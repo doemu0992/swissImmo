@@ -47,9 +47,9 @@
     </table>
 </div>
     <div class="border-t fw-linie fw-rumpf fw-flaeche2">
-        <form method="post" class="grid grid-cols-1 sm:grid-cols-6 gap-2 items-end">{% csrf_token %}
+        <form method="post" class="fw-raster r6 items-end">{% csrf_token %}
             <input type="hidden" name="aktion" value="anlage_neu">
-            <div class="sm:col-span-2"><label class="fw-label mb-1">{% trans "Bezeichnung" %}</label>
+            <div class="fw-col-span-2"><label class="fw-label mb-1">{% trans "Bezeichnung" %}</label>
                 <input name="bezeichnung" required placeholder="{% trans 'z. B. Heizung' %}" class="fw-feld w-full"></div>
             <div><label class="fw-label mb-1">{% trans "Liegenschaft" %}</label>
                 <select name="liegenschaft_id" class="fw-feld w-full">
@@ -69,7 +69,7 @@
                     <input name="nutzungsdauer_jahre" type="number" value="10" class="fw-feld w-16 text-right"></div>
                 <button title="{% trans 'Anlage erfassen' %}" class="fw-btn fw-primary self-end">{% zeichen 'neu' %}</button>
             </div>
-            <div class="sm:col-span-4">
+            <div class="fw-col-span-4">
                 {% comment %}
                     Klickfläche nur Kästchen + Text: als formularbreites <label>
                     lag sie direkt unter dem Erfassen-Knopf, und ein Tipper

@@ -1,7 +1,7 @@
 {% extends 'fw/phase2_form.html' %}
 {% load i18n %}
 {% block felder %}
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="fw-raster r2">
     <div>
         <label for="id_status" class="fw-label mb-1">{% trans "Stand" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
         <select id="id_status" name="status" class="fw-feld w-full">
@@ -59,7 +59,7 @@
         <input type="date" id="id_verlustschein_am" name="verlustschein_am" value="{{ werte.verlustschein_am }}" class="fw-feld w-full"{% if form.verlustschein_am.errors %} aria-invalid="true" aria-describedby="id_verlustschein_am_fehler"{% endif %}>
         {% include 'fw/_feldfehler.html' with f=form.verlustschein_am %}
     </div>
-    <div class="sm:col-span-2">
+    <div class="fw-col-span-2">
         <label for="id_bemerkung" class="fw-label mb-1">{% trans "Bemerkung" %}</label>
         <textarea id="id_bemerkung" name="bemerkung" rows="3" class="fw-feld w-full">{{ werte.bemerkung }}</textarea>
         {% include 'fw/_feldfehler.html' with f=form.bemerkung %}

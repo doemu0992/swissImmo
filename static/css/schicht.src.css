@@ -2644,3 +2644,182 @@
         .fw-alter-zeile .fw-lastbalken{height:12px}
         @media (max-width:640px){.fw-team-liste{padding:2px 16px 12px}.fw-team-zeile .fw-avci{width:32px;height:32px}}
         /* ---- Ende UI-Audit ---- */
+        /* ============================================================
+           BAUSTEINE V11 (26.10.2026): Bento, Raster, Assistent, Prozess, Hilfe
+           Ein Baukasten für alle Module — keine Seite baut sich ihr eigenes
+           Raster mehr (docs/DESIGN-V8.md, Abschnitt V11).
+           ============================================================ */
+        /* Bento: 12 Spalten, Kacheln S (3), M (4), L (6), XL (8), breit (12). Am Tablet 6, am Telefon 1. */
+        .fw-bento{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;margin-bottom:24px}
+        .fw-bento>*{grid-column:span 4;min-width:0;margin:0}
+        .fw-bento>.b-s{grid-column:span 3}.fw-bento>.b-m{grid-column:span 4}.fw-bento>.b-l{grid-column:span 6}
+        .fw-bento>.b-xl{grid-column:span 8}.fw-bento>.b-voll{grid-column:1 / -1}
+        @media (max-width:1100px){.fw-bento{grid-template-columns:repeat(6,minmax(0,1fr))}
+            .fw-bento>*,.fw-bento>.b-s,.fw-bento>.b-m{grid-column:span 3}.fw-bento>.b-l,.fw-bento>.b-xl{grid-column:1 / -1}}
+        @media (max-width:640px){.fw-bento{grid-template-columns:minmax(0,1fr);gap:12px}.fw-bento>*{grid-column:1 / -1 !important}}
+        /* Bento-Kachel: Kopf (Titel + runder Knopf), grosse Zahl, Fuss. Klickbar als <a>. */
+        .fw-kachel{position:relative;display:flex;flex-direction:column;gap:10px;padding:20px 22px;background:var(--ds-surface);
+            border-radius:var(--ds-radius-lg);box-shadow:var(--ds-shadow-sm);color:inherit;text-decoration:none;min-height:150px}
+        a.fw-kachel{transition:transform .25s var(--ds-ease),box-shadow .25s var(--ds-ease)}
+        a.fw-kachel:hover{transform:translateY(-3px);box-shadow:var(--ds-shadow)}
+        .fw-kachel-kopf{display:flex;align-items:center;justify-content:space-between;gap:10px}
+        .fw-kachel-kopf h2,.fw-kachel-kopf h3{margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em}
+        .fw-kachel-zahl{font-size:40px;font-weight:500;letter-spacing:-.04em;line-height:1;margin-top:auto}
+        .fw-kachel-zahl small{font-size:14px;font-weight:500;letter-spacing:0;color:var(--ds-muted);margin-left:6px}
+        .fw-kachel-text{font-size:12.5px;color:var(--ds-muted);line-height:1.45;margin:0}
+        .fw-kachel.akzent{background:radial-gradient(120% 120% at 100% 0%,var(--ds-akzent-hell) 0%,transparent 55%),linear-gradient(160deg,var(--ds-akzent),var(--ds-akzent-tief));color:var(--ds-auf-satt)}
+        .fw-kachel.akzent,.fw-kachel.akzent .fw-kachel-text{color:#fff}
+        .fw-kachel.dunkel{background:var(--ds-ink);color:var(--ds-surface)}
+        .fw-kachel.dunkel .fw-kachel-text{color:var(--ds-line-stark)}
+        .fw-kachel-liste{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13px}
+        .fw-kachel-liste li{display:flex;justify-content:space-between;gap:10px}
+        .fw-kachel-liste b{font-weight:600}
+        /* Formularraster: ersetzt `grid grid-cols-1 sm:grid-cols-N gap-*` — überall dieselben Abstände. */
+        .fw-raster{display:grid;grid-template-columns:minmax(0,1fr);gap:14px 16px}
+        @media (min-width:640px){
+            .fw-raster.r2{grid-template-columns:repeat(2,minmax(0,1fr))}.fw-raster.r3{grid-template-columns:repeat(3,minmax(0,1fr))}
+            .fw-raster.r4{grid-template-columns:repeat(4,minmax(0,1fr))}.fw-raster.r6{grid-template-columns:repeat(6,minmax(0,1fr))}
+            .fw-col-span-1{grid-column:span 1}.fw-col-span-2{grid-column:span 2}.fw-col-span-3{grid-column:span 3}
+            .fw-col-span-4{grid-column:span 4}.fw-col-span-6{grid-column:span 6}}
+        /* Seitenraster (zwei/drei Spalten ab 1024 px) für Karten nebeneinander */
+        .fw-raster.l2,.fw-raster.l3{gap:20px;align-items:start}
+        @media (min-width:768px){.fw-raster.m2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media (min-width:1024px){.fw-raster.l2{grid-template-columns:repeat(2,minmax(0,1fr))}.fw-raster.l3{grid-template-columns:repeat(3,minmax(0,1fr))}
+            .fw-raster.l4{grid-template-columns:repeat(4,minmax(0,1fr))}
+            .fw-lg-col-span-2{grid-column:span 2}.fw-lg-col-span-3{grid-column:span 3}.fw-lg-col-span-4{grid-column:span 4}}
+        .fw-raster>.fw-card{margin-bottom:0}
+        /* Formularseite: Karten nebeneinander statt einer halben, leeren Breite */
+        .fw-formseite{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+        .fw-formseite>.fw-card,.fw-formseite>section{margin:0}
+        /* Was keine Karte ist (Fehlerkasten, Hinweis, Knopfzeile), läuft über die volle Breite */
+        .fw-formseite>:not(.fw-card):not(section){grid-column:1 / -1}
+        @media (min-width:1100px){.fw-formseite{grid-template-columns:repeat(2,minmax(0,1fr))}.fw-formseite>.breit{grid-column:1 / -1}}
+        /* ---- Assistent (fw/_assistent.html + static/js/fw-bausteine.js) ----
+           Ohne Skript: ein normales Formular, alle Schritte untereinander. Mit Skript
+           (`.fw-assistent.an`): Schrittleiste, ein Schritt sichtbar, Prüfen am Schluss. */
+        .fw-assistent{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+        .fw-assistent-leiste{display:none}
+        .fw-assistent.an{grid-template-columns:232px minmax(0,1fr)}
+        .fw-assistent.an .fw-assistent-leiste{display:block;position:sticky;top:16px;background:var(--ds-surface);border-radius:var(--ds-radius-lg);box-shadow:var(--ds-shadow-sm);padding:14px}
+        .fw-assistent-leiste ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+        .fw-assistent-leiste li button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;background:none;border-radius:var(--ds-radius-sm);
+            font:inherit;font-size:13.5px;color:var(--ds-muted);text-align:left;cursor:pointer}
+        .fw-assistent-leiste li button:hover{background:var(--ds-surface-2);color:var(--ds-ink)}
+        .fw-assistent-leiste .nr{width:26px;height:26px;flex:0 0 26px;border-radius:var(--ds-pill);display:grid;place-items:center;font-size:12px;font-weight:600;
+            background:var(--ds-surface-2);color:var(--ds-muted)}
+        .fw-assistent-leiste li.hier button{color:var(--ds-ink);font-weight:600}
+        .fw-assistent-leiste li.hier .nr{background:var(--ds-ink);color:var(--ds-surface)}
+        .fw-assistent-leiste li.fertig .nr{background:var(--ds-akzent);color:#fff}
+        .fw-assistent-leiste li.optional .zusatz{font-size:11px;color:var(--ds-faint);font-weight:400;margin-left:auto}
+        .fw-assistent-leiste .fw-assistent-stand{font-size:12px;color:var(--ds-faint);padding:10px 10px 2px;border-top:1px solid var(--ds-line);margin-top:8px}
+        .fw-assistent.an [data-schritt]:not(.zeigt),.fw-assistent.an .fw-assistent-pruefen:not(.zeigt){display:none}
+        .fw-assistent [data-schritt]{display:flex;flex-direction:column;gap:16px}
+        .fw-assistent-inhalt{display:flex;flex-direction:column;gap:18px;min-width:0}
+        .fw-assistent-zusammenfassung{min-width:0}
+        .fw-assistent [data-schritt]>.fw-card{margin:0}
+        .fw-assistent-schritt-kopf{display:none}
+        .fw-assistent.an .fw-assistent-schritt-kopf{display:flex;flex-direction:column;gap:4px}
+        .fw-assistent-schritt-kopf .fw-ueber{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ds-faint)}
+        .fw-assistent-schritt-kopf h2{margin:0;font-size:24px;font-weight:500;letter-spacing:-.03em}
+        .fw-assistent-schritt-kopf p{margin:0;font-size:13px;color:var(--ds-muted)}
+        .fw-assistent-fuss{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 18px;background:var(--ds-surface);
+            border-radius:var(--ds-radius-lg);box-shadow:var(--ds-shadow-lg);position:sticky;bottom:16px;z-index:5}
+        .fw-assistent-fuss .rechts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+        .fw-assistent-fuss .stand{font-size:12.5px;color:var(--ds-muted)}
+        .fw-assistent:not(.an) [data-assistent-nur-js]{display:none}
+        .fw-assistent.an [data-assistent-ohne-js]{display:none}
+        .fw-assistent-pruefen dl{margin:0;display:grid;grid-template-columns:minmax(120px,34%) minmax(0,1fr);gap:8px 16px;font-size:13px}
+        .fw-assistent-pruefen dt{color:var(--ds-muted)}.fw-assistent-pruefen dd{margin:0;font-weight:500;overflow-wrap:anywhere}
+        .fw-assistent-pruefen h3{margin:18px 0 8px;font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+        .fw-assistent-pruefen h3:first-child{margin-top:0}
+        @media (max-width:900px){
+            .fw-assistent.an{grid-template-columns:minmax(0,1fr)}
+            .fw-assistent.an .fw-assistent-leiste{position:static;padding:8px;overflow-x:auto}
+            .fw-assistent-leiste ol{flex-direction:row;gap:4px;width:max-content}
+            .fw-assistent-leiste li button{padding:6px 10px;white-space:nowrap}
+            .fw-assistent-leiste .fw-assistent-stand,.fw-assistent-leiste .zusatz{display:none}
+            .fw-assistent-fuss{bottom:calc(12px + env(safe-area-inset-bottom,0px))}}
+        /* Schrittleiste des Vertrags-Assistenten (eigenes Skript in vertrag_neu.html) —
+           dieselbe Gestalt wie die Leiste des gemeinsamen Assistenten. */
+        .fw-schrittleiste{flex:0 0 210px;padding:16px 12px;border-right:1px solid var(--ds-line)}
+        .fw-schrittleiste ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+        .fw-schrittleiste li.hidden{display:none}
+        .fw-schrittleiste li button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;background:none;border-radius:var(--ds-radius-sm);
+            font:inherit;font-size:13.5px;color:var(--ds-muted);text-align:left;cursor:pointer;white-space:nowrap}
+        .fw-schrittleiste li button:hover{background:var(--ds-surface-2);color:var(--ds-ink)}
+        .fw-schrittleiste .nr{width:26px;height:26px;flex:0 0 26px;border-radius:var(--ds-pill);display:grid;place-items:center;font-size:12px;font-weight:600;
+            background:var(--ds-surface-2);color:var(--ds-muted)}
+        .fw-schrittleiste li.hier button{color:var(--ds-ink);font-weight:600}
+        .fw-schrittleiste li.hier .nr{background:var(--ds-ink);color:var(--ds-surface)}
+        .fw-schrittleiste li.fertig .nr{background:var(--ds-akzent);color:#fff}
+        .fw-schritt-titel{margin:0 0 4px;font-size:22px;font-weight:500;letter-spacing:-.03em;color:var(--ds-ink)}
+        .fw-schritt-text{margin:0 0 18px;font-size:13px;color:var(--ds-muted);line-height:1.5}
+        @media (max-width:639px){.fw-schrittleiste{flex:none;border-right:0;border-bottom:1px solid var(--ds-line);padding:8px;overflow-x:auto}
+            .fw-schrittleiste ol{flex-direction:row;width:max-content}.fw-schrittleiste li button{padding:6px 10px}}
+        /* Schmaler Assistent (halbe Breite neben einer Vorschau): Leiste als Zeile oben */
+        .fw-assistent-schmal.an{grid-template-columns:minmax(0,1fr)}
+        .fw-assistent-schmal.an .fw-assistent-leiste{position:static;padding:8px;overflow-x:auto}
+        .fw-assistent-schmal .fw-assistent-leiste ol{flex-direction:row;gap:4px;width:max-content}
+        .fw-assistent-schmal .fw-assistent-leiste li button{padding:6px 10px;white-space:nowrap}
+        .fw-assistent-schmal .fw-assistent-leiste .fw-assistent-stand{display:none}
+        .fw-wv-weg{margin-bottom:16px}
+        /* ---- Prozessleiste: Schritte eines Ablaufs mit Zustand (offen, Warnung, erledigt) ---- */
+        .fw-prozess{position:relative;list-style:none;margin:0 0 24px;padding:6px;display:flex;gap:4px;overflow-x:auto;background:var(--ds-surface);
+            border-radius:var(--ds-radius-lg);box-shadow:var(--ds-shadow-sm);scrollbar-width:none}
+        .fw-prozess::-webkit-scrollbar{display:none}
+        .fw-prozess li{flex:1 0 auto;min-width:0}
+        .fw-prozess a,.fw-prozess span.schritt{display:flex;align-items:center;gap:9px;padding:9px 14px;border-radius:var(--ds-radius-sm);color:var(--ds-muted);
+            text-decoration:none;font-size:13px;white-space:nowrap}
+        .fw-prozess a:hover{background:var(--ds-surface-2);color:var(--ds-ink)}
+        .fw-prozess .nr{width:24px;height:24px;flex:0 0 24px;border-radius:var(--ds-pill);display:grid;place-items:center;font-size:11.5px;font-weight:600;background:var(--ds-surface-2)}
+        .fw-prozess .erledigt .nr{background:var(--ds-good);color:var(--ds-auf-satt)}
+        .fw-prozess .warnung .nr{background:var(--ds-warn);color:var(--ds-auf-satt)}
+        .fw-prozess .gesperrt{opacity:.55}
+        .fw-prozess .hier a,.fw-prozess .hier span.schritt{background:var(--ds-ink);color:var(--ds-surface);font-weight:600}
+        .fw-prozess .hier .nr{background:var(--ds-akzent);color:#fff}
+        .fw-prozess small{display:block;font-size:11px;font-weight:400;opacity:.75}
+        /* ---- Hilfe: ⓘ-Knopf mit Erklärung zum Antippen (Tag `hilfe`, core/hilfe.py) ---- */
+        .fw-hilfe-knopf{display:inline-grid;place-items:center;width:18px;height:18px;margin-left:4px;vertical-align:-3px;border-radius:var(--ds-pill);
+            border:1px solid var(--ds-line-stark);background:var(--ds-surface);color:var(--ds-muted);font:600 11px/1 var(--ds-font);cursor:pointer;padding:0;flex:0 0 18px}
+        .fw-hilfe-knopf:hover,.fw-hilfe-knopf[aria-expanded="true"]{background:var(--ds-ink);border-color:var(--ds-ink);color:var(--ds-surface)}
+        .fw-hilfe-blase{position:fixed;z-index:90;max-width:min(320px,calc(100vw - 24px));padding:12px 14px;border-radius:var(--ds-radius-sm);
+            background:var(--ds-ink);color:var(--ds-surface);font-size:12.5px;line-height:1.5;font-weight:400;letter-spacing:0;text-transform:none;
+            box-shadow:var(--ds-shadow-lg);text-align:left}
+        .fw-hilfe-blase b{display:block;margin-bottom:3px;font-weight:600}
+        .fw-hilfe-blase a{color:var(--ds-akzent-hell)}
+        .fw-hilfe-text{display:none}
+        /* ---- Hilfebox «So funktioniert's»: einklappbar, je Benutzer wegklickbar ---- */
+        .fw-hilfebox{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;margin-bottom:20px;border-radius:var(--ds-radius-lg);
+            background:var(--ds-surface);box-shadow:var(--ds-shadow-sm)}
+        .fw-hilfebox>.fw-hi{width:34px;height:34px;flex:0 0 34px;border-radius:var(--ds-pill);display:grid;place-items:center;background:var(--ds-brand-soft);color:var(--ds-brand)}
+        .fw-hilfebox-inhalt{flex:1;min-width:0}
+        .fw-hilfebox-inhalt b{display:block;font-size:14px;font-weight:600;margin-bottom:4px}
+        .fw-hilfebox-inhalt ol,.fw-hilfebox-inhalt ul{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ds-muted);line-height:1.6}
+        .fw-hilfebox-inhalt p{margin:0;font-size:13px;color:var(--ds-muted);line-height:1.55}
+        .fw-hilfebox .zu{border:0;background:none;color:var(--ds-faint);cursor:pointer;padding:4px;border-radius:var(--ds-pill)}
+        .fw-hilfebox .zu:hover{background:var(--ds-surface-2);color:var(--ds-ink)}
+        .fw-hilfebox.weg{display:none}
+        @media (max-width:640px){.fw-hilfebox{padding:14px}.fw-hilfebox>.fw-hi{display:none}}
+        /* ---- Portale: am Desktop wird die Leiste zur Ember-Kopfleiste ----
+           Seit Ember blendet `.fw-side` ab 1024 px aus — im Portal gab es keine
+           Kopfleiste als Ersatz: kein Menü, kein Abmelden (UI-Analyse 26.10.2026).
+           Dieselbe Leiste (#pSidebar, Blöcke und Ids unverändert) steht jetzt oben:
+           Marke, Menü-Kapsel, Sprache und Abmelden. */
+        @media (min-width:1024px){
+            #pSidebar.fw-side{display:flex;position:static;height:auto;width:auto;max-width:1440px;margin:0 auto;flex-direction:row;
+                align-items:center;gap:14px;background:none;box-shadow:none;border:0;padding:20px 32px 0;transform:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+            #pSidebar .fw-side-kopf,#pSidebar .fw-nav,#pSidebar .fw-side-fuss{background:var(--ds-surface);border-radius:var(--ds-pill);height:52px;box-shadow:var(--ds-shadow-sm)}
+            #pSidebar .fw-side-kopf{flex:0 0 auto;padding:0 20px 0 12px;gap:9px}
+            #pSidebar .fw-nav{flex:1 1 auto;min-width:0;flex-direction:row;align-items:center;gap:2px;padding:0 6px;overflow-x:auto;scrollbar-width:none;padding-bottom:0}
+            #pSidebar .fw-nav::-webkit-scrollbar{display:none}
+            #pSidebar .fw-nav-eintrag{width:auto;flex:0 0 auto;white-space:nowrap;height:40px;padding:0 14px;border-radius:var(--ds-pill)}
+            #pSidebar .fw-nav-eintrag>.fw-zeichen{display:none!important}
+            #pSidebar .fw-nav-eintrag.hier{background:var(--ds-ink);color:var(--ds-surface);box-shadow:none}
+            #pSidebar .fw-nav-abschnitt{display:none}
+            #pSidebar .fw-side-fuss{flex:0 0 auto;flex-direction:row;align-items:center;gap:6px;border:0;padding:0 6px 0 10px}
+            #pSidebar .fw-side-fuss .fw-profil-abschnitt{padding:0}
+            #pSidebar .fw-side-fuss form{margin:0}
+            #pSidebar .fw-side-fuss .fw-nav-eintrag{height:40px}
+            .fw-portal-top{display:none}
+        }
+        /* ---- Ende Bausteine V11 ---- */

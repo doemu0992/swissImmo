@@ -40,7 +40,9 @@ Audit Etappe 3 (Knopf-Varianten) nahm `text-white` von selbstgebauten
 Knöpfen — `integrationen`, `mietzins`, `objekt_ausschreiben`, `vermarktung`
 (→ 0), `kreditoren` (3 → 2): 179 in 38.
 Redesign nach konzept-v8 (30.09.2026): Die neue Huelle traegt die Farben
-ueber die Schicht — `base.html` (4 → 1): **STAND 136 in 20 Vorlagen**.
+ueber die Schicht — `base.html` (4 → 1): 136 in 20.
+V11 (26.10.2026): Portal-Badge auf `fw-krit-voll` statt Fläche + `text-white`
+— `mieter_portal` (3 → 2): **STAND 135 in 20 Vorlagen**.
 
 E2.84: DAS OVERLAY IST AUSGEBAUT — UND DIE WARNUNG VON E2.20 GEPRUEFT
 ---------------------------------------------------------------------
@@ -280,7 +282,7 @@ OBERGRENZE = {
     'core/templates/core/_passwort_shell_bottom.html': 2,
     'core/templates/core/dossier/base.html': 7,
     'core/templates/core/mieter_kuendigung.html': 1,
-    'core/templates/core/mieter_portal.html': 3,
+    'core/templates/core/mieter_portal.html': 2,
     'core/templates/core/mieter_rechnungen.html': 1,
     'core/templates/core/mieter_schaden.html': 1,
     'core/templates/core/mieter_ticket_detail.html': 1,

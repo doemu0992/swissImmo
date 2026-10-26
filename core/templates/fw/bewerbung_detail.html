@@ -22,7 +22,7 @@
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-x-6 items-start">
     <!-- Hauptdaten -->
-    <div class="lg:col-span-2 min-w-0">
+    <div class="fw-lg-col-span-2 min-w-0">
         <div class="fw-card">
             <div class="fw-kopf"><h2>{% trans "Personalien & Kontakt" %}</h2></div>
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 px-5 pb-3">
@@ -32,7 +32,7 @@
                 <div class="fw-kv"><dt>{% trans "Heimatort" %}</dt><dd>{{ b.heimatort|default:"—" }}</dd></div>
                 <div class="fw-kv"><dt>{% trans "Mobil" %}</dt><dd>{{ b.mobilnummer }}</dd></div>
                 <div class="fw-kv"><dt>{% trans "E-Mail" %}</dt><dd class="truncate">{{ b.email }}</dd></div>
-                <div class="fw-kv sm:col-span-2"><dt>{% trans "Adresse" %}</dt><dd>{{ b.adresse }}, {{ b.plz }} {{ b.ort }}</dd></div>
+                <div class="fw-kv fw-col-span-2"><dt>{% trans "Adresse" %}</dt><dd>{{ b.adresse }}, {{ b.plz }} {{ b.ort }}</dd></div>
             </dl>
         </div>
 
@@ -55,8 +55,8 @@
                 <div class="fw-kv"><dt>{% trans "Haustiere" %}</dt><dd>{% if b.haustiere %}{{ b.haustiere_details|default:"ja" }}{% else %}{% trans "nein" %}{% endif %}</dd></div>
                 <div class="fw-kv"><dt>{% trans "Parkplatz" %}</dt><dd>{% if b.interesse_parkplatz %}{% trans "gewünscht" %}{% else %}{% trans "nein" %}{% endif %}</dd></div>
                 <div class="fw-kv"><dt>{% trans "Kaution" %}</dt><dd>{{ b.get_wunsch_kautions_typ_display }}</dd></div>
-                {% if b.schild_briefkasten %}<div class="fw-kv sm:col-span-2"><dt>{% trans "Briefkasten-Schild" %}</dt><dd>{{ b.schild_briefkasten }}</dd></div>{% endif %}
-                {% if b.schild_sonnerie %}<div class="fw-kv sm:col-span-2"><dt>{% trans "Sonnerie-Schild" %}</dt><dd>{{ b.schild_sonnerie }}</dd></div>{% endif %}
+                {% if b.schild_briefkasten %}<div class="fw-kv fw-col-span-2"><dt>{% trans "Briefkasten-Schild" %}</dt><dd>{{ b.schild_briefkasten }}</dd></div>{% endif %}
+                {% if b.schild_sonnerie %}<div class="fw-kv fw-col-span-2"><dt>{% trans "Sonnerie-Schild" %}</dt><dd>{{ b.schild_sonnerie }}</dd></div>{% endif %}
             </dl>
             {% if b.bemerkungen %}<p class="fw-mutet px-5 py-4 border-t fw-linie">{{ b.bemerkungen }}</p>{% endif %}
         </div>

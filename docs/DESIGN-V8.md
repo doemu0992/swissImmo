@@ -138,6 +138,36 @@ Rechte, Übersetzung, Stilschuld) umgangen; das Ember-Bild entsteht vollständig
 - **Datenwerte ohne `style=`:** Balkenhöhen kommen als `data-h`, der Halbkreis als SVG-Attribut —
   der Stilschuld-Wächter bleibt bei seiner Obergrenze.
 
+## V11 «Bausteine» (26.10.2026) — Bento-Raster, Assistent, Prozessleiste, Hilfe
+
+Ember bleibt das Bild; V11 vereinheitlicht, wie Seiten gebaut sind. Alles in `fw/_schicht.html`
+(Block «BAUSTEINE V11») und `static/js/fw-bausteine.js` — ohne JavaScript bleibt jede Seite ein
+normales Formular.
+
+- **Raster statt Tailwind-Grids:** `fw-raster r2/r3/r4/r6` (wächst ab Telefon), `l2/l3/l4` (erst ab
+  1024 px mehrspaltig), Spannen `fw-col-span-N` / `fw-lg-col-span-N`. 172 Tailwind-Grids in 31
+  Vorlagen umgestellt. Bento-Kacheln: `fw-bento` mit `b-s/m/l/xl/voll` und `fw-kachel`.
+- **Formularseite:** `fw-formseite` — volle Inhaltsbreite, Karten im Zweierraster ab 1024 px;
+  ersetzt die schmale `max-w-3xl`-Spalte (Personen, Liegenschaften, Objekte, Mandate, Verträge …).
+- **Assistent** (`.fw-assistent[data-assistent]`): Neue Akten (Person, Liegenschaft, Kündigung,
+  Weiterverrechnung, NK-Periode) werden Schritt für Schritt erfasst. Jeder Schritt ist eine
+  `section[data-schritt]`; «Weiter» prüft die Pflichtfelder des Schritts (`required`,
+  `data-pflicht`), der letzte Schritt fasst alles zusammen («Prüfen & speichern») mit «Ändern» je
+  Schritt. Fehler vom Server öffnen den Schritt mit dem ersten `aria-invalid`-Feld. Bearbeiten
+  bleibt eine Seite. Der Mietvertrags-Assistent behält seine Logik und bekommt die Schrittleiste
+  `fw-schrittleiste`. Feldnamen sind unverändert (`core/tests/test_bausteine.py` prüft das).
+- **Prozessleiste** (`fw/_prozess.html`): Schritte eines Ablaufs mit Zustand erledigt · warnung ·
+  offen · gesperrt · entfällt und «hier». Nebenkosten: `core/services/nk_prozess.py` leitet die
+  sieben Schritte (Periode → Versand & Zustellung) aus den Werten der Detailansicht ab und rechnet
+  nichts neu. Am Telefon scrollt die Leiste quer, der aktuelle Schritt wird ins Bild gerückt.
+- **In-App-Hilfe:** `{% load hilfe %}{% hilfe 'schluessel' %}` zeichnet ein ⓘ; Antippen öffnet eine
+  Blase (Escape, Scrollen, Klick daneben schliessen). Texte im Katalog `core/hilfe.py` (Regeln dort:
+  zwei, drei Sätze, Gesetz nur als Fundstelle, keine geratenen Zahlen). «So funktioniert's»-Kästen
+  `.fw-hilfebox[data-hilfebox]` erklären Abläufe (Mahnlauf, Bankabgleich, Zahllauf, NK,
+  Mieterwechsel, Weiterverrechnung) und lassen sich je Gerät ausblenden.
+- **Portale am Desktop:** Die Portal-Leiste wird ab 1024 px zur Ember-Kopfleiste
+  (Logo-, Navigations- und Sprach-Kapsel); am Telefon bleibt die Schublade.
+
 ## Was nicht mehr vorkommen soll
 
 - Kachelreihen `grid grid-cols-… gap-4` aus `fw-card p-5` mit Symbolquadrat (`w-11 h-11 rounded-lg fw-*-flaeche`) → `fw-kpis`.
@@ -145,6 +175,8 @@ Rechte, Übersetzung, Stilschuld) umgangen; das Ember-Bild entsteht vollständig
 - `italic` an Leerzuständen → `fw-leer`.
 - Eigene Überschriften `text-2xl font-bold` → `fw-phead h1`.
 - Knöpfe aus Utilities → `fw-btn`-Varianten.
+- `grid grid-cols-1 sm:grid-cols-N gap-…` und `sm:col-span-N` → `fw-raster rN` / `fw-col-span-N`.
+- `title="…"` als einzige Erklärung eines Fachbegriffs (am Telefon unerreichbar) → `{% hilfe %}`.
 - Farbige Beträge ohne Bedeutung (`fw-info` an einer Summe) → Tinte; Farbe nur für offen/überfällig/Gewinn-Verlust.
 
 ## Was bei jeder Umstellung unverändert bleibt

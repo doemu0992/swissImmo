@@ -20,7 +20,7 @@
     {% endif %}
 </div>
 
-<form method="post" enctype="multipart/form-data" class="max-w-3xl">
+<form method="post" enctype="multipart/form-data" class="fw-formseite">
     {% csrf_token %}
     {% if embed_base %}<input type="hidden" name="embed" value="1">{% endif %}
 
@@ -91,28 +91,28 @@
 <template id="mangelTpl">
     <div class="mangel-row border fw-linie rounded-lg p-3 space-y-2">
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
-            <select name="m_raum" class="fw-feld sm:col-span-3">
+            <select name="m_raum" class="fw-feld fw-col-span-3">
                 {# Raumname ist gespeicherter Wert: bleibt unübersetzt #}{% for r in raeume %}<option>{{ r }}</option>{% endfor %}
             </select>
-            <input name="m_beschreibung" placeholder="{% trans 'Mangel beschreiben' %}" class="fw-feld sm:col-span-4">
-            <select name="m_verursacher" class="fw-feld sm:col-span-2">
+            <input name="m_beschreibung" placeholder="{% trans 'Mangel beschreiben' %}" class="fw-feld fw-col-span-4">
+            <select name="m_verursacher" class="fw-feld fw-col-span-2">
                 <option value="abnutzung">{% trans "Abnutzung" %}</option><option value="mieter">{% trans "Mieter" %}</option><option value="vermieter">{% trans "Vermieter" %}</option>
             </select>
-            <input name="m_kosten" inputmode="decimal" placeholder="CHF" class="fw-feld sm:col-span-1 text-right" title="{% trans 'Reparatur-/Ersatzkosten' %}">
-            <label class="sm:col-span-1 text-center cursor-pointer fw-faint hover:fw-marke" title="{% trans 'Foto' %}">{% zeichen 'dokument' %}<input type="file" name="m_foto" accept="image/*" capture="environment" class="hidden"></label>
-            <button type="button" onclick="this.closest('.mangel-row').remove()" title="{% trans 'Diesen Mangel entfernen' %}" class="sm:col-span-1 fw-ikon mut gefahr">{% zeichen 'loeschen' %}</button>
+            <input name="m_kosten" inputmode="decimal" placeholder="CHF" class="fw-feld fw-col-span-1 text-right" title="{% trans 'Reparatur-/Ersatzkosten' %}">
+            <label class="fw-col-span-1 text-center cursor-pointer fw-faint hover:fw-marke" title="{% trans 'Foto' %}">{% zeichen 'dokument' %}<input type="file" name="m_foto" accept="image/*" capture="environment" class="hidden"></label>
+            <button type="button" onclick="this.closest('.mangel-row').remove()" title="{% trans 'Diesen Mangel entfernen' %}" class="fw-col-span-1 fw-ikon mut gefahr">{% zeichen 'loeschen' %}</button>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
-            <span class="sm:col-span-3 fw-klein">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Raumbuch-Element" %}</span>
-            <select name="m_ausstattung" class="fw-feld sm:col-span-6 fw-mutet">
+            <span class="fw-col-span-3 fw-klein">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Raumbuch-Element" %}</span>
+            <select name="m_ausstattung" class="fw-feld fw-col-span-6 fw-mutet">
                 <option value="">— {% trans "kein Element (voller Betrag)" %} —</option>
                 {% for el in elemente %}<option value="{{ el.id }}">{{ el.raum }} · {{ el.kategorie }}{% if el.einbau_datum %} ({{ el.einbau_datum|date:"Y" }}){% endif %}</option>{% endfor %}
             </select>
-            <input name="m_neuwert" inputmode="decimal" placeholder="{% trans 'Neuwert CHF' %}" class="fw-feld sm:col-span-3 text-right fw-mutet" title="{% trans 'Neuwert (optional, sonst vom Element)' %}">
+            <input name="m_neuwert" inputmode="decimal" placeholder="{% trans 'Neuwert CHF' %}" class="fw-feld fw-col-span-3 text-right fw-mutet" title="{% trans 'Neuwert (optional, sonst vom Element)' %}">
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
-            <span class="sm:col-span-3 fw-klein">{% trans "Beschädigung" %}</span>
-            <select name="m_vorsatz" class="fw-feld sm:col-span-6 fw-mutet" title="{% trans 'Bei Absicht gibt es keinen Zeitwertabzug' %}">
+            <span class="fw-col-span-3 fw-klein">{% trans "Beschädigung" %}</span>
+            <select name="m_vorsatz" class="fw-feld fw-col-span-6 fw-mutet" title="{% trans 'Bei Absicht gibt es keinen Zeitwertabzug' %}">
                 <option value="">{% trans "Unabsichtlich (Zeitwertabzug)" %}</option>
                 <option value="1">{% trans "Absichtlich (voller Betrag, kein Abzug)" %}</option>
             </select>

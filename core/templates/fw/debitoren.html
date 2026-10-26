@@ -35,7 +35,7 @@
         <button type="button" onclick="fwPos('Schadenersatz','')" class="fw-btn fw-leise fw-knapp">{% zeichen 'arbeit' klasse='mr-1' %}{% trans "Schadenersatz" %}</button>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+    <div class="fw-raster l2 items-start">
         <!-- LINKS: Formular -->
         <form method="post" action="/neu/debitoren/neu/" class="fw-formular">
             {% csrf_token %}

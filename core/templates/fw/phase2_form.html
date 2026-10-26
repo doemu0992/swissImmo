@@ -31,9 +31,9 @@ Betreibung, Zählerstand). Rendert ein Django-Form feldweise; Fehler stehen am F
             </div>
             {% endif %}
             {% block felder %}
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="fw-raster r2">
             {% for f in form %}
-                <div class="{% if f.field.widget.input_type == 'textarea' or f.name == 'bemerkung' %}sm:col-span-2{% endif %}">
+                <div class="{% if f.field.widget.input_type == 'textarea' or f.name == 'bemerkung' %}fw-col-span-2{% endif %}">
                     <label for="{{ f.id_for_label }}" class="fw-label mb-1">{{ f.label }}{% if f.field.required %} <span class="fw-pflicht" aria-hidden="true">*</span>{% endif %}</label>
                     {{ f }}
                     {% if f.errors %}<p id="{{ f.id_for_label }}_fehler" class="fw-feldfehler" role="alert">{{ f.errors.0 }}</p>{% endif %}

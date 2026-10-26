@@ -199,3 +199,29 @@ Schon vorhanden und deshalb nicht neu gebaut: Ticket-Board, Mahnlauf mit Trocken
 Wächter: `core/tests/test_leerstand_team.py` (10 Tests; Gegenprobe 6 von 7 Mutanten erkannt, der siebte ist
 fachlich gleichwertig). Bekannte Grenze: Die Ticket-Durchlaufzeit misst bis zur letzten Änderung, weil das Ticket
 kein eigenes Erledigt-Datum führt — die Seite sagt das.
+
+## Nachtrag 26.10.2026 — UX-Refactoring V11 (Assistenten und Hilfe)
+
+Analyse Modul für Modul, Massnahmenplan freigegeben, dann umgesetzt. Befunde und Umsetzung:
+
+| Befund | Umsetzung |
+|---|---|
+| Mieter- und Eigentümerportal ohne Navigation am Desktop (Leiste nur als Telefon-Schublade) | Leiste wird ab 1024 px zur Ember-Kopfleiste; Kacheln ohne Rand, Badge lesbar |
+| «Person erfassen»: 59 Felder auf einer halben Bildschirmbreite | Assistent in 5 Schritten (Art & Name, Kontakt, Adresse, Details optional, Zahlung & Notizen optional) + Prüfen |
+| Liegenschaft, Kündigung, Weiterverrechnung als lange Einzelformulare | je ein Assistent; Weiterverrechnung: erst «an einen Mieter» oder «auf alle verteilen» wählen, Kennzahlen oben |
+| Nebenkostenabrechnung: Schritte über Seiten und Knöpfe verstreut | Prozessleiste mit sieben Schritten und Zustand; neue Periode als Assistent mit Schnellwahl (Vorjahr, Heizperiode, laufendes Jahr) |
+| Fachbegriffe nur als `title`-Tooltip erklärt | Katalog mit 45 Begriffen (`core/hilfe.py`) und ⓘ-Blasen auf 23 Seiten; sechs «So funktioniert's»-Kästen |
+| Formulare brachen auf Tablet-Breite um (Tailwind-Grids ohne Ember-Abstände) | Ember-Raster `fw-raster` / `fw-formseite`, 172 Grids umgestellt |
+| Heute zeigte zweimal dieselben Zahlen | dritte Zahl: Termine diese Woche |
+
+Bewusst nicht umgesetzt: Bearbeiten in einer Schublade (Akten-Detail, Kreditoren) — es hätte die
+Bearbeitungsseiten und ihre Wächter verdoppelt; Bearbeiten bleibt eine Seite mit `fw-formseite`.
+Die Übersichten Finanzen, Berichte und Läufe waren schon Ember-konsistent und blieben.
+
+Übersetzungen der neuen Texte (fr/it/en) sind maschinell erstellt und brauchen eine fachliche Durchsicht.
+
+Wächter: `core/tests/test_bausteine.py` (15 Tests: jeder Hilfe-Schlüssel steht im Katalog und ist
+übersetzt, Prozesszustände und ihre Links, Assistent ohne verlorene Felder; Gegenprobe: falscher
+Schlüssel, falscher Zustand, verschwundenes Feld → rot), `e2e/tests/assistenten.spec.ts` (1440 und 390 px:
+Pflichtfeld hält an, Zurück behält Eingaben, Prüfen zeigt die Angaben, Hilfe-Blase im Bild,
+Prozessleiste ohne Querscrollen).

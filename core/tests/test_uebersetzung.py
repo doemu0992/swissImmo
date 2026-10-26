@@ -92,11 +92,14 @@ UEBERSETZT = (
     'core/zweifaktor_uebersicht.html',
     'fw/_abnahme_schluesselzeile.html',
     'fw/_arbeitsvorrat_abschnitte.html',
+    'fw/_assistent_attribute.html',  # V11: Assistent (Schritt-Texte)
+    'fw/_assistent_leiste.html',
     'fw/_bestaetigen.html',      # Audit Etappe 3: Bestätigungsdialog',
     'fw/_bezahlt_leer.html',
     'fw/_fwmodal.html',
     'fw/_listwerkzeug.html',     # Audit Etappe 4: Suche und Sortierung',
     'fw/_modal_done.html',
+    'fw/_prozess.html',          # V11: Prozessleiste Nebenkosten
     'fw/_seiten.html',           # Audit Etappe 4: Blätterleiste',
     'fw/_unterschrift_feld.html',
     'fw/_zustellstatus.html',

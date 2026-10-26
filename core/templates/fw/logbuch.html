@@ -41,8 +41,8 @@
 
 <!-- Filterleiste -->
 <form method="get" class="fw-card">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-5">
-        <div class="fw-feldblock lg:col-span-2">
+    <div class="fw-raster r2 l4 p-5">
+        <div class="fw-feldblock fw-lg-col-span-2">
             <label class="fw-label">{% trans "Suche" %}</label>
             <input name="q" value="{{ f_q }}" placeholder="{% trans 'Aktion, Objekt oder Detail …' %}"
                    class="fw-feld">
@@ -80,7 +80,7 @@
                 <option value="0"   {% if f_tage == '0' %}selected{% endif %}>{% trans "Gesamter Verlauf" %}</option>
             </select>
         </div>
-        <div class="flex items-end gap-2 lg:col-span-4">
+        <div class="flex items-end gap-2 fw-lg-col-span-4">
             <button class="fw-btn fw-primary">
                 {% zeichen 'filtern' %}{% trans "Filtern" %}
             </button>

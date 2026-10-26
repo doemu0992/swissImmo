@@ -186,7 +186,7 @@ Liegenschaft ohne Betreuung soll auffallen.
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start mb-4">
+    <div class="fw-raster l2 items-start mb-4">
         {% if lg.eigentuemer or lg.egid or lg.kataster_nummer %}
         <div class="fw-card fw-nomb">
             <div class="fw-kopf"><span class="fw-t">{% trans "Eigentum &amp; Register" %}</span></div>
@@ -247,8 +247,8 @@ Liegenschaft ohne Betreuung soll auffallen.
         <details class="fw-aufklapp">
             <summary>{% trans "Police hinzufügen" %}</summary>
             <div class="fw-aufklapp-inhalt">
-                <form method="post" action="/neu/liegenschaften/{{ lg.id }}/versicherung/" class="grid grid-cols-1 sm:grid-cols-6 gap-2">{% csrf_token %}
-                    <select name="art" class="fw-feld sm:col-span-2">
+                <form method="post" action="/neu/liegenschaften/{{ lg.id }}/versicherung/" class="fw-raster r6">{% csrf_token %}
+                    <select name="art" class="fw-feld fw-col-span-2">
                         <option value="gebaeude">{% trans "Gebäudeversicherung" %}</option>
                         <option value="haftpflicht">{% trans "Gebäude-Haftpflicht" %}</option>
                         <option value="wasser">{% trans "Wasser / Elementar" %}</option>
@@ -257,13 +257,13 @@ Liegenschaft ohne Betreuung soll auffallen.
                         <option value="rechtsschutz">{% trans "Rechtsschutz" %}</option>
                         <option value="andere">{% trans "Andere" %}</option>
                     </select>
-                    <input name="gesellschaft" placeholder="{% trans 'Gesellschaft' %}" class="fw-feld sm:col-span-2">
-                    <input name="policennummer" placeholder="{% trans 'Policennummer' %}" class="fw-feld sm:col-span-2">
-                    <input name="versicherungssumme" placeholder="{% trans 'Summe CHF' %}" class="fw-feld sm:col-span-2 tabular-nums">
-                    <input name="jahrespraemie" placeholder="{% trans 'Prämie/Jahr CHF' %}" class="fw-feld sm:col-span-2 tabular-nums">
-                    <input name="selbstbehalt" placeholder="{% trans 'Selbstbehalt je Schaden CHF' %}" class="fw-feld sm:col-span-2 tabular-nums">
-                    <input name="ablauf_datum" type="date" value="{{ heute_iso }}" class="fw-feld sm:col-span-2">
-                    <button class="fw-btn fw-primary sm:col-span-6">{% trans "Police speichern" %}</button>
+                    <input name="gesellschaft" placeholder="{% trans 'Gesellschaft' %}" class="fw-feld fw-col-span-2">
+                    <input name="policennummer" placeholder="{% trans 'Policennummer' %}" class="fw-feld fw-col-span-2">
+                    <input name="versicherungssumme" placeholder="{% trans 'Summe CHF' %}" class="fw-feld fw-col-span-2 tabular-nums">
+                    <input name="jahrespraemie" placeholder="{% trans 'Prämie/Jahr CHF' %}" class="fw-feld fw-col-span-2 tabular-nums">
+                    <input name="selbstbehalt" placeholder="{% trans 'Selbstbehalt je Schaden CHF' %}" class="fw-feld fw-col-span-2 tabular-nums">
+                    <input name="ablauf_datum" type="date" value="{{ heute_iso }}" class="fw-feld fw-col-span-2">
+                    <button class="fw-btn fw-primary fw-col-span-6">{% trans "Police speichern" %}</button>
                 </form>
             </div>
         </details>
@@ -305,7 +305,7 @@ Liegenschaft ohne Betreuung soll auffallen.
         <details class="fw-aufklapp">
             <summary>{% trans "Gerät erfassen" %}</summary>
             <div class="fw-aufklapp-inhalt">
-                <form method="post" action="/neu/geraet/" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <form method="post" action="/neu/geraet/" class="fw-raster r3">
                     {% csrf_token %}
                     <input type="hidden" name="liegenschaft_id" value="{{ lg.id }}">
                     <div><label class="fw-label mb-1">{% trans "Kategorie *" %}</label>
@@ -322,7 +322,7 @@ Liegenschaft ohne Betreuung soll auffallen.
                     <div><label class="fw-label mb-1">{% trans "Garantie bis" %}</label>
                         <input type="date" name="garantie_bis" class="fw-feld w-full"></div>
                     <div><label class="fw-label mb-1">{% trans "Notiz" %}</label><input name="notiz" class="fw-feld w-full"></div>
-                    <div class="sm:col-span-3"><button class="fw-btn fw-primary">{% zeichen 'neu' %}{% trans "Gerät erfassen" %}</button></div>
+                    <div class="fw-col-span-3"><button class="fw-btn fw-primary">{% zeichen 'neu' %}{% trans "Gerät erfassen" %}</button></div>
                 </form>
             </div>
         </details>
@@ -357,9 +357,9 @@ Liegenschaft ohne Betreuung soll auffallen.
                             <input type="date" name="installations_datum" value="{{ g.installations_datum|date:'Y-m-d' }}" class="fw-feld w-full"></div>
                         <div><label class="fw-label mb-1">{% trans "Garantie bis" %}</label>
                             <input type="date" name="garantie_bis" value="{{ g.garantie_bis|date:'Y-m-d' }}" class="fw-feld w-full"></div>
-                        <div class="col-span-2 sm:col-span-3"><label class="fw-label mb-1">{% trans "Notiz" %}</label>
+                        <div class="col-span-2 fw-col-span-3"><label class="fw-label mb-1">{% trans "Notiz" %}</label>
                             <input name="notiz" value="{{ g.notiz }}" class="fw-feld w-full"></div>
-                        <div class="col-span-2 sm:col-span-3 flex items-center gap-2 justify-end">
+                        <div class="col-span-2 fw-col-span-3 flex items-center gap-2 justify-end">
                             <button type="button" onclick="document.getElementById('lggedit-{{ g.id }}').classList.add('hidden')" class="fw-btn">{% trans "Abbrechen" %}</button>
                             <button class="fw-btn fw-primary">{% zeichen 'speichern' %}{% trans "Speichern" %}</button>
                         </div>
@@ -380,7 +380,7 @@ Liegenschaft ohne Betreuung soll auffallen.
         <details class="fw-aufklapp">
             <summary>{% trans "Zähler erfassen" %}</summary>
             <div class="fw-aufklapp-inhalt">
-                <form method="post" action="/neu/zaehler/" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <form method="post" action="/neu/zaehler/" class="fw-raster r4">
                     {% csrf_token %}
                     <input type="hidden" name="liegenschaft_id" value="{{ lg.id }}">
                     <div><label class="fw-label mb-1">{% trans "Typ *" %}</label>
@@ -391,7 +391,7 @@ Liegenschaft ohne Betreuung soll auffallen.
                         <input name="standort" placeholder="{% trans 'z.B. Technikraum' %}" class="fw-feld w-full"></div>
                     <div><label class="fw-label mb-1">{% trans "Aktueller Stand" %}</label>
                         <input name="aktueller_stand" inputmode="decimal" placeholder="0.00" class="fw-feld w-full"></div>
-                    <div class="sm:col-span-4"><button class="fw-btn fw-primary">{% zeichen 'neu' %}{% trans "Zähler erfassen" %}</button></div>
+                    <div class="fw-col-span-4"><button class="fw-btn fw-primary">{% zeichen 'neu' %}{% trans "Zähler erfassen" %}</button></div>
                 </form>
             </div>
         </details>
@@ -421,7 +421,7 @@ Liegenschaft ohne Betreuung soll auffallen.
                             <input name="standort" value="{{ z.standort }}" class="fw-feld w-full"></div>
                         <div><label class="fw-label mb-1">{% trans "Aktueller Stand" %}</label>
                             <input name="aktueller_stand" value="{{ z.aktueller_stand|floatformat:2 }}" inputmode="decimal" class="fw-feld w-full"></div>
-                        <div class="col-span-2 sm:col-span-4 flex items-center gap-2 justify-end">
+                        <div class="col-span-2 fw-col-span-4 flex items-center gap-2 justify-end">
                             <button type="button" onclick="document.getElementById('lgzedit-{{ z.id }}').classList.add('hidden')" class="fw-btn">{% trans "Abbrechen" %}</button>
                             <button class="fw-btn fw-primary">{% zeichen 'speichern' %}{% trans "Speichern" %}</button>
                         </div>
@@ -516,7 +516,7 @@ Liegenschaft ohne Betreuung soll auffallen.
             <summary>{% trans "Budget erfassen oder ändern" %}</summary>
             <div class="fw-aufklapp-inhalt">
                 <form method="post" action="/neu/liegenschaften/{{ lg.id }}/budget/"
-                      class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                      class="fw-raster r4">
                     {% csrf_token %}
                     <div><label class="fw-label mb-1">{% trans "Jahr *" %}</label>
                         <input type="number" name="jahr" value="{{ lg_jahr }}" min="2000" max="2100"
@@ -524,9 +524,9 @@ Liegenschaft ohne Betreuung soll auffallen.
                     <div><label class="fw-label mb-1">{% trans "Unterhaltsbudget CHF *" %}</label>
                         <input name="unterhalt" inputmode="decimal" placeholder="z.B. 31000"
                                required class="fw-feld w-full"></div>
-                    <div class="sm:col-span-2"><label class="fw-label mb-1">{% trans "Bemerkung" %}</label>
+                    <div class="fw-col-span-2"><label class="fw-label mb-1">{% trans "Bemerkung" %}</label>
                         <input name="bemerkung" placeholder="{% trans 'z.B. ohne Dachsanierung' %}" class="fw-feld w-full"></div>
-                    <div class="sm:col-span-4">
+                    <div class="fw-col-span-4">
                         <button class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Budget speichern" %}</button>
                         <span class="fw-klein ml-2">{% trans "Ein bestehendes Budget desselben Jahres wird überschrieben." %}</span>
                     </div>
@@ -632,7 +632,7 @@ Liegenschaft ohne Betreuung soll auffallen.
         <details class="fw-aufklapp">
             <summary>{% trans "Neue Frist erfassen" %}</summary>
             <div class="fw-aufklapp-inhalt">
-                <form method="post" action="/neu/liegenschaften/{{ lg.id }}/frist/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <form method="post" action="/neu/liegenschaften/{{ lg.id }}/frist/" class="fw-raster r2">
                     {% csrf_token %}
                     <div><label class="fw-label mb-1">{% trans "Art" %}</label>
                         <select name="art" class="fw-feld w-full">
@@ -649,8 +649,8 @@ Liegenschaft ohne Betreuung soll auffallen.
                         <input type="date" name="naechste_faelligkeit" required class="fw-feld w-full"></div>
                     <div><label class="fw-label mb-1">{% trans "Intervall (Monate, 0 = einmalig)" %}</label>
                         <input type="number" name="intervall_monate" value="12" min="0" class="fw-feld w-full"></div>
-                    <div class="sm:col-span-2"><label class="fw-label mb-1">{% trans "Notiz" %}</label><input name="notiz" class="fw-feld w-full"></div>
-                    <div class="sm:col-span-2"><button class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Frist speichern" %}</button></div>
+                    <div class="fw-col-span-2"><label class="fw-label mb-1">{% trans "Notiz" %}</label><input name="notiz" class="fw-feld w-full"></div>
+                    <div class="fw-col-span-2"><button class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Frist speichern" %}</button></div>
                 </form>
             </div>
         </details>
@@ -676,7 +676,7 @@ Liegenschaft ohne Betreuung soll auffallen.
             </tr>
             <tr id="wfedit-{{ f.wf.id }}" class="hidden">
                 <td colspan="6">
-                    <form method="post" action="/neu/frist/{{ f.wf.id }}/bearbeiten/" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <form method="post" action="/neu/frist/{{ f.wf.id }}/bearbeiten/" class="fw-raster r2">
                         {% csrf_token %}
                         <div><label class="fw-label mb-1">{% trans "Art" %}</label>
                             <select name="art" class="fw-feld w-full">
@@ -696,7 +696,7 @@ Liegenschaft ohne Betreuung soll auffallen.
                             <input type="number" name="intervall_monate" value="{{ f.wf.intervall_monate }}" min="0" class="fw-feld w-full"></div>
                         <div><label class="fw-label mb-1">{% trans "Notiz" %}</label>
                             <input name="notiz" value="{{ f.wf.notiz }}" class="fw-feld w-full"></div>
-                        <div class="sm:col-span-2 flex items-center gap-2 justify-end">
+                        <div class="fw-col-span-2 flex items-center gap-2 justify-end">
                             <button type="button" onclick="document.getElementById('wfedit-{{ f.wf.id }}').classList.add('hidden')" class="fw-btn">{% trans "Abbrechen" %}</button>
                             <button class="fw-btn fw-primary">{% zeichen 'speichern' %}{% trans "Speichern" %}</button>
                         </div>

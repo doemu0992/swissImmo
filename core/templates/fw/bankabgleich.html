@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n hilfe %}
 {% load chf %}
 {% block title %}{% trans "Bankabgleich" %} — swissImmo{% endblock %}
 
@@ -8,13 +8,26 @@
 <div class="fw-phead fw-phead-lauf">
     <div>
         <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a><span aria-hidden="true">/</span><span>{% trans "Bankabgleich" %}</span></nav>
-        <h1>{% trans "Bankabgleich" %}</h1>
+        <h1>{% trans "Bankabgleich" %} {% hilfe 'bankabgleich' %}</h1>
         <p>{% trans "Offene Posten mit Zahlungseingängen abgleichen und mit einem Klick verbuchen (Bank an Debitoren)" %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/bankabgleich/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
     {# Einstieg zu den gelernten Absendern: Die Automatik ordnet sonst unsichtbar zu. #}
     <div class="fw-phead-knoepfe">
         <a href="/neu/bankabgleich/zahler/" class="fw-btn">{% zeichen 'gut' %}{% trans "Gelernte Zahler" %}</a>
     </div>
+</div>
+
+<div class="fw-hilfebox" data-hilfebox="bankabgleich">
+    <span class="fw-hi" aria-hidden="true">{% zeichen 'hinweis' %}</span>
+    <div class="fw-hilfebox-inhalt">
+        <b>{% trans "So läuft der Bankabgleich" %}</b>
+        <ol>
+            <li>{% trans "camt.053- oder camt.054-Datei aus dem E-Banking importieren." %}</li>
+            <li>{% trans "Zahlungen mit QR-Referenz ordnen sich selbst zu." %}</li>
+            <li>{% trans "Den Rest von Hand zuordnen — gespeicherte Zahler-Zuordnungen helfen beim nächsten Mal." %}</li>
+        </ol>
+    </div>
+    <button type="button" class="zu" aria-label="{% trans 'Hinweis ausblenden' %}">{% zeichen 'schliessen' %}</button>
 </div>
 
 <!-- KPI + Import-Hinweis -->

@@ -1,7 +1,7 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
 {% load chf %}
-{% load rechte %}
+{% load rechte hilfe %}
 {% block title %}{{ p.bezeichnung }} — swissImmo{% endblock %}
 
 {% block content %}
@@ -55,13 +55,14 @@
 <div class="fw-kzn">
     <div><div class="fw-l">{% trans "Total Kosten (HNK)" %}</div>
         <div class="fw-w">CHF {{ total_kosten|chf }}</div></div>
-    <div><div class="fw-l">{% trans "Akonto bezahlt" %}</div>
+    <div><div class="fw-l">{% trans "Akonto bezahlt" %} {% hilfe 'akonto' %}</div>
         <div class="fw-w">CHF {{ total_akonto|chf }}</div></div>
     <div><div class="fw-l">{% if saldo_total > 0 %}{% trans "Saldo (Nachzahlung)" %}{% else %}{% trans "Saldo (Rückzahlung)" %}{% endif %}</div>
         <div class="fw-w {% if saldo_total > 0 %}crit{% else %}good{% endif %}">CHF {{ saldo_total|chf }}</div></div>
 </div>
 </div>
 
+{% trans "Ablauf der Abrechnung" as prozess_titel %}{% include 'fw/_prozess.html' with schritte=prozess titel=prozess_titel %}
 {% if warnungen %}
 <div class="fw-card">
     <div class="fw-hinweis warn">
@@ -76,11 +77,11 @@
 {% include 'fw/_detail_tabs.html' with gruppe='nk' tabs=tab_liste %}
 
 {% if akonto_vorschlaege %}
-<div class="fw-card">
+<div class="fw-card" id="akonto">
     <div class="fw-hinweis info">
         <span class="fw-hi">{% zeichen 'hinweis' %}</span>
         <div class="fw-ht">
-            <b>{% trans "Akonto-Anpassung empfohlen" %}</b>
+            <b>{% trans "Akonto-Anpassung empfohlen" %} {% hilfe 'akonto_anpassung' %}</b>
             <p>{% blocktrans trimmed count n=akonto_vorschlaege|length %}Bei {{ n }} Vertrag weicht der monatliche Akonto deutlich vom effektiven Bedarf ab. Neue Höhe auf CHF 5 gerundet.{% plural %}Bei {{ n }} Verträgen weicht der monatliche Akonto deutlich vom effektiven Bedarf ab. Neue Höhe auf CHF 5 gerundet.{% endblocktrans %}</p>
         </div>
     </div>

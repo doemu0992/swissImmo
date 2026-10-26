@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n hilfe %}
 {% load chf %}
 {% block title %}{% trans "Sollstellung Miete" %} — swissImmo{% endblock %}
 
@@ -12,7 +12,7 @@
 <div class="fw-phead fw-phead-lauf">
     <div>
         <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a><span aria-hidden="true">/</span><span>{% blocktrans with monat=monat_name %}Sollstellung {{ monat }}{% endblocktrans %}</span></nav>
-        <h1>{% blocktrans with monat=monat_name jahr=jahr %}Sollstellung {{ monat }} {{ jahr }}{% endblocktrans %}</h1>
+        <h1>{% blocktrans with monat=monat_name jahr=jahr %}Sollstellung {{ monat }} {{ jahr }}{% endblocktrans %} {% hilfe 'sollstellung' %}</h1>
         <p>{% if lauf %}{% blocktrans with datum=lauf.faellig_am|date:"d.m.Y" %}fällig {{ datum }}{% endblocktrans %} · {% if lauf.gestartet_am %}{% blocktrans with datum=lauf.gestartet_am|date:"d.m.Y" %}gestartet {{ datum }}{% endblocktrans %} · {% endif %}{% endif %}{% trans "Monatlicher Mietenlauf — erzeugt Debitorenrechnungen (Pro-Rata bei Ein-/Auszug mitten im Monat)" %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">

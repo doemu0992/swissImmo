@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n hilfe %}
 {% block title %}{% blocktrans with name=v.mieter.display_name %}Mängelrüge — {{ name }}{% endblocktrans %}{% endblock %}
 {% block content %}
 <nav class="fw-brotkrume mb-2.5">
@@ -12,7 +12,7 @@
 
 <div class="fw-phead">
     <div>
-        <h1>{% trans "Mängelrüge / Fristansetzung" %}</h1>
+        <h1>{% trans "Mängelrüge / Fristansetzung" %} {% hilfe 'maengelruege' %}</h1>
         <p>Art. 259a–259g OR · {{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }}, {{ v.einheit.liegenschaft.plz }} {{ v.einheit.liegenschaft.ort }}</p>
     </div>
 </div>

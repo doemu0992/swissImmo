@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n hilfe %}
 {% block title %}{% trans "Team & Auslastung" %} — swissImmo{% endblock %}
 
 {% block content %}
@@ -35,7 +35,7 @@
         <span class="fw-f">{% blocktrans count n=a.erledigt_n %}{{ n }} erledigt in 90 Tagen{% plural %}{{ n }} erledigt in 90 Tagen{% endblocktrans %}</span>
     </div>
     <div class="fw-kpi">
-        <span class="fw-l">{% trans "Termintreue" %}</span>
+        <span class="fw-l">{% trans "Termintreue" %} {% hilfe 'termintreue' %}</span>
         <span class="fw-v fw-num{% if a.termintreue is not None and a.termintreue < 80 %} fw-warn{% endif %}">{% if a.termintreue is not None %}{{ a.termintreue }} %{% else %}–{% endif %}</span>
         <span class="fw-f">{% trans "erledigt bis zur Zielzeit" %}</span>
     </div>

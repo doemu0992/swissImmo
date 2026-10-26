@@ -651,7 +651,7 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
         </div>
         <div class="fw-rumpf">
         <p class="fw-hilfe mb-4">{% trans "„Alle als ZIP“ erzeugt Mietvertrag + Beilagen, legt sie einzeln in die Akte (erscheinen im Mieterportal) und lädt sie gebündelt herunter." %}</p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="fw-raster r2">
             {% for d in erstellbare_dokumente %}
             <a href="{{ d.url }}" target="_blank" rel="noopener"
                class="flex items-center gap-3 p-3.5 rounded-lg border fw-linie hover:fw-linie-marke hover:fw-markenflaeche transition-all group">

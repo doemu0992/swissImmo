@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n hilfe %}
 {% block title %}{% trans "Verteilschlüssel" %} — {{ lg.strasse }} — swissImmo{% endblock %}
 {% block content %}
 <nav class="fw-brotkrume mb-3">
@@ -8,7 +8,7 @@
     <b>{% trans "Verteilschlüssel" %}</b>
 </nav>
 
-<div class="fw-phead"><div><h1>{% trans "Verteilschlüssel" %}</h1>
+<div class="fw-phead"><div><h1>{% trans "Verteilschlüssel" %} {% hilfe 'verteilschluessel' %}</h1>
     <p>{{ lg.strasse }}, {{ lg.ort }}</p></div></div>
 
 <div class="fw-hinweis {% if lg.verteilschluessel_aktiv %}info{% else %}warn{% endif %} rounded-lg mb-4">
@@ -59,7 +59,7 @@
     <form method="post" class="fw-rumpf space-y-3" novalidate>
         {% csrf_token %}<input type="hidden" name="aktion" value="prozente"><input type="hidden" name="id" value="{{ s.id }}">
         {% if s.summenfehler %}<div class="fw-hinweis crit rounded-lg" role="alert"><div class="fw-ht">{{ s.summenfehler }}</div></div>{% endif %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div class="fw-raster r2 l3">
         {% for r in s.raster %}
             <div>
                 <label for="pct_{{ r.e.id }}_{{ s.id }}" class="fw-label mb-1">{{ r.e.bezeichnung }}</label>
@@ -81,7 +81,7 @@
     <div class="fw-kopf"><h2>{% trans "Schlüssel hinzufügen" %}</h2></div>
     <form method="post" class="fw-rumpf" novalidate>
         {% csrf_token %}<input type="hidden" name="aktion" value="neu">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="fw-raster r2">
             <div>
                 <label for="id_kostenart" class="fw-label mb-1">{% trans "Kostenart" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
                 <select id="id_kostenart" name="kostenart" class="fw-feld w-full"{% if neu_fehler.kostenart %} aria-invalid="true" aria-describedby="id_kostenart_fehler"{% endif %}>

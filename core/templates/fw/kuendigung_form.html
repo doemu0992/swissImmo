@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n hilfe %}
 {% block title %}{% blocktrans with name=v.mieter.display_name %}Kündigung erfassen — {{ name }}{% endblocktrans %}{% endblock %}
 {% block content %}
 <nav class="fw-brotkrume mb-2.5">
@@ -17,19 +17,25 @@
     </div>
 </div>
 
-<form method="post" class="max-w-2xl">
+<form method="post">
     {% csrf_token %}
     {# Im Cockpit-Modal geladen? Dann nach dem Speichern das Popup schliessen. #}
     <input type="hidden" name="embed" id="k_embed" value="">
     <script>if (window.self !== window.top) document.getElementById('k_embed').value = '1';</script>
-    <div class="fw-card fw-rumpf space-y-4">
+    {% trans "Prüfen & speichern" as k_pruefen %}
+    <div class="fw-assistent" {% include 'fw/_assistent_attribute.html' with pruefen=k_pruefen %}>
+    {% include 'fw/_assistent_leiste.html' %}
+    <div class="fw-assistent-inhalt">
+    <section data-schritt="{% trans 'Wer & wie' %}" data-schritt-text="{% trans 'Wer kündigt, wie wurde zugestellt und wann ist die Kündigung eingegangen?' %}">
+        <div class="fw-assistent-schritt-kopf"></div>
+        <div class="fw-card fw-rumpf space-y-4">
         <div class="fw-formular">
             <div class="fw-feldblock"><label for="s_absender" class="fw-label">{% trans "Gekündigt durch *" %}</label>
                 <select name="absender" onchange="syncZustellung(); kuendigungCheck()" id="s_absender" class="fw-feld">
                     <option value="mieter">{% trans "Mieter" %}</option>
                     <option value="vermieter">{% trans "Vermieter" %}</option>
                 </select></div>
-            <div class="fw-feldblock"><label for="s_zustellung" class="fw-label">{% trans "Zustellung" %}</label>
+            <div class="fw-feldblock"><label for="s_zustellung" class="fw-label">{% trans "Zustellung" %} {% hilfe 'formularpflicht' %}</label>
                 <select name="zustellung" id="s_zustellung" class="fw-feld">
                     {% comment %}Zustellarten bleiben deutsch (Rechtsbegriffe, wie Kuendigung.ZUSTELLUNG_CHOICES).{% endcomment %}<option value="einschreiben">Einschreiben (Mieter)</option>
                     <option value="amtliches_formular">Amtliches Formular (Vermieter)</option>
@@ -39,10 +45,17 @@
         <div class="fw-formular">
             <div class="fw-feldblock"><label for="s_eingang" class="fw-label">{% trans "Eingang / Poststempel *" %}</label>
                 <input type="date" name="eingang_datum" id="s_eingang" value="{{ heute_iso }}" onchange="berechne()" class="fw-feld"></div>
-            <div class="fw-feldblock"><label for="s_gew_ende" class="fw-label">{% trans "Gewünschtes Ende" %} <span class="fw-faint font-normal">{% trans "(optional)" %}</span></label>
+        </div>
+        <p class="fw-hilfe">{% trans "Familienwohnung?" %} {% hilfe 'familienwohnung' %}</p>
+        </div>
+    </section>
+    <section data-schritt="{% trans 'Termin' %}" data-schritt-text="{% trans 'Der nächste ordentliche Termin aus Vertrag und Eingang — mit Prüfung nach Mietrecht.' %}">
+        <div class="fw-assistent-schritt-kopf"></div>
+        <div class="fw-card fw-rumpf space-y-4">
+        <div class="fw-formular">
+            <div class="fw-feldblock"><label for="s_gew_ende" class="fw-label">{% trans "Gewünschtes Ende" %} {% hilfe 'kuendigungsfrist' %} <span class="fw-faint font-normal">{% trans "(optional)" %}</span></label>
                 <input type="date" name="gewuenschtes_ende" id="s_gew_ende" onchange="kuendigungCheck()" {% if ao_termin %}value="{{ ao_termin|date:'Y-m-d' }}"{% endif %} class="fw-feld"></div>
         </div>
-
         <!-- Mietrechtliche Live-Prüfung -->
         <div id="k-warn" class="hidden"><div class="fw-hinweis warn rounded-lg">
             <span class="fw-hi">{% zeichen 'recht' %}</span>
@@ -74,7 +87,7 @@
         <!-- Ausserordentlicher Termin bei Zahlungsverzug (Art. 257d Abs. 2) -->
         <div class="fw-kpis fw-nomb">
             <div class="fw-kpi">
-            <div class="fw-l">{% trans "Ausserordentlich wegen Zahlungsverzug" %}</div>
+            <div class="fw-l">{% trans "Ausserordentlich wegen Zahlungsverzug" %} {% hilfe 'art_257d' %}</div>
             <div class="fw-v fw-crit">{% blocktrans with datum=ao_termin|date:"d.m.Y" %}frühestens {{ datum }}{% endblocktrans %}</div>
             <p class="fw-f">{% comment %}Rechtssatz (Art. 257d Abs. 2 OR): deutsch bis zur juristisch geprüften Übersetzung.{% endcomment %}Art. 257d Abs. 2 OR: mindestens 30 Tage auf Ende eines Monats — erst nach fruchtlosem Ablauf der gesetzten Zahlungsfrist.</p>
             </div>
@@ -89,6 +102,12 @@
                 <input id="s_ao_grund" name="ausserordentlich_grund" value="{{ prefill_grund }}" placeholder="z. B. wichtiger Grund (Art. 266g), Zahlungsverzug (257d) …" class="fw-feld"></div>
         </div>
 
+
+        </div>
+    </section>
+    <section data-schritt="{% trans 'Abschluss' %}" data-schritt-text="{% trans 'Erstreckung, Bemerkung und was beim Speichern zusätzlich angelegt wird.' %}" data-optional>
+        <div class="fw-assistent-schritt-kopf"></div>
+        <div class="fw-card fw-rumpf space-y-4">
         <div class="fw-feldblock"><label for="s_erstreckung" class="fw-label">{% trans "Erstreckung bis" %} <span class="fw-faint font-normal">{% trans "(optional)" %}</span></label>
             <input id="s_erstreckung" type="date" name="erstreckung_bis" class="fw-feld sm:w-56"></div>
         <div class="fw-feldblock"><label for="s_bemerkung" class="fw-label">{% trans "Bemerkung" %}</label>
@@ -104,13 +123,22 @@
             <span class="fw-hi">{% zeichen 'arbeit' %}</span>
             <div class="fw-ht fliess">{% blocktrans trimmed %}Beim Speichern wird automatisch eine <b>Auszugscheckliste</b> als Pendenzen angelegt (Abnahmetermin, Wohnungsabnahme, Zählerstände, Schlüssel, Schlussabrechnung, Kaution abrechnen …) — mit Fälligkeiten rund um das Vertragsende.{% endblocktrans %}</div>
         </div>
+        </div>
+    </section>
+    <section class="fw-assistent-pruefen">
+        <div class="fw-assistent-schritt-kopf"></div>
+        <div class="fw-card"><div class="fw-rumpf fw-assistent-zusammenfassung"></div></div>
+    </section>
+    <div class="fw-assistent-fuss">
+        <button type="button" class="fw-btn" data-assistent-zurueck data-assistent-nur-js>{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
+        <span class="stand" data-assistent-nur-js></span>
+        <div class="rechts">
+            <a href="/neu/vertraege/{{ v.id }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+            <button type="button" class="fw-btn fw-primary" data-assistent-weiter data-assistent-nur-js>{% trans "Weiter" %} {% zeichen 'weiter' %}</button>
+            <button type="submit" class="fw-btn fw-primary" data-assistent-absenden>{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Kündigung speichern" %}</button>
+        </div>
     </div>
-
-    <div class="flex items-center gap-3">
-        <button type="submit" class="fw-btn fw-primary">
-            {% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Kündigung speichern" %}
-        </button>
-        <a href="/neu/vertraege/{{ v.id }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+    </div>
     </div>
 </form>
 

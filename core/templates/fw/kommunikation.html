@@ -17,7 +17,7 @@
 {{ vorlagen|json_script:"vorlagen-data" }}
 <span id="logo-url" data-url="{{ logo_url }}"></span>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+<div class="fw-raster l2 items-start">
 
     <!-- ========== LINKS: FORMULAR ========== -->
     <div>
@@ -30,7 +30,7 @@
             </div>
             <div class="p-5">
             <!-- Ganze Liegenschaft wählen → alle Mieter dieser Liegenschaft markieren -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+            <div class="fw-raster r2 mb-2">
                 <select id="lg-select" onchange="lgWaehlen()" class="fw-feld">
                     <option value="">{% trans "Ganze Liegenschaft wählen…" %}</option>
                     {% for l in liegenschaften_wahl %}<option value="{{ l.id }}">{{ l.label }}</option>{% endfor %}

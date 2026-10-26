@@ -73,14 +73,14 @@
 
 <div id="kredform" class="{% if not neu_fehler %}hidden {% endif %}fw-card">
     <div class="fw-kopf"><h2>{% zeichen 'rechnung' klasse='fw-marke mr-1.5' %}{% trans "Kreditorenrechnung erfassen" %}</h2></div>
-    <form method="post" action="/neu/kreditoren/neu/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-3 gap-3 fw-rumpf" novalidate>
+    <form method="post" action="/neu/kreditoren/neu/" enctype="multipart/form-data" class="fw-raster r3 fw-rumpf" novalidate>
         {% csrf_token %}
         {% comment %} Audit Etappe 2: Mit Fehlern kommt dieses Formular offen und mit der
            Eingabe zurück; die Meldung steht am Feld. Nur die Belegdatei muss neu
            gewählt werden — Browser füllen Dateifelder aus Sicherheitsgründen nie vor. {% endcomment %}
-        {% if neu_fehler %}<div class="sm:col-span-3 fw-formfehler" role="alert"><b>{% blocktrans count n=anzahl_fehler %}{{ n }} Angabe prüfen{% plural %}{{ n }} Angaben prüfen{% endblocktrans %}</b> — {% trans "nichts wurde gespeichert. Die Hinweise stehen bei den Feldern." %}</div>{% endif %}
+        {% if neu_fehler %}<div class="fw-col-span-3 fw-formfehler" role="alert"><b>{% blocktrans count n=anzahl_fehler %}{{ n }} Angabe prüfen{% plural %}{{ n }} Angaben prüfen{% endblocktrans %}</b> — {% trans "nichts wurde gespeichert. Die Hinweise stehen bei den Feldern." %}</div>{% endif %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-        <div class="sm:col-span-2"><label for="kr-lieferant" class="fw-label mb-1">{% trans "Lieferant *" %}</label>
+        <div class="fw-col-span-2"><label for="kr-lieferant" class="fw-label mb-1">{% trans "Lieferant *" %}</label>
             <input id="kr-lieferant" name="lieferant" aria-required="true" value="{{ neu_werte.lieferant }}" class="fw-feld w-full"{% if neu_fehler.lieferant %} aria-invalid="true" aria-describedby="kr-lieferant_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.lieferant feld_id="kr-lieferant" %}</div>
         <div><label for="kr-betrag" class="fw-label mb-1">{% trans "Betrag brutto (CHF) *" %}</label>
             <input id="kr-betrag" name="betrag" required inputmode="decimal" value="{{ neu_werte.betrag }}" class="fw-feld w-full text-right fw-num"{% if neu_fehler.betrag %} aria-invalid="true" aria-describedby="kr-betrag_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.betrag feld_id="kr-betrag" %}</div>
@@ -111,10 +111,10 @@
             <input id="kr-leist-bis" type="date" name="leistungs_bis" value="{{ neu_werte.leistungs_bis }}" class="fw-feld w-full"{% if neu_fehler.leistungs_bis %} aria-invalid="true" aria-describedby="kr-leist-bis_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.leistungs_bis feld_id="kr-leist-bis" %}</div>
         <div><label for="kr-beleg" class="fw-label mb-1">{% trans "Beleg (PDF/Bild)" %}</label>
             <input id="kr-beleg" type="file" name="beleg_scan" class="fw-datei w-full"></div>
-        <div class="sm:col-span-2 flex items-center">
+        <div class="fw-col-span-2 flex items-center">
             <label class="fw-haekchen"><input type="checkbox" name="is_hnk_relevant" {% if neu_werte.is_hnk_relevant %}checked{% endif %} class="fw-akzent">{% trans "In Nebenkostenabrechnung einbeziehen (HNK)" %}</label>
             <span class="ml-2 fw-hilfe">— {% trans "wird bei NK-relevantem Konto (Heizung, Wasser, Hauswartung, Allgemeinstrom, Kehricht, Versicherung) automatisch gesetzt" %}</span></div>
-        <div class="sm:col-span-3"><button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Erfassen (Status: Neu)" %}</button></div>
+        <div class="fw-col-span-3"><button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Erfassen (Status: Neu)" %}</button></div>
     </form>
 </div>
 
@@ -271,7 +271,7 @@
                         <a href="{{ row.beleg_url }}" target="_blank" rel="noopener" class="inline-block mt-1.5 fw-link">{% zeichen 'extern' klasse='mr-1' %}{% trans "In neuem Tab öffnen" %}</a>
                     </div>
                     {% endif %}
-                    <form method="post" action="/neu/kreditoren/{{ row.k.id }}/bearbeiten/" class="grid grid-cols-1 sm:grid-cols-2 gap-3" novalidate>
+                    <form method="post" action="/neu/kreditoren/{{ row.k.id }}/bearbeiten/" class="fw-raster r2" novalidate>
                         {% csrf_token %}
                         {% comment %} Audit Etappe 2: Werte kommen aus `row.werte` — nach einem Fehler
                            ist das die Eingabe, sonst der gespeicherte Stand. {% endcomment %}
@@ -347,17 +347,17 @@
                         {% endif %}
                         <form method="post" action="/neu/kreditoren/{{ row.k.id }}/position/" class="grid grid-cols-2 sm:grid-cols-12 gap-2 items-end">
                             {% csrf_token %}
-                            <div class="col-span-2 sm:col-span-4"><label for="ks-konto-{{ row.k.id }}" class="fw-label mb-1">{% trans "Konto" %}</label>
+                            <div class="col-span-2 fw-col-span-4"><label for="ks-konto-{{ row.k.id }}" class="fw-label mb-1">{% trans "Konto" %}</label>
                                 <select id="ks-konto-{{ row.k.id }}" name="konto_id" required class="fw-feld w-full">
                                     <option value="">{% trans "Konto …" %}</option>
                                     {% for kx in aufwand_konten %}<option value="{{ kx.id }}">{{ kx.nummer }} {{ kx.bezeichnung }}</option>{% endfor %}
                                 </select></div>
-                            <div class="col-span-2 sm:col-span-3"><label for="ks-bez-{{ row.k.id }}" class="fw-label mb-1">{% trans "Bezeichnung" %}</label>
+                            <div class="col-span-2 fw-col-span-3"><label for="ks-bez-{{ row.k.id }}" class="fw-label mb-1">{% trans "Bezeichnung" %}</label>
                                 <input id="ks-bez-{{ row.k.id }}" name="bezeichnung" placeholder="{% trans 'optional' %}" class="fw-feld w-full"></div>
-                            <div class="sm:col-span-2"><label for="ks-betrag-{{ row.k.id }}" class="fw-label mb-1">{% trans "Betrag" %}</label>
+                            <div class="fw-col-span-2"><label for="ks-betrag-{{ row.k.id }}" class="fw-label mb-1">{% trans "Betrag" %}</label>
                                 <input id="ks-betrag-{{ row.k.id }}" name="betrag" inputmode="decimal" required class="fw-feld w-full text-right fw-num"></div>
-                            <div class="sm:col-span-2 flex items-center pb-1.5"><label class="fw-haekchen" title="{% trans 'In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet' %}"><input type="checkbox" name="is_hnk_relevant" class="fw-akzent">{% trans "HNK" %}</label></div>
-                            <div class="sm:col-span-1"><button class="fw-btn fw-primary fw-knapp w-full" title="{% trans 'Position hinzufügen' %}">{% zeichen 'neu' %}</button></div>
+                            <div class="fw-col-span-2 flex items-center pb-1.5"><label class="fw-haekchen" title="{% trans 'In die Nebenkostenabrechnung einbeziehen — wird den Mietern weiterverrechnet' %}"><input type="checkbox" name="is_hnk_relevant" class="fw-akzent">{% trans "HNK" %}</label></div>
+                            <div class="fw-col-span-1"><button class="fw-btn fw-primary fw-knapp w-full" title="{% trans 'Position hinzufügen' %}">{% zeichen 'neu' %}</button></div>
                         </form>
                     </div>
                 </td>
