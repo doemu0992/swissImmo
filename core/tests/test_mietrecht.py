@@ -494,7 +494,10 @@ class AnfechtungsfristTests(TestCase):
         p = Pendenz.objects.filter(vertrag=v, titel__icontains='Anfechtungsfrist Kündigung').first()
         self.assertIsNotNone(p)
         self.assertIn('Art. 271', p.beschreibung)
-        self.assertEqual(p.faellig_am, date.today() + timedelta(days=30))
+        # Seit 26.10.2026 ab dem ZUGANG (Befund F): ohne bestätigten Zugang
+        # Versand + Zustellpuffer, dann 30 Tage.
+        from rentals.services import ZUSTELL_PUFFER_TAGE
+        self.assertEqual(p.faellig_am, date.today() + timedelta(days=ZUSTELL_PUFFER_TAGE + 30))
 
     def test_mieterkuendigung_ohne_anfechtungsfrist(self):
         from core.models import Pendenz
@@ -1172,6 +1175,8 @@ class KuendigungSchlussabrechnungQSTests(TestCase):
         # Ausserordentliche Kündigung per 30.09.2026 → Vertrag endet früher
         c.post(f'/neu/vertraege/{v.id}/kuendigen/',
                {'eingang_datum': '2026-06-01', 'ausserordentlich': 'on',
+                # Seit 26.10.2026 nur mit strukturiertem Grund (Befund L).
+                'ausserordentlich_art': '266g',
                 'gewuenschtes_ende': '2026-09-30', 'bestaetigen': 'on'})
         v.refresh_from_db()
         self.assertEqual(v.ende, date(2026, 9, 30))

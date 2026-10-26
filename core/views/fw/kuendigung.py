@@ -95,14 +95,31 @@ def _auszugscheckliste_anlegen(vertrag, kuendigung, per, user, mit_leerstand=Fal
 # nur die Bestätigung zu sperren, wäre wirkungslos.
 @rolle_erforderlich(*VERWALTUNGS_ROLLEN)
 def fw_kuendigung_erfassen(request, vertrag_id):
-    """Erfasst eine Kündigung, berechnet den Termin und setzt den Vertrag auf 'gekuendigt'."""
+    """Erfasst eine Kündigung, berechnet den Termin und setzt den Vertrag auf 'gekuendigt'.
+
+    Seit dem Audit vom 26.10.2026 (Befunde F und L):
+      · Vermieterkündigung: `eingang_datum` ist der Versand (Poststempel); Frist und
+        Anfechtung laufen ab dem ZUGANG — bestätigt oder vermutet (Zustellpuffer).
+      · Ausserordentlich nur mit strukturiertem Grund; je Grund prüft der Server die
+        Mindestfrist, soweit der Bestand sie belegt (`ausserordentlicher_termin`).
+        «Ausserordentlich» beendet den Vertrag nicht mehr einfach am Wunschdatum.
+      · Art. 264 OR: Vorzeitige Rückgabe befreit nur mit angenommenem Ersatzmieter;
+        sonst haftet der Mieter bis zum nächsten ordentlichen Termin.
+      · Art. 266m OR: Mieterkündigung einer Familienwohnung ohne Zustimmung des
+        Ehegatten/Partners — erfasst, aber nicht bestätigt und ohne Folgen am Vertrag.
+      · Erstreckung (Art. 272 OR) verschiebt das Vertragsende und damit Sollstellung
+        und Leerstand.
+    """
     from django.shortcuts import redirect
     from django.contrib import messages
     from rentals.models import Kuendigung
-    from rentals.services import berechne_kuendigungstermin
+    from rentals.services import (AO_GRUENDE_MIETER, AO_GRUENDE_VERMIETER, ZUSTELL_PUFFER_TAGE,
+                                  ausserordentlicher_termin, berechne_kuendigungstermin,
+                                  vermuteter_zugang)
     from core.auth import log_aktion
     v = get_object_or_404(Mietvertrag, id=vertrag_id)
     basis = _global_filter(request)
+    zurueck = f'/neu/vertraege/{v.id}/kuendigen/'
 
     if request.method == 'POST':
         P = request.POST
@@ -115,10 +132,44 @@ def fw_kuendigung_erfassen(request, vertrag_id):
                 return date.fromisoformat(val)
             except ValueError:
                 return None
-        eingang = d('eingang_datum') or timezone.localdate()
-        termin = berechne_kuendigungstermin(v, eingang)
+        heute = timezone.localdate()
+        absender = P.get('absender', 'mieter')
+        if absender not in ('mieter', 'vermieter'):
+            absender = 'mieter'
+        eingang = d('eingang_datum') or heute
+        # Zugang: Beim Mieter ist der Eingang beim Vermieter der Zugang. Bei der
+        # Vermieterkündigung ist `eingang_datum` der Versand — massgebend ist,
+        # wann sie dem Mieter zugeht (Befund F). Unbestätigt: dieselbe Vermutung
+        # wie für Art. 269d und die 257d-Fristansetzung.
+        zugang_am = d('zugang_am') if absender == 'vermieter' else None
+        if zugang_am and zugang_am < eingang:
+            messages.error(request, gettext('Der Zugang kann nicht vor dem Versand liegen.'))
+            return redirect(zurueck)
+        zugang = vermuteter_zugang(eingang, zugang_am) if absender == 'vermieter' else eingang
+        termin = berechne_kuendigungstermin(v, zugang)
         gewuenscht = d('gewuenschtes_ende')
         ausserord = P.get('ausserordentlich') == 'on'
+        ao_art = (P.get('ausserordentlich_art') or '').strip()
+        _ao_grund = (P.get('ausserordentlich_grund') or '').lower()
+        if ausserord and not ao_art and ('257d' in _ao_grund or 'zahlungsverzug' in _ao_grund):
+            ao_art = '257d'     # Altform: Grund nur als Freitext (Verzugsprozess, Alt-Links)
+        if ausserord:
+            erlaubt = AO_GRUENDE_VERMIETER if absender == 'vermieter' else AO_GRUENDE_MIETER
+            if ao_art not in erlaubt:
+                messages.error(request, gettext(
+                    'Bitte den ausserordentlichen Grund wählen, der für diese Partei gilt.'))
+                return redirect(zurueck)
+
+        # Art. 264 OR: vorzeitige Rückgabe durch den Mieter.
+        ersatzmieter = (P.get('ersatzmieter') or '').strip()[:2000]
+        ersatz_angenommen = bool(ersatzmieter) and P.get('ersatzmieter_akzeptiert') == 'on'
+        vorzeitig = (absender == 'mieter' and not ausserord and gewuenscht is not None
+                     and termin is not None and gewuenscht < termin)
+        ersatz_befreit = vorzeitig and ersatz_angenommen
+
+        # Art. 266m OR: Familienwohnung, Kündigung durch den Mieter.
+        zustimmung = P.get('zustimmung_ehegatte') == 'on'
+        fehlt_zustimmung = absender == 'mieter' and v.familienwohnung and not zustimmung
 
         # ---- REGELWERK (Fristenwächter) ----
         # Bis 4b.10 stand hier nur die Klemmung weiter unten. Sie fängt den zu
@@ -129,25 +180,25 @@ def fw_kuendigung_erfassen(request, vertrag_id):
         # Ausserordentliche Kündigungen laufen NICHT durch die Prüfung: Art.
         # 257d, 266g und 271a haben eigene Fristen, die diese Regelart nicht
         # rechnet. Eine Regel auf einen Fall anzuwenden, für den sie nicht
-        # gemacht ist, wäre schlechter als keine Regel.
+        # gemacht ist, wäre schlechter als keine Regel. Dasselbe gilt für die
+        # Rückgabe mit angenommenem Ersatzmieter (Art. 264 OR): Sie ist kein
+        # Kündigungstermin.
         regel_anwendung = None
         # ZAHLUNGSVERZUG (Art. 257d Abs. 2 OR): Kündigen darf nur, wer eine
         # Frist angesetzt hat, die unbenützt abgelaufen ist. Läuft sie noch
         # oder hat der Mieter innert Frist bezahlt, wäre die Kündigung
         # unwirksam — hier hält das System an, statt sie anzulegen.
-        _ao_grund = (P.get('ausserordentlich_grund') or '').lower()
-        if ausserord and P.get('absender', 'mieter') == 'vermieter' and (
-                '257d' in _ao_grund or 'zahlungsverzug' in _ao_grund):
+        if ausserord and absender == 'vermieter' and ao_art == '257d':
             from core.services.zahlungsverzug import kuendigung_sperre
             sperre = kuendigung_sperre(v, eingang)
             if sperre:
                 messages.error(request, f'⛔ {sperre}')
                 return redirect(f'/neu/vertraege/{v.id}/kuendigen/?grund=verzug')
-        if not ausserord:
+        if not ausserord and not ersatz_befreit:
             from core.views.fw.regelwerk import folgekosten, pruefung_zum_vertrag
             from faelle.regelwerk import sperrt
             befund, regel_anwendung, regel = pruefung_zum_vertrag(
-                v, eingang, gewuenscht)
+                v, zugang, gewuenscht)
             if not befund.ok:
                 kosten = folgekosten(befund, v)
                 text = befund.meldung
@@ -161,60 +212,160 @@ def fw_kuendigung_erfassen(request, vertrag_id):
                     # den Betrieb anhält — und er setzt voraus, dass jemand den
                     # Regelsatz ausdrücklich als geprüft gekennzeichnet hat.
                     messages.error(request, f'⛔ {text}')
-                    return redirect(f'/neu/vertraege/{v.id}/kuendigen/')
+                    return redirect(zurueck)
                 messages.warning(request, f'⚠️ {text}')
-        # Wirksames Ende: ausserordentlich → gewünschtes Datum. Ordentlich: ein zu
-        # FRÜH gewünschtes Ende gilt von Gesetzes wegen auf den nächstmöglichen
-        # Termin (Art. 266a Abs. 2 OR) — serverseitig auf den berechneten
-        # ordentlichen Termin klemmen, sonst führen Vertragsende/Leerstand/
-        # Sollstellung ein rechtlich unwirksames Datum.
-        if ausserord and gewuenscht:
+
+        # Wirksames Ende.
+        #   Ausserordentlich: frühestens der Termin des Grundes. Ein früheres
+        #   Wunschdatum wird — wie bei der ordentlichen Kündigung (Art. 266a
+        #   Abs. 2 OR) — auf den frühesten zulässigen Termin geschoben. Für
+        #   Gründe ohne im Bestand belegte Frist wird nichts gerechnet; das
+        #   Wunschdatum ist dann Pflicht und die Seite warnt.
+        #   Ordentlich: ein zu FRÜH gewünschtes Ende gilt von Gesetzes wegen auf
+        #   den nächstmöglichen Termin (Art. 266a Abs. 2 OR) — ausser der Mieter
+        #   wird durch einen angenommenen Ersatzmieter befreit (Art. 264 OR).
+        if ausserord:
+            frueh = ausserordentlicher_termin(v, ao_art, zugang)
+            if frueh is None:
+                if not gewuenscht:
+                    messages.error(request, gettext(
+                        'Für diesen Grund rechnet die Anwendung keine Frist — bitte das Vertragsende angeben.'))
+                    return redirect(zurueck)
+                per = gewuenscht
+                messages.warning(request, '⚠️ ' + gettext(
+                    'Für %(grund)s ist im Bestand keine Mindestfrist hinterlegt — der Termin wurde nicht '
+                    'geprüft. Vor dem Versand rechtlich prüfen.') % {
+                        'grund': dict(Kuendigung.AO_ART_CHOICES).get(ao_art, ao_art)})
+            elif gewuenscht and gewuenscht >= frueh:
+                per = gewuenscht
+            else:
+                per = frueh
+                if gewuenscht:
+                    messages.warning(request, '⚠️ ' + gettext(
+                        'Gewünschtes Ende %(wunsch)s liegt vor dem frühesten Termin für diesen Grund — '
+                        'die Kündigung gilt auf %(termin)s.') % {
+                            'wunsch': gewuenscht.strftime('%d.%m.%Y'), 'termin': frueh.strftime('%d.%m.%Y')})
+        elif ersatz_befreit:
             per = gewuenscht
+            messages.info(request, gettext(
+                'Vorzeitige Rückgabe mit angenommenem Ersatzmieter (Art. 264 OR): Der Mieter ist ab '
+                '%(datum)s befreit.') % {'datum': gewuenscht.strftime('%d.%m.%Y')})
         elif gewuenscht and termin and gewuenscht < termin:
             per = termin
-            messages.warning(request, f"⚠️ Gewünschtes Ende {gewuenscht:%d.%m.%Y} liegt vor dem "
-                                      f"nächsten zulässigen Termin — die Kündigung gilt auf "
-                                      f"{termin:%d.%m.%Y} (Art. 266a Abs. 2 OR).")
+            if vorzeitig:
+                messages.warning(request, '⚠️ ' + gettext(
+                    'Vorzeitige Rückgabe ohne angenommenen Ersatzmieter: Der Mieter haftet bis zum '
+                    'nächsten ordentlichen Termin %(termin)s (Art. 264 OR).') % {
+                        'termin': termin.strftime('%d.%m.%Y')})
+            else:
+                messages.warning(request, f"⚠️ Gewünschtes Ende {gewuenscht:%d.%m.%Y} liegt vor dem "
+                                          f"nächsten zulässigen Termin — die Kündigung gilt auf "
+                                          f"{termin:%d.%m.%Y} (Art. 266a Abs. 2 OR).")
         else:
             per = gewuenscht or termin
 
+        # Erstreckung (Art. 272 OR): Das Mietverhältnis läuft bis dahin weiter —
+        # Vertragsende, Sollstellung und Leerstand folgen ihr (Befund L).
+        erstreckung = d('erstreckung_bis')
+        if erstreckung and per and erstreckung <= per:
+            messages.error(request, gettext('Die Erstreckung muss nach dem Vertragsende liegen.'))
+            return redirect(zurueck)
+        if erstreckung and per:
+            # Art. 272b OR (Gesetzesregister): höchstens vier Jahre bei Wohnräumen,
+            # sechs bei Geschäftsräumen. Gewarnt, nicht gesperrt — die Erstreckung
+            # spricht die Behörde aus, nicht die Verwaltung.
+            jahre = 6 if v.mietrecht_kategorie == 'gewerbe' else 4
+            try:
+                grenze = per.replace(year=per.year + jahre)
+            except ValueError:
+                grenze = per.replace(year=per.year + jahre, day=28)
+            if erstreckung > grenze:
+                messages.warning(request, '⚠️ ' + gettext(
+                    'Die Erstreckung übersteigt die Höchstdauer von %(n)s Jahren (Art. 272b OR).') % {'n': jahre})
+        vertragsende = erstreckung or per
+
+        bestaetigen = P.get('bestaetigen') == 'on' and not fehlt_zustimmung
         k = Kuendigung.objects.create(
-            vertrag=v, absender=P.get('absender', 'mieter'),
-            eingang_datum=eingang, zustellung=P.get('zustellung', 'einschreiben'),
+            vertrag=v, absender=absender,
+            eingang_datum=eingang, zugang_am=zugang_am,
+            zustellung=P.get('zustellung', 'einschreiben'),
             gewuenschtes_ende=gewuenscht, berechneter_termin=termin, per_datum=per,
             ende_vorher=v.ende,   # Snapshot der bisherigen Laufzeit (für Rücknahme)
-            ausserordentlich=ausserord, ausserordentlich_grund=P.get('ausserordentlich_grund', '').strip(),
-            erstreckung_bis=d('erstreckung_bis'), status='bestaetigt' if P.get('bestaetigen') == 'on' else 'erfasst',
+            ausserordentlich=ausserord, ausserordentlich_art=ao_art if ausserord else '',
+            ausserordentlich_grund=P.get('ausserordentlich_grund', '').strip(),
+            zustimmung_ehegatte=zustimmung,
+            ersatzmieter=ersatzmieter, ersatzmieter_akzeptiert=ersatz_angenommen,
+            erstreckung_bis=erstreckung, status='bestaetigt' if bestaetigen else 'erfasst',
             bemerkung=P.get('bemerkung', '').strip(),
         )
+        benutzer = request.user if request.user.is_authenticated else None
+
+        if fehlt_zustimmung:
+            # Ohne Zustimmung ist die Kündigung nichtig (Art. 266m/266o OR): Sie
+            # wird festgehalten, aber der Vertrag bleibt unverändert, und es
+            # entsteht keine Auszugscheckliste. Die Bestätigung bleibt gesperrt,
+            # bis die Zustimmung erfasst ist (`fw_kuendigung_bestaetigen`).
+            from core.models import Pendenz
+            Pendenz.objects.create(
+                titel=f"Art. 266m: Zustimmung des Ehegatten/Partners einholen – {v.mieter.display_name}",
+                beschreibung=("Die Mieterkündigung einer Familienwohnung braucht die ausdrückliche "
+                              "Zustimmung des Ehegatten oder eingetragenen Partners (Art. 266m OR). "
+                              "Ohne sie ist die Kündigung nichtig."),
+                kategorie='frist', faellig_am=heute, vertrag=v,
+                liegenschaft=v.einheit.liegenschaft if v.einheit_id else None,
+                quelle=f'266m:{k.pk}', erstellt_von=benutzer)
+            log_aktion(request, "Kündigung erfasst (ohne Zustimmung Art. 266m)", str(v.mieter),
+                       f"per {per.strftime('%d.%m.%Y') if per else '—'}", ziel=v)
+            messages.error(request, '⛔ ' + gettext(
+                'Familienwohnung: Ohne ausdrückliche Zustimmung des Ehegatten/Partners ist die Kündigung '
+                'nichtig (Art. 266m OR). Sie ist erfasst, aber nicht bestätigt — der Vertrag bleibt '
+                'unverändert, bis die Zustimmung vorliegt.'))
+            return redirect(f'/neu/vertraege/{v.id}/')
+
         # Vertrag auf gekündigt setzen
         v.status = 'gekuendigt'
         v.aktiv = False
-        v.ende = per
+        v.ende = vertragsende
         v.save(update_fields=['status', 'aktiv', 'ende'])
 
         # Anfechtungsfrist-Pendenz bei Vermieterkündigung geschützter Räume:
-        # der Mieter kann die Kündigung innert 30 Tagen anfechten (Art. 271/273 OR).
+        # der Mieter kann die Kündigung innert 30 Tagen ab EMPFANG anfechten
+        # (Art. 271/273 OR) — ab Zugang, nicht ab Versand (Befund F).
         if k.absender == 'vermieter' and v.ist_geschuetzt:
             from core.models import Pendenz
-            frist = eingang + _timedelta(days=30)
+            frist = zugang + _timedelta(days=30)
             Pendenz.objects.create(
                 titel=f"Anfechtungsfrist Kündigung läuft ab – {v.mieter.display_name}",
                 beschreibung=("Der Mieter kann die Vermieterkündigung innert 30 Tagen ab Empfang bei der "
                               "Schlichtungsbehörde anfechten (Art. 271/271a/273 OR) und eine Erstreckung "
-                              "verlangen (Art. 272). Danach wird die Kündigung grundsätzlich rechtskräftig."),
+                              "verlangen (Art. 272). Danach wird die Kündigung grundsätzlich rechtskräftig."
+                              + ("" if zugang_am else
+                                 f" Zugang vermutet: Versand {eingang:%d.%m.%Y} + {ZUSTELL_PUFFER_TAGE} Tage.")),
                 kategorie='frist', faellig_am=frist, vertrag=v,
                 liegenschaft=v.einheit.liegenschaft if v.einheit_id else None,
-                erstellt_von=request.user if request.user.is_authenticated else None,
+                erstellt_von=benutzer,
             )
+
+        # Art. 264 OR: vorgeschlagene Ersatzmieter prüfen, solange keiner angenommen ist.
+        if vorzeitig and ersatzmieter and not ersatz_angenommen:
+            from core.models import Pendenz
+            Pendenz.objects.create(
+                titel=f"Art. 264: Ersatzmieter prüfen – {v.mieter.display_name}",
+                beschreibung=("Vorgeschlagen: " + ersatzmieter[:400] + "\n\nIst ein Ersatzmieter "
+                              "zumutbar und zahlungsfähig und übernimmt er den Vertrag zu gleichen "
+                              f"Bedingungen, wird der Mieter befreit (Art. 264 OR). Bis dahin haftet er "
+                              f"bis {termin:%d.%m.%Y}."),
+                kategorie='aufgabe', faellig_am=heute + _timedelta(days=14), vertrag=v,
+                liegenschaft=v.einheit.liegenschaft if v.einheit_id else None,
+                quelle=f'264:{k.pk}', erstellt_von=benutzer)
 
         # Auszugscheckliste automatisch als Pendenzen anlegen
         leerstand_gewuenscht = P.get('leerstand_anlegen') == 'on'
-        n_pendenzen = _auszugscheckliste_anlegen(v, k, per, request.user, mit_leerstand=leerstand_gewuenscht)
+        n_pendenzen = _auszugscheckliste_anlegen(v, k, vertragsende, request.user, mit_leerstand=leerstand_gewuenscht)
         # Der Auszug ist EIN Vorgang: Fall «Mieterwechsel» eröffnen (wenn die Fallart
         # eingerichtet ist), bevor die Stichwort-Ereignisse unten seine Schritte abhaken.
         from core.services.mieterwechsel_fall import eroeffnen as _mw_eroeffnen
-        _mw_eroeffnen(v, benutzer=request.user if request.user.is_authenticated else None)
+        _mw_eroeffnen(v, benutzer=benutzer)
         # Wird die Kündigung schon beim Erfassen als bestätigt angelegt, ist «Kündigung
         # schriftlich bestätigen» erledigt — gleiche Regel wie in fw_kuendigung_bestaetigen.
         # Vorher blieb die Pendenz offen, obwohl das Häkchen gesetzt war (Stresstest, Punkt 12).
@@ -224,12 +375,12 @@ def fw_kuendigung_erfassen(request, vertrag_id):
 
         # Leerstand ab Tag nach Vertragsende (opt-in)
         hinweis = ""
-        if leerstand_gewuenscht and per and v.einheit_id:
+        if leerstand_gewuenscht and vertragsende and v.einheit_id:
             from rentals.models import Leerstand
-            beginn = per + _timedelta(days=1)
+            beginn = vertragsende + _timedelta(days=1)
             if not Leerstand.objects.filter(einheit=v.einheit, beginn=beginn, ende__isnull=True).exists():
                 Leerstand.objects.create(einheit=v.einheit, beginn=beginn, grund='mietersuche',
-                                         bemerkung=f"Automatisch aus Kündigung (Ende {per.strftime('%d.%m.%Y')})")
+                                         bemerkung=f"Automatisch aus Kündigung (Ende {vertragsende.strftime('%d.%m.%Y')})")
                 hinweis = " · Leerstand ab " + beginn.strftime('%d.%m.%Y') + " angelegt"
 
         # Der Regelstand gehört in die Spur: Wird die Regel später berichtigt,
@@ -241,19 +392,24 @@ def fw_kuendigung_erfassen(request, vertrag_id):
                           f"{regel_anwendung.regel_stand:%d.%m.%Y} → "
                           f"{auf_deutsch(regel_anwendung.get_befund_display).lower()}")
         log_aktion(request, "Kündigung erfasst", str(v.mieter),
-                   f"per {per.strftime('%d.%m.%Y') if per else '—'}, {n_pendenzen} Pendenzen{hinweis}{regel_spur}", ziel=v)
+                   f"per {per.strftime('%d.%m.%Y') if per else '—'}"
+                   + (f", erstreckt bis {erstreckung:%d.%m.%Y}" if erstreckung else "")
+                   + f", {n_pendenzen} Pendenzen{hinweis}{regel_spur}", ziel=v)
         if P.get('embed'):
             return render(request, 'fw/_modal_done.html', {
                 'msg': f"Kündigung erfasst · {n_pendenzen} Auszugs-Pendenzen"})
-        messages.success(request, '✅ ' + gettext('Kündigung erfasst — Vertragsende %(wert)s · %(n_pendenzen)s Auszugs-Pendenzen erstellt%(hinweis)s.') % {'wert': per.strftime('%d.%m.%Y') if per else '—', 'n_pendenzen': n_pendenzen, 'hinweis': hinweis})
+        messages.success(request, '✅ ' + gettext('Kündigung erfasst — Vertragsende %(wert)s · %(n_pendenzen)s Auszugs-Pendenzen erstellt%(hinweis)s.') % {'wert': vertragsende.strftime('%d.%m.%Y') if vertragsende else '—', 'n_pendenzen': n_pendenzen, 'hinweis': hinweis})
         return redirect(f'/neu/vertraege/{v.id}/')
 
-    # Vorschau des nächsten Termins für heute
-    vorschau_termin = berechne_kuendigungstermin(v, timezone.localdate())
+    # Vorschau des nächsten Termins für heute — beim Mieter ab Eingang heute,
+    # beim Vermieter ab dem vermuteten Zugang einer heute versandten Kündigung.
+    heute = timezone.localdate()
+    vorschau_termin = berechne_kuendigungstermin(v, heute)
+    vorschau_termin_vermieter = berechne_kuendigungstermin(v, vermuteter_zugang(heute))
     # Aus dem Verzugsprozess kommend → ausserordentliche Kündigung wegen Zahlungsverzug vorbelegen
     verzug = request.GET.get('grund') in ('verzug', '257d')
     from rentals.services import TERMINE_FEHLEN, TERMINE_KANTON, kuendigungstermine_fuer, termin_257d
-    ao_termin = termin_257d(timezone.localdate()) if verzug else None
+    ao_termin = termin_257d(vermuteter_zugang(heute)) if verzug else None
     # Ohne lesbare Termine im Vertrag (und ohne Kantonsregel) ist der Termin
     # oben nur der früheste DENKBARE — das muss auf der Seite stehen.
     _termine, termine_herkunft = kuendigungstermine_fuer(v)
@@ -261,10 +417,14 @@ def fw_kuendigung_erfassen(request, vertrag_id):
         'termine_fehlen': termine_herkunft == TERMINE_FEHLEN,
         'termine_kanton': termine_herkunft == TERMINE_KANTON,
         **basis, 'nav': 'vertraege', 'v': v,
-        'vorschau_termin': vorschau_termin, 'heute_iso': timezone.localdate().isoformat(),
+        'vorschau_termin': vorschau_termin, 'vorschau_termin_vermieter': vorschau_termin_vermieter,
+        'heute_iso': heute.isoformat(), 'zustell_puffer': ZUSTELL_PUFFER_TAGE,
         'prefill_ao': verzug,
+        'prefill_art': '257d' if verzug else '',
         'prefill_grund': 'Zahlungsverzug (Art. 257d OR)' if verzug else '',
         'ao_termin': ao_termin,
+        'ao_choices': Kuendigung.AO_ART_CHOICES,
+        'ao_vermieter': sorted(AO_GRUENDE_VERMIETER), 'ao_mieter': sorted(AO_GRUENDE_MIETER),
     })
 
 
@@ -596,24 +756,40 @@ def fw_kuendigung_bestaetigen(request, pk):
     if k.status == 'zurueckgezogen':
         messages.error(request, gettext('Zurückgezogene Kündigung kann nicht bestätigt werden.'))
         return redirect(f'/neu/vertraege/{v.id}/')
+    # Art. 266m OR: Die Mieterkündigung einer Familienwohnung wird erst mit der
+    # ausdrücklichen Zustimmung des Ehegatten/Partners bestätigt. Die Zustimmung
+    # kann hier nachgetragen werden.
+    felder = ['status']
+    if k.absender == 'mieter' and v.familienwohnung and not k.zustimmung_ehegatte:
+        if request.POST.get('zustimmung_ehegatte') != 'on':
+            messages.error(request, '⛔ ' + gettext(
+                'Familienwohnung: Bestätigung erst mit der ausdrücklichen Zustimmung des '
+                'Ehegatten/Partners (Art. 266m OR).'))
+            return redirect(f'/neu/vertraege/{v.id}/')
+        k.zustimmung_ehegatte = True
+        felder.append('zustimmung_ehegatte')
+        from core.services.automation import erledige_pendenzen_fuer
+        erledige_pendenzen_fuer(v, ['Art. 266m'], user=request.user)
 
     per = k.per_datum or k.berechneter_termin
+    # Eine Erstreckung verschiebt das Vertragsende (und damit die Sollstellung).
+    ende = k.erstreckung_bis if (k.erstreckung_bis and per and k.erstreckung_bis > per) else per
     k.status = 'bestaetigt'
-    k.save(update_fields=['status'])
+    k.save(update_fields=felder)
     v.status = 'gekuendigt'
     v.aktiv = False
-    v.ende = per
+    v.ende = ende
     v.save(update_fields=['status', 'aktiv', 'ende'])
 
-    n_pendenzen = _auszugscheckliste_anlegen(v, k, per, request.user, mit_leerstand=False)
+    n_pendenzen = _auszugscheckliste_anlegen(v, k, ende, request.user, mit_leerstand=False)
     from core.services.mieterwechsel_fall import eroeffnen as _mw_eroeffnen
     _mw_eroeffnen(v, benutzer=request.user if request.user.is_authenticated else None)
     # Bestätigung erfolgt → 'Kündigung schriftlich bestätigen' abhaken
     from core.services.automation import erledige_pendenzen_fuer
     erledige_pendenzen_fuer(v, ['schriftlich', 'Kündigungsformular'], user=request.user)
     log_aktion(request, "Kündigung bestätigt", str(v.mieter),
-               f"per {per.strftime('%d.%m.%Y') if per else '—'}, {n_pendenzen} Pendenzen", ziel=v)
-    messages.success(request, '✅ ' + gettext('Kündigung bestätigt — Vertragsende %(wert)s · %(n_pendenzen)s Auszugs-Pendenzen erstellt.') % {'wert': per.strftime('%d.%m.%Y') if per else '—', 'n_pendenzen': n_pendenzen})
+               f"per {ende.strftime('%d.%m.%Y') if ende else '—'}, {n_pendenzen} Pendenzen", ziel=v)
+    messages.success(request, '✅ ' + gettext('Kündigung bestätigt — Vertragsende %(wert)s · %(n_pendenzen)s Auszugs-Pendenzen erstellt.') % {'wert': ende.strftime('%d.%m.%Y') if ende else '—', 'n_pendenzen': n_pendenzen})
     return redirect(f'/neu/vertraege/{v.id}/')
 
 
@@ -807,6 +983,28 @@ def fw_herabsetzung(request, vertrag_id):
                     kategorie='frist', faellig_am=antwort_am + _timedelta(days=30), vertrag=v,
                     liegenschaft=lg, quelle=f'270a-anrufung:{v.pk}:{antwort_am.isoformat()}')
             log_aktion(request, 'Herabsetzungsbegehren beantwortet', str(v.mieter), text, ziel=v)
+            if request.POST.get('brief'):
+                # Antwortbrief (Befund M): abgelegt in der Korrespondenz — die
+                # Anrufungsfrist des Mieters läuft ab dieser Antwort, ihr Inhalt
+                # gehört in die Akte.
+                from django.http import HttpResponse
+                from core.services.ablage import ablegen
+                from core.services.herabsetzung_brief import antwortbrief_pdf
+                try:
+                    neu_netto = Decimal(_num_oder_leer(request.POST.get('neu_netto'))) \
+                        if _num_oder_leer(request.POST.get('neu_netto')) else None
+                except Exception:
+                    neu_netto = None
+                eingang_am = _datum_oder_none((p.quelle or '').split(':')[-1])
+                pdf = antwortbrief_pdf(v, ergebnis, antwort_am, eingang_am=eingang_am,
+                                       begruendung=(request.POST.get('begruendung') or '').strip()[:1500],
+                                       neu_netto=neu_netto,
+                                       wirksam_ab=_datum_oder_none(request.POST.get('wirksam_ab')))
+                ablegen(pdf, f"Antwort Herabsetzungsbegehren {antwort_am:%d.%m.%Y}",
+                        kategorie='korrespondenz', vertrag=v, dedup=True)
+                resp = HttpResponse(pdf, content_type='application/pdf')
+                resp['Content-Disposition'] = f'inline; filename="Antwort_Herabsetzung_{v.mieter.nachname}.pdf"'
+                return resp
             messages.success(request, '✅ ' + gettext('Antwort festgehalten: %(text)s.') % {'text': text})
             if ergebnis != 'ablehnung':
                 messages.info(request, gettext('Die Senkung wird über «Mietzinsanpassung» mit dem amtlichen Formular mitgeteilt.'))
@@ -817,7 +1015,14 @@ def fw_herabsetzung(request, vertrag_id):
     return render(request, 'fw/herabsetzung.html', {
         **basis, 'nav': 'vertraege', 'v': v, 'offene': offene, 'heute_iso': heute.isoformat(),
         'antwort_tage': HERABSETZUNG_ANTWORT_TAGE,
+        'netto_aktuell': v.effektiver_netto_mietzins(heute),
+        'beantwortet': Pendenz.objects.filter(vertrag=v, quelle__startswith='270a:', erledigt=True).exists(),
     })
+
+
+def _num_oder_leer(wert):
+    """'1''450.50' / '1450,5' → '1450.50'-artig; '' bei leer."""
+    return (wert or '').replace("'", '').replace(' ', '').replace(',', '.').strip()
 
 
 # Eine Zahlungsvereinbarung setzt die Mahnsperre und verschiebt die Fälligkeit im

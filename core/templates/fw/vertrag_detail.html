@@ -269,10 +269,17 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
                     <span class="fw-klein">{{ k.eingang_datum|date:"d.m.Y" }}</span>
                 </div>
                 <div class="mt-1">{% trans "Vertragsende" %}: <b class="fw-strong">{{ k.per_datum|date:"d.m.Y" }}</b>
-                    {% if k.ausserordentlich %}<span class="fw-chip fw-crit">{% trans "ausserordentlich" %}</span>{% endif %}</div>
+                    {% if k.ausserordentlich %}<span class="fw-chip fw-crit">{% trans "ausserordentlich" %}{% if k.ausserordentlich_art %} · {{ k.get_ausserordentlich_art_display }}{% endif %}</span>{% endif %}
+                    {% if k.erstreckung_bis %}<span class="fw-chip fw-info">{% blocktrans with d=k.erstreckung_bis|date:"d.m.Y" %}erstreckt bis {{ d }}{% endblocktrans %}</span>{% endif %}</div>
+                {% if k.zugang_am %}<div class="fw-klein">{% blocktrans with d=k.zugang_am|date:"d.m.Y" %}Zugang beim Mieter {{ d }}{% endblocktrans %}</div>{% endif %}
+                {% if k.ersatzmieter %}<div class="fw-klein">{% trans "Ersatzmieter (Art. 264 OR)" %}: {{ k.ersatzmieter|truncatechars:80 }}{% if k.ersatzmieter_akzeptiert %} · {% trans "angenommen" %}{% endif %}</div>{% endif %}
                 {% if k.status == 'erfasst' and request.user|darf:"/neu/kuendigung/1/bestaetigen/" %}
                 <form method="post" action="/neu/kuendigung/{{ k.id }}/bestaetigen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Kündigung bestätigen? Der Vertrag wird auf gekündigt gesetzt und Auszugs-Pendenzen werden erstellt." %}{% endfilter %}');" class="mt-2">
                     {% csrf_token %}
+                    {% if v.familienwohnung and k.absender == 'mieter' and not k.zustimmung_ehegatte %}
+                    {% comment %} Art. 266m OR: ohne Zustimmung keine Bestätigung (der Server sperrt). {% endcomment %}
+                    <label class="fw-haekchen fw-klein mb-1"><input type="checkbox" name="zustimmung_ehegatte" class="fw-akzent"> {% trans "Ausdrückliche Zustimmung des Ehegatten / Partners liegt vor (Art. 266m OR)" %}</label>
+                    {% endif %}
                     <button class="fw-btn fw-gutknopf fw-knapp">{% zeichen 'gut' %}{% trans "Bestätigen &amp; Vertrag beenden" %}</button>
                 </form>
                 {% elif k.status == 'erfasst' %}

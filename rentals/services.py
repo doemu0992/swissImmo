@@ -352,6 +352,71 @@ def termine_aus_vertrag(vertrag) -> list:
         kuendigungstermine_parsen(vertrag.kuendigungstermine) or [])]
 
 
+# ---------------------------------------------------------------------------
+# Ausserordentliche Kündigung: Mindesttermin je Grund (Befund L, 26.10.2026)
+# ---------------------------------------------------------------------------
+#
+# GEPRÜFT WIRD NUR, WAS DER BESTAND BELEGT. Grundlage sind die Kurzfassungen im
+# Gesetzesregister (`core/services/gesetzestexte.py`) und `core/services/
+# mietrecht.py`:
+#
+#   257d  «danach Kündigung mit 30 Tagen auf Monatsende»       → `termin_257d`
+#   266i  «mit der gesetzlichen Frist auf den nächsten Termin» → gesetzliche
+#         Frist, Termine des Vertrags
+#   266g  «mit gesetzlicher Frist»                             → nur die Frist;
+#         ein Termin ist im Register nicht genannt und wird nicht verlangt
+#
+# Für Art. 257f Abs. 3, 266h und 266k nennt der Bestand KEINE Frist. Für sie wird
+# nichts gerechnet und nichts erfunden: Die Kündigungserfassung verlangt dann ein
+# Datum und warnt, dass es ungeprüft ist.
+
+#: Wer welchen Grund geltend machen kann (Gesetzesregister: 257d «setzt der
+#: Vermieter», 266h «kann der Vermieter», 266i «können die Erben»). 266g und 266k
+#: stehen bei beiden — das Register schränkt sie nicht ein.
+AO_GRUENDE_VERMIETER = frozenset({'257d', '257f', '266g', '266h', '266k'})
+AO_GRUENDE_MIETER = frozenset({'266g', '266i', '266k'})
+
+
+def gesetzliche_frist_monate(vertrag) -> int:
+    """Gesetzliche Kündigungsfrist in Monaten nach Objektart (`mietrecht.ARTIKEL`):
+    Wohnungen 3 (Art. 266c), Geschäftsräume 6 (Art. 266d), übrige unbewegliche
+    Sachen 3 (Art. 266b). 0 = gesondert vermieteter Einstellplatz: zwei Wochen auf
+    Ende einer einmonatigen Mietdauer (Art. 266e) — `berechne_kuendigungstermin`
+    rechnet <= 0 genau so."""
+    kategorie = getattr(vertrag, 'mietrecht_kategorie', 'wohnen')
+    einheit = getattr(vertrag, 'einheit', None)
+    if kategorie == 'gewerbe':
+        return 6
+    if kategorie == 'nebenobjekt' and einheit is not None and getattr(einheit, 'ist_einstellplatz', False):
+        return 0
+    return 3
+
+
+def ausserordentlicher_termin(vertrag, art: str, zugang: _dt.date):
+    """Frühester Termin einer ausserordentlichen Kündigung aus `art` — oder None,
+    wenn der Bestand für diesen Grund keine Frist belegt (siehe oben)."""
+    import copy
+    if art == '257d':
+        return termin_257d(zugang)
+    if art not in ('266g', '266i'):
+        return None
+    monate = gesetzliche_frist_monate(vertrag)
+    if art == '266i':
+        # Gesetzliche statt vertraglicher Frist, auf den nächsten Termin. Eine
+        # Kopie, damit am Vertrag selbst nichts verändert wird; «erstmals
+        # kündbar auf» bindet die ausserordentliche Kündigung nicht.
+        gesetzlich = copy.copy(vertrag)
+        gesetzlich.kuendigungsfrist_monate = monate
+        gesetzlich.erstmals_kuendbar_auf = None
+        return berechne_kuendigungstermin(gesetzlich, zugang)
+    # 266g: die gesetzliche Frist ab Zugang, auf keinen bestimmten Termin.
+    if monate <= 0:
+        return zugang + _dt.timedelta(days=14)
+    m = zugang.month - 1 + monate
+    jahr, monat = zugang.year + m // 12, m % 12 + 1
+    return _dt.date(jahr, monat, min(zugang.day, calendar.monthrange(jahr, monat)[1]))
+
+
 def termin_257d(ab_datum: _dt.date) -> _dt.date:
     """Frühestmöglicher Kündigungstermin bei ausserordentlicher Kündigung wegen
     Zahlungsverzug (Art. 257d Abs. 2 OR): Frist von mindestens 30 Tagen auf Ende
