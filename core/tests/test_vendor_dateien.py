@@ -74,11 +74,13 @@ VENDOR = {
 NICHT_GEHOLT = ('bootstrap-icons',)
 
 #: `{% static 'css/x.css' %}` — beide Anführungsarten, beliebige Leerzeichen.
-_STATIC = re.compile(r"""\{%\s*static\s+['"]([^'"]+)['"]\s*%\}""")
+# Auch `{% statisch %}` (versionierte Adresse, core/templatetags/statisch.py):
+# Eine fehlende Datei fiele dort genauso still aus — ohne `?v=`, aber mit 404.
+_STATIC = re.compile(r"""\{%\s*(?:static|statisch)\s+['"]([^'"]+)['"]\s*%\}""")
 
 
 def _statische_verweise():
-    """Jede `{% static %}`-Adresse aus allen Vorlagen, mit Fundstelle."""
+    """Jede `{% static %}`- und `{% statisch %}`-Adresse aus allen Vorlagen, mit Fundstelle."""
     for ordner in ('core/templates', 'templates'):
         for pfad in sorted((WURZEL / ordner).rglob('*.html')):
             text = pfad.read_text(encoding='utf-8')

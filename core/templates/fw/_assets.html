@@ -1,4 +1,4 @@
-{% load static %}{% comment %}
+{% load static statisch %}{% comment %}
 Stilbausteine der Anwendung — aus dem Repo, nicht aus dem Netz (E0.2).
 
 WAS SICH GEAENDERT HAT
@@ -20,8 +20,8 @@ Datei; die fruehere zweite Datei in Tailwinds Voreinstellung ist entfernt.
 
 Bewacht von core/tests/test_keine_fremdquellen.py.
 {% endcomment %}
-<link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
-<link rel="stylesheet" href="{% static 'css/schriften.css' %}">
+<link rel="stylesheet" href="{% statisch 'css/tailwind.css' %}">
+<link rel="stylesheet" href="{% statisch 'css/schriften.css' %}">
 {% comment %}
 FONT AWESOME IST SEIT E2.42 NICHT MEHR NOETIG — UND SEIT E2.43 NIRGENDS MEHR.
 
