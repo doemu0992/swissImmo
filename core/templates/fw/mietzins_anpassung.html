@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen hilfe %}
 {% load chf l10n %}
 {% block title %}Mietzinsanpassung — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
@@ -13,12 +13,12 @@
 
 <div class="fw-phead">
     <div>
-        <h1>Mietzinsanpassung</h1>
+        <h1>Mietzinsanpassung {% hilfe 'formularpflicht' %}</h1>
         <p>Amtliches Formular nach Art. 269d OR / Art. 19 VMWG · {{ v.einheit.bezeichnung }}, {{ lg.strasse }}, {{ lg.plz }} {{ lg.ort }}</p>
     </div>
 </div>
 
-<form method="post" class="max-w-3xl">
+<form method="post" class="fw-formseite">
     {% csrf_token %}
 
     <!-- Grundlagen -->
@@ -35,7 +35,7 @@
                 <input name="basis_zins" id="mz_basis_zins" oninput="mietzinsCheck()" value="{% localize off %}{{ alt_zins }}{% endlocalize %}" class="fw-feld w-full {% if basis_fehlt %}fw-ring-warn{% endif %}">
             </div>
             <div class="fw-feldblock">
-                <label for="mz_neu_zins" class="fw-label">Neuer Referenzzins (%)</label>
+                <label for="mz_neu_zins" class="fw-label">Neuer Referenzzins (%) {% hilfe 'referenzzins' %}</label>
                 <input name="neu_zins" id="mz_neu_zins" oninput="mietzinsCheck()" value="{% localize off %}{{ aktuell_ref }}{% endlocalize %}" class="fw-feld w-full">
             </div>
             <div class="fw-feldblock breit">
@@ -47,7 +47,7 @@
                 <input id="mz_basis_lik" name="basis_lik" value="{% localize off %}{{ alt_lik }}{% endlocalize %}" class="fw-feld w-full {% if basis_fehlt %}fw-ring-warn{% endif %}">
             </div>
             <div class="fw-feldblock">
-                <label for="mz_neu_lik" class="fw-label">Neuer LIK (Punkte)</label>
+                <label for="mz_neu_lik" class="fw-label">Neuer LIK (Punkte) {% hilfe 'lik' %}</label>
                 <input id="mz_neu_lik" name="neu_lik" value="{% localize off %}{{ aktuell_lik }}{% endlocalize %}" class="fw-feld w-full">
             </div>
             <div class="fw-feldblock">
@@ -120,7 +120,7 @@
             <input type="checkbox" name="mit_vorbehalt" onchange="document.getElementById('vb').classList.toggle('hidden', !this.checked)" class="fw-akzent">
             Erhöhung mit Vorbehalt (nicht ausgeschöpfte Reserven)
         </label></div>
-        <div id="vb" class="hidden sm:col-span-2">
+        <div id="vb" class="hidden fw-col-span-2">
             <input name="vorbehalt_text" class="fw-feld w-full" placeholder="Text des Vorbehalts (optional)">
         </div>
         </div>

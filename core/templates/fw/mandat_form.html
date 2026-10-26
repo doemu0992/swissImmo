@@ -15,14 +15,14 @@
     </div>
 </div>
 
-<form method="post" enctype="multipart/form-data" class="max-w-3xl">
+<form method="post" enctype="multipart/form-data" class="fw-formseite">
     {% csrf_token %}
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Eigentümer" %}</h2></div>
         <div class="fw-rumpf space-y-4">
         <div><label for="md-firma" class="fw-label mb-1">{% trans "Name / Firma *" %}</label>
             <input id="md-firma" name="firma_oder_name" required value="{{ md.firma_oder_name }}" class="fw-feld w-full"></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="fw-raster r2">
             <div><label for="md-kontakt" class="fw-label mb-1">{% trans "Kontaktperson" %}</label>
                 <input id="md-kontakt" name="kontaktperson" value="{{ md.kontaktperson }}" class="fw-feld w-full"></div>
             <div><label for="md-email" class="fw-label mb-1">{% trans "E-Mail" %}</label>
@@ -37,15 +37,15 @@
         </div>
         <div><label for="md-strasse" class="fw-label mb-1">{% trans "Strasse & Nr." %}</label>
             <input id="md-strasse" name="strasse" value="{{ md.strasse }}" class="fw-feld w-full"></div>
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div class="fw-raster r4">
             <div><label for="md-plz" class="fw-label mb-1">{% trans "PLZ" %}</label>
                 <input id="md-plz" name="plz" value="{{ md.plz }}" class="fw-feld w-full"></div>
-            <div class="sm:col-span-2"><label for="md-ort" class="fw-label mb-1">{% trans "Ort" %}</label>
+            <div class="fw-col-span-2"><label for="md-ort" class="fw-label mb-1">{% trans "Ort" %}</label>
                 <input id="md-ort" name="ort" value="{{ md.ort }}" class="fw-feld w-full"></div>
             <div><label for="md-telefon" class="fw-label mb-1">{% trans "Telefon" %}</label>
                 <input id="md-telefon" name="telefon" value="{{ md.telefon }}" class="fw-feld w-full"></div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="fw-raster r2">
             <div><label for="md-bank" class="fw-label mb-1">{% trans "Bankname" %}</label>
                 <input id="md-bank" name="bank_name" value="{{ md.bank_name }}" class="fw-feld w-full"></div>
             <div><label for="md-iban" class="fw-label mb-1">IBAN</label>
@@ -68,7 +68,7 @@
         <p class="fw-hilfe mb-3">{% trans "Wähle die Liegenschaften, die diesem Eigentümer gehören." %}</p>
         {# Beleg, dass dieser Block wirklich mitgeschickt wurde — sonst rührt die View die Zuordnung nicht an #}
         <input type="hidden" name="lg_zuordnung" value="1">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto">
+        <div class="fw-raster r2 max-h-72 overflow-y-auto">
             {% for lg in alle_liegenschaften %}
             <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border fw-linie hover:fw-flaeche2 cursor-pointer text-sm">
                 <input type="checkbox" name="liegenschaften" value="{{ lg.id }}" {% if lg.id in zugeordnet %}checked{% endif %} class="fw-akzent">

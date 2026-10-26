@@ -56,16 +56,16 @@
 
         <!-- Schnellzugriffe als eigene Seiten -->
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            <a href="/mieter/rechnungen/" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-marke hover:shadow-md transition-all p-5">
+            <a href="/mieter/rechnungen/" class="fw-flaeche rounded-2xl shadow-sm hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
                     <span class="w-10 h-10 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'rechnung' %}</span>
-                    {% if offene_count %}<span class="text-[10px] font-bold fw-krit-flaeche text-white rounded-full px-2 py-0.5">{{ offene_count }}</span>{% endif %}
+                    {% if offene_count %}<span class="text-[10px] font-bold fw-krit-voll rounded-full px-2 py-0.5">{{ offene_count }}</span>{% endif %}
                 </div>
                 <div class="mt-3 font-bold fw-strong">{% trans "Rechnungen" %}</div>
                 <div class="text-xs fw-faint">{% if offene_count %}{% blocktrans with betrag=total_offen|chf %}CHF {{ betrag }} offen{% endblocktrans %}{% else %}{% trans "Keine offenen Rechnungen" %}{% endif %}</div>
             </a>
 
-            <a href="/mieter/dokumente/" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-marke hover:shadow-md transition-all p-5">
+            <a href="/mieter/dokumente/" class="fw-flaeche rounded-2xl shadow-sm hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
                     <span class="w-10 h-10 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'dokument' %}</span>
                     {% if dok_count %}<span class="text-[10px] font-bold fw-balken fw-mutet rounded-full px-2 py-0.5">{{ dok_count }}</span>{% endif %}
@@ -74,7 +74,7 @@
                 <div class="text-xs fw-faint">{% trans "Vertrag, Korrespondenz &amp; mehr" %}</div>
             </a>
 
-            <a href="/mieter/tickets/" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-marke hover:shadow-md transition-all p-5">
+            <a href="/mieter/tickets/" class="fw-flaeche rounded-2xl shadow-sm hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
                     <span class="w-10 h-10 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'arbeit' %}</span>
                     {% if ticket_count %}<span class="text-[10px] font-bold fw-balken fw-mutet rounded-full px-2 py-0.5">{{ ticket_count }}</span>{% endif %}
@@ -83,7 +83,7 @@
                 <div class="text-xs fw-faint">{% trans "Status &amp; Verlauf" %}</div>
             </a>
 
-            <a href="/mieter/schaden/neu/" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-krit hover:shadow-md transition-all p-5">
+            <a href="/mieter/schaden/neu/" class="fw-flaeche rounded-2xl shadow-sm hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
                     <span class="w-10 h-10 rounded-xl fw-krit-flaeche fw-kritisch flex items-center justify-center">{% zeichen 'warnung' %}</span>
                 </div>
@@ -91,7 +91,7 @@
                 <div class="text-xs fw-faint">{% trans "Reparatur beantragen" %}</div>
             </a>
 
-            <a href="/mieter/kontoauszug/" target="_blank" rel="noopener" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-marke hover:shadow-md transition-all p-5">
+            <a href="/mieter/kontoauszug/" target="_blank" rel="noopener" class="fw-flaeche rounded-2xl shadow-sm hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
                     <span class="w-10 h-10 rounded-xl fw-markenflaeche fw-marke flex items-center justify-center">{% zeichen 'dokument' %}</span>
                     {% zeichen 'extern' klasse='fw-faint text-xs' %}
@@ -100,7 +100,7 @@
                 <div class="text-xs fw-faint">{% trans "als PDF öffnen" %}</div>
             </a>
 
-            <a href="/mieter/kuendigung/" class="fw-flaeche rounded-2xl border fw-linie shadow-sm hover:fw-linie-krit hover:shadow-md transition-all p-5">
+            <a href="/mieter/kuendigung/" class="fw-flaeche rounded-2xl shadow-sm hover:shadow-md transition-all p-5">
                 <div class="flex items-center justify-between">
                     <span class="w-10 h-10 rounded-xl fw-krit-flaeche fw-kritisch flex items-center justify-center">{% zeichen 'senden' %}</span>
                 </div>

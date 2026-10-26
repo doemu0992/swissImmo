@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <!-- ERFOLGSRECHNUNG -->
 <div data-panel="bh" id="bh-erfolg">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+    <div class="fw-raster l2 mb-6">
         <!-- Erträge -->
         <div class="fw-card fw-nomb">
             <div class="fw-kopf">
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <!-- BILANZ -->
 <div data-panel="bh" id="bh-bilanz" class="hidden">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+    <div class="fw-raster l2 mb-6">
         <!-- Aktiven -->
         <div class="fw-card fw-nomb">
             <div class="fw-kopf">
@@ -276,25 +276,25 @@ document.addEventListener('DOMContentLoaded', function () {
     <form method="get" class="fw-card fw-rumpf grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         <input type="hidden" name="tab" value="journal">
-        <label class="sm:col-span-4 block">
+        <label class="fw-col-span-4 block">
             <span class="fw-label">{% trans "Text oder Beleg-Nr" %}</span>
             <input name="q" value="{{ j_suche }}" placeholder="{% trans 'z.B. Hauswartung, 2024-0042' %}"
                    class="mt-1 w-full fw-feld">
         </label>
-        <label class="sm:col-span-3 block">
+        <label class="fw-col-span-3 block">
             <span class="fw-label">{% trans "Konto" %}</span>
             <input name="konto" value="{{ j_konto }}" list="journal-konten" placeholder="{% trans 'Nummer' %}"
                    class="mt-1 w-full fw-feld fw-mono">
         </label>
-        <label class="sm:col-span-2 block">
+        <label class="fw-col-span-2 block">
             <span class="fw-label">{% trans "Von" %}</span>
             <input type="date" name="von" value="{{ j_von }}" class="mt-1 w-full fw-feld">
         </label>
-        <label class="sm:col-span-2 block">
+        <label class="fw-col-span-2 block">
             <span class="fw-label">{% trans "Bis" %}</span>
             <input type="date" name="bis" value="{{ j_bis }}" class="mt-1 w-full fw-feld">
         </label>
-        <div class="sm:col-span-1 flex gap-2">
+        <div class="fw-col-span-1 flex gap-2">
             <button class="w-full fw-btn fw-primary" title="{% trans 'Filtern' %}">
                 {% zeichen 'suchen' %}
             </button>

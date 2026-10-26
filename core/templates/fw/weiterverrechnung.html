@@ -1,6 +1,6 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
-{% load chf l10n %}
+{% load chf l10n hilfe %}
 {% block title %}{% trans "Weiterverrechnen" %} — {{ k.lieferant }}{% endblock %}
 {% block content %}
 {{ vertrag_daten|json_script:"wv-vd-data" }}
@@ -10,6 +10,19 @@
         <h1>{% trans "An Mieter weiterverrechnen" %}</h1>
         <p>{% trans "Lieferantenrechnung" %} <b>{{ k.lieferant }}</b>{% if k.referenz %} · {{ k.referenz }}{% endif %}{% if k.liegenschaft %} · {{ k.liegenschaft.strasse }}, {{ k.liegenschaft.ort }}{% endif %}</p>
     </div>
+</div>
+
+<div class="fw-hilfebox" data-hilfebox="weiterverrechnung">
+    <span class="fw-hi" aria-hidden="true">{% zeichen 'hinweis' %}</span>
+    <div class="fw-hilfebox-inhalt">
+        <b>{% trans "So funktioniert die Weiterverrechnung" %}</b>
+        <ol>
+            <li>{% trans "Prüfen, ob die Rechnung über die Nebenkosten läuft (HNK) — dann nicht doppelt belasten." %}</li>
+            <li>{% trans "Empfänger wählen: ein Mieter oder alle Mieter der Liegenschaft nach Schlüssel." %}</li>
+            <li>{% trans "Betrag und Zuschlag festlegen; es entsteht eine Debitorenrechnung mit QR-Zahlteil." %}</li>
+        </ol>
+    </div>
+    <button type="button" class="zu" aria-label="{% trans 'Hinweis ausblenden' %}">{% zeichen 'schliessen' %}</button>
 </div>
 
 {% comment %}Leere Zustände (Audit Etappe 4): Ist nichts mehr offen oder gibt es
@@ -30,14 +43,28 @@ Erklärung, warum.{% endcomment %}
 <div class="fw-hinweis crit">
     <span class="fw-hi">{% zeichen 'warnung' %}</span>
     <div class="fw-ht fliess">
-    <div class="fw-strong fw-kritisch">{% trans "Achtung: HNK-relevante Rechnung" %}</div>
+    <div class="fw-strong fw-kritisch">{% trans "Achtung: HNK-relevante Rechnung" %} {% hilfe 'hnk' %}</div>
     {% blocktrans trimmed %}Diese Rechnung fliesst bereits über die <b>Nebenkostenabrechnung</b> an die Mieter. Eine zusätzliche direkte Weiterverrechnung würde <b>doppelt belasten</b>. Nur fortfahren, wenn du das bewusst willst — dann unten das Häkchen «Trotzdem direkt weiterverrechnen» setzen.{% endblocktrans %}
     </div>
 </div>
 </div>
 {% endif %}
 
+<div class="fw-kpis">
+    <div class="fw-kpi"><div class="fw-l">{% trans "Rechnungsbetrag" %}</div>
+        <div class="fw-v">CHF {{ k.betrag|chf }}</div></div>
+    <div class="fw-kpi"><div class="fw-l">{% trans "Bereits weiterverrechnet" %}</div>
+        <div class="fw-v">CHF {{ k.weiterverrechnet_betrag|chf }}</div></div>
+    <div class="fw-kpi fw-accent"><div class="fw-l">{% trans "Noch offen" %} {% hilfe 'weiterverrechnung' %}</div>
+        <div class="fw-v">CHF {{ offen_wv|chf }}</div></div>
+</div>
+
 {% if verteil_mieter and k.liegenschaft %}
+<div class="fw-filters fw-nomb fw-wv-weg" role="group" aria-label="{% trans 'Wie weiterverrechnen?' %}">
+    <button type="button" class="fw-fchip fw-on" data-wv-weg="einzeln" aria-pressed="true">{% trans "An einen Mieter" %}</button>
+    <button type="button" class="fw-fchip" data-wv-weg="verteilen" aria-pressed="false">{% blocktrans count n=verteil_mieter %}An {{ n }} Mieter verrechnen{% plural %}Auf alle {{ n }} Mieter verteilen{% endblocktrans %}</button>
+</div>
+<div id="wv-verteilen" class="hidden">
 <!-- Verteilen auf alle Mieter der Liegenschaft nach Verteilschlüssel -->
 <form method="post" class="fw-card">
     {% csrf_token %}
@@ -47,7 +74,7 @@ Erklärung, warum.{% endcomment %}
     <p class="fw-hilfe mb-3">{% blocktrans trimmed with betrag=offen_wv|chf n=verteil_mieter strasse=k.liegenschaft.strasse %}Verteilt den offenen Betrag (CHF {{ betrag }}) in einem Schritt auf die
         <b>{{ n }}</b> aktiven Mietverhältnisse in {{ strasse }} nach gewähltem Schlüssel.{% endblocktrans %}</p>
     <div class="flex flex-wrap items-end gap-3">
-        <div class="fw-feldblock"><label class="fw-label">{% trans "Verteilschlüssel" %}</label>
+        <div class="fw-feldblock"><label class="fw-label">{% trans "Verteilschlüssel" %} {% hilfe 'verteilschluessel' %}</label>
             <select name="schluessel" class="fw-feld">
                 <option value="m2">{% trans "Fläche (m²)" %}</option>
                 <option value="einheit">{% trans "Pro Einheit (gleich)" %}</option>
@@ -65,76 +92,83 @@ Erklärung, warum.{% endcomment %}
     </div>
     </div>
 </form>
+</div>
 {% endif %}
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+<div class="fw-raster l2 items-start" id="wv-einzeln">
 <form method="post" id="wv-form">
     {% csrf_token %}
     <input type="hidden" name="embed" id="wv_embed" value="">
     <script>if (window.self !== window.top) document.getElementById('wv_embed').value = '1';</script>
-
-    <!-- Übersicht der Rechnung -->
-    <div class="fw-kpis">
-        <div class="fw-kpi"><div class="fw-l">{% trans "Rechnungsbetrag" %}</div>
-            <div class="fw-v">CHF {{ k.betrag|chf }}</div></div>
-        <div class="fw-kpi"><div class="fw-l">{% trans "Bereits weiterverrechnet" %}</div>
-            <div class="fw-v">CHF {{ k.weiterverrechnet_betrag|chf }}</div></div>
-        <div class="fw-kpi"><div class="fw-l">{% trans "Noch offen" %}</div>
-            <div class="fw-v">CHF {{ offen_wv|chf }}</div></div>
-    </div>
-
-    <div class="fw-card">
-    <div class="fw-formular fw-rumpf">
-        <div class="fw-feldblock breit">
-            <label class="fw-label">{% trans "Mieter / Vertrag *" %}</label>
-            <select name="vertrag_id" required onchange="wvPreview()" class="fw-feld">
-                <option value="">— {% trans "wählen" %} —</option>
-                {% for v in vertraege %}
-                <option value="{{ v.id }}">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}{% if v.einheit.liegenschaft %} ({{ v.einheit.liegenschaft.strasse }}){% endif %}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="fw-feldblock breit">
-            <label class="fw-label">{% trans "Titel" %}</label>
-            <input name="titel" value="Weiterverrechnung: {{ k.lieferant }}" oninput="wvPreview()" class="fw-feld">
-        </div>
-            <div class="fw-feldblock">
-                <label class="fw-label">{% trans "Weiterzuverrechnen (CHF)" %}</label>
-                <input name="betrag" id="wv_betrag" oninput="wvCheck(); wvPreview()" value="{% localize off %}{{ offen_wv }}{% endlocalize %}"
-                       class="fw-feld fw-strong">
-                <p class="fw-hilfe">{% trans "Fremdkosten — wird ertragsneutral über Konto 1190 durchgereicht." %}</p>
+    {% trans "Prüfen & erstellen" as wv_pruefen %}
+    <div class="fw-assistent fw-assistent-schmal" {% include 'fw/_assistent_attribute.html' with pruefen=wv_pruefen %}>
+    {% include 'fw/_assistent_leiste.html' %}
+    <div class="fw-assistent-inhalt">
+        <section data-schritt="{% trans 'Empfänger' %}" data-schritt-text="{% trans 'Welcher Mieter trägt die Kosten?' %}">
+            <div class="fw-assistent-schritt-kopf"></div>
+            <div class="fw-card"><div class="fw-formular fw-rumpf">
+                <div class="fw-feldblock breit">
+                    <label class="fw-label" for="wv-vertrag">{% trans "Mieter / Vertrag *" %}</label>
+                    <select name="vertrag_id" id="wv-vertrag" required onchange="wvPreview()" class="fw-feld">
+                        <option value="">— {% trans "wählen" %} —</option>
+                        {% for v in vertraege %}
+                        <option value="{{ v.id }}">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}{% if v.einheit.liegenschaft %} ({{ v.einheit.liegenschaft.strasse }}){% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="fw-feldblock breit">
+                    <label class="fw-label" for="wv-titel">{% trans "Titel" %}</label>
+                    <input name="titel" id="wv-titel" value="Weiterverrechnung: {{ k.lieferant }}" oninput="wvPreview()" class="fw-feld">
+                </div>
+                {% if ist_hnk %}
+                <label class="fw-haekchen fw-feldblock breit"><input type="checkbox" name="hnk_override" required class="fw-akzent-krit"><span class="fw-kritisch">{% trans "Trotzdem direkt weiterverrechnen (HNK-Doppelbelastung bewusst in Kauf nehmen)" %}</span></label>
+                {% endif %}
+            </div></div>
+        </section>
+        <section data-schritt="{% trans 'Betrag' %}" data-schritt-text="{% trans 'Fremdkosten werden durchgereicht; ein Zuschlag ist eigener Ertrag.' %}">
+            <div class="fw-assistent-schritt-kopf"></div>
+            <div class="fw-card">
+            <div class="fw-formular fw-rumpf">
+                <div class="fw-feldblock">
+                    <label class="fw-label" for="wv_betrag">{% trans "Weiterzuverrechnen (CHF)" %}</label>
+                    <input name="betrag" id="wv_betrag" required inputmode="decimal" oninput="wvCheck(); wvPreview()" value="{% localize off %}{{ offen_wv }}{% endlocalize %}" class="fw-feld fw-strong">
+                    <p class="fw-hilfe">{% trans "Fremdkosten — wird ertragsneutral über Konto 1190 durchgereicht." %}</p>
+                </div>
+                <div class="fw-feldblock">
+                    <label class="fw-label" for="wv_zuschlag">{% trans "Zuschlag (CHF, optional)" %}</label>
+                    <input name="zuschlag" id="wv_zuschlag" value="0" inputmode="decimal" oninput="wvPreview()" class="fw-feld">
+                    <p class="fw-hilfe">{% trans "Eigener Aufwand/Marge — wird als Ertrag (3600) gebucht." %}</p>
+                </div>
             </div>
-            <div class="fw-feldblock">
-                <label class="fw-label">{% trans "Zuschlag (CHF, optional)" %}</label>
-                <input name="zuschlag" id="wv_zuschlag" value="0" oninput="wvPreview()" class="fw-feld">
-                <p class="fw-hilfe">{% trans "Eigener Aufwand/Marge — wird als Ertrag (3600) gebucht." %}</p>
+            <div id="wv-warn" class="hidden">
+                <div class="fw-hinweis warn">
+                <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+                <div class="fw-ht"><b>{% trans "Hinweis" %}</b>
+                <span id="wv-warn-text"></span></div>
+                </div>
             </div>
-    </div>
-
-        <div id="wv-warn" class="hidden">
-            <div class="fw-hinweis warn">
-            <span class="fw-hi">{% zeichen 'hinweis' %}</span>
-            <div class="fw-ht"><b>{% trans "Hinweis" %}</b>
-            <span id="wv-warn-text"></span></div>
+            <div class="fw-fuss">
+                <span>
+                {% blocktrans trimmed with konto=aufwand_konto %}Buchung: Grundbetrag <b>1100 Debitor an 1190 Durchlauf</b> und <b>1190 an {{ konto }} Aufwand</b>
+                (ertragsneutral). Zuschlag <b>1100 an 3600 Ertrag</b>. Die neue Rechnung bleibt mit dieser Lieferantenrechnung verknüpft.{% endblocktrans %}
+                </span>
+            </div>
+            </div>
+        </section>
+        <section class="fw-assistent-pruefen">
+            <div class="fw-assistent-schritt-kopf"></div>
+            <div class="fw-card"><div class="fw-rumpf fw-assistent-zusammenfassung"></div></div>
+        </section>
+        <div class="fw-assistent-fuss">
+            <button type="button" class="fw-btn" data-assistent-zurueck data-assistent-nur-js>{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
+            <span class="stand" data-assistent-nur-js></span>
+            <div class="rechts">
+                <a href="/neu/kreditoren/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+                <button type="button" class="fw-btn fw-primary" data-assistent-weiter data-assistent-nur-js>{% trans "Weiter" %} {% zeichen 'weiter' %}</button>
+                <button type="submit" class="fw-btn fw-primary" data-assistent-absenden>{% zeichen 'extern' %}{% trans "Weiterverrechnen &amp; Debitor erstellen" %}</button>
             </div>
         </div>
-
-        <div class="fw-fuss">
-            <span>
-            {% blocktrans trimmed with konto=aufwand_konto %}Buchung: Grundbetrag <b>1100 Debitor an 1190 Durchlauf</b> und <b>1190 an {{ konto }} Aufwand</b>
-            (ertragsneutral). Zuschlag <b>1100 an 3600 Ertrag</b>. Die neue Rechnung bleibt mit dieser Lieferantenrechnung verknüpft.{% endblocktrans %}
-            </span>
-        </div>
     </div>
-
-    {% if ist_hnk %}
-    <label class="fw-haekchen mb-4"><input type="checkbox" name="hnk_override" class="fw-akzent-krit"><span class="fw-kritisch">{% trans "Trotzdem direkt weiterverrechnen (HNK-Doppelbelastung bewusst in Kauf nehmen)" %}</span></label>
-    {% endif %}
-    <div class="flex items-center gap-3 flex-wrap mb-6">
-        <button type="submit" class="fw-btn fw-primary">
-            {% zeichen 'extern' %}{% trans "Weiterverrechnen &amp; Debitor erstellen" %}
-        </button>
-        <a href="/neu/kreditoren/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 
@@ -148,6 +182,14 @@ Erklärung, warum.{% endcomment %}
 </div>
 
 <script>
+document.querySelectorAll('[data-wv-weg]').forEach(function (k) {
+    k.addEventListener('click', function () {
+        var weg = k.dataset.wvWeg;
+        document.querySelectorAll('[data-wv-weg]').forEach(function (x) { x.classList.toggle('fw-on', x === k); x.setAttribute('aria-pressed', x === k ? 'true' : 'false'); });
+        document.getElementById('wv-einzeln').classList.toggle('hidden', weg !== 'einzeln');
+        var v = document.getElementById('wv-verteilen'); if (v) v.classList.toggle('hidden', weg !== 'verteilen');
+    });
+});
 var WV_OFFEN = {% localize off %}{{ offen_wv }}{% endlocalize %};
 var WV_VD = JSON.parse(document.getElementById('wv-vd-data').textContent);
 var WV_ABS = JSON.parse(document.getElementById('wv-abs-data').textContent);

@@ -90,13 +90,13 @@
             <input name="firma" value="{{ vw.firma }}" class="fw-feld"></div>
         <div class="fw-feldblock"><label class="fw-label">{% trans "Strasse &amp; Nr." %}</label>
             <input name="strasse" value="{{ vw.strasse }}" class="fw-feld"></div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="fw-raster r3">
             <div class="fw-feldblock"><label class="fw-label">{% trans "PLZ" %}</label>
                 <input name="plz" value="{{ vw.plz }}" class="fw-feld"></div>
-            <div class="fw-feldblock sm:col-span-2"><label class="fw-label">{% trans "Ort" %}</label>
+            <div class="fw-feldblock fw-col-span-2"><label class="fw-label">{% trans "Ort" %}</label>
                 <input name="ort" value="{{ vw.ort }}" class="fw-feld"></div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="fw-raster r2">
             <div class="fw-feldblock"><label class="fw-label">{% trans "Telefon" %}</label>
                 <input name="telefon" value="{{ vw.telefon }}" class="fw-feld"></div>
             <div class="fw-feldblock"><label class="fw-label">{% trans "E-Mail" %}</label>

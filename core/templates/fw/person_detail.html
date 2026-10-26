@@ -133,7 +133,7 @@ alten Liegenschaft betreut.
   </div>
 </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+    <div class="fw-raster l2 items-start">
         <div class="fw-card fw-nomb">
             <div class="fw-kopf"><span class="fw-t">{% trans "Kontakt" %}</span></div>
             <div>
@@ -234,7 +234,7 @@ alten Liegenschaft betreut.
         </div>
         {% endif %}
         {% if m.notizen %}
-        <div class="fw-card fw-nomb lg:col-span-2">
+        <div class="fw-card fw-nomb fw-lg-col-span-2">
             <div class="fw-kopf"><span class="fw-t">{% trans "Interne Notizen" %}</span></div>
             <div class="fw-rumpf"><p class="fw-mutet whitespace-pre-line">{{ m.notizen }}</p></div>
         </div>
@@ -249,22 +249,22 @@ alten Liegenschaft betreut.
             </dl>{% else %}<p class="fw-leer">{% trans "Kein aktiver Vertrag." %}</p>{% endif %}
             </div>
         </div>
-        <div class="fw-card fw-nomb lg:col-span-2">
+        <div class="fw-card fw-nomb fw-lg-col-span-2">
             <div class="fw-kopf"><span class="fw-t">{% trans "Adressverlauf" %}</span></div>
             <details class="fw-aufklapp">
                 <summary>{% trans "Adresse hinzufügen" %}</summary>
                 <div class="fw-aufklapp-inhalt">
-                    <form method="post" action="/neu/personen/{{ m.id }}/adresse/" class="grid grid-cols-1 sm:grid-cols-6 gap-2">{% csrf_token %}
-                        <select name="art" class="fw-feld sm:col-span-2">
+                    <form method="post" action="/neu/personen/{{ m.id }}/adresse/" class="fw-raster r6">{% csrf_token %}
+                        <select name="art" class="fw-feld fw-col-span-2">
                             <option value="wohn">{% trans "Wohnadresse" %}</option>
                             <option value="korrespondenz">{% trans "Korrespondenzadresse" %}</option>
                         </select>
-                        <input type="date" name="gueltig_ab" value="{{ heute }}" class="fw-feld sm:col-span-2" required>
-                        <input name="strasse" placeholder="{% trans 'Strasse &amp; Nr. / c/o' %}" class="fw-feld sm:col-span-2">
-                        <input name="adresszusatz" placeholder="{% trans 'Adresszusatz' %}" class="fw-feld sm:col-span-2">
-                        <input name="plz" placeholder="{% trans 'PLZ' %}" class="fw-feld sm:col-span-1">
-                        <input name="ort" placeholder="{% trans 'Ort' %}" class="fw-feld sm:col-span-3">
-                        <button class="fw-btn fw-primary sm:col-span-6">{% trans "Adress-Zeile speichern" %}</button>
+                        <input type="date" name="gueltig_ab" value="{{ heute }}" class="fw-feld fw-col-span-2" required>
+                        <input name="strasse" placeholder="{% trans 'Strasse &amp; Nr. / c/o' %}" class="fw-feld fw-col-span-2">
+                        <input name="adresszusatz" placeholder="{% trans 'Adresszusatz' %}" class="fw-feld fw-col-span-2">
+                        <input name="plz" placeholder="{% trans 'PLZ' %}" class="fw-feld fw-col-span-1">
+                        <input name="ort" placeholder="{% trans 'Ort' %}" class="fw-feld fw-col-span-3">
+                        <button class="fw-btn fw-primary fw-col-span-6">{% trans "Adress-Zeile speichern" %}</button>
                     </form>
                 </div>
             </details>
@@ -291,7 +291,7 @@ alten Liegenschaft betreut.
             </table></div>
             <div class="fw-fuss">{% trans "Datierte Adress-Zeilen («gültig ab») wie beim Sollmietzins. Die zum Stichtag gültige Zeile ergibt die effektive Zustelladresse — eine Korrespondenzadresse hat dabei Vorrang vor der Wohnadresse." %}</div>
         </div>
-        <div class="fw-card fw-nomb lg:col-span-2">
+        <div class="fw-card fw-nomb fw-lg-col-span-2">
             <div class="fw-kopf"><span class="fw-ikon {% if portal_user %}good{% else %}mut{% endif %}">{% zeichen 'schluessel' %}</span>
                 <span class="fw-t">{% trans "Mieterportal-Zugang" %}</span>
                 {% if portal_user %}<span class="fw-chip {% if portal_user.is_active %}fw-good{% else %}fw-mut{% endif %}">{% if portal_user.is_active %}{% trans "aktiv" %}{% else %}{% trans "deaktiviert" %}{% endif %}</span>{% endif %}</div>

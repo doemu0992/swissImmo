@@ -51,3 +51,22 @@ export async function bestaetigen(page: Page, { navigation = true } = {}) {
   await geladen;
   if (navigation) await page.waitForLoadState('domcontentloaded');
 }
+
+// Assistent (fw-bausteine.js, V11): Neue Akten werden Schritt für Schritt
+// erfasst; nur der aktuelle Schritt ist sichtbar. `imAssistent` blättert mit
+// «Weiter», bis das Feld sichtbar ist — so bleibt ein Test unabhängig davon,
+// in welchem Schritt ein Feld steht. «Weiter» prüft dabei die Pflichtfelder
+// des Schritts wie ein Mensch.
+export async function imAssistent(page: Page, selektor: string) {
+  const feld = page.locator(selektor).first();
+  for (let i = 0; i < 8 && !(await feld.isVisible()); i++) {
+    await page.locator('[data-assistent-weiter]:visible').click();
+  }
+  await expect(feld).toBeVisible();
+  return feld;
+}
+
+/** Blättert bis «Prüfen» und speichert. */
+export async function assistentAbsenden(page: Page) {
+  await (await imAssistent(page, '[data-assistent-absenden]')).click();
+}

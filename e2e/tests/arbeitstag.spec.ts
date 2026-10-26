@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { bestaetigen, goto, login } from './helpers';
+import { assistentAbsenden, bestaetigen, goto, imAssistent, login } from './helpers';
 
 // «Day in the Life» (Phase 4 des Audits): ein Arbeitstag der Verwaltung, nur über die
 // Oberfläche — wie ein Mensch, ohne direkte Datenbank- oder API-Aufrufe.
@@ -66,12 +66,13 @@ test.describe('Arbeitstag', () => {
 
     // 3 — Liegenschaft anlegen und dem Mandat zuordnen
     await goto(page, '/neu/liegenschaften/neu/');
+    // Seit V11 ein Assistent: Adresse → Stammdaten & Eigentümer → … → Prüfen.
     await page.fill('input[name="strasse"]', STRASSE);
     await page.fill('input[name="plz"]', '8004');
     await page.fill('input[name="ort"]', 'Zürich');
-    await page.selectOption('select[name="status"]', 'aktiv');
+    await (await imAssistent(page, 'select[name="status"]')).selectOption('aktiv');
     await page.selectOption('select[name="eigentuemer_id"]', { label: MANDAT });
-    await page.locator('form:has(input[name="strasse"]) button[type="submit"]').click();
+    await assistentAbsenden(page);
     await page.waitForURL(/\/neu\/liegenschaften\/\d+\/$/, { waitUntil: 'domcontentloaded' });
     const lgId = idAusUrl(page.url(), 'liegenschaften');
     await expect(page.locator('main').getByText(STRASSE).first()).toBeVisible();
@@ -94,11 +95,12 @@ test.describe('Arbeitstag', () => {
     await page.selectOption('select[name="anrede"]', 'Frau');
     await page.fill('input[name="vorname"]', VORNAME);
     await page.fill('input[name="nachname"]', NACHNAME);
-    await page.fill('input[name="email"]', `mieter${id}@example.ch`);
-    await page.fill('input[name="strasse"]', 'Alte Adresse 5');
+    // Seit V11 ein Assistent: Art & Name → Kontakt → Adresse → … → Prüfen.
+    await (await imAssistent(page, 'input[name="email"]')).fill(`mieter${id}@example.ch`);
+    await (await imAssistent(page, 'input[name="strasse"]')).fill('Alte Adresse 5');
     await page.fill('input[name="plz"]', '8005');
     await page.fill('input[name="ort"]', 'Zürich');
-    await page.locator('form:has(input[name="nachname"]) button[type="submit"]').click();
+    await assistentAbsenden(page);
     await page.waitForURL(/\/neu\/personen\/\d+\/$/, { waitUntil: 'domcontentloaded' });
     const mieterId = idAusUrl(page.url(), 'personen');
     await expect(page.locator('main').getByText(NACHNAME).first()).toBeVisible();

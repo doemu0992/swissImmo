@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n  hilfe %}
 {% load l10n %}
 {% block title %}{% if ist_neu %}{% trans "Neue Liegenschaft" %}{% else %}{% blocktrans with name=lg.strasse %}{{ name }} bearbeiten{% endblocktrans %}{% endif %} — swissImmo{% endblock %}
 {% block content %}
@@ -18,7 +18,7 @@
     </div>
 </div>
 
-<form method="post" class="max-w-3xl" novalidate>
+<form method="post" novalidate>
     {% csrf_token %}
     {% comment %} `novalidate`: Die Prüfung macht der Server und meldet am Feld
        (Audit Etappe 2). Die Browserblasen erschienen nur für «required» und
@@ -30,22 +30,30 @@
         {% for fehler in form.non_field_errors %}<div class="mt-1">{{ fehler }}</div>{% endfor %}
     </div>
     {% endif %}
+    {% if ist_neu %}{% trans "Prüfen & anlegen" as lg_pruefen %}<div class="fw-assistent" {% include 'fw/_assistent_attribute.html' with pruefen=lg_pruefen %}>
+    {% include 'fw/_assistent_leiste.html' %}
+    <div class="fw-assistent-inhalt">{% else %}<div class="fw-formseite">{% endif %}
+    <section data-schritt="{% trans 'Adresse' %}" data-schritt-text="{% trans 'Wo steht das Haus? Aus der Adresse wird die EGID ermittelt.' %}">
+    <div class="fw-assistent-schritt-kopf"></div>
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Adresse" %}</h2></div>
         <div class="fw-rumpf space-y-4">
         {% include 'fw/_feld.html' with f=form.strasse label=_("Strasse & Nr.") pflicht=True %}
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div class="fw-raster r4">
             {% include 'fw/_feld.html' with f=form.plz label=_("PLZ") pflicht=True %}
-            {% include 'fw/_feld.html' with f=form.ort label=_("Ort") pflicht=True spalten="sm:col-span-2" %}
+            {% include 'fw/_feld.html' with f=form.ort label=_("Ort") pflicht=True spalten="fw-col-span-2" %}
             {% include 'fw/_feld.html' with f=form.kanton label=_("Kanton") platzhalter=_("SO") %}
         </div>
     </div>
     </div>
 
+    </section>
+    <section data-schritt="{% trans 'Stammdaten & Eigentümer' %}" data-schritt-text="{% trans 'Art, Status und wem die Liegenschaft gehört.' %}">
+    <div class="fw-assistent-schritt-kopf"></div>
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Stammdaten" %}</h2></div>
         <div class="fw-rumpf space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="fw-raster r3">
             {% include 'fw/_feld.html' with f=form.egid label=_("EGID") platzhalter=_("automatisch aus Adresse") %}
             {% include 'fw/_feld.html' with f=form.kataster_nummer label=_("Kataster-Nr.") %}
             <div><label for="id_typ" class="fw-label mb-1">{% trans "Art" %}</label>
@@ -79,13 +87,13 @@ Betreuung soll auffallen, nicht still dem Ersten zufallen, der sie öffnet.
                 {% include 'fw/_feldfehler.html' with f=None fehler=feld_fehler.betreut_von feld_id="id_betreut_von" %}</div>
             {% include 'fw/_feld.html' with f=form.baujahr label=_("Baujahr") inputmodus="numeric" %}
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="fw-raster r3">
             {% include 'fw/_feld.html' with f=form.versicherungswert label=_("Versicherungswert (CHF)") klasse="tabular-nums" inputmodus="decimal" %}
             {% include 'fw/_feld.html' with f=form.grundstuecksflaeche_m2 label=_("Grundstücksfläche (m²)") klasse="tabular-nums" inputmodus="decimal" %}
             {% include 'fw/_feld.html' with f=form.gebaeudevolumen_m3 label=_("Gebäudevolumen (m³)") klasse="tabular-nums" inputmodus="decimal" %}
         </div>
         <p class="fw-subhead">{% trans "Bewertung (für Rendite)" %}</p>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="fw-raster r3">
             {% include 'fw/_feld.html' with f=form.verkehrswert label=_("Verkehrswert (CHF)") platzhalter=_("Marktwert") klasse="tabular-nums" inputmodus="decimal" %}
             {% include 'fw/_feld.html' with f=form.anlagekosten label=_("Anlagekosten (CHF)") klasse="tabular-nums" inputmodus="decimal" %}
             {% include 'fw/_feld.html' with f=form.kaufpreis label=_("Kaufpreis (CHF)") klasse="tabular-nums" inputmodus="decimal" %}
@@ -156,10 +164,13 @@ Betreuung soll auffallen, nicht still dem Ersten zufallen, der sie öffnet.
     </div>
     </div>
 
+    </section>
+    <section data-schritt="{% trans 'Bank & Notfall' %}" data-schritt-text="{% trans 'Mietzinskonto und wer im Notfall kommt.' %}" data-optional>
+    <div class="fw-assistent-schritt-kopf"></div>
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Bank, Mietzinskonto & Notfallkontakte" %}</h2></div>
         <div class="fw-rumpf space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="fw-raster r2">
             {% include 'fw/_feld.html' with f=form.bank_name label=_("Bankname (Mietzinskonto)") %}
             {% include 'fw/_feld.html' with f=form.iban label="IBAN" klasse="font-mono" %}
             {% include 'fw/_feld.html' with f=form.hauswart_name label=_("Hauswart") %}
@@ -172,13 +183,16 @@ Betreuung soll auffallen, nicht still dem Ersten zufallen, der sie öffnet.
     </div>
     </div>
 
+    </section>
+    <section data-schritt="{% trans 'Heizung & Nebenkosten' %}" data-schritt-text="{% trans 'Wie Heiz- und Nebenkosten verteilt werden.' %}" data-optional>
+    <div class="fw-assistent-schritt-kopf"></div>
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Nebenkosten / Heizung" %}</h2></div>
         <div class="fw-rumpf space-y-3">
         <label class="fw-haekchen">
             <input type="checkbox" name="hkvo_aktiv" {% if form.hkvo_aktiv.value %}checked{% endif %} onchange="document.getElementById('hkvo-box').classList.toggle('hidden', !this.checked)" class="fw-akzent">
             {% trans "Verbrauchsabhängige Heizkostenabrechnung (HKVO)" %}
-        </label>
+        </label> {% hilfe 'hkvo' %}
         <div id="hkvo-box" class="{% if not form.hkvo_aktiv.value and not form.hkvo_grundkosten_prozent.errors %}hidden{% endif %} pl-6">
             <div class="flex items-center gap-2">
                 <label for="id_hkvo_grundkosten_prozent" class="fw-label">{% trans "Grundkosten-Anteil" %}</label>
@@ -191,16 +205,30 @@ Betreuung soll auffallen, nicht still dem Ersten zufallen, der sie öffnet.
         <label class="fw-haekchen">
             <input type="checkbox" name="verteilschluessel_aktiv" {% if form.verteilschluessel_aktiv.value %}checked{% endif %} class="fw-akzent">
             {% trans "Eigene Verteilschlüssel dieser Liegenschaft anwenden" %}
-        </label>
+        </label> {% hilfe 'verteilschluessel' %}
         <p class="fw-hilfe">{% trans "Aus: Die Nebenkosten werden nach dem Schlüssel verteilt, der am Beleg gewählt ist. Ein: Für Kostenarten mit eigenem Schlüssel (Zimmer, Wertquote, Prozent) gilt dieser; er überschreibt die Wahl am Beleg. Die Schlüssel pflegen Sie unter «Verteilschlüssel» in der Liegenschaft." %}</p>
     </div>
     </div>
 
-    <div class="flex items-center gap-2">
-        <button type="submit" class="fw-btn fw-primary">
-            {% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}
-        </button>
-        <a href="{% if ist_neu %}/neu/liegenschaften/{% else %}/neu/liegenschaften/{{ lg.id }}/{% endif %}" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+    </section>
+
+    {% if ist_neu %}
+    <section class="fw-assistent-pruefen">
+        <div class="fw-assistent-schritt-kopf"></div>
+        <div class="fw-card"><div class="fw-rumpf fw-assistent-zusammenfassung"></div></div>
+        <p class="fw-hilfe">{% trans "Nach dem Anlegen geht es direkt weiter zu den Objekten der Liegenschaft." %}</p>
+    </section>
+    {% endif %}
+
+    <div class="fw-assistent-fuss breit">
+        {% if ist_neu %}<button type="button" class="fw-btn" data-assistent-zurueck data-assistent-nur-js>{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
+        <span class="stand" data-assistent-nur-js></span>{% endif %}
+        <div class="rechts">
+            <a href="{% if ist_neu %}/neu/liegenschaften/{% else %}/neu/liegenschaften/{{ lg.id }}/{% endif %}" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+            {% if ist_neu %}<button type="button" class="fw-btn fw-primary" data-assistent-weiter data-assistent-nur-js>{% trans "Weiter" %} {% zeichen 'weiter' %}</button>{% endif %}
+            <button type="submit" class="fw-btn fw-primary"{% if ist_neu %} data-assistent-absenden{% endif %}>{% zeichen 'speichern' klasse='mr-1.5' %}{% if ist_neu %}{% trans "Liegenschaft anlegen" %}{% else %}{% trans "Speichern" %}{% endif %}</button>
+        </div>
     </div>
+    {% if ist_neu %}</div></div>{% else %}</div>{% endif %}
 </form>
 {% endblock %}

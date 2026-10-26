@@ -60,7 +60,7 @@
 </div>
 
 <!-- Karten-Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+<div class="fw-raster m2 l3">
     {% for row in rows %}
     <div class="fw-card fw-nomb fw-rumpf">
         <div class="flex items-start justify-between gap-3 mb-3">
@@ -128,7 +128,7 @@
         {% endif %}
     </div>
     {% empty %}
-    <div class="md:col-span-2 lg:col-span-3 fw-card fw-nomb">
+    <div class="md:col-span-2 fw-lg-col-span-3 fw-card fw-nomb">
         <div class="fw-leer"><b>{% if q or branche_filter %}{% trans "Keine Treffer" %}{% else %}{% trans "Noch keine Dienstleister erfasst" %}{% endif %}</b>
         {% trans "Handwerker werden in der klassischen Ansicht erfasst." %}</div>
     </div>

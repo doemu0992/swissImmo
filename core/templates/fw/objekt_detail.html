@@ -103,7 +103,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 
 <!-- ===== BEREICH: STAMMDATEN ===== -->
 <div data-panel="obj" id="obj-stammdaten">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start mb-4">
+    <div class="fw-raster l2 items-start mb-4">
         <!-- Aktueller Mieter -->
         <div class="fw-card fw-nomb">
             <div class="fw-kopf"><span class="fw-t">{% trans "Aktuelle Vermietung" %}</span></div>
@@ -296,7 +296,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Sollmietzins / Gratismonat erfassen" %}</h2></div>
         <div class="fw-rumpf">
-        <form method="post" action="/neu/sollmietzins/" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <form method="post" action="/neu/sollmietzins/" class="fw-raster r4">
             {% csrf_token %}
             <input type="hidden" name="einheit_id" value="{{ e.id }}">
             <div><label class="fw-label mb-1">{% trans "Gültig ab" %} <span class="fw-pflicht">*</span></label>
@@ -318,7 +318,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <p class="fw-klein mt-1">{% trans "Neue Verträge übernehmen die Basis" %}</p></div>
             <div><label class="fw-label mb-1">{% trans "Bemerkung" %}</label>
                 <input name="notiz" placeholder="{% trans 'z.B. Gratismonat' %}" class="fw-feld w-full"></div>
-            <div class="sm:col-span-4">
+            <div class="fw-col-span-4">
                 {% comment %}
                     Die Schaltfläche trug bisher die Klasse sm:col-span-4 auf dem <label>
                     selbst — anklickbar war damit das ganze, formularbreite Band direkt
@@ -337,7 +337,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     {% if e.ist_einstellplatz %}{% blocktrans trimmed %}Diese Zeile stellt den Mietzins <b>vollständig auf 0.00</b> — verrechnet wird nur noch <span id="smz-zuzahlen">die Nebenkosten</span>.{% endblocktrans %}{% else %}{% blocktrans trimmed %}Diese Zeile stellt den Nettomietzins <b>vollständig auf 0.00</b> — verrechnet wird nur noch <span id="smz-zuzahlen">die Nebenkosten</span>.{% endblocktrans %}{% endif %}
                 </p>
             </div>
-            <div class="sm:col-span-4">
+            <div class="fw-col-span-4">
                 <button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Sollmietzins speichern" %}</button>
             </div>
         </form>
@@ -604,7 +604,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Ausstattungselement erfassen" %}</h2></div>
         <div class="fw-rumpf">
-        <form method="post" action="/neu/objekte/{{ e.id }}/ausstattung/" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <form method="post" action="/neu/objekte/{{ e.id }}/ausstattung/" enctype="multipart/form-data" class="fw-raster r3">
             {% csrf_token %}
             <div><label class="fw-label mb-1">{% trans "Raum *" %}</label>
                 <input name="raum" list="raumliste" required placeholder="{% trans 'z.B. Küche' %}" class="fw-feld w-full">
@@ -633,11 +633,11 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <input type="date" name="garantie_bis" class="fw-feld w-full"></div>
             <div><label class="fw-label mb-1">{% trans "Menge" %}</label>
                 <input name="menge" inputmode="numeric" value="1" class="fw-feld w-full"></div>
-            <div class="sm:col-span-2"><label class="fw-label mb-1">{% trans "Notiz" %}</label>
+            <div class="fw-col-span-2"><label class="fw-label mb-1">{% trans "Notiz" %}</label>
                 <input name="notiz" class="fw-feld w-full"></div>
             <div><label class="fw-label mb-1">{% trans "Foto" %}</label>
                 <input type="file" name="foto" accept="image/*" class="fw-datei w-full"></div>
-            <div class="sm:col-span-3 flex justify-end"><button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Erfassen" %}</button></div>
+            <div class="fw-col-span-3 flex justify-end"><button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Erfassen" %}</button></div>
         </form>
     </div>
     </div>
@@ -720,11 +720,11 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                                 <input type="date" name="garantie_bis" value="{{ row.a.garantie_bis|date:'Y-m-d' }}" class="fw-feld w-full"></div>
                             <div><label class="fw-label mb-1">{% trans "Menge" %}</label>
                                 <input name="menge" value="{{ row.a.menge }}" inputmode="numeric" class="fw-feld w-full"></div>
-                            <div class="sm:col-span-2"><label class="fw-label mb-1">{% trans "Notiz" %}</label>
+                            <div class="fw-col-span-2"><label class="fw-label mb-1">{% trans "Notiz" %}</label>
                                 <input name="notiz" value="{{ row.a.notiz }}" class="fw-feld w-full"></div>
-                            <div class="sm:col-span-2"><label class="fw-label mb-1">{% trans "Foto" %} {% if row.a.foto %}<span class="fw-mutet">{% trans "(ersetzt bestehendes)" %}</span>{% endif %}</label>
+                            <div class="fw-col-span-2"><label class="fw-label mb-1">{% trans "Foto" %} {% if row.a.foto %}<span class="fw-mutet">{% trans "(ersetzt bestehendes)" %}</span>{% endif %}</label>
                                 <input type="file" name="foto" accept="image/*" class="fw-datei w-full"></div>
-                            <div class="col-span-2 sm:col-span-4 flex items-center gap-2 justify-end">
+                            <div class="col-span-2 fw-col-span-4 flex items-center gap-2 justify-end">
                                 <button type="button" onclick="document.getElementById('edit-{{ row.a.id }}').classList.add('hidden')" class="fw-btn">{% trans "Abbrechen" %}</button>
                                 <button class="fw-btn fw-primary">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}</button>
                             </div>
@@ -782,9 +782,9 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                             <input type="date" name="installations_datum" value="{{ g.installations_datum|date:'Y-m-d' }}" class="fw-feld w-full"></div>
                         <div><label class="fw-label mb-1">{% trans "Garantie bis" %}</label>
                             <input type="date" name="garantie_bis" value="{{ g.garantie_bis|date:'Y-m-d' }}" class="fw-feld w-full"></div>
-                        <div class="col-span-2 sm:col-span-3"><label class="fw-label mb-1">{% trans "Notiz" %}</label>
+                        <div class="col-span-2 fw-col-span-3"><label class="fw-label mb-1">{% trans "Notiz" %}</label>
                             <input name="notiz" value="{{ g.notiz }}" class="fw-feld w-full"></div>
-                        <div class="col-span-2 sm:col-span-3 flex items-center gap-2 justify-end">
+                        <div class="col-span-2 fw-col-span-3 flex items-center gap-2 justify-end">
                             <button type="button" onclick="document.getElementById('gedit-{{ g.id }}').classList.add('hidden')" class="fw-btn">{% trans "Abbrechen" %}</button>
                             <button class="fw-btn fw-primary">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}</button>
                         </div>
@@ -799,7 +799,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Gerät erfassen" %}</h2></div>
         <div class="fw-rumpf">
-        <form method="post" action="/neu/geraet/" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <form method="post" action="/neu/geraet/" class="fw-raster r3">
             {% csrf_token %}
             <input type="hidden" name="einheit_id" value="{{ e.id }}">
             <div><label class="fw-label mb-1">{% trans "Kategorie" %} <span class="fw-pflicht">*</span></label>
@@ -818,9 +818,9 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <input type="date" name="installations_datum" class="fw-feld w-full"></div>
             <div><label class="fw-label mb-1">{% trans "Garantie bis" %}</label>
                 <input type="date" name="garantie_bis" class="fw-feld w-full"></div>
-            <div class="sm:col-span-3"><label class="fw-label mb-1">{% trans "Notiz" %}</label>
+            <div class="fw-col-span-3"><label class="fw-label mb-1">{% trans "Notiz" %}</label>
                 <input name="notiz" class="fw-feld w-full"></div>
-            <div class="sm:col-span-3">
+            <div class="fw-col-span-3">
                 <button class="fw-btn fw-primary">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}</button>
             </div>
         </form>
@@ -858,7 +858,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                             <input name="standort" value="{{ z.standort }}" class="fw-feld w-full"></div>
                         <div><label class="fw-label mb-1">{% trans "Aktueller Stand" %}</label>
                             <input name="aktueller_stand" value="{{ z.aktueller_stand|floatformat:2 }}" inputmode="decimal" class="fw-feld w-full"></div>
-                        <div class="col-span-2 sm:col-span-4 flex items-center gap-2 justify-end">
+                        <div class="col-span-2 fw-col-span-4 flex items-center gap-2 justify-end">
                             <button type="button" onclick="document.getElementById('zedit-{{ z.id }}').classList.add('hidden')" class="fw-btn">{% trans "Abbrechen" %}</button>
                             <button class="fw-btn fw-primary">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}</button>
                         </div>
@@ -873,7 +873,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Zähler erfassen" %}</h2></div>
         <div class="fw-rumpf">
-        <form method="post" action="/neu/zaehler/" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <form method="post" action="/neu/zaehler/" class="fw-raster r4">
             {% csrf_token %}
             <input type="hidden" name="einheit_id" value="{{ e.id }}">
             <div><label class="fw-label mb-1">{% trans "Typ" %} <span class="fw-pflicht">*</span></label>
@@ -884,7 +884,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <input name="standort" placeholder="{% trans 'z.B. Keller' %}" class="fw-feld w-full"></div>
             <div><label class="fw-label mb-1">{% trans "Aktueller Stand" %}</label>
                 <input name="aktueller_stand" inputmode="decimal" placeholder="0.00" class="fw-feld w-full"></div>
-            <div class="sm:col-span-4">
+            <div class="fw-col-span-4">
                 <button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Zähler speichern" %}</button>
             </div>
         </form>
@@ -949,7 +949,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Schlüssel erfassen" %}</h2></div>
         <div class="fw-rumpf">
-        <form method="post" action="/neu/schluessel/" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <form method="post" action="/neu/schluessel/" class="fw-raster r4">
             {% csrf_token %}
             <input type="hidden" name="einheit_id" value="{{ e.id }}">
             <div><label class="fw-label mb-1">{% trans "Typ" %} <span class="fw-pflicht">*</span></label>
@@ -959,7 +959,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <input name="schluessel_nummer" required class="fw-feld w-full"></div>
             <div><label class="fw-label mb-1">{% trans "Anzahl Exemplare" %}</label>
                 <input name="anzahl" type="number" min="1" value="3" class="fw-feld w-full"></div>
-            <div class="sm:col-span-4">
+            <div class="fw-col-span-4">
                 <button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Schlüssel speichern" %}</button>
             </div>
         </form>

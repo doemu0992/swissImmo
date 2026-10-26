@@ -55,7 +55,7 @@
     <div class="fw-ember-zahlen">
         <a href="/neu/objekte/{{ lg_query }}"><span>{% trans "Mietobjekte" %}</span><b class="fw-num">{{ bento.orte.gesamt }}</b></a>
         <a href="/neu/schaeden/{{ lg_query }}"><span>{% trans "Offene Tickets" %}</span><b class="fw-num">{{ bento.tickets_offen }}</b></a>
-        <a href="/neu/debitoren/?ampel=rot{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"><span>{% trans "Überfällig" %}</span><b class="fw-num">{{ bento.rueckstand.n }}</b></a>
+        <a href="/neu/termine/kalender/"><span>{% trans "Termine diese Woche" %}</span><b class="fw-num">{{ bento.woche.anzahl }}</b></a>
     </div>
 </div>
 

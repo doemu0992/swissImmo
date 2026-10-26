@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n chf %}
+{% load zeichen i18n chf hilfe %}
 {% block title %}{% trans "Leerstand" %} — swissImmo{% endblock %}
 
 {% block content %}
@@ -20,12 +20,12 @@
 
 <div class="fw-kpis">
     <div class="fw-kpi fw-accent">
-        <span class="fw-l">{% trans "Mietausfall pro Monat" %}</span>
+        <span class="fw-l">{% trans "Mietausfall pro Monat" %} {% hilfe 'ausfall' %}</span>
         <span class="fw-v fw-num">CHF {{ c.ausfall_monat|chf:0 }}</span>
         <span class="fw-f">{% blocktrans count n=c.n_leer %}{{ n }} Einheit steht leer{% plural %}{{ n }} Einheiten stehen leer{% endblocktrans %}</span>
     </div>
     <div class="fw-kpi">
-        <span class="fw-l">{% trans "Leerstandsquote" %}</span>
+        <span class="fw-l">{% trans "Leerstandsquote" %} {% hilfe 'leerstandsquote' %}</span>
         <span class="fw-v fw-num{% if c.quote and c.quote > 3 %} fw-warn{% endif %}">{% if c.quote is not None %}{{ c.quote|floatformat:1 }} %{% else %}–{% endif %}</span>
         <span class="fw-f">{% blocktrans with n=c.n_leer m=c.gesamt %}{{ n }} von {{ m }} Einheiten{% endblocktrans %}</span>
     </div>
@@ -90,7 +90,7 @@
 
 {% if c.versorgt %}
 <details class="fw-klapp">
-    <summary>{% trans "Frei, aber versorgt" %} <span class="fw-neben">{{ c.versorgt|length }}</span></summary>
+    <summary>{% trans "Frei, aber versorgt" %} {% hilfe 'versorgt' %} <span class="fw-neben">{{ c.versorgt|length }}</span></summary>
     <ul class="fw-liste">
         {% for z in c.versorgt %}
         <li><a href="/neu/objekte/{{ z.e.id }}/" class="fw-zelle-titel">{{ z.e.bezeichnung }}</a> <span class="fw-zelle-sub">{{ z.lg.strasse }} · {% blocktrans with d=z.nachmieter_ab|date:"d.m.Y" %}Nachmieter ab {{ d }}{% endblocktrans %}</span></li>

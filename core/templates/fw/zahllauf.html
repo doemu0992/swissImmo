@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n hilfe %}
 {% load chf %}
 {% block title %}{% trans "Zahllauf" %} — swissImmo{% endblock %}
 
@@ -8,7 +8,7 @@
 <div class="fw-phead fw-phead-lauf">
     <div>
         <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a><span aria-hidden="true">/</span><span>{% trans "Zahllauf" %}</span></nav>
-        <h1>{% trans "Zahllauf" %}</h1>
+        <h1>{% trans "Zahllauf" %} {% hilfe 'zahllauf' %}</h1>
         <p>
             {% trans "Rechnungen auswählen → Zahlungsdatei (pain.001) erzeugen → nach der Bankbestätigung den ganzen Lauf auf einmal verbuchen" %}
             {% if aktive_lg %}· {% trans "gefiltert auf" %} <span class="fw-strong">{{ aktive_lg.strasse }}</span>
@@ -18,6 +18,19 @@
     <div class="fw-phead-knoepfe">
         <a href="/neu/kreditoren/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}" class="fw-btn">{% zeichen 'zurueck' %}{% trans "Zurück zu den Kreditoren" %}</a>
     </div>
+</div>
+
+<div class="fw-hilfebox" data-hilfebox="zahllauf">
+    <span class="fw-hi" aria-hidden="true">{% zeichen 'hinweis' %}</span>
+    <div class="fw-hilfebox-inhalt">
+        <b>{% trans "So läuft der Zahllauf" %}</b>
+        <ol>
+            <li>{% trans "Freigegebene Lieferantenrechnungen auswählen." %}</li>
+            <li>{% trans "Zahlungsdatei (pain.001) erzeugen und im E-Banking hochladen." %}</li>
+            <li>{% trans "Nach der Bankbestätigung den Lauf gesammelt verbuchen." %}</li>
+        </ol>
+    </div>
+    <button type="button" class="zu" aria-label="{% trans 'Hinweis ausblenden' %}">{% zeichen 'schliessen' %}</button>
 </div>
 
 {% if not verwaltung_iban %}

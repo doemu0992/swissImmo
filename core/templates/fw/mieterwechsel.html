@@ -1,18 +1,31 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n hilfe %}
 {% block title %}{% trans "Mieterwechsel" %} · swissImmo{% endblock %}
 {% block content %}
 
 <div class="fw-phead">
     <div>
         <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Akten" %}</a><span aria-hidden="true">/</span><span>{% trans "Mieterwechsel" %}</span></nav>
-        <h1>{% trans "Mieterwechsel-Cockpit" %}</h1>
+        <h1>{% trans "Mieterwechsel-Cockpit" %} {% hilfe 'ersatzmieter' %}</h1>
         <p>{% blocktrans trimmed with g=gekuendigt_n a=auslaufend_n %}Gekündigte <span class="fw-faint">({{ g }})</span> und auslaufende <span class="fw-faint">({{ a }})</span> Verträge — von Rücknahme bis Übergabe an den Nachmieter.{% endblocktrans %}</p>
     </div>
     <div class="fw-phead-knoepfe">
         <span class="fw-chip fw-mut"><b>{{ offen }}</b> {% trans "offen" %}</span>
         <span class="fw-chip fw-crit"><b>{{ dringend }}</b> {% trans "≤ 60 Tage" %}</span>
     </div>
+</div>
+
+<div class="fw-hilfebox" data-hilfebox="mieterwechsel">
+    <span class="fw-hi" aria-hidden="true">{% zeichen 'hinweis' %}</span>
+    <div class="fw-hilfebox-inhalt">
+        <b>{% trans "So läuft ein Mieterwechsel" %}</b>
+        <ol>
+            <li>{% trans "Kündigung erfassen — Termin und Auszugscheckliste entstehen automatisch." %}</li>
+            <li>{% trans "Objekt ausschreiben und Bewerbungen vergleichen." %}</li>
+            <li>{% trans "Nachmieter-Vertrag erfassen, Wohnung abnehmen, Schlussabrechnung und Kaution abschliessen." %}</li>
+        </ol>
+    </div>
+    <button type="button" class="zu" aria-label="{% trans 'Hinweis ausblenden' %}">{% zeichen 'schliessen' %}</button>
 </div>
 
 <div class="fw-filters items-center">

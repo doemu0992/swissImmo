@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n hilfe %}
 {% load chf %}
 {% block title %}{% trans "Bankkonten" %} — swissImmo{% endblock %}
 
@@ -22,7 +22,7 @@
         <div class="fw-l">{% trans "Konten hinterlegt" %}</div><div class="fw-v">{{ anzahl }}</div>
     </div>
     <div class="fw-kpi">
-        <div class="fw-l">{% trans "QR-IBAN aktiv" %}</div><div class="fw-v">{{ qr_count }}</div>
+        <div class="fw-l">{% trans "QR-IBAN aktiv" %} {% hilfe 'qr_iban' %}</div><div class="fw-v">{{ qr_count }}</div>
     </div>
     <div class="fw-kpi">
         <div class="fw-l">{% trans "Liegenschaft ohne IBAN" %}</div><div class="fw-v{% if fehlend %} fw-warn{% endif %}">{{ fehlend }}</div>
@@ -30,7 +30,7 @@
 </div>
 
 <!-- Konten-Karten -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+<div class="fw-raster l2 mb-6">
     {% for k in konten %}
     <div class="fw-card fw-nomb">
         <div class="fw-kopf">
@@ -67,7 +67,7 @@
         {% endif %}
     </div>
     {% empty %}
-    <div class="lg:col-span-2 fw-card fw-nomb">
+    <div class="fw-lg-col-span-2 fw-card fw-nomb">
         <div class="fw-leer">
             <b>{% trans "Noch keine Bankverbindung hinterlegt" %}</b>
             {% trans "Erfasse die IBAN bei der Liegenschaft, damit QR-Rechnungen erzeugt werden können." %}

@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n hilfe %}
 {% block title %}{% blocktrans with name=v.mieter.display_name %}Untervermietung — {{ name }}{% endblocktrans %}{% endblock %}
 {% block content %}
 <nav class="fw-brotkrume mb-2.5">
@@ -12,7 +12,7 @@
 
 <div class="fw-phead">
     <div>
-        <h1>{% trans "Untervermietung — Zustimmung / Ablehnung" %}</h1>
+        <h1>{% trans "Untervermietung — Zustimmung / Ablehnung" %} {% hilfe 'untermiete' %}</h1>
         <p>Art. 262 OR · {{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }}, {{ v.einheit.liegenschaft.plz }} {{ v.einheit.liegenschaft.ort }}</p>
     </div>
 </div>

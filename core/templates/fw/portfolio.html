@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n chf diagramm %}
+{% load zeichen i18n chf diagramm hilfe %}
 {% block title %}{% trans "Portfolio" %} — swissImmo{% endblock %}
 
 {% block content %}
@@ -36,17 +36,17 @@
         <span class="fw-f">{% blocktrans with aufwand=u.aufwand_jahr|chf:0 %}Betriebsaufwand 12 Mt. CHF {{ aufwand }}{% endblocktrans %}</span>
     </div>
     <div class="fw-kpi">
-        <span class="fw-l">{% trans "Nettorendite" %}</span>
+        <span class="fw-l">{% trans "Nettorendite" %} {% hilfe 'rendite' %}</span>
         <span class="fw-v fw-num">{% if u.netto is not None %}{{ u.netto|floatformat:2 }} %{% else %}–{% endif %}</span>
         <span class="fw-f">{% if u.brutto is not None %}{% blocktrans with b=u.brutto|floatformat:2 %}brutto {{ b }} % · auf Verkehrswert{% endblocktrans %}{% else %}{% trans "kein Verkehrswert erfasst" %}{% endif %}</span>
     </div>
     <div class="fw-kpi">
-        <span class="fw-l">{% trans "Leerstandsquote" %}</span>
+        <span class="fw-l">{% trans "Leerstandsquote" %} {% hilfe 'leerstandsquote' %}</span>
         <span class="fw-v fw-num{% if u.leer_quote and u.leer_quote > 5 %} fw-warn{% endif %}">{% if u.leer_quote is not None %}{{ u.leer_quote|floatformat:1 }} %{% else %}–{% endif %}</span>
         <span class="fw-f">{% blocktrans with n=u.leer m=u.objekte %}{{ n }} von {{ m }} Objekten leer{% endblocktrans %}</span>
     </div>
     <div class="fw-kpi">
-        <span class="fw-l">{% trans "Zahlungsquote" %}</span>
+        <span class="fw-l">{% trans "Zahlungsquote" %} {% hilfe 'zahlungsquote' %}</span>
         <span class="fw-v fw-num{% if u.zahlungsquote is not None and u.zahlungsquote < 95 %} fw-warn{% endif %}">{% if u.zahlungsquote is not None %}{{ u.zahlungsquote|floatformat:1 }} %{% else %}–{% endif %}</span>
         <span class="fw-f">{% blocktrans with s=u.offen_summe|chf:0 n=u.ueberfaellig_n %}offen CHF {{ s }} · {{ n }} überfällig{% endblocktrans %}</span>
     </div>

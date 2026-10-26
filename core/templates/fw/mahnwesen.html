@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n rechte %}
+{% load zeichen i18n rechte hilfe %}
 {% load chf %}
 {% block title %}{% trans "Mahnwesen" %} — swissImmo{% endblock %}
 
@@ -8,7 +8,7 @@
 <div class="fw-phead fw-phead-lauf">
     <div>
         <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a><span aria-hidden="true">/</span><span>{% trans "Mahnwesen" %}</span></nav>
-        <h1>{% trans "Mahnwesen" %}</h1>
+        <h1>{% trans "Mahnwesen" %} {% hilfe 'mahnstufen' %}</h1>
         <p>{% trans "Überfällige Forderungen nach Mahnstufe · Mahnung inkl. QR-Rechnung direkt erzeugen" %}
             {% if aktive_lg %}· {% trans "gefiltert auf" %} <span class="fw-strong">{{ aktive_lg.strasse }}</span>
             <a href="/neu/mahnwesen/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
@@ -18,6 +18,20 @@
         <a href="/neu/mahnstufen/" class="fw-btn">{% zeichen 'einstellungen' %}{% trans "Mahnstufen anpassen" %}</a>
         <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-btn">{% zeichen 'bericht' %}{% trans "Altersstruktur (OP-Aging) ansehen" %}</a>
     </div>
+</div>
+
+<div class="fw-hilfebox" data-hilfebox="mahnlauf">
+    <span class="fw-hi" aria-hidden="true">{% zeichen 'hinweis' %}</span>
+    <div class="fw-hilfebox-inhalt">
+        <b>{% trans "So läuft der Mahnlauf" %}</b>
+        <ol>
+            <li>{% trans "Überfällige Rechnungen erscheinen nach Mahnstufe; die Stufe ergibt sich aus den Tagen seit Fälligkeit." %}</li>
+            <li>{% trans "«Trockenlauf ansehen» zeigt, was der Lauf täte — ohne etwas zu versenden." %}</li>
+            <li>{% trans "«Mahnlauf ausführen» erstellt die Mahnungen mit QR-Rechnung und hält jeden Schritt in der Historie fest." %}</li>
+            <li>{% trans "Nach der Fristansetzung (Art. 257d OR) folgt bei Bedarf die Betreibung." %}</li>
+        </ol>
+    </div>
+    <button type="button" class="zu" aria-label="{% trans 'Hinweis ausblenden' %}">{% zeichen 'schliessen' %}</button>
 </div>
 
 <!-- Stufen-KPI -->
@@ -263,7 +277,7 @@
     {% csrf_token %}
     {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
     <div class="fw-ht">
-        <label class="fw-haekchen"><input type="checkbox" name="mit_zins" class="fw-akzent">{% blocktrans with zins=verzugszins %}Verzugszins ({{ zins }}%) berechnen{% endblocktrans %}</label>
+        <label class="fw-haekchen"><input type="checkbox" name="mit_zins" class="fw-akzent">{% blocktrans with zins=verzugszins %}Verzugszins ({{ zins }}%) berechnen{% endblocktrans %}</label> {% hilfe 'verzugszins' %}
         <label class="fw-haekchen"><input type="checkbox" name="kein_versand" class="fw-akzent">{% trans "Testlauf: nur erstellen, keine E-Mails versenden" %}</label>
     </div>
     <a href="/neu/mahnwesen/trockenlauf/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}" class="fw-btn">{% zeichen 'suchen' %}{% trans "Trockenlauf ansehen" %}</a>

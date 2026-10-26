@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen hilfe %}
 {% load chf %}
 {% block title %}Zahlungsverzug (Art. 257d) — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
@@ -11,7 +11,7 @@
 
 <div class="fw-phead">
     <div>
-        <h1>Zahlungsverzug — Frist ansetzen</h1>
+        <h1>Zahlungsverzug — Frist ansetzen {% hilfe 'art_257d' %}</h1>
         <p>Art. 257d OR · {{ v.einheit.bezeichnung }}, {{ lg.strasse }}, {{ lg.plz }} {{ lg.ort }}</p>
     </div>
 </div>

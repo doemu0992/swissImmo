@@ -181,8 +181,13 @@ def fw_nebenkosten_detail(request, pk):
         ('abrechnung', _('Mieter-Abrechnung'), len(abrechnungen) or None),
         ('belege', _('Belege'), (len(result.get('belege_details', [])) or belege.count()) or None),
     ]
+    from core.services.nk_prozess import schritte as nk_schritte
+    prozess = nk_schritte(p, total_kosten=result.get('total_kosten', Decimal('0.00')),
+                          warnungen=result.get('warnungen', []), akonto_vorschlaege=akonto_vorschlaege,
+                          hkvo_aktiv=getattr(lg, 'hkvo_aktiv', False) if lg else False,
+                          hkvo_angewendet=result.get('hkvo_angewendet', False))
     return render(request, 'fw/nebenkosten_detail.html', {
-        **basis, 'nav': 'nebenkosten', 'p': p,
+        **basis, 'nav': 'nebenkosten', 'p': p, 'prozess': prozess,
         'total_kosten': result.get('total_kosten', Decimal('0.00')),
         'total_akonto': total_akonto,
         'saldo_total': total_kosten_verteilt - total_akonto,

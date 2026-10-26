@@ -15,6 +15,11 @@ from portfolio.models import Liegenschaft
 from ._helfer import _team_user, _basis_objekte
 
 
+def _formular(body, feld):
+    """Das Formular, das `feld` enthält — unabhängig von seiner Gestaltungsklasse."""
+    return body[body.rindex('<form', 0, body.index(f'name="{feld}"')):]
+
+
 GUELTIGE_IBAN = 'CH93 0076 2011 6238 5295 7'
 
 
@@ -70,7 +75,7 @@ class LiegenschaftFormular(TestCase):
         Fehler stünde dort ein leeres Feld statt der Eingabe. Gemessen mit
         Chromium bei 390 px, bevor dieser Test entstand."""
         body = self.c.post(self.pfad, self._daten(baujahr='ca. 1970')).content.decode()
-        self.assertNotIn('type="number"', body[body.index('<form method="post" class="max-w-3xl'):])
+        self.assertNotIn('type="number"', _formular(body, 'strasse'))
         self.assertIn('inputmode="numeric"', body)
 
     def test_unlesbarer_betrag_steht_unveraendert_im_feld(self, _gwr):
@@ -352,7 +357,7 @@ class PersonFormular(TestCase):
 
     def test_keine_zahlenfelder_die_eingaben_verwerfen(self):
         body = self.c.get(self.pfad).content.decode()
-        self.assertNotIn('type="number"', body[body.index('<form method="post" class="max-w-3xl'):])
+        self.assertNotIn('type="number"', _formular(body, 'nachname'))
 
     def test_personenzahl_mit_tippfehler(self):
         self._fehler_am_feld(self.c.post(self.pfad, self._daten(haushalt_kinder='40')), 'haushalt_kinder')
@@ -466,7 +471,7 @@ class VertragBearbeiten(TestCase):
 
     def test_keine_zahlenfelder_die_eingaben_verwerfen(self):
         body = self.c.get(self.pfad).content.decode()
-        self.assertNotIn('type="number"', body[body.index('<form method="post" class="max-w-3xl'):])
+        self.assertNotIn('type="number"', _formular(body, 'anzahl_personen'))
 
     def test_gueltige_aenderung_wird_gespeichert(self):
         r = self.c.post(self.pfad, self._daten(kuendigungsfrist='6', nebenraeume='Estrich'))

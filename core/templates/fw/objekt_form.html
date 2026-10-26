@@ -19,7 +19,7 @@
     </div>
 </div>
 
-<form method="post" class="max-w-3xl" novalidate>
+<form method="post" class="fw-formseite" novalidate>
     {% csrf_token %}
     {% comment %} Prüfung und Meldung am Feld macht der Server (Audit Etappe 2), wie
        beim Liegenschaftsformular — deshalb `novalidate`. {% endcomment %}
@@ -38,7 +38,7 @@
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if vorwahl_lg == lg.id|stringformat:'s' %}selected{% endif %}>{{ lg.strasse }}, {{ lg.plz }} {{ lg.ort }}</option>{% endfor %}
             </select>
             {% include 'fw/_feldfehler.html' with f=None fehler=feld_fehler.liegenschaft_id feld_id="id_liegenschaft_id" %}</div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="fw-raster r3">
             {% include 'fw/_feld.html' with f=form.bezeichnung label=_("Bezeichnung") pflicht=True platzhalter=_("z. B. 3.5-Zi EG") %}
             <div><label for="id_typ" class="fw-label mb-1">{% trans "Typ" %}</label>
                 <select id="id_typ" name="typ" class="fw-feld w-full"{% if form.typ.errors %} aria-invalid="true" aria-describedby="id_typ_fehler"{% endif %}>
@@ -53,19 +53,19 @@
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Fläche & Details" %}</h2></div>
         <div class="fw-rumpf space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div class="fw-raster r4">
             {% include 'fw/_feld.html' with f=form.zimmer label=_("Zimmer") inputmodus="decimal" %}
             {% include 'fw/_feld.html' with f=form.flaeche_m2 label=_("Fläche (m²)") inputmodus="decimal" %}
             {% include 'fw/_feld.html' with f=form.volumen_m3 label=_("Volumen (m³)") inputmodus="decimal" %}
             {% include 'fw/_feld.html' with f=form.wertquote label=_("Wertquote (‰)") inputmodus="decimal" platzhalter=_("STWE / NK-Verteilung") %}
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div class="fw-raster r4">
             {% include 'fw/_feld.html' with f=form.ewid label=_("EWID") %}
             {% include 'fw/_feld.html' with f=form.keller label=_("Kellerabteil") %}
             {% include 'fw/_feld.html' with f=form.estrich label=_("Estrich") %}
             {% include 'fw/_feld.html' with f=form.oto_dose label=_("OTO-Dose (Glasfaser)") %}
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div class="fw-raster r4">
             {% include 'fw/_feld.html' with f=form.bodenbelag label=_("Bodenbelag (Wohnraum)") %}
             {% include 'fw/_feld.html' with f=form.bodenbelag_nassraum label=_("Bodenbelag (Nassraum)") %}
             {% include 'fw/_feld.html' with f=form.letzte_renovation label=_("Letzte Renovation (Jahr)") inputmodus="numeric" %}
@@ -93,7 +93,7 @@
         <div class="fw-kopf"><h2>{% trans "Soll-Mietzins" %}</h2></div>
         <div class="fw-rumpf space-y-4">
         {% if ist_neu %}
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="fw-raster r3">
             {% include 'fw/_feld.html' with f=form.nettomiete_aktuell label=_("Anfangs-Nettomiete (CHF)") inputmodus="decimal" platzhalter="0.00" klasse="tabular-nums" %}
             {% include 'fw/_feld.html' with f=form.nebenkosten_aktuell label=_("Nebenkosten (CHF)") inputmodus="decimal" platzhalter="0.00" klasse="tabular-nums" %}
             <div><label for="id_soll_gueltig_ab" class="fw-label mb-1">{% trans "Gültig ab" %}</label>

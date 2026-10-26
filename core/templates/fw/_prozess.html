@@ -1,0 +1,13 @@
+{% load i18n %}{% comment %} Prozessleiste: `schritte` = Liste von {nr, titel, info, zustand, url, hier}
+   (z. B. core/services/nk_prozess.py). Zustand: erledigt · warnung · offen · gesperrt · entfaellt. {% endcomment %}
+<ol class="fw-prozess" aria-label="{{ titel|default:_('Ablauf') }}">
+    {% for s in schritte %}
+    <li class="{{ s.zustand }}{% if s.hier %} hier{% endif %}">
+        {% if s.url and s.zustand != 'gesperrt' %}<a href="{{ s.url }}"{% if s.hier %} aria-current="step"{% endif %}>{% else %}<span class="schritt">{% endif %}
+            <span class="nr" aria-hidden="true">{% if s.zustand == 'erledigt' %}✓{% elif s.zustand == 'warnung' %}!{% elif s.zustand == 'entfaellt' %}–{% else %}{{ s.nr }}{% endif %}</span>
+            <span>{{ s.titel }}<small>{{ s.info }}</small></span>
+            <span class="sr-only">{% if s.zustand == 'erledigt' %}{% trans "erledigt" %}{% elif s.zustand == 'warnung' %}{% trans "prüfen" %}{% elif s.zustand == 'gesperrt' %}{% trans "noch nicht möglich" %}{% elif s.zustand == 'entfaellt' %}{% trans "entfällt" %}{% else %}{% trans "offen" %}{% endif %}</span>
+        {% if s.url and s.zustand != 'gesperrt' %}</a>{% else %}</span>{% endif %}
+    </li>
+    {% endfor %}
+</ol>
