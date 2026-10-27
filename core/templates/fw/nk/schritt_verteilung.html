@@ -21,7 +21,7 @@
 
 <div class="fw-bento">
     {% for k in kostenarten %}
-    <div class="fw-kachel b-l fw-nkw-kachel" id="ka-{{ k.ka }}">
+    <div class="fw-kachel b-l fw-nk-kachel" id="ka-{{ k.ka }}">
         <div class="fw-kachel-kopf"><h3>{{ k.name }}</h3><b class="fw-num">CHF {{ k.betrag|chf:0 }}</b></div>
         {% if k.ka == 'heizung' %}
         <p class="fw-kachel-text">{% if lg.hkvo_aktiv %}{% blocktrans with g=lg.hkvo_grundkosten_prozent %}Nach HKVO: {{ g }} % Grundkosten nach Volumen, der Rest nach Verbrauch — festgelegt in Schritt 4.{% endblocktrans %}{% else %}{% trans "Nach Volumen (m³), zeitlich nach Heizgradtagen — HKVO lässt sich in Schritt 4 einschalten." %}{% endif %}</p>
@@ -43,10 +43,10 @@
             {% else %}{% trans "Wie erfasst: Schlüssel am Beleg oder Konto." %}{% endif %}
         </p>
         {% if k.raster %}
-        <form method="post" class="fw-nkw-raster" novalidate>
+        <form method="post" class="fw-nk-raster" novalidate>
             {% csrf_token %}<input type="hidden" name="aktion" value="prozente"><input type="hidden" name="kostenart" value="{{ k.ka }}">
             {% if k.summenfehler %}<p class="fw-feldfehler" role="alert">{{ k.summenfehler }}</p>{% endif %}
-            <div class="fw-nkw-felder">
+            <div class="fw-nk-felder">
                 {% for r in k.raster %}
                 <label>{{ r.e.bezeichnung }} %
                     <input name="pct_{{ r.e.id }}" inputmode="decimal" class="fw-feld fw-num" value="{{ r.wert }}"{% if r.fehler %} aria-invalid="true"{% endif %}{% if not kann_schreiben %} readonly{% endif %}>
@@ -57,13 +57,13 @@
         </form>
         {% endif %}
         {% endif %}
-        <div class="fw-nkw-chips">
+        <div class="fw-nk-chips">
             {% for v in k.ausschluesse %}<span class="fw-chip fw-warn">{% blocktrans with name=v.mieter.display_name e=v.einheit.bezeichnung %}Vertrag {{ name }} ({{ e }}) schliesst aus · wird beachtet{% endblocktrans %}</span>{% endfor %}
         </div>
         {% if kann_schreiben and k.vertraege %}
-        <details class="fw-nkw-ausschluss">
+        <details class="fw-nk-ausschluss">
             <summary class="fw-link">{% trans "Vertraglich ausgeschlossen?" %}</summary>
-            <form method="post" class="fw-nkw-zeile">
+            <form method="post" class="fw-nk-zeile">
                 {% csrf_token %}<input type="hidden" name="aktion" value="ausschluss"><input type="hidden" name="kostenart" value="{{ k.ka }}">
                 <select name="vertrag_id" class="fw-feld" aria-label="{% trans 'Vertrag' %}">
                     {% for v in k.vertraege %}<option value="{{ v.id }}">{{ v.einheit.bezeichnung }} · {{ v.mieter.display_name }}</option>{% endfor %}
@@ -89,7 +89,7 @@
     <div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'warnung' %}</span>
         <div class="fw-ht">{% blocktrans count n=result.personen_leer_tage %}{{ n }} Leerstandstag in dieser Periode. Ein leeres Objekt hat keine Personen — wie es tragen soll, legt das Gesetz nicht fest. Ihre Wahl steht im Anhang der Abrechnung.{% plural %}{{ n }} Leerstandstage in dieser Periode. Ein leeres Objekt hat keine Personen — wie es tragen soll, legt das Gesetz nicht fest. Ihre Wahl steht im Anhang der Abrechnung.{% endblocktrans %}</div></div>
     {% endif %}
-    <div class="fw-rumpf fw-nkw-wahl">
+    <div class="fw-rumpf fw-nk-wahl">
         {% for wert, label in leerstand_wahl %}
         <label><input type="radio" name="leerstand_personen" value="{{ wert }}"{% if p.leerstand_personen == wert %} checked{% endif %}{% if not kann_schreiben %} disabled{% endif %}> {{ label }}</label>
         {% endfor %}

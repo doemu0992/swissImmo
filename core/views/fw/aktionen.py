@@ -526,11 +526,13 @@ def fw_nebenkosten_neu(request):
     from core.auth import log_aktion
     from core.services.nk_wizard import periode_pruefen
     from ._basis import _global_filter
+    from .nk_wizard import einstieg_assistent
     basis = _global_filter(request)
 
     def _formular(eingabe, fehler, status):
         return render(request, 'fw/nk/neu.html', {
             **basis, 'nav': 'nebenkosten', 'eingabe': eingabe, 'fehler': fehler,
+            'assistent': einstieg_assistent(basis.get('lg_query', '')),
             'liegenschaften': Liegenschaft.objects.order_by('strasse')}, status=status)
 
     if request.method != 'POST':

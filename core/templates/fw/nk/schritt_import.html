@@ -43,7 +43,7 @@
 
     {% if zeilen is not None %}
     <div class="fw-kopf"><h2>{% trans "3 · Vorschau" %}</h2>
-        <span class="fw-nkw-chips"><span class="fw-chip fw-good">{% blocktrans count n=n_ok %}{{ n }} neu{% plural %}{{ n }} neu{% endblocktrans %}</span>
+        <span class="fw-nk-chips"><span class="fw-chip fw-good">{% blocktrans count n=n_ok %}{{ n }} neu{% plural %}{{ n }} neu{% endblocktrans %}</span>
             {% if n_doppelt %}<span class="fw-chip fw-mut">{% blocktrans count n=n_doppelt %}{{ n }} schon erfasst{% plural %}{{ n }} schon erfasst{% endblocktrans %}</span>{% endif %}
             {% if n_fehler %}<span class="fw-chip fw-crit">{% blocktrans count n=n_fehler %}{{ n }} mit Fehler{% plural %}{{ n }} mit Fehler{% endblocktrans %}</span>{% endif %}</span></div>
     {% for z in zeilen %}

@@ -414,4 +414,31 @@ test('Vertrag: Leiste einreihig, Vorschau unter dem Inhalt, nichts quer', async 
   expect(m.rahmen).toBeLessThanOrEqual(390 - 16);
   expect(m.vorschauOben).toBeGreaterThanOrEqual(m.inhaltUnten);
   expect(m.quer, `die Seite scrollt ${m.quer} px quer`).toBeLessThanOrEqual(0);
+
+// ---- Assistenten-Standard, server-seitig (NK-Wizard, 27.10.2026): gemessen bei 390 × 844 ----
+// Zwei Regeln, deren Wirkung nur der Browser zeigt:
+// 1. `position:relative` an den Links der Leiste. Ohne sie ragt die `.sr-only`-Zeile jedes
+//    Schritts aus der waagrecht scrollenden Leiste, und die SEITE scrollte quer (gemessen 383 px).
+// 2. «Weiter zu Verbuchen & Zustellen» + «Abbrechen» passen nicht in eine Reihe des Fusses;
+//    unter 480 px steht nur «Weiter». Der Fuss bleibt zwei Reihen (gemessen 118 px, wie
+//    der client-seitige Assistent der Liegenschaft) statt drei.
+test('NK-Wizard: Leiste scrollt in sich, Fuss zwei Reihen, nichts quer', async ({ page }) => {
+  await login(page);
+  await goto(page, '/neu/nebenkosten/');
+  await page.getByText('NK E2E 2024').first().click();
+  await page.waitForURL(/\/nebenkosten\/\d+\//, { waitUntil: 'domcontentloaded' });
+  const basis = page.url().match(/\/neu\/nebenkosten\/\d+\//)![0];
+  for (const teil of ['periode', 'verteilung', 'pruefen', 'abschluss']) {
+    await goto(page, basis + teil + '/');
+    const quer = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+    expect(quer, `${teil}: die Seite scrollt ${quer} px quer`).toBeLessThanOrEqual(0);
+    const fuss = (await page.locator('.fw-assistent-fuss').boundingBox())!;
+    expect(fuss.height, `${teil}: Fuss ${Math.round(fuss.height)} px — drei Reihen?`).toBeLessThan(130);
+    const hier = (await page.locator('.fw-assistent-leiste li.hier').boundingBox())!;
+    expect(hier.x, `${teil}: aktueller Schritt links ausserhalb`).toBeGreaterThanOrEqual(0);
+    expect(hier.x + hier.width, `${teil}: aktueller Schritt rechts ausserhalb`).toBeLessThanOrEqual(390);
+  }
+  await goto(page, basis + 'pruefen/');
+  // innerText: was sichtbar ist (textContent enthielte auch die ausgeblendete Langform).
+  await expect(page.locator('.fw-assistent-fuss a.fw-primary')).toHaveText(/^\s*Weiter\s*$/, { useInnerText: true });
 });
