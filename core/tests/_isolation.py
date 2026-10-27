@@ -310,6 +310,14 @@ class MandantenFixture:
             liegenschaft=self.liegenschaft, schluessel_nummer=f'S-{k}-01')
         self.schluessel_ausgabe = SchluesselAusgabe.objects.create(
             schluessel=self.schluessel, mieter=self.mieter)
+        # Modul 2: Anlage und Tür, damit der Registrylauf die `pk` der neuen
+        # URLs mit einer ECHTEN fremden Anlage bzw. Tür angeht.
+        from portfolio.models import Schliessanlage, Schliesspunkt
+        self.schliessanlage = Schliessanlage.objects.create(
+            liegenschaft=self.liegenschaft, hersteller=f'Kaba {k}', sicherungskarte_nr=f'K-{k}-1')
+        self.schliesspunkt = Schliesspunkt.objects.create(
+            liegenschaft=self.liegenschaft, anlage=self.schliessanlage, bezeichnung=f'Haustür {k}')
+        self.schluessel.oeffnet.add(self.schliesspunkt)
         self.sollmietzins = Sollmietzins.objects.create(
             einheit=self.einheit, gueltig_ab=date(2024, 1, 1),
             netto_mietzins=Decimal('1500'))
@@ -613,6 +621,13 @@ class MandantenFixture:
         ('auftrag_kosten',  'auftrag'),
         ('auftrag_pdf',     'auftrag'),
         ('schluessel_rueckgabe', 'schluessel_ausgabe'),
+        # Modul 2: `fw_liegenschaft_schluessel_*` nehmen die LIEGENSCHAFT, nicht
+        # den Schlüssel — deshalb vor ('schluessel', …). Anlage und Tür haben
+        # eigene Muster (kein anderes trifft «schliessanlage»/«schliesspunkt»).
+        ('liegenschaft_schluessel', 'liegenschaft'),
+        ('liegenschaft_schliess', 'liegenschaft'),
+        ('schliessanlage',  'schliessanlage'),
+        ('schliesspunkt',   'schliesspunkt'),
         ('schluessel',      'schluessel'),
         ('sollmietzins',    'sollmietzins'),
         ('staffelvorlage',  'staffelvorlage'),

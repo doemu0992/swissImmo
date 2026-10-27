@@ -31,6 +31,8 @@ logger = logging.getLogger(__name__)
 
 from ._basis import (_global_filter, _kaution_bilanziert, _num, _pendenz_ziel,
                      STATUS_PILL, VERTRAG_PILL)
+from .schluessel import schliessanlage_kontext as _schliessanlage_kontext
+from core.services.schluessel import akte as _schluessel_akte, ausgaben_von as _ausgaben_von
 
 
 # ============================================================
@@ -386,6 +388,8 @@ def fw_liegenschaft_detail(request, pk):
         'geraet_kategorien': GERAET_KATEGORIEN,
         'zaehler_typen': ZAEHLER_TYPEN,
         'tab_liste': tab_liste,
+        # Modul 2: Abschnitt «Schliessanlage» (core/views/fw/schluessel.py)
+        **_schliessanlage_kontext(request, lg, einheiten),
     })
 
 
@@ -719,20 +723,12 @@ def fw_objekt_detail(request, pk):
             raeume.append({'raum': a.raum, 'elemente': [row]})
     ausst_count = len(ausst)
 
-    # Schlüsselregister: Bestand + offene Ausgaben je Schlüssel, Empfänger-Auswahl
+    # Schlüssel des Objekts als Karten (Modul 2). Ausgabe und Rücknahme laufen
+    # über die Kartenseiten der Liegenschaft (Unterschrift, Quittung).
+    from core.services.schluessel import karten as _schluessel_karten
     from portfolio.models import Schluessel
-    from crm.models import Handwerker as _Hw
-    schluessel_rows = []
-    for sch in (Schluessel.objects.filter(einheit=e)
-                .prefetch_related('ausgaben__mieter', 'ausgaben__handwerker')):
-        offene = [a for a in sch.ausgaben.all() if a.rueckgabe_am is None]
-        schluessel_rows.append({'s': sch, 'offene': offene,
-                                'verfuegbar': max(0, sch.anzahl - len(offene))})
-    schluessel_empfaenger = {
-        'mieter': list({v.mieter for v in _vertraege if v.status == 'aktiv' and v.mieter_id}),
-        'handwerker': list(_Hw.objects.order_by('firma')),
-    }
-    schluessel_offen_count = sum(len(r['offene']) for r in schluessel_rows)
+    schluessel_karten = _schluessel_karten(Schluessel.objects.filter(einheit=e, archiviert=False))
+    schluessel_offen_count = sum(k['n_offen'] for k in schluessel_karten)
 
     # Etappe 4b.11: Reiter aus dem Aktenregister statt aus dieser View. Acht
     # alte Reiter fallen auf sechs — `raumbuch`, `geraete`, `zaehler` und
@@ -778,7 +774,7 @@ def fw_objekt_detail(request, pk):
         ('mietzins', 'Mietzins', len(sollmietzinse) or None),
         ('geraete', 'Geräte', geraete.count() or None),
         ('zaehler', 'Zähler', zaehler.count() or None),
-        ('schluessel', 'Schlüssel', len(schluessel_rows) or None),
+        ('schluessel', 'Schlüssel', len(schluessel_karten) or None),
         ('dokumente', 'Dokumente', verhaeltnisse_dok_total or None),
     ], organisation=getattr(request, 'organisation', None) or _akt_org())
 
@@ -819,9 +815,9 @@ def fw_objekt_detail(request, pk):
         'merkmale_gewaehlt': e.merkmale or [],
         'merkmale_optionen': merkmale_optionen(e.merkmale or []),
         'tab_liste': tab_liste,
-        'schluessel_rows': schluessel_rows,
-        'schluessel_empfaenger': schluessel_empfaenger,
+        'schluessel_karten': schluessel_karten,
         'schluessel_offen_count': schluessel_offen_count,
+        'schluessel_arten': Schluessel.ART_CHOICES,
         'meldung': list(messages.get_messages(request)),
     })
 
@@ -1176,11 +1172,17 @@ def fw_zaehler_del(request, pk):
     return redirect(f'/neu/liegenschaften/{lid}/?tab=technik')
 
 
-# --- Schlüsselverwaltung (Register + Ausgabe/Rücknahme je Objekt) ---
+# --- Schlüsselverwaltung (Register je Objekt; Ausgabe/Rücknahme: core/views/fw/schluessel.py) ---
+
+def _objekt_schluessel_ziel(einheit_id):
+    return f'/neu/objekte/{einheit_id}/?tab=ausstattung#schluessel'
+
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_schluessel_add(request):
-    """Erfasst einen Schlüssel im Register eines Objekts."""
+    """Erfasst einen Schlüssel im Register eines Objekts. Schlüssel ohne
+    Einheit (Haustür, Briefkasten) entstehen an der Liegenschaft
+    (`fw_liegenschaft_schluessel_neu`)."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from portfolio.models import Schluessel
@@ -1189,88 +1191,78 @@ def fw_schluessel_add(request):
         return redirect('/neu/objekte/')
     e = get_object_or_404(Einheit.objects.select_related('liegenschaft'),
                           id=request.POST.get('einheit_id'))
-    nummer = (request.POST.get('schluessel_nummer') or '').strip()
-    typ = (request.POST.get('typ') or 'Wohnung').strip()
+    nummer = (request.POST.get('schluessel_nummer') or '').strip()[:50]
+    typ = (request.POST.get('typ') or 'Wohnung').strip()[:50]
+    art = request.POST.get('art') if request.POST.get('art') in dict(Schluessel.ART_CHOICES) else 'einzel'
     try:
         anzahl = max(1, int(request.POST.get('anzahl') or 1))
     except (TypeError, ValueError):
         anzahl = 1
     if not nummer:
         messages.error(request, gettext('Schlüssel-Nr. ist ein Pflichtfeld.'))
-        return redirect(f'/neu/objekte/{e.id}/?tab=schluessel')
-    Schluessel.objects.create(liegenschaft=e.liegenschaft, einheit=e,
+        return redirect(_objekt_schluessel_ziel(e.id))
+    Schluessel.objects.create(liegenschaft=e.liegenschaft, einheit=e, art=art,
                               typ=typ, schluessel_nummer=nummer, anzahl=anzahl)
     log_aktion(request, "Schlüssel erfasst", f"{e.bezeichnung}", f"{typ} {nummer} × {anzahl}")
     messages.success(request, '✅ ' + gettext('Schlüssel %(nummer)s (%(typ)s, %(anzahl)s×) erfasst.') % {'nummer': nummer, 'typ': typ, 'anzahl': anzahl})
-    return redirect(f'/neu/objekte/{e.id}/?tab=schluessel')
+    return redirect(_objekt_schluessel_ziel(e.id))
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_schluessel_del(request, pk):
-    """Entfernt einen Schlüssel aus dem Register (inkl. Ausgabe-Historie)."""
+    """Entfernt einen Schlüssel aus dem Register.
+
+    Seit Modul 2 (27.10.2026) löscht das den Verlauf nicht mehr mit: Hat der
+    Schlüssel Ausgaben, wird er archiviert — wer ihn wann hatte, samt
+    Quittungen und Verlusten, bleibt nachweisbar. Nur ein Schlüssel ohne jede
+    Ausgabe wird wirklich gelöscht. Solange er ausgegeben ist, geht beides nicht."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from portfolio.models import Schluessel
-    sch = get_object_or_404(Schluessel, id=pk)
-    eid = sch.einheit_id
+    from core.auth import log_aktion
+    sch = get_object_or_404(Schluessel.objects, id=pk)
+    eid, lid = sch.einheit_id, sch.liegenschaft_id
     if request.method == 'POST':
-        if sch.ausgaben.filter(rueckgabe_am__isnull=True).exists():
+        if sch.ausgaben.filter(status='ausgegeben').exists():
             messages.error(request, gettext('Schlüssel ist noch ausgegeben — zuerst Rücknahme erfassen.'))
+        elif sch.ausgaben.exists():
+            sch.archiviert = True
+            sch.save(update_fields=['archiviert'])
+            log_aktion(request, "Schlüssel archiviert", sch.typ, sch.schluessel_nummer)
+            messages.success(request, gettext('Schlüssel archiviert. Der Verlauf bleibt erhalten.'))
         else:
+            log_aktion(request, "Schlüssel entfernt", sch.typ, sch.schluessel_nummer)
             sch.delete()
             messages.success(request, gettext('Schlüssel entfernt.'))
-    return redirect(f'/neu/objekte/{eid}/?tab=schluessel' if eid else '/neu/objekte/')
+    standard = (_objekt_schluessel_ziel(eid) if eid
+                else f'/neu/liegenschaften/{lid}/?tab=stammdaten#schliessanlage')
+    ziel = (request.POST.get('next') or '').strip()
+    return redirect(ziel if ziel.startswith('/neu/') and not ziel.startswith('//') else standard)
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_schluessel_ausgabe(request, pk):
-    """Gibt einen Schlüssel an einen Mieter oder Handwerker aus."""
+    """Früher: Ausgabe eines Schlüssels ohne Unterschrift und Quittung.
+
+    Seit Modul 2 gibt es dafür EINEN Weg, die Kartenseite mit Unterschrift
+    (`fw_liegenschaft_schluessel_ausgabe`). Diese Adresse führt dorthin, mit
+    dem Schlüssel vorgewählt — ein zweiter Weg ohne Quittung bliebe sonst
+    offen."""
     from django.shortcuts import redirect
-    from django.contrib import messages
-    from portfolio.models import Schluessel, SchluesselAusgabe
-    from crm.models import Handwerker
-    from core.auth import log_aktion
-    sch = get_object_or_404(Schluessel, id=pk)
-    if request.method != 'POST':
-        return redirect(f'/neu/objekte/{sch.einheit_id}/?tab=schluessel')
-    offen = sch.ausgaben.filter(rueckgabe_am__isnull=True).count()
-    if offen >= sch.anzahl:
-        messages.error(request, gettext('Alle %(anzahl)s Exemplare von %(schluessel_nummer)s sind bereits ausgegeben.') % {'anzahl': sch.anzahl, 'schluessel_nummer': sch.schluessel_nummer})
-        return redirect(f'/neu/objekte/{sch.einheit_id}/?tab=schluessel')
-    empf = (request.POST.get('empfaenger') or '')
-    mieter = handwerker = None
-    name = ''
-    if empf.startswith('mieter:'):
-        mieter = Mieter.objects.filter(id=empf.split(':', 1)[1]).first()
-        name = mieter.display_name if mieter else ''
-    elif empf.startswith('handwerker:'):
-        handwerker = Handwerker.objects.filter(id=empf.split(':', 1)[1]).first()
-        name = handwerker.firma if handwerker else ''
-    if not (mieter or handwerker):
-        messages.error(request, gettext('Bitte Empfänger (Mieter oder Handwerker) wählen.'))
-        return redirect(f'/neu/objekte/{sch.einheit_id}/?tab=schluessel')
-    SchluesselAusgabe.objects.create(schluessel=sch, mieter=mieter, handwerker=handwerker,
-                                     ausgegeben_am=timezone.localdate())
-    log_aktion(request, "Schlüssel ausgegeben", sch.schluessel_nummer, name)
-    messages.success(request, '✅ ' + gettext('Schlüssel %(schluessel_nummer)s an %(name)s ausgegeben.') % {'schluessel_nummer': sch.schluessel_nummer, 'name': name})
-    return redirect(f'/neu/objekte/{sch.einheit_id}/?tab=schluessel')
+    from portfolio.models import Schluessel
+    sch = get_object_or_404(Schluessel.objects, id=pk)
+    return redirect(f'/neu/liegenschaften/{sch.liegenschaft_id}/schluessel/ausgabe/?schluessel={sch.pk}')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_schluessel_rueckgabe(request, pk):
-    """Erfasst die Rücknahme einer offenen Schlüsselausgabe."""
+    """Früher: Rücknahme ohne Quittung. Führt jetzt auf die Rücknahmeseite des
+    Empfängers dieser Ausgabe (siehe `fw_schluessel_ausgabe`)."""
     from django.shortcuts import redirect
-    from django.contrib import messages
     from portfolio.models import SchluesselAusgabe
-    from core.auth import log_aktion
+    from core.services.schluessel import ruecknahme_url
     a = get_object_or_404(SchluesselAusgabe.objects.select_related('schluessel'), id=pk)
-    if request.method == 'POST' and a.rueckgabe_am is None:
-        a.rueckgabe_am = timezone.localdate()
-        a.save(update_fields=['rueckgabe_am'])
-        wer = a.mieter.display_name if a.mieter_id else (a.handwerker.firma if a.handwerker_id else '')
-        log_aktion(request, "Schlüssel zurückgenommen", a.schluessel.schluessel_nummer, wer)
-        messages.success(request, '✅ ' + gettext('Schlüssel %(schluessel_nummer)s zurückgenommen.') % {'schluessel_nummer': a.schluessel.schluessel_nummer})
-    return redirect(f'/neu/objekte/{a.schluessel.einheit_id}/?tab=schluessel')
+    return redirect(ruecknahme_url(a))
 
 
 # --- Sollmietzins-Komponenten (datierte Netto-/NK-Historie je Objekt) ---
@@ -1975,6 +1967,10 @@ def fw_vertrag_detail(request, pk):
         'vt_zugang_next': f'/neu/vertraege/{v.id}/?tab=pendenzen',
         'vt_fin_zugang_next': f'/neu/vertraege/{v.id}/?tab=finanzen',
         'docuseal_konfiguriert': docuseal_konfiguriert(),
+        # Modul 2: Schlüssel dieses Vertrags mit Verlauf
+        'schluessel_akte': _schluessel_akte(_ausgaben_von({'vertrag': v})),
+        'schluessel_ausgabe_url': (f'/neu/liegenschaften/{v.einheit.liegenschaft_id}/schluessel/ausgabe/'
+                                   f'?an=vertrag:{v.id}&einheit={v.einheit_id}' if v.einheit_id else ''),
     })
 
 

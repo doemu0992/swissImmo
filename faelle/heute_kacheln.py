@@ -104,6 +104,22 @@ def rueckstand(heute, aktive_lg=None):
     return {'n': a['n'] or 0, 'summe': a['s'] or Decimal('0.00')}
 
 
+def _schluessel_kachel(heute, aktive_lg):
+    """Modul 2: Schlüssel, deren Rückgabefrist überschritten ist. Liegen alle
+    an einer Liegenschaft, führt die Kachel direkt in deren Schliessanlage."""
+    from core.services.schluessel import faellige
+    ueber = list(faellige(heute, aktive_lg, nur_ueberfaellig=True)
+                 .values_list('schluessel__liegenschaft_id', flat=True))
+    if not ueber:
+        return []
+    lg_ids = set(ueber)
+    ziel = (f'/neu/liegenschaften/{ueber[0]}/?tab=stammdaten#schliessanlage' if len(lg_ids) == 1
+            else '/neu/schluessel/faellig/')
+    return [_kachel('schluessel', _('Schlüssel'), len(ueber),
+                    ngettext('Rückgabe überfällig', 'Rückgaben überfällig', len(ueber)),
+                    _('Zurückfordern'), ziel, 'warn')]
+
+
 def _bewirtschaftung(heute, aktive_lg, av, faellig):
     from tickets.models import SchadenMeldung
     kacheln = []
@@ -121,6 +137,7 @@ def _bewirtschaftung(heute, aktive_lg, av, faellig):
         kacheln.append(_kachel('tickets', _('Tickets'), n,
                                _('niemandem zugewiesen'),
                                _('Zuweisen'), '/neu/schaeden/?zustaendig=niemand', 'warn'))
+    kacheln.extend(_schluessel_kachel(heute, aktive_lg))
     n = av.get('av_eingaenge_gesamt') or 0
     if n:
         kacheln.append(_kachel('posteingang', _('Posteingang'), n,

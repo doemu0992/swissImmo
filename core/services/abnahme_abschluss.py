@@ -179,12 +179,32 @@ def abschlussfelder_uebernehmen(prot, P):
         prot.unterschrift_verwalter = P.get('unterschrift_verwalter', '').strip()[:120]
 
 
+def schluessel_folgen(prot, user=None):
+    """Bucht die Schlüssel des Protokolls (Ausgabe beim Einzug, Rücknahme und
+    Verlust beim Auszug — core/services/schluessel.py). Gibt die Zeilen zurück,
+    die sich keinem Schlüssel des Registers zuordnen liessen.
+
+    Ein Fehler hier darf den Abschluss nicht kosten: Das Protokoll ist schon
+    unterschrieben. Er wird protokolliert, und die Buchung lässt sich über die
+    Ausgabeseite nachholen."""
+    import logging
+    from core.services.schluessel import abnahme_buchen
+    try:
+        return abnahme_buchen(prot, user=user)
+    except Exception:
+        logging.getLogger(__name__).exception('Schlüsselbuchung aus Abnahme %s fehlgeschlagen', prot.pk)
+        return None
+
+
 def abschluss_folgen(prot, user=None):
-    """Was ein abgeschlossenes Auszugsprotokoll auslöst: Checklisten-Pendenzen
-    abhaken, die Rügefrist setzen und die neue Adresse des Mieters hinterlegen.
-    Ein Einzug löst nichts davon aus."""
+    """Was ein abgeschlossenes Protokoll auslöst. Beide Arten buchen die
+    Schlüssel. Beim Auszug dazu: Checklisten-Pendenzen abhaken, die Rügefrist
+    setzen und die neue Adresse des Mieters hinterlegen.
+
+    Gibt die Zeilen des Schlüsselverzeichnisses zurück, die nicht gebucht
+    werden konnten (None, wenn die Buchung fehlschlug)."""
     if prot.typ != 'auszug':
-        return
+        return schluessel_folgen(prot, user)
     from core.services.automation import erledige_pendenzen_fuer
     v = prot.vertrag
     kw = ['Wohnungsabnahme', 'Abnahmetermin']
@@ -200,6 +220,9 @@ def abschluss_folgen(prot, user=None):
         kw.append(RUEGE_STICHWORT)
     erledige_pendenzen_fuer(v, kw, user=user)
     neue_adresse_hinterlegen(prot)
+    # Erst NACH dem Abhaken: Das Stichwort «Schlüssel» erledigte sonst die eben
+    # entstandene Pendenz «Zylinder ersetzen», wenn der Typ das Wort enthält.
+    return schluessel_folgen(prot, user)
 
 
 def neue_adresse_hinterlegen(prot):

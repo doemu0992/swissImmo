@@ -348,10 +348,13 @@ def fw_dienstleister_detail(request, pk):
                             akte_id=h.id)
         .select_related('fallart', 'zustaendig').order_by('-eroeffnet_am'))
 
-    from portfolio.models import Schluessel  # noqa: F401  (nur fuer die Beziehung)
-    schluessel = list(h.schluesselausgabe.select_related('schluessel')
-                      .filter(rueckgabe_am__isnull=True)) \
-        if hasattr(h, 'schluesselausgabe') else []
+    # Modul 2: Bis 27.10.2026 stand hier `h.schluesselausgabe` — den Rückbezug
+    # gibt es nicht (er heisst `schluesselausgabe_set`), und `hasattr` machte aus
+    # dem Fehler still eine leere Liste. Jetzt dieselbe Liste wie in Person und
+    # Vertrag, gelesen über das Feld statt über einen geratenen Namen.
+    from core.services.schluessel import akte as _schluessel_akte
+    from portfolio.models import SchluesselAusgabe
+    schluessel_akte = _schluessel_akte(SchluesselAusgabe.objects.filter(handwerker=h))
 
     tab_liste = _reiter_aus_alt('dienstleister', [
         ('uebersicht', 'Übersicht', None),
@@ -368,7 +371,7 @@ def fw_dienstleister_detail(request, pk):
         'offene_auftraege': offen,
         'kosten_geschaetzt_anteil': kosten_geschaetzt_anteil,
         'dl_faelle': faelle,
-        'schluessel': schluessel,
+        'schluessel_akte': schluessel_akte,
         'tab_liste': tab_liste,
         'heute': heute,
     })

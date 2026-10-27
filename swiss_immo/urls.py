@@ -155,6 +155,13 @@ from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_
                            fw_pendenzen, fw_pendenz_neu, fw_pendenz_toggle, fw_pendenz_loeschen, fw_fristen,
                            fw_fristen_ical, fristen_ical_feed)
 
+# Modul 2 (27.10.2026): Schlüssel und Schliessanlage
+from core.views.fw.schluessel import (fw_liegenschaft_schliessanlage, fw_schliessanlage_loeschen,
+                                      fw_liegenschaft_schliesspunkt, fw_schliesspunkt_loeschen,
+                                      fw_liegenschaft_schluessel_neu, fw_schluessel_bearbeiten,
+                                      fw_liegenschaft_schluessel_ausgabe, fw_liegenschaft_schluessel_ruecknahme,
+                                      fw_schluessel_faellig)
+
 # 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
 from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
 
@@ -292,6 +299,16 @@ urlpatterns = [
     path('neu/schluessel/<int:pk>/loeschen/', fw_schluessel_del, name='fw_schluessel_del'),
     path('neu/schluessel/<int:pk>/ausgabe/', fw_schluessel_ausgabe, name='fw_schluessel_ausgabe'),
     path('neu/schluessel/ausgabe/<int:pk>/rueckgabe/', fw_schluessel_rueckgabe, name='fw_schluessel_rueckgabe'),
+    # Modul 2 (27.10.2026): Schliessanlage, Türen, Ausgabe und Rücknahme mit Quittung
+    path('neu/schluessel/faellig/', fw_schluessel_faellig, name='fw_schluessel_faellig'),
+    path('neu/schluessel/<int:pk>/bearbeiten/', fw_schluessel_bearbeiten, name='fw_schluessel_bearbeiten'),
+    path('neu/liegenschaften/<int:pk>/schliessanlage/', fw_liegenschaft_schliessanlage, name='fw_liegenschaft_schliessanlage'),
+    path('neu/schliessanlage/<int:pk>/loeschen/', fw_schliessanlage_loeschen, name='fw_schliessanlage_loeschen'),
+    path('neu/liegenschaften/<int:pk>/schliesspunkt/', fw_liegenschaft_schliesspunkt, name='fw_liegenschaft_schliesspunkt'),
+    path('neu/schliesspunkt/<int:pk>/loeschen/', fw_schliesspunkt_loeschen, name='fw_schliesspunkt_loeschen'),
+    path('neu/liegenschaften/<int:pk>/schluessel/neu/', fw_liegenschaft_schluessel_neu, name='fw_liegenschaft_schluessel_neu'),
+    path('neu/liegenschaften/<int:pk>/schluessel/ausgabe/', fw_liegenschaft_schluessel_ausgabe, name='fw_liegenschaft_schluessel_ausgabe'),
+    path('neu/liegenschaften/<int:pk>/schluessel/ruecknahme/', fw_liegenschaft_schluessel_ruecknahme, name='fw_liegenschaft_schluessel_ruecknahme'),
     path('neu/sollmietzins/', fw_sollmietzins_add, name='fw_sollmietzins_add'),
     path('neu/sollmietzins/<int:pk>/loeschen/', fw_sollmietzins_del, name='fw_sollmietzins_del'),
     path('neu/objekte/<int:pk>/nkart/', fw_objekt_nkart, name='fw_objekt_nkart'),

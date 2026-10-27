@@ -1068,41 +1068,70 @@ class NachtN7SchluesselTests(TestCase):
         self.assertIn('Schlüssel', body)
         self.assertIn('W-101', body)
 
+    # Modul 2 (27.10.2026): Ausgabe und Rücknahme laufen über die Kartenseiten
+    # mit Unterschrift und Quittung. Die alten Adressen führen dorthin, statt
+    # einen zweiten Weg ohne Quittung offen zu halten — die vier Tests unten
+    # prüfen deshalb den neuen Ablauf, nicht mehr den alten Schnellweg.
+
+    def _ausgeben(self, c, lg, sch, empfaenger, anzahl=1):
+        from ._helfer import png_data_url
+        return c.post(f'/neu/liegenschaften/{lg.id}/schluessel/ausgabe/', {
+            'empfaenger': empfaenger, 'schluessel': [sch.id], f'anzahl_{sch.id}': str(anzahl),
+            'unterschrift': png_data_url('black')})
+
     def test_ausgabe_und_rueckgabe(self):
         from portfolio.models import Schluessel, SchluesselAusgabe
+        from ._helfer import png_data_url
         lg, e, m, v, c = self._setup()
         sch = Schluessel.objects.create(liegenschaft=lg, einheit=e, typ='Wohnung',
                                         schluessel_nummer='W-1', anzahl=2)
+        # Die alte Adresse legt nichts mehr an, sie führt zur Kartenseite.
         r = c.post(f'/neu/schluessel/{sch.id}/ausgabe/', {'empfaenger': f'mieter:{m.id}'})
+        self.assertRedirects(r, f'/neu/liegenschaften/{lg.id}/schluessel/ausgabe/?schluessel={sch.id}',
+                             fetch_redirect_response=False)
+        self.assertFalse(SchluesselAusgabe.objects.filter(schluessel=sch).exists())
+        r = self._ausgeben(c, lg, sch, f'vertrag:{v.id}')
         self.assertEqual(r.status_code, 302)
         a = SchluesselAusgabe.objects.get(schluessel=sch)
-        self.assertEqual(a.mieter_id, m.id)
+        self.assertEqual((a.mieter_id, a.vertrag_id, a.status), (m.id, v.id, 'ausgegeben'))
         self.assertIsNone(a.rueckgabe_am)
-        c.post(f'/neu/schluessel/ausgabe/{a.id}/rueckgabe/')
+        r = c.post(f'/neu/schluessel/ausgabe/{a.id}/rueckgabe/')
+        self.assertRedirects(r, f'/neu/liegenschaften/{lg.id}/schluessel/ruecknahme/?an=vertrag:{v.id}',
+                             fetch_redirect_response=False)
+        c.post(f'/neu/liegenschaften/{lg.id}/schluessel/ruecknahme/', {
+            'an': f'vertrag:{v.id}', f'status_{a.id}': 'zurueck', 'unterschrift': png_data_url('black')})
         a.refresh_from_db()
-        self.assertEqual(a.rueckgabe_am, self._heute())
+        self.assertEqual((a.status, a.rueckgabe_am), ('zurueck', self._heute()))
 
     def test_ausgabe_blockiert_wenn_alle_weg(self):
         from portfolio.models import Schluessel, SchluesselAusgabe
         lg, e, m, v, c = self._setup()
         sch = Schluessel.objects.create(liegenschaft=lg, einheit=e, typ='Keller',
                                         schluessel_nummer='K-1', anzahl=1)
-        c.post(f'/neu/schluessel/{sch.id}/ausgabe/', {'empfaenger': f'mieter:{m.id}'})
-        c.post(f'/neu/schluessel/{sch.id}/ausgabe/', {'empfaenger': f'mieter:{m.id}'})
+        self._ausgeben(c, lg, sch, f'vertrag:{v.id}')
+        r = self._ausgeben(c, lg, sch, f'vertrag:{v.id}')
+        self.assertEqual(r.status_code, 200)            # Seite mit Fehlermeldung, keine Buchung
         self.assertEqual(SchluesselAusgabe.objects.filter(schluessel=sch).count(), 1)
 
     def test_loeschen_blockiert_bei_offener_ausgabe(self):
+        """Ausgegeben: weder löschen noch archivieren. Mit Verlauf: archivieren
+        statt löschen (der Verlauf bleibt). Ohne jede Ausgabe: löschen."""
         from portfolio.models import Schluessel, SchluesselAusgabe
         lg, e, m, v, c = self._setup()
         sch = Schluessel.objects.create(liegenschaft=lg, einheit=e, typ='Wohnung',
                                         schluessel_nummer='W-2', anzahl=1)
         SchluesselAusgabe.objects.create(schluessel=sch, mieter=m)
         c.post(f'/neu/schluessel/{sch.id}/loeschen/')
-        self.assertTrue(Schluessel.objects.filter(id=sch.id).exists())
-        # Nach Rücknahme klappt das Löschen
-        a = sch.ausgaben.first(); a.rueckgabe_am = self._heute(); a.save()
+        sch.refresh_from_db()
+        self.assertFalse(sch.archiviert)
+        a = sch.ausgaben.first(); a.rueckgabe_am = self._heute(); a.status = 'zurueck'; a.save()
         c.post(f'/neu/schluessel/{sch.id}/loeschen/')
-        self.assertFalse(Schluessel.objects.filter(id=sch.id).exists())
+        sch.refresh_from_db()
+        self.assertTrue(sch.archiviert)
+        self.assertEqual(sch.ausgaben.count(), 1)
+        ohne = Schluessel.objects.create(liegenschaft=lg, einheit=e, typ='Keller', schluessel_nummer='K-9')
+        c.post(f'/neu/schluessel/{ohne.id}/loeschen/')
+        self.assertFalse(Schluessel.objects.filter(id=ohne.id).exists())
 
     def test_handwerker_ausgabe(self):
         from portfolio.models import Schluessel, SchluesselAusgabe
@@ -1111,7 +1140,8 @@ class NachtN7SchluesselTests(TestCase):
         hw = Handwerker.objects.create(firma='Sanitär AG')
         sch = Schluessel.objects.create(liegenschaft=lg, einheit=e, typ='Haustüre',
                                         schluessel_nummer='H-9', anzahl=5)
-        c.post(f'/neu/schluessel/{sch.id}/ausgabe/', {'empfaenger': f'handwerker:{hw.id}'})
+        self._ausgeben(c, lg, sch, f'handwerker:{hw.id}', anzahl=2)
         a = SchluesselAusgabe.objects.get(schluessel=sch)
-        self.assertEqual(a.handwerker_id, hw.id)
+        self.assertEqual((a.handwerker_id, a.anzahl), (hw.id, 2))
         self.assertIsNone(a.mieter_id)
+

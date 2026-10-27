@@ -226,6 +226,13 @@ HILFE = {
     'portal': (_('Portal-Zugang'), _(
         'Mieter und Eigentümer sehen im Portal ihre Rechnungen, Dokumente und Meldungen. '
         'Den Zugang richtest du auf der Personen- bzw. Mandatsseite ein.')),
+    # ---- Schlüssel (Modul 2, 27.10.2026) ----
+    'schliessanlage': (_('Schliessanlage'), _(
+        'Hersteller, Sicherungskarte und Bestellberechtigte der Anlage, dazu alle Schlüssel und die Türen, die sie '
+        'öffnen. Jede Ausgabe und Rücknahme erzeugt eine Quittung mit Unterschrift in der Ablage.')),
+    'schluesselart': (_('Schlüsselart'), _(
+        'Ein Hauptschlüssel öffnet alle Türen der Anlage, ein Gruppenschlüssel mehrere (etwa Haustür und Keller), ein '
+        'Einzelschlüssel eine bestimmte Tür wie die Wohnungstür.')),
 }
 
 

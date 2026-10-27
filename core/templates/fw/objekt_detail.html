@@ -890,61 +890,21 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         </form>
     </div>
     </div>
-<div class="fw-subhead">{% trans "Schlüssel" %}</div>
-    <div class="fw-card">
-        <div class="fw-tablewrap"><table class="fw-table">
-            <thead><tr>
-                <th>{% trans "Typ" %}</th><th>{% trans "Schlüssel-Nr." %}</th>
-                <th class="fw-zentriert">{% trans "Bestand" %}</th>
-                <th>{% trans "Ausgegeben an" %}</th>
-                <th>{% trans "Ausgabe" %}</th><th></th>
-            </tr></thead>
-            <tbody>
-            {% for row in schluessel_rows %}
-            <tr class="fw-hover">
-                <td class="fw-t">{{ row.s.typ }}</td>
-                <td class="fw-s">{{ row.s.schluessel_nummer }}</td>
-                <td class="fw-zentriert">
-                    <span class="px-2 py-0.5 rounded-md text-xs font-semibold {% if row.verfuegbar %}fw-gut-flaeche fw-gut{% else %}fw-warn-flaeche fw-warnton{% endif %}">{% blocktrans with v=row.verfuegbar n=row.s.anzahl %}{{ v }}/{{ n }} verfügbar{% endblocktrans %}</span>
-                </td>
-                <td class="fw-s">
-                    {% for a in row.offene %}
-                    <div class="flex items-center gap-2 whitespace-nowrap text-xs {% if not forloop.first %}mt-1{% endif %}">
-                        <span>{% if a.mieter %}{{ a.mieter.display_name }}{% elif a.handwerker %}{{ a.handwerker.firma }} <span class="fw-mutet">{% trans "(Handwerker)" %}</span>{% endif %}
-                            <span class="fw-mutet">{% blocktrans with d=a.ausgegeben_am|date:"d.m.Y" %}seit {{ d }}{% endblocktrans %}</span></span>
-                        <form method="post" action="/neu/schluessel/ausgabe/{{ a.id }}/rueckgabe/" class="inline">{% csrf_token %}
-                            <button class="fw-marke hover:fw-marke font-semibold" title="{% trans 'Rücknahme erfassen' %}">{% zeichen 'lauf' klasse='mr-0.5' %}{% trans "Rücknahme" %}</button>
-                        </form>
-                    </div>
-                    {% empty %}<span class="fw-faint">—</span>{% endfor %}
-                </td>
-                <td class="whitespace-nowrap">
-                    {% if row.verfuegbar %}
-                    <form method="post" action="/neu/schluessel/{{ row.s.id }}/ausgabe/" class="flex items-center gap-1.5">{% csrf_token %}
-                        <select name="empfaenger" required class="fw-feld max-w-[160px]">
-                            <option value="">{% trans "Empfänger …" %}</option>
-                            {% if schluessel_empfaenger.mieter %}<optgroup label="Mieter">
-                                {% for m in schluessel_empfaenger.mieter %}<option value="mieter:{{ m.id }}">{{ m.display_name }}</option>{% endfor %}
-                            </optgroup>{% endif %}
-                            {% if schluessel_empfaenger.handwerker %}<optgroup label="Handwerker">
-                                {% for h in schluessel_empfaenger.handwerker %}<option value="handwerker:{{ h.id }}">{{ h.firma }}</option>{% endfor %}
-                            </optgroup>{% endif %}
-                        </select>
-                        <button title="{% trans 'Schlüssel ausgeben' %}" class="fw-btn fw-primary">{% zeichen 'extern' %}</button>
-                    </form>
-                    {% else %}<span class="fw-klein">{% trans "Alle ausgegeben" %}</span>{% endif %}
-                </td>
-                <td class="fw-right">
-                    <form method="post" action="/neu/schluessel/{{ row.s.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Schlüssel aus dem Register entfernen?" %}{% endfilter %}');">{% csrf_token %}
-                        <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
-                    </form>
-                </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="6" class="fw-leer">{% trans "Noch keine Schlüssel im Register — z.B. Wohnungs-, Keller-, Briefkasten- und Haustürschlüssel erfassen." %}</td></tr>
-            {% endfor %}
-            </tbody>
-        </table></div>
+<div class="fw-subhead" id="schluessel">{% trans "Schlüssel" %}</div>
+    {% comment %} Modul 2 (27.10.2026): Karten statt Tabelle. Ausgabe und Rücknahme
+       laufen über die Kartenseiten der Liegenschaft — mit Unterschrift und
+       Quittung; allgemeine Schlüssel (Haustür, Briefkasten) stehen in deren
+       Abschnitt «Schliessanlage». {% endcomment %}
+    <div class="fw-sk-aktionen">
+        {% if schluessel_karten %}<a href="/neu/liegenschaften/{{ e.liegenschaft_id }}/schluessel/ausgabe/?einheit={{ e.id }}{% if aktiver_vertrag %}&amp;an=vertrag:{{ aktiver_vertrag.id }}{% endif %}" class="fw-btn fw-primary">{% zeichen 'senden' %}{% trans "Schlüssel ausgeben" %}</a>{% endif %}
+        <a href="/neu/liegenschaften/{{ e.liegenschaft_id }}/?tab=stammdaten#schliessanlage" class="fw-btn">{% zeichen 'liegenschaft' %}{% trans "Schliessanlage der Liegenschaft" %}</a>
+    </div>
+    <div class="fw-sk-raster">
+        {% for k in schluessel_karten %}
+        {% include 'fw/_schluessel_karte.html' with k=k weiter=request.get_full_path %}
+        {% empty %}
+        <div class="fw-card"><p class="fw-leer">{% trans "Noch keine Schlüssel für dieses Objekt — z. B. Wohnungs- und Kellerschlüssel erfassen." %}</p></div>
+        {% endfor %}
     </div>
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Schlüssel erfassen" %}</h2></div>
@@ -952,13 +912,17 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         <form method="post" action="/neu/schluessel/" class="fw-raster r4">
             {% csrf_token %}
             <input type="hidden" name="einheit_id" value="{{ e.id }}">
-            <div><label class="fw-label mb-1">{% trans "Typ" %} <span class="fw-pflicht">*</span></label>
-                <input name="typ" list="schluesseltyp" required placeholder="{% trans 'z.B. Wohnung, Keller, Briefkasten' %}" class="fw-feld w-full">
+            <div><label class="fw-label mb-1" for="ob-sk-typ">{% trans "Bezeichnung" %} <span class="fw-pflicht">*</span></label>
+                <input id="ob-sk-typ" name="typ" list="schluesseltyp" required maxlength="50" placeholder="{% trans 'z.B. Wohnung, Keller, Briefkasten' %}" class="fw-feld w-full">
                 <datalist id="schluesseltyp"><option value="Wohnung"></option><option value="Haustüre"></option><option value="Keller"></option><option value="Briefkasten"></option><option value="Garage"></option><option value="Waschküche"></option></datalist></div>
-            <div><label class="fw-label mb-1">{% trans "Schlüssel-Nr." %} <span class="fw-pflicht">*</span></label>
-                <input name="schluessel_nummer" required class="fw-feld w-full"></div>
-            <div><label class="fw-label mb-1">{% trans "Anzahl Exemplare" %}</label>
-                <input name="anzahl" type="number" min="1" value="3" class="fw-feld w-full"></div>
+            <div><label class="fw-label mb-1" for="ob-sk-nr">{% trans "Schlüssel-Nr." %} <span class="fw-pflicht">*</span></label>
+                <input id="ob-sk-nr" name="schluessel_nummer" required maxlength="50" class="fw-feld w-full"></div>
+            <div><label class="fw-label mb-1" for="ob-sk-art">{% trans "Art" %}</label>
+                <select id="ob-sk-art" name="art" class="fw-feld w-full">
+                    {% for wert, text in schluessel_arten %}<option value="{{ wert }}"{% if wert == 'einzel' %} selected{% endif %}>{{ text }}</option>{% endfor %}
+                </select></div>
+            <div><label class="fw-label mb-1" for="ob-sk-n">{% trans "Anzahl Exemplare" %}</label>
+                <input id="ob-sk-n" name="anzahl" type="number" min="1" value="3" class="fw-feld w-full"></div>
             <div class="fw-col-span-4">
                 <button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Schlüssel speichern" %}</button>
             </div>
