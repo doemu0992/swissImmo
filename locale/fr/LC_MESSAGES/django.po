@@ -32856,3 +32856,12 @@ msgstr "Vacant"
 msgctxt "Belegung eines Objekts"
 msgid "Vermietet ab %(datum)s"
 msgstr "Loué dès le %(datum)s"
+
+msgid "weitere Unterbereiche"
+msgstr "autres sous-domaines"
+
+msgid "Weitere Unterbereiche"
+msgstr "Autres sous-domaines"
+
+msgid "Neue Schadenmeldungen"
+msgstr "Nouveaux avis de dégât"

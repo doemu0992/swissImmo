@@ -32806,3 +32806,12 @@ msgstr "Sfitto"
 msgctxt "Belegung eines Objekts"
 msgid "Vermietet ab %(datum)s"
 msgstr "Locato dal %(datum)s"
+
+msgid "weitere Unterbereiche"
+msgstr "altre sottoaree"
+
+msgid "Weitere Unterbereiche"
+msgstr "Altre sottoaree"
+
+msgid "Neue Schadenmeldungen"
+msgstr "Nuove segnalazioni di danno"

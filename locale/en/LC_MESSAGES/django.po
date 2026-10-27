@@ -32382,3 +32382,12 @@ msgstr "Vacant"
 msgctxt "Belegung eines Objekts"
 msgid "Vermietet ab %(datum)s"
 msgstr "Let from %(datum)s"
+
+msgid "weitere Unterbereiche"
+msgstr "more sub-areas"
+
+msgid "Weitere Unterbereiche"
+msgstr "More sub-areas"
+
+msgid "Neue Schadenmeldungen"
+msgstr "New damage reports"

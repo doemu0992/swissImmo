@@ -443,3 +443,127 @@ test('NK-Wizard: Leiste scrollt in sich, Fuss zwei Reihen, nichts quer', async (
   // innerText: was sichtbar ist (textContent enthielte auch die ausgeblendete Langform).
   await expect(page.locator('.fw-assistent-fuss a.fw-primary')).toHaveText(/^\s*Weiter\s*$/, { useInnerText: true });
 });
+
+// ---- Kopfzeile v2 (27.10.2026): zwanzig Breiten, gemessen ------------------------------------
+//
+// Zeile 1 (Marke, Bestand, Bereiche, Suche, Werkzeuge) muss bei JEDER Breite eine Reihe bleiben, nichts
+// darf quer schieben, nichts sich überlappen. Ob das stimmt, entscheiden Schriftgrad, Innenabstand und
+// `gap` — nur der Browser kennt die Summe. Der ungünstigste Fall steht im Test: ein langer Bestandsname
+// (der Chip erreicht seine Höchstbreite) bei aktivem Filter. GEMESSEN (Chip 13 rem, 13 Punkte im Band):
+// die kleinste Reserve zwischen den Bereichen und der Suche beträgt 42 px (bei 1280), sonst über 45.
+//
+// Bis 900 px stehen DREI Reihen: Zeile 1 (Marke, Bestand-Symbol, Suche-Symbol, Werkzeuge), die Bereiche,
+// das Menüband. Ab 901 px sind es zwei.
+
+const BREITEN = [360, 375, 390, 414, 439, 440, 600, 768, 820, 900, 901, 1023, 1024, 1239, 1240, 1279, 1280, 1359, 1360, 1439, 1440, 1920];
+
+test('Zeile 1 bricht bei keiner Breite um, nichts schiebt quer, nichts überlappt', async ({ page }) => {
+  test.setTimeout(180_000);
+  await login(page);
+  await goto(page, '/neu/liegenschaften/');
+  // Ungünstigster Fall: langer Name im Chip, Filter aktiv
+  await page.evaluate(() => {
+    const s = document.querySelector('.fw-bestand select') as HTMLSelectElement;
+    const o = s.options[s.options.length - 1];
+    o.textContent = 'Hauptstrasse 123 Gartenweg, Zürich-Oerlikon';
+    o.selected = true;
+    document.querySelector('.fw-bestand')!.classList.add('aktiv');
+  });
+  for (const w of BREITEN) {
+    await page.setViewportSize({ width: w, height: 900 });
+    await page.waitForTimeout(120);
+    const m = await page.evaluate(() => {
+      const r = (el: Element) => { const q = el.getBoundingClientRect(); return { l: q.left, r: q.right, t: q.top, b: q.bottom, w: q.width, h: q.height }; };
+      const z1 = document.querySelector('.fw-kopf-z1')!;
+      const kinder = Array.from(z1.children).filter((k) => getComputedStyle(k).display !== 'none');
+      const teil = (k: Element) => (['fw-logo-kapsel', 'fw-bestand', 'fw-hauptnav', 'fw-os', 'fw-werkzeug-kapsel'].find((c) => k.classList.contains(c))) || k.tagName;
+      const boxen = kinder.map((k) => ({ n: teil(k), ...r(k) }));
+      const hn = document.getElementById('fwHauptnav')!;
+      const sichtbar = (s: string) => { const e = document.querySelector(s); return !!e && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().width > 0; };
+      return {
+        quer: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        boxen, hnavScroll: hn.scrollWidth - hn.clientWidth, vw: document.documentElement.clientWidth,
+        z1: r(z1), band: r(document.querySelector('.fw-bereichsreiter')!),
+        einst: sichtbar('.fw-wz-einst'), neu: sichtbar('.fw-wz-neu'), dunkel: sichtbar('.fw-knopf-dunkel'),
+        schnell: getComputedStyle(document.querySelector('.fw-profil-schnell')!).display !== 'none',
+      };
+    });
+    const wo = `${w} px`;
+    expect(m.quer, `${wo}: die Seite scrollt ${m.quer} px quer`).toBeLessThanOrEqual(0);
+    const mitte = (b: { t: number; b: number }) => (b.t + b.b) / 2;
+    const reihe1 = m.boxen.filter((b) => b.n !== 'fw-hauptnav' || w >= 901);
+    for (const b of reihe1) expect(Math.abs(mitte(b) - mitte(reihe1[0])), `${wo}: ${b.n} steht nicht in der ersten Reihe`).toBeLessThan(4);
+    // nichts überlappt, nichts ragt über den Rand
+    const sortiert = [...m.boxen].sort((a, b) => a.l - b.l);
+    for (let i = 1; i < sortiert.length; i++) {
+      if (Math.abs(mitte(sortiert[i]) - mitte(sortiert[i - 1])) < 4)
+        expect(sortiert[i].l, `${wo}: ${sortiert[i - 1].n} und ${sortiert[i].n} überlappen`).toBeGreaterThanOrEqual(sortiert[i - 1].r - 0.5);
+    }
+    for (const b of m.boxen) {
+      expect(b.l, `${wo}: ${b.n} ragt links aus dem Bild`).toBeGreaterThanOrEqual(0);
+      expect(b.r, `${wo}: ${b.n} ragt rechts aus dem Bild`).toBeLessThanOrEqual(m.vw - 15);
+    }
+    expect(m.hnavScroll, `${wo}: die Bereiche scrollen in sich, ein Bereich ist abgeschnitten`).toBeLessThanOrEqual(1);
+    if (w >= 901) {
+      expect(m.z1.h, `${wo}: Zeile 1 ist ${Math.round(m.z1.h)} px hoch — umgebrochen?`).toBeLessThan(60);
+      expect(m.band.t, `${wo}: das Menüband steht nicht unter Zeile 1`).toBeGreaterThanOrEqual(m.z1.b);
+    } else {
+      const nav = m.boxen.find((b) => b.n === 'fw-hauptnav')!;
+      expect(nav.t, `${wo}: die Bereiche stehen nicht unter Zeile 1`).toBeGreaterThanOrEqual(reihe1[0].b - 1);
+      expect(m.z1.h, `${wo}: Zeile 1 mit den Bereichen ist ${Math.round(m.z1.h)} px hoch (zwei Reihen erwartet)`).toBeLessThan(110);
+      expect(m.band.t, `${wo}: das Menüband steht nicht unter den Bereichen`).toBeGreaterThanOrEqual(nav.b);
+      expect(m.band.h, `${wo}: das Menüband ist am Telefon eine Reihe`).toBeLessThan(60);
+    }
+    // was bei welcher Breite in Zeile 1 steht (und sonst im Profilmenü)
+    expect(m.einst, `${wo}: Einstellungsknopf`).toBe(w >= 440);
+    expect(m.neu, `${wo}: «+»`).toBe(w >= 1024);
+    expect(m.dunkel, `${wo}: Hell/Dunkel`).toBe(w >= 1440);
+    expect(m.schnell, `${wo}: Schnellzeile im Profilmenü («Neuer Fall», Menü)`).toBe(w <= 1023);
+    // Bestand: ab 1240 mit Namen, darunter ein Symbol; Suche: bis 1279 ein Symbol
+    const bestand = m.boxen.find((b) => b.n === 'fw-bestand')!;
+    if (w >= 1240) expect(bestand.w, `${wo}: der Chip zeigt keinen Namen`).toBeGreaterThan(150);
+    else expect(bestand.w, `${wo}: der Chip ist kein Symbol`).toBeLessThan(60);
+    const os = m.boxen.find((b) => b.n === 'fw-os')!;
+    if (w <= 1279) expect(os.w, `${wo}: die Suche ist kein Symbol`).toBeLessThan(60);
+    else expect(os.w, `${wo}: die Suche ist ein Symbol`).toBeGreaterThan(150);
+  }
+});
+
+// DIE MARKE: ausgeschrieben, mit Schweizerkreuz, bei jeder Breite — nur kleiner (Haus / Schrift / Kreuz)
+test('Die Marke steht bei jeder Breite ausgeschrieben mit Kreuz und wird nicht abgeschnitten', async ({ page }) => {
+  await login(page);
+  await goto(page, '/neu/liegenschaften/');
+  const SOLL: [number, number, number, number][] = [[1920, 30, 19, 12], [1280, 30, 19, 12], [1024, 30, 19, 12],
+    [1023, 26, 16, 11], [820, 26, 16, 11], [601, 26, 16, 11], [600, 24, 15, 10], [390, 24, 15, 10], [360, 24, 15, 10]];
+  for (const [w, haus, schrift, kreuz] of SOLL) {
+    await page.setViewportSize({ width: w, height: 900 });
+    await page.waitForTimeout(100);
+    const m = await page.evaluate(() => {
+      const k = document.querySelector('.fw-logo-kapsel') as HTMLElement;
+      const b = k.querySelector('b') as HTMLElement;
+      const kr = k.querySelector('.fw-logo-kreuz') as SVGElement;
+      const h = k.querySelector('.fw-logo-haus') as SVGElement;
+      const text = document.createRange();
+      text.selectNodeContents(b.firstChild!);
+      const rect = (e: Element | Range) => e.getBoundingClientRect();
+      return {
+        kapsel: rect(k), wort: rect(text), kreuz: rect(kr), haus: rect(h),
+        schrift: parseFloat(getComputedStyle(b).fontSize), anzeige: getComputedStyle(b).display,
+        text: b.firstChild!.textContent, abgeschnitten: b.scrollWidth > b.clientWidth + 1 || k.scrollWidth > k.clientWidth + 1,
+      };
+    });
+    const wo = `${w} px`;
+    expect(m.text, `${wo}: Wortmarke`).toBe('immoswiss');
+    expect(m.anzeige, `${wo}: die Wortmarke ist ausgeblendet`).not.toBe('none');
+    expect(m.wort.width, `${wo}: die Wortmarke hat keine Breite`).toBeGreaterThan(55);
+    expect(m.schrift, `${wo}: Schriftgrad der Wortmarke`).toBe(schrift);
+    expect(Math.round(m.haus.width), `${wo}: Haus`).toBe(haus);
+    expect(Math.round(m.kreuz.width), `${wo}: Schweizerkreuz`).toBe(kreuz);
+    // alles liegt in der Kapsel, nichts ragt heraus; das Kreuz sitzt am Ende der Wortmarke
+    expect(m.haus.left, `${wo}: das Haus ragt links heraus`).toBeGreaterThanOrEqual(m.kapsel.left);
+    expect(m.kreuz.right, `${wo}: das Kreuz ragt rechts heraus`).toBeLessThanOrEqual(m.kapsel.right - 0.5);
+    expect(m.kreuz.top, `${wo}: das Kreuz ragt oben heraus`).toBeGreaterThanOrEqual(m.kapsel.top);
+    expect(m.wort.right, `${wo}: die Wortmarke wird vom Kreuz überdeckt`).toBeLessThanOrEqual(m.kreuz.left + 1);
+    expect(m.abgeschnitten, `${wo}: die Marke wird abgeschnitten`).toBe(false);
+  }
+});
