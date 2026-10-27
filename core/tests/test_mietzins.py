@@ -54,9 +54,13 @@ class LikVertragTests(TestCase):
             'netto_mietzins': '1500', 'nebenkosten': '200', 'basis_lik_punkte': '107.1'})
         self.assertEqual(r.status_code, 302)
         v = MV.objects.filter(mieter=m).first()
-        # ohne Formular-Override wird automatisch der neueste BFS-Stand gesetzt
+        # Ohne Formular-Override gilt der Stand des Monats VOR dem Mietbeginn (seit 27.10.2026), nicht der
+        # neueste BFS-Stand: Ein Vertrag ab 1.1.2025 hat Dezember 2024 als Basis. Gegenprobe: Beide unterscheiden sich.
+        from core.services.mietzinsmodell import basis_lik_vorschlag
         auto_stand, _pkt, _basis = aktueller_lik_wert()
-        self.assertEqual(v.basis_lik_stand, auto_stand)
+        self.assertEqual(v.basis_lik_stand, basis_lik_vorschlag(date(2025, 1, 1))[0])
+        self.assertEqual(v.basis_lik_stand, date(2024, 12, 1))
+        self.assertNotEqual(v.basis_lik_stand, auto_stand)
 
     def test_assistent_formular_override_stand(self):
         from rentals.models import Mietvertrag as MV

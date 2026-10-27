@@ -125,7 +125,13 @@ class VertragBearbeitenForm(forms.Form):
             v.index_weitergabe_prozent = daten['index_weitergabe_prozent']
         if daten.get('index_intervall_monate') is not None:
             v.index_intervall_monate = daten['index_intervall_monate']
-        if all(getattr(v, f) == getattr(self.vertrag, f) for f in v.MODELL_FELDER):
+        # Bei festem Mietzins entscheiden die Indexfelder nichts: Sie zu ändern ist keine Änderung am
+        # Mietzinsmodell (die Regeln lesen sie dort nicht), und ein Altvertrag mit Staffelresten wird
+        # deswegen nicht blockiert.
+        felder = [f for f in v.MODELL_FELDER
+                  if v.mietzins_modell != 'fest' or f not in ('basis_lik_punkte', 'basis_lik_stand',
+                                                               'index_weitergabe_prozent', 'index_intervall_monate')]
+        if all(getattr(v, f) == getattr(self.vertrag, f) for f in felder):
             return
         for b in sperren(pruefe_vertrag(v)):
             self.add_error(None, b.volltext)

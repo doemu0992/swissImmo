@@ -208,8 +208,11 @@ class GewerbeWizardTests(TestCase):
             'einheit_id': e.id, 'mieter_id': m.id, 'beginn': '2024-01-01',
             'netto_mietzins': '3000', 'nebenkosten': '300',
             'mietzins_modell': 'staffel',
+            # Seit 27.10.2026: Erhöhung in CHF (Art. 269c lit. c OR) statt neuer Betrag, und die
+            # Staffel braucht eine feste Dauer von drei Jahren (hier: Kündigungsverzicht des Vermieters).
             'staffel_ab': ['2025-01-01', '2026-01-01'],
-            'staffel_netto': ['3100', '3200'],
+            'staffel_erhoehung': ['100', '100'],
+            'vermieter_kuendigungsverzicht_bis': '2026-12-31',
             'zweckbestimmung': 'Betrieb einer Bäckerei',
             # kuendigungsfrist bewusst weggelassen → Default 6 (Gewerbe)
         })
@@ -220,6 +223,8 @@ class GewerbeWizardTests(TestCase):
         self.assertEqual(v.zweckbestimmung, 'Betrieb einer Bäckerei')
         self.assertEqual(v.staffelstufen.count(), 2)
         self.assertEqual(v.effektiver_netto_mietzins(date(2025, 6, 1)), Decimal('3100'))
+        self.assertEqual(v.effektiver_netto_mietzins(date(2026, 6, 1)), Decimal('3200'))
+        self.assertEqual([st.erhoehung_chf for st in v.staffelstufen.all()], [Decimal('100.00')] * 2)
 
     def test_live_mietrecht_check_im_wizard(self):
         """Der Wizard enthält die Live-Plausibilitätsprüfung (meldet beim Erfassen)."""
@@ -229,7 +234,10 @@ class GewerbeWizardTests(TestCase):
         self.assertIn('function mietrechtCheck', body)
         self.assertIn('id="mietrecht-warn"', body)
         self.assertIn('Art. 257e OR', body)   # Kaution-Prüfung
-        self.assertIn('Art. 269b OR', body)   # Index-Dauer-Prüfung
+        # Die Dauer von Index- und Staffelmiete prüft nicht mehr das Skript der Seite, sondern die
+        # Regelquelle (core/services/mietzinsmodell.py) über den Live-Endpunkt: keine zweite Fassung in JS.
+        self.assertNotIn('_monthsBetween', body)
+        self.assertIn('fw-mietzinsmodell.js', body)
 
     def test_pdf_gewerbe_index_rendert(self):
         from rentals.models import Mietvertrag as MV
@@ -1402,12 +1410,16 @@ class IndexparameterErfassbarTests(TestCase):
     def _speichern(self, **extra):
         e, m = self._objekte()
         c = self.c
+        # Weitergabe und Intervall gelten nur bei der Indexmiete (seit 27.10.2026 lehnt der Server sie bei
+        # festem Mietzins ab): ein gültiger Indexvertrag mit fünf Jahren Befristung und Basis.
         daten = {'einheit_id': str(e.id), 'mieter_id': str(m.id),
                  'netto_mietzins': '1500', 'nebenkosten': '200',
-                 'beginn': '2025-01-01'}
+                 'beginn': '2025-01-01', 'mietzins_modell': 'index',
+                 'ist_befristet': '1', 'ende': '2029-12-31',
+                 'basis_lik_punkte': '107.5', 'basis_lik_stand': '2024-12'}
         daten.update(extra)
         r = c.post('/neu/vertraege/neu/speichern/', daten)
-        self.assertEqual(r.status_code, 302)
+        self.assertEqual(r.status_code, 302, r.content.decode()[:300])
         return Mietvertrag.objects.get(einheit=e)
 
     def test_die_vereinbarte_weitergabe_kommt_an(self):
@@ -1418,27 +1430,45 @@ class IndexparameterErfassbarTests(TestCase):
 
     def test_ohne_angabe_gilt_weiterhin_100_prozent_und_12_monate(self):
         """Der bisherige stille Vorgabewert bleibt der Vorgabewert."""
-        v = self._speichern()
+        v = self._speichern(mietzins_modell='fest', ende='', ist_befristet='0')
         self.assertEqual(v.index_weitergabe_prozent, Decimal('100'))
         self.assertEqual(v.index_intervall_monate, 12)
 
-    def test_ueber_hundert_prozent_wird_gedeckelt(self):
-        """Mehr als die volle Teuerung gibt es nicht — Art. 269b OR."""
-        v = self._speichern(index_weitergabe_prozent='150')
+    def test_ueber_hundert_prozent_wird_abgelehnt_nicht_gedeckelt(self):
+        """Mehr als die volle Teuerung gibt es nicht — Art. 17 Abs. 1 VMWG. Bis 27.10.2026 kappte der
+        Server still auf 100 %; jetzt lehnt er ab und speichert nichts (Gegenprobe: 100 wird gespeichert)."""
+        e, m = self._objekte()
+        daten = {'einheit_id': str(e.id), 'mieter_id': str(m.id), 'netto_mietzins': '1500', 'nebenkosten': '200',
+                 'beginn': '2025-01-01', 'mietzins_modell': 'index', 'ist_befristet': '1', 'ende': '2029-12-31',
+                 'basis_lik_punkte': '107.5', 'basis_lik_stand': '2024-12'}
+        r = self.c.post('/neu/vertraege/neu/speichern/', {**daten, 'index_weitergabe_prozent': '150'})
+        self.assertEqual(r.status_code, 400)
+        self.assertFalse(Mietvertrag.objects.filter(einheit=e).exists())
+        r = self.c.post('/neu/vertraege/neu/speichern/', {**daten, 'index_weitergabe_prozent': '100'})
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(Mietvertrag.objects.get(einheit=e).index_weitergabe_prozent, Decimal('100'))
+
+    def test_null_negativ_und_leer_wird_abgelehnt_leeres_intervall_gilt_12(self):
+        """Null oder negativ ersetzte der Server früher still durch 100 % bzw. 12 Monate; das macht eine
+        falsche Indexklausel unsichtbar. Jetzt: abgelehnt."""
+        e, m = self._objekte()
+        daten = {'einheit_id': str(e.id), 'mieter_id': str(m.id), 'netto_mietzins': '1500', 'nebenkosten': '200',
+                 'beginn': '2025-01-01', 'mietzins_modell': 'index', 'ist_befristet': '1', 'ende': '2029-12-31',
+                 'basis_lik_punkte': '107.5', 'basis_lik_stand': '2024-12'}
+        for feld in ('index_weitergabe_prozent', 'index_intervall_monate'):
+            for roh in ('0', '-20'):
+                with self.subTest(feld=feld, eingabe=roh):
+                    r = self.c.post('/neu/vertraege/neu/speichern/', {**daten, feld: roh})
+                    self.assertEqual(r.status_code, 400)
+                    self.assertFalse(Mietvertrag.objects.filter(einheit=e).exists())
+        # Die Weitergabe verlangt die Indexmiete ausdrücklich (Regelquelle: «fehlt» ist eine Sperre) ...
+        r = self.c.post('/neu/vertraege/neu/speichern/', {**daten, 'index_weitergabe_prozent': ''})
+        self.assertEqual(r.status_code, 400)
+        self.assertFalse(Mietvertrag.objects.filter(einheit=e).exists())
+        # ... das Mindestintervall bleibt leer erlaubt und gilt dann 12 Monate
+        v = self._speichern(index_weitergabe_prozent='100', index_intervall_monate='')
         self.assertEqual(v.index_weitergabe_prozent, Decimal('100'))
-
-    def test_unsinn_faellt_auf_den_vorgabewert_zurueck(self):
-        """Leer, null oder negativ dürfen nichts kaputtmachen.
-
-        Buchstaben fielen hier früher ebenfalls still auf 100 % zurück. Seit
-        Audit Etappe 2 lehnt der Assistent unlesbare Eingaben ab — siehe
-        `test_buchstaben_werden_abgelehnt_statt_ersetzt`."""
-        for roh in ('', '0', '-20'):
-            with self.subTest(eingabe=roh):
-                v = self._speichern(index_weitergabe_prozent=roh,
-                                    index_intervall_monate=roh)
-                self.assertEqual(v.index_weitergabe_prozent, Decimal('100'))
-                self.assertEqual(v.index_intervall_monate, 12)
+        self.assertEqual(v.index_intervall_monate, 12)
 
     def test_buchstaben_werden_abgelehnt_statt_ersetzt(self):
         """Ein vertipptes «8o» statt 80 wurde still zu 100 % Weitergabe — dann
@@ -1467,6 +1497,8 @@ class IndexparameterErfassbarTests(TestCase):
         for feld in ('index_weitergabe_prozent', 'index_intervall_monate'):
             with self.subTest(feld=feld):
                 self.assertIn('name="%s"' % feld, html)
+                # im Index-Panel: nur dort werden sie gesendet
+                self.assertLess(html.index('id="mzm-panel-index"'), html.index('name="%s"' % feld))
 
     def test_die_weitergabe_wirkt_auch_wirklich_auf_die_erhoehung(self):
         """Sonst wäre das Feld erfassbar und trotzdem folgenlos.

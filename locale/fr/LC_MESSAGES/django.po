@@ -33067,3 +33067,224 @@ msgstr "Communication de la hausse échelonnée"
 #: core/hilfe.py
 msgid "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche Formular braucht es dafür nicht, die Mitteilung aber schon: Der Vertrag allein ersetzt sie nicht."
 msgstr "Chaque hausse est communiquée par écrit au locataire, au plus tôt quatre mois avant son entrée en vigueur (art. 269d al. 5 CO, art. 19a OBLF). Le formulaire officiel n'est pas nécessaire pour cela, mais la communication l'est : le contrat seul ne la remplace pas."
+
+#: Mietzinsmodell-Wizard (27.10.2026)
+msgid "Vermieter verzichtet auf Kündigung bis"
+msgstr "Le bailleur renonce à résilier jusqu'au"
+
+msgid "Nur bei einem unbefristeten Vertrag. Zählt bei Index- und Staffelmiete als feste Dauer."
+msgstr "Uniquement pour un bail de durée indéterminée. Compte comme durée ferme pour le loyer indexé et le loyer échelonné."
+
+msgid "Mietzins, Mietzinsmodell und Zahlungsmodalitäten."
+msgstr "Loyer, modèle de loyer et modalités de paiement."
+
+msgid "Zweckbestimmung für Geschäftsräume."
+msgstr "Affectation des locaux commerciaux."
+
+msgid "Fester Mietzins"
+msgstr "Loyer fixe"
+
+msgid "Der Mietzins bleibt, bis er nach den Regeln des Mietrechts angepasst wird."
+msgstr "Le loyer reste inchangé jusqu'à ce qu'il soit adapté selon les règles du droit du bail."
+
+msgid "Erhöhungen als Frankenbeträge, höchstens einmal jährlich. Feste Dauer mindestens 3 Jahre."
+msgstr "Hausses en montants en francs, au plus une fois par an. Durée ferme d'au moins 3 ans."
+
+msgid "Der Mietzins folgt dem Landesindex der Konsumentenpreise. Feste Dauer mindestens 5 Jahre."
+msgstr "Le loyer suit l'indice suisse des prix à la consommation. Durée ferme d'au moins 5 ans."
+
+msgid "Feste Dauer"
+msgstr "Durée ferme"
+
+msgid "Laufzeit ändern"
+msgstr "Modifier la durée"
+
+msgid "Startmietzins (netto)"
+msgstr "Loyer initial (net)"
+
+msgid "aus dem Feld «Mietzins netto» oben"
+msgstr "du champ « Loyer net » ci-dessus"
+
+msgid "Noch keine Stufe. Eine Stufe hinzufügen oder die Stufen erzeugen."
+msgstr "Pas encore de palier. Ajoutez un palier ou générez les paliers."
+
+msgid "Stufen erzeugen"
+msgstr "Générer les paliers"
+
+msgid "Jedes Jahr dieselbe Erhöhung, die erste 12 Monate nach Mietbeginn. Vorhandene Stufen werden ersetzt."
+msgstr "Chaque année la même hausse, la première 12 mois après le début du bail. Les paliers existants sont remplacés."
+
+msgid "Jährlich + CHF"
+msgstr "Par an + CHF"
+
+msgid "Wie oft"
+msgstr "Combien de fois"
+
+msgid "Index"
+msgstr "Indice"
+
+msgid "Landesindex der Konsumentenpreise (BFS)"
+msgstr "Indice suisse des prix à la consommation (OFS)"
+
+#, python-format
+msgid "Basis %(basis)s = 100 Punkte"
+msgstr "Base %(basis)s = 100 points"
+
+msgid "Vorschlag übernehmen"
+msgstr "Reprendre la suggestion"
+
+msgid "Anteil der Teuerung, der weitergegeben wird: über 0 und höchstens 100 Prozent."
+msgstr "Part du renchérissement répercutée : plus de 0 et au plus 100 pour cent."
+
+msgid "Mindestintervall (vertraglich, Monate)"
+msgstr "Intervalle minimal (contractuel, mois)"
+
+msgid "Aktuellen Referenzzinssatz übernehmen"
+msgstr "Reprendre le taux d'intérêt de référence actuel"
+
+msgid "Stand bei Vertragsbeginn — Grundlage für spätere Mietzinsanpassungen."
+msgstr "Taux au début du bail — base de futures adaptations du loyer."
+
+msgid "Lädt …"
+msgstr "Chargement …"
+
+msgid "Stufe {n}"
+msgstr "Palier {n}"
+
+msgid "Stufe {n} entfernen"
+msgstr "Supprimer le palier {n}"
+
+msgid "+ CHF"
+msgstr "+ CHF"
+
+msgid "→ neu CHF"
+msgstr "→ nouveau CHF"
+
+msgid "Mindestdauer erfüllt"
+msgstr "Durée minimale respectée"
+
+msgid "Mindestdauer nicht erfüllt"
+msgstr "Durée minimale non respectée"
+
+msgid "Dauer offen"
+msgstr "Durée ouverte"
+
+msgid "Prüfung läuft …"
+msgstr "Vérification en cours …"
+
+msgid "Nicht geprüft"
+msgstr "Non vérifié"
+
+msgid "Fest bis {bis}. Verlangt ist die Dauer bis {soll} ({jahre} Jahre ab Mietbeginn)."
+msgstr "Ferme jusqu'au {bis}. La durée exigée va jusqu'au {soll} ({jahre} ans dès le début du bail)."
+
+msgid "Der Mietbeginn fehlt (Schritt «Konditionen»): Ohne ihn lässt sich die feste Dauer nicht beurteilen."
+msgstr "Le début du bail manque (étape « Conditions ») : sans lui, la durée ferme ne peut pas être évaluée."
+
+msgid "Die Prüfung ist gerade nicht erreichbar. Der Server prüft beim Speichern trotzdem."
+msgstr "La vérification n'est pas joignable pour le moment. Le serveur vérifie de toute façon à l'enregistrement."
+
+msgid "Staffelstufen entfernt"
+msgstr "Paliers supprimés"
+
+msgid "Index-Angaben entfernt"
+msgstr "Données d'indice supprimées"
+
+msgid "Zuerst den Mietbeginn im Schritt «Konditionen» eintragen."
+msgstr "Saisissez d'abord le début du bail à l'étape « Conditions »."
+
+msgid "Einen Betrag über 0 eintragen."
+msgstr "Saisissez un montant supérieur à 0."
+
+msgid "Die Anzahl muss zwischen 1 und {max} liegen."
+msgstr "Le nombre doit être compris entre 1 et {max}."
+
+msgid "Vorschlag: {punkte} Punkte, Stand {stand} (Vormonat des Mietbeginns)."
+msgstr "Suggestion : {punkte} points, état {stand} (mois précédant le début du bail)."
+
+msgid "Für diesen Mietbeginn ist noch kein Indexstand veröffentlicht."
+msgstr "Aucun indice n'est encore publié pour ce début de bail."
+
+msgid "Beispiel: Bei LIK {lik} würde der Mietzins CHF {neu} betragen (heute CHF {alt})."
+msgstr "Exemple : à l'IPC {lik}, le loyer serait de CHF {neu} (aujourd'hui CHF {alt})."
+
+msgid "Beispiel: Bei LIK {lik} bliebe der Mietzins bei CHF {alt}."
+msgstr "Exemple : à l'IPC {lik}, le loyer resterait à CHF {alt}."
+
+msgid "Gesperrt: {grund}"
+msgstr "Bloqué : {grund}"
+
+msgid "(und {n} weitere)"
+msgstr "(et {n} autres)"
+
+msgid "Feste Dauer bis"
+msgstr "Durée ferme jusqu'au"
+
+msgid "Basis Landesindex"
+msgstr "Base de l'indice"
+
+msgid "Weitergabe"
+msgstr "Répercussion"
+
+msgid "Unbekanntes Mietzinsmodell."
+msgstr "Modèle de loyer inconnu."
+
+#, python-format
+msgid "Mehr als %(max)s Staffelstufen sind nicht möglich."
+msgstr "Plus de %(max)s paliers ne sont pas possibles."
+
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung ist zu hoch."
+msgstr "Palier %(nr)s : la hausse est trop élevée."
+
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung ist auf den Rappen genau anzugeben."
+msgstr "Palier %(nr)s : la hausse doit être indiquée au centime près."
+
+msgid "Die Weitergabe hat höchstens eine Nachkommastelle."
+msgstr "La répercussion comporte au plus une décimale."
+
+msgid "Die Basis des Landesindexes hat höchstens eine Nachkommastelle."
+msgstr "La base de l'indice comporte au plus une décimale."
+
+msgid "Bei festem Mietzins darf keine Indexklausel stehen bleiben (Weitergabe, Mindestintervall)."
+msgstr "Avec un loyer fixe, aucune clause d'indexation ne doit subsister (répercussion, intervalle minimal)."
+
+msgid "Der Mietbeginn fehlt: Ohne ihn lässt sich die feste Dauer nicht beurteilen."
+msgstr "Le début du bail manque : sans lui, la durée ferme ne peut pas être évaluée."
+
+#, python-format
+msgid "Stufe %(nr)s: «%(eingabe)s» ist als Datum nicht lesbar — nichts wurde gespeichert."
+msgstr "Palier %(nr)s : « %(eingabe)s » n'est pas lisible comme date — rien n'a été enregistré."
+
+#, python-format
+msgid "Stufe %(nr)s: «%(eingabe)s» ist als Erhöhung nicht lesbar — nichts wurde gespeichert."
+msgstr "Palier %(nr)s : « %(eingabe)s » n'est pas lisible comme hausse — rien n'a été enregistré."
+
+msgid "Eine Staffelstufe wird als Erhöhung in Franken erfasst, nicht als neuer Mietzins — nichts wurde gespeichert."
+msgstr "Un palier s'enregistre comme hausse en francs, pas comme nouveau loyer — rien n'a été enregistré."
+
+#, python-format
+msgid "Mietzinsmodell dieses Entwurfs (unverändert, daher nicht gesperrt): %(text)s"
+msgstr "Modèle de loyer de ce brouillon (inchangé, donc non bloqué) : %(text)s"
+
+msgid "Vorschau nicht möglich: Das Mietzinsmodell ist noch nicht zulässig."
+msgstr "Aperçu impossible : le modèle de loyer n'est pas encore admissible."
+
+msgid "Der Vertrag bleibt Entwurf: Das Mietzinsmodell ist nicht zulässig. Im Assistenten lässt es sich korrigieren."
+msgstr "Le contrat reste un brouillon : le modèle de loyer n'est pas admissible. Il peut être corrigé dans l'assistant."
+
+msgid "Der Mietzins ist im Vertrag als fester Betrag vereinbart. Spätere Anpassungen gehen mit dem amtlichen Formular (Art. 269d OR); die Gründe stehen in Art. 269a OR, etwa Referenzzinssatz oder Kostensteigerung."
+msgstr "Le loyer est convenu dans le bail comme montant fixe. Les adaptations ultérieures se font au moyen du formulaire officiel (art. 269d CO) ; les motifs figurent à l'art. 269a CO, par exemple le taux d'intérêt de référence ou la hausse des coûts."
+
+msgid "Weitergabe der Teuerung"
+msgstr "Répercussion du renchérissement"
+
+msgid "Der Anteil der Teuerung, der in den Mietzins einfliesst. Höchstens 100 Prozent: Die Erhöhung darf die Zunahme des Landesindexes nicht übersteigen (Art. 17 Abs. 1 VMWG). Sinkt der Index, ist der Mietzins entsprechend anzupassen (Art. 17 Abs. 2 VMWG)."
+msgstr "La part du renchérissement qui entre dans le loyer. Au maximum 100 pour cent : la hausse ne peut pas dépasser l'augmentation de l'indice (art. 17 al. 1 OBLF). Si l'indice baisse, le loyer doit être adapté en conséquence (art. 17 al. 2 OBLF)."
+
+msgid "Mindestintervall"
+msgstr "Intervalle minimal"
+
+msgid "Der Abstand zwischen zwei Anpassungen, den die Parteien im Vertrag vereinbaren. Die Ankündigung selbst erfolgt mit mindestens 30 Tagen auf ein Monatsende (Art. 17 Abs. 3 VMWG)."
+msgstr "L'intervalle entre deux adaptations convenu par les parties dans le bail. L'avis lui-même se fait au moins 30 jours avant la fin d'un mois (art. 17 al. 3 OBLF)."

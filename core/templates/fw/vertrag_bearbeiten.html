@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n hilfe %}
 {% load l10n %}
 {% load chf %}
 {% block title %}{% trans "Vertrag bearbeiten" %} — {{ v.mieter.display_name }}{% endblock %}
@@ -40,6 +40,7 @@
     <div class="fw-formfehler" role="alert">
         <b>{% blocktrans count n=anzahl_fehler %}{{ n }} Angabe prüfen{% plural %}{{ n }} Angaben prüfen{% endblocktrans %}</b> —
         {% trans "nichts wurde gespeichert. Die Hinweise stehen bei den Feldern." %}
+        {% if formular_fehler %}<ul class="mt-2 space-y-1">{% for meldung in formular_fehler %}<li>{{ meldung }}</li>{% endfor %}</ul>{% endif %}
     </div>
     {% endif %}
 
@@ -89,6 +90,9 @@
             </div>
             <div class="fw-feldblock"><label for="v-ende" class="fw-label">{% trans "Mietende (leer = unbefristet)" %}</label>
                 <input name="ende" type="date" value="{{ wert.ende }}" class="fw-feld" id="v-ende"{% if feld_fehler.ende %} aria-invalid="true" aria-describedby="v-ende_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.ende feld_id='v-ende' %}</div>
+            <div class="fw-feldblock"><label for="v-kuendigungsverzicht" class="fw-label">{% trans "Vermieter verzichtet auf Kündigung bis" %} {% hilfe 'kuendigungsverzicht' %}</label>
+                <input name="vermieter_kuendigungsverzicht_bis" type="date" value="{{ wert.vermieter_kuendigungsverzicht_bis }}" class="fw-feld" id="v-kuendigungsverzicht"{% if feld_fehler.vermieter_kuendigungsverzicht_bis %} aria-invalid="true" aria-describedby="v-kuendigungsverzicht_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.vermieter_kuendigungsverzicht_bis feld_id='v-kuendigungsverzicht' %}
+                <p class="fw-hilfe">{% trans "Nur bei einem unbefristeten Vertrag. Zählt bei Index- und Staffelmiete als feste Dauer." %}</p></div>
             <div class="fw-feldblock"><label for="v-kuendigungsfrist" class="fw-label">{% trans "Kündigungsfrist (Monate)" %}</label>
                 <input inputmode="numeric" name="kuendigungsfrist" value="{{ wert.kuendigungsfrist }}" class="fw-feld" id="v-kuendigungsfrist"{% if feld_fehler.kuendigungsfrist %} aria-invalid="true" aria-describedby="v-kuendigungsfrist_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.kuendigungsfrist feld_id='v-kuendigungsfrist' %}</div>
             <div class="fw-feldblock"><label for="v-erstmals_kuendbar" class="fw-label">{% trans "Erstmals kündbar auf" %}</label>

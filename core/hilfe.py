@@ -80,6 +80,17 @@ HILFE = {
     'vorbehalt': (_('Vorbehalt'), _(
         'Wer die mögliche Anpassung nicht ganz ausschöpft, kann sich den Rest für später vorbehalten. '
         'Der Vorbehalt wird beziffert — in Franken oder Prozent —, damit er sich später nachvollziehen lässt.')),
+    # Vertragsassistent, Block «Mietzinsmodell» (27.10.2026)
+    'festmiete': (_('Fester Mietzins'), _(
+        'Der Mietzins ist im Vertrag als fester Betrag vereinbart. Spätere Anpassungen gehen mit dem amtlichen '
+        'Formular (Art. 269d OR); die Gründe stehen in Art. 269a OR, etwa Referenzzinssatz oder Kostensteigerung.')),
+    'index_weitergabe': (_('Weitergabe der Teuerung'), _(
+        'Der Anteil der Teuerung, der in den Mietzins einfliesst. Höchstens 100 Prozent: Die Erhöhung darf die '
+        'Zunahme des Landesindexes nicht übersteigen (Art. 17 Abs. 1 VMWG). Sinkt der Index, ist der Mietzins '
+        'entsprechend anzupassen (Art. 17 Abs. 2 VMWG).')),
+    'index_intervall': (_('Mindestintervall'), _(
+        'Der Abstand zwischen zwei Anpassungen, den die Parteien im Vertrag vereinbaren. Die Ankündigung selbst '
+        'erfolgt mit mindestens 30 Tagen auf ein Monatsende (Art. 17 Abs. 3 VMWG).')),
     'indexmiete': (_('Indexmiete'), _(
         'Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach unten und höchstens im '
         'Umfang der Teuerung (Art. 269b OR, Art. 17 VMWG). Der Vertrag muss mindestens fünf Jahre fest dauern; ein '

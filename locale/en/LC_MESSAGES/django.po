@@ -32593,3 +32593,224 @@ msgstr "Notice of the graduated increase"
 #: core/hilfe.py
 msgid "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche Formular braucht es dafür nicht, die Mitteilung aber schon: Der Vertrag allein ersetzt sie nicht."
 msgstr "Every increase is communicated to the tenant in writing, no earlier than four months before it takes effect (Art. 269d para. 5 CO, Art. 19a VMWG). The official form is not required for this, but the notice is: the lease alone does not replace it."
+
+#: Mietzinsmodell-Wizard (27.10.2026)
+msgid "Vermieter verzichtet auf Kündigung bis"
+msgstr "Landlord waives termination until"
+
+msgid "Nur bei einem unbefristeten Vertrag. Zählt bei Index- und Staffelmiete als feste Dauer."
+msgstr "Only for an open-ended lease. Counts as a fixed term for index-linked and stepped rent."
+
+msgid "Mietzins, Mietzinsmodell und Zahlungsmodalitäten."
+msgstr "Rent, rent model and payment terms."
+
+msgid "Zweckbestimmung für Geschäftsräume."
+msgstr "Intended use of commercial premises."
+
+msgid "Fester Mietzins"
+msgstr "Fixed rent"
+
+msgid "Der Mietzins bleibt, bis er nach den Regeln des Mietrechts angepasst wird."
+msgstr "The rent stays the same until it is adjusted under tenancy law."
+
+msgid "Erhöhungen als Frankenbeträge, höchstens einmal jährlich. Feste Dauer mindestens 3 Jahre."
+msgstr "Increases as amounts in francs, at most once a year. Fixed term of at least 3 years."
+
+msgid "Der Mietzins folgt dem Landesindex der Konsumentenpreise. Feste Dauer mindestens 5 Jahre."
+msgstr "The rent follows the Swiss consumer price index. Fixed term of at least 5 years."
+
+msgid "Feste Dauer"
+msgstr "Fixed term"
+
+msgid "Laufzeit ändern"
+msgstr "Change the term"
+
+msgid "Startmietzins (netto)"
+msgstr "Starting rent (net)"
+
+msgid "aus dem Feld «Mietzins netto» oben"
+msgstr "from the “Net rent” field above"
+
+msgid "Noch keine Stufe. Eine Stufe hinzufügen oder die Stufen erzeugen."
+msgstr "No step yet. Add a step or generate the steps."
+
+msgid "Stufen erzeugen"
+msgstr "Generate steps"
+
+msgid "Jedes Jahr dieselbe Erhöhung, die erste 12 Monate nach Mietbeginn. Vorhandene Stufen werden ersetzt."
+msgstr "The same increase every year, the first one 12 months after the start of the lease. Existing steps are replaced."
+
+msgid "Jährlich + CHF"
+msgstr "Yearly + CHF"
+
+msgid "Wie oft"
+msgstr "How many times"
+
+msgid "Index"
+msgstr "Index"
+
+msgid "Landesindex der Konsumentenpreise (BFS)"
+msgstr "Swiss consumer price index (FSO)"
+
+#, python-format
+msgid "Basis %(basis)s = 100 Punkte"
+msgstr "Base %(basis)s = 100 points"
+
+msgid "Vorschlag übernehmen"
+msgstr "Use suggestion"
+
+msgid "Anteil der Teuerung, der weitergegeben wird: über 0 und höchstens 100 Prozent."
+msgstr "Share of inflation passed on: more than 0 and at most 100 percent."
+
+msgid "Mindestintervall (vertraglich, Monate)"
+msgstr "Minimum interval (contractual, months)"
+
+msgid "Aktuellen Referenzzinssatz übernehmen"
+msgstr "Use current reference interest rate"
+
+msgid "Stand bei Vertragsbeginn — Grundlage für spätere Mietzinsanpassungen."
+msgstr "Rate at the start of the lease — basis for later rent adjustments."
+
+msgid "Lädt …"
+msgstr "Loading …"
+
+msgid "Stufe {n}"
+msgstr "Step {n}"
+
+msgid "Stufe {n} entfernen"
+msgstr "Remove step {n}"
+
+msgid "+ CHF"
+msgstr "+ CHF"
+
+msgid "→ neu CHF"
+msgstr "→ new CHF"
+
+msgid "Mindestdauer erfüllt"
+msgstr "Minimum term met"
+
+msgid "Mindestdauer nicht erfüllt"
+msgstr "Minimum term not met"
+
+msgid "Dauer offen"
+msgstr "Term open"
+
+msgid "Prüfung läuft …"
+msgstr "Checking …"
+
+msgid "Nicht geprüft"
+msgstr "Not checked"
+
+msgid "Fest bis {bis}. Verlangt ist die Dauer bis {soll} ({jahre} Jahre ab Mietbeginn)."
+msgstr "Fixed until {bis}. The required term runs until {soll} ({jahre} years from the start of the lease)."
+
+msgid "Der Mietbeginn fehlt (Schritt «Konditionen»): Ohne ihn lässt sich die feste Dauer nicht beurteilen."
+msgstr "The start of the lease is missing (step “Terms”): without it the fixed term cannot be assessed."
+
+msgid "Die Prüfung ist gerade nicht erreichbar. Der Server prüft beim Speichern trotzdem."
+msgstr "The check is not reachable right now. The server checks again when saving."
+
+msgid "Staffelstufen entfernt"
+msgstr "Steps removed"
+
+msgid "Index-Angaben entfernt"
+msgstr "Index details removed"
+
+msgid "Zuerst den Mietbeginn im Schritt «Konditionen» eintragen."
+msgstr "Enter the start of the lease in the step “Terms” first."
+
+msgid "Einen Betrag über 0 eintragen."
+msgstr "Enter an amount above 0."
+
+msgid "Die Anzahl muss zwischen 1 und {max} liegen."
+msgstr "The number must be between 1 and {max}."
+
+msgid "Vorschlag: {punkte} Punkte, Stand {stand} (Vormonat des Mietbeginns)."
+msgstr "Suggestion: {punkte} points, as of {stand} (month before the start of the lease)."
+
+msgid "Für diesen Mietbeginn ist noch kein Indexstand veröffentlicht."
+msgstr "No index value has been published yet for this start of the lease."
+
+msgid "Beispiel: Bei LIK {lik} würde der Mietzins CHF {neu} betragen (heute CHF {alt})."
+msgstr "Example: at CPI {lik} the rent would be CHF {neu} (today CHF {alt})."
+
+msgid "Beispiel: Bei LIK {lik} bliebe der Mietzins bei CHF {alt}."
+msgstr "Example: at CPI {lik} the rent would stay at CHF {alt}."
+
+msgid "Gesperrt: {grund}"
+msgstr "Blocked: {grund}"
+
+msgid "(und {n} weitere)"
+msgstr "(and {n} more)"
+
+msgid "Feste Dauer bis"
+msgstr "Fixed term until"
+
+msgid "Basis Landesindex"
+msgstr "Index base"
+
+msgid "Weitergabe"
+msgstr "Pass-through"
+
+msgid "Unbekanntes Mietzinsmodell."
+msgstr "Unknown rent model."
+
+#, python-format
+msgid "Mehr als %(max)s Staffelstufen sind nicht möglich."
+msgstr "More than %(max)s steps are not possible."
+
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung ist zu hoch."
+msgstr "Step %(nr)s: the increase is too high."
+
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung ist auf den Rappen genau anzugeben."
+msgstr "Step %(nr)s: the increase must be given to the cent."
+
+msgid "Die Weitergabe hat höchstens eine Nachkommastelle."
+msgstr "The pass-through has at most one decimal place."
+
+msgid "Die Basis des Landesindexes hat höchstens eine Nachkommastelle."
+msgstr "The index base has at most one decimal place."
+
+msgid "Bei festem Mietzins darf keine Indexklausel stehen bleiben (Weitergabe, Mindestintervall)."
+msgstr "With a fixed rent no index clause may remain (pass-through, minimum interval)."
+
+msgid "Der Mietbeginn fehlt: Ohne ihn lässt sich die feste Dauer nicht beurteilen."
+msgstr "The start of the lease is missing: without it the fixed term cannot be assessed."
+
+#, python-format
+msgid "Stufe %(nr)s: «%(eingabe)s» ist als Datum nicht lesbar — nichts wurde gespeichert."
+msgstr "Step %(nr)s: “%(eingabe)s” cannot be read as a date — nothing was saved."
+
+#, python-format
+msgid "Stufe %(nr)s: «%(eingabe)s» ist als Erhöhung nicht lesbar — nichts wurde gespeichert."
+msgstr "Step %(nr)s: “%(eingabe)s” cannot be read as an increase — nothing was saved."
+
+msgid "Eine Staffelstufe wird als Erhöhung in Franken erfasst, nicht als neuer Mietzins — nichts wurde gespeichert."
+msgstr "A step is entered as an increase in francs, not as a new rent — nothing was saved."
+
+#, python-format
+msgid "Mietzinsmodell dieses Entwurfs (unverändert, daher nicht gesperrt): %(text)s"
+msgstr "Rent model of this draft (unchanged, so not blocked): %(text)s"
+
+msgid "Vorschau nicht möglich: Das Mietzinsmodell ist noch nicht zulässig."
+msgstr "Preview not possible: the rent model is not yet permissible."
+
+msgid "Der Vertrag bleibt Entwurf: Das Mietzinsmodell ist nicht zulässig. Im Assistenten lässt es sich korrigieren."
+msgstr "The contract stays a draft: the rent model is not permissible. It can be corrected in the assistant."
+
+msgid "Der Mietzins ist im Vertrag als fester Betrag vereinbart. Spätere Anpassungen gehen mit dem amtlichen Formular (Art. 269d OR); die Gründe stehen in Art. 269a OR, etwa Referenzzinssatz oder Kostensteigerung."
+msgstr "The rent is agreed in the lease as a fixed amount. Later adjustments use the official form (Art. 269d CO); the grounds are in Art. 269a CO, such as the reference interest rate or cost increases."
+
+msgid "Weitergabe der Teuerung"
+msgstr "Passing on inflation"
+
+msgid "Der Anteil der Teuerung, der in den Mietzins einfliesst. Höchstens 100 Prozent: Die Erhöhung darf die Zunahme des Landesindexes nicht übersteigen (Art. 17 Abs. 1 VMWG). Sinkt der Index, ist der Mietzins entsprechend anzupassen (Art. 17 Abs. 2 VMWG)."
+msgstr "The share of inflation that goes into the rent. At most 100 percent: the increase may not exceed the rise in the index (Art. 17 para. 1 VMWG). If the index falls, the rent must be adjusted accordingly (Art. 17 para. 2 VMWG)."
+
+msgid "Mindestintervall"
+msgstr "Minimum interval"
+
+msgid "Der Abstand zwischen zwei Anpassungen, den die Parteien im Vertrag vereinbaren. Die Ankündigung selbst erfolgt mit mindestens 30 Tagen auf ein Monatsende (Art. 17 Abs. 3 VMWG)."
+msgstr "The interval between two adjustments agreed by the parties in the lease. The notice itself is given at least 30 days before the end of a month (Art. 17 para. 3 VMWG)."

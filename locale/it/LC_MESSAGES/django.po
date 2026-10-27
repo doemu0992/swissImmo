@@ -33017,3 +33017,224 @@ msgstr "Comunicazione dell'aumento scalare"
 #: core/hilfe.py
 msgid "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche Formular braucht es dafür nicht, die Mitteilung aber schon: Der Vertrag allein ersetzt sie nicht."
 msgstr "Ogni aumento è comunicato per scritto al conduttore, al più presto quattro mesi prima della sua entrata in vigore (art. 269d cpv. 5 CO, art. 19a OLAL). Per questo non serve il modulo ufficiale, ma la comunicazione sì: il solo contratto non la sostituisce."
+
+#: Mietzinsmodell-Wizard (27.10.2026)
+msgid "Vermieter verzichtet auf Kündigung bis"
+msgstr "Il locatore rinuncia alla disdetta fino al"
+
+msgid "Nur bei einem unbefristeten Vertrag. Zählt bei Index- und Staffelmiete als feste Dauer."
+msgstr "Solo per un contratto a tempo indeterminato. Vale come durata fissa per la pigione indicizzata e graduale."
+
+msgid "Mietzins, Mietzinsmodell und Zahlungsmodalitäten."
+msgstr "Pigione, modello di pigione e modalità di pagamento."
+
+msgid "Zweckbestimmung für Geschäftsräume."
+msgstr "Destinazione dei locali commerciali."
+
+msgid "Fester Mietzins"
+msgstr "Pigione fissa"
+
+msgid "Der Mietzins bleibt, bis er nach den Regeln des Mietrechts angepasst wird."
+msgstr "La pigione resta invariata finché non viene adeguata secondo le regole del diritto di locazione."
+
+msgid "Erhöhungen als Frankenbeträge, höchstens einmal jährlich. Feste Dauer mindestens 3 Jahre."
+msgstr "Aumenti in franchi, al massimo una volta all'anno. Durata fissa di almeno 3 anni."
+
+msgid "Der Mietzins folgt dem Landesindex der Konsumentenpreise. Feste Dauer mindestens 5 Jahre."
+msgstr "La pigione segue l'indice nazionale dei prezzi al consumo. Durata fissa di almeno 5 anni."
+
+msgid "Feste Dauer"
+msgstr "Durata fissa"
+
+msgid "Laufzeit ändern"
+msgstr "Modifica la durata"
+
+msgid "Startmietzins (netto)"
+msgstr "Pigione iniziale (netta)"
+
+msgid "aus dem Feld «Mietzins netto» oben"
+msgstr "dal campo «Pigione netta» qui sopra"
+
+msgid "Noch keine Stufe. Eine Stufe hinzufügen oder die Stufen erzeugen."
+msgstr "Ancora nessun gradino. Aggiungete un gradino o generate i gradini."
+
+msgid "Stufen erzeugen"
+msgstr "Genera i gradini"
+
+msgid "Jedes Jahr dieselbe Erhöhung, die erste 12 Monate nach Mietbeginn. Vorhandene Stufen werden ersetzt."
+msgstr "Ogni anno lo stesso aumento, il primo 12 mesi dopo l'inizio della locazione. I gradini esistenti vengono sostituiti."
+
+msgid "Jährlich + CHF"
+msgstr "Ogni anno + CHF"
+
+msgid "Wie oft"
+msgstr "Quante volte"
+
+msgid "Index"
+msgstr "Indice"
+
+msgid "Landesindex der Konsumentenpreise (BFS)"
+msgstr "Indice nazionale dei prezzi al consumo (UST)"
+
+#, python-format
+msgid "Basis %(basis)s = 100 Punkte"
+msgstr "Base %(basis)s = 100 punti"
+
+msgid "Vorschlag übernehmen"
+msgstr "Accetta il suggerimento"
+
+msgid "Anteil der Teuerung, der weitergegeben wird: über 0 und höchstens 100 Prozent."
+msgstr "Quota del rincaro trasferita: oltre 0 e al massimo 100 per cento."
+
+msgid "Mindestintervall (vertraglich, Monate)"
+msgstr "Intervallo minimo (contrattuale, mesi)"
+
+msgid "Aktuellen Referenzzinssatz übernehmen"
+msgstr "Adotta il tasso d'interesse di riferimento attuale"
+
+msgid "Stand bei Vertragsbeginn — Grundlage für spätere Mietzinsanpassungen."
+msgstr "Valore all'inizio del contratto — base per successivi adeguamenti della pigione."
+
+msgid "Lädt …"
+msgstr "Caricamento …"
+
+msgid "Stufe {n}"
+msgstr "Gradino {n}"
+
+msgid "Stufe {n} entfernen"
+msgstr "Rimuovi il gradino {n}"
+
+msgid "+ CHF"
+msgstr "+ CHF"
+
+msgid "→ neu CHF"
+msgstr "→ nuovo CHF"
+
+msgid "Mindestdauer erfüllt"
+msgstr "Durata minima rispettata"
+
+msgid "Mindestdauer nicht erfüllt"
+msgstr "Durata minima non rispettata"
+
+msgid "Dauer offen"
+msgstr "Durata aperta"
+
+msgid "Prüfung läuft …"
+msgstr "Verifica in corso …"
+
+msgid "Nicht geprüft"
+msgstr "Non verificato"
+
+msgid "Fest bis {bis}. Verlangt ist die Dauer bis {soll} ({jahre} Jahre ab Mietbeginn)."
+msgstr "Fissa fino al {bis}. La durata richiesta arriva fino al {soll} ({jahre} anni dall'inizio della locazione)."
+
+msgid "Der Mietbeginn fehlt (Schritt «Konditionen»): Ohne ihn lässt sich die feste Dauer nicht beurteilen."
+msgstr "Manca l'inizio della locazione (passo «Condizioni»): senza di esso la durata fissa non può essere valutata."
+
+msgid "Die Prüfung ist gerade nicht erreichbar. Der Server prüft beim Speichern trotzdem."
+msgstr "La verifica al momento non è raggiungibile. Il server verifica comunque al salvataggio."
+
+msgid "Staffelstufen entfernt"
+msgstr "Gradini rimossi"
+
+msgid "Index-Angaben entfernt"
+msgstr "Dati dell'indice rimossi"
+
+msgid "Zuerst den Mietbeginn im Schritt «Konditionen» eintragen."
+msgstr "Inserite prima l'inizio della locazione nel passo «Condizioni»."
+
+msgid "Einen Betrag über 0 eintragen."
+msgstr "Inserite un importo superiore a 0."
+
+msgid "Die Anzahl muss zwischen 1 und {max} liegen."
+msgstr "Il numero deve essere compreso tra 1 e {max}."
+
+msgid "Vorschlag: {punkte} Punkte, Stand {stand} (Vormonat des Mietbeginns)."
+msgstr "Suggerimento: {punkte} punti, stato {stand} (mese precedente l'inizio della locazione)."
+
+msgid "Für diesen Mietbeginn ist noch kein Indexstand veröffentlicht."
+msgstr "Per questo inizio di locazione non è ancora stato pubblicato alcun indice."
+
+msgid "Beispiel: Bei LIK {lik} würde der Mietzins CHF {neu} betragen (heute CHF {alt})."
+msgstr "Esempio: con IPC {lik} la pigione sarebbe di CHF {neu} (oggi CHF {alt})."
+
+msgid "Beispiel: Bei LIK {lik} bliebe der Mietzins bei CHF {alt}."
+msgstr "Esempio: con IPC {lik} la pigione resterebbe a CHF {alt}."
+
+msgid "Gesperrt: {grund}"
+msgstr "Bloccato: {grund}"
+
+msgid "(und {n} weitere)"
+msgstr "(e altri {n})"
+
+msgid "Feste Dauer bis"
+msgstr "Durata fissa fino al"
+
+msgid "Basis Landesindex"
+msgstr "Base dell'indice"
+
+msgid "Weitergabe"
+msgstr "Trasferimento"
+
+msgid "Unbekanntes Mietzinsmodell."
+msgstr "Modello di pigione sconosciuto."
+
+#, python-format
+msgid "Mehr als %(max)s Staffelstufen sind nicht möglich."
+msgstr "Più di %(max)s gradini non sono possibili."
+
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung ist zu hoch."
+msgstr "Gradino %(nr)s: l'aumento è troppo alto."
+
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung ist auf den Rappen genau anzugeben."
+msgstr "Gradino %(nr)s: l'aumento va indicato al centesimo."
+
+msgid "Die Weitergabe hat höchstens eine Nachkommastelle."
+msgstr "Il trasferimento ha al massimo una cifra decimale."
+
+msgid "Die Basis des Landesindexes hat höchstens eine Nachkommastelle."
+msgstr "La base dell'indice ha al massimo una cifra decimale."
+
+msgid "Bei festem Mietzins darf keine Indexklausel stehen bleiben (Weitergabe, Mindestintervall)."
+msgstr "Con una pigione fissa non deve restare alcuna clausola d'indicizzazione (trasferimento, intervallo minimo)."
+
+msgid "Der Mietbeginn fehlt: Ohne ihn lässt sich die feste Dauer nicht beurteilen."
+msgstr "Manca l'inizio della locazione: senza di esso la durata fissa non può essere valutata."
+
+#, python-format
+msgid "Stufe %(nr)s: «%(eingabe)s» ist als Datum nicht lesbar — nichts wurde gespeichert."
+msgstr "Gradino %(nr)s: «%(eingabe)s» non è leggibile come data — non è stato salvato nulla."
+
+#, python-format
+msgid "Stufe %(nr)s: «%(eingabe)s» ist als Erhöhung nicht lesbar — nichts wurde gespeichert."
+msgstr "Gradino %(nr)s: «%(eingabe)s» non è leggibile come aumento — non è stato salvato nulla."
+
+msgid "Eine Staffelstufe wird als Erhöhung in Franken erfasst, nicht als neuer Mietzins — nichts wurde gespeichert."
+msgstr "Un gradino va registrato come aumento in franchi, non come nuova pigione — non è stato salvato nulla."
+
+#, python-format
+msgid "Mietzinsmodell dieses Entwurfs (unverändert, daher nicht gesperrt): %(text)s"
+msgstr "Modello di pigione di questa bozza (invariato, quindi non bloccato): %(text)s"
+
+msgid "Vorschau nicht möglich: Das Mietzinsmodell ist noch nicht zulässig."
+msgstr "Anteprima non possibile: il modello di pigione non è ancora ammissibile."
+
+msgid "Der Vertrag bleibt Entwurf: Das Mietzinsmodell ist nicht zulässig. Im Assistenten lässt es sich korrigieren."
+msgstr "Il contratto resta una bozza: il modello di pigione non è ammissibile. Si può correggere nell'assistente."
+
+msgid "Der Mietzins ist im Vertrag als fester Betrag vereinbart. Spätere Anpassungen gehen mit dem amtlichen Formular (Art. 269d OR); die Gründe stehen in Art. 269a OR, etwa Referenzzinssatz oder Kostensteigerung."
+msgstr "La pigione è convenuta nel contratto come importo fisso. Gli adeguamenti successivi avvengono con il modulo ufficiale (art. 269d CO); i motivi sono indicati nell'art. 269a CO, ad esempio il tasso d'interesse di riferimento o l'aumento dei costi."
+
+msgid "Weitergabe der Teuerung"
+msgstr "Trasferimento del rincaro"
+
+msgid "Der Anteil der Teuerung, der in den Mietzins einfliesst. Höchstens 100 Prozent: Die Erhöhung darf die Zunahme des Landesindexes nicht übersteigen (Art. 17 Abs. 1 VMWG). Sinkt der Index, ist der Mietzins entsprechend anzupassen (Art. 17 Abs. 2 VMWG)."
+msgstr "La quota di rincaro che confluisce nella pigione. Al massimo 100 per cento: l'aumento non può superare l'incremento dell'indice (art. 17 cpv. 1 OLAL). Se l'indice scende, la pigione va adeguata di conseguenza (art. 17 cpv. 2 OLAL)."
+
+msgid "Mindestintervall"
+msgstr "Intervallo minimo"
+
+msgid "Der Abstand zwischen zwei Anpassungen, den die Parteien im Vertrag vereinbaren. Die Ankündigung selbst erfolgt mit mindestens 30 Tagen auf ein Monatsende (Art. 17 Abs. 3 VMWG)."
+msgstr "L'intervallo tra due adeguamenti convenuto dalle parti nel contratto. La comunicazione stessa avviene con almeno 30 giorni per la fine di un mese (art. 17 cpv. 3 OLAL)."

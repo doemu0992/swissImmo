@@ -32829,3 +32829,224 @@ msgstr "Mitteilung der Staffelerhöhung"
 #: core/hilfe.py
 msgid "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche Formular braucht es dafür nicht, die Mitteilung aber schon: Der Vertrag allein ersetzt sie nicht."
 msgstr "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche Formular braucht es dafür nicht, die Mitteilung aber schon: Der Vertrag allein ersetzt sie nicht."
+
+#: Mietzinsmodell-Wizard (27.10.2026)
+msgid "Vermieter verzichtet auf Kündigung bis"
+msgstr "Vermieter verzichtet auf Kündigung bis"
+
+msgid "Nur bei einem unbefristeten Vertrag. Zählt bei Index- und Staffelmiete als feste Dauer."
+msgstr "Nur bei einem unbefristeten Vertrag. Zählt bei Index- und Staffelmiete als feste Dauer."
+
+msgid "Mietzins, Mietzinsmodell und Zahlungsmodalitäten."
+msgstr "Mietzins, Mietzinsmodell und Zahlungsmodalitäten."
+
+msgid "Zweckbestimmung für Geschäftsräume."
+msgstr "Zweckbestimmung für Geschäftsräume."
+
+msgid "Fester Mietzins"
+msgstr "Fester Mietzins"
+
+msgid "Der Mietzins bleibt, bis er nach den Regeln des Mietrechts angepasst wird."
+msgstr "Der Mietzins bleibt, bis er nach den Regeln des Mietrechts angepasst wird."
+
+msgid "Erhöhungen als Frankenbeträge, höchstens einmal jährlich. Feste Dauer mindestens 3 Jahre."
+msgstr "Erhöhungen als Frankenbeträge, höchstens einmal jährlich. Feste Dauer mindestens 3 Jahre."
+
+msgid "Der Mietzins folgt dem Landesindex der Konsumentenpreise. Feste Dauer mindestens 5 Jahre."
+msgstr "Der Mietzins folgt dem Landesindex der Konsumentenpreise. Feste Dauer mindestens 5 Jahre."
+
+msgid "Feste Dauer"
+msgstr "Feste Dauer"
+
+msgid "Laufzeit ändern"
+msgstr "Laufzeit ändern"
+
+msgid "Startmietzins (netto)"
+msgstr "Startmietzins (netto)"
+
+msgid "aus dem Feld «Mietzins netto» oben"
+msgstr "aus dem Feld «Mietzins netto» oben"
+
+msgid "Noch keine Stufe. Eine Stufe hinzufügen oder die Stufen erzeugen."
+msgstr "Noch keine Stufe. Eine Stufe hinzufügen oder die Stufen erzeugen."
+
+msgid "Stufen erzeugen"
+msgstr "Stufen erzeugen"
+
+msgid "Jedes Jahr dieselbe Erhöhung, die erste 12 Monate nach Mietbeginn. Vorhandene Stufen werden ersetzt."
+msgstr "Jedes Jahr dieselbe Erhöhung, die erste 12 Monate nach Mietbeginn. Vorhandene Stufen werden ersetzt."
+
+msgid "Jährlich + CHF"
+msgstr "Jährlich + CHF"
+
+msgid "Wie oft"
+msgstr "Wie oft"
+
+msgid "Index"
+msgstr "Index"
+
+msgid "Landesindex der Konsumentenpreise (BFS)"
+msgstr "Landesindex der Konsumentenpreise (BFS)"
+
+#, python-format
+msgid "Basis %(basis)s = 100 Punkte"
+msgstr "Basis %(basis)s = 100 Punkte"
+
+msgid "Vorschlag übernehmen"
+msgstr "Vorschlag übernehmen"
+
+msgid "Anteil der Teuerung, der weitergegeben wird: über 0 und höchstens 100 Prozent."
+msgstr "Anteil der Teuerung, der weitergegeben wird: über 0 und höchstens 100 Prozent."
+
+msgid "Mindestintervall (vertraglich, Monate)"
+msgstr "Mindestintervall (vertraglich, Monate)"
+
+msgid "Aktuellen Referenzzinssatz übernehmen"
+msgstr "Aktuellen Referenzzinssatz übernehmen"
+
+msgid "Stand bei Vertragsbeginn — Grundlage für spätere Mietzinsanpassungen."
+msgstr "Stand bei Vertragsbeginn — Grundlage für spätere Mietzinsanpassungen."
+
+msgid "Lädt …"
+msgstr "Lädt …"
+
+msgid "Stufe {n}"
+msgstr "Stufe {n}"
+
+msgid "Stufe {n} entfernen"
+msgstr "Stufe {n} entfernen"
+
+msgid "+ CHF"
+msgstr "+ CHF"
+
+msgid "→ neu CHF"
+msgstr "→ neu CHF"
+
+msgid "Mindestdauer erfüllt"
+msgstr "Mindestdauer erfüllt"
+
+msgid "Mindestdauer nicht erfüllt"
+msgstr "Mindestdauer nicht erfüllt"
+
+msgid "Dauer offen"
+msgstr "Dauer offen"
+
+msgid "Prüfung läuft …"
+msgstr "Prüfung läuft …"
+
+msgid "Nicht geprüft"
+msgstr "Nicht geprüft"
+
+msgid "Fest bis {bis}. Verlangt ist die Dauer bis {soll} ({jahre} Jahre ab Mietbeginn)."
+msgstr "Fest bis {bis}. Verlangt ist die Dauer bis {soll} ({jahre} Jahre ab Mietbeginn)."
+
+msgid "Der Mietbeginn fehlt (Schritt «Konditionen»): Ohne ihn lässt sich die feste Dauer nicht beurteilen."
+msgstr "Der Mietbeginn fehlt (Schritt «Konditionen»): Ohne ihn lässt sich die feste Dauer nicht beurteilen."
+
+msgid "Die Prüfung ist gerade nicht erreichbar. Der Server prüft beim Speichern trotzdem."
+msgstr "Die Prüfung ist gerade nicht erreichbar. Der Server prüft beim Speichern trotzdem."
+
+msgid "Staffelstufen entfernt"
+msgstr "Staffelstufen entfernt"
+
+msgid "Index-Angaben entfernt"
+msgstr "Index-Angaben entfernt"
+
+msgid "Zuerst den Mietbeginn im Schritt «Konditionen» eintragen."
+msgstr "Zuerst den Mietbeginn im Schritt «Konditionen» eintragen."
+
+msgid "Einen Betrag über 0 eintragen."
+msgstr "Einen Betrag über 0 eintragen."
+
+msgid "Die Anzahl muss zwischen 1 und {max} liegen."
+msgstr "Die Anzahl muss zwischen 1 und {max} liegen."
+
+msgid "Vorschlag: {punkte} Punkte, Stand {stand} (Vormonat des Mietbeginns)."
+msgstr "Vorschlag: {punkte} Punkte, Stand {stand} (Vormonat des Mietbeginns)."
+
+msgid "Für diesen Mietbeginn ist noch kein Indexstand veröffentlicht."
+msgstr "Für diesen Mietbeginn ist noch kein Indexstand veröffentlicht."
+
+msgid "Beispiel: Bei LIK {lik} würde der Mietzins CHF {neu} betragen (heute CHF {alt})."
+msgstr "Beispiel: Bei LIK {lik} würde der Mietzins CHF {neu} betragen (heute CHF {alt})."
+
+msgid "Beispiel: Bei LIK {lik} bliebe der Mietzins bei CHF {alt}."
+msgstr "Beispiel: Bei LIK {lik} bliebe der Mietzins bei CHF {alt}."
+
+msgid "Gesperrt: {grund}"
+msgstr "Gesperrt: {grund}"
+
+msgid "(und {n} weitere)"
+msgstr "(und {n} weitere)"
+
+msgid "Feste Dauer bis"
+msgstr "Feste Dauer bis"
+
+msgid "Basis Landesindex"
+msgstr "Basis Landesindex"
+
+msgid "Weitergabe"
+msgstr "Weitergabe"
+
+msgid "Unbekanntes Mietzinsmodell."
+msgstr "Unbekanntes Mietzinsmodell."
+
+#, python-format
+msgid "Mehr als %(max)s Staffelstufen sind nicht möglich."
+msgstr "Mehr als %(max)s Staffelstufen sind nicht möglich."
+
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung ist zu hoch."
+msgstr "Stufe %(nr)s: Die Erhöhung ist zu hoch."
+
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung ist auf den Rappen genau anzugeben."
+msgstr "Stufe %(nr)s: Die Erhöhung ist auf den Rappen genau anzugeben."
+
+msgid "Die Weitergabe hat höchstens eine Nachkommastelle."
+msgstr "Die Weitergabe hat höchstens eine Nachkommastelle."
+
+msgid "Die Basis des Landesindexes hat höchstens eine Nachkommastelle."
+msgstr "Die Basis des Landesindexes hat höchstens eine Nachkommastelle."
+
+msgid "Bei festem Mietzins darf keine Indexklausel stehen bleiben (Weitergabe, Mindestintervall)."
+msgstr "Bei festem Mietzins darf keine Indexklausel stehen bleiben (Weitergabe, Mindestintervall)."
+
+msgid "Der Mietbeginn fehlt: Ohne ihn lässt sich die feste Dauer nicht beurteilen."
+msgstr "Der Mietbeginn fehlt: Ohne ihn lässt sich die feste Dauer nicht beurteilen."
+
+#, python-format
+msgid "Stufe %(nr)s: «%(eingabe)s» ist als Datum nicht lesbar — nichts wurde gespeichert."
+msgstr "Stufe %(nr)s: «%(eingabe)s» ist als Datum nicht lesbar — nichts wurde gespeichert."
+
+#, python-format
+msgid "Stufe %(nr)s: «%(eingabe)s» ist als Erhöhung nicht lesbar — nichts wurde gespeichert."
+msgstr "Stufe %(nr)s: «%(eingabe)s» ist als Erhöhung nicht lesbar — nichts wurde gespeichert."
+
+msgid "Eine Staffelstufe wird als Erhöhung in Franken erfasst, nicht als neuer Mietzins — nichts wurde gespeichert."
+msgstr "Eine Staffelstufe wird als Erhöhung in Franken erfasst, nicht als neuer Mietzins — nichts wurde gespeichert."
+
+#, python-format
+msgid "Mietzinsmodell dieses Entwurfs (unverändert, daher nicht gesperrt): %(text)s"
+msgstr "Mietzinsmodell dieses Entwurfs (unverändert, daher nicht gesperrt): %(text)s"
+
+msgid "Vorschau nicht möglich: Das Mietzinsmodell ist noch nicht zulässig."
+msgstr "Vorschau nicht möglich: Das Mietzinsmodell ist noch nicht zulässig."
+
+msgid "Der Vertrag bleibt Entwurf: Das Mietzinsmodell ist nicht zulässig. Im Assistenten lässt es sich korrigieren."
+msgstr "Der Vertrag bleibt Entwurf: Das Mietzinsmodell ist nicht zulässig. Im Assistenten lässt es sich korrigieren."
+
+msgid "Der Mietzins ist im Vertrag als fester Betrag vereinbart. Spätere Anpassungen gehen mit dem amtlichen Formular (Art. 269d OR); die Gründe stehen in Art. 269a OR, etwa Referenzzinssatz oder Kostensteigerung."
+msgstr "Der Mietzins ist im Vertrag als fester Betrag vereinbart. Spätere Anpassungen gehen mit dem amtlichen Formular (Art. 269d OR); die Gründe stehen in Art. 269a OR, etwa Referenzzinssatz oder Kostensteigerung."
+
+msgid "Weitergabe der Teuerung"
+msgstr "Weitergabe der Teuerung"
+
+msgid "Der Anteil der Teuerung, der in den Mietzins einfliesst. Höchstens 100 Prozent: Die Erhöhung darf die Zunahme des Landesindexes nicht übersteigen (Art. 17 Abs. 1 VMWG). Sinkt der Index, ist der Mietzins entsprechend anzupassen (Art. 17 Abs. 2 VMWG)."
+msgstr "Der Anteil der Teuerung, der in den Mietzins einfliesst. Höchstens 100 Prozent: Die Erhöhung darf die Zunahme des Landesindexes nicht übersteigen (Art. 17 Abs. 1 VMWG). Sinkt der Index, ist der Mietzins entsprechend anzupassen (Art. 17 Abs. 2 VMWG)."
+
+msgid "Mindestintervall"
+msgstr "Mindestintervall"
+
+msgid "Der Abstand zwischen zwei Anpassungen, den die Parteien im Vertrag vereinbaren. Die Ankündigung selbst erfolgt mit mindestens 30 Tagen auf ein Monatsende (Art. 17 Abs. 3 VMWG)."
+msgstr "Der Abstand zwischen zwei Anpassungen, den die Parteien im Vertrag vereinbaren. Die Ankündigung selbst erfolgt mit mindestens 30 Tagen auf ein Monatsende (Art. 17 Abs. 3 VMWG)."
