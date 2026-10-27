@@ -86,6 +86,25 @@
         <div class="border-t fw-linie pt-4"></div>
         {% include 'fw/_unterschrift_feld.html' %}
         <div class="border-t fw-linie pt-4"></div>
+        {% comment %}Briefkopf (Modul 5): Farbe und Fusszeile der Dokumente aus Vorlagen und der Begleitdokumente zum Vertrag.{% endcomment %}
+        <div class="fw-raster r2">
+            <div class="fw-feldblock"><label for="acc-bk-farbe" class="fw-label">{% trans "Briefkopf-Farbe" %}</label>
+                <div class="fw-vl-farbe">
+                    <input type="color" id="acc-bk-wahl" value="{{ vw.briefkopf_farbe|default:'#1e293b' }}" aria-label="{% trans 'Farbe wählen' %}">
+                    <input id="acc-bk-farbe" name="briefkopf_farbe" value="{{ vw.briefkopf_farbe }}" placeholder="#1f6f5c" pattern="#[0-9A-Fa-f]{6}" class="fw-feld fw-mono">
+                </div>
+                <p class="fw-hilfe">{% trans "Linie und Überschriften im Briefkopf. Leer = neutral." %}</p></div>
+            <div class="fw-feldblock"><label for="acc-bk-fuss" class="fw-label">{% trans "Briefkopf-Fusszeile" %}</label>
+                <input id="acc-bk-fuss" name="briefkopf_fusszeile" value="{{ vw.briefkopf_fusszeile }}" maxlength="240" class="fw-feld">
+                <p class="fw-hilfe">{% trans "Eine Zeile am Seitenfuss, z. B. Handelsregister oder Bankverbindung." %}</p></div>
+        </div>
+        <script>
+        (function () {
+            var wahl = document.getElementById('acc-bk-wahl'), feld = document.getElementById('acc-bk-farbe');
+            if (wahl && feld) { wahl.addEventListener('input', function () { feld.value = wahl.value; }); }
+        })();
+        </script>
+        <div class="border-t fw-linie pt-4"></div>
         <div class="fw-feldblock"><label class="fw-label">{% trans "Firmenname" %}</label>
             <input name="firma" value="{{ vw.firma }}" class="fw-feld"></div>
         <div class="fw-feldblock"><label class="fw-label">{% trans "Strasse &amp; Nr." %}</label>

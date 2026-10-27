@@ -46,7 +46,7 @@ def fw_dokumente(request):
     eintraege = []
 
     # 1) Vertrags-/Mieter-Ablage (rentals)
-    rqs = RDok.objects.select_related('liegenschaft', 'mieter', 'vertrag', 'einheit').order_by('-datum')
+    rqs = RDok.objects.neueste().select_related('liegenschaft', 'mieter', 'vertrag', 'einheit').order_by('-datum')
     if aktive_lg:
         rqs = rqs.filter(Q(liegenschaft=aktive_lg) | Q(einheit__liegenschaft=aktive_lg))
     for d in rqs:
@@ -62,6 +62,8 @@ def fw_dokumente(request):
             'name': name, 'kat': d.kategorie or 'sonstiges', 'datum': d.datum,
             'url': d.datei.url, 'kontext': kontext, 'quelle': 'Vertragsablage',
             'zustell': d.zustellstatus,
+            # Fassungen (Modul 5): Die Liste zeigt die neueste, der Verlauf alle.
+            'version': d.version, 'verlauf_url': (f'/neu/dokument/{d.id}/verlauf/' if d.version > 1 else ''),
         })
 
     # 2) Objekt-/Liegenschafts-Ablage (portfolio)

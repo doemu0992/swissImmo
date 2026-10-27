@@ -85,7 +85,7 @@ def fw_person_detail(request, pk):
     from collections import defaultdict
     dok_buckets = defaultdict(list)
     vtr_meta = {}
-    for d in (RentalsDokument.objects.filter(_Q(mieter=m) | _Q(vertrag_id__in=_vids))
+    for d in (RentalsDokument.objects.neueste().filter(_Q(mieter=m) | _Q(vertrag_id__in=_vids))
               .select_related('einheit__liegenschaft', 'vertrag__einheit__liegenschaft')
               .distinct().order_by('-datum')):
         vid = d.vertrag_id

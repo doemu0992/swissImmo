@@ -92,7 +92,10 @@ class VertragsablageTests(TestCase):
 
     def test_vertragserstellung_aktualisiert_ohne_duplikat(self):
         """Gegenstück: Der ausdrückliche Weg (Vertrag erstellen/neu versenden)
-        ersetzt die Fassung weiterhin — ohne zweites Dokument."""
+        legt die neue Fassung ab — ohne zweiten Eintrag in der Akte.
+
+        Seit Modul 5 (27.10.2026) als NEUE FASSUNG statt durch Überschreiben:
+        Die bisherige bleibt als Vorgänger erhalten."""
         from core.views.pdf import erzeuge_und_ablege_vertragspaket
         erzeuge_und_ablege_vertragspaket(self.v)
         abgelegt = self._mietvertrag(self.v)
@@ -100,5 +103,8 @@ class VertragsablageTests(TestCase):
         self.v.netto_mietzins = Decimal('1750')
         self.v.save()
         erzeuge_und_ablege_vertragspaket(self.v)
-        self.assertNotEqual(_inhalt(abgelegt), vorher)
-        self.assertEqual(Dokument.objects.filter(vertrag=self.v, bezeichnung='Mietvertrag').count(), 1)
+        self.assertEqual(_inhalt(abgelegt), vorher, 'Die bisherige Fassung wurde überschrieben.')
+        neueste = Dokument.objects.neueste().filter(vertrag=self.v, bezeichnung='Mietvertrag')
+        self.assertEqual(neueste.count(), 1)
+        self.assertNotEqual(_inhalt(neueste.get()), vorher)
+        self.assertEqual(neueste.get().vorgaenger_id, abgelegt.pk)

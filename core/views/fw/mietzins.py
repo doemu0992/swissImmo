@@ -396,6 +396,10 @@ def fw_mietzins_anpassung(request, vertrag_id):
             ablegen(_formular_pdf(v, anp, vw, lik_basis, formular),
                     f"Mietzinsanpassung wirksam {anp.wirksam_ab:%d.%m.%Y}",
                     kategorie='vertrag', vertrag=v, dedup=True)
+        # Modul 5: Regel «Mietzinsanpassung versandt» — Begleitschreiben zum
+        # amtlichen Formular, das unverändert bleibt.
+        from core.services.dokument_regeln import dokument_fuer_ereignis
+        dokument_fuer_ereignis('mza_versandt', organisation=v.organisation, vertrag=v)
         log_aktion(request, "Mietzinsanpassung versandt", str(v),
                    f"neu CHF {anp.neuer_netto_mietzins}, wirksam {anp.wirksam_ab}, "
                    f"versandt {anp.versand_am}", ziel=v)

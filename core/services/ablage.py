@@ -10,15 +10,35 @@ logger = logging.getLogger(__name__)
 
 def ablegen(pdf_bytes, titel, kategorie='korrespondenz', *,
             vertrag=None, mieter=None, einheit=None, liegenschaft=None,
-            dateiname=None, dedup=False, zugang_pflichtig=False):
+            dateiname=None, dedup=False, zugang_pflichtig=False,
+            vorlage=None, im_portal_sichtbar=None):
     """Speichert ``pdf_bytes`` als Dokument in der Akte.
 
     Fehlende Bezüge werden - soweit möglich - aus dem Vertrag abgeleitet.
-    Mit ``dedup=True`` wird ein bereits vorhandenes Dokument gleicher
-    Bezeichnung (am selben Vertrag) überschrieben statt dupliziert.
+
+    ``dedup=True`` LEGT EINE NEUE FASSUNG AN (Modul 5, 27.10.2026). Bis dahin
+    überschrieb es die Datei des vorhandenen Dokuments gleicher Bezeichnung am
+    selben Vertrag — und mit ihr die Fassung, die tatsächlich verschickt
+    worden war. Jetzt entsteht ein neues Dokument mit neuer Datei, `version`
+    um eins höher und `vorgaenger` auf der bisherigen Fassung; die alte Datei
+    bleibt. Listen zeigen nur die neueste (`Dokument.objects.neueste()`).
+    Ist der Inhalt derselbe, entsteht keine Fassung: Das vorhandene Dokument
+    wird zurückgegeben. «Derselbe» heisst: dieselben Bytes oder — bei PDFs —
+    dieselben Seiteninhalte. reportlab schreibt in jede Datei Erstellungszeit
+    und eine Zufalls-ID; ohne diesen Vergleich legte schon das blosse
+    Wiederöffnen eines PDF (Rechnung, Abnahmeprotokoll, Zahlungsvereinbarung)
+    jedes Mal eine neue Fassung an.
+
+    Die neue Fassung erbt, was am Dokument und nicht an der Datei hängt: die
+    Portal-Sichtbarkeit (eine von Hand ausgeblendete Akte bleibt
+    ausgeblendet), den Zustellnachweis (`zugang_pflichtig`,
+    `frist_pendenz_id`) und die Herkunftsvorlage.
+
     `zugang_pflichtig`: Das Schreiben muss dem Mieter nachweislich zugehen (Art. 257d) —
     es gilt als «nicht zugestellt», bis der Zugang bestätigt ist (`Dokument.zustellstatus`).
-    Gibt das (erstellte oder aktualisierte) Dokument zurück (oder ``None``)."""
+    `vorlage`: die `crm.Vorlage`, aus der das Dokument entstand.
+    `im_portal_sichtbar`: None = Standard (sichtbar bzw. wie die Vorfassung).
+    Gibt das erstellte Dokument zurück (oder ``None``)."""
     from rentals.models import Dokument
     if vertrag is not None:
         mieter = mieter or getattr(vertrag, 'mieter', None)
@@ -26,25 +46,18 @@ def ablegen(pdf_bytes, titel, kategorie='korrespondenz', *,
     if einheit is not None and liegenschaft is None:
         liegenschaft = getattr(einheit, 'liegenschaft', None)
 
+    vorhanden = None
     if dedup and vertrag is not None:
         # `alle_organisationen`: Gesucht wird das Dokument zu GENAU DIESEM
         # Vertrag — die Mandantengrenze steht in derselben Zeile
         # (`vertrag=vertrag`), und ein Vertrag gehoert genau einer Verwaltung.
         # Mit `objects` braeche die Ablage ueberall dort ab, wo sie aus einem
         # Lauf heraus geschieht: Mahnung, Sollstellung, Vertragsversand.
-        vorhanden = Dokument.alle_organisationen.filter(
-            vertrag=vertrag, bezeichnung=(titel or 'Dokument')[:200]).first()
-        if vorhanden is not None:
-            try:
-                if not (dateiname or '').lower().endswith('.pdf'):
-                    dateiname = f"{_slug(dateiname or titel or 'dokument')}.pdf"
-                vorhanden.datei.save(dateiname, ContentFile(pdf_bytes), save=True)
-                if zugang_pflichtig and not vorhanden.zugang_pflichtig:
-                    vorhanden.zugang_pflichtig = True
-                    vorhanden.save(update_fields=['zugang_pflichtig'])
-                return vorhanden
-            except Exception:
-                return None
+        vorhanden = (Dokument.alle_organisationen
+                     .filter(vertrag=vertrag, bezeichnung=(titel or 'Dokument')[:200])
+                     .neueste().order_by('-id').first())
+        if vorhanden is not None and vorhanden.datei and _gleicher_inhalt(vorhanden.datei, pdf_bytes):
+            return vorhanden
 
     if not (dateiname or '').lower().endswith('.pdf'):
         basis = (dateiname or titel or 'dokument').strip() or 'dokument'
@@ -57,10 +70,22 @@ def ablegen(pdf_bytes, titel, kategorie='korrespondenz', *,
             kategorie=kategorie,
             vertrag=vertrag, mieter=mieter, einheit=einheit, liegenschaft=liegenschaft,
             zugang_pflichtig=zugang_pflichtig,
+            vorlage=vorlage,
         )
+        if im_portal_sichtbar is not None:
+            dok.im_portal_sichtbar = bool(im_portal_sichtbar)
+        if vorhanden is not None:
+            dok.vorgaenger = vorhanden
+            dok.version = (vorhanden.version or 1) + 1
+            dok.zugang_pflichtig = zugang_pflichtig or vorhanden.zugang_pflichtig
+            dok.frist_pendenz_id = vorhanden.frist_pendenz_id
+            dok.vorlage = vorlage or vorhanden.vorlage
+            if im_portal_sichtbar is None:
+                dok.im_portal_sichtbar = vorhanden.im_portal_sichtbar
         dok.datei.save(dateiname, ContentFile(pdf_bytes), save=True)
         return dok
     except Exception:
+        logger.exception("Ablage von «%s» gescheitert", titel)
         return None
 
 
@@ -85,9 +110,10 @@ def ablage_mahnung(vertrag, *, stufe=None, monat='', betrag='', datum=None,
     Download im Moment des Klicks. Wer später nachweisen musste, WAS dem Mieter
     zugestellt wurde, fand unter Vertrag → Dokumente nichts.
 
-    Der Titel trägt Stufe und Datum, `dedup=True` überschreibt denselben Titel am
-    selben Vertrag — mehrfaches Klicken am selben Tag erzeugt kein Duplikat, eine
-    spätere Stufe aber ein eigenes Dokument.
+    Der Titel trägt Stufe und Datum, `dedup=True` legt bei demselben Titel am
+    selben Vertrag eine neue Fassung an (seit Modul 5 statt zu überschreiben) —
+    mehrfaches Klicken am selben Tag erzeugt keinen zweiten Eintrag in der Akte,
+    eine spätere Stufe aber ein eigenes Dokument.
 
     Gibt das Dokument zurück (oder None). Die Ablage darf den Mahnvorgang nie
     scheitern lassen — Buchung und Historie sind wichtiger als der Beleg.
@@ -123,6 +149,46 @@ def ablage_mahnung(vertrag, *, stufe=None, monat='', betrag='', datum=None,
     return ablegen(pdf_bytes, titel, kategorie='korrespondenz',
                    vertrag=vertrag, dateiname=dateiname, dedup=True,
                    zugang_pflichtig=bool(letzte_stufe if zugang_pflichtig is None else zugang_pflichtig))
+
+
+def _pdf_kern(daten):
+    """SHA-256 der Seiteninhalte eines PDF — ohne Erstellungszeit und Datei-ID.
+
+    None, wenn es kein lesbares PDF ist (dann zählt nur der Bytevergleich).
+    """
+    import hashlib
+    import io
+    try:
+        from pypdf import PdfReader
+        seiten = PdfReader(io.BytesIO(daten)).pages
+        h = hashlib.sha256()
+        for seite in seiten:
+            inhalt = seite.get_contents()
+            h.update(inhalt.get_data() if inhalt is not None else b'')
+            h.update(b'\x00')
+        return h.hexdigest()
+    except Exception:
+        return None
+
+
+def _gleicher_inhalt(fieldfile, neu_bytes):
+    """True, wenn die abgelegte Datei inhaltlich dieselbe ist wie `neu_bytes`."""
+    import hashlib
+    try:
+        fieldfile.open('rb')
+        try:
+            alt = fieldfile.read()
+        finally:
+            fieldfile.close()
+    except Exception:
+        return False
+    neu_bytes = neu_bytes or b''
+    if hashlib.sha256(alt).digest() == hashlib.sha256(neu_bytes).digest():
+        return True
+    if alt[:5] != b'%PDF-' or neu_bytes[:5] != b'%PDF-':
+        return False
+    kern_alt = _pdf_kern(alt)
+    return kern_alt is not None and kern_alt == _pdf_kern(neu_bytes)
 
 
 def _file_sha256(fieldfile):
@@ -247,18 +313,24 @@ def bereinige_vertragsbeilagen_dubletten():
     (Mietvertrag, Allgemeine Bedingungen, Hausordnung, Merkblatt, Wohnungsausweis,
     Begleitbrief): je (Objekt, Titel) nur das neueste behalten. Der UNTERZEICHNETE
     Vertrag (eigene Logik) bleibt unberührt. Gibt die Anzahl entfernter Dubletten
-    zurück."""
+    zurück.
+
+    Fassungen (Modul 5) sind keine Dubletten: Ein Dokument mit Vorgänger oder
+    Nachfolger bleibt unberührt — sonst räumte dieser Lauf genau die alten
+    Fassungen weg, die `ablegen(dedup=True)` aufheben soll."""
     from django.db.models import Count
     from rentals.models import Dokument
     geloescht = 0
     gruppen = (Dokument.objects
-               .filter(kategorie='vertrag', einheit__isnull=False)
+               .filter(kategorie='vertrag', einheit__isnull=False,
+                       vorgaenger__isnull=True, nachfolger__isnull=True)
                .exclude(bezeichnung__startswith=SIGNIERT_TITEL)
                .values('einheit', 'bezeichnung')
                .annotate(n=Count('id')).filter(n__gt=1))
     for g in gruppen:
         docs = list(Dokument.objects.filter(
-            kategorie='vertrag', einheit_id=g['einheit'], bezeichnung=g['bezeichnung'])
+            kategorie='vertrag', einheit_id=g['einheit'], bezeichnung=g['bezeichnung'],
+            vorgaenger__isnull=True, nachfolger__isnull=True)
             .exclude(bezeichnung__startswith=SIGNIERT_TITEL)
             .order_by('-erstellt_am', '-id'))
         for d in docs[1:]:

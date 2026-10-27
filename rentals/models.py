@@ -3,7 +3,7 @@ import logging
 from django.utils.translation import gettext_noop
 from django.db import models
 from core.organisation_kette import OrganisationAusKette, organisation_aus_kontext
-from core.tenancy import AlleOrganisationenManager, TenantManager
+from core.tenancy import AlleOrganisationenManager, TenantManager, TenantQuerySet
 from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
@@ -984,6 +984,25 @@ class Leerstand(OrganisationAusKette):
     class Meta:
         db_table = 'core_leerstand'
 
+class DokumentQuerySet(TenantQuerySet):
+    def neueste(self):
+        """Nur die jüngste Fassung je Dokument — der Filter «ist neueste».
+
+        Eine Fassung ist die neueste, wenn keine andere auf sie als
+        `vorgaenger` zeigt. Listen und Akten zeigen nur sie; den Verlauf
+        zeigt die Detailansicht (`fw_rentals_dokument_verlauf`).
+        """
+        return self.filter(nachfolger__isnull=True)
+
+
+class DokumentManager(TenantManager.from_queryset(DokumentQuerySet)):
+    pass
+
+
+class DokumentAlleManager(AlleOrganisationenManager.from_queryset(DokumentQuerySet)):
+    pass
+
+
 class Dokument(OrganisationAusKette):
     # FUENF Wege, und seit PR 8 tragen sie alle die Organisation: `mieter`
     # und `eigentuemer` haben sie dort selbst bekommen. Reihenfolge nach
@@ -1014,9 +1033,47 @@ class Dokument(OrganisationAusKette):
     # Schreiben gehört (Sendungsnummer, `zugang_am`). Bewusst nur die ID: Ein Fremdschlüssel nach
     # `core` bräuchte eine Migrationsabhängigkeit rentals → core, und core hängt schon an rentals.
     frist_pendenz_id = models.PositiveIntegerField(null=True, blank=True)
+    # FASSUNGEN (Modul 5). `ablegen(dedup=True)` überschreibt nicht mehr, es
+    # legt eine neue Fassung an: neue Datei, `vorgaenger` zeigt auf die alte.
+    # Die alte Datei bleibt. Was als «neueste» gilt, sagt `neueste()`.
+    version = models.PositiveIntegerField("Version", default=1)
+    vorlage = models.ForeignKey('crm.Vorlage', on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='dokumente', verbose_name='Herkunftsvorlage')
+    # SET_NULL: Wer eine alte Fassung löscht, nimmt die neue nicht mit.
+    vorgaenger = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='nachfolger', verbose_name='Vorgängerfassung')
+
+    objects = DokumentManager()
+    alle_organisationen = DokumentAlleManager()
 
     class Meta:
         db_table = 'core_dokument'
+
+    def verlauf(self):
+        """Alle Fassungen dieses Dokuments, die neueste zuerst.
+
+        Läuft die Kette über `vorgaenger` zurück und über `nachfolger` vor —
+        aus jeder Fassung heraus dieselbe Liste. Über `alle_organisationen`:
+        Die Kette verlässt die Organisation nicht, denn jede Fassung entsteht
+        am selben Vertrag (`ablegen`), und die Grenze hat der Aufrufer beim
+        Laden dieser Fassung schon gezogen.
+        """
+        alle = type(self).alle_organisationen.filter(organisation_id=self.organisation_id)
+        kopf, gesehen = self, {self.pk}
+        while True:                                   # vorwärts bis zur neuesten
+            weiter = alle.filter(vorgaenger_id=kopf.pk).order_by('-id').first()
+            if weiter is None or weiter.pk in gesehen:
+                break
+            gesehen.add(weiter.pk)
+            kopf = weiter
+        kette, gesehen = [kopf], {kopf.pk}
+        while kette[-1].vorgaenger_id and kette[-1].vorgaenger_id not in gesehen:
+            vor = alle.filter(pk=kette[-1].vorgaenger_id).first()
+            if vor is None:
+                break
+            gesehen.add(vor.pk)
+            kette.append(vor)
+        return kette
 
     @property
     def zustellstatus(self):

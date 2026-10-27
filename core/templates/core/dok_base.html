@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <style>
     @page { size: A4 portrait; margin: 2.2cm 2cm 2cm 2cm;
-        @frame footer { -pdf-frame-content: footerContent; bottom: 1cm; margin-left: 2cm; margin-right: 2cm; height: 1cm; } }
+        @frame footer { -pdf-frame-content: footerContent; bottom: 0.8cm; margin-left: 2cm; margin-right: 2cm; height: 1.3cm; } }
     body { font-family: Helvetica, sans-serif; font-size: 9.5pt; color: #1e293b; line-height: 1.5; }
     h1 { font-size: 15pt; margin: 0 0 4pt 0; }
     h2 { font-size: 11pt; margin: 14pt 0 4pt 0; }
@@ -31,16 +31,41 @@
     .sign { width: 100%; margin-top: 26pt; }
     .sign td { width: 240pt; vertical-align: bottom; padding-top: 30pt; font-size: 8pt; color: #64748b; }
     .sigline { border-top: 1px solid #94a3b8; padding-top: 3pt; }
+    .logo { margin: 0 0 6pt 0; }
+    .empfaenger { margin-top: 22pt; }
+    .ortdatum { text-align: right; font-size: 8.5pt; color: #64748b; margin-bottom: 14pt; }
+    .unterschrift { margin-top: 14pt; }
+    .unterschrift-name { font-size: 9pt; }
+    .fusszeile { font-size: 7pt; color: #64748b; }
+    {% if briefkopf.farbe %}
+    .kopf { border-bottom: 1.5pt solid {{ briefkopf.farbe }}; }
+    h1, h2 { color: {{ briefkopf.farbe }}; }
+    {% endif %}
 </style>
 </head>
 <body>
 
+{% comment %}
+Briefkopf je Verwaltung (Modul 5): Logo, Farbe, Fusszeile und Unterschrift
+kommen aus `briefkopf` (core/services/briefkopf.py). Fehlt er, bleibt das
+Dokument, wie es war. Die Unterschrift steht nur dort, wo das Dokument sie
+verlangt (`mit_unterschrift`) — ein Merkblatt unterschreibt niemand.
+{% endcomment %}
+{% if briefkopf.logo_pfad %}<div class="logo"><img src="{{ briefkopf.logo_pfad }}" height="40"></div>{% endif %}
 <div class="kopf">{{ vermieter_name }} | {{ vermieter_strasse }} | {{ vermieter_plz }} {{ vermieter_ort }}</div>
 
 {% block inhalt %}{% endblock %}
 
+{% if mit_unterschrift %}
+<div class="unterschrift">
+    {% if briefkopf.unterschrift_pfad %}<img src="{{ briefkopf.unterschrift_pfad }}" height="45"><br>{% endif %}
+    <span class="unterschrift-name">{{ briefkopf.firma|default:vermieter_name }}</span>
+</div>
+{% endif %}
+
 <div id="footerContent" style="font-size:7pt;color:#94a3b8;text-align:center;">
-    {{ vermieter_name }} · {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }} · {% blocktrans trimmed with datum=heute|date:"d.m.Y" %}erstellt am {{ datum }}{% endblocktrans %} · {% blocktrans trimmed %}Seite <pdf:pagenumber> von <pdf:pagecount>{% endblocktrans %}
+    {% if briefkopf.fusszeile %}<span class="fusszeile">{{ briefkopf.fusszeile }}</span><br>{% endif %}
+    {{ vermieter_name }}{% if liegenschaft %} · {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }}{% endif %} · {% blocktrans trimmed with datum=heute|date:"d.m.Y" %}erstellt am {{ datum }}{% endblocktrans %} · {% blocktrans trimmed %}Seite <pdf:pagenumber> von <pdf:pagecount>{% endblocktrans %}
 </div>
 
 </body>

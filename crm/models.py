@@ -5,6 +5,7 @@ from decimal import Decimal
 from PIL import Image
 from django.core.files.base import ContentFile
 from django.conf import settings
+from django.core.validators import RegexValidator
 from django.db import models
 
 from core.funktionen import STUFEN_NAMEN, STUFEN_REIHENFOLGE
@@ -54,6 +55,13 @@ def _unterschrift_aufbereiten(instanz, praefix):
         except Exception:
             logger.debug("Fehler bewusst übergangen", exc_info=True)
 
+#: Hex-Farbe des Briefkopfs: genau «#» und sechs Hex-Ziffern. Kurzformen
+#: (#abc) und Namen (red) lehnt sie ab — xhtml2pdf und der Farbwähler im
+#: Browser verstehen sie nicht gleich.
+HEX_FARBE = RegexValidator(r'^#[0-9A-Fa-f]{6}$',
+                           _('Bitte eine Farbe im Format #RRGGBB angeben, z. B. #1f6f5c.'))
+
+
 class Organisation(models.Model):
     firma = models.CharField("Firmenname", max_length=100)
     strasse = models.CharField("Strasse & Nr.", max_length=100)
@@ -77,6 +85,15 @@ class Organisation(models.Model):
         null=True, blank=True)
     logo = models.ImageField("Firmenlogo", upload_to="logos/", blank=True, null=True)
     unterschrift_bild = models.ImageField("Digitale Unterschrift", upload_to="unterschriften/", blank=True, null=True)
+    # Briefkopf (Modul 5): Farbe und Fusszeile der Dokumente, die aus Vorlagen
+    # entstehen (`core/templates/core/dok_base.html`). Leer = Standard.
+    briefkopf_farbe = models.CharField(
+        "Briefkopf-Farbe", max_length=7, blank=True, default='',
+        validators=[HEX_FARBE],
+        help_text="Hex-Farbe wie #1f6f5c. Leer = neutrale Linie.")
+    briefkopf_fusszeile = models.CharField(
+        "Briefkopf-Fusszeile", max_length=240, blank=True, default='',
+        help_text="Eine Zeile am Seitenfuss, z. B. Handelsregister oder Bankverbindung.")
     aktueller_referenzzinssatz = models.DecimalField("Aktueller Ref.Zins", max_digits=4, decimal_places=2, default=1.25)
     # Verwaltungshonorar auf die Nebenkosten-Abrechnung (Standard 3 %) — vorher hart codiert
     nk_honorar_prozent = models.DecimalField("NK-Verwaltungshonorar (%)", max_digits=4, decimal_places=2, default=3.00)
@@ -713,12 +730,43 @@ class Vorlage(models.Model):
         ('ticket_erledigt', _('Schaden – Erledigt-Meldung')),
         ('bewerber_zusage', _('Bewerber – Zusage')),
         ('bewerber_absage', _('Bewerber – Absage')),
+        ('dokument', _('Dokument zu einem Ereignis')),
         ('sonstiges', _('Sonstiges')),
+    ]
+    FORMAT_CHOICES = [('text', _('Text')), ('html', _('HTML'))]
+    #: Die Sprachen der Dokumente. Englisch fehlt bewusst: `Mieter.sprache`
+    #: kennt es, aber eine englische Fassung fällt auf «de» zurück
+    #: (`core.services.dokument_regeln`), wie bei jeder anderen Lücke.
+    SPRACHE_CHOICES = [('de', _('Deutsch')), ('fr', _('Französisch')), ('it', _('Italienisch'))]
+    #: Ereignisse, bei denen eine Vorlage ein Begleitdokument erzeugt
+    #: (`core.services.dokument_regeln.dokument_fuer_ereignis`). Leer = die
+    #: Vorlage hängt an keinem Ereignis und wird nur von Hand verwendet.
+    #: Amtliche Formulare und Mahnungen mit Rechtstext stehen hier NICHT: Sie
+    #: bleiben fest verdrahtet und im Original.
+    EREIGNIS_CHOICES = [
+        ('vertrag_erstellt', _('Vertrag erstellt')),
+        ('bewerber_zugesagt', _('Bewerbung zugesagt')),
+        ('kuendigung_erfasst', _('Kündigung erfasst')),
+        ('mza_versandt', _('Mietzinsanpassung versandt')),
+        ('nk_versandt', _('Nebenkostenabrechnung versandt')),
+        ('abnahme_abgeschlossen', _('Abnahme abgeschlossen')),
     ]
     name = models.CharField("Bezeichnung", max_length=150)
     kategorie = models.CharField("Kategorie", max_length=20, choices=KATEGORIE_CHOICES, default='brief')
     betreff = models.CharField("Betreff", max_length=200, blank=True, default='')
     inhalt = models.TextField("Inhalt", blank=True, default='')
+    format = models.CharField("Format", max_length=4, choices=FORMAT_CHOICES, default='text')
+    sprache = models.CharField("Sprache", max_length=2, choices=SPRACHE_CHOICES, default='de')
+    ereignis = models.CharField("Ereignis", max_length=30, choices=EREIGNIS_CHOICES,
+                                blank=True, default='')
+    #: Zählt jedes Speichern einer eigenen Vorlage (`fw_vorlage_form`). Eine
+    #: Kopie der Systemvorlage setzt die Zählung der Vorlage fort, aus der sie
+    #: entsteht.
+    version = models.PositiveIntegerField("Version", default=1)
+    #: Ab wann die Fassung gilt. Leer = schon immer. Unter mehreren Fassungen
+    #: desselben Ereignisses gewinnt die mit dem jüngsten `gueltig_ab` <= heute.
+    gueltig_ab = models.DateField("Gültig ab", null=True, blank=True)
+    aktiv = models.BooleanField("Aktiv", default=True)
     erstellt_am = models.DateTimeField(auto_now_add=True)
     aktualisiert_am = models.DateTimeField(auto_now=True)
 

@@ -221,6 +221,8 @@ UEBERSETZT = (
     'fw/vertrag_neu.html',
     'fw/vorlage_form.html',
     'fw/vorlagen.html',
+    'fw/_vorlage_vorschau.html',   # Modul 5: Live-Vorschau
+    'fw/dokument_verlauf.html',    # Modul 5: Fassungen eines Dokuments
     'fw/weiterverrechnung.html',
     'fw/zahlung_aufteilen.html',  # V12: Assistent «Zahlung aufteilen»
     'fw/zahler_zuordnungen.html',

@@ -161,6 +161,10 @@ from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dos
 # 3. Verträge & Mietzins
 from core.views.contracts import mietzins_anpassung_view, generiere_amtliches_formular
 
+# Modul 5 (27.10.2026): Dokumenten-Automatisierung — Editor, Vorschau, Regeln, Fassungen
+from core.views.fw.vorlagen_editor import (fw_vorlage_vorschau, fw_vorlage_probe_pdf,
+                                           fw_vorlage_regel_umschalten, fw_rentals_dokument_verlauf)
+
 # 4. PDF (Mietvertrag + Begleitdokumente)
 from core.views.pdf import generate_pdf_view, generate_dokument_view, generate_vertragspaket_zip
 
@@ -538,6 +542,11 @@ urlpatterns = [
     path('neu/vorlagen/neu/', fw_vorlage_form, name='fw_vorlage_neu'),
     path('neu/vorlagen/<int:pk>/bearbeiten/', fw_vorlage_form, name='fw_vorlage_bearbeiten'),
     path('neu/vorlagen/<int:pk>/loeschen/', fw_vorlage_loeschen, name='fw_vorlage_loeschen'),
+    # Modul 5: Live-Vorschau, Probe-PDF, Regel an/aus, Fassungen eines Dokuments
+    path('neu/vorlagen/vorschau/', fw_vorlage_vorschau, name='fw_vorlage_vorschau'),
+    path('neu/vorlagen/probe-pdf/', fw_vorlage_probe_pdf, name='fw_vorlage_probe_pdf'),
+    path('neu/vorlagen/regel/umschalten/', fw_vorlage_regel_umschalten, name='fw_vorlage_regel_umschalten'),
+    path('neu/dokument/<int:pk>/verlauf/', fw_rentals_dokument_verlauf, name='fw_rentals_dokument_verlauf'),
     path('neu/integrationen/', fw_integrationen, name='fw_integrationen'),
     path('neu/integrationen/test-email/', fw_integration_test_email, name='fw_integration_test_email'),
     path('neu/integrationen/portal-token/', fw_integration_portal_token, name='fw_integration_portal_token'),

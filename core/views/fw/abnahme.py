@@ -816,6 +816,10 @@ def fw_abnahme_vorort_abschliessen(request, pk):
                f"{auf_deutsch(prot.get_typ_display)} {prot.datum}"
                + (f" · bestätigt: {', '.join(bestaetigt)}" if bestaetigt else ''), ziel=v)
     ab.abschluss_folgen(prot, user=request.user)
+    # Modul 5: Regel «Abnahme abgeschlossen» — Begleitdokument; das Protokoll
+    # selbst entsteht wie bisher beim PDF-Abruf.
+    from core.services.dokument_regeln import dokument_fuer_ereignis
+    dokument_fuer_ereignis('abnahme_abgeschlossen', organisation=v.organisation, vertrag=v)
     messages.success(request, '✅ ' + gettext('Abnahmeprotokoll erfasst (%(count)s Mängel).') % {'count': prot.maengel.count()})
     if prot.typ == 'auszug' and ab.ruege_noetig(prot):
         hinweis = gettext('Mängelrüge bis %(frist)s versenden (Art. 267a OR).') % {

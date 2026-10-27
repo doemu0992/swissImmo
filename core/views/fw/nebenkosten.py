@@ -355,6 +355,9 @@ def fw_nebenkosten_versand(request, pk):
                 abgelegt += 1
         except Exception:
             logger.debug("Fehler bewusst übergangen", exc_info=True)
+        # Modul 5: Regel «NK versandt» — Begleitschreiben je Mieter.
+        from core.services.dokument_regeln import dokument_fuer_ereignis
+        dokument_fuer_ereignis('nk_versandt', organisation=p.organisation, vertrag=v)
 
     if not kontexte:
         messages.error(request, gettext('Keine abzurechnenden Mieter in dieser Periode gefunden.'))
@@ -471,6 +474,9 @@ def fw_nebenkosten_mail(request, pk):
         gesendet += 1
         ablegen(pdf, f"Nebenkostenabrechnung {p.bezeichnung}", kategorie='korrespondenz',
                 vertrag=v, mieter=m, dedup=True)
+        # Modul 5: Regel «NK versandt» — Begleitschreiben je Mieter.
+        from core.services.dokument_regeln import dokument_fuer_ereignis
+        dokument_fuer_ereignis('nk_versandt', organisation=p.organisation, vertrag=v)
         journal_email(betreff, f"Nebenkostenabrechnung {p.bezeichnung} (PDF) versendet.", mieter=m, vertrag=v,
                       liegenschaft=p.liegenschaft, user=request.user, empfaenger=adresse)
 

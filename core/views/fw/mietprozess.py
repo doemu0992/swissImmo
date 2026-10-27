@@ -245,6 +245,7 @@ def fw_bewerber_entscheid(request, pk):
         return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
     b.status = ziel_status
     b.save(update_fields=['status'])
+    if entscheid == 'zusage': from core.services.dokument_regeln import dokument_fuer_ereignis; dokument_fuer_ereignis('bewerber_zugesagt', organisation=b.organisation, bewerbung=b)  # Modul 5: Begleitdokument, Fehler werden dort protokolliert
     ok = False
     if b.email:
         betreff, body = _bewerber_mail(b, entscheid)
