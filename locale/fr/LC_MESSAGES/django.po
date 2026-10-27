@@ -30294,3 +30294,63 @@ msgstr "Passe partiel"
 
 msgid "Einzelschlüssel"
 msgstr "Clé individuelle"
+
+msgid "Suchen …"
+msgstr "Rechercher …"
+
+msgid "Suche schliessen"
+msgstr "Fermer la recherche"
+
+msgid "Nach Bereich eingrenzen"
+msgstr "Filtrer par domaine"
+
+msgid "Suchergebnisse"
+msgstr "Résultats de la recherche"
+
+msgid "neuer Tab"
+msgstr "nouvel onglet"
+
+msgid "schliessen"
+msgstr "fermer"
+
+msgid "Strg"
+msgstr "Ctrl"
+
+msgid "Immobilien"
+msgstr "Immobilier"
+
+msgid "Mieter & Personen"
+msgstr "Locataires & personnes"
+
+msgid "Seiten & Aktionen"
+msgstr "Pages & actions"
+
+msgid "1 Treffer"
+msgstr "1 résultat"
+
+msgid "{n} Treffer"
+msgstr "{n} résultats"
+
+msgid "Suche läuft …"
+msgstr "Recherche en cours …"
+
+msgid "Keine Treffer für «{q}»."
+msgstr "Aucun résultat pour «{q}»."
+
+msgid "Versuchen Sie den Nachnamen oder einen Teil der Adresse. Telefonnummern und weitere Felder findet die ausführliche Suche."
+msgstr "Essayez le nom de famille ou une partie de l'adresse. Les numéros de téléphone et d'autres champs sont trouvés par la recherche détaillée."
+
+msgid "Die Suche ist gerade nicht erreichbar."
+msgstr "La recherche est momentanément indisponible."
+
+msgid "Bitte prüfen Sie die Verbindung. Seiten und Befehle finden Sie weiterhin."
+msgstr "Veuillez vérifier la connexion. Les pages et les commandes restent disponibles."
+
+msgid "Nochmals versuchen"
+msgstr "Réessayer"
+
+msgid "Alle Ergebnisse für «{q}» →"
+msgstr "Tous les résultats pour «{q}» →"
+
+msgid "Ausführlich suchen →"
+msgstr "Recherche détaillée →"
