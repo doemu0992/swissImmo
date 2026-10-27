@@ -721,8 +721,13 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
         aktuell_pkt = None
     if aktuell_pkt:
         from core.services.mietrecht import index_anpassung_vorschlag
+        # Vorgeladen, weil `index_anpassung_vorschlag` den effektiven Stand je
+        # Vertrag liest (Anpassungen, Komponenten, Objekt-Zeitplan) — ohne
+        # Prefetch je Vertrag mehrere Abfragen.
         for v in (Mietvertrag.objects.filter(status='aktiv', mietzins_modell='index')
-                  .select_related('mieter', 'einheit__liegenschaft')):
+                  .select_related('mieter', 'einheit__liegenschaft')
+                  .prefetch_related('anpassungen', 'staffelstufen', 'mietzins_komponenten',
+                                    'einheit__sollmietzinse')):
             if not v.einheit_id or (v.basis_lik_punkte or Decimal('0')) <= 0:
                 continue
             ref_datum = v.index_letzte_anpassung or v.beginn
@@ -846,8 +851,10 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
     # und legt dann fuer jeden Vertrag mit hoeherer Basis eine Senkungs-Pendenz
     # an, die es gar nicht gibt. Mit mehreren Verwaltungen kaeme dazu, dass eine
     # fremde Verwaltung den Massstab liefert.
+    # `effektive_basis` liest die Anpassungen — vorgeladen statt je Vertrag.
     for v in (Mietvertrag.objects.filter(status='aktiv', mietzins_modell='fest')
-              .select_related('mieter', 'einheit__liegenschaft', 'organisation')):
+              .select_related('mieter', 'einheit__liegenschaft', 'organisation')
+              .prefetch_related('anpassungen')):
         aktuell_ref = get_current_ref_zins(v.organisation)
         try:
             aktuell_ref = Decimal(str(aktuell_ref))
