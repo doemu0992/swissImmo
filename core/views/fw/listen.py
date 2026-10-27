@@ -641,7 +641,6 @@ def fw_debitor_abschreiben(request, pk):
     (z.B. Verlustschein) wird im Beleg + Logbuch festgehalten."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from finance.booking import buche, ensure_kontenplan
     from core.auth import log_aktion
     # Rücksprung: aus dem Zahlungs-Cockpit («Kleindifferenz ausbuchen») zurück
     # dorthin; nur eigene /neu/-Pfade (kein offener Redirect).
@@ -658,49 +657,15 @@ def fw_debitor_abschreiben(request, pk):
         if r.status not in ('offen', 'teilbezahlt'):
             messages.info(request, gettext('Nur offene oder teilbezahlte Forderungen können abgeschrieben werden.'))
             return redirect(ziel)
-        offen = r.offener_betrag
-        if offen <= 0:
-            messages.info(request, gettext('Kein offener Betrag — nichts abzuschreiben.'))
-            return redirect(ziel)
         grund = (request.POST.get('grund') or '').strip()
-        mieter_name = r.vertrag.mieter.display_name if r.vertrag_id and r.vertrag.mieter_id else ''
-        lg = r.liegenschaft or (r.vertrag.einheit.liegenschaft if r.vertrag_id and r.vertrag.einheit_id else None)
-        # MWST-Korrektur (Audit K1, Entgeltsminderung Art. 41 MWSTG): Steckt im
-        # offenen Betrag abgegrenzte MWST, die nie vereinnahmt wird, muss sie
-        # zurückgeholt werden — sonst wird Steuer abgeliefert, die es nie gab.
-        #
-        # Massgebend ist, was auf DIESER Rechnung tatsächlich an MWST gebucht
-        # wurde, nicht das heutige Flag am Vertrag: Wird ein Vertrag später
-        # optiert, hätte das Flag auf alte steuerfreie Rechnungen eine
-        # Phantom-Korrektur gebucht — und umgekehrt bei einer De-Option die
-        # echte Korrektur unterschlagen.
-        from django.db.models import Sum as _Sum
-        from finance.models import Buchung as _B
-        # Storno-Paar beidseitig ausblenden: `ist_storno=False` entfernt die
-        # Gegenbuchung, `storniert_am__isnull=True` das stornierte Original.
-        _mw = _B.objects.filter(debitoren_rechnung=r, ist_storno=False,
-                                storniert_am__isnull=True)
-        _h = _mw.filter(haben_konto__nummer='2200').aggregate(s=_Sum('betrag'))['s'] or Decimal('0.00')
-        _s = _mw.filter(soll_konto__nummer='2200').aggregate(s=_Sum('betrag'))['s'] or Decimal('0.00')
-        mwst_gebucht = _h - _s
-        mwst_anteil = Decimal('0.00')
-        if mwst_gebucht > 0 and r.betrag > 0:
-            # Anteilig auf den noch offenen Teil — Teilzahlungen haben ihren
-            # Steueranteil bereits vereinnahmt.
-            mwst_anteil = min((mwst_gebucht * offen / r.betrag).quantize(Decimal('0.01')),
-                              mwst_gebucht)
-        ensure_kontenplan()
-        text = f"Forderungsverlust {r.titel} {mieter_name}".strip()
-        if grund:
-            text += f" ({grund})"
-        buche('3805', '1100', offen - mwst_anteil, text, datum=timezone.localdate(),
-              liegenschaft=lg, debitor=r, user=request.user)
-        if mwst_anteil > 0:
-            buche('2200', '1100', mwst_anteil,
-                  f"MWST-Korrektur Forderungsverlust {r.titel} (Entgeltsminderung)",
-                  datum=timezone.localdate(), liegenschaft=lg, debitor=r, user=request.user)
-        r.status = 'abgeschrieben'
-        r.save(update_fields=['status'])
+        # Buchung und MWST-Korrektur im Dienst — dieselbe Stelle schreibt beim
+        # Verlustschein einer Betreibung ab (core/services/debitorenverlust.py).
+        from core.services.debitorenverlust import AbschreibungNichtMoeglich, forderung_abschreiben
+        try:
+            offen = forderung_abschreiben(r, grund, user=request.user)
+        except AbschreibungNichtMoeglich as exc:
+            messages.info(request, str(exc))
+            return redirect(ziel)
     log_aktion(request, "Forderungsverlust gebucht", r.titel,
                f"CHF {offen} · {grund or 'ohne Grundangabe'}")
     messages.success(request, '✅ ' + gettext("Forderung '%(titel)s' als Debitorenverlust abgeschrieben (CHF %(offen)s, Konto 3805).") % {'titel': r.titel, 'offen': offen})
