@@ -815,7 +815,13 @@ def fw_abnahme_vorort_abschliessen(request, pk):
     log_aktion(request, "Wohnungsabnahme abgeschlossen", str(v.mieter),
                f"{auf_deutsch(prot.get_typ_display)} {prot.datum}"
                + (f" · bestätigt: {', '.join(bestaetigt)}" if bestaetigt else ''), ziel=v)
-    ab.abschluss_folgen(prot, user=request.user)
+    ohne_zuordnung = ab.abschluss_folgen(prot, user=request.user)
+    if ohne_zuordnung is None:
+        messages.warning(request, gettext('Die Schlüssel konnten nicht gebucht werden. Bitte über die '
+                                          'Schliessanlage der Liegenschaft nachtragen.'))
+    elif ohne_zuordnung:
+        messages.warning(request, gettext('Nicht im Schlüsselregister, deshalb nicht gebucht: %(liste)s')
+                         % {'liste': ', '.join(ohne_zuordnung)})
     # Modul 5: Regel «Abnahme abgeschlossen» — Begleitdokument; das Protokoll
     # selbst entsteht wie bisher beim PDF-Abruf.
     from core.services.dokument_regeln import dokument_fuer_ereignis

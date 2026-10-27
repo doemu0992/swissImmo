@@ -1,0 +1,59 @@
+{% load i18n zeichen %}{% comment %}
+Eine Schlüsselkarte (Modul 2, 27.10.2026): Art-Kürzel, Nummer, Türen als Chips,
+wer ihn hat. `k` kommt aus core/services/schluessel.karten. `weiter` ist die
+Seite, auf die Ändern und Archivieren zurückführen. Mit `bearbeiten` erscheint
+das Formular zum Ändern (braucht `sl_punkte`, `sl_anlagen`, `sl_einheiten`).
+{% endcomment %}
+<article class="fw-sk{% if k.s.archiviert %} archiv{% endif %}" data-schluessel="{{ k.s.id }}">
+    <div class="fw-sk-kopf">
+        <span class="fw-sk-art {{ k.s.art }}" aria-label="{{ k.s.get_art_display }}">{{ k.kuerzel }}</span>
+        <div class="fw-sk-titel">
+            <b>{{ k.s.typ }} · {% trans "Nr." %} {{ k.s.schluessel_nummer }}</b>
+            <span>{{ k.s.get_art_display }}{% if k.s.einheit %} · {{ k.s.einheit.bezeichnung }}{% else %} · {% trans "allgemein" %}{% endif %}{% if k.s.schliessanlage %} · {{ k.s.schliessanlage }}{% endif %}</span>
+        </div>
+        <div class="fw-sk-stand"><b>{{ k.verfuegbar }}/{{ k.s.anzahl }}</b>{% trans "im Büro" %}</div>
+    </div>
+    <div class="fw-sk-chips">
+        {% if k.alle_tueren %}<span class="fw-chip fw-brand">{% trans "alle Türen" %}</span>
+        {% else %}{% for t in k.tueren %}<span class="fw-chip fw-mut">{{ t.bezeichnung }}</span>{% empty %}<span class="fw-chip fw-mut">{% trans "keine Tür zugeordnet" %}</span>{% endfor %}{% endif %}
+        {% if k.n_verloren %}<span class="fw-chip fw-crit">{% blocktrans count n=k.n_verloren %}{{ n }} verloren{% plural %}{{ n }} verloren{% endblocktrans %}</span>{% endif %}
+        {% if k.s.archiviert %}<span class="fw-chip fw-warn">{% trans "archiviert" %}</span>{% endif %}
+    </div>
+    {% if k.offene %}
+    <ul class="fw-sk-inhaber">
+        {% for a in k.offene %}
+        <li>
+            <span>{% if a.empfaenger_art == 'hauswart' %}{% trans "Hauswart" %} {% elif a.empfaenger_art == 'handwerker' %}{% trans "Dienstleister" %} {% endif %}<b>{{ a.empfaenger_name }}</b> · {% blocktrans count n=a.anzahl %}{{ n }} Stk.{% plural %}{{ n }} Stk.{% endblocktrans %}</span>
+            <small{% if a.ueberfaellig %} class="fw-kritisch"{% endif %}>{% blocktrans with d=a.ausgegeben_am|date:"d.m.Y" %}seit {{ d }}{% endblocktrans %}{% if a.rueckgabe_bis %} · {% blocktrans with d=a.rueckgabe_bis|date:"d.m.Y" %}zurück bis {{ d }}{% endblocktrans %}{% endif %}
+                {% if not nur_lesen %} · <a href="/neu/liegenschaften/{{ k.s.liegenschaft_id }}/schluessel/ruecknahme/?an={{ a.code }}" class="fw-link">{% trans "Rücknahme" %}</a>{% endif %}</small>
+        </li>
+        {% endfor %}
+    </ul>
+    {% elif not k.s.archiviert %}
+    <p class="fw-kachel-text">{% trans "Alle Exemplare liegen im Büro." %}</p>
+    {% endif %}
+    {% if not nur_lesen %}
+    <div class="fw-sk-fuss">
+        {% if k.s.archiviert %}
+        <form method="post" action="/neu/schluessel/{{ k.s.id }}/bearbeiten/">{% csrf_token %}
+            <input type="hidden" name="archiviert" value="0"><input type="hidden" name="next" value="{{ weiter }}">
+            <button class="fw-btn fw-knapp">{% zeichen 'zurueck' %}{% trans "Wieder aktivieren" %}</button>
+        </form>
+        {% else %}
+        {% if k.verfuegbar %}<a href="/neu/liegenschaften/{{ k.s.liegenschaft_id }}/schluessel/ausgabe/?schluessel={{ k.s.id }}" class="fw-btn fw-knapp fw-primary">{% zeichen 'senden' %}{% trans "Ausgeben" %}</a>{% endif %}
+        {% if not k.offene %}
+        <form method="post" action="/neu/schluessel/{{ k.s.id }}/loeschen/" onsubmit="return confirm('{% if k.hat_ausgaben %}{% filter escapejs %}{% trans "Schlüssel archivieren? Der Verlauf bleibt erhalten." %}{% endfilter %}{% else %}{% filter escapejs %}{% trans "Schlüssel aus dem Register entfernen?" %}{% endfilter %}{% endif %}');">{% csrf_token %}
+            <input type="hidden" name="next" value="{{ weiter }}">
+            <button class="fw-btn fw-knapp fw-leise">{% zeichen 'loeschen' %}{% if k.hat_ausgaben %}{% trans "Archivieren" %}{% else %}{% trans "Entfernen" %}{% endif %}</button>
+        </form>
+        {% endif %}
+        {% endif %}
+    </div>
+    {% if bearbeiten and not k.s.archiviert %}
+    <details class="fw-sk-formular">
+        <summary>{% trans "Bearbeiten" %}</summary>
+        {% include 'fw/_schluessel_formular.html' with sch=k.s %}
+    </details>
+    {% endif %}
+    {% endif %}
+</article>

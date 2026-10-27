@@ -197,6 +197,28 @@ def fw_fristen(request):
             'url': url, 'label': label or 'Öffnen', 'wide': wide,
         })
 
+    # Modul 2: Rückgabefristen ausgegebener Schlüssel. Sie sind keine
+    # Pendenzen (kein Abhaken, die Rücknahme erledigt sie), stehen aber hier,
+    # weil «Zurück bis» eine Frist ist. Ohne `nur=frist`-Filter: Der gilt der
+    # Pendenzkategorie.
+    if not nur_frist:
+        from core.services.schluessel import ruecknahme_url
+        from portfolio.models import SchluesselAusgabe
+        sq = (SchluesselAusgabe.objects.filter(status='ausgegeben', rueckgabe_bis__isnull=False)
+              .select_related('schluessel__liegenschaft', 'mieter', 'handwerker', 'benutzer'))
+        if aktive_lg:
+            sq = sq.filter(schluessel__liegenschaft=aktive_lg)
+        for a in sq.order_by('rueckgabe_bis'):
+            eintraege.append({
+                'p': None, 'faellig': a.rueckgabe_bis,
+                'titel': gettext('Schlüssel zurück: %(typ)s Nr. %(nr)s') % {
+                    'typ': a.schluessel.typ, 'nr': a.schluessel.schluessel_nummer},
+                'bezug': f"{a.schluessel.liegenschaft.strasse} · {a.empfaenger_name}",
+                'tage': (a.rueckgabe_bis - heute).days, 'art': gettext('Schlüssel'),
+                'url': ruecknahme_url(a), 'label': gettext('Rücknahme'), 'wide': False,
+            })
+        eintraege.sort(key=lambda e: e['faellig'])
+
     # Zeitfenster-Buckets
     grenze_woche = heute + timedelta(days=7)
     grenze_monat = heute + timedelta(days=30)

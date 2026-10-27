@@ -1,0 +1,28 @@
+{% extends 'fw/base.html' %}
+{% load i18n zeichen %}
+{% block title %}{% trans "Schlüssel: Rückgabe fällig" %} — swissImmo{% endblock %}
+{% block content %}
+{% comment %}Ziel der Kachel «Schlüssel» auf «Heute» (Modul 2): Rückgabefristen, die erreicht sind.{% endcomment %}
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Schlüssel: Rückgabe fällig" %}</h1>
+        <p>{% blocktrans count n=liste|length %}{{ n }} Ausgabe mit erreichter Rückgabefrist{% plural %}{{ n }} Ausgaben mit erreichter Rückgabefrist{% endblocktrans %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
+    </div>
+</div>
+<div class="fw-sk-raster">
+    {% for a in liste %}
+    <article class="fw-sk">
+        <div class="fw-sk-kopf">
+            <span class="fw-sk-art {{ a.schluessel.art }}" aria-hidden="true">{{ a.kuerzel }}</span>
+            <div class="fw-sk-titel"><b>{{ a.empfaenger_name }}</b>
+                <span>{{ a.schluessel.typ }} · {% trans "Nr." %} {{ a.schluessel.schluessel_nummer }} · {% blocktrans count n=a.anzahl %}{{ n }} Stk.{% plural %}{{ n }} Stk.{% endblocktrans %}</span></div>
+            <div class="fw-sk-stand"><b{% if a.tage > 0 %} class="fw-kritisch"{% endif %}>{{ a.rueckgabe_bis|date:"d.m." }}</b>{% if a.tage > 0 %}{% blocktrans count n=a.tage %}seit {{ n }} Tag{% plural %}seit {{ n }} Tagen{% endblocktrans %}{% else %}{% trans "heute" %}{% endif %}</div>
+        </div>
+        <p class="fw-kachel-text">{{ a.schluessel.liegenschaft.strasse }}, {{ a.schluessel.liegenschaft.ort }}</p>
+        <div class="fw-sk-fuss"><a href="{{ a.ruecknahme_url }}" class="fw-btn fw-knapp fw-primary">{% zeichen 'zurueck' %}{% trans "Rücknahme erfassen" %}</a></div>
+    </article>
+    {% empty %}
+    <div class="fw-card"><div class="fw-leer"><span class="fw-leer-zeichen">{% zeichen 'gut' %}</span><b>{% trans "Keine Rückgabe fällig." %}</b></div></div>
+    {% endfor %}
+</div>
+{% endblock %}

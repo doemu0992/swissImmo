@@ -229,6 +229,16 @@ UEBERSETZT = (
     'fw/zahllauf.html',
     'fw/zahlungsvereinbarung.html',  # 26.10.2026: Texte ausgezeichnet, Übersetzung folgt
     'fw/zulauf.html',
+    # Modul 2 (27.10.2026): Schlüssel und Schliessanlage — ausgezeichnet, Übersetzung folgt zentral.
+    'fw/_schliessanlage.html',
+    'fw/_schliessanlage_formular.html',
+    'fw/_schluessel_akte.html',
+    'fw/_schluessel_formular.html',
+    'fw/_schluessel_karte.html',
+    'fw/_schluessel_unterschrift.html',
+    'fw/schluessel_ausgabe.html',
+    'fw/schluessel_faellig.html',
+    'fw/schluessel_ruecknahme.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.

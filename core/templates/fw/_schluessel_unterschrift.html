@@ -1,0 +1,54 @@
+{% load i18n %}{% comment %}
+Unterschrift im Zeichenfeld (Modul 2) — dieselbe Bauart wie im Abschluss der
+Abnahme vor Ort (fw/abnahme_vorort.html): Canvas, Finger, PNG ins versteckte
+Feld `unterschrift`. Der Server prüft die Eingabe noch einmal
+(core/services/schluessel.unterschrift_lesen). Einmal je Seite einbinden;
+das Formular trägt `data-no-guard`, das Skript sperrt den Knopf selbst — sonst
+bliebe er nach einer Absage hier 15 Sekunden gesperrt.
+{% endcomment %}
+<div class="fw-sk-block" data-sk-unterschrift data-msg-fehlt="{% trans 'Bitte im Feld unterschreiben.' %}">
+    <h2>{{ titel }}</h2>
+    <div><label class="fw-label" for="sk-u-name">{% trans "Name der unterzeichnenden Person" %}</label>
+        <input id="sk-u-name" name="unterschrift_name" maxlength="120" value="{{ unterschrift_name }}" autocomplete="off" class="fw-feld w-full"></div>
+    <div class="fw-sk-pad"><canvas width="900" height="360" data-sk-pad aria-label="{% trans 'Unterschrift' %}"></canvas></div>
+    <div class="fw-sk-padzeile"><small class="fw-faint">{% trans "Mit dem Finger im Feld unterschreiben" %}</small>
+        <button type="button" class="fw-btn" data-sk-pad-weg>{% trans "Löschen" %}</button></div>
+    <input type="hidden" name="unterschrift" data-sk-pad-wert>
+    <p class="fw-kritisch" data-sk-pad-fehlt role="alert" hidden></p>
+</div>
+<script>
+(function () {
+    var feld = document.querySelector('[data-sk-unterschrift]');
+    if (!feld) return;
+    var c = feld.querySelector('canvas'), ctx = c.getContext('2d'), zeichnet = false, benutzt = false, letzte = null;
+    var form = feld.closest('form'), wert = feld.querySelector('[data-sk-pad-wert]'), hinweis = feld.querySelector('[data-sk-pad-fehlt]');
+    function leeren() { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height); benutzt = false; wert.value = ''; }
+    function punkt(e) {
+        var r = c.getBoundingClientRect();
+        return { x: (e.clientX - r.left) * c.width / r.width, y: (e.clientY - r.top) * c.height / r.height };
+    }
+    leeren();
+    ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#000000';
+    c.addEventListener('pointerdown', function (e) { zeichnet = true; letzte = punkt(e); c.setPointerCapture(e.pointerId);
+        ctx.beginPath(); ctx.moveTo(letzte.x, letzte.y); ctx.lineTo(letzte.x + 0.1, letzte.y + 0.1); ctx.stroke();
+        benutzt = true; hinweis.hidden = true; e.preventDefault(); });
+    c.addEventListener('pointermove', function (e) { if (!zeichnet) return; var p = punkt(e);
+        ctx.beginPath(); ctx.moveTo(letzte.x, letzte.y); ctx.lineTo(p.x, p.y); ctx.stroke(); letzte = p; e.preventDefault(); });
+    ['pointerup', 'pointercancel'].forEach(function (n) { c.addEventListener(n, function () { zeichnet = false; }); });
+    feld.querySelector('[data-sk-pad-weg]').addEventListener('click', leeren);
+    var gesendet = false;
+    form.addEventListener('submit', function (e) {
+        if (gesendet) { e.preventDefault(); return; }
+        if (!benutzt) {
+            e.preventDefault();
+            hinweis.textContent = feld.dataset.msgFehlt; hinweis.hidden = false;
+            feld.scrollIntoView({ block: 'center' });
+            return;
+        }
+        wert.value = c.toDataURL('image/png');
+        gesendet = true;
+        var knopf = form.querySelector('[data-sk-absenden]');
+        if (knopf) knopf.disabled = true;
+    });
+})();
+</script>

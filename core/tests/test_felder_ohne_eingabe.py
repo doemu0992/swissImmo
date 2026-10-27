@@ -192,6 +192,12 @@ AUSNAHMEN = {
     'tickets.SchadenFoto.bild': 'entsteht im Lauf oder Import, nicht von Hand',
     'tickets.SchadenFoto.hochgeladen_von': 'entsteht im Lauf oder Import, nicht von Hand',
     'tickets.TicketNachricht.empfaenger_handwerker': 'entsteht im Lauf oder Import, nicht von Hand',
+    # Modul 2 (27.10.2026): Die Quittungen entstehen als PDF beim Ausgeben bzw.
+    # Zurücknehmen (`core/services/schluessel.ausgeben` / `zuruecknehmen`), die
+    # Abnahme setzt `schluessel.abnahme_buchen` beim Abschluss des Protokolls.
+    'portfolio.SchluesselAusgabe.quittung': 'PDF aus `schluessel.ausgeben`, nicht gewählt',
+    'portfolio.SchluesselAusgabe.quittung_rueckgabe': 'PDF aus `schluessel.zuruecknehmen`, nicht gewählt',
+    'portfolio.SchluesselAusgabe.abnahme': 'gesetzt von `schluessel.abnahme_buchen` beim Abschluss der Abnahme',
 }
 
 #: OFFENE LUECKEN — angezeigt, aber nirgends erfassbar.
@@ -317,6 +323,8 @@ ALIAS = {
     # (`core/services/mietzinsanpassung._vertragsbasis_fortschreiben`).
     'rentals.Mietvertrag.mietzinsreserve_betrag': 'vorbehalt_betrag',
     'rentals.Mietvertrag.mietzinsreserve_prozent': 'vorbehalt_prozent',
+    # Modul 2: Die Rücknahmeseite hat dasselbe Zeichenfeld `unterschrift` wie die Ausgabe.
+    'portfolio.SchluesselAusgabe.unterschrift_rueckgabe': 'unterschrift',
 }
 
 

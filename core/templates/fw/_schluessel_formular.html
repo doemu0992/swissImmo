@@ -1,0 +1,42 @@
+{% load i18n zeichen hilfe %}{% comment %}
+Schlüssel erfassen bzw. ändern (Modul 2). Ohne `sch`: neuer Schlüssel an der
+Liegenschaft `lg` — die Einheit ist optional (Haustür, Briefkasten). Mit `sch`
+(und `k` aus der Karte): Änderung. Die Türen kommen aus `sl_punkte`.
+{% endcomment %}
+<form method="post" action="{% if sch %}/neu/schluessel/{{ sch.id }}/bearbeiten/{% else %}/neu/liegenschaften/{{ lg.id }}/schluessel/neu/{% endif %}" class="fw-raster r2">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ weiter|default:sl_ziel }}">
+    <div><label class="fw-label" for="sk-typ-{{ sch.id|default:'neu' }}">{% trans "Bezeichnung" %} <span class="fw-pflicht">*</span></label>
+        <input id="sk-typ-{{ sch.id|default:'neu' }}" name="typ" required maxlength="50" list="sk-typen" value="{{ sch.typ|default:'' }}" placeholder="{% trans 'z. B. Wohnung, Haustür, Briefkasten' %}" class="fw-feld w-full"></div>
+    <div><label class="fw-label" for="sk-nr-{{ sch.id|default:'neu' }}">{% trans "Schlüssel-Nr." %} <span class="fw-pflicht">*</span></label>
+        <input id="sk-nr-{{ sch.id|default:'neu' }}" name="schluessel_nummer" required maxlength="50" value="{{ sch.schluessel_nummer|default:'' }}" class="fw-feld w-full"></div>
+    <div><label class="fw-label" for="sk-art-{{ sch.id|default:'neu' }}">{% trans "Art" %} {% hilfe 'schluesselart' %}</label>
+        <select id="sk-art-{{ sch.id|default:'neu' }}" name="art" class="fw-feld w-full">
+            {% for wert, text in sl_arten %}<option value="{{ wert }}"{% if sch and sch.art == wert or not sch and wert == 'einzel' %} selected{% endif %}>{{ text }}</option>{% endfor %}
+        </select></div>
+    <div><label class="fw-label" for="sk-n-{{ sch.id|default:'neu' }}">{% trans "Anzahl Exemplare" %}</label>
+        <input id="sk-n-{{ sch.id|default:'neu' }}" name="anzahl" type="number" min="1" max="999" value="{{ sch.anzahl|default:'1' }}" class="fw-feld w-full"></div>
+    <div><label class="fw-label" for="sk-e-{{ sch.id|default:'neu' }}">{% trans "Objekt" %}</label>
+        <select id="sk-e-{{ sch.id|default:'neu' }}" name="einheit_id" class="fw-feld w-full">
+            <option value="">{% trans "allgemein (ohne Objekt)" %}</option>
+            {% for e in sl_einheiten %}<option value="{{ e.id }}"{% if sch and sch.einheit_id == e.id %} selected{% endif %}>{{ e.bezeichnung }}</option>{% endfor %}
+        </select></div>
+    <div><label class="fw-label" for="sk-a-{{ sch.id|default:'neu' }}">{% trans "Schliessanlage" %}</label>
+        <select id="sk-a-{{ sch.id|default:'neu' }}" name="schliessanlage" class="fw-feld w-full">
+            <option value="">—</option>
+            {% for an in sl_anlagen %}<option value="{{ an.id }}"{% if sch and sch.schliessanlage_id == an.id or not sch and sl_anlagen|length == 1 %} selected{% endif %}>{{ an }}</option>{% endfor %}
+        </select></div>
+    {% if sl_punkte %}
+    <fieldset class="fw-col-span-2 fw-sk-tueren">
+        <legend class="fw-label">{% trans "Öffnet" %}</legend>
+        <div class="fw-sk-chips">
+            {% for t in sl_punkte %}
+            <label class="fw-chip fw-mut fw-sk-tuerwahl"><input type="checkbox" name="oeffnet" value="{{ t.id }}"{% if k and t in k.tueren %} checked{% endif %}> {{ t.bezeichnung }}</label>
+            {% endfor %}
+        </div>
+    </fieldset>
+    {% endif %}
+    <div class="fw-col-span-2">
+        <button class="fw-btn fw-primary">{% zeichen 'gut' %}{% if sch %}{% trans "Änderung speichern" %}{% else %}{% trans "Schlüssel speichern" %}{% endif %}</button>
+    </div>
+</form>

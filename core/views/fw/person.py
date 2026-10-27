@@ -25,13 +25,14 @@ from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
 from crm.models import Mieter
 from finance.models import DebitorenRechnung, Zahlungseingang
-from portfolio.models import Liegenschaft
+from portfolio.models import Liegenschaft, SchluesselAusgabe
 from rentals.models import Mietvertrag
 
 logger = logging.getLogger(__name__)
 
 from ._basis import _global_filter, _num, VERTRAG_PILL
 from core.services.dokumentsprache import auf_deutsch
+from core.services.schluessel import akte as _schluessel_akte
 
 
 # ============================================================
@@ -171,6 +172,9 @@ def fw_person_detail(request, pk):
         'tab_liste': tab_liste,
         'adress_verlauf': list(m.adressen.all()),
         'heute': timezone.localdate().isoformat(),
+        # Modul 2: Schlüssel der Person über alle Mietverhältnisse, mit Verlauf
+        'schluessel_akte': _schluessel_akte(SchluesselAusgabe.objects.filter(
+            _Q(mieter=m) | _Q(vertrag__mieter=m)).distinct()),
     })
 
 

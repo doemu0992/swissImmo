@@ -1,0 +1,75 @@
+{% extends embed_base|default:'fw/base.html' %}
+{% load i18n zeichen hilfe %}
+{% block title %}{% trans "Schlüssel ausgeben" %} — {{ lg.strasse }}{% endblock %}
+{% block content %}
+{% comment %}
+Ausgabe am Telefon (Modul 2, 27.10.2026). Vorbild: Abnahme vor Ort — eine
+Spalte, grosse Tippflächen, Unterschrift mit dem Finger. Empfänger ist ein
+Mietvertrag, ein Dienstleister oder ein Hauswart (Benutzer). Mehrere Schlüssel
+auf einmal; daraus entsteht EINE Quittung als PDF in der Ablage.
+{% endcomment %}
+<div class="fw-sk-seite">
+    {% if not embed %}
+    <div class="fw-phead">
+        <div>
+            <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg.id }}/?tab=stammdaten#schliessanlage">{{ lg.strasse }}</a><span aria-hidden="true">/</span><span>{% trans "Schlüssel ausgeben" %}</span></nav>
+            <h1>{% trans "Schlüssel ausgeben" %}</h1>
+            <p>{{ lg.strasse }}, {{ lg.plz }} {{ lg.ort }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <form method="post" data-no-guard class="fw-sk-seite" id="sk-ausgabe">
+        {% csrf_token %}
+        {% if embed %}<input type="hidden" name="embed" value="1">{% endif %}
+        {% if weiter %}<input type="hidden" name="next" value="{{ weiter }}">{% endif %}
+
+        <div class="fw-sk-block">
+            <h2><label for="sk-empf">{% trans "An" %}</label></h2>
+            <select id="sk-empf" name="empfaenger" required class="fw-feld w-full">
+                <option value="">{% trans "Empfänger wählen …" %}</option>
+                {% if auswahl.vertraege %}<optgroup label="{% trans 'Mietverträge' %}">
+                    {% for v in auswahl.vertraege %}
+                    <option value="{{ v.sk_code }}"{% if vorwahl_empf == v.sk_code %} selected{% endif %}>{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }} ({{ v.get_status_display }})</option>
+                    {% endfor %}</optgroup>{% endif %}
+                {% if auswahl.handwerker %}<optgroup label="{% trans 'Dienstleister' %}">
+                    {% for h in auswahl.handwerker %}<option value="{{ h.sk_code }}"{% if vorwahl_empf == h.sk_code %} selected{% endif %}>{{ h.firma }}</option>{% endfor %}</optgroup>{% endif %}
+                {% if auswahl.hauswarte %}<optgroup label="{% trans 'Hauswart' %}">
+                    {% for u in auswahl.hauswarte %}<option value="{{ u.sk_code }}"{% if vorwahl_empf == u.sk_code %} selected{% endif %}>{{ u.get_full_name|default:u.username }}</option>{% endfor %}</optgroup>{% endif %}
+            </select>
+        </div>
+
+        <div class="fw-sk-block">
+            <h2>{% trans "Schlüssel" %}</h2>
+            {% for k in karten %}
+            <label class="fw-sk-wahl{% if not k.verfuegbar %} aus{% endif %}">
+                <input type="checkbox" name="schluessel" value="{{ k.s.id }}"{% if k.gewaehlt %} checked{% endif %}{% if not k.verfuegbar %} disabled{% endif %}>
+                <span class="fw-sk-art {{ k.s.art }}" aria-hidden="true">{{ k.kuerzel }}</span>
+                <span class="fw-sk-titel"><b>{{ k.s.typ }} · {% trans "Nr." %} {{ k.s.schluessel_nummer }}</b>
+                    <span>{% if k.alle_tueren %}{% trans "alle Türen" %}{% else %}{% for t in k.tueren %}{{ t.bezeichnung }}{% if not forloop.last %}, {% endif %}{% empty %}{% if k.s.einheit %}{{ k.s.einheit.bezeichnung }}{% else %}{% trans "allgemein" %}{% endif %}{% endfor %}{% endif %} · {% blocktrans with n=k.verfuegbar %}{{ n }} im Büro{% endblocktrans %}</span></span>
+                {% if k.verfuegbar > 1 %}<input type="number" name="anzahl_{{ k.s.id }}" min="1" max="{{ k.verfuegbar }}" value="{{ k.stueck }}" inputmode="numeric" class="fw-feld fw-sk-stueck" aria-label="{% trans 'Stück' %}">
+                {% elif k.verfuegbar %}<input type="hidden" name="anzahl_{{ k.s.id }}" value="1">{% endif %}
+            </label>
+            {% empty %}
+            <p class="fw-leer">{% trans "An dieser Liegenschaft sind noch keine Schlüssel erfasst." %} <a href="/neu/liegenschaften/{{ lg.id }}/?tab=stammdaten#schliessanlage" class="fw-link">{% trans "Schlüssel erfassen" %}</a></p>
+            {% endfor %}
+        </div>
+
+        <div class="fw-sk-block">
+            <h2><label for="sk-bis">{% trans "Zurück bis" %}</label></h2>
+            <input id="sk-bis" type="date" name="rueckgabe_bis" min="{{ heute_iso }}" value="{{ rueckgabe_bis }}" class="fw-feld w-full">
+            <p class="fw-hilfe">{% trans "Leer lassen, wenn der Schlüssel bleibt (Mieter). Wird er nicht zurückgegeben, steht er unter «Heute» und in den Fristen." %}</p>
+            <label class="fw-label" for="sk-notiz">{% trans "Notiz" %}</label>
+            <textarea id="sk-notiz" name="notiz" rows="2" maxlength="500" class="fw-feld w-full" placeholder="{% trans 'z. B. Auftrag, Ticket' %}">{{ notiz }}</textarea>
+        </div>
+
+        {% trans "Unterschrift Empfänger" as titel %}
+        {% include 'fw/_schluessel_unterschrift.html' with titel=titel %}
+
+        <p class="fw-hilfe">{% trans "Die Quittung entsteht als PDF und liegt danach in der Ablage." %}</p>
+        <div class="fw-sk-absenden">
+            <button type="submit" class="fw-btn fw-primary" data-sk-absenden>{% zeichen 'gut' %}{% trans "Ausgabe bestätigen" %}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

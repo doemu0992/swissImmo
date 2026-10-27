@@ -237,6 +237,13 @@ HILFE = {
     'vorlage_gueltig_ab': (_('Gültig ab'), _(
         'Ab diesem Tag gilt die Fassung. Gilt die Vorlage heute schon und liegt der Tag in der Zukunft, entsteht beim '
         'Speichern eine neue Fassung; bis dahin gilt die bisherige. Leer heisst: gilt sofort.')),
+    # ---- Schlüssel (Modul 2, 27.10.2026) ----
+    'schliessanlage': (_('Schliessanlage'), _(
+        'Hersteller, Sicherungskarte und Bestellberechtigte der Anlage, dazu alle Schlüssel und die Türen, die sie '
+        'öffnen. Jede Ausgabe und Rücknahme erzeugt eine Quittung mit Unterschrift in der Ablage.')),
+    'schluesselart': (_('Schlüsselart'), _(
+        'Ein Hauptschlüssel öffnet alle Türen der Anlage, ein Gruppenschlüssel mehrere (etwa Haustür und Keller), ein '
+        'Einzelschlüssel eine bestimmte Tür wie die Wohnungstür.')),
 }
 
 
