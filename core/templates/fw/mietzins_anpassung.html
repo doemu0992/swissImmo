@@ -160,6 +160,15 @@
                 <p class="fw-hilfe">{% trans "Vorschlag aus Referenzzins + Teuerung + Kosten" %}</p>
             </div>
             <div class="fw-feldblock">
+                <div class="fw-label">{% trans "Nebenkosten bisher" %}</div>
+                <div class="fw-betrag">CHF {{ alt_nk|chf }}</div>
+            </div>
+            <div class="fw-feldblock">
+                <label for="mz_nk" class="fw-label">{% trans "Nebenkosten neu (Akonto, CHF/Mt.)" %} <span class="fw-faint font-normal">{% trans "(optional)" %}</span></label>
+                <input name="neu_nk" id="mz_nk" inputmode="decimal" value="{% if neu_nk is not None %}{% localize off %}{{ neu_nk }}{% endlocalize %}{% endif %}" class="fw-feld w-full">
+                <p class="fw-hilfe">{% if nk_periode %}{% blocktrans with p=nk_periode.bezeichnung %}Vorschlag aus der Nebenkostenabrechnung «{{ p }}».{% endblocktrans %}{% else %}{% trans "Leer: die Nebenkosten bleiben." %}{% endif %}</p>
+            </div>
+            <div class="fw-feldblock">
                 <label for="mz_wirksam" class="fw-label">{% trans "Wirksam ab" %}</label>
                 <input type="date" name="wirksam_ab" id="mz_wirksam" data-pflicht onchange="mzRechnen()" value="{{ termin|date:'Y-m-d' }}" class="fw-feld w-full">
                 <p class="fw-hilfe" id="mz-frueh">{% blocktrans with datum=naechster_termin|date:"d.m.Y" %}Frühestens {{ datum }} bei Versand heute{% endblocktrans %}</p>

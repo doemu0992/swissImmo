@@ -1,0 +1,13 @@
+{% load i18n chf %}{% comment %} Zwei Kennzahl-Kacheln der Abrechnung: `kz` aus core/views/fw/nk_wizard.py (kennzahlen). {% endcomment %}
+<div class="fw-bento">
+    <div class="fw-kachel b-l akzent">
+        <div class="fw-kachel-kopf"><h3>{% trans "Kosten total" %}</h3></div>
+        <div class="fw-kachel-zahl">{{ kz.total|chf:0 }}<small>CHF</small></div>
+        <p class="fw-kachel-text">{% blocktrans with pct=kz.verteilt_pct d=kz.differenz|chf %}verteilt {{ pct }} % · Differenz {{ d }}{% endblocktrans %}{% if kz.eigentuemer %} · {% blocktrans with b=kz.eigentuemer|chf %}Eigentümer/Leerstand CHF {{ b }}{% endblocktrans %}{% endif %}</p>
+    </div>
+    <div class="fw-kachel b-l">
+        <div class="fw-kachel-kopf"><h3>{% trans "Saldo Mieter" %}</h3></div>
+        <div class="fw-kachel-zahl">{% if kz.saldo > 0 %}+{% endif %}{{ kz.saldo|chf:0 }}<small>CHF</small></div>
+        <p class="fw-kachel-text">{% blocktrans count n=kz.n_nach %}{{ n }} Nachzahlung{% plural %}{{ n }} Nachzahlungen{% endblocktrans %} · {% blocktrans count n=kz.n_gut %}{{ n }} Guthaben{% plural %}{{ n }} Guthaben{% endblocktrans %}</p>
+    </div>
+</div>

@@ -18,7 +18,9 @@ from reportlab.lib.units import mm
 from reportlab.lib import colors
 import reportlab.lib.utils
 
-from core.utils.billing import berechne_abrechnung
+from decimal import Decimal
+
+from core.utils.billing import hole_abrechnung
 from core.utils.qr_code import draw_qr_bill, ist_qr_iban, qrr_referenz
 
 logger = logging.getLogger(__name__)
@@ -248,12 +250,17 @@ def draw_header(c, verwaltung):
 def abrechnung_pdf_view(request, periode_id):
     periode = get_object_or_404(AbrechnungsPeriode, pk=periode_id)
     liegenschaft = periode.liegenschaft
-    ergebnis = berechne_abrechnung(periode_id)
+    # Fehler h (NK-Wizard): Die Route rechnete live — nach dem Verbuchen druckte sie andere
+    # Zahlen, als gebucht waren, sobald sich ein Beleg, eine Fläche oder ein Vertrag änderte.
+    # `hole_abrechnung` liefert bei einer verbuchten Periode den eingefrorenen Stand.
+    ergebnis = hole_abrechnung(periode)
 
     if 'error' in ergebnis:
         return HttpResponse(f"Fehler: {ergebnis['error']}")
 
-    abrechnungen = ergebnis.get('abrechnungen', [])
+    # Der Snapshot ist JSON: Beträge kommen als Text zurück.
+    abrechnungen = [{**z, **{f: Decimal(str(z.get(f, 0))) for f in ('kosten_anteil', 'akonto', 'saldo')}}
+                    for z in ergebnis.get('abrechnungen', [])]
     verwaltung = liegenschaft.organisation
     eigentuemer = liegenschaft.eigentuemer
 
@@ -270,7 +277,7 @@ def abrechnung_pdf_view(request, periode_id):
     c.setTitle(f"NK {periode.bezeichnung}")
 
     for row in abrechnungen:
-        if row['typ'] == 'leerstand':
+        if row['typ'] in ('leerstand', 'eigentuemer'):
             if eigentuemer: debtor = {'name': eigentuemer.firma_oder_name, 'line1': eigentuemer.strasse, 'line2': f"{eigentuemer.plz} {eigentuemer.ort}"}
             else: debtor = {'name': "Eigentümer (Leerstand)", 'line1': '', 'line2': ''}
         else:

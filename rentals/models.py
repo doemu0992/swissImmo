@@ -406,11 +406,17 @@ class Mietvertrag(OrganisationAusKette):
             komps = [k for k in self.mietzins_komponenten.all()
                      if k.gueltig_ab and k.gueltig_ab <= stichtag]
             komp = max(komps, key=lambda k: (k.gueltig_ab, k.id or 0)) if komps else None
-            if komp:
-                return komp.nebenkosten or Decimal('0.00')
-            soll = self._sollmietzins_zeile(stichtag)
-            if soll:
-                return soll.nebenkosten or Decimal('0.00')
+            soll = None if komp else self._sollmietzins_zeile(stichtag)
+            # E1 (NK-Wizard): Ein mit einer gebuchten Anpassung mitgeteiltes Akonto gilt ab ihrem
+            # Termin — wie beim Netto, wenn es nicht älter ist als die geltende Zeile.
+            anps = [a for a in self.anpassungen.all() if a.ist_gebucht and a.neue_nebenkosten is not None
+                    and a.wirksam_ab and a.wirksam_ab <= stichtag]
+            anp = max(anps, key=lambda a: (a.wirksam_ab, a.id or 0)) if anps else None
+            zeile = komp or soll
+            if anp is not None and (zeile is None or zeile.gueltig_ab <= anp.wirksam_ab):
+                return anp.neue_nebenkosten
+            if zeile is not None:
+                return zeile.nebenkosten or Decimal('0.00')
         return self.nebenkosten or Decimal('0.00')
 
     def _sollmietzins_zeile(self, fuer_datum=None):
@@ -967,6 +973,8 @@ class MietzinsAnpassung(OrganisationAusKette):
             gueltig_ab=self.wirksam_ab).delete()
         nk = _D('0.00') if getattr(einheit, 'ist_einstellplatz', False) \
             else (einheit.nebenkosten_aktuell or _D('0.00'))
+        if self.neue_nebenkosten is not None:          # E1: mit der Anpassung mitgeteiltes Akonto
+            nk = self.neue_nebenkosten
         teile = ["Amtliche Mietzinsanpassung"]
         grund = (self.begruendung or '').strip()
         if grund:

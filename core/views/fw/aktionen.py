@@ -514,27 +514,43 @@ def fw_dokument_loeschen(request, pk):
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_nebenkosten_neu(request):
-    """Neue Nebenkosten-Abrechnungsperiode anlegen."""
-    from django.shortcuts import redirect
+    """Neue Nebenkosten-Abrechnungsperiode anlegen — Schritt 1 des Wizards.
+
+    GET zeigt das Formular (vorher ein Ausklapp-Formular auf der Liste), POST legt an und
+    führt in den Wizard. Höchstens 12 Monate (`core.services.nk_wizard.periode_pruefen`);
+    Fehler stehen am Feld, die Eingabe bleibt.
+    """
+    from django.shortcuts import redirect, render
     from django.contrib import messages
     from finance.models import AbrechnungsPeriode
     from core.auth import log_aktion
+    from core.services.nk_wizard import periode_pruefen
+    from ._basis import _global_filter
+    basis = _global_filter(request)
+
+    def _formular(eingabe, fehler, status):
+        return render(request, 'fw/nk/neu.html', {
+            **basis, 'nav': 'nebenkosten', 'eingabe': eingabe, 'fehler': fehler,
+            'liegenschaften': Liegenschaft.objects.order_by('strasse')}, status=status)
+
     if request.method != 'POST':
-        return redirect('fw_nebenkosten')
+        vorwahl = basis['aktive_lg'].id if basis.get('aktive_lg') else ''
+        return _formular({'liegenschaft_id': str(vorwahl)}, {}, 200)
     lg = Liegenschaft.objects.filter(id=request.POST.get('liegenschaft_id') or None).first()
-    bez = (request.POST.get('bezeichnung') or '').strip()
-    try:
-        start = date.fromisoformat(request.POST.get('start_datum'))
-        ende = date.fromisoformat(request.POST.get('ende_datum'))
-    except Exception:
-        start = ende = None
-    if not lg or not bez or not start or not ende:
-        messages.error(request, gettext('Liegenschaft, Bezeichnung, Start- und Enddatum sind erforderlich.'))
-        return redirect('fw_nebenkosten')
+    bez = (request.POST.get('bezeichnung') or '').strip()[:100]
+    start, ende, fehler = periode_pruefen(request.POST.get('start_datum'), request.POST.get('ende_datum'))
+    if not lg:
+        fehler['liegenschaft_id'] = gettext('Bitte eine Liegenschaft wählen.')
+    if not bez:
+        fehler['bezeichnung'] = gettext('Bitte eine Bezeichnung angeben.')
+    if fehler:
+        messages.error(request, gettext('Liegenschaft, Bezeichnung, Start- und Enddatum sind erforderlich; '
+                                        'eine Periode umfasst höchstens 12 Monate.'))
+        return _formular(request.POST.dict(), fehler, 400)
     p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung=bez, start_datum=start, ende_datum=ende)
     log_aktion(request, "Abrechnungsperiode erstellt", bez, str(lg))
     messages.success(request, '✅ ' + gettext("Abrechnungsperiode '%(bez)s' erstellt.") % {'bez': bez})
-    return redirect(f'/neu/nebenkosten/{p.id}/')
+    return redirect(f'/neu/nebenkosten/{p.id}/periode/')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

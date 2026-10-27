@@ -149,6 +149,7 @@ def mietzins_so_pdf(vertrag, daten, verwaltung=None):
     alt_netto = Decimal(str(daten['alt_netto']))
     neu_netto = Decimal(str(daten['neu_netto']))
     nk = Decimal(str(daten.get('nebenkosten') or 0))
+    nk_alt = Decimal(str(daten.get('alt_nebenkosten', daten.get('nebenkosten')) or 0))  # E1: Akonto bisher
     y = 208*mm
     c.setFont("Helvetica-Bold", 9)
     c.drawString(20*mm, y, "Nettomietzins")
@@ -159,13 +160,13 @@ def mietzins_so_pdf(vertrag, daten, verwaltung=None):
     c.setFont("Helvetica-Bold", 9)
     c.drawString(20*mm, y, "Neben- und Betriebskosten")
     c.setFont("Helvetica", 9)
-    c.drawString(110*mm, y, f"Fr. {_fr(nk)}")
+    c.drawString(110*mm, y, f"Fr. {_fr(nk_alt)}")
     c.drawString(150*mm, y, f"Fr. {_fr(nk)}")
     y -= 8*mm
     c.setLineWidth(0.6); c.line(20*mm, y + 3*mm, 190*mm, y + 3*mm)
     c.setFont("Helvetica-Bold", 10)
     c.drawString(20*mm, y, "Bruttomietzins:")
-    c.drawString(110*mm, y, f"Fr. {_fr(alt_netto + nk)}")
+    c.drawString(110*mm, y, f"Fr. {_fr(alt_netto + nk_alt)}")
     c.drawString(150*mm, y, f"Fr. {_fr(neu_netto + nk)}")
 
     # C) Begründung

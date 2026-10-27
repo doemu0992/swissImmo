@@ -58,8 +58,16 @@ def akonto_empfehlung(kosten_monat, akonto_monat):
 
     Der Rundungsschritt auf CHF 5 bleibt unveraendert — ein Akonto von
     CHF 247 vorzuschlagen waere rechnerisch richtig und praktisch unbrauchbar.
+
+    DECIMAL STATT FLOAT (NK-Wizard, Fehler j)
+
+    Die Rechnung lief über `float` und `round()`. Jetzt durchgehend Decimal; die
+    Rundung bleibt dieselbe wie bisher bei `round()`: auf die nächste Fünferstufe,
+    genau in der Mitte zur geraden Stufe (ROUND_HALF_EVEN).
     """
-    empfohlen = (Decimal(round(float(kosten_monat) / 5.0)) * 5).quantize(Decimal('1'))
+    from decimal import ROUND_HALF_EVEN
+    stufen = (Decimal(kosten_monat) / Decimal('5')).quantize(Decimal('1'), rounding=ROUND_HALF_EVEN)
+    empfohlen = (stufen * 5).quantize(Decimal('1'))
     diff = empfohlen - akonto_monat
     schwelle = max(AKONTO_UNTERGRENZE, (akonto_monat * AKONTO_ANTEIL))
     empfehlen = abs(diff) >= schwelle and empfohlen > 0
@@ -119,87 +127,31 @@ def fw_nebenkosten(request):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_nebenkosten_detail(request, pk):
-    """Zeigt die Abrechnung — nutzt die EINE kanonische Engine (core.utils.billing),
-    identisch zu PDF und Verbuchung (keine divergierenden Berechnungen mehr)."""
-    from finance.models import AbrechnungsPeriode, KreditorenRechnung
+    """Offene Periode: der Wizard beim ersten Schritt, der nicht erledigt ist
+    (core/views/fw/nk_wizard.py). Verbuchte Periode: die Leseansicht mit dem
+    EINGEFRORENEN Stand — dieselben Zahlen wie Buchungen, PDF und Versand.
+
+    Die Leseansicht behebt, was die alte Detailseite falsch zeigte (Fehler i):
+    Mieter-Link über die Vertrags-ID (nicht ein leeres `a.v`), Fläche aus der
+    Abrechnung, kein Fusstext «Vorschau — verbindlich in der klassischen Ansicht»,
+    Positionen inkl. Kreditoren (aus dem Snapshot, nicht nur die Belege).
+    """
+    from finance.models import AbrechnungsPeriode
     from core.utils.billing import hole_abrechnung
+    from portfolio.models import Verteilschluessel
+    from .nk_wizard import _karten, kennzahlen, wizard_aktueller_schritt
     p = get_object_or_404(AbrechnungsPeriode.objects.select_related('liegenschaft'), id=pk)
+    if not p.abgeschlossen:
+        return wizard_aktueller_schritt(request, p)
     basis = _global_filter(request)
-    lg = p.liegenschaft
-
-    # Nach dem Verbuchen den EINGEFRORENEN Stand zeigen (identisch zu den Buchungen).
     result = hole_abrechnung(p)
-    # Kanonische Ausgabe auf die Template-Keys mappen
-    abrechnungen = []
-    total_kosten_verteilt = Decimal('0.00')
-    total_akonto = Decimal('0.00')
-    for a in result.get('abrechnungen', []):
-        kosten = Decimal(str(a.get('kosten_anteil', 0)))
-        akonto = Decimal(str(a.get('akonto', 0)))
-        total_kosten_verteilt += kosten
-        total_akonto += akonto
-        abrechnungen.append({
-            'v': None, 'vertrag_id': a.get('vertrag_id'),
-            'mieter': a.get('name', ''), 'einheit': a.get('einheit', ''),
-            'flaeche': '', 'tage': f"{a.get('von','')}–{a.get('bis','')}" if a.get('von') != '-' else 'Leerstand',
-            'kosten': kosten, 'akonto': akonto, 'saldo': Decimal(str(a.get('saldo', 0))),
-            'nachzahlung': a.get('nachzahlung', False), 'info': a.get('info', ''),
-        })
-
-    # Akonto-Anpassungs-Vorschlag: effektive Jahres-NK vs. aktuelle Akonto/Monat.
-    # Weicht der monatliche Akonto ≥ 10 % (mind. CHF 10) vom effektiven Bedarf ab,
-    # wird eine neue runde Akonto-Höhe vorgeschlagen.
-    monate = 1
-    if p.start_datum and p.ende_datum:
-        monate = max(1, round((p.ende_datum - p.start_datum).days / 30.44))
-    akonto_vorschlaege = []
-    for a in abrechnungen:
-        vid = a['vertrag_id']
-        if not vid:
-            continue
-        kosten_monat = (a['kosten'] / monate) if monate else a['kosten']
-        akonto_monat = (a['akonto'] / monate) if monate else a['akonto']
-        # Rundung auf CHF 5 und Schwelle stehen in `akonto_empfehlung` —
-        # herausgeloest in E2.25, damit die Grenze an ihrem Rand pruefbar ist.
-        empfohlen, diff, _schwelle, empfehlen = akonto_empfehlung(
-            kosten_monat, akonto_monat)
-        if empfehlen:
-            akonto_vorschlaege.append({
-                'vertrag_id': vid, 'mieter': a['mieter'], 'einheit': a['einheit'],
-                'aktuell': akonto_monat.quantize(Decimal('1')),
-                'empfohlen': empfohlen,
-                'richtung': 'erhöhen' if diff > 0 else 'senken',
-                'diff': abs(diff).quantize(Decimal('1')),
-            })
-
-    belege = p.belege.all().order_by('-datum')
-    kosten_rechnungen = (KreditorenRechnung.objects.filter(
-        liegenschaft=lg, is_hnk_relevant=True,
-        datum__gte=p.start_datum, datum__lte=p.ende_datum).exclude(status='storniert')) if lg else []
-
-    tab_liste = [
-        ('abrechnung', _('Mieter-Abrechnung'), len(abrechnungen) or None),
-        ('belege', _('Belege'), (len(result.get('belege_details', [])) or belege.count()) or None),
-    ]
-    from core.services.nk_prozess import schritte as nk_schritte
-    prozess = nk_schritte(p, total_kosten=result.get('total_kosten', Decimal('0.00')),
-                          warnungen=result.get('warnungen', []), akonto_vorschlaege=akonto_vorschlaege,
-                          hkvo_aktiv=getattr(lg, 'hkvo_aktiv', False) if lg else False,
-                          hkvo_angewendet=result.get('hkvo_angewendet', False))
+    namen = dict(Verteilschluessel.KOSTENART_CHOICES)
+    positionen = [{**b, 'kostenart_name': namen.get(b.get('kostenart'), '')} for b in result.get('belege_details', [])]
     return render(request, 'fw/nebenkosten_detail.html', {
-        **basis, 'nav': 'nebenkosten', 'p': p, 'prozess': prozess,
-        'total_kosten': result.get('total_kosten', Decimal('0.00')),
-        'total_akonto': total_akonto,
-        'saldo_total': total_kosten_verteilt - total_akonto,
-        'abrechnungen': abrechnungen,
-        'belege_details': result.get('belege_details', []),
-        'belege': belege, 'kreditoren': kosten_rechnungen,
-        'akonto_vorschlaege': akonto_vorschlaege,
+        **basis, 'nav': 'nebenkosten', 'p': p, 'result': result, 'kz': kennzahlen(result),
+        'karten': _karten(result), 'positionen': positionen,
+        'warnungen': result.get('warnungen', []), 'hinweise': result.get('hinweise', []),
         'hkvo_angewendet': result.get('hkvo_angewendet', False),
-        'hkvo_aktiv': getattr(lg, 'hkvo_aktiv', False) if lg else False,
-        'differenz': result.get('differenz', Decimal('0.00')),
-        'warnungen': result.get('warnungen', []),
-        'tab_liste': tab_liste,
     })
 
 
@@ -333,6 +285,12 @@ def fw_nebenkosten_versand(request, pk):
     p = get_object_or_404(AbrechnungsPeriode.objects.select_related('liegenschaft'), id=pk)
     if request.method != 'POST':
         return redirect(f'/neu/nebenkosten/{p.id}/')
+    # Fehler g: Ohne diese Prüfung ging der Versand auch für eine NICHT verbuchte Periode —
+    # live gerechnet, in die Akten und das Portal aller Mieter. Wie beim E-Mail-Versand gilt:
+    # erst verbuchen (eingefrorener Stand), dann zustellen.
+    if not p.abgeschlossen:
+        messages.error(request, gettext('Die Abrechnung ist noch nicht verbucht — erst verbuchen, dann versenden.'))
+        return redirect(f'/neu/nebenkosten/{p.id}/abschluss/')
 
     # Verbuchte Periode → eingefrorener Stand (gleiche Zahlen wie die Buchungen).
     result = hole_abrechnung(p)
@@ -369,38 +327,31 @@ def fw_nebenkosten_versand(request, pk):
 
 @rolle_erforderlich(ROLLE_VERWALTER)
 def fw_akonto_anpassen(request, pk):
-    """Übernimmt die vorgeschlagene neue Akonto-Höhe in die gewählten Verträge
-    (nach der NK-Abrechnung). Setzt Vertrag.nebenkosten + Einheit.nebenkosten_aktuell."""
+    """E1: Das Akonto wird hier NICHT mehr überschrieben — auch nicht gesenkt.
+
+    Eine Erhöhung der Akontozahlung ist eine einseitige Vertragsänderung und geht wie der
+    Mietzins über Formular und Termin (Art. 269d OR). Die Route bleibt für alte Formulare und
+    Lesezeichen: Sie leitet in den Ablauf «Mietzinsanpassung» des ersten gewählten Vertrags
+    weiter, vorbelegt mit dem vorgeschlagenen Akonto — oder in den Schritt «Prüfen».
+    """
     from django.shortcuts import redirect
     from django.contrib import messages
     from finance.models import AbrechnungsPeriode
-    from core.auth import log_aktion
     p = get_object_or_404(AbrechnungsPeriode, id=pk)
-    if request.method != 'POST':
-        return redirect(f'/neu/nebenkosten/{p.id}/')
-    angepasst = 0
-    for vid in request.POST.getlist('vertrag_id'):
-        neu = _num(request.POST.get(f'akonto_{vid}'))
+    for vid in (request.POST.getlist('vertrag_id') if request.method == 'POST' else []):
+        v = Mietvertrag.objects.filter(id=vid, einheit__liegenschaft=p.liegenschaft).first()
+        if v is None:
+            continue
         try:
-            betrag = Decimal(neu)
+            betrag = Decimal(_num(request.POST.get(f'akonto_{vid}')))
         except Exception:
-            continue
-        if betrag <= 0:
-            continue
-        v = Mietvertrag.objects.filter(id=vid).select_related('einheit').first()
-        if not v:
-            continue
-        v.nebenkosten = betrag
-        v.save(update_fields=['nebenkosten'])
-        if v.einheit_id:
-            v.einheit.nebenkosten_aktuell = betrag
-            v.einheit.save(update_fields=['nebenkosten_aktuell'])
-        angepasst += 1
-    log_aktion(request, "Akonto angepasst", p.bezeichnung, f"{angepasst} Verträge")
-    messages.success(request,
-                     ('✅ ' + gettext('Akonto bei %(n)s Vertrag/Verträgen angepasst.') % {'n': angepasst})
-                     if angepasst else gettext('Keine Akonto-Anpassung übernommen.'))
-    return redirect(f'/neu/nebenkosten/{p.id}/')
+            betrag = None
+        ziel = f'/neu/mietzins/{v.id}/anpassung/?nk_periode={p.id}'
+        if betrag is not None and betrag > 0:
+            ziel += f'&nk={betrag.quantize(Decimal("1"))}'
+        messages.info(request, gettext('Das Akonto wird über die Mietzinsanpassung angepasst (Formular und Termin).'))
+        return redirect(ziel)
+    return redirect(f'/neu/nebenkosten/{p.id}/pruefen/#akonto')
 
 
 # Nur Inhaber und Verwalter — wie der Versand ins Portal: Die Mail ist die Zustellung der

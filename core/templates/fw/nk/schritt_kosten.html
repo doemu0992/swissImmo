@@ -1,0 +1,113 @@
+{% extends 'fw/nk/_wizard.html' %}
+{% load zeichen i18n hilfe chf %}
+{% block frage %}<p>{% trans "Welche Kosten gehören in diese Abrechnung?" %} {% hilfe 'nebenkosten_vereinbart' %}</p>{% endblock %}
+{% block aufgabe %}
+<div class="fw-bento">
+    <div class="fw-kachel b-m akzent">
+        <div class="fw-kachel-kopf"><h3>{% trans "Kosten total" %}</h3></div>
+        <div class="fw-kachel-zahl">{{ result.total_kosten|chf:0 }}<small>CHF</small></div>
+        <p class="fw-kachel-text">{% blocktrans count n=result.belege_details|length %}{{ n }} Posten inkl. Honorar und Heizöl{% plural %}{{ n }} Posten inkl. Honorar und Heizöl{% endblocktrans %}</p>
+    </div>
+    <div class="fw-kachel b-m">
+        <div class="fw-kachel-kopf"><h3>{% trans "Kreditoren" %}</h3>{% hilfe 'hnk' %}</div>
+        <div class="fw-kachel-zahl">{{ kreditoren|length }}</div>
+        <p class="fw-kachel-text">{% trans "Freigegeben oder bezahlt, «In Nebenkostenabrechnung einbeziehen». Mit Leistungsperiode anteilig nach Tagen." %}</p>
+    </div>
+    <div class="fw-kachel b-m">
+        <div class="fw-kachel-kopf"><h3>{% trans "Manuelle Belege" %}</h3></div>
+        <div class="fw-kachel-zahl">{{ belege|length }}</div>
+        <p class="fw-kachel-text">{% trans "Kosten ohne Kreditorenrechnung, z. B. ein Beleg der Hauswartung." %}</p>
+    </div>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "HNK-Kreditoren" %}</h2><a href="/neu/kreditoren/?lg={{ lg.id }}" class="fw-link">{% trans "Zu den Kreditoren" %}</a></div>
+    {% for z in kreditoren %}
+    <div class="fw-zeile">
+        <div class="fw-mitte">
+            <div class="fw-t">{{ z.k.lieferant|default:_("Kreditor") }} <span class="fw-faint">· {{ z.k.datum|date:"d.m.Y" }}</span>
+                {% if z.oel %}<span class="fw-chip fw-info">{% blocktrans with l=z.k.menge_liter %}Heizöl {{ l }} L → Bestand{% endblocktrans %}</span>{% endif %}
+                {% if z.anteilig %}<span class="fw-chip fw-warn">{% blocktrans with a=z.tage_in b=z.tage_l %}anteilig {{ a }}/{{ b }} Tage{% endblocktrans %}</span>{% endif %}</div>
+            {% for t in z.teile %}<div class="fw-s">{{ t.konto.nummer|default:"" }} {{ t.konto.bezeichnung|default:"" }} · CHF {{ t.betrag|chf }}</div>{% endfor %}
+            {% if z.k.leistungs_von %}<div class="fw-s">{% blocktrans with v=z.k.leistungs_von|date:"d.m.Y" b=z.k.leistungs_bis|date:"d.m.Y" %}Leistung {{ v }} – {{ b }}{% endblocktrans %}</div>{% endif %}
+        </div>
+        <b class="fw-num">CHF {{ z.summe|chf }}</b>
+    </div>
+    {% empty %}
+    <div class="fw-rumpf">{% include 'fw/_empty.html' with knapp=True icon='rechnung' titel=_('Keine HNK-Kreditoren in dieser Periode.') subtext=_('Bei der Kreditorenrechnung «In Nebenkostenabrechnung einbeziehen» setzen.') %}</div>
+    {% endfor %}
+    {% if nicht_einbezogen %}
+    <div class="fw-fuss"><span>{% trans "Noch nicht einbezogen:" %}
+        {% for k in nicht_einbezogen %}{{ k.lieferant|default:k.id }} ({{ k.get_status_display }}){% if not forloop.last %}, {% endif %}{% endfor %}</span></div>
+    {% endif %}
+</div>
+
+<div class="fw-card" id="belege">
+    <div class="fw-kopf"><h2>{% trans "Manuelle Belege" %}</h2></div>
+    {% for b in belege %}
+    <div class="fw-zeile">
+        <div class="fw-mitte">
+            <div class="fw-t">{{ b.text|default:_("Beleg") }} <span class="fw-faint">· {{ b.datum|date:"d.m.Y" }}</span></div>
+            <div class="fw-s">{{ b.get_kategorie_display }} · {{ b.get_verteilschluessel_display }}</div>
+        </div>
+        <b class="fw-num">CHF {{ b.betrag|chf }}</b>
+        {% if kann_schreiben %}
+        <form method="post" onsubmit="return confirm('{% filter escapejs %}{% trans "Diesen Beleg löschen?" %}{% endfilter %}');">
+            {% csrf_token %}<input type="hidden" name="aktion" value="beleg_loeschen"><input type="hidden" name="beleg_id" value="{{ b.id }}">
+            <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}" aria-label="{% trans 'Beleg löschen' %}">{% zeichen 'loeschen' %}</button>
+        </form>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="fw-rumpf"><p class="fw-klein">{% trans "Noch keine manuellen Belege." %}</p></div>
+    {% endfor %}
+    {% if kann_schreiben %}
+    <form method="post" class="fw-rumpf" novalidate>
+        {% csrf_token %}<input type="hidden" name="aktion" value="beleg">
+        {% with e=beleg_eingabe f=beleg_fehler %}
+        <div class="fw-raster r3">
+            <div><label class="fw-label" for="b-text">{% trans "Beschreibung" %}</label>
+                <input name="text" id="b-text" class="fw-feld" maxlength="255" value="{{ e.text|default:'' }}"{% if f.text %} aria-invalid="true"{% endif %}>
+                {% if f.text %}<p class="fw-feldfehler" role="alert">{{ f.text }}</p>{% endif %}</div>
+            <div><label class="fw-label" for="b-kat">{% trans "Kategorie" %}</label>
+                <select name="kategorie" id="b-kat" class="fw-feld">{% for k, l in kategorien %}<option value="{{ k }}"{% if e.kategorie == k %} selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+                {% if f.kategorie %}<p class="fw-feldfehler" role="alert">{{ f.kategorie }}</p>{% endif %}</div>
+            <div><label class="fw-label" for="b-vs">{% trans "Verteilung" %}</label>
+                <select name="verteilschluessel" id="b-vs" class="fw-feld">{% for k, l in schluessel %}<option value="{{ k }}"{% if e.verteilschluessel == k %} selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+                {% if f.verteilschluessel %}<p class="fw-feldfehler" role="alert">{{ f.verteilschluessel }}</p>{% endif %}</div>
+            <div><label class="fw-label" for="b-datum">{% trans "Datum" %}</label>
+                <input type="date" name="datum" id="b-datum" class="fw-feld" value="{{ e.datum|default:'' }}"{% if f.datum %} aria-invalid="true"{% endif %}>
+                {% if f.datum %}<p class="fw-feldfehler" role="alert">{{ f.datum }}</p>{% endif %}</div>
+            <div><label class="fw-label" for="b-betrag">{% trans "Betrag CHF" %}</label>
+                <input name="betrag" id="b-betrag" inputmode="decimal" class="fw-feld fw-num" value="{{ e.betrag|default:'' }}"{% if f.betrag %} aria-invalid="true"{% endif %}>
+                {% if f.betrag %}<p class="fw-feldfehler" role="alert">{{ f.betrag }}</p>{% endif %}</div>
+        </div>
+        {% endwith %}
+        <p class="fw-hilfe">{% trans "Gilt für die Kostenart ein Schlüssel der Liegenschaft (Schritt 3), verteilt die Abrechnung nach diesem." %}</p>
+        <button class="fw-btn">{% zeichen 'neu' %}{% trans "Beleg erfassen" %}</button>
+    </form>
+    {% endif %}
+</div>
+
+<form method="post" class="fw-card" id="oel" novalidate>
+    {% csrf_token %}<input type="hidden" name="aktion" value="oel">
+    <div class="fw-kopf"><h2>{% trans "Heizöl-Bestand" %}</h2><span class="fw-neben">{% trans "nur bei Öl oder Gas mit Tank" %}</span></div>
+    <div class="fw-rumpf">
+        {% with e=oel_eingabe f=oel_fehler %}
+        <div class="fw-raster r3">
+            <div><label class="fw-label" for="oel-al">{% trans "Anfangsbestand Liter" %}</label>
+                <input name="anfangsbestand_liter" id="oel-al" inputmode="decimal" class="fw-feld fw-num" value="{% if e %}{{ e.anfangsbestand_liter }}{% else %}{{ p.anfangsbestand_liter }}{% endif %}"{% if not kann_schreiben %} readonly{% endif %}>
+                {% if f.anfangsbestand_liter %}<p class="fw-feldfehler" role="alert">{{ f.anfangsbestand_liter }}</p>{% endif %}</div>
+            <div><label class="fw-label" for="oel-ac">{% trans "Anfangsbestand CHF" %}</label>
+                <input name="anfangsbestand_chf" id="oel-ac" inputmode="decimal" class="fw-feld fw-num" value="{% if e %}{{ e.anfangsbestand_chf }}{% else %}{{ p.anfangsbestand_chf }}{% endif %}"{% if not kann_schreiben %} readonly{% endif %}>
+                {% if f.anfangsbestand_chf %}<p class="fw-feldfehler" role="alert">{{ f.anfangsbestand_chf }}</p>{% endif %}</div>
+            <div><label class="fw-label" for="oel-el">{% trans "Endbestand Liter" %}</label>
+                <input name="endbestand_liter" id="oel-el" inputmode="decimal" class="fw-feld fw-num" value="{% if e %}{{ e.endbestand_liter }}{% else %}{{ p.endbestand_liter }}{% endif %}"{% if not kann_schreiben %} readonly{% endif %}>
+                {% if f.endbestand_liter %}<p class="fw-feldfehler" role="alert">{{ f.endbestand_liter }}</p>{% endif %}</div>
+        </div>
+        {% endwith %}
+        <p class="fw-hilfe">{% trans "Verbrauch = Anfangsbestand + Zukäufe (Kreditoren mit Literangabe) − Endbestand, zum gewogenen Durchschnittspreis." %}</p>
+    </div>
+    {% if kann_schreiben %}<div class="fw-fuss"><span></span><button class="fw-btn">{% zeichen 'speichern' %}{% trans "Bestand speichern" %}</button></div>{% endif %}
+</form>
+{% endblock %}

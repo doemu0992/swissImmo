@@ -1,0 +1,64 @@
+{% extends 'fw/nk/_wizard.html' %}
+{% load zeichen i18n nk_wizard %}
+{% block frage %}<p>{% trans "Zählerstände aus einer CSV-Datei: hochladen, Spalten zuordnen, Vorschau prüfen, übernehmen." %}</p>{% endblock %}
+{% block aufgabe %}
+<p><a href="/neu/nebenkosten/{{ p.id }}/heizung/" class="fw-link">{% zeichen 'zurueck' %} {% trans "Zurück zu den Zählerständen" %}</a></p>
+
+{% if import_fehler %}
+<div class="fw-card"><div class="fw-hinweis crit" role="alert"><span class="fw-hi">{% zeichen 'kritisch' %}</span>
+    <div class="fw-ht"><b>{% trans "Die Datei lässt sich nicht lesen" %}</b>{{ import_fehler }}</div></div></div>
+{% endif %}
+
+{% if not spalten %}
+<form method="post" enctype="multipart/form-data" class="fw-kachel fw-import-kachel">
+    {% csrf_token %}<input type="hidden" name="aktion" value="hochladen">
+    <div class="fw-kachel-kopf"><h2>{% trans "1 · Datei hochladen" %}</h2><span class="fw-neben">{% trans "CSV mit Kopfzeile, Trennzeichen ; , oder Tab" %}</span></div>
+    <div class="fw-import-zeile">
+        <input type="file" name="datei" accept=".csv,.txt,text/csv" required class="fw-feld">
+        <button type="submit" class="fw-btn fw-primary">{% zeichen 'hochladen' %}{% trans "Hochladen" %}</button>
+    </div>
+    <p class="fw-kachel-text">{% trans "Gebraucht werden Zählernummer, Ablesedatum und Stand, optional die Art (Anfang, Zwischen, Ende). Die Datei wird nicht gespeichert." %}</p>
+</form>
+{% else %}
+<form method="post" class="fw-card" novalidate>
+    {% csrf_token %}
+    <textarea name="inhalt" hidden aria-hidden="true">{{ inhalt }}</textarea>
+    <div class="fw-kopf"><h2>{% trans "2 · Spalten zuordnen" %}</h2>
+        {% if lg.zaehler_import_zuordnung %}<span class="fw-neben">{% trans "Vorschlag aus dem letzten Import" %}</span>{% endif %}</div>
+    <div class="fw-rumpf">
+        <div class="fw-raster r2 l4">
+            {% for feld, label, pflicht in felder %}
+            <div><label class="fw-label" for="spalte-{{ feld }}">{{ label }}{% if pflicht %} *{% endif %}</label>
+                <select name="spalte_{{ feld }}" id="spalte-{{ feld }}" class="fw-feld">
+                    <option value="">— {% if pflicht %}{% trans "wählen" %}{% else %}{% trans "keine" %}{% endif %} —</option>
+                    {% for s in spalten %}<option value="{{ s }}"{% if zuordnung|nk_feld:feld == s %} selected{% endif %}>{{ s }}</option>{% endfor %}
+                </select>
+                {% with f=zuordnung_fehler|nk_feld:feld %}{% if f %}<p class="fw-feldfehler" role="alert">{{ f }}</p>{% endif %}{% endwith %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="fw-fuss"><span>{% blocktrans count n=spalten|length %}{{ n }} Spalte gefunden{% plural %}{{ n }} Spalten gefunden{% endblocktrans %}</span>
+        <button name="aktion" value="vorschau" class="fw-btn fw-primary">{% trans "Vorschau" %} {% zeichen 'weiter' %}</button></div>
+
+    {% if zeilen is not None %}
+    <div class="fw-kopf"><h2>{% trans "3 · Vorschau" %}</h2>
+        <span class="fw-nkw-chips"><span class="fw-chip fw-good">{% blocktrans count n=n_ok %}{{ n }} neu{% plural %}{{ n }} neu{% endblocktrans %}</span>
+            {% if n_doppelt %}<span class="fw-chip fw-mut">{% blocktrans count n=n_doppelt %}{{ n }} schon erfasst{% plural %}{{ n }} schon erfasst{% endblocktrans %}</span>{% endif %}
+            {% if n_fehler %}<span class="fw-chip fw-crit">{% blocktrans count n=n_fehler %}{{ n }} mit Fehler{% plural %}{{ n }} mit Fehler{% endblocktrans %}</span>{% endif %}</span></div>
+    {% for z in zeilen %}
+    <div class="fw-zeile">
+        <div class="fw-mitte">
+            <div class="fw-t">{% blocktrans with nr=z.nr %}Zeile {{ nr }}{% endblocktrans %} · {{ z.zaehler_text|default:"—" }}{% if z.zaehler %} <span class="fw-faint">· {{ z.zaehler.einheit.bezeichnung|default:_("allgemein") }}</span>{% endif %}</div>
+            <div class="fw-s">{{ z.datum_text }} · {{ z.stand_text }}{% if z.art %} · {{ z.art }}{% endif %}</div>
+            {% if z.fehler %}<div class="fw-feldfehler">{{ z.fehler }}</div>{% endif %}
+        </div>
+        {% if z.fehler %}<span class="fw-chip fw-crit">{% trans "Fehler" %}</span>{% elif z.doppelt %}<span class="fw-chip fw-mut">{% trans "schon erfasst" %}</span>{% else %}<span class="fw-chip fw-good">{% trans "neu" %}</span>{% endif %}
+    </div>
+    {% endfor %}
+    <div class="fw-fuss"><span>{% trans "Übernommen werden nur die neuen Zeilen ohne Fehler. Die Zuordnung bleibt für den nächsten Import gespeichert." %}</span>
+        {% if n_ok %}<button name="aktion" value="uebernehmen" class="fw-btn fw-primary">{% zeichen 'gut' %}{% blocktrans count n=n_ok %}{{ n }} Stand übernehmen{% plural %}{{ n }} Stände übernehmen{% endblocktrans %}</button>{% endif %}</div>
+    {% endif %}
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'fw/nk/_wizard.html' %}
+{% load zeichen i18n nk_wizard %}
+{% block frage %}<p>{% trans "Wie werden die Heizkosten geteilt, und liegen die Zählerstände vor?" %}</p>{% endblock %}
+{% block aufgabe %}
+<form method="post" class="fw-card" novalidate>
+    {% csrf_token %}<input type="hidden" name="aktion" value="hkvo">
+    <div class="fw-kopf"><h2>{% trans "Verbrauchsabhängige Heizkosten (HKVO)" %}</h2></div>
+    <div class="fw-rumpf">
+        <label class="fw-nkw-schalter"><input type="checkbox" name="hkvo_aktiv"{% if lg.hkvo_aktiv %} checked{% endif %}{% if not kann_schreiben %} disabled{% endif %}>
+            {% trans "Nach Verbrauch abrechnen (Grundkosten nach Volumen, Rest nach Zählerstand)" %}</label>
+        <div class="fw-nkw-felder">
+            <label>{% trans "Grundkostenanteil %" %}
+                <input name="hkvo_grundkosten_prozent" type="number" min="0" max="100" step="1" class="fw-feld fw-num" value="{{ lg.hkvo_grundkosten_prozent }}"{% if not kann_schreiben %} readonly{% endif %}{% if hkvo_fehler %} aria-invalid="true"{% endif %}>
+                {% if hkvo_fehler %}<span class="fw-feldfehler" role="alert">{{ hkvo_fehler }}</span>{% endif %}</label>
+        </div>
+        <p class="fw-hilfe">{% trans "Frei wählbar von 0 bis 100 %. Kantonale Vorgabe prüfen: Die Anwendung setzt keine Bandbreite, solange sie nicht belegt ist." %}</p>
+        <p class="fw-hilfe">{% trans "Gilt für die Liegenschaft, also auch für spätere Perioden. Verbuchte Abrechnungen bleiben, wie sie sind." %}</p>
+    </div>
+    {% if kann_schreiben %}<div class="fw-fuss"><span></span><button class="fw-btn">{% zeichen 'speichern' %}{% trans "Speichern" %}</button></div>{% endif %}
+</form>
+
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Zählerstände" %}</h2>
+        {% if kann_schreiben %}<a href="/neu/nebenkosten/{{ p.id }}/import/" class="fw-btn fw-knapp">{% zeichen 'hochladen' %}{% trans "CSV einlesen" %}</a>{% endif %}</div>
+    <div class="fw-rumpf"><p class="fw-klein">{% trans "Mit dem Zwischenstand beim Mieterwechsel wird der Verbrauch genau geteilt. Fehlt er, rechnet die Abrechnung wie bisher mit Heizgradtagen und kennzeichnet das." %}</p></div>
+</div>
+
+<div class="fw-bento">
+    {% for r in raster %}
+    {% with fe=stand_fehler|nk_eintrag:r.z.id %}
+    <form method="post" class="fw-kachel b-l fw-nkw-kachel" id="zaehler-{{ r.z.id }}" novalidate>
+        {% csrf_token %}<input type="hidden" name="aktion" value="staende"><input type="hidden" name="zaehler_id" value="{{ r.z.id }}">
+        <div class="fw-kachel-kopf"><h3>{{ r.z.einheit.bezeichnung }}</h3><span class="fw-klein">{{ r.z.typ }} {{ r.z.zaehler_nummer }}</span></div>
+        {% if fe.meldung %}<p class="fw-feldfehler" role="alert">{{ fe.meldung }}</p>{% endif %}
+        <div class="fw-nkw-staende">
+            {% for s in r.slots %}
+            <fieldset>
+                <legend>{{ s.label }}</legend>
+                <input type="date" name="{{ s.name }}_datum" class="fw-feld" aria-label="{% blocktrans with l=s.label %}Datum {{ l }}{% endblocktrans %}" value="{{ s.datum_text }}"{% if not kann_schreiben %} readonly{% endif %}>
+                <input name="{{ s.name }}_wert" inputmode="decimal" class="fw-feld fw-num" aria-label="{% blocktrans with l=s.label %}Stand {{ l }}{% endblocktrans %}" placeholder="{% trans 'Stand' %}" value="{{ s.wert_text }}"{% if not kann_schreiben %} readonly{% endif %}>
+                {% with feh=fe.felder|nk_feld:s.name %}
+                {% if feh %}<span class="fw-feldfehler" role="alert">{{ feh }}</span>
+                {% elif not s.stand %}<span class="fw-chip fw-warn">{% if s.art == 'zwischen' %}{% trans "Zwischenstand fehlt" %}{% else %}{% trans "fehlt" %}{% endif %}</span>
+                {% elif s.stand.herkunft == 'import' %}<span class="fw-chip fw-mut">{% trans "Import" %}</span>{% endif %}
+                {% endwith %}
+            </fieldset>
+            {% endfor %}
+        </div>
+        {% if kann_schreiben %}<button class="fw-btn fw-knapp">{% zeichen 'speichern' %}{% trans "Stände speichern" %}</button>{% endif %}
+    </form>
+    {% endwith %}
+    {% empty %}
+    <div class="fw-kachel b-voll">{% include 'fw/_empty.html' with knapp=True icon='zaehler' titel=_('Keine Heizungs- oder Wärmezähler erfasst.') subtext=_('Zähler erfassen Sie in der Akte des Objekts.') %}</div>
+    {% endfor %}
+</div>
+{% endblock %}
