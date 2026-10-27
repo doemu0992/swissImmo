@@ -3072,4 +3072,40 @@ und einen Stilblock enthaelt.
         }
         /* ---- Ende MODUL Schlüssel ---- */
 
+        /* ===== MODUL Portale (27.10.2026) ===== */
+        /* Mieterportal-Start: Bento mit drei Hauptwegen (Akzent zuerst) und zwei
+           kleinen Kacheln. Am Telefon zwei Spalten: «Etwas melden» über die volle
+           Breite, darunter je zwei Kacheln nebeneinander. */
+        .fw-bento.fw-mieter-start{margin-bottom:28px}
+        .fw-mieter-start>.fw-kachel{min-height:150px}
+        .fw-mieter-start>.fw-kachel.klein{min-height:0;padding:16px 20px;gap:8px}
+        .fw-mieter-start .fw-kachel.akzent>.fw-btn{align-self:flex-start;margin-top:auto;background:var(--ds-surface);color:var(--ds-ink);border:0}
+        .fw-mieter-start .fw-kachel-kopf .fw-zeichen{opacity:.7}
+        .fw-mieter-start .fw-kachel-liste li span{color:var(--ds-muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        @media (max-width:640px){
+            .fw-bento.fw-mieter-start{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+            .fw-bento.fw-mieter-start>*{grid-column:span 1 !important;padding:16px}
+            .fw-bento.fw-mieter-start>.akzent,.fw-bento.fw-mieter-start>.klein{grid-column:1 / -1 !important}
+            .fw-mieter-start>.fw-kachel{min-height:128px}
+            .fw-mieter-start .fw-kachel-zahl{font-size:32px}
+        }
+        /* Handwerkerportal: eine schmale Einzelseite ohne Leiste. */
+        .fw-hw-seite{max-width:680px}
+        .fw-hw-kopf{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+        .fw-hw-titel{margin:0;font-size:17px;font-weight:600;letter-spacing:-.01em;line-height:1.3}
+        .fw-hw-fakten{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:10px}
+        .fw-hw-fakten li{display:flex;flex-direction:column;gap:2px;min-width:0;overflow-wrap:anywhere}
+        .fw-hw-fakten b{font-weight:600;color:var(--ds-ink)}
+        .fw-hw-text{margin:0 0 14px;font-size:13.5px;line-height:1.55;color:var(--ds-ink);white-space:pre-line;overflow-wrap:anywhere}
+        .fw-hw-text .fw-label{margin-bottom:2px}
+        .fw-hw-fotos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
+        @media (min-width:520px){.fw-hw-fotos{grid-template-columns:repeat(3,minmax(0,1fr))}}
+        .fw-hw-zeile{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+        .fw-hw-formular{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+        .fw-hw-formular>.fw-btn{align-self:flex-start}
+        .fw-hw-nachricht{padding:10px 12px;border-radius:var(--ds-radius-sm);background:var(--ds-surface-2);margin-bottom:8px}
+        .fw-hw-nachricht.eigen{background:var(--ds-brand-soft)}
+        .fw-hw-nachricht p{margin:2px 0 0;font-size:13.5px;line-height:1.5;white-space:pre-line;overflow-wrap:anywhere}
+        /* ===== Ende MODUL Portale ===== */
+
 </style>

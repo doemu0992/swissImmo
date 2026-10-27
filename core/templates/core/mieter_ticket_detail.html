@@ -20,9 +20,21 @@
             </div>
             <span class="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full {{ status_cls }}">{{ status_label }}</span>
         </div>
-        {% if t.beschreibung %}
-        <p class="text-sm fw-mutet mt-4 whitespace-pre-line border-t fw-linie pt-4">{{ t.beschreibung }}</p>
+        {% if beschreibung %}
+        <p class="text-sm fw-mutet mt-4 whitespace-pre-line border-t fw-linie pt-4">{{ beschreibung }}</p>
         {% endif %}
+        {% if not eigen %}<p class="text-xs fw-faint mt-3">{% trans "Diese Meldung wurde zu Ihrer Wohnung erfasst, zum Beispiel telefonisch bei der Verwaltung." %}</p>{% endif %}
+    </div>
+
+    {% comment %} Handwerkertermin und Zutritt (Modul 3) — damit der Mieter weiss, wer wann kommt. {% endcomment %}
+    <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-6 mb-5" data-block="termin">
+        <h2 class="font-bold fw-strong flex items-center gap-2">{% zeichen 'termin' klasse='fw-faint' %} {% trans "Handwerker und Zutritt" %}</h2>
+        {% for a in termine %}
+        <p class="text-sm fw-ink mt-3">{% blocktrans with firma=a.handwerker.firma wann=a.termin_am|date:"D d.m.Y, H:i" %}{{ firma }} kommt am {{ wann }} Uhr.{% endblocktrans %}</p>
+        {% empty %}
+        <p class="text-sm fw-mutet mt-3">{% trans "Noch kein Handwerkertermin vereinbart." %}</p>
+        {% endfor %}
+        <p class="text-sm fw-mutet mt-2">{% trans "Zutritt:" %} {{ t.get_zutritt_display }}</p>
     </div>
 
     <!-- Verlauf -->

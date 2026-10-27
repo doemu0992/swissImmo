@@ -10,6 +10,7 @@ from django.utils.translation import gettext_lazy
 
 from core.tenancy import AlleOrganisationenManager, TenantManager
 from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
+from core.utils import get_smart_upload_path
 from django.utils import timezone
 from django.db.models import Sum
 
@@ -540,8 +541,15 @@ class KreditorenRechnung(OrganisationAusKette):
     # Bank beauftragt wurde — «heute» war eine stille Annahme.
     zahlung_ausfuehrung = models.DateField("Ausführung Zahllauf", null=True, blank=True)
 
-    beleg_scan = models.FileField(upload_to='kreditoren_belege/', blank=True, null=True)
+    # Neue Belege unter `organisation/<id>/kreditoren_belege/…` (UPLOAD_ORDNER).
+    # Alte Dateien bleiben unter `kreditoren_belege/` liegen; `media_protected`
+    # schützt beide Formen.
+    beleg_scan = models.FileField(upload_to=get_smart_upload_path, blank=True, null=True)
     fehlermeldung = models.TextField(blank=True)
+    # Der Handwerker hinter der Rechnung, wenn er bekannt ist (Handwerkerportal,
+    # Modul 3). `lieferant` bleibt der Text, den alle Listen zeigen.
+    handwerker = models.ForeignKey('crm.Handwerker', on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='kreditoren_rechnungen')
 
     class Meta:
         verbose_name = "Kreditorenrechnung"
