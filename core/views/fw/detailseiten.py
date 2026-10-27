@@ -1468,17 +1468,31 @@ def fw_staffel_del(request, pk):
 def fw_anpassung_del(request, pk):
     """Entfernt eine (versehentlich erstellte) Mietzinsanpassung. Danach folgt die
     Sollstellung wieder dem vorherigen Mietzins — bereits gestellte Rechnungen
-    bleiben unverändert (nur künftige Sollläufe)."""
+    bleiben unverändert (nur künftige Sollläufe).
+
+    Seit dem Production-Check (27.10.2026): Einen Entwurf darf entfernen, wer
+    schreiben darf. Eine VERSANDTE Anpassung ist dem Mieter mitgeteilt — sie
+    entfernt nur die Verwaltung (Verwalter/Inhaber), etwa nach einem Fehler beim
+    Erfassen, und mit ihr die Anfechtungs-Pendenz (Art. 270b OR), die sonst
+    weiter im Arbeitsvorrat stünde."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from rentals.models import MietzinsAnpassung
-    from core.auth import log_aktion
+    from core.auth import log_aktion, hat_rolle
+    from core.models import Pendenz
+    from core.services.mietzinsanpassung import quelle_anfechtung
     from portfolio.models import Sollmietzins
     a = get_object_or_404(MietzinsAnpassung, id=pk)
     vid = a.vertrag_id
     if request.method == 'POST':
+        if a.status in MietzinsAnpassung.GEBUCHT and not hat_rolle(request.user, VERWALTUNGS_ROLLEN):
+            messages.error(request, gettext('Eine versandte Mietzinsanpassung kann nur die Verwaltung '
+                                            '(Verwalter/Inhaber) entfernen.'))
+            return redirect(f'/neu/vertraege/{vid}/?tab=mietzins')
         log_aktion(request, "Mietzinsanpassung gelöscht", str(a.vertrag),
-                   f"wirksam {a.wirksam_ab}: CHF {a.neuer_netto_mietzins}")
+                   f"{a.get_status_display()}, wirksam {a.wirksam_ab}: CHF {a.neuer_netto_mietzins}")
+        Pendenz.objects.filter(vertrag_id=vid, quelle__in=[quelle_anfechtung(a), f'270b-verfahren:{a.pk}'],
+                               erledigt=False).delete()
         # Die aus dieser Anpassung erzeugte Sollmietzins-Zeile im Objekt
         # ebenfalls entfernen und den aktuellen Mietzins der Einheit neu ableiten.
         einheiten = {z.einheit for z in a.sollmietzins_zeilen.all()}

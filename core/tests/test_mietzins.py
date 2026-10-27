@@ -1073,3 +1073,38 @@ class VertragMietzinsRabattTests(TestCase):
         self.assertIn('Referenzmiete', html)
         self.assertIn('Zu bezahlen', html)
         self.assertIn('mietzinsfrei', html)
+
+
+class AnpassungLoeschenTests(TestCase):
+    """Production-Check (27.10.2026): Eine versandte Anpassung ist dem Mieter
+    mitgeteilt. Sie entfernt nur die Verwaltung, und mit ihr verschwindet die
+    Anfechtungs-Pendenz — vorher blieb diese im Arbeitsvorrat stehen."""
+
+    def setUp(self):
+        from core.models import Pendenz
+        from core.services.mietzinsanpassung import quelle_anfechtung
+        from rentals.models import MietzinsAnpassung
+        lg, e, m, self.v = _basis_objekte()
+        self.a = MietzinsAnpassung.objects.create(
+            vertrag=self.v, wirksam_ab=date(2027, 4, 1), alter_netto_mietzins=Decimal('1500'),
+            neuer_netto_mietzins=Decimal('1545'), status=MietzinsAnpassung.STATUS_VERSANDT,
+            versand_am=date(2026, 10, 20), zugang_am=date(2026, 10, 22))
+        Pendenz.objects.create(titel='Anfechtungsfrist', vertrag=self.v, quelle=quelle_anfechtung(self.a),
+                               faellig_am=date(2026, 11, 21))
+
+    def _loeschen(self, rolle):
+        c = Client()
+        c.force_login(_team_user(rolle))
+        return c.post(f'/neu/anpassung/{self.a.id}/loeschen/')
+
+    def test_sachbearbeiter_kann_versandte_nicht_entfernen(self):
+        from rentals.models import MietzinsAnpassung
+        self._loeschen('Sachbearbeiter')
+        self.assertTrue(MietzinsAnpassung.objects.filter(pk=self.a.pk).exists())
+
+    def test_verwaltung_entfernt_sie_samt_anfechtungs_pendenz(self):
+        from core.models import Pendenz
+        from rentals.models import MietzinsAnpassung
+        self._loeschen('Verwalter')
+        self.assertFalse(MietzinsAnpassung.objects.filter(pk=self.a.pk).exists())
+        self.assertFalse(Pendenz.objects.filter(vertrag=self.v, quelle__startswith='270b:').exists())
