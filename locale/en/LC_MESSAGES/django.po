@@ -30046,3 +30046,6 @@ msgstr "Group key"
 
 msgid "Einzelschlüssel"
 msgstr "Individual key"
+
+msgid "Kreditorenrechnung"
+msgstr "Creditor invoice"

@@ -30294,3 +30294,6 @@ msgstr "Passe partiel"
 
 msgid "Einzelschlüssel"
 msgstr "Clé individuelle"
+
+msgid "Kreditorenrechnung"
+msgstr "Facture créancier"
