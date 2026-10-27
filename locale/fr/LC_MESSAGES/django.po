@@ -32692,3 +32692,6 @@ msgstr "Chauffage & compteurs"
 
 msgid "Verbuchen & Zustellen"
 msgstr "Comptabilisation & notification"
+
+msgid "Kreditorenrechnung"
+msgstr "Facture créancier"

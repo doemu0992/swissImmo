@@ -32225,3 +32225,6 @@ msgstr "Heating & meters"
 
 msgid "Verbuchen & Zustellen"
 msgstr "Posting & delivery"
+
+msgid "Kreditorenrechnung"
+msgstr "Creditor invoice"

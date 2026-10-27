@@ -32644,3 +32644,6 @@ msgstr "Riscaldamento & contatori"
 
 msgid "Verbuchen & Zustellen"
 msgstr "Registrazione & notifica"
+
+msgid "Kreditorenrechnung"
+msgstr "Fattura creditore"
