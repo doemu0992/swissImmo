@@ -14,6 +14,15 @@
  *   Schritt sichtbar; «Weiter» prüft die Pflichtfelder des Schritts, der letzte Schritt
  *   fasst zusammen, was eingegeben ist. Ausgeblendete Schritte (`.hidden`, z. B. nur für
  *   Privatpersonen) zählen nicht mit.
+ *
+ * Für Seiten mit eigenem Skript (27.10.2026, Mietvertrag):
+ *   - Ereignis `fw-assistent:zeige` an der Wurzel nach jedem Schrittwechsel,
+ *     detail = {index, anzahl, schritt, letzter}. Wer es braucht (Zusammenfassung,
+ *     Vorschau), hängt sich daran, statt die Schritte selbst zu steuern.
+ *   - `wurzel.fwAssistent.zeige(i)` und `.zeigeFeld(el)`: öffnet den Schritt, in dem
+ *     ein Feld steht (z. B. eine Meldung des Servers), und setzt den Fokus.
+ *   - Vorschau `<aside class="fw-assistent-vorschau">`: Knopf `[data-vorschau-knopf]`
+ *     klappt sie auf schmalen Schirmen ein und aus (Ereignis `fw-assistent:vorschau`).
  */
 (function () {
     'use strict';
@@ -183,6 +192,14 @@
             if (zurueck) zurueck.disabled = hier === 0;
             if (weiter) weiter.classList.toggle('hidden', letzter);
             absenden.forEach(function (b) { b.classList.toggle('hidden', !letzter); });
+            // Telefon: Die Leiste ist eine waagrechte Zeile — den aktuellen Schritt ins Bild holen (27.10.2026)
+            var zeile = leiste.parentElement, aktLi = leiste.children[hier];
+            if (zeile && aktLi && zeile.scrollWidth > zeile.clientWidth) {
+                var rz = zeile.getBoundingClientRect(), rl = aktLi.getBoundingClientRect();
+                zeile.scrollLeft += (rl.left - rz.left) - (zeile.clientWidth - rl.width) / 2;
+            }
+            wurzel.dispatchEvent(new CustomEvent('fw-assistent:zeige', {
+                detail: { index: hier, anzahl: liste.length, schritt: akt, letzter: letzter } }));
             if (!ohneScroll) {
                 var oben = wurzel.getBoundingClientRect().top + window.scrollY - 16;
                 if (window.scrollY > oben) window.scrollTo({ top: oben, behavior: 'smooth' });
@@ -214,6 +231,24 @@
         var zuletzt = '';
         var beob = new MutationObserver(function () { var m = menge(); if (m !== zuletzt) { zuletzt = m; zeige(Math.min(hier, schritte().length - 1), true); } });
         alle.forEach(function (el) { beob.observe(el, { attributes: true, attributeFilter: ['class', 'hidden'] }); });
+
+        // Schnittstelle für Seiten mit eigenem Skript (27.10.2026)
+        wurzel.fwAssistent = {
+            zeige: function (i) { zeige(i); },
+            // Öffnet den Schritt, in dem `feld` steht; false, wenn es in keinem sichtbaren steht.
+            zeigeFeld: function (feld) {
+                var liste = schritte();
+                for (var i = 0; i < liste.length; i++) {
+                    if (!liste[i].contains(feld)) continue;
+                    zeige(i, true);
+                    if (feld.scrollIntoView) feld.scrollIntoView({ block: 'center' });
+                    try { feld.focus({ preventScroll: true }); } catch (e) { /* alt */ }
+                    return true;
+                }
+                return false;
+            },
+            hier: function () { return hier; }
+        };
 
         wurzel.classList.add('an');
         // Rückweg vom Server mit Fehlern: beim ersten markierten Feld anfangen
@@ -282,8 +317,28 @@
         });
     }
 
+    // Vorschau neben dem Assistenten (27.10.2026): auf schmalen Schirmen ein- und ausklappbar.
+    // Der Zustand steht als Klasse `offen` am Panel; das CSS blendet nur unterhalb der
+    // Spaltenbreite aus, breit ist die Vorschau immer sichtbar.
+    function vorschauen() {
+        document.querySelectorAll('.fw-assistent-vorschau [data-vorschau-knopf]').forEach(function (knopf) {
+            var panel = knopf.closest('.fw-assistent-vorschau');
+            function setzen(offen) {
+                panel.classList.toggle('offen', offen);
+                knopf.setAttribute('aria-expanded', offen ? 'true' : 'false');
+                var t = offen ? knopf.dataset.textVerbergen : knopf.dataset.textZeigen;
+                var ziel = knopf.querySelector('.t') || knopf;
+                if (t) ziel.textContent = t;
+                panel.dispatchEvent(new CustomEvent('fw-assistent:vorschau', { bubbles: true, detail: { offen: offen } }));
+            }
+            setzen(panel.classList.contains('offen'));
+            knopf.addEventListener('click', function () { setzen(!panel.classList.contains('offen')); });
+        });
+    }
+
     function start() {
         document.querySelectorAll('.fw-assistent[data-assistent]').forEach(assistent);
+        vorschauen();
         hilfe();
         hilfeboxen();
         prozessleisten();

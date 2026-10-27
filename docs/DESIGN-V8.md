@@ -150,16 +150,32 @@ normales Formular.
 - **Formularseite:** `fw-formseite` — volle Inhaltsbreite, Karten im Zweierraster ab 1024 px;
   ersetzt die schmale `max-w-3xl`-Spalte (Personen, Liegenschaften, Objekte, Mandate, Verträge …).
 - **Assistent** (`.fw-assistent[data-assistent]`): Neue Akten (Person, Liegenschaft, Kündigung,
-  Weiterverrechnung, NK-Periode) werden Schritt für Schritt erfasst. Jeder Schritt ist eine
+  Weiterverrechnung) werden Schritt für Schritt erfasst. Jeder Schritt ist eine
   `section[data-schritt]`; «Weiter» prüft die Pflichtfelder des Schritts (`required`,
   `data-pflicht`), der letzte Schritt fasst alles zusammen («Prüfen & speichern») mit «Ändern» je
   Schritt. Fehler vom Server öffnen den Schritt mit dem ersten `aria-invalid`-Feld. Bearbeiten
-  bleibt eine Seite. Der Mietvertrags-Assistent behält seine Logik und bekommt die Schrittleiste
-  `fw-schrittleiste`. Feldnamen sind unverändert (`core/tests/test_bausteine.py` prüft das).
+  bleibt eine Seite. Feldnamen sind unverändert (`core/tests/test_bausteine.py` prüft das).
+  Seit 27.10.2026 läuft auch der Mietvertrag (`fw/vertrag_neu.html`) über `fw-assistent`; die
+  eigene Schrittleiste `fw-schrittleiste` ist gelöscht. Dazu kam die optionale **Vorschau**:
+  `<aside class="fw-assistent-vorschau">` in `.fw-assistent.fw-assistent-mit-vorschau` — ab 1200 px
+  dritte Spalte rechts, darunter unter dem Inhalt, mit `[data-vorschau-knopf]` einklappbar. Seiten
+  mit eigenem Skript hängen sich an das Ereignis `fw-assistent:zeige` und öffnen den Schritt eines
+  Feldes mit `wurzel.fwAssistent.zeigeFeld(el)`.
 - **Prozessleiste** (`fw/_prozess.html`): Schritte eines Ablaufs mit Zustand erledigt · warnung ·
   offen · gesperrt · entfällt und «hier». Nebenkosten: `core/services/nk_prozess.py` leitet die
   sieben Schritte (Periode → Versand & Zustellung) aus den Werten der Detailansicht ab und rechnet
   nichts neu. Am Telefon scrollt die Leiste quer, der aktuelle Schritt wird ins Bild gerückt.
+- **Server-seitiger Assistent** (Assistenten-Standard, 27.10.2026): Abläufe, deren Schritte eigene
+  Seiten mit gespeichertem Zwischenstand sind (NK-Abrechnung `fw/nk/`, auch die neue Periode),
+  zeigen dieselbe Leiste, denselben Schrittkopf und denselben Fuss wie der client-seitige
+  Assistent — gleiche Klassen (`fw-assistent an`, `-leiste`, `-schritt-kopf`, `-fuss`), aber Links
+  statt Knöpfe. Rahmen `fw/_assistent_server.html` (Blöcke `seitenkopf`, `frage`, `inhalt`,
+  `fuss_haupt`), Leiste allein `fw/_assistent_server_leiste.html`, Kontext `assistent` aus
+  `core/services/assistent.py` (`server_assistent`: je Schritt `nr`, `titel`, `info`, `zustand`,
+  `url`). Zustände am `<li>`: `offen` · `fertig` (Akzent, ✓) · `warnung` (Warnfarbe, !) ·
+  `gesperrt` (gedämpft, kein Link) · `entfaellt` (–), dazu `hier` (schwarz) für die Seite, auf der
+  man steht; ein anderer Zustand ist ein Fehler. Fuss: Zurück, «Schritt i von n», Abbrechen,
+  Hauptknopf «Weiter zu …» (unter 480 px nur «Weiter») bzw. die Aktion des Schritts.
 - **In-App-Hilfe:** `{% load hilfe %}{% hilfe 'schluessel' %}` zeichnet ein ⓘ; Antippen öffnet eine
   Blase (Escape, Scrollen, Klick daneben schliessen). Texte im Katalog `core/hilfe.py` (Regeln dort:
   zwei, drei Sätze, Gesetz nur als Fundstelle, keine geratenen Zahlen). «So funktioniert's»-Kästen

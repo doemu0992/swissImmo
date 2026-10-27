@@ -44,6 +44,32 @@ def make_image_transparent(image_path):
         print(f"Konnte Bild nicht transparent machen: {e}")
         return image_path # Falls ein Fehler passiert, nimm das Originalbild
 
+def vermieter_unterschrift_pfad(liegenschaft):
+    """Bild der Vermieter-Unterschrift für den Mietvertrag, oder None.
+
+    Zuerst die Unterschrift der Verwaltung (`Organisation.unterschrift_bild`),
+    die den Vertrag in Vertretung abschliesst, sonst die des Eigentümers.
+    Bis 27.10.2026 las der Vertrag `verwaltung.unterschrift` — ein Feld, das es
+    nicht gibt — und setzte ohne Eigentümer-Unterschrift ein Muster-Gekritzel
+    (`unterschrift_dummy`) auf den Vertrag. Das sah aus wie eine echte
+    Unterschrift. Ohne Bild bleibt die Linie jetzt leer und wird von Hand
+    unterschrieben. Eine Quelle für PDF, Vorschau und DocuSeal.
+    """
+    if liegenschaft is None:
+        return None
+    for quelle in (liegenschaft.organisation, liegenschaft.eigentuemer):
+        bild = getattr(quelle, 'unterschrift_bild', None)
+        if not bild:
+            continue
+        try:
+            pfad = bild.path
+        except (ValueError, NotImplementedError):
+            continue
+        if os.path.exists(pfad):
+            return make_image_transparent(pfad)
+    return None
+
+
 def link_callback(uri, rel):
     if os.path.isfile(uri): return uri
     if not uri.startswith('/') and not uri.startswith('http'):
@@ -77,18 +103,7 @@ def build_vertrag_context(vertrag, *, mit_unterschrift=True):
     brutto = netto + nk
     kaution = vertrag.kautions_betrag or 0
 
-    unterschrift_path = None
-    if mit_unterschrift:
-        if verwaltung and getattr(verwaltung, 'unterschrift', None):
-            unterschrift_path = verwaltung.unterschrift.path
-        elif eigentuemer and getattr(eigentuemer, 'unterschrift_bild', None):
-            unterschrift_path = eigentuemer.unterschrift_bild.path
-        if not unterschrift_path:
-            dummy = finders.find("img/unterschrift_dummy_transparent.png")
-            if dummy:
-                unterschrift_path = dummy
-        if unterschrift_path:
-            unterschrift_path = make_image_transparent(unterschrift_path)
+    unterschrift_path = vermieter_unterschrift_pfad(liegenschaft) if mit_unterschrift else None
 
     template_name = ('core/mietvertrag_garage.html'
                      if (einheit and einheit.typ in ['pp', 'bas', 'gar'])

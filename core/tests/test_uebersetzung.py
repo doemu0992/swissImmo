@@ -97,6 +97,8 @@ UEBERSETZT = (
     'fw/_arbeitsvorrat_abschnitte.html',
     'fw/_assistent_attribute.html',  # V11: Assistent (Schritt-Texte)
     'fw/_assistent_leiste.html',
+    'fw/_assistent_server.html',  # Assistenten-Standard: server-seitiger Rahmen (27.10.2026)
+    'fw/_assistent_server_leiste.html',
     'fw/_bestaetigen.html',      # Audit Etappe 3: Bestätigungsdialog',
     'fw/_bezahlt_leer.html',
     'fw/_fwmodal.html',

@@ -142,10 +142,16 @@ class PaletteSucheTests(TestCase):
                 self.assertEqual(self._hole(self.a.benutzer, kurz), [])
 
     def test_die_treffermenge_bleibt_lesbar(self):
-        """Höchstens 15 — die Palette ist eine Abkürzung, keine Liste."""
+        """Höchstens 5 je Gruppe — die Palette ist eine Abkürzung, keine Liste.
+
+        Bis zum Omnisearch (27.10.2026) hiess die Grenze «höchstens 15 über vier
+        Arten». Seit die Suche über sechs Gruppen geht, gilt sie je Gruppe;
+        `core/tests/test_omnisearch.py` prüft sie mit mehr Treffern, als die
+        Obergrenze zulässt. Hier genügt die Gesamtgrenze 6 × 5.
+        """
         treffer = self._hole(self.a.benutzer, self.a.mieter.vorname)
         self.assertTrue(treffer, 'Nichts gefunden — dann sagt die Obergrenze nichts.')
-        self.assertLessEqual(len(treffer), 15, f'{len(treffer)} Treffer.')
+        self.assertLessEqual(len(treffer), 30, f'{len(treffer)} Treffer.')
 
     def test_ohne_anmeldung_kein_zugriff(self):
         antwort = Client().get('/neu/palette/', {'q': 'Mieter'})
