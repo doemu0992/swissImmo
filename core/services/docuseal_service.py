@@ -52,7 +52,6 @@ def docuseal_senden(vertrag):
     try:
         import requests
         from xhtml2pdf import pisa
-        from django.contrib.staticfiles import finders
         from core.views.docuseal import link_callback, sanitize_filename
 
 
@@ -67,16 +66,8 @@ def docuseal_senden(vertrag):
                          if einheit.typ in ('pp', 'bas', 'gar')
                          else 'core/mietvertrag_pdf.html')
 
-        unterschrift_path = None
-        if eigentuemer and getattr(eigentuemer, 'unterschrift_bild', None):
-            try:
-                unterschrift_path = eigentuemer.unterschrift_bild.path
-            except Exception:
-                unterschrift_path = None
-        if not unterschrift_path:
-            dummy = finders.find("img/unterschrift_dummy_transparent.png")
-            if dummy:
-                unterschrift_path = dummy
+        from core.services.pdf_service import vermieter_unterschrift_pfad
+        unterschrift_path = vermieter_unterschrift_pfad(liegenschaft)
 
         netto = vertrag.netto_mietzins or 0
         nk = vertrag.nebenkosten or 0
