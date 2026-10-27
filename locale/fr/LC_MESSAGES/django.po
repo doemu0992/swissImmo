@@ -27265,3 +27265,1095 @@ msgid "Zahlung ohne Zuordnung"
 msgid_plural "Zahlungen ohne Zuordnung"
 msgstr[0] "paiement sans attribution"
 msgstr[1] "paiements sans attribution"
+
+msgid "Rechtsvorschlag"
+msgstr "Opposition"
+
+msgid "Der Schuldner kann innert 10 Tagen nach Zustellung des Zahlungsbefehls ohne Begründung Rechtsvorschlag erheben (Art. 74 SchKG); dann steht die Betreibung still. Auch ein später erhobener Rechtsvorschlag kann gelten — etwa bei Betreibungsferien oder nachträglichem Rechtsvorschlag; das klärt das Betreibungsamt."
+msgstr "Le débiteur peut former opposition sans motivation dans les 10 jours suivant la notification du commandement de payer (art. 74 LP) ; la poursuite est alors suspendue. Une opposition formée plus tard peut aussi être valable — par exemple en cas de féries de poursuite ou d'opposition tardive ; l'office des poursuites le détermine."
+
+msgid "Rechtsöffnung"
+msgstr "Mainlevée"
+
+msgid "Beseitigt den Rechtsvorschlag. Mit einer unterschriebenen Schuldanerkennung, etwa dem Mietvertrag oder einer Zahlungsvereinbarung, gibt das Gericht provisorische Rechtsöffnung (Art. 82 SchKG), mit einem Urteil definitive (Art. 80 SchKG). Zwischen Gesuch und Entscheid steht die Jahresfrist für die Fortsetzung still."
+msgstr "Lève l'opposition. Avec une reconnaissance de dette signée, par exemple le bail ou un accord de paiement, le tribunal prononce la mainlevée provisoire (art. 82 LP) ; avec un jugement, la mainlevée définitive (art. 80 LP). Entre la requête et la décision, le délai d'un an pour la continuation est suspendu."
+
+msgid "Frühestens 20 Tage nach Zustellung des Zahlungsbefehls, bei Rechtsvorschlag erst nach der Rechtsöffnung; spätestens ein Jahr nach der Zustellung, verlängert um die Dauer des Rechtsöffnungsverfahrens (Art. 88 SchKG). Danach pfändet das Betreibungsamt."
+msgstr "Au plus tôt 20 jours après la notification du commandement de payer, en cas d'opposition seulement après la mainlevée ; au plus tard un an après la notification, prolongé de la durée de la procédure de mainlevée (art. 88 LP). L'office des poursuites procède ensuite à la saisie."
+
+msgid "Betreibungskosten"
+msgstr "Frais de poursuite"
+
+msgid "Die Kosten der Betreibung trägt der Schuldner, der Gläubiger schiesst sie vor (Art. 68 SchKG). «Kosten dem Mieter belasten» stellt sie als eigene Forderung in Rechnung; sie zählt nicht zum Mietzinsrückstand nach Art. 257d OR."
+msgstr "Les frais de poursuite sont à la charge du débiteur ; le créancier en fait l'avance (art. 68 LP). «Imputer les frais au locataire» les facture comme créance distincte ; celle-ci ne compte pas dans l'arriéré de loyer selon l'art. 257d CO."
+
+msgid "Deckt die Pfändung die Forderung nicht, stellt das Betreibungsamt einen Verlustschein aus (Art. 149 SchKG). Die offenen Beträge werden dann als Debitorenverlust (Konto 3805) abgeschrieben; die Forderung gegen den Schuldner bleibt bestehen."
+msgstr "Si la saisie ne couvre pas la créance, l'office des poursuites délivre un acte de défaut de biens (art. 149 LP). Les montants ouverts sont alors amortis comme perte sur débiteurs (compte 3805) ; la créance contre le débiteur subsiste."
+
+msgid "Der fällige Rückstand wird auf gleich hohe Raten verteilt, die letzte trägt den Rest. Bis zur Erfüllung ruhen nur die gedeckten Forderungen im Mahnlauf — neue Mieten werden normal gemahnt."
+msgstr "L'arriéré exigible est réparti en tranches égales, la dernière comprend le solde. Jusqu'à l'exécution, seules les créances couvertes sont suspendues dans le processus de rappel — les nouveaux loyers font l'objet de rappels normaux."
+
+msgid "Bruch der Vereinbarung"
+msgstr "Non-respect de l'accord"
+
+msgid "Liegt die bezahlte Summe nach einer kurzen Toleranz unter dem, was an Raten fällig war, gilt die Vereinbarung als gebrochen. Dann laufen die gedeckten Forderungen wieder im Mahnlauf, und eine Pendenz erinnert an die Fortsetzung des Mahnprozesses."
+msgstr "Si, après une courte tolérance, la somme payée est inférieure aux tranches échues, l'accord est considéré comme rompu. Les créances couvertes reprennent alors le processus de rappel, et une tâche rappelle de poursuivre la procédure de rappel."
+
+msgid "Schuldanerkennung"
+msgstr "Reconnaissance de dette"
+
+msgid "Unterschreibt der Mieter die Zahlungsvereinbarung, anerkennt er den Rückstand schriftlich. Das ist ein provisorischer Rechtsöffnungstitel (Art. 82 SchKG): Erhebt er in einer Betreibung Rechtsvorschlag, lässt sich dieser damit beseitigen."
+msgstr "En signant l'accord de paiement, le locataire reconnaît l'arriéré par écrit. C'est un titre de mainlevée provisoire (art. 82 LP) : s'il forme opposition dans une poursuite, celle-ci peut ainsi être levée."
+
+msgid "Vereinbarung und Art. 257d OR"
+msgstr "Accord et art. 257d CO"
+
+msgid "Eine Zahlungsvereinbarung hemmt eine bereits laufende Zahlungsfrist nach Art. 257d OR nicht, es sei denn, der Vermieter verzichtet ausdrücklich darauf."
+msgstr "Un accord de paiement ne suspend pas un délai de paiement déjà en cours selon l'art. 257d CO, sauf si le bailleur y renonce expressément."
+
+msgid "Vorbehalt"
+msgstr "Réserve"
+
+msgid "Wer die mögliche Anpassung nicht ganz ausschöpft, kann sich den Rest für später vorbehalten. Der Vorbehalt wird beziffert — in Franken oder Prozent —, damit er sich später nachvollziehen lässt."
+msgstr "Qui n'épuise pas entièrement l'adaptation possible peut réserver le reste pour plus tard. La réserve est chiffrée — en francs ou en pour cent — afin de rester vérifiable par la suite."
+
+msgid "Indexmiete"
+msgstr "Loyer indexé"
+
+msgid "Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach unten. Zulässig nur bei einem Vertrag mit fester Dauer von mindestens fünf Jahren (Art. 269b OR). Die Massenanpassung nach Referenzzins erfasst Indexmieten nicht."
+msgstr "Le loyer suit l'indice suisse des prix à la consommation, à la hausse comme à la baisse. Admis uniquement pour un bail d'une durée déterminée d'au moins cinq ans (art. 269b CO). L'adaptation groupée selon le taux de référence ne s'applique pas aux loyers indexés."
+
+msgid "Staffelmiete"
+msgstr "Loyer échelonné"
+
+msgid "Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens einmal jährlich, bei einer Vertragsdauer von mindestens drei Jahren (Art. 269c OR). Der Mietzins folgt den Stufen — die Anpassung nach Referenzzins und Teuerung gilt für ihn nicht."
+msgstr "Les hausses sont convenues dans le bail en montants en francs, au plus une fois par an, pour un bail d'au moins trois ans (art. 269c CO). Le loyer suit les paliers — l'adaptation selon le taux de référence et le renchérissement ne s'y applique pas."
+
+msgid "Herabsetzung"
+msgstr "Baisse de loyer"
+
+msgid "Sinkt der Referenzzins, kann der Mieter eine Herabsetzung verlangen (Art. 270a OR). Der Vermieter antwortet innert 30 Tagen; lehnt er ab, kann der Mieter innert 30 Tagen die Schlichtungsbehörde anrufen."
+msgstr "Si le taux de référence baisse, le locataire peut demander une baisse de loyer (art. 270a CO). Le bailleur répond dans les 30 jours ; s'il refuse, le locataire peut saisir l'autorité de conciliation dans les 30 jours."
+
+msgid "Zugang"
+msgstr "Réception"
+
+msgid "Fristen laufen ab dem Tag, an dem ein Schreiben beim Empfänger ankommt — nicht ab dem Versand. Ist der Zugang noch nicht bestätigt, rechnet die Anwendung mit Postweg und Abholfrist eines Einschreibens."
+msgstr "Les délais courent dès le jour où un courrier parvient au destinataire — non dès l'envoi. Si la réception n'est pas encore confirmée, l'application tient compte de l'acheminement postal et du délai de garde d'un recommandé."
+
+msgid "Von Hand gesetzt: Für diese Person läuft kein automatischer Mahnlauf. Eine Zahlungsvereinbarung braucht das Häkchen nicht — sie nimmt nur die Forderungen aus, die ihr Ratenplan deckt. Offene Rechnungen bleiben sichtbar."
+msgstr "Défini manuellement : aucun processus de rappel automatique pour cette personne. Un accord de paiement n'a pas besoin de cette case — il n'exclut que les créances couvertes par son plan de paiement échelonné. Les factures ouvertes restent visibles."
+
+msgid "Bitte angeben, ob der Mieter anwesend war."
+msgstr "Veuillez indiquer si le locataire était présent."
+
+msgid "Bitte den Allgemeinzustand wählen."
+msgstr "Veuillez choisir l'état général."
+
+msgid "Die Unterschrift der Verwaltung fehlt."
+msgstr "La signature de la gérance manque."
+
+msgid "Der Mieter war abwesend: bitte den Grund angeben."
+msgstr "Le locataire était absent : veuillez indiquer le motif."
+
+msgid "Die Unterschrift des Mieters fehlt. War er nicht da, «Mieter abwesend» wählen und den Grund angeben."
+msgstr "La signature du locataire manque. S'il était absent, choisir «Locataire absent» et indiquer le motif."
+
+msgid "Bitte den Namen der Person eintragen, die für den Mieter unterschreibt."
+msgstr "Veuillez saisir le nom de la personne qui signe pour le locataire."
+
+#, python-format
+msgid "%(count)s Bauteil(e) sind nicht bewertet: bitte bewerten oder ausdrücklich bestätigen."
+msgstr "%(count)s élément(s) non évalué(s) : veuillez les évaluer ou le confirmer expressément."
+
+#, python-format
+msgid "%(count)s Mieterschaden ohne Alter oder Lebensdauer des Bauteils: voller Betrag. Bitte bestätigen oder Einbaudatum und Lebensdauer im Raumbuch ergänzen."
+msgstr "%(count)s dommage(s) causé(s) par le locataire sans âge ni durée de vie de l'élément : montant intégral. Veuillez confirmer ou compléter la date de pose et la durée de vie dans l'inventaire des pièces."
+
+msgid "Zuerst die Betreibungskosten erfassen (Feld «Betreibungskosten»)."
+msgstr "Saisir d'abord les frais de poursuite (champ «Frais de poursuite»)."
+
+msgid "Die Betreibungskosten sind dem Mieter bereits belastet."
+msgstr "Les frais de poursuite ont déjà été imputés au locataire."
+
+msgid "Ohne Mietvertrag lassen sich keine Kosten belasten."
+msgstr "Sans bail, impossible d'imputer des frais."
+
+msgid "ohne amtliches Formular ist die Kündigung nichtig (Art. 266l/266o OR)"
+msgstr "sans formule officielle, la résiliation est nulle (art. 266l/266o CO)"
+
+msgid "ohne amtliches Formular ist die Mitteilung mangelhaft (Art. 270 Abs. 2 OR)"
+msgstr "sans formule officielle, la communication est viciée (art. 270 al. 2 CO)"
+
+msgid "ohne amtliches Formular ist die Anpassung nichtig (Art. 269d OR)"
+msgstr "sans formule officielle, l'adaptation est nulle (art. 269d CO)"
+
+#, python-format
+msgid "Für Kanton %(kanton)s ist kein amtliches Originalformular hinterlegt — verwenden Sie das Formular der kantonalen Behörde; %(folge)s."
+msgstr "Aucune formule officielle originale n'est enregistrée pour le canton %(kanton)s — utilisez la formule de l'autorité cantonale ; %(folge)s."
+
+msgid "Für das amtliche Formular muss der Kanton der Liegenschaft erfasst sein — die Postleitzahl allein bestimmt ihn nicht sicher."
+msgstr "Pour la formule officielle, le canton de l'immeuble doit être saisi — le NPA seul ne le détermine pas avec certitude."
+
+#, python-format
+msgid "PLZ %(plz)s liegt in Bereichen von: %(kantone)s."
+msgstr "Le NPA %(plz)s se situe dans des zones de : %(kantone)s."
+
+msgid "Gedeckt durch eine laufende Zahlungsvereinbarung (Ratenplan)"
+msgstr "Couvert par un accord de paiement en cours (plan de paiement échelonné)"
+
+msgid "In Betreibung (SchKG) — gemahnt wird über das Betreibungsamt"
+msgstr "En poursuite (LP) — les rappels passent par l'office des poursuites"
+
+msgid "Nur ein Entwurf dieses Vertrags lässt sich bearbeiten."
+msgstr "Seul un brouillon de ce bail peut être modifié."
+
+#, python-format
+msgid "Für den %(datum)s ist bereits eine Anpassung versandt."
+msgstr "Une adaptation a déjà été envoyée pour le %(datum)s."
+
+#, python-format
+msgid "Wirksamkeitsdatum zu früh: Bei diesem Versand kann die Erhöhung frühestens auf %(datum)s wirksam werden (Kündigungsfrist + 10 Tage ab Zugang, Art. 269d OR)."
+msgstr "Date d'effet trop précoce : avec cet envoi, la hausse peut prendre effet au plus tôt le %(datum)s (délai de résiliation + 10 jours dès réception, art. 269d CO)."
+
+msgid "Nur ein Entwurf kann als versandt erfasst werden."
+msgstr "Seul un brouillon peut être enregistré comme envoyé."
+
+msgid "Bitte das Versanddatum angeben."
+msgstr "Veuillez indiquer la date d'envoi."
+
+msgid "Der Zugang kann nicht vor dem Versand liegen."
+msgstr "La réception ne peut pas précéder l'envoi."
+
+msgid "Das Zugangsdatum kann nicht in der Zukunft liegen."
+msgstr "La date de réception ne peut pas être dans le futur."
+
+msgid "Dieser Statuswechsel ist nicht möglich."
+msgstr "Ce changement de statut n'est pas possible."
+
+msgid "Ticket zum Mangel anlegen und Handwerker zuweisen"
+msgstr "Créer un ticket pour le défaut et attribuer un artisan"
+
+msgid "Ersatz je fehlendem Schlüssel CHF"
+msgstr "Remplacement par clé manquante CHF"
+
+msgid "Schlüssel oder Zylinder"
+msgstr "Clé ou cylindre"
+
+msgid "Zulasten Mieter"
+msgstr "À la charge du locataire"
+
+msgid "Unterschreiben und abschliessen"
+msgstr "Signer et clôturer"
+
+msgid "Mängelrüge (Art. 267a OR)"
+msgstr "Avis des défauts (art. 267a CO)"
+
+#, python-format
+msgid "Versandt am <b>%(datum)s</b>."
+msgstr "Envoyé le <b>%(datum)s</b>."
+
+#, python-format
+msgid "Sofort nach der Rückgabe rügen: versenden bis <b>%(frist)s</b> (Abnahme plus zwei Arbeitstage). Erledigt ist die Frist erst mit dem Versand, nicht mit dem PDF."
+msgstr "Aviser immédiatement après la restitution : envoyer d'ici le <b>%(frist)s</b> (état des lieux plus deux jours ouvrables). Le délai n'est respecté qu'avec l'envoi, pas avec le PDF."
+
+msgid "Der Mieter war bei der Abnahme abwesend: Rüge eingeschrieben versenden (Zugangsnachweis)."
+msgstr "Le locataire était absent lors de l'état des lieux : envoyer l'avis en recommandé (preuve de réception)."
+
+msgid "Rüge versandt am"
+msgstr "Avis envoyé le"
+
+msgid "Sendungsnummer (Einschreiben)"
+msgstr "Numéro d'envoi (recommandé)"
+
+msgid "Versand festhalten"
+msgstr "Enregistrer l'envoi"
+
+msgid "Handwerker"
+msgstr "Artisan"
+
+msgid "Foto des Mangels"
+msgstr "Photo du défaut"
+
+msgid "Nach der Abnahme entdeckte Mängel"
+msgstr "Défauts découverts après l'état des lieux"
+
+msgid "Versteckte Mängel, die bei der Abnahme nicht erkennbar waren, sind sofort nach ihrer Entdeckung zu rügen (Art. 267a Abs. 3 OR). Sie stehen getrennt vom unterzeichneten Protokoll."
+msgstr "Les défauts cachés, non reconnaissables lors de l'état des lieux, doivent être signalés immédiatement après leur découverte (art. 267a al. 3 CO). Ils figurent séparément du procès-verbal signé."
+
+msgid "Entdeckt am"
+msgstr "Découvert le"
+
+msgid "Rüge"
+msgstr "Avis"
+
+msgid "Rüge (PDF)"
+msgstr "Avis (PDF)"
+
+#, python-format
+msgid "versandt %(datum)s"
+msgstr "envoyé le %(datum)s"
+
+msgid "Versandt"
+msgstr "Envoyé"
+
+msgid "Später entdeckten Mangel rügen"
+msgstr "Signaler un défaut découvert plus tard"
+
+msgid "Mangel erfassen"
+msgstr "Saisir un défaut"
+
+msgid "nicht unterzeichnet"
+msgstr "non signé"
+
+msgid "Mieter abwesend"
+msgstr "Locataire absent"
+
+msgid "Abgeschlossen wird im nächsten Schritt: mit den Unterschriften von Verwaltung und Mieter (oder dem Grund seiner Abwesenheit)."
+msgstr "La clôture a lieu à l'étape suivante : avec les signatures de la gérance et du locataire (ou le motif de son absence)."
+
+msgid "Bestätigt: Diese Bauteile wurden nicht bewertet."
+msgstr "Confirmé : ces éléments n'ont pas été évalués."
+
+msgid "Bestätigt: dem Mieter ohne Abzug «neu für alt» belasten (Einbaudatum und Lebensdauer sind nicht erfasst)."
+msgstr "Confirmé : imputer au locataire sans déduction «neuf pour vieux» (date de pose et durée de vie non saisies)."
+
+msgid "Mieter bei der Abnahme"
+msgstr "Locataire lors de l'état des lieux"
+
+msgid "Grund der Abwesenheit"
+msgstr "Motif de l'absence"
+
+msgid "Ohne Unterschrift des Mieters: die Mängelrüge eingeschrieben versenden (Zugangsnachweis)."
+msgstr "Sans signature du locataire : envoyer l'avis des défauts en recommandé (preuve de réception)."
+
+msgid "bitte wählen"
+msgstr "veuillez choisir"
+
+msgid "Strasse Nr., PLZ Ort"
+msgstr "Rue n°, NPA localité"
+
+msgid "Name der unterzeichnenden Person"
+msgstr "Nom de la personne signataire"
+
+msgid "Kein Formular ohne Kanton"
+msgstr "Pas de formule sans canton"
+
+msgid "Kanton bei der Liegenschaft erfassen"
+msgstr "Saisir le canton de l'immeuble"
+
+msgid "Kein amtliches Originalformular"
+msgstr "Pas de formule officielle originale"
+
+msgid "Verstanden: Die Nachbildung ist nur ein Entwurf (Wasserzeichen «Entwurf – nicht amtlich»)."
+msgstr "Compris : la reproduction n'est qu'un brouillon (filigrane «Brouillon – non officiel»)."
+
+#, python-format
+msgid "%%(n)s von %%(m)s Zeilen"
+msgstr "%%(n)s sur %%(m)s lignes"
+
+msgid "Forderungen in dieser Betreibung"
+msgstr "Créances dans cette poursuite"
+
+msgid "Solange die Betreibung offen ist, mahnt der Mahnlauf diese Forderungen nicht. Sind alle bezahlt, steht sie von selbst auf «Bezahlt»."
+msgstr "Tant que la poursuite est ouverte, le processus de rappel ne relance pas ces créances. Si toutes sont payées, elle passe d'elle-même à «Payé»."
+
+msgid "Datenblatt Betreibungsbegehren (PDF)"
+msgstr "Fiche de données réquisition de poursuite (PDF)"
+
+msgid "«Verlustschein» schreibt die offenen Forderungen ab und ist der Verwaltung (Verwalter, Inhaber) vorbehalten."
+msgstr "«Acte de défaut de biens» amortit les créances ouvertes et est réservé à la gérance (Verwalter, Inhaber)."
+
+msgid "Zins (%%)"
+msgstr "Intérêt (%%)"
+
+msgid "Zins seit"
+msgstr "Intérêt dès le"
+
+msgid "Forderungsgrund"
+msgstr "Cause de la créance"
+
+#, python-format
+msgid "Dem Mieter belastet: %(t)s (%(s)s)"
+msgstr "Imputé au locataire : %(t)s (%(s)s)"
+
+msgid "Rechtsöffnungsgesuch am"
+msgstr "Requête de mainlevée le"
+
+msgid "Rechtsöffnung erteilt am"
+msgstr "Mainlevée accordée le"
+
+msgid "Art der Rechtsöffnung"
+msgstr "Type de mainlevée"
+
+msgid "Pfändung am"
+msgstr "Saisie le"
+
+msgid "Kosten dem Mieter belasten"
+msgstr "Imputer les frais au locataire"
+
+#, python-format
+msgid "Bereits belastet: CHF %(b)s."
+msgstr "Déjà imputé : CHF %(b)s."
+
+#, python-format
+msgid "Betreibungskosten von CHF %(b)s dem Mieter als Forderung belasten?"
+msgstr "Imputer au locataire les frais de poursuite de CHF %(b)s comme créance ?"
+
+#, python-format
+msgid "Stellt CHF %(b)s als Forderung «Betreibungskosten (Art. 68 SchKG)» in Rechnung. Sie hängt an der Hauptforderung und zählt nicht zum Rückstand nach Art. 257d OR."
+msgstr "Facture CHF %(b)s comme créance «Frais de poursuite (art. 68 LP)». Elle est rattachée à la créance principale et ne compte pas dans l'arriéré selon l'art. 257d CO."
+
+msgid "Zuerst die Betreibungskosten oben erfassen und speichern."
+msgstr "Saisir et enregistrer d'abord les frais de poursuite ci-dessus."
+
+msgid "So läuft die Betreibung"
+msgstr "Déroulement de la poursuite"
+
+msgid "Hier die Forderungen wählen und die Angaben für das Betreibungsbegehren erfassen. Das Datenblatt als PDF hilft beim Ausfüllen des amtlichen Formulars."
+msgstr "Choisir ici les créances et saisir les données pour la réquisition de poursuite. La fiche de données en PDF aide à remplir la formule officielle."
+
+msgid "Das Betreibungsamt stellt den Zahlungsbefehl zu. Ab dann läuft die Frist für den Rechtsvorschlag."
+msgstr "L'office des poursuites notifie le commandement de payer. Dès lors, le délai d'opposition court."
+
+msgid "Bei Rechtsvorschlag: Rechtsöffnung beim Gericht verlangen."
+msgstr "En cas d'opposition : requérir la mainlevée auprès du tribunal."
+
+msgid "Danach das Fortsetzungsbegehren stellen — die Anwendung erinnert mit einer Pendenz an den Termin."
+msgstr "Ensuite, déposer la réquisition de continuer la poursuite — l'application rappelle l'échéance par une tâche."
+
+msgid "Solange die Betreibung offen ist, mahnt der Mahnlauf diese Forderungen nicht mehr."
+msgstr "Tant que la poursuite est ouverte, le processus de rappel ne relance plus ces créances."
+
+msgid "Prüfen & erfassen"
+msgstr "Vérifier et enregistrer"
+
+msgid "Forderungen wählen"
+msgstr "Choisir les créances"
+
+msgid "Welche offenen Mieten dieses Vertrags betrieben werden. Eine Betreibung für mehrere Monate kostet nur einmal Gebühren."
+msgstr "Quels loyers ouverts de ce bail sont mis en poursuite. Une poursuite pour plusieurs mois n'entraîne qu'une seule fois des émoluments."
+
+msgid "Hauptforderung"
+msgstr "Créance principale"
+
+msgid "Keine weiteren offenen, fälligen Forderungen dieses Vertrags."
+msgstr "Aucune autre créance ouverte et exigible pour ce bail."
+
+msgid "Mahngebühren und Verzugszinsen stehen nicht zur Wahl — sie gehören zur Hauptforderung. Forderungen, die bereits in einer offenen Betreibung stehen, fehlen hier."
+msgstr "Les frais de rappel et les intérêts moratoires ne sont pas proposés — ils font partie de la créance principale. Les créances déjà comprises dans une poursuite ouverte n'apparaissent pas ici."
+
+msgid "Gläubiger, Zins & Grund"
+msgstr "Créancier, intérêt et cause"
+
+msgid "Die Angaben für das Betreibungsbegehren."
+msgstr "Les données pour la réquisition de poursuite."
+
+msgid "Gläubiger"
+msgstr "Créancier"
+
+msgid "vertreten durch"
+msgstr "représenté par"
+
+msgid "Kein Eigentümer erfasst — die Verwaltung steht als Gläubigerin auf dem Datenblatt."
+msgstr "Aucun propriétaire saisi — la gérance figure comme créancière sur la fiche de données."
+
+msgid "Betreibungsamt am Wohnsitz des Mieters"
+msgstr "Office des poursuites du domicile du locataire"
+
+msgid "Vorgeschlagen: Summe der offenen Beträge der gewählten Forderungen."
+msgstr "Proposé : somme des montants ouverts des créances choisies."
+
+msgid "(sobald bekannt)"
+msgstr "(dès que connu)"
+
+msgid "Bei mehreren Forderungen mit verschiedener Fälligkeit selbst festlegen (z. B. mittlerer Verfall) oder die Fälligkeiten im Grund nennen."
+msgstr "En cas de plusieurs créances à échéances différentes, fixer soi-même (p. ex. échéance moyenne) ou indiquer les échéances dans la cause."
+
+msgid "Leer gelassen, setzt die Anwendung die gewählten Mieten mit Fälligkeit und Betrag ein."
+msgstr "Si le champ reste vide, l'application insère les loyers choisis avec échéance et montant."
+
+msgid "Nach dem Erfassen steht das Datenblatt «Betreibungsbegehren» als PDF bereit. Es ist eine Vorlage für das amtliche Formular des Betreibungsamts, nicht das Formular selbst."
+msgstr "Après l'enregistrement, la fiche de données «Réquisition de poursuite» est disponible en PDF. C'est un modèle pour la formule officielle de l'office des poursuites, pas la formule elle-même."
+
+#, python-format
+msgid "Fortsetzung ab %(d)s"
+msgstr "Continuation dès le %(d)s"
+
+msgid "Rechtsöffnung ausstehend"
+msgstr "Mainlevée en attente"
+
+msgid "PDF"
+msgstr "PDF"
+
+msgid "Die Nachbildung trägt das Wasserzeichen «Entwurf – nicht amtlich» und wird nicht in der Akte abgelegt. Sie dient als Vorlage zum Übertragen in das Formular der kantonalen Behörde."
+msgstr "La reproduction porte le filigrane «Brouillon – non officiel» et n'est pas classée dans le dossier. Elle sert de modèle à reporter dans la formule de l'autorité cantonale."
+
+msgid "Verstanden — Nachbildung als Entwurf öffnen"
+msgstr "Compris — ouvrir la reproduction comme brouillon"
+
+msgid "Neuer Nettomietzins (CHF)"
+msgstr "Nouveau loyer net (CHF)"
+
+msgid "(bei Zustimmung)"
+msgstr "(en cas d'acceptation)"
+
+msgid "Begründung im Antwortbrief"
+msgstr "Motivation dans la lettre de réponse"
+
+msgid "z. B. gestiegene Kosten und Teuerung gleichen die Senkung des Referenzzinses aus"
+msgstr "p. ex. la hausse des coûts et le renchérissement compensent la baisse du taux de référence"
+
+msgid "Festhalten + Antwortbrief (PDF)"
+msgstr "Enregistrer + lettre de réponse (PDF)"
+
+msgid "Wurde einem Begehren ganz oder teilweise zugestimmt, wird die Senkung mit dem amtlichen Formular mitgeteilt."
+msgstr "Si une demande a été acceptée totalement ou partiellement, la baisse est communiquée au moyen de la formule officielle."
+
+msgid "Mietzinsanpassung starten"
+msgstr "Démarrer l'adaptation du loyer"
+
+msgid "Eingang beim Vermieter *"
+msgstr "Réception chez le bailleur *"
+
+msgid "Versand (Poststempel) *"
+msgstr "Envoi (timbre postal) *"
+
+msgid "Zugang beim Mieter"
+msgstr "Réception par le locataire"
+
+#, python-format
+msgid "Leer: Versand + %(tage)s Tage (Postweg und Abholfrist)."
+msgstr "Vide : envoi + %(tage)s jours (acheminement postal et délai de garde)."
+
+msgid "Ausdrückliche Zustimmung des Ehegatten / eingetragenen Partners liegt vor"
+msgstr "Le consentement exprès du conjoint / partenaire enregistré a été donné"
+
+msgid "Kündigungstermine fehlen im Vertrag"
+msgstr "Termes de résiliation manquants dans le bail"
+
+msgid "Der Vertrag nennt keine lesbaren Termine und für den Kanton ist keine Regel hinterlegt. Der Termin unten nimmt jedes Monatsende an und ist damit nur der früheste denkbare. Bitte die vereinbarten oder ortsüblichen Termine im Vertrag ergänzen."
+msgstr "Le bail n'indique pas de termes lisibles et aucune règle n'est enregistrée pour le canton. Le terme ci-dessous admet chaque fin de mois et n'est donc que le plus précoce envisageable. Veuillez compléter dans le bail les termes convenus ou usuels locaux."
+
+msgid "Termine aus der Kantonsregel des Regelwerks — der Vertrag nennt keine."
+msgstr "Termes selon la règle cantonale du référentiel — le bail n'en indique aucun."
+
+#, python-format
+msgid "Berechnet aus Zugang + %(monate)s Monaten, auf den nächsten erlaubten Termin — bei Versand heute."
+msgstr "Calculé à partir de la réception + %(monate)s mois, au prochain terme admis — en cas d'envoi aujourd'hui."
+
+msgid "Grund *"
+msgstr "Motif *"
+
+msgid "Vorgeschlagene Ersatzmieter"
+msgstr "Locataires de remplacement proposés"
+
+msgid "(bei Auszug vor dem Termin)"
+msgstr "(en cas de départ avant le terme)"
+
+msgid "Name, Kontakt — je Zeile ein Vorschlag"
+msgstr "Nom, contact — une proposition par ligne"
+
+msgid "Ein Ersatzmieter ist angenommen — der Mieter wird ab dem gewünschten Ende befreit"
+msgstr "Un locataire de remplacement est accepté — le locataire est libéré dès la fin souhaitée"
+
+msgid "Ohne angenommenen Ersatzmieter haftet der Mieter bis zum nächsten ordentlichen Termin."
+msgstr "Sans locataire de remplacement accepté, le locataire répond jusqu'au prochain terme ordinaire."
+
+msgid "Verschiebt das Vertragsende — Sollstellung und Leerstand folgen ihm."
+msgstr "Repousse la fin du bail — la facturation des loyers et la vacance suivent."
+
+msgid "Mahngebühren brauchen eine vertragliche Grundlage: Verlangen dürfen Sie sie nur, wenn der Mietvertrag oder die AGB sie vorsehen. Der Verzugszins wird mit 360 Zinstagen je Jahr gerechnet; ob diese Zinsbasis für Ihre Verträge gilt, ist rechtlich zu bestätigen."
+msgstr "Les frais de rappel nécessitent une base contractuelle : vous ne pouvez les exiger que si le bail ou les CG les prévoient. L'intérêt moratoire est calculé sur 360 jours d'intérêt par an ; il faut faire confirmer juridiquement si cette base de calcul s'applique à vos baux."
+
+msgid "Kann der Mieter nicht auf einmal zahlen: «Ratenplan» vereinbart Raten für den Rückstand. Nur diese Forderungen ruhen dann im Mahnlauf."
+msgstr "Si le locataire ne peut pas payer en une fois : «Plan de paiement échelonné» convient de tranches pour l'arriéré. Seules ces créances sont alors suspendues dans le processus de rappel."
+
+msgid "Mahngebühren dürfen nur verlangt werden, wenn der Mietvertrag oder die AGB sie vorsehen. Der Verzugszins wird mit 360 Zinstagen je Jahr gerechnet — ob diese Zinsbasis gilt, ist rechtlich zu bestätigen."
+msgstr "Les frais de rappel ne peuvent être exigés que si le bail ou les CG les prévoient. L'intérêt moratoire est calculé sur 360 jours d'intérêt par an — il faut faire confirmer juridiquement si cette base s'applique."
+
+msgid "Entwürfe — noch nicht versandt"
+msgstr "Brouillons — pas encore envoyés"
+
+msgid "Netto bisher"
+msgstr "Net actuel"
+
+msgid "Auswählen"
+msgstr "Sélectionner"
+
+msgid "Versandt am"
+msgstr "Envoyé le"
+
+msgid "Für Kantone ohne hinterlegtes Original wurde das Formular der kantonalen Behörde verwendet"
+msgstr "Pour les cantons sans original enregistré, la formule de l'autorité cantonale a été utilisée"
+
+msgid "Ausgewählte als versandt erfassen"
+msgstr "Enregistrer la sélection comme envoyée"
+
+msgid "Keine offenen Entwürfe — alles Erfasste ist versandt oder gebucht."
+msgstr "Aucun brouillon ouvert — tout ce qui a été saisi est envoyé ou comptabilisé."
+
+msgid "«Anpassen» öffnet den Assistenten für die amtliche Mietzinsanpassung mit vorberechneten Werten (Referenzzins, LIK, Teuerung). Netto und Basis sind die <b>effektiven</b> Werte (inkl. gebuchter Anpassungen und Staffelstufen) — das Potenzial vergleicht diese effektive Basis mit dem aktuellen Stand. Index- und Staffelmieten sind von der Massenanpassung ausgenommen: Ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR)."
+msgstr "«Adapter» ouvre l'assistant d'adaptation officielle du loyer avec des valeurs précalculées (taux de référence, IPC, renchérissement). Net et base sont les valeurs <b>effectives</b> (y c. adaptations comptabilisées et paliers d'échelonnement) — le potentiel compare cette base effective à l'état actuel. Les loyers indexés et échelonnés sont exclus de l'adaptation groupée : leur loyer suit l'indice ou les paliers convenus (art. 269b/269c CO)."
+
+#, python-format
+msgid "Mietzinsanpassung — %(name)s"
+msgstr "Adaptation du loyer — %(name)s"
+
+msgid "Anpassung"
+msgstr "Adaptation"
+
+#, python-format
+msgid "Offener <b>Entwurf</b> (wirksam ab %(datum)s) — Änderungen schreiben ihn fort. Gebucht wird erst, wenn die Anpassung als versandt erfasst ist."
+msgstr "<b>Brouillon</b> ouvert (en vigueur dès le %(datum)s) — les modifications le mettent à jour. La comptabilisation n'a lieu qu'une fois l'adaptation enregistrée comme envoyée."
+
+msgid "Prüfen & Formular"
+msgstr "Vérifier et formule"
+
+msgid "Grundlagen"
+msgstr "Bases"
+
+msgid "Referenzzins, Teuerung und Kostensteigerung — bisher und neu. Der Vorschlag rechnet sich bei jeder Änderung neu."
+msgstr "Taux de référence, renchérissement et hausse des coûts — anciens et nouveaux. La proposition est recalculée à chaque modification."
+
+msgid "Punkte"
+msgstr "Points"
+
+msgid "Senkung"
+msgstr "Baisse"
+
+msgid "Begründung und neuer Mietzins sind vorbefüllt."
+msgstr "La motivation et le nouveau loyer sont préremplis."
+
+msgid "Der LIK hat sich seit der letzten Anpassung nicht verändert — keine Indexanpassung fällig."
+msgstr "L'IPC n'a pas changé depuis la dernière adaptation — aucune adaptation à l'indice n'est due."
+
+msgid "Der Mietzins folgt den vereinbarten Stufen. Eine Anpassung nach Referenzzins und Teuerung ist für diesen Vertrag nicht vorgesehen."
+msgstr "Le loyer suit les paliers convenus. Une adaptation selon le taux de référence et le renchérissement n'est pas prévue pour ce bail."
+
+msgid "Die Grundlagen sprechen für eine Senkung. Sie wird mit demselben Formular mitgeteilt und darf auch kurzfristiger wirken als eine Erhöhung."
+msgstr "Les bases plaident pour une baisse. Elle est communiquée avec la même formule et peut prendre effet plus rapidement qu'une hausse."
+
+msgid "Die Vertragsbasis (Referenzzins/LIK) war nicht erfasst — bitte die Basiswerte ergänzen, auf denen der aktuelle Mietzins beruht. Sie werden auf dem Vertrag gespeichert."
+msgstr "La base du bail (taux de référence/IPC) n'était pas saisie — veuillez compléter les valeurs de base sur lesquelles repose le loyer actuel. Elles sont enregistrées dans le bail."
+
+#, python-format
+msgid "Für diesen Vertrag liegt bereits eine Anpassung vor: Gerechnet wird ab deren Stand — Referenzzins %(zins)s %%, LIK %(lik)s, Netto CHF %(netto)s —, nicht ab der Vertragsbasis unten."
+msgstr "Une adaptation existe déjà pour ce bail : le calcul part de son état — taux de référence %(zins)s %%, IPC %(lik)s, net CHF %(netto)s —, et non de la base du bail ci-dessous."
+
+msgid "Referenzzins Vertrag (Basis, %%)"
+msgstr "Taux de référence du bail (base, %%)"
+
+msgid "Neuer Referenzzins (%%)"
+msgstr "Nouveau taux de référence (%%)"
+
+msgid "Allg. Kostensteigerung (%%)"
+msgstr "Hausse générale des coûts (%%)"
+
+#, python-format
+msgid "ausgeglichen bis %(datum)s"
+msgstr "compensé jusqu'au %(datum)s"
+
+msgid "seit Vertragsbeginn"
+msgstr "depuis le début du bail"
+
+msgid "LIK Vertrag (Basis, Punkte)"
+msgstr "IPC du bail (base, points)"
+
+msgid "Neuer LIK (Punkte)"
+msgstr "Nouvel IPC (points)"
+
+msgid "Stand-Monat (Basis-LIK)"
+msgstr "Mois de référence (IPC de base)"
+
+#, python-format
+msgid "LIK-Basis %(basis)s = 100"
+msgstr "Base IPC %(basis)s = 100"
+
+#, python-format
+msgid "neuer Stand %(stand)s"
+msgstr "nouvel état %(stand)s"
+
+msgid "Referenzzins"
+msgstr "Taux de référence"
+
+msgid "Teuerung"
+msgstr "Renchérissement"
+
+msgid "Nicht ausgeschöpfte Reserven vorbehalten — beziffert in CHF oder Prozent."
+msgstr "Réserver les réserves non épuisées — chiffrées en CHF ou en pour cent."
+
+msgid "Anpassung mit Vorbehalt (nicht ausgeschöpfte Reserven)"
+msgstr "Adaptation avec réserve (réserves non épuisées)"
+
+msgid "Vorbehalt (CHF pro Monat)"
+msgstr "Réserve (CHF par mois)"
+
+msgid "oder Vorbehalt (%%)"
+msgstr "ou réserve (%%)"
+
+msgid "Begründung des Vorbehalts"
+msgstr "Motivation de la réserve"
+
+msgid "z. B. Referenzzins 1.50 %% nicht weitergegeben"
+msgstr "p. ex. taux de référence 1.50 %% non répercuté"
+
+msgid "Pflicht, wenn ein Vorbehalt gemacht wird: Betrag oder Prozent. Beim Versand wird er zur Mietzinsreserve des Vertrags."
+msgstr "Obligatoire en cas de réserve : montant ou pour cent. Lors de l'envoi, elle devient la réserve de loyer du bail."
+
+msgid "Termin & Zustellung"
+msgstr "Terme et notification"
+
+msgid "Neuer Mietzins, Wirksamkeit und Versand. Massgebend für die Frist ist der Zugang beim Mieter."
+msgstr "Nouveau loyer, prise d'effet et envoi. La réception par le locataire est déterminante pour le délai."
+
+msgid "Der früheste Termin unten nimmt jedes Monatsende an. Bitte die vereinbarten oder ortsüblichen Termine im Vertrag ergänzen."
+msgstr "Le terme le plus précoce ci-dessous admet chaque fin de mois. Veuillez compléter dans le bail les termes convenus ou usuels locaux."
+
+msgid "Netto neu (CHF)"
+msgstr "Nouveau net (CHF)"
+
+msgid "Vorschlag aus Referenzzins + Teuerung + Kosten"
+msgstr "Proposition selon taux de référence + renchérissement + coûts"
+
+#, python-format
+msgid "Frühestens %(datum)s bei Versand heute"
+msgstr "Au plus tôt le %(datum)s en cas d'envoi aujourd'hui"
+
+msgid "Versand am (Poststempel)"
+msgstr "Envoi le (timbre postal)"
+
+msgid "Nur für «Als versandt erfassen»."
+msgstr "Uniquement pour «Enregistrer comme envoyé»."
+
+msgid "Begründung & Formular"
+msgstr "Motivation et formule"
+
+msgid "Begründung, Schlichtungsbehörde und welches Formular für diesen Kanton vorliegt."
+msgstr "Motivation, autorité de conciliation et formule disponible pour ce canton."
+
+msgid "Verstanden: Die Nachbildung ist nur ein Entwurf (Wasserzeichen «Entwurf – nicht amtlich»). Versandt wird das Formular der kantonalen Behörde."
+msgstr "Compris : la reproduction n'est qu'un brouillon (filigrane «Brouillon – non officiel»). C'est la formule de l'autorité cantonale qui est envoyée."
+
+#, python-format
+msgid "Amtliches Originalformular des Kantons %(kanton)s hinterlegt."
+msgstr "Formule officielle originale du canton %(kanton)s enregistrée."
+
+msgid "Zusätzliche Begründung (optional)"
+msgstr "Motivation supplémentaire (facultative)"
+
+msgid "z. B. wertvermehrende Investition (neue Küche)…"
+msgstr "p. ex. investissement à plus-value (nouvelle cuisine)…"
+
+msgid "Schlichtungsbehörde (Adresse)"
+msgstr "Autorité de conciliation (adresse)"
+
+#, python-format
+msgid "z. B. Schlichtungsbehörde für Mietsachen, %(ort)s"
+msgstr "p. ex. Autorité de conciliation en matière de bail, %(ort)s"
+
+msgid "<b>Entwurf speichern</b> und <b>Formular als PDF</b> buchen nichts. Erst <b>Als versandt erfassen</b> bucht den neuen Mietzins ab dem Wirksamkeitsdatum, legt die Anfechtungsfrist (30 Tage ab Zugang, Art. 270b OR) als Pendenz an und schreibt die Basisdaten des Vertrags fort."
+msgstr "<b>Enregistrer le brouillon</b> et <b>Formule en PDF</b> ne comptabilisent rien. Seul <b>Enregistrer comme envoyé</b> comptabilise le nouveau loyer dès la date d'effet, crée le délai de contestation (30 jours dès réception, art. 270b CO) comme tâche et met à jour les données de base du bail."
+
+msgid "Entwurf speichern"
+msgstr "Enregistrer le brouillon"
+
+msgid "Formular als PDF"
+msgstr "Formule en PDF"
+
+msgid "Als versandt erfassen"
+msgstr "Enregistrer comme envoyé"
+
+msgid "Kanton der Liegenschaft fehlt"
+msgstr "Canton de l'immeuble manquant"
+
+msgid "Kein Original"
+msgstr "Pas d'original"
+
+msgid "Je Vertrag wird ein Entwurf erfasst und das Formular als Sammel-PDF erstellt — gebucht wird noch nichts. Nach dem Versand die Entwürfe unter «Mietzins» als versandt erfassen: Erst dann gilt der neue Mietzins und die Anfechtungsfrist (Art. 270b OR) läuft als Pendenz. Verträge ohne Basisdaten, ohne Kanton oder ohne Potenzial werden übersprungen."
+msgstr "Un brouillon est créé par bail et la formule est générée en PDF groupé — rien n'est encore comptabilisé. Après l'envoi, enregistrer les brouillons comme envoyés sous «Loyer» : ce n'est qu'alors que le nouveau loyer s'applique et que le délai de contestation (art. 270b CO) court comme tâche. Les baux sans données de base, sans canton ou sans potentiel sont ignorés."
+
+msgid "Verstanden: Nachbildungen sind nur Entwürfe (Wasserzeichen «Entwurf – nicht amtlich»)."
+msgstr "Compris : les reproductions ne sont que des brouillons (filigrane «Brouillon – non officiel»)."
+
+msgid "aktiv (von Hand gesetzt)"
+msgstr "actif (défini manuellement)"
+
+#, python-format
+msgid "Betreibung %(nr)s"
+msgstr "Poursuite %(nr)s"
+
+msgid "Mahnsperre (von Hand — kein automatischer Mahnlauf für diese Person)"
+msgstr "Blocage des rappels (manuel — aucun processus de rappel automatique pour cette personne)"
+
+#, python-format
+msgid "Fortsetzungsbegehren ab %(a)s; das Ende ist offen, solange das Rechtsöffnungsverfahren läuft (Art. 88 Abs. 2 SchKG)."
+msgstr "Réquisition de continuer la poursuite dès le %(a)s ; la fin reste ouverte tant que la procédure de mainlevée est en cours (art. 88 al. 2 LP)."
+
+#, python-format
+msgid "Fortsetzung erst nach der Rechtsöffnung; spätestens %(b)s, verlängert um die Dauer des Rechtsöffnungsverfahrens (Art. 88 SchKG)."
+msgstr "Continuation seulement après la mainlevée ; au plus tard le %(b)s, prolongé de la durée de la procédure de mainlevée (art. 88 LP)."
+
+msgid "Fortsetzung erst nach dem Rechtsöffnungsentscheid; die Jahresfrist steht still, solange das Verfahren läuft (Art. 88 Abs. 2 SchKG)."
+msgstr "Continuation seulement après la décision de mainlevée ; le délai d'un an est suspendu tant que la procédure est en cours (art. 88 al. 2 LP)."
+
+msgid "Wohnungsabnahme vor Ort"
+msgstr "État des lieux de sortie sur place"
+
+msgid "Abnahme nachträglich erfassen (Formular)"
+msgstr "Saisir l'état des lieux ultérieurement (formulaire)"
+
+#, python-format
+msgid "erstreckt bis %(d)s"
+msgstr "prolongé jusqu'au %(d)s"
+
+#, python-format
+msgid "Zugang beim Mieter %(d)s"
+msgstr "Réception par le locataire le %(d)s"
+
+msgid "Ersatzmieter (Art. 264 OR)"
+msgstr "Locataire de remplacement (art. 264 CO)"
+
+msgid "Ausdrückliche Zustimmung des Ehegatten / Partners liegt vor (Art. 266m OR)"
+msgstr "Le consentement exprès du conjoint / partenaire a été donné (art. 266m CO)"
+
+#, python-format
+msgid "versandt %(d)s"
+msgstr "envoyé le %(d)s"
+
+#, python-format
+msgid "Zugang %(d)s"
+msgstr "Réception le %(d)s"
+
+msgid "Entwurf öffnen"
+msgstr "Ouvrir le brouillon"
+
+msgid "Wirksam"
+msgstr "En vigueur"
+
+msgid "Angefochten"
+msgstr "Contesté"
+
+msgid "Ratenplan & Betreibungen"
+msgstr "Plan de paiement échelonné et poursuites"
+
+msgid "Zahlungsvereinbarung"
+msgstr "Accord de paiement"
+
+#, python-format
+msgid "Laufender Ratenplan: CHF %(b)s in %(n)s Raten — die bis %(d)s fälligen Forderungen ruhen im Mahnlauf."
+msgstr "Plan de paiement échelonné en cours : CHF %(b)s en %(n)s tranches — les créances échues jusqu'au %(d)s sont suspendues dans le processus de rappel."
+
+#, python-format
+msgid "Betreibung %(nr)s vom %(d)s"
+msgstr "Poursuite %(nr)s du %(d)s"
+
+msgid "Keine Betreibungen zu diesem Vertrag."
+msgstr "Aucune poursuite pour ce bail."
+
+#, python-format
+msgid "Zahlungsvereinbarung — %(name)s"
+msgstr "Accord de paiement — %(name)s"
+
+msgid "So wirkt eine Zahlungsvereinbarung"
+msgstr "Effets d'un accord de paiement"
+
+msgid "Ratenplan: Der fällige Rückstand wird auf gleich hohe Raten verteilt; die letzte Rate trägt den Rest. Für jede Rate entsteht eine Pendenz."
+msgstr "Plan de paiement échelonné : l'arriéré exigible est réparti en tranches égales ; la dernière tranche comprend le solde. Une tâche est créée pour chaque tranche."
+
+msgid "Mahnsperre-Wirkung: Nur die gedeckten Forderungen (und ihre Mahngebühren und Zinsen) ruhen im Mahnlauf. Neue Mieten während des Plans werden normal gemahnt."
+msgstr "Effet de blocage des rappels : seules les créances couvertes (avec leurs frais de rappel et intérêts) sont suspendues dans le processus de rappel. Les nouveaux loyers pendant le plan font l'objet de rappels normaux."
+
+#, python-format
+msgid "Bruch: Bleiben die Zahlungen mehr als %(n)s Tage hinter den fälligen Raten zurück, gilt die Vereinbarung als gebrochen — die gedeckten Forderungen laufen wieder im Mahnlauf."
+msgstr "Rupture : si les paiements accusent un retard de plus de %(n)s jours sur les tranches échues, l'accord est considéré comme rompu — les créances couvertes reprennent le processus de rappel."
+
+msgid "Art. 257d OR: Eine bereits laufende Zahlungsfrist mit Kündigungsandrohung wird durch die Vereinbarung nicht gehemmt."
+msgstr "Art. 257d CO : un délai de paiement déjà en cours avec menace de résiliation n'est pas suspendu par l'accord."
+
+msgid "Schreiben: Die «Zahlungsvereinbarung mit Schuldanerkennung» zweifach ausdrucken und von beiden Seiten unterzeichnen lassen."
+msgstr "Courrier : imprimer l'«Accord de paiement avec reconnaissance de dette» en deux exemplaires et le faire signer par les deux parties."
+
+msgid "Es läuft eine Fristansetzung nach Art. 257d OR. Eine Zahlungsvereinbarung <b>hemmt diese Frist nicht</b> — es sei denn, der Vermieter verzichtet ausdrücklich darauf."
+msgstr "Une fixation de délai selon l'art. 257d CO est en cours. Un accord de paiement <b>ne suspend pas ce délai</b> — sauf si le bailleur y renonce expressément."
+
+#, python-format
+msgid "<b>CHF %(b)s</b> in %(n)s Raten — Status: <b>%(s)s</b>"
+msgstr "<b>CHF %(b)s</b> en %(n)s tranches — statut : <b>%(s)s</b>"
+
+#, python-format
+msgid "Bezahlt CHF %(b)s · offen CHF %(o)s"
+msgstr "Payé CHF %(b)s · ouvert CHF %(o)s"
+
+#, python-format
+msgid "Rate %(nr)s: %(d)s — CHF %(b)s"
+msgstr "Tranche %(nr)s : %(d)s — CHF %(b)s"
+
+#, python-format
+msgid "Im Mahnlauf ruhen die bis %(d)s fälligen Forderungen:"
+msgstr "Créances échues jusqu'au %(d)s suspendues dans le processus de rappel :"
+
+msgid "Keine offenen gedeckten Forderungen mehr."
+msgstr "Plus aucune créance couverte ouverte."
+
+msgid "Schreiben mit Schuldanerkennung (PDF)"
+msgstr "Courrier avec reconnaissance de dette (PDF)"
+
+msgid "Zahlungsvereinbarung abbrechen? Die gedeckten Forderungen laufen danach wieder im Mahnlauf."
+msgstr "Annuler l'accord de paiement ? Les créances couvertes reprendront ensuite le processus de rappel."
+
+msgid "Für diesen Vertrag besteht noch keine Zahlungsvereinbarung."
+msgstr "Aucun accord de paiement n'existe encore pour ce bail."
+
+msgid "Neue Vereinbarung"
+msgstr "Nouvel accord"
+
+#, python-format
+msgid "Fälliger Rückstand: <b>CHF %(b)s</b>. Er wird auf gleich hohe Raten verteilt; bis zur Erfüllung ruhen diese Forderungen im Mahnlauf."
+msgstr "Arriéré exigible : <b>CHF %(b)s</b>. Il est réparti en tranches égales ; jusqu'à l'exécution, ces créances sont suspendues dans le processus de rappel."
+
+msgid "Anzahl Raten"
+msgstr "Nombre de tranches"
+
+msgid "Abstand (Monate)"
+msgstr "Intervalle (mois)"
+
+msgid "Erste Rate am"
+msgstr "Première tranche le"
+
+msgid "Vereinbarung erfassen"
+msgstr "Enregistrer l'accord"
+
+msgid "Es gibt keinen fälligen Rückstand, der vereinbart werden könnte."
+msgstr "Il n'y a pas d'arriéré exigible pouvant faire l'objet d'un accord."
+
+#, python-format
+msgid "%(typ)s erfasst (%(count)s Mängel). Abschliessen mit Unterschriften im Protokoll."
+msgstr "%(typ)s enregistré (%(count)s défauts). Clôturer avec les signatures dans le procès-verbal."
+
+msgid "Jetzt unterschreiben und abschliessen."
+msgstr "Signer et clôturer maintenant."
+
+#, python-format
+msgid "Versanddatum ungültig: zwischen %(von)s und heute."
+msgstr "Date d'envoi invalide : entre le %(von)s et aujourd'hui."
+
+#, python-format
+msgid "Versand der Rüge am %(datum)s festgehalten."
+msgstr "Envoi de l'avis du %(datum)s enregistré."
+
+msgid "Nur an einem abgeschlossenen Auszugsprotokoll möglich."
+msgstr "Possible uniquement sur un procès-verbal de sortie clôturé."
+
+#, python-format
+msgid "Entdeckungsdatum ungültig: zwischen %(von)s und heute."
+msgstr "Date de découverte invalide : entre le %(von)s et aujourd'hui."
+
+msgid "Kostenschätzung ist keine Zahl."
+msgstr "L'estimation des coûts n'est pas un nombre."
+
+#, python-format
+msgid "Mangel erfasst. Rüge jetzt erstellen und bis %(frist)s versenden."
+msgstr "Défaut enregistré. Établir l'avis maintenant et l'envoyer d'ici le %(frist)s."
+
+#, python-format
+msgid "Ticket #%(id)s angelegt: Handwerker jetzt zuweisen."
+msgstr "Ticket #%(id)s créé : attribuer maintenant un artisan."
+
+msgid "Ein abgeschlossenes Abnahmeprotokoll ist unterschrieben und kann nicht gelöscht werden."
+msgstr "Un procès-verbal d'état des lieux clôturé est signé et ne peut pas être supprimé."
+
+msgid "Mieteranteil nach Lebensdauer (Zeitwert)"
+msgstr "Part du locataire selon la durée de vie (valeur actuelle)"
+
+msgid "Lebensdauer abgelaufen: kein Mieteranteil"
+msgstr "Durée de vie écoulée : pas de part du locataire"
+
+msgid "Noch kein Betrag: Kostenschätzung eingeben"
+msgstr "Pas encore de montant : saisir l'estimation des coûts"
+
+msgid "Kein Mieterschaden"
+msgstr "Pas de dommage causé par le locataire"
+
+#, python-format
+msgid "Mängelrüge bis %(frist)s versenden (Art. 267a OR)."
+msgstr "Envoyer l'avis des défauts d'ici le %(frist)s (art. 267a CO)."
+
+msgid "Der Mieter war abwesend: eingeschrieben senden."
+msgstr "Le locataire était absent : envoyer en recommandé."
+
+msgid "Eine versandte Mietzinsanpassung kann nur die Verwaltung (Verwalter/Inhaber) entfernen."
+msgstr "Seule la gérance (Verwalter/Inhaber) peut supprimer une adaptation de loyer envoyée."
+
+msgid "Bitte den ausserordentlichen Grund wählen, der für diese Partei gilt."
+msgstr "Veuillez choisir le motif extraordinaire applicable à cette partie."
+
+msgid "Für diesen Grund rechnet die Anwendung keine Frist — bitte das Vertragsende angeben."
+msgstr "Pour ce motif, l'application ne calcule aucun délai — veuillez indiquer la fin du bail."
+
+#, python-format
+msgid "Für %(grund)s ist im Bestand keine Mindestfrist hinterlegt — der Termin wurde nicht geprüft. Vor dem Versand rechtlich prüfen."
+msgstr "Aucun délai minimal n'est enregistré dans les données pour %(grund)s — le terme n'a pas été vérifié. Le faire vérifier juridiquement avant l'envoi."
+
+#, python-format
+msgid "Gewünschtes Ende %(wunsch)s liegt vor dem frühesten Termin für diesen Grund — die Kündigung gilt auf %(termin)s."
+msgstr "La fin souhaitée %(wunsch)s précède le terme le plus précoce pour ce motif — la résiliation vaut pour le %(termin)s."
+
+#, python-format
+msgid "Vorzeitige Rückgabe mit angenommenem Ersatzmieter (Art. 264 OR): Der Mieter ist ab %(datum)s befreit."
+msgstr "Restitution anticipée avec locataire de remplacement accepté (art. 264 CO) : le locataire est libéré dès le %(datum)s."
+
+#, python-format
+msgid "Vorzeitige Rückgabe ohne angenommenen Ersatzmieter: Der Mieter haftet bis zum nächsten ordentlichen Termin %(termin)s (Art. 264 OR)."
+msgstr "Restitution anticipée sans locataire de remplacement accepté : le locataire répond jusqu'au prochain terme ordinaire, le %(termin)s (art. 264 CO)."
+
+msgid "Die Erstreckung muss nach dem Vertragsende liegen."
+msgstr "La prolongation doit se situer après la fin du bail."
+
+#, python-format
+msgid "Die Erstreckung übersteigt die Höchstdauer von %(n)s Jahren (Art. 272b OR)."
+msgstr "La prolongation dépasse la durée maximale de %(n)s ans (art. 272b CO)."
+
+msgid "Familienwohnung: Ohne ausdrückliche Zustimmung des Ehegatten/Partners ist die Kündigung nichtig (Art. 266m OR). Sie ist erfasst, aber nicht bestätigt — der Vertrag bleibt unverändert, bis die Zustimmung vorliegt."
+msgstr "Logement de la famille : sans le consentement exprès du conjoint/partenaire, la résiliation est nulle (art. 266m CO). Elle est enregistrée, mais pas confirmée — le bail reste inchangé jusqu'à ce que le consentement soit donné."
+
+msgid "Familienwohnung: Bestätigung erst mit der ausdrücklichen Zustimmung des Ehegatten/Partners (Art. 266m OR)."
+msgstr "Logement de la famille : confirmation seulement avec le consentement exprès du conjoint/partenaire (art. 266m CO)."
+
+msgid "Zahlungsvereinbarung abgebrochen — die gedeckten Forderungen laufen wieder im Mahnlauf."
+msgstr "Accord de paiement annulé — les créances couvertes reprennent le processus de rappel."
+
+#, python-format
+msgid "Zahlungsvereinbarung erfasst — die gedeckten Forderungen ruhen im Mahnlauf, %(n)s Raten-Pendenzen angelegt."
+msgstr "Accord de paiement enregistré — les créances couvertes sont suspendues dans le processus de rappel, %(n)s tâches de tranches créées."
+
+msgid "Das Schreiben «Zahlungsvereinbarung mit Schuldanerkennung» steht bereit — zweifach ausdrucken und unterzeichnen lassen."
+msgstr "Le courrier «Accord de paiement avec reconnaissance de dette» est prêt — l'imprimer en deux exemplaires et le faire signer."
+
+msgid "Mahnsperre am Mieter (von Hand gesetzt)"
+msgstr "Blocage des rappels sur le locataire (défini manuellement)"
+
+msgid "Indexmiete — einzeln"
+msgstr "Loyer indexé — individuellement"
+
+msgid "Dieser Entwurf ist nicht mehr offen."
+msgstr "Ce brouillon n'est plus ouvert."
+
+#, python-format
+msgid "Wirksamkeitsdatum zu früh: Eine Mietzinserhöhung kann frühestens auf %(datum)s wirksam werden (Kündigungsfrist + 10-Tage-Ankündigung, Art. 269d OR)."
+msgstr "Date d'effet trop précoce : une hausse de loyer peut prendre effet au plus tôt le %(datum)s (délai de résiliation + préavis de 10 jours, art. 269d CO)."
+
+msgid "Ein Vorbehalt muss beziffert sein — bitte den vorbehaltenen Betrag in CHF oder in % angeben."
+msgstr "Une réserve doit être chiffrée — veuillez indiquer le montant réservé en CHF ou en %."
+
+#, python-format
+msgid "Entwurf gespeichert — neu CHF %(neu_netto)s ab %(datum)s. Gebucht wird erst beim Versand."
+msgstr "Brouillon enregistré — nouveau CHF %(neu_netto)s dès le %(datum)s. La comptabilisation n'a lieu qu'à l'envoi."
+
+#, python-format
+msgid "Mietzinsanpassung als versandt erfasst — neu CHF %(neu_netto)s ab %(datum)s."
+msgstr "Adaptation de loyer enregistrée comme envoyée — nouveau CHF %(neu_netto)s dès le %(datum)s."
+
+msgid "Bitte bestätigen, dass das amtliche Formular des Kantons verwendet wurde."
+msgstr "Veuillez confirmer que la formule officielle du canton a été utilisée."
+
+msgid "Bitte das Zugangsdatum einer versandten Anpassung angeben."
+msgstr "Veuillez indiquer la date de réception d'une adaptation envoyée."
+
+#, python-format
+msgid "Mietzinsanpassung aktualisiert: %(status)s."
+msgstr "Adaptation de loyer mise à jour : %(status)s."
+
+msgid "Kanton der Liegenschaft fehlt."
+msgstr "Canton de l'immeuble manquant."
+
+#, python-format
+msgid "%(n)s Anpassung(en) als versandt erfasst."
+msgstr "%(n)s adaptation(s) enregistrée(s) comme envoyée(s)."
+
+msgid "Keine offenen Entwürfe ausgewählt."
+msgstr "Aucun brouillon ouvert sélectionné."
+
+#, python-format
+msgid "%(n)s Index- oder Staffelmiete(n) ausgenommen — deren Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR), nicht dem Referenzzins."
+msgstr "%(n)s loyer(s) indexé(s) ou échelonné(s) exclu(s) — leur loyer suit l'indice ou les paliers convenus (art. 269b/269c CO), et non le taux de référence."
+
+msgid "Keine Anpassung möglich (Basisdaten oder Kanton fehlen, oder kein Potenzial)."
+msgstr "Aucune adaptation possible (données de base ou canton manquants, ou pas de potentiel)."
+
+msgid "Der Zinssatz muss zwischen 0 und 100 % liegen."
+msgstr "Le taux d'intérêt doit être compris entre 0 et 100 %."
+
+msgid "Rechtsvorschlag mehr als 10 Tage nach Zustellung des Zahlungsbefehls (Art. 74 SchKG). Gespeichert — bitte beim Betreibungsamt klären, ob er gilt: Er kann rechtzeitig sein (z. B. Fristende an einem Wochenende oder Feiertag, Betreibungsferien oder Rechtsstillstand, Art. 31, 56, 63 SchKG, oder nachträglicher Rechtsvorschlag, Art. 77 SchKG)."
+msgstr "Opposition plus de 10 jours après la notification du commandement de payer (art. 74 LP). Enregistrée — veuillez vérifier auprès de l'office des poursuites si elle est valable : elle peut être dans les délais (p. ex. fin du délai un week-end ou un jour férié, féries ou suspension des poursuites, art. 31, 56, 63 LP, ou opposition tardive, art. 77 LP)."
+
+msgid "Rechtsöffnungsgesuch ohne erfassten Rechtsvorschlag — eine Rechtsöffnung braucht es nur, wenn Rechtsvorschlag erhoben wurde."
+msgstr "Requête de mainlevée sans opposition enregistrée — une mainlevée n'est nécessaire que si une opposition a été formée."
+
+msgid "Fortsetzungsbegehren erfasst, obwohl der Rechtsvorschlag noch nicht durch einen Rechtsöffnungsentscheid beseitigt ist (Art. 88 Abs. 1 SchKG)."
+msgstr "Réquisition de continuer la poursuite enregistrée alors que l'opposition n'a pas encore été levée par une décision de mainlevée (art. 88 al. 1 LP)."
+
+#, python-format
+msgid "Fortsetzungsbegehren vor dem frühesten Termin (%(d)s, Art. 88 Abs. 1 SchKG)."
+msgstr "Réquisition de continuer la poursuite avant le terme le plus précoce (%(d)s, art. 88 al. 1 LP)."
+
+#, python-format
+msgid "Fortsetzungsbegehren nach Ablauf der Jahresfrist (%(d)s, Art. 88 Abs. 2 SchKG)."
+msgstr "Réquisition de continuer la poursuite après l'expiration du délai d'un an (%(d)s, art. 88 al. 2 LP)."
+
+msgid "Weitere Forderungen"
+msgstr "Autres créances"
+
+msgid "Diese Forderung steht bereits in einer offenen Betreibung."
+msgstr "Cette créance figure déjà dans une poursuite ouverte."
+
+msgid "Betrieben werden kann nur eine offene, fällige Hauptforderung (keine Mahngebühr, kein Zins, nichts noch nicht Fälliges)."
+msgstr "Seule une créance principale ouverte et exigible peut faire l'objet d'une poursuite (pas de frais de rappel, pas d'intérêt, rien qui ne soit pas encore échu)."
+
+msgid "Betreibung erfasst. Das Datenblatt für das Betreibungsbegehren steht als PDF bereit."
+msgstr "Poursuite enregistrée. La fiche de données pour la réquisition de poursuite est disponible en PDF."
+
+msgid "Der Verlustschein schreibt die offenen Forderungen ab (Konto 3805) — das darf nur die Verwaltung (Verwalter oder Inhaber)."
+msgstr "L'acte de défaut de biens amortit les créances ouvertes (compte 3805) — seule la gérance (Verwalter ou Inhaber) peut le faire."
+
+#, python-format
+msgid "Verlustschein: %(n)s Forderung(en) über CHF %(s)s als Debitorenverlust abgeschrieben (Konto 3805)."
+msgstr "Acte de défaut de biens : %(n)s créance(s) de CHF %(s)s amortie(s) comme perte sur débiteurs (compte 3805)."
+
+#, python-format
+msgid "%(n)s Forderung(en) liegen in einer gesperrten Buchungsperiode und wurden nicht abgeschrieben."
+msgstr "%(n)s créance(s) se trouvent dans une période comptable verrouillée et n'ont pas été amorties."
+
+#, python-format
+msgid "Betreibungskosten von CHF %(b)s dem Mieter belastet (Art. 68 SchKG)."
+msgstr "Frais de poursuite de CHF %(b)s imputés au locataire (art. 68 LP)."
+
+msgid "Rechtsöffnung beantragt"
+msgstr "Mainlevée requise"
+
+msgid "Rechtsöffnung erteilt"
+msgstr "Mainlevée accordée"
+
+msgid "Pfändung"
+msgstr "Saisie"
+
+msgid "Provisorisch (Art. 82 SchKG)"
+msgstr "Provisoire (art. 82 LP)"
+
+msgid "Definitiv (Art. 80 SchKG)"
+msgstr "Définitive (art. 80 LP)"
+
+msgid "Dient eine Anlage einzelnen Eigentümern nicht, kann die Verteilung abweichen. Die befreiten Einheiten tragen nichts; der Betrag wird auf die übrigen umgerechnet (neue Basis 100 %%, auf den Rappen genau). Die Begründung ist Pflicht und wird festgehalten."
+msgstr "Si une installation ne sert pas certains propriétaires, la répartition peut différer. Les unités exonérées ne supportent rien ; le montant est recalculé pour les autres (nouvelle base 100 %%, au centime près). La justification est obligatoire et consignée."
+
+#, python-format
+msgid "%(n)s Index- oder Staffelmiete ausgenommen — ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR)."
+msgid_plural "%(n)s Index- oder Staffelmieten ausgenommen — ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR)."
+msgstr[0] "%(n)s loyer indexé ou échelonné exclu — il suit l'indice ou les paliers convenus (art. 269b/269c CO)."
+msgstr[1] "%(n)s loyers indexés ou échelonnés exclus — leur loyer suit l'indice ou les paliers convenus (art. 269b/269c CO)."
+
+#, python-format
+msgid "%(n)s Entwurf + Formular (Sammel-PDF)"
+msgid_plural "%(n)s Entwürfe + Formulare (Sammel-PDF)"
+msgstr[0] "%(n)s brouillon + formule (PDF groupé)"
+msgstr[1] "%(n)s brouillons + formules (PDF groupé)"

@@ -27017,3 +27017,1095 @@ msgid "Zahlung ohne Zuordnung"
 msgid_plural "Zahlungen ohne Zuordnung"
 msgstr[0] "payment not assigned"
 msgstr[1] "payments not assigned"
+
+msgid "Rechtsvorschlag"
+msgstr "Objection"
+
+msgid "Der Schuldner kann innert 10 Tagen nach Zustellung des Zahlungsbefehls ohne Begründung Rechtsvorschlag erheben (Art. 74 SchKG); dann steht die Betreibung still. Auch ein später erhobener Rechtsvorschlag kann gelten — etwa bei Betreibungsferien oder nachträglichem Rechtsvorschlag; das klärt das Betreibungsamt."
+msgstr "The debtor can raise an objection without giving reasons within 10 days of the payment order being served (Art. 74 DEBA); the debt collection then stops. An objection raised later may also be valid — for example during debt collection holidays or as a late objection; the debt collection office will clarify this."
+
+msgid "Rechtsöffnung"
+msgstr "Removal of objection"
+
+msgid "Beseitigt den Rechtsvorschlag. Mit einer unterschriebenen Schuldanerkennung, etwa dem Mietvertrag oder einer Zahlungsvereinbarung, gibt das Gericht provisorische Rechtsöffnung (Art. 82 SchKG), mit einem Urteil definitive (Art. 80 SchKG). Zwischen Gesuch und Entscheid steht die Jahresfrist für die Fortsetzung still."
+msgstr "Removes the objection. With a signed acknowledgement of debt, such as the lease or a payment arrangement, the court grants provisional removal of objection (Art. 82 DEBA); with a judgment, definitive removal (Art. 80 DEBA). Between application and decision, the one-year deadline for continuation is suspended."
+
+msgid "Frühestens 20 Tage nach Zustellung des Zahlungsbefehls, bei Rechtsvorschlag erst nach der Rechtsöffnung; spätestens ein Jahr nach der Zustellung, verlängert um die Dauer des Rechtsöffnungsverfahrens (Art. 88 SchKG). Danach pfändet das Betreibungsamt."
+msgstr "At the earliest 20 days after the payment order is served, after an objection only once it has been removed; at the latest one year after service, extended by the duration of the removal proceedings (Art. 88 DEBA). The debt collection office then carries out the seizure."
+
+msgid "Betreibungskosten"
+msgstr "Debt collection costs"
+
+msgid "Die Kosten der Betreibung trägt der Schuldner, der Gläubiger schiesst sie vor (Art. 68 SchKG). «Kosten dem Mieter belasten» stellt sie als eigene Forderung in Rechnung; sie zählt nicht zum Mietzinsrückstand nach Art. 257d OR."
+msgstr "The debtor bears the debt collection costs; the creditor advances them (Art. 68 DEBA). “Charge costs to tenant” invoices them as a separate claim; it does not count towards the rent arrears under Art. 257d CO."
+
+msgid "Deckt die Pfändung die Forderung nicht, stellt das Betreibungsamt einen Verlustschein aus (Art. 149 SchKG). Die offenen Beträge werden dann als Debitorenverlust (Konto 3805) abgeschrieben; die Forderung gegen den Schuldner bleibt bestehen."
+msgstr "If the seizure does not cover the claim, the debt collection office issues a certificate of loss (Art. 149 DEBA). The open amounts are then written off as bad debt (account 3805); the claim against the debtor remains."
+
+msgid "Der fällige Rückstand wird auf gleich hohe Raten verteilt, die letzte trägt den Rest. Bis zur Erfüllung ruhen nur die gedeckten Forderungen im Mahnlauf — neue Mieten werden normal gemahnt."
+msgstr "The arrears due are split into equal instalments, the last one carrying the remainder. Until fulfilment, only the covered claims are paused in the dunning run — new rents receive reminders as usual."
+
+msgid "Bruch der Vereinbarung"
+msgstr "Breach of arrangement"
+
+msgid "Liegt die bezahlte Summe nach einer kurzen Toleranz unter dem, was an Raten fällig war, gilt die Vereinbarung als gebrochen. Dann laufen die gedeckten Forderungen wieder im Mahnlauf, und eine Pendenz erinnert an die Fortsetzung des Mahnprozesses."
+msgstr "If, after a short tolerance, the amount paid is below the instalments due, the arrangement counts as breached. The covered claims then return to the dunning run, and a task reminds you to continue the dunning process."
+
+msgid "Schuldanerkennung"
+msgstr "Acknowledgement of debt"
+
+msgid "Unterschreibt der Mieter die Zahlungsvereinbarung, anerkennt er den Rückstand schriftlich. Das ist ein provisorischer Rechtsöffnungstitel (Art. 82 SchKG): Erhebt er in einer Betreibung Rechtsvorschlag, lässt sich dieser damit beseitigen."
+msgstr "By signing the payment arrangement, the tenant acknowledges the arrears in writing. This is a title for provisional removal of objection (Art. 82 DEBA): if they raise an objection in debt collection, it can be removed with it."
+
+msgid "Vereinbarung und Art. 257d OR"
+msgstr "Arrangement and Art. 257d CO"
+
+msgid "Eine Zahlungsvereinbarung hemmt eine bereits laufende Zahlungsfrist nach Art. 257d OR nicht, es sei denn, der Vermieter verzichtet ausdrücklich darauf."
+msgstr "A payment arrangement does not suspend a payment deadline already running under Art. 257d CO, unless the landlord expressly waives it."
+
+msgid "Vorbehalt"
+msgstr "Reservation"
+
+msgid "Wer die mögliche Anpassung nicht ganz ausschöpft, kann sich den Rest für später vorbehalten. Der Vorbehalt wird beziffert — in Franken oder Prozent —, damit er sich später nachvollziehen lässt."
+msgstr "If you do not use the full possible adjustment, you can reserve the rest for later. The reservation is quantified — in francs or per cent — so that it can be traced later."
+
+msgid "Indexmiete"
+msgstr "Indexed rent"
+
+msgid "Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach unten. Zulässig nur bei einem Vertrag mit fester Dauer von mindestens fünf Jahren (Art. 269b OR). Die Massenanpassung nach Referenzzins erfasst Indexmieten nicht."
+msgstr "The rent follows the Swiss consumer price index, both up and down. Only permitted for a fixed-term lease of at least five years (Art. 269b CO). The bulk adjustment based on the reference rate does not cover indexed rents."
+
+msgid "Staffelmiete"
+msgstr "Graduated rent"
+
+msgid "Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens einmal jährlich, bei einer Vertragsdauer von mindestens drei Jahren (Art. 269c OR). Der Mietzins folgt den Stufen — die Anpassung nach Referenzzins und Teuerung gilt für ihn nicht."
+msgstr "The increases are agreed in the lease as amounts in francs, at most once a year, for a lease term of at least three years (Art. 269c CO). The rent follows the steps — adjustment for the reference rate and inflation does not apply to it."
+
+msgid "Herabsetzung"
+msgstr "Rent reduction"
+
+msgid "Sinkt der Referenzzins, kann der Mieter eine Herabsetzung verlangen (Art. 270a OR). Der Vermieter antwortet innert 30 Tagen; lehnt er ab, kann der Mieter innert 30 Tagen die Schlichtungsbehörde anrufen."
+msgstr "If the reference rate falls, the tenant can request a rent reduction (Art. 270a CO). The landlord replies within 30 days; if they refuse, the tenant can apply to the conciliation authority within 30 days."
+
+msgid "Zugang"
+msgstr "Receipt"
+
+msgid "Fristen laufen ab dem Tag, an dem ein Schreiben beim Empfänger ankommt — nicht ab dem Versand. Ist der Zugang noch nicht bestätigt, rechnet die Anwendung mit Postweg und Abholfrist eines Einschreibens."
+msgstr "Deadlines run from the day a letter reaches the recipient — not from dispatch. If receipt has not yet been confirmed, the application allows for postal delivery and the collection period of registered mail."
+
+msgid "Von Hand gesetzt: Für diese Person läuft kein automatischer Mahnlauf. Eine Zahlungsvereinbarung braucht das Häkchen nicht — sie nimmt nur die Forderungen aus, die ihr Ratenplan deckt. Offene Rechnungen bleiben sichtbar."
+msgstr "Set manually: no automatic dunning run for this person. A payment arrangement does not need the tick — it only excludes the claims covered by its instalment plan. Open invoices remain visible."
+
+msgid "Bitte angeben, ob der Mieter anwesend war."
+msgstr "Please state whether the tenant was present."
+
+msgid "Bitte den Allgemeinzustand wählen."
+msgstr "Please choose the general condition."
+
+msgid "Die Unterschrift der Verwaltung fehlt."
+msgstr "The management's signature is missing."
+
+msgid "Der Mieter war abwesend: bitte den Grund angeben."
+msgstr "The tenant was absent: please state the reason."
+
+msgid "Die Unterschrift des Mieters fehlt. War er nicht da, «Mieter abwesend» wählen und den Grund angeben."
+msgstr "The tenant's signature is missing. If they were not present, choose “Tenant absent” and state the reason."
+
+msgid "Bitte den Namen der Person eintragen, die für den Mieter unterschreibt."
+msgstr "Please enter the name of the person signing for the tenant."
+
+#, python-format
+msgid "%(count)s Bauteil(e) sind nicht bewertet: bitte bewerten oder ausdrücklich bestätigen."
+msgstr "%(count)s component(s) not rated: please rate them or confirm explicitly."
+
+#, python-format
+msgid "%(count)s Mieterschaden ohne Alter oder Lebensdauer des Bauteils: voller Betrag. Bitte bestätigen oder Einbaudatum und Lebensdauer im Raumbuch ergänzen."
+msgstr "%(count)s tenant damage item(s) without age or lifespan of the component: full amount. Please confirm, or add installation date and lifespan in the room inventory."
+
+msgid "Zuerst die Betreibungskosten erfassen (Feld «Betreibungskosten»)."
+msgstr "First enter the debt collection costs (field “Debt collection costs”)."
+
+msgid "Die Betreibungskosten sind dem Mieter bereits belastet."
+msgstr "The debt collection costs have already been charged to the tenant."
+
+msgid "Ohne Mietvertrag lassen sich keine Kosten belasten."
+msgstr "Costs cannot be charged without a lease."
+
+msgid "ohne amtliches Formular ist die Kündigung nichtig (Art. 266l/266o OR)"
+msgstr "without the official form, the termination is void (Art. 266l/266o CO)"
+
+msgid "ohne amtliches Formular ist die Mitteilung mangelhaft (Art. 270 Abs. 2 OR)"
+msgstr "without the official form, the notification is defective (Art. 270 para. 2 CO)"
+
+msgid "ohne amtliches Formular ist die Anpassung nichtig (Art. 269d OR)"
+msgstr "without the official form, the adjustment is void (Art. 269d CO)"
+
+#, python-format
+msgid "Für Kanton %(kanton)s ist kein amtliches Originalformular hinterlegt — verwenden Sie das Formular der kantonalen Behörde; %(folge)s."
+msgstr "No original official form is stored for the canton of %(kanton)s — use the cantonal authority's form; %(folge)s."
+
+msgid "Für das amtliche Formular muss der Kanton der Liegenschaft erfasst sein — die Postleitzahl allein bestimmt ihn nicht sicher."
+msgstr "For the official form, the property's canton must be entered — the postcode alone does not reliably determine it."
+
+#, python-format
+msgid "PLZ %(plz)s liegt in Bereichen von: %(kantone)s."
+msgstr "Postcode %(plz)s lies in areas of: %(kantone)s."
+
+msgid "Gedeckt durch eine laufende Zahlungsvereinbarung (Ratenplan)"
+msgstr "Covered by an active payment arrangement (instalment plan)"
+
+msgid "In Betreibung (SchKG) — gemahnt wird über das Betreibungsamt"
+msgstr "In debt collection (DEBA) — reminders go through the debt collection office"
+
+msgid "Nur ein Entwurf dieses Vertrags lässt sich bearbeiten."
+msgstr "Only a draft for this lease can be edited."
+
+#, python-format
+msgid "Für den %(datum)s ist bereits eine Anpassung versandt."
+msgstr "An adjustment has already been sent for %(datum)s."
+
+#, python-format
+msgid "Wirksamkeitsdatum zu früh: Bei diesem Versand kann die Erhöhung frühestens auf %(datum)s wirksam werden (Kündigungsfrist + 10 Tage ab Zugang, Art. 269d OR)."
+msgstr "Effective date too early: with this dispatch the increase can take effect on %(datum)s at the earliest (notice period + 10 days from receipt, Art. 269d CO)."
+
+msgid "Nur ein Entwurf kann als versandt erfasst werden."
+msgstr "Only a draft can be recorded as sent."
+
+msgid "Bitte das Versanddatum angeben."
+msgstr "Please enter the dispatch date."
+
+msgid "Der Zugang kann nicht vor dem Versand liegen."
+msgstr "Receipt cannot be before dispatch."
+
+msgid "Das Zugangsdatum kann nicht in der Zukunft liegen."
+msgstr "The date of receipt cannot be in the future."
+
+msgid "Dieser Statuswechsel ist nicht möglich."
+msgstr "This status change is not possible."
+
+msgid "Ticket zum Mangel anlegen und Handwerker zuweisen"
+msgstr "Create a ticket for the defect and assign a tradesperson"
+
+msgid "Ersatz je fehlendem Schlüssel CHF"
+msgstr "Replacement per missing key CHF"
+
+msgid "Schlüssel oder Zylinder"
+msgstr "Key or cylinder"
+
+msgid "Zulasten Mieter"
+msgstr "Charged to tenant"
+
+msgid "Unterschreiben und abschliessen"
+msgstr "Sign and complete"
+
+msgid "Mängelrüge (Art. 267a OR)"
+msgstr "Notice of defects (Art. 267a CO)"
+
+#, python-format
+msgid "Versandt am <b>%(datum)s</b>."
+msgstr "Sent on <b>%(datum)s</b>."
+
+#, python-format
+msgid "Sofort nach der Rückgabe rügen: versenden bis <b>%(frist)s</b> (Abnahme plus zwei Arbeitstage). Erledigt ist die Frist erst mit dem Versand, nicht mit dem PDF."
+msgstr "Give notice immediately after return: send by <b>%(frist)s</b> (inspection plus two working days). The deadline is only met by sending, not by the PDF."
+
+msgid "Der Mieter war bei der Abnahme abwesend: Rüge eingeschrieben versenden (Zugangsnachweis)."
+msgstr "The tenant was absent at the inspection: send the notice by registered mail (proof of receipt)."
+
+msgid "Rüge versandt am"
+msgstr "Notice sent on"
+
+msgid "Sendungsnummer (Einschreiben)"
+msgstr "Tracking number (registered mail)"
+
+msgid "Versand festhalten"
+msgstr "Record dispatch"
+
+msgid "Handwerker"
+msgstr "Tradesperson"
+
+msgid "Foto des Mangels"
+msgstr "Photo of the defect"
+
+msgid "Nach der Abnahme entdeckte Mängel"
+msgstr "Defects discovered after the inspection"
+
+msgid "Versteckte Mängel, die bei der Abnahme nicht erkennbar waren, sind sofort nach ihrer Entdeckung zu rügen (Art. 267a Abs. 3 OR). Sie stehen getrennt vom unterzeichneten Protokoll."
+msgstr "Hidden defects that could not be detected at the inspection must be notified immediately after discovery (Art. 267a para. 3 CO). They are kept separate from the signed report."
+
+msgid "Entdeckt am"
+msgstr "Discovered on"
+
+msgid "Rüge"
+msgstr "Notice"
+
+msgid "Rüge (PDF)"
+msgstr "Notice (PDF)"
+
+#, python-format
+msgid "versandt %(datum)s"
+msgstr "sent %(datum)s"
+
+msgid "Versandt"
+msgstr "Sent"
+
+msgid "Später entdeckten Mangel rügen"
+msgstr "Give notice of a defect discovered later"
+
+msgid "Mangel erfassen"
+msgstr "Record defect"
+
+msgid "nicht unterzeichnet"
+msgstr "not signed"
+
+msgid "Mieter abwesend"
+msgstr "Tenant absent"
+
+msgid "Abgeschlossen wird im nächsten Schritt: mit den Unterschriften von Verwaltung und Mieter (oder dem Grund seiner Abwesenheit)."
+msgstr "Completion happens in the next step: with the signatures of management and tenant (or the reason for their absence)."
+
+msgid "Bestätigt: Diese Bauteile wurden nicht bewertet."
+msgstr "Confirmed: these components were not rated."
+
+msgid "Bestätigt: dem Mieter ohne Abzug «neu für alt» belasten (Einbaudatum und Lebensdauer sind nicht erfasst)."
+msgstr "Confirmed: charge the tenant without a “new for old” deduction (installation date and lifespan not recorded)."
+
+msgid "Mieter bei der Abnahme"
+msgstr "Tenant at the inspection"
+
+msgid "Grund der Abwesenheit"
+msgstr "Reason for absence"
+
+msgid "Ohne Unterschrift des Mieters: die Mängelrüge eingeschrieben versenden (Zugangsnachweis)."
+msgstr "Without the tenant's signature: send the notice of defects by registered mail (proof of receipt)."
+
+msgid "bitte wählen"
+msgstr "please choose"
+
+msgid "Strasse Nr., PLZ Ort"
+msgstr "Street no., postcode town"
+
+msgid "Name der unterzeichnenden Person"
+msgstr "Name of the signatory"
+
+msgid "Kein Formular ohne Kanton"
+msgstr "No form without canton"
+
+msgid "Kanton bei der Liegenschaft erfassen"
+msgstr "Enter the property's canton"
+
+msgid "Kein amtliches Originalformular"
+msgstr "No original official form"
+
+msgid "Verstanden: Die Nachbildung ist nur ein Entwurf (Wasserzeichen «Entwurf – nicht amtlich»)."
+msgstr "Understood: the replica is only a draft (watermark “Draft – not official”)."
+
+#, python-format
+msgid "%%(n)s von %%(m)s Zeilen"
+msgstr "%%(n)s of %%(m)s rows"
+
+msgid "Forderungen in dieser Betreibung"
+msgstr "Claims in this debt collection"
+
+msgid "Solange die Betreibung offen ist, mahnt der Mahnlauf diese Forderungen nicht. Sind alle bezahlt, steht sie von selbst auf «Bezahlt»."
+msgstr "While the debt collection is open, the dunning run does not send reminders for these claims. Once all are paid, it switches to “Paid” automatically."
+
+msgid "Datenblatt Betreibungsbegehren (PDF)"
+msgstr "Data sheet for debt collection request (PDF)"
+
+msgid "«Verlustschein» schreibt die offenen Forderungen ab und ist der Verwaltung (Verwalter, Inhaber) vorbehalten."
+msgstr "“Certificate of loss” writes off the open claims and is reserved for management (Verwalter, Inhaber)."
+
+msgid "Zins (%%)"
+msgstr "Interest (%%)"
+
+msgid "Zins seit"
+msgstr "Interest from"
+
+msgid "Forderungsgrund"
+msgstr "Grounds of claim"
+
+#, python-format
+msgid "Dem Mieter belastet: %(t)s (%(s)s)"
+msgstr "Charged to tenant: %(t)s (%(s)s)"
+
+msgid "Rechtsöffnungsgesuch am"
+msgstr "Application for removal of objection on"
+
+msgid "Rechtsöffnung erteilt am"
+msgstr "Removal of objection granted on"
+
+msgid "Art der Rechtsöffnung"
+msgstr "Type of removal of objection"
+
+msgid "Pfändung am"
+msgstr "Seizure on"
+
+msgid "Kosten dem Mieter belasten"
+msgstr "Charge costs to tenant"
+
+#, python-format
+msgid "Bereits belastet: CHF %(b)s."
+msgstr "Already charged: CHF %(b)s."
+
+#, python-format
+msgid "Betreibungskosten von CHF %(b)s dem Mieter als Forderung belasten?"
+msgstr "Charge debt collection costs of CHF %(b)s to the tenant as a claim?"
+
+#, python-format
+msgid "Stellt CHF %(b)s als Forderung «Betreibungskosten (Art. 68 SchKG)» in Rechnung. Sie hängt an der Hauptforderung und zählt nicht zum Rückstand nach Art. 257d OR."
+msgstr "Invoices CHF %(b)s as the claim “Debt collection costs (Art. 68 DEBA)”. It is linked to the principal claim and does not count towards the arrears under Art. 257d CO."
+
+msgid "Zuerst die Betreibungskosten oben erfassen und speichern."
+msgstr "First enter and save the debt collection costs above."
+
+msgid "So läuft die Betreibung"
+msgstr "How debt collection works"
+
+msgid "Hier die Forderungen wählen und die Angaben für das Betreibungsbegehren erfassen. Das Datenblatt als PDF hilft beim Ausfüllen des amtlichen Formulars."
+msgstr "Choose the claims here and enter the details for the debt collection request. The PDF data sheet helps you fill in the official form."
+
+msgid "Das Betreibungsamt stellt den Zahlungsbefehl zu. Ab dann läuft die Frist für den Rechtsvorschlag."
+msgstr "The debt collection office serves the payment order. From then on, the objection deadline runs."
+
+msgid "Bei Rechtsvorschlag: Rechtsöffnung beim Gericht verlangen."
+msgstr "If there is an objection: apply to the court for removal of objection."
+
+msgid "Danach das Fortsetzungsbegehren stellen — die Anwendung erinnert mit einer Pendenz an den Termin."
+msgstr "Then file the continuation request — the application reminds you of the date with a task."
+
+msgid "Solange die Betreibung offen ist, mahnt der Mahnlauf diese Forderungen nicht mehr."
+msgstr "While the debt collection is open, the dunning run no longer sends reminders for these claims."
+
+msgid "Prüfen & erfassen"
+msgstr "Check & record"
+
+msgid "Forderungen wählen"
+msgstr "Choose claims"
+
+msgid "Welche offenen Mieten dieses Vertrags betrieben werden. Eine Betreibung für mehrere Monate kostet nur einmal Gebühren."
+msgstr "Which open rents of this lease are pursued. A single debt collection for several months only incurs fees once."
+
+msgid "Hauptforderung"
+msgstr "Principal claim"
+
+msgid "Keine weiteren offenen, fälligen Forderungen dieses Vertrags."
+msgstr "No further open, due claims for this lease."
+
+msgid "Mahngebühren und Verzugszinsen stehen nicht zur Wahl — sie gehören zur Hauptforderung. Forderungen, die bereits in einer offenen Betreibung stehen, fehlen hier."
+msgstr "Reminder fees and default interest cannot be selected — they belong to the principal claim. Claims already in an open debt collection are not shown here."
+
+msgid "Gläubiger, Zins & Grund"
+msgstr "Creditor, interest & grounds"
+
+msgid "Die Angaben für das Betreibungsbegehren."
+msgstr "The details for the debt collection request."
+
+msgid "Gläubiger"
+msgstr "Creditor"
+
+msgid "vertreten durch"
+msgstr "represented by"
+
+msgid "Kein Eigentümer erfasst — die Verwaltung steht als Gläubigerin auf dem Datenblatt."
+msgstr "No owner recorded — the management appears as creditor on the data sheet."
+
+msgid "Betreibungsamt am Wohnsitz des Mieters"
+msgstr "Debt collection office at the tenant's place of residence"
+
+msgid "Vorgeschlagen: Summe der offenen Beträge der gewählten Forderungen."
+msgstr "Suggested: total of the open amounts of the selected claims."
+
+msgid "(sobald bekannt)"
+msgstr "(once known)"
+
+msgid "Bei mehreren Forderungen mit verschiedener Fälligkeit selbst festlegen (z. B. mittlerer Verfall) oder die Fälligkeiten im Grund nennen."
+msgstr "With several claims with different due dates, set it yourself (e.g. average due date) or state the due dates in the grounds."
+
+msgid "Leer gelassen, setzt die Anwendung die gewählten Mieten mit Fälligkeit und Betrag ein."
+msgstr "If left empty, the application fills in the selected rents with due date and amount."
+
+msgid "Nach dem Erfassen steht das Datenblatt «Betreibungsbegehren» als PDF bereit. Es ist eine Vorlage für das amtliche Formular des Betreibungsamts, nicht das Formular selbst."
+msgstr "After recording, the data sheet “Debt collection request” is available as a PDF. It is a template for the debt collection office's official form, not the form itself."
+
+#, python-format
+msgid "Fortsetzung ab %(d)s"
+msgstr "Continuation from %(d)s"
+
+msgid "Rechtsöffnung ausstehend"
+msgstr "Removal of objection pending"
+
+msgid "PDF"
+msgstr "PDF"
+
+msgid "Die Nachbildung trägt das Wasserzeichen «Entwurf – nicht amtlich» und wird nicht in der Akte abgelegt. Sie dient als Vorlage zum Übertragen in das Formular der kantonalen Behörde."
+msgstr "The replica bears the watermark “Draft – not official” and is not filed. It serves as a template for transferring into the cantonal authority's form."
+
+msgid "Verstanden — Nachbildung als Entwurf öffnen"
+msgstr "Understood — open replica as draft"
+
+msgid "Neuer Nettomietzins (CHF)"
+msgstr "New net rent (CHF)"
+
+msgid "(bei Zustimmung)"
+msgstr "(if accepted)"
+
+msgid "Begründung im Antwortbrief"
+msgstr "Reasoning in the reply letter"
+
+msgid "z. B. gestiegene Kosten und Teuerung gleichen die Senkung des Referenzzinses aus"
+msgstr "e.g. increased costs and inflation offset the drop in the reference rate"
+
+msgid "Festhalten + Antwortbrief (PDF)"
+msgstr "Record + reply letter (PDF)"
+
+msgid "Wurde einem Begehren ganz oder teilweise zugestimmt, wird die Senkung mit dem amtlichen Formular mitgeteilt."
+msgstr "If a request was granted in full or in part, the reduction is notified using the official form."
+
+msgid "Mietzinsanpassung starten"
+msgstr "Start rent adjustment"
+
+msgid "Eingang beim Vermieter *"
+msgstr "Received by landlord *"
+
+msgid "Versand (Poststempel) *"
+msgstr "Dispatch (postmark) *"
+
+msgid "Zugang beim Mieter"
+msgstr "Receipt by tenant"
+
+#, python-format
+msgid "Leer: Versand + %(tage)s Tage (Postweg und Abholfrist)."
+msgstr "Empty: dispatch + %(tage)s days (postal delivery and collection period)."
+
+msgid "Ausdrückliche Zustimmung des Ehegatten / eingetragenen Partners liegt vor"
+msgstr "Express consent of the spouse / registered partner has been given"
+
+msgid "Kündigungstermine fehlen im Vertrag"
+msgstr "Termination dates missing from lease"
+
+msgid "Der Vertrag nennt keine lesbaren Termine und für den Kanton ist keine Regel hinterlegt. Der Termin unten nimmt jedes Monatsende an und ist damit nur der früheste denkbare. Bitte die vereinbarten oder ortsüblichen Termine im Vertrag ergänzen."
+msgstr "The lease states no readable dates and no rule is stored for the canton. The date below assumes any month-end and is therefore only the earliest conceivable one. Please add the agreed or locally customary dates to the lease."
+
+msgid "Termine aus der Kantonsregel des Regelwerks — der Vertrag nennt keine."
+msgstr "Dates from the rule set's cantonal rule — the lease states none."
+
+#, python-format
+msgid "Berechnet aus Zugang + %(monate)s Monaten, auf den nächsten erlaubten Termin — bei Versand heute."
+msgstr "Calculated from receipt + %(monate)s months, to the next permitted date — if sent today."
+
+msgid "Grund *"
+msgstr "Reason *"
+
+msgid "Vorgeschlagene Ersatzmieter"
+msgstr "Proposed replacement tenants"
+
+msgid "(bei Auszug vor dem Termin)"
+msgstr "(if moving out before the date)"
+
+msgid "Name, Kontakt — je Zeile ein Vorschlag"
+msgstr "Name, contact — one suggestion per line"
+
+msgid "Ein Ersatzmieter ist angenommen — der Mieter wird ab dem gewünschten Ende befreit"
+msgstr "A replacement tenant has been accepted — the tenant is released from the requested end date"
+
+msgid "Ohne angenommenen Ersatzmieter haftet der Mieter bis zum nächsten ordentlichen Termin."
+msgstr "Without an accepted replacement tenant, the tenant remains liable until the next ordinary date."
+
+msgid "Verschiebt das Vertragsende — Sollstellung und Leerstand folgen ihm."
+msgstr "Moves the end of the lease — rent invoicing and vacancy follow it."
+
+msgid "Mahngebühren brauchen eine vertragliche Grundlage: Verlangen dürfen Sie sie nur, wenn der Mietvertrag oder die AGB sie vorsehen. Der Verzugszins wird mit 360 Zinstagen je Jahr gerechnet; ob diese Zinsbasis für Ihre Verträge gilt, ist rechtlich zu bestätigen."
+msgstr "Reminder fees need a contractual basis: you may only charge them if the lease or the T&Cs provide for them. Default interest is calculated on 360 interest days per year; whether this interest basis applies to your leases needs legal confirmation."
+
+msgid "Kann der Mieter nicht auf einmal zahlen: «Ratenplan» vereinbart Raten für den Rückstand. Nur diese Forderungen ruhen dann im Mahnlauf."
+msgstr "If the tenant cannot pay in one go: “Instalment plan” agrees instalments for the arrears. Only those claims are then paused in the dunning run."
+
+msgid "Mahngebühren dürfen nur verlangt werden, wenn der Mietvertrag oder die AGB sie vorsehen. Der Verzugszins wird mit 360 Zinstagen je Jahr gerechnet — ob diese Zinsbasis gilt, ist rechtlich zu bestätigen."
+msgstr "Reminder fees may only be charged if the lease or the T&Cs provide for them. Default interest is calculated on 360 interest days per year — whether this interest basis applies needs legal confirmation."
+
+msgid "Entwürfe — noch nicht versandt"
+msgstr "Drafts — not yet sent"
+
+msgid "Netto bisher"
+msgstr "Previous net"
+
+msgid "Auswählen"
+msgstr "Select"
+
+msgid "Versandt am"
+msgstr "Sent on"
+
+msgid "Für Kantone ohne hinterlegtes Original wurde das Formular der kantonalen Behörde verwendet"
+msgstr "For cantons without a stored original, the cantonal authority's form was used"
+
+msgid "Ausgewählte als versandt erfassen"
+msgstr "Record selected as sent"
+
+msgid "Keine offenen Entwürfe — alles Erfasste ist versandt oder gebucht."
+msgstr "No open drafts — everything recorded has been sent or posted."
+
+msgid "«Anpassen» öffnet den Assistenten für die amtliche Mietzinsanpassung mit vorberechneten Werten (Referenzzins, LIK, Teuerung). Netto und Basis sind die <b>effektiven</b> Werte (inkl. gebuchter Anpassungen und Staffelstufen) — das Potenzial vergleicht diese effektive Basis mit dem aktuellen Stand. Index- und Staffelmieten sind von der Massenanpassung ausgenommen: Ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR)."
+msgstr "“Adjust” opens the wizard for the official rent adjustment with pre-calculated values (reference rate, CPI, inflation). Net and base are the <b>effective</b> values (incl. posted adjustments and graduated steps) — the potential compares this effective base with the current state. Indexed and graduated rents are excluded from the bulk adjustment: their rent follows the index or the agreed steps (Art. 269b/269c CO)."
+
+#, python-format
+msgid "Mietzinsanpassung — %(name)s"
+msgstr "Rent adjustment — %(name)s"
+
+msgid "Anpassung"
+msgstr "Adjustment"
+
+#, python-format
+msgid "Offener <b>Entwurf</b> (wirksam ab %(datum)s) — Änderungen schreiben ihn fort. Gebucht wird erst, wenn die Anpassung als versandt erfasst ist."
+msgstr "Open <b>draft</b> (effective from %(datum)s) — changes update it. Nothing is posted until the adjustment is recorded as sent."
+
+msgid "Prüfen & Formular"
+msgstr "Check & form"
+
+msgid "Grundlagen"
+msgstr "Basis"
+
+msgid "Referenzzins, Teuerung und Kostensteigerung — bisher und neu. Der Vorschlag rechnet sich bei jeder Änderung neu."
+msgstr "Reference rate, inflation and cost increases — previous and new. The suggestion is recalculated with every change."
+
+msgid "Punkte"
+msgstr "Points"
+
+msgid "Senkung"
+msgstr "Reduction"
+
+msgid "Begründung und neuer Mietzins sind vorbefüllt."
+msgstr "Reasoning and new rent are pre-filled."
+
+msgid "Der LIK hat sich seit der letzten Anpassung nicht verändert — keine Indexanpassung fällig."
+msgstr "The CPI has not changed since the last adjustment — no index adjustment due."
+
+msgid "Der Mietzins folgt den vereinbarten Stufen. Eine Anpassung nach Referenzzins und Teuerung ist für diesen Vertrag nicht vorgesehen."
+msgstr "The rent follows the agreed steps. An adjustment for the reference rate and inflation is not provided for in this lease."
+
+msgid "Die Grundlagen sprechen für eine Senkung. Sie wird mit demselben Formular mitgeteilt und darf auch kurzfristiger wirken als eine Erhöhung."
+msgstr "The basis points to a reduction. It is notified using the same form and may take effect at shorter notice than an increase."
+
+msgid "Die Vertragsbasis (Referenzzins/LIK) war nicht erfasst — bitte die Basiswerte ergänzen, auf denen der aktuelle Mietzins beruht. Sie werden auf dem Vertrag gespeichert."
+msgstr "The lease basis (reference rate/CPI) was not recorded — please add the base values on which the current rent is based. They are saved on the lease."
+
+#, python-format
+msgid "Für diesen Vertrag liegt bereits eine Anpassung vor: Gerechnet wird ab deren Stand — Referenzzins %(zins)s %%, LIK %(lik)s, Netto CHF %(netto)s —, nicht ab der Vertragsbasis unten."
+msgstr "An adjustment already exists for this lease: the calculation starts from its state — reference rate %(zins)s %%, CPI %(lik)s, net CHF %(netto)s — not from the lease basis below."
+
+msgid "Referenzzins Vertrag (Basis, %%)"
+msgstr "Lease reference rate (basis, %%)"
+
+msgid "Neuer Referenzzins (%%)"
+msgstr "New reference rate (%%)"
+
+msgid "Allg. Kostensteigerung (%%)"
+msgstr "General cost increase (%%)"
+
+#, python-format
+msgid "ausgeglichen bis %(datum)s"
+msgstr "offset until %(datum)s"
+
+msgid "seit Vertragsbeginn"
+msgstr "since start of lease"
+
+msgid "LIK Vertrag (Basis, Punkte)"
+msgstr "Lease CPI (basis, points)"
+
+msgid "Neuer LIK (Punkte)"
+msgstr "New CPI (points)"
+
+msgid "Stand-Monat (Basis-LIK)"
+msgstr "Reference month (base CPI)"
+
+#, python-format
+msgid "LIK-Basis %(basis)s = 100"
+msgstr "CPI base %(basis)s = 100"
+
+#, python-format
+msgid "neuer Stand %(stand)s"
+msgstr "new level %(stand)s"
+
+msgid "Referenzzins"
+msgstr "Reference rate"
+
+msgid "Teuerung"
+msgstr "Inflation"
+
+msgid "Nicht ausgeschöpfte Reserven vorbehalten — beziffert in CHF oder Prozent."
+msgstr "Reserve unused reserves — quantified in CHF or per cent."
+
+msgid "Anpassung mit Vorbehalt (nicht ausgeschöpfte Reserven)"
+msgstr "Adjustment with reservation (unused reserves)"
+
+msgid "Vorbehalt (CHF pro Monat)"
+msgstr "Reservation (CHF per month)"
+
+msgid "oder Vorbehalt (%%)"
+msgstr "or reservation (%%)"
+
+msgid "Begründung des Vorbehalts"
+msgstr "Reasoning for the reservation"
+
+msgid "z. B. Referenzzins 1.50 %% nicht weitergegeben"
+msgstr "e.g. reference rate 1.50 %% not passed on"
+
+msgid "Pflicht, wenn ein Vorbehalt gemacht wird: Betrag oder Prozent. Beim Versand wird er zur Mietzinsreserve des Vertrags."
+msgstr "Required if a reservation is made: amount or per cent. On dispatch it becomes the lease's rent reserve."
+
+msgid "Termin & Zustellung"
+msgstr "Date & delivery"
+
+msgid "Neuer Mietzins, Wirksamkeit und Versand. Massgebend für die Frist ist der Zugang beim Mieter."
+msgstr "New rent, effective date and dispatch. Receipt by the tenant is decisive for the deadline."
+
+msgid "Der früheste Termin unten nimmt jedes Monatsende an. Bitte die vereinbarten oder ortsüblichen Termine im Vertrag ergänzen."
+msgstr "The earliest date below assumes any month-end. Please add the agreed or locally customary dates to the lease."
+
+msgid "Netto neu (CHF)"
+msgstr "New net (CHF)"
+
+msgid "Vorschlag aus Referenzzins + Teuerung + Kosten"
+msgstr "Suggestion from reference rate + inflation + costs"
+
+#, python-format
+msgid "Frühestens %(datum)s bei Versand heute"
+msgstr "Earliest %(datum)s if sent today"
+
+msgid "Versand am (Poststempel)"
+msgstr "Sent on (postmark)"
+
+msgid "Nur für «Als versandt erfassen»."
+msgstr "Only for “Record as sent”."
+
+msgid "Begründung & Formular"
+msgstr "Reasoning & form"
+
+msgid "Begründung, Schlichtungsbehörde und welches Formular für diesen Kanton vorliegt."
+msgstr "Reasoning, conciliation authority and which form is available for this canton."
+
+msgid "Verstanden: Die Nachbildung ist nur ein Entwurf (Wasserzeichen «Entwurf – nicht amtlich»). Versandt wird das Formular der kantonalen Behörde."
+msgstr "Understood: the replica is only a draft (watermark “Draft – not official”). The cantonal authority's form is what gets sent."
+
+#, python-format
+msgid "Amtliches Originalformular des Kantons %(kanton)s hinterlegt."
+msgstr "Original official form of the canton of %(kanton)s stored."
+
+msgid "Zusätzliche Begründung (optional)"
+msgstr "Additional reasoning (optional)"
+
+msgid "z. B. wertvermehrende Investition (neue Küche)…"
+msgstr "e.g. value-enhancing investment (new kitchen)…"
+
+msgid "Schlichtungsbehörde (Adresse)"
+msgstr "Conciliation authority (address)"
+
+#, python-format
+msgid "z. B. Schlichtungsbehörde für Mietsachen, %(ort)s"
+msgstr "e.g. Conciliation authority for tenancy matters, %(ort)s"
+
+msgid "<b>Entwurf speichern</b> und <b>Formular als PDF</b> buchen nichts. Erst <b>Als versandt erfassen</b> bucht den neuen Mietzins ab dem Wirksamkeitsdatum, legt die Anfechtungsfrist (30 Tage ab Zugang, Art. 270b OR) als Pendenz an und schreibt die Basisdaten des Vertrags fort."
+msgstr "<b>Save draft</b> and <b>Form as PDF</b> post nothing. Only <b>Record as sent</b> posts the new rent from the effective date, creates the challenge deadline (30 days from receipt, Art. 270b CO) as a task and updates the lease's base data."
+
+msgid "Entwurf speichern"
+msgstr "Save draft"
+
+msgid "Formular als PDF"
+msgstr "Form as PDF"
+
+msgid "Als versandt erfassen"
+msgstr "Record as sent"
+
+msgid "Kanton der Liegenschaft fehlt"
+msgstr "Property canton missing"
+
+msgid "Kein Original"
+msgstr "No original"
+
+msgid "Je Vertrag wird ein Entwurf erfasst und das Formular als Sammel-PDF erstellt — gebucht wird noch nichts. Nach dem Versand die Entwürfe unter «Mietzins» als versandt erfassen: Erst dann gilt der neue Mietzins und die Anfechtungsfrist (Art. 270b OR) läuft als Pendenz. Verträge ohne Basisdaten, ohne Kanton oder ohne Potenzial werden übersprungen."
+msgstr "One draft is created per lease and the form is generated as a combined PDF — nothing is posted yet. After dispatch, record the drafts as sent under “Rent”: only then does the new rent apply and the challenge deadline (Art. 270b CO) run as a task. Leases without base data, without a canton or without potential are skipped."
+
+msgid "Verstanden: Nachbildungen sind nur Entwürfe (Wasserzeichen «Entwurf – nicht amtlich»)."
+msgstr "Understood: replicas are only drafts (watermark “Draft – not official”)."
+
+msgid "aktiv (von Hand gesetzt)"
+msgstr "active (set manually)"
+
+#, python-format
+msgid "Betreibung %(nr)s"
+msgstr "Debt collection %(nr)s"
+
+msgid "Mahnsperre (von Hand — kein automatischer Mahnlauf für diese Person)"
+msgstr "Dunning block (manual — no automatic dunning run for this person)"
+
+#, python-format
+msgid "Fortsetzungsbegehren ab %(a)s; das Ende ist offen, solange das Rechtsöffnungsverfahren läuft (Art. 88 Abs. 2 SchKG)."
+msgstr "Continuation request from %(a)s; the end remains open while the removal of objection proceedings are pending (Art. 88 para. 2 DEBA)."
+
+#, python-format
+msgid "Fortsetzung erst nach der Rechtsöffnung; spätestens %(b)s, verlängert um die Dauer des Rechtsöffnungsverfahrens (Art. 88 SchKG)."
+msgstr "Continuation only after removal of objection; at the latest %(b)s, extended by the duration of the removal proceedings (Art. 88 DEBA)."
+
+msgid "Fortsetzung erst nach dem Rechtsöffnungsentscheid; die Jahresfrist steht still, solange das Verfahren läuft (Art. 88 Abs. 2 SchKG)."
+msgstr "Continuation only after the decision on removal of objection; the one-year deadline is suspended while the proceedings are pending (Art. 88 para. 2 DEBA)."
+
+msgid "Wohnungsabnahme vor Ort"
+msgstr "On-site move-out inspection"
+
+msgid "Abnahme nachträglich erfassen (Formular)"
+msgstr "Record inspection afterwards (form)"
+
+#, python-format
+msgid "erstreckt bis %(d)s"
+msgstr "extended until %(d)s"
+
+#, python-format
+msgid "Zugang beim Mieter %(d)s"
+msgstr "Receipt by tenant %(d)s"
+
+msgid "Ersatzmieter (Art. 264 OR)"
+msgstr "Replacement tenant (Art. 264 CO)"
+
+msgid "Ausdrückliche Zustimmung des Ehegatten / Partners liegt vor (Art. 266m OR)"
+msgstr "Express consent of the spouse / partner has been given (Art. 266m CO)"
+
+#, python-format
+msgid "versandt %(d)s"
+msgstr "sent %(d)s"
+
+#, python-format
+msgid "Zugang %(d)s"
+msgstr "Receipt %(d)s"
+
+msgid "Entwurf öffnen"
+msgstr "Open draft"
+
+msgid "Wirksam"
+msgstr "In force"
+
+msgid "Angefochten"
+msgstr "Challenged"
+
+msgid "Ratenplan & Betreibungen"
+msgstr "Instalment plan & debt collection"
+
+msgid "Zahlungsvereinbarung"
+msgstr "Payment arrangement"
+
+#, python-format
+msgid "Laufender Ratenplan: CHF %(b)s in %(n)s Raten — die bis %(d)s fälligen Forderungen ruhen im Mahnlauf."
+msgstr "Active instalment plan: CHF %(b)s in %(n)s instalments — claims due up to %(d)s are paused in the dunning run."
+
+#, python-format
+msgid "Betreibung %(nr)s vom %(d)s"
+msgstr "Debt collection %(nr)s of %(d)s"
+
+msgid "Keine Betreibungen zu diesem Vertrag."
+msgstr "No debt collection for this lease."
+
+#, python-format
+msgid "Zahlungsvereinbarung — %(name)s"
+msgstr "Payment arrangement — %(name)s"
+
+msgid "So wirkt eine Zahlungsvereinbarung"
+msgstr "How a payment arrangement works"
+
+msgid "Ratenplan: Der fällige Rückstand wird auf gleich hohe Raten verteilt; die letzte Rate trägt den Rest. Für jede Rate entsteht eine Pendenz."
+msgstr "Instalment plan: the arrears due are split into equal instalments; the last instalment carries the remainder. A task is created for each instalment."
+
+msgid "Mahnsperre-Wirkung: Nur die gedeckten Forderungen (und ihre Mahngebühren und Zinsen) ruhen im Mahnlauf. Neue Mieten während des Plans werden normal gemahnt."
+msgstr "Dunning block effect: only the covered claims (and their reminder fees and interest) are paused in the dunning run. New rents during the plan receive reminders as usual."
+
+#, python-format
+msgid "Bruch: Bleiben die Zahlungen mehr als %(n)s Tage hinter den fälligen Raten zurück, gilt die Vereinbarung als gebrochen — die gedeckten Forderungen laufen wieder im Mahnlauf."
+msgstr "Breach: if payments fall more than %(n)s days behind the instalments due, the arrangement counts as breached — the covered claims return to the dunning run."
+
+msgid "Art. 257d OR: Eine bereits laufende Zahlungsfrist mit Kündigungsandrohung wird durch die Vereinbarung nicht gehemmt."
+msgstr "Art. 257d CO: a payment deadline with warning of termination that is already running is not suspended by the arrangement."
+
+msgid "Schreiben: Die «Zahlungsvereinbarung mit Schuldanerkennung» zweifach ausdrucken und von beiden Seiten unterzeichnen lassen."
+msgstr "Letter: print the “Payment arrangement with acknowledgement of debt” twice and have it signed by both parties."
+
+msgid "Es läuft eine Fristansetzung nach Art. 257d OR. Eine Zahlungsvereinbarung <b>hemmt diese Frist nicht</b> — es sei denn, der Vermieter verzichtet ausdrücklich darauf."
+msgstr "A notice setting a deadline under Art. 257d CO is running. A payment arrangement <b>does not suspend this deadline</b> — unless the landlord expressly waives it."
+
+#, python-format
+msgid "<b>CHF %(b)s</b> in %(n)s Raten — Status: <b>%(s)s</b>"
+msgstr "<b>CHF %(b)s</b> in %(n)s instalments — status: <b>%(s)s</b>"
+
+#, python-format
+msgid "Bezahlt CHF %(b)s · offen CHF %(o)s"
+msgstr "Paid CHF %(b)s · open CHF %(o)s"
+
+#, python-format
+msgid "Rate %(nr)s: %(d)s — CHF %(b)s"
+msgstr "Instalment %(nr)s: %(d)s — CHF %(b)s"
+
+#, python-format
+msgid "Im Mahnlauf ruhen die bis %(d)s fälligen Forderungen:"
+msgstr "Claims due up to %(d)s paused in the dunning run:"
+
+msgid "Keine offenen gedeckten Forderungen mehr."
+msgstr "No more open covered claims."
+
+msgid "Schreiben mit Schuldanerkennung (PDF)"
+msgstr "Letter with acknowledgement of debt (PDF)"
+
+msgid "Zahlungsvereinbarung abbrechen? Die gedeckten Forderungen laufen danach wieder im Mahnlauf."
+msgstr "Cancel the payment arrangement? The covered claims will then return to the dunning run."
+
+msgid "Für diesen Vertrag besteht noch keine Zahlungsvereinbarung."
+msgstr "There is no payment arrangement for this lease yet."
+
+msgid "Neue Vereinbarung"
+msgstr "New arrangement"
+
+#, python-format
+msgid "Fälliger Rückstand: <b>CHF %(b)s</b>. Er wird auf gleich hohe Raten verteilt; bis zur Erfüllung ruhen diese Forderungen im Mahnlauf."
+msgstr "Arrears due: <b>CHF %(b)s</b>. They are split into equal instalments; until fulfilment, these claims are paused in the dunning run."
+
+msgid "Anzahl Raten"
+msgstr "Number of instalments"
+
+msgid "Abstand (Monate)"
+msgstr "Interval (months)"
+
+msgid "Erste Rate am"
+msgstr "First instalment on"
+
+msgid "Vereinbarung erfassen"
+msgstr "Record arrangement"
+
+msgid "Es gibt keinen fälligen Rückstand, der vereinbart werden könnte."
+msgstr "There are no arrears due that could be arranged."
+
+#, python-format
+msgid "%(typ)s erfasst (%(count)s Mängel). Abschliessen mit Unterschriften im Protokoll."
+msgstr "%(typ)s recorded (%(count)s defects). Complete with signatures in the report."
+
+msgid "Jetzt unterschreiben und abschliessen."
+msgstr "Sign and complete now."
+
+#, python-format
+msgid "Versanddatum ungültig: zwischen %(von)s und heute."
+msgstr "Invalid dispatch date: between %(von)s and today."
+
+#, python-format
+msgid "Versand der Rüge am %(datum)s festgehalten."
+msgstr "Dispatch of the notice on %(datum)s recorded."
+
+msgid "Nur an einem abgeschlossenen Auszugsprotokoll möglich."
+msgstr "Only possible on a completed move-out report."
+
+#, python-format
+msgid "Entdeckungsdatum ungültig: zwischen %(von)s und heute."
+msgstr "Invalid discovery date: between %(von)s and today."
+
+msgid "Kostenschätzung ist keine Zahl."
+msgstr "The cost estimate is not a number."
+
+#, python-format
+msgid "Mangel erfasst. Rüge jetzt erstellen und bis %(frist)s versenden."
+msgstr "Defect recorded. Create the notice now and send it by %(frist)s."
+
+#, python-format
+msgid "Ticket #%(id)s angelegt: Handwerker jetzt zuweisen."
+msgstr "Ticket #%(id)s created: assign a tradesperson now."
+
+msgid "Ein abgeschlossenes Abnahmeprotokoll ist unterschrieben und kann nicht gelöscht werden."
+msgstr "A completed inspection report is signed and cannot be deleted."
+
+msgid "Mieteranteil nach Lebensdauer (Zeitwert)"
+msgstr "Tenant share by lifespan (current value)"
+
+msgid "Lebensdauer abgelaufen: kein Mieteranteil"
+msgstr "Lifespan expired: no tenant share"
+
+msgid "Noch kein Betrag: Kostenschätzung eingeben"
+msgstr "No amount yet: enter cost estimate"
+
+msgid "Kein Mieterschaden"
+msgstr "No tenant damage"
+
+#, python-format
+msgid "Mängelrüge bis %(frist)s versenden (Art. 267a OR)."
+msgstr "Send the notice of defects by %(frist)s (Art. 267a CO)."
+
+msgid "Der Mieter war abwesend: eingeschrieben senden."
+msgstr "The tenant was absent: send by registered mail."
+
+msgid "Eine versandte Mietzinsanpassung kann nur die Verwaltung (Verwalter/Inhaber) entfernen."
+msgstr "Only management (Verwalter/Inhaber) can remove a sent rent adjustment."
+
+msgid "Bitte den ausserordentlichen Grund wählen, der für diese Partei gilt."
+msgstr "Please choose the extraordinary ground that applies to this party."
+
+msgid "Für diesen Grund rechnet die Anwendung keine Frist — bitte das Vertragsende angeben."
+msgstr "The application calculates no notice period for this ground — please enter the end of the lease."
+
+#, python-format
+msgid "Für %(grund)s ist im Bestand keine Mindestfrist hinterlegt — der Termin wurde nicht geprüft. Vor dem Versand rechtlich prüfen."
+msgstr "No minimum notice period is stored for %(grund)s — the date has not been checked. Have it checked legally before sending."
+
+#, python-format
+msgid "Gewünschtes Ende %(wunsch)s liegt vor dem frühesten Termin für diesen Grund — die Kündigung gilt auf %(termin)s."
+msgstr "Requested end %(wunsch)s is before the earliest date for this ground — the termination takes effect on %(termin)s."
+
+#, python-format
+msgid "Vorzeitige Rückgabe mit angenommenem Ersatzmieter (Art. 264 OR): Der Mieter ist ab %(datum)s befreit."
+msgstr "Early return with an accepted replacement tenant (Art. 264 CO): the tenant is released from %(datum)s."
+
+#, python-format
+msgid "Vorzeitige Rückgabe ohne angenommenen Ersatzmieter: Der Mieter haftet bis zum nächsten ordentlichen Termin %(termin)s (Art. 264 OR)."
+msgstr "Early return without an accepted replacement tenant: the tenant remains liable until the next ordinary date, %(termin)s (Art. 264 CO)."
+
+msgid "Die Erstreckung muss nach dem Vertragsende liegen."
+msgstr "The extension must be after the end of the lease."
+
+#, python-format
+msgid "Die Erstreckung übersteigt die Höchstdauer von %(n)s Jahren (Art. 272b OR)."
+msgstr "The extension exceeds the maximum duration of %(n)s years (Art. 272b CO)."
+
+msgid "Familienwohnung: Ohne ausdrückliche Zustimmung des Ehegatten/Partners ist die Kündigung nichtig (Art. 266m OR). Sie ist erfasst, aber nicht bestätigt — der Vertrag bleibt unverändert, bis die Zustimmung vorliegt."
+msgstr "Family home: without the express consent of the spouse/partner, the termination is void (Art. 266m CO). It has been recorded but not confirmed — the lease remains unchanged until consent is given."
+
+msgid "Familienwohnung: Bestätigung erst mit der ausdrücklichen Zustimmung des Ehegatten/Partners (Art. 266m OR)."
+msgstr "Family home: confirmation only with the express consent of the spouse/partner (Art. 266m CO)."
+
+msgid "Zahlungsvereinbarung abgebrochen — die gedeckten Forderungen laufen wieder im Mahnlauf."
+msgstr "Payment arrangement cancelled — the covered claims return to the dunning run."
+
+#, python-format
+msgid "Zahlungsvereinbarung erfasst — die gedeckten Forderungen ruhen im Mahnlauf, %(n)s Raten-Pendenzen angelegt."
+msgstr "Payment arrangement recorded — the covered claims are paused in the dunning run, %(n)s instalment tasks created."
+
+msgid "Das Schreiben «Zahlungsvereinbarung mit Schuldanerkennung» steht bereit — zweifach ausdrucken und unterzeichnen lassen."
+msgstr "The letter “Payment arrangement with acknowledgement of debt” is ready — print it twice and have it signed."
+
+msgid "Mahnsperre am Mieter (von Hand gesetzt)"
+msgstr "Dunning block on tenant (set manually)"
+
+msgid "Indexmiete — einzeln"
+msgstr "Indexed rent — individually"
+
+msgid "Dieser Entwurf ist nicht mehr offen."
+msgstr "This draft is no longer open."
+
+#, python-format
+msgid "Wirksamkeitsdatum zu früh: Eine Mietzinserhöhung kann frühestens auf %(datum)s wirksam werden (Kündigungsfrist + 10-Tage-Ankündigung, Art. 269d OR)."
+msgstr "Effective date too early: a rent increase can take effect on %(datum)s at the earliest (notice period + 10-day advance notice, Art. 269d CO)."
+
+msgid "Ein Vorbehalt muss beziffert sein — bitte den vorbehaltenen Betrag in CHF oder in % angeben."
+msgstr "A reservation must be quantified — please enter the reserved amount in CHF or %."
+
+#, python-format
+msgid "Entwurf gespeichert — neu CHF %(neu_netto)s ab %(datum)s. Gebucht wird erst beim Versand."
+msgstr "Draft saved — new CHF %(neu_netto)s from %(datum)s. Nothing is posted until dispatch."
+
+#, python-format
+msgid "Mietzinsanpassung als versandt erfasst — neu CHF %(neu_netto)s ab %(datum)s."
+msgstr "Rent adjustment recorded as sent — new CHF %(neu_netto)s from %(datum)s."
+
+msgid "Bitte bestätigen, dass das amtliche Formular des Kantons verwendet wurde."
+msgstr "Please confirm that the canton's official form was used."
+
+msgid "Bitte das Zugangsdatum einer versandten Anpassung angeben."
+msgstr "Please enter the date of receipt for a sent adjustment."
+
+#, python-format
+msgid "Mietzinsanpassung aktualisiert: %(status)s."
+msgstr "Rent adjustment updated: %(status)s."
+
+msgid "Kanton der Liegenschaft fehlt."
+msgstr "Property canton missing."
+
+#, python-format
+msgid "%(n)s Anpassung(en) als versandt erfasst."
+msgstr "%(n)s adjustment(s) recorded as sent."
+
+msgid "Keine offenen Entwürfe ausgewählt."
+msgstr "No open drafts selected."
+
+#, python-format
+msgid "%(n)s Index- oder Staffelmiete(n) ausgenommen — deren Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR), nicht dem Referenzzins."
+msgstr "%(n)s indexed or graduated rent(s) excluded — their rent follows the index or the agreed steps (Art. 269b/269c CO), not the reference rate."
+
+msgid "Keine Anpassung möglich (Basisdaten oder Kanton fehlen, oder kein Potenzial)."
+msgstr "No adjustment possible (base data or canton missing, or no potential)."
+
+msgid "Der Zinssatz muss zwischen 0 und 100 % liegen."
+msgstr "The interest rate must be between 0 and 100 %."
+
+msgid "Rechtsvorschlag mehr als 10 Tage nach Zustellung des Zahlungsbefehls (Art. 74 SchKG). Gespeichert — bitte beim Betreibungsamt klären, ob er gilt: Er kann rechtzeitig sein (z. B. Fristende an einem Wochenende oder Feiertag, Betreibungsferien oder Rechtsstillstand, Art. 31, 56, 63 SchKG, oder nachträglicher Rechtsvorschlag, Art. 77 SchKG)."
+msgstr "Objection more than 10 days after the payment order was served (Art. 74 DEBA). Saved — please check with the debt collection office whether it is valid: it may be in time (e.g. deadline ending on a weekend or public holiday, debt collection holidays or suspension, Art. 31, 56, 63 DEBA, or late objection, Art. 77 DEBA)."
+
+msgid "Rechtsöffnungsgesuch ohne erfassten Rechtsvorschlag — eine Rechtsöffnung braucht es nur, wenn Rechtsvorschlag erhoben wurde."
+msgstr "Application for removal of objection without a recorded objection — removal is only needed if an objection was raised."
+
+msgid "Fortsetzungsbegehren erfasst, obwohl der Rechtsvorschlag noch nicht durch einen Rechtsöffnungsentscheid beseitigt ist (Art. 88 Abs. 1 SchKG)."
+msgstr "Continuation request recorded although the objection has not yet been removed by a decision on removal of objection (Art. 88 para. 1 DEBA)."
+
+#, python-format
+msgid "Fortsetzungsbegehren vor dem frühesten Termin (%(d)s, Art. 88 Abs. 1 SchKG)."
+msgstr "Continuation request before the earliest date (%(d)s, Art. 88 para. 1 DEBA)."
+
+#, python-format
+msgid "Fortsetzungsbegehren nach Ablauf der Jahresfrist (%(d)s, Art. 88 Abs. 2 SchKG)."
+msgstr "Continuation request after expiry of the one-year deadline (%(d)s, Art. 88 para. 2 DEBA)."
+
+msgid "Weitere Forderungen"
+msgstr "Further claims"
+
+msgid "Diese Forderung steht bereits in einer offenen Betreibung."
+msgstr "This claim is already in an open debt collection."
+
+msgid "Betrieben werden kann nur eine offene, fällige Hauptforderung (keine Mahngebühr, kein Zins, nichts noch nicht Fälliges)."
+msgstr "Only an open, due principal claim can be pursued (no reminder fee, no interest, nothing not yet due)."
+
+msgid "Betreibung erfasst. Das Datenblatt für das Betreibungsbegehren steht als PDF bereit."
+msgstr "Debt collection recorded. The data sheet for the debt collection request is available as a PDF."
+
+msgid "Der Verlustschein schreibt die offenen Forderungen ab (Konto 3805) — das darf nur die Verwaltung (Verwalter oder Inhaber)."
+msgstr "The certificate of loss writes off the open claims (account 3805) — only management (Verwalter or Inhaber) may do this."
+
+#, python-format
+msgid "Verlustschein: %(n)s Forderung(en) über CHF %(s)s als Debitorenverlust abgeschrieben (Konto 3805)."
+msgstr "Certificate of loss: %(n)s claim(s) totalling CHF %(s)s written off as bad debt (account 3805)."
+
+#, python-format
+msgid "%(n)s Forderung(en) liegen in einer gesperrten Buchungsperiode und wurden nicht abgeschrieben."
+msgstr "%(n)s claim(s) are in a locked accounting period and were not written off."
+
+#, python-format
+msgid "Betreibungskosten von CHF %(b)s dem Mieter belastet (Art. 68 SchKG)."
+msgstr "Debt collection costs of CHF %(b)s charged to the tenant (Art. 68 DEBA)."
+
+msgid "Rechtsöffnung beantragt"
+msgstr "Removal of objection requested"
+
+msgid "Rechtsöffnung erteilt"
+msgstr "Removal of objection granted"
+
+msgid "Pfändung"
+msgstr "Seizure"
+
+msgid "Provisorisch (Art. 82 SchKG)"
+msgstr "Provisional (Art. 82 DEBA)"
+
+msgid "Definitiv (Art. 80 SchKG)"
+msgstr "Definitive (Art. 80 DEBA)"
+
+msgid "Dient eine Anlage einzelnen Eigentümern nicht, kann die Verteilung abweichen. Die befreiten Einheiten tragen nichts; der Betrag wird auf die übrigen umgerechnet (neue Basis 100 %%, auf den Rappen genau). Die Begründung ist Pflicht und wird festgehalten."
+msgstr "If an installation does not serve individual owners, the distribution may differ. Exempted units bear nothing; the amount is recalculated for the others (new base 100 %%, exact to the cent). The reason is mandatory and is recorded."
+
+#, python-format
+msgid "%(n)s Index- oder Staffelmiete ausgenommen — ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR)."
+msgid_plural "%(n)s Index- oder Staffelmieten ausgenommen — ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR)."
+msgstr[0] "%(n)s indexed or graduated rent excluded — it follows the index or the agreed steps (Art. 269b/269c CO)."
+msgstr[1] "%(n)s indexed or graduated rents excluded — they follow the index or the agreed steps (Art. 269b/269c CO)."
+
+#, python-format
+msgid "%(n)s Entwurf + Formular (Sammel-PDF)"
+msgid_plural "%(n)s Entwürfe + Formulare (Sammel-PDF)"
+msgstr[0] "%(n)s draft + form (combined PDF)"
+msgstr[1] "%(n)s drafts + forms (combined PDF)"
