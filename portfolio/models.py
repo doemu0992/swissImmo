@@ -129,6 +129,10 @@ class Liegenschaft(models.Model):
     #: dürfen nicht über Nacht Abrechnungen verändern.
     verteilschluessel_aktiv = models.BooleanField("Verteilschlüssel der Liegenschaft anwenden", default=False)
     hkvo_grundkosten_prozent = models.IntegerField("Grundkosten-Anteil (%)", default=40)  # Rest = Verbrauchskosten
+    #: Letzte Spaltenzuordnung des Zählerstand-Imports (CSV, Entscheid E5): {'zaehler': 'Spaltenname', …}.
+    #: Der nächste Import derselben Liegenschaft schlägt sie wieder vor — Herstellerdateien
+    #: (Techem, ISTA …) kommen jedes Jahr im selben Aufbau.
+    zaehler_import_zuordnung = models.JSONField("Spaltenzuordnung Zählerstand-Import", default=dict, blank=True)
 
     # --- HAUSWARTUNG & NOTFALL ---
     hauswart_name = models.CharField("Hauswart", max_length=100, blank=True, default='')
@@ -480,7 +484,8 @@ class Verteilschluessel(OrganisationAusKette):
         ('anteil', _('Anteile (z.B. Wertquote)')),
         ('pauschal', _('Pauschal (CHF)')),
         ('zimmer', _('Zimmer')),
-        ('einheit', _('Pro Einheit'))
+        ('einheit', _('Pro Einheit')),
+        ('personen', _('Personen')),
     ]
 
     einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='verteilschluessel')
@@ -655,6 +660,15 @@ class ZaehlerStand(OrganisationAusKette):
     zaehler = models.ForeignKey(Zaehler, on_delete=models.CASCADE, related_name='staende')
     datum = models.DateField(default=timezone.now)
     wert = models.DecimalField("Zählerstand", max_digits=12, decimal_places=3)
+    #: Wofür der Stand steht. Leer bei Ständen aus der Zeit vor dem Wizard: Die Abrechnung
+    #: liest sie wie bisher nach Datum. «Zwischen» ist der Stand beim Mieterwechsel — mit
+    #: ihm teilt die Abrechnung den Verbrauch nach Zähler statt nach Heizgradtagen.
+    ART_ANFANG, ART_ZWISCHEN, ART_ENDE = 'anfang', 'zwischen', 'ende'
+    ART_CHOICES = [(ART_ANFANG, _('Anfangsstand')), (ART_ZWISCHEN, _('Zwischenstand (Mieterwechsel)')),
+                   (ART_ENDE, _('Endstand'))]
+    art = models.CharField("Art", max_length=10, choices=ART_CHOICES, blank=True, default='')
+    HERKUNFT_CHOICES = [('manuell', _('Manuell erfasst')), ('import', _('Import'))]
+    herkunft = models.CharField("Herkunft", max_length=10, choices=HERKUNFT_CHOICES, default='manuell')
 
     class Meta:
         verbose_name = "Zählerstand"

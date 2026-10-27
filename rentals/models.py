@@ -94,6 +94,12 @@ class Mietvertrag(OrganisationAusKette):
     nk_abrechnungsart = models.CharField("NK-Abrechnungsart", max_length=20, choices=NK_TYP_CHOICES, default='akonto')
     verteilschluessel = models.CharField("Verteilschlüssel", max_length=20, choices=VERTEIL_CHOICES, default='m2')
     ausgeschlossene_kosten = models.TextField("Ausgeschlossene Kosten", blank=True, help_text="Welche Kosten zahlt dieser Mieter NICHT?")
+    #: Dasselbe strukturiert (Entscheid E2, Art. 257a Abs. 2 OR): Schlüssel aus
+    #: `portfolio.Verteilschluessel.KOSTENART_CHOICES` — die Kostenart, die die Abrechnung kennt.
+    #: Eine Liste statt M2M, weil die Kostenart eine Auswahl ist und kein Modell. Die Abrechnung
+    #: verteilt eine ausgeschlossene Kostenart nicht auf diesen Mieter; sein Anteil geht auf eine
+    #: Eigentümerzeile. Der Freitext oben bleibt für das, was sich nicht zuordnen lässt.
+    ausgeschlossene_kostenarten = models.JSONField("Ausgeschlossene Kostenarten", default=list, blank=True)
     zahlungsrhythmus = models.CharField("Zahlungsrhythmus", max_length=20, choices=ZAHLUNGSRHYTHMUS_CHOICES, default='monatlich') # 🔥 NEU
     mwst_pflichtig = models.BooleanField("MWST-pflichtig", default=False)             # 🔥 NEU (v.a. Gewerbe)
     mwst_satz = models.DecimalField("MWST-Satz (%)", max_digits=4, decimal_places=1, default=Decimal('8.1'))  # 🔥 NEU (Option Art. 22 MWSTG)
@@ -851,6 +857,12 @@ class MietzinsAnpassung(OrganisationAusKette):
     wirksam_ab = models.DateField()
     neuer_netto_mietzins = models.DecimalField(max_digits=10, decimal_places=2)
     alter_netto_mietzins = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    #: Neue Akontozahlung für Nebenkosten, mitgeteilt mit derselben Anpassung (Entscheid E1).
+    #: Leer = die Nebenkosten bleiben. Der Vorschlag kommt aus der Nebenkostenabrechnung, die das
+    #: Akonto nicht mehr selbst überschreibt: Eine Erhöhung ist eine einseitige Vertragsänderung
+    #: und geht wie der Mietzins über Formular und Termin (Art. 269d OR).
+    alte_nebenkosten = models.DecimalField("Nebenkosten bisher", max_digits=8, decimal_places=2, null=True, blank=True)
+    neue_nebenkosten = models.DecimalField("Nebenkosten neu", max_digits=8, decimal_places=2, null=True, blank=True)
     alter_referenzzinssatz = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     alter_lik_index = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     neuer_referenzzinssatz = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
