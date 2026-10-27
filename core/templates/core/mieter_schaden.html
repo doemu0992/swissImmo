@@ -23,6 +23,15 @@
                 </select>
             </div>
             {% else %}<input type="hidden" name="vertrag_id" value="{{ objekte.0.vertrag.id }}">{% endif %}
+            {% comment %} Kategorie, Zutritt und Erreichbarkeit (Modul 3): dieselben Werte wie das QR-Formular —
+               Anliegen aus raumkatalog.ANLIEGEN, Zutritt aus SchadenMeldung.ZUTRITT_CHOICES,
+               Zeitfenster aus tickets/meldung.py. {% endcomment %}
+            <div>
+                <label for="m-kategorie" class="block text-xs font-semibold fw-mutet mb-1.5">{% trans "Worum geht es?" %}</label>
+                <select id="m-kategorie" name="kategorie" class="w-full fw-flaeche2 border fw-linie rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke">
+                    {% for wert, anzeige in kategorien %}<option value="{{ wert }}">{{ anzeige }}</option>{% endfor %}
+                </select>
+            </div>
             <div>
                 <label class="block text-xs font-semibold fw-mutet mb-1.5">{% trans "Was ist betroffen?" %}</label>
                 <input name="titel" required placeholder="{% trans 'z.B. Wasserhahn tropft' %}"
@@ -38,6 +47,20 @@
                 <textarea name="beschreibung" rows="5" required placeholder="{% trans 'Bitte beschreiben Sie das Problem möglichst genau.' %}"
                           class="w-full fw-flaeche2 border fw-linie rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke placeholder:fw-faint"></textarea>
             </div>
+            <fieldset class="space-y-2">
+                <legend class="block text-xs font-semibold fw-mutet mb-1.5">{% trans "Zutritt zur Wohnung" %}</legend>
+                {% for wert, anzeige in zutritt_wahl %}
+                <label class="fw-haekchen"><input type="radio" name="zutritt" value="{{ wert }}"{% if forloop.first %} checked{% endif %}> {{ anzeige }}</label>
+                {% endfor %}
+            </fieldset>
+            <fieldset>
+                <legend class="block text-xs font-semibold fw-mutet mb-1.5">{% trans "Erreichbarkeit (für Handwerker)" %} <span class="fw-faint font-normal">{% trans "(optional)" %}</span></legend>
+                <div class="grid grid-cols-2 gap-3">
+                    {% for fenster in zeitfenster %}
+                    <label class="fw-haekchen"><input type="checkbox" name="erreichbarkeit" value="{{ fenster }}"> {{ fenster }}</label>
+                    {% endfor %}
+                </div>
+            </fieldset>
             <div>
                 <label class="block text-xs font-semibold fw-mutet mb-1.5">{% trans "Fotos" %} <span class="fw-faint font-normal">{% trans "(optional, mehrere möglich)" %}</span></label>
                 <input type="file" name="fotos" multiple accept="image/*"

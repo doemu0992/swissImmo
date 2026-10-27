@@ -55,7 +55,7 @@ OBERGRENZE = {
     'core/dossier/vertrag.html': 8,
     'core/mieter_dokumente.html': 1,
     'core/mieter_konto.html': 1,
-    'core/mieter_portal.html': 7,
+    'core/mieter_portal.html': 4,
     'core/mieter_ticket_detail.html': 3,
     'core/passwort_reset.html': 1,
     'core/passwort_reset_confirm.html': 2,

@@ -101,7 +101,13 @@ class SchadenMeldung(OrganisationAusKette):
         # bezahlter Rechnung, Stresstest 30.09.2026, Punkt 15) und hielt die
         # Liste «liegt» der Akten dauerhaft rot.
         if self.status == 'erledigt' and self.pk:
-            self.handwerker_auftraege.exclude(status='erledigt').update(status='erledigt')
+            # Der Handwerker-Link wird mit dem Abschluss lesend und läuft
+            # 30 Tage später ab (E6) — vor dem `update`, das an `save()`
+            # vorbeigeht.
+            from .handwerker_zugang import abschluss_vermerken
+            offen = self.handwerker_auftraege.exclude(status='erledigt')
+            abschluss_vermerken(offen)
+            offen.update(status='erledigt')
 
     class Meta:
         verbose_name = "Ticket / Schaden"
@@ -167,9 +173,25 @@ class HandwerkerAuftrag(OrganisationAusKette):
     freigabe_datum = models.DateTimeField("Freigabe am", null=True, blank=True)
     freigabe_kommentar = models.TextField("Kommentar Eigentümer", blank=True, default='')
 
+    # Handwerkerportal (Modul 3, E6): ein geheimer Link je Auftrag, kein Konto.
+    # Gespeichert ist nur der SHA-256 des Tokens — der Klartext steht allein im
+    # Link der Auftrags-Mail. `token_gueltig_bis` bleibt leer, solange der
+    # Auftrag offen ist, und wird beim Abschluss auf «+30 Tage» gesetzt
+    # (tickets/handwerker_zugang.py). Global eindeutig, nicht je Organisation:
+    # Der Hash IST der Schlüssel, über den eine Anfrage ohne Mandantenkontext
+    # ihren Auftrag findet.
+    token_hash = models.CharField("Link-Token (SHA-256)", max_length=64, null=True, blank=True,
+                                  editable=False, db_index=True)
+    token_gueltig_bis = models.DateTimeField("Link gültig bis", null=True, blank=True, editable=False)
+    token_widerrufen_am = models.DateTimeField("Link widerrufen am", null=True, blank=True, editable=False)
+
     class Meta:
         verbose_name = "Handwerker-Auftrag"
         db_table = 'core_handwerkerauftrag'
+        constraints = [
+            models.UniqueConstraint(fields=['token_hash'], condition=models.Q(token_hash__isnull=False),
+                                    name='uniq_handwerkerauftrag_token_hash'),
+        ]
 
     @property
     def freigabe_ausstehend(self):
@@ -190,7 +212,10 @@ class TicketNachricht(OrganisationAusKette):
     ]
     typ = models.CharField(max_length=20, choices=TYP_CHOICES, default='chat')
     nachricht = models.TextField()
-    datei = models.FileField(upload_to='ticket_anhang/', blank=True, null=True)
+    # Neue Anhänge unter `organisation/<id>/ticket_anhang/…` (UPLOAD_ORDNER).
+    # Alte Dateien bleiben unter `ticket_anhang/` liegen; `media_protected`
+    # schützt beide Formen.
+    datei = models.FileField(upload_to=get_smart_upload_path, blank=True, null=True)
     cc_email = models.CharField("CC (Optional)", max_length=200, blank=True)
     # 🔥 WIEDER ZURÜCK: Verweist auf den CRM Handwerker
     empfaenger_handwerker = models.ForeignKey('crm.Handwerker', on_delete=models.SET_NULL, null=True, blank=True)

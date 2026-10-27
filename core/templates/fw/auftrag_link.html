@@ -1,0 +1,47 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Handwerker-Link" %} — {% blocktrans with nr=t.id %}Ticket #{{ nr }}{% endblocktrans %}{% endblock %}
+{% block content %}
+{% comment %}
+Modul 3 (E6): Der neu erzeugte Link erscheint genau hier und nur hier. In der
+Datenbank steht sein Hash; eine Meldung in der Sitzung würde den Klartext
+speichern, deshalb rendert die Aktion diese Seite direkt.
+{% endcomment %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="{{ zurueck }}">{% blocktrans with nr=t.id %}Ticket #{{ nr }}{% endblocktrans %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Handwerker-Link" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Neuer Handwerker-Link" %}</h1>
+        <p>{{ a.handwerker.firma }} · {{ t.titel }}</p>
+    </div>
+</div>
+
+<div class="fw-card">
+    <div class="fw-rumpf space-y-4">
+        <div class="fw-feldblock">
+            <label class="fw-label" for="hw-link">{% trans "Link für den Handwerker" %}</label>
+            <input id="hw-link" class="fw-feld" type="text" readonly value="{{ link }}" onfocus="this.select()">
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <button type="button" class="fw-btn fw-primary" data-kopiert="{% trans 'Kopiert' %}"
+                    onclick="var b=this;navigator.clipboard.writeText(document.getElementById('hw-link').value).then(function(){b.textContent=b.dataset.kopiert;});">{% zeichen 'kopieren' %}{% trans "Link kopieren" %}</button>
+            <a href="{{ zurueck }}" class="fw-btn">{% zeichen 'zurueck' %}{% trans "Zurück zum Schaden" %}</a>
+        </div>
+        <div class="fw-hinweis">
+            <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+            <div class="fw-ht">
+                {% if status == 'lesend' %}
+                {% trans "Der Auftrag ist abgeschlossen: Der Link zeigt ihn nur noch an, während 30 Tagen." %}
+                {% else %}
+                {% trans "Der Link öffnet nur diesen Auftrag und gilt bis 30 Tage nach dessen Abschluss. Der bisherige Link ist ab sofort ungültig." %}
+                {% endif %}
+                {% trans "Er wird nur jetzt angezeigt — wer ihn verliert, erzeugt einen neuen." %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

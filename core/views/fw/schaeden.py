@@ -336,6 +336,11 @@ def fw_schaden_detail(request, pk):
               else f"{t.melder_vorname or ''} {t.melder_nachname or ''}".strip() or '—')
 
     auftraege = list(auftraege)
+    # Handwerker-Link je Auftrag (Modul 3): kein / aktiv / lesend / abgelaufen / widerrufen.
+    from tickets.handwerker_zugang import link_status
+    for a in auftraege:
+        a.ticket = t                     # kein Nachladen je Auftrag in link_status
+        a.link_status = link_status(a)
     kosten_geschaetzt = sum((a.kosten_geschaetzt or Decimal('0')) for a in auftraege)
     kosten_effektiv = sum((a.kosten_effektiv or Decimal('0')) for a in auftraege)
 
@@ -824,6 +829,39 @@ def fw_auftrag_storno(request, pk):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_auftrag_link(request, pk):
+    """Handwerker-Link eines Auftrags widerrufen oder neu erzeugen (Modul 3, E6).
+
+    Der neue Link wird EINMAL angezeigt — direkt in dieser Antwort, nicht über
+    eine Meldung in der Sitzung: In der Datenbank steht nur sein Hash, und
+    dabei bleibt es. Wer ihn verliert, erzeugt ihn neu.
+    """
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from tickets.models import HandwerkerAuftrag
+    from tickets.handwerker_zugang import link_erzeugen, link_status, link_url, link_widerrufen
+    from core.auth import log_aktion
+    a = get_object_or_404(HandwerkerAuftrag.objects.select_related('ticket', 'handwerker'), id=pk)
+    ziel = f'/neu/schaeden/{a.ticket_id}/?tab=handwerker'
+    if request.method != 'POST':
+        return redirect(ziel)
+    if request.POST.get('aktion') == 'widerrufen':
+        if link_widerrufen(a):
+            log_aktion(request, "Handwerker-Link widerrufen", f"Ticket #{a.ticket_id}", a.handwerker.firma,
+                       ziel=a.ticket, kategorie='sicherheit')
+            messages.success(request, '✅ ' + gettext('Link widerrufen — er öffnet nichts mehr.'))
+        return redirect(ziel)
+    if request.POST.get('aktion') != 'neu':
+        return redirect(ziel)
+    url = link_url(link_erzeugen(a))
+    log_aktion(request, "Handwerker-Link neu erzeugt", f"Ticket #{a.ticket_id}", a.handwerker.firma,
+               ziel=a.ticket, kategorie='sicherheit')
+    return render(request, 'fw/auftrag_link.html', {
+        **_global_filter(request), 'nav': 'schadensfaelle', 'a': a, 't': a.ticket,
+        'link': url, 'status': link_status(a), 'zurueck': ziel})
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_auftrag_kosten(request, pk):
     """Reparaturkosten auf einem Handwerker-Auftrag erfassen; optional eine
     Kreditorenrechnung erzeugen und verknüpfen."""
@@ -848,15 +886,17 @@ def fw_auftrag_kosten(request, pk):
     a.kosten_geschaetzt = _dec('kosten_geschaetzt')
     a.kosten_effektiv = _dec('kosten_effektiv')
 
-    # Reparaturfreigabe anfordern: manuell oder ab Schwellenwert (CHF 1'000)
-    REPARATUR_FREIGABE_SCHWELLE = Decimal('1000')
+    # Reparaturfreigabe anfordern: manuell oder ab Schwellenwert (CHF 1'000).
+    # Schwelle und Abweichung stehen seit Modul 3 in tickets/workflow.py — die
+    # Offerte aus dem Handwerkerportal nimmt dieselben Werte.
+    from tickets.workflow import (ABWEICHUNG_NACHFREIGABE, REPARATUR_FREIGABE_SCHWELLE,
+                                  eigentuemer_um_freigabe_bitten)
     freigabe_anfordern = request.POST.get('freigabe_anfordern') == 'on'
     ueber_schwelle = (a.kosten_geschaetzt or Decimal('0')) >= REPARATUR_FREIGABE_SCHWELLE
     # KOSTENABWEICHUNG (Stresstest 30.09.2026: Schätzung 900 → effektiv 1240, +38 %,
     # und nichts geschah): Die Freigabe gilt für die geschätzte Summe. Liegen die
     # effektiven Kosten über der Schwelle, oder überschreiten sie die freigegebene
     # Schätzung um mehr als 20 %, braucht es eine (Nach-)Freigabe.
-    ABWEICHUNG_NACHFREIGABE = Decimal('1.20')
     eff = a.kosten_effektiv or Decimal('0')
     schaetz = a.kosten_geschaetzt or Decimal('0')
     if eff >= REPARATUR_FREIGABE_SCHWELLE:
@@ -873,21 +913,8 @@ def fw_auftrag_kosten(request, pk):
         a.freigabe_datum = None
         # Eigentümer aktiv informieren — sonst bemerkt er die Anfrage erst beim
         # nächsten Portal-Login und die Reparatur liegt tagelang auf Eis.
-        eigentuemer = getattr(a.ticket.liegenschaft, 'eigentuemer', None) if a.ticket.liegenschaft_id else None
-        mail_info = ""
-        if eigentuemer and eigentuemer.email:
-            from core.utils.email_service import send_ticket_email
-            lg = a.ticket.liegenschaft
-            kosten_txt = f"CHF {a.kosten_geschaetzt}" if a.kosten_geschaetzt else "noch offen"
-            text = (f"Guten Tag {eigentuemer.kontaktperson or eigentuemer.firma_oder_name}\n\n"
-                    f"Für Ihre Liegenschaft {lg.strasse}, {lg.plz} {lg.ort} liegt eine Reparatur "
-                    f"zur Freigabe bereit:\n\n"
-                    f"Schaden: {a.ticket.titel}\n"
-                    f"Geschätzte Kosten: {kosten_txt}\n\n"
-                    f"Bitte melden Sie sich im Eigentümer-Portal an, um die Reparatur "
-                    f"freizugeben oder abzulehnen.\n\nFreundliche Grüsse\nIhre Verwaltung")
-            if send_ticket_email(eigentuemer.email, f"Reparaturfreigabe angefragt — {lg.strasse}", text):
-                mail_info = f" E-Mail an {eigentuemer.email} gesendet."
+        adresse = eigentuemer_um_freigabe_bitten(a)
+        mail_info = f" E-Mail an {adresse} gesendet." if adresse else ""
         messages.info(request, 'ℹ️ ' + gettext('Reparatur zur Freigabe an den Eigentümer weitergeleitet (Portal).%(mail_info)s') % {'mail_info': mail_info})
 
     # Optional Kreditorenrechnung erstellen

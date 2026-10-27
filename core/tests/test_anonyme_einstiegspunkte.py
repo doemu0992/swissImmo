@@ -342,3 +342,35 @@ class GeteiltesKontoTests(OhneKontext):
             benutzer=self.b.benutzer, organisation=self.b.organisation).delete()
         self.client.post(reverse('fw_benutzer_loeschen', args=[self.b.benutzer.pk]))
         self.assertFalse(Benutzer.objects.filter(pk=self.b.benutzer.pk).exists())
+
+
+class HandwerkerLinkOhneKontextTests(OhneKontext):
+    """Modul 3: `/auftrag/<token>/` — öffentlich, ohne Konto, Token statt Rolle.
+
+    Bewusst ohne `rolle_erforderlich` (Entscheid E6). Gefunden wird über den
+    Hash mit `alle_organisationen`, danach läuft alles im Kontext der
+    Verwaltung des Auftrags. Ausführlich in `test_portale_modul3.py`; hier
+    steht der Einstieg im Bestand der anonymen Einstiegspunkte.
+    """
+
+    def test_link_oeffnet_den_auftrag_der_richtigen_verwaltung(self):
+        from django.core.cache import cache
+        from core.models import AktivitaetsLog
+        from core.tenancy import organisation_kontext
+        from tickets.handwerker_zugang import link_erzeugen
+
+        cache.clear()
+        with organisation_kontext(self.b.organisation):
+            token = link_erzeugen(self.b.auftrag)
+        antwort = self.client.get(f'/auftrag/{token}/')
+        self.assertEqual(antwort.status_code, 200, antwort.content[:200])
+        self.assertContains(antwort, self.b.schaden.titel)
+        self.assertNotContains(antwort, self.a.schaden.titel)
+        self.assertTrue(AktivitaetsLog.alle_organisationen.filter(
+            organisation=self.b.organisation, aktion='Handwerker-Link geöffnet').exists())
+
+    def test_unbekannter_token_ergibt_404(self):
+        import secrets
+        from django.core.cache import cache
+        cache.clear()
+        self.assertEqual(self.client.get(f'/auftrag/{secrets.token_urlsafe(32)}/').status_code, 404)

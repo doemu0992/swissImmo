@@ -88,6 +88,9 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
                                 mieter_tickets_view, mieter_ticket_detail, mieter_ticket_nachricht,
                                 mieter_rechnungen_view, mieter_dokumente_view, mieter_schaden_formular,
                                 mieter_konto_view, mieter_daten_view, mieter_passwort_view)
+# Modul 3 (27.10.2026): Handwerkerportal (Magic-Link je Auftrag) und Link-Verwaltung im Schaden
+from core.views.handwerker_portal import handwerker_auftrag, handwerker_auftrag_pdf, handwerker_auftrag_foto
+from core.views.fw.schaeden import fw_auftrag_link
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
 from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_zustaendig, fw_fallschritt_erledigen,
@@ -608,6 +611,12 @@ urlpatterns = [
     path('mieter/passwort/', mieter_passwort_view, name='mieter_passwort'),
     path('mieter/kuendigung/', mieter_kuendigung, name='mieter_kuendigung'),
     path('mieter/kuendigung/<int:pk>/brief/', mieter_kuendigung_pdf, name='mieter_kuendigung_pdf'),
+
+    # --- MODUL 3: HANDWERKERPORTAL (öffentlich, Token statt Konto; E6) ---
+    path('auftrag/<str:token>/', handwerker_auftrag, name='handwerker_auftrag'),
+    path('auftrag/<str:token>/pdf/', handwerker_auftrag_pdf, name='handwerker_auftrag_pdf'),
+    path('auftrag/<str:token>/foto/<int:nr>/', handwerker_auftrag_foto, name='handwerker_auftrag_foto'),
+    path('neu/auftrag/<int:pk>/link/', fw_auftrag_link, name='fw_auftrag_link'),
 
     # --- DOSSIER-SEITEN (Team-intern: alles zu einem Mieter/Objekt/Vertrag) ---
     path('dossier/mieter/<int:mieter_id>/', mieter_dossier, name='dossier_mieter'),

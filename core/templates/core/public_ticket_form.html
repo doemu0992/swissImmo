@@ -288,22 +288,13 @@
                         <div>
                             <label class="block text-xs font-bold fw-mutet uppercase mb-2">{% trans "Erreichbarkeit (für Handwerker)" %}</label>
                             <div class="grid grid-cols-2 gap-3">
+                                {% comment %} Zeitfenster aus tickets/meldung.py (ZEITFENSTER) — dieselben wie im Mieterportal. {% endcomment %}
+                                {% for fenster in zeitfenster %}
                                 <label class="cursor-pointer">
-                                    <input type="checkbox" name="erreichbarkeit" value="08:00 - 10:00" class="hidden time-checkbox">
-                                    <div class="border fw-linie rounded-lg py-2 text-center text-sm fw-mutet hover:fw-flaeche2 transition select-none">08:00 - 10:00</div>
+                                    <input type="checkbox" name="erreichbarkeit" value="{{ fenster }}" class="hidden time-checkbox">
+                                    <div class="border fw-linie rounded-lg py-2 text-center text-sm fw-mutet hover:fw-flaeche2 transition select-none">{{ fenster }}</div>
                                 </label>
-                                <label class="cursor-pointer">
-                                    <input type="checkbox" name="erreichbarkeit" value="10:00 - 12:00" class="hidden time-checkbox">
-                                    <div class="border fw-linie rounded-lg py-2 text-center text-sm fw-mutet hover:fw-flaeche2 transition select-none">10:00 - 12:00</div>
-                                </label>
-                                <label class="cursor-pointer">
-                                    <input type="checkbox" name="erreichbarkeit" value="14:00 - 16:00" class="hidden time-checkbox">
-                                    <div class="border fw-linie rounded-lg py-2 text-center text-sm fw-mutet hover:fw-flaeche2 transition select-none">14:00 - 16:00</div>
-                                </label>
-                                <label class="cursor-pointer">
-                                    <input type="checkbox" name="erreichbarkeit" value="16:00 - 18:00" class="hidden time-checkbox">
-                                    <div class="border fw-linie rounded-lg py-2 text-center text-sm fw-mutet hover:fw-flaeche2 transition select-none">16:00 - 18:00</div>
-                                </label>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>

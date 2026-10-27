@@ -22,6 +22,23 @@ from django.utils.translation import pgettext_lazy
 
 register = template.Library()
 
+#: Die Anliegen (Kategorie einer Meldung). Eigener Name, weil auch das
+#: Mieterportal sie als Auswahl anbietet (Modul 3) — dieselben Werte, nicht
+#: ein zweites Mal abgetippt.
+ANLIEGEN = (
+    pgettext_lazy('Raumkatalog', 'Schadensmeldung'), pgettext_lazy('Raumkatalog', 'Allgemeine Anfrage'),
+    pgettext_lazy('Raumkatalog', 'Namensschilder'), pgettext_lazy('Raumkatalog', 'Schlüsselbestellung'),
+    pgettext_lazy('Raumkatalog', 'Frage zu Dokumenten'),
+)
+
+
+def anliegen_auswahl():
+    """[(gespeicherter deutscher Wert, Anzeige in der aktuellen Sprache), …]."""
+    with translation.override(None):
+        werte = [str(a) for a in ANLIEGEN]
+    return list(zip(werte, [str(a) for a in ANLIEGEN]))
+
+
 #: Jeder Begriff, der in einem der beiden Formulare als Raum, Objekt oder
 #: Anliegen angezeigt wird. Ein Test prüft, dass die Formulare keinen Begriff
 #: führen, der hier fehlt.
@@ -62,11 +79,7 @@ BEGRIFFE = (
     pgettext_lazy('Raumkatalog', 'Schloss'), pgettext_lazy('Raumkatalog', 'Beschriftung'),
     pgettext_lazy('Raumkatalog', 'Klappe'), pgettext_lazy('Raumkatalog', 'Anderes'),
     pgettext_lazy('Raumkatalog', 'Sonstiges'),
-    # Anliegen
-    pgettext_lazy('Raumkatalog', 'Schadensmeldung'), pgettext_lazy('Raumkatalog', 'Allgemeine Anfrage'),
-    pgettext_lazy('Raumkatalog', 'Namensschilder'), pgettext_lazy('Raumkatalog', 'Schlüsselbestellung'),
-    pgettext_lazy('Raumkatalog', 'Frage zu Dokumenten'),
-)
+) + ANLIEGEN
 
 
 @register.simple_tag

@@ -171,6 +171,40 @@ class Command(BaseCommand):
                                   betrag=Decimal("640.00"), gegenpartei="Muster Hans, Zürich",
                                   text="Gutschrift ohne Referenz", status="offen"))
 
+        # --- Modul 3 (27.10.2026): Mieterportal und Handwerkerportal ----------
+        # Ein Portal-Login für die E2E-Mieterin (e2e-mieter / e2e-pass), eine
+        # telefonisch erfasste Meldung zu ihrer Wohnung mit Handwerkerauftrag
+        # und Termin, und eine offene Schlüsselausgabe. Den Handwerker-Link
+        # erzeugt die Spec selbst im Reiter «Handwerker» — ein fester Token im
+        # Seed wäre ein Geheimnis im Quelltext. Der Handwerker hat keine
+        # E-Mail-Adresse: Der Seed verschickt nichts.
+        mieter_user, _ = User.objects.get_or_create(username="e2e-mieter")
+        mieter_user.set_password("e2e-pass")
+        mieter_user.is_active = True
+        mieter_user.save()
+        with organisation_kontext(org):
+            from crm.models import Handwerker
+            from portfolio.models import Schluessel, SchluesselAusgabe
+            from tickets.models import HandwerkerAuftrag, SchadenMeldung
+            from django.utils import timezone as _tz
+            if m.benutzer_id is None:
+                m.benutzer = mieter_user
+                m.save(update_fields=["benutzer"])
+            hw, _ = Handwerker.objects.get_or_create(
+                firma="E2E Sanitär Huber", defaults=dict(telefon="044 000 00 00"))
+            ticket, _ = SchadenMeldung.objects.get_or_create(
+                titel="E2E Wasserhahn tropft",
+                defaults=dict(liegenschaft=lg, betroffene_einheit=e, status="in_bearbeitung",
+                              beschreibung="Der Wasserhahn in der Küche tropft.",
+                              tel_melder="079 000 11 22", zutritt="passpartout"))
+            termin = (_tz.localtime() + timedelta(days=2)).replace(hour=9, minute=0, second=0, microsecond=0)
+            HandwerkerAuftrag.objects.get_or_create(
+                ticket=ticket, handwerker=hw,
+                defaults=dict(status="offen", termin_am=termin, termin_status="vereinbart"))
+            schluessel, _ = Schluessel.objects.get_or_create(
+                liegenschaft=lg, schluessel_nummer="E2E-S-1", defaults=dict(einheit=e))
+            SchluesselAusgabe.objects.get_or_create(schluessel=schluessel, mieter=m)
+
         # Läufe der laufenden Periode (Karten auf «Läufe», Zähler in der Leiste).
         # Der Befehl setzt seinen Mandantenkontext selbst.
         from django.core.management import call_command

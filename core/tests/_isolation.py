@@ -54,6 +54,7 @@ PARAMETER_MODELL = {
     'nummer':          None,          # Kontonummer, keine Objekt-ID — Bauform C
     'pfad':            None,          # Dateipfad, keine Objekt-ID — Bauform C
     'zweck':           None,          # 'antworten'/'rechnungen' — keine Objekt-ID
+    'token':           None,          # Handwerker-Link (Modul 3) — Geheimnis, keine Objekt-ID
 }
 
 # Die Parameter ohne Objektbezug. Sie sind KEINE Ausnahme im Sinne von
@@ -67,7 +68,13 @@ PARAMETER_MODELL = {
 # je Verwaltung höchstens ein Postfach dieses Zwecks. Geprüft in
 # `core/tests/test_postfach.py` (PostfachMandantTests) und im Registrylauf
 # über das Fixture-Postfach.
-KEINE_OBJEKT_ID = {'nummer', 'pfad', 'zweck'}
+#
+# `token` (Modul 3, 27.10.2026) ist der Handwerker-Link `/auftrag/<token>/`:
+# ein Geheimnis, das über seinen Hash genau einen Auftrag findet — es gibt
+# keine fremde ID, die der Sweep einsetzen könnte. Geprüft von Hand in
+# `core/tests/test_portale_modul3.py` (fremder, falscher, abgelaufener und
+# widerrufener Token; kein zweiter Auftrag über denselben Token).
+KEINE_OBJEKT_ID = {'nummer', 'pfad', 'zweck', 'token'}
 
 
 class MandantenFixture:
@@ -542,6 +549,8 @@ class MandantenFixture:
         ('auftrag_termin',  'auftrag'),
         ('auftrag_rechnung', 'auftrag'),
         ('auftrag_storno',  'auftrag'),
+        # Modul 3: Handwerker-Link widerrufen/neu erzeugen lädt einen AUFTRAG.
+        ('auftrag_link',    'auftrag'),
         ('termin',          'termin'),
         ('abwesenheit',     'abwesenheit'),
         # Phase 4b.10 — der Fristenwaechter. Wieder von der Selbstpruefung
@@ -631,6 +640,9 @@ class MandantenFixture:
         ('objekt',          'einheit'),
         ('einheit',         'einheit'),
         ('vertrag',         'vertrag'),
+        # Modul 3: Ticket-Detail und -Nachricht im Mieterportal nehmen einen
+        # SCHADEN, keinen Mieter. Vorher griff ('mieter', 'mieter').
+        ('mieter_ticket',   'schaden'),
         ('mieter',          'mieter'),
         ('person',          'mieter'),
         ('eigentuemer',     'eigentuemer'),

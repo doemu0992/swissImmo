@@ -169,7 +169,9 @@ def _qr_formular(request, liegenschaft):
         process_public_ticket_form(liegenschaft, request.POST, request.FILES)
         return render(request, 'core/public_ticket_form.html', {'success': True, 'liegenschaft': liegenschaft})
 
-    return render(request, 'core/public_ticket_form.html', {'liegenschaft': liegenschaft, 'einheiten': einheiten})
+    from tickets.meldung import ZEITFENSTER
+    return render(request, 'core/public_ticket_form.html', {'liegenschaft': liegenschaft, 'einheiten': einheiten,
+                                                            'zeitfenster': ZEITFENSTER})
 
 # ==========================================
 # 4. AUSHANG GENERIEREN

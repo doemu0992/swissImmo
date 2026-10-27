@@ -1,0 +1,145 @@
+{% extends 'core/handwerker_base.html' %}
+{% load zeichen i18n chf %}
+{% block title %}{% blocktrans with firma=hw.firma %}Auftrag · {{ firma }}{% endblocktrans %}{% endblock %}
+{% block kopf %}{% blocktrans with firma=hw.firma %}Auftrag · {{ firma }}{% endblocktrans %}{% endblock %}
+
+{% block content %}
+{% comment %}
+Handwerkerportal (Modul 3). Genau EIN Auftrag. Telefon und Auftrags-PDF nur,
+solange der Auftrag offen ist; danach ist die Seite nur noch lesend und die
+Aktionskarten fehlen ganz.
+{% endcomment %}
+
+{% if abgeschlossen %}
+<div class="fw-hinweis warn fw-meldung" data-zustand="lesend">
+    <span class="fw-hi">{% zeichen 'gesperrt' %}</span>
+    <div class="fw-ht">{% if auftrag.token_gueltig_bis %}{% blocktrans with d=auftrag.token_gueltig_bis|date:"d.m.Y" %}Der Auftrag ist abgeschlossen. Dieser Link zeigt ihn nur noch an, bis {{ d }}.{% endblocktrans %}{% else %}{% trans "Der Auftrag ist abgeschlossen. Dieser Link zeigt ihn nur noch an." %}{% endif %}</div>
+</div>
+{% endif %}
+
+<section class="fw-card" aria-labelledby="hw-titel">
+    <div class="fw-kopf"><h1 id="hw-titel" class="fw-hw-titel">{{ t.titel }}</h1></div>
+    <div class="fw-rumpf">
+        <ul class="fw-hw-fakten">
+            <li><span class="fw-label">{% trans "Adresse" %}</span><b>{{ lg.strasse }}, {{ lg.plz }} {{ lg.ort }}</b></li>
+            {% if einheit %}<li><span class="fw-label">{% trans "Einheit" %}</span><b>{{ einheit.bezeichnung }}{% if einheit.etage %} · {{ einheit.etage }}{% endif %}</b></li>{% endif %}
+            {% if t.raum %}<li><span class="fw-label">{% trans "Raum" %}</span><b>{{ t.raum }}{% if t.objekt %} · {{ t.objekt }}{% endif %}</b></li>{% endif %}
+            <li><span class="fw-label">{% trans "Zutritt" %}</span><b>{{ t.get_zutritt_display }}</b></li>
+            {% if telefon %}<li><span class="fw-label">{% trans "Telefon vor Ort" %}</span><b><a class="fw-link" href="tel:{{ telefon }}">{{ telefon }}</a></b></li>{% endif %}
+            {% if auftrag.termin_status == 'vereinbart' and auftrag.termin_am %}<li><span class="fw-label">{% trans "Termin" %}</span><b>{{ auftrag.termin_am|date:"D d.m.Y, H:i" }}</b></li>{% endif %}
+        </ul>
+        {% if beschreibung %}<p class="fw-hw-text">{{ beschreibung }}</p>{% endif %}
+        {% if auftrag.bemerkung and not abgeschlossen %}<p class="fw-hw-text"><span class="fw-label">{% trans "Auftrag" %}</span>{{ auftrag.bemerkung }}</p>{% endif %}
+
+        {% if fotos %}
+        <div class="fw-hw-fotos">
+            {% for nr in fotos %}
+            <a href="{% url 'handwerker_auftrag_foto' token nr %}" target="_blank" rel="noopener noreferrer"><img src="{% url 'handwerker_auftrag_foto' token nr %}" alt="{% trans 'Foto zur Meldung' %}" class="fw-bild" loading="lazy"></a>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if not abgeschlossen %}
+        <a href="{% url 'handwerker_auftrag_pdf' token %}" target="_blank" rel="noopener noreferrer" class="fw-btn fw-knapp">{% zeichen 'drucken' %}{% trans "Auftrags-PDF" %}</a>
+        {% endif %}
+    </div>
+</section>
+
+{% if not abgeschlossen %}
+<section class="fw-card" aria-labelledby="hw-termin" data-karte="termin">
+    <div class="fw-kopf"><h2 id="hw-termin">{% trans "Termin" %}</h2></div>
+    <div class="fw-rumpf">
+        {% if auftrag.termin_status == 'vereinbart' and auftrag.termin_am %}
+        <p class="fw-hw-text">{% blocktrans with d=auftrag.termin_am|date:"D d.m.Y, H:i" %}Vereinbart: {{ d }} Uhr{% endblocktrans %}</p>
+        <form method="post" class="fw-hw-zeile">
+            {% csrf_token %}<input type="hidden" name="aktion" value="termin_bestaetigen">
+            <button class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Termin bestätigen" %}</button>
+        </form>
+        {% endif %}
+        <form method="post" class="fw-hw-formular">
+            {% csrf_token %}<input type="hidden" name="aktion" value="termin">
+            <div class="fw-feldblock">
+                <label class="fw-label" for="hw-termin-feld">{% if auftrag.termin_status == 'vereinbart' %}{% trans "Anderen Termin vorschlagen" %}{% else %}{% trans "Termin vorschlagen" %}{% endif %}</label>
+                <input id="hw-termin-feld" type="datetime-local" name="termin" required min="{{ termin_min }}" class="fw-feld">
+            </div>
+            <button class="fw-btn">{% zeichen 'termin' %}{% trans "Termin setzen" %}</button>
+            <p class="fw-klein">{% trans "Der Mieter erhält eine Mail mit Kalendereintrag." %}</p>
+        </form>
+    </div>
+</section>
+
+<section class="fw-card" aria-labelledby="hw-arbeit" data-karte="arbeit">
+    <div class="fw-kopf"><h2 id="hw-arbeit">{% trans "Arbeit" %}</h2></div>
+    <div class="fw-rumpf fw-hw-zeile">
+        <form method="post">{% csrf_token %}<input type="hidden" name="aktion" value="begonnen">
+            <button class="fw-btn">{% trans "Arbeit begonnen" %}</button></form>
+        <form method="post">{% csrf_token %}<input type="hidden" name="aktion" value="erledigt">
+            <button class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Arbeit erledigt melden" %}</button></form>
+    </div>
+</section>
+
+<section class="fw-card" aria-labelledby="hw-offerte" data-karte="offerte">
+    <div class="fw-kopf"><h2 id="hw-offerte">{% trans "Offerte hochladen" %}</h2></div>
+    <form method="post" enctype="multipart/form-data" class="fw-rumpf fw-hw-formular">
+        {% csrf_token %}<input type="hidden" name="aktion" value="offerte">
+        {% if auftrag.kosten_geschaetzt %}<p class="fw-klein">{% blocktrans with b=auftrag.kosten_geschaetzt|chf %}Bisher erfasst: CHF {{ b }}{% endblocktrans %}{% if auftrag.freigabe_status == 'ausstehend' %} · {% trans "Freigabe ausstehend" %}{% elif auftrag.freigabe_status == 'freigegeben' %} · {% trans "freigegeben" %}{% endif %}</p>{% endif %}
+        <div class="fw-feldblock">
+            <label class="fw-label" for="hw-offerte-betrag">{% trans "Betrag (CHF, inkl. MWST)" %}</label>
+            <input id="hw-offerte-betrag" name="betrag" inputmode="decimal" required class="fw-feld fw-num">
+        </div>
+        <div class="fw-feldblock">
+            <label class="fw-label" for="hw-offerte-datei">{% trans "Offerte (PDF oder Bild)" %}</label>
+            <input id="hw-offerte-datei" type="file" name="datei" required accept="application/pdf,image/*" class="fw-datei">
+        </div>
+        <p class="fw-klein">{% trans "Je nach Betrag braucht die Reparatur die Freigabe der Eigentümerschaft. Die Verwaltung meldet sich." %}</p>
+        <button class="fw-btn fw-primary">{% zeichen 'hochladen' %}{% trans "Offerte senden" %}</button>
+    </form>
+</section>
+
+<section class="fw-card" aria-labelledby="hw-rechnung" data-karte="rechnung">
+    <div class="fw-kopf"><h2 id="hw-rechnung">{% trans "Rechnung hochladen" %}</h2></div>
+    {% if auftrag.kreditoren_rechnung_id %}
+    <div class="fw-rumpf"><p class="fw-hw-text">{% trans "Die Rechnung ist eingegangen. Die Verwaltung prüft sie." %}</p></div>
+    {% else %}
+    <form method="post" enctype="multipart/form-data" class="fw-rumpf fw-hw-formular">
+        {% csrf_token %}<input type="hidden" name="aktion" value="rechnung">
+        <div class="fw-feldblock">
+            <label class="fw-label" for="hw-rechnung-betrag">{% trans "Rechnungsbetrag (CHF, inkl. MWST)" %}</label>
+            <input id="hw-rechnung-betrag" name="betrag" inputmode="decimal" required class="fw-feld fw-num">
+        </div>
+        <div class="fw-feldblock">
+            <label class="fw-label" for="hw-rechnung-datei">{% trans "Rechnung (PDF oder Bild)" %}</label>
+            <input id="hw-rechnung-datei" type="file" name="datei" required accept="application/pdf,image/*" class="fw-datei">
+        </div>
+        <p class="fw-klein">{% trans "Die Rechnung geht als Entwurf zur Kontrolle an die Verwaltung." %}</p>
+        <button class="fw-btn fw-primary">{% zeichen 'hochladen' %}{% trans "Rechnung senden" %}</button>
+    </form>
+    {% endif %}
+</section>
+{% endif %}
+
+<section class="fw-card" aria-labelledby="hw-nachrichten" data-karte="nachricht">
+    <div class="fw-kopf"><h2 id="hw-nachrichten">{% trans "Nachrichten mit der Verwaltung" %}</h2></div>
+    <div class="fw-rumpf">
+        {% for n in verlauf %}
+        <div class="fw-hw-nachricht{% if not n.is_von_verwaltung %} eigen{% endif %}">
+            <span class="fw-klein">{{ n.absender_name }} · {{ n.erstellt_am|date:"d.m.Y, H:i" }}</span>
+            <p>{{ n.nachricht }}</p>
+        </div>
+        {% empty %}
+        <p class="fw-klein">{% trans "Noch keine Nachrichten." %}</p>
+        {% endfor %}
+        {% if not abgeschlossen %}
+        <form method="post" class="fw-hw-formular">
+            {% csrf_token %}<input type="hidden" name="aktion" value="nachricht">
+            <div class="fw-feldblock">
+                <label class="fw-label" for="hw-text">{% trans "Nachricht" %}</label>
+                <textarea id="hw-text" name="text" rows="3" required maxlength="4000" class="fw-feld"></textarea>
+            </div>
+            <button class="fw-btn">{% zeichen 'senden' %}{% trans "Senden" %}</button>
+        </form>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block footer %}{% if verwaltung %}{% blocktrans with firma=verwaltung.firma %}Auftraggeberin: {{ firma }}{% endblocktrans %}{% if verwaltung.email %} · <a class="fw-link" href="mailto:{{ verwaltung.email }}">{{ verwaltung.email }}</a>{% endif %}{% if verwaltung.telefon %} · {{ verwaltung.telefon }}{% endif %}{% endif %}{% endblock %}

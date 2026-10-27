@@ -368,6 +368,30 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     {% endif %}
                 </div>
             </div>
+            {% comment %} Handwerker-Link (Modul 3, E6): öffnet nur diesen Auftrag, ohne Konto.
+               Der Klartext steht nirgends; «neu erzeugen» zeigt ihn einmal an. {% endcomment %}
+            <div class="fw-rumpf" data-link-status="{{ a.link_status }}">
+                <div class="fw-label">{% trans "Handwerker-Link" %}</div>
+                <p class="fw-klein mt-1">
+                    {% if a.link_status == 'aktiv' %}<span class="fw-chip fw-good">{% trans "aktiv" %}</span> {% trans "Öffnet nur diesen Auftrag. Ging mit der Auftrags-Mail an den Handwerker." %}
+                    {% elif a.link_status == 'lesend' %}<span class="fw-chip fw-warn">{% trans "nur lesend" %}</span> {% blocktrans with d=a.token_gueltig_bis|date:"d.m.Y" %}Auftrag abgeschlossen — lesbar bis {{ d }}.{% endblocktrans %}
+                    {% elif a.link_status == 'widerrufen' %}<span class="fw-chip fw-crit">{% trans "widerrufen" %}</span> {% blocktrans with d=a.token_widerrufen_am|date:"d.m.Y, H:i" %}am {{ d }} Uhr{% endblocktrans %}
+                    {% elif a.link_status == 'abgelaufen' %}<span class="fw-chip fw-warn">{% trans "abgelaufen" %}</span>
+                    {% else %}{% trans "Noch kein Link. Er entsteht mit der Auftrags-Mail — oder hier." %}{% endif %}
+                </p>
+                <div class="flex flex-wrap gap-2 mt-2">
+                    <form method="post" action="/neu/auftrag/{{ a.id }}/link/"{% if a.link_status == 'aktiv' %} onsubmit="return confirm('{% trans "Neuen Link erzeugen? Der bisherige öffnet danach nichts mehr." %}')"{% endif %}>
+                        {% csrf_token %}<input type="hidden" name="aktion" value="neu">
+                        <button class="fw-btn fw-knapp">{% zeichen 'neu' %}{% if a.link_status == 'kein' %}{% trans "Link erzeugen" %}{% else %}{% trans "Neuen Link erzeugen" %}{% endif %}</button>
+                    </form>
+                    {% if a.link_status == 'aktiv' or a.link_status == 'lesend' %}
+                    <form method="post" action="/neu/auftrag/{{ a.id }}/link/" onsubmit="return confirm('{% trans "Link widerrufen? Der Handwerker kann den Auftrag dann nicht mehr öffnen." %}')">
+                        {% csrf_token %}<input type="hidden" name="aktion" value="widerrufen">
+                        <button class="fw-btn fw-knapp">{% zeichen 'gesperrt' %}{% trans "Link widerrufen" %}</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
             {% if a.status != 'storniert' %}
             <div class="fw-rumpf">
                 {% if a.termin_status == 'vereinbart' %}

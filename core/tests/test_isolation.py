@@ -1056,7 +1056,8 @@ class IsolationstestsSelbstpruefungTests(TestCase):
         b = MandantenFixture('B', '3000', 'Bern')
         for name in ('fw_auftrag_kosten', 'fw_auftrag_pdf',
                      'fw_auftrag_nachricht', 'fw_auftrag_termin',
-                     'fw_auftrag_rechnung', 'fw_auftrag_storno'):
+                     'fw_auftrag_rechnung', 'fw_auftrag_storno',
+                     'fw_auftrag_link'):
             with self.subTest(url=name):
                 self.assertIsInstance(b.objekt_fuer('pk', name), HandwerkerAuftrag)
 
