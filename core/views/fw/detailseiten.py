@@ -1433,7 +1433,32 @@ def fw_staffel_add(request):
     if netto is None or netto <= 0:
         messages.error(request, gettext('Bitte einen gültigen Netto-Mietzins angeben.'))
         return redirect(ziel)
-    Staffelstufe.objects.create(vertrag=v, ab_datum=ab, netto_mietzins=netto)
+    netto = netto.quantize(Decimal('0.01'))
+    # Die Erhöhung in CHF ist die Quelle der Wahrheit (Art. 269c lit. c OR); die Maske liefert den
+    # neuen Netto-Mietzins, die Erhöhung folgt aus dem Stand davor.
+    from core.services.mietzinsmodell import Stufe, pruefe_vertrag, sperren
+    bisher = list(v.staffelstufen.all())
+    davor = [s for s in bisher if s.ab_datum < ab]
+    vorstand = max(davor, key=lambda s: (s.ab_datum, s.id)).netto_mietzins if davor else v.netto_mietzins
+    erhoehung = netto - (vorstand or Decimal('0'))
+    # Geprüft wird der Vertrag so, wie er nach dem Speichern wäre. Ein Altvertrag, der schon
+    # Staffelvertrag ist, wird nicht wegen früherer Verstösse blockiert, nur wegen neuer.
+    altes_modell = v.mietzins_modell
+    stufen_neu = [Stufe(ab=s.ab_datum, erhoehung_chf=s.erhoehung_chf) for s in bisher]
+    vorher = (set((b.regel, b.zeile) for b in sperren(pruefe_vertrag(v, stufen=stufen_neu)))
+              if altes_modell == 'staffel' else set())
+    stufen_neu.append(Stufe(ab=ab, erhoehung_chf=erhoehung))
+    v.mietzins_modell = 'staffel'
+    try:
+        neue_sperren = [b for b in sperren(pruefe_vertrag(v, stufen=stufen_neu))
+                        if (b.regel, b.zeile) not in vorher]
+    finally:
+        v.mietzins_modell = altes_modell
+    if neue_sperren:
+        for b in neue_sperren:
+            messages.error(request, '❌ ' + b.volltext)
+        return redirect(ziel)
+    Staffelstufe.objects.create(vertrag=v, ab_datum=ab, netto_mietzins=netto, erhoehung_chf=erhoehung)
     # Damit die Stufe im Mietenlauf greift, muss das Vertragsmodell 'staffel' sein.
     if v.mietzins_modell != 'staffel':
         v.mietzins_modell = 'staffel'

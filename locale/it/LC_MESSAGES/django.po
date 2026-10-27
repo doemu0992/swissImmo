@@ -32815,3 +32815,205 @@ msgstr "Altre sottoaree"
 
 msgid "Neue Schadenmeldungen"
 msgstr "Nuove segnalazioni di danno"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Die Dauer ist nicht fest: Der Vertrag ist weder befristet, noch verzichtet der Vermieter auf die Kündigung. Verlangt sind mindestens %(jahre)s Jahre ab Mietbeginn, also bis %(soll)s."
+msgstr "La durata non è vincolante: il contratto non è a tempo determinato e il locatore non rinuncia alla disdetta. È richiesta una durata di almeno %(jahre)s anni dall'inizio della locazione, quindi fino al %(soll)s."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Die feste Dauer endet am %(bis)s. Verlangt sind mindestens %(jahre)s Jahre ab Mietbeginn, also bis mindestens %(soll)s."
+msgstr "La durata vincolante termina il %(bis)s. Sono richiesti almeno %(jahre)s anni dall'inizio della locazione, quindi almeno fino al %(soll)s."
+
+#: core/services/mietzinsmodell.py
+msgid "Für die Staffelmiete gilt die Dauer sinngemäss wie bei der Indexmiete."
+msgstr "Per la pigione scalare la durata si valuta per analogia con la pigione indicizzata."
+
+#: core/services/mietzinsmodell.py
+msgid "Jede Anpassung wird mit dem amtlichen Formular angekündigt, mindestens 30 Tage vor einem Monatsende und erst nach Veröffentlichung des neuen Indexstandes. Sinkt der Index, sinkt der Mietzins entsprechend."
+msgstr "Ogni adeguamento è notificato con il modulo ufficiale, almeno 30 giorni prima della fine di un mese e solo dopo la pubblicazione del nuovo indice. Se l'indice scende, la pigione scende di conseguenza."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Laufzeit auf %(jahre)s Jahre setzen"
+msgstr "Impostare la durata a %(jahre)s anni"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Kündigungsverzicht des Vermieters bis %(datum)s eintragen"
+msgstr "Inserire la rinuncia del locatore alla disdetta fino al %(datum)s"
+
+#: core/services/mietzinsmodell.py
+msgid "Die Basis des Landesindexes (Punkte) fehlt."
+msgstr "Manca la base dell'indice (punti)."
+
+#: core/services/mietzinsmodell.py
+msgid "Der Stand-Monat der Index-Basis fehlt."
+msgstr "Manca il mese di riferimento della base dell'indice."
+
+#: core/services/mietzinsmodell.py
+msgid "Die Weitergabe der Teuerung in Prozent fehlt."
+msgstr "Manca la percentuale di trasferimento del rincaro."
+
+#: core/services/mietzinsmodell.py
+msgid "Als Index ist nur der Landesindex der Konsumentenpreise zulässig."
+msgstr "Come indice è ammesso soltanto l'indice nazionale dei prezzi al consumo."
+
+#: core/services/mietzinsmodell.py
+msgid "Das Mindestintervall muss mindestens 1 Monat betragen."
+msgstr "L'intervallo minimo deve essere di almeno 1 mese."
+
+#: core/services/mietzinsmodell.py
+msgid "Eine Indexklausel darf nicht mit Staffelstufen kombiniert werden."
+msgstr "Una clausola d'indicizzazione non può essere combinata con scaglioni."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe %(nr)s: Zwischen Mietbeginn und der ersten Erhöhung müssen mindestens 12 Monate liegen, frühestens am %(datum)s."
+msgstr "Scaglione %(nr)s: tra l'inizio della locazione e il primo aumento devono trascorrere almeno 12 mesi, al più presto il %(datum)s."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe %(nr)s: Zwischen zwei Erhöhungen müssen mindestens 12 Monate liegen, frühestens am %(datum)s."
+msgstr "Scaglione %(nr)s: tra due aumenti devono trascorrere almeno 12 mesi, al più presto il %(datum)s."
+
+#: core/services/mietzinsmodell.py
+msgid "Eine Staffelmiete braucht mindestens eine Stufe."
+msgstr "Una pigione scalare richiede almeno uno scaglione."
+
+#: core/services/mietzinsmodell.py
+msgid "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt. Das amtliche Formular braucht es dafür nicht."
+msgstr "Ogni aumento è comunicato per scritto al conduttore, al più presto quattro mesi prima della sua entrata in vigore. Per questo non serve il modulo ufficiale."
+
+#: core/services/mietzinsmodell.py
+msgid "Zu diesem Vertrag bestehen zusätzlich datierte Mietzinskomponenten oder ein Zeitplan (etwa Gratismonate). Sie gehen den Staffelstufen vor."
+msgstr "Per questo contratto esistono inoltre componenti di pigione datate o un piano temporale (ad es. mesi gratuiti). Hanno la precedenza sugli scaglioni."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "LIK-Stand %(stand)s übernehmen (%(punkte)s Punkte)"
+msgstr "Riprendere l'indice di %(stand)s (%(punkte)s punti)"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stand %(stand)s eintragen"
+msgstr "Inserire il mese %(stand)s"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Weitergabe %(w)s %%)."
+msgstr "In una pigione scalare non può rimanere una clausola d'indicizzazione (trasferimento del %(w)s %%)."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Der Stand der Index-Basis (%(stand)s) liegt nach dem Mietbeginn (%(beginn)s)."
+msgstr "Il mese di riferimento della base dell'indice (%(stand)s) è successivo all'inizio della locazione (%(beginn)s)."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Für %(stand)s weist die LIK-Tabelle %(tabelle)s Punkte aus, erfasst sind %(punkte)s."
+msgstr "Per %(stand)s la tabella IPC indica %(tabelle)s punti; sono registrati %(punkte)s."
+
+#: core/services/mietzinsmodell.py
+msgid "Weitergabe eintragen: 100 %"
+msgstr "Inserire il trasferimento: 100 %"
+
+#: core/services/mietzinsmodell.py
+msgid "Die Weitergabe darf höchstens 100 Prozent der Teuerung betragen."
+msgstr "Il trasferimento non può superare il 100 per cento del rincaro."
+
+#: core/services/mietzinsmodell.py
+msgid "Landesindex der Konsumentenpreise wählen"
+msgstr "Scegliere l'indice nazionale dei prezzi al consumo"
+
+#: core/services/mietzinsmodell.py
+msgid "Intervall setzen auf 12 Monate"
+msgstr "Impostare l'intervallo a 12 mesi"
+
+#: core/services/mietzinsmodell.py
+msgid "Staffelstufen entfernen"
+msgstr "Rimuovere gli scaglioni"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe %(nr)s: Das Datum fehlt."
+msgstr "Scaglione %(nr)s: manca la data."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung muss als Frankenbetrag vereinbart werden, nicht in Prozent."
+msgstr "Scaglione %(nr)s: l'aumento va convenuto come importo in franchi, non in percentuale."
+
+#: core/services/mietzinsmodell.py
+msgid "Weitergabe zurücksetzen auf 100 %"
+msgstr "Ripristinare il trasferimento al 100 %"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Intervall %(m)s Monate)."
+msgstr "In una pigione scalare non può rimanere una clausola d'indicizzazione (intervallo di %(m)s mesi)."
+
+#: core/services/mietzinsmodell.py
+msgid "Bei festem Mietzins dürfen keine Staffelstufen stehen."
+msgstr "Con una pigione fissa non devono esserci scaglioni."
+
+#: core/services/mietzinsmodell.py
+msgid "Punkte der Tabelle übernehmen"
+msgstr "Riprendere i punti della tabella"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung in CHF fehlt."
+msgstr "Scaglione %(nr)s: manca l'aumento in CHF."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe %(nr)s (%(datum)s) liegt nach dem Ende der festen Dauer (%(bis)s)."
+msgstr "Lo scaglione %(nr)s (%(datum)s) è successivo alla fine della durata vincolante (%(bis)s)."
+
+#: core/services/mietzinsmodell.py
+msgid "Intervall zurücksetzen auf 12 Monate"
+msgstr "Ripristinare l'intervallo a 12 mesi"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung muss ein Frankenbetrag über 0 sein."
+msgstr "Scaglione %(nr)s: l'aumento deve essere un importo in franchi superiore a 0."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe auf den %(datum)s legen"
+msgstr "Fissare lo scaglione al %(datum)s"
+
+#: core/hilfe.py
+msgid "Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach unten und höchstens im Umfang der Teuerung (Art. 269b OR, Art. 17 VMWG). Der Vertrag muss mindestens fünf Jahre fest dauern; ein Kündigungsverzicht des Vermieters für fünf Jahre genügt (Art. 17 Abs. 4 VMWG). Jede Anpassung geht mit dem amtlichen Formular, mindestens 30 Tage vor einem Monatsende."
+msgstr "La pigione segue l'indice nazionale dei prezzi al consumo, sia al rialzo sia al ribasso e al massimo nella misura del rincaro (art. 269b CO, art. 17 OLAL). Il contratto deve avere una durata vincolante di almeno cinque anni; basta una rinuncia del locatore alla disdetta per cinque anni (art. 17 cpv. 4 OLAL). Ogni adeguamento avviene con il modulo ufficiale, almeno 30 giorni prima della fine di un mese."
+
+#: core/hilfe.py
+msgid "Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens einmal jährlich, bei einer Vertragsdauer von mindestens drei Jahren (Art. 269c OR). Dass auch ein Kündigungsverzicht des Vermieters als feste Dauer zählt, ist sinngemäss von Art. 17 Abs. 4 VMWG übernommen. Der Mietzins folgt den Stufen — die Anpassung nach Referenzzins und Teuerung gilt für ihn nicht."
+msgstr "Gli aumenti sono convenuti nel contratto come importi in franchi, al massimo una volta all'anno, con una durata del contratto di almeno tre anni (art. 269c CO). Il fatto che anche una rinuncia del locatore alla disdetta valga come durata vincolante è ripreso per analogia dall'art. 17 cpv. 4 OLAL. La pigione segue gli scaglioni — l'adeguamento secondo il tasso di riferimento e il rincaro non si applica."
+
+#: core/hilfe.py
+msgid "Index und Staffel zusammen?"
+msgstr "Indice e scaglioni insieme?"
+
+#: core/hilfe.py
+msgid "Eine Indexklausel darf nicht mit einer Staffelung kombiniert werden (Art. 269b und 269c OR, BGE 124 III 57). Pro Vertrag gilt deshalb genau ein Mietzinsmodell: fest, Index oder Staffel."
+msgstr "Una clausola d'indicizzazione non può essere combinata con una scalarità (art. 269b e 269c CO, DTF 124 III 57). Per contratto vale quindi un solo modello di pigione: fissa, indicizzata o scalare."
+
+#: core/hilfe.py
+msgid "Kündigungsverzicht des Vermieters"
+msgstr "Rinuncia del locatore alla disdetta"
+
+#: core/hilfe.py
+msgid "Bei einem unbefristeten Vertrag zählt die Dauer als fest, wenn der Vermieter für die verlangte Zeit auf die Kündigung verzichtet: fünf Jahre bei der Indexmiete (Art. 17 Abs. 4 VMWG), drei Jahre bei der Staffelmiete (sinngemäss, Art. 269c OR). Die Frist läuft ab Mietbeginn; das genannte Enddatum zählt mit."
+msgstr "In un contratto a tempo indeterminato la durata è considerata vincolante se il locatore rinuncia alla disdetta per il periodo richiesto: cinque anni per la pigione indicizzata (art. 17 cpv. 4 OLAL), tre anni per la pigione scalare (per analogia, art. 269c CO). Il termine decorre dall'inizio della locazione; la data indicata è compresa."
+
+#: core/hilfe.py
+msgid "Mitteilung der Staffelerhöhung"
+msgstr "Comunicazione dell'aumento scalare"
+
+#: core/hilfe.py
+msgid "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche Formular braucht es dafür nicht, die Mitteilung aber schon: Der Vertrag allein ersetzt sie nicht."
+msgstr "Ogni aumento è comunicato per scritto al conduttore, al più presto quattro mesi prima della sua entrata in vigore (art. 269d cpv. 5 CO, art. 19a OLAL). Per questo non serve il modulo ufficiale, ma la comunicazione sì: il solo contratto non la sostituisce."

@@ -81,13 +81,26 @@ HILFE = {
         'Wer die mögliche Anpassung nicht ganz ausschöpft, kann sich den Rest für später vorbehalten. '
         'Der Vorbehalt wird beziffert — in Franken oder Prozent —, damit er sich später nachvollziehen lässt.')),
     'indexmiete': (_('Indexmiete'), _(
-        'Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach unten. Zulässig nur bei '
-        'einem Vertrag mit fester Dauer von mindestens fünf Jahren (Art. 269b OR). Die Massenanpassung nach '
-        'Referenzzins erfasst Indexmieten nicht.')),
+        'Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach unten und höchstens im '
+        'Umfang der Teuerung (Art. 269b OR, Art. 17 VMWG). Der Vertrag muss mindestens fünf Jahre fest dauern; ein '
+        'Kündigungsverzicht des Vermieters für fünf Jahre genügt (Art. 17 Abs. 4 VMWG). Jede Anpassung geht mit dem '
+        'amtlichen Formular, mindestens 30 Tage vor einem Monatsende.')),
     'staffelmiete': (_('Staffelmiete'), _(
         'Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens einmal jährlich, bei einer '
-        'Vertragsdauer von mindestens drei Jahren (Art. 269c OR). Der Mietzins folgt den Stufen — die '
-        'Anpassung nach Referenzzins und Teuerung gilt für ihn nicht.')),
+        'Vertragsdauer von mindestens drei Jahren (Art. 269c OR). Dass auch ein Kündigungsverzicht des Vermieters '
+        'als feste Dauer zählt, ist sinngemäss von Art. 17 Abs. 4 VMWG übernommen. Der Mietzins folgt den Stufen — '
+        'die Anpassung nach Referenzzins und Teuerung gilt für ihn nicht.')),
+    'index_staffel_kombination': (_('Index und Staffel zusammen?'), _(
+        'Eine Indexklausel darf nicht mit einer Staffelung kombiniert werden (Art. 269b und 269c OR, BGE 124 III 57). '
+        'Pro Vertrag gilt deshalb genau ein Mietzinsmodell: fest, Index oder Staffel.')),
+    'kuendigungsverzicht': (_('Kündigungsverzicht des Vermieters'), _(
+        'Bei einem unbefristeten Vertrag zählt die Dauer als fest, wenn der Vermieter für die verlangte Zeit auf die '
+        'Kündigung verzichtet: fünf Jahre bei der Indexmiete (Art. 17 Abs. 4 VMWG), drei Jahre bei der Staffelmiete '
+        '(sinngemäss, Art. 269c OR). Die Frist läuft ab Mietbeginn; das genannte Enddatum zählt mit.')),
+    'staffel_mitteilung': (_('Mitteilung der Staffelerhöhung'), _(
+        'Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt '
+        '(Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche Formular braucht es dafür nicht, die Mitteilung aber '
+        'schon: Der Vertrag allein ersetzt sie nicht.')),
     'herabsetzung': (_('Herabsetzung'), _(
         'Sinkt der Referenzzins, kann der Mieter eine Herabsetzung verlangen (Art. 270a OR). Der Vermieter '
         'antwortet innert 30 Tagen; lehnt er ab, kann der Mieter innert 30 Tagen die Schlichtungsbehörde anrufen.')),

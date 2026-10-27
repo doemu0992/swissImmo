@@ -691,6 +691,30 @@ class Mietvertrag(OrganisationAusKette):
         except Exception:
             return 'neutral'
 
+    #: Felder, die über das Mietzinsmodell entscheiden. Ändert eine Bearbeitung keines davon,
+    #: blockiert `clean()` einen Altvertrag nicht wegen eines früheren Verstosses.
+    MODELL_FELDER = ('mietzins_modell', 'beginn', 'ende', 'ist_befristet', 'vermieter_kuendigungsverzicht_bis',
+                     'basis_lik_punkte', 'basis_lik_stand', 'index_weitergabe_prozent', 'index_intervall_monate')
+
+    def clean(self):
+        """Mietzinsmodell prüfen (Art. 269b/269c OR, `core/services/mietzinsmodell.py`).
+
+        Wirkt nur über `full_clean()` und ModelForms; `save()` bleibt unverändert, damit Altdaten nicht
+        brechen. Ein bestehender Vertrag, dessen Modellfelder unverändert sind, wird nicht blockiert
+        (Altverstösse meldet `manage.py mietzinsmodell_bestand`). Stufen werden nur geprüft, wenn der
+        Vertrag schon gespeichert ist; neue Stufen prüft, wer sie anlegt (`pruefe_vertrag(stufen=...)`).
+        """
+        from django.core.exceptions import ValidationError
+        from core.services.mietzinsmodell import pruefe_vertrag, sperren
+        super().clean()
+        if self.pk:
+            alt = type(self).alle_organisationen.filter(pk=self.pk).values(*self.MODELL_FELDER).first()
+            if alt is not None and all(alt[f] == getattr(self, f) for f in self.MODELL_FELDER):
+                return
+        fehler = sperren(pruefe_vertrag(self))
+        if fehler:
+            raise ValidationError([ValidationError(b.volltext, code=b.regel) for b in fehler])
+
     def save(self, *args, **kwargs):
         # Rücklauf-Zeitstempel setzen, sobald der Vertrag als unterzeichnet gilt
         # (nur beim erstmaligen Übergang → nicht bei jedem weiteren Save).
@@ -788,9 +812,9 @@ class Mietvertrag(OrganisationAusKette):
 
 class Staffelstufe(OrganisationAusKette):
     ORGANISATION_PFAD = 'vertrag'
-    """Eine vereinbarte Staffelmietstufe (Art. 269c OR): ab `ab_datum` gilt
-    `netto_mietzins`. Vorab im Vertrag vereinbart → im Mietenlauf automatisch
-    (keine erneute Ankündigung nötig)."""
+    # Eine vereinbarte Staffelmietstufe (Art. 269c OR): ab `ab_datum` gilt `netto_mietzins`, der aus
+    # der Vorstufe und `erhoehung_chf` folgt. Die Erhöhung ist vorab im Vertrag vereinbart, wird dem
+    # Mieter aber vor jedem Eintritt schriftlich mitgeteilt (Art. 269d Abs. 5 OR, Art. 19a VMWG).
     vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE, related_name='staffelstufen')
     ab_datum = models.DateField("Gültig ab")
     netto_mietzins = models.DecimalField("Netto-Mietzins ab Stichtag", max_digits=8, decimal_places=2)
@@ -808,9 +832,62 @@ class Staffelstufe(OrganisationAusKette):
         ordering = ['ab_datum']
         verbose_name = "Staffelstufe"
         verbose_name_plural = "Staffelstufen"
+        constraints = [
+            # NULL bleibt erlaubt: Altstufen ohne positive Erhöhung (Migration 0050) meldet der
+            # Bestandsbericht, die Datenbank lehnt sie nicht nachträglich ab.
+            models.CheckConstraint(
+                condition=models.Q(erhoehung_chf__isnull=True) | models.Q(erhoehung_chf__gt=0),
+                name='staffelstufe_erhoehung_positiv'),
+        ]
 
     def __str__(self):
         return f"ab {self.ab_datum:%d.%m.%Y}: CHF {self.netto_mietzins}"
+
+    def save(self, *args, **kwargs):
+        """Ist `erhoehung_chf` gesetzt, folgt `netto_mietzins` aus Vorstufe + Erhöhung.
+
+        Danach werden die späteren Stufen nachgezogen: Wer eine Stufe einschiebt, ändert den Stand
+        aller folgenden. Ohne `erhoehung_chf` (Altweg) bleibt der übergebene Betrag stehen.
+        """
+        if self.erhoehung_chf is not None and self.vertrag_id and self.ab_datum:
+            self.netto_mietzins = self._vorstand() + self.erhoehung_chf
+            uf = kwargs.get('update_fields')
+            if uf is not None:
+                kwargs['update_fields'] = list(set(uf) | {'netto_mietzins'})
+        super().save(*args, **kwargs)
+        if self.erhoehung_chf is not None:
+            Staffelstufe.kette_neu_rechnen(self.vertrag)
+
+    def delete(self, *args, **kwargs):
+        vertrag = self.vertrag
+        ergebnis = super().delete(*args, **kwargs)
+        Staffelstufe.kette_neu_rechnen(vertrag)
+        return ergebnis
+
+    def _vorstand(self):
+        """Netto-Mietzins unmittelbar vor dieser Stufe: die vorige Stufe oder der Vertragsbeginn."""
+        vorige = [s for s in Staffelstufe.alle_organisationen.filter(vertrag_id=self.vertrag_id)
+                  .order_by('ab_datum', 'id') if (s.ab_datum, s.id) < (self.ab_datum, self.id or float('inf'))
+                  and s.pk != self.pk]
+        if vorige:
+            return vorige[-1].netto_mietzins
+        return self.vertrag.netto_mietzins or Decimal('0.00')
+
+    @staticmethod
+    def kette_neu_rechnen(vertrag):
+        """Rechnet den Netto-Mietzins aller Stufen eines Vertrags aus Beginn-Netto und Erhöhungen neu.
+
+        Stufen ohne `erhoehung_chf` (Altdaten) behalten ihren Betrag und sind Ausgangspunkt der
+        nächsten. Geschrieben wird per `update()`, damit `save()` nicht erneut anstösst."""
+        laufend = vertrag.netto_mietzins or Decimal('0.00')
+        for st in Staffelstufe.alle_organisationen.filter(vertrag_id=vertrag.pk).order_by('ab_datum', 'id'):
+            if st.erhoehung_chf is None:
+                laufend = st.netto_mietzins
+                continue
+            soll = laufend + st.erhoehung_chf
+            if st.netto_mietzins != soll:
+                Staffelstufe.alle_organisationen.filter(pk=st.pk).update(netto_mietzins=soll)
+            laufend = soll
 
 
 class VertragMietzins(OrganisationAusKette):

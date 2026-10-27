@@ -91,6 +91,7 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
 # Modul 3 (27.10.2026): Handwerkerportal (Magic-Link je Auftrag) und Link-Verwaltung im Schaden
 from core.views.handwerker_portal import handwerker_auftrag, handwerker_auftrag_pdf, handwerker_auftrag_foto
 from core.views.fw.schaeden import fw_auftrag_link
+from core.views.fw.mietzinsmodell_pruefen import fw_mietzinsmodell_pruefen
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
 from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_zustaendig, fw_fallschritt_erledigen,
@@ -285,6 +286,7 @@ urlpatterns = [
     path('neu/vertraege/neu/', fw_vertrag_neu, name='fw_vertrag_neu'),
     path('neu/vertraege/neu/speichern/', fw_vertrag_neu_speichern, name='fw_vertrag_neu_speichern'),
     path('neu/vertraege/vorschau/', fw_vertrag_vorschau, name='fw_vertrag_vorschau'),
+    path('neu/vertraege/mietzinsmodell/pruefen/', fw_mietzinsmodell_pruefen, name='fw_mietzinsmodell_pruefen'),
     path('neu/vertraege/<int:pk>/bearbeiten/', fw_vertrag_bearbeiten, name='fw_vertrag_bearbeiten'),
     path('neu/liegenschaften/<int:pk>/', fw_liegenschaft_detail, name='fw_liegenschaft_detail'),
     path('neu/liegenschaften/<int:pk>/frist/', fw_wartungsfrist_neu, name='fw_wartungsfrist_neu'),
