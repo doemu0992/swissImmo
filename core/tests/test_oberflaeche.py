@@ -259,8 +259,13 @@ class NavigationTests(TestCase):
     def test_palette_daten_vorhanden(self):
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/').content.decode()
+        # Die Daten der Palette bleiben; ihre Oberfläche ist seit dem 27.10.2026
+        # die Omnisearch in der Kopfzeile (`fwOs`), das Fenster `fwPalette` gibt
+        # es nicht mehr. Die dritte Zeile prüft das Fehlen — sonst bliebe ein
+        # vergessenes altes Fenster neben dem neuen unbemerkt.
         self.assertIn('fw-palette-data', html)
-        self.assertIn('fwPalette', html)
+        self.assertIn('id="fwOs"', html)
+        self.assertNotIn('id="fwPalette"', html)
 
 
 class MobilBeschriftungTests(TestCase):

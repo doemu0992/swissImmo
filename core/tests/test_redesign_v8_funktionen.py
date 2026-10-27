@@ -33,25 +33,27 @@ def _quelle(name):
 HUELLE = {
     'Ids': [
         'id="fwBackdrop"', 'id="fwSidebar"', 'id="navgrp-', 'id="navsub-',
-        'id="fwProfil"', 'id="fw-toasts"', 'fw-palette-data', 'id="fwPalette"',
-        'id="fwPaletteInput"', 'id="fwPaletteList"', 'id="fwPaletteFuss"',
+        'id="fwProfil"', 'id="fw-toasts"', 'fw-palette-data',
     ],
     'Funktionen': [
         'function fwToggleSidebar(', 'function fwOpenMobileNav(', 'function fwCloseMobileNav(',
-        'function fwNavToggle(', 'window.fwPaletteOpen', 'window.fwPaletteClose',
+        'function fwNavToggle(',
         'function fwProfilMenu(', 'function fwTab(', 'function fwTabellenStapeln(',
         'function fwSetTheme(', 'function fwSyncThemeButtons(',
     ],
     'Ereignisse und Mechanik': [
-        "e.key === 'Escape'", "(e.metaKey || e.ctrlKey)", "button[onclick=\"fwProfilMenu()\"]",
+        "e.key === 'Escape'", "button[onclick=\"fwProfilMenu()\"]",
         "get('tab')", "addEventListener('submit'", "data-no-guard", "form.target === '_blank'",
         "'#z-laedt'", "'fw-dreht'", "[data-suche]", "[data-zeile]", "[data-menu-btn]",
         "[data-menu-list]", "addEventListener('fw:content'", "nodeName !== 'BR'",
         "data-persist", ":not([data-persist])", "setTimeout",
     ],
-    'Palette': [
-        "fetch('/neu/palette/?q='", "'X-Requested-With': 'fetch'", "q.trim().length < 2",
-        '160)', "'/neu/suche/?q='", 'fw-pal-item',
+    # Die ⌘K-Palette als Fenster ist am 27.10.2026 in der Omnisearch der
+    # Kopfzeile aufgegangen. Ihre Logik steht jetzt in `fw/_omnisearch.html` und
+    # `static/js/fw-omnisearch.js` und wird unten (`OMNISEARCH_*`) geprüft; in
+    # der Hülle bleiben nur die Daten (`fw-palette-data`, oben) und das Skript.
+    'Omnisearch': [
+        "{% include 'fw/_omnisearch.html' %}", "js/fw-omnisearch.js", 'fw-kopf-z1', 'fw-kopf-z2',
     ],
     'Speicher und frühe Skripte': [
         "localStorage.getItem('fw-theme')", "localStorage.setItem('fw-theme'",
@@ -60,8 +62,8 @@ HUELLE = {
         "get('embed') === '1'",
     ],
     'Formulare': [
-        'action="/neu/mandant/"', 'name="organisation"', 'name="lg"', 'action="/neu/suche/"',
-        'name="q"', "core/_sprachwahl.html", '{% csrf_token %}',
+        'action="/neu/mandant/"', 'name="organisation"', 'name="lg"',
+        "core/_sprachwahl.html", '{% csrf_token %}',
     ],
     'Verweise': [
         '/neu/einstellungen/{{ lg_query }}', '/neu/dokumente/{{ lg_query }}',
@@ -80,6 +82,19 @@ HUELLE = {
         "aria-label=\"{% trans 'Bereiche' %}\"", 'aria-current="page"',
     ],
 }
+
+#: Die Omnisearch (früher ⌘K-Palette + Suchfeld) — Markup und Skript.
+OMNISEARCH_MARKUP = [
+    'id="fwOs"', 'id="fwOsEingabe"', 'id="fwOsListe"', 'id="fwOsPop"', 'id="fwOsFilter"', 'id="fwOsAlle"',
+    'id="fwOsTexte"', 'action="/neu/suche/"', 'name="q"', 'role="combobox"', 'role="listbox"',
+    'aria-controls="fwOsListe"', 'data-palette-url="/neu/palette/"',
+]
+OMNISEARCH_SKRIPT = [
+    "PALETTE_URL + '?q='", "'X-Requested-With': 'fetch'", 'MIN_ZEICHEN = 2', 'VERZOEGERUNG = 150',
+    'AbortController', "SUCHE_URL + '?q='", 'fw-palette-data', '(e.metaKey || e.ctrlKey)',
+    "e.key === 'k'", "e.key === 'Escape'", "'ArrowDown'", "'ArrowUp'", "e.key === 'Enter'",
+    'aria-activedescendant', 'window.fwSucheOeffnen',
+]
 
 #: Die Schublade (früher Popup) — `fw/_fwmodal.html`.
 SCHUBLADE = [
@@ -139,6 +154,12 @@ class FunktionsinventarTests(SimpleTestCase):
             with self.subTest(gruppe=gruppe):
                 self._pruefe('fw/base.html', eintraege)
 
+    def test_omnisearch(self):
+        self._pruefe('fw/_omnisearch.html', OMNISEARCH_MARKUP)
+        skript = (pathlib.Path(settings.BASE_DIR) / 'static' / 'js' / 'fw-omnisearch.js').read_text(encoding='utf-8')
+        fehlend = [e for e in OMNISEARCH_SKRIPT if e not in skript]
+        self.assertEqual(fehlend, [], f'fw-omnisearch.js: diese Logikstellen fehlen: {fehlend}')
+
     def test_schublade(self):
         self._pruefe('fw/_fwmodal.html', SCHUBLADE)
 
@@ -160,12 +181,12 @@ class FunktionsinventarTests(SimpleTestCase):
 class GerendertTests(TestCase):
     """Dieselben Hooks im ausgelieferten HTML der Startseite (angemeldet)."""
 
-    def test_startseite_liefert_huelle_palette_und_schublade(self):
+    def test_startseite_liefert_huelle_omnisearch_und_schublade(self):
         from core.tests.test_debitoren import _team_user
         c = Client()
         c.force_login(_team_user())
         html = c.get('/neu/').content.decode('utf-8')
-        for hook in ('id="fwSidebar"', 'id="fwPalette"', 'fw-palette-data', 'id="fwModal"',
+        for hook in ('id="fwSidebar"', 'id="fwOs"', 'fw-palette-data', 'id="fwModal"',
                      'id="fwBestaetigen"', 'aria-label="Bereiche"', 'name="lg"', 'name="q"',
                      'class="fw-schwerpunkt"', 'id="h-vorrat"', 'fw-reiter', 'fwThemeWechseln'):
             with self.subTest(hook=hook):

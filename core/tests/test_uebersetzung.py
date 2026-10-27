@@ -104,6 +104,7 @@ UEBERSETZT = (
     'fw/_fwmodal.html',
     'fw/_listwerkzeug.html',     # Audit Etappe 4: Suche und Sortierung',
     'fw/_modal_done.html',
+    'fw/_omnisearch.html',       # 27.10.2026: Omnisearch der Kopfzeile (Texte fürs Skript im <template>)
     'fw/_posten_gruppen.html',   # V12: Zahlungs-Cockpit, Trefferliste
     'fw/_prozess.html',          # V11: Prozessleiste Nebenkosten
     'fw/_seiten.html',           # Audit Etappe 4: Blätterleiste',
