@@ -32868,21 +32868,39 @@ msgstr "Nouveaux avis de dégât"
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Die Dauer ist nicht fest: Der Vertrag ist weder befristet, noch verzichtet der Vermieter auf die Kündigung. Verlangt sind mindestens %(jahre)s Jahre ab Mietbeginn, also bis %(soll)s."
-msgstr "La durée n'est pas ferme : le bail n'est pas conclu pour une durée déterminée et le bailleur ne renonce pas à résilier. Une durée d'au moins %(jahre)s ans dès le début du bail est exigée, soit jusqu'au %(soll)s."
+msgid ""
+"Die Dauer ist nicht fest: Der Vertrag ist weder befristet, noch verzichtet "
+"der Vermieter auf die Kündigung. Verlangt sind mindestens %(jahre)s Jahre ab"
+" Mietbeginn, also bis %(soll)s."
+msgstr ""
+"La durée n'est pas ferme : le bail n'est pas conclu pour une durée "
+"déterminée et le bailleur ne renonce pas à résilier. Une durée d'au moins "
+"%(jahre)s ans dès le début du bail est exigée, soit jusqu'au %(soll)s."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Die feste Dauer endet am %(bis)s. Verlangt sind mindestens %(jahre)s Jahre ab Mietbeginn, also bis mindestens %(soll)s."
-msgstr "La durée ferme se termine le %(bis)s. Au moins %(jahre)s ans dès le début du bail sont exigés, soit au moins jusqu'au %(soll)s."
+msgid ""
+"Die feste Dauer endet am %(bis)s. Verlangt sind mindestens %(jahre)s Jahre "
+"ab Mietbeginn, also bis mindestens %(soll)s."
+msgstr ""
+"La durée ferme se termine le %(bis)s. Au moins %(jahre)s ans dès le début du"
+" bail sont exigés, soit au moins jusqu'au %(soll)s."
 
 #: core/services/mietzinsmodell.py
 msgid "Für die Staffelmiete gilt die Dauer sinngemäss wie bei der Indexmiete."
-msgstr "Pour le loyer échelonné, la durée s'apprécie par analogie avec le loyer indexé."
+msgstr ""
+"Pour le loyer échelonné, la durée s'apprécie par analogie avec le loyer "
+"indexé."
 
 #: core/services/mietzinsmodell.py
-msgid "Jede Anpassung wird mit dem amtlichen Formular angekündigt, mindestens 30 Tage vor einem Monatsende und erst nach Veröffentlichung des neuen Indexstandes. Sinkt der Index, sinkt der Mietzins entsprechend."
-msgstr "Chaque adaptation est notifiée au moyen du formulaire officiel, au moins 30 jours avant la fin d'un mois et seulement après la publication du nouvel indice. Si l'indice baisse, le loyer baisse en conséquence."
+msgid ""
+"Jede Anpassung wird mit dem amtlichen Formular angekündigt, mindestens 30 "
+"Tage vor einem Monatsende und erst nach Veröffentlichung des neuen "
+"Indexstandes. Sinkt der Index, sinkt der Mietzins entsprechend."
+msgstr ""
+"Chaque adaptation est notifiée au moyen du formulaire officiel, au moins 30 "
+"jours avant la fin d'un mois et seulement après la publication du nouvel "
+"indice. Si l'indice baisse, le loyer baisse en conséquence."
 
 #: core/services/mietzinsmodell.py
 #, python-format
@@ -32908,7 +32926,8 @@ msgstr "Le pourcentage de répercussion du renchérissement est manquant."
 
 #: core/services/mietzinsmodell.py
 msgid "Als Index ist nur der Landesindex der Konsumentenpreise zulässig."
-msgstr "Seul l'indice suisse des prix à la consommation est admis comme indice."
+msgstr ""
+"Seul l'indice suisse des prix à la consommation est admis comme indice."
 
 #: core/services/mietzinsmodell.py
 msgid "Das Mindestintervall muss mindestens 1 Monat betragen."
@@ -32920,25 +32939,42 @@ msgstr "Une clause d'indexation ne peut pas être combinée avec des paliers."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Stufe %(nr)s: Zwischen Mietbeginn und der ersten Erhöhung müssen mindestens 12 Monate liegen, frühestens am %(datum)s."
-msgstr "Palier %(nr)s : au moins 12 mois doivent séparer le début du bail de la première hausse, au plus tôt le %(datum)s."
+msgid ""
+"Stufe %(nr)s: Zwischen Mietbeginn und der ersten Erhöhung müssen mindestens "
+"12 Monate liegen, frühestens am %(datum)s."
+msgstr ""
+"Palier %(nr)s : au moins 12 mois doivent séparer le début du bail de la "
+"première hausse, au plus tôt le %(datum)s."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Stufe %(nr)s: Zwischen zwei Erhöhungen müssen mindestens 12 Monate liegen, frühestens am %(datum)s."
-msgstr "Palier %(nr)s : au moins 12 mois doivent séparer deux hausses, au plus tôt le %(datum)s."
+msgid ""
+"Stufe %(nr)s: Zwischen zwei Erhöhungen müssen mindestens 12 Monate liegen, "
+"frühestens am %(datum)s."
+msgstr ""
+"Palier %(nr)s : au moins 12 mois doivent séparer deux hausses, au plus tôt "
+"le %(datum)s."
 
 #: core/services/mietzinsmodell.py
 msgid "Eine Staffelmiete braucht mindestens eine Stufe."
 msgstr "Un loyer échelonné nécessite au moins un palier."
 
 #: core/services/mietzinsmodell.py
-msgid "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt. Das amtliche Formular braucht es dafür nicht."
-msgstr "Chaque hausse est communiquée par écrit au locataire, au plus tôt quatre mois avant son entrée en vigueur. Le formulaire officiel n'est pas nécessaire pour cela."
+msgid ""
+"Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate"
+" vor ihrem Eintritt. Das amtliche Formular braucht es dafür nicht."
+msgstr ""
+"Chaque hausse est communiquée par écrit au locataire, au plus tôt quatre "
+"mois avant son entrée en vigueur. Le formulaire officiel n'est pas "
+"nécessaire pour cela."
 
 #: core/services/mietzinsmodell.py
-msgid "Zu diesem Vertrag bestehen zusätzlich datierte Mietzinskomponenten oder ein Zeitplan (etwa Gratismonate). Sie gehen den Staffelstufen vor."
-msgstr "Ce bail comporte en outre des composantes de loyer datées ou un échéancier (p. ex. des mois gratuits). Ils prévalent sur les paliers."
+msgid ""
+"Zu diesem Vertrag bestehen zusätzlich datierte Mietzinskomponenten oder ein "
+"Zeitplan (etwa Gratismonate). Sie gehen den Staffelstufen vor."
+msgstr ""
+"Ce bail comporte en outre des composantes de loyer datées ou un échéancier "
+"(p. ex. des mois gratuits). Ils prévalent sur les paliers."
 
 #: core/services/mietzinsmodell.py
 #, python-format
@@ -32952,18 +32988,30 @@ msgstr "Saisir le mois %(stand)s"
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Weitergabe %(w)s %%)."
-msgstr "Un loyer échelonné ne peut pas conserver de clause d'indexation (répercussion de %(w)s %%)."
+msgid ""
+"Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Weitergabe "
+"%(w)s %%)."
+msgstr ""
+"Un loyer échelonné ne peut pas conserver de clause d'indexation "
+"(répercussion de %(w)s %%)."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Der Stand der Index-Basis (%(stand)s) liegt nach dem Mietbeginn (%(beginn)s)."
-msgstr "Le mois de référence de la base de l'indice (%(stand)s) est postérieur au début du bail (%(beginn)s)."
+msgid ""
+"Der Stand der Index-Basis (%(stand)s) liegt nach dem Mietbeginn "
+"(%(beginn)s)."
+msgstr ""
+"Le mois de référence de la base de l'indice (%(stand)s) est postérieur au "
+"début du bail (%(beginn)s)."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Für %(stand)s weist die LIK-Tabelle %(tabelle)s Punkte aus, erfasst sind %(punkte)s."
-msgstr "Pour %(stand)s, le tableau de l'IPC indique %(tabelle)s points ; %(punkte)s ont été saisis."
+msgid ""
+"Für %(stand)s weist die LIK-Tabelle %(tabelle)s Punkte aus, erfasst sind "
+"%(punkte)s."
+msgstr ""
+"Pour %(stand)s, le tableau de l'IPC indique %(tabelle)s points ; %(punkte)s "
+"ont été saisis."
 
 #: core/services/mietzinsmodell.py
 msgid "Weitergabe eintragen: 100 %"
@@ -32971,7 +33019,8 @@ msgstr "Saisir la répercussion : 100 %"
 
 #: core/services/mietzinsmodell.py
 msgid "Die Weitergabe darf höchstens 100 Prozent der Teuerung betragen."
-msgstr "La répercussion ne peut pas dépasser 100 pour cent du renchérissement."
+msgstr ""
+"La répercussion ne peut pas dépasser 100 pour cent du renchérissement."
 
 #: core/services/mietzinsmodell.py
 msgid "Landesindex der Konsumentenpreise wählen"
@@ -32992,8 +33041,12 @@ msgstr "Palier %(nr)s : la date est manquante."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Stufe %(nr)s: Die Erhöhung muss als Frankenbetrag vereinbart werden, nicht in Prozent."
-msgstr "Palier %(nr)s : la hausse doit être convenue en montant en francs, pas en pourcentage."
+msgid ""
+"Stufe %(nr)s: Die Erhöhung muss als Frankenbetrag vereinbart werden, nicht "
+"in Prozent."
+msgstr ""
+"Palier %(nr)s : la hausse doit être convenue en montant en francs, pas en "
+"pourcentage."
 
 #: core/services/mietzinsmodell.py
 msgid "Weitergabe zurücksetzen auf 100 %"
@@ -33001,8 +33054,12 @@ msgstr "Rétablir la répercussion à 100 %"
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Intervall %(m)s Monate)."
-msgstr "Un loyer échelonné ne peut pas conserver de clause d'indexation (intervalle de %(m)s mois)."
+msgid ""
+"Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Intervall "
+"%(m)s Monate)."
+msgstr ""
+"Un loyer échelonné ne peut pas conserver de clause d'indexation (intervalle "
+"de %(m)s mois)."
 
 #: core/services/mietzinsmodell.py
 msgid "Bei festem Mietzins dürfen keine Staffelstufen stehen."
@@ -33019,8 +33076,11 @@ msgstr "Palier %(nr)s : la hausse en CHF est manquante."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Stufe %(nr)s (%(datum)s) liegt nach dem Ende der festen Dauer (%(bis)s)."
-msgstr "Le palier %(nr)s (%(datum)s) se situe après la fin de la durée ferme (%(bis)s)."
+msgid ""
+"Stufe %(nr)s (%(datum)s) liegt nach dem Ende der festen Dauer (%(bis)s)."
+msgstr ""
+"Le palier %(nr)s (%(datum)s) se situe après la fin de la durée ferme "
+"(%(bis)s)."
 
 #: core/services/mietzinsmodell.py
 msgid "Intervall zurücksetzen auf 12 Monate"
@@ -33029,7 +33089,8 @@ msgstr "Rétablir l'intervalle à 12 mois"
 #: core/services/mietzinsmodell.py
 #, python-format
 msgid "Stufe %(nr)s: Die Erhöhung muss ein Frankenbetrag über 0 sein."
-msgstr "Palier %(nr)s : la hausse doit être un montant en francs supérieur à 0."
+msgstr ""
+"Palier %(nr)s : la hausse doit être un montant en francs supérieur à 0."
 
 #: core/services/mietzinsmodell.py
 #, python-format
@@ -33037,33 +33098,597 @@ msgid "Stufe auf den %(datum)s legen"
 msgstr "Placer le palier au %(datum)s"
 
 #: core/hilfe.py
-msgid "Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach unten und höchstens im Umfang der Teuerung (Art. 269b OR, Art. 17 VMWG). Der Vertrag muss mindestens fünf Jahre fest dauern; ein Kündigungsverzicht des Vermieters für fünf Jahre genügt (Art. 17 Abs. 4 VMWG). Jede Anpassung geht mit dem amtlichen Formular, mindestens 30 Tage vor einem Monatsende."
-msgstr "Le loyer suit l'indice suisse des prix à la consommation, à la hausse comme à la baisse et au maximum à hauteur du renchérissement (art. 269b CO, art. 17 OBLF). Le bail doit être ferme pour au moins cinq ans ; une renonciation du bailleur à résilier pendant cinq ans suffit (art. 17 al. 4 OBLF). Toute adaptation se fait au moyen du formulaire officiel, au moins 30 jours avant la fin d'un mois."
+msgid ""
+"Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach"
+" unten und höchstens im Umfang der Teuerung (Art. 269b OR, Art. 17 VMWG). "
+"Der Vertrag muss mindestens fünf Jahre fest dauern; ein Kündigungsverzicht "
+"des Vermieters für fünf Jahre genügt (Art. 17 Abs. 4 VMWG). Jede Anpassung "
+"geht mit dem amtlichen Formular, mindestens 30 Tage vor einem Monatsende."
+msgstr ""
+"Le loyer suit l'indice suisse des prix à la consommation, à la hausse comme "
+"à la baisse et au maximum à hauteur du renchérissement (art. 269b CO, art. "
+"17 OBLF). Le bail doit être ferme pour au moins cinq ans ; une renonciation "
+"du bailleur à résilier pendant cinq ans suffit (art. 17 al. 4 OBLF). Toute "
+"adaptation se fait au moyen du formulaire officiel, au moins 30 jours avant "
+"la fin d'un mois."
 
 #: core/hilfe.py
-msgid "Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens einmal jährlich, bei einer Vertragsdauer von mindestens drei Jahren (Art. 269c OR). Dass auch ein Kündigungsverzicht des Vermieters als feste Dauer zählt, ist sinngemäss von Art. 17 Abs. 4 VMWG übernommen. Der Mietzins folgt den Stufen — die Anpassung nach Referenzzins und Teuerung gilt für ihn nicht."
-msgstr "Les hausses sont convenues dans le bail en montants en francs, au plus une fois par an, pour un bail d'au moins trois ans (art. 269c CO). Le fait qu'une renonciation du bailleur à résilier compte aussi comme durée ferme est repris par analogie de l'art. 17 al. 4 OBLF. Le loyer suit les paliers — l'adaptation selon le taux de référence et le renchérissement ne s'y applique pas."
+msgid ""
+"Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens "
+"einmal jährlich, bei einer Vertragsdauer von mindestens drei Jahren (Art. "
+"269c OR). Dass auch ein Kündigungsverzicht des Vermieters als feste Dauer "
+"zählt, ist sinngemäss von Art. 17 Abs. 4 VMWG übernommen. Der Mietzins folgt"
+" den Stufen — die Anpassung nach Referenzzins und Teuerung gilt für ihn "
+"nicht."
+msgstr ""
+"Les hausses sont convenues dans le bail en montants en francs, au plus une "
+"fois par an, pour un bail d'au moins trois ans (art. 269c CO). Le fait "
+"qu'une renonciation du bailleur à résilier compte aussi comme durée ferme "
+"est repris par analogie de l'art. 17 al. 4 OBLF. Le loyer suit les paliers —"
+" l'adaptation selon le taux de référence et le renchérissement ne s'y "
+"applique pas."
 
 #: core/hilfe.py
 msgid "Index und Staffel zusammen?"
 msgstr "Indice et paliers ensemble ?"
 
 #: core/hilfe.py
-msgid "Eine Indexklausel darf nicht mit einer Staffelung kombiniert werden (Art. 269b und 269c OR, BGE 124 III 57). Pro Vertrag gilt deshalb genau ein Mietzinsmodell: fest, Index oder Staffel."
-msgstr "Une clause d'indexation ne peut pas être combinée avec un échelonnement (art. 269b et 269c CO, ATF 124 III 57). Un seul modèle de loyer s'applique donc par bail : fixe, indexé ou échelonné."
+msgid ""
+"Eine Indexklausel darf nicht mit einer Staffelung kombiniert werden (Art. "
+"269b und 269c OR, BGE 124 III 57). Pro Vertrag gilt deshalb genau ein "
+"Mietzinsmodell: fest, Index oder Staffel."
+msgstr ""
+"Une clause d'indexation ne peut pas être combinée avec un échelonnement "
+"(art. 269b et 269c CO, ATF 124 III 57). Un seul modèle de loyer s'applique "
+"donc par bail : fixe, indexé ou échelonné."
 
 #: core/hilfe.py
 msgid "Kündigungsverzicht des Vermieters"
 msgstr "Renonciation du bailleur à résilier"
 
 #: core/hilfe.py
-msgid "Bei einem unbefristeten Vertrag zählt die Dauer als fest, wenn der Vermieter für die verlangte Zeit auf die Kündigung verzichtet: fünf Jahre bei der Indexmiete (Art. 17 Abs. 4 VMWG), drei Jahre bei der Staffelmiete (sinngemäss, Art. 269c OR). Die Frist läuft ab Mietbeginn; das genannte Enddatum zählt mit."
-msgstr "Pour un bail de durée indéterminée, la durée est réputée ferme si le bailleur renonce à résilier pendant la période exigée : cinq ans pour le loyer indexé (art. 17 al. 4 OBLF), trois ans pour le loyer échelonné (par analogie, art. 269c CO). Le délai court dès le début du bail ; la date indiquée est comprise."
+msgid ""
+"Bei einem unbefristeten Vertrag zählt die Dauer als fest, wenn der Vermieter"
+" für die verlangte Zeit auf die Kündigung verzichtet: fünf Jahre bei der "
+"Indexmiete (Art. 17 Abs. 4 VMWG), drei Jahre bei der Staffelmiete "
+"(sinngemäss, Art. 269c OR). Die Frist läuft ab Mietbeginn; das genannte "
+"Enddatum zählt mit."
+msgstr ""
+"Pour un bail de durée indéterminée, la durée est réputée ferme si le "
+"bailleur renonce à résilier pendant la période exigée : cinq ans pour le "
+"loyer indexé (art. 17 al. 4 OBLF), trois ans pour le loyer échelonné (par "
+"analogie, art. 269c CO). Le délai court dès le début du bail ; la date "
+"indiquée est comprise."
 
 #: core/hilfe.py
 msgid "Mitteilung der Staffelerhöhung"
 msgstr "Communication de la hausse échelonnée"
 
 #: core/hilfe.py
-msgid "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche Formular braucht es dafür nicht, die Mitteilung aber schon: Der Vertrag allein ersetzt sie nicht."
-msgstr "Chaque hausse est communiquée par écrit au locataire, au plus tôt quatre mois avant son entrée en vigueur (art. 269d al. 5 CO, art. 19a OBLF). Le formulaire officiel n'est pas nécessaire pour cela, mais la communication l'est : le contrat seul ne la remplace pas."
+msgid ""
+"Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate"
+" vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche "
+"Formular braucht es dafür nicht, die Mitteilung aber schon: Der Vertrag "
+"allein ersetzt sie nicht."
+msgstr ""
+"Chaque hausse est communiquée par écrit au locataire, au plus tôt quatre "
+"mois avant son entrée en vigueur (art. 269d al. 5 CO, art. 19a OBLF). Le "
+"formulaire officiel n'est pas nécessaire pour cela, mais la communication "
+"l'est : le contrat seul ne la remplace pas."
+
+msgid "Bekanntgabe des Indexstandes"
+msgstr "Publication de l'indice atteint"
+
+msgid ""
+"Bei einer Indexmiete darf die Mitteilung erst nach der öffentlichen "
+"Bekanntgabe des neuen Indexstandes erfolgen (Art. 19 Abs. 2 VMWG). Annahme "
+"der Anwendung: Ein Monat gilt als bekannt gegeben, sobald er in ihrer LIK-"
+"Tabelle steht; ein Veröffentlichungsdatum des BFS ist nicht hinterlegt."
+msgstr ""
+"Pour un loyer indexé, la communication ne peut intervenir qu'après la "
+"publication officielle du nouvel indice (art. 19 al. 2 OBLF). Hypothèse de "
+"l'application : un mois est réputé publié dès qu'il figure dans son tableau "
+"de l'IPC ; aucune date de publication de l'OFS n'y est enregistrée."
+
+msgid "Höchstbetrag"
+msgstr "Montant maximal"
+
+msgid ""
+"Die Erhöhung darf die Zunahme des Landesindexes nicht übersteigen (Art. 17 "
+"Abs. 1 VMWG), bei vereinbarter Teil-Weitergabe nur deren Anteil. Sinkt der "
+"Index, ist der Mietzins nach unten anzupassen (Abs. 2). Der Vorschlag wird "
+"auf 5 Rappen abgerundet, damit er die Grenze nie überschreitet."
+msgstr ""
+"L'augmentation ne peut pas dépasser la hausse de l'indice national (art. 17 "
+"al. 1 OBLF), en cas de report partiel convenu, seulement la part "
+"correspondante. Si l'indice baisse, le loyer doit être réduit (al. 2). La "
+"proposition est arrondie vers le bas à 5 centimes, afin de ne jamais "
+"dépasser la limite."
+
+msgid "Frist und Termin"
+msgstr "Délai et date"
+
+msgid ""
+"Die Anpassung ist mindestens 30 Tage im Voraus auf ein Monatsende "
+"anzukündigen (Art. 17 Abs. 3 VMWG). Die Anwendung rechnet ab Zugang beim "
+"Mieter, ohne bestätigten Zugang ab Versand plus Zustellpuffer. Frühere "
+"Termine stehen nicht zur Wahl."
+msgstr ""
+"L'adaptation doit être annoncée au moins 30 jours à l'avance pour la fin "
+"d'un mois (art. 17 al. 3 OBLF). L'application compte à partir de la "
+"réception par le locataire ; sans réception confirmée, à partir de l'envoi "
+"plus un délai d'acheminement. Les dates antérieures ne peuvent pas être "
+"choisies."
+
+msgid "Vertragliche Grenzen"
+msgstr "Limites contractuelles"
+
+msgid ""
+"Weitergabe, Mindestintervall und letzte Anpassung stammen aus dem "
+"Mietvertrag, nicht aus dem Gesetz. Ein laufendes Mindestintervall wird "
+"gemeldet, blockiert aber nicht: Der Vertrag entscheidet."
+msgstr ""
+"Le report, l'intervalle minimal et la dernière adaptation proviennent du "
+"contrat de bail, non de la loi. Un intervalle minimal en cours est signalé, "
+"mais ne bloque pas : le contrat décide."
+
+msgid "Amtliches Formular bei der Indexanpassung"
+msgstr "Formule officielle pour l'adaptation à l'indice"
+
+msgid ""
+"Das amtliche Formular (Art. 269d OR) gilt sinngemäss auch für die "
+"Indexanpassung (Art. 19 Abs. 2 VMWG). Nicht für jeden Kanton liegt ein "
+"Original vor; dann nennt die Anwendung die Lücke und erzeugt kein "
+"Ersatzformular."
+msgstr ""
+"La formule officielle (art. 269d CO) s'applique par analogie à l'adaptation "
+"à l'indice (art. 19 al. 2 OBLF). Un original n'existe pas pour chaque canton"
+" ; l'application signale alors la lacune et ne produit pas de formule de "
+"remplacement."
+
+msgid ""
+"Jede im Vertrag vereinbarte Erhöhung teilt der Vermieter schriftlich mit; "
+"ein amtliches Formular braucht es dafür nicht (Art. 269d Abs. 5 OR). Die "
+"Mitteilung darf frühestens vier Monate vor Eintritt der Erhöhung erfolgen "
+"(Art. 19a VMWG)."
+msgstr ""
+"Le bailleur communique par écrit chaque augmentation convenue dans le "
+"contrat ; une formule officielle n'est pas nécessaire (art. 269d al. 5 CO). "
+"La communication ne peut intervenir que quatre mois au plus tôt avant "
+"l'entrée en vigueur de l'augmentation (art. 19a OBLF)."
+
+msgid "Mitteilungsfenster"
+msgstr "Fenêtre de communication"
+
+msgid ""
+"Der erste Tag, an dem die Mitteilung versandt werden darf: vier Monate vor "
+"der Erhöhung. Bei einer Erhöhung am 31. März ist es der 1. Dezember, nicht "
+"der 30. November, der vier Monate und einen Tag davor liegt. Vorher erstellt"
+" die Anwendung kein Schreiben und nimmt kein Versanddatum an."
+msgstr ""
+"Le premier jour où la communication peut être envoyée : quatre mois avant "
+"l'augmentation. Pour une augmentation au 31 mars, c'est le 1er décembre et "
+"non le 30 novembre, qui précède de quatre mois et un jour. Avant cette date,"
+" l'application ne produit aucun courrier et n'enregistre aucune date "
+"d'envoi."
+
+msgid "Bitte den Monat des neuen LIK-Standes wählen."
+msgstr "Veuillez choisir le mois du nouvel indice."
+
+#, python-format
+msgid ""
+"Der LIK-Stand %(monat)s ist nicht veröffentlicht. Eine Indexanpassung ist "
+"erst nach der Bekanntgabe des neuen Indexstandes möglich (Art. 19 Abs. 2 "
+"VMWG). Letzter verfügbarer Monat: %(letzter)s."
+msgstr ""
+"L'indice de %(monat)s n'est pas publié. Une adaptation à l'indice n'est "
+"possible qu'après la publication du nouvel indice (art. 19 al. 2 OBLF). "
+"Dernier mois disponible : %(letzter)s."
+
+#, python-format
+msgid "Der neue LIK-Stand (%(neu)s) liegt vor dem bisherigen (%(alt)s)."
+msgstr "Le nouvel indice (%(neu)s) est antérieur à l'indice actuel (%(alt)s)."
+
+#, python-format
+msgid ""
+"Der LIK ist gesunken (%(alt)s → %(neu)s Punkte): Der Mietzins ist nach unten"
+" anzupassen (Art. 17 Abs. 2 VMWG), höchstens CHF %(grenze)s."
+msgstr ""
+"L'indice a baissé (%(alt)s → %(neu)s points) : le loyer doit être réduit "
+"(art. 17 al. 2 OBLF), au maximum CHF %(grenze)s."
+
+#, python-format
+msgid ""
+"Der LIK ist unverändert (%(lik)s Punkte): Eine Erhöhung ist nicht zulässig "
+"(Art. 17 Abs. 1 VMWG)."
+msgstr ""
+"L'indice est inchangé (%(lik)s points) : une augmentation n'est pas admise "
+"(art. 17 al. 1 OBLF)."
+
+#, python-format
+msgid ""
+"Die Erhöhung übersteigt die Indexzunahme mal Weitergabe (%(zunahme)s %% × "
+"%(w)s %%): höchstens CHF %(grenze)s netto (Art. 17 Abs. 1 VMWG)."
+msgstr ""
+"L'augmentation dépasse la hausse de l'indice multipliée par le report "
+"(%(zunahme)s %% × %(w)s %%) : au maximum CHF %(grenze)s net (art. 17 al. 1 "
+"OBLF)."
+
+msgid "Bitte das Wirksamkeitsdatum angeben."
+msgstr "Veuillez indiquer la date d'effet."
+
+msgid ""
+"Die Indexanpassung kann nur auf ein Monatsende wirksam werden, also am "
+"Ersten des Folgemonats (Art. 17 Abs. 3 VMWG)."
+msgstr ""
+"L'adaptation à l'indice ne peut prendre effet que pour la fin d'un mois, "
+"soit le premier du mois suivant (art. 17 al. 3 OBLF)."
+
+#, python-format
+msgid ""
+"Wirksamkeitsdatum zu früh: Die Ankündigung braucht mindestens 30 Tage bis "
+"zum Monatsende. Bei diesem Versand ist der früheste Termin der %(datum)s "
+"(Art. 17 Abs. 3 VMWG)."
+msgstr ""
+"Date d'effet trop proche : l'annonce exige au moins 30 jours jusqu'à la fin "
+"du mois. Avec cet envoi, la première date possible est le %(datum)s (art. 17"
+" al. 3 OBLF)."
+
+#, python-format
+msgid ""
+"Vertragliche Grenze (kein Gesetzeswert): Das Mindestintervall von %(monate)s"
+" Monaten seit der letzten Anpassung (%(letzte)s) läuft bis %(ende)s."
+msgstr ""
+"Limite contractuelle (non prévue par la loi) : l'intervalle minimal de "
+"%(monate)s mois depuis la dernière adaptation (%(letzte)s) court jusqu'au "
+"%(ende)s."
+
+#, python-format
+msgid ""
+"Frühestens %(datum)s: mindestens 30 Tage bis zu einem Monatsende (Art. 17 "
+"Abs. 3 VMWG), gerechnet ab Zugang (vermutet %(zugang)s)."
+msgstr ""
+"Au plus tôt le %(datum)s : au moins 30 jours jusqu'à la fin d'un mois (art. "
+"17 al. 3 OBLF), comptés dès la réception (présumée le %(zugang)s)."
+
+#, python-format
+msgid ""
+"Höchstens CHF %(grenze)s (Art. 17 VMWG). Ein höherer Betrag wird abgelehnt."
+msgstr ""
+"Au maximum CHF %(grenze)s (art. 17 OBLF). Un montant plus élevé est refusé."
+
+msgid "Erst nach einem veröffentlichten LIK-Stand möglich."
+msgstr "Possible seulement après la publication d'un indice."
+
+msgid "Der LIK der Vertragsbasis fehlt — bitte die Basis-Punkte ergänzen."
+msgstr ""
+"L'IPC de la base du contrat manque — veuillez compléter les points de base."
+
+msgid ""
+"Die Stufe erhöht nicht: Eine Staffelmiete verlangt eine Erhöhung in Franken "
+"(Art. 269c OR)."
+msgstr ""
+"Cette étape n'augmente pas le loyer : un loyer échelonné exige une "
+"augmentation en francs (art. 269c CO)."
+
+msgid ""
+"Erhöhung und Netto der Stufe stimmen nicht überein — bitte die Stufe prüfen."
+msgstr ""
+"L'augmentation et le net de l'échelon ne concordent pas — veuillez vérifier "
+"l'échelon."
+
+msgid "Der Vertrag ist keine Staffelmiete."
+msgstr "Le contrat n'est pas un loyer échelonné."
+
+msgid "Die Mitteilung ist bereits als versandt markiert."
+msgstr "La communication est déjà marquée comme envoyée."
+
+#, python-format
+msgid ""
+"Die Erhöhung gilt bereits (%(datum)s): Ein Schreiben im Voraus ist nicht "
+"mehr möglich."
+msgstr ""
+"L'augmentation s'applique déjà (%(datum)s) : un courrier préalable n'est "
+"plus possible."
+
+#, python-format
+msgid ""
+"Zu früh: Die schriftliche Mitteilung darf frühestens vier Monate vor der "
+"Erhöhung erfolgen, also ab dem %(datum)s (Art. 19a VMWG)."
+msgstr ""
+"Trop tôt : la communication écrite ne peut intervenir que quatre mois au "
+"plus tôt avant l'augmentation, soit dès le %(datum)s (art. 19a OBLF)."
+
+msgid "Das Schreiben konnte nicht abgelegt werden."
+msgstr "Le courrier n'a pas pu être classé."
+
+msgid "Das Versanddatum kann nicht in der Zukunft liegen."
+msgstr "La date d'envoi ne peut pas être dans le futur."
+
+#, python-format
+msgid ""
+"Zu früh versandt: Die schriftliche Mitteilung darf frühestens vier Monate "
+"vor der Erhöhung erfolgen, also ab dem %(datum)s (Art. 19a VMWG)."
+msgstr ""
+"Envoyé trop tôt : la communication écrite ne peut intervenir que quatre mois"
+" au plus tôt avant l'augmentation, soit dès le %(datum)s (art. 19a OBLF)."
+
+msgid "Mitteilung der vereinbarten Mietzinserhöhung (Staffelmiete)"
+msgstr "Communication de l'augmentation de loyer convenue (loyer échelonné)"
+
+#, python-format
+msgid ""
+"Für das Mietobjekt <b>%(objekt)s</b> an der %(strasse)s, %(plz)s %(ort)s, "
+"ist im Mietvertrag mit Mietbeginn %(beginn)s eine Staffelmiete vereinbart "
+"(Art. 269c OR). Gestützt auf diese Vereinbarung teilen wir Ihnen die "
+"folgende Erhöhung des Nettomietzinses mit."
+msgstr ""
+"Pour l'objet loué <b>%(objekt)s</b>, %(strasse)s, %(plz)s %(ort)s, un loyer "
+"échelonné a été convenu dans le contrat de bail dont la location commence le"
+" %(beginn)s (art. 269c CO). Sur la base de cet accord, nous vous "
+"communiquons l'augmentation suivante du loyer net."
+
+msgid "Nettomietzins bisher"
+msgstr "Loyer net actuel"
+
+msgid "Erhöhung"
+msgstr "Augmentation"
+
+msgid "Neuer Nettomietzins"
+msgstr "Nouveau loyer net"
+
+msgid ""
+"Die Erhöhung ergibt sich aus der im Mietvertrag vereinbarten Staffel. Diese "
+"Mitteilung betrifft nur den Nettomietzins; die Nebenkosten sind davon nicht "
+"betroffen."
+msgstr ""
+"L'augmentation résulte de l'échelonnement convenu dans le contrat de bail. "
+"Cette communication ne concerne que le loyer net ; les frais accessoires ne "
+"sont pas touchés."
+
+msgid ""
+"Schriftliche Mitteilung nach Art. 269d Abs. 5 OR. Für die Mitteilung einer "
+"im Vertrag vorgesehenen Staffelerhöhung ist kein amtliches Formular "
+"erforderlich."
+msgstr ""
+"Communication écrite selon l'art. 269d al. 5 CO. Pour la communication d'une"
+" augmentation échelonnée prévue dans le contrat, une formule officielle "
+"n'est pas requise."
+
+msgid "Indexstand"
+msgstr "Indice atteint"
+
+msgid ""
+"Neuer LIK-Stand, Höchstbetrag und vertragliche Grenzen. Mehr als die "
+"Indexzunahme mal Weitergabe ist nicht zulässig; sinkt der Index, ist die "
+"Anpassung nach unten zwingend."
+msgstr ""
+"Nouvel indice, montant maximal et limites contractuelles. Pas plus que la "
+"hausse de l'indice multipliée par le report ; si l'indice baisse, la "
+"réduction est obligatoire."
+
+msgid ""
+"Der Mietzins folgt dem Landesindex der Konsumentenpreise. Erhöht werden darf"
+" höchstens um die Zunahme mal die vereinbarte Weitergabe, gesenkt werden "
+"muss bei sinkendem Index."
+msgstr ""
+"Le loyer suit l'indice suisse des prix à la consommation. Il peut être "
+"augmenté au plus de la hausse multipliée par le report convenu, et doit être"
+" réduit si l'indice baisse."
+
+msgid ""
+"Annahme der Anwendung: Ein Monat gilt als bekannt gegeben, sobald er in der "
+"LIK-Tabelle der Anwendung steht. Ein Veröffentlichungsdatum des BFS ist "
+"nicht hinterlegt."
+msgstr ""
+"Hypothèse de l'application : un mois est réputé publié dès qu'il figure dans"
+" le tableau de l'IPC de l'application. Aucune date de publication de l'OFS "
+"n'est enregistrée."
+
+msgid ""
+"Der LIK der Vertragsbasis ist nicht erfasst — bitte die Basis-Punkte "
+"ergänzen, auf denen der aktuelle Mietzins beruht. Sie werden auf dem Vertrag"
+" gespeichert."
+msgstr ""
+"L'IPC de la base du contrat n'est pas saisi — veuillez compléter les points "
+"de base sur lesquels repose le loyer actuel. Ils sont enregistrés dans le "
+"contrat."
+
+#, python-format
+msgid ""
+"Für diesen Vertrag liegt bereits eine Anpassung vor: Gerechnet wird ab deren"
+" Stand — LIK %(lik)s, Netto CHF %(netto)s —, nicht ab der Vertragsbasis "
+"unten."
+msgstr ""
+"Une adaptation existe déjà pour ce contrat : le calcul part de son état — "
+"IPC %(lik)s, net CHF %(netto)s —, et non de la base du contrat ci-dessous."
+
+msgid "Der Index ist gesunken"
+msgstr "L'indice a baissé"
+
+msgid ""
+"Der Mietzins ist nach unten anzupassen (Art. 17 Abs. 2 VMWG). Der Assistent "
+"schlägt die Senkung vor und lässt keinen höheren Betrag zu."
+msgstr ""
+"Le loyer doit être réduit (art. 17 al. 2 OBLF). L'assistant propose la "
+"réduction et n'admet aucun montant plus élevé."
+
+msgid "Neuer LIK-Stand (Monat)"
+msgstr "Nouvel indice (mois)"
+
+#, python-format
+msgid "letzter verfügbarer Monat: %(monat)s"
+msgstr "dernier mois disponible : %(monat)s"
+
+msgid "Neuer LIK"
+msgstr "Nouvel IPC"
+
+msgid "Veränderung"
+msgstr "variation"
+
+msgid "Höchstens netto"
+msgstr "Maximum net"
+
+msgid "Weitergabe"
+msgstr "report"
+
+msgid "auf 5 Rappen abgerundet"
+msgstr "arrondi vers le bas à 5 centimes"
+
+msgid "Diese Werte stammen aus dem Mietvertrag, nicht aus dem Gesetz."
+msgstr "Ces valeurs proviennent du contrat de bail, non de la loi."
+
+msgid "Mindestintervall"
+msgstr "Intervalle minimal"
+
+msgid "Monate"
+msgstr "mois"
+
+msgid "Letzte Indexanpassung"
+msgstr "Dernière adaptation à l'indice"
+
+msgid "keine erfasst"
+msgstr "aucune saisie"
+
+#, python-format
+msgid "Lücke: Kein Originalformular für den Kanton %(kanton)s"
+msgstr "Lacune : aucune formule originale pour le canton %(kanton)s"
+
+#, python-format
+msgid ""
+"Die Anwendung erzeugt für die Indexanpassung kein Ersatzformular, auch keine"
+" Nachbildung. Originale liegen nur vor für: %(kantone)s. Verwenden Sie das "
+"Formular der kantonalen Behörde und erfassen Sie hier nur den Versand."
+msgstr ""
+"Pour l'adaptation à l'indice, l'application ne produit aucune formule de "
+"remplacement, pas même une reproduction. Des originaux n'existent que pour :"
+" %(kantone)s. Utilisez la formule de l'autorité cantonale et ne saisissez "
+"ici que l'envoi."
+
+msgid ""
+"Verstanden: Die Mitteilung geht auf dem amtlichen Formular des Kantons; hier"
+" wird nur der Versand erfasst."
+msgstr ""
+"Compris : la communication est faite sur la formule officielle du canton ; "
+"seul l'envoi est saisi ici."
+
+msgid "Begründung auf dem Formular"
+msgstr "Motif sur la formule"
+
+msgid ""
+"Wird beim Speichern aus Indexstand, Zunahme, Weitergabe und Beträgen erzeugt"
+" (Art. 269b OR, Art. 17 VMWG). Ordentliche Gründe wie Referenzzins oder "
+"Kostensteigerung gibt es bei der Indexmiete nicht."
+msgstr ""
+"Produit à l'enregistrement à partir de l'indice, de la variation, du report "
+"et des montants (art. 269b CO, art. 17 OBLF). Les motifs ordinaires comme le"
+" taux de référence ou la hausse des coûts n'existent pas pour un loyer "
+"indexé."
+
+msgid "Kein veröffentlichter LIK-Stand gewählt."
+msgstr "Aucun indice publié n'est choisi."
+
+msgid ""
+"Der Betrag war höher als zulässig und wurde auf den Höchstbetrag "
+"zurückgesetzt (Art. 17 VMWG)."
+msgstr ""
+"Le montant dépassait le maximum admis et a été ramené au montant maximal "
+"(art. 17 OBLF)."
+
+msgid "Der Nettomietzins bleibt unverändert."
+msgstr "Le loyer net reste inchangé."
+
+msgid "Staffelmiete: Mitteilung der Erhöhungen"
+msgstr "Loyer échelonné : communication des augmentations"
+
+msgid ""
+"Jede vereinbarte Erhöhung wird schriftlich mitgeteilt, frühestens vier "
+"Monate vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Ein "
+"amtliches Formular ist dafür nicht nötig."
+msgstr ""
+"Chaque augmentation convenue est communiquée par écrit, quatre mois au plus "
+"tôt avant son entrée en vigueur (art. 269d al. 5 CO, art. 19a OBLF). Une "
+"formule officielle n'est pas nécessaire."
+
+#, python-format
+msgid "Erhöhung ab %(datum)s"
+msgstr "Augmentation dès le %(datum)s"
+
+#, python-format
+msgid "Mitteilung frühestens ab %(datum)s"
+msgstr "Communication au plus tôt dès le %(datum)s"
+
+#, python-format
+msgid "versandt am %(datum)s"
+msgstr "envoyé le %(datum)s"
+
+#, python-format
+msgid "Schreiben erstellt am %(datum)s"
+msgstr "courrier établi le %(datum)s"
+
+msgid ""
+"Die Erhöhung gilt bereits, ohne dass eine Mitteilung als versandt erfasst "
+"ist."
+msgstr ""
+"L'augmentation s'applique déjà sans qu'aucune communication ne soit saisie "
+"comme envoyée."
+
+msgid "versandt"
+msgstr "envoyé"
+
+msgid "Mitteilung fällig"
+msgstr "Communication à faire"
+
+msgid "Schreiben erstellt"
+msgstr "Courrier établi"
+
+msgid "noch nicht im Fenster"
+msgstr "pas encore dans la fenêtre"
+
+msgid "Schreiben öffnen"
+msgstr "Ouvrir le courrier"
+
+msgid "Schreiben neu erstellen"
+msgstr "Établir à nouveau le courrier"
+
+msgid "Schreiben erstellen"
+msgstr "Établir le courrier"
+
+msgid "Als versandt markieren"
+msgstr "Marquer comme envoyé"
+
+msgid "Noch keine Staffelstufen erfasst."
+msgstr "Aucun échelon de loyer encore saisi."
+
+msgid "Der Nettomietzins bleibt unverändert — es gibt nichts mitzuteilen."
+msgstr "Le loyer net reste inchangé — il n'y a rien à communiquer."
+
+#, python-format
+msgid ""
+"Das höhere Nebenkosten-Akonto folgt nicht dem Index: Es kann frühestens auf "
+"%(datum)s wirksam werden (Kündigungsfrist + 10 Tage, Art. 269d OR)."
+msgstr ""
+"L'acompte de frais accessoires plus élevé ne suit pas l'indice : il ne peut "
+"prendre effet qu'au plus tôt le %(datum)s (délai de résiliation + 10 jours, "
+"art. 269d CO)."
+
+msgid "Für die Indexanpassung erzeugt die Anwendung kein Ersatzformular."
+msgstr ""
+"Pour l'adaptation à l'indice, l'application ne produit aucune formule de "
+"remplacement."
+
+#, python-format
+msgid ""
+"Schreiben zur Erhöhung ab %(datum)s erstellt und in der Akte abgelegt "
+"(Reiter «Dokumente»)."
+msgstr ""
+"Courrier relatif à l'augmentation dès le %(datum)s établi et classé dans le "
+"dossier (onglet « Documents »)."
+
+msgid "Bitte ein gültiges Versanddatum angeben."
+msgstr "Veuillez indiquer une date d'envoi valable."
+
+#, python-format
+msgid "Mitteilung zur Erhöhung ab %(datum)s als versandt markiert."
+msgstr ""
+"Communication de l'augmentation dès le %(datum)s marquée comme envoyée."

@@ -524,6 +524,46 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
             </tbody>
         </table></div>
     </div>
+    {% if v.mietzins_modell == 'staffel' %}
+    <div class="fw-card" id="vt-staffel-mitteilungen">
+        <div class="fw-kopf">
+            <span class="fw-ikon">{% zeichen 'senden' %}</span><h2>{% trans "Staffelmiete: Mitteilung der Erhöhungen" %} {% hilfe 'staffel_mitteilung' %}</h2>
+        </div>
+        <div class="px-5 py-3">
+            <p class="fw-hilfe">{% trans "Jede vereinbarte Erhöhung wird schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Ein amtliches Formular ist dafür nicht nötig." %}</p>
+        </div>
+        {% for z in staffel_mitteilungen %}{% with s=z.s %}
+        <div class="fw-zeile" data-staffel-stufe="{{ s.stufe.id }}" data-status="{{ s.status }}">
+            <div class="fw-mitte">
+                <div class="fw-t">{% blocktrans with datum=s.eintritt|date:"d.m.Y" %}Erhöhung ab {{ datum }}{% endblocktrans %}
+                    {% if s.erhoehung %}<span class="fw-num fw-strong">+ CHF {{ s.erhoehung|chf }}</span>{% endif %}</div>
+                <div class="fw-s">
+                    {% if s.bisher is not None %}{% trans "Netto" %} CHF {{ s.bisher|chf }} → <span class="fw-strong">CHF {{ s.neu|chf }}</span> · {% endif %}
+                    {% blocktrans with datum=s.fenster_ab|date:"d.m.Y" %}Mitteilung frühestens ab {{ datum }}{% endblocktrans %} {% hilfe 'staffel_mitteilung_fenster' %}
+                    {% if s.stufe.mitteilung_versandt_am %}· {% blocktrans with datum=s.stufe.mitteilung_versandt_am|date:"d.m.Y" %}versandt am {{ datum }}{% endblocktrans %}{% elif s.stufe.mitteilung_erstellt_am %}· {% blocktrans with datum=s.stufe.mitteilung_erstellt_am|date:"d.m.Y" %}Schreiben erstellt am {{ datum }}{% endblocktrans %}{% endif %}
+                </div>
+                {% if s.problem %}<div class="fw-s fw-warnton">{{ s.problem }}</div>{% endif %}
+                {% if s.verstrichen %}<div class="fw-s fw-warnton">{% trans "Die Erhöhung gilt bereits, ohne dass eine Mitteilung als versandt erfasst ist." %}</div>{% endif %}
+            </div>
+            <span class="fw-chip fw-dot {% if s.status == 'versandt' %}fw-good{% elif s.status == 'faellig' %}fw-warn{% elif s.status == 'erstellt' %}fw-info{% else %}fw-mut{% endif %}">{% if s.status == 'versandt' %}{% trans "versandt" %}{% elif s.status == 'faellig' %}{% trans "Mitteilung fällig" %}{% elif s.status == 'erstellt' %}{% trans "Schreiben erstellt" %}{% else %}{% trans "noch nicht im Fenster" %}{% endif %}</span>
+            {% if z.dokument and z.dokument.datei %}<a href="{{ z.dokument.datei.url }}" target="_blank" rel="noopener" class="fw-btn fw-knapp">{% trans "Schreiben öffnen" %}</a>{% endif %}
+            {% if s.kann_erstellen %}
+            <form method="post" action="/neu/staffel/{{ s.stufe.id }}/mitteilung/">{% csrf_token %}
+                <button type="submit" class="fw-btn fw-knapp{% if s.status == 'faellig' %} fw-primary{% endif %}">{% if s.status == 'erstellt' %}{% trans "Schreiben neu erstellen" %}{% else %}{% trans "Schreiben erstellen" %}{% endif %}</button>
+            </form>
+            {% endif %}
+            {% if s.kann_versenden %}
+            <form method="post" action="/neu/staffel/{{ s.stufe.id }}/mitteilung/versandt/" class="flex gap-1 flex-wrap">{% csrf_token %}
+                <input type="date" name="versandt_am" value="{{ heute_iso }}" min="{{ s.fenster_ab|date:'Y-m-d' }}" max="{{ heute_iso }}" aria-label="{% trans 'Versanddatum' %}" class="fw-feld">
+                <button type="submit" class="fw-btn fw-knapp">{% trans "Als versandt markieren" %}</button>
+            </form>
+            {% endif %}
+        </div>
+        {% endwith %}{% empty %}
+        <p class="fw-leer">{% trans "Noch keine Staffelstufen erfasst." %}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
     {% include 'fw/_schluessel_akte.html' with sa=schluessel_akte ausgabe_url=schluessel_ausgabe_url %}
 </div>
 

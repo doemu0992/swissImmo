@@ -32394,21 +32394,38 @@ msgstr "New damage reports"
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Die Dauer ist nicht fest: Der Vertrag ist weder befristet, noch verzichtet der Vermieter auf die Kündigung. Verlangt sind mindestens %(jahre)s Jahre ab Mietbeginn, also bis %(soll)s."
-msgstr "The term is not fixed: the lease is neither for a fixed term nor does the landlord waive the right to terminate. A minimum of %(jahre)s years from the start of the lease is required, i.e. until %(soll)s."
+msgid ""
+"Die Dauer ist nicht fest: Der Vertrag ist weder befristet, noch verzichtet "
+"der Vermieter auf die Kündigung. Verlangt sind mindestens %(jahre)s Jahre ab"
+" Mietbeginn, also bis %(soll)s."
+msgstr ""
+"The term is not fixed: the lease is neither for a fixed term nor does the "
+"landlord waive the right to terminate. A minimum of %(jahre)s years from the"
+" start of the lease is required, i.e. until %(soll)s."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Die feste Dauer endet am %(bis)s. Verlangt sind mindestens %(jahre)s Jahre ab Mietbeginn, also bis mindestens %(soll)s."
-msgstr "The fixed term ends on %(bis)s. A minimum of %(jahre)s years from the start of the lease is required, i.e. at least until %(soll)s."
+msgid ""
+"Die feste Dauer endet am %(bis)s. Verlangt sind mindestens %(jahre)s Jahre "
+"ab Mietbeginn, also bis mindestens %(soll)s."
+msgstr ""
+"The fixed term ends on %(bis)s. A minimum of %(jahre)s years from the start "
+"of the lease is required, i.e. at least until %(soll)s."
 
 #: core/services/mietzinsmodell.py
 msgid "Für die Staffelmiete gilt die Dauer sinngemäss wie bei der Indexmiete."
-msgstr "For graduated rent, the term is assessed by analogy with indexed rent."
+msgstr ""
+"For graduated rent, the term is assessed by analogy with indexed rent."
 
 #: core/services/mietzinsmodell.py
-msgid "Jede Anpassung wird mit dem amtlichen Formular angekündigt, mindestens 30 Tage vor einem Monatsende und erst nach Veröffentlichung des neuen Indexstandes. Sinkt der Index, sinkt der Mietzins entsprechend."
-msgstr "Every adjustment is announced on the official form, at least 30 days before the end of a month and only after the new index figure has been published. If the index falls, the rent falls accordingly."
+msgid ""
+"Jede Anpassung wird mit dem amtlichen Formular angekündigt, mindestens 30 "
+"Tage vor einem Monatsende und erst nach Veröffentlichung des neuen "
+"Indexstandes. Sinkt der Index, sinkt der Mietzins entsprechend."
+msgstr ""
+"Every adjustment is announced on the official form, at least 30 days before "
+"the end of a month and only after the new index figure has been published. "
+"If the index falls, the rent falls accordingly."
 
 #: core/services/mietzinsmodell.py
 #, python-format
@@ -32446,25 +32463,42 @@ msgstr "An index clause must not be combined with graduated steps."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Stufe %(nr)s: Zwischen Mietbeginn und der ersten Erhöhung müssen mindestens 12 Monate liegen, frühestens am %(datum)s."
-msgstr "Step %(nr)s: at least 12 months must pass between the start of the lease and the first increase, no earlier than %(datum)s."
+msgid ""
+"Stufe %(nr)s: Zwischen Mietbeginn und der ersten Erhöhung müssen mindestens "
+"12 Monate liegen, frühestens am %(datum)s."
+msgstr ""
+"Step %(nr)s: at least 12 months must pass between the start of the lease and"
+" the first increase, no earlier than %(datum)s."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Stufe %(nr)s: Zwischen zwei Erhöhungen müssen mindestens 12 Monate liegen, frühestens am %(datum)s."
-msgstr "Step %(nr)s: at least 12 months must pass between two increases, no earlier than %(datum)s."
+msgid ""
+"Stufe %(nr)s: Zwischen zwei Erhöhungen müssen mindestens 12 Monate liegen, "
+"frühestens am %(datum)s."
+msgstr ""
+"Step %(nr)s: at least 12 months must pass between two increases, no earlier "
+"than %(datum)s."
 
 #: core/services/mietzinsmodell.py
 msgid "Eine Staffelmiete braucht mindestens eine Stufe."
 msgstr "A graduated rent needs at least one step."
 
 #: core/services/mietzinsmodell.py
-msgid "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt. Das amtliche Formular braucht es dafür nicht."
-msgstr "Every increase is communicated to the tenant in writing, no earlier than four months before it takes effect. The official form is not required for this."
+msgid ""
+"Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate"
+" vor ihrem Eintritt. Das amtliche Formular braucht es dafür nicht."
+msgstr ""
+"Every increase is communicated to the tenant in writing, no earlier than "
+"four months before it takes effect. The official form is not required for "
+"this."
 
 #: core/services/mietzinsmodell.py
-msgid "Zu diesem Vertrag bestehen zusätzlich datierte Mietzinskomponenten oder ein Zeitplan (etwa Gratismonate). Sie gehen den Staffelstufen vor."
-msgstr "This lease also has dated rent components or a schedule (e.g. rent-free months). They take precedence over the steps."
+msgid ""
+"Zu diesem Vertrag bestehen zusätzlich datierte Mietzinskomponenten oder ein "
+"Zeitplan (etwa Gratismonate). Sie gehen den Staffelstufen vor."
+msgstr ""
+"This lease also has dated rent components or a schedule (e.g. rent-free "
+"months). They take precedence over the steps."
 
 #: core/services/mietzinsmodell.py
 #, python-format
@@ -32478,18 +32512,29 @@ msgstr "Enter the month %(stand)s"
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Weitergabe %(w)s %%)."
-msgstr "A graduated rent must not retain an index clause (pass-through of %(w)s %%)."
+msgid ""
+"Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Weitergabe "
+"%(w)s %%)."
+msgstr ""
+"A graduated rent must not retain an index clause (pass-through of %(w)s %%)."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Der Stand der Index-Basis (%(stand)s) liegt nach dem Mietbeginn (%(beginn)s)."
-msgstr "The reference month of the index base (%(stand)s) is after the start of the lease (%(beginn)s)."
+msgid ""
+"Der Stand der Index-Basis (%(stand)s) liegt nach dem Mietbeginn "
+"(%(beginn)s)."
+msgstr ""
+"The reference month of the index base (%(stand)s) is after the start of the "
+"lease (%(beginn)s)."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Für %(stand)s weist die LIK-Tabelle %(tabelle)s Punkte aus, erfasst sind %(punkte)s."
-msgstr "For %(stand)s the CPI table shows %(tabelle)s points; %(punkte)s are entered."
+msgid ""
+"Für %(stand)s weist die LIK-Tabelle %(tabelle)s Punkte aus, erfasst sind "
+"%(punkte)s."
+msgstr ""
+"For %(stand)s the CPI table shows %(tabelle)s points; %(punkte)s are "
+"entered."
 
 #: core/services/mietzinsmodell.py
 msgid "Weitergabe eintragen: 100 %"
@@ -32518,8 +32563,12 @@ msgstr "Step %(nr)s: the date is missing."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Stufe %(nr)s: Die Erhöhung muss als Frankenbetrag vereinbart werden, nicht in Prozent."
-msgstr "Step %(nr)s: the increase must be agreed as an amount in francs, not as a percentage."
+msgid ""
+"Stufe %(nr)s: Die Erhöhung muss als Frankenbetrag vereinbart werden, nicht "
+"in Prozent."
+msgstr ""
+"Step %(nr)s: the increase must be agreed as an amount in francs, not as a "
+"percentage."
 
 #: core/services/mietzinsmodell.py
 msgid "Weitergabe zurücksetzen auf 100 %"
@@ -32527,8 +32576,11 @@ msgstr "Reset pass-through to 100 %"
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Intervall %(m)s Monate)."
-msgstr "A graduated rent must not retain an index clause (interval of %(m)s months)."
+msgid ""
+"Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Intervall "
+"%(m)s Monate)."
+msgstr ""
+"A graduated rent must not retain an index clause (interval of %(m)s months)."
 
 #: core/services/mietzinsmodell.py
 msgid "Bei festem Mietzins dürfen keine Staffelstufen stehen."
@@ -32545,8 +32597,10 @@ msgstr "Step %(nr)s: the increase in CHF is missing."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Stufe %(nr)s (%(datum)s) liegt nach dem Ende der festen Dauer (%(bis)s)."
-msgstr "Step %(nr)s (%(datum)s) falls after the end of the fixed term (%(bis)s)."
+msgid ""
+"Stufe %(nr)s (%(datum)s) liegt nach dem Ende der festen Dauer (%(bis)s)."
+msgstr ""
+"Step %(nr)s (%(datum)s) falls after the end of the fixed term (%(bis)s)."
 
 #: core/services/mietzinsmodell.py
 msgid "Intervall zurücksetzen auf 12 Monate"
@@ -32563,33 +32617,580 @@ msgid "Stufe auf den %(datum)s legen"
 msgstr "Move the step to %(datum)s"
 
 #: core/hilfe.py
-msgid "Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach unten und höchstens im Umfang der Teuerung (Art. 269b OR, Art. 17 VMWG). Der Vertrag muss mindestens fünf Jahre fest dauern; ein Kündigungsverzicht des Vermieters für fünf Jahre genügt (Art. 17 Abs. 4 VMWG). Jede Anpassung geht mit dem amtlichen Formular, mindestens 30 Tage vor einem Monatsende."
-msgstr "The rent follows the Swiss consumer price index, both up and down and at most in line with inflation (Art. 269b CO, Art. 17 VMWG). The lease must be fixed for at least five years; a waiver of termination by the landlord for five years is enough (Art. 17 para. 4 VMWG). Every adjustment is made on the official form, at least 30 days before the end of a month."
+msgid ""
+"Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach"
+" unten und höchstens im Umfang der Teuerung (Art. 269b OR, Art. 17 VMWG). "
+"Der Vertrag muss mindestens fünf Jahre fest dauern; ein Kündigungsverzicht "
+"des Vermieters für fünf Jahre genügt (Art. 17 Abs. 4 VMWG). Jede Anpassung "
+"geht mit dem amtlichen Formular, mindestens 30 Tage vor einem Monatsende."
+msgstr ""
+"The rent follows the Swiss consumer price index, both up and down and at "
+"most in line with inflation (Art. 269b CO, Art. 17 VMWG). The lease must be "
+"fixed for at least five years; a waiver of termination by the landlord for "
+"five years is enough (Art. 17 para. 4 VMWG). Every adjustment is made on the"
+" official form, at least 30 days before the end of a month."
 
 #: core/hilfe.py
-msgid "Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens einmal jährlich, bei einer Vertragsdauer von mindestens drei Jahren (Art. 269c OR). Dass auch ein Kündigungsverzicht des Vermieters als feste Dauer zählt, ist sinngemäss von Art. 17 Abs. 4 VMWG übernommen. Der Mietzins folgt den Stufen — die Anpassung nach Referenzzins und Teuerung gilt für ihn nicht."
-msgstr "The increases are agreed in the lease as amounts in francs, at most once a year, for a lease term of at least three years (Art. 269c CO). That a landlord's waiver of termination also counts as a fixed term is taken over by analogy from Art. 17 para. 4 VMWG. The rent follows the steps — adjustment for the reference rate and inflation does not apply to it."
+msgid ""
+"Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens "
+"einmal jährlich, bei einer Vertragsdauer von mindestens drei Jahren (Art. "
+"269c OR). Dass auch ein Kündigungsverzicht des Vermieters als feste Dauer "
+"zählt, ist sinngemäss von Art. 17 Abs. 4 VMWG übernommen. Der Mietzins folgt"
+" den Stufen — die Anpassung nach Referenzzins und Teuerung gilt für ihn "
+"nicht."
+msgstr ""
+"The increases are agreed in the lease as amounts in francs, at most once a "
+"year, for a lease term of at least three years (Art. 269c CO). That a "
+"landlord's waiver of termination also counts as a fixed term is taken over "
+"by analogy from Art. 17 para. 4 VMWG. The rent follows the steps — "
+"adjustment for the reference rate and inflation does not apply to it."
 
 #: core/hilfe.py
 msgid "Index und Staffel zusammen?"
 msgstr "Index and steps together?"
 
 #: core/hilfe.py
-msgid "Eine Indexklausel darf nicht mit einer Staffelung kombiniert werden (Art. 269b und 269c OR, BGE 124 III 57). Pro Vertrag gilt deshalb genau ein Mietzinsmodell: fest, Index oder Staffel."
-msgstr "An index clause must not be combined with graduation (Art. 269b and 269c CO, BGE 124 III 57). Each lease therefore has exactly one rent model: fixed, indexed or graduated."
+msgid ""
+"Eine Indexklausel darf nicht mit einer Staffelung kombiniert werden (Art. "
+"269b und 269c OR, BGE 124 III 57). Pro Vertrag gilt deshalb genau ein "
+"Mietzinsmodell: fest, Index oder Staffel."
+msgstr ""
+"An index clause must not be combined with graduation (Art. 269b and 269c CO,"
+" BGE 124 III 57). Each lease therefore has exactly one rent model: fixed, "
+"indexed or graduated."
 
 #: core/hilfe.py
 msgid "Kündigungsverzicht des Vermieters"
 msgstr "Landlord's waiver of termination"
 
 #: core/hilfe.py
-msgid "Bei einem unbefristeten Vertrag zählt die Dauer als fest, wenn der Vermieter für die verlangte Zeit auf die Kündigung verzichtet: fünf Jahre bei der Indexmiete (Art. 17 Abs. 4 VMWG), drei Jahre bei der Staffelmiete (sinngemäss, Art. 269c OR). Die Frist läuft ab Mietbeginn; das genannte Enddatum zählt mit."
-msgstr "For an open-ended lease the term counts as fixed if the landlord waives termination for the required period: five years for indexed rent (Art. 17 para. 4 VMWG), three years for graduated rent (by analogy, Art. 269c CO). The period runs from the start of the lease; the stated end date is included."
+msgid ""
+"Bei einem unbefristeten Vertrag zählt die Dauer als fest, wenn der Vermieter"
+" für die verlangte Zeit auf die Kündigung verzichtet: fünf Jahre bei der "
+"Indexmiete (Art. 17 Abs. 4 VMWG), drei Jahre bei der Staffelmiete "
+"(sinngemäss, Art. 269c OR). Die Frist läuft ab Mietbeginn; das genannte "
+"Enddatum zählt mit."
+msgstr ""
+"For an open-ended lease the term counts as fixed if the landlord waives "
+"termination for the required period: five years for indexed rent (Art. 17 "
+"para. 4 VMWG), three years for graduated rent (by analogy, Art. 269c CO). "
+"The period runs from the start of the lease; the stated end date is "
+"included."
 
 #: core/hilfe.py
 msgid "Mitteilung der Staffelerhöhung"
 msgstr "Notice of the graduated increase"
 
 #: core/hilfe.py
-msgid "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche Formular braucht es dafür nicht, die Mitteilung aber schon: Der Vertrag allein ersetzt sie nicht."
-msgstr "Every increase is communicated to the tenant in writing, no earlier than four months before it takes effect (Art. 269d para. 5 CO, Art. 19a VMWG). The official form is not required for this, but the notice is: the lease alone does not replace it."
+msgid ""
+"Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate"
+" vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche "
+"Formular braucht es dafür nicht, die Mitteilung aber schon: Der Vertrag "
+"allein ersetzt sie nicht."
+msgstr ""
+"Every increase is communicated to the tenant in writing, no earlier than "
+"four months before it takes effect (Art. 269d para. 5 CO, Art. 19a VMWG). "
+"The official form is not required for this, but the notice is: the lease "
+"alone does not replace it."
+
+msgid "Bekanntgabe des Indexstandes"
+msgstr "Publication of the index level"
+
+msgid ""
+"Bei einer Indexmiete darf die Mitteilung erst nach der öffentlichen "
+"Bekanntgabe des neuen Indexstandes erfolgen (Art. 19 Abs. 2 VMWG). Annahme "
+"der Anwendung: Ein Monat gilt als bekannt gegeben, sobald er in ihrer LIK-"
+"Tabelle steht; ein Veröffentlichungsdatum des BFS ist nicht hinterlegt."
+msgstr ""
+"For an indexed rent, the notice may only be given after the new index level "
+"has been published officially (Art. 19 para. 2 VMWG). Assumption of the "
+"application: a month counts as published as soon as it appears in its CPI "
+"table; no publication date of the FSO is stored."
+
+msgid "Höchstbetrag"
+msgstr "Maximum amount"
+
+msgid ""
+"Die Erhöhung darf die Zunahme des Landesindexes nicht übersteigen (Art. 17 "
+"Abs. 1 VMWG), bei vereinbarter Teil-Weitergabe nur deren Anteil. Sinkt der "
+"Index, ist der Mietzins nach unten anzupassen (Abs. 2). Der Vorschlag wird "
+"auf 5 Rappen abgerundet, damit er die Grenze nie überschreitet."
+msgstr ""
+"The increase may not exceed the rise in the national index (Art. 17 para. 1 "
+"VMWG), or only the agreed share if the pass-through is partial. If the index"
+" falls, the rent must be reduced (para. 2). The proposal is rounded down to "
+"5 rappen so that it never exceeds the limit."
+
+msgid "Frist und Termin"
+msgstr "Notice period and date"
+
+msgid ""
+"Die Anpassung ist mindestens 30 Tage im Voraus auf ein Monatsende "
+"anzukündigen (Art. 17 Abs. 3 VMWG). Die Anwendung rechnet ab Zugang beim "
+"Mieter, ohne bestätigten Zugang ab Versand plus Zustellpuffer. Frühere "
+"Termine stehen nicht zur Wahl."
+msgstr ""
+"The adjustment must be announced at least 30 days in advance for the end of "
+"a month (Art. 17 para. 3 VMWG). The application counts from receipt by the "
+"tenant, or from dispatch plus a delivery allowance if receipt is not "
+"confirmed. Earlier dates cannot be selected."
+
+msgid "Vertragliche Grenzen"
+msgstr "Contractual limits"
+
+msgid ""
+"Weitergabe, Mindestintervall und letzte Anpassung stammen aus dem "
+"Mietvertrag, nicht aus dem Gesetz. Ein laufendes Mindestintervall wird "
+"gemeldet, blockiert aber nicht: Der Vertrag entscheidet."
+msgstr ""
+"The pass-through, the minimum interval and the last adjustment come from the"
+" lease, not from the law. A minimum interval that is still running is "
+"reported but does not block: the contract decides."
+
+msgid "Amtliches Formular bei der Indexanpassung"
+msgstr "Official form for the index adjustment"
+
+msgid ""
+"Das amtliche Formular (Art. 269d OR) gilt sinngemäss auch für die "
+"Indexanpassung (Art. 19 Abs. 2 VMWG). Nicht für jeden Kanton liegt ein "
+"Original vor; dann nennt die Anwendung die Lücke und erzeugt kein "
+"Ersatzformular."
+msgstr ""
+"The official form (Art. 269d CO) applies by analogy to the index adjustment "
+"(Art. 19 para. 2 VMWG). An original is not available for every canton; the "
+"application then reports the gap and does not produce a substitute form."
+
+msgid ""
+"Jede im Vertrag vereinbarte Erhöhung teilt der Vermieter schriftlich mit; "
+"ein amtliches Formular braucht es dafür nicht (Art. 269d Abs. 5 OR). Die "
+"Mitteilung darf frühestens vier Monate vor Eintritt der Erhöhung erfolgen "
+"(Art. 19a VMWG)."
+msgstr ""
+"The landlord notifies every increase agreed in the contract in writing; no "
+"official form is needed (Art. 269d para. 5 CO). The notice may be given at "
+"the earliest four months before the increase takes effect (Art. 19a VMWG)."
+
+msgid "Mitteilungsfenster"
+msgstr "Notice window"
+
+msgid ""
+"Der erste Tag, an dem die Mitteilung versandt werden darf: vier Monate vor "
+"der Erhöhung. Bei einer Erhöhung am 31. März ist es der 1. Dezember, nicht "
+"der 30. November, der vier Monate und einen Tag davor liegt. Vorher erstellt"
+" die Anwendung kein Schreiben und nimmt kein Versanddatum an."
+msgstr ""
+"The first day on which the notice may be sent: four months before the "
+"increase. For an increase on 31 March this is 1 December, not 30 November, "
+"which lies four months and one day before. Before that date the application "
+"creates no letter and records no dispatch date."
+
+msgid "Bitte den Monat des neuen LIK-Standes wählen."
+msgstr "Please choose the month of the new index level."
+
+#, python-format
+msgid ""
+"Der LIK-Stand %(monat)s ist nicht veröffentlicht. Eine Indexanpassung ist "
+"erst nach der Bekanntgabe des neuen Indexstandes möglich (Art. 19 Abs. 2 "
+"VMWG). Letzter verfügbarer Monat: %(letzter)s."
+msgstr ""
+"The index level for %(monat)s has not been published. An index adjustment is"
+" only possible after the new index level has been published (Art. 19 para. 2"
+" VMWG). Last available month: %(letzter)s."
+
+#, python-format
+msgid "Der neue LIK-Stand (%(neu)s) liegt vor dem bisherigen (%(alt)s)."
+msgstr ""
+"The new index level (%(neu)s) is earlier than the current one (%(alt)s)."
+
+#, python-format
+msgid ""
+"Der LIK ist gesunken (%(alt)s → %(neu)s Punkte): Der Mietzins ist nach unten"
+" anzupassen (Art. 17 Abs. 2 VMWG), höchstens CHF %(grenze)s."
+msgstr ""
+"The index has fallen (%(alt)s → %(neu)s points): the rent must be reduced "
+"(Art. 17 para. 2 VMWG), to CHF %(grenze)s at most."
+
+#, python-format
+msgid ""
+"Der LIK ist unverändert (%(lik)s Punkte): Eine Erhöhung ist nicht zulässig "
+"(Art. 17 Abs. 1 VMWG)."
+msgstr ""
+"The index is unchanged (%(lik)s points): an increase is not permitted (Art. "
+"17 para. 1 VMWG)."
+
+#, python-format
+msgid ""
+"Die Erhöhung übersteigt die Indexzunahme mal Weitergabe (%(zunahme)s %% × "
+"%(w)s %%): höchstens CHF %(grenze)s netto (Art. 17 Abs. 1 VMWG)."
+msgstr ""
+"The increase exceeds the index rise times the pass-through (%(zunahme)s %% ×"
+" %(w)s %%): CHF %(grenze)s net at most (Art. 17 para. 1 VMWG)."
+
+msgid "Bitte das Wirksamkeitsdatum angeben."
+msgstr "Please enter the effective date."
+
+msgid ""
+"Die Indexanpassung kann nur auf ein Monatsende wirksam werden, also am "
+"Ersten des Folgemonats (Art. 17 Abs. 3 VMWG)."
+msgstr ""
+"The index adjustment can only take effect at the end of a month, i.e. on the"
+" first of the following month (Art. 17 para. 3 VMWG)."
+
+#, python-format
+msgid ""
+"Wirksamkeitsdatum zu früh: Die Ankündigung braucht mindestens 30 Tage bis "
+"zum Monatsende. Bei diesem Versand ist der früheste Termin der %(datum)s "
+"(Art. 17 Abs. 3 VMWG)."
+msgstr ""
+"Effective date too early: the announcement needs at least 30 days until the "
+"end of the month. With this dispatch the earliest possible date is %(datum)s"
+" (Art. 17 para. 3 VMWG)."
+
+#, python-format
+msgid ""
+"Vertragliche Grenze (kein Gesetzeswert): Das Mindestintervall von %(monate)s"
+" Monaten seit der letzten Anpassung (%(letzte)s) läuft bis %(ende)s."
+msgstr ""
+"Contractual limit (not set by law): the minimum interval of %(monate)s "
+"months since the last adjustment (%(letzte)s) runs until %(ende)s."
+
+#, python-format
+msgid ""
+"Frühestens %(datum)s: mindestens 30 Tage bis zu einem Monatsende (Art. 17 "
+"Abs. 3 VMWG), gerechnet ab Zugang (vermutet %(zugang)s)."
+msgstr ""
+"Earliest %(datum)s: at least 30 days until the end of a month (Art. 17 para."
+" 3 VMWG), counted from receipt (presumed %(zugang)s)."
+
+#, python-format
+msgid ""
+"Höchstens CHF %(grenze)s (Art. 17 VMWG). Ein höherer Betrag wird abgelehnt."
+msgstr "CHF %(grenze)s at most (Art. 17 VMWG). A higher amount is rejected."
+
+msgid "Erst nach einem veröffentlichten LIK-Stand möglich."
+msgstr "Only possible once an index level has been published."
+
+msgid "Der LIK der Vertragsbasis fehlt — bitte die Basis-Punkte ergänzen."
+msgstr ""
+"The CPI of the contract basis is missing — please enter the base points."
+
+msgid ""
+"Die Stufe erhöht nicht: Eine Staffelmiete verlangt eine Erhöhung in Franken "
+"(Art. 269c OR)."
+msgstr ""
+"This step does not increase the rent: a graduated rent requires an increase "
+"in francs (Art. 269c CO)."
+
+msgid ""
+"Erhöhung und Netto der Stufe stimmen nicht überein — bitte die Stufe prüfen."
+msgstr ""
+"The increase and the net rent of the step do not match — please check the "
+"step."
+
+msgid "Der Vertrag ist keine Staffelmiete."
+msgstr "The contract is not a graduated rent."
+
+msgid "Die Mitteilung ist bereits als versandt markiert."
+msgstr "The notice is already marked as sent."
+
+#, python-format
+msgid ""
+"Die Erhöhung gilt bereits (%(datum)s): Ein Schreiben im Voraus ist nicht "
+"mehr möglich."
+msgstr ""
+"The increase already applies (%(datum)s): a letter in advance is no longer "
+"possible."
+
+#, python-format
+msgid ""
+"Zu früh: Die schriftliche Mitteilung darf frühestens vier Monate vor der "
+"Erhöhung erfolgen, also ab dem %(datum)s (Art. 19a VMWG)."
+msgstr ""
+"Too early: the written notice may be given at the earliest four months "
+"before the increase, i.e. from %(datum)s (Art. 19a VMWG)."
+
+msgid "Das Schreiben konnte nicht abgelegt werden."
+msgstr "The letter could not be filed."
+
+msgid "Das Versanddatum kann nicht in der Zukunft liegen."
+msgstr "The dispatch date cannot be in the future."
+
+#, python-format
+msgid ""
+"Zu früh versandt: Die schriftliche Mitteilung darf frühestens vier Monate "
+"vor der Erhöhung erfolgen, also ab dem %(datum)s (Art. 19a VMWG)."
+msgstr ""
+"Sent too early: the written notice may be given at the earliest four months "
+"before the increase, i.e. from %(datum)s (Art. 19a VMWG)."
+
+msgid "Mitteilung der vereinbarten Mietzinserhöhung (Staffelmiete)"
+msgstr "Notice of the agreed rent increase (graduated rent)"
+
+#, python-format
+msgid ""
+"Für das Mietobjekt <b>%(objekt)s</b> an der %(strasse)s, %(plz)s %(ort)s, "
+"ist im Mietvertrag mit Mietbeginn %(beginn)s eine Staffelmiete vereinbart "
+"(Art. 269c OR). Gestützt auf diese Vereinbarung teilen wir Ihnen die "
+"folgende Erhöhung des Nettomietzinses mit."
+msgstr ""
+"For the rental property <b>%(objekt)s</b>, %(strasse)s, %(plz)s %(ort)s, a "
+"graduated rent has been agreed in the lease starting on %(beginn)s (Art. "
+"269c CO). On the basis of this agreement we hereby notify you of the "
+"following increase in the net rent."
+
+msgid "Nettomietzins bisher"
+msgstr "Current net rent"
+
+msgid "Erhöhung"
+msgstr "Increase"
+
+msgid "Neuer Nettomietzins"
+msgstr "New net rent"
+
+msgid ""
+"Die Erhöhung ergibt sich aus der im Mietvertrag vereinbarten Staffel. Diese "
+"Mitteilung betrifft nur den Nettomietzins; die Nebenkosten sind davon nicht "
+"betroffen."
+msgstr ""
+"The increase follows from the graduation agreed in the lease. This notice "
+"concerns the net rent only; the service charges are not affected."
+
+msgid ""
+"Schriftliche Mitteilung nach Art. 269d Abs. 5 OR. Für die Mitteilung einer "
+"im Vertrag vorgesehenen Staffelerhöhung ist kein amtliches Formular "
+"erforderlich."
+msgstr ""
+"Written notice under Art. 269d para. 5 CO. No official form is required to "
+"notify a graduated increase provided for in the contract."
+
+msgid "Indexstand"
+msgstr "Index level"
+
+msgid ""
+"Neuer LIK-Stand, Höchstbetrag und vertragliche Grenzen. Mehr als die "
+"Indexzunahme mal Weitergabe ist nicht zulässig; sinkt der Index, ist die "
+"Anpassung nach unten zwingend."
+msgstr ""
+"New index level, maximum amount and contractual limits. Not more than the "
+"index rise times the pass-through; if the index falls, the reduction is "
+"mandatory."
+
+msgid ""
+"Der Mietzins folgt dem Landesindex der Konsumentenpreise. Erhöht werden darf"
+" höchstens um die Zunahme mal die vereinbarte Weitergabe, gesenkt werden "
+"muss bei sinkendem Index."
+msgstr ""
+"The rent follows the national consumer price index. It may be raised by no "
+"more than the rise times the agreed pass-through, and must be reduced if the"
+" index falls."
+
+msgid ""
+"Annahme der Anwendung: Ein Monat gilt als bekannt gegeben, sobald er in der "
+"LIK-Tabelle der Anwendung steht. Ein Veröffentlichungsdatum des BFS ist "
+"nicht hinterlegt."
+msgstr ""
+"Assumption of the application: a month counts as published as soon as it "
+"appears in the application's CPI table. No publication date of the FSO is "
+"stored."
+
+msgid ""
+"Der LIK der Vertragsbasis ist nicht erfasst — bitte die Basis-Punkte "
+"ergänzen, auf denen der aktuelle Mietzins beruht. Sie werden auf dem Vertrag"
+" gespeichert."
+msgstr ""
+"The CPI of the contract basis has not been entered — please enter the base "
+"points on which the current rent is based. They are saved on the contract."
+
+#, python-format
+msgid ""
+"Für diesen Vertrag liegt bereits eine Anpassung vor: Gerechnet wird ab deren"
+" Stand — LIK %(lik)s, Netto CHF %(netto)s —, nicht ab der Vertragsbasis "
+"unten."
+msgstr ""
+"An adjustment already exists for this contract: the calculation starts from "
+"its state — CPI %(lik)s, net CHF %(netto)s —, not from the contract basis "
+"below."
+
+msgid "Der Index ist gesunken"
+msgstr "The index has fallen"
+
+msgid ""
+"Der Mietzins ist nach unten anzupassen (Art. 17 Abs. 2 VMWG). Der Assistent "
+"schlägt die Senkung vor und lässt keinen höheren Betrag zu."
+msgstr ""
+"The rent must be reduced (Art. 17 para. 2 VMWG). The assistant proposes the "
+"reduction and does not allow a higher amount."
+
+msgid "Neuer LIK-Stand (Monat)"
+msgstr "New index level (month)"
+
+#, python-format
+msgid "letzter verfügbarer Monat: %(monat)s"
+msgstr "last available month: %(monat)s"
+
+msgid "Neuer LIK"
+msgstr "New CPI"
+
+msgid "Veränderung"
+msgstr "change"
+
+msgid "Höchstens netto"
+msgstr "Maximum net"
+
+msgid "Weitergabe"
+msgstr "pass-through"
+
+msgid "auf 5 Rappen abgerundet"
+msgstr "rounded down to 5 rappen"
+
+msgid "Diese Werte stammen aus dem Mietvertrag, nicht aus dem Gesetz."
+msgstr "These values come from the lease, not from the law."
+
+msgid "Mindestintervall"
+msgstr "Minimum interval"
+
+msgid "Monate"
+msgstr "months"
+
+msgid "Letzte Indexanpassung"
+msgstr "Last index adjustment"
+
+msgid "keine erfasst"
+msgstr "none recorded"
+
+#, python-format
+msgid "Lücke: Kein Originalformular für den Kanton %(kanton)s"
+msgstr "Gap: no original form for the canton of %(kanton)s"
+
+#, python-format
+msgid ""
+"Die Anwendung erzeugt für die Indexanpassung kein Ersatzformular, auch keine"
+" Nachbildung. Originale liegen nur vor für: %(kantone)s. Verwenden Sie das "
+"Formular der kantonalen Behörde und erfassen Sie hier nur den Versand."
+msgstr ""
+"For the index adjustment the application produces no substitute form, not "
+"even a replica. Originals exist only for: %(kantone)s. Use the form of the "
+"cantonal authority and record only the dispatch here."
+
+msgid ""
+"Verstanden: Die Mitteilung geht auf dem amtlichen Formular des Kantons; hier"
+" wird nur der Versand erfasst."
+msgstr ""
+"Understood: the notice is made on the cantonal official form; only the "
+"dispatch is recorded here."
+
+msgid "Begründung auf dem Formular"
+msgstr "Reason on the form"
+
+msgid ""
+"Wird beim Speichern aus Indexstand, Zunahme, Weitergabe und Beträgen erzeugt"
+" (Art. 269b OR, Art. 17 VMWG). Ordentliche Gründe wie Referenzzins oder "
+"Kostensteigerung gibt es bei der Indexmiete nicht."
+msgstr ""
+"Generated on saving from the index level, the change, the pass-through and "
+"the amounts (Art. 269b CO, Art. 17 VMWG). Ordinary grounds such as the "
+"reference interest rate or cost increases do not exist for an indexed rent."
+
+msgid "Kein veröffentlichter LIK-Stand gewählt."
+msgstr "No published index level has been chosen."
+
+msgid ""
+"Der Betrag war höher als zulässig und wurde auf den Höchstbetrag "
+"zurückgesetzt (Art. 17 VMWG)."
+msgstr ""
+"The amount was higher than permitted and was reset to the maximum amount "
+"(Art. 17 VMWG)."
+
+msgid "Der Nettomietzins bleibt unverändert."
+msgstr "The net rent remains unchanged."
+
+msgid "Staffelmiete: Mitteilung der Erhöhungen"
+msgstr "Graduated rent: notice of the increases"
+
+msgid ""
+"Jede vereinbarte Erhöhung wird schriftlich mitgeteilt, frühestens vier "
+"Monate vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Ein "
+"amtliches Formular ist dafür nicht nötig."
+msgstr ""
+"Every agreed increase is notified in writing, at the earliest four months "
+"before it takes effect (Art. 269d para. 5 CO, Art. 19a VMWG). An official "
+"form is not necessary."
+
+#, python-format
+msgid "Erhöhung ab %(datum)s"
+msgstr "Increase from %(datum)s"
+
+#, python-format
+msgid "Mitteilung frühestens ab %(datum)s"
+msgstr "Notice at the earliest from %(datum)s"
+
+#, python-format
+msgid "versandt am %(datum)s"
+msgstr "sent on %(datum)s"
+
+#, python-format
+msgid "Schreiben erstellt am %(datum)s"
+msgstr "letter created on %(datum)s"
+
+msgid ""
+"Die Erhöhung gilt bereits, ohne dass eine Mitteilung als versandt erfasst "
+"ist."
+msgstr ""
+"The increase already applies without any notice having been recorded as "
+"sent."
+
+msgid "versandt"
+msgstr "sent"
+
+msgid "Mitteilung fällig"
+msgstr "Notice due"
+
+msgid "Schreiben erstellt"
+msgstr "Letter created"
+
+msgid "noch nicht im Fenster"
+msgstr "not yet in the window"
+
+msgid "Schreiben öffnen"
+msgstr "Open letter"
+
+msgid "Schreiben neu erstellen"
+msgstr "Create letter again"
+
+msgid "Schreiben erstellen"
+msgstr "Create letter"
+
+msgid "Als versandt markieren"
+msgstr "Mark as sent"
+
+msgid "Noch keine Staffelstufen erfasst."
+msgstr "No graduated steps recorded yet."
+
+msgid "Der Nettomietzins bleibt unverändert — es gibt nichts mitzuteilen."
+msgstr "The net rent remains unchanged — there is nothing to notify."
+
+#, python-format
+msgid ""
+"Das höhere Nebenkosten-Akonto folgt nicht dem Index: Es kann frühestens auf "
+"%(datum)s wirksam werden (Kündigungsfrist + 10 Tage, Art. 269d OR)."
+msgstr ""
+"The higher service-charge advance does not follow the index: it can take "
+"effect at the earliest on %(datum)s (notice period + 10 days, Art. 269d CO)."
+
+msgid "Für die Indexanpassung erzeugt die Anwendung kein Ersatzformular."
+msgstr "For the index adjustment the application produces no substitute form."
+
+#, python-format
+msgid ""
+"Schreiben zur Erhöhung ab %(datum)s erstellt und in der Akte abgelegt "
+"(Reiter «Dokumente»)."
+msgstr ""
+"Letter on the increase from %(datum)s created and filed in the record (tab "
+"“Documents”)."
+
+msgid "Bitte ein gültiges Versanddatum angeben."
+msgstr "Please enter a valid dispatch date."
+
+#, python-format
+msgid "Mitteilung zur Erhöhung ab %(datum)s als versandt markiert."
+msgstr "Notice of the increase from %(datum)s marked as sent."

@@ -18,19 +18,30 @@ DOKUMENT_TYPEN = {
     'begleitbrief':           ('core/dok_begleitbrief.html',           'Begleitbrief Mietvertrag', {'signed': False}),
     'begleitbrief-signiert':  ('core/dok_begleitbrief.html',           'Begleitbrief unterzeichneter Vertrag', {'signed': True}),
     'kuendigungsbestaetigung': ('core/dok_kuendigungsbestaetigung.html', 'Kündigungsbestätigung', {}),
+    # Staffelmiete: schriftliche Mitteilung einer vereinbarten Erhöhung (Art. 269d Abs. 5 OR). Kein amtliches
+    # Formular. Braucht die Stufe: `generate_dokument_pdf_bytes(..., extra_context={...})`, siehe staffel_mitteilung.py.
+    'staffel-mitteilung':     ('core/dok_staffel_mitteilung.html',     'Staffelmiete – Mitteilung der Erhöhung', {}),
 }
+
+#: Typen, die nur mit zusätzlichem Kontext sinnvoll sind (hier: die Staffelstufe). Die allgemeine
+#: Ansicht `generate_dokument_view` bietet sie nicht an — ohne Stufe käme ein leeres Schreiben heraus.
+NUR_MIT_KONTEXT = frozenset({'staffel-mitteilung'})
 
 #: Diese Dokumente entstehen in der Sprache des Mieters (D11). Sie enthalten
 #: keinen Rechtstext: Begleitbrief, Wohnungsausweis, Merkblatt. Alle übrigen
 #: — Allgemeine Bedingungen, Hausordnung, Kündigungsbestätigung — bleiben
 #: Deutsch, bis ihr Wortlaut juristisch geprüft übersetzt ist
 #: (core/services/dokumentsprache.py).
-IN_MIETERSPRACHE = frozenset({'wohnungsausweis', 'merkblatt-lueften', 'begleitbrief', 'begleitbrief-signiert'})
+IN_MIETERSPRACHE = frozenset({'wohnungsausweis', 'merkblatt-lueften', 'begleitbrief', 'begleitbrief-signiert',
+                              'staffel-mitteilung'})
 
 
-def generate_dokument_pdf_bytes(vertrag, doc_type):
+def generate_dokument_pdf_bytes(vertrag, doc_type, extra_context=None):
+    """`extra_context`: zusätzliche Werte für die Vorlage (z. B. die Staffelstufe), nur für Typen, die sie brauchen."""
     if doc_type not in DOKUMENT_TYPEN:
         raise ValueError(f"Unbekannter Dokumenttyp: {doc_type}")
+    if doc_type in NUR_MIT_KONTEXT and not extra_context:
+        raise ValueError(f"Dokumenttyp {doc_type} braucht extra_context")
     template_name, _titel, extra = DOKUMENT_TYPEN[doc_type]
 
     einheit = vertrag.einheit
@@ -78,6 +89,7 @@ def generate_dokument_pdf_bytes(vertrag, doc_type):
         # Logo, Farbe und Fusszeile der Verwaltung DIESES Objekts (Modul 5).
         'briefkopf': briefkopf_kontext(verwaltung),
         **extra,
+        **(extra_context or {}),
     }
 
     sprache = sprache_von(vertrag.mieter) if doc_type in IN_MIETERSPRACHE else STANDARD

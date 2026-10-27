@@ -1,0 +1,83 @@
+{% load zeichen hilfe i18n chf l10n %}{% comment %}
+Schritt 1 des Mietzins-Assistenten für eine INDEXMIETE (Art. 269b OR, Art. 17 und 19 Abs. 2 VMWG).
+Kein Referenzzins, keine Kostensteigerung, kein Vorbehalt: Das sind ordentliche Anpassungsgründe, die
+bei der Indexmiete nicht gelten. Alle Zahlen kommen aus core/services/index_anpassung.py (idx);
+die Schrift im Browser zeigt sie nur und begrenzt die Eingabe, sie rechnet nicht selbst.
+{% endcomment %}
+<section data-schritt="{% trans 'Indexstand' %}" data-schritt-text="{% trans 'Neuer LIK-Stand, Höchstbetrag und vertragliche Grenzen. Mehr als die Indexzunahme mal Weitergabe ist nicht zulässig; sinkt der Index, ist die Anpassung nach unten zwingend.' %}">
+    <div class="fw-assistent-schritt-kopf"></div>
+    <div class="fw-hilfebox" data-hilfebox="mz-index">
+        <span class="fw-hi" aria-hidden="true">{% zeichen 'trend' %}</span>
+        <div class="fw-hilfebox-inhalt"><b>{% trans "Indexmiete" %} {% hilfe 'indexmiete' %}</b>
+        <p class="fw-hilfe">{% comment %}Rechtsgrundlage bleibt deutsch (D11).{% endcomment %}<span class="fw-strong">Indexmiete (Art. 269b OR):</span>
+        {% trans "Der Mietzins folgt dem Landesindex der Konsumentenpreise. Erhöht werden darf höchstens um die Zunahme mal die vereinbarte Weitergabe, gesenkt werden muss bei sinkendem Index." %}</p>
+        <p class="fw-hilfe">{% trans "Annahme der Anwendung: Ein Monat gilt als bekannt gegeben, sobald er in der LIK-Tabelle der Anwendung steht. Ein Veröffentlichungsdatum des BFS ist nicht hinterlegt." %} {% hilfe 'index_anpassung_bekanntgabe' %}</p>
+        </div>
+        <button type="button" class="zu" aria-label="{% trans 'Hinweis ausblenden' %}">{% zeichen 'schliessen' %}</button>
+    </div>
+    <div class="fw-card fw-rumpf space-y-4">
+        {% if idx.stand_fehler %}
+        <div class="fw-hinweis crit rounded-lg" id="iz-stand-fehler">
+            <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+            <div class="fw-ht"><b>{% trans "Keine Anpassung möglich" %}</b> — {{ idx.stand_fehler }}</div>
+        </div>
+        {% else %}
+        <div class="fw-hinweis crit rounded-lg hidden" id="iz-stand-fehler">
+            <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+            <div class="fw-ht"><b>{% trans "Keine Anpassung möglich" %}</b> — <span id="iz-stand-fehler-text"></span></div>
+        </div>
+        {% endif %}
+        {% if idx.basis_fehlt %}
+        <div class="fw-hinweis warn">
+            <span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">{% trans "Der LIK der Vertragsbasis ist nicht erfasst — bitte die Basis-Punkte ergänzen, auf denen der aktuelle Mietzins beruht. Sie werden auf dem Vertrag gespeichert." %}</div>
+        </div>
+        {% endif %}
+        {% if hat_anpassung %}
+        <div class="fw-hinweis info">
+            <span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">{% blocktrans trimmed with lik=alt_lik netto=alt_netto|chf %}Für diesen Vertrag liegt bereits eine Anpassung vor: Gerechnet wird ab deren Stand — LIK {{ lik }}, Netto CHF {{ netto }} —, nicht ab der Vertragsbasis unten.{% endblocktrans %}</div>
+        </div>
+        {% endif %}
+        <div id="iz-senkung" class="fw-hinweis warn rounded-lg{% if idx.rechnung.richtung != 'senkung' %} hidden{% endif %}">
+            <span class="fw-hi">{% zeichen 'zurueck' %}</span>
+            <div class="fw-ht"><b>{% trans "Der Index ist gesunken" %}</b> — {% trans "Der Mietzins ist nach unten anzupassen (Art. 17 Abs. 2 VMWG). Der Assistent schlägt die Senkung vor und lässt keinen höheren Betrag zu." %}</div>
+        </div>
+
+        <div class="fw-formular drei">
+            <div class="fw-feldblock">
+                <label for="mz_lik_stand" class="fw-label">{% trans "Neuer LIK-Stand (Monat)" %} {% hilfe 'lik' %}</label>
+                <select name="lik_stand" id="mz_lik_stand" onchange="izRechnen(true)" class="fw-feld w-full">
+                    {% for monat, punkte in idx_stand_optionen %}
+                    <option value="{{ monat|date:'Y-m' }}"{% if monat == idx.stand %} selected{% endif %}>{{ monat|date:'F Y' }} · {% localize off %}{{ punkte }}{% endlocalize %} {% trans "Punkte" %}</option>
+                    {% endfor %}
+                </select>
+                <p class="fw-hilfe">{% blocktrans with basis=lik_basis|default:"Dezember 2020" %}LIK-Basis {{ basis }} = 100{% endblocktrans %}{% if idx.letzter_stand %} · {% blocktrans with monat=idx.letzter_stand|date:'F Y' %}letzter verfügbarer Monat: {{ monat }}{% endblocktrans %}{% endif %}</p>
+            </div>
+            <div class="fw-feldblock">
+                <label for="mz_basis_lik" class="fw-label">{% trans "LIK Vertrag (Basis, Punkte)" %}</label>
+                <input id="mz_basis_lik" name="basis_lik" inputmode="decimal" oninput="izRechnen(true)" value="{% localize off %}{{ idx.alt_lik }}{% endlocalize %}" class="fw-feld w-full {% if idx.basis_fehlt %}fw-ring-warn{% endif %}">
+            </div>
+            <div class="fw-feldblock">
+                <label for="mz_basis_stand" class="fw-label">{% trans "Stand-Monat (Basis-LIK)" %}</label>
+                <input id="mz_basis_stand" type="month" name="basis_lik_stand" value="{{ alt_lik_stand|date:'Y-m' }}" class="fw-feld w-full">
+            </div>
+        </div>
+
+        <div class="fw-kpis fw-nomb" id="iz-kpis">
+            <div class="fw-kpi"><div class="fw-l">{% trans "Neuer LIK" %}</div><div class="fw-v" id="iz-neu-lik">{% if idx.neu_lik %}{% localize off %}{{ idx.neu_lik }}{% endlocalize %}{% else %}—{% endif %}</div>
+                <p class="fw-f" id="iz-zunahme">{% if idx.rechnung %}{% localize off %}{{ idx.rechnung.zunahme_prozent }}{% endlocalize %} % {% trans "Veränderung" %}{% endif %}</p></div>
+            <div class="fw-kpi"><div class="fw-l">{% trans "Netto bisher" %}</div><div class="fw-v" id="mz-r-alt">CHF {{ idx.alt_netto|chf }}</div></div>
+            <div class="fw-kpi"><div class="fw-l">{% trans "Höchstens netto" %} {% hilfe 'index_anpassung_grenze' %}</div><div class="fw-v" id="iz-hoechst">{% if idx.rechnung %}CHF {{ idx.rechnung.hoechst_netto|chf }}{% else %}—{% endif %}</div>
+                <p class="fw-f" id="iz-hoechst-f">{% if idx.rechnung %}{% localize off %}{{ idx.rechnung.zunahme_prozent }}{% endlocalize %} % × {% localize off %}{{ idx.rechnung.weitergabe_prozent|floatformat:"-2" }}{% endlocalize %} % {% trans "Weitergabe" %}{% endif %}</p></div>
+            <div class="fw-kpi fw-accent"><div class="fw-l">{% trans "Vorschlag" %}</div><div class="fw-v" id="mz-r-neu">CHF {{ vorschlag_netto|chf }}</div>
+                <p class="fw-f">{% trans "auf 5 Rappen abgerundet" %}</p></div>
+        </div>
+
+        <div class="fw-card fw-nomb" id="iz-grenzen">
+            <div class="fw-rumpf"><div class="fw-strong">{% trans "Vertragliche Grenzen" %} {% hilfe 'index_anpassung_vertragsgrenzen' %}</div>
+            <p class="fw-hilfe">{% trans "Diese Werte stammen aus dem Mietvertrag, nicht aus dem Gesetz." %}</p></div>
+            <div class="fw-dz"><span class="fw-dl">{% trans "Weitergabe" %}</span><span class="fw-dv">{% localize off %}{{ idx.grenzen.weitergabe|floatformat:"-2" }}{% endlocalize %} %</span></div>
+            <div class="fw-dz"><span class="fw-dl">{% trans "Mindestintervall" %}</span><span class="fw-dv">{{ idx.grenzen.intervall_monate }} {% trans "Monate" %}</span></div>
+            <div class="fw-dz"><span class="fw-dl">{% trans "Letzte Indexanpassung" %}</span><span class="fw-dv">{% if idx.grenzen.letzte_anpassung %}{{ idx.grenzen.letzte_anpassung|date:"d.m.Y" }}{% else %}{% trans "keine erfasst" %}{% endif %}</span></div>
+        </div>
+    </div>
+</section>
