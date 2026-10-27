@@ -454,8 +454,8 @@
         var fokus = document.activeElement || document.body;
         if (/INPUT|SELECT|TEXTAREA/.test(fokus.tagName || '')) return;
         if (e.key === 'Enter' && fokus.closest && fokus.closest('a,button')) return;
-        var pal = document.getElementById('fwPalette');
-        if (pal && !pal.classList.contains('hidden')) return;
+        var suche = document.getElementById('fwOsPop');
+        if (suche && !suche.hidden) return;
         var m = document.getElementById('fwModal');
         if (m && !m.classList.contains('hidden')) return;
         var z = zeilen(); if (!z.length) return;

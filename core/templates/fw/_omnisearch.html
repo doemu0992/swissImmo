@@ -1,0 +1,74 @@
+{% load zeichen i18n %}{% comment %}
+DIE OMNISEARCH (Kopfzeile, Zeile 1, rechts neben der Hauptnavigation)
+
+EIN FELD STATT ZWEIER
+
+Bis zum 27.10.2026 gab es ein breites Suchfeld in einer eigenen Zeile (`/neu/suche/`)
+und daneben ⌘K als Fenster über der Seite (Seiten und Akten). Jetzt ist es ein Feld:
+Ab zwei Zeichen öffnet darunter ein Popover mit den Treffern aus `/neu/palette/`,
+gruppiert und mit Filterkapseln; die Seiten und Befehle der früheren Palette
+(`fw_palette`) stehen als Gruppe «Seiten & Aktionen» darin.
+
+OHNE JAVASCRIPT bleibt es ein Formular: Absenden führt auf `/neu/suche/?q=…`.
+Das Popover, die Tastatur und das Aufklappen am Telefon macht
+`static/js/fw-omnisearch.js`; die Texte holt es aus dem `<template>` unten, damit
+jeder sichtbare Text durch `trans` läuft.
+
+AM TELEFON (bis 900 px) ist das Feld ein Symbol (die Beschriftung `label` fokussiert
+das Eingabefeld, auch ohne Skript). Fokus öffnet es über die volle Breite der ersten
+Zeile; Logo und Werkzeuge treten solange zurück.
+{% endcomment %}
+<div class="fw-os" id="fwOs" data-palette-url="/neu/palette/" data-suche-url="/neu/suche/">
+    <form method="get" action="/neu/suche/" role="search" class="fw-os-feld" id="fwOsForm">
+        <label for="fwOsEingabe" class="fw-os-lupe" title="{% trans 'Suchen' %}">
+            {% zeichen 'suchen' %}<span class="sr-only">{% trans "Suchen" %}</span>
+        </label>
+        <input id="fwOsEingabe" type="text" name="q" value="{% if request.resolver_match.url_name == 'fw_suche' %}{{ request.GET.q|default:'' }}{% endif %}"
+               placeholder="{% trans 'Suchen …' %}" aria-label="{% trans 'Suche nach Person, Objekt, Vertrag …' %}"
+               autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"
+               role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="fwOsListe">
+        <kbd class="fw-taste" id="fwOsTaste" aria-hidden="true">⌘K</kbd>
+        <button type="button" class="fw-os-zu" id="fwOsZu" aria-label="{% trans 'Suche schliessen' %}">{% zeichen 'schliessen' %}</button>
+    </form>
+    <div class="fw-os-pop" id="fwOsPop" hidden>
+        <div class="fw-os-filter" id="fwOsFilter" role="group" aria-label="{% trans 'Nach Bereich eingrenzen' %}"></div>
+        <div class="fw-os-liste" id="fwOsListe" role="listbox" aria-label="{% trans 'Suchergebnisse' %}"></div>
+        <div class="fw-os-fuss" id="fwOsFuss">
+            <span class="fw-os-tasten" aria-hidden="true">
+                <span><kbd class="fw-taste">↑</kbd> <kbd class="fw-taste">↓</kbd> {% trans "wählen" %}</span>
+                <span><kbd class="fw-taste">↵</kbd> {% trans "öffnen" %}</span>
+                <span><kbd class="fw-taste" data-os-meta>⌘</kbd><kbd class="fw-taste">↵</kbd> {% trans "neuer Tab" %}</span>
+                <span><kbd class="fw-taste">esc</kbd> {% trans "schliessen" %}</span>
+            </span>
+            <a href="/neu/suche/" id="fwOsAlle" class="fw-os-alle"></a>
+        </div>
+    </div>
+    <div class="sr-only" id="fwOsStatus" role="status" aria-live="polite"></div>
+    <template id="fwOsTexte">
+        <span data-k="strg">{% trans "Strg" %}</span>
+        <span data-k="alle">{% trans "Alle" %}</span>
+        <span data-k="personen">{% trans "Mieter" %}</span>
+        <span data-k="immobilien">{% trans "Immobilien" %}</span>
+        <span data-k="buchhaltung">{% trans "Buchhaltung" %}</span>
+        <span data-k="tickets">{% trans "Tickets" %}</span>
+        <span data-k="vertraege">{% trans "Mietverhältnisse" %}</span>
+        <span data-k="dokumente">{% trans "Dokumente" %}</span>
+        <span data-k="g_personen">{% trans "Mieter & Personen" %}</span>
+        <span data-k="g_immobilien">{% trans "Immobilien" %}</span>
+        <span data-k="g_vertraege">{% trans "Mietverhältnisse" %}</span>
+        <span data-k="g_buchhaltung">{% trans "Buchhaltung" %}</span>
+        <span data-k="g_tickets">{% trans "Tickets" %}</span>
+        <span data-k="g_dokumente">{% trans "Dokumente" %}</span>
+        <span data-k="g_seiten">{% trans "Seiten & Aktionen" %}</span>
+        <span data-k="treffer_1">{% trans "1 Treffer" %}</span>
+        <span data-k="treffer_n">{% trans "{n} Treffer" %}</span>
+        <span data-k="laedt">{% trans "Suche läuft …" %}</span>
+        <span data-k="leer">{% trans "Keine Treffer für «{q}»." %}</span>
+        <span data-k="leer_hinweis">{% trans "Versuchen Sie den Nachnamen oder einen Teil der Adresse. Telefonnummern und weitere Felder findet die ausführliche Suche." %}</span>
+        <span data-k="fehler">{% trans "Die Suche ist gerade nicht erreichbar." %}</span>
+        <span data-k="fehler_hinweis">{% trans "Bitte prüfen Sie die Verbindung. Seiten und Befehle finden Sie weiterhin." %}</span>
+        <span data-k="nochmals">{% trans "Nochmals versuchen" %}</span>
+        <span data-k="alle_ergebnisse">{% trans "Alle Ergebnisse für «{q}» →" %}</span>
+        <span data-k="ausfuehrlich">{% trans "Ausführlich suchen →" %}</span>
+    </template>
+</div>
