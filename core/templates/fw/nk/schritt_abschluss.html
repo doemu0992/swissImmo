@@ -11,9 +11,9 @@
         <p class="fw-kachel-text">{% trans "Nachzahlungen werden als Debitoren gestellt, Guthaben gutgeschrieben. Die Zahlen werden eingefroren; danach ändert sich die Abrechnung nicht mehr." %}</p>
         {% if not p.abgeschlossen %}
         {% if request.user|darf:"/neu/nebenkosten/1/verbuchen/" %}
-        <form method="post" action="/neu/nebenkosten/{{ p.id }}/verbuchen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Abrechnung jetzt verbuchen? Nachzahlungen werden als Debitoren gestellt, Guthaben gutgeschrieben. Die Periode wird abgeschlossen." %}{% endfilter %}');">
-            {% csrf_token %}<button class="fw-btn fw-primary"{% if not result.total_kosten %} disabled{% endif %}>{% zeichen 'gut' %}{% trans "Verbuchen" %}</button>
-        </form>
+        {% comment %} Der Knopf steht als Aktion des Schritts im Fuss (form="nk-verbuchen"). {% endcomment %}
+        <form method="post" action="/neu/nebenkosten/{{ p.id }}/verbuchen/" id="nk-verbuchen" onsubmit="return confirm('{% filter escapejs %}{% trans "Abrechnung jetzt verbuchen? Nachzahlungen werden als Debitoren gestellt, Guthaben gutgeschrieben. Die Periode wird abgeschlossen." %}{% endfilter %}');">
+            {% csrf_token %}</form>
         {% else %}<p class="fw-kachel-text">{% trans "Verbuchen dürfen Inhaber und Verwalter." %}</p>{% endif %}
         {% endif %}
     </div>
@@ -23,7 +23,7 @@
         {% if not p.abgeschlossen %}
         <p class="fw-kachel-text">{% trans "Versand nach dem Verbuchen: PDF ins Mieterportal, E-Mail, Zustellung mit Einsprachefrist." %}</p>
         {% else %}
-        <div class="fw-nkw-knoepfe">
+        <div class="fw-nk-knoepfe">
             {% if request.user|darf:"/neu/nebenkosten/1/versand/" %}
             <form method="post" action="/neu/nebenkosten/{{ p.id }}/versand/">{% csrf_token %}
                 <button class="fw-btn" title="{% trans 'Erzeugt je Mieter eine Abrechnung, legt sie ins Portal und lädt alle als Sammel-PDF' %}">{% zeichen 'herunterladen' %}{% trans "PDF erstellen & ablegen" %}</button></form>
@@ -41,4 +41,10 @@
         {% if pauschal %}<p class="fw-kachel-text">{% blocktrans count n=pauschal|length %}{{ n }} Vertrag mit Pauschale erhält keine Abrechnung.{% plural %}{{ n }} Verträge mit Pauschale erhalten keine Abrechnung.{% endblocktrans %}</p>{% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block fuss_haupt %}
+{% if not p.abgeschlossen and request.user|darf:"/neu/nebenkosten/1/verbuchen/" %}
+<button form="nk-verbuchen" class="fw-btn fw-primary"{% if not result.total_kosten %} disabled{% endif %}>{% zeichen 'gut' %}{% trans "Verbuchen" %}</button>
+{% endif %}
 {% endblock %}

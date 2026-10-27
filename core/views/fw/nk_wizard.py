@@ -119,14 +119,39 @@ def _kontext(request, p, nr, result=None):
         fehlt += list(result.get('hinweise') or [])
     elif nr == 5 and Decimal(str(result.get('differenz', 0) or 0)):
         fehlt.append(gettext('Verteilt ist nicht genau das Total: Differenz CHF %(d)s.') % {'d': result.get('differenz')})
+    basis = _global_filter(request)
     return {
-        **_global_filter(request), 'nav': 'nebenkosten', 'p': p, 'lg': lg, 'result': result,
+        **basis, 'nav': 'nebenkosten', 'p': p, 'lg': lg, 'result': result,
         'leiste': leiste, 'schritt': schritt, 'nr': nr,
-        'zurueck': leiste[nr - 2] if nr > 1 else None, 'weiter': leiste[nr] if nr < 6 else None,
+        'assistent': _assistent(leiste, nr, basis.get('lg_query', ''), abgeschlossen=p.abgeschlossen),
         'warnungen': je_schritt.get(nr, []), 'fehlt': fehlt, 'kacheln': kacheln, 'periode_zu_lang': zu_lang,
         'akonto_vorschlaege': vorschlaege,
         'kann_schreiben': hat_rolle(request.user, SCHREIB_ROLLEN),
     }
+
+
+#: Zustand aus `nk_prozess` (Prozessleiste, auch auf anderen Seiten) → Zustand des Assistenten.
+_ZUSTAND = {'erledigt': 'fertig'}
+
+
+def _assistent(leiste, nr, lg_query='', *, abgeschlossen=False):
+    """Leiste, Kopf und Fuss im Assistenten-Standard (fw/_assistent_server.html).
+    «Abbrechen» führt zur Nebenkosten-Liste; nach dem Verbuchen heisst der Knopf «Schliessen»."""
+    from core.services.assistent import server_assistent
+    schritte = [{**s, 'zustand': _ZUSTAND.get(s['zustand'], s['zustand'])} for s in leiste]
+    return server_assistent(schritte, nr, abbrechen_url='/neu/nebenkosten/' + (lg_query or ''),
+                            abbrechen_text=gettext('Schliessen') if abgeschlossen else None)
+
+
+def einstieg_assistent(lg_query=''):
+    """Die Leiste der Seite «Neue Periode» (/neu/nebenkosten/neu/): dieselben sechs Schritte,
+    Schritt 1 aktuell, die übrigen gesperrt — es gibt noch keine Periode, zu der sie führten."""
+    from core.services.assistent import server_assistent
+    from core.services.nk_prozess import WIZARD
+    schritte = [{'nr': nr, 'titel': titel, 'zustand': 'offen' if nr == 1 else 'gesperrt',
+                 'url': '/neu/nebenkosten/neu/' + (lg_query or '') if nr == 1 else ''}
+                for nr, _teil, titel in WIZARD]
+    return server_assistent(schritte, 1, abbrechen_url='/neu/nebenkosten/' + (lg_query or ''))
 
 
 def _zeigen(request, p, nr, vorlage, status=200, **extra):

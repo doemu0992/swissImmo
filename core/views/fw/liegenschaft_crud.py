@@ -447,7 +447,7 @@ def fw_suche(request):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_palette_suche(request):
-    """Datensätze für die ⌘K-Palette, als JSON.
+    """Datensätze für die ⌘K-Palette und das Suchfeld der Kopfzeile, als JSON.
 
     WARUM ES DIESEN ENDPUNKT GIBT (B7, E1.2)
 
@@ -462,93 +462,36 @@ def fw_palette_suche(request):
 
     WAS ZURÜCKKOMMT
 
-    Höchstens 15 Treffer über vier Arten, mit Typ, Beschriftung, Zusatz und
-    Adresse. Wenig genug, um ohne Blättern lesbar zu sein — die vollständige
-    Trefferliste bleibt `/neu/suche/`, und die Palette verweist am Ende
-    dorthin.
+    Seit der Omnisearch (27.10.2026) über alle Module: sechs Gruppen
+    (`personen`, `immobilien`, `vertraege`, `buchhaltung`, `tickets`,
+    `dokumente`), höchstens fünf Treffer je Gruppe, dazu `zahlen` mit der
+    Trefferzahl je Gruppe (höchstens 99). Jeder Treffer trägt `gruppe`, `art`,
+    `label`, `zusatz`, `url`, `status` (`{"text", "ton"}` oder null) und
+    `betrag` (fertig formatiert oder null). Weniger als zwei Zeichen ergibt
+    wie bisher `{"treffer": [], "q": q}`.
+
+    Die Suche selbst steht in `core/services/palette_suche.py`: dort die
+    Felder je Modell, die wortweise Verknüpfung und die Begründung, warum es je
+    Gruppe genau zwei Abfragen sind. Die vollständige Trefferliste bleibt
+    `/neu/suche/`.
 
     MANDANTENTRENNUNG
 
     Über die Manager der Modelle, wie überall: `Mieter.objects` &c. liefern
     nur den eigenen Mandanten. Dieser Endpunkt enthält KEINE eigene
     Organisationslogik — genau deshalb kann er sie auch nicht falsch machen.
-    `core/tests/test_palette_suche.py` prüft das mit einem zweiten Mandanten.
+    `core/tests/test_palette_suche.py` und `core/tests/test_omnisearch.py`
+    prüfen das mit einem zweiten Mandanten, die zweite Datei für jede Gruppe.
     """
     from django.http import JsonResponse
 
+    from core.services.palette_suche import suche
+
     q = (request.GET.get('q') or '').strip()
     if len(q) < 2:
-        # Ein einzelner Buchstabe trifft fast alles und kostet vier Abfragen
+        # Ein einzelner Buchstabe trifft fast alles und kostet zwölf Abfragen
         # bei jedem Tastendruck. Die Palette zeigt bis dahin die Seiten.
         return JsonResponse({'treffer': [], 'q': q})
 
-    def ueber_felder(*felder):
-        """Jedes Wort der Eingabe muss in IRGENDEINEM der Felder vorkommen.
-
-        WARUM WORTWEISE UND NICHT AM STÜCK
-
-        Menschen tippen «Anna Blaser», das Programm speichert Vorname und
-        Nachname getrennt. Ein `icontains` über die ganze Eingabe prüft dann
-        «enthält der Vorname die Zeichenkette 'Anna Blaser'?» — nein, und
-        «enthält der Nachname sie?» — auch nicht. Die Suche fand die Person
-        also genau dann nicht, wenn man ihren vollen Namen kannte.
-
-        Jedes Wort einzeln, alle mit UND verknüpft: «Anna Blaser» findet die
-        Person, «Blaser Anna» ebenso, «Blaser Bahnhofstrasse» grenzt weiter
-        ein statt mehr zu liefern.
-        """
-        bedingung = Q()
-        for wort in q.split():
-            oder = Q()
-            for feld in felder:
-                oder |= Q(**{f'{feld}__icontains': wort})
-            bedingung &= oder
-        return bedingung
-
-    treffer = []
-
-    for m in (Mieter.objects.filter(
-            ueber_felder('vorname', 'nachname', 'firmen_name', 'email', 'ort'))
-            .order_by('nachname', 'firmen_name')[:5]):
-        treffer.append({
-            'art': 'Person',
-            'label': str(m),
-            'zusatz': m.ort or m.email or '',
-            'url': f'/neu/personen/{m.id}/',
-        })
-
-    for lg in (Liegenschaft.objects.filter(
-            ueber_felder('strasse', 'ort', 'plz'))
-            .order_by('strasse')[:4]):
-        treffer.append({
-            'art': 'Liegenschaft',
-            'label': lg.strasse,
-            'zusatz': f'{lg.plz} {lg.ort}'.strip(),
-            'url': f'/neu/liegenschaften/{lg.id}/',
-        })
-
-    for e in (Einheit.objects.select_related('liegenschaft').filter(
-            ueber_felder('bezeichnung', 'liegenschaft__strasse'))
-            .order_by('liegenschaft__strasse', 'bezeichnung')[:3]):
-        treffer.append({
-            'art': 'Objekt',
-            'label': e.bezeichnung,
-            'zusatz': e.liegenschaft.strasse if e.liegenschaft_id else '',
-            'url': f'/neu/objekte/{e.id}/',
-        })
-
-    for v in (Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft').filter(
-            ueber_felder('mieter__vorname', 'mieter__nachname', 'mieter__firmen_name',
-                         'einheit__liegenschaft__strasse', 'einheit__bezeichnung'))
-            .order_by('-beginn')[:3]):
-        ort = ''
-        if v.einheit_id and v.einheit.liegenschaft_id:
-            ort = f'{v.einheit.liegenschaft.strasse}, {v.einheit.bezeichnung}'
-        treffer.append({
-            'art': 'Mietverhältnis',
-            'label': str(v.mieter) if v.mieter_id else f'MV-{v.id}',
-            'zusatz': ort,
-            'url': f'/neu/vertraege/{v.id}/',
-        })
-
-    return JsonResponse({'treffer': treffer[:15], 'q': q})
+    treffer, zahlen = suche(q)
+    return JsonResponse({'q': q, 'treffer': treffer, 'zahlen': zahlen})

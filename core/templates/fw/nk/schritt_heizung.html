@@ -6,9 +6,9 @@
     {% csrf_token %}<input type="hidden" name="aktion" value="hkvo">
     <div class="fw-kopf"><h2>{% trans "Verbrauchsabhängige Heizkosten (HKVO)" %}</h2></div>
     <div class="fw-rumpf">
-        <label class="fw-nkw-schalter"><input type="checkbox" name="hkvo_aktiv"{% if lg.hkvo_aktiv %} checked{% endif %}{% if not kann_schreiben %} disabled{% endif %}>
+        <label class="fw-nk-schalter"><input type="checkbox" name="hkvo_aktiv"{% if lg.hkvo_aktiv %} checked{% endif %}{% if not kann_schreiben %} disabled{% endif %}>
             {% trans "Nach Verbrauch abrechnen (Grundkosten nach Volumen, Rest nach Zählerstand)" %}</label>
-        <div class="fw-nkw-felder">
+        <div class="fw-nk-felder">
             <label>{% trans "Grundkostenanteil %" %}
                 <input name="hkvo_grundkosten_prozent" type="number" min="0" max="100" step="1" class="fw-feld fw-num" value="{{ lg.hkvo_grundkosten_prozent }}"{% if not kann_schreiben %} readonly{% endif %}{% if hkvo_fehler %} aria-invalid="true"{% endif %}>
                 {% if hkvo_fehler %}<span class="fw-feldfehler" role="alert">{{ hkvo_fehler }}</span>{% endif %}</label>
@@ -28,11 +28,11 @@
 <div class="fw-bento">
     {% for r in raster %}
     {% with fe=stand_fehler|nk_eintrag:r.z.id %}
-    <form method="post" class="fw-kachel b-l fw-nkw-kachel" id="zaehler-{{ r.z.id }}" novalidate>
+    <form method="post" class="fw-kachel b-l fw-nk-kachel" id="zaehler-{{ r.z.id }}" novalidate>
         {% csrf_token %}<input type="hidden" name="aktion" value="staende"><input type="hidden" name="zaehler_id" value="{{ r.z.id }}">
         <div class="fw-kachel-kopf"><h3>{{ r.z.einheit.bezeichnung }}</h3><span class="fw-klein">{{ r.z.typ }} {{ r.z.zaehler_nummer }}</span></div>
         {% if fe.meldung %}<p class="fw-feldfehler" role="alert">{{ fe.meldung }}</p>{% endif %}
-        <div class="fw-nkw-staende">
+        <div class="fw-nk-staende">
             {% for s in r.slots %}
             <fieldset>
                 <legend>{{ s.label }}</legend>

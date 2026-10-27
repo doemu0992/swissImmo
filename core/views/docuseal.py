@@ -97,15 +97,8 @@ def send_via_docuseal(request, vertrag_id):
         else:
             template_path = 'core/mietvertrag_pdf.html'
 
-        unterschrift_path = None
-        if eigentuemer and eigentuemer.unterschrift_bild:
-            try:
-                unterschrift_path = eigentuemer.unterschrift_bild.path
-            except: pass
-
-        if not unterschrift_path:
-            dummy = finders.find("img/unterschrift_dummy_transparent.png")
-            if dummy: unterschrift_path = dummy
+        from core.services.pdf_service import vermieter_unterschrift_pfad
+        unterschrift_path = vermieter_unterschrift_pfad(liegenschaft)
 
         netto = vertrag.netto_mietzins or 0
         nk = vertrag.nebenkosten or 0

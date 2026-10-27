@@ -97,7 +97,6 @@ OBERGRENZE = {
     'fw/regelwerk_protokoll.html': 1,
     'fw/schaden_detail.html': 2,
     'fw/vertrag_detail.html': 5,
-    'fw/vertrag_neu.html': 1,
     'fw/zulauf.html': 1,
 },
     'SELBSTGEBAUTER_KNOPF': {

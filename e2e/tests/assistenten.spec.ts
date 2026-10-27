@@ -89,10 +89,11 @@ for (const b of BREITEN) {
       await goto(page, '/neu/nebenkosten/');
       await page.getByText('NK E2E 2024').first().click();
       await page.waitForURL(/\/nebenkosten\/\d+\//, { waitUntil: 'domcontentloaded' });
-      const leiste = page.locator('.fw-nkw-leiste');
+      // Seit dem Assistenten-Standard (27.10.2026): Leiste des server-seitigen Assistenten.
+      const leiste = page.locator('.fw-assistent.an .fw-assistent-leiste');
       await expect(leiste).toBeVisible();
       await expect(leiste.locator('li')).toHaveCount(6);
-      const hier = leiste.locator('li.an');
+      const hier = leiste.locator('li.hier');
       await expect(hier).toHaveCount(1);
       await expect(hier).toBeInViewport();
       await keinQuerscrollen(page);
