@@ -32,7 +32,7 @@ Kontext aus core/views/fw/schluessel.schliessanlage_kontext (`sl_*`).
             <a href="/neu/schluessel/faellig/" class="fw-link">{% trans "Alle fälligen Rückgaben" %}</a>
         </div>
         <div class="fw-kachel b-m">
-            <div class="fw-kachel-kopf"><h3>{% trans "Verlust" %}</h3>{% if sl_verluste %}<span class="fw-chip fw-crit">{% blocktrans count n=sl_verluste|length %}{{ n }} offen{% plural %}{{ n }} offen{% endblocktrans %}</span>{% endif %}</div>
+            <div class="fw-kachel-kopf"><h3>{% trans "Verlust" %}</h3>{% if sl_verluste %}<span class="fw-chip fw-crit">{% blocktrans with n=sl_verluste|length %}{{ n }} offen{% endblocktrans %}</span>{% endif %}</div>
             {% if sl_verluste %}
             {% with p=sl_verluste.0 %}<p class="fw-kachel-text"><b>{{ p.titel }}</b><br>{{ p.beschreibung|truncatechars:140 }}</p>{% endwith %}
             <a href="/neu/pendenzen/" class="fw-link">{% trans "Pendenzen öffnen" %}</a>

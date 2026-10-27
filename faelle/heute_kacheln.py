@@ -116,7 +116,7 @@ def _schluessel_kachel(heute, aktive_lg):
     ziel = (f'/neu/liegenschaften/{ueber[0]}/?tab=stammdaten#schliessanlage' if len(lg_ids) == 1
             else '/neu/schluessel/faellig/')
     return [_kachel('schluessel', _('Schlüssel'), len(ueber),
-                    ngettext('Rückgabe überfällig', 'Rückgaben überfällig', len(ueber)),
+                    ngettext('Rückgabe ist überfällig', 'Rückgaben sind überfällig', len(ueber)),
                     _('Zurückfordern'), ziel, 'warn')]
 
 

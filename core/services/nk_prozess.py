@@ -106,7 +106,7 @@ def wizard_schritte(p, prozess, *, objekt_luecken, periode_zu_lang, warnungen_je
     luecken = objekt_luecken or []
     s.append({'zustand': 'warnung' if (luecken or periode_zu_lang or warnungen_je_schritt.get(1)) else 'erledigt',
               'info': f'{p.start_datum:%d.%m.%y}–{p.ende_datum:%d.%m.%y} · '
-                      + (ngettext('%(n)s Mt.', '%(n)s Mt.', monate) % {'n': monate})})
+                      + (_('%(n)s Mt.') % {'n': monate})})
     # 2 Kosten
     s.append({'zustand': 'warnung' if (kosten_da and warnungen_je_schritt.get(2)) else prozess[1]['zustand'],
               'info': (ngettext('%(n)s Posten · CHF %(b)s', '%(n)s Posten · CHF %(b)s', anzahl_kosten)

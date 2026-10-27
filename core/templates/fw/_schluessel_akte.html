@@ -6,7 +6,7 @@ jetzt ausgegeben ist, mit Rücknahme, darunter der Verlauf mit Belegen.
 <div class="fw-card" id="schluessel">
     <div class="fw-kopf"><span class="fw-ikon{% if sa.ueberfaellig %} crit{% elif sa.offen %} warn{% endif %}">{% zeichen 'schluessel' %}</span>
         <span class="fw-t">{% trans "Schlüssel" %}</span>
-        <span class="fw-neben">{% if sa.offen %}{% blocktrans count n=sa.stueck %}{{ n }} Stück ausgegeben{% plural %}{{ n }} Stück ausgegeben{% endblocktrans %}{% if sa.ueberfaellig %} · {% blocktrans count n=sa.ueberfaellig %}{{ n }} überfällig{% plural %}{{ n }} überfällig{% endblocktrans %}{% endif %}{% else %}{% trans "keine ausgegeben" %}{% endif %}</span></div>
+        <span class="fw-neben">{% if sa.offen %}{% blocktrans count n=sa.stueck %}{{ n }} Stück ausgegeben{% plural %}{{ n }} Stück ausgegeben{% endblocktrans %}{% if sa.ueberfaellig %} · {% blocktrans with n=sa.ueberfaellig %}{{ n }} überfällig{% endblocktrans %}{% endif %}{% else %}{% trans "keine ausgegeben" %}{% endif %}</span></div>
     {% for a in sa.offen %}
     <div class="fw-zeile">
         <span class="fw-marker {% if a.ueberfaellig %}crit{% else %}good{% endif %}"></span>
