@@ -122,7 +122,8 @@ Rechte, Übersetzung, Stilschuld) umgangen; das Ember-Bild entsteht vollständig
   (`#fwHauptnav`) mit gleitender Markierung (`.fw-gleiter`, folgt der Maus), Werkzeug-Kapsel
   (Dunkelmodus, Neuer Fall, Glocke, Einstellungen, Profil). Die alte Leiste `#fwSidebar` bleibt als
   Schublade für das Telefonmenü (Funktionen und Ids unverändert). Die Tab-Leiste unten entfällt;
-  am Telefon scrollt die Bereichs-Kapsel in sich.
+  am Telefon scrollt die Bereichs-Kapsel in sich. (Aufbau und Breiten seit dem 27.10.2026: Abschnitt
+  «Kopfzeile und Omnisearch» unten.)
 - **Heute als Bento** (`faelle/heute_bento.py`, Tests `core/tests/test_heute_bento.py`): grosse
   Suche, drei Zahlen, sechs Karten — Zahlungseingang (Halbkreis = Zahlungsquote des Jahres,
   Ø Verzug der letzten 90 Tage), Mahnwesen (orange Hauptkarte, überfällige Rechnungen),
@@ -209,14 +210,10 @@ Aktionen liegen unter «Weitere» (`details.fw-mehr-aktionen`).
 - **Fortschritt** `progress.fw-fortschritt` statt Breiten in `style=`.
 - Logik: `core/services/zahlungsklaerung.py`, Skript: `static/js/fw-zahlungen.js`.
 
-## Kopfzeile und Omnisearch (27.10.2026)
+## Kopfzeile und Omnisearch (27.10.2026, Kopfzeile v2)
 
-Vorlage: `navmock/vorschau` (freigegeben). Die Kopfzeile hat **zwei Zeilen** und eine Suche statt
-zwei: Zeile 1 = Marke, Bereiche (`#fwHauptnav`), rechtsbündig die Omnisearch (`#fwOs`), Werkzeuge;
-Zeile 2 = das **Menüband** des aktiven Bereichs (`nav.fw-bereichsreiter#navsub-…`, früher oben im
-Inhalt) mit dem Bereichsnamen als Überzeile («AKTEN /»), rechts der **Bestandsfilter `lg`** als
-Chip (`form.fw-bestand`, derselbe Auswahlmechanismus). Entfallen sind die eigene Zeile `fw-top`
-(Filter + breites Suchfeld) und das ⌘K-Fenster `fw-palette`.
+Vorlage: `mockups`-Vorschau «Kopfzeile v2» (freigegeben, mit den unten genannten Abweichungen). Die
+Kopfzeile hat **zwei Zeilen** und eine Suche statt zwei.
 
 - **Omnisearch:** `fw/_omnisearch.html` + `static/js/fw-omnisearch.js`. Ruhend 14 rem, mit Fokus
   bis 22 rem (das Feld wächst nach links über die freie Fläche, ohne die Bereiche zu verdecken),
@@ -247,8 +244,68 @@ Chip (`form.fw-bestand`, derselbe Auswahlmechanismus). Entfallen sind die eigene
   Symbol mit der Auswahl unsichtbar darüber (ein Punkt zeigt einen aktiven Filter) — nicht im
   Schubladenmenü, weil er dort bisher nicht stand und ein Filter, der die ganze Anwendung
   einschränkt, ohne Umweg erreichbar sein soll.
+
+**Zeile 1 von links:** Marke (`fw-logo-kapsel`) – Bestand (`form.fw-bestand`, Kontext-Chip) – Bereiche
+(`#fwHauptnav`) – Omnisearch (`#fwOs`, rechtsbündig) – Werkzeuge (`fw-werkzeug-kapsel`). Die Bereiche
+schliessen bei **jeder** Breite direkt an den Bestand an; sie werden **nicht** mathematisch zentriert
+(das Raster `1fr auto 1fr` des Mockups gibt es nicht).
+
+**Zeile 2:** das **Menüband** des aktiven Bereichs (`nav.fw-bereichsreiter#navsub-…`, früher oben im
+Inhalt) über die ganze Breite, Bereichsname als Überzeile («AKTEN /»). Auf «Heute» gibt es keine Zeile 2.
+
+- **Bestand:** derselbe Mechanismus wie immer — ein `<form method="get">` mit der nativen Auswahl
+  `name="lg"` (globaler Filter, `onchange` sendet; Mandantentrennung unverändert, die Liste kommt aus
+  `alle_liegenschaften`). Als Chip: Überzeile «BESTAND», darunter der Name; eine gewählte Liegenschaft
+  färbt den Chip (`.aktiv`). Die Auswahl liegt über dem **ganzen** Chip (ein Tipp auf Symbol, Überzeile
+  oder Name öffnet sie); Symbol, Überzeile und Pfeil sind Zierde. Bis 1239 px bleibt nur das Symbol, ein
+  Punkt zeigt den aktiven Filter, die Auswahl liegt unsichtbar darüber. Ohne JavaScript erscheint beim
+  Fokus ein Knopf «Übernehmen» unter dem Chip (`html:not(.fw-js)`; `fw-js` setzt die Kopfskript-Zeile
+  der Hülle).
+- **Menüband und «Mehr»:** `static/js/fw-menueband.js` misst die Breite (nach Schriftladung, bei
+  Grössenänderung) und lässt die vorderen Punkte stehen; der Rest steht im Überlauf `#fwMehrPop` hinter
+  «Mehr ▾» (mit der Zahl der versteckten Punkte). Die Gruppe hinten («Vorgänge» unter Akten) läuft zuerst
+  über und trägt im Überlauf ihre Überschrift (`data-abschnitt` am ersten Punkt der Gruppe). **Der aktive
+  Punkt wird nie versteckt**: er bleibt am Ende der sichtbaren Reihe (ohne Trenner davor). Steht ein
+  Punkt mit Zahl (Schäden: ungelesene Meldungen) im Überlauf, trägt «Mehr» einen roten Punkt
+  (`fw-punkt crit fw-mehr-punkt`). Der Überlauf ist ein Offenlegungsfeld: Knopf mit `aria-expanded` und
+  `aria-controls`, ↓ ↑ Pos1 Ende führen durch die Einträge, Esc schliesst und gibt den Fokus an den Knopf
+  zurück, Klick daneben oder ein Tab aus der Liste schliesst. Die Einträge sind Kopien der Links (DOM,
+  kein `innerHTML`). **Ohne JavaScript** bleibt «Mehr» unsichtbar und das Band scrollt in sich.
+- **Marke:** am PC (ab 1024 px) immer voll (Haus 30, Schrift 19, Kreuz 12); Tablet 601–1023 (26 / 16 /
+  11) und Handy bis 600 (24 / 15 / 10) verkleinert, aber **immer ausgeschrieben mit Schweizerkreuz**.
+  Nie nur das Zeichen. Bei geöffneter Suche am Telefon weicht sie.
+- **Omnisearch:** `fw/_omnisearch.html` + `static/js/fw-omnisearch.js`. Ruhend 13 rem (ab 1440), 11 rem
+  (1360–1439), 10,5 rem (1280–1359); bis 1279 px ein Symbol. Mit Fokus wächst das Feld nach links in den
+  freien Platz zwischen Bereichen und Suche (`--fw-os-extra`, **gemessen**, höchstens 8 rem; bei 1280 px
+  rund 20 px); als Symbol öffnet es sich auf mindestens 11 rem, notfalls über die Bereiche. Popover
+  36 rem. Ab zwei Zeichen, 150 ms entprellt, `AbortController`, nur die letzte Antwort zählt; Gerüst
+  beim ersten Laden, Kapseln mit Trefferzahlen, Gruppen nach dem Vertrag von `/neu/palette/` (`gruppe`,
+  `status`, `betrag`, `zahlen`), zuletzt die Gruppe «Seiten & Aktionen» aus den Daten `fw_palette`
+  (`#fw-palette-data`). ↑ ↓ ↵ ⌘↵ Esc, ⌘K / Strg+K. Ohne JavaScript ein Formular auf `/neu/suche/`.
+- **Was bei welcher Breite weicht** (Zeile 1 bleibt eine Reihe; gemessen in `e2e/tests/telefon.spec.ts`,
+  zweiundzwanzig Breiten, ungünstigster Fall: langer Bestandsname):
+
+  | Breite | Zeile 1 |
+  |---|---|
+  | ab 1440 | alles; Hell/Dunkel-Knopf in Zeile 1; Suche 13 rem |
+  | 1360–1439 | ohne Hell/Dunkel (im Profilmenü); Suche 11 rem |
+  | 1280–1359 | Suche 10,5 rem |
+  | 1240–1279 | Suche nur als Symbol |
+  | 1024–1239 | zusätzlich der Bestand nur als Symbol |
+  | 901–1023 | Marke kleiner; ohne «+» und ohne Menüknopf (beide im Profilmenü) |
+  | bis 900 (Telefon) | **drei Reihen**: Zeile 1 (Marke, Bestand-Symbol, Suche-Symbol, Glocke, Profil), die Bereiche, das Menüband (scrollt in sich, kein «Mehr») |
+  | bis 439 | zusätzlich ohne Einstellungsknopf (im Profilmenü, das ihn immer zeigt) |
+
+  Der **Einstellungsknopf** bleibt in Zeile 1 (Werkzeuge) und weicht erst, wenn Zeile 1 sonst umbricht
+  (unter 440 px), und dann nur ins Profilmenü. Hell/Dunkel, «+» und die Suchbreite weichen früher.
+- **Profilmenü** `#fwProfil`: bis 1023 px steht dort zusätzlich die Schnellzeile `fw-profil-schnell` —
+  «Neuer Fall» (öffnet wie das «+» das Fenster) und «Menü öffnen» (die Schublade `#fwSidebar` mit Mandant,
+  «Zuletzt geöffnet», Einstellungen; `fwOpenMobileNav`). Ab 1024 px steht sie nicht dort, weil «+» in
+  Zeile 1 steht und die Schublade nicht mehr gebraucht wird (`.fw-side` ist ab 1024 px aus).
 - **Wächter:** `core/tests/test_kopfzeile_omnisearch.py` (Struktur, Bindungen Skript ↔ Schicht ↔
-  Zeichentabelle ↔ Texte), `e2e/tests/omnisearch.spec.ts` (390 und 1280 px).
+  Vorlage ↔ Zeichentabelle ↔ Texte), `e2e/tests/kopfzeile.spec.ts` (Überlauf, «Mehr», Tastatur,
+  Bestand, Profilmenü, ohne JavaScript), `e2e/tests/telefon.spec.ts` (Zeile 1 bei 22 Breiten, Marke),
+  `e2e/tests/omnisearch.spec.ts` (Suche, 390 und 1280 px).
 
 ## Was nicht mehr vorkommen soll
 

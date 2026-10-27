@@ -12,6 +12,8 @@
 {% include 'fw/_zeichen.html' %}
     <script>
         // Zustand vor dem ersten Paint anwenden (kein Flackern)
+        // `fw-js`: nur mit Skript gesetzt; ohne es zeigt die Kopfzeile den «Übernehmen»-Knopf des Bestands
+        document.documentElement.classList.add('fw-js');
         if (localStorage.getItem('sbCollapsed') === '1') document.documentElement.classList.add('_sbc');
         // Automatisierte Läufe (Playwright, Selenium) ohne Bewegung: Messungen und
         // Bildschirmfotos sehen den Endzustand, nicht die Mitte einer Animation.
@@ -38,14 +40,17 @@ steht nur das Geruest.
 WAS AUS DER ALTEN HUELLE WOHIN GING — nichts ist weggefallen:
 
   Mandantenwechsel      Leiste oben, unter der Marke (nur bei mehreren)
-  Globaler Filter `lg`  Kopfzeile, Zeile 2 rechts neben dem Menueband, als Chip
-                        «Ganzer Bestand» (seit 27.10.2026; vorher eigene Zeile)
+  Globaler Filter `lg`  Kopfzeile, Zeile 1 hinter der Marke, als Kontext-Chip
+                        «Bestand / Ganzer Bestand» (seit 27.10.2026; vorher eigene
+                        Zeile, dann Zeile 2 neben dem Menueband)
   Suche `/neu/suche/`   Kopfzeile, Zeile 1: Omnisearch (`fw/_omnisearch.html`);
                         ⌘K fokussiert sie, die Seiten der frueheren Palette stehen
                         darin als Gruppe «Seiten & Aktionen»
   Dokumente, Kommun.    Kopfzeile rechts, als runde Knoepfe
-  Hell/Dunkel           Kopfzeile rechts (neu) UND im Profilmenue (wie bisher)
-  Profilmenue           unten in der Leiste; am Telefon der Kreis oben rechts
+  Hell/Dunkel           Kopfzeile rechts (ab 1440 px) UND im Profilmenue (wie bisher)
+  Profilmenue           unten in der Leiste; am Telefon der Kreis oben rechts;
+                        bis 1023 px zusaetzlich «Neuer Fall» und «Menue oeffnen»
+                        (Schublade) — in Zeile 1 ist dort kein Platz mehr
   Leiste einklappen     Pfeil neben der Marke (`_sbc`, localStorage)
   Tab-Leiste            unten, unter 1024 px
 
@@ -131,16 +136,16 @@ Detailseiten rufen sie beim Namen.
     <!-- ================= INHALT ================= -->
     <div class="fw-haupt">
 
-        {% comment %} ===== KOPFZEILE (27.10.2026, Vorlage: navmock/vorschau) =====
-           Zeile 1: Wortmarke, die fünf Bereiche (die schwarze Kapsel gleitet zum
-           aktiven Bereich), rechtsbündig die Omnisearch, dann die Werkzeuge.
-           Zeile 2: direkt darunter das Menüband des aktiven Bereichs (früher als
-           `fw-bereichsreiter` oben im Inhalt) und rechts der Bestandsfilter `lg`
-           als Chip. Die eigene Zeile `fw-top` (Filter + breites Suchfeld) und das
-           ⌘K-Fenster sind darin aufgegangen. Am Telefon steht die Bereichskapsel
-           unter Zeile 1, das Menüband darunter; beide scrollen in sich. Die Leiste
-           links (`#fwSidebar`) bleibt als Schublade für Mandant, «Zuletzt
-           geöffnet» und Einstellungen (Menüknopf). Ids und Funktionen sind
+        {% comment %} ===== KOPFZEILE v2 (27.10.2026, Vorlage: navmock/v2/vorschau) =====
+           Zeile 1 von links: Marke, Bestandsfilter `lg` (Kontext-Chip), die fünf Bereiche
+           (die schwarze Kapsel gleitet zum aktiven Bereich; sie schliessen direkt an den
+           Bestand an), rechtsbündig die Omnisearch, dann die Werkzeuge.
+           Zeile 2: das Menüband des aktiven Bereichs über die ganze Breite. Was nicht passt,
+           wandert in «Mehr» (`static/js/fw-menueband.js`); ohne Skript scrollt das Band.
+           Am Telefon (bis 900 px) stehen drei Reihen: Zeile 1 mit Marke, Bestand-Symbol,
+           Suche-Symbol, Glocke, Profil; die Bereiche; das Menüband (scrollt in sich).
+           «Neuer Fall» und der Menüknopf (Schublade `#fwSidebar` mit Mandant, «Zuletzt
+           geöffnet», Einstellungen) stehen dort im Profilmenü. Ids und Funktionen sind
            unverändert. {% endcomment %}
         <header class="fw-kopfleiste" id="fwKopf">
           <div class="fw-kopf-z1">
@@ -148,6 +153,23 @@ Detailseiten rufen sie beim Namen.
                 <svg class="fw-logo-haus" width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 15L16 4l13 11M7 13v14h18V13" class="a"/><path d="M12 27v-7h3v7M18 27v-9h3v9" class="b"/></svg>
                 <b>immoswiss<svg class="fw-logo-kreuz" width="12" height="12" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="3" fill="#e5342d"/><path d="M8.5 4h3v4.5H16v3h-4.5V16h-3v-4.5H4v-3h4.5z" fill="#fff"/></svg></b>
             </a>
+            {% comment %} GLOBALER FILTER: gilt für die ganze Anwendung. Ein Formular mit der nativen
+               Auswahl; sie liegt über dem ganzen Chip, ein Tipp irgendwo darauf öffnet sie. Bis 1239 px
+               bleibt vom Chip das Symbol (ein Punkt zeigt einen aktiven Filter), die Auswahl liegt
+               unsichtbar darüber. {% endcomment %}
+            <form method="get" class="fw-bestand{% if aktive_lg %} aktiv{% endif %}" title="{% trans 'Globaler Filter' %}">
+                <span class="fw-bestand-zeichen" aria-hidden="true">{% zeichen 'liegenschaft' %}</span>
+                <small class="fw-bestand-ueber" aria-hidden="true">{% trans "Bestand" %}</small>
+                <select name="lg" onchange="this.form.submit()" aria-label="{% trans 'Bestand' %}: {% trans 'Globaler Filter' %}">
+                    <option value="">{% trans "Ganzer Bestand" %}</option>
+                    {% for l in alle_liegenschaften %}
+                    <option value="{{ l.id }}" {% if aktive_lg and aktive_lg.id == l.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>
+                    {% endfor %}
+                </select>
+                {% comment %} Ohne Skript sendet die Auswahl nicht von selbst: Dann erscheint beim Fokus «Übernehmen». {% endcomment %}
+                <button type="submit" class="fw-bestand-ok">{% trans "Übernehmen" %}</button>
+                <span class="fw-bestand-pfeil" aria-hidden="true">{% zeichen 'aufklappen' %}</span>
+            </form>
             {% if fw_nav_gruppen %}<nav class="fw-kapsel fw-hauptnav" id="fwHauptnav" aria-label="{% trans 'Bereiche' %}">
                 <span class="fw-gleiter" aria-hidden="true"></span>
                 {% for g in fw_nav_gruppen %}
@@ -158,37 +180,31 @@ Detailseiten rufen sie beim Namen.
             <div class="fw-kapsel fw-werkzeug-kapsel">
                 <button type="button" onclick="fwThemeWechseln()" title="{% trans 'Hell- oder Dunkelmodus' %}" aria-label="{% trans 'Hell- oder Dunkelmodus' %}" class="fw-knopf-rund fw-knopf-dunkel">{% zeichen 'darstellung' %}</button>
                 <a href="/neu/faelle/neu/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neuen Fall erfassen' %}"
-                   class="fw-knopf-rund fw-nur-breit">{% zeichen 'neu' %}</a>
+                   class="fw-knopf-rund fw-wz-neu">{% zeichen 'neu' %}</a>
                 <a href="/neu/zulauf/{{ lg_query }}" title="{% trans 'Mitteilungen' %}" aria-label="{% trans 'Mitteilungen' %}"
                    class="fw-knopf-rund{% if nav == 'zulauf' %} hier{% endif %}">{% zeichen 'glocke' %}<span class="fw-pip" data-zaehler="zulauf" hidden></span></a>
-                <a href="/neu/einstellungen/{{ lg_query }}" title="{% trans 'Einstellungen' %}" aria-label="{% trans 'Einstellungen' %}" class="fw-knopf-rund fw-nur-breit fw-nur-weit{% if nav in fw_einstellungen_keys %} hier{% endif %}">{% zeichen 'einstellungen' %}</a>
-                <button type="button" onclick="fwOpenMobileNav()" aria-label="{% trans 'Menü öffnen' %}" class="fw-knopf-rund fw-nur-mobil">{% zeichen 'mehr' %}</button>
+                <a href="/neu/einstellungen/{{ lg_query }}" title="{% trans 'Einstellungen' %}" aria-label="{% trans 'Einstellungen' %}" class="fw-knopf-rund fw-wz-einst{% if nav in fw_einstellungen_keys %} hier{% endif %}">{% zeichen 'einstellungen' %}</a>
                 <button type="button" onclick="fwProfilMenu()" aria-label="{% trans 'Profil und Darstellung' %}" aria-haspopup="true" aria-controls="fwProfil" class="fw-avatar-knopf"><span class="fw-avatar fw-avatar-gross">{{ request.user.username|slice:":2"|upper }}</span></button>
             </div>
           </div>
+          {% for g in fw_nav_gruppen %}{% if nav in g.alle_keys and g.items and nav != 'dashboard' %}
           <div class="fw-kopf-z2">
-            {% for g in fw_nav_gruppen %}{% if nav in g.alle_keys and g.items and nav != 'dashboard' %}
             <nav id="navsub-{{ g.key }}" class="fw-bereichsreiter" aria-label="{{ g.label }}">
                 <span class="fw-bereichsreiter-name" aria-hidden="true">{{ g.label }}<i>/</i></span>
                 {% for it in g.items %}{% if it.erlaubt %}
                 {% if it.section and not forloop.first %}<span class="fw-bereichsreiter-trenner" aria-hidden="true"></span>{% endif %}
-                <a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}>{{ it.label }}{% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-z crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}</a>
+                <a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}{% if it.section %} data-abschnitt="{{ it.section }}"{% endif %}>{{ it.label }}{% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-z crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}</a>
                 {% endif %}{% endfor %}
+                {% comment %} «Mehr»: bleibt unsichtbar, bis das Skript Punkte aus dem Band nimmt. {% endcomment %}
+                <button type="button" class="fw-mehr" id="fwMehr" aria-expanded="false" aria-controls="fwMehrPop" hidden>
+                    <span>{% trans "Mehr" %}</span><span class="fw-mehr-n" aria-hidden="true"></span><span class="sr-only">{% trans "weitere Unterbereiche" %}</span>
+                    <span class="fw-mehr-pf" aria-hidden="true">{% zeichen 'aufklappen' %}</span>
+                    <span class="fw-punkt crit fw-mehr-punkt" role="img" aria-label="{% trans 'Neue Schadenmeldungen' %}" hidden></span>
+                </button>
             </nav>
-            {% endif %}{% endfor %}
-            {% comment %} GLOBALER FILTER: gilt für die ganze Anwendung. Am Telefon bleibt vom Chip das
-               Zeichen; die Auswahl liegt unsichtbar darüber und öffnet beim Tippen. {% endcomment %}
-            <form method="get" class="fw-bestand{% if aktive_lg %} aktiv{% endif %}" title="{% trans 'Globaler Filter' %}">
-                <span class="fw-bestand-zeichen">{% zeichen 'liegenschaft' %}</span>
-                <select name="lg" onchange="this.form.submit()" aria-label="{% trans 'Globaler Filter' %}">
-                    <option value="">{% trans "Ganzer Bestand" %}</option>
-                    {% for l in alle_liegenschaften %}
-                    <option value="{{ l.id }}" {% if aktive_lg and aktive_lg.id == l.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>
-                    {% endfor %}
-                </select>
-                <span class="fw-bestand-pfeil">{% zeichen 'aufklappen' %}</span>
-            </form>
+            <nav class="fw-mehr-pop" id="fwMehrPop" aria-label="{% trans 'Weitere Unterbereiche' %}" hidden></nav>
           </div>
+          {% endif %}{% endfor %}
         </header>
 
         <!-- Profilmenü -->
@@ -199,6 +215,13 @@ Detailseiten rufen sie beim Namen.
                     <b>{% trans "Hallo," %} {{ request.user.get_full_name|default:request.user.username }}</b>
                     <small>{{ request.user.email|default:request.user.username }}</small>
                 </div>
+            </div>
+            {% comment %} Was die Kopfzeile bis 1023 px nicht mehr tragen kann: «Neuer Fall» und die
+               Schublade (Mandant, «Zuletzt geöffnet»). Ab 1024 px stehen beide nicht hier (`fw-profil-schnell`). {% endcomment %}
+            <div class="fw-profil-schnell">
+                <a href="/neu/faelle/neu/" onclick="fwProfilMenu();return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')" class="fw-profil-link">{% zeichen 'neu' %} {% trans "Neuer Fall" %}</a>
+                <button type="button" onclick="fwProfilMenu();fwOpenMobileNav()" class="fw-profil-link">{% zeichen 'mehr' %} {% trans "Menü öffnen" %}</button>
+                <div class="fw-profil-trenner"></div>
             </div>
             <div class="fw-profil-abschnitt">
                 <div class="fw-profil-titel">{% trans "Darstellung" %}</div>
@@ -257,6 +280,8 @@ Detailseiten rufen sie beim Namen.
 {{ fw_palette|json_script:"fw-palette-data" }}
 <script defer src="{% statisch 'js/fw-omnisearch.js' %}"></script>
 {% endif %}
+{% comment %} Menüband der Kopfzeile: Überlauf in «Mehr». Ohne dieses Skript scrollt das Band. {% endcomment %}
+<script defer src="{% statisch 'js/fw-menueband.js' %}"></script>
 <script>
 // Leiste ein-/ausklappen (Zustand in localStorage)
 function fwToggleSidebar() {
@@ -332,31 +357,16 @@ function fwNavToggle(key) {
     document.getElementById('fwZuletztTitel').hidden = false;
 })();
 
-// Bereichsreiter: der aktive Reiter steht am Telefon im Bild, nicht rechts
-// ausserhalb der Zeile (z. B. «Vermarktung» unter Akten).
+// Die Bereichs-Kapsel oben: Ränder zeigen, wenn sie weiterläuft (Telefon, ab 901 px
+// bei sehr schmalem Fenster). Das Menüband darunter macht `static/js/fw-menueband.js`.
 (function () {
-    // Auch die Bereichs-Kapsel oben: Ränder zeigen, wenn sie weiterläuft
     var kapsel = document.getElementById('fwHauptnav');
-    if (kapsel) {
-        var kr = function () { var m = kapsel.scrollWidth - kapsel.clientWidth;
-            kapsel.classList.toggle('rand-l', m > 1 && kapsel.scrollLeft > 2);
-            kapsel.classList.toggle('rand-r', m > 1 && kapsel.scrollLeft < m - 2); };
-        kr(); kapsel.addEventListener('scroll', kr, { passive: true }); window.addEventListener('resize', kr);
-        setTimeout(kr, 400);
-    }
-    var zeile = document.querySelector('.fw-bereichsreiter');
-    if (!zeile) return;
-    var raender = function () {
-        var mehr = zeile.scrollWidth - zeile.clientWidth;
-        zeile.classList.toggle('rand-l', mehr > 1 && zeile.scrollLeft > 2);
-        zeile.classList.toggle('rand-r', mehr > 1 && zeile.scrollLeft < mehr - 2);
-    };
-    var hier = zeile.querySelector('a.hier');
-    if (hier && zeile.scrollWidth > zeile.clientWidth)
-        zeile.scrollLeft = Math.max(0, hier.offsetLeft - (zeile.clientWidth - hier.offsetWidth) / 2);
-    raender();
-    zeile.addEventListener('scroll', raender, { passive: true });
-    window.addEventListener('resize', raender);
+    if (!kapsel) return;
+    var kr = function () { var m = kapsel.scrollWidth - kapsel.clientWidth;
+        kapsel.classList.toggle('rand-l', m > 1 && kapsel.scrollLeft > 2);
+        kapsel.classList.toggle('rand-r', m > 1 && kapsel.scrollLeft < m - 2); };
+    kr(); kapsel.addEventListener('scroll', kr, { passive: true }); window.addEventListener('resize', kr);
+    setTimeout(kr, 400);
 })();
 
 // Profilmenü öffnen/schliessen
