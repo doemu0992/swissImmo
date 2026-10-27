@@ -233,9 +233,16 @@ REGISTER = [
     ('VMWG', '14', 'Mehrleistungen des Vermieters',
      'Wertvermehrende Investitionen/Verbesserungen berechtigen zu einer Mietzinserhöhung (energetische Sanierungen gelten als Mehrleistung).',
      ['mehrleistung', 'wertvermehrung', 'sanierung', 'investition']),
-    ('VMWG', '16', 'Kostensteigerungen',
+    # Bis 26.10.2026 stand die Kostensteigerung hier unter Art. 16 — der Bestand
+    # selbst zitiert Art. 16 VMWG für den Teuerungsausgleich (40 % des LIK,
+    # `core/services/mietzins_rechner.py`, `core/hilfe.py`). Die Kostensteigerung
+    # steht in Art. 12 VMWG (Befund N des Audits vom 26.10.2026).
+    ('VMWG', '12', 'Kostensteigerungen',
      'Allgemeine Kostensteigerungen (Unterhalt, Verwaltung) können über eine Pauschale im Mietzins berücksichtigt werden.',
      ['kostensteigerung', 'unterhalt', 'pauschale']),
+    ('VMWG', '16', 'Teuerungsausgleich',
+     'Zur Erhaltung der Kaufkraft des risikotragenden Kapitals darf die Teuerung (LIK) zu 40 % auf den Mietzins überwälzt werden.',
+     ['teuerung', 'lik', '40 prozent', 'kaufkraft']),
     ('VMWG', '19', 'Formular zur Mietzinserhöhung',
      'Das amtliche Formular muss Betrag, Datum des Wirksamwerdens, Begründung und die Anfechtungsmöglichkeit klar angeben.',
      ['formular', 'mietzinserhöhung', 'begründung', 'anfechtung']),

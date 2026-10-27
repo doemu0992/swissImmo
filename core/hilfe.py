@@ -77,6 +77,23 @@ HILFE = {
     'formularpflicht': (_('Amtliches Formular'), _(
         'Mietzinserhöhungen und Kündigungen durch den Vermieter brauchen das vom Kanton genehmigte Formular '
         '(Art. 269d und 266l OR). In einigen Kantonen gilt die Pflicht auch für den Anfangsmietzins.')),
+    'vorbehalt': (_('Vorbehalt'), _(
+        'Wer die mögliche Anpassung nicht ganz ausschöpft, kann sich den Rest für später vorbehalten. '
+        'Der Vorbehalt wird beziffert — in Franken oder Prozent —, damit er sich später nachvollziehen lässt.')),
+    'indexmiete': (_('Indexmiete'), _(
+        'Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach unten. Zulässig nur bei '
+        'einem Vertrag mit fester Dauer von mindestens fünf Jahren (Art. 269b OR). Die Massenanpassung nach '
+        'Referenzzins erfasst Indexmieten nicht.')),
+    'staffelmiete': (_('Staffelmiete'), _(
+        'Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens einmal jährlich, bei einer '
+        'Vertragsdauer von mindestens drei Jahren (Art. 269c OR). Der Mietzins folgt den Stufen — die '
+        'Anpassung nach Referenzzins und Teuerung gilt für ihn nicht.')),
+    'herabsetzung': (_('Herabsetzung'), _(
+        'Sinkt der Referenzzins, kann der Mieter eine Herabsetzung verlangen (Art. 270a OR). Der Vermieter '
+        'antwortet innert 30 Tagen; lehnt er ab, kann der Mieter innert 30 Tagen die Schlichtungsbehörde anrufen.')),
+    'zugang': (_('Zugang'), _(
+        'Fristen laufen ab dem Tag, an dem ein Schreiben beim Empfänger ankommt — nicht ab dem Versand. '
+        'Ist der Zugang noch nicht bestätigt, rechnet die Anwendung mit Postweg und Abholfrist eines Einschreibens.')),
     'kuendigungsfrist': (_('Kündigungsfristen'), _(
         'Für Wohnungen mindestens drei Monate auf einen ortsüblichen Termin (Art. 266c OR), für Geschäftsräume sechs '
         'Monate (Art. 266d OR) — der Vertrag kann längere Fristen vorsehen. Die Termine berechnet die Anwendung aus dem Vertrag.')),

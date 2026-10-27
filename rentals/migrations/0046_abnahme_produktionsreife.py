@@ -14,7 +14,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("rentals", "0044_mietzinsanpassung_anteile"),
+        ("rentals", "0045_mietzinsanpassung_ablauf_kuendigung"),
         ("tickets", "0015_phase1_audit_basis"),
     ]
 

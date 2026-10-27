@@ -10,15 +10,36 @@ from .models import Dokument, Mietvertrag
 
 logger = logging.getLogger(__name__)
 
-def berechne_mietpotenzial(vertrag, aktuell_ref, aktuell_lik, allg_kosten_pct=Decimal('0.00')):
+def bisheriger_stand(vertrag, wirksam_ab=None):
+    """(Netto-Mietzins, Referenzzins, LIK), die unmittelbar VOR `wirksam_ab` gelten.
+
+    Befund A (26.10.2026): Gerechnet wurde auf `vertrag.netto_mietzins` — dem
+    Ursprungsmietzins, den keine Anpassung je fortschreibt. Die zweite Erhöhung
+    setzte damit auf dem Betrag von vor der ersten auf, und die Prüfung
+    «ist das eine Erhöhung?» verglich mit demselben veralteten Wert.
+
+    Stichtag ist der Tag vor dem Wirksamwerden: Was dann gilt, ist der
+    «bisherige» Mietzins des amtlichen Formulars — auch eine bereits versandte,
+    aber erst später wirksame Anpassung zählt dazu. Ohne `wirksam_ab` gilt heute.
+    Entwürfe zählen nie (`Mietvertrag._wirksame_anpassung`).
+    """
+    stichtag = (wirksam_ab - _dt.timedelta(days=1)) if wirksam_ab else _dt.date.today()
+    netto = vertrag.effektiver_netto_mietzins(stichtag)
+    ref, lik = vertrag.effektive_basis(stichtag)
+    return netto, ref, lik
+
+
+def berechne_mietpotenzial(vertrag, aktuell_ref, aktuell_lik, allg_kosten_pct=Decimal('0.00'),
+                           wirksam_ab=None):
     """
     Berechnet das Erhöhungs- oder Senkungspotenzial nach Schweizer Mietrecht.
     Inklusive Referenzzinssatz, Teuerung (LIK) und allgemeiner Kostensteigerung.
     Rechenkerne und Herleitung: core.services.mietzins_rechner.
 
-    Basis ist der Stand, auf dem der aktuell verrechnete Mietzins beruht
-    (`Mietvertrag.effektive_basis()`: jüngste wirksame Anpassung, sonst Vertragsbeginn) —
-    sonst würde ein bereits weitergegebener Zinsschritt ein zweites Mal verrechnet.
+    Basis und Ausgangsmietzins sind der Stand, auf dem der Mietzins unmittelbar
+    vor `wirksam_ab` beruht (`bisheriger_stand`: jüngste gebuchte Anpassung,
+    Zeitplan, sonst Vertragsbeginn) — sonst würde ein bereits weitergegebener
+    Zinsschritt ein zweites Mal verrechnet, und zwar auf dem falschen Betrag.
     """
     from core.services import mietzins_rechner as rz
     from core.services.mietrecht import runde_mietzins
@@ -26,12 +47,12 @@ def berechne_mietpotenzial(vertrag, aktuell_ref, aktuell_lik, allg_kosten_pct=De
     if not vertrag.basis_referenzzinssatz or not vertrag.basis_lik_punkte:
         return None
 
-    basis_ref, basis_lik = vertrag.effektive_basis()
+    netto_miete, basis_ref, basis_lik = bisheriger_stand(vertrag, wirksam_ab)
     basis_ref = Decimal(str(basis_ref))
     basis_lik = Decimal(str(basis_lik))
     curr_ref = Decimal(str(aktuell_ref))
     curr_lik = Decimal(str(aktuell_lik))
-    netto_miete = Decimal(str(vertrag.netto_mietzins))
+    netto_miete = Decimal(str(netto_miete or 0))
 
     zins_prozent = rz.referenzzins_prozent(basis_ref, curr_ref)       # 1. Referenzzinssatz
     lik_prozent = rz.lik_prozent(basis_lik, curr_lik)                 # 2. Teuerung (40 %)
@@ -107,25 +128,108 @@ _MONATE = {
 }
 
 
-def _erlaubte_termin_monate(kuendigungstermine: str):
-    """Parst das (Freitext-)Feld kuendigungstermine zu einer Menge erlaubter Monatszahlen (1-12)."""
+#: Numerischer Termin im Freitext: «31.03.», «30.6», «31.12» — Tag und Monat.
+#: Eine Jahreszahl dahinter («31.03.2027») stört nicht, sie wird nicht gelesen.
+_TERMIN_ZIFFERN = re.compile(r'(?<!\d)(\d{1,2})\.\s?(\d{1,2})(?!\d)')
+
+
+def kuendigungstermine_parsen(kuendigungstermine: str):
+    """Liest das Freitextfeld `kuendigungstermine` zu einer Liste (tag, monat).
+
+    Gibt `None` zurück, wenn der Text KEINE Termine erkennen lässt — leer,
+    «ortsüblich» o. Ä. Das ist der Unterschied zur Fassung bis 26.10.2026: Sie
+    las einen leeren Text und Ziffern wie «31.03., 30.06., 30.09.» als «jedes
+    Monatsende». Ein Vertrag mit drei Quartalsterminen wurde damit auf jedes
+    Monatsende kündbar gerechnet — bis zu zwei Monate zu früh.
+
+    Erkannt werden:
+      · Ziffern «TT.MM» — der Tag wird übernommen, wie er dasteht;
+      · Monatsnamen — Tag 31 (Monatsende, wird später auf die Monatslänge
+        geklemmt), wie bisher;
+      · «jedes Monat(s)» / «monatlich» — alle zwölf Monatsenden;
+      · ein Ausschluss nach «ausser/ausgenommen» — per Name oder Ziffer.
+    """
     txt = (kuendigungstermine or '').lower()
     if not txt.strip():
-        return set(range(1, 13))
-    genannt = {num for name, num in _MONATE.items() if name in txt}
-    # "jedes Monats" / "monatlich" => alle Monate als Basis
-    if 'jedes monat' in txt or 'monatlich' in txt or 'jeden monat' in txt or not genannt:
-        erlaubt = set(range(1, 13))
-    else:
-        erlaubt = set(genannt)
-    # Ausschlüsse: "ausser Dezember", "ausgenommen ..."
-    if 'ausser' in txt or 'ausgenommen' in txt or 'ausg.' in txt:
-        pos = max(txt.find('ausser'), txt.find('ausgenommen'), txt.find('ausg.'))
-        schwanz = txt[pos:]
-        for name, num in _MONATE.items():
-            if name in schwanz:
-                erlaubt.discard(num)
-    return erlaubt or set(range(1, 13))
+        return None
+    pos_aus = [p for p in (txt.find('ausser'), txt.find('ausgenommen'), txt.find('ausg.'))
+               if p >= 0]
+    trenn = min(pos_aus) if pos_aus else len(txt)
+    kopf, schwanz = txt[:trenn], txt[trenn:]
+
+    termine = {}
+    for t, m in _TERMIN_ZIFFERN.findall(kopf):
+        tag, monat = int(t), int(m)
+        if 1 <= tag <= 31 and 1 <= monat <= 12:
+            termine[(tag, monat)] = True
+    for name, num in _MONATE.items():
+        if name in kopf:
+            termine[(31, num)] = True
+    if 'jedes monat' in kopf or 'jeden monat' in kopf or 'monatlich' in kopf:
+        for num in range(1, 13):
+            termine.setdefault((31, num), True)
+    if not termine:
+        return None
+
+    if schwanz:
+        aus_monate = {num for name, num in _MONATE.items() if name in schwanz}
+        aus_monate |= {int(m) for _t, m in _TERMIN_ZIFFERN.findall(schwanz) if 1 <= int(m) <= 12}
+        termine = {k: v for k, v in termine.items() if k[1] not in aus_monate}
+    return sorted(termine, key=lambda tm: (tm[1], tm[0])) or None
+
+
+#: Herkunft der Termine, mit denen gerechnet wird — für Hinweise in der Oberfläche.
+TERMINE_VERTRAG = 'vertrag'
+TERMINE_KANTON = 'kanton'
+TERMINE_FEHLEN = 'fehlt'
+
+
+def _kanton_termine(vertrag):
+    """Termine aus der Kündigungsregel des Kantons (Regelwerk der Organisation),
+    als (tag, monat) — oder None.
+
+    Das ist der Ort, an dem ortsübliche Termine in diesem Bestand hinterlegt
+    werden (`faelle.regelwerk_models.Regel`, Parameter `termine`). Der Grund-
+    Regelsatz trägt bewusst KEINE Termine (siehe `regelwerk_grundsatz`): sie
+    sind kantonal verschieden. Fehlt die Regel, wird nichts angenommen.
+    """
+    try:
+        from faelle.regelwerk import regel_holen
+        from core.views.fw.regelwerk import _kanton_zum_vertrag
+        regel = regel_holen(vertrag.organisation, 'kuendigungstermin',
+                            _kanton_zum_vertrag(vertrag))
+    except Exception:
+        logger.warning("Kantonsregel für Kündigungstermine nicht lesbar", exc_info=True)
+        return None
+    roh = list((getattr(regel, 'parameter', None) or {}).get('termine') or [])
+    termine = []
+    for eintrag in roh:
+        try:
+            t, m = (int(x) for x in str(eintrag).strip().rstrip('.').split('.')[:2])
+        except ValueError:
+            continue
+        if 1 <= t <= 31 and 1 <= m <= 12:
+            termine.append((t, m))
+    return termine or None
+
+
+def kuendigungstermine_fuer(vertrag):
+    """(Termine als [(tag, monat)], Herkunft).
+
+    Reihenfolge: was im Vertrag steht → die Kantonsregel des Regelwerks →
+    nichts. Bei «nichts» (`TERMINE_FEHLEN`) rechnet `berechne_kuendigungstermin`
+    weiter mit jedem Monatsende, damit Aufrufer ein Datum haben — das ist
+    dann der FRÜHESTE denkbare Termin, kein geltender. Jede Oberfläche, die
+    ihn zeigt, muss den fehlenden Eintrag melden (`TERMINE_FEHLEN`).
+    """
+    eigene = kuendigungstermine_parsen(getattr(vertrag, 'kuendigungstermine', ''))
+    if eigene:
+        return eigene, TERMINE_VERTRAG
+    if getattr(vertrag, 'pk', None):
+        kanton = _kanton_termine(vertrag)
+        if kanton:
+            return kanton, TERMINE_KANTON
+    return [(31, m) for m in range(1, 13)], TERMINE_FEHLEN
 
 
 def _monatsende(jahr: int, monat: int) -> _dt.date:
@@ -139,13 +243,28 @@ def _monatsende(jahr: int, monat: int) -> _dt.date:
 ZUSTELL_PUFFER_TAGE = 7
 
 
-def naechster_anpassungstermin(vertrag, ankuendigung_datum: _dt.date) -> _dt.date:
+def vermuteter_zugang(versand_am: _dt.date, zugang_am: _dt.date = None) -> _dt.date:
+    """Bestätigter Zugang, sonst Versand + Zustellpuffer.
+
+    Dieselbe Vermutung wie für Art. 269d (unten) und die 257d-Fristansetzung
+    (`fw_verzug_257d`): Massgebend ist, wann das Schreiben dem Empfänger
+    ZUGEHT. Solange das nicht feststeht, wird spät angenommen — eine darauf
+    gerechnete Frist endet dann eher zu spät als zu früh."""
+    if zugang_am:
+        return zugang_am
+    return versand_am + _dt.timedelta(days=ZUSTELL_PUFFER_TAGE)
+
+
+def naechster_anpassungstermin(vertrag, ankuendigung_datum: _dt.date,
+                               zugang_am: _dt.date = None) -> _dt.date:
     """Frühester Termin, auf den eine Mietzinserhöhung wirksam werden kann.
     Die Mitteilung muss dem Mieter mindestens 10 Tage VOR Beginn der Kündigungs-
-    frist ZUGEHEN (Art. 269d OR, Empfangstheorie). Wir rechnen daher Ankündigung
-    + Zustellpuffer (Postweg/Abholfrist) + 10 Tage wie einen Kündigungseingang
-    und nehmen den nächsten ordentlichen Kündigungstermin."""
-    fiktiver_eingang = ankuendigung_datum + _dt.timedelta(days=ZUSTELL_PUFFER_TAGE + 10)
+    frist ZUGEHEN (Art. 269d OR, Empfangstheorie). Wir rechnen daher den Zugang
+    (bestätigt, sonst Ankündigung + Zustellpuffer für Postweg/Abholfrist) + 10
+    Tage wie einen Kündigungseingang und nehmen den nächsten ordentlichen
+    Kündigungstermin."""
+    fiktiver_eingang = (vermuteter_zugang(ankuendigung_datum, zugang_am)
+                        + _dt.timedelta(days=10))
     termin = berechne_kuendigungstermin(vertrag, fiktiver_eingang)
     # Der Mietzins ist periodengerecht ab Monatsbeginn geschuldet — die Erhöhung
     # wird auf den ERSTEN des Folgemonats wirksam (Live-Test I). Explizit auf den
@@ -180,26 +299,33 @@ def berechne_kuendigungstermin(vertrag, eingang_datum: _dt.date) -> _dt.date:
         return me
 
     frist = int(vertrag.kuendigungsfrist_monate or 3)
-    erlaubt = _erlaubte_termin_monate(vertrag.kuendigungstermine)
+    termine, _herkunft = kuendigungstermine_fuer(vertrag)
 
-    # Frühestes Ende = Ende des Monats, der 'frist' Monate nach Eingang liegt
+    # Ende der Kündigungsfrist: Eingang + Frist, Tag auf die Monatslänge
+    # geklemmt. Für Monatsend-Termine ergibt das dasselbe wie die frühere
+    # Rechnung «Ende des Monats Eingang + Frist»; für einen Termin mitten im
+    # Monat («15.03.») ist es die genaue Grenze.
     m = eingang_datum.month - 1 + frist
     jahr = eingang_datum.year + m // 12
     monat = m % 12 + 1
-    fruehestens = _monatsende(jahr, monat)
-    if vertrag.erstmals_kuendbar_auf and vertrag.erstmals_kuendbar_auf > fruehestens:
-        fruehestens = vertrag.erstmals_kuendbar_auf
+    fristende = _dt.date(jahr, monat, min(eingang_datum.day, calendar.monthrange(jahr, monat)[1]))
 
-    # Nächsten erlaubten Monats-Endtermin >= fruehestens finden (max 24 Monate vorwärts)
-    kandidat = fruehestens
-    for _ in range(25):
-        if kandidat.month in erlaubt and kandidat >= fruehestens:
-            return kandidat
-        # nächster Monat
-        nm = kandidat.month % 12 + 1
-        ny = kandidat.year + (1 if kandidat.month == 12 else 0)
-        kandidat = _monatsende(ny, nm)
-    return fruehestens
+    def _naechster(ab):
+        kandidaten = sorted(
+            _dt.date(j, mo, min(t, calendar.monthrange(j, mo)[1]))
+            for j in range(ab.year, ab.year + 4)
+            for t, mo in termine)
+        return next((k for k in kandidaten if k >= ab), _monatsende(ab.year, ab.month))
+
+    regulaer = _naechster(fristende)
+    erstmals = vertrag.erstmals_kuendbar_auf
+    if erstmals and erstmals > regulaer:
+        # «Erstmals kündbar auf» ist selbst ein vereinbarter Termin — liegt er
+        # in einem Terminmonat, gilt er wie bisher unmittelbar.
+        if any(mo == erstmals.month for _t, mo in termine):
+            return erstmals
+        return _naechster(erstmals)
+    return regulaer
 
 
 def termine_aus_vertrag(vertrag) -> list:
@@ -211,14 +337,84 @@ def termine_aus_vertrag(vertrag) -> list:
     ausser Dezember»). `faelle.regelwerk.kuendigungstermin` erwartet dagegen
     eine Liste konkreter Termine. Diese Funktion ist die einzige Stelle, an der
     das eine ins andere übersetzt wird — die Freitext-Deutung bleibt damit bei
-    `_erlaubte_termin_monate` und wird nicht ein zweites Mal geschrieben.
+    `kuendigungstermine_parsen` und wird nicht ein zweites Mal geschrieben.
 
-    Der Tag ist immer `31`. `regelwerk.termine_als_daten` klemmt ihn auf die
-    Monatslänge, aus `31.02` wird der 28. bzw. 29. Februar. Ein hier fest
-    verdrahteter 28. wäre in Schaltjahren falsch.
+    Bei Monatsnamen ist der Tag `31`. `regelwerk.termine_als_daten` klemmt ihn
+    auf die Monatslänge, aus `31.02` wird der 28. bzw. 29. Februar. Ein hier
+    fest verdrahteter 28. wäre in Schaltjahren falsch. Bei Ziffern («30.06.»)
+    gilt der genannte Tag.
     """
-    return [f'31.{monat:02d}' for monat in sorted(_erlaubte_termin_monate(
-        vertrag.kuendigungstermine))]
+    # Leer, wenn der Vertrag nichts Lesbares enthält: Dann greift im Regelwerk
+    # die Kantonsregel (`pruefung_zum_vertrag`) — und fehlt auch sie, meldet
+    # die Prüfung «keine Kündigungstermine hinterlegt», statt wie bis
+    # 26.10.2026 stillschweigend jedes Monatsende zuzulassen.
+    return [f'{tag:02d}.{monat:02d}' for tag, monat in (
+        kuendigungstermine_parsen(vertrag.kuendigungstermine) or [])]
+
+
+# ---------------------------------------------------------------------------
+# Ausserordentliche Kündigung: Mindesttermin je Grund (Befund L, 26.10.2026)
+# ---------------------------------------------------------------------------
+#
+# GEPRÜFT WIRD NUR, WAS DER BESTAND BELEGT. Grundlage sind die Kurzfassungen im
+# Gesetzesregister (`core/services/gesetzestexte.py`) und `core/services/
+# mietrecht.py`:
+#
+#   257d  «danach Kündigung mit 30 Tagen auf Monatsende»       → `termin_257d`
+#   266i  «mit der gesetzlichen Frist auf den nächsten Termin» → gesetzliche
+#         Frist, Termine des Vertrags
+#   266g  «mit gesetzlicher Frist»                             → nur die Frist;
+#         ein Termin ist im Register nicht genannt und wird nicht verlangt
+#
+# Für Art. 257f Abs. 3, 266h und 266k nennt der Bestand KEINE Frist. Für sie wird
+# nichts gerechnet und nichts erfunden: Die Kündigungserfassung verlangt dann ein
+# Datum und warnt, dass es ungeprüft ist.
+
+#: Wer welchen Grund geltend machen kann (Gesetzesregister: 257d «setzt der
+#: Vermieter», 266h «kann der Vermieter», 266i «können die Erben»). 266g und 266k
+#: stehen bei beiden — das Register schränkt sie nicht ein.
+AO_GRUENDE_VERMIETER = frozenset({'257d', '257f', '266g', '266h', '266k'})
+AO_GRUENDE_MIETER = frozenset({'266g', '266i', '266k'})
+
+
+def gesetzliche_frist_monate(vertrag) -> int:
+    """Gesetzliche Kündigungsfrist in Monaten nach Objektart (`mietrecht.ARTIKEL`):
+    Wohnungen 3 (Art. 266c), Geschäftsräume 6 (Art. 266d), übrige unbewegliche
+    Sachen 3 (Art. 266b). 0 = gesondert vermieteter Einstellplatz: zwei Wochen auf
+    Ende einer einmonatigen Mietdauer (Art. 266e) — `berechne_kuendigungstermin`
+    rechnet <= 0 genau so."""
+    kategorie = getattr(vertrag, 'mietrecht_kategorie', 'wohnen')
+    einheit = getattr(vertrag, 'einheit', None)
+    if kategorie == 'gewerbe':
+        return 6
+    if kategorie == 'nebenobjekt' and einheit is not None and getattr(einheit, 'ist_einstellplatz', False):
+        return 0
+    return 3
+
+
+def ausserordentlicher_termin(vertrag, art: str, zugang: _dt.date):
+    """Frühester Termin einer ausserordentlichen Kündigung aus `art` — oder None,
+    wenn der Bestand für diesen Grund keine Frist belegt (siehe oben)."""
+    import copy
+    if art == '257d':
+        return termin_257d(zugang)
+    if art not in ('266g', '266i'):
+        return None
+    monate = gesetzliche_frist_monate(vertrag)
+    if art == '266i':
+        # Gesetzliche statt vertraglicher Frist, auf den nächsten Termin. Eine
+        # Kopie, damit am Vertrag selbst nichts verändert wird; «erstmals
+        # kündbar auf» bindet die ausserordentliche Kündigung nicht.
+        gesetzlich = copy.copy(vertrag)
+        gesetzlich.kuendigungsfrist_monate = monate
+        gesetzlich.erstmals_kuendbar_auf = None
+        return berechne_kuendigungstermin(gesetzlich, zugang)
+    # 266g: die gesetzliche Frist ab Zugang, auf keinen bestimmten Termin.
+    if monate <= 0:
+        return zugang + _dt.timedelta(days=14)
+    m = zugang.month - 1 + monate
+    jahr, monat = zugang.year + m // 12, m % 12 + 1
+    return _dt.date(jahr, monat, min(zugang.day, calendar.monthrange(jahr, monat)[1]))
 
 
 def termin_257d(ab_datum: _dt.date) -> _dt.date:

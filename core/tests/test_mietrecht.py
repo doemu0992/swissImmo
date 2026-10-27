@@ -494,7 +494,10 @@ class AnfechtungsfristTests(TestCase):
         p = Pendenz.objects.filter(vertrag=v, titel__icontains='Anfechtungsfrist Kündigung').first()
         self.assertIsNotNone(p)
         self.assertIn('Art. 271', p.beschreibung)
-        self.assertEqual(p.faellig_am, date.today() + timedelta(days=30))
+        # Seit 26.10.2026 ab dem ZUGANG (Befund F): ohne bestätigten Zugang
+        # Versand + Zustellpuffer, dann 30 Tage.
+        from rentals.services import ZUSTELL_PUFFER_TAGE
+        self.assertEqual(p.faellig_am, date.today() + timedelta(days=ZUSTELL_PUFFER_TAGE + 30))
 
     def test_mieterkuendigung_ohne_anfechtungsfrist(self):
         from core.models import Pendenz
@@ -509,12 +512,15 @@ class AnfechtungsfristTests(TestCase):
         from core.models import Pendenz
         _test_organisation(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
         lg, e, m, v = _basis_objekte()   # netto 1500
+        lg.kanton = 'ZH'; lg.save()
         v.basis_referenzzinssatz = Decimal('1.75'); v.basis_lik_punkte = Decimal('100'); v.save()
         from rentals.services import naechster_anpassungstermin
         wirksam = naechster_anpassungstermin(v, date.today())  # frühester gültiger Termin (269d inkl. Zustellpuffer)
         c = Client(); c.force_login(_team_user())
+        # Die Pendenz entsteht beim VERSAND, nicht schon beim Entwurf (Befund C).
         c.post(f'/neu/mietzins/{v.id}/anpassung/', {
-            'aktion': 'speichern', 'neu_netto': '1600', 'neu_zins': '1.50', 'neu_lik': '100',
+            'aktion': 'versandt', 'versand_am': date.today().isoformat(),
+            'neu_netto': '1600', 'neu_zins': '1.50', 'neu_lik': '100',
             'basis_zins': '1.75', 'basis_lik': '100', 'kosten_pct': '0',
             'wirksam_ab': wirksam.isoformat(),
         })
@@ -666,7 +672,8 @@ class Art266nDoppelzustellungTests(TestCase):
     def test_view_liefert_pdf_und_legt_zwei_kopien_ab(self):
         from rentals.models import Kuendigung
         from rentals.models import Dokument
-        _lg, _e, _m, v, _g = self._familienvertrag()
+        lg, _e, _m, v, _g = self._familienvertrag()
+        lg.kanton = 'ZH'; lg.save()   # Original hinterlegt (Befunde G/J)
         k = Kuendigung.objects.create(vertrag=v, absender='vermieter', per_datum=date(2027, 3, 31))
         c = Client(); c.force_login(_team_user())
         r = c.get(f'/neu/kuendigung/{k.id}/formular/')
@@ -692,7 +699,9 @@ class Art270AnfangsmietzinsTests(TestCase):
 
     def test_view_get_und_post(self):
         from rentals.models import Dokument
-        _lg, _e, _m, v = _basis_objekte()
+        lg, _e, _m, v = _basis_objekte()
+        # Kanton erfasst und mit Original (Befunde G/J) — sonst kein abgelegtes Formular.
+        lg.kanton = 'BE'; lg.save()
         c = Client(); c.force_login(_team_user())
         # GET zeigt das Formular
         g = c.get(f'/neu/mietzins/{v.id}/anfangsmietzins/')
@@ -919,11 +928,34 @@ class IndexMitteilungTests(TestCase):
         # +10% LIK × 80% Weitergabe = +8%
         self.assertEqual(r['neu_netto'], Decimal('1080.00'))
 
-    def test_kein_vorschlag_wenn_lik_nicht_gestiegen(self):
+    def test_kein_vorschlag_wenn_lik_unveraendert(self):
         from core.services.mietrecht import index_anpassung_vorschlag
         v = self._index_vertrag()
         self.assertIsNone(index_anpassung_vorschlag(v, aktuell_lik=Decimal('100.0')))
-        self.assertIsNone(index_anpassung_vorschlag(v, aktuell_lik=Decimal('95.0')))
+
+    def test_sinkender_lik_ergibt_senkung(self):
+        """Befund N (26.10.2026): Die Indexmiete folgt dem LIK in beide Richtungen.
+        Bis dahin lieferte ein gesunkener Index keinen Vorschlag."""
+        from core.services.mietrecht import index_anpassung_vorschlag
+        v = self._index_vertrag()
+        r = index_anpassung_vorschlag(v, aktuell_lik=Decimal('95.0'))
+        self.assertEqual(r['neu_netto'], Decimal('950.00'))
+        self.assertEqual(r['richtung'], 'senkung')
+        self.assertEqual(r['delta_prozent'], Decimal('-5.00'))
+
+    def test_zweite_indexanpassung_rechnet_ab_der_ersten(self):
+        """Ausgangspunkt ist der Stand nach der letzten gebuchten Anpassung —
+        nicht Vertragsbasis und Ursprungsmietzins."""
+        from core.services.mietrecht import index_anpassung_vorschlag
+        from rentals.models import MietzinsAnpassung
+        v = self._index_vertrag()
+        MietzinsAnpassung.objects.create(
+            vertrag=v, wirksam_ab=date(2025, 1, 1), neuer_netto_mietzins=Decimal('1050.00'),
+            alter_netto_mietzins=Decimal('1000.00'), neuer_lik_index=Decimal('105.0'))
+        v = type(v).objects.get(pk=v.pk)
+        r = index_anpassung_vorschlag(v, aktuell_lik=Decimal('110.25'))
+        self.assertEqual(r['alt_netto'], Decimal('1050.00'))
+        self.assertEqual(r['neu_netto'], Decimal('1102.50'))   # +5 % auf 1050, nicht +10.25 % auf 1000
 
     def test_kein_vorschlag_fuer_festmiete(self):
         from core.services.mietrecht import index_anpassung_vorschlag
@@ -1144,6 +1176,8 @@ class KuendigungSchlussabrechnungQSTests(TestCase):
         # Ausserordentliche Kündigung per 30.09.2026 → Vertrag endet früher
         c.post(f'/neu/vertraege/{v.id}/kuendigen/',
                {'eingang_datum': '2026-06-01', 'ausserordentlich': 'on',
+                # Seit 26.10.2026 nur mit strukturiertem Grund (Befund L).
+                'ausserordentlich_art': '266g',
                 'gewuenschtes_ende': '2026-09-30', 'bestaetigen': 'on'})
         v.refresh_from_db()
         self.assertEqual(v.ende, date(2026, 9, 30))

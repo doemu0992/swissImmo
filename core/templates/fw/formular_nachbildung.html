@@ -1,0 +1,27 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Kein amtliches Originalformular" %}{% endblock %}
+{% block content %}
+{% comment %} Zwischenseite vor dem Herunterladen einer Nachbildung (Befund J,
+   26.10.2026). Ohne sie lieferte die Anwendung für alle Kantone ausser BE, SO
+   und ZH still eine eigene Nachbildung, die wie ein amtliches Formular aussah. {% endcomment %}
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Kein amtliches Originalformular" %}</h1>
+        <p>{{ titel }}</p>
+    </div>
+</div>
+<div class="fw-card max-w-3xl">
+    <div class="fw-hinweis crit">
+        <span class="fw-hi">{% zeichen 'recht' %}</span>
+        <div class="fw-ht">{{ warnung }}</div>
+    </div>
+    <div class="fw-rumpf">
+        <p class="fw-hilfe">{% trans "Die Nachbildung trägt das Wasserzeichen «Entwurf – nicht amtlich» und wird nicht in der Akte abgelegt. Sie dient als Vorlage zum Übertragen in das Formular der kantonalen Behörde." %}</p>
+    </div>
+    <div class="fw-fuss">
+        <a href="{{ zurueck }}" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+        <a href="{{ weiter }}" class="fw-btn">{% zeichen 'drucken' %} {% trans "Verstanden — Nachbildung als Entwurf öffnen" %}</a>
+    </div>
+</div>
+{% endblock %}

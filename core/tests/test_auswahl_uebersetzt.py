@@ -2,7 +2,8 @@
 
 - Jede Beschriftung einer Auswahl ist übersetzbar (lazy) — ausser den
   bewusst deutschen: Rollennamen (Produktbegriffe), Aufenthaltsbewilligungen,
-  Mietzinsmodell mit Art.-Verweis, Zustellart der Kündigung, Regelarten
+  Mietzinsmodell mit Art.-Verweis, Zustellart und ausserordentliche Gründe
+  der Kündigung, Regelarten
   (Rechtsbegriffe) und Abo-Stufen (Produktnamen), GEAK-Klassen (Buchstaben).
 - Gespeicherter Text bleibt deutsch, auch bei französischer Oberfläche:
   interne Ticketnachricht und Protokoll beim Statuswechsel eines Schadens.
@@ -31,6 +32,10 @@ BEWUSST_DEUTSCH = {
     ('crm', 'Mieter', 'aufenthaltsbewilligung'),
     ('rentals', 'Mietvertrag', 'mietzins_modell'),
     ('rentals', 'Kuendigung', 'zustellung'),
+    # Die ausserordentlichen Gründe tragen den Gesetzesartikel im Namen — ein
+    # Rechtsbegriff wie die Zustellart darüber (Entscheid D11: deutsch bis zur
+    # juristisch geprüften Übersetzung). Neu seit 26.10.2026 (Audit, Befund L).
+    ('rentals', 'Kuendigung', 'ausserordentlich_art'),
     ('faelle', 'Regel', 'art'),
     ('portfolio', 'Liegenschaft', 'geak_klasse'),
     ('portfolio', 'Liegenschaft', 'geak_klasse_gesamt'),

@@ -19,7 +19,16 @@ KANTON_NAMEN = {
 }
 
 # Grobe PLZ→Kanton-Heuristik (nur Fallback, wenn Liegenschaft.kanton leer ist).
-# Reihenfolge: spezifischere Bereiche zuerst.
+#
+# DIE BEREICHE ÜBERLAPPEN, UND DAS IST DER PUNKT (Befund G, 26.10.2026)
+#
+# Bis zu dieser Fassung gewann der erste passende Bereich: 1201 Genève wurde
+# Waadt, 8200 Schaffhausen Zürich, 3920 Zermatt Bern — und mit ihnen Kantons-
+# formular, Schlichtungsbehörde und Formularpflicht. Die Postleitzahlen folgen
+# den Postkreisen, nicht den Kantonsgrenzen; eine Tabelle grober Bereiche kann
+# das nicht auflösen. Die Bereiche bleiben, wie sie sind — sie zu «verbessern»
+# hiesse, Grenzen zu raten. Liegt eine PLZ in Bereichen MEHRERER Kantone, gibt
+# die Heuristik KEINEN Kanton zurück, und die Oberfläche fragt nach.
 _PLZ_RANGES = [
     (1000, 1299, 'VD'), (1300, 1399, 'VD'), (1400, 1499, 'VD'),
     (1200, 1299, 'GE'), (1500, 1599, 'FR'), (1600, 1699, 'FR'),
@@ -41,25 +50,47 @@ _PLZ_RANGES = [
 ]
 
 
-def plz_to_kanton(plz):
+def plz_kantone(plz):
+    """Alle Kantone, in deren Bereich die PLZ fällt (sortiert) — leer, wenn keiner."""
     try:
         p = int(str(plz).strip()[:4])
     except (ValueError, TypeError):
-        return ''
-    for lo, hi, kt in _PLZ_RANGES:
-        if lo <= p <= hi:
-            return kt
-    return ''
+        return []
+    return sorted({kt for lo, hi, kt in _PLZ_RANGES if lo <= p <= hi})
+
+
+def plz_to_kanton(plz):
+    """Der Kanton zur PLZ, wenn die Heuristik ihn EINDEUTIG kennt — sonst None.
+
+    None heisst «nicht bestimmbar»: kein Bereich oder mehrere Kantone. Wer
+    wissen will, welche in Frage kommen, fragt `plz_kantone`."""
+    kandidaten = plz_kantone(plz)
+    return kandidaten[0] if len(kandidaten) == 1 else None
 
 
 def kanton_fuer_liegenschaft(lg):
-    """Kanton-Code (2 Zeichen). Priorität: Feld an der Liegenschaft, sonst PLZ."""
+    """Kanton-Code (2 Zeichen) oder None. Priorität: Feld an der Liegenschaft,
+    sonst die PLZ — aber nur, wenn sie eindeutig ist."""
     if lg is None:
-        return ''
+        return None
     kt = (getattr(lg, 'kanton', '') or '').strip().upper()
     if kt in KANTON_NAMEN:
         return kt
     return plz_to_kanton(getattr(lg, 'plz', ''))
+
+
+def formular_kanton(lg):
+    """Der Kanton für ein AMTLICHES Formular — nur aus dem Feld, nie aus der PLZ.
+
+    Ein Formular des falschen Kantons nennt die falsche Schlichtungsbehörde
+    und ist kein genehmigtes Formular; die Mitteilung wäre nichtig. Darum
+    genügt hier auch eine eindeutige PLZ nicht: Sie ist eine Vermutung, und
+    für diese eine Angabe verlangt der Bestand Gewissheit. None = nicht erfasst.
+    """
+    if lg is None:
+        return None
+    kt = (getattr(lg, 'kanton', '') or '').strip().upper()
+    return kt if kt in KANTON_NAMEN else None
 
 
 # ------------------------------------------------------------------

@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen %}
+{% load zeichen i18n hilfe chf l10n %}
 {% block title %}Herabsetzungsbegehren — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
 <nav class="fw-brotkrume mb-2.5">
@@ -10,7 +10,7 @@
 
 <div class="fw-phead">
     <div>
-        <h1>Herabsetzungsbegehren (Art. 270a OR)</h1>
+        <h1>Herabsetzungsbegehren (Art. 270a OR) {% hilfe 'herabsetzung' %}</h1>
         <p>{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }}</p>
     </div>
 </div>
@@ -37,10 +37,28 @@
                 </select></div>
             <div class="fw-feldblock"><label class="fw-label">Antwort erteilt am</label>
                 <input type="date" name="antwort_datum" value="{{ heute_iso }}" max="{{ heute_iso }}" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="hb_neu_{{ p.id }}" class="fw-label">{% trans "Neuer Nettomietzins (CHF)" %} <span class="fw-faint font-normal">{% trans "(bei Zustimmung)" %}</span></label>
+                <input id="hb_neu_{{ p.id }}" name="neu_netto" inputmode="decimal" placeholder="{% localize off %}{{ netto_aktuell }}{% endlocalize %}" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="hb_ab_{{ p.id }}" class="fw-label">{% trans "Wirksam ab" %}</label>
+                <input id="hb_ab_{{ p.id }}" type="date" name="wirksam_ab" class="fw-feld"></div>
+            <div class="fw-feldblock breit"><label for="hb_grund_{{ p.id }}" class="fw-label">{% trans "Begründung im Antwortbrief" %}</label>
+                <textarea id="hb_grund_{{ p.id }}" name="begruendung" rows="2" class="fw-feld" placeholder="{% trans 'z. B. gestiegene Kosten und Teuerung gleichen die Senkung des Referenzzinses aus' %}"></textarea></div>
         </div>
-        <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %} Antwort festhalten</button>
+        <div class="flex items-center gap-3 flex-wrap">
+            <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %} Antwort festhalten</button>
+            {% comment %} Der Brief wird abgelegt (Korrespondenz) und geöffnet — die
+               Anrufungsfrist des Mieters läuft ab dieser Antwort. {% endcomment %}
+            <button type="submit" name="brief" value="1" formtarget="_blank" class="fw-btn">{% zeichen 'drucken' %} {% trans "Festhalten + Antwortbrief (PDF)" %}</button>
+        </div>
     </form>
     {% endfor %}
+    {% endif %}
+
+    {% if beantwortet %}
+    <div class="fw-hinweis good rounded-lg"><span class="fw-hi">{% zeichen 'trend' %}</span>
+        <div class="fw-ht">{% trans "Wurde einem Begehren ganz oder teilweise zugestimmt, wird die Senkung mit dem amtlichen Formular mitgeteilt." %}
+        <a href="/neu/mietzins/{{ v.id }}/anpassung/" class="fw-link">{% trans "Mietzinsanpassung starten" %}</a></div>
+    </div>
     {% endif %}
 
     <h2>Neues Begehren erfassen</h2>

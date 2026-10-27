@@ -1818,8 +1818,8 @@ def _mietzins_grundlage(v):
     «ausgeglichen bis» und dem aktuellen Stand der Verwaltung zum Vergleich."""
     from core.services.lik import lik_bezeichnung, stand_label
     zins, lik = v.effektive_basis()
-    letzte = max((a for a in v.anpassungen.all() if a.wirksam_ab and a.wirksam_ab <= date.today()),
-                 key=lambda a: (a.wirksam_ab, a.id or 0), default=None)
+    # Nur GEBUCHTE Anpassungen (nicht Entwürfe) — dieselbe Auswahl wie die Basis.
+    letzte = v._wirksame_anpassung(date.today())
     org = v.organisation
     stand = None if letzte else v.basis_lik_stand
     return {

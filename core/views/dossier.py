@@ -16,7 +16,7 @@ from core.auth import (rolle_erforderlich, hat_rolle,
 from crm.models import Mieter
 from portfolio.models import Liegenschaft, Unterhalt
 from portfolio.models import Dokument as PortfolioDokument
-from rentals.models import Mietvertrag, Dokument as RentalsDokument
+from rentals.models import Mietvertrag, MietzinsAnpassung, Dokument as RentalsDokument
 from finance.models import DebitorenRechnung, Zahlungseingang
 from tickets.models import SchadenMeldung
 from core.services.dokumentsprache import nur_deutsch
@@ -150,7 +150,10 @@ def vertrag_dossier(request, vertrag_id):
                  .filter(vertrag=vertrag, status='verbucht')
                  .order_by('-datum_eingang')[:12])
 
-    anpassungen = vertrag.anpassungen.order_by('-wirksam_ab')[:8]
+    # Das Dossier ist die Akte nach aussen: nur gebuchte Anpassungen. Ein
+    # Entwurf ist nicht versandt und hat nie gegolten.
+    anpassungen = (vertrag.anpassungen.filter(status__in=MietzinsAnpassung.GEBUCHT)
+                   .order_by('-wirksam_ab')[:8])
 
     dokumente = (RentalsDokument.objects
                  .filter(vertrag=vertrag)
