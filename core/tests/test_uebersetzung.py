@@ -151,6 +151,11 @@ UEBERSETZT = (
     'fw/kontoblatt.html',
     'fw/kreditoren.html',
     'fw/kuendigung_form.html',
+    # Audit 26.10.2026 (Mietzinsanpassung/Kündigung): neu ausgezeichnet.
+    'fw/anfangsmietzins.html',
+    'fw/formular_nachbildung.html',
+    'fw/herabsetzung.html',
+    'fw/mietzins_anpassung.html',
     'fw/laeufe.html',
     'fw/lauf_detail.html',
     'fw/lebensdauer.html',

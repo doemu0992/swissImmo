@@ -806,8 +806,8 @@ def fw_kuendigung_formular(request, pk):
     k = get_object_or_404(Kuendigung.objects.select_related(
         'vertrag__mieter', 'vertrag__mitmieter', 'vertrag__einheit__liegenschaft'), id=pk)
     vw = k.organisation      # Briefkopf der Kuendigung, nicht der aeltesten Verwaltung
-    from core.services.formular_fill import (formular_status, kanton_fehlt_meldung,
-                                             kuendigung_zustellkopien, mit_wasserzeichen)
+    from core.services.formular_fill import kuendigung_zustellkopien, mit_wasserzeichen
+    from core.services.formular_status import formular_status, kanton_fehlt_meldung
     from core.services.ablage import ablegen
     lg = k.vertrag.einheit.liegenschaft if k.vertrag.einheit_id else None
     zurueck = f'/neu/vertraege/{k.vertrag_id}/'

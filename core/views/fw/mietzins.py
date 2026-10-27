@@ -248,7 +248,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
     from django.shortcuts import redirect
     from core.auth import log_aktion
     from core.services import mietzinsanpassung as ablauf
-    from core.services.formular_fill import formular_status, kanton_fehlt_meldung
+    from core.services.formular_status import formular_status, kanton_fehlt_meldung
     from core.services.mietzins_rechner import kostensteigerung_pauschal_pct
     from rentals.models import MietzinsAnpassung
     from rentals.services import (TERMINE_FEHLEN, ZUSTELL_PUFFER_TAGE, berechne_mietpotenzial,
@@ -507,7 +507,7 @@ def fw_anpassung_status(request, pk):
     from django.shortcuts import redirect
     from core.auth import log_aktion
     from core.services import mietzinsanpassung as ablauf
-    from core.services.formular_fill import formular_status
+    from core.services.formular_status import formular_status
     from rentals.models import MietzinsAnpassung
     anp = get_object_or_404(MietzinsAnpassung.objects.select_related(
         'vertrag__mieter', 'vertrag__einheit__liegenschaft'), id=pk)
@@ -551,7 +551,7 @@ def fw_mietzins_versand(request):
     from django.shortcuts import redirect
     from core.auth import log_aktion
     from core.services import mietzinsanpassung as ablauf
-    from core.services.formular_fill import formular_status
+    from core.services.formular_status import formular_status
     from rentals.models import MietzinsAnpassung
     if request.method != 'POST':
         return redirect('fw_mietzins')
@@ -602,7 +602,7 @@ def fw_mietzins_massenanpassung(request):
     from django.shortcuts import redirect
     from core.auth import log_aktion
     from core.services import mietzinsanpassung as ablauf
-    from core.services.formular_fill import formular_status
+    from core.services.formular_status import formular_status
     from rentals.models import MietzinsAnpassung
     from rentals.services import berechne_mietpotenzial, bisheriger_stand, naechster_anpassungstermin
 
@@ -738,7 +738,7 @@ def anfangsmietzins_auto_ablegen(vertrag, verwaltung=None):
     # Automatisch abgelegt wird nur ein KANTONSORIGINAL eines ERFASSTEN Kantons
     # (Befunde G, J). Bis hierher lag für 23 Kantone still eine Nachbildung in
     # der Akte, die wie das zugestellte amtliche Formular aussah.
-    from core.services.formular_fill import formular_status
+    from core.services.formular_status import formular_status
     formular = formular_status(einheit.liegenschaft, 'anfangsmietzins')
     if formular['kanton_fehlt']:
         return False, 'kanton_fehlt'
@@ -817,7 +817,8 @@ def fw_anfangsmietzins(request, vertrag_id):
     basis_lik = _bq.basis_lik_punkte
     basis_lik_basis = LIK_BASIS
 
-    from core.services.formular_fill import formular_status, kanton_fehlt_meldung, mit_wasserzeichen
+    from core.services.formular_fill import mit_wasserzeichen
+    from core.services.formular_status import formular_status, kanton_fehlt_meldung
     formular = formular_status(lg, 'anfangsmietzins')
 
     if request.method == 'POST':

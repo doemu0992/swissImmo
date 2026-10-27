@@ -123,6 +123,8 @@ AUSNAHMEN = {
     'rentals.MietzinsAnpassung.zins_prozent': 'berechnet von `berechne_mietpotenzial` und beim Erfassen der Anpassung gespeichert (`fw_mietzins_anpassung`, Massenlauf)',
     'rentals.MietzinsAnpassung.lik_prozent': 'berechnet von `berechne_mietpotenzial` und beim Erfassen der Anpassung gespeichert (`fw_mietzins_anpassung`, Massenlauf)',
     'rentals.MietzinsAnpassung.kosten_prozent': 'berechnet von `berechne_mietpotenzial` und beim Erfassen der Anpassung gespeichert (`fw_mietzins_anpassung`, Massenlauf)',
+    'rentals.MietzinsAnpassung.neuer_lik_stand': 'Stand-Monat des Marktstands beim Erfassen (`fw_mietzins_anpassung`, Massenlauf)',
+    'rentals.MietzinsAnpassung.kosten_ausgeglichen_bis': 'Rechendatum der Kostenpauschale beim Erfassen (`fw_mietzins_anpassung`); beim Versand auf den Vertrag übertragen',
 
     'crm.ReferenzzinsStand.vorher': 'schreibt `referenzzins.aenderung_festhalten` bei jeder Satzänderung',
     'crm.ReferenzzinsStand.betroffene_senkung': 'gezählt von `referenzzins.aenderung_festhalten`',
@@ -227,7 +229,8 @@ OFFENE_LUECKEN = {
 
 #: TOTE SPALTEN — nirgends gezeigt, nirgends gelesen, nirgends geschrieben.
 #:
-#: Diese fünf Felder kommen im ganzen Bestand NUR in ihrer eigenen
+#: Diese drei Felder (bis 26.10.2026 fünf — die Mietzinsreserve ist seither
+#: belegt, siehe ALIAS) kommen im ganzen Bestand NUR in ihrer eigenen
 #: Modellzeile vor. Das ist etwas anderes als eine offene Lücke: Dort wartet
 #: eine halbe Funktion, hier steht eine Spalte, die niemand benutzt.
 #:
@@ -243,10 +246,6 @@ TOTE_SPALTEN = {
         'nur portfolio/models.py:173 — Auswahlliste ohne Abnehmer',
     'portfolio.Liegenschaft.kaufdatum':
         'nur portfolio/models.py:43',
-    'rentals.Mietvertrag.mietzinsreserve_betrag':
-        'nur rentals/models.py:138',
-    'rentals.Mietvertrag.mietzinsreserve_prozent':
-        'nur rentals/models.py:139',
     'tickets.TicketNachricht.cc_email':
         'nur tickets/models.py:137 — die Nachricht kennt kein CC-Feld',
 }
@@ -293,6 +292,11 @@ ALIAS = {
     # Abnahme vor Ort: Eingaben je Bauteil, gesendet von fw_abnahme_position_speichern.
     'rentals.AbnahmePosition.kostenschaetzung': 'kosten',
     'rentals.AbnahmePosition.vorsaetzlich': 'vorsatz',
+    # Seit 26.10.2026 keine tote Spalte mehr: Der bezifferte Vorbehalt des
+    # Anpassungs-Assistenten wird beim Versand zur Mietzinsreserve des Vertrags
+    # (`core/services/mietzinsanpassung._vertragsbasis_fortschreiben`).
+    'rentals.Mietvertrag.mietzinsreserve_betrag': 'vorbehalt_betrag',
+    'rentals.Mietvertrag.mietzinsreserve_prozent': 'vorbehalt_prozent',
 }
 
 
@@ -459,9 +463,11 @@ class FelderOhneEingabewegTest(SimpleTestCase):
             f'anlegt, baut auch den Weg dorthin — oder trägt es mit '
             f'Begründung in AUSNAHMEN ein. Wer eine schliesst, führt die '
             f'Zahl hier nach.')
+        # 5 → 3 am 26.10.2026: Die Mietzinsreserve wird seither aus dem
+        # bezifferten Vorbehalt der Anpassung geschrieben (siehe ALIAS).
         self.assertEqual(
-            len(TOTE_SPALTEN), 5,
-            f'{len(TOTE_SPALTEN)} statt 5 tote Spalten. Eine neue tote Spalte '
+            len(TOTE_SPALTEN), 3,
+            f'{len(TOTE_SPALTEN)} statt 3 tote Spalten. Eine neue tote Spalte '
             f'gehört nicht angelegt; eine entfernte gehört hier gestrichen.')
 
     def test_jedes_feld_steht_in_hoechstens_einer_liste(self):
