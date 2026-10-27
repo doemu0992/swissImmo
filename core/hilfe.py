@@ -123,13 +123,14 @@ HILFE = {
         'Bestimmt, wie Kosten auf die Einheiten verteilt werden: nach Fläche, Volumen, Wertquote, Personen oder Zähler. '
         'Je Kostenart lässt sich ein eigener Schlüssel wählen.')),
     'hkvo': (_('Verbrauchsabhängige Heizkosten'), _(
-        'Ein Teil der Heizkosten (Grundkosten) wird nach Fläche verteilt, der Rest nach gemessenem Verbrauch. '
+        'Ein Teil der Heizkosten (Grundkosten) wird nach Volumen (m³) verteilt, der Rest nach gemessenem Verbrauch. '
         'Ob sie vorgeschrieben ist, regelt das kantonale Energierecht.')),
     'pro_rata': (_('Zeitanteilig (pro rata)'), _(
         'Wer nur einen Teil der Periode Mieter war, trägt die Kosten nach den Tagen seiner Mietdauer.')),
     'akonto_anpassung': (_('Akonto anpassen'), _(
         'Weicht das Akonto deutlich vom tatsächlichen Bedarf ab, schlägt die Anwendung einen neuen Betrag vor. '
-        'Die Anpassung gilt für künftige Sollstellungen; die Mitteilung an den Mieter ist separat.')),
+        'Übernommen wird er über die Mietzinsanpassung mit Formular und Termin; der neue Betrag gilt erst ab '
+        'diesem Termin.')),
     'hnk': (_('HNK'), _(
         'Heiz- und Nebenkosten. Eine HNK-relevante Lieferantenrechnung fliesst über die Nebenkostenabrechnung '
         'an die Mieter — eine zusätzliche direkte Weiterverrechnung würde doppelt belasten.')),

@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("crm", "0054_vorlage_ereignis_version_briefkopf"),
-        ("rentals", "0047_abnahme_altbestand"),
+        ("rentals", "0048_ausgeschlossene_kostenarten_nk_anpassung"),
     ]
 
     operations = [
