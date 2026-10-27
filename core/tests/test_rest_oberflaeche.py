@@ -34,7 +34,9 @@ class RestOberflaecheTests(TestCase):
         from mietprozess.models import Mietbewerbung
         Mietbewerbung.objects.create(einheit=self.e, vorname='Anna', nachname='Test', email='a@example.ch',
                                      geburtsdatum=date(1990, 1, 1), status='neu')
-        seite = self.c.get('/neu/bewerbungen/').content.decode()
+        # Seit dem Bewerber-Board (Modul 4) steht die Statusbeschriftung in der
+        # Liste; das Board gruppiert in eigene Spalten («Eingegangen» …).
+        seite = self.c.get('/neu/bewerbungen/?ansicht=liste').content.decode()
         self.assertIn('Nouvellement reçu', seite)
         self.assertNotIn('Neu eingegangen', seite)
 

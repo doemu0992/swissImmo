@@ -171,6 +171,19 @@ class Command(BaseCommand):
                                   betrag=Decimal("640.00"), gegenpartei="Muster Hans, Zürich",
                                   text="Gutschrift ohne Referenz", status="offen"))
 
+            # Modul 4 (27.10.2026): Bewerbungen für `e2e/tests/bewerber-board.spec.ts`.
+            # Je Karte ein eigener Ablauf, damit die Tests einander nicht den
+            # Zustand wegnehmen (Ziehen, Absage mit Dialog, Rücksprung, Telefon).
+            from mietprozess.models import Mietbewerbung
+            for vorname, status in (("Lea", "neu"), ("Marco", "geprueft"),
+                                    ("Nina", "geprueft"), ("Tom", "neu")):
+                Mietbewerbung.objects.get_or_create(
+                    email=f"{vorname.lower()}.e2e@example.ch",
+                    defaults=dict(einheit=e, vorname=vorname, nachname="E2E-Bewerber",
+                                  status=status, geburtsdatum=date(1990, 1, 1),
+                                  mobilnummer="079 000 00 00", beruf="Kauffrau",
+                                  einkommen_jahr="90'000"))
+
         # Läufe der laufenden Periode (Karten auf «Läufe», Zähler in der Leiste).
         # Der Befehl setzt seinen Mandantenkontext selbst.
         from django.core.management import call_command
