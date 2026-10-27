@@ -279,10 +279,6 @@ HILFE = {
         'Nicht für jeden Kanton liegt ein Original vor; dann nennt die Anwendung die Lücke und erzeugt kein '
         'Ersatzformular.')),
     # ---- Staffelmiete: Mitteilung der Erhöhung (Art. 269d Abs. 5 OR, Art. 19a VMWG, 27.10.2026) ----
-    'staffel_mitteilung': (_('Mitteilung der Staffelerhöhung'), _(
-        'Jede im Vertrag vereinbarte Erhöhung teilt der Vermieter schriftlich mit; ein amtliches Formular braucht es '
-        'dafür nicht (Art. 269d Abs. 5 OR). Die Mitteilung darf frühestens vier Monate vor Eintritt der Erhöhung '
-        'erfolgen (Art. 19a VMWG).')),
     'staffel_mitteilung_fenster': (_('Mitteilungsfenster'), _(
         'Der erste Tag, an dem die Mitteilung versandt werden darf: vier Monate vor der Erhöhung. Bei einer Erhöhung '
         'am 31. März ist es der 1. Dezember, nicht der 30. November, der vier Monate und einen Tag davor liegt. '

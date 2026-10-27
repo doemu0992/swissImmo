@@ -131,7 +131,10 @@ class StufenTests(TestCase):
         self.assertFalse(s.kann_versenden)
 
     def test_widerspruch_zwischen_erhoehung_und_netto_sperrt(self):
-        v = _staffel_vertrag(stufen=((date(2027, 6, 1), '1550.00', '40.00'),))
+        # `Staffelstufe.save()` leitet das Netto seit dem Regelkern aus der Erhöhung ab; ein Widerspruch
+        # entsteht nur noch im Altbestand oder durch direktes Update — so wird er hier hergestellt.
+        v = _staffel_vertrag(stufen=((date(2027, 6, 1), '1540.00', '40.00'),))
+        v.staffelstufen.update(netto_mietzins=Decimal('1550.00'))
         s = sm.stufen_staende(v, date(2027, 3, 1))[0]
         self.assertIn('stimmen nicht überein', s.problem)
         self.assertFalse(s.kann_erstellen)
