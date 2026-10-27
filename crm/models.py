@@ -474,7 +474,9 @@ class Mieter(models.Model):
     # --- ZAHLUNGSVERKEHR ---
     zahlungsart = models.CharField("Zahlungsart", max_length=20, choices=ZAHLUNGSART_CHOICES, blank=True, default='')
     ebill_email = models.EmailField("eBill-/E-Rechnungs-Adresse", blank=True, default='')
-    mahnsperre = models.BooleanField("Mahnsperre (Zahlungsvereinbarung)", default=False)
+    # Handschalter der Verwaltung; Zahlungsvereinbarungen sperren seit 26.10.2026
+    # nur ihre gedeckten Forderungen (core/services/mahnsperre.py).
+    mahnsperre = models.BooleanField("Mahnsperre (von Hand)", default=False)
     # Abweichender Zahler / Kostenträger (z.B. Sozialamt, Firma, Elternteil)
     zahler_name = models.CharField("Abweichender Zahler", max_length=150, blank=True, default='')
     zahler_adresse = models.CharField("Zahler-Adresse", max_length=200, blank=True, default='')

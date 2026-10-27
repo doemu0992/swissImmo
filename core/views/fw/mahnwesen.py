@@ -88,6 +88,13 @@ def fw_mahnwesen(request):
             if _offen > 0:
                 ohne_mahnfall.append((r, faellig, _offen, gesperrt[r.pk]))
             continue
+        # Der Handschalter am Mieter sperrt den ganzen Mieter — im Mahnlauf seit
+        # jeher, in dieser Liste bis 27.10.2026 nur im Vorlauf: Die Hauptliste
+        # zeigte Mahnfälle, die der Lauf gar nicht mahnt.
+        if r.vertrag_id and r.vertrag.mieter_id and getattr(r.vertrag.mieter, 'mahnsperre', False):
+            if _offen > 0:
+                ohne_mahnfall.append((r, faellig, _offen, gettext('Mahnsperre am Mieter (von Hand gesetzt)')))
+            continue
         # Der Fälligkeitstag ist Tag 0; wann der Verzug beginnt, stellt die Verwaltung ein.
         tage = stufen_laden.tage_im_verzug(faellig, heute, _eigentuemer_von_rechnung(r),
                                            organisation=r.organisation)

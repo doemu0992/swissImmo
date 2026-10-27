@@ -68,6 +68,29 @@ class SperreNurFuerGedeckteForderungenTests(TestCase):
         self.assertContains(antwort, f'/neu/vertraege/{self.v.id}/zahlungsvereinbarung/')
 
 
+class HandschalterImMahnwesenTests(TestCase):
+    """Der Handschalter `Mieter.mahnsperre` sperrt im Mahnlauf den ganzen Mieter —
+    bis 27.10.2026 zeigte die Hauptliste des Mahnwesens dessen Rechnungen trotzdem
+    als Mahnfälle."""
+
+    def test_hand_gesperrter_mieter_steht_unter_nicht_im_mahnlauf(self):
+        from finance.models import DebitorenRechnung
+        lg, e, m, v = _basis_objekte()
+        heute = date.today()
+        r = DebitorenRechnung.objects.create(vertrag=v, titel='Miete', datum=heute - timedelta(days=70),
+                                             faellig_am=heute - timedelta(days=70), betrag=Decimal('1000.00'))
+        m.mahnsperre = True
+        m.save(update_fields=['mahnsperre'])
+        c = Client()
+        c.force_login(_team_user('Verwalter'))
+        antwort = c.get('/neu/mahnwesen/', secure=True)
+        gezeigt = ({row['r'].pk for row in antwort.context['rows']}
+                   | {row['r'].pk for row in antwort.context['vorlauf']})
+        self.assertNotIn(r.pk, gezeigt)
+        gruende = {z['r'].pk: z['grund'] for z in antwort.context['ohne_mahnfall']}
+        self.assertIn('von Hand', gruende.get(r.pk, ''))
+
+
 class MahnsperreDatenmigrationTests(TestCase):
     """finance 0048: Das Häkchen, das die Vereinbarung gesetzt hatte, wird gelöst."""
 
