@@ -1,0 +1,40 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{{ d.bezeichnung|default:d.titel }} — {% trans "Fassungen" %} — swissImmo{% endblock %}
+{% block content %}
+{% comment %}
+Fassungen eines abgelegten Dokuments (Modul 5). `ablegen(dedup=True)` legt
+neue Fassungen an statt zu überschreiben; die Listen zeigen nur die neueste,
+hier stehen alle — die neueste zuerst.
+{% endcomment %}
+<nav class="fw-brotkrume mb-3">
+    <a href="/neu/dokumente/">{% trans "Dokumente" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{{ d.bezeichnung|default:d.titel }}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{{ d.bezeichnung|default:d.titel }}</h1>
+        <p>{% blocktrans count n=fassungen|length %}{{ n }} Fassung{% plural %}{{ n }} Fassungen{% endblocktrans %}{% if d.vertrag %} · <a href="/neu/vertraege/{{ d.vertrag_id }}/">{{ d.vertrag.mieter.display_name }}</a>{% endif %}{% if d.vorlage %} · {% blocktrans with name=d.vorlage.name %}aus der Vorlage «{{ name }}»{% endblocktrans %}{% endif %}</p>
+    </div>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Fassungen" %}</h2></div>
+    {% for f in fassungen %}
+    <div class="fw-zeile">
+        <span class="fw-ikon mut">{% zeichen 'dokument' %}</span>
+        <div class="fw-mitte">
+            <div class="fw-t">{% blocktrans with n=f.version %}Version {{ n }}{% endblocktrans %}
+                {% if forloop.first %}<span class="fw-chip fw-good">{% trans "neueste" %}</span>{% endif %}
+                {% if f.pk == d.pk and not forloop.first %}<span class="fw-chip fw-mut">{% trans "aufgerufen" %}</span>{% endif %}</div>
+            <div class="fw-s">{% if f.erstellt_am %}{{ f.erstellt_am|date:"d.m.Y H:i" }}{% else %}{{ f.datum|date:"d.m.Y" }}{% endif %}</div>
+        </div>
+        {% if f.datei %}<a href="{{ f.datei.url }}" target="_blank" rel="noopener" class="fw-btn fw-knapp">{% trans "Öffnen" %}</a>{% endif %}
+    </div>
+    {% empty %}
+    <p class="fw-leer">{% trans "Keine Fassungen." %}</p>
+    {% endfor %}
+</div>
+{% endblock %}

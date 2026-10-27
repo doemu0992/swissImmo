@@ -226,6 +226,17 @@ HILFE = {
     'portal': (_('Portal-Zugang'), _(
         'Mieter und Eigentümer sehen im Portal ihre Rechnungen, Dokumente und Meldungen. '
         'Den Zugang richtest du auf der Personen- bzw. Mandatsseite ein.')),
+    # ---- Vorlagen und Dokumente (Modul 5, 27.10.2026) ----
+    'dokumentregel': (_('Regel «Wenn … dann …»'), _(
+        'Eine Vorlage mit Ereignis erzeugt bei diesem Ereignis ein zusätzliches Dokument in der Akte. Es gilt die '
+        'eigene Vorlage vor der mitgelieferten und die Sprache des Empfängers vor Deutsch. Amtliche Formulare und '
+        'Mahnungen bleiben, wie sie sind.')),
+    'platzhalter': (_('Platzhalter'), _(
+        'Ein Platzhalter wie {mieter.name} wird beim Erzeugen durch den Wert aus Vertrag, Objekt oder Verwaltung '
+        'ersetzt. Unbekannte Platzhalter lassen sich nicht speichern; die älteren Schreibweisen gelten weiter.')),
+    'vorlage_gueltig_ab': (_('Gültig ab'), _(
+        'Ab diesem Tag gilt die Fassung. Gilt die Vorlage heute schon und liegt der Tag in der Zukunft, entsteht beim '
+        'Speichern eine neue Fassung; bis dahin gilt die bisherige. Leer heisst: gilt sofort.')),
 }
 
 

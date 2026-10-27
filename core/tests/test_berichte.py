@@ -40,8 +40,11 @@ class AblageTests(TestCase):
         d1 = ablegen(b'%PDF-1', 'Kündigung', vertrag=v, dedup=True)
         d2 = ablegen(b'%PDF-2', 'Kündigung', vertrag=v, dedup=True)
         self.assertIsNotNone(d1)
-        self.assertEqual(d1.id, d2.id)
-        self.assertEqual(Dokument.objects.filter(vertrag=v, bezeichnung='Kündigung').count(), 1)
+        # Seit Modul 5 (27.10.2026) eine neue Fassung statt Überschreiben: In
+        # der Akte steht weiter EIN Dokument, die alte Fassung bleibt dahinter.
+        self.assertEqual(d2.vorgaenger_id, d1.id)
+        self.assertEqual(Dokument.objects.neueste().filter(vertrag=v, bezeichnung='Kündigung').count(), 1)
+        self.assertEqual(Dokument.objects.filter(vertrag=v, bezeichnung='Kündigung').count(), 2)
         self.assertEqual(d1.mieter_id, v.mieter_id)
 
 

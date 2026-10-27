@@ -2956,5 +2956,41 @@ und einen Stilblock enthaelt.
             .fw-bw-board .fw-karte-wahl{max-width:none;width:100%;height:40px;font-size:14px}
         }
         /* ===== Ende MODUL bewerber-board ===== */
+        /* ===== MODUL Dokumenten-Automatisierung (27.10.2026) ===== */
+        /* Regeln «Wenn … dann …» (fw/vorlagen.html): Bento-Kacheln, am Telefon untereinander. */
+        .fw-regeln{margin-top:8px}
+        .fw-regel{min-height:0;gap:8px}
+        .fw-regel .fw-kachel-kopf{align-items:flex-start}
+        .fw-regel .fw-kachel-kopf h3{font-size:14px;line-height:1.35}
+        .fw-regel-marken{display:flex;flex-wrap:wrap;gap:6px}
+        .fw-regel-knoepfe{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:4px}
+        /* Editor (fw/vorlage_form.html): Formular links, Vorschau rechts; unter 1024 px untereinander (fw-raster l2). */
+        .fw-vl-stand{display:inline-block;margin-left:6px;color:var(--ds-faint);font-size:12.5px}
+        .fw-vl-editor{margin-bottom:20px}
+        .fw-vl-schalter{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;min-height:38px}
+        .fw-vl-chips{display:flex;flex-direction:column;gap:8px}
+        .fw-vl-gruppe{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+        .fw-vl-gruppe-name{flex-basis:100%;font-size:11.5px;font-weight:600;color:var(--ds-muted);text-transform:uppercase;letter-spacing:.04em}
+        .fw-vl-chip{border:0;cursor:pointer;font-family:var(--ds-mono);max-width:100%;overflow:hidden;text-overflow:ellipsis}
+        .fw-vl-chip:hover{box-shadow:var(--ds-shadow-sm)}
+        .fw-vl-farbe{display:flex;gap:8px;align-items:center}
+        .fw-vl-farbe input[type=color]{width:44px;height:38px;padding:2px;border:1px solid var(--ds-line);border-radius:var(--ds-radius-sm);background:var(--ds-surface);flex:0 0 44px}
+        .fw-vl-farbe .fw-feld{flex:1;min-width:0}
+        .fw-vl-vorschau-karte{align-self:start}
+        @media (min-width:1024px){.fw-vl-vorschau-karte{position:sticky;top:16px}}
+        .fw-vl-vorschau-kopf{padding-bottom:0}
+        .fw-vl-vorschau{padding:16px 20px 20px;min-width:0}
+        .fw-vl-hinweis{margin:0 0 10px}
+        /* Das Blatt: Briefaufbau wie im PDF, ohne Verwaltungsfarbe (die zeigt das Probe-PDF). */
+        .fw-vl-blatt{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius-sm);padding:22px 24px;font-size:13.5px;line-height:1.55;overflow-wrap:anywhere}
+        .fw-vl-absender{font-size:11.5px;color:var(--ds-muted);border-bottom:1px solid var(--ds-line);padding-bottom:6px;margin-bottom:14px}
+        .fw-vl-empfaenger{margin-bottom:14px}
+        .fw-vl-datum{text-align:right;font-size:12px;color:var(--ds-muted);margin-bottom:12px}
+        .fw-vl-betreff{font-size:14.5px;font-weight:600;margin:0 0 10px}
+        .fw-vl-text p{margin:0 0 10px}
+        .fw-vl-text ul,.fw-vl-text ol{margin:0 0 10px;padding-left:20px}
+        .fw-vl-fuss{margin-top:16px;padding-top:6px;border-top:1px solid var(--ds-line);font-size:11px;color:var(--ds-faint)}
+        @media (max-width:640px){.fw-vl-blatt{padding:16px}.fw-vl-vorschau{padding:12px 14px 16px}}
+        /* ---- Ende MODUL Dokumenten-Automatisierung ---- */
 
 </style>

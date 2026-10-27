@@ -248,7 +248,7 @@ def fw_liegenschaft_detail(request, pk):
         if isinstance(val, _dt):
             return val.replace(tzinfo=None)
         return _dt.combine(val, _dt.min.time())
-    for d in (RentalsDokument.objects
+    for d in (RentalsDokument.objects.neueste()
               .filter(Q(liegenschaft=lg) | Q(einheit__liegenschaft=lg))
               .filter(vertrag__isnull=True)
               .select_related('einheit').distinct().order_by('-datum')):
@@ -654,7 +654,7 @@ def fw_objekt_detail(request, pk):
                   .select_related('mieter', 'mitmieter')
                   .distinct().order_by('-beginn'))
     _dok_pro_vertrag = defaultdict(list)
-    for d in (RentalsDokument.objects.filter(vertrag__in=_vertraege)
+    for d in (RentalsDokument.objects.neueste().filter(vertrag__in=_vertraege)
               .order_by('-datum')):
         _dok_pro_vertrag[d.vertrag_id].append(d)
     verhaeltnisse = []
@@ -1863,7 +1863,7 @@ def fw_vertrag_detail(request, pk):
                  .order_by('-datum_eingang')[:15])
     anpassungen = v.anpassungen.order_by('-wirksam_ab')[:10]
     mietzins_komponenten = list(v.mietzins_komponenten.all())
-    dokumente = RentalsDokument.objects.filter(vertrag=v).order_by('-datum')[:15]
+    dokumente = RentalsDokument.objects.neueste().filter(vertrag=v).order_by('-datum')[:15]
 
     rechnungs_rows = []
     for r in rechnungen:

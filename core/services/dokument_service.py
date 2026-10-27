@@ -6,6 +6,7 @@ from django.utils import timezone
 from xhtml2pdf import pisa
 from crm.models import Organisation
 from core.services.pdf_service import link_callback
+from core.services.briefkopf import briefkopf_kontext
 from core.services.dokumentsprache import STANDARD, in_sprache, sprache_von
 
 # doc_type -> (Template, Titel, zusätzliche Kontext-Flags)
@@ -74,6 +75,8 @@ def generate_dokument_pdf_bytes(vertrag, doc_type):
         'brutto_fmt': f"{brutto:,.2f}".replace(",", "'"),
         'kaution_fmt': f"{kaution:,.2f}".replace(",", "'"),
         'mietzins_komponenten': komponenten,
+        # Logo, Farbe und Fusszeile der Verwaltung DIESES Objekts (Modul 5).
+        'briefkopf': briefkopf_kontext(verwaltung),
         **extra,
     }
 

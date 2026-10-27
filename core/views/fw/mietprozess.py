@@ -394,6 +394,10 @@ def fw_bewerber_entscheid(request, pk):
         messages.error(request, _kein_wechsel_text(b, _STATUS_LABEL[ziel_status]))
         return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
     ok = _entscheid_anwenden(request, b, entscheid)
+    if entscheid == 'zusage':
+        # Modul 5: Begleitdokument nach Regel; Fehler protokolliert der Dienst.
+        from core.services.dokument_regeln import dokument_fuer_ereignis
+        dokument_fuer_ereignis('bewerber_zugesagt', organisation=b.organisation, bewerbung=b)
     log_aktion(request, f"Bewerber-{entscheid.capitalize()}", f"{b.vorname} {b.nachname}",
                b.einheit.bezeichnung if b.einheit_id else '')
     meldung = gettext('Zusage gesetzt.') if entscheid == 'zusage' else gettext('Absage gesetzt.')

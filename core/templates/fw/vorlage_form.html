@@ -1,7 +1,14 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n hilfe %}
 {% block title %}{% if ist_neu %}{% trans "Neue Vorlage" %}{% else %}{% blocktrans with name=vl.name %}{{ name }} bearbeiten{% endblocktrans %}{% endif %} — swissImmo{% endblock %}
 {% block content %}
+{% comment %}
+Editor der Dokumenten-Automatisierung (Modul 5). Links das Formular mit den
+Platzhalter-Chips, rechts die Live-Vorschau (POST an /neu/vorlagen/vorschau/,
+gerendert mit einem echten Vertrag der eigenen Verwaltung). Unter 1024 px
+stehen beide untereinander (`fw-raster l2`). Gespeichert wird über
+`fw_vorlage_form`; unbekannte Platzhalter lehnt es ab.
+{% endcomment %}
 <nav class="fw-brotkrume mb-3">
     <a href="/neu/vorlagen/">{% trans "Vorlagen" %}</a>
     {% zeichen 'weiter' %}
@@ -11,56 +18,144 @@
 <div class="fw-phead">
     <div>
         <h1>{% if ist_neu %}{% trans "Neue Vorlage" %}{% else %}{% blocktrans with name=vl.name %}{{ name }} bearbeiten{% endblocktrans %}{% endif %}</h1>
-        <p>{% trans "Text mit Platzhaltern, die beim Verwenden automatisch ersetzt werden." %}</p>
+        <p>{% trans "Text mit Platzhaltern, die beim Verwenden automatisch ersetzt werden." %}
+            <span class="fw-vl-stand">{% blocktrans with n=version %}Version {{ n }}{% endblocktrans %}{% if werte.gueltig_ab %} · {% blocktrans with d=werte.gueltig_ab|date:"d.m.Y" %}gültig ab {{ d }}{% endblocktrans %}{% endif %}{% if ist_system %} · {% trans "mitgeliefert" %}{% endif %}</span></p>
     </div>
 </div>
 
-<div class="fw-cockpit">
-    <form method="post" class="fw-cockpit-haupt">
-        {% csrf_token %}
-        <div class="fw-card">
-            <div class="fw-formular p-5">
-                <div class="fw-feldblock"><label for="vf-name" class="fw-label">{% trans "Bezeichnung *" %}</label>
-                    <input id="vf-name" name="name" required value="{{ vl.name }}" class="fw-feld"></div>
-                <div class="fw-feldblock"><label for="vf-kat" class="fw-label">{% trans "Kategorie" %}</label>
-                    <select id="vf-kat" name="kategorie" class="fw-feld">
-                        {% for val, lbl in kategorien %}<option value="{{ val }}" {% if vl.kategorie == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
-                    </select></div>
-            <div class="fw-feldblock breit"><label for="vf-betreff" class="fw-label">{% trans "Betreff" %}</label>
-                <input id="vf-betreff" name="betreff" value="{{ vl.betreff }}" class="fw-feld"></div>
-            <div class="fw-feldblock breit"><label for="vf-inhalt" class="fw-label">{% trans "Inhalt" %}</label>
-                <textarea id="vf-inhalt" name="inhalt" rows="14" class="fw-feld fw-mono">{{ vl.inhalt }}</textarea></div>
-            <div class="fw-formular-fuss">
-            <a href="/neu/vorlagen/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
-            <button type="submit" class="fw-btn fw-primary">
-                {% zeichen 'speichern' %}{% trans "Speichern" %}
-            </button>
-            </div>
-            </div>
-        </div>
-    </form>
+{% if ist_system %}
+<div class="fw-hinweis info">
+    <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+    <div class="fw-ht">{% trans "Mitgelieferte Vorlage: Beim Speichern entsteht eine eigene Fassung für deine Verwaltung. Das Original bleibt für alle anderen, wie es ist." %}</div>
+</div>
+{% endif %}
 
-    <div class="fw-cockpit-kontext">
+<form method="post" id="vf-form" class="fw-raster l2 fw-vl-editor" data-vorschau="/neu/vorlagen/vorschau/">
+    {% csrf_token %}
     <div class="fw-card">
-        <div class="fw-kopf"><h2>{% trans "Platzhalter" %}</h2><span class="fw-neben">{% trans "Klicke, um einzufügen." %}</span></div>
-        <div class="py-1.5">
-            {% for code, beschr in platzhalter %}
-            <button type="button" onclick="einfuegen('{{ code }}')" class="fw-menuzeile">
-                <span><code class="fw-mono fw-marke">{{ code }}</code>
-                <span class="fw-klein block">{{ beschr }}</span></span>
-            </button>
-            {% endfor %}
+        <div class="fw-formular p-5">
+            <div class="fw-feldblock"><label for="vf-name" class="fw-label">{% trans "Bezeichnung *" %}</label>
+                <input id="vf-name" name="name" required value="{{ werte.name }}" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="vf-kat" class="fw-label">{% trans "Kategorie" %}</label>
+                <select id="vf-kat" name="kategorie" class="fw-feld">
+                    {% for val, lbl in kategorien %}<option value="{{ val }}" {% if werte.kategorie == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+                </select></div>
+            <div class="fw-feldblock"><label for="vf-ereignis" class="fw-label">{% trans "Ereignis" %} {% hilfe 'dokumentregel' %}</label>
+                <select id="vf-ereignis" name="ereignis" class="fw-feld">
+                    <option value="" {% if not werte.ereignis %}selected{% endif %}>{% trans "keins — nur von Hand verwenden" %}</option>
+                    {% for val, lbl in ereignisse %}<option value="{{ val }}" {% if werte.ereignis == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+                </select></div>
+            <div class="fw-feldblock"><label for="vf-format" class="fw-label">{% trans "Format" %}</label>
+                <select id="vf-format" name="format" class="fw-feld">
+                    {% for val, lbl in formate %}<option value="{{ val }}" {% if werte.format == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+                </select></div>
+            <div class="fw-feldblock"><span class="fw-label">{% trans "Sprache" %}</span>
+                <input type="hidden" name="sprache" id="vf-sprache" value="{{ werte.sprache }}">
+                <div class="fw-segment" role="group" aria-label="{% trans 'Sprache' %}" id="vf-sprachen">
+                    {% for val, lbl in sprachen %}<button type="button" data-sprache="{{ val }}" aria-pressed="{% if werte.sprache == val %}true{% else %}false{% endif %}" title="{{ lbl }}">{{ val|upper }}</button>{% endfor %}
+                </div>
+                {% if fassungen %}<p class="fw-hilfe">{% trans "Andere Sprachfassungen:" %}
+                    {% for f in fassungen %}<a href="{{ f.url }}">{{ f.code|upper }} {% if f.vorhanden %}{% trans "öffnen" %}{% else %}{% trans "anlegen" %}{% endif %}</a>{% if not forloop.last %} · {% endif %}{% endfor %}</p>{% endif %}
+            </div>
+            <div class="fw-feldblock"><label for="vf-gueltig" class="fw-label">{% trans "Gültig ab" %} {% hilfe 'vorlage_gueltig_ab' %}</label>
+                <input id="vf-gueltig" type="date" name="gueltig_ab" value="{{ werte.gueltig_ab|date:'Y-m-d' }}" class="fw-feld"></div>
+            <div class="fw-feldblock"><span class="fw-label">{% trans "Status" %}</span>
+                <input type="hidden" name="aktiv_feld" value="1">
+                <label class="fw-vl-schalter"><input type="checkbox" name="aktiv" value="1" {% if werte.aktiv %}checked{% endif %}> {% trans "aktiv" %}</label></div>
+            <div class="fw-feldblock breit"><label for="vf-betreff" class="fw-label">{% trans "Betreff" %}</label>
+                <input id="vf-betreff" name="betreff" value="{{ werte.betreff }}" class="fw-feld"></div>
+            <div class="fw-feldblock breit"><label for="vf-inhalt" class="fw-label">{% trans "Inhalt" %}</label>
+                <textarea id="vf-inhalt" name="inhalt" rows="14" class="fw-feld fw-mono">{{ werte.inhalt }}</textarea></div>
+            <div class="fw-feldblock breit">
+                <span class="fw-label">{% trans "Platzhalter einfügen" %} {% hilfe 'platzhalter' %}</span>
+                <div class="fw-vl-chips">
+                    {% for g, label, eintraege in gruppen %}
+                    <div class="fw-vl-gruppe"><span class="fw-vl-gruppe-name">{{ label }}</span>
+                        {% for p in eintraege %}<button type="button" class="fw-chip fw-brand fw-vl-chip" data-einfuegen="{{ p.code }}" title="{{ p.beschriftung }} — {{ p.beispiel }}">{{ p.code }}</button>{% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if alte_platzhalter %}
+                <details class="fw-aufklapp">
+                    <summary>{% trans "Ältere Schreibweisen (bleiben gültig)" %}</summary>
+                    <div class="fw-aufklapp-inhalt fw-vl-chips">
+                        {% for code, beschr in alte_platzhalter %}<button type="button" class="fw-chip fw-mut fw-vl-chip" data-einfuegen="{{ code }}" title="{{ beschr }}">{{ code }}</button>{% endfor %}
+                    </div>
+                </details>
+                {% endif %}
+            </div>
+            <div class="fw-formular-fuss">
+                <a href="/neu/vorlagen/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+                <button type="submit" formaction="/neu/vorlagen/probe-pdf/" formtarget="_blank" class="fw-btn">{% zeichen 'dokument' %}{% trans "Probe-PDF" %}</button>
+                <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %}{% trans "Speichern" %}</button>
+            </div>
         </div>
     </div>
+
+    <div class="fw-card fw-vl-vorschau-karte">
+        <div class="fw-kopf"><h2>{% trans "Vorschau" %}</h2>
+            <label for="vf-quelle" class="fw-neben">{% trans "mit" %}</label></div>
+        <div class="p-5 fw-vl-vorschau-kopf">
+            <select id="vf-quelle" name="quelle" class="fw-feld">
+                <option value="">{% trans "Beispielwerten" %}</option>
+                {% if vorschau_vertraege %}<optgroup label="{% trans 'Vertrag' %}">
+                    {% for v in vorschau_vertraege %}<option value="v:{{ v.id }}" {% if forloop.first and werte.ereignis != 'bewerber_zugesagt' %}selected{% endif %}>{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}</option>{% endfor %}
+                </optgroup>{% endif %}
+                {% if vorschau_bewerbungen %}<optgroup label="{% trans 'Bewerbung' %}">
+                    {% for b in vorschau_bewerbungen %}<option value="b:{{ b.id }}" {% if forloop.first and werte.ereignis == 'bewerber_zugesagt' %}selected{% endif %}>{{ b.vorname }} {{ b.nachname }} · {{ b.einheit.bezeichnung }}</option>{% endfor %}
+                </optgroup>{% endif %}
+            </select>
+        </div>
+        <div id="vf-vorschau" class="fw-vl-vorschau" aria-live="polite">
+            <p class="fw-leer">{% trans "Die Vorschau erscheint, sobald der Text geladen ist." %}</p>
+        </div>
     </div>
-</div>
+</form>
 
 <script>
-function einfuegen(code){
-    var ta = document.querySelector('textarea[name="inhalt"]');
-    var s = ta.selectionStart, e = ta.selectionEnd;
-    ta.value = ta.value.slice(0,s) + code + ta.value.slice(e);
-    ta.focus(); ta.selectionStart = ta.selectionEnd = s + code.length;
-}
+(function () {
+    var form = document.getElementById('vf-form');
+    var vorschau = document.getElementById('vf-vorschau');
+    var inhalt = form.querySelector('textarea[name="inhalt"]');
+    var letztes = inhalt;
+    var fehlertext = '{% filter escapejs %}{% trans "Die Vorschau liess sich nicht laden." %}{% endfilter %}';
+    form.querySelectorAll('input[name="betreff"], textarea[name="inhalt"]').forEach(function (f) {
+        f.addEventListener('focus', function () { letztes = f; });
+    });
+    function einfuegen(feld, code) {
+        var s = typeof feld.selectionStart === 'number' ? feld.selectionStart : feld.value.length;
+        var e = typeof feld.selectionEnd === 'number' ? feld.selectionEnd : s;
+        feld.value = feld.value.slice(0, s) + code + feld.value.slice(e);
+        feld.focus();
+        feld.selectionStart = feld.selectionEnd = s + code.length;
+        aktualisieren();
+    }
+    document.querySelectorAll('[data-einfuegen]').forEach(function (b) {
+        b.addEventListener('click', function () { einfuegen(letztes, b.getAttribute('data-einfuegen')); });
+    });
+    var sprache = document.getElementById('vf-sprache');
+    document.querySelectorAll('#vf-sprachen [data-sprache]').forEach(function (b) {
+        b.addEventListener('click', function () {
+            sprache.value = b.getAttribute('data-sprache');
+            document.querySelectorAll('#vf-sprachen [data-sprache]').forEach(function (x) {
+                x.setAttribute('aria-pressed', x === b ? 'true' : 'false');
+            });
+            aktualisieren();
+        });
+    });
+    var timer = null;
+    function aktualisieren() { clearTimeout(timer); timer = setTimeout(laden, 350); }
+    function laden() {
+        fetch(form.getAttribute('data-vorschau'), {
+            method: 'POST', body: new FormData(form), credentials: 'same-origin',
+            headers: {'X-Requested-With': 'fetch'}
+        }).then(function (r) { return r.ok ? r.text() : Promise.reject(r.status); })
+          .then(function (html) { vorschau.innerHTML = html; })
+          .catch(function () { vorschau.textContent = fehlertext; });
+    }
+    form.addEventListener('input', aktualisieren);
+    form.addEventListener('change', aktualisieren);
+    laden();
+})();
 </script>
 {% endblock %}

@@ -49,7 +49,7 @@ def mieter_dossier(request, mieter_id):
                  .filter(vertrag__mieter=mieter, status='verbucht')
                  .order_by('-datum_eingang')[:12])
 
-    dokumente = (RentalsDokument.objects
+    dokumente = (RentalsDokument.objects.neueste()
                  .filter(mieter=mieter)
                  .order_by('-datum')[:20])
 
@@ -101,7 +101,7 @@ def liegenschaft_dossier(request, liegenschaft_id):
 
     # Dokumente aus beiden Ablagen zusammenführen (Vertragsablage + Portfolio)
     dokumente = []
-    for d in RentalsDokument.objects.filter(liegenschaft=lg).order_by('-datum')[:15]:
+    for d in RentalsDokument.objects.neueste().filter(liegenschaft=lg).order_by('-datum')[:15]:
         dokumente.append({'titel': d.bezeichnung or d.titel, 'kategorie': d.kategorie,
                           'datum': d.datum, 'url': d.datei.url if d.datei else None})
     for d in PortfolioDokument.objects.filter(liegenschaft=lg).order_by('-datum')[:15]:
@@ -155,7 +155,7 @@ def vertrag_dossier(request, vertrag_id):
     anpassungen = (vertrag.anpassungen.filter(status__in=MietzinsAnpassung.GEBUCHT)
                    .order_by('-wirksam_ab')[:8])
 
-    dokumente = (RentalsDokument.objects
+    dokumente = (RentalsDokument.objects.neueste()
                  .filter(vertrag=vertrag)
                  .order_by('-datum')[:10])
 

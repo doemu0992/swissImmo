@@ -356,7 +356,7 @@ def _mieter_dok_gruppen(mieter, vertraege):
     # Vertragsbezug — z. B. Hausordnung). Sonst sähe der neue Mieter einer Einheit die
     # portal-sichtbaren Dokumente des Vormieters (Datenschutz-Leck). Eigene Dokumente
     # laufen über mieter=… bzw. die eigenen Verträge.
-    dok_qs = (RDokument.objects.filter(
+    dok_qs = (RDokument.objects.neueste().filter(
                   Q(mieter=mieter) | Q(vertrag_id__in=alle_vertrag_ids)
                   | Q(einheit_id__in=einheit_ids, mieter__isnull=True, vertrag__isnull=True),
                   im_portal_sichtbar=True)

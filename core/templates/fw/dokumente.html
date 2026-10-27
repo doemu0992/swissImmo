@@ -79,6 +79,7 @@
                     <div class="flex items-center gap-3">
                         <span class="fw-ikon">{% zeichen_wert e.icon %}</span>
                         <b>{{ e.name }}</b>{% include 'fw/_zustellstatus.html' with z=e.zustell d=None %}
+                        {% if e.verlauf_url %}<a href="{{ e.verlauf_url }}" onclick="event.stopPropagation();" class="fw-chip fw-mut">{% blocktrans with n=e.version %}Version {{ n }}{% endblocktrans %}</a>{% endif %}
                     </div>
                 </td>
                 <td><span class="fw-marke-kapsel capitalize">{{ e.kat }}</span></td>
