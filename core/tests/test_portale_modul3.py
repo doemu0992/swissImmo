@@ -120,7 +120,9 @@ class HandwerkerLinkTests(HandwerkerBasis):
         self.assertContains(r, '079 111 22 33')           # Telefon, solange offen
         self.assertContains(r, 'Passpartout')             # Zutritt
         self.assertEqual(r['X-Robots-Tag'], 'noindex, nofollow')
-        self.assertEqual(r['Referrer-Policy'], 'no-referrer')
+        # same-origin, nicht no-referrer: Sonst sendet der Browser bei den
+        # eigenen Formularen `Origin: null` und CSRF lehnt ab (403).
+        self.assertEqual(r['Referrer-Policy'], 'same-origin')
         self.assertIn('no-store', r['Cache-Control'])
 
     def test_falscher_und_kaputter_token_ergeben_404(self):

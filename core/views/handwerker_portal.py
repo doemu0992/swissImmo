@@ -18,8 +18,11 @@ Die Schranken, in dieser Reihenfolge:
 4. Danach läuft alles im **Kontext der Organisation des Auftrags**
    (`kontext_des_objekts`). Fotos und Dateien kommen nur über diesen Auftrag,
    nie über einen Pfad aus der Anfrage.
-5. Antwortköpfe: `X-Robots-Tag: noindex`, `Referrer-Policy: no-referrer`
-   (der Token steht in der Adresse), kein Cache (`never_cache`).
+5. Antwortköpfe: `X-Robots-Tag: noindex`, `Referrer-Policy: same-origin`
+   (der Token steht in der Adresse und darf an keine fremde Seite gehen),
+   kein Cache (`never_cache`). Nicht `no-referrer`: Damit schickt Chromium
+   bei den eigenen Formularen `Origin: null`, und die CSRF-Prüfung weist
+   jede Aktion mit 403 ab (gefunden im e2e-Lauf, 27.10.2026).
 
 Ist der Auftrag abgeschlossen, ist die Seite nur noch lesend: Jede Aktion wird
 abgewiesen, Telefonnummer und Auftrags-PDF (das sie enthält) entfallen.
@@ -55,7 +58,7 @@ OEFFNEN_LOG_FENSTER = 3600
 
 def _koepfe(antwort):
     antwort['X-Robots-Tag'] = 'noindex, nofollow'
-    antwort['Referrer-Policy'] = 'no-referrer'
+    antwort['Referrer-Policy'] = 'same-origin'
     return antwort
 
 

@@ -58,7 +58,7 @@ test('Handwerker sieht den Auftrag ohne Anmeldung, bei 390 Pixel', async ({ brow
   const antwort = await page.goto(pfad, { waitUntil: 'domcontentloaded' });
   expect(antwort!.status()).toBe(200);
   expect(antwort!.headers()['x-robots-tag']).toContain('noindex');
-  expect(antwort!.headers()['referrer-policy']).toBe('no-referrer');
+  expect(antwort!.headers()['referrer-policy']).toBe('same-origin');
   expect(antwort!.headers()['cache-control']).toContain('no-store');
   await expect(page.locator('#hw-titel')).toHaveText('E2E Wasserhahn tropft');
   await expect(page.getByText('E2E-Weg 1, 8000 Zürich')).toBeVisible();

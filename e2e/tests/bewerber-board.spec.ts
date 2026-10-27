@@ -24,6 +24,11 @@ async function neuGeladen(page: Page, tun: () => Promise<void>) {
 }
 
 test.describe('Bewerber-Board am Desktop', () => {
+  // Hoch genug, dass Quelle und Ziel ohne Scrollen sichtbar sind: Playwright
+  // scrollt beim Ziehen sonst zum Ziel, und der Mausdruck trifft danach eine
+  // andere Karte (nach dem Abbrechen steht Nina am Ende der Spalte).
+  test.use({ viewport: { width: 1280, height: 1400 } });
+
   test.beforeEach(async ({ page }) => {
     await login(page);
     await goto(page, '/neu/bewerbungen/');

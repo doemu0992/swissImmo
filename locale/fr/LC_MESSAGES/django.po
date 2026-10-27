@@ -28357,3 +28357,1940 @@ msgid "%(n)s Entwurf + Formular (Sammel-PDF)"
 msgid_plural "%(n)s Entwürfe + Formulare (Sammel-PDF)"
 msgstr[0] "%(n)s brouillon + formule (PDF groupé)"
 msgstr[1] "%(n)s brouillons + formules (PDF groupé)"
+
+msgid "Ein Teil der Heizkosten (Grundkosten) wird nach Volumen (m³) verteilt, der Rest nach gemessenem Verbrauch. Ob sie vorgeschrieben ist, regelt das kantonale Energierecht."
+msgstr "Une partie des frais de chauffage (frais de base) est répartie selon le volume (m³), le reste selon la consommation mesurée. Le droit cantonal de l'énergie détermine si le DIFC est obligatoire."
+
+msgid "Weicht das Akonto deutlich vom tatsächlichen Bedarf ab, schlägt die Anwendung einen neuen Betrag vor. Übernommen wird er über die Mietzinsanpassung mit Formular und Termin; der neue Betrag gilt erst ab diesem Termin."
+msgstr "Si l'acompte s'écarte nettement des besoins effectifs, l'application propose un nouveau montant. Il est repris via l'adaptation de loyer avec formulaire et date d'effet ; le nouveau montant ne s'applique qu'à partir de cette date."
+
+msgid "Regel «Wenn … dann …»"
+msgstr "Règle «si … alors …»"
+
+msgid "Eine Vorlage mit Ereignis erzeugt bei diesem Ereignis ein zusätzliches Dokument in der Akte. Es gilt die eigene Vorlage vor der mitgelieferten und die Sprache des Empfängers vor Deutsch. Amtliche Formulare und Mahnungen bleiben, wie sie sind."
+msgstr "Un modèle lié à un événement génère, lors de cet événement, un document supplémentaire dans le dossier. Votre propre modèle prime sur le modèle fourni, et la langue du destinataire sur l'allemand. Les formulaires officiels et les rappels restent inchangés."
+
+msgid "Ein Platzhalter wie {mieter.name} wird beim Erzeugen durch den Wert aus Vertrag, Objekt oder Verwaltung ersetzt. Unbekannte Platzhalter lassen sich nicht speichern; die älteren Schreibweisen gelten weiter."
+msgstr "Un espace réservé comme {mieter.name} est remplacé lors de la génération par la valeur issue du bail, de l'objet ou de la gérance. Les espaces réservés inconnus ne peuvent pas être enregistrés ; les anciennes graphies restent valables."
+
+msgid "Ab diesem Tag gilt die Fassung. Gilt die Vorlage heute schon und liegt der Tag in der Zukunft, entsteht beim Speichern eine neue Fassung; bis dahin gilt die bisherige. Leer heisst: gilt sofort."
+msgstr "La version s'applique à partir de ce jour. Si le modèle s'applique déjà aujourd'hui et que le jour est dans le futur, l'enregistrement crée une nouvelle version ; d'ici là, la version précédente s'applique. Vide signifie : s'applique immédiatement."
+
+msgid "Schliessanlage"
+msgstr "Installation de fermeture"
+
+msgid "Hersteller, Sicherungskarte und Bestellberechtigte der Anlage, dazu alle Schlüssel und die Türen, die sie öffnen. Jede Ausgabe und Rücknahme erzeugt eine Quittung mit Unterschrift in der Ablage."
+msgstr "Fabricant, carte de sécurité et personnes autorisées à commander de l'installation, ainsi que toutes les clés et les portes qu'elles ouvrent. Chaque remise et chaque reprise génère une quittance signée dans le classement."
+
+msgid "Schlüsselart"
+msgstr "Type de clé"
+
+msgid "Ein Hauptschlüssel öffnet alle Türen der Anlage, ein Gruppenschlüssel mehrere (etwa Haustür und Keller), ein Einzelschlüssel eine bestimmte Tür wie die Wohnungstür."
+msgstr "Un passe général ouvre toutes les portes de l'installation, un passe partiel plusieurs (p. ex. porte d'entrée et cave), une clé individuelle une porte précise comme celle de l'appartement."
+
+msgid "Mietvertrag mit Beilagen, Anfangsmietzins-Formular, wo Pflicht"
+msgstr "Bail avec annexes, formulaire de loyer initial là où il est obligatoire"
+
+msgid "E-Mail aus der Vorlage «Bewerber – Zusage»"
+msgstr "E-mail selon le modèle «Candidat – acceptation»"
+
+msgid "Pendenzen der Auszugscheckliste; das amtliche Formular entsteht beim Abruf"
+msgstr "Tâches en suspens de la check-list de sortie ; le formulaire officiel est généré à l'ouverture"
+
+msgid "amtliches Formular in der Akte (nur das Kantonsoriginal)"
+msgstr "formulaire officiel dans le dossier (uniquement l'original cantonal)"
+
+msgid "Nebenkostenabrechnung je Mieter in der Akte"
+msgstr "Décompte de frais accessoires par locataire dans le dossier"
+
+msgid "Protokoll in der Akte beim ersten PDF-Abruf"
+msgstr "Procès-verbal dans le dossier à la première ouverture du PDF"
+
+#, python-format
+msgid "%(n)s Posten · CHF %(b)s"
+msgid_plural "%(n)s Posten · CHF %(b)s"
+msgstr[0] "%(n)s poste · CHF %(b)s"
+msgstr[1] "%(n)s postes · CHF %(b)s"
+
+msgid "je Kostenart"
+msgstr "par type de charge"
+
+msgid "Zwischenstand fehlt"
+msgstr "Relevé intermédiaire manquant"
+
+msgid "pro Mieter"
+msgstr "par locataire"
+
+msgid "Differenz prüfen"
+msgstr "Vérifier la différence"
+
+msgid "Versand nach Buchung"
+msgstr "Envoi après comptabilisation"
+
+msgid "Das Ende liegt vor dem Beginn."
+msgstr "La fin est antérieure au début."
+
+#, python-format
+msgid "Eine Abrechnungsperiode umfasst höchstens %(n)s Monate (spätestens bis %(d)s)."
+msgstr "Une période de décompte couvre au plus %(n)s mois (au plus tard jusqu'au %(d)s)."
+
+msgid "Der Wert darf nicht negativ sein."
+msgstr "La valeur ne doit pas être négative."
+
+msgid "Der Wert ist zu gross."
+msgstr "La valeur est trop élevée."
+
+msgid "Zwischen 1 und 99 Personen."
+msgstr "Entre 1 et 99 personnes."
+
+msgid "Bitte eine Beschreibung angeben."
+msgstr "Veuillez indiquer une description."
+
+msgid "Bitte eine Kategorie wählen."
+msgstr "Veuillez choisir une catégorie."
+
+msgid "Bitte einen Verteilschlüssel wählen."
+msgstr "Veuillez choisir une clé de répartition."
+
+msgid "Bitte einen Betrag über 0 angeben."
+msgstr "Veuillez indiquer un montant supérieur à 0."
+
+msgid "Der Betrag ist zu gross."
+msgstr "Le montant est trop élevé."
+
+msgid "m²"
+msgstr "m²"
+
+msgid "m³"
+msgstr "m³"
+
+msgid "Eigene %"
+msgstr "% personnalisé"
+
+msgid "Anfang"
+msgstr "Début"
+
+#, python-format
+msgid "Wechsel %(d)s"
+msgstr "Changement %(d)s"
+
+#, python-format
+msgid "Der Stand vom %(d)s (%(w)s) liegt unter dem Stand vom %(d0)s (%(w0)s)."
+msgstr "Le relevé du %(d)s (%(w)s) est inférieur à celui du %(d0)s (%(w0)s)."
+
+#, python-format
+msgid "Das Ablesedatum %(d)s liegt in der Zukunft."
+msgstr "La date de relevé %(d)s est dans le futur."
+
+msgid "Zählernummer"
+msgstr "Numéro de compteur"
+
+msgid "Art (Anfang/Zwischen/Ende)"
+msgstr "Type (début/intermédiaire/fin)"
+
+#, python-format
+msgid "Die Datei ist grösser als %(n)s KB."
+msgstr "Le fichier dépasse %(n)s Ko."
+
+msgid "Die Datei ist keine lesbare Textdatei."
+msgstr "Le fichier n'est pas un fichier texte lisible."
+
+msgid "Die Datei braucht eine Kopfzeile und mindestens eine Datenzeile."
+msgstr "Le fichier doit contenir une ligne d'en-tête et au moins une ligne de données."
+
+#, python-format
+msgid "Höchstens %(n)s Zeilen je Import."
+msgstr "Au plus %(n)s lignes par import."
+
+#, python-format
+msgid "Spalte %(n)s"
+msgstr "Colonne %(n)s"
+
+msgid "Bitte eine Spalte wählen."
+msgstr "Veuillez choisir une colonne."
+
+msgid "Diese Spalte gibt es in der Datei nicht."
+msgstr "Cette colonne n'existe pas dans le fichier."
+
+msgid "Diese Spalte ist schon einem anderen Feld zugeordnet."
+msgstr "Cette colonne est déjà attribuée à un autre champ."
+
+#, python-format
+msgid "Zähler «%(n)s» gibt es in dieser Liegenschaft nicht."
+msgstr "Le compteur «%(n)s» n'existe pas dans cet immeuble."
+
+#, python-format
+msgid "Die Zählernummer «%(n)s» ist mehrfach vergeben."
+msgstr "Le numéro de compteur «%(n)s» est attribué plusieurs fois."
+
+#, python-format
+msgid "Datum «%(d)s» nicht lesbar (TT.MM.JJJJ oder JJJJ-MM-TT)."
+msgstr "Date «%(d)s» illisible (JJ.MM.AAAA ou AAAA-MM-JJ)."
+
+#, python-format
+msgid "Stand «%(s)s» ist keine gültige Zahl."
+msgstr "Le relevé «%(s)s» n'est pas un nombre valide."
+
+msgid "Der Stand ist zu gross."
+msgstr "Le relevé est trop élevé."
+
+#, python-format
+msgid "Art «%(a)s» unbekannt (Anfang, Zwischen oder Ende)."
+msgstr "Type «%(a)s» inconnu (début, intermédiaire ou fin)."
+
+#, python-format
+msgid "Für den %(d)s gibt es schon einen anderen Stand (%(w)s)."
+msgstr "Il existe déjà un autre relevé pour le %(d)s (%(w)s)."
+
+msgid "Briefanrede"
+msgstr "Formule d'appel"
+
+msgid "Anrede (Frau/Herr)"
+msgstr "Civilité (Madame/Monsieur)"
+
+msgid "Vor- und Nachname"
+msgstr "Prénom et nom"
+
+msgid "Zustelladresse"
+msgstr "Adresse de notification"
+
+msgid "Bezeichnung des Objekts"
+msgstr "Désignation de l'objet"
+
+msgid "Adresse der Liegenschaft"
+msgstr "Adresse de l'immeuble"
+
+msgid "PLZ der Liegenschaft"
+msgstr "NPA de l'immeuble"
+
+msgid "Ort der Liegenschaft"
+msgstr "Localité de l'immeuble"
+
+msgid "Zimmerzahl"
+msgstr "Nombre de pièces"
+
+msgid "Bruttomietzins (CHF)"
+msgstr "Loyer brut (CHF)"
+
+msgid "Name der Verwaltung"
+msgstr "Nom de la gérance"
+
+msgid "Adresse der Verwaltung"
+msgstr "Adresse de la gérance"
+
+msgid "Telefon der Verwaltung"
+msgstr "Téléphone de la gérance"
+
+msgid "E-Mail der Verwaltung"
+msgstr "E-mail de la gérance"
+
+msgid "Betreut von (Liegenschaft)"
+msgstr "Géré par (immeuble)"
+
+msgid "Vermieter (Eigentümer, sonst Verwaltung)"
+msgstr "Bailleur (propriétaire, sinon gérance)"
+
+msgid "Name der Bewerberin / des Bewerbers"
+msgstr "Nom de la candidate / du candidat"
+
+msgid "E-Mail aus der Bewerbung"
+msgstr "E-mail de la candidature"
+
+msgid "Telefon aus der Bewerbung"
+msgstr "Téléphone de la candidature"
+
+msgid "Gewünschter Bezugstermin"
+msgstr "Date d'emménagement souhaitée"
+
+msgid "Sehr geehrte Damen und Herren"
+msgstr "Mesdames, Messieurs"
+
+#, python-format
+msgid "Sehr geehrte Frau %(name)s"
+msgstr "Madame %(name)s"
+
+#, python-format
+msgid "Sehr geehrter Herr %(name)s"
+msgstr "Monsieur %(name)s"
+
+msgid "Bitte den Empfänger wählen."
+msgstr "Veuillez choisir le destinataire."
+
+msgid "Bitte mindestens einen Schlüssel wählen."
+msgstr "Veuillez choisir au moins une clé."
+
+#, python-format
+msgid "Schlüssel %(nr)s gehört nicht zu dieser Liegenschaft."
+msgstr "La clé %(nr)s n'appartient pas à cet immeuble."
+
+#, python-format
+msgid "Von Schlüssel %(nr)s sind %(frei)s Stück im Büro."
+msgstr "De la clé %(nr)s, %(frei)s exemplaires sont au bureau."
+
+msgid "«Zurück bis» liegt in der Vergangenheit."
+msgstr "«Retour jusqu'au» est dans le passé."
+
+msgid "Die Unterschrift des Empfängers fehlt oder ist nicht lesbar."
+msgstr "La signature du destinataire manque ou est illisible."
+
+msgid "Bitte mindestens einen Schlüssel als zurück oder verloren markieren."
+msgstr "Veuillez marquer au moins une clé comme rendue ou perdue."
+
+#, python-format
+msgid "Die Stückzahl bei Schlüssel %(nr)s stimmt nicht."
+msgstr "Le nombre d'exemplaires de la clé %(nr)s est incorrect."
+
+msgid "Die Unterschrift fehlt oder ist nicht lesbar."
+msgstr "La signature manque ou est illisible."
+
+#, python-format
+msgid "Auftrag · %(firma)s"
+msgstr "Mandat · %(firma)s"
+
+#, python-format
+msgid "Der Auftrag ist abgeschlossen. Dieser Link zeigt ihn nur noch an, bis %(d)s."
+msgstr "Le mandat est terminé. Ce lien ne permet plus que de le consulter, jusqu'au %(d)s."
+
+msgid "Der Auftrag ist abgeschlossen. Dieser Link zeigt ihn nur noch an."
+msgstr "Le mandat est terminé. Ce lien ne permet plus que de le consulter."
+
+msgid "Telefon vor Ort"
+msgstr "Téléphone sur place"
+
+msgid "Auftrag"
+msgstr "Mandat"
+
+msgid "Foto zur Meldung"
+msgstr "Photo de l'avis"
+
+#, python-format
+msgid "Vereinbart: %(d)s Uhr"
+msgstr "Convenu : %(d)s h"
+
+msgid "Termin bestätigen"
+msgstr "Confirmer le rendez-vous"
+
+msgid "Anderen Termin vorschlagen"
+msgstr "Proposer un autre rendez-vous"
+
+msgid "Termin vorschlagen"
+msgstr "Proposer un rendez-vous"
+
+msgid "Termin setzen"
+msgstr "Fixer le rendez-vous"
+
+msgid "Der Mieter erhält eine Mail mit Kalendereintrag."
+msgstr "Le locataire reçoit un e-mail avec une entrée de calendrier."
+
+msgid "Arbeit"
+msgstr "Travaux"
+
+msgid "Arbeit begonnen"
+msgstr "Travaux commencés"
+
+msgid "Arbeit erledigt melden"
+msgstr "Signaler les travaux terminés"
+
+msgid "Offerte hochladen"
+msgstr "Téléverser l'offre"
+
+#, python-format
+msgid "Bisher erfasst: CHF %(b)s"
+msgstr "Saisi jusqu'ici : CHF %(b)s"
+
+msgid "freigegeben"
+msgstr "approuvé"
+
+msgid "Betrag (CHF, inkl. MWST)"
+msgstr "Montant (CHF, TVA incl.)"
+
+msgid "Offerte (PDF oder Bild)"
+msgstr "Offre (PDF ou image)"
+
+msgid "Je nach Betrag braucht die Reparatur die Freigabe der Eigentümerschaft. Die Verwaltung meldet sich."
+msgstr "Selon le montant, la réparation requiert l'accord du propriétaire. La gérance vous contactera."
+
+msgid "Offerte senden"
+msgstr "Envoyer l'offre"
+
+msgid "Rechnung hochladen"
+msgstr "Téléverser la facture"
+
+msgid "Die Rechnung ist eingegangen. Die Verwaltung prüft sie."
+msgstr "La facture a été reçue. La gérance la vérifie."
+
+msgid "Rechnungsbetrag (CHF, inkl. MWST)"
+msgstr "Montant de la facture (CHF, TVA incl.)"
+
+msgid "Rechnung (PDF oder Bild)"
+msgstr "Facture (PDF ou image)"
+
+msgid "Die Rechnung geht als Entwurf zur Kontrolle an die Verwaltung."
+msgstr "La facture est transmise à la gérance comme brouillon pour contrôle."
+
+msgid "Rechnung senden"
+msgstr "Envoyer la facture"
+
+msgid "Nachrichten mit der Verwaltung"
+msgstr "Messages avec la gérance"
+
+msgid "Noch keine Nachrichten."
+msgstr "Aucun message pour l'instant."
+
+#, python-format
+msgid "Auftraggeberin: %(firma)s"
+msgstr "Mandant : %(firma)s"
+
+msgid "Auftrag — SwissImmo"
+msgstr "Mandat — SwissImmo"
+
+msgid "SwissImmo · Auftrag für Handwerker"
+msgstr "SwissImmo · Mandat pour artisan"
+
+msgid "Was möchten Sie tun?"
+msgstr "Que souhaitez-vous faire ?"
+
+msgid "Ihre Wege im Portal"
+msgstr "Vos accès dans le portail"
+
+msgid "Etwas melden"
+msgstr "Signaler quelque chose"
+
+msgid "Schaden, Defekt oder Frage — mit Fotos"
+msgstr "Dégât, défaut ou question — avec photos"
+
+msgid "Meldung erfassen"
+msgstr "Saisir un avis"
+
+#, python-format
+msgid "Termin am %(wann)s Uhr"
+msgstr "Rendez-vous le %(wann)s h"
+
+msgid "Kein Termin vereinbart"
+msgstr "Aucun rendez-vous convenu"
+
+msgid "Vertrag, Abrechnungen, Korrespondenz"
+msgstr "Bail, décomptes, correspondance"
+
+#, python-format
+msgid "%(n)s offen · CHF %(betrag)s"
+msgstr "%(n)s ouvertes · CHF %(betrag)s"
+
+msgid "Meine Schlüssel"
+msgstr "Mes clés"
+
+#, python-format
+msgid "%(n)s Schlüssel insgesamt"
+msgstr "%(n)s clés au total"
+
+msgid "Keine Schlüssel erfasst."
+msgstr "Aucune clé enregistrée."
+
+msgid "Zutritt zur Wohnung"
+msgstr "Accès à l'appartement"
+
+msgid "Diese Meldung wurde zu Ihrer Wohnung erfasst, zum Beispiel telefonisch bei der Verwaltung."
+msgstr "Cet avis a été saisi pour votre appartement, par exemple par téléphone auprès de la gérance."
+
+msgid "Handwerker und Zutritt"
+msgstr "Artisan et accès"
+
+#, python-format
+msgid "%(firma)s kommt am %(wann)s Uhr."
+msgstr "%(firma)s vient le %(wann)s h."
+
+msgid "Noch kein Handwerkertermin vereinbart."
+msgstr "Aucun rendez-vous avec un artisan convenu pour l'instant."
+
+msgid "Zutritt:"
+msgstr "Accès :"
+
+msgid "Status und Verlauf Ihrer Meldungen und der Meldungen zu Ihrer Wohnung."
+msgstr "Statut et historique de vos avis et des avis concernant votre appartement."
+
+msgid "Zu Ihrer Wohnung erfasst"
+msgstr "Saisi pour votre appartement"
+
+#, python-format
+msgid "Sicherungskarte Nr. %(nr)s"
+msgstr "Carte de sécurité n° %(nr)s"
+
+msgid "Bestellberechtigt:"
+msgstr "Autorisés à commander :"
+
+msgid "Noch keine Schliessanlage erfasst — Hersteller und Sicherungskarte unten eintragen."
+msgstr "Aucune installation de fermeture enregistrée — saisissez le fabricant et la carte de sécurité ci-dessous."
+
+#, python-format
+msgid "%(n)s Schlüssel"
+msgid_plural "%(n)s Schlüssel"
+msgstr[0] "%(n)s clé"
+msgstr[1] "%(n)s clés"
+
+msgid "ausgegeben"
+msgstr "remise"
+
+msgid "im Büro"
+msgstr "au bureau"
+
+msgid "verloren"
+msgstr "perdue"
+
+msgid "Rückgabe fällig"
+msgstr "Retour dû"
+
+#, python-format
+msgid "%(n)s Stk."
+msgid_plural "%(n)s Stk."
+msgstr[0] "%(n)s pce"
+msgstr[1] "%(n)s pces"
+
+msgid "Keine Rückgabe fällig."
+msgstr "Aucun retour dû."
+
+msgid "Alle fälligen Rückgaben"
+msgstr "Tous les retours dus"
+
+msgid "Pendenzen öffnen"
+msgstr "Ouvrir les tâches"
+
+msgid "Kein offener Verlust."
+msgstr "Aucune perte en suspens."
+
+msgid "Wer kommt durch diese Tür?"
+msgstr "Qui peut franchir cette porte ?"
+
+msgid "alle zeigen"
+msgstr "tout afficher"
+
+#, python-format
+msgid "Durch «%(t)s» kommen"
+msgstr "Peuvent franchir «%(t)s»"
+
+msgid "Niemand ausserhalb des Büros hat einen Schlüssel für diese Tür."
+msgstr "Personne en dehors du bureau n'a de clé pour cette porte."
+
+msgid "Kein Schlüssel öffnet diese Tür."
+msgstr "Aucune clé n'ouvre cette porte."
+
+msgid "Noch keine Schlüssel erfasst — auch Haustür-, Briefkasten- und Gruppenschlüssel gehören hierher."
+msgstr "Aucune clé enregistrée — les clés de porte d'entrée, de boîte aux lettres et les passes partiels en font aussi partie."
+
+#, python-format
+msgid "Archiv: %(n)s Schlüssel"
+msgid_plural "Archiv: %(n)s Schlüssel"
+msgstr[0] "Archives : %(n)s clé"
+msgstr[1] "Archives : %(n)s clés"
+
+msgid "Türen und Zylinder"
+msgstr "Portes et cylindres"
+
+#, python-format
+msgid "Tür «%(t)s» entfernen?"
+msgstr "Supprimer la porte «%(t)s» ?"
+
+msgid "Tür entfernen"
+msgstr "Supprimer la porte"
+
+msgid "Noch keine Türen erfasst."
+msgstr "Aucune porte enregistrée."
+
+msgid "Tür / Zylinder"
+msgstr "Porte / cylindre"
+
+msgid "z. B. Haustür, Keller, Wohnungstür 1.OG links"
+msgstr "p. ex. porte d'entrée, cave, porte d'appartement 1er étage gauche"
+
+msgid "Tür erfassen"
+msgstr "Saisir la porte"
+
+msgid "Schliessanlage entfernen? Schlüssel und Türen bleiben erhalten."
+msgstr "Supprimer l'installation de fermeture ? Les clés et les portes sont conservées."
+
+msgid "Anlage entfernen"
+msgstr "Supprimer l'installation"
+
+msgid "Neue Schliessanlage"
+msgstr "Nouvelle installation de fermeture"
+
+msgid "Hersteller"
+msgstr "Fabricant"
+
+msgid "z. B. Kaba, Keso, dormakaba"
+msgstr "p. ex. Kaba, Keso, dormakaba"
+
+msgid "z. B. star, 4000S"
+msgstr "p. ex. star, 4000S"
+
+msgid "Sicherungskarte Nr."
+msgstr "Carte de sécurité n°"
+
+msgid "Bestellberechtigte"
+msgstr "Personnes autorisées à commander"
+
+msgid "Wer darf Schlüssel nachbestellen?"
+msgstr "Qui peut commander des clés supplémentaires ?"
+
+msgid "Anlage speichern"
+msgstr "Enregistrer l'installation"
+
+#, python-format
+msgid "%(n)s Stück ausgegeben"
+msgid_plural "%(n)s Stück ausgegeben"
+msgstr[0] "%(n)s exemplaire remis"
+msgstr[1] "%(n)s exemplaires remis"
+
+msgid "Nr."
+msgstr "N°"
+
+#, python-format
+msgid "zurück bis %(d)s"
+msgstr "retour jusqu'au %(d)s"
+
+msgid "Keine Schlüssel ausgegeben."
+msgstr "Aucune clé remise."
+
+#, python-format
+msgid "Verlauf: %(n)s Eintrag"
+msgid_plural "Verlauf: %(n)s Einträge"
+msgstr[0] "Historique : %(n)s entrée"
+msgstr[1] "Historique : %(n)s entrées"
+
+msgid "Quittung"
+msgstr "Quittance"
+
+msgid "mit Einzugsabnahme"
+msgstr "avec état des lieux d'entrée"
+
+msgid "mit Auszugsabnahme"
+msgstr "avec état des lieux de sortie"
+
+msgid "z. B. Wohnung, Haustür, Briefkasten"
+msgstr "p. ex. appartement, porte d'entrée, boîte aux lettres"
+
+msgid "allgemein (ohne Objekt)"
+msgstr "général (sans objet)"
+
+msgid "Öffnet"
+msgstr "Ouvre"
+
+msgid "Änderung speichern"
+msgstr "Enregistrer la modification"
+
+msgid "alle Türen"
+msgstr "toutes les portes"
+
+msgid "keine Tür zugeordnet"
+msgstr "aucune porte attribuée"
+
+#, python-format
+msgid "%(n)s verloren"
+msgid_plural "%(n)s verloren"
+msgstr[0] "%(n)s perdue"
+msgstr[1] "%(n)s perdues"
+
+msgid "archiviert"
+msgstr "archivée"
+
+msgid "Alle Exemplare liegen im Büro."
+msgstr "Tous les exemplaires sont au bureau."
+
+msgid "Wieder aktivieren"
+msgstr "Réactiver"
+
+msgid "Ausgeben"
+msgstr "Remettre"
+
+msgid "Schlüssel archivieren? Der Verlauf bleibt erhalten."
+msgstr "Archiver la clé ? L'historique est conservé."
+
+msgid "Archivieren"
+msgstr "Archiver"
+
+msgid "Bitte im Feld unterschreiben."
+msgstr "Veuillez signer dans le champ."
+
+msgid "Unterschrift"
+msgstr "Signature"
+
+msgid "Unbekannte Platzhalter — so lässt sich die Vorlage nicht speichern:"
+msgstr "Espaces réservés inconnus — le modèle ne peut pas être enregistré ainsi :"
+
+msgid "Beispielwerte — wähle oben einen Vertrag oder eine Bewerbung für echte Daten."
+msgstr "Valeurs d'exemple — choisissez en haut un bail ou une candidature pour des données réelles."
+
+msgid "Briefkopf-Farbe"
+msgstr "Couleur de l'en-tête"
+
+msgid "Farbe wählen"
+msgstr "Choisir la couleur"
+
+msgid "Linie und Überschriften im Briefkopf. Leer = neutral."
+msgstr "Ligne et titres de l'en-tête. Vide = neutre."
+
+msgid "Briefkopf-Fusszeile"
+msgstr "Pied de page du papier à en-tête"
+
+msgid "Eine Zeile am Seitenfuss, z. B. Handelsregister oder Bankverbindung."
+msgstr "Une ligne en bas de page, p. ex. registre du commerce ou coordonnées bancaires."
+
+msgid "Handwerker-Link"
+msgstr "Lien artisan"
+
+msgid "Neuer Handwerker-Link"
+msgstr "Nouveau lien artisan"
+
+msgid "Link für den Handwerker"
+msgstr "Lien pour l'artisan"
+
+msgid "Link kopieren"
+msgstr "Copier le lien"
+
+msgid "Zurück zum Schaden"
+msgstr "Retour au dégât"
+
+msgid "Der Auftrag ist abgeschlossen: Der Link zeigt ihn nur noch an, während 30 Tagen."
+msgstr "Le mandat de travaux est clôturé : le lien ne fait plus que l'afficher, pendant 30 jours."
+
+msgid "Der Link öffnet nur diesen Auftrag und gilt bis 30 Tage nach dessen Abschluss. Der bisherige Link ist ab sofort ungültig."
+msgstr "Le lien n'ouvre que ce mandat de travaux et reste valable jusqu'à 30 jours après sa clôture. L'ancien lien n'est plus valable dès maintenant."
+
+msgid "Er wird nur jetzt angezeigt — wer ihn verliert, erzeugt einen neuen."
+msgstr "Il n'est affiché que maintenant — en cas de perte, générez-en un nouveau."
+
+#, python-format
+msgid "Allen %(n)s noch offenen Bewerbern eine Absage senden — auch denen, die zur Besichtigung eingeladen sind?"
+msgstr "Envoyer un refus aux %(n)s candidats encore ouverts — y compris ceux invités à la visite ?"
+
+msgid "Prüf-Checkliste"
+msgstr "Liste de contrôle"
+
+msgid "Zeigt, was geprüft ist. Der Status hängt nicht davon ab."
+msgstr "Indique ce qui a été vérifié. Le statut n'en dépend pas."
+
+#, python-format
+msgid "abgehakt von %(wer)s, %(am)s"
+msgstr "coché par %(wer)s, %(am)s"
+
+#, python-format
+msgid "zurückgenommen von %(wer)s, %(am)s"
+msgstr "décoché par %(wer)s, %(am)s"
+
+msgid "Abhaken"
+msgstr "Cocher"
+
+msgid "Aus dieser Bewerbung ist ein Vertrag entstanden; der Status ist damit abgeschlossen."
+msgstr "Un bail est issu de cette candidature ; le statut est donc clôturé."
+
+#, python-format
+msgid "Vertrag #%(nr)s (%(st)s) ist aus dieser Bewerbung entstanden."
+msgstr "Le bail n° %(nr)s (%(st)s) est issu de cette candidature."
+
+#, python-format
+msgid "%(n)s Bewerbung auf dem Board."
+msgid_plural "%(n)s Bewerbungen auf dem Board."
+msgstr[0] "%(n)s candidature sur le tableau."
+msgstr[1] "%(n)s candidatures sur le tableau."
+
+msgid "Karten ziehen oder an der Karte «Verschieben nach…» wählen."
+msgstr "Faites glisser les cartes ou choisissez « Déplacer vers… » sur la carte."
+
+msgid "Alle Bewerbungen, die neueste zuerst — auch ältere Absagen, bis sie nach DSG anonymisiert sind."
+msgstr "Toutes les candidatures, la plus récente en premier — y compris les anciens refus, jusqu'à leur anonymisation selon la LPD."
+
+msgid "Alle Objekte"
+msgstr "Tous les objets"
+
+msgid "Vergleich"
+msgstr "Comparaison"
+
+#, python-format
+msgid "%(n)s ältere Absage in der Liste"
+msgid_plural "%(n)s ältere Absagen in der Liste"
+msgstr[0] "%(n)s ancien refus dans la liste"
+msgstr[1] "%(n)s anciens refus dans la liste"
+
+msgid "Punktezahl aus dem Bewerber-Vergleich (0–100), eine Entscheidungshilfe"
+msgstr "Score de la comparaison des candidats (0–100), une aide à la décision"
+
+msgid "Betreibungsauszug fehlt"
+msgstr "Extrait des poursuites manquant"
+
+msgid "Betreibungsauszug da"
+msgstr "Extrait des poursuites disponible"
+
+msgid "Bruttomiete im Verhältnis zum Jahreseinkommen"
+msgstr "Loyer brut par rapport au revenu annuel"
+
+#, python-format
+msgid "Tragbarkeit %(p)s %%"
+msgstr "Supportabilité %(p)s %%"
+
+#, python-format
+msgid "Besichtigung %(t)s"
+msgstr "Visite %(t)s"
+
+msgid "zugesagt · Vertrag noch nicht erzeugt"
+msgstr "accepté · bail pas encore créé"
+
+#, python-format
+msgid "Absage %(d)s"
+msgstr "Refus %(d)s"
+
+msgid "Löschfrist nach DSG (Art. 6 Abs. 4)"
+msgstr "Délai d'effacement selon la LPD (art. 6, al. 4)"
+
+#, python-format
+msgid "Unterlagen gelöscht am %(d)s"
+msgstr "Documents supprimés le %(d)s"
+
+#, python-format
+msgid "Daten anonymisiert am %(d)s"
+msgstr "Données anonymisées le %(d)s"
+
+#, python-format
+msgid "Vertrag #%(nr)s · %(st)s"
+msgstr "Bail n° %(nr)s · %(st)s"
+
+msgid "Prüf-Checkliste: Betreibung, Ausweis, Referenz, Tragbarkeit"
+msgstr "Liste de contrôle : poursuites, pièce d'identité, référence, supportabilité"
+
+#, python-format
+msgid "Prüfung %(n)s/4"
+msgstr "Contrôle %(n)s/4"
+
+#, python-format
+msgid "eingegangen %(d)s"
+msgstr "reçue %(d)s"
+
+msgid "Verschieben nach…"
+msgstr "Déplacer vers…"
+
+msgid "Verschieben"
+msgstr "Déplacer"
+
+msgid "Keine neuen Bewerbungen."
+msgstr "Aucune nouvelle candidature."
+
+msgid "Noch kein Vertrag aus einer Bewerbung."
+msgstr "Aucun bail issu d'une candidature pour l'instant."
+
+#, python-format
+msgid "Abgelehnte bleiben %(n)s Tage sichtbar."
+msgstr "Les candidatures refusées restent visibles %(n)s jours."
+
+msgid "Absage senden?"
+msgstr "Envoyer le refus ?"
+
+msgid "erhält die Absage per E-Mail (Vorlage «Bewerber – Absage»). Die Bewerbung steht danach unter «Abgelehnt»."
+msgstr "reçoit le refus par e-mail (modèle « Candidat – refus »). La candidature figure ensuite sous « Refusé »."
+
+msgid "Absage senden"
+msgstr "Envoyer le refus"
+
+msgid "Bewerbungen kommen über das Formular eines ausgeschriebenen Objekts herein."
+msgstr "Les candidatures arrivent via le formulaire d'un objet mis en location."
+
+#, python-format
+msgid "Gezeigt sind die neuesten %(n)s. Ältere über den Objektfilter."
+msgstr "Les %(n)s plus récentes sont affichées. Les plus anciennes via le filtre d'objet."
+
+msgid "Verbindung unterbrochen — nichts geändert."
+msgstr "Connexion interrompue — rien n'a été modifié."
+
+msgid "Fassungen"
+msgstr "Versions"
+
+#, python-format
+msgid "%(n)s Fassung"
+msgid_plural "%(n)s Fassungen"
+msgstr[0] "%(n)s version"
+msgstr[1] "%(n)s versions"
+
+#, python-format
+msgid "aus der Vorlage «%(name)s»"
+msgstr "à partir du modèle « %(name)s »"
+
+#, python-format
+msgid "Version %(n)s"
+msgstr "Version %(n)s"
+
+msgid "neueste"
+msgstr "la plus récente"
+
+msgid "aufgerufen"
+msgstr "consultée"
+
+msgid "Keine Fassungen."
+msgstr "Aucune version."
+
+msgid "Nebenkosten bisher"
+msgstr "Frais accessoires actuels"
+
+msgid "Nebenkosten neu (Akonto, CHF/Mt.)"
+msgstr "Nouveaux frais accessoires (acompte, CHF/mois)"
+
+#, python-format
+msgid "Vorschlag aus der Nebenkostenabrechnung «%(p)s»."
+msgstr "Proposition issue du décompte des frais accessoires « %(p)s »."
+
+msgid "Leer: die Nebenkosten bleiben."
+msgstr "Vide : les frais accessoires restent inchangés."
+
+msgid "Periode & Objekte: Liegenschaft, Zeitraum (höchstens 12 Monate), Fläche, Volumen und Personen."
+msgstr "Période & objets : immeuble, période (12 mois au plus), surface, volume et personnes."
+
+msgid "Kosten — Kreditoren mit «In Nebenkostenabrechnung einbeziehen» erscheinen automatisch."
+msgstr "Coûts — les créanciers avec « Inclure dans le décompte des frais accessoires » apparaissent automatiquement."
+
+msgid "Verteilung je Kostenart, samt vertraglich ausgeschlossenen Kosten."
+msgstr "Répartition par type de charge, y compris les coûts exclus par le bail."
+
+msgid "Heizung & Zähler: Grundkostenanteil und Zählerstände."
+msgstr "Chauffage & compteurs : part des frais de base et relevés des compteurs."
+
+msgid "Prüfen: je Mieter eine Karte mit Saldo und Positionen."
+msgstr "Vérifier : une carte par locataire avec solde et postes."
+
+msgid "Verbuchen & Zustellen — die Zustellung startet die Einsprachefrist."
+msgstr "Comptabiliser & notifier — la notification fait courir le délai de contestation."
+
+msgid "Erste Periode anlegen"
+msgstr "Créer la première période"
+
+msgid "Hinweise beim Verbuchen"
+msgstr "Remarques lors de la comptabilisation"
+
+msgid "Je Mieter"
+msgstr "Par locataire"
+
+msgid "Kostenpositionen"
+msgstr "Postes de coûts"
+
+msgid "Belege, Kreditoren, Heizöl und Honorar"
+msgstr "Pièces, créanciers, mazout et honoraires"
+
+msgid "Keine Kostenpositionen."
+msgstr "Aucun poste de coûts."
+
+msgid "Leerstand (Eigentümer)"
+msgstr "Vacance (propriétaire)"
+
+msgid "Akonto gestellt"
+msgstr "Acomptes facturés"
+
+msgid "Pauschal — keine Abrechnung an den Mieter"
+msgstr "Forfait — pas de décompte au locataire"
+
+#, python-format
+msgid "Direktzahler %(n)s"
+msgstr "Payeur direct %(n)s"
+
+#, python-format
+msgid "Vertrag %(n)s schliesst aus"
+msgstr "Exclu par le bail %(n)s"
+
+#, python-format
+msgid "ohne %(was)s (Vertrag)"
+msgstr "sans %(was)s (bail)"
+
+msgid "Heizung mit Zwischenstand"
+msgstr "Chauffage avec relevé intermédiaire"
+
+msgid "Heizung nach Heizgradtagen"
+msgstr "Chauffage selon degrés-jours"
+
+#, python-format
+msgid "Akonto + CHF %(d)s/Mt.: Mietzinsanpassung"
+msgstr "Acompte + CHF %(d)s/mois : adaptation de loyer"
+
+#, python-format
+msgid "Akonto − CHF %(d)s/Mt.: Mietzinsanpassung"
+msgstr "Acompte − CHF %(d)s/mois : adaptation de loyer"
+
+msgid "Kosten total"
+msgstr "Total des coûts"
+
+#, python-format
+msgid "verteilt %(pct)s %% · Differenz %(d)s"
+msgstr "réparti %(pct)s %% · différence %(d)s"
+
+#, python-format
+msgid "Eigentümer/Leerstand CHF %(b)s"
+msgstr "Propriétaire/vacance CHF %(b)s"
+
+msgid "Saldo Mieter"
+msgstr "Solde locataires"
+
+#, python-format
+msgid "%(n)s Nachzahlung"
+msgid_plural "%(n)s Nachzahlungen"
+msgstr[0] "%(n)s paiement complémentaire"
+msgstr[1] "%(n)s paiements complémentaires"
+
+#, python-format
+msgid "%(n)s Guthaben"
+msgid_plural "%(n)s Guthaben"
+msgstr[0] "%(n)s avoir"
+msgstr[1] "%(n)s avoirs"
+
+msgid "Schritte der Abrechnung"
+msgstr "Étapes du décompte"
+
+#, python-format
+msgid "Schritt %(nr)s von 6"
+msgstr "Étape %(nr)s sur 6"
+
+msgid "Die Abrechnung lässt sich nicht rechnen"
+msgstr "Le décompte ne peut pas être calculé"
+
+msgid "Was fehlt"
+msgstr "Ce qui manque"
+
+#, python-format
+msgid "Weiter zu %(t)s"
+msgstr "Continuer vers %(t)s"
+
+#, python-format
+msgid "%(t)s: erst nach den Kosten möglich"
+msgstr "%(t)s : possible seulement après les coûts"
+
+msgid "Neue Periode"
+msgstr "Nouvelle période"
+
+msgid "Schritt 1 von 6 — danach Kosten, Verteilung, Heizung & Zähler, Prüfen, Verbuchen & Zustellen."
+msgstr "Étape 1 sur 6 — ensuite coûts, répartition, chauffage & compteurs, vérification, comptabilisation & notification."
+
+msgid "Periode & Objekte"
+msgstr "Période & objets"
+
+msgid "Für welches Haus und welchen Zeitraum wird abgerechnet? Höchstens 12 Monate."
+msgstr "Pour quel immeuble et quelle période le décompte est-il établi ? 12 mois au plus."
+
+msgid "Verbuchen stellt Nachzahlungen und Guthaben. Danach gehen die Abrechnungen an die Mieter."
+msgstr "La comptabilisation facture les paiements complémentaires et crédite les avoirs. Ensuite, les décomptes partent aux locataires."
+
+msgid "1 · Verbuchen"
+msgstr "1 · Comptabiliser"
+
+msgid "Nachzahlungen werden als Debitoren gestellt, Guthaben gutgeschrieben. Die Zahlen werden eingefroren; danach ändert sich die Abrechnung nicht mehr."
+msgstr "Les paiements complémentaires sont facturés comme débiteurs, les avoirs sont crédités. Les chiffres sont figés ; le décompte ne change plus ensuite."
+
+msgid "Verbuchen dürfen Inhaber und Verwalter."
+msgstr "La comptabilisation est réservée aux rôles Inhaber et Verwalter."
+
+msgid "2 · Zustellen"
+msgstr "2 · Notifier"
+
+msgid "Versand nach dem Verbuchen: PDF ins Mieterportal, E-Mail, Zustellung mit Einsprachefrist."
+msgstr "Envoi après la comptabilisation : PDF dans le portail locataires, e-mail, notification avec délai de contestation."
+
+msgid "PDF erstellen & ablegen"
+msgstr "Créer & classer le PDF"
+
+#, python-format
+msgid "%(n)s Vertrag mit Pauschale erhält keine Abrechnung."
+msgid_plural "%(n)s Verträge mit Pauschale erhalten keine Abrechnung."
+msgstr[0] "%(n)s bail au forfait ne reçoit pas de décompte."
+msgstr[1] "%(n)s baux au forfait ne reçoivent pas de décompte."
+
+msgid "Wie werden die Heizkosten geteilt, und liegen die Zählerstände vor?"
+msgstr "Comment les frais de chauffage sont-ils répartis, et les relevés des compteurs sont-ils disponibles ?"
+
+msgid "Verbrauchsabhängige Heizkosten (HKVO)"
+msgstr "Frais de chauffage selon la consommation (DIFC)"
+
+msgid "Nach Verbrauch abrechnen (Grundkosten nach Volumen, Rest nach Zählerstand)"
+msgstr "Décompter selon la consommation (frais de base selon le volume, reste selon le relevé)"
+
+#, python-format
+msgid "Grundkostenanteil %%"
+msgstr "Part des frais de base %%"
+
+#, python-format
+msgid "Frei wählbar von 0 bis 100 %%. Kantonale Vorgabe prüfen: Die Anwendung setzt keine Bandbreite, solange sie nicht belegt ist."
+msgstr "Librement choisi de 0 à 100 %%. Vérifiez la prescription cantonale : l'application n'impose aucune fourchette tant qu'elle n'est pas attestée."
+
+msgid "Gilt für die Liegenschaft, also auch für spätere Perioden. Verbuchte Abrechnungen bleiben, wie sie sind."
+msgstr "S'applique à l'immeuble, donc aussi aux périodes ultérieures. Les décomptes comptabilisés restent inchangés."
+
+msgid "CSV einlesen"
+msgstr "Importer un CSV"
+
+msgid "Mit dem Zwischenstand beim Mieterwechsel wird der Verbrauch genau geteilt. Fehlt er, rechnet die Abrechnung wie bisher mit Heizgradtagen und kennzeichnet das."
+msgstr "Avec le relevé intermédiaire lors du changement de locataire, la consommation est répartie exactement. S'il manque, le décompte calcule comme jusqu'ici selon les degrés-jours et le signale."
+
+#, python-format
+msgid "Datum %(l)s"
+msgstr "Date %(l)s"
+
+#, python-format
+msgid "Stand %(l)s"
+msgstr "Relevé %(l)s"
+
+msgid "Stände speichern"
+msgstr "Enregistrer les relevés"
+
+msgid "Keine Heizungs- oder Wärmezähler erfasst."
+msgstr "Aucun compteur de chauffage ou de chaleur saisi."
+
+msgid "Zähler erfassen Sie in der Akte des Objekts."
+msgstr "Vous saisissez les compteurs dans le dossier de l'objet."
+
+msgid "Zählerstände aus einer CSV-Datei: hochladen, Spalten zuordnen, Vorschau prüfen, übernehmen."
+msgstr "Relevés des compteurs depuis un fichier CSV : téléverser, attribuer les colonnes, vérifier l'aperçu, reprendre."
+
+msgid "Zurück zu den Zählerständen"
+msgstr "Retour aux relevés des compteurs"
+
+msgid "Die Datei lässt sich nicht lesen"
+msgstr "Le fichier ne peut pas être lu"
+
+msgid "1 · Datei hochladen"
+msgstr "1 · Téléverser le fichier"
+
+msgid "CSV mit Kopfzeile, Trennzeichen ; , oder Tab"
+msgstr "CSV avec ligne d'en-tête, séparateur ; , ou tabulation"
+
+msgid "Gebraucht werden Zählernummer, Ablesedatum und Stand, optional die Art (Anfang, Zwischen, Ende). Die Datei wird nicht gespeichert."
+msgstr "Sont requis le numéro de compteur, la date de relevé et le relevé, en option le type (début, intermédiaire, fin). Le fichier n'est pas enregistré."
+
+msgid "2 · Spalten zuordnen"
+msgstr "2 · Attribuer les colonnes"
+
+msgid "Vorschlag aus dem letzten Import"
+msgstr "Proposition issue du dernier import"
+
+#, python-format
+msgid "%(n)s Spalte gefunden"
+msgid_plural "%(n)s Spalten gefunden"
+msgstr[0] "%(n)s colonne trouvée"
+msgstr[1] "%(n)s colonnes trouvées"
+
+msgid "3 · Vorschau"
+msgstr "3 · Aperçu"
+
+#, python-format
+msgid "%(n)s neu"
+msgid_plural "%(n)s neu"
+msgstr[0] "%(n)s nouveau"
+msgstr[1] "%(n)s nouveaux"
+
+#, python-format
+msgid "%(n)s schon erfasst"
+msgid_plural "%(n)s schon erfasst"
+msgstr[0] "%(n)s déjà saisi"
+msgstr[1] "%(n)s déjà saisis"
+
+#, python-format
+msgid "%(n)s mit Fehler"
+msgid_plural "%(n)s mit Fehler"
+msgstr[0] "%(n)s avec erreur"
+msgstr[1] "%(n)s avec erreur"
+
+#, python-format
+msgid "Zeile %(nr)s"
+msgstr "Ligne %(nr)s"
+
+msgid "schon erfasst"
+msgstr "déjà saisi"
+
+msgid "neu"
+msgstr "nouveau"
+
+msgid "Übernommen werden nur die neuen Zeilen ohne Fehler. Die Zuordnung bleibt für den nächsten Import gespeichert."
+msgstr "Seules les nouvelles lignes sans erreur sont reprises. L'attribution reste enregistrée pour le prochain import."
+
+#, python-format
+msgid "%(n)s Stand übernehmen"
+msgid_plural "%(n)s Stände übernehmen"
+msgstr[0] "Reprendre %(n)s relevé"
+msgstr[1] "Reprendre %(n)s relevés"
+
+msgid "Welche Kosten gehören in diese Abrechnung?"
+msgstr "Quels coûts font partie de ce décompte ?"
+
+#, python-format
+msgid "%(n)s Posten inkl. Honorar und Heizöl"
+msgid_plural "%(n)s Posten inkl. Honorar und Heizöl"
+msgstr[0] "%(n)s poste, honoraires et mazout compris"
+msgstr[1] "%(n)s postes, honoraires et mazout compris"
+
+msgid "Freigegeben oder bezahlt, «In Nebenkostenabrechnung einbeziehen». Mit Leistungsperiode anteilig nach Tagen."
+msgstr "Approuvées ou payées, « Inclure dans le décompte des frais accessoires ». Avec période de prestation, au prorata des jours."
+
+msgid "Manuelle Belege"
+msgstr "Pièces manuelles"
+
+msgid "Kosten ohne Kreditorenrechnung, z. B. ein Beleg der Hauswartung."
+msgstr "Coûts sans facture créancier, p. ex. une pièce de la conciergerie."
+
+msgid "HNK-Kreditoren"
+msgstr "Créanciers FA"
+
+msgid "Zu den Kreditoren"
+msgstr "Vers les créanciers"
+
+msgid "Kreditor"
+msgstr "Créancier"
+
+#, python-format
+msgid "Heizöl %(l)s L → Bestand"
+msgstr "Mazout %(l)s L → stock"
+
+#, python-format
+msgid "anteilig %(a)s/%(b)s Tage"
+msgstr "au prorata %(a)s/%(b)s jours"
+
+#, python-format
+msgid "Leistung %(v)s – %(b)s"
+msgstr "Prestation %(v)s – %(b)s"
+
+msgid "Keine HNK-Kreditoren in dieser Periode."
+msgstr "Aucun créancier FA durant cette période."
+
+msgid "Bei der Kreditorenrechnung «In Nebenkostenabrechnung einbeziehen» setzen."
+msgstr "Cocher « Inclure dans le décompte des frais accessoires » sur la facture créancier."
+
+msgid "Noch nicht einbezogen:"
+msgstr "Pas encore inclus :"
+
+msgid "Diesen Beleg löschen?"
+msgstr "Supprimer cette pièce ?"
+
+msgid "Beleg löschen"
+msgstr "Supprimer la pièce"
+
+msgid "Noch keine manuellen Belege."
+msgstr "Aucune pièce manuelle pour l'instant."
+
+msgid "Gilt für die Kostenart ein Schlüssel der Liegenschaft (Schritt 3), verteilt die Abrechnung nach diesem."
+msgstr "Si une clé de l'immeuble s'applique au type de charge (étape 3), le décompte répartit selon celle-ci."
+
+msgid "Beleg erfassen"
+msgstr "Saisir une pièce"
+
+msgid "Heizöl-Bestand"
+msgstr "Stock de mazout"
+
+msgid "nur bei Öl oder Gas mit Tank"
+msgstr "seulement pour mazout ou gaz avec citerne"
+
+msgid "Anfangsbestand Liter"
+msgstr "Stock initial litres"
+
+msgid "Anfangsbestand CHF"
+msgstr "Stock initial CHF"
+
+msgid "Endbestand Liter"
+msgstr "Stock final litres"
+
+msgid "Verbrauch = Anfangsbestand + Zukäufe (Kreditoren mit Literangabe) − Endbestand, zum gewogenen Durchschnittspreis."
+msgstr "Consommation = stock initial + achats (créanciers avec indication des litres) − stock final, au prix moyen pondéré."
+
+msgid "Bestand speichern"
+msgstr "Enregistrer le stock"
+
+msgid "Für welchen Zeitraum wird abgerechnet, und stimmen die Masse der Objekte?"
+msgstr "Pour quelle période le décompte est-il établi, et les dimensions des objets sont-elles correctes ?"
+
+msgid "höchstens 12 Monate"
+msgstr "12 mois au plus"
+
+msgid "Ändert die Periode; die Abrechnung rechnet neu."
+msgstr "Modifie la période ; le décompte est recalculé."
+
+msgid "Periode speichern"
+msgstr "Enregistrer la période"
+
+msgid "Fläche, Volumen und Personen sind die Grundlage der Verteilung. Fehlt ein Wert, ergänzen Sie ihn direkt in der Kachel."
+msgstr "Surface, volume et personnes sont la base de la répartition. S'il manque une valeur, complétez-la directement dans la tuile."
+
+#, python-format
+msgid "%(was)s fehlt"
+msgstr "Manque : %(was)s"
+
+msgid "vollständig"
+msgstr "complet"
+
+msgid "Volumen m³"
+msgstr "Volume m³"
+
+msgid "In dieser Periode ohne Mietvertrag — die Kosten trägt der Eigentümer (Leerstand)."
+msgstr "Sans bail durant cette période — les coûts sont à la charge du propriétaire (vacance)."
+
+msgid "Diese Liegenschaft hat noch keine Objekte."
+msgstr "Cet immeuble n'a pas encore d'objets."
+
+msgid "Geht die Abrechnung auf, und stimmt jeder Anteil?"
+msgstr "Le décompte est-il équilibré, et chaque part est-elle correcte ?"
+
+#, python-format
+msgid "Bei %(n)s Vertrag weicht das monatliche Akonto deutlich vom Bedarf ab. Der Vorschlag öffnet die Mietzinsanpassung mit Formular und Termin — das Akonto wird nicht direkt überschrieben."
+msgid_plural "Bei %(n)s Verträgen weicht das monatliche Akonto deutlich vom Bedarf ab. Der Vorschlag öffnet die Mietzinsanpassung mit Formular und Termin — das Akonto wird nicht direkt überschrieben."
+msgstr[0] "Pour %(n)s bail, l'acompte mensuel s'écarte nettement du besoin. La proposition ouvre l'adaptation de loyer avec formulaire et échéance — l'acompte n'est pas écrasé directement."
+msgstr[1] "Pour %(n)s baux, l'acompte mensuel s'écarte nettement du besoin. La proposition ouvre l'adaptation de loyer avec formulaire et échéance — l'acompte n'est pas écrasé directement."
+
+msgid "Wie wird jede Kostenart verteilt?"
+msgstr "Comment chaque type de charge est-il réparti ?"
+
+msgid "Schlüssel je Kostenart sind eingeschaltet"
+msgstr "Les clés par type de charge sont activées"
+
+msgid "Für eine Kostenart mit Schlüssel gilt dieser — für Belege wie für Kreditoren. Ohne Schlüssel gilt, was am Beleg oder Konto steht."
+msgstr "Pour un type de charge avec clé, celle-ci s'applique — aux pièces comme aux créanciers. Sans clé, c'est l'indication de la pièce ou du compte qui s'applique."
+
+msgid "Verteilt wird wie erfasst"
+msgstr "Répartition telle que saisie"
+
+msgid "Jeder Beleg und jedes Konto bringt seinen Schlüssel mit. Wählen Sie unten eine Verteilung, gilt sie für die ganze Kostenart."
+msgstr "Chaque pièce et chaque compte apporte sa propre clé. Si vous choisissez une répartition ci-dessous, elle s'applique à tout le type de charge."
+
+msgid "Ausschalten"
+msgstr "Désactiver"
+
+msgid "Einschalten"
+msgstr "Activer"
+
+#, python-format
+msgid "Nach HKVO: %(g)s %% Grundkosten nach Volumen, der Rest nach Verbrauch — festgelegt in Schritt 4."
+msgstr "Selon le DIFC : %(g)s %% de frais de base selon le volume, le reste selon la consommation — défini à l'étape 4."
+
+msgid "Nach Volumen (m³), zeitlich nach Heizgradtagen — HKVO lässt sich in Schritt 4 einschalten."
+msgstr "Selon le volume (m³), dans le temps selon les degrés-jours — le DIFC peut être activé à l'étape 4."
+
+msgid "Zu Schritt 4"
+msgstr "Vers l'étape 4"
+
+#, python-format
+msgid "Verteilung %(ka)s"
+msgstr "Répartition %(ka)s"
+
+msgid "Nach Zimmerzahl (Schlüssel der Liegenschaft)."
+msgstr "Selon le nombre de pièces (clé de l'immeuble)."
+
+msgid "Nach Wertquote (Schlüssel der Liegenschaft)."
+msgstr "Selon la quote-part (clé de l'immeuble)."
+
+msgid "Gilt für diese Kostenart in dieser Periode, zeitanteilig nach Tagen."
+msgstr "S'applique à ce type de charge pour cette période, au prorata des jours."
+
+msgid "Wie erfasst: nach Volumen mit Heizgradtagen (Schlüssel am Beleg oder Konto «m³»)."
+msgstr "Tel que saisi : selon le volume avec degrés-jours de chauffage (clé sur la pièce ou le compte « m³ »)."
+
+msgid "Wie erfasst: Schlüssel am Beleg oder Konto."
+msgstr "Tel que saisi : clé sur la pièce ou le compte."
+
+#, python-format
+msgid "Vertrag %(name)s (%(e)s) schliesst aus · wird beachtet"
+msgstr "Bail %(name)s (%(e)s) exclut · pris en compte"
+
+msgid "Vertraglich ausgeschlossen?"
+msgstr "Exclu par le bail ?"
+
+msgid "schliesst aus"
+msgstr "exclut"
+
+msgid "trägt mit"
+msgstr "participe"
+
+msgid "Was der Vertrag ausschliesst, trägt dieser Mieter nicht; sein Anteil geht auf den Eigentümer (Art. 257a Abs. 2 OR)."
+msgstr "Ce que le bail exclut n'est pas à la charge de ce locataire ; sa part revient au propriétaire (art. 257a al. 2 CO)."
+
+msgid "Leerstand bei Kosten nach Personen — siehe unten"
+msgstr "Vacance pour les frais selon les personnes — voir ci-dessous"
+
+msgid "Noch keine Kosten — zuerst Schritt 2."
+msgstr "Pas encore de frais — d'abord l'étape 2."
+
+msgid "Leerstand bei Kosten nach Personen"
+msgstr "Vacance pour les frais selon les personnes"
+
+#, python-format
+msgid "%(n)s Leerstandstag in dieser Periode. Ein leeres Objekt hat keine Personen — wie es tragen soll, legt das Gesetz nicht fest. Ihre Wahl steht im Anhang der Abrechnung."
+msgid_plural "%(n)s Leerstandstage in dieser Periode. Ein leeres Objekt hat keine Personen — wie es tragen soll, legt das Gesetz nicht fest. Ihre Wahl steht im Anhang der Abrechnung."
+msgstr[0] "%(n)s jour de vacance dans cette période. Un objet vide n'a pas d'occupants — la loi ne fixe pas comment il doit participer aux frais. Votre choix figure dans l'annexe du décompte."
+msgstr[1] "%(n)s jours de vacance dans cette période. Un objet vide n'a pas d'occupants — la loi ne fixe pas comment il doit participer aux frais. Votre choix figure dans l'annexe du décompte."
+
+msgid "Schliessanlage der Liegenschaft"
+msgstr "Installation de fermeture de l'immeuble"
+
+msgid "Noch keine Schlüssel für dieses Objekt — z. B. Wohnungs- und Kellerschlüssel erfassen."
+msgstr "Pas encore de clés pour cet objet — saisir p. ex. les clés de l'appartement et de la cave."
+
+msgid "Öffnet nur diesen Auftrag. Ging mit der Auftrags-Mail an den Handwerker."
+msgstr "N'ouvre que ce mandat. Envoyé à l'artisan avec l'e-mail du mandat."
+
+msgid "nur lesend"
+msgstr "lecture seule"
+
+#, python-format
+msgid "Auftrag abgeschlossen — lesbar bis %(d)s."
+msgstr "Mandat terminé — consultable jusqu'au %(d)s."
+
+msgid "widerrufen"
+msgstr "révoqué"
+
+#, python-format
+msgid "am %(d)s Uhr"
+msgstr "le %(d)s"
+
+msgid "Noch kein Link. Er entsteht mit der Auftrags-Mail — oder hier."
+msgstr "Pas encore de lien. Il est créé avec l'e-mail du mandat — ou ici."
+
+msgid "Neuen Link erzeugen? Der bisherige öffnet danach nichts mehr."
+msgstr "Générer un nouveau lien ? L'ancien n'ouvrira plus rien."
+
+msgid "Link erzeugen"
+msgstr "Générer le lien"
+
+msgid "Neuen Link erzeugen"
+msgstr "Générer un nouveau lien"
+
+msgid "Link widerrufen? Der Handwerker kann den Auftrag dann nicht mehr öffnen."
+msgstr "Révoquer le lien ? L'artisan ne pourra plus ouvrir le mandat."
+
+msgid "Link widerrufen"
+msgstr "Révoquer le lien"
+
+msgid "An"
+msgstr "À"
+
+msgid "Empfänger wählen …"
+msgstr "Choisir le destinataire …"
+
+msgid "Mietverträge"
+msgstr "Baux"
+
+#, python-format
+msgid "%(n)s im Büro"
+msgstr "%(n)s au bureau"
+
+msgid "Stück"
+msgstr "Exemplaires"
+
+msgid "An dieser Liegenschaft sind noch keine Schlüssel erfasst."
+msgstr "Aucune clé n'est encore saisie pour cet immeuble."
+
+msgid "Zurück bis"
+msgstr "Retour d'ici le"
+
+msgid "Leer lassen, wenn der Schlüssel bleibt (Mieter). Wird er nicht zurückgegeben, steht er unter «Heute» und in den Fristen."
+msgstr "Laisser vide si la clé reste (locataire). Si elle n'est pas rendue, elle apparaît sous « Aujourd'hui » et dans les délais."
+
+msgid "z. B. Auftrag, Ticket"
+msgstr "p. ex. mandat, ticket"
+
+msgid "Unterschrift Empfänger"
+msgstr "Signature du destinataire"
+
+msgid "Die Quittung entsteht als PDF und liegt danach in der Ablage."
+msgstr "La quittance est créée en PDF puis déposée dans le classement."
+
+msgid "Ausgabe bestätigen"
+msgstr "Confirmer la remise"
+
+msgid "Schlüssel: Rückgabe fällig"
+msgstr "Clés : restitution due"
+
+#, python-format
+msgid "%(n)s Ausgabe mit erreichter Rückgabefrist"
+msgid_plural "%(n)s Ausgaben mit erreichter Rückgabefrist"
+msgstr[0] "%(n)s remise dont le délai de restitution est atteint"
+msgstr[1] "%(n)s remises dont le délai de restitution est atteint"
+
+msgid "Schlüssel zurücknehmen"
+msgstr "Reprendre des clés"
+
+msgid "Wer gibt zurück?"
+msgstr "Qui rend les clés ?"
+
+msgid "Rückgabe überfällig"
+msgstr "Restitution en retard"
+
+msgid "An dieser Liegenschaft ist kein Schlüssel ausgegeben."
+msgstr "Aucune clé de cet immeuble n'est remise."
+
+#, python-format
+msgid "Schlüssel bei %(n)s"
+msgstr "Clés chez %(n)s"
+
+msgid "bleibt"
+msgstr "reste"
+
+msgid "zurück"
+msgstr "rendue"
+
+msgid "Davon fehlen (Stück), wenn «zurück»"
+msgstr "Dont manquants (exemplaires), si « rendue »"
+
+#, python-format
+msgid "%(n)s hat an dieser Liegenschaft keinen Schlüssel."
+msgstr "%(n)s n'a aucune clé de cet immeuble."
+
+msgid "Ein Verlust legt die Pendenz «Zylinder ersetzen» an. Die Kosten werden nicht automatisch verrechnet — die Debitorenrechnung erfasst bei Bedarf eine Person."
+msgstr "Une perte crée la tâche en suspens « Remplacer le cylindre ». Les coûts ne sont pas facturés automatiquement — au besoin, une personne saisit la facture débiteur."
+
+msgid "Unterschrift bei der Rücknahme"
+msgstr "Signature lors de la reprise"
+
+msgid "Rücknahme bestätigen"
+msgstr "Confirmer la reprise"
+
+#, python-format
+msgid "gültig ab %(d)s"
+msgstr "valable dès le %(d)s"
+
+msgid "mitgeliefert"
+msgstr "fourni"
+
+msgid "Mitgelieferte Vorlage: Beim Speichern entsteht eine eigene Fassung für deine Verwaltung. Das Original bleibt für alle anderen, wie es ist."
+msgstr "Modèle fourni : en enregistrant, vous créez une version propre à votre gérance. L'original reste inchangé pour tous les autres."
+
+msgid "Ereignis"
+msgstr "Événement"
+
+msgid "keins — nur von Hand verwenden"
+msgstr "aucun — utiliser uniquement manuellement"
+
+msgid "Format"
+msgstr "Format"
+
+msgid "Andere Sprachfassungen:"
+msgstr "Autres versions linguistiques :"
+
+msgid "anlegen"
+msgstr "créer"
+
+msgid "Platzhalter einfügen"
+msgstr "Insérer un espace réservé"
+
+msgid "Ältere Schreibweisen (bleiben gültig)"
+msgstr "Anciennes graphies (restent valables)"
+
+msgid "Probe-PDF"
+msgstr "PDF d'essai"
+
+msgid "mit"
+msgstr "avec"
+
+msgid "Beispielwerten"
+msgstr "valeurs d'exemple"
+
+msgid "Die Vorschau erscheint, sobald der Text geladen ist."
+msgstr "L'aperçu s'affiche dès que le texte est chargé."
+
+msgid "Die Vorschau liess sich nicht laden."
+msgstr "Impossible de charger l'aperçu."
+
+msgid "Regeln: Wenn … dann …"
+msgstr "Règles : si … alors …"
+
+msgid "Regeln"
+msgstr "Règles"
+
+#, python-format
+msgid "Wenn: %(e)s"
+msgstr "Si : %(e)s"
+
+msgid "dann:"
+msgstr "alors :"
+
+msgid "kein zusätzliches Dokument"
+msgstr "aucun document supplémentaire"
+
+msgid "eigen"
+msgstr "propre"
+
+msgid "Fest dabei:"
+msgstr "Toujours inclus :"
+
+msgid "Vorlage anlegen"
+msgstr "Créer un modèle"
+
+msgid "Debitorenrechnung erfassen"
+msgstr "Saisir une facture débiteur"
+
+msgid "Schliessanlage öffnen"
+msgstr "Ouvrir l'installation de fermeture"
+
+msgid "Die Schlüssel konnten nicht gebucht werden. Bitte über die Schliessanlage der Liegenschaft nachtragen."
+msgstr "Les clés n'ont pas pu être enregistrées. Veuillez les ajouter via l'installation de fermeture de l'immeuble."
+
+#, python-format
+msgid "Nicht im Schlüsselregister, deshalb nicht gebucht: %(liste)s"
+msgstr "Absent du registre des clés, donc non enregistré : %(liste)s"
+
+msgid "Bitte eine Bezeichnung angeben."
+msgstr "Veuillez indiquer une désignation."
+
+msgid "Liegenschaft, Bezeichnung, Start- und Enddatum sind erforderlich; eine Periode umfasst höchstens 12 Monate."
+msgstr "L'immeuble, la désignation, la date de début et la date de fin sont obligatoires ; une période couvre au maximum 12 mois."
+
+msgid "Schlüssel archiviert. Der Verlauf bleibt erhalten."
+msgstr "Clé archivée. L'historique est conservé."
+
+msgid "Aus dieser Bewerbung ist bereits ein Vertrag entstanden. Den Stand ändern Sie im Vertrag."
+msgstr "Un bail a déjà été établi à partir de cette candidature. Modifiez l'état dans le bail."
+
+#, python-format
+msgid "Von «%(von)s» nach «%(nach)s» ist kein Wechsel vorgesehen."
+msgstr "Le passage de « %(von)s » à « %(nach)s » n'est pas prévu."
+
+msgid "Unbekannte Spalte."
+msgstr "Colonne inconnue."
+
+#, python-format
+msgid "Vertragsentwurf für %(bezeichnung)s erstellt — bitte Konditionen prüfen und aktivieren."
+msgstr "Projet de bail créé pour %(bezeichnung)s — veuillez vérifier les conditions et l'activer."
+
+#, python-format
+msgid "%(name)s: %(status)s."
+msgstr "%(name)s : %(status)s."
+
+msgid "Unbekannter Prüfpunkt."
+msgstr "Point de contrôle inconnu."
+
+#, python-format
+msgid "«%(punkt)s» abgehakt."
+msgstr "« %(punkt)s » coché."
+
+#, python-format
+msgid "«%(punkt)s» zurückgenommen."
+msgstr "« %(punkt)s » décoché."
+
+msgid "Das Nebenkosten-Akonto kann nicht negativ sein."
+msgstr "L'acompte de frais accessoires ne peut pas être négatif."
+
+msgid "Das Akonto wird über die Mietzinsanpassung angepasst (Formular und Termin)."
+msgstr "L'acompte est adapté via l'adaptation de loyer (formule et échéance)."
+
+msgid "Die Periode ist verbucht — ändern lässt sich nichts mehr."
+msgstr "La période est comptabilisée — plus rien ne peut être modifié."
+
+#, python-format
+msgid "Die Periode ist länger als %(n)s Monate."
+msgstr "La période dépasse %(n)s mois."
+
+#, python-format
+msgid "%(e)s: %(was)s fehlt"
+msgstr "%(e)s : il manque %(was)s"
+
+msgid "Noch keine Kosten. Kreditoren mit «In Nebenkostenabrechnung einbeziehen» erscheinen automatisch; weitere Kosten erfassen Sie als Beleg."
+msgstr "Pas encore de frais. Les créanciers avec « Inclure dans le décompte des frais accessoires » apparaissent automatiquement ; saisissez les autres frais comme pièce."
+
+#, python-format
+msgid "Verteilt ist nicht genau das Total: Differenz CHF %(d)s."
+msgstr "Le montant réparti ne correspond pas exactement au total : différence CHF %(d)s."
+
+msgid "Periode gespeichert."
+msgstr "Période enregistrée."
+
+#, python-format
+msgid "%(e)s gespeichert."
+msgstr "%(e)s enregistré."
+
+msgid "Beleg erfasst."
+msgstr "Pièce saisie."
+
+msgid "Beleg gelöscht."
+msgstr "Pièce supprimée."
+
+msgid "Heizöl-Bestand gespeichert."
+msgstr "Stock de mazout enregistré."
+
+#, python-format
+msgid "%(n)s HNK-Rechnung(en) im Status «neu», «in Zahlung» oder «teilbezahlt» — die Abrechnung liest nur freigegebene und bezahlte Rechnungen."
+msgstr "%(n)s facture(s) FA au statut « nouveau », « en paiement » ou « partiellement payé » — le décompte ne prend en compte que les factures validées et payées."
+
+msgid "Kostenart oder Verteilung unbekannt."
+msgstr "Type de charge ou répartition inconnu."
+
+msgid "Die Schlüssel je Kostenart sind für diese Liegenschaft jetzt eingeschaltet."
+msgstr "Les clés par type de charge sont désormais activées pour cet immeuble."
+
+#, python-format
+msgid "Verteilung für %(ka)s gespeichert."
+msgstr "Répartition pour %(ka)s enregistrée."
+
+msgid "Für diese Kostenart ist «Eigene %» nicht gewählt."
+msgstr "Pour ce type de charge, « % personnalisé » n'est pas choisi."
+
+msgid "Gespeichert."
+msgstr "Enregistré."
+
+msgid "Kostenart unbekannt."
+msgstr "Type de charge inconnu."
+
+#, python-format
+msgid "Vertrag %(v)s gespeichert."
+msgstr "Bail %(v)s enregistré."
+
+msgid "Unbekannte Auswahl."
+msgstr "Choix inconnu."
+
+msgid "Der Grundkostenanteil liegt zwischen 0 und 100 %."
+msgstr "La part des frais de base est comprise entre 0 et 100 %."
+
+msgid "Heizkosten-Einstellung gespeichert."
+msgstr "Réglage des frais de chauffage enregistré."
+
+msgid "Das ist kein Heizungs- oder Wärmezähler."
+msgstr "Ce n'est pas un compteur de chauffage ou de chaleur."
+
+msgid "Zählerstände gespeichert."
+msgstr "Relevés des compteurs enregistrés."
+
+msgid "Bitte eine CSV-Datei wählen."
+msgstr "Veuillez choisir un fichier CSV."
+
+#, python-format
+msgid "%(n)s Zählerstände übernommen."
+msgstr "%(n)s relevés de compteur repris."
+
+#, python-format
+msgid "%(n)s Zeilen mit Fehler wurden nicht übernommen."
+msgstr "%(n)s lignes erronées n'ont pas été reprises."
+
+#, python-format
+msgid "Schlüssel zurück: %(typ)s Nr. %(nr)s"
+msgstr "Retour de clé : %(typ)s n° %(nr)s"
+
+#, python-format
+msgid "«%(farbe)s» ist keine Farbe im Format #RRGGBB — Briefkopf-Farbe unverändert."
+msgstr "« %(farbe)s » n'est pas une couleur au format #RRGGBB — couleur de l'en-tête inchangée."
+
+#, python-format
+msgid "Neue Fassung von '%(name)s' gilt ab %(datum)s. Bis dahin gilt die bisherige."
+msgstr "La nouvelle version de « %(name)s » s'applique dès le %(datum)s. D'ici là, la version actuelle reste valable."
+
+msgid "Link widerrufen — er öffnet nichts mehr."
+msgstr "Lien révoqué — il n'ouvre plus rien."
+
+msgid "Bitte Hersteller, System oder Sicherungskarte angeben."
+msgstr "Veuillez indiquer le fabricant, le système ou la carte de sécurité."
+
+msgid "Schliessanlage gespeichert."
+msgstr "Installation de fermeture enregistrée."
+
+msgid "Schliessanlage entfernt. Schlüssel und Türen bleiben erhalten."
+msgstr "Installation de fermeture supprimée. Les clés et les portes sont conservées."
+
+msgid "Bitte die Tür bezeichnen, z. B. Haustür oder Keller."
+msgstr "Veuillez désigner la porte, p. ex. porte d'entrée ou cave."
+
+#, python-format
+msgid "Tür «%(t)s» erfasst."
+msgstr "Porte « %(t)s » saisie."
+
+msgid "Tür entfernt."
+msgstr "Porte supprimée."
+
+msgid "Bezeichnung und Schlüssel-Nr. sind Pflichtfelder."
+msgstr "La désignation et le n° de clé sont obligatoires."
+
+msgid "Eine gewählte Tür gehört nicht zu dieser Liegenschaft."
+msgstr "Une porte choisie n'appartient pas à cet immeuble."
+
+#, python-format
+msgid "%(n)s Stück sind ausgegeben oder verloren — weniger geht nicht."
+msgstr "%(n)s exemplaires sont remis ou perdus — impossible d'en avoir moins."
+
+#, python-format
+msgid "Schlüssel %(nr)s erfasst."
+msgstr "Clé %(nr)s saisie."
+
+#, python-format
+msgid "Schlüssel %(nr)s ist wieder aktiv."
+msgstr "La clé %(nr)s est de nouveau active."
+
+#, python-format
+msgid "Schlüssel %(nr)s gespeichert."
+msgstr "Clé %(nr)s enregistrée."
+
+msgid "«Zurück bis» ist kein gültiges Datum."
+msgstr "« Retour d'ici le » n'est pas une date valable."
+
+msgid "Die Ausgabe ist gebucht, die Quittung konnte aber nicht abgelegt werden."
+msgstr "La remise est enregistrée, mais la quittance n'a pas pu être classée."
+
+#, python-format
+msgid "%(n)s Schlüssel an %(name)s ausgegeben. Quittung in der Ablage."
+msgstr "%(n)s clé(s) remise(s) à %(name)s. Quittance dans le classement."
+
+msgid "Diesen Empfänger gibt es an dieser Liegenschaft nicht."
+msgstr "Ce destinataire n'existe pas pour cet immeuble."
+
+msgid "Die Rücknahme ist gebucht, die Quittung konnte aber nicht abgelegt werden."
+msgstr "La reprise est enregistrée, mais la quittance n'a pas pu être classée."
+
+msgid "Rücknahme gebucht. Quittung in der Ablage."
+msgstr "Reprise enregistrée. Quittance dans le classement."
+
+#, python-format
+msgid "%(n)s Verlust(e): Pendenz «Zylinder ersetzen» angelegt."
+msgstr "%(n)s perte(s) : tâche en suspens « Remplacer le cylindre » créée."
+
+msgid "{mieter.anrede}\n\nbeiliegend erhalten Sie Ihren Mietvertrag für {objekt.bezeichnung}, {objekt.adresse}. Mietbeginn ist der {vertrag.beginn}.\n\nFreundliche Grüsse"
+msgstr "{mieter.anrede}\n\nVeuillez trouver ci-joint votre bail pour {objekt.bezeichnung}, {objekt.adresse}. Le bail débute le {vertrag.beginn}.\n\nMeilleures salutations"
+
+msgid "{mieter.anrede}\n\ngerne bieten wir Ihnen die Wohnung an der {objekt.adresse} ab {vertrag.beginn} an. Der Nettomietzins beträgt CHF {vertrag.mietzins_netto}, die Nebenkosten CHF {vertrag.nebenkosten}.\n\nFreundliche Grüsse\n{verwaltung.sachbearbeiter}"
+msgstr "{mieter.anrede}\n\nNous avons le plaisir de vous proposer l'appartement situé {objekt.adresse} dès le {vertrag.beginn}. Le loyer net s'élève à CHF {vertrag.mietzins_netto}, les frais accessoires à CHF {vertrag.nebenkosten}.\n\nMeilleures salutations\n{verwaltung.sachbearbeiter}"
+
+msgid "{mieter.anrede}\n\ndie Kündigung des Mietverhältnisses für {objekt.bezeichnung}, {objekt.adresse} ist bei uns erfasst. Wir melden uns für die Wohnungsabnahme.\n\nFreundliche Grüsse"
+msgstr "{mieter.anrede}\n\nNous avons enregistré la résiliation du bail pour {objekt.bezeichnung}, {objekt.adresse}. Nous vous contacterons pour l'état des lieux de sortie.\n\nMeilleures salutations"
+
+msgid "{mieter.anrede}\n\nSie erhalten das amtliche Formular zur Anpassung Ihres Mietzinses für {objekt.bezeichnung}. Bei Fragen erreichen Sie uns unter {verwaltung.telefon}.\n\nFreundliche Grüsse"
+msgstr "{mieter.anrede}\n\nVous trouverez ci-joint la formule officielle d'adaptation de votre loyer pour {objekt.bezeichnung}. Pour toute question, vous pouvez nous joindre au {verwaltung.telefon}.\n\nMeilleures salutations"
+
+msgid "{mieter.anrede}\n\nSie erhalten die Nebenkostenabrechnung für {objekt.bezeichnung}. Bei Fragen erreichen Sie uns unter {verwaltung.telefon}.\n\nFreundliche Grüsse"
+msgstr "{mieter.anrede}\n\nVous trouverez ci-joint le décompte des frais accessoires pour {objekt.bezeichnung}. Pour toute question, vous pouvez nous joindre au {verwaltung.telefon}.\n\nMeilleures salutations"
+
+msgid "{mieter.anrede}\n\ndie Wohnungsabnahme für {objekt.bezeichnung}, {objekt.adresse} ist abgeschlossen. Vielen Dank für die Übergabe.\n\nFreundliche Grüsse"
+msgstr "{mieter.anrede}\n\nL'état des lieux de sortie pour {objekt.bezeichnung}, {objekt.adresse} est terminé. Merci beaucoup pour la remise des locaux.\n\nMeilleures salutations"
+
+msgid "«Gültig ab» ist kein Datum."
+msgstr "« Valable dès » n'est pas une date."
+
+msgid "Unbekanntes Format."
+msgstr "Format inconnu."
+
+msgid "Unbekannte Sprache."
+msgstr "Langue inconnue."
+
+msgid "Unbekanntes Ereignis."
+msgstr "Événement inconnu."
+
+#, python-format
+msgid "Unbekannte Platzhalter: %(liste)s. Erlaubt sind die Platzhalter in der Liste neben dem Text."
+msgstr "Espaces réservés inconnus : %(liste)s. Seuls les espaces réservés de la liste à côté du texte sont autorisés."
+
+msgid "Das Probe-PDF liess sich nicht erzeugen."
+msgstr "Impossible de générer le PDF d'essai."
+
+msgid "Für dieses Ereignis gibt es noch keine Vorlage."
+msgstr "Il n'existe pas encore de modèle pour cet événement."
+
+#, python-format
+msgid "Regel «%(e)s» ist eingeschaltet."
+msgstr "La règle « %(e)s » est activée."
+
+#, python-format
+msgid "Regel «%(e)s» ist ausgeschaltet."
+msgstr "La règle « %(e)s » est désactivée."
+
+msgid "Zu viele Anfragen. Bitte versuchen Sie es später erneut."
+msgstr "Trop de requêtes. Veuillez réessayer plus tard."
+
+msgid "Bitte eine Datei wählen (PDF oder Bild)."
+msgstr "Veuillez choisir un fichier (PDF ou image)."
+
+msgid "Der Auftrag ist abgeschlossen — der Link ist nur noch lesbar."
+msgstr "Le mandat est terminé — le lien n'est plus qu'en lecture seule."
+
+msgid "Bitte Datum und Zeit angeben."
+msgstr "Veuillez indiquer la date et l'heure."
+
+msgid "Der Termin liegt in der Vergangenheit."
+msgstr "Le rendez-vous est dans le passé."
+
+msgid "Termin gesetzt. Der Mieter erhält eine Mail mit Kalendereintrag."
+msgstr "Rendez-vous fixé. Le locataire reçoit un e-mail avec une entrée de calendrier."
+
+msgid "Termin bestätigt."
+msgstr "Rendez-vous confirmé."
+
+msgid "Danke, die Verwaltung ist informiert."
+msgstr "Merci, la gérance est informée."
+
+msgid "Nachricht an die Verwaltung gesendet."
+msgstr "Message envoyé à la gérance."
+
+msgid "Bitte einen Betrag in CHF angeben."
+msgstr "Veuillez indiquer un montant en CHF."
+
+msgid "Offerte erhalten. Sie braucht die Freigabe der Eigentümerschaft — die Verwaltung meldet sich."
+msgstr "Offre reçue. Elle doit être validée par les propriétaires — la gérance vous contactera."
+
+msgid "Offerte erhalten."
+msgstr "Offre reçue."
+
+msgid "Rechnung erhalten. Die Verwaltung prüft sie."
+msgstr "Facture reçue. La gérance la vérifie."
+
+msgid "Bitte eine Farbe im Format #RRGGBB angeben, z. B. #1f6f5c."
+msgstr "Veuillez indiquer une couleur au format #RRGGBB, p. ex. #1f6f5c."
+
+msgid "Dokument zu einem Ereignis"
+msgstr "Document lié à un événement"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "Vertrag erstellt"
+msgstr "Bail créé"
+
+msgid "Bewerbung zugesagt"
+msgstr "Candidature acceptée"
+
+msgid "Kündigung erfasst"
+msgstr "Résiliation saisie"
+
+msgid "Mietzinsanpassung versandt"
+msgstr "Adaptation de loyer envoyée"
+
+msgid "Nebenkostenabrechnung versandt"
+msgstr "Décompte des frais accessoires envoyé"
+
+msgid "Abnahme abgeschlossen"
+msgstr "État des lieux terminé"
+
+msgid "Rückgabe ist überfällig"
+msgid_plural "Rückgaben sind überfällig"
+msgstr[0] "Restitution en retard"
+msgstr[1] "Restitutions en retard"
+
+msgid "Zurückfordern"
+msgstr "Réclamer"
+
+msgid "Leerstand trägt nichts (Kosten nur auf die Bewohner)"
+msgstr "La vacance ne supporte rien (frais uniquement aux occupants)"
+
+msgid "Leerstand trägt nach der durchschnittlichen Belegung"
+msgstr "La vacance supporte selon l'occupation moyenne"
+
+msgid "Ausweis"
+msgstr "Pièce d'identité"
+
+msgid "Tragbarkeit"
+msgstr "Capacité financière"
+
+msgid "Prüfung"
+msgstr "Vérification"
+
+msgid "Eingegangen"
+msgstr "Reçues"
+
+msgid "Geprüft"
+msgstr "Vérifiées"
+
+msgid "Vertrag generiert"
+msgstr "Bail généré"
+
+msgid "Anfangsstand"
+msgstr "Relevé initial"
+
+msgid "Zwischenstand (Mieterwechsel)"
+msgstr "Relevé intermédiaire (changement de locataire)"
+
+msgid "Endstand"
+msgstr "Relevé final"
+
+msgid "Hauptschlüssel"
+msgstr "Passe général"
+
+msgid "Gruppenschlüssel"
+msgstr "Passe partiel"
+
+msgid "Einzelschlüssel"
+msgstr "Clé individuelle"
