@@ -218,7 +218,10 @@ test.describe('Omnisearch am Desktop', () => {
     expect(page.url(), 'Die Seite selbst bleibt stehen').toContain('/neu/liegenschaften/');
     await neuerTab.close();
 
-    // ↵ öffnet in diesem Tab
+    // ↵ öffnet in diesem Tab (nach dem Schliessen des Tabs liegt der Fokus erst wieder im Feld)
+    await page.bringToFront();
+    await feld(page).focus();
+    await expect(pop(page)).toBeVisible();
     await page.keyboard.press('Enter');
     await page.waitForURL('**/neu/personen/2/');
   });
@@ -279,6 +282,22 @@ test.describe('Omnisearch am Desktop', () => {
     modus = 'gut';
     await fehler.getByRole('button', { name: 'Nochmals versuchen' }).click();
     await expect(page.locator('#fwOsListe [role="option"]').first()).toBeVisible();
+  });
+
+  test('Antwortet der Endpunkt mit 403, zeigt das Popover den Fehlerzustand und die Seitentreffer', async ({ page }) => {
+    await login(page);
+    await goto(page, '/neu/liegenschaften/');
+    await attrappe(page, () => ({ status: 403, body: { detail: 'verboten' } }));
+    const seite = await page.evaluate(() => {
+      const d = JSON.parse(document.getElementById('fw-palette-data')!.textContent!);
+      return d.find((x: any) => x.label.length > 5 && x.url.startsWith('/neu/'));
+    });
+    const fehler = [] as string[];
+    page.on('pageerror', (e) => fehler.push(String(e)));
+    await tippe(page, seite.label.slice(0, 6));
+    await expect(page.locator('#fwOsListe .fw-os-leer[role="alert"]')).toContainText('nicht erreichbar');
+    await expect(page.locator('#fwOsListe [role="group"]', { hasText: 'Seiten & Aktionen' })).toBeVisible();
+    expect(fehler, 'Das Skript wirft bei 403').toEqual([]);
   });
 
   test('Seiten & Befehle der früheren Palette stehen als Gruppe «Seiten & Aktionen»', async ({ page }) => {

@@ -110,6 +110,15 @@ class KopfzeileStrukturTests(TestCase):
         cls.nutzer = _team_user()
         cls.lg = _basis_objekte()[0]
 
+    @classmethod
+    def tearDownClass(cls):
+        # `_basis_objekte()` setzt den Mandantenkontext des Prozesses; ohne diese
+        # Zeile liefe er in die nächste Testklasse (test_vorlagen_isolation prüft
+        # gerade das Fehlen des Kontexts und wurde davon rot).
+        from core.tenancy import loesche_organisation
+        loesche_organisation()
+        super().tearDownClass()
+
     def _seite(self, pfad='/neu/liegenschaften/'):
         c = Client()
         c.force_login(self.nutzer)
