@@ -42,7 +42,7 @@
             </select></div>
         <div class="fw-feldblock"><label class="fw-label">{% trans "Schlüssel zurück" %}</label>
             <input name="schluessel_anzahl" type="number" min="0" class="fw-feld"></div>
-        <div class="fw-feldblock justify-end"><label class="fw-haekchen"><input type="checkbox" name="mieter_anwesend" checked class="fw-akzent">{% trans "Mieter anwesend" %}</label></div>
+        <div class="fw-feldblock justify-end"><label class="fw-haekchen"><input type="checkbox" name="mieter_anwesend" class="fw-akzent">{% trans "Mieter anwesend" %}</label></div>
     </div></div>
 
     <!-- Zählerstände -->
@@ -79,7 +79,7 @@
                 <input name="unterschrift_mieter" class="fw-feld"></div>
             <div class="fw-feldblock"><label class="fw-label">{% trans "Unterschrift Verwaltung (Name)" %}</label>
                 <input name="unterschrift_verwalter" value="{{ verwalter_default }}" class="fw-feld"></div>
-        <div class="fw-feldblock breit"><label class="fw-haekchen"><input type="checkbox" name="abgeschlossen" class="fw-akzent">{% trans "Protokoll abgeschlossen" %}</label></div>
+        <p class="fw-feldblock breit fw-hilfe">{% trans "Abgeschlossen wird im nächsten Schritt: mit den Unterschriften von Verwaltung und Mieter (oder dem Grund seiner Abwesenheit)." %}</p>
     </div></div>
 
     <div class="flex items-center gap-3">
@@ -99,7 +99,8 @@
                 <option value="abnutzung">{% trans "Abnutzung" %}</option><option value="mieter">{% trans "Mieter" %}</option><option value="vermieter">{% trans "Vermieter" %}</option>
             </select>
             <input name="m_kosten" inputmode="decimal" placeholder="CHF" class="fw-feld fw-col-span-1 text-right" title="{% trans 'Reparatur-/Ersatzkosten' %}">
-            <label class="fw-col-span-1 text-center cursor-pointer fw-faint hover:fw-marke" title="{% trans 'Foto' %}">{% zeichen 'dokument' %}<input type="file" name="m_foto" accept="image/*" capture="environment" class="hidden"></label>
+            <label class="fw-col-span-1 text-center cursor-pointer fw-faint hover:fw-marke" title="{% trans 'Foto' %}">{% zeichen 'dokument' %}<input type="file" data-foto accept="image/*" capture="environment" class="hidden"></label>
+            <input type="hidden" name="m_zeile" value="">
             <button type="button" onclick="this.closest('.mangel-row').remove()" title="{% trans 'Diesen Mangel entfernen' %}" class="fw-col-span-1 fw-ikon mut gefahr">{% zeichen 'loeschen' %}</button>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
@@ -120,8 +121,15 @@
     </div>
 </template>
 <script>
+// Jede Zeile bekommt eine feste Nummer; ihr Foto heisst m_foto_<nummer>. Ohne das
+// rückten die Fotos nach einer Zeile ohne Foto eine Zeile nach oben: Ein leeres
+// Datei-Feld schickt der Browser nicht mit.
+var mangelNr = 0;
 function addMangel(){
     var tpl = document.getElementById('mangelTpl').content.cloneNode(true);
+    var nr = String(mangelNr++);
+    tpl.querySelector('[name=m_zeile]').value = nr;
+    tpl.querySelector('[data-foto]').name = 'm_foto_' + nr;
     document.getElementById('maengel').appendChild(tpl);
 }
 addMangel();  // eine Startzeile

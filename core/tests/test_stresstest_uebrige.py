@@ -110,7 +110,7 @@ class PendenzenTests(TestCase):
         self.v.status = 'gekuendigt'; self.v.ende = self.heute - timedelta(days=2); self.v.save()
         Pendenz.objects.create(titel='Auszug X', quelle=f'auto:auszug:{self.v.pk}', vertrag=self.v,
                                kategorie='vertrag', faellig_am=self.heute)
-        Abnahmeprotokoll.objects.create(vertrag=self.v, typ='auszug', datum=self.heute - timedelta(days=2))
+        Abnahmeprotokoll.objects.create(vertrag=self.v, typ='auszug', datum=self.heute - timedelta(days=2), abgeschlossen=True)
         generate_auto_pendenzen(horizont_tage=30)
         self.assertTrue(Pendenz.objects.get(quelle=f'auto:auszug:{self.v.pk}').erledigt)
 
@@ -218,7 +218,7 @@ class SchlussabrechnungVorbelegungTests(TestCase):
     def test_maengel_aus_dem_auszugsprotokoll_sind_ohne_auswahl_vorbelegt(self):
         from rentals.models import AbnahmeMangel, Abnahmeprotokoll
         lg, e, m, v = _basis_objekte()
-        prot = Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today())
+        prot = Abnahmeprotokoll.objects.create(vertrag=v, typ='auszug', datum=date.today(), abgeschlossen=True)
         AbnahmeMangel.objects.create(protokoll=prot, raum='Bad', beschreibung='Spiegel zerbrochen',
                                      verursacher='mieter', kostenschaetzung=Decimal('860.00'))
         c = Client(); c.force_login(_team_user('Verwalter'))

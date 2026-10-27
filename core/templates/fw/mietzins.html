@@ -65,7 +65,7 @@
             <tbody>
             {% for row in rows %}
             <tr>
-                <td class="pl-5 pr-1"><input type="checkbox" name="vertrag_id" value="{{ row.v.id }}" class="vertragWahl fw-akzent"></td>
+                <td class="pl-5 pr-1">{% if row.massenlauf %}<input type="checkbox" name="vertrag_id" value="{{ row.v.id }}" class="vertragWahl fw-akzent">{% endif %}</td>
                 <td class="fw-strong whitespace-nowrap">
                     <a href="/neu/vertraege/{{ row.v.id }}/" class="fw-link">{{ row.mieter }}</a>
                 </td>
@@ -105,12 +105,48 @@
   })();
 </script>
 
+{% comment %} Offene Entwürfe (Befund C): Sie buchen erst beim Versand. Hier
+   gesammelt — sonst bliebe ein Massenlauf als Stapel unsichtbarer Entwürfe
+   liegen, und der neue Mietzins würde nie verrechnet. {% endcomment %}
+<div class="fw-card">
+    <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'entwurf' %}</span><h2>{% trans "Entwürfe — noch nicht versandt" %}</h2></div>
+    {% if entwuerfe %}
+    <form method="post" action="/neu/mietzins/versand/">
+    {% csrf_token %}
+    <div class="fw-tablewrap"><table class="fw-table">
+        <thead><tr><th class="pl-5 pr-1"></th><th>{% trans "Mieter" %}</th><th class="fw-right">{% trans "Netto bisher" %}</th><th class="fw-right">{% trans "Netto neu" %}</th><th>{% trans "Wirksam ab" %}</th><th class="fw-right">{% trans "Aktion" %}</th></tr></thead>
+        <tbody>
+        {% for a in entwuerfe %}
+        <tr>
+            <td class="pl-5 pr-1"><input type="checkbox" name="anpassung" value="{{ a.id }}" checked class="fw-akzent" aria-label="{% trans 'Auswählen' %}"></td>
+            <td class="fw-strong whitespace-nowrap"><a href="/neu/vertraege/{{ a.vertrag_id }}/?tab=mietzins" class="fw-link">{{ a.vertrag.mieter.display_name }}</a></td>
+            <td class="fw-right fw-num fw-mutet">{{ a.alter_netto_mietzins|chf }}</td>
+            <td class="fw-right fw-num fw-strong">{{ a.neuer_netto_mietzins|chf }}</td>
+            <td class="fw-num whitespace-nowrap">{{ a.wirksam_ab|date:"d.m.Y" }}</td>
+            <td class="fw-right"><a href="/neu/mietzins/{{ a.vertrag_id }}/anpassung/" class="fw-btn fw-knapp">{% zeichen 'bearbeiten' %} {% trans "Öffnen" %}</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+    <div class="fw-fuss flex items-center gap-3 flex-wrap">
+        <label for="mz_versand_sammel" class="fw-label">{% trans "Versandt am" %}</label>
+        <input type="date" id="mz_versand_sammel" name="versand_am" value="{{ heute_iso }}" max="{{ heute_iso }}" class="fw-feld sm:w-56">
+        <label class="fw-haekchen"><input type="checkbox" name="nachbildung_bestaetigt" class="fw-akzent"> {% trans "Für Kantone ohne hinterlegtes Original wurde das Formular der kantonalen Behörde verwendet" %}</label>
+        <button type="submit" class="fw-btn fw-primary fw-knapp">{% zeichen 'senden' %} {% trans "Ausgewählte als versandt erfassen" %}</button>
+    </div>
+    </form>
+    {% else %}
+    <p class="fw-rumpf fw-hilfe">{% trans "Keine offenen Entwürfe — alles Erfasste ist versandt oder gebucht." %}</p>
+    {% endif %}
+</div>
+
 <div class="fw-card">
     <div class="fw-hinweis info">
         <span class="fw-hi">{% zeichen 'hinweis' %}</span>
         <div class="fw-ht fliess">
-    {% blocktrans trimmed %}«Anpassen» öffnet das amtliche Mietzinsanpassungs-Formular mit vorberechneten Werten (Referenzzins, LIK, Teuerung).
-    Netto und Basis sind die <b>effektiven</b> Werte (inkl. wirksamer Anpassungen und Staffelstufen) — das Potenzial vergleicht diese effektive Basis mit dem aktuellen Stand.{% endblocktrans %}
+    {% blocktrans trimmed %}«Anpassen» öffnet den Assistenten für die amtliche Mietzinsanpassung mit vorberechneten Werten (Referenzzins, LIK, Teuerung).
+    Netto und Basis sind die <b>effektiven</b> Werte (inkl. gebuchter Anpassungen und Staffelstufen) — das Potenzial vergleicht diese effektive Basis mit dem aktuellen Stand.
+    Index- und Staffelmieten sind von der Massenanpassung ausgenommen: Ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR).{% endblocktrans %}
         </div>
     </div>
 </div>

@@ -94,10 +94,29 @@ class MassenanpassungSzenarioTests(TestCase):
             alter_netto_mietzins=D('1450.00'), alter_referenzzinssatz=D('1.50'),
             neuer_referenzzinssatz=D('1.25'), alter_lik_index=D('106.2'), neuer_lik_index=D('106.2'))
         v = type(v).objects.get(pk=v.pk)
-        v.netto_mietzins = D('1407.80')
+        # Bis 26.10.2026 setzte dieser Test `v.netto_mietzins = 1407.80` nur im
+        # Speicher — und verbarg damit Befund A: Gespeichert bleibt der
+        # Ursprungsmietzins 1450, und auf ihm rechnete die nächste Anpassung.
+        self.assertEqual(v.netto_mietzins, D('1450.00'))
         r = berechne_mietpotenzial(v, D('1.25'), D('106.2'))
         self.assertEqual(r['zins_pct'], D('0.00'))
         self.assertEqual(r['action'], 'OK')
+        self.assertEqual(r['aktuell_chf'], D('1407.80'))
+
+    def test_folgeanpassung_rechnet_auf_dem_angepassten_mietzins(self):
+        """Befund A: Die zweite Erhöhung setzt auf dem Ergebnis der ersten auf."""
+        from rentals.models import MietzinsAnpassung
+        from rentals.services import berechne_mietpotenzial
+        v = self._fuenf()[0]
+        MietzinsAnpassung.objects.create(
+            vertrag=v, wirksam_ab=date(2025, 1, 1), neuer_netto_mietzins=D('1493.50'),
+            alter_netto_mietzins=D('1450.00'), alter_referenzzinssatz=D('1.50'),
+            neuer_referenzzinssatz=D('1.75'), alter_lik_index=D('106.2'), neuer_lik_index=D('106.2'))
+        v = type(v).objects.get(pk=v.pk)
+        r = berechne_mietpotenzial(v, D('2.00'), D('106.2'))
+        self.assertEqual(r['zins_pct'], D('3.00'))                    # nur der eine neue Schritt
+        self.assertEqual(r['aktuell_chf'], D('1493.50'))
+        self.assertEqual(r['neu_chf'], D('1538.30'))                  # 1493.50 × 1.03 = 1538.305
 
     def test_anteile_summieren_exakt_zum_total(self):
         from rentals.services import berechne_mietpotenzial

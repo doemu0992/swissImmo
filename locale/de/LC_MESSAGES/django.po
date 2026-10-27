@@ -27145,3 +27145,1095 @@ msgid "Zahlung ohne Zuordnung"
 msgid_plural "Zahlungen ohne Zuordnung"
 msgstr[0] "Zahlung ohne Zuordnung"
 msgstr[1] "Zahlungen ohne Zuordnung"
+
+msgid "Rechtsvorschlag"
+msgstr "Rechtsvorschlag"
+
+msgid "Der Schuldner kann innert 10 Tagen nach Zustellung des Zahlungsbefehls ohne Begründung Rechtsvorschlag erheben (Art. 74 SchKG); dann steht die Betreibung still. Auch ein später erhobener Rechtsvorschlag kann gelten — etwa bei Betreibungsferien oder nachträglichem Rechtsvorschlag; das klärt das Betreibungsamt."
+msgstr "Der Schuldner kann innert 10 Tagen nach Zustellung des Zahlungsbefehls ohne Begründung Rechtsvorschlag erheben (Art. 74 SchKG); dann steht die Betreibung still. Auch ein später erhobener Rechtsvorschlag kann gelten — etwa bei Betreibungsferien oder nachträglichem Rechtsvorschlag; das klärt das Betreibungsamt."
+
+msgid "Rechtsöffnung"
+msgstr "Rechtsöffnung"
+
+msgid "Beseitigt den Rechtsvorschlag. Mit einer unterschriebenen Schuldanerkennung, etwa dem Mietvertrag oder einer Zahlungsvereinbarung, gibt das Gericht provisorische Rechtsöffnung (Art. 82 SchKG), mit einem Urteil definitive (Art. 80 SchKG). Zwischen Gesuch und Entscheid steht die Jahresfrist für die Fortsetzung still."
+msgstr "Beseitigt den Rechtsvorschlag. Mit einer unterschriebenen Schuldanerkennung, etwa dem Mietvertrag oder einer Zahlungsvereinbarung, gibt das Gericht provisorische Rechtsöffnung (Art. 82 SchKG), mit einem Urteil definitive (Art. 80 SchKG). Zwischen Gesuch und Entscheid steht die Jahresfrist für die Fortsetzung still."
+
+msgid "Frühestens 20 Tage nach Zustellung des Zahlungsbefehls, bei Rechtsvorschlag erst nach der Rechtsöffnung; spätestens ein Jahr nach der Zustellung, verlängert um die Dauer des Rechtsöffnungsverfahrens (Art. 88 SchKG). Danach pfändet das Betreibungsamt."
+msgstr "Frühestens 20 Tage nach Zustellung des Zahlungsbefehls, bei Rechtsvorschlag erst nach der Rechtsöffnung; spätestens ein Jahr nach der Zustellung, verlängert um die Dauer des Rechtsöffnungsverfahrens (Art. 88 SchKG). Danach pfändet das Betreibungsamt."
+
+msgid "Betreibungskosten"
+msgstr "Betreibungskosten"
+
+msgid "Die Kosten der Betreibung trägt der Schuldner, der Gläubiger schiesst sie vor (Art. 68 SchKG). «Kosten dem Mieter belasten» stellt sie als eigene Forderung in Rechnung; sie zählt nicht zum Mietzinsrückstand nach Art. 257d OR."
+msgstr "Die Kosten der Betreibung trägt der Schuldner, der Gläubiger schiesst sie vor (Art. 68 SchKG). «Kosten dem Mieter belasten» stellt sie als eigene Forderung in Rechnung; sie zählt nicht zum Mietzinsrückstand nach Art. 257d OR."
+
+msgid "Deckt die Pfändung die Forderung nicht, stellt das Betreibungsamt einen Verlustschein aus (Art. 149 SchKG). Die offenen Beträge werden dann als Debitorenverlust (Konto 3805) abgeschrieben; die Forderung gegen den Schuldner bleibt bestehen."
+msgstr "Deckt die Pfändung die Forderung nicht, stellt das Betreibungsamt einen Verlustschein aus (Art. 149 SchKG). Die offenen Beträge werden dann als Debitorenverlust (Konto 3805) abgeschrieben; die Forderung gegen den Schuldner bleibt bestehen."
+
+msgid "Der fällige Rückstand wird auf gleich hohe Raten verteilt, die letzte trägt den Rest. Bis zur Erfüllung ruhen nur die gedeckten Forderungen im Mahnlauf — neue Mieten werden normal gemahnt."
+msgstr "Der fällige Rückstand wird auf gleich hohe Raten verteilt, die letzte trägt den Rest. Bis zur Erfüllung ruhen nur die gedeckten Forderungen im Mahnlauf — neue Mieten werden normal gemahnt."
+
+msgid "Bruch der Vereinbarung"
+msgstr "Bruch der Vereinbarung"
+
+msgid "Liegt die bezahlte Summe nach einer kurzen Toleranz unter dem, was an Raten fällig war, gilt die Vereinbarung als gebrochen. Dann laufen die gedeckten Forderungen wieder im Mahnlauf, und eine Pendenz erinnert an die Fortsetzung des Mahnprozesses."
+msgstr "Liegt die bezahlte Summe nach einer kurzen Toleranz unter dem, was an Raten fällig war, gilt die Vereinbarung als gebrochen. Dann laufen die gedeckten Forderungen wieder im Mahnlauf, und eine Pendenz erinnert an die Fortsetzung des Mahnprozesses."
+
+msgid "Schuldanerkennung"
+msgstr "Schuldanerkennung"
+
+msgid "Unterschreibt der Mieter die Zahlungsvereinbarung, anerkennt er den Rückstand schriftlich. Das ist ein provisorischer Rechtsöffnungstitel (Art. 82 SchKG): Erhebt er in einer Betreibung Rechtsvorschlag, lässt sich dieser damit beseitigen."
+msgstr "Unterschreibt der Mieter die Zahlungsvereinbarung, anerkennt er den Rückstand schriftlich. Das ist ein provisorischer Rechtsöffnungstitel (Art. 82 SchKG): Erhebt er in einer Betreibung Rechtsvorschlag, lässt sich dieser damit beseitigen."
+
+msgid "Vereinbarung und Art. 257d OR"
+msgstr "Vereinbarung und Art. 257d OR"
+
+msgid "Eine Zahlungsvereinbarung hemmt eine bereits laufende Zahlungsfrist nach Art. 257d OR nicht, es sei denn, der Vermieter verzichtet ausdrücklich darauf."
+msgstr "Eine Zahlungsvereinbarung hemmt eine bereits laufende Zahlungsfrist nach Art. 257d OR nicht, es sei denn, der Vermieter verzichtet ausdrücklich darauf."
+
+msgid "Vorbehalt"
+msgstr "Vorbehalt"
+
+msgid "Wer die mögliche Anpassung nicht ganz ausschöpft, kann sich den Rest für später vorbehalten. Der Vorbehalt wird beziffert — in Franken oder Prozent —, damit er sich später nachvollziehen lässt."
+msgstr "Wer die mögliche Anpassung nicht ganz ausschöpft, kann sich den Rest für später vorbehalten. Der Vorbehalt wird beziffert — in Franken oder Prozent —, damit er sich später nachvollziehen lässt."
+
+msgid "Indexmiete"
+msgstr "Indexmiete"
+
+msgid "Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach unten. Zulässig nur bei einem Vertrag mit fester Dauer von mindestens fünf Jahren (Art. 269b OR). Die Massenanpassung nach Referenzzins erfasst Indexmieten nicht."
+msgstr "Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach unten. Zulässig nur bei einem Vertrag mit fester Dauer von mindestens fünf Jahren (Art. 269b OR). Die Massenanpassung nach Referenzzins erfasst Indexmieten nicht."
+
+msgid "Staffelmiete"
+msgstr "Staffelmiete"
+
+msgid "Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens einmal jährlich, bei einer Vertragsdauer von mindestens drei Jahren (Art. 269c OR). Der Mietzins folgt den Stufen — die Anpassung nach Referenzzins und Teuerung gilt für ihn nicht."
+msgstr "Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens einmal jährlich, bei einer Vertragsdauer von mindestens drei Jahren (Art. 269c OR). Der Mietzins folgt den Stufen — die Anpassung nach Referenzzins und Teuerung gilt für ihn nicht."
+
+msgid "Herabsetzung"
+msgstr "Herabsetzung"
+
+msgid "Sinkt der Referenzzins, kann der Mieter eine Herabsetzung verlangen (Art. 270a OR). Der Vermieter antwortet innert 30 Tagen; lehnt er ab, kann der Mieter innert 30 Tagen die Schlichtungsbehörde anrufen."
+msgstr "Sinkt der Referenzzins, kann der Mieter eine Herabsetzung verlangen (Art. 270a OR). Der Vermieter antwortet innert 30 Tagen; lehnt er ab, kann der Mieter innert 30 Tagen die Schlichtungsbehörde anrufen."
+
+msgid "Zugang"
+msgstr "Zugang"
+
+msgid "Fristen laufen ab dem Tag, an dem ein Schreiben beim Empfänger ankommt — nicht ab dem Versand. Ist der Zugang noch nicht bestätigt, rechnet die Anwendung mit Postweg und Abholfrist eines Einschreibens."
+msgstr "Fristen laufen ab dem Tag, an dem ein Schreiben beim Empfänger ankommt — nicht ab dem Versand. Ist der Zugang noch nicht bestätigt, rechnet die Anwendung mit Postweg und Abholfrist eines Einschreibens."
+
+msgid "Von Hand gesetzt: Für diese Person läuft kein automatischer Mahnlauf. Eine Zahlungsvereinbarung braucht das Häkchen nicht — sie nimmt nur die Forderungen aus, die ihr Ratenplan deckt. Offene Rechnungen bleiben sichtbar."
+msgstr "Von Hand gesetzt: Für diese Person läuft kein automatischer Mahnlauf. Eine Zahlungsvereinbarung braucht das Häkchen nicht — sie nimmt nur die Forderungen aus, die ihr Ratenplan deckt. Offene Rechnungen bleiben sichtbar."
+
+msgid "Bitte angeben, ob der Mieter anwesend war."
+msgstr "Bitte angeben, ob der Mieter anwesend war."
+
+msgid "Bitte den Allgemeinzustand wählen."
+msgstr "Bitte den Allgemeinzustand wählen."
+
+msgid "Die Unterschrift der Verwaltung fehlt."
+msgstr "Die Unterschrift der Verwaltung fehlt."
+
+msgid "Der Mieter war abwesend: bitte den Grund angeben."
+msgstr "Der Mieter war abwesend: bitte den Grund angeben."
+
+msgid "Die Unterschrift des Mieters fehlt. War er nicht da, «Mieter abwesend» wählen und den Grund angeben."
+msgstr "Die Unterschrift des Mieters fehlt. War er nicht da, «Mieter abwesend» wählen und den Grund angeben."
+
+msgid "Bitte den Namen der Person eintragen, die für den Mieter unterschreibt."
+msgstr "Bitte den Namen der Person eintragen, die für den Mieter unterschreibt."
+
+#, python-format
+msgid "%(count)s Bauteil(e) sind nicht bewertet: bitte bewerten oder ausdrücklich bestätigen."
+msgstr "%(count)s Bauteil(e) sind nicht bewertet: bitte bewerten oder ausdrücklich bestätigen."
+
+#, python-format
+msgid "%(count)s Mieterschaden ohne Alter oder Lebensdauer des Bauteils: voller Betrag. Bitte bestätigen oder Einbaudatum und Lebensdauer im Raumbuch ergänzen."
+msgstr "%(count)s Mieterschaden ohne Alter oder Lebensdauer des Bauteils: voller Betrag. Bitte bestätigen oder Einbaudatum und Lebensdauer im Raumbuch ergänzen."
+
+msgid "Zuerst die Betreibungskosten erfassen (Feld «Betreibungskosten»)."
+msgstr "Zuerst die Betreibungskosten erfassen (Feld «Betreibungskosten»)."
+
+msgid "Die Betreibungskosten sind dem Mieter bereits belastet."
+msgstr "Die Betreibungskosten sind dem Mieter bereits belastet."
+
+msgid "Ohne Mietvertrag lassen sich keine Kosten belasten."
+msgstr "Ohne Mietvertrag lassen sich keine Kosten belasten."
+
+msgid "ohne amtliches Formular ist die Kündigung nichtig (Art. 266l/266o OR)"
+msgstr "ohne amtliches Formular ist die Kündigung nichtig (Art. 266l/266o OR)"
+
+msgid "ohne amtliches Formular ist die Mitteilung mangelhaft (Art. 270 Abs. 2 OR)"
+msgstr "ohne amtliches Formular ist die Mitteilung mangelhaft (Art. 270 Abs. 2 OR)"
+
+msgid "ohne amtliches Formular ist die Anpassung nichtig (Art. 269d OR)"
+msgstr "ohne amtliches Formular ist die Anpassung nichtig (Art. 269d OR)"
+
+#, python-format
+msgid "Für Kanton %(kanton)s ist kein amtliches Originalformular hinterlegt — verwenden Sie das Formular der kantonalen Behörde; %(folge)s."
+msgstr "Für Kanton %(kanton)s ist kein amtliches Originalformular hinterlegt — verwenden Sie das Formular der kantonalen Behörde; %(folge)s."
+
+msgid "Für das amtliche Formular muss der Kanton der Liegenschaft erfasst sein — die Postleitzahl allein bestimmt ihn nicht sicher."
+msgstr "Für das amtliche Formular muss der Kanton der Liegenschaft erfasst sein — die Postleitzahl allein bestimmt ihn nicht sicher."
+
+#, python-format
+msgid "PLZ %(plz)s liegt in Bereichen von: %(kantone)s."
+msgstr "PLZ %(plz)s liegt in Bereichen von: %(kantone)s."
+
+msgid "Gedeckt durch eine laufende Zahlungsvereinbarung (Ratenplan)"
+msgstr "Gedeckt durch eine laufende Zahlungsvereinbarung (Ratenplan)"
+
+msgid "In Betreibung (SchKG) — gemahnt wird über das Betreibungsamt"
+msgstr "In Betreibung (SchKG) — gemahnt wird über das Betreibungsamt"
+
+msgid "Nur ein Entwurf dieses Vertrags lässt sich bearbeiten."
+msgstr "Nur ein Entwurf dieses Vertrags lässt sich bearbeiten."
+
+#, python-format
+msgid "Für den %(datum)s ist bereits eine Anpassung versandt."
+msgstr "Für den %(datum)s ist bereits eine Anpassung versandt."
+
+#, python-format
+msgid "Wirksamkeitsdatum zu früh: Bei diesem Versand kann die Erhöhung frühestens auf %(datum)s wirksam werden (Kündigungsfrist + 10 Tage ab Zugang, Art. 269d OR)."
+msgstr "Wirksamkeitsdatum zu früh: Bei diesem Versand kann die Erhöhung frühestens auf %(datum)s wirksam werden (Kündigungsfrist + 10 Tage ab Zugang, Art. 269d OR)."
+
+msgid "Nur ein Entwurf kann als versandt erfasst werden."
+msgstr "Nur ein Entwurf kann als versandt erfasst werden."
+
+msgid "Bitte das Versanddatum angeben."
+msgstr "Bitte das Versanddatum angeben."
+
+msgid "Der Zugang kann nicht vor dem Versand liegen."
+msgstr "Der Zugang kann nicht vor dem Versand liegen."
+
+msgid "Das Zugangsdatum kann nicht in der Zukunft liegen."
+msgstr "Das Zugangsdatum kann nicht in der Zukunft liegen."
+
+msgid "Dieser Statuswechsel ist nicht möglich."
+msgstr "Dieser Statuswechsel ist nicht möglich."
+
+msgid "Ticket zum Mangel anlegen und Handwerker zuweisen"
+msgstr "Ticket zum Mangel anlegen und Handwerker zuweisen"
+
+msgid "Ersatz je fehlendem Schlüssel CHF"
+msgstr "Ersatz je fehlendem Schlüssel CHF"
+
+msgid "Schlüssel oder Zylinder"
+msgstr "Schlüssel oder Zylinder"
+
+msgid "Zulasten Mieter"
+msgstr "Zulasten Mieter"
+
+msgid "Unterschreiben und abschliessen"
+msgstr "Unterschreiben und abschliessen"
+
+msgid "Mängelrüge (Art. 267a OR)"
+msgstr "Mängelrüge (Art. 267a OR)"
+
+#, python-format
+msgid "Versandt am <b>%(datum)s</b>."
+msgstr "Versandt am <b>%(datum)s</b>."
+
+#, python-format
+msgid "Sofort nach der Rückgabe rügen: versenden bis <b>%(frist)s</b> (Abnahme plus zwei Arbeitstage). Erledigt ist die Frist erst mit dem Versand, nicht mit dem PDF."
+msgstr "Sofort nach der Rückgabe rügen: versenden bis <b>%(frist)s</b> (Abnahme plus zwei Arbeitstage). Erledigt ist die Frist erst mit dem Versand, nicht mit dem PDF."
+
+msgid "Der Mieter war bei der Abnahme abwesend: Rüge eingeschrieben versenden (Zugangsnachweis)."
+msgstr "Der Mieter war bei der Abnahme abwesend: Rüge eingeschrieben versenden (Zugangsnachweis)."
+
+msgid "Rüge versandt am"
+msgstr "Rüge versandt am"
+
+msgid "Sendungsnummer (Einschreiben)"
+msgstr "Sendungsnummer (Einschreiben)"
+
+msgid "Versand festhalten"
+msgstr "Versand festhalten"
+
+msgid "Handwerker"
+msgstr "Handwerker"
+
+msgid "Foto des Mangels"
+msgstr "Foto des Mangels"
+
+msgid "Nach der Abnahme entdeckte Mängel"
+msgstr "Nach der Abnahme entdeckte Mängel"
+
+msgid "Versteckte Mängel, die bei der Abnahme nicht erkennbar waren, sind sofort nach ihrer Entdeckung zu rügen (Art. 267a Abs. 3 OR). Sie stehen getrennt vom unterzeichneten Protokoll."
+msgstr "Versteckte Mängel, die bei der Abnahme nicht erkennbar waren, sind sofort nach ihrer Entdeckung zu rügen (Art. 267a Abs. 3 OR). Sie stehen getrennt vom unterzeichneten Protokoll."
+
+msgid "Entdeckt am"
+msgstr "Entdeckt am"
+
+msgid "Rüge"
+msgstr "Rüge"
+
+msgid "Rüge (PDF)"
+msgstr "Rüge (PDF)"
+
+#, python-format
+msgid "versandt %(datum)s"
+msgstr "versandt %(datum)s"
+
+msgid "Versandt"
+msgstr "Versandt"
+
+msgid "Später entdeckten Mangel rügen"
+msgstr "Später entdeckten Mangel rügen"
+
+msgid "Mangel erfassen"
+msgstr "Mangel erfassen"
+
+msgid "nicht unterzeichnet"
+msgstr "nicht unterzeichnet"
+
+msgid "Mieter abwesend"
+msgstr "Mieter abwesend"
+
+msgid "Abgeschlossen wird im nächsten Schritt: mit den Unterschriften von Verwaltung und Mieter (oder dem Grund seiner Abwesenheit)."
+msgstr "Abgeschlossen wird im nächsten Schritt: mit den Unterschriften von Verwaltung und Mieter (oder dem Grund seiner Abwesenheit)."
+
+msgid "Bestätigt: Diese Bauteile wurden nicht bewertet."
+msgstr "Bestätigt: Diese Bauteile wurden nicht bewertet."
+
+msgid "Bestätigt: dem Mieter ohne Abzug «neu für alt» belasten (Einbaudatum und Lebensdauer sind nicht erfasst)."
+msgstr "Bestätigt: dem Mieter ohne Abzug «neu für alt» belasten (Einbaudatum und Lebensdauer sind nicht erfasst)."
+
+msgid "Mieter bei der Abnahme"
+msgstr "Mieter bei der Abnahme"
+
+msgid "Grund der Abwesenheit"
+msgstr "Grund der Abwesenheit"
+
+msgid "Ohne Unterschrift des Mieters: die Mängelrüge eingeschrieben versenden (Zugangsnachweis)."
+msgstr "Ohne Unterschrift des Mieters: die Mängelrüge eingeschrieben versenden (Zugangsnachweis)."
+
+msgid "bitte wählen"
+msgstr "bitte wählen"
+
+msgid "Strasse Nr., PLZ Ort"
+msgstr "Strasse Nr., PLZ Ort"
+
+msgid "Name der unterzeichnenden Person"
+msgstr "Name der unterzeichnenden Person"
+
+msgid "Kein Formular ohne Kanton"
+msgstr "Kein Formular ohne Kanton"
+
+msgid "Kanton bei der Liegenschaft erfassen"
+msgstr "Kanton bei der Liegenschaft erfassen"
+
+msgid "Kein amtliches Originalformular"
+msgstr "Kein amtliches Originalformular"
+
+msgid "Verstanden: Die Nachbildung ist nur ein Entwurf (Wasserzeichen «Entwurf – nicht amtlich»)."
+msgstr "Verstanden: Die Nachbildung ist nur ein Entwurf (Wasserzeichen «Entwurf – nicht amtlich»)."
+
+#, python-format
+msgid "%%(n)s von %%(m)s Zeilen"
+msgstr "%%(n)s von %%(m)s Zeilen"
+
+msgid "Forderungen in dieser Betreibung"
+msgstr "Forderungen in dieser Betreibung"
+
+msgid "Solange die Betreibung offen ist, mahnt der Mahnlauf diese Forderungen nicht. Sind alle bezahlt, steht sie von selbst auf «Bezahlt»."
+msgstr "Solange die Betreibung offen ist, mahnt der Mahnlauf diese Forderungen nicht. Sind alle bezahlt, steht sie von selbst auf «Bezahlt»."
+
+msgid "Datenblatt Betreibungsbegehren (PDF)"
+msgstr "Datenblatt Betreibungsbegehren (PDF)"
+
+msgid "«Verlustschein» schreibt die offenen Forderungen ab und ist der Verwaltung (Verwalter, Inhaber) vorbehalten."
+msgstr "«Verlustschein» schreibt die offenen Forderungen ab und ist der Verwaltung (Verwalter, Inhaber) vorbehalten."
+
+msgid "Zins (%%)"
+msgstr "Zins (%%)"
+
+msgid "Zins seit"
+msgstr "Zins seit"
+
+msgid "Forderungsgrund"
+msgstr "Forderungsgrund"
+
+#, python-format
+msgid "Dem Mieter belastet: %(t)s (%(s)s)"
+msgstr "Dem Mieter belastet: %(t)s (%(s)s)"
+
+msgid "Rechtsöffnungsgesuch am"
+msgstr "Rechtsöffnungsgesuch am"
+
+msgid "Rechtsöffnung erteilt am"
+msgstr "Rechtsöffnung erteilt am"
+
+msgid "Art der Rechtsöffnung"
+msgstr "Art der Rechtsöffnung"
+
+msgid "Pfändung am"
+msgstr "Pfändung am"
+
+msgid "Kosten dem Mieter belasten"
+msgstr "Kosten dem Mieter belasten"
+
+#, python-format
+msgid "Bereits belastet: CHF %(b)s."
+msgstr "Bereits belastet: CHF %(b)s."
+
+#, python-format
+msgid "Betreibungskosten von CHF %(b)s dem Mieter als Forderung belasten?"
+msgstr "Betreibungskosten von CHF %(b)s dem Mieter als Forderung belasten?"
+
+#, python-format
+msgid "Stellt CHF %(b)s als Forderung «Betreibungskosten (Art. 68 SchKG)» in Rechnung. Sie hängt an der Hauptforderung und zählt nicht zum Rückstand nach Art. 257d OR."
+msgstr "Stellt CHF %(b)s als Forderung «Betreibungskosten (Art. 68 SchKG)» in Rechnung. Sie hängt an der Hauptforderung und zählt nicht zum Rückstand nach Art. 257d OR."
+
+msgid "Zuerst die Betreibungskosten oben erfassen und speichern."
+msgstr "Zuerst die Betreibungskosten oben erfassen und speichern."
+
+msgid "So läuft die Betreibung"
+msgstr "So läuft die Betreibung"
+
+msgid "Hier die Forderungen wählen und die Angaben für das Betreibungsbegehren erfassen. Das Datenblatt als PDF hilft beim Ausfüllen des amtlichen Formulars."
+msgstr "Hier die Forderungen wählen und die Angaben für das Betreibungsbegehren erfassen. Das Datenblatt als PDF hilft beim Ausfüllen des amtlichen Formulars."
+
+msgid "Das Betreibungsamt stellt den Zahlungsbefehl zu. Ab dann läuft die Frist für den Rechtsvorschlag."
+msgstr "Das Betreibungsamt stellt den Zahlungsbefehl zu. Ab dann läuft die Frist für den Rechtsvorschlag."
+
+msgid "Bei Rechtsvorschlag: Rechtsöffnung beim Gericht verlangen."
+msgstr "Bei Rechtsvorschlag: Rechtsöffnung beim Gericht verlangen."
+
+msgid "Danach das Fortsetzungsbegehren stellen — die Anwendung erinnert mit einer Pendenz an den Termin."
+msgstr "Danach das Fortsetzungsbegehren stellen — die Anwendung erinnert mit einer Pendenz an den Termin."
+
+msgid "Solange die Betreibung offen ist, mahnt der Mahnlauf diese Forderungen nicht mehr."
+msgstr "Solange die Betreibung offen ist, mahnt der Mahnlauf diese Forderungen nicht mehr."
+
+msgid "Prüfen & erfassen"
+msgstr "Prüfen & erfassen"
+
+msgid "Forderungen wählen"
+msgstr "Forderungen wählen"
+
+msgid "Welche offenen Mieten dieses Vertrags betrieben werden. Eine Betreibung für mehrere Monate kostet nur einmal Gebühren."
+msgstr "Welche offenen Mieten dieses Vertrags betrieben werden. Eine Betreibung für mehrere Monate kostet nur einmal Gebühren."
+
+msgid "Hauptforderung"
+msgstr "Hauptforderung"
+
+msgid "Keine weiteren offenen, fälligen Forderungen dieses Vertrags."
+msgstr "Keine weiteren offenen, fälligen Forderungen dieses Vertrags."
+
+msgid "Mahngebühren und Verzugszinsen stehen nicht zur Wahl — sie gehören zur Hauptforderung. Forderungen, die bereits in einer offenen Betreibung stehen, fehlen hier."
+msgstr "Mahngebühren und Verzugszinsen stehen nicht zur Wahl — sie gehören zur Hauptforderung. Forderungen, die bereits in einer offenen Betreibung stehen, fehlen hier."
+
+msgid "Gläubiger, Zins & Grund"
+msgstr "Gläubiger, Zins & Grund"
+
+msgid "Die Angaben für das Betreibungsbegehren."
+msgstr "Die Angaben für das Betreibungsbegehren."
+
+msgid "Gläubiger"
+msgstr "Gläubiger"
+
+msgid "vertreten durch"
+msgstr "vertreten durch"
+
+msgid "Kein Eigentümer erfasst — die Verwaltung steht als Gläubigerin auf dem Datenblatt."
+msgstr "Kein Eigentümer erfasst — die Verwaltung steht als Gläubigerin auf dem Datenblatt."
+
+msgid "Betreibungsamt am Wohnsitz des Mieters"
+msgstr "Betreibungsamt am Wohnsitz des Mieters"
+
+msgid "Vorgeschlagen: Summe der offenen Beträge der gewählten Forderungen."
+msgstr "Vorgeschlagen: Summe der offenen Beträge der gewählten Forderungen."
+
+msgid "(sobald bekannt)"
+msgstr "(sobald bekannt)"
+
+msgid "Bei mehreren Forderungen mit verschiedener Fälligkeit selbst festlegen (z. B. mittlerer Verfall) oder die Fälligkeiten im Grund nennen."
+msgstr "Bei mehreren Forderungen mit verschiedener Fälligkeit selbst festlegen (z. B. mittlerer Verfall) oder die Fälligkeiten im Grund nennen."
+
+msgid "Leer gelassen, setzt die Anwendung die gewählten Mieten mit Fälligkeit und Betrag ein."
+msgstr "Leer gelassen, setzt die Anwendung die gewählten Mieten mit Fälligkeit und Betrag ein."
+
+msgid "Nach dem Erfassen steht das Datenblatt «Betreibungsbegehren» als PDF bereit. Es ist eine Vorlage für das amtliche Formular des Betreibungsamts, nicht das Formular selbst."
+msgstr "Nach dem Erfassen steht das Datenblatt «Betreibungsbegehren» als PDF bereit. Es ist eine Vorlage für das amtliche Formular des Betreibungsamts, nicht das Formular selbst."
+
+#, python-format
+msgid "Fortsetzung ab %(d)s"
+msgstr "Fortsetzung ab %(d)s"
+
+msgid "Rechtsöffnung ausstehend"
+msgstr "Rechtsöffnung ausstehend"
+
+msgid "PDF"
+msgstr "PDF"
+
+msgid "Die Nachbildung trägt das Wasserzeichen «Entwurf – nicht amtlich» und wird nicht in der Akte abgelegt. Sie dient als Vorlage zum Übertragen in das Formular der kantonalen Behörde."
+msgstr "Die Nachbildung trägt das Wasserzeichen «Entwurf – nicht amtlich» und wird nicht in der Akte abgelegt. Sie dient als Vorlage zum Übertragen in das Formular der kantonalen Behörde."
+
+msgid "Verstanden — Nachbildung als Entwurf öffnen"
+msgstr "Verstanden — Nachbildung als Entwurf öffnen"
+
+msgid "Neuer Nettomietzins (CHF)"
+msgstr "Neuer Nettomietzins (CHF)"
+
+msgid "(bei Zustimmung)"
+msgstr "(bei Zustimmung)"
+
+msgid "Begründung im Antwortbrief"
+msgstr "Begründung im Antwortbrief"
+
+msgid "z. B. gestiegene Kosten und Teuerung gleichen die Senkung des Referenzzinses aus"
+msgstr "z. B. gestiegene Kosten und Teuerung gleichen die Senkung des Referenzzinses aus"
+
+msgid "Festhalten + Antwortbrief (PDF)"
+msgstr "Festhalten + Antwortbrief (PDF)"
+
+msgid "Wurde einem Begehren ganz oder teilweise zugestimmt, wird die Senkung mit dem amtlichen Formular mitgeteilt."
+msgstr "Wurde einem Begehren ganz oder teilweise zugestimmt, wird die Senkung mit dem amtlichen Formular mitgeteilt."
+
+msgid "Mietzinsanpassung starten"
+msgstr "Mietzinsanpassung starten"
+
+msgid "Eingang beim Vermieter *"
+msgstr "Eingang beim Vermieter *"
+
+msgid "Versand (Poststempel) *"
+msgstr "Versand (Poststempel) *"
+
+msgid "Zugang beim Mieter"
+msgstr "Zugang beim Mieter"
+
+#, python-format
+msgid "Leer: Versand + %(tage)s Tage (Postweg und Abholfrist)."
+msgstr "Leer: Versand + %(tage)s Tage (Postweg und Abholfrist)."
+
+msgid "Ausdrückliche Zustimmung des Ehegatten / eingetragenen Partners liegt vor"
+msgstr "Ausdrückliche Zustimmung des Ehegatten / eingetragenen Partners liegt vor"
+
+msgid "Kündigungstermine fehlen im Vertrag"
+msgstr "Kündigungstermine fehlen im Vertrag"
+
+msgid "Der Vertrag nennt keine lesbaren Termine und für den Kanton ist keine Regel hinterlegt. Der Termin unten nimmt jedes Monatsende an und ist damit nur der früheste denkbare. Bitte die vereinbarten oder ortsüblichen Termine im Vertrag ergänzen."
+msgstr "Der Vertrag nennt keine lesbaren Termine und für den Kanton ist keine Regel hinterlegt. Der Termin unten nimmt jedes Monatsende an und ist damit nur der früheste denkbare. Bitte die vereinbarten oder ortsüblichen Termine im Vertrag ergänzen."
+
+msgid "Termine aus der Kantonsregel des Regelwerks — der Vertrag nennt keine."
+msgstr "Termine aus der Kantonsregel des Regelwerks — der Vertrag nennt keine."
+
+#, python-format
+msgid "Berechnet aus Zugang + %(monate)s Monaten, auf den nächsten erlaubten Termin — bei Versand heute."
+msgstr "Berechnet aus Zugang + %(monate)s Monaten, auf den nächsten erlaubten Termin — bei Versand heute."
+
+msgid "Grund *"
+msgstr "Grund *"
+
+msgid "Vorgeschlagene Ersatzmieter"
+msgstr "Vorgeschlagene Ersatzmieter"
+
+msgid "(bei Auszug vor dem Termin)"
+msgstr "(bei Auszug vor dem Termin)"
+
+msgid "Name, Kontakt — je Zeile ein Vorschlag"
+msgstr "Name, Kontakt — je Zeile ein Vorschlag"
+
+msgid "Ein Ersatzmieter ist angenommen — der Mieter wird ab dem gewünschten Ende befreit"
+msgstr "Ein Ersatzmieter ist angenommen — der Mieter wird ab dem gewünschten Ende befreit"
+
+msgid "Ohne angenommenen Ersatzmieter haftet der Mieter bis zum nächsten ordentlichen Termin."
+msgstr "Ohne angenommenen Ersatzmieter haftet der Mieter bis zum nächsten ordentlichen Termin."
+
+msgid "Verschiebt das Vertragsende — Sollstellung und Leerstand folgen ihm."
+msgstr "Verschiebt das Vertragsende — Sollstellung und Leerstand folgen ihm."
+
+msgid "Mahngebühren brauchen eine vertragliche Grundlage: Verlangen dürfen Sie sie nur, wenn der Mietvertrag oder die AGB sie vorsehen. Der Verzugszins wird mit 360 Zinstagen je Jahr gerechnet; ob diese Zinsbasis für Ihre Verträge gilt, ist rechtlich zu bestätigen."
+msgstr "Mahngebühren brauchen eine vertragliche Grundlage: Verlangen dürfen Sie sie nur, wenn der Mietvertrag oder die AGB sie vorsehen. Der Verzugszins wird mit 360 Zinstagen je Jahr gerechnet; ob diese Zinsbasis für Ihre Verträge gilt, ist rechtlich zu bestätigen."
+
+msgid "Kann der Mieter nicht auf einmal zahlen: «Ratenplan» vereinbart Raten für den Rückstand. Nur diese Forderungen ruhen dann im Mahnlauf."
+msgstr "Kann der Mieter nicht auf einmal zahlen: «Ratenplan» vereinbart Raten für den Rückstand. Nur diese Forderungen ruhen dann im Mahnlauf."
+
+msgid "Mahngebühren dürfen nur verlangt werden, wenn der Mietvertrag oder die AGB sie vorsehen. Der Verzugszins wird mit 360 Zinstagen je Jahr gerechnet — ob diese Zinsbasis gilt, ist rechtlich zu bestätigen."
+msgstr "Mahngebühren dürfen nur verlangt werden, wenn der Mietvertrag oder die AGB sie vorsehen. Der Verzugszins wird mit 360 Zinstagen je Jahr gerechnet — ob diese Zinsbasis gilt, ist rechtlich zu bestätigen."
+
+msgid "Entwürfe — noch nicht versandt"
+msgstr "Entwürfe — noch nicht versandt"
+
+msgid "Netto bisher"
+msgstr "Netto bisher"
+
+msgid "Auswählen"
+msgstr "Auswählen"
+
+msgid "Versandt am"
+msgstr "Versandt am"
+
+msgid "Für Kantone ohne hinterlegtes Original wurde das Formular der kantonalen Behörde verwendet"
+msgstr "Für Kantone ohne hinterlegtes Original wurde das Formular der kantonalen Behörde verwendet"
+
+msgid "Ausgewählte als versandt erfassen"
+msgstr "Ausgewählte als versandt erfassen"
+
+msgid "Keine offenen Entwürfe — alles Erfasste ist versandt oder gebucht."
+msgstr "Keine offenen Entwürfe — alles Erfasste ist versandt oder gebucht."
+
+msgid "«Anpassen» öffnet den Assistenten für die amtliche Mietzinsanpassung mit vorberechneten Werten (Referenzzins, LIK, Teuerung). Netto und Basis sind die <b>effektiven</b> Werte (inkl. gebuchter Anpassungen und Staffelstufen) — das Potenzial vergleicht diese effektive Basis mit dem aktuellen Stand. Index- und Staffelmieten sind von der Massenanpassung ausgenommen: Ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR)."
+msgstr "«Anpassen» öffnet den Assistenten für die amtliche Mietzinsanpassung mit vorberechneten Werten (Referenzzins, LIK, Teuerung). Netto und Basis sind die <b>effektiven</b> Werte (inkl. gebuchter Anpassungen und Staffelstufen) — das Potenzial vergleicht diese effektive Basis mit dem aktuellen Stand. Index- und Staffelmieten sind von der Massenanpassung ausgenommen: Ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR)."
+
+#, python-format
+msgid "Mietzinsanpassung — %(name)s"
+msgstr "Mietzinsanpassung — %(name)s"
+
+msgid "Anpassung"
+msgstr "Anpassung"
+
+#, python-format
+msgid "Offener <b>Entwurf</b> (wirksam ab %(datum)s) — Änderungen schreiben ihn fort. Gebucht wird erst, wenn die Anpassung als versandt erfasst ist."
+msgstr "Offener <b>Entwurf</b> (wirksam ab %(datum)s) — Änderungen schreiben ihn fort. Gebucht wird erst, wenn die Anpassung als versandt erfasst ist."
+
+msgid "Prüfen & Formular"
+msgstr "Prüfen & Formular"
+
+msgid "Grundlagen"
+msgstr "Grundlagen"
+
+msgid "Referenzzins, Teuerung und Kostensteigerung — bisher und neu. Der Vorschlag rechnet sich bei jeder Änderung neu."
+msgstr "Referenzzins, Teuerung und Kostensteigerung — bisher und neu. Der Vorschlag rechnet sich bei jeder Änderung neu."
+
+msgid "Punkte"
+msgstr "Punkte"
+
+msgid "Senkung"
+msgstr "Senkung"
+
+msgid "Begründung und neuer Mietzins sind vorbefüllt."
+msgstr "Begründung und neuer Mietzins sind vorbefüllt."
+
+msgid "Der LIK hat sich seit der letzten Anpassung nicht verändert — keine Indexanpassung fällig."
+msgstr "Der LIK hat sich seit der letzten Anpassung nicht verändert — keine Indexanpassung fällig."
+
+msgid "Der Mietzins folgt den vereinbarten Stufen. Eine Anpassung nach Referenzzins und Teuerung ist für diesen Vertrag nicht vorgesehen."
+msgstr "Der Mietzins folgt den vereinbarten Stufen. Eine Anpassung nach Referenzzins und Teuerung ist für diesen Vertrag nicht vorgesehen."
+
+msgid "Die Grundlagen sprechen für eine Senkung. Sie wird mit demselben Formular mitgeteilt und darf auch kurzfristiger wirken als eine Erhöhung."
+msgstr "Die Grundlagen sprechen für eine Senkung. Sie wird mit demselben Formular mitgeteilt und darf auch kurzfristiger wirken als eine Erhöhung."
+
+msgid "Die Vertragsbasis (Referenzzins/LIK) war nicht erfasst — bitte die Basiswerte ergänzen, auf denen der aktuelle Mietzins beruht. Sie werden auf dem Vertrag gespeichert."
+msgstr "Die Vertragsbasis (Referenzzins/LIK) war nicht erfasst — bitte die Basiswerte ergänzen, auf denen der aktuelle Mietzins beruht. Sie werden auf dem Vertrag gespeichert."
+
+#, python-format
+msgid "Für diesen Vertrag liegt bereits eine Anpassung vor: Gerechnet wird ab deren Stand — Referenzzins %(zins)s %%, LIK %(lik)s, Netto CHF %(netto)s —, nicht ab der Vertragsbasis unten."
+msgstr "Für diesen Vertrag liegt bereits eine Anpassung vor: Gerechnet wird ab deren Stand — Referenzzins %(zins)s %%, LIK %(lik)s, Netto CHF %(netto)s —, nicht ab der Vertragsbasis unten."
+
+msgid "Referenzzins Vertrag (Basis, %%)"
+msgstr "Referenzzins Vertrag (Basis, %%)"
+
+msgid "Neuer Referenzzins (%%)"
+msgstr "Neuer Referenzzins (%%)"
+
+msgid "Allg. Kostensteigerung (%%)"
+msgstr "Allg. Kostensteigerung (%%)"
+
+#, python-format
+msgid "ausgeglichen bis %(datum)s"
+msgstr "ausgeglichen bis %(datum)s"
+
+msgid "seit Vertragsbeginn"
+msgstr "seit Vertragsbeginn"
+
+msgid "LIK Vertrag (Basis, Punkte)"
+msgstr "LIK Vertrag (Basis, Punkte)"
+
+msgid "Neuer LIK (Punkte)"
+msgstr "Neuer LIK (Punkte)"
+
+msgid "Stand-Monat (Basis-LIK)"
+msgstr "Stand-Monat (Basis-LIK)"
+
+#, python-format
+msgid "LIK-Basis %(basis)s = 100"
+msgstr "LIK-Basis %(basis)s = 100"
+
+#, python-format
+msgid "neuer Stand %(stand)s"
+msgstr "neuer Stand %(stand)s"
+
+msgid "Referenzzins"
+msgstr "Referenzzins"
+
+msgid "Teuerung"
+msgstr "Teuerung"
+
+msgid "Nicht ausgeschöpfte Reserven vorbehalten — beziffert in CHF oder Prozent."
+msgstr "Nicht ausgeschöpfte Reserven vorbehalten — beziffert in CHF oder Prozent."
+
+msgid "Anpassung mit Vorbehalt (nicht ausgeschöpfte Reserven)"
+msgstr "Anpassung mit Vorbehalt (nicht ausgeschöpfte Reserven)"
+
+msgid "Vorbehalt (CHF pro Monat)"
+msgstr "Vorbehalt (CHF pro Monat)"
+
+msgid "oder Vorbehalt (%%)"
+msgstr "oder Vorbehalt (%%)"
+
+msgid "Begründung des Vorbehalts"
+msgstr "Begründung des Vorbehalts"
+
+msgid "z. B. Referenzzins 1.50 %% nicht weitergegeben"
+msgstr "z. B. Referenzzins 1.50 %% nicht weitergegeben"
+
+msgid "Pflicht, wenn ein Vorbehalt gemacht wird: Betrag oder Prozent. Beim Versand wird er zur Mietzinsreserve des Vertrags."
+msgstr "Pflicht, wenn ein Vorbehalt gemacht wird: Betrag oder Prozent. Beim Versand wird er zur Mietzinsreserve des Vertrags."
+
+msgid "Termin & Zustellung"
+msgstr "Termin & Zustellung"
+
+msgid "Neuer Mietzins, Wirksamkeit und Versand. Massgebend für die Frist ist der Zugang beim Mieter."
+msgstr "Neuer Mietzins, Wirksamkeit und Versand. Massgebend für die Frist ist der Zugang beim Mieter."
+
+msgid "Der früheste Termin unten nimmt jedes Monatsende an. Bitte die vereinbarten oder ortsüblichen Termine im Vertrag ergänzen."
+msgstr "Der früheste Termin unten nimmt jedes Monatsende an. Bitte die vereinbarten oder ortsüblichen Termine im Vertrag ergänzen."
+
+msgid "Netto neu (CHF)"
+msgstr "Netto neu (CHF)"
+
+msgid "Vorschlag aus Referenzzins + Teuerung + Kosten"
+msgstr "Vorschlag aus Referenzzins + Teuerung + Kosten"
+
+#, python-format
+msgid "Frühestens %(datum)s bei Versand heute"
+msgstr "Frühestens %(datum)s bei Versand heute"
+
+msgid "Versand am (Poststempel)"
+msgstr "Versand am (Poststempel)"
+
+msgid "Nur für «Als versandt erfassen»."
+msgstr "Nur für «Als versandt erfassen»."
+
+msgid "Begründung & Formular"
+msgstr "Begründung & Formular"
+
+msgid "Begründung, Schlichtungsbehörde und welches Formular für diesen Kanton vorliegt."
+msgstr "Begründung, Schlichtungsbehörde und welches Formular für diesen Kanton vorliegt."
+
+msgid "Verstanden: Die Nachbildung ist nur ein Entwurf (Wasserzeichen «Entwurf – nicht amtlich»). Versandt wird das Formular der kantonalen Behörde."
+msgstr "Verstanden: Die Nachbildung ist nur ein Entwurf (Wasserzeichen «Entwurf – nicht amtlich»). Versandt wird das Formular der kantonalen Behörde."
+
+#, python-format
+msgid "Amtliches Originalformular des Kantons %(kanton)s hinterlegt."
+msgstr "Amtliches Originalformular des Kantons %(kanton)s hinterlegt."
+
+msgid "Zusätzliche Begründung (optional)"
+msgstr "Zusätzliche Begründung (optional)"
+
+msgid "z. B. wertvermehrende Investition (neue Küche)…"
+msgstr "z. B. wertvermehrende Investition (neue Küche)…"
+
+msgid "Schlichtungsbehörde (Adresse)"
+msgstr "Schlichtungsbehörde (Adresse)"
+
+#, python-format
+msgid "z. B. Schlichtungsbehörde für Mietsachen, %(ort)s"
+msgstr "z. B. Schlichtungsbehörde für Mietsachen, %(ort)s"
+
+msgid "<b>Entwurf speichern</b> und <b>Formular als PDF</b> buchen nichts. Erst <b>Als versandt erfassen</b> bucht den neuen Mietzins ab dem Wirksamkeitsdatum, legt die Anfechtungsfrist (30 Tage ab Zugang, Art. 270b OR) als Pendenz an und schreibt die Basisdaten des Vertrags fort."
+msgstr "<b>Entwurf speichern</b> und <b>Formular als PDF</b> buchen nichts. Erst <b>Als versandt erfassen</b> bucht den neuen Mietzins ab dem Wirksamkeitsdatum, legt die Anfechtungsfrist (30 Tage ab Zugang, Art. 270b OR) als Pendenz an und schreibt die Basisdaten des Vertrags fort."
+
+msgid "Entwurf speichern"
+msgstr "Entwurf speichern"
+
+msgid "Formular als PDF"
+msgstr "Formular als PDF"
+
+msgid "Als versandt erfassen"
+msgstr "Als versandt erfassen"
+
+msgid "Kanton der Liegenschaft fehlt"
+msgstr "Kanton der Liegenschaft fehlt"
+
+msgid "Kein Original"
+msgstr "Kein Original"
+
+msgid "Je Vertrag wird ein Entwurf erfasst und das Formular als Sammel-PDF erstellt — gebucht wird noch nichts. Nach dem Versand die Entwürfe unter «Mietzins» als versandt erfassen: Erst dann gilt der neue Mietzins und die Anfechtungsfrist (Art. 270b OR) läuft als Pendenz. Verträge ohne Basisdaten, ohne Kanton oder ohne Potenzial werden übersprungen."
+msgstr "Je Vertrag wird ein Entwurf erfasst und das Formular als Sammel-PDF erstellt — gebucht wird noch nichts. Nach dem Versand die Entwürfe unter «Mietzins» als versandt erfassen: Erst dann gilt der neue Mietzins und die Anfechtungsfrist (Art. 270b OR) läuft als Pendenz. Verträge ohne Basisdaten, ohne Kanton oder ohne Potenzial werden übersprungen."
+
+msgid "Verstanden: Nachbildungen sind nur Entwürfe (Wasserzeichen «Entwurf – nicht amtlich»)."
+msgstr "Verstanden: Nachbildungen sind nur Entwürfe (Wasserzeichen «Entwurf – nicht amtlich»)."
+
+msgid "aktiv (von Hand gesetzt)"
+msgstr "aktiv (von Hand gesetzt)"
+
+#, python-format
+msgid "Betreibung %(nr)s"
+msgstr "Betreibung %(nr)s"
+
+msgid "Mahnsperre (von Hand — kein automatischer Mahnlauf für diese Person)"
+msgstr "Mahnsperre (von Hand — kein automatischer Mahnlauf für diese Person)"
+
+#, python-format
+msgid "Fortsetzungsbegehren ab %(a)s; das Ende ist offen, solange das Rechtsöffnungsverfahren läuft (Art. 88 Abs. 2 SchKG)."
+msgstr "Fortsetzungsbegehren ab %(a)s; das Ende ist offen, solange das Rechtsöffnungsverfahren läuft (Art. 88 Abs. 2 SchKG)."
+
+#, python-format
+msgid "Fortsetzung erst nach der Rechtsöffnung; spätestens %(b)s, verlängert um die Dauer des Rechtsöffnungsverfahrens (Art. 88 SchKG)."
+msgstr "Fortsetzung erst nach der Rechtsöffnung; spätestens %(b)s, verlängert um die Dauer des Rechtsöffnungsverfahrens (Art. 88 SchKG)."
+
+msgid "Fortsetzung erst nach dem Rechtsöffnungsentscheid; die Jahresfrist steht still, solange das Verfahren läuft (Art. 88 Abs. 2 SchKG)."
+msgstr "Fortsetzung erst nach dem Rechtsöffnungsentscheid; die Jahresfrist steht still, solange das Verfahren läuft (Art. 88 Abs. 2 SchKG)."
+
+msgid "Wohnungsabnahme vor Ort"
+msgstr "Wohnungsabnahme vor Ort"
+
+msgid "Abnahme nachträglich erfassen (Formular)"
+msgstr "Abnahme nachträglich erfassen (Formular)"
+
+#, python-format
+msgid "erstreckt bis %(d)s"
+msgstr "erstreckt bis %(d)s"
+
+#, python-format
+msgid "Zugang beim Mieter %(d)s"
+msgstr "Zugang beim Mieter %(d)s"
+
+msgid "Ersatzmieter (Art. 264 OR)"
+msgstr "Ersatzmieter (Art. 264 OR)"
+
+msgid "Ausdrückliche Zustimmung des Ehegatten / Partners liegt vor (Art. 266m OR)"
+msgstr "Ausdrückliche Zustimmung des Ehegatten / Partners liegt vor (Art. 266m OR)"
+
+#, python-format
+msgid "versandt %(d)s"
+msgstr "versandt %(d)s"
+
+#, python-format
+msgid "Zugang %(d)s"
+msgstr "Zugang %(d)s"
+
+msgid "Entwurf öffnen"
+msgstr "Entwurf öffnen"
+
+msgid "Wirksam"
+msgstr "Wirksam"
+
+msgid "Angefochten"
+msgstr "Angefochten"
+
+msgid "Ratenplan & Betreibungen"
+msgstr "Ratenplan & Betreibungen"
+
+msgid "Zahlungsvereinbarung"
+msgstr "Zahlungsvereinbarung"
+
+#, python-format
+msgid "Laufender Ratenplan: CHF %(b)s in %(n)s Raten — die bis %(d)s fälligen Forderungen ruhen im Mahnlauf."
+msgstr "Laufender Ratenplan: CHF %(b)s in %(n)s Raten — die bis %(d)s fälligen Forderungen ruhen im Mahnlauf."
+
+#, python-format
+msgid "Betreibung %(nr)s vom %(d)s"
+msgstr "Betreibung %(nr)s vom %(d)s"
+
+msgid "Keine Betreibungen zu diesem Vertrag."
+msgstr "Keine Betreibungen zu diesem Vertrag."
+
+#, python-format
+msgid "Zahlungsvereinbarung — %(name)s"
+msgstr "Zahlungsvereinbarung — %(name)s"
+
+msgid "So wirkt eine Zahlungsvereinbarung"
+msgstr "So wirkt eine Zahlungsvereinbarung"
+
+msgid "Ratenplan: Der fällige Rückstand wird auf gleich hohe Raten verteilt; die letzte Rate trägt den Rest. Für jede Rate entsteht eine Pendenz."
+msgstr "Ratenplan: Der fällige Rückstand wird auf gleich hohe Raten verteilt; die letzte Rate trägt den Rest. Für jede Rate entsteht eine Pendenz."
+
+msgid "Mahnsperre-Wirkung: Nur die gedeckten Forderungen (und ihre Mahngebühren und Zinsen) ruhen im Mahnlauf. Neue Mieten während des Plans werden normal gemahnt."
+msgstr "Mahnsperre-Wirkung: Nur die gedeckten Forderungen (und ihre Mahngebühren und Zinsen) ruhen im Mahnlauf. Neue Mieten während des Plans werden normal gemahnt."
+
+#, python-format
+msgid "Bruch: Bleiben die Zahlungen mehr als %(n)s Tage hinter den fälligen Raten zurück, gilt die Vereinbarung als gebrochen — die gedeckten Forderungen laufen wieder im Mahnlauf."
+msgstr "Bruch: Bleiben die Zahlungen mehr als %(n)s Tage hinter den fälligen Raten zurück, gilt die Vereinbarung als gebrochen — die gedeckten Forderungen laufen wieder im Mahnlauf."
+
+msgid "Art. 257d OR: Eine bereits laufende Zahlungsfrist mit Kündigungsandrohung wird durch die Vereinbarung nicht gehemmt."
+msgstr "Art. 257d OR: Eine bereits laufende Zahlungsfrist mit Kündigungsandrohung wird durch die Vereinbarung nicht gehemmt."
+
+msgid "Schreiben: Die «Zahlungsvereinbarung mit Schuldanerkennung» zweifach ausdrucken und von beiden Seiten unterzeichnen lassen."
+msgstr "Schreiben: Die «Zahlungsvereinbarung mit Schuldanerkennung» zweifach ausdrucken und von beiden Seiten unterzeichnen lassen."
+
+msgid "Es läuft eine Fristansetzung nach Art. 257d OR. Eine Zahlungsvereinbarung <b>hemmt diese Frist nicht</b> — es sei denn, der Vermieter verzichtet ausdrücklich darauf."
+msgstr "Es läuft eine Fristansetzung nach Art. 257d OR. Eine Zahlungsvereinbarung <b>hemmt diese Frist nicht</b> — es sei denn, der Vermieter verzichtet ausdrücklich darauf."
+
+#, python-format
+msgid "<b>CHF %(b)s</b> in %(n)s Raten — Status: <b>%(s)s</b>"
+msgstr "<b>CHF %(b)s</b> in %(n)s Raten — Status: <b>%(s)s</b>"
+
+#, python-format
+msgid "Bezahlt CHF %(b)s · offen CHF %(o)s"
+msgstr "Bezahlt CHF %(b)s · offen CHF %(o)s"
+
+#, python-format
+msgid "Rate %(nr)s: %(d)s — CHF %(b)s"
+msgstr "Rate %(nr)s: %(d)s — CHF %(b)s"
+
+#, python-format
+msgid "Im Mahnlauf ruhen die bis %(d)s fälligen Forderungen:"
+msgstr "Im Mahnlauf ruhen die bis %(d)s fälligen Forderungen:"
+
+msgid "Keine offenen gedeckten Forderungen mehr."
+msgstr "Keine offenen gedeckten Forderungen mehr."
+
+msgid "Schreiben mit Schuldanerkennung (PDF)"
+msgstr "Schreiben mit Schuldanerkennung (PDF)"
+
+msgid "Zahlungsvereinbarung abbrechen? Die gedeckten Forderungen laufen danach wieder im Mahnlauf."
+msgstr "Zahlungsvereinbarung abbrechen? Die gedeckten Forderungen laufen danach wieder im Mahnlauf."
+
+msgid "Für diesen Vertrag besteht noch keine Zahlungsvereinbarung."
+msgstr "Für diesen Vertrag besteht noch keine Zahlungsvereinbarung."
+
+msgid "Neue Vereinbarung"
+msgstr "Neue Vereinbarung"
+
+#, python-format
+msgid "Fälliger Rückstand: <b>CHF %(b)s</b>. Er wird auf gleich hohe Raten verteilt; bis zur Erfüllung ruhen diese Forderungen im Mahnlauf."
+msgstr "Fälliger Rückstand: <b>CHF %(b)s</b>. Er wird auf gleich hohe Raten verteilt; bis zur Erfüllung ruhen diese Forderungen im Mahnlauf."
+
+msgid "Anzahl Raten"
+msgstr "Anzahl Raten"
+
+msgid "Abstand (Monate)"
+msgstr "Abstand (Monate)"
+
+msgid "Erste Rate am"
+msgstr "Erste Rate am"
+
+msgid "Vereinbarung erfassen"
+msgstr "Vereinbarung erfassen"
+
+msgid "Es gibt keinen fälligen Rückstand, der vereinbart werden könnte."
+msgstr "Es gibt keinen fälligen Rückstand, der vereinbart werden könnte."
+
+#, python-format
+msgid "%(typ)s erfasst (%(count)s Mängel). Abschliessen mit Unterschriften im Protokoll."
+msgstr "%(typ)s erfasst (%(count)s Mängel). Abschliessen mit Unterschriften im Protokoll."
+
+msgid "Jetzt unterschreiben und abschliessen."
+msgstr "Jetzt unterschreiben und abschliessen."
+
+#, python-format
+msgid "Versanddatum ungültig: zwischen %(von)s und heute."
+msgstr "Versanddatum ungültig: zwischen %(von)s und heute."
+
+#, python-format
+msgid "Versand der Rüge am %(datum)s festgehalten."
+msgstr "Versand der Rüge am %(datum)s festgehalten."
+
+msgid "Nur an einem abgeschlossenen Auszugsprotokoll möglich."
+msgstr "Nur an einem abgeschlossenen Auszugsprotokoll möglich."
+
+#, python-format
+msgid "Entdeckungsdatum ungültig: zwischen %(von)s und heute."
+msgstr "Entdeckungsdatum ungültig: zwischen %(von)s und heute."
+
+msgid "Kostenschätzung ist keine Zahl."
+msgstr "Kostenschätzung ist keine Zahl."
+
+#, python-format
+msgid "Mangel erfasst. Rüge jetzt erstellen und bis %(frist)s versenden."
+msgstr "Mangel erfasst. Rüge jetzt erstellen und bis %(frist)s versenden."
+
+#, python-format
+msgid "Ticket #%(id)s angelegt: Handwerker jetzt zuweisen."
+msgstr "Ticket #%(id)s angelegt: Handwerker jetzt zuweisen."
+
+msgid "Ein abgeschlossenes Abnahmeprotokoll ist unterschrieben und kann nicht gelöscht werden."
+msgstr "Ein abgeschlossenes Abnahmeprotokoll ist unterschrieben und kann nicht gelöscht werden."
+
+msgid "Mieteranteil nach Lebensdauer (Zeitwert)"
+msgstr "Mieteranteil nach Lebensdauer (Zeitwert)"
+
+msgid "Lebensdauer abgelaufen: kein Mieteranteil"
+msgstr "Lebensdauer abgelaufen: kein Mieteranteil"
+
+msgid "Noch kein Betrag: Kostenschätzung eingeben"
+msgstr "Noch kein Betrag: Kostenschätzung eingeben"
+
+msgid "Kein Mieterschaden"
+msgstr "Kein Mieterschaden"
+
+#, python-format
+msgid "Mängelrüge bis %(frist)s versenden (Art. 267a OR)."
+msgstr "Mängelrüge bis %(frist)s versenden (Art. 267a OR)."
+
+msgid "Der Mieter war abwesend: eingeschrieben senden."
+msgstr "Der Mieter war abwesend: eingeschrieben senden."
+
+msgid "Eine versandte Mietzinsanpassung kann nur die Verwaltung (Verwalter/Inhaber) entfernen."
+msgstr "Eine versandte Mietzinsanpassung kann nur die Verwaltung (Verwalter/Inhaber) entfernen."
+
+msgid "Bitte den ausserordentlichen Grund wählen, der für diese Partei gilt."
+msgstr "Bitte den ausserordentlichen Grund wählen, der für diese Partei gilt."
+
+msgid "Für diesen Grund rechnet die Anwendung keine Frist — bitte das Vertragsende angeben."
+msgstr "Für diesen Grund rechnet die Anwendung keine Frist — bitte das Vertragsende angeben."
+
+#, python-format
+msgid "Für %(grund)s ist im Bestand keine Mindestfrist hinterlegt — der Termin wurde nicht geprüft. Vor dem Versand rechtlich prüfen."
+msgstr "Für %(grund)s ist im Bestand keine Mindestfrist hinterlegt — der Termin wurde nicht geprüft. Vor dem Versand rechtlich prüfen."
+
+#, python-format
+msgid "Gewünschtes Ende %(wunsch)s liegt vor dem frühesten Termin für diesen Grund — die Kündigung gilt auf %(termin)s."
+msgstr "Gewünschtes Ende %(wunsch)s liegt vor dem frühesten Termin für diesen Grund — die Kündigung gilt auf %(termin)s."
+
+#, python-format
+msgid "Vorzeitige Rückgabe mit angenommenem Ersatzmieter (Art. 264 OR): Der Mieter ist ab %(datum)s befreit."
+msgstr "Vorzeitige Rückgabe mit angenommenem Ersatzmieter (Art. 264 OR): Der Mieter ist ab %(datum)s befreit."
+
+#, python-format
+msgid "Vorzeitige Rückgabe ohne angenommenen Ersatzmieter: Der Mieter haftet bis zum nächsten ordentlichen Termin %(termin)s (Art. 264 OR)."
+msgstr "Vorzeitige Rückgabe ohne angenommenen Ersatzmieter: Der Mieter haftet bis zum nächsten ordentlichen Termin %(termin)s (Art. 264 OR)."
+
+msgid "Die Erstreckung muss nach dem Vertragsende liegen."
+msgstr "Die Erstreckung muss nach dem Vertragsende liegen."
+
+#, python-format
+msgid "Die Erstreckung übersteigt die Höchstdauer von %(n)s Jahren (Art. 272b OR)."
+msgstr "Die Erstreckung übersteigt die Höchstdauer von %(n)s Jahren (Art. 272b OR)."
+
+msgid "Familienwohnung: Ohne ausdrückliche Zustimmung des Ehegatten/Partners ist die Kündigung nichtig (Art. 266m OR). Sie ist erfasst, aber nicht bestätigt — der Vertrag bleibt unverändert, bis die Zustimmung vorliegt."
+msgstr "Familienwohnung: Ohne ausdrückliche Zustimmung des Ehegatten/Partners ist die Kündigung nichtig (Art. 266m OR). Sie ist erfasst, aber nicht bestätigt — der Vertrag bleibt unverändert, bis die Zustimmung vorliegt."
+
+msgid "Familienwohnung: Bestätigung erst mit der ausdrücklichen Zustimmung des Ehegatten/Partners (Art. 266m OR)."
+msgstr "Familienwohnung: Bestätigung erst mit der ausdrücklichen Zustimmung des Ehegatten/Partners (Art. 266m OR)."
+
+msgid "Zahlungsvereinbarung abgebrochen — die gedeckten Forderungen laufen wieder im Mahnlauf."
+msgstr "Zahlungsvereinbarung abgebrochen — die gedeckten Forderungen laufen wieder im Mahnlauf."
+
+#, python-format
+msgid "Zahlungsvereinbarung erfasst — die gedeckten Forderungen ruhen im Mahnlauf, %(n)s Raten-Pendenzen angelegt."
+msgstr "Zahlungsvereinbarung erfasst — die gedeckten Forderungen ruhen im Mahnlauf, %(n)s Raten-Pendenzen angelegt."
+
+msgid "Das Schreiben «Zahlungsvereinbarung mit Schuldanerkennung» steht bereit — zweifach ausdrucken und unterzeichnen lassen."
+msgstr "Das Schreiben «Zahlungsvereinbarung mit Schuldanerkennung» steht bereit — zweifach ausdrucken und unterzeichnen lassen."
+
+msgid "Mahnsperre am Mieter (von Hand gesetzt)"
+msgstr "Mahnsperre am Mieter (von Hand gesetzt)"
+
+msgid "Indexmiete — einzeln"
+msgstr "Indexmiete — einzeln"
+
+msgid "Dieser Entwurf ist nicht mehr offen."
+msgstr "Dieser Entwurf ist nicht mehr offen."
+
+#, python-format
+msgid "Wirksamkeitsdatum zu früh: Eine Mietzinserhöhung kann frühestens auf %(datum)s wirksam werden (Kündigungsfrist + 10-Tage-Ankündigung, Art. 269d OR)."
+msgstr "Wirksamkeitsdatum zu früh: Eine Mietzinserhöhung kann frühestens auf %(datum)s wirksam werden (Kündigungsfrist + 10-Tage-Ankündigung, Art. 269d OR)."
+
+msgid "Ein Vorbehalt muss beziffert sein — bitte den vorbehaltenen Betrag in CHF oder in % angeben."
+msgstr "Ein Vorbehalt muss beziffert sein — bitte den vorbehaltenen Betrag in CHF oder in % angeben."
+
+#, python-format
+msgid "Entwurf gespeichert — neu CHF %(neu_netto)s ab %(datum)s. Gebucht wird erst beim Versand."
+msgstr "Entwurf gespeichert — neu CHF %(neu_netto)s ab %(datum)s. Gebucht wird erst beim Versand."
+
+#, python-format
+msgid "Mietzinsanpassung als versandt erfasst — neu CHF %(neu_netto)s ab %(datum)s."
+msgstr "Mietzinsanpassung als versandt erfasst — neu CHF %(neu_netto)s ab %(datum)s."
+
+msgid "Bitte bestätigen, dass das amtliche Formular des Kantons verwendet wurde."
+msgstr "Bitte bestätigen, dass das amtliche Formular des Kantons verwendet wurde."
+
+msgid "Bitte das Zugangsdatum einer versandten Anpassung angeben."
+msgstr "Bitte das Zugangsdatum einer versandten Anpassung angeben."
+
+#, python-format
+msgid "Mietzinsanpassung aktualisiert: %(status)s."
+msgstr "Mietzinsanpassung aktualisiert: %(status)s."
+
+msgid "Kanton der Liegenschaft fehlt."
+msgstr "Kanton der Liegenschaft fehlt."
+
+#, python-format
+msgid "%(n)s Anpassung(en) als versandt erfasst."
+msgstr "%(n)s Anpassung(en) als versandt erfasst."
+
+msgid "Keine offenen Entwürfe ausgewählt."
+msgstr "Keine offenen Entwürfe ausgewählt."
+
+#, python-format
+msgid "%(n)s Index- oder Staffelmiete(n) ausgenommen — deren Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR), nicht dem Referenzzins."
+msgstr "%(n)s Index- oder Staffelmiete(n) ausgenommen — deren Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR), nicht dem Referenzzins."
+
+msgid "Keine Anpassung möglich (Basisdaten oder Kanton fehlen, oder kein Potenzial)."
+msgstr "Keine Anpassung möglich (Basisdaten oder Kanton fehlen, oder kein Potenzial)."
+
+msgid "Der Zinssatz muss zwischen 0 und 100 % liegen."
+msgstr "Der Zinssatz muss zwischen 0 und 100 % liegen."
+
+msgid "Rechtsvorschlag mehr als 10 Tage nach Zustellung des Zahlungsbefehls (Art. 74 SchKG). Gespeichert — bitte beim Betreibungsamt klären, ob er gilt: Er kann rechtzeitig sein (z. B. Fristende an einem Wochenende oder Feiertag, Betreibungsferien oder Rechtsstillstand, Art. 31, 56, 63 SchKG, oder nachträglicher Rechtsvorschlag, Art. 77 SchKG)."
+msgstr "Rechtsvorschlag mehr als 10 Tage nach Zustellung des Zahlungsbefehls (Art. 74 SchKG). Gespeichert — bitte beim Betreibungsamt klären, ob er gilt: Er kann rechtzeitig sein (z. B. Fristende an einem Wochenende oder Feiertag, Betreibungsferien oder Rechtsstillstand, Art. 31, 56, 63 SchKG, oder nachträglicher Rechtsvorschlag, Art. 77 SchKG)."
+
+msgid "Rechtsöffnungsgesuch ohne erfassten Rechtsvorschlag — eine Rechtsöffnung braucht es nur, wenn Rechtsvorschlag erhoben wurde."
+msgstr "Rechtsöffnungsgesuch ohne erfassten Rechtsvorschlag — eine Rechtsöffnung braucht es nur, wenn Rechtsvorschlag erhoben wurde."
+
+msgid "Fortsetzungsbegehren erfasst, obwohl der Rechtsvorschlag noch nicht durch einen Rechtsöffnungsentscheid beseitigt ist (Art. 88 Abs. 1 SchKG)."
+msgstr "Fortsetzungsbegehren erfasst, obwohl der Rechtsvorschlag noch nicht durch einen Rechtsöffnungsentscheid beseitigt ist (Art. 88 Abs. 1 SchKG)."
+
+#, python-format
+msgid "Fortsetzungsbegehren vor dem frühesten Termin (%(d)s, Art. 88 Abs. 1 SchKG)."
+msgstr "Fortsetzungsbegehren vor dem frühesten Termin (%(d)s, Art. 88 Abs. 1 SchKG)."
+
+#, python-format
+msgid "Fortsetzungsbegehren nach Ablauf der Jahresfrist (%(d)s, Art. 88 Abs. 2 SchKG)."
+msgstr "Fortsetzungsbegehren nach Ablauf der Jahresfrist (%(d)s, Art. 88 Abs. 2 SchKG)."
+
+msgid "Weitere Forderungen"
+msgstr "Weitere Forderungen"
+
+msgid "Diese Forderung steht bereits in einer offenen Betreibung."
+msgstr "Diese Forderung steht bereits in einer offenen Betreibung."
+
+msgid "Betrieben werden kann nur eine offene, fällige Hauptforderung (keine Mahngebühr, kein Zins, nichts noch nicht Fälliges)."
+msgstr "Betrieben werden kann nur eine offene, fällige Hauptforderung (keine Mahngebühr, kein Zins, nichts noch nicht Fälliges)."
+
+msgid "Betreibung erfasst. Das Datenblatt für das Betreibungsbegehren steht als PDF bereit."
+msgstr "Betreibung erfasst. Das Datenblatt für das Betreibungsbegehren steht als PDF bereit."
+
+msgid "Der Verlustschein schreibt die offenen Forderungen ab (Konto 3805) — das darf nur die Verwaltung (Verwalter oder Inhaber)."
+msgstr "Der Verlustschein schreibt die offenen Forderungen ab (Konto 3805) — das darf nur die Verwaltung (Verwalter oder Inhaber)."
+
+#, python-format
+msgid "Verlustschein: %(n)s Forderung(en) über CHF %(s)s als Debitorenverlust abgeschrieben (Konto 3805)."
+msgstr "Verlustschein: %(n)s Forderung(en) über CHF %(s)s als Debitorenverlust abgeschrieben (Konto 3805)."
+
+#, python-format
+msgid "%(n)s Forderung(en) liegen in einer gesperrten Buchungsperiode und wurden nicht abgeschrieben."
+msgstr "%(n)s Forderung(en) liegen in einer gesperrten Buchungsperiode und wurden nicht abgeschrieben."
+
+#, python-format
+msgid "Betreibungskosten von CHF %(b)s dem Mieter belastet (Art. 68 SchKG)."
+msgstr "Betreibungskosten von CHF %(b)s dem Mieter belastet (Art. 68 SchKG)."
+
+msgid "Rechtsöffnung beantragt"
+msgstr "Rechtsöffnung beantragt"
+
+msgid "Rechtsöffnung erteilt"
+msgstr "Rechtsöffnung erteilt"
+
+msgid "Pfändung"
+msgstr "Pfändung"
+
+msgid "Provisorisch (Art. 82 SchKG)"
+msgstr "Provisorisch (Art. 82 SchKG)"
+
+msgid "Definitiv (Art. 80 SchKG)"
+msgstr "Definitiv (Art. 80 SchKG)"
+
+msgid "Dient eine Anlage einzelnen Eigentümern nicht, kann die Verteilung abweichen. Die befreiten Einheiten tragen nichts; der Betrag wird auf die übrigen umgerechnet (neue Basis 100 %%, auf den Rappen genau). Die Begründung ist Pflicht und wird festgehalten."
+msgstr "Dient eine Anlage einzelnen Eigentümern nicht, kann die Verteilung abweichen. Die befreiten Einheiten tragen nichts; der Betrag wird auf die übrigen umgerechnet (neue Basis 100 %%, auf den Rappen genau). Die Begründung ist Pflicht und wird festgehalten."
+
+#, python-format
+msgid "%(n)s Index- oder Staffelmiete ausgenommen — ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR)."
+msgid_plural "%(n)s Index- oder Staffelmieten ausgenommen — ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR)."
+msgstr[0] "%(n)s Index- oder Staffelmiete ausgenommen — ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR)."
+msgstr[1] "%(n)s Index- oder Staffelmieten ausgenommen — ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR)."
+
+#, python-format
+msgid "%(n)s Entwurf + Formular (Sammel-PDF)"
+msgid_plural "%(n)s Entwürfe + Formulare (Sammel-PDF)"
+msgstr[0] "%(n)s Entwurf + Formular (Sammel-PDF)"
+msgstr[1] "%(n)s Entwürfe + Formulare (Sammel-PDF)"

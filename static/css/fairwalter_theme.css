@@ -31,13 +31,13 @@
    GLOBALE DESIGN-VARIABLEN (SwissImmo Master-Theme)
    ===================================================================== */
 :root {
-    --si-primary: #2563eb;       /* Modernes SwissImmo Blau */
-    --si-primary-hover: #1d4ed8; /* Etwas dunkleres Blau für Hover */
-    --si-bg: #f8fafc;            /* Frisches, kühles Hellgrau für den Hintergrund */
+    --si-primary: #b04416;       /* Ember: --ds-brand der Stilschicht */
+    --si-primary-hover: #8a3410; /* Ember: --ds-brand-600 */
+    --si-bg: #efeeeb;            /* Ember: --ds-bg (warmes Grau) */
     --si-card-bg: #ffffff;       /* Reinweiss für die Karten */
-    --si-border: #e2e8f0;        /* Sanfte Rahmenfarbe */
-    --si-text-main: #0f172a;     /* Fast Schwarz für gute Lesbarkeit */
-    --si-text-muted: #64748b;    /* Graue Texte (z.B. Tabellenköpfe) */
+    --si-border: #e7e5e1;        /* Ember: --ds-line */
+    --si-text-main: #17181b;     /* Ember: --ds-ink */
+    --si-text-muted: #5d6068;    /* Ember: --ds-muted */
     --si-radius: 12px;           /* Globaler Radius für alle Boxen */
     --si-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
 }
@@ -88,7 +88,7 @@ fieldset.module h2,
 .inline-group h2 {
     padding: 1rem 1.5rem !important;
     margin-bottom: 0 !important;
-    background: #f8fafc !important; /* Leicht grauer Header für Tabellen-Karten */
+    background: #f6f5f3 !important; /* Ember: --ds-surface-2 */
 }
 
 /* =====================================================================
@@ -130,7 +130,7 @@ textarea {
 /* Fokus-Effekt (SwissImmo Blaues Leuchten) */
 input:focus, select:focus, textarea:focus {
     border-color: var(--si-primary) !important;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+    box-shadow: 0 0 0 3px rgba(176, 68, 22, 0.15) !important;
     outline: none !important;
 }
 

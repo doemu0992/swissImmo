@@ -33,7 +33,7 @@
             <div class="fw-feldblock"><label for="s_absender" class="fw-label">{% trans "Gekündigt durch *" %}</label>
                 <select name="absender" onchange="syncZustellung(); kuendigungCheck()" id="s_absender" class="fw-feld">
                     <option value="mieter">{% trans "Mieter" %}</option>
-                    <option value="vermieter">{% trans "Vermieter" %}</option>
+                    <option value="vermieter" {% if prefill_ao %}selected{% endif %}>{% trans "Vermieter" %}</option>
                 </select></div>
             <div class="fw-feldblock"><label for="s_zustellung" class="fw-label">{% trans "Zustellung" %} {% hilfe 'formularpflicht' %}</label>
                 <select name="zustellung" id="s_zustellung" class="fw-feld">
@@ -42,11 +42,23 @@
                     <option value="normal">Normal / persönlich</option>
                 </select></div>
         </div>
+        {% comment %} Befund F (26.10.2026): Beim Vermieter ist das Datum der VERSAND.
+           Frist und Anfechtung laufen ab dem ZUGANG beim Mieter — bestätigt oder,
+           solange unbekannt, Versand + Zustellpuffer (wie bei Art. 269d/257d). {% endcomment %}
         <div class="fw-formular">
-            <div class="fw-feldblock"><label for="s_eingang" class="fw-label">{% trans "Eingang / Poststempel *" %}</label>
-                <input type="date" name="eingang_datum" id="s_eingang" value="{{ heute_iso }}" onchange="berechne()" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="s_eingang" class="fw-label"><span data-nur="mieter">{% trans "Eingang beim Vermieter *" %}</span><span data-nur="vermieter" class="hidden">{% trans "Versand (Poststempel) *" %}</span></label>
+                <input type="date" name="eingang_datum" id="s_eingang" value="{{ heute_iso }}" max="{{ heute_iso }}" onchange="berechne()" class="fw-feld"></div>
+            <div class="fw-feldblock hidden" data-nur="vermieter"><label for="s_zugang" class="fw-label">{% trans "Zugang beim Mieter" %} {% hilfe 'zugang' %} <span class="fw-faint font-normal">{% trans "(optional)" %}</span></label>
+                <input type="date" name="zugang_am" id="s_zugang" max="{{ heute_iso }}" onchange="berechne()" class="fw-feld">
+                <p class="fw-hilfe">{% blocktrans with tage=zustell_puffer %}Leer: Versand + {{ tage }} Tage (Postweg und Abholfrist).{% endblocktrans %}</p></div>
         </div>
+        {% if v.familienwohnung %}
+        <label class="fw-haekchen" data-nur="mieter">
+            <input type="checkbox" name="zustimmung_ehegatte" id="s_zustimmung" class="fw-akzent" onchange="kuendigungCheck()"> {% trans "Ausdrückliche Zustimmung des Ehegatten / eingetragenen Partners liegt vor" %} {% hilfe 'familienwohnung' %}
+        </label>
+        {% else %}
         <p class="fw-hilfe">{% trans "Familienwohnung?" %} {% hilfe 'familienwohnung' %}</p>
+        {% endif %}
         </div>
     </section>
     <section data-schritt="{% trans 'Termin' %}" data-schritt-text="{% trans 'Der nächste ordentliche Termin aus Vertrag und Eingang — mit Prüfung nach Mietrecht.' %}">
@@ -63,12 +75,20 @@
             <ul id="k-warn-list" class="list-disc pl-5 space-y-0.5"></ul></div>
         </div></div>
 
+        {% if termine_fehlen %}
+        <div class="fw-hinweis warn rounded-lg">
+            <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+            <div class="fw-ht"><b>{% trans "Kündigungstermine fehlen im Vertrag" %}</b> — {% blocktrans trimmed %}Der Vertrag nennt keine lesbaren Termine und für den Kanton ist keine Regel hinterlegt. Der Termin unten nimmt jedes Monatsende an und ist damit nur der früheste denkbare. Bitte die vereinbarten oder ortsüblichen Termine im Vertrag ergänzen.{% endblocktrans %}</div>
+        </div>
+        {% elif termine_kanton %}
+        <p class="fw-hilfe">{% trans "Termine aus der Kantonsregel des Regelwerks — der Vertrag nennt keine." %}</p>
+        {% endif %}
         <!-- Berechneter Termin -->
         <div class="fw-kpis fw-nomb">
             <div class="fw-kpi fw-accent">
             <div class="fw-l">{% trans "Nächster ordentlicher Kündigungstermin" %}</div>
-            <div class="fw-v" id="termin-anzeige">{{ vorschau_termin|date:"d.m.Y" }}</div>
-            <p class="fw-f">{% blocktrans with monate=v.kuendigungsfrist_monate %}Berechnet aus Eingang + {{ monate }} Monaten, auf den nächsten erlaubten Termin.{% endblocktrans %}</p>
+            <div class="fw-v" id="termin-anzeige"><span data-nur="mieter">{{ vorschau_termin|date:"d.m.Y" }}</span><span data-nur="vermieter" class="hidden">{{ vorschau_termin_vermieter|date:"d.m.Y" }}</span></div>
+            <p class="fw-f">{% blocktrans with monate=v.kuendigungsfrist_monate %}Berechnet aus Zugang + {{ monate }} Monaten, auf den nächsten erlaubten Termin — bei Versand heute.{% endblocktrans %}</p>
             </div>
         </div>
 
@@ -97,9 +117,25 @@
         <label class="fw-haekchen">
             <input type="checkbox" name="ausserordentlich" id="s_ao" {% if prefill_ao %}checked{% endif %} onchange="document.getElementById('ao-box').classList.toggle('hidden', !this.checked); kuendigungCheck()" class="fw-akzent"> {% trans "Ausserordentliche Kündigung" %}
         </label>
+        {% comment %} Befund L: Ausserordentlich nur mit strukturiertem Grund. Der Server
+           prüft je Grund die Mindestfrist, soweit der Bestand sie belegt; ein zu
+           frühes Wunschdatum wird auf den frühesten Termin geschoben. {% endcomment %}
         <div id="ao-box" class="{% if not prefill_ao %}hidden {% endif %}space-y-3 pl-6">
-            <div class="fw-feldblock"><label for="s_ao_grund" class="fw-label">{% trans "Grund" %}</label>
-                <input id="s_ao_grund" name="ausserordentlich_grund" value="{{ prefill_grund }}" placeholder="z. B. wichtiger Grund (Art. 266g), Zahlungsverzug (257d) …" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="s_ao_art" class="fw-label">{% trans "Grund *" %}</label>
+                <select id="s_ao_art" name="ausserordentlich_art" class="fw-feld" onchange="kuendigungCheck()">
+                    <option value="">—</option>
+                    {% comment %}Gründe bleiben deutsch (Rechtsbegriffe, wie Kuendigung.AO_ART_CHOICES).{% endcomment %}{% for wert, text in ao_choices %}<option value="{{ wert }}" data-partei="{% if wert in ao_vermieter and wert in ao_mieter %}beide{% elif wert in ao_vermieter %}vermieter{% else %}mieter{% endif %}" {% if wert == prefill_art %}selected{% endif %}>{{ text }}</option>{% endfor %}
+                </select></div>
+            <div class="fw-feldblock"><label for="s_ao_grund" class="fw-label">{% trans "Begründung" %}</label>
+                <input id="s_ao_grund" name="ausserordentlich_grund" value="{{ prefill_grund }}" class="fw-feld"></div>
+        </div>
+
+        {% comment %} Art. 264 OR: Vorzeitige Rückgabe befreit nur mit angenommenem Ersatzmieter. {% endcomment %}
+        <div class="fw-feldblock hidden" data-nur="mieter" id="ersatz-box">
+            <label for="s_ersatz" class="fw-label">{% trans "Vorgeschlagene Ersatzmieter" %} {% hilfe 'ersatzmieter' %} <span class="fw-faint font-normal">{% trans "(bei Auszug vor dem Termin)" %}</span></label>
+            <textarea id="s_ersatz" name="ersatzmieter" rows="2" class="fw-feld" placeholder="{% trans 'Name, Kontakt — je Zeile ein Vorschlag' %}"></textarea>
+            <label class="fw-haekchen mt-2"><input type="checkbox" name="ersatzmieter_akzeptiert" class="fw-akzent"> {% trans "Ein Ersatzmieter ist angenommen — der Mieter wird ab dem gewünschten Ende befreit" %}</label>
+            <p class="fw-hilfe">{% trans "Ohne angenommenen Ersatzmieter haftet der Mieter bis zum nächsten ordentlichen Termin." %}</p>
         </div>
 
 
@@ -109,7 +145,8 @@
         <div class="fw-assistent-schritt-kopf"></div>
         <div class="fw-card fw-rumpf space-y-4">
         <div class="fw-feldblock"><label for="s_erstreckung" class="fw-label">{% trans "Erstreckung bis" %} <span class="fw-faint font-normal">{% trans "(optional)" %}</span></label>
-            <input id="s_erstreckung" type="date" name="erstreckung_bis" class="fw-feld sm:w-56"></div>
+            <input id="s_erstreckung" type="date" name="erstreckung_bis" class="fw-feld sm:w-56">
+            <p class="fw-hilfe">{% trans "Verschiebt das Vertragsende — Sollstellung und Leerstand folgen ihm." %}</p></div>
         <div class="fw-feldblock"><label for="s_bemerkung" class="fw-label">{% trans "Bemerkung" %}</label>
             <textarea id="s_bemerkung" name="bemerkung" rows="2" class="fw-feld"></textarea></div>
 
@@ -143,11 +180,36 @@
 </form>
 
 <script>
-// Zustellung sinnvoll an Absender koppeln
+// Zustellung sinnvoll an Absender koppeln — und was nur für eine Partei gilt
+// (Zugang, Zustimmung Art. 266m, Ersatzmieter Art. 264, Gründe) ein-/ausblenden.
 function syncZustellung(){
     const a = document.getElementById('s_absender').value;
     const z = document.getElementById('s_zustellung');
     z.value = a === 'vermieter' ? 'amtliches_formular' : 'einschreiben';
+    syncPartei();
+}
+function syncPartei(){
+    var a = document.getElementById('s_absender').value;
+    document.querySelectorAll('[data-nur]').forEach(function(el){
+        el.classList.toggle('hidden', el.dataset.nur !== a);
+    });
+    var sel = document.getElementById('s_ao_art');
+    if (sel) Array.prototype.forEach.call(sel.options, function(o){
+        if (!o.value) return;
+        var passt = o.dataset.partei === 'beide' || o.dataset.partei === a;
+        o.disabled = !passt; o.hidden = !passt;
+        if (!passt && o.selected) sel.value = '';
+    });
+}
+var ZUSTELL_PUFFER = {{ zustell_puffer|default:7 }};
+// Zugang wie auf dem Server: beim Vermieter bestätigt, sonst Versand + Puffer.
+function zugangDatum(){
+    var e = document.getElementById('s_eingang').value;
+    if (document.getElementById('s_absender').value !== 'vermieter') return e;
+    var z = document.getElementById('s_zugang').value;
+    if (z || !e) return z || e;
+    var d = new Date(e + 'T00:00:00'); d.setDate(d.getDate() + ZUSTELL_PUFFER);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
 // Termin live berechnen (Fallback: Serverwert). Wir schätzen clientseitig grob und lassen
 // die exakte Berechnung dem Server; hier nur eine Live-Andeutung für das Eingangsdatum.
@@ -163,7 +225,7 @@ function regelPruefen(){
     // Ausserordentliche Kündigungen laufen nicht durch diese Regelart — Art. 257d,
     // 266g und 271a haben eigene Fristen, die sie nicht rechnet.
     if (document.getElementById('s_ao').checked) { ziel.innerHTML = ''; return; }
-    var zugang = document.getElementById('s_eingang').value;
+    var zugang = zugangDatum();
     var termin = document.getElementById('s_gew_ende').value;
     if (!zugang) { ziel.innerHTML = ''; return; }
     clearTimeout(regelLauf);
@@ -180,7 +242,9 @@ function regelPruefen(){
 
 // Mietrechtliche Live-Prüfung der Kündigung. Die Hinweise sind Rechtssätze mit
 // Art.-Verweisen: deutsch bis zur juristisch geprüften Übersetzung.
-var MIN_TERMIN = "{{ vorschau_termin|date:'Y-m-d' }}";
+var MIN_TERMIN_MIETER = "{{ vorschau_termin|date:'Y-m-d' }}";
+var MIN_TERMIN_VERMIETER = "{{ vorschau_termin_vermieter|date:'Y-m-d' }}";
+var IST_FAMILIENWOHNUNG = {% if v.familienwohnung %}true{% else %}false{% endif %};
 var AO_MIN_TERMIN = "{{ ao_termin|date:'Y-m-d' }}";
 var IST_GESCHUETZT = {% if v.ist_geschuetzt %}true{% else %}false{% endif %};
 function kuendigungCheck(){
@@ -188,9 +252,28 @@ function kuendigungCheck(){
     var absender = document.getElementById('s_absender').value;
     var ao = document.getElementById('s_ao').checked;
     var gew = document.getElementById('s_gew_ende').value;
+    var MIN_TERMIN = absender === 'vermieter' ? MIN_TERMIN_VERMIETER : MIN_TERMIN_MIETER;
+    var art = (document.getElementById('s_ao_art') || {}).value || '';
+    var ersatz = document.getElementById('ersatz-box');
+    if (ersatz) ersatz.classList.toggle('hidden', absender !== 'mieter' || ao);
+
+    if (ao && !art) {
+        warns.push('Ausserordentliche Kündigung: bitte den gesetzlichen Grund wählen — ohne Grund rechnet die Anwendung den ordentlichen Termin.');
+    }
+    if (ao && (art === '257f' || art === '266h' || art === '266k')) {
+        warns.push('Für diesen Grund ist im Bestand keine Mindestfrist hinterlegt — der Termin wird nicht geprüft. Vor dem Versand rechtlich prüfen.');
+    }
+    // Art. 266m OR: Familienwohnung, Kündigung durch den Mieter.
+    if (absender === 'mieter' && IST_FAMILIENWOHNUNG && !(document.getElementById('s_zustimmung') || {}).checked) {
+        warns.push('Familienwohnung: Ohne ausdrückliche Zustimmung des Ehegatten/Partners ist die Kündigung nichtig (Art. 266m OR). Sie wird erfasst, aber nicht bestätigt.');
+    }
+    // Art. 264 OR: Auszug vor dem Termin.
+    if (absender === 'mieter' && !ao && gew && MIN_TERMIN && gew < MIN_TERMIN) {
+        warns.push('Auszug vor dem ordentlichen Termin: Der Mieter wird nur frei, wenn ein zumutbarer, zahlungsfähiger Ersatzmieter angenommen ist (Art. 264 OR) — sonst haftet er bis ' + MIN_TERMIN.split('-').reverse().join('.') + '.');
+    }
 
     // Gewünschtes Ende vor dem ordentlichen Termin → ordentliche Kündigung unwirksam
-    if (gew && MIN_TERMIN && gew < MIN_TERMIN && !ao) {
+    if (gew && MIN_TERMIN && gew < MIN_TERMIN && !ao && absender === 'vermieter') {
         warns.push('Das gewünschte Ende liegt vor dem nächsten ordentlichen Kündigungstermin (' +
                    MIN_TERMIN.split('-').reverse().join('.') + '). Eine ordentliche Kündigung auf ' +
                    'diesen Termin wäre unwirksam (Art. 266a / 266o OR) — nur bei ausserordentlicher Kündigung zulässig.');
@@ -212,6 +295,7 @@ function kuendigungCheck(){
     else { box.classList.add('hidden'); }
     regelPruefen();
 }
+syncZustellung();
 kuendigungCheck();
 </script>
 {% endblock %}

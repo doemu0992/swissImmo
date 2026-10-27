@@ -762,6 +762,7 @@ class NachtN6BewirtschafterTests(TestCase):
         _test_organisation(firma='V AG', aktueller_referenzzinssatz=Decimal('1.75'),
                                   aktueller_lik_punkte=Decimal('100'))
         lg, e, m, v = _basis_objekte()   # netto 1500
+        lg.kanton = 'ZH'; lg.save()      # Formular nur mit erfasstem Kanton (Befund G)
         # Basis-Zins tiefer als aktuell → Erhöhungspotenzial (+2 Stufen à 3 %)
         v.basis_referenzzinssatz = Decimal('1.25'); v.basis_lik_punkte = Decimal('100'); v.save()
         return lg, m, v
@@ -773,7 +774,7 @@ class NachtN6BewirtschafterTests(TestCase):
         self.assertEqual(r.status_code, 200)
         body = r.content.decode()
         self.assertIn('Wird angepasst', body)
-        self.assertIn('1 Anpassung erfassen', body)
+        self.assertIn('1 Entwurf + Formular', body)
 
     def test_massenanpassung_ausfuehren_und_idempotent(self):
         from rentals.models import MietzinsAnpassung
@@ -787,11 +788,20 @@ class NachtN6BewirtschafterTests(TestCase):
         self.assertEqual(MietzinsAnpassung.objects.filter(vertrag=v).count(), 1)
         anp = MietzinsAnpassung.objects.get(vertrag=v)
         self.assertGreater(anp.neuer_netto_mietzins, Decimal('1500'))
-        self.assertTrue(Pendenz.objects.filter(vertrag=v, titel__icontains='Anfechtungsfrist').exists())
+        # Der Massenlauf legt Entwürfe an (Befund C) — die Frist entsteht beim Versand.
+        self.assertEqual(anp.status, 'entwurf')
+        self.assertFalse(Pendenz.objects.filter(vertrag=v, titel__icontains='Anfechtungsfrist').exists())
         # Zweiter Lauf mit denselben Verträgen: keine Duplikate
         c.post('/neu/mietzins/massenanpassung/', {'aktion': 'ausfuehren', 'vertrag_id': [str(v.id)]})
         self.assertEqual(MietzinsAnpassung.objects.filter(vertrag=v).count(), 1)
+        # Versand für die Entwürfe erfassen → gebucht, Pendenz einmal.
+        c.post('/neu/mietzins/versand/', {'anpassung': [str(anp.id)], 'versand_am': date.today().isoformat()})
+        anp.refresh_from_db()
+        self.assertEqual(anp.status, 'versandt')
         self.assertEqual(Pendenz.objects.filter(vertrag=v, titel__icontains='Anfechtungsfrist').count(), 1)
+        # Dritter Lauf nach dem Versand: kein neuer Entwurf auf denselben Termin.
+        c.post('/neu/mietzins/massenanpassung/', {'aktion': 'ausfuehren', 'vertrag_id': [str(v.id)]})
+        self.assertEqual(MietzinsAnpassung.objects.filter(vertrag=v).count(), 1)
 
     def test_massenanpassung_ohne_basis_uebersprungen(self):
         from crm.models import Organisation

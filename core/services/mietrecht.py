@@ -181,18 +181,31 @@ def runde_mietzins(betrag, schritt=None):
             * schritt).quantize(Decimal('0.01'))
 
 
-def index_anpassung_vorschlag(vertrag, aktuell_lik=None):
+def index_anpassung_vorschlag(vertrag, aktuell_lik=None, wirksam_ab=None):
     """Berechnet die fällige Indexmiet-Anpassung (Art. 269b OR) für die amtliche
     Index-Mitteilung (Art. 269d): neuer Nettomietzins aus der LIK-Entwicklung
-    seit der Vertragsbasis, anteilig zur vereinbarten Weitergabe.
+    seit der letzten Anpassung, anteilig zur vereinbarten Weitergabe.
 
-    Rückgabe-Dict oder None (kein Indexvertrag / keine Basis / LIK nicht gestiegen):
-      neu_netto, alt_netto, basis_lik, aktuell_lik, delta_prozent, begruendung.
+    Seit 26.10.2026 in BEIDE Richtungen (Befund N): Sinkt der Index, folgt der
+    Mietzins ihm ebenso — die Rechnung ist dieselbe, nur mit negativem Vorzeichen.
+    Bis hierher gab die Funktion bei sinkendem LIK schlicht None zurück, und die
+    Senkung kam nirgends vor.
+
+    Ausgangspunkt ist der Stand unmittelbar vor `wirksam_ab`
+    (`rentals.services.bisheriger_stand`) — nicht `netto_mietzins` und
+    `basis_lik_punkte` des Vertragsbeginns. Sonst rechnete die zweite
+    Indexanpassung den bereits weitergegebenen Anstieg ein zweites Mal.
+
+    Rückgabe-Dict oder None (kein Indexvertrag / keine Basis / LIK unverändert):
+      neu_netto, alt_netto, basis_lik, aktuell_lik, delta_prozent, richtung
+      ('erhoehung' | 'senkung'), begruendung.
     """
     from decimal import Decimal
+    from rentals.services import bisheriger_stand
     if getattr(vertrag, 'mietzins_modell', 'fest') != 'index':
         return None
-    basis_lik = vertrag.basis_lik_punkte or Decimal('0')
+    alt_netto, _ref, basis_lik = bisheriger_stand(vertrag, wirksam_ab)
+    basis_lik = Decimal(str(basis_lik or 0))
     if basis_lik <= 0:
         return None
     if aktuell_lik is None:
@@ -204,23 +217,25 @@ def index_anpassung_vorschlag(vertrag, aktuell_lik=None):
     if not aktuell_lik:
         return None
     aktuell_lik = Decimal(str(aktuell_lik))
-    if aktuell_lik <= basis_lik:
-        return None   # LIK nicht gestiegen → keine Erhöhung möglich
+    if aktuell_lik == basis_lik:
+        return None   # LIK unverändert → nichts anzupassen
     weiter = (vertrag.index_weitergabe_prozent or Decimal('100')) / Decimal('100')
     faktor = Decimal('1') + (aktuell_lik - basis_lik) / basis_lik * weiter
-    alt_netto = vertrag.netto_mietzins or Decimal('0')
+    alt_netto = Decimal(str(alt_netto or 0))
     neu_netto = runde_mietzins(alt_netto * faktor)
-    if neu_netto <= alt_netto:
+    if neu_netto == alt_netto:
         return None
+    richtung = 'erhoehung' if neu_netto > alt_netto else 'senkung'
     delta_prozent = ((neu_netto - alt_netto) / alt_netto * Decimal('100')).quantize(Decimal('0.01')) \
         if alt_netto > 0 else Decimal('0')
     weiter_txt = '' if weiter == Decimal('1') else f" (Weitergabe {vertrag.index_weitergabe_prozent}%)"
-    begruendung = (f"Indexanpassung an den Landesindex der Konsumentenpreise (Art. 269b OR){weiter_txt}: "
+    wort = 'Indexanpassung' if richtung == 'erhoehung' else 'Indexanpassung (Senkung)'
+    begruendung = (f"{wort} an den Landesindex der Konsumentenpreise (Art. 269b OR){weiter_txt}: "
                    f"LIK {basis_lik} → {aktuell_lik} Punkte. Nettomietzins CHF {alt_netto} → CHF {neu_netto}.")
     return {
         'neu_netto': neu_netto, 'alt_netto': alt_netto,
         'basis_lik': basis_lik, 'aktuell_lik': aktuell_lik,
-        'delta_prozent': delta_prozent, 'begruendung': begruendung,
+        'delta_prozent': delta_prozent, 'richtung': richtung, 'begruendung': begruendung,
     }
 
 

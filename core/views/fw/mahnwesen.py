@@ -70,6 +70,11 @@ def fw_mahnwesen(request):
     vorlauf = []
     ohne_mahnfall = []      # (Rechnung, fällig, offen, Grund): offen, aber nicht in der Liste — mit Begründung
     offen_gesamt_n, offen_gesamt_summe = 0, Decimal('0.00')
+    # Durch Zahlungsvereinbarung gedeckt oder in Betreibung: dieselbe Stelle wie
+    # im Mahnlauf (core/services/mahnsperre.py), damit die Liste zeigt, was der
+    # Lauf tut — und bei «nicht im Mahnlauf» den Grund nennt.
+    from core.services.mahnsperre import gesperrte_forderungen
+    gesperrt = gesperrte_forderungen()
     for r in qs:
         faellig = r.faellig_am or r.datum
         if not faellig:
@@ -79,6 +84,17 @@ def fw_mahnwesen(request):
         if _offen > 0 and r.stammrechnung_id is None:
             offen_gesamt_n += 1
             offen_gesamt_summe += _offen
+        if r.pk in gesperrt:
+            if _offen > 0:
+                ohne_mahnfall.append((r, faellig, _offen, gesperrt[r.pk]))
+            continue
+        # Der Handschalter am Mieter sperrt den ganzen Mieter — im Mahnlauf seit
+        # jeher, in dieser Liste bis 27.10.2026 nur im Vorlauf: Die Hauptliste
+        # zeigte Mahnfälle, die der Lauf gar nicht mahnt.
+        if r.vertrag_id and r.vertrag.mieter_id and getattr(r.vertrag.mieter, 'mahnsperre', False):
+            if _offen > 0:
+                ohne_mahnfall.append((r, faellig, _offen, gettext('Mahnsperre am Mieter (von Hand gesetzt)')))
+            continue
         # Der Fälligkeitstag ist Tag 0; wann der Verzug beginnt, stellt die Verwaltung ein.
         tage = stufen_laden.tage_im_verzug(faellig, heute, _eigentuemer_von_rechnung(r),
                                            organisation=r.organisation)
@@ -109,7 +125,7 @@ def fw_mahnwesen(request):
                 elif mieter is None:
                     grund = gettext('Kein Vertrag verknüpft')
                 else:
-                    grund = gettext('Mahnsperre (laufende Zahlungsvereinbarung)')
+                    grund = gettext('Mahnsperre am Mieter (von Hand gesetzt)')
                 ohne_mahnfall.append((r, faellig, offen, grund))
             continue
         counts[stufe['stufe']] += 1

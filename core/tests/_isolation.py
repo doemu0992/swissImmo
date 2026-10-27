@@ -480,6 +480,10 @@ class MandantenFixture:
         # Phase 2: `fw_betreibung_neu` nimmt die RECHNUNG, `fw_betreibung_bearbeiten` die BETREIBUNG.
         ('betreibung_neu',  'debitor'),
         ('betreibung_bearbeiten', 'betreibung'),
+        # 26.10.2026: Datenblatt (PDF) und «Kosten belasten» nehmen die BETREIBUNG.
+        # Ein POST auf eine fremde darf dort keine Forderung anlegen.
+        ('betreibung_pdf',  'betreibung'),
+        ('betreibung_kosten', 'betreibung'),
         # STWEG-Modul. `pk` ist je nach URL EINE VERSAMMLUNG, ein TRAKTANDUM,
         # eine ANFRAGE oder eine AUFGABE (Pendenz) — abgelesen am
         # `get_object_or_404` in stweg/views.py. 'stweg_traktandum_neu' trägt die

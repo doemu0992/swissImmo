@@ -15,6 +15,9 @@ class MietrechtLogicTests(TestCase):
         self.dummy_vertrag.basis_referenzzinssatz = Decimal('1.25')
         self.dummy_vertrag.basis_lik_punkte = Decimal('100.0')
         self.dummy_vertrag.netto_mietzins = Decimal('1000.00')
+        # Gerechnet wird seit 26.10.2026 auf dem EFFEKTIVEN Mietzins vor dem
+        # Wirksamwerden (rentals.services.bisheriger_stand), nicht auf dem Feld.
+        self.dummy_vertrag.effektiver_netto_mietzins.return_value = Decimal('1000.00')
         self._basis(Decimal('1.25'), Decimal('100.0'))
 
     def _basis(self, ref, lik):

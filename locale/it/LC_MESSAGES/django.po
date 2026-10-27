@@ -27240,3 +27240,1095 @@ msgid "Zahlung ohne Zuordnung"
 msgid_plural "Zahlungen ohne Zuordnung"
 msgstr[0] "pagamento senza attribuzione"
 msgstr[1] "pagamenti senza attribuzione"
+
+msgid "Rechtsvorschlag"
+msgstr "Opposizione"
+
+msgid "Der Schuldner kann innert 10 Tagen nach Zustellung des Zahlungsbefehls ohne Begründung Rechtsvorschlag erheben (Art. 74 SchKG); dann steht die Betreibung still. Auch ein später erhobener Rechtsvorschlag kann gelten — etwa bei Betreibungsferien oder nachträglichem Rechtsvorschlag; das klärt das Betreibungsamt."
+msgstr "Il debitore può fare opposizione senza motivazione entro 10 giorni dalla notifica del precetto esecutivo (art. 74 LEF); l'esecuzione resta quindi sospesa. Anche un'opposizione fatta più tardi può essere valida — ad esempio durante le ferie esecutive o in caso di opposizione tardiva; lo chiarisce l'ufficio di esecuzione."
+
+msgid "Rechtsöffnung"
+msgstr "Rigetto dell'opposizione"
+
+msgid "Beseitigt den Rechtsvorschlag. Mit einer unterschriebenen Schuldanerkennung, etwa dem Mietvertrag oder einer Zahlungsvereinbarung, gibt das Gericht provisorische Rechtsöffnung (Art. 82 SchKG), mit einem Urteil definitive (Art. 80 SchKG). Zwischen Gesuch und Entscheid steht die Jahresfrist für die Fortsetzung still."
+msgstr "Elimina l'opposizione. Con un riconoscimento di debito firmato, ad esempio il contratto di locazione o un accordo di pagamento, il giudice pronuncia il rigetto provvisorio dell'opposizione (art. 82 LEF); con una sentenza, quello definitivo (art. 80 LEF). Tra l'istanza e la decisione il termine di un anno per il proseguimento è sospeso."
+
+msgid "Frühestens 20 Tage nach Zustellung des Zahlungsbefehls, bei Rechtsvorschlag erst nach der Rechtsöffnung; spätestens ein Jahr nach der Zustellung, verlängert um die Dauer des Rechtsöffnungsverfahrens (Art. 88 SchKG). Danach pfändet das Betreibungsamt."
+msgstr "Al più presto 20 giorni dopo la notifica del precetto esecutivo, in caso di opposizione solo dopo il rigetto dell'opposizione; al più tardi un anno dopo la notifica, prorogato della durata della procedura di rigetto (art. 88 LEF). In seguito l'ufficio di esecuzione procede al pignoramento."
+
+msgid "Betreibungskosten"
+msgstr "Spese di esecuzione"
+
+msgid "Die Kosten der Betreibung trägt der Schuldner, der Gläubiger schiesst sie vor (Art. 68 SchKG). «Kosten dem Mieter belasten» stellt sie als eigene Forderung in Rechnung; sie zählt nicht zum Mietzinsrückstand nach Art. 257d OR."
+msgstr "Le spese di esecuzione sono a carico del debitore; il creditore le anticipa (art. 68 LEF). «Addebitare le spese all'inquilino» le fattura come credito a sé; questo non rientra nell'arretrato di pigione secondo l'art. 257d CO."
+
+msgid "Deckt die Pfändung die Forderung nicht, stellt das Betreibungsamt einen Verlustschein aus (Art. 149 SchKG). Die offenen Beträge werden dann als Debitorenverlust (Konto 3805) abgeschrieben; die Forderung gegen den Schuldner bleibt bestehen."
+msgstr "Se il pignoramento non copre il credito, l'ufficio di esecuzione rilascia un attestato di carenza di beni (art. 149 LEF). Gli importi aperti vengono quindi stralciati come perdita su debitori (conto 3805); il credito nei confronti del debitore permane."
+
+msgid "Der fällige Rückstand wird auf gleich hohe Raten verteilt, die letzte trägt den Rest. Bis zur Erfüllung ruhen nur die gedeckten Forderungen im Mahnlauf — neue Mieten werden normal gemahnt."
+msgstr "L'arretrato scaduto viene suddiviso in rate uguali, l'ultima comprende il resto. Fino all'adempimento sono sospesi nel ciclo di solleciti solo i crediti coperti — le nuove pigioni vengono sollecitate normalmente."
+
+msgid "Bruch der Vereinbarung"
+msgstr "Violazione dell'accordo"
+
+msgid "Liegt die bezahlte Summe nach einer kurzen Toleranz unter dem, was an Raten fällig war, gilt die Vereinbarung als gebrochen. Dann laufen die gedeckten Forderungen wieder im Mahnlauf, und eine Pendenz erinnert an die Fortsetzung des Mahnprozesses."
+msgstr "Se, dopo una breve tolleranza, la somma pagata è inferiore alle rate scadute, l'accordo è considerato violato. I crediti coperti tornano allora nel ciclo di solleciti e una pendenza ricorda di proseguire la procedura di sollecito."
+
+msgid "Schuldanerkennung"
+msgstr "Riconoscimento di debito"
+
+msgid "Unterschreibt der Mieter die Zahlungsvereinbarung, anerkennt er den Rückstand schriftlich. Das ist ein provisorischer Rechtsöffnungstitel (Art. 82 SchKG): Erhebt er in einer Betreibung Rechtsvorschlag, lässt sich dieser damit beseitigen."
+msgstr "Firmando l'accordo di pagamento, l'inquilino riconosce l'arretrato per iscritto. È un titolo di rigetto provvisorio dell'opposizione (art. 82 LEF): se in un'esecuzione fa opposizione, questa può così essere rimossa."
+
+msgid "Vereinbarung und Art. 257d OR"
+msgstr "Accordo e art. 257d CO"
+
+msgid "Eine Zahlungsvereinbarung hemmt eine bereits laufende Zahlungsfrist nach Art. 257d OR nicht, es sei denn, der Vermieter verzichtet ausdrücklich darauf."
+msgstr "Un accordo di pagamento non sospende un termine di pagamento già in corso secondo l'art. 257d CO, a meno che il locatore vi rinunci espressamente."
+
+msgid "Vorbehalt"
+msgstr "Riserva"
+
+msgid "Wer die mögliche Anpassung nicht ganz ausschöpft, kann sich den Rest für später vorbehalten. Der Vorbehalt wird beziffert — in Franken oder Prozent —, damit er sich später nachvollziehen lässt."
+msgstr "Chi non sfrutta interamente l'adeguamento possibile può riservarsi il resto per più tardi. La riserva viene quantificata — in franchi o in percento — affinché resti verificabile in seguito."
+
+msgid "Indexmiete"
+msgstr "Pigione indicizzata"
+
+msgid "Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach unten. Zulässig nur bei einem Vertrag mit fester Dauer von mindestens fünf Jahren (Art. 269b OR). Die Massenanpassung nach Referenzzins erfasst Indexmieten nicht."
+msgstr "La pigione segue l'indice nazionale dei prezzi al consumo, sia al rialzo sia al ribasso. Ammessa solo per un contratto di durata determinata di almeno cinque anni (art. 269b CO). L'adeguamento collettivo secondo il tasso di riferimento non comprende le pigioni indicizzate."
+
+msgid "Staffelmiete"
+msgstr "Pigione scalare"
+
+msgid "Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens einmal jährlich, bei einer Vertragsdauer von mindestens drei Jahren (Art. 269c OR). Der Mietzins folgt den Stufen — die Anpassung nach Referenzzins und Teuerung gilt für ihn nicht."
+msgstr "Gli aumenti sono convenuti nel contratto come importi in franchi, al massimo una volta all'anno, con una durata del contratto di almeno tre anni (art. 269c CO). La pigione segue gli scaglioni — l'adeguamento secondo il tasso di riferimento e il rincaro non si applica."
+
+msgid "Herabsetzung"
+msgstr "Riduzione della pigione"
+
+msgid "Sinkt der Referenzzins, kann der Mieter eine Herabsetzung verlangen (Art. 270a OR). Der Vermieter antwortet innert 30 Tagen; lehnt er ab, kann der Mieter innert 30 Tagen die Schlichtungsbehörde anrufen."
+msgstr "Se il tasso di riferimento scende, l'inquilino può chiedere una riduzione della pigione (art. 270a CO). Il locatore risponde entro 30 giorni; se rifiuta, l'inquilino può adire l'autorità di conciliazione entro 30 giorni."
+
+msgid "Zugang"
+msgstr "Ricezione"
+
+msgid "Fristen laufen ab dem Tag, an dem ein Schreiben beim Empfänger ankommt — nicht ab dem Versand. Ist der Zugang noch nicht bestätigt, rechnet die Anwendung mit Postweg und Abholfrist eines Einschreibens."
+msgstr "I termini decorrono dal giorno in cui uno scritto giunge al destinatario — non dall'invio. Se la ricezione non è ancora confermata, l'applicazione tiene conto del recapito postale e del termine di giacenza di una raccomandata."
+
+msgid "Von Hand gesetzt: Für diese Person läuft kein automatischer Mahnlauf. Eine Zahlungsvereinbarung braucht das Häkchen nicht — sie nimmt nur die Forderungen aus, die ihr Ratenplan deckt. Offene Rechnungen bleiben sichtbar."
+msgstr "Impostato manualmente: per questa persona non viene eseguito alcun ciclo di solleciti automatico. Un accordo di pagamento non richiede la spunta — esclude solo i crediti coperti dal suo piano rateale. Le fatture aperte restano visibili."
+
+msgid "Bitte angeben, ob der Mieter anwesend war."
+msgstr "Indicare se l'inquilino era presente."
+
+msgid "Bitte den Allgemeinzustand wählen."
+msgstr "Scegliere lo stato generale."
+
+msgid "Die Unterschrift der Verwaltung fehlt."
+msgstr "Manca la firma dell'amministrazione."
+
+msgid "Der Mieter war abwesend: bitte den Grund angeben."
+msgstr "L'inquilino era assente: indicare il motivo."
+
+msgid "Die Unterschrift des Mieters fehlt. War er nicht da, «Mieter abwesend» wählen und den Grund angeben."
+msgstr "Manca la firma dell'inquilino. Se non era presente, scegliere «Inquilino assente» e indicare il motivo."
+
+msgid "Bitte den Namen der Person eintragen, die für den Mieter unterschreibt."
+msgstr "Inserire il nome della persona che firma per l'inquilino."
+
+#, python-format
+msgid "%(count)s Bauteil(e) sind nicht bewertet: bitte bewerten oder ausdrücklich bestätigen."
+msgstr "%(count)s elemento/i non valutato/i: valutarli o confermarlo espressamente."
+
+#, python-format
+msgid "%(count)s Mieterschaden ohne Alter oder Lebensdauer des Bauteils: voller Betrag. Bitte bestätigen oder Einbaudatum und Lebensdauer im Raumbuch ergänzen."
+msgstr "%(count)s danno/i dell'inquilino senza età o durata di vita dell'elemento: importo intero. Confermare o completare data di installazione e durata di vita nell'inventario dei locali."
+
+msgid "Zuerst die Betreibungskosten erfassen (Feld «Betreibungskosten»)."
+msgstr "Registrare prima le spese di esecuzione (campo «Spese di esecuzione»)."
+
+msgid "Die Betreibungskosten sind dem Mieter bereits belastet."
+msgstr "Le spese di esecuzione sono già state addebitate all'inquilino."
+
+msgid "Ohne Mietvertrag lassen sich keine Kosten belasten."
+msgstr "Senza contratto di locazione non è possibile addebitare spese."
+
+msgid "ohne amtliches Formular ist die Kündigung nichtig (Art. 266l/266o OR)"
+msgstr "senza modulo ufficiale la disdetta è nulla (art. 266l/266o CO)"
+
+msgid "ohne amtliches Formular ist die Mitteilung mangelhaft (Art. 270 Abs. 2 OR)"
+msgstr "senza modulo ufficiale la comunicazione è viziata (art. 270 cpv. 2 CO)"
+
+msgid "ohne amtliches Formular ist die Anpassung nichtig (Art. 269d OR)"
+msgstr "senza modulo ufficiale l'adeguamento è nullo (art. 269d CO)"
+
+#, python-format
+msgid "Für Kanton %(kanton)s ist kein amtliches Originalformular hinterlegt — verwenden Sie das Formular der kantonalen Behörde; %(folge)s."
+msgstr "Per il Cantone %(kanton)s non è depositato alcun modulo ufficiale originale — utilizzate il modulo dell'autorità cantonale; %(folge)s."
+
+msgid "Für das amtliche Formular muss der Kanton der Liegenschaft erfasst sein — die Postleitzahl allein bestimmt ihn nicht sicher."
+msgstr "Per il modulo ufficiale occorre registrare il Cantone dello stabile — il NPA da solo non lo determina con certezza."
+
+#, python-format
+msgid "PLZ %(plz)s liegt in Bereichen von: %(kantone)s."
+msgstr "Il NPA %(plz)s si trova in zone di: %(kantone)s."
+
+msgid "Gedeckt durch eine laufende Zahlungsvereinbarung (Ratenplan)"
+msgstr "Coperto da un accordo di pagamento in corso (piano rateale)"
+
+msgid "In Betreibung (SchKG) — gemahnt wird über das Betreibungsamt"
+msgstr "In esecuzione (LEF) — i solleciti avvengono tramite l'ufficio di esecuzione"
+
+msgid "Nur ein Entwurf dieses Vertrags lässt sich bearbeiten."
+msgstr "Si può modificare solo una bozza di questo contratto."
+
+#, python-format
+msgid "Für den %(datum)s ist bereits eine Anpassung versandt."
+msgstr "Per il %(datum)s è già stato inviato un adeguamento."
+
+#, python-format
+msgid "Wirksamkeitsdatum zu früh: Bei diesem Versand kann die Erhöhung frühestens auf %(datum)s wirksam werden (Kündigungsfrist + 10 Tage ab Zugang, Art. 269d OR)."
+msgstr "Data di decorrenza troppo anticipata: con questo invio l'aumento può avere effetto al più presto il %(datum)s (termine di preavviso + 10 giorni dalla ricezione, art. 269d CO)."
+
+msgid "Nur ein Entwurf kann als versandt erfasst werden."
+msgstr "Solo una bozza può essere registrata come inviata."
+
+msgid "Bitte das Versanddatum angeben."
+msgstr "Indicare la data d'invio."
+
+msgid "Der Zugang kann nicht vor dem Versand liegen."
+msgstr "La ricezione non può precedere l'invio."
+
+msgid "Das Zugangsdatum kann nicht in der Zukunft liegen."
+msgstr "La data di ricezione non può essere nel futuro."
+
+msgid "Dieser Statuswechsel ist nicht möglich."
+msgstr "Questo cambio di stato non è possibile."
+
+msgid "Ticket zum Mangel anlegen und Handwerker zuweisen"
+msgstr "Creare un ticket per il difetto e assegnare un artigiano"
+
+msgid "Ersatz je fehlendem Schlüssel CHF"
+msgstr "Sostituzione per chiave mancante CHF"
+
+msgid "Schlüssel oder Zylinder"
+msgstr "Chiave o cilindro"
+
+msgid "Zulasten Mieter"
+msgstr "A carico dell'inquilino"
+
+msgid "Unterschreiben und abschliessen"
+msgstr "Firmare e concludere"
+
+msgid "Mängelrüge (Art. 267a OR)"
+msgstr "Notifica dei difetti (art. 267a CO)"
+
+#, python-format
+msgid "Versandt am <b>%(datum)s</b>."
+msgstr "Inviata il <b>%(datum)s</b>."
+
+#, python-format
+msgid "Sofort nach der Rückgabe rügen: versenden bis <b>%(frist)s</b> (Abnahme plus zwei Arbeitstage). Erledigt ist die Frist erst mit dem Versand, nicht mit dem PDF."
+msgstr "Notificare subito dopo la riconsegna: inviare entro il <b>%(frist)s</b> (riconsegna più due giorni lavorativi). Il termine è rispettato solo con l'invio, non con il PDF."
+
+msgid "Der Mieter war bei der Abnahme abwesend: Rüge eingeschrieben versenden (Zugangsnachweis)."
+msgstr "L'inquilino era assente alla riconsegna: inviare la notifica per raccomandata (prova di ricezione)."
+
+msgid "Rüge versandt am"
+msgstr "Notifica inviata il"
+
+msgid "Sendungsnummer (Einschreiben)"
+msgstr "Numero d'invio (raccomandata)"
+
+msgid "Versand festhalten"
+msgstr "Registrare l'invio"
+
+msgid "Handwerker"
+msgstr "Artigiano"
+
+msgid "Foto des Mangels"
+msgstr "Foto del difetto"
+
+msgid "Nach der Abnahme entdeckte Mängel"
+msgstr "Difetti scoperti dopo la riconsegna"
+
+msgid "Versteckte Mängel, die bei der Abnahme nicht erkennbar waren, sind sofort nach ihrer Entdeckung zu rügen (Art. 267a Abs. 3 OR). Sie stehen getrennt vom unterzeichneten Protokoll."
+msgstr "I difetti occulti, non riconoscibili alla riconsegna, vanno notificati subito dopo la loro scoperta (art. 267a cpv. 3 CO). Figurano separatamente dal verbale firmato."
+
+msgid "Entdeckt am"
+msgstr "Scoperto il"
+
+msgid "Rüge"
+msgstr "Notifica"
+
+msgid "Rüge (PDF)"
+msgstr "Notifica (PDF)"
+
+#, python-format
+msgid "versandt %(datum)s"
+msgstr "inviato il %(datum)s"
+
+msgid "Versandt"
+msgstr "Inviato"
+
+msgid "Später entdeckten Mangel rügen"
+msgstr "Notificare un difetto scoperto in seguito"
+
+msgid "Mangel erfassen"
+msgstr "Registrare un difetto"
+
+msgid "nicht unterzeichnet"
+msgstr "non firmato"
+
+msgid "Mieter abwesend"
+msgstr "Inquilino assente"
+
+msgid "Abgeschlossen wird im nächsten Schritt: mit den Unterschriften von Verwaltung und Mieter (oder dem Grund seiner Abwesenheit)."
+msgstr "La conclusione avviene nel passo successivo: con le firme dell'amministrazione e dell'inquilino (o il motivo della sua assenza)."
+
+msgid "Bestätigt: Diese Bauteile wurden nicht bewertet."
+msgstr "Confermato: questi elementi non sono stati valutati."
+
+msgid "Bestätigt: dem Mieter ohne Abzug «neu für alt» belasten (Einbaudatum und Lebensdauer sind nicht erfasst)."
+msgstr "Confermato: addebitare all'inquilino senza deduzione «nuovo per vecchio» (data di installazione e durata di vita non registrate)."
+
+msgid "Mieter bei der Abnahme"
+msgstr "Inquilino alla riconsegna"
+
+msgid "Grund der Abwesenheit"
+msgstr "Motivo dell'assenza"
+
+msgid "Ohne Unterschrift des Mieters: die Mängelrüge eingeschrieben versenden (Zugangsnachweis)."
+msgstr "Senza firma dell'inquilino: inviare la notifica dei difetti per raccomandata (prova di ricezione)."
+
+msgid "bitte wählen"
+msgstr "scegliere"
+
+msgid "Strasse Nr., PLZ Ort"
+msgstr "Via n., NPA località"
+
+msgid "Name der unterzeichnenden Person"
+msgstr "Nome della persona firmataria"
+
+msgid "Kein Formular ohne Kanton"
+msgstr "Nessun modulo senza Cantone"
+
+msgid "Kanton bei der Liegenschaft erfassen"
+msgstr "Registrare il Cantone dello stabile"
+
+msgid "Kein amtliches Originalformular"
+msgstr "Nessun modulo ufficiale originale"
+
+msgid "Verstanden: Die Nachbildung ist nur ein Entwurf (Wasserzeichen «Entwurf – nicht amtlich»)."
+msgstr "Capito: la riproduzione è solo una bozza (filigrana «Bozza – non ufficiale»)."
+
+#, python-format
+msgid "%%(n)s von %%(m)s Zeilen"
+msgstr "%%(n)s di %%(m)s righe"
+
+msgid "Forderungen in dieser Betreibung"
+msgstr "Crediti in questa esecuzione"
+
+msgid "Solange die Betreibung offen ist, mahnt der Mahnlauf diese Forderungen nicht. Sind alle bezahlt, steht sie von selbst auf «Bezahlt»."
+msgstr "Finché l'esecuzione è aperta, il ciclo di solleciti non sollecita questi crediti. Se sono tutti pagati, passa automaticamente a «Pagato»."
+
+msgid "Datenblatt Betreibungsbegehren (PDF)"
+msgstr "Scheda dati domanda d'esecuzione (PDF)"
+
+msgid "«Verlustschein» schreibt die offenen Forderungen ab und ist der Verwaltung (Verwalter, Inhaber) vorbehalten."
+msgstr "«Attestato di carenza di beni» stralcia i crediti aperti ed è riservato all'amministrazione (Verwalter, Inhaber)."
+
+msgid "Zins (%%)"
+msgstr "Interesse (%%)"
+
+msgid "Zins seit"
+msgstr "Interesse dal"
+
+msgid "Forderungsgrund"
+msgstr "Causa del credito"
+
+#, python-format
+msgid "Dem Mieter belastet: %(t)s (%(s)s)"
+msgstr "Addebitato all'inquilino: %(t)s (%(s)s)"
+
+msgid "Rechtsöffnungsgesuch am"
+msgstr "Istanza di rigetto dell'opposizione il"
+
+msgid "Rechtsöffnung erteilt am"
+msgstr "Rigetto dell'opposizione pronunciato il"
+
+msgid "Art der Rechtsöffnung"
+msgstr "Tipo di rigetto dell'opposizione"
+
+msgid "Pfändung am"
+msgstr "Pignoramento il"
+
+msgid "Kosten dem Mieter belasten"
+msgstr "Addebitare le spese all'inquilino"
+
+#, python-format
+msgid "Bereits belastet: CHF %(b)s."
+msgstr "Già addebitato: CHF %(b)s."
+
+#, python-format
+msgid "Betreibungskosten von CHF %(b)s dem Mieter als Forderung belasten?"
+msgstr "Addebitare all'inquilino le spese di esecuzione di CHF %(b)s come credito?"
+
+#, python-format
+msgid "Stellt CHF %(b)s als Forderung «Betreibungskosten (Art. 68 SchKG)» in Rechnung. Sie hängt an der Hauptforderung und zählt nicht zum Rückstand nach Art. 257d OR."
+msgstr "Fattura CHF %(b)s come credito «Spese di esecuzione (art. 68 LEF)». È collegato al credito principale e non rientra nell'arretrato secondo l'art. 257d CO."
+
+msgid "Zuerst die Betreibungskosten oben erfassen und speichern."
+msgstr "Registrare e salvare prima le spese di esecuzione qui sopra."
+
+msgid "So läuft die Betreibung"
+msgstr "Come funziona l'esecuzione"
+
+msgid "Hier die Forderungen wählen und die Angaben für das Betreibungsbegehren erfassen. Das Datenblatt als PDF hilft beim Ausfüllen des amtlichen Formulars."
+msgstr "Scegliere qui i crediti e registrare i dati per la domanda d'esecuzione. La scheda dati in PDF aiuta a compilare il modulo ufficiale."
+
+msgid "Das Betreibungsamt stellt den Zahlungsbefehl zu. Ab dann läuft die Frist für den Rechtsvorschlag."
+msgstr "L'ufficio di esecuzione notifica il precetto esecutivo. Da quel momento decorre il termine per l'opposizione."
+
+msgid "Bei Rechtsvorschlag: Rechtsöffnung beim Gericht verlangen."
+msgstr "In caso di opposizione: chiedere il rigetto dell'opposizione al giudice."
+
+msgid "Danach das Fortsetzungsbegehren stellen — die Anwendung erinnert mit einer Pendenz an den Termin."
+msgstr "Poi presentare la domanda di proseguimento — l'applicazione ricorda la scadenza con una pendenza."
+
+msgid "Solange die Betreibung offen ist, mahnt der Mahnlauf diese Forderungen nicht mehr."
+msgstr "Finché l'esecuzione è aperta, il ciclo di solleciti non sollecita più questi crediti."
+
+msgid "Prüfen & erfassen"
+msgstr "Verificare e registrare"
+
+msgid "Forderungen wählen"
+msgstr "Scegliere i crediti"
+
+msgid "Welche offenen Mieten dieses Vertrags betrieben werden. Eine Betreibung für mehrere Monate kostet nur einmal Gebühren."
+msgstr "Quali pigioni aperte di questo contratto vengono messe in esecuzione. Un'esecuzione per più mesi comporta le tasse una sola volta."
+
+msgid "Hauptforderung"
+msgstr "Credito principale"
+
+msgid "Keine weiteren offenen, fälligen Forderungen dieses Vertrags."
+msgstr "Nessun altro credito aperto e scaduto di questo contratto."
+
+msgid "Mahngebühren und Verzugszinsen stehen nicht zur Wahl — sie gehören zur Hauptforderung. Forderungen, die bereits in einer offenen Betreibung stehen, fehlen hier."
+msgstr "Le spese di sollecito e gli interessi di mora non sono selezionabili — fanno parte del credito principale. I crediti già inclusi in un'esecuzione aperta non compaiono qui."
+
+msgid "Gläubiger, Zins & Grund"
+msgstr "Creditore, interesse e causa"
+
+msgid "Die Angaben für das Betreibungsbegehren."
+msgstr "I dati per la domanda d'esecuzione."
+
+msgid "Gläubiger"
+msgstr "Creditore"
+
+msgid "vertreten durch"
+msgstr "rappresentato da"
+
+msgid "Kein Eigentümer erfasst — die Verwaltung steht als Gläubigerin auf dem Datenblatt."
+msgstr "Nessun proprietario registrato — l'amministrazione figura come creditrice sulla scheda dati."
+
+msgid "Betreibungsamt am Wohnsitz des Mieters"
+msgstr "Ufficio di esecuzione del domicilio dell'inquilino"
+
+msgid "Vorgeschlagen: Summe der offenen Beträge der gewählten Forderungen."
+msgstr "Proposto: somma degli importi aperti dei crediti scelti."
+
+msgid "(sobald bekannt)"
+msgstr "(appena noto)"
+
+msgid "Bei mehreren Forderungen mit verschiedener Fälligkeit selbst festlegen (z. B. mittlerer Verfall) oder die Fälligkeiten im Grund nennen."
+msgstr "In caso di più crediti con scadenze diverse, stabilirla autonomamente (p. es. scadenza media) o indicare le scadenze nella causa."
+
+msgid "Leer gelassen, setzt die Anwendung die gewählten Mieten mit Fälligkeit und Betrag ein."
+msgstr "Se lasciato vuoto, l'applicazione inserisce le pigioni scelte con scadenza e importo."
+
+msgid "Nach dem Erfassen steht das Datenblatt «Betreibungsbegehren» als PDF bereit. Es ist eine Vorlage für das amtliche Formular des Betreibungsamts, nicht das Formular selbst."
+msgstr "Dopo la registrazione la scheda dati «Domanda d'esecuzione» è disponibile in PDF. È un modello per il modulo ufficiale dell'ufficio di esecuzione, non il modulo stesso."
+
+#, python-format
+msgid "Fortsetzung ab %(d)s"
+msgstr "Proseguimento dal %(d)s"
+
+msgid "Rechtsöffnung ausstehend"
+msgstr "Rigetto dell'opposizione in sospeso"
+
+msgid "PDF"
+msgstr "PDF"
+
+msgid "Die Nachbildung trägt das Wasserzeichen «Entwurf – nicht amtlich» und wird nicht in der Akte abgelegt. Sie dient als Vorlage zum Übertragen in das Formular der kantonalen Behörde."
+msgstr "La riproduzione reca la filigrana «Bozza – non ufficiale» e non viene archiviata nel fascicolo. Serve da modello da trascrivere nel modulo dell'autorità cantonale."
+
+msgid "Verstanden — Nachbildung als Entwurf öffnen"
+msgstr "Capito — aprire la riproduzione come bozza"
+
+msgid "Neuer Nettomietzins (CHF)"
+msgstr "Nuova pigione netta (CHF)"
+
+msgid "(bei Zustimmung)"
+msgstr "(in caso di accettazione)"
+
+msgid "Begründung im Antwortbrief"
+msgstr "Motivazione nella lettera di risposta"
+
+msgid "z. B. gestiegene Kosten und Teuerung gleichen die Senkung des Referenzzinses aus"
+msgstr "p. es. l'aumento dei costi e il rincaro compensano la diminuzione del tasso di riferimento"
+
+msgid "Festhalten + Antwortbrief (PDF)"
+msgstr "Registrare + lettera di risposta (PDF)"
+
+msgid "Wurde einem Begehren ganz oder teilweise zugestimmt, wird die Senkung mit dem amtlichen Formular mitgeteilt."
+msgstr "Se una domanda è stata accolta del tutto o in parte, la riduzione viene comunicata con il modulo ufficiale."
+
+msgid "Mietzinsanpassung starten"
+msgstr "Avviare l'adeguamento della pigione"
+
+msgid "Eingang beim Vermieter *"
+msgstr "Ricezione presso il locatore *"
+
+msgid "Versand (Poststempel) *"
+msgstr "Invio (timbro postale) *"
+
+msgid "Zugang beim Mieter"
+msgstr "Ricezione da parte dell'inquilino"
+
+#, python-format
+msgid "Leer: Versand + %(tage)s Tage (Postweg und Abholfrist)."
+msgstr "Vuoto: invio + %(tage)s giorni (recapito postale e termine di giacenza)."
+
+msgid "Ausdrückliche Zustimmung des Ehegatten / eingetragenen Partners liegt vor"
+msgstr "È presente il consenso esplicito del coniuge / partner registrato"
+
+msgid "Kündigungstermine fehlen im Vertrag"
+msgstr "Termini di disdetta mancanti nel contratto"
+
+msgid "Der Vertrag nennt keine lesbaren Termine und für den Kanton ist keine Regel hinterlegt. Der Termin unten nimmt jedes Monatsende an und ist damit nur der früheste denkbare. Bitte die vereinbarten oder ortsüblichen Termine im Vertrag ergänzen."
+msgstr "Il contratto non indica termini leggibili e per il Cantone non è depositata alcuna regola. Il termine qui sotto ammette ogni fine mese ed è quindi solo il più anticipato possibile. Completare nel contratto i termini convenuti o d'uso locale."
+
+msgid "Termine aus der Kantonsregel des Regelwerks — der Vertrag nennt keine."
+msgstr "Termini secondo la regola cantonale del set di regole — il contratto non ne indica."
+
+#, python-format
+msgid "Berechnet aus Zugang + %(monate)s Monaten, auf den nächsten erlaubten Termin — bei Versand heute."
+msgstr "Calcolato dalla ricezione + %(monate)s mesi, al prossimo termine ammesso — con invio oggi."
+
+msgid "Grund *"
+msgstr "Motivo *"
+
+msgid "Vorgeschlagene Ersatzmieter"
+msgstr "Inquilini subentranti proposti"
+
+msgid "(bei Auszug vor dem Termin)"
+msgstr "(in caso di trasloco prima del termine)"
+
+msgid "Name, Kontakt — je Zeile ein Vorschlag"
+msgstr "Nome, contatto — una proposta per riga"
+
+msgid "Ein Ersatzmieter ist angenommen — der Mieter wird ab dem gewünschten Ende befreit"
+msgstr "Un inquilino subentrante è stato accettato — l'inquilino è liberato dalla fine desiderata"
+
+msgid "Ohne angenommenen Ersatzmieter haftet der Mieter bis zum nächsten ordentlichen Termin."
+msgstr "Senza inquilino subentrante accettato, l'inquilino risponde fino al prossimo termine ordinario."
+
+msgid "Verschiebt das Vertragsende — Sollstellung und Leerstand folgen ihm."
+msgstr "Sposta la fine del contratto — l'emissione pigioni e lo sfitto si adeguano."
+
+msgid "Mahngebühren brauchen eine vertragliche Grundlage: Verlangen dürfen Sie sie nur, wenn der Mietvertrag oder die AGB sie vorsehen. Der Verzugszins wird mit 360 Zinstagen je Jahr gerechnet; ob diese Zinsbasis für Ihre Verträge gilt, ist rechtlich zu bestätigen."
+msgstr "Le spese di sollecito richiedono una base contrattuale: potete esigerle solo se il contratto di locazione o le CG le prevedono. L'interesse di mora è calcolato con 360 giorni d'interesse all'anno; se questa base di calcolo valga per i vostri contratti va confermato giuridicamente."
+
+msgid "Kann der Mieter nicht auf einmal zahlen: «Ratenplan» vereinbart Raten für den Rückstand. Nur diese Forderungen ruhen dann im Mahnlauf."
+msgstr "Se l'inquilino non può pagare in una volta: «Piano rateale» concorda rate per l'arretrato. Solo questi crediti sono allora sospesi nel ciclo di solleciti."
+
+msgid "Mahngebühren dürfen nur verlangt werden, wenn der Mietvertrag oder die AGB sie vorsehen. Der Verzugszins wird mit 360 Zinstagen je Jahr gerechnet — ob diese Zinsbasis gilt, ist rechtlich zu bestätigen."
+msgstr "Le spese di sollecito possono essere richieste solo se il contratto di locazione o le CG le prevedono. L'interesse di mora è calcolato con 360 giorni d'interesse all'anno — se questa base valga va confermato giuridicamente."
+
+msgid "Entwürfe — noch nicht versandt"
+msgstr "Bozze — non ancora inviate"
+
+msgid "Netto bisher"
+msgstr "Netto attuale"
+
+msgid "Auswählen"
+msgstr "Selezionare"
+
+msgid "Versandt am"
+msgstr "Inviato il"
+
+msgid "Für Kantone ohne hinterlegtes Original wurde das Formular der kantonalen Behörde verwendet"
+msgstr "Per i Cantoni senza originale depositato è stato utilizzato il modulo dell'autorità cantonale"
+
+msgid "Ausgewählte als versandt erfassen"
+msgstr "Registrare la selezione come inviata"
+
+msgid "Keine offenen Entwürfe — alles Erfasste ist versandt oder gebucht."
+msgstr "Nessuna bozza aperta — tutto quanto registrato è inviato o contabilizzato."
+
+msgid "«Anpassen» öffnet den Assistenten für die amtliche Mietzinsanpassung mit vorberechneten Werten (Referenzzins, LIK, Teuerung). Netto und Basis sind die <b>effektiven</b> Werte (inkl. gebuchter Anpassungen und Staffelstufen) — das Potenzial vergleicht diese effektive Basis mit dem aktuellen Stand. Index- und Staffelmieten sind von der Massenanpassung ausgenommen: Ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR)."
+msgstr "«Adeguare» apre l'assistente per l'adeguamento ufficiale della pigione con valori precalcolati (tasso di riferimento, IPC, rincaro). Netto e base sono i valori <b>effettivi</b> (inclusi adeguamenti contabilizzati e scaglioni) — il potenziale confronta questa base effettiva con lo stato attuale. Le pigioni indicizzate e scalari sono escluse dall'adeguamento collettivo: la loro pigione segue l'indice o gli scaglioni convenuti (art. 269b/269c CO)."
+
+#, python-format
+msgid "Mietzinsanpassung — %(name)s"
+msgstr "Adeguamento della pigione — %(name)s"
+
+msgid "Anpassung"
+msgstr "Adeguamento"
+
+#, python-format
+msgid "Offener <b>Entwurf</b> (wirksam ab %(datum)s) — Änderungen schreiben ihn fort. Gebucht wird erst, wenn die Anpassung als versandt erfasst ist."
+msgstr "<b>Bozza</b> aperta (in vigore dal %(datum)s) — le modifiche la aggiornano. La contabilizzazione avviene solo quando l'adeguamento è registrato come inviato."
+
+msgid "Prüfen & Formular"
+msgstr "Verifica e modulo"
+
+msgid "Grundlagen"
+msgstr "Basi"
+
+msgid "Referenzzins, Teuerung und Kostensteigerung — bisher und neu. Der Vorschlag rechnet sich bei jeder Änderung neu."
+msgstr "Tasso di riferimento, rincaro e aumento dei costi — precedenti e nuovi. La proposta viene ricalcolata a ogni modifica."
+
+msgid "Punkte"
+msgstr "Punti"
+
+msgid "Senkung"
+msgstr "Riduzione"
+
+msgid "Begründung und neuer Mietzins sind vorbefüllt."
+msgstr "La motivazione e la nuova pigione sono precompilate."
+
+msgid "Der LIK hat sich seit der letzten Anpassung nicht verändert — keine Indexanpassung fällig."
+msgstr "L'IPC non è cambiato dall'ultimo adeguamento — nessun adeguamento all'indice dovuto."
+
+msgid "Der Mietzins folgt den vereinbarten Stufen. Eine Anpassung nach Referenzzins und Teuerung ist für diesen Vertrag nicht vorgesehen."
+msgstr "La pigione segue gli scaglioni convenuti. Un adeguamento secondo il tasso di riferimento e il rincaro non è previsto per questo contratto."
+
+msgid "Die Grundlagen sprechen für eine Senkung. Sie wird mit demselben Formular mitgeteilt und darf auch kurzfristiger wirken als eine Erhöhung."
+msgstr "Le basi depongono a favore di una riduzione. Viene comunicata con lo stesso modulo e può avere effetto con un preavviso più breve di un aumento."
+
+msgid "Die Vertragsbasis (Referenzzins/LIK) war nicht erfasst — bitte die Basiswerte ergänzen, auf denen der aktuelle Mietzins beruht. Sie werden auf dem Vertrag gespeichert."
+msgstr "La base contrattuale (tasso di riferimento/IPC) non era registrata — completare i valori di base su cui si fonda la pigione attuale. Vengono salvati nel contratto."
+
+#, python-format
+msgid "Für diesen Vertrag liegt bereits eine Anpassung vor: Gerechnet wird ab deren Stand — Referenzzins %(zins)s %%, LIK %(lik)s, Netto CHF %(netto)s —, nicht ab der Vertragsbasis unten."
+msgstr "Per questo contratto esiste già un adeguamento: il calcolo parte dal suo stato — tasso di riferimento %(zins)s %%, IPC %(lik)s, netto CHF %(netto)s —, non dalla base contrattuale qui sotto."
+
+msgid "Referenzzins Vertrag (Basis, %%)"
+msgstr "Tasso di riferimento del contratto (base, %%)"
+
+msgid "Neuer Referenzzins (%%)"
+msgstr "Nuovo tasso di riferimento (%%)"
+
+msgid "Allg. Kostensteigerung (%%)"
+msgstr "Aumento generale dei costi (%%)"
+
+#, python-format
+msgid "ausgeglichen bis %(datum)s"
+msgstr "compensato fino al %(datum)s"
+
+msgid "seit Vertragsbeginn"
+msgstr "dall'inizio del contratto"
+
+msgid "LIK Vertrag (Basis, Punkte)"
+msgstr "IPC del contratto (base, punti)"
+
+msgid "Neuer LIK (Punkte)"
+msgstr "Nuovo IPC (punti)"
+
+msgid "Stand-Monat (Basis-LIK)"
+msgstr "Mese di riferimento (IPC di base)"
+
+#, python-format
+msgid "LIK-Basis %(basis)s = 100"
+msgstr "Base IPC %(basis)s = 100"
+
+#, python-format
+msgid "neuer Stand %(stand)s"
+msgstr "nuovo stato %(stand)s"
+
+msgid "Referenzzins"
+msgstr "Tasso di riferimento"
+
+msgid "Teuerung"
+msgstr "Rincaro"
+
+msgid "Nicht ausgeschöpfte Reserven vorbehalten — beziffert in CHF oder Prozent."
+msgstr "Riservare le riserve non sfruttate — quantificate in CHF o in percento."
+
+msgid "Anpassung mit Vorbehalt (nicht ausgeschöpfte Reserven)"
+msgstr "Adeguamento con riserva (riserve non sfruttate)"
+
+msgid "Vorbehalt (CHF pro Monat)"
+msgstr "Riserva (CHF al mese)"
+
+msgid "oder Vorbehalt (%%)"
+msgstr "o riserva (%%)"
+
+msgid "Begründung des Vorbehalts"
+msgstr "Motivazione della riserva"
+
+msgid "z. B. Referenzzins 1.50 %% nicht weitergegeben"
+msgstr "p. es. tasso di riferimento 1.50 %% non trasferito"
+
+msgid "Pflicht, wenn ein Vorbehalt gemacht wird: Betrag oder Prozent. Beim Versand wird er zur Mietzinsreserve des Vertrags."
+msgstr "Obbligatorio in caso di riserva: importo o percento. All'invio diventa la riserva di pigione del contratto."
+
+msgid "Termin & Zustellung"
+msgstr "Termine e notifica"
+
+msgid "Neuer Mietzins, Wirksamkeit und Versand. Massgebend für die Frist ist der Zugang beim Mieter."
+msgstr "Nuova pigione, decorrenza e invio. Per il termine è determinante la ricezione da parte dell'inquilino."
+
+msgid "Der früheste Termin unten nimmt jedes Monatsende an. Bitte die vereinbarten oder ortsüblichen Termine im Vertrag ergänzen."
+msgstr "Il termine più anticipato qui sotto ammette ogni fine mese. Completare nel contratto i termini convenuti o d'uso locale."
+
+msgid "Netto neu (CHF)"
+msgstr "Nuovo netto (CHF)"
+
+msgid "Vorschlag aus Referenzzins + Teuerung + Kosten"
+msgstr "Proposta da tasso di riferimento + rincaro + costi"
+
+#, python-format
+msgid "Frühestens %(datum)s bei Versand heute"
+msgstr "Al più presto il %(datum)s con invio oggi"
+
+msgid "Versand am (Poststempel)"
+msgstr "Invio il (timbro postale)"
+
+msgid "Nur für «Als versandt erfassen»."
+msgstr "Solo per «Registrare come inviato»."
+
+msgid "Begründung & Formular"
+msgstr "Motivazione e modulo"
+
+msgid "Begründung, Schlichtungsbehörde und welches Formular für diesen Kanton vorliegt."
+msgstr "Motivazione, autorità di conciliazione e modulo disponibile per questo Cantone."
+
+msgid "Verstanden: Die Nachbildung ist nur ein Entwurf (Wasserzeichen «Entwurf – nicht amtlich»). Versandt wird das Formular der kantonalen Behörde."
+msgstr "Capito: la riproduzione è solo una bozza (filigrana «Bozza – non ufficiale»). Viene inviato il modulo dell'autorità cantonale."
+
+#, python-format
+msgid "Amtliches Originalformular des Kantons %(kanton)s hinterlegt."
+msgstr "Modulo ufficiale originale del Cantone %(kanton)s depositato."
+
+msgid "Zusätzliche Begründung (optional)"
+msgstr "Motivazione supplementare (facoltativa)"
+
+msgid "z. B. wertvermehrende Investition (neue Küche)…"
+msgstr "p. es. investimento con plusvalore (nuova cucina)…"
+
+msgid "Schlichtungsbehörde (Adresse)"
+msgstr "Autorità di conciliazione (indirizzo)"
+
+#, python-format
+msgid "z. B. Schlichtungsbehörde für Mietsachen, %(ort)s"
+msgstr "p. es. Autorità di conciliazione in materia di locazione, %(ort)s"
+
+msgid "<b>Entwurf speichern</b> und <b>Formular als PDF</b> buchen nichts. Erst <b>Als versandt erfassen</b> bucht den neuen Mietzins ab dem Wirksamkeitsdatum, legt die Anfechtungsfrist (30 Tage ab Zugang, Art. 270b OR) als Pendenz an und schreibt die Basisdaten des Vertrags fort."
+msgstr "<b>Salva bozza</b> e <b>Modulo in PDF</b> non contabilizzano nulla. Solo <b>Registrare come inviato</b> contabilizza la nuova pigione dalla data di decorrenza, crea il termine di contestazione (30 giorni dalla ricezione, art. 270b CO) come pendenza e aggiorna i dati di base del contratto."
+
+msgid "Entwurf speichern"
+msgstr "Salva bozza"
+
+msgid "Formular als PDF"
+msgstr "Modulo in PDF"
+
+msgid "Als versandt erfassen"
+msgstr "Registrare come inviato"
+
+msgid "Kanton der Liegenschaft fehlt"
+msgstr "Cantone dello stabile mancante"
+
+msgid "Kein Original"
+msgstr "Nessun originale"
+
+msgid "Je Vertrag wird ein Entwurf erfasst und das Formular als Sammel-PDF erstellt — gebucht wird noch nichts. Nach dem Versand die Entwürfe unter «Mietzins» als versandt erfassen: Erst dann gilt der neue Mietzins und die Anfechtungsfrist (Art. 270b OR) läuft als Pendenz. Verträge ohne Basisdaten, ohne Kanton oder ohne Potenzial werden übersprungen."
+msgstr "Per ogni contratto viene registrata una bozza e il modulo viene generato come PDF cumulativo — non viene ancora contabilizzato nulla. Dopo l'invio, registrare le bozze come inviate in «Pigione»: solo allora vale la nuova pigione e il termine di contestazione (art. 270b CO) decorre come pendenza. I contratti senza dati di base, senza Cantone o senza potenziale vengono saltati."
+
+msgid "Verstanden: Nachbildungen sind nur Entwürfe (Wasserzeichen «Entwurf – nicht amtlich»)."
+msgstr "Capito: le riproduzioni sono solo bozze (filigrana «Bozza – non ufficiale»)."
+
+msgid "aktiv (von Hand gesetzt)"
+msgstr "attivo (impostato manualmente)"
+
+#, python-format
+msgid "Betreibung %(nr)s"
+msgstr "Esecuzione %(nr)s"
+
+msgid "Mahnsperre (von Hand — kein automatischer Mahnlauf für diese Person)"
+msgstr "Blocco dei solleciti (manuale — nessun ciclo di solleciti automatico per questa persona)"
+
+#, python-format
+msgid "Fortsetzungsbegehren ab %(a)s; das Ende ist offen, solange das Rechtsöffnungsverfahren läuft (Art. 88 Abs. 2 SchKG)."
+msgstr "Domanda di proseguimento dal %(a)s; la fine resta aperta finché la procedura di rigetto dell'opposizione è in corso (art. 88 cpv. 2 LEF)."
+
+#, python-format
+msgid "Fortsetzung erst nach der Rechtsöffnung; spätestens %(b)s, verlängert um die Dauer des Rechtsöffnungsverfahrens (Art. 88 SchKG)."
+msgstr "Proseguimento solo dopo il rigetto dell'opposizione; al più tardi il %(b)s, prorogato della durata della procedura di rigetto (art. 88 LEF)."
+
+msgid "Fortsetzung erst nach dem Rechtsöffnungsentscheid; die Jahresfrist steht still, solange das Verfahren läuft (Art. 88 Abs. 2 SchKG)."
+msgstr "Proseguimento solo dopo la decisione di rigetto dell'opposizione; il termine di un anno è sospeso finché la procedura è in corso (art. 88 cpv. 2 LEF)."
+
+msgid "Wohnungsabnahme vor Ort"
+msgstr "Riconsegna dell'abitazione sul posto"
+
+msgid "Abnahme nachträglich erfassen (Formular)"
+msgstr "Registrare la riconsegna in un secondo tempo (modulo)"
+
+#, python-format
+msgid "erstreckt bis %(d)s"
+msgstr "protratto fino al %(d)s"
+
+#, python-format
+msgid "Zugang beim Mieter %(d)s"
+msgstr "Ricezione da parte dell'inquilino il %(d)s"
+
+msgid "Ersatzmieter (Art. 264 OR)"
+msgstr "Inquilino subentrante (art. 264 CO)"
+
+msgid "Ausdrückliche Zustimmung des Ehegatten / Partners liegt vor (Art. 266m OR)"
+msgstr "È presente il consenso esplicito del coniuge / partner (art. 266m CO)"
+
+#, python-format
+msgid "versandt %(d)s"
+msgstr "inviato il %(d)s"
+
+#, python-format
+msgid "Zugang %(d)s"
+msgstr "Ricezione il %(d)s"
+
+msgid "Entwurf öffnen"
+msgstr "Aprire la bozza"
+
+msgid "Wirksam"
+msgstr "In vigore"
+
+msgid "Angefochten"
+msgstr "Contestato"
+
+msgid "Ratenplan & Betreibungen"
+msgstr "Piano rateale ed esecuzioni"
+
+msgid "Zahlungsvereinbarung"
+msgstr "Accordo di pagamento"
+
+#, python-format
+msgid "Laufender Ratenplan: CHF %(b)s in %(n)s Raten — die bis %(d)s fälligen Forderungen ruhen im Mahnlauf."
+msgstr "Piano rateale in corso: CHF %(b)s in %(n)s rate — i crediti scaduti fino al %(d)s sono sospesi nel ciclo di solleciti."
+
+#, python-format
+msgid "Betreibung %(nr)s vom %(d)s"
+msgstr "Esecuzione %(nr)s del %(d)s"
+
+msgid "Keine Betreibungen zu diesem Vertrag."
+msgstr "Nessuna esecuzione per questo contratto."
+
+#, python-format
+msgid "Zahlungsvereinbarung — %(name)s"
+msgstr "Accordo di pagamento — %(name)s"
+
+msgid "So wirkt eine Zahlungsvereinbarung"
+msgstr "Come agisce un accordo di pagamento"
+
+msgid "Ratenplan: Der fällige Rückstand wird auf gleich hohe Raten verteilt; die letzte Rate trägt den Rest. Für jede Rate entsteht eine Pendenz."
+msgstr "Piano rateale: l'arretrato scaduto viene suddiviso in rate uguali; l'ultima rata comprende il resto. Per ogni rata viene creata una pendenza."
+
+msgid "Mahnsperre-Wirkung: Nur die gedeckten Forderungen (und ihre Mahngebühren und Zinsen) ruhen im Mahnlauf. Neue Mieten während des Plans werden normal gemahnt."
+msgstr "Effetto di blocco dei solleciti: solo i crediti coperti (e le relative spese di sollecito e interessi) sono sospesi nel ciclo di solleciti. Le nuove pigioni durante il piano vengono sollecitate normalmente."
+
+#, python-format
+msgid "Bruch: Bleiben die Zahlungen mehr als %(n)s Tage hinter den fälligen Raten zurück, gilt die Vereinbarung als gebrochen — die gedeckten Forderungen laufen wieder im Mahnlauf."
+msgstr "Violazione: se i pagamenti restano indietro di oltre %(n)s giorni rispetto alle rate scadute, l'accordo è considerato violato — i crediti coperti tornano nel ciclo di solleciti."
+
+msgid "Art. 257d OR: Eine bereits laufende Zahlungsfrist mit Kündigungsandrohung wird durch die Vereinbarung nicht gehemmt."
+msgstr "Art. 257d CO: un termine di pagamento già in corso con comminatoria di disdetta non viene sospeso dall'accordo."
+
+msgid "Schreiben: Die «Zahlungsvereinbarung mit Schuldanerkennung» zweifach ausdrucken und von beiden Seiten unterzeichnen lassen."
+msgstr "Lettera: stampare in duplice copia l'«Accordo di pagamento con riconoscimento di debito» e farlo firmare da entrambe le parti."
+
+msgid "Es läuft eine Fristansetzung nach Art. 257d OR. Eine Zahlungsvereinbarung <b>hemmt diese Frist nicht</b> — es sei denn, der Vermieter verzichtet ausdrücklich darauf."
+msgstr "È in corso una fissazione del termine secondo l'art. 257d CO. Un accordo di pagamento <b>non sospende questo termine</b> — a meno che il locatore vi rinunci espressamente."
+
+#, python-format
+msgid "<b>CHF %(b)s</b> in %(n)s Raten — Status: <b>%(s)s</b>"
+msgstr "<b>CHF %(b)s</b> in %(n)s rate — stato: <b>%(s)s</b>"
+
+#, python-format
+msgid "Bezahlt CHF %(b)s · offen CHF %(o)s"
+msgstr "Pagato CHF %(b)s · aperto CHF %(o)s"
+
+#, python-format
+msgid "Rate %(nr)s: %(d)s — CHF %(b)s"
+msgstr "Rata %(nr)s: %(d)s — CHF %(b)s"
+
+#, python-format
+msgid "Im Mahnlauf ruhen die bis %(d)s fälligen Forderungen:"
+msgstr "Nel ciclo di solleciti sono sospesi i crediti scaduti fino al %(d)s:"
+
+msgid "Keine offenen gedeckten Forderungen mehr."
+msgstr "Nessun credito coperto ancora aperto."
+
+msgid "Schreiben mit Schuldanerkennung (PDF)"
+msgstr "Lettera con riconoscimento di debito (PDF)"
+
+msgid "Zahlungsvereinbarung abbrechen? Die gedeckten Forderungen laufen danach wieder im Mahnlauf."
+msgstr "Annullare l'accordo di pagamento? I crediti coperti torneranno poi nel ciclo di solleciti."
+
+msgid "Für diesen Vertrag besteht noch keine Zahlungsvereinbarung."
+msgstr "Per questo contratto non esiste ancora alcun accordo di pagamento."
+
+msgid "Neue Vereinbarung"
+msgstr "Nuovo accordo"
+
+#, python-format
+msgid "Fälliger Rückstand: <b>CHF %(b)s</b>. Er wird auf gleich hohe Raten verteilt; bis zur Erfüllung ruhen diese Forderungen im Mahnlauf."
+msgstr "Arretrato scaduto: <b>CHF %(b)s</b>. Viene suddiviso in rate uguali; fino all'adempimento questi crediti sono sospesi nel ciclo di solleciti."
+
+msgid "Anzahl Raten"
+msgstr "Numero di rate"
+
+msgid "Abstand (Monate)"
+msgstr "Intervallo (mesi)"
+
+msgid "Erste Rate am"
+msgstr "Prima rata il"
+
+msgid "Vereinbarung erfassen"
+msgstr "Registrare l'accordo"
+
+msgid "Es gibt keinen fälligen Rückstand, der vereinbart werden könnte."
+msgstr "Non vi è alcun arretrato scaduto che possa essere concordato."
+
+#, python-format
+msgid "%(typ)s erfasst (%(count)s Mängel). Abschliessen mit Unterschriften im Protokoll."
+msgstr "%(typ)s registrato (%(count)s difetti). Concludere con le firme nel verbale."
+
+msgid "Jetzt unterschreiben und abschliessen."
+msgstr "Ora firmare e concludere."
+
+#, python-format
+msgid "Versanddatum ungültig: zwischen %(von)s und heute."
+msgstr "Data d'invio non valida: tra il %(von)s e oggi."
+
+#, python-format
+msgid "Versand der Rüge am %(datum)s festgehalten."
+msgstr "Invio della notifica del %(datum)s registrato."
+
+msgid "Nur an einem abgeschlossenen Auszugsprotokoll möglich."
+msgstr "Possibile solo su un verbale di riconsegna concluso."
+
+#, python-format
+msgid "Entdeckungsdatum ungültig: zwischen %(von)s und heute."
+msgstr "Data di scoperta non valida: tra il %(von)s e oggi."
+
+msgid "Kostenschätzung ist keine Zahl."
+msgstr "La stima dei costi non è un numero."
+
+#, python-format
+msgid "Mangel erfasst. Rüge jetzt erstellen und bis %(frist)s versenden."
+msgstr "Difetto registrato. Creare ora la notifica e inviarla entro il %(frist)s."
+
+#, python-format
+msgid "Ticket #%(id)s angelegt: Handwerker jetzt zuweisen."
+msgstr "Ticket #%(id)s creato: assegnare ora un artigiano."
+
+msgid "Ein abgeschlossenes Abnahmeprotokoll ist unterschrieben und kann nicht gelöscht werden."
+msgstr "Un verbale di riconsegna concluso è firmato e non può essere eliminato."
+
+msgid "Mieteranteil nach Lebensdauer (Zeitwert)"
+msgstr "Quota dell'inquilino secondo la durata di vita (valore attuale)"
+
+msgid "Lebensdauer abgelaufen: kein Mieteranteil"
+msgstr "Durata di vita scaduta: nessuna quota dell'inquilino"
+
+msgid "Noch kein Betrag: Kostenschätzung eingeben"
+msgstr "Ancora nessun importo: inserire la stima dei costi"
+
+msgid "Kein Mieterschaden"
+msgstr "Nessun danno dell'inquilino"
+
+#, python-format
+msgid "Mängelrüge bis %(frist)s versenden (Art. 267a OR)."
+msgstr "Inviare la notifica dei difetti entro il %(frist)s (art. 267a CO)."
+
+msgid "Der Mieter war abwesend: eingeschrieben senden."
+msgstr "L'inquilino era assente: inviare per raccomandata."
+
+msgid "Eine versandte Mietzinsanpassung kann nur die Verwaltung (Verwalter/Inhaber) entfernen."
+msgstr "Solo l'amministrazione (Verwalter/Inhaber) può rimuovere un adeguamento della pigione inviato."
+
+msgid "Bitte den ausserordentlichen Grund wählen, der für diese Partei gilt."
+msgstr "Scegliere il motivo straordinario applicabile a questa parte."
+
+msgid "Für diesen Grund rechnet die Anwendung keine Frist — bitte das Vertragsende angeben."
+msgstr "Per questo motivo l'applicazione non calcola alcun termine — indicare la fine del contratto."
+
+#, python-format
+msgid "Für %(grund)s ist im Bestand keine Mindestfrist hinterlegt — der Termin wurde nicht geprüft. Vor dem Versand rechtlich prüfen."
+msgstr "Per %(grund)s non è depositato alcun termine minimo nei dati — il termine non è stato verificato. Farlo verificare giuridicamente prima dell'invio."
+
+#, python-format
+msgid "Gewünschtes Ende %(wunsch)s liegt vor dem frühesten Termin für diesen Grund — die Kündigung gilt auf %(termin)s."
+msgstr "La fine desiderata %(wunsch)s precede il termine più anticipato per questo motivo — la disdetta vale per il %(termin)s."
+
+#, python-format
+msgid "Vorzeitige Rückgabe mit angenommenem Ersatzmieter (Art. 264 OR): Der Mieter ist ab %(datum)s befreit."
+msgstr "Riconsegna anticipata con inquilino subentrante accettato (art. 264 CO): l'inquilino è liberato dal %(datum)s."
+
+#, python-format
+msgid "Vorzeitige Rückgabe ohne angenommenen Ersatzmieter: Der Mieter haftet bis zum nächsten ordentlichen Termin %(termin)s (Art. 264 OR)."
+msgstr "Riconsegna anticipata senza inquilino subentrante accettato: l'inquilino risponde fino al prossimo termine ordinario, il %(termin)s (art. 264 CO)."
+
+msgid "Die Erstreckung muss nach dem Vertragsende liegen."
+msgstr "La protrazione deve essere successiva alla fine del contratto."
+
+#, python-format
+msgid "Die Erstreckung übersteigt die Höchstdauer von %(n)s Jahren (Art. 272b OR)."
+msgstr "La protrazione supera la durata massima di %(n)s anni (art. 272b CO)."
+
+msgid "Familienwohnung: Ohne ausdrückliche Zustimmung des Ehegatten/Partners ist die Kündigung nichtig (Art. 266m OR). Sie ist erfasst, aber nicht bestätigt — der Vertrag bleibt unverändert, bis die Zustimmung vorliegt."
+msgstr "Abitazione familiare: senza il consenso esplicito del coniuge/partner la disdetta è nulla (art. 266m CO). È registrata, ma non confermata — il contratto resta invariato finché il consenso non è presente."
+
+msgid "Familienwohnung: Bestätigung erst mit der ausdrücklichen Zustimmung des Ehegatten/Partners (Art. 266m OR)."
+msgstr "Abitazione familiare: conferma solo con il consenso esplicito del coniuge/partner (art. 266m CO)."
+
+msgid "Zahlungsvereinbarung abgebrochen — die gedeckten Forderungen laufen wieder im Mahnlauf."
+msgstr "Accordo di pagamento annullato — i crediti coperti tornano nel ciclo di solleciti."
+
+#, python-format
+msgid "Zahlungsvereinbarung erfasst — die gedeckten Forderungen ruhen im Mahnlauf, %(n)s Raten-Pendenzen angelegt."
+msgstr "Accordo di pagamento registrato — i crediti coperti sono sospesi nel ciclo di solleciti, create %(n)s pendenze per le rate."
+
+msgid "Das Schreiben «Zahlungsvereinbarung mit Schuldanerkennung» steht bereit — zweifach ausdrucken und unterzeichnen lassen."
+msgstr "La lettera «Accordo di pagamento con riconoscimento di debito» è pronta — stamparla in duplice copia e farla firmare."
+
+msgid "Mahnsperre am Mieter (von Hand gesetzt)"
+msgstr "Blocco dei solleciti sull'inquilino (impostato manualmente)"
+
+msgid "Indexmiete — einzeln"
+msgstr "Pigione indicizzata — singolarmente"
+
+msgid "Dieser Entwurf ist nicht mehr offen."
+msgstr "Questa bozza non è più aperta."
+
+#, python-format
+msgid "Wirksamkeitsdatum zu früh: Eine Mietzinserhöhung kann frühestens auf %(datum)s wirksam werden (Kündigungsfrist + 10-Tage-Ankündigung, Art. 269d OR)."
+msgstr "Data di decorrenza troppo anticipata: un aumento della pigione può avere effetto al più presto il %(datum)s (termine di preavviso + preannuncio di 10 giorni, art. 269d CO)."
+
+msgid "Ein Vorbehalt muss beziffert sein — bitte den vorbehaltenen Betrag in CHF oder in % angeben."
+msgstr "Una riserva deve essere quantificata — indicare l'importo riservato in CHF o in %."
+
+#, python-format
+msgid "Entwurf gespeichert — neu CHF %(neu_netto)s ab %(datum)s. Gebucht wird erst beim Versand."
+msgstr "Bozza salvata — nuova CHF %(neu_netto)s dal %(datum)s. La contabilizzazione avviene solo all'invio."
+
+#, python-format
+msgid "Mietzinsanpassung als versandt erfasst — neu CHF %(neu_netto)s ab %(datum)s."
+msgstr "Adeguamento della pigione registrato come inviato — nuova CHF %(neu_netto)s dal %(datum)s."
+
+msgid "Bitte bestätigen, dass das amtliche Formular des Kantons verwendet wurde."
+msgstr "Confermare che è stato utilizzato il modulo ufficiale del Cantone."
+
+msgid "Bitte das Zugangsdatum einer versandten Anpassung angeben."
+msgstr "Indicare la data di ricezione di un adeguamento inviato."
+
+#, python-format
+msgid "Mietzinsanpassung aktualisiert: %(status)s."
+msgstr "Adeguamento della pigione aggiornato: %(status)s."
+
+msgid "Kanton der Liegenschaft fehlt."
+msgstr "Cantone dello stabile mancante."
+
+#, python-format
+msgid "%(n)s Anpassung(en) als versandt erfasst."
+msgstr "%(n)s adeguamento/i registrato/i come inviato/i."
+
+msgid "Keine offenen Entwürfe ausgewählt."
+msgstr "Nessuna bozza aperta selezionata."
+
+#, python-format
+msgid "%(n)s Index- oder Staffelmiete(n) ausgenommen — deren Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR), nicht dem Referenzzins."
+msgstr "%(n)s pigione/i indicizzata/e o scalare/i esclusa/e — la loro pigione segue l'indice o gli scaglioni convenuti (art. 269b/269c CO), non il tasso di riferimento."
+
+msgid "Keine Anpassung möglich (Basisdaten oder Kanton fehlen, oder kein Potenzial)."
+msgstr "Nessun adeguamento possibile (mancano i dati di base o il Cantone, oppure nessun potenziale)."
+
+msgid "Der Zinssatz muss zwischen 0 und 100 % liegen."
+msgstr "Il tasso d'interesse deve essere compreso tra 0 e 100 %."
+
+msgid "Rechtsvorschlag mehr als 10 Tage nach Zustellung des Zahlungsbefehls (Art. 74 SchKG). Gespeichert — bitte beim Betreibungsamt klären, ob er gilt: Er kann rechtzeitig sein (z. B. Fristende an einem Wochenende oder Feiertag, Betreibungsferien oder Rechtsstillstand, Art. 31, 56, 63 SchKG, oder nachträglicher Rechtsvorschlag, Art. 77 SchKG)."
+msgstr "Opposizione oltre 10 giorni dopo la notifica del precetto esecutivo (art. 74 LEF). Salvata — verificare presso l'ufficio di esecuzione se è valida: può essere tempestiva (p. es. scadenza del termine in un fine settimana o giorno festivo, ferie esecutive o sospensione, art. 31, 56, 63 LEF, oppure opposizione tardiva, art. 77 LEF)."
+
+msgid "Rechtsöffnungsgesuch ohne erfassten Rechtsvorschlag — eine Rechtsöffnung braucht es nur, wenn Rechtsvorschlag erhoben wurde."
+msgstr "Istanza di rigetto dell'opposizione senza opposizione registrata — il rigetto è necessario solo se è stata fatta opposizione."
+
+msgid "Fortsetzungsbegehren erfasst, obwohl der Rechtsvorschlag noch nicht durch einen Rechtsöffnungsentscheid beseitigt ist (Art. 88 Abs. 1 SchKG)."
+msgstr "Domanda di proseguimento registrata benché l'opposizione non sia ancora stata rimossa da una decisione di rigetto (art. 88 cpv. 1 LEF)."
+
+#, python-format
+msgid "Fortsetzungsbegehren vor dem frühesten Termin (%(d)s, Art. 88 Abs. 1 SchKG)."
+msgstr "Domanda di proseguimento prima del termine più anticipato (%(d)s, art. 88 cpv. 1 LEF)."
+
+#, python-format
+msgid "Fortsetzungsbegehren nach Ablauf der Jahresfrist (%(d)s, Art. 88 Abs. 2 SchKG)."
+msgstr "Domanda di proseguimento dopo la scadenza del termine di un anno (%(d)s, art. 88 cpv. 2 LEF)."
+
+msgid "Weitere Forderungen"
+msgstr "Altri crediti"
+
+msgid "Diese Forderung steht bereits in einer offenen Betreibung."
+msgstr "Questo credito è già incluso in un'esecuzione aperta."
+
+msgid "Betrieben werden kann nur eine offene, fällige Hauptforderung (keine Mahngebühr, kein Zins, nichts noch nicht Fälliges)."
+msgstr "Può essere messo in esecuzione solo un credito principale aperto e scaduto (nessuna spesa di sollecito, nessun interesse, nulla di non ancora scaduto)."
+
+msgid "Betreibung erfasst. Das Datenblatt für das Betreibungsbegehren steht als PDF bereit."
+msgstr "Esecuzione registrata. La scheda dati per la domanda d'esecuzione è disponibile in PDF."
+
+msgid "Der Verlustschein schreibt die offenen Forderungen ab (Konto 3805) — das darf nur die Verwaltung (Verwalter oder Inhaber)."
+msgstr "L'attestato di carenza di beni stralcia i crediti aperti (conto 3805) — può farlo solo l'amministrazione (Verwalter o Inhaber)."
+
+#, python-format
+msgid "Verlustschein: %(n)s Forderung(en) über CHF %(s)s als Debitorenverlust abgeschrieben (Konto 3805)."
+msgstr "Attestato di carenza di beni: %(n)s credito/i per CHF %(s)s stralciato/i come perdita su debitori (conto 3805)."
+
+#, python-format
+msgid "%(n)s Forderung(en) liegen in einer gesperrten Buchungsperiode und wurden nicht abgeschrieben."
+msgstr "%(n)s credito/i si trova/no in un periodo contabile bloccato e non è/sono stato/i stralciato/i."
+
+#, python-format
+msgid "Betreibungskosten von CHF %(b)s dem Mieter belastet (Art. 68 SchKG)."
+msgstr "Spese di esecuzione di CHF %(b)s addebitate all'inquilino (art. 68 LEF)."
+
+msgid "Rechtsöffnung beantragt"
+msgstr "Rigetto dell'opposizione chiesto"
+
+msgid "Rechtsöffnung erteilt"
+msgstr "Rigetto dell'opposizione pronunciato"
+
+msgid "Pfändung"
+msgstr "Pignoramento"
+
+msgid "Provisorisch (Art. 82 SchKG)"
+msgstr "Provvisorio (art. 82 LEF)"
+
+msgid "Definitiv (Art. 80 SchKG)"
+msgstr "Definitivo (art. 80 LEF)"
+
+msgid "Dient eine Anlage einzelnen Eigentümern nicht, kann die Verteilung abweichen. Die befreiten Einheiten tragen nichts; der Betrag wird auf die übrigen umgerechnet (neue Basis 100 %%, auf den Rappen genau). Die Begründung ist Pflicht und wird festgehalten."
+msgstr "Se un impianto non serve singoli proprietari, la ripartizione può differire. Le unità esentate non sostengono nulla; l'importo viene ricalcolato per le altre (nuova base 100 %%, al centesimo). La motivazione è obbligatoria e viene registrata."
+
+#, python-format
+msgid "%(n)s Index- oder Staffelmiete ausgenommen — ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR)."
+msgid_plural "%(n)s Index- oder Staffelmieten ausgenommen — ihr Mietzins folgt dem Index bzw. den vereinbarten Stufen (Art. 269b/269c OR)."
+msgstr[0] "%(n)s pigione indicizzata o scalare esclusa — segue l'indice o gli scaglioni convenuti (art. 269b/269c CO)."
+msgstr[1] "%(n)s pigioni indicizzate o scalari escluse — seguono l'indice o gli scaglioni convenuti (art. 269b/269c CO)."
+
+#, python-format
+msgid "%(n)s Entwurf + Formular (Sammel-PDF)"
+msgid_plural "%(n)s Entwürfe + Formulare (Sammel-PDF)"
+msgstr[0] "%(n)s bozza + modulo (PDF cumulativo)"
+msgstr[1] "%(n)s bozze + moduli (PDF cumulativo)"

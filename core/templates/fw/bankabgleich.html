@@ -432,7 +432,7 @@ anderes schachteln.
                         <span class="fw-s">{% blocktrans with bezahlt=t.bezahlt|chf total=t.r.betrag|chf %}CHF {{ bezahlt }} von {{ total }} bezahlt{% endblocktrans %}</span>
                     </div>
                     <div class="fw-s">
-                        {% if t.mahnsperre %}<span class="fw-chip fw-info">{% trans "Mahnsperre" %}</span>
+                        {% if t.mahnsperre %}<span class="fw-chip fw-info">{% trans "Mahnsperre" %}</span>{% if t.sperrgrund %} {{ t.sperrgrund }}{% endif %}
                         {% elif t.hoechste %}{% blocktrans with stufe=t.hoechste.stufe datum=t.hoechste.datum|date:"d.m.Y" %}Gemahnt: Stufe {{ stufe }} am {{ datum }}{% endblocktrans %}
                         {% else %}{% trans "Noch nicht gemahnt" %}{% endif %}
                         {% if t.naechste and not t.mahnsperre %} · <b>{% blocktrans with label=t.naechste.label %}nächster Mahnlauf: {{ label }}{% endblocktrans %}</b>{% endif %}

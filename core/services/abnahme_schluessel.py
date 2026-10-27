@@ -20,16 +20,17 @@ def schluessel_anlegen(prot, vorgaenger=None):
     from portfolio.models import Schluessel
     from rentals.models import AbnahmeSchluessel
     if vorgaenger is not None and vorgaenger.schluessel.exists():
-        zeilen = [(z.bezeichnung, z.anlage, z.soll) for z in vorgaenger.schluessel.all()]
+        # Der Ersatzpreis gehört zum Schlüssel, nicht zum Mieter: er wandert mit.
+        zeilen = [(z.bezeichnung, z.anlage, z.soll, z.kosten_je_stueck) for z in vorgaenger.schluessel.all()]
     else:
         einheit = prot.vertrag.einheit
         # Einheit zuerst, dann die Schlüssel der Liegenschaft ohne Einheitsbezug (Haustür, Briefkasten …)
         register = list(Schluessel.objects.filter(einheit=einheit).order_by('id')) + list(
             Schluessel.objects.filter(liegenschaft=einheit.liegenschaft, einheit__isnull=True).order_by('id'))
-        zeilen = [(r.typ, r.schluessel_nummer, r.anzahl) for r in register]
-    for nr, (bezeichnung, anlage, soll) in enumerate(zeilen):
+        zeilen = [(r.typ, r.schluessel_nummer, r.anzahl, None) for r in register]
+    for nr, (bezeichnung, anlage, soll, je_stueck) in enumerate(zeilen):
         AbnahmeSchluessel.objects.create(protokoll=prot, bezeichnung=bezeichnung[:80], anlage=anlage[:80],
-                                         soll=max(0, int(soll or 0)), sortierung=nr)
+                                         soll=max(0, int(soll or 0)), kosten_je_stueck=je_stueck, sortierung=nr)
 
 
 def _zahl(text):
@@ -37,9 +38,24 @@ def _zahl(text):
     return int(text) if text.isdigit() and int(text) < 1000 else None
 
 
+def _betrag(text):
+    """CHF-Betrag aus dem Formular; None bei leer, unlesbar oder negativ.
+    Höchstens 99'999.99 (Feldgrösse) — ein Schlüssel kostet nicht mehr."""
+    from decimal import Decimal, InvalidOperation
+    text = (text or '').strip().replace("'", '').replace(',', '.')
+    if not text:
+        return None
+    try:
+        wert = Decimal(text).quantize(Decimal('0.01'))
+    except InvalidOperation:
+        return None
+    return wert if Decimal('0') <= wert < Decimal('100000') else None
+
+
 def schluessel_speichern(prot, P):
     """Ersetzt das Schlüsselverzeichnis durch die Zeilen aus dem Formular
-    (parallele Listen `s_bezeichnung`, `s_anlage`, `s_soll`, `s_ist`).
+    (parallele Listen `s_bezeichnung`, `s_anlage`, `s_soll`, `s_ist`,
+    `s_kosten` — Ersatz je fehlendem Schlüssel).
 
     Leere Zeilen entfallen. Ist mindestens ein Ist gezählt, wird die Summe in
     `schluessel_anzahl` («Schlüssel zurück») übernommen — daran hängt die
@@ -47,6 +63,7 @@ def schluessel_speichern(prot, P):
     from rentals.models import AbnahmeSchluessel
     bezeichnungen = P.getlist('s_bezeichnung')
     anlagen, solls, ists = P.getlist('s_anlage'), P.getlist('s_soll'), P.getlist('s_ist')
+    kosten = P.getlist('s_kosten')
     zeilen = []
     for i, bez in enumerate(bezeichnungen[:MAX_ZEILEN]):
         bez = ' '.join((bez or '').split())[:80]
@@ -54,12 +71,13 @@ def schluessel_speichern(prot, P):
             continue
         zeilen.append((bez, ' '.join((anlagen[i] if i < len(anlagen) else '').split())[:80],
                        _zahl(solls[i] if i < len(solls) else '') or 0,
-                       _zahl(ists[i] if i < len(ists) else '')))
+                       _zahl(ists[i] if i < len(ists) else ''),
+                       _betrag(kosten[i] if i < len(kosten) else '')))
     prot.schluessel.all().delete()
-    for nr, (bez, anlage, soll, ist) in enumerate(zeilen):
+    for nr, (bez, anlage, soll, ist, je_stueck) in enumerate(zeilen):
         AbnahmeSchluessel.objects.create(protokoll=prot, bezeichnung=bez, anlage=anlage, soll=soll,
-                                         ist=ist, sortierung=nr)
-    gezaehlt = [ist for *_, ist in zeilen if ist is not None]
+                                         ist=ist, kosten_je_stueck=je_stueck, sortierung=nr)
+    gezaehlt = [ist for _b, _a, _s, ist, _k in zeilen if ist is not None]
     if gezaehlt:
         prot.schluessel_anzahl = sum(gezaehlt)
     return len(zeilen)

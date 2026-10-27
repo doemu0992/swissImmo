@@ -8,15 +8,19 @@ als Vorzustand neben jedem Bauteil.
 
 
 def durchgefuehrt(qs):
-    """Protokolle, die als «Abnahme erfolgt» zählen.
+    """Protokolle, die als «Abnahme erfolgt» zählen: nur abgeschlossene.
 
-    Abgeschlossen — oder aus dem klassischen Formular (ohne Bauteile; dort ist
-    «abgeschlossen» nur ein Häkchen, das oft fehlt). Ein offener Vor-Ort-Entwurf
-    zählt nicht: Er entsteht schon beim Einrichten und ist noch keine Abnahme.
-    Ohne diese Unterscheidung stünde der Mieterwechsel nach dem ersten Tippen
-    auf «Rücknahme erfolgt»."""
+    Bis 10/2026 zählte auch jedes Protokoll aus dem klassischen Formular (ohne
+    Bauteile), weil «abgeschlossen» dort ein Häkchen war, das oft fehlte. Damit
+    galt eine Abnahme als erfolgt, die niemand unterschrieben hatte. Seither
+    schliesst auch das klassische Formular über den Abschluss-Schritt mit
+    Unterschriften ab (core/services/abnahme_abschluss.py) — und ein offener
+    Entwurf, gleich aus welchem Weg, ist noch keine Abnahme.
+
+    Ausnahme Bestand: Protokolle, die vor der Umstellung nach alter Regel als
+    durchgeführt galten, bleiben es (`altbestand_durchgefuehrt`, Migration 0047)."""
     from django.db.models import Q
-    return qs.filter(Q(abgeschlossen=True) | Q(positionen__isnull=True)).distinct()
+    return qs.filter(Q(abgeschlossen=True) | Q(altbestand_durchgefuehrt=True))
 
 
 def vorgaenger_fuer(einheit, datum, ausser=None):
@@ -108,5 +112,6 @@ def einzug_vorbereiten(auszug):
     from rentals.models import AbnahmeSchluessel
     for z in auszug.schluessel.all():
         AbnahmeSchluessel.objects.create(protokoll=einzug, bezeichnung=z.bezeichnung, anlage=z.anlage,
-                                         soll=z.soll, ist=z.ist, sortierung=z.sortierung)
+                                         soll=z.soll, ist=z.ist, kosten_je_stueck=z.kosten_je_stueck,
+                                         sortierung=z.sortierung)
     return einzug

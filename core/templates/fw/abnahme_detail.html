@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n hilfe rechte %}
 {% load chf %}
 {% block title %}{% trans "Abnahmeprotokoll" %} — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
@@ -12,9 +12,15 @@
 <div class="fw-phead">
     <div>
         <h1>{% trans "Wohnungsabnahme" %} — {{ p.get_typ_display }}</h1>
-        <p>{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ p.datum|date:"d.m.Y" }}</p>
+        <p>{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ p.datum|date:"d.m.Y" }}
+            {% if p.abgeschlossen %}<span class="fw-chip fw-good">{% trans "Abgeschlossen" %}</span>{% else %}<span class="fw-chip fw-warn">{% trans "Entwurf" %}</span>{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">
+        {% if not p.abgeschlossen %}
+        {% comment %} Offene Protokolle — auch aus dem klassischen Formular — schliessen im
+           Abschluss-Schritt der Abnahme vor Ort ab: dort wird unterschrieben. {% endcomment %}
+        <a href="/neu/abnahme/{{ p.id }}/vorort/?r={{ abschluss_schritt }}" class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Unterschreiben und abschliessen" %}</a>
+        {% endif %}
         {% comment %} Mängelrüge Art. 267a OR: Die Ansicht war fertig, hatte aber keinen
            Knopf. Unterbleibt die Rüge nach der Rückgabe, gilt die Sache als
            ordnungsgemäss zurückgegeben — deshalb sichtbar im Kopf, nicht im Menü. {% endcomment %}
@@ -35,21 +41,48 @@
             </button>
             <div id="aAktionen" data-menu-list role="menu" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
                 <a href="/neu/abnahme/{{ p.id }}/pdf/" target="_blank" rel="noopener" class="fw-menuzeile">{% zeichen 'drucken' klasse='w-4' %}{% trans "Protokoll als PDF" %}</a>
+                {% comment %} Löschen: nur offene Entwürfe und nur Verwalter/Inhaber. Ein
+                   abgeschlossenes Protokoll ist unterschrieben und Beweismittel. {% endcomment %}
+                {% if not p.abgeschlossen and request.user|darf:"/neu/abnahme/1/loeschen/" %}
                 <div class="fw-menutrenner"></div>
                 <form method="post" action="/neu/abnahme/{{ p.id }}/loeschen/"
                       onsubmit="return confirm('{% filter escapejs %}{% trans "Abnahmeprotokoll wirklich löschen?" %}{% endfilter %}');">
                     {% csrf_token %}
                     <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}{% trans "Protokoll löschen" %}</button>
                 </form>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
 
+{% if p.typ == 'auszug' and hat_mieter_maengel %}
+<div class="fw-card" id="ruege">
+    <div class="fw-kopf"><h2>{% trans "Mängelrüge (Art. 267a OR)" %} {% hilfe 'maengelruege' %}</h2></div>
+    {% if p.ruege_versandt_am %}
+    <div class="fw-hinweis good"><span class="fw-hi">{% zeichen 'gut' %}</span>
+        <div class="fw-ht fliess">{% blocktrans with datum=p.ruege_versandt_am|date:"d.m.Y" %}Versandt am <b>{{ datum }}</b>.{% endblocktrans %}{% if p.ruege_sendungsnummer %} {% trans "Sendungsnummer" %} <span class="fw-mono">{{ p.ruege_sendungsnummer }}</span>{% endif %}</div></div>
+    {% else %}
+    <div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'hinweis' %}</span>
+        <div class="fw-ht fliess">{% blocktrans with frist=ruege_frist|date:"d.m.Y" %}Sofort nach der Rückgabe rügen: versenden bis <b>{{ frist }}</b> (Abnahme plus zwei Arbeitstage). Erledigt ist die Frist erst mit dem Versand, nicht mit dem PDF.{% endblocktrans %}
+            {% if not p.mieter_anwesend %}<br><b>{% trans "Der Mieter war bei der Abnahme abwesend: Rüge eingeschrieben versenden (Zugangsnachweis)." %}</b>{% endif %}</div></div>
+    {% if request.user|darf:"/neu/abnahme/1/ruege-versandt/" %}
+    <form method="post" action="/neu/abnahme/{{ p.id }}/ruege-versandt/" class="fw-rumpf flex items-center gap-2 flex-wrap">
+        {% csrf_token %}
+        <label class="fw-label" for="rVersandt">{% trans "Rüge versandt am" %}</label>
+        <input type="date" id="rVersandt" name="datum" value="{{ heute }}" min="{{ p.datum|date:'Y-m-d' }}" max="{{ heute }}" class="fw-feld" required>
+        <input type="text" name="sendungsnummer" maxlength="40" inputmode="numeric" placeholder="{% trans 'Sendungsnummer (Einschreiben)' %}" class="fw-feld" aria-label="{% trans 'Sendungsnummer (Einschreiben)' %}">
+        <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %}{% trans "Versand festhalten" %}</button>
+    </form>
+    {% endif %}
+    {% endif %}
+</div>
+{% endif %}
+
 <div class="fw-raster l3 items-start mb-6">
     <div class="fw-card fw-nomb"><dl class="fw-cbody">
         <div class="fw-kv"><dt>{% trans "Abnahme durch" %}</dt><dd>{{ p.verwalter_name|default:"—" }}</dd></div>
-        <div class="fw-kv"><dt>{% trans "Mieter anwesend" %}</dt><dd>{% if p.mieter_anwesend %}{% trans "Ja" %}{% else %}{% trans "Nein" %}{% endif %}</dd></div>
+        <div class="fw-kv"><dt>{% trans "Mieter anwesend" %}</dt><dd>{% if p.mieter_anwesend %}{% trans "Ja" %}{% else %}{% trans "Nein" %}{% if p.mieter_abwesend_grund %} — {{ p.mieter_abwesend_grund }}{% endif %}{% endif %}</dd></div>
         <div class="fw-kv"><dt>{% trans "Allgemeinzustand" %}</dt><dd>{{ p.get_allgemein_zustand_display }}</dd></div>
         <div class="fw-kv"><dt>{% trans "Schlüssel zurück" %}</dt><dd>{{ p.schluessel_anzahl|default:"—" }}</dd></div>
     </dl></div>
@@ -67,6 +100,8 @@
     </div>
 </div>
 
+{% comment %} Ein Mangel → Ticket: der Handwerkerauftrag läuft über die Ticketverwaltung.
+   Nach dem Anlegen steht hier der Rückweg zum Ticket. {% endcomment %}
 <div class="fw-card">
     <div class="fw-kopf"><h2>{% trans "Mängel" %}</h2><span class="fw-neben">{{ maengel|length }}</span></div>
     <div class="fw-tablewrap">
@@ -76,7 +111,8 @@
                 <th>{% trans "Verursacher" %}</th>
                 <th class="fw-right">{% trans "Kosten" %}</th>
                 <th class="fw-right">{% trans "Mieteranteil" %}</th>
-                <th>{% trans "Foto" %}</th></tr>
+                <th>{% trans "Foto" %}</th>
+                <th>{% trans "Handwerker" %}</th></tr>
         </thead>
         <tbody>
             {% for m in maengel %}
@@ -90,15 +126,81 @@
                 <td class="fw-right fw-num fw-strong"><span class="{% if m.verursacher == 'mieter' %}fw-kritisch{% else %}fw-faint{% endif %}">
                     {% if m.verursacher == 'mieter' and m.mieteranteil is not None %}{{ m.mieteranteil|chf }}{% elif m.verursacher == 'mieter' and m.kostenschaetzung %}{{ m.kostenschaetzung|chf }}{% else %}—{% endif %}</span>
                     {% if m.verursacher == 'mieter' %}{% if m.vorsaetzlich %}<div class="fw-sub2">{% trans "Absichtlich: kein Abzug" %}</div>{% elif m.zeitwert_grundlage == 'ohne_lebensdauer' %}<div class="fw-sub2 fw-kritisch">{% trans "Voller Betrag: Alter/Lebensdauer fehlt" %}</div>{% endif %}{% endif %}</td>
-                <td class="fw-zentriert">{% if m.foto %}<a href="{{ m.foto.url }}" target="_blank" rel="noopener" title="{% trans 'Foto in voller Grösse öffnen' %}"><img src="{{ m.foto.url }}" alt="Foto des Mangels" class="w-10 h-10 object-cover rounded inline-block"></a>{% endif %}</td>
+                <td class="fw-zentriert">{% if m.foto %}<a href="{{ m.foto.url }}" target="_blank" rel="noopener" title="{% trans 'Foto in voller Grösse öffnen' %}"><img src="{{ m.foto.url }}" alt="{% trans 'Foto des Mangels' %}" class="w-10 h-10 object-cover rounded inline-block"></a>{% endif %}</td>
+                <td>{% include 'fw/_abnahme_handwerker.html' with m=m %}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='gut' titel=_('Keine Mängel festgestellt.') %}</td></tr>
+            <tr><td colspan="7" class="fw-leerzeile">{% include 'fw/_empty.html' with knapp=True icon='gut' titel=_('Keine Mängel festgestellt.') %}</td></tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 </div>
+
+{% if p.abgeschlossen and p.typ == 'auszug' %}
+<div class="fw-card" id="nachmaengel">
+    <div class="fw-kopf"><h2>{% trans "Nach der Abnahme entdeckte Mängel" %}</h2><span class="fw-neben">{{ nachmaengel|length }}</span></div>
+    <p class="fw-rumpf fw-hilfe">{% trans "Versteckte Mängel, die bei der Abnahme nicht erkennbar waren, sind sofort nach ihrer Entdeckung zu rügen (Art. 267a Abs. 3 OR). Sie stehen getrennt vom unterzeichneten Protokoll." %}</p>
+    {% if nachmaengel %}
+    <div class="fw-tablewrap">
+    <table class="fw-table">
+        <thead><tr><th>{% trans "Entdeckt am" %}</th><th>{% trans "Raum" %}</th><th>{% trans "Mangel" %}</th>
+            <th class="fw-right">{% trans "Mieteranteil" %}</th><th>{% trans "Rüge" %}</th><th>{% trans "Handwerker" %}</th></tr></thead>
+        <tbody>
+            {% for m in nachmaengel %}
+            <tr>
+                <td class="fw-num">{{ m.entdeckt_am|date:"d.m.Y" }}</td>
+                <td>{{ m.raum|default:"—" }}</td>
+                <td class="fw-strong">{{ m.beschreibung }}{% if m.zeitwert_grundlage == 'ohne_lebensdauer' %}<div class="fw-sub2 fw-kritisch">{% trans "Voller Betrag: Alter/Lebensdauer fehlt" %}</div>{% endif %}</td>
+                <td class="fw-right fw-num">{% if m.mieteranteil is not None %}{{ m.mieteranteil|chf }}{% else %}—{% endif %}</td>
+                <td>
+                    <form method="post" action="/neu/abnahme/{{ p.id }}/ruege-267a/" target="_blank" class="inline">
+                        {% csrf_token %}<input type="hidden" name="mangel" value="{{ m.id }}">
+                        <button type="submit" class="fw-btn fw-knapp">{% zeichen 'drucken' %}{% trans "Rüge (PDF)" %}</button>
+                    </form>
+                    {% if m.ruege_versandt_am %}
+                    <span class="fw-chip fw-good">{% blocktrans with datum=m.ruege_versandt_am|date:"d.m.Y" %}versandt {{ datum }}{% endblocktrans %}</span>
+                    {% elif request.user|darf:"/neu/abnahme/1/ruege-versandt/" %}
+                    <form method="post" action="/neu/abnahme/{{ p.id }}/ruege-versandt/" class="flex items-center gap-2 flex-wrap mt-2">
+                        {% csrf_token %}<input type="hidden" name="mangel" value="{{ m.id }}">
+                        <input type="date" name="datum" value="{{ heute }}" min="{{ m.entdeckt_am|date:'Y-m-d' }}" max="{{ heute }}" class="fw-feld" aria-label="{% trans 'Rüge versandt am' %}" required>
+                        <button type="submit" class="fw-btn fw-knapp">{% trans "Versandt" %}</button>
+                    </form>
+                    {% endif %}
+                </td>
+                <td>{% include 'fw/_abnahme_handwerker.html' with m=m %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% endif %}
+    {% if request.user|darf:"/neu/abnahme/1/nachmangel/" %}
+    <details class="fw-aufklapp" id="nachmangel">
+        <summary>{% trans "Später entdeckten Mangel rügen" %}</summary>
+        <form method="post" action="/neu/abnahme/{{ p.id }}/nachmangel/" enctype="multipart/form-data" class="fw-formular fw-rumpf">
+            {% csrf_token %}
+            <div class="fw-feldblock"><label class="fw-label" for="nmDatum">{% trans "Entdeckt am" %}</label>
+                <input type="date" id="nmDatum" name="entdeckt_am" value="{{ heute }}" min="{{ p.datum|date:'Y-m-d' }}" max="{{ heute }}" class="fw-feld" required></div>
+            <div class="fw-feldblock"><label class="fw-label" for="nmRaum">{% trans "Raum" %}</label>
+                <select id="nmRaum" name="raum" class="fw-feld">{# Raumname ist gespeicherter Wert: bleibt unübersetzt #}{% for r in raeume %}<option>{{ r }}</option>{% endfor %}</select></div>
+            <div class="fw-feldblock breit"><label class="fw-label" for="nmText">{% trans "Mangel" %}</label>
+                <input id="nmText" name="beschreibung" maxlength="255" class="fw-feld" required placeholder="{% trans 'Mangel beschreiben' %}"></div>
+            <div class="fw-feldblock"><label class="fw-label" for="nmKosten">{% trans "Kostenschätzung CHF" %}</label>
+                <input id="nmKosten" name="kosten" inputmode="decimal" class="fw-feld"></div>
+            <div class="fw-feldblock"><label class="fw-label" for="nmElement">{% trans "Raumbuch-Element" %}</label>
+                <select id="nmElement" name="ausstattung" class="fw-feld">
+                    <option value="">— {% trans "kein Element (voller Betrag)" %} —</option>
+                    {% for el in elemente %}<option value="{{ el.id }}">{{ el.raum }} · {{ el.kategorie }}{% if el.einbau_datum %} ({{ el.einbau_datum|date:"Y" }}){% endif %}</option>{% endfor %}
+                </select></div>
+            <div class="fw-feldblock breit"><label class="fw-label" for="nmFoto">{% trans "Foto" %}</label>
+                <input type="file" id="nmFoto" name="foto" accept="image/*" class="fw-feld"></div>
+            <div class="fw-feldblock breit"><button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %}{% trans "Mangel erfassen" %}</button></div>
+        </form>
+    </details>
+    {% endif %}
+</div>
+{% endif %}
 
 {% if positionen %}
 <div class="fw-card">
@@ -125,12 +227,13 @@
     <div class="fw-kopf"><h2>{% trans "Schlüsselverzeichnis" %}</h2></div>
     <div class="fw-tablewrap">
 <table class="fw-table">
-        <thead><tr><th>{% trans "Schlüssel" %}</th><th>{% trans "Schliessanlage / Schlüsselnummer" %}</th><th class="fw-right">{% trans "Soll" context "Schlüssel" %}</th><th class="fw-right">{% trans "Ist" %}</th><th class="fw-right">{% trans "Fehlend" %}</th></tr></thead>
+        <thead><tr><th>{% trans "Schlüssel" %}</th><th>{% trans "Schliessanlage / Schlüsselnummer" %}</th><th class="fw-right">{% trans "Soll" context "Schlüssel" %}</th><th class="fw-right">{% trans "Ist" %}</th><th class="fw-right">{% trans "Fehlend" %}</th><th class="fw-right">{% trans "Zulasten Mieter" %}</th></tr></thead>
         <tbody>
             {% for z in schluessel %}
             <tr><td class="fw-strong">{{ z.bezeichnung }}</td><td>{{ z.anlage|default:"—" }}</td>
                 <td class="fw-right fw-num">{{ z.soll }}</td><td class="fw-right fw-num">{{ z.ist|default_if_none:"—" }}</td>
-                <td class="fw-right fw-num{% if z.fehlend %} fw-kritisch{% endif %}">{{ z.fehlend|default_if_none:"—" }}</td></tr>
+                <td class="fw-right fw-num{% if z.fehlend %} fw-kritisch{% endif %}">{{ z.fehlend|default_if_none:"—" }}</td>
+                <td class="fw-right fw-num">{% if z.kosten_mieter %}{{ z.kosten_mieter|chf }}{% else %}—{% endif %}</td></tr>
             {% endfor %}
         </tbody>
     </table>
@@ -139,13 +242,15 @@
 {% endif %}
 
 {% if p.bemerkungen %}<div class="fw-card"><div class="fw-kopf"><h2>{% trans "Bemerkungen" %}</h2></div><div class="fw-rumpf">{{ p.bemerkungen|linebreaksbr }}</div></div>{% endif %}
-{% if p.unterschrift_mieter_bild or p.unterschrift_verwalter_bild %}
+{% if p.abgeschlossen or p.unterschrift_mieter_bild or p.unterschrift_verwalter_bild %}
 <style>.ab-unterschrift { display: block; max-width: 18rem; width: 100%; height: auto; margin-bottom: 1rem; border: 1px solid var(--ds-line); border-radius:var(--ds-radius); }</style>
 <div class="fw-card">
     <div class="fw-kopf"><h2>{% trans "Unterschriften" %}</h2></div>
     <div class="fw-rumpf">
-        {% if p.unterschrift_mieter_bild %}<p class="fw-faint">{% trans "Mieter" %}: {{ p.unterschrift_mieter }}</p><img src="{{ p.unterschrift_mieter_bild.url }}" alt="{% trans 'Unterschrift Mieter' %}" class="ab-unterschrift">{% endif %}
-        {% if p.unterschrift_verwalter_bild %}<p class="fw-faint">{% trans "Verwaltung" %}: {{ p.unterschrift_verwalter }}</p><img src="{{ p.unterschrift_verwalter_bild.url }}" alt="{% trans 'Unterschrift Verwaltung' %}" class="ab-unterschrift">{% endif %}
+        {% if p.unterschrift_mieter_bild %}<p class="fw-faint">{% trans "Mieter" %}: {{ p.unterschrift_mieter }}</p><img src="{{ p.unterschrift_mieter_bild.url }}" alt="{% trans 'Unterschrift Mieter' %}" class="ab-unterschrift">
+        {% else %}<p class="fw-faint">{% trans "Mieter" %}: <b>{% trans "nicht unterzeichnet" %}</b>{% if not p.mieter_anwesend %} — {% trans "Mieter abwesend" %}{% if p.mieter_abwesend_grund %}: {{ p.mieter_abwesend_grund }}{% endif %}{% endif %}</p>{% endif %}
+        {% if p.unterschrift_verwalter_bild %}<p class="fw-faint">{% trans "Verwaltung" %}: {{ p.unterschrift_verwalter }}</p><img src="{{ p.unterschrift_verwalter_bild.url }}" alt="{% trans 'Unterschrift Verwaltung' %}" class="ab-unterschrift">
+        {% else %}<p class="fw-faint">{% trans "Verwaltung" %}: <b>{% trans "nicht unterzeichnet" %}</b></p>{% endif %}
     </div>
 </div>
 {% endif %}

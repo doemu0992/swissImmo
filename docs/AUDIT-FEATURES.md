@@ -44,8 +44,8 @@ das ist Phase 2.
 - M — keine Korrekturabrechnung nach Verbuchen; Leerstandsanteil wird ausgewiesen, aber nicht beim Eigentümer verbucht; kein Mieterbrief bei Akonto-Erhöhung (Art. 269d OR).
 
 ### 3.2 Inkasso
-- **K — Betreibungs-Workflow:** Struktur jetzt da (U4), Oberfläche und Kopplung an Mahnstufe/Abschreibung fehlen (Verlustschein).
-- M — Zahlungsvereinbarung ohne PDF/Unterschrift; keine Inkasso-/Anwaltsübergabe.
+- ~~**K — Betreibungs-Workflow**~~ — **erledigt 26.10.2026:** Assistent «Betreibung einleiten» (mehrere Mieten je Betreibung), Datenblatt-PDF für das Betreibungsbegehren, Fristen Art. 74/88 SchKG mit Stillstand, Pendenzen, Mahnlauf ruht für betriebene Forderungen, Tilgung nach Art. 87 OR, «Kosten belasten» (Art. 68 SchKG), Verlustschein schreibt auf 3805 ab (`core/services/betreibung.py`).
+- ~~M — Zahlungsvereinbarung ohne PDF/Unterschrift~~ — **erledigt 26.10.2026:** Schreiben «Zahlungsvereinbarung mit Schuldanerkennung» (Art. 82 SchKG), in der Vertragsakte abgelegt. Die Mahnsperre gilt seither nur den gedeckten Forderungen, nicht mehr dem ganzen Mieter (`core/services/mahnsperre.py`, Datenmigration finance 0048). Offen: keine Inkasso-/Anwaltsübergabe.
 
 ### 3.3 Tickets
 - **K — interne Zuweisung/SLA:** Felder jetzt da (U2); Filter «Meine Tickets», Ampel, Benachrichtigung fehlen. Eskalationsstufen fehlen.
@@ -71,7 +71,7 @@ das ist Phase 2.
 |---|---|---|
 | Ticket intern zuweisen, SLA-Frist | Block «Zuständigkeit» im Ticket, Filter «Meine Tickets», Chip «SLA überfällig» | nur Inhaber/Verwalter/Sachbearbeiter (nicht Hauswart, `core/tests/test_rbac.py`) |
 | NK-Zustellung, Einsprachefrist | Knopf in der Nebenkostenabrechnung | erst nach Verbuchen; Datum nicht vor Periodenende, nicht in der Zukunft |
-| Betreibung (SchKG) | Mahnwesen → «Betreibung», Liste `/neu/betreibungen/` | Datumsfolge, Stand↔Datum, 10-Tage-Frist (Art. 74), Forderung > 0 |
+| Betreibung (SchKG) | Mahnwesen → «Betreibung» (Assistent), Vertrags- und Personenakte, Liste `/neu/betreibungen/` | Datumsfolge, Stand↔Datum, Forderung > 0; Rechtsvorschlag nach 10 Tagen (Art. 74) seit 26.10.2026 nur noch als **Warnung** — Art. 31, 63, 77 SchKG können ihn rechtzeitig machen; Verlustschein nur Verwalter/Inhaber |
 | Zählerstand (HKVO) | Liegenschaft → «Zählerstand erfassen» | Stand darf nicht sinken, nicht vor/nach Nachbarständen |
 
 **Fehlerbehandlung.** Die REST-API besteht nur aus Webhooks; die Oberfläche ist
@@ -275,3 +275,35 @@ Wächter: `FehlzuordnungTests` und `KorrekturVerrechnungTests` in
 `core/tests/test_zahlungsklaerung.py`; Gegenprobe mit sieben Mutanten (Vorbefüllen ohne
 Beleg, kein Wiederöffnen, Sperrvermerk bleibt, Absender bleibt, Bankbuchung wird
 storniert/neu gebucht, 1190 nicht wiederherstellbar, zurücküberwiesener Teil) — alle rot.
+
+## Production-Readiness-Check (26./27.10.2026)
+
+Tiefen-Audit aller Routen (Browser-Crawl: 129 Seitentypen im Team-Bereich, Mieter- und
+Eigentümerportal, je 1440 und 390 px) und Fachprüfung Finanzen/Recht, Verträge,
+Abnahme. Ergebnis nach dem Umbau: keine Seite ausserhalb der neuen Hülle, kein
+Querüberlauf, keine alte Farbklasse im DOM; Farbwächter 135 → 55 (Rest: PDF-/Mail-
+Vorlagen und Admin-Tabellen, bewusst).
+
+| Bereich | Umgesetzt |
+|---|---|
+| Design | QR-Schadenformular ohne 3-s-Ladekreisel; tote Vorlagen gelöscht (`core/mietzins_form.html`, `fw/_menu_item.html`); alte Reiter-Umschaltung entfernt; Admin (Unfold) im Ember-Schema |
+| Ratenplan | Mahnsperre nur für die gedeckten Forderungen (`core/services/mahnsperre.py`), neue Mieten werden gemahnt; Schreiben mit Schuldanerkennung (Art. 82 SchKG); Hilfe, Übersetzung, Einstiege aus Mahnwesen/Akte; Handschalter `Mieter.mahnsperre` auch in der Mahnwesen-Liste |
+| Betreibung | Rechtsvorschlag nach Tag 10 nur Warnung; Fortsetzungsfrist mit Stillstand (Art. 88 Abs. 2 SchKG); Stände Rechtsöffnung beantragt/erteilt (prov./def.), Pfändung; Zins, Grund, mehrere Forderungen; Mahnlauf überspringt Betriebenes; Zahlung schliesst die Betreibung; Tilgung nach Art. 87 OR; Datenblatt Betreibungsbegehren (PDF); Kosten belasten; Verlustschein → Abschreibung 3805; Fristen-Pendenzen; Assistent; Anzeige auf Vertrag und Person |
+| Abnahme | Abschluss mit Unterschriftsregeln für beide Wege; Warnung ohne Lebensdauer; Mängelrüge Abnahme + 2 Arbeitstage, erledigt erst mit Versand; neue Adresse und Allgemeinzustand vor Ort; Foto-Zuordnung; Löschschutz; PDF vollständig mit Seitenzahlen; Nachrüge versteckter Mängel (Art. 267a Abs. 3); Schlüsselersatz; Handwerker aus Mangel; Depot-Text nur bei Sperrkonto; Foto-Ablage je Mandant; Bestandsschutz für alte Protokolle (rentals.0047) |
+| Mietzins | Folgeanpassung auf dem effektiven Mietzins; Vorrang vor Gratismonat/Komponenten; Ablauf Entwurf → versandt (Zugang + 30 Tage Anfechtung) → wirksam/angefochten, Vorschau bucht nicht; Massenanpassung ohne Index/Staffel; Basisdaten fortgeschrieben; Senkungs-Pendenzen gegen die effektive Basis; Assistent mit Live-Rechnung und beziffertem Vorbehalt; Antwortbrief Herabsetzungsbegehren; Indexsenkung; Art. 12 statt 16 VMWG; versandte Anpassung nur durch die Verwaltung löschbar |
+| Kündigung | Termine aus Ziffern gelesen, leeres Feld nicht als «jedes Monatsende»; Zugang mit Zustellpuffer; Art. 266m Zustimmung; Art. 264 Ersatzmieter; strukturierte ausserordentliche Gründe; Erstreckung wirkt auf Vertragsende |
+| Amtliche Formulare | Nur mit erfasstem Kanton (keine PLZ-Schätzung bei Überlappung); ausserhalb BE/SO/ZH sperrende Warnung, Nachbildung nur als Entwurf mit Wasserzeichen |
+
+### Offen — juristische Prüfung bzw. Fachentscheid (bewusst nicht geraten)
+
+- Referenzzins ab 5 % (VMWG Art. 13 Abs. 1): Sätze im Repo nicht belegt; Hinweis «ab 5 % von Hand prüfen» bleibt.
+- Art. 14 VMWG (wertvermehrende Investitionen): kein Rechner.
+- Fristen für Art. 257f Abs. 3, 266h, 266k: Datum ist Pflicht, die Seite warnt; keine Berechnung.
+- Verrechnung bei angefochtener Anpassung bis zum Entscheid: Buchung bleibt, Pendenz verlangt die Prüfung.
+- Zinsbasis 360 Tage (Verzugszins), Stillstand Art. 88 Abs. 2 als Differenz gezählt; Kostenbuchung Betreibung 1100/3600 (wie Mahngebühr) statt Kostenvorschuss 1110/1020 (STWEG).
+- Mahngebühren setzen eine vertragliche Grundlage voraus (Hinweis in der Hilfe).
+- Rechtstexte der Abnahme: «Für nicht gemeldete Mängel haftet der Mieter» (Einzug), Haftungsanerkennung durch Unterschrift, Depot-Verrechnung bei Kautionsversicherung (`rueckgabe_maengelruege_pdf`), Wortlaut Nachrüge, Regel «2 Arbeitstage» (ohne Feiertage), Vorsatz ohne Zeitwertabzug, Lebensdauerwerte (`raumkatalog.py`) gegen die paritätische Tabelle.
+- Texte Schuldanerkennung und Betreibungs-Datenblatt.
+- Originalformulare für die übrigen 23 Kantone.
+
+Wächter: `test_betreibung` (29), `test_zahlungsvereinbarung_sperre` (10), `test_abnahme_produktionsreife` (40), Mietzins-/Kündigungstests; Gegenproben je Test (u. a. 53 von 54 bzw. 28 von 29 Mutanten sofort rot, die übrigen nach Korrektur).

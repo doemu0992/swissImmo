@@ -131,12 +131,28 @@ class BetreibungTests(_Basis):
         d.update(kw)
         return d
 
+    def _bearbeiten_url(self):
+        """Eine angelegte Betreibung — den Stand führt seit dem Assistenten die Bearbeiten-Seite."""
+        from finance.models import Betreibung
+        b = Betreibung.objects.create(debitoren_rechnung=self.r, vertrag=self.vertrag,
+                                      forderung=Decimal('1700'), begehren_am=self.heute - timedelta(days=40))
+        return b, f'/neu/betreibungen/{b.id}/'
+
+    def _stand(self, **kw):
+        d = self._daten(begehren_am=(self.heute - timedelta(days=40)).isoformat(), zinssatz='5.00')
+        for k in ('zahlungsbefehl_am', 'rechtsvorschlag_am', 'rechtsoeffnung_beantragt_am', 'rechtsoeffnung_am',
+                  'rechtsoeffnung_art', 'fortsetzung_am', 'pfaendung_am', 'verlustschein_am', 'zins_ab',
+                  'forderungsgrund'):
+            d.setdefault(k, '')
+        d.update(kw)
+        return d
+
     def test_einleiten_legt_betreibung_an_und_listet_sie(self):
         from finance.models import Betreibung
         a = self.c.post(self.url, self._daten())
-        self.assertRedirects(a, '/neu/betreibungen/', fetch_redirect_response=False)
         b = Betreibung.objects.get()
-        self.assertEqual((b.debitoren_rechnung_id, b.vertrag_id), (self.r.id, self.vertrag.id))
+        self.assertRedirects(a, f'/neu/betreibungen/{b.id}/', fetch_redirect_response=False)
+        self.assertEqual((b.debitoren_rechnung_id, b.vertrag_id, b.status), (self.r.id, self.vertrag.id, 'begehren'))
         self.assertContains(self.c.get('/neu/betreibungen/'), 'Miete 08/2026')
 
     def test_forderung_null_wird_am_feld_abgelehnt(self):
@@ -146,23 +162,37 @@ class BetreibungTests(_Basis):
         self.assertEqual(Betreibung.objects.count(), 0)
 
     def test_stand_ohne_passendes_datum_wird_abgelehnt(self):
-        from finance.models import Betreibung
-        a = self.c.post(self.url, self._daten(status='zahlungsbefehl'))
+        b, url = self._bearbeiten_url()
+        a = self.c.post(url, self._stand(status='zahlungsbefehl'))
         self.assertContains(a, 'zahlungsbefehl_am_fehler', status_code=400)
-        self.assertEqual(Betreibung.objects.count(), 0)
+        b.refresh_from_db()
+        self.assertEqual(b.status, 'begehren')
 
     def test_datumsfolge_wird_geprueft(self):
-        a = self.c.post(self.url, self._daten(
-            status='zahlungsbefehl', zahlungsbefehl_am=(self.heute - timedelta(days=5)).isoformat(),
-            begehren_am=self.heute.isoformat()))
+        _b, url = self._bearbeiten_url()
+        a = self.c.post(url, self._stand(
+            status='zahlungsbefehl', zahlungsbefehl_am=(self.heute - timedelta(days=45)).isoformat()))
         self.assertContains(a, 'zahlungsbefehl_am_fehler', status_code=400)
 
-    def test_rechtsvorschlag_nach_zehn_tagen_wird_beanstandet(self):
-        a = self.c.post(self.url, self._daten(
-            status='rechtsvorschlag', begehren_am=(self.heute - timedelta(days=40)).isoformat(),
-            zahlungsbefehl_am=(self.heute - timedelta(days=30)).isoformat(),
-            rechtsvorschlag_am=(self.heute - timedelta(days=5)).isoformat()))
-        self.assertContains(a, '10-Tage-Frist', status_code=400)
+    def test_rechtsvorschlag_nach_zehn_tagen_wird_gespeichert_und_gewarnt(self):
+        """Art. 31 Abs. 3, Art. 63 und Art. 77 SchKG können einen späten Rechtsvorschlag
+        rechtzeitig machen — das Speichern darf daran nicht scheitern."""
+        b, url = self._bearbeiten_url()
+        a = self.c.post(url, self._stand(
+            status='rechtsvorschlag', zahlungsbefehl_am=(self.heute - timedelta(days=30)).isoformat(),
+            rechtsvorschlag_am=(self.heute - timedelta(days=5)).isoformat()), follow=True)
+        self.assertEqual(a.status_code, 200)
+        b.refresh_from_db()
+        self.assertEqual((b.status, b.rechtsvorschlag_am), ('rechtsvorschlag', self.heute - timedelta(days=5)))
+        warnungen = [str(m) for m in a.context['messages'] if m.level_tag == 'warning']
+        self.assertTrue(any('mehr als 10 Tage' in w for w in warnungen), warnungen)
+
+    def test_rechtsvorschlag_in_der_frist_warnt_nicht(self):
+        _b, url = self._bearbeiten_url()
+        a = self.c.post(url, self._stand(
+            status='rechtsvorschlag', zahlungsbefehl_am=(self.heute - timedelta(days=30)).isoformat(),
+            rechtsvorschlag_am=(self.heute - timedelta(days=22)).isoformat()), follow=True)
+        self.assertEqual([m for m in a.context['messages'] if m.level_tag == 'warning'], [])
 
     def test_bezahlte_rechnung_kann_nicht_betrieben_werden(self):
         from finance.models import Betreibung

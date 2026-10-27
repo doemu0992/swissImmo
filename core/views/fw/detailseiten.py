@@ -1468,17 +1468,31 @@ def fw_staffel_del(request, pk):
 def fw_anpassung_del(request, pk):
     """Entfernt eine (versehentlich erstellte) Mietzinsanpassung. Danach folgt die
     Sollstellung wieder dem vorherigen Mietzins — bereits gestellte Rechnungen
-    bleiben unverändert (nur künftige Sollläufe)."""
+    bleiben unverändert (nur künftige Sollläufe).
+
+    Seit dem Production-Check (27.10.2026): Einen Entwurf darf entfernen, wer
+    schreiben darf. Eine VERSANDTE Anpassung ist dem Mieter mitgeteilt — sie
+    entfernt nur die Verwaltung (Verwalter/Inhaber), etwa nach einem Fehler beim
+    Erfassen, und mit ihr die Anfechtungs-Pendenz (Art. 270b OR), die sonst
+    weiter im Arbeitsvorrat stünde."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from rentals.models import MietzinsAnpassung
-    from core.auth import log_aktion
+    from core.auth import log_aktion, hat_rolle
+    from core.models import Pendenz
+    from core.services.mietzinsanpassung import quelle_anfechtung
     from portfolio.models import Sollmietzins
     a = get_object_or_404(MietzinsAnpassung, id=pk)
     vid = a.vertrag_id
     if request.method == 'POST':
+        if a.status in MietzinsAnpassung.GEBUCHT and not hat_rolle(request.user, VERWALTUNGS_ROLLEN):
+            messages.error(request, gettext('Eine versandte Mietzinsanpassung kann nur die Verwaltung '
+                                            '(Verwalter/Inhaber) entfernen.'))
+            return redirect(f'/neu/vertraege/{vid}/?tab=mietzins')
         log_aktion(request, "Mietzinsanpassung gelöscht", str(a.vertrag),
-                   f"wirksam {a.wirksam_ab}: CHF {a.neuer_netto_mietzins}")
+                   f"{a.get_status_display()}, wirksam {a.wirksam_ab}: CHF {a.neuer_netto_mietzins}")
+        Pendenz.objects.filter(vertrag_id=vid, quelle__in=[quelle_anfechtung(a), f'270b-verfahren:{a.pk}'],
+                               erledigt=False).delete()
         # Die aus dieser Anpassung erzeugte Sollmietzins-Zeile im Objekt
         # ebenfalls entfernen und den aktuellen Mietzins der Einheit neu ableiten.
         einheiten = {z.einheit for z in a.sollmietzins_zeilen.all()}
@@ -1770,8 +1784,10 @@ def _formulare_prozesse(v, user=None):
             {'titel': 'Untermiete (Art. 262)', 'icon': 'person',
              'url': f'/neu/vertraege/{v.id}/untermiete/', 'erledigt': hat('Untermiete-'),
              'sub': 'Zustimmung / Ablehnung'},
+            # Hauptweg ist die Abnahme vor Ort (Raum für Raum, Unterschriften am
+            # Gerät); das klassische Formular bleibt im Menü der Vertragsakte.
             {'titel': 'Wohnungsabnahme', 'icon': 'dokument',
-             'url': f'/neu/vertraege/{v.id}/abnahme/neu/', 'sub': 'Ein- / Auszugsprotokoll'},
+             'url': f'/neu/vertraege/{v.id}/abnahme/vorort/', 'sub': 'Ein- / Auszugsprotokoll vor Ort'},
             {'titel': 'Schlussabrechnung', 'icon': 'rechnung',
              'url': f'/neu/vertraege/{v.id}/schlussabrechnung/', 'verfuegbar': (aktiv or beendet),
              'sub': 'beim Auszug'},
@@ -1816,8 +1832,8 @@ def _mietzins_grundlage(v):
     «ausgeglichen bis» und dem aktuellen Stand der Verwaltung zum Vergleich."""
     from core.services.lik import lik_bezeichnung, stand_label
     zins, lik = v.effektive_basis()
-    letzte = max((a for a in v.anpassungen.all() if a.wirksam_ab and a.wirksam_ab <= date.today()),
-                 key=lambda a: (a.wirksam_ab, a.id or 0), default=None)
+    # Nur GEBUCHTE Anpassungen (nicht Entwürfe) — dieselbe Auswahl wie die Basis.
+    letzte = v._wirksame_anpassung(date.today())
     org = v.organisation
     stand = None if letzte else v.basis_lik_stand
     return {
@@ -1915,7 +1931,21 @@ def fw_vertrag_detail(request, pk):
     # zwei Abfragen (`core.services.mieterkonto.berechne_vertragskonto`).
     from core.services.mieterkonto import berechne_vertragskonto
     konto_zeilen, konto_saldo = berechne_vertragskonto(v)
+    # Inkasso auf der Akte: Betreibungen dieses Vertrags (auch solche, deren
+    # `vertrag` leer blieb, über die Hauptforderung) und ein laufender Ratenplan.
+    # Zwei Abfragen; der Einstieg «Betreibung einleiten» nimmt die älteste offene
+    # Hauptforderung — der Assistent bietet die übrigen zur Auswahl an.
+    from django.db.models import Q as _Q
+    from finance.models import Betreibung
+    betreibungen = list(Betreibung.objects.filter(_Q(vertrag=v) | _Q(debitoren_rechnung__vertrag=v))
+                        .distinct().select_related('debitoren_rechnung').order_by('-begehren_am', '-id')[:10])
+    zv_aktiv = v.zahlungsvereinbarungen.filter(status='aktiv').first()
+    betreibung_start = min((r for r in offene if r.stammrechnung_id is None),
+                           key=lambda r: (r.faellig_am or r.datum, r.id), default=None)
     return render(request, 'fw/vertrag_detail.html', {
+        'betreibungen': betreibungen,
+        'zv_aktiv': zv_aktiv,
+        'betreibung_start': betreibung_start,
         'konto_zeilen': konto_zeilen,
         'konto_saldo': konto_saldo,
         'formular_gruppen': _formulare_prozesse(v, request.user),
@@ -2272,6 +2302,9 @@ def fw_schlussabrechnung(request, vertrag_id):
                 if m.mieteranteil is not None and m.ausstattung_id:
                     txt += " (Zeitwert)"
                 prefill_positionen.append({'text': txt[:90], 'betrag': betrag})
+        # Fehlende Schlüssel gehen wie Mängel in die Belastung des Mieters.
+        from core.services.abnahme_abschluss import schluessel_positionen
+        prefill_positionen.extend(schluessel_positionen(ab))
     if schaden_betrag > 0:
         prefill_positionen.insert(0, {'text': schaden_text, 'betrag': schaden_betrag})
     return render(request, 'fw/schlussabrechnung.html', {

@@ -52,7 +52,7 @@ class NutzungsentschaedigungTests(TestCase):
 
     def test_rueckgabe_begrenzt_die_entschaedigung(self):
         from rentals.models import Abnahmeprotokoll
-        Abnahmeprotokoll.objects.create(vertrag=self.v, typ='auszug', datum=date(2026, 3, 10))
+        Abnahmeprotokoll.objects.create(vertrag=self.v, typ='auszug', datum=date(2026, 3, 10), abgeschlossen=True)
         r = ne.stelle(self.v, 2026, 3)           # 1.–10. März = 10 von 31 Tagen
         # Netto und NK werden je für sich gerundet (wie in der Sollstellung).
         self.assertEqual(r.betrag, Decimal('419.35') + Decimal('58.06'))
@@ -60,7 +60,7 @@ class NutzungsentschaedigungTests(TestCase):
 
     def test_rueckgabe_am_vertragsende_schliesst_es_aus(self):
         from rentals.models import Abnahmeprotokoll
-        Abnahmeprotokoll.objects.create(vertrag=self.v, typ='auszug', datum=date(2026, 2, 28))
+        Abnahmeprotokoll.objects.create(vertrag=self.v, typ='auszug', datum=date(2026, 2, 28), abgeschlossen=True)
         self.assertFalse(ne.ist_offen(self.v, date(2026, 5, 1)))
         self.assertEqual(ne.monate_ohne_forderung(self.v, date(2026, 5, 1)), [])
 
@@ -82,7 +82,7 @@ class NutzungsentschaedigungTests(TestCase):
         generate_auto_pendenzen(horizont_tage=30)
         p = Pendenz.objects.get(quelle=f'auto:nutzung:{self.v.pk}')
         self.assertFalse(p.erledigt)
-        Abnahmeprotokoll.objects.create(vertrag=self.v, typ='auszug', datum=date(2026, 2, 28))
+        Abnahmeprotokoll.objects.create(vertrag=self.v, typ='auszug', datum=date(2026, 2, 28), abgeschlossen=True)
         generate_auto_pendenzen(horizont_tage=30)
         p.refresh_from_db()
         self.assertTrue(p.erledigt)

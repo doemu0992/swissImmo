@@ -209,6 +209,9 @@ class MietzinsAnpassungSollmietzinsTests(TestCase):
     def _setup(self):
         _test_organisation(firma='V AG', aktueller_referenzzinssatz=Decimal('1.50'))
         lg, e, m, v = _basis_objekte()
+        # Seit 26.10.2026 entsteht ein Formular nur mit erfasstem Kanton (Befund G).
+        lg.kanton = 'ZH'
+        lg.save()
         v.basis_referenzzinssatz = Decimal('1.75')
         v.basis_lik_punkte = Decimal('100')
         v.mietzins_modell = 'fest'
@@ -223,9 +226,12 @@ class MietzinsAnpassungSollmietzinsTests(TestCase):
         return naechster_anpassungstermin(v, timezone.localdate())
 
     def _anpassung_speichern(self, c, v, neu_netto='1600', wirksam=None):
+        # Gebucht wird seit 26.10.2026 erst beim Versand (Befund C) — der Test
+        # erfasst die Anpassung darum gleich als versandt.
+        from django.utils import timezone
         wirksam = wirksam or self._valid_wirksam(v)
         return c.post(f'/neu/mietzins/{v.id}/anpassung/', {
-            'aktion': 'speichern',
+            'aktion': 'versandt', 'versand_am': timezone.localdate().isoformat(),
             'neu_netto': neu_netto,
             'neu_zins': '1.50',
             'neu_lik': '105',
@@ -268,10 +274,13 @@ class MietzinsAnpassungSollmietzinsTests(TestCase):
         e, v = self._setup()
         w = self._valid_wirksam(v)
         c = Client(); c.force_login(_team_user())
-        # Zweimal PDF-Generieren desselben Formulars darf keine Duplikat-Zeilen erzeugen
+        # Zweimal «Als versandt erfassen» (Doppelklick) darf weder eine zweite
+        # Anpassung noch eine Duplikat-Zeile erzeugen.
+        from rentals.models import MietzinsAnpassung
         for _ in range(2):
             self._anpassung_speichern(c, v, wirksam=w)
         self.assertEqual(Sollmietzins.objects.filter(einheit=e, gueltig_ab=w).count(), 1)
+        self.assertEqual(MietzinsAnpassung.objects.filter(vertrag=v).count(), 1)
 
     def test_direkte_anpassung_erzeugt_objektzeile(self):
         # Auch eine ohne das /neu/-Formular erstellte Anpassung (Alt-View/Import/
@@ -1064,3 +1073,38 @@ class VertragMietzinsRabattTests(TestCase):
         self.assertIn('Referenzmiete', html)
         self.assertIn('Zu bezahlen', html)
         self.assertIn('mietzinsfrei', html)
+
+
+class AnpassungLoeschenTests(TestCase):
+    """Production-Check (27.10.2026): Eine versandte Anpassung ist dem Mieter
+    mitgeteilt. Sie entfernt nur die Verwaltung, und mit ihr verschwindet die
+    Anfechtungs-Pendenz — vorher blieb diese im Arbeitsvorrat stehen."""
+
+    def setUp(self):
+        from core.models import Pendenz
+        from core.services.mietzinsanpassung import quelle_anfechtung
+        from rentals.models import MietzinsAnpassung
+        lg, e, m, self.v = _basis_objekte()
+        self.a = MietzinsAnpassung.objects.create(
+            vertrag=self.v, wirksam_ab=date(2027, 4, 1), alter_netto_mietzins=Decimal('1500'),
+            neuer_netto_mietzins=Decimal('1545'), status=MietzinsAnpassung.STATUS_VERSANDT,
+            versand_am=date(2026, 10, 20), zugang_am=date(2026, 10, 22))
+        Pendenz.objects.create(titel='Anfechtungsfrist', vertrag=self.v, quelle=quelle_anfechtung(self.a),
+                               faellig_am=date(2026, 11, 21))
+
+    def _loeschen(self, rolle):
+        c = Client()
+        c.force_login(_team_user(rolle))
+        return c.post(f'/neu/anpassung/{self.a.id}/loeschen/')
+
+    def test_sachbearbeiter_kann_versandte_nicht_entfernen(self):
+        from rentals.models import MietzinsAnpassung
+        self._loeschen('Sachbearbeiter')
+        self.assertTrue(MietzinsAnpassung.objects.filter(pk=self.a.pk).exists())
+
+    def test_verwaltung_entfernt_sie_samt_anfechtungs_pendenz(self):
+        from core.models import Pendenz
+        from rentals.models import MietzinsAnpassung
+        self._loeschen('Verwalter')
+        self.assertFalse(MietzinsAnpassung.objects.filter(pk=self.a.pk).exists())
+        self.assertFalse(Pendenz.objects.filter(vertrag=self.v, quelle__startswith='270b:').exists())

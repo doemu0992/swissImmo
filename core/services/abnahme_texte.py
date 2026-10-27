@@ -11,7 +11,9 @@ durch eine Mietrechtsfachperson ist vor dem produktiven Einsatz ratsam.
 Welche Absätze erscheinen, entscheidet `schlussbestimmungen()`:
 - die Mängelrüge nur, wenn dem Mieter Mängel zugeordnet sind (sie nimmt Bezug
   auf «oben genannte» Mängel),
-- Haftung und Depot beim Auszug, die Rügefrist beim Einzug.
+- Haftung beim Auszug, die Rügefrist beim Einzug,
+- das Depot nur beim Auszug mit Mietzinsdepot auf einem Bank-Sperrkonto
+  (`hat_bankdepot`), nicht bei Kautionsversicherung oder ohne Kaution.
 """
 
 KOSTENUEBERNAHME = (
@@ -75,8 +77,22 @@ def schlussbestimmungen(prot):
     if prot.typ == 'einzug':
         return [absatz('einzug')]
     absaetze = []
-    if prot.maengel_mieter:
+    # «oben genannte Mangelhaftigkeiten»: nur, was bei der Abnahme festgestellt
+    # und damit im unterzeichneten Protokoll steht.
+    if prot.maengel_mieter_bei_abnahme:
         absaetze.append(absatz('kosten'))
     absaetze.append(absatz('haftung'))
-    absaetze.append(absatz('depot'))
+    if hat_bankdepot(prot.vertrag):
+        absaetze.append(absatz('depot'))
     return absaetze
+
+
+def hat_bankdepot(vertrag):
+    """Gibt es ein Mietzinsdepot bei einer Bank, das aufzulösen wäre?
+
+    Der Absatz «Mietzinsdepot» ermächtigt zur Auflösung des Depots «bei der
+    entsprechenden Bank». Bei einer Kautionsversicherung gibt es kein Depot,
+    ohne Kautionsbetrag ebenfalls nicht — dort stand der Absatz bis 10/2026
+    trotzdem im Protokoll. Nur die ausdrücklich erfasste Art `sperrkonto` mit
+    Betrag zählt; eine leere Art ist «nicht erfasst», nicht «Bank»."""
+    return bool(vertrag is not None and vertrag.kautions_art == 'sperrkonto' and vertrag.kautions_betrag)

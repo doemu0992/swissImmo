@@ -91,6 +91,7 @@ UEBERSETZT = (
     'core/zweifaktor_einrichten.html',
     'core/zweifaktor_uebersicht.html',
     'fw/_abnahme_schluesselzeile.html',
+    'fw/_abnahme_handwerker.html',
     'fw/_arbeitsvorrat_abschnitte.html',
     'fw/_assistent_attribute.html',  # V11: Assistent (Schritt-Texte)
     'fw/_assistent_leiste.html',
@@ -122,6 +123,7 @@ UEBERSETZT = (
     'fw/benutzer_form.html',
     'fw/berichte.html',
     'fw/betreibung_form.html',
+    'fw/betreibung_neu.html',     # 26.10.2026: Assistent «Betreibung einleiten»
     'fw/betreibungen.html',
     'fw/betriebskostenspiegel.html',
     'fw/bewerber_vergleich.html',
@@ -151,6 +153,11 @@ UEBERSETZT = (
     'fw/kontoblatt.html',
     'fw/kreditoren.html',
     'fw/kuendigung_form.html',
+    # Audit 26.10.2026 (Mietzinsanpassung/Kündigung): neu ausgezeichnet.
+    'fw/anfangsmietzins.html',
+    'fw/formular_nachbildung.html',
+    'fw/herabsetzung.html',
+    'fw/mietzins_anpassung.html',
     'fw/laeufe.html',
     'fw/lauf_detail.html',
     'fw/lebensdauer.html',
@@ -218,6 +225,7 @@ UEBERSETZT = (
     'fw/zahlung_aufteilen.html',  # V12: Assistent «Zahlung aufteilen»
     'fw/zahler_zuordnungen.html',
     'fw/zahllauf.html',
+    'fw/zahlungsvereinbarung.html',  # 26.10.2026: Texte ausgezeichnet, Übersetzung folgt
     'fw/zulauf.html',
 )
 

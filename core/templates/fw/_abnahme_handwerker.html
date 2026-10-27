@@ -1,0 +1,7 @@
+{% load zeichen i18n rechte %}{% comment %}Handwerker zu einem Abnahme-Mangel: Ticket öffnen (wenn schon angelegt) oder anlegen. `m` = AbnahmeMangel.{% endcomment %}
+{% if m.ticket_id %}<a href="/neu/schaeden/{{ m.ticket_id }}/" class="fw-link">{% blocktrans with id=m.ticket_id %}Ticket #{{ id }}{% endblocktrans %}</a>
+{% elif request.user|darf:"/neu/abnahme/1/handwerker/" %}<form method="post" action="/neu/abnahme/{{ m.protokoll_id }}/handwerker/" class="inline">
+    {% csrf_token %}<input type="hidden" name="mangel" value="{{ m.id }}">
+    <button type="submit" class="fw-btn fw-knapp" title="{% trans 'Ticket zum Mangel anlegen und Handwerker zuweisen' %}">{% zeichen 'arbeit' %}{% trans "Handwerker beauftragen" %}</button>
+</form>
+{% else %}—{% endif %}

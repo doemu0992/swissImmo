@@ -230,6 +230,10 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry
 
     res = {'gemahnt': 0, 'emails': 0, 'gebuehren': Decimal('0.00'), 'zins': Decimal('0.00'), 'geprueft': 0,
            'plan': []}
+    # Durch Zahlungsvereinbarung gedeckte und betriebene Forderungen — einmal vor
+    # der Schleife, an der Stelle, die auch das Mahnwesen fragt.
+    from core.services.mahnsperre import gesperrte_forderungen
+    gesperrt = gesperrte_forderungen()
 
     for r in qs:
         faellig = r.faellig_am or r.datum
@@ -262,8 +266,12 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry
         if not _s:
             continue
         stufe = _s['stufe']
-        # Mahnsperre: Mieter mit laufender Zahlungsvereinbarung nicht mahnen.
+        # Mahnsperre (Handschalter am Mieter): diesen Mieter nicht mahnen.
         if r.vertrag and r.vertrag.mieter_id and getattr(r.vertrag.mieter, 'mahnsperre', False):
+            continue
+        # Gedeckt durch einen Ratenplan oder in Betreibung: nur DIESE Forderung
+        # ruht — eine neue Miete desselben Mieters wird normal gemahnt.
+        if r.pk in gesperrt:
             continue
         res['geprueft'] += 1
         # Idempotenz: existiert bereits eine Mahnung dieser (oder höherer) Stufe?
@@ -720,21 +728,41 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
     except Exception:
         aktuell_pkt = None
     if aktuell_pkt:
+        from core.services.mietrecht import index_anpassung_vorschlag
+        # Vorgeladen, weil `index_anpassung_vorschlag` den effektiven Stand je
+        # Vertrag liest (Anpassungen, Komponenten, Objekt-Zeitplan) — ohne
+        # Prefetch je Vertrag mehrere Abfragen.
         for v in (Mietvertrag.objects.filter(status='aktiv', mietzins_modell='index')
-                  .select_related('mieter', 'einheit__liegenschaft')):
-            basis_lik = v.basis_lik_punkte or Decimal('0')
-            if basis_lik <= 0 or not v.einheit_id:
+                  .select_related('mieter', 'einheit__liegenschaft')
+                  .prefetch_related('anpassungen', 'staffelstufen', 'mietzins_komponenten',
+                                    'einheit__sollmietzinse')):
+            if not v.einheit_id or (v.basis_lik_punkte or Decimal('0')) <= 0:
                 continue
             ref_datum = v.index_letzte_anpassung or v.beginn
             naechste = _plus_monate(ref_datum, v.index_intervall_monate or 12)
             if naechste > grenze:
                 continue
-            if Decimal(aktuell_pkt) <= basis_lik:
-                continue   # LIK nicht gestiegen → keine Erhöhung möglich
-            weiter = (v.index_weitergabe_prozent or Decimal('100')) / Decimal('100')
-            faktor = Decimal('1') + (Decimal(aktuell_pkt) - basis_lik) / basis_lik * weiter
-            neuer_netto = (v.netto_mietzins * faktor).quantize(Decimal('0.01'))
-            if neuer_netto <= (v.netto_mietzins or Decimal('0')):
+            # Gerechnet wird ab dem Stand nach der letzten gebuchten Anpassung —
+            # mit derselben Funktion wie im Formular. Bis 26.10.2026 stand hier
+            # eine eigene Rechnung auf `basis_lik_punkte` und `netto_mietzins`
+            # des Vertragsbeginns: Nach der ersten Indexanpassung schlug sie den
+            # bereits weitergegebenen Anstieg ein zweites Mal vor.
+            vorschlag = index_anpassung_vorschlag(v, Decimal(aktuell_pkt), wirksam_ab=naechste)
+            if vorschlag is None:
+                continue
+            basis_lik = vorschlag['basis_lik']
+            alt_netto = vorschlag['alt_netto']
+            neuer_netto = vorschlag['neu_netto']
+            if vorschlag['richtung'] == 'senkung':
+                # Sinkt der Index, folgt der Mietzins ihm ebenso (Befund N). Die
+                # Pendenz ist ein Hinweis zur Mitteilung, keine Zustellfrist.
+                _ensure(f"auto:indexsenkung:{v.id}:{naechste.isoformat()}",
+                        f"Indexmiete senken: {v.mieter.display_name} ({v.einheit.bezeichnung})",
+                        heute, 'vertrag',
+                        (f"LIK {basis_lik}→{aktuell_pkt} Pkt. gesunken: Netto CHF {alt_netto}→{neuer_netto} "
+                         f"auf {naechste.strftime('%d.%m.%Y')} (Art. 269b OR). Anpassung über das "
+                         f"amtliche Formular mitteilen."),
+                        liegenschaft=v.einheit.liegenschaft, vertrag=v)
                 continue
             # DER ZUSTELLTERMIN WIRD GERECHNET, NICHT GESCHAETZT
             #
@@ -814,7 +842,7 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
                     # das Datum aus zwei Wochen gerechnet war. Datum und
                     # Begruendung widersprachen sich damit in einem Satz —
                     # wer nachrechnet, glaubt der Pendenz danach nichts mehr.
-                    (f"LIK {basis_lik}→{aktuell_pkt} Pkt.: Netto CHF {v.netto_mietzins}→{neuer_netto} "
+                    (f"LIK {basis_lik}→{aktuell_pkt} Pkt.: Netto CHF {alt_netto}→{neuer_netto} "
                      f"möglich auf {naechste.strftime('%d.%m.%Y')}. Amtliches Formular "
                      f"(Art. 269d) muss bis {zustellung.strftime('%d.%m.%Y')} beim Mieter "
                      f"sein — zehn Tage vor Beginn der {fristtext} "
@@ -831,14 +859,20 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
     # und legt dann fuer jeden Vertrag mit hoeherer Basis eine Senkungs-Pendenz
     # an, die es gar nicht gibt. Mit mehreren Verwaltungen kaeme dazu, dass eine
     # fremde Verwaltung den Massstab liefert.
+    # `effektive_basis` liest die Anpassungen — vorgeladen statt je Vertrag.
     for v in (Mietvertrag.objects.filter(status='aktiv', mietzins_modell='fest')
-              .select_related('mieter', 'einheit__liegenschaft', 'organisation')):
+              .select_related('mieter', 'einheit__liegenschaft', 'organisation')
+              .prefetch_related('anpassungen')):
         aktuell_ref = get_current_ref_zins(v.organisation)
         try:
             aktuell_ref = Decimal(str(aktuell_ref))
         except Exception:
             continue
-        basis_ref = v.basis_referenzzinssatz or Decimal('0')
+        # Die EFFEKTIVE Basis (Befund H, 26.10.2026): nach einer Anpassung die
+        # der jüngsten gebuchten, nicht mehr die des Vertragsbeginns. Bis dahin
+        # meldete die Pendenz einen Senkungsanspruch gegenüber einem Zinsstand,
+        # der längst weitergegeben war.
+        basis_ref = v.effektive_basis(heute)[0] or Decimal('0')
         if not v.einheit_id or basis_ref <= 0 or aktuell_ref >= basis_ref:
             continue
         # Senkung nicht linear: 1 Schritt 2.91 %, 2 Schritte 5.66 % … (Art. 13 VMWG).

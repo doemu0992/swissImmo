@@ -868,22 +868,30 @@ class MoneyBugBatchTests(TestCase):
         self.assertEqual(n, 3)   # Freigabe + Rückzahlung + Einbehalt, genau einmal
 
     def test_mietzins_anpassung_pdf_ist_idempotent(self):
-        # Mehrfaches PDF-Generieren darf keine doppelte Anpassung + Anfechtungs-Pendenz erzeugen.
+        # Mehrfaches PDF-Generieren darf keine doppelte Anpassung erzeugen — und
+        # seit 26.10.2026 (Befund C) überhaupt nichts buchen: ein Entwurf, keine
+        # Anfechtungs-Pendenz, keine Sollmietzins-Zeile.
+        from portfolio.models import Sollmietzins
         from rentals.models import MietzinsAnpassung
         from rentals.services import naechster_anpassungstermin
         from core.models import Pendenz
         from django.utils import timezone
         lg, e, m, v = _basis_objekte()
+        lg.kanton = 'ZH'; lg.save()
         v.basis_referenzzinssatz = Decimal('1.25'); v.basis_lik_punkte = Decimal('100.0'); v.save()
         wirksam = naechster_anpassungstermin(v, timezone.localdate())  # gültiger Termin (Art. 269d)
         c = Client(); c.force_login(_team_user())
         payload = {'aktion': 'pdf', 'neu_netto': '1600', 'neu_zins': '1.50',
                    'neu_lik': '105.0', 'wirksam_ab': wirksam.isoformat(),
-                   'begruendung': 'Referenzzins', 'formular': 'generisch'}
-        for _ in range(3):
-            c.post(f'/neu/mietzins/{v.id}/anpassung/', payload)
-        self.assertEqual(MietzinsAnpassung.objects.filter(vertrag=v, wirksam_ab=wirksam).count(), 1)
-        self.assertEqual(Pendenz.objects.filter(vertrag=v, kategorie='frist').count(), 1)
+                   'begruendung': 'Referenzzins'}
+        for neu in ('1600', '1610', '1620'):
+            r = c.post(f'/neu/mietzins/{v.id}/anpassung/', dict(payload, neu_netto=neu))
+            self.assertEqual(r['Content-Type'], 'application/pdf')
+        anp = MietzinsAnpassung.objects.get(vertrag=v)
+        self.assertEqual(anp.status, 'entwurf')
+        self.assertEqual(anp.neuer_netto_mietzins, Decimal('1620'))
+        self.assertEqual(Pendenz.objects.filter(vertrag=v, kategorie='frist').count(), 0)
+        self.assertFalse(Sollmietzins.objects.filter(quelle_anpassung=anp).exists())
 
     def test_schlussabrechnung_teilbezahlt_bleibt_op(self):
         # Verhaltenstest (ersetzt die frühere Quellcode-Prüfung): eine teilbezahlte
