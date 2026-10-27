@@ -395,7 +395,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             {% if a.status != 'storniert' %}
             <div class="fw-rumpf">
                 {% if a.termin_status == 'vereinbart' %}
-                <div class="fw-chip fw-good mb-2">{% zeichen 'kalender' %} {% blocktrans with d=a.termin_am|date:"d.m.Y, H:i" %}Termin: {{ d }} Uhr{% endblocktrans %}</div>
+                <div class="fw-chip fw-good mb-2">{% zeichen 'termin' %} {% blocktrans with d=a.termin_am|date:"d.m.Y, H:i" %}Termin: {{ d }} Uhr{% endblocktrans %}</div>
                 {% elif a.termin_status == 'abgesagt' %}
                 <div class="fw-chip fw-warn mb-2">{% trans "Termin abgesagt" %}</div>
                 {% endif %}
