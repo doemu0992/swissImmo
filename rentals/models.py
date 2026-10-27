@@ -64,6 +64,12 @@ class Mietvertrag(OrganisationAusKette):
     # (per_datum) — erst dieses Flag macht die Unterscheidung eindeutig, statt
     # `ende IS NOT NULL` mehrdeutig als «befristet» zu interpretieren.
     ist_befristet = models.BooleanField("Befristetes Mietverhältnis", default=False)
+    #: Unbefristeter Vertrag, bei dem der Vermieter bis zu diesem Datum nicht kündigen kann.
+    #: VMWG Art. 17 Abs. 4: Für Index (Art. 269b OR, 5 J.) gilt der Vertrag als fest
+    #: abgeschlossen, wenn der Vermieter mindestens so lange nicht kündigen kann; die Staffelmiete
+    #: (Art. 269c OR, 3 J.) folgt derselben Auslegung. Leer = kein Verzicht.
+    vermieter_kuendigungsverzicht_bis = models.DateField(
+        "Vermieter verzichtet auf Kündigung bis", null=True, blank=True)
     ende = models.DateField(null=True, blank=True)
     erstmals_kuendbar_auf = models.DateField("Erstmals kündbar auf", null=True, blank=True) # 🔥 NEU
     kuendigungsfrist_monate = models.IntegerField("Kündigungsfrist (Monate)", default=3)
@@ -788,6 +794,14 @@ class Staffelstufe(OrganisationAusKette):
     vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE, related_name='staffelstufen')
     ab_datum = models.DateField("Gültig ab")
     netto_mietzins = models.DecimalField("Netto-Mietzins ab Stichtag", max_digits=8, decimal_places=2)
+    #: Art. 269c lit. c OR: Die Erhöhung wird als Frankenbetrag vereinbart — nie in Prozent.
+    #: Quelle der Wahrheit; `netto_mietzins` ist der daraus folgende Stand der Stufe.
+    erhoehung_chf = models.DecimalField("Erhöhung (CHF)", max_digits=8, decimal_places=2,
+                                        null=True, blank=True)
+    #: Schriftliche Mitteilung der Erhöhung (Art. 269d Abs. 5 OR, frühestens 4 Monate vorher,
+    #: Art. 19a VMWG): wann das Schreiben erstellt und wann es versandt wurde.
+    mitteilung_erstellt_am = models.DateField("Mitteilung erstellt am", null=True, blank=True)
+    mitteilung_versandt_am = models.DateField("Mitteilung versandt am", null=True, blank=True)
 
     class Meta:
         db_table = 'core_staffelstufe'
