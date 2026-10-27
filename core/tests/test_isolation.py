@@ -396,6 +396,9 @@ ID_IM_QUERYSTRING = (
      'vorwahl_mieter', 'core/views/fw/kommunikation.py:86'),
     ('fw_vertrag_neu',   'einheit', 'einheit',
      'vorwahl_einheit', 'core/views/fw/vertragserstellung.py:58'),
+    # Modul 4 (27.10.2026): Objektfilter des Bewerber-Boards.
+    ('fw_bewerbungen',   'einheit', 'einheit',
+     'aktive_einheit', 'core/views/fw/mietprozess.py:120'),
 )
 
 

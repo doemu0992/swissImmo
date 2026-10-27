@@ -24,7 +24,7 @@
 
 {% if offene_n %}
 <form method="post" action="/neu/vermarktung/{{ e.id }}/bewerber/absage-uebrige/{{ lg_query }}" class="mb-4"
-      onsubmit="return confirm('{% filter escapejs %}{% blocktrans with n=offene_n %}Allen {{ n }} noch offenen Bewerbern eine Absage senden?{% endblocktrans %}{% endfilter %}');">
+      onsubmit="return confirm('{% filter escapejs %}{% blocktrans with n=offene_n %}Allen {{ n }} noch offenen Bewerbern eine Absage senden — auch denen, die zur Besichtigung eingeladen sind?{% endblocktrans %}{% endfilter %}');">
     {% csrf_token %}
     <button class="fw-btn fw-rand-krit fw-knapp">{% zeichen 'senden' %}{% blocktrans with n=offene_n %}Übrige {{ n }} absagen{% endblocktrans %}</button>
 </form>

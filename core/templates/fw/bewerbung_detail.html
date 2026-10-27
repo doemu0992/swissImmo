@@ -64,6 +64,29 @@
 
     <!-- Aktionen -->
     <div class="min-w-0">
+        {% comment %} Prüf-Checkliste (Modul 4, Entscheid E7): zeigt den Stand, ist kein
+           Riegel. «Bonität geprüft» setzt weiterhin das Einlesen des Betreibungsauszugs. {% endcomment %}
+        <div class="fw-card">
+            <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'gut' %}</span><h2>{% trans "Prüf-Checkliste" %}</h2></div>
+            <p class="fw-hilfe px-5 pt-3">{% trans "Zeigt, was geprüft ist. Der Status hängt nicht davon ab." %}</p>
+            {% for p in pruefpunkte %}
+            <div class="fw-zeile">
+                <div class="fw-mitte">
+                    <div class="fw-t">{% if p.ok %}{% zeichen 'gut' klasse='fw-gut' %}{% endif %} {{ p.label }}</div>
+                    {% if p.am %}<div class="fw-s">{% if p.ok %}{% blocktrans with wer=p.von am=p.am|date:"d.m.Y H:i" %}abgehakt von {{ wer }}, {{ am }}{% endblocktrans %}{% else %}{% blocktrans with wer=p.von am=p.am|date:"d.m.Y H:i" %}zurückgenommen von {{ wer }}, {{ am }}{% endblocktrans %}{% endif %}</div>{% else %}<div class="fw-s">{% trans "offen" %}</div>{% endif %}
+                </div>
+                {% if kann_schreiben %}
+                <form method="post" action="/neu/bewerbungen/{{ b.id }}/pruefung/">
+                    {% csrf_token %}
+                    <input type="hidden" name="pruefung" value="{{ p.key }}">
+                    <input type="hidden" name="ok" value="{% if p.ok %}0{% else %}1{% endif %}">
+                    <button class="fw-btn fw-knapp">{% if p.ok %}{% trans "Zurücknehmen" %}{% else %}{% trans "Abhaken" %}{% endif %}</button>
+                </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
         <div class="fw-card">
             <div class="fw-kopf"><h2>{% trans "Dokumente" %}</h2></div>
             {% if dokumente %}
@@ -103,6 +126,9 @@
                 </button>
             </form>
 
+            {% if b.vertrag_id %}
+            <p class="fw-hilfe fw-rumpf">{% trans "Aus dieser Bewerbung ist ein Vertrag entstanden; der Status ist damit abgeschlossen." %}</p>
+            {% else %}
             <form method="post" action="/neu/bewerbungen/{{ b.id }}/status/" class="flex items-center gap-2 fw-rumpf">
                 {% csrf_token %}
                 <select name="status" class="fw-feld flex-1">
@@ -112,11 +138,16 @@
                 </select>
                 <button class="fw-btn fw-primary fw-knapp">{% trans "Setzen" %}</button>
             </form>
+            {% endif %}
         </div>
 
         <div class="fw-card">
             <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'vertrag' %}</span><h2>{% trans "Zusage & Vertrag" %}</h2></div>
             <div class="fw-rumpf">
+            {% if b.vertrag %}
+            <p class="fw-hilfe mb-3">{% blocktrans with nr=b.vertrag.id st=b.vertrag.get_status_display %}Vertrag #{{ nr }} ({{ st }}) ist aus dieser Bewerbung entstanden.{% endblocktrans %}</p>
+            <a href="/neu/vertraege/{{ b.vertrag.id }}/" target="_top" class="fw-btn fw-primary w-full">{% trans "Vertrag öffnen" %}</a>
+            {% else %}
             <p class="fw-hilfe mb-3">{% blocktrans with e=b.einheit.bezeichnung %}Legt einen Mieter aus dieser Bewerbung an und erstellt einen Vertragsentwurf auf {{ e }}.{% endblocktrans %}</p>
             <form method="post" action="/neu/bewerbungen/{{ b.id }}/vertrag/" onsubmit="return confirm('{% filter escapejs %}{% trans "Mieter anlegen und Vertragsentwurf erstellen?" %}{% endfilter %}');">
                 {% csrf_token %}
@@ -124,6 +155,7 @@
                     {% trans "Mieter + Vertragsentwurf erstellen" %}
                 </button>
             </form>
+            {% endif %}
             </div>
         </div>
     </div>

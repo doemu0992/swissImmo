@@ -155,6 +155,9 @@ from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_
                            fw_pendenzen, fw_pendenz_neu, fw_pendenz_toggle, fw_pendenz_loeschen, fw_fristen,
                            fw_fristen_ical, fristen_ical_feed)
 
+# Modul 4 (27.10.2026): Bewerber-Board
+import core.views.fw.mietprozess as _bewerber_board  # noqa: E402
+
 # 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
 from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
 
@@ -475,6 +478,11 @@ urlpatterns = [
     path('neu/bewerbungen/<int:pk>/status/', fw_bewerbung_status, name='fw_bewerbung_status'),
     path('neu/bewerbungen/<int:pk>/unterlagen/', fw_bewerbung_unterlagen, name='fw_bewerbung_unterlagen'),
     path('neu/bewerbungen/<int:pk>/vertrag/', fw_bewerbung_zu_vertrag, name='fw_bewerbung_zu_vertrag'),
+    # Modul 4 (27.10.2026): Bewerber-Board — Spaltenwechsel und Prüf-Checkliste.
+    path('neu/bewerbungen/<int:pk>/verschieben/', _bewerber_board.fw_bewerbung_verschieben,
+         name='fw_bewerbung_verschieben'),
+    path('neu/bewerbungen/<int:pk>/pruefung/', _bewerber_board.fw_bewerbung_pruefung,
+         name='fw_bewerbung_pruefung'),
     path('neu/mietzins/', fw_mietzins, name='fw_mietzins'),
     path('neu/mietzins/massenanpassung/', fw_mietzins_massenanpassung, name='fw_mietzins_massenanpassung'),
     path('neu/mietzins/<int:vertrag_id>/anpassung/', fw_mietzins_anpassung, name='fw_mietzins_anpassung'),

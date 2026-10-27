@@ -15,6 +15,7 @@ from django.db.models import Q
 from django.utils.translation import gettext, gettext_lazy, gettext_noop
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
@@ -39,26 +40,129 @@ BEWERBUNG_SPALTEN = [
 ]
 
 
+#: Die Liste zeigt alles, auch ältere Absagen — bis zu dieser Zahl.
+BEWERBUNG_LISTE_MAX = 300
+
+_STATUS_LABEL = {k: l for k, l, _c in BEWERBUNG_SPALTEN}
+#: Chipfarbe je Status in der Liste (fw-chip-Modifikatoren aus der Schicht).
+_STATUS_CLS = {'neu': 'fw-info', 'geprueft': 'fw-warn', 'besichtigung': 'fw-info',
+               'zugesagt': 'fw-good', 'abgelehnt': 'fw-crit'}
+
+
+def _bewerbung_karte(b, heute):
+    """Was eine Karte des Boards (und eine Zeile der Liste) über eine Bewerbung zeigt.
+
+    Keine Abfrage je Karte: Die Punktezahl rechnet `bewerte_bewerbung` aus den
+    Feldern der Bewerbung und der vorgeladenen Einheit, und die Löschfrist
+    entsteht für Abgelehnte allein aus `aktualisiert_am` (siehe
+    `core.services.bewerbung_aufbewahrung.entschieden_am`). Für andere Status
+    würde `naechste_frist` die Verträge der Einheit lesen — sie wird deshalb
+    nur für Abgelehnte gerufen.
+    """
+    from core.services.bewerber_scoring import bewerte_bewerbung
+    from core.services.bewerbung_aufbewahrung import DOKUMENT_FELDER, naechste_frist
+    from mietprozess.workflow import erlaubte_spalten, spalte_von
+
+    e = b.einheit
+    brutto = (e.nettomiete_aktuell or Decimal('0')) + (e.nebenkosten_aktuell or Decimal('0'))
+    bewertung = bewerte_bewerbung(b, brutto)
+    faktor = bewertung['tragbarkeit_faktor']
+    karte = {
+        'b': b, 'spalte': spalte_von(b),
+        'score': bewertung['score'], 'ampel': bewertung['ampel'],
+        # Anteil der Bruttomiete am Einkommen, als Kehrwert des Faktors aus
+        # `bewerte_bewerbung` — keine eigene Regel, nur eine andere Schreibweise.
+        'tragbarkeit': (Decimal('100') / faktor).quantize(Decimal('1')) if faktor else None,
+        'auszug_fehlt': not (b.betreibungsauszug or b.digitaler_betreibungsauszug),
+        'pruefpunkte': b.pruefpunkte(),
+        'status_label': _STATUS_LABEL.get(b.status, b.status),
+        'status_cls': _STATUS_CLS.get(b.status, 'fw-mut'),
+        'ziele': erlaubte_spalten(b),
+        'frist': None, 'frist_dokumente': False,
+    }
+    karte['pruefung_ok'] = sum(1 for p in karte['pruefpunkte'] if p['ok'])
+    if karte['spalte'] == 'abgelehnt':
+        karte['frist'] = naechste_frist(b, heute)
+        karte['frist_dokumente'] = any(getattr(b, f, None) for f in DOKUMENT_FELDER)
+    return karte
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_bewerbungen(request):
-    """Bewerbungen-Board, nach Status gruppiert."""
+    """Bewerbungen als Board in vier Spalten — oder als Liste.
+
+    Das Board ist die Arbeitsfläche: Eingegangen, Geprüft, Abgelehnt (nur
+    `ABGELEHNT_TAGE` lang) und Vertrag generiert. Die Liste (`?ansicht=liste`)
+    zeigt dieselben Bewerbungen chronologisch und ohne die Frist, also auch
+    ältere Absagen bis zur Anonymisierung — dort sucht, wer Auskunft geben
+    muss, ob von einer Person noch Daten da sind.
+
+    Filter: `?lg=` (Liegenschaft, `_global_filter`) und `?einheit=` (Objekt).
+    """
+    from datetime import timedelta
     from mietprozess.models import Mietbewerbung
+    from mietprozess.workflow import ABGELEHNT_TAGE, SPALTEN
+
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
+    ansicht = 'liste' if request.GET.get('ansicht') == 'liste' else 'board'
 
-    qs = (Mietbewerbung.objects.select_related('einheit__liegenschaft')
+    qs = (Mietbewerbung.objects.select_related('einheit__liegenschaft', 'vertrag')
           .order_by('-erstellt_am'))
+    objekte = (Einheit.objects.filter(bewerbungen__isnull=False).distinct()
+               .select_related('liegenschaft').order_by('liegenschaft__strasse', 'bezeichnung'))
     if aktive_lg:
         qs = qs.filter(einheit__liegenschaft=aktive_lg)
+        objekte = objekte.filter(liegenschaft=aktive_lg)
 
-    alle = list(qs)
+    # Eine fremde Einheit findet der Mandantenfilter nicht — dann gilt kein
+    # Objektfilter, wie bei einer fremden `?lg=`.
+    einheit_roh = (request.GET.get('einheit') or '').strip()
+    aktive_einheit = (Einheit.objects.select_related('liegenschaft').filter(id=einheit_roh).first()
+                      if einheit_roh.isdigit() else None)
+    if aktive_einheit:
+        qs = qs.filter(einheit=aktive_einheit)
+
+    heute = timezone.localdate()
+    ausgeblendet = 0
+    if ansicht == 'board':
+        grenze = timezone.now() - timedelta(days=ABGELEHNT_TAGE)
+        alt = dict(status='abgelehnt', vertrag__isnull=True, aktualisiert_am__lt=grenze)
+        ausgeblendet = qs.filter(**alt).count()
+        qs = qs.exclude(**alt)
+        karten = [_bewerbung_karte(b, heute) for b in qs]
+    else:
+        zeilen = list(qs[:BEWERBUNG_LISTE_MAX + 1])
+        ausgeblendet = max(0, len(zeilen) - BEWERBUNG_LISTE_MAX)
+        karten = [_bewerbung_karte(b, heute) for b in zeilen[:BEWERBUNG_LISTE_MAX]]
+
     spalten = []
-    for key, label, cls in BEWERBUNG_SPALTEN:
-        eintraege = [b for b in alle if b.status == key]
-        spalten.append({'key': key, 'label': label, 'cls': cls, 'items': eintraege, 'anzahl': len(eintraege)})
+    if ansicht == 'board':
+        reihenfolge = {
+            # Geprüfte nach Punkten — dort wird ausgewählt. Sonst das Neueste zuerst.
+            'geprueft': lambda k: (-k['score'], -k['b'].erstellt_am.timestamp()),
+            'abgelehnt': lambda k: -k['b'].aktualisiert_am.timestamp(),
+        }
+        for key, label, _ziel in SPALTEN:
+            eigene = [k for k in karten if k['spalte'] == key]
+            if key in reihenfolge:
+                eigene.sort(key=reihenfolge[key])
+            spalten.append({'key': key, 'label': label, 'karten': eigene, 'anzahl': len(eigene)})
+
+    from urllib.parse import urlencode
+    filter_query = urlencode([(k, v) for k, v in (
+        ('lg', aktive_lg.id if aktive_lg else ''),
+        ('einheit', aktive_einheit.id if aktive_einheit else '')) if v])
 
     return render(request, 'fw/bewerbungen.html', {
-        **basis, **_vermietung_pipeline('bewerbungen', basis['lg_query']), 'nav': 'bewerbungen', 'spalten': spalten, 'gesamt': len(alle),
+        **basis, **_vermietung_pipeline('bewerbungen', basis['lg_query']), 'nav': 'bewerbungen',
+        'ansicht': ansicht, 'spalten': spalten, 'karten': karten, 'gesamt': len(karten),
+        'ausgeblendet': ausgeblendet, 'abgelehnt_tage': ABGELEHNT_TAGE,
+        'liste_max': BEWERBUNG_LISTE_MAX,
+        'objekte': objekte, 'aktive_einheit': aktive_einheit,
+        'filter_query': ('?' + filter_query) if filter_query else '',
+        'filter_amp': ('&' + filter_query) if filter_query else '',
+        'kann_verschieben': basis['kann_schreiben'],
     })
 
 
@@ -92,7 +196,8 @@ def fw_bewerber_vergleich(request, einheit_id):
     kandidaten.sort(key=lambda k: -k['score'])
     # Indikator-Spaltentitel aus dem ersten Kandidaten (fixe Reihenfolge)
     indikator_labels = [i['label'] for i in kandidaten[0]['indikatoren']] if kandidaten else []
-    offene_n = sum(1 for k in kandidaten if k['status'] in ('neu', 'geprueft'))
+    offene_n = sum(1 for k in kandidaten
+                   if k['status'] in SAMMELABSAGE_STATUS and not k['b'].vertrag_id)
 
     from django.contrib import messages
     return render(request, 'fw/bewerber_vergleich.html', {
@@ -152,6 +257,48 @@ def _bewerber_mail(b, entscheid):
                 f"und Ihr Interesse. Wir haben uns für eine andere Bewerbung entschieden und wünschen "
                 f"Ihnen bei der weiteren Wohnungssuche viel Erfolg.\n\nFreundliche Grüsse\n{ctx['vermieter']}")
     return betreff, body
+
+
+def _entscheid_anwenden(request, b, entscheid):
+    """Zusage oder Absage setzen und die Mail dazu schicken. True = Mail ging raus.
+
+    Ein Weg für alle, die entscheiden: Vergleich, Sammelabsage und Board.
+    Die Mail kommt aus der Vorlage `bewerber_zusage`/`bewerber_absage`
+    (`_bewerber_mail`); der Versand steht im Journal.
+
+    `aktualisiert_am` wird ausdrücklich mitgeschrieben. `auto_now` greift bei
+    `update_fields` nur für genannte Felder — bis 10/2026 behielt eine Absage
+    so den Zeitstempel der letzten früheren Änderung. Daran hängen aber die
+    Löschfrist (`bewerbung_aufbewahrung.entschieden_am`: «Zeitpunkt der
+    letzten Änderung») und die 30 Tage, die eine Absage auf dem Board steht.
+
+    Bei einer Absage wird eine offene Besichtigungs-Pendenz erledigt: Der
+    Termin mit einer abgelehnten Person findet nicht mehr statt.
+    """
+    from core.utils.email_service import journal_email, send_ticket_email
+    b.status = 'zugesagt' if entscheid == 'zusage' else 'abgelehnt'
+    b.save(update_fields=['status', 'aktualisiert_am'])
+    if entscheid == 'absage':
+        from core.models import Pendenz
+        Pendenz.objects.filter(quelle=f'besichtigung:{b.id}', erledigt=False).update(
+            erledigt=True, erledigt_am=timezone.localdate())
+    if not b.email:
+        return False
+    betreff, body = _bewerber_mail(b, entscheid)
+    ok = send_ticket_email(b.email, betreff, body)
+    if ok:
+        journal_email(betreff, body, user=request.user,
+                      empfaenger=f"{b.vorname} {b.nachname} <{b.email}> (Bewerbung)")
+    return ok
+
+
+def _kein_wechsel_text(b, ziel_label):
+    """Meldung für einen Statuswechsel, den `mietprozess.workflow` nicht vorsieht."""
+    if b.vertrag_id:
+        return gettext('Aus dieser Bewerbung ist bereits ein Vertrag entstanden. '
+                       'Den Stand ändern Sie im Vertrag.')
+    return gettext('Von «%(von)s» nach «%(nach)s» ist kein Wechsel vorgesehen.') % {
+        'von': b.get_status_display(), 'nach': ziel_label}
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
@@ -229,7 +376,7 @@ def fw_bewerber_entscheid(request, pk):
     from django.shortcuts import redirect
     from django.contrib import messages
     from mietprozess.models import Mietbewerbung
-    from core.utils.email_service import send_ticket_email
+    from mietprozess.workflow import status_erlaubt
     from core.auth import log_aktion
     b = get_object_or_404(Mietbewerbung.objects.select_related('einheit__liegenschaft'), id=pk)
     if request.method != 'POST':
@@ -243,16 +390,10 @@ def fw_bewerber_entscheid(request, pk):
     if b.status == ziel_status:
         messages.info(request, gettext('Diese Bewerbung wurde bereits zugesagt.') if entscheid == 'zusage' else gettext('Diese Bewerbung wurde bereits abgesagt.'))
         return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
-    b.status = ziel_status
-    b.save(update_fields=['status'])
-    ok = False
-    if b.email:
-        betreff, body = _bewerber_mail(b, entscheid)
-        ok = send_ticket_email(b.email, betreff, body)
-        if ok:
-            from core.utils.email_service import journal_email
-            journal_email(betreff, body, user=request.user,
-                          empfaenger=f"{b.vorname} {b.nachname} <{b.email}> (Bewerbung)")
+    if not status_erlaubt(b, ziel_status):
+        messages.error(request, _kein_wechsel_text(b, _STATUS_LABEL[ziel_status]))
+        return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
+    ok = _entscheid_anwenden(request, b, entscheid)
     log_aktion(request, f"Bewerber-{entscheid.capitalize()}", f"{b.vorname} {b.nachname}",
                b.einheit.bezeichnung if b.einheit_id else '')
     meldung = gettext('Zusage gesetzt.') if entscheid == 'zusage' else gettext('Absage gesetzt.')
@@ -262,14 +403,20 @@ def fw_bewerber_entscheid(request, pk):
     return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
 
 
+#: Wer bei der Sammelabsage eine Absage bekommt. «besichtigung» kam 10/2026
+#: dazu: Wer zur Besichtigung eingeladen war und nicht genommen wird, wartete
+#: sonst ohne Antwort.
+SAMMELABSAGE_STATUS = ('neu', 'geprueft', 'besichtigung')
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_bewerber_absage_uebrige(request, einheit_id):
-    """Sendet allen noch offenen (neu/geprüft) Bewerbern eines Objekts eine Absage
-    — z. B. nach der Zusage an den gewählten Bewerber."""
+    """Sendet allen noch offenen Bewerbern eines Objekts eine Absage — z. B. nach
+    der Zusage an den gewählten Bewerber. Offen heisst: neu, geprüft oder zur
+    Besichtigung eingeladen (`SAMMELABSAGE_STATUS`), und noch ohne Vertrag."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from mietprozess.models import Mietbewerbung
-    from core.utils.email_service import send_ticket_email
     from core.auth import log_aktion
     if request.method != 'POST':
         return redirect(f'/neu/vermarktung/{einheit_id}/bewerber/')
@@ -281,19 +428,13 @@ def fw_bewerber_absage_uebrige(request, einheit_id):
     # ausserdem, dass die ID existiert.
     from portfolio.models import Einheit
     get_object_or_404(Einheit, id=einheit_id)
-    offene = Mietbewerbung.objects.filter(einheit_id=einheit_id, status__in=['neu', 'geprueft'])
+    offene = Mietbewerbung.objects.filter(einheit_id=einheit_id, status__in=SAMMELABSAGE_STATUS,
+                                          vertrag__isnull=True)
     n = mails = 0
     for b in offene.select_related('einheit__liegenschaft'):
-        b.status = 'abgelehnt'
-        b.save(update_fields=['status'])
         n += 1
-        if b.email:
-            betreff, body = _bewerber_mail(b, 'absage')
-            if send_ticket_email(b.email, betreff, body):
-                mails += 1
-                from core.utils.email_service import journal_email
-                journal_email(betreff, body, user=request.user,
-                              empfaenger=f"{b.vorname} {b.nachname} <{b.email}> (Bewerbung)")
+        if _entscheid_anwenden(request, b, 'absage'):
+            mails += 1
     log_aktion(request, "Bewerber-Sammelabsage", f"Objekt #{einheit_id}", f"{n} abgesagt")
     meldung = gettext('%(n)s offene Bewerbung(en) abgesagt.') % {'n': n}
     if mails:
@@ -305,7 +446,8 @@ def fw_bewerber_absage_uebrige(request, einheit_id):
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_bewerbung_detail(request, pk):
     from mietprozess.models import Mietbewerbung
-    b = get_object_or_404(Mietbewerbung.objects.select_related('einheit__liegenschaft'), id=pk)
+    from mietprozess.workflow import erlaubte_status
+    b = get_object_or_404(Mietbewerbung.objects.select_related('einheit__liegenschaft', 'vertrag'), id=pk)
     basis = _global_filter(request)
 
     dokumente = []
@@ -316,10 +458,14 @@ def fw_bewerbung_detail(request, pk):
             dokumente.append({'label': label, 'url': f.url})
 
     status_label = dict((k, l) for k, l, _ in BEWERBUNG_SPALTEN).get(b.status, b.status)
+    # Nur der heutige Status und die erlaubten Ziele (`mietprozess.workflow`).
+    erlaubt = {b.status, *erlaubte_status(b)}
+    status_wahl = [(k, l, c) for k, l, c in BEWERBUNG_SPALTEN if k in erlaubt]
     from django.contrib import messages
     return render(request, 'fw/bewerbung_detail.html', {
         **basis, 'nav': 'bewerbungen', 'b': b, 'dokumente': dokumente,
-        'status_label': status_label, 'status_wahl': BEWERBUNG_SPALTEN,
+        'status_label': status_label, 'status_wahl': status_wahl,
+        'pruefpunkte': b.pruefpunkte(),
         'meldung': list(messages.get_messages(request)),
     })
 
@@ -365,13 +511,17 @@ def fw_bewerbung_status(request, pk):
     from django.shortcuts import redirect
     from django.contrib import messages
     from mietprozess.models import Mietbewerbung
+    from mietprozess.workflow import status_erlaubt
     from core.auth import log_aktion
     if request.method != 'POST':
         return redirect(f'/neu/bewerbungen/{pk}/')
     b = get_object_or_404(Mietbewerbung, id=pk)
     neu = request.POST.get('status')
     gueltig = {k for k, _, _ in BEWERBUNG_SPALTEN}
-    if neu in gueltig:
+    if neu in gueltig and not status_erlaubt(b, neu):
+        # Dieselben Übergänge wie auf dem Board (`mietprozess.workflow`).
+        messages.error(request, _kein_wechsel_text(b, _STATUS_LABEL[neu]))
+    elif neu in gueltig:
         b.status = neu
         b.save()
         log_aktion(request, "Bewerbungsstatus geändert", f"{b.vorname} {b.nachname}", neu)
@@ -391,42 +541,27 @@ def _aktuelle_basis(einheit):
     return zins, lik
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
-def fw_bewerbung_zu_vertrag(request, pk):
-    """Zusage: Mieter aus der Bewerbung anlegen (oder finden) und einen
-    Vertragsentwurf auf der Einheit erstellen — mit den Objekt-Defaults vorbefüllt."""
-    from django.shortcuts import redirect
-    from django.contrib import messages
-    from mietprozess.models import Mietbewerbung
+def _vertrag_aus_bewerbung(request, b):
+    """Mieter aus der Bewerbung anlegen (oder finden) und den Vertragsentwurf
+    erstellen. Gibt (vertrag, neu_angelegt) zurück.
+
+    Idempotent am Verweis `b.vertrag`: Steht er, entsteht nichts Neues. Bis
+    10/2026 suchte diese Stelle einen Entwurf über Name und E-Mail des Mieters
+    auf derselben Einheit — und traf damit auch den Entwurf einer anderen
+    Bewerbung mit gleichem Namen. Der Bestand ist über die Migration
+    `mietprozess.0010_vertrag_aus_bestand_zuordnen` zugeordnet, wo das
+    eindeutig ging.
+
+    Den Mieter sucht die Stelle weiterhin über E-Mail und Nachname: Das ist der
+    Duplikatschutz im Personenstamm (eine Person, die schon Mieter ist, wird
+    nicht ein zweites Mal angelegt), nicht die Zuordnung zum Vertrag.
+
+    Die Prüfung, ob der Wechsel erlaubt ist, macht der Aufrufer.
+    """
     from core.auth import log_aktion
-    if request.method != 'POST':
-        return redirect(f'/neu/bewerbungen/{pk}/')
-
-    b = get_object_or_404(Mietbewerbung.objects.select_related('einheit__liegenschaft'), id=pk)
+    if b.vertrag_id:
+        return b.vertrag, False
     einheit = b.einheit
-    lg = einheit.liegenschaft
-
-    # Idempotenz am ECHTEN Marker (nicht am Status): existiert für DIESEN Bewerber
-    # bereits ein Vertragsentwurf auf dieser Einheit, nicht erneut anlegen.
-    # Wichtig: `fw_bewerber_entscheid` (Bewerber-Vergleich) setzt 'zugesagt' OHNE
-    # Entwurf — der Status allein blockierte dann fälschlich die Umwandlung und
-    # leitete auf einen fremden Entwurf derselben Einheit um.
-    _bestehender = None
-    if b.email:
-        _bestehender = (Mietvertrag.objects
-                        .filter(einheit=einheit, status='entwurf',
-                                mieter__email__iexact=b.email,
-                                mieter__nachname__iexact=b.nachname)
-                        .order_by('-id').first())
-    if _bestehender is None:
-        _bestehender = (Mietvertrag.objects
-                        .filter(einheit=einheit, status='entwurf',
-                                mieter__vorname__iexact=b.vorname or '',
-                                mieter__nachname__iexact=b.nachname or '')
-                        .order_by('-id').first())
-    if _bestehender:
-        messages.info(request, gettext('Für diese Bewerbung existiert bereits ein Vertragsentwurf.'))
-        return redirect(f'/neu/vertraege/{_bestehender.id}/')
 
     # 1. Mieter finden oder anlegen (Duplikat-Schutz über E-Mail + Name)
     mieter = None
@@ -478,6 +613,7 @@ def fw_bewerbung_zu_vertrag(request, pk):
         besondere_vereinbarungen=(f"Haustiere: {b.haustiere_details}" if b.haustiere and b.haustiere_details else ''),
     )
 
+    b.vertrag = vertrag
     b.status = 'zugesagt'
     b.save()
     # Objekt ist vergeben → aus der Vermarktung/Feed/Exposé nehmen.
@@ -486,6 +622,141 @@ def fw_bewerbung_zu_vertrag(request, pk):
         einheit.save(update_fields=['zur_ausschreibung'])
     log_aktion(request, "Bewerbung → Vertragsentwurf", f"{mieter.display_name}",
                f"{einheit.bezeichnung}, Entwurf #{vertrag.id}", ziel=vertrag)
+    return vertrag, True
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_bewerbung_zu_vertrag(request, pk):
+    """Zusage: Mieter aus der Bewerbung anlegen (oder finden) und einen
+    Vertragsentwurf auf der Einheit erstellen — mit den Objekt-Defaults vorbefüllt."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from mietprozess.models import Mietbewerbung
+    from mietprozess.workflow import status_erlaubt
+    if request.method != 'POST':
+        return redirect(f'/neu/bewerbungen/{pk}/')
+
+    b = get_object_or_404(Mietbewerbung.objects.select_related('einheit__liegenschaft', 'vertrag'), id=pk)
+    if b.vertrag_id:
+        messages.info(request, gettext('Für diese Bewerbung existiert bereits ein Vertragsentwurf.'))
+        return redirect(f'/neu/vertraege/{b.vertrag_id}/')
+    if not status_erlaubt(b, 'zugesagt'):
+        messages.error(request, _kein_wechsel_text(b, _STATUS_LABEL['zugesagt']))
+        return redirect(f'/neu/bewerbungen/{b.id}/')
+
+    vertrag, _neu = _vertrag_aus_bewerbung(request, b)
     messages.success(request,
-        '✅ ' + gettext('Mieter angelegt und Vertragsentwurf für %(bezeichnung)s erstellt — bitte Konditionen prüfen und aktivieren.') % {'bezeichnung': einheit.bezeichnung})
+        '✅ ' + gettext('Mieter angelegt und Vertragsentwurf für %(bezeichnung)s erstellt — bitte Konditionen prüfen und aktivieren.') % {'bezeichnung': b.einheit.bezeichnung})
     return redirect(f'/neu/vertraege/{vertrag.id}/')
+
+
+def _verschieben_antwort(request, b, ok, text, status=200, weiter=None):
+    """JSON für das Ziehen, Weiterleitung mit Meldung für das Auswahlfeld —
+    wie `tickets_board._antwort`."""
+    from django.contrib import messages
+    from django.http import JsonResponse
+    from django.shortcuts import redirect
+    from mietprozess.workflow import erlaubte_spalten, spalte_von
+    als_json = (request.headers.get('x-requested-with') == 'XMLHttpRequest'
+                or 'application/json' in request.headers.get('accept', ''))
+    if als_json:
+        return JsonResponse({
+            'ok': ok, 'meldung': str(text), 'spalte': spalte_von(b), 'status': b.status,
+            'ziele': [[k, str(label)] for k, label in erlaubte_spalten(b)],
+            'weiter': weiter or ''}, status=status)
+    (messages.success if ok else messages.error)(request, text)
+    if ok and weiter:
+        return redirect(weiter)
+    # Zurück auf das Board mit denselben Filtern — nur Ziffern übernehmen.
+    from urllib.parse import urlencode
+    filter_ = [(k, request.POST.get(k, '')) for k in ('lg', 'einheit')]
+    query = urlencode([(k, v) for k, v in filter_ if v.isdigit()])
+    return redirect('/neu/bewerbungen/' + (f'?{query}' if query else ''))
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def fw_bewerbung_verschieben(request, pk):
+    """Spaltenwechsel vom Board — als Ziehen (JSON) oder Auswahlfeld (Formular).
+
+    * **Geprüft** setzt `geprueft`.
+    * **Abgelehnt** setzt die Absage samt Mail (`_entscheid_anwenden`). Im
+      Browser fragt vorher ein Dialog nach.
+    * **Vertrag generiert** legt Mieter und Vertragsentwurf an
+      (`_vertrag_aus_bewerbung`) und nennt die Vertragsseite als `weiter`.
+    * Alles, was `mietprozess.workflow` nicht vorsieht, ergibt 400; die Karte
+      springt zurück.
+    """
+    from mietprozess.models import Mietbewerbung
+    from mietprozess.workflow import SPALTEN, spalte_erlaubt, spalte_von
+    from core.auth import log_aktion
+
+    b = get_object_or_404(Mietbewerbung.objects.select_related('einheit__liegenschaft', 'vertrag'), id=pk)
+    spalte = request.POST.get('spalte', '')
+    labels = {k: label for k, label, _z in SPALTEN}
+
+    def antwort(ok, text, status=200, weiter=None):
+        return _verschieben_antwort(request, b, ok, text, status, weiter)
+
+    if spalte not in labels:
+        return antwort(False, gettext('Unbekannte Spalte.'), 400)
+    if spalte == spalte_von(b):
+        return antwort(True, gettext('Keine Änderung.'))
+    if not spalte_erlaubt(b, spalte):
+        return antwort(False, _kein_wechsel_text(b, labels[spalte]), 400)
+
+    name = f"{b.vorname} {b.nachname}"
+    if spalte == 'abgelehnt':
+        mail = _entscheid_anwenden(request, b, 'absage')
+        log_aktion(request, "Bewerber-Absage", name,
+                   f"{b.einheit.bezeichnung} (Board)")
+        text = gettext('Absage gesetzt.')
+        if mail:
+            text += ' ' + gettext('E-Mail an %(email)s gesendet.') % {'email': b.email}
+        return antwort(True, text)
+    if spalte == 'vertrag':
+        vertrag, _neu = _vertrag_aus_bewerbung(request, b)
+        return antwort(True, gettext('Vertragsentwurf für %(bezeichnung)s erstellt — bitte '
+                                     'Konditionen prüfen und aktivieren.') % {
+                           'bezeichnung': b.einheit.bezeichnung},
+                       weiter=f'/neu/vertraege/{vertrag.id}/')
+
+    b.status = 'geprueft'
+    b.save(update_fields=['status', 'aktualisiert_am'])
+    log_aktion(request, "Bewerbungsstatus geändert", name, 'geprueft (Board)')
+    return antwort(True, gettext('%(name)s: %(status)s.') % {
+        'name': name, 'status': b.get_status_display()})
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def fw_bewerbung_pruefung(request, pk):
+    """Einen Punkt der Prüf-Checkliste abhaken oder zurücknehmen.
+
+    Entscheid E7: Die Checkliste zeigt den Stand und ist kein Riegel — der
+    Status bleibt unberührt. Gespeichert wird nur `pruefung`; `aktualisiert_am`
+    bleibt stehen, weil an ihm die Löschfrist und die Sichtbarkeit einer
+    Absage auf dem Board hängen.
+    """
+    from django.contrib import messages
+    from django.shortcuts import redirect
+    from mietprozess.models import Mietbewerbung, PRUEFPUNKTE
+    from core.auth import log_aktion
+
+    b = get_object_or_404(Mietbewerbung, id=pk)
+    punkte = dict(PRUEFPUNKTE)
+    punkt = request.POST.get('pruefung', '')
+    if punkt not in punkte:
+        messages.error(request, gettext('Unbekannter Prüfpunkt.'))
+        return redirect(f'/neu/bewerbungen/{b.id}/')
+    ok = request.POST.get('ok') == '1'
+    wer = (request.user.get_full_name() or request.user.get_username()).strip()
+    stand = dict(b.pruefung) if isinstance(b.pruefung, dict) else {}
+    stand[punkt] = {'ok': ok, 'von': wer, 'am': timezone.now().isoformat(timespec='seconds')}
+    b.pruefung = stand
+    b.save(update_fields=['pruefung'])
+    log_aktion(request, "Bewerbung geprüft", f"{b.vorname} {b.nachname}",
+               f"{punkte[punkt]}: {'ja' if ok else 'nein'}")
+    messages.success(request, (gettext('«%(punkt)s» abgehakt.') if ok
+                               else gettext('«%(punkt)s» zurückgenommen.')) % {'punkt': punkte[punkt]})
+    return redirect(f'/neu/bewerbungen/{b.id}/')

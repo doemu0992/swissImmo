@@ -2,50 +2,274 @@
 {% load zeichen i18n %}
 {% block title %}{% trans "Bewerbungen" %} — swissImmo{% endblock %}
 {% block content %}
-
-
+{% comment %} BEWERBER-BOARD (Modul 4, 27.10.2026). Vier Spalten nach `mietprozess.workflow.SPALTEN`.
+   Ziehen mit der Maus ODER Auswahlfeld «Verschieben nach…» an der Karte (Tastatur, Telefon).
+   Abgelehnt fragt vorher im Dialog nach und schickt dann die bestehende Absage-Mail.
+   Vertrag generiert legt Mieter und Entwurf an und öffnet die Vertragsseite.
+   Die Liste (?ansicht=liste) zeigt alle Bewerbungen, auch ältere Absagen. {% endcomment %}
 <div class="fw-phead">
     <div>
         <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Akten" %}</a><span aria-hidden="true">/</span><span>{% trans "Bewerbungen" %}</span></nav>
         <h1>{% trans "Bewerbungen" %}</h1>
-        <p>{% trans "Mietinteressenten prüfen, zusagen und in einen Vertrag überführen" %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/bewerbungen/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %} · <b class="fw-strong">{{ gesamt }}</b> {% trans "total" %}</p>
+        {% if ansicht == 'board' %}
+        <p>{% blocktrans trimmed count n=gesamt %}{{ n }} Bewerbung auf dem Board.{% plural %}{{ n }} Bewerbungen auf dem Board.{% endblocktrans %} {% trans "Karten ziehen oder an der Karte «Verschieben nach…» wählen." %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/bewerbungen/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
+        {% else %}
+        <p>{% trans "Alle Bewerbungen, die neueste zuerst — auch ältere Absagen, bis sie nach DSG anonymisiert sind." %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/bewerbungen/?ansicht=liste" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
+        {% endif %}
+    </div>
+    <div class="fw-phead-knoepfe">
+        <div class="fw-segment" role="group" aria-label="{% trans 'Ansicht' %}">
+            <a href="/neu/bewerbungen/?ansicht=liste{{ filter_amp }}" class="fw-seg-link{% if ansicht == 'liste' %} an{% endif %}"{% if ansicht == 'liste' %} aria-current="page"{% endif %}>{% zeichen 'dokument' %} {% trans "Liste" %}</a>
+            <a href="/neu/bewerbungen/{{ filter_query }}" class="fw-seg-link{% if ansicht == 'board' %} an{% endif %}"{% if ansicht == 'board' %} aria-current="page"{% endif %}>{% zeichen 'bericht' %} {% trans "Board" %}</a>
+        </div>
     </div>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-x-4 items-start">
+<div class="fw-filters">
+    <form method="get" class="fw-bw-objekt" role="search">
+        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+        {% if ansicht == 'liste' %}<input type="hidden" name="ansicht" value="liste">{% endif %}
+        <label class="sr-only" for="bwObjekt">{% trans "Objekt" %}</label>
+        <select id="bwObjekt" name="einheit" class="fw-feld" onchange="this.form.requestSubmit()">
+            <option value="">{% trans "Alle Objekte" %}</option>
+            {% for o in objekte %}<option value="{{ o.id }}"{% if aktive_einheit and o.id == aktive_einheit.id %} selected{% endif %}>{{ o.liegenschaft.strasse }} · {{ o.bezeichnung }}</option>{% endfor %}
+        </select>
+        <noscript><button class="fw-btn fw-knapp">{% trans "Filtern" %}</button></noscript>
+    </form>
+    {% if aktive_einheit %}
+    <a href="/neu/bewerbungen/?{% if ansicht == 'liste' %}ansicht=liste{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" class="fw-fchip fw-on">{{ aktive_einheit.bezeichnung }}{% if aktive_einheit.nettomiete_aktuell %} · CHF {{ aktive_einheit.nettomiete_aktuell|floatformat:0 }}{% endif %} ×</a>
+    <a href="/neu/vermarktung/{{ aktive_einheit.id }}/bewerber/" class="fw-fchip">{% zeichen 'bericht' %} {% trans "Vergleich" %}</a>
+    {% endif %}
+    {% if ansicht == 'board' and ausgeblendet %}
+    <a href="/neu/bewerbungen/?ansicht=liste{{ filter_amp }}" class="fw-fchip">{% blocktrans trimmed count n=ausgeblendet %}{{ n }} ältere Absage in der Liste{% plural %}{{ n }} ältere Absagen in der Liste{% endblocktrans %}</a>
+    {% endif %}
+</div>
+
+{% if ansicht == 'board' %}
+<div id="fwBoardMeldung" class="fw-hinweis crit hidden" role="alert"><span class="fw-hi">{% zeichen 'kritisch' %}</span><div class="fw-ht" id="fwBoardMeldungText"></div></div>
+
+<div class="fw-board fw-bw-board" id="fwBoard" data-verschieben="{% if kann_verschieben %}1{% endif %}">
     {% for sp in spalten %}
-    <div class="fw-card">
-        <div class="fw-kopf">
-            <h2>{{ sp.label }}</h2>
-            <span class="fw-rechts"><span class="fw-chip {{ sp.cls }}">{{ sp.anzahl }}</span></span>
-        </div>
-        <div>
-            {% for b in sp.items %}
-            <a href="/neu/bewerbungen/{{ b.id }}/" class="fw-zeile klick">
-                <div class="fw-mitte">
-                <div class="flex items-center justify-between gap-2">
-                    <span class="fw-t truncate">{{ b.vorname }} {{ b.nachname }}</span>
-                    {% if b.hat_betreibungen %}{% zeichen 'warnung' klasse='fw-kritisch text-xs' %}
-                    {% else %}{% zeichen 'gut' klasse='fw-gut text-xs' %}{% endif %}
-                </div>
-                <div class="fw-s truncate">{{ b.einheit.bezeichnung }} · {{ b.einheit.liegenschaft.strasse }}</div>
-                <div class="flex items-center gap-2 mt-1 fw-klein">
-                    <span>{% zeichen 'person' klasse='mr-0.5' %}{{ b.anzahl_erwachsene }}{% if b.anzahl_kinder %}+{{ b.anzahl_kinder }}K{% endif %}</span>
-                    {% if b.gewuenschter_bezugstermin %}<span>{% zeichen 'termin' klasse='mr-0.5' %}{{ b.gewuenschter_bezugstermin|date:"d.m.y" }}</span>{% endif %}
-                    <span class="ml-auto">{{ b.erstellt_am|date:"d.m." }}</span>
-                </div>
-                </div>
-            </a>
-            {% empty %}
-            {% include 'fw/_empty.html' with knapp=True icon='person' titel=_('Keine Bewerbungen') %}
-            {% endfor %}
-        </div>
-    </div>
+    <section class="fw-spalte" data-spalte="{{ sp.key }}" aria-labelledby="sp-{{ sp.key }}">
+        <details class="fw-bw-klappe" open data-klappe>
+            <summary class="fw-spalte-kopf">
+                <h2 id="sp-{{ sp.key }}">{{ sp.label }}</h2>
+                <span class="fw-z" data-zaehler>{{ sp.anzahl }}</span>
+            </summary>
+            <ul class="fw-spalte-liste" data-liste>
+                {% for k in sp.karten %}{% with b=k.b %}
+                <li class="fw-karte{% if b.hat_betreibungen %} crit{% endif %}" data-id="{{ b.id }}" data-name="{{ b.vorname }} {{ b.nachname }}" {% if kann_verschieben and k.ziele %}draggable="true"{% endif %}>
+                    <div class="fw-karte-kopf">
+                        <span class="fw-chip fw-num {% if k.ampel == 'gut' %}fw-good{% elif k.ampel == 'mittel' %}fw-warn{% else %}fw-crit{% endif %}" title="{% trans 'Punktezahl aus dem Bewerber-Vergleich (0–100), eine Entscheidungshilfe' %}">{{ k.score }}</span>
+                        {% if b.hat_betreibungen %}<span class="fw-chip fw-crit">{% trans "Betreibungen" %}</span>{% endif %}
+                        <span class="fw-mono">#{{ b.id }}</span>
+                    </div>
+                    <a href="/neu/bewerbungen/{{ b.id }}/" class="fw-karte-titel" onclick="return fwModalOpenUrl('/neu/bewerbungen/{{ b.id }}/','{% filter escapejs %}{{ b.vorname }} {{ b.nachname }}{% endfilter %}')">{{ b.vorname }} {{ b.nachname }}</a>
+                    <div class="fw-karte-sub">{{ b.einheit.bezeichnung }} · {{ b.einheit.liegenschaft.strasse }}</div>
+                    <div class="fw-karte-befunde" data-befunde>
+                        {% if k.spalte == 'eingegangen' %}
+                            {% if k.auszug_fehlt %}<span class="fw-chip fw-warn">{% trans "Betreibungsauszug fehlt" %}</span>{% else %}<span class="fw-chip fw-good">{% trans "Betreibungsauszug da" %}</span>{% endif %}
+                            {% if k.tragbarkeit %}<span class="fw-chip fw-mut" title="{% trans 'Bruttomiete im Verhältnis zum Jahreseinkommen' %}">{% blocktrans with p=k.tragbarkeit %}Tragbarkeit {{ p }} %{% endblocktrans %}</span>{% endif %}
+                        {% elif k.spalte == 'geprueft' %}
+                            {% if b.status == 'besichtigung' %}<span class="fw-chip fw-info">{% if b.besichtigung_am %}{% blocktrans with t=b.besichtigung_am|date:"D d.m., H:i" %}Besichtigung {{ t }}{% endblocktrans %}{% else %}{% trans "Besichtigung" %}{% endif %}</span>
+                            {% elif b.status == 'zugesagt' %}<span class="fw-chip fw-warn">{% trans "zugesagt · Vertrag noch nicht erzeugt" %}</span>
+                            {% else %}<span class="fw-chip fw-info">{% trans "Bonität geprüft" %}</span>{% endif %}
+                        {% elif k.spalte == 'abgelehnt' %}
+                            <span class="fw-chip fw-mut">{% blocktrans with d=b.aktualisiert_am|date:"d.m." %}Absage {{ d }}{% endblocktrans %}</span>
+                            {% if k.frist %}<span class="fw-chip fw-mut" title="{% trans 'Löschfrist nach DSG (Art. 6 Abs. 4)' %}">{% if k.frist_dokumente %}{% blocktrans with d=k.frist|date:"d.m.Y" %}Unterlagen gelöscht am {{ d }}{% endblocktrans %}{% else %}{% blocktrans with d=k.frist|date:"d.m.Y" %}Daten anonymisiert am {{ d }}{% endblocktrans %}{% endif %}</span>{% endif %}
+                        {% elif k.spalte == 'vertrag' and b.vertrag %}
+                            <a href="/neu/vertraege/{{ b.vertrag.id }}/" class="fw-chip fw-good">{% blocktrans with nr=b.vertrag.id st=b.vertrag.get_status_display %}Vertrag #{{ nr }} · {{ st }}{% endblocktrans %}</a>
+                        {% endif %}
+                        {% if k.spalte != 'abgelehnt' %}
+                            {% for p in k.pruefpunkte %}{% if p.ok %}<span class="fw-chip fw-good fw-dot">{{ p.label }}</span>{% endif %}{% endfor %}
+                            <span class="fw-chip fw-mut" title="{% trans 'Prüf-Checkliste: Betreibung, Ausweis, Referenz, Tragbarkeit' %}">{% blocktrans with n=k.pruefung_ok %}Prüfung {{ n }}/4{% endblocktrans %}</span>
+                        {% endif %}
+                    </div>
+                    <div class="fw-karte-fuss">
+                        <span class="fw-karte-alter">{% blocktrans with d=b.erstellt_am|date:"d.m.Y" %}eingegangen {{ d }}{% endblocktrans %}</span>
+                        {% if kann_verschieben and k.ziele %}
+                        <form method="post" action="/neu/bewerbungen/{{ b.id }}/verschieben/" class="fw-karte-form" data-wahl-form>{% csrf_token %}
+                            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                            {% if aktive_einheit %}<input type="hidden" name="einheit" value="{{ aktive_einheit.id }}">{% endif %}
+                            <label class="sr-only" for="sp-wahl-{{ b.id }}">{% trans "Verschieben nach…" %} {{ b.vorname }} {{ b.nachname }}</label>
+                            <select id="sp-wahl-{{ b.id }}" name="spalte" class="fw-karte-wahl" data-wahl>
+                                <option value="" selected disabled>{% trans "Verschieben nach…" %}</option>
+                                {% for wert, bez in k.ziele %}<option value="{{ wert }}">{{ bez }}</option>{% endfor %}
+                            </select>
+                            <noscript><button class="fw-btn fw-knapp">{% trans "Verschieben" %}</button></noscript>
+                        </form>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endwith %}{% endfor %}
+            </ul>
+            <div class="fw-spalte-leer{% if sp.karten %} hidden{% endif %}" data-leer>{% if sp.key == 'eingegangen' %}{% trans "Keine neuen Bewerbungen." %}{% elif sp.key == 'vertrag' %}{% trans "Noch kein Vertrag aus einer Bewerbung." %}{% else %}{% trans "Nichts in dieser Spalte." %}{% endif %}</div>
+            {% if sp.key == 'abgelehnt' %}<p class="fw-bw-fuss">{% blocktrans with n=abgelehnt_tage %}Abgelehnte bleiben {{ n }} Tage sichtbar.{% endblocktrans %}</p>{% endif %}
+        </details>
+    </section>
     {% endfor %}
 </div>
+
+<dialog id="fwBwAbsage" class="fw-bestaetigen" aria-labelledby="fwBwAbsageTitel" aria-describedby="fwBwAbsageText">
+    <form method="dialog" data-no-guard>
+        <h2 id="fwBwAbsageTitel" class="fw-bestaetigen-titel">{% trans "Absage senden?" %}</h2>
+        <p id="fwBwAbsageText" class="fw-bestaetigen-text"><b id="fwBwAbsageName"></b> {% trans "erhält die Absage per E-Mail (Vorlage «Bewerber – Absage»). Die Bewerbung steht danach unter «Abgelehnt»." %}</p>
+        <div class="fw-bestaetigen-knoepfe">
+            <button type="submit" value="nein" class="fw-btn" id="fwBwAbsageNein" autofocus>{% trans "Abbrechen" %}</button>
+            <button type="submit" value="ja" class="fw-btn fw-gefahr" id="fwBwAbsageJa">{% trans "Absage senden" %}</button>
+        </div>
+    </form>
+</dialog>
+
+{% else %}
+<div class="fw-card">
+    {% for k in karten %}{% with b=k.b %}
+    <a href="/neu/bewerbungen/{{ b.id }}/" class="fw-zeile klick">
+        <div class="fw-mitte">
+            <div class="fw-t truncate">{{ b.vorname }} {{ b.nachname }}</div>
+            <div class="fw-s truncate">{{ b.einheit.bezeichnung }} · {{ b.einheit.liegenschaft.strasse }} · {{ b.erstellt_am|date:"d.m.Y" }}</div>
+        </div>
+        <span class="fw-chip {{ k.status_cls }}">{{ k.status_label }}{% if b.vertrag_id %} · {% trans "Vertrag" %}{% endif %}</span>
+        <span class="fw-chip fw-num {% if k.ampel == 'gut' %}fw-good{% elif k.ampel == 'mittel' %}fw-warn{% else %}fw-crit{% endif %}">{{ k.score }}</span>
+    </a>
+    {% endwith %}{% empty %}
+    {% include 'fw/_empty.html' with icon='person' titel=_('Keine Bewerbungen') subtext=_('Bewerbungen kommen über das Formular eines ausgeschriebenen Objekts herein.') %}
+    {% endfor %}
+</div>
+{% if ausgeblendet %}<p class="fw-hilfe">{% blocktrans with n=liste_max %}Gezeigt sind die neuesten {{ n }}. Ältere über den Objektfilter.{% endblocktrans %}</p>{% endif %}
+{% endif %}
 
 {% comment %} Die Pipeline-Leiste stand ueber dem Seitenkopf und zeigte dieselben
    Ziele wie die Bereichsreiter darueber (v8, zweiter Durchgang). Hier unten
    bleibt sie als «weiter im Ablauf» mit ihren Zaehlern. {% endcomment %}
 {% include 'fw/_pipeline.html' %}
+{% endblock %}
+
+{% block scripts %}
+{% include 'fw/_fwmodal.html' %}
+{% if ansicht == 'board' %}
+<script>
+(function () {
+    var board = document.getElementById('fwBoard');
+    if (!board) return;
+
+    // Am Telefon klappen Abgelehnt und Vertrag zu, damit die offenen Spalten
+    // oben stehen. Breiter sind alle Spalten offen und nicht einklappbar.
+    var schmal = window.matchMedia('(max-width: 720px)');
+    function klappen() {
+        board.querySelectorAll('[data-klappe]').forEach(function (d) {
+            var sp = d.closest('.fw-spalte').dataset.spalte;
+            d.open = !schmal.matches || sp === 'eingegangen' || sp === 'geprueft';
+        });
+    }
+    klappen();
+    if (schmal.addEventListener) schmal.addEventListener('change', klappen);
+    board.querySelectorAll('[data-klappe] > summary').forEach(function (s) {
+        s.addEventListener('click', function (e) { if (!schmal.matches) e.preventDefault(); });
+    });
+
+    if (!board.dataset.verschieben) return;
+    var gezogen = null, herkunft = null;
+    var meldung = document.getElementById('fwBoardMeldung'), text = document.getElementById('fwBoardMeldungText');
+    var csrf = (document.querySelector('input[name=csrfmiddlewaretoken]') || {}).value;
+    var dlg = document.getElementById('fwBwAbsage');
+
+    function zaehlen() {
+        board.querySelectorAll('.fw-spalte').forEach(function (sp) {
+            var n = sp.querySelectorAll('.fw-karte').length;
+            sp.querySelector('[data-zaehler]').textContent = n;
+            sp.querySelector('[data-leer]').classList.toggle('hidden', n > 0);
+        });
+    }
+    function fehler(t) { text.textContent = t; meldung.classList.remove('hidden'); meldung.scrollIntoView({block: 'nearest'}); }
+
+    // Rückfrage vor der Absage — der gestaltete Dialog, kein confirm().
+    // Nur ein Browser ohne <dialog> fragt nativ (wie fw/_bestaetigen.html).
+    function fragen(karte, weiter, abbruch) {
+        if (!dlg || typeof dlg.showModal !== 'function') {
+            if (window.confirm(document.getElementById('fwBwAbsageTitel').textContent)) weiter(); else abbruch();
+            return;
+        }
+        document.getElementById('fwBwAbsageName').textContent = karte.dataset.name || '';
+        dlg.returnValue = '';
+        dlg.onclose = function () { if (dlg.returnValue === 'ja') weiter(); else abbruch(); };
+        dlg.showModal();
+        document.getElementById('fwBwAbsageNein').focus();
+    }
+
+    function nachher(karte, j) {
+        var s = karte.querySelector('[data-wahl]');
+        if (s) {
+            while (s.options.length > 1) s.remove(1);
+            s.selectedIndex = 0;
+            j.ziele.forEach(function (z) { s.add(new Option(z[1], z[0])); });
+        }
+        var bef = karte.querySelector('[data-befunde]');
+        if (bef) {
+            bef.textContent = '';
+            var c = document.createElement('span'); c.className = 'fw-chip fw-info'; c.textContent = j.meldung;
+            bef.appendChild(c);
+        }
+        if (!j.ziele.length) { karte.removeAttribute('draggable'); var f = karte.querySelector('[data-wahl-form]'); if (f) f.remove(); }
+    }
+
+    function senden(karte, spalte, vorher) {
+        var f = new FormData(); f.append('spalte', spalte); f.append('csrfmiddlewaretoken', csrf);
+        fetch('/neu/bewerbungen/' + karte.dataset.id + '/verschieben/', {
+            method: 'POST', body: f, credentials: 'same-origin',
+            headers: {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json'}
+        }).then(function (r) { return r.json().then(function (j) { return [r.ok, j]; }); })
+          .then(function (a) {
+              if (a[0]) {
+                  if (a[1].weiter) { window.location.href = a[1].weiter; return; }
+                  meldung.classList.add('hidden');
+                  nachher(karte, a[1]);
+              } else { vorher.appendChild(karte); zaehlen(); fehler(a[1].meldung); }   // unzulässig: zurück
+          }).catch(function () { vorher.appendChild(karte); zaehlen(); fehler('{% filter escapejs %}{% trans "Verbindung unterbrochen — nichts geändert." %}{% endfilter %}'); });
+    }
+
+    board.addEventListener('dragstart', function (e) {
+        var k = e.target.closest && e.target.closest('.fw-karte'); if (!k || !k.hasAttribute('draggable')) return;
+        gezogen = k; herkunft = k.parentNode; k.classList.add('zieht');
+        e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', k.dataset.id);
+    });
+    board.addEventListener('dragend', function () {
+        if (gezogen) gezogen.classList.remove('zieht');
+        board.querySelectorAll('.ziel').forEach(function (s) { s.classList.remove('ziel'); });
+        gezogen = null;
+    });
+    board.querySelectorAll('.fw-spalte').forEach(function (sp) {
+        sp.addEventListener('dragover', function (e) { if (gezogen) { e.preventDefault(); sp.classList.add('ziel'); } });
+        sp.addEventListener('dragleave', function (e) { if (!sp.contains(e.relatedTarget)) sp.classList.remove('ziel'); });
+        sp.addEventListener('drop', function (e) {
+            e.preventDefault(); sp.classList.remove('ziel');
+            if (!gezogen) return;
+            var karte = gezogen, liste = sp.querySelector('[data-liste]'), vorher = herkunft;
+            if (liste === vorher) return;
+            sp.querySelector('[data-klappe]').open = true;
+            liste.insertBefore(karte, liste.firstChild); zaehlen();          // sofort zeigen …
+            if (sp.dataset.spalte === 'abgelehnt') {
+                fragen(karte, function () { senden(karte, 'abgelehnt', vorher); },
+                       function () { vorher.appendChild(karte); zaehlen(); });  // … abgebrochen: zurück
+            } else {
+                senden(karte, sp.dataset.spalte, vorher);
+            }
+        });
+    });
+
+    // Auswahlfeld: der Weg auf Touch-Geräten und mit der Tastatur.
+    board.querySelectorAll('[data-wahl]').forEach(function (s) {
+        s.addEventListener('change', function () {
+            var form = s.form, karte = s.closest('.fw-karte');
+            if (s.value === 'abgelehnt') {
+                fragen(karte, function () { form.requestSubmit ? form.requestSubmit() : form.submit(); },
+                       function () { s.selectedIndex = 0; });
+            } else if (s.value) {
+                form.requestSubmit ? form.requestSubmit() : form.submit();
+            }
+        });
+    });
+})();
+</script>
+{% endif %}
 {% endblock %}
