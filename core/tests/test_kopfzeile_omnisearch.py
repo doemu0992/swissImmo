@@ -309,3 +309,149 @@ class SkriptBindungenTests(SimpleTestCase):
     def test_verweise_der_treffer_bleiben_in_der_anwendung(self):
         skript = self._skript()
         self.assertGreaterEqual(skript.count("charAt(0) !== '/'"), 2, 'Beide Quellen (Endpunkt, Seiten) prüfen die Adresse.')
+
+
+class OmnisearchJeRolleTests(TestCase):
+    """Was die Kopfzeile jeder Rolle zeigt: dem Team die ganze Suche, der Hauswartung
+    ihre eingeschränkte, allen anderen nichts.
+
+    Die Gruppen nennt der Such-Dienst (`palette_suche.sicht_von`), die Kopfzeile
+    gibt sie nur weiter — hier steht deshalb keine zweite Rollenliste, und diese
+    Tests prüfen, dass das Markup zu dem passt, was der Endpunkt liefert.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        from django.contrib.auth import get_user_model
+        from crm.models import Mitgliedschaft
+        from ._helfer import _test_organisation
+        cls.org = _test_organisation()
+        cls.lg, _e, cls.mieter, _v = _basis_objekte()
+        cls.team = _team_user('Verwalter')
+        User = get_user_model()
+        cls.hauswart = User.objects.create_user(username='kz_hauswart', password='x')
+        Mitgliedschaft.objects.create(benutzer=cls.hauswart, organisation=cls.org,
+                                      rolle=Mitgliedschaft.ROLLE_HAUSWART)
+        cls.lg.hauswarte.add(cls.hauswart)
+        cls.keine = User.objects.create_user(username='kz_keine', password='x')
+
+    @classmethod
+    def tearDownClass(cls):
+        from core.tenancy import loesche_organisation
+        loesche_organisation()
+        super().tearDownClass()
+
+    def _seite(self, benutzer, pfad):
+        c = Client()
+        c.force_login(benutzer)
+        r = c.get(pfad)
+        self.assertEqual(r.status_code, 200, pfad)
+        return r.content.decode('utf-8')
+
+    @staticmethod
+    def _daten(html):
+        import json
+        m = re.search(r'<script id="fw-palette-data" type="application/json">(.*?)</script>', html, re.S)
+        assert m, 'fw-palette-data fehlt'
+        return json.loads(m.group(1))
+
+    def test_das_team_sieht_alle_sechs_gruppen_und_die_ausfuehrliche_suche(self):
+        wurzel = baum(self._seite(self.team, '/neu/liegenschaften/'))
+        os_ = eines(wurzel, id='fwOs')
+        self.assertEqual(os_.attrs['data-gruppen'],
+                         'personen,immobilien,vertraege,buchhaltung,tickets,dokumente')
+        self.assertEqual(os_.attrs['data-suche-url'], '/neu/suche/')
+        self.assertEqual(eines(wurzel, id='fwOsForm').attrs['action'], '/neu/suche/')
+        self.assertEqual(eines(wurzel, id='fwOsAlle').attrs['href'], '/neu/suche/')
+
+    def test_die_hauswartung_bekommt_die_suche_nur_fuer_schaeden(self):
+        html = self._seite(self.hauswart, '/neu/schaeden/')
+        wurzel = baum(html)
+        os_ = eines(wurzel, id='fwOs')
+        self.assertEqual(os_.attrs['data-gruppen'], 'tickets')
+        # `/neu/suche/` ist ihr gesperrt: Formular ohne JavaScript und «Alle Ergebnisse»
+        # führen auf die Schadenliste, die dasselbe `?q=` kennt.
+        self.assertEqual(os_.attrs['data-suche-url'], '/neu/schaeden/')
+        self.assertEqual(eines(wurzel, id='fwOsForm').attrs['action'], '/neu/schaeden/')
+        self.assertEqual(eines(wurzel, id='fwOsAlle').attrs['href'], '/neu/schaeden/')
+        self.assertEqual(eines(wurzel, id='fwOsEingabe').attrs['name'], 'q')
+        self.assertIn('js/fw-omnisearch.js', html)
+        # Keine Bereiche, also auch keine leere Kapsel dafür (am Telefon eine volle
+        # leere Zeile unter der Kopfzeile). Gegenprobe: Das Team hat sie.
+        self.assertEqual(finde(wurzel, id='fwHauptnav'), [])
+        self.assertEqual(len(finde(baum(self._seite(self.team, '/neu/liegenschaften/')),
+                                   id='fwHauptnav')), 1)
+        c = Client()
+        c.force_login(self.hauswart)
+        self.assertEqual(c.get('/neu/suche/').status_code, 403)
+
+    def test_die_seiten_der_hauswartung_sind_nur_ihre(self):
+        """Das ⌘K-Verzeichnis («Seiten & Aktionen») führt nirgends in eine Absage."""
+        daten = self._daten(self._seite(self.hauswart, '/neu/schaeden/'))
+        self.assertTrue(daten, 'Die Hauswartung hat keine Seiten in der Suche.')
+        c = Client()
+        c.force_login(self.hauswart)
+        for eintrag in daten:
+            with self.subTest(seite=eintrag['url']):
+                self.assertTrue(eintrag['url'].startswith('/neu/schaeden/'), eintrag)
+                self.assertEqual(c.get(eintrag['url']).status_code, 200)
+        # Gegenprobe: Das Team hat viel mehr Seiten, darunter solche, die der Hauswartung gesperrt sind.
+        team = self._daten(self._seite(self.team, '/neu/liegenschaften/'))
+        self.assertGreater(len(team), 30)
+        self.assertIn('/neu/liegenschaften/', {e['url'] for e in team})
+
+    def test_ohne_team_oder_hauswart_rolle_gibt_es_gar_keine_suche(self):
+        """Die Kopfzeile bietet nichts an, was der Endpunkt mit 403 beantwortet."""
+        from django.test import RequestFactory
+        from core.navigation import fw_navigation
+        from crm.models import Eigentuemer, Mieter
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        mieter_konto = User.objects.create_user(username='kz_mieter', password='x')
+        Mieter.objects.filter(pk=self.mieter.pk).update(benutzer=mieter_konto)
+        eig_konto = User.objects.create_user(username='kz_eigentuemer', password='x')
+        Eigentuemer.objects.create(organisation=self.org, firma_oder_name='Eig AG', benutzer=eig_konto)
+        for name, u in (('ohne Rolle', self.keine), ('Mieter-Portal', mieter_konto),
+                        ('Eigentümer-Portal', eig_konto)):
+            with self.subTest(konto=name):
+                r = RequestFactory().get('/neu/')
+                r.user = u
+                self.assertEqual(fw_navigation(r), {})
+        # Gegenprobe: Team und Hauswartung bekommen etwas.
+        for u in (self.team, self.hauswart):
+            r = RequestFactory().get('/neu/')
+            r.user = u
+            self.assertIn('fw_suche_gruppen', fw_navigation(r))
+
+    def test_die_hauswartung_bekommt_keine_bereichsnavigation(self):
+        """Nur die Suche — die Bereiche (Akten, Finanzen …) bleiben ihr verborgen wie bisher."""
+        from django.test import RequestFactory
+        from core.navigation import fw_navigation
+        r = RequestFactory().get('/neu/')
+        r.user = self.hauswart
+        kontext = fw_navigation(r)
+        self.assertEqual(set(kontext), {'fw_palette', 'fw_suche_gruppen', 'fw_suche_ziel'})
+        self.assertNotIn('fw_nav_gruppen', kontext)
+
+    def test_das_markup_nennt_genau_die_gruppen_des_endpunkts(self):
+        """Was `data-gruppen` verspricht, liefert `/neu/palette/` (und nur das)."""
+        import json
+        for benutzer, pfad in ((self.team, '/neu/liegenschaften/'), (self.hauswart, '/neu/schaeden/')):
+            with self.subTest(benutzer=benutzer.username):
+                versprochen = eines(baum(self._seite(benutzer, pfad)), id='fwOs').attrs['data-gruppen']
+                c = Client()
+                c.force_login(benutzer)
+                geliefert = json.loads(c.get('/neu/palette/', {'q': 'Muster'}).content)
+                self.assertEqual(','.join(geliefert['zahlen']), versprochen)
+
+
+class SkriptGruppenTests(SimpleTestCase):
+    """Das Skript zeigt nur Kapseln und Gruppen, die der Server nennt (`data-gruppen`)."""
+
+    def test_das_skript_liest_die_gruppen_vom_server(self):
+        skript = SKRIPT.read_text(encoding='utf-8')
+        self.assertIn("getAttribute('data-gruppen')", skript)
+        # Die Kapseln folgen den erlaubten Gruppen, «Alle» bleibt
+        self.assertIn("k === 'alle' || GRUPPEN.indexOf(k) >= 0", skript)
+        # Eine Gruppe, die der Server nicht nennt, darf das Aufbereiten nicht stören
+        self.assertIn('!proGruppe[g]', skript)

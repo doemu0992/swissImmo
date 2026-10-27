@@ -32527,3 +32527,19 @@ msgstr "Verbuchen & Zustellen"
 
 msgid "Kreditorenrechnung"
 msgstr "Kreditorenrechnung"
+
+#: core/services/palette_suche.py
+msgctxt "Belegung eines Objekts"
+msgid "Vermietet"
+msgstr "Vermietet"
+
+#: core/services/palette_suche.py
+msgctxt "Belegung eines Objekts"
+msgid "Leer"
+msgstr "Leer"
+
+#: core/services/palette_suche.py
+#, python-format
+msgctxt "Belegung eines Objekts"
+msgid "Vermietet ab %(datum)s"
+msgstr "Vermietet ab %(datum)s"

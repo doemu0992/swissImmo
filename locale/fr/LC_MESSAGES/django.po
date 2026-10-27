@@ -32754,3 +32754,19 @@ msgstr "Comptabilisation & notification"
 
 msgid "Kreditorenrechnung"
 msgstr "Facture créancier"
+
+#: core/services/palette_suche.py
+msgctxt "Belegung eines Objekts"
+msgid "Vermietet"
+msgstr "Loué"
+
+#: core/services/palette_suche.py
+msgctxt "Belegung eines Objekts"
+msgid "Leer"
+msgstr "Vacant"
+
+#: core/services/palette_suche.py
+#, python-format
+msgctxt "Belegung eines Objekts"
+msgid "Vermietet ab %(datum)s"
+msgstr "Loué dès le %(datum)s"

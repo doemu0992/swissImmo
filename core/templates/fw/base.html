@@ -148,13 +148,13 @@ Detailseiten rufen sie beim Namen.
                 <svg class="fw-logo-haus" width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 15L16 4l13 11M7 13v14h18V13" class="a"/><path d="M12 27v-7h3v7M18 27v-9h3v9" class="b"/></svg>
                 <b>immoswiss<svg class="fw-logo-kreuz" width="12" height="12" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="3" fill="#e5342d"/><path d="M8.5 4h3v4.5H16v3h-4.5V16h-3v-4.5H4v-3h4.5z" fill="#fff"/></svg></b>
             </a>
-            <nav class="fw-kapsel fw-hauptnav" id="fwHauptnav" aria-label="{% trans 'Bereiche' %}">
+            {% if fw_nav_gruppen %}<nav class="fw-kapsel fw-hauptnav" id="fwHauptnav" aria-label="{% trans 'Bereiche' %}">
                 <span class="fw-gleiter" aria-hidden="true"></span>
                 {% for g in fw_nav_gruppen %}
                 <a href="{{ g.ziel }}{{ lg_query }}" class="{% if nav in g.alle_keys %}hier{% endif %}"{% if nav in g.alle_keys %} aria-current="page"{% endif %}>{{ g.label }}{% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="fw-hauptnav-zahl" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}</a>
                 {% endfor %}
-            </nav>
-            {% if fw_palette %}{% include 'fw/_omnisearch.html' %}{% endif %}
+            </nav>{% endif %}{% comment %} Ohne Bereiche (die Hauswartung) gibt es auch keine leere Kapsel. {% endcomment %}
+            {% if fw_palette or fw_suche_gruppen %}{% include 'fw/_omnisearch.html' %}{% endif %}
             <div class="fw-kapsel fw-werkzeug-kapsel">
                 <button type="button" onclick="fwThemeWechseln()" title="{% trans 'Hell- oder Dunkelmodus' %}" aria-label="{% trans 'Hell- oder Dunkelmodus' %}" class="fw-knopf-rund fw-knopf-dunkel">{% zeichen 'darstellung' %}</button>
                 <a href="/neu/faelle/neu/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neuen Fall erfassen' %}"
@@ -251,7 +251,7 @@ Detailseiten rufen sie beim Namen.
         </main>
     </div>
 </div>
-{% if fw_palette %}
+{% if fw_palette or fw_suche_gruppen %}
 {% comment %} Die Seiten und Befehle der früheren ⌘K-Palette. Die Omnisearch (`fw/_omnisearch.html`,
    `static/js/fw-omnisearch.js`) zeigt sie als Gruppe «Seiten & Aktionen». {% endcomment %}
 {{ fw_palette|json_script:"fw-palette-data" }}

@@ -445,8 +445,13 @@ class RoutenSweepTests(RbacBasis):
     #: Routen, die der Hauswart bewusst öffnen darf (Rolle-Konstante nennt sie).
     #: Das Ticket-Board und «Zustand vom Board ändern» sind dieselben Rechte wie Liste
     #: und Statuswechsel (`TICKET_LESE_ROLLEN` / `TICKET_SCHREIB_ROLLEN`).
-    HAUSWART_ERLAUBT_GET = re.compile(r'^/neu/schaeden/(board/|\d+/(status/|verschieben/)?)?$')
-    HAUSWART_ERLAUBT_POST = re.compile(r'^/neu/schaeden/(board/|\d+/(status/|verschieben/)?)?$')
+    #: Dazu die Suche der Kopfzeile (`/neu/palette/`): Sie ist für die Hauswartung auf Schäden
+    #: ihrer Liegenschaften beschränkt (`palette_suche.sicht_von`, geprüft in
+    #: `test_omnisearch.RollenTests`); der Endpunkt unterscheidet GET und POST nicht.
+    HAUSWART_ERLAUBT_GET = re.compile(
+        r'^/neu/(schaeden/(board/|\d+/(status/|verschieben/)?)?|palette/)$')
+    HAUSWART_ERLAUBT_POST = re.compile(
+        r'^/neu/(schaeden/(board/|\d+/(status/|verschieben/)?)?|palette/)$')
 
     def _sweep(self, benutzer, erlaubt_get=None, erlaubt_post=None):
         self.client.force_login(benutzer)

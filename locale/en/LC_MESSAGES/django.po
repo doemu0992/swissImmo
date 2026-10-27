@@ -32287,3 +32287,19 @@ msgstr "Posting & delivery"
 
 msgid "Kreditorenrechnung"
 msgstr "Creditor invoice"
+
+#: core/services/palette_suche.py
+msgctxt "Belegung eines Objekts"
+msgid "Vermietet"
+msgstr "Let"
+
+#: core/services/palette_suche.py
+msgctxt "Belegung eines Objekts"
+msgid "Leer"
+msgstr "Vacant"
+
+#: core/services/palette_suche.py
+#, python-format
+msgctxt "Belegung eines Objekts"
+msgid "Vermietet ab %(datum)s"
+msgstr "Let from %(datum)s"

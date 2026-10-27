@@ -32706,3 +32706,19 @@ msgstr "Registrazione & notifica"
 
 msgid "Kreditorenrechnung"
 msgstr "Fattura creditore"
+
+#: core/services/palette_suche.py
+msgctxt "Belegung eines Objekts"
+msgid "Vermietet"
+msgstr "Locato"
+
+#: core/services/palette_suche.py
+msgctxt "Belegung eines Objekts"
+msgid "Leer"
+msgstr "Sfitto"
+
+#: core/services/palette_suche.py
+#, python-format
+msgctxt "Belegung eines Objekts"
+msgid "Vermietet ab %(datum)s"
+msgstr "Locato dal %(datum)s"
