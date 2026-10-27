@@ -32485,14 +32485,20 @@ msgstr "Suche läuft …"
 msgid "Keine Treffer für «{q}»."
 msgstr "Keine Treffer für «{q}»."
 
-msgid "Versuchen Sie den Nachnamen oder einen Teil der Adresse. Telefonnummern und weitere Felder findet die ausführliche Suche."
-msgstr "Versuchen Sie den Nachnamen oder einen Teil der Adresse. Telefonnummern und weitere Felder findet die ausführliche Suche."
+msgid ""
+"Versuchen Sie den Nachnamen oder einen Teil der Adresse. Telefonnummern und "
+"weitere Felder findet die ausführliche Suche."
+msgstr ""
+"Versuchen Sie den Nachnamen oder einen Teil der Adresse. Telefonnummern und "
+"weitere Felder findet die ausführliche Suche."
 
 msgid "Die Suche ist gerade nicht erreichbar."
 msgstr "Die Suche ist gerade nicht erreichbar."
 
-msgid "Bitte prüfen Sie die Verbindung. Seiten und Befehle finden Sie weiterhin."
-msgstr "Bitte prüfen Sie die Verbindung. Seiten und Befehle finden Sie weiterhin."
+msgid ""
+"Bitte prüfen Sie die Verbindung. Seiten und Befehle finden Sie weiterhin."
+msgstr ""
+"Bitte prüfen Sie die Verbindung. Seiten und Befehle finden Sie weiterhin."
 
 msgid "Nochmals versuchen"
 msgstr "Nochmals versuchen"
@@ -32502,6 +32508,7 @@ msgstr "Alle Ergebnisse für «{q}» →"
 
 msgid "Ausführlich suchen →"
 msgstr "Ausführlich suchen →"
+
 msgid ""
 "Sieben Schritte vom Objekt bis zum Abschluss — die Vorschau zeigt den "
 "Vertrag, wie er gedruckt wird."
@@ -32543,17 +32550,27 @@ msgstr "Wann findet die Abnahme statt, und woher kommen die Räume?"
 msgid "Termin und Art"
 msgstr "Termin und Art"
 
-msgid "Welche Räume werden abgenommen? Namen und Reihenfolge lassen sich ändern."
-msgstr "Welche Räume werden abgenommen? Namen und Reihenfolge lassen sich ändern."
+msgid ""
+"Welche Räume werden abgenommen? Namen und Reihenfolge lassen sich ändern."
+msgstr ""
+"Welche Räume werden abgenommen? Namen und Reihenfolge lassen sich ändern."
 
 msgid "Räume"
 msgstr "Räume"
 
-msgid "An wen geht die Mitteilung? Eine ganze Liegenschaft wählen oder einzelne Mieter ankreuzen."
-msgstr "An wen geht die Mitteilung? Eine ganze Liegenschaft wählen oder einzelne Mieter ankreuzen."
+msgid ""
+"An wen geht die Mitteilung? Eine ganze Liegenschaft wählen oder einzelne "
+"Mieter ankreuzen."
+msgstr ""
+"An wen geht die Mitteilung? Eine ganze Liegenschaft wählen oder einzelne "
+"Mieter ankreuzen."
 
-msgid "Betreff und Text verfassen. Platzhalter werden pro Empfänger automatisch ersetzt."
-msgstr "Betreff und Text verfassen. Platzhalter werden pro Empfänger automatisch ersetzt."
+msgid ""
+"Betreff und Text verfassen. Platzhalter werden pro Empfänger automatisch "
+"ersetzt."
+msgstr ""
+"Betreff und Text verfassen. Platzhalter werden pro Empfänger automatisch "
+"ersetzt."
 
 msgid "Wie soll die Mitteilung zu den Mietern kommen?"
 msgstr "Wie soll die Mitteilung zu den Mietern kommen?"
@@ -32564,14 +32581,24 @@ msgstr "Versandart"
 msgid "Serienbrief-PDF erzeugen"
 msgstr "Serienbrief-PDF erzeugen"
 
-msgid "Ein Brief pro Empfänger (Fenstercouvert) als Sammel-PDF zum Ausdrucken."
-msgstr "Ein Brief pro Empfänger (Fenstercouvert) als Sammel-PDF zum Ausdrucken."
+msgid ""
+"Ein Brief pro Empfänger (Fenstercouvert) als Sammel-PDF zum Ausdrucken."
+msgstr ""
+"Ein Brief pro Empfänger (Fenstercouvert) als Sammel-PDF zum Ausdrucken."
 
-msgid "Verschickt die Mitteilung an alle gewählten Mieter mit hinterlegter E-Mail-Adresse."
-msgstr "Verschickt die Mitteilung an alle gewählten Mieter mit hinterlegter E-Mail-Adresse."
+msgid ""
+"Verschickt die Mitteilung an alle gewählten Mieter mit hinterlegter E-Mail-"
+"Adresse."
+msgstr ""
+"Verschickt die Mitteilung an alle gewählten Mieter mit hinterlegter E-Mail-"
+"Adresse."
 
-msgid "Druckt die Vorschau (das Beispiel des ersten Empfängers) direkt aus dem Browser."
-msgstr "Druckt die Vorschau (das Beispiel des ersten Empfängers) direkt aus dem Browser."
+msgid ""
+"Druckt die Vorschau (das Beispiel des ersten Empfängers) direkt aus dem "
+"Browser."
+msgstr ""
+"Druckt die Vorschau (das Beispiel des ersten Empfängers) direkt aus dem "
+"Browser."
 
 msgid "{n} Empfänger"
 msgstr "{n} Empfänger"
@@ -32584,3 +32611,19 @@ msgstr "Code bestätigen"
 
 msgid "Der Code stimmt nicht. Uhrzeit des Telefons prüfen und neu versuchen."
 msgstr "Der Code stimmt nicht. Uhrzeit des Telefons prüfen und neu versuchen."
+
+#: core/services/palette_suche.py
+msgctxt "Belegung eines Objekts"
+msgid "Vermietet"
+msgstr "Vermietet"
+
+#: core/services/palette_suche.py
+msgctxt "Belegung eines Objekts"
+msgid "Leer"
+msgstr "Leer"
+
+#: core/services/palette_suche.py
+#, python-format
+msgctxt "Belegung eines Objekts"
+msgid "Vermietet ab %(datum)s"
+msgstr "Vermietet ab %(datum)s"

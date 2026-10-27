@@ -188,10 +188,60 @@ def nav_gruppen():
     ]
 
 
+def _seiten_fuer_hauswart():
+    """Die Seiten der Navigation, die die Hauswartung öffnen darf.
+
+    Positiv gelesen: nur, wenn die View ihre Rollen nennt (`benoetigte_rollen`,
+    vom Dekorator gesetzt) UND die Hauswartung darunter ist. `darf_oeffnen`
+    liefe bei einer View ohne Dekorator auf «ja»; für eine Rolle, die fast
+    nichts darf, ist «unbekannt» ein «nein».
+    """
+    from django.urls import resolve
+
+    from core.auth import ROLLE_HAUSWART
+
+    def erlaubt(ziel):
+        try:
+            rollen = getattr(resolve(ziel.split('?')[0]).func, 'benoetigte_rollen', None)
+        except Exception:
+            return False
+        return bool(rollen) and ROLLE_HAUSWART in rollen
+
+    seiten = []
+    for g in nav_gruppen():
+        if g['ziel'] and erlaubt(g['ziel']):
+            seiten.append({'label': g['label'], 'url': g['ziel']})
+        seiten += [{'label': it['label'], 'url': it['ziel'], 'gruppe': g['label']}
+                   for it in g['items'] if erlaubt(it['ziel'])]
+    return seiten
+
+
+def _suche_ohne_team(user):
+    """Was die Kopfzeile jemandem ohne Team-Rolle gibt: für die Hauswartung die
+    eingeschränkte Suche, für alle anderen nichts (leer wie bisher).
+
+    Welche Gruppen sie durchsucht, sagt der Dienst (`palette_suche.sicht_von`)
+    — hier steht keine zweite Rollenliste. Ohne Navigation (`fw_nav_gruppen`):
+    Die Hauswartung hat keine Bereiche, nur die Seiten, die sie öffnen darf.
+    """
+    from django.core.exceptions import PermissionDenied
+
+    from core.services.palette_suche import sicht_von
+
+    try:
+        suche = sicht_von(user)
+    except PermissionDenied:
+        return {}
+    return {'fw_palette': _seiten_fuer_hauswart(),
+            'fw_suche_gruppen': ','.join(suche.gruppen), 'fw_suche_ziel': suche.suchseite}
+
+
 def fw_navigation(request):
     """Context-Processor: Navigationsstruktur für base.html.
 
     Nur für angemeldete Team-Mitglieder — Portal-Nutzer sehen keine Leiste.
+    Eine Ausnahme: die Hauswartung bekommt die Suche (siehe `_suche_ohne_team`),
+    sonst nichts.
     """
     user = getattr(request, 'user', None)
     if not user or not user.is_authenticated:
@@ -199,7 +249,7 @@ def fw_navigation(request):
     try:
         from core.auth import hat_rolle, TEAM_ROLLEN
         if not hat_rolle(user, TEAM_ROLLEN):
-            return {}
+            return _suche_ohne_team(user)
     except Exception:
         return {}
 
@@ -256,6 +306,19 @@ def fw_navigation(request):
     except Exception:
         aktiv = None
 
+    # Welche Gruppen die Suche durchsucht, sagt der Dienst; die Rollen sind
+    # oben schon gelesen. (Ein Team-Mitglied ohne Rolle gibt es hier nicht —
+    # `PermissionDenied` hiesse einen Fehler im Rollenmodell, und der soll die
+    # Seite nicht mitreissen: Das Feld fällt dann auf «alle Gruppen» zurück.)
+    from django.core.exceptions import PermissionDenied
+
+    from core.services.palette_suche import sicht_von
+    try:
+        suche = sicht_von(user, meine)
+        suche_kontext = {'fw_suche_gruppen': ','.join(suche.gruppen),
+                         'fw_suche_ziel': suche.suchseite}
+    except PermissionDenied:
+        suche_kontext = {}
     return {'fw_nav_gruppen': gruppen, 'fw_palette': palette,
             'fw_einstellungen_keys': EINSTELLUNGEN_KEYS,
-            'fw_mandanten': mandanten, 'fw_mandant': aktiv}
+            'fw_mandanten': mandanten, 'fw_mandant': aktiv, **suche_kontext}

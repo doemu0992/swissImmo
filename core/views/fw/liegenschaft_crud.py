@@ -12,7 +12,7 @@ from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
-from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
+from core.auth import (rolle_erforderlich, HAUSWART_ROLLEN, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
 from crm.models import Mieter
 from portfolio.models import Einheit, Liegenschaft
@@ -445,7 +445,7 @@ def fw_suche(request):
     })
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*TEAM_ROLLEN, *HAUSWART_ROLLEN)
 def fw_palette_suche(request):
     """Datensätze für die ⌘K-Palette und das Suchfeld der Kopfzeile, als JSON.
 
@@ -475,6 +475,14 @@ def fw_palette_suche(request):
     Gruppe genau zwei Abfragen sind. Die vollständige Trefferliste bleibt
     `/neu/suche/`.
 
+    WER SUCHEN DARF
+
+    Das Team und die Hauswartung. Der Dekorator lässt beide hinein; was jede
+    Rolle findet, entscheidet der Dienst (`sicht_von`): das Team in allen
+    Gruppen, die Hauswartung nur Schäden ihrer Liegenschaften. `zahlen`
+    nennt dann nur die durchsuchten Gruppen. Anderen Rollen antwortet schon der
+    Dekorator mit 403.
+
     MANDANTENTRENNUNG
 
     Über die Manager der Modelle, wie überall: `Mieter.objects` &c. liefern
@@ -493,5 +501,5 @@ def fw_palette_suche(request):
         # bei jedem Tastendruck. Die Palette zeigt bis dahin die Seiten.
         return JsonResponse({'treffer': [], 'q': q})
 
-    treffer, zahlen = suche(q)
+    treffer, zahlen = suche(q, request.user)
     return JsonResponse({'q': q, 'treffer': treffer, 'zahlen': zahlen})

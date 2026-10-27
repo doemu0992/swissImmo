@@ -86,7 +86,7 @@ HUELLE = {
 #: Die Omnisearch (früher ⌘K-Palette + Suchfeld) — Markup und Skript.
 OMNISEARCH_MARKUP = [
     'id="fwOs"', 'id="fwOsEingabe"', 'id="fwOsListe"', 'id="fwOsPop"', 'id="fwOsFilter"', 'id="fwOsAlle"',
-    'id="fwOsTexte"', 'action="/neu/suche/"', 'name="q"', 'role="combobox"', 'role="listbox"',
+    'id="fwOsTexte"', 'action="{{ fw_suche_ziel|default:\'/neu/suche/\' }}"', 'name="q"', 'role="combobox"', 'role="listbox"',
     'aria-controls="fwOsListe"', 'data-palette-url="/neu/palette/"',
 ]
 OMNISEARCH_SKRIPT = [

@@ -28,6 +28,25 @@ Die Zeilen werden dabei nicht als Modellobjekte geladen, sondern als Werte
 nachlädt, und keinen `select_related`, den jemand vergessen könnte: Was die
 Darstellung braucht, steht in der Zeile.
 
+WAS NACH DER ABFRAGE NOCH GELADEN WIRD (`_NACHLADEN`)
+
+Zwei Angaben lassen sich nicht in die Spaltenform pressen, weil sie aus
+Fachregeln des Bestands folgen und nicht aus einer Spalte: der aktuell gültige
+Netto-Mietzins eines Vertrags (`Mietvertrag.effektiver_netto_mietzins`:
+Anpassungen, Komponenten, Staffel, Zeitplan) und der Belegungsstand eines
+Objekts (`faelle.objekte.zeilen`, dieselbe Regel wie die Objektliste). Beide
+laufen NACH dem Beschneiden auf fünf Zeilen, als Stapel für alle Treffer des
+Modells zugleich (`prefetch_related`). Das kostet je Modell eine feste Zahl
+Abfragen — nur, wenn es Treffer gibt, und unabhängig von deren Anzahl.
+
+WER WAS SUCHEN DARF (`sicht_von`)
+
+Die Rollenprüfung steht hier und nicht in der Ansicht oder der Oberfläche:
+Das Team sucht in allen sechs Gruppen. Die Hauswartung (Rolle «Hauswart», keine
+Team-Rolle) sucht nur in `HAUSWART_GRUPPEN`, und dort nur in den Liegenschaften,
+die ihr zugeordnet sind. Wer keine der beiden Rollen hat, bekommt
+`PermissionDenied`.
+
 MANDANTENTRENNUNG
 
 Keine eigene Organisationslogik. Jeder Teil geht über `Modell.objects`, den
@@ -40,11 +59,13 @@ from datetime import date
 from decimal import Decimal
 from urllib.parse import quote_plus
 
+from django.core.exceptions import PermissionDenied
 from django.db.models import (
-    Case, CharField, DateField, DecimalField, Exists, F, IntegerField, OuterRef, Q, Value, When)
-from django.db.models.functions import Coalesce, Concat, Lower
+    Case, CharField, DateField, DecimalField, Exists, F, IntegerField, OuterRef, Q, Subquery,
+    Value, When)
+from django.db.models.functions import Cast, Coalesce, Concat, Lower
 from django.utils import timezone
-from django.utils.translation import gettext
+from django.utils.translation import gettext, gettext_lazy, pgettext
 
 #: Reihenfolge der Gruppen in der Antwort.
 GRUPPEN = ('personen', 'immobilien', 'vertraege', 'buchhaltung', 'tickets', 'dokumente')
@@ -52,6 +73,26 @@ GRUPPEN = ('personen', 'immobilien', 'vertraege', 'buchhaltung', 'tickets', 'dok
 #: Treffer je Gruppe in der Antwort, und die Obergrenze der Zahl je Gruppe.
 JE_GRUPPE = 5
 ZAHL_MAX = 99
+
+#: Was die Hauswartung suchen darf. Nur die Gruppen, deren Treffer sie auch
+#: öffnen darf: Liegenschaften, Objekte, Personen, Verträge und Dokumente sind
+#: für sie gesperrt (`rolle_erforderlich(*TEAM_ROLLEN)`, 403), die Schäden nicht
+#: (`TICKET_LESE_ROLLEN`). Ein Treffer, der in eine Absage führt, wäre ein toter
+#: Link — und bei Dokumenten und Verträgen zugleich eine Auskunft über Mieter,
+#: die der Rolle nicht zusteht. Öffnet man der Hauswartung eine weitere Seite,
+#: wird die Gruppe hier ergänzt (`test_hauswart_gruppen_sind_offen` hält beides
+#: zusammen).
+HAUSWART_GRUPPEN = ('tickets',)
+
+#: Die ausführliche Suche, auf die «Alle Ergebnisse» und das Formular ohne
+#: JavaScript führen: beim Team `/neu/suche/`, bei der Hauswartung (der diese
+#: Seite gesperrt ist) die Schadenliste, die dasselbe `?q=` kennt.
+SUCHSEITE_TEAM = '/neu/suche/'
+SUCHSEITE_HAUSWART = '/neu/schaeden/'
+
+#: Werte der Spalte `u_flag` bei Debitorenrechnungen (bei den übrigen Teilen 0/1).
+FLAG_UEBERFAELLIG = 1
+FLAG_BETREIBUNG = 2
 
 #: Die gemeinsame Spaltenform. Jedes Modell füllt die Spalten, die es braucht,
 #: den Rest mit einem Leerwert gleichen Typs — `union()` verlangt je Position
@@ -63,7 +104,8 @@ ZAHL_MAX = 99
 #:   u_t1..7   Textwerte; die Belegung steht beim jeweiligen Teil
 #:   u_status  Statuscode des Modells (leer: kein Status)
 #:   u_betrag  Betrag (NULL: kein Betrag)
-#:   u_flag    0/1, Bedeutung je Teil (aktiver Vertrag, überfällig)
+#:   u_flag    0/1, Bedeutung je Teil (aktiver Vertrag, überfällig); bei Debitoren
+#:             0/1/2 (`FLAG_UEBERFAELLIG`, `FLAG_BETREIBUNG`)
 #:   u_datum   zweites Datum (Vertragsende)
 TEXTSPALTEN = 7
 SPALTEN = (('u_tag', 'u_pk', 'u_sort')
@@ -157,7 +199,7 @@ def _ja(bedingung):
     return Case(When(bedingung, then=Value(1)), default=Value(0), output_field=_ZAHL)
 
 
-def _teile_personen(woerter, heute):
+def _teile_personen(woerter, heute, sicht):
     from crm.models import Handwerker, Mieter
     from rentals.models import Mietvertrag
 
@@ -178,7 +220,7 @@ def _teile_personen(woerter, heute):
         texte=('firma', 'branche', 'telefon', 'email'))
 
 
-def _teile_immobilien(woerter, heute):
+def _teile_immobilien(woerter, heute, sicht):
     from portfolio.models import Einheit, Liegenschaft
 
     yield _teil(
@@ -191,7 +233,7 @@ def _teile_immobilien(woerter, heute):
         texte=('bezeichnung', 'liegenschaft__strasse'))
 
 
-def _teile_vertraege(woerter, heute):
+def _teile_vertraege(woerter, heute, sicht):
     from rentals.models import Mietvertrag
 
     yield _teil(
@@ -204,14 +246,30 @@ def _teile_vertraege(woerter, heute):
         status='status', datum='ende')
 
 
-def _teile_buchhaltung(woerter, heute):
-    from finance.models import DebitorenRechnung, KreditorenRechnung
+def _teile_buchhaltung(woerter, heute, sicht):
+    from finance.models import Betreibung, DebitorenRechnung, KreditorenRechnung, Mahnung
 
     # Überfällig wie in der Debitorenliste (`fw_debitoren`, Ampel «rot»): noch
     # offen oder teilbezahlt, und die Fälligkeit — ersatzweise das
     # Rechnungsdatum — liegt vor heute.
-    ueberfaellig = _ja(Q(status__in=('offen', 'teilbezahlt'))
-                       & (Q(faellig_am__lt=heute) | Q(faellig_am__isnull=True, datum__lt=heute)))
+    ueberfaellig_q = (Q(status__in=('offen', 'teilbezahlt'))
+                      & (Q(faellig_am__lt=heute) | Q(faellig_am__isnull=True, datum__lt=heute)))
+    # Das Mahnwesen des Bestands, als Unterabfragen in derselben Zeile (keine
+    # Abfrage je Treffer): die höchste erfasste Mahnung (`finance.Mahnung`,
+    # die revisionssichere Mahn-Historie) und eine noch offene Betreibung
+    # (`finance.Betreibung`, als Hauptforderung oder unter den weiteren
+    # Rechnungen). Beide über `objects`, also im eigenen Mandanten.
+    hoechste_mahnung = Subquery(
+        Mahnung.objects.filter(debitoren_rechnung=OuterRef('pk'))
+        .order_by('-stufe').values('stufe')[:1], output_field=_ZAHL)
+    offene_betreibung = Exists(
+        Betreibung.objects.filter(Q(debitoren_rechnung=OuterRef('pk'))
+                                  | Q(weitere_rechnungen=OuterRef('pk')))
+        .exclude(status__in=Betreibung.ABGESCHLOSSEN))
+    ueberfaellig = Case(
+        When(ueberfaellig_q, then=Case(When(offene_betreibung, then=Value(FLAG_BETREIBUNG)),
+                                       default=Value(FLAG_UEBERFAELLIG))),
+        default=Value(0), output_field=_ZAHL)
     yield _teil(
         DebitorenRechnung.objects.filter(wortweise(
             woerter, ('titel', 'qr_referenz', 'vertrag__mieter__vorname',
@@ -219,7 +277,8 @@ def _teile_buchhaltung(woerter, heute):
         'debitor', 'datum',
         texte=('titel', 'vertrag__mieter__typ', 'vertrag__mieter__vorname',
                'vertrag__mieter__nachname', 'vertrag__mieter__firmen_name',
-               'liegenschaft__strasse'),
+               'liegenschaft__strasse',
+               Cast(Coalesce(hoechste_mahnung, Value(0)), output_field=_TEXT)),
         status='status', betrag='betrag', flag=ueberfaellig)
 
     # Storniertes steht nicht in der Kreditorenliste (`fw_kreditoren`), also
@@ -235,11 +294,15 @@ def _teile_buchhaltung(woerter, heute):
         status='status', betrag='betrag', flag=ueberfaellig_k)
 
 
-def _teile_tickets(woerter, heute):
+def _teile_tickets(woerter, heute, sicht):
     from tickets.models import SchadenMeldung
 
+    meldungen = SchadenMeldung.objects.all()
+    if sicht.nur_hauswart:
+        # Wie die Schadenliste (`fw_schaeden`): nur die zugeordneten Liegenschaften.
+        meldungen = meldungen.filter(liegenschaft__hauswarte=sicht.benutzer)
     yield _teil(
-        SchadenMeldung.objects.filter(wortweise(
+        meldungen.filter(wortweise(
             woerter, ('titel', 'beschreibung', 'liegenschaft__strasse',
                       'betroffene_einheit__bezeichnung', 'melder_vorname', 'melder_nachname',
                       'gemeldet_von__vorname', 'gemeldet_von__nachname'),
@@ -249,7 +312,7 @@ def _teile_tickets(woerter, heute):
         status='status')
 
 
-def _teile_dokumente(woerter, heute):
+def _teile_dokumente(woerter, heute, sicht):
     from rentals.models import Dokument
 
     yield _teil(
@@ -344,7 +407,7 @@ def _verbinden(*teile):
 
 class _Zeile:
     """Eine Zeile der Spaltenform mit Zugriff über Namen."""
-    __slots__ = ('tag', 'pk', 'sort', 't', 'status', 'betrag', 'flag', 'datum')
+    __slots__ = ('tag', 'pk', 'sort', 't', 'status', 'betrag', 'flag', 'datum', 'extra')
 
     def __init__(self, werte):
         d = dict(zip(SPALTEN, werte))
@@ -352,6 +415,7 @@ class _Zeile:
         self.t = [d[f'u_t{i}'] or '' for i in range(1, TEXTSPALTEN + 1)]
         self.status, self.betrag = d['u_status'], d['u_betrag']
         self.flag, self.datum = d['u_flag'], d['u_datum']
+        self.extra = None                  # füllt `_NACHLADEN`, wo ein Modell es braucht
 
 
 def _treffer(art, label, zusatz, url, status=None, betrag=None):
@@ -396,7 +460,7 @@ def _dar_liegenschaft(z, pills):
 
 def _dar_objekt(z, pills):
     bezeichnung, strasse = z.t[:2]
-    return _treffer(gettext('Objekt'), bezeichnung, strasse, f'/neu/objekte/{z.pk}/')
+    return _treffer(gettext('Objekt'), bezeichnung, strasse, f'/neu/objekte/{z.pk}/', z.extra)
 
 
 def _dar_vertrag(z, pills):
@@ -412,15 +476,38 @@ def _dar_vertrag(z, pills):
     status = {'text': str(dict(Mietvertrag._meta.get_field('status').flatchoices).get(code)
                           or pill[code][0]),
               'ton': ton_aus_klasse(pill[code][1]) if code in pill else 'mut'}
-    return _treffer(gettext('Mietverhältnis'), label, zusatz, f'/neu/vertraege/{z.pk}/', status)
+    return _treffer(gettext('Mietverhältnis'), label, zusatz, f'/neu/vertraege/{z.pk}/', status,
+                    z.betrag)
+
+
+#: Die ersten drei Stufen haben im Bestand eigene Übersetzungen (1er, 2e, 3e rappel);
+#: für jede weitere gilt die Vorlage «%(stufe)s. Mahnung» der Mahnansicht.
+_MAHNUNG_TEXT = {1: gettext_lazy('1. Mahnung'), 2: gettext_lazy('2. Mahnung'),
+                 3: gettext_lazy('3. Mahnung')}
+
+
+def _ueberfaellig_text(flag, mahnstufe):
+    """«Überfällig», verfeinert um den Stand des Mahnwesens.
+
+    Eine offene Betreibung geht vor, dann die höchste erfasste Mahnung. Der Ton
+    bleibt «crit» in jeder Stufe: «Überfällig» war schon rot, und eine
+    «1. Mahnung» in Gelb sähe aus, als wäre die Lage nach der Mahnung
+    harmloser als davor.
+    """
+    if flag == FLAG_BETREIBUNG:
+        return gettext('Betreibung')
+    if mahnstufe.isdigit() and int(mahnstufe) > 0:
+        stufe = int(mahnstufe)
+        return str(_MAHNUNG_TEXT.get(stufe) or gettext('%(stufe)s. Mahnung') % {'stufe': stufe})
+    return gettext('Überfällig')
 
 
 def _dar_debitor(z, pills):
     from finance.models import DebitorenRechnung
-    titel, typ, vorname, nachname, firma, strasse = z.t[:6]
+    titel, typ, vorname, nachname, firma, strasse, mahnstufe = z.t[:7]
     wer = _mieter_name(typ, vorname, nachname, firma) if typ else strasse
     if z.flag:
-        status = {'text': gettext('Überfällig'), 'ton': 'crit'}
+        status = {'text': _ueberfaellig_text(z.flag, mahnstufe), 'ton': 'crit'}
     else:
         status = _status(DebitorenRechnung, z.status, pills['debitor'])
     return _treffer(gettext('Debitorenrechnung'), titel, wer,
@@ -471,6 +558,109 @@ _DARSTELLER = {
 
 
 # ---------------------------------------------------------------------------
+# Nach der Abfrage: Angaben, die eine Fachregel des Bestands rechnet
+# ---------------------------------------------------------------------------
+
+#: Der Befund der Objektliste, der «gekündigt, wird frei» meint
+#: (`faelle.objekte._befunde`). Ein Test hält ihn an einem echten Fall fest.
+_BEFUND_WIRD_FREI = 'Wird frei'
+
+#: Übersetzungskontext der Belegung EINES Objekts: Die Kennzahlen der Listen
+#: («Vermietet», «Leer») stehen in der Mehrzahl, ein Chip an einem Objekt in der Einzahl.
+_BELEGUNG = 'Belegung eines Objekts'
+
+
+def _nachladen_vertraege(zeilen, heute):
+    """Der aktuell gültige Netto-Mietzins je Vertrag, in `z.betrag`.
+
+    `Mietvertrag.effektiver_netto_mietzins` — dieselbe Auskunft wie die
+    Mietzinsliste und der Mieterspiegel: jüngste wirksame Anpassung, Komponente,
+    Zeitplan oder Staffelstufe, sonst der Vertragswert. Der NETTO-Mietzins ohne
+    Nebenkosten, und der Referenzwert, nicht der verrechnete: Ein Gratismonat
+    ändert die Auskunft «was kostet das Verhältnis» nicht.
+
+    Stichtag ist heute, bei einem schon beendeten Vertrag sein Ende. Der
+    Sollmietzins-Zeitplan eines Objekts kennt kein Vertragsende
+    (`_sollmietzins_zeile`); mit «heute» könnte ihm der Zeitplan des
+    Nachmieters den Betrag setzen.
+
+    Die vier Relationen, die die Methode liest, kommen im Stapel
+    (`prefetch_related`); ohne sie wären es vier Abfragen je Vertrag.
+    """
+    from rentals.models import Mietvertrag
+    je_pk = {z.pk: z for z in zeilen}
+    vertraege = (Mietvertrag.objects.filter(pk__in=je_pk).select_related('einheit')
+                 .prefetch_related('anpassungen', 'staffelstufen', 'mietzins_komponenten',
+                                   'einheit__sollmietzinse'))
+    for v in vertraege:
+        stichtag = min(heute, v.ende) if v.ende else heute
+        je_pk[v.pk].betrag = v.effektiver_netto_mietzins(stichtag)
+
+
+def _nachladen_objekte(zeilen, heute):
+    """Der Belegungsstand je Objekt, als Status in `z.extra`.
+
+    Nach der Regel der Objektliste (`faelle.objekte.zeilen`), nicht nach einer
+    zweiten: belegt, belegt mit baldigem Ende ohne Nachmieter, leer, oder
+    heute leer mit Nachmieter ab einem Datum. Ein Objekt hat keinen
+    gespeicherten Status, nur diese Herleitung.
+    """
+    from faelle.objekte import zeilen as belegung
+    from portfolio.models import Einheit
+    je_pk = {z.pk: z for z in zeilen}
+    for e in belegung(Einheit.objects.filter(pk__in=je_pk), stichtag=heute):
+        if e['belegt']:
+            wird_frei = any(b['text'] == _BEFUND_WIRD_FREI for b in e['befunde'])
+            status = ({'text': gettext('Wird frei'), 'ton': 'warn'} if wird_frei
+                      else {'text': pgettext(_BELEGUNG, 'Vermietet'), 'ton': 'good'})
+        elif e['nachmieter_ab']:
+            status = {'text': pgettext(_BELEGUNG, 'Vermietet ab %(datum)s')
+                      % {'datum': f"{e['nachmieter_ab']:%d.%m.%Y}"}, 'ton': 'good'}
+        else:
+            status = {'text': pgettext(_BELEGUNG, 'Leer'), 'ton': 'warn'}
+        je_pk[e['e'].pk].extra = status
+
+
+#: Tag des Teils -> Funktion, die die fünf Zeilen dieses Modells ergänzt.
+_NACHLADEN = {'vertrag': _nachladen_vertraege, 'objekt': _nachladen_objekte}
+
+
+# ---------------------------------------------------------------------------
+# Wer darf was
+# ---------------------------------------------------------------------------
+
+class Sicht:
+    """Was ein Benutzer in der aktiven Organisation durchsuchen darf."""
+    __slots__ = ('benutzer', 'gruppen', 'nur_hauswart', 'suchseite')
+
+    def __init__(self, benutzer, gruppen, nur_hauswart):
+        self.benutzer, self.gruppen, self.nur_hauswart = benutzer, gruppen, nur_hauswart
+        self.suchseite = SUCHSEITE_HAUSWART if nur_hauswart else SUCHSEITE_TEAM
+
+
+def sicht_von(benutzer, rollen=None):
+    """Die Sicht des Benutzers; `PermissionDenied` ohne Team- oder Hauswartrolle.
+
+    `rollen`: die Rollen in der aktiven Organisation (`core.auth.eigene_rollen`),
+    wenn der Aufrufer sie ohnehin gelesen hat — sonst eine Abfrage hier.
+
+    Team (und Superuser) suchen überall. Die Hauswartung nur in
+    `HAUSWART_GRUPPEN`; hat jemand beide Rollen, gilt das Team (wie
+    `core.auth.ist_nur_hauswart`).
+    """
+    from core.auth import ROLLE_HAUSWART, TEAM_ROLLEN, eigene_rollen
+    if getattr(benutzer, 'is_superuser', False):
+        return Sicht(benutzer, GRUPPEN, False)
+    if rollen is None:
+        rollen = eigene_rollen(benutzer)
+    if rollen & set(TEAM_ROLLEN):
+        return Sicht(benutzer, GRUPPEN, False)
+    if ROLLE_HAUSWART in rollen:
+        return Sicht(benutzer, tuple(g for g in GRUPPEN if g in HAUSWART_GRUPPEN), True)
+    raise PermissionDenied('Für die Suche fehlt die Berechtigung.')
+
+
+# ---------------------------------------------------------------------------
 # Der Einstieg
 # ---------------------------------------------------------------------------
 
@@ -479,29 +669,39 @@ def _vereinigt(teile):
     return teile[0].union(*teile[1:], all=True) if len(teile) > 1 else teile[0]
 
 
-def suche(eingabe):
-    """Sucht `eingabe` in allen Gruppen.
+def suche(eingabe, benutzer):
+    """Sucht `eingabe` in den Gruppen, die `benutzer` durchsuchen darf.
 
     Gibt `(treffer, zahlen)` zurück: die Treffer in der Reihenfolge der Gruppen
-    (je Treffer mit `gruppe`) und die Trefferzahl je Gruppe. Je Gruppe zwei
-    Abfragen — Treffer und Zahl —, unabhängig von der Trefferzahl.
+    (je Treffer mit `gruppe`) und die Trefferzahl je durchsuchter Gruppe. Je
+    Gruppe zwei Abfragen — Treffer und Zahl —, unabhängig von der Trefferzahl,
+    dazu die Stapel von `_NACHLADEN`, wenn es Treffer dieser Modelle gibt.
+
+    Die Rolle prüft dieser Dienst (`sicht_von`): Das Team bekommt alle sechs
+    Gruppen, die Hauswartung nur ihre (`HAUSWART_GRUPPEN`, nur eigene
+    Liegenschaften), alle anderen `PermissionDenied`.
 
     Der Aufrufer prüft die Mindestlänge; hier wird nicht mehr geprüft.
     """
+    erlaubnis = sicht_von(benutzer)
     woerter = eingabe.split()
     heute = timezone.localdate()
     pills = _pills()
     treffer, zahlen = [], {}
-    for gruppe in GRUPPEN:
+    for gruppe in erlaubnis.gruppen:
         teile, neueste_zuerst = _GRUPPEN[gruppe]
-        alle = _vereinigt(teile(woerter, heute))
+        alle = _vereinigt(teile(woerter, heute, erlaubnis))
         # Sortiert wird nach dem Schlüssel, danach nach der Herkunft und dem
         # Primärschlüssel — damit die Reihenfolge bei gleichem Schlüssel nicht
         # vom Zufall der Datenbank abhängt.
         richtung = '-' if neueste_zuerst else ''
-        zeilen = alle.order_by(f'{richtung}u_sort', 'u_tag', f'{richtung}u_pk')[:JE_GRUPPE]
-        for werte in zeilen:
-            zeile = _Zeile(werte)
+        zeilen = [_Zeile(w) for w in
+                  alle.order_by(f'{richtung}u_sort', 'u_tag', f'{richtung}u_pk')[:JE_GRUPPE]]
+        for tag, nachladen in _NACHLADEN.items():
+            eigene = [z for z in zeilen if z.tag == tag]
+            if eigene:
+                nachladen(eigene, heute)
+        for zeile in zeilen:
             treffer.append({'gruppe': gruppe, **_DARSTELLER[zeile.tag](zeile, pills)})
         # Gezählt wird bis ZAHL_MAX: «99» heisst «99 oder mehr», und die
         # Datenbank zählt nie mehr als nötig.

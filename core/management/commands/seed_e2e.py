@@ -217,6 +217,18 @@ class Command(BaseCommand):
                 liegenschaft=lg, schluessel_nummer="E2E-S-1", defaults=dict(einheit=e))
             SchluesselAusgabe.objects.get_or_create(schluessel=schluessel, mieter=m)
 
+            # Die Hauswartung (e2e-hauswart / e2e-pass): Mitgliedschaft «Hauswart» und
+            # der Liegenschaft zugeordnet — sie sucht in der Kopfzeile nur Schäden
+            # (omnisearch.spec.ts, «Die Hauswartung»).
+            hauswart, _ = User.objects.get_or_create(username="e2e-hauswart")
+            hauswart.set_password("e2e-pass")
+            hauswart.is_active = True
+            hauswart.save()
+            Mitgliedschaft.objects.get_or_create(
+                benutzer=hauswart, organisation=org,
+                defaults=dict(rolle=Mitgliedschaft.ROLLE_HAUSWART))
+            lg.hauswarte.add(hauswart)
+
         # Läufe der laufenden Periode (Karten auf «Läufe», Zähler in der Leiste).
         # Der Befehl setzt seinen Mandantenkontext selbst.
         from django.core.management import call_command

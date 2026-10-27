@@ -14,12 +14,19 @@ Das Popover, die Tastatur und das Aufklappen am Telefon macht
 `static/js/fw-omnisearch.js`; die Texte holt es aus dem `<template>` unten, damit
 jeder sichtbare Text durch `trans` läuft.
 
+WER WELCHE GRUPPEN SIEHT: `fw_suche_gruppen` (kommagetrennt) und `fw_suche_ziel` kommen
+aus dem Context-Processor `fw_navigation`, der beides vom Such-Dienst
+(`core/services/palette_suche.py`, `sicht_von`) erfährt. Das Team sieht alle sechs Gruppen
+und `/neu/suche/`; die Hauswartung nur ihre und die Schadenliste als ausführliche Suche
+(`/neu/suche/` ist ihr gesperrt). Hier steht keine Rollenliste. Fehlen die Variablen,
+gilt das Verhalten des Teams.
+
 AM TELEFON (bis 900 px) ist das Feld ein Symbol (die Beschriftung `label` fokussiert
 das Eingabefeld, auch ohne Skript). Fokus öffnet es über die volle Breite der ersten
 Zeile; Logo und Werkzeuge treten solange zurück.
 {% endcomment %}
-<div class="fw-os" id="fwOs" data-palette-url="/neu/palette/" data-suche-url="/neu/suche/">
-    <form method="get" action="/neu/suche/" role="search" class="fw-os-feld" id="fwOsForm">
+<div class="fw-os" id="fwOs" data-palette-url="/neu/palette/" data-suche-url="{{ fw_suche_ziel|default:'/neu/suche/' }}"{% if fw_suche_gruppen %} data-gruppen="{{ fw_suche_gruppen }}"{% endif %}>
+    <form method="get" action="{{ fw_suche_ziel|default:'/neu/suche/' }}" role="search" class="fw-os-feld" id="fwOsForm">
         <label for="fwOsEingabe" class="fw-os-lupe" title="{% trans 'Suchen' %}">
             {% zeichen 'suchen' %}<span class="sr-only">{% trans "Suchen" %}</span>
         </label>
@@ -40,7 +47,7 @@ Zeile; Logo und Werkzeuge treten solange zurück.
                 <span><kbd class="fw-taste" data-os-meta>⌘</kbd><kbd class="fw-taste">↵</kbd> {% trans "neuer Tab" %}</span>
                 <span><kbd class="fw-taste">esc</kbd> {% trans "schliessen" %}</span>
             </span>
-            <a href="/neu/suche/" id="fwOsAlle" class="fw-os-alle"></a>
+            <a href="{{ fw_suche_ziel|default:'/neu/suche/' }}" id="fwOsAlle" class="fw-os-alle"></a>
         </div>
     </div>
     <div class="sr-only" id="fwOsStatus" role="status" aria-live="polite"></div>
