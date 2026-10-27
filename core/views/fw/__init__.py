@@ -66,6 +66,7 @@ from .zahlungsklaerung import (  # noqa: F401 — Zahlungs-Cockpit V12
 from .phase2_formulare import *      # noqa: F401,F403 — Phase 2 (Audit)
 from .verteilschluessel import *      # noqa: F401,F403 — Verteilschlüssel der Liegenschaft
 from .nk_wizard import *              # noqa: F401,F403 — Nebenkosten-Wizard (Modul 1)
+from .staffel_mitteilung import *      # noqa: F401,F403 — Staffelmiete: Mitteilung der Erhöhung (Art. 269d Abs. 5 OR)
 from .buchhaltung import *   # noqa: F401,F403 — Block 5
 from .mietzins import *      # noqa: F401,F403 — Block 5
 from .kreditoren import *    # noqa: F401,F403 — Block 4

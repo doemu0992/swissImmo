@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.utils.text import slugify
 from rentals.models import Mietvertrag
 from core.services.pdf_service import generate_vertrag_pdf_bytes
-from core.services.dokument_service import generate_dokument_pdf_bytes, DOKUMENT_TYPEN
+from core.services.dokument_service import generate_dokument_pdf_bytes, DOKUMENT_TYPEN, NUR_MIT_KONTEXT
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +117,7 @@ def generate_dokument_view(request, vertrag_id, doc_type):
     """Erstellt eines der Fairwalter-Begleitdokumente (Allgemeine Bedingungen,
     Hausordnung, Merkblatt, Wohnungsausweis, Begleitbriefe) als PDF."""
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
-    if doc_type not in DOKUMENT_TYPEN:
+    if doc_type not in DOKUMENT_TYPEN or doc_type in NUR_MIT_KONTEXT:
         return HttpResponse('Unbekannter Dokumenttyp.', status=404)
     try:
         pdf_bytes = generate_dokument_pdf_bytes(vertrag, doc_type)

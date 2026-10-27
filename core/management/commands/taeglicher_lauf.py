@@ -137,6 +137,17 @@ class Command(BaseCommand):
         except Exception as ex:
             details.append(f"Ticket-Erinnerungen übersprungen ({ex})")
 
+        # Staffelmiete: Erinnerung an die schriftliche Mitteilung jeder Erhöhung (Art. 269d
+        # Abs. 5 OR, Art. 19a VMWG) — je Verwaltung, im Kontext dieser Schleife; idempotent
+        # über `Pendenz.quelle`, ein zweiter Lauf legt nichts an.
+        try:
+            from core.services.staffel_mitteilung import pendenzen_erzeugen
+            n_staffel = pendenzen_erzeugen(timezone.localdate())
+            if n_staffel:
+                details.append(f"{n_staffel} Staffel-Mitteilung(en) fällig")
+        except Exception as e:
+            details.append(f"Staffel-Mitteilungen übersprungen ({e})")
+
         msg = "Täglicher Lauf: " + ", ".join(details) + "."
         AktivitaetsLog.objects.create(aktion="Täglicher Lauf (Scheduler)", objekt="", details=msg)
         self.stdout.write(self.style.SUCCESS(f"{organisation}: {msg}"))

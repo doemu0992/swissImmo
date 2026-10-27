@@ -1934,7 +1934,13 @@ def fw_vertrag_detail(request, pk):
     zv_aktiv = v.zahlungsvereinbarungen.filter(status='aktiv').first()
     betreibung_start = min((r for r in offene if r.stammrechnung_id is None),
                            key=lambda r: (r.faellig_am or r.datum, r.id), default=None)
+    # Staffelmiete: je Stufe das Fenster der schriftlichen Mitteilung (Art. 269d Abs. 5 OR, Art. 19a VMWG).
+    staffel_mitteilungen = []
+    if v.mietzins_modell == 'staffel':
+        from core.services import staffel_mitteilung as _sm
+        staffel_mitteilungen = _sm.uebersicht(v, _heute)
     return render(request, 'fw/vertrag_detail.html', {
+        'staffel_mitteilungen': staffel_mitteilungen,
         'betreibungen': betreibungen,
         'zv_aktiv': zv_aktiv,
         'betreibung_start': betreibung_start,
