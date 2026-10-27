@@ -470,9 +470,11 @@ class StaffelImTabTests(TestCase):
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Büro 1', typ='gew',
                                    nettomiete_aktuell=Decimal('2000'))
         m = Mieter.objects.create(typ='firma', firmen_name='Z AG')
+        # Befristet auf drei Jahre: Eine Staffelmiete setzt sie voraus (Art. 269c lit. a OR); seit
+        # 27.10.2026 lehnt `fw_staffel_add` einen Vertrag ohne feste Dauer ab.
         v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2025, 1, 1),
                                        netto_mietzins=Decimal('2000'), nebenkosten=Decimal('0'),
-                                       status='aktiv')
+                                       status='aktiv', ist_befristet=True, ende=date(2027, 12, 31))
         return e, v
 
     def test_gewerbe_tab_zeigt_live_staffel_nur_bei_staffelvertrag(self):

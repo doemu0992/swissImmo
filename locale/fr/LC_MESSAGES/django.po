@@ -32865,3 +32865,205 @@ msgstr "Autres sous-domaines"
 
 msgid "Neue Schadenmeldungen"
 msgstr "Nouveaux avis de dégât"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Die Dauer ist nicht fest: Der Vertrag ist weder befristet, noch verzichtet der Vermieter auf die Kündigung. Verlangt sind mindestens %(jahre)s Jahre ab Mietbeginn, also bis %(soll)s."
+msgstr "La durée n'est pas ferme : le bail n'est pas conclu pour une durée déterminée et le bailleur ne renonce pas à résilier. Une durée d'au moins %(jahre)s ans dès le début du bail est exigée, soit jusqu'au %(soll)s."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Die feste Dauer endet am %(bis)s. Verlangt sind mindestens %(jahre)s Jahre ab Mietbeginn, also bis mindestens %(soll)s."
+msgstr "La durée ferme se termine le %(bis)s. Au moins %(jahre)s ans dès le début du bail sont exigés, soit au moins jusqu'au %(soll)s."
+
+#: core/services/mietzinsmodell.py
+msgid "Für die Staffelmiete gilt die Dauer sinngemäss wie bei der Indexmiete."
+msgstr "Pour le loyer échelonné, la durée s'apprécie par analogie avec le loyer indexé."
+
+#: core/services/mietzinsmodell.py
+msgid "Jede Anpassung wird mit dem amtlichen Formular angekündigt, mindestens 30 Tage vor einem Monatsende und erst nach Veröffentlichung des neuen Indexstandes. Sinkt der Index, sinkt der Mietzins entsprechend."
+msgstr "Chaque adaptation est notifiée au moyen du formulaire officiel, au moins 30 jours avant la fin d'un mois et seulement après la publication du nouvel indice. Si l'indice baisse, le loyer baisse en conséquence."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Laufzeit auf %(jahre)s Jahre setzen"
+msgstr "Fixer la durée à %(jahre)s ans"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Kündigungsverzicht des Vermieters bis %(datum)s eintragen"
+msgstr "Saisir la renonciation du bailleur à résilier jusqu'au %(datum)s"
+
+#: core/services/mietzinsmodell.py
+msgid "Die Basis des Landesindexes (Punkte) fehlt."
+msgstr "La base de l'indice (points) est manquante."
+
+#: core/services/mietzinsmodell.py
+msgid "Der Stand-Monat der Index-Basis fehlt."
+msgstr "Le mois de référence de la base de l'indice est manquant."
+
+#: core/services/mietzinsmodell.py
+msgid "Die Weitergabe der Teuerung in Prozent fehlt."
+msgstr "Le pourcentage de répercussion du renchérissement est manquant."
+
+#: core/services/mietzinsmodell.py
+msgid "Als Index ist nur der Landesindex der Konsumentenpreise zulässig."
+msgstr "Seul l'indice suisse des prix à la consommation est admis comme indice."
+
+#: core/services/mietzinsmodell.py
+msgid "Das Mindestintervall muss mindestens 1 Monat betragen."
+msgstr "L'intervalle minimal doit être d'au moins 1 mois."
+
+#: core/services/mietzinsmodell.py
+msgid "Eine Indexklausel darf nicht mit Staffelstufen kombiniert werden."
+msgstr "Une clause d'indexation ne peut pas être combinée avec des paliers."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe %(nr)s: Zwischen Mietbeginn und der ersten Erhöhung müssen mindestens 12 Monate liegen, frühestens am %(datum)s."
+msgstr "Palier %(nr)s : au moins 12 mois doivent séparer le début du bail de la première hausse, au plus tôt le %(datum)s."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe %(nr)s: Zwischen zwei Erhöhungen müssen mindestens 12 Monate liegen, frühestens am %(datum)s."
+msgstr "Palier %(nr)s : au moins 12 mois doivent séparer deux hausses, au plus tôt le %(datum)s."
+
+#: core/services/mietzinsmodell.py
+msgid "Eine Staffelmiete braucht mindestens eine Stufe."
+msgstr "Un loyer échelonné nécessite au moins un palier."
+
+#: core/services/mietzinsmodell.py
+msgid "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt. Das amtliche Formular braucht es dafür nicht."
+msgstr "Chaque hausse est communiquée par écrit au locataire, au plus tôt quatre mois avant son entrée en vigueur. Le formulaire officiel n'est pas nécessaire pour cela."
+
+#: core/services/mietzinsmodell.py
+msgid "Zu diesem Vertrag bestehen zusätzlich datierte Mietzinskomponenten oder ein Zeitplan (etwa Gratismonate). Sie gehen den Staffelstufen vor."
+msgstr "Ce bail comporte en outre des composantes de loyer datées ou un échéancier (p. ex. des mois gratuits). Ils prévalent sur les paliers."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "LIK-Stand %(stand)s übernehmen (%(punkte)s Punkte)"
+msgstr "Reprendre l'indice de %(stand)s (%(punkte)s points)"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stand %(stand)s eintragen"
+msgstr "Saisir le mois %(stand)s"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Weitergabe %(w)s %%)."
+msgstr "Un loyer échelonné ne peut pas conserver de clause d'indexation (répercussion de %(w)s %%)."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Der Stand der Index-Basis (%(stand)s) liegt nach dem Mietbeginn (%(beginn)s)."
+msgstr "Le mois de référence de la base de l'indice (%(stand)s) est postérieur au début du bail (%(beginn)s)."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Für %(stand)s weist die LIK-Tabelle %(tabelle)s Punkte aus, erfasst sind %(punkte)s."
+msgstr "Pour %(stand)s, le tableau de l'IPC indique %(tabelle)s points ; %(punkte)s ont été saisis."
+
+#: core/services/mietzinsmodell.py
+msgid "Weitergabe eintragen: 100 %"
+msgstr "Saisir la répercussion : 100 %"
+
+#: core/services/mietzinsmodell.py
+msgid "Die Weitergabe darf höchstens 100 Prozent der Teuerung betragen."
+msgstr "La répercussion ne peut pas dépasser 100 pour cent du renchérissement."
+
+#: core/services/mietzinsmodell.py
+msgid "Landesindex der Konsumentenpreise wählen"
+msgstr "Choisir l'indice suisse des prix à la consommation"
+
+#: core/services/mietzinsmodell.py
+msgid "Intervall setzen auf 12 Monate"
+msgstr "Fixer l'intervalle à 12 mois"
+
+#: core/services/mietzinsmodell.py
+msgid "Staffelstufen entfernen"
+msgstr "Supprimer les paliers"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe %(nr)s: Das Datum fehlt."
+msgstr "Palier %(nr)s : la date est manquante."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung muss als Frankenbetrag vereinbart werden, nicht in Prozent."
+msgstr "Palier %(nr)s : la hausse doit être convenue en montant en francs, pas en pourcentage."
+
+#: core/services/mietzinsmodell.py
+msgid "Weitergabe zurücksetzen auf 100 %"
+msgstr "Rétablir la répercussion à 100 %"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Intervall %(m)s Monate)."
+msgstr "Un loyer échelonné ne peut pas conserver de clause d'indexation (intervalle de %(m)s mois)."
+
+#: core/services/mietzinsmodell.py
+msgid "Bei festem Mietzins dürfen keine Staffelstufen stehen."
+msgstr "Pour un loyer fixe, aucun palier ne doit figurer."
+
+#: core/services/mietzinsmodell.py
+msgid "Punkte der Tabelle übernehmen"
+msgstr "Reprendre les points du tableau"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung in CHF fehlt."
+msgstr "Palier %(nr)s : la hausse en CHF est manquante."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe %(nr)s (%(datum)s) liegt nach dem Ende der festen Dauer (%(bis)s)."
+msgstr "Le palier %(nr)s (%(datum)s) se situe après la fin de la durée ferme (%(bis)s)."
+
+#: core/services/mietzinsmodell.py
+msgid "Intervall zurücksetzen auf 12 Monate"
+msgstr "Rétablir l'intervalle à 12 mois"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung muss ein Frankenbetrag über 0 sein."
+msgstr "Palier %(nr)s : la hausse doit être un montant en francs supérieur à 0."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe auf den %(datum)s legen"
+msgstr "Placer le palier au %(datum)s"
+
+#: core/hilfe.py
+msgid "Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach unten und höchstens im Umfang der Teuerung (Art. 269b OR, Art. 17 VMWG). Der Vertrag muss mindestens fünf Jahre fest dauern; ein Kündigungsverzicht des Vermieters für fünf Jahre genügt (Art. 17 Abs. 4 VMWG). Jede Anpassung geht mit dem amtlichen Formular, mindestens 30 Tage vor einem Monatsende."
+msgstr "Le loyer suit l'indice suisse des prix à la consommation, à la hausse comme à la baisse et au maximum à hauteur du renchérissement (art. 269b CO, art. 17 OBLF). Le bail doit être ferme pour au moins cinq ans ; une renonciation du bailleur à résilier pendant cinq ans suffit (art. 17 al. 4 OBLF). Toute adaptation se fait au moyen du formulaire officiel, au moins 30 jours avant la fin d'un mois."
+
+#: core/hilfe.py
+msgid "Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens einmal jährlich, bei einer Vertragsdauer von mindestens drei Jahren (Art. 269c OR). Dass auch ein Kündigungsverzicht des Vermieters als feste Dauer zählt, ist sinngemäss von Art. 17 Abs. 4 VMWG übernommen. Der Mietzins folgt den Stufen — die Anpassung nach Referenzzins und Teuerung gilt für ihn nicht."
+msgstr "Les hausses sont convenues dans le bail en montants en francs, au plus une fois par an, pour un bail d'au moins trois ans (art. 269c CO). Le fait qu'une renonciation du bailleur à résilier compte aussi comme durée ferme est repris par analogie de l'art. 17 al. 4 OBLF. Le loyer suit les paliers — l'adaptation selon le taux de référence et le renchérissement ne s'y applique pas."
+
+#: core/hilfe.py
+msgid "Index und Staffel zusammen?"
+msgstr "Indice et paliers ensemble ?"
+
+#: core/hilfe.py
+msgid "Eine Indexklausel darf nicht mit einer Staffelung kombiniert werden (Art. 269b und 269c OR, BGE 124 III 57). Pro Vertrag gilt deshalb genau ein Mietzinsmodell: fest, Index oder Staffel."
+msgstr "Une clause d'indexation ne peut pas être combinée avec un échelonnement (art. 269b et 269c CO, ATF 124 III 57). Un seul modèle de loyer s'applique donc par bail : fixe, indexé ou échelonné."
+
+#: core/hilfe.py
+msgid "Kündigungsverzicht des Vermieters"
+msgstr "Renonciation du bailleur à résilier"
+
+#: core/hilfe.py
+msgid "Bei einem unbefristeten Vertrag zählt die Dauer als fest, wenn der Vermieter für die verlangte Zeit auf die Kündigung verzichtet: fünf Jahre bei der Indexmiete (Art. 17 Abs. 4 VMWG), drei Jahre bei der Staffelmiete (sinngemäss, Art. 269c OR). Die Frist läuft ab Mietbeginn; das genannte Enddatum zählt mit."
+msgstr "Pour un bail de durée indéterminée, la durée est réputée ferme si le bailleur renonce à résilier pendant la période exigée : cinq ans pour le loyer indexé (art. 17 al. 4 OBLF), trois ans pour le loyer échelonné (par analogie, art. 269c CO). Le délai court dès le début du bail ; la date indiquée est comprise."
+
+#: core/hilfe.py
+msgid "Mitteilung der Staffelerhöhung"
+msgstr "Communication de la hausse échelonnée"
+
+#: core/hilfe.py
+msgid "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche Formular braucht es dafür nicht, die Mitteilung aber schon: Der Vertrag allein ersetzt sie nicht."
+msgstr "Chaque hausse est communiquée par écrit au locataire, au plus tôt quatre mois avant son entrée en vigueur (art. 269d al. 5 CO, art. 19a OBLF). Le formulaire officiel n'est pas nécessaire pour cela, mais la communication l'est : le contrat seul ne la remplace pas."

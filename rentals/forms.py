@@ -36,6 +36,12 @@ class VertragBearbeitenForm(forms.Form):
       unlesbarer Mietbeginn still der alte.
     - Eine Index-Weitergabe von 0 % oder weniger wurde still ignoriert.
 
+    MIETZINSMODELL: Wird `vertrag` übergeben, prüft `clean()` die Felder, die das Formular ändert
+    (Ende, Beginn, Kündigungsverzicht des Vermieters, Index-Weitergabe und -Intervall), gegen die
+    Regeln von Art. 269b/269c OR (`core/services/mietzinsmodell.py`). Sperren landen als Fehler
+    am Formular. Ändert die Eingabe keines der Modellfelder des Vertrags, wird ein Altvertrag
+    nicht wegen eines früheren Verstosses blockiert.
+
     `entwurf=False` (aktiver, gekündigter, archivierter Vertrag): Die
     mietzinswirksamen Felder sind gesperrt und werden hier gar nicht erst
     angenommen — das erzwingt weiterhin die Ansicht, dieses Formular prüft sie
@@ -48,11 +54,14 @@ class VertragBearbeitenForm(forms.Form):
     anzahl_personen = forms.IntegerField(required=False, min_value=1, max_value=PERSONEN_MAX)
     index_weitergabe_prozent = SchweizerZahl(required=False, max_digits=5, decimal_places=1)
     index_intervall_monate = forms.IntegerField(required=False, min_value=1)
+    #: Nur wirksam, wenn das Feld mitgeschickt wird (sonst bleibt der Wert am Vertrag).
+    vermieter_kuendigungsverzicht_bis = forms.DateField(required=False)
 
-    def __init__(self, *args, entwurf=False, beginn=None, **kwargs):
+    def __init__(self, *args, entwurf=False, beginn=None, vertrag=None, **kwargs):
         super().__init__(*args, **kwargs)
         from rentals.models import Mietvertrag
         self.beginn_alt = beginn
+        self.vertrag = vertrag
         for name in FREITEXT:
             self.fields[name] = forms.CharField(
                 required=False, max_length=Mietvertrag._meta.get_field(name).max_length)
@@ -93,4 +102,30 @@ class VertragBearbeitenForm(forms.Form):
         ende = daten.get('ende')
         if beginn and ende and ende < beginn:
             self.add_error('ende', _t('Das Mietende liegt vor dem Mietbeginn.'))
+        if self.vertrag is not None and not self.errors:
+            self._mietzinsmodell_pruefen(daten)
         return daten
+
+    def _mietzinsmodell_pruefen(self, daten):
+        """Hält den Vertrag mit den eingegebenen Werten gegen `pruefe` (nur Sperren)."""
+        import copy
+
+        from core.services.mietzinsmodell import pruefe_vertrag, sperren
+        v = copy.copy(self.vertrag)
+        v.ende = daten.get('ende')
+        # Wie `fw_vertrag_bearbeiten`: Bei einem aktiven Vertrag folgt die Befristung dem Enddatum;
+        # bei gekündigten/archivierten stammt `ende` aus der Kündigung.
+        if v.status == 'aktiv':
+            v.ist_befristet = bool(v.ende)
+        if daten.get('beginn'):
+            v.beginn = daten['beginn']
+        if 'vermieter_kuendigungsverzicht_bis' in self.data:
+            v.vermieter_kuendigungsverzicht_bis = daten.get('vermieter_kuendigungsverzicht_bis')
+        if daten.get('index_weitergabe_prozent') is not None:
+            v.index_weitergabe_prozent = daten['index_weitergabe_prozent']
+        if daten.get('index_intervall_monate') is not None:
+            v.index_intervall_monate = daten['index_intervall_monate']
+        if all(getattr(v, f) == getattr(self.vertrag, f) for f in v.MODELL_FELDER):
+            return
+        for b in sperren(pruefe_vertrag(v)):
+            self.add_error(None, b.volltext)

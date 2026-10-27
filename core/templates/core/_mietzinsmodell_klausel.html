@@ -1,0 +1,21 @@
+{% load chf mietzinsmodell_tags %}{% mietzinsmodell_klausel vertrag as k %}{% comment %}
+Index- bzw. Staffelklausel des Mietvertrags (Art. 269b / 269c OR). Eingebunden in mietvertrag_pdf.html
+und mietvertrag_garage.html mit kopf="subsec" bzw. "sublabel" und nummer="4.5" (oder leer).
+Rechtstext: von einer Fachperson zu prüfen. Der Vertrag bleibt deutsch (core/services/dokumentsprache.py).
+{% endcomment %}{% if k.modell == 'index' %}
+<div class="{{ kopf }}">{% if nummer %}{{ nummer }} {% endif %}Indexklausel (Art. 269b OR)</div>
+<p class="note">Der Nettomietzins ist an den Landesindex der Konsumentenpreise (LIK) des Bundesamts für Statistik gebunden; ein anderer Index gilt nicht. Basis ist der Indexstand {% if k.lik_stand %}{{ k.lik_stand }}{% else %}(Stand-Monat fehlt){% endif %} mit {{ k.lik_punkte|default:"—" }} Punkten (Basis {{ k.lik_basis }} = 100).</p>
+<p class="note">Der Mietzins folgt dem Index im Umfang von {{ k.weitergabe }} Prozent der Indexveränderung, höchstens jedoch um die Zunahme des Indexes. Sinkt der Index, ist der Mietzins entsprechend zu senken (Art. 17 Abs. 1 und 2 VMWG). Eine Erhöhung ist frühestens alle {{ k.intervall }} Monate möglich.</p>
+<p class="note">Der Vermieter kündigt jede Anpassung mit dem amtlichen Formular an, mindestens 30 Tage im Voraus auf ein Monatsende und erst nach der öffentlichen Bekanntgabe des neuen Indexstandes (Art. 269d OR, Art. 17 Abs. 3 und Art. 19 Abs. 2 VMWG).</p>
+<p class="note">{% if k.dauer_art == 'befristet' %}Der Mietvertrag ist bis zum {{ k.fest_bis|date:"d.m.Y" }} fest abgeschlossen; die feste Dauer beträgt mindestens {{ k.jahre_wort }} Jahre (Art. 269b OR).{% elif k.dauer_art == 'verzicht' %}Der Vermieter verzichtet bis zum {{ k.fest_bis|date:"d.m.Y" }} auf die Kündigung des Mietvertrags; der Verzicht dauert mindestens {{ k.jahre_wort }} Jahre ab Mietbeginn (Art. 17 Abs. 4 VMWG).{% else %}Die feste Dauer von mindestens {{ k.jahre_wort }} Jahren (Mietende oder Kündigungsverzicht des Vermieters) ist noch nicht festgelegt.{% endif %}</p>
+{% elif k.modell == 'staffel' %}
+<div class="{{ kopf }}">{% if nummer %}{{ nummer }} {% endif %}Staffelmietklausel (Art. 269c OR)</div>
+<p class="note">Die Parteien vereinbaren folgende Erhöhungen des Nettomietzinses als Frankenbeträge. Der Mietzins wird höchstens einmal jährlich erhöht.</p>
+<table class="data">
+    <tr><td class="k">ab {{ k.beginn|date:"d.m.Y" }}</td><td>Nettomietzins bei Mietbeginn</td><td>CHF {{ k.netto|chf }}</td></tr>
+    {% for s in k.stufen %}<tr><td class="k">ab {{ s.ab|date:"d.m.Y" }}</td><td>Erhöhung um CHF {{ s.erhoehung|chf }}</td><td>neu CHF {{ s.neu|chf }}</td></tr>
+    {% empty %}<tr><td class="k" colspan="3">Es sind keine Erhöhungen erfasst.</td></tr>{% endfor %}
+</table>
+<p class="note">{% if k.dauer_art == 'befristet' %}Der Mietvertrag ist bis zum {{ k.fest_bis|date:"d.m.Y" }} fest abgeschlossen; die feste Dauer beträgt mindestens {{ k.jahre_wort }} Jahre (Art. 269c OR).{% elif k.dauer_art == 'verzicht' %}Der Vermieter verzichtet bis zum {{ k.fest_bis|date:"d.m.Y" }} auf die Kündigung des Mietvertrags; der Verzicht dauert mindestens {{ k.jahre_wort }} Jahre ab Mietbeginn.{% else %}Die feste Dauer von mindestens {{ k.jahre_wort }} Jahren (Mietende oder Kündigungsverzicht des Vermieters) ist noch nicht festgelegt.{% endif %}</p>
+<p class="note">Der Vermieter teilt dem Mieter jede Erhöhung schriftlich mit, frühestens vier Monate vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG).</p>
+{% endif %}
