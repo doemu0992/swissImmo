@@ -32630,21 +32630,38 @@ msgstr "Vermietet ab %(datum)s"
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Die Dauer ist nicht fest: Der Vertrag ist weder befristet, noch verzichtet der Vermieter auf die Kündigung. Verlangt sind mindestens %(jahre)s Jahre ab Mietbeginn, also bis %(soll)s."
-msgstr "Die Dauer ist nicht fest: Der Vertrag ist weder befristet, noch verzichtet der Vermieter auf die Kündigung. Verlangt sind mindestens %(jahre)s Jahre ab Mietbeginn, also bis %(soll)s."
+msgid ""
+"Die Dauer ist nicht fest: Der Vertrag ist weder befristet, noch verzichtet "
+"der Vermieter auf die Kündigung. Verlangt sind mindestens %(jahre)s Jahre ab"
+" Mietbeginn, also bis %(soll)s."
+msgstr ""
+"Die Dauer ist nicht fest: Der Vertrag ist weder befristet, noch verzichtet "
+"der Vermieter auf die Kündigung. Verlangt sind mindestens %(jahre)s Jahre ab"
+" Mietbeginn, also bis %(soll)s."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Die feste Dauer endet am %(bis)s. Verlangt sind mindestens %(jahre)s Jahre ab Mietbeginn, also bis mindestens %(soll)s."
-msgstr "Die feste Dauer endet am %(bis)s. Verlangt sind mindestens %(jahre)s Jahre ab Mietbeginn, also bis mindestens %(soll)s."
+msgid ""
+"Die feste Dauer endet am %(bis)s. Verlangt sind mindestens %(jahre)s Jahre "
+"ab Mietbeginn, also bis mindestens %(soll)s."
+msgstr ""
+"Die feste Dauer endet am %(bis)s. Verlangt sind mindestens %(jahre)s Jahre "
+"ab Mietbeginn, also bis mindestens %(soll)s."
 
 #: core/services/mietzinsmodell.py
 msgid "Für die Staffelmiete gilt die Dauer sinngemäss wie bei der Indexmiete."
-msgstr "Für die Staffelmiete gilt die Dauer sinngemäss wie bei der Indexmiete."
+msgstr ""
+"Für die Staffelmiete gilt die Dauer sinngemäss wie bei der Indexmiete."
 
 #: core/services/mietzinsmodell.py
-msgid "Jede Anpassung wird mit dem amtlichen Formular angekündigt, mindestens 30 Tage vor einem Monatsende und erst nach Veröffentlichung des neuen Indexstandes. Sinkt der Index, sinkt der Mietzins entsprechend."
-msgstr "Jede Anpassung wird mit dem amtlichen Formular angekündigt, mindestens 30 Tage vor einem Monatsende und erst nach Veröffentlichung des neuen Indexstandes. Sinkt der Index, sinkt der Mietzins entsprechend."
+msgid ""
+"Jede Anpassung wird mit dem amtlichen Formular angekündigt, mindestens 30 "
+"Tage vor einem Monatsende und erst nach Veröffentlichung des neuen "
+"Indexstandes. Sinkt der Index, sinkt der Mietzins entsprechend."
+msgstr ""
+"Jede Anpassung wird mit dem amtlichen Formular angekündigt, mindestens 30 "
+"Tage vor einem Monatsende und erst nach Veröffentlichung des neuen "
+"Indexstandes. Sinkt der Index, sinkt der Mietzins entsprechend."
 
 #: core/services/mietzinsmodell.py
 #, python-format
@@ -32682,25 +32699,41 @@ msgstr "Eine Indexklausel darf nicht mit Staffelstufen kombiniert werden."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Stufe %(nr)s: Zwischen Mietbeginn und der ersten Erhöhung müssen mindestens 12 Monate liegen, frühestens am %(datum)s."
-msgstr "Stufe %(nr)s: Zwischen Mietbeginn und der ersten Erhöhung müssen mindestens 12 Monate liegen, frühestens am %(datum)s."
+msgid ""
+"Stufe %(nr)s: Zwischen Mietbeginn und der ersten Erhöhung müssen mindestens "
+"12 Monate liegen, frühestens am %(datum)s."
+msgstr ""
+"Stufe %(nr)s: Zwischen Mietbeginn und der ersten Erhöhung müssen mindestens "
+"12 Monate liegen, frühestens am %(datum)s."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Stufe %(nr)s: Zwischen zwei Erhöhungen müssen mindestens 12 Monate liegen, frühestens am %(datum)s."
-msgstr "Stufe %(nr)s: Zwischen zwei Erhöhungen müssen mindestens 12 Monate liegen, frühestens am %(datum)s."
+msgid ""
+"Stufe %(nr)s: Zwischen zwei Erhöhungen müssen mindestens 12 Monate liegen, "
+"frühestens am %(datum)s."
+msgstr ""
+"Stufe %(nr)s: Zwischen zwei Erhöhungen müssen mindestens 12 Monate liegen, "
+"frühestens am %(datum)s."
 
 #: core/services/mietzinsmodell.py
 msgid "Eine Staffelmiete braucht mindestens eine Stufe."
 msgstr "Eine Staffelmiete braucht mindestens eine Stufe."
 
 #: core/services/mietzinsmodell.py
-msgid "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt. Das amtliche Formular braucht es dafür nicht."
-msgstr "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt. Das amtliche Formular braucht es dafür nicht."
+msgid ""
+"Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate"
+" vor ihrem Eintritt. Das amtliche Formular braucht es dafür nicht."
+msgstr ""
+"Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate"
+" vor ihrem Eintritt. Das amtliche Formular braucht es dafür nicht."
 
 #: core/services/mietzinsmodell.py
-msgid "Zu diesem Vertrag bestehen zusätzlich datierte Mietzinskomponenten oder ein Zeitplan (etwa Gratismonate). Sie gehen den Staffelstufen vor."
-msgstr "Zu diesem Vertrag bestehen zusätzlich datierte Mietzinskomponenten oder ein Zeitplan (etwa Gratismonate). Sie gehen den Staffelstufen vor."
+msgid ""
+"Zu diesem Vertrag bestehen zusätzlich datierte Mietzinskomponenten oder ein "
+"Zeitplan (etwa Gratismonate). Sie gehen den Staffelstufen vor."
+msgstr ""
+"Zu diesem Vertrag bestehen zusätzlich datierte Mietzinskomponenten oder ein "
+"Zeitplan (etwa Gratismonate). Sie gehen den Staffelstufen vor."
 
 #: core/services/mietzinsmodell.py
 #, python-format
@@ -32714,18 +32747,30 @@ msgstr "Stand %(stand)s eintragen"
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Weitergabe %(w)s %%)."
-msgstr "Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Weitergabe %(w)s %%)."
+msgid ""
+"Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Weitergabe "
+"%(w)s %%)."
+msgstr ""
+"Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Weitergabe "
+"%(w)s %%)."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Der Stand der Index-Basis (%(stand)s) liegt nach dem Mietbeginn (%(beginn)s)."
-msgstr "Der Stand der Index-Basis (%(stand)s) liegt nach dem Mietbeginn (%(beginn)s)."
+msgid ""
+"Der Stand der Index-Basis (%(stand)s) liegt nach dem Mietbeginn "
+"(%(beginn)s)."
+msgstr ""
+"Der Stand der Index-Basis (%(stand)s) liegt nach dem Mietbeginn "
+"(%(beginn)s)."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Für %(stand)s weist die LIK-Tabelle %(tabelle)s Punkte aus, erfasst sind %(punkte)s."
-msgstr "Für %(stand)s weist die LIK-Tabelle %(tabelle)s Punkte aus, erfasst sind %(punkte)s."
+msgid ""
+"Für %(stand)s weist die LIK-Tabelle %(tabelle)s Punkte aus, erfasst sind "
+"%(punkte)s."
+msgstr ""
+"Für %(stand)s weist die LIK-Tabelle %(tabelle)s Punkte aus, erfasst sind "
+"%(punkte)s."
 
 #: core/services/mietzinsmodell.py
 msgid "Weitergabe eintragen: 100 %"
@@ -32754,8 +32799,12 @@ msgstr "Stufe %(nr)s: Das Datum fehlt."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Stufe %(nr)s: Die Erhöhung muss als Frankenbetrag vereinbart werden, nicht in Prozent."
-msgstr "Stufe %(nr)s: Die Erhöhung muss als Frankenbetrag vereinbart werden, nicht in Prozent."
+msgid ""
+"Stufe %(nr)s: Die Erhöhung muss als Frankenbetrag vereinbart werden, nicht "
+"in Prozent."
+msgstr ""
+"Stufe %(nr)s: Die Erhöhung muss als Frankenbetrag vereinbart werden, nicht "
+"in Prozent."
 
 #: core/services/mietzinsmodell.py
 msgid "Weitergabe zurücksetzen auf 100 %"
@@ -32763,8 +32812,12 @@ msgstr "Weitergabe zurücksetzen auf 100 %"
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Intervall %(m)s Monate)."
-msgstr "Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Intervall %(m)s Monate)."
+msgid ""
+"Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Intervall "
+"%(m)s Monate)."
+msgstr ""
+"Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Intervall "
+"%(m)s Monate)."
 
 #: core/services/mietzinsmodell.py
 msgid "Bei festem Mietzins dürfen keine Staffelstufen stehen."
@@ -32781,8 +32834,10 @@ msgstr "Stufe %(nr)s: Die Erhöhung in CHF fehlt."
 
 #: core/services/mietzinsmodell.py
 #, python-format
-msgid "Stufe %(nr)s (%(datum)s) liegt nach dem Ende der festen Dauer (%(bis)s)."
-msgstr "Stufe %(nr)s (%(datum)s) liegt nach dem Ende der festen Dauer (%(bis)s)."
+msgid ""
+"Stufe %(nr)s (%(datum)s) liegt nach dem Ende der festen Dauer (%(bis)s)."
+msgstr ""
+"Stufe %(nr)s (%(datum)s) liegt nach dem Ende der festen Dauer (%(bis)s)."
 
 #: core/services/mietzinsmodell.py
 msgid "Intervall zurücksetzen auf 12 Monate"
@@ -32799,28 +32854,66 @@ msgid "Stufe auf den %(datum)s legen"
 msgstr "Stufe auf den %(datum)s legen"
 
 #: core/hilfe.py
-msgid "Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach unten und höchstens im Umfang der Teuerung (Art. 269b OR, Art. 17 VMWG). Der Vertrag muss mindestens fünf Jahre fest dauern; ein Kündigungsverzicht des Vermieters für fünf Jahre genügt (Art. 17 Abs. 4 VMWG). Jede Anpassung geht mit dem amtlichen Formular, mindestens 30 Tage vor einem Monatsende."
-msgstr "Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach unten und höchstens im Umfang der Teuerung (Art. 269b OR, Art. 17 VMWG). Der Vertrag muss mindestens fünf Jahre fest dauern; ein Kündigungsverzicht des Vermieters für fünf Jahre genügt (Art. 17 Abs. 4 VMWG). Jede Anpassung geht mit dem amtlichen Formular, mindestens 30 Tage vor einem Monatsende."
+msgid ""
+"Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach"
+" unten und höchstens im Umfang der Teuerung (Art. 269b OR, Art. 17 VMWG). "
+"Der Vertrag muss mindestens fünf Jahre fest dauern; ein Kündigungsverzicht "
+"des Vermieters für fünf Jahre genügt (Art. 17 Abs. 4 VMWG). Jede Anpassung "
+"geht mit dem amtlichen Formular, mindestens 30 Tage vor einem Monatsende."
+msgstr ""
+"Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach"
+" unten und höchstens im Umfang der Teuerung (Art. 269b OR, Art. 17 VMWG). "
+"Der Vertrag muss mindestens fünf Jahre fest dauern; ein Kündigungsverzicht "
+"des Vermieters für fünf Jahre genügt (Art. 17 Abs. 4 VMWG). Jede Anpassung "
+"geht mit dem amtlichen Formular, mindestens 30 Tage vor einem Monatsende."
 
 #: core/hilfe.py
-msgid "Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens einmal jährlich, bei einer Vertragsdauer von mindestens drei Jahren (Art. 269c OR). Dass auch ein Kündigungsverzicht des Vermieters als feste Dauer zählt, ist sinngemäss von Art. 17 Abs. 4 VMWG übernommen. Der Mietzins folgt den Stufen — die Anpassung nach Referenzzins und Teuerung gilt für ihn nicht."
-msgstr "Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens einmal jährlich, bei einer Vertragsdauer von mindestens drei Jahren (Art. 269c OR). Dass auch ein Kündigungsverzicht des Vermieters als feste Dauer zählt, ist sinngemäss von Art. 17 Abs. 4 VMWG übernommen. Der Mietzins folgt den Stufen — die Anpassung nach Referenzzins und Teuerung gilt für ihn nicht."
+msgid ""
+"Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens "
+"einmal jährlich, bei einer Vertragsdauer von mindestens drei Jahren (Art. "
+"269c OR). Dass auch ein Kündigungsverzicht des Vermieters als feste Dauer "
+"zählt, ist sinngemäss von Art. 17 Abs. 4 VMWG übernommen. Der Mietzins folgt"
+" den Stufen — die Anpassung nach Referenzzins und Teuerung gilt für ihn "
+"nicht."
+msgstr ""
+"Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens "
+"einmal jährlich, bei einer Vertragsdauer von mindestens drei Jahren (Art. "
+"269c OR). Dass auch ein Kündigungsverzicht des Vermieters als feste Dauer "
+"zählt, ist sinngemäss von Art. 17 Abs. 4 VMWG übernommen. Der Mietzins folgt"
+" den Stufen — die Anpassung nach Referenzzins und Teuerung gilt für ihn "
+"nicht."
 
 #: core/hilfe.py
 msgid "Index und Staffel zusammen?"
 msgstr "Index und Staffel zusammen?"
 
 #: core/hilfe.py
-msgid "Eine Indexklausel darf nicht mit einer Staffelung kombiniert werden (Art. 269b und 269c OR, BGE 124 III 57). Pro Vertrag gilt deshalb genau ein Mietzinsmodell: fest, Index oder Staffel."
-msgstr "Eine Indexklausel darf nicht mit einer Staffelung kombiniert werden (Art. 269b und 269c OR, BGE 124 III 57). Pro Vertrag gilt deshalb genau ein Mietzinsmodell: fest, Index oder Staffel."
+msgid ""
+"Eine Indexklausel darf nicht mit einer Staffelung kombiniert werden (Art. "
+"269b und 269c OR, BGE 124 III 57). Pro Vertrag gilt deshalb genau ein "
+"Mietzinsmodell: fest, Index oder Staffel."
+msgstr ""
+"Eine Indexklausel darf nicht mit einer Staffelung kombiniert werden (Art. "
+"269b und 269c OR, BGE 124 III 57). Pro Vertrag gilt deshalb genau ein "
+"Mietzinsmodell: fest, Index oder Staffel."
 
 #: core/hilfe.py
 msgid "Kündigungsverzicht des Vermieters"
 msgstr "Kündigungsverzicht des Vermieters"
 
 #: core/hilfe.py
-msgid "Bei einem unbefristeten Vertrag zählt die Dauer als fest, wenn der Vermieter für die verlangte Zeit auf die Kündigung verzichtet: fünf Jahre bei der Indexmiete (Art. 17 Abs. 4 VMWG), drei Jahre bei der Staffelmiete (sinngemäss, Art. 269c OR). Die Frist läuft ab Mietbeginn; das genannte Enddatum zählt mit."
-msgstr "Bei einem unbefristeten Vertrag zählt die Dauer als fest, wenn der Vermieter für die verlangte Zeit auf die Kündigung verzichtet: fünf Jahre bei der Indexmiete (Art. 17 Abs. 4 VMWG), drei Jahre bei der Staffelmiete (sinngemäss, Art. 269c OR). Die Frist läuft ab Mietbeginn; das genannte Enddatum zählt mit."
+msgid ""
+"Bei einem unbefristeten Vertrag zählt die Dauer als fest, wenn der Vermieter"
+" für die verlangte Zeit auf die Kündigung verzichtet: fünf Jahre bei der "
+"Indexmiete (Art. 17 Abs. 4 VMWG), drei Jahre bei der Staffelmiete "
+"(sinngemäss, Art. 269c OR). Die Frist läuft ab Mietbeginn; das genannte "
+"Enddatum zählt mit."
+msgstr ""
+"Bei einem unbefristeten Vertrag zählt die Dauer als fest, wenn der Vermieter"
+" für die verlangte Zeit auf die Kündigung verzichtet: fünf Jahre bei der "
+"Indexmiete (Art. 17 Abs. 4 VMWG), drei Jahre bei der Staffelmiete "
+"(sinngemäss, Art. 269c OR). Die Frist läuft ab Mietbeginn; das genannte "
+"Enddatum zählt mit."
 
 #: core/hilfe.py
 msgid "Mitteilung der Staffelerhöhung"

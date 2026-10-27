@@ -89,6 +89,11 @@ def ist_erhoehung(anp):
     return neu is not None and alt is not None and neu > alt
 
 
+def _nk_erhoeht(anp):
+    neu, alt = getattr(anp, 'neue_nebenkosten', None), getattr(anp, 'alte_nebenkosten', None)
+    return neu is not None and alt is not None and neu > alt
+
+
 def fristfehler(anp, versand_am, zugang_am=None):
     """Meldung, wenn der Termin bei diesem Versand/Zugang zu früh ist — sonst ''.
 
@@ -99,7 +104,15 @@ def fristfehler(anp, versand_am, zugang_am=None):
     darf früher wirken.
     """
     from rentals.services import naechster_anpassungstermin
-    if not ist_erhoehung(anp):
+    if anp.vertrag.mietzins_modell == 'index':
+        # Indexmiete: Art. 17 Abs. 3 VMWG — 30 Tage auf ein Monatsende, in BEIDE
+        # Richtungen. Die 10-Tage-Regel des Art. 269d OR gilt nur noch für ein
+        # mitgeteiltes höheres Nebenkosten-Akonto, das keine Indexfolge ist.
+        from core.services.index_anpassung import termin_fehler
+        fehler = termin_fehler(anp.wirksam_ab, versand_am, zugang_am)
+        if fehler or not _nk_erhoeht(anp):
+            return fehler
+    elif not ist_erhoehung(anp):
         return ''
     frueh = naechster_anpassungstermin(anp.vertrag, versand_am, zugang_am=zugang_am)
     if anp.wirksam_ab < frueh:

@@ -1,0 +1,39 @@
+{% extends "core/dok_base.html" %}
+{% load i18n chf %}
+{% block inhalt %}
+{% comment %}
+Schriftliche Mitteilung einer im Mietvertrag vereinbarten Staffelerhöhung (Art. 269d Abs. 5 OR).
+Kein amtliches Formular. Sprache: die des Mieters (core/services/dokument_service.py). Kontext von
+core/services/staffel_mitteilung.py: stufe, bisher, erhoehung, neu, eintritt.
+{% endcomment %}
+<div>
+    {{ vermieter_name }}<br>{{ vermieter_strasse }}<br>{{ vermieter_plz }} {{ vermieter_ort }}
+</div>
+
+<div class="empfaenger adr">
+    {{ mieter.display_name }}<br>
+    {% if mitmieter %}{{ mitmieter.display_name }}<br>{% elif mitmieter_name %}{{ mitmieter_name }}<br>{% endif %}
+    {% if mieter.strasse %}{{ mieter.strasse }}<br>{{ mieter.plz }} {{ mieter.ort }}{% elif mitmieter and mitmieter.strasse %}{{ mitmieter.strasse }}<br>{{ mitmieter.plz }} {{ mitmieter.ort }}{% endif %}
+</div>
+
+<div class="ortdatum">
+    {{ liegenschaft.ort }}, {{ heute|date:"d.m.Y" }}
+</div>
+
+<h2>{% trans "Mitteilung der vereinbarten Mietzinserhöhung (Staffelmiete)" %}</h2>
+<p>{% trans "Sehr geehrte Mieterschaft" %}</p>
+<p>{% blocktrans trimmed with objekt=einheit.bezeichnung strasse=liegenschaft.strasse plz=liegenschaft.plz ort=liegenschaft.ort beginn=vertrag.beginn|date:"d.m.Y" %}Für das Mietobjekt <b>{{ objekt }}</b> an der {{ strasse }}, {{ plz }} {{ ort }}, ist im Mietvertrag mit Mietbeginn {{ beginn }} eine Staffelmiete vereinbart (Art. 269c OR). Gestützt auf diese Vereinbarung teilen wir Ihnen die folgende Erhöhung des Nettomietzinses mit.{% endblocktrans %}</p>
+
+<table class="data">
+    <tr><td class="k">{% trans "Nettomietzins bisher" %}</td><td>CHF {{ bisher|chf }}</td></tr>
+    <tr><td class="k">{% trans "Erhöhung" %}</td><td>CHF {{ erhoehung|chf }}</td></tr>
+    <tr><td class="k"><b>{% trans "Neuer Nettomietzins" %}</b></td><td><b>CHF {{ neu|chf }}</b></td></tr>
+    <tr><td class="k">{% trans "Gültig ab" %}</td><td><b>{{ eintritt|date:"d.m.Y" }}</b></td></tr>
+</table>
+
+<p>{% trans "Die Erhöhung ergibt sich aus der im Mietvertrag vereinbarten Staffel. Diese Mitteilung betrifft nur den Nettomietzins; die Nebenkosten sind davon nicht betroffen." %}</p>
+<p class="note">{% trans "Schriftliche Mitteilung nach Art. 269d Abs. 5 OR. Für die Mitteilung einer im Vertrag vorgesehenen Staffelerhöhung ist kein amtliches Formular erforderlich." %}</p>
+
+<p class="unterschrift">{% trans "Freundliche Grüsse" %}</p>
+{% comment %}Name und Unterschrift setzt dok_base.html (mit_unterschrift).{% endcomment %}
+{% endblock %}

@@ -269,6 +269,31 @@ HILFE = {
     'schluesselart': (_('Schlüsselart'), _(
         'Ein Hauptschlüssel öffnet alle Türen der Anlage, ein Gruppenschlüssel mehrere (etwa Haustür und Keller), ein '
         'Einzelschlüssel eine bestimmte Tür wie die Wohnungstür.')),
+    # ---- Indexanpassung (Art. 269b OR, Art. 17 und 19 VMWG, 27.10.2026) ----
+    'index_anpassung_bekanntgabe': (_('Bekanntgabe des Indexstandes'), _(
+        'Bei einer Indexmiete darf die Mitteilung erst nach der öffentlichen Bekanntgabe des neuen Indexstandes '
+        'erfolgen (Art. 19 Abs. 2 VMWG). Annahme der Anwendung: Ein Monat gilt als bekannt gegeben, sobald er in '
+        'ihrer LIK-Tabelle steht; ein Veröffentlichungsdatum des BFS ist nicht hinterlegt.')),
+    'index_anpassung_grenze': (_('Höchstbetrag'), _(
+        'Die Erhöhung darf die Zunahme des Landesindexes nicht übersteigen (Art. 17 Abs. 1 VMWG), bei vereinbarter '
+        'Teil-Weitergabe nur deren Anteil. Sinkt der Index, ist der Mietzins nach unten anzupassen (Abs. 2). Der '
+        'Vorschlag wird auf 5 Rappen abgerundet, damit er die Grenze nie überschreitet.')),
+    'index_anpassung_frist': (_('Frist und Termin'), _(
+        'Die Anpassung ist mindestens 30 Tage im Voraus auf ein Monatsende anzukündigen (Art. 17 Abs. 3 VMWG). '
+        'Die Anwendung rechnet ab Zugang beim Mieter, ohne bestätigten Zugang ab Versand plus Zustellpuffer. Frühere '
+        'Termine stehen nicht zur Wahl.')),
+    'index_anpassung_vertragsgrenzen': (_('Vertragliche Grenzen'), _(
+        'Weitergabe, Mindestintervall und letzte Anpassung stammen aus dem Mietvertrag, nicht aus dem Gesetz. Ein '
+        'laufendes Mindestintervall wird gemeldet, blockiert aber nicht: Der Vertrag entscheidet.')),
+    'index_anpassung_formular': (_('Amtliches Formular bei der Indexanpassung'), _(
+        'Das amtliche Formular (Art. 269d OR) gilt sinngemäss auch für die Indexanpassung (Art. 19 Abs. 2 VMWG). '
+        'Nicht für jeden Kanton liegt ein Original vor; dann nennt die Anwendung die Lücke und erzeugt kein '
+        'Ersatzformular.')),
+    # ---- Staffelmiete: Mitteilung der Erhöhung (Art. 269d Abs. 5 OR, Art. 19a VMWG, 27.10.2026) ----
+    'staffel_mitteilung_fenster': (_('Mitteilungsfenster'), _(
+        'Der erste Tag, an dem die Mitteilung versandt werden darf: vier Monate vor der Erhöhung. Bei einer Erhöhung '
+        'am 31. März ist es der 1. Dezember, nicht der 30. November, der vier Monate und einen Tag davor liegt. '
+        'Vorher erstellt die Anwendung kein Schreiben und nimmt kein Versanddatum an.')),
 }
 
 

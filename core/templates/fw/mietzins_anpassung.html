@@ -33,25 +33,13 @@
     {% include 'fw/_assistent_leiste.html' %}
     <div class="fw-assistent-inhalt">
 
+    {% if idx %}
+    {% include 'fw/_mietzins_index.html' %}
+    {% else %}
     <!-- 1. Grundlagen -->
     <section data-schritt="{% trans 'Grundlagen' %}" data-schritt-text="{% trans 'Referenzzins, Teuerung und Kostensteigerung — bisher und neu. Der Vorschlag rechnet sich bei jeder Änderung neu.' %}">
         <div class="fw-assistent-schritt-kopf"></div>
-        {% if v.mietzins_modell == 'index' %}
-        <div class="fw-hilfebox" data-hilfebox="mz-index">
-            <span class="fw-hi" aria-hidden="true">{% zeichen 'trend' %}</span>
-            <div class="fw-hilfebox-inhalt"><b>{% trans "Indexmiete" %} {% hilfe 'indexmiete' %}</b>
-            {% if index_vorschlag %}
-            <p class="fw-hilfe">{% comment %}Rechtsgrundlage bleibt deutsch (D11).{% endcomment %}<span class="fw-strong">Indexmiete (Art. 269b OR):</span>
-            LIK {{ index_vorschlag.basis_lik }} → {{ index_vorschlag.aktuell_lik }} {% trans "Punkte" %}
-            → {% trans "Netto" %} CHF {{ index_vorschlag.alt_netto|chf }} → <span class="fw-strong">CHF {{ index_vorschlag.neu_netto|chf }}</span>
-            ({% if index_vorschlag.delta_prozent > 0 %}+{% endif %}{{ index_vorschlag.delta_prozent }}%{% if index_vorschlag.richtung == 'senkung' %}, {% trans "Senkung" %}{% endif %}). {% trans "Begründung und neuer Mietzins sind vorbefüllt." %}</p>
-            {% else %}
-            <p class="fw-hilfe">{% trans "Der LIK hat sich seit der letzten Anpassung nicht verändert — keine Indexanpassung fällig." %}</p>
-            {% endif %}
-            </div>
-            <button type="button" class="zu" aria-label="{% trans 'Hinweis ausblenden' %}">{% zeichen 'schliessen' %}</button>
-        </div>
-        {% elif v.mietzins_modell == 'staffel' %}
+        {% if v.mietzins_modell == 'staffel' %}
         <div class="fw-hinweis warn rounded-lg">
             <span class="fw-hi">{% zeichen 'hinweis' %}</span>
             <div class="fw-ht"><b>{% trans "Staffelmiete" %} {% hilfe 'staffelmiete' %}</b> — {% trans "Der Mietzins folgt den vereinbarten Stufen. Eine Anpassung nach Referenzzins und Teuerung ist für diesen Vertrag nicht vorgesehen." %}</div>
@@ -112,7 +100,9 @@
         </div>
         </div>
     </section>
+    {% endif %}
 
+    {% if not idx %}
     <!-- 2. Vorbehalt -->
     <section data-schritt="{% trans 'Vorbehalt' %}" data-schritt-text="{% trans 'Nicht ausgeschöpfte Reserven vorbehalten — beziffert in CHF oder Prozent.' %}" data-optional>
         <div class="fw-assistent-schritt-kopf"></div>
@@ -138,6 +128,7 @@
         </div>
         </div>
     </section>
+    {% endif %}
 
     <!-- 3. Termin & Zustellung -->
     <section data-schritt="{% trans 'Termin & Zustellung' %}" data-schritt-text="{% trans 'Neuer Mietzins, Wirksamkeit und Versand. Massgebend für die Frist ist der Zugang beim Mieter.' %}">
@@ -156,8 +147,12 @@
             </div>
             <div class="fw-feldblock">
                 <label for="mz_neu" class="fw-label">{% trans "Netto neu (CHF)" %}</label>
-                <input name="neu_netto" id="mz_neu" data-pflicht oninput="mietzinsCheck()" value="{% localize off %}{{ neu_netto }}{% endlocalize %}" class="fw-feld w-full fw-linie-marke fw-strong">
+                <input name="neu_netto" id="mz_neu" data-pflicht inputmode="decimal" oninput="{% if idx %}izBegrenzen(){% else %}mietzinsCheck(){% endif %}" value="{% localize off %}{{ neu_netto }}{% endlocalize %}" class="fw-feld w-full fw-linie-marke fw-strong">
+                {% if idx %}
+                <p class="fw-hilfe" id="iz-neu-hilfe">{{ idx.hoechst_text }}</p>
+                {% else %}
                 <p class="fw-hilfe">{% trans "Vorschlag aus Referenzzins + Teuerung + Kosten" %}</p>
+                {% endif %}
             </div>
             <div class="fw-feldblock">
                 <div class="fw-label">{% trans "Nebenkosten bisher" %}</div>
@@ -169,18 +164,25 @@
                 <p class="fw-hilfe">{% if nk_periode %}{% blocktrans with p=nk_periode.bezeichnung %}Vorschlag aus der Nebenkostenabrechnung «{{ p }}».{% endblocktrans %}{% else %}{% trans "Leer: die Nebenkosten bleiben." %}{% endif %}</p>
             </div>
             <div class="fw-feldblock">
-                <label for="mz_wirksam" class="fw-label">{% trans "Wirksam ab" %}</label>
+                <label for="mz_wirksam" class="fw-label">{% trans "Wirksam ab" %}{% if idx %} {% hilfe 'index_anpassung_frist' %}{% endif %}</label>
+                {% if idx %}
+                <select name="wirksam_ab" id="mz_wirksam" data-pflicht onchange="izRechnen()" class="fw-feld w-full">
+                    {% for t in idx.termine %}<option value="{{ t|date:'Y-m-d' }}"{% if t == idx.termin %} selected{% endif %}>{{ t|date:"d.m.Y" }}</option>{% endfor %}
+                </select>
+                <p class="fw-hilfe" id="mz-frueh">{{ idx.frueh_text }}</p>
+                {% else %}
                 <input type="date" name="wirksam_ab" id="mz_wirksam" data-pflicht onchange="mzRechnen()" value="{{ termin|date:'Y-m-d' }}" class="fw-feld w-full">
                 <p class="fw-hilfe" id="mz-frueh">{% blocktrans with datum=naechster_termin|date:"d.m.Y" %}Frühestens {{ datum }} bei Versand heute{% endblocktrans %}</p>
+                {% endif %}
             </div>
             <div class="fw-feldblock">
                 <label for="mz_versand" class="fw-label">{% trans "Versand am (Poststempel)" %}</label>
-                <input type="date" name="versand_am" id="mz_versand" value="{{ heute_iso }}" max="{{ heute_iso }}" onchange="mzRechnen()" class="fw-feld w-full">
+                <input type="date" name="versand_am" id="mz_versand" value="{{ heute_iso }}" max="{{ heute_iso }}" onchange="{% if idx %}izRechnen(){% else %}mzRechnen(){% endif %}" class="fw-feld w-full">
                 <p class="fw-hilfe">{% trans "Nur für «Als versandt erfassen»." %}</p>
             </div>
             <div class="fw-feldblock">
                 <label for="mz_zugang" class="fw-label">{% trans "Zugang beim Mieter" %} {% hilfe 'zugang' %} <span class="fw-faint font-normal">{% trans "(optional)" %}</span></label>
-                <input type="date" name="zugang_am" id="mz_zugang" max="{{ heute_iso }}" onchange="mzRechnen()" class="fw-feld w-full">
+                <input type="date" name="zugang_am" id="mz_zugang" max="{{ heute_iso }}" onchange="{% if idx %}izRechnen(){% else %}mzRechnen(){% endif %}" class="fw-feld w-full">
                 <p class="fw-hilfe">{% blocktrans with tage=zustell_puffer %}Leer: Versand + {{ tage }} Tage (Postweg und Abholfrist).{% endblocktrans %}</p>
             </div>
         </div>
@@ -204,6 +206,14 @@
             <span class="fw-hi">{% zeichen 'hinweis' %}</span>
             <div class="fw-ht"><b>{% trans "Kein Formular ohne Kanton" %}</b> — {{ kanton_fehlt_meldung }} <a href="/neu/liegenschaften/{{ lg.id }}/bearbeiten/" class="fw-link">{% trans "Kanton bei der Liegenschaft erfassen" %}</a></div>
         </div>
+        {% elif idx_luecke %}
+        <div class="fw-hinweis crit rounded-lg" id="iz-luecke">
+            <span class="fw-hi">{% zeichen 'recht' %}</span>
+            <div class="fw-ht"><b>{% blocktrans with kanton=idx_luecke.kanton_name %}Lücke: Kein Originalformular für den Kanton {{ kanton }}{% endblocktrans %}</b> {% hilfe 'index_anpassung_formular' %}
+            <p>{{ formular.warnung }}</p>
+            <p>{% blocktrans trimmed with kantone=idx_luecke.vorhanden|join:", " %}Die Anwendung erzeugt für die Indexanpassung kein Ersatzformular, auch keine Nachbildung. Originale liegen nur vor für: {{ kantone }}. Verwenden Sie das Formular der kantonalen Behörde und erfassen Sie hier nur den Versand.{% endblocktrans %}</p>
+            <label class="fw-haekchen mt-2"><input type="checkbox" name="nachbildung_bestaetigt" class="fw-akzent"> {% trans "Verstanden: Die Mitteilung geht auf dem amtlichen Formular des Kantons; hier wird nur der Versand erfasst." %}</label></div>
+        </div>
         {% elif not formular.original %}
         <div class="fw-hinweis crit rounded-lg">
             <span class="fw-hi">{% zeichen 'recht' %}</span>
@@ -214,6 +224,12 @@
         <p class="fw-hilfe">{% blocktrans with kanton=formular.kanton_name %}Amtliches Originalformular des Kantons {{ kanton }} hinterlegt.{% endblocktrans %}</p>
         {% endif %}
         <div class="fw-formular">
+        {% if idx %}
+        <div class="fw-feldblock breit">
+            <div class="fw-label">{% trans "Begründung auf dem Formular" %}</div>
+            <p class="fw-hilfe" id="iz-begruendung">{% trans "Wird beim Speichern aus Indexstand, Zunahme, Weitergabe und Beträgen erzeugt (Art. 269b OR, Art. 17 VMWG). Ordentliche Gründe wie Referenzzins oder Kostensteigerung gibt es bei der Indexmiete nicht." %}</p>
+        </div>
+        {% endif %}
         <div class="fw-feldblock breit">
             <label for="mz_begruendung" class="fw-label">{% trans "Zusätzliche Begründung (optional)" %}</label>
             <textarea id="mz_begruendung" name="begruendung" rows="2" class="fw-feld w-full" placeholder="{% trans 'z. B. wertvermehrende Investition (neue Küche)…' %}">{{ begruendung }}</textarea>
@@ -242,7 +258,7 @@
             <button type="button" class="fw-btn fw-primary" data-assistent-weiter data-assistent-nur-js>{% trans "Weiter" %} {% zeichen 'weiter' %}</button>
             <button type="submit" name="aktion" value="entwurf" class="fw-btn" data-assistent-absenden>{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Entwurf speichern" %}</button>
             {% if not formular.kanton_fehlt %}
-            <button type="submit" name="aktion" value="pdf" formtarget="_blank" class="fw-btn" data-assistent-absenden>{% zeichen 'drucken' klasse='mr-1.5' %}{% trans "Formular als PDF" %}</button>
+            {% if not idx_luecke %}<button type="submit" name="aktion" value="pdf" formtarget="_blank" class="fw-btn" data-assistent-absenden>{% zeichen 'drucken' klasse='mr-1.5' %}{% trans "Formular als PDF" %}</button>{% endif %}
             <button type="submit" name="aktion" value="versandt" class="fw-btn fw-primary" data-assistent-absenden>{% zeichen 'senden' klasse='mr-1.5' %}{% trans "Als versandt erfassen" %}</button>
             {% endif %}
         </div>
@@ -298,7 +314,85 @@ function mzRechnen(){
     }, 250);
 }
 
-function mietzinsCheck(){
+var MZ_INDEX = {% if idx %}true{% else %}false{% endif %};
+var IZ_HOECHST = {% if idx.rechnung %}{% localize off %}{{ idx.rechnung.hoechst_netto }}{% endlocalize %}{% else %}null{% endif %};
+var IZ_ALT_NETTO = {% localize off %}{{ alt_netto|default:0 }}{% endlocalize %};
+var IZ_STAND_FEHLER = {% if idx.stand_fehler %}true{% else %}false{% endif %};
+var IZ_INTERVALL = "{{ idx.intervall_hinweis|escapejs }}";
+
+// Indexmiete: Der Server rechnet (core/services/index_anpassung.py), der Browser zeigt und begrenzt.
+// Mehr als der Höchstbetrag wird vorab auf ihn zurückgesetzt; abgelehnt wird er auf dem Server trotzdem.
+function _cent(x){ return Math.round(parseFloat(String(x).replace(',', '.')) * 100); }
+var izLauf = null;
+function izRechnen(setzeVorschlag){
+    clearTimeout(izLauf);
+    izLauf = setTimeout(function(){
+        var q = ['lik_stand', 'basis_lik', 'wirksam_ab', 'versand_am', 'zugang_am'].map(function(n){
+            var el = document.querySelector('[name="' + n + '"]');
+            return n + '=' + encodeURIComponent(el ? el.value : '');
+        }).join('&');
+        fetch(MZ_RECHNEN_URL + '?' + q, {credentials: 'same-origin'})
+            .then(function(a){ return a.ok ? a.json() : null; })
+            .then(function(r){
+                if (!r || !r.index) return;
+                var f = document.getElementById('iz-stand-fehler'), ft = document.getElementById('iz-stand-fehler-text');
+                IZ_STAND_FEHLER = !!r.stand_fehler;
+                if (f) { f.classList.toggle('hidden', !r.stand_fehler); if (ft) ft.textContent = r.stand_fehler; }
+                document.getElementById('mz-r-alt').textContent = _chf(r.alt_netto);
+                document.getElementById('iz-neu-lik').textContent = r.neu_lik || '—';
+                document.getElementById('iz-zunahme').textContent = r.zunahme_text;
+                document.getElementById('iz-hoechst').textContent = r.hoechst_netto ? _chf(r.hoechst_netto) : '—';
+                document.getElementById('iz-hoechst-f').textContent = r.hoechst_f_text;
+                document.getElementById('mz-r-neu').textContent = r.vorschlag_netto ? _chf(r.vorschlag_netto) : _chf(r.alt_netto);
+                var sk = document.getElementById('iz-senkung'); if (sk) sk.classList.toggle('hidden', r.richtung !== 'senkung');
+                IZ_HOECHST = r.hoechst_netto ? parseFloat(r.hoechst_netto) : null;
+                IZ_ALT_NETTO = parseFloat(r.alt_netto);
+                IZ_INTERVALL = r.intervall_hinweis || '';
+                var hilfe = document.getElementById('iz-neu-hilfe');
+                if (hilfe) hilfe.textContent = r.hoechst_text;
+                // Terminliste: nur zulässige Monatserste; die bisherige Wahl bleibt, wenn sie noch zulässig ist.
+                var sel = document.getElementById('mz_wirksam'), alt = sel.value;
+                sel.innerHTML = '';
+                r.termine.forEach(function(t){
+                    var o = document.createElement('option'); o.value = t.wert; o.textContent = t.text; sel.appendChild(o);
+                });
+                sel.value = r.termine.some(function(t){ return t.wert === alt; }) ? alt : r.fruehester_termin;
+                document.getElementById('mz-frueh').textContent = r.frueh_text;
+                var neu = document.getElementById('mz_neu');
+                if (setzeVorschlag && r.vorschlag_netto) neu.value = r.vorschlag_netto;
+                izBegrenzen();
+            })
+            .catch(function(){});
+    }, 250);
+}
+
+function izBegrenzen(){
+    var neu = document.getElementById('mz_neu');
+    if (!neu) return;
+    var roh = (neu.value || '').trim();
+    var ok = true;
+    if (IZ_HOECHST !== null && roh !== '' && !isNaN(parseFloat(roh.replace(',', '.'))) && _cent(roh) > _cent(IZ_HOECHST)) {
+        neu.value = String(IZ_HOECHST.toFixed ? IZ_HOECHST.toFixed(2) : IZ_HOECHST);
+        ok = false;
+    }
+    neu.setCustomValidity(IZ_STAND_FEHLER ? '{{ _("Kein veröffentlichter LIK-Stand gewählt.")|escapejs }}' : '');
+    mietzinsCheck(ok ? null : 'begrenzt');
+}
+
+function izCheck(begrenzt){
+    var warns = [];
+    var neu = _mzNum('mz_neu');
+    if (begrenzt) warns.push('{{ _("Der Betrag war höher als zulässig und wurde auf den Höchstbetrag zurückgesetzt (Art. 17 VMWG).")|escapejs }}');
+    if (!isNaN(neu) && Math.round(neu * 100) === Math.round(IZ_ALT_NETTO * 100)) warns.push('{{ _("Der Nettomietzins bleibt unverändert.")|escapejs }}');
+    if (IZ_INTERVALL) warns.push(IZ_INTERVALL);
+    var box = document.getElementById('mz-warn'), list = document.getElementById('mz-warn-list');
+    list.innerHTML = '';
+    warns.forEach(function(w){ var li = document.createElement('li'); li.textContent = w; list.appendChild(li); });
+    box.classList.toggle('hidden', !warns.length);
+}
+
+function mietzinsCheck(begrenzt){
+    if (MZ_INDEX) { izCheck(begrenzt); return; }
     var warns = [];
     var neu = _mzNum('mz_neu');
     var wirksam = _mzWert('mz_wirksam');
@@ -337,8 +431,8 @@ function mietzinsCheck(){
     else { box.classList.add('hidden'); }
 }
 ['mz_vb_betrag', 'mz_vb_prozent', 'mz_mit_vorbehalt'].forEach(function(id){
-    var e = document.getElementById(id); if (e) e.addEventListener('input', mietzinsCheck);
+    var e = document.getElementById(id); if (e) e.addEventListener('input', function(){ mietzinsCheck(); });
 });
-mietzinsCheck();
+if (MZ_INDEX) { izBegrenzen(); } else { mietzinsCheck(); }
 </script>
 {% endblock %}
