@@ -193,6 +193,11 @@ UPLOAD_ORDNER = {
     # gemeinsamen `abnahme_fotos/`. Der Ordnername bleibt, damit die Regel in
     # media_protected.py (SENSIBLE_PREFIXE) unverändert greift.
     'AbnahmeMangel':  'abnahme_fotos',
+    # Modul 3 (27.10.2026): Ticket-Anhänge und Kreditoren-Belege lagen mit
+    # festem `upload_to` ohne Organisation. Die Ordnernamen bleiben, damit
+    # SENSIBLE_PREFIXE in media_protected.py für alte und neue Pfade greift.
+    'TicketNachricht':    'ticket_anhang',
+    'KreditorenRechnung': 'kreditoren_belege',
 }
 
 

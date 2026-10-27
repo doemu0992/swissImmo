@@ -1,0 +1,100 @@
+{% extends 'fw/nk/_wizard.html' %}
+{% load zeichen i18n hilfe chf %}
+{% block frage %}<p>{% trans "Wie wird jede Kostenart verteilt?" %} {% hilfe 'verteilschluessel' %}</p>{% endblock %}
+{% block aufgabe %}
+<div class="fw-card">
+    <div class="fw-hinweis {% if lg.verteilschluessel_aktiv %}info{% else %}warn{% endif %}">
+        <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+        <div class="fw-ht">
+            {% if lg.verteilschluessel_aktiv %}
+            <b>{% trans "Schlüssel je Kostenart sind eingeschaltet" %}</b>{% trans "Für eine Kostenart mit Schlüssel gilt dieser — für Belege wie für Kreditoren. Ohne Schlüssel gilt, was am Beleg oder Konto steht." %}
+            {% else %}
+            <b>{% trans "Verteilt wird wie erfasst" %}</b>{% trans "Jeder Beleg und jedes Konto bringt seinen Schlüssel mit. Wählen Sie unten eine Verteilung, gilt sie für die ganze Kostenart." %}
+            {% endif %}
+        </div>
+        {% if kann_schreiben %}
+        <form method="post">{% csrf_token %}<input type="hidden" name="aktion" value="aktiv"><input type="hidden" name="an" value="{% if lg.verteilschluessel_aktiv %}0{% else %}1{% endif %}">
+            <button class="fw-btn fw-knapp">{% if lg.verteilschluessel_aktiv %}{% trans "Ausschalten" %}{% else %}{% trans "Einschalten" %}{% endif %}</button></form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="fw-bento">
+    {% for k in kostenarten %}
+    <div class="fw-kachel b-l fw-nkw-kachel" id="ka-{{ k.ka }}">
+        <div class="fw-kachel-kopf"><h3>{{ k.name }}</h3><b class="fw-num">CHF {{ k.betrag|chf:0 }}</b></div>
+        {% if k.ka == 'heizung' %}
+        <p class="fw-kachel-text">{% if lg.hkvo_aktiv %}{% blocktrans with g=lg.hkvo_grundkosten_prozent %}Nach HKVO: {{ g }} % Grundkosten nach Volumen, der Rest nach Verbrauch — festgelegt in Schritt 4.{% endblocktrans %}{% else %}{% trans "Nach Volumen (m³), zeitlich nach Heizgradtagen — HKVO lässt sich in Schritt 4 einschalten." %}{% endif %}</p>
+        <a href="/neu/nebenkosten/{{ p.id }}/heizung/" class="fw-btn fw-knapp">{% trans "Zu Schritt 4" %} {% zeichen 'weiter' %}</a>
+        {% else %}
+        <form method="post">
+            {% csrf_token %}<input type="hidden" name="aktion" value="schluessel"><input type="hidden" name="kostenart" value="{{ k.ka }}">
+            <div class="fw-segment" role="group" aria-label="{% blocktrans with ka=k.name %}Verteilung {{ ka }}{% endblocktrans %}">
+                {% for wert, label in segment %}
+                <button name="typ" value="{{ wert }}"{% if k.tabelle == wert %} class="an" aria-pressed="true"{% else %} aria-pressed="false"{% endif %}{% if not kann_schreiben %} disabled{% endif %}>{{ label }}</button>
+                {% endfor %}
+            </div>
+        </form>
+        <p class="fw-kachel-text">
+            {% if k.tabelle == 'zimmer' %}{% trans "Nach Zimmerzahl (Schlüssel der Liegenschaft)." %}
+            {% elif k.tabelle == 'anteil' %}{% trans "Nach Wertquote (Schlüssel der Liegenschaft)." %}
+            {% elif k.tabelle %}{% trans "Gilt für diese Kostenart in dieser Periode, zeitanteilig nach Tagen." %}
+            {% elif 'heiz' in k.arten %}{% trans "Wie erfasst: nach Volumen mit Heizgradtagen (Schlüssel am Beleg oder Konto «m³»)." %}
+            {% else %}{% trans "Wie erfasst: Schlüssel am Beleg oder Konto." %}{% endif %}
+        </p>
+        {% if k.raster %}
+        <form method="post" class="fw-nkw-raster" novalidate>
+            {% csrf_token %}<input type="hidden" name="aktion" value="prozente"><input type="hidden" name="kostenart" value="{{ k.ka }}">
+            {% if k.summenfehler %}<p class="fw-feldfehler" role="alert">{{ k.summenfehler }}</p>{% endif %}
+            <div class="fw-nkw-felder">
+                {% for r in k.raster %}
+                <label>{{ r.e.bezeichnung }} %
+                    <input name="pct_{{ r.e.id }}" inputmode="decimal" class="fw-feld fw-num" value="{{ r.wert }}"{% if r.fehler %} aria-invalid="true"{% endif %}{% if not kann_schreiben %} readonly{% endif %}>
+                    {% if r.fehler %}<span class="fw-feldfehler" role="alert">{{ r.fehler }}</span>{% endif %}</label>
+                {% endfor %}
+            </div>
+            {% if kann_schreiben %}<button class="fw-btn fw-knapp">{% trans "Prozentanteile speichern" %}</button>{% endif %}
+        </form>
+        {% endif %}
+        {% endif %}
+        <div class="fw-nkw-chips">
+            {% for v in k.ausschluesse %}<span class="fw-chip fw-warn">{% blocktrans with name=v.mieter.display_name e=v.einheit.bezeichnung %}Vertrag {{ name }} ({{ e }}) schliesst aus · wird beachtet{% endblocktrans %}</span>{% endfor %}
+        </div>
+        {% if kann_schreiben and k.vertraege %}
+        <details class="fw-nkw-ausschluss">
+            <summary class="fw-link">{% trans "Vertraglich ausgeschlossen?" %}</summary>
+            <form method="post" class="fw-nkw-zeile">
+                {% csrf_token %}<input type="hidden" name="aktion" value="ausschluss"><input type="hidden" name="kostenart" value="{{ k.ka }}">
+                <select name="vertrag_id" class="fw-feld" aria-label="{% trans 'Vertrag' %}">
+                    {% for v in k.vertraege %}<option value="{{ v.id }}">{{ v.einheit.bezeichnung }} · {{ v.mieter.display_name }}</option>{% endfor %}
+                </select>
+                <button name="an" value="1" class="fw-btn fw-knapp">{% trans "schliesst aus" %}</button>
+                <button name="an" value="0" class="fw-btn fw-geist fw-knapp">{% trans "trägt mit" %}</button>
+            </form>
+            <p class="fw-hilfe">{% trans "Was der Vertrag ausschliesst, trägt dieser Mieter nicht; sein Anteil geht auf den Eigentümer (Art. 257a Abs. 2 OR)." %}</p>
+        </details>
+        {% endif %}
+        {% if 'personen' in k.arten %}<p class="fw-kachel-text"><a href="#leerstand" class="fw-link">{% trans "Leerstand bei Kosten nach Personen — siehe unten" %}</a></p>{% endif %}
+    </div>
+    {% empty %}
+    <div class="fw-kachel b-voll">{% include 'fw/_empty.html' with knapp=True icon='rechnung' titel=_('Noch keine Kosten — zuerst Schritt 2.') %}</div>
+    {% endfor %}
+</div>
+
+{% if result.personen_kosten %}
+<form method="post" class="fw-card" id="leerstand">
+    {% csrf_token %}<input type="hidden" name="aktion" value="leerstand_personen">
+    <div class="fw-kopf"><h2>{% trans "Leerstand bei Kosten nach Personen" %}</h2></div>
+    {% if result.personen_leer_tage %}
+    <div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'warnung' %}</span>
+        <div class="fw-ht">{% blocktrans count n=result.personen_leer_tage %}{{ n }} Leerstandstag in dieser Periode. Ein leeres Objekt hat keine Personen — wie es tragen soll, legt das Gesetz nicht fest. Ihre Wahl steht im Anhang der Abrechnung.{% plural %}{{ n }} Leerstandstage in dieser Periode. Ein leeres Objekt hat keine Personen — wie es tragen soll, legt das Gesetz nicht fest. Ihre Wahl steht im Anhang der Abrechnung.{% endblocktrans %}</div></div>
+    {% endif %}
+    <div class="fw-rumpf fw-nkw-wahl">
+        {% for wert, label in leerstand_wahl %}
+        <label><input type="radio" name="leerstand_personen" value="{{ wert }}"{% if p.leerstand_personen == wert %} checked{% endif %}{% if not kann_schreiben %} disabled{% endif %}> {{ label }}</label>
+        {% endfor %}
+    </div>
+    {% if kann_schreiben %}<div class="fw-fuss"><span></span><button class="fw-btn">{% zeichen 'speichern' %}{% trans "Speichern" %}</button></div>{% endif %}
+</form>
+{% endif %}
+{% endblock %}

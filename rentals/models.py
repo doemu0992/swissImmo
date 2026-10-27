@@ -3,7 +3,7 @@ import logging
 from django.utils.translation import gettext_noop
 from django.db import models
 from core.organisation_kette import OrganisationAusKette, organisation_aus_kontext
-from core.tenancy import AlleOrganisationenManager, TenantManager
+from core.tenancy import AlleOrganisationenManager, TenantManager, TenantQuerySet
 from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
@@ -94,6 +94,12 @@ class Mietvertrag(OrganisationAusKette):
     nk_abrechnungsart = models.CharField("NK-Abrechnungsart", max_length=20, choices=NK_TYP_CHOICES, default='akonto')
     verteilschluessel = models.CharField("Verteilschlüssel", max_length=20, choices=VERTEIL_CHOICES, default='m2')
     ausgeschlossene_kosten = models.TextField("Ausgeschlossene Kosten", blank=True, help_text="Welche Kosten zahlt dieser Mieter NICHT?")
+    #: Dasselbe strukturiert (Entscheid E2, Art. 257a Abs. 2 OR): Schlüssel aus
+    #: `portfolio.Verteilschluessel.KOSTENART_CHOICES` — die Kostenart, die die Abrechnung kennt.
+    #: Eine Liste statt M2M, weil die Kostenart eine Auswahl ist und kein Modell. Die Abrechnung
+    #: verteilt eine ausgeschlossene Kostenart nicht auf diesen Mieter; sein Anteil geht auf eine
+    #: Eigentümerzeile. Der Freitext oben bleibt für das, was sich nicht zuordnen lässt.
+    ausgeschlossene_kostenarten = models.JSONField("Ausgeschlossene Kostenarten", default=list, blank=True)
     zahlungsrhythmus = models.CharField("Zahlungsrhythmus", max_length=20, choices=ZAHLUNGSRHYTHMUS_CHOICES, default='monatlich') # 🔥 NEU
     mwst_pflichtig = models.BooleanField("MWST-pflichtig", default=False)             # 🔥 NEU (v.a. Gewerbe)
     mwst_satz = models.DecimalField("MWST-Satz (%)", max_digits=4, decimal_places=1, default=Decimal('8.1'))  # 🔥 NEU (Option Art. 22 MWSTG)
@@ -400,11 +406,17 @@ class Mietvertrag(OrganisationAusKette):
             komps = [k for k in self.mietzins_komponenten.all()
                      if k.gueltig_ab and k.gueltig_ab <= stichtag]
             komp = max(komps, key=lambda k: (k.gueltig_ab, k.id or 0)) if komps else None
-            if komp:
-                return komp.nebenkosten or Decimal('0.00')
-            soll = self._sollmietzins_zeile(stichtag)
-            if soll:
-                return soll.nebenkosten or Decimal('0.00')
+            soll = None if komp else self._sollmietzins_zeile(stichtag)
+            # E1 (NK-Wizard): Ein mit einer gebuchten Anpassung mitgeteiltes Akonto gilt ab ihrem
+            # Termin — wie beim Netto, wenn es nicht älter ist als die geltende Zeile.
+            anps = [a for a in self.anpassungen.all() if a.ist_gebucht and a.neue_nebenkosten is not None
+                    and a.wirksam_ab and a.wirksam_ab <= stichtag]
+            anp = max(anps, key=lambda a: (a.wirksam_ab, a.id or 0)) if anps else None
+            zeile = komp or soll
+            if anp is not None and (zeile is None or zeile.gueltig_ab <= anp.wirksam_ab):
+                return anp.neue_nebenkosten
+            if zeile is not None:
+                return zeile.nebenkosten or Decimal('0.00')
         return self.nebenkosten or Decimal('0.00')
 
     def _sollmietzins_zeile(self, fuer_datum=None):
@@ -851,6 +863,12 @@ class MietzinsAnpassung(OrganisationAusKette):
     wirksam_ab = models.DateField()
     neuer_netto_mietzins = models.DecimalField(max_digits=10, decimal_places=2)
     alter_netto_mietzins = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    #: Neue Akontozahlung für Nebenkosten, mitgeteilt mit derselben Anpassung (Entscheid E1).
+    #: Leer = die Nebenkosten bleiben. Der Vorschlag kommt aus der Nebenkostenabrechnung, die das
+    #: Akonto nicht mehr selbst überschreibt: Eine Erhöhung ist eine einseitige Vertragsänderung
+    #: und geht wie der Mietzins über Formular und Termin (Art. 269d OR).
+    alte_nebenkosten = models.DecimalField("Nebenkosten bisher", max_digits=8, decimal_places=2, null=True, blank=True)
+    neue_nebenkosten = models.DecimalField("Nebenkosten neu", max_digits=8, decimal_places=2, null=True, blank=True)
     alter_referenzzinssatz = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     alter_lik_index = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     neuer_referenzzinssatz = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
@@ -955,6 +973,8 @@ class MietzinsAnpassung(OrganisationAusKette):
             gueltig_ab=self.wirksam_ab).delete()
         nk = _D('0.00') if getattr(einheit, 'ist_einstellplatz', False) \
             else (einheit.nebenkosten_aktuell or _D('0.00'))
+        if self.neue_nebenkosten is not None:          # E1: mit der Anpassung mitgeteiltes Akonto
+            nk = self.neue_nebenkosten
         teile = ["Amtliche Mietzinsanpassung"]
         grund = (self.begruendung or '').strip()
         if grund:
@@ -983,6 +1003,25 @@ class Leerstand(OrganisationAusKette):
 
     class Meta:
         db_table = 'core_leerstand'
+
+class DokumentQuerySet(TenantQuerySet):
+    def neueste(self):
+        """Nur die jüngste Fassung je Dokument — der Filter «ist neueste».
+
+        Eine Fassung ist die neueste, wenn keine andere auf sie als
+        `vorgaenger` zeigt. Listen und Akten zeigen nur sie; den Verlauf
+        zeigt die Detailansicht (`fw_rentals_dokument_verlauf`).
+        """
+        return self.filter(nachfolger__isnull=True)
+
+
+class DokumentManager(TenantManager.from_queryset(DokumentQuerySet)):
+    pass
+
+
+class DokumentAlleManager(AlleOrganisationenManager.from_queryset(DokumentQuerySet)):
+    pass
+
 
 class Dokument(OrganisationAusKette):
     # FUENF Wege, und seit PR 8 tragen sie alle die Organisation: `mieter`
@@ -1014,9 +1053,47 @@ class Dokument(OrganisationAusKette):
     # Schreiben gehört (Sendungsnummer, `zugang_am`). Bewusst nur die ID: Ein Fremdschlüssel nach
     # `core` bräuchte eine Migrationsabhängigkeit rentals → core, und core hängt schon an rentals.
     frist_pendenz_id = models.PositiveIntegerField(null=True, blank=True)
+    # FASSUNGEN (Modul 5). `ablegen(dedup=True)` überschreibt nicht mehr, es
+    # legt eine neue Fassung an: neue Datei, `vorgaenger` zeigt auf die alte.
+    # Die alte Datei bleibt. Was als «neueste» gilt, sagt `neueste()`.
+    version = models.PositiveIntegerField("Version", default=1)
+    vorlage = models.ForeignKey('crm.Vorlage', on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='dokumente', verbose_name='Herkunftsvorlage')
+    # SET_NULL: Wer eine alte Fassung löscht, nimmt die neue nicht mit.
+    vorgaenger = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='nachfolger', verbose_name='Vorgängerfassung')
+
+    objects = DokumentManager()
+    alle_organisationen = DokumentAlleManager()
 
     class Meta:
         db_table = 'core_dokument'
+
+    def verlauf(self):
+        """Alle Fassungen dieses Dokuments, die neueste zuerst.
+
+        Läuft die Kette über `vorgaenger` zurück und über `nachfolger` vor —
+        aus jeder Fassung heraus dieselbe Liste. Über `alle_organisationen`:
+        Die Kette verlässt die Organisation nicht, denn jede Fassung entsteht
+        am selben Vertrag (`ablegen`), und die Grenze hat der Aufrufer beim
+        Laden dieser Fassung schon gezogen.
+        """
+        alle = type(self).alle_organisationen.filter(organisation_id=self.organisation_id)
+        kopf, gesehen = self, {self.pk}
+        while True:                                   # vorwärts bis zur neuesten
+            weiter = alle.filter(vorgaenger_id=kopf.pk).order_by('-id').first()
+            if weiter is None or weiter.pk in gesehen:
+                break
+            gesehen.add(weiter.pk)
+            kopf = weiter
+        kette, gesehen = [kopf], {kopf.pk}
+        while kette[-1].vorgaenger_id and kette[-1].vorgaenger_id not in gesehen:
+            vor = alle.filter(pk=kette[-1].vorgaenger_id).first()
+            if vor is None:
+                break
+            gesehen.add(vor.pk)
+            kette.append(vor)
+        return kette
 
     @property
     def zustellstatus(self):

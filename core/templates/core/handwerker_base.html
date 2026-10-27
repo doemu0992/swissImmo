@@ -1,0 +1,40 @@
+{% load zeichen i18n %}<!DOCTYPE html>
+{% get_current_language as sprache %}<html lang="{{ sprache|slice:':2'|default:'de' }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="same-origin">
+    <title>{% block title %}{% trans "Auftrag — SwissImmo" %}{% endblock %}</title>
+    <script>/* Theme früh setzen (kein Flash) */(function(){try{var t=localStorage.getItem('fw-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+{% include 'core/_assets_aussen.html' %}
+</head>
+{% comment %}
+SCHLANKE HÜLLE FÜR DAS HANDWERKERPORTAL (Modul 3, 27.10.2026)
+
+Dieselben Stilbausteine wie `core/portal_base.html`, aber ohne Leiste, ohne
+Abmelden und ohne Navigation: Der Handwerker hat kein Konto, und die Seite
+zeigt genau einen Auftrag. Eine Navigation hätte nichts, wohin sie führen
+dürfte.
+{% endcomment %}
+<body class="fw-body">
+    <main class="fw-inhalt fw-hw-seite">
+        <header class="fw-hw-kopf">
+            <span class="fw-marke-zeichen"><svg class="fw-zeichen fw-auf-marke" aria-hidden="true"><use href="#z-arbeit"/></svg></span>
+            <b class="fw-portal-titel">{% block kopf %}{% trans "Auftrag" %}{% endblock %}</b>
+        </header>
+
+        {% if messages %}{% for m in messages %}
+        <div class="fw-hinweis fw-meldung {% if 'error' in m.tags %}crit{% else %}good{% endif %}"{% if 'error' in m.tags %} role="alert"{% else %} role="status"{% endif %}>
+            <span class="fw-hi">{% if 'error' in m.tags %}{% zeichen 'kritisch' %}{% else %}{% zeichen 'gut' %}{% endif %}</span>
+            <div class="fw-ht">{{ m }}</div>
+        </div>
+        {% endfor %}{% endif %}
+
+        {% block content %}{% endblock %}
+
+        <p class="fw-portal-fuss">{% block footer %}{% trans "SwissImmo · Auftrag für Handwerker" %}{% endblock %}</p>
+    </main>
+{% block scripts %}{% endblock %}
+</body>
+</html>

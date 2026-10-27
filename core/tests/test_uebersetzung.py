@@ -65,6 +65,8 @@ UEBERSETZT = (
     'core/_mieter_nav.html',
     'core/_passwort_shell_bottom.html',
     'core/_passwort_shell_top.html',
+    'core/handwerker_auftrag.html',
+    'core/handwerker_base.html',
     'core/login.html',
     'core/mieter_daten.html',
     'core/mieter_dokumente.html',
@@ -115,6 +117,7 @@ UEBERSETZT = (
     'fw/abwesenheiten.html',
     'fw/account.html',
     'fw/anlagen.html',
+    'fw/auftrag_link.html',
     'fw/auswertung.html',
     'fw/bankabgleich.html',
     'fw/bankkonten.html',
@@ -221,12 +224,24 @@ UEBERSETZT = (
     'fw/vertrag_neu.html',
     'fw/vorlage_form.html',
     'fw/vorlagen.html',
+    'fw/_vorlage_vorschau.html',   # Modul 5: Live-Vorschau
+    'fw/dokument_verlauf.html',    # Modul 5: Fassungen eines Dokuments
     'fw/weiterverrechnung.html',
     'fw/zahlung_aufteilen.html',  # V12: Assistent «Zahlung aufteilen»
     'fw/zahler_zuordnungen.html',
     'fw/zahllauf.html',
     'fw/zahlungsvereinbarung.html',  # 26.10.2026: Texte ausgezeichnet, Übersetzung folgt
     'fw/zulauf.html',
+    # Modul 2 (27.10.2026): Schlüssel und Schliessanlage — ausgezeichnet, Übersetzung folgt zentral.
+    'fw/_schliessanlage.html',
+    'fw/_schliessanlage_formular.html',
+    'fw/_schluessel_akte.html',
+    'fw/_schluessel_formular.html',
+    'fw/_schluessel_karte.html',
+    'fw/_schluessel_unterschrift.html',
+    'fw/schluessel_ausgabe.html',
+    'fw/schluessel_faellig.html',
+    'fw/schluessel_ruecknahme.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.

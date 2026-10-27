@@ -1,0 +1,37 @@
+{% load i18n zeichen %}{% comment %}
+Liste «Schlüssel» einer Akte (Person, Vertrag, Dienstleister — Modul 2): was
+jetzt ausgegeben ist, mit Rücknahme, darunter der Verlauf mit Belegen.
+`sa` aus core/services/schluessel.akte; `ausgabe_url` optional.
+{% endcomment %}
+<div class="fw-card" id="schluessel">
+    <div class="fw-kopf"><span class="fw-ikon{% if sa.ueberfaellig %} crit{% elif sa.offen %} warn{% endif %}">{% zeichen 'schluessel' %}</span>
+        <span class="fw-t">{% trans "Schlüssel" %}</span>
+        <span class="fw-neben">{% if sa.offen %}{% blocktrans count n=sa.stueck %}{{ n }} Stück ausgegeben{% plural %}{{ n }} Stück ausgegeben{% endblocktrans %}{% if sa.ueberfaellig %} · {% blocktrans with n=sa.ueberfaellig %}{{ n }} überfällig{% endblocktrans %}{% endif %}{% else %}{% trans "keine ausgegeben" %}{% endif %}</span></div>
+    {% for a in sa.offen %}
+    <div class="fw-zeile">
+        <span class="fw-marker {% if a.ueberfaellig %}crit{% else %}good{% endif %}"></span>
+        <span class="fw-sk-art {{ a.schluessel.art }}" aria-label="{{ a.schluessel.get_art_display }}">{{ a.kuerzel }}</span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ a.schluessel.typ }} · {% trans "Nr." %} {{ a.schluessel.schluessel_nummer }} · {% blocktrans count n=a.anzahl %}{{ n }} Stk.{% plural %}{{ n }} Stk.{% endblocktrans %}</div>
+            <div class="fw-s">{{ a.schluessel.liegenschaft.strasse }}{% if a.schluessel.einheit %} · {{ a.schluessel.einheit.bezeichnung }}{% endif %} · {% blocktrans with d=a.ausgegeben_am|date:"d.m.Y" %}seit {{ d }}{% endblocktrans %}{% if a.rueckgabe_bis %} · <span{% if a.ueberfaellig %} class="fw-kritisch"{% endif %}>{% blocktrans with d=a.rueckgabe_bis|date:"d.m.Y" %}zurück bis {{ d }}{% endblocktrans %}</span>{% endif %}</div>
+        </div>
+        <a href="{{ a.ruecknahme_url }}" class="fw-btn fw-knapp">{% trans "Rücknahme" %}</a>
+    </div>
+    {% empty %}
+    <p class="fw-leer">{% trans "Keine Schlüssel ausgegeben." %}</p>
+    {% endfor %}
+    {% if ausgabe_url %}
+    <div class="fw-rumpf"><a href="{{ ausgabe_url }}" class="fw-btn fw-knapp fw-primary">{% zeichen 'senden' %}{% trans "Schlüssel ausgeben" %}</a></div>
+    {% endif %}
+    {% if sa.verlauf %}
+    <details class="fw-sk-formular fw-sk-verlauf">
+        <summary>{% blocktrans count n=sa.verlauf|length %}Verlauf: {{ n }} Eintrag{% plural %}Verlauf: {{ n }} Einträge{% endblocktrans %}</summary>
+        <ul class="fw-sk-inhaber">
+            {% for ev in sa.verlauf %}
+            <li><span>{{ ev.datum|date:"d.m.Y" }} · {% if ev.art == 'ausgabe' %}{% trans "Ausgabe" %}{% elif ev.art == 'verloren' %}<b class="fw-kritisch">{% trans "verloren" %}</b>{% else %}{% trans "Rücknahme" %}{% endif %} · {{ ev.a.anzahl }} × {{ ev.a.schluessel.typ }} {{ ev.a.schluessel.schluessel_nummer }}</span>
+                <small>{% if ev.beleg and ev.beleg.datei %}<a href="{{ ev.beleg.datei.url }}" class="fw-link" target="_blank" rel="noopener">{% trans "Quittung" %}</a>{% elif ev.abnahme %}<a href="/neu/abnahme/{{ ev.abnahme.id }}/" class="fw-link">{% if ev.abnahme.typ == 'einzug' %}{% trans "mit Einzugsabnahme" %}{% else %}{% trans "mit Auszugsabnahme" %}{% endif %}</a>{% endif %}</small></li>
+            {% endfor %}
+        </ul>
+    </details>
+    {% endif %}
+</div>

@@ -10,6 +10,7 @@ from django.utils.translation import gettext_lazy
 
 from core.tenancy import AlleOrganisationenManager, TenantManager
 from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
+from core.utils import get_smart_upload_path
 from django.utils import timezone
 from django.db.models import Sum
 
@@ -540,8 +541,15 @@ class KreditorenRechnung(OrganisationAusKette):
     # Bank beauftragt wurde — «heute» war eine stille Annahme.
     zahlung_ausfuehrung = models.DateField("Ausführung Zahllauf", null=True, blank=True)
 
-    beleg_scan = models.FileField(upload_to='kreditoren_belege/', blank=True, null=True)
+    # Neue Belege unter `organisation/<id>/kreditoren_belege/…` (UPLOAD_ORDNER).
+    # Alte Dateien bleiben unter `kreditoren_belege/` liegen; `media_protected`
+    # schützt beide Formen.
+    beleg_scan = models.FileField(upload_to=get_smart_upload_path, blank=True, null=True)
     fehlermeldung = models.TextField(blank=True)
+    # Der Handwerker hinter der Rechnung, wenn er bekannt ist (Handwerkerportal,
+    # Modul 3). `lieferant` bleibt der Text, den alle Listen zeigen.
+    handwerker = models.ForeignKey('crm.Handwerker', on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='kreditoren_rechnungen')
 
     class Meta:
         verbose_name = "Kreditorenrechnung"
@@ -755,6 +763,16 @@ class AbrechnungsPeriode(OrganisationAusKette):
     anfangsbestand_chf = models.DecimalField("Anfangsbestand (CHF)", max_digits=10, decimal_places=2, default=0)
     endbestand_liter = models.DecimalField("Endbestand (L) am Stichtag", max_digits=10, decimal_places=2, default=0)
 
+    #: Kosten nach Personen bei Leerstand (Entscheid E3). Das Gesetz legt es nicht fest; die
+    #: Verwaltung wählt je Abrechnung, die Wahl steht im Anhang der Abrechnung.
+    #: «keine» ist das Verhalten bis hierher: Der Leerstand hat 0 Personen und trägt nichts.
+    LEERSTAND_PERSONEN_CHOICES = [
+        ('keine', gettext_lazy('Leerstand trägt nichts (Kosten nur auf die Bewohner)')),
+        ('durchschnitt', gettext_lazy('Leerstand trägt nach der durchschnittlichen Belegung')),
+    ]
+    leerstand_personen = models.CharField("Leerstand bei Kosten nach Personen", max_length=12,
+                                          choices=LEERSTAND_PERSONEN_CHOICES, default='keine')
+
     class Meta:
         verbose_name = "Abrechnungsperiode"
         verbose_name_plural = "Abrechnungsperioden"
@@ -776,39 +794,6 @@ class AbrechnungsPeriode(OrganisationAusKette):
             logger.debug("Fehler bewusst übergangen", exc_info=True)
         # Fallback (z.B. ohne Liegenschaft): reine Belegsumme
         return self.belege.aggregate(total=Sum('betrag'))['total'] or Decimal('0.00')
-
-    def berechne_mieter_anteil(self, vertrag):
-        v_start = vertrag.beginn
-        v_ende = vertrag.ende or self.ende_datum
-        overlap_start = max(v_start, self.start_datum)
-        overlap_end = min(v_ende, self.ende_datum)
-
-        if overlap_start > overlap_end:
-            return Decimal('0.00')
-
-        tage_bewohnt = (overlap_end - overlap_start).days + 1
-        tage_periode = (self.ende_datum - self.start_datum).days + 1
-        zeit_faktor = Decimal(tage_bewohnt) / Decimal(tage_periode)
-
-        kosten_m2 = self.belege.filter(verteilschluessel='m2').aggregate(Sum('betrag'))['betrag__sum'] or Decimal('0.00')
-        kosten_einheit = self.belege.filter(verteilschluessel='einheit').aggregate(Sum('betrag'))['betrag__sum'] or Decimal('0.00')
-
-        alle_einheiten = self.liegenschaft.einheiten.all()
-        total_flaeche = sum(e.flaeche_m2 for e in alle_einheiten if e.flaeche_m2) or 1
-        anzahl_einheiten = alle_einheiten.count() or 1
-
-        mieter_flaeche = vertrag.einheit.flaeche_m2 or 0
-        anteil_m2 = (kosten_m2 * Decimal(mieter_flaeche) / Decimal(total_flaeche)) * zeit_faktor
-        anteil_einheit = (kosten_einheit / Decimal(anzahl_einheiten)) * zeit_faktor
-
-        total_anteil = round(anteil_m2 + anteil_einheit, 2)
-        return Decimal(str(total_anteil))
-
-    # --- Die "Heizgradtage" Logik für Mieterwechsel ---
-    def get_heizgradtage_faktor(self, monat):
-        """ Gibt den Schweizer Standard-Prozentsatz der Heizenergie pro Monat zurück """
-        hgt = {1: 21, 2: 18, 3: 15, 4: 10, 5: 5, 6: 0, 7: 0, 8: 0, 9: 3, 10: 8, 11: 10, 12: 10}
-        return Decimal(hgt.get(monat, 0)) / Decimal('100')
 
 class NebenkostenLernRegel(models.Model):
     # Stammdaten je Verwaltung (Rezept A). Der Skill `phase-2-migration` nennt

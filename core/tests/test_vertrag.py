@@ -348,7 +348,8 @@ class DocuSealAblageTests(TestCase):
         lg, e, m, v = _basis_objekte()
         _ablegen_vertragsdokument(b'%PDF-1', 'Hausordnung', v)
         _ablegen_vertragsdokument(b'%PDF-2', 'Hausordnung', v)   # 2. Erstellung → kein Duplikat
-        self.assertEqual(Dokument.objects.filter(einheit=e, bezeichnung='Hausordnung').count(), 1)
+        # Seit Modul 5 eine neue Fassung: in der Akte (neueste) weiter eines.
+        self.assertEqual(Dokument.objects.neueste().filter(einheit=e, bezeichnung='Hausordnung').count(), 1)
 
     def test_bereinige_vertragsbeilagen_dubletten(self):
         from core.services.ablage import ablegen, bereinige_vertragsbeilagen_dubletten

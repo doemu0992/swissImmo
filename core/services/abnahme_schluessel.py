@@ -14,20 +14,27 @@ MAX_ZEILEN = 30
 def schluessel_anlegen(prot, vorgaenger=None):
     """Legt die Zeilen des Schlüsselverzeichnisses für ein neues Protokoll an.
 
-    Quelle in dieser Rangfolge: das Vorgänger-Protokoll (Soll übernommen, Ist
+    Quelle in dieser Rangfolge: beim Auszug die offenen Schlüsselausgaben
+    dieses Vertrags (Modul 2, 27.10.2026 — was der Mieter erhalten hat, nicht
+    das ganze Register); sonst das Vorgänger-Protokoll (Soll übernommen, Ist
     wird neu gezählt), sonst das Schlüsselregister der Einheit und der
-    Liegenschaft (Typ, Nummer, Anzahl)."""
-    from portfolio.models import Schluessel
+    Liegenschaft (Typ, Nummer, Anzahl; ohne archivierte und ohne
+    Hauptschlüssel)."""
+    from core.services.schluessel import register_fuer_abnahme, soll_aus_ausgaben
     from rentals.models import AbnahmeSchluessel
-    if vorgaenger is not None and vorgaenger.schluessel.exists():
+    aus_ausgaben = soll_aus_ausgaben(prot) if prot.typ == 'auszug' else []
+    if aus_ausgaben:
+        # Der Ersatzpreis gehört zum Schlüssel: aus dem Vorgänger übernehmen, wo er passt.
+        preise = {}
+        if vorgaenger is not None:
+            preise = {(z.bezeichnung, z.anlage): z.kosten_je_stueck for z in vorgaenger.schluessel.all()}
+        zeilen = [(b, a, soll, preise.get((b, a))) for b, a, soll in aus_ausgaben]
+    elif vorgaenger is not None and vorgaenger.schluessel.exists():
         # Der Ersatzpreis gehört zum Schlüssel, nicht zum Mieter: er wandert mit.
         zeilen = [(z.bezeichnung, z.anlage, z.soll, z.kosten_je_stueck) for z in vorgaenger.schluessel.all()]
     else:
-        einheit = prot.vertrag.einheit
         # Einheit zuerst, dann die Schlüssel der Liegenschaft ohne Einheitsbezug (Haustür, Briefkasten …)
-        register = list(Schluessel.objects.filter(einheit=einheit).order_by('id')) + list(
-            Schluessel.objects.filter(liegenschaft=einheit.liegenschaft, einheit__isnull=True).order_by('id'))
-        zeilen = [(r.typ, r.schluessel_nummer, r.anzahl, None) for r in register]
+        zeilen = [(r.typ, r.schluessel_nummer, r.anzahl, None) for r in register_fuer_abnahme(prot)]
     for nr, (bezeichnung, anlage, soll, je_stueck) in enumerate(zeilen):
         AbnahmeSchluessel.objects.create(protokoll=prot, bezeichnung=bezeichnung[:80], anlage=anlage[:80],
                                          soll=max(0, int(soll or 0)), kosten_je_stueck=je_stueck, sortierung=nr)

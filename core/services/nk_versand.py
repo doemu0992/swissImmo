@@ -26,9 +26,15 @@ def mieter_kontexte(p, result):
     total_kosten = result.get('total_kosten', Decimal('0.00'))
 
     eintraege = []
+    anhang = anhang_zeilen(p, result)
     for a in result.get('abrechnungen', []):
         vid = a.get('vertrag_id')
         if not vid or a.get('typ') == 'leerstand':
+            continue
+        # Fehler f: Pauschal (und «inbegriffen») wird nicht abgerechnet — das Akonto deckt
+        # die Kosten, der Saldo ist 0, die Differenz trägt der Eigentümer. Ein Abrechnungs-PDF
+        # mit Kosten und «Guthaben 0.00» im Portal lädt nur zu Rückfragen ein.
+        if a.get('typ') == 'mieter_pauschal':
             continue
         v = (Mietvertrag.objects.filter(id=vid)
              .select_related('mieter', 'mitmieter', 'einheit__liegenschaft').first())
@@ -50,9 +56,38 @@ def mieter_kontexte(p, result):
             'adresse': adresse, 'positionen': positionen, 'total_kosten': total_kosten,
             'kosten_anteil': a.get('kosten_anteil', 0), 'akonto': a.get('akonto', 0),
             'saldo': a.get('saldo', 0), 'nachzahlung': a.get('nachzahlung', False),
+            'aufschluesselung': a.get('aufschluesselung', []), 'ausgeschlossen': a.get('ausgeschlossen', []),
+            'anhang': anhang + _zeilen_hinweise(a),
         }
         eintraege.append({'vertrag': v, 'mieter': m, 'k': k})
     return eintraege
+
+
+def anhang_zeilen(p, result):
+    """Hinweise für den Anhang der Abrechnung, die für alle Mieter gelten.
+
+    E3: Gibt es Kosten nach Personen und Leerstand, steht die gewählte Regel im Anhang —
+    der Mieter soll nachvollziehen können, warum der Leerstand (nicht) mitträgt.
+    """
+    zeilen = []
+    if Decimal(str(result.get('personen_kosten') or 0)) > 0 and result.get('personen_leer_tage'):
+        if result.get('leerstand_personen') == 'durchschnitt':
+            zeilen.append('Kosten nach Personen: Leerstehende Einheiten tragen nach der durchschnittlichen '
+                          'Belegung der bewohnten Einheiten; ihr Anteil geht zulasten des Eigentümers.')
+        else:
+            zeilen.append('Kosten nach Personen: Leerstehende Einheiten tragen keinen Anteil; '
+                          'die Kosten verteilen sich auf die Bewohner.')
+    return zeilen
+
+
+def _zeilen_hinweise(a):
+    """Hinweise, die nur diese Zeile betreffen (Heizverbrauch). Die vertraglich ausgeschlossenen
+    Kostenarten benennt das PDF selbst (`ausgeschlossen`), dort fest auf Deutsch."""
+    if a.get('heiz_basis') == 'zaehler':
+        return ['Heizverbrauch: nach Zählerstand beim Mieterwechsel geteilt.']
+    if a.get('heiz_basis') == 'heizgradtage':
+        return ['Heizverbrauch: ohne Zwischenstand beim Mieterwechsel nach Heizgradtagen geteilt.']
+    return []
 
 
 def antwortadresse(organisation_id):

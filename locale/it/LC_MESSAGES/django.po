@@ -28332,3 +28332,1940 @@ msgid "%(n)s Entwurf + Formular (Sammel-PDF)"
 msgid_plural "%(n)s Entwürfe + Formulare (Sammel-PDF)"
 msgstr[0] "%(n)s bozza + modulo (PDF cumulativo)"
 msgstr[1] "%(n)s bozze + moduli (PDF cumulativo)"
+
+msgid "Ein Teil der Heizkosten (Grundkosten) wird nach Volumen (m³) verteilt, der Rest nach gemessenem Verbrauch. Ob sie vorgeschrieben ist, regelt das kantonale Energierecht."
+msgstr "Una parte delle spese di riscaldamento (costi di base) è ripartita secondo il volume (m³), il resto secondo il consumo misurato. Il diritto cantonale dell'energia stabilisce se il CIRCS è obbligatorio."
+
+msgid "Weicht das Akonto deutlich vom tatsächlichen Bedarf ab, schlägt die Anwendung einen neuen Betrag vor. Übernommen wird er über die Mietzinsanpassung mit Formular und Termin; der neue Betrag gilt erst ab diesem Termin."
+msgstr "Se l'acconto si scosta notevolmente dal fabbisogno effettivo, l'applicazione propone un nuovo importo. Viene ripreso tramite l'adeguamento della pigione con modulo e data di effetto; il nuovo importo vale solo a partire da tale data."
+
+msgid "Regel «Wenn … dann …»"
+msgstr "Regola «se … allora …»"
+
+msgid "Eine Vorlage mit Ereignis erzeugt bei diesem Ereignis ein zusätzliches Dokument in der Akte. Es gilt die eigene Vorlage vor der mitgelieferten und die Sprache des Empfängers vor Deutsch. Amtliche Formulare und Mahnungen bleiben, wie sie sind."
+msgstr "Un modello con evento genera, al verificarsi di tale evento, un documento supplementare nel fascicolo. Il modello proprio prevale su quello fornito e la lingua del destinatario sul tedesco. I moduli ufficiali e i solleciti restano invariati."
+
+msgid "Ein Platzhalter wie {mieter.name} wird beim Erzeugen durch den Wert aus Vertrag, Objekt oder Verwaltung ersetzt. Unbekannte Platzhalter lassen sich nicht speichern; die älteren Schreibweisen gelten weiter."
+msgstr "Un segnaposto come {mieter.name} viene sostituito, al momento della generazione, dal valore del contratto di locazione, dell'oggetto o dell'amministrazione. I segnaposto sconosciuti non possono essere salvati; le grafie precedenti restano valide."
+
+msgid "Ab diesem Tag gilt die Fassung. Gilt die Vorlage heute schon und liegt der Tag in der Zukunft, entsteht beim Speichern eine neue Fassung; bis dahin gilt die bisherige. Leer heisst: gilt sofort."
+msgstr "La versione vale a partire da questo giorno. Se il modello vale già oggi e il giorno è nel futuro, al salvataggio viene creata una nuova versione; fino ad allora vale quella precedente. Vuoto significa: vale subito."
+
+msgid "Schliessanlage"
+msgstr "Impianto di chiusura"
+
+msgid "Hersteller, Sicherungskarte und Bestellberechtigte der Anlage, dazu alle Schlüssel und die Türen, die sie öffnen. Jede Ausgabe und Rücknahme erzeugt eine Quittung mit Unterschrift in der Ablage."
+msgstr "Produttore, carta di sicurezza e persone autorizzate a ordinare dell'impianto, oltre a tutte le chiavi e le porte che aprono. Ogni consegna e restituzione genera una ricevuta firmata nell'archivio."
+
+msgid "Schlüsselart"
+msgstr "Tipo di chiave"
+
+msgid "Ein Hauptschlüssel öffnet alle Türen der Anlage, ein Gruppenschlüssel mehrere (etwa Haustür und Keller), ein Einzelschlüssel eine bestimmte Tür wie die Wohnungstür."
+msgstr "Una chiave maestra apre tutte le porte dell'impianto, una chiave di gruppo ne apre diverse (ad es. porta d'ingresso e cantina), una chiave singola una porta precisa come quella dell'appartamento."
+
+msgid "Mietvertrag mit Beilagen, Anfangsmietzins-Formular, wo Pflicht"
+msgstr "Contratto di locazione con allegati, modulo della pigione iniziale dove obbligatorio"
+
+msgid "E-Mail aus der Vorlage «Bewerber – Zusage»"
+msgstr "E-mail dal modello «Candidato – conferma»"
+
+msgid "Pendenzen der Auszugscheckliste; das amtliche Formular entsteht beim Abruf"
+msgstr "Pendenze della checklist di uscita; il modulo ufficiale viene generato all'apertura"
+
+msgid "amtliches Formular in der Akte (nur das Kantonsoriginal)"
+msgstr "modulo ufficiale nel fascicolo (solo l'originale cantonale)"
+
+msgid "Nebenkostenabrechnung je Mieter in der Akte"
+msgstr "Conteggio delle spese accessorie per inquilino nel fascicolo"
+
+msgid "Protokoll in der Akte beim ersten PDF-Abruf"
+msgstr "Verbale nel fascicolo alla prima apertura del PDF"
+
+#, python-format
+msgid "%(n)s Posten · CHF %(b)s"
+msgid_plural "%(n)s Posten · CHF %(b)s"
+msgstr[0] "%(n)s voce · CHF %(b)s"
+msgstr[1] "%(n)s voci · CHF %(b)s"
+
+msgid "je Kostenart"
+msgstr "per tipo di spesa"
+
+msgid "Zwischenstand fehlt"
+msgstr "Lettura intermedia mancante"
+
+msgid "pro Mieter"
+msgstr "per inquilino"
+
+msgid "Differenz prüfen"
+msgstr "Verificare la differenza"
+
+msgid "Versand nach Buchung"
+msgstr "Invio dopo la registrazione"
+
+msgid "Das Ende liegt vor dem Beginn."
+msgstr "La fine precede l'inizio."
+
+#, python-format
+msgid "Eine Abrechnungsperiode umfasst höchstens %(n)s Monate (spätestens bis %(d)s)."
+msgstr "Un periodo di conteggio comprende al massimo %(n)s mesi (al più tardi fino al %(d)s)."
+
+msgid "Der Wert darf nicht negativ sein."
+msgstr "Il valore non può essere negativo."
+
+msgid "Der Wert ist zu gross."
+msgstr "Il valore è troppo alto."
+
+msgid "Zwischen 1 und 99 Personen."
+msgstr "Tra 1 e 99 persone."
+
+msgid "Bitte eine Beschreibung angeben."
+msgstr "Indicare una descrizione."
+
+msgid "Bitte eine Kategorie wählen."
+msgstr "Scegliere una categoria."
+
+msgid "Bitte einen Verteilschlüssel wählen."
+msgstr "Scegliere una chiave di ripartizione."
+
+msgid "Bitte einen Betrag über 0 angeben."
+msgstr "Indicare un importo superiore a 0."
+
+msgid "Der Betrag ist zu gross."
+msgstr "L'importo è troppo alto."
+
+msgid "m²"
+msgstr "m²"
+
+msgid "m³"
+msgstr "m³"
+
+msgid "Eigene %"
+msgstr "% personalizzata"
+
+msgid "Anfang"
+msgstr "Inizio"
+
+#, python-format
+msgid "Wechsel %(d)s"
+msgstr "Cambio %(d)s"
+
+#, python-format
+msgid "Der Stand vom %(d)s (%(w)s) liegt unter dem Stand vom %(d0)s (%(w0)s)."
+msgstr "La lettura del %(d)s (%(w)s) è inferiore a quella del %(d0)s (%(w0)s)."
+
+#, python-format
+msgid "Das Ablesedatum %(d)s liegt in der Zukunft."
+msgstr "La data della lettura %(d)s è nel futuro."
+
+msgid "Zählernummer"
+msgstr "Numero del contatore"
+
+msgid "Art (Anfang/Zwischen/Ende)"
+msgstr "Tipo (inizio/intermedia/fine)"
+
+#, python-format
+msgid "Die Datei ist grösser als %(n)s KB."
+msgstr "Il file supera %(n)s KB."
+
+msgid "Die Datei ist keine lesbare Textdatei."
+msgstr "Il file non è un file di testo leggibile."
+
+msgid "Die Datei braucht eine Kopfzeile und mindestens eine Datenzeile."
+msgstr "Il file deve contenere una riga d'intestazione e almeno una riga di dati."
+
+#, python-format
+msgid "Höchstens %(n)s Zeilen je Import."
+msgstr "Al massimo %(n)s righe per importazione."
+
+#, python-format
+msgid "Spalte %(n)s"
+msgstr "Colonna %(n)s"
+
+msgid "Bitte eine Spalte wählen."
+msgstr "Scegliere una colonna."
+
+msgid "Diese Spalte gibt es in der Datei nicht."
+msgstr "Questa colonna non esiste nel file."
+
+msgid "Diese Spalte ist schon einem anderen Feld zugeordnet."
+msgstr "Questa colonna è già assegnata a un altro campo."
+
+#, python-format
+msgid "Zähler «%(n)s» gibt es in dieser Liegenschaft nicht."
+msgstr "Il contatore «%(n)s» non esiste in questo stabile."
+
+#, python-format
+msgid "Die Zählernummer «%(n)s» ist mehrfach vergeben."
+msgstr "Il numero del contatore «%(n)s» è assegnato più volte."
+
+#, python-format
+msgid "Datum «%(d)s» nicht lesbar (TT.MM.JJJJ oder JJJJ-MM-TT)."
+msgstr "Data «%(d)s» non leggibile (GG.MM.AAAA o AAAA-MM-GG)."
+
+#, python-format
+msgid "Stand «%(s)s» ist keine gültige Zahl."
+msgstr "La lettura «%(s)s» non è un numero valido."
+
+msgid "Der Stand ist zu gross."
+msgstr "La lettura è troppo alta."
+
+#, python-format
+msgid "Art «%(a)s» unbekannt (Anfang, Zwischen oder Ende)."
+msgstr "Tipo «%(a)s» sconosciuto (inizio, intermedia o fine)."
+
+#, python-format
+msgid "Für den %(d)s gibt es schon einen anderen Stand (%(w)s)."
+msgstr "Per il %(d)s esiste già un'altra lettura (%(w)s)."
+
+msgid "Briefanrede"
+msgstr "Formula di saluto"
+
+msgid "Anrede (Frau/Herr)"
+msgstr "Titolo (Signora/Signor)"
+
+msgid "Vor- und Nachname"
+msgstr "Nome e cognome"
+
+msgid "Zustelladresse"
+msgstr "Indirizzo di recapito"
+
+msgid "Bezeichnung des Objekts"
+msgstr "Designazione dell'oggetto"
+
+msgid "Adresse der Liegenschaft"
+msgstr "Indirizzo dello stabile"
+
+msgid "PLZ der Liegenschaft"
+msgstr "NPA dello stabile"
+
+msgid "Ort der Liegenschaft"
+msgstr "Località dello stabile"
+
+msgid "Zimmerzahl"
+msgstr "Numero di locali"
+
+msgid "Bruttomietzins (CHF)"
+msgstr "Pigione lorda (CHF)"
+
+msgid "Name der Verwaltung"
+msgstr "Nome dell'amministrazione"
+
+msgid "Adresse der Verwaltung"
+msgstr "Indirizzo dell'amministrazione"
+
+msgid "Telefon der Verwaltung"
+msgstr "Telefono dell'amministrazione"
+
+msgid "E-Mail der Verwaltung"
+msgstr "E-mail dell'amministrazione"
+
+msgid "Betreut von (Liegenschaft)"
+msgstr "Gestito da (stabile)"
+
+msgid "Vermieter (Eigentümer, sonst Verwaltung)"
+msgstr "Locatore (proprietario, altrimenti amministrazione)"
+
+msgid "Name der Bewerberin / des Bewerbers"
+msgstr "Nome della candidata / del candidato"
+
+msgid "E-Mail aus der Bewerbung"
+msgstr "E-mail dalla candidatura"
+
+msgid "Telefon aus der Bewerbung"
+msgstr "Telefono dalla candidatura"
+
+msgid "Gewünschter Bezugstermin"
+msgstr "Data d'entrata desiderata"
+
+msgid "Sehr geehrte Damen und Herren"
+msgstr "Gentili signore e signori"
+
+#, python-format
+msgid "Sehr geehrte Frau %(name)s"
+msgstr "Gentile Signora %(name)s"
+
+#, python-format
+msgid "Sehr geehrter Herr %(name)s"
+msgstr "Egregio Signor %(name)s"
+
+msgid "Bitte den Empfänger wählen."
+msgstr "Scegliere il destinatario."
+
+msgid "Bitte mindestens einen Schlüssel wählen."
+msgstr "Scegliere almeno una chiave."
+
+#, python-format
+msgid "Schlüssel %(nr)s gehört nicht zu dieser Liegenschaft."
+msgstr "La chiave %(nr)s non appartiene a questo stabile."
+
+#, python-format
+msgid "Von Schlüssel %(nr)s sind %(frei)s Stück im Büro."
+msgstr "Della chiave %(nr)s ci sono %(frei)s esemplari in ufficio."
+
+msgid "«Zurück bis» liegt in der Vergangenheit."
+msgstr "«Restituzione entro» è nel passato."
+
+msgid "Die Unterschrift des Empfängers fehlt oder ist nicht lesbar."
+msgstr "La firma del destinatario manca o non è leggibile."
+
+msgid "Bitte mindestens einen Schlüssel als zurück oder verloren markieren."
+msgstr "Contrassegnare almeno una chiave come restituita o persa."
+
+#, python-format
+msgid "Die Stückzahl bei Schlüssel %(nr)s stimmt nicht."
+msgstr "Il numero di esemplari della chiave %(nr)s non è corretto."
+
+msgid "Die Unterschrift fehlt oder ist nicht lesbar."
+msgstr "La firma manca o non è leggibile."
+
+#, python-format
+msgid "Auftrag · %(firma)s"
+msgstr "Incarico · %(firma)s"
+
+#, python-format
+msgid "Der Auftrag ist abgeschlossen. Dieser Link zeigt ihn nur noch an, bis %(d)s."
+msgstr "L'incarico è concluso. Questo link permette ormai solo di visualizzarlo, fino al %(d)s."
+
+msgid "Der Auftrag ist abgeschlossen. Dieser Link zeigt ihn nur noch an."
+msgstr "L'incarico è concluso. Questo link permette ormai solo di visualizzarlo."
+
+msgid "Telefon vor Ort"
+msgstr "Telefono sul posto"
+
+msgid "Auftrag"
+msgstr "Incarico"
+
+msgid "Foto zur Meldung"
+msgstr "Foto della segnalazione"
+
+#, python-format
+msgid "Vereinbart: %(d)s Uhr"
+msgstr "Concordato: %(d)s"
+
+msgid "Termin bestätigen"
+msgstr "Confermare l'appuntamento"
+
+msgid "Anderen Termin vorschlagen"
+msgstr "Proporre un altro appuntamento"
+
+msgid "Termin vorschlagen"
+msgstr "Proporre un appuntamento"
+
+msgid "Termin setzen"
+msgstr "Fissare l'appuntamento"
+
+msgid "Der Mieter erhält eine Mail mit Kalendereintrag."
+msgstr "L'inquilino riceve un'e-mail con una voce di calendario."
+
+msgid "Arbeit"
+msgstr "Lavori"
+
+msgid "Arbeit begonnen"
+msgstr "Lavori iniziati"
+
+msgid "Arbeit erledigt melden"
+msgstr "Segnalare lavori conclusi"
+
+msgid "Offerte hochladen"
+msgstr "Caricare l'offerta"
+
+#, python-format
+msgid "Bisher erfasst: CHF %(b)s"
+msgstr "Finora registrato: CHF %(b)s"
+
+msgid "freigegeben"
+msgstr "approvato"
+
+msgid "Betrag (CHF, inkl. MWST)"
+msgstr "Importo (CHF, IVA incl.)"
+
+msgid "Offerte (PDF oder Bild)"
+msgstr "Offerta (PDF o immagine)"
+
+msgid "Je nach Betrag braucht die Reparatur die Freigabe der Eigentümerschaft. Die Verwaltung meldet sich."
+msgstr "A seconda dell'importo, la riparazione richiede l'approvazione del proprietario. L'amministrazione La contatterà."
+
+msgid "Offerte senden"
+msgstr "Inviare l'offerta"
+
+msgid "Rechnung hochladen"
+msgstr "Caricare la fattura"
+
+msgid "Die Rechnung ist eingegangen. Die Verwaltung prüft sie."
+msgstr "La fattura è pervenuta. L'amministrazione la verifica."
+
+msgid "Rechnungsbetrag (CHF, inkl. MWST)"
+msgstr "Importo della fattura (CHF, IVA incl.)"
+
+msgid "Rechnung (PDF oder Bild)"
+msgstr "Fattura (PDF o immagine)"
+
+msgid "Die Rechnung geht als Entwurf zur Kontrolle an die Verwaltung."
+msgstr "La fattura viene trasmessa all'amministrazione come bozza per il controllo."
+
+msgid "Rechnung senden"
+msgstr "Inviare la fattura"
+
+msgid "Nachrichten mit der Verwaltung"
+msgstr "Messaggi con l'amministrazione"
+
+msgid "Noch keine Nachrichten."
+msgstr "Ancora nessun messaggio."
+
+#, python-format
+msgid "Auftraggeberin: %(firma)s"
+msgstr "Committente: %(firma)s"
+
+msgid "Auftrag — SwissImmo"
+msgstr "Incarico — SwissImmo"
+
+msgid "SwissImmo · Auftrag für Handwerker"
+msgstr "SwissImmo · Incarico per artigiano"
+
+msgid "Was möchten Sie tun?"
+msgstr "Che cosa desidera fare?"
+
+msgid "Ihre Wege im Portal"
+msgstr "Le Sue funzioni nel portale"
+
+msgid "Etwas melden"
+msgstr "Segnalare qualcosa"
+
+msgid "Schaden, Defekt oder Frage — mit Fotos"
+msgstr "Danno, difetto o domanda — con foto"
+
+msgid "Meldung erfassen"
+msgstr "Registrare una segnalazione"
+
+#, python-format
+msgid "Termin am %(wann)s Uhr"
+msgstr "Appuntamento il %(wann)s"
+
+msgid "Kein Termin vereinbart"
+msgstr "Nessun appuntamento concordato"
+
+msgid "Vertrag, Abrechnungen, Korrespondenz"
+msgstr "Contratto di locazione, conteggi, corrispondenza"
+
+#, python-format
+msgid "%(n)s offen · CHF %(betrag)s"
+msgstr "%(n)s aperte · CHF %(betrag)s"
+
+msgid "Meine Schlüssel"
+msgstr "Le mie chiavi"
+
+#, python-format
+msgid "%(n)s Schlüssel insgesamt"
+msgstr "%(n)s chiavi in totale"
+
+msgid "Keine Schlüssel erfasst."
+msgstr "Nessuna chiave registrata."
+
+msgid "Zutritt zur Wohnung"
+msgstr "Accesso all'appartamento"
+
+msgid "Diese Meldung wurde zu Ihrer Wohnung erfasst, zum Beispiel telefonisch bei der Verwaltung."
+msgstr "Questa segnalazione è stata registrata per il Suo appartamento, ad esempio telefonicamente presso l'amministrazione."
+
+msgid "Handwerker und Zutritt"
+msgstr "Artigiano e accesso"
+
+#, python-format
+msgid "%(firma)s kommt am %(wann)s Uhr."
+msgstr "%(firma)s viene il %(wann)s."
+
+msgid "Noch kein Handwerkertermin vereinbart."
+msgstr "Ancora nessun appuntamento con l'artigiano concordato."
+
+msgid "Zutritt:"
+msgstr "Accesso:"
+
+msgid "Status und Verlauf Ihrer Meldungen und der Meldungen zu Ihrer Wohnung."
+msgstr "Stato e cronologia delle Sue segnalazioni e di quelle relative al Suo appartamento."
+
+msgid "Zu Ihrer Wohnung erfasst"
+msgstr "Registrata per il Suo appartamento"
+
+#, python-format
+msgid "Sicherungskarte Nr. %(nr)s"
+msgstr "Carta di sicurezza n. %(nr)s"
+
+msgid "Bestellberechtigt:"
+msgstr "Autorizzati a ordinare:"
+
+msgid "Noch keine Schliessanlage erfasst — Hersteller und Sicherungskarte unten eintragen."
+msgstr "Nessun impianto di chiusura registrato — inserire produttore e carta di sicurezza qui sotto."
+
+#, python-format
+msgid "%(n)s Schlüssel"
+msgid_plural "%(n)s Schlüssel"
+msgstr[0] "%(n)s chiave"
+msgstr[1] "%(n)s chiavi"
+
+msgid "ausgegeben"
+msgstr "consegnata"
+
+msgid "im Büro"
+msgstr "in ufficio"
+
+msgid "verloren"
+msgstr "persa"
+
+msgid "Rückgabe fällig"
+msgstr "Restituzione dovuta"
+
+#, python-format
+msgid "%(n)s Stk."
+msgid_plural "%(n)s Stk."
+msgstr[0] "%(n)s pz."
+msgstr[1] "%(n)s pz."
+
+msgid "Keine Rückgabe fällig."
+msgstr "Nessuna restituzione dovuta."
+
+msgid "Alle fälligen Rückgaben"
+msgstr "Tutte le restituzioni dovute"
+
+msgid "Pendenzen öffnen"
+msgstr "Aprire le pendenze"
+
+msgid "Kein offener Verlust."
+msgstr "Nessuna perdita in sospeso."
+
+msgid "Wer kommt durch diese Tür?"
+msgstr "Chi può passare da questa porta?"
+
+msgid "alle zeigen"
+msgstr "mostrare tutto"
+
+#, python-format
+msgid "Durch «%(t)s» kommen"
+msgstr "Possono passare da «%(t)s»"
+
+msgid "Niemand ausserhalb des Büros hat einen Schlüssel für diese Tür."
+msgstr "Nessuno al di fuori dell'ufficio ha una chiave per questa porta."
+
+msgid "Kein Schlüssel öffnet diese Tür."
+msgstr "Nessuna chiave apre questa porta."
+
+msgid "Noch keine Schlüssel erfasst — auch Haustür-, Briefkasten- und Gruppenschlüssel gehören hierher."
+msgstr "Nessuna chiave registrata — anche le chiavi della porta d'ingresso, della bucalettere e di gruppo vanno inserite qui."
+
+#, python-format
+msgid "Archiv: %(n)s Schlüssel"
+msgid_plural "Archiv: %(n)s Schlüssel"
+msgstr[0] "Archivio: %(n)s chiave"
+msgstr[1] "Archivio: %(n)s chiavi"
+
+msgid "Türen und Zylinder"
+msgstr "Porte e cilindri"
+
+#, python-format
+msgid "Tür «%(t)s» entfernen?"
+msgstr "Rimuovere la porta «%(t)s»?"
+
+msgid "Tür entfernen"
+msgstr "Rimuovere la porta"
+
+msgid "Noch keine Türen erfasst."
+msgstr "Nessuna porta registrata."
+
+msgid "Tür / Zylinder"
+msgstr "Porta / cilindro"
+
+msgid "z. B. Haustür, Keller, Wohnungstür 1.OG links"
+msgstr "ad es. porta d'ingresso, cantina, porta appartamento 1° piano sinistra"
+
+msgid "Tür erfassen"
+msgstr "Registrare la porta"
+
+msgid "Schliessanlage entfernen? Schlüssel und Türen bleiben erhalten."
+msgstr "Rimuovere l'impianto di chiusura? Chiavi e porte vengono mantenute."
+
+msgid "Anlage entfernen"
+msgstr "Rimuovere l'impianto"
+
+msgid "Neue Schliessanlage"
+msgstr "Nuovo impianto di chiusura"
+
+msgid "Hersteller"
+msgstr "Produttore"
+
+msgid "z. B. Kaba, Keso, dormakaba"
+msgstr "ad es. Kaba, Keso, dormakaba"
+
+msgid "z. B. star, 4000S"
+msgstr "ad es. star, 4000S"
+
+msgid "Sicherungskarte Nr."
+msgstr "Carta di sicurezza n."
+
+msgid "Bestellberechtigte"
+msgstr "Persone autorizzate a ordinare"
+
+msgid "Wer darf Schlüssel nachbestellen?"
+msgstr "Chi può ordinare chiavi supplementari?"
+
+msgid "Anlage speichern"
+msgstr "Salvare l'impianto"
+
+#, python-format
+msgid "%(n)s Stück ausgegeben"
+msgid_plural "%(n)s Stück ausgegeben"
+msgstr[0] "%(n)s esemplare consegnato"
+msgstr[1] "%(n)s esemplari consegnati"
+
+msgid "Nr."
+msgstr "N."
+
+#, python-format
+msgid "zurück bis %(d)s"
+msgstr "restituzione entro il %(d)s"
+
+msgid "Keine Schlüssel ausgegeben."
+msgstr "Nessuna chiave consegnata."
+
+#, python-format
+msgid "Verlauf: %(n)s Eintrag"
+msgid_plural "Verlauf: %(n)s Einträge"
+msgstr[0] "Cronologia: %(n)s voce"
+msgstr[1] "Cronologia: %(n)s voci"
+
+msgid "Quittung"
+msgstr "Ricevuta"
+
+msgid "mit Einzugsabnahme"
+msgstr "con consegna dell'alloggio"
+
+msgid "mit Auszugsabnahme"
+msgstr "con riconsegna dell'alloggio"
+
+msgid "z. B. Wohnung, Haustür, Briefkasten"
+msgstr "ad es. appartamento, porta d'ingresso, bucalettere"
+
+msgid "allgemein (ohne Objekt)"
+msgstr "generale (senza oggetto)"
+
+msgid "Öffnet"
+msgstr "Apre"
+
+msgid "Änderung speichern"
+msgstr "Salvare la modifica"
+
+msgid "alle Türen"
+msgstr "tutte le porte"
+
+msgid "keine Tür zugeordnet"
+msgstr "nessuna porta assegnata"
+
+#, python-format
+msgid "%(n)s verloren"
+msgid_plural "%(n)s verloren"
+msgstr[0] "%(n)s persa"
+msgstr[1] "%(n)s perse"
+
+msgid "archiviert"
+msgstr "archiviata"
+
+msgid "Alle Exemplare liegen im Büro."
+msgstr "Tutti gli esemplari sono in ufficio."
+
+msgid "Wieder aktivieren"
+msgstr "Riattivare"
+
+msgid "Ausgeben"
+msgstr "Consegnare"
+
+msgid "Schlüssel archivieren? Der Verlauf bleibt erhalten."
+msgstr "Archiviare la chiave? La cronologia viene conservata."
+
+msgid "Archivieren"
+msgstr "Archiviare"
+
+msgid "Bitte im Feld unterschreiben."
+msgstr "Firmare nel campo."
+
+msgid "Unterschrift"
+msgstr "Firma"
+
+msgid "Unbekannte Platzhalter — so lässt sich die Vorlage nicht speichern:"
+msgstr "Segnaposto sconosciuti — così il modello non può essere salvato:"
+
+msgid "Beispielwerte — wähle oben einen Vertrag oder eine Bewerbung für echte Daten."
+msgstr "Valori di esempio — scegliere in alto un contratto o una candidatura per dati reali."
+
+msgid "Briefkopf-Farbe"
+msgstr "Colore dell'intestazione"
+
+msgid "Farbe wählen"
+msgstr "Scegliere il colore"
+
+msgid "Linie und Überschriften im Briefkopf. Leer = neutral."
+msgstr "Linea e titoli dell'intestazione. Vuoto = neutro."
+
+msgid "Briefkopf-Fusszeile"
+msgstr "Piè di pagina della carta intestata"
+
+msgid "Eine Zeile am Seitenfuss, z. B. Handelsregister oder Bankverbindung."
+msgstr "Una riga a piè di pagina, p. es. registro di commercio o coordinate bancarie."
+
+msgid "Handwerker-Link"
+msgstr "Link artigiano"
+
+msgid "Neuer Handwerker-Link"
+msgstr "Nuovo link artigiano"
+
+msgid "Link für den Handwerker"
+msgstr "Link per l'artigiano"
+
+msgid "Link kopieren"
+msgstr "Copiare il link"
+
+msgid "Zurück zum Schaden"
+msgstr "Torna al danno"
+
+msgid "Der Auftrag ist abgeschlossen: Der Link zeigt ihn nur noch an, während 30 Tagen."
+msgstr "L'incarico è concluso: il link lo mostra ancora solo in lettura, per 30 giorni."
+
+msgid "Der Link öffnet nur diesen Auftrag und gilt bis 30 Tage nach dessen Abschluss. Der bisherige Link ist ab sofort ungültig."
+msgstr "Il link apre solo questo incarico ed è valido fino a 30 giorni dopo la sua conclusione. Il link precedente non è più valido da subito."
+
+msgid "Er wird nur jetzt angezeigt — wer ihn verliert, erzeugt einen neuen."
+msgstr "Viene mostrato solo ora — chi lo perde ne genera uno nuovo."
+
+#, python-format
+msgid "Allen %(n)s noch offenen Bewerbern eine Absage senden — auch denen, die zur Besichtigung eingeladen sind?"
+msgstr "Inviare un rifiuto a tutti i %(n)s candidati ancora aperti — anche a quelli invitati alla visita?"
+
+msgid "Prüf-Checkliste"
+msgstr "Lista di controllo"
+
+msgid "Zeigt, was geprüft ist. Der Status hängt nicht davon ab."
+msgstr "Mostra ciò che è stato verificato. Lo stato non ne dipende."
+
+#, python-format
+msgid "abgehakt von %(wer)s, %(am)s"
+msgstr "spuntato da %(wer)s, %(am)s"
+
+#, python-format
+msgid "zurückgenommen von %(wer)s, %(am)s"
+msgstr "annullato da %(wer)s, %(am)s"
+
+msgid "Abhaken"
+msgstr "Spuntare"
+
+msgid "Aus dieser Bewerbung ist ein Vertrag entstanden; der Status ist damit abgeschlossen."
+msgstr "Da questa candidatura è nato un contratto; lo stato è quindi concluso."
+
+#, python-format
+msgid "Vertrag #%(nr)s (%(st)s) ist aus dieser Bewerbung entstanden."
+msgstr "Il contratto n. %(nr)s (%(st)s) è nato da questa candidatura."
+
+#, python-format
+msgid "%(n)s Bewerbung auf dem Board."
+msgid_plural "%(n)s Bewerbungen auf dem Board."
+msgstr[0] "%(n)s candidatura sulla bacheca."
+msgstr[1] "%(n)s candidature sulla bacheca."
+
+msgid "Karten ziehen oder an der Karte «Verschieben nach…» wählen."
+msgstr "Trascinare le schede o scegliere «Sposta in…» sulla scheda."
+
+msgid "Alle Bewerbungen, die neueste zuerst — auch ältere Absagen, bis sie nach DSG anonymisiert sind."
+msgstr "Tutte le candidature, la più recente per prima — anche i rifiuti più vecchi, finché non sono anonimizzati secondo la LPD."
+
+msgid "Alle Objekte"
+msgstr "Tutti gli oggetti"
+
+msgid "Vergleich"
+msgstr "Confronto"
+
+#, python-format
+msgid "%(n)s ältere Absage in der Liste"
+msgid_plural "%(n)s ältere Absagen in der Liste"
+msgstr[0] "%(n)s rifiuto precedente nell'elenco"
+msgstr[1] "%(n)s rifiuti precedenti nell'elenco"
+
+msgid "Punktezahl aus dem Bewerber-Vergleich (0–100), eine Entscheidungshilfe"
+msgstr "Punteggio dal confronto candidati (0–100), un aiuto decisionale"
+
+msgid "Betreibungsauszug fehlt"
+msgstr "Estratto esecuzioni mancante"
+
+msgid "Betreibungsauszug da"
+msgstr "Estratto esecuzioni presente"
+
+msgid "Bruttomiete im Verhältnis zum Jahreseinkommen"
+msgstr "Pigione lorda rispetto al reddito annuo"
+
+#, python-format
+msgid "Tragbarkeit %(p)s %%"
+msgstr "Sostenibilità %(p)s %%"
+
+#, python-format
+msgid "Besichtigung %(t)s"
+msgstr "Visita %(t)s"
+
+msgid "zugesagt · Vertrag noch nicht erzeugt"
+msgstr "accettato · contratto non ancora creato"
+
+#, python-format
+msgid "Absage %(d)s"
+msgstr "Rifiuto %(d)s"
+
+msgid "Löschfrist nach DSG (Art. 6 Abs. 4)"
+msgstr "Termine di cancellazione secondo la LPD (art. 6 cpv. 4)"
+
+#, python-format
+msgid "Unterlagen gelöscht am %(d)s"
+msgstr "Documenti eliminati il %(d)s"
+
+#, python-format
+msgid "Daten anonymisiert am %(d)s"
+msgstr "Dati anonimizzati il %(d)s"
+
+#, python-format
+msgid "Vertrag #%(nr)s · %(st)s"
+msgstr "Contratto n. %(nr)s · %(st)s"
+
+msgid "Prüf-Checkliste: Betreibung, Ausweis, Referenz, Tragbarkeit"
+msgstr "Lista di controllo: esecuzioni, documento d'identità, referenza, sostenibilità"
+
+#, python-format
+msgid "Prüfung %(n)s/4"
+msgstr "Verifica %(n)s/4"
+
+#, python-format
+msgid "eingegangen %(d)s"
+msgstr "ricevuta %(d)s"
+
+msgid "Verschieben nach…"
+msgstr "Sposta in…"
+
+msgid "Verschieben"
+msgstr "Spostare"
+
+msgid "Keine neuen Bewerbungen."
+msgstr "Nessuna nuova candidatura."
+
+msgid "Noch kein Vertrag aus einer Bewerbung."
+msgstr "Ancora nessun contratto da una candidatura."
+
+#, python-format
+msgid "Abgelehnte bleiben %(n)s Tage sichtbar."
+msgstr "Le candidature respinte restano visibili %(n)s giorni."
+
+msgid "Absage senden?"
+msgstr "Inviare il rifiuto?"
+
+msgid "erhält die Absage per E-Mail (Vorlage «Bewerber – Absage»). Die Bewerbung steht danach unter «Abgelehnt»."
+msgstr "riceve il rifiuto via e-mail (modello «Candidato – rifiuto»). La candidatura si trova poi sotto «Respinto»."
+
+msgid "Absage senden"
+msgstr "Inviare il rifiuto"
+
+msgid "Bewerbungen kommen über das Formular eines ausgeschriebenen Objekts herein."
+msgstr "Le candidature arrivano tramite il modulo di un oggetto pubblicato."
+
+#, python-format
+msgid "Gezeigt sind die neuesten %(n)s. Ältere über den Objektfilter."
+msgstr "Sono mostrate le %(n)s più recenti. Le più vecchie tramite il filtro oggetti."
+
+msgid "Verbindung unterbrochen — nichts geändert."
+msgstr "Connessione interrotta — nulla è stato modificato."
+
+msgid "Fassungen"
+msgstr "Versioni"
+
+#, python-format
+msgid "%(n)s Fassung"
+msgid_plural "%(n)s Fassungen"
+msgstr[0] "%(n)s versione"
+msgstr[1] "%(n)s versioni"
+
+#, python-format
+msgid "aus der Vorlage «%(name)s»"
+msgstr "dal modello «%(name)s»"
+
+#, python-format
+msgid "Version %(n)s"
+msgstr "Versione %(n)s"
+
+msgid "neueste"
+msgstr "più recente"
+
+msgid "aufgerufen"
+msgstr "aperta"
+
+msgid "Keine Fassungen."
+msgstr "Nessuna versione."
+
+msgid "Nebenkosten bisher"
+msgstr "Spese accessorie attuali"
+
+msgid "Nebenkosten neu (Akonto, CHF/Mt.)"
+msgstr "Nuove spese accessorie (acconto, CHF/mese)"
+
+#, python-format
+msgid "Vorschlag aus der Nebenkostenabrechnung «%(p)s»."
+msgstr "Proposta dal conteggio delle spese accessorie «%(p)s»."
+
+msgid "Leer: die Nebenkosten bleiben."
+msgstr "Vuoto: le spese accessorie restano invariate."
+
+msgid "Periode & Objekte: Liegenschaft, Zeitraum (höchstens 12 Monate), Fläche, Volumen und Personen."
+msgstr "Periodo & oggetti: stabile, periodo (al massimo 12 mesi), superficie, volume e persone."
+
+msgid "Kosten — Kreditoren mit «In Nebenkostenabrechnung einbeziehen» erscheinen automatisch."
+msgstr "Costi — i creditori con «Includi nel conteggio delle spese accessorie» appaiono automaticamente."
+
+msgid "Verteilung je Kostenart, samt vertraglich ausgeschlossenen Kosten."
+msgstr "Ripartizione per tipo di spesa, compresi i costi esclusi dal contratto."
+
+msgid "Heizung & Zähler: Grundkostenanteil und Zählerstände."
+msgstr "Riscaldamento & contatori: quota costi di base e letture dei contatori."
+
+msgid "Prüfen: je Mieter eine Karte mit Saldo und Positionen."
+msgstr "Verificare: una scheda per inquilino con saldo e voci."
+
+msgid "Verbuchen & Zustellen — die Zustellung startet die Einsprachefrist."
+msgstr "Registrare & notificare — la notifica avvia il termine di contestazione."
+
+msgid "Erste Periode anlegen"
+msgstr "Creare il primo periodo"
+
+msgid "Hinweise beim Verbuchen"
+msgstr "Avvisi durante la registrazione"
+
+msgid "Je Mieter"
+msgstr "Per inquilino"
+
+msgid "Kostenpositionen"
+msgstr "Voci di costo"
+
+msgid "Belege, Kreditoren, Heizöl und Honorar"
+msgstr "Giustificativi, creditori, olio combustibile e onorario"
+
+msgid "Keine Kostenpositionen."
+msgstr "Nessuna voce di costo."
+
+msgid "Leerstand (Eigentümer)"
+msgstr "Sfitto (proprietario)"
+
+msgid "Akonto gestellt"
+msgstr "Acconti fatturati"
+
+msgid "Pauschal — keine Abrechnung an den Mieter"
+msgstr "Forfait — nessun conteggio all'inquilino"
+
+#, python-format
+msgid "Direktzahler %(n)s"
+msgstr "Pagatore diretto %(n)s"
+
+#, python-format
+msgid "Vertrag %(n)s schliesst aus"
+msgstr "Escluso dal contratto %(n)s"
+
+#, python-format
+msgid "ohne %(was)s (Vertrag)"
+msgstr "senza %(was)s (contratto)"
+
+msgid "Heizung mit Zwischenstand"
+msgstr "Riscaldamento con lettura intermedia"
+
+msgid "Heizung nach Heizgradtagen"
+msgstr "Riscaldamento secondo gradi-giorno"
+
+#, python-format
+msgid "Akonto + CHF %(d)s/Mt.: Mietzinsanpassung"
+msgstr "Acconto + CHF %(d)s/mese: adeguamento della pigione"
+
+#, python-format
+msgid "Akonto − CHF %(d)s/Mt.: Mietzinsanpassung"
+msgstr "Acconto − CHF %(d)s/mese: adeguamento della pigione"
+
+msgid "Kosten total"
+msgstr "Totale costi"
+
+#, python-format
+msgid "verteilt %(pct)s %% · Differenz %(d)s"
+msgstr "ripartito %(pct)s %% · differenza %(d)s"
+
+#, python-format
+msgid "Eigentümer/Leerstand CHF %(b)s"
+msgstr "Proprietario/sfitto CHF %(b)s"
+
+msgid "Saldo Mieter"
+msgstr "Saldo inquilini"
+
+#, python-format
+msgid "%(n)s Nachzahlung"
+msgid_plural "%(n)s Nachzahlungen"
+msgstr[0] "%(n)s conguaglio"
+msgstr[1] "%(n)s conguagli"
+
+#, python-format
+msgid "%(n)s Guthaben"
+msgid_plural "%(n)s Guthaben"
+msgstr[0] "%(n)s credito"
+msgstr[1] "%(n)s crediti"
+
+msgid "Schritte der Abrechnung"
+msgstr "Fasi del conteggio"
+
+#, python-format
+msgid "Schritt %(nr)s von 6"
+msgstr "Fase %(nr)s di 6"
+
+msgid "Die Abrechnung lässt sich nicht rechnen"
+msgstr "Il conteggio non può essere calcolato"
+
+msgid "Was fehlt"
+msgstr "Cosa manca"
+
+#, python-format
+msgid "Weiter zu %(t)s"
+msgstr "Avanti a %(t)s"
+
+#, python-format
+msgid "%(t)s: erst nach den Kosten möglich"
+msgstr "%(t)s: possibile solo dopo i costi"
+
+msgid "Neue Periode"
+msgstr "Nuovo periodo"
+
+msgid "Schritt 1 von 6 — danach Kosten, Verteilung, Heizung & Zähler, Prüfen, Verbuchen & Zustellen."
+msgstr "Fase 1 di 6 — poi costi, ripartizione, riscaldamento & contatori, verifica, registrazione & notifica."
+
+msgid "Periode & Objekte"
+msgstr "Periodo & oggetti"
+
+msgid "Für welches Haus und welchen Zeitraum wird abgerechnet? Höchstens 12 Monate."
+msgstr "Per quale stabile e quale periodo si effettua il conteggio? Al massimo 12 mesi."
+
+msgid "Verbuchen stellt Nachzahlungen und Guthaben. Danach gehen die Abrechnungen an die Mieter."
+msgstr "La registrazione fattura i conguagli e accredita i crediti. Poi i conteggi vengono inviati agli inquilini."
+
+msgid "1 · Verbuchen"
+msgstr "1 · Registrare"
+
+msgid "Nachzahlungen werden als Debitoren gestellt, Guthaben gutgeschrieben. Die Zahlen werden eingefroren; danach ändert sich die Abrechnung nicht mehr."
+msgstr "I conguagli vengono fatturati come debitori, i crediti accreditati. Le cifre vengono congelate; in seguito il conteggio non cambia più."
+
+msgid "Verbuchen dürfen Inhaber und Verwalter."
+msgstr "Possono registrare i ruoli Inhaber e Verwalter."
+
+msgid "2 · Zustellen"
+msgstr "2 · Notificare"
+
+msgid "Versand nach dem Verbuchen: PDF ins Mieterportal, E-Mail, Zustellung mit Einsprachefrist."
+msgstr "Invio dopo la registrazione: PDF nel portale inquilini, e-mail, notifica con termine di contestazione."
+
+msgid "PDF erstellen & ablegen"
+msgstr "Creare & archiviare il PDF"
+
+#, python-format
+msgid "%(n)s Vertrag mit Pauschale erhält keine Abrechnung."
+msgid_plural "%(n)s Verträge mit Pauschale erhalten keine Abrechnung."
+msgstr[0] "%(n)s contratto con forfait non riceve alcun conteggio."
+msgstr[1] "%(n)s contratti con forfait non ricevono alcun conteggio."
+
+msgid "Wie werden die Heizkosten geteilt, und liegen die Zählerstände vor?"
+msgstr "Come vengono ripartite le spese di riscaldamento, e sono disponibili le letture dei contatori?"
+
+msgid "Verbrauchsabhängige Heizkosten (HKVO)"
+msgstr "Spese di riscaldamento secondo il consumo (CIRCS)"
+
+msgid "Nach Verbrauch abrechnen (Grundkosten nach Volumen, Rest nach Zählerstand)"
+msgstr "Conteggiare secondo il consumo (costi di base secondo il volume, resto secondo la lettura)"
+
+#, python-format
+msgid "Grundkostenanteil %%"
+msgstr "Quota costi di base %%"
+
+#, python-format
+msgid "Frei wählbar von 0 bis 100 %%. Kantonale Vorgabe prüfen: Die Anwendung setzt keine Bandbreite, solange sie nicht belegt ist."
+msgstr "Liberamente selezionabile da 0 a 100 %%. Verificare la prescrizione cantonale: l'applicazione non impone alcuna forbice finché non è documentata."
+
+msgid "Gilt für die Liegenschaft, also auch für spätere Perioden. Verbuchte Abrechnungen bleiben, wie sie sind."
+msgstr "Vale per lo stabile, quindi anche per i periodi successivi. I conteggi registrati restano invariati."
+
+msgid "CSV einlesen"
+msgstr "Importare CSV"
+
+msgid "Mit dem Zwischenstand beim Mieterwechsel wird der Verbrauch genau geteilt. Fehlt er, rechnet die Abrechnung wie bisher mit Heizgradtagen und kennzeichnet das."
+msgstr "Con la lettura intermedia al cambio d'inquilino il consumo viene ripartito esattamente. Se manca, il conteggio calcola come finora con i gradi-giorno e lo segnala."
+
+#, python-format
+msgid "Datum %(l)s"
+msgstr "Data %(l)s"
+
+#, python-format
+msgid "Stand %(l)s"
+msgstr "Lettura %(l)s"
+
+msgid "Stände speichern"
+msgstr "Salvare le letture"
+
+msgid "Keine Heizungs- oder Wärmezähler erfasst."
+msgstr "Nessun contatore di riscaldamento o di calore registrato."
+
+msgid "Zähler erfassen Sie in der Akte des Objekts."
+msgstr "I contatori si registrano nel fascicolo dell'oggetto."
+
+msgid "Zählerstände aus einer CSV-Datei: hochladen, Spalten zuordnen, Vorschau prüfen, übernehmen."
+msgstr "Letture dei contatori da un file CSV: caricare, assegnare le colonne, verificare l'anteprima, riprendere."
+
+msgid "Zurück zu den Zählerständen"
+msgstr "Torna alle letture dei contatori"
+
+msgid "Die Datei lässt sich nicht lesen"
+msgstr "Il file non può essere letto"
+
+msgid "1 · Datei hochladen"
+msgstr "1 · Caricare il file"
+
+msgid "CSV mit Kopfzeile, Trennzeichen ; , oder Tab"
+msgstr "CSV con riga d'intestazione, separatore ; , o tabulazione"
+
+msgid "Gebraucht werden Zählernummer, Ablesedatum und Stand, optional die Art (Anfang, Zwischen, Ende). Die Datei wird nicht gespeichert."
+msgstr "Servono numero del contatore, data della lettura e lettura, facoltativamente il tipo (inizio, intermedia, fine). Il file non viene salvato."
+
+msgid "2 · Spalten zuordnen"
+msgstr "2 · Assegnare le colonne"
+
+msgid "Vorschlag aus dem letzten Import"
+msgstr "Proposta dall'ultima importazione"
+
+#, python-format
+msgid "%(n)s Spalte gefunden"
+msgid_plural "%(n)s Spalten gefunden"
+msgstr[0] "%(n)s colonna trovata"
+msgstr[1] "%(n)s colonne trovate"
+
+msgid "3 · Vorschau"
+msgstr "3 · Anteprima"
+
+#, python-format
+msgid "%(n)s neu"
+msgid_plural "%(n)s neu"
+msgstr[0] "%(n)s nuova"
+msgstr[1] "%(n)s nuove"
+
+#, python-format
+msgid "%(n)s schon erfasst"
+msgid_plural "%(n)s schon erfasst"
+msgstr[0] "%(n)s già registrata"
+msgstr[1] "%(n)s già registrate"
+
+#, python-format
+msgid "%(n)s mit Fehler"
+msgid_plural "%(n)s mit Fehler"
+msgstr[0] "%(n)s con errore"
+msgstr[1] "%(n)s con errore"
+
+#, python-format
+msgid "Zeile %(nr)s"
+msgstr "Riga %(nr)s"
+
+msgid "schon erfasst"
+msgstr "già registrata"
+
+msgid "neu"
+msgstr "nuova"
+
+msgid "Übernommen werden nur die neuen Zeilen ohne Fehler. Die Zuordnung bleibt für den nächsten Import gespeichert."
+msgstr "Vengono riprese solo le nuove righe senza errori. L'assegnazione resta salvata per la prossima importazione."
+
+#, python-format
+msgid "%(n)s Stand übernehmen"
+msgid_plural "%(n)s Stände übernehmen"
+msgstr[0] "Riprendere %(n)s lettura"
+msgstr[1] "Riprendere %(n)s letture"
+
+msgid "Welche Kosten gehören in diese Abrechnung?"
+msgstr "Quali costi rientrano in questo conteggio?"
+
+#, python-format
+msgid "%(n)s Posten inkl. Honorar und Heizöl"
+msgid_plural "%(n)s Posten inkl. Honorar und Heizöl"
+msgstr[0] "%(n)s voce incl. onorario e olio combustibile"
+msgstr[1] "%(n)s voci incl. onorario e olio combustibile"
+
+msgid "Freigegeben oder bezahlt, «In Nebenkostenabrechnung einbeziehen». Mit Leistungsperiode anteilig nach Tagen."
+msgstr "Approvate o pagate, «Includi nel conteggio delle spese accessorie». Con periodo di prestazione, pro rata per giorni."
+
+msgid "Manuelle Belege"
+msgstr "Giustificativi manuali"
+
+msgid "Kosten ohne Kreditorenrechnung, z. B. ein Beleg der Hauswartung."
+msgstr "Costi senza fattura creditore, p. es. un giustificativo della portineria."
+
+msgid "HNK-Kreditoren"
+msgstr "Creditori SA"
+
+msgid "Zu den Kreditoren"
+msgstr "Ai creditori"
+
+msgid "Kreditor"
+msgstr "Creditore"
+
+#, python-format
+msgid "Heizöl %(l)s L → Bestand"
+msgstr "Olio combustibile %(l)s L → scorta"
+
+#, python-format
+msgid "anteilig %(a)s/%(b)s Tage"
+msgstr "pro rata %(a)s/%(b)s giorni"
+
+#, python-format
+msgid "Leistung %(v)s – %(b)s"
+msgstr "Prestazione %(v)s – %(b)s"
+
+msgid "Keine HNK-Kreditoren in dieser Periode."
+msgstr "Nessun creditore SA in questo periodo."
+
+msgid "Bei der Kreditorenrechnung «In Nebenkostenabrechnung einbeziehen» setzen."
+msgstr "Attivare «Includi nel conteggio delle spese accessorie» sulla fattura creditore."
+
+msgid "Noch nicht einbezogen:"
+msgstr "Non ancora inclusi:"
+
+msgid "Diesen Beleg löschen?"
+msgstr "Eliminare questo giustificativo?"
+
+msgid "Beleg löschen"
+msgstr "Eliminare il giustificativo"
+
+msgid "Noch keine manuellen Belege."
+msgstr "Ancora nessun giustificativo manuale."
+
+msgid "Gilt für die Kostenart ein Schlüssel der Liegenschaft (Schritt 3), verteilt die Abrechnung nach diesem."
+msgstr "Se per il tipo di spesa vale una chiave dello stabile (fase 3), il conteggio ripartisce secondo questa."
+
+msgid "Beleg erfassen"
+msgstr "Registrare un giustificativo"
+
+msgid "Heizöl-Bestand"
+msgstr "Scorta di olio combustibile"
+
+msgid "nur bei Öl oder Gas mit Tank"
+msgstr "solo per olio o gas con serbatoio"
+
+msgid "Anfangsbestand Liter"
+msgstr "Scorta iniziale litri"
+
+msgid "Anfangsbestand CHF"
+msgstr "Scorta iniziale CHF"
+
+msgid "Endbestand Liter"
+msgstr "Scorta finale litri"
+
+msgid "Verbrauch = Anfangsbestand + Zukäufe (Kreditoren mit Literangabe) − Endbestand, zum gewogenen Durchschnittspreis."
+msgstr "Consumo = scorta iniziale + acquisti (creditori con indicazione dei litri) − scorta finale, al prezzo medio ponderato."
+
+msgid "Bestand speichern"
+msgstr "Salvare la scorta"
+
+msgid "Für welchen Zeitraum wird abgerechnet, und stimmen die Masse der Objekte?"
+msgstr "Per quale periodo si effettua il conteggio, e le misure degli oggetti sono corrette?"
+
+msgid "höchstens 12 Monate"
+msgstr "al massimo 12 mesi"
+
+msgid "Ändert die Periode; die Abrechnung rechnet neu."
+msgstr "Modifica il periodo; il conteggio viene ricalcolato."
+
+msgid "Periode speichern"
+msgstr "Salvare il periodo"
+
+msgid "Fläche, Volumen und Personen sind die Grundlage der Verteilung. Fehlt ein Wert, ergänzen Sie ihn direkt in der Kachel."
+msgstr "Superficie, volume e persone sono la base della ripartizione. Se manca un valore, completarlo direttamente nel riquadro."
+
+#, python-format
+msgid "%(was)s fehlt"
+msgstr "Manca: %(was)s"
+
+msgid "vollständig"
+msgstr "completo"
+
+msgid "Volumen m³"
+msgstr "Volume m³"
+
+msgid "In dieser Periode ohne Mietvertrag — die Kosten trägt der Eigentümer (Leerstand)."
+msgstr "Senza contratto di locazione in questo periodo — i costi sono a carico del proprietario (sfitto)."
+
+msgid "Diese Liegenschaft hat noch keine Objekte."
+msgstr "Questo stabile non ha ancora oggetti."
+
+msgid "Geht die Abrechnung auf, und stimmt jeder Anteil?"
+msgstr "Il conteggio quadra, e ogni quota è corretta?"
+
+#, python-format
+msgid "Bei %(n)s Vertrag weicht das monatliche Akonto deutlich vom Bedarf ab. Der Vorschlag öffnet die Mietzinsanpassung mit Formular und Termin — das Akonto wird nicht direkt überschrieben."
+msgid_plural "Bei %(n)s Verträgen weicht das monatliche Akonto deutlich vom Bedarf ab. Der Vorschlag öffnet die Mietzinsanpassung mit Formular und Termin — das Akonto wird nicht direkt überschrieben."
+msgstr[0] "Per %(n)s contratto l'acconto mensile si scosta nettamente dal fabbisogno. La proposta apre l'adeguamento della pigione con modulo e scadenza — l'acconto non viene sovrascritto direttamente."
+msgstr[1] "Per %(n)s contratti l'acconto mensile si scosta nettamente dal fabbisogno. La proposta apre l'adeguamento della pigione con modulo e scadenza — l'acconto non viene sovrascritto direttamente."
+
+msgid "Wie wird jede Kostenart verteilt?"
+msgstr "Come viene ripartito ogni tipo di spesa?"
+
+msgid "Schlüssel je Kostenart sind eingeschaltet"
+msgstr "Le chiavi per tipo di spesa sono attivate"
+
+msgid "Für eine Kostenart mit Schlüssel gilt dieser — für Belege wie für Kreditoren. Ohne Schlüssel gilt, was am Beleg oder Konto steht."
+msgstr "Per un tipo di spesa con chiave vale quest'ultima — per i giustificativi come per i creditori. Senza chiave vale quanto indicato sul giustificativo o sul conto."
+
+msgid "Verteilt wird wie erfasst"
+msgstr "Ripartizione come registrata"
+
+msgid "Jeder Beleg und jedes Konto bringt seinen Schlüssel mit. Wählen Sie unten eine Verteilung, gilt sie für die ganze Kostenart."
+msgstr "Ogni giustificativo e ogni conto porta con sé la propria chiave. Se si sceglie una ripartizione qui sotto, vale per l'intero tipo di spesa."
+
+msgid "Ausschalten"
+msgstr "Disattivare"
+
+msgid "Einschalten"
+msgstr "Attivare"
+
+#, python-format
+msgid "Nach HKVO: %(g)s %% Grundkosten nach Volumen, der Rest nach Verbrauch — festgelegt in Schritt 4."
+msgstr "Secondo il CIRCS: %(g)s %% di costi di base secondo il volume, il resto secondo il consumo — stabilito nella fase 4."
+
+msgid "Nach Volumen (m³), zeitlich nach Heizgradtagen — HKVO lässt sich in Schritt 4 einschalten."
+msgstr "Secondo il volume (m³), nel tempo secondo i gradi-giorno — il CIRCS può essere attivato nella fase 4."
+
+msgid "Zu Schritt 4"
+msgstr "Alla fase 4"
+
+#, python-format
+msgid "Verteilung %(ka)s"
+msgstr "Ripartizione %(ka)s"
+
+msgid "Nach Zimmerzahl (Schlüssel der Liegenschaft)."
+msgstr "Secondo il numero di locali (chiave dello stabile)."
+
+msgid "Nach Wertquote (Schlüssel der Liegenschaft)."
+msgstr "Secondo la quota di valore (chiave dello stabile)."
+
+msgid "Gilt für diese Kostenart in dieser Periode, zeitanteilig nach Tagen."
+msgstr "Vale per questo tipo di spesa in questo periodo, pro rata secondo i giorni."
+
+msgid "Wie erfasst: nach Volumen mit Heizgradtagen (Schlüssel am Beleg oder Konto «m³»)."
+msgstr "Come registrato: secondo il volume con gradi-giorno di riscaldamento (chiave sul giustificativo o sul conto «m³»)."
+
+msgid "Wie erfasst: Schlüssel am Beleg oder Konto."
+msgstr "Come registrato: chiave sul giustificativo o sul conto."
+
+#, python-format
+msgid "Vertrag %(name)s (%(e)s) schliesst aus · wird beachtet"
+msgstr "Contratto %(name)s (%(e)s) esclude · considerato"
+
+msgid "Vertraglich ausgeschlossen?"
+msgstr "Escluso dal contratto?"
+
+msgid "schliesst aus"
+msgstr "esclude"
+
+msgid "trägt mit"
+msgstr "partecipa"
+
+msgid "Was der Vertrag ausschliesst, trägt dieser Mieter nicht; sein Anteil geht auf den Eigentümer (Art. 257a Abs. 2 OR)."
+msgstr "Ciò che il contratto esclude non è a carico di questo inquilino; la sua quota va al proprietario (art. 257a cpv. 2 CO)."
+
+msgid "Leerstand bei Kosten nach Personen — siehe unten"
+msgstr "Sfitto per le spese secondo le persone — vedi sotto"
+
+msgid "Noch keine Kosten — zuerst Schritt 2."
+msgstr "Ancora nessuna spesa — prima il passo 2."
+
+msgid "Leerstand bei Kosten nach Personen"
+msgstr "Sfitto per le spese secondo le persone"
+
+#, python-format
+msgid "%(n)s Leerstandstag in dieser Periode. Ein leeres Objekt hat keine Personen — wie es tragen soll, legt das Gesetz nicht fest. Ihre Wahl steht im Anhang der Abrechnung."
+msgid_plural "%(n)s Leerstandstage in dieser Periode. Ein leeres Objekt hat keine Personen — wie es tragen soll, legt das Gesetz nicht fest. Ihre Wahl steht im Anhang der Abrechnung."
+msgstr[0] "%(n)s giorno di sfitto in questo periodo. Un oggetto vuoto non ha persone — la legge non stabilisce come debba partecipare alle spese. La Sua scelta figura nell'allegato del conteggio."
+msgstr[1] "%(n)s giorni di sfitto in questo periodo. Un oggetto vuoto non ha persone — la legge non stabilisce come debba partecipare alle spese. La Sua scelta figura nell'allegato del conteggio."
+
+msgid "Schliessanlage der Liegenschaft"
+msgstr "Impianto di chiusura dello stabile"
+
+msgid "Noch keine Schlüssel für dieses Objekt — z. B. Wohnungs- und Kellerschlüssel erfassen."
+msgstr "Ancora nessuna chiave per questo oggetto — registrare p. es. le chiavi dell'appartamento e della cantina."
+
+msgid "Öffnet nur diesen Auftrag. Ging mit der Auftrags-Mail an den Handwerker."
+msgstr "Apre solo questo incarico. Inviato all'artigiano con l'e-mail dell'incarico."
+
+msgid "nur lesend"
+msgstr "sola lettura"
+
+#, python-format
+msgid "Auftrag abgeschlossen — lesbar bis %(d)s."
+msgstr "Incarico concluso — consultabile fino al %(d)s."
+
+msgid "widerrufen"
+msgstr "revocato"
+
+#, python-format
+msgid "am %(d)s Uhr"
+msgstr "il %(d)s"
+
+msgid "Noch kein Link. Er entsteht mit der Auftrags-Mail — oder hier."
+msgstr "Ancora nessun link. Viene creato con l'e-mail dell'incarico — oppure qui."
+
+msgid "Neuen Link erzeugen? Der bisherige öffnet danach nichts mehr."
+msgstr "Generare un nuovo link? Quello precedente non aprirà più nulla."
+
+msgid "Link erzeugen"
+msgstr "Genera link"
+
+msgid "Neuen Link erzeugen"
+msgstr "Genera nuovo link"
+
+msgid "Link widerrufen? Der Handwerker kann den Auftrag dann nicht mehr öffnen."
+msgstr "Revocare il link? L'artigiano non potrà più aprire l'incarico."
+
+msgid "Link widerrufen"
+msgstr "Revoca link"
+
+msgid "An"
+msgstr "A"
+
+msgid "Empfänger wählen …"
+msgstr "Scegliere il destinatario …"
+
+msgid "Mietverträge"
+msgstr "Contratti di locazione"
+
+#, python-format
+msgid "%(n)s im Büro"
+msgstr "%(n)s in ufficio"
+
+msgid "Stück"
+msgstr "Esemplari"
+
+msgid "An dieser Liegenschaft sind noch keine Schlüssel erfasst."
+msgstr "Per questo stabile non sono ancora registrate chiavi."
+
+msgid "Zurück bis"
+msgstr "Restituzione entro"
+
+msgid "Leer lassen, wenn der Schlüssel bleibt (Mieter). Wird er nicht zurückgegeben, steht er unter «Heute» und in den Fristen."
+msgstr "Lasciare vuoto se la chiave resta (inquilino). Se non viene restituita, compare in «Oggi» e nelle scadenze."
+
+msgid "z. B. Auftrag, Ticket"
+msgstr "p. es. incarico, ticket"
+
+msgid "Unterschrift Empfänger"
+msgstr "Firma del destinatario"
+
+msgid "Die Quittung entsteht als PDF und liegt danach in der Ablage."
+msgstr "La ricevuta viene creata in PDF e poi archiviata."
+
+msgid "Ausgabe bestätigen"
+msgstr "Conferma consegna"
+
+msgid "Schlüssel: Rückgabe fällig"
+msgstr "Chiavi: restituzione dovuta"
+
+#, python-format
+msgid "%(n)s Ausgabe mit erreichter Rückgabefrist"
+msgid_plural "%(n)s Ausgaben mit erreichter Rückgabefrist"
+msgstr[0] "%(n)s consegna con termine di restituzione raggiunto"
+msgstr[1] "%(n)s consegne con termine di restituzione raggiunto"
+
+msgid "Schlüssel zurücknehmen"
+msgstr "Ritirare chiavi"
+
+msgid "Wer gibt zurück?"
+msgstr "Chi restituisce?"
+
+msgid "Rückgabe überfällig"
+msgstr "Restituzione scaduta"
+
+msgid "An dieser Liegenschaft ist kein Schlüssel ausgegeben."
+msgstr "Per questo stabile non è consegnata alcuna chiave."
+
+#, python-format
+msgid "Schlüssel bei %(n)s"
+msgstr "Chiavi presso %(n)s"
+
+msgid "bleibt"
+msgstr "resta"
+
+msgid "zurück"
+msgstr "restituita"
+
+msgid "Davon fehlen (Stück), wenn «zurück»"
+msgstr "Di cui mancanti (esemplari), se «restituita»"
+
+#, python-format
+msgid "%(n)s hat an dieser Liegenschaft keinen Schlüssel."
+msgstr "%(n)s non ha chiavi di questo stabile."
+
+msgid "Ein Verlust legt die Pendenz «Zylinder ersetzen» an. Die Kosten werden nicht automatisch verrechnet — die Debitorenrechnung erfasst bei Bedarf eine Person."
+msgstr "Una perdita crea la pendenza «Sostituire il cilindro». I costi non vengono addebitati automaticamente — se necessario, una persona registra la fattura debitore."
+
+msgid "Unterschrift bei der Rücknahme"
+msgstr "Firma alla restituzione"
+
+msgid "Rücknahme bestätigen"
+msgstr "Conferma restituzione"
+
+#, python-format
+msgid "gültig ab %(d)s"
+msgstr "valido dal %(d)s"
+
+msgid "mitgeliefert"
+msgstr "fornito"
+
+msgid "Mitgelieferte Vorlage: Beim Speichern entsteht eine eigene Fassung für deine Verwaltung. Das Original bleibt für alle anderen, wie es ist."
+msgstr "Modello fornito: salvando si crea una versione propria per la Sua amministrazione. L'originale resta invariato per tutti gli altri."
+
+msgid "Ereignis"
+msgstr "Evento"
+
+msgid "keins — nur von Hand verwenden"
+msgstr "nessuno — usare solo manualmente"
+
+msgid "Format"
+msgstr "Formato"
+
+msgid "Andere Sprachfassungen:"
+msgstr "Altre versioni linguistiche:"
+
+msgid "anlegen"
+msgstr "crea"
+
+msgid "Platzhalter einfügen"
+msgstr "Inserisci segnaposto"
+
+msgid "Ältere Schreibweisen (bleiben gültig)"
+msgstr "Grafie precedenti (restano valide)"
+
+msgid "Probe-PDF"
+msgstr "PDF di prova"
+
+msgid "mit"
+msgstr "con"
+
+msgid "Beispielwerten"
+msgstr "valori di esempio"
+
+msgid "Die Vorschau erscheint, sobald der Text geladen ist."
+msgstr "L'anteprima appare non appena il testo è caricato."
+
+msgid "Die Vorschau liess sich nicht laden."
+msgstr "Impossibile caricare l'anteprima."
+
+msgid "Regeln: Wenn … dann …"
+msgstr "Regole: se … allora …"
+
+msgid "Regeln"
+msgstr "Regole"
+
+#, python-format
+msgid "Wenn: %(e)s"
+msgstr "Se: %(e)s"
+
+msgid "dann:"
+msgstr "allora:"
+
+msgid "kein zusätzliches Dokument"
+msgstr "nessun documento supplementare"
+
+msgid "eigen"
+msgstr "proprio"
+
+msgid "Fest dabei:"
+msgstr "Sempre incluso:"
+
+msgid "Vorlage anlegen"
+msgstr "Crea modello"
+
+msgid "Debitorenrechnung erfassen"
+msgstr "Registra fattura debitore"
+
+msgid "Schliessanlage öffnen"
+msgstr "Apri impianto di chiusura"
+
+msgid "Die Schlüssel konnten nicht gebucht werden. Bitte über die Schliessanlage der Liegenschaft nachtragen."
+msgstr "Non è stato possibile registrare le chiavi. Aggiungerle tramite l'impianto di chiusura dello stabile."
+
+#, python-format
+msgid "Nicht im Schlüsselregister, deshalb nicht gebucht: %(liste)s"
+msgstr "Non presente nel registro delle chiavi, quindi non registrato: %(liste)s"
+
+msgid "Bitte eine Bezeichnung angeben."
+msgstr "Indicare una designazione."
+
+msgid "Liegenschaft, Bezeichnung, Start- und Enddatum sind erforderlich; eine Periode umfasst höchstens 12 Monate."
+msgstr "Stabile, designazione, data di inizio e di fine sono obbligatori; un periodo copre al massimo 12 mesi."
+
+msgid "Schlüssel archiviert. Der Verlauf bleibt erhalten."
+msgstr "Chiave archiviata. La cronologia viene mantenuta."
+
+msgid "Aus dieser Bewerbung ist bereits ein Vertrag entstanden. Den Stand ändern Sie im Vertrag."
+msgstr "Da questa candidatura è già nato un contratto. Lo stato si modifica nel contratto."
+
+#, python-format
+msgid "Von «%(von)s» nach «%(nach)s» ist kein Wechsel vorgesehen."
+msgstr "Il passaggio da «%(von)s» a «%(nach)s» non è previsto."
+
+msgid "Unbekannte Spalte."
+msgstr "Colonna sconosciuta."
+
+#, python-format
+msgid "Vertragsentwurf für %(bezeichnung)s erstellt — bitte Konditionen prüfen und aktivieren."
+msgstr "Bozza di contratto creata per %(bezeichnung)s — verificare le condizioni e attivarla."
+
+#, python-format
+msgid "%(name)s: %(status)s."
+msgstr "%(name)s: %(status)s."
+
+msgid "Unbekannter Prüfpunkt."
+msgstr "Punto di verifica sconosciuto."
+
+#, python-format
+msgid "«%(punkt)s» abgehakt."
+msgstr "«%(punkt)s» spuntato."
+
+#, python-format
+msgid "«%(punkt)s» zurückgenommen."
+msgstr "«%(punkt)s» annullato."
+
+msgid "Das Nebenkosten-Akonto kann nicht negativ sein."
+msgstr "L'acconto per le spese accessorie non può essere negativo."
+
+msgid "Das Akonto wird über die Mietzinsanpassung angepasst (Formular und Termin)."
+msgstr "L'acconto viene adeguato tramite l'adeguamento della pigione (modulo e termine)."
+
+msgid "Die Periode ist verbucht — ändern lässt sich nichts mehr."
+msgstr "Il periodo è contabilizzato — non si può più modificare nulla."
+
+#, python-format
+msgid "Die Periode ist länger als %(n)s Monate."
+msgstr "Il periodo supera i %(n)s mesi."
+
+#, python-format
+msgid "%(e)s: %(was)s fehlt"
+msgstr "%(e)s: manca %(was)s"
+
+msgid "Noch keine Kosten. Kreditoren mit «In Nebenkostenabrechnung einbeziehen» erscheinen automatisch; weitere Kosten erfassen Sie als Beleg."
+msgstr "Ancora nessuna spesa. I creditori con «Includere nel conteggio delle spese accessorie» appaiono automaticamente; le altre spese si registrano come giustificativo."
+
+#, python-format
+msgid "Verteilt ist nicht genau das Total: Differenz CHF %(d)s."
+msgstr "L'importo ripartito non corrisponde esattamente al totale: differenza CHF %(d)s."
+
+msgid "Periode gespeichert."
+msgstr "Periodo salvato."
+
+#, python-format
+msgid "%(e)s gespeichert."
+msgstr "%(e)s salvato."
+
+msgid "Beleg erfasst."
+msgstr "Giustificativo registrato."
+
+msgid "Beleg gelöscht."
+msgstr "Giustificativo eliminato."
+
+msgid "Heizöl-Bestand gespeichert."
+msgstr "Scorta di olio combustibile salvata."
+
+#, python-format
+msgid "%(n)s HNK-Rechnung(en) im Status «neu», «in Zahlung» oder «teilbezahlt» — die Abrechnung liest nur freigegebene und bezahlte Rechnungen."
+msgstr "%(n)s fattura/e SA con stato «nuovo», «in pagamento» o «pagato in parte» — il conteggio considera solo le fatture approvate e pagate."
+
+msgid "Kostenart oder Verteilung unbekannt."
+msgstr "Tipo di spesa o ripartizione sconosciuti."
+
+msgid "Die Schlüssel je Kostenart sind für diese Liegenschaft jetzt eingeschaltet."
+msgstr "Le chiavi per tipo di spesa sono ora attivate per questo stabile."
+
+#, python-format
+msgid "Verteilung für %(ka)s gespeichert."
+msgstr "Ripartizione per %(ka)s salvata."
+
+msgid "Für diese Kostenart ist «Eigene %» nicht gewählt."
+msgstr "Per questo tipo di spesa non è selezionato «% personalizzata»."
+
+msgid "Gespeichert."
+msgstr "Salvato."
+
+msgid "Kostenart unbekannt."
+msgstr "Tipo di spesa sconosciuto."
+
+#, python-format
+msgid "Vertrag %(v)s gespeichert."
+msgstr "Contratto %(v)s salvato."
+
+msgid "Unbekannte Auswahl."
+msgstr "Selezione sconosciuta."
+
+msgid "Der Grundkostenanteil liegt zwischen 0 und 100 %."
+msgstr "La quota costi di base è compresa tra 0 e 100 %."
+
+msgid "Heizkosten-Einstellung gespeichert."
+msgstr "Impostazione delle spese di riscaldamento salvata."
+
+msgid "Das ist kein Heizungs- oder Wärmezähler."
+msgstr "Questo non è un contatore di riscaldamento o di calore."
+
+msgid "Zählerstände gespeichert."
+msgstr "Letture dei contatori salvate."
+
+msgid "Bitte eine CSV-Datei wählen."
+msgstr "Scegliere un file CSV."
+
+#, python-format
+msgid "%(n)s Zählerstände übernommen."
+msgstr "%(n)s letture dei contatori importate."
+
+#, python-format
+msgid "%(n)s Zeilen mit Fehler wurden nicht übernommen."
+msgstr "%(n)s righe con errori non sono state importate."
+
+#, python-format
+msgid "Schlüssel zurück: %(typ)s Nr. %(nr)s"
+msgstr "Restituzione chiave: %(typ)s n. %(nr)s"
+
+#, python-format
+msgid "«%(farbe)s» ist keine Farbe im Format #RRGGBB — Briefkopf-Farbe unverändert."
+msgstr "«%(farbe)s» non è un colore nel formato #RRGGBB — colore dell'intestazione invariato."
+
+#, python-format
+msgid "Neue Fassung von '%(name)s' gilt ab %(datum)s. Bis dahin gilt die bisherige."
+msgstr "La nuova versione di «%(name)s» vale dal %(datum)s. Fino ad allora vale quella attuale."
+
+msgid "Link widerrufen — er öffnet nichts mehr."
+msgstr "Link revocato — non apre più nulla."
+
+msgid "Bitte Hersteller, System oder Sicherungskarte angeben."
+msgstr "Indicare produttore, sistema o carta di sicurezza."
+
+msgid "Schliessanlage gespeichert."
+msgstr "Impianto di chiusura salvato."
+
+msgid "Schliessanlage entfernt. Schlüssel und Türen bleiben erhalten."
+msgstr "Impianto di chiusura rimosso. Chiavi e porte vengono mantenute."
+
+msgid "Bitte die Tür bezeichnen, z. B. Haustür oder Keller."
+msgstr "Indicare la porta, p. es. porta d'ingresso o cantina."
+
+#, python-format
+msgid "Tür «%(t)s» erfasst."
+msgstr "Porta «%(t)s» registrata."
+
+msgid "Tür entfernt."
+msgstr "Porta rimossa."
+
+msgid "Bezeichnung und Schlüssel-Nr. sind Pflichtfelder."
+msgstr "Designazione e n. chiave sono campi obbligatori."
+
+msgid "Eine gewählte Tür gehört nicht zu dieser Liegenschaft."
+msgstr "Una porta selezionata non appartiene a questo stabile."
+
+#, python-format
+msgid "%(n)s Stück sind ausgegeben oder verloren — weniger geht nicht."
+msgstr "%(n)s esemplari sono consegnati o persi — non si può scendere sotto."
+
+#, python-format
+msgid "Schlüssel %(nr)s erfasst."
+msgstr "Chiave %(nr)s registrata."
+
+#, python-format
+msgid "Schlüssel %(nr)s ist wieder aktiv."
+msgstr "La chiave %(nr)s è di nuovo attiva."
+
+#, python-format
+msgid "Schlüssel %(nr)s gespeichert."
+msgstr "Chiave %(nr)s salvata."
+
+msgid "«Zurück bis» ist kein gültiges Datum."
+msgstr "«Restituzione entro» non è una data valida."
+
+msgid "Die Ausgabe ist gebucht, die Quittung konnte aber nicht abgelegt werden."
+msgstr "La consegna è registrata, ma non è stato possibile archiviare la ricevuta."
+
+#, python-format
+msgid "%(n)s Schlüssel an %(name)s ausgegeben. Quittung in der Ablage."
+msgstr "%(n)s chiave/i consegnata/e a %(name)s. Ricevuta nell'archivio."
+
+msgid "Diesen Empfänger gibt es an dieser Liegenschaft nicht."
+msgstr "Questo destinatario non esiste per questo stabile."
+
+msgid "Die Rücknahme ist gebucht, die Quittung konnte aber nicht abgelegt werden."
+msgstr "La restituzione è registrata, ma non è stato possibile archiviare la ricevuta."
+
+msgid "Rücknahme gebucht. Quittung in der Ablage."
+msgstr "Restituzione registrata. Ricevuta nell'archivio."
+
+#, python-format
+msgid "%(n)s Verlust(e): Pendenz «Zylinder ersetzen» angelegt."
+msgstr "%(n)s perdita/e: pendenza «Sostituire il cilindro» creata."
+
+msgid "{mieter.anrede}\n\nbeiliegend erhalten Sie Ihren Mietvertrag für {objekt.bezeichnung}, {objekt.adresse}. Mietbeginn ist der {vertrag.beginn}.\n\nFreundliche Grüsse"
+msgstr "{mieter.anrede}\n\nin allegato riceve il Suo contratto di locazione per {objekt.bezeichnung}, {objekt.adresse}. La locazione inizia il {vertrag.beginn}.\n\nCordiali saluti"
+
+msgid "{mieter.anrede}\n\ngerne bieten wir Ihnen die Wohnung an der {objekt.adresse} ab {vertrag.beginn} an. Der Nettomietzins beträgt CHF {vertrag.mietzins_netto}, die Nebenkosten CHF {vertrag.nebenkosten}.\n\nFreundliche Grüsse\n{verwaltung.sachbearbeiter}"
+msgstr "{mieter.anrede}\n\nsiamo lieti di offrirLe l'appartamento in {objekt.adresse} dal {vertrag.beginn}. La pigione netta ammonta a CHF {vertrag.mietzins_netto}, le spese accessorie a CHF {vertrag.nebenkosten}.\n\nCordiali saluti\n{verwaltung.sachbearbeiter}"
+
+msgid "{mieter.anrede}\n\ndie Kündigung des Mietverhältnisses für {objekt.bezeichnung}, {objekt.adresse} ist bei uns erfasst. Wir melden uns für die Wohnungsabnahme.\n\nFreundliche Grüsse"
+msgstr "{mieter.anrede}\n\nabbiamo registrato la disdetta del contratto di locazione per {objekt.bezeichnung}, {objekt.adresse}. La contatteremo per la riconsegna dell'abitazione.\n\nCordiali saluti"
+
+msgid "{mieter.anrede}\n\nSie erhalten das amtliche Formular zur Anpassung Ihres Mietzinses für {objekt.bezeichnung}. Bei Fragen erreichen Sie uns unter {verwaltung.telefon}.\n\nFreundliche Grüsse"
+msgstr "{mieter.anrede}\n\nin allegato riceve il modulo ufficiale per l'adeguamento della Sua pigione per {objekt.bezeichnung}. Per domande ci può raggiungere al numero {verwaltung.telefon}.\n\nCordiali saluti"
+
+msgid "{mieter.anrede}\n\nSie erhalten die Nebenkostenabrechnung für {objekt.bezeichnung}. Bei Fragen erreichen Sie uns unter {verwaltung.telefon}.\n\nFreundliche Grüsse"
+msgstr "{mieter.anrede}\n\nin allegato riceve il conteggio delle spese accessorie per {objekt.bezeichnung}. Per domande ci può raggiungere al numero {verwaltung.telefon}.\n\nCordiali saluti"
+
+msgid "{mieter.anrede}\n\ndie Wohnungsabnahme für {objekt.bezeichnung}, {objekt.adresse} ist abgeschlossen. Vielen Dank für die Übergabe.\n\nFreundliche Grüsse"
+msgstr "{mieter.anrede}\n\nla riconsegna dell'abitazione per {objekt.bezeichnung}, {objekt.adresse} è conclusa. Grazie mille per la consegna.\n\nCordiali saluti"
+
+msgid "«Gültig ab» ist kein Datum."
+msgstr "«Valido dal» non è una data."
+
+msgid "Unbekanntes Format."
+msgstr "Formato sconosciuto."
+
+msgid "Unbekannte Sprache."
+msgstr "Lingua sconosciuta."
+
+msgid "Unbekanntes Ereignis."
+msgstr "Evento sconosciuto."
+
+#, python-format
+msgid "Unbekannte Platzhalter: %(liste)s. Erlaubt sind die Platzhalter in der Liste neben dem Text."
+msgstr "Segnaposto sconosciuti: %(liste)s. Sono ammessi solo i segnaposto della lista accanto al testo."
+
+msgid "Das Probe-PDF liess sich nicht erzeugen."
+msgstr "Impossibile generare il PDF di prova."
+
+msgid "Für dieses Ereignis gibt es noch keine Vorlage."
+msgstr "Per questo evento non esiste ancora un modello."
+
+#, python-format
+msgid "Regel «%(e)s» ist eingeschaltet."
+msgstr "La regola «%(e)s» è attivata."
+
+#, python-format
+msgid "Regel «%(e)s» ist ausgeschaltet."
+msgstr "La regola «%(e)s» è disattivata."
+
+msgid "Zu viele Anfragen. Bitte versuchen Sie es später erneut."
+msgstr "Troppe richieste. Riprovi più tardi."
+
+msgid "Bitte eine Datei wählen (PDF oder Bild)."
+msgstr "Scegliere un file (PDF o immagine)."
+
+msgid "Der Auftrag ist abgeschlossen — der Link ist nur noch lesbar."
+msgstr "L'incarico è concluso — il link è ormai in sola lettura."
+
+msgid "Bitte Datum und Zeit angeben."
+msgstr "Indicare data e ora."
+
+msgid "Der Termin liegt in der Vergangenheit."
+msgstr "L'appuntamento è nel passato."
+
+msgid "Termin gesetzt. Der Mieter erhält eine Mail mit Kalendereintrag."
+msgstr "Appuntamento fissato. L'inquilino riceve un'e-mail con la voce di calendario."
+
+msgid "Termin bestätigt."
+msgstr "Appuntamento confermato."
+
+msgid "Danke, die Verwaltung ist informiert."
+msgstr "Grazie, l'amministrazione è stata informata."
+
+msgid "Nachricht an die Verwaltung gesendet."
+msgstr "Messaggio inviato all'amministrazione."
+
+msgid "Bitte einen Betrag in CHF angeben."
+msgstr "Indicare un importo in CHF."
+
+msgid "Offerte erhalten. Sie braucht die Freigabe der Eigentümerschaft — die Verwaltung meldet sich."
+msgstr "Offerta ricevuta. Deve essere approvata dalla proprietà — l'amministrazione La contatterà."
+
+msgid "Offerte erhalten."
+msgstr "Offerta ricevuta."
+
+msgid "Rechnung erhalten. Die Verwaltung prüft sie."
+msgstr "Fattura ricevuta. L'amministrazione la verifica."
+
+msgid "Bitte eine Farbe im Format #RRGGBB angeben, z. B. #1f6f5c."
+msgstr "Indicare un colore nel formato #RRGGBB, p. es. #1f6f5c."
+
+msgid "Dokument zu einem Ereignis"
+msgstr "Documento legato a un evento"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "Vertrag erstellt"
+msgstr "Contratto creato"
+
+msgid "Bewerbung zugesagt"
+msgstr "Candidatura accettata"
+
+msgid "Kündigung erfasst"
+msgstr "Disdetta registrata"
+
+msgid "Mietzinsanpassung versandt"
+msgstr "Adeguamento della pigione inviato"
+
+msgid "Nebenkostenabrechnung versandt"
+msgstr "Conteggio delle spese accessorie inviato"
+
+msgid "Abnahme abgeschlossen"
+msgstr "Riconsegna conclusa"
+
+msgid "Rückgabe ist überfällig"
+msgid_plural "Rückgaben sind überfällig"
+msgstr[0] "Restituzione scaduta"
+msgstr[1] "Restituzioni scadute"
+
+msgid "Zurückfordern"
+msgstr "Richiedi"
+
+msgid "Leerstand trägt nichts (Kosten nur auf die Bewohner)"
+msgstr "Lo sfitto non sostiene nulla (spese solo agli occupanti)"
+
+msgid "Leerstand trägt nach der durchschnittlichen Belegung"
+msgstr "Lo sfitto sostiene secondo l'occupazione media"
+
+msgid "Ausweis"
+msgstr "Documento d'identità"
+
+msgid "Tragbarkeit"
+msgstr "Sostenibilità finanziaria"
+
+msgid "Prüfung"
+msgstr "Verifica"
+
+msgid "Eingegangen"
+msgstr "Ricevute"
+
+msgid "Geprüft"
+msgstr "Verificate"
+
+msgid "Vertrag generiert"
+msgstr "Contratto generato"
+
+msgid "Anfangsstand"
+msgstr "Lettura iniziale"
+
+msgid "Zwischenstand (Mieterwechsel)"
+msgstr "Lettura intermedia (cambio d'inquilino)"
+
+msgid "Endstand"
+msgstr "Lettura finale"
+
+msgid "Hauptschlüssel"
+msgstr "Chiave maestra"
+
+msgid "Gruppenschlüssel"
+msgstr "Chiave di gruppo"
+
+msgid "Einzelschlüssel"
+msgstr "Chiave singola"

@@ -399,6 +399,10 @@ def fw_kuendigung_erfassen(request, vertrag_id):
                    f"per {per.strftime('%d.%m.%Y') if per else '—'}"
                    + (f", erstreckt bis {erstreckung:%d.%m.%Y}" if erstreckung else "")
                    + f", {n_pendenzen} Pendenzen{hinweis}{regel_spur}", ziel=v)
+        # Modul 5: Regel «Kündigung erfasst» — Begleitdokument; ein Fehler darin
+        # kostet die erfasste Kündigung nicht.
+        from core.services.dokument_regeln import dokument_fuer_ereignis
+        dokument_fuer_ereignis('kuendigung_erfasst', organisation=v.organisation, vertrag=v)
         if P.get('embed'):
             return render(request, 'fw/_modal_done.html', {
                 'msg': f"Kündigung erfasst · {n_pendenzen} Auszugs-Pendenzen"})

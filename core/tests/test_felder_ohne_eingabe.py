@@ -105,6 +105,8 @@ STILL = ('hash', 'geheim', 'token', 'ip_', '_am', 'anonymisiert', 'is_',
 #: Wer hier etwas eintraegt, sagt: «Das setzt ein Lauf, ein Import oder eine
 #: Vorlage.» Wer es weglaesst und trotzdem kein Formular baut, wird rot.
 AUSNAHMEN = {
+    'rentals.Dokument.vorgaenger':
+     'gesetzt von `core.services.ablage.ablegen(dedup=True)`: die neue Fassung zeigt auf die bisherige (Modul 5)',
     'finance.Betreibung.debitoren_rechnung':
      'gesetzt von `fw_betreibung_neu` aus der Rechnung in der Adresse (`/neu/betreibungen/neu/<pk>/`), nicht im Formular gewählt',
     'portfolio.Liegenschaft.hauswarte':
@@ -172,6 +174,10 @@ AUSNAHMEN = {
     'finance.Kontoauszug.dateiname': 'entsteht im Lauf oder Import, nicht von Hand',
     'finance.Kontoauszug.eroeffnungssaldo': 'entsteht im Lauf oder Import, nicht von Hand',
     'finance.Kontoauszug.importiert_von': 'entsteht im Lauf oder Import, nicht von Hand',
+    # NK-Wizard (Modul 1, 27.10.2026): beide füllt der CSV-Import der Zählerstände
+    # (`core.services.nk_wizard.uebernehmen`); von Hand gewählt wird nur die Zuordnung im Import.
+    'portfolio.Liegenschaft.zaehler_import_zuordnung': 'letzte Spaltenzuordnung, vom Zählerstand-Import gespeichert',
+    'portfolio.ZaehlerStand.herkunft': 'manuell oder Import — setzt der Schreibpfad, nicht der Mensch',
     'finance.Kontoauszug.schlusssaldo': 'entsteht im Lauf oder Import, nicht von Hand',
     'finance.KreditorenZahlung.bank_referenz': 'entsteht im Lauf oder Import, nicht von Hand',
     'finance.Mahnung.betrag_offen': 'entsteht im Lauf oder Import, nicht von Hand',
@@ -186,6 +192,12 @@ AUSNAHMEN = {
     'tickets.SchadenFoto.bild': 'entsteht im Lauf oder Import, nicht von Hand',
     'tickets.SchadenFoto.hochgeladen_von': 'entsteht im Lauf oder Import, nicht von Hand',
     'tickets.TicketNachricht.empfaenger_handwerker': 'entsteht im Lauf oder Import, nicht von Hand',
+    # Modul 2 (27.10.2026): Die Quittungen entstehen als PDF beim Ausgeben bzw.
+    # Zurücknehmen (`core/services/schluessel.ausgeben` / `zuruecknehmen`), die
+    # Abnahme setzt `schluessel.abnahme_buchen` beim Abschluss des Protokolls.
+    'portfolio.SchluesselAusgabe.quittung': 'PDF aus `schluessel.ausgeben`, nicht gewählt',
+    'portfolio.SchluesselAusgabe.quittung_rueckgabe': 'PDF aus `schluessel.zuruecknehmen`, nicht gewählt',
+    'portfolio.SchluesselAusgabe.abnahme': 'gesetzt von `schluessel.abnahme_buchen` beim Abschluss der Abnahme',
 }
 
 #: OFFENE LUECKEN — angezeigt, aber nirgends erfassbar.
@@ -311,6 +323,8 @@ ALIAS = {
     # (`core/services/mietzinsanpassung._vertragsbasis_fortschreiben`).
     'rentals.Mietvertrag.mietzinsreserve_betrag': 'vorbehalt_betrag',
     'rentals.Mietvertrag.mietzinsreserve_prozent': 'vorbehalt_prozent',
+    # Modul 2: Die Rücknahmeseite hat dasselbe Zeichenfeld `unterschrift` wie die Ausgabe.
+    'portfolio.SchluesselAusgabe.unterschrift_rueckgabe': 'unterschrift',
 }
 
 

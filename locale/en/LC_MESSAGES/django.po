@@ -28109,3 +28109,1940 @@ msgid "%(n)s Entwurf + Formular (Sammel-PDF)"
 msgid_plural "%(n)s Entwürfe + Formulare (Sammel-PDF)"
 msgstr[0] "%(n)s draft + form (combined PDF)"
 msgstr[1] "%(n)s drafts + forms (combined PDF)"
+
+msgid "Ein Teil der Heizkosten (Grundkosten) wird nach Volumen (m³) verteilt, der Rest nach gemessenem Verbrauch. Ob sie vorgeschrieben ist, regelt das kantonale Energierecht."
+msgstr "Part of the heating costs (base costs) is allocated by volume (m³), the rest by measured consumption. Cantonal energy law determines whether individual heating cost billing is mandatory."
+
+msgid "Weicht das Akonto deutlich vom tatsächlichen Bedarf ab, schlägt die Anwendung einen neuen Betrag vor. Übernommen wird er über die Mietzinsanpassung mit Formular und Termin; der neue Betrag gilt erst ab diesem Termin."
+msgstr "If the advance differs significantly from actual needs, the application suggests a new amount. It is adopted via the rent adjustment with form and effective date; the new amount only applies from that date."
+
+msgid "Regel «Wenn … dann …»"
+msgstr "“If … then …” rule"
+
+msgid "Eine Vorlage mit Ereignis erzeugt bei diesem Ereignis ein zusätzliches Dokument in der Akte. Es gilt die eigene Vorlage vor der mitgelieferten und die Sprache des Empfängers vor Deutsch. Amtliche Formulare und Mahnungen bleiben, wie sie sind."
+msgstr "A template with an event creates an additional document in the file when that event occurs. Your own template takes precedence over the supplied one, and the recipient's language over German. Official forms and reminders remain unchanged."
+
+msgid "Ein Platzhalter wie {mieter.name} wird beim Erzeugen durch den Wert aus Vertrag, Objekt oder Verwaltung ersetzt. Unbekannte Platzhalter lassen sich nicht speichern; die älteren Schreibweisen gelten weiter."
+msgstr "A placeholder such as {mieter.name} is replaced on generation by the value from the lease, unit or management. Unknown placeholders cannot be saved; the older spellings remain valid."
+
+msgid "Ab diesem Tag gilt die Fassung. Gilt die Vorlage heute schon und liegt der Tag in der Zukunft, entsteht beim Speichern eine neue Fassung; bis dahin gilt die bisherige. Leer heisst: gilt sofort."
+msgstr "The version applies from this day. If the template already applies today and the day is in the future, saving creates a new version; until then, the previous one applies. Empty means: applies immediately."
+
+msgid "Schliessanlage"
+msgstr "Locking system"
+
+msgid "Hersteller, Sicherungskarte und Bestellberechtigte der Anlage, dazu alle Schlüssel und die Türen, die sie öffnen. Jede Ausgabe und Rücknahme erzeugt eine Quittung mit Unterschrift in der Ablage."
+msgstr "Manufacturer, security card and persons authorised to order for the system, plus all keys and the doors they open. Each issue and return creates a signed receipt in the filing."
+
+msgid "Schlüsselart"
+msgstr "Key type"
+
+msgid "Ein Hauptschlüssel öffnet alle Türen der Anlage, ein Gruppenschlüssel mehrere (etwa Haustür und Keller), ein Einzelschlüssel eine bestimmte Tür wie die Wohnungstür."
+msgstr "A master key opens all doors of the system, a group key several (e.g. front door and cellar), an individual key one specific door such as the apartment door."
+
+msgid "Mietvertrag mit Beilagen, Anfangsmietzins-Formular, wo Pflicht"
+msgstr "Lease with attachments, initial rent form where mandatory"
+
+msgid "E-Mail aus der Vorlage «Bewerber – Zusage»"
+msgstr "Email from the “Applicant – acceptance” template"
+
+msgid "Pendenzen der Auszugscheckliste; das amtliche Formular entsteht beim Abruf"
+msgstr "Pending items from the move-out checklist; the official form is generated when opened"
+
+msgid "amtliches Formular in der Akte (nur das Kantonsoriginal)"
+msgstr "official form in the file (cantonal original only)"
+
+msgid "Nebenkostenabrechnung je Mieter in der Akte"
+msgstr "Service charge statement per tenant in the file"
+
+msgid "Protokoll in der Akte beim ersten PDF-Abruf"
+msgstr "Report in the file when the PDF is first opened"
+
+#, python-format
+msgid "%(n)s Posten · CHF %(b)s"
+msgid_plural "%(n)s Posten · CHF %(b)s"
+msgstr[0] "%(n)s item · CHF %(b)s"
+msgstr[1] "%(n)s items · CHF %(b)s"
+
+msgid "je Kostenart"
+msgstr "per cost type"
+
+msgid "Zwischenstand fehlt"
+msgstr "Interim reading missing"
+
+msgid "pro Mieter"
+msgstr "per tenant"
+
+msgid "Differenz prüfen"
+msgstr "Check difference"
+
+msgid "Versand nach Buchung"
+msgstr "Dispatch after posting"
+
+msgid "Das Ende liegt vor dem Beginn."
+msgstr "The end is before the start."
+
+#, python-format
+msgid "Eine Abrechnungsperiode umfasst höchstens %(n)s Monate (spätestens bis %(d)s)."
+msgstr "A statement period covers at most %(n)s months (until %(d)s at the latest)."
+
+msgid "Der Wert darf nicht negativ sein."
+msgstr "The value must not be negative."
+
+msgid "Der Wert ist zu gross."
+msgstr "The value is too large."
+
+msgid "Zwischen 1 und 99 Personen."
+msgstr "Between 1 and 99 people."
+
+msgid "Bitte eine Beschreibung angeben."
+msgstr "Please enter a description."
+
+msgid "Bitte eine Kategorie wählen."
+msgstr "Please choose a category."
+
+msgid "Bitte einen Verteilschlüssel wählen."
+msgstr "Please choose an allocation key."
+
+msgid "Bitte einen Betrag über 0 angeben."
+msgstr "Please enter an amount greater than 0."
+
+msgid "Der Betrag ist zu gross."
+msgstr "The amount is too large."
+
+msgid "m²"
+msgstr "m²"
+
+msgid "m³"
+msgstr "m³"
+
+msgid "Eigene %"
+msgstr "Custom %"
+
+msgid "Anfang"
+msgstr "Start"
+
+#, python-format
+msgid "Wechsel %(d)s"
+msgstr "Change %(d)s"
+
+#, python-format
+msgid "Der Stand vom %(d)s (%(w)s) liegt unter dem Stand vom %(d0)s (%(w0)s)."
+msgstr "The reading of %(d)s (%(w)s) is lower than the reading of %(d0)s (%(w0)s)."
+
+#, python-format
+msgid "Das Ablesedatum %(d)s liegt in der Zukunft."
+msgstr "The reading date %(d)s is in the future."
+
+msgid "Zählernummer"
+msgstr "Meter number"
+
+msgid "Art (Anfang/Zwischen/Ende)"
+msgstr "Type (start/interim/end)"
+
+#, python-format
+msgid "Die Datei ist grösser als %(n)s KB."
+msgstr "The file is larger than %(n)s KB."
+
+msgid "Die Datei ist keine lesbare Textdatei."
+msgstr "The file is not a readable text file."
+
+msgid "Die Datei braucht eine Kopfzeile und mindestens eine Datenzeile."
+msgstr "The file needs a header row and at least one data row."
+
+#, python-format
+msgid "Höchstens %(n)s Zeilen je Import."
+msgstr "At most %(n)s rows per import."
+
+#, python-format
+msgid "Spalte %(n)s"
+msgstr "Column %(n)s"
+
+msgid "Bitte eine Spalte wählen."
+msgstr "Please choose a column."
+
+msgid "Diese Spalte gibt es in der Datei nicht."
+msgstr "This column does not exist in the file."
+
+msgid "Diese Spalte ist schon einem anderen Feld zugeordnet."
+msgstr "This column is already assigned to another field."
+
+#, python-format
+msgid "Zähler «%(n)s» gibt es in dieser Liegenschaft nicht."
+msgstr "Meter “%(n)s” does not exist in this property."
+
+#, python-format
+msgid "Die Zählernummer «%(n)s» ist mehrfach vergeben."
+msgstr "Meter number “%(n)s” is assigned more than once."
+
+#, python-format
+msgid "Datum «%(d)s» nicht lesbar (TT.MM.JJJJ oder JJJJ-MM-TT)."
+msgstr "Date “%(d)s” not readable (DD.MM.YYYY or YYYY-MM-DD)."
+
+#, python-format
+msgid "Stand «%(s)s» ist keine gültige Zahl."
+msgstr "Reading “%(s)s” is not a valid number."
+
+msgid "Der Stand ist zu gross."
+msgstr "The reading is too large."
+
+#, python-format
+msgid "Art «%(a)s» unbekannt (Anfang, Zwischen oder Ende)."
+msgstr "Type “%(a)s” unknown (start, interim or end)."
+
+#, python-format
+msgid "Für den %(d)s gibt es schon einen anderen Stand (%(w)s)."
+msgstr "There is already another reading for %(d)s (%(w)s)."
+
+msgid "Briefanrede"
+msgstr "Letter salutation"
+
+msgid "Anrede (Frau/Herr)"
+msgstr "Title (Ms/Mr)"
+
+msgid "Vor- und Nachname"
+msgstr "First and last name"
+
+msgid "Zustelladresse"
+msgstr "Delivery address"
+
+msgid "Bezeichnung des Objekts"
+msgstr "Unit name"
+
+msgid "Adresse der Liegenschaft"
+msgstr "Property address"
+
+msgid "PLZ der Liegenschaft"
+msgstr "Property postcode"
+
+msgid "Ort der Liegenschaft"
+msgstr "Property town"
+
+msgid "Zimmerzahl"
+msgstr "Number of rooms"
+
+msgid "Bruttomietzins (CHF)"
+msgstr "Gross rent (CHF)"
+
+msgid "Name der Verwaltung"
+msgstr "Management name"
+
+msgid "Adresse der Verwaltung"
+msgstr "Management address"
+
+msgid "Telefon der Verwaltung"
+msgstr "Management phone"
+
+msgid "E-Mail der Verwaltung"
+msgstr "Management email"
+
+msgid "Betreut von (Liegenschaft)"
+msgstr "Managed by (property)"
+
+msgid "Vermieter (Eigentümer, sonst Verwaltung)"
+msgstr "Landlord (owner, otherwise management)"
+
+msgid "Name der Bewerberin / des Bewerbers"
+msgstr "Applicant's name"
+
+msgid "E-Mail aus der Bewerbung"
+msgstr "Email from the application"
+
+msgid "Telefon aus der Bewerbung"
+msgstr "Phone from the application"
+
+msgid "Gewünschter Bezugstermin"
+msgstr "Desired move-in date"
+
+msgid "Sehr geehrte Damen und Herren"
+msgstr "Dear Sir or Madam"
+
+#, python-format
+msgid "Sehr geehrte Frau %(name)s"
+msgstr "Dear Ms %(name)s"
+
+#, python-format
+msgid "Sehr geehrter Herr %(name)s"
+msgstr "Dear Mr %(name)s"
+
+msgid "Bitte den Empfänger wählen."
+msgstr "Please choose the recipient."
+
+msgid "Bitte mindestens einen Schlüssel wählen."
+msgstr "Please choose at least one key."
+
+#, python-format
+msgid "Schlüssel %(nr)s gehört nicht zu dieser Liegenschaft."
+msgstr "Key %(nr)s does not belong to this property."
+
+#, python-format
+msgid "Von Schlüssel %(nr)s sind %(frei)s Stück im Büro."
+msgstr "%(frei)s copies of key %(nr)s are in the office."
+
+msgid "«Zurück bis» liegt in der Vergangenheit."
+msgstr "“Return by” is in the past."
+
+msgid "Die Unterschrift des Empfängers fehlt oder ist nicht lesbar."
+msgstr "The recipient's signature is missing or unreadable."
+
+msgid "Bitte mindestens einen Schlüssel als zurück oder verloren markieren."
+msgstr "Please mark at least one key as returned or lost."
+
+#, python-format
+msgid "Die Stückzahl bei Schlüssel %(nr)s stimmt nicht."
+msgstr "The number of copies for key %(nr)s is incorrect."
+
+msgid "Die Unterschrift fehlt oder ist nicht lesbar."
+msgstr "The signature is missing or unreadable."
+
+#, python-format
+msgid "Auftrag · %(firma)s"
+msgstr "Work order · %(firma)s"
+
+#, python-format
+msgid "Der Auftrag ist abgeschlossen. Dieser Link zeigt ihn nur noch an, bis %(d)s."
+msgstr "The work order is completed. This link only displays it now, until %(d)s."
+
+msgid "Der Auftrag ist abgeschlossen. Dieser Link zeigt ihn nur noch an."
+msgstr "The work order is completed. This link only displays it now."
+
+msgid "Telefon vor Ort"
+msgstr "On-site phone"
+
+msgid "Auftrag"
+msgstr "Work order"
+
+msgid "Foto zur Meldung"
+msgstr "Photo from the report"
+
+#, python-format
+msgid "Vereinbart: %(d)s Uhr"
+msgstr "Agreed: %(d)s"
+
+msgid "Termin bestätigen"
+msgstr "Confirm appointment"
+
+msgid "Anderen Termin vorschlagen"
+msgstr "Suggest another appointment"
+
+msgid "Termin vorschlagen"
+msgstr "Suggest appointment"
+
+msgid "Termin setzen"
+msgstr "Set appointment"
+
+msgid "Der Mieter erhält eine Mail mit Kalendereintrag."
+msgstr "The tenant receives an email with a calendar entry."
+
+msgid "Arbeit"
+msgstr "Work"
+
+msgid "Arbeit begonnen"
+msgstr "Work started"
+
+msgid "Arbeit erledigt melden"
+msgstr "Report work done"
+
+msgid "Offerte hochladen"
+msgstr "Upload quote"
+
+#, python-format
+msgid "Bisher erfasst: CHF %(b)s"
+msgstr "Recorded so far: CHF %(b)s"
+
+msgid "freigegeben"
+msgstr "approved"
+
+msgid "Betrag (CHF, inkl. MWST)"
+msgstr "Amount (CHF, incl. VAT)"
+
+msgid "Offerte (PDF oder Bild)"
+msgstr "Quote (PDF or image)"
+
+msgid "Je nach Betrag braucht die Reparatur die Freigabe der Eigentümerschaft. Die Verwaltung meldet sich."
+msgstr "Depending on the amount, the repair requires the owner's approval. The management will be in touch."
+
+msgid "Offerte senden"
+msgstr "Send quote"
+
+msgid "Rechnung hochladen"
+msgstr "Upload invoice"
+
+msgid "Die Rechnung ist eingegangen. Die Verwaltung prüft sie."
+msgstr "The invoice has been received. The management is checking it."
+
+msgid "Rechnungsbetrag (CHF, inkl. MWST)"
+msgstr "Invoice amount (CHF, incl. VAT)"
+
+msgid "Rechnung (PDF oder Bild)"
+msgstr "Invoice (PDF or image)"
+
+msgid "Die Rechnung geht als Entwurf zur Kontrolle an die Verwaltung."
+msgstr "The invoice goes to the management as a draft for review."
+
+msgid "Rechnung senden"
+msgstr "Send invoice"
+
+msgid "Nachrichten mit der Verwaltung"
+msgstr "Messages with the management"
+
+msgid "Noch keine Nachrichten."
+msgstr "No messages yet."
+
+#, python-format
+msgid "Auftraggeberin: %(firma)s"
+msgstr "Client: %(firma)s"
+
+msgid "Auftrag — SwissImmo"
+msgstr "Work order — SwissImmo"
+
+msgid "SwissImmo · Auftrag für Handwerker"
+msgstr "SwissImmo · Work order for tradesperson"
+
+msgid "Was möchten Sie tun?"
+msgstr "What would you like to do?"
+
+msgid "Ihre Wege im Portal"
+msgstr "Your options in the portal"
+
+msgid "Etwas melden"
+msgstr "Report something"
+
+msgid "Schaden, Defekt oder Frage — mit Fotos"
+msgstr "Damage, defect or question — with photos"
+
+msgid "Meldung erfassen"
+msgstr "Create report"
+
+#, python-format
+msgid "Termin am %(wann)s Uhr"
+msgstr "Appointment on %(wann)s"
+
+msgid "Kein Termin vereinbart"
+msgstr "No appointment arranged"
+
+msgid "Vertrag, Abrechnungen, Korrespondenz"
+msgstr "Lease, statements, correspondence"
+
+#, python-format
+msgid "%(n)s offen · CHF %(betrag)s"
+msgstr "%(n)s open · CHF %(betrag)s"
+
+msgid "Meine Schlüssel"
+msgstr "My keys"
+
+#, python-format
+msgid "%(n)s Schlüssel insgesamt"
+msgstr "%(n)s keys in total"
+
+msgid "Keine Schlüssel erfasst."
+msgstr "No keys recorded."
+
+msgid "Zutritt zur Wohnung"
+msgstr "Access to the apartment"
+
+msgid "Diese Meldung wurde zu Ihrer Wohnung erfasst, zum Beispiel telefonisch bei der Verwaltung."
+msgstr "This report was recorded for your apartment, for example by phone with the management."
+
+msgid "Handwerker und Zutritt"
+msgstr "Tradesperson and access"
+
+#, python-format
+msgid "%(firma)s kommt am %(wann)s Uhr."
+msgstr "%(firma)s is coming on %(wann)s."
+
+msgid "Noch kein Handwerkertermin vereinbart."
+msgstr "No tradesperson appointment arranged yet."
+
+msgid "Zutritt:"
+msgstr "Access:"
+
+msgid "Status und Verlauf Ihrer Meldungen und der Meldungen zu Ihrer Wohnung."
+msgstr "Status and history of your reports and of reports concerning your apartment."
+
+msgid "Zu Ihrer Wohnung erfasst"
+msgstr "Recorded for your apartment"
+
+#, python-format
+msgid "Sicherungskarte Nr. %(nr)s"
+msgstr "Security card no. %(nr)s"
+
+msgid "Bestellberechtigt:"
+msgstr "Authorised to order:"
+
+msgid "Noch keine Schliessanlage erfasst — Hersteller und Sicherungskarte unten eintragen."
+msgstr "No locking system recorded yet — enter the manufacturer and security card below."
+
+#, python-format
+msgid "%(n)s Schlüssel"
+msgid_plural "%(n)s Schlüssel"
+msgstr[0] "%(n)s key"
+msgstr[1] "%(n)s keys"
+
+msgid "ausgegeben"
+msgstr "issued"
+
+msgid "im Büro"
+msgstr "in the office"
+
+msgid "verloren"
+msgstr "lost"
+
+msgid "Rückgabe fällig"
+msgstr "Return due"
+
+#, python-format
+msgid "%(n)s Stk."
+msgid_plural "%(n)s Stk."
+msgstr[0] "%(n)s pc."
+msgstr[1] "%(n)s pcs"
+
+msgid "Keine Rückgabe fällig."
+msgstr "No returns due."
+
+msgid "Alle fälligen Rückgaben"
+msgstr "All returns due"
+
+msgid "Pendenzen öffnen"
+msgstr "Open pending items"
+
+msgid "Kein offener Verlust."
+msgstr "No open loss."
+
+msgid "Wer kommt durch diese Tür?"
+msgstr "Who can get through this door?"
+
+msgid "alle zeigen"
+msgstr "show all"
+
+#, python-format
+msgid "Durch «%(t)s» kommen"
+msgstr "Can get through “%(t)s”"
+
+msgid "Niemand ausserhalb des Büros hat einen Schlüssel für diese Tür."
+msgstr "No one outside the office has a key for this door."
+
+msgid "Kein Schlüssel öffnet diese Tür."
+msgstr "No key opens this door."
+
+msgid "Noch keine Schlüssel erfasst — auch Haustür-, Briefkasten- und Gruppenschlüssel gehören hierher."
+msgstr "No keys recorded yet — front door, letterbox and group keys belong here too."
+
+#, python-format
+msgid "Archiv: %(n)s Schlüssel"
+msgid_plural "Archiv: %(n)s Schlüssel"
+msgstr[0] "Archive: %(n)s key"
+msgstr[1] "Archive: %(n)s keys"
+
+msgid "Türen und Zylinder"
+msgstr "Doors and cylinders"
+
+#, python-format
+msgid "Tür «%(t)s» entfernen?"
+msgstr "Remove door “%(t)s”?"
+
+msgid "Tür entfernen"
+msgstr "Remove door"
+
+msgid "Noch keine Türen erfasst."
+msgstr "No doors recorded yet."
+
+msgid "Tür / Zylinder"
+msgstr "Door / cylinder"
+
+msgid "z. B. Haustür, Keller, Wohnungstür 1.OG links"
+msgstr "e.g. front door, cellar, apartment door 1st floor left"
+
+msgid "Tür erfassen"
+msgstr "Add door"
+
+msgid "Schliessanlage entfernen? Schlüssel und Türen bleiben erhalten."
+msgstr "Remove locking system? Keys and doors are kept."
+
+msgid "Anlage entfernen"
+msgstr "Remove system"
+
+msgid "Neue Schliessanlage"
+msgstr "New locking system"
+
+msgid "Hersteller"
+msgstr "Manufacturer"
+
+msgid "z. B. Kaba, Keso, dormakaba"
+msgstr "e.g. Kaba, Keso, dormakaba"
+
+msgid "z. B. star, 4000S"
+msgstr "e.g. star, 4000S"
+
+msgid "Sicherungskarte Nr."
+msgstr "Security card no."
+
+msgid "Bestellberechtigte"
+msgstr "Authorised to order"
+
+msgid "Wer darf Schlüssel nachbestellen?"
+msgstr "Who may order additional keys?"
+
+msgid "Anlage speichern"
+msgstr "Save system"
+
+#, python-format
+msgid "%(n)s Stück ausgegeben"
+msgid_plural "%(n)s Stück ausgegeben"
+msgstr[0] "%(n)s copy issued"
+msgstr[1] "%(n)s copies issued"
+
+msgid "Nr."
+msgstr "No."
+
+#, python-format
+msgid "zurück bis %(d)s"
+msgstr "return by %(d)s"
+
+msgid "Keine Schlüssel ausgegeben."
+msgstr "No keys issued."
+
+#, python-format
+msgid "Verlauf: %(n)s Eintrag"
+msgid_plural "Verlauf: %(n)s Einträge"
+msgstr[0] "History: %(n)s entry"
+msgstr[1] "History: %(n)s entries"
+
+msgid "Quittung"
+msgstr "Receipt"
+
+msgid "mit Einzugsabnahme"
+msgstr "with move-in handover"
+
+msgid "mit Auszugsabnahme"
+msgstr "with move-out handover"
+
+msgid "z. B. Wohnung, Haustür, Briefkasten"
+msgstr "e.g. apartment, front door, letterbox"
+
+msgid "allgemein (ohne Objekt)"
+msgstr "general (no unit)"
+
+msgid "Öffnet"
+msgstr "Opens"
+
+msgid "Änderung speichern"
+msgstr "Save change"
+
+msgid "alle Türen"
+msgstr "all doors"
+
+msgid "keine Tür zugeordnet"
+msgstr "no door assigned"
+
+#, python-format
+msgid "%(n)s verloren"
+msgid_plural "%(n)s verloren"
+msgstr[0] "%(n)s lost"
+msgstr[1] "%(n)s lost"
+
+msgid "archiviert"
+msgstr "archived"
+
+msgid "Alle Exemplare liegen im Büro."
+msgstr "All copies are in the office."
+
+msgid "Wieder aktivieren"
+msgstr "Reactivate"
+
+msgid "Ausgeben"
+msgstr "Hand out"
+
+msgid "Schlüssel archivieren? Der Verlauf bleibt erhalten."
+msgstr "Archive key? The history is kept."
+
+msgid "Archivieren"
+msgstr "Archive"
+
+msgid "Bitte im Feld unterschreiben."
+msgstr "Please sign in the field."
+
+msgid "Unterschrift"
+msgstr "Signature"
+
+msgid "Unbekannte Platzhalter — so lässt sich die Vorlage nicht speichern:"
+msgstr "Unknown placeholders — the template cannot be saved like this:"
+
+msgid "Beispielwerte — wähle oben einen Vertrag oder eine Bewerbung für echte Daten."
+msgstr "Sample values — choose a lease or an application above for real data."
+
+msgid "Briefkopf-Farbe"
+msgstr "Letterhead colour"
+
+msgid "Farbe wählen"
+msgstr "Choose colour"
+
+msgid "Linie und Überschriften im Briefkopf. Leer = neutral."
+msgstr "Line and headings in the letterhead. Empty = neutral."
+
+msgid "Briefkopf-Fusszeile"
+msgstr "Letterhead footer"
+
+msgid "Eine Zeile am Seitenfuss, z. B. Handelsregister oder Bankverbindung."
+msgstr "One line at the foot of the page, e.g. commercial register or bank details."
+
+msgid "Handwerker-Link"
+msgstr "Tradesperson link"
+
+msgid "Neuer Handwerker-Link"
+msgstr "New tradesperson link"
+
+msgid "Link für den Handwerker"
+msgstr "Link for the tradesperson"
+
+msgid "Link kopieren"
+msgstr "Copy link"
+
+msgid "Zurück zum Schaden"
+msgstr "Back to damage"
+
+msgid "Der Auftrag ist abgeschlossen: Der Link zeigt ihn nur noch an, während 30 Tagen."
+msgstr "The work order is completed: the link now only displays it, for 30 days."
+
+msgid "Der Link öffnet nur diesen Auftrag und gilt bis 30 Tage nach dessen Abschluss. Der bisherige Link ist ab sofort ungültig."
+msgstr "The link opens only this work order and is valid until 30 days after its completion. The previous link is invalid from now on."
+
+msgid "Er wird nur jetzt angezeigt — wer ihn verliert, erzeugt einen neuen."
+msgstr "It is shown only now — if lost, generate a new one."
+
+#, python-format
+msgid "Allen %(n)s noch offenen Bewerbern eine Absage senden — auch denen, die zur Besichtigung eingeladen sind?"
+msgstr "Send a rejection to all %(n)s remaining open applicants — including those invited to a viewing?"
+
+msgid "Prüf-Checkliste"
+msgstr "Review checklist"
+
+msgid "Zeigt, was geprüft ist. Der Status hängt nicht davon ab."
+msgstr "Shows what has been checked. The status does not depend on it."
+
+#, python-format
+msgid "abgehakt von %(wer)s, %(am)s"
+msgstr "ticked by %(wer)s, %(am)s"
+
+#, python-format
+msgid "zurückgenommen von %(wer)s, %(am)s"
+msgstr "unticked by %(wer)s, %(am)s"
+
+msgid "Abhaken"
+msgstr "Tick off"
+
+msgid "Aus dieser Bewerbung ist ein Vertrag entstanden; der Status ist damit abgeschlossen."
+msgstr "A lease has resulted from this application; the status is therefore closed."
+
+#, python-format
+msgid "Vertrag #%(nr)s (%(st)s) ist aus dieser Bewerbung entstanden."
+msgstr "Lease #%(nr)s (%(st)s) has resulted from this application."
+
+#, python-format
+msgid "%(n)s Bewerbung auf dem Board."
+msgid_plural "%(n)s Bewerbungen auf dem Board."
+msgstr[0] "%(n)s application on the board."
+msgstr[1] "%(n)s applications on the board."
+
+msgid "Karten ziehen oder an der Karte «Verschieben nach…» wählen."
+msgstr "Drag cards or choose “Move to…” on the card."
+
+msgid "Alle Bewerbungen, die neueste zuerst — auch ältere Absagen, bis sie nach DSG anonymisiert sind."
+msgstr "All applications, newest first — including older rejections until they are anonymised under the FADP."
+
+msgid "Alle Objekte"
+msgstr "All units"
+
+msgid "Vergleich"
+msgstr "Comparison"
+
+#, python-format
+msgid "%(n)s ältere Absage in der Liste"
+msgid_plural "%(n)s ältere Absagen in der Liste"
+msgstr[0] "%(n)s older rejection in the list"
+msgstr[1] "%(n)s older rejections in the list"
+
+msgid "Punktezahl aus dem Bewerber-Vergleich (0–100), eine Entscheidungshilfe"
+msgstr "Score from the applicant comparison (0–100), a decision aid"
+
+msgid "Betreibungsauszug fehlt"
+msgstr "Debt enforcement extract missing"
+
+msgid "Betreibungsauszug da"
+msgstr "Debt enforcement extract available"
+
+msgid "Bruttomiete im Verhältnis zum Jahreseinkommen"
+msgstr "Gross rent relative to annual income"
+
+#, python-format
+msgid "Tragbarkeit %(p)s %%"
+msgstr "Affordability %(p)s %%"
+
+#, python-format
+msgid "Besichtigung %(t)s"
+msgstr "Viewing %(t)s"
+
+msgid "zugesagt · Vertrag noch nicht erzeugt"
+msgstr "accepted · lease not yet created"
+
+#, python-format
+msgid "Absage %(d)s"
+msgstr "Rejection %(d)s"
+
+msgid "Löschfrist nach DSG (Art. 6 Abs. 4)"
+msgstr "Deletion period under the FADP (Art. 6 para. 4)"
+
+#, python-format
+msgid "Unterlagen gelöscht am %(d)s"
+msgstr "Documents deleted on %(d)s"
+
+#, python-format
+msgid "Daten anonymisiert am %(d)s"
+msgstr "Data anonymised on %(d)s"
+
+#, python-format
+msgid "Vertrag #%(nr)s · %(st)s"
+msgstr "Lease #%(nr)s · %(st)s"
+
+msgid "Prüf-Checkliste: Betreibung, Ausweis, Referenz, Tragbarkeit"
+msgstr "Review checklist: debt enforcement, ID, reference, affordability"
+
+#, python-format
+msgid "Prüfung %(n)s/4"
+msgstr "Checks %(n)s/4"
+
+#, python-format
+msgid "eingegangen %(d)s"
+msgstr "received %(d)s"
+
+msgid "Verschieben nach…"
+msgstr "Move to…"
+
+msgid "Verschieben"
+msgstr "Move"
+
+msgid "Keine neuen Bewerbungen."
+msgstr "No new applications."
+
+msgid "Noch kein Vertrag aus einer Bewerbung."
+msgstr "No lease from an application yet."
+
+#, python-format
+msgid "Abgelehnte bleiben %(n)s Tage sichtbar."
+msgstr "Rejected applications remain visible for %(n)s days."
+
+msgid "Absage senden?"
+msgstr "Send rejection?"
+
+msgid "erhält die Absage per E-Mail (Vorlage «Bewerber – Absage»). Die Bewerbung steht danach unter «Abgelehnt»."
+msgstr "receives the rejection by email (template “Applicant – rejection”). The application then appears under “Rejected”."
+
+msgid "Absage senden"
+msgstr "Send rejection"
+
+msgid "Bewerbungen kommen über das Formular eines ausgeschriebenen Objekts herein."
+msgstr "Applications come in via the form of an advertised unit."
+
+#, python-format
+msgid "Gezeigt sind die neuesten %(n)s. Ältere über den Objektfilter."
+msgstr "Showing the newest %(n)s. Older ones via the unit filter."
+
+msgid "Verbindung unterbrochen — nichts geändert."
+msgstr "Connection lost — nothing changed."
+
+msgid "Fassungen"
+msgstr "Versions"
+
+#, python-format
+msgid "%(n)s Fassung"
+msgid_plural "%(n)s Fassungen"
+msgstr[0] "%(n)s version"
+msgstr[1] "%(n)s versions"
+
+#, python-format
+msgid "aus der Vorlage «%(name)s»"
+msgstr "from the template “%(name)s”"
+
+#, python-format
+msgid "Version %(n)s"
+msgstr "Version %(n)s"
+
+msgid "neueste"
+msgstr "latest"
+
+msgid "aufgerufen"
+msgstr "viewed"
+
+msgid "Keine Fassungen."
+msgstr "No versions."
+
+msgid "Nebenkosten bisher"
+msgstr "Current service charges"
+
+msgid "Nebenkosten neu (Akonto, CHF/Mt.)"
+msgstr "New service charges (advance, CHF/mo.)"
+
+#, python-format
+msgid "Vorschlag aus der Nebenkostenabrechnung «%(p)s»."
+msgstr "Suggestion from the service charge statement “%(p)s”."
+
+msgid "Leer: die Nebenkosten bleiben."
+msgstr "Empty: the service charges stay the same."
+
+msgid "Periode & Objekte: Liegenschaft, Zeitraum (höchstens 12 Monate), Fläche, Volumen und Personen."
+msgstr "Period & units: property, period (12 months at most), area, volume and occupants."
+
+msgid "Kosten — Kreditoren mit «In Nebenkostenabrechnung einbeziehen» erscheinen automatisch."
+msgstr "Costs — payables marked “Include in service charge statement” appear automatically."
+
+msgid "Verteilung je Kostenart, samt vertraglich ausgeschlossenen Kosten."
+msgstr "Allocation per cost type, including costs excluded by the lease."
+
+msgid "Heizung & Zähler: Grundkostenanteil und Zählerstände."
+msgstr "Heating & meters: base cost share and meter readings."
+
+msgid "Prüfen: je Mieter eine Karte mit Saldo und Positionen."
+msgstr "Review: one card per tenant with balance and items."
+
+msgid "Verbuchen & Zustellen — die Zustellung startet die Einsprachefrist."
+msgstr "Post & deliver — delivery starts the objection period."
+
+msgid "Erste Periode anlegen"
+msgstr "Create first period"
+
+msgid "Hinweise beim Verbuchen"
+msgstr "Notes from posting"
+
+msgid "Je Mieter"
+msgstr "Per tenant"
+
+msgid "Kostenpositionen"
+msgstr "Cost items"
+
+msgid "Belege, Kreditoren, Heizöl und Honorar"
+msgstr "Vouchers, payables, heating oil and fee"
+
+msgid "Keine Kostenpositionen."
+msgstr "No cost items."
+
+msgid "Leerstand (Eigentümer)"
+msgstr "Vacancy (owner)"
+
+msgid "Akonto gestellt"
+msgstr "Advances billed"
+
+msgid "Pauschal — keine Abrechnung an den Mieter"
+msgstr "Flat rate — no statement to the tenant"
+
+#, python-format
+msgid "Direktzahler %(n)s"
+msgstr "Direct payer %(n)s"
+
+#, python-format
+msgid "Vertrag %(n)s schliesst aus"
+msgstr "Excluded by lease %(n)s"
+
+#, python-format
+msgid "ohne %(was)s (Vertrag)"
+msgstr "without %(was)s (lease)"
+
+msgid "Heizung mit Zwischenstand"
+msgstr "Heating with interim reading"
+
+msgid "Heizung nach Heizgradtagen"
+msgstr "Heating by degree days"
+
+#, python-format
+msgid "Akonto + CHF %(d)s/Mt.: Mietzinsanpassung"
+msgstr "Advance + CHF %(d)s/mo.: rent adjustment"
+
+#, python-format
+msgid "Akonto − CHF %(d)s/Mt.: Mietzinsanpassung"
+msgstr "Advance − CHF %(d)s/mo.: rent adjustment"
+
+msgid "Kosten total"
+msgstr "Total costs"
+
+#, python-format
+msgid "verteilt %(pct)s %% · Differenz %(d)s"
+msgstr "allocated %(pct)s %% · difference %(d)s"
+
+#, python-format
+msgid "Eigentümer/Leerstand CHF %(b)s"
+msgstr "Owner/vacancy CHF %(b)s"
+
+msgid "Saldo Mieter"
+msgstr "Tenant balance"
+
+#, python-format
+msgid "%(n)s Nachzahlung"
+msgid_plural "%(n)s Nachzahlungen"
+msgstr[0] "%(n)s additional payment"
+msgstr[1] "%(n)s additional payments"
+
+#, python-format
+msgid "%(n)s Guthaben"
+msgid_plural "%(n)s Guthaben"
+msgstr[0] "%(n)s credit"
+msgstr[1] "%(n)s credits"
+
+msgid "Schritte der Abrechnung"
+msgstr "Statement steps"
+
+#, python-format
+msgid "Schritt %(nr)s von 6"
+msgstr "Step %(nr)s of 6"
+
+msgid "Die Abrechnung lässt sich nicht rechnen"
+msgstr "The statement cannot be calculated"
+
+msgid "Was fehlt"
+msgstr "What is missing"
+
+#, python-format
+msgid "Weiter zu %(t)s"
+msgstr "Continue to %(t)s"
+
+#, python-format
+msgid "%(t)s: erst nach den Kosten möglich"
+msgstr "%(t)s: only possible after the costs"
+
+msgid "Neue Periode"
+msgstr "New period"
+
+msgid "Schritt 1 von 6 — danach Kosten, Verteilung, Heizung & Zähler, Prüfen, Verbuchen & Zustellen."
+msgstr "Step 1 of 6 — then costs, allocation, heating & meters, review, posting & delivery."
+
+msgid "Periode & Objekte"
+msgstr "Period & units"
+
+msgid "Für welches Haus und welchen Zeitraum wird abgerechnet? Höchstens 12 Monate."
+msgstr "Which building and which period is the statement for? 12 months at most."
+
+msgid "Verbuchen stellt Nachzahlungen und Guthaben. Danach gehen die Abrechnungen an die Mieter."
+msgstr "Posting bills additional payments and credits balances. The statements then go to the tenants."
+
+msgid "1 · Verbuchen"
+msgstr "1 · Post"
+
+msgid "Nachzahlungen werden als Debitoren gestellt, Guthaben gutgeschrieben. Die Zahlen werden eingefroren; danach ändert sich die Abrechnung nicht mehr."
+msgstr "Additional payments are billed as receivables, credits are credited. The figures are frozen; the statement no longer changes afterwards."
+
+msgid "Verbuchen dürfen Inhaber und Verwalter."
+msgstr "Only the Inhaber and Verwalter roles may post."
+
+msgid "2 · Zustellen"
+msgstr "2 · Deliver"
+
+msgid "Versand nach dem Verbuchen: PDF ins Mieterportal, E-Mail, Zustellung mit Einsprachefrist."
+msgstr "Dispatch after posting: PDF to the tenant portal, email, delivery with objection period."
+
+msgid "PDF erstellen & ablegen"
+msgstr "Create & file PDF"
+
+#, python-format
+msgid "%(n)s Vertrag mit Pauschale erhält keine Abrechnung."
+msgid_plural "%(n)s Verträge mit Pauschale erhalten keine Abrechnung."
+msgstr[0] "%(n)s lease with a flat rate receives no statement."
+msgstr[1] "%(n)s leases with a flat rate receive no statement."
+
+msgid "Wie werden die Heizkosten geteilt, und liegen die Zählerstände vor?"
+msgstr "How are the heating costs split, and are the meter readings available?"
+
+msgid "Verbrauchsabhängige Heizkosten (HKVO)"
+msgstr "Consumption-based heating costs (individual heating cost billing)"
+
+msgid "Nach Verbrauch abrechnen (Grundkosten nach Volumen, Rest nach Zählerstand)"
+msgstr "Bill by consumption (base costs by volume, remainder by meter reading)"
+
+#, python-format
+msgid "Grundkostenanteil %%"
+msgstr "Base cost share %%"
+
+#, python-format
+msgid "Frei wählbar von 0 bis 100 %%. Kantonale Vorgabe prüfen: Die Anwendung setzt keine Bandbreite, solange sie nicht belegt ist."
+msgstr "Freely selectable from 0 to 100 %%. Check the cantonal requirement: the application sets no range as long as none is documented."
+
+msgid "Gilt für die Liegenschaft, also auch für spätere Perioden. Verbuchte Abrechnungen bleiben, wie sie sind."
+msgstr "Applies to the property, i.e. also to later periods. Posted statements stay as they are."
+
+msgid "CSV einlesen"
+msgstr "Import CSV"
+
+msgid "Mit dem Zwischenstand beim Mieterwechsel wird der Verbrauch genau geteilt. Fehlt er, rechnet die Abrechnung wie bisher mit Heizgradtagen und kennzeichnet das."
+msgstr "With the interim reading at a change of tenant, consumption is split exactly. If it is missing, the statement calculates by degree days as before and flags this."
+
+#, python-format
+msgid "Datum %(l)s"
+msgstr "Date %(l)s"
+
+#, python-format
+msgid "Stand %(l)s"
+msgstr "Reading %(l)s"
+
+msgid "Stände speichern"
+msgstr "Save readings"
+
+msgid "Keine Heizungs- oder Wärmezähler erfasst."
+msgstr "No heating or heat meters recorded."
+
+msgid "Zähler erfassen Sie in der Akte des Objekts."
+msgstr "Meters are recorded in the unit's file."
+
+msgid "Zählerstände aus einer CSV-Datei: hochladen, Spalten zuordnen, Vorschau prüfen, übernehmen."
+msgstr "Meter readings from a CSV file: upload, map columns, check preview, import."
+
+msgid "Zurück zu den Zählerständen"
+msgstr "Back to meter readings"
+
+msgid "Die Datei lässt sich nicht lesen"
+msgstr "The file cannot be read"
+
+msgid "1 · Datei hochladen"
+msgstr "1 · Upload file"
+
+msgid "CSV mit Kopfzeile, Trennzeichen ; , oder Tab"
+msgstr "CSV with header row, separator ; , or tab"
+
+msgid "Gebraucht werden Zählernummer, Ablesedatum und Stand, optional die Art (Anfang, Zwischen, Ende). Die Datei wird nicht gespeichert."
+msgstr "Required are meter number, reading date and reading, optionally the type (start, interim, end). The file is not stored."
+
+msgid "2 · Spalten zuordnen"
+msgstr "2 · Map columns"
+
+msgid "Vorschlag aus dem letzten Import"
+msgstr "Suggestion from the last import"
+
+#, python-format
+msgid "%(n)s Spalte gefunden"
+msgid_plural "%(n)s Spalten gefunden"
+msgstr[0] "%(n)s column found"
+msgstr[1] "%(n)s columns found"
+
+msgid "3 · Vorschau"
+msgstr "3 · Preview"
+
+#, python-format
+msgid "%(n)s neu"
+msgid_plural "%(n)s neu"
+msgstr[0] "%(n)s new"
+msgstr[1] "%(n)s new"
+
+#, python-format
+msgid "%(n)s schon erfasst"
+msgid_plural "%(n)s schon erfasst"
+msgstr[0] "%(n)s already recorded"
+msgstr[1] "%(n)s already recorded"
+
+#, python-format
+msgid "%(n)s mit Fehler"
+msgid_plural "%(n)s mit Fehler"
+msgstr[0] "%(n)s with error"
+msgstr[1] "%(n)s with errors"
+
+#, python-format
+msgid "Zeile %(nr)s"
+msgstr "Row %(nr)s"
+
+msgid "schon erfasst"
+msgstr "already recorded"
+
+msgid "neu"
+msgstr "new"
+
+msgid "Übernommen werden nur die neuen Zeilen ohne Fehler. Die Zuordnung bleibt für den nächsten Import gespeichert."
+msgstr "Only new rows without errors are imported. The mapping is saved for the next import."
+
+#, python-format
+msgid "%(n)s Stand übernehmen"
+msgid_plural "%(n)s Stände übernehmen"
+msgstr[0] "Import %(n)s reading"
+msgstr[1] "Import %(n)s readings"
+
+msgid "Welche Kosten gehören in diese Abrechnung?"
+msgstr "Which costs belong in this statement?"
+
+#, python-format
+msgid "%(n)s Posten inkl. Honorar und Heizöl"
+msgid_plural "%(n)s Posten inkl. Honorar und Heizöl"
+msgstr[0] "%(n)s item incl. fee and heating oil"
+msgstr[1] "%(n)s items incl. fee and heating oil"
+
+msgid "Freigegeben oder bezahlt, «In Nebenkostenabrechnung einbeziehen». Mit Leistungsperiode anteilig nach Tagen."
+msgstr "Approved or paid, “Include in service charge statement”. With a service period, pro rata by days."
+
+msgid "Manuelle Belege"
+msgstr "Manual vouchers"
+
+msgid "Kosten ohne Kreditorenrechnung, z. B. ein Beleg der Hauswartung."
+msgstr "Costs without a payable invoice, e.g. a caretaking voucher."
+
+msgid "HNK-Kreditoren"
+msgstr "SC payables"
+
+msgid "Zu den Kreditoren"
+msgstr "To payables"
+
+msgid "Kreditor"
+msgstr "Payable"
+
+#, python-format
+msgid "Heizöl %(l)s L → Bestand"
+msgstr "Heating oil %(l)s L → stock"
+
+#, python-format
+msgid "anteilig %(a)s/%(b)s Tage"
+msgstr "pro rata %(a)s/%(b)s days"
+
+#, python-format
+msgid "Leistung %(v)s – %(b)s"
+msgstr "Service %(v)s – %(b)s"
+
+msgid "Keine HNK-Kreditoren in dieser Periode."
+msgstr "No SC payables in this period."
+
+msgid "Bei der Kreditorenrechnung «In Nebenkostenabrechnung einbeziehen» setzen."
+msgstr "Set “Include in service charge statement” on the payable invoice."
+
+msgid "Noch nicht einbezogen:"
+msgstr "Not yet included:"
+
+msgid "Diesen Beleg löschen?"
+msgstr "Delete this voucher?"
+
+msgid "Beleg löschen"
+msgstr "Delete voucher"
+
+msgid "Noch keine manuellen Belege."
+msgstr "No manual vouchers yet."
+
+msgid "Gilt für die Kostenart ein Schlüssel der Liegenschaft (Schritt 3), verteilt die Abrechnung nach diesem."
+msgstr "If a property key applies to the cost type (step 3), the statement allocates by it."
+
+msgid "Beleg erfassen"
+msgstr "Record voucher"
+
+msgid "Heizöl-Bestand"
+msgstr "Heating oil stock"
+
+msgid "nur bei Öl oder Gas mit Tank"
+msgstr "only for oil or gas with a tank"
+
+msgid "Anfangsbestand Liter"
+msgstr "Opening stock litres"
+
+msgid "Anfangsbestand CHF"
+msgstr "Opening stock CHF"
+
+msgid "Endbestand Liter"
+msgstr "Closing stock litres"
+
+msgid "Verbrauch = Anfangsbestand + Zukäufe (Kreditoren mit Literangabe) − Endbestand, zum gewogenen Durchschnittspreis."
+msgstr "Consumption = opening stock + purchases (payables with litres stated) − closing stock, at the weighted average price."
+
+msgid "Bestand speichern"
+msgstr "Save stock"
+
+msgid "Für welchen Zeitraum wird abgerechnet, und stimmen die Masse der Objekte?"
+msgstr "Which period is the statement for, and are the unit measurements correct?"
+
+msgid "höchstens 12 Monate"
+msgstr "12 months at most"
+
+msgid "Ändert die Periode; die Abrechnung rechnet neu."
+msgstr "Changes the period; the statement is recalculated."
+
+msgid "Periode speichern"
+msgstr "Save period"
+
+msgid "Fläche, Volumen und Personen sind die Grundlage der Verteilung. Fehlt ein Wert, ergänzen Sie ihn direkt in der Kachel."
+msgstr "Area, volume and occupants are the basis of the allocation. If a value is missing, add it directly in the tile."
+
+#, python-format
+msgid "%(was)s fehlt"
+msgstr "%(was)s missing"
+
+msgid "vollständig"
+msgstr "complete"
+
+msgid "Volumen m³"
+msgstr "Volume m³"
+
+msgid "In dieser Periode ohne Mietvertrag — die Kosten trägt der Eigentümer (Leerstand)."
+msgstr "No lease in this period — the owner bears the costs (vacancy)."
+
+msgid "Diese Liegenschaft hat noch keine Objekte."
+msgstr "This property has no units yet."
+
+msgid "Geht die Abrechnung auf, und stimmt jeder Anteil?"
+msgstr "Does the statement balance, and is every share correct?"
+
+#, python-format
+msgid "Bei %(n)s Vertrag weicht das monatliche Akonto deutlich vom Bedarf ab. Der Vorschlag öffnet die Mietzinsanpassung mit Formular und Termin — das Akonto wird nicht direkt überschrieben."
+msgid_plural "Bei %(n)s Verträgen weicht das monatliche Akonto deutlich vom Bedarf ab. Der Vorschlag öffnet die Mietzinsanpassung mit Formular und Termin — das Akonto wird nicht direkt überschrieben."
+msgstr[0] "For %(n)s lease, the monthly advance differs significantly from the requirement. The suggestion opens the rent adjustment with form and date — the advance is not overwritten directly."
+msgstr[1] "For %(n)s leases, the monthly advance differs significantly from the requirement. The suggestion opens the rent adjustment with form and date — the advance is not overwritten directly."
+
+msgid "Wie wird jede Kostenart verteilt?"
+msgstr "How is each cost type allocated?"
+
+msgid "Schlüssel je Kostenart sind eingeschaltet"
+msgstr "Keys per cost type are switched on"
+
+msgid "Für eine Kostenart mit Schlüssel gilt dieser — für Belege wie für Kreditoren. Ohne Schlüssel gilt, was am Beleg oder Konto steht."
+msgstr "For a cost type with a key, that key applies — to vouchers and payables alike. Without a key, what is set on the voucher or account applies."
+
+msgid "Verteilt wird wie erfasst"
+msgstr "Allocated as recorded"
+
+msgid "Jeder Beleg und jedes Konto bringt seinen Schlüssel mit. Wählen Sie unten eine Verteilung, gilt sie für die ganze Kostenart."
+msgstr "Each voucher and each account brings its own key. If you choose an allocation below, it applies to the whole cost type."
+
+msgid "Ausschalten"
+msgstr "Switch off"
+
+msgid "Einschalten"
+msgstr "Switch on"
+
+#, python-format
+msgid "Nach HKVO: %(g)s %% Grundkosten nach Volumen, der Rest nach Verbrauch — festgelegt in Schritt 4."
+msgstr "Under individual heating cost billing: %(g)s %% base costs by volume, the rest by consumption — set in step 4."
+
+msgid "Nach Volumen (m³), zeitlich nach Heizgradtagen — HKVO lässt sich in Schritt 4 einschalten."
+msgstr "By volume (m³), over time by degree days — individual heating cost billing can be switched on in step 4."
+
+msgid "Zu Schritt 4"
+msgstr "To step 4"
+
+#, python-format
+msgid "Verteilung %(ka)s"
+msgstr "Allocation %(ka)s"
+
+msgid "Nach Zimmerzahl (Schlüssel der Liegenschaft)."
+msgstr "By number of rooms (property key)."
+
+msgid "Nach Wertquote (Schlüssel der Liegenschaft)."
+msgstr "By value quota (property key)."
+
+msgid "Gilt für diese Kostenart in dieser Periode, zeitanteilig nach Tagen."
+msgstr "Applies to this cost type in this period, pro rata by days."
+
+msgid "Wie erfasst: nach Volumen mit Heizgradtagen (Schlüssel am Beleg oder Konto «m³»)."
+msgstr "As recorded: by volume with heating degree days (key on voucher or account “m³”)."
+
+msgid "Wie erfasst: Schlüssel am Beleg oder Konto."
+msgstr "As recorded: key on voucher or account."
+
+#, python-format
+msgid "Vertrag %(name)s (%(e)s) schliesst aus · wird beachtet"
+msgstr "Lease %(name)s (%(e)s) excludes · taken into account"
+
+msgid "Vertraglich ausgeschlossen?"
+msgstr "Excluded by lease?"
+
+msgid "schliesst aus"
+msgstr "excludes"
+
+msgid "trägt mit"
+msgstr "shares cost"
+
+msgid "Was der Vertrag ausschliesst, trägt dieser Mieter nicht; sein Anteil geht auf den Eigentümer (Art. 257a Abs. 2 OR)."
+msgstr "What the lease excludes is not borne by this tenant; their share goes to the owner (Art. 257a para. 2 CO)."
+
+msgid "Leerstand bei Kosten nach Personen — siehe unten"
+msgstr "Vacancy for costs by occupants — see below"
+
+msgid "Noch keine Kosten — zuerst Schritt 2."
+msgstr "No costs yet — do step 2 first."
+
+msgid "Leerstand bei Kosten nach Personen"
+msgstr "Vacancy for costs by occupants"
+
+#, python-format
+msgid "%(n)s Leerstandstag in dieser Periode. Ein leeres Objekt hat keine Personen — wie es tragen soll, legt das Gesetz nicht fest. Ihre Wahl steht im Anhang der Abrechnung."
+msgid_plural "%(n)s Leerstandstage in dieser Periode. Ein leeres Objekt hat keine Personen — wie es tragen soll, legt das Gesetz nicht fest. Ihre Wahl steht im Anhang der Abrechnung."
+msgstr[0] "%(n)s vacancy day in this period. An empty unit has no occupants — the law does not specify how it should bear costs. Your choice appears in the statement appendix."
+msgstr[1] "%(n)s vacancy days in this period. An empty unit has no occupants — the law does not specify how it should bear costs. Your choice appears in the statement appendix."
+
+msgid "Schliessanlage der Liegenschaft"
+msgstr "Property locking system"
+
+msgid "Noch keine Schlüssel für dieses Objekt — z. B. Wohnungs- und Kellerschlüssel erfassen."
+msgstr "No keys for this unit yet — e.g. record apartment and cellar keys."
+
+msgid "Öffnet nur diesen Auftrag. Ging mit der Auftrags-Mail an den Handwerker."
+msgstr "Opens only this work order. Sent to the tradesperson with the work order email."
+
+msgid "nur lesend"
+msgstr "read-only"
+
+#, python-format
+msgid "Auftrag abgeschlossen — lesbar bis %(d)s."
+msgstr "Work order completed — readable until %(d)s."
+
+msgid "widerrufen"
+msgstr "revoked"
+
+#, python-format
+msgid "am %(d)s Uhr"
+msgstr "on %(d)s"
+
+msgid "Noch kein Link. Er entsteht mit der Auftrags-Mail — oder hier."
+msgstr "No link yet. It is created with the work order email — or here."
+
+msgid "Neuen Link erzeugen? Der bisherige öffnet danach nichts mehr."
+msgstr "Generate a new link? The previous one will no longer open anything."
+
+msgid "Link erzeugen"
+msgstr "Generate link"
+
+msgid "Neuen Link erzeugen"
+msgstr "Generate new link"
+
+msgid "Link widerrufen? Der Handwerker kann den Auftrag dann nicht mehr öffnen."
+msgstr "Revoke link? The tradesperson will no longer be able to open the work order."
+
+msgid "Link widerrufen"
+msgstr "Revoke link"
+
+msgid "An"
+msgstr "To"
+
+msgid "Empfänger wählen …"
+msgstr "Choose recipient …"
+
+msgid "Mietverträge"
+msgstr "Leases"
+
+#, python-format
+msgid "%(n)s im Büro"
+msgstr "%(n)s in the office"
+
+msgid "Stück"
+msgstr "Copies"
+
+msgid "An dieser Liegenschaft sind noch keine Schlüssel erfasst."
+msgstr "No keys recorded for this property yet."
+
+msgid "Zurück bis"
+msgstr "Return by"
+
+msgid "Leer lassen, wenn der Schlüssel bleibt (Mieter). Wird er nicht zurückgegeben, steht er unter «Heute» und in den Fristen."
+msgstr "Leave empty if the key stays (tenant). If it is not returned, it appears under “Today” and in the deadlines."
+
+msgid "z. B. Auftrag, Ticket"
+msgstr "e.g. work order, ticket"
+
+msgid "Unterschrift Empfänger"
+msgstr "Recipient signature"
+
+msgid "Die Quittung entsteht als PDF und liegt danach in der Ablage."
+msgstr "The receipt is created as a PDF and then filed."
+
+msgid "Ausgabe bestätigen"
+msgstr "Confirm issue"
+
+msgid "Schlüssel: Rückgabe fällig"
+msgstr "Keys: return due"
+
+#, python-format
+msgid "%(n)s Ausgabe mit erreichter Rückgabefrist"
+msgid_plural "%(n)s Ausgaben mit erreichter Rückgabefrist"
+msgstr[0] "%(n)s issue with return deadline reached"
+msgstr[1] "%(n)s issues with return deadline reached"
+
+msgid "Schlüssel zurücknehmen"
+msgstr "Take back keys"
+
+msgid "Wer gibt zurück?"
+msgstr "Who is returning?"
+
+msgid "Rückgabe überfällig"
+msgstr "Return overdue"
+
+msgid "An dieser Liegenschaft ist kein Schlüssel ausgegeben."
+msgstr "No key is issued for this property."
+
+#, python-format
+msgid "Schlüssel bei %(n)s"
+msgstr "Keys held by %(n)s"
+
+msgid "bleibt"
+msgstr "stays"
+
+msgid "zurück"
+msgstr "returned"
+
+msgid "Davon fehlen (Stück), wenn «zurück»"
+msgstr "Missing (copies) if “returned”"
+
+#, python-format
+msgid "%(n)s hat an dieser Liegenschaft keinen Schlüssel."
+msgstr "%(n)s has no key for this property."
+
+msgid "Ein Verlust legt die Pendenz «Zylinder ersetzen» an. Die Kosten werden nicht automatisch verrechnet — die Debitorenrechnung erfasst bei Bedarf eine Person."
+msgstr "A loss creates the pending item “Replace cylinder”. Costs are not charged automatically — if needed, someone records the debtor invoice."
+
+msgid "Unterschrift bei der Rücknahme"
+msgstr "Signature on return"
+
+msgid "Rücknahme bestätigen"
+msgstr "Confirm return"
+
+#, python-format
+msgid "gültig ab %(d)s"
+msgstr "valid from %(d)s"
+
+msgid "mitgeliefert"
+msgstr "supplied"
+
+msgid "Mitgelieferte Vorlage: Beim Speichern entsteht eine eigene Fassung für deine Verwaltung. Das Original bleibt für alle anderen, wie es ist."
+msgstr "Supplied template: saving creates your management's own version. The original stays unchanged for everyone else."
+
+msgid "Ereignis"
+msgstr "Event"
+
+msgid "keins — nur von Hand verwenden"
+msgstr "none — use manually only"
+
+msgid "Format"
+msgstr "Format"
+
+msgid "Andere Sprachfassungen:"
+msgstr "Other language versions:"
+
+msgid "anlegen"
+msgstr "create"
+
+msgid "Platzhalter einfügen"
+msgstr "Insert placeholder"
+
+msgid "Ältere Schreibweisen (bleiben gültig)"
+msgstr "Older spellings (remain valid)"
+
+msgid "Probe-PDF"
+msgstr "Sample PDF"
+
+msgid "mit"
+msgstr "with"
+
+msgid "Beispielwerten"
+msgstr "sample values"
+
+msgid "Die Vorschau erscheint, sobald der Text geladen ist."
+msgstr "The preview appears once the text has loaded."
+
+msgid "Die Vorschau liess sich nicht laden."
+msgstr "The preview could not be loaded."
+
+msgid "Regeln: Wenn … dann …"
+msgstr "Rules: if … then …"
+
+msgid "Regeln"
+msgstr "Rules"
+
+#, python-format
+msgid "Wenn: %(e)s"
+msgstr "If: %(e)s"
+
+msgid "dann:"
+msgstr "then:"
+
+msgid "kein zusätzliches Dokument"
+msgstr "no additional document"
+
+msgid "eigen"
+msgstr "custom"
+
+msgid "Fest dabei:"
+msgstr "Always included:"
+
+msgid "Vorlage anlegen"
+msgstr "Create template"
+
+msgid "Debitorenrechnung erfassen"
+msgstr "Record debtor invoice"
+
+msgid "Schliessanlage öffnen"
+msgstr "Open locking system"
+
+msgid "Die Schlüssel konnten nicht gebucht werden. Bitte über die Schliessanlage der Liegenschaft nachtragen."
+msgstr "The keys could not be booked. Please add them via the property's locking system."
+
+#, python-format
+msgid "Nicht im Schlüsselregister, deshalb nicht gebucht: %(liste)s"
+msgstr "Not in the key register, so not booked: %(liste)s"
+
+msgid "Bitte eine Bezeichnung angeben."
+msgstr "Please enter a name."
+
+msgid "Liegenschaft, Bezeichnung, Start- und Enddatum sind erforderlich; eine Periode umfasst höchstens 12 Monate."
+msgstr "Property, name, start and end date are required; a period covers at most 12 months."
+
+msgid "Schlüssel archiviert. Der Verlauf bleibt erhalten."
+msgstr "Key archived. The history is kept."
+
+msgid "Aus dieser Bewerbung ist bereits ein Vertrag entstanden. Den Stand ändern Sie im Vertrag."
+msgstr "A lease has already been created from this application. Change the status in the lease."
+
+#, python-format
+msgid "Von «%(von)s» nach «%(nach)s» ist kein Wechsel vorgesehen."
+msgstr "Moving from “%(von)s” to “%(nach)s” is not supported."
+
+msgid "Unbekannte Spalte."
+msgstr "Unknown column."
+
+#, python-format
+msgid "Vertragsentwurf für %(bezeichnung)s erstellt — bitte Konditionen prüfen und aktivieren."
+msgstr "Draft lease created for %(bezeichnung)s — please check the terms and activate it."
+
+#, python-format
+msgid "%(name)s: %(status)s."
+msgstr "%(name)s: %(status)s."
+
+msgid "Unbekannter Prüfpunkt."
+msgstr "Unknown check item."
+
+#, python-format
+msgid "«%(punkt)s» abgehakt."
+msgstr "“%(punkt)s” checked."
+
+#, python-format
+msgid "«%(punkt)s» zurückgenommen."
+msgstr "“%(punkt)s” unchecked."
+
+msgid "Das Nebenkosten-Akonto kann nicht negativ sein."
+msgstr "The service charge advance cannot be negative."
+
+msgid "Das Akonto wird über die Mietzinsanpassung angepasst (Formular und Termin)."
+msgstr "The advance is adjusted via the rent adjustment (form and date)."
+
+msgid "Die Periode ist verbucht — ändern lässt sich nichts mehr."
+msgstr "The period is booked — nothing can be changed any more."
+
+#, python-format
+msgid "Die Periode ist länger als %(n)s Monate."
+msgstr "The period is longer than %(n)s months."
+
+#, python-format
+msgid "%(e)s: %(was)s fehlt"
+msgstr "%(e)s: %(was)s missing"
+
+msgid "Noch keine Kosten. Kreditoren mit «In Nebenkostenabrechnung einbeziehen» erscheinen automatisch; weitere Kosten erfassen Sie als Beleg."
+msgstr "No costs yet. Creditors with “Include in service charge statement” appear automatically; record other costs as a voucher."
+
+#, python-format
+msgid "Verteilt ist nicht genau das Total: Differenz CHF %(d)s."
+msgstr "The allocated amount does not exactly match the total: difference CHF %(d)s."
+
+msgid "Periode gespeichert."
+msgstr "Period saved."
+
+#, python-format
+msgid "%(e)s gespeichert."
+msgstr "%(e)s saved."
+
+msgid "Beleg erfasst."
+msgstr "Voucher recorded."
+
+msgid "Beleg gelöscht."
+msgstr "Voucher deleted."
+
+msgid "Heizöl-Bestand gespeichert."
+msgstr "Heating oil stock saved."
+
+#, python-format
+msgid "%(n)s HNK-Rechnung(en) im Status «neu», «in Zahlung» oder «teilbezahlt» — die Abrechnung liest nur freigegebene und bezahlte Rechnungen."
+msgstr "%(n)s SC invoice(s) with status “new”, “in payment” or “partly paid” — the statement only reads approved and paid invoices."
+
+msgid "Kostenart oder Verteilung unbekannt."
+msgstr "Unknown cost type or allocation."
+
+msgid "Die Schlüssel je Kostenart sind für diese Liegenschaft jetzt eingeschaltet."
+msgstr "Keys per cost type are now enabled for this property."
+
+#, python-format
+msgid "Verteilung für %(ka)s gespeichert."
+msgstr "Allocation for %(ka)s saved."
+
+msgid "Für diese Kostenart ist «Eigene %» nicht gewählt."
+msgstr "“Custom %” is not selected for this cost type."
+
+msgid "Gespeichert."
+msgstr "Saved."
+
+msgid "Kostenart unbekannt."
+msgstr "Unknown cost type."
+
+#, python-format
+msgid "Vertrag %(v)s gespeichert."
+msgstr "Lease %(v)s saved."
+
+msgid "Unbekannte Auswahl."
+msgstr "Unknown selection."
+
+msgid "Der Grundkostenanteil liegt zwischen 0 und 100 %."
+msgstr "The base cost share is between 0 and 100 %."
+
+msgid "Heizkosten-Einstellung gespeichert."
+msgstr "Heating cost setting saved."
+
+msgid "Das ist kein Heizungs- oder Wärmezähler."
+msgstr "This is not a heating or heat meter."
+
+msgid "Zählerstände gespeichert."
+msgstr "Meter readings saved."
+
+msgid "Bitte eine CSV-Datei wählen."
+msgstr "Please choose a CSV file."
+
+#, python-format
+msgid "%(n)s Zählerstände übernommen."
+msgstr "%(n)s meter readings imported."
+
+#, python-format
+msgid "%(n)s Zeilen mit Fehler wurden nicht übernommen."
+msgstr "%(n)s rows with errors were not imported."
+
+#, python-format
+msgid "Schlüssel zurück: %(typ)s Nr. %(nr)s"
+msgstr "Key return: %(typ)s no. %(nr)s"
+
+#, python-format
+msgid "«%(farbe)s» ist keine Farbe im Format #RRGGBB — Briefkopf-Farbe unverändert."
+msgstr "“%(farbe)s” is not a colour in #RRGGBB format — letterhead colour unchanged."
+
+#, python-format
+msgid "Neue Fassung von '%(name)s' gilt ab %(datum)s. Bis dahin gilt die bisherige."
+msgstr "The new version of “%(name)s” applies from %(datum)s. Until then, the current one applies."
+
+msgid "Link widerrufen — er öffnet nichts mehr."
+msgstr "Link revoked — it no longer opens anything."
+
+msgid "Bitte Hersteller, System oder Sicherungskarte angeben."
+msgstr "Please enter manufacturer, system or security card."
+
+msgid "Schliessanlage gespeichert."
+msgstr "Locking system saved."
+
+msgid "Schliessanlage entfernt. Schlüssel und Türen bleiben erhalten."
+msgstr "Locking system removed. Keys and doors are kept."
+
+msgid "Bitte die Tür bezeichnen, z. B. Haustür oder Keller."
+msgstr "Please name the door, e.g. front door or cellar."
+
+#, python-format
+msgid "Tür «%(t)s» erfasst."
+msgstr "Door “%(t)s” recorded."
+
+msgid "Tür entfernt."
+msgstr "Door removed."
+
+msgid "Bezeichnung und Schlüssel-Nr. sind Pflichtfelder."
+msgstr "Name and key no. are required."
+
+msgid "Eine gewählte Tür gehört nicht zu dieser Liegenschaft."
+msgstr "A selected door does not belong to this property."
+
+#, python-format
+msgid "%(n)s Stück sind ausgegeben oder verloren — weniger geht nicht."
+msgstr "%(n)s copies are issued or lost — it cannot be fewer."
+
+#, python-format
+msgid "Schlüssel %(nr)s erfasst."
+msgstr "Key %(nr)s recorded."
+
+#, python-format
+msgid "Schlüssel %(nr)s ist wieder aktiv."
+msgstr "Key %(nr)s is active again."
+
+#, python-format
+msgid "Schlüssel %(nr)s gespeichert."
+msgstr "Key %(nr)s saved."
+
+msgid "«Zurück bis» ist kein gültiges Datum."
+msgstr "“Return by” is not a valid date."
+
+msgid "Die Ausgabe ist gebucht, die Quittung konnte aber nicht abgelegt werden."
+msgstr "The issue is booked, but the receipt could not be filed."
+
+#, python-format
+msgid "%(n)s Schlüssel an %(name)s ausgegeben. Quittung in der Ablage."
+msgstr "%(n)s key(s) issued to %(name)s. Receipt filed."
+
+msgid "Diesen Empfänger gibt es an dieser Liegenschaft nicht."
+msgstr "This recipient does not exist for this property."
+
+msgid "Die Rücknahme ist gebucht, die Quittung konnte aber nicht abgelegt werden."
+msgstr "The return is booked, but the receipt could not be filed."
+
+msgid "Rücknahme gebucht. Quittung in der Ablage."
+msgstr "Return booked. Receipt filed."
+
+#, python-format
+msgid "%(n)s Verlust(e): Pendenz «Zylinder ersetzen» angelegt."
+msgstr "%(n)s loss(es): pending item “Replace cylinder” created."
+
+msgid "{mieter.anrede}\n\nbeiliegend erhalten Sie Ihren Mietvertrag für {objekt.bezeichnung}, {objekt.adresse}. Mietbeginn ist der {vertrag.beginn}.\n\nFreundliche Grüsse"
+msgstr "{mieter.anrede}\n\nPlease find enclosed your lease for {objekt.bezeichnung}, {objekt.adresse}. The lease starts on {vertrag.beginn}.\n\nKind regards"
+
+msgid "{mieter.anrede}\n\ngerne bieten wir Ihnen die Wohnung an der {objekt.adresse} ab {vertrag.beginn} an. Der Nettomietzins beträgt CHF {vertrag.mietzins_netto}, die Nebenkosten CHF {vertrag.nebenkosten}.\n\nFreundliche Grüsse\n{verwaltung.sachbearbeiter}"
+msgstr "{mieter.anrede}\n\nWe are pleased to offer you the apartment at {objekt.adresse} from {vertrag.beginn}. The net rent is CHF {vertrag.mietzins_netto}, the service charges CHF {vertrag.nebenkosten}.\n\nKind regards\n{verwaltung.sachbearbeiter}"
+
+msgid "{mieter.anrede}\n\ndie Kündigung des Mietverhältnisses für {objekt.bezeichnung}, {objekt.adresse} ist bei uns erfasst. Wir melden uns für die Wohnungsabnahme.\n\nFreundliche Grüsse"
+msgstr "{mieter.anrede}\n\nWe have recorded the termination of the lease for {objekt.bezeichnung}, {objekt.adresse}. We will contact you about the move-out inspection.\n\nKind regards"
+
+msgid "{mieter.anrede}\n\nSie erhalten das amtliche Formular zur Anpassung Ihres Mietzinses für {objekt.bezeichnung}. Bei Fragen erreichen Sie uns unter {verwaltung.telefon}.\n\nFreundliche Grüsse"
+msgstr "{mieter.anrede}\n\nPlease find enclosed the official form for the adjustment of your rent for {objekt.bezeichnung}. If you have any questions, you can reach us at {verwaltung.telefon}.\n\nKind regards"
+
+msgid "{mieter.anrede}\n\nSie erhalten die Nebenkostenabrechnung für {objekt.bezeichnung}. Bei Fragen erreichen Sie uns unter {verwaltung.telefon}.\n\nFreundliche Grüsse"
+msgstr "{mieter.anrede}\n\nPlease find enclosed the service charge statement for {objekt.bezeichnung}. If you have any questions, you can reach us at {verwaltung.telefon}.\n\nKind regards"
+
+msgid "{mieter.anrede}\n\ndie Wohnungsabnahme für {objekt.bezeichnung}, {objekt.adresse} ist abgeschlossen. Vielen Dank für die Übergabe.\n\nFreundliche Grüsse"
+msgstr "{mieter.anrede}\n\nThe move-out inspection for {objekt.bezeichnung}, {objekt.adresse} has been completed. Thank you for the handover.\n\nKind regards"
+
+msgid "«Gültig ab» ist kein Datum."
+msgstr "“Valid from” is not a date."
+
+msgid "Unbekanntes Format."
+msgstr "Unknown format."
+
+msgid "Unbekannte Sprache."
+msgstr "Unknown language."
+
+msgid "Unbekanntes Ereignis."
+msgstr "Unknown event."
+
+#, python-format
+msgid "Unbekannte Platzhalter: %(liste)s. Erlaubt sind die Platzhalter in der Liste neben dem Text."
+msgstr "Unknown placeholders: %(liste)s. Only the placeholders listed next to the text are allowed."
+
+msgid "Das Probe-PDF liess sich nicht erzeugen."
+msgstr "The sample PDF could not be generated."
+
+msgid "Für dieses Ereignis gibt es noch keine Vorlage."
+msgstr "There is no template for this event yet."
+
+#, python-format
+msgid "Regel «%(e)s» ist eingeschaltet."
+msgstr "Rule “%(e)s” is enabled."
+
+#, python-format
+msgid "Regel «%(e)s» ist ausgeschaltet."
+msgstr "Rule “%(e)s” is disabled."
+
+msgid "Zu viele Anfragen. Bitte versuchen Sie es später erneut."
+msgstr "Too many requests. Please try again later."
+
+msgid "Bitte eine Datei wählen (PDF oder Bild)."
+msgstr "Please choose a file (PDF or image)."
+
+msgid "Der Auftrag ist abgeschlossen — der Link ist nur noch lesbar."
+msgstr "The work order is completed — the link is now read-only."
+
+msgid "Bitte Datum und Zeit angeben."
+msgstr "Please enter date and time."
+
+msgid "Der Termin liegt in der Vergangenheit."
+msgstr "The appointment is in the past."
+
+msgid "Termin gesetzt. Der Mieter erhält eine Mail mit Kalendereintrag."
+msgstr "Appointment set. The tenant receives an email with a calendar entry."
+
+msgid "Termin bestätigt."
+msgstr "Appointment confirmed."
+
+msgid "Danke, die Verwaltung ist informiert."
+msgstr "Thank you, the management has been informed."
+
+msgid "Nachricht an die Verwaltung gesendet."
+msgstr "Message sent to the management."
+
+msgid "Bitte einen Betrag in CHF angeben."
+msgstr "Please enter an amount in CHF."
+
+msgid "Offerte erhalten. Sie braucht die Freigabe der Eigentümerschaft — die Verwaltung meldet sich."
+msgstr "Quote received. It needs the owners' approval — the management will be in touch."
+
+msgid "Offerte erhalten."
+msgstr "Quote received."
+
+msgid "Rechnung erhalten. Die Verwaltung prüft sie."
+msgstr "Invoice received. The management will review it."
+
+msgid "Bitte eine Farbe im Format #RRGGBB angeben, z. B. #1f6f5c."
+msgstr "Please enter a colour in #RRGGBB format, e.g. #1f6f5c."
+
+msgid "Dokument zu einem Ereignis"
+msgstr "Document for an event"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "Vertrag erstellt"
+msgstr "Lease created"
+
+msgid "Bewerbung zugesagt"
+msgstr "Application accepted"
+
+msgid "Kündigung erfasst"
+msgstr "Termination recorded"
+
+msgid "Mietzinsanpassung versandt"
+msgstr "Rent adjustment sent"
+
+msgid "Nebenkostenabrechnung versandt"
+msgstr "Service charge statement sent"
+
+msgid "Abnahme abgeschlossen"
+msgstr "Handover completed"
+
+msgid "Rückgabe ist überfällig"
+msgid_plural "Rückgaben sind überfällig"
+msgstr[0] "Return overdue"
+msgstr[1] "Returns overdue"
+
+msgid "Zurückfordern"
+msgstr "Reclaim"
+
+msgid "Leerstand trägt nichts (Kosten nur auf die Bewohner)"
+msgstr "Vacancy bears nothing (costs only to occupants)"
+
+msgid "Leerstand trägt nach der durchschnittlichen Belegung"
+msgstr "Vacancy bears costs by average occupancy"
+
+msgid "Ausweis"
+msgstr "ID"
+
+msgid "Tragbarkeit"
+msgstr "Affordability"
+
+msgid "Prüfung"
+msgstr "Check"
+
+msgid "Eingegangen"
+msgstr "Received"
+
+msgid "Geprüft"
+msgstr "Reviewed"
+
+msgid "Vertrag generiert"
+msgstr "Lease generated"
+
+msgid "Anfangsstand"
+msgstr "Initial reading"
+
+msgid "Zwischenstand (Mieterwechsel)"
+msgstr "Interim reading (tenant change)"
+
+msgid "Endstand"
+msgstr "Final reading"
+
+msgid "Hauptschlüssel"
+msgstr "Master key"
+
+msgid "Gruppenschlüssel"
+msgstr "Group key"
+
+msgid "Einzelschlüssel"
+msgstr "Individual key"

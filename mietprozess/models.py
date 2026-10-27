@@ -1,5 +1,8 @@
+import os
+
 import pdfplumber
 from django.db import models
+from django.utils.deconstruct import deconstructible
 from core.organisation_kette import OrganisationAusKette
 from portfolio.models import Einheit
 from django.utils.translation import gettext_lazy as _
@@ -37,6 +40,51 @@ def scan_pdf_for_betreibungen(file_obj):
     except Exception as e:
         print(f"PDF Scanner Error: {e}")
         return None
+
+
+@deconstructible
+class BewerbungAblage:
+    """Ablagepfad der Bewerbungsunterlagen: organisation/<id>/bewerbungen/<ordner>/<name>.
+
+    Bis 10/2026 lagen sie ohne Präfix unter `bewerbungen/<ordner>/`. Die
+    Unterordner bleiben dieselben, damit `SENSIBLE_PREFIXE` in
+    `core/views/media_protected.py` unverändert greift (das Präfix zieht
+    `ohne_organisationspraefix` dort ab). Alt-Dateien bleiben liegen; die
+    Zugriffsregel findet ihre Organisation über die Datenbank, und die
+    DSG-Löschung (`core.services.bewerbung_aufbewahrung`) geht über das
+    Dateifeld, nicht über den Pfad — sie trifft beide Formen.
+
+    Ohne bestimmbare Organisation bleibt es beim Alt-Pfad ohne Präfix, wie in
+    `get_smart_upload_path`. Eine Klasse statt einer Funktion je Ordner, damit
+    die Migration den Ordner als Argument festhält.
+    """
+
+    def __init__(self, ordner):
+        self.ordner = ordner
+
+    def __call__(self, instance, filename):
+        from core.utils import organisation_id_fuer_ablage
+        org_id = organisation_id_fuer_ablage(instance)
+        pfad = os.path.join('bewerbungen', self.ordner, filename)
+        if org_id is None:
+            return pfad
+        return os.path.join('organisation', str(org_id), pfad)
+
+    def __eq__(self, other):
+        return isinstance(other, BewerbungAblage) and other.ordner == self.ordner
+
+    def __hash__(self):
+        return hash(('BewerbungAblage', self.ordner))
+
+
+#: Die Prüf-Checkliste einer Bewerbung (Entscheid E7): Sie zeigt den Stand und
+#: ist KEIN Riegel — «Bonität geprüft» setzt weiter die Automatik in `save()`.
+PRUEFPUNKTE = (
+    ('betreibung', _('Betreibung')),
+    ('ausweis', _('Ausweis')),
+    ('referenz', _('Referenz')),
+    ('tragbarkeit', _('Tragbarkeit')),
+)
 
 
 # ==========================================
@@ -142,16 +190,44 @@ class Mietbewerbung(OrganisationAusKette):
 
     # --- Dokumente (Schweizer Standard) ---
     digitaler_betreibungsauszug = models.BooleanField(default=False, help_text="Wird via API eingeholt")
-    betreibungsauszug = models.FileField(upload_to="bewerbungen/betreibung/", blank=True, null=True)
-    ausweiskopie = models.FileField(upload_to="bewerbungen/ausweis/", blank=True, null=True)
-    lohnausweis = models.FileField(upload_to="bewerbungen/lohn/", blank=True, null=True)
-    weitere_dokumente = models.FileField(upload_to="bewerbungen/weitere/", blank=True, null=True)
+    betreibungsauszug = models.FileField(upload_to=BewerbungAblage('betreibung'), blank=True, null=True)
+    ausweiskopie = models.FileField(upload_to=BewerbungAblage('ausweis'), blank=True, null=True)
+    lohnausweis = models.FileField(upload_to=BewerbungAblage('lohn'), blank=True, null=True)
+    weitere_dokumente = models.FileField(upload_to=BewerbungAblage('weitere'), blank=True, null=True)
+
+    # --- Ergebnis ---
+    # Der Vertragsentwurf, der aus dieser Bewerbung entstand. Gesetzt von
+    # `fw_bewerbung_zu_vertrag`; bis 10/2026 wurde er über Name und E-Mail
+    # des Mieters gesucht und konnte so einen fremden Entwurf treffen.
+    vertrag = models.ForeignKey('rentals.Mietvertrag', null=True, blank=True,
+                                on_delete=models.SET_NULL, related_name='bewerbungen',
+                                verbose_name=_('Vertrag'))
+    # Prüf-Checkliste: {punkt: {'ok': bool, 'von': str, 'am': ISO-Zeit}} je
+    # Eintrag aus PRUEFPUNKTE. Leer = noch nichts abgehakt.
+    pruefung = models.JSONField(_('Prüfung'), default=dict, blank=True)
 
     erstellt_am = models.DateTimeField(auto_now_add=True)
     aktualisiert_am = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Bewerbung {self.vorname} {self.nachname} - {self.einheit.bezeichnung}"
+
+    def pruefpunkte(self):
+        """Die Checkliste als Liste: [{'key', 'label', 'ok', 'von', 'am'}]."""
+        from django.utils.dateparse import parse_datetime
+        stand = self.pruefung if isinstance(self.pruefung, dict) else {}
+        punkte = []
+        for key, label in PRUEFPUNKTE:
+            eintrag = stand.get(key) if isinstance(stand.get(key), dict) else {}
+            am = eintrag.get('am') or ''
+            punkte.append({'key': key, 'label': label, 'ok': bool(eintrag.get('ok')),
+                           'von': eintrag.get('von', ''),
+                           'am': parse_datetime(am) if isinstance(am, str) and am else None})
+        return punkte
+
+    def pruefung_erledigt(self):
+        """Anzahl abgehakter Punkte der Checkliste."""
+        return sum(1 for p in self.pruefpunkte() if p['ok'])
 
     def save(self, *args, **kwargs):
         # Prüfen, ob wir die Datei scannen müssen (nur wenn sie neu hochgeladen wurde)

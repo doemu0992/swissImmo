@@ -29,19 +29,19 @@ def _wrap(text, breite):
 def _ersetze(text, e):
     ort = f"{e.get('plz','')} {e.get('ort','')}".strip()
     ersatz = {
-        '{name}': e.get('name', ''),
-        '{anrede}': e.get('anrede', ''),
-        '{strasse}': e.get('strasse', ''),
-        '{plz}': e.get('plz', ''),
-        '{ort}': e.get('ort', ''),
-        '{adresse}': f"{e.get('strasse','')}, {ort}".strip(', '),
-        '{objekt}': e.get('objekt', ''),
-        '{liegenschaft}': e.get('liegenschaft', ''),
+        'name': e.get('name', ''),
+        'anrede': e.get('anrede', ''),
+        'strasse': e.get('strasse', ''),
+        'plz': e.get('plz', ''),
+        'ort': e.get('ort', ''),
+        'adresse': f"{e.get('strasse','')}, {ort}".strip(', '),
+        'objekt': e.get('objekt', ''),
+        'liegenschaft': e.get('liegenschaft', ''),
     }
-    out = text or ''
-    for k, v in ersatz.items():
-        out = out.replace(k, v or '')
-    return out
+    # Der zentrale Dienst ersetzt (Modul 5): dieselben alten Namen, dazu die
+    # neuen, die auf sie zeigen (`{mieter.name}` = `{name}`).
+    from core.services.platzhalter import ersetze
+    return ersetze(text or '', {k: (v or '') for k, v in ersatz.items()})
 
 
 @nur_deutsch

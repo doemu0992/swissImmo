@@ -54,6 +54,7 @@ PARAMETER_MODELL = {
     'nummer':          None,          # Kontonummer, keine Objekt-ID — Bauform C
     'pfad':            None,          # Dateipfad, keine Objekt-ID — Bauform C
     'zweck':           None,          # 'antworten'/'rechnungen' — keine Objekt-ID
+    'token':           None,          # Handwerker-Link (Modul 3) — Geheimnis, keine Objekt-ID
 }
 
 # Die Parameter ohne Objektbezug. Sie sind KEINE Ausnahme im Sinne von
@@ -67,7 +68,13 @@ PARAMETER_MODELL = {
 # je Verwaltung höchstens ein Postfach dieses Zwecks. Geprüft in
 # `core/tests/test_postfach.py` (PostfachMandantTests) und im Registrylauf
 # über das Fixture-Postfach.
-KEINE_OBJEKT_ID = {'nummer', 'pfad', 'zweck'}
+#
+# `token` (Modul 3, 27.10.2026) ist der Handwerker-Link `/auftrag/<token>/`:
+# ein Geheimnis, das über seinen Hash genau einen Auftrag findet — es gibt
+# keine fremde ID, die der Sweep einsetzen könnte. Geprüft von Hand in
+# `core/tests/test_portale_modul3.py` (fremder, falscher, abgelaufener und
+# widerrufener Token; kein zweiter Auftrag über denselben Token).
+KEINE_OBJEKT_ID = {'nummer', 'pfad', 'zweck', 'token'}
 
 
 class MandantenFixture:
@@ -310,6 +317,14 @@ class MandantenFixture:
             liegenschaft=self.liegenschaft, schluessel_nummer=f'S-{k}-01')
         self.schluessel_ausgabe = SchluesselAusgabe.objects.create(
             schluessel=self.schluessel, mieter=self.mieter)
+        # Modul 2: Anlage und Tür, damit der Registrylauf die `pk` der neuen
+        # URLs mit einer ECHTEN fremden Anlage bzw. Tür angeht.
+        from portfolio.models import Schliessanlage, Schliesspunkt
+        self.schliessanlage = Schliessanlage.objects.create(
+            liegenschaft=self.liegenschaft, hersteller=f'Kaba {k}', sicherungskarte_nr=f'K-{k}-1')
+        self.schliesspunkt = Schliesspunkt.objects.create(
+            liegenschaft=self.liegenschaft, anlage=self.schliessanlage, bezeichnung=f'Haustür {k}')
+        self.schluessel.oeffnet.add(self.schliesspunkt)
         self.sollmietzins = Sollmietzins.objects.create(
             einheit=self.einheit, gueltig_ab=date(2024, 1, 1),
             netto_mietzins=Decimal('1500'))
@@ -542,6 +557,8 @@ class MandantenFixture:
         ('auftrag_termin',  'auftrag'),
         ('auftrag_rechnung', 'auftrag'),
         ('auftrag_storno',  'auftrag'),
+        # Modul 3: Handwerker-Link widerrufen/neu erzeugen lädt einen AUFTRAG.
+        ('auftrag_link',    'auftrag'),
         ('termin',          'termin'),
         ('abwesenheit',     'abwesenheit'),
         # Phase 4b.10 — der Fristenwaechter. Wieder von der Selbstpruefung
@@ -613,6 +630,13 @@ class MandantenFixture:
         ('auftrag_kosten',  'auftrag'),
         ('auftrag_pdf',     'auftrag'),
         ('schluessel_rueckgabe', 'schluessel_ausgabe'),
+        # Modul 2: `fw_liegenschaft_schluessel_*` nehmen die LIEGENSCHAFT, nicht
+        # den Schlüssel — deshalb vor ('schluessel', …). Anlage und Tür haben
+        # eigene Muster (kein anderes trifft «schliessanlage»/«schliesspunkt»).
+        ('liegenschaft_schluessel', 'liegenschaft'),
+        ('liegenschaft_schliess', 'liegenschaft'),
+        ('schliessanlage',  'schliessanlage'),
+        ('schliesspunkt',   'schliesspunkt'),
         ('schluessel',      'schluessel'),
         ('sollmietzins',    'sollmietzins'),
         ('staffelvorlage',  'staffelvorlage'),
@@ -631,6 +655,9 @@ class MandantenFixture:
         ('objekt',          'einheit'),
         ('einheit',         'einheit'),
         ('vertrag',         'vertrag'),
+        # Modul 3: Ticket-Detail und -Nachricht im Mieterportal nehmen einen
+        # SCHADEN, keinen Mieter. Vorher griff ('mieter', 'mieter').
+        ('mieter_ticket',   'schaden'),
         ('mieter',          'mieter'),
         ('person',          'mieter'),
         ('eigentuemer',     'eigentuemer'),

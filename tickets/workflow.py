@@ -23,11 +23,21 @@ gilt damit für Ansicht, Admin und Skripte. Nicht erfasst:
 ``QuerySet.update()`` — wie bei jeder Modellregel.
 """
 import logging
+from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
 logger = logging.getLogger(__name__)
+
+#: Ab diesem geschätzten Betrag (CHF) braucht eine Reparatur die Freigabe der
+#: Eigentümerschaft. Stand bis Modul 3 lokal in `fw_auftrag_kosten`; hier,
+#: damit die Offerte aus dem Handwerkerportal dieselbe Schwelle nimmt.
+REPARATUR_FREIGABE_SCHWELLE = Decimal('1000')
+
+#: Die Freigabe gilt für die geschätzte Summe. Liegt ein neuer Betrag mehr als
+#: 20 % darüber, braucht es eine Nachfreigabe (Stresstest 30.09.2026).
+ABWEICHUNG_NACHFREIGABE = Decimal('1.20')
 
 #: Erlaubte Übergänge. Alles andere wird abgelehnt.
 UEBERGAENGE = {
@@ -246,8 +256,17 @@ def arbeitsauftrag_senden(auftrag, text=''):
         except Exception:
             logger.warning("Foto zu Ticket #%s nicht lesbar, Auftrag geht ohne", ticket.pk)
     if hw.email:
+        # Handwerkerportal (Modul 3): Der Link öffnet genau diesen Auftrag. Er
+        # entsteht nur, wenn eine Mail hinausgeht — der Klartext steht nirgends
+        # sonst, ein Link ohne Empfänger wäre verloren. Ein erneuter Versand
+        # ersetzt den alten Link.
+        from .handwerker_zugang import link_erzeugen, link_url
+        url = link_url(link_erzeugen(auftrag))
+        inhalt = (f"{inhalt}\n\nAuftrag online ansehen, Termin bestätigen, Offerte oder "
+                  f"Rechnung hochladen:\n{url}")
         html = ("<html><body style='font-family:Arial,sans-serif'>"
-                + inhalt.replace('\n', '<br>') + "</body></html>")
+                + inhalt.replace('\n', '<br>').replace(url, f"<a href='{url}'>{url}</a>")
+                + "</body></html>")
         versendet = send_via_hoststar(
             hw.email, betreff, html, f"Reparaturauftrag_{auftrag.id}.pdf", pdf,
             weitere_anhaenge=anhaenge, reply_to=reply_to(ticket))
@@ -493,7 +512,10 @@ def auftrag_stornieren(auftrag, grund=''):
         if auftrag.freigabe_status == 'ausstehend':
             auftrag.freigabe_status = 'nicht_noetig'
             auftrag.freigabe_datum = None
-        auftrag.save(update_fields=['status', 'freigabe_status', 'freigabe_datum'])
+        from .handwerker_zugang import abschluss_vermerken
+        abschluss_vermerken(auftrag)          # Link nur noch lesend, Ablauf in 30 Tagen (E6)
+        auftrag.save(update_fields=['status', 'freigabe_status', 'freigabe_datum',
+                                    'token_gueltig_bis'])
         grund = (grund or '').strip()
         _protokoll(ticket, f"Auftrag #{auftrag.id} an {hw.firma} storniert"
                            + (f": {grund}" if grund else "."))
@@ -518,3 +540,174 @@ def auftrag_stornieren(auftrag, grund=''):
                    f"Storno an {hw.firma} NICHT versendet "
                    f"({'keine E-Mail-Adresse' if not hw.email else 'Versand fehlgeschlagen'})."))
     return ok
+
+
+# ---------------------------------------------------------------------------
+# Eigentümer-Freigabe und Handwerkerportal (Modul 3)
+# ---------------------------------------------------------------------------
+
+def eigentuemer_um_freigabe_bitten(auftrag):
+    """Mail an die Eigentümerschaft: eine Reparatur wartet auf ihre Freigabe.
+
+    Aus `fw_auftrag_kosten` hierher gezogen (Text unverändert), damit die
+    Offerte aus dem Handwerkerportal denselben Weg nimmt. Gibt die Adresse
+    zurück, an die versendet wurde, sonst ''.
+    """
+    from core.utils.email_service import send_ticket_email
+    ticket = auftrag.ticket
+    eigentuemer = getattr(ticket.liegenschaft, 'eigentuemer', None) if ticket.liegenschaft_id else None
+    if not (eigentuemer and eigentuemer.email):
+        return ''
+    lg = ticket.liegenschaft
+    kosten_txt = f"CHF {auftrag.kosten_geschaetzt}" if auftrag.kosten_geschaetzt else "noch offen"
+    text = (f"Guten Tag {eigentuemer.kontaktperson or eigentuemer.firma_oder_name}\n\n"
+            f"Für Ihre Liegenschaft {lg.strasse}, {lg.plz} {lg.ort} liegt eine Reparatur "
+            f"zur Freigabe bereit:\n\n"
+            f"Schaden: {ticket.titel}\n"
+            f"Geschätzte Kosten: {kosten_txt}\n\n"
+            f"Bitte melden Sie sich im Eigentümer-Portal an, um die Reparatur "
+            f"freizugeben oder abzulehnen.\n\nFreundliche Grüsse\nIhre Verwaltung")
+    if send_ticket_email(eigentuemer.email, f"Reparaturfreigabe angefragt — {lg.strasse}", text):
+        return eigentuemer.email
+    return ''
+
+
+def _vom_handwerker(auftrag, text, datei=None):
+    """Verlaufseintrag «vom Handwerker» — dieselbe Form wie eine Mail-Antwort
+    (`antwort_zuordnen`): intern, ungelesen, der Handwerker als Absender."""
+    from .models import TicketNachricht
+    hw, ticket = auftrag.handwerker, auftrag.ticket
+    n = TicketNachricht(ticket=ticket, absender_name=hw.firma, typ='handwerker_mail',
+                        empfaenger_handwerker=hw, nachricht=text, is_intern=True,
+                        is_von_verwaltung=False, gelesen=False)
+    if datei is not None:
+        n.datei = datei
+    n.save()
+    ticket.gelesen = False
+    ticket.save(update_fields=['gelesen'])
+    return n
+
+
+def nachricht_von_handwerker(auftrag, text):
+    """Nachricht aus dem Handwerkerportal. Wartete das Ticket auf den
+    Handwerker, ist wieder die Verwaltung am Zug — dieselbe Regel wie bei
+    einer Mail-Antwort (`antwort_zuordnen`)."""
+    text = (text or '').strip()
+    if not text:
+        raise ValidationError('Bitte eine Nachricht eingeben.', code='leer')
+    n = _vom_handwerker(auftrag, text)
+    ticket = auftrag.ticket
+    if ticket.status == 'warte_auf_handwerker':
+        try:
+            wechsle_status(ticket, 'in_bearbeitung')
+        except ValidationError:
+            logger.exception("Ticket #%s: Rückwechsel nach Handwerker-Nachricht nicht möglich", ticket.pk)
+    return n
+
+
+#: Was der Handwerker melden kann, und wohin das Ticket dann im Regelweg geht.
+#: «begonnen»: der Handwerker ist am Zug. «erledigt»: Arbeit gemacht, die
+#: Rechnung fehlt noch — abgeschlossen wird intern, nach der Rechnung.
+HANDWERKER_MELDUNGEN = {
+    'begonnen': ('warte_auf_handwerker', 'Arbeit begonnen'),
+    'erledigt': ('wartet_auf_rechnung', 'Arbeit erledigt'),
+}
+
+
+def handwerker_meldet(auftrag, was):
+    """«begonnen» bzw. «erledigt» aus dem Handwerkerportal.
+
+    Nur über erlaubte Übergänge (`UEBERGAENGE`). Ist der Übergang vom
+    aktuellen Status aus nicht vorgesehen, bleibt der Status, und ein interner
+    Hinweis sagt der Verwaltung, was der Handwerker gemeldet hat. Gibt True
+    zurück, wenn der Status gewechselt hat.
+    """
+    if was not in HANDWERKER_MELDUNGEN:
+        raise ValidationError('Unbekannte Meldung.', code='unbekannt')
+    ziel, text = HANDWERKER_MELDUNGEN[was]
+    ticket = auftrag.ticket
+    _vom_handwerker(auftrag, f"{auftrag.handwerker.firma} meldet: {text}.")
+    if ticket.status == ziel:
+        return False
+    if ziel in UEBERGAENGE.get(ticket.status, ()):
+        try:
+            wechsle_status(ticket, ziel)
+            return True
+        except ValidationError:
+            logger.exception("Ticket #%s: Handwerker-Meldung «%s» nicht umsetzbar", ticket.pk, was)
+    _protokoll(ticket, f"Handwerker meldet «{text}», Status bleibt «{ticket.status}» "
+                       f"(Übergang nach «{ziel}» nicht vorgesehen) — bitte prüfen.")
+    return False
+
+
+def termin_bestaetigen(auftrag):
+    """Der Handwerker bestätigt den vereinbarten Termin. Keine Mails: Der
+    Termin ist beiden Seiten schon bekannt; der Verlauf hält die Bestätigung fest."""
+    if auftrag.termin_status != 'vereinbart' or not auftrag.termin_am:
+        raise ValidationError('Es gibt keinen vereinbarten Termin.', code='kein_termin')
+    return _vom_handwerker(auftrag, f"{auftrag.handwerker.firma} bestätigt den Termin "
+                                    f"{_termin_text(auftrag.termin_am)}.")
+
+
+def offerte_erfassen(auftrag, betrag, datei):
+    """Offerte aus dem Handwerkerportal: Betrag und Dokument.
+
+    Setzt `kosten_geschaetzt`. Ab `REPARATUR_FREIGABE_SCHWELLE` wird die
+    Freigabe der Eigentümerschaft angefordert — dieselbe Regel wie in
+    `fw_auftrag_kosten`. Lag schon eine Freigabe vor und übersteigt die neue
+    Offerte die freigegebene Schätzung um mehr als 20 %, braucht es eine
+    Nachfreigabe (`ABWEICHUNG_NACHFREIGABE`, wie bei den effektiven Kosten).
+    Gibt True zurück, wenn eine Freigabe angefordert wurde.
+    """
+    if betrag is None or betrag <= 0:
+        raise ValidationError('Bitte einen Betrag angeben.', code='betrag')
+    alt = auftrag.kosten_geschaetzt or Decimal('0')
+    anfordern = (
+        (auftrag.freigabe_status in ('nicht_noetig', 'abgelehnt')
+         and betrag >= REPARATUR_FREIGABE_SCHWELLE)
+        or (auftrag.freigabe_status == 'freigegeben' and alt > 0
+            and betrag > alt * ABWEICHUNG_NACHFREIGABE))
+    with transaction.atomic():
+        auftrag.kosten_geschaetzt = betrag
+        felder = ['kosten_geschaetzt']
+        if anfordern:
+            auftrag.freigabe_status = 'ausstehend'
+            auftrag.freigabe_datum = None
+            felder += ['freigabe_status', 'freigabe_datum']
+        auftrag.save(update_fields=felder)
+        _vom_handwerker(auftrag, f"Offerte {auftrag.handwerker.firma}: CHF {betrag}"
+                                 + (" — Eigentümer-Freigabe angefordert." if anfordern else "."),
+                        datei=datei)
+    if anfordern:
+        try:
+            eigentuemer_um_freigabe_bitten(auftrag)
+        except Exception:
+            logger.exception("Freigabe-Mail zu Auftrag #%s fehlgeschlagen", auftrag.pk)
+    return anfordern
+
+
+def rechnung_einreichen(auftrag, betrag, datei):
+    """Rechnung aus dem Handwerkerportal: ein ENTWURF in den Kreditoren.
+
+    `KreditorenRechnung(status='neu')` mit dem Beleg und dem Handwerker,
+    verknüpft wie in `fw_auftrag_rechnung` über `rechnung_verknuepfen` — aber
+    ohne Abschluss: Geprüft, freigegeben und abgeschlossen wird intern.
+    Hängt am Auftrag schon eine Rechnung, wird abgelehnt.
+    """
+    from django.utils import timezone
+    from finance.models import KreditorenRechnung
+    if auftrag.kreditoren_rechnung_id:
+        raise ValidationError('Zu diesem Auftrag ist schon eine Rechnung erfasst.', code='doppelt')
+    if betrag is None or betrag <= 0:
+        raise ValidationError('Bitte einen Betrag angeben.', code='betrag')
+    ticket, hw = auftrag.ticket, auftrag.handwerker
+    with transaction.atomic():
+        kr = KreditorenRechnung(
+            liegenschaft=ticket.liegenschaft, lieferant=hw.firma, handwerker=hw,
+            betrag=betrag, datum=timezone.localdate(), status='neu')
+        kr.beleg_scan = datei
+        kr.save()
+        rechnung_verknuepfen(auftrag, kr, abschliessen=False)
+        _vom_handwerker(auftrag, f"Rechnung {hw.firma}: CHF {betrag} hochgeladen "
+                                 f"(Kreditor #{kr.pk}, Entwurf zur Kontrolle).")
+    return kr

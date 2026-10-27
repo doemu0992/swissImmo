@@ -597,6 +597,10 @@ def fw_vertrag_neu_speichern(request):
             anzahl_dok = len(erzeuge_und_ablege_vertragspaket(vertrag))
         except Exception:
             anzahl_dok = 0
+        # Modul 5: Regel «Vertrag erstellt» — ein Begleitdokument zusätzlich zum
+        # Paket. Fehler protokolliert die Regel selbst; der Vertrag ist gespeichert.
+        from core.services.dokument_regeln import dokument_fuer_ereignis
+        dokument_fuer_ereignis('vertrag_erstellt', organisation=vertrag.organisation, vertrag=vertrag)
         # Amtliches Anfangsmietzins-Formular (Art. 270 Abs. 2 OR) automatisch
         # mitgenerieren, sofern Formularpflicht besteht — steht so zur
         # Schlüsselübergabe bereit (30-Tage-Anfechtungsfrist ab Erhalt).

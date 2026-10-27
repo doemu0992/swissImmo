@@ -173,9 +173,10 @@ def ticket_kontext(ticket, handwerker=None, status=None, termin=None):
 
 
 def _ersetze(text, kontext):
-    for key, val in kontext.items():
-        text = text.replace('{' + key + '}', str(val))
-    return text
+    # Der zentrale Dienst ersetzt (Modul 5); unbekannte Platzhalter bleiben
+    # stehen wie bisher.
+    from core.services.platzhalter import ersetze
+    return ersetze(text, kontext)
 
 
 def vorlage_text(kategorie, ticket, handwerker=None, status=None, termin=None):

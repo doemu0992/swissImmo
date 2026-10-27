@@ -396,6 +396,9 @@ ID_IM_QUERYSTRING = (
      'vorwahl_mieter', 'core/views/fw/kommunikation.py:86'),
     ('fw_vertrag_neu',   'einheit', 'einheit',
      'vorwahl_einheit', 'core/views/fw/vertragserstellung.py:58'),
+    # Modul 4 (27.10.2026): Objektfilter des Bewerber-Boards.
+    ('fw_bewerbungen',   'einheit', 'einheit',
+     'aktive_einheit', 'core/views/fw/mietprozess.py:120'),
 )
 
 
@@ -1056,7 +1059,8 @@ class IsolationstestsSelbstpruefungTests(TestCase):
         b = MandantenFixture('B', '3000', 'Bern')
         for name in ('fw_auftrag_kosten', 'fw_auftrag_pdf',
                      'fw_auftrag_nachricht', 'fw_auftrag_termin',
-                     'fw_auftrag_rechnung', 'fw_auftrag_storno'):
+                     'fw_auftrag_rechnung', 'fw_auftrag_storno',
+                     'fw_auftrag_link'):
             with self.subTest(url=name):
                 self.assertIsInstance(b.objekt_fuer('pk', name), HandwerkerAuftrag)
 

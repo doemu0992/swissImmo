@@ -88,6 +88,9 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
                                 mieter_tickets_view, mieter_ticket_detail, mieter_ticket_nachricht,
                                 mieter_rechnungen_view, mieter_dokumente_view, mieter_schaden_formular,
                                 mieter_konto_view, mieter_daten_view, mieter_passwort_view)
+# Modul 3 (27.10.2026): Handwerkerportal (Magic-Link je Auftrag) und Link-Verwaltung im Schaden
+from core.views.handwerker_portal import handwerker_auftrag, handwerker_auftrag_pdf, handwerker_auftrag_foto
+from core.views.fw.schaeden import fw_auftrag_link
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
 from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_zustaendig, fw_fallschritt_erledigen,
@@ -155,11 +158,24 @@ from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_
                            fw_pendenzen, fw_pendenz_neu, fw_pendenz_toggle, fw_pendenz_loeschen, fw_fristen,
                            fw_fristen_ical, fristen_ical_feed)
 
+# Modul 4 (27.10.2026): Bewerber-Board
+import core.views.fw.mietprozess as _bewerber_board  # noqa: E402
+# Modul 2 (27.10.2026): Schlüssel und Schliessanlage
+from core.views.fw.schluessel import (fw_liegenschaft_schliessanlage, fw_schliessanlage_loeschen,
+                                      fw_liegenschaft_schliesspunkt, fw_schliesspunkt_loeschen,
+                                      fw_liegenschaft_schluessel_neu, fw_schluessel_bearbeiten,
+                                      fw_liegenschaft_schluessel_ausgabe, fw_liegenschaft_schluessel_ruecknahme,
+                                      fw_schluessel_faellig)
+
 # 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
 from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
 
 # 3. Verträge & Mietzins
 from core.views.contracts import mietzins_anpassung_view, generiere_amtliches_formular
+
+# Modul 5 (27.10.2026): Dokumenten-Automatisierung — Editor, Vorschau, Regeln, Fassungen
+from core.views.fw.vorlagen_editor import (fw_vorlage_vorschau, fw_vorlage_probe_pdf,
+                                           fw_vorlage_regel_umschalten, fw_rentals_dokument_verlauf)
 
 # 4. PDF (Mietvertrag + Begleitdokumente)
 from core.views.pdf import generate_pdf_view, generate_dokument_view, generate_vertragspaket_zip
@@ -171,6 +187,11 @@ from core.views.webhooks import brevo_inbound_webhook
 # 6. Abrechnung, QR, Finanzen & Mahnungen
 from core.views.billing import abrechnung_pdf_view, qr_rechnung_pdf
 from core.views.email_views import send_abrechnung_email_view, send_mahnung_email_view, generate_mahnung_pdf_view
+
+# 6b. Nebenkosten-Wizard (Modul 1, 27.10.2026) — sechs Schritte unter /neu/nebenkosten/<pk>/
+from core.views.fw.nk_wizard import (fw_nebenkosten_periode, fw_nebenkosten_kosten, fw_nebenkosten_verteilung,
+                                     fw_nebenkosten_heizung, fw_nebenkosten_import, fw_nebenkosten_pruefen,
+                                     fw_nebenkosten_abschluss)
 
 urlpatterns = [
     # --- STARTSEITE ---
@@ -292,6 +313,16 @@ urlpatterns = [
     path('neu/schluessel/<int:pk>/loeschen/', fw_schluessel_del, name='fw_schluessel_del'),
     path('neu/schluessel/<int:pk>/ausgabe/', fw_schluessel_ausgabe, name='fw_schluessel_ausgabe'),
     path('neu/schluessel/ausgabe/<int:pk>/rueckgabe/', fw_schluessel_rueckgabe, name='fw_schluessel_rueckgabe'),
+    # Modul 2 (27.10.2026): Schliessanlage, Türen, Ausgabe und Rücknahme mit Quittung
+    path('neu/schluessel/faellig/', fw_schluessel_faellig, name='fw_schluessel_faellig'),
+    path('neu/schluessel/<int:pk>/bearbeiten/', fw_schluessel_bearbeiten, name='fw_schluessel_bearbeiten'),
+    path('neu/liegenschaften/<int:pk>/schliessanlage/', fw_liegenschaft_schliessanlage, name='fw_liegenschaft_schliessanlage'),
+    path('neu/schliessanlage/<int:pk>/loeschen/', fw_schliessanlage_loeschen, name='fw_schliessanlage_loeschen'),
+    path('neu/liegenschaften/<int:pk>/schliesspunkt/', fw_liegenschaft_schliesspunkt, name='fw_liegenschaft_schliesspunkt'),
+    path('neu/schliesspunkt/<int:pk>/loeschen/', fw_schliesspunkt_loeschen, name='fw_schliesspunkt_loeschen'),
+    path('neu/liegenschaften/<int:pk>/schluessel/neu/', fw_liegenschaft_schluessel_neu, name='fw_liegenschaft_schluessel_neu'),
+    path('neu/liegenschaften/<int:pk>/schluessel/ausgabe/', fw_liegenschaft_schluessel_ausgabe, name='fw_liegenschaft_schluessel_ausgabe'),
+    path('neu/liegenschaften/<int:pk>/schluessel/ruecknahme/', fw_liegenschaft_schluessel_ruecknahme, name='fw_liegenschaft_schluessel_ruecknahme'),
     path('neu/sollmietzins/', fw_sollmietzins_add, name='fw_sollmietzins_add'),
     path('neu/sollmietzins/<int:pk>/loeschen/', fw_sollmietzins_del, name='fw_sollmietzins_del'),
     path('neu/objekte/<int:pk>/nkart/', fw_objekt_nkart, name='fw_objekt_nkart'),
@@ -417,6 +448,14 @@ urlpatterns = [
     path('neu/nebenkosten/<int:pk>/versand/', fw_nebenkosten_versand, name='fw_nebenkosten_versand'),
     path('neu/nebenkosten/<int:pk>/mail/', fw_nebenkosten_mail, name='fw_nebenkosten_mail'),
     path('neu/nebenkosten/<int:pk>/akonto/', fw_akonto_anpassen, name='fw_akonto_anpassen'),
+    # NK-Wizard (Modul 1, 27.10.2026): die sechs Schritte und der CSV-Import der Zählerstände.
+    path('neu/nebenkosten/<int:pk>/periode/', fw_nebenkosten_periode, name='fw_nebenkosten_periode'),
+    path('neu/nebenkosten/<int:pk>/kosten/', fw_nebenkosten_kosten, name='fw_nebenkosten_kosten'),
+    path('neu/nebenkosten/<int:pk>/verteilung/', fw_nebenkosten_verteilung, name='fw_nebenkosten_verteilung'),
+    path('neu/nebenkosten/<int:pk>/heizung/', fw_nebenkosten_heizung, name='fw_nebenkosten_heizung'),
+    path('neu/nebenkosten/<int:pk>/import/', fw_nebenkosten_import, name='fw_nebenkosten_import'),
+    path('neu/nebenkosten/<int:pk>/pruefen/', fw_nebenkosten_pruefen, name='fw_nebenkosten_pruefen'),
+    path('neu/nebenkosten/<int:pk>/abschluss/', fw_nebenkosten_abschluss, name='fw_nebenkosten_abschluss'),
     # Phase 4b: die Oberflaechen zu Phase 4a. Bis hierher hatten Fall,
     # Eingang und Lauf keine einzige URL.
     path('neu/arbeit/', fw_arbeit, name='fw_arbeit'),
@@ -475,6 +514,11 @@ urlpatterns = [
     path('neu/bewerbungen/<int:pk>/status/', fw_bewerbung_status, name='fw_bewerbung_status'),
     path('neu/bewerbungen/<int:pk>/unterlagen/', fw_bewerbung_unterlagen, name='fw_bewerbung_unterlagen'),
     path('neu/bewerbungen/<int:pk>/vertrag/', fw_bewerbung_zu_vertrag, name='fw_bewerbung_zu_vertrag'),
+    # Modul 4 (27.10.2026): Bewerber-Board — Spaltenwechsel und Prüf-Checkliste.
+    path('neu/bewerbungen/<int:pk>/verschieben/', _bewerber_board.fw_bewerbung_verschieben,
+         name='fw_bewerbung_verschieben'),
+    path('neu/bewerbungen/<int:pk>/pruefung/', _bewerber_board.fw_bewerbung_pruefung,
+         name='fw_bewerbung_pruefung'),
     path('neu/mietzins/', fw_mietzins, name='fw_mietzins'),
     path('neu/mietzins/massenanpassung/', fw_mietzins_massenanpassung, name='fw_mietzins_massenanpassung'),
     path('neu/mietzins/<int:vertrag_id>/anpassung/', fw_mietzins_anpassung, name='fw_mietzins_anpassung'),
@@ -538,6 +582,11 @@ urlpatterns = [
     path('neu/vorlagen/neu/', fw_vorlage_form, name='fw_vorlage_neu'),
     path('neu/vorlagen/<int:pk>/bearbeiten/', fw_vorlage_form, name='fw_vorlage_bearbeiten'),
     path('neu/vorlagen/<int:pk>/loeschen/', fw_vorlage_loeschen, name='fw_vorlage_loeschen'),
+    # Modul 5: Live-Vorschau, Probe-PDF, Regel an/aus, Fassungen eines Dokuments
+    path('neu/vorlagen/vorschau/', fw_vorlage_vorschau, name='fw_vorlage_vorschau'),
+    path('neu/vorlagen/probe-pdf/', fw_vorlage_probe_pdf, name='fw_vorlage_probe_pdf'),
+    path('neu/vorlagen/regel/umschalten/', fw_vorlage_regel_umschalten, name='fw_vorlage_regel_umschalten'),
+    path('neu/dokument/<int:pk>/verlauf/', fw_rentals_dokument_verlauf, name='fw_rentals_dokument_verlauf'),
     path('neu/integrationen/', fw_integrationen, name='fw_integrationen'),
     path('neu/integrationen/test-email/', fw_integration_test_email, name='fw_integration_test_email'),
     path('neu/integrationen/portal-token/', fw_integration_portal_token, name='fw_integration_portal_token'),
@@ -608,6 +657,12 @@ urlpatterns = [
     path('mieter/passwort/', mieter_passwort_view, name='mieter_passwort'),
     path('mieter/kuendigung/', mieter_kuendigung, name='mieter_kuendigung'),
     path('mieter/kuendigung/<int:pk>/brief/', mieter_kuendigung_pdf, name='mieter_kuendigung_pdf'),
+
+    # --- MODUL 3: HANDWERKERPORTAL (öffentlich, Token statt Konto; E6) ---
+    path('auftrag/<str:token>/', handwerker_auftrag, name='handwerker_auftrag'),
+    path('auftrag/<str:token>/pdf/', handwerker_auftrag_pdf, name='handwerker_auftrag_pdf'),
+    path('auftrag/<str:token>/foto/<int:nr>/', handwerker_auftrag_foto, name='handwerker_auftrag_foto'),
+    path('neu/auftrag/<int:pk>/link/', fw_auftrag_link, name='fw_auftrag_link'),
 
     # --- DOSSIER-SEITEN (Team-intern: alles zu einem Mieter/Objekt/Vertrag) ---
     path('dossier/mieter/<int:mieter_id>/', mieter_dossier, name='dossier_mieter'),

@@ -356,7 +356,7 @@ def _mieter_dok_gruppen(mieter, vertraege):
     # Vertragsbezug — z. B. Hausordnung). Sonst sähe der neue Mieter einer Einheit die
     # portal-sichtbaren Dokumente des Vormieters (Datenschutz-Leck). Eigene Dokumente
     # laufen über mieter=… bzw. die eigenen Verträge.
-    dok_qs = (RDokument.objects.filter(
+    dok_qs = (RDokument.objects.neueste().filter(
                   Q(mieter=mieter) | Q(vertrag_id__in=alle_vertrag_ids)
                   | Q(einheit_id__in=einheit_ids, mieter__isnull=True, vertrag__isnull=True),
                   im_portal_sichtbar=True)
@@ -399,15 +399,52 @@ def _mieter_offene(mieter):
     return offene, total_offen
 
 
-def _mieter_ticket_count(mieter):
+def _mieter_tickets(mieter):
+    """Die Tickets, die der Mieter im Portal sieht (Modul 3).
+
+    Bis hierher nur die selbst gemeldeten (`gemeldet_von=mieter`). Dazu kommen
+    jetzt die Tickets SEINER EINHEIT, die während SEINER MIETDAUER entstanden
+    sind — auch telefonisch oder intern erfasste. Die Mietdauer begrenzt nach
+    beiden Seiten: Die Meldungen des Vormieters gehen den Nachmieter nichts an.
+    Erst- und Mitmieter wie überall im Portal (`_ist_mieter_q`), Entwürfe nicht.
+    """
+    from django.db.models import Q
     from tickets.models import SchadenMeldung
-    return SchadenMeldung.objects.filter(gemeldet_von=mieter).count()
+    sicht = Q(gemeldet_von=mieter)
+    for v in (Mietvertrag.objects.filter(_ist_mieter_q(mieter)).exclude(status='entwurf')
+              .only('einheit_id', 'beginn', 'ende')):
+        if not v.einheit_id or not v.beginn:
+            continue
+        dauer = Q(betroffene_einheit_id=v.einheit_id, erstellt_am__date__gte=v.beginn)
+        if v.ende:
+            dauer &= Q(erstellt_am__date__lte=v.ende)
+        sicht |= dauer
+    return SchadenMeldung.objects.filter(sicht)
+
+
+def _naechster_termin(tickets_qs):
+    """Der nächste vereinbarte Handwerkertermin zu den sichtbaren Tickets."""
+    from django.utils import timezone
+    from tickets.models import HandwerkerAuftrag
+    return (HandwerkerAuftrag.objects
+            .filter(ticket__in=tickets_qs, termin_status='vereinbart',
+                    termin_am__gte=timezone.now())
+            .exclude(status='storniert')
+            .select_related('handwerker', 'ticket').order_by('termin_am').first())
+
+
+def _mieter_schluessel(mieter):
+    """Offene Schlüsselausgaben an den Mieter (noch nicht zurückgegeben)."""
+    from portfolio.models import SchluesselAusgabe
+    return list(SchluesselAusgabe.objects.filter(mieter=mieter, rueckgabe_am__isnull=True)
+                .select_related('schluessel').order_by('ausgegeben_am', 'id'))
 
 
 @never_cache
 @login_required
 def mieter_portal_view(request):
-    """Portal-Startseite (Dashboard): Mietobjekt(e) + Schnellzugriffe mit Zählern."""
+    """Portal-Startseite: drei Hauptwege (melden, Meldungen, Dokumente), dazu
+    Rechnungen und Schlüssel als kleine Kacheln, darunter das Mietobjekt."""
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None:
         if hat_rolle(request.user, TEAM_ROLLEN):
@@ -420,10 +457,14 @@ def mieter_portal_view(request):
     offene, total_offen = _mieter_offene(mieter)
     dok_gruppen = _mieter_dok_gruppen(mieter, vertraege)
     dok_count = sum(len(g['docs']) for g in dok_gruppen)
+    tickets = _mieter_tickets(mieter)
     return render(request, 'core/mieter_portal.html', {
         'mieter': mieter, 'objekte': objekte,
         'offene_count': len(offene), 'total_offen': total_offen,
-        'dok_count': dok_count, 'ticket_count': _mieter_ticket_count(mieter),
+        'dok_count': dok_count,
+        'meldungen_offen': tickets.exclude(status='erledigt').count(),
+        'naechster_termin': _naechster_termin(tickets),
+        'schluessel': _mieter_schluessel(mieter),
     })
 
 
@@ -470,8 +511,14 @@ def mieter_schaden_formular(request):
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None:
         return redirect('mieter_portal')
+    from core.templatetags.raumkatalog import anliegen_auswahl
+    from tickets.meldung import ZEITFENSTER
+    from tickets.models import SchadenMeldung
     _vertraege, objekte = _mieter_objekte(mieter)
-    return render(request, 'core/mieter_schaden.html', {'mieter': mieter, 'objekte': objekte})
+    return render(request, 'core/mieter_schaden.html', {
+        'mieter': mieter, 'objekte': objekte,
+        'kategorien': anliegen_auswahl(), 'zutritt_wahl': SchadenMeldung.ZUTRITT_CHOICES,
+        'zeitfenster': ZEITFENSTER})
 
 
 @login_required
@@ -690,9 +737,25 @@ def mieter_schaden_melden(request):
     if not v or not v.einheit_id:
         messages.error(request, gettext('Kein aktives Mietobjekt gefunden.'))
         return redirect('mieter_portal')
+    # Kategorie, Zutritt und Erreichbarkeit wie im QR-Formular (Modul 3). Nur
+    # bekannte Werte: Was nicht in der Auswahl steht, fällt auf die Vorgabe
+    # zurück, statt als freier Text in der Akte zu landen.
+    from core.templatetags.raumkatalog import anliegen_auswahl
+    from tickets.meldung import erreichbarkeit_zeile, gueltige_zeitfenster
+    kategorien = [wert for wert, _anzeige in anliegen_auswahl()]
+    kategorie = request.POST.get('kategorie')
+    if kategorie not in kategorien:
+        kategorie = kategorien[0]
+    zutritt = request.POST.get('zutritt')
+    if zutritt not in dict(SchadenMeldung.ZUTRITT_CHOICES):
+        zutritt = SchadenMeldung._meta.get_field('zutritt').default
+    erreichbar = erreichbarkeit_zeile(gueltige_zeitfenster(request.POST.getlist('erreichbarkeit')))
+    if erreichbar:
+        beschreibung = f"{beschreibung}\n\n{erreichbar}"
     t = SchadenMeldung.objects.create(
         liegenschaft=v.einheit.liegenschaft, betroffene_einheit=v.einheit,
         gemeldet_von=mieter, titel=titel, beschreibung=beschreibung,
+        kategorie=kategorie, zutritt=zutritt,
         raum=(request.POST.get('raum') or '').strip(),
         melder_vorname=mieter.vorname or '', melder_nachname=mieter.nachname or '',
         email_melder=mieter.email or '', tel_melder=mieter.mobile or mieter.telefon_privat or '',
@@ -767,39 +830,62 @@ TICKET_STATUS_PILL = {
 @never_cache
 @login_required
 def mieter_tickets_view(request):
-    """Übersicht aller vom Mieter gemeldeten Schäden mit Status."""
+    """Übersicht der Meldungen mit Status: die eigenen und die der Einheit
+    während der Mietdauer (`_mieter_tickets`)."""
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None:
         return redirect('mieter_portal')
-    from tickets.models import SchadenMeldung
-    qs = (SchadenMeldung.objects.filter(gemeldet_von=mieter)
+    from tickets.meldung import ohne_kontaktblock
+    qs = (_mieter_tickets(mieter)
           .select_related('liegenschaft', 'betroffene_einheit').order_by('-erstellt_am'))
     tickets = []
     for t in qs:
         label, cls = TICKET_STATUS_PILL.get(t.status, (t.status, 'fw-flaeche2 fw-mutet'))
-        tickets.append({'t': t, 'status_label': label, 'status_cls': cls,
+        eigen = t.gemeldet_von_id == mieter.pk
+        tickets.append({'t': t, 'status_label': label, 'status_cls': cls, 'eigen': eigen,
+                        'text': t.beschreibung if eigen else ohne_kontaktblock(t.beschreibung),
                         'objekt': f"{t.liegenschaft.strasse}" if t.liegenschaft_id else '—'})
     return render(request, 'core/mieter_tickets.html', {'mieter': mieter, 'tickets': tickets})
+
+
+#: Verlaufseinträge, die zur Korrespondenz mit dem MELDER gehören. Hat ein
+#: anderer gemeldet (Nachbar über den QR-Aushang, die Verwaltung am Telefon),
+#: sind das Mails an ihn — mit seinem Namen und seiner Adresse.
+_MELDER_KORRESPONDENZ = ('email', 'mail_antwort')
 
 
 @never_cache
 @login_required
 def mieter_ticket_detail(request, pk):
-    """Ticket-Detail mit Status + Nachrichtenverlauf; Mieter kann antworten."""
+    """Ticket-Detail mit Status, Handwerkertermin, Zutritt und Verlauf; der
+    Mieter kann antworten. Fremde oder nicht sichtbare Tickets: 404."""
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None:
         return redirect('mieter_portal')
-    from tickets.models import SchadenMeldung
-    t = get_object_or_404(SchadenMeldung, pk=pk, gemeldet_von=mieter)
+    from tickets.meldung import ohne_kontaktblock
+    t = get_object_or_404(_mieter_tickets(mieter).select_related('liegenschaft'), pk=pk)
     label, cls = TICKET_STATUS_PILL.get(t.status, (t.status, 'fw-flaeche2 fw-mutet'))
+    eigen = t.gemeldet_von_id == mieter.pk
     # Nur mieter-relevante Verlaufseinträge (keine internen Notizen / Handwerker-Mails)
     verlauf = (t.nachrichten.exclude(is_intern=True)
                .exclude(typ='handwerker_mail').order_by('erstellt_am'))
+    if not eigen:
+        verlauf = verlauf.exclude(typ__in=_MELDER_KORRESPONDENZ)
+    termine = list(t.handwerker_auftraege.filter(termin_status='vereinbart', termin_am__isnull=False)
+                   .exclude(status='storniert').select_related('handwerker').order_by('termin_am'))
     return render(request, 'core/mieter_ticket_detail.html', {
         'mieter': mieter, 't': t, 'status_label': label, 'status_cls': cls,
-        'verlauf': verlauf,
+        'verlauf': verlauf, 'eigen': eigen, 'termine': termine,
+        'beschreibung': t.beschreibung if eigen else ohne_kontaktblock(t.beschreibung),
         'objekt': f"{t.liegenschaft.strasse}, {t.liegenschaft.ort}" if t.liegenschaft_id else '—',
     })
+
+
+#: Wohin eine Nachricht des Mieters das Ticket bringt — nur über erlaubte
+#: Übergänge (tickets/workflow.py). «erledigt → in Bearbeitung» ist die dort
+#: vorgesehene Wiedereröffnung; «warte auf Mieter → in Bearbeitung» dieselbe
+#: Regel wie bei einer Mail-Antwort des Melders (`antwort_zuordnen`).
+_MIETER_NACHRICHT_ZIEL = {'erledigt': 'in_bearbeitung', 'warte_auf_mieter': 'in_bearbeitung'}
 
 
 @never_cache
@@ -810,8 +896,10 @@ def mieter_ticket_nachricht(request, pk):
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None or request.method != 'POST':
         return redirect('mieter_portal')
-    from tickets.models import SchadenMeldung, TicketNachricht
-    t = get_object_or_404(SchadenMeldung, pk=pk, gemeldet_von=mieter)
+    from django.core.exceptions import ValidationError
+    from tickets.models import TicketNachricht
+    from tickets.workflow import UEBERGAENGE, wechsle_status
+    t = get_object_or_404(_mieter_tickets(mieter).select_related('liegenschaft'), pk=pk)
     text = (request.POST.get('text') or '').strip()
     if not text:
         return redirect(f'/mieter/ticket/{t.id}/')
@@ -819,9 +907,29 @@ def mieter_ticket_nachricht(request, pk):
                                    nachricht=text, is_von_verwaltung=False, gelesen=False)
     # Ticket wieder als ungelesen markieren → Sidebar-Badge beim Verwalter
     t.gelesen = False
-    if t.status == 'erledigt':
-        t.status = 'in_bearbeitung'
-    t.save(update_fields=['gelesen', 'status'])
+    t.save(update_fields=['gelesen'])
+    # DER STATUS LÄUFT ÜBER DEN WORKFLOW (Modul 3). Hier stand
+    # `t.status = 'in_bearbeitung'` direkt am Feld — an `wechsle_status` und
+    # damit an der Übergangstabelle vorbei. Jetzt: erlaubter Übergang, sonst
+    # bleibt der Status, und ein interner Hinweis sagt der Verwaltung, dass der
+    # Mieter geschrieben hat (die Mail unten geht in beiden Fällen).
+    alt = t.status
+    ziel = _MIETER_NACHRICHT_ZIEL.get(alt)
+    if ziel:
+        hinweis = ''
+        if ziel in UEBERGAENGE.get(alt, ()):
+            try:
+                wechsle_status(t, ziel)
+                if alt == 'erledigt':
+                    hinweis = 'Ticket durch eine Nachricht des Mieters wieder geöffnet.'
+            except ValidationError:
+                logger.exception("Ticket #%s: Mieter-Nachricht, Wechsel %s -> %s abgelehnt", t.pk, alt, ziel)
+                hinweis = f'Mieter hat geschrieben; Status bleibt «{t.get_status_display()}».'
+        else:
+            hinweis = f'Mieter hat geschrieben; Status bleibt «{t.get_status_display()}».'
+        if hinweis:
+            TicketNachricht.objects.create(ticket=t, absender_name='System', typ='system',
+                                           nachricht=hinweis, is_intern=True)
     # Verwaltung per E-Mail benachrichtigen
     try:
         from core.utils.email_service import send_ticket_email

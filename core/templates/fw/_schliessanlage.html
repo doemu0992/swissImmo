@@ -1,0 +1,136 @@
+{% load i18n zeichen hilfe %}{% comment %}
+Abschnitt «Schliessanlage» der Liegenschaft (Modul 2, 27.10.2026, Entscheid E10).
+Oben die Bento-Kacheln (Bestand, Rückgabe fällig, Verlust), darunter je
+Schlüssel eine Karte, dann die Pflege von Anlage, Türen und Schlüsseln.
+Kontext aus core/views/fw/schluessel.schliessanlage_kontext (`sl_*`).
+{% endcomment %}
+<section id="schliessanlage" class="fw-sk-abschnitt" aria-labelledby="sk-titel">
+    <div class="fw-subhead" id="sk-titel">{% trans "Schliessanlage" %} {% hilfe 'schliessanlage' %}</div>
+    <p class="fw-sk-anlagen">
+        {% for an in sl_anlagen %}<span><b>{{ an }}</b>{% if an.sicherungskarte_nr %} · {% blocktrans with nr=an.sicherungskarte_nr %}Sicherungskarte Nr. {{ nr }}{% endblocktrans %}{% endif %}{% if an.bestellberechtigte %} · {% trans "Bestellberechtigt:" %} {{ an.bestellberechtigte|truncatechars:80 }}{% endif %}</span>{% empty %}<span>{% trans "Noch keine Schliessanlage erfasst — Hersteller und Sicherungskarte unten eintragen." %}</span>{% endfor %}
+    </p>
+
+    <div class="fw-bento fw-sk-bento">
+        <a href="#sk-karten" class="fw-kachel b-m akzent">
+            <div class="fw-kachel-kopf"><h3>{% trans "Bestand" %}</h3></div>
+            <div class="fw-kachel-zahl">{{ sl_bestand.total }}<small>{% blocktrans count n=sl_bestand.schluessel %}{{ n }} Schlüssel{% plural %}{{ n }} Schlüssel{% endblocktrans %}</small></div>
+            <p class="fw-kachel-text fw-sk-zahlen"><span><b>{{ sl_bestand.ausgegeben }}</b> {% trans "ausgegeben" %}</span><span><b>{{ sl_bestand.im_buero }}</b> {% trans "im Büro" %}</span><span><b>{{ sl_bestand.verloren }}</b> {% trans "verloren" %}</span></p>
+        </a>
+        <div class="fw-kachel b-m">
+            <div class="fw-kachel-kopf"><h3>{% trans "Rückgabe fällig" %}</h3>{% if sl_faellig %}<span class="fw-chip fw-warn">{{ sl_faellig|length }}</span>{% endif %}</div>
+            {% if sl_faellig %}
+            <ul class="fw-kachel-liste">
+                {% for a in sl_faellig|slice:":3" %}
+                <li><span>{{ a.empfaenger_name }} · {% blocktrans count n=a.anzahl %}{{ n }} Stk.{% plural %}{{ n }} Stk.{% endblocktrans %}</span>
+                    <a href="{{ a.ruecknahme_url }}" class="fw-link">{% if a.tage > 0 %}{% blocktrans count n=a.tage %}seit {{ n }} Tag{% plural %}seit {{ n }} Tagen{% endblocktrans %}{% else %}{% trans "heute" %}{% endif %}</a></li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="fw-kachel-zahl">0</div>
+            <p class="fw-kachel-text">{% trans "Keine Rückgabe fällig." %}</p>
+            {% endif %}
+            <a href="/neu/schluessel/faellig/" class="fw-link">{% trans "Alle fälligen Rückgaben" %}</a>
+        </div>
+        <div class="fw-kachel b-m">
+            <div class="fw-kachel-kopf"><h3>{% trans "Verlust" %}</h3>{% if sl_verluste %}<span class="fw-chip fw-crit">{% blocktrans with n=sl_verluste|length %}{{ n }} offen{% endblocktrans %}</span>{% endif %}</div>
+            {% if sl_verluste %}
+            {% with p=sl_verluste.0 %}<p class="fw-kachel-text"><b>{{ p.titel }}</b><br>{{ p.beschreibung|truncatechars:140 }}</p>{% endwith %}
+            <a href="/neu/pendenzen/" class="fw-link">{% trans "Pendenzen öffnen" %}</a>
+            {% else %}
+            <div class="fw-kachel-zahl">0</div>
+            <p class="fw-kachel-text">{% trans "Kein offener Verlust." %}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="fw-sk-aktionen">
+        <a href="/neu/liegenschaften/{{ lg.id }}/schluessel/ausgabe/" class="fw-btn fw-primary">{% zeichen 'senden' %}{% trans "Schlüssel ausgeben" %}</a>
+        <a href="/neu/liegenschaften/{{ lg.id }}/schluessel/ruecknahme/" class="fw-btn">{% zeichen 'zurueck' %}{% trans "Rücknahme erfassen" %}</a>
+    </div>
+
+    {% if sl_punkte %}
+    <nav class="fw-sk-filter" aria-label="{% trans 'Wer kommt durch diese Tür?' %}">
+        <span class="fw-label">{% trans "Wer kommt durch diese Tür?" %}</span>
+        {% for t in sl_punkte %}
+        <a href="?tab=stammdaten&amp;tuer={{ t.id }}#schliessanlage" class="fw-chip {% if sl_tuer and sl_tuer.id == t.id %}fw-brand{% else %}fw-mut{% endif %}"{% if sl_tuer and sl_tuer.id == t.id %} aria-current="true"{% endif %}>{{ t.bezeichnung }}</a>
+        {% endfor %}
+        {% if sl_tuer %}<a href="?tab=stammdaten#schliessanlage" class="fw-link">{% trans "alle zeigen" %}</a>{% endif %}
+    </nav>
+    {% endif %}
+    {% if sl_tuer %}
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'schluessel' %}</span>
+            <span class="fw-t">{% blocktrans with t=sl_tuer.bezeichnung %}Durch «{{ t }}» kommen{% endblocktrans %}</span>
+            <span class="fw-neben">{% blocktrans count n=sl_karten|length %}{{ n }} Schlüssel{% plural %}{{ n }} Schlüssel{% endblocktrans %}</span></div>
+        <div class="fw-rumpf">
+            {% if sl_durch %}
+            <ul class="fw-sk-inhaber">
+                {% for d in sl_durch %}<li><span><b>{{ d.a.empfaenger_name }}</b> · {{ d.k.kuerzel }} {{ d.k.s.schluessel_nummer }}</span><small>{% blocktrans count n=d.a.anzahl %}{{ n }} Stk.{% plural %}{{ n }} Stk.{% endblocktrans %}</small></li>{% endfor %}
+            </ul>
+            {% else %}<p class="fw-leer">{% trans "Niemand ausserhalb des Büros hat einen Schlüssel für diese Tür." %}</p>{% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="fw-sk-raster" id="sk-karten">
+        {% for k in sl_karten %}
+        {% include 'fw/_schluessel_karte.html' with k=k bearbeiten=True weiter=sl_ziel %}
+        {% empty %}
+        <div class="fw-card"><p class="fw-leer">{% if sl_tuer %}{% trans "Kein Schlüssel öffnet diese Tür." %}{% else %}{% trans "Noch keine Schlüssel erfasst — auch Haustür-, Briefkasten- und Gruppenschlüssel gehören hierher." %}{% endif %}</p></div>
+        {% endfor %}
+    </div>
+    {% if sl_archiv %}
+    <details class="fw-sk-formular">
+        <summary>{% blocktrans count n=sl_archiv|length %}Archiv: {{ n }} Schlüssel{% plural %}Archiv: {{ n }} Schlüssel{% endblocktrans %}</summary>
+        <div class="fw-sk-raster">{% for k in sl_archiv %}{% include 'fw/_schluessel_karte.html' with k=k weiter=sl_ziel %}{% endfor %}</div>
+    </details>
+    {% endif %}
+
+    <datalist id="sk-typen"><option value="Wohnung"></option><option value="Haustür"></option><option value="Keller"></option><option value="Briefkasten"></option><option value="Garage"></option><option value="Waschküche"></option><option value="Velo"></option></datalist>
+    <div class="fw-raster l3">
+        <div class="fw-card">
+            <div class="fw-kopf"><h2>{% trans "Schlüssel erfassen" %}</h2></div>
+            <div class="fw-rumpf">{% include 'fw/_schluessel_formular.html' with sch=None k=None weiter=sl_ziel %}</div>
+        </div>
+        <div class="fw-card">
+            <div class="fw-kopf"><h2>{% trans "Türen und Zylinder" %}</h2></div>
+            <div class="fw-rumpf">
+                <ul class="fw-sk-inhaber">
+                    {% for t in sl_punkte %}
+                    <li><span><b>{{ t.bezeichnung }}</b>{% if t.einheit %} · {{ t.einheit.bezeichnung }}{% endif %}{% if t.anlage %} · {{ t.anlage }}{% endif %}</span>
+                        <form method="post" action="/neu/schliesspunkt/{{ t.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with t=t.bezeichnung %}Tür «{{ t }}» entfernen?{% endblocktrans %}{% endfilter %}');">{% csrf_token %}
+                            <button class="fw-ikon mut gefahr" aria-label="{% trans 'Tür entfernen' %}">{% zeichen 'loeschen' %}</button></form></li>
+                    {% empty %}<li><span class="fw-mutet">{% trans "Noch keine Türen erfasst." %}</span></li>{% endfor %}
+                </ul>
+                <form method="post" action="/neu/liegenschaften/{{ lg.id }}/schliesspunkt/" class="fw-raster r2">{% csrf_token %}
+                    <div class="fw-col-span-2"><label class="fw-label" for="sp-bez">{% trans "Tür / Zylinder" %} <span class="fw-pflicht">*</span></label>
+                        <input id="sp-bez" name="bezeichnung" required maxlength="80" placeholder="{% trans 'z. B. Haustür, Keller, Wohnungstür 1.OG links' %}" class="fw-feld w-full"></div>
+                    <div><label class="fw-label" for="sp-e">{% trans "Objekt" %}</label>
+                        <select id="sp-e" name="einheit_id" class="fw-feld w-full"><option value="">{% trans "allgemein" %}</option>
+                            {% for e in sl_einheiten %}<option value="{{ e.id }}">{{ e.bezeichnung }}</option>{% endfor %}</select></div>
+                    <div><label class="fw-label" for="sp-a">{% trans "Schliessanlage" %}</label>
+                        <select id="sp-a" name="anlage_id" class="fw-feld w-full"><option value="">—</option>
+                            {% for an in sl_anlagen %}<option value="{{ an.id }}"{% if sl_anlagen|length == 1 %} selected{% endif %}>{{ an }}</option>{% endfor %}</select></div>
+                    <div class="fw-col-span-2"><button class="fw-btn">{% zeichen 'neu' %}{% trans "Tür erfassen" %}</button></div>
+                </form>
+            </div>
+        </div>
+        <div class="fw-card">
+            <div class="fw-kopf"><h2>{% trans "Anlage" %}</h2></div>
+            <div class="fw-rumpf">
+                {% for an in sl_anlagen %}
+                <details class="fw-sk-formular">
+                    <summary>{{ an }}</summary>
+                    {% include 'fw/_schliessanlage_formular.html' with an=an %}
+                    <form method="post" action="/neu/schliessanlage/{{ an.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Schliessanlage entfernen? Schlüssel und Türen bleiben erhalten." %}{% endfilter %}');">{% csrf_token %}
+                        <button class="fw-btn fw-knapp fw-leise">{% zeichen 'loeschen' %}{% trans "Anlage entfernen" %}</button></form>
+                </details>
+                {% endfor %}
+                <details class="fw-sk-formular"{% if not sl_anlagen %} open{% endif %}>
+                    <summary>{% trans "Neue Schliessanlage" %}</summary>
+                    {% include 'fw/_schliessanlage_formular.html' with an=None %}
+                </details>
+            </div>
+        </div>
+    </div>
+</section>

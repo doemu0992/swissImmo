@@ -74,21 +74,25 @@ for (const b of BREITEN) {
       await expect(blase).toBeHidden();
     });
 
-    test('Nebenkosten: Prozessleiste mit aktuellem Schritt, Periode per Schnellwahl', async ({ page }) => {
+    // NK-Wizard (Modul 1, 27.10.2026): «Periode anlegen» öffnet Schritt 1 als eigene Seite statt
+    // eines Ausklapp-Formulars; die Periode zeigt den Stepper mit sechs Schritten.
+    test('Nebenkosten: Stepper mit aktuellem Schritt, Periode per Schnellwahl', async ({ page }) => {
       await login(page);
       await goto(page, '/neu/nebenkosten/');
-      await page.getByRole('button', { name: /Periode anlegen/ }).click();
+      await page.getByRole('link', { name: /Periode anlegen/ }).first().click();
+      await page.waitForURL(/\/nebenkosten\/neu\//, { waitUntil: 'domcontentloaded' });
       await page.locator('[data-nk-schnell] [data-von]').first().click();
       await expect(page.locator('input[name="start_datum"]')).not.toHaveValue('');
       await expect(page.locator('input[name="ende_datum"]')).not.toHaveValue('');
       await expect(page.locator('input[name="bezeichnung"]')).not.toHaveValue('');
 
+      await goto(page, '/neu/nebenkosten/');
       await page.getByText('NK E2E 2024').first().click();
       await page.waitForURL(/\/nebenkosten\/\d+\//, { waitUntil: 'domcontentloaded' });
-      const leiste = page.locator('.fw-prozess');
+      const leiste = page.locator('.fw-nkw-leiste');
       await expect(leiste).toBeVisible();
-      await expect(leiste.locator('li')).toHaveCount(7);
-      const hier = leiste.locator('li.hier');
+      await expect(leiste.locator('li')).toHaveCount(6);
+      const hier = leiste.locator('li.an');
       await expect(hier).toHaveCount(1);
       await expect(hier).toBeInViewport();
       await keinQuerscrollen(page);

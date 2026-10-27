@@ -123,13 +123,14 @@ HILFE = {
         'Bestimmt, wie Kosten auf die Einheiten verteilt werden: nach Fläche, Volumen, Wertquote, Personen oder Zähler. '
         'Je Kostenart lässt sich ein eigener Schlüssel wählen.')),
     'hkvo': (_('Verbrauchsabhängige Heizkosten'), _(
-        'Ein Teil der Heizkosten (Grundkosten) wird nach Fläche verteilt, der Rest nach gemessenem Verbrauch. '
+        'Ein Teil der Heizkosten (Grundkosten) wird nach Volumen (m³) verteilt, der Rest nach gemessenem Verbrauch. '
         'Ob sie vorgeschrieben ist, regelt das kantonale Energierecht.')),
     'pro_rata': (_('Zeitanteilig (pro rata)'), _(
         'Wer nur einen Teil der Periode Mieter war, trägt die Kosten nach den Tagen seiner Mietdauer.')),
     'akonto_anpassung': (_('Akonto anpassen'), _(
         'Weicht das Akonto deutlich vom tatsächlichen Bedarf ab, schlägt die Anwendung einen neuen Betrag vor. '
-        'Die Anpassung gilt für künftige Sollstellungen; die Mitteilung an den Mieter ist separat.')),
+        'Übernommen wird er über die Mietzinsanpassung mit Formular und Termin; der neue Betrag gilt erst ab '
+        'diesem Termin.')),
     'hnk': (_('HNK'), _(
         'Heiz- und Nebenkosten. Eine HNK-relevante Lieferantenrechnung fliesst über die Nebenkostenabrechnung '
         'an die Mieter — eine zusätzliche direkte Weiterverrechnung würde doppelt belasten.')),
@@ -226,6 +227,24 @@ HILFE = {
     'portal': (_('Portal-Zugang'), _(
         'Mieter und Eigentümer sehen im Portal ihre Rechnungen, Dokumente und Meldungen. '
         'Den Zugang richtest du auf der Personen- bzw. Mandatsseite ein.')),
+    # ---- Vorlagen und Dokumente (Modul 5, 27.10.2026) ----
+    'dokumentregel': (_('Regel «Wenn … dann …»'), _(
+        'Eine Vorlage mit Ereignis erzeugt bei diesem Ereignis ein zusätzliches Dokument in der Akte. Es gilt die '
+        'eigene Vorlage vor der mitgelieferten und die Sprache des Empfängers vor Deutsch. Amtliche Formulare und '
+        'Mahnungen bleiben, wie sie sind.')),
+    'platzhalter': (_('Platzhalter'), _(
+        'Ein Platzhalter wie {mieter.name} wird beim Erzeugen durch den Wert aus Vertrag, Objekt oder Verwaltung '
+        'ersetzt. Unbekannte Platzhalter lassen sich nicht speichern; die älteren Schreibweisen gelten weiter.')),
+    'vorlage_gueltig_ab': (_('Gültig ab'), _(
+        'Ab diesem Tag gilt die Fassung. Gilt die Vorlage heute schon und liegt der Tag in der Zukunft, entsteht beim '
+        'Speichern eine neue Fassung; bis dahin gilt die bisherige. Leer heisst: gilt sofort.')),
+    # ---- Schlüssel (Modul 2, 27.10.2026) ----
+    'schliessanlage': (_('Schliessanlage'), _(
+        'Hersteller, Sicherungskarte und Bestellberechtigte der Anlage, dazu alle Schlüssel und die Türen, die sie '
+        'öffnen. Jede Ausgabe und Rücknahme erzeugt eine Quittung mit Unterschrift in der Ablage.')),
+    'schluesselart': (_('Schlüsselart'), _(
+        'Ein Hauptschlüssel öffnet alle Türen der Anlage, ein Gruppenschlüssel mehrere (etwa Haustür und Keller), ein '
+        'Einzelschlüssel eine bestimmte Tür wie die Wohnungstür.')),
 }
 
 

@@ -149,7 +149,8 @@ class AssistentSeitenTests(TestCase):
         for url, mindestens in (('/neu/personen/neu/', 5), ('/neu/liegenschaften/neu/', 4),
                                 (f'/neu/vertraege/{self.v.id}/kuendigen/', 3),
                                 (f'/neu/kreditoren/{k.id}/weiterverrechnen/', 2),
-                                ('/neu/nebenkosten/', 1)):
+                                # NK-Wizard: Schritt 1 einer neuen Periode statt Ausklapp-Formular
+                                ('/neu/nebenkosten/neu/', 1)):
             with self.subTest(url=url):
                 html = self.seite(url)
                 self.assertIn('data-assistent ', html)
@@ -180,6 +181,9 @@ class AssistentSeitenTests(TestCase):
         from finance.models import AbrechnungsPeriode
         p = AbrechnungsPeriode.objects.create(liegenschaft=self.lg, bezeichnung='NK 2025',
                                               start_datum=date(2025, 1, 1), ende_datum=date(2025, 12, 31))
+        # Bewusst angepasst (NK-Wizard, 27.10.2026): Die offene Periode öffnet den Wizard; sein
+        # Stepper (sechs Schritte) baut auf `nk_prozess.schritte` auf.
         html = self.seite(f'/neu/nebenkosten/{p.id}/')
-        self.assertIn('class="fw-prozess"', html)
-        self.assertIn('Kosten &amp; Belege', html)
+        self.assertIn('class="fw-nkw-leiste"', html)
+        self.assertIn('Periode &amp; Objekte', html)
+        self.assertIn('aria-current="step"', html)

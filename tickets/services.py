@@ -86,7 +86,8 @@ def process_public_ticket_form(liegenschaft, post_data, files_data):
     final_text += f"Name: {melder_name}\nTel: {telefon}\nEmail: {email}\n"
 
     if erreichbarkeit_list:
-        final_text += f"Erreichbar: {', '.join(erreichbarkeit_list)}\n"
+        from .meldung import erreichbarkeit_zeile
+        final_text += f"{erreichbarkeit_zeile(erreichbarkeit_list)}\n"
 
     if hersteller or seriennummer:
         final_text += "\n--- GERÄT ---\n"

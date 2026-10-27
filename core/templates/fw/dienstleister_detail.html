@@ -50,8 +50,8 @@
                aus, als sie ist. {% endcomment %}
             <div class="fw-f fw-lang">{% if kosten_geschaetzt_anteil %}{% blocktrans with b=kosten_geschaetzt_anteil|chf %}davon CHF {{ b }} geschätzt{% endblocktrans %}{% else %}{% trans "alle Beträge effektiv" %}{% endif %}</div></div>
         <div><div class="fw-l">{% trans "Schlüssel" %}</div>
-            <div class="fw-w{% if schluessel %} warn{% endif %}">{{ schluessel|length }}</div>
-            <div class="fw-f">{% if schluessel %}{% trans "nicht zurückgegeben" %}{% else %}{% trans "keine ausgegeben" %}{% endif %}</div></div>
+            <div class="fw-w{% if schluessel_akte.ueberfaellig %} crit{% elif schluessel_akte.offen %} warn{% endif %}">{{ schluessel_akte.stueck }}</div>
+            <div class="fw-f">{% if schluessel_akte.offen %}{% trans "nicht zurückgegeben" %}{% else %}{% trans "keine ausgegeben" %}{% endif %}</div></div>
     </div>
     {% include 'fw/_detail_tabs.html' with gruppe='dl' tabs=tab_liste %}
 </div>
@@ -84,22 +84,10 @@
         </table>
     </div>
 
-    {% if schluessel %}
-    <div class="fw-card">
-        <div class="fw-kopf"><span class="fw-ikon warn">{% zeichen 'schluessel' %}</span>
-            <span class="fw-t">{% trans "Ausgegebene Schlüssel" %}</span>
-            <span class="fw-neben">{% blocktrans with n=schluessel|length %}{{ n }} nicht zurückgegeben{% endblocktrans %}</span></div>
-        {% for a in schluessel %}
-        <div class="fw-zeile">
-            <span class="fw-marker warn"></span>
-            <div class="fw-mitte">
-                <div class="fw-t">{{ a.schluessel.bezeichnung }}</div>
-                <div class="fw-s">{% blocktrans with d=a.ausgegeben_am|date:"d.m.Y" %}ausgegeben am {{ d }}{% endblocktrans %}</div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+    {% comment %} Modul 2: Bis 27.10.2026 war diese Liste immer leer (falscher
+       Rückbezug im View) und las `a.schluessel.bezeichnung`, ein Feld, das es
+       nicht gibt. Jetzt dieselbe Liste wie in Person und Vertrag. {% endcomment %}
+    {% include 'fw/_schluessel_akte.html' with sa=schluessel_akte %}
 </div>
 
 <!-- ===== BEREICH: AUFTRÄGE ===== -->

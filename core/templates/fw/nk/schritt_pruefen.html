@@ -1,0 +1,16 @@
+{% extends 'fw/nk/_wizard.html' %}
+{% load zeichen i18n hilfe %}
+{% block frage %}<p>{% trans "Geht die Abrechnung auf, und stimmt jeder Anteil?" %}</p>{% endblock %}
+{% block aufgabe %}
+{% include 'fw/nk/_kennzahlen.html' %}
+
+{% if akonto_vorschlaege %}
+<div class="fw-card" id="akonto">
+    <div class="fw-hinweis info"><span class="fw-hi">{% zeichen 'hinweis' %}</span>
+        <div class="fw-ht"><b>{% trans "Akonto-Anpassung empfohlen" %} {% hilfe 'akonto' %}</b>
+            {% blocktrans trimmed count n=akonto_vorschlaege|length %}Bei {{ n }} Vertrag weicht das monatliche Akonto deutlich vom Bedarf ab. Der Vorschlag öffnet die Mietzinsanpassung mit Formular und Termin — das Akonto wird nicht direkt überschrieben.{% plural %}Bei {{ n }} Verträgen weicht das monatliche Akonto deutlich vom Bedarf ab. Der Vorschlag öffnet die Mietzinsanpassung mit Formular und Termin — das Akonto wird nicht direkt überschrieben.{% endblocktrans %}</div></div>
+</div>
+{% endif %}
+
+{% include 'fw/nk/_karten.html' with mit_vorschlag=True %}
+{% endblock %}

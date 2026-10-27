@@ -1,0 +1,44 @@
+{% extends 'fw/nk/_wizard.html' %}
+{% load zeichen i18n rechte %}
+{% block frage %}<p>{% trans "Verbuchen stellt Nachzahlungen und Guthaben. Danach gehen die Abrechnungen an die Mieter." %}</p>{% endblock %}
+{% block aufgabe %}
+{% include 'fw/nk/_kennzahlen.html' %}
+
+<div class="fw-bento">
+    <div class="fw-kachel b-l">
+        <div class="fw-kachel-kopf"><h3>{% trans "1 · Verbuchen" %}</h3>
+            {% if p.abgeschlossen %}<span class="fw-chip fw-good">{% trans "verbucht" %}</span>{% else %}<span class="fw-chip fw-warn">{% trans "offen" %}</span>{% endif %}</div>
+        <p class="fw-kachel-text">{% trans "Nachzahlungen werden als Debitoren gestellt, Guthaben gutgeschrieben. Die Zahlen werden eingefroren; danach ändert sich die Abrechnung nicht mehr." %}</p>
+        {% if not p.abgeschlossen %}
+        {% if request.user|darf:"/neu/nebenkosten/1/verbuchen/" %}
+        <form method="post" action="/neu/nebenkosten/{{ p.id }}/verbuchen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Abrechnung jetzt verbuchen? Nachzahlungen werden als Debitoren gestellt, Guthaben gutgeschrieben. Die Periode wird abgeschlossen." %}{% endfilter %}');">
+            {% csrf_token %}<button class="fw-btn fw-primary"{% if not result.total_kosten %} disabled{% endif %}>{% zeichen 'gut' %}{% trans "Verbuchen" %}</button>
+        </form>
+        {% else %}<p class="fw-kachel-text">{% trans "Verbuchen dürfen Inhaber und Verwalter." %}</p>{% endif %}
+        {% endif %}
+    </div>
+    <div class="fw-kachel b-l">
+        <div class="fw-kachel-kopf"><h3>{% trans "2 · Zustellen" %}</h3>
+            {% if p.versendet_am %}<span class="fw-chip fw-good">{% blocktrans with d=p.versendet_am|date:"d.m.Y" %}zugestellt {{ d }}{% endblocktrans %}</span>{% endif %}</div>
+        {% if not p.abgeschlossen %}
+        <p class="fw-kachel-text">{% trans "Versand nach dem Verbuchen: PDF ins Mieterportal, E-Mail, Zustellung mit Einsprachefrist." %}</p>
+        {% else %}
+        <div class="fw-nkw-knoepfe">
+            {% if request.user|darf:"/neu/nebenkosten/1/versand/" %}
+            <form method="post" action="/neu/nebenkosten/{{ p.id }}/versand/">{% csrf_token %}
+                <button class="fw-btn" title="{% trans 'Erzeugt je Mieter eine Abrechnung, legt sie ins Portal und lädt alle als Sammel-PDF' %}">{% zeichen 'herunterladen' %}{% trans "PDF erstellen & ablegen" %}</button></form>
+            {% endif %}
+            {% if request.user|darf:"/neu/nebenkosten/1/mail/" %}
+            <form method="post" action="/neu/nebenkosten/{{ p.id }}/mail/" onsubmit="return confirm('{% filter escapejs %}{% trans "Abrechnung jetzt per E-Mail an alle Mieter senden? Mieter ohne E-Mail-Adresse erhalten sie per Brief (Sammel-PDF)." %}{% endfilter %}');">
+                {% csrf_token %}{% if p.versendet_am and p.versand_kanal == 'email' %}<input type="hidden" name="nochmals" value="1">{% endif %}
+                <button class="fw-btn">{% zeichen 'senden' %}{% if p.versendet_am and p.versand_kanal == 'email' %}{% trans "Erneut per E-Mail senden" %}{% else %}{% trans "Per E-Mail senden" %}{% endif %}</button></form>
+            {% endif %}
+            {% if request.user|darf:"/neu/nebenkosten/1/zustellung/" %}
+            <a href="/neu/nebenkosten/{{ p.id }}/zustellung/" class="fw-btn">{% zeichen 'verlauf' %}{% if p.versendet_am %}{% blocktrans with d=p.einsprache_bis|date:"d.m.Y" %}Einsprache bis {{ d }}{% endblocktrans %}{% else %}{% trans "Zustellung erfassen" %}{% endif %}</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% if pauschal %}<p class="fw-kachel-text">{% blocktrans count n=pauschal|length %}{{ n }} Vertrag mit Pauschale erhält keine Abrechnung.{% plural %}{{ n }} Verträge mit Pauschale erhalten keine Abrechnung.{% endblocktrans %}</p>{% endif %}
+    </div>
+</div>
+{% endblock %}

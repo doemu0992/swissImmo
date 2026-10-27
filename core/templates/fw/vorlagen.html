@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n hilfe %}
 {% block title %}{% trans "Vorlagen" %} — swissImmo{% endblock %}
 {% block content %}
 <div class="fw-phead">
@@ -22,13 +22,62 @@
 </div>
 
 
+{% comment %}
+Modul 5: Regeln «Ereignis → Dokument». Je Ereignis eine Kachel; die Auswahl
+rechnet core/services/dokument_regeln.py (regel_uebersicht). Was fest dazu
+entsteht, steht unter «Fest dabei» — die Regel legt ein weiteres Dokument dazu.
+{% endcomment %}
+<h2 class="fw-subhead">{% trans "Regeln: Wenn … dann …" %} {% hilfe 'dokumentregel' %}</h2>
+<section class="fw-bento fw-regeln" aria-label="{% trans 'Regeln' %}">
+    {% for r in regeln %}
+    <article class="fw-kachel fw-regel" data-ereignis="{{ r.ereignis }}">
+        <div class="fw-kachel-kopf">
+            <h3>{% blocktrans with e=r.label %}Wenn: {{ e }}{% endblocktrans %}</h3>
+            {% if r.status == 'aktiv' %}<span class="fw-chip fw-good fw-dot">{% trans "aktiv" %}</span>
+            {% else %}<span class="fw-chip fw-mut">{% trans "aus" %}</span>{% endif %}
+        </div>
+        <p class="fw-kachel-text">
+            <b>{% trans "dann:" %}</b>
+            {% if r.vorlage %}«{{ r.vorlage.name }}»{% if r.sprachen %} · {{ r.sprachen|join:" / "|upper }}{% endif %}
+            {% else %}{% trans "kein zusätzliches Dokument" %}{% endif %}
+        </p>
+        {% if r.herkunft %}
+        <div class="fw-regel-marken">
+            {% if r.herkunft == 'system' %}<span class="fw-chip fw-info">{% trans "System" %}</span>
+            {% else %}<span class="fw-chip fw-brand">{% trans "eigen" %}</span>{% endif %}
+            {% if r.vorlage.gueltig_ab %}<span class="fw-chip fw-mut">{% blocktrans with d=r.vorlage.gueltig_ab|date:"d.m.Y" %}ab {{ d }}{% endblocktrans %}</span>{% endif %}
+        </div>
+        {% endif %}
+        <p class="fw-kachel-text">{% trans "Fest dabei:" %} {{ r.fest }}</p>
+        <div class="fw-regel-knoepfe">
+            {% if r.vorlage %}
+            <a href="/neu/vorlagen/{{ r.vorlage.id }}/bearbeiten/" class="fw-btn fw-knapp">{% zeichen 'bearbeiten' %}{% trans "Bearbeiten" %}</a>
+            {% else %}
+            <a href="/neu/vorlagen/neu/?ereignis={{ r.ereignis }}" class="fw-btn fw-knapp fw-primary">{% zeichen 'neu' %}{% trans "Vorlage anlegen" %}</a>
+            {% endif %}
+            {% if r.umschaltbar %}
+            <form method="post" action="/neu/vorlagen/regel/umschalten/">
+                {% csrf_token %}
+                <input type="hidden" name="ereignis" value="{{ r.ereignis }}">
+                <button class="fw-btn fw-knapp fw-geist">{% if r.status == 'aktiv' %}{% trans "Ausschalten" %}{% else %}{% trans "Einschalten" %}{% endif %}</button>
+            </form>
+            {% endif %}
+        </div>
+    </article>
+    {% endfor %}
+</section>
+
 {% if vorlagen %}
 <div class="fw-card">
     <div class="fw-kopf"><span class="fw-t">{% trans "Vorlagen" %}</span><span class="fw-neben">{{ vorlagen|length }}</span></div>
     {% for v in vorlagen %}
     <div class="fw-zeile">
         <div class="fw-mitte">
-            <div class="fw-zkopf"><span class="fw-marke-kapsel">{{ v.get_kategorie_display }}</span></div>
+            <div class="fw-zkopf"><span class="fw-marke-kapsel">{{ v.get_kategorie_display }}</span>
+                <span class="fw-chip fw-mut">{{ v.sprache|upper }} · {% blocktrans with n=v.version %}Version {{ n }}{% endblocktrans %}</span>
+                {% if v.organisation_id %}<span class="fw-chip fw-brand">{% trans "eigen" %}</span>{% else %}<span class="fw-chip fw-info">{% trans "System" %}</span>{% endif %}
+                {% if v.ereignis %}<span class="fw-chip fw-mut">{{ v.get_ereignis_display }}</span>{% endif %}
+                {% if not v.aktiv %}<span class="fw-chip fw-warn">{% trans "aus" %}</span>{% endif %}</div>
             <div class="fw-t">{{ v.name }}</div>
             {% if v.betreff %}<div class="fw-s">{% trans "Betreff" %}: {{ v.betreff }}</div>{% endif %}
             <div class="fw-s fw-faint line-clamp-3">{{ v.inhalt|truncatechars:120 }}</div>

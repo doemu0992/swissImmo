@@ -126,6 +126,22 @@ def fw_account(request):
         # Verwaltung.save() macht den weissen Hintergrund automatisch transparent.
         from core.services.unterschrift import uebernehme_aus_formular
         uebernehme_aus_formular(vw, request)
+        # Briefkopf (Modul 5). FEHLT das Feld, bleibt der Wert: Das
+        # Marktdaten-Formular oben postet auf dieselbe Ansicht und schickt ihn
+        # nicht mit (dieselbe Regel wie beim Stundensatz).
+        if 'briefkopf_farbe' in P:
+            from django.core.exceptions import ValidationError
+            from crm.models import HEX_FARBE
+            farbe = (P.get('briefkopf_farbe') or '').strip()
+            try:
+                if farbe:
+                    HEX_FARBE(farbe)
+                vw.briefkopf_farbe = farbe
+            except ValidationError:
+                messages.error(request, gettext(
+                    '«%(farbe)s» ist keine Farbe im Format #RRGGBB — Briefkopf-Farbe unverändert.') % {'farbe': farbe})
+        if 'briefkopf_fusszeile' in P:
+            vw.briefkopf_fusszeile = (P.get('briefkopf_fusszeile') or '').strip()[:240]
         vw.save()
         if _zins_alt != vw.aktueller_referenzzinssatz:
             from core.services.referenzzins import aenderung_festhalten
@@ -789,9 +805,14 @@ PLATZHALTER_HILFE = [
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_vorlagen(request):
     from crm.models import Vorlage
+    from core.services.dokument_regeln import regel_uebersicht
     basis = _global_filter(request)
     vorlagen = Vorlage.objects.all()
-    return render(request, 'fw/vorlagen.html', {**basis, 'nav': 'vorlagen', 'vorlagen': vorlagen})
+    return render(request, 'fw/vorlagen.html', {
+        **basis, 'nav': 'vorlagen', 'vorlagen': vorlagen,
+        # Modul 5: je Ereignis eine Kachel «Wenn … dann …».
+        'regeln': regel_uebersicht(organisation_der_anfrage(request)),
+    })
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
@@ -818,10 +839,20 @@ def fw_vorlage_form(request, pk=None):
     from django.contrib import messages
     from crm.models import Vorlage
     from core.auth import log_aktion, snapshot_model, diff_model
+    from .vorlagen_editor import formular_kontext, formular_lesen, formular_vorbelegung
     vl = get_object_or_404(Vorlage, id=pk) if pk else None
     basis = _global_filter(request)
     if request.method == 'POST':
         alt_snap = snapshot_model(Vorlage.objects.get(pk=pk)) if pk else {}
+        # Modul 5: Felder lesen und prüfen — unbekannte Platzhalter, Format,
+        # Sprache, Ereignis, «gültig ab». Bei einem Fehler bleibt die Eingabe
+        # stehen; vorher führte ein Fehler zurück auf ein leeres Formular.
+        werte, fehler = formular_lesen(request.POST, vl)
+        if fehler:
+            for f in fehler:
+                messages.error(request, f)
+            return render(request, 'fw/vorlage_form.html', {
+                **basis, 'nav': 'vorlagen', **formular_kontext(request, vl, werte)})
 
         # KOPIE STATT UEBERSCHREIBEN BEI SYSTEMVORLAGEN (Etappe 6.4).
         #
@@ -832,34 +863,47 @@ def fw_vorlage_form(request, pk=None):
         # Stattdessen entsteht eine eigene Fassung; das Original bleibt, wie es
         # ist, und kuenftige Korrekturen daran erreichen weiterhin alle, die
         # keine eigene angelegt haben.
-        if vl is not None and vl.organisation_id is None:
-            obj = Vorlage()
+        #
+        # VERSION (Modul 5): Jedes Speichern einer eigenen Vorlage zählt die
+        # Version hoch; die Kopie setzt die Zählung des Originals fort. Gilt
+        # die Vorlage heute schon und soll die Änderung erst ab einem späteren
+        # Tag gelten, entsteht eine NEUE Zeile — sonst stünde der neue Text ab
+        # sofort in der Akte, oder bis zum Stichtag gälte gar keiner.
+        heute = timezone.localdate()
+        kopiert = vl is not None and vl.organisation_id is None
+        neue_fassung = (vl is not None and not kopiert and vl.aktiv
+                        and werte['gueltig_ab'] is not None and werte['gueltig_ab'] > heute
+                        and (vl.gueltig_ab is None or vl.gueltig_ab <= heute))
+        if kopiert or neue_fassung:
+            obj = Vorlage(version=(vl.version or 1) + 1)
             alt_snap = {}
+        elif vl is not None:
+            obj = vl
+            obj.version = (vl.version or 1) + 1
         else:
-            obj = vl or Vorlage()
+            obj = Vorlage(version=1)
         # Die Zuordnung zur eigenen Verwaltung macht `Vorlage.save()` — dort
         # gilt sie fuer JEDEN Aufrufer, nicht nur fuer dieses Formular.
-        obj.name = request.POST.get('name', '').strip()
-        obj.kategorie = request.POST.get('kategorie', 'brief')
-        obj.betreff = request.POST.get('betreff', '').strip()
-        obj.inhalt = request.POST.get('inhalt', '')
-        if not obj.name:
-            messages.error(request, gettext('Bezeichnung ist erforderlich.'))
-            return redirect(request.path)
+        for feld, wert in werte.items():
+            setattr(obj, feld, wert)
         obj.save()
-        kopiert = pk and (vl is not None and vl.organisation_id is None)
-        _diff = diff_model(alt_snap, snapshot_model(obj), obj) if (pk and not kopiert) else ''
-        log_aktion(request, "Vorlage bearbeitet" if (pk and not kopiert) else "Vorlage erstellt",
-                   obj.name, _diff)
+        bearbeitet = vl is not None and not (kopiert or neue_fassung)
+        _diff = diff_model(alt_snap, snapshot_model(obj), obj) if bearbeitet else ''
+        log_aktion(request, "Vorlage bearbeitet" if bearbeitet else "Vorlage erstellt",
+                   obj.name, _diff or f"Version {obj.version}")
         if kopiert:
             messages.success(
                 request, '✅ ' + gettext("Eigene Fassung von '%(name)s' angelegt. Die mitgelieferte Vorlage bleibt unverändert.") % {'name': obj.name})
+        elif neue_fassung:
+            messages.success(request, '✅ ' + gettext(
+                "Neue Fassung von '%(name)s' gilt ab %(datum)s. Bis dahin gilt die bisherige.") % {
+                    'name': obj.name, 'datum': obj.gueltig_ab.strftime('%d.%m.%Y')})
         else:
             messages.success(request, '✅ ' + gettext("Vorlage '%(name)s' gespeichert.") % {'name': obj.name})
         return redirect('/neu/vorlagen/')
     return render(request, 'fw/vorlage_form.html', {
-        **basis, 'nav': 'vorlagen', 'vl': vl, 'ist_neu': vl is None,
-        'kategorien': Vorlage.KATEGORIE_CHOICES, 'platzhalter': PLATZHALTER_HILFE,
+        **basis, 'nav': 'vorlagen',
+        **formular_kontext(request, vl, formular_vorbelegung(request.GET, vl)),
     })
 
 

@@ -250,15 +250,23 @@ class NebenkostenVersandOhneSachbearbeitungTests(TestCase):
         self.assertFalse(self._im_portal().exists())
 
     def test_verwalter_versendet(self):
+        # Bewusst angepasst (NK-Wizard, Fehler g): versendet wird nur eine verbuchte Periode.
+        type(self.p).objects.filter(pk=self.p.pk).update(abgeschlossen=True)
         _client('Verwalter').post(f'/neu/nebenkosten/{self.p.pk}/versand/')
         self.assertTrue(self._im_portal().exists())
 
     def test_knoepfe_nur_fuer_berechtigte(self):
+        # Bewusst angepasst (NK-Wizard): «Verbuchen» steht im Schritt «Verbuchen & Zustellen» der
+        # offenen Periode, «Versand» in der Leseansicht der verbuchten.
+        sachbearbeiter, verwalter = _client('Sachbearbeiter'), _client('Verwalter')
+        schritt = f'/neu/nebenkosten/{self.p.pk}/abschluss/'
+        sachb = sachbearbeiter.get(schritt)
+        self.assertEqual(sachb.status_code, 200)
+        self.assertNotContains(sachb, f'/neu/nebenkosten/{self.p.pk}/verbuchen/')
+        self.assertContains(verwalter.get(schritt), f'/neu/nebenkosten/{self.p.pk}/verbuchen/')
+        type(self.p).objects.filter(pk=self.p.pk).update(abgeschlossen=True)
         detail = f'/neu/nebenkosten/{self.p.pk}/'
-        sachb = _client('Sachbearbeiter').get(detail)
+        sachb = sachbearbeiter.get(detail)
         self.assertEqual(sachb.status_code, 200)
         self.assertNotContains(sachb, f'/neu/nebenkosten/{self.p.pk}/versand/')
-        self.assertNotContains(sachb, f'/neu/nebenkosten/{self.p.pk}/verbuchen/')
-        verw = _client('Verwalter').get(detail)
-        self.assertContains(verw, f'/neu/nebenkosten/{self.p.pk}/versand/')
-        self.assertContains(verw, f'/neu/nebenkosten/{self.p.pk}/verbuchen/')
+        self.assertContains(verwalter.get(detail), f'/neu/nebenkosten/{self.p.pk}/versand/')

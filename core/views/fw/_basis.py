@@ -259,6 +259,13 @@ def _pendenz_ziel(p):
     gehört NICHT ins Popup — ihr Hero + Tabs + Tabellen werden im engen Iframe
     (v.a. mobil) abgeschnitten und kollidieren mit dem Pendenz-Titel."""
     q = p.quelle or ''
+    # Modul 2: Verlust eines Schlüssels (Entscheid E9) — die Verrechnung löst
+    # eine Person aus. Beim Hauswart (intern) gibt es niemanden zu verrechnen.
+    if q.startswith('schluessel:verlust:'):
+        return ('/neu/debitoren/', gettext('Debitorenrechnung erfassen'), False, False)
+    if q.startswith('schluessel:verlust-intern:') and p.liegenschaft_id:
+        return (f'/neu/liegenschaften/{p.liegenschaft_id}/?tab=stammdaten#schliessanlage',
+                gettext('Schliessanlage öffnen'), False, False)
     if p.vertrag_id:
         if q.startswith(('257d-vorschlag:', '257d-einschreiben:')):
             return (f'/neu/vertraege/{p.vertrag_id}/verzug/', gettext('Fristansetzung starten'), False, False)

@@ -1,0 +1,82 @@
+{% extends embed_base|default:'fw/base.html' %}
+{% load i18n zeichen %}
+{% block title %}{% trans "Schlüssel zurücknehmen" %} — {{ lg.strasse }}{% endblock %}
+{% block content %}
+{% comment %}
+Rücknahme am Telefon (Modul 2, 27.10.2026). Je ausgegebenem Schlüssel:
+bleibt, zurück oder verloren; bei mehreren Stück lässt sich angeben, wie viele
+davon fehlen. Ein Verlust erzeugt die Pendenz «Zylinder ersetzen» (E9: keine
+automatische Verrechnung). Ohne Empfänger zeigt die Seite, wer an dieser
+Liegenschaft Schlüssel hat.
+{% endcomment %}
+<div class="fw-sk-seite">
+    {% if not embed %}
+    <div class="fw-phead">
+        <div>
+            <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg.id }}/?tab=stammdaten#schliessanlage">{{ lg.strasse }}</a><span aria-hidden="true">/</span><span>{% trans "Rücknahme" %}</span></nav>
+            <h1>{% trans "Schlüssel zurücknehmen" %}</h1>
+            <p>{% if empf %}{{ empf.name }} · {% endif %}{{ lg.strasse }}, {{ lg.plz }} {{ lg.ort }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not empf %}
+    <div class="fw-sk-block">
+        <h2>{% trans "Wer gibt zurück?" %}</h2>
+        {% for i in inhaber %}
+        <a href="?an={{ i.code }}{% if embed %}&amp;embed=1{% endif %}" class="fw-sk-wahl">
+            <span class="fw-sk-art" aria-hidden="true">{% zeichen 'person' %}</span>
+            <span class="fw-sk-titel"><b>{{ i.name }}</b>
+                <span>{% blocktrans count n=i.stueck %}{{ n }} Stück ausgegeben{% plural %}{{ n }} Stück ausgegeben{% endblocktrans %}{% if i.ueberfaellig %} · <span class="fw-kritisch">{% trans "Rückgabe überfällig" %}</span>{% endif %}</span></span>
+            {% zeichen 'weiter' %}
+        </a>
+        {% empty %}
+        <p class="fw-leer">{% trans "An dieser Liegenschaft ist kein Schlüssel ausgegeben." %}</p>
+        {% endfor %}
+    </div>
+    {% else %}
+    <form method="post" data-no-guard class="fw-sk-seite" id="sk-ruecknahme">
+        {% csrf_token %}
+        <input type="hidden" name="an" value="{{ empf.code }}">
+        {% if embed %}<input type="hidden" name="embed" value="1">{% endif %}
+        {% if weiter %}<input type="hidden" name="next" value="{{ weiter }}">{% endif %}
+        <div class="fw-sk-block">
+            <h2>{% blocktrans with n=empf.name %}Schlüssel bei {{ n }}{% endblocktrans %}</h2>
+            {% for a in offene %}
+            <fieldset class="fw-sk-block fw-sk-rueck" data-anzahl="{{ a.anzahl }}">
+                <legend class="fw-sk-kopf">
+                    <span class="fw-sk-art {{ a.schluessel.art }}" aria-hidden="true">{{ a.kuerzel }}</span>
+                    <span class="fw-sk-titel"><b>{{ a.schluessel.typ }} · {% trans "Nr." %} {{ a.schluessel.schluessel_nummer }}</b>
+                        <span>{% blocktrans count n=a.anzahl %}{{ n }} Stk.{% plural %}{{ n }} Stk.{% endblocktrans %} · {% blocktrans with d=a.ausgegeben_am|date:"d.m.Y" %}seit {{ d }}{% endblocktrans %}{% if a.rueckgabe_bis %} · <span{% if a.ueberfaellig %} class="fw-kritisch"{% endif %}>{% blocktrans with d=a.rueckgabe_bis|date:"d.m.Y" %}zurück bis {{ d }}{% endblocktrans %}</span>{% endif %}</span></span>
+                </legend>
+                <div class="fw-sk-segment" role="radiogroup" aria-label="{% trans 'Stand' %}">
+                    <label><input type="radio" name="status_{{ a.id }}" value=""{% if not a.wahl %} checked{% endif %}>{% trans "bleibt" %}</label>
+                    <label><input type="radio" name="status_{{ a.id }}" value="zurueck"{% if a.wahl == 'zurueck' %} checked{% endif %}>{% trans "zurück" %}</label>
+                    <label class="verloren"><input type="radio" name="status_{{ a.id }}" value="verloren"{% if a.wahl == 'verloren' %} checked{% endif %}>{% trans "verloren" %}</label>
+                </div>
+                {% if a.anzahl > 1 %}
+                <div class="fw-sk-teil"><label class="fw-label" for="sk-v-{{ a.id }}">{% trans "Davon fehlen (Stück), wenn «zurück»" %}</label>
+                    <input id="sk-v-{{ a.id }}" type="number" name="verloren_{{ a.id }}" min="0" max="{{ a.anzahl|add:'-1' }}" value="{{ a.verloren_n }}" inputmode="numeric" class="fw-feld fw-sk-stueck"></div>
+                {% endif %}
+            </fieldset>
+            {% empty %}
+            <p class="fw-leer">{% blocktrans with n=empf.name %}{{ n }} hat an dieser Liegenschaft keinen Schlüssel.{% endblocktrans %}</p>
+            {% endfor %}
+        </div>
+        {% if offene %}
+        <div class="fw-sk-block">
+            <label class="fw-label" for="sk-notiz">{% trans "Notiz" %}</label>
+            <textarea id="sk-notiz" name="notiz" rows="2" maxlength="500" class="fw-feld w-full">{{ notiz }}</textarea>
+            <p class="fw-hilfe">{% trans "Ein Verlust legt die Pendenz «Zylinder ersetzen» an. Die Kosten werden nicht automatisch verrechnet — die Debitorenrechnung erfasst bei Bedarf eine Person." %}</p>
+        </div>
+        {% trans "Unterschrift bei der Rücknahme" as titel %}
+        {% include 'fw/_schluessel_unterschrift.html' with titel=titel %}
+        <p class="fw-hilfe">{% trans "Die Quittung entsteht als PDF und liegt danach in der Ablage." %}</p>
+        <div class="fw-sk-absenden">
+            <button type="submit" class="fw-btn fw-primary" data-sk-absenden>{% zeichen 'gut' %}{% trans "Rücknahme bestätigen" %}</button>
+        </div>
+        {% endif %}
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

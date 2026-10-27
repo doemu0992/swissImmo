@@ -1,0 +1,16 @@
+{% load i18n zeichen %}{% comment %}Schliessanlage anlegen (`an` leer) oder ändern (Modul 2).{% endcomment %}
+<form method="post" action="/neu/liegenschaften/{{ lg.id }}/schliessanlage/" class="fw-raster r2">
+    {% csrf_token %}
+    {% if an %}<input type="hidden" name="anlage_id" value="{{ an.id }}">{% endif %}
+    <div><label class="fw-label" for="sa-h-{{ an.id|default:'neu' }}">{% trans "Hersteller" %}</label>
+        <input id="sa-h-{{ an.id|default:'neu' }}" name="hersteller" maxlength="80" value="{{ an.hersteller|default:'' }}" placeholder="{% trans 'z. B. Kaba, Keso, dormakaba' %}" class="fw-feld w-full"></div>
+    <div><label class="fw-label" for="sa-s-{{ an.id|default:'neu' }}">{% trans "System" %}</label>
+        <input id="sa-s-{{ an.id|default:'neu' }}" name="system" maxlength="80" value="{{ an.system|default:'' }}" placeholder="{% trans 'z. B. star, 4000S' %}" class="fw-feld w-full"></div>
+    <div class="fw-col-span-2"><label class="fw-label" for="sa-k-{{ an.id|default:'neu' }}">{% trans "Sicherungskarte Nr." %}</label>
+        <input id="sa-k-{{ an.id|default:'neu' }}" name="sicherungskarte_nr" maxlength="60" value="{{ an.sicherungskarte_nr|default:'' }}" class="fw-feld w-full"></div>
+    <div class="fw-col-span-2"><label class="fw-label" for="sa-b-{{ an.id|default:'neu' }}">{% trans "Bestellberechtigte" %}</label>
+        <textarea id="sa-b-{{ an.id|default:'neu' }}" name="bestellberechtigte" rows="2" class="fw-feld w-full" placeholder="{% trans 'Wer darf Schlüssel nachbestellen?' %}">{{ an.bestellberechtigte|default:'' }}</textarea></div>
+    <div class="fw-col-span-2"><label class="fw-label" for="sa-n-{{ an.id|default:'neu' }}">{% trans "Notiz" %}</label>
+        <textarea id="sa-n-{{ an.id|default:'neu' }}" name="notiz" rows="2" class="fw-feld w-full">{{ an.notiz|default:'' }}</textarea></div>
+    <div class="fw-col-span-2"><button class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Anlage speichern" %}</button></div>
+</form>
