@@ -154,8 +154,13 @@ normales Formular.
   `section[data-schritt]`; «Weiter» prüft die Pflichtfelder des Schritts (`required`,
   `data-pflicht`), der letzte Schritt fasst alles zusammen («Prüfen & speichern») mit «Ändern» je
   Schritt. Fehler vom Server öffnen den Schritt mit dem ersten `aria-invalid`-Feld. Bearbeiten
-  bleibt eine Seite. Der Mietvertrags-Assistent behält seine Logik und bekommt die Schrittleiste
-  `fw-schrittleiste`. Feldnamen sind unverändert (`core/tests/test_bausteine.py` prüft das).
+  bleibt eine Seite. Feldnamen sind unverändert (`core/tests/test_bausteine.py` prüft das).
+  Seit 27.10.2026 läuft auch der Mietvertrag (`fw/vertrag_neu.html`) über `fw-assistent`; die
+  eigene Schrittleiste `fw-schrittleiste` ist gelöscht. Dazu kam die optionale **Vorschau**:
+  `<aside class="fw-assistent-vorschau">` in `.fw-assistent.fw-assistent-mit-vorschau` — ab 1200 px
+  dritte Spalte rechts, darunter unter dem Inhalt, mit `[data-vorschau-knopf]` einklappbar. Seiten
+  mit eigenem Skript hängen sich an das Ereignis `fw-assistent:zeige` und öffnen den Schritt eines
+  Feldes mit `wurzel.fwAssistent.zeigeFeld(el)`.
 - **Prozessleiste** (`fw/_prozess.html`): Schritte eines Ablaufs mit Zustand erledigt · warnung ·
   offen · gesperrt · entfällt und «hier». Nebenkosten: `core/services/nk_prozess.py` leitet die
   sieben Schritte (Periode → Versand & Zustellung) aus den Werten der Detailansicht ab und rechnet

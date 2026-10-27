@@ -30269,3 +30269,12 @@ msgstr "Chiave di gruppo"
 
 msgid "Einzelschlüssel"
 msgstr "Chiave singola"
+
+msgid "Sieben Schritte vom Objekt bis zum Abschluss — die Vorschau zeigt den Vertrag, wie er gedruckt wird."
+msgstr "Sette passi dall'oggetto alla conclusione — l'anteprima mostra il contratto come verrà stampato."
+
+msgid "Vorschau zeigen"
+msgstr "Mostra l'anteprima"
+
+msgid "Vorschau ausblenden"
+msgstr "Nascondi l'anteprima"

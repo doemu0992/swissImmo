@@ -30294,3 +30294,12 @@ msgstr "Passe partiel"
 
 msgid "Einzelschlüssel"
 msgstr "Clé individuelle"
+
+msgid "Sieben Schritte vom Objekt bis zum Abschluss — die Vorschau zeigt den Vertrag, wie er gedruckt wird."
+msgstr "Sept étapes de l'objet à la conclusion — l'aperçu montre le bail tel qu'il sera imprimé."
+
+msgid "Vorschau zeigen"
+msgstr "Afficher l'aperçu"
+
+msgid "Vorschau ausblenden"
+msgstr "Masquer l'aperçu"

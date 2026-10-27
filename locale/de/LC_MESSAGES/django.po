@@ -30174,3 +30174,12 @@ msgstr "Gruppenschlüssel"
 
 msgid "Einzelschlüssel"
 msgstr "Einzelschlüssel"
+
+msgid "Sieben Schritte vom Objekt bis zum Abschluss — die Vorschau zeigt den Vertrag, wie er gedruckt wird."
+msgstr "Sieben Schritte vom Objekt bis zum Abschluss — die Vorschau zeigt den Vertrag, wie er gedruckt wird."
+
+msgid "Vorschau zeigen"
+msgstr "Vorschau zeigen"
+
+msgid "Vorschau ausblenden"
+msgstr "Vorschau ausblenden"

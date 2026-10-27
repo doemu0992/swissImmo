@@ -392,3 +392,26 @@ test('Akten: Reiter einreihig, nichts quer', async ({ page }) => {
     expect(quer, `${pfad}: die Seite scrollt ${quer} px quer`).toBeLessThanOrEqual(0);
   }
 });
+
+// MIETVERTRAG IM ASSISTENTEN-STANDARD (27.10.2026): Die Leiste ist am Telefon
+// eine Zeile (gemessen 54 px), die Vorschau steht unter dem Inhalt; ihr Kopf mit
+// Titel und Knopf «Vorschau ausblenden» bleibt eine Reihe (32 px, zweireihig 59),
+// und der auf A4 skalierte Rahmen endet am Kartenrand (374) statt quer zu schieben.
+test('Vertrag: Leiste einreihig, Vorschau unter dem Inhalt, nichts quer', async ({ page }) => {
+  await login(page);
+  await goto(page, '/neu/vertraege/neu/');
+  await expect(page.locator('.fw-assistent.an')).toBeVisible();
+  const m = await page.evaluate(() => {
+    const r = (s: string) => document.querySelector(s)!.getBoundingClientRect();
+    return { leiste: r('.fw-assistent-leiste').height, kopf: r('.fw-assistent-vorschau-kopf').height,
+      knopf: r('[data-vorschau-knopf]').right, rahmen: document.getElementById('pvFrame')!.parentElement!.getBoundingClientRect().right,
+      inhaltUnten: r('.fw-assistent-inhalt').bottom, vorschauOben: r('.fw-assistent-vorschau').top,
+      quer: document.documentElement.scrollWidth - innerWidth };
+  });
+  expect(m.leiste, `Leiste ${Math.round(m.leiste)} px — umgebrochen?`).toBeLessThan(70);
+  expect(m.kopf, `Vorschau-Kopf ${Math.round(m.kopf)} px — umgebrochen?`).toBeLessThan(44);
+  expect(m.knopf).toBeLessThanOrEqual(390 - 16);
+  expect(m.rahmen).toBeLessThanOrEqual(390 - 16);
+  expect(m.vorschauOben).toBeGreaterThanOrEqual(m.inhaltUnten);
+  expect(m.quer, `die Seite scrollt ${m.quer} px quer`).toBeLessThanOrEqual(0);
+});
