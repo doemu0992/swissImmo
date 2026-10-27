@@ -30046,3 +30046,12 @@ msgstr "Group key"
 
 msgid "Einzelschlüssel"
 msgstr "Individual key"
+
+msgid "Sieben Schritte vom Objekt bis zum Abschluss — die Vorschau zeigt den Vertrag, wie er gedruckt wird."
+msgstr "Seven steps from unit to signing — the preview shows the lease as it will be printed."
+
+msgid "Vorschau zeigen"
+msgstr "Show preview"
+
+msgid "Vorschau ausblenden"
+msgstr "Hide preview"

@@ -169,9 +169,13 @@ class GewerbeWizardTests(TestCase):
         # NK-Feld + Brutto-Anzeige sind ausblendbare Container
         self.assertIn('id="nk-field-box"', body)
         self.assertIn('id="brutto-box"', body)
-        # Schritt-Navigation überspringt den Nebenkosten-Schritt bei Einstellplatz
-        self.assertIn('function visibleSteps()', body)
-        self.assertIn('updateStepNav()', body)
+        # Schritt-Navigation überspringt den Nebenkosten-Schritt bei Einstellplatz.
+        # Bewusst angepasst (Assistenten-Standard, 27.10.2026): statt eigener
+        # visibleSteps()/updateStepNav() blendet die Seite den Schritt aus, und der
+        # gemeinsame Assistent zählt ausgeblendete Schritte nicht mit.
+        self.assertIn('<section id="schritt-nk" data-schritt=', body)
+        self.assertIn("getElementById('schritt-nk').classList.toggle('hidden', isEP())", body)
+        self.assertGreaterEqual(body.count('nkSchrittSetzen()'), 3)   # Definition + lgChange + objChange
         # Vorschau nutzt dynamische Abschnittsnummern statt hartem "6. Nebenkosten"
         self.assertIn('secN(', body)
         self.assertNotIn('<div class="pvsec">6. Nebenkosten</div>', body)
