@@ -30269,3 +30269,13 @@ msgstr "Chiave di gruppo"
 
 msgid "Einzelschlüssel"
 msgstr "Chiave singola"
+
+#, python-format
+msgid "Schritt %(i)s von %(n)s"
+msgstr "Passo %(i)s di %(n)s"
+
+msgid "Heizung & Zähler"
+msgstr "Riscaldamento & contatori"
+
+msgid "Verbuchen & Zustellen"
+msgstr "Registrazione & notifica"

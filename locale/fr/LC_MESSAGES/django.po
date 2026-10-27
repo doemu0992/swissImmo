@@ -30294,3 +30294,13 @@ msgstr "Passe partiel"
 
 msgid "Einzelschlüssel"
 msgstr "Clé individuelle"
+
+#, python-format
+msgid "Schritt %(i)s von %(n)s"
+msgstr "Étape %(i)s sur %(n)s"
+
+msgid "Heizung & Zähler"
+msgstr "Chauffage & compteurs"
+
+msgid "Verbuchen & Zustellen"
+msgstr "Comptabilisation & notification"

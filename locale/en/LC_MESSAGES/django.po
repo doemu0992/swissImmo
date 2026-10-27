@@ -30046,3 +30046,13 @@ msgstr "Group key"
 
 msgid "Einzelschlüssel"
 msgstr "Individual key"
+
+#, python-format
+msgid "Schritt %(i)s von %(n)s"
+msgstr "Step %(i)s of %(n)s"
+
+msgid "Heizung & Zähler"
+msgstr "Heating & meters"
+
+msgid "Verbuchen & Zustellen"
+msgstr "Posting & delivery"

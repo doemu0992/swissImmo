@@ -30174,3 +30174,13 @@ msgstr "Gruppenschlüssel"
 
 msgid "Einzelschlüssel"
 msgstr "Einzelschlüssel"
+
+#, python-format
+msgid "Schritt %(i)s von %(n)s"
+msgstr "Schritt %(i)s von %(n)s"
+
+msgid "Heizung & Zähler"
+msgstr "Heizung & Zähler"
+
+msgid "Verbuchen & Zustellen"
+msgstr "Verbuchen & Zustellen"
