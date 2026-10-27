@@ -1,60 +1,68 @@
-{% extends 'fw/base.html' %}
+{% extends 'fw/_assistent_server.html' %}
 {% load i18n zeichen %}
 {% block title %}{% trans "Zwei-Faktor einrichten" %} — swissImmo{% endblock %}
-{% block content %}
+{% comment %}
+Einrichtung des zweiten Faktors im Rahmen des server-seitigen Assistenten (fw/_assistent_server.html),
+Schritt 1 und 2; Schritt 3 (Notfallcodes) ist core/zweifaktor_codes.html. Schritt 1 ist die Adresse ohne
+Parameter, Schritt 2 `?schritt=2` und die Antwort auf ein falsches POST. Schlüssel und QR stehen nur in
+Schritt 1 im Kontext. Prüfung, Geheimnis und Notfallcodes sind unverändert (core/views/zweifaktor.py).
+{% endcomment %}
+{% block seitenkopf %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="{% url 'zweifaktor_uebersicht' %}">{% trans "Zwei-Faktor-Anmeldung" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Einrichten" %}</b>
+</nav>
+
 <div class="fw-phead">
     <div>
         <h1>{% trans "Zwei-Faktor-Anmeldung einrichten" %}</h1>
         <p>{% trans "Ein zweiter Faktor schützt den Zugang auch dann, wenn das Passwort in fremde Hände gerät." %}</p>
     </div>
 </div>
+{% endblock %}
 
-<div class="max-w-2xl">
-    {% if pflicht_hinweis %}
-    <div class="fw-card"><div class="fw-hinweis warn">
-        <span class="fw-hi">{% zeichen 'warnung' %}</span>
-        <div class="fw-ht">{% trans "Ihre Verwaltung verlangt die Zwei-Faktor-Anmeldung. Ohne Einrichtung ist die Oberfläche gesperrt." %}</div>
-    </div></div>
-    {% endif %}
+{% block frage %}<p>{% if schritt == 1 %}{% trans "Scannen Sie den QR-Code mit einer Authenticator-App (Google Authenticator, 1Password, Aegis, Microsoft Authenticator — alle funktionieren)." %}{% else %}{% trans "Damit ist belegt, dass die App richtig eingerichtet ist. Erst danach gilt der zweite Faktor — wer hier abbricht, sperrt sich nicht aus." %}{% endif %}</p>{% endblock %}
 
-    <div class="fw-card">
-        <div class="fw-kopf"><h2>{% trans "Schritt 1 — Code scannen" %}</h2></div>
-        <div class="p-5">
-        <p class="text-sm fw-mutet mb-4">
-            {% trans "Scannen Sie den QR-Code mit einer Authenticator-App (Google Authenticator, 1Password, Aegis, Microsoft Authenticator — alle funktionieren)." %}
-        </p>
-        <div class="flex flex-col sm:flex-row gap-5 items-start">
-            <div class="fw-flaeche p-3 rounded-lg border fw-linie shrink-0" style="width:200px">
-                {{ qr|safe }}
-            </div>
-            <div class="text-sm fw-mutet space-y-2 min-w-0">
-                <p class="font-semibold fw-ink">{% trans "Kein Scanner zur Hand?" %}</p>
-                <p>{% trans "Geben Sie diesen Schlüssel von Hand in der App ein" %}:</p>
-                <code class="block fw-feld fw-mono break-all select-all">{{ geheimnis }}</code>
-                <p class="fw-hilfe">{% trans "Typ: zeitbasiert (TOTP) · 6 Stellen · 30 Sekunden" %}</p>
-            </div>
-        </div>
-        </div>
-    </div>
+{% block inhalt %}
+{% if pflicht_hinweis %}
+<div class="fw-card"><div class="fw-hinweis warn">
+    <span class="fw-hi">{% zeichen 'warnung' %}</span>
+    <div class="fw-ht">{% trans "Ihre Verwaltung verlangt die Zwei-Faktor-Anmeldung. Ohne Einrichtung ist die Oberfläche gesperrt." %}</div>
+</div></div>
+{% endif %}
 
-    <div class="fw-card">
-        <div class="fw-kopf"><h2>{% trans "Schritt 2 — Code bestätigen" %}</h2></div>
-        <div class="p-5">
-        <p class="text-sm fw-mutet mb-4">
-            {% trans "Damit ist belegt, dass die App richtig eingerichtet ist. Erst danach gilt der zweite Faktor — wer hier abbricht, sperrt sich nicht aus." %}
-        </p>
-        {% if fehler %}
-        <div class="fw-befund crit mb-4 p-3 text-sm">{{ fehler }}</div>
-        {% endif %}
-        <form method="post" class="flex flex-wrap gap-3 items-center">
-            {% csrf_token %}
-            <input name="code" inputmode="numeric" autocomplete="one-time-code" required
-                   maxlength="14" placeholder="000000"
-                   class="border fw-linie rounded-lg px-4 py-2.5 text-lg tracking-[.3em]
-                          text-center font-mono w-44">
-            <button class="fw-btn fw-primary">{% trans "Aktivieren" %}</button>
-        </form>
+{% if schritt == 1 %}
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "QR-Code" %}</h2></div>
+    <div class="fw-rumpf fw-zf-scan">
+        <div class="fw-flaeche fw-zf-qr">{{ qr|safe }}</div>
+        <div class="fw-zf-schluessel">
+            <p class="fw-strong">{% trans "Kein Scanner zur Hand?" %}</p>
+            <p class="fw-mutet">{% trans "Geben Sie diesen Schlüssel von Hand in der App ein" %}:</p>
+            <code class="fw-feld fw-mono fw-zf-geheimnis">{{ geheimnis }}</code>
+            <p class="fw-hilfe">{% trans "Typ: zeitbasiert (TOTP) · 6 Stellen · 30 Sekunden" %}</p>
         </div>
     </div>
 </div>
+{% else %}
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Code aus der App" %}</h2></div>
+    <div class="fw-rumpf">
+        {% if fehler %}
+        <div class="fw-hinweis crit" role="alert"><span class="fw-hi">{% zeichen 'kritisch' %}</span><div class="fw-ht">{{ fehler }}</div></div>
+        {% endif %}
+        <form method="post" id="zf-code" class="fw-zf-form">
+            {% csrf_token %}
+            <label class="fw-label" for="zf-code-feld">{% trans "Sechsstelliger Code" %}</label>
+            <input name="code" id="zf-code-feld" class="fw-feld fw-mono fw-zf-code" inputmode="numeric"
+                   autocomplete="one-time-code" required maxlength="14" placeholder="000000" autofocus>
+        </form>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
+
+{% block fuss_haupt %}{% if schritt == 2 %}
+<button type="submit" form="zf-code" class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Aktivieren" %}</button>
+{% else %}{{ block.super }}{% endif %}{% endblock %}

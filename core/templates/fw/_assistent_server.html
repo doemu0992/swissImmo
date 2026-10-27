@@ -35,7 +35,7 @@ Blöcke:
             {% else %}<button type="button" class="fw-btn" disabled>{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>{% endif %}
             <span class="stand">{% blocktrans with i=a.i n=a.n %}Schritt {{ i }} von {{ n }}{% endblocktrans %}</span>
             <div class="rechts">
-                <a href="{{ a.abbrechen_url }}" class="fw-btn fw-geist">{% if a.abbrechen_text %}{{ a.abbrechen_text }}{% else %}{% trans "Abbrechen" %}{% endif %}</a>
+                {% if a.abbrechen_url %}<a href="{{ a.abbrechen_url }}" class="fw-btn fw-geist">{% if a.abbrechen_text %}{{ a.abbrechen_text }}{% else %}{% trans "Abbrechen" %}{% endif %}</a>{% endif %}
                 {% block fuss_haupt %}
                 {% if a.weiter and a.weiter.zustand != 'gesperrt' %}<a href="{{ a.weiter.url }}" class="fw-btn fw-primary"><span class="fw-assistent-lang">{% blocktrans with t=a.weiter.titel %}Weiter zu {{ t }}{% endblocktrans %}</span><span class="fw-assistent-kurz">{% trans "Weiter" %}</span> {% zeichen 'weiter' %}</a>
                 {% elif a.weiter %}{% block weiter_gesperrt %}<button type="button" class="fw-btn fw-primary" disabled>{% trans "Weiter" %} {% zeichen 'weiter' %}</button>{% endblock %}{% endif %}

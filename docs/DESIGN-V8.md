@@ -176,6 +176,15 @@ normales Formular.
   `gesperrt` (gedämpft, kein Link) · `entfaellt` (–), dazu `hier` (schwarz) für die Seite, auf der
   man steht; ein anderer Zustand ist ein Fehler. Fuss: Zurück, «Schritt i von n», Abbrechen,
   Hauptknopf «Weiter zu …» (unter 480 px nur «Weiter») bzw. die Aktion des Schritts.
+  Ein Schritt ohne `url` ist kein Link (`link` aus `server_assistent`), ohne dass er «gesperrt»
+  aussähe; `abbrechen_url=None` lässt «Abbrechen» weg, wo es nichts mehr abzubrechen gibt.
+- **Weitere Seiten im Standard** (27.10.2026, zweite Runde): die **2FA-Einrichtung**
+  (`core/zweifaktor_einrichten.html`, server-seitig: Code scannen · Code bestätigen · Notfallcodes;
+  Schritt 2 ist `?schritt=2`, Schritt 3 nur die Antwort auf das richtige POST, weil die Codes genau
+  einmal erscheinen), der **Serienbrief** (`fw/kommunikation.html`, client-seitig mit Vorschau:
+  Empfänger · Mitteilung · Versand, der Hauptknopf im Fuss führt die gewählte Versandart aus) und
+  **Abnahme vor Ort einrichten** (`fw/abnahme_vorort_neu.html`, client-seitig: Allgemein ·
+  Struktur). CSS im Block «MODUL assistent-seiten» am Ende von `_schicht.html`.
 - **In-App-Hilfe:** `{% load hilfe %}{% hilfe 'schluessel' %}` zeichnet ein ⓘ; Antippen öffnet eine
   Blase (Escape, Scrollen, Klick daneben schliessen). Texte im Katalog `core/hilfe.py` (Regeln dort:
   zwei, drei Sätze, Gesetz nur als Fundstelle, keine geratenen Zahlen). «So funktioniert's»-Kästen
@@ -216,6 +225,21 @@ Chip (`form.fw-bestand`, derselbe Auswahlmechanismus). Entfallen sind die eigene
   `/neu/palette/` (`gruppe`, `status`, `betrag`, `zahlen`), zuletzt die Gruppe «Seiten & Aktionen»
   aus den Daten `fw_palette` (`#fw-palette-data`). ↑ ↓ ↵ ⌘↵ Esc, ⌘K / Strg+K. Ohne JavaScript ein
   Formular auf `/neu/suche/`.
+- **Betrag und Status (Nachtrag 27.10.2026):** Ein Vertrag trägt den *aktuell geltenden Netto-Mietzins*
+  (`Mietvertrag.effektiver_netto_mietzins`, ohne Nebenkosten; bei beendetem Vertrag am Vertragsende),
+  ein Objekt seinen Belegungsstand («Vermietet», «Wird frei», «Leer», «Vermietet ab …» — nach der
+  Regel der Objektliste, `faelle/objekte.py`), eine überfällige Debitorenrechnung die höchste erfasste
+  Mahnung («1. Mahnung» …) oder «Betreibung» (offene `finance.Betreibung` geht vor). Der Ton bleibt
+  «crit» in jeder Stufe. Die beiden ersten brauchen je einen Stapel Abfragen nach der Trefferauswahl
+  (`_NACHLADEN` in `core/services/palette_suche.py`, nur mit Treffern, unabhängig von deren Zahl), die
+  Mahnstufe keine (Unterabfrage in der Zeile).
+- **Rollen:** Das Team durchsucht alle sechs Gruppen. Die **Hauswartung** (keine Team-Rolle) bekommt
+  die Suche nur für `tickets`, und dort nur die Schäden ihrer Liegenschaften; die Gruppen nennt
+  der Dienst (`palette_suche.sicht_von`), die Kopfzeile reicht sie als `data-gruppen` weiter (das
+  Skript zeigt nur diese Kapseln), «Alle Ergebnisse» und das Formular ohne JavaScript führen auf
+  `/neu/schaeden/` statt auf das ihr gesperrte `/neu/suche/`. Personen, Verträge, Buchhaltung,
+  Immobilien und Dokumente fehlen bewusst, weil ihre Ziele der Hauswartung mit 403 antworten
+  (`test_hauswart_gruppen_sind_offen`).
 - **Breiten:** ab 1280 alles; 901–1279 kompakt (Marke nur als Zeichen, kein Einstellungsknopf);
   901–1023 zusätzlich ohne Hell/Dunkel-Knopf und mit 16 px Rand; **bis 900 px Telefon**: die Suche
   ist ein Symbol, ein Tipp öffnet sie über die ganze Zeile (Marke und Werkzeuge treten zurück,

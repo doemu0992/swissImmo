@@ -1,0 +1,28 @@
+{% extends 'fw/base.html' %}
+{% load i18n zeichen %}
+{% block title %}{% trans "Notfallcodes" %} — swissImmo{% endblock %}
+{% block content %}
+{% comment %}
+«Notfallcodes neu erzeugen» aus der Übersicht: kein Assistent, denn es ist ein einzelner Schritt.
+Die Schlussseite der Einrichtung ist zweifaktor_codes.html.
+{% endcomment %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="{% url 'zweifaktor_uebersicht' %}">{% trans "Zwei-Faktor-Anmeldung" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Notfallcodes" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Notfallcodes" %}</h1>
+        <p>{% trans "Bewahren Sie diese Codes ausserhalb des Telefons auf." %}</p>
+    </div>
+</div>
+
+<div class="fw-zf-seite">
+    {% include 'core/_zweifaktor_codes_karte.html' %}
+    <div class="fw-zf-knoepfe">
+        <a href="{% url 'zweifaktor_uebersicht' %}" class="fw-btn fw-primary">{% trans "Ich habe sie gesichert" %}</a>
+    </div>
+</div>
+{% endblock %}

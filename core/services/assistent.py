@@ -7,7 +7,9 @@ wie der client-seitige Assistent (`static/js/fw-bausteine.js`). Gerendert wird e
 beide lesen den Kontext `assistent`, den diese Funktion baut.
 
 Je Schritt ein dict mit `nr`, `titel`, `info` (optional, kleine Zeile unter dem Titel),
-`zustand` und `url`, optional `optional=True`.
+`zustand` und `url`, optional `optional=True`. Ohne `url` ist der Schritt kein Link (z. B. die
+erledigten Schritte nach einer Einrichtung, die sich nicht wiederholen lässt); er behält
+seinen Zustand und seine Gestalt.
 
 Zustände (CSS-Klasse am `<li>`, Abschnitt «Assistent» in `_schicht.html`):
 
@@ -30,7 +32,8 @@ def server_assistent(schritte, aktuell, *, abbrechen_url, abbrechen_text=None):
 
     `schritte`: Folge von dicts (siehe oben), in der Reihenfolge der Leiste.
     `aktuell`: Nummer (`nr`) des Schritts dieser Seite.
-    `abbrechen_url`: Ziel von «Abbrechen» (in der Regel die Liste, von der man kam).
+    `abbrechen_url`: Ziel von «Abbrechen» (in der Regel die Liste, von der man kam). `None`:
+    kein Knopf — wenn es nichts mehr abzubrechen gibt (Schlussseite nach einer Einrichtung).
     `abbrechen_text`: anderer Text für diesen Knopf, z. B. «Schliessen» nach dem Abschluss.
 
     Rückgabe: `schritte` (Kopien mit `hier`), `nr`, `i` und `n` («Schritt i von n», aus der
@@ -43,8 +46,11 @@ def server_assistent(schritte, aktuell, *, abbrechen_url, abbrechen_text=None):
         if zustand not in ZUSTAENDE:
             raise ValueError(f'Unbekannter Zustand {zustand!r} in Schritt {s.get("nr")!r}; '
                              f'erlaubt: {", ".join(ZUSTAENDE)}')
-        liste.append({**s, 'zustand': zustand, 'info': s.get('info') or '', 'url': s.get('url') or '',
-                      'hier': s.get('nr') == aktuell})
+        url = s.get('url') or ''
+        hier = s.get('nr') == aktuell
+        liste.append({**s, 'zustand': zustand, 'info': s.get('info') or '', 'url': url, 'hier': hier,
+                      # Link nur mit Ziel; gesperrt ist nie einer, die eigene Seite mit Ziel immer.
+                      'link': bool(url) and (hier or zustand != 'gesperrt')})
     pos = next((i for i, s in enumerate(liste) if s['hier']), None)
     if pos is None:
         raise ValueError(f'Schritt {aktuell!r} steht nicht in der Leiste')

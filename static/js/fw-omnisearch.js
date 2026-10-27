@@ -57,8 +57,15 @@
         return s;
     }
 
-    var GRUPPEN = ['personen', 'immobilien', 'vertraege', 'buchhaltung', 'tickets', 'dokumente'];
-    var CHIPS = ['alle', 'personen', 'immobilien', 'buchhaltung', 'tickets', 'vertraege', 'dokumente'];
+    // Welche Gruppen es für diesen Benutzer gibt, sagt der Server (`data-gruppen`, aus
+    // dem Such-Dienst): Die Hauswartung durchsucht nur Tickets — die übrigen Kapseln
+    // und Gruppen gäbe es für sie nicht, sie wären «0 Treffer» statt «nicht erlaubt».
+    // Ohne Angabe (älteres Markup) gelten alle sechs.
+    var ALLE_GRUPPEN = ['personen', 'immobilien', 'vertraege', 'buchhaltung', 'tickets', 'dokumente'];
+    var ERLAUBT = (wurzel.getAttribute('data-gruppen') || '').split(',').filter(function (g) { return ALLE_GRUPPEN.indexOf(g) >= 0; });
+    var GRUPPEN = ERLAUBT.length ? ALLE_GRUPPEN.filter(function (g) { return ERLAUBT.indexOf(g) >= 0; }) : ALLE_GRUPPEN;
+    var CHIPS = ['alle', 'personen', 'immobilien', 'buchhaltung', 'tickets', 'vertraege', 'dokumente']
+        .filter(function (k) { return k === 'alle' || GRUPPEN.indexOf(k) >= 0; });
     var ZEICHEN = { personen: 'person', immobilien: 'liegenschaft', vertraege: 'vertrag',
                     buchhaltung: 'rechnung', tickets: 'meldung', dokumente: 'dokument', seiten: 'weiter' };
     var TOENE = { crit: 1, warn: 1, good: 1, mut: 1 };
@@ -120,7 +127,7 @@
         roh.forEach(function (x) {
             if (!x || typeof x.url !== 'string' || x.url.charAt(0) !== '/') return;
             var g = GRUPPEN.indexOf(x.gruppe) >= 0 ? x.gruppe : ART_ZU_GRUPPE[x.art];
-            if (!g) return;
+            if (!g || !proGruppe[g]) return;
             var ton = x.status && TOENE[x.status.ton] ? x.status.ton : 'mut';
             proGruppe[g].push({ gruppe: g, art: x.art || '', label: String(x.label || ''), zusatz: String(x.zusatz || ''),
                                 url: x.url, status: x.status && x.status.text ? { text: String(x.status.text), ton: ton } : null,

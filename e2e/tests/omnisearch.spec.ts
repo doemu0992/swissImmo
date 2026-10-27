@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { login, goto } from './helpers';
+import { login, goto, warteAufURL } from './helpers';
 
 // DIE OMNISEARCH IN DER KOPFZEILE (27.10.2026) — GEMESSEN IM BROWSER
 //
@@ -429,4 +429,178 @@ test('Der echte Endpunkt liefert den Vertrag (Gruppe, Status, Betrag, Zahlen)', 
   await page.keyboard.type('e2e', { delay: 20 });
   if (d.treffer.length) await expect(page.locator('#fwOsListe [role="option"]').first()).toBeVisible();
   else await expect(page.locator('#fwOsListe .fw-os-leer')).toBeVisible();
+});
+
+// ───────────────────────── Betrag, Status und Mahnstufe (echter Endpunkt) ─────────────────────────
+test('Der echte Endpunkt: Betrag am Vertrag, Belegung am Objekt, Überfälligkeit an der Rechnung', async ({ page }) => {
+  await login(page);
+  const antwort = await page.request.get('/neu/palette/?q=E2E');
+  expect(antwort.status()).toBe(200);
+  const d = await antwort.json();
+  // Je Gruppe gibt es höchstens fünf Treffer; andere Specs legen weitere «E2E»-Rechnungen an.
+  // Die Rechnung des Seeds wird deshalb mit ihrem vollen Titel gesucht.
+  const rechnungen = await (await page.request.get('/neu/palette/?q=' + encodeURIComponent('E2E offene Miete'))).json();
+  const vertrag = d.treffer.find((x: Treffer) => x.gruppe === 'vertraege' && x.label.includes('E2E'));
+  expect(vertrag, 'Kein Vertrag der E2E-Welt gefunden').toBeTruthy();
+  // Netto-Mietzins des Seeds (1500), ohne die Nebenkosten (200)
+  expect(vertrag.betrag).toBe("CHF 1'500.00");
+  const objekt = d.treffer.find((x: Treffer) => x.art === 'Objekt' && x.label === '3.5 Zi E2E');
+  expect(objekt, 'Kein Objekt der E2E-Welt gefunden').toBeTruthy();
+  expect(objekt.status).toEqual({ text: 'Vermietet', ton: 'good' });
+  const rechnung = rechnungen.treffer.find((x: Treffer) => x.gruppe === 'buchhaltung' && x.label === 'E2E offene Miete');
+  expect(rechnung, 'Keine Rechnung der E2E-Welt gefunden').toBeTruthy();
+  expect(rechnung.status).toEqual({ text: 'Überfällig', ton: 'crit' });
+  expect(rechnung.betrag).toBe("CHF 1'700.00");
+  // Personen tragen keinen Betrag
+  for (const x of d.treffer as Treffer[]) if (x.gruppe === 'personen') expect(x.betrag).toBeNull();
+});
+
+// ───────────────────────── lange Beträge und Status am Telefon ─────────────────────────
+test.describe('Lange Beträge und Status am Telefon', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  const LANG = {
+    q: 'lang',
+    treffer: [
+      t('vertraege', 'Mietverhältnis', 'Genossenschaft Wohnen im Alter Zürich-Oerlikon', 'Bahnhofstrasse 128, Erdgeschoss rechts, Hinterhaus', '/neu/vertraege/1/',
+        { text: 'Gekündigt', ton: 'crit' }, "CHF 123'456.50"),
+      t('immobilien', 'Objekt', '4½-Zimmer-Attikawohnung 5. OG', 'Bahnhofstrasse 128', '/neu/objekte/2/',
+        { text: 'Vermietet ab 01.12.2026', ton: 'good' }),
+      t('buchhaltung', 'Debitorenrechnung', 'Miete Oktober 2026 inkl. Nebenkostenakonto', 'Genossenschaft Wohnen im Alter', '/neu/debitoren/?q=x',
+        { text: '3. Mahnung', ton: 'crit' }, "CHF 1'234'567.80"),
+    ],
+    zahlen: { personen: 0, immobilien: 1, vertraege: 1, buchhaltung: 1, tickets: 0, dokumente: 0 },
+  };
+
+  test('Nichts ragt aus dem Popover, die Seite scrollt nicht quer, Betrag und Status bleiben lesbar', async ({ page }) => {
+    await login(page);
+    await goto(page, '/neu/liegenschaften/');
+    await attrappe(page, () => ({ body: LANG }));
+    await page.locator('#fwOs .fw-os-lupe').tap();
+    await page.keyboard.type('lang', { delay: 20 });
+    await expect(page.locator('#fwOsListe [role="option"]').first()).toBeVisible();
+    const p = await box(page, '#fwOsPop');
+    const ueber = await page.evaluate(() => {
+      const pp = document.getElementById('fwOsPop')!.getBoundingClientRect();
+      const raus: string[] = [];
+      document.querySelectorAll('#fwOsListe .fw-os-t').forEach((z) => {
+        const r = z.getBoundingClientRect();
+        if (r.right > pp.right + 1 || r.left < pp.left - 1) raus.push('Zeile');
+        z.querySelectorAll('.fw-os-betrag, .fw-chip, .fw-os-txt b').forEach((k) => {
+          const kr = k.getBoundingClientRect();
+          if (kr.right > pp.right + 1) raus.push(k.className || k.tagName);
+        });
+      });
+      return raus;
+    });
+    expect(ueber, 'Ein Betrag, Chip oder Titel ragt über den Rand des Popovers').toEqual([]);
+    expect(p.x + p.width).toBeLessThanOrEqual(391);
+    // Der volle Betrag steht da (nicht abgeschnitten), der Status ebenso
+    const betrag = page.locator('#fwOsListe .fw-os-betrag', { hasText: "1'234'567.80" });
+    await expect(betrag).toBeVisible();
+    expect(await betrag.evaluate((e) => e.scrollWidth <= e.clientWidth + 1), 'Der Betrag ist abgeschnitten').toBeTruthy();
+    const chip = page.locator('#fwOsListe .fw-chip.fw-good');
+    await expect(chip).toHaveText('Vermietet ab 01.12.2026');
+    expect(await chip.evaluate((e) => e.scrollWidth <= e.clientWidth + 1), 'Der Status ist abgeschnitten').toBeTruthy();
+    await keinQuerscrollen(page);
+  });
+});
+
+// ───────────────────────── die Hauswartung ─────────────────────────
+// Eigene Anmeldung (e2e-hauswart, siehe seed_e2e): Mitgliedschaft «Hauswart», der
+// Liegenschaft der E2E-Welt zugeordnet. Sie sucht in der Kopfzeile nur Schäden.
+async function loginHauswart(page: Page) {
+  await goto(page, '/login/');
+  await page.fill('input[name="username"]', 'e2e-hauswart');
+  await page.fill('input[name="password"]', 'e2e-pass');
+  await Promise.all([warteAufURL(page, '**'), page.click('button[type="submit"], input[type="submit"]')]);
+  await expect(page).not.toHaveURL(/\/login\//);
+}
+
+test.describe('Die Hauswartung am Telefon (390 px)', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  test('Die Suche ist da, öffnet über die volle Breite und kennt nur Schäden', async ({ page }) => {
+    await loginHauswart(page);
+    await goto(page, '/neu/schaeden/');
+    await expect(page.locator('#fwOs')).toHaveAttribute('data-gruppen', 'tickets');
+    const os = await box(page, '#fwOs .fw-os-feld');
+    expect(Math.abs(os.width - 44), 'Das Feld ist am Telefon ein Symbol').toBeLessThan(2);
+    await keinQuerscrollen(page);
+
+    await page.locator('#fwOs .fw-os-lupe').tap();
+    await expect(feld(page)).toBeFocused();
+    await page.waitForTimeout(400);
+    const offen = await box(page, '#fwOs .fw-os-feld');
+    expect(Math.abs(offen.width - 358), `Offen misst das Feld ${Math.round(offen.width)} px`).toBeLessThan(3);
+
+    // echter Endpunkt: der Schaden der E2E-Welt
+    await page.keyboard.type('Wasserhahn', { delay: 20 });
+    await expect(pop(page)).toBeVisible();
+    const optionen = page.locator('#fwOsListe [role="option"]');
+    await expect(optionen).toHaveCount(1);
+    await expect(optionen.first()).toContainText('Wasserhahn tropft');
+    await expect(optionen.first()).toHaveAttribute('href', /^\/neu\/schaeden\/\d+\/$/);
+    // Nur zwei Kapseln: «Alle» und «Tickets» — keine Gruppen, die es für sie nicht gibt
+    const kapseln = page.locator('#fwOsFilter .fw-os-chip');
+    await expect(kapseln).toHaveCount(2);
+    await expect(kapseln.nth(0)).toContainText('Alle');
+    await expect(kapseln.nth(1)).toContainText('Tickets');
+    await expect(page.locator('#fwOsListe .fw-os-kopf')).toHaveText([/Tickets\s*1/]);
+    // «Alle Ergebnisse» führt auf die Schadenliste (/neu/suche/ ist ihr gesperrt)
+    await expect(page.locator('#fwOsAlle')).toHaveAttribute('href', '/neu/schaeden/?q=Wasserhahn');
+    const p = await box(page, '#fwOsPop');
+    expect(Math.abs(p.width - 358)).toBeLessThan(3);
+    expect(p.x + p.width).toBeLessThanOrEqual(391);
+    await keinQuerscrollen(page);
+  });
+
+  test('Ein Begriff aus den gesperrten Gruppen findet nichts und zeigt den leeren Zustand', async ({ page }) => {
+    await loginHauswart(page);
+    await goto(page, '/neu/schaeden/');
+    await page.locator('#fwOs .fw-os-lupe').tap();
+    // Die E-Mail-Adresse steht nur bei der Person; ein Schaden durchsucht Adressen und Namen,
+    // aber keine E-Mail. («Erika» als Melderin kann in der CI-Welt in einem Schaden stehen.)
+    await page.keyboard.type('e2e-mieter', { delay: 20 });
+    await expect(page.locator('#fwOsListe .fw-os-leer')).toContainText('Keine Treffer für «e2e-mieter»');
+    await expect(page.locator('#fwOsListe [role="option"]')).toHaveCount(0);
+    await keinQuerscrollen(page);
+  });
+});
+
+test.describe('Die Hauswartung am Desktop', () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  test('Der Endpunkt antwortet ihr mit Schäden allein; was ihr gesperrt ist, bleibt gesperrt', async ({ page }) => {
+    await loginHauswart(page);
+    const antwort = await page.request.get('/neu/palette/?q=E2E');
+    expect(antwort.status()).toBe(200);
+    const d = await antwort.json();
+    expect(Object.keys(d.zahlen)).toEqual(['tickets']);
+    expect(d.treffer.length).toBeGreaterThan(0);
+    for (const x of d.treffer as Treffer[]) {
+      expect(x.gruppe).toBe('tickets');
+      expect(x.betrag).toBeNull();
+    }
+    for (const gesperrt of ['/neu/suche/?q=E2E', '/neu/personen/', '/neu/vertraege/', '/neu/debitoren/', '/neu/dokumente/']) {
+      expect((await page.request.get(gesperrt)).status(), gesperrt).toBe(403);
+    }
+  });
+
+  test('Das Formular ohne JavaScript führt auf die Schadenliste, nicht in die Absage', async ({ browser, baseURL }) => {
+    const ctx = await browser.newContext({ javaScriptEnabled: false, baseURL, viewport: { width: 1280, height: 800 }, locale: 'de-CH',
+      extraHTTPHeaders: { 'Accept-Language': 'de-CH,de;q=0.9' } });
+    const p = await ctx.newPage();
+    await p.goto('/login/', { waitUntil: 'domcontentloaded' });
+    await p.fill('input[name="username"]', 'e2e-hauswart');
+    await p.fill('input[name="password"]', 'e2e-pass');
+    await Promise.all([p.waitForURL((u) => !u.pathname.startsWith('/login/'), { waitUntil: 'domcontentloaded' }),
+      p.click('button[type="submit"], input[type="submit"]')]);
+    await p.goto('/neu/schaeden/', { waitUntil: 'domcontentloaded' });
+    await expect(p.locator('#fwOsForm')).toHaveAttribute('action', '/neu/schaeden/');
+    await p.locator('#fwOsEingabe').fill('Wasserhahn');
+    await Promise.all([p.waitForURL('**/neu/schaeden/?q=Wasserhahn', { waitUntil: 'domcontentloaded' }), p.keyboard.press('Enter')]);
+    await expect(p.locator('body')).toContainText('Wasserhahn');
+    await ctx.close();
+  });
 });

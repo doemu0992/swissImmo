@@ -24,6 +24,11 @@ Gesucht wird mit einem Begriff, der in BEIDEN Beständen vorkommt («Mieter»,
 zurückkommt. Eine Suche nach einem Begriff, den nur der fremde Bestand trägt,
 wäre auch ohne Filter leer, wenn die Suche selbst schon nichts findet. Dazu die
 Gegenprobe: derselbe Begriff liefert dem anderen Mandanten SEINE Daten.
+
+NACHTRAG (27.10.2026): Verträge tragen den aktuellen Netto-Mietzins, Objekte
+ihren Belegungsstand, Debitoren die Mahnstufe, und die Hauswartung sucht
+eingeschränkt (nur Schäden, nur eigene Liegenschaften). Dazu die Gegenproben
+je Rolle: Wer was findet, steht in `RollenTests`.
 """
 import json
 from datetime import date, timedelta
@@ -172,7 +177,8 @@ class GruppenTests(Basis):
         self.assertEqual(t['Liegenschaft']['status'], {'text': 'Entwurf', 'ton': 'mut'})
         self.assertEqual(t['Objekt']['label'], '3.5 Zi A')
         self.assertEqual(t['Objekt']['url'], f'/neu/objekte/{self.a.einheit.id}/')
-        self.assertIsNone(t['Objekt']['status'])
+        # Das Objekt ist vermietet (aktiver Vertrag ohne Ende, Fixture).
+        self.assertEqual(t['Objekt']['status'], {'text': 'Vermietet', 'ton': 'good'})
         for x in t.values():
             self.assertIsNone(x['betrag'])
 
@@ -191,7 +197,9 @@ class GruppenTests(Basis):
         self.assertEqual(t[0]['zusatz'], 'A-Weg 7, 3.5 Zi A')
         self.assertEqual(t[0]['url'], f'/neu/vertraege/{self.a.vertrag.id}/')
         self.assertEqual(t[0]['status'], {'text': 'Aktiv', 'ton': 'good'})
-        self.assertIsNone(t[0]['betrag'])
+        # Der AKTUELLE Netto-Mietzins: Das Fixture hat eine gebuchte Anpassung auf
+        # 1550 (ab 01.04.2025); der Vertragswert (1500) und der Brutto (1750) sind es nicht.
+        self.assertEqual(t[0]['betrag'], "CHF 1'550.00")
 
     def test_vertragsstatus_folgt_dem_anzeigestatus(self):
         """Wie die Vertragsliste: gekündigt rot, abgelaufen «Beendet» gedämpft."""
@@ -215,8 +223,9 @@ class GruppenTests(Basis):
         self.assertEqual(t[0]['art'], 'Debitorenrechnung')
         self.assertEqual(t[0]['label'], 'Miete 02/2024 A')
         self.assertEqual(t[0]['zusatz'], 'Mieter A')
-        # Die Fälligkeit (28.02.2024) liegt in der Vergangenheit, Status «offen».
-        self.assertEqual(t[0]['status'], {'text': 'Überfällig', 'ton': 'crit'})
+        # Die Fälligkeit (28.02.2024) liegt in der Vergangenheit, Status «offen»,
+        # und das Fixture führt dazu eine offene Betreibung (Stand «Begehren»).
+        self.assertEqual(t[0]['status'], {'text': 'Betreibung', 'ton': 'crit'})
         self.assertEqual(t[0]['betrag'], "CHF 1'700.00")
         self.assertIn(quote_plus('Miete 02/2024 A'), t[0]['url'])
         self.assertTrue(t[0]['url'].startswith('/neu/debitoren/?q='))
@@ -555,19 +564,21 @@ class MandantentrennungTests(Basis):
         antwort = Client().get('/neu/palette/', {'q': 'Mieter'})
         self.assertIn(antwort.status_code, (302, 403))
 
-    def test_die_rolle_bleibt_team(self):
-        """Lesezugriff darf, die Hauswartung nicht (`TEAM_ROLLEN`)."""
+    def test_ohne_team_oder_hauswart_rolle_403(self):
+        """Lesezugriff darf (alle Gruppen); wer keine der beiden Rollen hat, nicht.
+        Die Hauswartung steht in `RollenTests`."""
         from django.contrib.auth import get_user_model
         from crm.models import Mitgliedschaft
-        for rolle, status in ((Mitgliedschaft.ROLLE_LESEZUGRIFF, 200),
-                              (Mitgliedschaft.ROLLE_HAUSWART, 403)):
-            with self.subTest(rolle=rolle):
-                u = get_user_model().objects.create_user(username=f'rolle_{rolle}', password='x')
-                Mitgliedschaft.objects.create(
-                    benutzer=u, organisation=self.a.organisation, rolle=rolle)
-                c = Client()
-                c.force_login(u)
-                self.assertEqual(c.get('/neu/palette/', {'q': 'Mieter'}).status_code, status)
+        u = get_user_model().objects.create_user(username='rolle_lesend', password='x')
+        Mitgliedschaft.objects.create(
+            benutzer=u, organisation=self.a.organisation,
+            rolle=Mitgliedschaft.ROLLE_LESEZUGRIFF)
+        c = Client()
+        c.force_login(u)
+        self.assertEqual(c.get('/neu/palette/', {'q': 'Mieter'}).status_code, 200)
+        ohne = get_user_model().objects.create_user(username='rolle_keine', password='x')
+        c.force_login(ohne)
+        self.assertEqual(c.get('/neu/palette/', {'q': 'Mieter'}).status_code, 403)
 
 
 class WortweiseTests(Basis):
@@ -650,7 +661,8 @@ class KurzeEingabeTests(Basis):
 
 
 class AbfragezahlTests(Basis):
-    """Je Gruppe zwei Abfragen (Treffer und Zahl), dazu die vier des Requests.
+    """Je Gruppe zwei Abfragen (Treffer und Zahl), dazu die des Requests, dazu
+    je ein fester Stapel für Verträge und Objekte, wenn es solche Treffer gibt.
 
     Die Zahl ist fest: Sie hängt weder von der Trefferzahl noch von der Zahl
     der Wörter ab. Ein Test auf Gleichheit, nicht auf eine Obergrenze — eine
@@ -658,8 +670,22 @@ class AbfragezahlTests(Basis):
     """
 
     #: 4 Abfragen des Requests (Sitzung, Benutzer, Mitgliedschaft samt Organisation,
-    #: Rollenprüfung) + 6 Gruppen × 2.
-    ERWARTET = 16
+    #: Rollenprüfung) + 1 Rollenlesung im Dienst (`sicht_von`: Er prüft die Rolle
+    #: selbst, nicht nur der Dekorator) + 6 Gruppen × 2.
+    GRUNDZAHL = 17
+    #: Vertrag samt Objekt + Anpassungen, Staffelstufen, Komponenten und
+    #: Objekt-Sollmietzinse (`_nachladen_vertraege`): nur mit Vertragstreffern.
+    STAPEL_VERTRAEGE = 5
+    #: Objekte + Verträge der Objekte + Verträge mit Nebenobjekten (`_nachladen_objekte`):
+    #: nur mit Objekttreffern. (Gibt es zu den Treffern einen Vertrag mit Nebenobjekten,
+    #: kommt deren Vorladung hinzu: eine weitere Abfrage, wieder unabhängig von der Anzahl.)
+    STAPEL_OBJEKTE = 3
+
+    def _erwartet(self, treffer):
+        arten = {t['art'] for t in treffer}
+        return (self.GRUNDZAHL
+                + (self.STAPEL_VERTRAEGE if 'Mietverhältnis' in arten else 0)
+                + (self.STAPEL_OBJEKTE if 'Objekt' in arten else 0))
 
     def _messen(self, c, q):
         with CaptureQueriesContext(connection) as ctx:
@@ -675,21 +701,96 @@ class AbfragezahlTests(Basis):
         c = Client()
         c.force_login(self.a.benutzer)
         c.get('/neu/palette/', {'q': 'Mi'})                         # Wärmlauf
+        gesehen = set()
         for q in ('Vieltreffer',                  # 30 Treffer, begrenzt auf 5
-                  'Weg 7',                        # Treffer in fünf Gruppen
+                  'Weg 7',                        # Treffer in fünf Gruppen, mit Vertrag und Objekt
                   'zzzqqq',                       # keine Treffer
                   'Mieter A Wasserschaden Bad',   # vier Wörter
                   'Kündigungsschreiben'):         # nur Dokumente
             with self.subTest(q=q):
-                anzahl, _daten = self._messen(c, q)
-                self.assertEqual(anzahl, self.ERWARTET)
+                anzahl, daten = self._messen(c, q)
+                gesehen |= {t['art'] for t in daten['treffer']}
+                self.assertEqual(anzahl, self._erwartet(daten['treffer']))
+        # Die Fälle haben beide Stapel wirklich ausgelöst — sonst prüfte die
+        # Schleife nur die Grundzahl.
+        self.assertTrue({'Mietverhältnis', 'Objekt'} <= gesehen, gesehen)
 
     def test_assertNumQueries(self):
         c = Client()
         c.force_login(self.a.benutzer)
         c.get('/neu/palette/', {'q': 'Mi'})
-        with self.assertNumQueries(self.ERWARTET):
+        # «Mieter» trifft einen Vertrag, kein Objekt.
+        with self.assertNumQueries(self.GRUNDZAHL + self.STAPEL_VERTRAEGE):
             c.get('/neu/palette/', {'q': 'Mieter'})
+        # «Sanitaer» trifft nur einen Dienstleister: Grundzahl.
+        with self.assertNumQueries(self.GRUNDZAHL):
+            c.get('/neu/palette/', {'q': 'Sanitaer'})
+
+    def test_die_zahl_haengt_nicht_von_der_trefferzahl_der_stapel_ab(self):
+        """Ein Vertrag oder fünf: dieselbe Zahl. Der Stapel ist das Gegenmittel
+        zu vier Abfragen JE Vertrag, und diese Zahl ist sein Beleg."""
+        from crm.models import Mieter
+        from portfolio.models import Einheit
+        from rentals.models import Mietvertrag
+        c = Client()
+        c.force_login(self.a.benutzer)
+        c.get('/neu/palette/', {'q': 'Mi'})
+        ein, daten_ein = self._messen(c, 'Reihe')       # noch kein Treffer
+        self.assertEqual(daten_ein['treffer'], [])
+        with self._kontext(self.a):
+            for n in range(5):
+                e = Einheit.objects.create(liegenschaft=self.a.liegenschaft, bezeichnung=f'Reihe {n}',
+                                           typ='whg', nettomiete_aktuell=Decimal('1000'))
+                m = Mieter.objects.create(typ='person', vorname='Reihe', nachname=f'Mieter{n}')
+                Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2024, 1, 1),
+                                           netto_mietzins=Decimal('1000') + n,
+                                           nebenkosten=Decimal('100'), status='aktiv')
+        anzahl_fuenf, daten = self._messen(c, 'Reihe')
+        vertraege = [t for t in daten['treffer'] if t['gruppe'] == 'vertraege']
+        objekte = [t for t in daten['treffer'] if t['art'] == 'Objekt']
+        self.assertEqual((len(vertraege), len(objekte)), (5, 5))
+        # Mit einem einzigen Treffer je Modell
+        with self._kontext(self.a):
+            Mietvertrag.objects.filter(mieter__vorname='Reihe').exclude(
+                mieter__nachname='Mieter0').delete()
+            Einheit.objects.filter(bezeichnung__startswith='Reihe').exclude(
+                bezeichnung='Reihe 0').delete()
+        anzahl_eins, daten_eins = self._messen(c, 'Reihe')
+        self.assertEqual(len([t for t in daten_eins['treffer'] if t['gruppe'] == 'vertraege']), 1)
+        self.assertEqual(anzahl_fuenf, anzahl_eins)
+        self.assertEqual(anzahl_eins, self._erwartet(daten_eins['treffer']))
+
+    def test_die_messung_sieht_eine_abfrage_je_vertrag(self):
+        """Gegenprobe: Würde der Betrag je Vertrag einzeln gerechnet (ohne Stapel),
+        wüchse die Zahl mit der Trefferzahl — und dieser Aufbau müsste es zeigen."""
+        from crm.models import Mieter
+        from portfolio.models import Einheit
+        from rentals.models import Mietvertrag
+        with self._kontext(self.a):
+            for n in range(5):
+                e = Einheit.objects.create(liegenschaft=self.a.liegenschaft, bezeichnung=f'Reihe {n}',
+                                           typ='whg', nettomiete_aktuell=Decimal('1000'))
+                m = Mieter.objects.create(typ='person', vorname='Reihe', nachname=f'Mieter{n}')
+                Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2024, 1, 1),
+                                           netto_mietzins=Decimal('1000'),
+                                           nebenkosten=Decimal('100'), status='aktiv')
+        c = Client()
+        c.force_login(self.a.benutzer)
+        c.get('/neu/palette/', {'q': 'Mi'})
+        stapel, _daten = self._messen(c, 'Reihe')
+        original = palette_suche._NACHLADEN['vertrag']
+
+        def einzeln(zeilen, heute):
+            from rentals.models import Mietvertrag as MV
+            for z in zeilen:
+                v = MV.objects.select_related('einheit').get(pk=z.pk)       # keine Stapel
+                z.betrag = v.effektiver_netto_mietzins(heute)
+        palette_suche._NACHLADEN['vertrag'] = einzeln
+        try:
+            einzeln_anzahl, _daten = self._messen(c, 'Reihe')
+        finally:
+            palette_suche._NACHLADEN['vertrag'] = original
+        self.assertGreater(einzeln_anzahl, stapel + 5)
 
     def test_die_messung_sieht_eine_zusaetzliche_abfrage(self):
         """Gegenprobe: ein Zähler, der nie anschlägt, beweist nichts. Hier wird
@@ -710,7 +811,32 @@ class AbfragezahlTests(Basis):
         finally:
             palette_suche._DARSTELLER['mieter'] = original
         self.assertTrue([t for t in daten['treffer'] if t['gruppe'] == 'personen'])
-        self.assertEqual(anzahl, self.ERWARTET + 1)
+        self.assertEqual(anzahl, self.GRUNDZAHL + self.STAPEL_VERTRAEGE + 1)
+
+    def test_mahnstufe_und_betreibung_kosten_keine_abfrage(self):
+        """Sie stehen als Unterabfragen in der Zeile der Rechnung. Fünf Rechnungen
+        mit Mahnung und Betreibung kosten dieselbe Zahl wie fünf ohne."""
+        from finance.models import Betreibung, DebitorenRechnung, Mahnung
+        c = Client()
+        c.force_login(self.a.benutzer)
+        c.get('/neu/palette/', {'q': 'Mi'})
+        with self._kontext(self.a):
+            rechnungen = [DebitorenRechnung.objects.create(
+                vertrag=self.a.vertrag, titel=f'Stapelprobe {n}', betrag=Decimal('100'),
+                datum=date(2024, 3, 1), faellig_am=date(2024, 3, 31), status='offen')
+                for n in range(5)]
+        ohne, daten_ohne = self._messen(c, 'Stapelprobe')
+        self.assertEqual({t['status']['text'] for t in daten_ohne['treffer']}, {'Überfällig'})
+        with self._kontext(self.a):
+            for r in rechnungen:
+                Mahnung.objects.create(debitoren_rechnung=r, vertrag=self.a.vertrag, stufe=2,
+                                       datum=date(2024, 5, 1), betrag_offen=Decimal('100'))
+            Betreibung.objects.create(debitoren_rechnung=rechnungen[0], vertrag=self.a.vertrag,
+                                      forderung=Decimal('100'), begehren_am=date(2024, 6, 1))
+        mit, daten_mit = self._messen(c, 'Stapelprobe')
+        self.assertEqual({t['status']['text'] for t in daten_mit['treffer']},
+                         {'2. Mahnung', 'Betreibung'})
+        self.assertEqual(ohne, mit)
 
 
 class StatusTonTests(TestCase):
@@ -765,6 +891,626 @@ class UebersetzungTests(Basis):
         self.assertNotEqual(fr, de, 'Der Statustext ist nicht übersetzt.')
 
     def test_ueberfaellig_ist_uebersetzt(self):
-        with self._kontext(self.a), translation.override('fr'):
-            treffer, _zahlen = palette_suche.suche('Miete 02/2024')
+        from finance.models import DebitorenRechnung
+        with self._kontext(self.a):
+            DebitorenRechnung.objects.create(
+                vertrag=self.a.vertrag, titel='Nur überfällig', betrag=Decimal('100'),
+                datum=date(2024, 3, 1), faellig_am=date(2024, 3, 31), status='offen')
+            with translation.override('fr'):
+                treffer, _zahlen = palette_suche.suche('Nur überfällig', self.a.benutzer)
         self.assertNotEqual(treffer[0]['status']['text'], 'Überfällig')
+
+    def test_mahnstufe_und_betreibung_sind_uebersetzt(self):
+        """Beides sind neue Texte der Omnisearch; ungeprüft bliebe einer deutsch."""
+        from finance.models import DebitorenRechnung, Mahnung
+        with self._kontext(self.a):
+            r = DebitorenRechnung.objects.create(
+                vertrag=self.a.vertrag, titel='Gemahnt', betrag=Decimal('100'),
+                datum=date(2024, 3, 1), faellig_am=date(2024, 3, 31), status='offen')
+            Mahnung.objects.create(debitoren_rechnung=r, vertrag=self.a.vertrag, stufe=2,
+                                   datum=date(2024, 5, 1), betrag_offen=Decimal('100'))
+            for sprache in ('fr', 'it', 'en'):
+                with self.subTest(sprache=sprache), translation.override(sprache):
+                    stufe, _ = palette_suche.suche('Gemahnt', self.a.benutzer)
+                    betreibung, _ = palette_suche.suche('Miete 02/2024', self.a.benutzer)
+                    self.assertIn('2', stufe[0]['status']['text'])
+                    self.assertNotEqual(stufe[0]['status']['text'], '2. Mahnung')
+                    self.assertNotEqual(betreibung[0]['status']['text'], 'Betreibung')
+
+    def test_objektstatus_und_vertragsbetrag_sind_uebersetzt(self):
+        with self._kontext(self.a):
+            for sprache in ('fr', 'it', 'en'):
+                with self.subTest(sprache=sprache), translation.override(sprache):
+                    treffer, _ = palette_suche.suche('3.5 Zi A', self.a.benutzer)
+                    objekt = [t for t in treffer if t['url'].startswith('/neu/objekte/')]
+                    self.assertEqual(len(objekt), 1, treffer)
+                    self.assertNotEqual(objekt[0]['status']['text'], 'Vermietet')
+
+
+# ---------------------------------------------------------------------------
+# Nachtrag 27.10.2026
+# ---------------------------------------------------------------------------
+
+def _vertrag_mit_objekt(m, bezeichnung, **vertrag):
+    """Ein Objekt mit eigenem Vertrag im Bestand von `m` (Hauptmieter: der des Fixtures)."""
+    from portfolio.models import Einheit
+    from rentals.models import Mietvertrag
+    felder = dict(beginn=date(2024, 1, 1), netto_mietzins=Decimal('1000'),
+                  nebenkosten=Decimal('100'), status='aktiv')
+    felder.update(vertrag)
+    with organisation_kontext(m.organisation):
+        e = Einheit.objects.create(liegenschaft=m.liegenschaft, bezeichnung=bezeichnung,
+                                   typ='whg', nettomiete_aktuell=Decimal('1000'))
+        v = Mietvertrag.objects.create(mieter=m.mieter, einheit=e, **felder)
+    return e, v
+
+
+class VertragBetragTests(Basis):
+    """Der Betrag eines Vertrags ist der AKTUELL GELTENDE Netto-Mietzins.
+
+    Die Regel steht im Modell (`Mietvertrag.effektiver_netto_mietzins`); hier
+    wird geprüft, dass die Suche ihr folgt und keine zweite erfindet: Anpassung,
+    Komponente, Staffel, Ende des Vertrags. Der Betrag ohne Nebenkosten.
+
+    Das Fixture führt für seinen Vertrag eine gebuchte Anpassung auf 1550
+    (ab 01.04.2025) — der Vertragswert 1500 ist also gerade NICHT der aktuelle.
+    Wo ein Test den Vertragswert braucht, legt er einen eigenen Vertrag an.
+    """
+
+    def _betrag(self, q, m=None):
+        t = self._gruppe(m or self.a, q, 'vertraege')
+        self.assertEqual(len(t), 1, t)
+        return t[0]['betrag']
+
+    def test_der_vertragswert_ohne_nebenkosten_ohne_anpassung(self):
+        _vertrag_mit_objekt(self.a, 'Wertprobe', netto_mietzins=Decimal('1234.50'),
+                            nebenkosten=Decimal('99'))
+        self.assertEqual(self._betrag('Wertprobe'), "CHF 1'234.50")
+
+    def test_die_gebuchte_anpassung_geht_dem_vertragswert_vor(self):
+        """Das Fixture: Vertragswert 1500, Anpassung auf 1550 — gezeigt wird 1550."""
+        from rentals.models import Mietvertrag
+        with self._kontext(self.a):
+            self.assertEqual(Mietvertrag.objects.get(pk=self.a.vertrag.pk).netto_mietzins,
+                             Decimal('1500.00'))
+        self.assertEqual(self._betrag('Mieter A'), "CHF 1'550.00")
+
+    def test_die_juengste_wirksame_anpassung_gilt(self):
+        from rentals.models import MietzinsAnpassung
+        with self._kontext(self.a):
+            MietzinsAnpassung.objects.create(
+                vertrag=self.a.vertrag, wirksam_ab=date(2025, 6, 1),
+                neuer_netto_mietzins=Decimal('1620.50'))
+        self.assertEqual(self._betrag('Mieter A'), "CHF 1'620.50")
+
+    def test_eine_kuenftige_oder_entworfene_anpassung_zaehlt_nicht(self):
+        from rentals.models import MietzinsAnpassung
+        with self._kontext(self.a):
+            MietzinsAnpassung.objects.create(
+                vertrag=self.a.vertrag, wirksam_ab=date.today() + timedelta(days=30),
+                neuer_netto_mietzins=Decimal('1999.00'))
+            MietzinsAnpassung.objects.create(
+                vertrag=self.a.vertrag, wirksam_ab=date(2025, 8, 1),
+                neuer_netto_mietzins=Decimal('1888.00'), status=MietzinsAnpassung.STATUS_ENTWURF)
+        self.assertEqual(self._betrag('Mieter A'), "CHF 1'550.00")
+
+    def test_staffelstufe_gilt_ab_ihrem_datum(self):
+        from rentals.models import Staffelstufe
+        _e, v = _vertrag_mit_objekt(self.a, 'Staffelprobe', mietzins_modell='staffel')
+        with self._kontext(self.a):
+            Staffelstufe.objects.create(vertrag=v, ab_datum=date(2025, 1, 1),
+                                        netto_mietzins=Decimal('1800'))
+            Staffelstufe.objects.create(vertrag=v, ab_datum=date.today() + timedelta(days=60),
+                                        netto_mietzins=Decimal('2100'))
+        self.assertEqual(self._betrag('Staffelprobe'), "CHF 1'800.00")
+
+    def test_gratismonat_aendert_die_auskunft_nicht(self):
+        """Der Rabatt mindert die Verrechnung, nicht den Mietzins: Der Betrag bleibt der Referenzwert."""
+        from rentals.models import VertragMietzins
+        _e, v = _vertrag_mit_objekt(self.a, 'Gratisprobe')
+        with self._kontext(self.a):
+            VertragMietzins.objects.create(
+                vertrag=v, gueltig_ab=date(2024, 1, 1),
+                netto_mietzins=Decimal('1700'), rabatt_netto=Decimal('1700'))
+        self.assertEqual(self._betrag('Gratisprobe'), "CHF 1'700.00")
+
+    def test_ein_beendeter_vertrag_nennt_den_mietzins_an_seinem_ende(self):
+        """Eine Anpassung NACH dem Ende (etwa des Nachmieters) darf ihm keinen Betrag setzen."""
+        from rentals.models import MietzinsAnpassung
+        _e, v = _vertrag_mit_objekt(self.a, 'Endeprobe', status='archiviert',
+                                    ende=date(2025, 6, 30))
+        with self._kontext(self.a):
+            MietzinsAnpassung.objects.create(
+                vertrag=v, wirksam_ab=date(2025, 3, 1), neuer_netto_mietzins=Decimal('1100'))
+            MietzinsAnpassung.objects.create(
+                vertrag=v, wirksam_ab=date(2025, 7, 15), neuer_netto_mietzins=Decimal('1999'))
+        t = self._gruppe(self.a, 'Endeprobe', 'vertraege')[0]
+        self.assertEqual(t['betrag'], "CHF 1'100.00")
+        self.assertEqual(t['status']['text'], 'Beendet')
+
+    def test_der_betrag_gehoert_dem_eigenen_mandanten(self):
+        from rentals.models import MietzinsAnpassung
+        with self._kontext(self.b):
+            MietzinsAnpassung.objects.filter(vertrag=self.b.vertrag).update(
+                neuer_netto_mietzins=Decimal('1777'))
+        self.assertEqual(self._betrag('Mieter A', self.a), "CHF 1'550.00")
+        self.assertEqual(self._betrag('Mieter B', self.b), "CHF 1'777.00")
+
+    def test_betrag_tragen_nur_vertraege_und_rechnungen(self):
+        daten = self._antwort(self.a, 'Mieter')
+        mit = {t['gruppe'] for t in daten['treffer'] if t['betrag']}
+        self.assertEqual(mit, {'vertraege', 'buchhaltung'})
+
+
+class ObjektStatusTests(Basis):
+    """Der Status eines Objekts ist sein Belegungsstand — nach der Regel der
+    Objektliste (`faelle.objekte`), nicht nach einer eigenen."""
+
+    def _status(self, q, m=None):
+        m = m or self.a
+        t = [x for x in self._gruppe(m, q, 'immobilien') if x['art'] == 'Objekt']
+        self.assertEqual(len(t), 1, t)
+        return t[0]['status']
+
+    def test_vermietet(self):
+        self.assertEqual(self._status('3.5 Zi A'), {'text': 'Vermietet', 'ton': 'good'})
+
+    def test_gekuendigt_ohne_nachmieter_wird_frei(self):
+        from rentals.models import Mietvertrag
+        with self._kontext(self.a):
+            Mietvertrag.objects.filter(pk=self.a.vertrag.pk).update(
+                status='gekuendigt', ende=date.today() + timedelta(days=60))
+        self.assertEqual(self._status('3.5 Zi A'), {'text': 'Wird frei', 'ton': 'warn'})
+
+    def test_ein_fernes_ende_ist_noch_vermietet(self):
+        from rentals.models import Mietvertrag
+        with self._kontext(self.a):
+            Mietvertrag.objects.filter(pk=self.a.vertrag.pk).update(
+                status='gekuendigt', ende=date.today() + timedelta(days=400))
+        self.assertEqual(self._status('3.5 Zi A'), {'text': 'Vermietet', 'ton': 'good'})
+
+    def test_abgelaufener_vertrag_heisst_leer(self):
+        from rentals.models import Mietvertrag
+        with self._kontext(self.a):
+            Mietvertrag.objects.filter(pk=self.a.vertrag.pk).update(
+                status='archiviert', ende=date.today() - timedelta(days=20))
+        self.assertEqual(self._status('3.5 Zi A'), {'text': 'Leer', 'ton': 'warn'})
+
+    def test_ein_objekt_ohne_jeden_vertrag_ist_leer(self):
+        from portfolio.models import Einheit
+        with self._kontext(self.a):
+            Einheit.objects.create(liegenschaft=self.a.liegenschaft, bezeichnung='Leerprobe',
+                                   typ='whg', nettomiete_aktuell=Decimal('900'))
+        self.assertEqual(self._status('Leerprobe'), {'text': 'Leer', 'ton': 'warn'})
+
+    def test_nachmieter_ab_datum(self):
+        """Heute leer, aber der Vertrag beginnt bald: kein Leerstand, an dem jemand arbeiten muss."""
+        ab = date.today() + timedelta(days=30)
+        _vertrag_mit_objekt(self.a, 'Nachmieterprobe', beginn=ab)
+        self.assertEqual(self._status('Nachmieterprobe'),
+                         {'text': f'Vermietet ab {ab:%d.%m.%Y}', 'ton': 'good'})
+
+    def test_nebenobjekt_gilt_mit_dem_hauptvertrag_als_vermietet(self):
+        from portfolio.models import Einheit
+        with self._kontext(self.a):
+            pp = Einheit.objects.create(liegenschaft=self.a.liegenschaft,
+                                        bezeichnung='Parkplatzprobe', typ='pp',
+                                        nettomiete_aktuell=Decimal('120'))
+            self.a.vertrag.nebenobjekte.add(pp)
+        self.assertEqual(self._status('Parkplatzprobe'), {'text': 'Vermietet', 'ton': 'good'})
+
+    def test_der_stand_folgt_der_objektliste(self):
+        """Die Suche und die Objektliste urteilen über dieselben Objekte gleich:
+        'leer' hier heisst 'nicht versorgt' dort."""
+        from faelle.objekte import zeilen
+        from portfolio.models import Einheit
+        ab = date.today() + timedelta(days=20)
+        _vertrag_mit_objekt(self.a, 'Folgeprobe 1', beginn=ab)
+        _vertrag_mit_objekt(self.a, 'Folgeprobe 2', status='archiviert',
+                            ende=date.today() - timedelta(days=5))
+        _vertrag_mit_objekt(self.a, 'Folgeprobe 3', status='gekuendigt',
+                            ende=date.today() + timedelta(days=45))
+        with self._kontext(self.a):
+            Einheit.objects.create(liegenschaft=self.a.liegenschaft, bezeichnung='Folgeprobe 4',
+                                   typ='whg', nettomiete_aktuell=Decimal('900'))
+            liste = {z['e'].bezeichnung: z for z in zeilen(
+                Einheit.objects.filter(bezeichnung__startswith='Folgeprobe'))}
+        self.assertEqual(len(liste), 4)
+        texte = {}
+        for bezeichnung, z in liste.items():
+            status = self._status(bezeichnung)
+            texte[bezeichnung] = status['text']
+            with self.subTest(objekt=bezeichnung, status=status['text']):
+                self.assertEqual(status['text'] == 'Leer', not z['versorgt'])
+                self.assertEqual(status['text'] == 'Wird frei',
+                                 any(b['text'] == 'Wird frei' for b in z['befunde']))
+        self.assertEqual(texte, {'Folgeprobe 1': f'Vermietet ab {ab:%d.%m.%Y}',
+                                 'Folgeprobe 2': 'Leer', 'Folgeprobe 3': 'Wird frei',
+                                 'Folgeprobe 4': 'Leer'})
+
+    def test_die_belegung_gehoert_dem_eigenen_mandanten(self):
+        from rentals.models import Mietvertrag
+        with self._kontext(self.b):
+            Mietvertrag.objects.filter(pk=self.b.vertrag.pk).update(
+                status='archiviert', ende=date.today() - timedelta(days=20))
+        self.assertEqual(self._status('Zi A', self.a)['text'], 'Vermietet')
+        self.assertEqual(self._status('Zi B', self.b)['text'], 'Leer')
+
+    def test_liegenschaften_bleiben_bei_ihrem_status(self):
+        t = [x for x in self._gruppe(self.a, 'A-Weg', 'immobilien') if x['art'] == 'Liegenschaft']
+        self.assertEqual(t[0]['status'], {'text': 'Entwurf', 'ton': 'mut'})
+
+
+class MahnstufeTests(Basis):
+    """«Überfällig» wird zur Mahnstufe oder zur Betreibung, wo es sie gibt."""
+
+    def _rechnung(self, m, titel, **felder):
+        from finance.models import DebitorenRechnung
+        werte = dict(vertrag=m.vertrag, titel=titel, betrag=Decimal('100'),
+                     datum=date(2024, 3, 1), faellig_am=date(2024, 3, 31), status='offen')
+        werte.update(felder)
+        with organisation_kontext(m.organisation):
+            return DebitorenRechnung.objects.create(**werte)
+
+    def _mahnung(self, m, rechnung, stufe):
+        from finance.models import Mahnung
+        with organisation_kontext(m.organisation):
+            return Mahnung.objects.create(
+                debitoren_rechnung=rechnung, vertrag=m.vertrag, stufe=stufe,
+                datum=date(2024, 4, stufe), betrag_offen=Decimal('100'))
+
+    def _betreibung(self, m, rechnung, status='begehren', weitere=()):
+        from finance.models import Betreibung
+        with organisation_kontext(m.organisation):
+            b = Betreibung.objects.create(
+                debitoren_rechnung=rechnung, vertrag=m.vertrag, forderung=Decimal('100'),
+                begehren_am=date(2024, 6, 1), status=status)
+            b.weitere_rechnungen.set(weitere)
+            return b
+
+    def _status(self, titel, m=None):
+        t = self._gruppe(m or self.a, titel, 'buchhaltung')
+        self.assertEqual(len(t), 1, t)
+        return t[0]['status']
+
+    def test_ohne_mahnung_bleibt_es_ueberfaellig(self):
+        self._rechnung(self.a, 'Ohnemahnung')
+        self.assertEqual(self._status('Ohnemahnung'), {'text': 'Überfällig', 'ton': 'crit'})
+
+    def test_die_hoechste_erfasste_mahnung_gilt(self):
+        r = self._rechnung(self.a, 'Gemahnt')
+        for stufe, text in ((1, '1. Mahnung'), (2, '2. Mahnung'), (3, '3. Mahnung')):
+            self._mahnung(self.a, r, stufe)
+            with self.subTest(stufe=stufe):
+                self.assertEqual(self._status('Gemahnt'), {'text': text, 'ton': 'crit'})
+
+    def test_eine_offene_betreibung_geht_der_mahnung_vor(self):
+        r = self._rechnung(self.a, 'Betrieben')
+        self._mahnung(self.a, r, 3)
+        self._betreibung(self.a, r)
+        self.assertEqual(self._status('Betrieben'), {'text': 'Betreibung', 'ton': 'crit'})
+
+    def test_eine_abgeschlossene_betreibung_zaehlt_nicht(self):
+        from finance.models import Betreibung
+        for i, stand in enumerate(Betreibung.ABGESCHLOSSEN):
+            with self.subTest(stand=stand):
+                titel = f'Abgeschlossen{i}x'
+                r = self._rechnung(self.a, titel)
+                self._mahnung(self.a, r, 2)
+                self._betreibung(self.a, r, status=stand)
+                self.assertEqual(self._status(titel), {'text': '2. Mahnung', 'ton': 'crit'})
+
+    def test_jeder_offene_stand_der_betreibung_zaehlt(self):
+        from finance.models import Betreibung
+        offen = [c for c, _l in Betreibung.STATUS_CHOICES if c not in Betreibung.ABGESCHLOSSEN]
+        self.assertGreaterEqual(len(offen), 5)
+        for i, stand in enumerate(offen):
+            with self.subTest(stand=stand):
+                titel = f'Offenstand{i}x'
+                r = self._rechnung(self.a, titel)
+                self._betreibung(self.a, r, status=stand)
+                self.assertEqual(self._status(titel)['text'], 'Betreibung')
+
+    def test_weitere_rechnung_einer_betreibung_zaehlt_mit(self):
+        haupt = self._rechnung(self.a, 'Hauptforderung')
+        weitere = self._rechnung(self.a, 'Weiterforderung')
+        self._rechnung(self.a, 'Andereforderung')
+        self._betreibung(self.a, haupt, weitere=[weitere])
+        self.assertEqual(self._status('Hauptforderung')['text'], 'Betreibung')
+        self.assertEqual(self._status('Weiterforderung')['text'], 'Betreibung')
+        self.assertEqual(self._status('Andereforderung')['text'], 'Überfällig')
+
+    def test_nur_offene_und_ueberfaellige_rechnungen_werden_verfeinert(self):
+        morgen = date.today() + timedelta(days=10)
+        faelle = [
+            # (Status, fällig, soll)
+            ('bezahlt', date(2024, 3, 31), 'Bezahlt'),
+            ('storniert', date(2024, 3, 31), 'Storniert'),
+            ('offen', morgen, 'Offen'),
+            ('teilbezahlt', date(2024, 3, 31), '2. Mahnung'),
+        ]
+        for i, (status, faellig, soll) in enumerate(faelle):
+            titel = f'Verfeinerprobe{i}x'
+            r = self._rechnung(self.a, titel, status=status, faellig_am=faellig)
+            self._mahnung(self.a, r, 2)
+            if status == 'storniert':
+                self._betreibung(self.a, r)
+            with self.subTest(status=status, faellig=faellig):
+                self.assertEqual(self._status(titel)['text'], soll)
+
+    def test_jeder_mandant_sieht_den_stand_seiner_rechnung(self):
+        self._rechnung(self.a, 'Gleichtitel')
+        rb = self._rechnung(self.b, 'Gleichtitel')
+        self._mahnung(self.b, rb, 3)
+        self.assertEqual(self._status('Gleichtitel', self.a)['text'], 'Überfällig')
+        self.assertEqual(self._status('Gleichtitel', self.b)['text'], '3. Mahnung')
+
+    def test_betreibung_und_mahnung_eines_anderen_mandanten_faerben_nichts(self):
+        """Die Unterabfragen laufen über `objects`.
+
+        Die Unterabfrage hängt an der Primärschlüsselnummer der Rechnung, ein fremder
+        Datensatz käme also nur über eine Verknüpfung über die Grenze hinein: eine
+        Betreibung und eine Mahnung, die Mandant B führt und die auf die Rechnung von
+        A zeigen (so ein Datensatz entsteht nur durch einen Fehler anderswo — genau
+        dann soll die Suche von A ihn nicht auswerten).
+        """
+        from finance.models import Betreibung, Mahnung
+        ra = self._rechnung(self.a, 'Fremdgeführt')
+        rb = self._rechnung(self.b, 'Fremdgeführt')
+        with organisation_kontext(self.b.organisation):
+            betreibung = Betreibung.objects.create(
+                debitoren_rechnung=rb, vertrag=self.b.vertrag, forderung=Decimal('100'),
+                begehren_am=date(2024, 6, 1))
+            betreibung.weitere_rechnungen.add(ra)
+            mahnung = Mahnung.objects.create(
+                debitoren_rechnung=rb, vertrag=self.b.vertrag, stufe=3,
+                datum=date(2024, 4, 3), betrag_offen=Decimal('100'))
+        # Die Mahnung wird (wie durch einen Fehler anderswo) auf A's Rechnung umgebogen,
+        # bleibt aber im Bestand von B.
+        Mahnung.alle_organisationen.filter(pk=mahnung.pk).update(debitoren_rechnung=ra)
+        self.assertEqual(Mahnung.alle_organisationen.get(pk=mahnung.pk).organisation_id,
+                         self.b.organisation.pk)
+        self.assertEqual(self._status('Fremdgeführt', self.a), {'text': 'Überfällig', 'ton': 'crit'})
+        # Gegenprobe: Im Bestand von B zählt dieselbe Betreibung.
+        self.assertEqual(self._status('Fremdgeführt', self.b)['text'], 'Betreibung')
+        self.assertTrue(Betreibung.alle_organisationen.filter(weitere_rechnungen=ra).exists())
+
+
+class RollenTests(Basis):
+    """Gegenprobe je Rolle: Wer findet was — und was nie.
+
+    Das Team sucht in allen sechs Gruppen. Die Hauswartung nur in den Schäden
+    ihrer Liegenschaften. Alle anderen bekommen 403.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        from django.contrib.auth import get_user_model
+        from crm.models import Mitgliedschaft
+        from portfolio.models import Liegenschaft
+        from tickets.models import SchadenMeldung
+        User = get_user_model()
+        cls.benutzer = {}
+        for rolle in (Mitgliedschaft.ROLLE_INHABER, Mitgliedschaft.ROLLE_VERWALTER,
+                      Mitgliedschaft.ROLLE_SACHBEARBEITER, Mitgliedschaft.ROLLE_LESEZUGRIFF,
+                      Mitgliedschaft.ROLLE_HAUSWART):
+            u = User.objects.create_user(username=f'rt_{rolle}', password='x')
+            Mitgliedschaft.objects.create(benutzer=u, organisation=cls.a.organisation, rolle=rolle)
+            cls.benutzer[rolle] = u
+        cls.hauswart = cls.benutzer[Mitgliedschaft.ROLLE_HAUSWART]
+        # Ein zweiter Hauswart ohne zugeordnete Liegenschaft
+        cls.hauswart_leer = User.objects.create_user(username='rt_hauswart_leer', password='x')
+        Mitgliedschaft.objects.create(benutzer=cls.hauswart_leer, organisation=cls.a.organisation,
+                                      rolle=Mitgliedschaft.ROLLE_HAUSWART)
+        # Portal-Konten und ein Konto ohne jede Rolle
+        cls.keine = User.objects.create_user(username='rt_keine', password='x')
+        cls.mieter_portal = User.objects.create_user(username='rt_mieter', password='x')
+        cls.eigentuemer_portal = User.objects.create_user(username='rt_eigentuemer', password='x')
+        with organisation_kontext(cls.a.organisation):
+            type(cls.a.mieter).objects.filter(pk=cls.a.mieter.pk).update(benutzer=cls.mieter_portal)
+            type(cls.a.eigentuemer).objects.filter(pk=cls.a.eigentuemer.pk).update(
+                benutzer=cls.eigentuemer_portal)
+            # Eine zweite Liegenschaft in A, dem Hauswart NICHT zugeordnet, mit eigenem Schaden
+            cls.lg_neben = Liegenschaft.objects.create(
+                strasse='A-Nebenweg 9', plz='8000', ort='Zürich', eigentuemer=cls.a.eigentuemer,
+                organisation=cls.a.organisation, versicherungswert=Decimal('500000'))
+            cls.schaden_neben = SchadenMeldung.objects.create(
+                liegenschaft=cls.lg_neben, titel='Wasserschaden Nebenhaus', beschreibung='tropft')
+            cls.a.liegenschaft.hauswarte.add(cls.hauswart)
+        # Der Hauswart ist (fälschlich) auch einer Liegenschaft von B zugeordnet:
+        # Der Mandantenfilter, nicht die Zuordnung, hält B draussen.
+        cls.b.liegenschaft.hauswarte.add(cls.hauswart)
+
+    def _von(self, benutzer, q):
+        c = Client()
+        c.force_login(benutzer)
+        antwort = c.get('/neu/palette/', {'q': q})
+        return antwort.status_code, (json.loads(antwort.content) if antwort.status_code == 200 else None)
+
+    # ---- Team: alle sechs Gruppen ----------------------------------------
+    def test_jede_team_rolle_durchsucht_alle_sechs_gruppen(self):
+        from crm.models import Mitgliedschaft
+        for rolle in (Mitgliedschaft.ROLLE_INHABER, Mitgliedschaft.ROLLE_VERWALTER,
+                      Mitgliedschaft.ROLLE_SACHBEARBEITER, Mitgliedschaft.ROLLE_LESEZUGRIFF):
+            with self.subTest(rolle=rolle):
+                status, daten = self._von(self.benutzer[rolle], 'Mieter')
+                self.assertEqual(status, 200)
+                self.assertEqual(list(daten['zahlen']), GRUPPEN)
+                self.assertTrue({'personen', 'vertraege', 'buchhaltung'}
+                                <= {t['gruppe'] for t in daten['treffer']})
+
+    def test_superuser_durchsucht_alle_gruppen(self):
+        from django.contrib.auth import get_user_model
+        from crm.models import Mitgliedschaft
+        u = get_user_model().objects.create_superuser(username='rt_super', password='x')
+        Mitgliedschaft.objects.create(benutzer=u, organisation=self.a.organisation,
+                                      rolle=Mitgliedschaft.ROLLE_LESEZUGRIFF)
+        status, daten = self._von(u, 'Mieter')
+        self.assertEqual((status, list(daten['zahlen'])), (200, GRUPPEN))
+
+    # ---- Hauswartung: nur Schäden der eigenen Liegenschaften ---------------
+    def test_hauswart_findet_nur_schaeden_seiner_liegenschaften(self):
+        status, daten = self._von(self.hauswart, 'Wasserschaden')
+        self.assertEqual(status, 200)
+        self.assertEqual(daten['zahlen'], {'tickets': 1})
+        self.assertEqual([t['url'] for t in daten['treffer']],
+                         [f'/neu/schaeden/{self.a.schaden.id}/'])
+        self.assertEqual({t['gruppe'] for t in daten['treffer']}, {'tickets'})
+        # Gegenprobe: Das Team findet beide Schäden von A, den Schaden der
+        # Nebenliegenschaft gibt es also wirklich.
+        _s, team = self._von(self.benutzer['Verwalter'], 'Wasserschaden')
+        self.assertEqual({t['url'] for t in team['treffer']},
+                         {f'/neu/schaeden/{self.a.schaden.id}/',
+                          f'/neu/schaeden/{self.schaden_neben.id}/'})
+
+    def test_hauswart_findet_keine_personen_vertraege_buchhaltung_dokumente_objekte(self):
+        for q in ('Mieter', 'Sanitaer', 'Miete 02/2024', 'Handwerk', 'Kündigungsschreiben',
+                  '3.5 Zi', 'A-Weg', 'mieter-a@example.ch'):
+            with self.subTest(q=q):
+                status, daten = self._von(self.hauswart, q)
+                self.assertEqual(status, 200)
+                self.assertEqual(list(daten['zahlen']), ['tickets'])
+                self.assertLessEqual({t['gruppe'] for t in daten['treffer']}, {'tickets'})
+                text = json.dumps(daten, ensure_ascii=False)
+                for tabu in ('CHF', 'Mietverhältnis', 'Debitorenrechnung', 'Kreditorenrechnung',
+                             'Dienstleister', '/neu/personen/', '/neu/vertraege/',
+                             '/neu/liegenschaften/', '/neu/objekte/', '/neu/dokument',
+                             '/neu/debitoren/', '/neu/kreditoren/'):
+                    self.assertNotIn(tabu, text)
+        # Gegenprobe: Das Team findet dieselben Begriffe in diesen Gruppen.
+        for q, gruppe in (('Mieter', 'personen'), ('Sanitaer', 'personen'),
+                          ('Miete 02/2024', 'buchhaltung'), ('Kündigungsschreiben', 'dokumente'),
+                          ('A-Weg', 'immobilien'), ('Mieter', 'vertraege')):
+            with self.subTest(team=q, gruppe=gruppe):
+                _s, team = self._von(self.benutzer['Verwalter'], q)
+                self.assertGreater(team['zahlen'][gruppe], 0)
+
+    def test_hauswart_ohne_zugeordnete_liegenschaft_findet_nichts(self):
+        status, daten = self._von(self.hauswart_leer, 'Wasserschaden')
+        self.assertEqual((status, daten['treffer'], daten['zahlen']), (200, [], {'tickets': 0}))
+
+    def test_hauswart_findet_den_schaden_auch_ueber_seine_nummer(self):
+        _s, daten = self._von(self.hauswart, f'#{self.a.schaden.id}')
+        self.assertEqual([t['url'] for t in daten['treffer']],
+                         [f'/neu/schaeden/{self.a.schaden.id}/'])
+        _s, daten = self._von(self.hauswart, f'#{self.schaden_neben.id}')
+        self.assertEqual(daten['treffer'], [])
+        _s, daten = self._von(self.hauswart, f'#{self.b.schaden.id}')
+        self.assertEqual(daten['treffer'], [])
+
+    def test_hauswart_sieht_nie_den_mandanten_b_auch_bei_zuordnung(self):
+        """Die Zuordnung zu einer Liegenschaft von B ändert nichts: Der Mandantenfilter greift zuerst."""
+        self.assertTrue(self.b.liegenschaft.hauswarte.filter(pk=self.hauswart.pk).exists())
+        _status, daten = self._von(self.hauswart, 'Wasserschaden')
+        text = json.dumps(daten, ensure_ascii=False)
+        self.assertNotIn('Wasserschaden B', text)
+        self.assertNotIn('B-Weg', text)
+        self.assertNotIn(f'/neu/schaeden/{self.b.schaden.id}/', text)
+        _s, nummer = self._von(self.hauswart, f'#{self.b.schaden.id}')
+        self.assertEqual(nummer['treffer'], [])
+        # Gegenprobe: Im Bestand von B gibt es den Schaden, und B's Team findet ihn.
+        _s, b = self._von(self.b.benutzer, 'Wasserschaden B')
+        self.assertEqual(len(b['treffer']), 1)
+
+    def test_hauswart_liest_die_tabellen_der_anderen_gruppen_nicht(self):
+        """Nicht nur ausgeblendet: Für die gesperrten Gruppen läuft gar keine Abfrage."""
+        tabellen = [apps.get_model(a, n)._meta.db_table for a, n in (
+            ('crm', 'Handwerker'), ('rentals', 'Mietvertrag'), ('rentals', 'Dokument'),
+            ('finance', 'DebitorenRechnung'), ('finance', 'KreditorenRechnung'))]
+        c = Client()
+        c.force_login(self.hauswart)
+        c.get('/neu/palette/', {'q': 'Mi'})
+        with CaptureQueriesContext(connection) as hauswart:
+            c.get('/neu/palette/', {'q': 'Weg 7'})
+        for q in hauswart.captured_queries:
+            for tabelle in tabellen:
+                self.assertNotIn(f'"{tabelle}"', q['sql'])
+        # Gegenprobe: Dieselbe Eingabe beim Team liest diese Tabellen.
+        t = Client()
+        t.force_login(self.benutzer['Verwalter'])
+        t.get('/neu/palette/', {'q': 'Mi'})
+        with CaptureQueriesContext(connection) as team:
+            t.get('/neu/palette/', {'q': 'Weg 7'})
+        sql = ' '.join(q['sql'] for q in team.captured_queries)
+        self.assertTrue(all(f'"{tabelle}"' in sql for tabelle in tabellen))
+
+    def test_hauswart_hat_eine_feste_abfragezahl(self):
+        """4 des Requests + 1 Rollenlesung im Dienst + 2 für die eine Gruppe."""
+        c = Client()
+        c.force_login(self.hauswart)
+        c.get('/neu/palette/', {'q': 'Mi'})
+        for q in ('Wasserschaden', 'zzzqqq', 'Wasserschaden Bad Heizung'):
+            with self.subTest(q=q), self.assertNumQueries(7):
+                c.get('/neu/palette/', {'q': q})
+
+    # ---- alle anderen: 403 ---------------------------------------------------
+    def test_ohne_rolle_und_portalkonten_403(self):
+        for name, u in (('ohne Rolle', self.keine), ('Mieter-Portal', self.mieter_portal),
+                        ('Eigentümer-Portal', self.eigentuemer_portal)):
+            with self.subTest(konto=name):
+                status, _daten = self._von(u, 'Wasserschaden')
+                self.assertEqual(status, 403)
+                # auch ohne Suchbegriff: die Rolle entscheidet, nicht die Eingabe
+                c = Client()
+                c.force_login(u)
+                self.assertEqual(c.get('/neu/palette/').status_code, 403)
+
+    def test_anonym_wird_zur_anmeldung_geleitet(self):
+        antwort = Client().get('/neu/palette/', {'q': 'Wasserschaden'})
+        self.assertEqual(antwort.status_code, 302)
+        self.assertIn('/login/', antwort['Location'])
+
+    def test_hauswart_mit_kurzer_eingabe_bekommt_die_leere_antwort(self):
+        status, daten = self._von(self.hauswart, 'W')
+        self.assertEqual((status, daten), (200, {'treffer': [], 'q': 'W'}))
+
+    # ---- der Dienst selbst ---------------------------------------------------
+    def test_der_dienst_prueft_die_rolle_selbst(self):
+        """Nicht nur der Dekorator der Ansicht: Wer `suche` ohne Rolle aufruft, bekommt `PermissionDenied`."""
+        from django.core.exceptions import PermissionDenied
+        for u in (self.keine, self.mieter_portal, self.eigentuemer_portal):
+            with self.subTest(konto=u.username), self._kontext(self.a):
+                with self.assertRaises(PermissionDenied):
+                    palette_suche.suche('Wasserschaden', u)
+
+    def test_sicht_je_rolle(self):
+        with self._kontext(self.a):
+            self.assertEqual(palette_suche.sicht_von(self.benutzer['Lesezugriff']).gruppen,
+                             tuple(GRUPPEN))
+            hauswart = palette_suche.sicht_von(self.hauswart)
+            self.assertEqual((hauswart.gruppen, hauswart.nur_hauswart, hauswart.suchseite),
+                             (('tickets',), True, '/neu/schaeden/'))
+            team = palette_suche.sicht_von(self.benutzer['Verwalter'])
+            self.assertEqual((team.nur_hauswart, team.suchseite), (False, '/neu/suche/'))
+            # Beide Rollen: das Team gewinnt (wie `ist_nur_hauswart`).
+            beide = palette_suche.sicht_von(self.hauswart, rollen={'Hauswart', 'Verwalter'})
+            self.assertEqual((beide.gruppen, beide.nur_hauswart), (tuple(GRUPPEN), False))
+
+    def test_hauswart_gruppen_sind_offen(self):
+        """Die Hauswartung sucht nur, was sie öffnen darf — und die übrigen Gruppen sind gesperrt.
+
+        Dieser Test hält die Liste `HAUSWART_GRUPPEN` an den Rechten der Ansichten fest:
+        Jeder Treffer einer erlaubten Gruppe öffnet sich für die Hauswartung, jeder Treffer
+        einer nicht erlaubten führt in ein 403. Öffnet jemand eine weitere Ansicht für sie,
+        wird der zweite Teil rot — das ist der Hinweis, die Gruppe aufzunehmen.
+        """
+        erlaubt = set(palette_suche.HAUSWART_GRUPPEN)
+        self.assertEqual(erlaubt, {'tickets'})
+        c = Client()
+        c.force_login(self.hauswart)
+        beispiele = {
+            'personen': ('Mieter A', 'Sanitaer A'), 'immobilien': ('A-Weg',),
+            'vertraege': ('Mieter A',), 'buchhaltung': ('Miete 02/2024 A', 'Handwerk A'),
+            'tickets': ('#{}'.format(self.a.schaden.id),), 'dokumente': ('Kündigungsschreiben A',),
+        }
+        gesehen = set()
+        for gruppe, begriffe in beispiele.items():
+            for q in begriffe:
+                _s, daten = self._von(self.benutzer['Verwalter'], q)
+                for t in (x for x in daten['treffer'] if x['gruppe'] == gruppe):
+                    gesehen.add(gruppe)
+                    with self.subTest(gruppe=gruppe, url=t['url']):
+                        antwort = c.get(t['url'])
+                        self.assertEqual(antwort.status_code, 200 if gruppe in erlaubt else 403)
+        self.assertEqual(gesehen, set(GRUPPEN), 'Eine Gruppe lieferte keinen Beispieltreffer.')

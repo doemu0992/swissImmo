@@ -32664,13 +32664,18 @@ msgstr "Ricerca in corso …"
 msgid "Keine Treffer für «{q}»."
 msgstr "Nessun risultato per «{q}»."
 
-msgid "Versuchen Sie den Nachnamen oder einen Teil der Adresse. Telefonnummern und weitere Felder findet die ausführliche Suche."
-msgstr "Provi il cognome o una parte dell'indirizzo. I numeri di telefono e altri campi li trova la ricerca dettagliata."
+msgid ""
+"Versuchen Sie den Nachnamen oder einen Teil der Adresse. Telefonnummern und "
+"weitere Felder findet die ausführliche Suche."
+msgstr ""
+"Provi il cognome o una parte dell'indirizzo. I numeri di telefono e altri "
+"campi li trova la ricerca dettagliata."
 
 msgid "Die Suche ist gerade nicht erreichbar."
 msgstr "La ricerca al momento non è raggiungibile."
 
-msgid "Bitte prüfen Sie die Verbindung. Seiten und Befehle finden Sie weiterhin."
+msgid ""
+"Bitte prüfen Sie die Verbindung. Seiten und Befehle finden Sie weiterhin."
 msgstr "Controlli la connessione. Pagine e comandi restano disponibili."
 
 msgid "Nochmals versuchen"
@@ -32681,6 +32686,7 @@ msgstr "Tutti i risultati per «{q}» →"
 
 msgid "Ausführlich suchen →"
 msgstr "Ricerca dettagliata →"
+
 msgid ""
 "Sieben Schritte vom Objekt bis zum Abschluss — die Vorschau zeigt den "
 "Vertrag, wie er gedruckt wird."
@@ -32706,3 +32712,97 @@ msgstr "Registrazione & notifica"
 
 msgid "Kreditorenrechnung"
 msgstr "Fattura creditore"
+
+msgid "QR-Code"
+msgstr "Codice QR"
+
+msgid "Code aus der App"
+msgstr "Codice dell'app"
+
+msgid "Sechsstelliger Code"
+msgstr "Codice a sei cifre"
+
+msgid "Wann findet die Abnahme statt, und woher kommen die Räume?"
+msgstr "Quando avviene la consegna e da dove provengono i locali?"
+
+msgid "Termin und Art"
+msgstr "Data e tipo"
+
+msgid ""
+"Welche Räume werden abgenommen? Namen und Reihenfolge lassen sich ändern."
+msgstr ""
+"Quali locali vengono ispezionati? Nomi e ordine possono essere modificati."
+
+msgid "Räume"
+msgstr "Locali"
+
+msgid ""
+"An wen geht die Mitteilung? Eine ganze Liegenschaft wählen oder einzelne "
+"Mieter ankreuzen."
+msgstr ""
+"A chi è destinata la comunicazione? Scegliere un intero stabile o "
+"selezionare singoli inquilini."
+
+msgid ""
+"Betreff und Text verfassen. Platzhalter werden pro Empfänger automatisch "
+"ersetzt."
+msgstr ""
+"Redigere oggetto e testo. I segnaposto vengono sostituiti automaticamente "
+"per ogni destinatario."
+
+msgid "Wie soll die Mitteilung zu den Mietern kommen?"
+msgstr "Come deve arrivare la comunicazione agli inquilini?"
+
+msgid "Versandart"
+msgstr "Modalità di invio"
+
+msgid "Serienbrief-PDF erzeugen"
+msgstr "Genera il PDF della lettera in serie"
+
+msgid ""
+"Ein Brief pro Empfänger (Fenstercouvert) als Sammel-PDF zum Ausdrucken."
+msgstr ""
+"Una lettera per destinatario (busta con finestra) come PDF cumulativo da "
+"stampare."
+
+msgid ""
+"Verschickt die Mitteilung an alle gewählten Mieter mit hinterlegter E-Mail-"
+"Adresse."
+msgstr ""
+"Invia la comunicazione a tutti gli inquilini selezionati con indirizzo "
+"e-mail registrato."
+
+msgid ""
+"Druckt die Vorschau (das Beispiel des ersten Empfängers) direkt aus dem "
+"Browser."
+msgstr ""
+"Stampa l'anteprima (l'esempio del primo destinatario) direttamente dal "
+"browser."
+
+msgid "{n} Empfänger"
+msgstr "{n} destinatario/i"
+
+msgid "Code scannen"
+msgstr "Scansionare il codice"
+
+msgid "Code bestätigen"
+msgstr "Confermare il codice"
+
+msgid "Der Code stimmt nicht. Uhrzeit des Telefons prüfen und neu versuchen."
+msgstr "Il codice non corrisponde. Controlli l'ora del telefono e riprovi."
+
+#: core/services/palette_suche.py
+msgctxt "Belegung eines Objekts"
+msgid "Vermietet"
+msgstr "Locato"
+
+#: core/services/palette_suche.py
+msgctxt "Belegung eines Objekts"
+msgid "Leer"
+msgstr "Sfitto"
+
+#: core/services/palette_suche.py
+#, python-format
+msgctxt "Belegung eines Objekts"
+msgid "Vermietet ab %(datum)s"
+msgstr "Locato dal %(datum)s"
