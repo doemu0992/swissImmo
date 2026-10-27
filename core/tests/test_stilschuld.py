@@ -81,7 +81,6 @@ OBERGRENZE = {
     'core/portal.html': 1,
     'core/portal_login.html': 1,
     'core/schaden_melden.html': 4,
-    'core/zweifaktor_einrichten.html': 1,
     'emails/base_email.html': 1,
     'emails/email_mahnung.html': 2,
     'fw/_listwerkzeug.html': 1,

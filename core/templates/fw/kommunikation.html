@@ -17,25 +17,32 @@
 {{ vorlagen|json_script:"vorlagen-data" }}
 <span id="logo-url" data-url="{{ logo_url }}"></span>
 
-<div class="fw-raster l2 items-start">
+{% comment %}
+Assistenten-Standard (27.10.2026), client-seitige Variante mit Vorschau: drei Schritte (Empfänger,
+Mitteilung, Versand), Leiste, Schrittkopf und Fuss aus fw-bausteine.js, die Live-Vorschau als
+`.fw-assistent-vorschau`. Kein Formular: Das Skript unten sammelt die Wahl und schickt sie über die
+zwei versteckten Formulare im Schritt «Versand» ab. Im letzten Schritt führt der Hauptknopf die dort
+gewählte Versandart aus (Serienbrief-PDF, E-Mail oder Brief drucken).
+{% endcomment %}
+<div class="fw-assistent fw-assistent-mit-vorschau" id="mk-assistent" {% include 'fw/_assistent_attribute.html' %}>
+{% include 'fw/_assistent_leiste.html' %}
+<div class="fw-assistent-inhalt">
 
-    <!-- ========== LINKS: FORMULAR ========== -->
-    <div>
-        <!-- Schritt 1: Empfänger -->
+    <section data-schritt="{% trans 'Empfänger' %}" data-schritt-text="{% trans 'An wen geht die Mitteilung? Eine ganze Liegenschaft wählen oder einzelne Mieter ankreuzen.' %}">
+        <div class="fw-assistent-schritt-kopf"></div>
         <div class="fw-card">
             <div class="fw-kopf">
-                <span class="fw-avci">1</span>
                 <h2>{% trans "Empfänger" %}</h2>
                 <span id="emp-count" class="fw-rechts fw-neben"></span>
             </div>
-            <div class="p-5">
-            <!-- Ganze Liegenschaft wählen → alle Mieter dieser Liegenschaft markieren -->
+            <div class="fw-rumpf">
+            {% comment %} Ganze Liegenschaft wählen → alle Mieter dieser Liegenschaft markieren {% endcomment %}
             <div class="fw-raster r2 mb-2">
-                <select id="lg-select" onchange="lgWaehlen()" class="fw-feld">
+                <select id="lg-select" onchange="lgWaehlen()" class="fw-feld" aria-label="{% trans 'Ganze Liegenschaft wählen…' %}">
                     <option value="">{% trans "Ganze Liegenschaft wählen…" %}</option>
                     {% for l in liegenschaften_wahl %}<option value="{{ l.id }}">{{ l.label }}</option>{% endfor %}
                 </select>
-                <input id="emp-search" oninput="empSuche()" placeholder="{% trans 'Empfänger suchen…' %}" class="fw-feld">
+                <input id="emp-search" oninput="empSuche()" placeholder="{% trans 'Empfänger suchen…' %}" aria-label="{% trans 'Empfänger suchen…' %}" class="fw-feld">
             </div>
             <div class="flex items-center gap-2 mb-2">
                 <button type="button" onclick="alleWaehlen(true)" class="fw-link">{% trans "Alle (sichtbar)" %}</button>
@@ -58,28 +65,29 @@
             <p class="fw-hilfe mt-2">{% trans "Standardmässig ist niemand vorausgewählt. Ganze Liegenschaft wählen oder einzeln ankreuzen." %}</p>
             </div>
         </div>
+    </section>
 
-        <!-- Schritt 2: Betreff + Text -->
+    <section data-schritt="{% trans 'Mitteilung' %}" data-schritt-text="{% trans 'Betreff und Text verfassen. Platzhalter werden pro Empfänger automatisch ersetzt.' %}">
+        <div class="fw-assistent-schritt-kopf"></div>
         <div class="fw-card">
             <div class="fw-kopf">
-                <span class="fw-avci">2</span>
                 <h2>{% trans "Mitteilung verfassen" %}</h2>
             </div>
-            <div class="p-5">
+            <div class="fw-rumpf">
             <div class="fw-feldblock mb-3 pb-3 border-b fw-linie">
-                <label class="fw-label">{% trans "Vorlage verwenden" %}</label>
+                <label class="fw-label" for="vorlage-select">{% trans "Vorlage verwenden" %}</label>
                 <select id="vorlage-select" onchange="vorlageWaehlen()" class="fw-feld">
                     <option value="">— {% trans "Freier Text (keine Vorlage)" %} —</option>
                 </select>
                 <p class="fw-hilfe">{% blocktrans trimmed %}Vorlagen verwaltest du unter <a href="/neu/vorlagen/" class="fw-marke hover:underline">Profil → Vorlagen</a>.{% endblocktrans %}</p>
             </div>
             <div class="fw-feldblock mb-3">
-            <label class="fw-label">{% trans "Betreff" %}</label>
+            <label class="fw-label" for="betreff">{% trans "Betreff" %}</label>
             <input id="betreff" type="text" value="Information zu Ihrer Wohnung" oninput="aktualisiere()"
                    class="fw-feld">
             </div>
 
-            <label class="fw-label mb-1">{% trans "Text" %}</label>
+            <label class="fw-label mb-1" for="nachricht">{% trans "Text" %}</label>
             <div class="flex flex-wrap gap-1.5 mb-2">
                 <button type="button" onclick="einfuegen('{name}')" class="fw-btn fw-weich fw-knapp">{% trans "+ Name" %}</button>
                 <button type="button" onclick="einfuegen('{anrede}')" class="fw-btn fw-weich fw-knapp">{% trans "+ Anrede" %}</button>
@@ -87,7 +95,7 @@
                 <button type="button" onclick="einfuegen('{adresse}')" class="fw-btn fw-weich fw-knapp">{% trans "+ Adresse" %}</button>
             </div>
             {% comment %}Vorbelegter Brieftext bleibt deutsch — Dokumentinhalt, Entscheid D11.{% endcomment %}
-            <textarea id="nachricht" rows="9" oninput="aktualisiere()"
+            <textarea id="nachricht" rows="9" oninput="aktualisiere()" data-pflicht="{% trans 'Bitte einen Text verfassen.' %}"
                       class="fw-feld w-full">Sehr geehrte/r {anrede} {name}
 
 Wir möchten Sie über anstehende Arbeiten in Ihrer Liegenschaft ({objekt}) informieren.
@@ -96,24 +104,26 @@ Freundliche Grüsse</textarea>
             <p class="fw-hilfe mt-2">{% trans "Platzhalter werden pro Empfänger automatisch ersetzt." %}</p>
             </div>
         </div>
+    </section>
 
-        <!-- Schritt 3: Aktion -->
+    <section data-schritt="{% trans 'Versand' %}" data-schritt-text="{% trans 'Wie soll die Mitteilung zu den Mietern kommen?' %}">
+        <div class="fw-assistent-schritt-kopf"></div>
         <div class="fw-card">
             <div class="fw-kopf">
-                <span class="fw-avci">3</span>
-                <h2>{% trans "Versand" %}</h2>
+                <h2>{% trans "Versandart" %}</h2>
             </div>
-            <div class="p-5">
-            <div class="flex flex-wrap gap-2">
-                <button type="button" onclick="druckeVorschau()" class="fw-btn fw-primary">
-                    {% zeichen 'drucken' %} {% trans "Als Brief drucken" %}
-                </button>
-                <button type="button" onclick="serienbriefPdf()" class="fw-btn">
-                    {% zeichen 'drucken' %} {% trans "Serienbrief-PDF" %}
-                </button>
-                <button type="button" onclick="perEmailSenden()" class="fw-btn">
-                    {% zeichen 'senden' %} {% trans "Per E-Mail senden" %}
-                </button>
+            <div class="fw-rumpf">
+            <p class="fw-mk-zusammen" id="mk-zusammen" aria-live="polite"></p>
+            <div class="fw-mk-arten" role="radiogroup" aria-label="{% trans 'Versandart' %}">
+                <label class="fw-haekchen"><input type="radio" name="mk-art" value="pdf" class="fw-akzent" checked
+                    data-knopf="{% trans 'Serienbrief-PDF erzeugen' %}"> <span><b>{% trans "Serienbrief-PDF" %}</b>
+                    <small class="fw-hilfe">{% trans "Ein Brief pro Empfänger (Fenstercouvert) als Sammel-PDF zum Ausdrucken." %}</small></span></label>
+                <label class="fw-haekchen"><input type="radio" name="mk-art" value="mail" class="fw-akzent"
+                    data-knopf="{% trans 'Per E-Mail senden' %}"> <span><b>{% trans "Per E-Mail senden" %}</b>
+                    <small class="fw-hilfe">{% trans "Verschickt die Mitteilung an alle gewählten Mieter mit hinterlegter E-Mail-Adresse." %}</small></span></label>
+                <label class="fw-haekchen"><input type="radio" name="mk-art" value="druck" class="fw-akzent"
+                    data-knopf="{% trans 'Als Brief drucken' %}"> <span><b>{% trans "Als Brief drucken" %}</b>
+                    <small class="fw-hilfe">{% trans "Druckt die Vorschau (das Beispiel des ersten Empfängers) direkt aus dem Browser." %}</small></span></label>
             </div>
             <form id="mailForm" method="post" action="/neu/kommunikation/senden/" class="hidden">{% csrf_token %}
                 <input type="hidden" name="betreff" id="mail-betreff">
@@ -125,7 +135,6 @@ Freundliche Grüsse</textarea>
                 <input type="hidden" name="text" id="pdf-text">
                 <div id="pdf-empfaenger"></div>
             </form>
-            <p class="fw-hilfe mt-3">{% trans "„Serienbrief-PDF“ erzeugt einen Brief pro Empfänger (Fenstercouvert) als Sammel-PDF zum Ausdrucken. „Per E-Mail senden“ verschickt die Mitteilung an alle gewählten Mieter mit hinterlegter E-Mail-Adresse." %}</p>
             <script>
               function _sammleVersand(){
                 var ids=[].slice.call(document.querySelectorAll('.emp-check:checked')).map(function(c){return c.value;});
@@ -153,32 +162,48 @@ Freundliche Grüsse</textarea>
                 d.ids.forEach(function(id){var i=document.createElement('input');i.type='hidden';i.name='empfaenger_id';i.value=id;box.appendChild(i);});
                 document.getElementById('pdfForm').submit();
               }
+              // Der Hauptknopf im Fuss führt die gewählte Versandart aus.
+              function versandAusfuehren(){
+                var art=(document.querySelector('input[name=mk-art]:checked')||{}).value;
+                if(art==='mail') perEmailSenden();
+                else if(art==='druck'){ if(_sammleVersand()) druckeVorschau(); }
+                else serienbriefPdf();
+              }
             </script>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- ========== RECHTS: LIVE-VORSCHAU ========== -->
-    <div class="lg:sticky lg:top-24">
-        <div class="fw-subhead flex items-center gap-2">
-            {% trans "Live-Vorschau" %}
-            <span id="preview-hint" class="ml-auto normal-case fw-klein"></span>
+    <div class="fw-assistent-fuss">
+        <button type="button" class="fw-btn" data-assistent-zurueck data-assistent-nur-js>{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
+        <span class="stand" data-assistent-nur-js></span>
+        <div class="rechts">
+            <a href="/neu/{{ lg_query }}" class="fw-btn fw-geist" onclick="if (document.referrer) { history.back(); return false; }">{% trans "Abbrechen" %}</a>
+            <button type="button" class="fw-btn fw-primary" data-assistent-weiter data-assistent-nur-js>{% trans "Weiter" %} {% zeichen 'weiter' %}</button>
+            <button type="button" class="fw-btn fw-primary" id="mk-los" data-assistent-absenden onclick="versandAusfuehren()">{% zeichen 'senden' %}<span id="mk-los-text">{% trans "Serienbrief-PDF erzeugen" %}</span></button>
         </div>
-        <div id="brief" class="fw-card p-8 md:p-10 min-h-[500px] text-sm fw-strong leading-relaxed">
-            <!-- Logo -->
+    </div>
+</div>
+
+<aside class="fw-assistent-vorschau offen" aria-label="{% trans 'Live-Vorschau' %}">
+    <div class="fw-assistent-vorschau-kopf">
+        <span class="fw-assistent-vorschau-titel">{% zeichen 'drucken' %} {% trans "Live-Vorschau" %}</span>
+        <button type="button" class="fw-btn fw-knapp fw-leise" data-vorschau-knopf aria-controls="mk-vorschau-rumpf"
+                data-text-zeigen="{% trans 'Vorschau zeigen' %}" data-text-verbergen="{% trans 'Vorschau ausblenden' %}"><span class="t">{% trans "Vorschau ausblenden" %}</span></button>
+    </div>
+    <div class="fw-assistent-vorschau-rumpf" id="mk-vorschau-rumpf">
+        <span id="preview-hint" class="fw-klein"></span>
+        <div id="brief" class="fw-card fw-brief text-sm fw-strong leading-relaxed">
+            {% comment %} Logo, Absender, Empfänger-Adresse, Ort/Datum, Betreff, Text {% endcomment %}
             <div id="pv-logo" class="mb-6"></div>
-            <!-- Absender -->
             <div id="pv-absender" class="fw-fs-klein fw-mutet mb-10"></div>
-            <!-- Empfänger-Adresse -->
             <div id="pv-empfaenger" class="mb-8 whitespace-pre-line"></div>
-            <!-- Ort/Datum -->
             <div id="pv-datum" class="text-right text-xs fw-mutet mb-6"></div>
-            <!-- Betreff -->
             <div id="pv-betreff" class="font-bold mb-4"></div>
-            <!-- Text -->
             <div id="pv-text" class="whitespace-pre-line"></div>
         </div>
     </div>
+</aside>
 </div>
 
 <script>
@@ -273,6 +298,10 @@ function aktualisiere() {
 
     document.getElementById('emp-count').textContent = '{% filter escapejs %}{% trans "{n} ausgewählt" %}{% endfilter %}'.replace('{n}', empf.length);
     document.getElementById('preview-hint').textContent = erste ? ('{% filter escapejs %}{% trans "Beispiel:" %}{% endfilter %} ' + erste.name) : '';
+    // «Weiter» im Schritt «Empfänger» braucht mindestens einen Empfänger (fw-bausteine.js prüft die Gültigkeit).
+    document.getElementById('emp-search').setCustomValidity(empf.length ? '' : '{% filter escapejs %}{% trans "Bitte mindestens einen Empfänger wählen." %}{% endfilter %}');
+    document.getElementById('mk-zusammen').textContent = '{% filter escapejs %}{% trans "{n} Empfänger" %}{% endfilter %}'.replace('{n}', empf.length)
+        + ' · ' + (document.getElementById('betreff').value || '');
 
     document.getElementById('pv-logo').innerHTML = LOGO_URL
         ? '<img src="' + LOGO_URL + '" alt="Logo" style="max-height:64px;max-width:220px;object-fit:contain;">' : '';
@@ -288,6 +317,10 @@ function aktualisiere() {
     document.getElementById('pv-betreff').textContent = ersetze(document.getElementById('betreff').value, erste);
     document.getElementById('pv-text').textContent = ersetze(document.getElementById('nachricht').value, erste);
 }
+// Die Beschriftung des Hauptknopfs folgt der gewählten Versandart.
+document.querySelectorAll('input[name=mk-art]').forEach(function(r){
+    r.addEventListener('change', function(){ document.getElementById('mk-los-text').textContent = r.dataset.knopf; });
+});
 function druckeVorschau() {
     const inhalt = document.getElementById('brief').innerHTML;
     const w = window.open('', '_blank');

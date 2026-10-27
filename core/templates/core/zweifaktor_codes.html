@@ -1,40 +1,28 @@
-{% extends 'fw/base.html' %}
+{% extends 'fw/_assistent_server.html' %}
 {% load i18n zeichen %}
 {% block title %}{% trans "Notfallcodes" %} — swissImmo{% endblock %}
-{% block content %}
+{% comment %}
+Schritt 3 der Einrichtung im Rahmen des server-seitigen Assistenten: die Antwort auf das erfolgreiche POST
+(core/views/zweifaktor.py). Die Liste erscheint genau einmal und hat keine Adresse; darum kein «Zurück»,
+kein «Abbrechen» und keine Links auf die ersten beiden Schritte.
+{% endcomment %}
+{% block seitenkopf %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="{% url 'zweifaktor_uebersicht' %}">{% trans "Zwei-Faktor-Anmeldung" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Einrichten" %}</b>
+</nav>
+
 <div class="fw-phead">
     <div>
-        <h1>{% trans "Notfallcodes" %}</h1>
-        <p>{% if frisch %}{% trans "Die Zwei-Faktor-Anmeldung ist aktiv." %}{% endif %}
-           {% trans "Bewahren Sie diese Codes ausserhalb des Telefons auf." %}</p>
-    </div>
-</div>
-
-<div class="max-w-2xl">
-    <div class="fw-card"><div class="fw-hinweis warn">
-        <span class="fw-hi">{% zeichen 'warnung' %}</span>
-        <div class="fw-ht"><b>{% trans "Diese Liste erscheint genau einmal." %}</b> {% trans "Gespeichert wird nur ein Hash — wir können sie Ihnen später nicht noch einmal zeigen, nur neu erzeugen. Ohne Codes und ohne Telefon kommt niemand mehr an Ihren Zugang." %}</div>
-    </div></div>
-
-    <div class="fw-card">
-        <div class="fw-kopf"><h2>{% trans "Notfallcodes" %}</h2></div>
-        <div class="p-5">
-        <div class="grid grid-cols-2 gap-2">
-            {% for code in codes %}
-            <div class="fw-feld fw-mono select-all">{{ code }}</div>
-            {% endfor %}
-        </div>
-        <p class="fw-hilfe mt-4">
-            {% trans "Jeder Code gilt genau einmal und ersetzt bei der Anmeldung den Code aus der App." %}
-        </p>
-        </div>
-    </div>
-
-    <div class="flex gap-3">
-        <button onclick="window.print()"
-                class="fw-btn">{% zeichen 'drucken' %}{% trans "Drucken" %}</button>
-        <a href="{% url 'zweifaktor_uebersicht' %}"
-           class="fw-btn fw-primary">{% trans "Ich habe sie gesichert" %}</a>
+        <h1>{% trans "Zwei-Faktor-Anmeldung einrichten" %}</h1>
+        <p>{% trans "Die Zwei-Faktor-Anmeldung ist aktiv." %}</p>
     </div>
 </div>
 {% endblock %}
+
+{% block frage %}<p>{% trans "Bewahren Sie diese Codes ausserhalb des Telefons auf." %}</p>{% endblock %}
+
+{% block inhalt %}{% include 'core/_zweifaktor_codes_karte.html' %}{% endblock %}
+
+{% block fuss_haupt %}<a href="{% url 'zweifaktor_uebersicht' %}" class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Ich habe sie gesichert" %}</a>{% endblock %}

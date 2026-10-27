@@ -32754,3 +32754,60 @@ msgstr "Comptabilisation & notification"
 
 msgid "Kreditorenrechnung"
 msgstr "Facture créancier"
+
+msgid "QR-Code"
+msgstr "Code QR"
+
+msgid "Code aus der App"
+msgstr "Code de l'application"
+
+msgid "Sechsstelliger Code"
+msgstr "Code à six chiffres"
+
+msgid "Wann findet die Abnahme statt, und woher kommen die Räume?"
+msgstr "Quand a lieu la remise, et d'où viennent les pièces ?"
+
+msgid "Termin und Art"
+msgstr "Date et type"
+
+msgid "Welche Räume werden abgenommen? Namen und Reihenfolge lassen sich ändern."
+msgstr "Quelles pièces sont contrôlées ? Les noms et l'ordre peuvent être modifiés."
+
+msgid "Räume"
+msgstr "Pièces"
+
+msgid "An wen geht die Mitteilung? Eine ganze Liegenschaft wählen oder einzelne Mieter ankreuzen."
+msgstr "À qui s'adresse la communication ? Choisir un immeuble entier ou cocher des locataires."
+
+msgid "Betreff und Text verfassen. Platzhalter werden pro Empfänger automatisch ersetzt."
+msgstr "Rédiger l'objet et le texte. Les champs variables sont remplacés automatiquement pour chaque destinataire."
+
+msgid "Wie soll die Mitteilung zu den Mietern kommen?"
+msgstr "Comment la communication doit-elle parvenir aux locataires ?"
+
+msgid "Versandart"
+msgstr "Mode d'envoi"
+
+msgid "Serienbrief-PDF erzeugen"
+msgstr "Générer le PDF du publipostage"
+
+msgid "Ein Brief pro Empfänger (Fenstercouvert) als Sammel-PDF zum Ausdrucken."
+msgstr "Une lettre par destinataire (enveloppe à fenêtre) en PDF groupé à imprimer."
+
+msgid "Verschickt die Mitteilung an alle gewählten Mieter mit hinterlegter E-Mail-Adresse."
+msgstr "Envoie la communication à tous les locataires choisis ayant une adresse e-mail enregistrée."
+
+msgid "Druckt die Vorschau (das Beispiel des ersten Empfängers) direkt aus dem Browser."
+msgstr "Imprime l'aperçu (l'exemple du premier destinataire) directement depuis le navigateur."
+
+msgid "{n} Empfänger"
+msgstr "{n} destinataire(s)"
+
+msgid "Code scannen"
+msgstr "Scanner le code"
+
+msgid "Code bestätigen"
+msgstr "Confirmer le code"
+
+msgid "Der Code stimmt nicht. Uhrzeit des Telefons prüfen und neu versuchen."
+msgstr "Le code ne correspond pas. Vérifiez l'heure du téléphone et réessayez."

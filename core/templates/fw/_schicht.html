@@ -3006,6 +3006,57 @@ und einen Stilblock enthaelt.
         .fw-hw-nachricht p{margin:2px 0 0;font-size:13.5px;line-height:1.5;white-space:pre-line;overflow-wrap:anywhere}
         /* ===== Ende MODUL Portale ===== */
 
+        /* ===== MODUL assistent-seiten (27.10.2026): 2FA-Einrichtung, Serienbrief, Abnahme vor Ort =====
+           Drei Seiten im Assistenten-Standard (Abschnitt «Assistent»). Hier nur, was die Karten dieser
+           Seiten brauchen; Leiste, Schrittkopf und Fuss sind die gemeinsamen Klassen. */
+        /* Schritt ohne Link (erledigt, aber nicht mehr erreichbar) und die eigene Seite ohne Ziel */
+        .fw-assistent-leiste li.hier>.schritt{color:var(--ds-ink);font-weight:600}
+        .fw-btn[hidden]{display:none}
+        /* 2FA: QR und Schlüssel, Codefeld, Notfallcodes */
+        .fw-zf-scan{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+        .fw-zf-qr{flex:0 0 200px;width:200px;padding:12px;border:1px solid var(--ds-line);border-radius:var(--ds-radius-lg)}
+        .fw-zf-qr svg{display:block;width:100%;height:auto}
+        .fw-zf-schluessel{flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:8px;font-size:13.5px;color:var(--ds-muted)}
+        .fw-zf-schluessel p{margin:0}
+        .fw-zf-geheimnis{display:block;overflow-wrap:anywhere;user-select:all}
+        .fw-zf-form{display:flex;flex-direction:column;gap:6px;max-width:260px}
+        .fw-zf-code{font-size:22px;letter-spacing:.3em;text-align:center}
+        .fw-zf-codes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+        .fw-zf-codes .fw-feld{user-select:all;overflow-wrap:anywhere}
+        .fw-zf-codes{margin-bottom:12px}
+        .fw-zf-seite{max-width:42rem;display:flex;flex-direction:column;gap:16px}
+        .fw-zf-knoepfe{display:flex;gap:12px}
+        .fw-zf-seite .fw-card{margin:0}
+        /* Serienbrief: Brief in der Vorschau, Wahl der Versandart */
+        .fw-brief{padding:40px;min-height:500px;overflow-wrap:anywhere}
+        .fw-mk-zusammen{margin:0 0 14px;font-size:13px;color:var(--ds-muted);overflow-wrap:anywhere}
+        .fw-mk-arten{display:flex;flex-direction:column;gap:14px}
+        .fw-mk-arten .fw-haekchen b{font-weight:600}
+        .fw-mk-arten .fw-haekchen small{display:block;font-weight:400;margin-top:2px}
+        @media (max-width:640px){.fw-brief{padding:20px;min-height:0}}
+        /* Abnahme vor Ort: Räume als Zeilen mit Knöpfen, Katalog im Dialog */
+        .fw-abn-wahl{max-width:100%;text-overflow:ellipsis}
+        .fw-abn-entwurf{margin-top:8px}
+        .fw-abn-liste{list-style:none;margin:0 0 12px;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+        .fw-abn-zeile{display:flex;align-items:center;gap:2px;background:var(--ds-surface-2);border:1px solid var(--ds-line);
+            border-radius:var(--ds-radius-lg);padding:4px 4px 4px 10px}
+        .fw-abn-zeile input{flex:1;min-width:0;border:0;background:transparent;color:var(--ds-ink);font-size:16px;font-weight:600;min-height:44px}
+        .fw-abn-ikon{width:44px;height:44px;flex:0 0 44px;display:flex;align-items:center;justify-content:center;background:transparent;
+            border:0;border-radius:var(--ds-radius);color:var(--ds-brand);cursor:pointer}
+        .fw-abn-ikon.gefahr{color:var(--ds-crit)}
+        .fw-abn-ikon.hoch svg{transform:rotate(180deg)}
+        .fw-abn-ikon:disabled{color:var(--ds-faint);cursor:default}
+        .fw-abn-dialog{max-width:32rem;max-height:80vh}
+        .fw-abn-dkopf{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+        .fw-abn-dkopf .fw-bestaetigen-titel{margin:0}
+        .fw-abn-dialog .fw-feld[type=search]{width:100%;box-sizing:border-box}
+        .fw-abn-katalog{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px;max-height:45vh;overflow:auto}
+        .fw-abn-katalog button{width:100%;min-height:44px;display:flex;align-items:center;justify-content:space-between;background:var(--ds-surface-2);
+            border:1px solid var(--ds-line);border-radius:var(--ds-radius-lg);padding:0 14px;color:var(--ds-ink);font-weight:600;cursor:pointer;text-align:left}
+        .fw-abn-eigen{display:flex;gap:8px;margin-top:12px}
+        .fw-abn-eigen input{flex:1;min-width:0}
+        /* ===== Ende MODUL assistent-seiten ===== */
+
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
         /* Vorlage: navmock/vorschau (freigegeben). Zeile 1: Marke, Bereiche, rechtsbuendig die
            Omnisearch, Werkzeuge. Zeile 2: das Menueband des aktiven Bereichs (`fw-bereichsreiter`,

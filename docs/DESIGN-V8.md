@@ -176,6 +176,15 @@ normales Formular.
   `gesperrt` (gedämpft, kein Link) · `entfaellt` (–), dazu `hier` (schwarz) für die Seite, auf der
   man steht; ein anderer Zustand ist ein Fehler. Fuss: Zurück, «Schritt i von n», Abbrechen,
   Hauptknopf «Weiter zu …» (unter 480 px nur «Weiter») bzw. die Aktion des Schritts.
+  Ein Schritt ohne `url` ist kein Link (`link` aus `server_assistent`), ohne dass er «gesperrt»
+  aussähe; `abbrechen_url=None` lässt «Abbrechen» weg, wo es nichts mehr abzubrechen gibt.
+- **Weitere Seiten im Standard** (27.10.2026, zweite Runde): die **2FA-Einrichtung**
+  (`core/zweifaktor_einrichten.html`, server-seitig: Code scannen · Code bestätigen · Notfallcodes;
+  Schritt 2 ist `?schritt=2`, Schritt 3 nur die Antwort auf das richtige POST, weil die Codes genau
+  einmal erscheinen), der **Serienbrief** (`fw/kommunikation.html`, client-seitig mit Vorschau:
+  Empfänger · Mitteilung · Versand, der Hauptknopf im Fuss führt die gewählte Versandart aus) und
+  **Abnahme vor Ort einrichten** (`fw/abnahme_vorort_neu.html`, client-seitig: Allgemein ·
+  Struktur). CSS im Block «MODUL assistent-seiten» am Ende von `_schicht.html`.
 - **In-App-Hilfe:** `{% load hilfe %}{% hilfe 'schluessel' %}` zeichnet ein ⓘ; Antippen öffnet eine
   Blase (Escape, Scrollen, Klick daneben schliessen). Texte im Katalog `core/hilfe.py` (Regeln dort:
   zwei, drei Sätze, Gesetz nur als Fundstelle, keine geratenen Zahlen). «So funktioniert's»-Kästen

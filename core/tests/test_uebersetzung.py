@@ -89,7 +89,9 @@ UEBERSETZT = (
     'core/public_ticket_form.html',
     'core/schaden_melden.html',
     'core/zweifaktor_bestaetigen.html',
+    'core/_zweifaktor_codes_karte.html',   # Assistenten-Seiten (27.10.2026)
     'core/zweifaktor_codes.html',
+    'core/zweifaktor_codes_neu.html',
     'core/zweifaktor_einrichten.html',
     'core/zweifaktor_uebersicht.html',
     'fw/_abnahme_schluesselzeile.html',

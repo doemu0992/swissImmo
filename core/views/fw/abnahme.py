@@ -612,6 +612,8 @@ def fw_abnahme_vorort_start(request, vertrag_id):
     return render(request, 'fw/abnahme_vorort_neu.html', {
         **_global_filter(request), 'nav': 'vertraege', 'v': v,
         'typ': typ, 'datum': datum.isoformat(), 'vorlage': vorlage, 'raeume': raeume,
+        # Nach einem POST ohne Raum beginnt der Assistent beim Schritt «Struktur» (aria-invalid).
+        'raum_fehler': request.method == 'POST' and not raeume,
         'vorlagen': vorlagen, 'katalog': _vorort_raumkatalog(v.einheit, vorlagen),
         'entwurf': entwurf, 'vorgaenger': vorgaenger,
         'paar': paar, 'ausziehend': ausziehend, 'einziehend': einziehend,

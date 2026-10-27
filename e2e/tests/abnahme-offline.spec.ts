@@ -18,7 +18,7 @@ test('Eingaben ohne Netz bleiben erhalten und gehen mit Netz hinaus', async ({ p
   // Protokoll über den Assistenten anlegen (leere Vorlage, zwei Räume)
   await goto(page, '/neu/vertraege/1/abnahme/vorort/?typ=auszug&vorlage=standard');
   await page.selectOption('#vnVorlage', 'leer');
-  await page.click('button[data-tab=struktur].fw-btn');
+  await page.click('.fw-assistent-fuss [data-assistent-weiter]');   // Assistenten-Standard: Schritt «Struktur»
   for (const raum of ['Küche', 'Keller']) {
     await page.click('#vnHinzu');
     await page.fill('#vnEigen', raum);
