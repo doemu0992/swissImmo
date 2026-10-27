@@ -840,30 +840,149 @@ class Lebensdauer(models.Model):
         return row.jahre if row else None
 
 
+class Schliessanlage(OrganisationAusKette):
+    """Die Schliessanlage einer Liegenschaft (Modul 2, 27.10.2026).
+
+    Hersteller, System und Sicherungskarte gehören zur Anlage, nicht zum
+    einzelnen Schlüssel: Wer einen Schlüssel nachbestellt, braucht die Karte
+    und die Personen, die bestellen dürfen. Mehrere Anlagen je Liegenschaft
+    sind erlaubt (Wohnhaus und Einstellhalle haben oft getrennte Systeme)."""
+    ORGANISATION_PFAD = 'liegenschaft'
+    liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE, related_name='schliessanlagen')
+    hersteller = models.CharField("Hersteller", max_length=80, blank=True, default='')
+    system = models.CharField("System", max_length=80, blank=True, default='')
+    sicherungskarte_nr = models.CharField("Sicherungskarte Nr.", max_length=60, blank=True, default='')
+    bestellberechtigte = models.TextField("Bestellberechtigte", blank=True, default='')
+    notiz = models.TextField("Notiz", blank=True, default='')
+
+    class Meta:
+        verbose_name = "Schliessanlage"
+        verbose_name_plural = "Schliessanlagen"
+        ordering = ['id']
+
+    def __str__(self):
+        return ' '.join(t for t in (self.hersteller, self.system) if t) or f"Schliessanlage {self.pk}"
+
+
+class Schliesspunkt(OrganisationAusKette):
+    """Eine Tür oder ein Zylinder (Haustür, Keller, Wohnungstür 1.OG l.).
+
+    Die Liegenschaft trägt die Kette; die Anlage ist optional, damit Türen
+    auch ohne erfasste Anlage zugeordnet werden können. Die Einheit ist
+    optional, weil die meisten Türen allgemein sind."""
+    ORGANISATION_PFAD = 'liegenschaft'
+    liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE, related_name='schliesspunkte')
+    anlage = models.ForeignKey(Schliessanlage, on_delete=models.SET_NULL, null=True, blank=True,
+                               related_name='schliesspunkte', verbose_name="Schliessanlage")
+    bezeichnung = models.CharField("Tür / Zylinder", max_length=80)
+    einheit = models.ForeignKey(Einheit, on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='schliesspunkte')
+
+    class Meta:
+        verbose_name = "Schliesspunkt"
+        verbose_name_plural = "Schliesspunkte"
+        ordering = ['bezeichnung', 'id']
+
+    def __str__(self):
+        return self.bezeichnung
+
+
 class Schluessel(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
+    #: Schliessplan nach Entscheid E10: drei Arten statt einer Hierarchie.
+    ART_CHOICES = [
+        ('haupt', _('Hauptschlüssel')),
+        ('gruppe', _('Gruppenschlüssel')),
+        ('einzel', _('Einzelschlüssel')),
+    ]
     liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE)
+    # Optional: Haustür-, Briefkasten- und Gruppenschlüssel gehören keiner Einheit.
     einheit = models.ForeignKey(Einheit, on_delete=models.SET_NULL, null=True, blank=True, related_name='schluessel_liste')
     typ = models.CharField(max_length=50, default='Wohnung')
     schluessel_nummer = models.CharField(max_length=50)
     anzahl = models.IntegerField(default=1)
+    schliessanlage = models.ForeignKey(Schliessanlage, on_delete=models.SET_NULL, null=True, blank=True,
+                                       related_name='schluessel', verbose_name="Schliessanlage")
+    art = models.CharField("Art", max_length=10, choices=ART_CHOICES, default='einzel')
+    oeffnet = models.ManyToManyField(Schliesspunkt, blank=True, related_name='schluessel',
+                                     verbose_name="Öffnet")
+    # Ein Schlüssel mit Ausgaben wird nicht gelöscht, sondern archiviert: Der
+    # Verlauf (wer hatte ihn, Quittungen, Verluste) bleibt nachweisbar.
+    archiviert = models.BooleanField("Archiviert", default=False)
 
     class Meta:
         verbose_name = "Schlüssel"
         db_table = 'core_schluessel'
 
+    def __str__(self):
+        return f"{self.typ} {self.schluessel_nummer}".strip()
+
 
 class SchluesselAusgabe(OrganisationAusKette):
     ORGANISATION_PFAD = 'schluessel__liegenschaft'
+    STATUS_AUSGEGEBEN = 'ausgegeben'
+    STATUS_ZURUECK = 'zurueck'
+    STATUS_VERLOREN = 'verloren'
+    STATUS_CHOICES = [
+        (STATUS_AUSGEGEBEN, _('ausgegeben')),
+        (STATUS_ZURUECK, _('zurück')),
+        (STATUS_VERLOREN, _('verloren')),
+    ]
     schluessel = models.ForeignKey(Schluessel, on_delete=models.CASCADE, related_name='ausgaben')
     mieter = models.ForeignKey('crm.Mieter', on_delete=models.SET_NULL, null=True, blank=True)
     handwerker = models.ForeignKey('crm.Handwerker', on_delete=models.SET_NULL, null=True, blank=True)
     ausgegeben_am = models.DateField(default=timezone.now)
+    # Tag der Rücknahme ODER des Verlusts: gesetzt, sobald der Schlüssel nicht
+    # mehr ausgegeben ist. `status` sagt, welches von beiden.
     rueckgabe_am = models.DateField(null=True, blank=True)
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='schluessel_ausgaben')
+    # Hauswart: ein Benutzer, kein Mieter und kein Dienstleister.
+    benutzer = models.ForeignKey('benutzer.Benutzer', on_delete=models.SET_NULL, null=True, blank=True,
+                                 related_name='schluessel_ausgaben')
+    anzahl = models.PositiveSmallIntegerField("Stück", default=1)
+    rueckgabe_bis = models.DateField("Zurück bis", null=True, blank=True)
+    status = models.CharField("Status", max_length=12, choices=STATUS_CHOICES, default=STATUS_AUSGEGEBEN,
+                              db_index=True)
+    # Ablage unter organisation/<id>/… (get_smart_upload_path).
+    unterschrift = models.ImageField("Unterschrift Empfänger", upload_to=get_smart_upload_path,
+                                     null=True, blank=True)
+    quittung = models.ForeignKey('rentals.Dokument', on_delete=models.SET_NULL, null=True, blank=True,
+                                 related_name='+', verbose_name="Quittung Ausgabe")
+    unterschrift_rueckgabe = models.ImageField("Unterschrift Rücknahme", upload_to=get_smart_upload_path,
+                                               null=True, blank=True)
+    quittung_rueckgabe = models.ForeignKey('rentals.Dokument', on_delete=models.SET_NULL, null=True, blank=True,
+                                           related_name='+', verbose_name="Quittung Rücknahme")
+    # Die Abnahme, die diese Ausgabe gebucht hat. Daran erkennt ein erneuter
+    # Abschluss, dass schon gebucht ist (keine doppelte Ausgabe).
+    abnahme = models.ForeignKey('rentals.Abnahmeprotokoll', on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='schluessel_ausgaben')
+    notiz = models.TextField("Notiz", blank=True, default='')
 
     class Meta:
         verbose_name = "Schlüsselausgabe"
         db_table = 'core_schluesselausgabe'
+
+    @property
+    def empfaenger_name(self):
+        if self.mieter_id:
+            return self.mieter.display_name
+        if self.handwerker_id:
+            return self.handwerker.firma
+        if self.benutzer_id:
+            return self.benutzer.get_full_name() or self.benutzer.username
+        return ''
+
+    @property
+    def empfaenger_art(self):
+        """'mieter', 'handwerker', 'hauswart' oder '' — für Kürzel und Texte."""
+        if self.mieter_id:
+            return 'mieter'
+        if self.handwerker_id:
+            return 'handwerker'
+        if self.benutzer_id:
+            return 'hauswart'
+        return ''
 
 
 class Wartungsfrist(OrganisationAusKette):
