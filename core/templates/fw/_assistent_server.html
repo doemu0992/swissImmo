@@ -1,0 +1,49 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block content %}
+{% comment %}
+Rahmen des SERVER-seitigen Assistenten (Assistenten-Standard, 27.10.2026): jeder Schritt eine
+eigene Seite, der Zwischenstand gespeichert. Markup und Klassen wie beim client-seitigen
+Assistenten, nachdem fw-bausteine.js ihn eingeschaltet hat — nur steht `an` schon im HTML,
+und es gibt kein `data-assistent` (das Skript lässt ihn in Ruhe).
+
+Kontext: `assistent` aus core/services/assistent.py (server_assistent).
+Blöcke:
+  seitenkopf      Brotkrume und fw-phead (h1 + eine Zeile)
+  frage           <p> im Schrittkopf: die Frage des Schritts
+  inhalt          die Karten des Schritts
+  fuss_haupt      rechts im Fuss nach «Abbrechen»: Vorgabe «Weiter zu …», im letzten
+                  Schritt die Aktion (Seite überschreibt den Block)
+  weiter_gesperrt Vorgabe, wenn der nächste Schritt gesperrt ist
+  nach_assistent  nach dem Raster (z. B. Skripte)
+{% endcomment %}
+{% block seitenkopf %}{% endblock %}
+{% with a=assistent %}
+<div class="fw-assistent an">
+    {% include 'fw/_assistent_server_leiste.html' %}
+    <div class="fw-assistent-inhalt">
+        <section class="zeigt" data-schritt="{{ a.schritt.titel }}">
+            <div class="fw-assistent-schritt-kopf">
+                <span class="fw-ueber">{% blocktrans with i=a.i n=a.n %}Schritt {{ i }} von {{ n }}{% endblocktrans %}</span>
+                <h2>{{ a.schritt.titel }}</h2>
+                {% block frage %}{% endblock %}
+            </div>
+            {% block inhalt %}{% endblock %}
+        </section>
+        <div class="fw-assistent-fuss">
+            {% if a.zurueck %}<a href="{{ a.zurueck.url }}" class="fw-btn">{% zeichen 'zurueck' %} {% trans "Zurück" %}</a>
+            {% else %}<button type="button" class="fw-btn" disabled>{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>{% endif %}
+            <span class="stand">{% blocktrans with i=a.i n=a.n %}Schritt {{ i }} von {{ n }}{% endblocktrans %}</span>
+            <div class="rechts">
+                <a href="{{ a.abbrechen_url }}" class="fw-btn fw-geist">{% if a.abbrechen_text %}{{ a.abbrechen_text }}{% else %}{% trans "Abbrechen" %}{% endif %}</a>
+                {% block fuss_haupt %}
+                {% if a.weiter and a.weiter.zustand != 'gesperrt' %}<a href="{{ a.weiter.url }}" class="fw-btn fw-primary"><span class="fw-assistent-lang">{% blocktrans with t=a.weiter.titel %}Weiter zu {{ t }}{% endblocktrans %}</span><span class="fw-assistent-kurz">{% trans "Weiter" %}</span> {% zeichen 'weiter' %}</a>
+                {% elif a.weiter %}{% block weiter_gesperrt %}<button type="button" class="fw-btn fw-primary" disabled>{% trans "Weiter" %} {% zeichen 'weiter' %}</button>{% endblock %}{% endif %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endwith %}
+{% block nach_assistent %}{% endblock %}
+{% endblock %}

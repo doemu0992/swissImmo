@@ -1,12 +1,13 @@
-{% extends 'fw/base.html' %}
+{% extends 'fw/_assistent_server.html' %}
 {% load zeichen i18n hilfe %}
 {% block title %}{% trans "Neue Abrechnungsperiode" %} — swissImmo{% endblock %}
-{% block content %}
 {% comment %}
-Schritt 1 des Nebenkosten-Wizards für eine NEUE Periode (vorher ein Ausklapp-Formular auf
-/neu/nebenkosten/). Die übrigen Schritte öffnen sich nach dem Anlegen unter
-/neu/nebenkosten/<pk>/. Ohne JavaScript ein gewöhnliches Formular.
+Schritt 1 des Nebenkosten-Wizards für eine NEUE Periode, im Rahmen des server-seitigen
+Assistenten: dieselbe Leiste mit sechs Schritten wie in der Periode, Schritt 1 aktuell, die
+übrigen gesperrt (es gibt noch keine Periode). «Periode anlegen» legt an und führt nach
+/neu/nebenkosten/<pk>/periode/ — dort geht Schritt 1 mit den Objekten weiter.
 {% endcomment %}
+{% block seitenkopf %}
 <nav class="fw-brotkrume mb-2.5">
     <a href="/neu/nebenkosten/{{ lg_query }}">{% trans "Nebenkosten" %}</a>
     {% zeichen 'weiter' %}
@@ -14,56 +15,43 @@ Schritt 1 des Nebenkosten-Wizards für eine NEUE Periode (vorher ein Ausklapp-Fo
 </nav>
 <div class="fw-phead"><div><h1>{% trans "Neue Abrechnungsperiode" %}</h1>
     <p>{% trans "Schritt 1 von 6 — danach Kosten, Verteilung, Heizung & Zähler, Prüfen, Verbuchen & Zustellen." %}</p></div></div>
+{% endblock %}
 
-<form method="post" action="/neu/nebenkosten/neu/" novalidate>
+{% block frage %}<p>{% trans 'Für welches Haus und welchen Zeitraum wird abgerechnet? Höchstens 12 Monate.' %}</p>{% endblock %}
+
+{% block inhalt %}
+<form method="post" action="/neu/nebenkosten/neu/" id="nk-neu">
     {% csrf_token %}
-    {% trans "Periode anlegen" as nk_pruefen %}
-    <div class="fw-assistent" {% include 'fw/_assistent_attribute.html' with pruefen=nk_pruefen %}>
-    {% include 'fw/_assistent_leiste.html' %}
-    <div class="fw-assistent-inhalt">
-        <section data-schritt="{% trans 'Periode & Objekte' %}" data-schritt-text="{% trans 'Für welches Haus und welchen Zeitraum wird abgerechnet? Höchstens 12 Monate.' %}">
-            <div class="fw-assistent-schritt-kopf"></div>
-            <div class="fw-card"><div class="fw-rumpf fw-formular">
-                <div class="fw-feldblock breit"><label class="fw-label" for="nk-lg">{% trans "Liegenschaft *" %}</label>
-                    <select name="liegenschaft_id" id="nk-lg" required class="fw-feld"{% if fehler.liegenschaft_id %} aria-invalid="true"{% endif %}>
-                        <option value="">— {% trans "wählen" %} —</option>
-                        {% for l in liegenschaften %}<option value="{{ l.id }}" {% if eingabe.liegenschaft_id == l.id|stringformat:"s" %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>{% endfor %}
-                    </select>
-                    {% if fehler.liegenschaft_id %}<p class="fw-feldfehler" role="alert">{{ fehler.liegenschaft_id }}</p>{% endif %}</div>
-                <div class="fw-feldblock breit"><span class="fw-label">{% trans "Schnellwahl" %}</span>
-                    <div class="fw-filters fw-nomb" data-nk-schnell>
-                        <button type="button" class="fw-fchip" data-von="vorjahr">{% trans "Kalenderjahr (Vorjahr)" %}</button>
-                        <button type="button" class="fw-fchip" data-von="heiz">{% trans "Heizperiode 1.7.–30.6." %}</button>
-                        <button type="button" class="fw-fchip" data-von="laufend">{% trans "Laufendes Jahr" %}</button>
-                    </div></div>
-                <div class="fw-feldblock"><label class="fw-label" for="nk-von">{% trans "Von *" %}</label>
-                    <input type="date" name="start_datum" id="nk-von" required class="fw-feld" value="{{ eingabe.start_datum|default:'' }}"{% if fehler.start_datum %} aria-invalid="true"{% endif %}>
-                    {% if fehler.start_datum %}<p class="fw-feldfehler" role="alert">{{ fehler.start_datum }}</p>{% endif %}</div>
-                <div class="fw-feldblock"><label class="fw-label" for="nk-bis">{% trans "Bis *" %}</label>
-                    <input type="date" name="ende_datum" id="nk-bis" required class="fw-feld" value="{{ eingabe.ende_datum|default:'' }}"{% if fehler.ende_datum %} aria-invalid="true" aria-describedby="nk-bis-fehler"{% endif %}>
-                    {% if fehler.ende_datum %}<p class="fw-feldfehler" id="nk-bis-fehler" role="alert">{{ fehler.ende_datum }}</p>{% endif %}</div>
-                <div class="fw-feldblock breit"><label class="fw-label" for="nk-bez">{% trans "Bezeichnung *" %}</label>
-                    <input name="bezeichnung" id="nk-bez" required maxlength="100" placeholder="{% trans 'z.B. Heizperiode 2025/2026' %}" class="fw-feld" value="{{ eingabe.bezeichnung|default:'' }}"{% if fehler.bezeichnung %} aria-invalid="true"{% endif %}>
-                    {% if fehler.bezeichnung %}<p class="fw-feldfehler" role="alert">{{ fehler.bezeichnung }}</p>{% endif %}
-                    <p class="fw-hilfe">{% trans "Wird aus dem Zeitraum vorgeschlagen; du kannst sie ändern." %}</p></div>
+    <div class="fw-card"><div class="fw-rumpf fw-formular">
+        <div class="fw-feldblock breit"><label class="fw-label" for="nk-lg">{% trans "Liegenschaft *" %}</label>
+            <select name="liegenschaft_id" id="nk-lg" required class="fw-feld"{% if fehler.liegenschaft_id %} aria-invalid="true"{% endif %}>
+                <option value="">— {% trans "wählen" %} —</option>
+                {% for l in liegenschaften %}<option value="{{ l.id }}" {% if eingabe.liegenschaft_id == l.id|stringformat:"s" %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>{% endfor %}
+            </select>
+            {% if fehler.liegenschaft_id %}<p class="fw-feldfehler" role="alert">{{ fehler.liegenschaft_id }}</p>{% endif %}</div>
+        <div class="fw-feldblock breit"><span class="fw-label">{% trans "Schnellwahl" %}</span>
+            <div class="fw-filters fw-nomb" data-nk-schnell>
+                <button type="button" class="fw-fchip" data-von="vorjahr">{% trans "Kalenderjahr (Vorjahr)" %}</button>
+                <button type="button" class="fw-fchip" data-von="heiz">{% trans "Heizperiode 1.7.–30.6." %}</button>
+                <button type="button" class="fw-fchip" data-von="laufend">{% trans "Laufendes Jahr" %}</button>
             </div></div>
-        </section>
-        <section class="fw-assistent-pruefen">
-            <div class="fw-assistent-schritt-kopf"></div>
-            <div class="fw-card"><div class="fw-rumpf fw-assistent-zusammenfassung"></div></div>
-        </section>
-        <div class="fw-assistent-fuss">
-            <button type="button" class="fw-btn" data-assistent-zurueck data-assistent-nur-js>{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
-            <span class="stand" data-assistent-nur-js></span>
-            <div class="rechts">
-                <a href="/neu/nebenkosten/{{ lg_query }}" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
-                <button type="button" class="fw-btn fw-primary" data-assistent-weiter data-assistent-nur-js>{% trans "Weiter" %} {% zeichen 'weiter' %}</button>
-                <button class="fw-btn fw-primary" data-assistent-absenden>{% zeichen 'gut' %}{% trans "Periode anlegen" %}</button>
-            </div>
-        </div>
-    </div>
-    </div>
+        <div class="fw-feldblock"><label class="fw-label" for="nk-von">{% trans "Von *" %}</label>
+            <input type="date" name="start_datum" id="nk-von" required class="fw-feld" value="{{ eingabe.start_datum|default:'' }}"{% if fehler.start_datum %} aria-invalid="true"{% endif %}>
+            {% if fehler.start_datum %}<p class="fw-feldfehler" role="alert">{{ fehler.start_datum }}</p>{% endif %}</div>
+        <div class="fw-feldblock"><label class="fw-label" for="nk-bis">{% trans "Bis *" %}</label>
+            <input type="date" name="ende_datum" id="nk-bis" required class="fw-feld" value="{{ eingabe.ende_datum|default:'' }}"{% if fehler.ende_datum %} aria-invalid="true" aria-describedby="nk-bis-fehler"{% endif %}>
+            {% if fehler.ende_datum %}<p class="fw-feldfehler" id="nk-bis-fehler" role="alert">{{ fehler.ende_datum }}</p>{% endif %}</div>
+        <div class="fw-feldblock breit"><label class="fw-label" for="nk-bez">{% trans "Bezeichnung *" %}</label>
+            <input name="bezeichnung" id="nk-bez" required maxlength="100" placeholder="{% trans 'z.B. Heizperiode 2025/2026' %}" class="fw-feld" value="{{ eingabe.bezeichnung|default:'' }}"{% if fehler.bezeichnung %} aria-invalid="true"{% endif %}>
+            {% if fehler.bezeichnung %}<p class="fw-feldfehler" role="alert">{{ fehler.bezeichnung }}</p>{% endif %}
+            <p class="fw-hilfe">{% trans "Wird aus dem Zeitraum vorgeschlagen; du kannst sie ändern." %}</p></div>
+    </div></div>
 </form>
+{% endblock %}
+
+{% block fuss_haupt %}<button form="nk-neu" class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Periode anlegen" %}</button>{% endblock %}
+
+{% block nach_assistent %}
 <script>
 // Schnellwahl der üblichen Zeiträume + Bezeichnung aus dem Zeitraum
 (function () {

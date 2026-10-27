@@ -1,12 +1,13 @@
-{% extends 'fw/base.html' %}
+{% extends 'fw/_assistent_server.html' %}
 {% load zeichen i18n %}
 {% block title %}{{ p.bezeichnung }} — {{ schritt.titel }} — swissImmo{% endblock %}
-{% block content %}
 {% comment %}
-Rahmen des Nebenkosten-Wizards (Modul 1): links die sechs Schritte (am Telefon eine waagrecht
-scrollende Zeile), rechts oben was fehlt, darunter die Aufgabe des Schritts. Zustände und
-Ziele kommen aus core/services/nk_prozess.py (wizard_schritte), gerechnet wird nichts.
+Nebenkosten-Wizard (Modul 1) im Rahmen des server-seitigen Assistenten (fw/_assistent_server.html):
+sechs Schritte, jeder eine Seite. Zustände, Infozeilen und Ziele kommen aus
+core/services/nk_prozess.py (wizard_schritte), gerechnet wird nichts. Die Seiten füllen
+`frage` und `aufgabe`; oben steht, was fehlt.
 {% endcomment %}
+{% block seitenkopf %}
 <nav class="fw-brotkrume mb-2.5">
     <a href="/neu/nebenkosten/{{ lg_query }}">{% trans "Nebenkosten" %}</a>
     {% zeichen 'weiter' %}
@@ -23,62 +24,27 @@ Ziele kommen aus core/services/nk_prozess.py (wizard_schritte), gerechnet wird n
         {% else %}<span class="fw-chip fw-warn fw-dot">{% trans "Offen" %}</span>{% endif %}
     </div>
 </div>
+{% endblock %}
 
-<div class="fw-nkw">
-    <nav class="fw-nkw-leiste" aria-label="{% trans 'Schritte der Abrechnung' %}">
-        <ol>
-        {% for s in leiste %}
-            <li class="{{ s.zustand }}{% if s.nr == nr %} an{% endif %}">
-                {% if s.zustand != 'gesperrt' %}<a href="{{ s.url }}"{% if s.nr == nr %} aria-current="step"{% endif %}>{% else %}<span class="schritt">{% endif %}
-                    <span class="nr" aria-hidden="true">{% if s.zustand == 'erledigt' %}✓{% elif s.zustand == 'warnung' %}!{% elif s.zustand == 'entfaellt' %}–{% else %}{{ s.nr }}{% endif %}</span>
-                    <span>{{ s.titel }}<small>{{ s.info }}</small></span>
-                    <span class="sr-only">{% if s.zustand == 'erledigt' %}{% trans "erledigt" %}{% elif s.zustand == 'warnung' %}{% trans "prüfen" %}{% elif s.zustand == 'gesperrt' %}{% trans "noch nicht möglich" %}{% elif s.zustand == 'entfaellt' %}{% trans "entfällt" %}{% else %}{% trans "offen" %}{% endif %}</span>
-                {% if s.zustand != 'gesperrt' %}</a>{% else %}</span>{% endif %}
-            </li>
-        {% endfor %}
-        </ol>
-    </nav>
-    <script>
-    // Am Telefon scrollt der Stepper waagrecht: den aktuellen Schritt ins Bild holen.
-    (function () {
-        var l = document.querySelector('.fw-nkw-leiste'), a = l && l.querySelector('li.an');
-        if (l && a && l.scrollWidth > l.clientWidth) { l.scrollLeft = Math.max(0, a.offsetLeft - 12); }
-    })();
-    </script>
+{% block inhalt %}
+{% if result.error %}
+<div class="fw-card"><div class="fw-hinweis crit"><span class="fw-hi">{% zeichen 'kritisch' %}</span>
+    <div class="fw-ht"><b>{% trans "Die Abrechnung lässt sich nicht rechnen" %}</b>{{ result.error }}</div></div></div>
+{% endif %}
 
-    <div class="fw-nkw-inhalt">
-        <div class="fw-nkw-kopf">
-            <small>{% blocktrans with nr=nr %}Schritt {{ nr }} von 6{% endblocktrans %}</small>
-            <h2>{{ schritt.titel }}</h2>
-            {% block frage %}{% endblock %}
-        </div>
-
-        {% if result.error %}
-        <div class="fw-card"><div class="fw-hinweis crit"><span class="fw-hi">{% zeichen 'kritisch' %}</span>
-            <div class="fw-ht"><b>{% trans "Die Abrechnung lässt sich nicht rechnen" %}</b>{{ result.error }}</div></div></div>
-        {% endif %}
-
-        {% if warnungen or fehlt %}
-        <div class="fw-card fw-nkw-fehlt" role="status">
-            <div class="fw-hinweis warn">
-                <span class="fw-hi">{% zeichen 'warnung' %}</span>
-                <div class="fw-ht">
-                    <b>{% trans "Was fehlt" %}</b>
-                    <ul>{% for f in fehlt %}<li>{{ f }}</li>{% endfor %}{% for w in warnungen %}<li>{{ w }}</li>{% endfor %}</ul>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        {% block aufgabe %}{% endblock %}
-
-        <div class="fw-assistent-fuss">
-            {% if zurueck %}<a href="{{ zurueck.url }}" class="fw-btn">{% zeichen 'zurueck' %} {% trans "Zurück" %}</a>{% endif %}
-            <div class="rechts">
-                {% if weiter and weiter.zustand != 'gesperrt' %}<a href="{{ weiter.url }}" class="fw-btn fw-primary">{% blocktrans with t=weiter.titel %}Weiter zu {{ t }}{% endblocktrans %} {% zeichen 'weiter' %}</a>
-                {% elif weiter %}<span class="fw-klein">{% blocktrans with t=weiter.titel %}{{ t }}: erst nach den Kosten möglich{% endblocktrans %}</span>{% endif %}
-            </div>
+{% if warnungen or fehlt %}
+<div class="fw-card fw-nk-fehlt" role="status">
+    <div class="fw-hinweis warn">
+        <span class="fw-hi">{% zeichen 'warnung' %}</span>
+        <div class="fw-ht">
+            <b>{% trans "Was fehlt" %}</b>
+            <ul>{% for f in fehlt %}<li>{{ f }}</li>{% endfor %}{% for w in warnungen %}<li>{{ w }}</li>{% endfor %}</ul>
         </div>
     </div>
 </div>
+{% endif %}
+
+{% block aufgabe %}{% endblock %}
 {% endblock %}
+
+{% block weiter_gesperrt %}<span class="fw-klein">{% blocktrans with t=assistent.weiter.titel %}{{ t }}: erst nach den Kosten möglich{% endblocktrans %}</span>{% endblock %}

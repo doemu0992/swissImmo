@@ -24,19 +24,19 @@
         <button class="fw-btn">{% zeichen 'speichern' %}{% trans "Periode speichern" %}</button></div>{% endif %}
 </form>
 
-<div class="fw-nkw-abschnitt">
+<div class="fw-nk-abschnitt">
     <h3>{% trans "Objekte" %}</h3>
     <p class="fw-klein">{% trans "Fläche, Volumen und Personen sind die Grundlage der Verteilung. Fehlt ein Wert, ergänzen Sie ihn direkt in der Kachel." %} {% hilfe 'pro_rata' %}</p>
 </div>
 <div class="fw-bento">
     {% for k in kacheln %}
     {% with fe=kachel_fehler|nk_eintrag:k.e.id ein=kachel_eingabe|nk_eintrag:k.e.id %}
-    <form method="post" class="fw-kachel b-m fw-nkw-kachel{% if k.fehlt %} fehlt{% endif %}" id="einheit-{{ k.e.id }}" novalidate>
+    <form method="post" class="fw-kachel b-m fw-nk-kachel{% if k.fehlt %} fehlt{% endif %}" id="einheit-{{ k.e.id }}" novalidate>
         {% csrf_token %}<input type="hidden" name="aktion" value="einheit"><input type="hidden" name="einheit_id" value="{{ k.e.id }}">
         <div class="fw-kachel-kopf"><h3>{{ k.e.bezeichnung }}</h3>
             {% if k.fehlt %}<span class="fw-chip fw-warn">{% blocktrans with was=k.fehlt|join:", " %}{{ was }} fehlt{% endblocktrans %}</span>
             {% else %}<span class="fw-chip fw-good">{% trans "vollständig" %}</span>{% endif %}</div>
-        <div class="fw-nkw-felder">
+        <div class="fw-nk-felder">
             <label>{% trans "Fläche m²" %}
                 <input name="flaeche_m2" inputmode="decimal" class="fw-feld fw-num" value="{% if ein %}{{ ein.flaeche_m2 }}{% else %}{{ k.e.flaeche_m2|default_if_none:'' }}{% endif %}"{% if not kann_schreiben %} readonly{% endif %}{% if fe.flaeche_m2 %} aria-invalid="true"{% endif %}>
                 {% if fe.flaeche_m2 %}<span class="fw-feldfehler" role="alert">{{ fe.flaeche_m2 }}</span>{% endif %}</label>
@@ -45,12 +45,12 @@
                 {% if fe.volumen_m3 %}<span class="fw-feldfehler" role="alert">{{ fe.volumen_m3 }}</span>{% endif %}</label>
         </div>
         {% for v in k.vertraege %}
-        <div class="fw-nkw-vertrag">
+        <div class="fw-nk-vertrag">
             <div><a href="/neu/vertraege/{{ v.id }}/" class="fw-link fw-strong">{{ v.mieter.display_name }}</a>
                 <span class="fw-klein">{{ v.beginn|date:"d.m.y" }}–{% if v.ende %}{{ v.ende|date:"d.m.y" }}{% else %}…{% endif %}</span></div>
-            <div class="fw-nkw-chips">
+            <div class="fw-nk-chips">
                 <span class="fw-chip {% if v.nk_abrechnungsart == 'akonto' %}fw-info{% elif v.nk_abrechnungsart == 'direkt' %}fw-warn{% else %}fw-mut{% endif %}">{{ v.get_nk_abrechnungsart_display }}</span>
-                <label class="fw-nkw-personen">{% trans "Personen" %}
+                <label class="fw-nk-personen">{% trans "Personen" %}
                     <input name="personen_{{ v.id }}" type="number" min="1" max="99" class="fw-feld fw-num" value="{{ v.anzahl_personen }}"{% if not kann_schreiben %} readonly{% endif %}></label>
             </div>
         </div>

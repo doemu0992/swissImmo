@@ -2665,6 +2665,30 @@ und einen Stilblock enthaelt.
         .fw-assistent-schmal .fw-assistent-leiste li button{padding:6px 10px;white-space:nowrap}
         .fw-assistent-schmal .fw-assistent-leiste .fw-assistent-stand{display:none}
         .fw-wv-weg{margin-bottom:16px}
+        /* ---- Assistent: Zustände der Leiste und server-seitige Variante (NK-Umstellung, 27.10.2026) ----
+           Für beide Varianten: <li class="offen|fertig|warnung|gesperrt|entfaellt [hier] [optional]">.
+           Der client-seitige Assistent zeichnet <button>, der server-seitige (fw/_assistent_server.html,
+           core/services/assistent.py) <a>, gesperrte Schritte als <span class="schritt">.
+           Infozeile unter dem Titel: <small class="info">. `hier` schlägt jeden Zustand. */
+        /* position:relative hält die .sr-only-Zeile im Link — sonst ragt sie am Telefon aus der
+           waagrecht scrollenden Leiste und die ganze Seite scrollt quer (gemessen: 383 px). */
+        .fw-assistent-leiste li>a,.fw-assistent-leiste li>.schritt{position:relative;display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;
+            border-radius:var(--ds-radius-sm);font-size:13.5px;line-height:1.35;color:var(--ds-muted);text-decoration:none}
+        .fw-assistent-leiste li>a:hover{background:var(--ds-surface-2);color:var(--ds-ink)}
+        .fw-assistent-leiste li.hier>a{color:var(--ds-ink);font-weight:600}
+        .fw-assistent-leiste .t{min-width:0}
+        .fw-assistent-leiste .info{display:block;font-size:11.5px;font-weight:400;color:var(--ds-faint);margin-top:2px}
+        .fw-assistent-leiste li.warnung:not(.hier) .nr{background:var(--ds-warn);color:var(--ds-auf-satt)}
+        .fw-assistent-leiste li.hier .nr{background:var(--ds-ink);color:var(--ds-surface)}
+        .fw-assistent-leiste li.gesperrt:not(.hier)>*{opacity:.55;cursor:not-allowed}
+        .fw-assistent-leiste li.entfaellt:not(.hier)>*{color:var(--ds-faint)}
+        .fw-assistent [data-schritt]>.fw-bento,.fw-assistent [data-schritt]>form{margin:0}
+        .fw-assistent-kurz{display:none}
+        @media (max-width:900px){
+            .fw-assistent-leiste li>a,.fw-assistent-leiste li>.schritt{padding:6px 10px;white-space:nowrap}}
+        @media (max-width:480px){
+            .fw-assistent-fuss .fw-assistent-lang{display:none}.fw-assistent-fuss .fw-assistent-kurz{display:inline}}
+        /* ---- Ende Assistent-Zustände (NK-Umstellung) ---- */
         /* ---- Prozessleiste: Schritte eines Ablaufs mit Zustand (offen, Warnung, erledigt) ---- */
         .fw-prozess{position:relative;list-style:none;margin:0 0 24px;padding:6px;display:flex;gap:4px;overflow-x:auto;background:var(--ds-surface);
             border-radius:var(--ds-radius-lg);box-shadow:var(--ds-shadow-sm);scrollbar-width:none}
@@ -2871,67 +2895,40 @@ und einen Stilblock enthaelt.
         }
         /* ---- Ende Zahlungs-Cockpit V12 ---- */
         /* ===== MODUL Nebenkosten-Wizard (27.10.2026) =====
-           Sechs Schritte unter /neu/nebenkosten/<pk>/ (fw/nk/). Links der Stepper, rechts was
-           fehlt und die Aufgabe. Am Telefon wird der Stepper eine waagrecht scrollende Zeile.
-           Kacheln aus dem Bento (fw-bento/fw-kachel), Knöpfe und Segmente aus dem Bestand. */
-        .fw-nkw{display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px;align-items:start}
-        .fw-nkw-leiste{position:sticky;top:16px;background:var(--ds-surface);border-radius:var(--ds-radius-lg);box-shadow:var(--ds-shadow-sm);padding:12px}
-        .fw-nkw-leiste ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
-        .fw-nkw-leiste a,.fw-nkw-leiste span.schritt{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border-radius:var(--ds-radius-sm);
-            color:var(--ds-muted);text-decoration:none;font-size:13.5px;line-height:1.35}
-        .fw-nkw-leiste a:hover{background:var(--ds-surface-2);color:var(--ds-ink)}
-        .fw-nkw-leiste .nr{width:26px;height:26px;flex:0 0 26px;border-radius:var(--ds-pill);display:grid;place-items:center;font-size:12px;font-weight:600;
-            background:var(--ds-surface-2);color:var(--ds-muted)}
-        .fw-nkw-leiste small{display:block;font-size:11.5px;font-weight:400;color:var(--ds-faint);margin-top:2px}
-        .fw-nkw-leiste .erledigt .nr{background:var(--ds-good);color:var(--ds-auf-satt)}
-        .fw-nkw-leiste .warnung .nr{background:var(--ds-warn);color:var(--ds-auf-satt)}
-        .fw-nkw-leiste .gesperrt{opacity:.55}
-        .fw-nkw-leiste .an a{background:var(--ds-ink);color:var(--ds-surface);font-weight:600}
-        .fw-nkw-leiste .an small{color:inherit;opacity:.75}
-        .fw-nkw-leiste .an .nr{background:var(--ds-akzent);color:var(--ds-auf-satt)}
-        .fw-nkw-inhalt{display:flex;flex-direction:column;gap:18px;min-width:0}
-        .fw-nkw-inhalt>.fw-card,.fw-nkw-inhalt>.fw-bento,.fw-nkw-inhalt>form{margin:0}
-        .fw-nkw-kopf{display:flex;flex-direction:column;gap:4px}
-        .fw-nkw-kopf small{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ds-faint)}
-        .fw-nkw-kopf h2{margin:0;font-size:24px;font-weight:500;letter-spacing:-.03em}
-        .fw-nkw-kopf p{margin:0;font-size:13px;color:var(--ds-muted)}
-        .fw-nkw-fehlt ul{margin:4px 0 0;padding-left:18px}
-        .fw-nkw-abschnitt h3,.fw-nkw-titel{margin:0 0 4px;font-size:15px;font-weight:600}
-        .fw-nkw-kachel{min-height:0}
-        .fw-nkw-kachel.fehlt{box-shadow:var(--ds-shadow-sm),inset 0 0 0 2px var(--ds-warn-soft)}
-        .fw-nkw-kachel .fw-segment{flex-wrap:wrap}
-        .fw-nkw-kachel .fw-segment button{flex:1 1 auto;white-space:nowrap}
-        .fw-nkw-felder{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-        .fw-nkw-felder label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--ds-muted);min-width:0}
-        .fw-nkw-vertrag{display:flex;flex-direction:column;gap:6px;padding-top:10px;border-top:1px solid var(--ds-line);font-size:13px}
-        .fw-nkw-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-        .fw-nkw-chips:empty{display:none}
-        .fw-nkw-personen{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ds-muted)}
-        .fw-nkw-personen .fw-feld{width:64px}
-        .fw-nkw-zeile{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-        .fw-nkw-zeile .fw-feld{flex:1 1 180px;min-width:0}
-        .fw-nkw-ausschluss summary{cursor:pointer;font-size:12.5px}
-        .fw-nkw-ausschluss[open] summary{margin-bottom:8px}
-        .fw-nkw-raster{display:flex;flex-direction:column;gap:8px}
-        .fw-nkw-wahl{display:flex;flex-direction:column;gap:8px;font-size:13.5px}
-        .fw-nkw-schalter{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;margin-bottom:12px}
-        .fw-nkw-staende{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-        .fw-nkw-staende fieldset{border:1px solid var(--ds-line);border-radius:var(--ds-radius-sm);padding:8px 10px 10px;margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
-        .fw-nkw-staende legend{font-size:12px;font-weight:600;color:var(--ds-muted);padding:0 4px}
-        .fw-nkw-staende .fw-chip{align-self:flex-start}
-        .fw-nkw-saldo{font-size:20px;font-weight:600;letter-spacing:-.02em;white-space:nowrap}
-        .fw-nkw-saldo.nach{color:var(--ds-crit)}
-        .fw-nkw-saldo.gut{color:var(--ds-good)}
-        .fw-nkw-karte.eigen{background:var(--ds-surface-2)}
-        .fw-nkw-knoepfe{display:flex;flex-wrap:wrap;gap:8px}
-        @media (max-width:900px){
-            .fw-nkw{grid-template-columns:minmax(0,1fr);gap:14px}
-            .fw-nkw-leiste{position:relative;top:0;padding:6px;overflow-x:auto;scrollbar-width:none}
-            .fw-nkw-leiste::-webkit-scrollbar{display:none}
-            .fw-nkw-leiste ol{flex-direction:row;width:max-content;gap:4px}
-            .fw-nkw-leiste a,.fw-nkw-leiste span.schritt{white-space:nowrap;padding:6px 10px;align-items:center}
-        }
-        @media (max-width:640px){.fw-nkw-felder{grid-template-columns:minmax(0,1fr)}.fw-nkw-kopf h2{font-size:21px}}
+           Sechs Schritte unter /neu/nebenkosten/<pk>/ (fw/nk/). Leiste, Schrittkopf und Fuss
+           kommen seit dem Assistenten-Standard (27.10.2026) aus dem server-seitigen Assistenten
+           (fw/_assistent_server.html, Abschnitt «Assistent»); hier steht nur, was die Karten und
+           Kacheln der Abrechnung brauchen. Kacheln aus dem Bento, Knöpfe und Segmente aus dem Bestand. */
+        .fw-nk-fehlt ul{margin:4px 0 0;padding-left:18px}
+        .fw-nk-abschnitt h3,.fw-nk-titel{margin:0 0 4px;font-size:15px;font-weight:600}
+        .fw-nk-kachel{min-height:0}
+        .fw-nk-kachel.fehlt{box-shadow:var(--ds-shadow-sm),inset 0 0 0 2px var(--ds-warn-soft)}
+        .fw-nk-kachel .fw-segment{flex-wrap:wrap}
+        .fw-nk-kachel .fw-segment button{flex:1 1 auto;white-space:nowrap}
+        .fw-nk-felder{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+        .fw-nk-felder label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--ds-muted);min-width:0}
+        .fw-nk-vertrag{display:flex;flex-direction:column;gap:6px;padding-top:10px;border-top:1px solid var(--ds-line);font-size:13px}
+        .fw-nk-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+        .fw-nk-chips:empty{display:none}
+        .fw-nk-personen{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ds-muted)}
+        .fw-nk-personen .fw-feld{width:64px}
+        .fw-nk-zeile{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+        .fw-nk-zeile .fw-feld{flex:1 1 180px;min-width:0}
+        .fw-nk-ausschluss summary{cursor:pointer;font-size:12.5px}
+        .fw-nk-ausschluss[open] summary{margin-bottom:8px}
+        .fw-nk-raster{display:flex;flex-direction:column;gap:8px}
+        .fw-nk-wahl{display:flex;flex-direction:column;gap:8px;font-size:13.5px}
+        .fw-nk-schalter{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;margin-bottom:12px}
+        .fw-nk-staende{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+        .fw-nk-staende fieldset{border:1px solid var(--ds-line);border-radius:var(--ds-radius-sm);padding:8px 10px 10px;margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
+        .fw-nk-staende legend{font-size:12px;font-weight:600;color:var(--ds-muted);padding:0 4px}
+        .fw-nk-staende .fw-chip{align-self:flex-start}
+        .fw-nk-saldo{font-size:20px;font-weight:600;letter-spacing:-.02em;white-space:nowrap}
+        .fw-nk-saldo.nach{color:var(--ds-crit)}
+        .fw-nk-saldo.gut{color:var(--ds-good)}
+        .fw-nk-karte.eigen{background:var(--ds-surface-2)}
+        .fw-nk-knoepfe{display:flex;flex-wrap:wrap;gap:8px}
+        @media (max-width:640px){.fw-nk-felder{grid-template-columns:minmax(0,1fr)}}
         /* ===== Ende MODUL Nebenkosten-Wizard ===== */
 
         /* ===== MODUL bewerber-board (27.10.2026) ===== */

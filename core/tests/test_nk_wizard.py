@@ -64,7 +64,9 @@ class SeitenTests(_Basis):
                 r = self.c.get(self.basis + teil + '/')
                 self.assertEqual(r.status_code, 200)
                 html = r.content.decode()
-                self.assertIn('class="fw-nkw-leiste"', html)
+                # Bewusst angepasst (Assistenten-Standard, 27.10.2026): die Leiste des
+                # server-seitigen Assistenten statt der eigenen `fw-nkw-leiste`.
+                self.assertIn('class="fw-assistent-leiste"', html)
                 self.assertEqual(html.count('<li class="'), 6, 'sechs Schritte im Stepper')
                 self.assertIn('aria-current="step"', html)
 
@@ -72,7 +74,7 @@ class SeitenTests(_Basis):
         """Pauschal ohne Fläche-Lücken, Kosten da: Der erste offene Schritt ist «Prüfen»."""
         r = self.c.get(self.basis)
         self.assertEqual(r.status_code, 200)
-        self.assertContains(r, 'class="fw-nkw-leiste"')
+        self.assertContains(r, 'class="fw-assistent-leiste"')
         self.assertContains(r, 'Geht die Abrechnung auf')
 
     def test_schritt_eins_zeigt_die_luecke_der_kachel(self):
@@ -86,7 +88,7 @@ class SeitenTests(_Basis):
         self.verbuchen()
         r = self.c.get(self.basis)
         self.assertEqual(r.status_code, 200)
-        self.assertNotContains(r, 'class="fw-nkw-leiste"')
+        self.assertNotContains(r, 'class="fw-assistent-leiste"')
         self.assertContains(r, f'/neu/nebenkosten/{self.p.id}/zustellung/')
         # Fehler i: Der Mieter-Link führt auf den Vertrag (vorher `a.v.id` = leer).
         self.assertContains(r, f'href="/neu/vertraege/{self.v1.id}/"')

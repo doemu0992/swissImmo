@@ -1,0 +1,31 @@
+{% load i18n %}{% comment %}
+Schrittleiste des SERVER-seitigen Assistenten: dieselbe Gestalt wie die Leiste, die
+static/js/fw-bausteine.js für den client-seitigen zeichnet, aber aus Links. Kontext
+`assistent` aus core/services/assistent.py (server_assistent); `leiste_label` wahlweise.
+Zustände am <li>: offen · fertig · warnung · gesperrt · entfaellt, dazu `hier` für die Seite,
+auf der man steht. Gesperrte Schritte sind kein Link.
+{% endcomment %}
+<nav class="fw-assistent-leiste" aria-label="{{ leiste_label|default:_('Schritte') }}">
+    <ol>
+    {% for s in assistent.schritte %}
+        <li class="{{ s.zustand }}{% if s.hier %} hier{% endif %}{% if s.optional %} optional{% endif %}">
+            {% if s.hier or s.zustand != 'gesperrt' %}<a href="{{ s.url }}"{% if s.hier %} aria-current="step"{% endif %}>{% else %}<span class="schritt" aria-disabled="true">{% endif %}
+                <span class="nr" aria-hidden="true">{% if s.zustand == 'fertig' %}✓{% elif s.zustand == 'warnung' %}!{% elif s.zustand == 'entfaellt' %}–{% else %}{{ s.nr }}{% endif %}</span>
+                <span class="t">{{ s.titel }}{% if s.info %}<small class="info">{{ s.info }}</small>{% endif %}</span>
+                {% if s.optional %}<span class="zusatz">{% trans "optional" %}</span>{% endif %}
+                <span class="sr-only">{% if s.zustand == 'fertig' %}{% trans "erledigt" %}{% elif s.zustand == 'warnung' %}{% trans "prüfen" %}{% elif s.zustand == 'gesperrt' %}{% trans "noch nicht möglich" %}{% elif s.zustand == 'entfaellt' %}{% trans "entfällt" %}{% else %}{% trans "offen" %}{% endif %}</span>
+            {% if s.hier or s.zustand != 'gesperrt' %}</a>{% else %}</span>{% endif %}
+        </li>
+    {% endfor %}
+    </ol>
+    <div class="fw-assistent-stand">{% blocktrans with i=assistent.i n=assistent.n %}Schritt {{ i }} von {{ n }}{% endblocktrans %}</div>
+</nav>
+<script>
+// Am Telefon scrollt die Leiste waagrecht: den aktuellen Schritt ins Bild holen.
+(function (l) {
+    var a = l && l.querySelector('li.hier');
+    if (a && l.scrollWidth > l.clientWidth) {
+        l.scrollLeft += a.getBoundingClientRect().left - l.getBoundingClientRect().left - 12;
+    }
+})(document.currentScript && document.currentScript.previousElementSibling);
+</script>
