@@ -414,6 +414,7 @@ test('Vertrag: Leiste einreihig, Vorschau unter dem Inhalt, nichts quer', async 
   expect(m.rahmen).toBeLessThanOrEqual(390 - 16);
   expect(m.vorschauOben).toBeGreaterThanOrEqual(m.inhaltUnten);
   expect(m.quer, `die Seite scrollt ${m.quer} px quer`).toBeLessThanOrEqual(0);
+});
 
 // ---- Assistenten-Standard, server-seitig (NK-Wizard, 27.10.2026): gemessen bei 390 × 844 ----
 // Zwei Regeln, deren Wirkung nur der Browser zeigt:
