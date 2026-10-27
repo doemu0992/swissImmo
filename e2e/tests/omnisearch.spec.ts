@@ -437,6 +437,9 @@ test('Der echte Endpunkt: Betrag am Vertrag, Belegung am Objekt, Überfälligkei
   const antwort = await page.request.get('/neu/palette/?q=E2E');
   expect(antwort.status()).toBe(200);
   const d = await antwort.json();
+  // Je Gruppe gibt es höchstens fünf Treffer; andere Specs legen weitere «E2E»-Rechnungen an.
+  // Die Rechnung des Seeds wird deshalb mit ihrem vollen Titel gesucht.
+  const rechnungen = await (await page.request.get('/neu/palette/?q=' + encodeURIComponent('E2E offene Miete'))).json();
   const vertrag = d.treffer.find((x: Treffer) => x.gruppe === 'vertraege' && x.label.includes('E2E'));
   expect(vertrag, 'Kein Vertrag der E2E-Welt gefunden').toBeTruthy();
   // Netto-Mietzins des Seeds (1500), ohne die Nebenkosten (200)
@@ -444,7 +447,7 @@ test('Der echte Endpunkt: Betrag am Vertrag, Belegung am Objekt, Überfälligkei
   const objekt = d.treffer.find((x: Treffer) => x.art === 'Objekt' && x.label === '3.5 Zi E2E');
   expect(objekt, 'Kein Objekt der E2E-Welt gefunden').toBeTruthy();
   expect(objekt.status).toEqual({ text: 'Vermietet', ton: 'good' });
-  const rechnung = d.treffer.find((x: Treffer) => x.gruppe === 'buchhaltung' && x.label === 'E2E offene Miete');
+  const rechnung = rechnungen.treffer.find((x: Treffer) => x.gruppe === 'buchhaltung' && x.label === 'E2E offene Miete');
   expect(rechnung, 'Keine Rechnung der E2E-Welt gefunden').toBeTruthy();
   expect(rechnung.status).toEqual({ text: 'Überfällig', ton: 'crit' });
   expect(rechnung.betrag).toBe("CHF 1'700.00");
@@ -556,9 +559,10 @@ test.describe('Die Hauswartung am Telefon (390 px)', () => {
     await loginHauswart(page);
     await goto(page, '/neu/schaeden/');
     await page.locator('#fwOs .fw-os-lupe').tap();
-    // «Erika» steht nur bei Person und Vertrag, nicht in einem Schaden
-    await page.keyboard.type('Erika', { delay: 20 });
-    await expect(page.locator('#fwOsListe .fw-os-leer')).toContainText('Keine Treffer für «Erika»');
+    // Die E-Mail-Adresse steht nur bei der Person; ein Schaden durchsucht Adressen und Namen,
+    // aber keine E-Mail. («Erika» als Melderin kann in der CI-Welt in einem Schaden stehen.)
+    await page.keyboard.type('e2e-mieter', { delay: 20 });
+    await expect(page.locator('#fwOsListe .fw-os-leer')).toContainText('Keine Treffer für «e2e-mieter»');
     await expect(page.locator('#fwOsListe [role="option"]')).toHaveCount(0);
     await keinQuerscrollen(page);
   });
