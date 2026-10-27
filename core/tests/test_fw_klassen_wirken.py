@@ -66,10 +66,11 @@ BASIS = VORLAGEN / 'base.html'
 #: eigenes Aussehen haben. Wer hier etwas einträgt, muss sagen, warum die
 #: Klasse ohne Regel richtig ist.
 OHNE_REGEL_RICHTIG = {
-    # `fw/base.html` erzeugt die Einträge der Befehlspalette im Skript und
-    # sucht sie später mit `querySelector('.fw-pal-item')` wieder. Die
-    # Gestaltung liegt in den daneben stehenden Tailwind-Klassen.
-    'fw-pal-item',
+    # (Leer seit dem 27.10.2026: `fw-pal-item` war die Klasse der Einträge im
+    # ⌘K-Fenster; das Fenster gibt es nicht mehr. Die Klassen der Omnisearch
+    # stehen als Regeln in der Schicht und werden von
+    # `test_kopfzeile_omnisearch.test_jede_klasse_des_skripts_hat_eine_regel`
+    # gegen das Skript geprüft.)
 }
 
 

@@ -1,4 +1,4 @@
-{% load zeichen i18n %}{% get_current_language as aktuelle_sprache %}
+{% load zeichen i18n statisch %}{% get_current_language as aktuelle_sprache %}
 <!DOCTYPE html>
 <html lang="{{ aktuelle_sprache|slice:':2'|default:'de' }}">
 <head>
@@ -38,9 +38,11 @@ steht nur das Geruest.
 WAS AUS DER ALTEN HUELLE WOHIN GING — nichts ist weggefallen:
 
   Mandantenwechsel      Leiste oben, unter der Marke (nur bei mehreren)
-  Globaler Filter `lg`  Kopfzeile links, als Auswahl «Ganzer Bestand» — im
-                        Mockup die Kapsel vor dem Suchfeld
-  Suche `/neu/suche/`   Kopfzeile, ⌘K oeffnet daneben die Palette
+  Globaler Filter `lg`  Kopfzeile, Zeile 2 rechts neben dem Menueband, als Chip
+                        «Ganzer Bestand» (seit 27.10.2026; vorher eigene Zeile)
+  Suche `/neu/suche/`   Kopfzeile, Zeile 1: Omnisearch (`fw/_omnisearch.html`);
+                        ⌘K fokussiert sie, die Seiten der frueheren Palette stehen
+                        darin als Gruppe «Seiten & Aktionen»
   Dokumente, Kommun.    Kopfzeile rechts, als runde Knoepfe
   Hell/Dunkel           Kopfzeile rechts (neu) UND im Profilmenue (wie bisher)
   Profilmenue           unten in der Leiste; am Telefon der Kreis oben rechts
@@ -129,13 +131,19 @@ Detailseiten rufen sie beim Namen.
     <!-- ================= INHALT ================= -->
     <div class="fw-haupt">
 
-        {% comment %} ===== KOPFLEISTE NACH DEM EMBER-MOCKUP (26.10.2026, mockups/immoswiss-ember.html) =====
-           Drei Kapseln: Wortmarke links, die fünf Bereiche in der Mitte (die schwarze
-           Kapsel gleitet zum aktiven Bereich), Werkzeuge rechts. Am Telefon steht die
-           Bereichskapsel unter der Zeile und scrollt in sich. Die Leiste links
-           (`#fwSidebar`) bleibt als Schublade für Mandant, «Zuletzt geöffnet» und
-           Einstellungen (Menüknopf). Ids und Funktionen sind unverändert. {% endcomment %}
+        {% comment %} ===== KOPFZEILE (27.10.2026, Vorlage: navmock/vorschau) =====
+           Zeile 1: Wortmarke, die fünf Bereiche (die schwarze Kapsel gleitet zum
+           aktiven Bereich), rechtsbündig die Omnisearch, dann die Werkzeuge.
+           Zeile 2: direkt darunter das Menüband des aktiven Bereichs (früher als
+           `fw-bereichsreiter` oben im Inhalt) und rechts der Bestandsfilter `lg`
+           als Chip. Die eigene Zeile `fw-top` (Filter + breites Suchfeld) und das
+           ⌘K-Fenster sind darin aufgegangen. Am Telefon steht die Bereichskapsel
+           unter Zeile 1, das Menüband darunter; beide scrollen in sich. Die Leiste
+           links (`#fwSidebar`) bleibt als Schublade für Mandant, «Zuletzt
+           geöffnet» und Einstellungen (Menüknopf). Ids und Funktionen sind
+           unverändert. {% endcomment %}
         <header class="fw-kopfleiste" id="fwKopf">
+          <div class="fw-kopf-z1">
             <a href="/neu/{{ lg_query }}" class="fw-kapsel fw-logo-kapsel" title="{% trans 'Zur Übersicht' %}" aria-label="immoswiss — {% trans 'Zur Übersicht' %}">
                 <svg class="fw-logo-haus" width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 15L16 4l13 11M7 13v14h18V13" class="a"/><path d="M12 27v-7h3v7M18 27v-9h3v9" class="b"/></svg>
                 <b>immoswiss<svg class="fw-logo-kreuz" width="12" height="12" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="3" fill="#e5342d"/><path d="M8.5 4h3v4.5H16v3h-4.5V16h-3v-4.5H4v-3h4.5z" fill="#fff"/></svg></b>
@@ -146,35 +154,41 @@ Detailseiten rufen sie beim Namen.
                 <a href="{{ g.ziel }}{{ lg_query }}" class="{% if nav in g.alle_keys %}hier{% endif %}"{% if nav in g.alle_keys %} aria-current="page"{% endif %}>{{ g.label }}{% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="fw-hauptnav-zahl" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}</a>
                 {% endfor %}
             </nav>
+            {% if fw_palette %}{% include 'fw/_omnisearch.html' %}{% endif %}
             <div class="fw-kapsel fw-werkzeug-kapsel">
                 <button type="button" onclick="fwThemeWechseln()" title="{% trans 'Hell- oder Dunkelmodus' %}" aria-label="{% trans 'Hell- oder Dunkelmodus' %}" class="fw-knopf-rund fw-knopf-dunkel">{% zeichen 'darstellung' %}</button>
                 <a href="/neu/faelle/neu/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neuen Fall erfassen' %}"
                    class="fw-knopf-rund fw-nur-breit">{% zeichen 'neu' %}</a>
                 <a href="/neu/zulauf/{{ lg_query }}" title="{% trans 'Mitteilungen' %}" aria-label="{% trans 'Mitteilungen' %}"
                    class="fw-knopf-rund{% if nav == 'zulauf' %} hier{% endif %}">{% zeichen 'glocke' %}<span class="fw-pip" data-zaehler="zulauf" hidden></span></a>
-                <a href="/neu/einstellungen/{{ lg_query }}" title="{% trans 'Einstellungen' %}" aria-label="{% trans 'Einstellungen' %}" class="fw-knopf-rund fw-nur-breit{% if nav in fw_einstellungen_keys %} hier{% endif %}">{% zeichen 'einstellungen' %}</a>
+                <a href="/neu/einstellungen/{{ lg_query }}" title="{% trans 'Einstellungen' %}" aria-label="{% trans 'Einstellungen' %}" class="fw-knopf-rund fw-nur-breit fw-nur-weit{% if nav in fw_einstellungen_keys %} hier{% endif %}">{% zeichen 'einstellungen' %}</a>
                 <button type="button" onclick="fwOpenMobileNav()" aria-label="{% trans 'Menü öffnen' %}" class="fw-knopf-rund fw-nur-mobil">{% zeichen 'mehr' %}</button>
                 <button type="button" onclick="fwProfilMenu()" aria-label="{% trans 'Profil und Darstellung' %}" aria-haspopup="true" aria-controls="fwProfil" class="fw-avatar-knopf"><span class="fw-avatar fw-avatar-gross">{{ request.user.username|slice:":2"|upper }}</span></button>
             </div>
-        </header>
-
-        <header class="fw-top" id="fwTop">
-            <!-- GLOBALER FILTER: gilt für die ganze Anwendung -->
-            <form method="get" class="fw-bereich" title="{% trans 'Globaler Filter' %}">
-                <span class="fw-bereich-zeichen">{% zeichen 'liegenschaft' %}</span>
+          </div>
+          <div class="fw-kopf-z2">
+            {% for g in fw_nav_gruppen %}{% if nav in g.alle_keys and g.items and nav != 'dashboard' %}
+            <nav id="navsub-{{ g.key }}" class="fw-bereichsreiter" aria-label="{{ g.label }}">
+                <span class="fw-bereichsreiter-name" aria-hidden="true">{{ g.label }}<i>/</i></span>
+                {% for it in g.items %}{% if it.erlaubt %}
+                {% if it.section and not forloop.first %}<span class="fw-bereichsreiter-trenner" aria-hidden="true"></span>{% endif %}
+                <a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}>{{ it.label }}{% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-z crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}</a>
+                {% endif %}{% endfor %}
+            </nav>
+            {% endif %}{% endfor %}
+            {% comment %} GLOBALER FILTER: gilt für die ganze Anwendung. Am Telefon bleibt vom Chip das
+               Zeichen; die Auswahl liegt unsichtbar darüber und öffnet beim Tippen. {% endcomment %}
+            <form method="get" class="fw-bestand{% if aktive_lg %} aktiv{% endif %}" title="{% trans 'Globaler Filter' %}">
+                <span class="fw-bestand-zeichen">{% zeichen 'liegenschaft' %}</span>
                 <select name="lg" onchange="this.form.submit()" aria-label="{% trans 'Globaler Filter' %}">
                     <option value="">{% trans "Ganzer Bestand" %}</option>
                     {% for l in alle_liegenschaften %}
                     <option value="{{ l.id }}" {% if aktive_lg and aktive_lg.id == l.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>
                     {% endfor %}
                 </select>
+                <span class="fw-bestand-pfeil">{% zeichen 'aufklappen' %}</span>
             </form>
-
-            <form method="get" action="/neu/suche/" class="fw-suche" role="search">
-                {% zeichen 'suchen' %}
-                <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="{% trans 'Suche nach Person, Objekt, Vertrag …' %}" aria-label="{% trans 'Suche nach Person, Objekt, Vertrag …' %}">
-                {% if fw_palette %}<kbd class="fw-taste" onclick="fwPaletteOpen()">⌘K</kbd>{% endif %}
-            </form>
+          </div>
         </header>
 
         <!-- Profilmenü -->
@@ -233,34 +247,15 @@ Detailseiten rufen sie beim Namen.
         {% endif %}
 
         <main class="fw-inhalt">
-            {% for g in fw_nav_gruppen %}{% if nav in g.alle_keys and g.items and nav != 'dashboard' %}
-            <nav id="navsub-{{ g.key }}" class="fw-bereichsreiter" aria-label="{{ g.label }}">
-                {% for it in g.items %}{% if it.erlaubt %}
-                {% if it.section and not forloop.first %}<span class="fw-bereichsreiter-trenner" aria-hidden="true"></span>{% endif %}
-                <a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}>{{ it.label }}{% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-z crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}</a>
-                {% endif %}{% endfor %}
-            </nav>
-            {% endif %}{% endfor %}
             {% block content %}{% endblock %}
         </main>
     </div>
 </div>
 {% if fw_palette %}
+{% comment %} Die Seiten und Befehle der früheren ⌘K-Palette. Die Omnisearch (`fw/_omnisearch.html`,
+   `static/js/fw-omnisearch.js`) zeigt sie als Gruppe «Seiten & Aktionen». {% endcomment %}
 {{ fw_palette|json_script:"fw-palette-data" }}
-<!-- ⌘K Befehlspalette -->
-<div id="fwPalette" class="fw-palette hidden" onclick="if(event.target===this)fwPaletteClose()">
-    <div class="fw-palette-box" role="dialog" aria-label="{% trans 'Person, Objekt, Mietverhältnis oder Seite …' %}">
-        <div class="fw-palette-feld">
-            {% zeichen 'suchen' %}
-            <input id="fwPaletteInput" type="text" placeholder="{% trans 'Person, Objekt, Mietverhältnis oder Seite …' %}" autocomplete="off">
-            <span class="fw-taste">ESC</span>
-        </div>
-        <div id="fwPaletteList" class="fw-palette-liste"></div>
-        <div class="fw-palette-fuss">
-            <span>↵ {% trans "öffnen" %}</span><span id="fwPaletteFuss">{% trans "Tippen sucht in Akten und Seiten" %}</span>
-        </div>
-    </div>
-</div>
+<script defer src="{% statisch 'js/fw-omnisearch.js' %}"></script>
 {% endif %}
 <script>
 // Leiste ein-/ausklappen (Zustand in localStorage)
@@ -362,122 +357,6 @@ function fwNavToggle(key) {
     raender();
     zeile.addEventListener('scroll', raender, { passive: true });
     window.addEventListener('resize', raender);
-})();
-
-// Kopfzeile: Trennlinie erst, wenn der Inhalt darunter durchläuft
-(function () {
-    var top = document.getElementById('fwTop');
-    if (!top) return;
-    function pruefen() { top.classList.toggle('fw-gerollt', window.scrollY > 4); }
-    window.addEventListener('scroll', pruefen, {passive: true});
-    pruefen();
-})();
-
-// ─── ⌘K / Ctrl+K Befehlspalette ───
-(function () {
-    var pal = document.getElementById('fwPalette');
-    if (!pal) return;
-    var input = document.getElementById('fwPaletteInput');
-    var list = document.getElementById('fwPaletteList');
-    var data = [];
-    try { data = JSON.parse(document.getElementById('fw-palette-data').textContent) || []; } catch (e) {}
-
-    function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-
-    // AKTEN VOR SEITEN (B7, E1.2)
-    //
-    // Bis E1.2 kannte die Palette nur die Menue-Labels. Wer «Blaser» tippte,
-    // las «Keine Seite gefunden» und musste die Eingabe mit ↵ an eine zweite
-    // Suche weiterreichen. Bei 300 Mietverhaeltnissen ist die Datensatzsuche
-    // aber der Normalfall — deshalb stehen Treffer aus den Akten oben und die
-    // Seiten darunter.
-    //
-    // Die Seiten kommen sofort (sie liegen im Browser), die Datensaetze
-    // nachgereicht. Ein Feld, das erst nach der Antwort des Servers etwas
-    // zeigt, fuehlt sich langsam an, auch wenn es schnell ist.
-    var akten = [];        // zuletzt vom Server geholte Datensaetze
-    var aktenFuer = '';    // zu welcher Eingabe sie gehoeren
-    var holen = null;      // laufender Zeitgeber
-
-    function seitenTreffer(ql) {
-        return data.filter(function (d) {
-            return !ql || d.label.toLowerCase().indexOf(ql) !== -1
-                || (d.gruppe && d.gruppe.toLowerCase().indexOf(ql) !== -1);
-        });
-    }
-
-    function zeile(url, label, zusatz, art, aktiv) {
-        return '<a href="' + url + '" class="fw-pal-item' + (aktiv ? ' aktiv' : '') + '">' +
-               (art ? '<span class="fw-pal-art">' + esc(art) + '</span>'
-                    : '{% zeichen 'weiter' klasse='fw-faint' %}') +
-               '<span class="fw-pal-label">' + esc(label) + '</span>' +
-               (zusatz ? '<span class="fw-pal-zusatz">' + esc(zusatz) + '</span>' : '') +
-               '</a>';
-    }
-
-    function render(q) {
-        var ql = (q || '').toLowerCase();
-        var seiten = seitenTreffer(ql);
-        var meine = (aktenFuer === q.trim()) ? akten : [];
-        var stuecke = [];
-        var nr = 0;
-
-        if (meine.length) {
-            stuecke.push('<div class="fw-palette-gruppe">{% filter escapejs %}{% trans "Akten" %}{% endfilter %}</div>');
-            meine.forEach(function (t) { stuecke.push(zeile(t.url, t.label, t.zusatz, t.art, nr++ === 0)); });
-        }
-        if (seiten.length) {
-            if (meine.length) {
-                stuecke.push('<div class="fw-palette-gruppe">{% filter escapejs %}{% trans "Seiten" %}{% endfilter %}</div>');
-            }
-            seiten.slice(0, meine.length ? 5 : 12).forEach(function (d) {
-                stuecke.push(zeile(d.url, d.label, d.gruppe || '', '', nr++ === 0));
-            });
-        }
-        if (!stuecke.length) {
-            list.innerHTML = '<div class="fw-palette-leer">{% filter escapejs %}{% trans "Nichts gefunden — ↵ sucht ausführlich nach" %}{% endfilter %} «' + esc(q) + '»</div>';
-            return;
-        }
-        list.innerHTML = stuecke.join('');
-    }
-
-    function aktenHolen(q) {
-        if (holen) { clearTimeout(holen); }
-        if (q.trim().length < 2) { akten = []; aktenFuer = ''; return; }
-        // Kurz warten: Wer «Blaser» tippt, loest sonst sechs Abfragen aus.
-        holen = setTimeout(function () {
-            var gefragt = q.trim();
-            fetch('/neu/palette/?q=' + encodeURIComponent(gefragt), {headers: {'X-Requested-With': 'fetch'}})
-                .then(function (r) { return r.ok ? r.json() : {treffer: []}; })
-                .then(function (d) {
-                    // Nur uebernehmen, wenn die Eingabe seither nicht weiterlief.
-                    if (input.value.trim() !== gefragt) { return; }
-                    akten = d.treffer || [];
-                    aktenFuer = gefragt;
-                    render(input.value);
-                })
-                .catch(function () { /* offline: die Seiten stehen weiterhin */ });
-        }, 160);
-    }
-    window.fwPaletteOpen = function () { pal.classList.remove('hidden'); input.value = ''; akten = []; aktenFuer = ''; render(''); setTimeout(function(){ input.focus(); }, 30); };
-    window.fwPaletteClose = function () { pal.classList.add('hidden'); };
-    input.addEventListener('input', function () { render(input.value); aktenHolen(input.value); });
-    input.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            var first = list.querySelector('.fw-pal-item');
-            if (first) { window.location.href = first.getAttribute('href'); }
-            else if (input.value.trim()) { window.location.href = '/neu/suche/?q=' + encodeURIComponent(input.value.trim()); }
-        }
-        if (e.key === 'Escape') fwPaletteClose();
-    });
-    document.addEventListener('keydown', function (e) {
-        if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
-            e.preventDefault();
-            pal.classList.contains('hidden') ? fwPaletteOpen() : fwPaletteClose();
-        }
-        if (e.key === 'Escape') fwPaletteClose();
-    });
 })();
 
 // Profilmenü öffnen/schliessen

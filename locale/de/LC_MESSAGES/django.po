@@ -32443,6 +32443,65 @@ msgstr "Gruppenschlüssel"
 msgid "Einzelschlüssel"
 msgstr "Einzelschlüssel"
 
+msgid "Suchen …"
+msgstr "Suchen …"
+
+msgid "Suche schliessen"
+msgstr "Suche schliessen"
+
+msgid "Nach Bereich eingrenzen"
+msgstr "Nach Bereich eingrenzen"
+
+msgid "Suchergebnisse"
+msgstr "Suchergebnisse"
+
+msgid "neuer Tab"
+msgstr "neuer Tab"
+
+msgid "schliessen"
+msgstr "schliessen"
+
+msgid "Strg"
+msgstr "Strg"
+
+msgid "Immobilien"
+msgstr "Immobilien"
+
+msgid "Mieter & Personen"
+msgstr "Mieter & Personen"
+
+msgid "Seiten & Aktionen"
+msgstr "Seiten & Aktionen"
+
+msgid "1 Treffer"
+msgstr "1 Treffer"
+
+msgid "{n} Treffer"
+msgstr "{n} Treffer"
+
+msgid "Suche läuft …"
+msgstr "Suche läuft …"
+
+msgid "Keine Treffer für «{q}»."
+msgstr "Keine Treffer für «{q}»."
+
+msgid "Versuchen Sie den Nachnamen oder einen Teil der Adresse. Telefonnummern und weitere Felder findet die ausführliche Suche."
+msgstr "Versuchen Sie den Nachnamen oder einen Teil der Adresse. Telefonnummern und weitere Felder findet die ausführliche Suche."
+
+msgid "Die Suche ist gerade nicht erreichbar."
+msgstr "Die Suche ist gerade nicht erreichbar."
+
+msgid "Bitte prüfen Sie die Verbindung. Seiten und Befehle finden Sie weiterhin."
+msgstr "Bitte prüfen Sie die Verbindung. Seiten und Befehle finden Sie weiterhin."
+
+msgid "Nochmals versuchen"
+msgstr "Nochmals versuchen"
+
+msgid "Alle Ergebnisse für «{q}» →"
+msgstr "Alle Ergebnisse für «{q}» →"
+
+msgid "Ausführlich suchen →"
+msgstr "Ausführlich suchen →"
 msgid ""
 "Sieben Schritte vom Objekt bis zum Abschluss — die Vorschau zeigt den "
 "Vertrag, wie er gedruckt wird."

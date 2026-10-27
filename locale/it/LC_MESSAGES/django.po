@@ -32622,6 +32622,65 @@ msgstr "Chiave di gruppo"
 msgid "Einzelschlüssel"
 msgstr "Chiave singola"
 
+msgid "Suchen …"
+msgstr "Cerca …"
+
+msgid "Suche schliessen"
+msgstr "Chiudi la ricerca"
+
+msgid "Nach Bereich eingrenzen"
+msgstr "Filtra per area"
+
+msgid "Suchergebnisse"
+msgstr "Risultati della ricerca"
+
+msgid "neuer Tab"
+msgstr "nuova scheda"
+
+msgid "schliessen"
+msgstr "chiudi"
+
+msgid "Strg"
+msgstr "Ctrl"
+
+msgid "Immobilien"
+msgstr "Immobili"
+
+msgid "Mieter & Personen"
+msgstr "Inquilini & persone"
+
+msgid "Seiten & Aktionen"
+msgstr "Pagine & azioni"
+
+msgid "1 Treffer"
+msgstr "1 risultato"
+
+msgid "{n} Treffer"
+msgstr "{n} risultati"
+
+msgid "Suche läuft …"
+msgstr "Ricerca in corso …"
+
+msgid "Keine Treffer für «{q}»."
+msgstr "Nessun risultato per «{q}»."
+
+msgid "Versuchen Sie den Nachnamen oder einen Teil der Adresse. Telefonnummern und weitere Felder findet die ausführliche Suche."
+msgstr "Provi il cognome o una parte dell'indirizzo. I numeri di telefono e altri campi li trova la ricerca dettagliata."
+
+msgid "Die Suche ist gerade nicht erreichbar."
+msgstr "La ricerca al momento non è raggiungibile."
+
+msgid "Bitte prüfen Sie die Verbindung. Seiten und Befehle finden Sie weiterhin."
+msgstr "Controlli la connessione. Pagine e comandi restano disponibili."
+
+msgid "Nochmals versuchen"
+msgstr "Riprova"
+
+msgid "Alle Ergebnisse für «{q}» →"
+msgstr "Tutti i risultati per «{q}» →"
+
+msgid "Ausführlich suchen →"
+msgstr "Ricerca dettagliata →"
 msgid ""
 "Sieben Schritte vom Objekt bis zum Abschluss — die Vorschau zeigt den "
 "Vertrag, wie er gedruckt wird."

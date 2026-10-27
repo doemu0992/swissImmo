@@ -200,6 +200,32 @@ Aktionen liegen unter «Weitere» (`details.fw-mehr-aktionen`).
 - **Fortschritt** `progress.fw-fortschritt` statt Breiten in `style=`.
 - Logik: `core/services/zahlungsklaerung.py`, Skript: `static/js/fw-zahlungen.js`.
 
+## Kopfzeile und Omnisearch (27.10.2026)
+
+Vorlage: `navmock/vorschau` (freigegeben). Die Kopfzeile hat **zwei Zeilen** und eine Suche statt
+zwei: Zeile 1 = Marke, Bereiche (`#fwHauptnav`), rechtsbündig die Omnisearch (`#fwOs`), Werkzeuge;
+Zeile 2 = das **Menüband** des aktiven Bereichs (`nav.fw-bereichsreiter#navsub-…`, früher oben im
+Inhalt) mit dem Bereichsnamen als Überzeile («AKTEN /»), rechts der **Bestandsfilter `lg`** als
+Chip (`form.fw-bestand`, derselbe Auswahlmechanismus). Entfallen sind die eigene Zeile `fw-top`
+(Filter + breites Suchfeld) und das ⌘K-Fenster `fw-palette`.
+
+- **Omnisearch:** `fw/_omnisearch.html` + `static/js/fw-omnisearch.js`. Ruhend 14 rem, mit Fokus
+  bis 22 rem (das Feld wächst nach links über die freie Fläche, ohne die Bereiche zu verdecken),
+  Popover 36 rem. Ab zwei Zeichen, 150 ms entprellt, `AbortController`, nur die letzte Antwort
+  zählt; Gerüst beim ersten Laden, Kapseln mit Trefferzahlen, Gruppen nach dem Vertrag von
+  `/neu/palette/` (`gruppe`, `status`, `betrag`, `zahlen`), zuletzt die Gruppe «Seiten & Aktionen»
+  aus den Daten `fw_palette` (`#fw-palette-data`). ↑ ↓ ↵ ⌘↵ Esc, ⌘K / Strg+K. Ohne JavaScript ein
+  Formular auf `/neu/suche/`.
+- **Breiten:** ab 1280 alles; 901–1279 kompakt (Marke nur als Zeichen, kein Einstellungsknopf);
+  901–1023 zusätzlich ohne Hell/Dunkel-Knopf und mit 16 px Rand; **bis 900 px Telefon**: die Suche
+  ist ein Symbol, ein Tipp öffnet sie über die ganze Zeile (Marke und Werkzeuge treten zurück,
+  Popover darunter über die ganze Breite). Der Bestandsfilter bleibt am Telefon im Menüband, als
+  Symbol mit der Auswahl unsichtbar darüber (ein Punkt zeigt einen aktiven Filter) — nicht im
+  Schubladenmenü, weil er dort bisher nicht stand und ein Filter, der die ganze Anwendung
+  einschränkt, ohne Umweg erreichbar sein soll.
+- **Wächter:** `core/tests/test_kopfzeile_omnisearch.py` (Struktur, Bindungen Skript ↔ Schicht ↔
+  Zeichentabelle ↔ Texte), `e2e/tests/omnisearch.spec.ts` (390 und 1280 px).
+
 ## Was nicht mehr vorkommen soll
 
 - Kachelreihen `grid grid-cols-… gap-4` aus `fw-card p-5` mit Symbolquadrat (`w-11 h-11 rounded-lg fw-*-flaeche`) → `fw-kpis`.

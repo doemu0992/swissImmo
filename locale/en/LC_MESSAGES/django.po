@@ -32203,6 +32203,65 @@ msgstr "Group key"
 msgid "Einzelschlüssel"
 msgstr "Individual key"
 
+msgid "Suchen …"
+msgstr "Search …"
+
+msgid "Suche schliessen"
+msgstr "Close search"
+
+msgid "Nach Bereich eingrenzen"
+msgstr "Filter by area"
+
+msgid "Suchergebnisse"
+msgstr "Search results"
+
+msgid "neuer Tab"
+msgstr "new tab"
+
+msgid "schliessen"
+msgstr "close"
+
+msgid "Strg"
+msgstr "Ctrl"
+
+msgid "Immobilien"
+msgstr "Properties"
+
+msgid "Mieter & Personen"
+msgstr "Tenants & people"
+
+msgid "Seiten & Aktionen"
+msgstr "Pages & actions"
+
+msgid "1 Treffer"
+msgstr "1 result"
+
+msgid "{n} Treffer"
+msgstr "{n} results"
+
+msgid "Suche läuft …"
+msgstr "Searching …"
+
+msgid "Keine Treffer für «{q}»."
+msgstr "No results for “{q}”."
+
+msgid "Versuchen Sie den Nachnamen oder einen Teil der Adresse. Telefonnummern und weitere Felder findet die ausführliche Suche."
+msgstr "Try the last name or part of the address. Phone numbers and other fields are found by the detailed search."
+
+msgid "Die Suche ist gerade nicht erreichbar."
+msgstr "Search is currently unavailable."
+
+msgid "Bitte prüfen Sie die Verbindung. Seiten und Befehle finden Sie weiterhin."
+msgstr "Please check your connection. Pages and commands are still available."
+
+msgid "Nochmals versuchen"
+msgstr "Try again"
+
+msgid "Alle Ergebnisse für «{q}» →"
+msgstr "All results for “{q}” →"
+
+msgid "Ausführlich suchen →"
+msgstr "Detailed search →"
 msgid ""
 "Sieben Schritte vom Objekt bis zum Abschluss — die Vorschau zeigt den "
 "Vertrag, wie er gedruckt wird."
