@@ -127,16 +127,29 @@ def _park_konto(nummer):
 
 
 def offene_rechnungen(vertrag):
-    """Offene Rechnungen eines Vertrags, älteste zuerst.
+    """Offene Rechnungen eines Vertrags in der Tilgungsreihenfolge nach Art. 87 Abs. 1 OR.
 
-    Reihenfolge ist hier kein Detail: Bei mehreren offenen Monatsmieten wird die
-    älteste Forderung zuerst getilgt — sonst mahnt man einen Mieter für einen
-    Monat, den er längst bezahlt hat.
+    Reihenfolge ist hier kein Detail. Ohne Erklärung des Zahlers wird eine Zahlung
+    auf die fällige Schuld angerechnet, unter mehreren fälligen auf die, für die
+    der Schuldner ZUERST BETRIEBEN worden ist, sonst auf die früher verfallene:
+
+    1. Forderungen in offenen Betreibungen — die zuerst betriebene vorn
+       (`core.services.betreibung.tilgungsrang`). Würde stattdessen eine ältere,
+       nicht betriebene Miete getilgt, bliebe die betriebene offen, und die
+       Betreibung liefe weiter, obwohl der Mieter gezahlt hat.
+    2. Danach die älteste Fälligkeit zuerst — sonst mahnt man einen Mieter für
+       einen Monat, den er längst bezahlt hat.
     """
+    from core.services.betreibung import tilgungsrang
     from finance.models import DebitorenRechnung
-    return list(DebitorenRechnung.objects
-                .filter(vertrag=vertrag, status__in=['offen', 'teilbezahlt'])
-                .order_by('faellig_am', 'datum', 'id'))
+    rechnungen = list(DebitorenRechnung.objects
+                      .filter(vertrag=vertrag, status__in=['offen', 'teilbezahlt'])
+                      .order_by('faellig_am', 'datum', 'id'))
+    rang = tilgungsrang(vertrag)
+    if rang:
+        # Stabile Sortierung: Innerhalb beider Gruppen bleibt «älteste zuerst».
+        rechnungen.sort(key=lambda r: (r.pk not in rang, rang.get(r.pk, ())))
+    return rechnungen
 
 
 def sammel_zuordnen(zahlungen, vertrag, user=None):

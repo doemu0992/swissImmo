@@ -147,7 +147,14 @@ def fw_person_detail(request, pk):
         ('aktivitaet', 'Journal', m.kommunikationen.count() or None),
         ('verlauf', 'Verlauf', len(verlauf) or None),
     ], organisation=getattr(request, 'organisation', None) or _akt_org())
+    # Betreibungen gegen diese Person, über alle ihre Mietverhältnisse — bei den
+    # offenen Posten, wo die Frage «läuft schon etwas?» entsteht. Eine Abfrage.
+    from finance.models import Betreibung
+    person_betreibungen = list(Betreibung.objects.filter(
+        _Q(vertrag__mieter=m) | _Q(debitoren_rechnung__vertrag__mieter=m))
+        .distinct().order_by('-begehren_am', '-id')[:10])
     return render(request, 'fw/person_detail.html', {
+        'person_betreibungen': person_betreibungen,
         **basis, 'nav': 'personen', 'm': m, 'verlauf': verlauf,
         'vertrag_rows': vertrag_rows,
         'person_faelle': person_faelle,

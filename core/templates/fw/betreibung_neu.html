@@ -1,0 +1,171 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n hilfe chf %}
+{% block title %}{{ titel }} — swissImmo{% endblock %}
+{% block content %}
+{% comment %}
+BETREIBUNG EINLEITEN — Assistent (`fw-assistent`, static/js/fw-bausteine.js).
+Drei Schritte: Forderungen wählen → Gläubiger, Zins und Grund → Prüfen. Ohne Skript
+stehen alle Schritte untereinander und das Formular schickt wie immer ab; geprüft
+wird im Server (`BetreibungNeuForm`). Die Hauptforderung aus der Adresse ist immer
+dabei — ihr Kästchen ist gesperrt, weitere Mieten desselben Vertrags sind wählbar.
+Das PDF «Betreibungsbegehren (Daten)» entsteht nach dem Speichern auf der Betreibung.
+{% endcomment %}
+<nav class="fw-brotkrume mb-3">
+    <a href="/neu/mahnwesen/">{% trans "Mahnwesen" %}</a>
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
+    <a href="/neu/betreibungen/">{% trans "Betreibungen" %}</a>
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
+    <b>{{ titel }}</b>
+</nav>
+
+<div class="fw-phead"><div>
+    <h1>{{ titel }} {% hilfe 'betreibung' %}</h1>
+    <p>{% if r.vertrag_id %}{{ r.vertrag.mieter.display_name }} · {% endif %}{{ r.titel }}</p>
+</div></div>
+
+<div class="fw-hilfebox max-w-2xl" data-hilfebox="betreibung_einleiten">
+    <span class="fw-hi" aria-hidden="true">{% zeichen 'hinweis' %}</span>
+    <div class="fw-hilfebox-inhalt">
+        <b>{% trans "So läuft die Betreibung" %}</b>
+        <ol>
+            <li>{% trans "Hier die Forderungen wählen und die Angaben für das Betreibungsbegehren erfassen. Das Datenblatt als PDF hilft beim Ausfüllen des amtlichen Formulars." %}</li>
+            <li>{% trans "Das Betreibungsamt stellt den Zahlungsbefehl zu. Ab dann läuft die Frist für den Rechtsvorschlag." %} {% hilfe 'rechtsvorschlag' %}</li>
+            <li>{% trans "Bei Rechtsvorschlag: Rechtsöffnung beim Gericht verlangen." %} {% hilfe 'rechtsoeffnung' %}</li>
+            <li>{% trans "Danach das Fortsetzungsbegehren stellen — die Anwendung erinnert mit einer Pendenz an den Termin." %} {% hilfe 'fortsetzung' %}</li>
+        </ol>
+        <p>{% trans "Solange die Betreibung offen ist, mahnt der Mahnlauf diese Forderungen nicht mehr." %}</p>
+    </div>
+    <button type="button" class="zu" aria-label="{% trans 'Hinweis ausblenden' %}">{% zeichen 'schliessen' %}</button>
+</div>
+
+<form method="post" class="max-w-2xl" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="fw-hinweis crit rounded-lg mb-3" role="alert">
+        <div class="fw-ht">{% for e in form.non_field_errors %}{{ e }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>
+    </div>
+    {% endif %}
+    {% trans "Prüfen & erfassen" as b_pruefen %}
+    <div class="fw-assistent" {% include 'fw/_assistent_attribute.html' with pruefen=b_pruefen %}>
+    {% include 'fw/_assistent_leiste.html' %}
+    <div class="fw-assistent-inhalt">
+
+    <section data-schritt="{% trans 'Forderungen wählen' %}" data-schritt-text="{% trans 'Welche offenen Mieten dieses Vertrags betrieben werden. Eine Betreibung für mehrere Monate kostet nur einmal Gebühren.' %}">
+        <div class="fw-assistent-schritt-kopf"></div>
+        <div class="fw-card fw-rumpf space-y-3">
+            <fieldset>
+                <legend class="fw-label mb-1">{% trans "Forderungen" %}</legend>
+                <label class="fw-haekchen">
+                    <input type="checkbox" checked disabled class="fw-akzent" data-betrag="{{ r.offener_betrag|stringformat:'s' }}" data-forderung>
+                    <span><b>{{ r.titel }}</b> · {% blocktrans with d=r.faellig_am|default:r.datum|date:"d.m.Y" %}fällig {{ d }}{% endblocktrans %} · CHF {{ r.offener_betrag|chf }} <span class="fw-klein">({% trans "Hauptforderung" %})</span></span>
+                </label>
+                {% for x in auswahl %}
+                <label class="fw-haekchen">
+                    <input type="checkbox" name="weitere_rechnungen" value="{{ x.id }}" class="fw-akzent" data-betrag="{{ x.offener_betrag|stringformat:'s' }}" data-forderung data-ja="{{ x.titel }}"{% if x.id in gewaehlt_ids %} checked{% endif %}>
+                    <span>{{ x.titel }} · {% blocktrans with d=x.faellig_am|default:x.datum|date:"d.m.Y" %}fällig {{ d }}{% endblocktrans %} · CHF {{ x.offener_betrag|chf }}</span>
+                </label>
+                {% empty %}
+                <p class="fw-klein">{% trans "Keine weiteren offenen, fälligen Forderungen dieses Vertrags." %}</p>
+                {% endfor %}
+                {% if form.weitere_rechnungen.errors %}<p id="id_weitere_rechnungen_fehler" class="fw-feldfehler" role="alert">{{ form.weitere_rechnungen.errors.0 }}</p>{% endif %}
+            </fieldset>
+            <p class="fw-hilfe">{% trans "Mahngebühren und Verzugszinsen stehen nicht zur Wahl — sie gehören zur Hauptforderung. Forderungen, die bereits in einer offenen Betreibung stehen, fehlen hier." %}</p>
+        </div>
+    </section>
+
+    <section data-schritt="{% trans 'Gläubiger, Zins & Grund' %}" data-schritt-text="{% trans 'Die Angaben für das Betreibungsbegehren.' %}">
+        <div class="fw-assistent-schritt-kopf"></div>
+        <div class="fw-card fw-rumpf space-y-4">
+            <div class="fw-hinweis info rounded-lg"><span class="fw-hi">{% zeichen 'person' %}</span>
+                <div class="fw-ht">
+                    <b>{% trans "Gläubiger" %}</b><br>{% for z in glaeubiger %}{% if z %}{{ z }}<br>{% endif %}{% endfor %}
+                    {% if vertreter %}<b>{% trans "vertreten durch" %}</b><br>{% for z in vertreter %}{% if z %}{{ z }}<br>{% endif %}{% endfor %}
+                    {% else %}<span class="fw-klein">{% trans "Kein Eigentümer erfasst — die Verwaltung steht als Gläubigerin auf dem Datenblatt." %}</span>{% endif %}
+                </div>
+            </div>
+            <div class="fw-raster r2">
+                <div>
+                    <label for="id_betreibungsamt" class="fw-label mb-1">{% trans "Betreibungsamt" %}</label>
+                    <input type="text" id="id_betreibungsamt" name="betreibungsamt" value="{{ werte.betreibungsamt }}" class="fw-feld w-full" placeholder="{% trans 'Betreibungsamt am Wohnsitz des Mieters' %}"{% if form.betreibungsamt.errors %} aria-invalid="true" aria-describedby="id_betreibungsamt_fehler"{% endif %}>
+                    {% include 'fw/_feldfehler.html' with f=form.betreibungsamt %}
+                </div>
+                <div>
+                    <label for="id_begehren_am" class="fw-label mb-1">{% trans "Betreibungsbegehren am" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                    <input type="date" id="id_begehren_am" name="begehren_am" value="{{ werte.begehren_am }}" class="fw-feld w-full" required{% if form.begehren_am.errors %} aria-invalid="true" aria-describedby="id_begehren_am_fehler"{% endif %}>
+                    {% include 'fw/_feldfehler.html' with f=form.begehren_am %}
+                </div>
+                <div>
+                    <label for="id_forderung" class="fw-label mb-1">{% trans "Forderung (CHF)" %}</label>
+                    <input type="text" id="id_forderung" name="forderung" value="{{ werte.forderung }}" inputmode="decimal" class="fw-feld w-full" data-summe{% if form.forderung.errors %} aria-invalid="true" aria-describedby="id_forderung_fehler"{% endif %}>
+                    <p class="fw-hilfe">{% trans "Vorgeschlagen: Summe der offenen Beträge der gewählten Forderungen." %}</p>
+                    {% include 'fw/_feldfehler.html' with f=form.forderung %}
+                </div>
+                <div>
+                    <label for="id_betreibungsnummer" class="fw-label mb-1">{% trans "Betreibungsnummer" %} <span class="fw-faint font-normal">{% trans "(sobald bekannt)" %}</span></label>
+                    <input type="text" id="id_betreibungsnummer" name="betreibungsnummer" value="{{ werte.betreibungsnummer }}" class="fw-feld w-full"{% if form.betreibungsnummer.errors %} aria-invalid="true" aria-describedby="id_betreibungsnummer_fehler"{% endif %}>
+                    {% include 'fw/_feldfehler.html' with f=form.betreibungsnummer %}
+                </div>
+                <div>
+                    <label for="id_zinssatz" class="fw-label mb-1">{% trans "Zins (%)" %} {% hilfe 'verzugszins' %}</label>
+                    <input type="text" id="id_zinssatz" name="zinssatz" value="{{ werte.zinssatz }}" inputmode="decimal" class="fw-feld w-full"{% if form.zinssatz.errors %} aria-invalid="true" aria-describedby="id_zinssatz_fehler"{% endif %}>
+                    {% include 'fw/_feldfehler.html' with f=form.zinssatz %}
+                </div>
+                <div>
+                    <label for="id_zins_ab" class="fw-label mb-1">{% trans "Zins seit" %}</label>
+                    <input type="date" id="id_zins_ab" name="zins_ab" value="{{ werte.zins_ab }}" class="fw-feld w-full"{% if form.zins_ab.errors %} aria-invalid="true" aria-describedby="id_zins_ab_fehler"{% endif %}>
+                    <p class="fw-hilfe">{% trans "Bei mehreren Forderungen mit verschiedener Fälligkeit selbst festlegen (z. B. mittlerer Verfall) oder die Fälligkeiten im Grund nennen." %}</p>
+                    {% include 'fw/_feldfehler.html' with f=form.zins_ab %}
+                </div>
+                <div class="fw-col-span-2">
+                    <label for="id_forderungsgrund" class="fw-label mb-1">{% trans "Forderungsgrund" %}</label>
+                    <textarea id="id_forderungsgrund" name="forderungsgrund" rows="3" class="fw-feld w-full">{{ werte.forderungsgrund }}</textarea>
+                    <p class="fw-hilfe">{% trans "Leer gelassen, setzt die Anwendung die gewählten Mieten mit Fälligkeit und Betrag ein." %}</p>
+                    {% include 'fw/_feldfehler.html' with f=form.forderungsgrund %}
+                </div>
+                <div class="fw-col-span-2">
+                    <label for="id_bemerkung" class="fw-label mb-1">{% trans "Bemerkung" %}</label>
+                    <textarea id="id_bemerkung" name="bemerkung" rows="2" class="fw-feld w-full">{{ werte.bemerkung }}</textarea>
+                    {% include 'fw/_feldfehler.html' with f=form.bemerkung %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="fw-assistent-pruefen">
+        <div class="fw-assistent-schritt-kopf"></div>
+        <div class="fw-card"><div class="fw-rumpf fw-assistent-zusammenfassung"></div></div>
+        <p class="fw-hilfe mt-2">{% trans "Nach dem Erfassen steht das Datenblatt «Betreibungsbegehren» als PDF bereit. Es ist eine Vorlage für das amtliche Formular des Betreibungsamts, nicht das Formular selbst." %}</p>
+    </section>
+    <div class="fw-assistent-fuss">
+        <button type="button" class="fw-btn" data-assistent-zurueck data-assistent-nur-js>{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
+        <span class="stand" data-assistent-nur-js></span>
+        <div class="rechts">
+            <a href="/neu/mahnwesen/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+            <button type="button" class="fw-btn fw-primary" data-assistent-weiter data-assistent-nur-js>{% trans "Weiter" %} {% zeichen 'weiter' %}</button>
+            <button type="submit" class="fw-btn fw-primary" data-assistent-absenden>{% zeichen 'recht' klasse='mr-1.5' %}{% trans "Betreibung erfassen" %}</button>
+        </div>
+    </div>
+    </div>
+    </div>
+</form>
+
+<script>
+// Forderung = Summe der angekreuzten offenen Beträge, solange niemand den Betrag
+// von Hand geändert hat. Gerechnet in Rappen, damit 0.1 + 0.2 nicht 0.30000000004 ergibt.
+(function () {
+    var feld = document.querySelector('[data-summe]');
+    if (!feld) return;
+    var vonHand = false;
+    feld.addEventListener('input', function () { vonHand = true; });
+    function summe() {
+        if (vonHand) return;
+        var rappen = 0;
+        document.querySelectorAll('[data-forderung]').forEach(function (k) {
+            if (k.checked) rappen += Math.round(parseFloat(k.dataset.betrag || '0') * 100);
+        });
+        feld.value = (rappen / 100).toFixed(2);
+    }
+    document.querySelectorAll('[data-forderung]').forEach(function (k) { k.addEventListener('change', summe); });
+})();
+</script>
+{% endblock %}

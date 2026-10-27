@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n hilfe %}
 {% load betreuung %}
 {% load rechte %}
 {% load chf %}
@@ -616,6 +616,28 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
             {% endfor %}
             </tbody>
         </table></div>
+    </div>
+    <div class="fw-card" id="inkasso">
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'recht' %}</span><h2>{% trans "Ratenplan & Betreibungen" %}</h2> {% hilfe 'betreibung' %}
+            <span class="fw-rechts"><a href="/neu/vertraege/{{ v.id }}/zahlungsvereinbarung/" class="fw-link">{% trans "Zahlungsvereinbarung" %}</a></span></div>
+        <div class="fw-rumpf space-y-2">
+            {% if zv_aktiv %}
+            <p>{% blocktrans trimmed with b=zv_aktiv.betrag_total|chf n=zv_aktiv.anzahl_raten d=zv_aktiv.gedeckt_bis|date:"d.m.Y" %}Laufender Ratenplan: CHF {{ b }} in {{ n }} Raten — die bis {{ d }} fälligen Forderungen ruhen im Mahnlauf.{% endblocktrans %}</p>
+            {% endif %}
+            {% for b in betreibungen %}
+            <div class="flex items-center gap-3 flex-wrap">
+                <span class="fw-chip {% if b.ist_offen %}fw-crit{% endif %}">{{ b.get_status_display }}</span>
+                <span class="fw-strong">{% blocktrans with nr=b.betreibungsnummer|default:b.id d=b.begehren_am|date:"d.m.Y" %}Betreibung {{ nr }} vom {{ d }}{% endblocktrans %}</span>
+                <span class="fw-num">CHF {{ b.forderung|chf }}</span>
+                <a href="/neu/betreibungen/{{ b.id }}/" class="fw-link">{% trans "Öffnen" %}</a>
+            </div>
+            {% empty %}
+            <p class="fw-klein">{% trans "Keine Betreibungen zu diesem Vertrag." %}</p>
+            {% endfor %}
+            {% if betreibung_start and request.user|darf:"/neu/betreibungen/neu/1/" %}
+            <a href="/neu/betreibungen/neu/{{ betreibung_start.id }}/" class="fw-btn fw-knapp">{% zeichen 'recht' %}{% trans "Betreibung einleiten" %}</a>
+            {% endif %}
+        </div>
     </div>
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Zahlungseingänge" %}</h2></div>

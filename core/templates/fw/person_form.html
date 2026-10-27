@@ -338,7 +338,7 @@
                 <input name="bank_name" value="{{ m.bank_name }}" class="fw-feld w-full" id="p-bank_name"{% if feld_fehler.bank_name %} aria-invalid="true" aria-describedby="p-bank_name_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.bank_name feld_id='p-bank_name' %}</div>
         </div>
         <label class="fw-haekchen">
-            <input type="checkbox" name="mahnsperre" {% if m.mahnsperre %}checked{% endif %} class="rounded"> {% trans "Mahnsperre (laufende Zahlungsvereinbarung — kein automatischer Mahnlauf)" %}</label> {% hilfe 'mahnsperre' %}
+            <input type="checkbox" name="mahnsperre" {% if m.mahnsperre %}checked{% endif %} class="rounded"> {% trans "Mahnsperre (von Hand — kein automatischer Mahnlauf für diese Person)" %}</label> {% hilfe 'mahnsperre' %}
         <div class="pt-2 border-t fw-linie">
             <p class="fw-label mb-2">{% trans "Abweichender Zahler / Kostenträger" %} <span class="font-normal fw-faint">{% trans "(z.B. Sozialamt, Firma)" %}</span> {% hilfe 'abweichender_zahler' %}</p>
             <div class="fw-raster r3">

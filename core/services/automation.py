@@ -230,6 +230,10 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry
 
     res = {'gemahnt': 0, 'emails': 0, 'gebuehren': Decimal('0.00'), 'zins': Decimal('0.00'), 'geprueft': 0,
            'plan': []}
+    # Durch Zahlungsvereinbarung gedeckte und betriebene Forderungen — einmal vor
+    # der Schleife, an der Stelle, die auch das Mahnwesen fragt.
+    from core.services.mahnsperre import gesperrte_forderungen
+    gesperrt = gesperrte_forderungen()
 
     for r in qs:
         faellig = r.faellig_am or r.datum
@@ -262,8 +266,12 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry
         if not _s:
             continue
         stufe = _s['stufe']
-        # Mahnsperre: Mieter mit laufender Zahlungsvereinbarung nicht mahnen.
+        # Mahnsperre (Handschalter am Mieter): diesen Mieter nicht mahnen.
         if r.vertrag and r.vertrag.mieter_id and getattr(r.vertrag.mieter, 'mahnsperre', False):
+            continue
+        # Gedeckt durch einen Ratenplan oder in Betreibung: nur DIESE Forderung
+        # ruht — eine neue Miete desselben Mieters wird normal gemahnt.
+        if r.pk in gesperrt:
             continue
         res['geprueft'] += 1
         # Idempotenz: existiert bereits eine Mahnung dieser (oder höherer) Stufe?

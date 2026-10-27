@@ -182,6 +182,10 @@ def fw_bankabgleich(request):
     # Teilzahlungen: Rechnungen mit Rest — mit Fortschritt und Mahnstand.
     from core.services.mahnstufen import Mahnstufen, eigentuemer_von_rechnung
     _stufen = Mahnstufen()
+    # Nicht nur der Handschalter am Mieter: auch was ein Ratenplan deckt oder
+    # betrieben wird, läuft nicht in den Mahnlauf (core/services/mahnsperre.py).
+    from core.services.mahnsperre import gesperrte_forderungen
+    _gesperrt = gesperrte_forderungen()
     teilzahlungen = []
     for row in rows:
         r = row['r']
@@ -203,7 +207,9 @@ def fw_bankabgleich(request):
             **row, 'bezahlt': bezahlt,
             'prozent': int((bezahlt / r.betrag * 100) if r.betrag else 0),
             'hoechste': hoechste, 'naechste': naechste,
-            'mahnsperre': bool(r.vertrag_id and r.vertrag.mieter_id and r.vertrag.mieter.mahnsperre),
+            'mahnsperre': bool((r.vertrag_id and r.vertrag.mieter_id and r.vertrag.mieter.mahnsperre)
+                               or r.pk in _gesperrt),
+            'sperrgrund': _gesperrt.get(r.pk, ''),
             'kleindifferenz': row['offen'] <= _zk.KLEINDIFFERENZ_CHF,
         })
     teil_rest = sum((t['offen'] for t in teilzahlungen), Decimal('0.00'))

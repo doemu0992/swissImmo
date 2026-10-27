@@ -161,23 +161,45 @@ def fw_nebenkosten_zustellung(request, pk):
 # ---------------------------------------------------------------- Betreibung
 
 class BetreibungForm(forms.ModelForm):
+    """Stand und Daten einer Betreibung nachführen (Bearbeiten).
+
+    WARNUNG STATT FEHLER. Was nach Gesetz in Ausnahmefällen zulässig sein kann,
+    blockiert das Speichern nicht, sondern steht nach dem Speichern als Warnung
+    da (`warnungen`). Beispiel Rechtsvorschlag nach mehr als zehn Tagen: Er kann
+    rechtzeitig sein — Fristende an einem Samstag, Sonntag oder Feiertag
+    (Art. 31 Abs. 3 SchKG), Betreibungsferien und Rechtsstillstand (Art. 56,
+    63 SchKG) oder ein nachträglicher Rechtsvorschlag (Art. 77 SchKG). Ob das
+    zutrifft, weiss das Betreibungsamt, nicht diese Anwendung. Ein Fehler am
+    Feld hätte die Verwaltung gezwungen, ein falsches Datum einzutragen.
+    """
+
     class Meta:
         from finance.models import Betreibung
         model = Betreibung
-        fields = ['status', 'betreibungsamt', 'betreibungsnummer', 'forderung', 'kosten',
-                  'begehren_am', 'zahlungsbefehl_am', 'rechtsvorschlag_am', 'rechtsoeffnung_am',
-                  'fortsetzung_am', 'verlustschein_am', 'bemerkung']
+        fields = ['status', 'betreibungsamt', 'betreibungsnummer', 'forderung', 'zinssatz', 'zins_ab',
+                  'forderungsgrund', 'kosten',
+                  'begehren_am', 'zahlungsbefehl_am', 'rechtsvorschlag_am', 'rechtsoeffnung_beantragt_am',
+                  'rechtsoeffnung_am', 'rechtsoeffnung_art', 'fortsetzung_am', 'pfaendung_am',
+                  'verlustschein_am', 'bemerkung']
         widgets = {k: DATUM for k in ('begehren_am', 'zahlungsbefehl_am', 'rechtsvorschlag_am',
-                                      'rechtsoeffnung_am', 'fortsetzung_am', 'verlustschein_am')}
+                                      'rechtsoeffnung_beantragt_am', 'rechtsoeffnung_am', 'fortsetzung_am',
+                                      'pfaendung_am', 'verlustschein_am', 'zins_ab')}
         widgets['bemerkung'] = forms.Textarea(attrs={'rows': 3})
+        widgets['forderungsgrund'] = forms.Textarea(attrs={'rows': 3})
 
     #: Stand → Datumsfeld, das dafür belegt sein muss.
     BRAUCHT = {'zahlungsbefehl': 'zahlungsbefehl_am', 'rechtsvorschlag': 'rechtsvorschlag_am',
+               'rechtsoeffnung_beantragt': 'rechtsoeffnung_beantragt_am',
                'rechtsoeffnung': 'rechtsoeffnung_am', 'fortsetzung': 'fortsetzung_am',
-               'verlustschein': 'verlustschein_am'}
+               'pfaendung': 'pfaendung_am', 'verlustschein': 'verlustschein_am'}
     #: Reihenfolge der Daten — jedes darf nicht vor seinem Vorgänger liegen.
-    ABFOLGE = ['begehren_am', 'zahlungsbefehl_am', 'rechtsvorschlag_am', 'rechtsoeffnung_am',
-               'fortsetzung_am', 'verlustschein_am']
+    ABFOLGE = ['begehren_am', 'zahlungsbefehl_am', 'rechtsvorschlag_am', 'rechtsoeffnung_beantragt_am',
+               'rechtsoeffnung_am', 'fortsetzung_am', 'pfaendung_am', 'verlustschein_am']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        #: Hinweise, die das Speichern nicht verhindern (siehe Klassenkommentar).
+        self.warnungen = []
 
     def clean_forderung(self):
         f = self.cleaned_data['forderung']
@@ -185,16 +207,24 @@ class BetreibungForm(forms.ModelForm):
             raise forms.ValidationError(gettext('Die Forderung muss grösser als 0 sein.'))
         return f
 
+    def clean_zinssatz(self):
+        z = self.cleaned_data.get('zinssatz')
+        if z is not None and not (Decimal('0') <= z <= Decimal('100')):
+            raise forms.ValidationError(gettext('Der Zinssatz muss zwischen 0 und 100 % liegen.'))
+        return z
+
     def clean(self):
         data = super().clean()
         heute = timezone.localdate()
         status = data.get('status')
         pflicht = self.BRAUCHT.get(status)
-        if pflicht and not data.get(pflicht):
+        if pflicht and pflicht in self.fields and not data.get(pflicht):
             self.add_error(pflicht, gettext('Für den Stand «%(s)s» ist dieses Datum nötig.')
                            % {'s': dict(self.fields['status'].choices).get(status, status)})
         vorher = None
         for feld in self.ABFOLGE:
+            if feld not in self.fields:
+                continue
             d = data.get(feld)
             if d and d > heute and feld != 'begehren_am':
                 self.add_error(feld, gettext('Das Datum liegt in der Zukunft.'))
@@ -205,8 +235,94 @@ class BetreibungForm(forms.ModelForm):
                 vorher = (feld, d)
         zb, rv = data.get('zahlungsbefehl_am'), data.get('rechtsvorschlag_am')
         if zb and rv and rv > zb + timedelta(days=10):
-            self.add_error('rechtsvorschlag_am', gettext(
-                'Rechtsvorschlag nach Ablauf der 10-Tage-Frist (Art. 74 SchKG) — bitte prüfen.'))
+            self.warnungen.append(gettext(
+                'Rechtsvorschlag mehr als 10 Tage nach Zustellung des Zahlungsbefehls (Art. 74 SchKG). '
+                'Gespeichert — bitte beim Betreibungsamt klären, ob er gilt: Er kann rechtzeitig sein '
+                '(z. B. Fristende an einem Wochenende oder Feiertag, Betreibungsferien oder Rechtsstillstand, '
+                'Art. 31, 56, 63 SchKG, oder nachträglicher Rechtsvorschlag, Art. 77 SchKG).'))
+        if data.get('rechtsoeffnung_beantragt_am') and not rv:
+            self.warnungen.append(gettext(
+                'Rechtsöffnungsgesuch ohne erfassten Rechtsvorschlag — eine Rechtsöffnung braucht es nur, '
+                'wenn Rechtsvorschlag erhoben wurde.'))
+        fs = data.get('fortsetzung_am')
+        if fs and zb and not self.errors:
+            from finance.models import Betreibung
+            probe = Betreibung(zahlungsbefehl_am=zb, rechtsvorschlag_am=rv,
+                               rechtsoeffnung_beantragt_am=data.get('rechtsoeffnung_beantragt_am'),
+                               rechtsoeffnung_am=data.get('rechtsoeffnung_am'))
+            frueh, spaet = probe.fortsetzung_frist
+            if frueh is None:
+                self.warnungen.append(gettext(
+                    'Fortsetzungsbegehren erfasst, obwohl der Rechtsvorschlag noch nicht durch einen '
+                    'Rechtsöffnungsentscheid beseitigt ist (Art. 88 Abs. 1 SchKG).'))
+            elif fs < frueh:
+                self.warnungen.append(gettext(
+                    'Fortsetzungsbegehren vor dem frühesten Termin (%(d)s, Art. 88 Abs. 1 SchKG).')
+                    % {'d': frueh.strftime('%d.%m.%Y')})
+            elif spaet and fs > spaet:
+                self.warnungen.append(gettext(
+                    'Fortsetzungsbegehren nach Ablauf der Jahresfrist (%(d)s, Art. 88 Abs. 2 SchKG).')
+                    % {'d': spaet.strftime('%d.%m.%Y')})
+        return data
+
+
+class BetreibungNeuForm(BetreibungForm):
+    """Der Assistent «Betreibung einleiten»: Forderungen, Gläubiger/Zins/Grund, Prüfen.
+
+    Angelegt wird immer im Stand «Begehren». Den weiteren Stand führt die
+    Verwaltung auf der Betreibung nach (`BetreibungForm`) — ein Assistent, der
+    zugleich alle späteren Stände abfragte, wäre keiner mehr.
+
+    `weitere_rechnungen` sind die zusätzlichen Monatsmieten DESSELBEN Vertrags; die Auswahl
+    kommt aus `betreibung.betreibbare_forderungen`. Eine fremde oder bereits
+    betriebene ID ist darin nicht enthalten und wird als ungültige Wahl abgelehnt.
+    Bleibt die Forderung leer, gilt die Summe der offenen Beträge.
+    """
+
+    class Meta(BetreibungForm.Meta):
+        fields = ['betreibungsamt', 'betreibungsnummer', 'forderung', 'zinssatz', 'zins_ab',
+                  'forderungsgrund', 'begehren_am', 'bemerkung']
+
+    weitere_rechnungen = forms.ModelMultipleChoiceField(queryset=None, required=False,
+                                             widget=forms.CheckboxSelectMultiple,
+                                             label=_('Weitere Forderungen'))
+
+    def __init__(self, *args, haupt, auswahl, **kwargs):
+        super().__init__(*args, **kwargs)
+        from finance.models import DebitorenRechnung
+        self.haupt = haupt
+        self.auswahl = [r for r in auswahl if r.pk != haupt.pk]
+        self.fields['weitere_rechnungen'].queryset = DebitorenRechnung.objects.filter(pk__in=[r.pk for r in self.auswahl])
+        self.fields['forderung'].required = False
+        # Leer heisst: der gesetzliche Satz (Modell-Vorgabe, Art. 104 OR). Wer keinen
+        # Zins verlangt, trägt 0 ein.
+        self.fields['zinssatz'].required = False
+
+    def clean_forderung(self):
+        f = self.cleaned_data.get('forderung')
+        if f is not None and f <= 0:
+            raise forms.ValidationError(gettext('Die Forderung muss grösser als 0 sein.'))
+        return f
+
+    def clean_zinssatz(self):
+        z = super().clean_zinssatz()
+        if z is None:
+            from finance.models import Betreibung
+            z = Betreibung._meta.get_field('zinssatz').default
+        return z
+
+    def gewaehlte(self):
+        """Hauptforderung und gewählte weitere, älteste zuerst — mit vorgeladenen Zahlungen."""
+        geladen = {r.pk: r for r in self.auswahl}
+        weitere = [geladen.get(r.pk, r) for r in (self.cleaned_data.get('weitere_rechnungen') or [])]
+        return [self.haupt] + sorted(weitere, key=lambda r: (r.faellig_am or r.datum, r.pk))
+
+    def clean(self):
+        data = super().clean()
+        if 'weitere_rechnungen' in self.errors:
+            return data
+        if data.get('forderung') is None and 'forderung' not in self.errors:
+            data['forderung'] = sum((r.offener_betrag for r in self.gewaehlte()), Decimal('0.00'))
         return data
 
 
@@ -216,7 +332,7 @@ def fw_betreibungen(request):
     from finance.models import Betreibung
     basis = _global_filter(request)
     qs = Betreibung.objects.select_related('debitoren_rechnung__vertrag__mieter')
-    abgeschlossen = ('bezahlt', 'verlustschein', 'zurueckgezogen')
+    abgeschlossen = Betreibung.ABGESCHLOSSEN
     rows = list(qs)
     rows.sort(key=lambda b: (b.status in abgeschlossen, -b.begehren_am.toordinal()))
     return render(request, 'fw/betreibungen.html', {
@@ -225,48 +341,179 @@ def fw_betreibungen(request):
     })
 
 
+class _EntwurfBetreibung:
+    """Was `betreibung.glaeubiger` von einer Betreibung braucht — vor dem Speichern."""
+
+    def __init__(self, rechnung, organisation):
+        self.vertrag = rechnung.vertrag
+        self.debitoren_rechnung = rechnung
+        self.organisation = organisation
+
+
+def _gewaehlt_ids(form):
+    """IDs der angekreuzten weiteren Forderungen — nach einem Fehler, was gesendet wurde."""
+    if not form.is_bound:
+        return []
+    return [int(x) for x in form.data.getlist('weitere_rechnungen') if str(x).isdigit()]
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_betreibung_neu(request, pk):
-    """Betreibung für eine offene Debitorenrechnung einleiten (pk = Rechnung)."""
-    from finance.models import Betreibung, DebitorenRechnung
-    r = get_object_or_404(DebitorenRechnung.objects.select_related('vertrag__mieter'), pk=pk)
+    """Betreibung einleiten — Assistent ab einer offenen Debitorenrechnung (pk = Rechnung).
+
+    Die Rechnung aus der Adresse ist die Hauptforderung; weitere offene, fällige
+    Mieten desselben Vertrags lassen sich dazunehmen. Forderungen, die schon in
+    einer offenen Betreibung stehen, sind nicht wählbar — zweimal dieselbe Miete
+    zu betreiben hiesse zwei Zahlungsbefehle für eine Schuld."""
+    from core.services import betreibung as bdienst
+    from core.tenancy import organisation_der_anfrage
+    from finance.models import DebitorenRechnung
+    r = get_object_or_404(DebitorenRechnung.objects.select_related(
+        'vertrag__mieter', 'vertrag__einheit__liegenschaft__eigentuemer', 'liegenschaft'), pk=pk)
     if r.status in ('bezahlt', 'storniert'):
         messages.error(request, gettext('Für eine bezahlte oder stornierte Rechnung kann keine Betreibung eingeleitet werden.'))
         return redirect('/neu/mahnwesen/')
-    offen = r.offener_betrag or r.betrag
-    form = BetreibungForm(request.POST or None, initial={
-        'forderung': offen, 'begehren_am': timezone.localdate(), 'status': 'begehren'})
-    if request.method == 'POST' and form.is_valid():
-        b = form.save(commit=False)
-        b.debitoren_rechnung, b.vertrag, b.erstellt_von = r, r.vertrag, request.user
-        b.save()
-        log_aktion(request, 'Betreibung eingeleitet', str(r.vertrag.mieter if r.vertrag_id else r.titel), f'CHF {b.forderung}')
-        messages.success(request, gettext('Betreibung erfasst.'))
+    betrieben = bdienst.rechnung_ids_in_offener_betreibung()
+    if r.pk in betrieben:
+        messages.error(request, gettext('Diese Forderung steht bereits in einer offenen Betreibung.'))
         return redirect('/neu/betreibungen/')
-    return _seite(request, form, titel=gettext('Betreibung einleiten'),
-                  hinweis=f'{r.titel} · CHF {offen}', zurueck='/neu/mahnwesen/',
-                  zurueck_text=gettext('Mahnwesen'), senden=gettext('Betreibung erfassen'),
-                  status=400 if request.method == 'POST' else 200, vorlage='fw/betreibung_form.html')
+    if r.vertrag_id:
+        auswahl = [x for x in bdienst.betreibbare_forderungen(r.vertrag) if x.pk not in betrieben]
+    else:
+        auswahl = [r] if r.offener_betrag > 0 else []
+    haupt = next((x for x in auswahl if x.pk == r.pk), None)
+    if haupt is None:
+        messages.error(request, gettext('Betrieben werden kann nur eine offene, fällige Hauptforderung '
+                                        '(keine Mahngebühr, kein Zins, nichts noch nicht Fälliges).'))
+        return redirect('/neu/mahnwesen/')
+    form = BetreibungNeuForm(request.POST or None, haupt=haupt, auswahl=auswahl, initial={
+        'forderung': haupt.offener_betrag, 'begehren_am': timezone.localdate(), 'zinssatz': Decimal('5.00'),
+        'zins_ab': bdienst.zins_ab_vorschlag([haupt]),
+        'forderungsgrund': bdienst.forderungsgrund_vorschlag([haupt], r.vertrag),
+        # Ausdrücklich leer: `_werte` liest sonst die M2M der noch ungespeicherten
+        # Betreibung, und Django verweigert das ohne Primärschlüssel.
+        'weitere_rechnungen': []})
+    if request.method == 'POST' and form.is_valid():
+        gewaehlt = form.gewaehlte()
+        b = form.save(commit=False)
+        b.debitoren_rechnung, b.vertrag, b.erstellt_von = haupt, haupt.vertrag, request.user
+        b.status = 'begehren'
+        if not b.forderungsgrund.strip():
+            b.forderungsgrund = bdienst.forderungsgrund_vorschlag(gewaehlt, haupt.vertrag)
+        b.save()
+        b.weitere_rechnungen.set(gewaehlt[1:])
+        bdienst.nach_speichern(b, user=request.user)
+        log_aktion(request, 'Betreibung eingeleitet', str(haupt.vertrag.mieter if haupt.vertrag_id else haupt.titel),
+                   f'CHF {b.forderung} · {len(gewaehlt)} Forderung(en)', ziel=haupt.vertrag)
+        messages.success(request, gettext('Betreibung erfasst. Das Datenblatt für das Betreibungsbegehren '
+                                          'steht als PDF bereit.'))
+        return redirect(f'/neu/betreibungen/{b.id}/')
+    gl, vertreter = bdienst.glaeubiger(_EntwurfBetreibung(haupt, organisation_der_anfrage(request)))
+    return render(request, 'fw/betreibung_neu.html', {
+        **_global_filter(request), 'form': form, 'werte': _werte(form), 'r': haupt,
+        'auswahl': form.auswahl, 'gewaehlt_ids': _gewaehlt_ids(form),
+        'glaeubiger': gl, 'vertreter': vertreter, 'titel': gettext('Betreibung einleiten'),
+    }, status=400 if request.method == 'POST' else 200)
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_betreibung_bearbeiten(request, pk):
-    """Stand und Daten einer Betreibung nachführen."""
+    """Stand und Daten einer Betreibung nachführen.
+
+    Der Wechsel auf «Verlustschein» schreibt die offenen Forderungen ab (3805) —
+    das dürfen nur Verwaltungsrollen, wie das Abschreiben im OP-Buch
+    (`fw_debitor_abschreiben`)."""
+    from core.auth import hat_rolle
+    from core.services import betreibung as bdienst
     from finance.models import Betreibung
-    b = get_object_or_404(Betreibung.objects.select_related('debitoren_rechnung'), pk=pk)
+    b = get_object_or_404(Betreibung.objects.select_related(
+        'debitoren_rechnung', 'vertrag__mieter', 'vertrag__einheit__liegenschaft', 'kosten_rechnung'), pk=pk)
+    alter_status = b.status
+    kann_verwalten = hat_rolle(request.user, VERWALTUNGS_ROLLEN)
     form = BetreibungForm(request.POST or None, instance=b)
     if request.method == 'POST' and form.is_valid():
-        b = form.save()
-        log_aktion(request, 'Betreibung bearbeitet', f'Betreibung #{b.id}', b.get_status_display())
-        messages.success(request, gettext('Betreibung gespeichert.'))
-        return redirect('/neu/betreibungen/')
-    extra = {}
+        if (form.cleaned_data.get('status') == 'verlustschein' and alter_status != 'verlustschein'
+                and not kann_verwalten):
+            form.add_error('status', gettext('Der Verlustschein schreibt die offenen Forderungen ab (Konto 3805) — '
+                                             'das darf nur die Verwaltung (Verwalter oder Inhaber).'))
+        else:
+            b = form.save()
+            ergebnis = bdienst.nach_speichern(b, alter_status=alter_status, user=request.user)
+            log_aktion(request, 'Betreibung bearbeitet', f'Betreibung #{b.id}', b.get_status_display(),
+                       ziel=b.vertrag)
+            messages.success(request, gettext('Betreibung gespeichert.'))
+            for w in form.warnungen:
+                messages.warning(request, w)
+            if ergebnis:
+                n, summe, ausgelassen = ergebnis
+                if n:
+                    messages.success(request, gettext('Verlustschein: %(n)s Forderung(en) über CHF %(s)s als '
+                                                      'Debitorenverlust abgeschrieben (Konto 3805).')
+                                     % {'n': n, 's': f'{summe:.2f}'})
+                if ausgelassen:
+                    messages.warning(request, gettext('%(n)s Forderung(en) liegen in einer gesperrten '
+                                                      'Buchungsperiode und wurden nicht abgeschrieben.')
+                                     % {'n': ausgelassen})
+            return redirect(f'/neu/betreibungen/{b.id}/')
+    if request.method == 'POST':
+        # Nach einem Fehler gilt der gespeicherte Stand, nicht der halb geänderte
+        # aus der Eingabe — die Knöpfe unten (PDF, Kosten) wirken auf ihn.
+        b.refresh_from_db()
+    extra = {'b': b, 'rechnungen': b.rechnungen(), 'kann_verwalten': kann_verwalten}
     if b.rechtsvorschlag_frist_bis:
         extra['fristen'] = {'rv': b.rechtsvorschlag_frist_bis, 'fortsetzung': b.fortsetzung_frist}
     return _seite(request, form, titel=gettext('Betreibung bearbeiten'),
                   hinweis=f'{b.debitoren_rechnung.titel}', zurueck='/neu/betreibungen/',
                   zurueck_text=gettext('Betreibungen'), senden=gettext('Speichern'), extra=extra,
                   status=400 if request.method == 'POST' else 200, vorlage='fw/betreibung_form.html')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_betreibung_pdf(request, pk):
+    """Datenblatt für das Betreibungsbegehren (Vorlage, nicht das amtliche Formular).
+
+    Wird in der Vertragsakte abgelegt — derselbe Titel überschreibt das frühere
+    Blatt derselben Betreibung, statt Kopien zu stapeln."""
+    from django.http import HttpResponse
+
+    from core.services.ablage import ablegen
+    from core.services.inkasso_briefe import betreibungsbegehren_pdf
+    from finance.models import Betreibung
+    b = get_object_or_404(Betreibung.objects.select_related(
+        'debitoren_rechnung__liegenschaft__eigentuemer', 'vertrag__mieter',
+        'vertrag__einheit__liegenschaft__eigentuemer', 'organisation'), pk=pk)
+    pdf = betreibungsbegehren_pdf(b)
+    if b.vertrag_id:
+        ablegen(pdf, f"Betreibungsbegehren (Daten) {b.betreibungsnummer or '#' + str(b.pk)}",
+                kategorie='korrespondenz', vertrag=b.vertrag, dedup=True,
+                dateiname=f"Betreibungsbegehren_{b.pk}.pdf")
+    log_aktion(request, 'Betreibungsbegehren (Daten) erstellt', f'Betreibung #{b.id}', f'CHF {b.forderung}',
+               ziel=b.vertrag)
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    resp['Content-Disposition'] = f'inline; filename="Betreibungsbegehren_{b.pk}.pdf"'
+    return resp
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_betreibung_kosten(request, pk):
+    """«Kosten dem Mieter belasten» — Betreibungskosten (Art. 68 SchKG) als Forderung.
+
+    Dieselbe Rolle wie das Erfassen einer Mahngebühr (`fw_mahnung_erfassen`)."""
+    from core.services import betreibung as bdienst
+    from finance.models import Betreibung
+    b = get_object_or_404(Betreibung.objects.all(), pk=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/betreibungen/{b.id}/')
+    try:
+        k = bdienst.kosten_belasten(b, user=request.user)
+    except (bdienst.BetreibungsFehler, PermissionError) as exc:
+        # PermissionError: gesperrte Buchungsperiode (`buche`).
+        messages.error(request, str(exc))
+        return redirect(f'/neu/betreibungen/{b.id}/')
+    log_aktion(request, 'Betreibungskosten belastet', f'Betreibung #{b.id}', f'CHF {k.betrag}', ziel=b.vertrag)
+    messages.success(request, gettext('Betreibungskosten von CHF %(b)s dem Mieter belastet (Art. 68 SchKG).')
+                     % {'b': f'{k.betrag:.2f}'})
+    return redirect(f'/neu/betreibungen/{b.id}/')
 
 
 # ---------------------------------------------------------------- Zählerstand

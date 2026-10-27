@@ -8,6 +8,9 @@ weiter als «Kündigung möglich» im System. Darum hier, einmal, am Modell.
 
 Auch der Storno einer Rechnung zählt: Eine stornierte Forderung ist keine,
 deren Nichtzahlung eine Kündigung trüge.
+
+Dieselbe Stelle führt die Betreibung nach: Sind alle Forderungen einer offenen
+Betreibung bezahlt, steht sie auf «Bezahlt» (`core.services.betreibung`).
 """
 import logging
 
@@ -87,3 +90,13 @@ def _rechnung_gespeichert(sender, instance, raw=False, created=False, **kwargs):
     if raw or created:
         return
     _pruefen(instance.vertrag_id)
+    # Betreibung: Sind alle ihre Forderungen bezahlt, steht sie auf «Bezahlt».
+    # Hier und nicht an den Zahlungswegen — aus demselben Grund wie oben: Es
+    # gibt viele davon. Nur für bezahlte Rechnungen, eine Abfrage.
+    if instance.status == 'bezahlt':
+        try:
+            from core.services.betreibung import nach_rechnungsstatus
+            nach_rechnungsstatus(instance)
+        except Exception:
+            logger.exception('Betreibungsstand nach Zahlung der Rechnung %s nicht nachgeführt',
+                             instance.pk)

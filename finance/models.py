@@ -675,7 +675,13 @@ class Zahlungsvereinbarung(OrganisationAusKette):
     (`gedeckt_bis`). Die Raten sind gleich hoch, die letzte trägt den Rest. Erfüllt
     ist die Vereinbarung, sobald der gedeckte Rückstand bezahlt ist; gebrochen,
     wenn die bezahlte Summe der Soll-Summe der fälligen Raten (nach Toleranz)
-    hinterherhinkt — dann endet die Mahnsperre, und der Mahnprozess läuft weiter.
+    hinterherhinkt — dann läuft der Mahnprozess für die gedeckten Forderungen weiter.
+
+    Die Sperre gilt NUR für die gedeckten Forderungen (und ihre Mahngebühren/
+    Zinsen), nicht für den ganzen Mieter: Eine neue Monatsmiete während des
+    Ratenplans wird normal gemahnt (`zahlungsvereinbarung.ist_durch_vereinbarung_gesperrt`).
+    Bis 26.10.2026 setzte die Vereinbarung `Mieter.mahnsperre` — damit blieben
+    auch alle späteren Mieten ungemahnt, solange der Plan lief.
 
     Eine laufende Fristansetzung nach Art. 257d OR wird durch eine Vereinbarung
     NICHT gehemmt, es sei denn, der Vermieter verzichtet ausdrücklich darauf.
@@ -1291,36 +1297,72 @@ _pre_save.connect(_dezimalfeld_guard, dispatch_uid='finance.dezimalfeld_guard')
 
 class Betreibung(OrganisationAusKette):
     ORGANISATION_PFAD = 'debitoren_rechnung'
-    """Betreibungsverfahren für eine offene Mietzinsforderung (SchKG).
+    """Betreibungsverfahren für offene Mietzinsforderungen (SchKG).
 
     Bildet den Weg ab: Begehren → Zahlungsbefehl → Rechtsvorschlag? →
-    Rechtsöffnung → Fortsetzung → Verlustschein. Die Stufe steht im Status,
-    die Daten halten Fristen fest (Rechtsvorschlag 10 Tage ab Zustellung,
-    Art. 74 SchKG; Fortsetzungsbegehren frühestens 20 Tage und spätestens ein
-    Jahr nach Zustellung des Zahlungsbefehls, Art. 88 SchKG).
+    Rechtsöffnung beantragt → Rechtsöffnung erteilt → Fortsetzung → Pfändung →
+    Verlustschein. Die Stufe steht im Status, die Daten halten die Fristen fest
+    (Rechtsvorschlag 10 Tage ab Zustellung, Art. 74 SchKG; Fortsetzungsbegehren
+    siehe `fortsetzung_frist`, Art. 88 SchKG).
+
+    EINE BETREIBUNG, MEHRERE MONATSMIETEN. `debitoren_rechnung` ist die
+    Hauptforderung (Bezug zur Organisation, Kopf der Betreibung), weitere offene
+    Mieten desselben Vertrags hängen an `weitere_rechnungen`. Wer drei Monate
+    Rückstand hat, wird einmal betrieben, nicht dreimal — drei Zahlungsbefehle
+    hiessen dreifache Gebühren, die der Mieter am Ende nicht bezahlt.
     """
+    #: Stände, in denen die Betreibung abgeschlossen ist. Nur OFFENE Betreibungen
+    #: sperren den Mahnlauf und gehen bei der Tilgung vor (Art. 87 Abs. 1 OR).
+    ABGESCHLOSSEN = ('bezahlt', 'verlustschein', 'zurueckgezogen')
     STATUS_CHOICES = [
         ('begehren', gettext_lazy('Begehren eingereicht')),
         ('zahlungsbefehl', gettext_lazy('Zahlungsbefehl zugestellt')),
         ('rechtsvorschlag', gettext_lazy('Rechtsvorschlag erhoben')),
-        ('rechtsoeffnung', gettext_lazy('Rechtsöffnung beantragt/erteilt')),
+        ('rechtsoeffnung_beantragt', gettext_lazy('Rechtsöffnung beantragt')),
+        # Der Schlüssel bleibt `rechtsoeffnung` — Bestandsdaten bleiben gültig.
+        # Bis 26.10.2026 hiess der Stand «beantragt/erteilt»; seither gibt es
+        # «beantragt» als eigenen Stand, weil zwischen Gesuch und Entscheid die
+        # Jahresfrist für die Fortsetzung stillsteht (Art. 88 Abs. 2 SchKG).
+        ('rechtsoeffnung', gettext_lazy('Rechtsöffnung erteilt')),
         ('fortsetzung', gettext_lazy('Fortsetzungsbegehren')),
+        ('pfaendung', gettext_lazy('Pfändung')),
         ('bezahlt', gettext_lazy('Bezahlt')),
         ('verlustschein', gettext_lazy('Verlustschein')),
         ('zurueckgezogen', gettext_lazy('Zurückgezogen')),
     ]
+    RECHTSOEFFNUNG_ARTEN = [
+        ('provisorisch', gettext_lazy('Provisorisch (Art. 82 SchKG)')),
+        ('definitiv', gettext_lazy('Definitiv (Art. 80 SchKG)')),
+    ]
     debitoren_rechnung = models.ForeignKey(DebitorenRechnung, on_delete=models.PROTECT, related_name='betreibungen')
+    weitere_rechnungen = models.ManyToManyField(
+        DebitorenRechnung, blank=True, related_name='betreibungen_weitere',
+        verbose_name="Weitere Forderungen in dieser Betreibung")
     vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, blank=True, related_name='betreibungen')
-    status = models.CharField("Stand", max_length=20, choices=STATUS_CHOICES, default='begehren')
+    status = models.CharField("Stand", max_length=30, choices=STATUS_CHOICES, default='begehren')
     betreibungsamt = models.CharField("Betreibungsamt", max_length=120, blank=True, default='')
     betreibungsnummer = models.CharField("Betreibungsnummer", max_length=40, blank=True, default='')
     forderung = models.DecimalField("Forderung (CHF)", max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    # Verzugszins für das Betreibungsbegehren. 5 % ist der gesetzliche Satz
+    # (Art. 104 Abs. 1 OR), wenn nichts anderes vereinbart ist.
+    zinssatz = models.DecimalField("Zins (%)", max_digits=5, decimal_places=2, default=Decimal('5.00'))
+    zins_ab = models.DateField("Zins seit", null=True, blank=True)
+    forderungsgrund = models.TextField("Forderungsgrund", blank=True, default='')
     kosten = models.DecimalField("Betreibungskosten (CHF)", max_digits=8, decimal_places=2, default=Decimal('0.00'))
+    # Die Rechnung «Betreibungskosten (Art. 68 SchKG)», sobald die Kosten dem
+    # Mieter belastet sind. Hält das Belasten einmalig: ein zweiter Klick würde
+    # sonst dieselben Kosten zweimal fordern.
+    kosten_rechnung = models.ForeignKey(DebitorenRechnung, on_delete=models.SET_NULL, null=True, blank=True,
+                                        related_name='+', editable=False)
     begehren_am = models.DateField("Betreibungsbegehren am", default=timezone.now)
     zahlungsbefehl_am = models.DateField("Zahlungsbefehl zugestellt am", null=True, blank=True)
     rechtsvorschlag_am = models.DateField("Rechtsvorschlag am", null=True, blank=True)
-    rechtsoeffnung_am = models.DateField("Rechtsöffnung am", null=True, blank=True)
+    rechtsoeffnung_beantragt_am = models.DateField("Rechtsöffnungsgesuch am", null=True, blank=True)
+    rechtsoeffnung_am = models.DateField("Rechtsöffnung erteilt am", null=True, blank=True)
+    rechtsoeffnung_art = models.CharField("Art der Rechtsöffnung", max_length=12, blank=True, default='',
+                                          choices=RECHTSOEFFNUNG_ARTEN)
     fortsetzung_am = models.DateField("Fortsetzungsbegehren am", null=True, blank=True)
+    pfaendung_am = models.DateField("Pfändung am", null=True, blank=True)
     verlustschein_am = models.DateField("Verlustschein am", null=True, blank=True)
     bemerkung = models.TextField(blank=True, default='')
     erstellt_am = models.DateTimeField(auto_now_add=True)
@@ -1335,6 +1377,15 @@ class Betreibung(OrganisationAusKette):
         return f"Betreibung {self.betreibungsnummer or self.pk} – CHF {self.forderung} ({self.get_status_display()})"
 
     @property
+    def ist_offen(self):
+        return self.status not in self.ABGESCHLOSSEN
+
+    def rechnungen(self):
+        """Alle Forderungen dieser Betreibung: die Hauptforderung zuerst, dann die weiteren."""
+        weitere = [r for r in self.weitere_rechnungen.all() if r.pk != self.debitoren_rechnung_id]
+        return [self.debitoren_rechnung, *sorted(weitere, key=lambda r: (r.faellig_am or r.datum, r.pk))]
+
+    @property
     def rechtsvorschlag_frist_bis(self):
         """Letzter Tag für den Rechtsvorschlag (10 Tage ab Zustellung, Art. 74 SchKG)."""
         if not self.zahlungsbefehl_am:
@@ -1344,9 +1395,38 @@ class Betreibung(OrganisationAusKette):
 
     @property
     def fortsetzung_frist(self):
-        """(frühestens, spätestens) für das Fortsetzungsbegehren, Art. 88 SchKG."""
+        """(frühestens, spätestens) für das Fortsetzungsbegehren, Art. 88 SchKG.
+
+        * Ohne Rechtsvorschlag: frühestens 20 Tage nach Zustellung des
+          Zahlungsbefehls (Abs. 1), spätestens ein Jahr danach (Abs. 2).
+        * Mit Rechtsvorschlag: frühestens, wenn er beseitigt ist — hier am Tag
+          des Rechtsöffnungsentscheids (`rechtsoeffnung_am`), nie vor den
+          20 Tagen. Ohne Entscheid ist `frühestens` None: Fortsetzen geht nicht.
+          Ob der Entscheid vollstreckbar ist, prüft die Verwaltung.
+        * Die Jahresfrist steht zwischen Einleitung und Erledigung des
+          Rechtsöffnungsverfahrens still (Abs. 2): Die Tage vom Gesuch
+          (`rechtsoeffnung_beantragt_am`) bis zum Entscheid kommen dazu.
+          Läuft das Verfahren noch, ist das Ende offen — `spätestens` None.
+
+        Gezählt wird die blosse Differenz der Tage, ohne den Tag des Gesuchs
+        mitzuzählen: Die kürzere Lesart, damit die Frist im Zweifel früher
+        endet als später. Das Jahr sind wie bisher 365 Tage.
+        """
         if not self.zahlungsbefehl_am:
             return None
         from datetime import timedelta
-        return (self.zahlungsbefehl_am + timedelta(days=20),
-                self.zahlungsbefehl_am + timedelta(days=365))
+        zb = self.zahlungsbefehl_am
+        fruehestens = zb + timedelta(days=20)
+        spaetestens = zb + timedelta(days=365)
+        if self.rechtsvorschlag_am:
+            if self.rechtsoeffnung_am:
+                fruehestens = max(fruehestens, self.rechtsoeffnung_am)
+            else:
+                fruehestens = None
+            if self.rechtsoeffnung_beantragt_am:
+                if self.rechtsoeffnung_am:
+                    stillstand = max(0, (self.rechtsoeffnung_am - self.rechtsoeffnung_beantragt_am).days)
+                    spaetestens += timedelta(days=stillstand)
+                else:
+                    spaetestens = None
+        return (fruehestens, spaetestens)

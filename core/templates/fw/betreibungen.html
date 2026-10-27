@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n hilfe chf %}
 {% block title %}{% trans "Betreibungen" %} — swissImmo{% endblock %}
 {% block content %}
 <nav class="fw-brotkrume mb-3">
@@ -7,8 +7,8 @@
     {% zeichen 'weiter' klasse='fw-fs-mikro' %}
     <b>{% trans "Betreibungen" %}</b>
 </nav>
-<div class="fw-phead"><div><h1>{% trans "Betreibungen" %}</h1>
-    <p>{% blocktrans with s=summe_offen %}Offene Forderungen in Betreibung: CHF {{ s }}{% endblocktrans %}</p></div></div>
+<div class="fw-phead"><div><h1>{% trans "Betreibungen" %} {% hilfe 'betreibung' %}</h1>
+    <p>{% blocktrans with s=summe_offen|chf %}Offene Forderungen in Betreibung: CHF {{ s }}{% endblocktrans %}</p></div></div>
 
 <div class="fw-card">
   {% if rows %}
@@ -23,10 +23,11 @@
         <td>{% if b.vertrag %}{{ b.vertrag.mieter.display_name }}<br>{% endif %}<span class="fw-klein">{{ b.debitoren_rechnung.titel }}</span></td>
         <td>{% if b.status in abgeschlossen %}<span class="fw-chip">{{ b.get_status_display }}</span>{% else %}<span class="fw-chip fw-crit">{{ b.get_status_display }}</span>{% endif %}</td>
         <td>{{ b.betreibungsamt|default:"—" }}<br><span class="fw-klein">{{ b.betreibungsnummer }}</span></td>
-        <td class="text-right tabular-nums">{{ b.forderung }}</td>
+        <td class="text-right tabular-nums">{{ b.forderung|chf }}</td>
         <td>{{ b.begehren_am|date:"d.m.Y" }}</td>
-        <td>{% if b.status == 'zahlungsbefehl' and b.rechtsvorschlag_frist_bis %}{% blocktrans with d=b.rechtsvorschlag_frist_bis|date:"d.m.Y" %}Rechtsvorschlag bis {{ d }}{% endblocktrans %}{% else %}—{% endif %}</td>
-        <td><a class="fw-btn" href="/neu/betreibungen/{{ b.id }}/">{% trans "Bearbeiten" %}</a></td>
+        <td>{% if b.status in abgeschlossen %}—{% elif b.status == 'zahlungsbefehl' and b.rechtsvorschlag_frist_bis %}{% blocktrans with d=b.rechtsvorschlag_frist_bis|date:"d.m.Y" %}Rechtsvorschlag bis {{ d }}{% endblocktrans %}{% elif b.fortsetzung_frist.0 and not b.fortsetzung_am %}{% blocktrans with d=b.fortsetzung_frist.0|date:"d.m.Y" %}Fortsetzung ab {{ d }}{% endblocktrans %}{% elif b.rechtsvorschlag_am and not b.rechtsoeffnung_am %}{% trans "Rechtsöffnung ausstehend" %}{% else %}—{% endif %}</td>
+        <td class="whitespace-nowrap"><a class="fw-btn" href="/neu/betreibungen/{{ b.id }}/">{% trans "Bearbeiten" %}</a>
+            <a class="fw-btn" href="/neu/betreibungen/{{ b.id }}/pdf/" target="_blank" rel="noopener">{% zeichen 'drucken' %}{% trans "PDF" %}</a></td>
       </tr>
     {% endfor %}
     </tbody>
