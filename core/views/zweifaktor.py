@@ -35,12 +35,14 @@ from django.contrib.auth import authenticate, login as django_login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password, make_password
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.debug import sensitive_post_parameters
 
 from core.models import SicherheitsEreignis, Wiederherstellungscode, ZweiterFaktor
 from core.services import totp
+from core.services.assistent import server_assistent
 
 #: Wie lange die Merknotiz zwischen Passwort und Code gilt (Sekunden).
 WARTEFRIST = 5 * 60
@@ -256,6 +258,31 @@ def _neue_codes(benutzer):
     return klartext
 
 
+def _einrichtungs_assistent(aktuell):
+    """Leiste, Schrittkopf und Fuss der Einrichtung (Assistenten-Standard, server-seitig).
+
+    Drei Schritte: Code scannen, Code bestätigen, Notfallcodes. Der dritte ist nur die
+    Antwort auf das erfolgreiche POST — die Codes erscheinen genau einmal und haben darum
+    keine Adresse: Dort sind die beiden ersten erledigt, aber kein Link mehr (sie führten
+    zur Übersicht, denn der Faktor ist dann aktiv), auch der dritte nicht, und es gibt weder
+    «Zurück» noch «Abbrechen». Vorher ist der dritte Schritt gesperrt.
+    """
+    basis = reverse('zweifaktor_einrichten')
+    fertig = aktuell == 3
+    schritte = [
+        {'nr': 1, 'titel': gettext('Code scannen'), 'url': '' if fertig else basis,
+         'zustand': 'fertig' if aktuell > 1 else 'offen'},
+        {'nr': 2, 'titel': gettext('Code bestätigen'), 'url': '' if fertig else basis + '?schritt=2',
+         'zustand': 'fertig' if aktuell > 2 else 'offen'},
+        {'nr': 3, 'titel': gettext('Notfallcodes'), 'url': '',
+         'zustand': 'offen' if fertig else 'gesperrt'},
+    ]
+    a = server_assistent(schritte, aktuell, abbrechen_url=None if fertig else reverse('zweifaktor_uebersicht'))
+    if fertig:
+        a['zurueck'] = None
+    return a
+
+
 @never_cache
 @login_required
 @sensitive_post_parameters('code')
@@ -276,22 +303,28 @@ def zweifaktor_einrichten(request):
             _sicherheit('Zweiter Faktor eingerichtet', request.user.get_username(),
                         request=request)
             return render(request, 'core/zweifaktor_codes.html',
-                          {'codes': codes, 'frisch': True})
-        fehler = 'Der Code stimmt nicht. Uhrzeit des Telefons prüfen und neu versuchen.'
+                          {'codes': codes, 'assistent': _einrichtungs_assistent(3)})
+        fehler = gettext('Der Code stimmt nicht. Uhrzeit des Telefons prüfen und neu versuchen.')
+        schritt = 2
     else:
         fehler = ''
+        schritt = 2 if request.GET.get('schritt') == '2' else 1
 
-    konto = request.user.email or request.user.get_username()
-    url = totp.einrichtungs_url(faktor.geheimnis, konto)
-    return render(request, 'core/zweifaktor_einrichten.html', {
-        # Weisser Grund im SVG selbst: Der Rahmen um den Code ist `fw-flaeche`
-        # und wird im Dunkelmodus dunkel — schwarzer Code auf dunkler Fläche
-        # lässt sich kaum scannen (dasselbe wie beim Bewerbungs-QR).
-        'qr': totp.qr_svg(url, hell='#fff'),
-        'geheimnis': faktor.geheimnis,
-        'fehler': fehler,
-        'pflicht_hinweis': _pflicht_fuer(request.user),
-    })
+    kontext = {'fehler': fehler, 'schritt': schritt,
+               'assistent': _einrichtungs_assistent(schritt),
+               'pflicht_hinweis': _pflicht_fuer(request.user)}
+    if schritt == 1:
+        # Schlüssel und QR nur dort, wo man sie braucht — Schritt 2 fragt nur den Code ab.
+        konto = request.user.email or request.user.get_username()
+        url = totp.einrichtungs_url(faktor.geheimnis, konto)
+        kontext.update({
+            # Weisser Grund im SVG selbst: Der Rahmen um den Code ist `fw-flaeche`
+            # und wird im Dunkelmodus dunkel — schwarzer Code auf dunkler Fläche
+            # lässt sich kaum scannen (dasselbe wie beim Bewerbungs-QR).
+            'qr': totp.qr_svg(url, hell='#fff'),
+            'geheimnis': faktor.geheimnis,
+        })
+    return render(request, 'core/zweifaktor_einrichten.html', kontext)
 
 
 @never_cache
@@ -376,7 +409,7 @@ def zweifaktor_codes_neu(request):
         return redirect('zweifaktor_einrichten')
     codes = _neue_codes(request.user)
     _sicherheit('Notfallcodes neu erzeugt', request.user.get_username(), request=request)
-    return render(request, 'core/zweifaktor_codes.html', {'codes': codes, 'frisch': False})
+    return render(request, 'core/zweifaktor_codes_neu.html', {'codes': codes})
 
 
 @never_cache

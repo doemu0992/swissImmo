@@ -3,123 +3,120 @@
 {% block title %}{% trans "Abnahme vor Ort einrichten" %} — {{ v.mieter.display_name }}{% endblock %}
 {% block content %}
 {% comment %}
-Einrichtung der Abnahme vor Ort, in zwei Schritten wie bei immotop:
-«Allgemein» (Datum, Art, Strukturvorlage) und «Struktur» (Räume ergänzen,
-umbenennen, umsortieren, entfernen). Ein Formular, ein POST. Ohne JavaScript
-bleibt es eine Liste aus Textfeldern — die Räume stehen als <input name="raum">
-im Quelltext, JavaScript ergänzt nur die Knöpfe.
+Einrichtung der Abnahme vor Ort im Assistenten-Standard (client-seitige Variante, 27.10.2026):
+zwei Schritte wie bei immotop, «Allgemein» (Datum, Art, Strukturvorlage) und «Struktur» (Räume
+ergänzen, umbenennen, umsortieren, entfernen). Ein Formular, ein POST am Schluss. Ohne JavaScript
+bleibt es eine Liste aus Textfeldern — die Räume stehen als <input name="raum"> im Quelltext,
+JavaScript ergänzt nur die Knöpfe. Leiste, Schrittkopf und Fuss kommen aus fw-bausteine.js.
 {% endcomment %}
-<style>
-.vn { max-width: 34rem; margin: 0 auto; padding-bottom: 6rem; }
-.vn-reiter { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--ds-line); margin-bottom: 1rem; }
-.vn-reiter button { min-height: 2.75rem; background: transparent; border: 0; border-bottom: .2rem solid transparent;
-    color: var(--ds-muted); font-weight: 600; cursor: pointer; }
-.vn-reiter button[aria-selected="true"] { color: var(--ds-ink); border-bottom-color: var(--ds-brand); }
-.vn [hidden] { display: none !important; }
-.vn-feld { display: grid; grid-template-columns: minmax(0, 1fr); gap: .25rem; margin-bottom: .9rem; }
-.vn-feld select { max-width: 100%; text-overflow: ellipsis; }   /* lange Vorlagen-Namen dürfen den Rand nicht sprengen */
-.vn-liste { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem; }   /* minmax: sonst weitet das Textfeld die Spalte über den Rand */
-.vn-zeile { display: flex; align-items: center; gap: .15rem; background: var(--ds-surface); border: 1px solid var(--ds-line);
-    border-radius:var(--ds-radius-lg); padding: .25rem .25rem .25rem .6rem; }
-.vn-zeile input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ds-ink); font-size: 1rem; font-weight: 600; min-height: 2.75rem; }
-.vn-ikon { width: 2.75rem; height: 2.75rem; flex: 0 0 2.75rem; display: flex; align-items: center; justify-content: center;
-    background: transparent; border: 0; border-radius:var(--ds-radius); color: var(--ds-brand); cursor: pointer; }
-.vn-ikon.gefahr { color: var(--ds-crit); }
-.vn-ikon.hoch svg { transform: rotate(180deg); }
-.vn-ikon:disabled { color: var(--ds-faint); cursor: default; }
-.vn-kopf { display: flex; align-items: center; justify-content: space-between; margin-bottom: .8rem; }
-.vn-kopf h2 { margin: 0; font-size: 1.3rem; }
-.vn-fuss { display: flex; justify-content: space-between; gap: .6rem; margin-top: 1rem; }
-.vn-fuss > * { min-height: 2.75rem; }
-.vn-hinweis { background: var(--ds-info-soft); border-radius:var(--ds-radius-lg); padding: .8rem 1rem; margin-bottom: 1rem; }
-.vn dialog { width: min(32rem, calc(100vw - 2rem)); max-height: 80vh; border: 0; border-radius:var(--ds-radius-lg);
-    padding: 1rem; background: var(--ds-surface); color: var(--ds-ink); box-shadow: var(--ds-shadow-lg); }
-.vn dialog::backdrop { background: var(--ds-scrim); }
-.vn-dkopf { display: flex; align-items: center; justify-content: space-between; margin-bottom: .8rem; }
-.vn-dkopf h3 { margin: 0; font-size: 1.2rem; }
-.vn-katalog { list-style: none; margin: .8rem 0 0; padding: 0; display: grid; gap: .4rem; max-height: 45vh; overflow: auto; }
-.vn-katalog button { width: 100%; min-height: 2.75rem; display: flex; align-items: center; justify-content: space-between;
-    background: var(--ds-surface-2); border: 1px solid var(--ds-line); border-radius:var(--ds-radius-lg);
-    padding: 0 .9rem; color: var(--ds-ink); font-weight: 600; cursor: pointer; text-align: left; }
-.vn #vnSuche { width: 100%; box-sizing: border-box; }
-.vn-eigen { display: flex; gap: .5rem; margin-top: .8rem; }
-.vn-eigen input { flex: 1; min-width: 0; }
-</style>
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/vertraege/{{ lg_query }}">{% trans "Mietverhältnisse" %}</a>
+    {% zeichen 'weiter' %}
+    <a href="/neu/vertraege/{{ v.id }}/">{{ v.mieter.display_name }}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Abnahme vor Ort" %}</b>
+</nav>
 
-<div class="vn" id="vn">
-    <div class="fw-phead">
-        <div>
-            <h1>{% trans "Abnahme vor Ort einrichten" %}</h1>
-            <p>{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ v.mieter.display_name }}</p>
-        </div>
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Abnahme vor Ort einrichten" %}</h1>
+        <p>{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }} · {{ v.mieter.display_name }}</p>
     </div>
+</div>
 
-    {% if entwurf %}
-    <div class="vn-hinweis">
-        <p>{% blocktrans with datum=entwurf.datum|date:"d.m.Y" %}Es gibt einen offenen Entwurf vom {{ datum }}.{% endblocktrans %}</p>
-        <a class="fw-btn fw-leise" href="/neu/abnahme/{{ entwurf.id }}/vorort/">{% trans "Entwurf fortsetzen" %}</a>
-    </div>
-    {% endif %}
+{% if entwurf %}
+<div class="fw-card"><div class="fw-hinweis info">
+    <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+    <div class="fw-ht">{% blocktrans with datum=entwurf.datum|date:"d.m.Y" %}Es gibt einen offenen Entwurf vom {{ datum }}.{% endblocktrans %}
+        <a class="fw-btn fw-knapp fw-leise fw-abn-entwurf" href="/neu/abnahme/{{ entwurf.id }}/vorort/">{% trans "Entwurf fortsetzen" %}</a></div>
+</div></div>
+{% endif %}
 
-    <form method="post" action="/neu/vertraege/{{ v.id }}/abnahme/vorort/" id="vnForm">
-        {% csrf_token %}
-        <div class="vn-reiter" role="tablist">
-            <button type="button" role="tab" data-tab="allgemein" aria-selected="true">{% trans "Allgemein" %}</button>
-            <button type="button" role="tab" data-tab="struktur" aria-selected="false">{% trans "Struktur" %}</button>
-        </div>
+<form method="post" action="/neu/vertraege/{{ v.id }}/abnahme/vorort/" id="vnForm" novalidate>
+{% csrf_token %}
+<div class="fw-assistent" id="vn" {% include 'fw/_assistent_attribute.html' %}>
+{% include 'fw/_assistent_leiste.html' %}
+<div class="fw-assistent-inhalt">
 
-        <section data-seite="allgemein">
-            <div class="vn-feld"><label class="fw-label" for="vnDatum">{% trans "Datum" %}</label>
-                <input class="fw-feld" type="date" name="datum" id="vnDatum" value="{{ datum }}"></div>
-            <div class="vn-feld"><label class="fw-label" for="vnTyp">{% trans "Art" %}</label>
-                <select class="fw-feld" name="typ" id="vnTyp">
-                    <option value="auszug" {% if typ == 'auszug' %}selected{% endif %}>{% trans "Auszug / Rücknahme" %}</option>
-                    <option value="einzug" {% if typ == 'einzug' %}selected{% endif %}>{% trans "Einzug / Übergabe" %}</option>
-                    <option value="beides" {% if not paar %}disabled{% elif typ == 'beides' %}selected{% endif %}>{% trans "Aus- und Einzug" %}{% if not paar %} — {% trans "kein zweiter Vertrag" %}{% endif %}</option>
-                </select>
+    <section data-schritt="{% trans 'Allgemein' %}" data-schritt-text="{% trans 'Wann findet die Abnahme statt, und woher kommen die Räume?' %}">
+        <div class="fw-assistent-schritt-kopf"></div>
+        <div class="fw-card">
+            <div class="fw-kopf"><h2>{% trans "Termin und Art" %}</h2></div>
+            <div class="fw-rumpf space-y-4">
+                <div class="fw-raster r2">
+                    <div class="fw-feldblock"><label class="fw-label" for="vnDatum">{% trans "Datum" %}</label>
+                        <input class="fw-feld" type="date" name="datum" id="vnDatum" value="{{ datum }}"></div>
+                    <div class="fw-feldblock"><label class="fw-label" for="vnTyp">{% trans "Art" %}</label>
+                        <select class="fw-feld fw-abn-wahl" name="typ" id="vnTyp">
+                            <option value="auszug" {% if typ == 'auszug' %}selected{% endif %}>{% trans "Auszug / Rücknahme" %}</option>
+                            <option value="einzug" {% if typ == 'einzug' %}selected{% endif %}>{% trans "Einzug / Übergabe" %}</option>
+                            <option value="beides" {% if not paar %}disabled{% elif typ == 'beides' %}selected{% endif %}>{% trans "Aus- und Einzug" %}{% if not paar %} — {% trans "kein zweiter Vertrag" %}{% endif %}</option>
+                        </select></div>
+                </div>
                 {% if paar %}
-                <div class="vn-feld"><label class="fw-label" for="vnPartner">{% trans "Aus- und Einzug mit Vertrag" %}</label>
-                    <select class="fw-feld" name="partner" id="vnPartner">
+                <div class="fw-feldblock"><label class="fw-label" for="vnPartner">{% trans "Aus- und Einzug mit Vertrag" %}</label>
+                    <select class="fw-feld fw-abn-wahl" name="partner" id="vnPartner">
                         {% for a in andere %}<option value="{{ a.id }}" {% if partner.id == a.id %}selected{% endif %}>{{ a.mieter.display_name }} ({{ a.beginn|date:"d.m.Y" }}{% if a.ende %} – {{ a.ende|date:"d.m.Y" }}{% endif %})</option>{% endfor %}
                     </select>
-                    <small class="fw-faint">{% trans "Nur bei «Aus- und Einzug»: Der Vertrag mit dem früheren Beginn zieht aus, der andere zieht ein. Das Einzugsprotokoll wird beim Abschluss vorbereitet." %}</small></div>
-                {% else %}<small class="fw-faint">{% trans "Aus- und Einzug in einem Termin geht, sobald für diese Einheit ein zweiter Vertrag (Vor- oder Nachmieter) angelegt ist." %} <a class="fw-link" href="/neu/vertraege/neu/?einheit={{ v.einheit_id }}">{% trans "Folgevertrag anlegen" %}</a></small>{% endif %}</div>
-            <div class="vn-feld"><label class="fw-label" for="vnVorlage">{% trans "Strukturvorlage" %}</label>
-                <select class="fw-feld" name="vorlage" id="vnVorlage">
-                    {% if 'vorgaenger' in vorlagen %}<option value="vorgaenger" {% if vorlage == 'vorgaenger' %}selected{% endif %}>{% blocktrans with art=vorgaenger.get_typ_display datum=vorgaenger.datum|date:"d.m.Y" %}Aus letzter Abnahme ({{ art }} {{ datum }}){% endblocktrans %}</option>{% endif %}
-                    {% if 'raumbuch' in vorlagen %}<option value="raumbuch" {% if vorlage == 'raumbuch' %}selected{% endif %}>{% trans "Aus dem Raumbuch" %}</option>{% endif %}
-                    <option value="standard" {% if vorlage == 'standard' %}selected{% endif %}>{% trans "Standard (Wohnung)" %}</option>
-                    <option value="leer" {% if vorlage == 'leer' %}selected{% endif %}>{% trans "Leer" %}</option>
-                </select></div>
-            {% if vorgaenger %}<p class="vn-hinweis">{% blocktrans with art=vorgaenger.get_typ_display datum=vorgaenger.datum|date:"d.m.Y" name=vorgaenger.vertrag.mieter.display_name %}Letzte Abnahme dieser Einheit: {{ art }} vom {{ datum }} ({{ name }}). Mit der Vorlage «Aus letzter Abnahme» steht ihr Zustand neben jedem Bauteil.{% endblocktrans %}</p>{% endif %}
-            <div class="vn-fuss"><span></span><button type="button" class="fw-btn fw-gutknopf" data-tab="struktur">{% trans "Weiter" %}</button></div>
-        </section>
-
-        <section data-seite="struktur">
-            <div class="vn-kopf"><h2>{% trans "Struktur" %}</h2>
-                <button type="button" class="fw-btn fw-gutknopf" id="vnHinzu" hidden>{% zeichen 'neu' klasse='mr-1' %}{% trans "Hinzufügen" %}</button></div>
-            <ul class="vn-liste" id="vnListe">
-                {% for r in raeume %}<li class="vn-zeile"><input name="raum" value="{{ r }}" maxlength="60" aria-label="{% trans 'Raum' %}"></li>{% endfor %}
-            </ul>
-            <p class="fw-faint" id="vnLeer" {% if raeume %}hidden{% endif %}>{% trans "Noch kein Raum — mit «Hinzufügen» einen Raum ergänzen." %}</p>
-            <div class="vn-fuss">
-                <button type="button" class="fw-btn" data-tab="allgemein">{% trans "Zurück" %}</button>
-                <button type="submit" class="fw-btn fw-gutknopf">{% trans "Abnahme erstellen" %}</button>
+                    <p class="fw-hilfe">{% trans "Nur bei «Aus- und Einzug»: Der Vertrag mit dem früheren Beginn zieht aus, der andere zieht ein. Das Einzugsprotokoll wird beim Abschluss vorbereitet." %}</p></div>
+                {% else %}<p class="fw-hilfe">{% trans "Aus- und Einzug in einem Termin geht, sobald für diese Einheit ein zweiter Vertrag (Vor- oder Nachmieter) angelegt ist." %} <a class="fw-link" href="/neu/vertraege/neu/?einheit={{ v.einheit_id }}">{% trans "Folgevertrag anlegen" %}</a></p>{% endif %}
             </div>
-        </section>
-    </form>
+        </div>
+        <div class="fw-card">
+            <div class="fw-kopf"><h2>{% trans "Strukturvorlage" %}</h2></div>
+            <div class="fw-rumpf space-y-4">
+                <div class="fw-feldblock"><label class="fw-label" for="vnVorlage">{% trans "Strukturvorlage" %}</label>
+                    <select class="fw-feld fw-abn-wahl" name="vorlage" id="vnVorlage">
+                        {% if 'vorgaenger' in vorlagen %}<option value="vorgaenger" {% if vorlage == 'vorgaenger' %}selected{% endif %}>{% blocktrans with art=vorgaenger.get_typ_display datum=vorgaenger.datum|date:"d.m.Y" %}Aus letzter Abnahme ({{ art }} {{ datum }}){% endblocktrans %}</option>{% endif %}
+                        {% if 'raumbuch' in vorlagen %}<option value="raumbuch" {% if vorlage == 'raumbuch' %}selected{% endif %}>{% trans "Aus dem Raumbuch" %}</option>{% endif %}
+                        <option value="standard" {% if vorlage == 'standard' %}selected{% endif %}>{% trans "Standard (Wohnung)" %}</option>
+                        <option value="leer" {% if vorlage == 'leer' %}selected{% endif %}>{% trans "Leer" %}</option>
+                    </select></div>
+                {% if vorgaenger %}
+                <div class="fw-hinweis info"><span class="fw-hi">{% zeichen 'hinweis' %}</span>
+                    <div class="fw-ht">{% blocktrans with art=vorgaenger.get_typ_display datum=vorgaenger.datum|date:"d.m.Y" name=vorgaenger.vertrag.mieter.display_name %}Letzte Abnahme dieser Einheit: {{ art }} vom {{ datum }} ({{ name }}). Mit der Vorlage «Aus letzter Abnahme» steht ihr Zustand neben jedem Bauteil.{% endblocktrans %}</div></div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
 
-    <dialog id="vnDialog" aria-labelledby="vnDTitel">
-        <div class="vn-dkopf"><h3 id="vnDTitel">{% trans "Weitere Gruppen:" %}</h3>
-            <button type="button" class="vn-ikon" id="vnDZu" aria-label="{% trans 'Schliessen' %}">{% zeichen 'schliessen' %}</button></div>
-        <input class="fw-feld" type="search" id="vnSuche" placeholder="{% trans 'Suche' %}" autocomplete="off">
-        <ul class="vn-katalog" id="vnKatalog"></ul>
-        <div class="vn-eigen"><input class="fw-feld" id="vnEigen" maxlength="60" placeholder="{% trans 'Eigener Raum' %}">
-            <button type="button" class="fw-btn fw-gutknopf" id="vnEigenOk">{% trans "Hinzufügen" %}</button></div>
-    </dialog>
-    {{ vorlagen|json_script:"vnVorlagen" }}
-    {{ katalog|json_script:"vnKatalogDaten" }}
+    <section data-schritt="{% trans 'Struktur' %}" data-schritt-text="{% trans 'Welche Räume werden abgenommen? Namen und Reihenfolge lassen sich ändern.' %}">
+        <div class="fw-assistent-schritt-kopf"></div>
+        <div class="fw-card">
+            <div class="fw-kopf"><h2>{% trans "Räume" %}</h2>
+                <div class="fw-rechts"><button type="button" class="fw-btn fw-knapp" id="vnHinzu" hidden>{% zeichen 'neu' %}{% trans "Hinzufügen" %}</button></div></div>
+            <div class="fw-rumpf">
+                <ul class="fw-abn-liste" id="vnListe"{% if raum_fehler %} aria-invalid="true"{% endif %}>
+                    {% for r in raeume %}<li class="fw-abn-zeile"><input name="raum" value="{{ r }}" maxlength="60" aria-label="{% trans 'Raum' %}"></li>{% endfor %}
+                </ul>
+                <p class="fw-hilfe" id="vnLeer" {% if raeume %}hidden{% endif %}>{% trans "Noch kein Raum — mit «Hinzufügen» einen Raum ergänzen." %}</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="fw-assistent-fuss">
+        <button type="button" class="fw-btn" data-assistent-zurueck data-assistent-nur-js>{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
+        <span class="stand" data-assistent-nur-js></span>
+        <div class="rechts">
+            <a href="/neu/vertraege/{{ v.id }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+            <button type="button" class="fw-btn fw-primary" data-assistent-weiter data-assistent-nur-js>{% trans "Weiter" %} {% zeichen 'weiter' %}</button>
+            <button type="submit" class="fw-btn fw-primary" data-assistent-absenden>{% zeichen 'speichern' %}{% trans "Abnahme erstellen" %}</button>
+        </div>
+    </div>
 </div>
+</div>
+</form>
+
+<dialog id="vnDialog" class="fw-bestaetigen fw-abn-dialog" aria-labelledby="vnDTitel">
+    <div class="fw-abn-dkopf"><h2 id="vnDTitel" class="fw-bestaetigen-titel">{% trans "Weitere Gruppen:" %}</h2>
+        <button type="button" class="fw-abn-ikon" id="vnDZu" aria-label="{% trans 'Schliessen' %}">{% zeichen 'schliessen' %}</button></div>
+    <input class="fw-feld" type="search" id="vnSuche" placeholder="{% trans 'Suche' %}" autocomplete="off">
+    <ul class="fw-abn-katalog" id="vnKatalog"></ul>
+    <div class="fw-abn-eigen"><input class="fw-feld" id="vnEigen" maxlength="60" placeholder="{% trans 'Eigener Raum' %}">
+        <button type="button" class="fw-btn fw-primary" id="vnEigenOk">{% trans "Hinzufügen" %}</button></div>
+</dialog>
+{{ vorlagen|json_script:"vnVorlagen" }}
+{{ katalog|json_script:"vnKatalogDaten" }}
 
 <script>
 (function () {
@@ -131,29 +128,24 @@ im Quelltext, JavaScript ergänzt nur die Knöpfe.
     var T = {
         hoch: "{% filter escapejs %}{% trans 'Raum nach oben' %}{% endfilter %}",
         runter: "{% filter escapejs %}{% trans 'Raum nach unten' %}{% endfilter %}",
-        weg: "{% filter escapejs %}{% trans 'Raum entfernen' %}{% endfilter %}"
+        weg: "{% filter escapejs %}{% trans 'Raum entfernen' %}{% endfilter %}",
+        raum: "{% filter escapejs %}{% trans 'Raum' %}{% endfilter %}"
     };
     var ZEICHEN = { ab: '<svg class="fw-zeichen" aria-hidden="true"><use href="#z-aufklappen"/></svg>',
                     weg: '<svg class="fw-zeichen" aria-hidden="true"><use href="#z-loeschen"/></svg>' };
 
-    function zeigeSeite(name) {
-        wurzel.querySelectorAll('[data-seite]').forEach(function (s) { s.hidden = s.dataset.seite !== name; });
-        wurzel.querySelectorAll('.vn-reiter [data-tab]').forEach(function (b) {
-            b.setAttribute('aria-selected', b.dataset.tab === name ? 'true' : 'false'); });
-        window.scrollTo(0, 0);
-    }
     function werte() {
         return Array.prototype.map.call(liste.querySelectorAll('input[name=raum]'), function (i) { return i.value.trim(); })
             .filter(Boolean);
     }
     function knopf(klasse, text, svg) {
         var b = document.createElement('button');
-        b.type = 'button'; b.className = 'vn-ikon ' + klasse; b.setAttribute('aria-label', text); b.title = text; b.innerHTML = svg;
+        b.type = 'button'; b.className = 'fw-abn-ikon ' + klasse; b.setAttribute('aria-label', text); b.title = text; b.innerHTML = svg;
         return b;
     }
     function zeile(name) {
-        var li = document.createElement('li'); li.className = 'vn-zeile';
-        var i = document.createElement('input'); i.name = 'raum'; i.value = name; i.maxLength = 60; i.setAttribute('aria-label', 'Raum');
+        var li = document.createElement('li'); li.className = 'fw-abn-zeile';
+        var i = document.createElement('input'); i.name = 'raum'; i.value = name; i.maxLength = 60; i.setAttribute('aria-label', T.raum);
         li.appendChild(i);
         li.appendChild(knopf('hoch', T.hoch, ZEICHEN.ab));
         li.appendChild(knopf('runter', T.runter, ZEICHEN.ab));
@@ -166,7 +158,7 @@ im Quelltext, JavaScript ergänzt nur die Knöpfe.
         pruefe();
     }
     function pruefe() {
-        var zeilen = liste.querySelectorAll('.vn-zeile');
+        var zeilen = liste.querySelectorAll('.fw-abn-zeile');
         zeilen.forEach(function (li, nr) {
             li.querySelector('.hoch').disabled = nr === 0;
             li.querySelector('.runter').disabled = nr === zeilen.length - 1;
@@ -182,17 +174,17 @@ im Quelltext, JavaScript ergänzt nur die Knöpfe.
     // Aus der reinen Textliste wird die Bedienung: Knöpfe ergänzen.
     document.getElementById('vnHinzu').hidden = false;
     aufbauen(werte());
-    zeigeSeite('allgemein');
 
     wurzel.addEventListener('click', function (e) {
-        var tab = e.target.closest('[data-tab]');
-        if (tab) { zeigeSeite(tab.dataset.tab); return; }
-        var li = e.target.closest('.vn-zeile');
+        var li = e.target.closest('.fw-abn-zeile');
         if (li && e.target.closest('.hoch') && li.previousElementSibling) liste.insertBefore(li, li.previousElementSibling);
         else if (li && e.target.closest('.runter') && li.nextElementSibling) liste.insertBefore(li.nextElementSibling, li);
         else if (li && e.target.closest('.gefahr')) li.remove();
         else if (e.target.closest('#vnHinzu')) { baueKatalog(''); dialog.showModal(); }
-        else if (e.target.closest('#vnDZu')) dialog.close();
+        pruefe();
+    });
+    dialog.addEventListener('click', function (e) {
+        if (e.target.closest('#vnDZu')) dialog.close();
         else if (e.target.closest('#vnEigenOk')) { var f = document.getElementById('vnEigen'); ergaenze(f.value); f.value = ''; dialog.close(); }
         else if (e.target.closest('#vnKatalog button')) { ergaenze(e.target.closest('button').dataset.name); dialog.close(); }
         pruefe();
