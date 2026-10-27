@@ -418,6 +418,7 @@ for (const b of BREITEN) {
       // Über die Leiste nach vorne: hält im Schritt «Mietzins» an
       await page.locator('.fw-assistent-leiste li', { hasText: 'Abschluss' }).locator('button').click();
       await expect(schritt(page)).toContainText('Mietzins');
+      await page.waitForTimeout(400);   // die Meldung des Browsers zur Gültigkeit und das Scrollen setzen sich
       // Ein Klick auf den Grund im Fuss zeigt das Modell
       await page.locator('.fw-mzm-fuss-text').click();
       await expect(page.locator('#mzm_staffel')).toBeFocused();
