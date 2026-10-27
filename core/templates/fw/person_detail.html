@@ -228,7 +228,7 @@ alten Liegenschaft betreut.
                 {% if m.bank_name %}<div class="fw-dz"><div class="fw-dl">{% trans "Bank" %}</div><div class="fw-dv">{{ m.bank_name }}</div></div>{% endif %}
                 {% if m.zahlungsart %}<div class="fw-dz"><div class="fw-dl">{% trans "Zahlungsart" %}</div><div class="fw-dv">{{ m.get_zahlungsart_display }}</div></div>{% endif %}
                 {% if m.ebill_email %}<div class="fw-dz"><div class="fw-dl">{% trans "eBill / E-Rechnung" %}</div><div class="fw-dv">{{ m.ebill_email }}</div></div>{% endif %}
-                {% if m.mahnsperre %}<div class="fw-dz"><div class="fw-dl">{% trans "Mahnsperre" %}</div><div class="fw-dv fw-warnton">{% trans "aktiv (Zahlungsvereinbarung)" %}</div></div>{% endif %}
+                {% if m.mahnsperre %}<div class="fw-dz"><div class="fw-dl">{% trans "Mahnsperre" %}</div><div class="fw-dv fw-warnton">{% trans "aktiv (von Hand gesetzt)" %}</div></div>{% endif %}
                 {% if m.zahler_name %}<div class="fw-dz"><div class="fw-dl">{% trans "Abw. Zahler" %}</div><div class="fw-dv">{{ m.zahler_name }}{% if m.zahler_adresse %} · {{ m.zahler_adresse }}{% endif %}</div></div>{% endif %}
             </div>
         </div>
@@ -404,6 +404,11 @@ alten Liegenschaft betreut.
                         {% zeichen 'recht' %} Zahlungsverzug 257d{% if offene_vertraege|length > 1 %} · {{ vt.einheit.bezeichnung }}{% endif %}
                     </a>
                     {% endif %}
+                    {% if request.user|darf:"/neu/vertraege/1/zahlungsvereinbarung/" %}
+                    <a href="/neu/vertraege/{{ vt.id }}/zahlungsvereinbarung/" class="fw-btn">
+                        {% zeichen 'geld' %} {% trans "Ratenplan" %}{% if offene_vertraege|length > 1 %} · {{ vt.einheit.bezeichnung }}{% endif %}
+                    </a>
+                    {% endif %}
                     {% endfor %}
                 </div>
             </div>
@@ -429,6 +434,20 @@ alten Liegenschaft betreut.
             </tbody>
         </table></div>
     </div>
+    {% if person_betreibungen %}
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'recht' %}</span><span class="fw-t">{% trans "Betreibungen" %}</span></div>
+        <div class="fw-tablewrap"><table class="fw-table">
+            <tbody>
+            {% for b in person_betreibungen %}
+            <tr><td class="fw-num">{{ b.begehren_am|date:"d.m.Y" }}</td>
+                <td><a href="/neu/betreibungen/{{ b.id }}/" class="fw-link">{% blocktrans with nr=b.betreibungsnummer|default:b.id %}Betreibung {{ nr }}{% endblocktrans %}</a> · {{ b.get_status_display }}</td>
+                <td class="fw-right"><span class="fw-betrag">{{ b.forderung|chf }}</span></td></tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+    </div>
+    {% endif %}
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon good">{% zeichen 'zurueck' %}</span>
             <span class="fw-t">{% trans "Zahlungseingänge" %}</span></div>

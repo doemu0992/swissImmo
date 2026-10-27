@@ -44,8 +44,8 @@ das ist Phase 2.
 - M — keine Korrekturabrechnung nach Verbuchen; Leerstandsanteil wird ausgewiesen, aber nicht beim Eigentümer verbucht; kein Mieterbrief bei Akonto-Erhöhung (Art. 269d OR).
 
 ### 3.2 Inkasso
-- **K — Betreibungs-Workflow:** Struktur jetzt da (U4), Oberfläche und Kopplung an Mahnstufe/Abschreibung fehlen (Verlustschein).
-- M — Zahlungsvereinbarung ohne PDF/Unterschrift; keine Inkasso-/Anwaltsübergabe.
+- ~~**K — Betreibungs-Workflow**~~ — **erledigt 26.10.2026:** Assistent «Betreibung einleiten» (mehrere Mieten je Betreibung), Datenblatt-PDF für das Betreibungsbegehren, Fristen Art. 74/88 SchKG mit Stillstand, Pendenzen, Mahnlauf ruht für betriebene Forderungen, Tilgung nach Art. 87 OR, «Kosten belasten» (Art. 68 SchKG), Verlustschein schreibt auf 3805 ab (`core/services/betreibung.py`).
+- ~~M — Zahlungsvereinbarung ohne PDF/Unterschrift~~ — **erledigt 26.10.2026:** Schreiben «Zahlungsvereinbarung mit Schuldanerkennung» (Art. 82 SchKG), in der Vertragsakte abgelegt. Die Mahnsperre gilt seither nur den gedeckten Forderungen, nicht mehr dem ganzen Mieter (`core/services/mahnsperre.py`, Datenmigration finance 0048). Offen: keine Inkasso-/Anwaltsübergabe.
 
 ### 3.3 Tickets
 - **K — interne Zuweisung/SLA:** Felder jetzt da (U2); Filter «Meine Tickets», Ampel, Benachrichtigung fehlen. Eskalationsstufen fehlen.
@@ -71,7 +71,7 @@ das ist Phase 2.
 |---|---|---|
 | Ticket intern zuweisen, SLA-Frist | Block «Zuständigkeit» im Ticket, Filter «Meine Tickets», Chip «SLA überfällig» | nur Inhaber/Verwalter/Sachbearbeiter (nicht Hauswart, `core/tests/test_rbac.py`) |
 | NK-Zustellung, Einsprachefrist | Knopf in der Nebenkostenabrechnung | erst nach Verbuchen; Datum nicht vor Periodenende, nicht in der Zukunft |
-| Betreibung (SchKG) | Mahnwesen → «Betreibung», Liste `/neu/betreibungen/` | Datumsfolge, Stand↔Datum, 10-Tage-Frist (Art. 74), Forderung > 0 |
+| Betreibung (SchKG) | Mahnwesen → «Betreibung» (Assistent), Vertrags- und Personenakte, Liste `/neu/betreibungen/` | Datumsfolge, Stand↔Datum, Forderung > 0; Rechtsvorschlag nach 10 Tagen (Art. 74) seit 26.10.2026 nur noch als **Warnung** — Art. 31, 63, 77 SchKG können ihn rechtzeitig machen; Verlustschein nur Verwalter/Inhaber |
 | Zählerstand (HKVO) | Liegenschaft → «Zählerstand erfassen» | Stand darf nicht sinken, nicht vor/nach Nachbarständen |
 
 **Fehlerbehandlung.** Die REST-API besteht nur aus Webhooks; die Oberfläche ist

@@ -123,6 +123,7 @@ UEBERSETZT = (
     'fw/benutzer_form.html',
     'fw/berichte.html',
     'fw/betreibung_form.html',
+    'fw/betreibung_neu.html',     # 26.10.2026: Assistent «Betreibung einleiten»
     'fw/betreibungen.html',
     'fw/betriebskostenspiegel.html',
     'fw/bewerber_vergleich.html',
@@ -219,6 +220,7 @@ UEBERSETZT = (
     'fw/zahlung_aufteilen.html',  # V12: Assistent «Zahlung aufteilen»
     'fw/zahler_zuordnungen.html',
     'fw/zahllauf.html',
+    'fw/zahlungsvereinbarung.html',  # 26.10.2026: Texte ausgezeichnet, Übersetzung folgt
     'fw/zulauf.html',
 )
 

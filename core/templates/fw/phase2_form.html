@@ -27,7 +27,12 @@ Betreibung, Zählerstand). Rendert ein Django-Form feldweise; Fehler stehen am F
             {% if fristen %}
             <div class="fw-hinweis info rounded-lg"><span class="fw-hi">{% zeichen 'recht' %}</span>
                 <div class="fw-ht">{% blocktrans with d=fristen.rv|date:"d.m.Y" %}Rechtsvorschlag bis {{ d }} (Art. 74 SchKG).{% endblocktrans %}
-                {% if fristen.fortsetzung %}{% blocktrans with a=fristen.fortsetzung.0|date:"d.m.Y" b=fristen.fortsetzung.1|date:"d.m.Y" %}Fortsetzungsbegehren zwischen {{ a }} und {{ b }} (Art. 88 SchKG).{% endblocktrans %}{% endif %}</div>
+                {% if fristen.fortsetzung %}{% with f=fristen.fortsetzung.0 s=fristen.fortsetzung.1 %}
+                {% if f and s %}{% blocktrans with a=f|date:"d.m.Y" b=s|date:"d.m.Y" %}Fortsetzungsbegehren zwischen {{ a }} und {{ b }} (Art. 88 SchKG).{% endblocktrans %}
+                {% elif f %}{% blocktrans with a=f|date:"d.m.Y" %}Fortsetzungsbegehren ab {{ a }}; das Ende ist offen, solange das Rechtsöffnungsverfahren läuft (Art. 88 Abs. 2 SchKG).{% endblocktrans %}
+                {% elif s %}{% blocktrans with b=s|date:"d.m.Y" %}Fortsetzung erst nach der Rechtsöffnung; spätestens {{ b }}, verlängert um die Dauer des Rechtsöffnungsverfahrens (Art. 88 SchKG).{% endblocktrans %}
+                {% else %}{% trans "Fortsetzung erst nach dem Rechtsöffnungsentscheid; die Jahresfrist steht still, solange das Verfahren läuft (Art. 88 Abs. 2 SchKG)." %}{% endif %}
+                {% endwith %}{% endif %}</div>
             </div>
             {% endif %}
             {% block felder %}
@@ -49,4 +54,7 @@ Betreibung, Zählerstand). Rendert ein Django-Form feldweise; Fehler stehen am F
         <a href="{{ zurueck }}" class="fw-btn">{% trans "Abbrechen" %}</a>
     </div>
 </form>
+{% comment %} Für eigene Formulare NEBEN dem Hauptformular (z. B. «Kosten belasten» der
+   Betreibung) — ein Formular im Formular wäre ungültiges HTML. {% endcomment %}
+{% block nach_formular %}{% endblock %}
 {% endblock %}

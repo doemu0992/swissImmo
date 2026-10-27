@@ -798,8 +798,9 @@ def fw_herabsetzung(request, vertrag_id):
     })
 
 
-# Eine Zahlungsvereinbarung setzt die Mahnsperre und verschiebt die Fälligkeit im
-# Gespräch mit dem Mieter — eine Entscheidung der Verwaltung, wie die Fristansetzung.
+# Eine Zahlungsvereinbarung nimmt die gedeckten Forderungen aus dem Mahnlauf und
+# verschiebt ihre Fälligkeit im Gespräch mit dem Mieter — eine Entscheidung der
+# Verwaltung, wie die Fristansetzung.
 @rolle_erforderlich(*VERWALTUNGS_ROLLEN)
 def fw_zahlungsvereinbarung(request, vertrag_id):
     """Ratenplan für einen Rückstand (core/services/zahlungsvereinbarung.py)."""
@@ -823,7 +824,7 @@ def fw_zahlungsvereinbarung(request, vertrag_id):
             if vereinb:
                 zv.abbrechen(vereinb)
                 log_aktion(request, 'Zahlungsvereinbarung abgebrochen', str(v.mieter), f'#{vereinb.pk}', ziel=v)
-                messages.success(request, gettext('Zahlungsvereinbarung abgebrochen — die Mahnsperre ist aufgehoben.'))
+                messages.success(request, gettext('Zahlungsvereinbarung abgebrochen — die gedeckten Forderungen laufen wieder im Mahnlauf.'))
             return redirect(f'/neu/vertraege/{v.id}/zahlungsvereinbarung/')
         try:
             raten = int(request.POST.get('anzahl_raten') or 0)
@@ -840,20 +841,61 @@ def fw_zahlungsvereinbarung(request, vertrag_id):
             return redirect(f'/neu/vertraege/{v.id}/zahlungsvereinbarung/')
         log_aktion(request, 'Zahlungsvereinbarung erfasst', str(v.mieter),
                    f'CHF {vereinb.betrag_total:.2f} in {raten} Raten ab {erste:%d.%m.%Y}', ziel=v)
-        messages.success(request, '✅ ' + gettext('Zahlungsvereinbarung erfasst — Mahnsperre gesetzt, %(n)s Raten-Pendenzen angelegt.') % {'n': raten})
+        messages.success(request, '✅ ' + gettext('Zahlungsvereinbarung erfasst — die gedeckten Forderungen ruhen im Mahnlauf, %(n)s Raten-Pendenzen angelegt.') % {'n': raten})
+        messages.info(request, gettext('Das Schreiben «Zahlungsvereinbarung mit Schuldanerkennung» steht bereit — zweifach ausdrucken und unterzeichnen lassen.'))
         return redirect(f'/neu/vertraege/{v.id}/zahlungsvereinbarung/')
 
     vereinbarungen = []
     for vb in v.zahlungsvereinbarungen.all():
         vereinbarungen.append({
             'v': vb, 'plan': zv.raten_plan(vb),
-            'bezahlt': zv.bezahlt(vb), 'offen': zv.rueckstand(vb)})
+            'bezahlt': zv.bezahlt(vb), 'offen': zv.rueckstand(vb),
+            'forderungen': zv.gedeckte_forderungen(vb) if vb.status == 'aktiv' else []})
     return render(request, 'fw/zahlungsvereinbarung.html', {
         **basis, 'nav': 'vertraege', 'v': v, 'vereinbarungen': vereinbarungen,
         'rueckstand': faelliger_rueckstand(v, stichtag=heute),
         'frist_laeuft': aktive_fristen(v).exists(),
         'heute_iso': heute.isoformat(),
+        'toleranz_tage': zv.TOLERANZ_TAGE,
     })
+
+
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_zahlungsvereinbarung_pdf(request, vertrag_id):
+    """«Zahlungsvereinbarung mit Schuldanerkennung» als PDF, abgelegt in der Vertragsakte.
+
+    `?vb=<id>` wählt die Vereinbarung; gesucht wird über den Rückbezug DIESES
+    Vertrags — eine fremde ID findet nichts (404). Ohne Angabe die neueste.
+    Dieselbe Rolle wie die Vereinbarung selbst: Das Schreiben ist die Erklärung
+    der Vermieterin, die der Mieter unterschreibt."""
+    from django.http import Http404, HttpResponse
+
+    from core.auth import log_aktion
+    from core.services.ablage import ablegen
+    from core.services.inkasso_briefe import zahlungsvereinbarung_pdf
+
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft__eigentuemer'),
+                          id=vertrag_id)
+    qs = v.zahlungsvereinbarungen.all()
+    roh = request.GET.get('vb') or ''
+    if roh:
+        if not roh.isdigit():
+            raise Http404
+        vb = qs.filter(pk=int(roh)).first()
+    else:
+        vb = qs.first()
+    if vb is None:
+        raise Http404
+    pdf = zahlungsvereinbarung_pdf(vb)
+    titel = f"Zahlungsvereinbarung mit Schuldanerkennung #{vb.pk}"
+    # dedup: erneutes Öffnen überschreibt das Dokument derselben Vereinbarung,
+    # statt die Akte mit Kopien zu füllen.
+    ablegen(pdf, titel, kategorie='vertrag', vertrag=v, dedup=True,
+            dateiname=f"Zahlungsvereinbarung_{v.mieter.nachname or v.id}_{vb.pk}.pdf")
+    log_aktion(request, "Zahlungsvereinbarung (Schreiben) erstellt", str(v.mieter), titel, ziel=v)
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    resp['Content-Disposition'] = f'inline; filename="Zahlungsvereinbarung_{vb.pk}.pdf"'
+    return resp
 
 
 def _datum_oder_none(wert):

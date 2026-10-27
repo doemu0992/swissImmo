@@ -24,9 +24,46 @@ HILFE = {
         'Kündigung an. Zahlt der Mieter nicht, ist eine Kündigung mit mindestens 30 Tagen Frist auf Ende eines Monats möglich.')),
     'verzugszins': (_('Verzugszins'), _(
         'Ab Verzug schuldet der Mieter Verzugszins von 5 % pro Jahr (Art. 104 OR), sofern nichts anderes vereinbart ist.')),
+    # Die Hinweise zu Mahngebühren (vertragliche Grundlage) und zur Zinsbasis (360 Tage)
+    # stehen auf den Seiten Mahnwesen und Mahnstufen, nicht in diesen Einträgen: Ein
+    # geänderter Text verlöre seine Übersetzung, bis die Kataloge nachgeführt sind.
     'betreibung': (_('Betreibung'), _(
         'Zwangsvollstreckung nach SchKG: Mit dem Betreibungsbegehren stellt das Betreibungsamt einen Zahlungsbefehl zu. '
         'Erhebt der Mieter Rechtsvorschlag, braucht es eine Rechtsöffnung.')),
+    'rechtsvorschlag': (_('Rechtsvorschlag'), _(
+        'Der Schuldner kann innert 10 Tagen nach Zustellung des Zahlungsbefehls ohne Begründung Rechtsvorschlag '
+        'erheben (Art. 74 SchKG); dann steht die Betreibung still. Auch ein später erhobener Rechtsvorschlag kann '
+        'gelten — etwa bei Betreibungsferien oder nachträglichem Rechtsvorschlag; das klärt das Betreibungsamt.')),
+    'rechtsoeffnung': (_('Rechtsöffnung'), _(
+        'Beseitigt den Rechtsvorschlag. Mit einer unterschriebenen Schuldanerkennung, etwa dem Mietvertrag oder einer '
+        'Zahlungsvereinbarung, gibt das Gericht provisorische Rechtsöffnung (Art. 82 SchKG), mit einem Urteil '
+        'definitive (Art. 80 SchKG). Zwischen Gesuch und Entscheid steht die Jahresfrist für die Fortsetzung still.')),
+    'fortsetzung': (_('Fortsetzungsbegehren'), _(
+        'Frühestens 20 Tage nach Zustellung des Zahlungsbefehls, bei Rechtsvorschlag erst nach der Rechtsöffnung; '
+        'spätestens ein Jahr nach der Zustellung, verlängert um die Dauer des Rechtsöffnungsverfahrens '
+        '(Art. 88 SchKG). Danach pfändet das Betreibungsamt.')),
+    'betreibungskosten': (_('Betreibungskosten'), _(
+        'Die Kosten der Betreibung trägt der Schuldner, der Gläubiger schiesst sie vor (Art. 68 SchKG). '
+        '«Kosten dem Mieter belasten» stellt sie als eigene Forderung in Rechnung; sie zählt nicht zum '
+        'Mietzinsrückstand nach Art. 257d OR.')),
+    'verlustschein': (_('Verlustschein'), _(
+        'Deckt die Pfändung die Forderung nicht, stellt das Betreibungsamt einen Verlustschein aus (Art. 149 SchKG). '
+        'Die offenen Beträge werden dann als Debitorenverlust (Konto 3805) abgeschrieben; die Forderung gegen den '
+        'Schuldner bleibt bestehen.')),
+    'ratenplan': (_('Ratenplan'), _(
+        'Der fällige Rückstand wird auf gleich hohe Raten verteilt, die letzte trägt den Rest. Bis zur Erfüllung '
+        'ruhen nur die gedeckten Forderungen im Mahnlauf — neue Mieten werden normal gemahnt.')),
+    'ratenbruch': (_('Bruch der Vereinbarung'), _(
+        'Liegt die bezahlte Summe nach einer kurzen Toleranz unter dem, was an Raten fällig war, gilt die '
+        'Vereinbarung als gebrochen. Dann laufen die gedeckten Forderungen wieder im Mahnlauf, und eine Pendenz '
+        'erinnert an die Fortsetzung des Mahnprozesses.')),
+    'schuldanerkennung': (_('Schuldanerkennung'), _(
+        'Unterschreibt der Mieter die Zahlungsvereinbarung, anerkennt er den Rückstand schriftlich. Das ist ein '
+        'provisorischer Rechtsöffnungstitel (Art. 82 SchKG): Erhebt er in einer Betreibung Rechtsvorschlag, '
+        'lässt sich dieser damit beseitigen.')),
+    'vereinbarung_257d': (_('Vereinbarung und Art. 257d OR'), _(
+        'Eine Zahlungsvereinbarung hemmt eine bereits laufende Zahlungsfrist nach Art. 257d OR nicht, es sei denn, '
+        'der Vermieter verzichtet ausdrücklich darauf.')),
     'kaution': (_('Mietkaution'), _(
         'Bei Wohnräumen höchstens drei Monatszinse; sie liegt auf einem Konto oder Depot auf den Namen des Mieters '
         '(Art. 257e OR). Die Bank gibt sie mit Zustimmung beider frei — oder dem Mieter, wenn der Vermieter innert '
@@ -103,8 +140,8 @@ HILFE = {
     'zahllauf': (_('Zahllauf'), _(
         'Fasst freigegebene Lieferantenrechnungen zu einem Zahlungsauftrag (pain.001) zusammen und verbucht den Lauf gesammelt.')),
     'mahnsperre': (_('Mahnsperre'), _(
-        'Für diese Person läuft kein automatischer Mahnlauf, etwa während einer Zahlungsvereinbarung. '
-        'Offene Rechnungen bleiben sichtbar.')),
+        'Von Hand gesetzt: Für diese Person läuft kein automatischer Mahnlauf. Eine Zahlungsvereinbarung braucht '
+        'das Häkchen nicht — sie nimmt nur die Forderungen aus, die ihr Ratenplan deckt. Offene Rechnungen bleiben sichtbar.')),
     'abweichender_zahler': (_('Abweichender Zahler'), _(
         'Wenn jemand anders zahlt als der Mieter, zum Beispiel das Sozialamt oder ein Arbeitgeber. '
         'Der Bankabgleich erkennt die Zahlungen dann auch unter diesem Namen.')),

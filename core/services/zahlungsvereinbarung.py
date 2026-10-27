@@ -5,11 +5,24 @@ Betrag, Raten oder Ende — und niemand bemerkte, wenn die Vereinbarung gebroche
 wurde (Stresstest 30.09.2026). Jetzt:
 
 · `anlegen` erfasst den gedeckten Rückstand, verteilt ihn auf gleich hohe Raten
-  (die letzte trägt den Rest), setzt die Mahnsperre und legt je Rate eine Pendenz an.
+  (die letzte trägt den Rest) und legt je Rate eine Pendenz an.
 · `pruefen` (täglich und nach jeder Zahlung) stellt fest, ob erfüllt oder gebrochen.
   Gebrochen: Die bezahlte Summe liegt unter der Soll-Summe der Raten, die vor
-  `TOLERANZ_TAGE` Tagen fällig waren. Dann endet die Mahnsperre, und eine Pendenz
-  verlangt die Fortsetzung des Mahnprozesses.
+  `TOLERANZ_TAGE` Tagen fällig waren. Dann laufen die gedeckten Forderungen wieder
+  im Mahnlauf, und eine Pendenz verlangt die Fortsetzung des Mahnprozesses.
+
+WAS GESPERRT IST (seit 26.10.2026)
+
+Solange eine Vereinbarung `aktiv` ist, nimmt der Mahnlauf genau die Forderungen
+aus, die sie deckt: die Rechnungen des Vertrags, die bis `gedeckt_bis` fällig
+waren, und die daraus abgeleiteten Mahngebühren und Zinsen (`stammrechnung`).
+Eine neue Monatsmiete während des Ratenplans ist NICHT gedeckt und wird normal
+gemahnt — der Mieter zahlt Raten auf den alten Rückstand, nicht auf die laufende
+Miete. Früher setzte `anlegen` dafür `Mieter.mahnsperre` und sperrte damit den
+ganzen Mieter; das Häkchen ist seither wieder ein reiner Handschalter
+(Datenmigration finance 0048). Zentral entschieden wird in
+`ist_durch_vereinbarung_gesperrt` bzw. `gesperrte_rechnung_ids`; Mahnlauf und
+Mahnwesen fragen nur dort.
 
 Eine Vereinbarung hemmt eine laufende 257d-Frist nicht (siehe Modellkommentar).
 """
@@ -85,22 +98,76 @@ def anlegen(vertrag, anzahl_raten, erste_rate, intervall_monate=1, user=None, no
             beschreibung=f'Zahlungsvereinbarung #{v.pk}: Rate {nr} von {anzahl_raten}.',
             kategorie='finanzen', faellig_am=faellig, vertrag=vertrag, liegenschaft=lg,
             quelle=f'auto:rate:{v.pk}:{nr}', erstellt_von=user)
-    mieter = vertrag.mieter
-    if not mieter.mahnsperre:
-        mieter.mahnsperre = True
-        mieter.save(update_fields=['mahnsperre'])
     return v
 
 
-def _sperre_aufheben(v):
-    """Mahnsperre beenden — ausser eine andere aktive Vereinbarung desselben Mieters läuft."""
-    from finance.models import Zahlungsvereinbarung
-    mieter = v.vertrag.mieter
-    andere = Zahlungsvereinbarung.objects.filter(
-        vertrag__mieter=mieter, status='aktiv').exclude(pk=v.pk).exists()
-    if not andere and mieter.mahnsperre:
-        mieter.mahnsperre = False
-        mieter.save(update_fields=['mahnsperre'])
+def _gedeckt_q(vereinbarungen):
+    """Q-Ausdruck über die Hauptforderungen, die diese Vereinbarungen decken.
+
+    Massgebend ist das Fälligkeitsdatum, ohne eines das Rechnungsdatum — wie in
+    `zahlungsverzug.faelliger_rueckstand`, mit dem der Rückstand berechnet wurde."""
+    from django.db.models import Q
+    q = Q(pk__in=[])
+    for v in vereinbarungen:
+        q |= (Q(vertrag_id=v.vertrag_id, stammrechnung__isnull=True)
+              & (Q(faellig_am__lte=v.gedeckt_bis)
+                 | Q(faellig_am__isnull=True, datum__lte=v.gedeckt_bis)))
+    return q
+
+
+def gesperrte_rechnung_ids():
+    """IDs aller Forderungen, die eine AKTIVE Vereinbarung deckt (siehe Modulkopf).
+
+    Für Listen und den Mahnlauf: drei Abfragen, egal wie viele Rechnungen
+    geprüft werden. Läuft über `objects` — also im Kontext der Organisation."""
+    from finance.models import DebitorenRechnung, Zahlungsvereinbarung
+    aktive = list(Zahlungsvereinbarung.objects.filter(status='aktiv')
+                  .only('vertrag_id', 'gedeckt_bis'))
+    if not aktive:
+        return set()
+    haupt = set(DebitorenRechnung.objects.filter(_gedeckt_q(aktive)).values_list('pk', flat=True))
+    if not haupt:
+        return set()
+    abgeleitet = set(DebitorenRechnung.objects.filter(stammrechnung_id__in=haupt)
+                     .values_list('pk', flat=True))
+    return haupt | abgeleitet
+
+
+def ist_durch_vereinbarung_gesperrt(rechnung):
+    """Ist diese Forderung durch eine aktive Zahlungsvereinbarung vom Mahnen ausgenommen?
+
+    Eine abgeleitete Forderung (Mahngebühr, Zins) teilt das Schicksal ihrer
+    Stammrechnung."""
+    haupt = rechnung
+    if rechnung.stammrechnung_id:
+        haupt = rechnung.stammrechnung
+    if not haupt.vertrag_id:
+        return False
+    faellig = haupt.faellig_am or haupt.datum
+    if not faellig:
+        return False
+    return haupt.vertrag.zahlungsvereinbarungen.filter(status='aktiv', gedeckt_bis__gte=faellig).exists()
+
+
+def gedeckte_forderungen(v):
+    """[(Rechnung, offen bei Abschluss)] — die Forderungen, die der Rückstand umfasst.
+
+    Für das Schreiben mit Schuldanerkennung: Es nennt die Forderungen, wie sie am
+    Tag des Abschlusses offen waren, damit die Summe dem anerkannten Betrag
+    (`betrag_total`) entspricht — auch wenn danach schon Raten eingegangen sind.
+    Gezählt werden verbuchte Zahlungen mit Eingang bis `gedeckt_bis`."""
+    zeilen = []
+    for r in (v.vertrag.debitoren_rechnungen
+              .filter(_gedeckt_q([v]))
+              .exclude(status='storniert')
+              .prefetch_related('zahlungseingaenge')
+              .order_by('faellig_am', 'datum', 'id')):
+        bezahlt_bis = sum((z.betrag or Decimal('0.00')) for z in r.zahlungseingaenge.all()
+                          if z.status == 'verbucht' and z.datum_eingang and z.datum_eingang <= v.gedeckt_bis)
+        offen = max(Decimal('0.00'), r.betrag - bezahlt_bis)
+        if offen > 0:
+            zeilen.append((r, offen))
+    return zeilen
 
 
 def _raten_pendenzen(v, erledigen_bis_nr=None, alle=False):
@@ -130,7 +197,6 @@ def pruefen(v, stichtag=None, bruch=True):
         v.status = 'erfuellt'
         v.save(update_fields=['status'])
         _raten_pendenzen(v, alle=True)
-        _sperre_aufheben(v)
         return v.status
     gezahlt = v.betrag_total - offen
     # Raten, die durch die Zahlungen bereits gedeckt sind, sind erledigt.
@@ -145,14 +211,14 @@ def pruefen(v, stichtag=None, bruch=True):
         v.status = 'gebrochen'
         v.save(update_fields=['status'])
         _raten_pendenzen(v, alle=True)
-        _sperre_aufheben(v)
         Pendenz.objects.get_or_create(
             quelle=f'auto:ratenbruch:{v.pk}',
             defaults={
                 'titel': f'Zahlungsvereinbarung gebrochen – {v.vertrag.mieter.display_name}',
                 'beschreibung': (f'Bezahlt CHF {gezahlt:.2f} von CHF {soll_bis(v, stichtag - timedelta(days=TOLERANZ_TAGE)):.2f} '
-                                 f'fälligen Raten. Die Mahnsperre ist aufgehoben; der Mahnprozess läuft '
-                                 f'weiter (Mahnwesen, ggf. Fristansetzung nach Art. 257d OR).'),
+                                 f'fälligen Raten. Die gedeckten Forderungen laufen wieder im Mahnlauf; '
+                                 f'der Mahnprozess geht weiter (Mahnwesen, ggf. Fristansetzung nach '
+                                 f'Art. 257d OR).'),
                 'kategorie': 'finanzen', 'faellig_am': stichtag, 'vertrag': v.vertrag,
                 'liegenschaft': lg})
     return v.status
@@ -179,4 +245,3 @@ def abbrechen(v):
         v.status = 'abgebrochen'
         v.save(update_fields=['status'])
         _raten_pendenzen(v, alle=True)
-        _sperre_aufheben(v)

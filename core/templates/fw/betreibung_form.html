@@ -1,12 +1,35 @@
 {% extends 'fw/phase2_form.html' %}
-{% load i18n %}
+{% load i18n hilfe zeichen chf %}
 {% block felder %}
+{% comment %}
+BETREIBUNG BEARBEITEN (`fw_betreibung_bearbeiten`). Eingeleitet wird über den
+Assistenten `fw/betreibung_neu.html`; hier wird der Stand nachgeführt. Was nach
+Gesetz trotzdem zulässig sein kann (später Rechtsvorschlag, Fortsetzung ausserhalb
+der Frist), steht nach dem Speichern als Warnung da, nicht als Fehler am Feld.
+{% endcomment %}
+{% if b %}
+<div class="fw-hinweis info rounded-lg">
+    <span class="fw-hi">{% zeichen 'rechnung' %}</span>
+    <div class="fw-ht">
+        <b>{% trans "Forderungen in dieser Betreibung" %}</b>
+        <ul class="list-disc pl-5">
+            {% for r in rechnungen %}<li>{{ r.titel }} · {{ r.faellig_am|default:r.datum|date:"d.m.Y" }} · CHF {{ r.betrag|chf }} · {{ r.get_status_display }}</li>{% endfor %}
+        </ul>
+        {% if b.ist_offen %}<p class="fw-klein">{% trans "Solange die Betreibung offen ist, mahnt der Mahnlauf diese Forderungen nicht. Sind alle bezahlt, steht sie von selbst auf «Bezahlt»." %}</p>{% endif %}
+    </div>
+</div>
+<div class="flex flex-wrap gap-2">
+    <a href="/neu/betreibungen/{{ b.id }}/pdf/" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' %}{% trans "Datenblatt Betreibungsbegehren (PDF)" %}</a>
+    {% if b.vertrag_id %}<a href="/neu/vertraege/{{ b.vertrag_id }}/" class="fw-btn">{% zeichen 'vertrag' %}{% trans "Zum Vertrag" %}</a>{% endif %}
+</div>
+{% endif %}
 <div class="fw-raster r2">
     <div>
         <label for="id_status" class="fw-label mb-1">{% trans "Stand" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
         <select id="id_status" name="status" class="fw-feld w-full">
             {% for wert, bez in form.status.field.choices %}<option value="{{ wert }}"{% if werte.status == wert %} selected{% endif %}>{{ bez }}</option>{% endfor %}
         </select>
+        {% if not kann_verwalten %}<p class="fw-hilfe">{% trans "«Verlustschein» schreibt die offenen Forderungen ab und ist der Verwaltung (Verwalter, Inhaber) vorbehalten." %}</p>{% endif %}
         {% include 'fw/_feldfehler.html' with f=form.status %}
     </div>
     <div>
@@ -25,8 +48,24 @@
         {% include 'fw/_feldfehler.html' with f=form.forderung %}
     </div>
     <div>
-        <label for="id_kosten" class="fw-label mb-1">{% trans "Betreibungskosten (CHF)" %}</label>
+        <label for="id_zinssatz" class="fw-label mb-1">{% trans "Zins (%)" %} {% hilfe 'verzugszins' %}</label>
+        <input type="text" id="id_zinssatz" name="zinssatz" value="{{ werte.zinssatz }}" inputmode="decimal" class="fw-feld w-full"{% if form.zinssatz.errors %} aria-invalid="true" aria-describedby="id_zinssatz_fehler"{% endif %}>
+        {% include 'fw/_feldfehler.html' with f=form.zinssatz %}
+    </div>
+    <div>
+        <label for="id_zins_ab" class="fw-label mb-1">{% trans "Zins seit" %}</label>
+        <input type="date" id="id_zins_ab" name="zins_ab" value="{{ werte.zins_ab }}" class="fw-feld w-full"{% if form.zins_ab.errors %} aria-invalid="true" aria-describedby="id_zins_ab_fehler"{% endif %}>
+        {% include 'fw/_feldfehler.html' with f=form.zins_ab %}
+    </div>
+    <div class="fw-col-span-2">
+        <label for="id_forderungsgrund" class="fw-label mb-1">{% trans "Forderungsgrund" %}</label>
+        <textarea id="id_forderungsgrund" name="forderungsgrund" rows="3" class="fw-feld w-full">{{ werte.forderungsgrund }}</textarea>
+        {% include 'fw/_feldfehler.html' with f=form.forderungsgrund %}
+    </div>
+    <div>
+        <label for="id_kosten" class="fw-label mb-1">{% trans "Betreibungskosten (CHF)" %} {% hilfe 'betreibungskosten' %}</label>
         <input type="text" id="id_kosten" name="kosten" value="{{ werte.kosten }}" inputmode="decimal" class="fw-feld w-full"{% if form.kosten.errors %} aria-invalid="true" aria-describedby="id_kosten_fehler"{% endif %}>
+        {% if b.kosten_rechnung %}<p class="fw-hilfe">{% blocktrans with t=b.kosten_rechnung.titel s=b.kosten_rechnung.get_status_display %}Dem Mieter belastet: {{ t }} ({{ s }}){% endblocktrans %}</p>{% endif %}
         {% include 'fw/_feldfehler.html' with f=form.kosten %}
     </div>
     <div>
@@ -40,22 +79,39 @@
         {% include 'fw/_feldfehler.html' with f=form.zahlungsbefehl_am %}
     </div>
     <div>
-        <label for="id_rechtsvorschlag_am" class="fw-label mb-1">{% trans "Rechtsvorschlag am" %}</label>
+        <label for="id_rechtsvorschlag_am" class="fw-label mb-1">{% trans "Rechtsvorschlag am" %} {% hilfe 'rechtsvorschlag' %}</label>
         <input type="date" id="id_rechtsvorschlag_am" name="rechtsvorschlag_am" value="{{ werte.rechtsvorschlag_am }}" class="fw-feld w-full"{% if form.rechtsvorschlag_am.errors %} aria-invalid="true" aria-describedby="id_rechtsvorschlag_am_fehler"{% endif %}>
         {% include 'fw/_feldfehler.html' with f=form.rechtsvorschlag_am %}
     </div>
     <div>
-        <label for="id_rechtsoeffnung_am" class="fw-label mb-1">{% trans "Rechtsöffnung am" %}</label>
+        <label for="id_rechtsoeffnung_beantragt_am" class="fw-label mb-1">{% trans "Rechtsöffnungsgesuch am" %} {% hilfe 'rechtsoeffnung' %}</label>
+        <input type="date" id="id_rechtsoeffnung_beantragt_am" name="rechtsoeffnung_beantragt_am" value="{{ werte.rechtsoeffnung_beantragt_am }}" class="fw-feld w-full"{% if form.rechtsoeffnung_beantragt_am.errors %} aria-invalid="true" aria-describedby="id_rechtsoeffnung_beantragt_am_fehler"{% endif %}>
+        {% include 'fw/_feldfehler.html' with f=form.rechtsoeffnung_beantragt_am %}
+    </div>
+    <div>
+        <label for="id_rechtsoeffnung_am" class="fw-label mb-1">{% trans "Rechtsöffnung erteilt am" %}</label>
         <input type="date" id="id_rechtsoeffnung_am" name="rechtsoeffnung_am" value="{{ werte.rechtsoeffnung_am }}" class="fw-feld w-full"{% if form.rechtsoeffnung_am.errors %} aria-invalid="true" aria-describedby="id_rechtsoeffnung_am_fehler"{% endif %}>
         {% include 'fw/_feldfehler.html' with f=form.rechtsoeffnung_am %}
     </div>
     <div>
-        <label for="id_fortsetzung_am" class="fw-label mb-1">{% trans "Fortsetzungsbegehren am" %}</label>
+        <label for="id_rechtsoeffnung_art" class="fw-label mb-1">{% trans "Art der Rechtsöffnung" %}</label>
+        <select id="id_rechtsoeffnung_art" name="rechtsoeffnung_art" class="fw-feld w-full">
+            {% for wert, bez in form.rechtsoeffnung_art.field.choices %}<option value="{{ wert }}"{% if werte.rechtsoeffnung_art == wert %} selected{% endif %}>{{ bez }}</option>{% endfor %}
+        </select>
+        {% include 'fw/_feldfehler.html' with f=form.rechtsoeffnung_art %}
+    </div>
+    <div>
+        <label for="id_fortsetzung_am" class="fw-label mb-1">{% trans "Fortsetzungsbegehren am" %} {% hilfe 'fortsetzung' %}</label>
         <input type="date" id="id_fortsetzung_am" name="fortsetzung_am" value="{{ werte.fortsetzung_am }}" class="fw-feld w-full"{% if form.fortsetzung_am.errors %} aria-invalid="true" aria-describedby="id_fortsetzung_am_fehler"{% endif %}>
         {% include 'fw/_feldfehler.html' with f=form.fortsetzung_am %}
     </div>
     <div>
-        <label for="id_verlustschein_am" class="fw-label mb-1">{% trans "Verlustschein am" %}</label>
+        <label for="id_pfaendung_am" class="fw-label mb-1">{% trans "Pfändung am" %}</label>
+        <input type="date" id="id_pfaendung_am" name="pfaendung_am" value="{{ werte.pfaendung_am }}" class="fw-feld w-full"{% if form.pfaendung_am.errors %} aria-invalid="true" aria-describedby="id_pfaendung_am_fehler"{% endif %}>
+        {% include 'fw/_feldfehler.html' with f=form.pfaendung_am %}
+    </div>
+    <div>
+        <label for="id_verlustschein_am" class="fw-label mb-1">{% trans "Verlustschein am" %} {% hilfe 'verlustschein' %}</label>
         <input type="date" id="id_verlustschein_am" name="verlustschein_am" value="{{ werte.verlustschein_am }}" class="fw-feld w-full"{% if form.verlustschein_am.errors %} aria-invalid="true" aria-describedby="id_verlustschein_am_fehler"{% endif %}>
         {% include 'fw/_feldfehler.html' with f=form.verlustschein_am %}
     </div>
@@ -65,4 +121,25 @@
         {% include 'fw/_feldfehler.html' with f=form.bemerkung %}
     </div>
 </div>
+{% endblock %}
+
+{% block nach_formular %}
+{% if b and b.ist_offen %}
+<div class="fw-card max-w-2xl mt-4">
+    <div class="fw-rumpf space-y-2">
+        <h2>{% trans "Kosten dem Mieter belasten" %} {% hilfe 'betreibungskosten' %}</h2>
+        {% if b.kosten_rechnung and b.kosten_rechnung.status != 'storniert' %}
+        <p class="fw-klein">{% blocktrans with b=b.kosten_rechnung.betrag|chf %}Bereits belastet: CHF {{ b }}.{% endblocktrans %}</p>
+        {% elif b.kosten > 0 %}
+        <form method="post" action="/neu/betreibungen/{{ b.id }}/kosten/" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with b=b.kosten|chf %}Betreibungskosten von CHF {{ b }} dem Mieter als Forderung belasten?{% endblocktrans %}{% endfilter %}');">
+            {% csrf_token %}
+            <p class="fw-klein">{% blocktrans with b=b.kosten|chf %}Stellt CHF {{ b }} als Forderung «Betreibungskosten (Art. 68 SchKG)» in Rechnung. Sie hängt an der Hauptforderung und zählt nicht zum Rückstand nach Art. 257d OR.{% endblocktrans %}</p>
+            <button type="submit" class="fw-btn">{% zeichen 'rechnung' %}{% trans "Kosten dem Mieter belasten" %}</button>
+        </form>
+        {% else %}
+        <p class="fw-klein">{% trans "Zuerst die Betreibungskosten oben erfassen und speichern." %}</p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
 {% endblock %}

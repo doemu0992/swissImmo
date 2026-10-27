@@ -28,8 +28,10 @@
             <li>{% trans "Überfällige Rechnungen erscheinen nach Mahnstufe; die Stufe ergibt sich aus den Tagen seit Fälligkeit." %}</li>
             <li>{% trans "«Trockenlauf ansehen» zeigt, was der Lauf täte — ohne etwas zu versenden." %}</li>
             <li>{% trans "«Mahnlauf ausführen» erstellt die Mahnungen mit QR-Rechnung und hält jeden Schritt in der Historie fest." %}</li>
-            <li>{% trans "Nach der Fristansetzung (Art. 257d OR) folgt bei Bedarf die Betreibung." %}</li>
+            <li>{% trans "Nach der Fristansetzung (Art. 257d OR) folgt bei Bedarf die Betreibung." %} {% hilfe 'betreibung' %}</li>
+            <li>{% trans "Kann der Mieter nicht auf einmal zahlen: «Ratenplan» vereinbart Raten für den Rückstand. Nur diese Forderungen ruhen dann im Mahnlauf." %} {% hilfe 'ratenplan' %}</li>
         </ol>
+        <p>{% trans "Mahngebühren dürfen nur verlangt werden, wenn der Mietvertrag oder die AGB sie vorsehen. Der Verzugszins wird mit 360 Zinstagen je Jahr gerechnet — ob diese Zinsbasis gilt, ist rechtlich zu bestätigen." %}</p>
     </div>
     <button type="button" class="zu" aria-label="{% trans 'Hinweis ausblenden' %}">{% zeichen 'schliessen' %}</button>
 </div>
@@ -103,6 +105,7 @@
                     </form>
                     {% endif %}
                     <div class="inline-flex flex-wrap items-center justify-end gap-1.5">
+                    {% if row.vertrag_id and request.user|darf:"/neu/vertraege/1/zahlungsvereinbarung/" %}<a href="/neu/vertraege/{{ row.vertrag_id }}/zahlungsvereinbarung/" class="fw-btn fw-knapp">{% zeichen 'geld' %} {% trans "Ratenplan" %}</a>{% endif %}
                     {% if request.user|darf:"/neu/betreibungen/neu/1/" %}<a href="/neu/betreibungen/neu/{{ row.r.id }}/" class="fw-btn fw-knapp" title="{% trans 'Betreibung einleiten (SchKG)' %}">{% zeichen 'recht' %} {% trans "Betreibung" %}</a>{% endif %}
                     {% if row.mahn_url %}
                     <a href="{{ row.mahn_url }}" target="_blank" rel="noopener"

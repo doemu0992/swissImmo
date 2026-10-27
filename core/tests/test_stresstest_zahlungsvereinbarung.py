@@ -38,11 +38,15 @@ class ZahlungsvereinbarungTests(TestCase):
         self.assertEqual([f.month for _, f, _ in plan],
                          [(self.heute.month - 1 + i) % 12 + 1 for i in range(3)])
 
-    def test_anlegen_setzt_mahnsperre_und_raten_pendenzen(self):
+    def test_anlegen_sperrt_die_gedeckte_forderung_nicht_den_mieter(self):
+        """Seit 26.10.2026: kein `Mieter.mahnsperre` mehr — gesperrt ist die Forderung."""
         from core.models import Pendenz
+        from core.services import zahlungsvereinbarung as zv
         vb = self._anlegen(3)
         self.m.refresh_from_db()
-        self.assertTrue(self.m.mahnsperre)
+        self.assertFalse(self.m.mahnsperre)
+        self.assertTrue(zv.ist_durch_vereinbarung_gesperrt(self.r))
+        self.assertEqual(zv.gesperrte_rechnung_ids(), {self.r.pk})
         self.assertEqual(Pendenz.objects.filter(quelle__startswith=f'auto:rate:{vb.pk}:').count(), 3)
 
     def test_mahnlauf_mahnt_waehrend_der_vereinbarung_nicht(self):
@@ -52,11 +56,12 @@ class ZahlungsvereinbarungTests(TestCase):
 
     def test_volle_zahlung_erfuellt_und_hebt_die_sperre_auf(self):
         from core.models import Pendenz
+        from core.services import zahlungsvereinbarung as zv
         vb = self._anlegen(3)
         self._zahlen('1000.00')
-        vb.refresh_from_db(); self.m.refresh_from_db()
+        vb.refresh_from_db()
         self.assertEqual(vb.status, 'erfuellt')
-        self.assertFalse(self.m.mahnsperre)
+        self.assertFalse(zv.ist_durch_vereinbarung_gesperrt(self.r))
         self.assertFalse(Pendenz.objects.filter(quelle__startswith=f'auto:rate:{vb.pk}:', erledigt=False).exists())
 
     def test_erste_rate_bezahlt_erledigt_nur_deren_pendenz(self):
@@ -75,8 +80,8 @@ class ZahlungsvereinbarungTests(TestCase):
         # Erste Rate war vor 10 Tagen fällig und wurde nicht bezahlt.
         vb.erste_rate = self.heute - timedelta(days=10); vb.save()
         self.assertEqual(zv.pruefen(vb), 'gebrochen')
-        self.m.refresh_from_db()
-        self.assertFalse(self.m.mahnsperre)
+        self.assertFalse(zv.ist_durch_vereinbarung_gesperrt(self.r))
+        self.assertEqual(zv.gesperrte_rechnung_ids(), set())
         self.assertTrue(Pendenz.objects.filter(quelle=f'auto:ratenbruch:{vb.pk}').exists())
 
     def test_toleranz_verzeiht_wenige_tage_verspaetung(self):
@@ -129,8 +134,8 @@ class ZahlungsvereinbarungTests(TestCase):
         from core.services import zahlungsvereinbarung as zv
         vb = self._anlegen(3)
         zv.abbrechen(vb)
-        self.m.refresh_from_db(); vb.refresh_from_db()
-        self.assertFalse(self.m.mahnsperre)
+        vb.refresh_from_db()
+        self.assertFalse(zv.ist_durch_vereinbarung_gesperrt(self.r))
         self.assertEqual(vb.status, 'abgebrochen')
 
     def test_view_anlegen_und_rollen(self):

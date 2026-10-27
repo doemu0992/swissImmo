@@ -1917,7 +1917,21 @@ def fw_vertrag_detail(request, pk):
     # zwei Abfragen (`core.services.mieterkonto.berechne_vertragskonto`).
     from core.services.mieterkonto import berechne_vertragskonto
     konto_zeilen, konto_saldo = berechne_vertragskonto(v)
+    # Inkasso auf der Akte: Betreibungen dieses Vertrags (auch solche, deren
+    # `vertrag` leer blieb, über die Hauptforderung) und ein laufender Ratenplan.
+    # Zwei Abfragen; der Einstieg «Betreibung einleiten» nimmt die älteste offene
+    # Hauptforderung — der Assistent bietet die übrigen zur Auswahl an.
+    from django.db.models import Q as _Q
+    from finance.models import Betreibung
+    betreibungen = list(Betreibung.objects.filter(_Q(vertrag=v) | _Q(debitoren_rechnung__vertrag=v))
+                        .distinct().select_related('debitoren_rechnung').order_by('-begehren_am', '-id')[:10])
+    zv_aktiv = v.zahlungsvereinbarungen.filter(status='aktiv').first()
+    betreibung_start = min((r for r in offene if r.stammrechnung_id is None),
+                           key=lambda r: (r.faellig_am or r.datum, r.id), default=None)
     return render(request, 'fw/vertrag_detail.html', {
+        'betreibungen': betreibungen,
+        'zv_aktiv': zv_aktiv,
+        'betreibung_start': betreibung_start,
         'konto_zeilen': konto_zeilen,
         'konto_saldo': konto_saldo,
         'formular_gruppen': _formulare_prozesse(v, request.user),
