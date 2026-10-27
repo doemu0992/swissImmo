@@ -32706,3 +32706,12 @@ msgstr "Registrazione & notifica"
 
 msgid "Kreditorenrechnung"
 msgstr "Fattura creditore"
+
+msgid "weitere Unterbereiche"
+msgstr "altre sottoaree"
+
+msgid "Weitere Unterbereiche"
+msgstr "Altre sottoaree"
+
+msgid "Neue Schadenmeldungen"
+msgstr "Nuove segnalazioni di danno"

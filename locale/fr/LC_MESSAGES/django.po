@@ -32754,3 +32754,12 @@ msgstr "Comptabilisation & notification"
 
 msgid "Kreditorenrechnung"
 msgstr "Facture créancier"
+
+msgid "weitere Unterbereiche"
+msgstr "autres sous-domaines"
+
+msgid "Weitere Unterbereiche"
+msgstr "Autres sous-domaines"
+
+msgid "Neue Schadenmeldungen"
+msgstr "Nouveaux avis de dégât"

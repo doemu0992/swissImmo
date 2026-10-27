@@ -428,6 +428,22 @@
     });
     window.fwSucheOeffnen = fokussieren;
 
+    // Wie weit das Feld bei Fokus nach links wachsen darf: der freie Platz zwischen den Bereichen und
+    // dem Feld (höchstens 8 rem), gemessen statt gerechnet, weil die Breite des Bestand-Chips vom Namen
+    // abhängt. Die Schicht liest ihn als `--fw-os-extra`; am Telefon öffnet sich das Feld über die ganze Zeile.
+    var BEREICHE = document.getElementById('fwHauptnav');
+    var telefon = window.matchMedia('(max-width:900px)');
+    function extraMessen() {
+        if (telefon.matches || !BEREICHE) { wurzel.style.removeProperty('--fw-os-extra'); return; }
+        var frei = Math.floor(wurzel.getBoundingClientRect().left - BEREICHE.getBoundingClientRect().right - 14);
+        wurzel.style.setProperty('--fw-os-extra', Math.max(0, Math.min(128, frei)) + 'px');
+    }
+    extraMessen();
+    window.addEventListener('resize', extraMessen);
+    window.addEventListener('load', extraMessen);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(extraMessen);
+    eingabe.addEventListener('focus', extraMessen);
+
     // Tastenhinweise: ⌘ auf dem Mac, sonst «Strg».
     if (!istMac()) {
         if (taste) taste.textContent = t('strg') + ' K';

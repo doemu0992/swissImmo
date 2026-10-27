@@ -32287,3 +32287,12 @@ msgstr "Posting & delivery"
 
 msgid "Kreditorenrechnung"
 msgstr "Creditor invoice"
+
+msgid "weitere Unterbereiche"
+msgstr "more sub-areas"
+
+msgid "Weitere Unterbereiche"
+msgstr "More sub-areas"
+
+msgid "Neue Schadenmeldungen"
+msgstr "New damage reports"

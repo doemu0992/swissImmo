@@ -2278,9 +2278,9 @@ und einen Stilblock enthaelt.
         .fw-logo-haus{width:30px;height:30px;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
         .fw-logo-haus .a{stroke:var(--ds-ink)}.fw-logo-haus .b{stroke:var(--ds-akzent)}
         .fw-logo-kreuz{position:absolute;right:0;top:-2px;width:12px;height:12px}
-        .fw-hauptnav{position:relative;gap:2px;padding:6px;margin-inline:auto;max-width:100%;overflow-x:auto;scrollbar-width:none}
+        .fw-hauptnav{position:relative;gap:2px;padding:6px;max-width:100%;overflow-x:auto;scrollbar-width:none}
         .fw-hauptnav::-webkit-scrollbar{display:none}
-        .fw-hauptnav a{position:relative;z-index:1;display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 18px;border-radius:var(--ds-pill);
+        .fw-hauptnav a{position:relative;z-index:1;display:inline-flex;align-items:center;gap:7px;height:40px;border-radius:var(--ds-pill);
             font-size:14px;font-weight:500;color:var(--ds-muted);text-decoration:none;white-space:nowrap;transition:color .25s}
         .fw-hauptnav a:hover{color:var(--ds-ink)}
         .fw-hauptnav a.hier{color:var(--ds-surface)}
@@ -2311,20 +2311,13 @@ und einen Stilblock enthaelt.
             .fw-toasts{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
             .fw-profil{top:72px;right:16px}
         }
-        @media (max-width:520px){
-            .fw-logo-kapsel{padding:0 14px 0 10px}.fw-logo-kapsel b{font-size:17px}
-            .fw-werkzeug-kapsel .fw-knopf-rund{width:36px;height:36px}
-            .fw-hauptnav a{padding:0 14px;font-size:13.5px}
-        }
-        @media (max-width:400px){ .fw-werkzeug-kapsel .fw-knopf-dunkel{display:none} }
 
         /* ---- Seitenkopf: gross und leicht ---- */
         .fw-phead h1,.fw-hallo h1{font-size:clamp(30px,3.4vw,44px);font-weight:500;letter-spacing:-.04em;line-height:1.06}
         .fw-phead p{font-size:14px}
         .fw-aktenkopf h1{letter-spacing:-.03em}
         @media (max-width:640px){ .fw-phead h1,.fw-hallo h1{font-size:30px} }
-        /* Fünf Bereiche passen am Telefon in die Kapsel (390 px: «Berichte» war abgeschnitten) */
-        @media (max-width:460px){ .fw-hauptnav a{padding:0 10px;font-size:13px;gap:5px} }
+        /* Fünf Bereiche passen am Telefon in die Kapsel (390 px: «Berichte» war abgeschnitten): Block «Kopfzeile» */
         .fw-hauptnav.rand-l{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 28px);mask-image:linear-gradient(90deg,transparent 0,#000 28px)}
         .fw-hauptnav.rand-r{-webkit-mask-image:linear-gradient(270deg,transparent 0,#000 28px);mask-image:linear-gradient(270deg,transparent 0,#000 28px)}
         .fw-hauptnav.rand-l.rand-r{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%)}
@@ -3007,20 +3000,98 @@ und einen Stilblock enthaelt.
         /* ===== Ende MODUL Portale ===== */
 
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
-        /* Vorlage: navmock/vorschau (freigegeben). Zeile 1: Marke, Bereiche, rechtsbuendig die
-           Omnisearch, Werkzeuge. Zeile 2: das Menueband des aktiven Bereichs (`fw-bereichsreiter`,
-           vorher oben im Inhalt) und rechts der Bestandsfilter `lg` als Chip. Die Zeile `fw-top`
-           und das ⌘K-Fenster (`fw-palette`) gibt es nicht mehr.
-           Masse: Kapseln 52 px, Suchfeld 44 px, ruhend 14 rem, mit Fokus 22 rem, Popover 36 rem.
-           Breiten: ab 1240 px alles; 901-1239 kompakt (Marke nur als Zeichen, ohne Einstellungs-
-           knopf); bis 900 px Telefon: Suche als Symbol, Zeile 1 = Marke, Suche, Werkzeuge. */
-        .fw-kopf-z1{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-        .fw-kopf-z2{display:flex;align-items:center;gap:12px;margin-top:10px;min-width:0}
+        /* Vorlage: navmock/v2/vorschau (freigegeben, Stand «Kopfzeile v2»). Zeile 1 von links: Marke,
+           Bestandsfilter `lg` (Kontext-Chip «BESTAND / Name»), die fünf Bereiche (schliessen bei jeder
+           Breite direkt an den Bestand an, nicht mittig), rechtsbündig die Omnisearch, Werkzeuge.
+           Zeile 2: das Menüband des aktiven Bereichs über die ganze Breite (`fw-bereichsreiter`); was
+           nicht passt, wandert in «Mehr» (`static/js/fw-menueband.js`), ohne Skript scrollt das Band.
+           Die Zeile `fw-top` und das ⌘K-Fenster (`fw-palette`) gibt es nicht mehr.
+           Masse: Kapseln 52 px, Suchfeld 44 px, Popover 36 rem.
 
-        /* Menueband: Bereichsname als kleine Ueberzeile, aktive Unterseite im Ember-Ton */
-        .fw-bereichsreiter{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:2px;height:52px;padding:6px;
+           WAS BEI WELCHER BREITE WEICHT (Zeile 1 bleibt eine Reihe; gemessen in e2e/tests/telefon.spec.ts):
+             ab 1440     alles; Hell/Dunkel-Knopf in Zeile 1, Suche 13 rem
+             1360-1439   ohne Hell/Dunkel (steht im Profilmenü), Suche 11 rem
+             1280-1359   Suche 10,5 rem
+             1240-1279   Suche nur als Symbol (öffnet bei Fokus nach links)
+             1024-1239   zusätzlich der Bestand nur als Symbol
+             901-1023    Marke kleiner, ohne «+» (im Profilmenü), Bereiche dürfen in sich scrollen
+             bis 900     Telefon: drei Reihen, Suche und Bestand als Symbol, «+» und Menüknopf im Profilmenü
+             bis 439     zusätzlich ohne Einstellungsknopf (steht im Profilmenü)
+           Die Marke steht bei jeder Breite ausgeschrieben, mit Schweizerkreuz; sie wird nur kleiner. */
+        .fw-kopf-z1{display:flex;align-items:center;gap:12px}
+        .fw-kopf-z2{position:relative;margin-top:10px;min-width:0}
+
+        /* Marke: Tablet und Telefon kleiner, nie nur das Zeichen */
+        @media (max-width:1023px){
+            .fw-logo-kapsel{padding:0 12px 0 11px;gap:7px}
+            .fw-logo-kapsel b{font-size:16px;padding-right:14px}
+            .fw-logo-haus{width:26px;height:26px}
+            .fw-logo-kreuz{width:11px;height:11px;top:-1px}
+        }
+        @media (max-width:600px){
+            .fw-logo-kapsel{padding:0 8px 0 9px;gap:6px}
+            .fw-logo-kapsel b{font-size:15px;padding-right:12px}
+            .fw-logo-haus{width:24px;height:24px}
+            .fw-logo-kreuz{width:10px;height:10px}
+        }
+
+        /* Bestandsfilter `lg` als Kontext-Chip: Überzeile «BESTAND», darunter der Name. Die native Auswahl
+           liegt über dem ganzen Chip (Padding schiebt den Text in die zweite Zeile), ein Tipp irgendwo
+           darauf öffnet sie; Symbol, Überzeile und Pfeil sind Zierde und reichen den Tipp durch. */
+        .fw-bestand{position:relative;flex:0 1 auto;min-width:0;max-width:13rem;display:flex;align-items:center;height:52px;
+            background:var(--ds-surface);border-radius:var(--ds-pill);box-shadow:var(--ds-shadow-sm),0 0 0 1px var(--ds-line);
+            transition:box-shadow .2s,background .2s}
+        .fw-bestand:hover{box-shadow:var(--ds-shadow-sm),0 0 0 1px var(--ds-line-stark)}
+        .fw-bestand:focus-within{box-shadow:var(--ds-shadow-sm),0 0 0 2px color-mix(in srgb,var(--ds-akzent) 65%,transparent)}
+        .fw-bestand-zeichen{position:absolute;left:9px;top:9px;width:34px;height:34px;border-radius:var(--ds-pill);background:var(--ds-surface-2);
+            color:var(--ds-ink);display:grid;place-items:center;pointer-events:none}
+        .fw-bestand-ueber{position:absolute;left:52px;right:34px;top:10px;font-size:10.5px;font-weight:600;letter-spacing:.08em;line-height:1.2;
+            text-transform:uppercase;color:var(--ds-faint);white-space:nowrap;overflow:hidden;pointer-events:none}
+        .fw-bestand select{-webkit-appearance:none;appearance:none;field-sizing:content;box-sizing:border-box;min-width:0;max-width:100%;height:100%;
+            padding:13px 34px 0 52px;border:0;border-radius:var(--ds-pill);background:transparent;font:inherit;font-size:13.5px;font-weight:600;
+            line-height:1.2;color:var(--ds-ink);cursor:pointer;text-overflow:ellipsis;outline:none;box-shadow:none}
+        .fw-bestand select option{background:var(--ds-surface);color:var(--ds-ink)}
+        .fw-bestand-pfeil{position:absolute;right:12px;top:50%;transform:translateY(-50%);display:flex;color:var(--ds-muted);pointer-events:none}
+        .fw-bestand.aktiv{background:var(--ds-brand-soft)}
+        .fw-bestand.aktiv select{color:var(--ds-brand)}
+        .fw-bestand.aktiv .fw-bestand-zeichen{background:var(--ds-surface);color:var(--ds-brand)}
+        /* Ohne Skript sendet die Auswahl nicht von selbst (`onchange`): beim Fokus erscheint «Übernehmen» unter dem Chip */
+        .fw-bestand-ok{display:none}
+        html:not(.fw-js) .fw-bestand:focus-within .fw-bestand-ok{display:inline-flex;align-items:center;position:absolute;left:0;top:calc(100% + 8px);z-index:60;
+            height:36px;padding:0 16px;border:0;border-radius:var(--ds-pill);background:var(--ds-ink);color:var(--ds-surface);font:inherit;font-size:13px;
+            font-weight:600;cursor:pointer;box-shadow:var(--ds-shadow-lg)}
+        /* bis 1239 px: nur das Symbol (ein Punkt zeigt einen aktiven Filter), die Auswahl liegt unsichtbar darüber */
+        @media (max-width:1239px){
+            .fw-bestand{flex:0 0 52px;width:52px;max-width:none}
+            .fw-bestand-ueber,.fw-bestand-pfeil{display:none}
+            .fw-bestand select{position:absolute;inset:0;width:100%;padding:0;opacity:0;font-size:16px}
+            .fw-bestand.aktiv::after{content:"";position:absolute;top:7px;right:7px;width:10px;height:10px;border-radius:var(--ds-pill);
+                background:var(--ds-akzent);box-shadow:0 0 0 2px var(--ds-brand-soft);pointer-events:none}
+        }
+
+        /* Bereiche: schliessen an den Bestand an; zu wenig Platz → sie scrollen in sich statt die Zeile zu sprengen */
+        .fw-hauptnav{flex:0 1 auto;min-width:0;margin:0}
+        .fw-hauptnav a{flex:none;padding:0 12px}
+        @media (min-width:1360px){.fw-hauptnav a{padding:0 14px}}
+        @media (min-width:1440px){.fw-hauptnav a{padding:0 17px}}
+        @media (min-width:901px) and (max-width:1023px){.fw-hauptnav a{padding:0 10px;font-size:13.5px;gap:5px}}
+        /* Werkzeuge: Hell/Dunkel erst ab 1440 px, «+» ab 1024 px, Einstellungen ab 440 px */
+        .fw-werkzeug-kapsel .fw-knopf-dunkel{display:none}
+        @media (min-width:1440px){.fw-werkzeug-kapsel .fw-knopf-dunkel{display:grid}}
+        @media (max-width:1023px){.fw-wz-neu{display:none}}
+        @media (max-width:439px){.fw-wz-einst{display:none}}
+        /* Profilmenü: was die Kopfzeile bis 1023 px nicht mehr trägt, steht dort */
+        .fw-profil-schnell{display:none}
+        @media (max-width:1023px){.fw-profil-schnell{display:block}}
+        button.fw-profil-link{width:100%;border:0;background:none;font:inherit;font-size:13.5px;text-align:left;cursor:pointer}
+        .fw-profil{max-height:calc(100dvh - 96px);overflow-y:auto}
+
+        /* Menüband: Bereichsname als kleine Überzeile, aktive Unterseite im Ember-Ton */
+        .fw-bereichsreiter{display:flex;align-items:center;gap:2px;height:52px;padding:6px;min-width:0;
             background:var(--ds-surface);border-radius:var(--ds-pill);box-shadow:var(--ds-shadow-sm);overflow-x:auto;scrollbar-width:none}
         .fw-bereichsreiter::-webkit-scrollbar{display:none}
+        .fw-bereichsreiter.fw-band-js{overflow:hidden}
+        .fw-bereichsreiter [hidden]{display:none!important}
         .fw-bereichsreiter-name{flex:none;display:flex;gap:6px;padding:0 8px 0 14px;font-size:11.5px;font-weight:600;
             letter-spacing:.08em;text-transform:uppercase;color:var(--ds-faint)}
         .fw-bereichsreiter-name i{font-style:normal;opacity:.5}
@@ -3029,38 +3100,58 @@ und einen Stilblock enthaelt.
         .fw-bereichsreiter a:hover{background:var(--ds-surface-2);color:var(--ds-ink)}
         .fw-bereichsreiter a.hier{background:var(--ds-brand-soft);color:var(--ds-brand);font-weight:600}
         .fw-bereichsreiter .fw-z{font-size:11px;font-weight:600;padding:0 6px;border-radius:var(--ds-pill);line-height:17px}
-        .fw-bereichsreiter .fw-z.crit{background:var(--ds-crit-soft);color:var(--ds-crit)}
+        .fw-bereichsreiter .fw-z.crit,.fw-mehr-pop .fw-z.crit{background:var(--ds-crit-soft);color:var(--ds-crit)}
         .fw-bereichsreiter-trenner{flex:0 0 1px;width:1px;height:20px;margin:0 6px;background:var(--ds-line)}
-        /* Mehr Reiter als Breite (Akten: 13): weich auslaufende Raender zeigen, dass das Band weiterlaeuft */
+        /* Telefon: das Band scrollt in sich; weich auslaufende Ränder zeigen, dass es weiterläuft */
         .fw-bereichsreiter.rand-l{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 40px);mask-image:linear-gradient(90deg,transparent 0,#000 40px)}
         .fw-bereichsreiter.rand-r{-webkit-mask-image:linear-gradient(270deg,transparent 0,#000 40px);mask-image:linear-gradient(270deg,transparent 0,#000 40px)}
         .fw-bereichsreiter.rand-l.rand-r{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 40px,#000 calc(100% - 40px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 40px,#000 calc(100% - 40px),transparent 100%)}
 
-        /* Bestandsfilter `lg` als Chip rechts in Zeile 2 */
-        .fw-bestand{position:relative;flex:0 0 auto;margin-left:auto;display:flex;align-items:center;gap:8px;height:44px;padding:0 36px 0 7px;
-            background:var(--ds-surface);border-radius:var(--ds-pill);box-shadow:var(--ds-shadow-sm),0 0 0 1px var(--ds-line);min-width:0;max-width:20rem;
-            transition:box-shadow .2s}
-        .fw-bestand:hover{box-shadow:var(--ds-shadow-sm),0 0 0 1px var(--ds-line-stark)}
-        .fw-bestand:focus-within{box-shadow:var(--ds-shadow-sm),0 0 0 2px color-mix(in srgb,var(--ds-akzent) 65%,transparent)}
-        .fw-bestand-zeichen{flex:0 0 30px;width:30px;height:30px;border-radius:var(--ds-pill);background:var(--ds-surface-2);color:var(--ds-ink);display:grid;place-items:center}
-        .fw-bestand select{-webkit-appearance:none;appearance:none;min-width:0;max-width:16rem;field-sizing:content;border:0;background:transparent;
-            font:inherit;font-size:13.5px;font-weight:600;color:var(--ds-ink);padding:0;cursor:pointer;text-overflow:ellipsis;outline:none;box-shadow:none}
-        .fw-bestand select option{background:var(--ds-surface);color:var(--ds-ink)}
-        .fw-bestand-pfeil{position:absolute;right:13px;top:50%;transform:translateY(-50%);display:flex;color:var(--ds-muted);pointer-events:none}
-        .fw-bestand.aktiv{background:var(--ds-brand-soft)}
-        .fw-bestand.aktiv select{color:var(--ds-brand)}
-        .fw-bestand.aktiv .fw-bestand-zeichen{background:var(--ds-surface);color:var(--ds-brand)}
+        /* «Mehr»: der Überlauf des Bandes (nur mit Skript, ab 901 px) */
+        .fw-mehr{flex:none;margin-left:auto;height:40px;display:inline-flex;align-items:center;gap:7px;padding:0 12px 0 16px;border:0;background:none;
+            border-radius:var(--ds-pill);font:inherit;font-size:13.5px;font-weight:500;color:var(--ds-ink);position:relative;white-space:nowrap;cursor:pointer}
+        .fw-mehr[hidden]{display:none}
+        .fw-mehr::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:1px;background:var(--ds-line)}
+        .fw-mehr:hover,.fw-mehr[aria-expanded=true]{background:var(--ds-surface-2)}
+        .fw-mehr-n{font-family:var(--ds-mono);font-size:11px;color:var(--ds-faint)}
+        .fw-mehr-pf{display:flex;color:var(--ds-muted);transition:transform .2s var(--ds-ease)}
+        .fw-mehr[aria-expanded=true] .fw-mehr-pf{transform:rotate(180deg)}
+        .fw-mehr-punkt{position:absolute;top:7px;right:8px;box-shadow:0 0 0 2px var(--ds-surface)}
+        .fw-mehr-punkt[hidden]{display:none}
+        .fw-mehr-pop{position:absolute;right:0;top:calc(100% + 8px);z-index:50;min-width:17rem;max-width:calc(100vw - 32px);max-height:min(30rem,calc(100dvh - 12rem));
+            overflow-y:auto;overscroll-behavior:contain;padding:6px 8px 8px;background:var(--ds-surface);border-radius:var(--ds-radius);
+            box-shadow:var(--ds-shadow-lg),0 0 0 1px var(--ds-line);animation:fw-os-auf .16s var(--ds-ease)}
+        .fw-mehr-pop[hidden]{display:none}
+        .fw-mehr-kopf{display:block;padding:10px 10px 4px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ds-faint)}
+        .fw-mehr-pop a{display:flex;align-items:center;justify-content:space-between;gap:12px;height:40px;padding:0 10px;border-radius:var(--ds-radius-knopf);
+            font-size:13.5px;font-weight:500;color:var(--ds-muted);text-decoration:none}
+        .fw-mehr-pop a:hover,.fw-mehr-pop a:focus-visible{background:var(--ds-hover);color:var(--ds-ink);outline:none}
+        .fw-mehr-pop .fw-z{font-size:11px;font-weight:600;padding:0 6px;border-radius:var(--ds-pill);line-height:17px}
+        html.fw-ruhig .fw-mehr-pop{animation:none}
 
-        /* Omnisearch: das Feld waechst bei Fokus nach links ueber die freie Flaeche; der Platz in
-           der Zeile bleibt bei 14 rem, nichts rutscht. */
-        .fw-os{--fw-os-ruhe:14rem;--fw-os-offen:calc(var(--fw-os-ruhe) + clamp(0px,100vw - 1206px,8rem));
-            position:relative;flex:0 0 var(--fw-os-ruhe);width:var(--fw-os-ruhe);height:44px}
+        /* Omnisearch: das Feld wächst bei Fokus nach links in den freien Platz (`--fw-os-extra`, höchstens 8 rem, misst
+           `fw-omnisearch.js`; ohne Skript wächst es nicht). Der Platz in der Zeile bleibt unverändert, nichts rutscht. */
+        .fw-os{--fw-os-ruhe:13rem;--fw-os-offen:calc(var(--fw-os-ruhe) + var(--fw-os-extra,0px));
+            position:relative;flex:0 0 var(--fw-os-ruhe);width:var(--fw-os-ruhe);height:44px;margin-left:auto}
+        @media (max-width:1439px){.fw-os{--fw-os-ruhe:11rem}}
+        @media (max-width:1359px){.fw-os{--fw-os-ruhe:10.5rem}}
         .fw-os-feld{position:absolute;top:0;right:0;z-index:2;width:var(--fw-os-ruhe);height:44px;margin:0;display:flex;align-items:center;gap:8px;
             padding:0 8px 0 14px;background:var(--ds-surface);border-radius:var(--ds-pill);color:var(--ds-faint);
             box-shadow:var(--ds-shadow-sm),0 0 0 1px var(--ds-line);transition:width .2s var(--ds-ease),box-shadow .2s}
         .fw-os-feld:hover{box-shadow:var(--ds-shadow-sm),0 0 0 1px var(--ds-line-stark)}
         .fw-os.offen .fw-os-feld,.fw-os:focus-within .fw-os-feld{width:var(--fw-os-offen);color:var(--ds-brand);
             box-shadow:var(--ds-shadow-sm),0 0 0 2px color-mix(in srgb,var(--ds-akzent) 65%,transparent)}
+        /* 901-1279 px: die Suche ist ein Symbol; bei Fokus öffnet sie sich nach links (mindestens 11 rem, notfalls über die Bereiche) */
+        @media (min-width:901px) and (max-width:1279px){
+            .fw-os{--fw-os-ruhe:44px;--fw-os-min:11rem}
+            .fw-os-feld{padding:0;justify-content:center}
+            .fw-os-feld input{flex:0 0 0;width:0;opacity:0}
+            .fw-os-feld .fw-taste{display:none}
+            .fw-os-lupe{width:44px;height:44px;cursor:pointer}
+            .fw-os.offen .fw-os-feld,.fw-os:focus-within .fw-os-feld{width:calc(var(--fw-os-ruhe) + max(var(--fw-os-extra,0px),var(--fw-os-min)));
+                padding:0 8px 0 0;justify-content:flex-start}
+            .fw-os.offen .fw-os-feld input,.fw-os:focus-within .fw-os-feld input{flex:1;width:auto;opacity:1}
+        }
         .fw-os-lupe{display:grid;place-items:center;flex:0 0 auto;color:inherit;cursor:text;font-size:16px}
         .fw-os-feld input{flex:1;min-width:0;height:100%;border:0;background:transparent;padding:0;outline:none;box-shadow:none;
             font:inherit;font-size:13.5px;color:var(--ds-ink)}
@@ -3118,43 +3209,23 @@ und einen Stilblock enthaelt.
         .fw-os-alle{margin-left:auto;font-weight:500;color:var(--ds-brand);text-decoration:none}
         .fw-os-alle:hover{text-decoration:underline}
         html.fw-ruhig .fw-os-pop,html.fw-ruhig .fw-os-balken{animation:none}
-        @media (prefers-reduced-motion:reduce){.fw-os-pop,.fw-os-balken{animation:none}.fw-os-feld{transition:none}}
+        @media (prefers-reduced-motion:reduce){.fw-os-pop,.fw-os-balken,.fw-mehr-pop{animation:none}.fw-os-feld{transition:none}}
 
-        /* Zeile 1: die Bereiche stehen links neben der Marke, der freie Platz liegt vor der Suche
-           (dorthin waechst das Feld bei Fokus, ohne die Bereiche zu verdecken). */
-        @media (min-width:901px){.fw-hauptnav{margin-inline:0 auto}}
-        @media (max-width:1279px){.fw-nur-weit{display:none!important}}
-        /* 901-1279 px: Marke nur als Zeichen, Bereiche enger; der Einstellungsknopf steht im Profilmenue */
-        @media (min-width:901px) and (max-width:1279px){
-            .fw-kopf-z1{gap:10px}
-            .fw-logo-kapsel{padding:0 14px 0 12px}
-            .fw-logo-kapsel b{display:none}
-            .fw-hauptnav a{padding:0 12px}
-            .fw-os{--fw-os-offen:calc(var(--fw-os-ruhe) + clamp(0px,100vw - 970px,8rem))}
-        }
-        /* 901-1023 px (Tablet): wie die Seite selbst mit 16 px Rand; das Suchfeld ruhend schmaler, der
-           Hell/Dunkel-Knopf steht im Profilmenue */
-        @media (min-width:901px) and (max-width:1023px){
-            .fw-kopfleiste{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-            .fw-werkzeug-kapsel .fw-knopf-dunkel{display:none}
-            .fw-os{--fw-os-ruhe:12rem;--fw-os-offen:calc(var(--fw-os-ruhe) + clamp(0px,100vw - 850px,8rem))}
-        }
-
-        /* Telefon */
+        /* Telefon (bis 900 px): drei Reihen. Zeile 1: Marke, Bestand-Symbol, Suche-Symbol, Werkzeuge; darunter die
+           Bereiche; darunter das Menüband (scrollt in sich, kein «Mehr»). */
         @media (max-width:900px){
             .fw-kopfleiste{padding-block:14px 0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-            .fw-logo-kapsel{padding:0 8px}
-            .fw-logo-kapsel b{font-size:16px;padding-right:14px}
+            .fw-kopf-z1{flex-wrap:wrap;gap:8px}
+            .fw-kapsel{height:48px}
             .fw-werkzeug-kapsel{gap:2px;padding:0 4px}
-            .fw-avatar.fw-avatar-gross{width:36px;height:36px;flex-basis:36px}
-            .fw-hauptnav{order:3;width:100%;margin:0}
-            .fw-kopf-z2{margin-top:8px;gap:8px}
-            .fw-bestand{width:44px;flex:0 0 44px;padding:0;justify-content:center;max-width:none}
-            .fw-bestand select{position:absolute;inset:0;width:100%;height:100%;max-width:none;opacity:0;font-size:16px}
-            .fw-bestand-pfeil{display:none}
-            .fw-bestand.aktiv::after{content:"";position:absolute;top:5px;right:5px;width:9px;height:9px;border-radius:var(--ds-pill);
-                background:var(--ds-akzent);box-shadow:0 0 0 2px var(--ds-brand-soft)}
-            .fw-os{position:static;flex:0 0 44px;width:44px;margin-left:auto}
+            .fw-werkzeug-kapsel .fw-knopf-rund,.fw-avatar.fw-avatar-gross{width:36px;height:36px;flex-basis:36px}
+            .fw-werkzeug-kapsel .fw-pip{top:7px;right:8px}
+            .fw-hauptnav{order:3;flex:1 1 100%;width:100%;max-width:none}
+            .fw-hauptnav a{flex:1 1 auto;justify-content:center;height:36px;padding:0 10px;font-size:13px;gap:5px}
+            .fw-bestand{flex:0 0 44px;width:44px;height:44px}
+            .fw-bestand-zeichen{left:5px;top:5px}
+            .fw-bestand.aktiv::after{top:5px;right:5px}
+            .fw-os{--fw-os-ruhe:44px;position:static;flex:0 0 44px;width:44px;margin-left:auto}
             .fw-os-feld{position:relative;top:auto;right:auto;width:44px;padding:0;justify-content:center}
             .fw-os-feld input{flex:0 0 0;width:0;opacity:0}
             .fw-os-feld .fw-taste{display:none}
@@ -3165,14 +3236,29 @@ und einen Stilblock enthaelt.
             .fw-os.offen .fw-os-zu,.fw-os:focus-within .fw-os-zu{display:grid}
             .fw-kopf-z1:has(.fw-os.offen)>:not(.fw-os),.fw-kopf-z1:has(.fw-os:focus-within)>:not(.fw-os){display:none}
             .fw-kopfleiste:has(.fw-os.offen) .fw-kopf-z2,.fw-kopfleiste:has(.fw-os:focus-within) .fw-kopf-z2{display:none}
-            .fw-os-pop{top:64px;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));width:auto;max-width:none}
+            .fw-os-pop{top:66px;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));width:auto;max-width:none}
             .fw-os-liste{max-height:calc(100dvh - 15rem)}
             .fw-os-tasten{display:none}
             .fw-os-alle{margin-left:0}
             .fw-os-rechts{flex-direction:column;align-items:flex-end;gap:3px}
             .fw-os-enter{display:none}
+            .fw-kopf-z2{margin-top:8px}
+            .fw-bereichsreiter{height:48px}
+            .fw-bereichsreiter a{height:36px}
         }
-        @media (max-width:370px){.fw-logo-kapsel b{display:none}.fw-logo-kapsel{padding:0 12px}}
+        @media (max-width:420px){.fw-hauptnav a{padding:0 8px}}
+        @media (max-width:380px){
+            .fw-kopf-z1{gap:6px}
+            .fw-logo-kapsel{padding:0 6px 0 8px}
+            .fw-logo-kapsel b{padding-right:11px}
+            .fw-bestand{flex-basis:40px;width:40px;height:40px}
+            .fw-bestand-zeichen{left:3px;top:3px}
+            .fw-os{flex-basis:40px;width:40px;height:40px}
+            .fw-os-feld,.fw-os-lupe{height:40px}
+            .fw-os-feld{width:40px}
+            .fw-os-lupe{width:40px}
+            .fw-hauptnav a{padding:0 6px;gap:4px}
+        }
         /* ===== Ende MODUL Kopfzeile und Omnisearch ===== */
 
 </style>
