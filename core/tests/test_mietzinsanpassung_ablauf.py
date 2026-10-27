@@ -357,3 +357,47 @@ class SammelversandIsolationTests(TestCase):
         r = c.post(f'/neu/anpassung/{fremd.pk}/status/', {'aktion': 'wirksam'})
         self.assertEqual(r.status_code, 404)
         self.assertEqual(MietzinsAnpassung.alle_organisationen.get(pk=fremd.pk).status, 'versandt')
+
+
+class EntwurfInListeUndDossierTests(TestCase):
+    """Befund C, auch ausserhalb des Assistenten: Ein Entwurf ist keine Anpassung,
+    die gegolten hat — weder als «letzte Anpassung» der Mietzinsliste noch in der
+    Mietzins-Historie des Vertragsdossiers."""
+
+    def test_liste_zeigt_entwurf_nicht_als_letzte_anpassung(self):
+        _lg, _e, v = _vertrag()
+        _anpassung(v, status='entwurf', wirksam_ab=date(2031, 4, 1))
+        c = Client(); c.force_login(_team_user())
+        r = c.get('/neu/mietzins/')
+        zeile = next(z for z in r.context['rows'] if z['v'].pk == v.pk)
+        self.assertIsNone(zeile['letzte_anpassung'])
+        self.assertEqual(zeile['anpassungen'], 0)
+        _anpassung(v, status='versandt', wirksam_ab=date(2025, 1, 1))
+        r = c.get('/neu/mietzins/')
+        zeile = next(z for z in r.context['rows'] if z['v'].pk == v.pk)
+        self.assertEqual(zeile['letzte_anpassung'], date(2025, 1, 1))
+
+    def test_dossier_fuehrt_nur_gebuchte_anpassungen(self):
+        _lg, _e, v = _vertrag()
+        gebucht = _anpassung(v, status='wirksam', wirksam_ab=date(2025, 1, 1))
+        _anpassung(v, status='entwurf', wirksam_ab=date(2031, 4, 1), neu='1600.00')
+        c = Client(); c.force_login(_team_user())
+        r = c.get(f'/dossier/vertrag/{v.id}/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual([a.pk for a in r.context['anpassungen']], [gebucht.pk])
+
+
+class RechnenIsolationTests(TestCase):
+    """Die Live-Neuberechnung liefert Mietzins und Basis eines Vertrags als JSON —
+    für einen fremden Vertrag 404, nicht dessen Zahlen."""
+
+    def test_fremder_vertrag_404(self):
+        from ._isolation import MandantenFixture
+        a = MandantenFixture('A', '8000', 'Zürich')
+        b = MandantenFixture('B', '3000', 'Bern')
+        c = Client(); c.force_login(a.benutzer)
+        eigen = c.get(f'/neu/mietzins/{a.vertrag.pk}/anpassung/rechnen/', {'neu_zins': '1.75'})
+        self.assertEqual(eigen.status_code, 200)
+        self.assertIn('alt_netto', eigen.json())
+        fremd = c.get(f'/neu/mietzins/{b.vertrag.pk}/anpassung/rechnen/', {'neu_zins': '1.75'})
+        self.assertEqual(fremd.status_code, 404)

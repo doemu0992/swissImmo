@@ -101,7 +101,10 @@ def fw_mietzins(request):
         if pot_filter and pot_filter != pot:
             continue
         label, cls, icon = POTENZIAL_PILL.get(pot, POTENZIAL_PILL['neutral'])
-        letzte = list(v.anpassungen.all())
+        # Nur gebuchte Anpassungen: Ein Entwurf aus dem Assistenten oder dem
+        # Massenlauf ist keine «letzte Anpassung» — er steht unten bei den
+        # offenen Entwürfen. Python-Filter, damit der Prefetch greift.
+        letzte = [a for a in v.anpassungen.all() if a.ist_gebucht]
         letzte_anpassung = max((a.wirksam_ab for a in letzte), default=None)
         # EFFEKTIVE Werte zeigen (wirksame Anpassungen + Staffelstufen) — nicht
         # die eingefrorene Vertragsbasis. Sonst stimmen die Zahlen hier nicht mit
