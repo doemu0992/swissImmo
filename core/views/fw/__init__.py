@@ -65,6 +65,7 @@ from .zahlungsklaerung import (  # noqa: F401 — Zahlungs-Cockpit V12
     fw_verrechnung_rueckgaengig, fw_guthaben_wiederherstellen, fw_zuordnung_aufheben)
 from .phase2_formulare import *      # noqa: F401,F403 — Phase 2 (Audit)
 from .verteilschluessel import *      # noqa: F401,F403 — Verteilschlüssel der Liegenschaft
+from .nk_wizard import *              # noqa: F401,F403 — Nebenkosten-Wizard (Modul 1)
 from .buchhaltung import *   # noqa: F401,F403 — Block 5
 from .mietzins import *      # noqa: F401,F403 — Block 5
 from .kreditoren import *    # noqa: F401,F403 — Block 4

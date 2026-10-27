@@ -123,8 +123,11 @@ class SzenarioHelfer:
     def _erwartet(self, einheit, von, bis, honorar=Fraction(0)):
         """Kostenanteil einer Einheit im Zeitraum, exakt (ohne Rundung)."""
         tot_m2, tot_m3 = sum(self.FLAECHE.values()), sum(self.VOLUMEN.values())
-        heizung = Fraction(self.HEIZUNG) * self.VOLUMEN[einheit] / tot_m3 * hgt(von, bis) / hgt(self.START, self.ENDE)
-        wasser_pool = Fraction(self.WASSER) + (Fraction(self.HEIZUNG + self.WASSER + self.HAUSWART) * honorar)
+        # Das Honorar auf die Heizkosten folgt seit dem NK-Wizard (Fehler e, 27.10.2026) den
+        # Heizkosten; nur das Honorar auf die übrigen Kosten liegt im Flächen-Topf.
+        heizung = (Fraction(self.HEIZUNG) * (1 + honorar) * self.VOLUMEN[einheit] / tot_m3
+                   * hgt(von, bis) / hgt(self.START, self.ENDE))
+        wasser_pool = Fraction(self.WASSER) + (Fraction(self.WASSER + self.HAUSWART) * honorar)
         wasser = wasser_pool * self.FLAECHE[einheit] / tot_m2 * tage(von, bis) / TAGE_JAHR
         hauswart = Fraction(self.HAUSWART) / 3 * tage(von, bis) / TAGE_JAHR
         return heizung + wasser + hauswart
@@ -203,7 +206,8 @@ class NebenkostenSzenarioTests(SzenarioHelfer, TestCase):
             self.assertEqual(z['nachzahlung'], z['saldo'] > 0)
 
     def test_mit_verwaltungshonorar_bleibt_alles_auf_den_rappen_genau(self):
-        """3 % Honorar auf 15'300 = 459.00; es kommt in den Flächen-Pool (m²)."""
+        """3 % Honorar auf 15'300 = 459.00; der Teil auf die Heizung (360.00) folgt den Heizkosten,
+        der Rest (99.00) kommt in den Flächen-Pool (m²)."""
         self._aufbauen(honorar='3')
         r = self._engine()
         self.assertEqual(r['total_kosten'], Decimal('15759.00'))

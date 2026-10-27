@@ -81,7 +81,12 @@ def entwurf_speichern(vertrag, werte, entwurf=None):
 
 
 def ist_erhoehung(anp):
-    return (anp.neuer_netto_mietzins or Decimal('0')) > (anp.alter_netto_mietzins or Decimal('0'))
+    """Netto höher — oder das Nebenkosten-Akonto (E1, NK-Wizard): Auch die Erhöhung des Akontos
+    ist eine einseitige Vertragsänderung zulasten des Mieters, mit derselben Frist und Anfechtung."""
+    if (anp.neuer_netto_mietzins or Decimal('0')) > (anp.alter_netto_mietzins or Decimal('0')):
+        return True
+    neu, alt = getattr(anp, 'neue_nebenkosten', None), getattr(anp, 'alte_nebenkosten', None)
+    return neu is not None and alt is not None and neu > alt
 
 
 def fristfehler(anp, versand_am, zugang_am=None):

@@ -122,6 +122,50 @@ def _draw_page(c, k):
         c.drawString(24 * mm, y, "Guthaben zu Ihren Gunsten")
         c.drawRightString(w - 24 * mm, y, f"CHF {_chf(abs(saldo))}")
 
+    # Ihr Anteil nach Kostenart und Anhang (NK-Wizard): Woraus sich der Anteil zusammensetzt,
+    # was der Vertrag ausschliesst und wie Leerstand und Heizverbrauch geteilt wurden.
+    from portfolio.models import Verteilschluessel
+    namen = dict(Verteilschluessel.KOSTENART_CHOICES)
+    y -= 14 * mm
+
+    def _platz(y):
+        if y < 34 * mm:
+            c.showPage()
+            return h - 25 * mm
+        return y
+
+    teile = k.get('aufschluesselung') or []
+    if teile:
+        c.setFillColorRGB(0.4, 0.45, 0.5)
+        c.setFont("Helvetica-Bold", 8)
+        c.drawString(20 * mm, y, "IHR ANTEIL NACH KOSTENART")
+        y -= 5 * mm
+        c.setFont("Helvetica", 9)
+        c.setFillColorRGB(0.1, 0.1, 0.1)
+        for t in teile:
+            y = _platz(y)
+            c.drawString(24 * mm, y, str(namen.get(t.get('kostenart'), t.get('kostenart') or '—')))
+            c.drawRightString(w - 24 * mm, y, _chf(t.get('betrag', 0)))
+            y -= 5 * mm
+        y -= 3 * mm
+    anhang = list(k.get('anhang') or [])
+    if k.get('ausgeschlossen'):
+        anhang.append('Nach Mietvertrag nicht von Ihnen getragen: '
+                      + ', '.join(str(namen.get(x, x)) for x in k['ausgeschlossen']) + '.')
+    if anhang:
+        y = _platz(y)
+        c.setFillColorRGB(0.4, 0.45, 0.5)
+        c.setFont("Helvetica-Bold", 8)
+        c.drawString(20 * mm, y, "ANHANG")
+        y -= 4.5 * mm
+        c.setFont("Helvetica", 8)
+        import textwrap
+        for text in anhang:
+            for zeile in textwrap.wrap(text, 115):
+                y = _platz(y)
+                c.drawString(20 * mm, y, zeile)
+                y -= 4 * mm
+
     # Rechtsgrundlagen (VMWG / OR) — konsistent zur klassischen Abrechnung
     from core.services.mietrecht import ref as _mr
     c.setFillColorRGB(0.5, 0.55, 0.6)

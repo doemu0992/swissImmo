@@ -172,6 +172,10 @@ AUSNAHMEN = {
     'finance.Kontoauszug.dateiname': 'entsteht im Lauf oder Import, nicht von Hand',
     'finance.Kontoauszug.eroeffnungssaldo': 'entsteht im Lauf oder Import, nicht von Hand',
     'finance.Kontoauszug.importiert_von': 'entsteht im Lauf oder Import, nicht von Hand',
+    # NK-Wizard (Modul 1, 27.10.2026): beide füllt der CSV-Import der Zählerstände
+    # (`core.services.nk_wizard.uebernehmen`); von Hand gewählt wird nur die Zuordnung im Import.
+    'portfolio.Liegenschaft.zaehler_import_zuordnung': 'letzte Spaltenzuordnung, vom Zählerstand-Import gespeichert',
+    'portfolio.ZaehlerStand.herkunft': 'manuell oder Import — setzt der Schreibpfad, nicht der Mensch',
     'finance.Kontoauszug.schlusssaldo': 'entsteht im Lauf oder Import, nicht von Hand',
     'finance.KreditorenZahlung.bank_referenz': 'entsteht im Lauf oder Import, nicht von Hand',
     'finance.Mahnung.betrag_offen': 'entsteht im Lauf oder Import, nicht von Hand',

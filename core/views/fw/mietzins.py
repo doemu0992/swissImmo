@@ -203,9 +203,13 @@ def _formular_daten(v, anp, lik_basis):
     (Befund A). Der LIK-Stand «bisher» ist der der letzten gebuchten Anpassung.
     """
     stichtag = anp.wirksam_ab - _timedelta(days=1)
+    # E1 (NK-Wizard): Wird mit der Anpassung ein neues Akonto mitgeteilt, steht es in der Spalte
+    # «neu»; «bisher» bleibt das bisherige. Ohne Akonto-Änderung sind beide Spalten wie bis anhin.
+    nk_neu = anp.neue_nebenkosten if anp.neue_nebenkosten is not None else v.effektive_nebenkosten(anp.wirksam_ab)
+    nk_alt = anp.alte_nebenkosten if anp.neue_nebenkosten is not None and anp.alte_nebenkosten is not None else nk_neu
     return {
         'alt_netto': anp.alter_netto_mietzins, 'neu_netto': anp.neuer_netto_mietzins,
-        'nebenkosten': v.effektive_nebenkosten(anp.wirksam_ab),
+        'nebenkosten': nk_neu, 'alt_nebenkosten': nk_alt,
         'alt_zins': anp.alter_referenzzinssatz, 'neu_zins': anp.neuer_referenzzinssatz,
         'alt_lik': anp.alter_lik_index, 'neu_lik': anp.neuer_lik_index,
         'lik_basis': lik_basis,
@@ -306,6 +310,12 @@ def fw_mietzins_anpassung(request, vertrag_id):
         wirksam_ab = _datum(P.get('wirksam_ab')) or naechster_anpassungstermin(v, heute)
         alt_netto, alt_zins, alt_lik = bisheriger_stand(v, wirksam_ab)
         neu_netto = _dec(P.get('neu_netto'), str(alt_netto))
+        # E1 (NK-Wizard): neues Nebenkosten-Akonto, leer = bleibt.
+        neu_nk = _dec_oder_none(P.get('neu_nk'))
+        if neu_nk is not None and neu_nk < 0:
+            messages.error(request, gettext('Das Nebenkosten-Akonto kann nicht negativ sein.'))
+            return redirect(zurueck)
+        alt_nk = v.effektive_nebenkosten(wirksam_ab - _timedelta(days=1)) if neu_nk is not None else None
         neu_zins = _dec(P.get('neu_zins'), str(aktuell_ref))
         neu_lik = _dec(P.get('neu_lik'), str(aktuell_lik))
         kosten_pct = _dec(P.get('kosten_pct'), '0')
@@ -315,7 +325,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
         # 10-tägigen Ankündigungsfrist wirksam werden — gemessen an einem Versand
         # HEUTE. Beim Versand prüft `versand_erfassen` mit dem echten Datum nach.
         # Verglichen wird mit dem EFFEKTIVEN bisherigen Mietzins (Befund A).
-        if neu_netto > (alt_netto or Decimal('0')):
+        if neu_netto > (alt_netto or Decimal('0')) or (neu_nk is not None and neu_nk > alt_nk):
             frueh = naechster_anpassungstermin(v, heute)
             if wirksam_ab < frueh:
                 messages.error(request, '❌ ' + gettext(
@@ -351,6 +361,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
             'vorbehalt_betrag': vb_betrag, 'vorbehalt_prozent': vb_prozent,
             'vorbehalt_text': (P.get('vorbehalt_text') or '').strip() if mit_vorbehalt else '',
             'schlichtungsbehoerde': (P.get('schlichtungsbehoerde') or '').strip()[:300],
+            'neue_nebenkosten': neu_nk, 'alte_nebenkosten': alt_nk,
         }
         neu_angelegt = entwurf is None and ablauf.offener_entwurf(v) is None
         try:
@@ -431,6 +442,16 @@ def fw_mietzins_anpassung(request, vertrag_id):
     # Marktwerte vorschlagen, damit der Sachbearbeiter sie ergänzen kann.
     basis_fehlt = not ((v.basis_referenzzinssatz or 0) > 0 and (v.basis_lik_punkte or 0) > 0)
     _termine, termine_herkunft = kuendigungstermine_fuer(v)
+    # E1 (NK-Wizard): Vorbelegung des neuen Akontos aus der Nebenkostenabrechnung (?nk=…).
+    nk_vorschlag = _dec_oder_none(request.GET.get('nk'))
+    if nk_vorschlag is not None and nk_vorschlag < 0:
+        nk_vorschlag = None
+    nk_periode = None
+    if request.GET.get('nk_periode', '').isdigit():
+        from finance.models import AbrechnungsPeriode
+        nk_periode = AbrechnungsPeriode.objects.filter(pk=request.GET['nk_periode'], liegenschaft=lg).first()
+    if entwurf and entwurf.neue_nebenkosten is not None and nk_vorschlag is None:
+        nk_vorschlag = entwurf.neue_nebenkosten
     hat_vorbehalt = bool(entwurf and (entwurf.vorbehalt_betrag is not None
                                       or entwurf.vorbehalt_prozent is not None))
     return render(request, 'fw/mietzins_anpassung.html', {
@@ -467,6 +488,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
         'termine_fehlen': termine_herkunft == TERMINE_FEHLEN,
         'heute_iso': heute.isoformat(),
         'zustell_puffer': ZUSTELL_PUFFER_TAGE,
+        'alt_nk': v.effektive_nebenkosten(vortag), 'neu_nk': nk_vorschlag, 'nk_periode': nk_periode,
     })
 
 

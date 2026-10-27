@@ -113,6 +113,7 @@ def fill_mietzins_so(vertrag, daten, verwaltung=None):
     alt_netto = Decimal(str(daten['alt_netto']))
     neu_netto = Decimal(str(daten['neu_netto']))
     nk = Decimal(str(daten.get('nebenkosten') or 0))
+    nk_alt = Decimal(str(daten.get('alt_nebenkosten', daten.get('nebenkosten')) or 0))  # E1: Akonto bisher
 
     gruende = []
     if daten.get('alt_zins') is not None and daten.get('neu_zins') is not None and daten['alt_zins'] != daten['neu_zins']:
@@ -145,10 +146,10 @@ def fill_mietzins_so(vertrag, daten, verwaltung=None):
         c.drawString(451, _y(330), _fr(neu_netto))
         # Neben-/Betriebskosten total → erste freie Positionszeile (top≈466)
         c.drawString(76, _y(467), "Neben-/Betriebskosten")
-        c.drawString(318, _y(467), _fr(nk))
+        c.drawString(318, _y(467), _fr(nk_alt))
         c.drawString(451, _y(467), _fr(nk))
         # Bruttomietzins (top≈518)
-        c.drawString(318, _y(519), _fr(alt_netto + nk))
+        c.drawString(318, _y(519), _fr(alt_netto + nk_alt))
         c.drawString(451, _y(519), _fr(neu_netto + nk))
         # C) Begründung (Box top≈588..663)
         yy = 598
@@ -377,6 +378,7 @@ def fill_mietzins_zh(vertrag, daten, verwaltung=None):
     eigentuemer = lg.eigentuemer if lg else None
     alt = Decimal(str(daten['alt_netto'])); neu = Decimal(str(daten['neu_netto']))
     nk = Decimal(str(daten.get('nebenkosten') or 0))
+    nk_alt = Decimal(str(daten.get('alt_nebenkosten', daten.get('nebenkosten')) or 0))  # E1: Akonto bisher
     absn_block = _absender_block(verwaltung, eigentuemer)
 
     gruende = []
@@ -403,9 +405,9 @@ def fill_mietzins_zh(vertrag, daten, verwaltung=None):
         'Textfeld 5': f"{lg.strasse}, {lg.plz} {lg.ort}",
         'Textfeld 6': _dstr(daten['wirksam_ab']),
         'Textfeld 7': _fr(alt), 'Textfeld 8': _fr(neu),
-        'Textfeld 9': 'Nebenkosten' if nk else '',
-        'Textfeld 10': _fr(nk) if nk else '', 'Textfeld 11': _fr(nk) if nk else '',
-        'Textfeld 30': _fr(alt + nk), 'Textfeld 31': _fr(neu + nk),
+        'Textfeld 9': 'Nebenkosten' if (nk or nk_alt) else '',
+        'Textfeld 10': _fr(nk_alt) if (nk or nk_alt) else '', 'Textfeld 11': _fr(nk) if (nk or nk_alt) else '',
+        'Textfeld 30': _fr(alt + nk_alt), 'Textfeld 31': _fr(neu + nk),
         'Textfeld 32': g_zeilen[0] if len(g_zeilen) > 0 else '',
         'Textfeld 76': g_zeilen[1] if len(g_zeilen) > 1 else '',
         'Textfeld 74': g_zeilen[2] if len(g_zeilen) > 2 else '',
@@ -461,6 +463,7 @@ def fill_mietzins_be(vertrag, daten, verwaltung=None):
     eigentuemer = lg.eigentuemer if lg else None
     alt = Decimal(str(daten['alt_netto'])); neu = Decimal(str(daten['neu_netto']))
     nk = Decimal(str(daten.get('nebenkosten') or 0))
+    nk_alt = Decimal(str(daten.get('alt_nebenkosten', daten.get('nebenkosten')) or 0))  # E1: Akonto bisher
     absn = _absender(verwaltung, eigentuemer)
 
     gruende = []
@@ -486,7 +489,7 @@ def fill_mietzins_be(vertrag, daten, verwaltung=None):
         'Textfeld 13': _objekt_zeile(vertrag),                          # Miet-/Pachtobjekt
         'Textfeld 14': _dstr(daten['wirksam_ab']),                      # neu ab
         'Textfeld 15': _fr(alt), 'Textfeld 16': _fr(neu),               # Zins ohne NK bisher/neu
-        'Textfeld 17': _fr(nk) if nk else '', 'Textfeld 18': _fr(nk) if nk else '',  # NK
+        'Textfeld 17': _fr(nk_alt) if (nk or nk_alt) else '', 'Textfeld 18': _fr(nk) if (nk or nk_alt) else '',  # NK bisher/neu
         'Textfeld 19': begr[:110],                                      # klare Begründung der Änderung
         'Ort_Datum': _ort_datum(vertrag, verwaltung, eigentuemer),
         'Unterschrift': '',

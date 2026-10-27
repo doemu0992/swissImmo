@@ -1,0 +1,95 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n hilfe %}
+{% block title %}{% trans "Neue Abrechnungsperiode" %} — swissImmo{% endblock %}
+{% block content %}
+{% comment %}
+Schritt 1 des Nebenkosten-Wizards für eine NEUE Periode (vorher ein Ausklapp-Formular auf
+/neu/nebenkosten/). Die übrigen Schritte öffnen sich nach dem Anlegen unter
+/neu/nebenkosten/<pk>/. Ohne JavaScript ein gewöhnliches Formular.
+{% endcomment %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/nebenkosten/{{ lg_query }}">{% trans "Nebenkosten" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Neue Periode" %}</b>
+</nav>
+<div class="fw-phead"><div><h1>{% trans "Neue Abrechnungsperiode" %}</h1>
+    <p>{% trans "Schritt 1 von 6 — danach Kosten, Verteilung, Heizung & Zähler, Prüfen, Verbuchen & Zustellen." %}</p></div></div>
+
+<form method="post" action="/neu/nebenkosten/neu/" novalidate>
+    {% csrf_token %}
+    {% trans "Periode anlegen" as nk_pruefen %}
+    <div class="fw-assistent" {% include 'fw/_assistent_attribute.html' with pruefen=nk_pruefen %}>
+    {% include 'fw/_assistent_leiste.html' %}
+    <div class="fw-assistent-inhalt">
+        <section data-schritt="{% trans 'Periode & Objekte' %}" data-schritt-text="{% trans 'Für welches Haus und welchen Zeitraum wird abgerechnet? Höchstens 12 Monate.' %}">
+            <div class="fw-assistent-schritt-kopf"></div>
+            <div class="fw-card"><div class="fw-rumpf fw-formular">
+                <div class="fw-feldblock breit"><label class="fw-label" for="nk-lg">{% trans "Liegenschaft *" %}</label>
+                    <select name="liegenschaft_id" id="nk-lg" required class="fw-feld"{% if fehler.liegenschaft_id %} aria-invalid="true"{% endif %}>
+                        <option value="">— {% trans "wählen" %} —</option>
+                        {% for l in liegenschaften %}<option value="{{ l.id }}" {% if eingabe.liegenschaft_id == l.id|stringformat:"s" %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>{% endfor %}
+                    </select>
+                    {% if fehler.liegenschaft_id %}<p class="fw-feldfehler" role="alert">{{ fehler.liegenschaft_id }}</p>{% endif %}</div>
+                <div class="fw-feldblock breit"><span class="fw-label">{% trans "Schnellwahl" %}</span>
+                    <div class="fw-filters fw-nomb" data-nk-schnell>
+                        <button type="button" class="fw-fchip" data-von="vorjahr">{% trans "Kalenderjahr (Vorjahr)" %}</button>
+                        <button type="button" class="fw-fchip" data-von="heiz">{% trans "Heizperiode 1.7.–30.6." %}</button>
+                        <button type="button" class="fw-fchip" data-von="laufend">{% trans "Laufendes Jahr" %}</button>
+                    </div></div>
+                <div class="fw-feldblock"><label class="fw-label" for="nk-von">{% trans "Von *" %}</label>
+                    <input type="date" name="start_datum" id="nk-von" required class="fw-feld" value="{{ eingabe.start_datum|default:'' }}"{% if fehler.start_datum %} aria-invalid="true"{% endif %}>
+                    {% if fehler.start_datum %}<p class="fw-feldfehler" role="alert">{{ fehler.start_datum }}</p>{% endif %}</div>
+                <div class="fw-feldblock"><label class="fw-label" for="nk-bis">{% trans "Bis *" %}</label>
+                    <input type="date" name="ende_datum" id="nk-bis" required class="fw-feld" value="{{ eingabe.ende_datum|default:'' }}"{% if fehler.ende_datum %} aria-invalid="true" aria-describedby="nk-bis-fehler"{% endif %}>
+                    {% if fehler.ende_datum %}<p class="fw-feldfehler" id="nk-bis-fehler" role="alert">{{ fehler.ende_datum }}</p>{% endif %}</div>
+                <div class="fw-feldblock breit"><label class="fw-label" for="nk-bez">{% trans "Bezeichnung *" %}</label>
+                    <input name="bezeichnung" id="nk-bez" required maxlength="100" placeholder="{% trans 'z.B. Heizperiode 2025/2026' %}" class="fw-feld" value="{{ eingabe.bezeichnung|default:'' }}"{% if fehler.bezeichnung %} aria-invalid="true"{% endif %}>
+                    {% if fehler.bezeichnung %}<p class="fw-feldfehler" role="alert">{{ fehler.bezeichnung }}</p>{% endif %}
+                    <p class="fw-hilfe">{% trans "Wird aus dem Zeitraum vorgeschlagen; du kannst sie ändern." %}</p></div>
+            </div></div>
+        </section>
+        <section class="fw-assistent-pruefen">
+            <div class="fw-assistent-schritt-kopf"></div>
+            <div class="fw-card"><div class="fw-rumpf fw-assistent-zusammenfassung"></div></div>
+        </section>
+        <div class="fw-assistent-fuss">
+            <button type="button" class="fw-btn" data-assistent-zurueck data-assistent-nur-js>{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
+            <span class="stand" data-assistent-nur-js></span>
+            <div class="rechts">
+                <a href="/neu/nebenkosten/{{ lg_query }}" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+                <button type="button" class="fw-btn fw-primary" data-assistent-weiter data-assistent-nur-js>{% trans "Weiter" %} {% zeichen 'weiter' %}</button>
+                <button class="fw-btn fw-primary" data-assistent-absenden>{% zeichen 'gut' %}{% trans "Periode anlegen" %}</button>
+            </div>
+        </div>
+    </div>
+    </div>
+</form>
+<script>
+// Schnellwahl der üblichen Zeiträume + Bezeichnung aus dem Zeitraum
+(function () {
+    var von = document.getElementById('nk-von'), bis = document.getElementById('nk-bis'), bez = document.getElementById('nk-bez');
+    if (!von) return;
+    var iso = function (d) { return d.toISOString().slice(0, 10); };
+    var vorschlag = function () {
+        if (!von.value || !bis.value || bez.dataset.selbst) return;
+        var a = new Date(von.value), b = new Date(bis.value);
+        bez.value = a.getFullYear() === b.getFullYear()
+            ? '{% filter escapejs %}{% trans "Nebenkosten" %}{% endfilter %} ' + a.getFullYear()
+            : '{% filter escapejs %}{% trans "Heizperiode" %}{% endfilter %} ' + a.getFullYear() + '/' + b.getFullYear();
+    };
+    if (bez.value) bez.dataset.selbst = '1';
+    bez.addEventListener('input', function () { bez.dataset.selbst = bez.value ? '1' : ''; });
+    von.addEventListener('change', vorschlag); bis.addEventListener('change', vorschlag);
+    document.querySelectorAll('[data-nk-schnell] [data-von]').forEach(function (k) {
+        k.addEventListener('click', function () {
+            var j = new Date().getFullYear(), a, b;
+            if (k.dataset.von === 'vorjahr') { a = new Date(Date.UTC(j - 1, 0, 1)); b = new Date(Date.UTC(j - 1, 11, 31)); }
+            else if (k.dataset.von === 'heiz') { a = new Date(Date.UTC(j - 1, 6, 1)); b = new Date(Date.UTC(j, 5, 30)); }
+            else { a = new Date(Date.UTC(j, 0, 1)); b = new Date(Date.UTC(j, 11, 31)); }
+            von.value = iso(a); bis.value = iso(b); bez.dataset.selbst = ''; vorschlag();
+            document.querySelectorAll('[data-nk-schnell] .fw-fchip').forEach(function (x) { x.classList.toggle('fw-on', x === k); });
+        });
+    });
+})();
+</script>
+{% endblock %}

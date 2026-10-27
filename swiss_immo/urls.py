@@ -175,6 +175,11 @@ from core.views.webhooks import brevo_inbound_webhook
 from core.views.billing import abrechnung_pdf_view, qr_rechnung_pdf
 from core.views.email_views import send_abrechnung_email_view, send_mahnung_email_view, generate_mahnung_pdf_view
 
+# 6b. Nebenkosten-Wizard (Modul 1, 27.10.2026) — sechs Schritte unter /neu/nebenkosten/<pk>/
+from core.views.fw.nk_wizard import (fw_nebenkosten_periode, fw_nebenkosten_kosten, fw_nebenkosten_verteilung,
+                                     fw_nebenkosten_heizung, fw_nebenkosten_import, fw_nebenkosten_pruefen,
+                                     fw_nebenkosten_abschluss)
+
 urlpatterns = [
     # --- STARTSEITE ---
     path('', index_view, name='index'),
@@ -420,6 +425,14 @@ urlpatterns = [
     path('neu/nebenkosten/<int:pk>/versand/', fw_nebenkosten_versand, name='fw_nebenkosten_versand'),
     path('neu/nebenkosten/<int:pk>/mail/', fw_nebenkosten_mail, name='fw_nebenkosten_mail'),
     path('neu/nebenkosten/<int:pk>/akonto/', fw_akonto_anpassen, name='fw_akonto_anpassen'),
+    # NK-Wizard (Modul 1, 27.10.2026): die sechs Schritte und der CSV-Import der Zählerstände.
+    path('neu/nebenkosten/<int:pk>/periode/', fw_nebenkosten_periode, name='fw_nebenkosten_periode'),
+    path('neu/nebenkosten/<int:pk>/kosten/', fw_nebenkosten_kosten, name='fw_nebenkosten_kosten'),
+    path('neu/nebenkosten/<int:pk>/verteilung/', fw_nebenkosten_verteilung, name='fw_nebenkosten_verteilung'),
+    path('neu/nebenkosten/<int:pk>/heizung/', fw_nebenkosten_heizung, name='fw_nebenkosten_heizung'),
+    path('neu/nebenkosten/<int:pk>/import/', fw_nebenkosten_import, name='fw_nebenkosten_import'),
+    path('neu/nebenkosten/<int:pk>/pruefen/', fw_nebenkosten_pruefen, name='fw_nebenkosten_pruefen'),
+    path('neu/nebenkosten/<int:pk>/abschluss/', fw_nebenkosten_abschluss, name='fw_nebenkosten_abschluss'),
     # Phase 4b: die Oberflaechen zu Phase 4a. Bis hierher hatten Fall,
     # Eingang und Lauf keine einzige URL.
     path('neu/arbeit/', fw_arbeit, name='fw_arbeit'),

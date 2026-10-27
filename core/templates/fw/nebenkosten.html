@@ -14,7 +14,7 @@
             <a href="/neu/nebenkosten/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">
-        <button type="button" onclick="document.getElementById('nkform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Periode anlegen" %}</button>
+        <a href="/neu/nebenkosten/neu/{{ lg_query }}" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Periode anlegen" %}</a>
     </div>
 </div>
 
@@ -24,90 +24,16 @@
     <div class="fw-hilfebox-inhalt">
         <b>{% trans "So läuft eine Nebenkostenabrechnung" %}</b>
         <ol>
-            <li>{% trans "Periode anlegen: Liegenschaft und Zeitraum." %}</li>
-            <li>{% trans "Kosten erfassen — Kreditoren mit «In Nebenkostenabrechnung einbeziehen» erscheinen automatisch." %}</li>
-            <li>{% trans "Bei verbrauchsabhängigen Heizkosten die Zählerstände prüfen." %} {% hilfe 'hkvo' %}</li>
-            <li>{% trans "Verteilung und Akonto prüfen, dann verbuchen." %} {% hilfe 'akonto' %}</li>
-            <li>{% trans "Abrechnungen versenden und die Zustellung erfassen — sie startet die Einsprachefrist." %}</li>
+            <li>{% trans "Periode & Objekte: Liegenschaft, Zeitraum (höchstens 12 Monate), Fläche, Volumen und Personen." %}</li>
+            <li>{% trans "Kosten — Kreditoren mit «In Nebenkostenabrechnung einbeziehen» erscheinen automatisch." %}</li>
+            <li>{% trans "Verteilung je Kostenart, samt vertraglich ausgeschlossenen Kosten." %}</li>
+            <li>{% trans "Heizung & Zähler: Grundkostenanteil und Zählerstände." %} {% hilfe 'hkvo' %}</li>
+            <li>{% trans "Prüfen: je Mieter eine Karte mit Saldo und Positionen." %} {% hilfe 'akonto' %}</li>
+            <li>{% trans "Verbuchen & Zustellen — die Zustellung startet die Einsprachefrist." %}</li>
         </ol>
     </div>
     <button type="button" class="zu" aria-label="{% trans 'Hinweis ausblenden' %}">{% zeichen 'schliessen' %}</button>
 </div>
-
-<div id="nkform" class="hidden">
-    <form method="post" action="/neu/nebenkosten/neu/">
-        {% csrf_token %}
-        {% trans "Periode anlegen" as nk_pruefen %}
-        <div class="fw-assistent" {% include 'fw/_assistent_attribute.html' with pruefen=nk_pruefen %}>
-        {% include 'fw/_assistent_leiste.html' %}
-        <div class="fw-assistent-inhalt">
-            <section data-schritt="{% trans 'Liegenschaft & Zeitraum' %}" data-schritt-text="{% trans 'Für welches Haus und welchen Zeitraum wird abgerechnet?' %}">
-                <div class="fw-assistent-schritt-kopf"></div>
-                <div class="fw-card"><div class="fw-rumpf fw-formular">
-                    <div class="fw-feldblock breit"><label class="fw-label" for="nk-lg">{% trans "Liegenschaft *" %}</label>
-                        <select name="liegenschaft_id" id="nk-lg" required class="fw-feld">
-                            <option value="">— {% trans "wählen" %} —</option>
-                            {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
-                        </select></div>
-                    <div class="fw-feldblock breit"><span class="fw-label">{% trans "Schnellwahl" %}</span>
-                        <div class="fw-filters fw-nomb" data-nk-schnell>
-                            <button type="button" class="fw-fchip" data-von="vorjahr">{% trans "Kalenderjahr (Vorjahr)" %}</button>
-                            <button type="button" class="fw-fchip" data-von="heiz">{% trans "Heizperiode 1.7.–30.6." %}</button>
-                            <button type="button" class="fw-fchip" data-von="laufend">{% trans "Laufendes Jahr" %}</button>
-                        </div></div>
-                    <div class="fw-feldblock"><label class="fw-label" for="nk-von">{% trans "Von *" %}</label>
-                        <input type="date" name="start_datum" id="nk-von" required class="fw-feld"></div>
-                    <div class="fw-feldblock"><label class="fw-label" for="nk-bis">{% trans "Bis *" %}</label>
-                        <input type="date" name="ende_datum" id="nk-bis" required class="fw-feld"></div>
-                    <div class="fw-feldblock breit"><label class="fw-label" for="nk-bez">{% trans "Bezeichnung *" %}</label>
-                        <input name="bezeichnung" id="nk-bez" required placeholder="{% trans 'z.B. Heizperiode 2025/2026' %}" class="fw-feld">
-                        <p class="fw-hilfe">{% trans "Wird aus dem Zeitraum vorgeschlagen; du kannst sie ändern." %}</p></div>
-                </div></div>
-            </section>
-            <section class="fw-assistent-pruefen">
-                <div class="fw-assistent-schritt-kopf"></div>
-                <div class="fw-card"><div class="fw-rumpf fw-assistent-zusammenfassung"></div></div>
-            </section>
-            <div class="fw-assistent-fuss">
-                <button type="button" class="fw-btn" data-assistent-zurueck data-assistent-nur-js>{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
-                <span class="stand" data-assistent-nur-js></span>
-                <div class="rechts">
-                    <button type="button" class="fw-btn fw-geist" onclick="document.getElementById('nkform').classList.add('hidden')">{% trans "Abbrechen" %}</button>
-                    <button type="button" class="fw-btn fw-primary" data-assistent-weiter data-assistent-nur-js>{% trans "Weiter" %} {% zeichen 'weiter' %}</button>
-                    <button class="fw-btn fw-primary" data-assistent-absenden>{% zeichen 'gut' %}{% trans "Periode anlegen" %}</button>
-                </div>
-            </div>
-        </div>
-        </div>
-    </form>
-</div>
-<script>
-// Schnellwahl der üblichen Zeiträume + Bezeichnung aus dem Zeitraum
-(function () {
-    var von = document.getElementById('nk-von'), bis = document.getElementById('nk-bis'), bez = document.getElementById('nk-bez');
-    if (!von) return;
-    var iso = function (d) { return d.toISOString().slice(0, 10); };
-    var vorschlag = function () {
-        if (!von.value || !bis.value || bez.dataset.selbst) return;
-        var a = new Date(von.value), b = new Date(bis.value);
-        bez.value = a.getFullYear() === b.getFullYear()
-            ? '{% filter escapejs %}{% trans "Nebenkosten" %}{% endfilter %} ' + a.getFullYear()
-            : '{% filter escapejs %}{% trans "Heizperiode" %}{% endfilter %} ' + a.getFullYear() + '/' + b.getFullYear();
-    };
-    bez.addEventListener('input', function () { bez.dataset.selbst = bez.value ? '1' : ''; });
-    von.addEventListener('change', vorschlag); bis.addEventListener('change', vorschlag);
-    document.querySelectorAll('[data-nk-schnell] [data-von]').forEach(function (k) {
-        k.addEventListener('click', function () {
-            var j = new Date().getFullYear(), a, b;
-            if (k.dataset.von === 'vorjahr') { a = new Date(Date.UTC(j - 1, 0, 1)); b = new Date(Date.UTC(j - 1, 11, 31)); }
-            else if (k.dataset.von === 'heiz') { a = new Date(Date.UTC(j - 1, 6, 1)); b = new Date(Date.UTC(j, 5, 30)); }
-            else { a = new Date(Date.UTC(j, 0, 1)); b = new Date(Date.UTC(j, 11, 31)); }
-            von.value = iso(a); bis.value = iso(b); bez.dataset.selbst = ''; vorschlag();
-            document.querySelectorAll('[data-nk-schnell] .fw-fchip').forEach(function (x) { x.classList.toggle('fw-on', x === k); });
-        });
-    });
-})();
-</script>
 
 <!-- KPI -->
 <div class="fw-kpis">
@@ -173,7 +99,7 @@
             {% empty %}
             <tr><td colspan="7" class="fw-leerzeile fw-leer">
                 <b>{% if status_filter %}{% trans "Keine Perioden in diesem Status" %}{% else %}{% trans "Noch keine Abrechnungsperioden" %}{% endif %}</b>
-                <p>{% trans "Perioden werden in der klassischen Ansicht angelegt." %}</p>
+                <p><a href="/neu/nebenkosten/neu/{{ lg_query }}" class="fw-link">{% trans "Erste Periode anlegen" %}</a></p>
             </td></tr>
             {% endfor %}
             </tbody>

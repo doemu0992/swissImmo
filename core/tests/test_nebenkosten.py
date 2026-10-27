@@ -12,16 +12,20 @@ from ._helfer import (_test_organisation,
 
 class AkontoTests(TestCase):
     def test_akonto_uebernahme(self):
+        """Bewusst angepasst (NK-Wizard, Entscheid E1, 27.10.2026): Die Route überschreibt das
+        Akonto nicht mehr, sondern leitet in die Mietzinsanpassung — vorbelegt mit dem Betrag."""
         lg, e, m, v = _basis_objekte()
         from finance.models import AbrechnungsPeriode
         p = AbrechnungsPeriode.objects.create(liegenschaft=lg, bezeichnung='NK 2025',
                                               start_datum=date(2025, 1, 1), ende_datum=date(2025, 12, 31))
+        vorher = v.nebenkosten
         u = _team_user()
         c = Client(); c.force_login(u)
         r = c.post(f'/neu/nebenkosten/{p.id}/akonto/', {'vertrag_id': [str(v.id)], f'akonto_{v.id}': '333'})
         self.assertEqual(r.status_code, 302)
+        self.assertEqual(r['Location'], f'/neu/mietzins/{v.id}/anpassung/?nk_periode={p.id}&nk=333')
         v.refresh_from_db()
-        self.assertEqual(v.nebenkosten, Decimal('333'))
+        self.assertEqual(v.nebenkosten, vorher)
 
 
 class NkRundungTests(TestCase):
@@ -119,6 +123,9 @@ class NkAbrechnungVersandTests(TestCase):
         lg, e, m, v, p = self._periode()
         team = _team_user()
         c = Client(); c.force_login(team)
+        # Bewusst angepasst (NK-Wizard, Fehler g): Versand erst nach dem Verbuchen.
+        _seed_konten()
+        c.post(f'/neu/nebenkosten/{p.id}/verbuchen/')
         r = c.post(f'/neu/nebenkosten/{p.id}/versand/')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r['Content-Type'], 'application/pdf')

@@ -1,0 +1,30 @@
+{% load i18n chf zeichen %}{% comment %} Eine Karte je Zeile der Abrechnung (Mieter, Eigentümer, Leerstand): `karten` aus
+core/views/fw/nk_wizard.py (_karten). `mit_vorschlag`: Akonto-Vorschlag mit Link in die Mietzinsanpassung (E1). {% endcomment %}
+<div class="fw-bento" id="karten">
+    {% for k in karten %}
+    <div class="fw-kachel b-m fw-nkw-karte{% if k.typ == 'leerstand' or k.typ == 'eigentuemer' %} eigen{% endif %}">
+        <div class="fw-kachel-kopf">
+            <h3>{% if k.vertrag_id %}<a href="/neu/vertraege/{{ k.vertrag_id }}/" class="fw-link">{{ k.name }}</a>{% elif k.typ == 'eigentuemer' %}{% trans "Eigentümer" %}{% else %}{% trans "Leerstand (Eigentümer)" %}{% endif %}</h3>
+            <span class="fw-nkw-saldo{% if k.typ == 'mieter_akonto' %}{% if k.saldo > 0 %} nach{% elif k.saldo < 0 %} gut{% endif %}{% endif %}">{% if k.saldo > 0 %}+ {% elif k.saldo < 0 %}− {% endif %}{{ k.saldo|chf|cut:"-" }}</span>
+        </div>
+        <p class="fw-kachel-text">{{ k.einheit }}{% if k.flaeche %} · {{ k.flaeche|floatformat:0 }} m²{% endif %}
+            {% if k.von and k.von != '-' %} · {{ k.von }}–{{ k.bis }}{% endif %}{% if k.tage %} · {% blocktrans count n=k.tage %}{{ n }} Tag{% plural %}{{ n }} Tage{% endblocktrans %}{% endif %}</p>
+        <ul class="fw-kachel-liste">
+            {% for pos in k.positionen %}<li><span>{{ pos.name }}</span><b class="fw-num">{{ pos.betrag|chf }}</b></li>{% endfor %}
+            {% if k.typ == 'mieter_akonto' %}<li><span>{% trans "Akonto gestellt" %}</span><b class="fw-num">−{{ k.akonto|chf }}</b></li>{% endif %}
+        </ul>
+        <div class="fw-nkw-chips">
+            {% if k.typ == 'mieter_pauschal' %}<span class="fw-chip fw-mut">{% trans "Pauschal — keine Abrechnung an den Mieter" %}</span>{% endif %}
+            {% if k.typ == 'eigentuemer' %}<span class="fw-chip fw-warn">{% if k.grund == 'direkt' %}{% blocktrans with n=k.bezug_name %}Direktzahler {{ n }}{% endblocktrans %}{% else %}{% blocktrans with n=k.bezug_name %}Vertrag {{ n }} schliesst aus{% endblocktrans %}{% endif %}</span>{% endif %}
+            {% if k.ausgeschlossen_namen %}<span class="fw-chip fw-info">{% blocktrans with was=k.ausgeschlossen_namen|join:", " %}ohne {{ was }} (Vertrag){% endblocktrans %}</span>{% endif %}
+            {% if k.heiz_basis == 'zaehler' %}<span class="fw-chip fw-good">{% trans "Heizung mit Zwischenstand" %}</span>
+            {% elif k.heiz_basis == 'heizgradtage' %}<span class="fw-chip fw-warn">{% trans "Heizung nach Heizgradtagen" %}</span>{% endif %}
+        </div>
+        {% if mit_vorschlag and k.vorschlag %}
+        <a href="{{ k.vorschlag.url }}" class="fw-btn fw-knapp" id="akonto-{{ k.vertrag_id }}">{% zeichen 'geld' %}{% if k.vorschlag.richtung == 'erhoehen' %}{% blocktrans with d=k.vorschlag.diff %}Akonto + CHF {{ d }}/Mt.: Mietzinsanpassung{% endblocktrans %}{% else %}{% blocktrans with d=k.vorschlag.diff %}Akonto − CHF {{ d }}/Mt.: Mietzinsanpassung{% endblocktrans %}{% endif %}</a>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="fw-kachel b-voll">{% include 'fw/_empty.html' with knapp=True icon='person' titel=_('Keine Mieter in dieser Periode.') %}</div>
+    {% endfor %}
+</div>
