@@ -22,8 +22,11 @@ Art. 257d OR – Kündigungsandrohung» (Einschreiben, 30 Tage) — siehe
 Häkchen: Sie sind Mahnungen und drohen nichts an.
 """
 import io
+import logging
 
 from core.services.dokumentsprache import nur_deutsch
+
+logger = logging.getLogger(__name__)
 
 MONATE = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August",
           "September", "Oktober", "November", "Dezember"]
@@ -222,7 +225,11 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
                          f"{titel} {monat} {e.bezeichnung}",
                          reference=getattr(rechnung, 'qr_referenz', None) or None)
         except Exception:
-            pass
+            # Früher `pass`: Das Mahnschreiben ging OHNE Einzahlungsschein hinaus
+            # und niemand erfuhr davon. Wie beim 257d-Schreiben: protokollieren
+            # und die Erzeugung abbrechen, damit der Fehler sichtbar wird.
+            logger.exception("Mahnbrief: QR-Rechnung für Vertrag %s nicht erzeugt", vertrag.pk)
+            raise
     c.save()
     buffer.seek(0)
     return buffer.getvalue()

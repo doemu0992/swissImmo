@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 from ._basis import _global_filter, _num
 from core.tenancy import aktuelle_organisation
+from finance.booking import bankkonten as bankkonten_der_verwaltung, bank_nr_aus_eingabe
 
 
 # ============================================================
@@ -322,9 +323,7 @@ def fw_kreditor_bezahlen(request):
         valuta = date.fromisoformat(request.POST.get('valuta') or '')
     except ValueError:
         valuta = timezone.localdate()
-    bank_nr = (request.POST.get('bank_konto') or '1020').strip()
-    if not Buchungskonto.objects.filter(nummer=bank_nr).exists():
-        bank_nr = '1020'
+    bank_nr = bank_nr_aus_eingabe(request.POST.get('bank_konto'))
     erwartet = erwarteter_betrag(request.POST)
     try:
         with transaction.atomic():
@@ -508,9 +507,7 @@ def fw_zahllauf(request):
             if not rechnungen:
                 messages.error(request, gettext('Keine Rechnung ausgewählt.'))
                 return redirect(_ziel())
-            bank_nr = (request.POST.get('bank_konto') or '1020').strip()
-            if not Buchungskonto.objects.filter(nummer=bank_nr).exists():
-                bank_nr = '1020'
+            bank_nr = bank_nr_aus_eingabe(request.POST.get('bank_konto'))
             valuta = _datum('valuta', heute)
             from finance.booking import buche
             n, summe, gesperrt, schon = 0, Decimal('0.00'), 0, 0
@@ -623,7 +620,7 @@ def fw_zahllauf(request):
         'ohne_iban': ohne_iban, 'heute': heute,
         'fehler_liste': request.session.pop('zahllauf_fehler', []),
         'verwaltung_iban': ((vw.iban if vw else '') or '').strip(),
-        'bankkonten': Buchungskonto.objects.filter(nummer__startswith='10').order_by('nummer'),
+        'bankkonten': bankkonten_der_verwaltung(),
         'meldung': list(_msg.get_messages(request)),
     })
 

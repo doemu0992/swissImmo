@@ -85,8 +85,15 @@ def generate_single_pdf_bytes(periode, row, verwaltung, liegenschaft, vertrag):
 
     c.showPage()
     if row['nachzahlung'] and liegenschaft.iban:
-        try: draw_qr_bill(c, liegenschaft.iban, creditor, debtor, betrag, f"NK {periode.bezeichnung}"); c.showPage()
-        except: pass
+        try:
+            draw_qr_bill(c, liegenschaft.iban, creditor, debtor, betrag, f"NK {periode.bezeichnung}")
+            c.showPage()
+        except Exception:
+            # Früher `except: pass`: Die Abrechnung ging mit einer Nachzahlung OHNE
+            # Einzahlungsschein hinaus, und niemand erfuhr davon. Jetzt steht der
+            # Fehler im Protokoll und bricht die Erzeugung ab.
+            logger.exception("NK-Abrechnung: QR-Rechnung für Periode %s nicht erzeugt", periode.pk)
+            raise
 
     c.save(); buffer.seek(0)
     return buffer.getvalue()

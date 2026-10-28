@@ -159,7 +159,7 @@ def fw_mahnwesen(request):
     # Blättern VOR den Zeilendetails: Nur die Zeilen der angezeigten Seite
     # brauchen Mahnung, Zustellnachweis und Gebührenstand. Summen und Zähler
     # oben stammen aus allen Mahnfällen und ändern sich dadurch nicht.
-    seite, query_ohne_seite = blaettern(request, rows)
+    seite, query_ohne_seite = blaettern(request, rows, pro_seite=PRO_SEITE)
     anzahl_positionen = seite.paginator.count
     rows = list(seite.object_list)
 

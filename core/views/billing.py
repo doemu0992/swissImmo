@@ -8,6 +8,7 @@ import io
 import datetime
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
+from django.utils.translation import gettext
 from core.auth import rolle_erforderlich, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER, ROLLE_LESEZUGRIFF
 
 # Profi-Tools
@@ -346,7 +347,13 @@ def abrechnung_pdf_view(request, periode_id):
                              f"NK {periode.bezeichnung} - {row['einheit']}", reference=nk_ref)
                 c.showPage()
             except Exception as e:
-                print(f"QR Error: {e}")
+                # Früher `print`: Die Abrechnung ging mit einer Nachzahlung OHNE
+                # Einzahlungsschein hinaus. Jetzt Protokoll und eine sichtbare Absage.
+                logger.exception("NK-Abrechnung: QR-Rechnung für Periode %s nicht erzeugt", periode.pk)
+                return HttpResponse(
+                    gettext("Fehler: Die QR-Rechnung für %(einheit)s konnte nicht erzeugt werden (%(fehler)s). "
+                            "Das PDF wurde nicht ausgeliefert, damit keine Nachzahlung ohne Einzahlungsschein verschickt wird.")
+                    % {'einheit': row['einheit'], 'fehler': e}, status=500)
 
     c.save()
     buffer.seek(0)
