@@ -133,6 +133,9 @@
 
 <div class="subsec">4.4 Nebenkosten</div>
 <p class="note">Nebenkosten sind das Entgelt für die tatsächlichen Aufwendungen des Vermieters oder eines Dritten für Leistungen, die mit dem Gebrauch der Mietsache zusammenhängen, wie Heizungs-, Warmwasser- und Betriebskosten sowie öffentliche Abgaben. Abrechnungsart: {{ vertrag.get_nk_abrechnungsart_display }}. Verteilschlüssel: {{ vertrag.get_verteilschluessel_display }}.</p>
+{% if vertrag.nk_kostenarten_namen %}
+<p class="note">Der Mieter trägt folgende Nebenkosten, die hier einzeln bezeichnet sind (Art. 257a Abs. 2 OR): <b>{{ vertrag.nk_kostenarten_namen|join:", " }}</b>. Nicht aufgeführte Kosten sind nicht vereinbart und werden dem Mieter nicht belastet.</p>
+{% endif %}
 
 {% include 'core/_mietzinsmodell_klausel.html' with kopf='subsec' nummer='4.5' %}
 

@@ -82,6 +82,11 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
             v_start = max(start_date, v.beginn)
             v_ende = min(end_date, v.ende) if v.ende else end_date
             faktor = Decimal((v_ende - v_start).days + 1) / Decimal(last_day)
+            # MIET-09: Eine Staffelstufe ohne belegte, rechtzeitige Mitteilung wird nicht verrechnet
+            # (`effektiver_netto_mietzins`); die Verwaltung erfährt es als Pendenz.
+            if v.mietzins_modell == 'staffel':
+                from core.services.staffel_mitteilung import fehlende_mitteilung_pendenzen
+                fehlende_mitteilung_pendenzen(v, start_date)
             # --- Option B: Bruttobuchung ---
             # Referenz = die ECHTE vereinbarte Miete (Mieterspiegel/Bilanz-Ertrag),
             # verrechnet = was der Mieter effektiv zahlt (Referenz − Rabatt/Erlass).

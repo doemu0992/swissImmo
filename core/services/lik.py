@@ -14,6 +14,19 @@ LIK_BASIS = "Dezember 2020"
 
 # Landesindex der Konsumentenpreise, Basis «Dezember 2020 = 100» (Quelle: BFS).
 # None = Monat noch nicht veröffentlicht. Bei neuer BFS-Publikation hier ergänzen.
+#
+# QUELLEN (MIET-14):
+#  * Januar 2021 – Juni 2026: Wert für Wert mit der HEV/BFS-Tabelle abgeglichen (Audit Mietrecht, 28.10.2026).
+#  * Juli – September 2026 (108.2 / 108.6 / 108.5): aus dem Audit-Bericht Mietrecht, MIET-14 (HEV-Tabelle
+#    «Landesindex der Konsumentenpreise», Quelle BFS, gelesen am 28.10.2026). In der Umgebung dieser
+#    Änderung bestand kein Netzzugang zu bfs.admin.ch/hev-schweiz.ch: Vor dem Einsatz in Mietzinsanpassungen
+#    gegen die BFS-Publikation prüfen (Fachpunkt im Bericht).
+#  * Oktober 2026 erscheint Anfang November 2026 (BFS) und ist deshalb noch nicht eingetragen.
+#
+# BASISWECHSEL: Das BFS stellt den Index auf «Dezember 2025 = 100» um. Eine amtliche Verkettung
+# (Umrechnungsfaktor) zwischen den Basen ist hier NICHT belegt und wird deshalb nicht erfunden: Die Tabelle
+# bleibt auf Dezember 2020, solange das BFS diese Reihe weiterführt. Neue Verträge auf der Basis Dezember 2025
+# brauchen den amtlichen Faktor (Fachpunkt).
 LIK_DEZ2020 = {
     2020: [None, None, None, None, None, None, None, None, None, None, None, 100.0],
     2021: [100.1, 100.2, 100.6, 100.8, 101.0, 101.1, 101.0, 101.3, 101.3, 101.6, 101.6, 101.5],
@@ -21,7 +34,7 @@ LIK_DEZ2020 = {
     2023: [105.0, 105.8, 106.0, 106.0, 106.3, 106.3, 106.2, 106.4, 106.3, 106.4, 106.2, 106.2],
     2024: [106.4, 107.1, 107.1, 107.4, 107.7, 107.7, 107.5, 107.5, 107.2, 107.1, 106.9, 106.9],
     2025: [106.8, 107.4, 107.5, 107.5, 107.6, 107.8, 107.8, 107.7, 107.5, 107.2, 107.0, 106.9],
-    2026: [106.9, 107.6, 107.8, 108.1, 108.3, 108.3],
+    2026: [106.9, 107.6, 107.8, 108.1, 108.3, 108.3, 108.2, 108.6, 108.5],
 }
 
 
@@ -33,6 +46,45 @@ def lik_punkte_fuer(jahr, monat):
         return None
     val = reihe[monat - 1]
     return Decimal(str(val)) if val is not None else None
+
+
+#: So viele Monate darf die Tabelle hinter dem Kalender zurückliegen, bevor `tabelle_hinweis` anschlägt.
+#: Das BFS veröffentlicht den Monatswert Anfang des Folgemonats; drei Monate sind Luft für Verspätung.
+TABELLE_MAX_RUECKSTAND_MONATE = 3
+
+
+def letzter_tabellenmonat():
+    """(jahr, monat) des jüngsten Monats mit Wert in `LIK_DEZ2020`, oder None."""
+    letzter = None
+    for jahr in sorted(LIK_DEZ2020):
+        for i, val in enumerate(LIK_DEZ2020[jahr]):
+            if val is not None:
+                letzter = (jahr, i + 1)
+    return letzter
+
+
+def tabelle_rueckstand_monate(heute):
+    """Wie viele Monate die Tabelle hinter dem Kalendermonat von `heute` liegt (0 = aktueller Monat)."""
+    letzter = letzter_tabellenmonat()
+    if letzter is None:
+        return None
+    return (heute.year - letzter[0]) * 12 + (heute.month - letzter[1])
+
+
+def tabelle_hinweis(heute):
+    """Hinweistext, wenn die Tabelle zu weit hinter dem Kalender liegt — sonst ''.
+
+    Ein Hinweis statt eines Absturzes: Fehlt der aktuelle Monat, melden die Anpassungen «kein Wert»
+    (fail-safe), und die Verwaltung erfährt hier, was zu tun ist."""
+    rueckstand = tabelle_rueckstand_monate(heute)
+    if rueckstand is not None and rueckstand <= TABELLE_MAX_RUECKSTAND_MONATE:
+        return ''
+    letzter = letzter_tabellenmonat()
+    stand = f"{_MONATE[letzter[1] - 1]} {letzter[0]}" if letzter else "kein Monat"
+    return (f"Die LIK-Tabelle (core/services/lik.py, LIK_DEZ2020) endet im {stand} und liegt mehr als "
+            f"{TABELLE_MAX_RUECKSTAND_MONATE} Monate hinter dem Kalender. Bitte die Monatswerte des BFS "
+            "(Landesindex der Konsumentenpreise) nachtragen; bis dahin sind Indexanpassungen für die "
+            "fehlenden Monate gesperrt.")
 
 
 def _tabelle_wert():

@@ -206,7 +206,7 @@ class GewerbeWizardTests(TestCase):
         team = _team_user(); c = Client(); c.force_login(team)
         c.post('/neu/vertraege/neu/speichern/', {
             'einheit_id': e.id, 'mieter_id': m.id, 'beginn': '2024-01-01',
-            'netto_mietzins': '3000', 'nebenkosten': '300',
+            'netto_mietzins': '3000', 'nebenkosten': '300', 'nk_kostenarten': ['heizung'],
             'mietzins_modell': 'staffel',
             # Seit 27.10.2026: Erhöhung in CHF (Art. 269c lit. c OR) statt neuer Betrag, und die
             # Staffel braucht eine feste Dauer von drei Jahren (hier: Kündigungsverzicht des Vermieters).
@@ -222,7 +222,11 @@ class GewerbeWizardTests(TestCase):
         self.assertEqual(v.kuendigungsfrist_monate, 6)
         self.assertEqual(v.zweckbestimmung, 'Betrieb einer Bäckerei')
         self.assertEqual(v.staffelstufen.count(), 2)
-        self.assertEqual(v.effektiver_netto_mietzins(date(2025, 6, 1)), Decimal('3100'))
+        self.assertEqual(v.effektiver_netto_mietzins(date(2025, 6, 1)), Decimal('3100'))   # Stufe vor dem 1.10.2025
+        # MIET-09: Die Stufe vom 1.1.2026 wirkt erst mit belegter Mitteilung (Art. 269d Abs. 5 OR).
+        self.assertEqual(v.effektiver_netto_mietzins(date(2026, 6, 1)), Decimal('3100'))
+        v.staffelstufen.filter(ab_datum=date(2026, 1, 1)).update(mitteilung_versandt_am=date(2025, 11, 1))
+        v = MV.objects.get(pk=v.pk)
         self.assertEqual(v.effektiver_netto_mietzins(date(2026, 6, 1)), Decimal('3200'))
         self.assertEqual([st.erhoehung_chf for st in v.staffelstufen.all()], [Decimal('100.00')] * 2)
 
@@ -433,7 +437,7 @@ class DocuSealAblageTests(TestCase):
         r = c.post('/neu/vertraege/neu/speichern/', {
             'einheit_id': str(e.id), 'mieter_id': str(m.id),
             'netto_mietzins': '1500', 'nebenkosten': '200', 'beginn': '2025-01-01',
-            'abschluss': 'senden'})
+            'nk_kostenarten': ['heizung'], 'abschluss': 'senden'})
         self.assertEqual(r.status_code, 302)
         self.assertTrue(Mietvertrag.objects.filter(einheit=e).exists())  # trotzdem erstellt
 
@@ -660,7 +664,7 @@ class VertragBearbeitenTests(TestCase):
             'beginn': '2024-01-01', 'netto_mietzins': '1700', 'nebenkosten': '210',
             'nk_abrechnungsart': 'akonto', 'zahlungsrhythmus': 'monatlich',
             'verteilschluessel': 'm2', 'mietzins_modell': 'fest', 'kuendigungsfrist': '3',
-            'anzahl_personen': '1', 'nebenraeume': 'Keller 9'})
+            'anzahl_personen': '1', 'nebenraeume': 'Keller 9', 'nk_kostenarten': ['heizung']})
         self.assertEqual(Mietvertrag.objects.count(), vor)   # kein neuer Vertrag
         v.refresh_from_db()
         self.assertEqual(v.netto_mietzins, Decimal('1700'))
@@ -687,8 +691,9 @@ class VertragBearbeitenTests(TestCase):
         bleibt dokumentlos, bis er aktiviert wird."""
         from rentals.models import Mietvertrag, Dokument
         lg, e, m, v = _basis_objekte()
+        lg.kanton = 'AG'; lg.save()   # kein Pflichtkanton: hier geht es um die PDFs, nicht um das Anfangsmietzins-Formular
         c = Client(); c.force_login(_team_user())
-        base = {'einheit_id': str(e.id), 'mieter_id': str(m.id), 'beginn': '2026-05-01',
+        base = {'einheit_id': str(e.id), 'mieter_id': str(m.id), 'beginn': '2026-05-01', 'nk_kostenarten': ['heizung'],
                 'netto_mietzins': '1400', 'nebenkosten': '200', 'nk_abrechnungsart': 'akonto',
                 'zahlungsrhythmus': 'monatlich', 'verteilschluessel': 'm2',
                 'mietzins_modell': 'fest', 'kuendigungsfrist': '3', 'anzahl_personen': '1'}
@@ -707,6 +712,7 @@ class VertragBearbeitenTests(TestCase):
         """Wird ein Entwurf im Assistenten aktiviert, entstehen die PDFs."""
         from rentals.models import Mietvertrag, Dokument
         lg, e, m, v = _basis_objekte()
+        lg.kanton = 'AG'; lg.save()   # kein Pflichtkanton: hier geht es um die PDFs, nicht um das Anfangsmietzins-Formular
         v.status = 'entwurf'; v.save()
         self.assertEqual(Dokument.objects.filter(vertrag=v).count(), 0)
         c = Client(); c.force_login(_team_user())
@@ -715,7 +721,7 @@ class VertragBearbeitenTests(TestCase):
             'beginn': '2024-01-01', 'netto_mietzins': '1500', 'nebenkosten': '200',
             'nk_abrechnungsart': 'akonto', 'zahlungsrhythmus': 'monatlich',
             'verteilschluessel': 'm2', 'mietzins_modell': 'fest', 'kuendigungsfrist': '3',
-            'anzahl_personen': '1', 'aktiv_setzen': 'on'})
+            'nk_kostenarten': ['heizung'], 'anzahl_personen': '1', 'aktiv_setzen': 'on'})
         v.refresh_from_db()
         self.assertEqual(v.status, 'aktiv')
         self.assertGreater(Dokument.objects.filter(vertrag=v).count(), 0)
@@ -799,6 +805,9 @@ class StatusUmschalterTests(TestCase):
         """
         _lg, _e, _m, v = _basis_objekte()
         self.assertEqual(v.status, 'aktiv', 'Ausgangslage der Fixture geaendert.')
+        # Kein Pflichtkanton, Nebenkostenarten im Vertrag: Ein Entwurf wird erst damit aktiviert (MIET-04/-11).
+        _lg.kanton = 'AG'; _lg.save()
+        v.nk_kostenarten = ['heizung']; v.save()
         c = Client(); c.force_login(_team_user(rolle='Verwaltung'))
 
         c.post(f'/neu/vertraege/{v.id}/status/', {'status': 'entwurf'})
@@ -910,7 +919,7 @@ class BefristungTests(TestCase):
         r = c.post('/neu/vertraege/neu/speichern/', {
             'mieter_id': m.id, 'einheit_id': e.id,
             'beginn': '2026-01-01', 'ende': '2027-12-31', 'ist_befristet': '1',
-            'netto_mietzins': '1500', 'nebenkosten': '200',
+            'netto_mietzins': '1500', 'nebenkosten': '200', 'nk_kostenarten': ['heizung'],
             'kuendigungsfrist': '3', 'anzahl_personen': '1',
         })
         self.assertIn(r.status_code, (200, 302))
@@ -1426,7 +1435,7 @@ class IndexparameterErfassbarTests(TestCase):
         # Weitergabe und Intervall gelten nur bei der Indexmiete (seit 27.10.2026 lehnt der Server sie bei
         # festem Mietzins ab): ein gültiger Indexvertrag mit fünf Jahren Befristung und Basis.
         daten = {'einheit_id': str(e.id), 'mieter_id': str(m.id),
-                 'netto_mietzins': '1500', 'nebenkosten': '200',
+                 'netto_mietzins': '1500', 'nebenkosten': '200', 'nk_kostenarten': ['heizung'],
                  'beginn': '2025-01-01', 'mietzins_modell': 'index',
                  'ist_befristet': '1', 'ende': '2029-12-31',
                  'basis_lik_punkte': '107.5', 'basis_lik_stand': '2024-12'}
@@ -1452,6 +1461,7 @@ class IndexparameterErfassbarTests(TestCase):
         Server still auf 100 %; jetzt lehnt er ab und speichert nichts (Gegenprobe: 100 wird gespeichert)."""
         e, m = self._objekte()
         daten = {'einheit_id': str(e.id), 'mieter_id': str(m.id), 'netto_mietzins': '1500', 'nebenkosten': '200',
+                 'nk_kostenarten': ['heizung'],
                  'beginn': '2025-01-01', 'mietzins_modell': 'index', 'ist_befristet': '1', 'ende': '2029-12-31',
                  'basis_lik_punkte': '107.5', 'basis_lik_stand': '2024-12'}
         r = self.c.post('/neu/vertraege/neu/speichern/', {**daten, 'index_weitergabe_prozent': '150'})

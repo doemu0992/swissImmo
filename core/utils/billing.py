@@ -800,6 +800,13 @@ def berechne_abrechnung(periode_id):
                 ausgeschlossen = set(teile)
             else:
                 ausgeschlossen = set(getattr(vertrag, 'ausgeschlossene_kostenarten', None) or []) & set(teile)
+                # MIET-11 (Art. 257a Abs. 2 OR, BGE 135 III 591): Nennt der Vertrag seine Nebenkostenarten
+                # einzeln (`nk_kostenarten`), ist nur das verrechenbar — was nicht darin steht, trägt der
+                # Vermieter und geht wie ein Ausschluss auf die Eigentümerzeile. Ohne Liste (Altvertrag)
+                # bleibt es beim bisherigen Verfahren: alle Arten ausser den ausgeschlossenen.
+                vereinbart = set(getattr(vertrag, 'nk_kostenarten', None) or [])
+                if vereinbart:
+                    ausgeschlossen |= set(teile) - vereinbart
             teile_eig = {ka: b for ka, b in teile.items() if ka in ausgeschlossen}
             teile = {ka: b for ka, b in teile.items() if ka not in ausgeschlossen}
             mieter_total_kosten = sum(teile.values(), Decimal('0'))

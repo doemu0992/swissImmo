@@ -66,15 +66,7 @@
  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
  <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Geburtsdatum *</label><input v-model="form.geburtsdatum" type="date" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
  </div>
- <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Geschlecht</label>
- <select v-model="form.geschlecht" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none">
- <option value="weiblich">Weiblich</option><option value="maennlich">Männlich</option>
- </select>
- </div>
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Nationalität</label><input v-model="form.nationalitaet" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
- </div>
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Heimatort (für Schweizer)</label><input v-model="form.heimatort" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
+ {% comment %}Geschlecht, Nationalität und Heimatort bewusst NICHT gefragt (MIET-13): Der EDÖB hält Angaben wie Nationalität in der Auswahlphase nicht für verhältnismässig (Merkblatt Anmeldeformulare für Mietwohnungen, 15.7.2025). Anrede und Personalien werden mit dem Vertragsabschluss erhoben.{% endcomment %}
  </div>
 
  <div v-show="step === 2" class="space-y-5 animate-fade-in">
@@ -286,7 +278,6 @@
  form: {
  einheit_id: '{{ einheit.id }}',
  vorname: '', nachname: '', zivilstand: '', geburtsdatum: '',
- geschlecht: 'weiblich', nationalitaet: 'Schweiz', heimatort: '',
  mobilnummer: '', email: '', adresse: '', plz: '', ort: '',
  aktueller_vermieter: '', kontaktperson_vermieter: '', telefon_vermieter: '', email_vermieter: '',
  erwerbsstatus: 'angestellt', beruf: '', einkommen_jahr: '70’000 - 80’000',

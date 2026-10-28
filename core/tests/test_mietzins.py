@@ -51,7 +51,8 @@ class LikVertragTests(TestCase):
         c = Client(); c.force_login(team)
         r = c.post('/neu/vertraege/neu/speichern/', {
             'einheit_id': str(e.id), 'mieter_id': str(m.id), 'beginn': '2025-01-01',
-            'netto_mietzins': '1500', 'nebenkosten': '200', 'basis_lik_punkte': '107.1'})
+            'netto_mietzins': '1500', 'nebenkosten': '200', 'basis_lik_punkte': '107.1',
+            'nk_kostenarten': ['heizung']})
         self.assertEqual(r.status_code, 302)
         v = MV.objects.filter(mieter=m).first()
         # Ohne Formular-Override gilt der Stand des Monats VOR dem Mietbeginn (seit 27.10.2026), nicht der
@@ -72,7 +73,7 @@ class LikVertragTests(TestCase):
         c.post('/neu/vertraege/neu/speichern/', {
             'einheit_id': str(e.id), 'mieter_id': str(m.id), 'beginn': '2025-01-01',
             'netto_mietzins': '1500', 'nebenkosten': '200', 'basis_lik_punkte': '106.3',
-            'basis_lik_stand': '2023-05'})
+            'basis_lik_stand': '2023-05', 'nk_kostenarten': ['heizung']})
         v = MV.objects.filter(mieter=m).first()
         self.assertEqual(v.basis_lik_stand, date(2023, 5, 1))
 
@@ -81,8 +82,8 @@ class LikVertragTests(TestCase):
         # live=False → deterministisch aus der eingebauten BFS-Tabelle
         stand, pkt, basis = aktueller_lik_wert(live=False)
         self.assertEqual(basis, 'Dezember 2020')
-        self.assertEqual(stand, date(2026, 6, 1))       # neuester Monat im Bild
-        self.assertEqual(pkt, Decimal('108.3'))
+        self.assertEqual(stand, date(2026, 9, 1))       # neuester Monat im Bild (seit MIET-14: September 2026)
+        self.assertEqual(pkt, Decimal('108.5'))
 
     def test_live_parser_extrahiert_monat_und_wert(self):
         # Simuliert die HEV-Tabelle: Live-Parser muss Monat UND Wert lesen
@@ -129,7 +130,11 @@ class GewerbeMietzinsTests(TestCase):
         Staffelstufe.objects.create(vertrag=v, ab_datum=date(2025, 1, 1), netto_mietzins=Decimal('2100'))
         Staffelstufe.objects.create(vertrag=v, ab_datum=date(2026, 1, 1), netto_mietzins=Decimal('2200'))
         self.assertEqual(v.effektiver_netto_mietzins(date(2024, 6, 1)), Decimal('2000'))  # vor 1. Stufe
-        self.assertEqual(v.effektiver_netto_mietzins(date(2025, 6, 1)), Decimal('2100'))
+        self.assertEqual(v.effektiver_netto_mietzins(date(2025, 6, 1)), Decimal('2100'))   # Stufe vor dem 1.10.2025
+        # MIET-09: Die Stufe vom 1.1.2026 wirkt erst mit belegter, rechtzeitiger Mitteilung (Art. 269d Abs. 5 OR).
+        self.assertEqual(v.effektiver_netto_mietzins(date(2026, 6, 1)), Decimal('2100'))
+        Staffelstufe.objects.filter(vertrag=v, ab_datum=date(2026, 1, 1)).update(mitteilung_versandt_am=date(2025, 11, 15))
+        v = Mietvertrag.objects.get(pk=v.pk)
         self.assertEqual(v.effektiver_netto_mietzins(date(2026, 6, 1)), Decimal('2200'))
 
     def test_effektiver_mietzins_fest_und_index(self):
@@ -503,7 +508,11 @@ class StaffelImTabTests(TestCase):
         v.refresh_from_db()
         self.assertEqual(v.mietzins_modell, 'staffel')
         self.assertEqual(v.staffelstufen.count(), 1)
-        # Effektiver Mietzins ab Stichtag greift
+        # Effektiver Mietzins ab Stichtag greift — seit MIET-09 mit belegter Mitteilung (Art. 269d Abs. 5 OR);
+        # ohne sie bleibt der bisherige Mietzins.
+        self.assertEqual(v.effektiver_netto_mietzins(date(2026, 6, 1)), Decimal('2000.00'))
+        Staffelstufe.objects.filter(vertrag=v).update(mitteilung_versandt_am=date(2025, 11, 15))
+        v = Mietvertrag.objects.get(pk=v.pk)
         self.assertEqual(v.effektiver_netto_mietzins(date(2026, 6, 1)), Decimal('2100'))
         # löschen
         s = Staffelstufe.objects.get(vertrag=v)

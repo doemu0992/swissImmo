@@ -2452,6 +2452,17 @@ def _akte_kopfzahlen(v, total_offen, offene, pendenzen):
                      'Zertifikat sind nicht erfasst. Bis dahin fehlt der '
                      'Nachweis nach Art. 257e OR.'),
             'url': f'/neu/vertraege/{v.id}/#kaution', 'knopf': gettext('Erfassen')})
+    # Anfangsmietzins-Formular (Art. 270 Abs. 2 OR, MIET-04): Pflicht und Nachweis am Vertrag. Ohne Original
+    # und ohne Nachweis sagt die Akte es oben, nicht erst im Reiter «Mietzins».
+    from core.services.anfangsformular import anfangsformular_lage
+    af_lage = anfangsformular_lage(v.einheit if v.einheit_id else None, v)
+    if af_lage['gesperrt']:
+        chips.append(('crit', gettext('Formular-Nachweis fehlt')))
+        hinweise.append({
+            'art': 'warn', 'ikon': 'recht',
+            'titel': gettext('Anfangsmietzins-Formular erforderlich'),
+            'text': af_lage['hinweis'],
+            'url': f'/neu/vertraege/{v.id}/?tab=mietzins#vt-anfangsformular-nachweis', 'knopf': gettext('Nachweis erfassen')})
     # KEIN Hinweis auf eine fehlende Referenzzins-Basis: `basis_referenzzinssatz`
     # ist NOT NULL mit Vorgabewert aus `get_current_ref_zins`. Die Bedingung
     # koennte nie zutreffen — ein Hinweis, der nie erscheint, ist toter Code.
@@ -2459,6 +2470,7 @@ def _akte_kopfzahlen(v, total_offen, offene, pendenzen):
 
     eigentuemer = getattr(getattr(v.einheit, 'liegenschaft', None), 'eigentuemer', None)
     return {
+        'af_lage': af_lage,
         'kopf_chips': chips,
         'kopf_hinweise': hinweise,
         'kopf_netto': v.netto_mietzins or Decimal('0'),

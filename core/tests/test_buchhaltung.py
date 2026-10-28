@@ -345,7 +345,9 @@ class SollstellungKontierungTests(TestCase):
         v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2025, 1, 1),
                                        netto_mietzins=Decimal('2000'), nebenkosten=Decimal('0'),
                                        status='aktiv', mietzins_modell='staffel')
-        Staffelstufe.objects.create(vertrag=v, ab_datum=date(2026, 1, 1), netto_mietzins=Decimal('2100'))
+        # MIET-09: Die Stufe ab 2026-01 gilt nur mit belegter, rechtzeitiger Mitteilung (Art. 269d Abs. 5 OR).
+        Staffelstufe.objects.create(vertrag=v, ab_datum=date(2026, 1, 1), netto_mietzins=Decimal('2100'),
+                                    mitteilung_versandt_am=date(2025, 11, 1))
         run_sollstellung(2026, 3)   # März 2026 → Stufe ab 2026-01 gilt
         r = DebitorenRechnung.objects.get(vertrag=v, titel='Miete & NK 03/2026')
         self.assertEqual(r.betrag, Decimal('2100.00'))

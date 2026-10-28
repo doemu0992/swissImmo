@@ -290,6 +290,10 @@ def _kostenart_kacheln(p, result, raster=None):
         kachel = {'ka': ka, 'name': namen.get(ka, ka), 'betrag': k['betrag'], 'arten': k.get('arten', []),
                   'tabelle': aktiv, 'schluessel': s,
                   'ausschluesse': [v for v in vertraege if ka in (v.ausgeschlossene_kostenarten or [])],
+                  # MIET-11: Verträge mit Positionsliste, in der diese Kostenart fehlt, tragen sie nicht.
+                  'nicht_vereinbart': [v for v in vertraege
+                                       if v.nk_kostenarten and ka not in v.nk_kostenarten
+                                       and ka not in (v.ausgeschlossene_kostenarten or [])],
                   'vertraege': vertraege}
         if aktiv == 'prozent' and s is not None:
             vorhanden = {z.einheit_id: z.wert for z in Verteilschluessel.objects.filter(

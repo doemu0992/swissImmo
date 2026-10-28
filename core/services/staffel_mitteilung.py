@@ -57,6 +57,11 @@ FENSTER_MONATE = 4
 #: Interne Gewohnheit, kein Gesetzeswert: Die Erinnerung kommt so viele Tage vor dem Fenster.
 VORLAUF_TAGE = 14
 
+#: Art. 269d Abs. 5 OR (Mitteilung in der Staffelvereinbarung vorgesehener Erhöhungen) gilt seit dem
+#: 1.10.2025. Eine Stufe, die schon davor eintrat, wirkt ohne Mitteilung wie bisher (MIET-09: «Altverträge:
+#: eine Stufe, die schon vor 1.10.2025 galt, bleibt unverändert»).
+INKRAFT_MITTEILUNG = date(2025, 10, 1)
+
 STATUS_NOCH_NICHT = 'noch_nicht'
 STATUS_FAELLIG = 'faellig'
 STATUS_ERSTELLT = 'erstellt'
@@ -91,6 +96,42 @@ def erinnerung_ab(eintritt):
     return fenster_beginn(eintritt) - timedelta(days=VORLAUF_TAGE)
 
 
+# ── Wirkt die Stufe? (MIET-09) ───────────────────────────────────────────────
+def stufe_wirkt(stufe):
+    """Darf die Stufe verrechnet werden? Nur mit belegter, rechtzeitiger schriftlicher Mitteilung.
+
+    KONSERVATIVE LESART (Fachpunkt, im Schlussbericht gemeldet): Art. 269d Abs. 5 OR verlangt für die
+    Mitteilung in der Staffelvereinbarung vorgesehener Erhöhungen die Schriftform; wann spätestens und
+    mit welcher Folge bei Verspätung, sagt der Gesetzestext nicht. Die Anwendung verrechnet die Stufe
+    deshalb nur, wenn
+
+      * sie vor dem 1.10.2025 eintrat (Altvertrag, Übergangsrecht), oder
+      * `mitteilung_versandt_am` gesetzt ist, vor dem Eintritt der Stufe liegt und nicht früher als das
+        Fenster der Art. 19a VMWG (vier Monate vor Eintritt).
+
+    Eine verspätete oder fehlende Mitteilung lässt den bisherigen Mietzins stehen; die Stufe wird nicht
+    nachgeholt. Das ist vorsichtig (der Vermieter verrechnet nie zu viel), nicht ein belegter Rechtssatz."""
+    if stufe.ab_datum < INKRAFT_MITTEILUNG:
+        return True
+    versandt = stufe.mitteilung_versandt_am
+    return bool(versandt and versandt < stufe.ab_datum and versandt >= fenster_beginn(stufe.ab_datum))
+
+
+def wirksame_stufe(stufen, stichtag):
+    """Die am Stichtag geltende Stufe (die jüngste mit `ab_datum <= stichtag`), oder None.
+
+    Die Stufen bauen aufeinander auf (Stand = Vorstufe + Erhöhung). Wirkt eine Stufe nicht, wirken auch
+    die späteren nicht: Sonst würde mit der späteren Stufe die nie mitgeteilte Erhöhung der früheren
+    mitverrechnet. Es gilt dann die letzte Stufe VOR der ersten, die nicht wirkt."""
+    geltend = None
+    for st in sorted((x for x in stufen if x.ab_datum and x.ab_datum <= stichtag),
+                     key=lambda x: (x.ab_datum, x.pk or 0)):
+        if not stufe_wirkt(st):
+            break
+        geltend = st
+    return geltend
+
+
 # ── Die Stufen eines Vertrags ────────────────────────────────────────────────
 @dataclass(frozen=True)
 class StufenStand:
@@ -104,6 +145,8 @@ class StufenStand:
     erinnerung_ab: date
     status: str
     verstrichen: bool          # Eintritt schon erreicht, ohne dass versandt wurde
+    wirkt: bool                # wird verrechnet (belegte, rechtzeitige Mitteilung bzw. Altstufe)
+    verspaetet: bool           # als versandt erfasst, aber nicht rechtzeitig vor dem Eintritt
     problem: str               # '' oder der Grund, warum kein Schreiben entstehen darf
     kann_erstellen: bool
     kann_versenden: bool
@@ -152,7 +195,10 @@ def stufen_staende(vertrag, heute):
         liste.append(StufenStand(
             stufe=st, bisher=bisher, neu=st.netto_mietzins, erhoehung=erhoehung, eintritt=st.ab_datum,
             fenster_ab=fenster, erinnerung_ab=fenster - timedelta(days=VORLAUF_TAGE), status=status,
-            verstrichen=(not st.mitteilung_versandt_am) and st.ab_datum <= heute, problem=problem,
+            verstrichen=(not st.mitteilung_versandt_am) and st.ab_datum <= heute and not stufe_wirkt(st),
+            problem=problem,
+            wirkt=stufe_wirkt(st),
+            verspaetet=bool(st.mitteilung_versandt_am) and not stufe_wirkt(st),
             # Ein Schreiben zu einer Erhöhung, die schon gilt, wäre falsch formuliert.
             kann_erstellen=(status != STATUS_VERSANDT and im_fenster_heute and not problem
                             and st.ab_datum > heute),
@@ -276,6 +322,64 @@ def pendenz_erledigen(stufe, heute):
         p.erledigt = True
         p.erledigt_am = heute
         p.save(update_fields=['erledigt', 'erledigt_am'])
+    # Die Pendenz «Mitteilung fehlt» (MIET-09) erledigt sich, sobald die Stufe wirkt.
+    if stufe_wirkt(stufe):
+        for p in Pendenz.objects.filter(vertrag=stufe.vertrag, quelle=fehlt_quelle(stufe), erledigt=False):
+            p.erledigt = True
+            p.erledigt_am = heute
+            p.save(update_fields=['erledigt', 'erledigt_am'])
+
+
+def fehlt_quelle(stufe):
+    """Schlüssel der Pendenz «Staffelmitteilung fehlt» (nach dem Eintritt der Stufe)."""
+    return f'staffelfehlt:{stufe.pk}'
+
+
+def fehlende_mitteilung_pendenzen(vertrag, stichtag):
+    """Pendenz «Staffelmitteilung fehlt» für jede eingetretene Stufe, die nicht verrechnet wird (MIET-09).
+
+    Aufrufer: der Sollstellungslauf (er verrechnet die Stufe NICHT, also muss die Verwaltung es erfahren)
+    und der tägliche Lauf. Idempotent über `Pendenz.quelle`; eine erledigte Pendenz wird nicht
+    wieder geöffnet. Läuft im Kontext der Organisation des Vertrags. Gibt die Zahl NEUER Pendenzen zurück."""
+    from core.models import Pendenz
+    if vertrag.mietzins_modell != 'staffel':
+        return 0
+    neu = 0
+    for st in vertrag.staffelstufen.all():
+        if not st.ab_datum or st.ab_datum > stichtag or stufe_wirkt(st):
+            continue
+        if vertrag.ende and vertrag.ende < st.ab_datum:
+            continue
+        quelle = fehlt_quelle(st)
+        if Pendenz.objects.filter(vertrag=vertrag, quelle=quelle).exists():
+            continue
+        verspaetet = bool(st.mitteilung_versandt_am)
+        Pendenz.objects.create(
+            vertrag=vertrag, quelle=quelle, kategorie='vertrag', faellig_am=stichtag,
+            liegenschaft=vertrag.einheit.liegenschaft if vertrag.einheit_id else None,
+            titel=(f"Staffelmitteilung fehlt – {vertrag.mieter.display_name} "
+                   f"({vertrag.einheit.bezeichnung}, Stufe ab {st.ab_datum:%d.%m.%Y})")[:200],
+            beschreibung=(
+                f"Die Staffelstufe ab {st.ab_datum:%d.%m.%Y} (Netto CHF {st.netto_mietzins}) wird NICHT verrechnet: "
+                + ("Die Mitteilung wurde erst am %s versandt, also nicht rechtzeitig vor dem Eintritt. "
+                   % st.mitteilung_versandt_am.strftime('%d.%m.%Y') if verspaetet
+                   else "Es ist keine schriftliche Mitteilung als versandt erfasst. ")
+                + "Seit dem 1.10.2025 verlangt Art. 269d Abs. 5 OR die schriftliche Mitteilung jeder "
+                  "Staffelerhöhung; der bisherige Mietzins bleibt, bis die Rechtslage geklärt ist. "
+                  "Mitteilung auf der Vertragsakte (Reiter Mietzins) prüfen oder nachholen; Rechtsfolge "
+                  "einer verspäteten Mitteilung mit einer Fachperson klären."))
+        neu += 1
+    return neu
+
+
+def fehlende_mitteilung_pendenzen_alle(heute):
+    """Alle laufenden Staffelverträge der aktuellen Organisation (täglicher Lauf)."""
+    from rentals.models import Mietvertrag
+    neu = 0
+    for v in (Mietvertrag.objects.filter(mietzins_modell='staffel', status__in=['aktiv', 'gekuendigt'])
+              .select_related('mieter', 'einheit__liegenschaft').prefetch_related('staffelstufen')):
+        neu += fehlende_mitteilung_pendenzen(v, heute)
+    return neu
 
 
 def pendenzen_erzeugen(heute, user=None):

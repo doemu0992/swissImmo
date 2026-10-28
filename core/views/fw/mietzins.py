@@ -60,6 +60,14 @@ def fw_mietzins(request):
     curr_zins = vw.aktueller_referenzzinssatz if vw else None
     curr_lik = vw.aktueller_lik_punkte if vw else None
 
+    # MIET-14: Ist die LIK-Tabelle mehr als drei Monate hinter dem Kalender, steht hier ein Hinweis
+    # (statt dass Anpassungen stillschweigend unterbleiben).
+    from core.services.lik import tabelle_hinweis
+    _lik_hinweis = tabelle_hinweis(heute)
+    if _lik_hinweis and request.method == 'GET':
+        from django.contrib import messages
+        messages.warning(request, '⚠️ ' + _lik_hinweis)
+
     # N+1 vermeiden: alle datierten Relationen vorladen, damit die Mietzins-Methoden
     # (effektive_basis / effektiver_netto_mietzins / _sollmietzins_zeile) den
     # Prefetch-Cache nutzen statt pro Vertrag zu queryen.
@@ -825,12 +833,9 @@ def fw_mietzins_massenanpassung(request):
 
 
 def _vormiete_fuer(vertrag):
-    """Letzter beendeter Vertrag desselben Objekts (für die Vormiete-Angabe)."""
-    if not vertrag.einheit_id:
-        return None
-    return (Mietvertrag.objects.filter(einheit=vertrag.einheit).exclude(id=vertrag.id)
-            .filter(beginn__lt=vertrag.beginn or timezone.localdate())
-            .order_by('-beginn').first())
+    """Der Vormieter-Vertrag desselben Objekts (ohne Entwürfe) — siehe `core/services/anfangsformular.py`."""
+    from core.services.anfangsformular import vormiete_fuer
+    return vormiete_fuer(vertrag)
 
 
 def anfangsmietzins_auto_ablegen(vertrag, verwaltung=None):
@@ -866,20 +871,21 @@ def anfangsmietzins_auto_ablegen(vertrag, verwaltung=None):
     soll = einheit.aktueller_sollmietzins(vertrag.beginn)
     anf_netto = (soll.netto_mietzins if soll else vertrag.netto_mietzins) or Decimal('0')
     anf_nk = (soll.nebenkosten if soll else vertrag.nebenkosten) or Decimal('0')
-    vor = _vormiete_fuer(vertrag)
-    vor_soll = vor.einheit.aktueller_sollmietzins(vor.beginn) if (vor and vor.einheit_id) else None
+    # MIET-05: «bisheriger Mietzins» ist der LETZTE vor dem neuen Vertrag gültige (Staffelstufe, gebuchte
+    # Anpassung), nicht der Wert zu Beginn der Vormiete; Referenzzins und LIK aus der damals wirksamen Basis.
+    from core.services.anfangsformular import vormiete_werte
+    vor = vormiete_werte(vertrag)
     from core.services.lik import LIK_BASIS
-    _bq = vor or vertrag  # Berechnungsgrundlagen: Vorvertrag, sonst aktueller Vertrag
     daten = {
         'anfang_netto': anf_netto,
         'anfang_nk': anf_nk,
-        'vormiete_netto': ((vor_soll.netto_mietzins if vor_soll else (vor.netto_mietzins if vor else 0)) or Decimal('0')),
-        'vormiete_nk': ((vor_soll.nebenkosten if vor_soll else (vor.nebenkosten if vor else 0)) or Decimal('0')),
+        'vormiete_netto': vor['netto'] if vor else Decimal('0'),
+        'vormiete_nk': vor['nk'] if vor else Decimal('0'),
         'beginn': vertrag.beginn,
         'grund_choice': 'unbekannt' if not vor else 'anpassung',
         'begruendung': '',
-        'basis_ref': _bq.basis_referenzzinssatz,
-        'basis_lik': _bq.basis_lik_punkte,
+        'basis_ref': vor['ref'] if vor else vertrag.basis_referenzzinssatz,
+        'basis_lik': vor['lik'] if vor else vertrag.basis_lik_punkte,
         'basis_lik_basis': LIK_BASIS,
         'pflicht_info': info,
     }
@@ -919,20 +925,21 @@ def fw_anfangsmietzins(request, vertrag_id):
 
     # Vormiete-Vorschlag: letzter beendeter Vertrag desselben Objekts (Sollmietzins
     # per dessen Beginn, sonst dessen Vertragswerte).
-    vormiete = _vormiete_fuer(v)
-    if vormiete and vormiete.einheit_id:
-        vsoll = vormiete.einheit.aktueller_sollmietzins(vormiete.beginn)
-        vor_netto = vsoll.netto_mietzins if vsoll else (vormiete.netto_mietzins or Decimal('0'))
-        vor_nk = vsoll.nebenkosten if vsoll else (vormiete.nebenkosten or Decimal('0'))
+    # MIET-05: der LETZTE vor dem neuen Vertrag gültige Mietzins der Vormiete (Staffelstufe, gebuchte
+    # Anpassung), nicht der Wert zu Beginn der Vormiete — `core/services/anfangsformular.py`.
+    from core.services.anfangsformular import vormiete_werte
+    vor_werte = vormiete_werte(v)
+    vormiete = vor_werte['vertrag'] if vor_werte else None
+    if vor_werte:
+        vor_netto, vor_nk = vor_werte['netto'], vor_werte['nk']
     else:
         vor_netto = vor_nk = ''
 
-    # Berechnungsgrundlagen: Referenzzinssatz + LIK-Punkte + LIK-Basis. Quelle =
-    # Vorvertrag (falls vorhanden), sonst der aktuelle Vertrag (immer gesetzt).
+    # Berechnungsgrundlagen: Referenzzinssatz + LIK-Punkte + LIK-Basis. Quelle = die Basis, auf der der
+    # bisherige Mietzins am Stichtag beruhte (Art. 19 Abs. 3 VMWG), sonst der aktuelle Vertrag.
     from core.services.lik import LIK_BASIS
-    _bq = vormiete or v
-    basis_ref = _bq.basis_referenzzinssatz
-    basis_lik = _bq.basis_lik_punkte
+    basis_ref = vor_werte['ref'] if vor_werte else v.basis_referenzzinssatz
+    basis_lik = vor_werte['lik'] if vor_werte else v.basis_lik_punkte
     basis_lik_basis = LIK_BASIS
 
     from core.services.formular_fill import mit_wasserzeichen
@@ -989,6 +996,7 @@ def fw_anfangsmietzins(request, vertrag_id):
         'anfang_netto': soll_netto, 'anfang_nk': soll_nk,
         'soll': soll,
         'vormiete': vormiete,
+        'vor_stichtag': vor_werte['stichtag'] if vor_werte else None,
         'vormiete_netto': vor_netto,
         'vormiete_nk': vor_nk,
         'pflicht': pflicht, 'pflicht_info': pflicht_info,

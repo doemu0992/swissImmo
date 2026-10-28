@@ -57,6 +57,22 @@ class Mietvertrag(OrganisationAusKette):
     sign_status = models.CharField("Signatur-Status", max_length=20, choices=STATUS_CHOICES, default='offen')
     unterzeichnet_am = models.DateTimeField("Unterzeichnet am (Rücklauf)", null=True, blank=True)
 
+    #: Nachweis zum Anfangsmietzins-Formular (MIET-04, Art. 270 Abs. 2 OR): In den Kantonen mit Formularpflicht
+    #: ohne hinterlegtes Original verwendet die Verwaltung das Formular der Behörde ausserhalb der Anwendung.
+    #: Ohne Nachweis (Dokument in der Akte oder diese Bestätigung) wird der Vertrag nicht aktiviert
+    #: (`core/services/anfangsformular.py`).
+    ANFANGSFORMULAR_NACHWEIS = [
+        ('', '—'),
+        ('extern', _('Amtliches Formular extern verwendet und dem Mieter zugestellt')),
+        ('nicht_betroffen', _('Formularpflicht trifft für dieses Objekt nicht zu')),
+    ]
+    anfangsformular_nachweis = models.CharField("Anfangsmietzins-Formular: Nachweis", max_length=16,
+                                                choices=ANFANGSFORMULAR_NACHWEIS, blank=True, default='')
+    anfangsformular_datum = models.DateField("Anfangsmietzins-Formular: Datum der Zustellung/Bestätigung",
+                                             null=True, blank=True)
+    anfangsformular_notiz = models.CharField("Anfangsmietzins-Formular: Bemerkung (Nachweis, Begründung)",
+                                             max_length=200, blank=True, default='')
+
     # --- FRISTEN & TERMINE ---
     beginn = models.DateField()
     # `ist_befristet` trennt sauber das befristete Verhältnis (endet ohne Kündigung
@@ -107,6 +123,11 @@ class Mietvertrag(OrganisationAusKette):
     #: verteilt eine ausgeschlossene Kostenart nicht auf diesen Mieter; sein Anteil geht auf eine
     #: Eigentümerzeile. Der Freitext oben bleibt für das, was sich nicht zuordnen lässt.
     ausgeschlossene_kostenarten = models.JSONField("Ausgeschlossene Kostenarten", default=list, blank=True)
+    #: Die im Vertrag EINZELN bezeichneten Nebenkostenarten (MIET-11, Art. 257a Abs. 2 OR, BGE 135 III 591):
+    #: Opt-in statt Opt-out. Schlüssel wie oben. Leer = Altvertrag ohne Liste (die Abrechnung verteilt wie bisher alle
+    #: Kostenarten ausser den ausgeschlossenen); gefüllt = nur diese Arten sind verrechenbar. Neue Verträge verlangen
+    #: die Liste im Assistenten, solange Nebenkosten (Akonto/Pauschal) vereinbart sind.
+    nk_kostenarten = models.JSONField("Im Vertrag bezeichnete Nebenkostenarten", default=list, blank=True)
     zahlungsrhythmus = models.CharField("Zahlungsrhythmus", max_length=20, choices=ZAHLUNGSRHYTHMUS_CHOICES, default='monatlich') # 🔥 NEU
     mwst_pflichtig = models.BooleanField("MWST-pflichtig", default=False)             # 🔥 NEU (v.a. Gewerbe)
     mwst_satz = models.DecimalField("MWST-Satz (%)", max_digits=4, decimal_places=1, default=Decimal('8.1'))  # 🔥 NEU (Option Art. 22 MWSTG)
@@ -369,9 +390,10 @@ class Mietvertrag(OrganisationAusKette):
         if soll:
             return soll.netto_mietzins or Decimal('0.00')
         if self.mietzins_modell == 'staffel':
-            stufen = [s for s in self.staffelstufen.all()
-                      if s.ab_datum and s.ab_datum <= stichtag]
-            stufe = max(stufen, key=lambda s: (s.ab_datum, s.id or 0)) if stufen else None
+            # MIET-09: Eine Stufe gilt nur mit belegter, rechtzeitiger Mitteilung (Art. 269d Abs. 5 OR);
+            # sonst bleibt der bisherige Mietzins (`staffel_mitteilung.stufe_wirkt`, konservative Lesart).
+            from core.services.staffel_mitteilung import wirksame_stufe
+            stufe = wirksame_stufe(self.staffelstufen.all(), stichtag)
             return stufe.netto_mietzins if stufe else basis
         return basis
 
@@ -691,6 +713,14 @@ class Mietvertrag(OrganisationAusKette):
             return 'neutral'
         except Exception:
             return 'neutral'
+
+    @property
+    def nk_kostenarten_namen(self):
+        """Die im Vertrag bezeichneten Nebenkostenarten als Klartext, in der Reihenfolge des Katalogs
+        (`portfolio.Verteilschluessel.KOSTENART_CHOICES`). Leer bei einem Altvertrag ohne Liste."""
+        from portfolio.models import Verteilschluessel
+        gewaehlt = set(self.nk_kostenarten or [])
+        return [str(name) for key, name in Verteilschluessel.KOSTENART_CHOICES if key in gewaehlt]
 
     #: Felder, die über das Mietzinsmodell entscheiden. Ändert eine Bearbeitung keines davon,
     #: blockiert `clean()` einen Altvertrag nicht wegen eines früheren Verstosses.

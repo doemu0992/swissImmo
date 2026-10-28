@@ -546,16 +546,41 @@ def verarbeite_docuseal_event(payload):
         # über den Mandantenfilter, und die Pendenz braucht ihn ebenfalls.
         from core.services.mietzinsmodell import pruefe_vertrag, sperren
         from core.tenancy import organisation_kontext
+        from core.services.anfangsformular import aktivierungssperren
         with organisation_kontext(vertrag.organisation):
             offen = sperren(pruefe_vertrag(vertrag))
             if offen:
                 logger.warning("DocuSeal-Event: Vertrag %s unterzeichnet, Mietzinsmodell nicht zulässig — "
                                "bleibt Entwurf (%s)", vertrag.pk, ', '.join(b.regel for b in offen))
                 _pendenz_modell_gesperrt(vertrag, offen)
-        if not offen:
+            # MIET-04/MIET-11: ohne Anfangsmietzins-Formular (Art. 270 Abs. 2 OR) bzw. ohne einzeln
+            # bezeichnete Nebenkosten (Art. 257a Abs. 2 OR) wird der Vertrag nicht aktiv.
+            weitere = aktivierungssperren(vertrag)
+            if weitere:
+                logger.warning("DocuSeal-Event: Vertrag %s unterzeichnet, Voraussetzungen fehlen — bleibt Entwurf", vertrag.pk)
+                _pendenz_aktivierung_gesperrt(vertrag, weitere)
+        if not offen and not weitere:
             vertrag.status = 'aktiv'
     vertrag.save()   # → zentrale Ablage (Portal, Person, Objekt) via Model.save
     return True
+
+
+def _pendenz_aktivierung_gesperrt(vertrag, gruende):
+    """Pendenz «unterzeichnet, aber nicht aktiviert» wegen fehlendem Formular-Nachweis oder fehlenden
+    Nebenkostenarten — einmal je Vertrag (idempotent über `quelle`). Der Aufrufer hält den Mandantenkontext."""
+    from django.utils import timezone
+
+    from core.models import Pendenz
+    quelle = f'auto:aktivierungssperre:{vertrag.pk}'
+    if Pendenz.objects.filter(quelle=quelle, erledigt=False).exists():
+        return
+    titel = f'Vertrag unterzeichnet, aber nicht aktiv: {vertrag.mieter.display_name}'
+    Pendenz.objects.create(
+        quelle=quelle, titel=titel[:Pendenz._meta.get_field('titel').max_length],
+        kategorie='vertrag', faellig_am=timezone.localdate(), vertrag=vertrag,
+        liegenschaft=vertrag.einheit.liegenschaft if vertrag.einheit_id else None,
+        beschreibung=('Der Vertrag ist digital unterzeichnet, bleibt aber Entwurf: ' + ' '.join(gruende)
+                      + ' Nachholen, dann den Vertrag aktivieren.'))
 
 
 def _pendenz_modell_gesperrt(vertrag, befunde):

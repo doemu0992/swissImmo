@@ -59,6 +59,7 @@
         {% endif %}
         <div class="fw-nk-chips">
             {% for v in k.ausschluesse %}<span class="fw-chip fw-warn">{% blocktrans with name=v.mieter.display_name e=v.einheit.bezeichnung %}Vertrag {{ name }} ({{ e }}) schliesst aus · wird beachtet{% endblocktrans %}</span>{% endfor %}
+            {% for v in k.nicht_vereinbart %}<span class="fw-chip fw-warn">{% blocktrans with name=v.mieter.display_name e=v.einheit.bezeichnung %}Vertrag {{ name }} ({{ e }}) nennt diese Kostenart nicht · Anteil beim Eigentümer{% endblocktrans %}</span>{% endfor %}
         </div>
         {% if kann_schreiben and k.vertraege %}
         <details class="fw-nk-ausschluss">

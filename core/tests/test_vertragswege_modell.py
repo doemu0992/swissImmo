@@ -25,8 +25,9 @@ from ._helfer import Einheit, Liegenschaft, Mieter, _team_user, _test_organisati
 
 class Basis(TestCase):
     def setUp(self):
+        # Kanton ohne Formularpflicht: Diese Tests prüfen das Mietzinsmodell, nicht das Anfangsmietzins-Formular.
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Wegeweg 1', plz='8000',
-                                         ort='Zürich', versicherungswert=Decimal('1000000'))
+                                         ort='Zürich', kanton='AG', versicherungswert=Decimal('1000000'))
         self.e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg', typ='whg',
                                         nettomiete_aktuell=Decimal('2000'))
         self.m = Mieter.objects.create(typ='person', vorname='Wega', nachname='Weg', email='wega@example.ch')
@@ -38,7 +39,8 @@ class Basis(TestCase):
         daten = dict(mieter=self.m, einheit=self.e, beginn=date(2025, 1, 1), netto_mietzins=Decimal('2000'),
                      nebenkosten=Decimal('200'), status='entwurf', mietzins_modell='index', ist_befristet=True,
                      ende=date(2029, 12, 31) if gueltig else date(2029, 12, 30),
-                     basis_lik_punkte=Decimal('106.9'), basis_lik_stand=date(2024, 12, 1))
+                     basis_lik_punkte=Decimal('106.9'), basis_lik_stand=date(2024, 12, 1),
+                     nk_kostenarten=['heizung'])
         daten.update(felder)
         return Mietvertrag.objects.create(**daten)
 

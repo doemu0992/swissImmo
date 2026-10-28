@@ -145,6 +145,10 @@ class Command(BaseCommand):
             n_staffel = pendenzen_erzeugen(timezone.localdate())
             if n_staffel:
                 details.append(f"{n_staffel} Staffel-Mitteilung(en) fällig")
+            from core.services.staffel_mitteilung import fehlende_mitteilung_pendenzen_alle
+            n_fehlt = fehlende_mitteilung_pendenzen_alle(timezone.localdate())
+            if n_fehlt:
+                details.append(f"{n_fehlt} Staffelstufe(n) ohne rechtzeitige Mitteilung (nicht verrechnet)")
         except Exception as e:
             details.append(f"Staffel-Mitteilungen übersprungen ({e})")
 

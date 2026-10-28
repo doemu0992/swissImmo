@@ -386,7 +386,7 @@ class LikVorschlagTests(SimpleTestCase):
 
     def test_noch_nicht_veroeffentlichter_monat_nimmt_den_neuesten_davor(self):
         stand, punkte = mm.basis_lik_vorschlag(d(2027, 5, 1))
-        self.assertEqual((stand, punkte), (d(2026, 6, 1), Decimal('108.3')))
+        self.assertEqual((stand, punkte), (d(2026, 9, 1), Decimal('108.5')))   # seit MIET-14: Tabelle bis September 2026
 
     def test_vor_der_tabelle_kein_vorschlag(self):
         self.assertEqual(mm.basis_lik_vorschlag(d(2020, 12, 1)), (None, None))
@@ -503,7 +503,8 @@ class StaffelstufeModellTests(TestCase):
         from rentals.models import Staffelstufe
         v = _vertrag('staffel')
         Staffelstufe.objects.create(vertrag=v, ab_datum=d(2027, 3, 1), erhoehung_chf=Decimal('75'),
-                                    netto_mietzins=Decimal('0'))
+                                    netto_mietzins=Decimal('0'), mitteilung_versandt_am=d(2027, 1, 15))
+        # MIET-09: Die Stufe wirkt mit belegter, rechtzeitiger Mitteilung (Art. 269d Abs. 5 OR).
         self.assertEqual(v.effektiver_netto_mietzins(d(2027, 6, 1)), Decimal('1075.00'))
         self.assertEqual(v.effektiver_netto_mietzins(d(2027, 2, 1)), Decimal('1000'))
 

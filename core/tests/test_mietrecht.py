@@ -867,6 +867,7 @@ class FormularpflichtTests(TestCase):
             'mieter_id': str(m.id), 'einheit_id': str(e2.id),
             'beginn': beginn.isoformat(), 'netto_mietzins': '1400', 'nebenkosten': '180',
             'mietzins_modell': 'fest', 'kautions_betrag': '4200', 'aktiv_setzen': 'on',
+            'nk_kostenarten': ['heizung'],
         })
         self.assertIn(r.status_code, (200, 302))
         v = Mietvertrag.objects.filter(einheit=e2).latest('id')

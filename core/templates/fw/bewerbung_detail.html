@@ -28,8 +28,8 @@
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 px-5 pb-3">
                 <div class="fw-kv"><dt>{% trans "Geburtsdatum" %}</dt><dd>{{ b.geburtsdatum|date:"d.m.Y" }}</dd></div>
                 {% if b.zivilstand %}<div class="fw-kv"><dt>{% trans "Zivilstand" %}</dt><dd>{{ b.get_zivilstand_display }}</dd></div>{% endif %}
-                <div class="fw-kv"><dt>{% trans "Nationalität" %}</dt><dd>{{ b.nationalitaet }}</dd></div>
-                <div class="fw-kv"><dt>{% trans "Heimatort" %}</dt><dd>{{ b.heimatort|default:"—" }}</dd></div>
+                {% if b.nationalitaet %}<div class="fw-kv"><dt>{% trans "Nationalität" %}</dt><dd>{{ b.nationalitaet }}</dd></div>{% endif %}
+                {% if b.heimatort %}<div class="fw-kv"><dt>{% trans "Heimatort" %}</dt><dd>{{ b.heimatort }}</dd></div>{% endif %}
                 <div class="fw-kv"><dt>{% trans "Mobil" %}</dt><dd>{{ b.mobilnummer }}</dd></div>
                 <div class="fw-kv"><dt>{% trans "E-Mail" %}</dt><dd class="truncate">{{ b.email }}</dd></div>
                 <div class="fw-kv fw-col-span-2"><dt>{% trans "Adresse" %}</dt><dd>{{ b.adresse }}, {{ b.plz }} {{ b.ort }}</dd></div>
