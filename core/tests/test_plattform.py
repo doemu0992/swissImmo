@@ -288,7 +288,27 @@ class LogbuchTests(TestCase):
 
 
 class DatenResetTests(TestCase):
-    """Gefahrenzone: alle Daten löschen und von vorne beginnen."""
+    """Gefahrenzone: alle Daten löschen und von vorne beginnen.
+
+    Seit SICH-03 (Audit 28.10.2026) verlangt der Reset das Passwort und eine
+    gelungene Sicherung. Die Sicherung ersetzt `_reset` hier durch einen Stub:
+    Unter SQLite läuft der Test auf einer Datenbank im Speicher, die der Befehl
+    `sicherung` nicht lesen kann. Dass der Reset OHNE gelungene Sicherung
+    abbricht, belegt `core/tests/test_datenreset.py`.
+    """
+
+    def setUp(self):
+        # Der Reset zählt Versuche je Benutzer im Cache; SQLite vergibt nach dem
+        # Zurückrollen dieselben IDs wieder — ohne Leeren zählten die Tests
+        # einer Klasse gemeinsam auf das Limit.
+        from django.core.cache import cache
+        cache.clear()
+
+    def _reset(self, client, passwort='x', bestaetigung='LÖSCHEN', **extra):
+        from unittest.mock import patch
+        with patch('core.services.datenreset.sicherung_erstellen', return_value=''):
+            return client.post('/neu/datenreset/', {'bestaetigung': bestaetigung,
+                                                    'passwort': passwort, **extra}, secure=True)
 
     def test_reset_ueberlebt_ein_modell_ohne_tabelle(self):
         """Ein registriertes Modell ohne Tabelle darf den Reset nicht abbrechen.
@@ -312,7 +332,7 @@ class DatenResetTests(TestCase):
 
         c = Client()
         c.force_login(_team_user('Inhaber'))
-        antwort = c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'}, secure=True)
+        antwort = self._reset(c)
         self.assertIn(antwort.status_code, (302, 200))
 
     def test_reset_von_a_laesst_den_bestand_von_b_stehen(self):
@@ -349,7 +369,7 @@ class DatenResetTests(TestCase):
 
         c = Client()
         c.force_login(a.benutzer)
-        antwort = c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
+        antwort = self._reset(c, passwort='geheim-egal')
         self.assertIn(antwort.status_code, (302, 200))
 
         for modell, name in ((Liegenschaft, 'Liegenschaft'), (Mieter, 'Mieter'),
@@ -390,7 +410,7 @@ class DatenResetTests(TestCase):
 
         c = Client()
         c.force_login(_team_user(rolle='Inhaber'))
-        c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
+        self._reset(c)
 
         self.assertTrue(
             SicherheitsEreignis.objects.filter(objekt='angreifer').exists(),
@@ -403,7 +423,7 @@ class DatenResetTests(TestCase):
         Ausstattung.objects.create(einheit=e, raum='Küche', kategorie='Herd')
         self.assertTrue(Mietvertrag.objects.exists())
         c = Client(); c.force_login(_team_user(rolle='Inhaber'))
-        r = c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
+        r = self._reset(c)
         self.assertEqual(r.status_code, 302)
         from crm.models import Mieter
         self.assertFalse(Mietvertrag.objects.exists())
@@ -415,7 +435,7 @@ class DatenResetTests(TestCase):
         _lg, _e, _m, _v = _basis_objekte()
         u = _team_user(rolle='Inhaber')
         c = Client(); c.force_login(u)
-        c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
+        self._reset(c)
         # Benutzer + Rollen bleiben → Login weiter gültig
         self.assertTrue(User.objects.filter(id=u.id).exists())
         r = c.get('/neu/account/')
@@ -424,7 +444,7 @@ class DatenResetTests(TestCase):
     def test_reset_ohne_bestaetigung_macht_nichts(self):
         _lg, _e, _m, v = _basis_objekte()
         c = Client(); c.force_login(_team_user(rolle='Inhaber'))
-        r = c.post('/neu/datenreset/', {'bestaetigung': 'nein'})
+        r = self._reset(c, bestaetigung='nein')
         self.assertEqual(r.status_code, 302)
         self.assertTrue(Mietvertrag.objects.filter(id=v.id).exists())
 
@@ -433,7 +453,7 @@ class DatenResetTests(TestCase):
         from finance.models import Buchungskonto
         _lg, _e, _m, _v = _basis_objekte()
         c = Client(); c.force_login(_team_user(rolle='Inhaber'))
-        c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
+        self._reset(c)
         # Lebensdauertabelle + Kontenplan wieder vorhanden
         self.assertTrue(Lebensdauer.objects.exists())
         self.assertTrue(Buchungskonto.objects.exists())
@@ -444,7 +464,7 @@ class DatenResetTests(TestCase):
         Gegenstück: Der Reset funktioniert für ihn weiterhin."""
         _lg, _e, _m, v = _basis_objekte()
         c = Client(); c.force_login(_team_user(rolle='Verwalter'))
-        r = c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
+        r = self._reset(c)
         self.assertEqual(r.status_code, 403)
         self.assertTrue(Mietvertrag.objects.filter(id=v.id).exists())
 

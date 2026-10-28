@@ -356,3 +356,25 @@ Eine Beobachtung, kein Fehler: `postgres_anlegen.py` fragt die Passwörter mit
 gegeben). Aus einem Skript heraus scheitert es mit `EOFError`; dort legt man
 Rolle und Datenbank mit denselben zwei Befehlen per `psql` an
 (`CREATE ROLE … LOGIN PASSWORD …`, `CREATE DATABASE … OWNER …`).
+
+## Der Datenreset sichert zuerst (28.10.2026, SICH-03)
+
+«Alles löschen & neu beginnen» (Konto → Gefahrenzone, nur Inhaber) ruft vor dem
+Löschen **diesen Dienst** auf (`core/services/datenreset.py::sicherung_erstellen`,
+`manage.py sicherung --ohne-medien`). Schlägt die Sicherung fehl, wird nichts
+gelöscht; die Meldung nennt den Grund. Die Medien werden nicht angefasst (der
+Reset leert Datenbankzeilen, keine Dateien) und deshalb nicht mitgesichert.
+
+Weiter verlangt der Reset das Passwort des Inhabers und bei aktivem zweitem
+Faktor einen Code, läuft in **einer Transaktion** (bei jedem Fehler bleibt alles,
+wie es war) und lässt das Audit-Log, die Mitgliedschaften und die Konfiguration
+der Fallmaschine stehen. Welche Modelle er leert, folgt dem Modellbestand: alles
+mit Spalte `organisation` in den Apps `core, crm, finance, mietprozess,
+portfolio, rentals, tickets, faelle, stweg`, ausser dem, was in
+`datenreset.BEHALTEN` mit Grund steht. Ein Wächter in
+`core/tests/test_datenreset.py` meldet ein neues Modell, das weder im Reset noch
+in `BEHALTEN` steht.
+
+Wiederherstellen nach einem irrtümlichen Reset: der Stand liegt in
+`~/sicherungen/` (`<Zeitstempel>-db.*`), Vorgehen wie oben unter «Wiederherstellen».
+

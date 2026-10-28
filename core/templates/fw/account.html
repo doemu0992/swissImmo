@@ -155,13 +155,23 @@
 <div id="gefahrenzone" class="fw-card fw-linie-krit max-w-3xl">
     <div class="fw-kopf"><span class="fw-ikon crit">{% zeichen 'warnung' %}</span><h2 class="fw-kritisch">{% trans "Gefahrenzone" %}</h2></div>
     <div class="p-5">
-    <p class="text-sm fw-mutet mb-4">{% blocktrans trimmed %}Löscht <span class="font-semibold">alle</span> Daten (Liegenschaften, Objekte, Verträge, Personen, Buchungen, Rechnungen, Schäden, Vorlagen, Mandate und Verwaltungs-Stammdaten) und startet mit einer leeren Datenbank. Benutzerkonten und Rollen bleiben erhalten.{% endblocktrans %} <span class="font-semibold fw-kritisch">{% trans "Dieser Schritt kann nicht rückgängig gemacht werden." %}</span></p>
+    <p class="text-sm fw-mutet mb-4">{% blocktrans trimmed %}Löscht <span class="font-semibold">alle</span> Daten (Liegenschaften, Objekte, Verträge, Personen, Buchungen, Rechnungen, Schäden, Vorlagen, Mandate und Verwaltungs-Stammdaten) und startet mit einer leeren Datenbank. Benutzerkonten und Rollen bleiben erhalten.{% endblocktrans %} <span class="font-semibold fw-kritisch">{% trans "Dieser Schritt kann nicht rückgängig gemacht werden." %}</span> {% trans "Vorher wird automatisch eine Sicherung der Datenbank erstellt; schlägt sie fehl, wird nichts gelöscht. Das Audit-Log bleibt erhalten." %}</p>
     <form method="post" action="/neu/datenreset/" onsubmit="return confirm('{% filter escapejs %}{% trans "Wirklich ALLE Daten unwiderruflich löschen und von vorne beginnen?" %}{% endfilter %}');" class="flex flex-wrap items-end gap-3">
         {% csrf_token %}
         <div class="fw-feldblock">
             <label class="fw-label">{% trans "Zum Bestätigen «LÖSCHEN» eingeben" %}</label>
             <input name="bestaetigung" autocomplete="off" placeholder="{% trans 'LÖSCHEN' %}" class="fw-feld w-48 fw-linie-krit">
         </div>
+        <div class="fw-feldblock">
+            <label class="fw-label" for="reset-passwort">{% trans "Dein Passwort" %}</label>
+            <input id="reset-passwort" type="password" name="passwort" required autocomplete="current-password" class="fw-feld w-48 fw-linie-krit">
+        </div>
+        {% if reset_braucht_code %}
+        <div class="fw-feldblock">
+            <label class="fw-label" for="reset-code">{% trans "Code der Zwei-Faktor-Anmeldung" %}</label>
+            <input id="reset-code" name="code" required inputmode="numeric" autocomplete="one-time-code" class="fw-feld w-48 fw-linie-krit">
+        </div>
+        {% endif %}
         <button class="fw-btn fw-gefahr">
             {% zeichen 'loeschen' %}{% trans "Alles löschen &amp; neu beginnen" %}
         </button>
