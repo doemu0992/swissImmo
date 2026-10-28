@@ -815,9 +815,15 @@ def fw_kuendigung_bestaetigen(request, pk):
 def fw_kuendigung_formular(request, pk):
     """Amtliches Kündigungsformular (PDF) — Original des zuständigen Kantons ausfüllen.
     Art. 266n OR: Kündigt der Vermieter eine Familienwohnung, werden zwei separat an
-    Mieter UND Ehegatte adressierte Kopien erzeugt (sonst ist die Kündigung nichtig)."""
+    Mieter UND Ehegatte adressierte Kopien erzeugt (sonst ist die Kündigung nichtig).
+
+    GET ist die VORSCHAU und schreibt nichts (ROUTE-01): Abgelegt und die Pendenz
+    «Formular versenden» abgehakt wird erst beim ausdrücklichen «Erstellen» (POST,
+    nur Schreib-Rollen). Das Formular gelangt erst mit der Zustellung ins Portal."""
     from django.http import HttpResponse
     from django.contrib import messages
+    from django.core.exceptions import PermissionDenied
+    from core.auth import hat_rolle
     from rentals.models import Kuendigung
     from crm.models import Organisation
     from django.shortcuts import redirect
@@ -844,17 +850,21 @@ def fw_kuendigung_formular(request, pk):
             'warnung': formular['warnung'], 'zurueck': zurueck,
             'weiter': f'/neu/kuendigung/{k.id}/formular/?nachbildung=bestaetigt'})
 
+    erstellen = request.method == 'POST'
+    if erstellen and not hat_rolle(request.user, SCHREIB_ROLLEN):
+        raise PermissionDenied
     kopien = kuendigung_zustellkopien(k.vertrag, k, verwaltung=vw)
     if formular['original']:
-        for empf_name, pdf in kopien:
-            suffix = f" — Zustellung an {empf_name}" if empf_name else ""
-            ablegen(pdf, f"Kündigung {auf_deutsch(k.get_absender_display)} {k.eingang_datum:%d.%m.%Y}{suffix}",
-                    kategorie='vertrag', vertrag=k.vertrag, dedup=True)
-        # Amtliches Formular erstellt → 'schriftlich bestätigen / Formular versenden' abhaken.
-        # Bei einer Nachbildung NICHT: Mit ihr ist das amtliche Formular nicht erstellt.
-        from core.services.automation import erledige_pendenzen_fuer
-        erledige_pendenzen_fuer(k.vertrag, ['schriftlich', 'Kündigungsformular'],
-                                user=request.user)
+        if erstellen:
+            for empf_name, pdf in kopien:
+                suffix = f" — Zustellung an {empf_name}" if empf_name else ""
+                ablegen(pdf, f"Kündigung {auf_deutsch(k.get_absender_display)} {k.eingang_datum:%d.%m.%Y}{suffix}",
+                        kategorie='vertrag', vertrag=k.vertrag, dedup=True)
+            # Amtliches Formular erstellt → 'schriftlich bestätigen / Formular versenden' abhaken.
+            # Bei einer Nachbildung NICHT: Mit ihr ist das amtliche Formular nicht erstellt.
+            from core.services.automation import erledige_pendenzen_fuer
+            erledige_pendenzen_fuer(k.vertrag, ['schriftlich', 'Kündigungsformular'],
+                                    user=request.user)
     else:
         kopien = [(n, mit_wasserzeichen(pdf)) for n, pdf in kopien]
 
@@ -1107,7 +1117,8 @@ def fw_zahlungsvereinbarung(request, vertrag_id):
 
 @rolle_erforderlich(*VERWALTUNGS_ROLLEN)
 def fw_zahlungsvereinbarung_pdf(request, vertrag_id):
-    """«Zahlungsvereinbarung mit Schuldanerkennung» als PDF, abgelegt in der Vertragsakte.
+    """«Zahlungsvereinbarung mit Schuldanerkennung» als PDF. GET ist die Vorschau und
+    schreibt nichts; erst POST («Erstellen») legt sie in der Vertragsakte ab (ROUTE-01).
 
     `?vb=<id>` wählt die Vereinbarung; gesucht wird über den Rückbezug DIESES
     Vertrags — eine fremde ID findet nichts (404). Ohne Angabe die neueste.
@@ -1133,11 +1144,12 @@ def fw_zahlungsvereinbarung_pdf(request, vertrag_id):
         raise Http404
     pdf = zahlungsvereinbarung_pdf(vb)
     titel = f"Zahlungsvereinbarung mit Schuldanerkennung #{vb.pk}"
-    # dedup: erneutes Öffnen überschreibt das Dokument derselben Vereinbarung,
-    # statt die Akte mit Kopien zu füllen.
-    ablegen(pdf, titel, kategorie='vertrag', vertrag=v, dedup=True,
-            dateiname=f"Zahlungsvereinbarung_{v.mieter.nachname or v.id}_{vb.pk}.pdf")
-    log_aktion(request, "Zahlungsvereinbarung (Schreiben) erstellt", str(v.mieter), titel, ziel=v)
+    if request.method == 'POST':
+        # dedup: erneutes Erstellen legt eine neue Fassung desselben Titels an,
+        # statt die Akte mit Kopien zu füllen.
+        ablegen(pdf, titel, kategorie='vertrag', vertrag=v, dedup=True,
+                dateiname=f"Zahlungsvereinbarung_{v.mieter.nachname or v.id}_{vb.pk}.pdf")
+        log_aktion(request, "Zahlungsvereinbarung (Schreiben) erstellt", str(v.mieter), titel, ziel=v)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Zahlungsvereinbarung_{vb.pk}.pdf"'
     return resp

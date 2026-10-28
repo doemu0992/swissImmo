@@ -154,10 +154,16 @@ def fw_liegenschaft_form(request, pk=None):
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_liegenschaft_gwr(request, pk):
     """GWR/EGID-Import manuell (erneut) auslösen — z.B. wenn er beim Anlegen
-    fehlschlug oder die Objekte nachträglich vom Bund geladen werden sollen."""
+    fehlschlug oder die Objekte nachträglich vom Bund geladen werden sollen.
+
+    NUR POST (ROUTE-07): Der Import ruft die Bundesdienste auf und legt Objekte an.
+    Als GET genügte ein fremder Link, um das auszulösen; ein POST trägt das
+    CSRF-Token. Ein GET führt nur zurück auf die Akte."""
     from django.shortcuts import redirect
     from django.contrib import messages
     lg = get_object_or_404(Liegenschaft, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/liegenschaften/{lg.id}/')
     try:
         from portfolio.services import sync_liegenschaft_with_gwr
         res = sync_liegenschaft_with_gwr(lg)

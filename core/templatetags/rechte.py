@@ -19,3 +19,13 @@ register = template.Library()
 @register.filter
 def darf(user, pfad):
     return darf_oeffnen(user, str(pfad))
+
+
+@register.filter
+def darf_schreiben(user):
+    """Gehört der Benutzer zu den Schreib-Rollen (nicht «Lesezugriff»)?
+
+    Für Knöpfe, die Daten ablegen oder protokollieren, obwohl ihre View auch dem
+    Lesezugriff offensteht (die Vorschau). Die View prüft die Rolle selbst."""
+    from core.auth import SCHREIB_ROLLEN, hat_rolle
+    return hat_rolle(user, SCHREIB_ROLLEN)

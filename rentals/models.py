@@ -1141,9 +1141,13 @@ class Dokument(OrganisationAusKette):
     titel = models.CharField(max_length=200, blank=True)
     datei = models.FileField(upload_to=get_smart_upload_path)
     kategorie = models.CharField(max_length=50, choices=[('vertrag', _('Vertrag')), ('protokoll', pgettext_lazy('Auswahl', 'Protokoll')), ('korrespondenz', _('Korrespondenz')), ('sonstiges', _('Sonstiges'))])
-    # Sichtbarkeit im Mieterportal (Datenschutz): Standard sichtbar, Verwalter
-    # kann sensible Dokumente (z.B. interne Vermerke) ausblenden.
-    im_portal_sichtbar = models.BooleanField("Im Mieterportal sichtbar", default=True)
+    # Sichtbarkeit im Mieterportal (Datenschutz): Standard NICHT sichtbar. Ein
+    # Dokument erscheint dort erst, wenn es dem Mieter zugestellt oder freigegeben
+    # wurde (Versand, Unterschrift, Vertrag in Kraft, Freigabe von Hand in der
+    # Person-Akte). Bis 28.10.2026 war der Standard «sichtbar»: schon das
+    # Ansehen einer Mahnung oder eines Betreibungsdatenblatts legte das Dokument
+    # für den Mieter bereit (ROUTE-01).
+    im_portal_sichtbar = models.BooleanField("Im Mieterportal sichtbar", default=False)
     datum = models.DateField(auto_now_add=True)
     # Exakter Ablage-Zeitpunkt (Datum + Uhrzeit). datum bleibt für Alt-Auswertungen.
     erstellt_am = models.DateTimeField("Abgelegt am", auto_now_add=True, null=True)

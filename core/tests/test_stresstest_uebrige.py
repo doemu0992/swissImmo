@@ -283,7 +283,12 @@ class NkFristUndKautionFreigabeTests(TestCase):
                 'gewuenschtes_ende': (heute + timedelta(days=120)).isoformat()}, secure=True)
         p = Pendenz.objects.get(vertrag=v, titel__startswith='Kaution: Freigabeschreiben')
         self.assertFalse(p.erledigt)
+        # Die Vorschau (GET) erledigt nichts (ROUTE-01) ...
         c.get(f'/neu/vertraege/{v.id}/kaution-beleg/freigabe/', secure=True)
+        p.refresh_from_db()
+        self.assertFalse(p.erledigt)
+        # ... das ausdrückliche «Erstellen» (POST) erledigt die Pendenz.
+        c.post(f'/neu/vertraege/{v.id}/kaution-beleg/freigabe/', secure=True)
         p.refresh_from_db()
         self.assertTrue(p.erledigt)
 

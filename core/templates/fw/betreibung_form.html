@@ -19,7 +19,7 @@ der Frist), steht nach dem Speichern als Warnung da, nicht als Fehler am Feld.
     </div>
 </div>
 <div class="flex flex-wrap gap-2">
-    <a href="/neu/betreibungen/{{ b.id }}/pdf/" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' %}{% trans "Datenblatt Betreibungsbegehren (PDF)" %}</a>
+    {% url 'fw_betreibung_pdf' b.id as pdf_url %}{% include 'fw/_pdf_erstellen.html' with url=pdf_url text=_("Datenblatt Betreibungsbegehren (PDF)") %}
     {% if b.vertrag_id %}<a href="/neu/vertraege/{{ b.vertrag_id }}/" class="fw-btn">{% zeichen 'vertrag' %}{% trans "Zum Vertrag" %}</a>{% endif %}
 </div>
 {% endif %}

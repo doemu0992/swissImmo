@@ -40,7 +40,15 @@
                 {% zeichen 'mehr' %}{% trans "Mehr" %}
             </button>
             <div id="aAktionen" data-menu-list role="menu" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
+                {% if p.abgeschlossen and request.user|darf_schreiben %}
+                {% comment %} Abgeschlossen: «Erstellen» (POST) legt das Protokoll in der Akte ab (beim Abschluss geschieht das schon). {% endcomment %}
+                <form method="post" action="/neu/abnahme/{{ p.id }}/pdf/" target="_blank">
+                    {% csrf_token %}
+                    <button type="submit" class="fw-menuzeile">{% zeichen 'drucken' klasse='w-4' %}{% trans "Protokoll als PDF" %}</button>
+                </form>
+                {% else %}
                 <a href="/neu/abnahme/{{ p.id }}/pdf/" target="_blank" rel="noopener" class="fw-menuzeile">{% zeichen 'drucken' klasse='w-4' %}{% trans "Protokoll als PDF" %}</a>
+                {% endif %}
                 {% comment %} Löschen: nur offene Entwürfe und nur Verwalter/Inhaber. Ein
                    abgeschlossenes Protokoll ist unterschrieben und Beweismittel. {% endcomment %}
                 {% if not p.abgeschlossen and request.user|darf:"/neu/abnahme/1/loeschen/" %}

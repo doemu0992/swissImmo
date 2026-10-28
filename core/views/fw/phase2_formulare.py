@@ -472,8 +472,10 @@ def fw_betreibung_bearbeiten(request, pk):
 def fw_betreibung_pdf(request, pk):
     """Datenblatt für das Betreibungsbegehren (Vorlage, nicht das amtliche Formular).
 
-    Wird in der Vertragsakte abgelegt — derselbe Titel überschreibt das frühere
-    Blatt derselben Betreibung, statt Kopien zu stapeln."""
+    GET ist die VORSCHAU und schreibt nichts. Erst POST («Datenblatt erstellen»)
+    legt das Blatt in der Vertragsakte ab — dort überschreibt derselbe Titel das
+    frühere Blatt derselben Betreibung, statt Kopien zu stapeln. Das Blatt ist
+    intern und bleibt für den Mieter unsichtbar (ROUTE-01)."""
     from django.http import HttpResponse
 
     from core.services.ablage import ablegen
@@ -483,12 +485,13 @@ def fw_betreibung_pdf(request, pk):
         'debitoren_rechnung__liegenschaft__eigentuemer', 'vertrag__mieter',
         'vertrag__einheit__liegenschaft__eigentuemer', 'organisation'), pk=pk)
     pdf = betreibungsbegehren_pdf(b)
-    if b.vertrag_id:
-        ablegen(pdf, f"Betreibungsbegehren (Daten) {b.betreibungsnummer or '#' + str(b.pk)}",
-                kategorie='korrespondenz', vertrag=b.vertrag, dedup=True,
-                dateiname=f"Betreibungsbegehren_{b.pk}.pdf")
-    log_aktion(request, 'Betreibungsbegehren (Daten) erstellt', f'Betreibung #{b.id}', f'CHF {b.forderung}',
-               ziel=b.vertrag)
+    if request.method == 'POST':
+        if b.vertrag_id:
+            ablegen(pdf, f"Betreibungsbegehren (Daten) {b.betreibungsnummer or '#' + str(b.pk)}",
+                    kategorie='korrespondenz', vertrag=b.vertrag, dedup=True,
+                    dateiname=f"Betreibungsbegehren_{b.pk}.pdf", im_portal_sichtbar=False)
+        log_aktion(request, 'Betreibungsbegehren (Daten) erstellt', f'Betreibung #{b.id}', f'CHF {b.forderung}',
+                   ziel=b.vertrag)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Betreibungsbegehren_{b.pk}.pdf"'
     return resp

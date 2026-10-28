@@ -250,17 +250,18 @@ class EinrichtungTests(ZweiFaktorBasis):
         self.client.force_login(self.benutzer)
         antwort = self.client.get(reverse('zweifaktor_einrichten'))
         self.assertContains(antwort, '<svg')
-        faktor = ZweiterFaktor.objects.get(benutzer=self.benutzer)
-        self.assertContains(antwort, faktor.geheimnis)
+        # Das Geheimnis liegt bis zur Bestätigung nur in der Sitzung (ROUTE-07).
+        self.assertFalse(ZweiterFaktor.objects.filter(benutzer=self.benutzer).exists())
+        self.assertContains(antwort, self.client.session['zweifaktor_neues_geheimnis'])
 
     def test_richtiger_code_aktiviert_und_zeigt_notfallcodes(self):
         self.client.force_login(self.benutzer)
         self.client.get(reverse('zweifaktor_einrichten'))
-        faktor = ZweiterFaktor.objects.get(benutzer=self.benutzer)
+        geheimnis = self.client.session['zweifaktor_neues_geheimnis']
 
         antwort = self.client.post(reverse('zweifaktor_einrichten'),
-                                   {'code': totp.code(faktor.geheimnis)})
-        faktor.refresh_from_db()
+                                   {'code': totp.code(geheimnis)})
+        faktor = ZweiterFaktor.objects.get(benutzer=self.benutzer)
         self.assertTrue(faktor.ist_aktiv)
         self.assertEqual(Wiederherstellungscode.objects.filter(
             benutzer=self.benutzer).count(), 10)

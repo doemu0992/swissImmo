@@ -197,12 +197,15 @@ class MahnlaufTests(TestCase):
         self.assertEqual(len(dok), 1, "«Erfassen» legte kein Dokument am Vertrag ab")
         self.assertIn('1. Mahnung', dok[0].bezeichnung)
 
-    def test_mahnung_pdf_button_legt_die_mahnung_in_die_akte(self):
+    def test_mahnung_pdf_vorschau_legt_nichts_in_die_akte(self):
+        """ROUTE-01: Die PDF-Vorschau (GET) ist reine Anzeige. Früher legte schon das
+        Öffnen der 257d-Fassung ein Dokument in die Akte, das der Mieter im Portal sah.
+        Abgelegt wird beim Erfassen der Mahnung und beim Versand (POST)."""
         r = self._ueberfaellig(40)
         c = Client(); c.force_login(_team_user())
         antwort = c.get(f'/vertrag/{r.vertrag_id}/mahnung/')
         self.assertEqual(antwort.status_code, 200)
-        self.assertEqual(len(self._mahn_dokumente(r.vertrag)), 1)
+        self.assertEqual(len(self._mahn_dokumente(r.vertrag)), 0)
 
     def test_mahnung_wird_am_selben_tag_nicht_dupliziert(self):
         """Zweimal klicken darf die Akte nicht aufblähen — dieselbe Stufe am
@@ -215,8 +218,8 @@ class MahnlaufTests(TestCase):
         c.get(f'/vertrag/{r.vertrag_id}/mahnung/')
         c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.id, 'stufe': 2}, follow=True)
         titel = sorted(d.bezeichnung for d in self._mahn_dokumente(r.vertrag))
-        # «1. Mahnung», «2. Mahnung» und die stufenlose «Mahnung» des PDF-Buttons
-        self.assertEqual(len(titel), 3, f"unerwartete Dokumente: {titel}")
+        # «1. Mahnung» und «2. Mahnung»; die PDF-Vorschau (GET) legt seit ROUTE-01 nichts ab.
+        self.assertEqual(len(titel), 2, f"unerwartete Dokumente: {titel}")
 
     def test_ablage_scheitert_lautlos_und_bricht_den_mahnlauf_nicht(self):
         """Die Ablage ist Beiwerk: Geht die PDF-Erzeugung schief, muss der

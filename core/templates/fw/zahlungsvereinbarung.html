@@ -62,7 +62,10 @@ werden gemahnt. Das Schreiben mit Schuldanerkennung kommt aus
         </ul>
         {% endif %}
         <div class="flex flex-wrap gap-2">
-            <a href="/neu/vertraege/{{ v.id }}/zahlungsvereinbarung/pdf/?vb={{ e.v.id }}" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' %}{% trans "Schreiben mit Schuldanerkennung (PDF)" %}</a>
+            <form method="post" action="/neu/vertraege/{{ v.id }}/zahlungsvereinbarung/pdf/?vb={{ e.v.id }}" target="_blank" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="fw-btn">{% zeichen 'drucken' %}{% trans "Schreiben mit Schuldanerkennung (PDF)" %}</button>
+            </form>
             {% if e.v.status == 'aktiv' %}
             <form method="post" onsubmit="return confirm('{% filter escapejs %}{% trans "Zahlungsvereinbarung abbrechen? Die gedeckten Forderungen laufen danach wieder im Mahnlauf." %}{% endfilter %}');">
                 {% csrf_token %}
