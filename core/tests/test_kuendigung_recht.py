@@ -157,7 +157,7 @@ class VertragsmaskeTests(TestCase):
         c = Client()
         c.force_login(_team_user())
         daten = {'einheit_id': str(frei.id), 'mieter_id': str(self.m.id), 'netto_mietzins': '1800',
-                 'nebenkosten': '250', 'beginn': '2026-12-01', 'kuendigungsfrist': '2'}
+                 'nebenkosten': '250', 'nk_kostenarten': ['heizung'], 'beginn': '2026-12-01', 'kuendigungsfrist': '2'}
         c.post('/neu/vertraege/neu/speichern/', daten)
         self.assertFalse(Mietvertrag.objects.filter(einheit=frei).exists(),
                          'Ein Vertrag mit zwei Monaten Kündigungsfrist wurde gespeichert (Art. 266c OR).')
@@ -174,13 +174,13 @@ class VertragsmaskeTests(TestCase):
         c.force_login(_team_user())
         c.post('/neu/vertraege/neu/speichern/', {
             'einheit_id': str(gew.id), 'mieter_id': str(self.m.id), 'netto_mietzins': '3000',
-            'nebenkosten': '300', 'beginn': '2026-12-01'})
+            'nebenkosten': '300', 'nk_kostenarten': ['heizung'], 'beginn': '2026-12-01'})
         self.assertEqual(Mietvertrag.objects.get(einheit=gew).kuendigungsfrist_monate, 6)
         # ... und fünf Monate werden abgewiesen.
         Mietvertrag.objects.filter(einheit=gew).delete()
         c.post('/neu/vertraege/neu/speichern/', {
             'einheit_id': str(gew.id), 'mieter_id': str(self.m.id), 'netto_mietzins': '3000',
-            'nebenkosten': '300', 'beginn': '2026-12-01', 'kuendigungsfrist': '5'})
+            'nebenkosten': '300', 'nk_kostenarten': ['heizung'], 'beginn': '2026-12-01', 'kuendigungsfrist': '5'})
         self.assertFalse(Mietvertrag.objects.filter(einheit=gew).exists())
 
 
