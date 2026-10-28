@@ -236,6 +236,19 @@ def _suche_ohne_team(user):
             'fw_suche_gruppen': ','.join(suche.gruppen), 'fw_suche_ziel': suche.suchseite}
 
 
+def _kopf_reduziert(user):
+    """Die Kopfzeile ohne Ziele, die diese Person nicht öffnen darf (DESIGN-01).
+
+    Wer keine Team-Rolle hat, bekommt «+», Glocke, Zahnrad, die Rubriken des
+    Profilmenüs und die Zähler-Abfrage nicht angeboten: Jedes dieser Ziele
+    endete für die Hauswartung bzw. für Mieter und Eigentümer (2FA-Seiten) auf
+    einer 403-Seite. Das Logo führt zur eigenen Startseite: für die Hauswartung
+    die Schadenliste, sonst die Login-Weiche (`/nach-login/`, rollengerecht)."""
+    from core.auth import ist_nur_hauswart
+    return {'fw_kopf_reduziert': True,
+            'fw_kopf_start': '/neu/schaeden/' if ist_nur_hauswart(user) else '/nach-login/'}
+
+
 def fw_navigation(request):
     """Context-Processor: Navigationsstruktur für base.html.
 
@@ -249,7 +262,7 @@ def fw_navigation(request):
     try:
         from core.auth import hat_rolle, TEAM_ROLLEN
         if not hat_rolle(user, TEAM_ROLLEN):
-            return _suche_ohne_team(user)
+            return {**_kopf_reduziert(user), **_suche_ohne_team(user)}
     except Exception:
         return {}
 

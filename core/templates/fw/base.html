@@ -68,9 +68,9 @@ Detailseiten rufen sie beim Namen.
     <!-- ================= LEISTE ================= -->
     <aside id="fwSidebar" class="fw-side fw-flaeche" aria-label="{% trans 'Hauptnavigation' %}">
         <div class="fw-side-kopf sb-logo">
-            <a href="/neu/" title="{% trans 'Zur Übersicht' %}" class="fw-marke-zeichen">si</a>
+            <a href="{% if fw_kopf_reduziert %}{{ fw_kopf_start }}{% else %}/neu/{% endif %}" title="{% trans 'Zur Übersicht' %}" class="fw-marke-zeichen">si</a>
             <div class="fw-marke-text sb-logotext">
-                <a href="/neu/">swissImmo</a>
+                <a href="{% if fw_kopf_reduziert %}{{ fw_kopf_start }}{% else %}/neu/{% endif %}">swissImmo</a>
                 {% if fw_mandant and fw_mandanten|length <= 1 %}<small class="fw-faint" title="{{ fw_mandant.firma }}">{{ fw_mandant.firma }}</small>{% endif %}
             </div>
             <button type="button" onclick="fwToggleSidebar()" title="{% trans 'Menü ein-/ausklappen' %}" class="fw-side-knopf fw-nur-breit">
@@ -125,9 +125,11 @@ Detailseiten rufen sie beim Namen.
         </nav>
 
         <div class="fw-side-fuss">
+            {% if not fw_kopf_reduziert %}
             <a href="/neu/einstellungen/{{ lg_query }}" class="fw-nav-eintrag sb-item{% if nav in fw_einstellungen_keys %} hier{% endif %}">
                 {% zeichen 'einstellungen' %} <span class="sb-label">{% trans "Einstellungen" %}</span>
             </a>
+            {% endif %}
             <button type="button" onclick="fwProfilMenu()" class="fw-ich" aria-haspopup="true" aria-controls="fwProfil">
                 <span class="fw-avatar">{{ request.user.username|slice:":2"|upper }}</span>
                 <span class="sb-label"><b class="fw-ink truncate">{{ request.user.get_full_name|default:request.user.username }}</b><small class="fw-faint truncate">{{ request.user.email|default:request.user.username }}</small></span>
@@ -151,7 +153,7 @@ Detailseiten rufen sie beim Namen.
            unverändert. {% endcomment %}
         <header class="fw-kopfleiste" id="fwKopf">
           <div class="fw-kopf-z1">
-            <a href="/neu/{{ lg_query }}" class="fw-kapsel fw-logo-kapsel" title="{% trans 'Zur Übersicht' %}" aria-label="immoswiss — {% trans 'Zur Übersicht' %}">
+            <a href="{% if fw_kopf_reduziert %}{{ fw_kopf_start }}{% else %}/neu/{{ lg_query }}{% endif %}" class="fw-kapsel fw-logo-kapsel" title="{% trans 'Zur Übersicht' %}" aria-label="immoswiss — {% trans 'Zur Übersicht' %}">
                 <svg class="fw-logo-haus" width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 15L16 4l13 11M7 13v14h18V13" class="a"/><path d="M12 27v-7h3v7M18 27v-9h3v9" class="b"/></svg>
                 <b>immoswiss<svg class="fw-logo-kreuz" width="12" height="12" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="3" fill="#e5342d"/><path d="M8.5 4h3v4.5H16v3h-4.5V16h-3v-4.5H4v-3h4.5z" fill="#fff"/></svg></b>
             </a>
@@ -181,11 +183,17 @@ Detailseiten rufen sie beim Namen.
             {% if fw_palette or fw_suche_gruppen %}{% include 'fw/_omnisearch.html' %}{% endif %}
             <div class="fw-kapsel fw-werkzeug-kapsel">
                 <button type="button" onclick="fwThemeWechseln()" title="{% trans 'Hell- oder Dunkelmodus' %}" aria-label="{% trans 'Hell- oder Dunkelmodus' %}" class="fw-knopf-rund fw-knopf-dunkel">{% zeichen 'darstellung' %}</button>
-                <a href="/neu/faelle/neu/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neuen Fall erfassen' %}"
+                {% comment %} «+», Glocke und Zahnrad führen in Bereiche des Teams: Die Hauswartung und die
+                   Portal-Rollen (2FA-Seiten) bekommen sie nicht angeboten (`fw_kopf_reduziert`,
+                   `core/navigation.py`). «Neuer Fall» fällt auf die Vollseite zurück, wo `fwModalOpen`
+                   (Schublade, `fw/_fwmodal.html`) auf der Seite nicht geladen ist. {% endcomment %}
+                {% if not fw_kopf_reduziert %}
+                <a href="/neu/faelle/neu/" onclick="return window.fwModalOpen ? fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}') : true" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neuen Fall erfassen' %}"
                    class="fw-knopf-rund fw-wz-neu">{% zeichen 'neu' %}</a>
                 <a href="/neu/zulauf/{{ lg_query }}" title="{% trans 'Mitteilungen' %}" aria-label="{% trans 'Mitteilungen' %}"
                    class="fw-knopf-rund{% if nav == 'zulauf' %} hier{% endif %}">{% zeichen 'glocke' %}<span class="fw-pip" data-zaehler="zulauf" hidden></span></a>
                 <a href="/neu/einstellungen/{{ lg_query }}" title="{% trans 'Einstellungen' %}" aria-label="{% trans 'Einstellungen' %}" class="fw-knopf-rund fw-wz-einst{% if nav in fw_einstellungen_keys %} hier{% endif %}">{% zeichen 'einstellungen' %}</a>
+                {% endif %}
                 <button type="button" onclick="fwProfilMenu()" aria-label="{% trans 'Profil und Darstellung' %}" aria-haspopup="true" aria-controls="fwProfil" class="fw-avatar-knopf"><span class="fw-avatar fw-avatar-gross">{{ request.user.username|slice:":2"|upper }}</span></button>
             </div>
           </div>
@@ -221,7 +229,7 @@ Detailseiten rufen sie beim Namen.
             {% comment %} Was die Kopfzeile bis 1023 px nicht mehr tragen kann: «Neuer Fall» und die
                Schublade. Ab 1024 px stehen beide nicht hier (`fw-profil-schnell`). {% endcomment %}
             <div class="fw-profil-schnell">
-                <a href="/neu/faelle/neu/" onclick="fwProfilMenu();return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')" class="fw-profil-link">{% zeichen 'neu' %} {% trans "Neuer Fall" %}</a>
+                {% if not fw_kopf_reduziert %}<a href="/neu/faelle/neu/" onclick="fwProfilMenu();return window.fwModalOpen ? fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}') : true" class="fw-profil-link">{% zeichen 'neu' %} {% trans "Neuer Fall" %}</a>{% endif %}
                 <button type="button" onclick="fwProfilMenu();fwOpenMobileNav()" class="fw-profil-link">{% zeichen 'mehr' %} {% trans "Menü öffnen" %}</button>
                 <div class="fw-profil-trenner"></div>
             </div>
@@ -254,10 +262,12 @@ Detailseiten rufen sie beim Namen.
                 {% include 'core/_sprachwahl.html' with rahmen='fw-segment' knopf='' aktiv='an' passiv='' %}
             </div>
             <div class="fw-profil-trenner"></div>
+            {% if not fw_kopf_reduziert %}
             <a href="/neu/dokumente/{{ lg_query }}" class="fw-profil-link">{% zeichen 'dokument' %} {% trans "Dokumente" %}</a>
             <a href="/neu/kommunikation/{{ lg_query }}" class="fw-profil-link">{% zeichen 'senden' %} {% trans "Kommunikation" %}</a>
             <a href="/neu/einstellungen/" class="fw-profil-link">{% zeichen 'einstellungen' %} {% trans "Einstellungen" %}</a>
             <div class="fw-profil-trenner"></div>
+            {% endif %}
             <a href="/logout/" class="fw-profil-link crit">{% zeichen 'extern' %} {% trans "Abmelden" %}</a>
         </div>
 
@@ -335,6 +345,7 @@ function fwNavToggle(key) {
 // Nach dem Seitenaufbau geholt, damit keine Seite auf den Arbeitsvorrat wartet.
 (function () {
     if (document.documentElement.classList.contains('_embed')) return;
+    {% if fw_kopf_reduziert %}return;   // Hauswartung und Portal-Rollen dürfen die Zahlen nicht abfragen (403 im Hintergrund){% endif %}
     fetch('/neu/leistenzahlen/', {headers: {'X-Requested-With': 'fetch'}, credentials: 'same-origin'})
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (z) {
