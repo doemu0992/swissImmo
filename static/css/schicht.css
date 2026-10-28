@@ -2155,6 +2155,14 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-mzm-fuss-text{padding:0;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;text-decoration:underline;
             display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-width:0}
         .fw-assistent-fuss .fw-btn[disabled]{opacity:.5;cursor:not-allowed}
+        .fw-profil{overflow-x:hidden}
+        .fw-profil-mandant{margin:0}
+        .fw-profil-mandant .fw-profil-titel{display:block}
+        .fw-profil-mandant select{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;
+            text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+        .fw-profil-zuletzt{display:flex;flex-direction:column;gap:2px;margin-inline:-8px;min-width:0}
+        .fw-profil-zuletzt .fw-zuletzt-eintrag{font-size:13.5px;min-width:0;padding:6px 8px}
+        .fw-profil-zuletzt .fw-zuletzt-eintrag .truncate{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .fw-kopf-z1{display:flex;align-items:center;gap:12px}
         .fw-kopf-z2{position:relative;margin-top:10px;min-width:0}
         @media (max-width:1023px){

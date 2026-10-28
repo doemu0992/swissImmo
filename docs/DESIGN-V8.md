@@ -298,14 +298,28 @@ Inhalt) über die ganze Breite, Bereichsname als Überzeile («AKTEN /»). Auf �
 
   Der **Einstellungsknopf** bleibt in Zeile 1 (Werkzeuge) und weicht erst, wenn Zeile 1 sonst umbricht
   (unter 440 px), und dann nur ins Profilmenü. Hell/Dunkel, «+» und die Suchbreite weichen früher.
-- **Profilmenü** `#fwProfil`: bis 1023 px steht dort zusätzlich die Schnellzeile `fw-profil-schnell` —
-  «Neuer Fall» (öffnet wie das «+» das Fenster) und «Menü öffnen» (die Schublade `#fwSidebar` mit Mandant,
-  «Zuletzt geöffnet», Einstellungen; `fwOpenMobileNav`). Ab 1024 px steht sie nicht dort, weil «+» in
-  Zeile 1 steht und die Schublade nicht mehr gebraucht wird (`.fw-side` ist ab 1024 px aus).
+- **Profilmenü** `#fwProfil` (272 px breit, rechts unter der Kopfzeile; höchstens `100dvh - 96px` hoch, danach
+  scrollt es in sich, nie quer): von oben Kopf (Name, E-Mail), bis 1023 px die Schnellzeile `fw-profil-schnell` —
+  «Neuer Fall» (öffnet wie das «+» das Fenster) und «Menü öffnen» (die Schublade `#fwSidebar` mit
+  Einstellungen; `fwOpenMobileNav`), dann **bei jeder Breite**
+  - **Mandant** (`fw-profil-mandant`, Auswahl `#fwMandantWahlProfil`): der Wechsel der Organisation, nur wer in
+    mehr als einer Mitglied ist (wie in der Schublade); gleiches Ziel `POST /neu/mandant/`, die Prüfung der
+    Mitgliedschaft macht weiterhin `fw_mandant_wechseln`. Lange Namen werden mit Ellipse gekürzt.
+  - **Zuletzt geöffnet** (`#fwZuletztProfilAbschnitt`, Liste `#fwZuletztProfil`, Klasse `fw-profil-zuletzt`):
+    dieselben höchstens drei Akten aus `localStorage` (`fw-zuletzt`) wie in der Schublade; ein Skript in
+    `base.html` füllt beide Listen aus derselben Quelle. Ohne Einträge bleibt der Abschnitt verborgen.
+  - dann Darstellung (Hell/Dunkel), Sprache, Dokumente, Kommunikation, Einstellungen, Abmelden.
+
+  Warum bei jeder Breite: Die Schublade ist ab 1024 px aus (`.fw-side`), Mandant und «Zuletzt geöffnet» waren
+  dort unerreichbar (behoben 28.10.2026). Bis 1023 px stehen beide zusätzlich in der Schublade, das Menü
+  bleibt der gemeinsame Weg. Die Liste im Profilmenü trägt **nicht** die Klasse `fw-zuletzt`: Diese blendet die
+  zugeklappte Leiste (`html._sbc`) aus. Regeln: Modulblock «Profilmenue Mandant» in der Stilschicht, vor dem
+  Block «Kopfzeile und Omnisearch» (der bleibt der letzte).
 - **Wächter:** `core/tests/test_kopfzeile_omnisearch.py` (Struktur, Bindungen Skript ↔ Schicht ↔
   Vorlage ↔ Zeichentabelle ↔ Texte), `e2e/tests/kopfzeile.spec.ts` (Überlauf, «Mehr», Tastatur,
   Bestand, Profilmenü, ohne JavaScript), `e2e/tests/telefon.spec.ts` (Zeile 1 bei 22 Breiten, Marke),
-  `e2e/tests/omnisearch.spec.ts` (Suche, 390 und 1280 px).
+  `e2e/tests/omnisearch.spec.ts` (Suche, 390 und 1280 px), `core/tests/test_profilmenue_mandant.py` und
+  `e2e/tests/profilmenue-mandant.spec.ts` (Mandant und «Zuletzt geöffnet» im Profilmenü, 390 und 1280 px, hell und dunkel).
 
 ## Was nicht mehr vorkommen soll
 

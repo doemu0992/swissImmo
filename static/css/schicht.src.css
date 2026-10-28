@@ -3088,6 +3088,22 @@
         .fw-assistent-fuss .fw-btn[disabled]{opacity:.5;cursor:not-allowed}
         /* ===== Ende MODUL mietzinsmodell-wizard ===== */
 
+        /* ===== MODUL Profilmenue Mandant (28.10.2026) ===== */
+        /* Mandantenwechsel und «Zuletzt geöffnet» stehen bei jeder Breite im Profilmenü `#fwProfil`: Ab 1024 px ist die
+           Schublade `#fwSidebar` aus, beide wären sonst am PC unerreichbar. Das Menü ist 272 px breit und kann nicht quer
+           scrollen (`overflow-x:hidden`); lange Namen werden mit Ellipse gekürzt, die Höhe begrenzt `.fw-profil` (Block
+           «Kopfzeile»: 100dvh - 96px, danach scrollt es in sich). Eigene Klasse für die Liste, nicht `.fw-zuletzt`: Diese
+           blendet die zugeklappte Leiste (`html._sbc`) aus, das Profilmenü bleibt davon unberührt. */
+        .fw-profil{overflow-x:hidden}
+        .fw-profil-mandant{margin:0}
+        .fw-profil-mandant .fw-profil-titel{display:block}
+        .fw-profil-mandant select{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;
+            text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+        .fw-profil-zuletzt{display:flex;flex-direction:column;gap:2px;margin-inline:-8px;min-width:0}
+        .fw-profil-zuletzt .fw-zuletzt-eintrag{font-size:13.5px;min-width:0;padding:6px 8px}
+        .fw-profil-zuletzt .fw-zuletzt-eintrag .truncate{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        /* ===== Ende MODUL Profilmenue Mandant ===== */
+
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
         /* Vorlage: navmock/v2/vorschau (freigegeben, Stand «Kopfzeile v2»). Zeile 1 von links: Marke,
            Bestandsfilter `lg` (Kontext-Chip «BESTAND / Name»), die fünf Bereiche (schliessen bei jeder
