@@ -24,6 +24,7 @@ from portfolio.models import Liegenschaft
 logger = logging.getLogger(__name__)
 
 from ._basis import _global_filter, _num
+from core.utils.parameter import jahr_streng
 
 
 # ============================================================
@@ -287,7 +288,7 @@ def fw_buchhaltung(request):
         qs = qs.filter(liegenschaft=aktive_lg)
     if jahr_param and jahr_param != 'alle':
         try:
-            jahr = int(jahr_param)
+            jahr = jahr_streng(jahr_param)
             qs = qs.filter(datum__gte=date(jahr, 1, 1), datum__lte=date(jahr, 12, 31))
         except ValueError:
             jahr = heute.year
@@ -464,7 +465,7 @@ def fw_kontenplan(request):
     # --- Saldenliste ---
     jahr_param = request.GET.get('jahr', str(heute.year))
     try:
-        jahr = int(jahr_param)
+        jahr = jahr_streng(jahr_param)
     except ValueError:
         jahr = heute.year
     bqs = Buchung.objects.filter(datum__gte=date(jahr, 1, 1), datum__lte=date(jahr, 12, 31))
@@ -506,7 +507,7 @@ def fw_kontoblatt(request, nummer):
     konto = get_object_or_404(Buchungskonto, nummer=nummer)
     jahr_param = request.GET.get('jahr', str(heute.year))
     try:
-        jahr = int(jahr_param)
+        jahr = jahr_streng(jahr_param)
     except ValueError:
         jahr = None
 
@@ -562,7 +563,7 @@ def fw_buchhaltung_pdf(request):
         jahr = 'alle'
     else:
         try:
-            jahr = int(jahr_param)
+            jahr = jahr_streng(jahr_param)
         except ValueError:
             jahr = heute.year
 
@@ -589,7 +590,7 @@ def fw_buchhaltung_export(request):
     aktive_lg = basis['aktive_lg']
     heute = timezone.localdate()
     try:
-        jahr = int(request.GET.get('jahr', str(heute.year)))
+        jahr = jahr_streng(request.GET.get('jahr', str(heute.year)))
     except ValueError:
         jahr = heute.year
     qs = Buchung.objects.all()

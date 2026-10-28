@@ -306,13 +306,23 @@ def fw_pendenz_neu(request):
             faellig = date.fromisoformat(request.POST['faellig_am'])
         except Exception:
             faellig = None
-    lg_id = request.POST.get('liegenschaft_id') or None
+    # Die Liegenschaft wird über den Mandantenfilter nachgeschlagen: Eine unbekannte,
+    # fremde oder unsinnige Kennung ist ein Formularfehler, kein 500 (ROUTE-06).
+    lg_roh = request.POST.get('liegenschaft_id') or ''
+    lg = None
+    if lg_roh:
+        from portfolio.models import Liegenschaft
+        from core.utils.parameter import id_param
+        lg = Liegenschaft.objects.filter(pk=id_param(lg_roh)).first()
+        if lg is None:
+            messages.error(request, gettext('Die gewählte Liegenschaft gibt es nicht.'))
+            return redirect('fw_pendenzen')
     Pendenz.objects.create(
         titel=titel,
         beschreibung=(request.POST.get('beschreibung') or '').strip(),
         kategorie=request.POST.get('kategorie', 'aufgabe'),
         faellig_am=faellig,
-        liegenschaft_id=lg_id if lg_id else None,
+        liegenschaft=lg,
         erstellt_von=request.user,
     )
     log_aktion(request, "Pendenz erstellt", titel, '')

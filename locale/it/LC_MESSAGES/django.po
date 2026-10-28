@@ -33855,3 +33855,31 @@ msgstr "Il contratto è di durata determinata e termina il %(datum)s senza disde
 #, python-format
 msgid "Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet (Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
 msgstr "Il locatore ha rinunciato alla disdetta fino al %(datum)s (rinuncia alla disdetta, art. 17 cpv. 4 OLAL). Una disdetta ordinaria con effetto al %(wirkung)s (prima di questa data) non può essere registrata. Le disdette straordinarie, ad esempio per mora nel pagamento (art. 257d CO), rimangono possibili."
+
+#, python-format
+msgid "Die Eingabe ist zu lang: Ein Feld darf höchstens %(n)s Zeichen enthalten."
+msgstr "Il testo inserito è troppo lungo: un campo può contenere al massimo %(n)s caratteri."
+
+msgid "Eine Zahl in der Eingabe ist zu gross oder zu klein."
+msgstr "Un numero inserito è troppo grande o troppo piccolo."
+
+msgid "Die Eingabe enthält eine ungültige Kennung oder Zahl."
+msgstr "L'inserimento contiene un identificativo o un numero non valido."
+
+msgid "Ein Wert liegt ausserhalb des zulässigen Bereichs (zum Beispiel eine negative Menge)."
+msgstr "Un valore è al di fuori dell'intervallo ammesso (ad esempio una quantità negativa)."
+
+msgid "Die Eingabe wurde nicht gespeichert."
+msgstr "L'inserimento non è stato salvato."
+
+msgid "Ungültige Eingabe – swissImmo"
+msgstr "Inserimento non valido – swissImmo"
+
+msgid "Ungültige Eingabe"
+msgstr "Inserimento non valido"
+
+msgid "Die Anfrage konnte nicht verarbeitet werden. Bitte prüfen Sie Ihre Eingabe."
+msgstr "La richiesta non ha potuto essere elaborata. Controlli i dati inseriti."
+
+msgid "Die gewählte Liegenschaft gibt es nicht."
+msgstr "Lo stabile scelto non esiste."

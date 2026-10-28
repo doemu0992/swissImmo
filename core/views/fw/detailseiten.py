@@ -2303,7 +2303,8 @@ def fw_schlussabrechnung(request, vertrag_id):
     # OHNE ausdrückliche Wahl gilt das jüngste Auszugsprotokoll: Der Bewirtschafter
     # tippte die Mängel (Mieteranteil CHF 860 im Stresstest) sonst erneut ab, obwohl
     # sie im Protokoll stehen.
-    ab_id = request.GET.get('abnahme')
+    from core.utils.parameter import id_param
+    ab_id = id_param(request.GET.get('abnahme'))        # `?abnahme=abc` gilt als nicht angegeben
     from rentals.models import Abnahmeprotokoll
     if ab_id:
         ab = Abnahmeprotokoll.objects.filter(id=ab_id, vertrag=v).first()

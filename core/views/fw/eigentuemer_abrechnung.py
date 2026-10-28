@@ -21,6 +21,7 @@ from core.auth import rolle_erforderlich, VERWALTUNGS_ROLLEN
 from portfolio.models import Liegenschaft
 
 from ._basis import _global_filter, _num
+from core.utils.parameter import jahr_streng
 
 
 # ============================================================
@@ -66,7 +67,7 @@ def fw_eigentuemer_abrechnung(request, pk):
     basis = _global_filter(request)
     heute = timezone.localdate()
     try:
-        jahr = int(request.GET.get('jahr') or heute.year)
+        jahr = jahr_streng(request.GET.get('jahr') or heute.year)
     except ValueError:
         jahr = heute.year
 
@@ -102,7 +103,7 @@ def fw_eigentuemer_kontokorrent(request, pk):
     jahr = None
     if jahr_param and jahr_param != 'alle':
         try:
-            jahr = int(jahr_param)
+            jahr = jahr_streng(jahr_param)
         except ValueError:
             jahr = None
 

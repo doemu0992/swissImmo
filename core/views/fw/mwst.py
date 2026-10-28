@@ -19,6 +19,7 @@ from core.auth import rolle_erforderlich, ROLLE_VERWALTER, TEAM_ROLLEN
 from ._basis import (_global_filter, _mwst_beleg, _mwst_bereits_verbucht,
                      _mwst_periode, _num)
 from core.tenancy import aktuelle_organisation
+from core.utils.parameter import jahr_streng
 
 
 # ============================================================
@@ -39,7 +40,7 @@ def fw_mwst(request):
     heute = timezone.localdate()
 
     try:
-        jahr = int(request.GET.get('jahr') or heute.year)
+        jahr = jahr_streng(request.GET.get('jahr') or heute.year)
     except ValueError:
         jahr = heute.year
     quartal = request.GET.get('quartal', '')  # '', '1'..'4'
@@ -80,8 +81,8 @@ def fw_mwst_einstellungen(request):
         vw.saldosteuersatz = Decimal('0')
     vw.save(update_fields=['mwst_methode', 'mwst_uid', 'saldosteuersatz'])
     messages.success(request, '✅ ' + gettext('MWST-Einstellungen gespeichert.'))
-    ziel = request.POST.get('zurueck') or '/neu/mwst/'
-    return redirect(ziel)
+    from core.utils.parameter import sicheres_ziel
+    return redirect(sicheres_ziel(request, '/neu/mwst/', 'zurueck'))
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
@@ -99,7 +100,7 @@ def fw_mwst_estv_export(request):
     aktive_lg = basis['aktive_lg']
     heute = timezone.localdate()
     try:
-        jahr = int(request.GET.get('jahr') or heute.year)
+        jahr = jahr_streng(request.GET.get('jahr') or heute.year)
     except ValueError:
         jahr = heute.year
     quartal = request.GET.get('quartal', '')

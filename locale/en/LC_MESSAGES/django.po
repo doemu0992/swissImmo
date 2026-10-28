@@ -33412,3 +33412,31 @@ msgstr "The lease is fixed-term and ends on %(datum)s without notice (Art. 266 C
 #, python-format
 msgid "Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet (Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
 msgstr "The landlord has waived termination until %(datum)s (waiver of termination, Art. 17 para. 4 VMWG). An ordinary termination taking effect on %(wirkung)s (before this date) cannot be recorded. Extraordinary terminations, for example for default in payment (Art. 257d CO), remain possible."
+
+#, python-format
+msgid "Die Eingabe ist zu lang: Ein Feld darf höchstens %(n)s Zeichen enthalten."
+msgstr "The entry is too long: a field may contain at most %(n)s characters."
+
+msgid "Eine Zahl in der Eingabe ist zu gross oder zu klein."
+msgstr "A number in the entry is too large or too small."
+
+msgid "Die Eingabe enthält eine ungültige Kennung oder Zahl."
+msgstr "The entry contains an invalid identifier or number."
+
+msgid "Ein Wert liegt ausserhalb des zulässigen Bereichs (zum Beispiel eine negative Menge)."
+msgstr "A value is outside the permitted range (for example a negative quantity)."
+
+msgid "Die Eingabe wurde nicht gespeichert."
+msgstr "The entry was not saved."
+
+msgid "Ungültige Eingabe – swissImmo"
+msgstr "Invalid entry – swissImmo"
+
+msgid "Ungültige Eingabe"
+msgstr "Invalid entry"
+
+msgid "Die Anfrage konnte nicht verarbeitet werden. Bitte prüfen Sie Ihre Eingabe."
+msgstr "The request could not be processed. Please check your entry."
+
+msgid "Die gewählte Liegenschaft gibt es nicht."
+msgstr "The selected property does not exist."
