@@ -58,6 +58,15 @@ class OrganisationsFehler(RuntimeError):
     """
 
 
+class FremdeOrganisation(OrganisationsFehler):
+    """Ein Datensatz sollte in einer anderen Organisation entstehen als der der Anfrage.
+
+    Das Netz unter den Ansichten (`OrganisationAusKette.save`): Eine ungeprüfte ID
+    aus einem Formular hätte den Datensatz sonst bei der Verwaltung des FREMDEN
+    Elternobjekts angelegt.
+    """
+
+
 def setze_organisation(organisation):
     """Setzt die Organisation des laufenden Kontexts.
 
