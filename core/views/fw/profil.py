@@ -251,7 +251,13 @@ def fw_datenreset(request):
                 # entweder allen (Systemvorlagen) oder niemandem.
                 continue
             try:
-                modell.objects.all().delete()
+                zeilen = modell.objects.all()
+                if hasattr(zeilen, 'ausnahme_loeschen'):
+                    # Buchungen sind am QuerySet unlöschbar (FIN-15). Der Datenreset
+                    # ist die benannte Ausnahme — mit Begründung im Log.
+                    zeilen.ausnahme_loeschen('Datenreset durch den Inhaber (fw_datenreset)')
+                else:
+                    zeilen.delete()
             except Exception:
                 logger.warning('Datenreset: %s konnte nicht geleert werden',
                                modell._meta.label, exc_info=True)

@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy
 
-from core.tenancy import AlleOrganisationenManager, TenantManager
+from core.tenancy import AlleOrganisationenManager, TenantManager, TenantQuerySet
 from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
 from core.utils import get_smart_upload_path
 from django.utils import timezone
@@ -172,6 +172,120 @@ class LieferantProfil(models.Model):
     def __str__(self): return f"{self.name_anzeige} → {self.standard_konto or '—'}"
 
 
+#: Felder einer Buchung, die nach dem Buchen NICHT mehr geändert werden dürfen.
+#: Was hier steht, ist der Inhalt des Belegs: wann, was, zwischen welchen
+#: Konten, wie viel, für welches Objekt, unter welcher Nummer, von wem.
+BUCHUNG_UNVERAENDERLICH = (
+    'datum', 'beleg_text', 'soll_konto_id', 'haben_konto_id', 'betrag', 'liegenschaft_id',
+    'ist_storno', 'storno_von_id', 'beleg_nr', 'organisation_id', 'erstellt_von_id',
+)
+
+#: Die Verknüpfungen zu den Nebenbüchern (Zahlung, Rechnung) — die «Zuordnung».
+#: Sie dürfen nachgetragen werden, ändern aber weder Betrag noch Konten. In einer
+#: gesperrten Periode gilt auch das nicht.
+BUCHUNG_VERKNUEPFUNGEN = ('zahlungseingang_id', 'kreditoren_rechnung_id', 'debitoren_rechnung_id')
+
+#: Die Storno-Markierung des Originals (`storniere_buchung`). Sie wird nur
+#: einmal gesetzt und nie zurückgenommen; die Periodensperre lässt sie zu, weil
+#: das Storno selbst in der OFFENEN Periode gebucht wird.
+BUCHUNG_STORNO_MARKE = 'storniert_am'
+
+
+def _feldnamen(namen):
+    """`soll_konto_id` und `soll_konto` meinen dasselbe Feld."""
+    return {n[:-3] if n.endswith('_id') else n for n in namen}
+
+
+_NACHTRAEGLICH_ERLAUBT = _feldnamen(BUCHUNG_VERKNUEPFUNGEN) | {BUCHUNG_STORNO_MARKE}
+_NUR_STORNO_MARKE = {BUCHUNG_STORNO_MARKE}
+
+
+class BuchungQuerySet(TenantQuerySet):
+    """Sammeländerungen an Buchungen: nur das, was ein Beleg nachträglich darf.
+
+    Bisher war die Unveränderbarkeit eine Konvention an der Instanz (`delete()`
+    des Modells wirft). `Buchung.objects.filter(...).update(betrag=1)` und
+    `.delete()` umgingen sie ohne Spur (Audit FIN-15/SICH-06, `probe11.py`).
+    Hier wird die Sammel-Ebene geschlossen:
+
+    * `update()` / `bulk_update()`: nur Storno-Marke und Beleg-Verknüpfungen,
+      und diese nicht in einer gesperrten Periode.
+    * `delete()` und `bulk_create()`: nie. Letzteres umgeht die Belegnummer und
+      die Periodensperre.
+    * Wer es trotzdem muss (Reparatur nach einem Fehler, Testaufbau), nimmt
+      `ausnahme_aendern(grund, …)` bzw. `ausnahme_loeschen(grund)`: benannt,
+      greppbar, mit Begründung, und im Log festgehalten. Das ist ein Zugang,
+      kein Freibrief — er hinterlässt eine Zeile, die ein Prüfer findet.
+
+    NICHT damit gelöst: `_base_manager`, rohes SQL und die Kaskade beim Löschen
+    einer Organisation umgehen jeden QuerySet-Schutz. Das ist erst mit
+    DB-Triggern und Revisionslog (Etappe 2) zu schliessen.
+    """
+
+    def _pruefe_nachtraeglich(self, felder):
+        unerlaubt = _feldnamen(felder) - _NACHTRAEGLICH_ERLAUBT
+        if unerlaubt:
+            raise PermissionError(
+                'Buchungen sind nach dem Buchen unveränderlich (Revisionssicherheit, OR 957a/958f): '
+                f'{", ".join(sorted(unerlaubt))} lässt sich nicht ändern. Bitte stornieren und neu buchen.')
+        if _feldnamen(felder) - _NUR_STORNO_MARKE:
+            self._pruefe_periodensperre()
+
+    def _pruefe_periodensperre(self):
+        from crm.models import Organisation
+        gesperrte = Organisation.objects.filter(
+            buchung_gesperrt_bis__isnull=False,
+            pk__in=self.order_by().values('organisation_id')).values_list('pk', 'buchung_gesperrt_bis')
+        for organisation_id, sperre in gesperrte:
+            if self.filter(organisation_id=organisation_id, datum__lte=sperre).exists():
+                raise PermissionError(
+                    f'Periode gesperrt: Buchungen bis {sperre:%d.%m.%Y} sind abgeschlossen '
+                    'und lassen sich nicht mehr ändern.')
+
+    def update(self, **kwargs):
+        self._pruefe_nachtraeglich(kwargs)
+        return super().update(**kwargs)
+
+    def bulk_update(self, objs, fields, *args, **kwargs):
+        self._pruefe_nachtraeglich(fields)
+        return super().bulk_update(objs, fields, *args, **kwargs)
+
+    def delete(self):
+        raise PermissionError(
+            'Buchungen dürfen nicht gelöscht werden (Revisionssicherheit). '
+            'Bitte stornieren statt löschen.')
+
+    def bulk_create(self, objs, *args, **kwargs):
+        raise PermissionError(
+            'Buchungen werden einzeln gebucht: bulk_create umginge Belegnummer und Periodensperre.')
+
+    @staticmethod
+    def _begruenden(grund, was):
+        if not grund or not str(grund).strip():
+            raise ValueError(f'{was} an Buchungen braucht eine Begründung (grund=…).')
+        logger.warning('Revisionsbruch: %s an Buchungen — %s', was, str(grund).strip())
+
+    def ausnahme_aendern(self, grund, **felder):
+        """Ändert Buchungsfelder AUSNAHMSWEISE. Nur für Reparaturen und Testaufbau;
+        die Begründung landet im Log."""
+        self._begruenden(grund, 'Änderung')
+        return super().update(**felder)
+
+    def ausnahme_loeschen(self, grund):
+        """Löscht Buchungen AUSNAHMSWEISE (Datenreset, Testaufbau); Begründung im Log."""
+        self._begruenden(grund, 'Löschung')
+        return super().delete()
+
+
+class BuchungManager(TenantManager.from_queryset(BuchungQuerySet)):
+    """`Buchung.objects`: filtert auf die Organisation und trägt die Sperren des QuerySets."""
+
+
+class BuchungAlleManager(AlleOrganisationenManager.from_queryset(BuchungQuerySet)):
+    """`Buchung.alle_organisationen`: der benannte Weg an der Mandantengrenze vorbei —
+    mit denselben Sperren gegen nachträgliche Änderung."""
+
+
 # 🔥 NEU: Die doppelte Buchhaltung (Soll & Haben) mit Revisionssicherheit
 class Buchung(OrganisationAusKette):
     ORGANISATION_PFAD = 'soll_konto'
@@ -209,47 +323,121 @@ class Buchung(OrganisationAusKette):
     def __str__(self):
         return f"{self.datum}: {self.soll_konto.nummer} an {self.haben_konto.nummer} | CHF {self.betrag}"
 
-    def save(self, *args, **kwargs):
-        from django.db import IntegrityError, transaction
+    objects = BuchungManager()
+    alle_organisationen = BuchungAlleManager()
 
+    def save(self, *args, **kwargs):
         # Die Organisation MUSS vor allem Weiteren feststehen: Periodensperre
         # und Belegnummer haengen beide an ihr, und beide laufen, BEVOR
         # `OrganisationAusKette.save()` sie sonst ableiten wuerde.
         if self.organisation_id is None:
             self.organisation_id = self.organisation_aus_kette()
 
+        # Eine BESTEHENDE Buchung ist ein Beleg: Inhalt unveraenderlich, nur die
+        # Storno-Marke und die Verknuepfungen zu den Nebenbuechern duerfen sich
+        # bewegen (Audit FIN-15/SICH-06).
+        if not self._state.adding:
+            self._pruefe_aenderung()
+            return super().save(*args, **kwargs)
+
         # Periodensperre: neue Buchungen in einer abgeschlossenen Periode blockieren.
-        if self._state.adding:
-            from crm.models import Organisation
-            # Die Sperre der EIGENEN Verwaltung, nicht `Organisation.objects.first()`.
-            # Mit zwei Mandanten haette bisher der Abschluss von A die Buchungen
-            # von B blockiert — oder, schlimmer, B haette in eine abgeschlossene
-            # Periode buchen koennen, weil A noch offen war.
-            vw = Organisation.objects.filter(pk=self.organisation_id).first()
-            sperre = vw.buchung_gesperrt_bis if vw else None
-            if sperre and self.datum and self.datum <= sperre:
+        sperre = self._periodensperre()
+        datum = models.DateField().to_python(self.datum) if self.datum else None
+        if sperre and datum and datum <= sperre:
+            raise PermissionError(
+                f"Periode gesperrt: Buchungen bis {sperre:%d.%m.%Y} sind abgeschlossen "
+                f"(Datum {datum:%d.%m.%Y}). Bitte spätere Periode wählen."
+            )
+        if self.beleg_nr is not None:
+            return super().save(*args, **kwargs)
+        self._mit_belegnummer_speichern(*args, **kwargs)
+
+    def _periodensperre(self):
+        """Die Sperre der EIGENEN Verwaltung, nicht `Organisation.objects.first()`.
+        Mit zwei Mandanten haette der Abschluss von A sonst die Buchungen von B
+        blockiert — oder B haette in eine abgeschlossene Periode buchen koennen,
+        weil A noch offen war."""
+        from crm.models import Organisation
+        vw = Organisation.objects.filter(pk=self.organisation_id).first()
+        return vw.buchung_gesperrt_bis if vw else None
+
+    def _pruefe_aenderung(self):
+        """Weist die Aenderung einer bestehenden Buchung ab, ausser sie betrifft
+        nur die Storno-Marke oder die Verknuepfungen zu den Nebenbuechern — und
+        auch das nicht in einer gesperrten Periode (die Storno-Marke schon)."""
+        # `_base_manager`: Der Vergleich liest die EIGENE Zeile ueber ihren
+        # Primaerschluessel; eine Mandantengrenze kann dabei nicht verletzt werden.
+        gespeichert = (type(self)._base_manager.filter(pk=self.pk)
+                       .values(*BUCHUNG_UNVERAENDERLICH, *BUCHUNG_VERKNUEPFUNGEN, BUCHUNG_STORNO_MARKE)
+                       .first())
+        if gespeichert is None:
+            return                              # Zeile fehlt: Django meldet das selbst
+
+        def gleich(attname):
+            feld = self._meta.get_field(attname[:-3] if attname.endswith('_id') else attname)
+            try:
+                return feld.to_python(getattr(self, attname)) == gespeichert[attname]
+            except (TypeError, ValueError, ArithmeticError):
+                return False
+
+        geaendert = [a for a in BUCHUNG_UNVERAENDERLICH if not gleich(a)]
+        if geaendert:
+            raise PermissionError(
+                f'Buchung #{gespeichert["beleg_nr"]} ist unveränderlich (Revisionssicherheit, '
+                f'OR 957a/958f): {", ".join(a.removesuffix("_id") for a in geaendert)} lässt sich '
+                'nicht ändern. Bitte stornieren und neu buchen.')
+        alte_marke = gespeichert[BUCHUNG_STORNO_MARKE]
+        if alte_marke is not None and self.storniert_am != alte_marke:
+            raise PermissionError(
+                f'Buchung #{gespeichert["beleg_nr"]}: Ein Storno lässt sich nicht zurücknehmen — '
+                'bitte neu buchen.')
+        if [a for a in BUCHUNG_VERKNUEPFUNGEN if not gleich(a)]:
+            sperre = self._periodensperre()
+            if sperre and gespeichert['datum'] <= sperre:
                 raise PermissionError(
-                    f"Periode gesperrt: Buchungen bis {sperre:%d.%m.%Y} sind abgeschlossen "
-                    f"(Datum {self.datum:%d.%m.%Y}). Bitte spätere Periode wählen."
-                )
-            # Fortlaufende, EINDEUTIGE Belegnummer vergeben (lückenlos, OR 957a/958f).
-            # beleg_nr ist eindeutig; bei Parallel-Buchungen (Postgres) kollidiert
-            # Max+1 → IntegrityError. Deshalb Retry: Nummer neu berechnen und den
-            # Insert im Savepoint wiederholen (funktioniert auch verschachtelt in
-            # einer äusseren transaction.atomic()).
-            #
-            # JE ORGANISATION, seit Etappe 5 — und das ist keine Formalie:
-            #
-            # Die Constraint allein genügt hier nicht, darauf weist der Skill
-            # `phase-2-migration` ausdrücklich hin. Zählte `Max` weiter global,
-            # bekäme die zweite Verwaltung als erste Buchung die Nummer 1051,
-            # weil die erste tausend Buchungen hat. Aus dieser Lücke liesse sich
-            # die Buchungsmenge eines fremden Mandanten ablesen — und eine
-            # Belegnummernfolge, die bei 1051 beginnt, ist nach OR 957a/958f
-            # ohnehin keine lückenlose mehr. Jede Verwaltung zählt bei 1.
-            if self.beleg_nr is None:
-                last_exc = None
-                for _ in range(8):
+                    f'Periode gesperrt: Buchungen bis {sperre:%d.%m.%Y} sind abgeschlossen '
+                    'und lassen sich nicht mehr ändern.')
+
+    def _mit_belegnummer_speichern(self, *args, **kwargs):
+        """Vergibt die fortlaufende, EINDEUTIGE Belegnummer und speichert (OR 957a/958f).
+
+        JE ORGANISATION, seit Etappe 5 — und das ist keine Formalie:
+
+        Die Constraint allein genügt hier nicht, darauf weist der Skill
+        `phase-2-migration` ausdrücklich hin. Zählte `Max` weiter global,
+        bekäme die zweite Verwaltung als erste Buchung die Nummer 1051,
+        weil die erste tausend Buchungen hat. Aus dieser Lücke liesse sich
+        die Buchungsmenge eines fremden Mandanten ablesen — und eine
+        Belegnummernfolge, die bei 1051 beginnt, ist nach OR 957a/958f
+        ohnehin keine lückenlose mehr. Jede Verwaltung zählt bei 1.
+
+        GESPERRT STATT GERATEN (SICH-44, 28.10.2026): `Max+1` mit blossem
+        Wiederholen scheiterte bei Stoss — bei 8 gleichzeitigen Schreibern
+        brachen 4 bis 5 mit `uniq_beleg_nr_je_organisation` ab, die acht
+        Versuche ohne Wartezeit reichten nicht. Jetzt hält ein Schreiber die
+        Nummernkreis-Sperre dieser Organisation von der Berechnung bis zum
+        Commit; der Nächste wartet und liest danach die neue Obergrenze. Die
+        Wiederholung bleibt für Datenbanken ohne Sperre (SQLite) und als
+        Gürtel — mit Wartezeit, im Savepoint (funktioniert auch verschachtelt
+        in einer äusseren `transaction.atomic()`).
+
+        FOLGE, die man kennen muss: Die Sperre gilt bis zum Ende der
+        UMGEBENDEN Transaktion. Ein langer Lauf (Sollstellung über 1000
+        Verträge in einer Transaktion) hält den Nummernkreis seiner
+        Organisation entsprechend lange. Das war vorher schon so (der
+        Unique-Index wartete), nur scheiterte der Wartende am Ende.
+        """
+        import time
+
+        from django.db import IntegrityError, transaction
+
+        from core.sperren import sperre_organisation
+
+        letzter_fehler = None
+        for versuch in range(8):
+            try:
+                with transaction.atomic():
+                    sperre_organisation('beleg_nr', self.organisation_id)
                     # `alle_organisationen`, weil die Mandantengrenze hier
                     # eine Zeile tiefer AUSDRUECKLICH steht
                     # (`organisation_id=self.organisation_id`). Der Kontext
@@ -260,17 +448,15 @@ class Buchung(OrganisationAusKette):
                               .filter(organisation_id=self.organisation_id)
                               .aggregate(m=models.Max('beleg_nr'))['m'] or 0)
                     self.beleg_nr = letzte + 1
-                    try:
-                        with transaction.atomic():
-                            super().save(*args, **kwargs)
-                        return
-                    except IntegrityError as exc:
-                        last_exc = exc
-                        continue
-                if last_exc:
-                    raise last_exc
+                    super().save(*args, **kwargs)
                 return
-        super().save(*args, **kwargs)
+            except IntegrityError as exc:
+                self.beleg_nr = None
+                if 'beleg_nr' not in str(exc):
+                    raise                       # ein anderer Fehler: nicht wiederholen
+                letzter_fehler = exc
+                time.sleep(min(0.005 * 2 ** versuch, 0.2))
+        raise letzter_fehler
 
     def delete(self, *args, **kwargs):
         """Revisionssicherheit: Buchungen sind append-only. Statt Löschen wird

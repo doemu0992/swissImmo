@@ -33910,3 +33910,56 @@ msgstr "Le bail est de durée déterminée et prend fin le %(datum)s sans résil
 #, python-format
 msgid "Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet (Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
 msgstr "Le bailleur a renoncé à résilier jusqu'au %(datum)s (renonciation à la résiliation, art. 17 al. 4 OBLF). Une résiliation ordinaire avec effet au %(wirkung)s (avant cette date) ne peut pas être enregistrée. Les résiliations extraordinaires, par exemple pour demeure dans le paiement (art. 257d CO), restent possibles."
+
+# --- Geldpfade: Sperren, Eigentümerauszahlung aus eingegangenem Geld (Etappe 0, 28.10.2026) ---
+
+msgid "Keine Rechnung ausgewählt — oder die Rechnungen sind bereits in einer Zahlungsdatei."
+msgstr "Aucune facture sélectionnée — ou les factures figurent déjà dans un fichier de paiement."
+
+#, python-format
+msgid "%(schon)s Rechnung(en) waren schon bezahlt — nicht noch einmal verbucht."
+msgstr "%(schon)s facture(s) déjà payée(s) — elles n'ont pas été comptabilisées une seconde fois."
+
+#, python-format
+msgid "«%(titel)s»: Der offene Betrag hat sich seit dem Öffnen der Maske geändert (jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon verbucht. Nichts doppelt gebucht."
+msgstr "« %(titel)s » : le montant ouvert a changé depuis l'ouverture du formulaire (maintenant CHF %(offen)s) — le paiement a probablement déjà été comptabilisé. Rien n'a été comptabilisé en double."
+
+#, python-format
+msgid "«%(lieferant)s»: Der offene Betrag hat sich seit dem Öffnen der Maske geändert (jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon verbucht. Nichts doppelt gebucht."
+msgstr "« %(lieferant)s » : le montant ouvert a changé depuis l'ouverture du formulaire (maintenant CHF %(offen)s) — le paiement a probablement déjà été comptabilisé. Rien n'a été comptabilisé en double."
+
+#, python-format
+msgid "Das Bankkonto «%(nummer)s» gibt es nicht."
+msgstr "Le compte bancaire « %(nummer)s » n'existe pas."
+
+#, python-format
+msgid "Konto %(nummer)s ist kein Bankkonto für Auszahlungen. Das Kautionssperrkonto (1015) gehört den Mietern und kann nicht für Eigentümerauszahlungen benutzt werden."
+msgstr "Le compte %(nummer)s n'est pas un compte bancaire pour les versements. Le compte de garantie bloqué (1015) appartient aux locataires et ne peut pas être utilisé pour des versements aux propriétaires."
+
+msgid "Seit dem Öffnen der Maske wurde für diesen Eigentümer eine Auszahlung erfasst — vermutlich dieselbe. Bitte die Seite neu laden; es wurde nichts doppelt gebucht."
+msgstr "Un versement a été saisi pour ce propriétaire depuis l'ouverture du formulaire — probablement le même. Veuillez recharger la page ; rien n'a été comptabilisé en double."
+
+#, python-format
+msgid "Auszahlbar sind höchstens CHF %(auszahlbar)s (eingegangene Mittel abzüglich bezahlter Kosten und bisheriger Auszahlungen). Verlangt: CHF %(betrag)s."
+msgstr "Le montant versable est de CHF %(auszahlbar)s au maximum (fonds encaissés moins charges payées et versements antérieurs). Demandé : CHF %(betrag)s."
+
+#, python-format
+msgid "Das Bankkonto %(nummer)s deckt die Auszahlung nicht: Saldo CHF %(saldo)s, verlangt CHF %(betrag)s."
+msgstr "Le compte bancaire %(nummer)s ne couvre pas le versement : solde CHF %(saldo)s, demandé CHF %(betrag)s."
+
+msgid "Sollbasis: auch noch nicht bezahlte Mieten und Rechnungen"
+msgstr "Base d'exigibilité : y compris loyers et factures pas encore payés"
+
+msgid "Auszahlbar (eingegangene Mittel)"
+msgstr "Versable (fonds encaissés)"
+
+#, python-format
+msgid "Eingegangen %(e)s − bezahlt %(b)s − ausbezahlt %(a)s"
+msgstr "Encaissé %(e)s − payé %(b)s − versé %(a)s"
+
+#, python-format
+msgid "Auszahlbar: CHF %(a)s. Gezählt wird nur, was tatsächlich eingegangen ist, abzüglich bezahlter Kosten und bisheriger Auszahlungen — Kautionen und noch nicht bezahlte Mieten zählen nicht."
+msgstr "Versable : CHF %(a)s. Seul compte ce qui a effectivement été encaissé, moins les charges payées et les versements antérieurs — les garanties de loyer et les loyers non payés ne comptent pas."
+
+msgid "Zurzeit ist nichts auszahlbar."
+msgstr "Aucun versement n'est possible pour le moment."

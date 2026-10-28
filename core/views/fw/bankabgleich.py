@@ -349,32 +349,26 @@ def fw_bankabgleich_verbuchen(request):
     if request.method != 'POST':
         return redirect('fw_bankabgleich')
 
+    # Die Mandantengrenze zuerst (fremde ID -> 404); alles, was vom ZUSTAND der
+    # Rechnung abhaengt, folgt erst nach dem Sperren.
     rechnung = get_object_or_404(DebitorenRechnung, id=request.POST.get('rechnung_id'))
     if not rechnung.vertrag_id:
         messages.error(request, gettext('Position ohne Vertrag kann nicht automatisch verbucht werden.'))
         return redirect('fw_bankabgleich')
-    # Status-Guard: auf stornierte/bezahlte Rechnungen darf keine Zahlung gebucht
-    # werden — sonst springt eine STORNIERTE Rechnung auf «bezahlt» und das
-    # Mieterkonto zeigt ein Haben ohne Soll (real im Audit passiert).
-    if rechnung.status not in ('offen', 'teilbezahlt'):
-        messages.error(request, gettext('«%(titel)s» ist %(get_status_display)s — darauf kann keine Zahlung verbucht werden.') % {'titel': rechnung.titel, 'get_status_display': rechnung.get_status_display()})
-        return redirect('fw_bankabgleich')
 
-    offen = rechnung.offener_betrag
     raw = (request.POST.get('betrag') or '').strip()
+    eingabe = None
     if raw:
         try:
-            betrag = Decimal(_num(raw))
+            eingabe = Decimal(_num(raw))
         except Exception:
             messages.error(request, gettext('Ungültiger Betrag «%(raw)s».') % {'raw': raw})
             return redirect('fw_bankabgleich')
-    else:
-        betrag = offen
-    # Explizite 0/Negativ-Eingabe ist ein Tippfehler — abbrechen statt still
-    # auf 0.01 zu klemmen (verwirrende Mini-Teilzahlung).
-    if betrag <= 0:
-        messages.error(request, gettext('Betrag muss grösser als 0 sein.'))
-        return redirect('fw_bankabgleich')
+        # Explizite 0/Negativ-Eingabe ist ein Tippfehler — abbrechen statt still
+        # auf 0.01 zu klemmen (verwirrende Mini-Teilzahlung).
+        if eingabe <= 0:
+            messages.error(request, gettext('Betrag muss grösser als 0 sein.'))
+            return redirect('fw_bankabgleich')
     # VALUTA: Gezählt wird der Tag, an dem das Geld auf dem Bankkonto einging —
     # nicht der Tag der Erfassung. Ein am 30. gutgeschriebener, am 3. erfasster
     # Betrag gälte sonst als am 3. bezahlt: Der Verzugszins läuft zu lange, und
@@ -391,17 +385,46 @@ def fw_bankabgleich_verbuchen(request):
             messages.error(request, gettext('Das Valutadatum liegt in der Zukunft.'))
             return redirect('fw_bankabgleich')
 
-    # ÜBERZAHLUNG: Der volle Eingang wird gebucht. Früher klemmte `min(betrag, offen)`
-    # den Rest still weg — auf dem Bankkonto lagen CHF 300 mehr als in der Buchhaltung,
-    # und der Mieter sah sein Guthaben nicht. Wie im camt-Import: Überschuss als
-    # Mieterguthaben auf 2030 (echte Verbindlichkeit, der Mieter ist bekannt).
-    eingang = betrag
-    betrag = min(eingang, offen)
-    ueberschuss = eingang - betrag
+    from core.sperren import erwarteter_betrag
+    erwartet = erwarteter_betrag(request.POST)
 
-    vertrag = rechnung.vertrag
-    lg_v = vertrag.einheit.liegenschaft
     with transaction.atomic():
+        # SPERREN, DANN PRÜFEN (Audit FIN-01): Vier parallele Klicks lasen
+        # «offen» alle vor der ersten Buchung und buchten CHF 6'800 auf eine
+        # Rechnung über 1'700. Die Zeile wird gesperrt, der Zustand DANACH neu
+        # gelesen; wer wartet, sieht die Buchung des Vorgängers.
+        rechnung = (DebitorenRechnung.objects.select_for_update(of=('self',))
+                    .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft')
+                    .get(pk=rechnung.pk))
+        # Status-Guard: auf stornierte/bezahlte Rechnungen darf keine Zahlung gebucht
+        # werden — sonst springt eine STORNIERTE Rechnung auf «bezahlt» und das
+        # Mieterkonto zeigt ein Haben ohne Soll (real im Audit passiert).
+        if rechnung.status not in ('offen', 'teilbezahlt'):
+            messages.error(request, gettext('«%(titel)s» ist %(get_status_display)s — darauf kann keine Zahlung verbucht werden.') % {'titel': rechnung.titel, 'get_status_display': rechnung.get_status_display()})
+            return redirect('fw_bankabgleich')
+
+        offen = rechnung.offener_betrag
+        if erwartet is not None and erwartet != offen:
+            messages.error(request, gettext(
+                '«%(titel)s»: Der offene Betrag hat sich seit dem Öffnen der Maske geändert '
+                '(jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon verbucht. Nichts doppelt gebucht.')
+                % {'titel': rechnung.titel, 'offen': offen})
+            return redirect('fw_bankabgleich')
+        betrag = eingabe if eingabe is not None else offen
+        if betrag <= 0:
+            messages.error(request, gettext('Betrag muss grösser als 0 sein.'))
+            return redirect('fw_bankabgleich')
+
+        # ÜBERZAHLUNG: Der volle Eingang wird gebucht. Früher klemmte `min(betrag, offen)`
+        # den Rest still weg — auf dem Bankkonto lagen CHF 300 mehr als in der Buchhaltung,
+        # und der Mieter sah sein Guthaben nicht. Wie im camt-Import: Überschuss als
+        # Mieterguthaben auf 2030 (echte Verbindlichkeit, der Mieter ist bekannt).
+        eingang = betrag
+        betrag = min(eingang, offen)
+        ueberschuss = eingang - betrag
+
+        vertrag = rechnung.vertrag
+        lg_v = vertrag.einheit.liegenschaft
         zahlung = Zahlungseingang.objects.create(
             vertrag=vertrag, betrag=betrag, datum_eingang=valuta,
             buchungs_monat=(rechnung.faellig_am or rechnung.datum or heute).replace(day=1),
@@ -909,9 +932,18 @@ def fw_camt_import(request):
     """
     from django.contrib import messages
     from django.shortcuts import redirect
+    from core.sperren import sperre_organisation
+    from core.tenancy import organisation_der_anfrage
 
     try:
         with transaction.atomic():
+            # EIN IMPORT JE VERWALTUNG ZUR ZEIT (Audit FIN-05): Zwei gleichzeitige
+            # Importe derselben Datei prüften beide «Referenz noch unbekannt» und
+            # buchten eine Gutschrift doppelt (21 statt 20 Zahlungen, 35'700 statt
+            # 34'000). Der zweite wartet, bis der erste festgeschrieben ist, und
+            # erkennt dann jede Zeile als Duplikat. Die Sperre gilt bis zum Ende
+            # der Transaktion — der Import läuft ohnehin als Ganzes in einer.
+            sperre_organisation('kontoauszug_import', organisation_der_anfrage(request).pk)
             return _camt_import_ausfuehren(request)
     except Exception:
         logger.exception('Bank-Import abgebrochen — vollständig zurückgerollt')
@@ -1041,6 +1073,17 @@ def _camt_import_ausfuehren(request):
     def _verbuche(rechnung, betrag, e, via):
         vertrag = rechnung.vertrag
         with transaction.atomic():
+            # Die Rechnung kommt aus einer Liste, die zu Beginn des Imports
+            # gelesen wurde. Hat inzwischen jemand von Hand darauf gebucht, wäre
+            # der Betrag hier zu hoch: lieber den ganzen Import abbrechen (er
+            # rollt vollständig zurück und lässt sich wiederholen) als zu viel
+            # zu buchen. Gesperrt wird die Zeile ohnehin für die Statusänderung.
+            frisch = (DebitorenRechnung.objects.select_for_update(of=('self',))
+                      .only('id', 'status', 'betrag').get(pk=rechnung.pk))
+            if frisch.status not in ('offen', 'teilbezahlt') or frisch.offener_betrag < betrag:
+                raise RuntimeError(
+                    f'Rechnung #{rechnung.pk} wurde während des Imports verändert '
+                    f'(Status {frisch.status}, offen CHF {frisch.offener_betrag}) — Import abgebrochen.')
             zahlung = Zahlungseingang.objects.create(
                 vertrag=vertrag, betrag=betrag, datum_eingang=e['datum'] or heute,
                 buchungs_monat=(rechnung.faellig_am or rechnung.datum or heute).replace(day=1),

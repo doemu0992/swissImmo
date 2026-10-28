@@ -33154,3 +33154,56 @@ msgstr "Der Vertrag ist befristet und endet am %(datum)s ohne Kündigung (Art. 2
 #, python-format
 msgid "Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet (Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
 msgstr "Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet (Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
+
+# --- Geldpfade: Sperren, Eigentümerauszahlung aus eingegangenem Geld (Etappe 0, 28.10.2026) ---
+
+msgid "Keine Rechnung ausgewählt — oder die Rechnungen sind bereits in einer Zahlungsdatei."
+msgstr "Keine Rechnung ausgewählt — oder die Rechnungen sind bereits in einer Zahlungsdatei."
+
+#, python-format
+msgid "%(schon)s Rechnung(en) waren schon bezahlt — nicht noch einmal verbucht."
+msgstr "%(schon)s Rechnung(en) waren schon bezahlt — nicht noch einmal verbucht."
+
+#, python-format
+msgid "«%(titel)s»: Der offene Betrag hat sich seit dem Öffnen der Maske geändert (jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon verbucht. Nichts doppelt gebucht."
+msgstr "«%(titel)s»: Der offene Betrag hat sich seit dem Öffnen der Maske geändert (jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon verbucht. Nichts doppelt gebucht."
+
+#, python-format
+msgid "«%(lieferant)s»: Der offene Betrag hat sich seit dem Öffnen der Maske geändert (jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon verbucht. Nichts doppelt gebucht."
+msgstr "«%(lieferant)s»: Der offene Betrag hat sich seit dem Öffnen der Maske geändert (jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon verbucht. Nichts doppelt gebucht."
+
+#, python-format
+msgid "Das Bankkonto «%(nummer)s» gibt es nicht."
+msgstr "Das Bankkonto «%(nummer)s» gibt es nicht."
+
+#, python-format
+msgid "Konto %(nummer)s ist kein Bankkonto für Auszahlungen. Das Kautionssperrkonto (1015) gehört den Mietern und kann nicht für Eigentümerauszahlungen benutzt werden."
+msgstr "Konto %(nummer)s ist kein Bankkonto für Auszahlungen. Das Kautionssperrkonto (1015) gehört den Mietern und kann nicht für Eigentümerauszahlungen benutzt werden."
+
+msgid "Seit dem Öffnen der Maske wurde für diesen Eigentümer eine Auszahlung erfasst — vermutlich dieselbe. Bitte die Seite neu laden; es wurde nichts doppelt gebucht."
+msgstr "Seit dem Öffnen der Maske wurde für diesen Eigentümer eine Auszahlung erfasst — vermutlich dieselbe. Bitte die Seite neu laden; es wurde nichts doppelt gebucht."
+
+#, python-format
+msgid "Auszahlbar sind höchstens CHF %(auszahlbar)s (eingegangene Mittel abzüglich bezahlter Kosten und bisheriger Auszahlungen). Verlangt: CHF %(betrag)s."
+msgstr "Auszahlbar sind höchstens CHF %(auszahlbar)s (eingegangene Mittel abzüglich bezahlter Kosten und bisheriger Auszahlungen). Verlangt: CHF %(betrag)s."
+
+#, python-format
+msgid "Das Bankkonto %(nummer)s deckt die Auszahlung nicht: Saldo CHF %(saldo)s, verlangt CHF %(betrag)s."
+msgstr "Das Bankkonto %(nummer)s deckt die Auszahlung nicht: Saldo CHF %(saldo)s, verlangt CHF %(betrag)s."
+
+msgid "Sollbasis: auch noch nicht bezahlte Mieten und Rechnungen"
+msgstr "Sollbasis: auch noch nicht bezahlte Mieten und Rechnungen"
+
+msgid "Auszahlbar (eingegangene Mittel)"
+msgstr "Auszahlbar (eingegangene Mittel)"
+
+#, python-format
+msgid "Eingegangen %(e)s − bezahlt %(b)s − ausbezahlt %(a)s"
+msgstr "Eingegangen %(e)s − bezahlt %(b)s − ausbezahlt %(a)s"
+
+#, python-format
+msgid "Auszahlbar: CHF %(a)s. Gezählt wird nur, was tatsächlich eingegangen ist, abzüglich bezahlter Kosten und bisheriger Auszahlungen — Kautionen und noch nicht bezahlte Mieten zählen nicht."
+msgstr "Auszahlbar: CHF %(a)s. Gezählt wird nur, was tatsächlich eingegangen ist, abzüglich bezahlter Kosten und bisheriger Auszahlungen — Kautionen und noch nicht bezahlte Mieten zählen nicht."
+
+msgid "Zurzeit ist nichts auszahlbar."
+msgstr "Zurzeit ist nichts auszahlbar."

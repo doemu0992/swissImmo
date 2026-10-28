@@ -42,6 +42,12 @@
             {% if kk.offen >= 0 %}{% trans "Offen an Eigentümer" %}{% else %}{% trans "Überzahlung (Eigentümer schuldet)" %}{% endif %}
         </div>
         <div class="fw-v{% if kk.offen < 0 %} fw-crit{% endif %}">CHF {{ kk.offen|chf }}</div>
+        <div class="fw-f">{% trans "Sollbasis: auch noch nicht bezahlte Mieten und Rechnungen" %}</div>
+    </div>
+    <div class="fw-kpi">
+        <div class="fw-l">{% trans "Auszahlbar (eingegangene Mittel)" %}</div>
+        <div class="fw-v">CHF {{ liq.auszahlbar|chf }}</div>
+        <div class="fw-f">{% blocktrans with e=liq.eingegangen|chf b=liq.bezahlt|chf a=liq.ausbezahlt|chf %}Eingegangen {{ e }} − bezahlt {{ b }} − ausbezahlt {{ a }}{% endblocktrans %}</div>
     </div>
 </div>
 
@@ -151,12 +157,14 @@
             <div class="fw-kopf"><h2>{% trans "Auszahlung erfassen" %}</h2></div>
             <div class="fw-rumpf">
             <p class="fw-hilfe mb-4">{% trans "Bucht Soll 2850 (Kontokorrent Eigentümer) / Haben Bank." %}</p>
+            <p class="fw-hilfe mb-4">{% blocktrans with a=liq.auszahlbar|chf %}Auszahlbar: CHF {{ a }}. Gezählt wird nur, was tatsächlich eingegangen ist, abzüglich bezahlter Kosten und bisheriger Auszahlungen — Kautionen und noch nicht bezahlte Mieten zählen nicht.{% endblocktrans %}</p>
             <form method="post" action="/neu/mandate/{{ md.id }}/auszahlung/" class="space-y-3">
                 {% csrf_token %}
+                <input type="hidden" name="stand" value="{{ auszahlungs_stand }}">
                 <div class="fw-feldblock">
                     <label class="fw-label">{% trans "Betrag (CHF) *" %}</label>
                     <input name="betrag" type="text" inputmode="decimal" required
-                           value="{% if kk.offen > 0 %}{{ kk.offen|chf }}{% endif %}"
+                           value="{% if liq.auszahlbar > 0 %}{{ liq.auszahlbar|chf }}{% endif %}"
                            class="fw-feld">
                 </div>
                 <div class="fw-feldblock">
@@ -167,7 +175,7 @@
                 <div class="fw-feldblock">
                     <label class="fw-label">{% trans "Ab Bankkonto" %}</label>
                     <select name="konto_nummer" class="fw-feld">
-                        {% for k in bankkonten %}<option value="{{ k.nummer }}">{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
+                        {% for k in bankkonten %}<option value="{{ k.nummer }}" {% if k.nummer == '1020' %}selected{% endif %}>{{ k.nummer }} {{ k.bezeichnung }} · CHF {{ k.saldo|chf }}</option>{% endfor %}
                     </select>
                 </div>
                 <div class="fw-feldblock">
@@ -175,9 +183,10 @@
                     <input name="bemerkung" type="text" placeholder="{% trans 'z. B. Quartalsauszahlung Q2' %}"
                            class="fw-feld">
                 </div>
-                <button class="w-full fw-btn fw-primary">
+                <button class="w-full fw-btn fw-primary"{% if liq.auszahlbar <= 0 %} disabled title="{% trans 'Zurzeit ist nichts auszahlbar.' %}"{% endif %}>
                     {% zeichen 'geld' klasse='mr-1.5' %}{% trans "Auszahlung verbuchen" %}
                 </button>
+                {% if liq.auszahlbar <= 0 %}<p class="fw-hilfe">{% trans "Zurzeit ist nichts auszahlbar." %}</p>{% endif %}
             </form>
             {% if md.iban %}<p class="fw-hilfe mt-3">{% trans "Eigentümer-IBAN:" %} <span class="fw-mono">{{ md.iban }}</span></p>{% endif %}
             </div>

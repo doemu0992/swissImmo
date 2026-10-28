@@ -741,15 +741,20 @@ class UniqueConstraintsProOrganisationTests(IsolationsBasis):
         # Nummer 1 freiräumen — aber NICHT die beiden Buchungen, die gleich
         # umnummeriert werden. Die erste Fassung löschte sie mit und scheiterte
         # danach an „Save with update_fields did not affect any rows".
+        #
+        # Seit der Härtung vom 28.10.2026 (FIN-15) sind Buchungen am QuerySet
+        # unveränderlich und unlöschbar; der Testaufbau geht deshalb über die
+        # benannten Ausnahmen mit Begründung (`ausnahme_loeschen`/`ausnahme_aendern`).
         Buchung.alle_organisationen.filter(beleg_nr=1).exclude(
-            pk__in=[self.a.buchung.pk, self.b.buchung.pk]).delete()
+            pk__in=[self.a.buchung.pk, self.b.buchung.pk]).ausnahme_loeschen(
+            'Testaufbau: Nummer 1 freiräumen')
         with organisation_kontext(self.a.organisation):
-            self.a.buchung.beleg_nr = 1
-            self.a.buchung.save(update_fields=['beleg_nr'])
+            Buchung.objects.filter(pk=self.a.buchung.pk).ausnahme_aendern(
+                'Testaufbau: Belegnummer 1 für A', beleg_nr=1)
         try:
             with transaction.atomic(), organisation_kontext(self.b.organisation):
-                self.b.buchung.beleg_nr = 1
-                self.b.buchung.save(update_fields=['beleg_nr'])
+                Buchung.objects.filter(pk=self.b.buchung.pk).ausnahme_aendern(
+                    'Testaufbau: Belegnummer 1 für B', beleg_nr=1)
         except IntegrityError:
             self.fail('Buchung.beleg_nr ist global eindeutig — der '
                       'Belegnummernkreis muss je Organisation zaehlen.')
@@ -770,8 +775,8 @@ class UniqueConstraintsProOrganisationTests(IsolationsBasis):
                 haben_konto=self.a.konto_haben, betrag=Decimal('42'), datum=date(2024, 2, 2))
         with self.assertRaises(IntegrityError), transaction.atomic(), \
                 organisation_kontext(self.a.organisation):
-            zweite.beleg_nr = 1
-            zweite.save(update_fields=['beleg_nr'])
+            Buchung.objects.filter(pk=zweite.pk).ausnahme_aendern(
+                'Testaufbau: doppelte Belegnummer in A', beleg_nr=1)
 
 
 class HintergrundjobsTests(IsolationsBasis):

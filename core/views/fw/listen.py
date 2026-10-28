@@ -712,27 +712,32 @@ def fw_debitor_stornieren(request, pk):
     if request.method != 'POST':
         return redirect('fw_debitoren')
 
-    r = get_object_or_404(DebitorenRechnung, id=pk)
-    if r.status == 'storniert':
-        messages.info(request, gettext('Rechnung ist bereits storniert.'))
-        return redirect('fw_debitoren')
-
-    bezahlt = (Zahlungseingang.objects.filter(debitoren_rechnung=r, status='verbucht')
-               .exists())
-    if bezahlt:
-        messages.error(request, gettext('Diese Rechnung hat verbuchte Zahlungen — bitte zuerst die Zahlung(en) stornieren.'))
-        return redirect('fw_debitoren')
-
-    # Abgeleitete Mahngebühren/Zins-Forderungen mitstornieren: Wird die
-    # Hauptforderung aufgehoben, ist auch die darauf gestellte Mahngebühr
-    # gegenstandslos. Nur unbezahlte Folgeforderungen — eine bereits bezahlte
-    # Mahngebühr bräuchte erst eine Zahlungsstornierung (Live-Test E).
-    folge = list(DebitorenRechnung.objects.filter(stammrechnung=r)
-                 .exclude(status='storniert'))
-    folge_bezahlt = [f for f in folge
-                     if Zahlungseingang.objects.filter(debitoren_rechnung=f, status='verbucht').exists()]
+    get_object_or_404(DebitorenRechnung, id=pk)         # fremde ID -> 404, bevor gesperrt wird
     n_folge = 0
     with transaction.atomic():
+        # SPERREN, DANN PRÜFEN (Audit FIN-04): Drei parallele Klicks kehrten die
+        # Buchungen der Rechnung mehrfach um (1100 um 2'200 überstorniert). Die
+        # Prüfungen unten gelten für den Stand NACH dem Warten — und eine
+        # Zahlung, die gerade verbucht wird, hält dieselbe Zeile.
+        r = DebitorenRechnung.objects.select_for_update(of=('self',)).get(id=pk)
+        if r.status == 'storniert':
+            messages.info(request, gettext('Rechnung ist bereits storniert.'))
+            return redirect('fw_debitoren')
+
+        bezahlt = (Zahlungseingang.objects.filter(debitoren_rechnung=r, status='verbucht')
+                   .exists())
+        if bezahlt:
+            messages.error(request, gettext('Diese Rechnung hat verbuchte Zahlungen — bitte zuerst die Zahlung(en) stornieren.'))
+            return redirect('fw_debitoren')
+
+        # Abgeleitete Mahngebühren/Zins-Forderungen mitstornieren: Wird die
+        # Hauptforderung aufgehoben, ist auch die darauf gestellte Mahngebühr
+        # gegenstandslos. Nur unbezahlte Folgeforderungen — eine bereits bezahlte
+        # Mahngebühr bräuchte erst eine Zahlungsstornierung (Live-Test E).
+        folge = list(DebitorenRechnung.objects.select_for_update(of=('self',))
+                     .filter(stammrechnung=r).exclude(status='storniert'))
+        folge_bezahlt = [f for f in folge
+                         if Zahlungseingang.objects.filter(debitoren_rechnung=f, status='verbucht').exists()]
         # Nur noch nicht stornierte Originale umkehren (Doppel-Storno-Schutz).
         for b in Buchung.objects.filter(debitoren_rechnung=r, ist_storno=False,
                                         storniert_am__isnull=True):
@@ -1197,8 +1202,15 @@ def fw_auswertung(request):
 
     # Ein storniertes Original zählte hier weiter, seine Gegenbuchung war
     # ausgeblendet — der Storno hob sich in der Auswertung also nie auf.
-    base_q = Buchung.objects.filter(datum__year=jahr, ist_storno=False,
-                                    storniert_am__isnull=True)
+    #
+    # Abschlussbuchungen ausklammern (Zwilling von FUNK-02): Der Jahresabschluss
+    # saldiert alle Erfolgskonten per 31.12. gegen 2970. Ohne den Ausschluss zeigte
+    # die Auswertung eines abgeschlossenen Jahres Mietertrag 0 (gemessen 28.10.2026:
+    # 10'000 vor, 0 nach dem Abschluss).
+    from core.services.jahresabschluss import abschluss_buchungen_q
+    base_q = (Buchung.objects.filter(datum__year=jahr, ist_storno=False,
+                                     storniert_am__isnull=True)
+              .exclude(abschluss_buchungen_q()))
     if aktive_lg:
         base_q = base_q.filter(liegenschaft=aktive_lg)
 

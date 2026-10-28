@@ -208,6 +208,11 @@ def fw_buchhaltung(request):
         except Exception as exc:
             messages.error(request, '❌ ' + gettext('Jahresabschluss fehlgeschlagen: %(exc)s') % {'exc': exc})
             return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
+        if not n_ab and ist_abgeschlossen(j_ab, aktive_lg):
+            # Ein gleichzeitiger zweiter Klick: Der Dienst hat unter der Sperre
+            # gesehen, dass der erste den Abschluss schon gebucht hat.
+            messages.info(request, gettext('Das Geschäftsjahr %(j_ab)s ist bereits abgeschlossen.') % {'j_ab': j_ab})
+            return redirect(f'/neu/buchhaltung/?jahr={j_ab}')
         log_aktion(request, "Jahresabschluss gebucht", str(j_ab),
                    f"{n_ab} Konten, Ergebnis CHF {erg}")
         gesperrt_hinweis = ""
