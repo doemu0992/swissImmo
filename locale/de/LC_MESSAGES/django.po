@@ -33143,3 +33143,14 @@ msgstr "Mindestintervall"
 
 msgid "Der Abstand zwischen zwei Anpassungen, den die Parteien im Vertrag vereinbaren. Die Ankündigung selbst erfolgt mit mindestens 30 Tagen auf ein Monatsende (Art. 17 Abs. 3 VMWG)."
 msgstr "Der Abstand zwischen zwei Anpassungen, den die Parteien im Vertrag vereinbaren. Die Ankündigung selbst erfolgt mit mindestens 30 Tagen auf ein Monatsende (Art. 17 Abs. 3 VMWG)."
+
+msgid "Der Vertrag bleibt archiviert: Das Mietzinsmodell ist nicht zulässig (Befunde oben)."
+msgstr "Der Vertrag bleibt archiviert: Das Mietzinsmodell ist nicht zulässig (Befunde oben)."
+
+#, python-format
+msgid "Der Vertrag ist befristet und endet am %(datum)s ohne Kündigung (Art. 266 OR). Eine ordentliche Kündigung durch den Vermieter mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
+msgstr "Der Vertrag ist befristet und endet am %(datum)s ohne Kündigung (Art. 266 OR). Eine ordentliche Kündigung durch den Vermieter mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
+
+#, python-format
+msgid "Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet (Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
+msgstr "Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet (Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."

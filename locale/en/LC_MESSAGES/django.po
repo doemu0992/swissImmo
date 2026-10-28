@@ -33401,3 +33401,14 @@ msgstr "Please enter a valid dispatch date."
 #, python-format
 msgid "Mitteilung zur Erhöhung ab %(datum)s als versandt markiert."
 msgstr "Notice of the increase from %(datum)s marked as sent."
+
+msgid "Der Vertrag bleibt archiviert: Das Mietzinsmodell ist nicht zulässig (Befunde oben)."
+msgstr "The contract stays archived: the rent model is not permissible (findings above)."
+
+#, python-format
+msgid "Der Vertrag ist befristet und endet am %(datum)s ohne Kündigung (Art. 266 OR). Eine ordentliche Kündigung durch den Vermieter mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
+msgstr "The lease is fixed-term and ends on %(datum)s without notice (Art. 266 CO). An ordinary termination by the landlord taking effect on %(wirkung)s (before this date) cannot be recorded. Extraordinary terminations, for example for default in payment (Art. 257d CO), remain possible."
+
+#, python-format
+msgid "Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet (Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
+msgstr "The landlord has waived termination until %(datum)s (waiver of termination, Art. 17 para. 4 VMWG). An ordinary termination taking effect on %(wirkung)s (before this date) cannot be recorded. Extraordinary terminations, for example for default in payment (Art. 257d CO), remain possible."
