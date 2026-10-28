@@ -450,8 +450,8 @@
         if (gefuellt) angeklickt();
     }
 
-    // Beispielrechnung (nur Anzeige): neu = Netto × (1 + (LIK − Basis) / Basis × Weitergabe), auf 5 Rappen.
-    // Gleiche Rechnung und Rundung wie mietrecht.index_anpassung_vorschlag / runde_mietzins.
+    // Beispielrechnung (nur Anzeige): neu = Netto × (1 + (LIK − Basis) / Basis × Weitergabe), auf 5 Rappen abgerundet.
+    // Gleiche Rechnung und Rundung wie mietrecht.index_anpassung_vorschlag (core.services.index_anpassung.rechne).
     function beispiel() {
         var p = $('mzm-beispiel'); p.textContent = '';
         if (modell() !== 'index') { p.classList.add('hidden'); return; }
@@ -460,7 +460,8 @@
         // faktor = (ad·bn·wd·100 + (an·bd − bn·ad)·wn) / (ad·bn·wd·100)
         var diff = akt.n * basis.d - basis.n * akt.d;
         var fz = akt.d * basis.n * w.d * 100n + diff * w.n, fn = akt.d * basis.n * w.d * 100n;
-        var einheiten = rundeHalbHoch(20n * netto.n * fz, netto.d * fn);   // Vielfache von 5 Rappen
+        // ABgerundet auf 5 Rappen (core.services.index_anpassung.rechne): Der Vorschlag überschreitet die Zunahme mal Weitergabe nie.
+        var einheiten = (20n * netto.n * fz) / (netto.d * fn);   // Vielfache von 5 Rappen; BigInt teilt nach unten
         if (einheiten < 0n) { p.classList.add('hidden'); return; }
         var neuCents = einheiten * 5n;
         var altCents = rundeHalbHoch(netto.n * 100n, netto.d);

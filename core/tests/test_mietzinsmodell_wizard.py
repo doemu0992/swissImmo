@@ -502,6 +502,6 @@ class BeispielrechnungTests(TestCase):
     def test_zahlen_der_beispielrechnung(self):
         voll = index_anpassung_vorschlag(self.vertrag(Decimal('100')), aktuell_lik=Decimal('108.3'))
         teil = index_anpassung_vorschlag(self.vertrag(Decimal('60')), aktuell_lik=Decimal('108.3'))
-        self.assertEqual(voll['neu_netto'], Decimal('2024.30'))   # 2024.2991 auf 5 Rappen
-        self.assertEqual(teil['neu_netto'], Decimal('2014.60'))   # 2014.5794 auf 5 Rappen
+        self.assertEqual(voll['neu_netto'], Decimal('2024.25'))   # 2024.2991, auf 5 Rappen ABgerundet (Art. 17 VMWG)
+        self.assertEqual(teil['neu_netto'], Decimal('2014.55'))   # 2014.5794, abgerundet
         self.assertNotEqual(voll['neu_netto'], teil['neu_netto'])

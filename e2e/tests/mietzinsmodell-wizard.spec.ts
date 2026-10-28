@@ -389,7 +389,7 @@ for (const b of BREITEN) {
       await expect(weiter(page)).toBeDisabled();
     });
 
-    test('Index: Beispielrechnung aus dem aktuellen LIK, auf 5 Rappen', async ({ page }) => {
+    test('Index: Beispielrechnung aus dem aktuellen LIK, auf 5 Rappen abgerundet', async ({ page }) => {
       await zumMietzins(page, '2025-01-01', '2000');
       await modell(page, 'index');
       await geprueft(page);
@@ -398,10 +398,10 @@ for (const b of BREITEN) {
       const bsp = page.locator('#mzm-beispiel');
       await expect(bsp).toBeVisible();
       await expect(bsp).toContainText('LIK 108.3');
-      await expect(bsp).toContainText("CHF 2'024.30");
+      await expect(bsp).toContainText("CHF 2'024.25");
       await expect(bsp).toContainText("heute CHF 2'000.00");
       await page.fill('#s_weitergabe', '60');
-      await expect(bsp).toContainText("CHF 2'014.60");
+      await expect(bsp).toContainText("CHF 2'014.55");
       // Gleicher Stand: bleibt beim Mietzins
       await page.fill('#s_lik', '108.3');
       await expect(bsp).toContainText("bliebe der Mietzins bei CHF 2'000.00");
