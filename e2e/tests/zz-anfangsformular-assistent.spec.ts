@@ -107,7 +107,7 @@ for (const b of BREITEN) {
   });
 }
 
-// Zuletzt und nur einmal: Der Vertrag wird wirklich angelegt und belegt das Objekt im E2E-Bestand.
+// Zuletzt und nur einmal (die Datei heisst «zz-…», damit sie nach allen Specs läuft, die ein freies Objekt brauchen): Der Vertrag wird wirklich angelegt und belegt das Objekt im E2E-Bestand.
 test.describe('Anfangsmietzins-Formular: Aktivieren mit Nachweis', () => {
   test.use({ viewport: BREITEN[0].viewport });
 
