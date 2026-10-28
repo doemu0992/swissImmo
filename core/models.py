@@ -428,3 +428,52 @@ class Pendenz(OrganisationAusKette):
 
     def __str__(self):
         return f"{self.titel} ({'erledigt' if self.erledigt else 'offen'})"
+
+
+class Archiveintrag(models.Model):
+    """Archiv statt hartes Löschen (Audit FUNK-03/FIN-16, Etappe 2).
+
+    Ein archiviertes Objekt (Liegenschaft, Objekt, Person, Vertrag, Mandat,
+    Dokument, Schadenmeldung, STWEG-Dokument) bleibt vollständig erhalten, erscheint
+    aber nicht mehr in den Arbeitslisten. Der Eintrag nennt, wer es wann und warum
+    archiviert hat und bis wann es aufzubewahren ist; vorher gibt es kein hartes
+    Löschen (`core/services/archiv.py`, `loeschschutz.py`). «Wiederherstellen»
+    löscht den Eintrag.
+
+    Eine eigene Tabelle statt einer Spalte je Modell: acht Modelle, keine
+    Migration über den Produktivbestand, und die Aufbewahrungsfrist steht an
+    einer Stelle. Der Bezug ist `typ` (Modell-Label) + `objekt_id`.
+    """
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
+                                     related_name='%(app_label)s_%(class)s', verbose_name='Organisation')
+    typ = models.CharField("Typ", max_length=60, db_index=True)
+    objekt_id = models.PositiveIntegerField("Objekt-ID")
+    bezeichnung = models.CharField("Bezeichnung", max_length=255, blank=True, default='')
+    archiviert_am = models.DateField("Archiviert am")
+    archiviert_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
+                                       blank=True, related_name='+', verbose_name="Archiviert von")
+    grund = models.CharField("Grund", max_length=255, blank=True, default='')
+    # Mandatsende: das Datum, an dem das Mandat endet (nur bei Eigentümern gesetzt).
+    mandatsende = models.DateField("Mandatsende", null=True, blank=True)
+    # Status vor dem Archivieren (Liegenschaft, Vertrag): «Wiederherstellen» setzt ihn zurück.
+    vorher_status = models.CharField("Status vorher", max_length=30, blank=True, default='')
+    aufbewahren_bis = models.DateField("Aufbewahren bis")
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            self.organisation_id = organisation_bestimmen().pk
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Archiveintrag"
+        verbose_name_plural = "Archiv"
+        ordering = ['-archiviert_am', '-id']
+        constraints = [models.UniqueConstraint(fields=['organisation', 'typ', 'objekt_id'],
+                                               name='uniq_archiv_je_objekt')]
+        indexes = [models.Index(fields=['organisation', 'typ'])]
+
+    def __str__(self):
+        return f"{self.typ} #{self.objekt_id} ({self.bezeichnung})"

@@ -1,0 +1,43 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% comment %}
+ARCHIV UND MANDATSENDE (Etappe 2). Archivierte Objekte bleiben vollständig erhalten und
+werden zehn Jahre aufbewahrt (Art. 958f OR). Karten statt Tabelle: bei 390 px ohne Querscroll.
+{% endcomment %}
+{% block title %}{% trans "Archiv" %} — swissImmo{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Archiv" %}</h1>
+        <p>{% blocktrans trimmed %}Archivierte Liegenschaften, Objekte, Personen, Verträge, Mandate, Dokumente und Schadenmeldungen. Sie bleiben {{ jahre }} Jahre aufbewahrt (Art. 958f OR) und lassen sich bis dahin nicht löschen.{% endblocktrans %}</p>
+    </div>
+</div>
+
+{% for g in gruppen %}
+<div class="fw-card mb-3">
+    <div class="fw-kopf"><h3 class="fw-t">{{ g.name }}</h3></div>
+    <div class="fw-rumpf">
+    {% for z in g.eintraege %}
+        <div class="flex items-center gap-3 flex-wrap py-2">
+            <div class="grow min-w-0">
+                <b class="fw-strong">{{ z.e.bezeichnung|default:"—" }}</b>
+                <p class="fw-mutet">{% blocktrans with am=z.e.archiviert_am|date:"d.m.Y" bis=z.e.aufbewahren_bis|date:"d.m.Y" %}Archiviert am {{ am }} · aufzubewahren bis {{ bis }}{% endblocktrans %}{% if z.e.mandatsende %} · {% blocktrans with ende=z.e.mandatsende|date:"d.m.Y" %}Mandatsende {{ ende }}{% endblocktrans %}{% endif %}{% if z.e.grund %} · {{ z.e.grund }}{% endif %}</p>
+            </div>
+            <form method="post" action="/neu/archiv/{{ z.kuerzel }}/{{ z.e.objekt_id }}/wiederherstellen/" class="inline">{% csrf_token %}
+                <button type="submit" class="fw-btn fw-knapp">{% trans "Wiederherstellen" %}</button>
+            </form>
+            {% if z.loeschbar %}
+            <form method="post" action="/neu/archiv/{{ z.kuerzel }}/{{ z.e.objekt_id }}/loeschen/" class="inline">{% csrf_token %}
+                <button type="submit" class="fw-btn fw-knapp">{% trans "Endgültig löschen" %}</button>
+            </form>
+            {% endif %}
+        </div>
+    {% endfor %}
+    </div>
+</div>
+{% empty %}
+{% trans "Das Archiv ist leer" as leer_titel %}
+{% trans "Archivierte Objekte erscheinen hier und bleiben zehn Jahre aufbewahrt." as leer_text %}
+{% include 'fw/_empty.html' with icon='wartet' titel=leer_titel subtext=leer_text %}
+{% endfor %}
+{% endblock %}

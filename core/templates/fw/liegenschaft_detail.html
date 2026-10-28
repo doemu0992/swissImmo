@@ -53,6 +53,7 @@ Liegenschaft ohne Betreuung soll auffallen.
                     <button title="{% trans 'EGID ermitteln & Objekte aus dem GWR importieren' %}" class="fw-menuzeile">{% zeichen 'herunterladen' klasse='w-4' %}{% trans "GWR-Import (Objekte)" %}</button>
                 </form>
                 <div class="fw-menutrenner"></div>
+                {% include 'fw/_archivieren.html' with kuerzel='liegenschaft' pk=lg.id stil='menu' %}
                 <form method="post" action="/neu/liegenschaften/{{ lg.id }}/loeschen/"
                       onsubmit="return confirm('{% filter escapejs %}{% blocktrans with s=lg.strasse %}Liegenschaft {{ s }} inkl. aller Objekte wirklich löschen? Hängen Verträge, Rechnungen, Abrechnungen oder Dokumente daran, wird das Löschen abgelehnt. Dies kann nicht rückgängig gemacht werden.{% endblocktrans %}{% endfilter %}');">
                     {% csrf_token %}

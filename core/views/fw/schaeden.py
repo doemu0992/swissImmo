@@ -84,9 +84,10 @@ def fw_schaeden(request):
     # dafuer, dass die Seite ueberhaupt benutzbar bleibt: `_befunde` liest je
     # Meldung die Auftraege UND die Nachrichten. Ohne Vorladen sind das zwei
     # zusaetzliche Abfragen JE ZEILE.
-    qs = (SchadenMeldung.objects
-          .select_related('liegenschaft', 'betroffene_einheit', 'gemeldet_von')
-          .prefetch_related('handwerker_auftraege', 'nachrichten'))
+    from core.services.archiv import ausblenden
+    qs = ausblenden(SchadenMeldung.objects
+                    .select_related('liegenschaft', 'betroffene_einheit', 'gemeldet_von')
+                    .prefetch_related('handwerker_auftraege', 'nachrichten'))
     if aktive_lg:
         qs = qs.filter(liegenschaft=aktive_lg)
     # Der Hauswart sieht nur die Meldungen seiner Liegenschaften.
@@ -196,7 +197,8 @@ def fw_schaden_kosten(request):
             g['offen'] += gesch   # noch nicht abgerechnet → offene Kostenschätzung
 
     # Schaden-Zähler je Liegenschaft
-    schaeden = SchadenMeldung.objects.all()
+    from core.services.archiv import ausblenden
+    schaeden = ausblenden(SchadenMeldung.objects.all())
     if aktive_lg:
         schaeden = schaeden.filter(liegenschaft=aktive_lg)
     if jahr:
@@ -541,17 +543,22 @@ def fw_schaden_foto_loeschen(request, pk):
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_schaden_loeschen(request, pk):
-    """Schadensmeldung (Ticket) löschen — inkl. Fotos/Nachrichten (cascade)."""
+    """Schadensmeldung archivieren (Aufbewahrung, Art. 958f OR) — statt Fotos und Verlauf zu vernichten."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from tickets.models import SchadenMeldung
     from core.auth import log_aktion
     t = get_object_or_404(SchadenMeldung, id=pk)
     if request.method == 'POST':
+        from core.services import archiv
         titel = t.titel or (t.beschreibung or '')[:40]
-        t.delete()
-        log_aktion(request, "Schadensmeldung gelöscht", titel, '')
-        messages.success(request, '🗑️ ' + gettext('Schadensmeldung gelöscht.'))
+        try:
+            archiv.archivieren(t, user=request.user, grund='Schadensmeldung entfernt')
+        except archiv.ArchivFehler as fehler:
+            messages.error(request, '❌ ' + str(fehler))
+        else:
+            log_aktion(request, "Schadensmeldung archiviert", titel, '')
+            messages.success(request, '📦 ' + gettext('Schadensmeldung archiviert.'))
     return redirect('/neu/schaeden/')
 
 

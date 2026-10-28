@@ -444,9 +444,20 @@ def fw_vertrag_status(request, pk):
                                                     '(Befunde oben).'))
                 return redirect(f'/neu/vertraege/{v.id}/')
         if neu in erlaubt:
-            v.status = neu
-            v.aktiv = (neu == 'aktiv')
-            v.save(update_fields=['status', 'aktiv'])
+            from core.services import archiv
+            if neu == 'archiviert':
+                # Archiv mit Aufbewahrungsfrist (Art. 958f OR) statt nur Statuswert.
+                if archiv.ist_archiviert(v):
+                    v.status, v.aktiv = neu, False
+                    v.save(update_fields=['status', 'aktiv'])
+                else:
+                    archiv.archivieren(v, user=request.user, grund='Vertragsstatus «Inaktiv / Archiviert»',
+                                       pruefen=False)
+            else:
+                v.status = neu
+                v.aktiv = (neu == 'aktiv')
+                v.save(update_fields=['status', 'aktiv'])
+                archiv.eintrag_entfernen(v)
             # Aktives Mietverhältnis → Objekt aus der Vermarktung/Feed nehmen.
             if neu == 'aktiv' and v.einheit_id and v.einheit.zur_ausschreibung:
                 v.einheit.zur_ausschreibung = False

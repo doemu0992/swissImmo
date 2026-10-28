@@ -67,6 +67,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     <a href="/neu/vermarktung/{{ e.id }}/bewerber/" class="fw-menuzeile">{% zeichen 'person' klasse='w-4' %}{% trans "Bewerber vergleichen" %}</a>
                     <div class="fw-menutrenner"></div>
                     <a href="/neu/liegenschaften/{{ e.liegenschaft_id }}/" class="fw-menuzeile">{% zeichen 'liegenschaft' klasse='w-4' %}{% trans "Zur Liegenschaft" %}</a>
+                    {% include 'fw/_archivieren.html' with kuerzel='objekt' pk=e.id stil='menu' %}
                 </div>
             </div>
         </div>

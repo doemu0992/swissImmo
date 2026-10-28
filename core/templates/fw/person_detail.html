@@ -68,6 +68,7 @@ alten Liegenschaft betreut.
                     </form>
                     <div class="fw-menutrenner"></div>
                     {% endif %}
+                    {% include 'fw/_archivieren.html' with kuerzel='person' pk=m.id stil='menu' %}
                     <form method="post" action="/neu/personen/{{ m.id }}/loeschen/"
                           onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=m.display_name %}Person „{{ name }}“ wirklich löschen? Hängen Verträge, Rechnungen oder Dokumente an ihr, wird das Löschen abgelehnt. Journal und Adressen werden mitgelöscht.{% endblocktrans %}{% endfilter %}');">
                         {% csrf_token %}
@@ -496,9 +497,7 @@ alten Liegenschaft betreut.
                 </button>
             </form>
             {% if d.datei %}<a href="{{ d.datei.url }}" target="_blank" rel="noopener" class="fw-link shrink-0">{% trans "Öffnen" %}</a>{% endif %}
-            <form method="post" action="/neu/dokument/{{ d.id }}/loeschen/" class="shrink-0" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=d.bezeichnung|default:d.titel %}Dokument «{{ name }}» löschen?{% endblocktrans %}{% endfilter %}');">{% csrf_token %}
-                <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' klasse='text-xs' %}</button>
-            </form>
+            {% include 'fw/_archivieren.html' with kuerzel='dokument' pk=d.id weiter=request.get_full_path %}
         </div>
         {% endfor %}
     </details>
