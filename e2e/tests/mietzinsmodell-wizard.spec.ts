@@ -397,13 +397,25 @@ for (const b of BREITEN) {
       await page.fill('#s_weitergabe', '100');
       const bsp = page.locator('#mzm-beispiel');
       await expect(bsp).toBeVisible();
-      await expect(bsp).toContainText('LIK 108.3');
-      await expect(bsp).toContainText("CHF 2'024.25");
       await expect(bsp).toContainText("heute CHF 2'000.00");
+      // Der aktuelle LIK kommt aus dem Live-Abruf (BFS), sonst aus der eingebauten Tabelle:
+      // in der CI weicht er von der Sandbox ab. Gelesen wird er daher aus der Anzeige, und die
+      // Erwartung wird exakt in ganzen Rappen gerechnet (Zunahme × Weitergabe, auf 5 Rappen ABgerundet).
+      const lik = ((await bsp.innerText()).match(/LIK (\d+\.\d)/) || [])[1];
+      expect(lik, 'Beispiel nennt den aktuellen LIK').toBeTruthy();
+      const zehntel = BigInt(lik.replace('.', ''));
+      const erwartet = (weitergabe: bigint) => {
+        // neu = 2000.00 × (1 + (akt − 107.0) / 107.0 × w / 100), alles in Rappen und Zehnteln
+        const zaehler = 200000n * 107000n + 200000n * (zehntel - 1070n) * weitergabe;
+        const rappen = (zaehler / (107000n * 5n)) * 5n;
+        const franken = (rappen / 100n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+        return `CHF ${franken}.${(rappen % 100n).toString().padStart(2, '0')}`;
+      };
+      await expect(bsp).toContainText(erwartet(100n));
       await page.fill('#s_weitergabe', '60');
-      await expect(bsp).toContainText("CHF 2'014.55");
+      await expect(bsp).toContainText(erwartet(60n));
       // Gleicher Stand: bleibt beim Mietzins
-      await page.fill('#s_lik', '108.3');
+      await page.fill('#s_lik', lik);
       await expect(bsp).toContainText("bliebe der Mietzins bei CHF 2'000.00");
       // Ohne Basis keine Rechnung
       await page.fill('#s_lik', '');
