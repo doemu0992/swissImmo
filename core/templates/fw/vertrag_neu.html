@@ -245,6 +245,12 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
         <label class="fw-label mb-1">{% trans "Mietzinsvorbehalte" %}</label>
         <textarea name="weitere_vorbehalte" rows="2" oninput="live()" placeholder="{% trans 'z. B. Vorbehalt weiterer Referenzzins-/Teuerungsanpassungen' %}" class="fw-feld w-full"></textarea>
 
+        {% comment %} MIET-04: Pflicht zum amtlichen Anfangsmietzins-Formular (Art. 270 Abs. 2 OR). Der Text kommt vom Server (core/services/anfangsformular.py) und hängt am gewählten Objekt. {% endcomment %}
+        <div id="af-hinweis" class="hidden mt-4" role="status"><div class="fw-hinweis warn">
+            <span class="fw-hi">{% zeichen 'recht' %}</span>
+            <div class="fw-ht"><b>{% trans "Anfangsmietzins-Formular" %}</b> <span id="af-hinweis-text"></span></div>
+        </div></div>
+
         {% comment %} Geschäftsraum: Nutzungszweck (nur bei Gewerbe sichtbar). Das Mietzinsmodell steht für alle Mietarten im Block darunter. {% endcomment %}
         <div id="gewerbe-box" class="hidden border fw-linie-marke fw-markenflaeche rounded-xl p-4 mt-4">
             <h4 class="font-bold fw-strong text-sm mb-1">{% zeichen 'dokument' klasse='fw-marke mr-1' %}{% trans "Geschäftsraum" %}</h4>
@@ -397,6 +403,17 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
             <option value="quote">{% trans "Wertquote" %}</option><option value="einheit">{% trans "Pro Einheit / Pauschal" %}</option>
             <option value="individuell">{% trans "Individuelle Zähler (VHKA)" %}</option>
         </select>
+
+        {% comment %} MIET-11: Opt-in. Der Vertrag nennt die Nebenkostenarten einzeln (Art. 257a Abs. 2 OR, BGE 135 III 591); die Abrechnung verrechnet nur diese. Die Vorauswahl ist ein Vorschlag, den die Verwaltung bestätigt. {% endcomment %}
+        <fieldset id="nk-arten-box" class="mt-4">
+            <legend class="fw-label mb-1">{% trans "Nebenkostenarten im Vertrag" %}</legend>
+            <p class="text-xs fw-faint mb-2">{% trans "Nur angekreuzte Arten stehen im Vertrag und sind abrechenbar. Nebenkosten müssen klar und bestimmt vereinbart sein (Art. 257a Abs. 2 OR); was fehlt, trägt der Vermieter." %}</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1">
+                {% for k in nk_katalog %}
+                <label class="fw-haekchen"><input type="checkbox" name="nk_kostenarten" value="{{ k.key }}"{% if k.vorgabe %} checked{% endif %} class="fw-akzent" onchange="live()"> {{ k.name }}</label>
+                {% endfor %}
+            </div>
+        </fieldset>
     </div></div>
     </section>
 
@@ -404,6 +421,23 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
     <div class="fw-assistent-schritt-kopf"></div>
     <div class="fw-card"><div class="fw-rumpf">
         <div id="summary" class="fw-flaeche2 rounded-lg p-4 text-sm space-y-1.5 mb-4"></div>
+        {% comment %} MIET-04: Wo es kein Kantonsoriginal gibt, wird das Formular der Behörde extern verwendet. Ohne Nachweis bleibt der Vertrag Entwurf. {% endcomment %}
+        <div id="af-nachweis" class="hidden mb-4 pb-4 border-b fw-linie">
+            <h4 class="font-bold fw-strong text-sm mb-1">{% trans "Anfangsmietzins-Formular: Nachweis" %}</h4>
+            <p id="af-nachweis-text" class="text-xs fw-faint mb-2">{% trans "Für diesen Kanton ist kein amtliches Original hinterlegt. Das Formular der kantonalen Behörde wird ausserhalb der Anwendung verwendet; hier wird festgehalten, dass und wann." %}</p>
+            <label class="fw-label mb-1" for="s_af_nachweis">{% trans "Nachweis" %}</label>
+            <select name="anfangsformular_nachweis" id="s_af_nachweis" class="fw-feld w-full mb-2">
+                <option value="">{% trans "Noch kein Nachweis (der Vertrag bleibt Entwurf)" %}</option>
+                <option value="extern">{% trans "Amtliches Formular extern verwendet und dem Mieter zugestellt" %}</option>
+                <option value="nicht_betroffen" id="af-opt-nb">{% trans "Formularpflicht trifft für dieses Objekt nicht zu" %}</option>
+            </select>
+            <div class="fw-formular">
+                <div class="fw-feldblock"><label class="fw-label" for="s_af_datum">{% trans "Datum der Zustellung" %}</label>
+                    <input type="date" name="anfangsformular_datum" id="s_af_datum" class="fw-feld w-full"></div>
+                <div class="fw-feldblock"><label class="fw-label" for="s_af_notiz">{% trans "Bemerkung / Begründung" %}</label>
+                    <input name="anfangsformular_notiz" id="s_af_notiz" maxlength="200" class="fw-feld w-full"></div>
+            </div>
+        </div>
         <label class="fw-haekchen">
             <input type="checkbox" name="aktiv_setzen" checked class="fw-akzent"> {% blocktrans trimmed %}Vertrag direkt als <b>aktiv</b> setzen (erscheint in Sollstellung &amp; Debitoren){% endblocktrans %}
         </label>
@@ -579,6 +613,10 @@ function prefillEditFromDraft(){
   setV('weitere_vorbehalte', ED.weitere_vorbehalte);
   setV('zahlungsrhythmus', ED.zahlungsrhythmus);
   setV('nk_abrechnungsart', ED.nk_abrechnungsart);
+  if ((ED.nk_kostenarten || []).length) document.querySelectorAll('[name="nk_kostenarten"]').forEach(cb => { cb.checked = ED.nk_kostenarten.includes(cb.value); });
+  setV('anfangsformular_nachweis', ED.af_nachweis);
+  setV('anfangsformular_datum', ED.af_datum);
+  setV('anfangsformular_notiz', ED.af_notiz);
   setV('verteilschluessel', ED.verteilschluessel);
   if (document.getElementById('s_zweck')) document.getElementById('s_zweck').value = ED.zweckbestimmung || '';
   // 6. Modell / MWST / Familienwohnung
@@ -767,7 +805,20 @@ function objChange(){
     if (nkArtSel && o.nk_abrechnungsart) nkArtSel.value = o.nk_abrechnungsart;
   }
   nkSchrittSetzen();
+  afSetzen();
   live();
+}
+// MIET-04: Hinweis und Nachweis zum Anfangsmietzins-Formular (Art. 270 Abs. 2 OR) am gewählten Objekt.
+function afSetzen(){
+  const o = curObj(), af = o && o.af;
+  const zeigen = !!(af && af.erforderlich);
+  const nachweis = zeigen && !af.original;
+  document.getElementById('af-hinweis').classList.toggle('hidden', !zeigen);
+  if (zeigen) document.getElementById('af-hinweis-text').textContent = af.hinweis;
+  document.getElementById('af-nachweis').classList.toggle('hidden', !nachweis);
+  const nb = document.getElementById('af-opt-nb');
+  if (nb) { nb.hidden = !(af && af.pflicht === 'teilweise'); nb.disabled = nb.hidden; }
+  if (!nachweis) { document.getElementById('s_af_nachweis').value = ''; }
 }
 // Sollmietzins-Historie (gültig ab): neuer Vertrag übernimmt automatisch die
 // zum Mietbeginn gültige Zeile (jüngstes gueltig_ab <= Mietbeginn). Ohne
@@ -878,6 +929,14 @@ function setNeuTyp(t){
 // Einstellplatz (Parkplatz/Garage) hat KEINE Nebenkosten → der Schritt Nebenkosten
 // entfällt. Ausgeblendete Schritte zählt der Assistent nicht mit: Leiste, «Schritt i
 // von n» und Weiter überspringen ihn; wer gerade darauf steht, landet beim Abschluss.
+// MIET-11: die im Vertrag einzeln bezeichneten Nebenkostenarten für die Zusammenfassung.
+function nkNamen(){
+  return [...document.querySelectorAll('#vform [name="nk_kostenarten"]:checked')].map(c => c.parentElement.textContent.trim());
+}
+function nkArtenText(){
+  const namen = nkNamen();
+  return namen.length ? ' Einzeln bezeichnet (Art. 257a Abs. 2 OR): ' + namen.join(', ') + '.' : '';
+}
 function isEP(){ const o=curObj(); return !!(o && o.ist_einstellplatz); }
 function nkSchrittSetzen(){ document.getElementById('schritt-nk').classList.toggle('hidden', isEP()); }
 // Bei jedem Schrittwechsel: Zusammenfassung im Abschluss, Vorschau nachführen.
@@ -1047,7 +1106,7 @@ function live(){
     ${secN('Mietzinsdepot')}
     <p class="text-xs fw-mutet my-2">Der Mieter leistet eine Sicherheit im Sinne von OR 257e von <b>CHF ${fmt(kaut)}</b>.${val('kautions_konto')?' Konto: '+val('kautions_konto'):''}</p>
 
-    ${eps ? '' : secN('Nebenkosten') + `<p class="text-xs fw-mutet my-2">Abrechnungsart: ${({akonto:'Akonto (Vorschuss mit Abrechnung)',pauschal:'Pauschal',inbegriffen:'Im Nettomietzins inbegriffen',direkt:'Direkt an Werke'})[val('nk_abrechnungsart')]||'Akonto'}. Nebenkosten sind das Entgelt für Heizung, Warmwasser und Betriebskosten.</p>`}
+    ${eps ? '' : secN('Nebenkosten') + `<p class="text-xs fw-mutet my-2">Abrechnungsart: ${({akonto:'Akonto (Vorschuss mit Abrechnung)',pauschal:'Pauschal',inbegriffen:'Im Nettomietzins inbegriffen',direkt:'Direkt an Werke'})[val('nk_abrechnungsart')]||'Akonto'}. Nebenkosten sind das Entgelt für Heizung, Warmwasser und Betriebskosten.${nkArtenText()}</p>`}
 
     ${val('besondere_vereinbarungen')? secN('Besondere Bestimmungen')+`<p class="text-xs fw-mutet my-2">${val('besondere_vereinbarungen')}</p>`:''}
 
@@ -1089,7 +1148,8 @@ function buildSummary(){
       ? `<div class="flex justify-between border-t fw-linie pt-1.5 mt-1.5"><span class="fw-mutet">Mietzins/Monat</span><span class="font-bold fw-marke">CHF ${fmt(netto)}</span></div>`
       : `<div class="flex justify-between border-t fw-linie pt-1.5 mt-1.5"><span class="fw-mutet">Netto / NK</span><span class="font-medium">CHF ${fmt(netto)} / ${fmt(nk)}</span></div>
     <div class="flex justify-between"><span class="fw-mutet">Brutto/Monat</span><span class="font-bold fw-marke">CHF ${fmt(netto+nk)}</span></div>`}
-    <div class="flex justify-between"><span class="fw-mutet">Kaution</span><span class="font-medium">CHF ${fmt(parseFloat(val('kautions_betrag'))||0)}</span></div>`;
+    <div class="flex justify-between"><span class="fw-mutet">Kaution</span><span class="font-medium">CHF ${fmt(parseFloat(val('kautions_betrag'))||0)}</span></div>
+    ${eps?'':`<div class="flex justify-between gap-3"><span class="fw-mutet">Nebenkostenarten</span><span class="font-medium text-right">${nkNamen().join(', ')||'—'}</span></div>`}`;
   // Mietzinsmodell: die Zeilen entstehen im Skript des Modells, Werte nur als Text
   const sum = document.getElementById('summary');
   fwMzm.zusammenfassung().forEach(function(z){

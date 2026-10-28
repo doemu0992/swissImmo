@@ -137,9 +137,14 @@ class Mietbewerbung(OrganisationAusKette):
     zivilstand = models.CharField(max_length=50, choices=ZIVILSTAND_CHOICES,
                                   blank=True, default='')
     geburtsdatum = models.DateField()
-    geschlecht = models.CharField(max_length=20, choices=[('weiblich', _('Weiblich')), ('maennlich', _('Männlich'))], default='weiblich')
-    nationalitaet = models.CharField(max_length=100, default='Schweiz')
-    heimatort = models.CharField(max_length=150, blank=True, null=True) # Für Schweizer relevant
+    # MIET-13: Geschlecht, Nationalität und Heimatort fragt das öffentliche Formular nicht mehr (EDÖB-Merkblatt
+    # vom 15.7.2025: Nationalität in der Auswahlphase unzulässig). Leer = nicht erhoben; die Vorgaben
+    # «weiblich» und «Schweiz» hätten für jede Bewerbung eine Angabe erfunden, die niemand gemacht hat.
+    # Bestehende Bewerbungen behalten, was sie tragen; ausgewertet (Scoring) werden die Felder nie.
+    geschlecht = models.CharField(max_length=20, choices=[('weiblich', _('Weiblich')), ('maennlich', _('Männlich'))],
+                                  blank=True, default='')
+    nationalitaet = models.CharField(max_length=100, blank=True, default='')
+    heimatort = models.CharField(max_length=150, blank=True, null=True) # nur noch Altdaten
 
     # --- Kontakt & Adresse ---
     mobilnummer = models.CharField(max_length=50)

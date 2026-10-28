@@ -37,6 +37,10 @@ class ChipTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.a = MandantenFixture('A', '8000', 'Zürich')
+        # Kanton ohne Formularpflicht: «ohne Besonderheit» heisst auch ohne Hinweis auf das Anfangsmietzins-Formular
+        # (PLZ 8000 ergäbe Zürich; den Chip «Formular-Nachweis fehlt» belegt test_anfangsformular.py).
+        cls.a.liegenschaft.kanton = 'AG'
+        cls.a.liegenschaft.save()
 
     def test_ohne_besonderheit_nur_der_status(self):
         with mandant(self.a.organisation):

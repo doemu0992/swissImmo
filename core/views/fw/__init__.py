@@ -67,6 +67,7 @@ from .phase2_formulare import *      # noqa: F401,F403 — Phase 2 (Audit)
 from .verteilschluessel import *      # noqa: F401,F403 — Verteilschlüssel der Liegenschaft
 from .nk_wizard import *              # noqa: F401,F403 — Nebenkosten-Wizard (Modul 1)
 from .staffel_mitteilung import *      # noqa: F401,F403 — Staffelmiete: Mitteilung der Erhöhung (Art. 269d Abs. 5 OR)
+from .anfangsformular import *          # noqa: F401,F403 — Nachweis zum Anfangsmietzins-Formular (Art. 270 Abs. 2 OR)
 from .buchhaltung import *   # noqa: F401,F403 — Block 5
 from .mietzins import *      # noqa: F401,F403 — Block 5
 from .kreditoren import *    # noqa: F401,F403 — Block 4

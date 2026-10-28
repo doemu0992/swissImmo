@@ -34512,3 +34512,137 @@ msgstr ""
 
 msgid "Die gewählte Liegenschaft gibt es nicht."
 msgstr "Lo stabile scelto non esiste."
+
+#, python-format
+msgid "Anfangsmietzins-Formular möglicherweise erforderlich (Art. 270 Abs. 2 OR, Kanton %(kanton)s: Formularpflicht nur für bestimmte Gemeinden oder Wohnungen); ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III 583)."
+msgstr "Modulo per la pigione iniziale forse obbligatorio (art. 270 cpv. 2 CO, Cantone %(kanton)s: obbligo limitato a determinati comuni o abitazioni); senza il modulo la pattuizione della pigione è nulla (DTF 140 III 583)."
+
+#, python-format
+msgid "Anfangsmietzins-Formular erforderlich (Art. 270 Abs. 2 OR, Kanton %(kanton)s); ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III 583)."
+msgstr "Modulo per la pigione iniziale obbligatorio (art. 270 cpv. 2 CO, Cantone %(kanton)s); senza il modulo la pattuizione della pigione è nulla (DTF 140 III 583)."
+
+msgid "Der Kanton der Liegenschaft ist nicht erfasst — ob der Anfangsmietzins das amtliche Formular braucht (Art. 270 Abs. 2 OR), lässt sich so nicht beurteilen. Ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III 583). Bitte den Kanton bei der Liegenschaft erfassen."
+msgstr "Il Cantone dello stabile non è registrato: non si può quindi stabilire se la pigione iniziale richieda il modulo ufficiale (art. 270 cpv. 2 CO). Senza il modulo la pattuizione della pigione è nulla (DTF 140 III 583). Registrare il Cantone nella scheda dello stabile."
+
+msgid "Das Formular des Kantons ist hinterlegt und wird beim Aktivieren automatisch in der Akte abgelegt."
+msgstr "Il modulo del Cantone è disponibile e verrà archiviato automaticamente nel dossier all'attivazione."
+
+msgid "Für diesen Kanton ist kein amtliches Original hinterlegt: Das Formular der kantonalen Behörde extern verwenden und den Nachweis am Vertrag festhalten."
+msgstr "Per questo Cantone non è disponibile alcun originale ufficiale: usare il modulo dell'autorità cantonale al di fuori dell'applicazione e registrare la prova nel contratto."
+
+#, python-format
+msgid "%(hinweis)s Aktivieren erst, wenn der Nachweis am Vertrag festgehalten ist («Formular extern verwendet», mit Datum)."
+msgstr "%(hinweis)s Attivare solo dopo aver registrato la prova nel contratto («modulo usato esternamente», con la data)."
+
+msgid "Die Nebenkosten sind im Vertrag nicht einzeln bezeichnet (Art. 257a Abs. 2 OR, BGE 135 III 591): Was nicht klar und bestimmt vereinbart ist, trägt der Vermieter. Im Vertragsassistenten die Nebenkostenarten wählen."
+msgstr "Le spese accessorie non sono designate singolarmente nel contratto (art. 257a cpv. 2 CO, DTF 135 III 591): ciò che non è pattuito in modo chiaro e preciso è a carico del locatore. Scegliere i tipi di spese accessorie nell'assistente contratti."
+
+msgid "Das Datum des Formulars ist nicht lesbar."
+msgstr "La data del modulo non è leggibile."
+
+msgid "Bitte das Datum angeben, an dem das Formular dem Mieter zugestellt wurde oder wird."
+msgstr "Indicare la data in cui il modulo è stato o sarà consegnato al conduttore."
+
+msgid "Diesen Nachweis gibt es nur, wo die Formularpflicht nur teilweise gilt (Neuenburg, Waadt). Hier besteht die Pflicht: das Formular der Behörde verwenden."
+msgstr "Questa prova esiste solo dove l'obbligo del modulo vale solo in parte (Neuchâtel, Vaud). Qui l'obbligo sussiste: usare il modulo dell'autorità."
+
+msgid "Bitte begründen, warum die Formularpflicht für dieses Objekt nicht zutrifft."
+msgstr "Motivare perché l'obbligo del modulo non si applica a questo oggetto."
+
+msgid "ohne amtliches Formular ist die Mietzinsvereinbarung nichtig (Art. 270 Abs. 2 OR; BGE 140 III 583)"
+msgstr "senza il modulo ufficiale la pattuizione della pigione è nulla (art. 270 cpv. 2 CO; DTF 140 III 583)"
+
+msgid "wo die Formularpflicht gilt, ist die Mietzinsvereinbarung ohne amtliches Formular nichtig (Art. 270 Abs. 2 OR; BGE 140 III 583)"
+msgstr "dove vige l'obbligo del modulo, la pattuizione della pigione senza modulo ufficiale è nulla (art. 270 cpv. 2 CO; DTF 140 III 583)"
+
+msgid "nach dem Verzeichnis der Formularpflicht besteht in diesem Kanton keine Pflicht (Art. 270 Abs. 2 OR)"
+msgstr "secondo l'elenco dell'obbligo del modulo, questo Cantone non prevede alcun obbligo (art. 270 cpv. 2 CO)"
+
+#, python-format
+msgid "Vertrag %(name)s (%(e)s) nennt diese Kostenart nicht · Anteil beim Eigentümer"
+msgstr "Il contratto %(name)s (%(e)s) non menziona questo tipo di spesa · quota a carico del proprietario"
+
+msgid "Anfangsmietzins-Formular"
+msgstr "Modulo per la pigione iniziale"
+
+msgid "Das Formular liegt in der Akte."
+msgstr "Il modulo è nel dossier."
+
+msgid "Nachweis"
+msgstr "Prova"
+
+msgid "Amtliches Formular extern verwendet und dem Mieter zugestellt"
+msgstr "Modulo ufficiale usato esternamente e consegnato al conduttore"
+
+msgid "Formularpflicht trifft für dieses Objekt nicht zu"
+msgstr "L'obbligo del modulo non si applica a questo oggetto"
+
+msgid "Datum der Zustellung"
+msgstr "Data di consegna"
+
+msgid "Bemerkung / Begründung"
+msgstr "Osservazione / motivazione"
+
+msgid "Nachweis festhalten"
+msgstr "Registrare la prova"
+
+msgid "Nachweis entfernen"
+msgstr "Rimuovere la prova"
+
+msgid "Die Erhöhung ist eingetreten, ohne dass eine Mitteilung als versandt erfasst ist — sie wird nicht verrechnet, der bisherige Mietzins bleibt."
+msgstr "L'aumento è scattato senza che sia registrata alcuna comunicazione come inviata — non viene fatturato, resta la pigione attuale."
+
+msgid "Die Mitteilung wurde nicht rechtzeitig vor dem Eintritt versandt — die Stufe wird nicht verrechnet. Rechtsfolge mit einer Fachperson klären."
+msgstr "La comunicazione non è stata inviata in tempo prima dell'entrata in vigore — lo scaglione non viene fatturato. Far chiarire la conseguenza giuridica da uno specialista."
+
+msgid "Nebenkostenarten im Vertrag"
+msgstr "Tipi di spese accessorie nel contratto"
+
+msgid "Nur angekreuzte Arten stehen im Vertrag und sind abrechenbar. Nebenkosten müssen klar und bestimmt vereinbart sein (Art. 257a Abs. 2 OR); was fehlt, trägt der Vermieter."
+msgstr "Solo i tipi selezionati figurano nel contratto e sono addebitabili. Le spese accessorie devono essere pattuite in modo chiaro e preciso (art. 257a cpv. 2 CO); ciò che manca è a carico del locatore."
+
+msgid "Anfangsmietzins-Formular: Nachweis"
+msgstr "Modulo per la pigione iniziale: prova"
+
+msgid "Für diesen Kanton ist kein amtliches Original hinterlegt. Das Formular der kantonalen Behörde wird ausserhalb der Anwendung verwendet; hier wird festgehalten, dass und wann."
+msgstr "Per questo Cantone non è disponibile alcun originale ufficiale. Il modulo dell'autorità cantonale viene usato al di fuori dell'applicazione; qui si registra che e quando è stato usato."
+
+msgid "Noch kein Nachweis (der Vertrag bleibt Entwurf)"
+msgstr "Nessuna prova ancora (il contratto resta una bozza)"
+
+msgid "Der Vertrag bleibt Entwurf."
+msgstr "Il contratto resta una bozza."
+
+msgid "Nachweis entfernt."
+msgstr "Prova rimossa."
+
+msgid "Für dieses Objekt ist kein Nachweis nötig."
+msgstr "Per questo oggetto non è necessaria alcuna prova."
+
+msgid "Bitte wählen, was zutrifft."
+msgstr "Scegliere ciò che si applica."
+
+msgid "Nachweis zum Anfangsmietzins-Formular festgehalten."
+msgstr "Prova relativa al modulo per la pigione iniziale registrata."
+
+msgid "Formular-Nachweis fehlt"
+msgstr "Prova del modulo mancante"
+
+msgid "Anfangsmietzins-Formular erforderlich"
+msgstr "Modulo per la pigione iniziale obbligatorio"
+
+msgid "Nachweis erfassen"
+msgstr "Registrare la prova"
+
+msgid "Zum Aktivieren den Nachweis im Schritt «Abschluss» erfassen — oder den Vertrag als Entwurf speichern."
+msgstr "Per attivare, registrare la prova nel passo «Conclusione» — oppure salvare il contratto come bozza."
+
+msgid "Bitte die Nebenkostenarten wählen, die der Mieter trägt: Sie müssen im Vertrag einzeln bezeichnet sein (Art. 257a Abs. 2 OR). Nicht Aufgeführtes kann nicht abgerechnet werden."
+msgstr "Scegliere i tipi di spese accessorie a carico del conduttore: devono essere designati singolarmente nel contratto (art. 257a cpv. 2 CO). Ciò che non vi figura non può essere conteggiato."
+
+#, python-format
+msgid "Anfangsmietzins-Formular: Nachweis am Vertrag festgehalten (%(art)s)."
+msgstr "Modulo per la pigione iniziale: prova registrata nel contratto (%(art)s)."
+
+msgid "Das Anfangsmietzins-Formular konnte nicht automatisch erstellt werden — bitte unter «Anfangsmietzins» am Vertrag von Hand erstellen."
+msgstr "Il modulo per la pigione iniziale non ha potuto essere creato automaticamente — crearlo a mano sotto «Pigione iniziale» nel contratto."

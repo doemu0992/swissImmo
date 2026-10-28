@@ -24,8 +24,10 @@ from ._helfer import Einheit, Liegenschaft, Mieter, _team_user, _test_organisati
 
 class WizardBasis(TestCase):
     def setUp(self):
+        # Kanton ohne Formularpflicht: Diese Tests prüfen das Mietzinsmodell, nicht das Anfangsmietzins-Formular
+        # (dessen Sperre beim Aktivieren steht in test_anfangsformular.py).
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Modellweg 1', plz='8000',
-                                         ort='Zürich', versicherungswert=Decimal('1000000'))
+                                         ort='Zürich', kanton='AG', versicherungswert=Decimal('1000000'))
         self.e = Einheit.objects.create(liegenschaft=lg, bezeichnung='Whg', typ='whg',
                                         nettomiete_aktuell=Decimal('2000'))
         self.m = Mieter.objects.create(typ='person', vorname='Mia', nachname='Modell')
@@ -34,8 +36,9 @@ class WizardBasis(TestCase):
 
     # Gültige Eingaben je Modell: Beginn 1.1.2025
     def daten(self, **extra):
+        # `nk_kostenarten`: Neue Verträge mit Nebenkosten nennen ihre Kostenarten einzeln (Art. 257a Abs. 2 OR).
         d = {'einheit_id': str(self.e.id), 'mieter_id': str(self.m.id), 'netto_mietzins': '2000',
-             'nebenkosten': '200', 'beginn': '2025-01-01'}
+             'nebenkosten': '200', 'beginn': '2025-01-01', 'nk_kostenarten': ['heizung']}
         d.update(extra)
         return d
 
@@ -133,6 +136,13 @@ class SpeichernStaffelTests(WizardBasis):
         self.assertEqual([(s.ab_datum, s.erhoehung_chf, s.netto_mietzins) for s in stufen],
                          [(date(2026, 1, 1), Decimal('50.00'), Decimal('2050.00')),
                           (date(2027, 1, 1), Decimal('50.00'), Decimal('2100.00'))])
+        # MIET-09: Beide Stufen treten nach dem 1.10.2025 ein. Ohne belegte Mitteilung (Art. 269d Abs. 5 OR) gilt
+        # der bisherige Mietzins; erst mit der Mitteilung wirken die Stufen.
+        self.assertEqual(v.effektiver_netto_mietzins(date(2027, 6, 1)), Decimal('2000.00'))
+        for stufe, versandt in zip(stufen, (date(2025, 12, 1), date(2026, 12, 1))):
+            stufe.mitteilung_versandt_am = versandt
+            stufe.save(update_fields=['mitteilung_versandt_am'])
+        v = Mietvertrag.objects.get(pk=v.pk)
         self.assertEqual(v.effektiver_netto_mietzins(date(2027, 6, 1)), Decimal('2100.00'))
 
     def test_dauer_drei_jahre_genau_ok_einen_tag_weniger_nicht(self):
@@ -210,7 +220,7 @@ class BearbeitenEntwurfTests(WizardBasis):
             mieter=self.m, einheit=self.e, beginn=date(2025, 1, 1), netto_mietzins=Decimal('2000'),
             nebenkosten=Decimal('200'), status='entwurf', mietzins_modell='index', ist_befristet=True,
             ende=date(2028, 12, 31), basis_lik_punkte=Decimal('106.9'), basis_lik_stand=date(2024, 12, 1),
-            **felder)
+            nk_kostenarten=['heizung'], **felder)
         return v
 
     def bearbeiten(self, v, **extra):
@@ -298,7 +308,8 @@ class StatuswechselTests(WizardBasis):
     def entwurf(self, **felder):
         daten = dict(mieter=self.m, einheit=self.e, beginn=date(2025, 1, 1), netto_mietzins=Decimal('2000'),
                      nebenkosten=Decimal('200'), status='entwurf', mietzins_modell='index', ist_befristet=True,
-                     ende=date(2029, 12, 30), basis_lik_punkte=Decimal('106.9'), basis_lik_stand=date(2024, 12, 1))
+                     ende=date(2029, 12, 30), basis_lik_punkte=Decimal('106.9'), basis_lik_stand=date(2024, 12, 1),
+                     nk_kostenarten=['heizung'])
         daten.update(felder)
         return Mietvertrag.objects.create(**daten)
 

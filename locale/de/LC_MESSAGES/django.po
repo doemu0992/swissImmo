@@ -33606,3 +33606,137 @@ msgstr ""
 
 msgid "Die gewählte Liegenschaft gibt es nicht."
 msgstr "Die gewählte Liegenschaft gibt es nicht."
+
+#, python-format
+msgid "Anfangsmietzins-Formular möglicherweise erforderlich (Art. 270 Abs. 2 OR, Kanton %(kanton)s: Formularpflicht nur für bestimmte Gemeinden oder Wohnungen); ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III 583)."
+msgstr "Anfangsmietzins-Formular möglicherweise erforderlich (Art. 270 Abs. 2 OR, Kanton %(kanton)s: Formularpflicht nur für bestimmte Gemeinden oder Wohnungen); ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III 583)."
+
+#, python-format
+msgid "Anfangsmietzins-Formular erforderlich (Art. 270 Abs. 2 OR, Kanton %(kanton)s); ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III 583)."
+msgstr "Anfangsmietzins-Formular erforderlich (Art. 270 Abs. 2 OR, Kanton %(kanton)s); ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III 583)."
+
+msgid "Der Kanton der Liegenschaft ist nicht erfasst — ob der Anfangsmietzins das amtliche Formular braucht (Art. 270 Abs. 2 OR), lässt sich so nicht beurteilen. Ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III 583). Bitte den Kanton bei der Liegenschaft erfassen."
+msgstr "Der Kanton der Liegenschaft ist nicht erfasst — ob der Anfangsmietzins das amtliche Formular braucht (Art. 270 Abs. 2 OR), lässt sich so nicht beurteilen. Ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III 583). Bitte den Kanton bei der Liegenschaft erfassen."
+
+msgid "Das Formular des Kantons ist hinterlegt und wird beim Aktivieren automatisch in der Akte abgelegt."
+msgstr "Das Formular des Kantons ist hinterlegt und wird beim Aktivieren automatisch in der Akte abgelegt."
+
+msgid "Für diesen Kanton ist kein amtliches Original hinterlegt: Das Formular der kantonalen Behörde extern verwenden und den Nachweis am Vertrag festhalten."
+msgstr "Für diesen Kanton ist kein amtliches Original hinterlegt: Das Formular der kantonalen Behörde extern verwenden und den Nachweis am Vertrag festhalten."
+
+#, python-format
+msgid "%(hinweis)s Aktivieren erst, wenn der Nachweis am Vertrag festgehalten ist («Formular extern verwendet», mit Datum)."
+msgstr "%(hinweis)s Aktivieren erst, wenn der Nachweis am Vertrag festgehalten ist («Formular extern verwendet», mit Datum)."
+
+msgid "Die Nebenkosten sind im Vertrag nicht einzeln bezeichnet (Art. 257a Abs. 2 OR, BGE 135 III 591): Was nicht klar und bestimmt vereinbart ist, trägt der Vermieter. Im Vertragsassistenten die Nebenkostenarten wählen."
+msgstr "Die Nebenkosten sind im Vertrag nicht einzeln bezeichnet (Art. 257a Abs. 2 OR, BGE 135 III 591): Was nicht klar und bestimmt vereinbart ist, trägt der Vermieter. Im Vertragsassistenten die Nebenkostenarten wählen."
+
+msgid "Das Datum des Formulars ist nicht lesbar."
+msgstr "Das Datum des Formulars ist nicht lesbar."
+
+msgid "Bitte das Datum angeben, an dem das Formular dem Mieter zugestellt wurde oder wird."
+msgstr "Bitte das Datum angeben, an dem das Formular dem Mieter zugestellt wurde oder wird."
+
+msgid "Diesen Nachweis gibt es nur, wo die Formularpflicht nur teilweise gilt (Neuenburg, Waadt). Hier besteht die Pflicht: das Formular der Behörde verwenden."
+msgstr "Diesen Nachweis gibt es nur, wo die Formularpflicht nur teilweise gilt (Neuenburg, Waadt). Hier besteht die Pflicht: das Formular der Behörde verwenden."
+
+msgid "Bitte begründen, warum die Formularpflicht für dieses Objekt nicht zutrifft."
+msgstr "Bitte begründen, warum die Formularpflicht für dieses Objekt nicht zutrifft."
+
+msgid "ohne amtliches Formular ist die Mietzinsvereinbarung nichtig (Art. 270 Abs. 2 OR; BGE 140 III 583)"
+msgstr "ohne amtliches Formular ist die Mietzinsvereinbarung nichtig (Art. 270 Abs. 2 OR; BGE 140 III 583)"
+
+msgid "wo die Formularpflicht gilt, ist die Mietzinsvereinbarung ohne amtliches Formular nichtig (Art. 270 Abs. 2 OR; BGE 140 III 583)"
+msgstr "wo die Formularpflicht gilt, ist die Mietzinsvereinbarung ohne amtliches Formular nichtig (Art. 270 Abs. 2 OR; BGE 140 III 583)"
+
+msgid "nach dem Verzeichnis der Formularpflicht besteht in diesem Kanton keine Pflicht (Art. 270 Abs. 2 OR)"
+msgstr "nach dem Verzeichnis der Formularpflicht besteht in diesem Kanton keine Pflicht (Art. 270 Abs. 2 OR)"
+
+#, python-format
+msgid "Vertrag %(name)s (%(e)s) nennt diese Kostenart nicht · Anteil beim Eigentümer"
+msgstr "Vertrag %(name)s (%(e)s) nennt diese Kostenart nicht · Anteil beim Eigentümer"
+
+msgid "Anfangsmietzins-Formular"
+msgstr "Anfangsmietzins-Formular"
+
+msgid "Das Formular liegt in der Akte."
+msgstr "Das Formular liegt in der Akte."
+
+msgid "Nachweis"
+msgstr "Nachweis"
+
+msgid "Amtliches Formular extern verwendet und dem Mieter zugestellt"
+msgstr "Amtliches Formular extern verwendet und dem Mieter zugestellt"
+
+msgid "Formularpflicht trifft für dieses Objekt nicht zu"
+msgstr "Formularpflicht trifft für dieses Objekt nicht zu"
+
+msgid "Datum der Zustellung"
+msgstr "Datum der Zustellung"
+
+msgid "Bemerkung / Begründung"
+msgstr "Bemerkung / Begründung"
+
+msgid "Nachweis festhalten"
+msgstr "Nachweis festhalten"
+
+msgid "Nachweis entfernen"
+msgstr "Nachweis entfernen"
+
+msgid "Die Erhöhung ist eingetreten, ohne dass eine Mitteilung als versandt erfasst ist — sie wird nicht verrechnet, der bisherige Mietzins bleibt."
+msgstr "Die Erhöhung ist eingetreten, ohne dass eine Mitteilung als versandt erfasst ist — sie wird nicht verrechnet, der bisherige Mietzins bleibt."
+
+msgid "Die Mitteilung wurde nicht rechtzeitig vor dem Eintritt versandt — die Stufe wird nicht verrechnet. Rechtsfolge mit einer Fachperson klären."
+msgstr "Die Mitteilung wurde nicht rechtzeitig vor dem Eintritt versandt — die Stufe wird nicht verrechnet. Rechtsfolge mit einer Fachperson klären."
+
+msgid "Nebenkostenarten im Vertrag"
+msgstr "Nebenkostenarten im Vertrag"
+
+msgid "Nur angekreuzte Arten stehen im Vertrag und sind abrechenbar. Nebenkosten müssen klar und bestimmt vereinbart sein (Art. 257a Abs. 2 OR); was fehlt, trägt der Vermieter."
+msgstr "Nur angekreuzte Arten stehen im Vertrag und sind abrechenbar. Nebenkosten müssen klar und bestimmt vereinbart sein (Art. 257a Abs. 2 OR); was fehlt, trägt der Vermieter."
+
+msgid "Anfangsmietzins-Formular: Nachweis"
+msgstr "Anfangsmietzins-Formular: Nachweis"
+
+msgid "Für diesen Kanton ist kein amtliches Original hinterlegt. Das Formular der kantonalen Behörde wird ausserhalb der Anwendung verwendet; hier wird festgehalten, dass und wann."
+msgstr "Für diesen Kanton ist kein amtliches Original hinterlegt. Das Formular der kantonalen Behörde wird ausserhalb der Anwendung verwendet; hier wird festgehalten, dass und wann."
+
+msgid "Noch kein Nachweis (der Vertrag bleibt Entwurf)"
+msgstr "Noch kein Nachweis (der Vertrag bleibt Entwurf)"
+
+msgid "Der Vertrag bleibt Entwurf."
+msgstr "Der Vertrag bleibt Entwurf."
+
+msgid "Nachweis entfernt."
+msgstr "Nachweis entfernt."
+
+msgid "Für dieses Objekt ist kein Nachweis nötig."
+msgstr "Für dieses Objekt ist kein Nachweis nötig."
+
+msgid "Bitte wählen, was zutrifft."
+msgstr "Bitte wählen, was zutrifft."
+
+msgid "Nachweis zum Anfangsmietzins-Formular festgehalten."
+msgstr "Nachweis zum Anfangsmietzins-Formular festgehalten."
+
+msgid "Formular-Nachweis fehlt"
+msgstr "Formular-Nachweis fehlt"
+
+msgid "Anfangsmietzins-Formular erforderlich"
+msgstr "Anfangsmietzins-Formular erforderlich"
+
+msgid "Nachweis erfassen"
+msgstr "Nachweis erfassen"
+
+msgid "Zum Aktivieren den Nachweis im Schritt «Abschluss» erfassen — oder den Vertrag als Entwurf speichern."
+msgstr "Zum Aktivieren den Nachweis im Schritt «Abschluss» erfassen — oder den Vertrag als Entwurf speichern."
+
+msgid "Bitte die Nebenkostenarten wählen, die der Mieter trägt: Sie müssen im Vertrag einzeln bezeichnet sein (Art. 257a Abs. 2 OR). Nicht Aufgeführtes kann nicht abgerechnet werden."
+msgstr "Bitte die Nebenkostenarten wählen, die der Mieter trägt: Sie müssen im Vertrag einzeln bezeichnet sein (Art. 257a Abs. 2 OR). Nicht Aufgeführtes kann nicht abgerechnet werden."
+
+#, python-format
+msgid "Anfangsmietzins-Formular: Nachweis am Vertrag festgehalten (%(art)s)."
+msgstr "Anfangsmietzins-Formular: Nachweis am Vertrag festgehalten (%(art)s)."
+
+msgid "Das Anfangsmietzins-Formular konnte nicht automatisch erstellt werden — bitte unter «Anfangsmietzins» am Vertrag von Hand erstellen."
+msgstr "Das Anfangsmietzins-Formular konnte nicht automatisch erstellt werden — bitte unter «Anfangsmietzins» am Vertrag von Hand erstellen."

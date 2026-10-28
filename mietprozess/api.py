@@ -39,8 +39,11 @@ def public_submit_bewerbung(
     nachname: str = Form(...),
     zivilstand: str = Form(''),      # nicht mehr im Erstformular erhoben
     geburtsdatum: str = Form(...),
-    geschlecht: str = Form(...),
-    nationalitaet: str = Form(...),
+    # MIET-13: Geschlecht, Nationalität und Heimatort werden nicht mehr erhoben (EDÖB-Merkblatt 15.7.2025).
+    # Die Parameter bleiben, damit ein noch geladenes altes Formular nicht mit 422 scheitert; ihr Wert wird
+    # NICHT gespeichert.
+    geschlecht: str = Form(''),
+    nationalitaet: str = Form(''),
     heimatort: Optional[str] = Form(None),
     # --- Kontakt & Adresse ---
     mobilnummer: str = Form(...),
@@ -159,9 +162,6 @@ def public_submit_bewerbung(
             nachname=nachname,
             zivilstand=zivilstand,
             geburtsdatum=parsed_geburtsdatum,
-            geschlecht=geschlecht,
-            nationalitaet=nationalitaet,
-            heimatort=heimatort,
 
             mobilnummer=mobilnummer,
             email=email,

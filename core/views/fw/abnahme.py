@@ -443,6 +443,18 @@ def fw_vertrag_status(request, pk):
                     messages.error(request, gettext('Der Vertrag bleibt archiviert: Das Mietzinsmodell ist nicht zulässig '
                                                     '(Befunde oben).'))
                 return redirect(f'/neu/vertraege/{v.id}/')
+        if neu == 'aktiv' and v.status in ('entwurf', 'archiviert'):
+            # MIET-04/MIET-11: Anfangsmietzins-Formular (Art. 270 Abs. 2 OR) und einzeln bezeichnete
+            # Nebenkosten (Art. 257a Abs. 2 OR) gehören zum Inkraftsetzen eines NEUEN Vertrags. «Archiviert»
+            # zählt mit (sonst der Umweg Entwurf → archiviert → aktiv); die Liste der Nebenkostenarten
+            # verlangt `aktivierungssperren` nur vom Entwurf.
+            from core.services.anfangsformular import aktivierungssperren
+            gruende = aktivierungssperren(v)
+            if gruende:
+                for g in gruende:
+                    messages.error(request, '❌ ' + g)
+                messages.error(request, gettext('Der Vertrag bleibt Entwurf.'))
+                return redirect(f'/neu/vertraege/{v.id}/')
         if neu in erlaubt:
             v.status = neu
             v.aktiv = (neu == 'aktiv')

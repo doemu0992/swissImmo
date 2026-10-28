@@ -34563,3 +34563,137 @@ msgstr "La demande n'a pas pu être traitée. Veuillez vérifier votre saisie."
 
 msgid "Die gewählte Liegenschaft gibt es nicht."
 msgstr "L'immeuble choisi n'existe pas."
+
+#, python-format
+msgid "Anfangsmietzins-Formular möglicherweise erforderlich (Art. 270 Abs. 2 OR, Kanton %(kanton)s: Formularpflicht nur für bestimmte Gemeinden oder Wohnungen); ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III 583)."
+msgstr "Formule de loyer initial peut-être obligatoire (art. 270 al. 2 CO, canton %(kanton)s : obligation limitée à certaines communes ou à certains logements) ; sans la formule, la fixation du loyer est nulle (ATF 140 III 583)."
+
+#, python-format
+msgid "Anfangsmietzins-Formular erforderlich (Art. 270 Abs. 2 OR, Kanton %(kanton)s); ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III 583)."
+msgstr "Formule de loyer initial obligatoire (art. 270 al. 2 CO, canton %(kanton)s) ; sans la formule, la fixation du loyer est nulle (ATF 140 III 583)."
+
+msgid "Der Kanton der Liegenschaft ist nicht erfasst — ob der Anfangsmietzins das amtliche Formular braucht (Art. 270 Abs. 2 OR), lässt sich so nicht beurteilen. Ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III 583). Bitte den Kanton bei der Liegenschaft erfassen."
+msgstr "Le canton de l'immeuble n'est pas saisi : on ne peut donc pas déterminer si le loyer initial exige la formule officielle (art. 270 al. 2 CO). Sans la formule, la fixation du loyer est nulle (ATF 140 III 583). Veuillez saisir le canton dans la fiche de l'immeuble."
+
+msgid "Das Formular des Kantons ist hinterlegt und wird beim Aktivieren automatisch in der Akte abgelegt."
+msgstr "La formule du canton est disponible et sera classée automatiquement dans le dossier lors de l'activation."
+
+msgid "Für diesen Kanton ist kein amtliches Original hinterlegt: Das Formular der kantonalen Behörde extern verwenden und den Nachweis am Vertrag festhalten."
+msgstr "Aucun original officiel n'est disponible pour ce canton : utiliser la formule de l'autorité cantonale en dehors de l'application et consigner la preuve dans le contrat."
+
+#, python-format
+msgid "%(hinweis)s Aktivieren erst, wenn der Nachweis am Vertrag festgehalten ist («Formular extern verwendet», mit Datum)."
+msgstr "%(hinweis)s N'activer qu'une fois la preuve consignée dans le contrat (« formule utilisée en externe », avec la date)."
+
+msgid "Die Nebenkosten sind im Vertrag nicht einzeln bezeichnet (Art. 257a Abs. 2 OR, BGE 135 III 591): Was nicht klar und bestimmt vereinbart ist, trägt der Vermieter. Im Vertragsassistenten die Nebenkostenarten wählen."
+msgstr "Les frais accessoires ne sont pas désignés un à un dans le contrat (art. 257a al. 2 CO, ATF 135 III 591) : ce qui n'est pas convenu de manière claire et précise est à la charge du bailleur. Choisir les types de frais accessoires dans l'assistant de contrat."
+
+msgid "Das Datum des Formulars ist nicht lesbar."
+msgstr "La date de la formule n'est pas lisible."
+
+msgid "Bitte das Datum angeben, an dem das Formular dem Mieter zugestellt wurde oder wird."
+msgstr "Veuillez indiquer la date à laquelle la formule a été ou sera remise au locataire."
+
+msgid "Diesen Nachweis gibt es nur, wo die Formularpflicht nur teilweise gilt (Neuenburg, Waadt). Hier besteht die Pflicht: das Formular der Behörde verwenden."
+msgstr "Cette preuve n'existe que là où l'obligation d'utiliser la formule est partielle (Neuchâtel, Vaud). Ici l'obligation s'applique : utiliser la formule de l'autorité."
+
+msgid "Bitte begründen, warum die Formularpflicht für dieses Objekt nicht zutrifft."
+msgstr "Veuillez justifier pourquoi l'obligation d'utiliser la formule ne s'applique pas à cet objet."
+
+msgid "ohne amtliches Formular ist die Mietzinsvereinbarung nichtig (Art. 270 Abs. 2 OR; BGE 140 III 583)"
+msgstr "sans la formule officielle, la fixation du loyer est nulle (art. 270 al. 2 CO ; ATF 140 III 583)"
+
+msgid "wo die Formularpflicht gilt, ist die Mietzinsvereinbarung ohne amtliches Formular nichtig (Art. 270 Abs. 2 OR; BGE 140 III 583)"
+msgstr "là où l'obligation d'utiliser la formule s'applique, la fixation du loyer sans formule officielle est nulle (art. 270 al. 2 CO ; ATF 140 III 583)"
+
+msgid "nach dem Verzeichnis der Formularpflicht besteht in diesem Kanton keine Pflicht (Art. 270 Abs. 2 OR)"
+msgstr "selon le répertoire de l'obligation de formule, ce canton n'impose aucune obligation (art. 270 al. 2 CO)"
+
+#, python-format
+msgid "Vertrag %(name)s (%(e)s) nennt diese Kostenart nicht · Anteil beim Eigentümer"
+msgstr "Le contrat %(name)s (%(e)s) ne mentionne pas ce type de frais · part à la charge du propriétaire"
+
+msgid "Anfangsmietzins-Formular"
+msgstr "Formule de loyer initial"
+
+msgid "Das Formular liegt in der Akte."
+msgstr "La formule figure dans le dossier."
+
+msgid "Nachweis"
+msgstr "Preuve"
+
+msgid "Amtliches Formular extern verwendet und dem Mieter zugestellt"
+msgstr "Formule officielle utilisée en externe et remise au locataire"
+
+msgid "Formularpflicht trifft für dieses Objekt nicht zu"
+msgstr "L'obligation d'utiliser la formule ne s'applique pas à cet objet"
+
+msgid "Datum der Zustellung"
+msgstr "Date de remise"
+
+msgid "Bemerkung / Begründung"
+msgstr "Remarque / justification"
+
+msgid "Nachweis festhalten"
+msgstr "Consigner la preuve"
+
+msgid "Nachweis entfernen"
+msgstr "Supprimer la preuve"
+
+msgid "Die Erhöhung ist eingetreten, ohne dass eine Mitteilung als versandt erfasst ist — sie wird nicht verrechnet, der bisherige Mietzins bleibt."
+msgstr "L'augmentation est entrée en vigueur sans qu'aucune communication ne soit saisie comme envoyée — elle n'est pas facturée, le loyer actuel est maintenu."
+
+msgid "Die Mitteilung wurde nicht rechtzeitig vor dem Eintritt versandt — die Stufe wird nicht verrechnet. Rechtsfolge mit einer Fachperson klären."
+msgstr "La communication n'a pas été envoyée à temps avant l'entrée en vigueur — l'échelon n'est pas facturé. Faire clarifier la conséquence juridique par un spécialiste."
+
+msgid "Nebenkostenarten im Vertrag"
+msgstr "Types de frais accessoires dans le contrat"
+
+msgid "Nur angekreuzte Arten stehen im Vertrag und sind abrechenbar. Nebenkosten müssen klar und bestimmt vereinbart sein (Art. 257a Abs. 2 OR); was fehlt, trägt der Vermieter."
+msgstr "Seuls les types cochés figurent dans le contrat et peuvent être décomptés. Les frais accessoires doivent être convenus de manière claire et précise (art. 257a al. 2 CO) ; ce qui manque est à la charge du bailleur."
+
+msgid "Anfangsmietzins-Formular: Nachweis"
+msgstr "Formule de loyer initial : preuve"
+
+msgid "Für diesen Kanton ist kein amtliches Original hinterlegt. Das Formular der kantonalen Behörde wird ausserhalb der Anwendung verwendet; hier wird festgehalten, dass und wann."
+msgstr "Aucun original officiel n'est disponible pour ce canton. La formule de l'autorité cantonale est utilisée en dehors de l'application ; on consigne ici qu'elle l'a été et quand."
+
+msgid "Noch kein Nachweis (der Vertrag bleibt Entwurf)"
+msgstr "Pas encore de preuve (le contrat reste un brouillon)"
+
+msgid "Der Vertrag bleibt Entwurf."
+msgstr "Le contrat reste un brouillon."
+
+msgid "Nachweis entfernt."
+msgstr "Preuve supprimée."
+
+msgid "Für dieses Objekt ist kein Nachweis nötig."
+msgstr "Aucune preuve n'est nécessaire pour cet objet."
+
+msgid "Bitte wählen, was zutrifft."
+msgstr "Veuillez choisir ce qui convient."
+
+msgid "Nachweis zum Anfangsmietzins-Formular festgehalten."
+msgstr "Preuve relative à la formule de loyer initial consignée."
+
+msgid "Formular-Nachweis fehlt"
+msgstr "Preuve de la formule manquante"
+
+msgid "Anfangsmietzins-Formular erforderlich"
+msgstr "Formule de loyer initial obligatoire"
+
+msgid "Nachweis erfassen"
+msgstr "Saisir la preuve"
+
+msgid "Zum Aktivieren den Nachweis im Schritt «Abschluss» erfassen — oder den Vertrag als Entwurf speichern."
+msgstr "Pour activer, saisir la preuve à l'étape « Conclusion » — ou enregistrer le contrat comme brouillon."
+
+msgid "Bitte die Nebenkostenarten wählen, die der Mieter trägt: Sie müssen im Vertrag einzeln bezeichnet sein (Art. 257a Abs. 2 OR). Nicht Aufgeführtes kann nicht abgerechnet werden."
+msgstr "Veuillez choisir les types de frais accessoires supportés par le locataire : ils doivent être désignés un à un dans le contrat (art. 257a al. 2 CO). Ce qui n'y figure pas ne peut pas être décompté."
+
+#, python-format
+msgid "Anfangsmietzins-Formular: Nachweis am Vertrag festgehalten (%(art)s)."
+msgstr "Formule de loyer initial : preuve consignée dans le contrat (%(art)s)."
+
+msgid "Das Anfangsmietzins-Formular konnte nicht automatisch erstellt werden — bitte unter «Anfangsmietzins» am Vertrag von Hand erstellen."
+msgstr "La formule de loyer initial n'a pas pu être créée automatiquement — veuillez la créer à la main sous « Loyer initial » dans le contrat."

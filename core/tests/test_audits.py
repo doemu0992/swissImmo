@@ -1147,6 +1147,7 @@ class VertragMieterspiegelFTests(TestCase):
             'einheit_id': str(einheit.id),
             'mieter_typ': 'person', 'vorname': 'Anna', 'nachname': 'Beispiel',
             'beginn': '2026-01-01', 'netto_mietzins': '1500', 'nebenkosten': '200',
+            'nk_kostenarten': ['heizung'],
         }
         data.update(overrides)
         return c.post('/neu/vertraege/neu/speichern/', data)

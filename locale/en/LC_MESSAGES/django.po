@@ -34032,3 +34032,137 @@ msgstr "The request could not be processed. Please check your entry."
 
 msgid "Die gewählte Liegenschaft gibt es nicht."
 msgstr "The selected property does not exist."
+
+#, python-format
+msgid "Anfangsmietzins-Formular möglicherweise erforderlich (Art. 270 Abs. 2 OR, Kanton %(kanton)s: Formularpflicht nur für bestimmte Gemeinden oder Wohnungen); ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III 583)."
+msgstr "Initial rent form possibly required (Art. 270 para. 2 CO, canton %(kanton)s: obligation applies only to certain municipalities or dwellings); without the form the rent agreement is void (BGE 140 III 583)."
+
+#, python-format
+msgid "Anfangsmietzins-Formular erforderlich (Art. 270 Abs. 2 OR, Kanton %(kanton)s); ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III 583)."
+msgstr "Initial rent form required (Art. 270 para. 2 CO, canton %(kanton)s); without the form the rent agreement is void (BGE 140 III 583)."
+
+msgid "Der Kanton der Liegenschaft ist nicht erfasst — ob der Anfangsmietzins das amtliche Formular braucht (Art. 270 Abs. 2 OR), lässt sich so nicht beurteilen. Ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III 583). Bitte den Kanton bei der Liegenschaft erfassen."
+msgstr "The canton of the property is not recorded, so it cannot be determined whether the initial rent requires the official form (Art. 270 para. 2 CO). Without the form the rent agreement is void (BGE 140 III 583). Please enter the canton on the property."
+
+msgid "Das Formular des Kantons ist hinterlegt und wird beim Aktivieren automatisch in der Akte abgelegt."
+msgstr "The canton's form is on file and is saved to the record automatically on activation."
+
+msgid "Für diesen Kanton ist kein amtliches Original hinterlegt: Das Formular der kantonalen Behörde extern verwenden und den Nachweis am Vertrag festhalten."
+msgstr "No official original is on file for this canton: use the cantonal authority's form outside the application and record the proof on the contract."
+
+#, python-format
+msgid "%(hinweis)s Aktivieren erst, wenn der Nachweis am Vertrag festgehalten ist («Formular extern verwendet», mit Datum)."
+msgstr "%(hinweis)s Activate only once the proof is recorded on the contract (“form used externally”, with date)."
+
+msgid "Die Nebenkosten sind im Vertrag nicht einzeln bezeichnet (Art. 257a Abs. 2 OR, BGE 135 III 591): Was nicht klar und bestimmt vereinbart ist, trägt der Vermieter. Im Vertragsassistenten die Nebenkostenarten wählen."
+msgstr "The ancillary costs are not itemised in the contract (Art. 257a para. 2 CO, BGE 135 III 591): anything not agreed clearly and specifically is borne by the landlord. Select the ancillary cost types in the contract assistant."
+
+msgid "Das Datum des Formulars ist nicht lesbar."
+msgstr "The date of the form is not readable."
+
+msgid "Bitte das Datum angeben, an dem das Formular dem Mieter zugestellt wurde oder wird."
+msgstr "Please enter the date on which the form was or will be delivered to the tenant."
+
+msgid "Diesen Nachweis gibt es nur, wo die Formularpflicht nur teilweise gilt (Neuenburg, Waadt). Hier besteht die Pflicht: das Formular der Behörde verwenden."
+msgstr "This proof exists only where the form obligation applies in part (Neuchâtel, Vaud). Here the obligation applies: use the authority’s form."
+
+msgid "Bitte begründen, warum die Formularpflicht für dieses Objekt nicht zutrifft."
+msgstr "Please explain why the form obligation does not apply to this property."
+
+msgid "ohne amtliches Formular ist die Mietzinsvereinbarung nichtig (Art. 270 Abs. 2 OR; BGE 140 III 583)"
+msgstr "without the official form the rent agreement is void (Art. 270 para. 2 CO; BGE 140 III 583)"
+
+msgid "wo die Formularpflicht gilt, ist die Mietzinsvereinbarung ohne amtliches Formular nichtig (Art. 270 Abs. 2 OR; BGE 140 III 583)"
+msgstr "where the form obligation applies, a rent agreement without the official form is void (Art. 270 para. 2 CO; BGE 140 III 583)"
+
+msgid "nach dem Verzeichnis der Formularpflicht besteht in diesem Kanton keine Pflicht (Art. 270 Abs. 2 OR)"
+msgstr "according to the register of form obligations, this canton has no obligation (Art. 270 para. 2 CO)"
+
+#, python-format
+msgid "Vertrag %(name)s (%(e)s) nennt diese Kostenart nicht · Anteil beim Eigentümer"
+msgstr "Contract %(name)s (%(e)s) does not list this cost type · share borne by the owner"
+
+msgid "Anfangsmietzins-Formular"
+msgstr "Initial rent form"
+
+msgid "Das Formular liegt in der Akte."
+msgstr "The form is in the record."
+
+msgid "Nachweis"
+msgstr "Proof"
+
+msgid "Amtliches Formular extern verwendet und dem Mieter zugestellt"
+msgstr "Official form used externally and delivered to the tenant"
+
+msgid "Formularpflicht trifft für dieses Objekt nicht zu"
+msgstr "The form obligation does not apply to this property"
+
+msgid "Datum der Zustellung"
+msgstr "Date of delivery"
+
+msgid "Bemerkung / Begründung"
+msgstr "Note / reason"
+
+msgid "Nachweis festhalten"
+msgstr "Record proof"
+
+msgid "Nachweis entfernen"
+msgstr "Remove proof"
+
+msgid "Die Erhöhung ist eingetreten, ohne dass eine Mitteilung als versandt erfasst ist — sie wird nicht verrechnet, der bisherige Mietzins bleibt."
+msgstr "The increase has taken effect without any notice recorded as sent — it is not charged; the current rent stays."
+
+msgid "Die Mitteilung wurde nicht rechtzeitig vor dem Eintritt versandt — die Stufe wird nicht verrechnet. Rechtsfolge mit einer Fachperson klären."
+msgstr "The notice was not sent in time before the step took effect — the step is not charged. Have the legal consequence clarified by a specialist."
+
+msgid "Nebenkostenarten im Vertrag"
+msgstr "Ancillary cost types in the contract"
+
+msgid "Nur angekreuzte Arten stehen im Vertrag und sind abrechenbar. Nebenkosten müssen klar und bestimmt vereinbart sein (Art. 257a Abs. 2 OR); was fehlt, trägt der Vermieter."
+msgstr "Only ticked types appear in the contract and can be billed. Ancillary costs must be agreed clearly and specifically (Art. 257a para. 2 CO); anything missing is borne by the landlord."
+
+msgid "Anfangsmietzins-Formular: Nachweis"
+msgstr "Initial rent form: proof"
+
+msgid "Für diesen Kanton ist kein amtliches Original hinterlegt. Das Formular der kantonalen Behörde wird ausserhalb der Anwendung verwendet; hier wird festgehalten, dass und wann."
+msgstr "No official original is on file for this canton. The cantonal authority's form is used outside the application; this records that and when it was used."
+
+msgid "Noch kein Nachweis (der Vertrag bleibt Entwurf)"
+msgstr "No proof yet (the contract stays a draft)"
+
+msgid "Der Vertrag bleibt Entwurf."
+msgstr "The contract stays a draft."
+
+msgid "Nachweis entfernt."
+msgstr "Proof removed."
+
+msgid "Für dieses Objekt ist kein Nachweis nötig."
+msgstr "No proof is needed for this property."
+
+msgid "Bitte wählen, was zutrifft."
+msgstr "Please choose what applies."
+
+msgid "Nachweis zum Anfangsmietzins-Formular festgehalten."
+msgstr "Proof for the initial rent form recorded."
+
+msgid "Formular-Nachweis fehlt"
+msgstr "Form proof missing"
+
+msgid "Anfangsmietzins-Formular erforderlich"
+msgstr "Initial rent form required"
+
+msgid "Nachweis erfassen"
+msgstr "Record proof"
+
+msgid "Zum Aktivieren den Nachweis im Schritt «Abschluss» erfassen — oder den Vertrag als Entwurf speichern."
+msgstr "To activate, record the proof in the “Completion” step — or save the contract as a draft."
+
+msgid "Bitte die Nebenkostenarten wählen, die der Mieter trägt: Sie müssen im Vertrag einzeln bezeichnet sein (Art. 257a Abs. 2 OR). Nicht Aufgeführtes kann nicht abgerechnet werden."
+msgstr "Please select the ancillary cost types borne by the tenant: they must be itemised in the contract (Art. 257a para. 2 CO). Anything not listed cannot be billed."
+
+#, python-format
+msgid "Anfangsmietzins-Formular: Nachweis am Vertrag festgehalten (%(art)s)."
+msgstr "Initial rent form: proof recorded on the contract (%(art)s)."
+
+msgid "Das Anfangsmietzins-Formular konnte nicht automatisch erstellt werden — bitte unter «Anfangsmietzins» am Vertrag von Hand erstellen."
+msgstr "The initial rent form could not be created automatically — please create it manually under “Initial rent” on the contract."
