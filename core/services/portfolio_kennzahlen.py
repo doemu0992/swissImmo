@@ -27,7 +27,7 @@ from decimal import Decimal
 from django.db.models import Count, Q, Sum
 from django.db.models.functions import TruncMonth
 
-from .rendite import _monatsanfang, _plus_monate, liegenschaft_rendite, soll_jahresmiete
+from .rendite import _monatsanfang, _plus_monate, liegenschaft_renditen, soll_jahresmiete
 
 NULL = Decimal('0.00')
 
@@ -93,6 +93,20 @@ def offene_posten(liegenschaften, heute=None):
     return (qs.aggregate(s=Sum('betrag'))['s'] or NULL, qs.count(), ueber.count())
 
 
+def leerstand_je_liegenschaft(liegenschaften):
+    """`{lg.pk: (leer, gesamt)}` mit zwei gruppierten Abfragen statt zwei je Liegenschaft."""
+    from portfolio.models import Einheit
+    from rentals.models import Mietvertrag
+    ids = [lg.pk for lg in liegenschaften]
+    gesamt = dict(Einheit.objects.filter(liegenschaft_id__in=ids)
+                  .values_list('liegenschaft_id').annotate(n=Count('pk')))
+    belegt = dict(Mietvertrag.objects.filter(status__in=('aktiv', 'gekuendigt'),
+                                             einheit__liegenschaft_id__in=ids)
+                  .values_list('einheit__liegenschaft_id')
+                  .annotate(n=Count('einheit_id', distinct=True)))
+    return {pk: (max(0, gesamt.get(pk, 0) - belegt.get(pk, 0)), gesamt.get(pk, 0)) for pk in ids}
+
+
 def leerstand(liegenschaften):
     """(leere Objekte, alle Objekte): zählt Einheiten ohne aktiven Mietvertrag."""
     from portfolio.models import Einheit
@@ -116,9 +130,11 @@ def uebersicht(liegenschaften, bis=None):
     zeilen = []
     summe_netto = summe_aufwand = summe_wert = summe_wert_mit_rendite = NULL
     summe_netto_mit_wert = NULL
+    renditen = liegenschaft_renditen(liegenschaften, bis)
+    leerstaende = leerstand_je_liegenschaft(liegenschaften)
     for lg in liegenschaften:
-        r = liegenschaft_rendite(lg, bis)
-        leer, gesamt = leerstand([lg])
+        r = renditen[lg.pk]
+        leer, gesamt = leerstaende[lg.pk]
         zeilen.append({
             'lg': lg, 'soll': r['jahres_netto'], 'aufwand': r['betriebsaufwand'],
             'wert': r['wert'], 'quelle': r['wert_quelle'],
@@ -132,7 +148,8 @@ def uebersicht(liegenschaften, bis=None):
             summe_wert += r['wert']
             summe_netto_mit_wert += r['jahres_netto']
             summe_wert_mit_rendite += r['jahres_netto'] - r['betriebsaufwand']
-    leer, gesamt = leerstand(liegenschaften)
+    leer = sum(l for l, _ in leerstaende.values())
+    gesamt = sum(g for _, g in leerstaende.values())
     offen_summe, offen_n, ueberfaellig_n = offene_posten(liegenschaften, bis)
     return {
         'zeilen': zeilen,

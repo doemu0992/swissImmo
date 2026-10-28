@@ -18,42 +18,89 @@ def _plus_monate(d, n):
     return date(d.year + m // 12, m % 12 + 1, 1)
 
 
+def soll_jahresmieten(liegenschaften, stichtag=None):
+    """`{lg.pk: (netto, brutto)}` für mehrere Liegenschaften mit EINER Vertragsabfrage.
+
+    Die Mietzins-Methoden am Vertrag lesen Anpassungen, Staffelstufen,
+    Komponenten und den Objekt-Zeitplan. Ohne Prefetch ist das eine Abfrage
+    je Tabelle und Vertrag; gemessen am 28.10.2026: 6 833 Abfragen auf der
+    Portfolio-Seite (SICH-09). Deshalb wird hier einmal für alle geladen."""
+    from rentals.models import Mietvertrag
+    stichtag = stichtag or date.today()
+    ids = [lg.pk for lg in liegenschaften]
+    summen = {pk: [Decimal('0.00'), Decimal('0.00')] for pk in ids}
+    vertraege = (Mietvertrag.objects.filter(einheit__liegenschaft_id__in=ids, status='aktiv')
+                 .select_related('einheit')
+                 .prefetch_related('anpassungen', 'staffelstufen', 'mietzins_komponenten',
+                                   'einheit__sollmietzinse'))
+    for v in vertraege:
+        n = v.effektiver_netto_mietzins(stichtag) or Decimal('0.00')
+        nk = v.effektive_nebenkosten(stichtag) or Decimal('0.00')
+        summe = summen[v.einheit.liegenschaft_id]
+        summe[0] += n
+        summe[1] += n + nk
+    return {pk: (netto * 12, brutto * 12) for pk, (netto, brutto) in summen.items()}
+
+
 def soll_jahresmiete(lg, stichtag=None):
     """Soll-Jahresmietzins (netto + brutto) der Liegenschaft aus den zum Stichtag
     aktiven Verträgen. Netto = Mietertrag ohne Nebenkosten (relevanter Ertrag
     für die Rendite); Brutto = inkl. NK."""
-    from rentals.models import Mietvertrag
-    stichtag = stichtag or date.today()
-    netto = Decimal('0.00')
-    brutto = Decimal('0.00')
-    vertraege = (Mietvertrag.objects.filter(einheit__liegenschaft=lg, status='aktiv')
-                 .select_related('einheit'))
-    for v in vertraege:
-        n = v.effektiver_netto_mietzins(stichtag) or Decimal('0.00')
-        nk = v.effektive_nebenkosten(stichtag) or Decimal('0.00')
-        netto += n
-        brutto += n + nk
-    return netto * 12, brutto * 12
+    return soll_jahresmieten([lg], stichtag)[lg.pk]
+
+
+def betriebsaufwaende_12m(liegenschaften, bis=None):
+    """`{lg.pk: Betrag}`: Aufwand-Buchungen der letzten 12 Monate je Liegenschaft
+    in EINER Summenabfrage (ohne Storni, wie `betriebsaufwand_12m`)."""
+    from django.db.models import Sum
+    from finance.models import Buchung
+    bis = bis or date.today()
+    von = _plus_monate(_monatsanfang(bis), -11)
+    ids = [lg.pk for lg in liegenschaften]
+    # ist_storno=False blendet die Gegenbuchung aus; storniert_am__isnull=True
+    # zusätzlich das stornierte Original — sonst zählt ein stornierter Aufwand
+    # weiter in die Kennzahlen (Storno-Paar wäre einseitig gefiltert).
+    summen = dict(Buchung.objects.filter(liegenschaft_id__in=ids, ist_storno=False,
+                                         storniert_am__isnull=True,
+                                         datum__gte=von, datum__lte=bis,
+                                         soll_konto__typ='aufwand')
+                  .values_list('liegenschaft_id').annotate(s=Sum('betrag')))
+    return {pk: summen.get(pk) or Decimal('0.00') for pk in ids}
 
 
 def betriebsaufwand_12m(lg, bis=None):
     """Effektiver Betriebsaufwand der letzten 12 Monate (Aufwand-Buchungen der
     Liegenschaft, ohne Storni). Grundlage für die Nettorendite."""
-    from finance.models import Buchung
-    bis = bis or date.today()
-    von = _plus_monate(_monatsanfang(bis), -11)
-    total = Decimal('0.00')
-    # ist_storno=False blendet die Gegenbuchung aus; storniert_am__isnull=True
-    # zusätzlich das stornierte Original — sonst zählt ein stornierter Aufwand
-    # weiter in die Kennzahlen (Storno-Paar wäre einseitig gefiltert).
-    qs = (Buchung.objects.filter(liegenschaft=lg, ist_storno=False,
-                                 storniert_am__isnull=True,
-                                 datum__gte=von, datum__lte=bis,
-                                 soll_konto__typ='aufwand')
-          .select_related('soll_konto'))
-    for b in qs:
-        total += b.betrag or Decimal('0.00')
-    return total
+    return betriebsaufwaende_12m([lg], bis)[lg.pk]
+
+
+def liegenschaft_renditen(liegenschaften, stichtag=None):
+    """`{lg.pk: Rendite-Dict}` für mehrere Liegenschaften mit konstant vielen
+    Abfragen (zwei, unabhängig von der Zahl der Liegenschaften und Verträge)."""
+    stichtag = stichtag or date.today()
+    liegenschaften = list(liegenschaften)
+    soll = soll_jahresmieten(liegenschaften, stichtag)
+    aufwand = betriebsaufwaende_12m(liegenschaften, stichtag)
+    out = {}
+    for lg in liegenschaften:
+        jahres_netto, jahres_brutto = soll[lg.pk]
+        wert, quelle = None, None
+        if lg.verkehrswert and lg.verkehrswert > 0:
+            wert, quelle = lg.verkehrswert, 'verkehrswert'
+        elif lg.anlagekosten and lg.anlagekosten > 0:
+            wert, quelle = lg.anlagekosten, 'anlagekosten'
+
+        bruttorendite = nettorendite = None
+        if wert:
+            bruttorendite = float(jahres_netto) / float(wert) * 100
+            nettorendite = float(jahres_netto - aufwand[lg.pk]) / float(wert) * 100
+        out[lg.pk] = {
+            'wert': wert, 'wert_quelle': quelle,
+            'jahres_netto': jahres_netto, 'jahres_brutto': jahres_brutto,
+            'betriebsaufwand': aufwand[lg.pk],
+            'bruttorendite': bruttorendite, 'nettorendite': nettorendite,
+        }
+    return out
 
 
 def liegenschaft_rendite(lg, stichtag=None):
@@ -65,26 +112,7 @@ def liegenschaft_rendite(lg, stichtag=None):
       bruttorendite (%, Netto-Soll / Wert), nettorendite (%, (Netto-Soll − Aufwand)/Wert).
     Renditen sind None, wenn kein valider Wert hinterlegt ist.
     """
-    stichtag = stichtag or date.today()
-    jahres_netto, jahres_brutto = soll_jahresmiete(lg, stichtag)
-    aufwand = betriebsaufwand_12m(lg, stichtag)
-
-    wert, quelle = None, None
-    if lg.verkehrswert and lg.verkehrswert > 0:
-        wert, quelle = lg.verkehrswert, 'verkehrswert'
-    elif lg.anlagekosten and lg.anlagekosten > 0:
-        wert, quelle = lg.anlagekosten, 'anlagekosten'
-
-    bruttorendite = nettorendite = None
-    if wert:
-        bruttorendite = float(jahres_netto) / float(wert) * 100
-        nettorendite = float(jahres_netto - aufwand) / float(wert) * 100
-    return {
-        'wert': wert, 'wert_quelle': quelle,
-        'jahres_netto': jahres_netto, 'jahres_brutto': jahres_brutto,
-        'betriebsaufwand': aufwand,
-        'bruttorendite': bruttorendite, 'nettorendite': nettorendite,
-    }
+    return liegenschaft_renditen([lg], stichtag)[lg.pk]
 
 
 def betriebsrechnung(lg, jahr=None):

@@ -59,7 +59,7 @@
             <a href="?stufe={{ wert }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
                class="{% if stufe_filter == wert %}hier{% endif %}">{{ label }}</a>
             {% endfor %}
-        <span class="ml-auto fw-klein">{% blocktrans count n=rows|length %}{{ n }} Position{% plural %}{{ n }} Positionen{% endblocktrans %}
+        <span class="ml-auto fw-klein">{% blocktrans count n=anzahl_positionen %}{{ n }} Position{% plural %}{{ n }} Positionen{% endblocktrans %}
             · {% blocktrans with n=offen_gesamt_n summe=offen_gesamt_summe|chf %}Offene Forderungen insgesamt: {{ n }} (CHF {{ summe }}){% endblocktrans %}</span>
     </div>
 
@@ -152,6 +152,7 @@
             </tbody>
         </table>
     </div>
+    {% include 'fw/_seiten.html' %}
 
     <!-- Stufen-Legende -->
     <div class="fw-fuss justify-start gap-x-6">
@@ -270,6 +271,7 @@
             </tbody>
         </table>
     </div>
+    {% include 'fw/_seiten.html' with seite=vorlauf_seite query_ohne_seite=vorlauf_query param='vseite' %}
 </div>
 {% endif %}
 {% comment %} Freigabeleiste nach konzept-v8 (Läufe): Der Mahnlauf wandert aus dem
