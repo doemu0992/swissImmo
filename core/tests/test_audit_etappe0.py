@@ -90,8 +90,11 @@ class Fehlerseiten(TestCase):
         self.assertIn('href="/portal/"', self._ziel('/portal/gibt-es-nicht/'))
 
     def test_team(self):
+        # Das Team (und alle ausserhalb der Portale) geht über die Login-Weiche, die je Rolle
+        # weiterleitet; ein festes `/neu/` war für Hauswart, Mieter und Eigentümer selbst 403
+        # (DESIGN-02, siehe test_fehlerseiten_rollen).
         body = self._ziel('/neu/gibt-es-nicht/')
-        self.assertIn('href="/neu/"', body)
+        self.assertIn('href="/nach-login/"', body)
         self.assertNotIn('href="/mieter/"', body)
 
     def test_favicon_in_markenfarbe(self):
