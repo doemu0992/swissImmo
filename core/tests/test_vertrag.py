@@ -1615,18 +1615,66 @@ class IndexparameterBearbeitenTests(TestCase):
         v.refresh_from_db()
         self.assertEqual(v.index_weitergabe_prozent, Decimal('75'))
 
-    def test_ueber_hundert_prozent_wird_gekappt(self):
-        """Mehr als die Teuerung weiterzugeben, sieht das Gesetz nicht vor.
+    def test_ueber_hundert_prozent_wird_abgelehnt_nicht_gekappt(self):
+        """Mehr als die Zunahme des LIK weiterzugeben, sieht Art. 17 Abs. 1 VMWG nicht vor.
 
-        DER VERTRAG STARTET BEI 80 %, NICHT BEI 100 — sonst prüft der Test
-        nichts: Aus 150 wird 100, der Vertrag stand schon auf 100, und
-        «gekappt» wäre von «stillschweigend ignoriert» nicht zu
-        unterscheiden. Bei 80 → 100 ist der Unterschied sichtbar.
+        Bis 28.10.2026 (E2.53) kürzte die Maske 150 still auf 100 und meldete
+        «aktualisiert». Jetzt lehnt sie ab, wie der Wizard: 400, Meldung mit
+        Artikel am Feld, nichts gespeichert.
+
+        DER VERTRAG STARTET BEI 80 %, damit die Gegenprobe etwas zeigt: 150 darf
+        weder zu 100 (alte Kappung) noch zu 150 (ungeprüft) werden, sondern bleibt
+        bei 80; und 100 wird danach gespeichert.
         """
+        from core.models import AktivitaetsLog
+
         v = self._aktiver_vertrag()
         v.index_weitergabe_prozent = Decimal('80'); v.save()
         c = Client(); c.force_login(_team_user())
-        self._post(c, v, index_weitergabe_prozent='150')
+        antwort = self._post(c, v, index_weitergabe_prozent='150')
+        self.assertEqual(antwort.status_code, 400)
+        inhalt = antwort.content.decode()
+        self.assertIn('höchstens 100 Prozent der Teuerung', inhalt)
+        self.assertIn('Art. 17 Abs. 1 VMWG', inhalt)
+        v.refresh_from_db()
+        self.assertEqual(v.index_weitergabe_prozent, Decimal('80'))
+        self.assertFalse(AktivitaetsLog.objects.filter(aktion='Index-Weitergabe geändert').exists())
+        # Gegenprobe: genau 100 % ist zulässig und wird gespeichert.
+        antwort = self._post(c, v, index_weitergabe_prozent='100')
+        self.assertEqual(antwort.status_code, 302)
+        v.refresh_from_db()
+        self.assertEqual(v.index_weitergabe_prozent, Decimal('100'))
+
+    def test_null_und_negativ_werden_abgelehnt(self):
+        v = self._aktiver_vertrag()
+        c = Client(); c.force_login(_team_user())
+        for wert in ('0', '-5'):
+            with self.subTest(wert=wert):
+                antwort = self._post(c, v, index_weitergabe_prozent=wert)
+                self.assertEqual(antwort.status_code, 400)
+                self.assertIn('über 0 %', antwort.content.decode())
+                v.refresh_from_db()
+                self.assertEqual(v.index_weitergabe_prozent, Decimal('100'))
+
+    def test_altvertrag_mit_ueber_hundert_wird_nicht_blockiert_wenn_er_sie_nicht_aendert(self):
+        """Ein Vertrag, der schon über 100 % steht, bleibt bearbeitbar, solange die Weitergabe gleich bleibt.
+
+        Gegenprobe im selben Test: Wer den Wert ändert (auch auf einen anderen Wert über 100), wird abgelehnt."""
+        v = self._aktiver_vertrag()
+        v.index_weitergabe_prozent = Decimal('150'); v.save()
+        c = Client(); c.force_login(_team_user())
+        antwort = self._post(c, v, index_weitergabe_prozent='150', kuendigungstermine='Ende März')
+        self.assertEqual(antwort.status_code, 302)
+        v.refresh_from_db()
+        self.assertEqual(v.index_weitergabe_prozent, Decimal('150'))
+        self.assertEqual(v.kuendigungstermine, 'Ende März')
+        antwort = self._post(c, v, index_weitergabe_prozent='160')
+        self.assertEqual(antwort.status_code, 400)
+        v.refresh_from_db()
+        self.assertEqual(v.index_weitergabe_prozent, Decimal('150'))
+        # Und die Korrektur auf einen zulässigen Wert geht durch.
+        antwort = self._post(c, v, index_weitergabe_prozent='100')
+        self.assertEqual(antwort.status_code, 302)
         v.refresh_from_db()
         self.assertEqual(v.index_weitergabe_prozent, Decimal('100'))
 
