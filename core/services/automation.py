@@ -30,6 +30,96 @@ def _konten_fuer(v):
     return ertrag_konto, "3020", "NK-Akonto"
 
 
+class SollstellungTeilfehler(RuntimeError):
+    """Die Sollstellung ist für einzelne Verträge gescheitert, für die übrigen gelaufen.
+
+    `erstellt`: Zahl der trotzdem gestellten Rechnungen; `fehler`: `[(vertrag_id, ausnahme)]`.
+    Eine RuntimeError, damit die Oberfläche (zeigt die Meldung) und der Scheduler (Fehler,
+    kein Erfolg) sie wie bisher behandeln."""
+
+    def __init__(self, erstellt, fehler, monat, jahr):
+        self.erstellt, self.fehler = erstellt, fehler
+        ids = ', '.join(str(v) for v, _ in fehler[:10]) + (' …' if len(fehler) > 10 else '')
+        super().__init__(
+            f'Sollstellung {monat:02d}/{jahr}: {erstellt} Rechnung(en) gestellt, '
+            f'{len(fehler)} Vertrag/Verträge nicht gestellt (Vertrag-ID: {ids}). '
+            f'Ursache: {fehler[0][1]}')
+
+
+def _sollstellung_vertrag(v, start_date, end_date, last_day, titel, user):
+    """Stellt einen Vertrag für den Monat. Gibt die neue Rechnung zurück, oder `None`,
+    wenn schon gestellt oder nichts zu stellen ist. Läuft in der Transaktion des Aufrufers."""
+    from finance.models import DebitorenRechnung
+    from finance.booking import buche
+    monat, jahr = start_date.month, start_date.year
+    if DebitorenRechnung.objects.filter(vertrag=v, titel=titel).exclude(status='storniert').exists():
+        return None
+    v_start = max(start_date, v.beginn)
+    v_ende = min(end_date, v.ende) if v.ende else end_date
+    faktor = Decimal((v_ende - v_start).days + 1) / Decimal(last_day)
+    # --- Option B: Bruttobuchung ---
+    # Referenz = die ECHTE vereinbarte Miete (Mieterspiegel/Bilanz-Ertrag),
+    # verrechnet = was der Mieter effektiv zahlt (Referenz − Rabatt/Erlass).
+    # Datierte Komponenten (Gratismonate/gestaffelter Start) haben Vorrang;
+    # sonst Staffel/Anpassung/Basiswert.
+    ref_netto = round((v.effektiver_netto_mietzins(start_date) or Decimal('0')) * faktor, 2)
+    ref_nk = round((v.effektive_nebenkosten(start_date) or Decimal('0')) * faktor, 2)
+    verr_netto = round((v.verrechneter_netto_mietzins(start_date) or Decimal('0')) * faktor, 2)
+    verr_nk = round((v.verrechnete_nebenkosten(start_date) or Decimal('0')) * faktor, 2)
+    # Rabatt = Referenz − verrechnet (nie negativ), aus den gerundeten Werten
+    # abgeleitet, damit Debitor exakt auf den verrechneten Betrag nettoiert.
+    rabatt_netto = max(Decimal('0.00'), ref_netto - verr_netto)
+    rabatt_nk = max(Decimal('0.00'), ref_nk - verr_nk)
+    if ref_netto + ref_nk <= 0:
+        return None
+    # MWST folgt dem effektiv verrechneten Betrag (nicht dem Referenzwert).
+    # Satz über `mwst_satz_wirksam`: bei Wohnraum immer 0, auch wenn das
+    # Flag gesetzt wäre. Miete UND Nebenkosten tragen die MWST (NK teilen
+    # den Satz der Hauptleistung).
+    satz = v.mwst_satz_wirksam
+    mwst = Decimal('0.00')
+    if satz > 0:
+        mwst = round((verr_netto + verr_nk) * (satz / Decimal('100')), 2)
+    # Der Debitor schuldet nur den verrechneten Betrag (Gratismonat = 0).
+    # Schuldet der Mieter diesen Monat NICHTS (Gratismonat / voller Erlass),
+    # entsteht keine offene Forderung: Die Rechnung wird sofort als 'bezahlt'
+    # markiert (offener Betrag 0). Sonst stünde ein 0.00-Beleg dauerhaft als
+    # «offen» im OP-Buch und tauchte in Mahnlisten/QR-Vorschlägen auf
+    # (Live-Test E). Der volle Referenzertrag + Erlass werden trotzdem
+    # gebucht (Bilanz/Mieterspiegel korrekt), die Rechnung bleibt als
+    # Beleg/Idempotenz-Anker bestehen.
+    netto_schuld = verr_netto + verr_nk + mwst
+    rechnung = DebitorenRechnung.objects.create(
+        vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
+        titel=titel, betrag=netto_schuld, faellig_am=v_start,
+        mwst_satz=satz if mwst else Decimal('0.0'), mwst_betrag=mwst,
+        status='bezahlt' if netto_schuld <= 0 else 'offen')
+    lg = v.einheit.liegenschaft if v.einheit_id else None
+    ertrag_konto, nk_konto, nk_label = _konten_fuer(v)
+    # Vollen Referenzertrag als Ertrag buchen (Bilanz/Mieterspiegel korrekt) …
+    buche("1100", ertrag_konto, ref_netto, f"Mietertrag {v.mieter} - {monat:02d}/{jahr}",
+          datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
+    buche("1100", nk_konto, ref_nk, f"{nk_label} {v.mieter} - {monat:02d}/{jahr}",
+          datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
+    # … den Rabatt/Erlass als Ertragsminderung gegen den Debitor buchen
+    # (Soll 3090 / Haben 1100 → Debitor nettoiert auf den verrechneten Betrag).
+    buche("3090", "1100", rabatt_netto,
+          f"Mietzinserlass {v.mieter} - {monat:02d}/{jahr}",
+          datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
+    # NK-Erlass auf ein EIGENES Konto (3091), nicht auf 3090: Die
+    # Honorarbasis rechnet auf dem Netto-Mietertrag (3000/3010) und
+    # enthält die Nebenkosten gar nicht. Ein NK-Erlass auf 3090 hätte
+    # eine Basis gemindert, in der die Nebenkosten nie standen — das
+    # Honorar wurde systematisch zu tief und die Basis konnte bei
+    # überwiegend erlassenen Perioden sogar negativ werden (Audit).
+    buche("3091", "1100", rabatt_nk,
+          f"NK-Erlass {v.mieter} - {monat:02d}/{jahr}",
+          datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
+    buche("1100", "2200", mwst, f"MWST {satz}% {v.mieter} - {monat:02d}/{jahr}",
+          datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
+    return rechnung
+
+
 # ============================================================
 # 1. SOLLSTELLUNG (monatlicher Mietenlauf)
 # ============================================================
@@ -44,9 +134,9 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
     nannte. Wer auf eine Liegenschaft gefiltert hatte, stellte damit unbeabsichtigt
     allen Mietern Rechnung (Praxis-Audit). Der Scheduler ruft weiterhin ohne
     Parameter auf und deckt das ganze Portfolio ab."""
-    from finance.models import DebitorenRechnung
-    from finance.booking import buche, ensure_kontenplan
+    from finance.booking import ensure_kontenplan
     from rentals.models import Mietvertrag
+    from core.sperren import lock_timeout_setzen
 
     start_date = date(jahr, monat, 1)
     _, last_day = _calendar.monthrange(jahr, monat)
@@ -56,94 +146,44 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
     ensure_kontenplan()   # Kontenplan garantieren (kein stiller Buchungsverlust)
 
     erstellt = 0
-    gestellt_fuer, neue_rechnungen = [], []
-    with transaction.atomic():
-        # Zeilensperre auf die aktiven Verträge: ein gleichzeitiger zweiter
-        # Sollstellungs-Lauf (Button + Scheduler) blockiert bis dieser fertig ist,
-        # dann greift der exists()-Check → keine doppelten Monatsmieten.
-        # Nur PKs sperren (kein Join → kein Nullable-Outer-Join-Problem unter
-        # Postgres; auf SQLite ohnehin No-op).
-        # Auch GEKÜNDIGTE Verträge fakturieren, solange ihr Ende nicht vor dem
-        # Monatsanfang liegt — die Miete der Kündigungsfrist ist geschuldet.
-        # Der status='aktiv'-Filter allein liess sie durchfallen: die
-        # Kündigung setzt den Status sofort auf 'gekuendigt', Monate vor dem
-        # Auszug, und die Miete bis dahin wurde nie gestellt (stiller Verlust).
-        _basis = (Mietvertrag.objects.filter(status__in=['aktiv', 'gekuendigt'],
-                                             beginn__lte=end_date)
-                  .exclude(ende__lt=start_date))
-        if liegenschaft is not None:
-            _basis = _basis.filter(einheit__liegenschaft=liegenschaft)
-        locked_ids = list(_basis.select_for_update().values_list('pk', flat=True))
-        vertraege = (Mietvertrag.objects.filter(pk__in=locked_ids)
-                     .select_related('mieter', 'einheit__liegenschaft'))
-        for v in vertraege:
-            if DebitorenRechnung.objects.filter(vertrag=v, titel=titel).exclude(status='storniert').exists():
-                continue
-            v_start = max(start_date, v.beginn)
-            v_ende = min(end_date, v.ende) if v.ende else end_date
-            faktor = Decimal((v_ende - v_start).days + 1) / Decimal(last_day)
-            # --- Option B: Bruttobuchung ---
-            # Referenz = die ECHTE vereinbarte Miete (Mieterspiegel/Bilanz-Ertrag),
-            # verrechnet = was der Mieter effektiv zahlt (Referenz − Rabatt/Erlass).
-            # Datierte Komponenten (Gratismonate/gestaffelter Start) haben Vorrang;
-            # sonst Staffel/Anpassung/Basiswert.
-            ref_netto = round((v.effektiver_netto_mietzins(start_date) or Decimal('0')) * faktor, 2)
-            ref_nk = round((v.effektive_nebenkosten(start_date) or Decimal('0')) * faktor, 2)
-            verr_netto = round((v.verrechneter_netto_mietzins(start_date) or Decimal('0')) * faktor, 2)
-            verr_nk = round((v.verrechnete_nebenkosten(start_date) or Decimal('0')) * faktor, 2)
-            # Rabatt = Referenz − verrechnet (nie negativ), aus den gerundeten Werten
-            # abgeleitet, damit Debitor exakt auf den verrechneten Betrag nettoiert.
-            rabatt_netto = max(Decimal('0.00'), ref_netto - verr_netto)
-            rabatt_nk = max(Decimal('0.00'), ref_nk - verr_nk)
-            if ref_netto + ref_nk <= 0:
-                continue
-            # MWST folgt dem effektiv verrechneten Betrag (nicht dem Referenzwert).
-            # Satz über `mwst_satz_wirksam`: bei Wohnraum immer 0, auch wenn das
-            # Flag gesetzt wäre. Miete UND Nebenkosten tragen die MWST (NK teilen
-            # den Satz der Hauptleistung).
-            satz = v.mwst_satz_wirksam
-            mwst = Decimal('0.00')
-            if satz > 0:
-                mwst = round((verr_netto + verr_nk) * (satz / Decimal('100')), 2)
-            # Der Debitor schuldet nur den verrechneten Betrag (Gratismonat = 0).
-            # Schuldet der Mieter diesen Monat NICHTS (Gratismonat / voller Erlass),
-            # entsteht keine offene Forderung: Die Rechnung wird sofort als 'bezahlt'
-            # markiert (offener Betrag 0). Sonst stünde ein 0.00-Beleg dauerhaft als
-            # «offen» im OP-Buch und tauchte in Mahnlisten/QR-Vorschlägen auf
-            # (Live-Test E). Der volle Referenzertrag + Erlass werden trotzdem
-            # gebucht (Bilanz/Mieterspiegel korrekt), die Rechnung bleibt als
-            # Beleg/Idempotenz-Anker bestehen.
-            netto_schuld = verr_netto + verr_nk + mwst
-            rechnung = DebitorenRechnung.objects.create(
-                vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
-                titel=titel, betrag=netto_schuld, faellig_am=v_start,
-                mwst_satz=satz if mwst else Decimal('0.0'), mwst_betrag=mwst,
-                status='bezahlt' if netto_schuld <= 0 else 'offen')
-            lg = v.einheit.liegenschaft if v.einheit_id else None
-            ertrag_konto, nk_konto, nk_label = _konten_fuer(v)
-            # Vollen Referenzertrag als Ertrag buchen (Bilanz/Mieterspiegel korrekt) …
-            buche("1100", ertrag_konto, ref_netto, f"Mietertrag {v.mieter} - {monat:02d}/{jahr}",
-                  datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
-            buche("1100", nk_konto, ref_nk, f"{nk_label} {v.mieter} - {monat:02d}/{jahr}",
-                  datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
-            # … den Rabatt/Erlass als Ertragsminderung gegen den Debitor buchen
-            # (Soll 3090 / Haben 1100 → Debitor nettoiert auf den verrechneten Betrag).
-            buche("3090", "1100", rabatt_netto,
-                  f"Mietzinserlass {v.mieter} - {monat:02d}/{jahr}",
-                  datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
-            # NK-Erlass auf ein EIGENES Konto (3091), nicht auf 3090: Die
-            # Honorarbasis rechnet auf dem Netto-Mietertrag (3000/3010) und
-            # enthält die Nebenkosten gar nicht. Ein NK-Erlass auf 3090 hätte
-            # eine Basis gemindert, in der die Nebenkosten nie standen — das
-            # Honorar wurde systematisch zu tief und die Basis konnte bei
-            # überwiegend erlassenen Perioden sogar negativ werden (Audit).
-            buche("3091", "1100", rabatt_nk,
-                  f"NK-Erlass {v.mieter} - {monat:02d}/{jahr}",
-                  datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
-            buche("1100", "2200", mwst, f"MWST {satz}% {v.mieter} - {monat:02d}/{jahr}",
-                  datum=start_date, liegenschaft=lg, debitor=rechnung, user=user)
+    gestellt_fuer, neue_rechnungen, fehler = [], [], []
+    # Auch GEKÜNDIGTE Verträge fakturieren, solange ihr Ende nicht vor dem
+    # Monatsanfang liegt — die Miete der Kündigungsfrist ist geschuldet.
+    # Der status='aktiv'-Filter allein liess sie durchfallen: die
+    # Kündigung setzt den Status sofort auf 'gekuendigt', Monate vor dem
+    # Auszug, und die Miete bis dahin wurde nie gestellt (stiller Verlust).
+    _basis = (Mietvertrag.objects.filter(status__in=['aktiv', 'gekuendigt'],
+                                         beginn__lte=end_date)
+              .exclude(ende__lt=start_date))
+    if liegenschaft is not None:
+        _basis = _basis.filter(einheit__liegenschaft=liegenschaft)
+    vertraege = {v.pk: v for v in (
+        _basis.select_related('mieter', 'einheit__liegenschaft')
+        .prefetch_related('mietzins_komponenten', 'staffelstufen', 'anpassungen',
+                          'einheit__sollmietzinse').order_by('pk'))}
+    vertrag_ids = list(vertraege)
+    # Eine Teil-Transaktion je Vertrag (SICH-05/FIN-Skalierung): Die Zeilensperre
+    # des Vertrags hält nur so lange wie seine Buchungen, nicht für den ganzen
+    # Monatslauf, und ein Fehler bei EINEM Vertrag rollt nur diesen zurück. Die
+    # Sperre auf den Vertrag bleibt der Schutz vor dem zweiten Lauf (Knopf +
+    # Scheduler): Wer wartet, sieht danach die Rechnung und überspringt.
+    for vid in vertrag_ids:
+        v = vertraege[vid]
+        try:
+            with transaction.atomic():
+                lock_timeout_setzen()
+                list(Mietvertrag.objects.select_for_update().filter(pk=vid).values_list('pk', flat=True))
+                rechnung = _sollstellung_vertrag(v, start_date, end_date, last_day, titel, user)
+        except PermissionError:
+            # Gesperrte Buchungsperiode: gilt für alle Verträge des Monats, kein Einzelfehler.
+            raise
+        except Exception as ausnahme:                      # noqa: BLE001
+            logger.exception('Sollstellung %02d/%s: Vertrag %s nicht gestellt', monat, jahr, vid)
+            fehler.append((vid, ausnahme))
+            continue
+        if rechnung is not None:
             erstellt += 1
-            gestellt_fuer.append(v.pk)
+            gestellt_fuer.append(vid)
             neue_rechnungen.append(rechnung.pk)
     # Guthaben, die «mit der nächsten Rechnung» verrechnet werden sollen
     # (Zahlungs-Cockpit V12). Nach der Transaktion der Sollstellung: Eine
@@ -158,6 +198,10 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
         except Exception:
             logger.warning('Guthaben-Verrechnung nach Sollstellung %02d/%s fehlgeschlagen',
                            monat, jahr, exc_info=True)
+    if fehler:
+        # Die gestellten Verträge bleiben gestellt (eigene Transaktion); die
+        # fehlgeschlagenen werden benannt. Ein zweiter Lauf holt sie nach (idempotent).
+        raise SollstellungTeilfehler(erstellt, fehler, monat, jahr)
     return erstellt
 
 
@@ -215,6 +259,9 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry
     # Mahnstufen + Gebuehr je Organisation (crm.MahnStufe), ggf. vom Eigentümer übersteuert.
     from core.services.mahnstufen import Mahnstufen, eigentuemer_von_rechnung
     stufen_laden = Mahnstufen()
+    # Die Verwaltung des Laufs (Kontext): `r.organisation` wäre je Rechnung eine Abfrage.
+    from core.tenancy import aktuelle_organisation
+    kontext_org = aktuelle_organisation()
 
     heute = timezone.localdate()
     # Abgeleitete Forderungen (Mahngebühr, Verzugszins — `stammrechnung`)
@@ -224,7 +271,11 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry
     # und werden mit der Hauptforderung eingefordert.
     qs = (DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'],
                                            stammrechnung__isnull=True)
-          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft', 'liegenschaft'))
+          .select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft__eigentuemer',
+                          'liegenschaft__eigentuemer')
+          # Zahlungen und Mahnungen vorladen: `offener_betrag` und die höchste Stufe
+          # wären sonst je Rechnung eine Abfrage (SICH-09, Trockenlauf 4 418 Abfragen).
+          .prefetch_related('zahlungseingaenge', 'mahnungen'))
     if aktive_lg:
         qs = qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
 
@@ -244,16 +295,16 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry
             continue
         # Verzugsbeginn je Organisation: Der Fälligkeitstag ist Tag 0.
         tage = stufen_laden.tage_im_verzug(faellig, heute, eigentuemer_von_rechnung(r),
-                                           organisation=r.organisation)
+                                           organisation=kontext_org or r.organisation)
         if tage is None:
             continue
-        org = r.organisation
+        org = kontext_org or r.organisation
         # Verjährte Mietzinsforderung (Art. 128 Ziff. 1 OR: 5 Jahre) nicht mehr
         # mahnen — Mahnungen unterbrechen die Verjährung ohnehin nicht; der Fall
         # gehört zur Abschreibung/Betreibung (eigene Verjährungs-Pendenz).
         if tage > 5 * 365:
             continue
-        hoechste = r.mahnungen.order_by('-stufe').first()
+        hoechste = max(r.mahnungen.all(), key=lambda m: m.stufe, default=None)
         if erzwingen:
             # Nächste aktive Stufe nach der bisher höchsten — unabhängig von `ab_tage`.
             aktive = sorted(stufen_laden.config(eigentuemer_von_rechnung(r), organisation=org),
@@ -262,7 +313,7 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry
             _s = next((s for s in aktive if s['stufe'] > bisher), None)
         else:
             _s = stufen_laden.stufe_fuer_tage(tage, eigentuemer_von_rechnung(r),
-                                              organisation=r.organisation)
+                                              organisation=kontext_org or r.organisation)
         if not _s:
             continue
         stufe = _s['stufe']
@@ -437,11 +488,15 @@ def erledige_pendenzen_fuer(vertrag, keywords, user=None):
 # ============================================================
 # 3. AUTO-PENDENZEN (Fristen aus dem Datenbestand persistieren)
 # ============================================================
-def generate_auto_pendenzen(horizont_tage=90, user=None, organisation=None):
+def generate_auto_pendenzen(horizont_tage=90, user=None, organisation=None, fehler=None):
     """Erzeugt/aktualisiert persistente Pendenzen aus terminierten Ereignissen.
 
     (Vertragsende, Auszug, Geräte-Garantien, Serviceabos.) Idempotent über das
     Feld `Pendenz.quelle`. Gibt die Anzahl neu erstellter Pendenzen zurück.
+
+    `fehler`: eine Liste. Ist sie gegeben, bricht ein Fehler in einer Verwaltung die
+    übrigen nicht ab; er landet als `(organisation, ausnahme)` in der Liste.
+    Ohne sie wirft der erste Fehler (alter Weg, z. B. für Aufrufe aus Tests).
 
     JE ORGANISATION EIN DURCHGANG (Etappe 6.2). Die Funktion läuft aus dem
     täglichen Lauf, also ohne Anfrage und damit ohne Mandantenkontext. Sie
@@ -461,8 +516,19 @@ def generate_auto_pendenzen(horizont_tage=90, user=None, organisation=None):
     if nur_eine is not None:
         alle = alle.filter(pk=getattr(nur_eine, 'pk', nur_eine))
     for organisation in alle:
-        with organisation_kontext(organisation):
-            gesamt += _pendenzen_fuer_organisation(horizont_tage, user)
+        if fehler is None:
+            with organisation_kontext(organisation):
+                gesamt += _pendenzen_fuer_organisation(horizont_tage, user)
+            continue
+        # Mit Fehlerliste (Tageslauf): je Verwaltung eine eigene Transaktion. Ein
+        # Fehler rollt nur ihre Pendenzen zurück, wird gesammelt und gemeldet; die
+        # übrigen Verwaltungen laufen weiter (SICH-05).
+        try:
+            with organisation_kontext(organisation), transaction.atomic():
+                gesamt += _pendenzen_fuer_organisation(horizont_tage, user)
+        except Exception as ausnahme:                          # noqa: BLE001
+            logger.exception('Auto-Pendenzen: %s abgebrochen', organisation)
+            fehler.append((organisation, ausnahme))
     return gesamt
 
 

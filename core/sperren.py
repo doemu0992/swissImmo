@@ -39,7 +39,7 @@ die Sperre wirkt, belegen nur Tests mit echten Threads auf PostgreSQL
 """
 import hashlib
 
-from django.db import DEFAULT_DB_ALIAS, connections
+from django.db import DEFAULT_DB_ALIAS, OperationalError, connections
 from django.db.transaction import TransactionManagementError
 
 
@@ -47,6 +47,30 @@ def _schluessel(*teile):
     """64-Bit-Schlüssel (vorzeichenbehaftet) aus den Namensteilen."""
     roh = ':'.join(str(t) for t in ('swissimmo', *teile)).encode('utf-8')
     return int.from_bytes(hashlib.blake2b(roh, digest_size=8).digest(), 'big', signed=True)
+
+
+#: Wartezeit auf eine Sperre. Wer länger warten müsste, bekommt einen klaren Fehler statt
+#: einer hängenden Anfrage: Ein Lauf, der eine Sperre ewig hält, würde sonst alle
+#: nachfolgenden Anfragen der Verwaltung mit aufhängen (Sollstellung, Zahllauf, Abschluss).
+LOCK_TIMEOUT_MS = 15000
+
+
+class SperreBelegt(RuntimeError):
+    """Eine andere Anfrage hält die Sperre länger als `LOCK_TIMEOUT_MS`."""
+
+
+def lock_timeout_setzen(millisekunden=None):
+    """`SET LOCAL lock_timeout` für den Rest der laufenden Transaktion (nur PostgreSQL).
+
+    Gilt für Zeilensperren (`select_for_update`) wie für Advisory Locks. Auf SQLite
+    ohne Wirkung. Gehört in `transaction.atomic()`; ausserhalb wäre es sofort verfallen."""
+    verbindung = connections[DEFAULT_DB_ALIAS]
+    if not verbindung.in_atomic_block:
+        raise TransactionManagementError('lock_timeout_setzen() gehört in eine transaction.atomic().')
+    if verbindung.vendor != 'postgresql':
+        return
+    with verbindung.cursor() as cursor:
+        cursor.execute('SET LOCAL lock_timeout = %s', [f'{int(millisekunden or LOCK_TIMEOUT_MS)}ms'])
 
 
 def sperre(*teile):
@@ -65,8 +89,17 @@ def sperre(*teile):
             'die Sperre schon wieder frei, bevor gebucht wird.')
     if verbindung.vendor != 'postgresql':
         return
-    with verbindung.cursor() as cursor:
-        cursor.execute('SELECT pg_advisory_xact_lock(%s)', [_schluessel(*teile)])
+    lock_timeout_setzen()
+    try:
+        with verbindung.cursor() as cursor:
+            cursor.execute('SELECT pg_advisory_xact_lock(%s)', [_schluessel(*teile)])
+    except OperationalError as e:
+        ursache = e.__cause__
+        if (getattr(ursache, 'sqlstate', None) or getattr(ursache, 'pgcode', None)) == '55P03':  # lock_not_available
+            raise SperreBelegt(
+                'Eine andere Buchung läuft gerade und hält die Sperre. '
+                'Bitte in einigen Sekunden erneut versuchen.') from e
+        raise
 
 
 def sperre_organisation(name, organisation_id):
