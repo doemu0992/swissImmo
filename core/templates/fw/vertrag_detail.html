@@ -287,6 +287,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
                 <p class="fw-klein mt-2">{% trans "Wartet auf Bestätigung durch Inhaber oder Verwalter." %}</p>
                 {% endif %}
                 {% if k.status != 'zurueckgezogen' %}
+                {% if k.absender == 'vermieter' %}<p class="fw-klein fw-warnton mt-1.5">{% trans "Vor dem Versand eigenhändig unterschreiben (Art. 266l OR, sonst nichtig, Art. 266o OR): Das PDF enthält kein Unterschriftsbild." %}</p>{% endif %}
                 <div class="flex items-center gap-3 mt-1.5">
                     {% if request.user|darf_schreiben %}
                     <form method="post" action="/neu/kuendigung/{{ k.id }}/formular/" target="_blank" class="inline">

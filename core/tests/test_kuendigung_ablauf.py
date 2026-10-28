@@ -10,6 +10,8 @@ from decimal import Decimal
 from django.test import Client, TestCase
 from django.utils import timezone
 
+from core.services.fristen import naechster_werktag
+
 from ._helfer import _basis_objekte, _team_user
 
 
@@ -40,7 +42,7 @@ class ZugangVermieterTests(_Basis):
         zugang = self.heute + timedelta(days=ZUSTELL_PUFFER_TAGE)
         self.assertEqual(k.berechneter_termin, berechne_kuendigungstermin(self.v, zugang))
         p = Pendenz.objects.get(vertrag=self.v, titel__startswith='Anfechtungsfrist Kündigung')
-        self.assertEqual(p.faellig_am, zugang + timedelta(days=30))
+        self.assertEqual(p.faellig_am, naechster_werktag(zugang + timedelta(days=30)))     # Art. 78 OR
 
     def test_bestaetigter_zugang_gilt(self):
         from core.models import Pendenz
@@ -49,7 +51,7 @@ class ZugangVermieterTests(_Basis):
                    zugang_am=gestern.isoformat())
         self.assertEqual(self._k().zugang_am, gestern)
         p = Pendenz.objects.get(vertrag=self.v, titel__startswith='Anfechtungsfrist Kündigung')
-        self.assertEqual(p.faellig_am, gestern + timedelta(days=30))
+        self.assertEqual(p.faellig_am, naechster_werktag(gestern + timedelta(days=30)))
 
     def test_zugang_vor_versand_wird_abgewiesen(self):
         self._post(absender='vermieter', zugang_am=(self.heute - timedelta(days=5)).isoformat())

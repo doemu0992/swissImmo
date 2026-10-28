@@ -4,6 +4,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.test import TestCase, Client
+from core.services.fristen import naechster_werktag
 from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, Mieter, Organisation, Liegenschaft, Einheit,
     Mietvertrag, User)
@@ -356,7 +357,7 @@ class Verzug257dTests(TestCase):
 
     def test_einschreiben_erfasst_provisorische_frist(self):
         """Mit Sendungsnummer + Versanddatum: Pendenz speichert die Tracking-Felder,
-        faellig_am ist PROVISORISCH = Versand + Postweg(1) + 30 (strikte Empfangstheorie)."""
+        faellig_am ist PROVISORISCH = Versand + Postweg(1) + Abholfrist(7) + 30 (Empfangstheorie)."""
         from core.models import Pendenz
         lg, e, m, v = self._setup_offen()
         c = Client(); c.force_login(_team_user())
@@ -372,8 +373,11 @@ class Verzug257dTests(TestCase):
         self.assertEqual(p.versand_am, versand)
         self.assertEqual(p.frist_tage, 30)
         self.assertIsNone(p.zugang_am)
-        # PROVISORISCH: Versand + 1 (Postweg) + 30, NICHT das Formular-frist_bis (+40).
-        self.assertEqual(p.faellig_am, versand + timedelta(days=31))
+        # PROVISORISCH vom spätestmöglichen Zugang aus (Audit MIET-01, BGE 119 II 147 E. 2): Versand + 1 Tag
+        # Postweg + 7 Tage Abholfrist + 30 Tage, auf den nächsten Werktag gerückt (Art. 78 OR) — NICHT das
+        # Formular-frist_bis (+40) und NICHT mehr Versand + 1 + 30 (bis zu 7 Tage zu kurz, weil die Frist erst ab
+        # Abholung bzw. ab dem letzten Tag der Abholfrist läuft, nicht ab der Abholeinladung).
+        self.assertEqual(p.faellig_am, naechster_werktag(versand + timedelta(days=38)))
         self.assertIn('PROVISORISCH', p.beschreibung)
         # Fristen-Center zeigt Track & Trace + «Zugang bestätigen» für dieses Einschreiben.
         rf = c.get('/neu/fristen/', secure=True)
@@ -399,7 +403,7 @@ class Verzug257dTests(TestCase):
         self.assertEqual(r.status_code, 302)
         p.refresh_from_db()
         self.assertEqual(p.zugang_am, zugang)
-        self.assertEqual(p.faellig_am, zugang + timedelta(days=30))
+        self.assertEqual(p.faellig_am, naechster_werktag(zugang + timedelta(days=30)))
         self.assertNotEqual(p.faellig_am, alt_frist)
         self.assertIn('Zugang bestätigt', p.beschreibung)
         self.assertTrue(AktivitaetsLog.objects.filter(aktion__icontains='Zugang').exists())
@@ -443,7 +447,7 @@ class Verzug257dTests(TestCase):
 
     def test_sendungsnummer_korrigieren(self):
         """Vertippte Sendungsnummer kann nachträglich korrigiert werden; ein neues
-        Versanddatum rechnet die provisorische Frist neu (Versand+1+30)."""
+        Versanddatum rechnet die provisorische Frist neu (Versand+1+7+30, Werktag)."""
         from core.models import Pendenz
         lg, e, m, v = self._setup_offen()
         c = Client(); c.force_login(_team_user())
@@ -461,7 +465,7 @@ class Verzug257dTests(TestCase):
         p.refresh_from_db()
         self.assertEqual(p.sendungsnummer, '99.11.222333.44445555')
         self.assertEqual(p.versand_am, neu_versand)
-        self.assertEqual(p.faellig_am, neu_versand + timedelta(days=31))
+        self.assertEqual(p.faellig_am, naechster_werktag(neu_versand + timedelta(days=38)))
         # Fremdes Redirect-Ziel wird verworfen.
         r2 = c.post(f'/neu/fristen/verzug/{p.id}/sendung/',
                     {'sendungsnummer': '99.11.222333.44445555', 'next': 'https://evil.example/x'}, secure=True)
@@ -478,7 +482,7 @@ class Verzug257dTests(TestCase):
                {'zugang_am': (date.today() + timedelta(days=10)).isoformat()})
         p.refresh_from_db()
         self.assertEqual(p.zugang_am, date.today())
-        self.assertEqual(p.faellig_am, date.today() + timedelta(days=30))
+        self.assertEqual(p.faellig_am, naechster_werktag(date.today() + timedelta(days=30)))
 
 
 class AnfechtungsfristTests(TestCase):

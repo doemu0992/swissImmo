@@ -1,4 +1,4 @@
-from django.utils.translation import gettext
+from django.utils.translation import gettext, gettext_lazy
 """Digitale Unterschrift auf reportlab-Briefen.
 
 Die Unterschrift lag bisher nur auf den Vertrags- und Formular-PDFs
@@ -18,6 +18,22 @@ import os
 from reportlab.lib.units import mm
 
 logger = logging.getLogger(__name__)
+
+#: Hinweis im Versandschritt (Audit MIET-03). Die Kündigung braucht die Schriftform (Art. 266l Abs. 1 OR); eine
+#: Kündigung, die Art. 266l–266n nicht entspricht, ist nichtig (Art. 266o OR). Art. 269d Abs. 4 OR (mechanisch
+#: nachgebildete Unterschrift) gilt nur für Mietzinserhöhungen und andere einseitige Vertragsänderungen, nicht für
+#: die Kündigung. Darum setzt die Anwendung bei der Vermieterkündigung KEIN Unterschriftsbild ein.
+UNTERSCHRIFT_HINWEIS_KUENDIGUNG = gettext_lazy(
+    'Vor dem Versand eigenhändig unterschreiben: Die Kündigung braucht die Schriftform (Art. 266l Abs. 1 OR), '
+    'sonst ist sie nichtig (Art. 266o OR). Die Anwendung setzt kein Unterschriftsbild ein — eine mechanisch '
+    'nachgebildete Unterschrift ist bei der Kündigung nicht zugelassen (Art. 269d Abs. 4 OR gilt nur für '
+    'Mietzinserhöhungen). Statt der Unterschrift von Hand genügt eine qualifizierte elektronische Signatur '
+    '(Art. 14 Abs. 2bis OR).')
+#: Dasselbe für die Fristansetzung mit Kündigungsandrohung (Art. 257d Abs. 1 OR: «schriftlich»).
+UNTERSCHRIFT_HINWEIS_257D = gettext_lazy(
+    'Vor dem Versand eigenhändig unterschreiben: Die Fristansetzung mit Kündigungsandrohung braucht die '
+    'Schriftform (Art. 257d Abs. 1 OR; Art. 13 und 14 OR). Die Anwendung setzt kein Unterschriftsbild ein — '
+    'das PDF lässt die Unterschriftslinie frei.')
 
 
 

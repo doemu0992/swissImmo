@@ -1781,6 +1781,8 @@ def _formulare_prozesse(v, user=None):
              'url': f'/neu/vertraege/{v.id}/zahlungsvereinbarung/', 'sub': 'Ratenplan für einen Rückstand'},
             {'titel': 'Herabsetzungsbegehren (Art. 270a)', 'icon': 'trend',
              'url': f'/neu/vertraege/{v.id}/herabsetzung/', 'sub': 'Begehren des Mieters, 30 Tage Antwortfrist'},
+            {'titel': 'Verfahren (Art. 271a)', 'icon': 'recht',
+             'url': f'/neu/vertraege/{v.id}/verfahren/', 'sub': 'Schlichtung / Gericht: Kündigungssperre'},
             {'titel': 'Nutzungsentschädigung', 'icon': 'geld',
              'url': f'/neu/vertraege/{v.id}/nutzungsentschaedigung/', 'verfuegbar': v.ist_beendet,
              'sub': 'Mieter nach Vertragsende nicht ausgezogen'},
@@ -2140,6 +2142,7 @@ def fw_schlussabrechnung(request, vertrag_id):
                             vertrag=v, liegenschaft=lg_s, einheit=v.einheit,
                             titel="Schlussabrechnung (Nachzahlung)", datum=dat_s,
                             faellig_am=dat_s + _timedelta(days=30), betrag=neu_saldo, status='offen',
+                            forderungsart='sonstige',     # Schäden und Saldo gemischt: nicht Art. 257d
                             mwst_satz=(daten.get('mwst_satz') or Decimal('0.0')) if mwst_neu > 0 else Decimal('0.0'),
                             mwst_betrag=mwst_neu if mwst_neu > 0 else Decimal('0.00'))
                         if netto_neu != 0:

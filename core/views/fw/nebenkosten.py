@@ -204,6 +204,7 @@ def fw_nebenkosten_verbuchen(request, pk):
                     titel=f"NK-Abrechnung Nachzahlung - {p.bezeichnung}",
                     beschreibung=f"Periode {p.start_datum:%d.%m.%Y}–{p.ende_datum:%d.%m.%Y}",
                     betrag=saldo + mwst, faellig_am=heute + timezone.timedelta(days=30), konto_haben=konto_nk,
+                    forderungsart='miete',     # Nebenkosten (Art. 257d OR)
                     mwst_satz=satz if mwst else Decimal('0.0'), mwst_betrag=mwst)
                 buche("1100", "3020", saldo, f"NK-Nachzahlung {v.mieter} - {p.bezeichnung}",
                       datum=heute, liegenschaft=v.einheit.liegenschaft, debitor=rech, user=request.user)

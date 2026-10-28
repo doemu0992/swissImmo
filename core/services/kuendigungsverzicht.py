@@ -14,6 +14,20 @@ DIE UNTERSCHEIDUNG STEHT HIER, AN EINER STELLE
   Der Zahlungsverzug (Art. 257d OR) läuft über denselben Weg mit `ausserordentlich_art='257d'`.
 
 Das Datum ist inklusive: Ein Vertragsende genau am Datum des Verzichts ist zulässig, ein Tag davor nicht.
+
+BEFRISTET OHNE KÜNDIGUNGSRECHT (Audit MIET-07)
+
+Ein befristeter Vertrag endet ohne Kündigung mit Ablauf der Dauer (Art. 266 Abs. 1 OR). Eine ordentliche
+Kündigung gibt es dort nur, wenn der Vertrag sie ausdrücklich vorsieht — im Bestand das Feld
+`Mietvertrag.erstmals_kuendbar_auf`. Ohne dieses Datum ist eine ordentliche Kündigung, gleich von wem, rechtlich
+wirkungslos; erfasst, würde sie das Vertragsende auf einen Termin verschieben, den es nicht gibt (Sollstellung und
+Leerstand folgen ihm). Darum:
+
+* Der Vermieter kann sie nicht erfassen (Art. 266 Abs. 1 OR).
+* Der Mieter kann nur vorzeitig zurückgeben (Art. 264 OR): Er wird frei, wenn ein zumutbarer, zahlungsfähiger
+  Ersatzmieter den Vertrag zu gleichen Bedingungen übernimmt, sonst schuldet er den Mietzins bis zum Ende der
+  Vertragsdauer. Das ist keine Kündigung; `termin` ist dort das vereinbarte Vertragsende.
+* Ausserordentliche Kündigungen (257d, 257f, 266g …) bleiben möglich, wie schon beim Kündigungsverzicht.
 """
 from datetime import date
 
@@ -63,3 +77,29 @@ def sperre_text(vertrag, wirkung, *, absender, ausserordentlich, ende=None):
         'VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht '
         'erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben '
         'möglich.') % daten
+
+
+def befristet_ohne_kuendigungsrecht(vertrag, ende=None):
+    """True bei einem befristeten Vertrag, der keine ordentliche Kündigung vorsieht (`erstmals_kuendbar_auf`
+    leer). `ende` überschreibt `vertrag.ende`."""
+    ende = vertrag.ende if ende is None else ende
+    return bool(vertrag.ist_befristet and ende and not vertrag.erstmals_kuendbar_auf)
+
+
+def befristung_sperre_text(vertrag, *, ausserordentlich, vorzeitige_rueckgabe, ende=None):
+    """Meldung, wenn eine ORDENTLICHE Kündigung eines befristeten Vertrags ohne Kündigungsrecht erfasst werden
+    soll — sonst ''.
+
+    `vorzeitige_rueckgabe`: Der Mieter gibt vor dem Vertragsende zurück (Art. 264 OR); das ist erfassbar, sie
+    ist aber keine Kündigung und lässt das Vertragsende, wie es ist."""
+    if ausserordentlich or vorzeitige_rueckgabe or not befristet_ohne_kuendigungsrecht(vertrag, ende):
+        return ''
+    ende = vertrag.ende if ende is None else ende
+    return gettext(
+        'Der Vertrag ist befristet und endet am %(datum)s ohne Kündigung (Art. 266 OR). Eine ordentliche '
+        'Kündigung sieht er nicht vor (kein «Erstmals kündbar auf»), sie wäre wirkungslos und kann nicht erfasst '
+        'werden. Zieht der Mieter früher aus, das gewünschte Ende vor dem %(datum)s angeben (vorzeitige Rückgabe, '
+        'Art. 264 OR); ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich. '
+        'Einigen sich die Parteien auf ein früheres Ende, ist das ein Aufhebungsvertrag: Das Vertragsende unter '
+        '«Vertrag bearbeiten» anpassen.'
+    ) % {'datum': ende.strftime('%d.%m.%Y')}

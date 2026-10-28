@@ -36,6 +36,21 @@ from portfolio.models import Liegenschaft, Einheit, Wartungsfrist
 from rentals.models import Mietvertrag
 
 
+def werktag_vor(tage=1, ab=None):
+    """Der jüngste Werktag, der mindestens `tage` Tage vor `ab` (Standard: heute) liegt.
+
+    Ein Fristende, das auf einen Samstag, Sonntag oder Feiertag fällt, rückt auf den nächsten Werktag (Art. 78 OR,
+    `core/services/fristen.py`). Ein Test, der «die Frist ist gestern abgelaufen» braucht, nimmt darum diesen Tag und
+    nicht `heute - 1`: Sonst ist er an jedem Montag und Sonntag rot (die Frist läuft dann noch)."""
+    from datetime import timedelta as _td
+
+    from core.services.fristen import ist_werktag
+    tag = (ab or timezone.localdate()) - _td(days=tage)
+    while not ist_werktag(tag):
+        tag -= _td(days=1)
+    return tag
+
+
 def vor_tagen(tage, stunde=12):
     """Der Zeitpunkt «vor `tage` Kalendertagen» als Zürcher Uhrzeit (Standard: Mittag).
 

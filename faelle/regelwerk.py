@@ -365,10 +365,12 @@ def zahlungsfrist(zugang, gekuendigt_am=None, mindest_tage=None,
     Dieselbe Unterscheidung wie beim Kündigungstermin — sie ist der
     häufigste Fehler in beiden Fällen.
 
-    Diese Funktion bekommt den Zugang bereits als Datum. Wer vom Versandtag
-    aus rechnet, schlägt vorher den Zustellpuffer auf (Postweg plus
-    siebentägige Abholfrist beim Einschreiben); `fw_verzug_257d` macht das
-    mit `ZUSTELL_PUFFER = 7`.
+    Diese Funktion bekommt den Zugang bereits als Datum. Zugang ist bei einem
+    Einschreiben der Tag der tatsächlichen Abholung, bei Nichtabholung der
+    letzte Tag der siebentägigen Abholfrist (BGE 119 II 147 E. 2) — nicht die
+    Abholeinladung. Wer vom Versandtag aus rechnet, nimmt den spätestmöglichen
+    Zugang (Postweg plus Abholfrist): `core.services.zahlungsverzug.
+    provisorisches_fristende`, das `fw_verzug_257d` benutzt (Audit MIET-01).
 
     DER TAG DES ZUGANGS ZAEHLT NICHT MIT
 

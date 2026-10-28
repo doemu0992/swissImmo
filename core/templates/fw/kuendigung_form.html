@@ -52,6 +52,18 @@
                 <input type="date" name="zugang_am" id="s_zugang" max="{{ heute_iso }}" onchange="berechne()" class="fw-feld">
                 <p class="fw-hilfe">{% blocktrans with tage=zustell_puffer %}Leer: Versand + {{ tage }} Tage (Postweg und Abholfrist).{% endblocktrans %}</p></div>
         </div>
+        {% comment %} Art. 271a OR (Audit MIET-06): Kündigung des Vermieters während eines Verfahrens um die Mietsache und
+           drei Jahre danach ist anfechtbar. Der Server hält an; die Ausnahmen des Abs. 3 bestätigt der Erfasser. {% endcomment %}
+        {% if schutz_vorschau or request.GET.sperrfrist %}
+        <div class="fw-hinweis warn rounded-lg hidden" data-nur="vermieter" id="sperrfrist-box">
+            <span class="fw-hi">{% zeichen 'recht' %}</span>
+            <div class="fw-ht"><b>{% trans "Sperrfrist nach Art. 271a OR" %}</b>
+                {% if schutz_vorschau %}<ul class="list-disc pl-5 space-y-0.5">{% for sp in schutz_vorschau %}<li>{{ sp.text }}</li>{% endfor %}</ul>
+                <p class="fw-hilfe">{{ schutz_ausnahmen }}</p>{% endif %}
+                <label class="fw-haekchen mt-1"><input type="checkbox" name="sperrfrist_ausnahme" class="fw-akzent"> {% trans "Ausnahme nach Art. 271a Abs. 3 OR liegt vor" %}</label>
+            </div>
+        </div>
+        {% endif %}
         {% if v.familienwohnung %}
         <label class="fw-haekchen" data-nur="mieter">
             <input type="checkbox" name="zustimmung_ehegatte" id="s_zustimmung" class="fw-akzent" onchange="kuendigungCheck()"> {% trans "Ausdrückliche Zustimmung des Ehegatten / eingetragenen Partners liegt vor" %} {% hilfe 'familienwohnung' %}
@@ -287,7 +299,9 @@ function kuendigungCheck(){
     // Vermieterkündigung geschützter Räume → Formpflicht + Anfechtungs-/Erstreckungsrechte
     if (absender === 'vermieter' && IST_GESCHUETZT) {
         warns.push('Vermieterkündigung von Wohn-/Geschäftsräumen: nur mit amtlich genehmigtem Formular gültig ' +
-                   '(Art. 266l OR). Der Mieter kann innert 30 Tagen anfechten (Art. 271/273) und eine ' +
+                   '(Art. 266l OR) und nur, wenn sie eigenhändig unterschrieben ist (Schriftform, Art. 266l Abs. 1 OR, ' +
+                   'sonst nichtig, Art. 266o OR) — das PDF enthält kein Unterschriftsbild. ' +
+                   'Der Mieter kann innert 30 Tagen anfechten (Art. 271/273) und eine ' +
                    'Erstreckung verlangen (Art. 272).');
     }
     var box = document.getElementById('k-warn'), list = document.getElementById('k-warn-list');

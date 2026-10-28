@@ -252,6 +252,8 @@ UEBERSETZT = (
     'fw/schluessel_ausgabe.html',
     'fw/schluessel_faellig.html',
     'fw/schluessel_ruecknahme.html',
+    # Etappe 1 Recht (28.10.2026): Verfahren nach Art. 271a OR — ausgezeichnet und in fr/it/en übersetzt.
+    'fw/verfahren.html',
 )
 
 #: Eine Stichprobe je Vorlage, mit der erwarteten Fassung je Sprache.

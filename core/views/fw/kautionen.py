@@ -236,7 +236,8 @@ def fw_kaution_aktion(request, vertrag_id):
                         rech_e = DebitorenRechnung.objects.create(
                             vertrag=v, liegenschaft=lg_k, einheit=v.einheit,
                             betrag=abzug, datum=dat_k, faellig_am=dat_k + _timedelta(days=30),
-                            status='offen', titel="Schadenersatz (Kautionsversicherung)",
+                            status='offen', forderungsart='sonstige',
+                            titel="Schadenersatz (Kautionsversicherung)",
                             beschreibung=v.kautions_abzug_grund or "Einbehalt aus Kaution")
                         _buche("1100", "3600", abzug, f"Schadenersatz {v.mieter}",
                                datum=dat_k, liegenschaft=lg_k, debitor=rech_e, user=request.user)

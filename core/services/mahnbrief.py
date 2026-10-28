@@ -117,6 +117,10 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
         from core.services.zahlungsverzug import eigentuemer_als_mieter
         if eigentuemer_als_mieter(vertrag) is not None:
             letzte_stufe = False
+        # Art. 257d OR droht nur bei fälligen Mietzinsen und Nebenkosten an. Eine Weiterverrechnung, ein Selbstbehalt
+        # oder eine Mahngebühr bekommt auch auf der letzten Stufe ein gewöhnliches Mahnschreiben (Audit MIET-02).
+        if rechnung is not None and getattr(rechnung, 'forderungsart', 'miete') != 'miete':
+            letzte_stufe = False
     if letzte_stufe:
         from core.views.email_views import generate_mahnung_combined_pdf_bytes
         # Die Mahngebühr der Stufe steht im Brief und hat einen eigenen Einzahlungsschein;

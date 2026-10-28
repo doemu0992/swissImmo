@@ -1,0 +1,85 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% blocktrans with name=v.mieter.display_name %}Verfahren — {{ name }}{% endblocktrans %}{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/vertraege/{{ v.id }}/">{{ v.mieter.display_name }}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Verfahren" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Mietrechtliche Verfahren (Art. 271a OR)" %}</h1>
+        <p>{{ v.einheit.bezeichnung }}, {{ v.einheit.liegenschaft.strasse }}</p>
+    </div>
+</div>
+
+<div class="fw-card fw-rumpf space-y-4 max-w-2xl">
+    <div class="fw-hinweis info rounded-lg"><span class="fw-hi">{% zeichen 'recht' %}</span>
+        <div class="fw-ht">{% blocktrans trimmed %}Eine Kündigung des Vermieters ist anfechtbar, wenn sie während eines Schlichtungs- oder Gerichtsverfahrens um die Mietsache ausgesprochen wird (Art. 271a Abs. 1 lit. d OR) oder vor Ablauf von drei Jahren nach einem Verfahren, in dem der Vermieter unterlegen ist, die Klage zurückgezogen, auf die Anrufung des Richters verzichtet oder sich verglichen hat (lit. e). Dasselbe gilt für eine schriftlich nachgewiesene Einigung ausserhalb eines Verfahrens (Abs. 2). Die Erfassung einer Vermieterkündigung hält in diesen Zeiten an.{% endblocktrans %}</div>
+    </div>
+
+    {% if sperren %}
+    <div class="fw-hinweis warn rounded-lg"><span class="fw-hi">{% zeichen 'hinweis' %}</span>
+        <div class="fw-ht"><b>{% trans "Heute gesperrt" %}</b>
+            <ul class="list-disc pl-5 space-y-0.5">{% for sp in sperren %}<li>{{ sp.text }}</li>{% endfor %}</ul>
+            <p class="fw-hilfe">{{ ausnahmen }}</p></div>
+    </div>
+    {% endif %}
+
+    <h2>{% trans "Erfasste Verfahren" %}</h2>
+    {% for e in verfahren %}
+    <div class="fw-card fw-rumpf space-y-2">
+        <p><b>{{ e.v.get_art_display }}</b> · {{ e.v.get_gegenstand_display }}<br>
+        <span class="fw-klein">{% blocktrans with d=e.v.eingeleitet_am|date:"d.m.Y" %}Eingeleitet am {{ d }}{% endblocktrans %}{% if e.v.aktenzeichen %} · {{ e.v.aktenzeichen }}{% endif %}</span></p>
+        {% if e.haengig %}
+        <span class="fw-chip fw-warn">{% trans "hängig" %}</span>
+        <form method="post" class="space-y-2">
+            {% csrf_token %}
+            <input type="hidden" name="aktion" value="abschluss">
+            <input type="hidden" name="verfahren" value="{{ e.v.id }}">
+            <div class="fw-formular">
+                <div class="fw-feldblock"><label for="vf_ausgang_{{ e.v.id }}" class="fw-label">{% trans "Ausgang" %}</label>
+                    <select id="vf_ausgang_{{ e.v.id }}" name="ausgang" class="fw-feld">
+                        {% for wert, text in ausgaenge %}<option value="{{ wert }}">{{ text }}</option>{% endfor %}
+                    </select></div>
+                <div class="fw-feldblock"><label for="vf_ende_{{ e.v.id }}" class="fw-label">{% trans "Abgeschlossen am" %}</label>
+                    <input id="vf_ende_{{ e.v.id }}" type="date" name="abgeschlossen_am" value="{{ heute_iso }}" min="{{ e.v.eingeleitet_am|date:'Y-m-d' }}" max="{{ heute_iso }}" class="fw-feld"></div>
+            </div>
+            <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %} {% trans "Verfahren abschliessen" %}</button>
+        </form>
+        {% else %}
+        <p>{{ e.v.get_ausgang_display }} · {% blocktrans with d=e.v.abgeschlossen_am|date:"d.m.Y" %}abgeschlossen am {{ d }}{% endblocktrans %}</p>
+        {% if e.bis %}<p class="fw-klein fw-warnton">{% blocktrans with d=e.bis|date:"d.m.Y" %}Kündigung des Vermieters anfechtbar bis und mit {{ d }} (Art. 271a Abs. 1 lit. e OR).{% endblocktrans %}</p>{% endif %}
+        {% endif %}
+        {% if e.v.bemerkung %}<p class="fw-klein">{{ e.v.bemerkung }}</p>{% endif %}
+    </div>
+    {% empty %}
+    <p class="fw-hilfe">{% trans "Zu diesem Vertrag ist kein Verfahren erfasst. Eine angefochtene Mietzinsanpassung zählt automatisch als laufendes Schlichtungsverfahren." %}</p>
+    {% endfor %}
+
+    <h2>{% trans "Verfahren oder Einigung erfassen" %}</h2>
+    <form method="post" class="space-y-2">
+        {% csrf_token %}
+        <input type="hidden" name="aktion" value="neu">
+        <div class="fw-formular">
+            <div class="fw-feldblock"><label for="vf_art" class="fw-label">{% trans "Art" %}</label>
+                <select id="vf_art" name="art" class="fw-feld">
+                    {% for wert, text in arten %}<option value="{{ wert }}">{{ text }}</option>{% endfor %}
+                </select></div>
+            <div class="fw-feldblock"><label for="vf_gegenstand" class="fw-label">{% trans "Gegenstand" %}</label>
+                <select id="vf_gegenstand" name="gegenstand" class="fw-feld">
+                    {% for wert, text in gegenstaende %}<option value="{{ wert }}">{{ text }}</option>{% endfor %}
+                </select></div>
+            <div class="fw-feldblock"><label for="vf_beginn" class="fw-label">{% trans "Eingeleitet am (bei einer Einigung: Datum der Einigung)" %}</label>
+                <input id="vf_beginn" type="date" name="eingeleitet_am" value="{{ heute_iso }}" max="{{ heute_iso }}" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="vf_az" class="fw-label">{% trans "Aktenzeichen / Behörde" %}</label>
+                <input id="vf_az" name="aktenzeichen" maxlength="120" class="fw-feld"></div>
+            <div class="fw-feldblock breit"><label for="vf_bem" class="fw-label">{% trans "Bemerkung" %}</label>
+                <input id="vf_bem" name="bemerkung" maxlength="1000" class="fw-feld"></div>
+        </div>
+        <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %} {% trans "Erfassen" %}</button>
+    </form>
+</div>
+{% endblock %}

@@ -92,10 +92,45 @@ def generate_single_pdf_bytes(periode, row, verwaltung, liegenschaft, vertrag):
     return buffer.getvalue()
 
 
+def _aufstellung_zeichnen(c, positionen, betrag_str, verwaltung, vertrag):
+    """Beilage zur 257d-Fristansetzung: jede verzugsbegründende Forderung mit Bezeichnung, Fälligkeit und
+    offenem Betrag, darunter das Total. Beginnt eine neue Seite und läuft bei Bedarf auf weitere Seiten."""
+    def kopf(fortsetzung):
+        c.showPage()
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(25*mm, 270*mm, "Aufstellung der ausstehenden Beträge" + (" (Fortsetzung)" if fortsetzung else ""))
+        c.setFont("Helvetica", 9)
+        c.drawString(25*mm, 264*mm, f"Beilage zur Zahlungsaufforderung nach Art. 257d OR – {vertrag.einheit.bezeichnung}")
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(25*mm, 254*mm, "Bezeichnung")
+        c.drawString(115*mm, 254*mm, "Fällig am")
+        c.drawRightString(185*mm, 254*mm, "Betrag CHF")
+        c.line(25*mm, 252*mm, 185*mm, 252*mm)
+        return 246*mm
+
+    y = kopf(False)
+    c.setFont("Helvetica", 10)
+    for bez, faellig, betrag in positionen:
+        if y < 30*mm:
+            y = kopf(True)
+            c.setFont("Helvetica", 10)
+        c.drawString(25*mm, y, str(bez)[:60])
+        c.drawString(115*mm, y, f"{faellig:%d.%m.%Y}")
+        c.drawRightString(185*mm, y, f"{betrag:.2f}")
+        y -= 6*mm
+    if y < 40*mm:
+        y = kopf(True)
+    c.line(25*mm, y + 3*mm, 185*mm, y + 3*mm)
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(25*mm, y - 3*mm, "Total ausstehend")
+    c.drawRightString(185*mm, y - 3*mm, f"{betrag_str}")
+
+
 # 🔥 VERBESSERT: Hilfsfunktion für das kombinierte PDF (Brief S1 + QR S2)
 def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_str, heute,
                                         empfaenger=None, reference=None,
-                                        gebuehr=None, gebuehr_reference=None):
+                                        gebuehr=None, gebuehr_reference=None,
+                                        positionen=None):
     """257d-Zahlungsaufforderung mit Kuendigungsandrohung (+ QR-Rechnung).
 
     `gebuehr` (> 0): Die Mahngebühr der Stufe. Sie steht als eigener Absatz im Brief und
@@ -103,6 +138,16 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
     der Gebührenforderung). Sie ist bewusst NICHT im Betrag der Fristansetzung und nicht auf
     dem ersten Einzahlungsschein: Art. 257d OR nennt nur Mietzinse und Nebenkosten
     (siehe core/services/zahlungsverzug.py).
+    positionen (optional): [(Bezeichnung, fällig am, Betrag), …] — jede verzugsbegründende Forderung
+    einzeln mit Monat und Betrag (Audit MIET-02). Bis zu drei Positionen stehen im Brieftext, mehr auf einer
+    Beilage («Aufstellung der ausstehenden Beträge») vor dem Einzahlungsschein. Ohne Angabe steht wie bisher
+    nur `monat_str`/`betrag_str` im Text.
+
+    UNTERSCHRIFT (Audit MIET-03): Das Schreiben trägt KEIN Unterschriftsbild. Die Fristansetzung mit
+    Kündigungsandrohung verlangt Schriftlichkeit (Art. 257d Abs. 1 OR, Art. 13/14 OR: eigenhändige
+    Unterschrift); die mechanische Nachbildung nach Art. 14 Abs. 2 OR genügt nur, wo sie im Verkehr üblich
+    ist, und Art. 269d Abs. 4 OR gilt nur für Mietzinserhöhungen. Das PDF lässt die Linie darum frei und
+    sagt es: «Eigenhändige Unterschrift». Ausgedruckt wird es vor dem Versand von Hand unterschrieben.
     empfaenger (optional): {firma, name, strasse, ort_line, nachname, anrede} —
     ueberschreibt den Empfaenger fuer separat adressierte Kopien (Art. 266n OR:
     Familienwohnung/Mitmieter). Ohne Override: vertrag.mieter."""
@@ -154,9 +199,24 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
     elif r_anrede == "Frau": salutation = f"Sehr geehrte Frau {r_nachn},"
     c.drawString(left_margin, text_y, salutation); text_y -= 10*mm
 
+    positionen = list(positionen or [])
+    if len(positionen) <= 1:
+        einleitung = [
+            f"Bei der Kontrolle unserer Mietzinseingänge mussten wir leider feststellen, dass für den",
+            f"Monat {monat_str} noch ein Betrag von CHF {betrag_str} ausstehend ist.", ""]
+    elif len(positionen) <= 3:
+        einleitung = [
+            "Bei der Kontrolle unserer Mietzinseingänge mussten wir leider feststellen, dass folgende",
+            "fällige Mietzinse und Nebenkosten ausstehend sind:",
+            *[f"   {bez}, fällig am {faellig:%d.%m.%Y}: CHF {betrag:.2f}" for bez, faellig, betrag in positionen],
+            f"   Total: CHF {betrag_str}", ""]
+    else:
+        einleitung = [
+            "Bei der Kontrolle unserer Mietzinseingänge mussten wir leider feststellen, dass mehrere",
+            f"fällige Mietzinse und Nebenkosten ausstehend sind, insgesamt CHF {betrag_str}.",
+            "Die einzelnen Monate und Beträge stehen in der beiliegenden Aufstellung.", ""]
     lines = [
-        f"Bei der Kontrolle unserer Mietzinseingänge mussten wir leider feststellen, dass für den",
-        f"Monat {monat_str} noch ein Betrag von CHF {betrag_str} ausstehend ist.", "",
+        *einleitung,
         "Gestützt auf Art. 257d des Schweizerischen Obligationenrechts (OR) setzen wir Ihnen",
         "hiermit eine formelle Zahlungsfrist von", "",
         "30 TAGEN", "",
@@ -170,24 +230,24 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
         "Sollte sich Ihre Zahlung mit diesem Schreiben gekreuzt haben, bitten wir Sie,",
         "dieses Schreiben als gegenstandslos zu betrachten.", "",
         "Freundliche Grüsse", "", "", "__________________________",
+        "Eigenhändige Unterschrift",
         f"{verwaltung.firma if verwaltung else 'Die Vermieterschaft'}"
     ]
 
-    sig_y = None
+    # Verdichten, wenn die Positionen den Platz knapp machen (Aufstand bis ins Blattende vermeiden).
+    zeilenhoehe = 5.5 * mm if len(lines) <= 27 else 4.6 * mm
     for line in lines:
         if "30 TAGEN" in line or "KÜNDIGUNGSANDROHUNG" in line: c.setFont("Helvetica-Bold", 11)
+        elif line == "Eigenhändige Unterschrift": c.setFont("Helvetica-Oblique", 8)
         else: c.setFont("Helvetica", 11)
-        if line.startswith("____"):
-            sig_y = text_y            # Höhe der Unterschriftslinie merken
-        c.drawString(left_margin, text_y, line); text_y -= 5.5*mm
+        c.drawString(left_margin, text_y, line); text_y -= zeilenhoehe
 
-    # Digitale Unterschrift über die Linie setzen. Ein Schreiben, das per
-    # Einschreiben rausgeht und eine Kündigung androht, gehört unterschrieben.
-    if sig_y is not None:
-        from core.services.unterschrift import unterschrift_zeichnen
-        lg = vertrag.einheit.liegenschaft if vertrag.einheit_id else None
-        unterschrift_zeichnen(c, left_margin, sig_y,
-                              verwaltung, getattr(lg, 'eigentuemer', None))
+    # Kein Unterschriftsbild: Ein Faksimile macht aus dem Ausdruck ein Schreiben, das unterschrieben aussieht,
+    # es aber nicht ist (Art. 14 OR). Die Linie bleibt frei für die eigenhändige Unterschrift.
+
+    # --- BEILAGE: AUFSTELLUNG DER AUSSTEHENDEN BETRÄGE ---
+    if len(positionen) > 3:
+        _aufstellung_zeichnen(c, positionen, betrag_str, verwaltung, vertrag)
 
     # --- SEITE 2: DIE QR-RECHNUNG ---
     # QR-Einzahlungsschein: IBAN der Liegenschaft, sonst die der Verwaltung

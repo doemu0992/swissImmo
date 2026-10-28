@@ -28,6 +28,26 @@ erkennbar an `stammrechnung`). Art. 257d nennt nur Mietzinse und Nebenkosten;
 eine Frist, die wegen einer offenen Mahngebühr von CHF 20 aktiv bliebe,
 schlüge eine Kündigung vor, die nicht zulässig ist.
 
+WANN DIE FRIST ZU LAUFEN BEGINNT (Audit MIET-01)
+
+Die Fristansetzung ist eine empfangsbedürftige Willenserklärung: Die Frist läuft ab **Zugang**, nicht ab Versand
+und nicht ab der Abholeinladung. Wird das Einschreiben nicht zugestellt, sondern auf der Post hinterlegt
+(Abholeinladung), gilt (BGE 119 II 147 E. 2):
+
+* holt der Mieter es ab, ist der Zugang der Tag der **tatsächlichen Abholung**;
+* holt er es nicht ab, wird der Zugang auf den **letzten Tag der siebentägigen Abholfrist** fingiert
+  (Tag der Abholeinladung + 7).
+
+Der Tag des Zugangs zählt nicht mit (Art. 77 Abs. 1 Ziff. 1 OR): Fristende = Zugang + 30 Tage. Bis der Zugang
+bestätigt ist, ist das Fristende **vorläufig** und rechnet vom ungünstigsten Fall: Versand + 1 Tag Postweg +
+7 Tage Abholfrist + 30 Tage (`provisorisches_fristende`). Die Kündigungssperre (`kuendigung_sperre`) gilt bis zu
+diesem Tag, auch wenn nie ein Zugang bestätigt wurde. Eine zu früh ausgesprochene Kündigung ist nach dem
+Bundesgericht anfechtbar (BGE 119 II 147 E. 4), nicht ohne Weiteres wirkungslos — gerade deshalb darf die
+Anwendung sie nicht vorschlagen.
+
+Fällt das Fristende auf einen Samstag, Sonntag oder Feiertag, ist der nächste Werktag der letzte Tag
+(Art. 78 OR, `core/services/fristen.py`). Wer dann zahlt, zahlt rechtzeitig.
+
 RECHTZEITIG HEISST: GUTSCHRIFT BIS FRISTENDE
 
 Geldschulden sind Bringschulden; massgebend ist der Eingang beim Vermieter
@@ -40,11 +60,15 @@ einem Vermerk versehen: Ob noch gekündigt wird, ist ein Entscheid der
 Verwaltung, kein Automatismus.
 """
 import logging
+from datetime import timedelta
 from decimal import Decimal
 
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.utils import timezone
+
+from core.services.fristen import fristende as _fristende
+from core.services.fristen import naechster_werktag
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +82,13 @@ FALLART_SCHLUESSEL = 'zahlungsverzug'
 SCHRITT_FRISTANSETZUNG = 'Zahlungsfrist mit Kündigungsandrohung'
 SCHRITT_UEBERWACHEN = 'Fristablauf überwachen'
 
+#: Zahlungsfrist in Tagen ab Zugang (Art. 257d Abs. 1 OR: bei Wohn- und Geschäftsräumen mindestens 30).
+FRIST_TAGE = 30
+#: Geschätzter Postweg bis zum Zustellversuch — nur für das VORLÄUFIGE Fristende.
+POSTWEG_TAGE = 1
+#: Abholfrist eines Einschreibens (BGE 119 II 147 E. 2): Am letzten Tag wird der Zugang fingiert.
+ABHOLFRIST_TAGE = 7
+
 _OFFENE_STATUS = ('offen', 'teilbezahlt', 'abgeschrieben')
 VERMERK_LATE = 'Nach Fristablauf bezahlt'
 #: Steht in jeder durch Zahlung erledigten Frist — daran erkennt
@@ -68,6 +99,46 @@ VERMERK_GEWAHRT = ('Eine Kündigung nach Art. 257d Abs. 2 OR gestützt auf '
 
 def quelle_fuer(vertrag):
     return f'{QUELLE_PRAEFIX}{vertrag.pk}'
+
+
+def provisorisches_fristende(versand_am, frist_tage=FRIST_TAGE):
+    """Vorläufiges Fristende eines versandten Einschreibens, solange der Zugang nicht bestätigt ist:
+    Versand + Postweg + Abholfrist + Zahlungsfrist — der späteste Zugang, mit dem zu rechnen ist.
+    Nie zu kurz (Audit MIET-01)."""
+    return _fristende(versand_am, POSTWEG_TAGE + ABHOLFRIST_TAGE + (frist_tage or FRIST_TAGE))
+
+
+def fiktiver_zugang(abholeinladung_am):
+    """Zugang eines NICHT abgeholten Einschreibens: der letzte Tag der siebentägigen Abholfrist
+    (Tag der Abholeinladung + 7). Fällt er auf einen Nicht-Werktag, gilt der nächste Werktag
+    (konservativ: der Zugang liegt dann später, die Frist endet später)."""
+    return naechster_werktag(abholeinladung_am + timedelta(days=ABHOLFRIST_TAGE))
+
+
+def definitives_fristende(zugang, frist_tage=FRIST_TAGE):
+    """Fristende ab bestätigtem Zugang: Zugang + Frist, ein Samstag, Sonntag oder Feiertag rückt auf den
+    nächsten Werktag (Art. 78 OR)."""
+    return _fristende(zugang, frist_tage or FRIST_TAGE)
+
+
+def zugang_unbestaetigt(pendenz):
+    """Die Fristansetzung ist als Einschreiben erfasst, der Zugang aber nicht bestätigt."""
+    return pendenz.zugang_am is None and bool(pendenz.versand_am or pendenz.sendungsnummer)
+
+
+def fristende_von(pendenz):
+    """Das WIRKSAME letzte Tag der Zahlungsfrist dieser Pendenz — oder None.
+
+    · Zugang bestätigt: gespeichertes Fristende.
+    · Zugang unbestätigt mit Versanddatum: mindestens das vorläufige Fristende. Das gilt auch für Fristen,
+      die vor der Korrektur mit einem kürzeren Puffer angelegt wurden.
+    · In jedem Fall auf den nächsten Werktag gerückt (Art. 78 OR) — auch bei Altdaten."""
+    ende = pendenz.faellig_am
+    if ende is None:
+        return None
+    if pendenz.zugang_am is None and pendenz.versand_am:
+        ende = max(ende, provisorisches_fristende(pendenz.versand_am, pendenz.frist_tage))
+    return naechster_werktag(ende)
 
 
 def ist_257d_frist(pendenz):
@@ -96,14 +167,25 @@ def _stichtag(pendenz):
     return timezone.localdate()
 
 
+def verzugsforderungen(vertrag, stichtag):
+    """Die Forderungen, die einen Verzug nach Art. 257d OR begründen können: nicht stornierte, bis zum
+    `stichtag` fällige **Mietzinse und Nebenkosten** des Vertrags (`forderungsart='miete'`).
+
+    Nicht dazu gehören Weiterverrechnungen, Selbstbehalt, Schlussabrechnung, Schadenersatz, Betreibungskosten
+    und abgeleitete Forderungen (Mahngebühr, Verzugszins — `stammrechnung`). Art. 257d Abs. 1 nennt «fällige
+    Mietzinse oder Nebenkosten», und eine Androhung, die mehr verlangt, ist angreifbar (Audit MIET-02).
+    Die Reihenfolge ist die der Fälligkeit, damit der Brief die Monate geordnet nennt."""
+    rechnungen = [r for r in (vertrag.debitoren_rechnungen
+                              .exclude(status='storniert')
+                              .filter(stammrechnung__isnull=True, forderungsart='miete')
+                              .prefetch_related('zahlungseingaenge'))
+                  if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) <= stichtag]
+    return sorted(rechnungen, key=lambda r: (r.faellig_am or r.datum, r.pk))
+
+
 def gedeckte_forderungen(pendenz):
     """Die Forderungen, deren Zahlung die Frist wahrt (siehe Modulkopf)."""
-    stichtag = _stichtag(pendenz)
-    return [r for r in (pendenz.vertrag.debitoren_rechnungen
-                        .exclude(status='storniert')
-                        .filter(stammrechnung__isnull=True)
-                        .prefetch_related('zahlungseingaenge'))
-            if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) <= stichtag]
+    return verzugsforderungen(pendenz.vertrag, _stichtag(pendenz))
 
 
 def rueckstand(pendenz):
@@ -245,12 +327,15 @@ def pruefe_nach_zahlung(vertrag):
             if offen > 0:
                 continue
             bezahlt_am = _zahltag(forderungen)
-            if p.faellig_am and bezahlt_am > p.faellig_am:
+            # Das letzte Tag der Frist ist ein Werktag (Art. 78 OR): Eine Zahlung am Montag nach einem
+            # Sonntags-Fristende ist rechtzeitig.
+            ende = fristende_von(p)
+            if ende and bezahlt_am > ende:
                 # Kündigungsrecht besteht weiter — nur vermerken, einmal.
                 if VERMERK_LATE not in (p.beschreibung or ''):
                     p.beschreibung = (
                         f'{VERMERK_LATE} ({bezahlt_am:%d.%m.%Y}, Frist bis '
-                        f'{p.faellig_am:%d.%m.%Y}). Das Kündigungsrecht nach '
+                        f'{ende:%d.%m.%Y}). Das Kündigungsrecht nach '
                         f'Art. 257d Abs. 2 OR besteht grundsätzlich weiter — '
                         f'Entscheid der Verwaltung erforderlich.\n\n'
                         f'{p.beschreibung}').strip()
@@ -259,7 +344,7 @@ def pruefe_nach_zahlung(vertrag):
             frist_erledigen(p, (
                 f'Erledigt am {timezone.localdate():%d.%m.%Y}: Rückstand am '
                 f'{bezahlt_am:%d.%m.%Y} vollständig bezahlt, innert Frist'
-                + (f' (bis {p.faellig_am:%d.%m.%Y})' if p.faellig_am else '')
+                + (f' (bis {ende:%d.%m.%Y})' if ende else '')
                 + '. ' + VERMERK_GEWAHRT))
             geschlossen += 1
             logger.info('257d-Frist %s (Vertrag %s) durch Zahlung erledigt',
@@ -285,15 +370,10 @@ def pruefe_nach_zahlung(vertrag):
 
 
 def faelliger_rueckstand(vertrag, stichtag=None):
-    """Offener Betrag der heute fälligen Mietforderungen (ohne Mahngebühr/Zins)."""
+    """Offener Betrag der heute fälligen Mietforderungen (nur Mietzins und Nebenkosten, ohne Mahngebühr/Zins)."""
     stichtag = stichtag or timezone.localdate()
-    total = Decimal('0.00')
-    for r in (vertrag.debitoren_rechnungen.filter(status__in=('offen', 'teilbezahlt'),
-                                                  stammrechnung__isnull=True)
-              .prefetch_related('zahlungseingaenge')):
-        if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) <= stichtag:
-            total += r.offener_betrag
-    return total
+    return sum((r.offener_betrag for r in verzugsforderungen(vertrag, stichtag)
+                if r.status in ('offen', 'teilbezahlt')), Decimal('0.00'))
 
 
 class EigentuemerSchutz(PermissionDenied):
@@ -355,6 +435,10 @@ def eskalation_257d(rechnung, benutzer=None):
 
     v = rechnung.vertrag
     if v is None or rechnung.stammrechnung_id:
+        return None
+    if rechnung.forderungsart != 'miete':
+        # Art. 257d OR gilt nur für Mietzinse und Nebenkosten: Eine Weiterverrechnung oder ein Selbstbehalt
+        # führt nach der letzten Mahnstufe nicht zur Kündigungsandrohung (Audit MIET-02).
         return None
     if eigentuemer_als_mieter(v) is not None:       # Stockwerkeigentümer: keine Fristansetzung, keine Pendenz
         logger.warning('257d-Eskalation für Vertrag %s unterlassen: Mieter ist Stockwerkeigentümer', v.pk)
@@ -450,8 +534,10 @@ def kuendigung_sperre(vertrag, stichtag):
 
     Zwei Fälle sperren:
 
-    · Eine Frist läuft noch (Fristende ≥ Stichtag). Gekündigt werden darf erst
-      nach unbenütztem Ablauf; vorher ist die Kündigung unwirksam.
+    · Eine Frist läuft noch (wirksames Fristende ≥ Stichtag, `fristende_von`). Gekündigt werden darf erst
+      nach unbenütztem Ablauf; vorher ist die Kündigung anfechtbar. Ist der Zugang des Einschreibens nicht
+      bestätigt, gilt das VORLÄUFIGE Fristende (Versand + Postweg + Abholfrist + 30 Tage): Wer den Zugang
+      nicht nachträgt, wird nicht zu früh freigegeben (Audit MIET-01).
     · Die jüngste Fristansetzung wurde durch rechtzeitige Zahlung erledigt,
       und keine neue läuft. Dann gibt es keine Grundlage mehr.
 
@@ -459,12 +545,18 @@ def kuendigung_sperre(vertrag, stichtag):
     ausserhalb der Anwendung verschickt worden sein.
     """
     aktiv = list(aktive_fristen(vertrag).order_by('faellig_am'))
-    laufend = [p for p in aktiv if p.faellig_am and p.faellig_am >= stichtag]
+    laufend = sorted(((fristende_von(p), p) for p in aktiv
+                      if fristende_von(p) and fristende_von(p) >= stichtag), key=lambda x: x[0])
     if laufend:
-        p = laufend[-1]
-        return (f'Die Zahlungsfrist nach Art. 257d OR läuft noch bis '
-                f'{p.faellig_am:%d.%m.%Y}. Eine Kündigung wegen Zahlungsverzugs '
+        ende, p = laufend[-1]
+        text = (f'Die Zahlungsfrist nach Art. 257d OR läuft noch bis '
+                f'{ende:%d.%m.%Y}. Eine Kündigung wegen Zahlungsverzugs '
                 f'ist erst nach unbenütztem Ablauf zulässig.')
+        if zugang_unbestaetigt(p):
+            text += (' Der Zugang des Einschreibens ist nicht bestätigt — das Fristende ist vorläufig '
+                     '(Versand + Postweg + 7 Tage Abholfrist + 30 Tage). Zugang aus Track & Trace '
+                     'bestätigen, dann gilt das genaue Fristende.')
+        return text
     if aktiv:
         return None
     juengste = (vertrag.pendenzen
@@ -475,4 +567,18 @@ def kuendigung_sperre(vertrag, stichtag):
         return ('Der Rückstand wurde innert der Zahlungsfrist nach Art. 257d OR '
                 'vollständig bezahlt — die Fristansetzung ist erledigt. Eine '
                 'Kündigung wegen Zahlungsverzugs braucht eine neue Fristansetzung.')
+    return None
+
+
+def kuendigung_hinweis(vertrag, stichtag):
+    """Warnung (keine Sperre), wenn die Frist zwar abgelaufen ist, der Zugang des Einschreibens aber nie
+    bestätigt wurde. Das Fristende beruht dann auf der Annahme eines Postwegs von einem Tag; wurde das
+    Schreiben später zugestellt, ist die Kündigung zu früh (anfechtbar). Leer, wenn nichts zu bemerken ist."""
+    for p in aktive_fristen(vertrag):
+        ende = fristende_von(p)
+        if ende and ende < stichtag and zugang_unbestaetigt(p):
+            return ('Der Zugang der Fristansetzung (Einschreiben) wurde nie bestätigt. Das Fristende '
+                    f'{ende:%d.%m.%Y} rechnet mit einem Postweg von einem Tag. Vor der Kündigung den Zugang '
+                    'aus Track & Trace prüfen und bestätigen: Läuft die Frist ab dem tatsächlichen Zugang '
+                    'noch, ist die Kündigung zu früh (anfechtbar, BGE 119 II 147).')
     return None

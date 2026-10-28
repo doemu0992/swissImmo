@@ -118,6 +118,7 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
                 vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
                 titel=titel, betrag=netto_schuld, faellig_am=v_start,
                 mwst_satz=satz if mwst else Decimal('0.0'), mwst_betrag=mwst,
+                forderungsart='miete',     # Mietzins und Nebenkosten: Art. 257d OR
                 status='bezahlt' if netto_schuld <= 0 else 'offen')
             lg = v.einheit.liegenschaft if v.einheit_id else None
             ertrag_konto, nk_konto, nk_label = _konten_fuer(v)
@@ -377,7 +378,7 @@ def _mahnschritt_buchen(r, stufe, heute, offen, gebuehr, zins, tage, send_email,
                 vertrag=r.vertrag, liegenschaft=lg,
                 titel=" + ".join(teile), beschreibung=f"Zu: {r.titel}",
                 datum=heute, faellig_am=heute + timedelta(days=30),
-                betrag=zusatz, status='offen',
+                betrag=zusatz, status='offen', forderungsart='sonstige',
                 stammrechnung=r)   # für Storno-Kaskade (Live-Test E)
             # Ins Hauptbuch buchen (Forderung an übrigen Ertrag) — sonst driften
             # Nebenbuch (OP/Debitoren) und Hauptbuch (1100) auseinander, der

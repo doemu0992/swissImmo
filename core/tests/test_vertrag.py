@@ -1047,11 +1047,21 @@ class UnterschriftBriefeTests(TestCase):
         self.assertIn('sig_man', unterschrift_pfad(vw, md))
 
     # ---------- Mahnung mit Kündigungsandrohung (Art. 257d OR) ----------
-    def test_mahnung_257d_traegt_die_unterschrift(self):
+    def test_mahnung_257d_traegt_kein_unterschriftsbild(self):
+        """Audit MIET-03 (28.10.2026), vorher: `test_mahnung_257d_traegt_die_unterschrift` verlangte das Gegenteil.
+
+        Die Fristansetzung mit Kündigungsandrohung verlangt Schriftform (Art. 257d Abs. 1 OR); eine Unterschrift ist
+        eigenhändig zu schreiben (Art. 14 Abs. 1 OR), die mechanische Nachbildung genügt nur, wo sie im Verkehr üblich
+        ist (Abs. 2), und Art. 269d Abs. 4 OR gilt nur für Mietzinserhöhungen. Ein Brief mit Faksimile sieht
+        unterschrieben aus und ist es nicht. Der Test zementierte den Fehler; jetzt hält er das Gegenteil fest: Mit
+        hinterlegtem Unterschriftsbild trägt die erste Seite KEIN Bild, und die Linie ist beschriftet."""
+        from pypdf import PdfReader
+        import io
         lg, e, m, v = _basis_objekte()
-        ohne = self._mahnung(v, self._verwaltung(False))
-        mit = self._mahnung(v, self._verwaltung(True))
-        self.assertGreater(len(mit), len(ohne) + 500)
+        ohne = PdfReader(io.BytesIO(self._mahnung(v, self._verwaltung(False)))).pages[0]
+        mit = PdfReader(io.BytesIO(self._mahnung(v, self._verwaltung(True)))).pages[0]
+        self.assertEqual(len(list(mit.images)), len(list(ohne.images)))
+        self.assertIn('Eigenhändige Unterschrift', mit.extract_text())
 
     def test_mahnung_257d_ohne_unterschrift_bleibt_erzeugbar(self):
         """Fehlt das Bild, muss der Brief trotzdem rauskommen — nur eben leer."""
@@ -1185,14 +1195,17 @@ class UnterschriftBriefeTests(TestCase):
         self.assertTrue(vw.unterschrift_bild)
 
     def test_gezeichnete_unterschrift_landet_im_brief(self):
+        """Als Brief dient die Kautionsbestätigung: Das 257d-Schreiben trägt seit MIET-03 (28.10.2026) bewusst kein
+        Unterschriftsbild mehr (siehe `test_mahnung_257d_traegt_kein_unterschriftsbild`)."""
+        from core.services.mietprozess_briefe import kaution_hinterlegung_pdf
         lg, e, m, v = _basis_objekte()
         vw = self._verwaltung(False)
-        ohne = self._mahnung(v, vw)
+        ohne = kaution_hinterlegung_pdf(v, vw)
         c = Client(); c.force_login(_team_user())
         c.post('/neu/account/', {**self._basis(vw),
                                  'unterschrift_gezeichnet': self._data_url()})
         vw.refresh_from_db()
-        self.assertGreater(len(self._mahnung(v, vw)), len(ohne) + 500)
+        self.assertGreater(len(kaution_hinterlegung_pdf(v, vw)), len(ohne) + 500)
 
     def test_leeres_zeichenfeld_loescht_die_unterschrift_nicht(self):
         """Wer nur die Adresse ändert, darf die Unterschrift nicht verlieren."""
