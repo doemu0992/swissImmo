@@ -33844,3 +33844,14 @@ msgstr "Indicare una data d'invio valida."
 #, python-format
 msgid "Mitteilung zur Erhöhung ab %(datum)s als versandt markiert."
 msgstr "Comunicazione dell'aumento dal %(datum)s contrassegnata come inviata."
+
+msgid "Der Vertrag bleibt archiviert: Das Mietzinsmodell ist nicht zulässig (Befunde oben)."
+msgstr "Il contratto resta archiviato: il modello di pigione non è ammissibile (rilievi sopra)."
+
+#, python-format
+msgid "Der Vertrag ist befristet und endet am %(datum)s ohne Kündigung (Art. 266 OR). Eine ordentliche Kündigung durch den Vermieter mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
+msgstr "Il contratto è di durata determinata e termina il %(datum)s senza disdetta (art. 266 CO). Una disdetta ordinaria da parte del locatore con effetto al %(wirkung)s (prima di questa data) non può essere registrata. Le disdette straordinarie, ad esempio per mora nel pagamento (art. 257d CO), rimangono possibili."
+
+#, python-format
+msgid "Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet (Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
+msgstr "Il locatore ha rinunciato alla disdetta fino al %(datum)s (rinuncia alla disdetta, art. 17 cpv. 4 OLAL). Una disdetta ordinaria con effetto al %(wirkung)s (prima di questa data) non può essere registrata. Le disdette straordinarie, ad esempio per mora nel pagamento (art. 257d CO), rimangono possibili."

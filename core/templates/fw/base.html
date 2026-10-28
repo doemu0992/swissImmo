@@ -39,7 +39,8 @@ steht nur das Geruest.
 
 WAS AUS DER ALTEN HUELLE WOHIN GING — nichts ist weggefallen:
 
-  Mandantenwechsel      Leiste oben, unter der Marke (nur bei mehreren)
+  Mandantenwechsel      Leiste oben, unter der Marke (nur bei mehreren) UND im
+                        Profilmenue (seit 28.10.2026; ab 1024 px ist die Leiste aus)
   Globaler Filter `lg`  Kopfzeile, Zeile 1 hinter der Marke, als Kontext-Chip
                         «Bestand / Ganzer Bestand» (seit 27.10.2026; vorher eigene
                         Zeile, dann Zeile 2 neben dem Menueband)
@@ -50,7 +51,8 @@ WAS AUS DER ALTEN HUELLE WOHIN GING — nichts ist weggefallen:
   Hell/Dunkel           Kopfzeile rechts (ab 1440 px) UND im Profilmenue (wie bisher)
   Profilmenue           unten in der Leiste; am Telefon der Kreis oben rechts;
                         bis 1023 px zusaetzlich «Neuer Fall» und «Menue oeffnen»
-                        (Schublade) — in Zeile 1 ist dort kein Platz mehr
+                        (Schublade) — in Zeile 1 ist dort kein Platz mehr; bei jeder
+                        Breite Mandant (bei mehreren) und «Zuletzt geoeffnet»
   Leiste einklappen     Pfeil neben der Marke (`_sbc`, localStorage)
   Tab-Leiste            unten, unter 1024 px
 
@@ -144,8 +146,8 @@ Detailseiten rufen sie beim Namen.
            wandert in «Mehr» (`static/js/fw-menueband.js`); ohne Skript scrollt das Band.
            Am Telefon (bis 900 px) stehen drei Reihen: Zeile 1 mit Marke, Bestand-Symbol,
            Suche-Symbol, Glocke, Profil; die Bereiche; das Menüband (scrollt in sich).
-           «Neuer Fall» und der Menüknopf (Schublade `#fwSidebar` mit Mandant, «Zuletzt
-           geöffnet», Einstellungen) stehen dort im Profilmenü. Ids und Funktionen sind
+           «Neuer Fall» und der Menüknopf (Schublade `#fwSidebar` mit Einstellungen) stehen dort im
+           Profilmenü; Mandant und «Zuletzt geöffnet» stehen bei jeder Breite im Profilmenü. Ids und Funktionen sind
            unverändert. {% endcomment %}
         <header class="fw-kopfleiste" id="fwKopf">
           <div class="fw-kopf-z1">
@@ -217,11 +219,28 @@ Detailseiten rufen sie beim Namen.
                 </div>
             </div>
             {% comment %} Was die Kopfzeile bis 1023 px nicht mehr tragen kann: «Neuer Fall» und die
-               Schublade (Mandant, «Zuletzt geöffnet»). Ab 1024 px stehen beide nicht hier (`fw-profil-schnell`). {% endcomment %}
+               Schublade. Ab 1024 px stehen beide nicht hier (`fw-profil-schnell`). {% endcomment %}
             <div class="fw-profil-schnell">
                 <a href="/neu/faelle/neu/" onclick="fwProfilMenu();return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')" class="fw-profil-link">{% zeichen 'neu' %} {% trans "Neuer Fall" %}</a>
                 <button type="button" onclick="fwProfilMenu();fwOpenMobileNav()" class="fw-profil-link">{% zeichen 'mehr' %} {% trans "Menü öffnen" %}</button>
                 <div class="fw-profil-trenner"></div>
+            </div>
+            {% if fw_mandant and fw_mandanten|length > 1 %}
+            {% comment %} MANDANT UND «ZULETZT GEÖFFNET» AUCH AM PC (28.10.2026): Die Schublade ist ab 1024 px aus, dort
+               waren beide unerreichbar. Gleiches Ziel, gleiche Bedingung wie in der Schublade (nur bei mehreren
+               Organisationen); die Prüfung der Mitgliedschaft macht weiterhin `fw_mandant_wechseln`. {% endcomment %}
+            <form method="post" action="/neu/mandant/" class="fw-profil-abschnitt fw-profil-mandant">{% csrf_token %}
+                <label for="fwMandantWahlProfil" class="fw-profil-titel">{% trans "Mandant" %}</label>
+                <select id="fwMandantWahlProfil" name="organisation" onchange="this.form.submit()" aria-label="{% trans 'Mandant wechseln' %}" class="fw-feld">
+                    {% for m in fw_mandanten %}
+                    <option value="{{ m.id }}" {% if fw_mandant.id == m.id %}selected{% endif %}>{{ m.firma }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            {% endif %}
+            <div class="fw-profil-abschnitt" id="fwZuletztProfilAbschnitt" role="group" aria-labelledby="fwZuletztProfilTitel" hidden>
+                <div class="fw-profil-titel" id="fwZuletztProfilTitel">{% trans "Zuletzt geöffnet" %}</div>
+                <div id="fwZuletztProfil" class="fw-profil-zuletzt"></div>
             </div>
             <div class="fw-profil-abschnitt">
                 <div class="fw-profil-titel">{% trans "Darstellung" %}</div>
@@ -343,18 +362,24 @@ function fwNavToggle(key) {
             try { localStorage.setItem('fw-zuletzt', JSON.stringify(liste)); } catch (e) {}
         }
     }
-    var ziel = document.getElementById('fwZuletzt');
-    if (!ziel || !liste.length) return;
+    if (!liste.length) return;
     function kurz(s) { return s.split(/[\s·,-]+/).filter(function (w) { return /^[A-Za-zÀ-ÿ]/.test(w); })
                                .slice(0, 2).map(function (w) { return w[0]; }).join('').toUpperCase(); }
-    liste.forEach(function (x) {
-        var a = document.createElement('a');
-        a.href = x.h; a.className = 'fw-nav-eintrag fw-zuletzt-eintrag' + (x.h === location.pathname ? ' hier' : '');
-        var k = document.createElement('span'); k.className = 'fw-avatar fw-avatar-klein'; k.textContent = kurz(x.l);
-        var t = document.createElement('span'); t.className = 'truncate'; t.textContent = x.l;
-        a.appendChild(k); a.appendChild(t); ziel.appendChild(a);
+    // Dieselbe Liste an zwei Orten: in der Schublade und im Profilmenü (am PC ist die Schublade aus).
+    // [Liste, Titel bzw. Abschnitt, der erst mit Einträgen erscheint]
+    [['fwZuletzt', 'fwZuletztTitel'], ['fwZuletztProfil', 'fwZuletztProfilAbschnitt']].forEach(function (p) {
+        var ziel = document.getElementById(p[0]);
+        if (!ziel) return;
+        liste.forEach(function (x) {
+            var a = document.createElement('a');
+            a.href = x.h; a.className = 'fw-nav-eintrag fw-zuletzt-eintrag' + (x.h === location.pathname ? ' hier' : '');
+            var k = document.createElement('span'); k.className = 'fw-avatar fw-avatar-klein'; k.textContent = kurz(x.l);
+            var t = document.createElement('span'); t.className = 'truncate'; t.textContent = x.l;
+            a.appendChild(k); a.appendChild(t); ziel.appendChild(a);
+        });
+        var titel = document.getElementById(p[1]);
+        if (titel) titel.hidden = false;
     });
-    document.getElementById('fwZuletztTitel').hidden = false;
 })();
 
 // Die Bereichs-Kapsel oben: Ränder zeigen, wenn sie weiterläuft (Telefon, ab 901 px

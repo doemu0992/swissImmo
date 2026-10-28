@@ -48,6 +48,14 @@ def docuseal_senden(vertrag):
     mieter = vertrag.mieter
     if not mieter or not (mieter.email or '').strip():
         return (False, "Der Mieter hat keine E-Mail-Adresse — Versand nicht möglich.")
+    if vertrag.status == 'entwurf':
+        # Ein Entwurf mit unzulässigem Mietzinsmodell (Art. 269b/269c OR) geht nicht zur Unterschrift:
+        # Mit der Unterschrift würde er aktiv. Wer ihn korrigiert, kann ihn danach senden.
+        from core.services.mietzinsmodell import pruefe_vertrag, sperren
+        offen = sperren(pruefe_vertrag(vertrag))
+        if offen:
+            return (False, "Das Mietzinsmodell ist nicht zulässig — Versand nicht möglich: "
+                           + ' '.join(b.volltext for b in offen))
 
     try:
         import requests

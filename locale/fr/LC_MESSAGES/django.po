@@ -33899,3 +33899,14 @@ msgstr "Veuillez indiquer une date d'envoi valable."
 msgid "Mitteilung zur Erhöhung ab %(datum)s als versandt markiert."
 msgstr ""
 "Communication de l'augmentation dès le %(datum)s marquée comme envoyée."
+
+msgid "Der Vertrag bleibt archiviert: Das Mietzinsmodell ist nicht zulässig (Befunde oben)."
+msgstr "Le contrat reste archivé : le modèle de loyer n'est pas admissible (constatations ci-dessus)."
+
+#, python-format
+msgid "Der Vertrag ist befristet und endet am %(datum)s ohne Kündigung (Art. 266 OR). Eine ordentliche Kündigung durch den Vermieter mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
+msgstr "Le bail est de durée déterminée et prend fin le %(datum)s sans résiliation (art. 266 CO). Une résiliation ordinaire par le bailleur avec effet au %(wirkung)s (avant cette date) ne peut pas être enregistrée. Les résiliations extraordinaires, par exemple pour demeure dans le paiement (art. 257d CO), restent possibles."
+
+#, python-format
+msgid "Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet (Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
+msgstr "Le bailleur a renoncé à résilier jusqu'au %(datum)s (renonciation à la résiliation, art. 17 al. 4 OBLF). Une résiliation ordinaire avec effet au %(wirkung)s (avant cette date) ne peut pas être enregistrée. Les résiliations extraordinaires, par exemple pour demeure dans le paiement (art. 257d CO), restent possibles."

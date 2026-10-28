@@ -268,6 +268,16 @@ def fw_kuendigung_erfassen(request, vertrag_id):
         else:
             per = gewuenscht or termin
 
+        # Kündigungsverzicht (Art. 17 Abs. 4 VMWG) und Befristung: Der Vermieter kann bis dahin nicht
+        # ordentlich kündigen. Gesperrt ist nur diese Kündigung; die des Mieters und jede ausserordentliche
+        # (257d, 257f, 266g, 266h …) bleiben möglich — die Unterscheidung steht in
+        # `core/services/kuendigungsverzicht.py`.
+        from core.services.kuendigungsverzicht import sperre_text
+        verzicht = sperre_text(v, per, absender=absender, ausserordentlich=ausserord)
+        if verzicht:
+            messages.error(request, '⛔ ' + verzicht)
+            return redirect(zurueck)
+
         # Erstreckung (Art. 272 OR): Das Mietverhältnis läuft bis dahin weiter —
         # Vertragsende, Sollstellung und Leerstand folgen ihr (Befund L).
         erstreckung = d('erstreckung_bis')

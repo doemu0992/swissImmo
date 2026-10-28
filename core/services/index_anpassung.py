@@ -267,6 +267,29 @@ def frueheste_wirksamkeit(versand_am, zugang_am=None, puffer_tage=None):
     return ende + timedelta(days=1)
 
 
+def termin_ab(datum):
+    """Der erste zulässige Wirksamkeitstag (ein Monatserster) am oder nach `datum`."""
+    if datum.day == 1:
+        return datum
+    return plus_monate(monatserster(datum), 1)
+
+
+def spaetester_zugang(wirksam_ab):
+    """Der letzte Tag, an dem die Mitteilung zugehen muss, damit der neue Mietzins am
+    `wirksam_ab` (einem Monatsersten) gilt: 30 Tage vor dem Monatsende davor.
+
+    Die Umkehrung von `frueheste_wirksamkeit` (Art. 17 Abs. 3 VMWG)."""
+    return wirksam_ab - timedelta(days=1 + FRIST_TAGE)
+
+
+def spaetester_versand(wirksam_ab, puffer_tage=None):
+    """Der letzte Versandtag für `wirksam_ab`, wenn der Zugang vermutet wird (Annahme 2)."""
+    if puffer_tage is None:
+        from rentals.services import ZUSTELL_PUFFER_TAGE
+        puffer_tage = ZUSTELL_PUFFER_TAGE
+    return spaetester_zugang(wirksam_ab) - timedelta(days=puffer_tage)
+
+
 def termine_ab(frueh, anzahl=24):
     """Die zulässigen Wirksamkeitsdaten ab `frueh`: jeder Monatserste."""
     termine, d = [], frueh

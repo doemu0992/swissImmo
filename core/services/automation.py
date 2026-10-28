@@ -480,6 +480,8 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
 
     def _ensure(quelle, titel, faellig, kategorie, beschreibung='', liegenschaft=None, vertrag=None):
         nonlocal neu
+        # `Pendenz.titel` ist auf 200 Zeichen begrenzt; PostgreSQL lehnt mehr ab.
+        titel = titel[:200]
         obj, created = Pendenz.objects.get_or_create(
             quelle=quelle,
             defaults={'titel': titel, 'faellig_am': faellig, 'kategorie': kategorie,
@@ -720,15 +722,18 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
                 wf.notiz or f"Wiederkehrende Frist ({auf_deutsch(wf.get_art_display)}) — Termin planen/erneuern.",
                 liegenschaft=wf.liegenschaft)
 
-    # e) Indexmieten: fällige Indexanpassung erkennen (Art. 269b). Nicht still
-    # umbuchen — Ankündigung mit amtlichem Formular (Art. 269d, 30 Tage Vorlauf).
+    # e) Indexmieten: fällige Indexanpassung erkennen (Art. 269b OR). Nicht still
+    # umbuchen — Ankündigung mit dem amtlichen Formular, sinngemäss (Art. 19
+    # Abs. 2 VMWG), mit mindestens 30 Tagen auf ein Monatsende (Art. 17 Abs. 3 VMWG).
     try:
         from core.services.lik import aktueller_lik_wert
         _stand, aktuell_pkt, _b = aktueller_lik_wert(live=False)  # Tabellenwert: schnell, offline
     except Exception:
         aktuell_pkt = None
     if aktuell_pkt:
+        from core.services import index_anpassung as ia
         from core.services.mietrecht import index_anpassung_vorschlag
+        from rentals.services import ZUSTELL_PUFFER_TAGE
         # Vorgeladen, weil `index_anpassung_vorschlag` den effektiven Stand je
         # Vertrag liest (Anpassungen, Komponenten, Objekt-Zeitplan) — ohne
         # Prefetch je Vertrag mehrere Abfragen.
@@ -742,111 +747,68 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
             naechste = _plus_monate(ref_datum, v.index_intervall_monate or 12)
             if naechste > grenze:
                 continue
+            # Wirksam wird eine Indexanpassung an einem Monatsersten (Art. 17
+            # Abs. 3 VMWG: Monatsende). Fällt der vertragliche Termin in den
+            # Monat, ist es der Erste des Folgemonats.
+            termin = ia.termin_ab(naechste)
             # Gerechnet wird ab dem Stand nach der letzten gebuchten Anpassung —
             # mit derselben Funktion wie im Formular. Bis 26.10.2026 stand hier
             # eine eigene Rechnung auf `basis_lik_punkte` und `netto_mietzins`
             # des Vertragsbeginns: Nach der ersten Indexanpassung schlug sie den
             # bereits weitergegebenen Anstieg ein zweites Mal vor.
-            vorschlag = index_anpassung_vorschlag(v, Decimal(aktuell_pkt), wirksam_ab=naechste)
+            vorschlag = index_anpassung_vorschlag(v, Decimal(aktuell_pkt), wirksam_ab=termin)
             if vorschlag is None:
                 continue
             basis_lik = vorschlag['basis_lik']
             alt_netto = vorschlag['alt_netto']
             neuer_netto = vorschlag['neu_netto']
+
+            # DIE FRIST DER INDEXMIETE IST ART. 17 ABS. 3 VMWG, NICHT ART. 269d OR
+            #
+            # Bis 28.10.2026 rechnete diese Pendenz mit `mietzins_zustellung()`
+            # (Beginn der Kündigungsfrist minus zehn Tage, Art. 269d OR) und
+            # schrieb «später zugestellt ist die Erhöhung nichtig». Für
+            # Indexmieten gilt aber die Verordnung: Ankündigung mit mindestens
+            # 30 Tagen auf ein Monatsende, das amtliche Formular sinngemäss
+            # (Art. 19 Abs. 2 VMWG). Gerechnet wird mit derselben Funktion
+            # wie im Assistenten (`index_anpassung`); die Folge einer zu kurzen
+            # Frist steht hier nicht, weil sie im Bestand nicht belegt ist —
+            # der Assistent lehnt einen zu frühen Termin ab und nennt den
+            # frühesten.
+            #
+            # Die Erkenntnis zum Einstellplatz gilt für Pendenzen nach Art.
+            # 269d weiter (`faelle/regelwerk.py`), nicht für diese.
+            zugang_spaet = ia.spaetester_zugang(termin)
+            versand_spaet = ia.spaetester_versand(termin)
+            frist_text = (
+                f"Zugang spätestens bis {zugang_spaet.strftime('%d.%m.%Y')}, 30 Tage vor dem "
+                f"Monatsende (Art. 17 Abs. 3 VMWG); bei Versand mit {ZUSTELL_PUFFER_TAGE} Tagen "
+                f"Zustellpuffer spätestens am {versand_spaet.strftime('%d.%m.%Y')}. "
+                f"Amtliches Formular (Art. 19 Abs. 2 VMWG sinngemäss), erst nach Bekanntgabe "
+                f"des neuen Indexstandes.")
+            if versand_spaet < heute:
+                frist_text += (
+                    f" Für diesen Termin reicht die Frist bei Versand heute nicht mehr; "
+                    f"frühester Termin bei Versand heute: "
+                    f"{ia.frueheste_wirksamkeit(heute).strftime('%d.%m.%Y')}.")
+            # Fällig, wenn der Versand erfolgen muss — nicht am Termin selbst.
+            faellig = max(versand_spaet, heute)
+
             if vorschlag['richtung'] == 'senkung':
-                # Sinkt der Index, folgt der Mietzins ihm ebenso (Befund N). Die
-                # Pendenz ist ein Hinweis zur Mitteilung, keine Zustellfrist.
+                # Sinkt der Index, folgt der Mietzins ihm ebenso (Befund N).
                 _ensure(f"auto:indexsenkung:{v.id}:{naechste.isoformat()}",
                         f"Indexmiete senken: {v.mieter.display_name} ({v.einheit.bezeichnung})",
-                        heute, 'vertrag',
+                        faellig, 'vertrag',
                         (f"LIK {basis_lik}→{aktuell_pkt} Pkt. gesunken: Netto CHF {alt_netto}→{neuer_netto} "
-                         f"auf {naechste.strftime('%d.%m.%Y')} (Art. 269b OR). Anpassung über das "
-                         f"amtliche Formular mitteilen."),
+                         f"auf {termin.strftime('%d.%m.%Y')} (Art. 17 Abs. 2 VMWG). {frist_text}"),
                         liegenschaft=v.einheit.liegenschaft, vertrag=v)
                 continue
-            # DER ZUSTELLTERMIN WIRD GERECHNET, NICHT GESCHAETZT
-            #
-            # Bis E2.37 stand hier woertlich «30 Tage vor Termin». Das war
-            # ZWEIFACH falsch:
-            #
-            #   · dreissig statt zehn Tage — die dreissig sind die
-            #     ANFECHTUNGSFRIST des Mieters (Art. 270b OR), andere Frist,
-            #     andere Richtung;
-            #   · «vor Termin» statt «vor Beginn der Kuendigungsfrist» — und
-            #     der liegt eine ganze Kuendigungsfrist frueher.
-            #
-            # Wer die Pendenz befolgte, stellte drei Monate zu spaet zu. Eine
-            # verspaetet zugestellte Erhoehung ist NICHTIG (Art. 269d Abs. 2
-            # OR) — nicht verschoben. Der Text war also nicht bloss ungenau,
-            # er war die Anleitung zum Verlust.
-            #
-            # Gerechnet wird mit `mietzins_zustellung()` aus dem Regelwerk
-            # (E2.36) — dieselbe Rechnung, die die Regel prueft. Zwei
-            # Rechnungen fuer eine Vorschrift widersprechen sich frueher oder
-            # spaeter; das war der Befund B3.
-            from faelle.regelwerk import mietzins_zustellung
-
-            # DIE KURZFRIST-VERZWEIGUNG IST ENTFALLEN (E2.38)
-            #
-            # Sie fragte: Wie rechnet man die 269d-Frist bei einem
-            # Einstellplatz mit Zwei-Wochen-Kuendigungsfrist? Die Frage davor
-            # war offen und wichtiger: Faellt eine Mietzinserhoehung beim
-            # GESONDERT VERMIETETEN Einstellplatz ueberhaupt unter Art. 269d?
-            #
-            # NACHGESCHLAGEN: Art. 269d steht im «Zweiten Abschnitt: Schutz vor
-            # missbraeuchlichen Mietzinsen ... BEI DER MIETE VON WOHN- UND
-            # GESCHAEFTSRAEUMEN». Ein allein vermieteter Parkplatz ist keines
-            # von beidem. Der Bestand zieht dieselbe Linie schon bei der
-            # Kuendigung: `rentals/models.py` haelt fest, dass gesondert
-            # vermietete Nebenobjekte kein amtliches Formular brauchen
-            # (Art. 266l gilt ebenfalls nur fuer Wohn- und Geschaeftsraeume).
-            #
-            # Wird der Platz ZUSAMMEN mit einer Wohnung vermietet, gilt er
-            # nach Art. 253a Abs. 1 OR als Teil davon — dann greift 269d sehr
-            # wohl. Genau deshalb sagt der Bestand «gesondert vermietet».
-            #
-            # WARUM TROTZDEM DIE LANGE FRIST GERECHNET WIRD
-            #
-            # Die Folgen sind unsymmetrisch: Das Formular zu verwenden, wo es
-            # nicht noetig ist, kostet ein Blatt Papier. Es wegzulassen, wo es
-            # noetig ist, macht die Erhoehung NICHTIG. Bei einer Rechtsfrage
-            # ohne Bundesgerichtsentscheid ist der teurere Irrtum der, den man
-            # vermeidet.
-            #
-            # Deshalb: keine Sonderbehandlung, keine 24-Tage-Frist. Fehlt die
-            # Kuendigungsfrist im Vertrag, gilt die gesetzliche Mindestfrist
-            # fuer Wohnraeume (drei Monate) — dieselbe Vorgabe wie im
-            # Regelwerk. Das ist die vorsichtigere Seite und die einfachere.
-            #
-            # `> 0` und nicht `or 3`: Das Feld ist ein `IntegerField` ohne
-            # Untergrenze, ein negativer Wert ist eintragbar. `or 3` reicht
-            # ihn durch, und `mietzins_zustellung()` rechnet dann VORWAERTS —
-            # gemessen: bei -1 Monat liegt die Zustellung am 20.04.2027 fuer
-            # einen Termin am 31.03.2027, also nach dem Termin. Der Satz in
-            # der Pendenz waere unsinnig, und zwar in die gefaehrliche
-            # Richtung.
-            monate_roh = v.kuendigungsfrist_monate or 0
-            frist_monate = monate_roh if monate_roh > 0 else 3
-            zustellung = mietzins_zustellung(
-                termin=naechste, frist_monate=frist_monate).vorschlag
-            fristtext = f'{frist_monate}-monatigen'
 
             _ensure(f"auto:index:{v.id}:{naechste.isoformat()}",
                     f"Indexmiete anpassen: {v.mieter.display_name} ({v.einheit.bezeichnung})",
-                    # Faellig ist die Pendenz, wenn ZUGESTELLT sein muss —
-                    # nicht am Termin selbst. Bis dahin ist nichts zu tun,
-                    # danach ist es zu spaet.
-                    max(zustellung, heute), 'vertrag',
-                    # `fristtext` statt einer festen Monatszahl: Im
-                    # Kurzfristfall stand hier zuvor «3-monatigen», waehrend
-                    # das Datum aus zwei Wochen gerechnet war. Datum und
-                    # Begruendung widersprachen sich damit in einem Satz —
-                    # wer nachrechnet, glaubt der Pendenz danach nichts mehr.
+                    faellig, 'vertrag',
                     (f"LIK {basis_lik}→{aktuell_pkt} Pkt.: Netto CHF {alt_netto}→{neuer_netto} "
-                     f"möglich auf {naechste.strftime('%d.%m.%Y')}. Amtliches Formular "
-                     f"(Art. 269d) muss bis {zustellung.strftime('%d.%m.%Y')} beim Mieter "
-                     f"sein — zehn Tage vor Beginn der {fristtext} "
-                     f"Kündigungsfrist. Später zugestellt ist die Erhöhung nichtig."),
+                     f"möglich auf {termin.strftime('%d.%m.%Y')} (Art. 17 Abs. 1 VMWG). {frist_text}"),
                     liegenschaft=v.einheit.liegenschaft, vertrag=v)
 
     # f) Referenzzinssenkung: liegt der aktuelle Referenzzinssatz unter der
