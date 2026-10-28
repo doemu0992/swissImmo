@@ -171,7 +171,12 @@ def dokument_fuer_ereignis(ereignis, *, organisation, vertrag=None, bewerbung=No
                 # Ein Schreiben an eine BEWERBERIN hängt an der Einheit, nicht an
                 # einem Vertrag. Im Mieterportal sähe es sonst der heutige Mieter
                 # dieser Einheit (Objektdokumente ohne Vertrag sind dort sichtbar).
-                im_portal_sichtbar=(False if vertrag is None else None))
+                #
+                # Zu einem Vertrag gehört das Begleitschreiben dem Mieter: Die
+                # Verwaltung hat die Regel ausdrücklich für dieses Ereignis
+                # eingerichtet (Versand, Vertragserstellung, Abnahme), das ist die
+                # Freigabe. Ohne Vertrag bleibt es unsichtbar.
+                im_portal_sichtbar=(vertrag is not None))
             if dok is None:
                 raise RuntimeError('Ablage gescheitert')
             return dok

@@ -415,7 +415,8 @@ class ErinnerungenTests(TestCase):
         from datetime import timedelta
         from django.utils import timezone
         from tickets.models import HandwerkerAuftrag, SchadenMeldung
-        vor = timezone.now() - timedelta(days=tage)
+        from core.tests._helfer import vor_tagen
+        vor = vor_tagen(tage)      # Kalendertage in Zürcher Zeit, nicht UTC-Differenz
         SchadenMeldung.objects.filter(pk=ticket.pk).update(aktualisiert_am=vor)
         if auftrag:
             HandwerkerAuftrag.objects.filter(pk=auftrag.pk).update(beauftragt_am=vor)

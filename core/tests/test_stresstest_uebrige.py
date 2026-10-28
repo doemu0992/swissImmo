@@ -5,7 +5,7 @@ from decimal import Decimal
 from django.test import Client, TestCase
 from django.utils import timezone
 
-from ._helfer import _basis_objekte, _seed_konten, _team_user
+from ._helfer import _basis_objekte, _seed_konten, _team_user, vor_tagen
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -149,7 +149,7 @@ class AuftragTicketTests(TestCase):
         from core.models import Pendenz
         from core.services.automation import generate_auto_pendenzen
         from tickets.models import SchadenMeldung
-        SchadenMeldung.objects.filter(pk=self.t.pk).update(aktualisiert_am=timezone.now() - timedelta(days=83))
+        SchadenMeldung.objects.filter(pk=self.t.pk).update(aktualisiert_am=vor_tagen(83))
         generate_auto_pendenzen(horizont_tage=30)
         p = Pendenz.objects.get(quelle=f'auto:ticket:{self.t.pk}')
         self.assertIn('83 Tagen', p.titel)
@@ -283,7 +283,12 @@ class NkFristUndKautionFreigabeTests(TestCase):
                 'gewuenschtes_ende': (heute + timedelta(days=120)).isoformat()}, secure=True)
         p = Pendenz.objects.get(vertrag=v, titel__startswith='Kaution: Freigabeschreiben')
         self.assertFalse(p.erledigt)
+        # Die Vorschau (GET) erledigt nichts (ROUTE-01) ...
         c.get(f'/neu/vertraege/{v.id}/kaution-beleg/freigabe/', secure=True)
+        p.refresh_from_db()
+        self.assertFalse(p.erledigt)
+        # ... das ausdrückliche «Erstellen» (POST) erledigt die Pendenz.
+        c.post(f'/neu/vertraege/{v.id}/kaution-beleg/freigabe/', secure=True)
         p.refresh_from_db()
         self.assertTrue(p.erledigt)
 

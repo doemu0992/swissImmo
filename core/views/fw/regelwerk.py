@@ -44,6 +44,7 @@ from django.views.decorators.http import require_POST
 from core.auth import (log_aktion, rolle_erforderlich, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
 
+from core.utils.parameter import sicheres_ziel
 from ._basis import _global_filter
 
 
@@ -397,11 +398,11 @@ def fw_regelanwendung_uebersteuern(request, pk):
         anwendung.uebersteuern(request.user, request.POST.get('begruendung', ''))
     except ValueError as fehler:
         messages.error(request, str(fehler))
-        return redirect(request.POST.get('zurueck') or '/neu/regelwerk/protokoll/')
+        return redirect(sicheres_ziel(request, '/neu/regelwerk/protokoll/', 'zurueck'))
     log_aktion(request, 'Regelbefund übersteuert', anwendung.art,
                anwendung.uebersteuert_begruendung, ziel=anwendung)
     messages.success(request, gettext('Übersteuerung mit Begründung protokolliert.'))
-    return redirect(request.POST.get('zurueck') or '/neu/regelwerk/protokoll/')
+    return redirect(sicheres_ziel(request, '/neu/regelwerk/protokoll/', 'zurueck'))
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)

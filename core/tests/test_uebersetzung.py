@@ -59,6 +59,7 @@ SPRACHEN = ('de', 'fr', 'it', 'en')
 #: Vorlagen, die bereits ausgezeichnet sind. Diese Liste darf nur WACHSEN —
 #: dieselbe Sperrklinke wie beim Farbklassen-Zaehler, nur andersherum.
 UEBERSETZT = (
+    '400.html',
     '403.html',
     '404.html',
     '500.html',

@@ -42,6 +42,7 @@ logger = logging.getLogger(__name__)
 from ._basis import (_global_filter, _num, _vermietung_pipeline,
                      STATUS_PILL, VERTRAG_PILL)
 from core.tenancy import aktuelle_organisation
+from core.utils.parameter import jahr_streng
 
 
 # ============================================================
@@ -1086,7 +1087,7 @@ def fw_betriebsrechnung_pdf(request, pk):
     from core.services.gebaeude_report import betriebsrechnung_pdf
     lg = get_object_or_404(Liegenschaft, id=pk)
     try:
-        jahr = int(request.GET.get('jahr') or timezone.localdate().year)
+        jahr = jahr_streng(request.GET.get('jahr') or timezone.localdate().year)
     except ValueError:
         jahr = timezone.localdate().year
     # Briefkopf vom Objekt der Auswertung.
@@ -1126,7 +1127,7 @@ def fw_betriebskostenspiegel(request):
     basis = _global_filter(request)
     heute = timezone.localdate()
     try:
-        jahr = int(request.GET.get('jahr') or heute.year)
+        jahr = jahr_streng(request.GET.get('jahr') or heute.year)
     except ValueError:
         jahr = heute.year
     von, bis = date(jahr, 1, 1), date(jahr, 12, 31)
@@ -1179,7 +1180,7 @@ def fw_auswertung(request):
     aktive_lg = basis['aktive_lg']
     heute = timezone.localdate()
     try:
-        jahr = int(request.GET.get('jahr') or heute.year)
+        jahr = jahr_streng(request.GET.get('jahr') or heute.year)
     except ValueError:
         jahr = heute.year
     typ = request.GET.get('typ', 'mietertrag')

@@ -468,7 +468,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
             from core.services.ablage import ablegen
             ablegen(_formular_pdf(v, anp, vw, lik_basis, formular),
                     f"Mietzinsanpassung wirksam {anp.wirksam_ab:%d.%m.%Y}",
-                    kategorie='vertrag', vertrag=v, dedup=True)
+                    kategorie='vertrag', vertrag=v, dedup=True, im_portal_sichtbar=True)
         # Modul 5: Regel «Mietzinsanpassung versandt» — Begleitschreiben zum
         # amtlichen Formular, das unverändert bleibt.
         from core.services.dokument_regeln import dokument_fuer_ereignis

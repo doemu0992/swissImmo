@@ -1,0 +1,18 @@
+{% load i18n zeichen %}{% comment %}
+POST-Knopf «Erstellen» für ein PDF, das in der Akte abgelegt werden soll (ROUTE-01).
+
+Wer schreiben darf, erstellt das Dokument mit diesem Knopf (POST): Es wird in der
+Vertragsakte abgelegt, und wo es dazugehört, folgen die Pendenz und der
+Protokolleintrag. Der Link auf dieselbe Adresse (GET) bleibt die reine Vorschau
+und schreibt nichts: Ihn sieht der Lesezugriff. Abgelegte Dokumente sind für den
+Mieter unsichtbar, bis sie zugestellt oder in der Person-Akte freigegeben sind.
+Das PDF öffnet in einem neuen Tab (`target="_blank"`, vom Doppelklick-Schutz in
+fw/base.html ausgenommen).
+
+Parameter: url (Adresse), text (Beschriftung), titel (Hinweistext, optional),
+klasse (Standard «fw-btn»), ikon (Standard «drucken»).
+{% endcomment %}
+<form method="post" action="{{ url }}" target="_blank" class="inline">
+    {% csrf_token %}
+    <button type="submit" class="{{ klasse|default:'fw-btn' }}"{% if titel %} title="{{ titel }}"{% endif %}>{% zeichen_wert ikon|default:'drucken' %}{{ text }}</button>
+</form>

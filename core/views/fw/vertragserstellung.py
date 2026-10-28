@@ -109,6 +109,8 @@ def _assistent_kontext(request, edit_id=None, immer_zeigen=None):
     }
 
     # Bearbeiten-Modus: der Assistent editiert einen bestehenden ENTWURF (voll).
+    from core.utils.parameter import id_param
+    edit_id = id_param(edit_id)           # `?edit=abc` ist kein Entwurf, nicht 500 (ROUTE-05)
     edit_vertrag = (Mietvertrag.objects
                     .filter(id=edit_id, status='entwurf')
                     .select_related('einheit__liegenschaft', 'mieter', 'mitmieter').first()
@@ -117,7 +119,7 @@ def _assistent_kontext(request, edit_id=None, immer_zeigen=None):
     # Vorwahl einer bestimmten Einheit (z.B. aus dem Mieterwechsel-Cockpit):
     # dann nur diese Liegenschaft + dieses Objekt anzeigen, keine Auswahl nötig.
     try:
-        vorwahl_einheit = int(request.GET.get('einheit') or 0) or None
+        vorwahl_einheit = id_param(request.GET.get('einheit'))
     except ValueError:
         vorwahl_einheit = None
     vorwahl_e = Einheit.objects.select_related('liegenschaft').filter(id=vorwahl_einheit).first() if vorwahl_einheit else None

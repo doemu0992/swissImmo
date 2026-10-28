@@ -306,7 +306,9 @@ def send_mahnung_email_view(request, vertrag_id):
             vertrag, verwaltung, stufe=stufe, monat=monat_str, betrag=betrag_str,
             datum=heute, gebuehr=cfg['gebuehr'] if cfg else None,
             letzte_stufe=bool(cfg and cfg['kuendigung']), rechnung=rechnung)
-        ablage_mahnung(vertrag, stufe=stufe, datum=heute, pdf_bytes=pdf_bytes)
+        # Die Kopie geht per E-Mail an den Mieter: Er darf sie im Portal sehen.
+        ablage_mahnung(vertrag, stufe=stufe, datum=heute, pdf_bytes=pdf_bytes,
+                       im_portal_sichtbar=True)
         objekt = f"{vertrag.einheit.bezeichnung} ({vertrag.einheit.liegenschaft.strasse})"
         titel = titel_fuer(vertrag, stufe, bool(cfg and cfg['kuendigung']))
         email = EmailMultiAlternatives(
@@ -336,7 +338,7 @@ def send_mahnung_email_view(request, vertrag_id):
     # Dasselbe PDF, das der Mieter erhält, gehört in die Akte — sonst lässt sich
     # später nicht belegen, WAS zugestellt wurde.
     ablage_mahnung(vertrag, monat=monat_str, betrag=betrag_str, datum=heute,
-                   pdf_bytes=pdf_bytes, zugang_pflichtig=True)
+                   pdf_bytes=pdf_bytes, zugang_pflichtig=True, im_portal_sichtbar=True)
 
     firma_name = getattr(vertrag.mieter, 'firma', None)
     anzeige_name = firma_name if firma_name else f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}"
@@ -393,7 +395,12 @@ def generate_mahnung_pdf_view(request, vertrag_id):
     betrag_str = request.GET.get('betrag') or request.POST.get('betrag', default_betrag)
 
     heute = datetime.date.today()
-    from core.services.ablage import ablage_mahnung
+
+    # VORSCHAU: Dieser Aufruf (GET) legt nichts ab und schreibt nichts (ROUTE-01).
+    # Vorher landete schon das blosse Öffnen der 257d-Fassung in der Vertragsakte —
+    # im Mieterportal sichtbar, ohne dass je etwas versandt worden wäre. Abgelegt
+    # wird beim Versand (`send_mahnung_email_view`, POST) und beim Erfassen der
+    # Mahnung im Mahnwesen.
 
     # MAHNSTUFE AUS DEM MAHNWESEN (`?rechnung=<id>&stufe=<n>`): Das Schreiben der
     # Stufe — mit Monat und offenem Betrag DER FORDERUNG, nicht frei eingebbar.
@@ -420,7 +427,6 @@ def generate_mahnung_pdf_view(request, vertrag_id):
             betrag=f"{rechnung.offener_betrag:.2f}", datum=heute,
             gebuehr=cfg['gebuehr'] if cfg else None,
             letzte_stufe=bool(cfg and cfg['kuendigung']), rechnung=rechnung)
-        ablage_mahnung(vertrag, stufe=stufe, datum=heute, pdf_bytes=pdf_bytes)
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = (
             f'inline; filename="Mahnung_{stufe}_{vertrag.mieter.nachname}.pdf"')
@@ -428,10 +434,6 @@ def generate_mahnung_pdf_view(request, vertrag_id):
         return response
 
     pdf_bytes = generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_str, heute)
-    # In die Vertrags-Akte legen: sonst existiert die Mahnung nur als Download im
-    # Moment des Klicks und ist unter Vertrag -> Dokumente nirgends nachweisbar.
-    ablage_mahnung(vertrag, monat=monat_str, betrag=betrag_str, datum=heute,
-                   pdf_bytes=pdf_bytes)
 
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="Mahnung_Art257d_{vertrag.mieter.nachname}.pdf"'

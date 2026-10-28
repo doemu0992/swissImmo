@@ -8,7 +8,7 @@
    gilt auch hier). Ziehen mit der Maus ODER Auswahlfeld an der Karte (Tastatur, Telefon). {% endcomment %}
 <div class="fw-phead">
     <div>
-        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Akten" %}</a><span aria-hidden="true">/</span><a href="/neu/schaeden/{{ lg_query }}">{% trans "Schäden" %}</a><span aria-hidden="true">/</span><span>{% trans "Board" %}</span></nav>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}">{% if not fw_kopf_reduziert %}<a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Akten" %}</a><span aria-hidden="true">/</span>{% endif %}<a href="/neu/schaeden/{{ lg_query }}">{% trans "Schäden" %}</a><span aria-hidden="true">/</span><span>{% trans "Board" %}</span></nav>
         <h1>{% trans "Ticket-Board" %}</h1>
         <p>{% blocktrans trimmed with n=gesamt %}{{ n }} Tickets nach Zustand. Karten ziehen oder den Zustand an der Karte wählen. Erledigtes bleibt {{ erledigt_tage }} Tage sichtbar.{% endblocktrans %}</p>
     </div>
@@ -17,7 +17,7 @@
             <a href="/neu/schaeden/{{ lg_query }}" class="fw-seg-link">{% zeichen 'dokument' %} {% trans "Liste" %}</a>
             <a href="/neu/schaeden/board/{{ lg_query }}" class="fw-seg-link an" aria-current="page">{% zeichen 'bericht' %} {% trans "Board" %}</a>
         </div>
-        <a href="/neu/kommunikation/" class="fw-btn">{% zeichen 'senden' %} {% trans "Mieter kontaktieren" %}</a>
+        {% if not fw_kopf_reduziert %}<a href="/neu/kommunikation/" class="fw-btn">{% zeichen 'senden' %} {% trans "Mieter kontaktieren" %}</a>{% endif %}
         <a href="/neu/schaeden/?neu=1" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Neues Ticket" %}</a>
     </div>
 </div>

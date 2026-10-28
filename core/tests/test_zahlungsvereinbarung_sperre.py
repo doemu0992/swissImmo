@@ -150,10 +150,14 @@ class SchuldanerkennungPdfTests(TestCase):
 
     def test_pdf_wird_einmal_in_der_vertragsakte_abgelegt(self):
         from rentals.models import Dokument
+        titel = f'Zahlungsvereinbarung mit Schuldanerkennung #{self.vb.pk}'
+        # Die Vorschau (GET) legt nichts ab (ROUTE-01) ...
         self.c.get(self.url, secure=True)
-        self.c.get(self.url, secure=True)
-        self.assertEqual(Dokument.objects.filter(
-            vertrag=self.v, bezeichnung=f'Zahlungsvereinbarung mit Schuldanerkennung #{self.vb.pk}').count(), 1)
+        self.assertEqual(Dokument.objects.filter(vertrag=self.v, bezeichnung=titel).count(), 0)
+        # ... das ausdrückliche «Erstellen» (POST) legt es einmal ab, auch bei Wiederholung.
+        self.c.post(self.url, secure=True)
+        self.c.post(self.url, secure=True)
+        self.assertEqual(Dokument.objects.neueste().filter(vertrag=self.v, bezeichnung=titel).count(), 1)
 
     def test_vereinbarung_eines_anderen_vertrags_ist_nicht_erreichbar(self):
         from crm.models import Mieter

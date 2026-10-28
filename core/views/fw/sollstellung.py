@@ -30,13 +30,14 @@ from ._basis import _global_filter
 # ============================================================
 
 import calendar as _calendar
+from core.utils.parameter import jahr_streng
 
 
 def _sollstellung_kontext(request):
     """Vorschau: aktive Verträge + Soll je Vertrag für den gewählten Monat."""
     heute = timezone.localdate()
     try:
-        jahr = int(request.GET.get('jahr') or heute.year)
+        jahr = jahr_streng(request.GET.get('jahr') or heute.year)
         monat = int(request.GET.get('monat') or heute.month)
     except ValueError:
         jahr, monat = heute.year, heute.month

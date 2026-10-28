@@ -25,8 +25,12 @@ class MahnbriefTests(TestCase):
         from finance.models import DebitorenRechnung
         self.lg, self.e, self.m, self.v = _basis_objekte()
         self.heute = date.today()
-        # Dezembermiete, heute deutlich später gemahnt
-        self.faellig = date(self.heute.year - 1, 12, 1)
+        # Dezembermiete, heute deutlich später gemahnt: der jüngste 1. Dezember, der mehr als
+        # 90 Tage zurückliegt (Stufe 3 gilt ab 60 Tagen). Ein fester «Dezember des Vorjahres»
+        # war im Januar noch keine 60 Tage her (SICH-45).
+        self.faellig = date(self.heute.year, 12, 1)
+        while (self.heute - self.faellig).days < 90:
+            self.faellig = date(self.faellig.year - 1, 12, 1)
         self.r = DebitorenRechnung.objects.create(
             vertrag=self.v, titel='Miete & NK 12', datum=self.faellig,
             faellig_am=self.faellig, betrag=Decimal('1700.00'))

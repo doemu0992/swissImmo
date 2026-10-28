@@ -32,6 +32,8 @@ abgelaufen ist.
 """
 from datetime import timedelta
 
+from django.utils import timezone
+
 #: Dateifelder des Dossiers — die eigentlich heiklen Daten.
 DOKUMENT_FELDER = ('betreibungsauszug', 'ausweiskopie', 'lohnausweis', 'weitere_dokumente')
 
@@ -61,11 +63,13 @@ def entschieden_am(bewerbung):
     if bewerbung.status == 'zugesagt':
         return None                      # daraus entsteht das Mietverhältnis
     if bewerbung.status == 'abgelehnt':
-        return bewerbung.aktualisiert_am.date()
+        # Der Zürcher Tag, nicht der UTC-Tag: `.date()` auf einem aware Zeitstempel liefert UTC
+        # und lag zwischen 00:00 und 02:00 einen Tag daneben (SICH-24).
+        return timezone.localtime(bewerbung.aktualisiert_am).date()
 
     vertrag = (bewerbung.einheit.vertraege
                .filter(status__in=('aktiv', 'beendet'),
-                       beginn__gte=bewerbung.erstellt_am.date())
+                       beginn__gte=timezone.localtime(bewerbung.erstellt_am).date())
                .order_by('beginn').first())
     return vertrag.beginn if vertrag else None
 

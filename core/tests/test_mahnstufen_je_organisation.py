@@ -473,7 +473,9 @@ class MahnlaufErzwingenTests(TestCase):
 class MahnlaufTerminTests(TestCase):
     """Der Termin des Mahnlaufs im Arbeitsvorrat folgt den Mahnstufen — kein fester 15."""
 
-    STICHTAG = timezone.datetime(2026, 10, 1).date()
+    # Erster des laufenden Monats: Die Seite plant den Lauf des laufenden Monats; ein festes
+    # Datum (01.10.2026) passte nur in diesem Monat (SICH-45).
+    STICHTAG = timezone.localdate().replace(day=1)
 
     @classmethod
     def setUpTestData(cls):
@@ -484,7 +486,7 @@ class MahnlaufTerminTests(TestCase):
         from faelle.lauf_models import Lauf
         return Lauf.alle_organisationen.get(
             laufart__organisation=fixture.organisation, laufart__schluessel='mahnlauf',
-            periode='2026-10').faellig_am
+            periode=f'{self.STICHTAG.year}-{self.STICHTAG.month:02d}').faellig_am
 
     def test_standard_ist_der_15_weil_erste_stufe_ab_14_tagen(self):
         from faelle.lauf_dienst import planen

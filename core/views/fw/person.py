@@ -950,7 +950,7 @@ def _person_kopf(m, vertraege, total_offen):
         rollen.append({
             'art': 'Schadenmelder', 'art_label': art_label['Schadenmelder'], 'aktiv': t.status != 'erledigt',
             'ort': t.titel, 'mandat': None,
-            'von': t.erstellt_am.date() if t.erstellt_am else None, 'bis': None,
+            'von': timezone.localtime(t.erstellt_am).date() if t.erstellt_am else None, 'bis': None,
             'status': t.get_status_display(), 'brutto': None,
             'url': f'/neu/schaeden/{t.id}/',
         })

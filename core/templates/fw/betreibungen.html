@@ -27,7 +27,7 @@
         <td>{{ b.begehren_am|date:"d.m.Y" }}</td>
         <td>{% if b.status in abgeschlossen %}—{% elif b.status == 'zahlungsbefehl' and b.rechtsvorschlag_frist_bis %}{% blocktrans with d=b.rechtsvorschlag_frist_bis|date:"d.m.Y" %}Rechtsvorschlag bis {{ d }}{% endblocktrans %}{% elif b.fortsetzung_frist.0 and not b.fortsetzung_am %}{% blocktrans with d=b.fortsetzung_frist.0|date:"d.m.Y" %}Fortsetzung ab {{ d }}{% endblocktrans %}{% elif b.rechtsvorschlag_am and not b.rechtsoeffnung_am %}{% trans "Rechtsöffnung ausstehend" %}{% else %}—{% endif %}</td>
         <td class="whitespace-nowrap"><a class="fw-btn" href="/neu/betreibungen/{{ b.id }}/">{% trans "Bearbeiten" %}</a>
-            <a class="fw-btn" href="/neu/betreibungen/{{ b.id }}/pdf/" target="_blank" rel="noopener">{% zeichen 'drucken' %}{% trans "PDF" %}</a></td>
+            {% url 'fw_betreibung_pdf' b.id as pdf_url %}{% include 'fw/_pdf_erstellen.html' with url=pdf_url text=_("PDF") %}</td>
       </tr>
     {% endfor %}
     </tbody>

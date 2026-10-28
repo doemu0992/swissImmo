@@ -9,7 +9,7 @@
 
 from django.shortcuts import get_object_or_404
 
-from core.auth import rolle_erforderlich, TEAM_ROLLEN
+from core.auth import rolle_erforderlich, SCHREIB_ROLLEN, TEAM_ROLLEN
 from finance.models import DebitorenRechnung
 
 
@@ -21,8 +21,14 @@ from finance.models import DebitorenRechnung
 def fw_debitor_qr_pdf(request, pk):
     """QR-Einzahlungsschein (A4) für eine beliebige Debitorenrechnung —
     ermöglicht Ad-hoc-Weiterverrechnungen (Schlüssel, Sonnerie, Ersatz …)
-    mit QR-Rechnung inkl. QRR-Referenz."""
+    mit QR-Rechnung inkl. QRR-Referenz.
+
+    GET ist die VORSCHAU und schreibt nichts (ROUTE-01/18). Erst POST
+    («QR erstellen») legt die Rechnung in der Vertragsakte ab — nur für
+    Schreib-Rollen, und für den Mieter unsichtbar, bis sie zugestellt ist."""
     from django.http import HttpResponse
+    from django.core.exceptions import PermissionDenied
+    from core.auth import hat_rolle
     from core.services.debitor_qr import generate_debitor_qr_pdf
 
     r = get_object_or_404(DebitorenRechnung.objects.select_related(
@@ -38,10 +44,13 @@ def fw_debitor_qr_pdf(request, pk):
     pdf = generate_debitor_qr_pdf(r)
     if pdf is None:
         return HttpResponse("Keine IBAN hinterlegt (Liegenschaft oder Verwaltung).", status=400)
-    # Auto-Ablage in die Akte (pro Rechnung eigener Titel) -> Portal
-    if r.vertrag_id:
-        from core.services.ablage import ablegen
-        ablegen(pdf, f"Rechnung: {r.titel} (#{r.id})", kategorie='korrespondenz', vertrag=r.vertrag, dedup=True)
+    if request.method == 'POST':
+        if not hat_rolle(request.user, SCHREIB_ROLLEN):
+            raise PermissionDenied
+        # Ablage in die Akte (pro Rechnung eigener Titel)
+        if r.vertrag_id:
+            from core.services.ablage import ablegen
+            ablegen(pdf, f"Rechnung: {r.titel} (#{r.id})", kategorie='korrespondenz', vertrag=r.vertrag, dedup=True)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Rechnung_{r.id}.pdf"'
     return resp

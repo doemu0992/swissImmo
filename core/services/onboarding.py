@@ -149,6 +149,13 @@ def organisation_anlegen(firma: str, benutzername: str, email: str,
             benutzer=benutzer, organisation=organisation,
             defaults={'rolle': Mitgliedschaft.ROLLE_INHABER})
 
+        # Die paritätische Lebensdauertabelle gehört zur Anlage, nicht zum ersten
+        # Seitenaufruf: Bis 28.10.2026 füllte sie erst ein GET auf
+        # /neu/lebensdauer/ (ROUTE-07). Wer die Seite nie öffnete, rechnete in
+        # der Abnahme ohne Lebensdauern. `seed_lebensdauer` ist idempotent.
+        from core.services.raumkatalog import seed_lebensdauer
+        seed_lebensdauer(organisation)
+
     # Die Gruppe trägt die Rechte, die Mitgliedschaft die Zugehörigkeit.
     # `core/views/fw/benutzer.py` hält beide parallel; wer hier nur eines
     # setzt, baut einen Inhaber, der nichts darf.

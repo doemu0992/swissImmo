@@ -378,3 +378,25 @@ in `BEHALTEN` steht.
 Wiederherstellen nach einem irrtümlichen Reset: der Stand liegt in
 `~/sicherungen/` (`<Zeitstempel>-db.*`), Vorgehen wie oben unter «Wiederherstellen».
 
+## Abhängigkeiten auf bekannte Schwachstellen prüfen
+
+Gesichert wird nicht nur der Bestand, sondern auch der Boden darunter: Django, Pillow, pypdf
+und cryptography verarbeiten Dateien und Anfragen Fremder. Am 28.10.2026 meldete `pip-audit`
+175 Schwachstellen in 16 der gepinnten Pakete (Django 5.2.9 war acht Patch-Fassungen im
+Rückstand); `requirements.txt` steht seither auf den kleinsten Fassungen ohne bekannte Meldung.
+
+- **CI:** Der Job `pip-audit` (`.github/workflows/ci.yml`) liest `requirements.txt`, fragt die
+  Schwachstellendatenbank ab und wird **rot**, sobald eine Schwachstelle eine behobene Fassung
+  hat. Eine Schwachstelle ohne behobene Fassung erscheint nur als Hinweis. Ausgewertet wird mit
+  `_tools/pip_audit_pruefen.py`.
+- **Ausnahme:** Steht ein Update nicht zur Wahl, kommt die Kennung mit **Begründung, Datum und
+  Verantwortlichem** in `pip-audit-ignore.txt`. Eine Zeile ohne Begründung wird abgewiesen, eine
+  Ausnahme, die nichts mehr trifft, gemeldet.
+- **Von Hand**, vor dem Einspielen eines Updates oder wenn die CI rot ist:
+  `pip install pip-audit && pip-audit -r requirements.txt --no-deps --disable-pip`.
+- **Die Meldungen ändern sich ohne Codeänderung.** Der Job läuft bei jedem Push und Pull Request;
+  wer ihn auch bei Ruhe will, ergänzt in `ci.yml` einen wöchentlichen `schedule`-Auslöser.
+- **Update einspielen:** Fassung in `requirements.txt` anheben, `pip check`, ganze Suite auf SQLite
+  **und** PostgreSQL, danach `deploy.sh`. Hauptversionssprünge (Pillow 13, cryptography 50) nur,
+  wenn die behobene Fassung nur dort liegt, und mit den PDF-Tests (`reportlab`, `xhtml2pdf`,
+  `pyHanko`) im Lauf.

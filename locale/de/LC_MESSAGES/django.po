@@ -33570,3 +33570,39 @@ msgstr ""
 "Diesen Vertrag wirklich löschen?\n"
 "\n"
 "Er hat %(r)s Rechnung(en) und %(z)s Zahlung(en) und kann deshalb nicht gelöscht werden. Setze ihn stattdessen auf «Inaktiv / Archiviert»."
+
+#, python-format
+msgid ""
+"Die Eingabe ist zu lang: Ein Feld darf höchstens %(n)s Zeichen enthalten."
+msgstr ""
+"Die Eingabe ist zu lang: Ein Feld darf höchstens %(n)s Zeichen enthalten."
+
+msgid "Eine Zahl in der Eingabe ist zu gross oder zu klein."
+msgstr "Eine Zahl in der Eingabe ist zu gross oder zu klein."
+
+msgid "Die Eingabe enthält eine ungültige Kennung oder Zahl."
+msgstr "Die Eingabe enthält eine ungültige Kennung oder Zahl."
+
+msgid ""
+"Ein Wert liegt ausserhalb des zulässigen Bereichs (zum Beispiel eine "
+"negative Menge)."
+msgstr ""
+"Ein Wert liegt ausserhalb des zulässigen Bereichs (zum Beispiel eine "
+"negative Menge)."
+
+msgid "Die Eingabe wurde nicht gespeichert."
+msgstr "Die Eingabe wurde nicht gespeichert."
+
+msgid "Ungültige Eingabe – swissImmo"
+msgstr "Ungültige Eingabe – swissImmo"
+
+msgid "Ungültige Eingabe"
+msgstr "Ungültige Eingabe"
+
+msgid ""
+"Die Anfrage konnte nicht verarbeitet werden. Bitte prüfen Sie Ihre Eingabe."
+msgstr ""
+"Die Anfrage konnte nicht verarbeitet werden. Bitte prüfen Sie Ihre Eingabe."
+
+msgid "Die gewählte Liegenschaft gibt es nicht."
+msgstr "Die gewählte Liegenschaft gibt es nicht."

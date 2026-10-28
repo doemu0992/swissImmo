@@ -109,7 +109,8 @@ def archiviere_vertrag_wenn_unterzeichnet(vertrag):
                 vertrag=vertrag,
                 mieter=vertrag.mieter,
                 einheit=vertrag.einheit,
-                datei=vertrag.pdf_datei
+                datei=vertrag.pdf_datei,
+                im_portal_sichtbar=True,       # unterzeichnet: liegt dem Mieter vor
             )
             return True
 

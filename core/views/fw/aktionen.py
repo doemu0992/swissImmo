@@ -915,7 +915,8 @@ def fw_serienbrief_pdf(request):
         from core.services.serienbrief import _ersetze
         betreff_aufgeloest = _ersetze(betreff, e) or betreff
         # Ablage am Vertrag (erscheint im Portal beider Personen) + am Hauptmieter
-        if ablegen(einzel, f"Brief: {betreff_aufgeloest}", kategorie='korrespondenz', vertrag=v, mieter=m):
+        if ablegen(einzel, f"Brief: {betreff_aufgeloest}", kategorie='korrespondenz', vertrag=v, mieter=m,
+                   im_portal_sichtbar=True):
             abgelegt += 1
 
     log_aktion(request, "Serienbrief-PDF erzeugt", betreff, f"{len(empfaenger)} Empfänger · {abgelegt} abgelegt")

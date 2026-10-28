@@ -37,7 +37,12 @@ def ablegen(pdf_bytes, titel, kategorie='korrespondenz', *,
     `zugang_pflichtig`: Das Schreiben muss dem Mieter nachweislich zugehen (Art. 257d) —
     es gilt als «nicht zugestellt», bis der Zugang bestätigt ist (`Dokument.zustellstatus`).
     `vorlage`: die `crm.Vorlage`, aus der das Dokument entstand.
-    `im_portal_sichtbar`: None = Standard (sichtbar bzw. wie die Vorfassung).
+    `im_portal_sichtbar`: None = Standard = NICHT sichtbar (bzw. wie die Vorfassung).
+    Ein Dokument gelangt erst ins Mieterportal, wenn es dem Mieter tatsächlich
+    zugestellt oder freigegeben wurde (Versand, Unterschrift, Inkraftsetzen des
+    Vertrags, Freigabe von Hand): Aufrufer, die genau das tun, übergeben `True`.
+    Bis 28.10.2026 war der Standard «sichtbar» — ein Mahn- oder Betreibungsschreiben
+    stand damit schon vor dem Versand im Portal (ROUTE-01).
     Gibt das erstellte Dokument zurück (oder ``None``)."""
     from rentals.models import Dokument
     if vertrag is not None:
@@ -94,7 +99,7 @@ SIGNIERT_TITEL = "Mietvertrag (unterzeichnet)"
 
 def ablage_mahnung(vertrag, *, stufe=None, monat='', betrag='', datum=None,
                    pdf_bytes=None, rechnung=None, gebuehr=None, letzte_stufe=False,
-                   zugang_pflichtig=None):
+                   zugang_pflichtig=None, im_portal_sichtbar=None):
     """Legt die Mahnung als PDF in der Vertrags-Akte ab.
 
     Eine Mahnung ist der Beleg für eine Zahlungsaufforderung. Ohne `pdf_bytes`
@@ -117,6 +122,10 @@ def ablage_mahnung(vertrag, *, stufe=None, monat='', betrag='', datum=None,
 
     Gibt das Dokument zurück (oder None). Die Ablage darf den Mahnvorgang nie
     scheitern lassen — Buchung und Historie sind wichtiger als der Beleg.
+
+    `im_portal_sichtbar`: nur `True`, wenn die Mahnung dem Mieter in diesem Schritt
+    tatsächlich zugestellt wird (E-Mail-Kopie, Mahnlauf mit Versand). Ein blosser
+    Beleg im Mahnwesen bleibt für den Mieter unsichtbar.
     """
     from django.utils import timezone
     if vertrag is None:
@@ -148,7 +157,8 @@ def ablage_mahnung(vertrag, *, stufe=None, monat='', betrag='', datum=None,
     dateiname = f"Mahnung_{stufe or ''}_{getattr(vertrag, 'id', '')}_{datum:%Y%m%d}.pdf"
     return ablegen(pdf_bytes, titel, kategorie='korrespondenz',
                    vertrag=vertrag, dateiname=dateiname, dedup=True,
-                   zugang_pflichtig=bool(letzte_stufe if zugang_pflichtig is None else zugang_pflichtig))
+                   zugang_pflichtig=bool(letzte_stufe if zugang_pflichtig is None else zugang_pflichtig),
+                   im_portal_sichtbar=im_portal_sichtbar)
 
 
 def _pdf_kern(daten):
@@ -278,8 +288,9 @@ def ablage_signierter_vertrag(vertrag, pdf_bytes=None):
             return None
 
     # 3) Noch keine Fassung → erstmals ablegen.
+    # Der unterzeichnete Vertrag liegt beim Mieter vor: sichtbar.
     return ablegen(pdf_bytes, titel, kategorie='vertrag', vertrag=vertrag,
-                   dateiname=dateiname, dedup=False)
+                   dateiname=dateiname, dedup=False, im_portal_sichtbar=True)
 
 
 def bereinige_signierte_dubletten():

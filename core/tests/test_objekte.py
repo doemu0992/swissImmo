@@ -192,12 +192,17 @@ class AusstattungRaumbuchTests(TestCase):
 
         Bis Etappe 5 legte die Data-Migration `0019_seed_lebensdauer` sie an —
         ohne Bezug, weil es zur Migrationszeit keine Organisation gibt. Solche
-        herrenlosen Zeilen loescht `0037`, und `fw_lebensdauer` legt sie beim
-        ersten Aufruf fuer die eigene Verwaltung neu an.
+        herrenlosen Zeilen loescht `0037`. Seit 28.10.2026 (ROUTE-07) legt sie
+        weder ein GET auf `/neu/lebensdauer/` an noch sonst ein Seitenaufruf:
+        Sie entstehen bei der Anlage der Verwaltung (`organisation_anlegen`) oder
+        mit dem Knopf «Standardwerte ergaenzen» (POST).
         """
         from portfolio.models import Lebensdauer
         c = Client(); c.force_login(_team_user())
         c.get('/neu/lebensdauer/')
+        self.assertFalse(Lebensdauer.objects.filter(organisation=_test_organisation()).exists(),
+                         'Ein GET darf die Tabelle nicht fuellen.')
+        c.post('/neu/lebensdauer/', {'aktion': 'seed'})
         self.assertTrue(
             Lebensdauer.objects.filter(kategorie='Backofen',
                                        organisation=_test_organisation()).exists())

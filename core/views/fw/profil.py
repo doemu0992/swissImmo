@@ -543,6 +543,8 @@ def fw_mieterwechsel(request):
     heute = timezone.localdate()
     try:
         monate = int(request.GET.get('monate', '12'))
+        if not 0 <= monate <= 600:          # 999999 Monate sprengen `timedelta` (ROUTE-05)
+            monate = 12
     except ValueError:
         monate = 12
     grenze = None if monate == 0 else heute + _timedelta(days=int(monate * 30.44))

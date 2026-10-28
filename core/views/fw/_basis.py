@@ -91,7 +91,11 @@ def _global_filter(request):
     if ist_nur_hauswart(request.user):
         eigene = eigene.filter(hauswarte=request.user)
 
-    lg_id = request.GET.get('lg') or None
+    # Eine Nicht-Zahl oder eine Zahl ausserhalb von `bigint` ist KEINE Kennung
+    # (ROUTE-05): `?lg=abc` ergab 500 auf 136 von 166 Seiten. Wie eine fremde ID
+    # gilt sie als «kein Filter».
+    from core.utils.parameter import id_param
+    lg_id = id_param(request.GET.get('lg'))
     aktive_lg = None
     if lg_id:
         # Die Einschränkung steht IM Filter, nicht in einer Prüfung danach:

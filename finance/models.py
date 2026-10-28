@@ -5,6 +5,7 @@ import datetime
 import logging
 from decimal import Decimal, InvalidOperation
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy
 
@@ -12,9 +13,23 @@ from core.tenancy import AlleOrganisationenManager, TenantManager, TenantQuerySe
 from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
 from core.utils import get_smart_upload_path
 from django.utils import timezone
+from core.zeit import datum_heute
 from django.db.models import Sum
 
 logger = logging.getLogger(__name__)
+
+
+class BetragFehler(ValidationError, ValueError):
+    """Ein Betrag, der nicht in sein Feld passt (kein Betrag oder zu gross).
+
+    Eine `ValidationError`, damit Formulare und die Eingabe-Schicht
+    (`core/middleware_eingabe.py`) daraus eine Meldung machen statt einer
+    500-Seite (ROUTE-06). Zugleich ein `ValueError`: Die vielen Stellen, die
+    `except ValueError` um ein `save()` haben, und die Tests, die darauf
+    prüfen, laufen unverändert weiter."""
+
+    def __str__(self):
+        return ' '.join(self.messages)
 
 
 def pruefe_dezimalfelder(instance):
@@ -37,13 +52,13 @@ def pruefe_dezimalfelder(instance):
         try:
             d = Decimal(str(wert))
         except (InvalidOperation, ValueError, TypeError):
-            raise ValueError(f"{feld.name}: «{wert}» ist kein gültiger Betrag.")
+            raise BetragFehler(f"{feld.name}: «{wert}» ist kein gültiger Betrag.")
         stellen = d.as_tuple()
         vorkomma = len(stellen.digits) + stellen.exponent      # exponent ≤ 0
         max_vorkomma = feld.max_digits - feld.decimal_places
         if vorkomma > max_vorkomma:
             grenze = 10 ** max_vorkomma
-            raise ValueError(
+            raise BetragFehler(
                 f"{feld.verbose_name or feld.name}: Betrag zu gross "
                 f"(maximal {grenze:,.0f}).".replace(',', "'"))
 
@@ -297,7 +312,7 @@ class BuchungAlleManager(AlleOrganisationenManager.from_queryset(BuchungQuerySet
 # 🔥 NEU: Die doppelte Buchhaltung (Soll & Haben) mit Revisionssicherheit
 class Buchung(OrganisationAusKette):
     ORGANISATION_PFAD = 'soll_konto'
-    datum = models.DateField(default=timezone.now)
+    datum = models.DateField(default=datum_heute)
     beleg_text = models.CharField(max_length=255)
 
     # Optional: Verknüpfung zur Liegenschaft (für objektbezogene Auswertungen)
@@ -507,7 +522,7 @@ class DebitorenRechnung(OrganisationAusKette):
 
     titel = models.CharField("Titel / Grund", max_length=200)
     beschreibung = models.TextField(blank=True, default="")
-    datum = models.DateField(default=timezone.now)
+    datum = models.DateField(default=datum_heute)
     faellig_am = models.DateField(null=True, blank=True)
     betrag = models.DecimalField(max_digits=10, decimal_places=2)  # Bruttobetrag (inkl. MWST, falls ausgewiesen)
     # MWST-Ausweis (Momentaufnahme bei der Rechnungsstellung): Satz und Betrag
@@ -621,7 +636,7 @@ class Zahlungseingang(OrganisationAusKette):
     debitoren_rechnung = models.ForeignKey(DebitorenRechnung, on_delete=models.SET_NULL, null=True, blank=True, related_name='zahlungseingaenge')
 
     betrag = models.DecimalField(max_digits=10, decimal_places=2)
-    datum_eingang = models.DateField(default=timezone.now)
+    datum_eingang = models.DateField(default=datum_heute)
     buchungs_monat = models.DateField("Für Monat/Jahr", null=True)
     bemerkung = models.CharField(max_length=255, blank=True, default='')
     # Bank-Transaktionsreferenz aus camt.053 (AcctSvcrRef) — Duplikatschutz beim Import
@@ -665,7 +680,7 @@ class Mahnung(OrganisationAusKette):
     debitoren_rechnung = models.ForeignKey(DebitorenRechnung, on_delete=models.CASCADE, related_name='mahnungen', null=True, blank=True)
     vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.PROTECT, null=True, blank=True, related_name='mahnungen')
     stufe = models.PositiveSmallIntegerField("Mahnstufe", default=1)
-    datum = models.DateField("Mahndatum", default=timezone.now)
+    datum = models.DateField("Mahndatum", default=datum_heute)
     betrag_offen = models.DecimalField("Offener Betrag", max_digits=10, decimal_places=2, default=Decimal('0.00'))
     gebuehr = models.DecimalField("Mahngebühr", max_digits=8, decimal_places=2, default=Decimal('0.00'))
     # Mit DIESER Mahnung fakturierter Verzugszins (nur das Delta zur Vorstufe) —
@@ -865,7 +880,7 @@ class KreditorenZahlung(OrganisationAusKette):
     """Ausgangszahlung an einen Lieferanten (ermöglicht Teilzahlungen / OP)."""
     kreditor = models.ForeignKey(KreditorenRechnung, on_delete=models.CASCADE, related_name='zahlungen')
     betrag = models.DecimalField(max_digits=10, decimal_places=2)
-    datum = models.DateField(default=timezone.now)
+    datum = models.DateField(default=datum_heute)
     konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
     bank_referenz = models.CharField("Bank-Referenz", max_length=140, blank=True, default='', db_index=True)
     bemerkung = models.CharField(max_length=255, blank=True, default='')
@@ -1058,7 +1073,7 @@ class NebenkostenBeleg(OrganisationAusKette):
                        ('einheit', gettext_lazy('Pro Wohnung')), ('personen', gettext_lazy('Nach Personenzahl'))]
 
     periode = models.ForeignKey(AbrechnungsPeriode, on_delete=models.CASCADE, related_name='belege')
-    datum = models.DateField(default=timezone.now, blank=True, null=True)
+    datum = models.DateField(default=datum_heute, blank=True, null=True)
     text = models.CharField("Beschreibung / Lieferant", max_length=255, blank=True)
     kategorie = models.CharField(max_length=50, choices=NK_KATEGORIE_CHOICES, default='diverse')
     verteilschluessel = models.CharField("Verteilschlüssel", max_length=20, choices=VERTEIL_CHOICES, default='m2')
@@ -1282,7 +1297,7 @@ class EigentuemerAuszahlung(models.Model):
 
     eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.PROTECT, related_name='auszahlungen')
     betrag = models.DecimalField(max_digits=12, decimal_places=2)
-    datum = models.DateField(default=timezone.now)
+    datum = models.DateField(default=datum_heute)
     konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True,
                               help_text="Bankkonto der Auszahlung (Haben)")
     bemerkung = models.CharField(max_length=255, blank=True, default='')
@@ -1543,7 +1558,7 @@ class Betreibung(OrganisationAusKette):
     # sonst dieselben Kosten zweimal fordern.
     kosten_rechnung = models.ForeignKey(DebitorenRechnung, on_delete=models.SET_NULL, null=True, blank=True,
                                         related_name='+', editable=False)
-    begehren_am = models.DateField("Betreibungsbegehren am", default=timezone.now)
+    begehren_am = models.DateField("Betreibungsbegehren am", default=datum_heute)
     zahlungsbefehl_am = models.DateField("Zahlungsbefehl zugestellt am", null=True, blank=True)
     rechtsvorschlag_am = models.DateField("Rechtsvorschlag am", null=True, blank=True)
     rechtsoeffnung_beantragt_am = models.DateField("Rechtsöffnungsgesuch am", null=True, blank=True)

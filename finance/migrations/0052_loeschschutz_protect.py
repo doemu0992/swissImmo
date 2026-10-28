@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("crm", "0054_vorlage_ereignis_version_briefkopf"),
-        ("finance", "0050_kreditor_handwerker_ablage"),
+        ("finance", "0051_kreditor_adresse_zahlungsdatei"),
         ("portfolio", "0048_schluesselausgabe_status_uebernehmen"),
         ("rentals", "0051_staffelstufe_erhoehung_positiv"),
     ]

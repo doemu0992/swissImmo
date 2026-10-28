@@ -195,7 +195,8 @@ npm run css:alle
   vorher `python manage.py collectstatic`, `DEBUG=False` und einen festen
   `SECRET_KEY` setzen. `staticfiles/` und `media/` vom Webserver ausliefern
   lassen — `media/` **nicht** öffentlich, Uploads laufen über geschützte Views.
-- **Sicherung und Wiederherstellung**: `docs/SICHERUNG.md`.
+- **Sicherung und Wiederherstellung**: `docs/SICHERUNG.md`; dort auch, wie die
+  Abhängigkeiten auf bekannte Schwachstellen geprüft werden (CI-Job `pip-audit`).
 
 ## Projektaufbau
 

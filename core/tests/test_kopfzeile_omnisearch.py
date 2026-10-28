@@ -506,7 +506,9 @@ class OmnisearchJeRolleTests(TestCase):
             with self.subTest(konto=name):
                 r = RequestFactory().get('/neu/')
                 r.user = u
-                self.assertEqual(fw_navigation(r), {})
+                # Keine Suche, keine Palette — nur das Zeichen für die reduzierte Kopfzeile ohne die
+                # Team-Ziele (DESIGN-01): Logo → Login-Weiche, kein «+», keine Glocke, kein Zahnrad.
+                self.assertEqual(fw_navigation(r), {'fw_kopf_reduziert': True, 'fw_kopf_start': '/nach-login/'})
         # Gegenprobe: Team und Hauswartung bekommen etwas.
         for u in (self.team, self.hauswart):
             r = RequestFactory().get('/neu/')
@@ -520,7 +522,9 @@ class OmnisearchJeRolleTests(TestCase):
         r = RequestFactory().get('/neu/')
         r.user = self.hauswart
         kontext = fw_navigation(r)
-        self.assertEqual(set(kontext), {'fw_palette', 'fw_suche_gruppen', 'fw_suche_ziel'})
+        self.assertEqual(set(kontext), {'fw_palette', 'fw_suche_gruppen', 'fw_suche_ziel',
+                                        'fw_kopf_reduziert', 'fw_kopf_start'})
+        self.assertEqual(kontext['fw_kopf_start'], '/neu/schaeden/')      # eigene Startseite, nicht /neu/ (403)
         self.assertNotIn('fw_nav_gruppen', kontext)
 
     def test_das_markup_nennt_genau_die_gruppen_des_endpunkts(self):

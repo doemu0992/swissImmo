@@ -269,12 +269,20 @@ def fw_kaution_aktion(request, vertrag_id):
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_kaution_beleg(request, vertrag_id, art):
     """Kautions-Beleg als PDF (Art. 257e OR): `hinterlegung` = Bestätigung an die
-    Mieterschaft, `freigabe` = Freigabeschreiben an die Bank. Wird in der Akte abgelegt."""
+    Mieterschaft, `freigabe` = Freigabeschreiben an die Bank.
+
+    GET ist die VORSCHAU und schreibt nichts (ROUTE-01: schon das Öffnen legte
+    das Bankschreiben im Mieterportal bereit und hakte die Pendenz ab). Erst
+    POST («Erstellen») legt den Beleg in der Akte ab, erledigt die Pendenz und
+    protokolliert — und nur für Schreib-Rollen: «Lesend» (Treuhand/Revision)
+    erzeugt keine Akteneinträge. Die Bestätigung an den Mieter wird erst mit
+    dem Versand freigegeben (Schalter in der Person-Akte)."""
     from django.http import HttpResponse
+    from django.core.exceptions import PermissionDenied
     from crm.models import Organisation
     from core.services.mietprozess_briefe import kaution_hinterlegung_pdf, kaution_freigabe_pdf
     from core.services.ablage import ablegen
-    from core.auth import log_aktion
+    from core.auth import log_aktion, hat_rolle
     v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
     # Die Verwaltung des VERTRAGS, nicht die aelteste im Bestand: Ein Brief
     # traegt den Briefkopf dessen, der ihn schreibt.
@@ -285,11 +293,15 @@ def fw_kaution_beleg(request, vertrag_id, art):
     else:
         pdf = kaution_hinterlegung_pdf(v, verwaltung=vw)
         titel = f"Kaution-Bestätigung {v.mieter.nachname}"
-    ablegen(pdf, titel, kategorie='vertrag', vertrag=v, dedup=True)
-    if art == 'freigabe':
-        from core.services.automation import erledige_pendenzen_fuer
-        erledige_pendenzen_fuer(v, ['Freigabeschreiben'], user=request.user)
-    log_aktion(request, "Kautions-Beleg erstellt", str(v.mieter), titel, ziel=v)
+    if request.method == 'POST':
+        if not hat_rolle(request.user, SCHREIB_ROLLEN):
+            raise PermissionDenied
+        # Das Bankschreiben ist nie für den Mieter bestimmt.
+        ablegen(pdf, titel, kategorie='vertrag', vertrag=v, dedup=True, im_portal_sichtbar=False)
+        if art == 'freigabe':
+            from core.services.automation import erledige_pendenzen_fuer
+            erledige_pendenzen_fuer(v, ['Freigabeschreiben'], user=request.user)
+        log_aktion(request, "Kautions-Beleg erstellt", str(v.mieter), titel, ziel=v)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="{titel.replace(" ", "_")}.pdf"'
     return resp

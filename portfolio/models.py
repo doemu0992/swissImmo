@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 from core.tenancy import AlleOrganisationenManager, TenantManager
 from django.utils import timezone
+from core.zeit import datum_heute
 from datetime import date
 from decimal import Decimal
 from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_path
@@ -536,7 +537,7 @@ class Dokument(OrganisationAusKette):
     titel = models.CharField(max_length=200)
     kategorie = models.CharField(max_length=50, default='Allgemein')
     datei = models.FileField(upload_to=get_smart_upload_path)
-    datum = models.DateField(default=timezone.now)
+    datum = models.DateField(default=datum_heute)
 
     class Meta:
         verbose_name = "Dokument"
@@ -612,7 +613,7 @@ class Unterhalt(OrganisationAusKette):
     einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, null=True, blank=True, related_name='unterhalte')
     titel = models.CharField(max_length=200)
     beschreibung = models.TextField(blank=True, default='')
-    datum = models.DateField(default=timezone.now)
+    datum = models.DateField(default=datum_heute)
     kosten = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     beleg = models.FileField(upload_to=get_smart_upload_path, blank=True, null=True)
 
@@ -658,7 +659,7 @@ class ZaehlerStand(OrganisationAusKette):
     # Organisation — die Kette endet also schon nach einem Glied.
     ORGANISATION_PFAD = 'zaehler'
     zaehler = models.ForeignKey(Zaehler, on_delete=models.CASCADE, related_name='staende')
-    datum = models.DateField(default=timezone.now)
+    datum = models.DateField(default=datum_heute)
     wert = models.DecimalField("Zählerstand", max_digits=12, decimal_places=3)
     #: Wofür der Stand steht. Leer bei Ständen aus der Zeit vor dem Wizard: Die Abrechnung
     #: liest sie wie bisher nach Datum. «Zwischen» ist der Stand beim Mieterwechsel — mit
@@ -945,7 +946,7 @@ class SchluesselAusgabe(OrganisationAusKette):
     schluessel = models.ForeignKey(Schluessel, on_delete=models.CASCADE, related_name='ausgaben')
     mieter = models.ForeignKey('crm.Mieter', on_delete=models.SET_NULL, null=True, blank=True)
     handwerker = models.ForeignKey('crm.Handwerker', on_delete=models.SET_NULL, null=True, blank=True)
-    ausgegeben_am = models.DateField(default=timezone.now)
+    ausgegeben_am = models.DateField(default=datum_heute)
     # Tag der Rücknahme ODER des Verlusts: gesetzt, sobald der Schlüssel nicht
     # mehr ausgegeben ist. `status` sagt, welches von beiden.
     rueckgabe_am = models.DateField(null=True, blank=True)
