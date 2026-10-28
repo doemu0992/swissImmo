@@ -55,7 +55,7 @@ def _zaehlen(*pruefungen):
 
 def _person(m):
     from finance.models import Betreibung, DebitorenRechnung, Mahnung, Zahlungseingang
-    from rentals.models import Abnahmeprotokoll, Dokument, Kuendigung, Mietvertrag
+    from rentals.models import Abnahmeprotokoll, Dokument, Kuendigung, Mietverfahren, Mietvertrag
     return _zaehlen(
         (_('Mietverträge'), Mietvertrag.objects.filter(
             Q(mieter=m) | Q(mitmieter=m) | Q(weitere_mieter=m)).distinct()),
@@ -64,6 +64,7 @@ def _person(m):
         (_('Mahnungen'), Mahnung.objects.filter(vertrag__mieter=m)),
         (_('Betreibungen'), Betreibung.objects.filter(vertrag__mieter=m)),
         (_('Kündigungen'), Kuendigung.objects.filter(vertrag__mieter=m)),
+        (_('Mietrechtliche Verfahren'), Mietverfahren.objects.filter(vertrag__mieter=m)),
         (_('Abnahmeprotokolle'), Abnahmeprotokoll.objects.filter(vertrag__mieter=m)),
         (_('Dokumente'), Dokument.objects.filter(mieter=m)),
     )
@@ -74,7 +75,7 @@ def _vertrag(v):
     zählen nicht: `Mietvertrag.delete()` räumt sie selbst weg."""
     from core.views.pdf import VERTRAGSPAKET_TITEL
     from finance.models import Betreibung, DebitorenRechnung, Mahnung, Zahlungseingang, Zahlungsvereinbarung
-    from rentals.models import Abnahmeprotokoll, Dokument, Kuendigung
+    from rentals.models import Abnahmeprotokoll, Dokument, Kuendigung, Mietverfahren
     return _zaehlen(
         (_('Rechnungen'), DebitorenRechnung.objects.filter(vertrag=v)),
         (_('Zahlungen'), Zahlungseingang.objects.filter(vertrag=v)),
@@ -82,6 +83,7 @@ def _vertrag(v):
         (_('Betreibungen'), Betreibung.objects.filter(vertrag=v)),
         (_('Zahlungsvereinbarungen'), Zahlungsvereinbarung.objects.filter(vertrag=v)),
         (_('Kündigungen'), Kuendigung.objects.filter(vertrag=v)),
+        (_('Mietrechtliche Verfahren'), Mietverfahren.objects.filter(vertrag=v)),
         (_('Abnahmeprotokolle'), Abnahmeprotokoll.objects.filter(vertrag=v)),
         (_('Dokumente'), Dokument.objects.filter(vertrag=v).exclude(
             kategorie='vertrag', bezeichnung__in=VERTRAGSPAKET_TITEL)),

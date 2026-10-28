@@ -101,6 +101,24 @@ class VertragBearbeitenForm(forms.Form):
                 f"({ART_INDEX_WEITERGABE})")
         return w
 
+    def clean_kuendigungsfrist(self):
+        # Audit MIET-08: Die gesetzliche Frist (Wohnungen 3, Geschäftsräume 6 Monate, Art. 266c/266d OR) ist die
+        # Mindestfrist; eine kürzere gilt nicht (Art. 266a Abs. 2 OR) und wird nicht mehr angenommen.
+        #
+        # Unverändert bleibt ein Wert, der schon am Vertrag steht: Ein Altvertrag mit einer zu kurzen Frist wird
+        # nicht blockiert, solange die Frist nicht geändert wird. Die Terminberechnung rechnet ohnehin mit der
+        # gesetzlichen Mindestfrist (`rentals.services.berechne_kuendigungstermin`).
+        wert = self.cleaned_data.get('kuendigungsfrist')
+        if wert is None or self.vertrag is None or not self.vertrag.einheit_id:
+            return wert
+        if wert == self.vertrag.kuendigungsfrist_monate:
+            return wert
+        from rentals.services import kuendigungsfrist_fehler
+        fehler = kuendigungsfrist_fehler(wert, self.vertrag.einheit)
+        if fehler:
+            raise forms.ValidationError(fehler)
+        return wert
+
     def clean_mwst_satz(self):
         # Wie beim Kreditor: «8.10» ist 8.1 und kein Fehler; «7.75» lässt sich
         # nicht verlustfrei auf eine Nachkommastelle kürzen.

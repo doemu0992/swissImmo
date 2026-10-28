@@ -556,6 +556,21 @@ class DebitorenRechnung(OrganisationAusKette):
     qr_referenz = models.CharField("QRR-Referenz (27-stellig)", max_length=27, blank=True, default='', db_index=True)  # 🔥 NEU (camt.053-Abgleich)
     pdf_dokument = models.FileField(upload_to='debitoren_rechnungen/', blank=True, null=True)
 
+    # ART DER FORDERUNG (Audit MIET-02). Art. 257d OR kennt nur «fällige Mietzinse oder Nebenkosten». Die
+    # Fristansetzung mit Kündigungsandrohung darf nur diese nennen und summieren; eine Weiterverrechnung, ein
+    # Selbstbehalt, die Schlussabrechnung, Schadenersatz oder Betreibungskosten gehören nicht hinein. Ohne
+    # diese Kennung konnte ein Mieter, der alle Mieten bezahlt hat, wegen einer Nebenforderung «im Rückstand»
+    # bleiben. Jede Stelle, die eine Forderung anlegt, nennt die Art ausdrücklich (Wächter in
+    # `core/tests/test_forderungsart.py`).
+    FORDERUNGSART_MIETE = 'miete'
+    FORDERUNGSART_SONSTIGE = 'sonstige'
+    FORDERUNGSART_CHOICES = [
+        (FORDERUNGSART_MIETE, gettext_lazy('Mietzins / Nebenkosten (Art. 257d OR)')),
+        (FORDERUNGSART_SONSTIGE, gettext_lazy('Sonstige Forderung')),
+    ]
+    forderungsart = models.CharField("Art der Forderung", max_length=10, choices=FORDERUNGSART_CHOICES,
+                                     default=FORDERUNGSART_MIETE)
+
     class Meta:
         verbose_name = "Debitorenrechnung (Weiterverrechnung)"
         verbose_name_plural = "Debitorenrechnungen"

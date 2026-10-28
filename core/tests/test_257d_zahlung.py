@@ -30,7 +30,7 @@ from decimal import Decimal
 from django.core.management import call_command
 from django.test import Client, TestCase
 
-from ._helfer import _basis_objekte, _team_user
+from ._helfer import _basis_objekte, _team_user, werktag_vor
 
 
 class Verzug257dZahlungTests(TestCase):
@@ -160,7 +160,7 @@ class Verzug257dZahlungTests(TestCase):
     def test_zahlung_nach_fristablauf_schliesst_nicht_stillschweigend(self):
         """Nach Fristablauf besteht das Kündigungsrecht weiter — Entscheid, kein Automat."""
         p = self._frist_ansetzen()
-        type(p).objects.filter(pk=p.pk).update(faellig_am=self.heute - timedelta(days=1))
+        type(p).objects.filter(pk=p.pk).update(faellig_am=werktag_vor(1))
         self._zahlen('1700.00', am=self.heute)
         p.refresh_from_db()
         self.assertFalse(p.erledigt)
@@ -206,7 +206,7 @@ class Verzug257dZahlungTests(TestCase):
         """Die Sperre darf den legitimen Fall nicht verhindern."""
         from rentals.models import Kuendigung
         p = self._frist_ansetzen()
-        type(p).objects.filter(pk=p.pk).update(faellig_am=self.heute - timedelta(days=1))
+        type(p).objects.filter(pk=p.pk).update(faellig_am=werktag_vor(1))
         self._kuendigen_wegen_verzug()
         self.assertTrue(Kuendigung.objects.filter(vertrag=self.v).exists())
 

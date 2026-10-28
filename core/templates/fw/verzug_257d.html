@@ -22,29 +22,47 @@
     <!-- Offene Forderung -->
     <div class="fw-kpis">
         <div class="fw-kpi">
-        <div class="fw-l">Offene, fällige Mietzinse</div>
+        <div class="fw-l">Offene, fällige Mietzinse und Nebenkosten</div>
         <div class="fw-v {% if offen_total > 0 %}fw-crit{% else %}{% endif %}">
             CHF {{ offen_total|chf }}
         </div>
         <p class="fw-f">{{ anzahl_faellig }} fällige Rechnung(en) dieses Vertrags.</p>
         </div>
     </div>
+    {% if faellige %}
+    <div class="fw-card"><div class="fw-rumpf">
+        <p class="fw-hilfe">Diese Monate und Beträge nennt das Schreiben einzeln (Art. 257d Abs. 1 OR):</p>
+        <ul class="list-disc pl-5 text-sm space-y-0.5">
+            {% for r in faellige %}<li>{{ r.titel }} · fällig {{ r.faellig_am|default:r.datum|date:"d.m.Y" }} · CHF {{ r.offener_betrag|chf }}</li>{% endfor %}
+        </ul>
+    </div></div>
+    {% endif %}
+    {% if ausgenommen_anzahl %}
+    <div class="fw-card"><div class="fw-hinweis info">
+        <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+        <div class="fw-ht"><b>Nicht Teil der Fristansetzung:</b> {{ ausgenommen_anzahl }} weitere offene Forderung(en) über CHF {{ ausgenommen_total|chf }}
+        (etwa Weiterverrechnung, Selbstbehalt, Schlussabrechnung, Mahngebühr oder Verzugszins). Art. 257d OR gilt nur für fällige
+        Mietzinse und Nebenkosten; diese Beträge werden nicht gemahnt und nicht angedroht.</div>
+    </div></div>
+    {% endif %}
     {% if offen_total <= 0 %}
     <div class="fw-card"><div class="fw-hinweis warn">
         <span class="fw-hi">{% zeichen 'hinweis' %}</span>
-        <div class="fw-ht">Aktuell keine fälligen offenen Mietzinse — eine Fristansetzung nach Art. 257d setzt einen tatsächlichen Zahlungsrückstand voraus.</div>
+        <div class="fw-ht">Aktuell keine fälligen offenen Mietzinse oder Nebenkosten — eine Fristansetzung nach Art. 257d setzt einen tatsächlichen Zahlungsrückstand voraus. Ohne ihn lässt sich die Frist nicht ansetzen.</div>
     </div></div>
     {% endif %}
 
     <!-- Frist -->
     <div class="fw-card fw-rumpf space-y-4">
         <div class="fw-feldblock">
-            <label class="fw-label">Vorläufige Frist bis</label>
+            <label class="fw-label">Vorläufiges Fristende</label>
             <input type="date" name="frist_bis" id="v_frist" value="{{ default_frist }}" onchange="fristCheck()"
                    class="fw-feld sm:w-64">
             <p class="fw-hilfe">
-                Mindestfrist: <b>{{ min_frist }} Tage</b> ({% if min_frist == 30 %}Wohn-/Geschäftsräume{% else %}übrige Objekte{% endif %}, Art. 257d Abs. 1 OR).
-                Bei Einschreiben mit erfasstem Versanddatum <b>provisorisch</b> — definitiv ab bestätigtem Zugang.
+                Mindestfrist: <b>{{ min_frist }} Tage ab Zugang</b> ({% if min_frist == 30 %}Wohn-/Geschäftsräume{% else %}übrige Objekte{% endif %}, Art. 257d Abs. 1 OR).
+                Der Zugang liegt frühestens nach Postweg und {{ abholfrist_tage }} Tagen Abholfrist des Einschreibens; das vorläufige Fristende
+                rechnet deshalb mit <b>{{ zustell_tage }} Tagen mehr</b> ({{ min_frist|add:zustell_tage }} Tage ab heute). Fällt es auf einen Samstag, Sonntag oder Feiertag,
+                gilt der nächste Werktag (Art. 78 OR). Bei Einschreiben mit erfasstem Versanddatum <b>provisorisch</b> — definitiv ab bestätigtem Zugang.
             </p>
         </div>
 
@@ -55,6 +73,13 @@
             <ul id="v-warn-list" class="list-disc pl-5 space-y-0.5"></ul></div>
         </div></div>
 
+        <div class="fw-hinweis warn rounded-lg" id="unterschrift-hinweis">
+            <span class="fw-hi">{% zeichen 'recht' %}</span>
+            <div class="fw-ht"><b>Eigenhändig unterschreiben.</b> Die Fristansetzung mit Kündigungsandrohung braucht die Schriftform
+            (Art. 257d Abs. 1 OR; Art. 13/14 OR). Das PDF enthält <b>kein Unterschriftsbild</b> und lässt die Linie frei:
+            Vor dem Versand von Hand unterschreiben (oder qualifiziert elektronisch signieren).</div>
+        </div>
+
         <div class="fw-hinweis info rounded-lg">
             <span class="fw-hi">{% zeichen 'arbeit' %}</span>
             <div class="fw-ht">Beim Speichern wird eine <strong>Zahlungsaufforderung mit Fristansetzung</strong> (PDF) erstellt und in die Akte gelegt,
@@ -63,7 +88,7 @@
         </div>
     </div>
 
-    <!-- Einschreiben / Zugang (strikte Empfangstheorie) -->
+    <!-- Einschreiben / Zugang (Empfangstheorie, BGE 119 II 147) -->
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'gut' %}</span><h2>Einschreiben &amp; Zugang</h2></div>
         <div class="fw-rumpf space-y-4">
@@ -81,11 +106,13 @@
         </div>
         <div class="fw-flaeche2 border fw-linie rounded-lg p-3 text-xs fw-mutet leading-relaxed">
             {% zeichen 'recht' klasse='fw-faint mr-1' %}
-            <b>Strikte Empfangstheorie:</b> Die 30-Tage-Frist läuft ab dem <b>Zugang</b> (Zustellung bzw.
-            Abholeinladung tritt in den Machtbereich des Mieters) — nicht ab Versand und ohne 7-Tage-Fiktion.
+            <b>Empfangstheorie (BGE 119 II 147 E. 2):</b> Die 30-Tage-Frist läuft ab dem <b>Zugang</b> — nicht ab Versand
+            und <b>nicht ab der Abholeinladung</b>. Holt der Mieter das Einschreiben ab, ist es der Tag der <b>Abholung</b>;
+            holt er es nicht ab, gilt es am <b>letzten Tag der siebentägigen Abholfrist</b> als zugegangen (Zustellfiktion).
             Der Zugang wird später im <b>Fristen-Center</b> aus <b>Track&nbsp;&amp;&nbsp;Trace</b> per
-            «Zugang bestätigen» erfasst; die Frist wird dann exakt nachgezogen. Ohne Sendungsnummer gilt die
-            vorläufige Frist oben.
+            «Zugang bestätigen» erfasst; die Frist wird dann exakt nachgezogen. Bis dahin ist das Fristende vorläufig
+            (Versand + 1 Tag Postweg + {{ abholfrist_tage }} Tage Abholfrist + 30 Tage), und eine Kündigung bleibt gesperrt.
+            Ohne Sendungsnummer gilt die vorläufige Frist oben.
         </div>
         </div>
     </div>
@@ -103,16 +130,18 @@
 
 <script>
 var MIN_FRIST = {{ min_frist }};
+var ZUSTELL_TAGE = {{ zustell_tage }};
 var HEUTE = "{{ heute_iso }}";
 function fristCheck(){
     var warns = [];
     var f = document.getElementById('v_frist').value;
     if (f && HEUTE) {
         var tage = Math.round((new Date(f) - new Date(HEUTE)) / 86400000);
-        if (tage < MIN_FRIST) {
-            warns.push('Die Frist beträgt nur ' + tage + ' Tage. Nach Art. 257d Abs. 1 OR muss sie ' +
-                       'mindestens ' + MIN_FRIST + ' Tage betragen — eine kürzere Frist ist unwirksam und ' +
-                       'eine darauf gestützte Kündigung anfechtbar.');
+        if (tage < MIN_FRIST + ZUSTELL_TAGE) {
+            warns.push('Das Fristende liegt nur ' + tage + ' Tage nach heute. Nach Art. 257d Abs. 1 OR muss die Frist ' +
+                       'mindestens ' + MIN_FRIST + ' Tage ab Zugang betragen; dazu kommen ' + ZUSTELL_TAGE +
+                       ' Tage für Postweg und Abholfrist des Einschreibens. Eine kürzere Frist ist unwirksam und ' +
+                       'eine darauf gestützte Kündigung anfechtbar — das Fristende wird beim Speichern verlängert.');
         }
     }
     var box = document.getElementById('v-warn'), list = document.getElementById('v-warn-list');

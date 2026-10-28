@@ -34512,3 +34512,231 @@ msgstr ""
 
 msgid "Die gewählte Liegenschaft gibt es nicht."
 msgstr "Lo stabile scelto non esiste."
+
+msgid "Abgeschlossen am"
+msgstr "Chiuso il"
+
+msgid "Abholeinladung (nicht abgeholt)"
+msgstr "Avviso di ritiro (non ritirato)"
+
+msgid "Abholung / Zustellung"
+msgstr "Ritiro / consegna"
+
+msgid "Aktenzeichen / Behörde"
+msgstr "Numero d'incarto / autorità"
+
+msgid "Ausgang"
+msgstr "Esito"
+
+msgid "Ausnahme nach Art. 271a Abs. 3 OR liegt vor"
+msgstr "Sussiste un'eccezione ai sensi dell'art. 271a cpv. 3 CO"
+
+msgid "Ausnahmen (Art. 271a Abs. 3 OR): dringender Eigenbedarf des Vermieters oder naher Verwandter, Zahlungsrückstand (Art. 257d), schwere Verletzung der Sorgfaltspflicht (Art. 257f), Veräusserung der Sache (Art. 261), wichtige Gründe (Art. 266g), Konkurs des Mieters (Art. 266h)."
+msgstr "Eccezioni (art. 271a cpv. 3 CO): bisogno urgente del locatore o di parenti stretti, mora dell'inquilino (art. 257d), grave violazione dell'obbligo di diligenza (art. 257f), alienazione della cosa (art. 261), gravi motivi (art. 266g), fallimento dell'inquilino (art. 266h)."
+
+msgid "Bitte Art und Gegenstand des Verfahrens wählen."
+msgstr "Selezionare il tipo e l'oggetto della procedura."
+
+msgid "Bitte ein Datum angeben, das nicht in der Zukunft liegt."
+msgstr "Indicare una data che non sia nel futuro."
+
+msgid "Bitte ein hängiges Verfahren und den Ausgang wählen."
+msgstr "Selezionare una procedura pendente e il suo esito."
+
+msgid "Das Abschlussdatum darf weder vor Beginn des Verfahrens noch in der Zukunft liegen."
+msgstr "La data di chiusura non può essere anteriore all'inizio della procedura né futura."
+
+msgid "Das Datum ist"
+msgstr "La data corrisponde a"
+
+#, python-format
+msgid "Das Verfahren (%(gegenstand)s) wurde am %(ende)s abgeschlossen: %(ausgang)s. Eine Kündigung des Vermieters vor Ablauf von drei Jahren, also bis und mit %(bis)s, ist anfechtbar (Art. 271a Abs. 1 lit. e OR)."
+msgstr "La procedura (%(gegenstand)s) è stata chiusa il %(ende)s: %(ausgang)s. Una disdetta da parte del locatore prima della scadenza di tre anni, ossia fino al %(bis)s incluso, è impugnabile (art. 271a cpv. 1 lett. e CO)."
+
+#, python-format
+msgid "Der Vertrag ist befristet und endet am %(datum)s ohne Kündigung (Art. 266 OR). Eine ordentliche Kündigung sieht er nicht vor (kein «Erstmals kündbar auf»), sie wäre wirkungslos und kann nicht erfasst werden. Zieht der Mieter früher aus, das gewünschte Ende vor dem %(datum)s angeben (vorzeitige Rückgabe, Art. 264 OR); ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich. Einigen sich die Parteien auf ein früheres Ende, ist das ein Aufhebungsvertrag: Das Vertragsende unter «Vertrag bearbeiten» anpassen."
+msgstr "Il contratto è a tempo determinato e termina il %(datum)s senza disdetta (art. 266 CO). Non prevede una disdetta ordinaria (nessun «Disdicibile per la prima volta al»), che sarebbe priva di effetto e non può quindi essere registrata. Se l'inquilino se ne va prima, indicare la fine desiderata prima del %(datum)s (restituzione anticipata, art. 264 CO); le disdette straordinarie, ad esempio per mora nel pagamento (art. 257d CO), restano possibili. Se le parti concordano una fine anticipata, si tratta di un accordo di risoluzione: adeguare la fine del contratto sotto «Modificare il contratto»."
+
+#, python-format
+msgid "Der Vertrag nennt eine Kündigungsfrist von %(vertrag)s Monat(en); gesetzlich sind mindestens %(gesetz)s Monate (Art. 266b–266d OR). Eine kürzere Frist gilt nicht, die Kündigung gilt auf den nächstmöglichen Termin (Art. 266a Abs. 2 OR) — gerechnet wurde mit %(gesetz)s Monaten."
+msgstr "Il contratto prevede un termine di disdetta di %(vertrag)s mese/i; per legge sono almeno %(gesetz)s mesi (art. 266b–266d CO). Un termine più breve non è valido: la disdetta vale per il prossimo termine possibile (art. 266a cpv. 2 CO) — il calcolo è stato fatto con %(gesetz)s mesi."
+
+msgid "Die Abholeinladung kann nicht vor dem Versand liegen."
+msgstr "L'avviso di ritiro non può essere anteriore alla spedizione."
+
+#, python-format
+msgid "Die Abholfrist läuft noch bis %(datum)s: Bis dahin kann der Mieter das Einschreiben noch abholen. Den Zugang erst danach als «nicht abgeholt» erfassen — oder die Abholung eintragen."
+msgstr "Il termine di ritiro scade il %(datum)s: fino ad allora l'inquilino può ancora ritirare la raccomandata. Registrare la ricezione come «non ritirata» solo dopo — oppure registrare il ritiro."
+
+#, python-format
+msgid "Die Frist wurde verlängert: Sie läuft %(tage)s Tage ab Zugang (Art. 257d Abs. 1 OR), und der Zugang liegt frühestens nach Postweg und siebentägiger Abholfrist des Einschreibens."
+msgstr "Il termine è stato prorogato: decorre per %(tage)s giorni dalla ricezione (art. 257d cpv. 1 CO), e la ricezione avviene al più presto dopo il tragitto postale e il termine di ritiro di sette giorni della raccomandata."
+
+#, python-format
+msgid "Die Kündigungsfrist beträgt mindestens %(min)s Monate (%(art)s). Eine kürzere Frist gilt nicht: Die Kündigung gälte auf den nächstmöglichen Termin (Art. 266a Abs. 2 OR)."
+msgstr "Il termine di disdetta è di almeno %(min)s mesi (%(art)s). Un termine più breve non è valido: la disdetta varrebbe per il prossimo termine possibile (art. 266a cpv. 2 CO)."
+
+msgid "Art. 266d OR (Geschäftsräume)"
+msgstr "art. 266d CO (locali commerciali)"
+
+msgid "Art. 266c OR (Wohnungen)"
+msgstr "art. 266c CO (abitazioni)"
+
+msgid "Art. 266b OR"
+msgstr "art. 266b CO"
+
+#, python-format
+msgid "Die Mietzinsanpassung per %(wirksam)s ist angefochten (Status «angefochten»): Ein Schlichtungsverfahren läuft. Eine Kündigung des Vermieters während eines Verfahrens um die Mietsache ist anfechtbar (Art. 271a Abs. 1 lit. d OR). Ist das Verfahren abgeschlossen, den Ausgang unter «Verfahren» erfassen."
+msgstr "L'adeguamento della pigione al %(wirksam)s è contestato (stato «angefochten»): è in corso una procedura di conciliazione. Una disdetta da parte del locatore durante una procedura relativa alla cosa locata è impugnabile (art. 271a cpv. 1 lett. d CO). Se la procedura è conclusa, registrare l'esito sotto «Procedure»."
+
+#, python-format
+msgid "Verfahren «%(art)s» (%(gegenstand)s), eingeleitet am %(beginn)s: %(zustand)s. Eine Kündigung des Vermieters während eines Verfahrens um die Mietsache ist anfechtbar (Art. 271a Abs. 1 lit. d OR)."
+msgstr "Procedura «%(art)s» (%(gegenstand)s), avviata il %(beginn)s: %(zustand)s. Una disdetta da parte del locatore durante una procedura relativa alla cosa locata è impugnabile (art. 271a cpv. 1 lett. d CO)."
+
+msgid "läuft"
+msgstr "in corso"
+
+#, python-format
+msgid "lief bis %(ende)s"
+msgstr "è durata fino al %(ende)s"
+
+msgid "Eine Kündigung des Vermieters ist anfechtbar, wenn sie während eines Schlichtungs- oder Gerichtsverfahrens um die Mietsache ausgesprochen wird (Art. 271a Abs. 1 lit. d OR) oder vor Ablauf von drei Jahren nach einem Verfahren, in dem der Vermieter unterlegen ist, die Klage zurückgezogen, auf die Anrufung des Richters verzichtet oder sich verglichen hat (lit. e). Dasselbe gilt für eine schriftlich nachgewiesene Einigung ausserhalb eines Verfahrens (Abs. 2). Die Erfassung einer Vermieterkündigung hält in diesen Zeiten an."
+msgstr "Una disdetta da parte del locatore è impugnabile se data durante una procedura di conciliazione o giudiziaria relativa alla cosa locata (art. 271a cpv. 1 lett. d CO) o prima della scadenza di tre anni dopo una procedura nella quale il locatore è risultato soccombente, ha ritirato la domanda, ha rinunciato ad adire il giudice o ha concluso una transazione (lett. e). Lo stesso vale per un accordo provato per scritto al di fuori di una procedura (cpv. 2). La registrazione di una disdetta da parte del locatore viene fermata in questi periodi."
+
+#, python-format
+msgid "Eingeleitet am %(d)s"
+msgstr "Avviata il %(d)s"
+
+msgid "Eingeleitet am (bei einer Einigung: Datum der Einigung)"
+msgstr "Avviata il (per un accordo: data dell'accordo)"
+
+msgid "Erfasste Verfahren"
+msgstr "Procedure registrate"
+
+msgid "Es gibt keinen fälligen Rückstand an Mietzins oder Nebenkosten. Eine Fristansetzung mit Kündigungsandrohung nach Art. 257d OR setzt einen solchen voraus; andere Forderungen (Weiterverrechnung, Selbstbehalt, Mahngebühr) zählen nicht."
+msgstr "Non vi è alcun arretrato scaduto di pigione o spese accessorie. La fissazione di un termine con comminatoria di disdetta secondo l'art. 257d CO lo presuppone; gli altri crediti (rifatturazione, franchigia, spese di sollecito) non contano."
+
+msgid "Fristen laufen ab dem Tag, an dem ein Schreiben beim Empfänger ankommt — nicht ab dem Versand und nicht ab der Abholeinladung. Wird ein Einschreiben abgeholt, ist es der Tag der Abholung; wird es nicht abgeholt, gilt es am letzten Tag der siebentägigen Abholfrist als zugegangen (BGE 119 II 147). Ist der Zugang noch nicht bestätigt, rechnet die Anwendung vom spätestmöglichen Zugang (Postweg und Abholfrist) und sperrt eine Kündigung bis dahin."
+msgstr "I termini decorrono dal giorno in cui uno scritto giunge al destinatario — non dalla spedizione né dall'avviso di ritiro. Se una raccomandata viene ritirata, è il giorno del ritiro; se non viene ritirata, si considera ricevuta l'ultimo giorno del termine di ritiro di sette giorni (DTF 119 II 147). Finché la ricezione non è confermata, l'applicazione calcola dalla ricezione più tardiva possibile (tragitto postale e termine di ritiro) e blocca una disdetta fino ad allora."
+
+msgid "Gegenstand"
+msgstr "Oggetto"
+
+msgid "Gerichtsverfahren"
+msgstr "Procedura giudiziaria"
+
+msgid "Heute gesperrt"
+msgstr "Oggi bloccata"
+
+msgid "Kündigung / Erstreckung"
+msgstr "Disdetta / protrazione"
+
+#, python-format
+msgid "Kündigung des Vermieters anfechtbar bis und mit %(d)s (Art. 271a Abs. 1 lit. e OR)."
+msgstr "Disdetta da parte del locatore impugnabile fino al %(d)s incluso (art. 271a cpv. 1 lett. e CO)."
+
+msgid "Kündigung in einer Sperrfrist nach Art. 271a OR erfasst, weil eine Ausnahme bestätigt wurde. Der Mieter kann sie anfechten."
+msgstr "Disdetta registrata durante un periodo di protezione ai sensi dell'art. 271a CO, poiché è stata confermata un'eccezione. L'inquilino può impugnarla."
+
+msgid "Liegt eine Ausnahme vor, das Kästchen «Ausnahme nach Art. 271a Abs. 3 OR liegt vor» setzen und die Kündigung erneut erfassen."
+msgstr "Se sussiste un'eccezione, spuntare la casella «Sussiste un'eccezione ai sensi dell'art. 271a cpv. 3 CO» e registrare nuovamente la disdetta."
+
+msgid "Mieter hat das Begehren zurückgezogen"
+msgstr "L'inquilino ha ritirato la domanda"
+
+msgid "Mieter hat das Verfahren missbräuchlich eingeleitet"
+msgstr "L'inquilino ha avviato la procedura in modo abusivo"
+
+msgid "Mieter unterlegen"
+msgstr "Inquilino soccombente"
+
+msgid "Mietrechtliche Verfahren (Art. 271a OR)"
+msgstr "Procedure in materia di locazione (art. 271a CO)"
+
+msgid "Mietrechtliche Verfahren"
+msgstr "Procedure in materia di locazione"
+
+msgid "Mietzins (Erhöhung, Anfangsmietzins, Herabsetzung)"
+msgstr "Pigione (aumento, pigione iniziale, riduzione)"
+
+msgid "Mietzins / Nebenkosten (Art. 257d OR)"
+msgstr "Pigione / spese accessorie (art. 257d CO)"
+
+msgid "Mängel / Gebrauch der Sache"
+msgstr "Difetti / uso della cosa"
+
+msgid "Schlichtungsverfahren"
+msgstr "Procedura di conciliazione"
+
+msgid "Schriftliche Einigung ausserhalb eines Verfahrens (Art. 271a Abs. 2 OR)"
+msgstr "Accordo scritto al di fuori di una procedura (art. 271a cpv. 2 CO)"
+
+msgid "Sonstige Forderung"
+msgstr "Altro credito"
+
+msgid "Sperrfrist nach Art. 271a OR"
+msgstr "Periodo di protezione ai sensi dell'art. 271a CO"
+
+msgid "Tatsächliches Zustell-/Abholdatum aus Track & Trace — leer lassen, solange der Zugang nicht feststeht. Ab dem Zugang laufen die 30 Tage; bei Nichtabholung das Datum der Abholeinladung."
+msgstr "Data effettiva di consegna/ritiro secondo Track & Trace — lasciare vuoto finché la ricezione non è accertata. I 30 giorni decorrono dalla ricezione; in caso di mancato ritiro, la data dell'avviso di ritiro."
+
+msgid "Verfahren abgeschlossen."
+msgstr "Procedura chiusa."
+
+#, python-format
+msgid "Verfahren abgeschlossen. Eine Kündigung des Vermieters ist bis und mit %(bis)s anfechtbar (Art. 271a Abs. 1 lit. e OR, drei Jahre)."
+msgstr "Procedura chiusa. Una disdetta da parte del locatore è impugnabile fino al %(bis)s incluso (art. 271a cpv. 1 lett. e CO, tre anni)."
+
+msgid "Verfahren abschliessen"
+msgstr "Chiudere la procedura"
+
+msgid "Verfahren erfasst. Eine Kündigung des Vermieters ist ab jetzt gegen Art. 271a OR geschützt und wird angehalten."
+msgstr "Procedura registrata. Da ora una disdetta da parte del locatore è protetta dall'art. 271a CO e viene fermata."
+
+msgid "Verfahren oder Einigung erfassen"
+msgstr "Registrare una procedura o un accordo"
+
+#, python-format
+msgid "Verfahren — %(name)s"
+msgstr "Procedure — %(name)s"
+
+msgid "Vergleich oder sonstige Einigung"
+msgstr "Transazione o altro accordo"
+
+msgid "Vermieter hat Forderung oder Klage zurückgezogen oder erheblich eingeschränkt"
+msgstr "Il locatore ha ritirato la pretesa o la domanda o l'ha ridotta notevolmente"
+
+msgid "Vermieter hat auf die Anrufung des Richters verzichtet"
+msgstr "Il locatore ha rinunciato ad adire il giudice"
+
+msgid "Vermieter zu einem erheblichen Teil unterlegen"
+msgstr "Il locatore è risultato soccombente in misura considerevole"
+
+msgid "Vor dem Versand eigenhändig unterschreiben (Art. 266l OR, sonst nichtig, Art. 266o OR): Das PDF enthält kein Unterschriftsbild."
+msgstr "Firmare di proprio pugno prima della spedizione (art. 266l CO, altrimenti nulla, art. 266o CO): il PDF non contiene alcuna immagine della firma."
+
+msgid "Vor dem Versand eigenhändig unterschreiben: Die Fristansetzung mit Kündigungsandrohung braucht die Schriftform (Art. 257d Abs. 1 OR; Art. 13 und 14 OR). Die Anwendung setzt kein Unterschriftsbild ein — das PDF lässt die Unterschriftslinie frei."
+msgstr "Firmare di proprio pugno prima della spedizione: la fissazione di un termine con comminatoria di disdetta richiede la forma scritta (art. 257d cpv. 1 CO; art. 13 e 14 CO). L'applicazione non inserisce alcuna immagine della firma — il PDF lascia libera la riga della firma."
+
+msgid "Vor dem Versand eigenhändig unterschreiben: Die Kündigung braucht die Schriftform (Art. 266l Abs. 1 OR), sonst ist sie nichtig (Art. 266o OR). Die Anwendung setzt kein Unterschriftsbild ein — eine mechanisch nachgebildete Unterschrift ist bei der Kündigung nicht zugelassen (Art. 269d Abs. 4 OR gilt nur für Mietzinserhöhungen). Statt der Unterschrift von Hand genügt eine qualifizierte elektronische Signatur (Art. 14 Abs. 2bis OR)."
+msgstr "Firmare di proprio pugno prima della spedizione: la disdetta richiede la forma scritta (art. 266l cpv. 1 CO), altrimenti è nulla (art. 266o CO). L'applicazione non inserisce alcuna immagine della firma — una firma riprodotta meccanicamente non è ammessa per la disdetta (l'art. 269d cpv. 4 CO vale solo per gli aumenti della pigione). Una firma elettronica qualificata sostituisce la firma autografa (art. 14 cpv. 2bis CO)."
+
+#, python-format
+msgid "Vorzeitige Rückgabe ohne angenommenen Ersatzmieter: Der Mieter haftet bis zum Ende der vereinbarten Vertragsdauer am %(termin)s (Art. 264 Abs. 2 OR)."
+msgstr "Restituzione anticipata senza inquilino sostitutivo accettato: l'inquilino risponde fino alla fine della durata contrattuale convenuta, il %(termin)s (art. 264 cpv. 2 CO)."
+
+msgid "Zu diesem Vertrag ist kein Verfahren erfasst. Eine angefochtene Mietzinsanpassung zählt automatisch als laufendes Schlichtungsverfahren."
+msgstr "Per questo contratto non è registrata alcuna procedura. Un adeguamento della pigione contestato conta automaticamente come procedura di conciliazione in corso."
+
+#, python-format
+msgid "abgeschlossen am %(d)s"
+msgstr "chiusa il %(d)s"
+
+msgid "hängig"
+msgstr "pendente"
+
+msgid "hängig (nicht abgeschlossen)"
+msgstr "pendente (non chiusa)"
+
+msgid "Bei Zahlungsverzug setzt der Vermieter schriftlich eine Zahlungsfrist von mindestens 30 Tagen und droht die Kündigung an. Zahlt der Mieter nicht, ist eine Kündigung mit mindestens 30 Tagen Frist auf Ende eines Monats möglich. Genannt und angedroht werden nur fällige Mietzinse und Nebenkosten, keine anderen Forderungen."
+msgstr "In caso di mora il locatore fissa per iscritto un termine di pagamento di almeno 30 giorni e minaccia la disdetta. Se l'inquilino non paga, è possibile una disdetta con preavviso di almeno 30 giorni per la fine di un mese. Sono menzionate e oggetto della comminatoria soltanto le pigioni e le spese accessorie scadute, nessun altro credito."

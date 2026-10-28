@@ -608,6 +608,11 @@ def fw_vertrag_neu_speichern(request):
     # bisher); nur, was eingetippt und nicht lesbar ist, hält hier an.
     for feld, meldung in _unlesbare_eingaben(P):
         _fehler(feld, meldung)
+    # Kündigungsfrist unter der gesetzlichen Mindestfrist (Art. 266c/266d OR) wird abgelehnt (Audit MIET-08).
+    from rentals.services import kuendigungsfrist_fehler
+    _kf_fehler = kuendigungsfrist_fehler(P.get('kuendigungsfrist'), einheit)
+    if _kf_fehler:
+        _fehler('kuendigungsfrist', _kf_fehler)
     # MIETZINSMODELL (Art. 269b/269c OR): hart, nicht als Warnung. Dieselbe Regelquelle wie die
     # Live-Prüfung im Assistenten; der Browser lässt sich umgehen, diese Stelle nicht.
     modell = _modell_aus_eingabe(P, beginn=_datum_val('beginn'), netto=_dec_val('netto_mietzins'),
@@ -982,7 +987,7 @@ def fw_vertrag_vorschau(request):
         beginn=datum('beginn') or timezone.localdate(), ende=modell.ende, ist_befristet=modell.ist_befristet,
         vermieter_kuendigungsverzicht_bis=modell.verzicht_bis,
         erstmals_kuendbar_auf=datum('erstmals_kuendbar'),
-        kuendigungsfrist_monate=int(P.get('kuendigungsfrist') or 3),
+        kuendigungsfrist_monate=int(P.get('kuendigungsfrist') or (6 if einheit.mietrecht_kategorie == 'gewerbe' else 3)),
         kuendigungstermine=P.get('kuendigungstermine', '').strip() or 'Ende jedes Monats ausser Dezember',
         mitmieter_name=mitmieter, familienwohnung=P.get('familienwohnung') == 'on',
         anzahl_personen=int(P.get('anzahl_personen') or 1),

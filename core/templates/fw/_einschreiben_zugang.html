@@ -1,7 +1,7 @@
 {% load zeichen %}
 {% comment %}
 Einschreiben-Zeile für eine 257d-Frist-Pendenz: Track & Trace (Swiss Post) +
-«Zugang bestätigen» (strikte Empfangstheorie). Wird im Fristen-Center, auf der
+«Zugang bestätigen» (Empfangstheorie, BGE 119 II 147: Abholung bzw. letzter Tag der Abholfrist). Wird im Fristen-Center, auf der
 Vertrags- und der Kontakt-Detailseite eingebunden.
 Parameter (per {% include ... with %}):
   p            – Pendenz-Objekt (mit sendungsnummer / zugang_am / faellig_am)
@@ -17,16 +17,20 @@ Parameter (per {% include ... with %}):
         <span class="font-mono fw-klein">{{ p.sendungsnummer }}</span>
     </a>
     {% if p.zugang_am %}
-    <span class="fw-chip fw-good">
-        {% zeichen 'gut' %} Zugang {{ p.zugang_am|date:"d.m.Y" }}
+    <span class="fw-chip fw-good" {% if p.zugang_fingiert %}title="Nicht abgeholt: Der Zugang gilt am letzten Tag der siebentägigen Abholfrist als erfolgt (BGE 119 II 147)."{% endif %}>
+        {% zeichen 'gut' %} Zugang {{ p.zugang_am|date:"d.m.Y" }}{% if p.zugang_fingiert %} (fingiert){% endif %}
     </span>
     {% else %}
     <form method="post" action="/neu/fristen/verzug/{{ p.id }}/zugang/" class="inline-flex items-center gap-1.5">
         {% csrf_token %}
         {% if zugang_next %}<input type="hidden" name="next" value="{{ zugang_next }}">{% endif %}
-        <label class="fw-klein">Zustellung:</label>
+        <select name="zugang_art" class="fw-feld"
+                title="Abgeholt/zugestellt: die Frist läuft ab diesem Tag. Nicht abgeholt: Datum der Abholeinladung; der Zugang gilt am letzten Tag der siebentägigen Abholfrist als erfolgt (erst nach deren Ablauf).">
+            <option value="abgeholt">abgeholt / zugestellt am</option>
+            <option value="nicht_abgeholt">nicht abgeholt – Abholeinladung vom</option>
+        </select>
         <input type="date" name="zugang_am" value="{{ zugang_heute }}" max="{{ zugang_heute }}"
-               title="Tatsächliches Zustell-/Abholdatum aus Track & Trace (z. B. gestern) — ab hier laufen die 30 Tage"
+               title="Tatsächliches Zustell-/Abholdatum aus Track & Trace (z. B. gestern) — ab hier laufen die 30 Tage; bei Nichtabholung das Datum der Abholeinladung"
                class="fw-feld">
         <button type="submit"
                 class="fw-btn">

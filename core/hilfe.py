@@ -21,7 +21,8 @@ HILFE = {
         'ergibt sich aus den Tagen seit Fälligkeit; Tage und Gebühren stellst du unter «Mahnstufen anpassen» ein.')),
     'art_257d': (_('Fristansetzung nach Art. 257d OR'), _(
         'Bei Zahlungsverzug setzt der Vermieter schriftlich eine Zahlungsfrist von mindestens 30 Tagen und droht die '
-        'Kündigung an. Zahlt der Mieter nicht, ist eine Kündigung mit mindestens 30 Tagen Frist auf Ende eines Monats möglich.')),
+        'Kündigung an. Zahlt der Mieter nicht, ist eine Kündigung mit mindestens 30 Tagen Frist auf Ende eines Monats möglich. '
+        'Genannt und angedroht werden nur fällige Mietzinse und Nebenkosten, keine anderen Forderungen.')),
     'verzugszins': (_('Verzugszins'), _(
         'Ab Verzug schuldet der Mieter Verzugszins von 5 % pro Jahr (Art. 104 OR), sofern nichts anderes vereinbart ist.')),
     # Die Hinweise zu Mahngebühren (vertragliche Grundlage) und zur Zinsbasis (360 Tage)
@@ -116,8 +117,10 @@ HILFE = {
         'Sinkt der Referenzzins, kann der Mieter eine Herabsetzung verlangen (Art. 270a OR). Der Vermieter '
         'antwortet innert 30 Tagen; lehnt er ab, kann der Mieter innert 30 Tagen die Schlichtungsbehörde anrufen.')),
     'zugang': (_('Zugang'), _(
-        'Fristen laufen ab dem Tag, an dem ein Schreiben beim Empfänger ankommt — nicht ab dem Versand. '
-        'Ist der Zugang noch nicht bestätigt, rechnet die Anwendung mit Postweg und Abholfrist eines Einschreibens.')),
+        'Fristen laufen ab dem Tag, an dem ein Schreiben beim Empfänger ankommt — nicht ab dem Versand und nicht ab '
+        'der Abholeinladung. Wird ein Einschreiben abgeholt, ist es der Tag der Abholung; wird es nicht abgeholt, gilt es '
+        'am letzten Tag der siebentägigen Abholfrist als zugegangen (BGE 119 II 147). Ist der Zugang noch nicht bestätigt, '
+        'rechnet die Anwendung vom spätestmöglichen Zugang (Postweg und Abholfrist) und sperrt eine Kündigung bis dahin.')),
     'kuendigungsfrist': (_('Kündigungsfristen'), _(
         'Für Wohnungen mindestens drei Monate auf einen ortsüblichen Termin (Art. 266c OR), für Geschäftsräume sechs '
         'Monate (Art. 266d OR) — der Vertrag kann längere Fristen vorsehen. Die Termine berechnet die Anwendung aus dem Vertrag.')),

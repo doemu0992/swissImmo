@@ -334,17 +334,16 @@ def kuendigung_so_pdf(vertrag, kuendigung, verwaltung=None, empfaenger=None):
     y = 95*mm
     c.setFont("Helvetica-Bold", 9)
     c.drawString(20*mm, y, "Ort / Datum")
-    c.drawString(110*mm, y, "Unterschrift")
+    c.drawString(110*mm, y, "Unterschrift (eigenhändig)")
     absn = _absender(verwaltung, eigentuemer)
     ort = (absn[2].split(' ', 1)[-1] if absn[2] else (lg.ort if lg else ''))
     c.setFont("Helvetica", 9)
     c.drawString(20*mm, y - 8*mm, f"{ort}, ")
-    eigentuemer_unterschrift = getattr(eigentuemer, 'unterschrift_bild', None) if eigentuemer else None
-    if eigentuemer_unterschrift:
-        try:
-            c.drawImage(eigentuemer_unterschrift.path, 110*mm, y - 20*mm, width=45*mm, preserveAspectRatio=True, mask='auto')
-        except Exception:
-            logger.debug("Fehler bewusst übergangen", exc_info=True)
+    # KEIN Unterschriftsbild (Audit MIET-03): Die Kündigung braucht die Schriftform (Art. 266l Abs. 1 OR), sonst ist
+    # sie nichtig (Art. 266o OR); die mechanische Nachbildung nach Art. 269d Abs. 4 OR gilt nur für
+    # Mietzinserhöhungen. Die Linie bleibt frei und wird von Hand unterschrieben.
+    c.setLineWidth(0.4)
+    c.line(110*mm, y - 12*mm, 185*mm, y - 12*mm)
 
     c.setFont("Helvetica-Oblique", 7.5); c.setFillColor(colors.grey)
     c.drawString(20*mm, 12*mm, "Das Formular ist nur gültig mit den Bestimmungen des OR (Seite 2).  Seite 1/2")

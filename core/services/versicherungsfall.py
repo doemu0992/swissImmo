@@ -141,7 +141,7 @@ def selbstbehalt_ueberwaelzen(vf, vertrag, benutzer=None):
             titel=f'Selbstbehalt Versicherungsschaden (Ticket #{ticket.pk})',
             beschreibung=f'Selbstbehalt aus Schadenfall {vf.schadennummer or ticket.titel}.',
             datum=heute, faellig_am=heute + timezone.timedelta(days=30),
-            betrag=vf.selbstbehalt, status='offen')
+            betrag=vf.selbstbehalt, status='offen', forderungsart='sonstige')
         buche('1100', aufwand_konto(ticket), vf.selbstbehalt,
               f'Selbstbehalt {vertrag.mieter} — Versicherungsschaden Ticket #{ticket.pk}',
               datum=heute, liegenschaft=lg, debitor=rechnung, user=benutzer)

@@ -23,6 +23,8 @@ from decimal import Decimal
 from django.test import Client, TestCase
 from django.utils import timezone
 
+from core.services.fristen import naechster_werktag
+from core.services.zahlungsverzug import provisorisches_fristende
 from core.tenancy import organisation_kontext
 from core.tests._isolation import MandantenFixture
 
@@ -1157,7 +1159,8 @@ class ZustellungAusDemMahnwesenTests(TestCase):
         p = self._pendenz()
         self.assertEqual(p.sendungsnummer, '98.00.123456')
         self.assertIsNone(p.zugang_am)
-        self.assertEqual(p.faellig_am, heute + timedelta(days=31))      # Versand + 1 Tag Postweg + 30
+        # Versand + 1 Tag Postweg + 7 Tage Abholfrist + 30 Tage, auf den nächsten Werktag gerückt (MIET-01, MIET-10)
+        self.assertEqual(p.faellig_am, provisorisches_fristende(heute))
         self.assertEqual(self._dok(dok).frist_pendenz_id, p.pk)
         with organisation_kontext(self.a.organisation):
             self.assertEqual(self._dok(dok).zustellstatus, ('versandt', None))
@@ -1170,7 +1173,7 @@ class ZustellungAusDemMahnwesenTests(TestCase):
                                                        'zugang_am': zugang.isoformat()})
         p = self._pendenz()
         self.assertEqual(p.zugang_am, zugang)
-        self.assertEqual(p.faellig_am, zugang + timedelta(days=30))
+        self.assertEqual(p.faellig_am, naechster_werktag(zugang + timedelta(days=30)))
         with organisation_kontext(self.a.organisation):
             self.assertEqual(self._dok(dok).zustellstatus, ('bestaetigt', zugang))
         # danach zeigt die Seite «Zugang bestätigt» und kein Formular mehr

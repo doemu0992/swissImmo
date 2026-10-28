@@ -410,12 +410,18 @@ class Pendenz(OrganisationAusKette):
     vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.CASCADE, null=True, blank=True, related_name='pendenzen')
 
     # Einschreiben-Zustellung (v.a. 257d-Fristen): Sendungsnummer + Versand-/
-    # Zugangsdatum. Strikte Empfangstheorie — die Frist läuft ab ZUGANG (Eintritt
-    # in den Machtbereich = Zustellung/Abholeinladung), den der Nutzer aus
-    # Track&Trace bestätigt. Bis dahin ist faellig_am provisorisch.
+    # Zugangsdatum. Empfangstheorie — die Frist läuft ab ZUGANG: bei Zustellung
+    # oder Abholung der Tag, an dem der Mieter das Schreiben erhält; bei
+    # Nichtabholung der letzte Tag der 7-tägigen Abholfrist (BGE 119 II 147
+    # E. 2), NICHT die Abholeinladung. Den Zugang bestätigt der Nutzer aus
+    # Track&Trace. Bis dahin ist faellig_am provisorisch (und nie zu kurz).
     sendungsnummer = models.CharField("Sendungsnummer (Einschreiben)", max_length=40, blank=True, default='')
     versand_am = models.DateField("Versendet am", null=True, blank=True)
     zugang_am = models.DateField("Zugang bestätigt am", null=True, blank=True)
+    #: Der Zugang ist nicht belegt, sondern fingiert: Das Einschreiben wurde nicht abgeholt, `zugang_am` ist der
+    #: letzte Tag der siebentägigen Abholfrist (BGE 119 II 147 E. 2). Bei tatsächlicher Abholung steht hier
+    #: False und `zugang_am` ist der Tag der Abholung.
+    zugang_fingiert = models.BooleanField("Zugang fingiert (nicht abgeholt)", default=False)
     frist_tage = models.PositiveSmallIntegerField("Fristdauer ab Zugang (Tage)", null=True, blank=True)
 
     erstellt_am = models.DateTimeField(auto_now_add=True)
