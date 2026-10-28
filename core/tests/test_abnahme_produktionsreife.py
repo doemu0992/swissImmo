@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from ._helfer import _basis_objekte, _team_user, abschluss_daten, png_data_url
 from ._isolation import MandantenFixture
+from ._uhr import bei_stichtag
 from .test_abnahme_kette import _protokoll
 
 
@@ -29,6 +30,9 @@ def _pdf(prot):
         return [(s.extract_text() or '', len(s.images)) for s in d.pages]
 
 
+# Die Tests rechnen mit absoluten Daten (Abnahme 01.10.2026, Rüge fällig 27.10.2026): Die Uhr steht
+# auf dem Tag, für den sie geschrieben wurden — sonst sind sie nur an diesem Tag richtig (SICH-45).
+@bei_stichtag(date(2026, 10, 28))
 class Basis(TestCase):
     def setUp(self):
         self.lg, self.einheit, self.mieter, self.v = _basis_objekte()

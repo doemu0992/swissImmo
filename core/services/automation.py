@@ -981,25 +981,35 @@ def run_abschreibungen(jahr, user=None):
     aktivum = _konto('1500', 'Sachanlagen (Anlagegüter)', 'bilanz')
     buchungsdatum = date(jahr, 12, 31)
     anzahl, summe = 0, D('0.00')
-    for a in Anlage.objects.filter(aktiv=True):
-        if a.anschaffungsdatum and a.anschaffungsdatum.year > jahr:
-            continue
-        if a.buchwert <= (a.restwert or D('0')):
-            continue   # vollständig abgeschrieben
-        if Abschreibung.objects.filter(anlage=a, jahr=jahr).exists():
-            continue
-        afa = a.jahres_afa
-        # nicht unter den Restwert abschreiben
-        max_afa = a.buchwert - (a.restwert or D('0'))
-        if afa > max_afa:
-            afa = max_afa
-        if afa <= 0:
-            continue
-        b = Buchung.objects.create(
-            datum=buchungsdatum, beleg_text=f"Abschreibung {jahr}: {a.bezeichnung}",
-            liegenschaft=a.liegenschaft, soll_konto=aufwand, haben_konto=aktivum,
-            betrag=afa, erstellt_von=user)
-        Abschreibung.objects.create(anlage=a, jahr=jahr, betrag=afa, datum=buchungsdatum, buchung=b)
+    for anlage_id in list(Anlage.objects.filter(aktiv=True).order_by('pk').values_list('pk', flat=True)):
+        # JE ANLAGE EINE TRANSAKTION MIT SPERRE (Audit FIN-05/FIN-33): Vorher
+        # committete die Buchung, BEVOR die Abschreibung angelegt war — zwei
+        # parallele Läufe buchten beide, und der zweite scheiterte erst am
+        # Unique-Constraint der Abschreibung. Die AfA-Buchungen blieben stehen.
+        # Jetzt gehören Buchung und Abschreibung zusammen, und was die Zeile
+        # nach dem Sperren zeigt, entscheidet.
+        with transaction.atomic():
+            a = Anlage.objects.select_for_update().filter(pk=anlage_id, aktiv=True).first()
+            if a is None:
+                continue
+            if a.anschaffungsdatum and a.anschaffungsdatum.year > jahr:
+                continue
+            if a.buchwert <= (a.restwert or D('0')):
+                continue   # vollständig abgeschrieben
+            if Abschreibung.objects.filter(anlage=a, jahr=jahr).exists():
+                continue
+            afa = a.jahres_afa
+            # nicht unter den Restwert abschreiben
+            max_afa = a.buchwert - (a.restwert or D('0'))
+            if afa > max_afa:
+                afa = max_afa
+            if afa <= 0:
+                continue
+            b = Buchung.objects.create(
+                datum=buchungsdatum, beleg_text=f"Abschreibung {jahr}: {a.bezeichnung}",
+                liegenschaft=a.liegenschaft, soll_konto=aufwand, haben_konto=aktivum,
+                betrag=afa, erstellt_von=user)
+            Abschreibung.objects.create(anlage=a, jahr=jahr, betrag=afa, datum=buchungsdatum, buchung=b)
         anzahl += 1
         summe += afa
     return anzahl, summe
@@ -1016,17 +1026,25 @@ def run_erneuerungsfonds_einlage(jahr, user=None):
     anzahl, summe = 0, D('0.00')
     # STWEG-Fonds NICHT hier: Dort sind Einlagen kein Aufwand der Verwaltung,
     # sondern Passivum der Gemeinschaft, belastet je Eigentümer (stweg.fonds).
-    for f in Erneuerungsfonds.objects.filter(jaehrliche_einlage__gt=0, liegenschaft__typ='MIETE'):
-        if f.letzte_einlage_jahr == jahr:
-            continue
-        einlage = f.jaehrliche_einlage
-        Buchung.objects.create(
-            datum=buchungsdatum, beleg_text=f"Einlage Erneuerungsfonds {jahr}: {f.liegenschaft}",
-            liegenschaft=f.liegenschaft, soll_konto=aufwand, haben_konto=fonds_konto,
-            betrag=einlage, erstellt_von=user)
-        f.bestand = (f.bestand or D('0')) + einlage
-        f.letzte_einlage_jahr = jahr
-        f.save(update_fields=['bestand', 'letzte_einlage_jahr'])
+    fonds_ids = list(Erneuerungsfonds.objects.filter(jaehrliche_einlage__gt=0, liegenschaft__typ='MIETE')
+                     .order_by('pk').values_list('pk', flat=True))
+    for fonds_id in fonds_ids:
+        # Je Fonds eine Transaktion mit Sperre (Audit FIN-05/FIN-33): Buchung und
+        # Fortschreibung des Bestands gehören zusammen, und `letzte_einlage_jahr`
+        # wird erst NACH dem Sperren gelesen.
+        with transaction.atomic():
+            f = (Erneuerungsfonds.objects.select_for_update(of=('self',))
+                 .select_related('liegenschaft').filter(pk=fonds_id).first())
+            if f is None or f.letzte_einlage_jahr == jahr:
+                continue
+            einlage = f.jaehrliche_einlage
+            Buchung.objects.create(
+                datum=buchungsdatum, beleg_text=f"Einlage Erneuerungsfonds {jahr}: {f.liegenschaft}",
+                liegenschaft=f.liegenschaft, soll_konto=aufwand, haben_konto=fonds_konto,
+                betrag=einlage, erstellt_von=user)
+            f.bestand = (f.bestand or D('0')) + einlage
+            f.letzte_einlage_jahr = jahr
+            f.save(update_fields=['bestand', 'letzte_einlage_jahr'])
         anzahl += 1
         summe += einlage
     return anzahl, summe

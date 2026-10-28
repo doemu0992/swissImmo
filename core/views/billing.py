@@ -221,13 +221,8 @@ def qr_rechnung_pdf(request, vertrag_id):
     c.save()
     buffer.seek(0)
     pdf_bytes = buffer.getvalue()
-    # Auto-Ablage in die Akte (pro Monat eigener Titel -> Dedup je Monat) -> Portal
-    try:
-        from core.services.ablage import ablegen
-        ablegen(pdf_bytes, f"QR-Rechnung Miete {monat_jahr}", kategorie='korrespondenz',
-                vertrag=vertrag, dedup=True)
-    except Exception:
-        logger.debug("Fehler bewusst übergangen", exc_info=True)
+    # Ansehen legt nichts ab (ROUTE-01/18): Die QR-Rechnung kommt aus der
+    # Sollstellung bzw. dem Debitoren-Beleg («QR erstellen», POST).
     response = HttpResponse(pdf_bytes, content_type='application/pdf')
     filename = f"QR_Rechnung_{mieter.nachname}_{monat_jahr.replace('/', '-')}.pdf"
     response['Content-Disposition'] = f'inline; filename="{filename}"'

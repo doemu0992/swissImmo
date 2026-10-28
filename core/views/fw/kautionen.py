@@ -33,6 +33,10 @@ logger = logging.getLogger(__name__)
 # KAUTIONS-REGISTER (Art. 257e OR — separat vom Verwaltungs-Hauptbuch)
 # ============================================================
 
+class _KautionSchonAufgeloest(Exception):
+    """Zwischen Prüfung und Buchung hat ein anderer Vorgang die Kaution aufgelöst."""
+
+
 KAUTION_PILL = {
     'erwartet':       ('Erwartet',       'fw-warn-flaeche fw-warnton'),
     'einbezahlt':     ('Einbezahlt',     'fw-gut-flaeche fw-gut'),
@@ -207,6 +211,13 @@ def fw_kaution_aktion(request, vertrag_id):
         #  Einbehalt:    2010 Kautionsverbindlichkeit an 3600 (Ertrag Eigentümer)
         try:
             with transaction.atomic():
+                # GESPERRT, DANN ERNEUT GEPRÜFT: Die Prüfung «bilanziert?» oben stammt
+                # von VOR dem Warten. Zwei gleichzeitige Rückzahlungen derselben
+                # Kaution buchten beide die Freigabe des Sperrkontos. Der Vertrag
+                # wird gesperrt, der Saldo von 2010 danach neu gelesen.
+                Mietvertrag.objects.select_for_update(of=('self',)).get(pk=v.pk)
+                if not v.ist_kautionsversicherung and _kaution_bilanziert(v) <= 0:
+                    raise _KautionSchonAufgeloest
                 v.save(update_fields=['kautions_zurueckbezahlt_am', 'kautions_rueckzahlung_betrag',
                                       'kautions_abzug_betrag', 'kautions_abzug_grund'])
                 from finance.booking import buche as _buche
@@ -238,6 +249,9 @@ def fw_kaution_aktion(request, vertrag_id):
                     if abzug > 0:
                         _buche("2010", "3600", abzug, f"{beleg} — Einbehalt (Ertrag)",
                                datum=dat_k, liegenschaft=lg_k, user=request.user)
+        except _KautionSchonAufgeloest:
+            messages.error(request, '❌ ' + gettext('Für diesen Vertrag ist keine Kaution bilanziert (nicht einbezahlt oder bereits aufgelöst).'))
+            return redirect(f'/neu/vertraege/{v.id}/')
         except PermissionError as exc:
             messages.error(request, f"❌ {exc}")
             return redirect(f'/neu/vertraege/{v.id}/')
@@ -255,12 +269,20 @@ def fw_kaution_aktion(request, vertrag_id):
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_kaution_beleg(request, vertrag_id, art):
     """Kautions-Beleg als PDF (Art. 257e OR): `hinterlegung` = Bestätigung an die
-    Mieterschaft, `freigabe` = Freigabeschreiben an die Bank. Wird in der Akte abgelegt."""
+    Mieterschaft, `freigabe` = Freigabeschreiben an die Bank.
+
+    GET ist die VORSCHAU und schreibt nichts (ROUTE-01: schon das Öffnen legte
+    das Bankschreiben im Mieterportal bereit und hakte die Pendenz ab). Erst
+    POST («Erstellen») legt den Beleg in der Akte ab, erledigt die Pendenz und
+    protokolliert — und nur für Schreib-Rollen: «Lesend» (Treuhand/Revision)
+    erzeugt keine Akteneinträge. Die Bestätigung an den Mieter wird erst mit
+    dem Versand freigegeben (Schalter in der Person-Akte)."""
     from django.http import HttpResponse
+    from django.core.exceptions import PermissionDenied
     from crm.models import Organisation
     from core.services.mietprozess_briefe import kaution_hinterlegung_pdf, kaution_freigabe_pdf
     from core.services.ablage import ablegen
-    from core.auth import log_aktion
+    from core.auth import log_aktion, hat_rolle
     v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'), id=vertrag_id)
     # Die Verwaltung des VERTRAGS, nicht die aelteste im Bestand: Ein Brief
     # traegt den Briefkopf dessen, der ihn schreibt.
@@ -271,11 +293,15 @@ def fw_kaution_beleg(request, vertrag_id, art):
     else:
         pdf = kaution_hinterlegung_pdf(v, verwaltung=vw)
         titel = f"Kaution-Bestätigung {v.mieter.nachname}"
-    ablegen(pdf, titel, kategorie='vertrag', vertrag=v, dedup=True)
-    if art == 'freigabe':
-        from core.services.automation import erledige_pendenzen_fuer
-        erledige_pendenzen_fuer(v, ['Freigabeschreiben'], user=request.user)
-    log_aktion(request, "Kautions-Beleg erstellt", str(v.mieter), titel, ziel=v)
+    if request.method == 'POST':
+        if not hat_rolle(request.user, SCHREIB_ROLLEN):
+            raise PermissionDenied
+        # Das Bankschreiben ist nie für den Mieter bestimmt.
+        ablegen(pdf, titel, kategorie='vertrag', vertrag=v, dedup=True, im_portal_sichtbar=False)
+        if art == 'freigabe':
+            from core.services.automation import erledige_pendenzen_fuer
+            erledige_pendenzen_fuer(v, ['Freigabeschreiben'], user=request.user)
+        log_aktion(request, "Kautions-Beleg erstellt", str(v.mieter), titel, ziel=v)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="{titel.replace(" ", "_")}.pdf"'
     return resp

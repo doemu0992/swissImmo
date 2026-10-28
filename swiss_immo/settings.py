@@ -194,6 +194,10 @@ MIDDLEWARE = [
     'core.middleware_zweifaktor.ZweiFaktorPflichtMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Nach der Meldungs-Schicht (sie legt Meldungen ab, die der Rücksprung zeigt).
+    # Macht aus Eingaben, die nicht in ihr Feld passen (zu lang, zu gross, keine
+    # Zahl), eine Meldung statt einer 500-Seite — siehe core/middleware_eingabe.py.
+    'core.middleware_eingabe.EingabeFehlerMiddleware',
 ]
 
 ROOT_URLCONF = 'swiss_immo.urls'

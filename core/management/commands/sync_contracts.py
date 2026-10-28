@@ -52,7 +52,8 @@ class Command(BaseCommand):
                         vertrag=v,
                         mieter=v.mieter,
                         einheit=v.einheit,
-                        datei=v.pdf_datei
+                        datei=v.pdf_datei,
+                        im_portal_sichtbar=True,       # unterzeichnet: liegt dem Mieter vor
                     )
                     self.stdout.write(self.style.SUCCESS(f"OK Dokument erstellt für: {v.mieter}"))
                     count += 1

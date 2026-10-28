@@ -1,0 +1,11 @@
+# Ausnahmen für den CI-Job «pip-audit» (.github/workflows/ci.yml, _tools/pip_audit_pruefen.py).
+#
+# Eine bekannte Schwachstelle mit Fix-Version macht den Job rot. Soll sie trotzdem durchgehen
+# (kein Update kompatibel, nicht erreichbar, bewusst zurückgestellt), steht sie hier — eine
+# Kennung je Zeile, HINTER «#» die Begründung mit Datum und Verantwortlichem:
+#
+#     PYSEC-2026-1234   # reportlab 4.4.7: betrifft nur Wasserzeichen-Import, den wir nicht nutzen; 28.10.2026, Dominik; prüfen bis 30.11.2026
+#
+# Eine Zeile ohne Begründung wird abgewiesen, eine Ausnahme, die nichts mehr trifft, gemeldet.
+# Stand 28.10.2026: keine Ausnahmen — alle bekannten Schwachstellen der gepinnten Fassungen
+# sind mit den Updates aus SICH-04 behoben.

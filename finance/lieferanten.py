@@ -28,9 +28,13 @@ def lieferant_vorschlag(name):
     return LieferantProfil.objects.filter(name_key=key).first()
 
 
-def lerne_lieferant(name, konto=None, iban=''):
-    """Schreibt das Standardkonto (+ IBAN) für diesen Lieferanten fort.
-    Idempotent pro normalisiertem Namen; erhöht den Trefferzähler."""
+def lerne_lieferant(name, konto=None, iban='', adresse=None):
+    """Schreibt das Standardkonto (+ IBAN, + Anschrift) für diesen Lieferanten
+    fort. Idempotent pro normalisiertem Namen; erhöht den Trefferzähler.
+
+    `adresse`: Wörterbuch mit strasse, hausnummer, plz, ort, land (siehe
+    `finance/kreditor_adresse.py`). Eine Anschrift ohne Ort wird nicht gelernt —
+    sie würde eine gute gelernte Anschrift durch eine leere ersetzen."""
     from finance.models import LieferantProfil
     key = lieferant_key(name)
     if not key:
@@ -41,9 +45,35 @@ def lerne_lieferant(name, konto=None, iban=''):
         prof.standard_konto = konto
     if iban:
         prof.iban = iban[:50]
+    if adresse and (adresse.get('ort') or '').strip():
+        from finance.kreditor_adresse import FELDER, LAENGEN
+        for f in FELDER:
+            wert = (adresse.get(f) or '').strip()
+            if f == 'land':
+                wert = wert.upper() or 'CH'
+            setattr(prof, f, wert[:LAENGEN[f]])
     if (name or '').strip():
         prof.name_anzeige = (name or '').strip()[:200]
     prof.treffer = (prof.treffer or 0) + 1
+    prof.save()
+    return prof
+
+
+def lerne_adresse(name, adresse):
+    """Merkt sich die Anschrift eines Lieferanten, ohne den Trefferzähler zu
+    berühren (anders als `lerne_lieferant`, das bei jeder Freigabe läuft)."""
+    from finance.kreditor_adresse import FELDER, LAENGEN
+    from finance.models import LieferantProfil
+    key = lieferant_key(name)
+    if not key or not (adresse.get('ort') or '').strip():
+        return None
+    prof, _ = LieferantProfil.objects.get_or_create(
+        name_key=key, defaults={'name_anzeige': (name or '').strip()[:200]})
+    for f in FELDER:
+        wert = (adresse.get(f) or '').strip()
+        if f == 'land':
+            wert = wert.upper() or 'CH'
+        setattr(prof, f, wert[:LAENGEN[f]])
     prof.save()
     return prof
 

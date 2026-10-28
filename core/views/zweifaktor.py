@@ -283,6 +283,10 @@ def _einrichtungs_assistent(aktuell):
     return a
 
 
+#: Sitzungsschlüssel für das noch nicht bestätigte Geheimnis der Einrichtung.
+_SESSION_NEUES_GEHEIMNIS = 'zweifaktor_neues_geheimnis'
+
+
 @never_cache
 @login_required
 @sensitive_post_parameters('code')
@@ -291,11 +295,21 @@ def zweifaktor_einrichten(request):
     if faktor is not None and faktor.ist_aktiv:
         return redirect('zweifaktor_uebersicht')
 
+    # Das Geheimnis entsteht beim Anzeigen (GET), aber NICHT in der Datenbank
+    # (ROUTE-07): Es liegt in der Sitzung, bis der erste Code gesendet wird (POST).
+    # Vorher legte schon das blosse Öffnen der Seite einen Datensatz an.
     if faktor is None:
-        faktor = ZweiterFaktor.objects.create(benutzer=request.user,
-                                              geheimnis=totp.geheimnis_erzeugen())
+        geheimnis = request.session.get(_SESSION_NEUES_GEHEIMNIS)
+        if not geheimnis:
+            geheimnis = totp.geheimnis_erzeugen()
+            request.session[_SESSION_NEUES_GEHEIMNIS] = geheimnis
+    else:
+        geheimnis = faktor.geheimnis
 
     if request.method == 'POST':
+        if faktor is None:
+            faktor = ZweiterFaktor.objects.create(benutzer=request.user, geheimnis=geheimnis)
+            request.session.pop(_SESSION_NEUES_GEHEIMNIS, None)
         if faktor.pruefen(request.POST.get('code', '')):
             faktor.bestaetigt_am = timezone.now()
             faktor.save(update_fields=['bestaetigt_am'])
@@ -316,13 +330,13 @@ def zweifaktor_einrichten(request):
     if schritt == 1:
         # Schlüssel und QR nur dort, wo man sie braucht — Schritt 2 fragt nur den Code ab.
         konto = request.user.email or request.user.get_username()
-        url = totp.einrichtungs_url(faktor.geheimnis, konto)
+        url = totp.einrichtungs_url(geheimnis, konto)
         kontext.update({
             # Weisser Grund im SVG selbst: Der Rahmen um den Code ist `fw-flaeche`
             # und wird im Dunkelmodus dunkel — schwarzer Code auf dunkler Fläche
             # lässt sich kaum scannen (dasselbe wie beim Bewerbungs-QR).
             'qr': totp.qr_svg(url, hell='#fff'),
-            'geheimnis': faktor.geheimnis,
+            'geheimnis': geheimnis,
         })
     return render(request, 'core/zweifaktor_einrichten.html', kontext)
 

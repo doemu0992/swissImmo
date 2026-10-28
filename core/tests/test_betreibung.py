@@ -323,12 +323,18 @@ class DatenblattTests(_Basis):
                              betreibungsamt='Betreibungsamt Zürich 1')
         antwort = self.c.get(f'/neu/betreibungen/{b.id}/pdf/')
         self.assertEqual(antwort['Content-Type'], 'application/pdf')
+        # Die Vorschau (GET) legt nichts ab (ROUTE-01) ...
+        self.assertFalse(Dokument.objects.filter(vertrag=self.v).exists())
+        # ... das ausdrückliche «Erstellen» (POST) legt das interne Datenblatt ab.
+        antwort = self.c.post(f'/neu/betreibungen/{b.id}/pdf/')
+        self.assertEqual(antwort['Content-Type'], 'application/pdf')
         text = self._text(antwort.content)
         for stueck in ('Vorlage', 'NICHT das amtliche Betreibungsbegehren', 'Immo Eigentum AG',
                        'Vertreter des Gläubigers', 'Hans Muster', 'Seeweg 3', "3'400.00",
                        'Zins: 5 % seit 15.07.2026', 'Mietzins Juli und August', 'Betreibungsamt Zürich 1'):
             self.assertIn(stueck, text)
-        self.assertTrue(Dokument.objects.filter(vertrag=self.v, bezeichnung__startswith='Betreibungsbegehren').exists())
+        d = Dokument.objects.get(vertrag=self.v, bezeichnung__startswith='Betreibungsbegehren')
+        self.assertFalse(d.im_portal_sichtbar, 'Das interne Datenblatt darf der Mieter nicht sehen.')
 
     def test_vertragsakte_zeigt_die_betreibung(self):
         b = self._betreibung(self.r1)

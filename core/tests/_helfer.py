@@ -6,10 +6,11 @@ Modulen; was sie alle brauchen, steht hier.
 
 Unveraendert uebernommen.
 """
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
 from django.test import TestCase, Client, RequestFactory
+from django.utils import timezone
 from django.contrib import admin
 from unittest import skipUnless
 
@@ -33,6 +34,18 @@ User = get_user_model()
 from crm.models import Mieter, Eigentuemer, Organisation
 from portfolio.models import Liegenschaft, Einheit, Wartungsfrist
 from rentals.models import Mietvertrag
+
+
+def vor_tagen(tage, stunde=12):
+    """Der Zeitpunkt «vor `tage` Kalendertagen» als Zürcher Uhrzeit (Standard: Mittag).
+
+    NICHT `timezone.now() - timedelta(days=tage)`: Das rechnet in UTC. Zwischen 22:00 und
+    24:00 UTC (Zürich: nach Mitternacht) und über die Zeitumstellung hinweg liegt das
+    Ergebnis dann auf einem anderen Zürcher Kalendertag, und jeder Test, der «seit N Tagen»
+    oder «vor N Tagen» als Kalendertage erwartet, ist rot — nur zu bestimmten Tageszeiten
+    und Jahreszeiten (SICH-45). Mittag des Kalendertags ist von beidem unabhängig."""
+    tag = timezone.localdate() - timedelta(days=tage)
+    return timezone.make_aware(datetime.combine(tag, time(stunde, 0)))
 
 
 #: Alte Gruppennamen → Rolle der Mitgliedschaft (Etappe 4.3).

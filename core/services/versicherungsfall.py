@@ -101,66 +101,84 @@ def melden(ticket, *, police=None, schadennummer='', gemeldet_am=None, schadensu
     return vf
 
 
+def _sperren_und_neu_lesen(vf):
+    """Sperrt den Fall und liest ihn neu — in `transaction.atomic()` aufzurufen.
+
+    «Einmalig» heisst: Zwei gleichzeitige Klicks dürfen nur EINMAL buchen. Die
+    Prüfungen («schon verbucht?») gelten für den Stand NACH dem Warten, nicht für
+    den, den der Aufrufer vor dem Klick geladen hat (Audit FIN-02/FIN-05)."""
+    # `alle_organisationen`: Der Fall wird über seinen Primärschlüssel nachgeladen —
+    # dasselbe Objekt, das der Aufrufer unter seinem Kontext schon hat.
+    type(vf).alle_organisationen.select_for_update().get(pk=vf.pk)
+    vf.refresh_from_db()
+
+
 def selbstbehalt_ueberwaelzen(vf, vertrag, benutzer=None):
     """Stellt dem Mieter den Selbstbehalt in Rechnung (Soll Debitoren an Aufwandsminderung).
 
     Nur wenn der Kostenträger «Mieter» ist, ein Selbstbehalt besteht und der Vertrag zur
     betroffenen Einheit gehört. Einmalig.
     """
+    from django.db import transaction
     from finance.booking import buche
     from finance.models import DebitorenRechnung
 
-    if vf.selbstbehalt_traeger != 'mieter':
-        raise ValueError('Der Selbstbehalt ist nicht dem Mieter zugewiesen.')
-    if vf.selbstbehalt <= 0:
-        raise ValueError('Es ist kein Selbstbehalt zu überwälzen.')
-    if vf.selbstbehalt_rechnung_id:
-        raise ValueError('Der Selbstbehalt wurde bereits in Rechnung gestellt.')
-    ticket = vf.ticket
-    if ticket.betroffene_einheit_id and vertrag.einheit_id != ticket.betroffene_einheit_id:
-        raise ValueError('Der Vertrag gehört nicht zur betroffenen Einheit.')
-    heute = timezone.localdate()
-    lg = vertrag.einheit.liegenschaft if vertrag.einheit_id else ticket.liegenschaft
-    rechnung = DebitorenRechnung.objects.create(
-        vertrag=vertrag, liegenschaft=lg, einheit=vertrag.einheit,
-        titel=f'Selbstbehalt Versicherungsschaden (Ticket #{ticket.pk})',
-        beschreibung=f'Selbstbehalt aus Schadenfall {vf.schadennummer or ticket.titel}.',
-        datum=heute, faellig_am=heute + timezone.timedelta(days=30),
-        betrag=vf.selbstbehalt, status='offen')
-    buche('1100', aufwand_konto(ticket), vf.selbstbehalt,
-          f'Selbstbehalt {vertrag.mieter} — Versicherungsschaden Ticket #{ticket.pk}',
-          datum=heute, liegenschaft=lg, debitor=rechnung, user=benutzer)
-    vf.selbstbehalt_rechnung = rechnung
-    vf.save(update_fields=['selbstbehalt_rechnung'])
+    with transaction.atomic():
+        _sperren_und_neu_lesen(vf)
+        if vf.selbstbehalt_traeger != 'mieter':
+            raise ValueError('Der Selbstbehalt ist nicht dem Mieter zugewiesen.')
+        if vf.selbstbehalt <= 0:
+            raise ValueError('Es ist kein Selbstbehalt zu überwälzen.')
+        if vf.selbstbehalt_rechnung_id:
+            raise ValueError('Der Selbstbehalt wurde bereits in Rechnung gestellt.')
+        ticket = vf.ticket
+        if ticket.betroffene_einheit_id and vertrag.einheit_id != ticket.betroffene_einheit_id:
+            raise ValueError('Der Vertrag gehört nicht zur betroffenen Einheit.')
+        heute = timezone.localdate()
+        lg = vertrag.einheit.liegenschaft if vertrag.einheit_id else ticket.liegenschaft
+        rechnung = DebitorenRechnung.objects.create(
+            vertrag=vertrag, liegenschaft=lg, einheit=vertrag.einheit,
+            titel=f'Selbstbehalt Versicherungsschaden (Ticket #{ticket.pk})',
+            beschreibung=f'Selbstbehalt aus Schadenfall {vf.schadennummer or ticket.titel}.',
+            datum=heute, faellig_am=heute + timezone.timedelta(days=30),
+            betrag=vf.selbstbehalt, status='offen')
+        buche('1100', aufwand_konto(ticket), vf.selbstbehalt,
+              f'Selbstbehalt {vertrag.mieter} — Versicherungsschaden Ticket #{ticket.pk}',
+              datum=heute, liegenschaft=lg, debitor=rechnung, user=benutzer)
+        vf.selbstbehalt_rechnung = rechnung
+        vf.save(update_fields=['selbstbehalt_rechnung'])
     _schritte(ticket, ('Selbstbehalt',), benutzer)
     return rechnung
 
 
 def entschaedigung_verbuchen(vf, betrag, datum=None, bank='1020', benutzer=None):
     """Bucht die Versicherungsleistung (Bank an Aufwandskonto). Einmalig."""
+    from django.db import transaction
     from finance.booking import buche
     from finance.models import Buchungskonto
 
-    if vf.entschaedigung_am is not None:
-        raise ValueError('Die Entschädigung ist bereits verbucht.')
-    if betrag is None or betrag <= 0:
-        raise ValueError('Die Entschädigung muss grösser als 0 sein.')
-    if vf.status == 'abgelehnt':
-        raise ValueError('Der Fall ist als abgelehnt erfasst.')
-    heute = timezone.localdate()
-    datum = datum or heute
-    if datum > heute:
-        raise ValueError('Das Datum der Entschädigung liegt in der Zukunft.')
-    if not Buchungskonto.objects.filter(nummer=bank).exists():
-        bank = '1020'
-    ticket = vf.ticket
-    buche(bank, aufwand_konto(ticket), betrag,
-          f'Versicherungsleistung {vf.police.gesellschaft if vf.police_id else ""} — Ticket #{ticket.pk}'.replace('  ', ' '),
-          datum=datum, liegenschaft=ticket.liegenschaft, user=benutzer)
-    vf.entschaedigung_erhalten = betrag
-    vf.entschaedigung_am = datum
-    vf.status = 'entschaedigt'
-    vf.save(update_fields=['entschaedigung_erhalten', 'entschaedigung_am', 'status'])
+    with transaction.atomic():
+        _sperren_und_neu_lesen(vf)
+        if vf.entschaedigung_am is not None:
+            raise ValueError('Die Entschädigung ist bereits verbucht.')
+        if betrag is None or betrag <= 0:
+            raise ValueError('Die Entschädigung muss grösser als 0 sein.')
+        if vf.status == 'abgelehnt':
+            raise ValueError('Der Fall ist als abgelehnt erfasst.')
+        heute = timezone.localdate()
+        datum = datum or heute
+        if datum > heute:
+            raise ValueError('Das Datum der Entschädigung liegt in der Zukunft.')
+        if not Buchungskonto.objects.filter(nummer=bank).exists():
+            bank = '1020'
+        ticket = vf.ticket
+        buche(bank, aufwand_konto(ticket), betrag,
+              f'Versicherungsleistung {vf.police.gesellschaft if vf.police_id else ""} — Ticket #{ticket.pk}'.replace('  ', ' '),
+              datum=datum, liegenschaft=ticket.liegenschaft, user=benutzer)
+        vf.entschaedigung_erhalten = betrag
+        vf.entschaedigung_am = datum
+        vf.status = 'entschaedigt'
+        vf.save(update_fields=['entschaedigung_erhalten', 'entschaedigung_am', 'status'])
     _schritte(ticket, ('Entschädigung',), benutzer)
     return vf
 

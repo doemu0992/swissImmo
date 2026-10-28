@@ -27,6 +27,38 @@ jobs:
       - name: Ruff
         run: ruff check . --output-format=github
 
+  # Bekannte Schwachstellen in den gepinnten Abhängigkeiten (SICH-04). Rot wird der Job, wenn
+  # eine Schwachstelle eine behobene Fassung hat — dann gibt es ein Update. Eine Ausnahme
+  # braucht eine Begründung in pip-audit-ignore.txt (Auswertung: _tools/pip_audit_pruefen.py).
+  # Braucht keine Systembibliotheken und keine Datenbank: pip-audit liest requirements.txt
+  # und fragt die Schwachstellendatenbank ab, installiert wird nichts.
+  #
+  # Das Ergebnis ändert sich auch ohne Codeänderung (neue Meldungen): Der Job läuft bei jedem
+  # Push und Pull Request; wer es wöchentlich will, ergänzt oben einen `schedule`-Auslöser.
+  pip-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: pip-audit installieren
+        run: pip install pip-audit==2.10.1
+      - name: Abhängigkeiten gegen die Schwachstellendatenbank prüfen
+        # `|| true`: pip-audit endet mit 1, sobald irgendetwas gefunden wird — auch eine
+        # Schwachstelle ohne Fix-Version. Entschieden wird im nächsten Schritt.
+        run: pip-audit -r requirements.txt --no-deps --disable-pip --format json --output pip-audit.json || true
+      - name: Auswerten (Fix vorhanden = rot, Ausnahmen mit Begründung)
+        run: python _tools/pip_audit_pruefen.py pip-audit.json pip-audit-ignore.txt
+      - name: Bericht als Artefakt
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-audit
+          path: pip-audit.json
+          retention-days: 14
+
   test:
     runs-on: ubuntu-latest
     steps:

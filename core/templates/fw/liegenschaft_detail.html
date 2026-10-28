@@ -54,7 +54,7 @@ Liegenschaft ohne Betreuung soll auffallen.
                 </form>
                 <div class="fw-menutrenner"></div>
                 <form method="post" action="/neu/liegenschaften/{{ lg.id }}/loeschen/"
-                      onsubmit="return confirm('{% filter escapejs %}{% blocktrans with s=lg.strasse %}Liegenschaft {{ s }} inkl. aller Objekte wirklich löschen? Dies kann nicht rückgängig gemacht werden.{% endblocktrans %}{% endfilter %}');">
+                      onsubmit="return confirm('{% filter escapejs %}{% blocktrans with s=lg.strasse %}Liegenschaft {{ s }} inkl. aller Objekte wirklich löschen? Hängen Verträge, Rechnungen, Abrechnungen oder Dokumente daran, wird das Löschen abgelehnt. Dies kann nicht rückgängig gemacht werden.{% endblocktrans %}{% endfilter %}');">
                     {% csrf_token %}
                     <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}{% trans "Liegenschaft löschen" %}</button>
                 </form>

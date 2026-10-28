@@ -32682,15 +32682,27 @@ msgid "Mitteilung der Staffelerhöhung"
 msgstr "Notice of the graduated increase"
 
 #: core/hilfe.py
-msgid "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche Formular braucht es dafür nicht, die Mitteilung aber schon: Der Vertrag allein ersetzt sie nicht."
-msgstr "Every increase is communicated to the tenant in writing, no earlier than four months before it takes effect (Art. 269d para. 5 CO, Art. 19a VMWG). The official form is not required for this, but the notice is: the lease alone does not replace it."
+msgid ""
+"Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate"
+" vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche "
+"Formular braucht es dafür nicht, die Mitteilung aber schon: Der Vertrag "
+"allein ersetzt sie nicht."
+msgstr ""
+"Every increase is communicated to the tenant in writing, no earlier than "
+"four months before it takes effect (Art. 269d para. 5 CO, Art. 19a VMWG). "
+"The official form is not required for this, but the notice is: the lease "
+"alone does not replace it."
 
 #: Mietzinsmodell-Wizard (27.10.2026)
 msgid "Vermieter verzichtet auf Kündigung bis"
 msgstr "Landlord waives termination until"
 
-msgid "Nur bei einem unbefristeten Vertrag. Zählt bei Index- und Staffelmiete als feste Dauer."
-msgstr "Only for an open-ended lease. Counts as a fixed term for index-linked and stepped rent."
+msgid ""
+"Nur bei einem unbefristeten Vertrag. Zählt bei Index- und Staffelmiete als "
+"feste Dauer."
+msgstr ""
+"Only for an open-ended lease. Counts as a fixed term for index-linked and "
+"stepped rent."
 
 msgid "Mietzins, Mietzinsmodell und Zahlungsmodalitäten."
 msgstr "Rent, rent model and payment terms."
@@ -32701,14 +32713,23 @@ msgstr "Intended use of commercial premises."
 msgid "Fester Mietzins"
 msgstr "Fixed rent"
 
-msgid "Der Mietzins bleibt, bis er nach den Regeln des Mietrechts angepasst wird."
+msgid ""
+"Der Mietzins bleibt, bis er nach den Regeln des Mietrechts angepasst wird."
 msgstr "The rent stays the same until it is adjusted under tenancy law."
 
-msgid "Erhöhungen als Frankenbeträge, höchstens einmal jährlich. Feste Dauer mindestens 3 Jahre."
-msgstr "Increases as amounts in francs, at most once a year. Fixed term of at least 3 years."
+msgid ""
+"Erhöhungen als Frankenbeträge, höchstens einmal jährlich. Feste Dauer "
+"mindestens 3 Jahre."
+msgstr ""
+"Increases as amounts in francs, at most once a year. Fixed term of at least "
+"3 years."
 
-msgid "Der Mietzins folgt dem Landesindex der Konsumentenpreise. Feste Dauer mindestens 5 Jahre."
-msgstr "The rent follows the Swiss consumer price index. Fixed term of at least 5 years."
+msgid ""
+"Der Mietzins folgt dem Landesindex der Konsumentenpreise. Feste Dauer "
+"mindestens 5 Jahre."
+msgstr ""
+"The rent follows the Swiss consumer price index. Fixed term of at least 5 "
+"years."
 
 msgid "Feste Dauer"
 msgstr "Fixed term"
@@ -32728,8 +32749,12 @@ msgstr "No step yet. Add a step or generate the steps."
 msgid "Stufen erzeugen"
 msgstr "Generate steps"
 
-msgid "Jedes Jahr dieselbe Erhöhung, die erste 12 Monate nach Mietbeginn. Vorhandene Stufen werden ersetzt."
-msgstr "The same increase every year, the first one 12 months after the start of the lease. Existing steps are replaced."
+msgid ""
+"Jedes Jahr dieselbe Erhöhung, die erste 12 Monate nach Mietbeginn. "
+"Vorhandene Stufen werden ersetzt."
+msgstr ""
+"The same increase every year, the first one 12 months after the start of the"
+" lease. Existing steps are replaced."
 
 msgid "Jährlich + CHF"
 msgstr "Yearly + CHF"
@@ -32750,7 +32775,9 @@ msgstr "Base %(basis)s = 100 points"
 msgid "Vorschlag übernehmen"
 msgstr "Use suggestion"
 
-msgid "Anteil der Teuerung, der weitergegeben wird: über 0 und höchstens 100 Prozent."
+msgid ""
+"Anteil der Teuerung, der weitergegeben wird: über 0 und höchstens 100 "
+"Prozent."
 msgstr "Share of inflation passed on: more than 0 and at most 100 percent."
 
 msgid "Mindestintervall (vertraglich, Monate)"
@@ -32792,14 +32819,25 @@ msgstr "Checking …"
 msgid "Nicht geprüft"
 msgstr "Not checked"
 
-msgid "Fest bis {bis}. Verlangt ist die Dauer bis {soll} ({jahre} Jahre ab Mietbeginn)."
-msgstr "Fixed until {bis}. The required term runs until {soll} ({jahre} years from the start of the lease)."
+msgid ""
+"Fest bis {bis}. Verlangt ist die Dauer bis {soll} ({jahre} Jahre ab "
+"Mietbeginn)."
+msgstr ""
+"Fixed until {bis}. The required term runs until {soll} ({jahre} years from "
+"the start of the lease)."
 
-msgid "Der Mietbeginn fehlt (Schritt «Konditionen»): Ohne ihn lässt sich die feste Dauer nicht beurteilen."
-msgstr "The start of the lease is missing (step “Terms”): without it the fixed term cannot be assessed."
+msgid ""
+"Der Mietbeginn fehlt (Schritt «Konditionen»): Ohne ihn lässt sich die feste "
+"Dauer nicht beurteilen."
+msgstr ""
+"The start of the lease is missing (step “Terms”): without it the fixed term "
+"cannot be assessed."
 
-msgid "Die Prüfung ist gerade nicht erreichbar. Der Server prüft beim Speichern trotzdem."
-msgstr "The check is not reachable right now. The server checks again when saving."
+msgid ""
+"Die Prüfung ist gerade nicht erreichbar. Der Server prüft beim Speichern "
+"trotzdem."
+msgstr ""
+"The check is not reachable right now. The server checks again when saving."
 
 msgid "Staffelstufen entfernt"
 msgstr "Steps removed"
@@ -32817,12 +32855,16 @@ msgid "Die Anzahl muss zwischen 1 und {max} liegen."
 msgstr "The number must be between 1 and {max}."
 
 msgid "Vorschlag: {punkte} Punkte, Stand {stand} (Vormonat des Mietbeginns)."
-msgstr "Suggestion: {punkte} points, as of {stand} (month before the start of the lease)."
+msgstr ""
+"Suggestion: {punkte} points, as of {stand} (month before the start of the "
+"lease)."
 
 msgid "Für diesen Mietbeginn ist noch kein Indexstand veröffentlicht."
 msgstr "No index value has been published yet for this start of the lease."
 
-msgid "Beispiel: Bei LIK {lik} würde der Mietzins CHF {neu} betragen (heute CHF {alt})."
+msgid ""
+"Beispiel: Bei LIK {lik} würde der Mietzins CHF {neu} betragen (heute CHF "
+"{alt})."
 msgstr "Example: at CPI {lik} the rent would be CHF {neu} (today CHF {alt})."
 
 msgid "Beispiel: Bei LIK {lik} bliebe der Mietzins bei CHF {alt}."
@@ -32864,41 +32906,77 @@ msgstr "The pass-through has at most one decimal place."
 msgid "Die Basis des Landesindexes hat höchstens eine Nachkommastelle."
 msgstr "The index base has at most one decimal place."
 
-msgid "Bei festem Mietzins darf keine Indexklausel stehen bleiben (Weitergabe, Mindestintervall)."
-msgstr "With a fixed rent no index clause may remain (pass-through, minimum interval)."
+msgid ""
+"Bei festem Mietzins darf keine Indexklausel stehen bleiben (Weitergabe, "
+"Mindestintervall)."
+msgstr ""
+"With a fixed rent no index clause may remain (pass-through, minimum "
+"interval)."
 
-msgid "Der Mietbeginn fehlt: Ohne ihn lässt sich die feste Dauer nicht beurteilen."
-msgstr "The start of the lease is missing: without it the fixed term cannot be assessed."
-
-#, python-format
-msgid "Stufe %(nr)s: «%(eingabe)s» ist als Datum nicht lesbar — nichts wurde gespeichert."
-msgstr "Step %(nr)s: “%(eingabe)s” cannot be read as a date — nothing was saved."
-
-#, python-format
-msgid "Stufe %(nr)s: «%(eingabe)s» ist als Erhöhung nicht lesbar — nichts wurde gespeichert."
-msgstr "Step %(nr)s: “%(eingabe)s” cannot be read as an increase — nothing was saved."
-
-msgid "Eine Staffelstufe wird als Erhöhung in Franken erfasst, nicht als neuer Mietzins — nichts wurde gespeichert."
-msgstr "A step is entered as an increase in francs, not as a new rent — nothing was saved."
+msgid ""
+"Der Mietbeginn fehlt: Ohne ihn lässt sich die feste Dauer nicht beurteilen."
+msgstr ""
+"The start of the lease is missing: without it the fixed term cannot be "
+"assessed."
 
 #, python-format
-msgid "Mietzinsmodell dieses Entwurfs (unverändert, daher nicht gesperrt): %(text)s"
+msgid ""
+"Stufe %(nr)s: «%(eingabe)s» ist als Datum nicht lesbar — nichts wurde "
+"gespeichert."
+msgstr ""
+"Step %(nr)s: “%(eingabe)s” cannot be read as a date — nothing was saved."
+
+#, python-format
+msgid ""
+"Stufe %(nr)s: «%(eingabe)s» ist als Erhöhung nicht lesbar — nichts wurde "
+"gespeichert."
+msgstr ""
+"Step %(nr)s: “%(eingabe)s” cannot be read as an increase — nothing was "
+"saved."
+
+msgid ""
+"Eine Staffelstufe wird als Erhöhung in Franken erfasst, nicht als neuer "
+"Mietzins — nichts wurde gespeichert."
+msgstr ""
+"A step is entered as an increase in francs, not as a new rent — nothing was "
+"saved."
+
+#, python-format
+msgid ""
+"Mietzinsmodell dieses Entwurfs (unverändert, daher nicht gesperrt): %(text)s"
 msgstr "Rent model of this draft (unchanged, so not blocked): %(text)s"
 
 msgid "Vorschau nicht möglich: Das Mietzinsmodell ist noch nicht zulässig."
 msgstr "Preview not possible: the rent model is not yet permissible."
 
-msgid "Der Vertrag bleibt Entwurf: Das Mietzinsmodell ist nicht zulässig. Im Assistenten lässt es sich korrigieren."
-msgstr "The contract stays a draft: the rent model is not permissible. It can be corrected in the assistant."
+msgid ""
+"Der Vertrag bleibt Entwurf: Das Mietzinsmodell ist nicht zulässig. Im "
+"Assistenten lässt es sich korrigieren."
+msgstr ""
+"The contract stays a draft: the rent model is not permissible. It can be "
+"corrected in the assistant."
 
-msgid "Der Mietzins ist im Vertrag als fester Betrag vereinbart. Spätere Anpassungen gehen mit dem amtlichen Formular (Art. 269d OR); die Gründe stehen in Art. 269a OR, etwa Referenzzinssatz oder Kostensteigerung."
-msgstr "The rent is agreed in the lease as a fixed amount. Later adjustments use the official form (Art. 269d CO); the grounds are in Art. 269a CO, such as the reference interest rate or cost increases."
+msgid ""
+"Der Mietzins ist im Vertrag als fester Betrag vereinbart. Spätere "
+"Anpassungen gehen mit dem amtlichen Formular (Art. 269d OR); die Gründe "
+"stehen in Art. 269a OR, etwa Referenzzinssatz oder Kostensteigerung."
+msgstr ""
+"The rent is agreed in the lease as a fixed amount. Later adjustments use the"
+" official form (Art. 269d CO); the grounds are in Art. 269a CO, such as the "
+"reference interest rate or cost increases."
 
 msgid "Weitergabe der Teuerung"
 msgstr "Passing on inflation"
 
-msgid "Der Anteil der Teuerung, der in den Mietzins einfliesst. Höchstens 100 Prozent: Die Erhöhung darf die Zunahme des Landesindexes nicht übersteigen (Art. 17 Abs. 1 VMWG). Sinkt der Index, ist der Mietzins entsprechend anzupassen (Art. 17 Abs. 2 VMWG)."
-msgstr "The share of inflation that goes into the rent. At most 100 percent: the increase may not exceed the rise in the index (Art. 17 para. 1 VMWG). If the index falls, the rent must be adjusted accordingly (Art. 17 para. 2 VMWG)."
+msgid ""
+"Der Anteil der Teuerung, der in den Mietzins einfliesst. Höchstens 100 "
+"Prozent: Die Erhöhung darf die Zunahme des Landesindexes nicht übersteigen "
+"(Art. 17 Abs. 1 VMWG). Sinkt der Index, ist der Mietzins entsprechend "
+"anzupassen (Art. 17 Abs. 2 VMWG)."
+msgstr ""
+"The share of inflation that goes into the rent. At most 100 percent: the "
+"increase may not exceed the rise in the index (Art. 17 para. 1 VMWG). If the"
+" index falls, the rent must be adjusted accordingly (Art. 17 para. 2 VMWG)."
 
 msgid "Bekanntgabe des Indexstandes"
 msgstr "Publication of the index level"
@@ -33253,8 +33331,14 @@ msgstr "These values come from the lease, not from the law."
 msgid "Mindestintervall"
 msgstr "Minimum interval"
 
-msgid "Der Abstand zwischen zwei Anpassungen, den die Parteien im Vertrag vereinbaren. Die Ankündigung selbst erfolgt mit mindestens 30 Tagen auf ein Monatsende (Art. 17 Abs. 3 VMWG)."
-msgstr "The interval between two adjustments agreed by the parties in the lease. The notice itself is given at least 30 days before the end of a month (Art. 17 para. 3 VMWG)."
+msgid ""
+"Der Abstand zwischen zwei Anpassungen, den die Parteien im Vertrag "
+"vereinbaren. Die Ankündigung selbst erfolgt mit mindestens 30 Tagen auf ein "
+"Monatsende (Art. 17 Abs. 3 VMWG)."
+msgstr ""
+"The interval between two adjustments agreed by the parties in the lease. The"
+" notice itself is given at least 30 days before the end of a month (Art. 17 "
+"para. 3 VMWG)."
 
 msgid "Monate"
 msgstr "months"
@@ -33402,13 +33486,549 @@ msgstr "Please enter a valid dispatch date."
 msgid "Mitteilung zur Erhöhung ab %(datum)s als versandt markiert."
 msgstr "Notice of the increase from %(datum)s marked as sent."
 
-msgid "Der Vertrag bleibt archiviert: Das Mietzinsmodell ist nicht zulässig (Befunde oben)."
-msgstr "The contract stays archived: the rent model is not permissible (findings above)."
+msgid ""
+"Der Vertrag bleibt archiviert: Das Mietzinsmodell ist nicht zulässig "
+"(Befunde oben)."
+msgstr ""
+"The contract stays archived: the rent model is not permissible (findings "
+"above)."
 
 #, python-format
-msgid "Der Vertrag ist befristet und endet am %(datum)s ohne Kündigung (Art. 266 OR). Eine ordentliche Kündigung durch den Vermieter mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
-msgstr "The lease is fixed-term and ends on %(datum)s without notice (Art. 266 CO). An ordinary termination by the landlord taking effect on %(wirkung)s (before this date) cannot be recorded. Extraordinary terminations, for example for default in payment (Art. 257d CO), remain possible."
+msgid ""
+"Der Vertrag ist befristet und endet am %(datum)s ohne Kündigung (Art. 266 "
+"OR). Eine ordentliche Kündigung durch den Vermieter mit Wirkung auf den "
+"%(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche "
+"Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
+msgstr ""
+"The lease is fixed-term and ends on %(datum)s without notice (Art. 266 CO). "
+"An ordinary termination by the landlord taking effect on %(wirkung)s (before"
+" this date) cannot be recorded. Extraordinary terminations, for example for "
+"default in payment (Art. 257d CO), remain possible."
 
 #, python-format
-msgid "Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet (Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
-msgstr "The landlord has waived termination until %(datum)s (waiver of termination, Art. 17 para. 4 VMWG). An ordinary termination taking effect on %(wirkung)s (before this date) cannot be recorded. Extraordinary terminations, for example for default in payment (Art. 257d CO), remain possible."
+msgid ""
+"Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet "
+"(Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit "
+"Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. "
+"Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), "
+"bleiben möglich."
+msgstr ""
+"The landlord has waived termination until %(datum)s (waiver of termination, "
+"Art. 17 para. 4 VMWG). An ordinary termination taking effect on %(wirkung)s "
+"(before this date) cannot be recorded. Extraordinary terminations, for "
+"example for default in payment (Art. 257d CO), remain possible."
+
+# --- Geldpfade: Sperren, Eigentümerauszahlung aus eingegangenem Geld (Etappe
+# 0, 28.10.2026) ---
+msgid ""
+"Keine Rechnung ausgewählt — oder die Rechnungen sind bereits in einer "
+"Zahlungsdatei."
+msgstr "No invoice selected — or the invoices are already in a payment file."
+
+#, python-format
+msgid ""
+"%(schon)s Rechnung(en) waren schon bezahlt — nicht noch einmal verbucht."
+msgstr "%(schon)s invoice(s) already paid — not posted a second time."
+
+#, python-format
+msgid ""
+"«%(titel)s»: Der offene Betrag hat sich seit dem Öffnen der Maske geändert "
+"(jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon verbucht. Nichts "
+"doppelt gebucht."
+msgstr ""
+"\"%(titel)s\": The open amount has changed since the form was opened (now "
+"CHF %(offen)s) — the payment has probably been posted already. Nothing was "
+"posted twice."
+
+#, python-format
+msgid ""
+"«%(lieferant)s»: Der offene Betrag hat sich seit dem Öffnen der Maske "
+"geändert (jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon "
+"verbucht. Nichts doppelt gebucht."
+msgstr ""
+"\"%(lieferant)s\": The open amount has changed since the form was opened "
+"(now CHF %(offen)s) — the payment has probably been posted already. Nothing "
+"was posted twice."
+
+#, python-format
+msgid "Das Bankkonto «%(nummer)s» gibt es nicht."
+msgstr "The bank account \"%(nummer)s\" does not exist."
+
+#, python-format
+msgid ""
+"Konto %(nummer)s ist kein Bankkonto für Auszahlungen. Das Kautionssperrkonto"
+" (1015) gehört den Mietern und kann nicht für Eigentümerauszahlungen benutzt"
+" werden."
+msgstr ""
+"Account %(nummer)s is not a bank account for payouts. The blocked deposit "
+"account (1015) belongs to the tenants and cannot be used for owner payouts."
+
+msgid ""
+"Seit dem Öffnen der Maske wurde für diesen Eigentümer eine Auszahlung "
+"erfasst — vermutlich dieselbe. Bitte die Seite neu laden; es wurde nichts "
+"doppelt gebucht."
+msgstr ""
+"A payout has been recorded for this owner since the form was opened — "
+"probably the same one. Please reload the page; nothing was posted twice."
+
+#, python-format
+msgid ""
+"Auszahlbar sind höchstens CHF %(auszahlbar)s (eingegangene Mittel abzüglich "
+"bezahlter Kosten und bisheriger Auszahlungen). Verlangt: CHF %(betrag)s."
+msgstr ""
+"At most CHF %(auszahlbar)s can be paid out (funds received less costs paid "
+"and previous payouts). Requested: CHF %(betrag)s."
+
+#, python-format
+msgid ""
+"Das Bankkonto %(nummer)s deckt die Auszahlung nicht: Saldo CHF %(saldo)s, "
+"verlangt CHF %(betrag)s."
+msgstr ""
+"Bank account %(nummer)s does not cover the payout: balance CHF %(saldo)s, "
+"requested CHF %(betrag)s."
+
+msgid "Sollbasis: auch noch nicht bezahlte Mieten und Rechnungen"
+msgstr "Accrual basis: including rents and invoices not yet paid"
+
+msgid "Auszahlbar (eingegangene Mittel)"
+msgstr "Payable (funds received)"
+
+#, python-format
+msgid "Eingegangen %(e)s − bezahlt %(b)s − ausbezahlt %(a)s"
+msgstr "Received %(e)s − paid %(b)s − paid out %(a)s"
+
+#, python-format
+msgid ""
+"Auszahlbar: CHF %(a)s. Gezählt wird nur, was tatsächlich eingegangen ist, "
+"abzüglich bezahlter Kosten und bisheriger Auszahlungen — Kautionen und noch "
+"nicht bezahlte Mieten zählen nicht."
+msgstr ""
+"Payable: CHF %(a)s. Only what has actually been received counts, less costs "
+"paid and previous payouts — deposits and unpaid rents do not count."
+
+msgid "Zurzeit ist nichts auszahlbar."
+msgstr "Nothing can be paid out at the moment."
+
+msgid "(ohne Namen)"
+msgstr "(no name)"
+
+msgid "Anschrift"
+msgstr "Address"
+
+#, python-format
+msgid "Anschrift der Verwaltung unvollständig: %(felder)s fehlt"
+msgstr "Property manager address incomplete: %(felder)s missing"
+
+msgid "Anschrift des Lieferanten"
+msgstr "Supplier address"
+
+msgid "Anschrift ergänzen"
+msgstr "Complete address"
+
+msgid "Anschrift fehlt"
+msgstr "Address missing"
+
+msgid "Anschrift für die Zahlungsdatei"
+msgstr "Address for the payment file"
+
+#, python-format
+msgid "Anschrift unvollständig: %(felder)s fehlt"
+msgstr "Address incomplete: %(felder)s missing"
+
+#, python-format
+msgid "Anschrift von «%(lieferant)s» gespeichert."
+msgstr "Address of \"%(lieferant)s\" saved."
+
+#, python-format
+msgid "Auch bei %(n)s weiteren offenen Rechnungen eingetragen."
+msgstr "Also entered on %(n)s further open invoices."
+
+msgid ""
+"Auch bei den übrigen offenen Rechnungen dieses Lieferanten eintragen, die "
+"noch keine Anschrift haben"
+msgstr ""
+"Also enter it on this supplier's other open invoices that have no address "
+"yet"
+
+msgid ""
+"Bei einer bezahlten oder stornierten Rechnung wird die Anschrift nicht mehr "
+"geändert."
+msgstr "The address of a paid or cancelled invoice is no longer changed."
+
+msgid "Betrag fehlt oder ist nicht positiv"
+msgstr "Amount missing or not positive"
+
+msgid "Betrag über CHF 999 999 999.99"
+msgstr "Amount above CHF 999 999 999.99"
+
+#, python-format
+msgid ""
+"Die IBAN wurde geändert (vorher %(alt)s). Vor der Zahlung beim Lieferanten "
+"bestätigen lassen."
+msgstr ""
+"The IBAN was changed (previously %(alt)s). Have the supplier confirm it "
+"before paying."
+
+#, python-format
+msgid ""
+"Die IBAN «%(iban)s» ist ungültig (Prüfziffer oder Länge). Bitte die Rechnung"
+" bearbeiten und die IBAN korrigieren."
+msgstr ""
+"The IBAN \"%(iban)s\" is invalid (check digits or length). Please edit the "
+"invoice and correct the IBAN."
+
+msgid ""
+"Die Swiss Payment Standards verlangen ab dem 14.11.2026 die Anschrift des "
+"Begünstigten in der Zahlungsdatei, mindestens Ort und Land. Diese Seite "
+"ändert nur die Anschrift — Betrag, IBAN und Buchungen bleiben unberührt."
+msgstr ""
+"From 14.11.2026 the Swiss Payment Standards require the beneficiary address "
+"in the payment file, at least town and country. This page only changes the "
+"address — amount, IBAN and postings stay untouched."
+
+msgid ""
+"Die Zahlungsaufforderung wurde nicht erzeugt, weil der Einzahlungsschein "
+"fehlerhaft wäre. Bitte IBAN und Anschrift der Verwaltung prüfen; es wurde "
+"nichts gespeichert oder versandt."
+msgstr ""
+"The payment demand was not created because the payment slip would be faulty."
+" Please check the property manager's IBAN and address; nothing was saved or "
+"sent."
+
+msgid "Die Zahlungsdatei wurde nicht erzeugt."
+msgstr "The payment file was not created."
+
+msgid ""
+"Freigabe erst nach Bestätigung: Kreuz «IBAN-Wechsel geprüft» in der Zeile "
+"setzen."
+msgstr ""
+"Approval only after confirmation: tick \"IBAN change checked\" in the row."
+
+msgid "Hausnummer"
+msgstr "House number"
+
+msgid "IBAN der Verwaltung fehlt"
+msgstr "Property manager IBAN missing"
+
+msgid "IBAN der Verwaltung ungültig (Prüfziffer oder Länge stimmt nicht)"
+msgstr "Property manager IBAN invalid (check digits or length wrong)"
+
+msgid "IBAN fehlt"
+msgstr "IBAN missing"
+
+msgid "IBAN geändert?"
+msgstr "IBAN changed?"
+
+msgid "IBAN ungültig (Prüfziffer oder Länge stimmt nicht)"
+msgstr "IBAN invalid (check digits or length wrong)"
+
+msgid "IBAN weicht vom Lieferantenprofil ab"
+msgstr "IBAN differs from the supplier profile"
+
+#, python-format
+msgid ""
+"IBAN weicht vom Lieferantenprofil ab: bisher %(alt)s, jetzt %(neu)s. Vor der"
+" Freigabe beim Lieferanten nachfragen (Rechnungsbetrug)."
+msgstr ""
+"IBAN differs from the supplier profile: previously %(alt)s, now %(neu)s. Ask"
+" the supplier before approving (invoice fraud)."
+
+msgid "IBAN-Wechsel geprüft"
+msgstr "IBAN change checked"
+
+msgid "In den Kreditoren öffnen"
+msgstr "Open in creditors"
+
+msgid ""
+"Jede Zahlung wird vor der Dateierzeugung geprüft; keine Rechnung wurde auf "
+"«In Zahlung» gesetzt. Bitte ergänzen oder die Rechnung aus der Auswahl "
+"nehmen:"
+msgstr ""
+"Every payment is checked before the file is created; no invoice was set to "
+"\"In payment\". Please complete it or remove the invoice from the selection:"
+
+msgid "Keine Zahlung in der Auswahl"
+msgstr "No payment in the selection"
+
+msgid "Land (Code)"
+msgstr "Country (code)"
+
+msgid "Lieferantenname fehlt"
+msgstr "Supplier name missing"
+
+msgid "Name der Verwaltung fehlt"
+msgstr "Property manager name missing"
+
+msgid ""
+"Ort und Land braucht die Zahlungsdatei (Swiss Payment Standards ab "
+"14.11.2026). Steht die Hausnummer in der Strasse, wird sie abgetrennt."
+msgstr ""
+"The payment file needs town and country (Swiss Payment Standards from "
+"14.11.2026). If the house number is in the street field, it is split off."
+
+msgid "Profil → Account"
+msgstr "Profile → Account"
+
+msgid "QR-IBAN, aber keine gültige QR-Referenz (27 Ziffern, Prüfziffer)"
+msgstr "QR-IBAN, but no valid QR reference (27 digits, check digit)"
+
+msgid "Verwaltung (Auftraggeber)"
+msgstr "Property manager (debtor)"
+
+#, python-format
+msgid ""
+"Zahlungsdatei nicht erzeugt: %(n)s Eintrag/Einträge sind unvollständig. "
+"Unten steht, was je Kreditor fehlt."
+msgstr ""
+"Payment file not created: %(n)s entries are incomplete. Below is what is "
+"missing per creditor."
+
+msgid "ergänzen"
+msgstr "complete"
+
+msgid "für die Zahlungsdatei"
+msgstr "for the payment file"
+
+msgid "Zweibuchstabiger Ländercode, z. B. CH, DE, AT, FR, IT, LI."
+msgstr "Two-letter country code, e.g. CH, DE, AT, FR, IT, LI."
+
+msgid "Ort fehlt — die Anschrift ist sonst unvollständig."
+msgstr "Town missing — the address is otherwise incomplete."
+
+msgid "Der Ort fehlt."
+msgstr "The town is missing."
+
+msgid "Diese Liegenschaft gibt es nicht."
+msgstr "This property does not exist."
+
+#, python-format
+msgid "Titel ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "The title is too long (at most %(n)s characters)."
+
+msgid ""
+"Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail"
+" und Name kann nur die Person selbst ändern — gespeichert wurde nur die "
+"Rolle in deiner Verwaltung."
+msgstr ""
+"This account is also used in another management company. Only the person "
+"themselves can change the password, email and name — only the role in your "
+"management company was saved."
+
+msgid ""
+"Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail"
+" und Name kann nur die Person selbst ändern. Du kannst hier die Rolle in "
+"deiner Verwaltung festlegen oder die Mitgliedschaft beenden."
+msgstr ""
+"This account is also used in another management company. Only the person "
+"themselves can change the password, email and name. Here you can set the "
+"role in your management company or end the membership."
+
+msgid "Mitgliedschaft in meiner Verwaltung beenden"
+msgstr "End membership in my management company"
+
+msgid "(das Konto bleibt für die andere Verwaltung bestehen)"
+msgstr "(the account remains available to the other management company)"
+
+msgid "Kündigungen"
+msgstr "Terminations"
+
+msgid "Abnahmeprotokolle"
+msgstr "Handover reports"
+
+msgid "Zahlungsvereinbarungen"
+msgstr "Payment agreements"
+
+msgid "Kreditorenrechnungen"
+msgstr "Supplier invoices"
+
+msgid "Buchungen"
+msgstr "Bookings"
+
+msgid "Bankbewegungen"
+msgstr "Bank transactions"
+
+msgid "Nebenkostenabrechnungen"
+msgstr "Service charge statements"
+
+msgid "Jahresabschlüsse"
+msgstr "Annual closings"
+
+msgid "Anlagen"
+msgstr "Fixed assets"
+
+msgid "Dokumente zu Verträgen und Personen"
+msgstr "Documents for leases and persons"
+
+msgid "Schadenmeldungen"
+msgstr "Damage reports"
+
+msgid "STWEG-Abrechnungen"
+msgstr "Condominium statements"
+
+msgid "STWEG-Budgets"
+msgstr "Condominium budgets"
+
+msgid "STWEG-Dokumente"
+msgstr "Condominium documents"
+
+msgid "Versammlungen und Beschlüsse"
+msgstr "Meetings and resolutions"
+
+msgid "Stockwerkeinheiten"
+msgstr "Condominium units"
+
+msgid ""
+"Beende die Verträge; auf Wunsch der Person kannst du ihre Daten über die "
+"Datenschutz-Löschung (Anonymisierung) unkenntlich machen."
+msgstr ""
+"End the leases; at the person’s request you can make their data "
+"unrecognisable using the data-protection deletion (anonymisation)."
+
+msgid "Setze den Vertrag stattdessen auf «Inaktiv / Archiviert»."
+msgstr "Set the lease to “Inactive / Archived” instead."
+
+msgid "Setze die Liegenschaft stattdessen auf den Status «Archiviert»."
+msgstr "Set the property to the status “Archived” instead."
+
+msgid "Beende die Verträge; das Objekt bleibt mit seiner Geschichte bestehen."
+msgstr "End the leases; the unit remains with its history."
+
+msgid "Das Mandat bleibt bestehen; ein Archiv für Mandate folgt."
+msgstr "The mandate remains; an archive for mandates will follow."
+
+#, python-format
+msgid ""
+"«%(name)s» kann nicht gelöscht werden: Es hängen noch Daten daran (%(was)s)."
+" Geschäftsunterlagen sind zehn Jahre aufzubewahren (Art. 958f OR). %(weg)s"
+msgstr ""
+"“%(name)s” cannot be deleted: data is still attached to it (%(was)s). "
+"Business records must be kept for ten years (Art. 958f CO). %(weg)s"
+
+msgid "Zu viele Versuche. Bitte in einer Viertelstunde erneut versuchen."
+msgstr "Too many attempts. Please try again in fifteen minutes."
+
+msgid "Das Passwort stimmt nicht — nichts wurde gelöscht."
+msgstr "The password is incorrect — nothing was deleted."
+
+msgid ""
+"Der Code für die Zwei-Faktor-Anmeldung stimmt nicht — nichts wurde gelöscht."
+msgstr "The two-factor code is incorrect — nothing was deleted."
+
+#, python-format
+msgid ""
+"Die Sicherung vor dem Zurücksetzen ist fehlgeschlagen — es wurde nichts "
+"gelöscht. (%(grund)s)"
+msgstr "The backup before the reset failed — nothing was deleted. (%(grund)s)"
+
+#, python-format
+msgid ""
+"Das Zurücksetzen ist fehlgeschlagen und wurde zurückgerollt — es wurde "
+"nichts gelöscht. (%(grund)s)"
+msgstr ""
+"The reset failed and was rolled back — nothing was deleted. (%(grund)s)"
+
+msgid "Dein Passwort"
+msgstr "Your password"
+
+msgid "Code der Zwei-Faktor-Anmeldung"
+msgstr "Two-factor code"
+
+msgid ""
+"Vorher wird automatisch eine Sicherung der Datenbank erstellt; schlägt sie "
+"fehl, wird nichts gelöscht. Das Audit-Log bleibt erhalten."
+msgstr ""
+"A database backup is created automatically beforehand; if it fails, nothing "
+"is deleted. The audit log is kept."
+
+#, python-format
+msgid "Bitte füllen Sie das Feld «%(feld)s» aus."
+msgstr "Please fill in the “%(feld)s” field."
+
+#, python-format
+msgid "«%(feld)s» ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "“%(feld)s” is too long (at most %(n)s characters)."
+
+msgid "Anliegen"
+msgstr "Request"
+
+msgid "Bitte geben Sie eine gültige E-Mail-Adresse an."
+msgstr "Please enter a valid email address."
+
+msgid "Die gewählte Einheit gibt es in dieser Liegenschaft nicht."
+msgstr "The selected unit does not exist in this property."
+
+msgid ""
+"Das Foto konnte nicht verwendet werden. Bitte wählen Sie ein Bild (JPEG, "
+"PNG, WebP oder HEIC) bis 15 MB."
+msgstr ""
+"The photo could not be used. Please choose an image (JPEG, PNG, WebP or "
+"HEIC) up to 15 MB."
+
+msgid "Zu viele Meldungen in kurzer Zeit. Bitte später erneut versuchen."
+msgstr "Too many reports in a short time. Please try again later."
+
+msgid "Ihre Meldung wurde noch nicht gesendet."
+msgstr "Your report has not been sent yet."
+
+#, python-format
+msgid ""
+"Liegenschaft %(s)s inkl. aller Objekte wirklich löschen? Hängen Verträge, "
+"Rechnungen, Abrechnungen oder Dokumente daran, wird das Löschen abgelehnt. "
+"Dies kann nicht rückgängig gemacht werden."
+msgstr ""
+"Really delete property %(s)s including all units? If leases, invoices, "
+"statements or documents are attached, the deletion is refused. This cannot "
+"be undone."
+
+#, python-format
+msgid ""
+"Person „%(name)s“ wirklich löschen? Hängen Verträge, Rechnungen oder "
+"Dokumente an ihr, wird das Löschen abgelehnt. Journal und Adressen werden "
+"mitgelöscht."
+msgstr ""
+"Really delete the person “%(name)s”? If leases, invoices or documents are "
+"attached, the deletion is refused. The journal and addresses are deleted "
+"with it."
+
+#, python-format
+msgid ""
+"Diesen Vertrag wirklich löschen?\n"
+"\n"
+"Er hat %(r)s Rechnung(en) und %(z)s Zahlung(en) und kann deshalb nicht gelöscht werden. Setze ihn stattdessen auf «Inaktiv / Archiviert»."
+msgstr ""
+"Really delete this lease?\n"
+"\n"
+"It has %(r)s invoice(s) and %(z)s payment(s) and therefore cannot be deleted. Set it to “Inactive / Archived” instead."
+
+#, python-format
+msgid ""
+"Die Eingabe ist zu lang: Ein Feld darf höchstens %(n)s Zeichen enthalten."
+msgstr "The entry is too long: a field may contain at most %(n)s characters."
+
+msgid "Eine Zahl in der Eingabe ist zu gross oder zu klein."
+msgstr "A number in the entry is too large or too small."
+
+msgid "Die Eingabe enthält eine ungültige Kennung oder Zahl."
+msgstr "The entry contains an invalid identifier or number."
+
+msgid ""
+"Ein Wert liegt ausserhalb des zulässigen Bereichs (zum Beispiel eine "
+"negative Menge)."
+msgstr ""
+"A value is outside the permitted range (for example a negative quantity)."
+
+msgid "Die Eingabe wurde nicht gespeichert."
+msgstr "The entry was not saved."
+
+msgid "Ungültige Eingabe – swissImmo"
+msgstr "Invalid entry – swissImmo"
+
+msgid "Ungültige Eingabe"
+msgstr "Invalid entry"
+
+msgid ""
+"Die Anfrage konnte nicht verarbeitet werden. Bitte prüfen Sie Ihre Eingabe."
+msgstr "The request could not be processed. Please check your entry."
+
+msgid "Die gewählte Liegenschaft gibt es nicht."
+msgstr "The selected property does not exist."

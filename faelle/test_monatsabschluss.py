@@ -303,7 +303,10 @@ class ZahllaufZweiSchritteTests(_Basis):
         return [KreditorenRechnung.objects.create(
             lieferant=f'Lieferant {i}', betrag=Decimal('800'), status='freigegeben',
             liegenschaft=self.lg, konto=_k('4000'),
-            iban='CH9300762011623852957', referenz=f'R-{i}') for i in range(n)]
+            iban='CH9300762011623852957', referenz=f'R-{i}',
+            # Die Zahlungsdatei verlangt die Anschrift (SPS 2026, Etappe 0).
+            lieferant_strasse='Hauptstrasse', lieferant_hausnummer='1',
+            lieferant_plz='3000', lieferant_ort='Bern') for i in range(n)]
 
     def test_datei_setzt_den_lauf_auf_laeuft_und_nicht_auf_abgeschlossen(self):
         k = self._kreditoren(1)

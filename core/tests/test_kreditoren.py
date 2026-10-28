@@ -75,7 +75,10 @@ class KreditorZahllaufTests(TestCase):
         k = KreditorenRechnung.objects.create(
             lieferant='Elektro AG', betrag=Decimal('800'), status='freigegeben',
             liegenschaft=lg, konto=_k('4000'),
-            iban='CH9300762011623852957', referenz='R-1')
+            iban='CH9300762011623852957', referenz='R-1',
+            # Seit den SPS 2026 verlangt die Zahlungsdatei die Anschrift (Ort, Land).
+            lieferant_strasse='Industriestrasse', lieferant_hausnummer='4',
+            lieferant_plz='8005', lieferant_ort='Zürich')
         return lg, k
 
     def test_zahllauf_markiert_in_zahlung(self):
@@ -937,7 +940,10 @@ class KreditorenP4Tests(TestCase):
         return [KreditorenRechnung.objects.create(
             lieferant=n, referenz=f'RE-{i}', betrag=Decimal(b),
             datum=date(2024, 4, 1), faellig_am=date(2024, 4, 20 + i),
-            iban=iban, liegenschaft=lg, status='freigegeben')
+            iban=iban, liegenschaft=lg, status='freigegeben',
+            # Anschrift: Pflicht für die Zahlungsdatei (SPS 2026).
+            lieferant_strasse='Hauptstrasse', lieferant_hausnummer=str(i + 1),
+            lieferant_plz='3000', lieferant_ort='Bern')
             for i, (n, iban, b) in enumerate(daten)]
 
     def _mit_iban(self):

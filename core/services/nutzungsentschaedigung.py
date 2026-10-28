@@ -79,13 +79,25 @@ def monate_ohne_forderung(vertrag, bis=None):
 def stelle(vertrag, jahr, monat, user=None):
     """Stellt die Entschädigung für EINEN Monat. Gibt die Forderung zurück oder None
     (nichts geschuldet oder bereits gestellt)."""
-    from core.services.automation import _konten_fuer
-    from finance.booking import buche, ensure_kontenplan
-    from finance.models import DebitorenRechnung
+    from django.db import transaction
 
     titel = _titel(jahr, monat)
     if vertrag.debitoren_rechnungen.filter(titel=titel).exclude(status='storniert').exists():
         return None
+    with transaction.atomic():
+        # GESPERRT, DANN ERNEUT GEPRÜFT (wie die Sollstellung): Zwei gleichzeitige
+        # Läufe stellten sonst dieselbe Monatsentschädigung doppelt.
+        type(vertrag).alle_organisationen.select_for_update().get(pk=vertrag.pk)
+        if vertrag.debitoren_rechnungen.filter(titel=titel).exclude(status='storniert').exists():
+            return None
+        return _stelle_gesperrt(vertrag, jahr, monat, titel, user)
+
+
+def _stelle_gesperrt(vertrag, jahr, monat, titel, user):
+    from core.services.automation import _konten_fuer
+    from finance.booking import buche, ensure_kontenplan
+    from finance.models import DebitorenRechnung
+
     letzter = calendar.monthrange(jahr, monat)[1]
     monat_start, monat_ende = date(jahr, monat, 1), date(jahr, monat, letzter)
     von = max(monat_start, vertrag.ende + timedelta(days=1))

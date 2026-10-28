@@ -248,8 +248,12 @@ class MandantenFixture:
         self.handwerker = Handwerker.objects.create(firma=f'Sanitaer {k} GmbH')
         self.dokument_portfolio = PDokument.objects.create(
             liegenschaft=self.liegenschaft, titel=f'Police {k}', datei=f'dok/{k}.pdf')
+        # Sichtbar im Portal: Seit ROUTE-01 ist der Standard «unsichtbar», und ein
+        # verstecktes Dokument ergäbe für die Fremdzugriffs-Prüfungen ohnehin 404 —
+        # der Isolationstest bewiese dann nichts.
         self.dokument_rentals = RDokument.objects.create(
-            vertrag=self.vertrag, datei=f'vertrag/{k}.pdf', kategorie='vertrag')
+            vertrag=self.vertrag, datei=f'vertrag/{k}.pdf', kategorie='vertrag',
+            im_portal_sichtbar=True)
         self.kommunikation = Kommunikation.objects.create(
             mieter=self.mieter, vertrag=self.vertrag, inhalt=f'Notiz {k}')
         self.kuendigung = Kuendigung.objects.create(vertrag=self.vertrag)

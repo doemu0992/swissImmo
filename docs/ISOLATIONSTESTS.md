@@ -92,6 +92,34 @@ Damit ist die Vollständigkeit nicht mehr Gedächtnisleistung. Wer in einem Jahr
 
 ---
 
+### F. Fremde IDs im Body, alle Rollen (28.10.2026, SICH-01 / SICH-27)
+
+Die Bauformen A bis E setzen fremde IDs in den **Pfad** oder den **Querystring**.
+Die drei Löcher des Audits vom 28.10.2026 standen im **Formular**: `fw_pendenz_neu`
+(`liegenschaft_id` → Zeile in der Organisation der fremden Liegenschaft), der
+QR-Aushang (`einheit_id`) und `fw_abwesenheit_neu` (`benutzer`, `vertreten_durch`;
+`Benutzer` hat keinen Mandantenfilter). Jeder Weg hatte einen grünen Test, der die
+Frage an die falsche Stelle stellte.
+
+`FremdeIdImBodyTests` (`core/tests/test_isolation.py`, Messung in
+`core/tests/_koerper_ids.py`) schickt an **jede** POST-Route einen Body, in dem jedes
+bekannte Feld auf Mandant B zeigt — als Inhaber, Verwalter und Sachbearbeiter, als
+Formular und als JSON — und misst danach den **Bestand**, nicht den Statuscode:
+neue/geänderte/gelöschte Zeilen von B, Fremdschlüssel von A nach B, Benutzer ohne
+Mitgliedschaft in der Organisation der Zeile. Nur Tabellen, in die geschrieben wurde,
+werden neu gelesen. Die Messung weist sich selbst nach
+(`test_der_nachweis_findet_ein_leck`). Ausnahmen stehen mit Grund in
+`OEFFENTLICH_BY_DESIGN` (`/schaden/melden/`, Bewerbungsformular).
+`ZweiPfadParameterTests` deckt die Routen mit zwei Pfadparametern ab, `stweg` steht in
+`EIGENE_APPS`.
+
+Darunter liegt ein **Netz**: `OrganisationAusKette.save()` bricht mit
+`FremdeOrganisation` ab, wenn die aus der Kette abgeleitete Organisation vom Kontext
+der Anfrage abweicht. Es ersetzt die Prüfung in der Ansicht nicht (das Ergebnis wäre
+ein 500), verhindert aber die stille Zeile im fremden Mandanten. Der Weg für Ansichten:
+`core/utils/formularid.eigenes_objekt(Modell, roh, …)`; für Personen des Teams
+`team_der_organisation(request.organisation)`.
+
 ## Wann ist ein Test ein Test
 
 Ein Isolationstest, der auch **ohne** den Filter grün wäre, prüft nichts. Das ist kein theoretisches Problem — es ist die wahrscheinlichste Art, wie diese Etappe scheitert, weil ein falsch aufgesetzter Test genauso grün aussieht wie ein richtiger.

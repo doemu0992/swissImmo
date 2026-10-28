@@ -8,6 +8,7 @@
 # geraten werden darf (Skill schweizer-fachlogik). Der Umzug aendert daran
 # nichts: Der Blockinhalt ist gegen HEAD Zeile fuer Zeile geprueft.
 
+import logging
 import re
 from datetime import date
 from decimal import Decimal
@@ -23,6 +24,8 @@ from rentals.models import Mietvertrag
 
 from ._basis import _global_filter, _num
 from core.services.dokumentsprache import auf_deutsch
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================
@@ -373,19 +376,40 @@ def fw_abnahme_loeschen(request, pk):
     return redirect(f'/neu/vertraege/{vid}/' if vid else '/neu/vertraege/')
 
 
+def _protokoll_ablegen(prot, pdf=None):
+    """Legt das ABGESCHLOSSENE Abnahmeprotokoll in der Vertragsakte ab.
+
+    Ein abgeschlossenes Protokoll ist unterschrieben und liegt dem Mieter vor:
+    Es ist im Mieterportal sichtbar. Ein offenes Protokoll wird nie abgelegt.
+    Gibt das Dokument zurück oder None."""
+    if not getattr(prot, 'abgeschlossen', False):
+        return None
+    from core.services.abnahme_pdf import generate_abnahme_pdf
+    from core.services.ablage import ablegen
+    if pdf is None:
+        pdf = generate_abnahme_pdf(prot, verwaltung=prot.organisation)
+    return ablegen(pdf, f"Abnahmeprotokoll ({auf_deutsch(prot.get_typ_display)}) {prot.datum:%d.%m.%Y}",
+                   kategorie='protokoll', vertrag=prot.vertrag, dedup=True,
+                   im_portal_sichtbar=True)
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_abnahme_pdf(request, pk):
+    """Abnahmeprotokoll als PDF. GET ist die Vorschau und schreibt nichts; beim
+    Abschluss der Abnahme (POST) legt `fw_abnahme_vorort_abschliessen` das
+    Protokoll ab. Ein POST hierher holt das für ein bereits abgeschlossenes
+    Protokoll nach — nur für Schreib-Rollen (ROUTE-01/18)."""
     from django.http import HttpResponse
+    from django.core.exceptions import PermissionDenied
     from rentals.models import Abnahmeprotokoll
-    from crm.models import Organisation
+    from core.auth import hat_rolle
     from core.services.abnahme_pdf import generate_abnahme_pdf
     prot = get_object_or_404(Abnahmeprotokoll.objects.select_related('vertrag__mieter', 'vertrag__einheit__liegenschaft'), id=pk)
     pdf = generate_abnahme_pdf(prot, verwaltung=prot.organisation)
-    # Auto-Ablage in die Vertrags-Akte (abgeschlossene Protokolle)
-    if getattr(prot, 'abgeschlossen', False):
-        from core.services.ablage import ablegen
-        ablegen(pdf, f"Abnahmeprotokoll ({auf_deutsch(prot.get_typ_display)}) {prot.datum:%d.%m.%Y}",
-                kategorie='protokoll', vertrag=prot.vertrag, dedup=True)
+    if request.method == 'POST':
+        if not hat_rolle(request.user, SCHREIB_ROLLEN):
+            raise PermissionDenied
+        _protokoll_ablegen(prot, pdf)
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Abnahmeprotokoll_{prot.vertrag.mieter.nachname}.pdf"'
     return resp
@@ -436,26 +460,36 @@ def fw_vertrag_status(request, pk):
 
 @rolle_erforderlich(ROLLE_VERWALTER)
 def fw_vertrag_loeschen(request, pk):
-    """Löscht einen Mietvertrag. Verknüpfte Rechnungen/Zahlungen bleiben erhalten
-    (FK on_delete=SET_NULL) — die revisionssichere Buchhaltung wird nicht zerstört."""
+    """Löscht einen Mietvertrag — NUR einen ohne Rechnungen, Zahlungen, Mahnungen,
+    Kündigungen, Abnahmen und Dokumente (FIN-16).
+
+    Vorher liess sich ein aktiver Vertrag mit offenen Rechnungen löschen: Die
+    Rechnungen behielten Status `offen`, verloren aber den Vertrag (`SET_NULL`)
+    und fielen aus Mieterkonto, Mahnlauf und Art. 257d OR. Ein bezahlter oder
+    beendeter Vertrag gehört ins Archiv (Status «Inaktiv / Archiviert»)."""
     from django.shortcuts import redirect
     from django.contrib import messages
+    from django.db import transaction
+    from django.db.models import ProtectedError
     from core.auth import log_aktion
+    from core.services.loeschschutz import geschuetzt_melden, hindernisse, sperrmeldung
     v = get_object_or_404(Mietvertrag, id=pk)
     if request.method == 'POST':
-        # Abnahmeprotokolle sind Beweismittel und gehören zur Einheit: Ein Vertrag
-        # mit Protokoll wird nicht gelöscht. Das Löschen würde sie über CASCADE mit
-        # entfernen und die Geschichte der Einheit zerreissen.
-        if v.abnahmen.exists():
-            messages.error(request, gettext(
-                'Der Vertrag hat Abnahmeprotokolle und kann nicht gelöscht werden: Sie gehören zur Einheit.'))
-            return redirect(f'/neu/vertraege/{v.id}/')
         name = str(v.mieter)
         einheit = v.einheit.bezeichnung
+        haengt = hindernisse(v)
+        if haengt:
+            messages.error(request, '❌ ' + sperrmeldung(v, haengt, f'{name} · {einheit}'))
+            return redirect(f'/neu/vertraege/{v.id}/')
+        try:
+            with transaction.atomic():
+                # Bereinigung der verwaisten Vertragspaket-Dokumente passiert zentral in
+                # Mietvertrag.delete().
+                v.delete()
+        except ProtectedError as fehler:
+            messages.error(request, '❌ ' + geschuetzt_melden(v, fehler, f'{name} · {einheit}'))
+            return redirect(f'/neu/vertraege/{v.id}/')
         log_aktion(request, "Mietvertrag gelöscht", name, einheit)
-        # Bereinigung der verwaisten Vertragspaket-Dokumente passiert zentral in
-        # Mietvertrag.delete() (greift auch auf dem API-Löschpfad).
-        v.delete()
         messages.success(request, '🗑️ ' + gettext('Vertrag (%(name)s · %(einheit)s) wurde gelöscht.') % {'name': name, 'einheit': einheit})
         return redirect('/neu/vertraege/')
     return redirect(f'/neu/vertraege/{v.id}/')
@@ -842,8 +876,14 @@ def fw_abnahme_vorort_abschliessen(request, pk):
     elif ohne_zuordnung:
         messages.warning(request, gettext('Nicht im Schlüsselregister, deshalb nicht gebucht: %(liste)s')
                          % {'liste': ', '.join(ohne_zuordnung)})
-    # Modul 5: Regel «Abnahme abgeschlossen» — Begleitdokument; das Protokoll
-    # selbst entsteht wie bisher beim PDF-Abruf.
+    # Das unterschriebene Protokoll gehört jetzt in die Akte (früher entstand es
+    # erst beim PDF-Abruf, auch durch blosses Ansehen). Ein Fehler darf den
+    # bereits gespeicherten Abschluss nicht zurücknehmen.
+    try:
+        _protokoll_ablegen(prot)
+    except Exception:
+        logger.exception('Abnahmeprotokoll %s nicht abgelegt', prot.pk)
+    # Modul 5: Regel «Abnahme abgeschlossen» — Begleitdokument.
     from core.services.dokument_regeln import dokument_fuer_ereignis
     dokument_fuer_ereignis('abnahme_abgeschlossen', organisation=v.organisation, vertrag=v)
     messages.success(request, '✅ ' + gettext('Abnahmeprotokoll erfasst (%(count)s Mängel).') % {'count': prot.maengel.count()})

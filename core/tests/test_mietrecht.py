@@ -679,7 +679,12 @@ class Art266nDoppelzustellungTests(TestCase):
         r = c.get(f'/neu/kuendigung/{k.id}/formular/')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r['Content-Type'], 'application/pdf')
-        # Zwei separat adressierte Kopien abgelegt.
+        # Die Vorschau (GET) legt nichts ab (ROUTE-01) ...
+        self.assertEqual(Dokument.objects.filter(vertrag=v, bezeichnung__contains='Zustellung an').count(), 0)
+        # ... das ausdrückliche «Erstellen» (POST) legt zwei separat adressierte Kopien ab.
+        r = c.post(f'/neu/kuendigung/{k.id}/formular/')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
         n = Dokument.objects.filter(vertrag=v, bezeichnung__contains='Zustellung an').count()
         self.assertEqual(n, 2)
 

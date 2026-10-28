@@ -253,7 +253,8 @@ class MietvertragAdmin(NurLesenModelAdmin):
         if getattr(obj, 'sign_status', '') == 'unterzeichnet' and getattr(obj, 'pdf_datei', None):
             exists = Dokument.objects.filter(vertrag=obj, kategorie='vertrag').exists()
             if not exists:
-                Dokument.objects.create(titel=f"Mietvertrag {obj.mieter}", kategorie='vertrag', vertrag=obj, mieter=obj.mieter, einheit=obj.einheit, datei=obj.pdf_datei)
+                Dokument.objects.create(titel=f"Mietvertrag {obj.mieter}", kategorie='vertrag', vertrag=obj, mieter=obj.mieter, einheit=obj.einheit, datei=obj.pdf_datei,
+                                         im_portal_sichtbar=True)  # unterzeichnet: liegt dem Mieter vor
                 messages.success(request, '✅ ' + gettext('Vertrag archiviert.'))
 
 # ... Die anderen Klassen (LeerstandAdmin, MietzinsAnpassungAdmin, DokumentAdmin) bleiben unverändert ...

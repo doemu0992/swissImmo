@@ -56,58 +56,140 @@ def add_chat_message(ticket, text, absender="Verwaltung", is_von_verwaltung=True
 
 # --- 2. ÖFFENTLICHE FORMULAR & PDF LOGIK ---
 
+class MeldungUngueltig(ValueError):
+    """Das öffentliche Meldeformular wurde unvollständig oder falsch ausgefüllt.
+
+    `fehler` ist eine Liste lesbarer Meldungen für den Melder. Es wurde dabei
+    NICHTS angelegt.
+    """
+
+    def __init__(self, fehler):
+        super().__init__('; '.join(fehler))
+        self.fehler = list(fehler)
+
+
+#: Feldlängen des öffentlichen QR-Formulars. Sie folgen den Spalten von
+#: `SchadenMeldung` (SICH-14: SQLite schweigt bei zu langem Text, PostgreSQL
+#: antwortet mit 500) und lassen für `titel (nachname)` Platz in den 200 Zeichen
+#: von `SchadenMeldung.titel`.
+GRENZEN_QR = {
+    'titel': 100, 'nachname': 70, 'vorname': 100, 'anrede': 20, 'email': 254,
+    'telefon': 50, 'hersteller': 100, 'seriennummer': 100, 'beschreibung': 5000,
+}
+
+
+def pruefe_oeffentliche_meldung(liegenschaft, post_data, files_data):
+    """Prüft das QR-Formular und gibt die bereinigten Werte zurück.
+
+    Wirft `MeldungUngueltig`, ohne etwas anzulegen. Die Einheit wird NUR aus der
+    Liegenschaft des Aushangs aufgelöst (SICH-08): Eine ID aus dem Formular, die
+    zu einer anderen Liegenschaft oder gar einer fremden Verwaltung gehört,
+    verknüpfte sonst das Ticket mit deren Einheit. Der Aufrufer setzt den
+    Mandantenkontext der Liegenschaft (`kontext_des_objekts`).
+    """
+    from django.core.exceptions import ValidationError
+    from django.core.validators import validate_email
+    from django.utils.translation import gettext as _
+
+    from core.utils.formularid import eigenes_objekt
+    from core.utils.uploads import validiere_bild
+    from portfolio.models import Einheit
+
+    fehler = []
+
+    def text(name, pflicht=False, bezeichnung=None):
+        wert = (post_data.get(name) or '').strip()
+        bez = bezeichnung or name
+        if pflicht and not wert:
+            fehler.append(_('Bitte füllen Sie das Feld «%(feld)s» aus.') % {'feld': bez})
+        elif len(wert) > GRENZEN_QR[name]:
+            fehler.append(_('«%(feld)s» ist zu lang (höchstens %(n)s Zeichen).')
+                          % {'feld': bez, 'n': GRENZEN_QR[name]})
+        return wert
+
+    titel = text('titel', True, _('Anliegen'))
+    beschreibung = text('beschreibung', True, _('Beschreibung'))
+    anrede = text('anrede', False, _('Anrede'))
+    vorname = text('vorname', True, _('Vorname'))
+    nachname = text('nachname', True, _('Nachname'))
+    email = text('email', True, _('E-Mail'))
+    telefon = text('telefon', True, _('Telefon'))
+    hersteller = text('hersteller', False, _('Marke / Hersteller'))
+    seriennummer = text('seriennummer', False, _('Seriennummer'))
+    if email and len(email) <= GRENZEN_QR['email']:
+        try:
+            validate_email(email)
+        except ValidationError:
+            fehler.append(_('Bitte geben Sie eine gültige E-Mail-Adresse an.'))
+
+    einheit = None
+    einheit_roh = (post_data.get('einheit_id') or '').strip()
+    if einheit_roh:
+        einheit = eigenes_objekt(Einheit, einheit_roh, liegenschaft=liegenschaft)
+        if einheit is None:
+            fehler.append(_('Die gewählte Einheit gibt es in dieser Liegenschaft nicht.'))
+
+    foto = files_data.get('foto')
+    if foto:
+        ok, _grund = validiere_bild(foto)
+        if not ok:
+            fehler.append(_('Das Foto konnte nicht verwendet werden. Bitte wählen Sie ein Bild '
+                            '(JPEG, PNG, WebP oder HEIC) bis 15 MB.'))
+
+    if fehler:
+        raise MeldungUngueltig(fehler)
+
+    from .meldung import gueltige_zeitfenster
+    return {
+        'titel': titel, 'beschreibung': beschreibung, 'anrede': anrede,
+        'vorname': vorname, 'nachname': nachname, 'email': email, 'telefon': telefon,
+        'hersteller': hersteller, 'seriennummer': seriennummer, 'einheit': einheit,
+        'foto': foto or None,
+        'erreichbarkeit': gueltige_zeitfenster(post_data.getlist('erreichbarkeit')),
+    }
+
+
 def process_public_ticket_form(liegenschaft, post_data, files_data):
     """
     Verarbeitet das öffentliche QR-Formular, setzt die Beschreibung
     zusammen und speichert das Ticket.
+
+    Wirft `MeldungUngueltig`, wenn Pflichtfelder fehlen, ein Text zu lang ist,
+    die Einheit nicht zur Liegenschaft gehört oder das Foto kein Bild ist.
     """
-    # 1. Basis Daten
-    titel = post_data.get('titel')
-    beschreibung_raw = post_data.get('beschreibung')
-    einheit_id = post_data.get('einheit_id')
-    foto = files_data.get('foto')
+    d = pruefe_oeffentliche_meldung(liegenschaft, post_data, files_data)
 
-    # 2. Kontakt Daten
-    anrede = post_data.get('anrede', '')
-    vorname = post_data.get('vorname', '')
-    nachname = post_data.get('nachname', '')
-    email = post_data.get('email', '')
-    telefon = post_data.get('telefon', '')
-    erreichbarkeit_list = post_data.getlist('erreichbarkeit')
+    melder_name = f"{d['anrede']} {d['vorname']} {d['nachname']}".strip()
 
-    melder_name = f"{anrede} {vorname} {nachname}".strip()
+    # Beschreibung zusammenbauen
+    final_text = f"{d['beschreibung']}\n\n--- KONTAKT ---\n"
+    final_text += f"Name: {melder_name}\nTel: {d['telefon']}\nEmail: {d['email']}\n"
 
-    # 3. Geräte Daten
-    hersteller = post_data.get('hersteller')
-    seriennummer = post_data.get('seriennummer')
-
-    # 4. Beschreibung zusammenbauen
-    final_text = f"{beschreibung_raw}\n\n--- KONTAKT ---\n"
-    final_text += f"Name: {melder_name}\nTel: {telefon}\nEmail: {email}\n"
-
-    if erreichbarkeit_list:
+    if d['erreichbarkeit']:
         from .meldung import erreichbarkeit_zeile
-        final_text += f"{erreichbarkeit_zeile(erreichbarkeit_list)}\n"
+        final_text += f"{erreichbarkeit_zeile(d['erreichbarkeit'])}\n"
 
-    if hersteller or seriennummer:
+    if d['hersteller'] or d['seriennummer']:
         final_text += "\n--- GERÄT ---\n"
-        if hersteller: final_text += f"Marke: {hersteller}\n"
-        if seriennummer: final_text += f"S/N: {seriennummer}\n"
+        if d['hersteller']:
+            final_text += f"Marke: {d['hersteller']}\n"
+        if d['seriennummer']:
+            final_text += f"S/N: {d['seriennummer']}\n"
 
     # Speichern
     ticket = SchadenMeldung(
-        titel=f"{titel} ({nachname})",
+        titel=f"{d['titel']} ({d['nachname']})",
         beschreibung=final_text,
         prioritaet='mittel',
         status='neu',
-        betroffene_einheit_id=einheit_id if einheit_id else None,
+        betroffene_einheit=d['einheit'],
         liegenschaft=liegenschaft,
-        email_melder=email,
-        tel_melder=telefon,
+        email_melder=d['email'],
+        tel_melder=d['telefon'],
         gemeldet_von=None
     )
-    if foto:
-        ticket.foto = foto
+    if d['foto']:
+        ticket.foto = d['foto']
     ticket.save()
 
     # Bestätigungs-Email via Brevo senden

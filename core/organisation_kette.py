@@ -230,11 +230,39 @@ class OrganisationAusKette(models.Model):
                     return organisation_id
         return None
 
+    def _pruefe_kette_gegen_kontext(self):
+        """Das NETZ unter SICH-01: Die Kette darf nicht aus dem Mandanten hinausführen.
+
+        `organisation_aus_kette()` leitet die Organisation aus dem Elternobjekt ab —
+        auch aus einem FREMDEN. `fw_pendenz_neu` übernahm `liegenschaft_id` aus dem
+        Formular, und die Pendenz entstand in der Verwaltung der fremden Liegenschaft
+        (Audit 28.10.2026). Die Ansichten prüfen jetzt jede ID; hier steht, was
+        übrig bleibt, wenn eine künftige Ansicht es wieder vergisst: Ein Speichern,
+        dessen abgeleitete Organisation vom Kontext der Anfrage abweicht, bricht ab,
+        statt eine Zeile in einem fremden Mandanten anzulegen.
+
+        Ohne Kontext (Management-Command, Migration) und bei ausdrücklich gesetzter
+        Organisation gilt die Prüfung nicht: Dort sagt der Aufrufer, wem die Zeile
+        gehört.
+        """
+        from core.tenancy import FremdeOrganisation, aktuelle_organisation
+
+        kontext = aktuelle_organisation()
+        if kontext is None or self.organisation_id is None:
+            return
+        if self.organisation_id != getattr(kontext, 'pk', kontext):
+            raise FremdeOrganisation(
+                f'{self._meta.label}: Die Kette ({self.ORGANISATION_PFAD}) führt in die Organisation '
+                f'{self.organisation_id}, die Anfrage läuft aber in {getattr(kontext, "pk", kontext)}. '
+                f'Eine ID aus Formular oder Query wurde nicht gegen die eigene Verwaltung geprüft '
+                f'(`core/utils/formularid.eigenes_objekt`).')
+
     def save(self, *args, **kwargs):
         # Nur ergänzen, nie überschreiben: Wer die Organisation ausdrücklich
         # gesetzt hat (Datenmigration, Test-Fixture), meint sie so.
         if self.organisation_id is None:
             self.organisation_id = self.organisation_aus_kette()
+            self._pruefe_kette_gegen_kontext()
         if self.organisation_id is None:
             # Die Kette trug nicht. Das ist bei den meisten Modellen unmoeglich
             # (ihre Glieder sind pflichtig) und bei einigen der Normalfall: Ein

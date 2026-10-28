@@ -562,25 +562,33 @@ def fw_person_loeschen(request, pk):
     if request.method != 'POST':
         return redirect(f'/neu/personen/{m.id}/')
 
-    aktive = m.vertraege.filter(status='aktiv').count()
-    if aktive:
-        messages.error(request, '❌ ' + gettext('Person kann nicht gelöscht werden: %(aktive)s aktive(r) Vertrag/Verträge. Bitte zuerst kündigen/beenden.') % {'aktive': aktive})
+    # FUNK-03: Gesperrt wird, sobald IRGENDETWAS Aufbewahrungspflichtiges
+    # hängt — nicht nur ein aktiver Vertrag. Die Prüfung steht VOR jeder
+    # Änderung (Portal-Login lösen o. ä.), damit eine Sperre nichts halb tut.
+    from django.db import transaction
+    from django.db.models import ProtectedError
+    from core.services.loeschschutz import geschuetzt_melden, hindernisse, sperrmeldung
+    name = m.display_name
+    haengt = hindernisse(m)
+    if haengt:
+        messages.error(request, '❌ ' + sperrmeldung(m, haengt))
         return redirect(f'/neu/personen/{m.id}/')
 
-    name = m.display_name
-    anz_vertraege = m.vertraege.count()
-    # Verknüpften Portal-Login mitentfernen
-    if m.benutzer_id:
-        from core.auth import konto_freigeben
-        _konto = m.benutzer
-        m.benutzer = None
-        m.save(update_fields=['benutzer'])
-        konto_freigeben(_konto, getattr(request, 'organisation', None))
-    log_aktion(request, "Person gelöscht", name,
-               f"inkl. {anz_vertraege} Vertrag/Verträge + zugehörige Daten" if anz_vertraege else "")
-    m.delete()   # cascade: Verträge (beendet/Entwurf), Kommunikation, Dokumente etc.
-    zusatz = f" inkl. {anz_vertraege} beendete(r)/Entwurf-Vertrag/Verträge" if anz_vertraege else ""
-    messages.success(request, '🗑️ ' + gettext('„%(name)s" gelöscht%(zusatz)s.') % {'name': name, 'zusatz': zusatz})
+    try:
+        with transaction.atomic():
+            # Verknüpften Portal-Login mitentfernen
+            if m.benutzer_id:
+                from core.auth import konto_freigeben
+                _konto = m.benutzer
+                m.benutzer = None
+                m.save(update_fields=['benutzer'])
+                konto_freigeben(_konto, getattr(request, 'organisation', None))
+            m.delete()   # Adressen und Journal fallen mit; alles Weitere fängt die Sperre oben ab
+    except ProtectedError as fehler:
+        messages.error(request, '❌ ' + geschuetzt_melden(m, fehler))
+        return redirect(f'/neu/personen/{m.id}/')
+    log_aktion(request, "Person gelöscht", name, "")
+    messages.success(request, '🗑️ ' + gettext('„%(name)s" gelöscht%(zusatz)s.') % {'name': name, 'zusatz': ''})
     return redirect('/neu/personen/')
 
 
@@ -942,7 +950,7 @@ def _person_kopf(m, vertraege, total_offen):
         rollen.append({
             'art': 'Schadenmelder', 'art_label': art_label['Schadenmelder'], 'aktiv': t.status != 'erledigt',
             'ort': t.titel, 'mandat': None,
-            'von': t.erstellt_am.date() if t.erstellt_am else None, 'bis': None,
+            'von': timezone.localtime(t.erstellt_am).date() if t.erstellt_am else None, 'bis': None,
             'status': t.get_status_display(), 'brutto': None,
             'url': f'/neu/schaeden/{t.id}/',
         })

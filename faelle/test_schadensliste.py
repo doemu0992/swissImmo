@@ -45,7 +45,8 @@ class _Basis(TestCase):
         werte.update(felder)
         t = SchadenMeldung.objects.create(**werte)
         if tage_alt:
-            wann = timezone.now() - timedelta(days=tage_alt)
+            from core.tests._helfer import vor_tagen
+            wann = vor_tagen(tage_alt)       # Kalendertage in Zürcher Zeit (nicht UTC-Differenz)
             SchadenMeldung.objects.filter(id=t.id).update(
                 erstellt_am=wann, aktualisiert_am=wann)
             t.refresh_from_db()

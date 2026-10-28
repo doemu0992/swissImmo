@@ -89,7 +89,8 @@ def _vorlagen():
     for muster in ('*.html', '*.css'):
         for pfad in WURZEL.rglob(muster):
             rel = pfad.relative_to(WURZEL).as_posix()
-            if rel.startswith(('mockups/', 'node_modules/', 'staticfiles/')):
+            # `.claude/`: Arbeitskopien (Worktrees) anderer Sitzungen — sonst zählt jede Quelle doppelt (SICH-28).
+            if rel.startswith(('mockups/', 'node_modules/', 'staticfiles/', '.claude/')):
                 continue
             if rel in GEBAUT:
                 continue

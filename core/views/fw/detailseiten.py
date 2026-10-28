@@ -1599,21 +1599,10 @@ def fw_lebensdauer(request):
     organisation = getattr(request, 'organisation', None)
     eigene = Lebensdauer.objects.filter(organisation=organisation)
 
-    # Erstbefuellung je Verwaltung.
-    #
-    # Bis Etappe 5 kam die Tabelle aus der Data-Migration `0019_seed_lebensdauer`
-    # und war nach der Installation gefuellt. Seit die Werte einer Organisation
-    # gehoeren, geht das nicht mehr: Zur Migrationszeit gibt es noch keine, und
-    # `0037` loescht die herrenlosen Zeilen deshalb.
-    #
-    # Ohne diese vier Zeilen begaenne JEDE neue Verwaltung mit einer leeren
-    # Tabelle und muesste erst den Knopf „Standardwerte ergaenzen" finden. Das
-    # waere eine Verschlechterung, die nur mit der Umstellung zu tun haette und
-    # nichts mit dem Fach. `seed_lebensdauer` ist idempotent; sobald eine eigene
-    # Zeile existiert, passiert hier nie wieder etwas.
-    if organisation is not None and not eigene.exists():
-        from core.services.raumkatalog import seed_lebensdauer
-        seed_lebensdauer(organisation)
+    # KEINE Erstbefuellung beim Aufruf (ROUTE-07): Ein GET schreibt nichts.
+    # Die Standardwerte entstehen bei der Anlage der Verwaltung
+    # (`core/services/onboarding.py`); bei einer leeren Tabelle gibt es den
+    # Knopf «Standardwerte ergaenzen» (POST, Aktion `seed` unten).
 
     if request.method == 'POST':
         if not hat_rolle(request.user, SCHREIB_ROLLEN):
@@ -1780,10 +1769,10 @@ def _formulare_prozesse(v, user=None):
         {'titel': 'Kaution (Art. 257e)', 'icon': 'geld', 'items': [
             {'titel': 'Hinterlegungsbestätigung', 'icon': 'drucken',
              'url': f'/neu/vertraege/{v.id}/kaution-beleg/hinterlegung/', 'verfuegbar': hat_kaution,
-             'erledigt': hat('Kaution-Bestätigung'), 'sub': 'an die Mieterschaft'},
+             'erledigt': hat('Kaution-Bestätigung'), 'sub': 'an die Mieterschaft', 'ablegen_post': True},
             {'titel': 'Freigabe an Bank', 'icon': 'bank',
              'url': f'/neu/vertraege/{v.id}/kaution-beleg/freigabe/', 'verfuegbar': sperrkonto,
-             'erledigt': hat('Kaution-Freigabe'), 'sub': 'Sperrkonto freigeben'},
+             'erledigt': hat('Kaution-Freigabe'), 'sub': 'Sperrkonto freigeben', 'ablegen_post': True},
         ]},
         {'titel': 'Prozesse', 'icon': 'einstellungen', 'items': [
             {'titel': 'Zahlungsverzug (Art. 257d)', 'icon': 'recht',
@@ -2096,27 +2085,39 @@ def fw_schlussabrechnung(request, vertrag_id):
             # noch nie lief. Umgekehrt fehlte eine Sperre für den Gutschrift-Fall
             # ohne Kaution, wo ein Doppelklick zweimal Mieterguthaben buchte (Audit).
             from finance.models import Buchung as _BIdem
-            schon_verbucht = (
-                DebitorenRechnung.objects.filter(
-                    vertrag=v, titel="Schlussabrechnung (Nachzahlung)"
-                ).exclude(status='storniert').exists()
-                # storniert_am mitprüfen — sonst widerspricht diese Hälfte der
-                # ersten: die schliesst stornierte Rechnungen bereits aus, damit
-                # eine Schlussabrechnung nach einem Storno neu erstellt werden
-                # kann. Ohne den Filter blockierte die stehengebliebene
-                # Original-Buchung genau das.
-                or _BIdem.objects.filter(
-                    beleg_text__contains=f"Schlussabrechnung [V{v.pk}]",
-                    ist_storno=False, storniert_am__isnull=True
-                ).exists()
-            )
-            if schon_verbucht:
+
+            def _schon_verbucht():
+                return (
+                    DebitorenRechnung.objects.filter(
+                        vertrag=v, titel="Schlussabrechnung (Nachzahlung)"
+                    ).exclude(status='storniert').exists()
+                    # storniert_am mitprüfen — sonst widerspricht diese Hälfte der
+                    # ersten: die schliesst stornierte Rechnungen bereits aus, damit
+                    # eine Schlussabrechnung nach einem Storno neu erstellt werden
+                    # kann. Ohne den Filter blockierte die stehengebliebene
+                    # Original-Buchung genau das.
+                    or _BIdem.objects.filter(
+                        beleg_text__contains=f"Schlussabrechnung [V{v.pk}]",
+                        ist_storno=False, storniert_am__isnull=True
+                    ).exists()
+                )
+
+            def _bereits_verbucht_antwort():
                 if request.POST.get('embed'):
                     return render(request, 'fw/_modal_done.html', {'msg': 'Schlussabrechnung bereits verbucht'})
                 messages.info(request, gettext('Diese Schlussabrechnung wurde bereits verbucht.'))
                 return redirect(f'/neu/vertraege/{v.id}/')
+
+            if _schon_verbucht():
+                return _bereits_verbucht_antwort()
             try:
                 with transaction.atomic():
+                    # GESPERRT, DANN ERNEUT GEPRÜFT: Die Prüfung oben stammt von VOR
+                    # dem Warten. Zwei gleichzeitige Klicks buchten die Kaution
+                    # zweimal frei und stellten zwei Nachzahlungs-Rechnungen.
+                    Mietvertrag.objects.select_for_update(of=('self',)).get(pk=v.pk)
+                    if _schon_verbucht():
+                        return _bereits_verbucht_antwort()
                     from finance.booking import buche
                     heute = timezone.localdate()
                     lg_s = v.einheit.liegenschaft if v.einheit_id else None
@@ -2314,7 +2315,8 @@ def fw_schlussabrechnung(request, vertrag_id):
     # OHNE ausdrückliche Wahl gilt das jüngste Auszugsprotokoll: Der Bewirtschafter
     # tippte die Mängel (Mieteranteil CHF 860 im Stresstest) sonst erneut ab, obwohl
     # sie im Protokoll stehen.
-    ab_id = request.GET.get('abnahme')
+    from core.utils.parameter import id_param
+    ab_id = id_param(request.GET.get('abnahme'))        # `?abnahme=abc` gilt als nicht angegeben
     from rentals.models import Abnahmeprotokoll
     if ab_id:
         ab = Abnahmeprotokoll.objects.filter(id=ab_id, vertrag=v).first()

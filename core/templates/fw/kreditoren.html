@@ -105,6 +105,7 @@
         <div><label for="kr-iban" class="fw-label mb-1">{% trans "IBAN des Lieferanten" %}</label>
             <input id="kr-iban" name="iban" placeholder="{% trans 'CH..' %}" value="{{ neu_werte.iban }}" class="fw-feld w-full fw-mono"{% if neu_fehler.iban %} aria-invalid="true" aria-describedby="kr-iban_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.iban feld_id="kr-iban" %}
             <span class="fw-hilfe">{% trans "Ohne IBAN kann die Rechnung nicht in den Zahllauf." %}</span></div>
+        {% include 'fw/_kreditor_adresse_felder.html' with werte=neu_werte fehler=neu_fehler idp="kr-adr" klasse="fw-col-span-3" %}
         <div><label for="kr-leist-von" class="fw-label mb-1">{% trans "Leistung von" %} <span class="fw-faint">{% trans "(HNK-Periode)" %}</span></label>
             <input id="kr-leist-von" type="date" name="leistungs_von" value="{{ neu_werte.leistungs_von }}" class="fw-feld w-full"{% if neu_fehler.leistungs_von %} aria-invalid="true" aria-describedby="kr-leist-von_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.leistungs_von feld_id="kr-leist-von" %}</div>
         <div><label for="kr-leist-bis" class="fw-label mb-1">{% trans "Leistung bis" %}</label>
@@ -179,6 +180,8 @@
                 <td class="fw-strong whitespace-nowrap">
                     {{ row.lieferant }}
                     {% if row.k.referenz %}<div class="fw-sub2"><span class="fw-mono">{{ row.k.referenz }}</span></div>{% endif %}
+                    {% if row.iban_warnung %}<div class="fw-sub2 fw-warnton">{% trans "IBAN weicht vom Lieferantenprofil ab" %}</div>{% endif %}
+                    {% if row.adresse_fehlt %}<div class="fw-sub2 fw-warnton">{% trans "Anschrift fehlt" %}{% if row.adresse_nachtragbar %} · <a href="/neu/kreditoren/{{ row.k.id }}/adresse/" class="fw-link">{% trans "ergänzen" %}</a>{% endif %}</div>{% endif %}
                 </td>
                 <td class="whitespace-nowrap">{{ row.objekt }}</td>
                 <td class="whitespace-nowrap">{% if row.konto %}{{ row.konto }}{% else %}<span class="fw-warnton">{% trans "nicht zugeordnet" %}</span>{% endif %}{% comment %}
@@ -196,6 +199,7 @@
                         <form method="post" action="/neu/kreditoren/bezahlen/" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.lieferant|safe %}Zahlung an {{ name }} verbuchen?{% endblocktrans %}{% endfilter %}');" class="inline-flex items-center gap-1">
                             {% csrf_token %}
                             <input type="hidden" name="rechnung_id" value="{{ row.k.id }}">
+                            <input type="hidden" name="erwartet_offen" value="{{ row.offen_betrag|stringformat:'.2f' }}">
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                             <input type="number" step="0.05" min="0" name="betrag" value="{{ row.offen_betrag|stringformat:'.2f' }}"
                                    class="fw-feld w-24 text-right" title="{% trans 'Betrag (Teilzahlung möglich)' %}">
@@ -219,6 +223,9 @@
                                 <option value="">{% trans "Aufwandskonto…" %}</option>
                                 {% for k in aufwand_konten %}<option value="{{ k.id }}">{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
                             </select>
+                            {% endif %}
+                            {% if row.iban_warnung %}
+                            <label class="fw-haekchen" title="{{ row.iban_warnung }}"><input type="checkbox" name="iban_bestaetigt" value="1" required class="fw-akzent">{% trans "IBAN-Wechsel geprüft" %}</label>
                             {% endif %}
                             <button type="submit" class="fw-btn fw-warnknopf fw-knapp">
                                 {% zeichen 'speichern' %} {% trans "Freigeben" %}
@@ -258,6 +265,9 @@
                     {% if row.k.fehlermeldung %}
                     <div class="fw-hinweis warn mb-3"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">{{ row.k.fehlermeldung }}</div></div>
                     {% endif %}
+                    {% if row.iban_warnung %}
+                    <div class="fw-hinweis warn mb-3" role="alert"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht"><b>{% trans "IBAN geändert?" %}</b> {{ row.iban_warnung }}</div></div>
+                    {% endif %}
                     <div class="grid grid-cols-1 {% if row.beleg_url %}lg:grid-cols-2{% endif %} gap-5 items-start">
                     {% if row.beleg_url %}
                     <!-- Beleg-Vorschau: gescannte Rechnung neben den Feldern prüfen -->
@@ -293,6 +303,7 @@
                             <input id="kc-leist-bis-{{ row.k.id }}" type="date" name="leistungs_bis" value="{{ row.werte.leistungs_bis }}" class="fw-feld w-full"{% if row.fehler.leistungs_bis %} aria-invalid="true" aria-describedby="kc-leist-bis-{{ row.k.id }}_fehler"{% endif %}>{% if row.fehler.leistungs_bis %}<p id="kc-leist-bis-{{ row.k.id }}_fehler" class="fw-feldfehler">{{ row.fehler.leistungs_bis }}</p>{% endif %}</div>
                         <div class="col-span-2"><label for="kc-iban-{{ row.k.id }}" class="fw-label mb-1">IBAN</label>
                             <input id="kc-iban-{{ row.k.id }}" name="iban" value="{{ row.werte.iban }}" class="fw-feld w-full fw-mono"{% if row.fehler.iban %} aria-invalid="true" aria-describedby="kc-iban-{{ row.k.id }}_fehler"{% endif %}>{% if row.fehler.iban %}<p id="kc-iban-{{ row.k.id }}_fehler" class="fw-feldfehler">{{ row.fehler.iban }}</p>{% endif %}</div>
+                        {% include 'fw/_kreditor_adresse_felder.html' with werte=row.werte fehler=row.fehler idp=row.adr_idp klasse="col-span-2" %}
                         <div><label for="kc-lg-{{ row.k.id }}" class="fw-label mb-1">{% trans "Liegenschaft" %}</label>
                             <select id="kc-lg-{{ row.k.id }}" name="liegenschaft_id" class="fw-feld w-full"{% if row.fehler.liegenschaft_id %} aria-invalid="true" aria-describedby="kc-lg-{{ row.k.id }}_fehler"{% endif %}>
                                 <option value="">— {% trans "keine" %} —</option>

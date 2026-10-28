@@ -9,6 +9,7 @@ dem neuen Mieter zu — der Vormieter hatte danach kein Vertragsdokument mehr.
 Zweitens überschrieben die Download-Views die abgelegte Fassung mit einem PDF
 aus den aktuellen Vertragsdaten — schon durch blosses Ansehen, auch mit
 Lesezugriff. Nach einer Vertragsänderung war die verschickte Fassung weg.
+Seit 28.10.2026 (ROUTE-01) legen die Download-Views gar nichts mehr ab.
 
 Gegenprobe: Mit dem alten `_ablegen_vertragsdokument` sind die ersten beiden
 Tests rot.
@@ -56,12 +57,13 @@ class VertragsablageTests(TestCase):
         neu_v = Mietvertrag.objects.create(mieter=neu_m, einheit=self.e, beginn=date(2026, 1, 1),
                                            netto_mietzins=Decimal('1600'),
                                            nebenkosten=Decimal('200'), status='aktiv')
+        from core.views.pdf import erzeuge_und_ablege_vertragspaket
         self.client.force_login(_team_user('Verwalter'))
 
-        self.client.get(f'/vertrag/{self.v.pk}/pdf/')
+        erzeuge_und_ablege_vertragspaket(self.v)            # wie bei der Vertragserstellung
         alt = self._mietvertrag(self.v)
         alt_inhalt = _inhalt(alt)
-        self.client.get(f'/vertrag/{neu_v.pk}/pdf/')
+        erzeuge_und_ablege_vertragspaket(neu_v)
 
         alt.refresh_from_db()
         self.assertEqual(alt.vertrag_id, self.v.pk, 'Das Dokument des Vormieters wurde umgehängt.')
@@ -84,11 +86,24 @@ class VertragsablageTests(TestCase):
         self.assertEqual(_inhalt(abgelegt), vorher, 'Ansehen hat die abgelegte Fassung ersetzt.')
         self.assertEqual(Dokument.objects.filter(vertrag=self.v, bezeichnung='Mietvertrag').count(), 1)
 
-    def test_ansehen_legt_an_was_fehlt(self):
-        """Gegenstück: Die Akte füllt sich weiterhin beim ersten Erzeugen."""
+    def test_ansehen_legt_nichts_ab(self):
+        """ROUTE-01: Das PDF öffnen (GET) legt nichts in die Akte — schon gar nicht für
+        den Lesezugriff. Vorher entstand dabei ein im Mieterportal sichtbares Dokument.
+        Abgelegt wird beim ausdrücklichen Erstellen des Vertrags."""
         self.client.force_login(_team_user('Verwalter'))
-        self.client.get(f'/vertrag/{self.v.pk}/pdf/')
-        self.assertEqual(Dokument.objects.filter(vertrag=self.v, bezeichnung='Mietvertrag').count(), 1)
+        for adresse in (f'/vertrag/{self.v.pk}/pdf/', f'/vertrag/{self.v.pk}/dokumente-zip/',
+                        f'/vertrag/{self.v.pk}/dokument/hausordnung/'):
+            with self.subTest(adresse=adresse):
+                self.assertEqual(self.client.get(adresse).status_code, 200)
+        self.assertEqual(Dokument.objects.filter(vertrag=self.v).count(), 0)
+
+    def test_vertragspaket_ist_nach_dem_erstellen_im_portal_sichtbar(self):
+        """Gegenstück: Mit dem Inkraftsetzen des Vertrags gehen die Dokumente an den Mieter."""
+        from core.views.pdf import erzeuge_und_ablege_vertragspaket
+        erzeuge_und_ablege_vertragspaket(self.v)
+        dokumente = Dokument.objects.filter(vertrag=self.v)
+        self.assertGreaterEqual(dokumente.count(), 2)
+        self.assertFalse(dokumente.filter(im_portal_sichtbar=False).exists())
 
     def test_vertragserstellung_aktualisiert_ohne_duplikat(self):
         """Gegenstück: Der ausdrückliche Weg (Vertrag erstellen/neu versenden)

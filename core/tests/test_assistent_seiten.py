@@ -68,6 +68,10 @@ class EinrichtungImStandardTests(ZweiFaktorBasis):
     def _faktor(self):
         return ZweiterFaktor.objects.get(benutzer=self.benutzer)
 
+    def _neues_geheimnis(self):
+        """Das angezeigte, noch nicht gespeicherte Geheimnis (liegt in der Sitzung)."""
+        return self.client.session['zweifaktor_neues_geheimnis']
+
     def test_schritt_eins_im_rahmen_des_standards(self):
         html = self.client.get(self.url).content.decode()
         self.assertIn('class="fw-assistent an"', html)
@@ -90,7 +94,7 @@ class EinrichtungImStandardTests(ZweiFaktorBasis):
     def test_schluessel_und_qr_stehen_nur_in_schritt_eins(self):
         """Datenschutz: Das Geheimnis wird nicht öfter angezeigt als nötig — Schritt 2 fragt nur den Code."""
         self.client.get(self.url)
-        geheimnis = self._faktor().geheimnis
+        geheimnis = self._neues_geheimnis()
         eins = self.client.get(self.url)
         self.assertContains(eins, geheimnis)
         self.assertContains(eins, '<svg')
@@ -99,6 +103,22 @@ class EinrichtungImStandardTests(ZweiFaktorBasis):
         self.assertNotContains(zwei, 'fw-zf-qr')
         self.assertNotIn('qr', zwei.context)
         self.assertNotIn('geheimnis', zwei.context)
+
+    def test_get_legt_keinen_datensatz_an_und_zeigt_immer_dasselbe_geheimnis(self):
+        """ROUTE-07: Das blosse Öffnen der Einrichtung schreibt nichts in die Datenbank.
+        Das Geheimnis liegt in der Sitzung und bleibt bei jedem Aufruf dasselbe — sonst
+        passte der gescannte Code nicht zu dem, der beim Bestätigen gilt."""
+        eins = self.client.get(self.url)
+        self.assertFalse(ZweiterFaktor.objects.filter(benutzer=self.benutzer).exists())
+        geheimnis = self._neues_geheimnis()
+        self.assertContains(eins, geheimnis)
+        zwei = self.client.get(self.url)
+        self.assertContains(zwei, geheimnis)
+        self.assertFalse(ZweiterFaktor.objects.filter(benutzer=self.benutzer).exists())
+        # Erst das Absenden legt den Datensatz an, mit genau diesem Geheimnis.
+        self.client.post(self.url, {'code': '000000'})
+        self.assertEqual(self._faktor().geheimnis, geheimnis)
+        self.assertNotIn('zweifaktor_neues_geheimnis', self.client.session)
 
     def test_schritt_zwei_hat_das_codefeld_und_die_aktion_im_fuss(self):
         html = self.client.get(self.url + '?schritt=2').content.decode()
@@ -124,9 +144,9 @@ class EinrichtungImStandardTests(ZweiFaktorBasis):
 
     def test_richtiger_code_aktiviert_und_zeigt_schritt_drei_ohne_weg_zurueck(self):
         self.client.get(self.url)
+        geheimnis = self._neues_geheimnis()
+        antwort = self.client.post(self.url, {'code': totp.code(geheimnis)})
         faktor = self._faktor()
-        antwort = self.client.post(self.url, {'code': totp.code(faktor.geheimnis)})
-        faktor.refresh_from_db()
         self.assertTrue(faktor.ist_aktiv)
         self.assertEqual(Wiederherstellungscode.objects.filter(benutzer=self.benutzer).count(), 10)
         html = antwort.content.decode()
@@ -147,10 +167,10 @@ class EinrichtungImStandardTests(ZweiFaktorBasis):
     def test_keine_seite_der_einrichtung_wird_zwischengespeichert(self):
         """Datenschutz: Geheimnis und Notfallcodes dürfen nicht im Browser-Cache landen."""
         self.client.get(self.url)
-        faktor = self._faktor()
+        geheimnis = self._neues_geheimnis()
         schritt1 = self.client.get(self.url)
         schritt2 = self.client.get(self.url + '?schritt=2')
-        codes = self.client.post(self.url, {'code': totp.code(faktor.geheimnis)})
+        codes = self.client.post(self.url, {'code': totp.code(geheimnis)})
         for name, antwort in (('1', schritt1), ('2', schritt2), ('3', codes)):
             with self.subTest(schritt=name):
                 self.assertIn('no-store', antwort['Cache-Control'])

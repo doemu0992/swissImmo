@@ -154,10 +154,16 @@ def fw_liegenschaft_form(request, pk=None):
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_liegenschaft_gwr(request, pk):
     """GWR/EGID-Import manuell (erneut) auslösen — z.B. wenn er beim Anlegen
-    fehlschlug oder die Objekte nachträglich vom Bund geladen werden sollen."""
+    fehlschlug oder die Objekte nachträglich vom Bund geladen werden sollen.
+
+    NUR POST (ROUTE-07): Der Import ruft die Bundesdienste auf und legt Objekte an.
+    Als GET genügte ein fremder Link, um das auszulösen; ein POST trägt das
+    CSRF-Token. Ein GET führt nur zurück auf die Akte."""
     from django.shortcuts import redirect
     from django.contrib import messages
     lg = get_object_or_404(Liegenschaft, id=pk)
+    if request.method != 'POST':
+        return redirect(f'/neu/liegenschaften/{lg.id}/')
     try:
         from portfolio.services import sync_liegenschaft_with_gwr
         res = sync_liegenschaft_with_gwr(lg)
@@ -190,15 +196,26 @@ def fw_liegenschaft_loeschen(request, pk):
     if request.method != 'POST':
         return redirect(f'/neu/liegenschaften/{lg.id}/')
 
-    aktive = Mietvertrag.objects.filter(einheit__liegenschaft=lg, status='aktiv').count()
-    if aktive:
-        messages.error(request, '❌ ' + gettext('Liegenschaft kann nicht gelöscht werden: %(aktive)s aktive(r) Vertrag/Verträge. Bitte zuerst kündigen/beenden.') % {'aktive': aktive})
+    # FUNK-03 / FIN-16: Verträge (alle, nicht nur aktive), Rechnungen, Buchungen,
+    # NK-Abrechnungen, Abschlüsse, Anlagen, Dokumente … sperren das Löschen.
+    # Übrig bleibt, was ohne Geschäftsunterlagen ist: Objekte, Zähler, Geräte.
+    from django.db import transaction
+    from django.db.models import ProtectedError
+    from core.services.loeschschutz import geschuetzt_melden, hindernisse, sperrmeldung
+    name = f"{lg.strasse}, {lg.plz} {lg.ort}"
+    haengt = hindernisse(lg)
+    if haengt:
+        messages.error(request, '❌ ' + sperrmeldung(lg, haengt, name))
         return redirect(f'/neu/liegenschaften/{lg.id}/')
 
-    name = f"{lg.strasse}, {lg.plz} {lg.ort}"
     anz_obj = lg.einheiten.count()
+    try:
+        with transaction.atomic():
+            lg.delete()   # cascade: Objekte, Zähler, Geräte etc.
+    except ProtectedError as fehler:
+        messages.error(request, '❌ ' + geschuetzt_melden(lg, fehler, name))
+        return redirect(f'/neu/liegenschaften/{lg.id}/')
     log_aktion(request, "Liegenschaft gelöscht", name, f"inkl. {anz_obj} Objekt(e)")
-    lg.delete()   # cascade: Objekte, Zähler, Geräte, beendete Verträge etc.
     messages.success(request, '🗑️ ' + gettext('Liegenschaft „%(name)s" inkl. %(anz_obj)s Objekt(e) gelöscht.') % {'name': name, 'anz_obj': anz_obj})
     return redirect('/neu/liegenschaften/')
 

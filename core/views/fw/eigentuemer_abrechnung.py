@@ -21,6 +21,7 @@ from core.auth import rolle_erforderlich, VERWALTUNGS_ROLLEN
 from portfolio.models import Liegenschaft
 
 from ._basis import _global_filter, _num
+from core.utils.parameter import jahr_streng
 
 
 # ============================================================
@@ -37,10 +38,19 @@ def _mandat_abrechnung_daten(eigentuemer, jahr):
     ertrag_konten = list(Buchungskonto.objects.filter(typ='ertrag'))
     aufwand_konten = list(Buchungskonto.objects.filter(typ='aufwand'))
 
+    # Abschlussbuchungen ausklammern, wie das Kontokorrent es tut
+    # (`eigentuemer_kontokorrent.kontokorrent`): Der Jahresabschluss je
+    # Liegenschaft saldiert alle Erfolgskonten per 31.12. gegen 2970. Ohne den
+    # Ausschluss zeigte die Abrechnung — Seite UND PDF — nach dem Abschluss
+    # Ertrag 0, Aufwand 0, Saldo 0, während das Kontokorrent weiter 8'000 nannte
+    # (Audit FUNK-02).
+    from core.services.jahresabschluss import abschluss_buchungen_q
+
     zeilen = []
     sum_ertrag = sum_aufwand = Decimal('0.00')
     for lg in liegenschaften:
-        bqs = Buchung.objects.filter(liegenschaft=lg, datum__gte=von, datum__lte=bis)
+        bqs = (Buchung.objects.filter(liegenschaft=lg, datum__gte=von, datum__lte=bis)
+               .exclude(abschluss_buchungen_q()))
         ertrag = Decimal('0.00')
         for k in ertrag_konten:
             s = bqs.filter(soll_konto=k).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
@@ -66,7 +76,7 @@ def fw_eigentuemer_abrechnung(request, pk):
     basis = _global_filter(request)
     heute = timezone.localdate()
     try:
-        jahr = int(request.GET.get('jahr') or heute.year)
+        jahr = jahr_streng(request.GET.get('jahr') or heute.year)
     except ValueError:
         jahr = heute.year
 
@@ -93,8 +103,7 @@ def fw_eigentuemer_kontokorrent(request, pk):
     """Kontokorrent Eigentümer (on-screen): Ergebnis der Liegenschaften −
     Auszahlungen = offener Saldo. Einstieg zum Erfassen einer Auszahlung."""
     from crm.models import Eigentuemer
-    from core.services.eigentuemer_kontokorrent import kontokorrent
-    from finance.models import Buchungskonto
+    from core.services.eigentuemer_kontokorrent import auszahlungs_stand, kontokorrent, liquiditaet
     md = get_object_or_404(Eigentuemer, id=pk)
     basis = _global_filter(request)
     heute = timezone.localdate()
@@ -102,7 +111,7 @@ def fw_eigentuemer_kontokorrent(request, pk):
     jahr = None
     if jahr_param and jahr_param != 'alle':
         try:
-            jahr = int(jahr_param)
+            jahr = jahr_streng(jahr_param)
         except ValueError:
             jahr = None
 
@@ -116,7 +125,13 @@ def fw_eigentuemer_kontokorrent(request, pk):
         return resp
 
     kk = kontokorrent(md, jahr=jahr)
-    bankkonten = list(Buchungskonto.objects.filter(nummer__in=['1020', '1015']).order_by('nummer'))
+    # Nur Bankkonten — das Kautionssperrkonto 1015 gehört den Mietern und stand
+    # hier bisher als erste Wahl in der Liste (Audit FUNK-01). Jedes mit seinem
+    # Saldo, damit die Maske zeigt, was gedeckt ist.
+    from finance.booking import bankkonten as _bankkonten, kontosaldo
+    bankkonten = [{'nummer': k.nummer, 'bezeichnung': k.bezeichnung, 'saldo': kontosaldo(k)}
+                  for k in _bankkonten()]
+    liq = liquiditaet(md)
 
     # Verwaltungshonorar-Vorschau nur bei gewähltem Geschäftsjahr (Honorar wird
     # je Jahr gebucht). Ohne Jahr (kumuliert) keine Buchung anbieten.
@@ -133,6 +148,7 @@ def fw_eigentuemer_kontokorrent(request, pk):
         'jahr': jahr, 'jahr_param': jahr_param,
         'jahre': list(range(heute.year, heute.year - 5, -1)),
         'bankkonten': bankkonten, 'heute': heute,
+        'liq': liq, 'auszahlungs_stand': auszahlungs_stand(md),
         'meldung': list(messages.get_messages(request)),
     })
 
@@ -223,13 +239,19 @@ def fw_eigentuemer_mahnstufen(request, pk):
 @rolle_erforderlich(*VERWALTUNGS_ROLLEN)
 def fw_eigentuemer_auszahlung(request, pk):
     """Erfasst eine Auszahlung an den Eigentümer und bucht sie:
-    Soll 2850 (Kontokorrent Eigentümer) / Haben Bank."""
+    Soll 2850 (Kontokorrent Eigentümer) / Haben Bank.
+
+    Nur aus eingegangenem Geld (Liquiditätsbasis, siehe
+    `eigentuemer_kontokorrent.liquiditaet`), nur gegen ein Bankkonto, das den
+    Betrag deckt, und nie vom Kautionssperrkonto 1015 — atomar und gesperrt, so
+    dass zwei gleichzeitige Auszahlungen die Deckung nicht überschreiten."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from crm.models import Eigentuemer
-    from finance.models import Buchungskonto, EigentuemerAuszahlung
-    from finance.booking import buche, konto as _konto
+    from finance.models import Buchungskonto
+    from finance.booking import konto as _konto
     from core.auth import log_aktion
+    from core.services.eigentuemer_kontokorrent import AuszahlungNichtMoeglich, buche_auszahlung
     md = get_object_or_404(Eigentuemer, id=pk)
     if request.method != 'POST':
         return redirect('fw_eigentuemer_kontokorrent', pk=md.id)
@@ -244,20 +266,22 @@ def fw_eigentuemer_auszahlung(request, pk):
         datum = date.fromisoformat(request.POST['datum']) if request.POST.get('datum') else timezone.localdate()
     except ValueError:
         datum = timezone.localdate()
-    bank = Buchungskonto.objects.filter(nummer=request.POST.get('konto_nummer') or '1020').first() or _konto('1020')
+    konto_nr = (request.POST.get('konto_nummer') or '').strip() or '1020'
+    bank = Buchungskonto.objects.filter(nummer=konto_nr).first()
+    if bank is None and konto_nr == '1020':
+        bank = _konto('1020')
+    if bank is None:
+        messages.error(request, gettext('Das Bankkonto «%(nummer)s» gibt es nicht.') % {'nummer': konto_nr})
+        return redirect('fw_eigentuemer_kontokorrent', pk=md.id)
     bemerkung = (request.POST.get('bemerkung') or '').strip()
 
     try:
-        buchung = buche('2850', bank, betrag,
-                        f"Auszahlung Eigentümer {md.firma_oder_name}" + (f" — {bemerkung}" if bemerkung else ""),
-                        datum=datum, user=request.user)
-    except PermissionError as e:
-        messages.error(request, str(e))
+        buchung = buche_auszahlung(md, betrag, bank=bank, datum=datum, bemerkung=bemerkung,
+                                   user=request.user, stand=request.POST.get('stand') or None)
+    except (AuszahlungNichtMoeglich, PermissionError) as e:
+        messages.error(request, '❌ ' + str(e))
         return redirect('fw_eigentuemer_kontokorrent', pk=md.id)
 
-    EigentuemerAuszahlung.objects.create(
-        eigentuemer=md, betrag=betrag, datum=datum, konto=bank,
-        bemerkung=bemerkung, erstellt_von=request.user)
     log_aktion(request, "Eigentümer-Auszahlung", md.firma_oder_name,
                f"CHF {betrag} ab {bank.nummer} · Beleg #{buchung.beleg_nr if buchung else '—'}")
     messages.success(request, '✅ ' + gettext('Auszahlung CHF %(betrag)s an %(firma_oder_name)s verbucht (Soll 2850 / Haben %(nummer)s).') % {'betrag': betrag, 'firma_oder_name': md.firma_oder_name, 'nummer': bank.nummer})

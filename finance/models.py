@@ -5,16 +5,31 @@ import datetime
 import logging
 from decimal import Decimal, InvalidOperation
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy
 
-from core.tenancy import AlleOrganisationenManager, TenantManager
+from core.tenancy import AlleOrganisationenManager, TenantManager, TenantQuerySet
 from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
 from core.utils import get_smart_upload_path
 from django.utils import timezone
+from core.zeit import datum_heute
 from django.db.models import Sum
 
 logger = logging.getLogger(__name__)
+
+
+class BetragFehler(ValidationError, ValueError):
+    """Ein Betrag, der nicht in sein Feld passt (kein Betrag oder zu gross).
+
+    Eine `ValidationError`, damit Formulare und die Eingabe-Schicht
+    (`core/middleware_eingabe.py`) daraus eine Meldung machen statt einer
+    500-Seite (ROUTE-06). Zugleich ein `ValueError`: Die vielen Stellen, die
+    `except ValueError` um ein `save()` haben, und die Tests, die darauf
+    prüfen, laufen unverändert weiter."""
+
+    def __str__(self):
+        return ' '.join(self.messages)
 
 
 def pruefe_dezimalfelder(instance):
@@ -37,13 +52,13 @@ def pruefe_dezimalfelder(instance):
         try:
             d = Decimal(str(wert))
         except (InvalidOperation, ValueError, TypeError):
-            raise ValueError(f"{feld.name}: «{wert}» ist kein gültiger Betrag.")
+            raise BetragFehler(f"{feld.name}: «{wert}» ist kein gültiger Betrag.")
         stellen = d.as_tuple()
         vorkomma = len(stellen.digits) + stellen.exponent      # exponent ≤ 0
         max_vorkomma = feld.max_digits - feld.decimal_places
         if vorkomma > max_vorkomma:
             grenze = 10 ** max_vorkomma
-            raise ValueError(
+            raise BetragFehler(
                 f"{feld.verbose_name or feld.name}: Betrag zu gross "
                 f"(maximal {grenze:,.0f}).".replace(',', "'"))
 
@@ -136,6 +151,14 @@ class LieferantProfil(models.Model):
     standard_konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL,
                                        null=True, blank=True, related_name='lieferanten')
     iban = models.CharField(max_length=50, blank=True)
+    # Die zuletzt freigegebene Anschrift des Lieferanten (gleiche Felder und
+    # Längen wie an `KreditorenRechnung.lieferant_*`): neue Rechnungen desselben
+    # Lieferanten übernehmen sie, statt dass sie jedes Mal neu eingetippt wird.
+    strasse = models.CharField("Strasse", max_length=70, blank=True)
+    hausnummer = models.CharField("Hausnummer", max_length=16, blank=True)
+    plz = models.CharField("PLZ", max_length=16, blank=True)
+    ort = models.CharField("Ort", max_length=35, blank=True)
+    land = models.CharField("Land (ISO-Code)", max_length=2, default='CH')
     treffer = models.PositiveIntegerField("Gelernte Belege", default=0)
     aktualisiert_am = models.DateTimeField(auto_now=True)
 
@@ -172,14 +195,128 @@ class LieferantProfil(models.Model):
     def __str__(self): return f"{self.name_anzeige} → {self.standard_konto or '—'}"
 
 
+#: Felder einer Buchung, die nach dem Buchen NICHT mehr geändert werden dürfen.
+#: Was hier steht, ist der Inhalt des Belegs: wann, was, zwischen welchen
+#: Konten, wie viel, für welches Objekt, unter welcher Nummer, von wem.
+BUCHUNG_UNVERAENDERLICH = (
+    'datum', 'beleg_text', 'soll_konto_id', 'haben_konto_id', 'betrag', 'liegenschaft_id',
+    'ist_storno', 'storno_von_id', 'beleg_nr', 'organisation_id', 'erstellt_von_id',
+)
+
+#: Die Verknüpfungen zu den Nebenbüchern (Zahlung, Rechnung) — die «Zuordnung».
+#: Sie dürfen nachgetragen werden, ändern aber weder Betrag noch Konten. In einer
+#: gesperrten Periode gilt auch das nicht.
+BUCHUNG_VERKNUEPFUNGEN = ('zahlungseingang_id', 'kreditoren_rechnung_id', 'debitoren_rechnung_id')
+
+#: Die Storno-Markierung des Originals (`storniere_buchung`). Sie wird nur
+#: einmal gesetzt und nie zurückgenommen; die Periodensperre lässt sie zu, weil
+#: das Storno selbst in der OFFENEN Periode gebucht wird.
+BUCHUNG_STORNO_MARKE = 'storniert_am'
+
+
+def _feldnamen(namen):
+    """`soll_konto_id` und `soll_konto` meinen dasselbe Feld."""
+    return {n[:-3] if n.endswith('_id') else n for n in namen}
+
+
+_NACHTRAEGLICH_ERLAUBT = _feldnamen(BUCHUNG_VERKNUEPFUNGEN) | {BUCHUNG_STORNO_MARKE}
+_NUR_STORNO_MARKE = {BUCHUNG_STORNO_MARKE}
+
+
+class BuchungQuerySet(TenantQuerySet):
+    """Sammeländerungen an Buchungen: nur das, was ein Beleg nachträglich darf.
+
+    Bisher war die Unveränderbarkeit eine Konvention an der Instanz (`delete()`
+    des Modells wirft). `Buchung.objects.filter(...).update(betrag=1)` und
+    `.delete()` umgingen sie ohne Spur (Audit FIN-15/SICH-06, `probe11.py`).
+    Hier wird die Sammel-Ebene geschlossen:
+
+    * `update()` / `bulk_update()`: nur Storno-Marke und Beleg-Verknüpfungen,
+      und diese nicht in einer gesperrten Periode.
+    * `delete()` und `bulk_create()`: nie. Letzteres umgeht die Belegnummer und
+      die Periodensperre.
+    * Wer es trotzdem muss (Reparatur nach einem Fehler, Testaufbau), nimmt
+      `ausnahme_aendern(grund, …)` bzw. `ausnahme_loeschen(grund)`: benannt,
+      greppbar, mit Begründung, und im Log festgehalten. Das ist ein Zugang,
+      kein Freibrief — er hinterlässt eine Zeile, die ein Prüfer findet.
+
+    NICHT damit gelöst: `_base_manager`, rohes SQL und die Kaskade beim Löschen
+    einer Organisation umgehen jeden QuerySet-Schutz. Das ist erst mit
+    DB-Triggern und Revisionslog (Etappe 2) zu schliessen.
+    """
+
+    def _pruefe_nachtraeglich(self, felder):
+        unerlaubt = _feldnamen(felder) - _NACHTRAEGLICH_ERLAUBT
+        if unerlaubt:
+            raise PermissionError(
+                'Buchungen sind nach dem Buchen unveränderlich (Revisionssicherheit, OR 957a/958f): '
+                f'{", ".join(sorted(unerlaubt))} lässt sich nicht ändern. Bitte stornieren und neu buchen.')
+        if _feldnamen(felder) - _NUR_STORNO_MARKE:
+            self._pruefe_periodensperre()
+
+    def _pruefe_periodensperre(self):
+        from crm.models import Organisation
+        gesperrte = Organisation.objects.filter(
+            buchung_gesperrt_bis__isnull=False,
+            pk__in=self.order_by().values('organisation_id')).values_list('pk', 'buchung_gesperrt_bis')
+        for organisation_id, sperre in gesperrte:
+            if self.filter(organisation_id=organisation_id, datum__lte=sperre).exists():
+                raise PermissionError(
+                    f'Periode gesperrt: Buchungen bis {sperre:%d.%m.%Y} sind abgeschlossen '
+                    'und lassen sich nicht mehr ändern.')
+
+    def update(self, **kwargs):
+        self._pruefe_nachtraeglich(kwargs)
+        return super().update(**kwargs)
+
+    def bulk_update(self, objs, fields, *args, **kwargs):
+        self._pruefe_nachtraeglich(fields)
+        return super().bulk_update(objs, fields, *args, **kwargs)
+
+    def delete(self):
+        raise PermissionError(
+            'Buchungen dürfen nicht gelöscht werden (Revisionssicherheit). '
+            'Bitte stornieren statt löschen.')
+
+    def bulk_create(self, objs, *args, **kwargs):
+        raise PermissionError(
+            'Buchungen werden einzeln gebucht: bulk_create umginge Belegnummer und Periodensperre.')
+
+    @staticmethod
+    def _begruenden(grund, was):
+        if not grund or not str(grund).strip():
+            raise ValueError(f'{was} an Buchungen braucht eine Begründung (grund=…).')
+        logger.warning('Revisionsbruch: %s an Buchungen — %s', was, str(grund).strip())
+
+    def ausnahme_aendern(self, grund, **felder):
+        """Ändert Buchungsfelder AUSNAHMSWEISE. Nur für Reparaturen und Testaufbau;
+        die Begründung landet im Log."""
+        self._begruenden(grund, 'Änderung')
+        return super().update(**felder)
+
+    def ausnahme_loeschen(self, grund):
+        """Löscht Buchungen AUSNAHMSWEISE (Datenreset, Testaufbau); Begründung im Log."""
+        self._begruenden(grund, 'Löschung')
+        return super().delete()
+
+
+class BuchungManager(TenantManager.from_queryset(BuchungQuerySet)):
+    """`Buchung.objects`: filtert auf die Organisation und trägt die Sperren des QuerySets."""
+
+
+class BuchungAlleManager(AlleOrganisationenManager.from_queryset(BuchungQuerySet)):
+    """`Buchung.alle_organisationen`: der benannte Weg an der Mandantengrenze vorbei —
+    mit denselben Sperren gegen nachträgliche Änderung."""
+
+
 # 🔥 NEU: Die doppelte Buchhaltung (Soll & Haben) mit Revisionssicherheit
 class Buchung(OrganisationAusKette):
     ORGANISATION_PFAD = 'soll_konto'
-    datum = models.DateField(default=timezone.now)
+    datum = models.DateField(default=datum_heute)
     beleg_text = models.CharField(max_length=255)
 
     # Optional: Verknüpfung zur Liegenschaft (für objektbezogene Auswertungen)
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True, related_name='buchungen')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT, null=True, blank=True, related_name='buchungen')
 
     soll_konto = models.ForeignKey(Buchungskonto, on_delete=models.PROTECT, related_name='soll_buchungen')
     haben_konto = models.ForeignKey(Buchungskonto, on_delete=models.PROTECT, related_name='haben_buchungen')
@@ -209,47 +346,121 @@ class Buchung(OrganisationAusKette):
     def __str__(self):
         return f"{self.datum}: {self.soll_konto.nummer} an {self.haben_konto.nummer} | CHF {self.betrag}"
 
-    def save(self, *args, **kwargs):
-        from django.db import IntegrityError, transaction
+    objects = BuchungManager()
+    alle_organisationen = BuchungAlleManager()
 
+    def save(self, *args, **kwargs):
         # Die Organisation MUSS vor allem Weiteren feststehen: Periodensperre
         # und Belegnummer haengen beide an ihr, und beide laufen, BEVOR
         # `OrganisationAusKette.save()` sie sonst ableiten wuerde.
         if self.organisation_id is None:
             self.organisation_id = self.organisation_aus_kette()
 
+        # Eine BESTEHENDE Buchung ist ein Beleg: Inhalt unveraenderlich, nur die
+        # Storno-Marke und die Verknuepfungen zu den Nebenbuechern duerfen sich
+        # bewegen (Audit FIN-15/SICH-06).
+        if not self._state.adding:
+            self._pruefe_aenderung()
+            return super().save(*args, **kwargs)
+
         # Periodensperre: neue Buchungen in einer abgeschlossenen Periode blockieren.
-        if self._state.adding:
-            from crm.models import Organisation
-            # Die Sperre der EIGENEN Verwaltung, nicht `Organisation.objects.first()`.
-            # Mit zwei Mandanten haette bisher der Abschluss von A die Buchungen
-            # von B blockiert — oder, schlimmer, B haette in eine abgeschlossene
-            # Periode buchen koennen, weil A noch offen war.
-            vw = Organisation.objects.filter(pk=self.organisation_id).first()
-            sperre = vw.buchung_gesperrt_bis if vw else None
-            if sperre and self.datum and self.datum <= sperre:
+        sperre = self._periodensperre()
+        datum = models.DateField().to_python(self.datum) if self.datum else None
+        if sperre and datum and datum <= sperre:
+            raise PermissionError(
+                f"Periode gesperrt: Buchungen bis {sperre:%d.%m.%Y} sind abgeschlossen "
+                f"(Datum {datum:%d.%m.%Y}). Bitte spätere Periode wählen."
+            )
+        if self.beleg_nr is not None:
+            return super().save(*args, **kwargs)
+        self._mit_belegnummer_speichern(*args, **kwargs)
+
+    def _periodensperre(self):
+        """Die Sperre der EIGENEN Verwaltung, nicht `Organisation.objects.first()`.
+        Mit zwei Mandanten haette der Abschluss von A sonst die Buchungen von B
+        blockiert — oder B haette in eine abgeschlossene Periode buchen koennen,
+        weil A noch offen war."""
+        from crm.models import Organisation
+        vw = Organisation.objects.filter(pk=self.organisation_id).first()
+        return vw.buchung_gesperrt_bis if vw else None
+
+    def _pruefe_aenderung(self):
+        """Weist die Aenderung einer bestehenden Buchung ab, ausser sie betrifft
+        nur die Storno-Marke oder die Verknuepfungen zu den Nebenbuechern — und
+        auch das nicht in einer gesperrten Periode (die Storno-Marke schon)."""
+        # `_base_manager`: Der Vergleich liest die EIGENE Zeile ueber ihren
+        # Primaerschluessel; eine Mandantengrenze kann dabei nicht verletzt werden.
+        gespeichert = (type(self)._base_manager.filter(pk=self.pk)
+                       .values(*BUCHUNG_UNVERAENDERLICH, *BUCHUNG_VERKNUEPFUNGEN, BUCHUNG_STORNO_MARKE)
+                       .first())
+        if gespeichert is None:
+            return                              # Zeile fehlt: Django meldet das selbst
+
+        def gleich(attname):
+            feld = self._meta.get_field(attname[:-3] if attname.endswith('_id') else attname)
+            try:
+                return feld.to_python(getattr(self, attname)) == gespeichert[attname]
+            except (TypeError, ValueError, ArithmeticError):
+                return False
+
+        geaendert = [a for a in BUCHUNG_UNVERAENDERLICH if not gleich(a)]
+        if geaendert:
+            raise PermissionError(
+                f'Buchung #{gespeichert["beleg_nr"]} ist unveränderlich (Revisionssicherheit, '
+                f'OR 957a/958f): {", ".join(a.removesuffix("_id") for a in geaendert)} lässt sich '
+                'nicht ändern. Bitte stornieren und neu buchen.')
+        alte_marke = gespeichert[BUCHUNG_STORNO_MARKE]
+        if alte_marke is not None and self.storniert_am != alte_marke:
+            raise PermissionError(
+                f'Buchung #{gespeichert["beleg_nr"]}: Ein Storno lässt sich nicht zurücknehmen — '
+                'bitte neu buchen.')
+        if [a for a in BUCHUNG_VERKNUEPFUNGEN if not gleich(a)]:
+            sperre = self._periodensperre()
+            if sperre and gespeichert['datum'] <= sperre:
                 raise PermissionError(
-                    f"Periode gesperrt: Buchungen bis {sperre:%d.%m.%Y} sind abgeschlossen "
-                    f"(Datum {self.datum:%d.%m.%Y}). Bitte spätere Periode wählen."
-                )
-            # Fortlaufende, EINDEUTIGE Belegnummer vergeben (lückenlos, OR 957a/958f).
-            # beleg_nr ist eindeutig; bei Parallel-Buchungen (Postgres) kollidiert
-            # Max+1 → IntegrityError. Deshalb Retry: Nummer neu berechnen und den
-            # Insert im Savepoint wiederholen (funktioniert auch verschachtelt in
-            # einer äusseren transaction.atomic()).
-            #
-            # JE ORGANISATION, seit Etappe 5 — und das ist keine Formalie:
-            #
-            # Die Constraint allein genügt hier nicht, darauf weist der Skill
-            # `phase-2-migration` ausdrücklich hin. Zählte `Max` weiter global,
-            # bekäme die zweite Verwaltung als erste Buchung die Nummer 1051,
-            # weil die erste tausend Buchungen hat. Aus dieser Lücke liesse sich
-            # die Buchungsmenge eines fremden Mandanten ablesen — und eine
-            # Belegnummernfolge, die bei 1051 beginnt, ist nach OR 957a/958f
-            # ohnehin keine lückenlose mehr. Jede Verwaltung zählt bei 1.
-            if self.beleg_nr is None:
-                last_exc = None
-                for _ in range(8):
+                    f'Periode gesperrt: Buchungen bis {sperre:%d.%m.%Y} sind abgeschlossen '
+                    'und lassen sich nicht mehr ändern.')
+
+    def _mit_belegnummer_speichern(self, *args, **kwargs):
+        """Vergibt die fortlaufende, EINDEUTIGE Belegnummer und speichert (OR 957a/958f).
+
+        JE ORGANISATION, seit Etappe 5 — und das ist keine Formalie:
+
+        Die Constraint allein genügt hier nicht, darauf weist der Skill
+        `phase-2-migration` ausdrücklich hin. Zählte `Max` weiter global,
+        bekäme die zweite Verwaltung als erste Buchung die Nummer 1051,
+        weil die erste tausend Buchungen hat. Aus dieser Lücke liesse sich
+        die Buchungsmenge eines fremden Mandanten ablesen — und eine
+        Belegnummernfolge, die bei 1051 beginnt, ist nach OR 957a/958f
+        ohnehin keine lückenlose mehr. Jede Verwaltung zählt bei 1.
+
+        GESPERRT STATT GERATEN (SICH-44, 28.10.2026): `Max+1` mit blossem
+        Wiederholen scheiterte bei Stoss — bei 8 gleichzeitigen Schreibern
+        brachen 4 bis 5 mit `uniq_beleg_nr_je_organisation` ab, die acht
+        Versuche ohne Wartezeit reichten nicht. Jetzt hält ein Schreiber die
+        Nummernkreis-Sperre dieser Organisation von der Berechnung bis zum
+        Commit; der Nächste wartet und liest danach die neue Obergrenze. Die
+        Wiederholung bleibt für Datenbanken ohne Sperre (SQLite) und als
+        Gürtel — mit Wartezeit, im Savepoint (funktioniert auch verschachtelt
+        in einer äusseren `transaction.atomic()`).
+
+        FOLGE, die man kennen muss: Die Sperre gilt bis zum Ende der
+        UMGEBENDEN Transaktion. Ein langer Lauf (Sollstellung über 1000
+        Verträge in einer Transaktion) hält den Nummernkreis seiner
+        Organisation entsprechend lange. Das war vorher schon so (der
+        Unique-Index wartete), nur scheiterte der Wartende am Ende.
+        """
+        import time
+
+        from django.db import IntegrityError, transaction
+
+        from core.sperren import sperre_organisation
+
+        letzter_fehler = None
+        for versuch in range(8):
+            try:
+                with transaction.atomic():
+                    sperre_organisation('beleg_nr', self.organisation_id)
                     # `alle_organisationen`, weil die Mandantengrenze hier
                     # eine Zeile tiefer AUSDRUECKLICH steht
                     # (`organisation_id=self.organisation_id`). Der Kontext
@@ -260,17 +471,15 @@ class Buchung(OrganisationAusKette):
                               .filter(organisation_id=self.organisation_id)
                               .aggregate(m=models.Max('beleg_nr'))['m'] or 0)
                     self.beleg_nr = letzte + 1
-                    try:
-                        with transaction.atomic():
-                            super().save(*args, **kwargs)
-                        return
-                    except IntegrityError as exc:
-                        last_exc = exc
-                        continue
-                if last_exc:
-                    raise last_exc
+                    super().save(*args, **kwargs)
                 return
-        super().save(*args, **kwargs)
+            except IntegrityError as exc:
+                self.beleg_nr = None
+                if 'beleg_nr' not in str(exc):
+                    raise                       # ein anderer Fehler: nicht wiederholen
+                letzter_fehler = exc
+                time.sleep(min(0.005 * 2 ** versuch, 0.2))
+        raise letzter_fehler
 
     def delete(self, *args, **kwargs):
         """Revisionssicherheit: Buchungen sind append-only. Statt Löschen wird
@@ -307,13 +516,13 @@ class DebitorenRechnung(OrganisationAusKette):
         ('storniert', gettext_lazy('Storniert')),     # 🔥 NEU statt Löschen
         ('abgeschrieben', gettext_lazy('Abgeschrieben')),   # Forderungsverlust (Konto 3805)
     ]
-    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, related_name='debitoren_rechnungen')
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
-    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.SET_NULL, null=True, blank=True)
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.PROTECT, null=True, related_name='debitoren_rechnungen')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT, null=True, blank=True)
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.PROTECT, null=True, blank=True)
 
     titel = models.CharField("Titel / Grund", max_length=200)
     beschreibung = models.TextField(blank=True, default="")
-    datum = models.DateField(default=timezone.now)
+    datum = models.DateField(default=datum_heute)
     faellig_am = models.DateField(null=True, blank=True)
     betrag = models.DecimalField(max_digits=10, decimal_places=2)  # Bruttobetrag (inkl. MWST, falls ausgewiesen)
     # MWST-Ausweis (Momentaufnahme bei der Rechnungsstellung): Satz und Betrag
@@ -419,15 +628,15 @@ class Zahlungseingang(OrganisationAusKette):
     # Zahlungseingang mehr ohne Bezug entstehen — an EINER Stelle statt an
     # neun, und auch fuer jeden kuenftigen Erzeugungspfad, den niemand kennt.
     ORGANISATION_PFAD = ('vertrag', 'liegenschaft', 'debitoren_rechnung', 'konto')
-    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, related_name='zahlungen')
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.PROTECT, null=True, related_name='zahlungen')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT, null=True, blank=True)
     konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
 
     # 🔥 NEU: Verknüpfung zur Rechnung für sauberes Matching
     debitoren_rechnung = models.ForeignKey(DebitorenRechnung, on_delete=models.SET_NULL, null=True, blank=True, related_name='zahlungseingaenge')
 
     betrag = models.DecimalField(max_digits=10, decimal_places=2)
-    datum_eingang = models.DateField(default=timezone.now)
+    datum_eingang = models.DateField(default=datum_heute)
     buchungs_monat = models.DateField("Für Monat/Jahr", null=True)
     bemerkung = models.CharField(max_length=255, blank=True, default='')
     # Bank-Transaktionsreferenz aus camt.053 (AcctSvcrRef) — Duplikatschutz beim Import
@@ -469,9 +678,9 @@ class Mahnung(OrganisationAusKette):
     """Revisionssichere Mahn-Historie: pro Mahnschritt ein unveränderlicher Eintrag
     mit Stufe, offenem Betrag und (optionaler) Mahngebühr."""
     debitoren_rechnung = models.ForeignKey(DebitorenRechnung, on_delete=models.CASCADE, related_name='mahnungen', null=True, blank=True)
-    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, blank=True, related_name='mahnungen')
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.PROTECT, null=True, blank=True, related_name='mahnungen')
     stufe = models.PositiveSmallIntegerField("Mahnstufe", default=1)
-    datum = models.DateField("Mahndatum", default=timezone.now)
+    datum = models.DateField("Mahndatum", default=datum_heute)
     betrag_offen = models.DecimalField("Offener Betrag", max_digits=10, decimal_places=2, default=Decimal('0.00'))
     gebuehr = models.DecimalField("Mahngebühr", max_digits=8, decimal_places=2, default=Decimal('0.00'))
     # Mit DIESER Mahnung fakturierter Verzugszins (nur das Delta zur Vorstufe) —
@@ -518,8 +727,8 @@ class KreditorenRechnung(OrganisationAusKette):
         "Bei Verteilung beim Eigentümer verbleibend (Leerstand)", max_digits=10,
         decimal_places=2, default=Decimal('0.00'))
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='neu')
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
-    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.SET_NULL, null=True, blank=True)
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT, null=True, blank=True)
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.PROTECT, null=True, blank=True)
     konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
 
     # Die "Shift-Left" Felder für die HNK
@@ -529,6 +738,16 @@ class KreditorenRechnung(OrganisationAusKette):
     menge_liter = models.DecimalField("Menge (Liter)", max_digits=10, decimal_places=2, null=True, blank=True)
 
     lieferant = models.CharField(max_length=200, blank=True)
+    # Anschrift des Lieferanten, strukturiert wie in der Zahlungsdatei (pain.001,
+    # `PstlAdr`: StrtNm, BldgNb, PstCd, TwnNm, Ctry). Die Längen sind die des
+    # ISO-Schemas (70/16/16/35). Ort und Land braucht der Zahllauf; Land ist der
+    # ISO-3166-Code, «CH» als Vorgabe. Befüllt wird sie beim Erfassen, aus dem
+    # QR-Code des Belegs oder aus dem Lieferantenprofil (`finance/kreditor_adresse.py`).
+    lieferant_strasse = models.CharField("Strasse", max_length=70, blank=True)
+    lieferant_hausnummer = models.CharField("Hausnummer", max_length=16, blank=True)
+    lieferant_plz = models.CharField("PLZ", max_length=16, blank=True)
+    lieferant_ort = models.CharField("Ort", max_length=35, blank=True)
+    lieferant_land = models.CharField("Land (ISO-Code)", max_length=2, default='CH')
     datum = models.DateField(null=True, blank=True)
     faellig_am = models.DateField(null=True, blank=True)
     betrag = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Bruttobetrag inkl. MWST
@@ -661,7 +880,7 @@ class KreditorenZahlung(OrganisationAusKette):
     """Ausgangszahlung an einen Lieferanten (ermöglicht Teilzahlungen / OP)."""
     kreditor = models.ForeignKey(KreditorenRechnung, on_delete=models.CASCADE, related_name='zahlungen')
     betrag = models.DecimalField(max_digits=10, decimal_places=2)
-    datum = models.DateField(default=timezone.now)
+    datum = models.DateField(default=datum_heute)
     konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
     bank_referenz = models.CharField("Bank-Referenz", max_length=140, blank=True, default='', db_index=True)
     bemerkung = models.CharField(max_length=255, blank=True, default='')
@@ -701,7 +920,7 @@ class Zahlungsvereinbarung(OrganisationAusKette):
         ('gebrochen', gettext_lazy('Gebrochen')),
         ('abgebrochen', gettext_lazy('Abgebrochen')),
     ]
-    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.CASCADE,
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.PROTECT,
                                 related_name='zahlungsvereinbarungen')
     betrag_total = models.DecimalField("Rückstand bei Abschluss (CHF)", max_digits=10, decimal_places=2)
     gedeckt_bis = models.DateField("Gedeckte Forderungen: fällig bis")
@@ -729,7 +948,7 @@ class Zahlungsvereinbarung(OrganisationAusKette):
 
 class AbrechnungsPeriode(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, related_name='abrechnungen')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT, related_name='abrechnungen')
     bezeichnung = models.CharField("Titel", max_length=100)
     start_datum = models.DateField()
     ende_datum = models.DateField()
@@ -854,7 +1073,7 @@ class NebenkostenBeleg(OrganisationAusKette):
                        ('einheit', gettext_lazy('Pro Wohnung')), ('personen', gettext_lazy('Nach Personenzahl'))]
 
     periode = models.ForeignKey(AbrechnungsPeriode, on_delete=models.CASCADE, related_name='belege')
-    datum = models.DateField(default=timezone.now, blank=True, null=True)
+    datum = models.DateField(default=datum_heute, blank=True, null=True)
     text = models.CharField("Beschreibung / Lieferant", max_length=255, blank=True)
     kategorie = models.CharField(max_length=50, choices=NK_KATEGORIE_CHOICES, default='diverse')
     verteilschluessel = models.CharField("Verteilschlüssel", max_length=20, choices=VERTEIL_CHOICES, default='m2')
@@ -934,7 +1153,7 @@ class NebenkostenBeleg(OrganisationAusKette):
 
 class Jahresabschluss(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE)
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT)
     jahr = models.IntegerField(default=2026)
     notizen = models.TextField(blank=True, default='')
 
@@ -955,7 +1174,7 @@ class Anlage(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
     """Anlagegut (z.B. Heizung, Lift, Küche) mit linearer Abschreibung.
     Jährliche AfA = Anschaffungswert / Nutzungsdauer (Jahre)."""
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, related_name='anlagen')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT, related_name='anlagen')
     bezeichnung = models.CharField("Bezeichnung", max_length=200)
     anschaffungswert = models.DecimalField("Anschaffungswert (CHF)", max_digits=12, decimal_places=2, default=Decimal('0.00'))
     anschaffungsdatum = models.DateField("Anschaffungsdatum")
@@ -1013,7 +1232,7 @@ class Erneuerungsfonds(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
     """Erneuerungsfonds / Rückstellung je Liegenschaft (STWEG-tauglich).
     Jährliche Einlage wird als Rückstellung gebucht."""
-    liegenschaft = models.OneToOneField('portfolio.Liegenschaft', on_delete=models.CASCADE, related_name='erneuerungsfonds')
+    liegenschaft = models.OneToOneField('portfolio.Liegenschaft', on_delete=models.PROTECT, related_name='erneuerungsfonds')
     bestand = models.DecimalField("Bestand (CHF)", max_digits=12, decimal_places=2, default=Decimal('0.00'))
     jaehrliche_einlage = models.DecimalField("Jährliche Einlage (CHF)", max_digits=10, decimal_places=2, default=Decimal('0.00'))
     letzte_einlage_jahr = models.PositiveIntegerField(null=True, blank=True)
@@ -1076,9 +1295,9 @@ class EigentuemerAuszahlung(models.Model):
             self.organisation_id = organisation_bestimmen().pk
         super().save(*args, **kwargs)
 
-    eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.CASCADE, related_name='auszahlungen')
+    eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.PROTECT, related_name='auszahlungen')
     betrag = models.DecimalField(max_digits=12, decimal_places=2)
-    datum = models.DateField(default=timezone.now)
+    datum = models.DateField(default=datum_heute)
     konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True,
                               help_text="Bankkonto der Auszahlung (Haben)")
     bemerkung = models.CharField(max_length=255, blank=True, default='')
@@ -1105,7 +1324,7 @@ class Hypothek(OrganisationAusKette):
     """Hypothekartranche auf einer Liegenschaft (Fest/SARON/variabel).
     Grundlage für Zinskosten und Ablauf-/Refinanzierungsplanung."""
     TYP = [('fest', gettext_lazy('Festhypothek')), ('saron', gettext_lazy('SARON')), ('variabel', gettext_lazy('Variabel'))]
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, related_name='hypotheken')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT, related_name='hypotheken')
     bank = models.CharField("Bank / Gläubiger", max_length=120, blank=True, default='')
     bezeichnung = models.CharField("Bezeichnung / Tranche", max_length=120, blank=True, default='')
     betrag = models.DecimalField("Betrag (CHF)", max_digits=12, decimal_places=2, default=Decimal('0.00'))
@@ -1196,7 +1415,7 @@ class Bankbewegung(OrganisationAusKette):
     # Eindeutiger Schlüssel der Bank — verhindert Doppelimport derselben Zeile.
     bank_referenz = models.CharField(max_length=140, blank=True, default='', db_index=True)
     status = models.CharField(max_length=12, choices=STATUS, default='offen', db_index=True)
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL,
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT,
                                      null=True, blank=True, related_name='bankbewegungen')
     zahlung = models.ForeignKey('finance.Zahlungseingang', on_delete=models.SET_NULL,
                                 null=True, blank=True, related_name='bankbewegungen')
@@ -1323,7 +1542,7 @@ class Betreibung(OrganisationAusKette):
     weitere_rechnungen = models.ManyToManyField(
         DebitorenRechnung, blank=True, related_name='betreibungen_weitere',
         verbose_name="Weitere Forderungen in dieser Betreibung")
-    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, blank=True, related_name='betreibungen')
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.PROTECT, null=True, blank=True, related_name='betreibungen')
     status = models.CharField("Stand", max_length=30, choices=STATUS_CHOICES, default='begehren')
     betreibungsamt = models.CharField("Betreibungsamt", max_length=120, blank=True, default='')
     betreibungsnummer = models.CharField("Betreibungsnummer", max_length=40, blank=True, default='')
@@ -1339,7 +1558,7 @@ class Betreibung(OrganisationAusKette):
     # sonst dieselben Kosten zweimal fordern.
     kosten_rechnung = models.ForeignKey(DebitorenRechnung, on_delete=models.SET_NULL, null=True, blank=True,
                                         related_name='+', editable=False)
-    begehren_am = models.DateField("Betreibungsbegehren am", default=timezone.now)
+    begehren_am = models.DateField("Betreibungsbegehren am", default=datum_heute)
     zahlungsbefehl_am = models.DateField("Zahlungsbefehl zugestellt am", null=True, blank=True)
     rechtsvorschlag_am = models.DateField("Rechtsvorschlag am", null=True, blank=True)
     rechtsoeffnung_beantragt_am = models.DateField("Rechtsöffnungsgesuch am", null=True, blank=True)

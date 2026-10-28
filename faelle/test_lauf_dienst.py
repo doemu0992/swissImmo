@@ -214,7 +214,9 @@ class AltlaufTests(_Basis):
     """Gemeldet nach dem Merge: «bereits ausgeführt, werden trotzdem angezeigt»."""
 
     def test_ausfuehrung_im_oktober_erledigt_auch_den_versaeumten_august(self):
-        with mandant(self.org):
+        # «Älter» heisst: früher fällig als heute. Mit der echten Uhr stimmt das nur, wenn heute
+        # nach dem 1. August liegt — darum steht die Uhr auf dem Oktober (SICH-45).
+        with mandant(self.org), mock.patch('django.utils.timezone.localdate', return_value=OKTOBER):
             planen(self.org, date(2026, 8, 1))
             planen(self.org, OKTOBER)
             lauf_erledigt('mahnlauf', '2026-10', auch_aeltere=True)

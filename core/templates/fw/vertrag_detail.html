@@ -65,7 +65,7 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
                 <div class="fw-menutrenner"></div>
                 <form method="post" action="/neu/vertraege/{{ v.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% if rechnungs_rows %}{% blocktrans with r=rechnungs_rows|length z=zahlungen|length %}Diesen Vertrag wirklich löschen?
 
-{{ r }} verknüpfte Rechnung(en) und {{ z }} Zahlung(en) bleiben erhalten (werden entkoppelt).{% endblocktrans %}{% else %}{% trans "Diesen Vertrag wirklich löschen?" %}{% endif %}{% endfilter %}');">
+Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelöscht werden. Setze ihn stattdessen auf «Inaktiv / Archiviert».{% endblocktrans %}{% else %}{% trans "Diesen Vertrag wirklich löschen?" %}{% endif %}{% endfilter %}');">
                     {% csrf_token %}
                     <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}{% trans "Vertrag löschen" %}</button>
                 </form>
@@ -288,7 +288,14 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
                 {% endif %}
                 {% if k.status != 'zurueckgezogen' %}
                 <div class="flex items-center gap-3 mt-1.5">
+                    {% if request.user|darf_schreiben %}
+                    <form method="post" action="/neu/kuendigung/{{ k.id }}/formular/" target="_blank" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="fw-link">{% zeichen 'vertrag' klasse='mr-0.5' %}{% trans "Amtliches Formular" %}{% if formular_kanton %} {{ formular_kanton }}{% endif %} {% trans "(PDF)" %}</button>
+                    </form>
+                    {% else %}
                     <a href="/neu/kuendigung/{{ k.id }}/formular/" target="_blank" rel="noopener" class="fw-link">{% zeichen 'vertrag' klasse='mr-0.5' %}{% trans "Amtliches Formular" %}{% if formular_kanton %} {{ formular_kanton }}{% endif %} {% trans "(PDF)" %}</a>
+                    {% endif %}
                     <a href="/vertrag/{{ v.id }}/dokument/kuendigungsbestaetigung/" target="_blank" rel="noopener" class="fw-link">{% trans "Bestätigung" %}</a>
                     {% if request.user|darf:"/neu/kuendigung/1/zuruecknehmen/" %}
                     <form method="post" action="/neu/kuendigung/{{ k.id }}/zuruecknehmen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Kündigung zurücknehmen und Vertrag reaktivieren?" %}{% endfilter %}');" class="inline">
@@ -367,9 +374,17 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
         </dl>
         {% if v.kautions_einbezahlt_am %}
         <div class="flex flex-wrap gap-2 mb-3">
+            {% comment %} Schreib-Rollen erstellen und legen ab (POST); der Lesezugriff sieht nur die Vorschau (GET). {% endcomment %}
+            {% if request.user|darf_schreiben %}
+            {% url 'fw_kaution_beleg' v.id 'hinterlegung' as beleg_url %}{% include 'fw/_pdf_erstellen.html' with url=beleg_url text=_("Bestätigung an Mieter") klasse="fw-btn fw-knapp" %}
+            {% if not v.ist_kautionsversicherung %}
+            {% url 'fw_kaution_beleg' v.id 'freigabe' as beleg_url %}{% include 'fw/_pdf_erstellen.html' with url=beleg_url text=_("Freigabe an Bank") klasse="fw-btn fw-knapp" ikon="bank" %}
+            {% endif %}
+            {% else %}
             <a href="/neu/vertraege/{{ v.id }}/kaution-beleg/hinterlegung/" target="_blank" rel="noopener" class="fw-btn fw-knapp">{% zeichen 'drucken' %}{% trans "Bestätigung an Mieter" %}</a>
             {% if not v.ist_kautionsversicherung %}
             <a href="/neu/vertraege/{{ v.id }}/kaution-beleg/freigabe/" target="_blank" rel="noopener" class="fw-btn fw-knapp">{% zeichen 'bank' %}{% trans "Freigabe an Bank" %}</a>
+            {% endif %}
             {% endif %}
         </div>
         {% endif %}
@@ -777,9 +792,22 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
         {% for g in formular_gruppen %}
         <div class="fw-card">
             <div class="fw-kopf"><span class="fw-ikon">{% zeichen_wert g.icon %}</span><h2>{{ g.titel }}</h2></div>
+            {% comment %} Zeilen mit `ablegen_post` (Kaution-Belege) erstellen für Schreib-Rollen per POST und legen ab; die Adresse selbst (GET) ist nur die Vorschau. Das Formular nimmt nur diese Zeilen mit. {% endcomment %}
+            <form method="post">{% csrf_token %}
             <div>
                 {% for it in g.items %}
-                {% if it.verfuegbar %}
+                {% if it.verfuegbar and it.ablegen_post and request.user|darf_schreiben %}
+                <button type="submit" formaction="{{ it.url }}" formmethod="post" formtarget="_blank" class="fw-zeile klick group w-full text-left">
+                    <div class="fw-ikon">{% zeichen_wert it.icon %}</div>
+                    <div class="fw-mitte">
+                        <div class="fw-t">{{ it.titel }}
+                            {% if it.erledigt %}<span class="fw-chip fw-good">{% trans "erstellt" %}</span>{% endif %}
+                        </div>
+                        <div class="fw-s truncate">{{ it.sub }}</div>
+                    </div>
+                    {% zeichen 'weiter' klasse='text-xs fw-faint group-hover:fw-marke' %}
+                </button>
+                {% elif it.verfuegbar %}
                 <a href="{{ it.url }}" {% if '/pdf/' in it.url or '/qr/' in it.url or '/dokument/' in it.url or 'kaution-beleg' in it.url %}target="_blank" rel="noopener"{% endif %} class="fw-zeile klick group">
                     <div class="fw-ikon">{% zeichen_wert it.icon %}</div>
                     <div class="fw-mitte">
@@ -802,6 +830,7 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
                 {% endif %}
                 {% endfor %}
             </div>
+            </form>
         </div>
         {% endfor %}
     </div>

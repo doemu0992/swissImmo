@@ -462,10 +462,17 @@ class Paket4ProzesseTests(TestCase):
         v.kautions_einbezahlt_am = date(2024, 1, 5); v.save()
         c = Client(); c.force_login(_team_user())
         for art in ('hinterlegung', 'freigabe'):
+            # GET ist die Vorschau und legt nichts ab (ROUTE-01) ...
             r = c.get(f'/neu/vertraege/{v.id}/kaution-beleg/{art}/')
             self.assertEqual(r.status_code, 200)
             self.assertEqual(r['Content-Type'], 'application/pdf')
-        self.assertTrue(Dokument.objects.filter(vertrag=v, bezeichnung__startswith='Kaution').exists())
+        self.assertFalse(Dokument.objects.filter(vertrag=v, bezeichnung__startswith='Kaution').exists())
+        # ... erst das ausdrückliche «Erstellen» (POST) legt ab.
+        for art in ('hinterlegung', 'freigabe'):
+            r = c.post(f'/neu/vertraege/{v.id}/kaution-beleg/{art}/')
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertEqual(Dokument.objects.filter(vertrag=v, bezeichnung__startswith='Kaution').count(), 2)
 
     def test_maengelruege_pdf_und_pendenz(self):
         from rentals.models import Dokument

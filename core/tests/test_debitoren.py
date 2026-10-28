@@ -7,6 +7,7 @@ from decimal import Decimal
 from django.conf import settings
 
 from django.test import TestCase, Client
+from django.utils import timezone
 from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _seed_konten, _sig_bytes, _heute, Mieter,
     Eigentuemer, Organisation, Liegenschaft, Einheit, Mietvertrag, User)
@@ -197,12 +198,15 @@ class MahnlaufTests(TestCase):
         self.assertEqual(len(dok), 1, "«Erfassen» legte kein Dokument am Vertrag ab")
         self.assertIn('1. Mahnung', dok[0].bezeichnung)
 
-    def test_mahnung_pdf_button_legt_die_mahnung_in_die_akte(self):
+    def test_mahnung_pdf_vorschau_legt_nichts_in_die_akte(self):
+        """ROUTE-01: Die PDF-Vorschau (GET) ist reine Anzeige. Früher legte schon das
+        Öffnen der 257d-Fassung ein Dokument in die Akte, das der Mieter im Portal sah.
+        Abgelegt wird beim Erfassen der Mahnung und beim Versand (POST)."""
         r = self._ueberfaellig(40)
         c = Client(); c.force_login(_team_user())
         antwort = c.get(f'/vertrag/{r.vertrag_id}/mahnung/')
         self.assertEqual(antwort.status_code, 200)
-        self.assertEqual(len(self._mahn_dokumente(r.vertrag)), 1)
+        self.assertEqual(len(self._mahn_dokumente(r.vertrag)), 0)
 
     def test_mahnung_wird_am_selben_tag_nicht_dupliziert(self):
         """Zweimal klicken darf die Akte nicht aufblähen — dieselbe Stufe am
@@ -215,8 +219,8 @@ class MahnlaufTests(TestCase):
         c.get(f'/vertrag/{r.vertrag_id}/mahnung/')
         c.post('/neu/mahnwesen/erfassen/', {'rechnung_id': r.id, 'stufe': 2}, follow=True)
         titel = sorted(d.bezeichnung for d in self._mahn_dokumente(r.vertrag))
-        # «1. Mahnung», «2. Mahnung» und die stufenlose «Mahnung» des PDF-Buttons
-        self.assertEqual(len(titel), 3, f"unerwartete Dokumente: {titel}")
+        # «1. Mahnung» und «2. Mahnung»; die PDF-Vorschau (GET) legt seit ROUTE-01 nichts ab.
+        self.assertEqual(len(titel), 2, f"unerwartete Dokumente: {titel}")
 
     def test_ablage_scheitert_lautlos_und_bricht_den_mahnlauf_nicht(self):
         """Die Ablage ist Beiwerk: Geht die PDF-Erzeugung schief, muss der
@@ -960,15 +964,22 @@ class FinanzUIP5Tests(TestCase):
         from finance.models import EigentuemerAuszahlung
         from finance.booking import ensure_kontenplan
         ensure_kontenplan()
-        _basis_objekte()
+        lg, _e, _m, _v = _basis_objekte()
         md = Eigentuemer.objects.create(firma_oder_name='Muster Immobilien AG')
+        # Seit FUNK-01/FIN-03 zahlt die Maske nur aus eingegangenem Geld und gegen
+        # ein gedecktes Bankkonto aus: Der Eigentümer braucht also etwas zugut.
+        from finance.booking import buche
+        lg.eigentuemer = md
+        lg.save()
+        buche('1020', '3000', Decimal('20000'), 'Mieteingang', datum=date(2024, 4, 1), liegenschaft=lg)
+        saldo_vorher = self._saldo('1020')
         c = Client(); c.force_login(_team_user())
         c.post(f'/neu/mandate/{md.id}/auszahlung/',
                {'betrag': "12'500.00", 'datum': '2024-05-01'})
         a = EigentuemerAuszahlung.objects.get(eigentuemer=md)
         self.assertEqual(a.betrag, Decimal('12500.00'))
         self.assertEqual(self._saldo('2850'), Decimal('12500.00'))
-        self.assertEqual(self._saldo('1020'), Decimal('-12500.00'))
+        self.assertEqual(self._saldo('1020'), saldo_vorher - Decimal('12500.00'))
 
     def test_kreditor_zahlung_akzeptiert_apostroph_betrag(self):
         from finance.models import KreditorenRechnung, KreditorenZahlung
@@ -1240,8 +1251,9 @@ class FinanzUIP5Tests(TestCase):
         lg, e, m, v = _basis_objekte()
         from finance.booking import buche, ensure_kontenplan
         ensure_kontenplan()
-        buche('1020', '3000', Decimal('1500.00'), 'Miete August', datum=date(2026, 8, 1),
-              liegenschaft=lg)
+        # Das Journal zeigt das laufende Jahr: ein Datum im laufenden Jahr, nicht ein festes (SICH-45).
+        buche('1020', '3000', Decimal('1500.00'), 'Miete August',
+              datum=timezone.localdate().replace(month=1, day=2), liegenschaft=lg)
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/buchhaltung/?tab=journal').content.decode('utf-8')
         journal = html.split('id="bh-journal"')[1]
@@ -1462,7 +1474,7 @@ class GeldKaestchenTests(TestCase):
         lg, e, m, v = _basis_objekte()
         c = Client(); c.force_login(_team_user())
         for wert, kennzeichen in (('1', 'value-Attribut'), ('on', 'ohne value')):
-            Buchung.objects.all().delete()
+            Buchung.objects.all().ausnahme_loeschen('Testaufbau: je Durchlauf mit leerem Journal beginnen')
             c.post('/neu/anlagen/', {
                 'aktion': 'anlage_neu', 'bezeichnung': f'Heizung {kennzeichen}',
                 'liegenschaft_id': lg.id, 'anschaffungswert': '12000',

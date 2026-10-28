@@ -39,6 +39,7 @@ def _hauswart_pruefen(request, ticket):
         raise PermissionDenied('Diese Liegenschaft ist dem Hauswart nicht zugeordnet.')
 from core.tenancy import aktuelle_organisation
 from core.services.dokumentsprache import auf_deutsch
+from core.utils.parameter import jahr_streng
 
 
 # ============================================================
@@ -168,7 +169,7 @@ def fw_schaden_kosten(request):
     aktive_lg = basis['aktive_lg']
     heute = timezone.localdate()
     try:
-        jahr = int(request.GET.get('jahr') or 0)
+        jahr = jahr_streng(request.GET.get('jahr') or 0)
     except ValueError:
         jahr = 0
 
@@ -374,7 +375,7 @@ def fw_schaden_detail(request, pk):
     # Kennzahlen des Aktenkopfs (4b.3). Vier Werte, die zusammen sagen, ob
     # dieser Schaden gut dasteht: was er kostet, wer dran ist, wie lange er
     # laeuft und wann zuletzt etwas geschah.
-    offen_seit = (timezone.localdate() - t.erstellt_am.date()).days if t.erstellt_am else None
+    offen_seit = (timezone.localdate() - timezone.localtime(t.erstellt_am).date()).days if t.erstellt_am else None
     letzte_nachricht = nachrichten.last()
 
     # Verknüpfbare Rechnungen: dieselbe Liegenschaft (oder ohne), nicht storniert, an keinem

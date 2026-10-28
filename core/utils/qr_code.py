@@ -105,6 +105,20 @@ def ist_qr_iban(iban):
         return False
 
 
+class QrReferenzFehlt(ValueError):
+    """Zur QR-IBAN fehlt die (gültige) QR-Referenz: Einen Einzahlungsschein mit
+    «NON» lehnt das E-Banking ab, also wird er nicht gezeichnet."""
+
+
+def sammelreferenz(vertrag_id):
+    """Gültige QR-Referenz für ein Schreiben, das MEHRERE Forderungen eines
+    Vertrags zugleich mahnt (257d mit mehreren fälligen Posten). Sie trägt die
+    Vertragsnummer und die Rechnungsnummer 0 — keine Forderung hat die 0, also
+    wird die Zahlung keiner einzelnen zugeschlagen. Die Zuordnung im
+    Bankabgleich bleibt Handarbeit (Zahlungsklärung)."""
+    return qrr_referenz(vertrag_id, 0)[0]
+
+
 def qrr_referenz(vertrag_id, rechnung_id):
     """27-stellige QRR-Referenz (Modulo-10-rekursiv). Gibt (raw, formatiert) zurück."""
     basis = f"{(vertrag_id or 0):010d}{(rechnung_id or 0):016d}"
@@ -138,9 +152,17 @@ def draw_qr_bill(c, iban, creditor, debtor, amount, reason, reference=None):
     raw_iban = iban.replace(" ", "")
     formatted_iban = format_iban(raw_iban)
 
-    # Referenztyp korrekt bestimmen (SIX-Spec): QR-IBAN => QRR + Referenz, sonst NON
+    # Referenztyp korrekt bestimmen (SIX-Spec): QR-IBAN => QRR + Referenz, sonst NON.
+    # Eine QR-IBAN OHNE gültige QR-Referenz ergäbe einen Einzahlungsschein mit
+    # «NON», den das E-Banking ablehnt (FIN-11). Den gibt es nicht still: Der
+    # Aufrufer bekommt einen Fehler und liefert die Referenz.
     ref_raw = (reference or "").replace(" ", "")
-    if ist_qr_iban(raw_iban) and ref_raw:
+    if ist_qr_iban(raw_iban):
+        from core.services.iban import qrr_pruefziffer_ok
+        if not qrr_pruefziffer_ok(ref_raw):
+            raise QrReferenzFehlt(
+                "QR-IBAN %s braucht eine gültige QR-Referenz (27 Ziffern, Prüfziffer); "
+                "erhalten: %r." % (raw_iban, reference))
         ref_typ, ref_val = "QRR", ref_raw
     else:
         ref_typ, ref_val = "NON", ""

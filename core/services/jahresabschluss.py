@@ -100,15 +100,28 @@ def buche_jahresabschluss(jahr, *, liegenschaft=None, user=None):
     """Schliesst alle Erfolgskonten des Jahres gegen 2970 ab (idempotent).
     Gibt (anzahl_buchungen, ergebnis) zurück — ergebnis > 0 = Gewinn."""
     from django.db import transaction
-    from finance.booking import buche
     if ist_abgeschlossen(jahr, liegenschaft):
         return 0, Decimal('0.00')
     with transaction.atomic():
-        # Innerhalb der Transaktion erneut prüfen — ein Doppelklick schickt zwei
-        # Requests, die beide den Vor-Check passiert haben.
+        # GESPERRT, DANN ERNEUT GEPRÜFT (Audit FIN-05): Die Prüfung in der
+        # Transaktion allein genügt nicht — unter READ COMMITTED sehen zwei
+        # gleichzeitige Läufe beide «noch nicht abgeschlossen». Drei parallele
+        # Abschlüsse buchten sechs statt zwei Abschlussbuchungen und
+        # verdreifachten das Ergebnis auf 2970. Die Sperre je Organisation
+        # stellt sie hintereinander; erst der Wartende sieht den Abschluss.
+        _sperre_abschluss()
         if ist_abgeschlossen(jahr, liegenschaft):
             return 0, Decimal('0.00')
         return _buche(jahr, liegenschaft, user)
+
+
+def _sperre_abschluss():
+    """Eine Sperre für Abschluss UND Rücknahme der laufenden Organisation: Beide
+    ändern denselben Bestand und dürfen nicht ineinander laufen."""
+    from core.sperren import sperre_organisation
+    from core.tenancy import aktuelle_organisation
+    organisation = aktuelle_organisation()
+    sperre_organisation('jahresabschluss', getattr(organisation, 'pk', organisation))
 
 
 def nimm_zurueck(jahr, *, liegenschaft=None, user=None):
@@ -128,6 +141,7 @@ def nimm_zurueck(jahr, *, liegenschaft=None, user=None):
     from finance.models import Buchung
     from finance.booking import storniere_buchung
     with transaction.atomic():
+        _sperre_abschluss()
         offen = Buchung.objects.filter(
             beleg_text__startswith=f"{BELEG_PREFIX} {jahr} —",
             ist_storno=False, storniert_am__isnull=True)

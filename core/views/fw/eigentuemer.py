@@ -166,28 +166,41 @@ def fw_eigentuemer_portal_zugang(request, pk):
 
 @rolle_erforderlich(ROLLE_VERWALTER)
 def fw_eigentuemer_loeschen(request, pk):
-    """Löscht einen Eigentümer — NUR wenn keine Liegenschaften zugeordnet sind
-    (eigentuemer->liegenschaft ist CASCADE; sonst würden Objekte/Verträge mitgelöscht)."""
+    """Löscht ein Mandat — NUR wenn nichts Aufbewahrungspflichtiges daran hängt
+    (Liegenschaften, Auszahlungen, Dokumente, Stockwerkeinheiten; FUNK-03).
+    Die Fremdschlüssel sind `PROTECT`: Auch an der Ansicht vorbei werden weder
+    Liegenschaften noch das Kontokorrent des Eigentümers mitgelöscht."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from crm.models import Eigentuemer
     from core.auth import log_aktion
     md = get_object_or_404(Eigentuemer, id=pk)
     if request.method == 'POST':
-        anzahl = Liegenschaft.objects.filter(eigentuemer=md).count()
-        if anzahl > 0:
-            messages.error(request, '❌ ' + gettext("'%(firma_oder_name)s' hat noch %(anzahl)s zugeordnete Liegenschaft(en). Bitte zuerst die Zuordnung im Bearbeiten-Dialog entfernen, dann löschen.") % {'firma_oder_name': md.firma_oder_name, 'anzahl': anzahl})
-            return redirect('/neu/mandate/')
+        # FUNK-03: nicht nur Liegenschaften, auch Auszahlungen (Kontokorrent),
+        # Dokumente und Stockwerkeinheiten sperren das Löschen. Die Prüfung steht
+        # VOR jeder Änderung.
+        from django.db import transaction
+        from django.db.models import ProtectedError
+        from core.services.loeschschutz import geschuetzt_melden, hindernisse, sperrmeldung
         name = md.firma_oder_name
-        # Verknüpften Eigentümer-Portal-Login mitentfernen — sonst bleibt ein
-        # Login zurück, dessen eigentuemer_profil ins Leere zeigt.
-        if md.benutzer_id:
-            from core.auth import konto_freigeben
-            _konto = md.benutzer
-            md.benutzer = None
-            md.save(update_fields=['benutzer'])
-            konto_freigeben(_konto, getattr(request, 'organisation', None))
+        haengt = hindernisse(md)
+        if haengt:
+            messages.error(request, '❌ ' + sperrmeldung(md, haengt, name))
+            return redirect('/neu/mandate/')
+        try:
+            with transaction.atomic():
+                # Verknüpften Eigentümer-Portal-Login mitentfernen — sonst bleibt ein
+                # Login zurück, dessen eigentuemer_profil ins Leere zeigt.
+                if md.benutzer_id:
+                    from core.auth import konto_freigeben
+                    _konto = md.benutzer
+                    md.benutzer = None
+                    md.save(update_fields=['benutzer'])
+                    konto_freigeben(_konto, getattr(request, 'organisation', None))
+                md.delete()
+        except ProtectedError as fehler:
+            messages.error(request, '❌ ' + geschuetzt_melden(md, fehler, name))
+            return redirect('/neu/mandate/')
         log_aktion(request, "Eigentuemer gelöscht", name, '')
-        md.delete()
         messages.success(request, '🗑️ ' + gettext('Eigentuemer %(name)s gelöscht.') % {'name': name})
     return redirect('/neu/mandate/')

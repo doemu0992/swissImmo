@@ -27,6 +27,7 @@ from django.utils.translation import gettext as _
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
+from core.services.iban import formatiere_iban, ist_gueltige_iban, normalisiere_iban
 from crm.models import Mieter, Organisation
 from finance.models import DebitorenRechnung, Zahlungseingang
 from portfolio.models import Einheit, Liegenschaft
@@ -91,8 +92,21 @@ def fw_kreditor_neu(request):
             if _nr:
                 konto = _konto(_nr)
 
+    # Anschrift für die Zahlungsdatei: wie eingegeben, sonst die gelernte des
+    # Lieferanten (Profil). Nichts davon wird geraten.
+    from finance.kreditor_adresse import (FELDER as _ADR, adresse_von_profil,
+                                          iban_abweichung, iban_meldung)
+    from finance.lieferanten import lieferant_vorschlag
+    _profil = lieferant_vorschlag(lieferant)
+    adresse = {f: c[f'lieferant_{f}'] for f in _ADR}
+    if not adresse['ort'] and _profil and _profil.ort:
+        adresse = adresse_von_profil(_profil)
+
     kr = KreditorenRechnung.objects.create(
         lieferant=lieferant, betrag=betrag,
+        lieferant_strasse=adresse['strasse'], lieferant_hausnummer=adresse['hausnummer'],
+        lieferant_plz=adresse['plz'], lieferant_ort=adresse['ort'],
+        lieferant_land=adresse['land'] or 'CH',
         # Leer heisst «ohne MWST» (0 %), wie bisher. Unlesbar ist ein Feldfehler.
         mwst_satz=(c['mwst_satz'] if c['mwst_satz'] is not None else Decimal('0.0')),
         liegenschaft=lg, konto=konto,
@@ -113,6 +127,9 @@ def fw_kreditor_neu(request):
         kr.save()
     log_aktion(request, "Kreditorenrechnung erfasst", lieferant, f"CHF {betrag}")
     messages.success(request, '✅ ' + gettext("Kreditorenrechnung '%(lieferant)s' über CHF %(betrag)s erfasst (Status: Neu — bitte freigeben).") % {'lieferant': lieferant, 'betrag': betrag})
+    _gelernt = iban_abweichung(kr, profil=_profil)
+    if _gelernt:
+        messages.warning(request, '⚠️ ' + iban_meldung(kr.iban, _gelernt))
     ziel = '/neu/kreditoren/'
     if lgq := request.POST.get('lg'):
         ziel += f'?lg={lgq}'
@@ -211,7 +228,10 @@ def fw_kreditor_bearbeiten(request, pk):
     k.leistungs_von = c['leistungs_von']
     k.leistungs_bis = c['leistungs_bis']
     k.referenz = c['referenz'].strip()
+    alte_iban = k.iban
     k.iban = c['iban']
+    from finance.kreditor_adresse import adresse_setzen, iban_abweichung, iban_meldung
+    adresse_setzen(k, {f: c[f'lieferant_{f}'] for f in ('strasse', 'hausnummer', 'plz', 'ort', 'land')})
     k.liegenschaft = neue_lg
     k.konto = neues_konto
     # NK-Relevanz: Checkbox ODER (neu zugewiesenes) HNK-Konto
@@ -221,6 +241,17 @@ def fw_kreditor_bearbeiten(request, pk):
     k.save()
     log_aktion(request, "Kreditorenrechnung bearbeitet", k.lieferant, f"CHF {k.betrag or 0}")
     messages.success(request, '✅ ' + gettext('Rechnung «%(lieferant)s» aktualisiert.') % {'lieferant': k.lieferant})
+    # Betrugsschutz: Eine geänderte Kontonummer fällt auf, bevor sie bezahlt wird
+    # (FIN-09). Verglichen wird mit dem, was vorher an der Rechnung stand, und mit
+    # dem gelernten Lieferantenprofil.
+    if alte_iban and k.iban and normalisiere_iban(alte_iban) != normalisiere_iban(k.iban):
+        log_aktion(request, "Kreditor-IBAN geändert", k.lieferant, f"{alte_iban} → {k.iban}")
+        messages.warning(request, '⚠️ ' + gettext(
+            'Die IBAN wurde geändert (vorher %(alt)s). Vor der Zahlung beim Lieferanten bestätigen lassen.') % {
+            'alt': formatiere_iban(alte_iban)})
+    _gelernt = iban_abweichung(k)
+    if _gelernt:
+        messages.warning(request, '⚠️ ' + iban_meldung(k.iban, _gelernt))
     ziel = '/neu/kreditoren/'
     if lgq := request.POST.get('lg'):
         ziel += f'?lg={lgq}'
@@ -246,6 +277,22 @@ def fw_kreditor_freigeben(request, pk):
     sperre = freigabe_sperre(k)
     if sperre:
         messages.error(request, f'⛔ {sperre}')
+        return redirect('fw_kreditoren')
+
+    # IBAN: Prüfsumme (Mod 97) und Abgleich mit dem gelernten Lieferantenprofil.
+    # Eine KI-gelesene oder per Mail eingegangene IBAN wurde bisher ungeprüft
+    # freigegeben und in die Zahlungsdatei übernommen (FIN-09).
+    from finance.kreditor_adresse import (adresse_von_rechnung, aus_profil_uebernehmen,
+                                          iban_abweichung, iban_meldung)
+    if k.iban and not ist_gueltige_iban(k.iban):
+        messages.error(request, '⛔ ' + gettext(
+            'Die IBAN «%(iban)s» ist ungültig (Prüfziffer oder Länge). Bitte die Rechnung bearbeiten und die IBAN korrigieren.') % {
+            'iban': k.iban})
+        return redirect('fw_kreditoren')
+    _gelernt = iban_abweichung(k)
+    if _gelernt and request.POST.get('iban_bestaetigt') != '1':
+        messages.error(request, '⛔ ' + iban_meldung(k.iban, _gelernt) + ' ' + gettext(
+            'Freigabe erst nach Bestätigung: Kreuz «IBAN-Wechsel geprüft» in der Zeile setzen.'))
         return redirect('fw_kreditoren')
 
     # Aufwandskonto zuweisen (aus Formular oder bestehendes). Mit Kostenaufteilung
@@ -277,6 +324,8 @@ def fw_kreditor_freigeben(request, pk):
         elif k.konto and k.konto.is_hnk_relevant and not k.is_hnk_relevant:
             k.is_hnk_relevant = True
         k.status = 'freigegeben'
+        # Fehlt die Anschrift, kommt die gelernte des Lieferanten (falls bekannt).
+        aus_profil_uebernehmen(k)
         k.save()
         from finance.booking import buche
         datum_b = k.datum or timezone.localdate()
@@ -310,7 +359,10 @@ def fw_kreditor_freigeben(request, pk):
         # Lieferanten-Gedächtnis fortschreiben: dieses Konto wird künftig für
         # denselben Lieferanten automatisch vorgeschlagen.
         from finance.lieferanten import lerne_lieferant
-        lerne_lieferant(k.lieferant, konto=k.konto, iban=k.iban)
+        lerne_lieferant(k.lieferant, konto=k.konto, iban=k.iban, adresse=adresse_von_rechnung(k))
+    if _gelernt:
+        log_aktion(request, "Kreditor-IBAN-Wechsel bestätigt", k.lieferant,
+                   f"{formatiere_iban(_gelernt)} → {formatiere_iban(k.iban)}")
     log_aktion(request, "Kreditorenrechnung freigegeben", k.lieferant, f"CHF {k.betrag}")
     messages.success(request, '✅ ' + gettext("'%(lieferant)s' freigegeben und verbucht.") % {'lieferant': k.lieferant})
     ziel = '/neu/kreditoren/'
@@ -863,7 +915,8 @@ def fw_serienbrief_pdf(request):
         from core.services.serienbrief import _ersetze
         betreff_aufgeloest = _ersetze(betreff, e) or betreff
         # Ablage am Vertrag (erscheint im Portal beider Personen) + am Hauptmieter
-        if ablegen(einzel, f"Brief: {betreff_aufgeloest}", kategorie='korrespondenz', vertrag=v, mieter=m):
+        if ablegen(einzel, f"Brief: {betreff_aufgeloest}", kategorie='korrespondenz', vertrag=v, mieter=m,
+                   im_portal_sichtbar=True):
             abgelegt += 1
 
     log_aktion(request, "Serienbrief-PDF erzeugt", betreff, f"{len(empfaenger)} Empfänger · {abgelegt} abgelegt")
@@ -1169,9 +1222,16 @@ def fw_bankbewegung_zuordnen(request):
     betrag = abs(bew.betrag)
 
     if art == 'ignorieren':
-        bew.status = 'ignoriert'
-        bew.bemerkung = (request.POST.get('bemerkung') or 'Nicht buchungsrelevant')[:255]
-        bew.save(update_fields=['status', 'bemerkung'])
+        with transaction.atomic():
+            # Gesperrt und danach geprüft: Läuft gleichzeitig eine Verbuchung
+            # derselben Bewegung, darf «ignorieren» sie nicht überschreiben.
+            bew = Bankbewegung.objects.select_for_update().get(pk=bew.pk)
+            if bew.status != 'offen':
+                messages.info(request, gettext('Diese Bankbewegung ist bereits erledigt.'))
+                return redirect(ziel)
+            bew.status = 'ignoriert'
+            bew.bemerkung = (request.POST.get('bemerkung') or 'Nicht buchungsrelevant')[:255]
+            bew.save(update_fields=['status', 'bemerkung'])
         log_aktion(request, "Bankbewegung ignoriert", str(bew), bew.bemerkung)
         messages.success(request, gettext('Bewegung als nicht buchungsrelevant markiert.'))
         return redirect(ziel)
@@ -1199,9 +1259,16 @@ def fw_bankbewegung_zuordnen(request):
 
     try:
         with transaction.atomic():
+            # SPERREN, DANN PRÜFEN: Der Status oben stammt von VOR dem Warten.
+            # Zwei parallele Verbuchungen derselben Auszugszeile buchten sonst
+            # zweimal; die Zeile wird gesperrt und ihr Zustand neu gelesen.
+            bew = Bankbewegung.objects.select_for_update().get(pk=bew.pk)
+            if bew.status != 'offen':
+                messages.info(request, gettext('Diese Bankbewegung ist bereits erledigt.'))
+                return redirect(ziel)
             if art == 'kreditor':
                 from finance.models import KreditorenZahlung
-                kr = get_object_or_404(KreditorenRechnung,
+                kr = get_object_or_404(KreditorenRechnung.objects.select_for_update(of=('self',)),
                                        id=request.POST.get('kreditor_id'))
                 if bew.betrag >= 0:
                     messages.error(request, gettext('Eine Gutschrift kann keine Lieferantenrechnung tilgen.'))
@@ -1316,6 +1383,14 @@ def fw_mwst_verbuchen(request):
         date(jahr, int(quartal) * 3, _calendar.monthrange(jahr, int(quartal) * 3)[1])
     try:
         with transaction.atomic():
+            # GESPERRT, DANN ERNEUT GEPRÜFT: «Schon verbucht?» oben stammt von VOR
+            # dem Warten. Zwei gleichzeitige Klicks buchten die Zahllast doppelt.
+            from core.sperren import sperre_organisation
+            from core.tenancy import organisation_der_anfrage
+            sperre_organisation('mwst_verbuchen', organisation_der_anfrage(request).pk)
+            if _mwst_bereits_verbucht(jahr, quartal, aktive_lg):
+                messages.info(request, gettext('Diese MWST-Periode wurde bereits verbucht.'))
+                return redirect(ziel)
             if methode == 'saldo':
                 if zahllast > 0:
                     buche('2200', '2201', zahllast, f"{beleg} — Zahllast ESTV (Saldosatz)",

@@ -272,7 +272,7 @@ class MitmieterPortalTests(TestCase):
                                        netto_mietzins=Decimal('1200'), nebenkosten=Decimal('150'),
                                        status='aktiv', familienwohnung=True)
         u2 = User.objects.create_user(username='zweit', password='x'); m2.benutzer = u2; m2.save()
-        d = Dokument(vertrag=v, bezeichnung='Mietvertrag', kategorie='vertrag')
+        d = Dokument(vertrag=v, bezeichnung='Mietvertrag', kategorie='vertrag', im_portal_sichtbar=True)
         d.datei.save('mv.pdf', ContentFile(b'%PDF'), save=True)
         return lg, e, m1, m2, v, u2, d
 
@@ -346,7 +346,7 @@ class MieterDokumenteTests(TestCase):
         from rentals.models import Dokument
         lg, e, m, v = _basis_objekte()
         u = User.objects.create_user(username='dok_mieter', password='x'); m.benutzer = u; m.save()
-        dv = Dokument(vertrag=v, bezeichnung='Mietvertrag', kategorie='vertrag')
+        dv = Dokument(vertrag=v, bezeichnung='Mietvertrag', kategorie='vertrag', im_portal_sichtbar=True)
         dv.datei.save('mv.pdf', ContentFile(b'%PDF'), save=True)
         di = Dokument(mieter=m, bezeichnung='Intern', kategorie='sonstiges', im_portal_sichtbar=False)
         di.datei.save('int.pdf', ContentFile(b'%PDF'), save=True)
@@ -372,22 +372,29 @@ class MieterDokumenteTests(TestCase):
         self.assertNotIn('Mietvertrag', c.get('/mieter/dokumente/').content.decode())
         self.assertEqual(c.get(f'/mieter/dokument/{dv.id}/').status_code, 404)
 
-    def test_vertragsdokument_automatisch_abgelegt(self):
+    def test_vertragsdokument_wird_beim_erstellen_abgelegt_nicht_beim_ansehen(self):
         from rentals.models import Dokument
+        from core.views.pdf import erzeuge_und_ablege_vertragspaket
         lg, e, m, v = _basis_objekte()
         u = User.objects.create_user(username='vd_mieter', password='x'); m.benutzer = u; m.save()
         team = _team_user()
         tc = Client(); tc.force_login(team)
         r = tc.get(f'/vertrag/{v.id}/pdf/')
         self.assertEqual(r.status_code, 200)
-        d = Dokument.objects.filter(vertrag=v, kategorie='vertrag').first()
+        # ROUTE-01: Das Ansehen legt nichts in die Akte und damit nichts ins Portal.
+        self.assertEqual(Dokument.objects.filter(vertrag=v).count(), 0)
+        mc = Client(); mc.force_login(u)
+        self.assertNotIn('Mietvertrag', mc.get('/mieter/dokumente/').content.decode())
+        # Das ausdrückliche Erstellen (Vertrag in Kraft setzen) legt ab ...
+        erzeuge_und_ablege_vertragspaket(v)
+        d = Dokument.objects.filter(vertrag=v, kategorie='vertrag', bezeichnung='Mietvertrag').first()
         self.assertIsNotNone(d)
         self.assertEqual(d.mieter_id, m.id)
-        # Dedup: erneute Generierung erzeugt kein Duplikat
+        # Dedup: erneutes Generieren erzeugt kein Duplikat in der Liste der neuesten Fassungen
         tc.get(f'/vertrag/{v.id}/pdf/')
-        self.assertEqual(Dokument.objects.filter(vertrag=v, kategorie='vertrag').count(), 1)
-        # im Portal sichtbar
-        mc = Client(); mc.force_login(u)
+        self.assertEqual(Dokument.objects.neueste().filter(
+            vertrag=v, kategorie='vertrag', bezeichnung='Mietvertrag').count(), 1)
+        # ... und der Mieter sieht es im Portal.
         self.assertIn('Mietvertrag', mc.get('/mieter/dokumente/').content.decode())
 
     def test_serienbrief_pro_empfaenger_abgelegt(self):
@@ -412,9 +419,8 @@ class MieterDokumenteTests(TestCase):
         r = c.get(f'/vertrag/{v.id}/dokumente-zip/')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r['Content-Type'], 'application/zip')
-        # Mehrere Dokumente in der Akte (Mietvertrag + Beilagen)
-        anzahl = Dokument.objects.filter(vertrag=v, kategorie='vertrag').count()
-        self.assertGreaterEqual(anzahl, 2)
+        # Der Download legt nichts in die Akte ab (ROUTE-01).
+        self.assertEqual(Dokument.objects.filter(vertrag=v).count(), 0)
         # ZIP enthält mindestens den Mietvertrag
         import io, zipfile
         zf = zipfile.ZipFile(io.BytesIO(r.content))

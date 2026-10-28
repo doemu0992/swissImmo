@@ -221,7 +221,7 @@ class BewerberVerschiebenTests(TestCase):
         self.assertEqual(len(absagen), 1)
         self.assertIn('Wohnungsbewerbung', absagen[0].subject)
         # Der Entscheid ist heute — daran hängen Löschfrist und die 30 Tage.
-        self.assertEqual(b.aktualisiert_am.date(), timezone.localdate())
+        self.assertEqual(timezone.localtime(b.aktualisiert_am).date(), timezone.localdate())
         self.assertTrue(Pendenz.objects.get(quelle=f'besichtigung:{b.id}').erledigt)
 
     def test_vertrag_setzt_fk_und_nennt_die_vertragsseite(self):
@@ -339,7 +339,7 @@ class BewerbungStatusUndVertragTests(TestCase):
         self.c.post(f'/neu/bewerbungen/{b.id}/entscheid/', {'entscheid': 'absage'})
         b.refresh_from_db()
         self.assertEqual(b.status, 'abgelehnt')
-        self.assertEqual(b.aktualisiert_am.date(), timezone.localdate())
+        self.assertEqual(timezone.localtime(b.aktualisiert_am).date(), timezone.localdate())
 
 
 class SammelabsageTests(TestCase):
@@ -534,7 +534,10 @@ class VertragZuordnungMigrationTests(TestCase):
             ('mietprozess', '0010_vertrag_aus_bestand_zuordnen')).apps
         migration.zuordnen(apps, None)
 
-    def _vertrag(self, e, vorname, nachname, email, beginn=date(2026, 12, 1), status='entwurf'):
+    def _vertrag(self, e, vorname, nachname, email, beginn=None, status='entwurf'):
+        # Beginn nach der Bewerbung — relativ zu heute, nicht ein festes Datum, das irgendwann
+        # in der Vergangenheit liegt (SICH-45).
+        beginn = beginn or timezone.localdate() + timedelta(days=60)
         m = Mieter.objects.create(typ='person', vorname=vorname, nachname=nachname, email=email)
         return Mietvertrag.objects.create(mieter=m, einheit=e, status=status, beginn=beginn,
                                           netto_mietzins=Decimal('1500'), nebenkosten=Decimal('200'))

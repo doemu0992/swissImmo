@@ -5,6 +5,7 @@ from django.db import models
 from core.organisation_kette import OrganisationAusKette, organisation_aus_kontext
 from core.tenancy import AlleOrganisationenManager, TenantManager, TenantQuerySet
 from django.utils import timezone
+from core.zeit import datum_heute
 from datetime import timedelta
 from decimal import Decimal
 from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_path
@@ -46,8 +47,8 @@ class Mietvertrag(OrganisationAusKette):
         ('jahr', _('jährlich')),
     ]
 
-    mieter = models.ForeignKey('crm.Mieter', on_delete=models.CASCADE, related_name='vertraege')
-    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='vertraege')
+    mieter = models.ForeignKey('crm.Mieter', on_delete=models.PROTECT, related_name='vertraege')
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.PROTECT, related_name='vertraege')
     nebenobjekte = models.ManyToManyField('portfolio.Einheit', blank=True, related_name='als_nebenobjekt_in_vertraegen')
 
     # --- VERTRAGS-STATUS ---
@@ -801,14 +802,21 @@ class Mietvertrag(OrganisationAusKette):
         # Personen-/Objekt-Akte und im Mieterportal hängen und tauchten dort
         # doppelt / „ohne Vertragsbezug" auf. Zentral hier, damit UI (fw_vertrag_
         # loeschen) UND API (delete_vertrag) und jeder künftige Löschpfad greifen.
-        try:
-            from core.views.pdf import VERTRAGSPAKET_TITEL
-            self.dokument_ablage.filter(
-                kategorie='vertrag', bezeichnung__in=VERTRAGSPAKET_TITEL
-            ).delete()
-        except Exception:
-            logger.debug("Fehler bewusst übergangen", exc_info=True)
-        return super().delete(*args, **kwargs)
+        #
+        # ATOMAR (FUNK-03): Haengen Rechnungen, Abnahmen oder Kuendigungen am
+        # Vertrag, wirft `super().delete()` einen `ProtectedError`. Ohne die
+        # Transaktion waeren die Paket-Dokumente dann schon weg, obwohl der
+        # Vertrag bleibt.
+        from django.db import transaction
+        with transaction.atomic():
+            try:
+                from core.views.pdf import VERTRAGSPAKET_TITEL
+                self.dokument_ablage.filter(
+                    kategorie='vertrag', bezeichnung__in=VERTRAGSPAKET_TITEL
+                ).delete()
+            except Exception:
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
+            return super().delete(*args, **kwargs)
 
 class Staffelstufe(OrganisationAusKette):
     ORGANISATION_PFAD = 'vertrag'
@@ -1133,17 +1141,21 @@ class Dokument(OrganisationAusKette):
     # Produktiv gemessen (16.08.2026): 7 Zeilen, 0 ohne Weg. Lokal 158, 0.
     ORGANISATION_PFAD = ('vertrag', 'einheit', 'liegenschaft', 'mieter', 'eigentuemer')
     eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.SET_NULL, null=True, blank=True)
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, null=True, blank=True)
-    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, null=True, blank=True)
-    mieter = models.ForeignKey('crm.Mieter', on_delete=models.CASCADE, null=True, blank=True)
-    vertrag = models.ForeignKey(Mietvertrag, on_delete=models.SET_NULL, null=True, blank=True, related_name='dokument_ablage')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT, null=True, blank=True)
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.PROTECT, null=True, blank=True)
+    mieter = models.ForeignKey('crm.Mieter', on_delete=models.PROTECT, null=True, blank=True)
+    vertrag = models.ForeignKey(Mietvertrag, on_delete=models.PROTECT, null=True, blank=True, related_name='dokument_ablage')
     bezeichnung = models.CharField(max_length=200, default="Dokument")
     titel = models.CharField(max_length=200, blank=True)
     datei = models.FileField(upload_to=get_smart_upload_path)
     kategorie = models.CharField(max_length=50, choices=[('vertrag', _('Vertrag')), ('protokoll', pgettext_lazy('Auswahl', 'Protokoll')), ('korrespondenz', _('Korrespondenz')), ('sonstiges', _('Sonstiges'))])
-    # Sichtbarkeit im Mieterportal (Datenschutz): Standard sichtbar, Verwalter
-    # kann sensible Dokumente (z.B. interne Vermerke) ausblenden.
-    im_portal_sichtbar = models.BooleanField("Im Mieterportal sichtbar", default=True)
+    # Sichtbarkeit im Mieterportal (Datenschutz): Standard NICHT sichtbar. Ein
+    # Dokument erscheint dort erst, wenn es dem Mieter zugestellt oder freigegeben
+    # wurde (Versand, Unterschrift, Vertrag in Kraft, Freigabe von Hand in der
+    # Person-Akte). Bis 28.10.2026 war der Standard «sichtbar»: schon das
+    # Ansehen einer Mahnung oder eines Betreibungsdatenblatts legte das Dokument
+    # für den Mieter bereit (ROUTE-01).
+    im_portal_sichtbar = models.BooleanField("Im Mieterportal sichtbar", default=False)
     datum = models.DateField(auto_now_add=True)
     # Exakter Ablage-Zeitpunkt (Datum + Uhrzeit). datum bleibt für Alt-Auswertungen.
     erstellt_am = models.DateTimeField("Abgelegt am", auto_now_add=True, null=True)
@@ -1250,7 +1262,7 @@ class Kuendigung(OrganisationAusKette):
         ('zurueckgezogen', _('Zurückgezogen')),
     ]
 
-    vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE, related_name='kuendigungen')
+    vertrag = models.ForeignKey(Mietvertrag, on_delete=models.PROTECT, related_name='kuendigungen')
     absender = models.CharField("Gekündigt durch", max_length=20, choices=ABSENDER_CHOICES, default='mieter')
     eingang_datum = models.DateField("Eingang / Poststempel", default=timezone.localdate)
     zustellung = models.CharField("Zustellung", max_length=30, choices=ZUSTELLUNG_CHOICES, default='einschreiben')
@@ -1314,10 +1326,10 @@ class Abnahmeprotokoll(OrganisationAusKette):
     # Liegenschaft und damit den Daten-Reset). Der Schutz vor versehentlichem
     # Löschen sitzt dort, wo ein Mensch ihn auslöst: `fw_vertrag_loeschen`
     # verweigert, solange Protokolle am Vertrag hängen.
-    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.CASCADE, related_name='abnahmen')
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.PROTECT, related_name='abnahmen')
     # Die Ablage: Jedes Protokoll steht bei der Einheit, über alle Mieter hinweg.
     # Abgeleitet aus dem Vertrag (save), nicht eingegeben.
-    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='abnahmen',
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.PROTECT, related_name='abnahmen',
                                 editable=False)
     # Das Protokoll, auf dem dieses aufbaut (Auszug → späterer Einzug und umgekehrt).
     vorgaenger = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
@@ -1327,7 +1339,7 @@ class Abnahmeprotokoll(OrganisationAusKette):
     folge_vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True,
                                       blank=True, related_name='+')
     typ = models.CharField("Art", max_length=10, choices=TYP_CHOICES, default='auszug')
-    datum = models.DateField("Datum", default=timezone.now)
+    datum = models.DateField("Datum", default=datum_heute)
     mieter_anwesend = models.BooleanField("Mieter anwesend", default=True)
     # Ohne Unterschrift des Mieters wird nur abgeschlossen, wenn er abwesend war
     # UND der Grund festgehalten ist: Das Protokoll ist sonst kein Beweis dafür,

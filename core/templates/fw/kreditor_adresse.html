@@ -1,0 +1,32 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% load chf %}
+{% block title %}{% trans "Anschrift des Lieferanten" %} — swissImmo{% endblock %}
+
+{% block content %}
+
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/finanzen/{{ lg_query }}">{% trans "Finanzen" %}</a><span aria-hidden="true">/</span><a href="/neu/kreditoren/{{ lg_query }}">{% trans "Kreditoren" %}</a><span aria-hidden="true">/</span><span>{% trans "Anschrift" %}</span></nav>
+        <h1>{% trans "Anschrift des Lieferanten" %}</h1>
+        <p>{{ k.lieferant|default:"—" }}{% if k.betrag %} · CHF {{ k.betrag|chf }}{% endif %}</p>
+    </div>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% zeichen 'rechnung' klasse='fw-marke mr-1.5' %}{% trans "Anschrift für die Zahlungsdatei" %}</h2></div>
+    <form method="post" action="/neu/kreditoren/{{ k.id }}/adresse/" class="fw-rumpf" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ ziel }}">
+        {% if anzahl_fehler %}<div class="fw-formfehler mb-3" role="alert"><b>{% blocktrans count n=anzahl_fehler %}{{ n }} Angabe prüfen{% plural %}{{ n }} Angaben prüfen{% endblocktrans %}</b> — {% trans "nichts wurde gespeichert. Die Hinweise stehen bei den Feldern." %}</div>{% endif %}
+        <p class="fw-hilfe mb-3">{% blocktrans trimmed %}Die Swiss Payment Standards verlangen ab dem 14.11.2026 die Anschrift des Begünstigten in der Zahlungsdatei, mindestens Ort und Land.
+            Diese Seite ändert nur die Anschrift — Betrag, IBAN und Buchungen bleiben unberührt.{% endblocktrans %}</p>
+        {% include 'fw/_kreditor_adresse_felder.html' with werte=werte fehler=fehler idp="ka" klasse="" %}
+        <div class="mt-3"><label class="fw-haekchen"><input type="checkbox" name="weitere" value="1" checked class="fw-akzent">{% trans "Auch bei den übrigen offenen Rechnungen dieses Lieferanten eintragen, die noch keine Anschrift haben" %}</label></div>
+        <div class="mt-4 flex items-center gap-2 justify-end">
+            <a href="{{ ziel }}" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+            <button class="fw-btn fw-primary">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
