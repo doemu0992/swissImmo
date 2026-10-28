@@ -179,7 +179,7 @@ class Buchung(OrganisationAusKette):
     beleg_text = models.CharField(max_length=255)
 
     # Optional: Verknüpfung zur Liegenschaft (für objektbezogene Auswertungen)
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True, related_name='buchungen')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT, null=True, blank=True, related_name='buchungen')
 
     soll_konto = models.ForeignKey(Buchungskonto, on_delete=models.PROTECT, related_name='soll_buchungen')
     haben_konto = models.ForeignKey(Buchungskonto, on_delete=models.PROTECT, related_name='haben_buchungen')
@@ -307,9 +307,9 @@ class DebitorenRechnung(OrganisationAusKette):
         ('storniert', gettext_lazy('Storniert')),     # 🔥 NEU statt Löschen
         ('abgeschrieben', gettext_lazy('Abgeschrieben')),   # Forderungsverlust (Konto 3805)
     ]
-    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, related_name='debitoren_rechnungen')
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
-    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.SET_NULL, null=True, blank=True)
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.PROTECT, null=True, related_name='debitoren_rechnungen')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT, null=True, blank=True)
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.PROTECT, null=True, blank=True)
 
     titel = models.CharField("Titel / Grund", max_length=200)
     beschreibung = models.TextField(blank=True, default="")
@@ -419,8 +419,8 @@ class Zahlungseingang(OrganisationAusKette):
     # Zahlungseingang mehr ohne Bezug entstehen — an EINER Stelle statt an
     # neun, und auch fuer jeden kuenftigen Erzeugungspfad, den niemand kennt.
     ORGANISATION_PFAD = ('vertrag', 'liegenschaft', 'debitoren_rechnung', 'konto')
-    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, related_name='zahlungen')
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.PROTECT, null=True, related_name='zahlungen')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT, null=True, blank=True)
     konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
 
     # 🔥 NEU: Verknüpfung zur Rechnung für sauberes Matching
@@ -469,7 +469,7 @@ class Mahnung(OrganisationAusKette):
     """Revisionssichere Mahn-Historie: pro Mahnschritt ein unveränderlicher Eintrag
     mit Stufe, offenem Betrag und (optionaler) Mahngebühr."""
     debitoren_rechnung = models.ForeignKey(DebitorenRechnung, on_delete=models.CASCADE, related_name='mahnungen', null=True, blank=True)
-    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, blank=True, related_name='mahnungen')
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.PROTECT, null=True, blank=True, related_name='mahnungen')
     stufe = models.PositiveSmallIntegerField("Mahnstufe", default=1)
     datum = models.DateField("Mahndatum", default=timezone.now)
     betrag_offen = models.DecimalField("Offener Betrag", max_digits=10, decimal_places=2, default=Decimal('0.00'))
@@ -518,8 +518,8 @@ class KreditorenRechnung(OrganisationAusKette):
         "Bei Verteilung beim Eigentümer verbleibend (Leerstand)", max_digits=10,
         decimal_places=2, default=Decimal('0.00'))
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='neu')
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True)
-    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.SET_NULL, null=True, blank=True)
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT, null=True, blank=True)
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.PROTECT, null=True, blank=True)
     konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True)
 
     # Die "Shift-Left" Felder für die HNK
@@ -701,7 +701,7 @@ class Zahlungsvereinbarung(OrganisationAusKette):
         ('gebrochen', gettext_lazy('Gebrochen')),
         ('abgebrochen', gettext_lazy('Abgebrochen')),
     ]
-    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.CASCADE,
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.PROTECT,
                                 related_name='zahlungsvereinbarungen')
     betrag_total = models.DecimalField("Rückstand bei Abschluss (CHF)", max_digits=10, decimal_places=2)
     gedeckt_bis = models.DateField("Gedeckte Forderungen: fällig bis")
@@ -729,7 +729,7 @@ class Zahlungsvereinbarung(OrganisationAusKette):
 
 class AbrechnungsPeriode(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, related_name='abrechnungen')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT, related_name='abrechnungen')
     bezeichnung = models.CharField("Titel", max_length=100)
     start_datum = models.DateField()
     ende_datum = models.DateField()
@@ -934,7 +934,7 @@ class NebenkostenBeleg(OrganisationAusKette):
 
 class Jahresabschluss(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE)
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT)
     jahr = models.IntegerField(default=2026)
     notizen = models.TextField(blank=True, default='')
 
@@ -955,7 +955,7 @@ class Anlage(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
     """Anlagegut (z.B. Heizung, Lift, Küche) mit linearer Abschreibung.
     Jährliche AfA = Anschaffungswert / Nutzungsdauer (Jahre)."""
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, related_name='anlagen')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT, related_name='anlagen')
     bezeichnung = models.CharField("Bezeichnung", max_length=200)
     anschaffungswert = models.DecimalField("Anschaffungswert (CHF)", max_digits=12, decimal_places=2, default=Decimal('0.00'))
     anschaffungsdatum = models.DateField("Anschaffungsdatum")
@@ -1013,7 +1013,7 @@ class Erneuerungsfonds(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
     """Erneuerungsfonds / Rückstellung je Liegenschaft (STWEG-tauglich).
     Jährliche Einlage wird als Rückstellung gebucht."""
-    liegenschaft = models.OneToOneField('portfolio.Liegenschaft', on_delete=models.CASCADE, related_name='erneuerungsfonds')
+    liegenschaft = models.OneToOneField('portfolio.Liegenschaft', on_delete=models.PROTECT, related_name='erneuerungsfonds')
     bestand = models.DecimalField("Bestand (CHF)", max_digits=12, decimal_places=2, default=Decimal('0.00'))
     jaehrliche_einlage = models.DecimalField("Jährliche Einlage (CHF)", max_digits=10, decimal_places=2, default=Decimal('0.00'))
     letzte_einlage_jahr = models.PositiveIntegerField(null=True, blank=True)
@@ -1076,7 +1076,7 @@ class EigentuemerAuszahlung(models.Model):
             self.organisation_id = organisation_bestimmen().pk
         super().save(*args, **kwargs)
 
-    eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.CASCADE, related_name='auszahlungen')
+    eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.PROTECT, related_name='auszahlungen')
     betrag = models.DecimalField(max_digits=12, decimal_places=2)
     datum = models.DateField(default=timezone.now)
     konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL, null=True, blank=True,
@@ -1105,7 +1105,7 @@ class Hypothek(OrganisationAusKette):
     """Hypothekartranche auf einer Liegenschaft (Fest/SARON/variabel).
     Grundlage für Zinskosten und Ablauf-/Refinanzierungsplanung."""
     TYP = [('fest', gettext_lazy('Festhypothek')), ('saron', gettext_lazy('SARON')), ('variabel', gettext_lazy('Variabel'))]
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, related_name='hypotheken')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT, related_name='hypotheken')
     bank = models.CharField("Bank / Gläubiger", max_length=120, blank=True, default='')
     bezeichnung = models.CharField("Bezeichnung / Tranche", max_length=120, blank=True, default='')
     betrag = models.DecimalField("Betrag (CHF)", max_digits=12, decimal_places=2, default=Decimal('0.00'))
@@ -1196,7 +1196,7 @@ class Bankbewegung(OrganisationAusKette):
     # Eindeutiger Schlüssel der Bank — verhindert Doppelimport derselben Zeile.
     bank_referenz = models.CharField(max_length=140, blank=True, default='', db_index=True)
     status = models.CharField(max_length=12, choices=STATUS, default='offen', db_index=True)
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL,
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT,
                                      null=True, blank=True, related_name='bankbewegungen')
     zahlung = models.ForeignKey('finance.Zahlungseingang', on_delete=models.SET_NULL,
                                 null=True, blank=True, related_name='bankbewegungen')
@@ -1323,7 +1323,7 @@ class Betreibung(OrganisationAusKette):
     weitere_rechnungen = models.ManyToManyField(
         DebitorenRechnung, blank=True, related_name='betreibungen_weitere',
         verbose_name="Weitere Forderungen in dieser Betreibung")
-    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True, blank=True, related_name='betreibungen')
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.PROTECT, null=True, blank=True, related_name='betreibungen')
     status = models.CharField("Stand", max_length=30, choices=STATUS_CHOICES, default='begehren')
     betreibungsamt = models.CharField("Betreibungsamt", max_length=120, blank=True, default='')
     betreibungsnummer = models.CharField("Betreibungsnummer", max_length=40, blank=True, default='')

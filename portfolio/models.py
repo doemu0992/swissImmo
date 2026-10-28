@@ -10,7 +10,7 @@ from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_p
 from core.organisation_kette import OrganisationAusKette, organisation_aus_kontext
 
 class Liegenschaft(models.Model):
-    eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.CASCADE, related_name='liegenschaften', null=True, blank=True)
+    eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.PROTECT, related_name='liegenschaften', null=True, blank=True)
     #: WER DIESE LIEGENSCHAFT BETREUT (E2.70).
     #
     # In einer Verwaltung wird liegenschaftsweise aufgeteilt, nicht Fall für
@@ -531,8 +531,8 @@ class Dokument(OrganisationAusKette):
     # beide Fremdschluessel optional. Die Einheit steht vorn, weil sie die
     # genauere Angabe ist; beide fuehren zur selben Organisation.
     ORGANISATION_PFAD = ('einheit__liegenschaft', 'liegenschaft')
-    liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE, null=True, blank=True, related_name='dokumente')
-    einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, null=True, blank=True, related_name='dokumente')
+    liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.PROTECT, null=True, blank=True, related_name='dokumente')
+    einheit = models.ForeignKey(Einheit, on_delete=models.PROTECT, null=True, blank=True, related_name='dokumente')
     titel = models.CharField(max_length=200)
     kategorie = models.CharField(max_length=50, default='Allgemein')
     datei = models.FileField(upload_to=get_smart_upload_path)

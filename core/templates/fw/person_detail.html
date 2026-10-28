@@ -69,7 +69,7 @@ alten Liegenschaft betreut.
                     <div class="fw-menutrenner"></div>
                     {% endif %}
                     <form method="post" action="/neu/personen/{{ m.id }}/loeschen/"
-                          onsubmit="return confirm('{% filter escapejs %}{% if anzahl_aktive %}{% blocktrans with name=m.display_name %}Person „{{ name }}“ wirklich löschen? Achtung: es besteht ein aktiver Vertrag – die Löschung wird blockiert.{% endblocktrans %}{% else %}{% blocktrans with name=m.display_name %}Person „{{ name }}“ wirklich löschen? Beendete/Entwurf-Verträge, Journal und Dokumente dieser Person werden mitgelöscht.{% endblocktrans %}{% endif %}{% endfilter %}');">
+                          onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=m.display_name %}Person „{{ name }}“ wirklich löschen? Hängen Verträge, Rechnungen oder Dokumente an ihr, wird das Löschen abgelehnt. Journal und Adressen werden mitgelöscht.{% endblocktrans %}{% endfilter %}');">
                         {% csrf_token %}
                         <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}{% trans "Person löschen" %}</button>
                     </form>
