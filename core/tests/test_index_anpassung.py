@@ -604,6 +604,21 @@ class AssistentServerTests(TestCase):
         v.refresh_from_db()
         self.assertEqual(v.index_letzte_anpassung, date(2027, 1, 1))
 
+    def test_sollmietzins_bemerkung_passt_in_das_feld(self):
+        """PostgreSQL lehnt einen Wert über `max_length` ab, SQLite nicht: Die Bemerkung der
+        Sollmietzins-Zeile (Begründung + Mietername) muss auf die Feldlänge gekürzt werden."""
+        from portfolio.models import Sollmietzins
+        v = _index_vertrag(kanton='ZH')
+        self._post(v, aktion='versandt', versand_am=HEUTE.isoformat())
+        anp = self._entwuerfe(v).get()
+        anp.begruendung = 'Anpassung an den Landesindex der Konsumentenpreise. ' * 12
+        anp.save()
+        notiz = Sollmietzins.objects.get(quelle_anpassung=anp).notiz
+        grenze = Sollmietzins._meta.get_field('notiz').max_length
+        self.assertLessEqual(len(notiz), grenze)
+        self.assertTrue(notiz.startswith('Amtliche Mietzinsanpassung'))
+        self.assertTrue(notiz.endswith('…'))
+
     def test_versand_mit_bestaetigtem_zugang_darf_frueher_wirken_als_ein_entwurf(self):
         """Ein bestätigter Zugang ersetzt den Puffer: Beim Versand zählt das echte Datum, beim
         Entwurf (Versand «heute», Zustellpuffer) ist derselbe Termin noch zu früh."""

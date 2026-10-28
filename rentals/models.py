@@ -948,6 +948,17 @@ class VertragMietzins(OrganisationAusKette):
         return f"ab {self.gueltig_ab:%d.%m.%Y}: Netto CHF {self.netto_mietzins} / NK CHF {self.nebenkosten}"
 
 
+def _auf_feldlaenge(text, modell, feld):
+    """Kürzt `text` auf die Länge des CharField `feld` (mit «…»).
+
+    SQLite prüft `max_length` nicht, PostgreSQL schon («value too long for type
+    character varying(200)»): Die ausführliche Index-Begründung sprengte so die Bemerkung der
+    Sollmietzins-Zeile — in der Sandbox unbemerkt, in der CI auf PostgreSQL ein Fehler.
+    """
+    grenze = modell._meta.get_field(feld).max_length
+    return text if len(text) <= grenze else text[:grenze - 1].rstrip() + '…'
+
+
 class MietzinsAnpassung(OrganisationAusKette):
     ORGANISATION_PFAD = 'vertrag'
     vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE, related_name='anpassungen')
@@ -1081,7 +1092,7 @@ class MietzinsAnpassung(OrganisationAusKette):
                 'basis_referenzzinssatz': self.neuer_referenzzinssatz,
                 'basis_lik_punkte': self.neuer_lik_index,
                 'quelle_anpassung': self,
-                'notiz': " · ".join(teile),
+                'notiz': _auf_feldlaenge(" · ".join(teile), Sollmietzins, 'notiz'),
             })
 
 class Leerstand(OrganisationAusKette):
