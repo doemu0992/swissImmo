@@ -85,6 +85,7 @@ EINSTELLUNGEN_ZIELE = [
     '/neu/logbuch/',
     '/neu/rechtsgrundlagen/',
     '/neu/regelwerk/',
+    '/neu/einstellungen/zahlungsfreigabe/',
 ]
 
 

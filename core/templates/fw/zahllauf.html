@@ -124,6 +124,8 @@
                     {{ z.k.lieferant|default:"—" }}
                     {% if z.k.referenz %}<div class="fw-sub2">{{ z.k.referenz }}</div>{% endif %}
                     {% for t in z.probleme %}<div class="fw-sub2 fw-warnton">{{ t }}</div>{% endfor %}
+                    {% if z.va.sperre %}<div class="fw-sub2 fw-warnton">{% if z.va.geaendert %}{% trans "Freigabe ungültig: Betrag oder IBAN wurden geändert." %}{% elif z.va.vorgelegt %}{% blocktrans with name=z.va.vorleger %}Zahlung vorgelegt von {{ name }}, wartet auf die Freigabe einer zweiten Person.{% endblocktrans %}{% else %}{% trans "Braucht die Freigabe einer zweiten Person (Freigabelimit)." %}{% endif %} <a href="/neu/kreditoren/?q={{ z.k.lieferant|urlencode }}" class="fw-link fw-klein">{% trans "In den Kreditoren öffnen" %}</a></div>
+                    {% elif z.va.noetig %}<div class="fw-sub2 fw-gut">{% blocktrans with name=z.va.freigeber %}Zahlung freigegeben von {{ name }}{% endblocktrans %}</div>{% endif %}
                     {% if z.adresse_fehlt %}<a href="/neu/kreditoren/{{ z.k.id }}/adresse/?next=/neu/zahllauf/" class="fw-link fw-klein">{% trans "Anschrift ergänzen" %}</a>{% endif %}
                 </td>
                 <td class="fw-mutet whitespace-nowrap">{{ z.objekt }}</td>

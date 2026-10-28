@@ -125,6 +125,16 @@ class Organisation(models.Model):
     # Einrichtung (core.views.zweifaktor).
     zweifaktor_pflicht = models.BooleanField(
         "Zwei-Faktor für alle Konten dieser Verwaltung verlangen", default=False)
+    # Vier-Augen-Prinzip bei Kreditorenzahlungen (Etappe 2): Eine Rechnung ab
+    # diesem Betrag (CHF, Rechnungsbetrag brutto) wird erst nach der Freigabe
+    # durch eine zweite Person bezahlt oder in eine Zahlungsdatei genommen.
+    # Leer = Vier-Augen-Prinzip aus (nur der Inhaber stellt es ein, es wird
+    # protokolliert). Vorgabe CHF 5'000.
+    freigabelimit_kreditoren = models.DecimalField(
+        "Freigabelimite Kreditorenzahlungen (CHF)", max_digits=12, decimal_places=2,
+        null=True, blank=True, default=Decimal('5000.00'),
+        help_text="Zahlungen ab diesem Rechnungsbetrag braucht die Freigabe einer zweiten Person. "
+                  "Leer = keine Freigabe nötig.")
     # Mahnwesen — je Verwaltung einstellbar (Seite /neu/mahnstufen/), nichts davon im Code.
     mahn_verzug_ab_tag = models.PositiveSmallIntegerField(
         "Verzug beginnt n Tage nach Fälligkeit", default=0,
