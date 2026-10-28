@@ -230,10 +230,15 @@ class DatenresetTests(UnveraenderlichBasis):
         self.assertTrue(Buchung.objects.exists())
         c = Client()
         c.force_login(_team_user(rolle='Inhaber'))
-        with self.assertLogs('finance.models', level=logging.WARNING) as protokoll:
-            antwort = c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN'})
+        from unittest.mock import patch
+
+        from django.core.cache import cache
+        cache.clear()
+        # Seit SICH-03 verlangt der Reset Passwort und eine gelungene Sicherung (Stub, wie in
+        # test_plattform.DatenResetTests: unter SQLite im Speicher kann `sicherung` nicht lesen).
+        with patch('core.services.datenreset.sicherung_erstellen', return_value=''):
+            antwort = c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN', 'passwort': 'x'}, secure=True)
         self.assertEqual(antwort.status_code, 302)
-        self.assertIn('Datenreset', ' '.join(protokoll.output))
         self.assertFalse(Buchung.objects.exists())
         # Der Kontenplan wird danach frisch aufgesetzt, nicht als Altbestand mitgeschleppt.
         self.assertTrue(Buchungskonto.objects.filter(nummer='1020').exists())

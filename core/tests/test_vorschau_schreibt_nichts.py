@@ -222,7 +222,7 @@ class PortalSichtbarkeitStandardTests(TestCase):
         """Die Migration 0053 nimmt Betreibungs-Datenblatt und Bankschreiben aus dem Portal —
         sonst nichts (Mahnungen lassen sich aus den Daten nicht sicher beurteilen)."""
         from core.services.ablage import ablegen
-        migration = importlib.import_module('rentals.migrations.0053_interne_dokumente_im_portal_ausblenden')
+        migration = importlib.import_module('rentals.migrations.0054_interne_dokumente_im_portal_ausblenden')
         titel = ['Betreibungsbegehren (Daten) #1', 'Kaution-Freigabe (Bank) Muster',
                  'Kaution-Bestätigung Muster', '2. Mahnung vom 01.10.2026']
         for t in titel:

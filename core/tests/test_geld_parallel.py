@@ -77,7 +77,8 @@ class GeldPfadBasis(TransactionTestCase):
         return KreditorenRechnung.objects.create(
             lieferant=lieferant, betrag=Decimal(betrag), status=status,
             iban='CH9300762011623852957', datum=timezone.localdate(),
-            faellig_am=timezone.localdate(), liegenschaft=self.lg, referenz='R-1')
+            faellig_am=timezone.localdate(), liegenschaft=self.lg, referenz='R-1',
+            lieferant_ort='Zürich', lieferant_land='CH')
 
     def saldo(self, nummer):
         from finance.models import Buchung
