@@ -5,6 +5,7 @@ from django.db import models
 from core.organisation_kette import OrganisationAusKette, organisation_aus_kontext
 from core.tenancy import AlleOrganisationenManager, TenantManager, TenantQuerySet
 from django.utils import timezone
+from core.zeit import datum_heute
 from datetime import timedelta
 from decimal import Decimal
 from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_path
@@ -1331,7 +1332,7 @@ class Abnahmeprotokoll(OrganisationAusKette):
     folge_vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.SET_NULL, null=True,
                                       blank=True, related_name='+')
     typ = models.CharField("Art", max_length=10, choices=TYP_CHOICES, default='auszug')
-    datum = models.DateField("Datum", default=timezone.now)
+    datum = models.DateField("Datum", default=datum_heute)
     mieter_anwesend = models.BooleanField("Mieter anwesend", default=True)
     # Ohne Unterschrift des Mieters wird nur abgeschlossen, wenn er abwesend war
     # UND der Grund festgehalten ist: Das Protokoll ist sonst kein Beweis dafür,

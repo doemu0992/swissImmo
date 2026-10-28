@@ -7,6 +7,7 @@ from decimal import Decimal
 from django.conf import settings
 
 from django.test import TestCase, Client
+from django.utils import timezone
 from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _seed_konten, _sig_bytes, _heute, Mieter,
     Eigentuemer, Organisation, Liegenschaft, Einheit, Mietvertrag, User)
@@ -1243,8 +1244,9 @@ class FinanzUIP5Tests(TestCase):
         lg, e, m, v = _basis_objekte()
         from finance.booking import buche, ensure_kontenplan
         ensure_kontenplan()
-        buche('1020', '3000', Decimal('1500.00'), 'Miete August', datum=date(2026, 8, 1),
-              liegenschaft=lg)
+        # Das Journal zeigt das laufende Jahr: ein Datum im laufenden Jahr, nicht ein festes (SICH-45).
+        buche('1020', '3000', Decimal('1500.00'), 'Miete August',
+              datum=timezone.localdate().replace(month=1, day=2), liegenschaft=lg)
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/buchhaltung/?tab=journal').content.decode('utf-8')
         journal = html.split('id="bh-journal"')[1]

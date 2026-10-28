@@ -284,6 +284,11 @@ def _quellen():
             teile += [q.read_text(encoding='utf-8') for q in p.rglob('*.html')]
     for q in WURZEL.rglob('*.py'):
         t = q.as_posix()
+        # `.claude/`: Arbeitskopien (Worktrees) anderer Sitzungen — sonst zählt jede Datei doppelt
+        # (SICH-28). Relativ zur Wurzel geprüft: Liegt das Projekt selbst in einem Worktree, steht
+        # `.claude` im absoluten Pfad.
+        if q.relative_to(WURZEL).as_posix().startswith('.claude/'):
+            continue
         if any(x in t for x in ('node_modules', '/test', 'migrations')):
             continue
         teile.append(q.read_text(encoding='utf-8'))

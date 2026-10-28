@@ -1,5 +1,5 @@
 """Vorgaben der Gemeinschaft: Einladungsfrist, Beschlussfähigkeit, Anfechtungsfrist — nur, was eingetragen ist."""
-from datetime import timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 
 from django.test import TestCase
@@ -141,9 +141,11 @@ class VorgabenTests(TestCase):
         vorgaben.speichern(self.lg, {'anfechtungsfrist_tage': '30'})
         v = self.versammlung([])
         self.assertIsNone(vorgaben.anfechtungsfrist_bis(v))        # Protokoll noch nicht versendet
-        v.protokoll_versendet_am = timezone.now() - timedelta(days=5)
+        # Fester Zeitpunkt statt `jetzt - 5 Tage`: Die UTC-Differenz über die Zeitumstellung
+        # (25.10.2026) liess den Zürcher Tag um eins abweichen, je nach Tageszeit des Laufs.
+        v.protokoll_versendet_am = timezone.make_aware(datetime(2026, 10, 23, 12, 0))
         v.save()
-        self.assertEqual(vorgaben.anfechtungsfrist_bis(v), timezone.localdate() + timedelta(days=25))
+        self.assertEqual(vorgaben.anfechtungsfrist_bis(v), date(2026, 11, 22))   # 23.10. + 30 Tage
 
 
 class VorgabenOberflaecheTests(TestCase):

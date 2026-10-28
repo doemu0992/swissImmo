@@ -5,7 +5,7 @@ from decimal import Decimal
 from django.test import Client, TestCase
 from django.utils import timezone
 
-from ._helfer import _basis_objekte, _seed_konten, _team_user
+from ._helfer import _basis_objekte, _seed_konten, _team_user, vor_tagen
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -149,7 +149,7 @@ class AuftragTicketTests(TestCase):
         from core.models import Pendenz
         from core.services.automation import generate_auto_pendenzen
         from tickets.models import SchadenMeldung
-        SchadenMeldung.objects.filter(pk=self.t.pk).update(aktualisiert_am=timezone.now() - timedelta(days=83))
+        SchadenMeldung.objects.filter(pk=self.t.pk).update(aktualisiert_am=vor_tagen(83))
         generate_auto_pendenzen(horizont_tage=30)
         p = Pendenz.objects.get(quelle=f'auto:ticket:{self.t.pk}')
         self.assertIn('83 Tagen', p.titel)

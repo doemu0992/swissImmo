@@ -166,7 +166,8 @@ def _alle_quellen():
     """
     for p in sorted(WURZEL.rglob('*.py')):
         rel = p.relative_to(WURZEL).as_posix()
-        if any(x in rel for x in ('node_modules', '/migrations/', '/tests/')):
+        # `.claude/`: Arbeitskopien (Worktrees) anderer Sitzungen — sonst zählt jede Datei doppelt (SICH-28).
+        if rel.startswith('.claude/') or any(x in rel for x in ('node_modules', '/migrations/', '/tests/')):
             continue
         if '/test_' in rel or rel.startswith('test'):
             continue
