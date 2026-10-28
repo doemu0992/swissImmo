@@ -14,7 +14,7 @@ hat genau einen Hauptknopf — den nächsten sinnvollen Schritt.
 
 <div class="fw-phead fw-phead-lauf">
     <div>
-        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a><span aria-hidden="true">/</span><span>{% trans "Bankabgleich" %}</span></nav>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}">{% if ist_team %}<a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a>{% else %}<span>{% trans "Läufe" %}</span>{% endif %}<span aria-hidden="true">/</span><span>{% trans "Bankabgleich" %}</span></nav>
         <h1>{% trans "Bankabgleich" %} {% hilfe 'bankabgleich' %}</h1>
         <p>{% trans "Zahlungseingänge klären, aufteilen und verbuchen — Sonderfälle wie Teil-, Sammel- und Überzahlungen inklusive" %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/bankabgleich/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>

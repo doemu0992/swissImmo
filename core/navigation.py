@@ -248,8 +248,8 @@ def _navigation_buchhaltung(user):
     gruppen, palette = [], []
     for g in nav_gruppen():
         items = [dict(it, erlaubt=True) for it in g['items'] if erlaubt(it['ziel'])]
-        if not items and not erlaubt(g['ziel']):
-            continue
+        if not items:
+            continue        # ein Bereich ohne öffnbare Seite (Heute, Akten) entfällt
         ziel = g['ziel'] if erlaubt(g['ziel']) else items[0]['ziel']
         gruppen.append(dict(g, items=items, ziel=ziel,
                             alle_keys=[g['key']] + [k for it in items for k in it['keys']]))

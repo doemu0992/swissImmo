@@ -1078,6 +1078,7 @@ def fw_berichte(request):
                     for g in berichte]
         berichte = [g for g in berichte if g['items']]
         v8['mandat_zeilen'] = []
+        v8['ausstand_balken'] = [dict(z, url='') for z in v8.get('ausstand_balken') or []]
     return render(request, 'fw/berichte.html', {**basis, 'nav': 'berichte', 'berichte': berichte,
                                                 'heute': heute, **v8})
 

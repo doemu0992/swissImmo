@@ -41,7 +41,7 @@
         <b>{{ mail }}</b> senden — PDF-/Foto-Anhänge werden automatisch gescannt und erscheinen hier als Status «Neu».{% endblocktrans %}</div>
     </div>
     {% endif %}
-    {% if not ki_aktiv %}
+    {% if not ki_aktiv and ist_team %}
     <div class="fw-hinweis warn mb-4">
         <span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht"><b>{% trans "KI nicht konfiguriert" %}</b> — {% blocktrans trimmed %}es läuft nur die regelbasierte Erkennung (IBAN/Betrag/Datum aus Text-PDFs; Foto-Belege werden nicht ausgelesen). Für die volle KI-Erkennung den <code>GROQ_API_KEY</code> unter
         <a href="/neu/integrationen/" class="underline">Integrationen</a> hinterlegen.{% endblocktrans %}</div>

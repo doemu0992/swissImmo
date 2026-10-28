@@ -88,7 +88,8 @@ def _alle_views():
                 lauf(p, prefix + str(p.pattern))
             else:
                 f = inspect.unwrap(p.callback)
-                treffer.append((prefix + str(p.pattern), f.__name__,
+                name = getattr(f, '__name__', None) or f.func.__name__
+                treffer.append((prefix + str(p.pattern), name,
                                 getattr(p.callback, 'benoetigte_rollen', None)))
     lauf(get_resolver())
     return treffer
@@ -267,6 +268,16 @@ class BuchhaltungNavigationTests(RollenBasis):
                 if status == 403:
                     tot[ziel] = seite
         self.assertEqual(tot, {}, f'Links in die 403: {tot}')
+
+    def test_gegenprobe_team_behaelt_seine_links(self):
+        """Die Links, die der Buchhaltung fehlen, stehen für das Team weiter da."""
+        c = self.client_von('verwalter')
+        for seite in ('/neu/zahllauf/', '/neu/bankabgleich/', '/neu/mahnwesen/', '/neu/sollstellung/', '/neu/mwst/'):
+            with self.subTest(seite=seite):
+                self.assertContains(c.get(seite), 'href="/neu/laeufe/')
+        self.assertContains(c.get('/neu/mahnwesen/'), 'href="/neu/betreibungen/"')
+        self.assertContains(c.get('/neu/mahnwesen/'), 'action="/neu/mahnwesen/lauf/"')
+        self.assertNotContains(self.client_von('buchhaltung').get('/neu/mahnwesen/'), 'action="/neu/mahnwesen/lauf/"')
 
     def test_bericht_ohne_mandatsliste(self):
         html = self.client_von('buchhaltung').get('/neu/berichte/').content.decode()
