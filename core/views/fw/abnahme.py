@@ -401,17 +401,23 @@ def fw_vertrag_status(request, pk):
     if request.method == 'POST':
         neu = request.POST.get('status', '')
         erlaubt = {'entwurf': 'Entwurf', 'aktiv': 'Aktiv', 'archiviert': 'Inaktiv / Archiviert'}
-        if neu == 'aktiv' and v.status == 'entwurf':
+        if neu == 'aktiv' and v.status in ('entwurf', 'archiviert'):
             # Ein Entwurf wird erst aktiv, wenn sein Mietzinsmodell zulässig ist (Art. 269b/269c OR).
             # Entwürfe aus der Zeit vor den harten Regeln können Verstösse tragen; sie lassen sich im
-            # Assistenten bearbeiten, hier bleibt der Status stehen.
+            # Assistenten bearbeiten, hier bleibt der Status stehen. Dasselbe gilt für «archiviert»:
+            # Sonst liesse sich ein Entwurf über «Inaktiv» an der Prüfung vorbei aktivieren.
+            # Ein gekündigter Vertrag war schon aktiv und wird nicht neu geprüft.
             from core.services.mietzinsmodell import pruefe_vertrag, sperren
             offen = sperren(pruefe_vertrag(v))
             if offen:
                 for b in offen:
                     messages.error(request, '❌ ' + b.volltext)
-                messages.error(request, gettext('Der Vertrag bleibt Entwurf: Das Mietzinsmodell ist nicht zulässig. '
-                                                'Im Assistenten lässt es sich korrigieren.'))
+                if v.status == 'entwurf':
+                    messages.error(request, gettext('Der Vertrag bleibt Entwurf: Das Mietzinsmodell ist nicht zulässig. '
+                                                    'Im Assistenten lässt es sich korrigieren.'))
+                else:
+                    messages.error(request, gettext('Der Vertrag bleibt archiviert: Das Mietzinsmodell ist nicht zulässig '
+                                                    '(Befunde oben).'))
                 return redirect(f'/neu/vertraege/{v.id}/')
         if neu in erlaubt:
             v.status = neu
