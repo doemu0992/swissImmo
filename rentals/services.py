@@ -502,6 +502,40 @@ def verarbeite_docuseal_event(payload):
                            ContentFile(r.content), save=False)
     vertrag.sign_status = 'unterzeichnet'
     if vertrag.status in ('entwurf', 'offen'):
-        vertrag.status = 'aktiv'
+        # Die Unterschrift ist eine Tatsache und bleibt gespeichert. Aktiv wird der Vertrag aber nur, wenn
+        # sein Mietzinsmodell zulässig ist (Art. 269b/269c OR) — wie bei «Vertrag aktivieren». Sonst
+        # bleibt er Entwurf, und eine Pendenz sagt warum (kein stilles Liegenlassen).
+        # Der Webhook läuft ohne Anmeldung, also ohne Mandantenkontext: Die Staffelstufen liest `pruefe_vertrag`
+        # über den Mandantenfilter, und die Pendenz braucht ihn ebenfalls.
+        from core.services.mietzinsmodell import pruefe_vertrag, sperren
+        from core.tenancy import organisation_kontext
+        with organisation_kontext(vertrag.organisation):
+            offen = sperren(pruefe_vertrag(vertrag))
+            if offen:
+                logger.warning("DocuSeal-Event: Vertrag %s unterzeichnet, Mietzinsmodell nicht zulässig — "
+                               "bleibt Entwurf (%s)", vertrag.pk, ', '.join(b.regel for b in offen))
+                _pendenz_modell_gesperrt(vertrag, offen)
+        if not offen:
+            vertrag.status = 'aktiv'
     vertrag.save()   # → zentrale Ablage (Portal, Person, Objekt) via Model.save
     return True
+
+
+def _pendenz_modell_gesperrt(vertrag, befunde):
+    """Pendenz «unterzeichnet, aber nicht aktiviert» — einmal je Vertrag (idempotent über `quelle`).
+
+    Der Aufrufer hält den Mandantenkontext."""
+    from django.utils import timezone
+
+    from core.models import Pendenz
+    quelle = f'auto:modellsperre:{vertrag.pk}'
+    if Pendenz.objects.filter(quelle=quelle).exists():
+        return
+    titel = f'Vertrag unterzeichnet, aber nicht aktiv: {vertrag.mieter.display_name}'
+    Pendenz.objects.create(
+        quelle=quelle, titel=titel[:Pendenz._meta.get_field('titel').max_length],
+        kategorie='vertrag', faellig_am=timezone.localdate(), vertrag=vertrag,
+        liegenschaft=vertrag.einheit.liegenschaft if vertrag.einheit_id else None,
+        beschreibung=('Der Vertrag ist digital unterzeichnet, bleibt aber Entwurf, weil sein '
+                      'Mietzinsmodell nicht zulässig ist: ' + ' '.join(b.volltext for b in befunde)
+                      + ' Korrigieren, dann den Vertrag aktivieren.'))

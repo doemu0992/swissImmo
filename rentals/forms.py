@@ -34,7 +34,8 @@ class VertragBearbeitenForm(forms.Form):
       Wert; man sah «gespeichert» und glaubte, die Änderung stehe.
     - Beim Entwurf wurde ein unlesbarer Nettomietzins still CHF 0.00, ein
       unlesbarer Mietbeginn still der alte.
-    - Eine Index-Weitergabe von 0 % oder weniger wurde still ignoriert.
+    - Eine Index-Weitergabe von 0 % oder weniger wurde still ignoriert, eine über 100 % still auf
+      100 % gekürzt.
 
     MIETZINSMODELL: Wird `vertrag` übergeben, prüft `clean()` die Felder, die das Formular ändert
     (Ende, Beginn, Kündigungsverzicht des Vermieters, Index-Weitergabe und -Intervall), gegen die
@@ -74,16 +75,31 @@ class VertragBearbeitenForm(forms.Form):
                                                      min_value=0, max_value=100)
 
     def clean_index_weitergabe_prozent(self):
-        # Über 100 % wird auf 100 % GEKÜRZT, nicht abgelehnt — so entschieden
-        # in E2.53 und festgehalten in `test_ueber_hundert_prozent_wird_gekappt`
-        # (mehr als die Teuerung weiterzugeben, sieht das Gesetz nicht vor).
-        # Abgelehnt wird, was vorher still ignoriert wurde: 0 und weniger.
+        # Über 100 % wurde bis 28.10.2026 still auf 100 % gekürzt (E2.53). Jetzt
+        # lehnt die Maske ab, wie der Wizard (`mietzinsmodell`, Regel
+        # 'index_weitergabe'): Die Erhöhung darf die Zunahme des LIK nicht übersteigen
+        # (Art. 17 Abs. 1 VMWG), und eine Eingabe, die still etwas anderes speichert,
+        # als sie zeigt, ist ein Fehler. Auch 0 und weniger werden abgelehnt.
+        #
+        # Unverändert bleibt ein Wert, der schon am Vertrag steht: Ein Altvertrag mit
+        # einem früheren Verstoss wird nicht blockiert, solange die Weitergabe nicht
+        # geändert wird (die Ansicht schreibt sie dann auch nicht).
+        from django.utils.translation import gettext
+
+        from core.services.mietzinsmodell import ART_INDEX_WEITERGABE
         w = self.cleaned_data.get('index_weitergabe_prozent')
         if w is None:
             return None
+        if self.vertrag is not None and w == self.vertrag.index_weitergabe_prozent:
+            return w
         if w <= 0:
-            raise forms.ValidationError(_t('Die Weitergabe muss über 0 % liegen.'))
-        return min(w, Decimal('100'))
+            raise forms.ValidationError(
+                f"{gettext('Die Weitergabe muss über 0 % liegen.')} ({ART_INDEX_WEITERGABE})")
+        if w > 100:
+            raise forms.ValidationError(
+                f"{gettext('Die Weitergabe darf höchstens 100 Prozent der Teuerung betragen.')} "
+                f"({ART_INDEX_WEITERGABE})")
+        return w
 
     def clean_mwst_satz(self):
         # Wie beim Kreditor: «8.10» ist 8.1 und kein Fehler; «7.75» lässt sich
