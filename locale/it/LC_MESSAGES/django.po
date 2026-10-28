@@ -33855,3 +33855,153 @@ msgstr "Il contratto è di durata determinata e termina il %(datum)s senza disde
 #, python-format
 msgid "Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet (Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
 msgstr "Il locatore ha rinunciato alla disdetta fino al %(datum)s (rinuncia alla disdetta, art. 17 cpv. 4 OLAL). Una disdetta ordinaria con effetto al %(wirkung)s (prima di questa data) non può essere registrata. Le disdette straordinarie, ad esempio per mora nel pagamento (art. 257d CO), rimangono possibili."
+
+msgid "Diese Liegenschaft gibt es nicht."
+msgstr "Questo stabile non esiste."
+
+#, python-format
+msgid "Titel ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "Il titolo è troppo lungo (al massimo %(n)s caratteri)."
+
+msgid "Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail und Name kann nur die Person selbst ändern — gespeichert wurde nur die Rolle in deiner Verwaltung."
+msgstr "Questo account è utilizzato anche in un’altra amministrazione. Password, e-mail e nome possono essere modificati solo dalla persona stessa — è stato salvato solo il ruolo nella tua amministrazione."
+
+msgid "Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail und Name kann nur die Person selbst ändern. Du kannst hier die Rolle in deiner Verwaltung festlegen oder die Mitgliedschaft beenden."
+msgstr "Questo account è utilizzato anche in un’altra amministrazione. Password, e-mail e nome possono essere modificati solo dalla persona stessa. Qui puoi definire il ruolo nella tua amministrazione o terminare l’appartenenza."
+
+msgid "Mitgliedschaft in meiner Verwaltung beenden"
+msgstr "Terminare l’appartenenza alla mia amministrazione"
+
+msgid "(das Konto bleibt für die andere Verwaltung bestehen)"
+msgstr "(l’account resta disponibile per l’altra amministrazione)"
+
+msgid "Kündigungen"
+msgstr "Disdette"
+
+msgid "Abnahmeprotokolle"
+msgstr "Verbali di consegna"
+
+msgid "Zahlungsvereinbarungen"
+msgstr "Accordi di pagamento"
+
+msgid "Kreditorenrechnungen"
+msgstr "Fatture fornitori"
+
+msgid "Buchungen"
+msgstr "Registrazioni contabili"
+
+msgid "Bankbewegungen"
+msgstr "Movimenti bancari"
+
+msgid "Nebenkostenabrechnungen"
+msgstr "Conteggi delle spese accessorie"
+
+msgid "Jahresabschlüsse"
+msgstr "Chiusure annuali"
+
+msgid "Anlagen"
+msgstr "Immobilizzazioni"
+
+msgid "Dokumente zu Verträgen und Personen"
+msgstr "Documenti relativi a contratti e persone"
+
+msgid "Schadenmeldungen"
+msgstr "Segnalazioni di danni"
+
+msgid "STWEG-Abrechnungen"
+msgstr "Conteggi PPP"
+
+msgid "STWEG-Budgets"
+msgstr "Preventivi PPP"
+
+msgid "STWEG-Dokumente"
+msgstr "Documenti PPP"
+
+msgid "Versammlungen und Beschlüsse"
+msgstr "Assemblee e decisioni"
+
+msgid "Stockwerkeinheiten"
+msgstr "Unità di piano"
+
+msgid "Beende die Verträge; auf Wunsch der Person kannst du ihre Daten über die Datenschutz-Löschung (Anonymisierung) unkenntlich machen."
+msgstr "Termina i contratti; su richiesta della persona puoi rendere irriconoscibili i suoi dati tramite la cancellazione per la protezione dei dati (anonimizzazione)."
+
+msgid "Setze den Vertrag stattdessen auf «Inaktiv / Archiviert»."
+msgstr "Imposta invece il contratto su «Inattivo / Archiviato»."
+
+msgid "Setze die Liegenschaft stattdessen auf den Status «Archiviert»."
+msgstr "Imposta invece lo stabile sullo stato «Archiviato»."
+
+msgid "Beende die Verträge; das Objekt bleibt mit seiner Geschichte bestehen."
+msgstr "Termina i contratti; l’oggetto resta con la sua storia."
+
+msgid "Das Mandat bleibt bestehen; ein Archiv für Mandate folgt."
+msgstr "Il mandato resta; un archivio per i mandati seguirà."
+
+#, python-format
+msgid "«%(name)s» kann nicht gelöscht werden: Es hängen noch Daten daran (%(was)s). Geschäftsunterlagen sind zehn Jahre aufzubewahren (Art. 958f OR). %(weg)s"
+msgstr "«%(name)s» non può essere eliminato: vi sono ancora dati collegati (%(was)s). I documenti commerciali devono essere conservati per dieci anni (art. 958f CO). %(weg)s"
+
+msgid "Zu viele Versuche. Bitte in einer Viertelstunde erneut versuchen."
+msgstr "Troppi tentativi. Riprova tra un quarto d’ora."
+
+msgid "Das Passwort stimmt nicht — nichts wurde gelöscht."
+msgstr "La password non è corretta — non è stato eliminato nulla."
+
+msgid "Der Code für die Zwei-Faktor-Anmeldung stimmt nicht — nichts wurde gelöscht."
+msgstr "Il codice dell’autenticazione a due fattori non è corretto — non è stato eliminato nulla."
+
+#, python-format
+msgid "Die Sicherung vor dem Zurücksetzen ist fehlgeschlagen — es wurde nichts gelöscht. (%(grund)s)"
+msgstr "Il backup prima del ripristino è fallito — non è stato eliminato nulla. (%(grund)s)"
+
+#, python-format
+msgid "Das Zurücksetzen ist fehlgeschlagen und wurde zurückgerollt — es wurde nichts gelöscht. (%(grund)s)"
+msgstr "Il ripristino è fallito ed è stato annullato — non è stato eliminato nulla. (%(grund)s)"
+
+msgid "Dein Passwort"
+msgstr "La tua password"
+
+msgid "Code der Zwei-Faktor-Anmeldung"
+msgstr "Codice dell’autenticazione a due fattori"
+
+msgid "Vorher wird automatisch eine Sicherung der Datenbank erstellt; schlägt sie fehl, wird nichts gelöscht. Das Audit-Log bleibt erhalten."
+msgstr "Prima viene creato automaticamente un backup del database; se fallisce, non viene eliminato nulla. Il log di audit viene conservato."
+
+#, python-format
+msgid "Bitte füllen Sie das Feld «%(feld)s» aus."
+msgstr "Compilate il campo «%(feld)s»."
+
+#, python-format
+msgid "«%(feld)s» ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "«%(feld)s» è troppo lungo (al massimo %(n)s caratteri)."
+
+msgid "Anliegen"
+msgstr "Richiesta"
+
+msgid "Bitte geben Sie eine gültige E-Mail-Adresse an."
+msgstr "Indicate un indirizzo e-mail valido."
+
+msgid "Die gewählte Einheit gibt es in dieser Liegenschaft nicht."
+msgstr "L’unità scelta non esiste in questo stabile."
+
+msgid "Das Foto konnte nicht verwendet werden. Bitte wählen Sie ein Bild (JPEG, PNG, WebP oder HEIC) bis 15 MB."
+msgstr "La foto non ha potuto essere utilizzata. Scegliete un’immagine (JPEG, PNG, WebP o HEIC) fino a 15 MB."
+
+msgid "Zu viele Meldungen in kurzer Zeit. Bitte später erneut versuchen."
+msgstr "Troppe segnalazioni in poco tempo. Riprovate più tardi."
+
+msgid "Ihre Meldung wurde noch nicht gesendet."
+msgstr "La vostra segnalazione non è ancora stata inviata."
+
+#, python-format
+msgid "Liegenschaft %(s)s inkl. aller Objekte wirklich löschen? Hängen Verträge, Rechnungen, Abrechnungen oder Dokumente daran, wird das Löschen abgelehnt. Dies kann nicht rückgängig gemacht werden."
+msgstr "Eliminare lo stabile %(s)s, oggetti compresi? Se vi sono collegati contratti, fatture, conteggi o documenti, l’eliminazione viene rifiutata. L’operazione non può essere annullata."
+
+#, python-format
+msgid "Person „%(name)s“ wirklich löschen? Hängen Verträge, Rechnungen oder Dokumente an ihr, wird das Löschen abgelehnt. Journal und Adressen werden mitgelöscht."
+msgstr "Eliminare davvero la persona «%(name)s»? Se vi sono collegati contratti, fatture o documenti, l’eliminazione viene rifiutata. Giornale e indirizzi vengono eliminati con essa."
+
+#, python-format
+msgid "Diesen Vertrag wirklich löschen?\n\nEr hat %(r)s Rechnung(en) und %(z)s Zahlung(en) und kann deshalb nicht gelöscht werden. Setze ihn stattdessen auf «Inaktiv / Archiviert»."
+msgstr "Eliminare davvero questo contratto?\n\nHa %(r)s fattura/e e %(z)s pagamento/i e non può quindi essere eliminato. Impostalo invece su «Inattivo / Archiviato»."
