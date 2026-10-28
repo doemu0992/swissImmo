@@ -105,6 +105,10 @@ STILL = ('hash', 'geheim', 'token', 'ip_', '_am', 'anonymisiert', 'is_',
 #: Wer hier etwas eintraegt, sagt: «Das setzt ein Lauf, ein Import oder eine
 #: Vorlage.» Wer es weglaesst und trotzdem kein Formular baut, wird rot.
 AUSNAHMEN = {
+    'core.Archiveintrag.aufbewahren_bis':
+     'gesetzt von `core.services.archiv.archivieren`: 31.12. des zehnten Jahres nach dem Archivieren (Art. 958f OR)',
+    'core.Archiveintrag.vorher_status':
+     'gesetzt von `core.services.archiv.archivieren`: Status vor dem Archivieren, für das Wiederherstellen',
     'rentals.Dokument.vorgaenger':
      'gesetzt von `core.services.ablage.ablegen(dedup=True)`: die neue Fassung zeigt auf die bisherige (Modul 5)',
     'finance.Betreibung.debitoren_rechnung':

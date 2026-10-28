@@ -34032,3 +34032,111 @@ msgstr "The request could not be processed. Please check your entry."
 
 msgid "Die gewählte Liegenschaft gibt es nicht."
 msgstr "The selected property does not exist."
+
+# --- Archiv, Auskunftsrecht, Löschschutz (Etappe 2, 28.10.2026) ---
+
+msgid "Archiv"
+msgstr "Archive"
+
+#, python-format
+msgid "Archivierte Liegenschaften, Objekte, Personen, Verträge, Mandate, Dokumente und Schadenmeldungen. Sie bleiben %(jahre)s Jahre aufbewahrt (Art. 958f OR) und lassen sich bis dahin nicht löschen."
+msgstr "Archived properties, units, persons, contracts, mandates, documents and damage reports. They are kept for %(jahre)s years (Art. 958f CO) and cannot be deleted until then."
+
+#, python-format
+msgid "Archiviert am %(am)s · aufzubewahren bis %(bis)s"
+msgstr "Archived on %(am)s · retain until %(bis)s"
+
+#, python-format
+msgid "Mandatsende %(ende)s"
+msgstr "Mandate ends %(ende)s"
+
+msgid "Wiederherstellen"
+msgstr "Restore"
+
+msgid "Endgültig löschen"
+msgstr "Delete permanently"
+
+msgid "Das Archiv ist leer"
+msgstr "The archive is empty"
+
+msgid "Archivierte Objekte erscheinen hier und bleiben zehn Jahre aufbewahrt."
+msgstr "Archived items appear here and are kept for ten years."
+
+msgid "Bleibt zehn Jahre aufbewahrt (Art. 958f OR) und lässt sich wiederherstellen."
+msgstr "Kept for ten years (Art. 958f CO) and can be restored."
+
+msgid "Alle Daten dieser Person als ZIP (DSG Art. 25)."
+msgstr "All data of this person as a ZIP file (FADP Art. 25)."
+
+msgid "Auskunft (DSG Art. 25)"
+msgstr "Access request (FADP Art. 25)"
+
+msgid "Dokumente (Personen und Verträge)"
+msgstr "Documents (persons and contracts)"
+
+msgid "Dokumente (Ablage)"
+msgstr "Documents (filing)"
+
+#, python-format
+msgid "Es laufen noch %(n)s Mietverträge. Beende sie zuerst."
+msgstr "%(n)s tenancy agreements are still running. End them first."
+
+#, python-format
+msgid "Dem Mandat sind noch %(n)s Liegenschaften zugeordnet, die nicht archiviert sind. Archiviere sie oder ordne sie einem anderen Mandat zu."
+msgstr "%(n)s properties that are not archived are still assigned to the mandate. Archive them or assign them to another mandate."
+
+msgid "Bereits archiviert."
+msgstr "Already archived."
+
+msgid "Nicht archiviert."
+msgstr "Not archived."
+
+#, python-format
+msgid "Aufbewahrungsfrist bis %(bis)s"
+msgstr "Retention period until %(bis)s"
+
+msgid "Nur archivierte Objekte lassen sich endgültig löschen."
+msgstr "Only archived items can be deleted permanently."
+
+#, python-format
+msgid "Die Aufbewahrungsfrist läuft bis %(bis)s."
+msgstr "The retention period runs until %(bis)s."
+
+msgid "Setze die Liegenschaft stattdessen auf «Archiviert» (Archiv, Aufbewahrung zehn Jahre)."
+msgstr "Set the property to \"Archived\" instead (archive, ten-year retention)."
+
+msgid "Archiviere den Vertrag stattdessen («Inaktiv / Archiviert»)."
+msgstr "Archive the contract instead (\"Inactive / Archived\")."
+
+msgid "Beende die Verträge und archiviere das Objekt; es bleibt mit seiner Geschichte bestehen."
+msgstr "End the contracts and archive the unit; it is kept with its history."
+
+msgid "Beende das Mandat über «Archivieren» (Mandatsende): Es bleibt zehn Jahre aufbewahrt."
+msgstr "End the mandate via \"Archive\" (mandate end): it is kept for ten years."
+
+msgid "Archiviere das Dokument stattdessen."
+msgstr "Archive the document instead."
+
+msgid "Archiviere die Schadenmeldung stattdessen."
+msgstr "Archive the damage report instead."
+
+msgid "Ungültiges Datum für das Mandatsende."
+msgstr "Invalid date for the mandate end."
+
+#, python-format
+msgid "«%(name)s» ist archiviert und wird bis zum %(bis)s aufbewahrt."
+msgstr "\"%(name)s\" is archived and will be kept until %(bis)s."
+
+#, python-format
+msgid "«%(name)s» ist wiederhergestellt."
+msgstr "\"%(name)s\" has been restored."
+
+#, python-format
+msgid "«%(name)s» ist endgültig gelöscht."
+msgstr "\"%(name)s\" has been deleted permanently."
+
+msgid "Dokument archiviert."
+msgstr "Document archived."
+
+msgid "Schadensmeldung archiviert."
+msgstr "Damage report archived."

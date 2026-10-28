@@ -34563,3 +34563,111 @@ msgstr "La demande n'a pas pu être traitée. Veuillez vérifier votre saisie."
 
 msgid "Die gewählte Liegenschaft gibt es nicht."
 msgstr "L'immeuble choisi n'existe pas."
+
+# --- Archiv, Auskunftsrecht, Löschschutz (Etappe 2, 28.10.2026) ---
+
+msgid "Archiv"
+msgstr "Archives"
+
+#, python-format
+msgid "Archivierte Liegenschaften, Objekte, Personen, Verträge, Mandate, Dokumente und Schadenmeldungen. Sie bleiben %(jahre)s Jahre aufbewahrt (Art. 958f OR) und lassen sich bis dahin nicht löschen."
+msgstr "Immeubles, objets, personnes, contrats, mandats, documents et déclarations de sinistre archivés. Ils sont conservés %(jahre)s ans (art. 958f CO) et ne peuvent pas être supprimés d'ici là."
+
+#, python-format
+msgid "Archiviert am %(am)s · aufzubewahren bis %(bis)s"
+msgstr "Archivé le %(am)s · à conserver jusqu'au %(bis)s"
+
+#, python-format
+msgid "Mandatsende %(ende)s"
+msgstr "Fin du mandat %(ende)s"
+
+msgid "Wiederherstellen"
+msgstr "Restaurer"
+
+msgid "Endgültig löschen"
+msgstr "Supprimer définitivement"
+
+msgid "Das Archiv ist leer"
+msgstr "Les archives sont vides"
+
+msgid "Archivierte Objekte erscheinen hier und bleiben zehn Jahre aufbewahrt."
+msgstr "Les objets archivés apparaissent ici et sont conservés dix ans."
+
+msgid "Bleibt zehn Jahre aufbewahrt (Art. 958f OR) und lässt sich wiederherstellen."
+msgstr "Conservé dix ans (art. 958f CO) et restaurable."
+
+msgid "Alle Daten dieser Person als ZIP (DSG Art. 25)."
+msgstr "Toutes les données de cette personne en ZIP (art. 25 LPD)."
+
+msgid "Auskunft (DSG Art. 25)"
+msgstr "Renseignements (art. 25 LPD)"
+
+msgid "Dokumente (Personen und Verträge)"
+msgstr "Documents (personnes et contrats)"
+
+msgid "Dokumente (Ablage)"
+msgstr "Documents (classement)"
+
+#, python-format
+msgid "Es laufen noch %(n)s Mietverträge. Beende sie zuerst."
+msgstr "%(n)s contrats de bail sont encore en cours. Terminez-les d'abord."
+
+#, python-format
+msgid "Dem Mandat sind noch %(n)s Liegenschaften zugeordnet, die nicht archiviert sind. Archiviere sie oder ordne sie einem anderen Mandat zu."
+msgstr "%(n)s immeubles non archivés sont encore attribués au mandat. Archivez-les ou attribuez-les à un autre mandat."
+
+msgid "Bereits archiviert."
+msgstr "Déjà archivé."
+
+msgid "Nicht archiviert."
+msgstr "Non archivé."
+
+#, python-format
+msgid "Aufbewahrungsfrist bis %(bis)s"
+msgstr "Délai de conservation jusqu'au %(bis)s"
+
+msgid "Nur archivierte Objekte lassen sich endgültig löschen."
+msgstr "Seuls les objets archivés peuvent être supprimés définitivement."
+
+#, python-format
+msgid "Die Aufbewahrungsfrist läuft bis %(bis)s."
+msgstr "Le délai de conservation court jusqu'au %(bis)s."
+
+msgid "Setze die Liegenschaft stattdessen auf «Archiviert» (Archiv, Aufbewahrung zehn Jahre)."
+msgstr "Placez plutôt l'immeuble sur « Archivé » (archives, conservation dix ans)."
+
+msgid "Archiviere den Vertrag stattdessen («Inaktiv / Archiviert»)."
+msgstr "Archivez plutôt le contrat (« Inactif / Archivé »)."
+
+msgid "Beende die Verträge und archiviere das Objekt; es bleibt mit seiner Geschichte bestehen."
+msgstr "Terminez les contrats et archivez l'objet ; il est conservé avec son historique."
+
+msgid "Beende das Mandat über «Archivieren» (Mandatsende): Es bleibt zehn Jahre aufbewahrt."
+msgstr "Mettez fin au mandat via « Archiver » (fin du mandat) : il est conservé dix ans."
+
+msgid "Archiviere das Dokument stattdessen."
+msgstr "Archivez plutôt le document."
+
+msgid "Archiviere die Schadenmeldung stattdessen."
+msgstr "Archivez plutôt la déclaration de sinistre."
+
+msgid "Ungültiges Datum für das Mandatsende."
+msgstr "Date invalide pour la fin du mandat."
+
+#, python-format
+msgid "«%(name)s» ist archiviert und wird bis zum %(bis)s aufbewahrt."
+msgstr "« %(name)s » est archivé et conservé jusqu'au %(bis)s."
+
+#, python-format
+msgid "«%(name)s» ist wiederhergestellt."
+msgstr "« %(name)s » est restauré."
+
+#, python-format
+msgid "«%(name)s» ist endgültig gelöscht."
+msgstr "« %(name)s » est supprimé définitivement."
+
+msgid "Dokument archiviert."
+msgstr "Document archivé."
+
+msgid "Schadensmeldung archiviert."
+msgstr "Déclaration de sinistre archivée."
