@@ -65,7 +65,7 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
                 <div class="fw-menutrenner"></div>
                 <form method="post" action="/neu/vertraege/{{ v.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% if rechnungs_rows %}{% blocktrans with r=rechnungs_rows|length z=zahlungen|length %}Diesen Vertrag wirklich löschen?
 
-{{ r }} verknüpfte Rechnung(en) und {{ z }} Zahlung(en) bleiben erhalten (werden entkoppelt).{% endblocktrans %}{% else %}{% trans "Diesen Vertrag wirklich löschen?" %}{% endif %}{% endfilter %}');">
+Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelöscht werden. Setze ihn stattdessen auf «Inaktiv / Archiviert».{% endblocktrans %}{% else %}{% trans "Diesen Vertrag wirklich löschen?" %}{% endif %}{% endfilter %}');">
                     {% csrf_token %}
                     <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}{% trans "Vertrag löschen" %}</button>
                 </form>

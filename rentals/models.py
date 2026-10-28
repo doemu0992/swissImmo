@@ -46,8 +46,8 @@ class Mietvertrag(OrganisationAusKette):
         ('jahr', _('jährlich')),
     ]
 
-    mieter = models.ForeignKey('crm.Mieter', on_delete=models.CASCADE, related_name='vertraege')
-    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='vertraege')
+    mieter = models.ForeignKey('crm.Mieter', on_delete=models.PROTECT, related_name='vertraege')
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.PROTECT, related_name='vertraege')
     nebenobjekte = models.ManyToManyField('portfolio.Einheit', blank=True, related_name='als_nebenobjekt_in_vertraegen')
 
     # --- VERTRAGS-STATUS ---
@@ -801,14 +801,21 @@ class Mietvertrag(OrganisationAusKette):
         # Personen-/Objekt-Akte und im Mieterportal hängen und tauchten dort
         # doppelt / „ohne Vertragsbezug" auf. Zentral hier, damit UI (fw_vertrag_
         # loeschen) UND API (delete_vertrag) und jeder künftige Löschpfad greifen.
-        try:
-            from core.views.pdf import VERTRAGSPAKET_TITEL
-            self.dokument_ablage.filter(
-                kategorie='vertrag', bezeichnung__in=VERTRAGSPAKET_TITEL
-            ).delete()
-        except Exception:
-            logger.debug("Fehler bewusst übergangen", exc_info=True)
-        return super().delete(*args, **kwargs)
+        #
+        # ATOMAR (FUNK-03): Haengen Rechnungen, Abnahmen oder Kuendigungen am
+        # Vertrag, wirft `super().delete()` einen `ProtectedError`. Ohne die
+        # Transaktion waeren die Paket-Dokumente dann schon weg, obwohl der
+        # Vertrag bleibt.
+        from django.db import transaction
+        with transaction.atomic():
+            try:
+                from core.views.pdf import VERTRAGSPAKET_TITEL
+                self.dokument_ablage.filter(
+                    kategorie='vertrag', bezeichnung__in=VERTRAGSPAKET_TITEL
+                ).delete()
+            except Exception:
+                logger.debug("Fehler bewusst übergangen", exc_info=True)
+            return super().delete(*args, **kwargs)
 
 class Staffelstufe(OrganisationAusKette):
     ORGANISATION_PFAD = 'vertrag'
@@ -1133,10 +1140,10 @@ class Dokument(OrganisationAusKette):
     # Produktiv gemessen (16.08.2026): 7 Zeilen, 0 ohne Weg. Lokal 158, 0.
     ORGANISATION_PFAD = ('vertrag', 'einheit', 'liegenschaft', 'mieter', 'eigentuemer')
     eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.SET_NULL, null=True, blank=True)
-    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, null=True, blank=True)
-    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, null=True, blank=True)
-    mieter = models.ForeignKey('crm.Mieter', on_delete=models.CASCADE, null=True, blank=True)
-    vertrag = models.ForeignKey(Mietvertrag, on_delete=models.SET_NULL, null=True, blank=True, related_name='dokument_ablage')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.PROTECT, null=True, blank=True)
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.PROTECT, null=True, blank=True)
+    mieter = models.ForeignKey('crm.Mieter', on_delete=models.PROTECT, null=True, blank=True)
+    vertrag = models.ForeignKey(Mietvertrag, on_delete=models.PROTECT, null=True, blank=True, related_name='dokument_ablage')
     bezeichnung = models.CharField(max_length=200, default="Dokument")
     titel = models.CharField(max_length=200, blank=True)
     datei = models.FileField(upload_to=get_smart_upload_path)
@@ -1250,7 +1257,7 @@ class Kuendigung(OrganisationAusKette):
         ('zurueckgezogen', _('Zurückgezogen')),
     ]
 
-    vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE, related_name='kuendigungen')
+    vertrag = models.ForeignKey(Mietvertrag, on_delete=models.PROTECT, related_name='kuendigungen')
     absender = models.CharField("Gekündigt durch", max_length=20, choices=ABSENDER_CHOICES, default='mieter')
     eingang_datum = models.DateField("Eingang / Poststempel", default=timezone.localdate)
     zustellung = models.CharField("Zustellung", max_length=30, choices=ZUSTELLUNG_CHOICES, default='einschreiben')
@@ -1314,10 +1321,10 @@ class Abnahmeprotokoll(OrganisationAusKette):
     # Liegenschaft und damit den Daten-Reset). Der Schutz vor versehentlichem
     # Löschen sitzt dort, wo ein Mensch ihn auslöst: `fw_vertrag_loeschen`
     # verweigert, solange Protokolle am Vertrag hängen.
-    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.CASCADE, related_name='abnahmen')
+    vertrag = models.ForeignKey('rentals.Mietvertrag', on_delete=models.PROTECT, related_name='abnahmen')
     # Die Ablage: Jedes Protokoll steht bei der Einheit, über alle Mieter hinweg.
     # Abgeleitet aus dem Vertrag (save), nicht eingegeben.
-    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.CASCADE, related_name='abnahmen',
+    einheit = models.ForeignKey('portfolio.Einheit', on_delete=models.PROTECT, related_name='abnahmen',
                                 editable=False)
     # Das Protokoll, auf dem dieses aufbaut (Auszug → späterer Einzug und umgekehrt).
     vorgaenger = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,

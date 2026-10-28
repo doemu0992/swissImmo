@@ -337,12 +337,27 @@ class DatenLebenszyklusTests(TestCase):
         _lg, e, m, v = _basis_objekte()
         self._dok(v, e, m, 'Mietvertrag')
         self._dok(v, e, m, 'Hausordnung')
-        fremd = self._dok(v, e, m, 'Mieterbrief', kategorie='korrespondenz')
         v.delete()
         # Vertragspaket ist weg (kein verwaister vertrag=None-Rest)
         self.assertEqual(Dokument.objects.filter(bezeichnung__in=['Mietvertrag', 'Hausordnung']).count(), 0)
-        # Fremd-Korrespondenz bleibt erhalten
-        self.assertTrue(Dokument.objects.filter(id=fremd.id).exists())
+
+    def test_vertrag_mit_fremder_korrespondenz_wird_nicht_geloescht(self):
+        """Seit FUNK-03 (28.10.2026) bleibt kein Dokument mehr verwaist zurück.
+
+        Vorher setzte das Löschen des Vertrags `Dokument.vertrag` auf NULL und liess
+        die Korrespondenz stehen. Jetzt sperrt sie das Löschen (`PROTECT`); das
+        Vertragspaket (automatisch erzeugte Kopien) bleibt dabei unangetastet,
+        weil `Mietvertrag.delete()` atomar ist.
+        """
+        from django.db.models import ProtectedError
+        from rentals.models import Dokument
+        _lg, e, m, v = _basis_objekte()
+        self._dok(v, e, m, 'Mietvertrag')
+        fremd = self._dok(v, e, m, 'Mieterbrief', kategorie='korrespondenz')
+        with self.assertRaises(ProtectedError):
+            v.delete()
+        self.assertTrue(Dokument.objects.filter(id=fremd.id, vertrag=v).exists())
+        self.assertTrue(Dokument.objects.filter(bezeichnung='Mietvertrag', vertrag=v).exists())
 
     def test_anpassung_sollmietzins_cascade_kein_orphan(self):
         # Löschen der Anpassung (bzw. via Vertrags-CASCADE) darf keine
@@ -460,7 +475,9 @@ class DatenLebenszyklusTests(TestCase):
     def test_person_loeschen_raeumt_portal_login(self):
         from crm.models import Mieter
         _lg, _e, m, v = _basis_objekte()
-        v.status = 'beendet'; v.aktiv = False; v.save()
+        # Seit FUNK-03 sperrt jeder Vertrag das Löschen der Person (auch ein beendeter):
+        # Der Vertrag ohne Rechnungen und Dokumente wird zuerst entfernt.
+        v.delete()
         u = User.objects.create_user(username='portal_mieter', password='x')
         m.benutzer = u; m.save()
         self._c().post(f'/neu/personen/{m.id}/loeschen/')

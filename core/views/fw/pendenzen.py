@@ -16,6 +16,7 @@ from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
 from core.auth import rolle_erforderlich, SCHREIB_ROLLEN, TEAM_ROLLEN
+from core.utils.formularid import eigenes_objekt
 from portfolio.models import Liegenschaft
 from rentals.models import Mietvertrag
 
@@ -300,19 +301,35 @@ def fw_pendenz_neu(request):
     if not titel:
         messages.error(request, gettext('Titel fehlt.'))
         return redirect('fw_pendenzen')
+    if len(titel) > Pendenz._meta.get_field('titel').max_length:
+        messages.error(request, gettext('Titel ist zu lang (höchstens %(n)s Zeichen).')
+                       % {'n': Pendenz._meta.get_field('titel').max_length})
+        return redirect('fw_pendenzen')
+    kategorie = request.POST.get('kategorie', 'aufgabe')
+    if kategorie not in dict(Pendenz.KATEGORIE_CHOICES):
+        kategorie = 'aufgabe'
     faellig = None
     if request.POST.get('faellig_am'):
         try:
             faellig = date.fromisoformat(request.POST['faellig_am'])
         except Exception:
             faellig = None
-    lg_id = request.POST.get('liegenschaft_id') or None
+    # Die Liegenschaft wird ueber den Mandanten-Manager AUFGELOEST, nicht als
+    # nackte ID uebernommen (SICH-01): `OrganisationAusKette` leitet die
+    # Organisation der Zeile aus der Liegenschaft ab — eine fremde ID legte die
+    # Pendenz bis hinein in den iCal-Feed der anderen Verwaltung.
+    lg = None
+    if (request.POST.get('liegenschaft_id') or '').strip():
+        lg = eigenes_objekt(Liegenschaft, request.POST.get('liegenschaft_id'))
+        if lg is None:
+            messages.error(request, gettext('Diese Liegenschaft gibt es nicht.'))
+            return redirect('fw_pendenzen')
     Pendenz.objects.create(
         titel=titel,
         beschreibung=(request.POST.get('beschreibung') or '').strip(),
-        kategorie=request.POST.get('kategorie', 'aufgabe'),
+        kategorie=kategorie,
         faellig_am=faellig,
-        liegenschaft_id=lg_id if lg_id else None,
+        liegenschaft=lg,
         erstellt_von=request.user,
     )
     log_aktion(request, "Pendenz erstellt", titel, '')

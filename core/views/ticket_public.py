@@ -1,7 +1,9 @@
 # core/views/ticket_public.py
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
+from django.utils.translation import gettext
 from core.auth import rolle_erforderlich, TEAM_ROLLEN
+from core.utils.formularid import ganzzahl
 
 from portfolio.models import Liegenschaft, Einheit
 from rentals.models import Mietvertrag
@@ -44,6 +46,21 @@ def public_schaden_melden_view(request):
         # Liegenschafts-Infos aus Dropdown/Auto-Suggest
         liegenschaft_id = request.POST.get('liegenschaft_id', '')
         adresse_text = request.POST.get('adresse', '').strip()
+        # Laengen auf die Spalten von `SchadenMeldung` (SICH-14): SQLite schweigt
+        # bei zu langem Text, PostgreSQL antwortet mit 500 — und das auf einer
+        # Seite, die jeder ohne Anmeldung erreicht. `raum` und `objekt` bleiben
+        # unter 100, weil beide zusammen im Titel (200) stehen.
+        for wert, grenze, name in ((kategorie, 100, 'Kategorie'), (raum, 80, 'Raum'),
+                                   (objekt, 80, 'Objekt'), (vorname, 100, 'Vorname'),
+                                   (nachname, 100, 'Nachname'), (email, 254, 'E-Mail'),
+                                   (telefon, 50, 'Telefon'), (beschreibung, 5000, 'Beschreibung'),
+                                   (adresse_text, 300, 'Adresse'),
+                                   (request.POST.get('erreichbarkeit', ''), 20, 'Erreichbarkeit')):
+            if len(wert) > grenze:
+                return render(request, 'core/schaden_melden.html', {
+                    'fehler': gettext('«%(feld)s» ist zu lang (höchstens %(n)s Zeichen).')
+                              % {'feld': name, 'n': grenze},
+                    'liegenschaften_json': '[]'}, status=400)
         foto = request.FILES.get('foto')
         # Öffentlicher (anonymer) Upload → Bild-Inhalt streng validieren.
         if foto is not None:
@@ -70,9 +87,9 @@ def public_schaden_melden_view(request):
         zugewiesene_einheit = None
 
         # A) Wurde sauber via Dropdown ausgewählt (Sicherstellen, dass es eine Zahl ist)
-        if liegenschaft_id and liegenschaft_id.isdigit():
+        if ganzzahl(liegenschaft_id):
             zugewiesene_liegenschaft = Liegenschaft.alle_organisationen.filter(
-                pk=int(liegenschaft_id)).first()
+                pk=ganzzahl(liegenschaft_id)).first()
 
         # B) Auto-Abgleich via E-Mail
         if gefundener_mieter and not zugewiesene_liegenschaft:
@@ -165,13 +182,32 @@ def _qr_formular(request, liegenschaft):
     # den Mieterbestand (Nachnamen) + leerstehende Wohnungen des ganzen Portfolios
     # abgreifen (DSG/Datenschutz). Zur Auswahl genügt die Objektbezeichnung/Etage.
 
+    from tickets.meldung import ZEITFENSTER
+    from tickets.services import MeldungUngueltig
+
+    def formular(status=200, **zusatz):
+        return render(request, 'core/public_ticket_form.html', {
+            'liegenschaft': liegenschaft, 'einheiten': einheiten,
+            'zeitfenster': ZEITFENSTER, **zusatz}, status=status)
+
     if request.method == 'POST':
-        process_public_ticket_form(liegenschaft, request.POST, request.FILES)
+        # Dieselbe Drossel wie die Schwesterseite `/schaden/melden/` (10 je IP
+        # und Stunde, SICH-08/ROUTE-04): Der Aushang war die ungeschuetzteste
+        # Schreibstelle der Anwendung — 30 Posts hintereinander, 30 Tickets, jedes
+        # mit einer Bestaetigungsmail an eine frei gewaehlte Adresse.
+        from core.utils.throttle import client_ip, rate_limit
+        if not rate_limit(f"report:{client_ip(request)}", limit=10, window_seconds=3600):
+            return formular(429, fehler=[gettext(
+                'Zu viele Meldungen in kurzer Zeit. Bitte später erneut versuchen.')])
+        try:
+            process_public_ticket_form(liegenschaft, request.POST, request.FILES)
+        except MeldungUngueltig as problem:
+            # Die Eingaben kommen mit zurueck, damit niemand alles neu tippen muss.
+            return formular(400, fehler=problem.fehler, werte=request.POST, start_schritt=4,
+                            erreichbarkeit_gewaehlt=request.POST.getlist('erreichbarkeit'))
         return render(request, 'core/public_ticket_form.html', {'success': True, 'liegenschaft': liegenschaft})
 
-    from tickets.meldung import ZEITFENSTER
-    return render(request, 'core/public_ticket_form.html', {'liegenschaft': liegenschaft, 'einheiten': einheiten,
-                                                            'zeitfenster': ZEITFENSTER})
+    return formular()
 
 # ==========================================
 # 4. AUSHANG GENERIEREN

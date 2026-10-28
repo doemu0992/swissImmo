@@ -436,26 +436,36 @@ def fw_vertrag_status(request, pk):
 
 @rolle_erforderlich(ROLLE_VERWALTER)
 def fw_vertrag_loeschen(request, pk):
-    """Löscht einen Mietvertrag. Verknüpfte Rechnungen/Zahlungen bleiben erhalten
-    (FK on_delete=SET_NULL) — die revisionssichere Buchhaltung wird nicht zerstört."""
+    """Löscht einen Mietvertrag — NUR einen ohne Rechnungen, Zahlungen, Mahnungen,
+    Kündigungen, Abnahmen und Dokumente (FIN-16).
+
+    Vorher liess sich ein aktiver Vertrag mit offenen Rechnungen löschen: Die
+    Rechnungen behielten Status `offen`, verloren aber den Vertrag (`SET_NULL`)
+    und fielen aus Mieterkonto, Mahnlauf und Art. 257d OR. Ein bezahlter oder
+    beendeter Vertrag gehört ins Archiv (Status «Inaktiv / Archiviert»)."""
     from django.shortcuts import redirect
     from django.contrib import messages
+    from django.db import transaction
+    from django.db.models import ProtectedError
     from core.auth import log_aktion
+    from core.services.loeschschutz import geschuetzt_melden, hindernisse, sperrmeldung
     v = get_object_or_404(Mietvertrag, id=pk)
     if request.method == 'POST':
-        # Abnahmeprotokolle sind Beweismittel und gehören zur Einheit: Ein Vertrag
-        # mit Protokoll wird nicht gelöscht. Das Löschen würde sie über CASCADE mit
-        # entfernen und die Geschichte der Einheit zerreissen.
-        if v.abnahmen.exists():
-            messages.error(request, gettext(
-                'Der Vertrag hat Abnahmeprotokolle und kann nicht gelöscht werden: Sie gehören zur Einheit.'))
-            return redirect(f'/neu/vertraege/{v.id}/')
         name = str(v.mieter)
         einheit = v.einheit.bezeichnung
+        haengt = hindernisse(v)
+        if haengt:
+            messages.error(request, '❌ ' + sperrmeldung(v, haengt, f'{name} · {einheit}'))
+            return redirect(f'/neu/vertraege/{v.id}/')
+        try:
+            with transaction.atomic():
+                # Bereinigung der verwaisten Vertragspaket-Dokumente passiert zentral in
+                # Mietvertrag.delete().
+                v.delete()
+        except ProtectedError as fehler:
+            messages.error(request, '❌ ' + geschuetzt_melden(v, fehler, f'{name} · {einheit}'))
+            return redirect(f'/neu/vertraege/{v.id}/')
         log_aktion(request, "Mietvertrag gelöscht", name, einheit)
-        # Bereinigung der verwaisten Vertragspaket-Dokumente passiert zentral in
-        # Mietvertrag.delete() (greift auch auf dem API-Löschpfad).
-        v.delete()
         messages.success(request, '🗑️ ' + gettext('Vertrag (%(name)s · %(einheit)s) wurde gelöscht.') % {'name': name, 'einheit': einheit})
         return redirect('/neu/vertraege/')
     return redirect(f'/neu/vertraege/{v.id}/')

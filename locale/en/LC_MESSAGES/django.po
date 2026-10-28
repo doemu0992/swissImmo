@@ -33797,3 +33797,205 @@ msgstr "Town missing — the address is otherwise incomplete."
 
 msgid "Der Ort fehlt."
 msgstr "The town is missing."
+
+msgid "Diese Liegenschaft gibt es nicht."
+msgstr "This property does not exist."
+
+#, python-format
+msgid "Titel ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "The title is too long (at most %(n)s characters)."
+
+msgid ""
+"Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail"
+" und Name kann nur die Person selbst ändern — gespeichert wurde nur die "
+"Rolle in deiner Verwaltung."
+msgstr ""
+"This account is also used in another management company. Only the person "
+"themselves can change the password, email and name — only the role in your "
+"management company was saved."
+
+msgid ""
+"Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail"
+" und Name kann nur die Person selbst ändern. Du kannst hier die Rolle in "
+"deiner Verwaltung festlegen oder die Mitgliedschaft beenden."
+msgstr ""
+"This account is also used in another management company. Only the person "
+"themselves can change the password, email and name. Here you can set the "
+"role in your management company or end the membership."
+
+msgid "Mitgliedschaft in meiner Verwaltung beenden"
+msgstr "End membership in my management company"
+
+msgid "(das Konto bleibt für die andere Verwaltung bestehen)"
+msgstr "(the account remains available to the other management company)"
+
+msgid "Kündigungen"
+msgstr "Terminations"
+
+msgid "Abnahmeprotokolle"
+msgstr "Handover reports"
+
+msgid "Zahlungsvereinbarungen"
+msgstr "Payment agreements"
+
+msgid "Kreditorenrechnungen"
+msgstr "Supplier invoices"
+
+msgid "Buchungen"
+msgstr "Bookings"
+
+msgid "Bankbewegungen"
+msgstr "Bank transactions"
+
+msgid "Nebenkostenabrechnungen"
+msgstr "Service charge statements"
+
+msgid "Jahresabschlüsse"
+msgstr "Annual closings"
+
+msgid "Anlagen"
+msgstr "Fixed assets"
+
+msgid "Dokumente zu Verträgen und Personen"
+msgstr "Documents for leases and persons"
+
+msgid "Schadenmeldungen"
+msgstr "Damage reports"
+
+msgid "STWEG-Abrechnungen"
+msgstr "Condominium statements"
+
+msgid "STWEG-Budgets"
+msgstr "Condominium budgets"
+
+msgid "STWEG-Dokumente"
+msgstr "Condominium documents"
+
+msgid "Versammlungen und Beschlüsse"
+msgstr "Meetings and resolutions"
+
+msgid "Stockwerkeinheiten"
+msgstr "Condominium units"
+
+msgid ""
+"Beende die Verträge; auf Wunsch der Person kannst du ihre Daten über die "
+"Datenschutz-Löschung (Anonymisierung) unkenntlich machen."
+msgstr ""
+"End the leases; at the person’s request you can make their data "
+"unrecognisable using the data-protection deletion (anonymisation)."
+
+msgid "Setze den Vertrag stattdessen auf «Inaktiv / Archiviert»."
+msgstr "Set the lease to “Inactive / Archived” instead."
+
+msgid "Setze die Liegenschaft stattdessen auf den Status «Archiviert»."
+msgstr "Set the property to the status “Archived” instead."
+
+msgid "Beende die Verträge; das Objekt bleibt mit seiner Geschichte bestehen."
+msgstr "End the leases; the unit remains with its history."
+
+msgid "Das Mandat bleibt bestehen; ein Archiv für Mandate folgt."
+msgstr "The mandate remains; an archive for mandates will follow."
+
+#, python-format
+msgid ""
+"«%(name)s» kann nicht gelöscht werden: Es hängen noch Daten daran (%(was)s)."
+" Geschäftsunterlagen sind zehn Jahre aufzubewahren (Art. 958f OR). %(weg)s"
+msgstr ""
+"“%(name)s” cannot be deleted: data is still attached to it (%(was)s). "
+"Business records must be kept for ten years (Art. 958f CO). %(weg)s"
+
+msgid "Zu viele Versuche. Bitte in einer Viertelstunde erneut versuchen."
+msgstr "Too many attempts. Please try again in fifteen minutes."
+
+msgid "Das Passwort stimmt nicht — nichts wurde gelöscht."
+msgstr "The password is incorrect — nothing was deleted."
+
+msgid ""
+"Der Code für die Zwei-Faktor-Anmeldung stimmt nicht — nichts wurde gelöscht."
+msgstr "The two-factor code is incorrect — nothing was deleted."
+
+#, python-format
+msgid ""
+"Die Sicherung vor dem Zurücksetzen ist fehlgeschlagen — es wurde nichts "
+"gelöscht. (%(grund)s)"
+msgstr "The backup before the reset failed — nothing was deleted. (%(grund)s)"
+
+#, python-format
+msgid ""
+"Das Zurücksetzen ist fehlgeschlagen und wurde zurückgerollt — es wurde "
+"nichts gelöscht. (%(grund)s)"
+msgstr ""
+"The reset failed and was rolled back — nothing was deleted. (%(grund)s)"
+
+msgid "Dein Passwort"
+msgstr "Your password"
+
+msgid "Code der Zwei-Faktor-Anmeldung"
+msgstr "Two-factor code"
+
+msgid ""
+"Vorher wird automatisch eine Sicherung der Datenbank erstellt; schlägt sie "
+"fehl, wird nichts gelöscht. Das Audit-Log bleibt erhalten."
+msgstr ""
+"A database backup is created automatically beforehand; if it fails, nothing "
+"is deleted. The audit log is kept."
+
+#, python-format
+msgid "Bitte füllen Sie das Feld «%(feld)s» aus."
+msgstr "Please fill in the “%(feld)s” field."
+
+#, python-format
+msgid "«%(feld)s» ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "“%(feld)s” is too long (at most %(n)s characters)."
+
+msgid "Anliegen"
+msgstr "Request"
+
+msgid "Bitte geben Sie eine gültige E-Mail-Adresse an."
+msgstr "Please enter a valid email address."
+
+msgid "Die gewählte Einheit gibt es in dieser Liegenschaft nicht."
+msgstr "The selected unit does not exist in this property."
+
+msgid ""
+"Das Foto konnte nicht verwendet werden. Bitte wählen Sie ein Bild (JPEG, "
+"PNG, WebP oder HEIC) bis 15 MB."
+msgstr ""
+"The photo could not be used. Please choose an image (JPEG, PNG, WebP or "
+"HEIC) up to 15 MB."
+
+msgid "Zu viele Meldungen in kurzer Zeit. Bitte später erneut versuchen."
+msgstr "Too many reports in a short time. Please try again later."
+
+msgid "Ihre Meldung wurde noch nicht gesendet."
+msgstr "Your report has not been sent yet."
+
+#, python-format
+msgid ""
+"Liegenschaft %(s)s inkl. aller Objekte wirklich löschen? Hängen Verträge, "
+"Rechnungen, Abrechnungen oder Dokumente daran, wird das Löschen abgelehnt. "
+"Dies kann nicht rückgängig gemacht werden."
+msgstr ""
+"Really delete property %(s)s including all units? If leases, invoices, "
+"statements or documents are attached, the deletion is refused. This cannot "
+"be undone."
+
+#, python-format
+msgid ""
+"Person „%(name)s“ wirklich löschen? Hängen Verträge, Rechnungen oder "
+"Dokumente an ihr, wird das Löschen abgelehnt. Journal und Adressen werden "
+"mitgelöscht."
+msgstr ""
+"Really delete the person “%(name)s”? If leases, invoices or documents are "
+"attached, the deletion is refused. The journal and addresses are deleted "
+"with it."
+
+#, python-format
+msgid ""
+"Diesen Vertrag wirklich löschen?\n"
+"\n"
+"Er hat %(r)s Rechnung(en) und %(z)s Zahlung(en) und kann deshalb nicht gelöscht werden. Setze ihn stattdessen auf «Inaktiv / Archiviert»."
+msgstr ""
+"Really delete this lease?\n"
+"\n"
+"It has %(r)s invoice(s) and %(z)s payment(s) and therefore cannot be deleted. Set it to “Inactive / Archived” instead."

@@ -69,8 +69,12 @@ from django.urls import NoReverseMatch, get_resolver, reverse
 
 from ._isolation import KEINE_OBJEKT_ID, MandantenFixture
 
+# `stweg` fehlte bis zum Audit vom 28.10.2026 (SICH-27a): Manager-Test,
+# Modellbezug-Wächter und Bestandszählung des POST-Tests übersahen damit die
+# über 30 STWEG-Modelle — ausgerechnet die Beschlüsse, Abrechnungen und
+# Pfandrechte einer Verwaltung.
 EIGENE_APPS = ('benutzer', 'core', 'crm', 'portfolio', 'rentals', 'finance', 'tickets',
-               'mietprozess', 'faelle')
+               'mietprozess', 'faelle', 'stweg')
 
 # ---------------------------------------------------------------------------
 # Ausnahmen vom Registrylauf — benannt und begründet, nicht ausgefiltert.
@@ -1211,3 +1215,301 @@ class IndexparameterFremderVertragTest(TestCase):
         self.assertIn(antwort.status_code, (200, 302))
         eigen.refresh_from_db()
         self.assertEqual(eigen.index_weitergabe_prozent, Decimal('40'))
+
+
+# ===========================================================================
+# Bauform F — fremde IDs im BODY, mit allen Rollen (SICH-01, SICH-27)
+# ===========================================================================
+
+def _rollen_clients(a):
+    """Inhaber, Verwalter und Sachbearbeiter von A, je mit eigenem Client.
+
+    Der Fixture-Benutzer ist Inhaber. Die niedrigeren Rollen fehlten bisher
+    (SICH-27d): Mit ihnen enden viele Views schon am Dekorator, aber genau die
+    Views mit `SCHREIB_ROLLEN` — `fw_pendenz_neu` — hatte nur der Inhaber je
+    erreicht.
+    """
+    from django.contrib.auth import get_user_model
+    from django.contrib.auth.models import Group
+
+    from crm.models import Mitgliedschaft
+
+    clients = {}
+    for rolle in (Mitgliedschaft.ROLLE_INHABER, Mitgliedschaft.ROLLE_VERWALTER,
+                  Mitgliedschaft.ROLLE_SACHBEARBEITER):
+        if rolle == Mitgliedschaft.ROLLE_INHABER:
+            benutzer = a.benutzer
+        else:
+            benutzer = get_user_model().objects.create_user(
+                username=f'a_{rolle.lower()}', password='geheim-egal')
+            benutzer.groups.add(Group.objects.get_or_create(name=rolle)[0])
+            Mitgliedschaft.objects.create(benutzer=benutzer, organisation=a.organisation, rolle=rolle)
+        c = Client(raise_request_exception=False)
+        c.force_login(benutzer)
+        clients[rolle] = c
+    return clients
+
+
+class FremdeIdImBodyTests(TestCase):
+    """Keine POST-Route schreibt über die Mandantengrenze, auch wenn die ID im Body steht.
+
+    Der Registrylauf (`FremdeIdUeberUrlsTests`) setzt fremde IDs in den URL-PFAD.
+    Die Löcher des Audits vom 28.10.2026 standen im FORMULAR:
+
+    * `fw_pendenz_neu`: `liegenschaft_id` ungeprüft → Zeile in der Organisation
+      der FREMDEN Liegenschaft (SICH-01),
+    * `public_report` (QR-Aushang): `einheit_id` ungeprüft (SICH-08),
+    * `fw_abwesenheit_neu`: `benutzer` und `vertreten_durch` ungeprüft —
+      `Benutzer` hat keinen Mandantenfilter.
+
+    Jeder dieser Wege hatte einen grünen Test, der die Frage an die falsche
+    Stelle stellte. Hier läuft jede POST-Route mit einem Body, in dem JEDES
+    bekannte Feld auf Mandant B zeigt, als Inhaber, Verwalter und
+    Sachbearbeiter, als Formular und als JSON. Gemessen wird der Bestand
+    (`_koerper_ids.Bestand`), nicht der Statuscode.
+
+    GEGENPROBE (28.10.2026, je einzeln eingebaut, rot gesehen, zurückgebaut):
+      * `fw_pendenz_neu`: `liegenschaft=lg` wieder durch `liegenschaft_id=<roh>`
+        → `NEUE_ZEILE_IN_B`;
+      * `fw_abwesenheit_neu`: Team-Filter entfernt → `USER_OHNE_MITGLIEDSCHAFT`;
+      * `tickets.services`: `betroffene_einheit=d['einheit']` durch die rohe ID
+        → `FK_UEBER_GRENZE`;
+      * `test_der_nachweis_findet_ein_leck` weist die Messung selbst nach.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+        cls.b = MandantenFixture('B', '3000', 'Bern')
+        cls.clients = _rollen_clients(cls.a)
+        # Eine zweite Person im Team von B (Abwesenheit: Vertretung darf nicht die abwesende Person sein).
+        from django.contrib.auth import get_user_model
+
+        from crm.models import Mitgliedschaft
+        cls.b_zweiter = get_user_model().objects.create_user(username='b_zweiter', password='x')
+        Mitgliedschaft.objects.create(benutzer=cls.b_zweiter, organisation=cls.b.organisation,
+                                      rolle=Mitgliedschaft.ROLLE_SACHBEARBEITER)
+
+    def setUp(self):
+        from . import _koerper_ids as k
+        self.k = k
+        self.felder = k.felder_fuer(self.b, self.b.benutzer, self.b_zweiter)
+        self.bestand = k.Bestand(self.b.organisation)
+
+    def _lauf(self, rolle, als_json=False):
+        routen, ungebunden = self.k.post_routen(self.a)
+        self.assertGreater(len(routen), 400, 'auffällig wenige POST-Routen im Lauf')
+        client = self.clients[rolle]
+        befunde = []
+        for name, pfad in routen:
+            status, bf = self.k.sende(client, self.bestand, pfad, dict(self.felder), als_json)
+            if name in self.k.OEFFENTLICH_BY_DESIGN:
+                continue
+            if bf:
+                befunde.append((name, pfad, status, bf[:3]))
+        return befunde, ungebunden
+
+    def test_inhaber_formular(self):
+        befunde, _ = self._lauf('Inhaber')
+        self.assertEqual(befunde, [], 'Routen schreiben über die Mandantengrenze:\n'
+                         + '\n'.join(str(b) for b in befunde[:10]))
+
+    def test_verwalter_formular(self):
+        befunde, _ = self._lauf('Verwalter')
+        self.assertEqual(befunde, [], '\n'.join(str(b) for b in befunde[:10]))
+
+    def test_sachbearbeiter_formular(self):
+        """Die Rolle, mit der SICH-01 ausgelöst wurde (`SCHREIB_ROLLEN`)."""
+        befunde, _ = self._lauf('Sachbearbeiter')
+        self.assertEqual(befunde, [], '\n'.join(str(b) for b in befunde[:10]))
+
+    def test_inhaber_json(self):
+        befunde, _ = self._lauf('Inhaber', als_json=True)
+        self.assertEqual(befunde, [], '\n'.join(str(b) for b in befunde[:10]))
+
+    def test_der_lauf_erreicht_die_bekannten_loecher(self):
+        """Der Lauf ruft die Routen des Audits tatsächlich auf.
+
+        Ohne diesen Test wäre ein Lauf grün, der sie wegen eines Pfadfehlers nie
+        angefasst hat — genau der Fehler, der die Löcher unsichtbar machte.
+        """
+        routen, _ = self.k.post_routen(self.a)
+        namen = {n for n, _ in routen}
+        for erwartet in ('fw_pendenz_neu', 'public_report', 'fw_abwesenheit_neu',
+                         'fw_benutzer_bearbeiten', 'fw_liegenschaft_bearbeiten'):
+            self.assertIn(erwartet, namen, f'{erwartet} fehlt im Lauf')
+
+    def test_der_nachweis_findet_ein_leck(self):
+        """Gegenprobe zur Messung: Ein echtes Leck MUSS gefunden werden.
+
+        Sonst bewiese ein grüner Lauf nur, dass die Messung nichts sieht. Der
+        Fehler wird hier von Hand erzeugt (Pendenz in B, Verweis von A auf eine
+        Einheit von B, Abwesenheit mit Benutzer von B) und muss genau die
+        erwarteten Befunde liefern.
+        """
+        from core.models import Pendenz
+        from core.tenancy import organisation_kontext
+        from faelle.termin_models import Abwesenheit
+        from tickets.models import SchadenMeldung
+
+        # 1. eine Zeile entsteht in B (die Organisation ausdrücklich gesetzt — am Netz vorbei)
+        with organisation_kontext(self.a.organisation):
+            leck = Pendenz(titel='LECK', liegenschaft=self.b.liegenschaft, organisation=self.b.organisation)
+            leck.save()
+        self.assertEqual(leck.organisation_id, self.b.organisation.pk)
+        arten = {b[0] for b in self.bestand.befunde({Pendenz._meta.db_table})}
+        self.assertIn('NEUE_ZEILE_IN_B', arten)
+
+        # 2. eine Zeile von A zeigt auf eine Einheit von B
+        with organisation_kontext(self.a.organisation):
+            SchadenMeldung.objects.create(
+                liegenschaft=self.a.liegenschaft, betroffene_einheit=self.b.einheit,
+                titel='LECK', beschreibung='x')
+        arten = {b[0] for b in self.bestand.befunde({SchadenMeldung._meta.db_table})}
+        self.assertIn('FK_UEBER_GRENZE', arten)
+
+        # 3. ein Benutzer ohne Mitgliedschaft in der Organisation der Zeile
+        with organisation_kontext(self.a.organisation):
+            Abwesenheit.objects.create(
+                organisation=self.a.organisation, benutzer=self.b.benutzer,
+                von='2026-12-01', bis='2026-12-02', grund=Abwesenheit.FERIEN)
+        arten = {b[0] for b in self.bestand.befunde({Abwesenheit._meta.db_table})}
+        self.assertIn('USER_OHNE_MITGLIEDSCHAFT', arten)
+
+    def test_das_netz_verhindert_die_zeile_in_b_auch_ohne_pruefung_in_der_ansicht(self):
+        """`OrganisationAusKette.save()` bricht ab, wenn die Kette aus dem Mandanten führt.
+
+        Das Netz unter SICH-01: Vergisst eine künftige Ansicht die Prüfung, entsteht
+        die Zeile nicht stillschweigend bei der Verwaltung der fremden Liegenschaft.
+        GEGENPROBE: `_pruefe_kette_gegen_kontext` in `save()` auskommentiert → rot.
+        """
+        from core.models import Pendenz
+        from core.tenancy import FremdeOrganisation, organisation_kontext
+        with organisation_kontext(self.a.organisation):
+            with self.assertRaises(FremdeOrganisation):
+                Pendenz.objects.create(titel='NETZ', liegenschaft=self.b.liegenschaft)
+            # Gegenprobe: die eigene Liegenschaft geht
+            Pendenz.objects.create(titel='EIGEN', liegenschaft=self.a.liegenschaft)
+        self.assertFalse(Pendenz.alle_organisationen.filter(titel='NETZ').exists())
+        self.assertTrue(Pendenz.alle_organisationen.filter(
+            titel='EIGEN', organisation=self.a.organisation).exists())
+
+    def test_ohne_kontext_gilt_das_netz_nicht(self):
+        """Management-Commands und Migrationen setzen die Organisation selbst."""
+        from core.models import Pendenz
+        p = Pendenz.alle_organisationen.create(titel='OHNE KONTEXT', liegenschaft=self.b.liegenschaft)
+        self.assertEqual(p.organisation_id, self.b.organisation.pk)
+
+    def test_die_fremde_liegenschaft_im_formular_legt_nichts_an(self):
+        """Der Einzelfall aus SICH-01, ohne Fuzz: sagt, was herauskommen MUSS."""
+        from core.models import Pendenz
+        for rolle in ('Inhaber', 'Verwalter', 'Sachbearbeiter'):
+            with self.subTest(rolle=rolle):
+                antwort = self.clients[rolle].post('/neu/pendenzen/neu/', {
+                    'titel': f'Bitte prüfen {rolle}', 'liegenschaft_id': self.b.liegenschaft.pk,
+                    'kategorie': 'frist', 'faellig_am': '2026-11-02'})
+                self.assertEqual(antwort.status_code, 302)
+                self.assertFalse(Pendenz.alle_organisationen.filter(
+                    titel=f'Bitte prüfen {rolle}').exists(),
+                    'Eine Pendenz mit fremder Liegenschaft wurde angelegt.')
+
+    def test_die_eigene_liegenschaft_im_formular_geht_weiterhin(self):
+        """Gegenprobe: Sonst wäre jeder Fix grün, der einfach alles ablehnt."""
+        from core.models import Pendenz
+        antwort = self.clients['Sachbearbeiter'].post('/neu/pendenzen/neu/', {
+            'titel': 'Eigene Frist', 'liegenschaft_id': self.a.liegenschaft.pk, 'kategorie': 'frist'})
+        self.assertEqual(antwort.status_code, 302)
+        p = Pendenz.alle_organisationen.get(titel='Eigene Frist')
+        self.assertEqual(p.organisation_id, self.a.organisation.pk)
+        self.assertEqual(p.liegenschaft_id, self.a.liegenschaft.pk)
+
+    def test_abwesenheit_nur_fuer_das_eigene_team(self):
+        from faelle.termin_models import Abwesenheit
+        antwort = self.clients['Sachbearbeiter'].post('/neu/abwesenheiten/neu/', {
+            'benutzer': self.b.benutzer.pk, 'von': '2026-11-01', 'bis': '2026-11-05', 'grund': 'ferien'})
+        self.assertEqual(antwort.status_code, 302)
+        self.assertFalse(Abwesenheit.alle_organisationen.filter(
+            benutzer=self.b.benutzer, von='2026-11-01').exists())
+        # Vertretung aus dem fremden Team
+        self.clients['Sachbearbeiter'].post('/neu/abwesenheiten/neu/', {
+            'von': '2026-11-01', 'bis': '2026-11-05', 'grund': 'ferien',
+            'vertreten_durch': self.b.benutzer.pk})
+        self.assertFalse(Abwesenheit.alle_organisationen.filter(vertreten_durch=self.b.benutzer).exists())
+        # Gegenprobe: die eigene Person geht
+        self.clients['Sachbearbeiter'].post('/neu/abwesenheiten/neu/', {
+            'benutzer': self.a.benutzer.pk, 'von': '2026-11-01', 'bis': '2026-11-05', 'grund': 'ferien'})
+        self.assertTrue(Abwesenheit.alle_organisationen.filter(
+            benutzer=self.a.benutzer, von='2026-11-01', organisation=self.a.organisation).exists())
+
+
+class ZweiPfadParameterTests(IsolationsBasis):
+    """Routen mit ZWEI Pfadparametern (SICH-27b): sieben fehlten in der Registry.
+
+    `generate_dokument`, `fw_kaution_beleg`, `stweg_pdf`, `stweg_zinsabrechnung_pdf`,
+    `stweg_inkasso_position_storno` und `handwerker_auftrag_foto` haben zwei
+    Parameter. Der Registrylauf kennt nur Routen mit einem; die zweiparametrigen
+    prüfte jemand einmal von Hand (`probe7.py`). Hier läuft jede mit
+    Kombinationen aus eigenem und fremdem Objekt.
+    """
+
+    def setUp(self):
+        super().setUp()
+        from . import _koerper_ids as k
+        self.k = k
+        self.bestand = k.Bestand(self.b.organisation)
+
+    def _zwei_parameter_routen(self):
+        gefunden = []
+        for name, eintrag in get_resolver().reverse_dict.items():
+            if not isinstance(name, str):
+                continue
+            for _pfad, params in eintrag[0]:
+                if len(params) == 2 and not (set(params) & {'uidb64', 'token'}):
+                    gefunden.append((name, list(params)))
+                break
+        return sorted(gefunden)
+
+    @staticmethod
+    def _wert_fuer(name, parameter):
+        # Die Textparameter bekommen einen Wert, den die Route kennt.
+        if parameter == 'doc_type':
+            return 'mietvertrag'
+        if parameter == 'art':
+            return 'zahlung' if 'kaution' in name else 'protokoll'
+        return 1
+
+    def _pfad(self, name, params, fixture_je_parameter):
+        args = []
+        for p, fx in zip(params, fixture_je_parameter):
+            if p in ('art', 'doc_type', 'nr'):
+                args.append(self._wert_fuer(name, p))
+            else:
+                args.append(fx.objekt_fuer(p, name).pk)
+        return reverse(name, args=args)
+
+    def test_es_gibt_routen_mit_zwei_parametern(self):
+        namen = {n for n, _ in self._zwei_parameter_routen()}
+        self.assertGreaterEqual(len(namen), 5)
+        for erwartet in ('generate_dokument', 'fw_kaution_beleg', 'stweg_pdf'):
+            self.assertIn(erwartet, namen)
+
+    def test_fremde_objekte_in_jeder_kombination(self):
+        durchlauf = 0
+        for name, params in self._zwei_parameter_routen():
+            if name in AUSNAHMEN:
+                continue
+            for kombi in ((self.b, self.b), (self.b, self.a), (self.a, self.b)):
+                try:
+                    pfad = self._pfad(name, params, kombi)
+                except (LookupError, NoReverseMatch):
+                    continue
+                durchlauf += 1
+                with self.subTest(url=name, kombination=[k.kuerzel for k in kombi]):
+                    for methode in ('get', 'post'):
+                        status, befunde, inhalt = self.k.sende_mit_inhalt(
+                            self.client, self.bestand, pfad, {}, methode=methode)
+                        self.assertLess(status, 500, f'{name} {methode.upper()} stürzt ab')
+                        verraten = [m for m in FremdeIdUeberUrlsTests.VERRAETERISCH if m in inhalt]
+                        self.assertEqual(verraten, [], f'{name} gibt Daten von B heraus')
+                        self.assertEqual(befunde, [], f'{name} {methode.upper()} greift auf B zu')
+        self.assertGreater(durchlauf, 10, 'auffällig wenige Kombinationen geprüft')

@@ -30,6 +30,7 @@ from django.views.decorators.http import require_POST
 
 from core.auth import rolle_erforderlich, SCHREIB_ROLLEN, TEAM_ROLLEN
 
+from core.utils.formularid import ganzzahl
 from ._basis import _global_filter, _num, team_der_organisation
 
 logger = logging.getLogger(__name__)
@@ -866,12 +867,25 @@ def fw_abwesenheit_neu(request):
 
     from faelle.termin_models import Abwesenheit
 
+    # BEIDE PERSONEN AUS DEM EIGENEN TEAM (SICH-01, Klasse «ID im Body»).
+    # `Benutzer` traegt keinen Mandantenfilter: Die rohe ID liess eine Person
+    # einer FREMDEN Verwaltung als abwesend bzw. als Vertretung eintragen.
+    team = team_der_organisation(getattr(request, 'organisation', None))
+    benutzer_roh = (request.POST.get('benutzer') or '').strip()
+    benutzer = request.user
+    if benutzer_roh:
+        benutzer = team.filter(pk=ganzzahl(benutzer_roh) or 0).first()
+    vertretung_roh = (request.POST.get('vertreten_durch') or '').strip()
+    vertretung = team.filter(pk=ganzzahl(vertretung_roh) or 0).first() if vertretung_roh else None
+    if benutzer is None or (vertretung_roh and vertretung is None):
+        messages.error(request, gettext('Diese Person gehört nicht zu Ihrer Verwaltung.'))
+        return redirect('/neu/abwesenheiten/')
     a = Abwesenheit(
-        benutzer_id=_num(request.POST.get('benutzer')) or request.user.id,
+        benutzer=benutzer,
         von=parse_date(request.POST.get('von') or ''),
         bis=parse_date(request.POST.get('bis') or ''),
         grund=request.POST.get('grund') or Abwesenheit.FERIEN,
-        vertreten_durch_id=_num(request.POST.get('vertreten_durch')) or None,
+        vertreten_durch=vertretung,
         notiz=(request.POST.get('notiz') or '').strip())
     if not a.von or not a.bis:
         messages.error(request, gettext('Von und Bis sind nötig.'))

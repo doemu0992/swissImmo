@@ -329,8 +329,11 @@ class PortfolioTests(_Basis):
         self.assertEqual(r.context['donut_mitte'][1], 'Objekte')
 
     def test_leeres_portfolio_zeigt_leerzustand(self):
-        from portfolio.models import Liegenschaft
-        Liegenschaft.objects.all().delete()
+        # Seit FUNK-03 hängen Verträge und Rechnungen per PROTECT an der Liegenschaft: Der
+        # Bestand wird in Abhängigkeitsreihenfolge geleert (wie beim Datenreset).
+        from core.services.datenreset import _leeren, betroffene_modelle
+        from core.tenancy import aktuelle_organisation
+        _leeren(betroffene_modelle(), aktuelle_organisation())
         self.assertContains(self.c.get('/neu/portfolio/'), 'Keine Liegenschaft im Portfolio')
 
     def test_eigentuemer_und_hauswart_haben_keinen_zugang(self):

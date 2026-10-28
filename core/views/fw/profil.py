@@ -166,7 +166,15 @@ def fw_account(request):
         # Liest die Rolle am Dekorator von fw_datenreset ab — Anzeige und
         # Sperre können damit nicht auseinanderlaufen.
         'kann_reset': darf_oeffnen(request.user, '/neu/datenreset/'),
+        # Der Reset verlangt bei aktivem zweitem Faktor zusätzlich den Code.
+        'reset_braucht_code': _hat_aktiven_zweiten_faktor(request.user),
     })
+
+
+def _hat_aktiven_zweiten_faktor(benutzer):
+    from core.models import ZweiterFaktor
+    faktor = ZweiterFaktor.objects.filter(benutzer=benutzer).first()
+    return bool(faktor and faktor.ist_aktiv)
 
 
 # Nur der Inhaber (seit 28.09.2026, vorher jeder Verwalter). Der Reset leert
@@ -174,16 +182,24 @@ def fw_account(request):
 # ist nach docs/PHASE-2-PLAN.md (Etappe 4.3) Inhaber-Sache.
 @rolle_erforderlich(*INHABER_ROLLEN)
 def fw_datenreset(request):
-    """GEFAHRENZONE: löscht ALLE operativen Daten (Liegenschaften, Objekte,
-    Verträge, Personen, Buchungen, Rechnungen, Schäden, Vorlagen, Mandate,
-    Verwaltungs-Stammdaten …) und startet mit einer leeren, frisch geseedeten
-    Datenbank. Benutzerkonten/Rollen bleiben erhalten (Login bleibt gültig).
-    Erfordert Bestätigungstext 'LÖSCHEN'."""
+    """GEFAHRENZONE: löscht ALLE Betriebsdaten dieser Verwaltung (Liegenschaften,
+    Objekte, Verträge, Personen, Buchungen, Rechnungen, Schäden, Fälle, STWEG,
+    Vorlagen, Mandate …) und startet mit frischen Grunddaten. Benutzerkonten,
+    Rollen und das Audit-Log bleiben.
+
+    Voraussetzungen (SICH-03, Audit 28.10.2026), in dieser Reihenfolge:
+      1. Bestätigungswort «LÖSCHEN»,
+      2. erneute Anmeldung: Passwort — und bei aktivem zweitem Faktor ein Code,
+      3. eine GELUNGENE Sicherung (`manage.py sicherung`): ohne sie wird nichts
+         gelöscht.
+    Das Löschen selbst läuft in EINER Transaktion (`core/services/datenreset.py`):
+    Bei jedem Fehler bleibt alles, wie es war."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from django.db import connection
-    from django.apps import apps
     from core.auth import log_aktion
+    from core.models import ZweiterFaktor
+    from core.services import datenreset
+    from core.utils.throttle import client_ip, rate_limit
 
     if request.method != 'POST':
         return redirect('/neu/account/')
@@ -191,90 +207,50 @@ def fw_datenreset(request):
         messages.error(request, gettext('Zum Zurücksetzen bitte «LÖSCHEN» eingeben.'))
         return redirect('/neu/account/#gefahrenzone')
 
-    # Eigene App-Daten (Framework/Benutzer bleiben erhalten)
-    OWN_APPS = {'core', 'crm', 'finance', 'mietprozess', 'portfolio', 'rentals', 'tickets'}
-    # Auth-Tabellen NIE anfassen (Login/Rollen bleiben), auch wenn ein Modell
-    # im 'core'-App-Label darauf zeigen sollte.
-    # Zwei Tabellen kamen mit Etappe 4 dazu, beide im App-Label 'crm' und
-    # deshalb ohne diesen Eintrag mitgeloescht:
-    #
-    # `crm_mitgliedschaft` traegt seit 4.3 die Rolle. Ohne sie haette nach dem
-    # Reset KEIN Benutzer mehr eine Rolle, und jede View antwortete mit 403 —
-    # gefunden von test_reset_behaelt_benutzer.
-    #
-    # `core_verwaltung` ist die Organisation. Sie IST der Mandant, nicht
-    # dessen Daten: Firmenname, IBAN, Logo, Referenzzins, MWST-Einstellungen.
-    # Sie zu loeschen und die Mitgliedschaft zu behalten hinterliess einen
-    # Fremdschluessel ins Leere (IntegrityError). Und fachlich ist «meine
-    # Daten zuruecksetzen» nicht «meine Firma abmelden».
-    KEEP = {'auth_user', 'auth_group', 'auth_user_groups', 'auth_group_permissions',
-            'auth_permission', 'auth_user_user_permissions', 'django_admin_log',
-            'django_content_type', 'django_session', 'django_migrations',
-            'crm_mitgliedschaft', 'core_verwaltung',
-            # Das Betreiberlog (Anmeldeversuche ohne bestimmbare Verwaltung)
-            # sind Betriebsdaten der Installation, nicht Daten dieser
-            # Verwaltung. «Meine Daten zuruecksetzen» loescht sie nicht.
-            'core_sicherheitsereignis'}
-    # Nur Tabellen, die es wirklich gibt. Ein `DELETE FROM` auf eine fehlende
-    # Tabelle bricht den GANZEN Reset ab — der Nutzer sieht einen Serverfehler
-    # und weiss nicht, ob halb gelöscht wurde. Ein Modell ohne Tabelle ist
-    # nicht erfunden: eine nicht angewandte Migration reicht, und im Testlauf
-    # stehen die Modelle aus `test_tenant_manager.py` in der Registry.
-    vorhanden = set(connection.introspection.table_names())
-    tabellen = sorted({m._meta.db_table for m in apps.get_models()
-                       if m._meta.app_label in OWN_APPS and m._meta.db_table not in KEEP
-                       and m._meta.db_table in vorhanden})
+    # --- 2. Erneute Anmeldung ---------------------------------------------
+    # Eine gekaperte Sitzung oder ein unbeaufsichtigter Bildschirm genügten bisher
+    # für den Totalverlust. Der Versuchszähler verhindert, dass dieser Weg zum
+    # Passwort-Orakel wird.
+    if not rate_limit(f'datenreset:{request.user.pk}:{client_ip(request)}', limit=5, window_seconds=900):
+        messages.error(request, gettext('Zu viele Versuche. Bitte in einer Viertelstunde erneut versuchen.'))
+        return redirect('/neu/account/#gefahrenzone')
+    if not request.user.check_password(request.POST.get('passwort') or ''):
+        log_aktion(request, "Datenreset abgelehnt", "Passwort falsch")
+        messages.error(request, gettext('Das Passwort stimmt nicht — nichts wurde gelöscht.'))
+        return redirect('/neu/account/#gefahrenzone')
+    faktor = ZweiterFaktor.objects.filter(benutzer=request.user).first()
+    if faktor is not None and faktor.ist_aktiv:
+        from core.views.zweifaktor import _notfallcode_einloesen
+        eingabe = (request.POST.get('code') or '').strip()
+        if not (faktor.pruefen(eingabe) or _notfallcode_einloesen(request.user, eingabe)):
+            log_aktion(request, "Datenreset abgelehnt", "Zweiter Faktor falsch")
+            messages.error(request, gettext('Der Code für die Zwei-Faktor-Anmeldung stimmt nicht — nichts wurde gelöscht.'))
+            return redirect('/neu/account/#gefahrenzone')
 
-    # NUR DER EIGENE BESTAND. Bis zum Audit vom 18.08.2026 stand hier ein
-    # `DELETE FROM "<tabelle>"` je Tabelle — ohne jede Einschränkung auf die
-    # Organisation. Ein Verwalter (kein Superuser nötig, ein Bestätigungswort)
-    # löschte damit die Liegenschaften, Mieter, Verträge, Buchungen und Belege
-    # JEDER Verwaltung auf dieser Installation. Gemessen: A(12 LG/49 Mieter)
-    # und B(1/1) → beide auf (0/0). Nicht wiederherstellbar ausser aus der
-    # Sicherung, und für B ohne jeden Hinweis: Mitgliedschaft und
-    # Verwaltungsdaten blieben stehen, die Anwendung war einfach leer.
-    #
-    # Gelöscht wird darum über die MODELLE, nicht über die Tabelle: Im
-    # gesetzten Kontext schränkt der `TenantManager` bereits ein, und was
-    # keinen Bezug hat (`Benutzer`, `Organisation`), steht ohnehin in KEEP.
-    # `constraint_checks_disabled` bleibt, damit die Reihenfolge der
-    # Fremdschlüssel keine Rolle spielt.
+    # --- 3. Sicherung -------------------------------------------------------
+    try:
+        datenreset.sicherung_erstellen()
+    except datenreset.ResetFehler as fehler:
+        log_aktion(request, "Datenreset abgelehnt", "Sicherung fehlgeschlagen", str(fehler)[:300])
+        messages.error(request, gettext(
+            'Die Sicherung vor dem Zurücksetzen ist fehlgeschlagen — es wurde nichts gelöscht. (%(grund)s)')
+            % {'grund': fehler})
+        return redirect('/neu/account/#gefahrenzone')
+
+    # --- 4. Löschen: alles oder nichts --------------------------------------
     organisation = organisation_der_anfrage(request)
-    modelle = [m for m in apps.get_models()
-               if m._meta.app_label in OWN_APPS and m._meta.db_table not in KEEP
-               and m._meta.db_table in vorhanden]
-    with connection.constraint_checks_disabled():
-        for modell in modelle:
-            manager = getattr(modell, 'objects', None)
-            if getattr(type(manager), 'filtert', True) is False or manager is None:
-                # Modell ohne Mandantenfilter: nicht anfassen. Es gehört
-                # entweder allen (Systemvorlagen) oder niemandem.
-                continue
-            try:
-                zeilen = modell.objects.all()
-                if hasattr(zeilen, 'ausnahme_loeschen'):
-                    # Buchungen sind am QuerySet unlöschbar (FIN-15). Der Datenreset
-                    # ist die benannte Ausnahme — mit Begründung im Log.
-                    zeilen.ausnahme_loeschen('Datenreset durch den Inhaber (fw_datenreset)')
-                else:
-                    zeilen.delete()
-            except Exception:
-                logger.warning('Datenreset: %s konnte nicht geleert werden',
-                               modell._meta.label, exc_info=True)
-
-    # Referenz-/Stammdaten frisch aufsetzen
-    from finance.booking import ensure_kontenplan
-    from core.services.raumkatalog import seed_lebensdauer
     try:
-        ensure_kontenplan()
-    except Exception:
-        logger.debug("Fehler bewusst übergangen", exc_info=True)
-    try:
-        seed_lebensdauer()
-    except Exception:
-        logger.debug("Fehler bewusst übergangen", exc_info=True)
+        with transaction.atomic():
+            anzahl = datenreset.setze_zurueck(organisation)
+    except Exception as fehler:                            # noqa: BLE001
+        logger.exception('Datenreset zurückgerollt')
+        log_aktion(request, "Datenreset fehlgeschlagen", "zurückgerollt", str(fehler)[:300])
+        messages.error(request, gettext(
+            'Das Zurücksetzen ist fehlgeschlagen und wurde zurückgerollt — es wurde nichts gelöscht. (%(grund)s)')
+            % {'grund': fehler})
+        return redirect('/neu/account/#gefahrenzone')
 
-    log_aktion(request, "Datenbank zurückgesetzt", f"{len(modelle)} Modelle geleert")
+    log_aktion(request, "Datenbank zurückgesetzt", f"{anzahl} Modelle geleert")
     messages.success(request, '✅ ' + gettext('Alle Daten wurden gelöscht — du startest mit einer leeren Datenbank.'))
     return redirect('/neu/')
 
@@ -355,9 +331,18 @@ def fw_benutzer(request):
     # Kein Registrylauf fand das, weil diese URL keinen ID-Parameter hat und
     # damit durch das Raster der Bauform A fiel (gemessen 17.08.2026).
     organisation = getattr(request, 'organisation', None)
+    from django.db.models import Prefetch
+
+    from crm.models import Mitgliedschaft
     users = (User.objects.filter(is_active=True, mitgliedschaften__organisation=organisation)
              .select_related('mieter_profil', 'eigentuemer_profil')
-             .prefetch_related('groups').order_by('username').distinct())
+             .prefetch_related('groups',
+                               # Die Rolle in DIESER Verwaltung steht in der Mitgliedschaft; die Gruppe
+                               # ist global und stimmt bei einem gemeinsamen Konto (SICH-02) nicht.
+                               Prefetch('mitgliedschaften',
+                                        queryset=Mitgliedschaft.alle_organisationen.filter(organisation=organisation),
+                                        to_attr='_rolle_hier'))
+             .order_by('username').distinct())
     rows = []
     for u in users:
         # Reine Portal-Zugänge ausblenden (Mieter- oder Eigentümer-Portal)
@@ -370,7 +355,8 @@ def fw_benutzer(request):
         rollen = [g.name for g in u.groups.all()]
         if ROLLE_EIGENTUEMER in rollen and len(rollen) == 1:
             continue  # reiner Eigentümer (per Rolle) — auch ausblenden
-        rows.append({'u': u, 'rolle': ', '.join(rollen) or ('Superuser' if u.is_superuser else '—'),
+        meine_rolle = u._rolle_hier[0].rolle if getattr(u, '_rolle_hier', None) else ''
+        rows.append({'u': u, 'rolle': meine_rolle or ', '.join(rollen) or ('Superuser' if u.is_superuser else '—'),
                      'name': (u.get_full_name() or u.username)})
     return render(request, 'fw/benutzer.html', {**basis, 'nav': 'benutzer', 'rows': rows})
 

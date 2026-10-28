@@ -235,7 +235,10 @@ class RentabilitaetMandantengrenzeTest(TestCase):
 
         `Zeiteintrag.ORGANISATION_PFAD = 'fall'`: Die Organisation wird beim
         Speichern AUS DEM FALL abgeleitet, nicht aus dem Kontext. Ein im
-        Kontext B angelegter Eintrag an einem Fall aus A trägt A.
+        Kontext B angelegter Eintrag an einem Fall aus A trüge A — bis zum
+        28.10.2026 (SICH-01). Seither verweigert `OrganisationAusKette.save()`
+        genau diesen Fall mit `FremdeOrganisation`; ohne Kontext (Systemlauf)
+        gilt weiterhin die Kette.
 
         Ein Zeiteintrag gehört dorthin, wo sein Fall hingehört — nicht dorthin,
         wo jemand ihn gerade anlegt. Das ist keine Prüfung, die man umgehen
@@ -255,11 +258,19 @@ class RentabilitaetMandantengrenzeTest(TestCase):
                 akte_typ=ContentType.objects.get_for_model(Eigentuemer),
                 akte_id=md.id).first()
 
-        # Im FREMDEN Kontext angelegt — trägt trotzdem die Organisation des Falls.
+        # Im FREMDEN Kontext angelegt: seit dem Netz unter SICH-01 (28.10.2026) bricht das
+        # Speichern ab, statt die Zeile still bei der Verwaltung des Falls anzulegen.
+        from core.tenancy import FremdeOrganisation, ohne_organisation
         with mandant(self.b.organisation):
-            eintrag = Zeiteintrag.objects.create(
-                fall=fall, benutzer=self.b.benutzer,
-                minuten=999, taetigkeit='sonder')
+            with self.assertRaises(FremdeOrganisation):
+                Zeiteintrag.objects.create(
+                    fall=fall, benutzer=self.b.benutzer,
+                    minuten=999, taetigkeit='sonder')
+
+        # Ohne Kontext (Systemlauf) bindet die Kette weiterhin an die Organisation des Falls.
+        with ohne_organisation():
+            eintrag = Zeiteintrag.alle_organisationen.create(
+                fall=fall, benutzer=self.a.benutzer, minuten=999, taetigkeit='sonder')
 
         self.assertEqual(
             eintrag.organisation_id, fall.organisation_id,

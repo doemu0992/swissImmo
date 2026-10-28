@@ -34318,3 +34318,212 @@ msgstr "Localité manquante — sinon l'adresse est incomplète."
 
 msgid "Der Ort fehlt."
 msgstr "La localité manque."
+
+msgid "Diese Liegenschaft gibt es nicht."
+msgstr "Cet immeuble n’existe pas."
+
+#, python-format
+msgid "Titel ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "Le titre est trop long (%(n)s caractères au maximum)."
+
+msgid ""
+"Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail"
+" und Name kann nur die Person selbst ändern — gespeichert wurde nur die "
+"Rolle in deiner Verwaltung."
+msgstr ""
+"Ce compte est aussi utilisé dans une autre gérance. Seule la personne elle-"
+"même peut modifier le mot de passe, l’e-mail et le nom — seul le rôle dans "
+"ta gérance a été enregistré."
+
+msgid ""
+"Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail"
+" und Name kann nur die Person selbst ändern. Du kannst hier die Rolle in "
+"deiner Verwaltung festlegen oder die Mitgliedschaft beenden."
+msgstr ""
+"Ce compte est aussi utilisé dans une autre gérance. Seule la personne elle-"
+"même peut modifier le mot de passe, l’e-mail et le nom. Ici, tu peux définir"
+" le rôle dans ta gérance ou mettre fin à l’appartenance."
+
+msgid "Mitgliedschaft in meiner Verwaltung beenden"
+msgstr "Mettre fin à l’appartenance à ma gérance"
+
+msgid "(das Konto bleibt für die andere Verwaltung bestehen)"
+msgstr "(le compte reste disponible pour l’autre gérance)"
+
+msgid "Kündigungen"
+msgstr "Résiliations"
+
+msgid "Abnahmeprotokolle"
+msgstr "Procès-verbaux de remise"
+
+msgid "Zahlungsvereinbarungen"
+msgstr "Conventions de paiement"
+
+msgid "Kreditorenrechnungen"
+msgstr "Factures fournisseurs"
+
+msgid "Buchungen"
+msgstr "Écritures comptables"
+
+msgid "Bankbewegungen"
+msgstr "Mouvements bancaires"
+
+msgid "Nebenkostenabrechnungen"
+msgstr "Décomptes de charges"
+
+msgid "Jahresabschlüsse"
+msgstr "Bouclements annuels"
+
+msgid "Anlagen"
+msgstr "Immobilisations"
+
+msgid "Dokumente zu Verträgen und Personen"
+msgstr "Documents relatifs aux baux et aux personnes"
+
+msgid "Schadenmeldungen"
+msgstr "Annonces de dommages"
+
+msgid "STWEG-Abrechnungen"
+msgstr "Décomptes PPE"
+
+msgid "STWEG-Budgets"
+msgstr "Budgets PPE"
+
+msgid "STWEG-Dokumente"
+msgstr "Documents PPE"
+
+msgid "Versammlungen und Beschlüsse"
+msgstr "Assemblées et décisions"
+
+msgid "Stockwerkeinheiten"
+msgstr "Unités d’étage"
+
+msgid ""
+"Beende die Verträge; auf Wunsch der Person kannst du ihre Daten über die "
+"Datenschutz-Löschung (Anonymisierung) unkenntlich machen."
+msgstr ""
+"Mets fin aux baux ; à la demande de la personne, tu peux rendre ses données "
+"méconnaissables via la suppression au titre de la protection des données "
+"(anonymisation)."
+
+msgid "Setze den Vertrag stattdessen auf «Inaktiv / Archiviert»."
+msgstr "Place plutôt le bail sur « Inactif / Archivé »."
+
+msgid "Setze die Liegenschaft stattdessen auf den Status «Archiviert»."
+msgstr "Place plutôt l’immeuble au statut « Archivé »."
+
+msgid "Beende die Verträge; das Objekt bleibt mit seiner Geschichte bestehen."
+msgstr "Mets fin aux baux ; l’objet reste avec son historique."
+
+msgid "Das Mandat bleibt bestehen; ein Archiv für Mandate folgt."
+msgstr "Le mandat est conservé ; une archive pour les mandats suivra."
+
+#, python-format
+msgid ""
+"«%(name)s» kann nicht gelöscht werden: Es hängen noch Daten daran (%(was)s)."
+" Geschäftsunterlagen sind zehn Jahre aufzubewahren (Art. 958f OR). %(weg)s"
+msgstr ""
+"« %(name)s » ne peut pas être supprimé : des données y sont encore "
+"rattachées (%(was)s). Les documents commerciaux doivent être conservés dix "
+"ans (art. 958f CO). %(weg)s"
+
+msgid "Zu viele Versuche. Bitte in einer Viertelstunde erneut versuchen."
+msgstr "Trop de tentatives. Réessaie dans un quart d’heure."
+
+msgid "Das Passwort stimmt nicht — nichts wurde gelöscht."
+msgstr "Le mot de passe est incorrect — rien n’a été supprimé."
+
+msgid ""
+"Der Code für die Zwei-Faktor-Anmeldung stimmt nicht — nichts wurde gelöscht."
+msgstr ""
+"Le code de l’authentification à deux facteurs est incorrect — rien n’a été "
+"supprimé."
+
+#, python-format
+msgid ""
+"Die Sicherung vor dem Zurücksetzen ist fehlgeschlagen — es wurde nichts "
+"gelöscht. (%(grund)s)"
+msgstr ""
+"La sauvegarde avant la réinitialisation a échoué — rien n’a été supprimé. "
+"(%(grund)s)"
+
+#, python-format
+msgid ""
+"Das Zurücksetzen ist fehlgeschlagen und wurde zurückgerollt — es wurde "
+"nichts gelöscht. (%(grund)s)"
+msgstr ""
+"La réinitialisation a échoué et a été annulée — rien n’a été supprimé. "
+"(%(grund)s)"
+
+msgid "Dein Passwort"
+msgstr "Ton mot de passe"
+
+msgid "Code der Zwei-Faktor-Anmeldung"
+msgstr "Code de l’authentification à deux facteurs"
+
+msgid ""
+"Vorher wird automatisch eine Sicherung der Datenbank erstellt; schlägt sie "
+"fehl, wird nichts gelöscht. Das Audit-Log bleibt erhalten."
+msgstr ""
+"Une sauvegarde de la base de données est créée automatiquement au préalable "
+"; si elle échoue, rien n’est supprimé. Le journal d’audit est conservé."
+
+#, python-format
+msgid "Bitte füllen Sie das Feld «%(feld)s» aus."
+msgstr "Veuillez remplir le champ « %(feld)s »."
+
+#, python-format
+msgid "«%(feld)s» ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "« %(feld)s » est trop long (%(n)s caractères au maximum)."
+
+msgid "Anliegen"
+msgstr "Demande"
+
+msgid "Bitte geben Sie eine gültige E-Mail-Adresse an."
+msgstr "Veuillez indiquer une adresse e-mail valide."
+
+msgid "Die gewählte Einheit gibt es in dieser Liegenschaft nicht."
+msgstr "L’unité choisie n’existe pas dans cet immeuble."
+
+msgid ""
+"Das Foto konnte nicht verwendet werden. Bitte wählen Sie ein Bild (JPEG, "
+"PNG, WebP oder HEIC) bis 15 MB."
+msgstr ""
+"La photo n’a pas pu être utilisée. Veuillez choisir une image (JPEG, PNG, "
+"WebP ou HEIC) de 15 Mo au maximum."
+
+msgid "Zu viele Meldungen in kurzer Zeit. Bitte später erneut versuchen."
+msgstr "Trop d’annonces en peu de temps. Veuillez réessayer plus tard."
+
+msgid "Ihre Meldung wurde noch nicht gesendet."
+msgstr "Votre annonce n’a pas encore été envoyée."
+
+#, python-format
+msgid ""
+"Liegenschaft %(s)s inkl. aller Objekte wirklich löschen? Hängen Verträge, "
+"Rechnungen, Abrechnungen oder Dokumente daran, wird das Löschen abgelehnt. "
+"Dies kann nicht rückgängig gemacht werden."
+msgstr ""
+"Supprimer l’immeuble %(s)s, objets compris ? Si des baux, factures, "
+"décomptes ou documents y sont rattachés, la suppression est refusée. Cette "
+"action est irréversible."
+
+#, python-format
+msgid ""
+"Person „%(name)s“ wirklich löschen? Hängen Verträge, Rechnungen oder "
+"Dokumente an ihr, wird das Löschen abgelehnt. Journal und Adressen werden "
+"mitgelöscht."
+msgstr ""
+"Supprimer vraiment la personne « %(name)s » ? Si des baux, factures ou "
+"documents y sont rattachés, la suppression est refusée. Le journal et les "
+"adresses sont supprimés avec elle."
+
+#, python-format
+msgid ""
+"Diesen Vertrag wirklich löschen?\n"
+"\n"
+"Er hat %(r)s Rechnung(en) und %(z)s Zahlung(en) und kann deshalb nicht gelöscht werden. Setze ihn stattdessen auf «Inaktiv / Archiviert»."
+msgstr ""
+"Supprimer vraiment ce bail ?\n"
+"\n"
+"Il compte %(r)s facture(s) et %(z)s paiement(s) et ne peut donc pas être supprimé. Place-le plutôt sur « Inactif / Archivé »."

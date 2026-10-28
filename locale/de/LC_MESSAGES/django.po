@@ -33363,3 +33363,210 @@ msgstr ""
 
 msgid "Zurzeit ist nichts auszahlbar."
 msgstr "Zurzeit ist nichts auszahlbar."
+
+msgid "Diese Liegenschaft gibt es nicht."
+msgstr "Diese Liegenschaft gibt es nicht."
+
+#, python-format
+msgid "Titel ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "Titel ist zu lang (höchstens %(n)s Zeichen)."
+
+msgid ""
+"Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail"
+" und Name kann nur die Person selbst ändern — gespeichert wurde nur die "
+"Rolle in deiner Verwaltung."
+msgstr ""
+"Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail"
+" und Name kann nur die Person selbst ändern — gespeichert wurde nur die "
+"Rolle in deiner Verwaltung."
+
+msgid ""
+"Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail"
+" und Name kann nur die Person selbst ändern. Du kannst hier die Rolle in "
+"deiner Verwaltung festlegen oder die Mitgliedschaft beenden."
+msgstr ""
+"Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail"
+" und Name kann nur die Person selbst ändern. Du kannst hier die Rolle in "
+"deiner Verwaltung festlegen oder die Mitgliedschaft beenden."
+
+msgid "Mitgliedschaft in meiner Verwaltung beenden"
+msgstr "Mitgliedschaft in meiner Verwaltung beenden"
+
+msgid "(das Konto bleibt für die andere Verwaltung bestehen)"
+msgstr "(das Konto bleibt für die andere Verwaltung bestehen)"
+
+msgid "Kündigungen"
+msgstr "Kündigungen"
+
+msgid "Abnahmeprotokolle"
+msgstr "Abnahmeprotokolle"
+
+msgid "Zahlungsvereinbarungen"
+msgstr "Zahlungsvereinbarungen"
+
+msgid "Kreditorenrechnungen"
+msgstr "Kreditorenrechnungen"
+
+msgid "Buchungen"
+msgstr "Buchungen"
+
+msgid "Bankbewegungen"
+msgstr "Bankbewegungen"
+
+msgid "Nebenkostenabrechnungen"
+msgstr "Nebenkostenabrechnungen"
+
+msgid "Jahresabschlüsse"
+msgstr "Jahresabschlüsse"
+
+msgid "Anlagen"
+msgstr "Anlagen"
+
+msgid "Dokumente zu Verträgen und Personen"
+msgstr "Dokumente zu Verträgen und Personen"
+
+msgid "Schadenmeldungen"
+msgstr "Schadenmeldungen"
+
+msgid "STWEG-Abrechnungen"
+msgstr "STWEG-Abrechnungen"
+
+msgid "STWEG-Budgets"
+msgstr "STWEG-Budgets"
+
+msgid "STWEG-Dokumente"
+msgstr "STWEG-Dokumente"
+
+msgid "Versammlungen und Beschlüsse"
+msgstr "Versammlungen und Beschlüsse"
+
+msgid "Stockwerkeinheiten"
+msgstr "Stockwerkeinheiten"
+
+msgid ""
+"Beende die Verträge; auf Wunsch der Person kannst du ihre Daten über die "
+"Datenschutz-Löschung (Anonymisierung) unkenntlich machen."
+msgstr ""
+"Beende die Verträge; auf Wunsch der Person kannst du ihre Daten über die "
+"Datenschutz-Löschung (Anonymisierung) unkenntlich machen."
+
+msgid "Setze den Vertrag stattdessen auf «Inaktiv / Archiviert»."
+msgstr "Setze den Vertrag stattdessen auf «Inaktiv / Archiviert»."
+
+msgid "Setze die Liegenschaft stattdessen auf den Status «Archiviert»."
+msgstr "Setze die Liegenschaft stattdessen auf den Status «Archiviert»."
+
+msgid "Beende die Verträge; das Objekt bleibt mit seiner Geschichte bestehen."
+msgstr ""
+"Beende die Verträge; das Objekt bleibt mit seiner Geschichte bestehen."
+
+msgid "Das Mandat bleibt bestehen; ein Archiv für Mandate folgt."
+msgstr "Das Mandat bleibt bestehen; ein Archiv für Mandate folgt."
+
+#, python-format
+msgid ""
+"«%(name)s» kann nicht gelöscht werden: Es hängen noch Daten daran (%(was)s)."
+" Geschäftsunterlagen sind zehn Jahre aufzubewahren (Art. 958f OR). %(weg)s"
+msgstr ""
+"«%(name)s» kann nicht gelöscht werden: Es hängen noch Daten daran (%(was)s)."
+" Geschäftsunterlagen sind zehn Jahre aufzubewahren (Art. 958f OR). %(weg)s"
+
+msgid "Zu viele Versuche. Bitte in einer Viertelstunde erneut versuchen."
+msgstr "Zu viele Versuche. Bitte in einer Viertelstunde erneut versuchen."
+
+msgid "Das Passwort stimmt nicht — nichts wurde gelöscht."
+msgstr "Das Passwort stimmt nicht — nichts wurde gelöscht."
+
+msgid ""
+"Der Code für die Zwei-Faktor-Anmeldung stimmt nicht — nichts wurde gelöscht."
+msgstr ""
+"Der Code für die Zwei-Faktor-Anmeldung stimmt nicht — nichts wurde gelöscht."
+
+#, python-format
+msgid ""
+"Die Sicherung vor dem Zurücksetzen ist fehlgeschlagen — es wurde nichts "
+"gelöscht. (%(grund)s)"
+msgstr ""
+"Die Sicherung vor dem Zurücksetzen ist fehlgeschlagen — es wurde nichts "
+"gelöscht. (%(grund)s)"
+
+#, python-format
+msgid ""
+"Das Zurücksetzen ist fehlgeschlagen und wurde zurückgerollt — es wurde "
+"nichts gelöscht. (%(grund)s)"
+msgstr ""
+"Das Zurücksetzen ist fehlgeschlagen und wurde zurückgerollt — es wurde "
+"nichts gelöscht. (%(grund)s)"
+
+msgid "Dein Passwort"
+msgstr "Dein Passwort"
+
+msgid "Code der Zwei-Faktor-Anmeldung"
+msgstr "Code der Zwei-Faktor-Anmeldung"
+
+msgid ""
+"Vorher wird automatisch eine Sicherung der Datenbank erstellt; schlägt sie "
+"fehl, wird nichts gelöscht. Das Audit-Log bleibt erhalten."
+msgstr ""
+"Vorher wird automatisch eine Sicherung der Datenbank erstellt; schlägt sie "
+"fehl, wird nichts gelöscht. Das Audit-Log bleibt erhalten."
+
+#, python-format
+msgid "Bitte füllen Sie das Feld «%(feld)s» aus."
+msgstr "Bitte füllen Sie das Feld «%(feld)s» aus."
+
+#, python-format
+msgid "«%(feld)s» ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "«%(feld)s» ist zu lang (höchstens %(n)s Zeichen)."
+
+msgid "Anliegen"
+msgstr "Anliegen"
+
+msgid "Bitte geben Sie eine gültige E-Mail-Adresse an."
+msgstr "Bitte geben Sie eine gültige E-Mail-Adresse an."
+
+msgid "Die gewählte Einheit gibt es in dieser Liegenschaft nicht."
+msgstr "Die gewählte Einheit gibt es in dieser Liegenschaft nicht."
+
+msgid ""
+"Das Foto konnte nicht verwendet werden. Bitte wählen Sie ein Bild (JPEG, "
+"PNG, WebP oder HEIC) bis 15 MB."
+msgstr ""
+"Das Foto konnte nicht verwendet werden. Bitte wählen Sie ein Bild (JPEG, "
+"PNG, WebP oder HEIC) bis 15 MB."
+
+msgid "Zu viele Meldungen in kurzer Zeit. Bitte später erneut versuchen."
+msgstr "Zu viele Meldungen in kurzer Zeit. Bitte später erneut versuchen."
+
+msgid "Ihre Meldung wurde noch nicht gesendet."
+msgstr "Ihre Meldung wurde noch nicht gesendet."
+
+#, python-format
+msgid ""
+"Liegenschaft %(s)s inkl. aller Objekte wirklich löschen? Hängen Verträge, "
+"Rechnungen, Abrechnungen oder Dokumente daran, wird das Löschen abgelehnt. "
+"Dies kann nicht rückgängig gemacht werden."
+msgstr ""
+"Liegenschaft %(s)s inkl. aller Objekte wirklich löschen? Hängen Verträge, "
+"Rechnungen, Abrechnungen oder Dokumente daran, wird das Löschen abgelehnt. "
+"Dies kann nicht rückgängig gemacht werden."
+
+#, python-format
+msgid ""
+"Person „%(name)s“ wirklich löschen? Hängen Verträge, Rechnungen oder "
+"Dokumente an ihr, wird das Löschen abgelehnt. Journal und Adressen werden "
+"mitgelöscht."
+msgstr ""
+"Person „%(name)s“ wirklich löschen? Hängen Verträge, Rechnungen oder "
+"Dokumente an ihr, wird das Löschen abgelehnt. Journal und Adressen werden "
+"mitgelöscht."
+
+#, python-format
+msgid ""
+"Diesen Vertrag wirklich löschen?\n"
+"\n"
+"Er hat %(r)s Rechnung(en) und %(z)s Zahlung(en) und kann deshalb nicht gelöscht werden. Setze ihn stattdessen auf «Inaktiv / Archiviert»."
+msgstr ""
+"Diesen Vertrag wirklich löschen?\n"
+"\n"
+"Er hat %(r)s Rechnung(en) und %(z)s Zahlung(en) und kann deshalb nicht gelöscht werden. Setze ihn stattdessen auf «Inaktiv / Archiviert»."

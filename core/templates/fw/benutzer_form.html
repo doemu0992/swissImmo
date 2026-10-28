@@ -20,17 +20,20 @@
     <div class="fw-card">
     <div class="fw-kopf"><span class="fw-t">{% trans "Benutzer" %}</span></div>
     <div class="fw-formular p-5">
+        {% if nur_mitgliedschaft %}
+        <div class="fw-feldblock breit"><div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">{% trans "Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail und Name kann nur die Person selbst ändern. Du kannst hier die Rolle in deiner Verwaltung festlegen oder die Mitgliedschaft beenden." %}</div></div></div>
+        {% endif %}
         <div class="fw-feldblock breit"><label for="bf-username" class="fw-label">{% trans "Benutzername *" %}</label>
             {% if ist_neu %}<input id="bf-username" name="username" required class="fw-feld">
             {% else %}<input id="bf-username" value="{{ ziel.username }}" disabled class="fw-feld">{% endif %}</div>
             <div class="fw-feldblock"><label for="bf-first" class="fw-label">{% trans "Vorname" %}</label>
-                <input id="bf-first" name="first_name" value="{{ ziel.first_name }}" class="fw-feld"></div>
+                <input id="bf-first" name="first_name" value="{{ ziel.first_name }}" {% if nur_mitgliedschaft %}disabled{% endif %} class="fw-feld"></div>
             <div class="fw-feldblock"><label for="bf-last" class="fw-label">{% trans "Nachname" %}</label>
-                <input id="bf-last" name="last_name" value="{{ ziel.last_name }}" class="fw-feld"></div>
+                <input id="bf-last" name="last_name" value="{{ ziel.last_name }}" {% if nur_mitgliedschaft %}disabled{% endif %} class="fw-feld"></div>
         <div class="fw-feldblock"><label for="bf-email" class="fw-label">{% trans "E-Mail" %}</label>
-            <input id="bf-email" type="email" name="email" value="{{ ziel.email }}" class="fw-feld"></div>
+            <input id="bf-email" type="email" name="email" value="{{ ziel.email }}" {% if nur_mitgliedschaft %}disabled{% endif %} class="fw-feld"></div>
         <div class="fw-feldblock"><label for="bf-pw" class="fw-label">{% trans "Passwort" %} {% if not ist_neu %}<span class="fw-faint">{% trans "(leer lassen = unverändert)" %}</span>{% else %}*{% endif %}</label>
-            <input id="bf-pw" type="text" name="passwort" {% if ist_neu %}required{% endif %} autocomplete="new-password" class="fw-feld"></div>
+            <input id="bf-pw" type="text" name="passwort" {% if ist_neu %}required{% endif %} {% if nur_mitgliedschaft %}disabled{% endif %} autocomplete="new-password" class="fw-feld"></div>
     </div>
     </div>
 
@@ -54,10 +57,17 @@
             <p class="fw-hilfe">{% trans "Nur für die Rolle Hauswart: Er sieht und bearbeitet die Schadensmeldungen ausschliesslich dieser Liegenschaften. Ohne Auswahl sieht er nichts." %}</p></div>
         {% endif %}
         <div class="fw-feldblock breit">
+        {% if nur_mitgliedschaft %}
+        <label class="flex items-center gap-2 flex-wrap">
+            <input type="checkbox" name="mitgliedschaft_beenden" class="fw-akzent"> {% trans "Mitgliedschaft in meiner Verwaltung beenden" %}
+            <span class="fw-hilfe">{% trans "(das Konto bleibt für die andere Verwaltung bestehen)" %}</span>
+        </label>
+        {% else %}
         <label class="flex items-center gap-2 flex-wrap">
             <input type="checkbox" name="is_active" {% if ist_neu or ziel.is_active %}checked{% endif %} {% if ist_selbst %}disabled{% endif %} class="fw-akzent"> {% trans "Konto aktiv" %}
             {% if ist_selbst %}<span class="fw-hilfe">{% trans "(eigener Account — kann nicht deaktiviert werden)" %}</span>{% endif %}
         </label>
+        {% endif %}
         </div>
         </div>
     </div>

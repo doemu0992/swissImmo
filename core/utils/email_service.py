@@ -4,6 +4,7 @@ import os
 from django.core.mail import EmailMessage
 from django.conf import settings
 from django.utils import dateformat, translation
+from django.utils.html import escape
 from django.utils.translation import gettext
 
 from core.services.dokumentsprache import in_sprache, sprache_von
@@ -66,7 +67,7 @@ def send_ticket_receipt(ticket):
     html_msg = f"""
     <html><body>
     <h2>{_text1}</h2>
-    <p>{_text2}: #{ticket.id}<br>{_text3}: {ticket.titel}</p>
+    <p>{_text2}: #{ticket.id}<br>{_text3}: {escape(ticket.titel)}</p>
     <p>{_text4}</p>
     <p>{_text5}<br>ImmoSwiss Verwaltung</p>
     </body></html>
@@ -97,7 +98,7 @@ def send_handyman_notification(auftrag):
             v = ticket.liegenschaft.organisation
             eigentuemer_info = f"{v.firma}, {v.strasse}, {v.plz} {v.ort}"
 
-        auftrags_text = auftrag.bemerkung if auftrag.bemerkung else "Bitte Auftrag ausführen."
+        auftrags_text = escape(auftrag.bemerkung) if auftrag.bemerkung else "Bitte Auftrag ausführen."
 
         html_hw = f"""
         <html><body style="font-family: Arial, sans-serif;">
@@ -106,8 +107,8 @@ def send_handyman_notification(auftrag):
             <hr>
             <table width="100%" cellpadding="5" style="border:1px solid #ddd;">
                 <tr style="background:#eee;"><td><strong>Objekt:</strong></td><td>{ticket.liegenschaft.strasse}, {ticket.liegenschaft.ort}</td></tr>
-                <tr><td><strong>Schaden:</strong></td><td>{ticket.titel}<br>{ticket.beschreibung}</td></tr>
-                <tr style="background:#eee;"><td><strong>Kontakt vor Ort:</strong></td><td>{ticket.gemeldet_von}<br>{ticket.tel_melder}</td></tr>
+                <tr><td><strong>Schaden:</strong></td><td>{escape(ticket.titel)}<br>{escape(ticket.beschreibung)}</td></tr>
+                <tr style="background:#eee;"><td><strong>Kontakt vor Ort:</strong></td><td>{escape(ticket.gemeldet_von)}<br>{escape(ticket.tel_melder)}</td></tr>
                 <tr><td><strong>Rechnung an:</strong></td><td>{eigentuemer_info}</td></tr>
             </table>
             <p style="font-size:0.8em; color:gray;">Bitte Ticket #{ticket.id} als Referenz nutzen.</p>
@@ -158,12 +159,12 @@ def send_neue_meldung_intern(ticket, to_emails):
       <h2 style="color:#4338ca;">Neue Schadenmeldung aus dem Mieterportal</h2>
       <table cellpadding="6" style="border-collapse:collapse;">
         <tr><td style="color:#64748b;">Ticket</td><td><strong>#{ticket.id}</strong></td></tr>
-        <tr><td style="color:#64748b;">Titel</td><td><strong>{ticket.titel}</strong></td></tr>
-        <tr><td style="color:#64748b;">Objekt</td><td>{objekt} · {einheit}</td></tr>
-        <tr><td style="color:#64748b;">Raum</td><td>{ticket.raum or '—'}</td></tr>
-        <tr><td style="color:#64748b;">Melder</td><td>{melder}<br>{ticket.email_melder or ''} {ticket.tel_melder or ''}</td></tr>
+        <tr><td style="color:#64748b;">Titel</td><td><strong>{escape(ticket.titel)}</strong></td></tr>
+        <tr><td style="color:#64748b;">Objekt</td><td>{escape(objekt)} · {escape(einheit)}</td></tr>
+        <tr><td style="color:#64748b;">Raum</td><td>{escape(ticket.raum or '—')}</td></tr>
+        <tr><td style="color:#64748b;">Melder</td><td>{escape(melder)}<br>{escape(ticket.email_melder or '')} {escape(ticket.tel_melder or '')}</td></tr>
       </table>
-      <p style="margin-top:12px;white-space:pre-line;">{ticket.beschreibung or ''}</p>
+      <p style="margin-top:12px;white-space:pre-line;">{escape(ticket.beschreibung or '')}</p>
       <p style="color:#94a3b8;font-size:12px;margin-top:20px;">Diese Meldung erscheint in der Software unter Schadensfälle.</p>
     </body></html>
     """
