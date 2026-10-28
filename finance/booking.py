@@ -151,23 +151,67 @@ def storniere_buchung(buchung, *, user=None, datum=None):
     Das Storno wird im laufenden (offenen) Datum gebucht — nicht rückdatiert in
     die u.U. gesperrte Ursprungsperiode. Gibt die Gegenbuchung zurück.
     """
+    from django.db import transaction
     from finance.models import Buchung
     if buchung.ist_storno:
         raise ValueError("Eine Storno-Buchung kann nicht storniert werden.")
-    if buchung.storniert_am is not None:
-        raise ValueError("Diese Buchung wurde bereits storniert.")
 
-    original_nr = buchung.beleg_nr
-    gegen = Buchung.objects.create(
-        datum=datum or timezone.localdate(),
-        beleg_text=f"Storno Beleg #{original_nr}: {buchung.beleg_text}"[:255],
-        soll_konto=buchung.haben_konto, haben_konto=buchung.soll_konto,
-        betrag=buchung.betrag, liegenschaft=buchung.liegenschaft,
-        erstellt_von=user, ist_storno=True, storno_von=buchung,
-        # Beleg-Verknüpfungen mitführen, damit OP-/Nebenbuch-Bezug erhalten bleibt
-        debitoren_rechnung=buchung.debitoren_rechnung,
-        kreditoren_rechnung=buchung.kreditoren_rechnung,
-        zahlungseingang=buchung.zahlungseingang)
-    buchung.storniert_am = timezone.now()
-    buchung.save(update_fields=['storniert_am'])
+    with transaction.atomic():
+        # GESPERRT UND NEU GELESEN (Audit FIN-04): Die Prüfung am übergebenen
+        # Objekt sah den Stand von VOR dem Warten. Sechs parallele Stornos
+        # derselben Buchung erzeugten sechs Gegenbuchungen. Jetzt sperrt der
+        # erste die Zeile, und die übrigen prüfen danach, was der erste hinterlassen hat.
+        # `alle_organisationen`: Die Zeile wird über ihren Primärschlüssel
+        # nachgeladen — dasselbe Objekt, das der Aufrufer unter seinem Kontext
+        # schon geholt hat. Eine Mandantengrenze kann das nicht verletzen, und
+        # mit `objects` bräche jedes Storno ausserhalb einer Anfrage ab.
+        original = Buchung.alle_organisationen.select_for_update().get(pk=buchung.pk)
+        if original.ist_storno:
+            raise ValueError("Eine Storno-Buchung kann nicht storniert werden.")
+        if original.storniert_am is not None:
+            raise ValueError("Diese Buchung wurde bereits storniert.")
+
+        gegen = Buchung.objects.create(
+            datum=datum or timezone.localdate(),
+            beleg_text=f"Storno Beleg #{original.beleg_nr}: {original.beleg_text}"[:255],
+            soll_konto=original.haben_konto, haben_konto=original.soll_konto,
+            betrag=original.betrag, liegenschaft=original.liegenschaft,
+            erstellt_von=user, ist_storno=True, storno_von=original,
+            # Beleg-Verknüpfungen mitführen, damit OP-/Nebenbuch-Bezug erhalten bleibt
+            debitoren_rechnung=original.debitoren_rechnung,
+            kreditoren_rechnung=original.kreditoren_rechnung,
+            zahlungseingang=original.zahlungseingang)
+        original.storniert_am = timezone.now()
+        original.save(update_fields=['storniert_am'])
+    buchung.storniert_am = original.storniert_am
     return gegen
+
+
+#: Das Kautionssperrkonto (Art. 257e OR): Geld der Mieter auf einem Konto, das auf
+#: ihren Namen lautet. Es ist KEIN Bankkonto der Verwaltung im Sinne von Zahlungen
+#: an Eigentümer, Lieferanten oder Mieter und darf nie Quelle oder Ziel einer
+#: normalen Auszahlung sein.
+KAUTIONSSPERRKONTO = '1015'
+
+
+def ist_bankkonto(konto):
+    """Ein Bankkonto der Verwaltung (Kontengruppe 10, ohne das Kautionssperrkonto)."""
+    nummer = getattr(konto, 'nummer', konto)
+    return str(nummer).startswith('10') and str(nummer) != KAUTIONSSPERRKONTO
+
+
+def bankkonten():
+    """Die Bankkonten der laufenden Verwaltung, nach Nummer."""
+    from finance.models import Buchungskonto
+    return (Buchungskonto.objects.filter(nummer__startswith='10')
+            .exclude(nummer=KAUTIONSSPERRKONTO).order_by('nummer'))
+
+
+def kontosaldo(konto):
+    """Soll minus Haben über alle Buchungen des Kontos (Storni zählen mit und
+    heben ihr Original auf)."""
+    from django.db.models import Sum
+    from finance.models import Buchung
+    soll = Buchung.objects.filter(soll_konto=konto).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+    haben = Buchung.objects.filter(haben_konto=konto).aggregate(t=Sum('betrag'))['t'] or Decimal('0.00')
+    return soll - haben

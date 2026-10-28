@@ -1169,9 +1169,16 @@ def fw_bankbewegung_zuordnen(request):
     betrag = abs(bew.betrag)
 
     if art == 'ignorieren':
-        bew.status = 'ignoriert'
-        bew.bemerkung = (request.POST.get('bemerkung') or 'Nicht buchungsrelevant')[:255]
-        bew.save(update_fields=['status', 'bemerkung'])
+        with transaction.atomic():
+            # Gesperrt und danach geprüft: Läuft gleichzeitig eine Verbuchung
+            # derselben Bewegung, darf «ignorieren» sie nicht überschreiben.
+            bew = Bankbewegung.objects.select_for_update().get(pk=bew.pk)
+            if bew.status != 'offen':
+                messages.info(request, gettext('Diese Bankbewegung ist bereits erledigt.'))
+                return redirect(ziel)
+            bew.status = 'ignoriert'
+            bew.bemerkung = (request.POST.get('bemerkung') or 'Nicht buchungsrelevant')[:255]
+            bew.save(update_fields=['status', 'bemerkung'])
         log_aktion(request, "Bankbewegung ignoriert", str(bew), bew.bemerkung)
         messages.success(request, gettext('Bewegung als nicht buchungsrelevant markiert.'))
         return redirect(ziel)
@@ -1199,9 +1206,16 @@ def fw_bankbewegung_zuordnen(request):
 
     try:
         with transaction.atomic():
+            # SPERREN, DANN PRÜFEN: Der Status oben stammt von VOR dem Warten.
+            # Zwei parallele Verbuchungen derselben Auszugszeile buchten sonst
+            # zweimal; die Zeile wird gesperrt und ihr Zustand neu gelesen.
+            bew = Bankbewegung.objects.select_for_update().get(pk=bew.pk)
+            if bew.status != 'offen':
+                messages.info(request, gettext('Diese Bankbewegung ist bereits erledigt.'))
+                return redirect(ziel)
             if art == 'kreditor':
                 from finance.models import KreditorenZahlung
-                kr = get_object_or_404(KreditorenRechnung,
+                kr = get_object_or_404(KreditorenRechnung.objects.select_for_update(of=('self',)),
                                        id=request.POST.get('kreditor_id'))
                 if bew.betrag >= 0:
                     messages.error(request, gettext('Eine Gutschrift kann keine Lieferantenrechnung tilgen.'))
@@ -1316,6 +1330,14 @@ def fw_mwst_verbuchen(request):
         date(jahr, int(quartal) * 3, _calendar.monthrange(jahr, int(quartal) * 3)[1])
     try:
         with transaction.atomic():
+            # GESPERRT, DANN ERNEUT GEPRÜFT: «Schon verbucht?» oben stammt von VOR
+            # dem Warten. Zwei gleichzeitige Klicks buchten die Zahllast doppelt.
+            from core.sperren import sperre_organisation
+            from core.tenancy import organisation_der_anfrage
+            sperre_organisation('mwst_verbuchen', organisation_der_anfrage(request).pk)
+            if _mwst_bereits_verbucht(jahr, quartal, aktive_lg):
+                messages.info(request, gettext('Diese MWST-Periode wurde bereits verbucht.'))
+                return redirect(ziel)
             if methode == 'saldo':
                 if zahllast > 0:
                     buche('2200', '2201', zahllast, f"{beleg} — Zahllast ESTV (Saldosatz)",

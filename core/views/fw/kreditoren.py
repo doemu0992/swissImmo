@@ -273,15 +273,11 @@ def fw_kreditor_bezahlen(request):
         return redirect('fw_kreditoren')
 
     from finance.models import KreditorenZahlung
-    k = get_object_or_404(KreditorenRechnung, id=request.POST.get('rechnung_id'))
-    if k.status in ('bezahlt', 'storniert', 'neu'):
-        messages.error(request, gettext('Diese Rechnung kann nicht (mehr) bezahlt werden.'))
-        return redirect('fw_kreditoren')
     from finance.freigabe import freigabe_sperre
-    sperre = freigabe_sperre(k)
-    if sperre:
-        messages.error(request, f'⛔ {sperre}')
-        return redirect('fw_kreditoren')
+    from core.sperren import erwarteter_betrag
+    # Die Mandantengrenze zuerst (fremde ID -> 404); was vom ZUSTAND der Rechnung
+    # abhaengt, wird erst nach dem Sperren geprueft.
+    k = get_object_or_404(KreditorenRechnung, id=request.POST.get('rechnung_id'))
 
     # Optionaler Teilbetrag; Standard = offener Betrag
     def _dec(x):
@@ -289,18 +285,13 @@ def fw_kreditor_bezahlen(request):
             return Decimal(_num(x))
         except Exception:
             return None
-    offen = k.offener_betrag
     # Leeres Feld = Vollzahlung; eine EXPLIZITE 0 ist ein Tippfehler und darf
     # NICHT still zur Vollzahlung werden (Decimal('0') ist falsy — die frühere
     # `or offen`-Logik zahlte bei Eingabe «0» kommentarlos den vollen Betrag).
     raw = (request.POST.get('betrag') or '').strip()
-    betrag = _dec(raw) if raw else offen
-    if betrag is None or betrag <= 0:
+    eingabe = _dec(raw) if raw else None
+    if raw and (eingabe is None or eingabe <= 0):
         messages.error(request, gettext('Ungültiger Betrag «%(raw)s» — Zahlung nicht ausgeführt.') % {'raw': raw})
-        return redirect('fw_kreditoren')
-    betrag = min(betrag, offen)
-    if betrag <= 0:
-        messages.error(request, gettext('Kein offener Betrag zu bezahlen.'))
         return redirect('fw_kreditoren')
 
     # Valutadatum und Bankkonto sind wählbar — «heute» und «1020» waren stille
@@ -312,8 +303,31 @@ def fw_kreditor_bezahlen(request):
     bank_nr = (request.POST.get('bank_konto') or '1020').strip()
     if not Buchungskonto.objects.filter(nummer=bank_nr).exists():
         bank_nr = '1020'
+    erwartet = erwarteter_betrag(request.POST)
     try:
         with transaction.atomic():
+            # SPERREN, DANN PRÜFEN (Audit FIN-02): Vier parallele Klicks buchten
+            # viermal 800 auf eine Rechnung über 800. Status und offener Betrag
+            # gelten für den Stand NACH dem Warten auf die Zeile.
+            k = KreditorenRechnung.objects.select_for_update(of=('self',)).get(pk=k.pk)
+            if k.status in ('bezahlt', 'storniert', 'neu'):
+                messages.error(request, gettext('Diese Rechnung kann nicht (mehr) bezahlt werden.'))
+                return redirect('fw_kreditoren')
+            sperre = freigabe_sperre(k)
+            if sperre:
+                messages.error(request, f'⛔ {sperre}')
+                return redirect('fw_kreditoren')
+            offen = k.offener_betrag
+            if erwartet is not None and erwartet != offen:
+                messages.error(request, gettext(
+                    "«%(lieferant)s»: Der offene Betrag hat sich seit dem Öffnen der Maske geändert "
+                    "(jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon verbucht. Nichts doppelt gebucht.")
+                    % {'lieferant': k.lieferant or gettext('Lieferant'), 'offen': offen})
+                return redirect('fw_kreditoren')
+            betrag = min(eingabe if eingabe is not None else offen, offen)
+            if betrag <= 0:
+                messages.error(request, gettext('Kein offener Betrag zu bezahlen.'))
+                return redirect('fw_kreditoren')
             from finance.booking import buche
             zahlung = KreditorenZahlung.objects.create(
                 kreditor=k, betrag=betrag, datum=valuta,
@@ -369,9 +383,14 @@ def fw_zahllauf(request):
             z += f'?lg={aktive_lg.id}'
         return z
 
-    def _auswahl(status):
+    def _auswahl(status, sperren=False):
+        """Die gewählten Rechnungen im verlangten Status. Mit `sperren=True` werden
+        die Zeilen gesperrt UND der Status erst danach gelesen — nur innerhalb
+        von `transaction.atomic()` zu benutzen."""
         ids = [i for i in request.POST.getlist('rechnung_ids') if str(i).isdigit()]
         qs = KreditorenRechnung.objects.filter(id__in=ids, status__in=status)
+        if sperren:
+            qs = qs.select_for_update(of=('self',)).order_by('id')   # feste Reihenfolge: keine Sperr-Kreuze
         if aktive_lg:
             qs = qs.filter(liegenschaft=aktive_lg)
         # Rechnungen mit ausstehender/abgelehnter Eigentümerfreigabe fallen aus
@@ -399,10 +418,6 @@ def fw_zahllauf(request):
 
         # --- 1) Zahlungsdatei für die AUSGEWÄHLTEN Rechnungen ---
         if aktion == 'datei':
-            rechnungen = _auswahl(['freigegeben'])
-            if not rechnungen:
-                messages.error(request, gettext('Keine Rechnung ausgewählt.'))
-                return redirect(_ziel())
             vw = aktuelle_organisation()
             debtor_iban = ((vw.iban if vw else '') or '').strip()
             if not debtor_iban:
@@ -411,25 +426,36 @@ def fw_zahllauf(request):
             # Ausführungsdatum ist frei wählbar — die Bank führt den Lauf an
             # diesem Tag aus; «heute» war eine stille Annahme (Praxis-Audit).
             exec_date = _datum('ausfuehrungsdatum', heute)
-            jetzt = timezone.now()
-            msg_id = f"SWISSIMMO-{jetzt.strftime('%Y%m%d%H%M%S')}"
-            xml, anzahl, summe, skipped = generate_pain001(
-                rechnungen, debtor_name=(vw.firma if vw else 'Immobilienverwaltung'),
-                debtor_iban=debtor_iban, msg_id=msg_id,
-                exec_date=exec_date.isoformat(),
-                now_iso=jetzt.strftime('%Y-%m-%dT%H:%M:%S'))
-            if anzahl == 0:
-                messages.error(request, gettext('Keine zahlbare Rechnung in der Auswahl (IBAN oder Betrag fehlt).'))
-                return redirect(_ziel())
-            uebersprungen = {rid for rid, _ in skipped}
-            n = 0
-            for r in rechnungen:
-                if r.id in uebersprungen:
-                    continue
-                r.status = 'in_zahlung'
-                r.zahlung_ausfuehrung = exec_date
-                r.save(update_fields=['status', 'zahlung_ausfuehrung'])
-                n += 1
+            with transaction.atomic():
+                # GESPERRT UND DANACH AUSGEWÄHLT (Audit FIN-02): Zwei parallele
+                # Läufe lasen dieselben Rechnungen als «freigegeben» und lieferten
+                # zwei Dateien mit denselben Zahlungen — in zwei Dateien ins
+                # E-Banking geladen, zahlt die Bank doppelt. Jetzt sperrt der
+                # erste die Zeilen und setzt sie auf «in Zahlung»; der zweite
+                # wartet und findet sie nicht mehr «freigegeben».
+                rechnungen = _auswahl(['freigegeben'], sperren=True)
+                if not rechnungen:
+                    messages.error(request, gettext('Keine Rechnung ausgewählt — oder die Rechnungen sind bereits in einer Zahlungsdatei.'))
+                    return redirect(_ziel())
+                jetzt = timezone.now()
+                msg_id = f"SWISSIMMO-{jetzt.strftime('%Y%m%d%H%M%S')}"
+                xml, anzahl, summe, skipped = generate_pain001(
+                    rechnungen, debtor_name=(vw.firma if vw else 'Immobilienverwaltung'),
+                    debtor_iban=debtor_iban, msg_id=msg_id,
+                    exec_date=exec_date.isoformat(),
+                    now_iso=jetzt.strftime('%Y-%m-%dT%H:%M:%S'))
+                if anzahl == 0:
+                    messages.error(request, gettext('Keine zahlbare Rechnung in der Auswahl (IBAN oder Betrag fehlt).'))
+                    return redirect(_ziel())
+                uebersprungen = {rid for rid, _ in skipped}
+                n = 0
+                for r in rechnungen:
+                    if r.id in uebersprungen:
+                        continue
+                    r.status = 'in_zahlung'
+                    r.zahlung_ausfuehrung = exec_date
+                    r.save(update_fields=['status', 'zahlung_ausfuehrung'])
+                    n += 1
             # Die Datei allein erledigt den Zahllauf nicht: Gezahlt ist erst,
             # was die Sammelbestätigung verbucht. Bis dahin «läuft» der Lauf.
             from faelle.lauf_dienst import lauf_gestartet, periode_von
@@ -451,13 +477,19 @@ def fw_zahllauf(request):
                 bank_nr = '1020'
             valuta = _datum('valuta', heute)
             from finance.booking import buche
-            n, summe, gesperrt = 0, Decimal('0.00'), 0
+            n, summe, gesperrt, schon = 0, Decimal('0.00'), 0, 0
             for r in rechnungen:
-                offen = r.offener_betrag
-                if offen <= 0:
-                    continue
                 try:
                     with transaction.atomic():
+                        # SPERREN, DANN PRÜFEN (Audit FIN-02): Drei parallele
+                        # Bestätigungen buchten 8 statt 3 Zahlungen (4'000 statt
+                        # 1'500). Was die Auswahl oben gelesen hat, ist veraltet,
+                        # sobald ein anderer Lauf dieselbe Rechnung bezahlt.
+                        r = KreditorenRechnung.objects.select_for_update(of=('self',)).get(pk=r.pk)
+                        offen = r.offener_betrag
+                        if r.status not in ('in_zahlung', 'freigegeben', 'teilbezahlt') or offen <= 0:
+                            schon += 1
+                            continue
                         KreditorenZahlung.objects.create(
                             kreditor=r, betrag=offen, datum=valuta,
                             bemerkung=f"Zahllauf {valuta:%d.%m.%Y}"[:255],
@@ -486,14 +518,19 @@ def fw_zahllauf(request):
                 messages.success(request, '✅ ' + gettext('%(n)s Zahlung(en) über CHF %(summe)s verbucht (2000 an %(bank_nr)s, Valuta %(valuta)s).') % {'n': n, 'summe': summe, 'bank_nr': bank_nr, 'valuta': format(valuta, '%d.%m.%Y')})
             if gesperrt:
                 messages.error(request, '⚠️ ' + gettext('%(gesperrt)s Zahlung(en) nicht verbucht: die Buchungsperiode ist gesperrt.') % {'gesperrt': gesperrt})
+            if schon:
+                messages.info(request, gettext('%(schon)s Rechnung(en) waren schon bezahlt — nicht noch einmal verbucht.') % {'schon': schon})
             return redirect(_ziel())
 
         # --- 3) Auswahl zurück auf «freigegeben» (Lauf nicht ausgeführt) ---
         if aktion == 'zuruecksetzen':
-            rechnungen = _auswahl(['in_zahlung'])
-            for r in rechnungen:
-                r.status = 'freigegeben'
-                r.save(update_fields=['status'])
+            with transaction.atomic():
+                # Gesperrt: Läuft gleichzeitig die Sammelbestätigung, darf eine
+                # eben bezahlte Rechnung nicht wieder «freigegeben» werden.
+                rechnungen = _auswahl(['in_zahlung'], sperren=True)
+                for r in rechnungen:
+                    r.status = 'freigegeben'
+                    r.save(update_fields=['status'])
             log_aktion(request, "Zahllauf zurückgesetzt", f"{len(rechnungen)} Rechnungen", '')
             messages.success(request, '↩︎ ' + gettext('%(len)s Rechnung(en) wieder freigegeben.') % {'len': len(rechnungen)})
             return redirect(_ziel())
@@ -561,9 +598,15 @@ def fw_kreditor_zahlung_zuruecksetzen(request, pk):
     if request.method != 'POST':
         return redirect('fw_kreditoren')
     k = get_object_or_404(KreditorenRechnung, id=pk)
-    if k.status == 'in_zahlung':
-        k.status = 'freigegeben'
-        k.save(update_fields=['status'])
+    with transaction.atomic():
+        # Gesperrt und danach geprüft: Eine Rechnung, die gerade bezahlt wird,
+        # darf nicht wieder «freigegeben» werden.
+        k = KreditorenRechnung.objects.select_for_update(of=('self',)).get(pk=k.pk)
+        zurueckgesetzt = k.status == 'in_zahlung'
+        if zurueckgesetzt:
+            k.status = 'freigegeben'
+            k.save(update_fields=['status'])
+    if zurueckgesetzt:
         log_aktion(request, "Zahllauf zurückgesetzt", k.lieferant or f"Rechnung #{k.id}", '')
         messages.success(request, '↩︎ ' + gettext("'%(lieferant)s' wieder freigegeben (nicht mehr in Zahlung).") % {'lieferant': k.lieferant})
     ziel = '/neu/kreditoren/'

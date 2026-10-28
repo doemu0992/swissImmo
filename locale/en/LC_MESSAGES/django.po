@@ -33412,3 +33412,56 @@ msgstr "The lease is fixed-term and ends on %(datum)s without notice (Art. 266 C
 #, python-format
 msgid "Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet (Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
 msgstr "The landlord has waived termination until %(datum)s (waiver of termination, Art. 17 para. 4 VMWG). An ordinary termination taking effect on %(wirkung)s (before this date) cannot be recorded. Extraordinary terminations, for example for default in payment (Art. 257d CO), remain possible."
+
+# --- Geldpfade: Sperren, Eigentümerauszahlung aus eingegangenem Geld (Etappe 0, 28.10.2026) ---
+
+msgid "Keine Rechnung ausgewählt — oder die Rechnungen sind bereits in einer Zahlungsdatei."
+msgstr "No invoice selected — or the invoices are already in a payment file."
+
+#, python-format
+msgid "%(schon)s Rechnung(en) waren schon bezahlt — nicht noch einmal verbucht."
+msgstr "%(schon)s invoice(s) already paid — not posted a second time."
+
+#, python-format
+msgid "«%(titel)s»: Der offene Betrag hat sich seit dem Öffnen der Maske geändert (jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon verbucht. Nichts doppelt gebucht."
+msgstr "\"%(titel)s\": The open amount has changed since the form was opened (now CHF %(offen)s) — the payment has probably been posted already. Nothing was posted twice."
+
+#, python-format
+msgid "«%(lieferant)s»: Der offene Betrag hat sich seit dem Öffnen der Maske geändert (jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon verbucht. Nichts doppelt gebucht."
+msgstr "\"%(lieferant)s\": The open amount has changed since the form was opened (now CHF %(offen)s) — the payment has probably been posted already. Nothing was posted twice."
+
+#, python-format
+msgid "Das Bankkonto «%(nummer)s» gibt es nicht."
+msgstr "The bank account \"%(nummer)s\" does not exist."
+
+#, python-format
+msgid "Konto %(nummer)s ist kein Bankkonto für Auszahlungen. Das Kautionssperrkonto (1015) gehört den Mietern und kann nicht für Eigentümerauszahlungen benutzt werden."
+msgstr "Account %(nummer)s is not a bank account for payouts. The blocked deposit account (1015) belongs to the tenants and cannot be used for owner payouts."
+
+msgid "Seit dem Öffnen der Maske wurde für diesen Eigentümer eine Auszahlung erfasst — vermutlich dieselbe. Bitte die Seite neu laden; es wurde nichts doppelt gebucht."
+msgstr "A payout has been recorded for this owner since the form was opened — probably the same one. Please reload the page; nothing was posted twice."
+
+#, python-format
+msgid "Auszahlbar sind höchstens CHF %(auszahlbar)s (eingegangene Mittel abzüglich bezahlter Kosten und bisheriger Auszahlungen). Verlangt: CHF %(betrag)s."
+msgstr "At most CHF %(auszahlbar)s can be paid out (funds received less costs paid and previous payouts). Requested: CHF %(betrag)s."
+
+#, python-format
+msgid "Das Bankkonto %(nummer)s deckt die Auszahlung nicht: Saldo CHF %(saldo)s, verlangt CHF %(betrag)s."
+msgstr "Bank account %(nummer)s does not cover the payout: balance CHF %(saldo)s, requested CHF %(betrag)s."
+
+msgid "Sollbasis: auch noch nicht bezahlte Mieten und Rechnungen"
+msgstr "Accrual basis: including rents and invoices not yet paid"
+
+msgid "Auszahlbar (eingegangene Mittel)"
+msgstr "Payable (funds received)"
+
+#, python-format
+msgid "Eingegangen %(e)s − bezahlt %(b)s − ausbezahlt %(a)s"
+msgstr "Received %(e)s − paid %(b)s − paid out %(a)s"
+
+#, python-format
+msgid "Auszahlbar: CHF %(a)s. Gezählt wird nur, was tatsächlich eingegangen ist, abzüglich bezahlter Kosten und bisheriger Auszahlungen — Kautionen und noch nicht bezahlte Mieten zählen nicht."
+msgstr "Payable: CHF %(a)s. Only what has actually been received counts, less costs paid and previous payouts — deposits and unpaid rents do not count."
+
+msgid "Zurzeit ist nichts auszahlbar."
+msgstr "Nothing can be paid out at the moment."

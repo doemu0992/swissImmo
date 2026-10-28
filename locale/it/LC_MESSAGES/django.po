@@ -33855,3 +33855,56 @@ msgstr "Il contratto è di durata determinata e termina il %(datum)s senza disde
 #, python-format
 msgid "Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet (Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
 msgstr "Il locatore ha rinunciato alla disdetta fino al %(datum)s (rinuncia alla disdetta, art. 17 cpv. 4 OLAL). Una disdetta ordinaria con effetto al %(wirkung)s (prima di questa data) non può essere registrata. Le disdette straordinarie, ad esempio per mora nel pagamento (art. 257d CO), rimangono possibili."
+
+# --- Geldpfade: Sperren, Eigentümerauszahlung aus eingegangenem Geld (Etappe 0, 28.10.2026) ---
+
+msgid "Keine Rechnung ausgewählt — oder die Rechnungen sind bereits in einer Zahlungsdatei."
+msgstr "Nessuna fattura selezionata — oppure le fatture sono già in un file di pagamento."
+
+#, python-format
+msgid "%(schon)s Rechnung(en) waren schon bezahlt — nicht noch einmal verbucht."
+msgstr "%(schon)s fattura/e già pagata/e — non contabilizzata/e una seconda volta."
+
+#, python-format
+msgid "«%(titel)s»: Der offene Betrag hat sich seit dem Öffnen der Maske geändert (jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon verbucht. Nichts doppelt gebucht."
+msgstr "«%(titel)s»: l'importo aperto è cambiato dall'apertura della maschera (ora CHF %(offen)s) — il pagamento è probabilmente già stato contabilizzato. Nulla è stato contabilizzato due volte."
+
+#, python-format
+msgid "«%(lieferant)s»: Der offene Betrag hat sich seit dem Öffnen der Maske geändert (jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon verbucht. Nichts doppelt gebucht."
+msgstr "«%(lieferant)s»: l'importo aperto è cambiato dall'apertura della maschera (ora CHF %(offen)s) — il pagamento è probabilmente già stato contabilizzato. Nulla è stato contabilizzato due volte."
+
+#, python-format
+msgid "Das Bankkonto «%(nummer)s» gibt es nicht."
+msgstr "Il conto bancario «%(nummer)s» non esiste."
+
+#, python-format
+msgid "Konto %(nummer)s ist kein Bankkonto für Auszahlungen. Das Kautionssperrkonto (1015) gehört den Mietern und kann nicht für Eigentümerauszahlungen benutzt werden."
+msgstr "Il conto %(nummer)s non è un conto bancario per i versamenti. Il conto di garanzia bloccato (1015) appartiene agli inquilini e non può essere utilizzato per i versamenti ai proprietari."
+
+msgid "Seit dem Öffnen der Maske wurde für diesen Eigentümer eine Auszahlung erfasst — vermutlich dieselbe. Bitte die Seite neu laden; es wurde nichts doppelt gebucht."
+msgstr "Dall'apertura della maschera è stato registrato un versamento per questo proprietario — probabilmente lo stesso. Ricaricare la pagina; nulla è stato contabilizzato due volte."
+
+#, python-format
+msgid "Auszahlbar sind höchstens CHF %(auszahlbar)s (eingegangene Mittel abzüglich bezahlter Kosten und bisheriger Auszahlungen). Verlangt: CHF %(betrag)s."
+msgstr "Si possono versare al massimo CHF %(auszahlbar)s (fondi incassati meno costi pagati e versamenti precedenti). Richiesto: CHF %(betrag)s."
+
+#, python-format
+msgid "Das Bankkonto %(nummer)s deckt die Auszahlung nicht: Saldo CHF %(saldo)s, verlangt CHF %(betrag)s."
+msgstr "Il conto bancario %(nummer)s non copre il versamento: saldo CHF %(saldo)s, richiesto CHF %(betrag)s."
+
+msgid "Sollbasis: auch noch nicht bezahlte Mieten und Rechnungen"
+msgstr "Base per competenza: anche pigioni e fatture non ancora pagate"
+
+msgid "Auszahlbar (eingegangene Mittel)"
+msgstr "Versabile (fondi incassati)"
+
+#, python-format
+msgid "Eingegangen %(e)s − bezahlt %(b)s − ausbezahlt %(a)s"
+msgstr "Incassato %(e)s − pagato %(b)s − versato %(a)s"
+
+#, python-format
+msgid "Auszahlbar: CHF %(a)s. Gezählt wird nur, was tatsächlich eingegangen ist, abzüglich bezahlter Kosten und bisheriger Auszahlungen — Kautionen und noch nicht bezahlte Mieten zählen nicht."
+msgstr "Versabile: CHF %(a)s. Conta solo quanto è stato effettivamente incassato, meno i costi pagati e i versamenti precedenti — le garanzie di locazione e le pigioni non pagate non contano."
+
+msgid "Zurzeit ist nichts auszahlbar."
+msgstr "Al momento non è possibile versare nulla."

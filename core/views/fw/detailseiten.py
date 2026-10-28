@@ -2096,27 +2096,39 @@ def fw_schlussabrechnung(request, vertrag_id):
             # noch nie lief. Umgekehrt fehlte eine Sperre für den Gutschrift-Fall
             # ohne Kaution, wo ein Doppelklick zweimal Mieterguthaben buchte (Audit).
             from finance.models import Buchung as _BIdem
-            schon_verbucht = (
-                DebitorenRechnung.objects.filter(
-                    vertrag=v, titel="Schlussabrechnung (Nachzahlung)"
-                ).exclude(status='storniert').exists()
-                # storniert_am mitprüfen — sonst widerspricht diese Hälfte der
-                # ersten: die schliesst stornierte Rechnungen bereits aus, damit
-                # eine Schlussabrechnung nach einem Storno neu erstellt werden
-                # kann. Ohne den Filter blockierte die stehengebliebene
-                # Original-Buchung genau das.
-                or _BIdem.objects.filter(
-                    beleg_text__contains=f"Schlussabrechnung [V{v.pk}]",
-                    ist_storno=False, storniert_am__isnull=True
-                ).exists()
-            )
-            if schon_verbucht:
+
+            def _schon_verbucht():
+                return (
+                    DebitorenRechnung.objects.filter(
+                        vertrag=v, titel="Schlussabrechnung (Nachzahlung)"
+                    ).exclude(status='storniert').exists()
+                    # storniert_am mitprüfen — sonst widerspricht diese Hälfte der
+                    # ersten: die schliesst stornierte Rechnungen bereits aus, damit
+                    # eine Schlussabrechnung nach einem Storno neu erstellt werden
+                    # kann. Ohne den Filter blockierte die stehengebliebene
+                    # Original-Buchung genau das.
+                    or _BIdem.objects.filter(
+                        beleg_text__contains=f"Schlussabrechnung [V{v.pk}]",
+                        ist_storno=False, storniert_am__isnull=True
+                    ).exists()
+                )
+
+            def _bereits_verbucht_antwort():
                 if request.POST.get('embed'):
                     return render(request, 'fw/_modal_done.html', {'msg': 'Schlussabrechnung bereits verbucht'})
                 messages.info(request, gettext('Diese Schlussabrechnung wurde bereits verbucht.'))
                 return redirect(f'/neu/vertraege/{v.id}/')
+
+            if _schon_verbucht():
+                return _bereits_verbucht_antwort()
             try:
                 with transaction.atomic():
+                    # GESPERRT, DANN ERNEUT GEPRÜFT: Die Prüfung oben stammt von VOR
+                    # dem Warten. Zwei gleichzeitige Klicks buchten die Kaution
+                    # zweimal frei und stellten zwei Nachzahlungs-Rechnungen.
+                    Mietvertrag.objects.select_for_update(of=('self',)).get(pk=v.pk)
+                    if _schon_verbucht():
+                        return _bereits_verbucht_antwort()
                     from finance.booking import buche
                     heute = timezone.localdate()
                     lg_s = v.einheit.liegenschaft if v.einheit_id else None

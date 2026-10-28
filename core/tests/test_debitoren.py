@@ -960,15 +960,22 @@ class FinanzUIP5Tests(TestCase):
         from finance.models import EigentuemerAuszahlung
         from finance.booking import ensure_kontenplan
         ensure_kontenplan()
-        _basis_objekte()
+        lg, _e, _m, _v = _basis_objekte()
         md = Eigentuemer.objects.create(firma_oder_name='Muster Immobilien AG')
+        # Seit FUNK-01/FIN-03 zahlt die Maske nur aus eingegangenem Geld und gegen
+        # ein gedecktes Bankkonto aus: Der Eigentümer braucht also etwas zugut.
+        from finance.booking import buche
+        lg.eigentuemer = md
+        lg.save()
+        buche('1020', '3000', Decimal('20000'), 'Mieteingang', datum=date(2024, 4, 1), liegenschaft=lg)
+        saldo_vorher = self._saldo('1020')
         c = Client(); c.force_login(_team_user())
         c.post(f'/neu/mandate/{md.id}/auszahlung/',
                {'betrag': "12'500.00", 'datum': '2024-05-01'})
         a = EigentuemerAuszahlung.objects.get(eigentuemer=md)
         self.assertEqual(a.betrag, Decimal('12500.00'))
         self.assertEqual(self._saldo('2850'), Decimal('12500.00'))
-        self.assertEqual(self._saldo('1020'), Decimal('-12500.00'))
+        self.assertEqual(self._saldo('1020'), saldo_vorher - Decimal('12500.00'))
 
     def test_kreditor_zahlung_akzeptiert_apostroph_betrag(self):
         from finance.models import KreditorenRechnung, KreditorenZahlung
@@ -1462,7 +1469,7 @@ class GeldKaestchenTests(TestCase):
         lg, e, m, v = _basis_objekte()
         c = Client(); c.force_login(_team_user())
         for wert, kennzeichen in (('1', 'value-Attribut'), ('on', 'ohne value')):
-            Buchung.objects.all().delete()
+            Buchung.objects.all().ausnahme_loeschen('Testaufbau: je Durchlauf mit leerem Journal beginnen')
             c.post('/neu/anlagen/', {
                 'aktion': 'anlage_neu', 'bezeichnung': f'Heizung {kennzeichen}',
                 'liegenschaft_id': lg.id, 'anschaffungswert': '12000',

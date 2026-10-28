@@ -73,17 +73,25 @@ def buche_honorar(eigentuemer, jahr, *, gegen_nummer='2850', user=None):
     `4500 an 1020` liess den Banksaldo vom realen Kontoauszug abweichen
     (Audit-Befund W3). Die effektive Zahlung wird separat über das Kontokorrent
     ausgebucht."""
+    from django.db import transaction
+
+    from core.sperren import sperre_organisation
     from finance.booking import buche, konto
 
-    zeilen, _total, _prozent = honorar_vorschau(eigentuemer, jahr)
-    gegen = konto(gegen_nummer)
     anzahl = 0
     summe = Decimal('0.00')
-    for z in zeilen:
-        if z['gebucht'] or z['honorar'] <= 0:
-            continue
-        buche('4500', gegen, z['honorar'], _beleg_text(jahr, z['lg']),
-              datum=date(jahr, 12, 31), liegenschaft=z['lg'], user=user)
-        anzahl += 1
-        summe += z['honorar']
+    with transaction.atomic():
+        # GESPERRT, DANN BERECHNET: «Schon gebucht?» stützt sich auf den Belegtext.
+        # Zwei gleichzeitige Klicks sahen beide «noch nicht» und buchten das
+        # Honorar doppelt. Die Vorschau läuft deshalb erst nach der Sperre.
+        sperre_organisation('verwaltungshonorar', eigentuemer.organisation_id)
+        zeilen, _total, _prozent = honorar_vorschau(eigentuemer, jahr)
+        gegen = konto(gegen_nummer)
+        for z in zeilen:
+            if z['gebucht'] or z['honorar'] <= 0:
+                continue
+            buche('4500', gegen, z['honorar'], _beleg_text(jahr, z['lg']),
+                  datum=date(jahr, 12, 31), liegenschaft=z['lg'], user=user)
+            anzahl += 1
+            summe += z['honorar']
     return anzahl, summe

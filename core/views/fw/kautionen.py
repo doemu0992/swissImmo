@@ -33,6 +33,10 @@ logger = logging.getLogger(__name__)
 # KAUTIONS-REGISTER (Art. 257e OR — separat vom Verwaltungs-Hauptbuch)
 # ============================================================
 
+class _KautionSchonAufgeloest(Exception):
+    """Zwischen Prüfung und Buchung hat ein anderer Vorgang die Kaution aufgelöst."""
+
+
 KAUTION_PILL = {
     'erwartet':       ('Erwartet',       'fw-warn-flaeche fw-warnton'),
     'einbezahlt':     ('Einbezahlt',     'fw-gut-flaeche fw-gut'),
@@ -207,6 +211,13 @@ def fw_kaution_aktion(request, vertrag_id):
         #  Einbehalt:    2010 Kautionsverbindlichkeit an 3600 (Ertrag Eigentümer)
         try:
             with transaction.atomic():
+                # GESPERRT, DANN ERNEUT GEPRÜFT: Die Prüfung «bilanziert?» oben stammt
+                # von VOR dem Warten. Zwei gleichzeitige Rückzahlungen derselben
+                # Kaution buchten beide die Freigabe des Sperrkontos. Der Vertrag
+                # wird gesperrt, der Saldo von 2010 danach neu gelesen.
+                Mietvertrag.objects.select_for_update(of=('self',)).get(pk=v.pk)
+                if not v.ist_kautionsversicherung and _kaution_bilanziert(v) <= 0:
+                    raise _KautionSchonAufgeloest
                 v.save(update_fields=['kautions_zurueckbezahlt_am', 'kautions_rueckzahlung_betrag',
                                       'kautions_abzug_betrag', 'kautions_abzug_grund'])
                 from finance.booking import buche as _buche
@@ -238,6 +249,9 @@ def fw_kaution_aktion(request, vertrag_id):
                     if abzug > 0:
                         _buche("2010", "3600", abzug, f"{beleg} — Einbehalt (Ertrag)",
                                datum=dat_k, liegenschaft=lg_k, user=request.user)
+        except _KautionSchonAufgeloest:
+            messages.error(request, '❌ ' + gettext('Für diesen Vertrag ist keine Kaution bilanziert (nicht einbezahlt oder bereits aufgelöst).'))
+            return redirect(f'/neu/vertraege/{v.id}/')
         except PermissionError as exc:
             messages.error(request, f"❌ {exc}")
             return redirect(f'/neu/vertraege/{v.id}/')

@@ -196,6 +196,7 @@
                         <form method="post" action="/neu/kreditoren/bezahlen/" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.lieferant|safe %}Zahlung an {{ name }} verbuchen?{% endblocktrans %}{% endfilter %}');" class="inline-flex items-center gap-1">
                             {% csrf_token %}
                             <input type="hidden" name="rechnung_id" value="{{ row.k.id }}">
+                            <input type="hidden" name="erwartet_offen" value="{{ row.offen_betrag|stringformat:'.2f' }}">
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                             <input type="number" step="0.05" min="0" name="betrag" value="{{ row.offen_betrag|stringformat:'.2f' }}"
                                    class="fw-feld w-24 text-right" title="{% trans 'Betrag (Teilzahlung möglich)' %}">
