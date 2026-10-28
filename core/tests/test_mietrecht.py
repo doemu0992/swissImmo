@@ -500,8 +500,12 @@ class AnfechtungsfristTests(TestCase):
         self.assertIn('Art. 271', p.beschreibung)
         # Seit 26.10.2026 ab dem ZUGANG (Befund F): ohne bestätigten Zugang
         # Versand + Zustellpuffer, dann 30 Tage.
+        # Fristende nach Art. 78 OR (fällt es auf einen Samstag/Sonntag/Feiertag, gilt der nächste Werktag),
+        # gerechnet ab dem Zürcher Tag, nicht ab dem UTC-Tag des Testläufers.
+        from core.services.fristen import naechster_werktag
+        from core.zeit import datum_heute
         from rentals.services import ZUSTELL_PUFFER_TAGE
-        self.assertEqual(p.faellig_am, date.today() + timedelta(days=ZUSTELL_PUFFER_TAGE + 30))
+        self.assertEqual(p.faellig_am, naechster_werktag(datum_heute() + timedelta(days=ZUSTELL_PUFFER_TAGE + 30)))
 
     def test_mieterkuendigung_ohne_anfechtungsfrist(self):
         from core.models import Pendenz
