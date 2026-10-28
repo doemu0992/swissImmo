@@ -136,6 +136,14 @@ class LieferantProfil(models.Model):
     standard_konto = models.ForeignKey(Buchungskonto, on_delete=models.SET_NULL,
                                        null=True, blank=True, related_name='lieferanten')
     iban = models.CharField(max_length=50, blank=True)
+    # Die zuletzt freigegebene Anschrift des Lieferanten (gleiche Felder und
+    # Längen wie an `KreditorenRechnung.lieferant_*`): neue Rechnungen desselben
+    # Lieferanten übernehmen sie, statt dass sie jedes Mal neu eingetippt wird.
+    strasse = models.CharField("Strasse", max_length=70, blank=True)
+    hausnummer = models.CharField("Hausnummer", max_length=16, blank=True)
+    plz = models.CharField("PLZ", max_length=16, blank=True)
+    ort = models.CharField("Ort", max_length=35, blank=True)
+    land = models.CharField("Land (ISO-Code)", max_length=2, default='CH')
     treffer = models.PositiveIntegerField("Gelernte Belege", default=0)
     aktualisiert_am = models.DateTimeField(auto_now=True)
 
@@ -715,6 +723,16 @@ class KreditorenRechnung(OrganisationAusKette):
     menge_liter = models.DecimalField("Menge (Liter)", max_digits=10, decimal_places=2, null=True, blank=True)
 
     lieferant = models.CharField(max_length=200, blank=True)
+    # Anschrift des Lieferanten, strukturiert wie in der Zahlungsdatei (pain.001,
+    # `PstlAdr`: StrtNm, BldgNb, PstCd, TwnNm, Ctry). Die Längen sind die des
+    # ISO-Schemas (70/16/16/35). Ort und Land braucht der Zahllauf; Land ist der
+    # ISO-3166-Code, «CH» als Vorgabe. Befüllt wird sie beim Erfassen, aus dem
+    # QR-Code des Belegs oder aus dem Lieferantenprofil (`finance/kreditor_adresse.py`).
+    lieferant_strasse = models.CharField("Strasse", max_length=70, blank=True)
+    lieferant_hausnummer = models.CharField("Hausnummer", max_length=16, blank=True)
+    lieferant_plz = models.CharField("PLZ", max_length=16, blank=True)
+    lieferant_ort = models.CharField("Ort", max_length=35, blank=True)
+    lieferant_land = models.CharField("Land (ISO-Code)", max_length=2, default='CH')
     datum = models.DateField(null=True, blank=True)
     faellig_am = models.DateField(null=True, blank=True)
     betrag = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Bruttobetrag inkl. MWST

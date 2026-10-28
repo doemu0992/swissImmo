@@ -33114,15 +33114,27 @@ msgid "Mitteilung der Staffelerhöhung"
 msgstr "Comunicazione dell'aumento scalare"
 
 #: core/hilfe.py
-msgid "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche Formular braucht es dafür nicht, die Mitteilung aber schon: Der Vertrag allein ersetzt sie nicht."
-msgstr "Ogni aumento è comunicato per scritto al conduttore, al più presto quattro mesi prima della sua entrata in vigore (art. 269d cpv. 5 CO, art. 19a OLAL). Per questo non serve il modulo ufficiale, ma la comunicazione sì: il solo contratto non la sostituisce."
+msgid ""
+"Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate"
+" vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche "
+"Formular braucht es dafür nicht, die Mitteilung aber schon: Der Vertrag "
+"allein ersetzt sie nicht."
+msgstr ""
+"Ogni aumento è comunicato per scritto al conduttore, al più presto quattro "
+"mesi prima della sua entrata in vigore (art. 269d cpv. 5 CO, art. 19a OLAL)."
+" Per questo non serve il modulo ufficiale, ma la comunicazione sì: il solo "
+"contratto non la sostituisce."
 
 #: Mietzinsmodell-Wizard (27.10.2026)
 msgid "Vermieter verzichtet auf Kündigung bis"
 msgstr "Il locatore rinuncia alla disdetta fino al"
 
-msgid "Nur bei einem unbefristeten Vertrag. Zählt bei Index- und Staffelmiete als feste Dauer."
-msgstr "Solo per un contratto a tempo indeterminato. Vale come durata fissa per la pigione indicizzata e graduale."
+msgid ""
+"Nur bei einem unbefristeten Vertrag. Zählt bei Index- und Staffelmiete als "
+"feste Dauer."
+msgstr ""
+"Solo per un contratto a tempo indeterminato. Vale come durata fissa per la "
+"pigione indicizzata e graduale."
 
 msgid "Mietzins, Mietzinsmodell und Zahlungsmodalitäten."
 msgstr "Pigione, modello di pigione e modalità di pagamento."
@@ -33133,14 +33145,25 @@ msgstr "Destinazione dei locali commerciali."
 msgid "Fester Mietzins"
 msgstr "Pigione fissa"
 
-msgid "Der Mietzins bleibt, bis er nach den Regeln des Mietrechts angepasst wird."
-msgstr "La pigione resta invariata finché non viene adeguata secondo le regole del diritto di locazione."
+msgid ""
+"Der Mietzins bleibt, bis er nach den Regeln des Mietrechts angepasst wird."
+msgstr ""
+"La pigione resta invariata finché non viene adeguata secondo le regole del "
+"diritto di locazione."
 
-msgid "Erhöhungen als Frankenbeträge, höchstens einmal jährlich. Feste Dauer mindestens 3 Jahre."
-msgstr "Aumenti in franchi, al massimo una volta all'anno. Durata fissa di almeno 3 anni."
+msgid ""
+"Erhöhungen als Frankenbeträge, höchstens einmal jährlich. Feste Dauer "
+"mindestens 3 Jahre."
+msgstr ""
+"Aumenti in franchi, al massimo una volta all'anno. Durata fissa di almeno 3 "
+"anni."
 
-msgid "Der Mietzins folgt dem Landesindex der Konsumentenpreise. Feste Dauer mindestens 5 Jahre."
-msgstr "La pigione segue l'indice nazionale dei prezzi al consumo. Durata fissa di almeno 5 anni."
+msgid ""
+"Der Mietzins folgt dem Landesindex der Konsumentenpreise. Feste Dauer "
+"mindestens 5 Jahre."
+msgstr ""
+"La pigione segue l'indice nazionale dei prezzi al consumo. Durata fissa di "
+"almeno 5 anni."
 
 msgid "Feste Dauer"
 msgstr "Durata fissa"
@@ -33160,8 +33183,12 @@ msgstr "Ancora nessun gradino. Aggiungete un gradino o generate i gradini."
 msgid "Stufen erzeugen"
 msgstr "Genera i gradini"
 
-msgid "Jedes Jahr dieselbe Erhöhung, die erste 12 Monate nach Mietbeginn. Vorhandene Stufen werden ersetzt."
-msgstr "Ogni anno lo stesso aumento, il primo 12 mesi dopo l'inizio della locazione. I gradini esistenti vengono sostituiti."
+msgid ""
+"Jedes Jahr dieselbe Erhöhung, die erste 12 Monate nach Mietbeginn. "
+"Vorhandene Stufen werden ersetzt."
+msgstr ""
+"Ogni anno lo stesso aumento, il primo 12 mesi dopo l'inizio della locazione."
+" I gradini esistenti vengono sostituiti."
 
 msgid "Jährlich + CHF"
 msgstr "Ogni anno + CHF"
@@ -33182,7 +33209,9 @@ msgstr "Base %(basis)s = 100 punti"
 msgid "Vorschlag übernehmen"
 msgstr "Accetta il suggerimento"
 
-msgid "Anteil der Teuerung, der weitergegeben wird: über 0 und höchstens 100 Prozent."
+msgid ""
+"Anteil der Teuerung, der weitergegeben wird: über 0 und höchstens 100 "
+"Prozent."
 msgstr "Quota del rincaro trasferita: oltre 0 e al massimo 100 per cento."
 
 msgid "Mindestintervall (vertraglich, Monate)"
@@ -33192,7 +33221,9 @@ msgid "Aktuellen Referenzzinssatz übernehmen"
 msgstr "Adotta il tasso d'interesse di riferimento attuale"
 
 msgid "Stand bei Vertragsbeginn — Grundlage für spätere Mietzinsanpassungen."
-msgstr "Valore all'inizio del contratto — base per successivi adeguamenti della pigione."
+msgstr ""
+"Valore all'inizio del contratto — base per successivi adeguamenti della "
+"pigione."
 
 msgid "Lädt …"
 msgstr "Caricamento …"
@@ -33224,14 +33255,26 @@ msgstr "Verifica in corso …"
 msgid "Nicht geprüft"
 msgstr "Non verificato"
 
-msgid "Fest bis {bis}. Verlangt ist die Dauer bis {soll} ({jahre} Jahre ab Mietbeginn)."
-msgstr "Fissa fino al {bis}. La durata richiesta arriva fino al {soll} ({jahre} anni dall'inizio della locazione)."
+msgid ""
+"Fest bis {bis}. Verlangt ist die Dauer bis {soll} ({jahre} Jahre ab "
+"Mietbeginn)."
+msgstr ""
+"Fissa fino al {bis}. La durata richiesta arriva fino al {soll} ({jahre} anni"
+" dall'inizio della locazione)."
 
-msgid "Der Mietbeginn fehlt (Schritt «Konditionen»): Ohne ihn lässt sich die feste Dauer nicht beurteilen."
-msgstr "Manca l'inizio della locazione (passo «Condizioni»): senza di esso la durata fissa non può essere valutata."
+msgid ""
+"Der Mietbeginn fehlt (Schritt «Konditionen»): Ohne ihn lässt sich die feste "
+"Dauer nicht beurteilen."
+msgstr ""
+"Manca l'inizio della locazione (passo «Condizioni»): senza di esso la durata"
+" fissa non può essere valutata."
 
-msgid "Die Prüfung ist gerade nicht erreichbar. Der Server prüft beim Speichern trotzdem."
-msgstr "La verifica al momento non è raggiungibile. Il server verifica comunque al salvataggio."
+msgid ""
+"Die Prüfung ist gerade nicht erreichbar. Der Server prüft beim Speichern "
+"trotzdem."
+msgstr ""
+"La verifica al momento non è raggiungibile. Il server verifica comunque al "
+"salvataggio."
 
 msgid "Staffelstufen entfernt"
 msgstr "Gradini rimossi"
@@ -33249,13 +33292,19 @@ msgid "Die Anzahl muss zwischen 1 und {max} liegen."
 msgstr "Il numero deve essere compreso tra 1 e {max}."
 
 msgid "Vorschlag: {punkte} Punkte, Stand {stand} (Vormonat des Mietbeginns)."
-msgstr "Suggerimento: {punkte} punti, stato {stand} (mese precedente l'inizio della locazione)."
+msgstr ""
+"Suggerimento: {punkte} punti, stato {stand} (mese precedente l'inizio della "
+"locazione)."
 
 msgid "Für diesen Mietbeginn ist noch kein Indexstand veröffentlicht."
-msgstr "Per questo inizio di locazione non è ancora stato pubblicato alcun indice."
+msgstr ""
+"Per questo inizio di locazione non è ancora stato pubblicato alcun indice."
 
-msgid "Beispiel: Bei LIK {lik} würde der Mietzins CHF {neu} betragen (heute CHF {alt})."
-msgstr "Esempio: con IPC {lik} la pigione sarebbe di CHF {neu} (oggi CHF {alt})."
+msgid ""
+"Beispiel: Bei LIK {lik} würde der Mietzins CHF {neu} betragen (heute CHF "
+"{alt})."
+msgstr ""
+"Esempio: con IPC {lik} la pigione sarebbe di CHF {neu} (oggi CHF {alt})."
 
 msgid "Beispiel: Bei LIK {lik} bliebe der Mietzins bei CHF {alt}."
 msgstr "Esempio: con IPC {lik} la pigione resterebbe a CHF {alt}."
@@ -33296,41 +33345,83 @@ msgstr "Il trasferimento ha al massimo una cifra decimale."
 msgid "Die Basis des Landesindexes hat höchstens eine Nachkommastelle."
 msgstr "La base dell'indice ha al massimo una cifra decimale."
 
-msgid "Bei festem Mietzins darf keine Indexklausel stehen bleiben (Weitergabe, Mindestintervall)."
-msgstr "Con una pigione fissa non deve restare alcuna clausola d'indicizzazione (trasferimento, intervallo minimo)."
+msgid ""
+"Bei festem Mietzins darf keine Indexklausel stehen bleiben (Weitergabe, "
+"Mindestintervall)."
+msgstr ""
+"Con una pigione fissa non deve restare alcuna clausola d'indicizzazione "
+"(trasferimento, intervallo minimo)."
 
-msgid "Der Mietbeginn fehlt: Ohne ihn lässt sich die feste Dauer nicht beurteilen."
-msgstr "Manca l'inizio della locazione: senza di esso la durata fissa non può essere valutata."
-
-#, python-format
-msgid "Stufe %(nr)s: «%(eingabe)s» ist als Datum nicht lesbar — nichts wurde gespeichert."
-msgstr "Gradino %(nr)s: «%(eingabe)s» non è leggibile come data — non è stato salvato nulla."
-
-#, python-format
-msgid "Stufe %(nr)s: «%(eingabe)s» ist als Erhöhung nicht lesbar — nichts wurde gespeichert."
-msgstr "Gradino %(nr)s: «%(eingabe)s» non è leggibile come aumento — non è stato salvato nulla."
-
-msgid "Eine Staffelstufe wird als Erhöhung in Franken erfasst, nicht als neuer Mietzins — nichts wurde gespeichert."
-msgstr "Un gradino va registrato come aumento in franchi, non come nuova pigione — non è stato salvato nulla."
+msgid ""
+"Der Mietbeginn fehlt: Ohne ihn lässt sich die feste Dauer nicht beurteilen."
+msgstr ""
+"Manca l'inizio della locazione: senza di esso la durata fissa non può essere"
+" valutata."
 
 #, python-format
-msgid "Mietzinsmodell dieses Entwurfs (unverändert, daher nicht gesperrt): %(text)s"
-msgstr "Modello di pigione di questa bozza (invariato, quindi non bloccato): %(text)s"
+msgid ""
+"Stufe %(nr)s: «%(eingabe)s» ist als Datum nicht lesbar — nichts wurde "
+"gespeichert."
+msgstr ""
+"Gradino %(nr)s: «%(eingabe)s» non è leggibile come data — non è stato "
+"salvato nulla."
+
+#, python-format
+msgid ""
+"Stufe %(nr)s: «%(eingabe)s» ist als Erhöhung nicht lesbar — nichts wurde "
+"gespeichert."
+msgstr ""
+"Gradino %(nr)s: «%(eingabe)s» non è leggibile come aumento — non è stato "
+"salvato nulla."
+
+msgid ""
+"Eine Staffelstufe wird als Erhöhung in Franken erfasst, nicht als neuer "
+"Mietzins — nichts wurde gespeichert."
+msgstr ""
+"Un gradino va registrato come aumento in franchi, non come nuova pigione — "
+"non è stato salvato nulla."
+
+#, python-format
+msgid ""
+"Mietzinsmodell dieses Entwurfs (unverändert, daher nicht gesperrt): %(text)s"
+msgstr ""
+"Modello di pigione di questa bozza (invariato, quindi non bloccato): "
+"%(text)s"
 
 msgid "Vorschau nicht möglich: Das Mietzinsmodell ist noch nicht zulässig."
-msgstr "Anteprima non possibile: il modello di pigione non è ancora ammissibile."
+msgstr ""
+"Anteprima non possibile: il modello di pigione non è ancora ammissibile."
 
-msgid "Der Vertrag bleibt Entwurf: Das Mietzinsmodell ist nicht zulässig. Im Assistenten lässt es sich korrigieren."
-msgstr "Il contratto resta una bozza: il modello di pigione non è ammissibile. Si può correggere nell'assistente."
+msgid ""
+"Der Vertrag bleibt Entwurf: Das Mietzinsmodell ist nicht zulässig. Im "
+"Assistenten lässt es sich korrigieren."
+msgstr ""
+"Il contratto resta una bozza: il modello di pigione non è ammissibile. Si "
+"può correggere nell'assistente."
 
-msgid "Der Mietzins ist im Vertrag als fester Betrag vereinbart. Spätere Anpassungen gehen mit dem amtlichen Formular (Art. 269d OR); die Gründe stehen in Art. 269a OR, etwa Referenzzinssatz oder Kostensteigerung."
-msgstr "La pigione è convenuta nel contratto come importo fisso. Gli adeguamenti successivi avvengono con il modulo ufficiale (art. 269d CO); i motivi sono indicati nell'art. 269a CO, ad esempio il tasso d'interesse di riferimento o l'aumento dei costi."
+msgid ""
+"Der Mietzins ist im Vertrag als fester Betrag vereinbart. Spätere "
+"Anpassungen gehen mit dem amtlichen Formular (Art. 269d OR); die Gründe "
+"stehen in Art. 269a OR, etwa Referenzzinssatz oder Kostensteigerung."
+msgstr ""
+"La pigione è convenuta nel contratto come importo fisso. Gli adeguamenti "
+"successivi avvengono con il modulo ufficiale (art. 269d CO); i motivi sono "
+"indicati nell'art. 269a CO, ad esempio il tasso d'interesse di riferimento o"
+" l'aumento dei costi."
 
 msgid "Weitergabe der Teuerung"
 msgstr "Trasferimento del rincaro"
 
-msgid "Der Anteil der Teuerung, der in den Mietzins einfliesst. Höchstens 100 Prozent: Die Erhöhung darf die Zunahme des Landesindexes nicht übersteigen (Art. 17 Abs. 1 VMWG). Sinkt der Index, ist der Mietzins entsprechend anzupassen (Art. 17 Abs. 2 VMWG)."
-msgstr "La quota di rincaro che confluisce nella pigione. Al massimo 100 per cento: l'aumento non può superare l'incremento dell'indice (art. 17 cpv. 1 OLAL). Se l'indice scende, la pigione va adeguata di conseguenza (art. 17 cpv. 2 OLAL)."
+msgid ""
+"Der Anteil der Teuerung, der in den Mietzins einfliesst. Höchstens 100 "
+"Prozent: Die Erhöhung darf die Zunahme des Landesindexes nicht übersteigen "
+"(Art. 17 Abs. 1 VMWG). Sinkt der Index, ist der Mietzins entsprechend "
+"anzupassen (Art. 17 Abs. 2 VMWG)."
+msgstr ""
+"La quota di rincaro che confluisce nella pigione. Al massimo 100 per cento: "
+"l'aumento non può superare l'incremento dell'indice (art. 17 cpv. 1 OLAL). "
+"Se l'indice scende, la pigione va adeguata di conseguenza (art. 17 cpv. 2 "
+"OLAL)."
 
 msgid "Bekanntgabe des Indexstandes"
 msgstr "Pubblicazione del nuovo indice"
@@ -33692,8 +33783,14 @@ msgstr "Questi valori derivano dal contratto di locazione, non dalla legge."
 msgid "Mindestintervall"
 msgstr "Intervallo minimo"
 
-msgid "Der Abstand zwischen zwei Anpassungen, den die Parteien im Vertrag vereinbaren. Die Ankündigung selbst erfolgt mit mindestens 30 Tagen auf ein Monatsende (Art. 17 Abs. 3 VMWG)."
-msgstr "L'intervallo tra due adeguamenti convenuto dalle parti nel contratto. La comunicazione stessa avviene con almeno 30 giorni per la fine di un mese (art. 17 cpv. 3 OLAL)."
+msgid ""
+"Der Abstand zwischen zwei Anpassungen, den die Parteien im Vertrag "
+"vereinbaren. Die Ankündigung selbst erfolgt mit mindestens 30 Tagen auf ein "
+"Monatsende (Art. 17 Abs. 3 VMWG)."
+msgstr ""
+"L'intervallo tra due adeguamenti convenuto dalle parti nel contratto. La "
+"comunicazione stessa avviene con almeno 30 giorni per la fine di un mese "
+"(art. 17 cpv. 3 OLAL)."
 
 msgid "Monate"
 msgstr "mesi"
@@ -33845,52 +33942,113 @@ msgstr "Indicare una data d'invio valida."
 msgid "Mitteilung zur Erhöhung ab %(datum)s als versandt markiert."
 msgstr "Comunicazione dell'aumento dal %(datum)s contrassegnata come inviata."
 
-msgid "Der Vertrag bleibt archiviert: Das Mietzinsmodell ist nicht zulässig (Befunde oben)."
-msgstr "Il contratto resta archiviato: il modello di pigione non è ammissibile (rilievi sopra)."
+msgid ""
+"Der Vertrag bleibt archiviert: Das Mietzinsmodell ist nicht zulässig "
+"(Befunde oben)."
+msgstr ""
+"Il contratto resta archiviato: il modello di pigione non è ammissibile "
+"(rilievi sopra)."
 
 #, python-format
-msgid "Der Vertrag ist befristet und endet am %(datum)s ohne Kündigung (Art. 266 OR). Eine ordentliche Kündigung durch den Vermieter mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
-msgstr "Il contratto è di durata determinata e termina il %(datum)s senza disdetta (art. 266 CO). Una disdetta ordinaria da parte del locatore con effetto al %(wirkung)s (prima di questa data) non può essere registrata. Le disdette straordinarie, ad esempio per mora nel pagamento (art. 257d CO), rimangono possibili."
+msgid ""
+"Der Vertrag ist befristet und endet am %(datum)s ohne Kündigung (Art. 266 "
+"OR). Eine ordentliche Kündigung durch den Vermieter mit Wirkung auf den "
+"%(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche "
+"Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
+msgstr ""
+"Il contratto è di durata determinata e termina il %(datum)s senza disdetta "
+"(art. 266 CO). Una disdetta ordinaria da parte del locatore con effetto al "
+"%(wirkung)s (prima di questa data) non può essere registrata. Le disdette "
+"straordinarie, ad esempio per mora nel pagamento (art. 257d CO), rimangono "
+"possibili."
 
 #, python-format
-msgid "Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet (Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
-msgstr "Il locatore ha rinunciato alla disdetta fino al %(datum)s (rinuncia alla disdetta, art. 17 cpv. 4 OLAL). Una disdetta ordinaria con effetto al %(wirkung)s (prima di questa data) non può essere registrata. Le disdette straordinarie, ad esempio per mora nel pagamento (art. 257d CO), rimangono possibili."
+msgid ""
+"Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet "
+"(Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit "
+"Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. "
+"Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), "
+"bleiben möglich."
+msgstr ""
+"Il locatore ha rinunciato alla disdetta fino al %(datum)s (rinuncia alla "
+"disdetta, art. 17 cpv. 4 OLAL). Una disdetta ordinaria con effetto al "
+"%(wirkung)s (prima di questa data) non può essere registrata. Le disdette "
+"straordinarie, ad esempio per mora nel pagamento (art. 257d CO), rimangono "
+"possibili."
 
-# --- Geldpfade: Sperren, Eigentümerauszahlung aus eingegangenem Geld (Etappe 0, 28.10.2026) ---
-
-msgid "Keine Rechnung ausgewählt — oder die Rechnungen sind bereits in einer Zahlungsdatei."
-msgstr "Nessuna fattura selezionata — oppure le fatture sono già in un file di pagamento."
+# --- Geldpfade: Sperren, Eigentümerauszahlung aus eingegangenem Geld (Etappe
+# 0, 28.10.2026) ---
+msgid ""
+"Keine Rechnung ausgewählt — oder die Rechnungen sind bereits in einer "
+"Zahlungsdatei."
+msgstr ""
+"Nessuna fattura selezionata — oppure le fatture sono già in un file di "
+"pagamento."
 
 #, python-format
-msgid "%(schon)s Rechnung(en) waren schon bezahlt — nicht noch einmal verbucht."
-msgstr "%(schon)s fattura/e già pagata/e — non contabilizzata/e una seconda volta."
+msgid ""
+"%(schon)s Rechnung(en) waren schon bezahlt — nicht noch einmal verbucht."
+msgstr ""
+"%(schon)s fattura/e già pagata/e — non contabilizzata/e una seconda volta."
 
 #, python-format
-msgid "«%(titel)s»: Der offene Betrag hat sich seit dem Öffnen der Maske geändert (jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon verbucht. Nichts doppelt gebucht."
-msgstr "«%(titel)s»: l'importo aperto è cambiato dall'apertura della maschera (ora CHF %(offen)s) — il pagamento è probabilmente già stato contabilizzato. Nulla è stato contabilizzato due volte."
+msgid ""
+"«%(titel)s»: Der offene Betrag hat sich seit dem Öffnen der Maske geändert "
+"(jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon verbucht. Nichts "
+"doppelt gebucht."
+msgstr ""
+"«%(titel)s»: l'importo aperto è cambiato dall'apertura della maschera (ora "
+"CHF %(offen)s) — il pagamento è probabilmente già stato contabilizzato. "
+"Nulla è stato contabilizzato due volte."
 
 #, python-format
-msgid "«%(lieferant)s»: Der offene Betrag hat sich seit dem Öffnen der Maske geändert (jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon verbucht. Nichts doppelt gebucht."
-msgstr "«%(lieferant)s»: l'importo aperto è cambiato dall'apertura della maschera (ora CHF %(offen)s) — il pagamento è probabilmente già stato contabilizzato. Nulla è stato contabilizzato due volte."
+msgid ""
+"«%(lieferant)s»: Der offene Betrag hat sich seit dem Öffnen der Maske "
+"geändert (jetzt CHF %(offen)s) — die Zahlung wurde vermutlich schon "
+"verbucht. Nichts doppelt gebucht."
+msgstr ""
+"«%(lieferant)s»: l'importo aperto è cambiato dall'apertura della maschera "
+"(ora CHF %(offen)s) — il pagamento è probabilmente già stato contabilizzato."
+" Nulla è stato contabilizzato due volte."
 
 #, python-format
 msgid "Das Bankkonto «%(nummer)s» gibt es nicht."
 msgstr "Il conto bancario «%(nummer)s» non esiste."
 
 #, python-format
-msgid "Konto %(nummer)s ist kein Bankkonto für Auszahlungen. Das Kautionssperrkonto (1015) gehört den Mietern und kann nicht für Eigentümerauszahlungen benutzt werden."
-msgstr "Il conto %(nummer)s non è un conto bancario per i versamenti. Il conto di garanzia bloccato (1015) appartiene agli inquilini e non può essere utilizzato per i versamenti ai proprietari."
+msgid ""
+"Konto %(nummer)s ist kein Bankkonto für Auszahlungen. Das Kautionssperrkonto"
+" (1015) gehört den Mietern und kann nicht für Eigentümerauszahlungen benutzt"
+" werden."
+msgstr ""
+"Il conto %(nummer)s non è un conto bancario per i versamenti. Il conto di "
+"garanzia bloccato (1015) appartiene agli inquilini e non può essere "
+"utilizzato per i versamenti ai proprietari."
 
-msgid "Seit dem Öffnen der Maske wurde für diesen Eigentümer eine Auszahlung erfasst — vermutlich dieselbe. Bitte die Seite neu laden; es wurde nichts doppelt gebucht."
-msgstr "Dall'apertura della maschera è stato registrato un versamento per questo proprietario — probabilmente lo stesso. Ricaricare la pagina; nulla è stato contabilizzato due volte."
+msgid ""
+"Seit dem Öffnen der Maske wurde für diesen Eigentümer eine Auszahlung "
+"erfasst — vermutlich dieselbe. Bitte die Seite neu laden; es wurde nichts "
+"doppelt gebucht."
+msgstr ""
+"Dall'apertura della maschera è stato registrato un versamento per questo "
+"proprietario — probabilmente lo stesso. Ricaricare la pagina; nulla è stato "
+"contabilizzato due volte."
 
 #, python-format
-msgid "Auszahlbar sind höchstens CHF %(auszahlbar)s (eingegangene Mittel abzüglich bezahlter Kosten und bisheriger Auszahlungen). Verlangt: CHF %(betrag)s."
-msgstr "Si possono versare al massimo CHF %(auszahlbar)s (fondi incassati meno costi pagati e versamenti precedenti). Richiesto: CHF %(betrag)s."
+msgid ""
+"Auszahlbar sind höchstens CHF %(auszahlbar)s (eingegangene Mittel abzüglich "
+"bezahlter Kosten und bisheriger Auszahlungen). Verlangt: CHF %(betrag)s."
+msgstr ""
+"Si possono versare al massimo CHF %(auszahlbar)s (fondi incassati meno costi"
+" pagati e versamenti precedenti). Richiesto: CHF %(betrag)s."
 
 #, python-format
-msgid "Das Bankkonto %(nummer)s deckt die Auszahlung nicht: Saldo CHF %(saldo)s, verlangt CHF %(betrag)s."
-msgstr "Il conto bancario %(nummer)s non copre il versamento: saldo CHF %(saldo)s, richiesto CHF %(betrag)s."
+msgid ""
+"Das Bankkonto %(nummer)s deckt die Auszahlung nicht: Saldo CHF %(saldo)s, "
+"verlangt CHF %(betrag)s."
+msgstr ""
+"Il conto bancario %(nummer)s non copre il versamento: saldo CHF %(saldo)s, "
+"richiesto CHF %(betrag)s."
 
 msgid "Sollbasis: auch noch nicht bezahlte Mieten und Rechnungen"
 msgstr "Base per competenza: anche pigioni e fatture non ancora pagate"
@@ -33903,8 +34061,208 @@ msgid "Eingegangen %(e)s − bezahlt %(b)s − ausbezahlt %(a)s"
 msgstr "Incassato %(e)s − pagato %(b)s − versato %(a)s"
 
 #, python-format
-msgid "Auszahlbar: CHF %(a)s. Gezählt wird nur, was tatsächlich eingegangen ist, abzüglich bezahlter Kosten und bisheriger Auszahlungen — Kautionen und noch nicht bezahlte Mieten zählen nicht."
-msgstr "Versabile: CHF %(a)s. Conta solo quanto è stato effettivamente incassato, meno i costi pagati e i versamenti precedenti — le garanzie di locazione e le pigioni non pagate non contano."
+msgid ""
+"Auszahlbar: CHF %(a)s. Gezählt wird nur, was tatsächlich eingegangen ist, "
+"abzüglich bezahlter Kosten und bisheriger Auszahlungen — Kautionen und noch "
+"nicht bezahlte Mieten zählen nicht."
+msgstr ""
+"Versabile: CHF %(a)s. Conta solo quanto è stato effettivamente incassato, "
+"meno i costi pagati e i versamenti precedenti — le garanzie di locazione e "
+"le pigioni non pagate non contano."
 
 msgid "Zurzeit ist nichts auszahlbar."
 msgstr "Al momento non è possibile versare nulla."
+
+msgid "(ohne Namen)"
+msgstr "(senza nome)"
+
+msgid "Anschrift"
+msgstr "Indirizzo"
+
+#, python-format
+msgid "Anschrift der Verwaltung unvollständig: %(felder)s fehlt"
+msgstr "Indirizzo dell'amministrazione incompleto: manca %(felder)s"
+
+msgid "Anschrift des Lieferanten"
+msgstr "Indirizzo del fornitore"
+
+msgid "Anschrift ergänzen"
+msgstr "Completare l'indirizzo"
+
+msgid "Anschrift fehlt"
+msgstr "Indirizzo mancante"
+
+msgid "Anschrift für die Zahlungsdatei"
+msgstr "Indirizzo per il file di pagamento"
+
+#, python-format
+msgid "Anschrift unvollständig: %(felder)s fehlt"
+msgstr "Indirizzo incompleto: manca %(felder)s"
+
+#, python-format
+msgid "Anschrift von «%(lieferant)s» gespeichert."
+msgstr "Indirizzo di «%(lieferant)s» salvato."
+
+#, python-format
+msgid "Auch bei %(n)s weiteren offenen Rechnungen eingetragen."
+msgstr "Inserito anche in %(n)s altre fatture aperte."
+
+msgid ""
+"Auch bei den übrigen offenen Rechnungen dieses Lieferanten eintragen, die "
+"noch keine Anschrift haben"
+msgstr ""
+"Inserire l'indirizzo anche nelle altre fatture aperte di questo fornitore "
+"che non ne hanno ancora uno"
+
+msgid ""
+"Bei einer bezahlten oder stornierten Rechnung wird die Anschrift nicht mehr "
+"geändert."
+msgstr ""
+"L'indirizzo non viene più modificato per una fattura pagata o stornata."
+
+msgid "Betrag fehlt oder ist nicht positiv"
+msgstr "Importo mancante o non positivo"
+
+msgid "Betrag über CHF 999 999 999.99"
+msgstr "Importo superiore a CHF 999 999 999.99"
+
+#, python-format
+msgid ""
+"Die IBAN wurde geändert (vorher %(alt)s). Vor der Zahlung beim Lieferanten "
+"bestätigen lassen."
+msgstr ""
+"L'IBAN è stato modificato (prima %(alt)s). Prima del pagamento farlo "
+"confermare dal fornitore."
+
+#, python-format
+msgid ""
+"Die IBAN «%(iban)s» ist ungültig (Prüfziffer oder Länge). Bitte die Rechnung"
+" bearbeiten und die IBAN korrigieren."
+msgstr ""
+"L'IBAN «%(iban)s» non è valido (cifra di controllo o lunghezza). Modificare "
+"la fattura e correggere l'IBAN."
+
+msgid ""
+"Die Swiss Payment Standards verlangen ab dem 14.11.2026 die Anschrift des "
+"Begünstigten in der Zahlungsdatei, mindestens Ort und Land. Diese Seite "
+"ändert nur die Anschrift — Betrag, IBAN und Buchungen bleiben unberührt."
+msgstr ""
+"Dal 14.11.2026 gli Swiss Payment Standards richiedono nel file di pagamento "
+"l'indirizzo del beneficiario, almeno località e paese. Questa pagina "
+"modifica solo l'indirizzo: importo, IBAN e registrazioni restano invariati."
+
+msgid ""
+"Die Zahlungsaufforderung wurde nicht erzeugt, weil der Einzahlungsschein "
+"fehlerhaft wäre. Bitte IBAN und Anschrift der Verwaltung prüfen; es wurde "
+"nichts gespeichert oder versandt."
+msgstr ""
+"L'intimazione di pagamento non è stata creata perché la polizza di "
+"versamento sarebbe errata. Verificare IBAN e indirizzo dell'amministrazione;"
+" non è stato salvato né inviato nulla."
+
+msgid "Die Zahlungsdatei wurde nicht erzeugt."
+msgstr "Il file di pagamento non è stato creato."
+
+msgid ""
+"Freigabe erst nach Bestätigung: Kreuz «IBAN-Wechsel geprüft» in der Zeile "
+"setzen."
+msgstr ""
+"Approvazione solo dopo conferma: spuntare «Cambio IBAN verificato» nella "
+"riga."
+
+msgid "Hausnummer"
+msgstr "Numero civico"
+
+msgid "IBAN der Verwaltung fehlt"
+msgstr "IBAN dell'amministrazione mancante"
+
+msgid "IBAN der Verwaltung ungültig (Prüfziffer oder Länge stimmt nicht)"
+msgstr ""
+"IBAN dell'amministrazione non valido (cifra di controllo o lunghezza errata)"
+
+msgid "IBAN fehlt"
+msgstr "IBAN mancante"
+
+msgid "IBAN geändert?"
+msgstr "IBAN modificato?"
+
+msgid "IBAN ungültig (Prüfziffer oder Länge stimmt nicht)"
+msgstr "IBAN non valido (cifra di controllo o lunghezza errata)"
+
+msgid "IBAN weicht vom Lieferantenprofil ab"
+msgstr "L'IBAN differisce dal profilo del fornitore"
+
+#, python-format
+msgid ""
+"IBAN weicht vom Lieferantenprofil ab: bisher %(alt)s, jetzt %(neu)s. Vor der"
+" Freigabe beim Lieferanten nachfragen (Rechnungsbetrug)."
+msgstr ""
+"L'IBAN differisce dal profilo del fornitore: prima %(alt)s, ora %(neu)s. "
+"Prima dell'approvazione chiedere al fornitore (frode con fatture)."
+
+msgid "IBAN-Wechsel geprüft"
+msgstr "Cambio IBAN verificato"
+
+msgid "In den Kreditoren öffnen"
+msgstr "Aprire nei creditori"
+
+msgid ""
+"Jede Zahlung wird vor der Dateierzeugung geprüft; keine Rechnung wurde auf "
+"«In Zahlung» gesetzt. Bitte ergänzen oder die Rechnung aus der Auswahl "
+"nehmen:"
+msgstr ""
+"Ogni pagamento viene controllato prima della creazione del file; nessuna "
+"fattura è stata messa «In pagamento». Completare o togliere la fattura dalla"
+" selezione:"
+
+msgid "Keine Zahlung in der Auswahl"
+msgstr "Nessun pagamento nella selezione"
+
+msgid "Land (Code)"
+msgstr "Paese (codice)"
+
+msgid "Lieferantenname fehlt"
+msgstr "Nome del fornitore mancante"
+
+msgid "Name der Verwaltung fehlt"
+msgstr "Nome dell'amministrazione mancante"
+
+msgid ""
+"Ort und Land braucht die Zahlungsdatei (Swiss Payment Standards ab "
+"14.11.2026). Steht die Hausnummer in der Strasse, wird sie abgetrennt."
+msgstr ""
+"Il file di pagamento richiede località e paese (Swiss Payment Standards dal "
+"14.11.2026). Se il numero civico è nella via, viene separato."
+
+msgid "Profil → Account"
+msgstr "Profilo → Account"
+
+msgid "QR-IBAN, aber keine gültige QR-Referenz (27 Ziffern, Prüfziffer)"
+msgstr ""
+"IBAN QR, ma nessun riferimento QR valido (27 cifre, cifra di controllo)"
+
+msgid "Verwaltung (Auftraggeber)"
+msgstr "Amministrazione (ordinante)"
+
+#, python-format
+msgid ""
+"Zahlungsdatei nicht erzeugt: %(n)s Eintrag/Einträge sind unvollständig. "
+"Unten steht, was je Kreditor fehlt."
+msgstr ""
+"File di pagamento non creato: %(n)s voce/voci incomplete. Sotto è indicato "
+"cosa manca per ogni creditore."
+
+msgid "ergänzen"
+msgstr "completare"
+
+msgid "für die Zahlungsdatei"
+msgstr "per il file di pagamento"
+
+msgid "Zweibuchstabiger Ländercode, z. B. CH, DE, AT, FR, IT, LI."
+msgstr "Codice paese di due lettere, ad es. CH, DE, AT, FR, IT, LI."
+
+msgid "Ort fehlt — die Anschrift ist sonst unvollständig."
+msgstr "Manca la località — altrimenti l'indirizzo è incompleto."
+
+msgid "Der Ort fehlt."
+msgstr "Manca la località."

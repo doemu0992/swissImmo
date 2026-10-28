@@ -110,7 +110,10 @@ class Command(BaseCommand):
                 lieferant="E2E Sanitär AG", referenz="E2E-RF-1",
                 defaults=dict(liegenschaft=lg, status="freigegeben",
                               datum=date(2024, 3, 1), faellig_am=date(2024, 3, 31),
-                              betrag=Decimal("800"), iban="CH9300762011623852957"))
+                              betrag=Decimal("800"), iban="CH9300762011623852957",
+                              # Die Zahlungsdatei verlangt die Anschrift (SPS 2026).
+                              lieferant_strasse="Sanitärweg", lieferant_hausnummer="9",
+                              lieferant_plz="8005", lieferant_ort="Zürich"))
 
             # Zweite Einheit OHNE Fläche + NK-Periode mit m²-Beleg → die NK-Abrechnung
             # muss vor der fehlenden Fläche warnen (Warnbanner).

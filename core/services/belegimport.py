@@ -14,6 +14,8 @@ from email.header import decode_header
 
 from django.core.files.base import ContentFile
 
+from core.services.iban import ist_gueltige_iban
+
 logger = logging.getLogger(__name__)
 
 BELEG_ENDUNGEN = ('.pdf', '.jpg', '.jpeg', '.png', '.webp')
@@ -59,7 +61,23 @@ def beleg_importieren(datei, liegenschaft=None, quelle=''):
     from finance.lieferanten import vorbelegen
     if vorbelegen(kr, kategorie=daten.get('kategorie')):
         daten['konto_auto'] = kr.konto.nummer
+    # Anschrift für die Zahlungsdatei: aus dem QR-Code bzw. der KI-Erkennung, sonst
+    # die gelernte des Lieferanten. Fehlt beides, bleibt sie leer (der Zahllauf
+    # meldet es) — geraten wird nichts.
+    from finance.kreditor_adresse import adresse_setzen, aus_profil_uebernehmen
+    adresse = daten.get('adresse') or {}
+    if (adresse.get('ort') or '').strip():
+        adresse_setzen(kr, adresse)
+    else:
+        aus_profil_uebernehmen(kr)
     hinweis = '' if daten.get('methode') in ('ki', 'vision', 'qr') else (daten.get('hinweis') or '')
+    if kr.iban and not ist_gueltige_iban(kr.iban):
+        # Eine gelesene IBAN ohne stimmende Prüfziffer ist fast immer ein
+        # Lesefehler (Ziffer vertauscht, Zeichen verwechselt). Sie bleibt zur
+        # Korrektur stehen, aber die Freigabe lässt sie nicht durch.
+        warnung = (f"Gelesene IBAN {kr.iban} ist ungültig (Prüfziffer) — bitte mit dem Beleg "
+                   "vergleichen und korrigieren.")
+        hinweis = warnung + (f" · {hinweis}" if hinweis else '')
     if quelle:
         hinweis = quelle + (f" · {hinweis}" if hinweis else '')
     kr.fehlermeldung = hinweis

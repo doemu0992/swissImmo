@@ -10,6 +10,7 @@
 # der Nachweis wichtig, dass hier NICHTS geaendert wurde -- Blockinhalt
 # gegen HEAD Zeile fuer Zeile identisch.
 
+import logging
 import re
 from datetime import date, timedelta as _timedelta
 from decimal import Decimal
@@ -27,6 +28,8 @@ from rentals.models import Mietvertrag
 
 from ._basis import _global_filter
 from core.services.dokumentsprache import auf_deutsch
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================
@@ -526,6 +529,7 @@ def fw_verzug_257d(request, vertrag_id):
         # Dasselbe 257d-PDF wie /vertrag/<id>/mahnung/ (sauberer Brief mit
         # Kuendigungsandrohung + QR-Rechnung) statt eines generischen Serienbriefs.
         from core.views.email_views import generate_mahnung_combined_pdf_bytes
+        from core.utils.qr_code import sammelreferenz
 
         # Empfaenger: Primaer (Mieter) + separat adressierte Kopien. Art. 266n OR
         # erfasst die Fristansetzung nach 257d: bei FAMILIENWOHNUNG muss sie Mieter
@@ -555,12 +559,22 @@ def fw_verzug_257d(request, vertrag_id):
         pdf = None
         abgelegt = []
         for i, ovr in enumerate(zustellungen):
-            # Eine einzelne QRR trägt nur EINE Forderung: bei mehreren gemahnten
-            # Forderungen bleibt die Referenz leer, statt die Zahlung der ersten
-            # zuzuschlagen.
-            _ref = faellige[0].qr_referenz if len(faellige) == 1 else None
-            _p = generate_mahnung_combined_pdf_bytes(v, vw, _monat, _betrag, heute,
-                                                     empfaenger=ovr, reference=_ref)
+            # Eine einzelne QRR trägt nur EINE Forderung: Bei mehreren gemahnten
+            # Forderungen steht die Sammelreferenz des Vertrags auf dem Schein.
+            # Sie ist gültig, wird aber keiner Einzelforderung zugeschlagen. Eine
+            # LEERE Referenz ergäbe zur QR-IBAN einen Einzahlungsschein mit «NON»,
+            # den das E-Banking ablehnt — der Mieter könnte nicht zahlen, und die
+            # darauf gestützte Kündigung wäre angreifbar (FIN-11).
+            _ref = (faellige[0].qr_referenz if len(faellige) == 1 else '') or sammelreferenz(v.id)
+            try:
+                _p = generate_mahnung_combined_pdf_bytes(v, vw, _monat, _betrag, heute,
+                                                         empfaenger=ovr, reference=_ref)
+            except Exception:
+                logger.exception("257d: Zahlungsaufforderung für Vertrag %s nicht erzeugt", v.pk)
+                messages.error(request, '⛔ ' + gettext(
+                    'Die Zahlungsaufforderung wurde nicht erzeugt, weil der Einzahlungsschein fehlerhaft wäre. '
+                    'Bitte IBAN und Anschrift der Verwaltung prüfen; es wurde nichts gespeichert oder versandt.'))
+                return redirect(f'/neu/vertraege/{v.id}/')
             if i == 0:
                 pdf = _p
             _to = ovr['name'] if ovr else m.display_name

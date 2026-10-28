@@ -167,6 +167,15 @@ AUSNAHMEN = {
         '(verkettet Original mit Storno)',
     'finance.LieferantProfil.standard_konto':
         'setzt `finance/lieferanten.py` aus der gelernten Zuordnung',
+    # Zahlungsdatei (Etappe 0, 28.10.2026): Das Lieferantenprofil lernt die
+    # Anschrift aus der freigegebenen Rechnung (`lerne_lieferant`) bzw. von der
+    # Adressseite (`lerne_adresse`). Eingegeben wird sie an der Rechnung
+    # (`KreditorenRechnung.lieferant_*`, Formulare in kreditoren.html).
+    'finance.LieferantProfil.strasse': 'gelernt von `finance/lieferanten.py` aus der Rechnung',
+    'finance.LieferantProfil.hausnummer': 'gelernt von `finance/lieferanten.py` aus der Rechnung',
+    'finance.LieferantProfil.plz': 'gelernt von `finance/lieferanten.py` aus der Rechnung',
+    'finance.LieferantProfil.ort': 'gelernt von `finance/lieferanten.py` aus der Rechnung',
+    'finance.LieferantProfil.land': 'gelernt von `finance/lieferanten.py` aus der Rechnung',
     'finance.DebitorenRechnung.pdf_dokument': 'entsteht im Lauf oder Import, nicht von Hand',
     'finance.DebitorenRechnung.qr_referenz': 'entsteht im Lauf oder Import, nicht von Hand',
     'finance.DebitorenRechnung.quell_kreditor': 'entsteht im Lauf oder Import, nicht von Hand',

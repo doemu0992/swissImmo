@@ -45,6 +45,28 @@
 </div>
 {% endif %}
 
+{% if fehler_liste %}
+<div class="fw-card" role="alert" id="zahllauf-fehler">
+    <div class="fw-hinweis crit">
+        <span class="fw-hi">{% zeichen 'kritisch' %}</span>
+        <div class="fw-ht fliess">
+            <b>{% trans "Die Zahlungsdatei wurde nicht erzeugt." %}</b>
+            {% trans "Jede Zahlung wird vor der Dateierzeugung geprüft; keine Rechnung wurde auf «In Zahlung» gesetzt. Bitte ergänzen oder die Rechnung aus der Auswahl nehmen:" %}
+            <ul class="mt-2 space-y-1.5">
+                {% for f in fehler_liste %}
+                <li>
+                    <span class="fw-strong">{{ f.lieferant }}</span> — {{ f.texte|join:"; " }}
+                    {% if f.id and f.adresse %}<a href="/neu/kreditoren/{{ f.id }}/adresse/?next=/neu/zahllauf/" class="fw-link">{% trans "Anschrift ergänzen" %}</a>
+                    {% elif f.id %}<a href="/neu/kreditoren/?q={{ f.lieferant|urlencode }}" class="fw-link">{% trans "In den Kreditoren öffnen" %}</a>
+                    {% else %}<a href="/neu/account/" class="fw-link">{% trans "Profil → Account" %}</a>{% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="fw-kpis">
     <div class="fw-kpi">
         <div class="fw-l">{% blocktrans count n=vorschlag|length %}Vorschlag ({{ n }} Rechnung){% plural %}Vorschlag ({{ n }} Rechnungen){% endblocktrans %}</div>
@@ -101,6 +123,8 @@
                 <td class="fw-strong whitespace-nowrap">
                     {{ z.k.lieferant|default:"—" }}
                     {% if z.k.referenz %}<div class="fw-sub2">{{ z.k.referenz }}</div>{% endif %}
+                    {% for t in z.probleme %}<div class="fw-sub2 fw-warnton">{{ t }}</div>{% endfor %}
+                    {% if z.adresse_fehlt %}<a href="/neu/kreditoren/{{ z.k.id }}/adresse/?next=/neu/zahllauf/" class="fw-link fw-klein">{% trans "Anschrift ergänzen" %}</a>{% endif %}
                 </td>
                 <td class="fw-mutet whitespace-nowrap">{{ z.objekt }}</td>
                 <td class="whitespace-nowrap">

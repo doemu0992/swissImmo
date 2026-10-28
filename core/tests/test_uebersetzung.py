@@ -160,6 +160,9 @@ UEBERSETZT = (
     'fw/kontenplan.html',
     'fw/kontoblatt.html',
     'fw/kreditoren.html',
+    # Zahlungsdatei (Etappe 0, 28.10.2026): Anschrift des Lieferanten.
+    'fw/kreditor_adresse.html',
+    'fw/_kreditor_adresse_felder.html',
     'fw/kuendigung_form.html',
     # Audit 26.10.2026 (Mietzinsanpassung/Kündigung): neu ausgezeichnet.
     'fw/anfangsmietzins.html',
