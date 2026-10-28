@@ -1,0 +1,24 @@
+{% load i18n %}{% comment %}
+   Anschrift des Lieferanten für die Zahlungsdatei — EINE Fassung für das Erfassen,
+   das Bearbeiten und die Adressseite einer freigegebenen Rechnung.
+   Erwartet: `werte` (Wörterbuch mit lieferant_strasse … lieferant_land),
+   `fehler` (Meldungen je Feldname), `idp` (Präfix der Feld-IDs, je Zeile eindeutig)
+   und `klasse` (Spannweite im umgebenden Raster).
+{% endcomment %}
+<div class="{{ klasse }}">
+    <div class="fw-subhead mb-1.5">{% trans "Anschrift des Lieferanten" %} <span class="fw-faint">({% trans "für die Zahlungsdatei" %})</span></div>
+    <div class="fw-raster r2">
+        <div><label for="{{ idp }}-strasse" class="fw-label mb-1">{% trans "Strasse" %}</label>
+            <input id="{{ idp }}-strasse" name="lieferant_strasse" maxlength="70" autocomplete="off" value="{{ werte.lieferant_strasse }}" class="fw-feld w-full"{% if fehler.lieferant_strasse %} aria-invalid="true" aria-describedby="{{ idp }}-strasse_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=fehler.lieferant_strasse feld_id=idp|add:"-strasse" %}</div>
+        <div><label for="{{ idp }}-hausnummer" class="fw-label mb-1">{% trans "Hausnummer" %}</label>
+            <input id="{{ idp }}-hausnummer" name="lieferant_hausnummer" maxlength="16" autocomplete="off" value="{{ werte.lieferant_hausnummer }}" class="fw-feld w-full"{% if fehler.lieferant_hausnummer %} aria-invalid="true" aria-describedby="{{ idp }}-hausnummer_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=fehler.lieferant_hausnummer feld_id=idp|add:"-hausnummer" %}</div>
+        <div><label for="{{ idp }}-plz" class="fw-label mb-1">{% trans "PLZ" %}</label>
+            <input id="{{ idp }}-plz" name="lieferant_plz" maxlength="16" inputmode="numeric" autocomplete="off" value="{{ werte.lieferant_plz }}" class="fw-feld w-full"{% if fehler.lieferant_plz %} aria-invalid="true" aria-describedby="{{ idp }}-plz_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=fehler.lieferant_plz feld_id=idp|add:"-plz" %}</div>
+        <div><label for="{{ idp }}-ort" class="fw-label mb-1">{% trans "Ort" %}</label>
+            <input id="{{ idp }}-ort" name="lieferant_ort" maxlength="35" autocomplete="off" value="{{ werte.lieferant_ort }}" class="fw-feld w-full"{% if fehler.lieferant_ort %} aria-invalid="true" aria-describedby="{{ idp }}-ort_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with f=None fehler=fehler.lieferant_ort feld_id=idp|add:"-ort" %}</div>
+        <div><label for="{{ idp }}-land" class="fw-label mb-1">{% trans "Land (Code)" %}</label>
+            <input id="{{ idp }}-land" name="lieferant_land" maxlength="2" list="{{ idp }}-laender" autocomplete="off" value="{{ werte.lieferant_land|default:'CH' }}" class="fw-feld w-full fw-mono"{% if fehler.lieferant_land %} aria-invalid="true" aria-describedby="{{ idp }}-land_fehler"{% endif %}>
+            <datalist id="{{ idp }}-laender"><option value="CH"><option value="LI"><option value="DE"><option value="AT"><option value="FR"><option value="IT"></datalist>{% include 'fw/_feldfehler.html' with f=None fehler=fehler.lieferant_land feld_id=idp|add:"-land" %}</div>
+    </div>
+    <span class="fw-hilfe">{% trans "Ort und Land braucht die Zahlungsdatei (Swiss Payment Standards ab 14.11.2026). Steht die Hausnummer in der Strasse, wird sie abgetrennt." %}</span>
+</div>

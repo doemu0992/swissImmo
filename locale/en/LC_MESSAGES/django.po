@@ -33412,3 +33412,146 @@ msgstr "The lease is fixed-term and ends on %(datum)s without notice (Art. 266 C
 #, python-format
 msgid "Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet (Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
 msgstr "The landlord has waived termination until %(datum)s (waiver of termination, Art. 17 para. 4 VMWG). An ordinary termination taking effect on %(wirkung)s (before this date) cannot be recorded. Extraordinary terminations, for example for default in payment (Art. 257d CO), remain possible."
+
+msgid "(ohne Namen)"
+msgstr "(no name)"
+
+msgid "Anschrift"
+msgstr "Address"
+
+#, python-format
+msgid "Anschrift der Verwaltung unvollständig: %(felder)s fehlt"
+msgstr "Property manager address incomplete: %(felder)s missing"
+
+msgid "Anschrift des Lieferanten"
+msgstr "Supplier address"
+
+msgid "Anschrift ergänzen"
+msgstr "Complete address"
+
+msgid "Anschrift fehlt"
+msgstr "Address missing"
+
+msgid "Anschrift für die Zahlungsdatei"
+msgstr "Address for the payment file"
+
+#, python-format
+msgid "Anschrift unvollständig: %(felder)s fehlt"
+msgstr "Address incomplete: %(felder)s missing"
+
+#, python-format
+msgid "Anschrift von «%(lieferant)s» gespeichert."
+msgstr "Address of \"%(lieferant)s\" saved."
+
+#, python-format
+msgid "Auch bei %(n)s weiteren offenen Rechnungen eingetragen."
+msgstr "Also entered on %(n)s further open invoices."
+
+msgid "Auch bei den übrigen offenen Rechnungen dieses Lieferanten eintragen, die noch keine Anschrift haben"
+msgstr "Also enter it on this supplier's other open invoices that have no address yet"
+
+msgid "Bei einer bezahlten oder stornierten Rechnung wird die Anschrift nicht mehr geändert."
+msgstr "The address of a paid or cancelled invoice is no longer changed."
+
+msgid "Betrag fehlt oder ist nicht positiv"
+msgstr "Amount missing or not positive"
+
+msgid "Betrag über CHF 999 999 999.99"
+msgstr "Amount above CHF 999 999 999.99"
+
+#, python-format
+msgid "Die IBAN wurde geändert (vorher %(alt)s). Vor der Zahlung beim Lieferanten bestätigen lassen."
+msgstr "The IBAN was changed (previously %(alt)s). Have the supplier confirm it before paying."
+
+#, python-format
+msgid "Die IBAN «%(iban)s» ist ungültig (Prüfziffer oder Länge). Bitte die Rechnung bearbeiten und die IBAN korrigieren."
+msgstr "The IBAN \"%(iban)s\" is invalid (check digits or length). Please edit the invoice and correct the IBAN."
+
+msgid "Die Swiss Payment Standards verlangen ab dem 14.11.2026 die Anschrift des Begünstigten in der Zahlungsdatei, mindestens Ort und Land. Diese Seite ändert nur die Anschrift — Betrag, IBAN und Buchungen bleiben unberührt."
+msgstr "From 14.11.2026 the Swiss Payment Standards require the beneficiary address in the payment file, at least town and country. This page only changes the address — amount, IBAN and postings stay untouched."
+
+msgid "Die Zahlungsaufforderung wurde nicht erzeugt, weil der Einzahlungsschein fehlerhaft wäre. Bitte IBAN und Anschrift der Verwaltung prüfen; es wurde nichts gespeichert oder versandt."
+msgstr "The payment demand was not created because the payment slip would be faulty. Please check the property manager's IBAN and address; nothing was saved or sent."
+
+msgid "Die Zahlungsdatei wurde nicht erzeugt."
+msgstr "The payment file was not created."
+
+msgid "Freigabe erst nach Bestätigung: Kreuz «IBAN-Wechsel geprüft» in der Zeile setzen."
+msgstr "Approval only after confirmation: tick \"IBAN change checked\" in the row."
+
+msgid "Hausnummer"
+msgstr "House number"
+
+msgid "IBAN der Verwaltung fehlt"
+msgstr "Property manager IBAN missing"
+
+msgid "IBAN der Verwaltung ungültig (Prüfziffer oder Länge stimmt nicht)"
+msgstr "Property manager IBAN invalid (check digits or length wrong)"
+
+msgid "IBAN fehlt"
+msgstr "IBAN missing"
+
+msgid "IBAN geändert?"
+msgstr "IBAN changed?"
+
+msgid "IBAN ungültig (Prüfziffer oder Länge stimmt nicht)"
+msgstr "IBAN invalid (check digits or length wrong)"
+
+msgid "IBAN weicht vom Lieferantenprofil ab"
+msgstr "IBAN differs from the supplier profile"
+
+#, python-format
+msgid "IBAN weicht vom Lieferantenprofil ab: bisher %(alt)s, jetzt %(neu)s. Vor der Freigabe beim Lieferanten nachfragen (Rechnungsbetrug)."
+msgstr "IBAN differs from the supplier profile: previously %(alt)s, now %(neu)s. Ask the supplier before approving (invoice fraud)."
+
+msgid "IBAN-Wechsel geprüft"
+msgstr "IBAN change checked"
+
+msgid "In den Kreditoren öffnen"
+msgstr "Open in creditors"
+
+msgid "Jede Zahlung wird vor der Dateierzeugung geprüft; keine Rechnung wurde auf «In Zahlung» gesetzt. Bitte ergänzen oder die Rechnung aus der Auswahl nehmen:"
+msgstr "Every payment is checked before the file is created; no invoice was set to \"In payment\". Please complete it or remove the invoice from the selection:"
+
+msgid "Keine Zahlung in der Auswahl"
+msgstr "No payment in the selection"
+
+msgid "Land (Code)"
+msgstr "Country (code)"
+
+msgid "Lieferantenname fehlt"
+msgstr "Supplier name missing"
+
+msgid "Name der Verwaltung fehlt"
+msgstr "Property manager name missing"
+
+msgid "Ort und Land braucht die Zahlungsdatei (Swiss Payment Standards ab 14.11.2026). Steht die Hausnummer in der Strasse, wird sie abgetrennt."
+msgstr "The payment file needs town and country (Swiss Payment Standards from 14.11.2026). If the house number is in the street field, it is split off."
+
+msgid "Profil → Account"
+msgstr "Profile → Account"
+
+msgid "QR-IBAN, aber keine gültige QR-Referenz (27 Ziffern, Prüfziffer)"
+msgstr "QR-IBAN, but no valid QR reference (27 digits, check digit)"
+
+msgid "Verwaltung (Auftraggeber)"
+msgstr "Property manager (debtor)"
+
+#, python-format
+msgid "Zahlungsdatei nicht erzeugt: %(n)s Eintrag/Einträge sind unvollständig. Unten steht, was je Kreditor fehlt."
+msgstr "Payment file not created: %(n)s entries are incomplete. Below is what is missing per creditor."
+
+msgid "ergänzen"
+msgstr "complete"
+
+msgid "für die Zahlungsdatei"
+msgstr "for the payment file"
+
+msgid "Zweibuchstabiger Ländercode, z. B. CH, DE, AT, FR, IT, LI."
+msgstr "Two-letter country code, e.g. CH, DE, AT, FR, IT, LI."
+
+msgid "Ort fehlt — die Anschrift ist sonst unvollständig."
+msgstr "Town missing — the address is otherwise incomplete."
+
+msgid "Der Ort fehlt."
+msgstr "The town is missing."

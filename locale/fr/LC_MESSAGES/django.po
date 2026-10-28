@@ -33910,3 +33910,146 @@ msgstr "Le bail est de durée déterminée et prend fin le %(datum)s sans résil
 #, python-format
 msgid "Der Vermieter hat bis zum %(datum)s auf die Kündigung verzichtet (Kündigungsverzicht, Art. 17 Abs. 4 VMWG). Eine ordentliche Kündigung mit Wirkung auf den %(wirkung)s (vor diesem Datum) kann nicht erfasst werden. Ausserordentliche Kündigungen, etwa wegen Zahlungsverzugs (Art. 257d OR), bleiben möglich."
 msgstr "Le bailleur a renoncé à résilier jusqu'au %(datum)s (renonciation à la résiliation, art. 17 al. 4 OBLF). Une résiliation ordinaire avec effet au %(wirkung)s (avant cette date) ne peut pas être enregistrée. Les résiliations extraordinaires, par exemple pour demeure dans le paiement (art. 257d CO), restent possibles."
+
+msgid "(ohne Namen)"
+msgstr "(sans nom)"
+
+msgid "Anschrift"
+msgstr "Adresse"
+
+#, python-format
+msgid "Anschrift der Verwaltung unvollständig: %(felder)s fehlt"
+msgstr "Adresse de la gérance incomplète : %(felder)s manquant(s)"
+
+msgid "Anschrift des Lieferanten"
+msgstr "Adresse du fournisseur"
+
+msgid "Anschrift ergänzen"
+msgstr "Compléter l'adresse"
+
+msgid "Anschrift fehlt"
+msgstr "Adresse manquante"
+
+msgid "Anschrift für die Zahlungsdatei"
+msgstr "Adresse pour le fichier de paiement"
+
+#, python-format
+msgid "Anschrift unvollständig: %(felder)s fehlt"
+msgstr "Adresse incomplète : %(felder)s manquant(s)"
+
+#, python-format
+msgid "Anschrift von «%(lieferant)s» gespeichert."
+msgstr "Adresse de « %(lieferant)s » enregistrée."
+
+#, python-format
+msgid "Auch bei %(n)s weiteren offenen Rechnungen eingetragen."
+msgstr "Également saisie pour %(n)s autres factures ouvertes."
+
+msgid "Auch bei den übrigen offenen Rechnungen dieses Lieferanten eintragen, die noch keine Anschrift haben"
+msgstr "Saisir aussi l'adresse pour les autres factures ouvertes de ce fournisseur qui n'en ont pas encore"
+
+msgid "Bei einer bezahlten oder stornierten Rechnung wird die Anschrift nicht mehr geändert."
+msgstr "L'adresse n'est plus modifiée pour une facture payée ou annulée."
+
+msgid "Betrag fehlt oder ist nicht positiv"
+msgstr "Montant manquant ou non positif"
+
+msgid "Betrag über CHF 999 999 999.99"
+msgstr "Montant supérieur à CHF 999 999 999.99"
+
+#, python-format
+msgid "Die IBAN wurde geändert (vorher %(alt)s). Vor der Zahlung beim Lieferanten bestätigen lassen."
+msgstr "L'IBAN a été modifiée (auparavant %(alt)s). Faites-la confirmer par le fournisseur avant le paiement."
+
+#, python-format
+msgid "Die IBAN «%(iban)s» ist ungültig (Prüfziffer oder Länge). Bitte die Rechnung bearbeiten und die IBAN korrigieren."
+msgstr "L'IBAN « %(iban)s » n'est pas valide (chiffre de contrôle ou longueur). Veuillez modifier la facture et corriger l'IBAN."
+
+msgid "Die Swiss Payment Standards verlangen ab dem 14.11.2026 die Anschrift des Begünstigten in der Zahlungsdatei, mindestens Ort und Land. Diese Seite ändert nur die Anschrift — Betrag, IBAN und Buchungen bleiben unberührt."
+msgstr "Les Swiss Payment Standards exigent dès le 14.11.2026 l'adresse du bénéficiaire dans le fichier de paiement, au minimum la localité et le pays. Cette page ne modifie que l'adresse — le montant, l'IBAN et les écritures restent inchangés."
+
+msgid "Die Zahlungsaufforderung wurde nicht erzeugt, weil der Einzahlungsschein fehlerhaft wäre. Bitte IBAN und Anschrift der Verwaltung prüfen; es wurde nichts gespeichert oder versandt."
+msgstr "La sommation de paiement n'a pas été créée, car le bulletin de versement serait défectueux. Veuillez vérifier l'IBAN et l'adresse de la gérance ; rien n'a été enregistré ni envoyé."
+
+msgid "Die Zahlungsdatei wurde nicht erzeugt."
+msgstr "Le fichier de paiement n'a pas été créé."
+
+msgid "Freigabe erst nach Bestätigung: Kreuz «IBAN-Wechsel geprüft» in der Zeile setzen."
+msgstr "Validation seulement après confirmation : cocher « Changement d'IBAN vérifié » dans la ligne."
+
+msgid "Hausnummer"
+msgstr "Numéro"
+
+msgid "IBAN der Verwaltung fehlt"
+msgstr "IBAN de la gérance manquant"
+
+msgid "IBAN der Verwaltung ungültig (Prüfziffer oder Länge stimmt nicht)"
+msgstr "IBAN de la gérance non valide (chiffre de contrôle ou longueur incorrect)"
+
+msgid "IBAN fehlt"
+msgstr "IBAN manquant"
+
+msgid "IBAN geändert?"
+msgstr "IBAN modifié ?"
+
+msgid "IBAN ungültig (Prüfziffer oder Länge stimmt nicht)"
+msgstr "IBAN non valide (chiffre de contrôle ou longueur incorrect)"
+
+msgid "IBAN weicht vom Lieferantenprofil ab"
+msgstr "L'IBAN diffère du profil du fournisseur"
+
+#, python-format
+msgid "IBAN weicht vom Lieferantenprofil ab: bisher %(alt)s, jetzt %(neu)s. Vor der Freigabe beim Lieferanten nachfragen (Rechnungsbetrug)."
+msgstr "L'IBAN diffère du profil du fournisseur : auparavant %(alt)s, maintenant %(neu)s. Avant la validation, demander au fournisseur (fraude à la facture)."
+
+msgid "IBAN-Wechsel geprüft"
+msgstr "Changement d'IBAN vérifié"
+
+msgid "In den Kreditoren öffnen"
+msgstr "Ouvrir dans les créanciers"
+
+msgid "Jede Zahlung wird vor der Dateierzeugung geprüft; keine Rechnung wurde auf «In Zahlung» gesetzt. Bitte ergänzen oder die Rechnung aus der Auswahl nehmen:"
+msgstr "Chaque paiement est contrôlé avant la création du fichier ; aucune facture n'a été mise « En paiement ». Veuillez compléter ou retirer la facture de la sélection :"
+
+msgid "Keine Zahlung in der Auswahl"
+msgstr "Aucun paiement dans la sélection"
+
+msgid "Land (Code)"
+msgstr "Pays (code)"
+
+msgid "Lieferantenname fehlt"
+msgstr "Nom du fournisseur manquant"
+
+msgid "Name der Verwaltung fehlt"
+msgstr "Nom de la gérance manquant"
+
+msgid "Ort und Land braucht die Zahlungsdatei (Swiss Payment Standards ab 14.11.2026). Steht die Hausnummer in der Strasse, wird sie abgetrennt."
+msgstr "Le fichier de paiement exige la localité et le pays (Swiss Payment Standards dès le 14.11.2026). Si le numéro figure dans la rue, il est séparé."
+
+msgid "Profil → Account"
+msgstr "Profil → Compte"
+
+msgid "QR-IBAN, aber keine gültige QR-Referenz (27 Ziffern, Prüfziffer)"
+msgstr "IBAN QR, mais pas de référence QR valable (27 chiffres, chiffre de contrôle)"
+
+msgid "Verwaltung (Auftraggeber)"
+msgstr "Gérance (donneur d'ordre)"
+
+#, python-format
+msgid "Zahlungsdatei nicht erzeugt: %(n)s Eintrag/Einträge sind unvollständig. Unten steht, was je Kreditor fehlt."
+msgstr "Fichier de paiement non créé : %(n)s entrée(s) incomplète(s). Ci-dessous, ce qui manque pour chaque créancier."
+
+msgid "ergänzen"
+msgstr "compléter"
+
+msgid "für die Zahlungsdatei"
+msgstr "pour le fichier de paiement"
+
+msgid "Zweibuchstabiger Ländercode, z. B. CH, DE, AT, FR, IT, LI."
+msgstr "Code pays à deux lettres, p. ex. CH, DE, AT, FR, IT, LI."
+
+msgid "Ort fehlt — die Anschrift ist sonst unvollständig."
+msgstr "Localité manquante — sinon l'adresse est incomplète."
+
+msgid "Der Ort fehlt."
+msgstr "La localité manque."

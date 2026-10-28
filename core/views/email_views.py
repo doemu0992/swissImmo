@@ -4,6 +4,7 @@ from rentals.models import Mietvertrag, Leerstand
 from finance.models import AbrechnungsPeriode
 
 import io
+import logging
 import datetime
 from decimal import Decimal
 from django.core.mail import EmailMultiAlternatives
@@ -25,6 +26,8 @@ from reportlab.lib import colors
 # Eigene Imports
 from core.utils.billing import berechne_abrechnung
 from core.utils.qr_code import draw_qr_bill
+
+logger = logging.getLogger(__name__)
 
 # ==============================================================================
 # HILFSFUNKTIONEN FÜR PDF-GENERIERUNG
@@ -208,7 +211,13 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
 
             # `reference`: QRR der gemahnten Forderung. Ohne sie wäre die QR-Rechnung
             # mit QR-IBAN nach SIX-Spezifikation ungültig (NON + QR-IBAN) und die
-            # Zahlung im camt-Import nicht zuordenbar.
+            # Zahlung im camt-Import nicht zuordenbar. Mahnt das Schreiben mehrere
+            # Forderungen (`reference` leer), trägt der Schein die Sammelreferenz
+            # des Vertrags — gültig, aber keiner Einzelforderung zugeschlagen.
+            from core.utils.qr_code import ist_qr_iban, sammelreferenz
+            if ist_qr_iban(iban):
+                reference = reference or sammelreferenz(vertrag.id)
+                gebuehr_reference = gebuehr_reference or sammelreferenz(vertrag.id)
             draw_qr_bill(c, iban, creditor, debtor, betrag_float,
                          f"Mahnung {monat_str} {vertrag.einheit.bezeichnung}",
                          reference=reference)
@@ -218,7 +227,13 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
                 draw_qr_bill(c, iban, creditor, debtor, float(gebuehr),
                              f"Mahngebühr {monat_str} {vertrag.einheit.bezeichnung}",
                              reference=gebuehr_reference)
-        except: pass
+        except Exception:
+            # Früher `except: pass`: Das Schreiben ging OHNE Einzahlungsschein
+            # hinaus, und niemand erfuhr davon — bei einer Zahlungsaufforderung
+            # nach Art. 257d OR ein Mangel mit Folgen. Jetzt steht der Fehler im
+            # Protokoll und bricht die Erzeugung ab.
+            logger.exception("Mahnung/257d: QR-Rechnung für Vertrag %s nicht erzeugt", vertrag.pk)
+            raise
 
     c.save(); buffer.seek(0)
     return buffer.getvalue()

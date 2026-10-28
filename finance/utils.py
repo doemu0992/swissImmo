@@ -49,7 +49,10 @@ Antworte AUSSCHLIESSLICH als gültiges JSON mit exakt diesen Keys:
   "reparatur", "verwaltung", "sonstiges")
 - leistung_von (string, Beginn der Leistungs-/Abrechnungsperiode YYYY-MM-DD,
   falls die Rechnung eine Periode nennt, z.B. «Abrechnung 01.01.–31.12.»; sonst null)
-- leistung_bis (string, Ende der Leistungsperiode YYYY-MM-DD; sonst null)"""
+- leistung_bis (string, Ende der Leistungsperiode YYYY-MM-DD; sonst null)
+- strasse, hausnummer, plz, ort (string: die Anschrift des RECHNUNGSSTELLERS, also
+  des Lieferanten — nicht des Empfängers; Strasse ohne Hausnummer; sonst "")
+- land (string, zweibuchstabiger Ländercode des Rechnungsstellers, z.B. "CH"; sonst "")"""
 
 # --- Schweizer QR-Zahlteil: deterministische Extraktion (übersteuert die KI) ---
 # Für QRR-Zahlungen zählen NUR die 27-stellige QR-Referenz (Mod10-rekursiv
@@ -106,6 +109,16 @@ def _spc_parsen(text):
         'lieferant': zeilen[5].strip(),           # Zahlungsempfänger (Creditor)
         'referenz': re.sub(r'\s+', '', zeilen[28]) if len(zeilen) > 28 else '',
     }
+    # Anschrift des Zahlungsempfängers: Zeilen 7-11 (Typ, Name, Strasse,
+    # Hausnummer, PLZ, Ort, Land). Nur die STRUKTURIERTE Anschrift («S») wird
+    # übernommen; bei der kombinierten («K») stehen PLZ und Ort in einer Zeile
+    # ohne feste Form — die wird nicht geraten.
+    if zeilen[4].strip() == 'S':
+        adresse = {'strasse': zeilen[6].strip(), 'hausnummer': zeilen[7].strip(),
+                   'plz': zeilen[8].strip(), 'ort': zeilen[9].strip(),
+                   'land': zeilen[10].strip().upper()}
+        if adresse['ort']:
+            daten['adresse'] = adresse
     try:
         daten['betrag'] = round(float(zeilen[18]), 2) if zeilen[18].strip() else 0.0
     except (ValueError, IndexError):
@@ -167,6 +180,8 @@ def _qr_anwenden(ergebnis, qr):
         ergebnis['betrag'] = qr['betrag']
     if qr.get('lieferant'):
         ergebnis['lieferant'] = qr['lieferant'][:200]
+    if qr.get('adresse'):
+        ergebnis['adresse'] = qr['adresse']
     if ergebnis.get('methode') in ('regex', 'leer'):
         ergebnis['methode'] = 'qr'
         ergebnis['hinweis'] = 'Schweizer QR-Code dekodiert — Zahlungsdaten verbindlich'
@@ -205,6 +220,14 @@ def _normalisiere(daten, methode, hinweis=""):
                 out[feld] = None
     kat = str(daten.get("kategorie") or "").strip().lower()
     out["kategorie"] = kat if kat in _KATEGORIEN else ""
+    adresse = {f: re.sub(r"\s+", " ", str(daten.get(f) or "")).strip()[:n]
+               for f, n in (("strasse", 70), ("hausnummer", 16), ("plz", 16), ("ort", 35))}
+    if adresse["ort"]:
+        # Ländercode nur, wenn es einer ist («Schweiz» wird nicht gekürzt, sondern
+        # verworfen; leer heisst «CH», siehe `adresse_setzen`).
+        land = str(daten.get("land") or "").strip()
+        adresse["land"] = land.upper() if re.fullmatch(r"[A-Za-z]{2}", land) else ""
+        out["adresse"] = adresse
     return out
 
 
