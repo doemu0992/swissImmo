@@ -80,14 +80,38 @@ HILFE = {
     'vorbehalt': (_('Vorbehalt'), _(
         'Wer die mögliche Anpassung nicht ganz ausschöpft, kann sich den Rest für später vorbehalten. '
         'Der Vorbehalt wird beziffert — in Franken oder Prozent —, damit er sich später nachvollziehen lässt.')),
+    # Vertragsassistent, Block «Mietzinsmodell» (27.10.2026)
+    'festmiete': (_('Fester Mietzins'), _(
+        'Der Mietzins ist im Vertrag als fester Betrag vereinbart. Spätere Anpassungen gehen mit dem amtlichen '
+        'Formular (Art. 269d OR); die Gründe stehen in Art. 269a OR, etwa Referenzzinssatz oder Kostensteigerung.')),
+    'index_weitergabe': (_('Weitergabe der Teuerung'), _(
+        'Der Anteil der Teuerung, der in den Mietzins einfliesst. Höchstens 100 Prozent: Die Erhöhung darf die '
+        'Zunahme des Landesindexes nicht übersteigen (Art. 17 Abs. 1 VMWG). Sinkt der Index, ist der Mietzins '
+        'entsprechend anzupassen (Art. 17 Abs. 2 VMWG).')),
+    'index_intervall': (_('Mindestintervall'), _(
+        'Der Abstand zwischen zwei Anpassungen, den die Parteien im Vertrag vereinbaren. Die Ankündigung selbst '
+        'erfolgt mit mindestens 30 Tagen auf ein Monatsende (Art. 17 Abs. 3 VMWG).')),
     'indexmiete': (_('Indexmiete'), _(
-        'Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach unten. Zulässig nur bei '
-        'einem Vertrag mit fester Dauer von mindestens fünf Jahren (Art. 269b OR). Die Massenanpassung nach '
-        'Referenzzins erfasst Indexmieten nicht.')),
+        'Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach unten und höchstens im '
+        'Umfang der Teuerung (Art. 269b OR, Art. 17 VMWG). Der Vertrag muss mindestens fünf Jahre fest dauern; ein '
+        'Kündigungsverzicht des Vermieters für fünf Jahre genügt (Art. 17 Abs. 4 VMWG). Jede Anpassung geht mit dem '
+        'amtlichen Formular, mindestens 30 Tage vor einem Monatsende.')),
     'staffelmiete': (_('Staffelmiete'), _(
         'Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens einmal jährlich, bei einer '
-        'Vertragsdauer von mindestens drei Jahren (Art. 269c OR). Der Mietzins folgt den Stufen — die '
-        'Anpassung nach Referenzzins und Teuerung gilt für ihn nicht.')),
+        'Vertragsdauer von mindestens drei Jahren (Art. 269c OR). Dass auch ein Kündigungsverzicht des Vermieters '
+        'als feste Dauer zählt, ist sinngemäss von Art. 17 Abs. 4 VMWG übernommen. Der Mietzins folgt den Stufen — '
+        'die Anpassung nach Referenzzins und Teuerung gilt für ihn nicht.')),
+    'index_staffel_kombination': (_('Index und Staffel zusammen?'), _(
+        'Eine Indexklausel darf nicht mit einer Staffelung kombiniert werden (Art. 269b und 269c OR, BGE 124 III 57). '
+        'Pro Vertrag gilt deshalb genau ein Mietzinsmodell: fest, Index oder Staffel.')),
+    'kuendigungsverzicht': (_('Kündigungsverzicht des Vermieters'), _(
+        'Bei einem unbefristeten Vertrag zählt die Dauer als fest, wenn der Vermieter für die verlangte Zeit auf die '
+        'Kündigung verzichtet: fünf Jahre bei der Indexmiete (Art. 17 Abs. 4 VMWG), drei Jahre bei der Staffelmiete '
+        '(sinngemäss, Art. 269c OR). Die Frist läuft ab Mietbeginn; das genannte Enddatum zählt mit.')),
+    'staffel_mitteilung': (_('Mitteilung der Staffelerhöhung'), _(
+        'Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt '
+        '(Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche Formular braucht es dafür nicht, die Mitteilung aber '
+        'schon: Der Vertrag allein ersetzt sie nicht.')),
     'herabsetzung': (_('Herabsetzung'), _(
         'Sinkt der Referenzzins, kann der Mieter eine Herabsetzung verlangen (Art. 270a OR). Der Vermieter '
         'antwortet innert 30 Tagen; lehnt er ab, kann der Mieter innert 30 Tagen die Schlichtungsbehörde anrufen.')),
@@ -245,6 +269,31 @@ HILFE = {
     'schluesselart': (_('Schlüsselart'), _(
         'Ein Hauptschlüssel öffnet alle Türen der Anlage, ein Gruppenschlüssel mehrere (etwa Haustür und Keller), ein '
         'Einzelschlüssel eine bestimmte Tür wie die Wohnungstür.')),
+    # ---- Indexanpassung (Art. 269b OR, Art. 17 und 19 VMWG, 27.10.2026) ----
+    'index_anpassung_bekanntgabe': (_('Bekanntgabe des Indexstandes'), _(
+        'Bei einer Indexmiete darf die Mitteilung erst nach der öffentlichen Bekanntgabe des neuen Indexstandes '
+        'erfolgen (Art. 19 Abs. 2 VMWG). Annahme der Anwendung: Ein Monat gilt als bekannt gegeben, sobald er in '
+        'ihrer LIK-Tabelle steht; ein Veröffentlichungsdatum des BFS ist nicht hinterlegt.')),
+    'index_anpassung_grenze': (_('Höchstbetrag'), _(
+        'Die Erhöhung darf die Zunahme des Landesindexes nicht übersteigen (Art. 17 Abs. 1 VMWG), bei vereinbarter '
+        'Teil-Weitergabe nur deren Anteil. Sinkt der Index, ist der Mietzins nach unten anzupassen (Abs. 2). Der '
+        'Vorschlag wird auf 5 Rappen abgerundet, damit er die Grenze nie überschreitet.')),
+    'index_anpassung_frist': (_('Frist und Termin'), _(
+        'Die Anpassung ist mindestens 30 Tage im Voraus auf ein Monatsende anzukündigen (Art. 17 Abs. 3 VMWG). '
+        'Die Anwendung rechnet ab Zugang beim Mieter, ohne bestätigten Zugang ab Versand plus Zustellpuffer. Frühere '
+        'Termine stehen nicht zur Wahl.')),
+    'index_anpassung_vertragsgrenzen': (_('Vertragliche Grenzen'), _(
+        'Weitergabe, Mindestintervall und letzte Anpassung stammen aus dem Mietvertrag, nicht aus dem Gesetz. Ein '
+        'laufendes Mindestintervall wird gemeldet, blockiert aber nicht: Der Vertrag entscheidet.')),
+    'index_anpassung_formular': (_('Amtliches Formular bei der Indexanpassung'), _(
+        'Das amtliche Formular (Art. 269d OR) gilt sinngemäss auch für die Indexanpassung (Art. 19 Abs. 2 VMWG). '
+        'Nicht für jeden Kanton liegt ein Original vor; dann nennt die Anwendung die Lücke und erzeugt kein '
+        'Ersatzformular.')),
+    # ---- Staffelmiete: Mitteilung der Erhöhung (Art. 269d Abs. 5 OR, Art. 19a VMWG, 27.10.2026) ----
+    'staffel_mitteilung_fenster': (_('Mitteilungsfenster'), _(
+        'Der erste Tag, an dem die Mitteilung versandt werden darf: vier Monate vor der Erhöhung. Bei einer Erhöhung '
+        'am 31. März ist es der 1. Dezember, nicht der 30. November, der vier Monate und einen Tag davor liegt. '
+        'Vorher erstellt die Anwendung kein Schreiben und nimmt kein Versanddatum an.')),
 }
 
 

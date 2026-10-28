@@ -1,11 +1,17 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n hilfe %}
-{% load l10n %}
+{% load l10n statisch %}
 {% comment %}
 Übersetzt ist die Oberfläche des Assistenten. Deutsch bleiben (bis zur juristisch
-geprüften Übersetzung): Rechtssätze mit Artikelverweis, die Mietzinsmodelle mit
-Art. 269b/c und die Vertragsvorschau im Skript — sie zeigt, was so im deutschen
-Vertrag steht. Die Anrede hat feste Werte (value="Herr"), weil sie gespeichert wird.
+geprüften Übersetzung): einzelne Rechtssätze mit Artikelverweis und die Vertragsvorschau
+im Skript — sie zeigt, was so im deutschen Vertrag steht. Die Anrede hat feste Werte
+(value="Herr"), weil sie gespeichert wird.
+
+MIETZINSMODELL (27.10.2026): Der Block `#mzm` im Schritt «Mietzins» gilt für ALLE Mietarten.
+Seine Regeln stehen nicht hier und nicht im Skript, sondern in core/services/mietzinsmodell.py;
+static/js/fw-mietzinsmodell.js fragt sie über /neu/vertraege/mietzinsmodell/pruefen/ ab und zeigt
+die Befunde. Der Server prüft beim Speichern, in der Vorschau und beim Statuswechsel dieselben
+Regeln noch einmal (core/views/fw/vertragserstellung.py).
 {% endcomment %}
 {% block title %}{% trans "Vertragserfassung" %} — swissImmo{% endblock %}
 
@@ -16,6 +22,7 @@ Vertrag steht. Die Anrede hat feste Werte (value="Herr"), weil sie gespeichert w
 {{ edit_json|json_script:"edit-data" }}
 {{ rueckgabe|json_script:"rueckgabe-data" }}
 {{ feld_fehler|json_script:"fehler-data" }}
+{{ mzm_config|json_script:"mzm-config" }}
 
 <nav class="fw-brotkrume mb-3">
     <a href="/neu/vertraege/{{ lg_query }}">{% trans "Mietverhältnisse" %}</a>
@@ -171,6 +178,9 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
                 <input name="ende" id="s_ende" type="date" oninput="live()" class="fw-feld w-full">
                 <input type="hidden" name="ist_befristet" id="ist_befristet_hidden" value="0">
                 <label class="fw-haekchen mt-1"><input type="checkbox" id="unbefristet" checked onchange="toggleEnde()"> {% trans "unbefristet" %}</label></div>
+            <div class="fw-feldblock breit" id="verzicht-box"><label class="fw-label" for="s_verzicht">{% trans "Vermieter verzichtet auf Kündigung bis" %} {% hilfe 'kuendigungsverzicht' %}</label>
+                <input name="vermieter_kuendigungsverzicht_bis" id="s_verzicht" type="date" oninput="live()" class="fw-feld w-full">
+                <p class="fw-hilfe">{% trans "Nur bei einem unbefristeten Vertrag. Zählt bei Index- und Staffelmiete als feste Dauer." %}</p></div>
         </div>
 
         <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 mt-4 mb-2">
@@ -205,7 +215,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
     </div></div>
     </section>
 
-    <section data-schritt="{% trans 'Mietzins' %}" data-schritt-text="{% trans 'Mietzins, Indexwerte und Zahlungsmodalitäten.' %}">
+    <section data-schritt="{% trans 'Mietzins' %}" data-schritt-text="{% trans 'Mietzins, Mietzinsmodell und Zahlungsmodalitäten.' %}">
     <div class="fw-assistent-schritt-kopf"></div>
     <div class="fw-card"><div class="fw-rumpf">
         <label class="fw-label mb-1">{% trans "Zahlungsmodus *" %}</label>
@@ -235,69 +245,113 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
         <label class="fw-label mb-1">{% trans "Mietzinsvorbehalte" %}</label>
         <textarea name="weitere_vorbehalte" rows="2" oninput="live()" placeholder="{% trans 'z. B. Vorbehalt weiterer Referenzzins-/Teuerungsanpassungen' %}" class="fw-feld w-full"></textarea>
 
-        {% comment %} Geschäftsraum: Zweck + Mietzinsmodell (nur bei Gewerbe sichtbar) {% endcomment %}
+        {% comment %} Geschäftsraum: Nutzungszweck (nur bei Gewerbe sichtbar). Das Mietzinsmodell steht für alle Mietarten im Block darunter. {% endcomment %}
         <div id="gewerbe-box" class="hidden border fw-linie-marke fw-markenflaeche rounded-xl p-4 mt-4">
             <h4 class="font-bold fw-strong text-sm mb-1">{% zeichen 'dokument' klasse='fw-marke mr-1' %}{% trans "Geschäftsraum" %}</h4>
-            <p class="text-xs fw-faint mb-3">{% trans "Zweckbestimmung und Mietzinsmodell für Geschäftsräume." %}</p>
-            <label class="fw-label mb-1">{% trans "Nutzungszweck" %}</label>
-            <input name="zweckbestimmung" id="s_zweck" oninput="live()" placeholder="{% trans 'z. B. Betrieb eines Coiffeursalons' %}" class="fw-feld w-full mb-3">
-            <label class="fw-label mb-1">{% trans "Mietzinsmodell" %}</label>
-            <select name="mietzins_modell" id="s_modell" onchange="modellChange(); live()" class="fw-feld w-full">
-                <option value="fest">Fester Mietzins</option>
-                <option value="index">Indexmiete (LIK, Art. 269b — Vertrag ≥ 5 Jahre)</option>
-                <option value="staffel">Staffelmiete (Art. 269c — Vertrag ≥ 3 Jahre)</option>
-            </select>
-            <div id="staffel-box" class="hidden mt-3">
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-                    <label class="fw-label">{% trans "Staffelstufen" %}</label>
-                    <button type="button" onclick="staffelAdd()" class="fw-btn fw-knapp fw-rand-marke">{% trans "+ Stufe" %}</button>
-                </div>
-                <p class="fw-fs-klein fw-faint mb-2">{% trans "Ab dem Stichtag gilt der neue Nettomietzins — automatisch im Mietenlauf." %}</p>
-                <div id="staffel-rows" class="space-y-2"></div>
-            </div>
-            <p id="index-hint" class="hidden fw-fs-klein fw-warnton fw-warn-flaeche rounded px-2 py-1 mt-3">Indexanpassungen werden mit amtlichem Formular (Art. 269d) angekündigt — das System erinnert automatisch, wenn der LIK gestiegen ist.</p>
+            <p class="text-xs fw-faint mb-3">{% trans "Zweckbestimmung für Geschäftsräume." %}</p>
+            <label class="fw-label mb-1" for="s_zweck">{% trans "Nutzungszweck" %}</label>
+            <input name="zweckbestimmung" id="s_zweck" oninput="live()" placeholder="{% trans 'z. B. Betrieb eines Coiffeursalons' %}" class="fw-feld w-full">
         </div>
+    </div></div>
+
+    {% comment %}
+    MIETZINSMODELL (27.10.2026) — für alle Mietarten.
+    Drei Kacheln als echte Radiogruppe: Die Radio-Semantik schliesst die Modelle gegenseitig aus, es gibt kein
+    zweites Steuerelement. Die Radios decken ihre Kachel ab (unsichtbar, aber anklickbar und mit Tastatur);
+    das ⓘ liegt ausserhalb des Labels. Die Panels sind Teil derselben Karte; Felder des nicht gewählten
+    Modells sind `disabled` und werden nicht gesendet. Regeln: core/services/mietzinsmodell.py.
+    {% endcomment %}
+    <div class="fw-card" id="mzm" data-zeitplan="0"><div class="fw-rumpf fw-mzm">
+        <fieldset class="fw-mzm-wahl">
+            <legend class="fw-label">{% trans "Mietzinsmodell" %} {% hilfe 'index_staffel_kombination' %}</legend>
+            <div class="fw-mzm-kacheln">
+                <div class="fw-kachel fw-mzm-kachel">
+                    <input type="radio" name="mietzins_modell" id="mzm_fest" value="fest" checked>
+                    <label for="mzm_fest"><span class="fw-mzm-marke" aria-hidden="true"></span><b class="fw-mzm-titel">{% trans "Fester Mietzins" %}</b>
+                        <span class="fw-kachel-text">{% trans "Der Mietzins bleibt, bis er nach den Regeln des Mietrechts angepasst wird." %}</span></label>
+                    <span class="fw-mzm-hilfe">{% hilfe 'festmiete' %}</span>
+                </div>
+                <div class="fw-kachel fw-mzm-kachel">
+                    <input type="radio" name="mietzins_modell" id="mzm_staffel" value="staffel">
+                    <label for="mzm_staffel"><span class="fw-mzm-marke" aria-hidden="true"></span><b class="fw-mzm-titel">{% trans "Staffelmiete" %}</b>
+                        <span class="fw-kachel-text">{% trans "Erhöhungen als Frankenbeträge, höchstens einmal jährlich. Feste Dauer mindestens 3 Jahre." %}</span></label>
+                    <span class="fw-mzm-hilfe">{% hilfe 'staffelmiete' %}</span>
+                </div>
+                <div class="fw-kachel fw-mzm-kachel">
+                    <input type="radio" name="mietzins_modell" id="mzm_index" value="index">
+                    <label for="mzm_index"><span class="fw-mzm-marke" aria-hidden="true"></span><b class="fw-mzm-titel">{% trans "Indexmiete" %}</b>
+                        <span class="fw-kachel-text">{% trans "Der Mietzins folgt dem Landesindex der Konsumentenpreise. Feste Dauer mindestens 5 Jahre." %}</span></label>
+                    <span class="fw-mzm-hilfe">{% hilfe 'indexmiete' %}</span>
+                </div>
+            </div>
+        </fieldset>
+        <p id="mzm-rueck" class="fw-mzm-rueck hidden" role="status"></p>
+
+        <div id="mzm-ampel" class="fw-mzm-ampel hidden" role="status">
+            <div class="fw-mzm-ampel-kopf"><span id="mzm-ampel-chip" class="fw-chip fw-dot fw-mut"></span>
+                <b>{% trans "Feste Dauer" %}</b> {% hilfe 'kuendigungsverzicht' %}</div>
+            <p id="mzm-ampel-text" class="fw-mzm-ampel-text"></p>
+            <div class="fw-mzm-ampel-fix"><span id="mzm-ampel-fix"></span>
+                <button type="button" id="mzm-zu-laufzeit" class="fw-btn fw-knapp fw-leise">{% trans "Laufzeit ändern" %}</button></div>
+        </div>
+
+        <div id="mzm-panel-staffel" class="fw-mzm-panel hidden">
+            <h4 class="fw-mzm-kopf">{% trans "Staffelstufen" %} {% hilfe 'staffelmiete' %}</h4>
+            <p class="fw-mzm-start">{% trans "Startmietzins (netto)" %} <b id="mzm-start">CHF —</b>
+                <span class="fw-hilfe">{% trans "aus dem Feld «Mietzins netto» oben" %}</span></p>
+            <div id="mzm-staffel-zeilen" class="fw-mzm-zeilen" role="list"></div>
+            <p class="fw-hilfe fw-mzm-leer">{% trans "Noch keine Stufe. Eine Stufe hinzufügen oder die Stufen erzeugen." %}</p>
+            <div><button type="button" id="mzm-stufe-neu" class="fw-btn fw-knapp fw-rand-marke">{% trans "+ Stufe" %}</button></div>
+            <div class="fw-mzm-gen">
+                <b>{% trans "Stufen erzeugen" %}</b>
+                <p class="fw-hilfe">{% trans "Jedes Jahr dieselbe Erhöhung, die erste 12 Monate nach Mietbeginn. Vorhandene Stufen werden ersetzt." %}</p>
+                <div class="fw-mzm-zeile-felder">
+                    <label class="fw-mzm-feld"><span>{% trans "Jährlich + CHF" %}</span>
+                        <input type="number" step="0.01" inputmode="decimal" id="mzm-gen-betrag" class="fw-feld fw-num"></label>
+                    <label class="fw-mzm-feld"><span>{% trans "Wie oft" %}</span>
+                        <input type="number" step="1" min="1" inputmode="numeric" id="mzm-gen-anzahl" value="2" class="fw-feld fw-num"></label>
+                </div>
+                <div><button type="button" id="mzm-gen-knopf" class="fw-btn fw-knapp">{% trans "Stufen erzeugen" %}</button></div>
+                <p id="mzm-gen-hinweis" class="fw-feldfehler" role="alert"></p>
+            </div>
+        </div>
+
+        <div id="mzm-panel-index" class="fw-mzm-panel hidden">
+            <h4 class="fw-mzm-kopf">{% trans "Index" %}: {% trans "Landesindex der Konsumentenpreise (BFS)" %} {% hilfe 'lik' %}</h4>
+            <div class="fw-formular">
+                <div class="fw-feldblock"><label class="fw-label" for="s_lik">{% trans "Basis Konsumentenpreisindex (LIK)" %}</label>
+                    <input name="basis_lik_punkte" id="s_lik" type="number" step="0.1" inputmode="decimal" oninput="live()" class="fw-feld fw-num">
+                    <p class="fw-hilfe">{% blocktrans with basis=lik_basis %}Basis {{ basis }} = 100 Punkte{% endblocktrans %}</p></div>
+                <div class="fw-feldblock"><label class="fw-label" for="s_lik_stand">{% trans "LIK Stand-Monat" %}</label>
+                    <input name="basis_lik_stand" id="s_lik_stand" type="month" oninput="live()" class="fw-feld">
+                    <p class="fw-hilfe">{% trans "Monat, aus dem der LIK-Wert stammt" %}</p></div>
+            </div>
+            <p class="fw-mzm-vorschlag"><span id="mzm-vorschlag"></span>
+                <button type="button" id="mzm-vorschlag-knopf" class="fw-btn fw-knapp fw-rand-marke hidden">{% trans "Vorschlag übernehmen" %}</button></p>
+            <div class="fw-formular">
+                <div class="fw-feldblock"><label class="fw-label" for="s_weitergabe">{% trans "Weitergabe (%)" %} {% hilfe 'index_weitergabe' %}</label>
+                    <input name="index_weitergabe_prozent" id="s_weitergabe" type="number" step="0.1" inputmode="decimal" value="100" oninput="live()" class="fw-feld fw-num">
+                    <p class="fw-hilfe">{% trans "Anteil der Teuerung, der weitergegeben wird: über 0 und höchstens 100 Prozent." %}</p></div>
+                <div class="fw-feldblock"><label class="fw-label" for="s_intervall">{% trans "Mindestintervall (vertraglich, Monate)" %} {% hilfe 'index_intervall' %}</label>
+                    <input name="index_intervall_monate" id="s_intervall" type="number" step="1" inputmode="numeric" value="12" oninput="live()" class="fw-feld fw-num">
+                    <p class="fw-hilfe">{% trans "Frühestens so viele Monate nach der letzten Anpassung." %}</p></div>
+            </div>
+            <p id="mzm-beispiel" class="fw-mzm-beispiel hidden"></p>
+        </div>
+
+        <div id="mzm-befunde" class="fw-mzm-befunde" aria-live="polite"></div>
+        <template data-mzm-zeichen="loeschen">{% zeichen 'loeschen' %}</template>
+        <template data-mzm-zeichen="kritisch">{% zeichen 'kritisch' %}</template>
+        <template data-mzm-zeichen="hinweis">{% zeichen 'hinweis' %}</template>
     </div></div>
 
     <div class="fw-card"><div class="fw-rumpf">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
-            <h4 class="font-bold fw-strong text-sm">{% trans "Indexwerte" %}</h4>
-            <button type="button" onclick="indexUebernehmen(this)" class="fw-btn fw-knapp fw-rand-marke">{% trans "Aktuelle Werte übernehmen" %}</button>
+            <h4 class="font-bold fw-strong text-sm">{% trans "Referenzzinssatz" %}</h4>
+            <button type="button" onclick="indexUebernehmen(this)" class="fw-btn fw-knapp fw-rand-marke">{% trans "Aktuellen Referenzzinssatz übernehmen" %}</button>
         </div>
-        <p class="text-xs fw-faint mb-3">{% trans "Basiswerte, auf denen der Vertrag beruht — für spätere Mietzinsanpassungen." %}</p>
+        <p class="text-xs fw-faint mb-3">{% trans "Stand bei Vertragsbeginn — Grundlage für spätere Mietzinsanpassungen." %}</p>
         <div class="fw-formular">
-            <div class="fw-feldblock"><label class="fw-label">{% trans "Basis Konsumentenpreisindex (LIK)" %}</label>
-                <input name="basis_lik_punkte" id="s_lik" type="number" step="0.1" oninput="live()" class="fw-feld w-full">
-                <p class="fw-hilfe">{% blocktrans with basis=lik_basis %}Basis {{ basis }}{% endblocktrans %}</p></div>
-            {% comment %}
-            WEITERGABE UND MINDESTINTERVALL (E2.52)
-
-            Beide Felder standen seit jeher im Modell und
-            steuern die Indexanpassung in `automation.py` und
-            `mietrecht.py` — erfassen konnte man sie NIRGENDS.
-            Es galt still `100 %` und `12 Monate`.
-
-            Art. 269b OR laesst eine Weitergabe unter 100 %
-            ausdruecklich zu; sie wird verhandelt. Wer sie
-            vereinbart hat, muss sie eintragen koennen, sonst
-            rechnet die Anpassung zu hoch — und eine zu hohe
-            Erhoehung ist anfechtbar.
-            {% endcomment %}
-            <div class="fw-feldblock"><label class="fw-label">{% trans "Weitergabe (%)" %}</label>
-                <input name="index_weitergabe_prozent" type="number" step="0.1" min="0" max="100"
-                       value="{{ v.index_weitergabe_prozent|default:'100' }}"
-                       class="fw-feld w-full fw-num">
-                <p class="fw-hilfe">Anteil der Teuerung, der weitergegeben wird (Art.&nbsp;269b). Leer = 100&nbsp;%.</p></div>
-            <div class="fw-feldblock"><label class="fw-label">{% trans "Mindestintervall (Monate)" %}</label>
-                <input name="index_intervall_monate" type="number" step="1" min="1"
-                       value="{{ v.index_intervall_monate|default:'12' }}"
-                       class="fw-feld w-full fw-num">
-                <p class="fw-hilfe">{% trans "Frühestens so viele Monate nach der letzten Anpassung." %}</p></div>
-            <div class="fw-feldblock"><label class="fw-label">{% trans "LIK Stand-Monat" %}</label>
-                <input name="basis_lik_stand" id="s_lik_stand" type="month" value="{{ aktueller_lik_stand_iso }}" oninput="live()" class="fw-feld w-full">
-                <p class="fw-hilfe">{% trans "Monat, aus dem der LIK-Wert stammt" %}</p></div>
-        </div>
-        <div class="fw-formular mt-3">
             <div class="fw-feldblock"><label class="fw-label" for="s_ref">{% trans "Stand Referenzzinssatz (%)" %} {% hilfe 'referenzzins' %}</label>
                 <input name="basis_referenzzinssatz" id="s_ref" type="number" step="0.05" oninput="live()" class="fw-feld w-full"></div>
         </div>
@@ -367,6 +421,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
     </section>
 
     <div class="fw-assistent-fuss">
+        <p id="mzm-fuss" class="fw-mzm-fuss hidden" role="status">{% zeichen 'kritisch' %}<button type="button" class="fw-mzm-fuss-text"></button></p>
         <button type="button" id="btn-back" class="fw-btn" data-assistent-zurueck data-assistent-nur-js>{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
         <span class="stand" data-assistent-nur-js></span>
         <div class="rechts">
@@ -398,6 +453,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
 </div>
 </form>
 
+<script src="{% statisch 'js/fw-mietzinsmodell.js' %}"></script>
 <script>
 // Texte der Oberfläche in der Sprache der Sitzung. Die Vertragsvorschau und die
 // mietrechtlichen Warnungen weiter unten bleiben bewusst deutsch.
@@ -406,10 +462,9 @@ const UI = {
   person_waehlen: '{% filter escapejs %}{% trans 'Person auswählen…' %}{% endfilter %}',
   objekt_waehlen: '{% filter escapejs %}{% trans 'Objekt auswählen…' %}{% endfilter %}',
   zuerst_lg: '{% filter escapejs %}{% trans 'Zuerst Liegenschaft wählen…' %}{% endfilter %}',
+  laedt: '{% filter escapejs %}{% trans 'Lädt …' %}{% endfilter %}',
   mietzins: '{% filter escapejs %}{% trans 'Mietzins (CHF) *' %}{% endfilter %}',
   mietzins_netto: '{% filter escapejs %}{% trans 'Mietzins netto (CHF) *' %}{% endfilter %}',
-  netto_chf: '{% filter escapejs %}{% trans 'Netto CHF' %}{% endfilter %}',
-  stufe_weg: '{% filter escapejs %}{% trans 'Staffelstufe entfernen' %}{% endfilter %}',
 };
 const LG = JSON.parse(document.getElementById('lg-data').textContent);
 const MIETER = JSON.parse(document.getElementById('mieter-data').textContent);
@@ -443,14 +498,13 @@ function monatAnzeige(m){
 function gewaehlteMonate(){ return Array.from(document.querySelectorAll('.monat-cb:checked')).map(c=>c.value); }
 function fristStep(d){ const el=document.getElementById('s_frist'); const min=parseInt(el.min)||1; el.value=Math.max(min,(parseInt(el.value)|| (min||3))+d); live(); }
 function indexUebernehmen(btn){
-    // Zuerst gespeicherte Werte, dann Live-Abruf aus dem Internet.
-    document.getElementById('s_lik').value=AKT_LIK; document.getElementById('s_ref').value=AKT_REF;
-    if(AKT_LIK_STAND){ document.getElementById('s_lik_stand').value=AKT_LIK_STAND; }
+    // Zuerst der gespeicherte Stand, dann Live-Abruf aus dem Internet. Nur der Referenzzinssatz:
+    // Die Basis des Landesindexes ist der Stand des Vormonats zum Mietbeginn (Index-Panel).
+    document.getElementById('s_ref').value=AKT_REF;
     live();
-    var label = btn ? btn.textContent : ''; if(btn){ btn.disabled=true; btn.textContent='Lädt …'; }
+    var label = btn ? btn.textContent : ''; if(btn){ btn.disabled=true; btn.textContent=UI.laedt; }
     fetch('/neu/marktdaten/live/').then(r=>r.json()).then(d=>{
         if(d.ref_zins) document.getElementById('s_ref').value=d.ref_zins;
-        if(d.lik) document.getElementById('s_lik').value=d.lik;
         live();
         if(btn){ btn.disabled=false; btn.textContent = d.quelle==='internet' ? '✓ Aktuell (Internet)' : label;
                  setTimeout(()=>{ btn.textContent=label; }, 2500); }
@@ -508,6 +562,7 @@ function prefillEditFromDraft(){
   const unb=document.getElementById('unbefristet'); if (unb) unb.checked = !!ED.unbefristet;
   if (!ED.unbefristet && document.getElementById('s_ende')) document.getElementById('s_ende').value = ED.ende || '';
   if (typeof toggleEnde === 'function') toggleEnde();
+  setV('vermieter_kuendigungsverzicht_bis', ED.verzicht_bis);
   setV('erstmals_kuendbar', ED.erstmals_kuendbar);
   if (document.getElementById('s_frist')) document.getElementById('s_frist').value = ED.kuendigungsfrist;
   // Kündigungstermine → passende Monats-Checkboxen setzen
@@ -527,7 +582,16 @@ function prefillEditFromDraft(){
   setV('verteilschluessel', ED.verteilschluessel);
   if (document.getElementById('s_zweck')) document.getElementById('s_zweck').value = ED.zweckbestimmung || '';
   // 6. Modell / MWST / Familienwohnung
-  const sm=document.getElementById('s_modell'); if(sm){ sm.value=ED.mietzins_modell; if(typeof modellChange==='function') modellChange(); }
+  fwMzm.setzeModell(ED.mietzins_modell || 'fest', true);
+  if (ED.mietzins_modell === 'staffel') fwMzm.stufenSetzen((ED.stufen || []).map(z => ({ab: z.ab, erhoehung: z.erhoehung})));
+  if (ED.mietzins_modell === 'index') {
+    // Gespeicherte Basis und Vereinbarungen gelten als eigene Eingabe: Der Vorschlag überschreibt sie nicht.
+    const lik = document.getElementById('s_lik'), st = document.getElementById('s_lik_stand');
+    if (ED.basis_lik_punkte != null) { lik.value = ED.basis_lik_punkte; lik.dataset.manuell = '1'; }
+    if (ED.basis_lik_stand) { st.value = ED.basis_lik_stand; st.dataset.manuell = '1'; }
+    setV('index_weitergabe_prozent', ED.index_weitergabe_prozent);
+    setV('index_intervall_monate', ED.index_intervall_monate);
+  }
   const fw=document.getElementById('familienwohnung'); if(fw) fw.checked = !!ED.familienwohnung;
   const mw=document.getElementById('s_mwst');
   if(mw){ mw.checked=!!ED.mwst_pflichtig; const box=document.getElementById('mwst-satz-box'); if(box) box.classList.toggle('hidden', !ED.mwst_pflichtig); }
@@ -536,7 +600,6 @@ function prefillEditFromDraft(){
   if (document.getElementById('s_netto')) document.getElementById('s_netto').value = ED.netto_mietzins;
   if (document.getElementById('s_nk')) document.getElementById('s_nk').value = ED.nebenkosten;
   if (ED.basis_referenzzinssatz!=null) { const el=document.getElementById('s_ref'); if(el) el.value=ED.basis_referenzzinssatz; }
-  if (ED.basis_lik_punkte!=null) { const el=document.getElementById('s_lik'); if(el) el.value=ED.basis_lik_punkte; }
   setV('kautions_betrag', ED.kautions_betrag);
   setV('kautions_konto', ED.kautions_konto);
   live();
@@ -567,23 +630,20 @@ function eingabenZurueck(){
     else mieter2Tab('neu');
   }
   document.getElementById('unbefristet').checked = w('ist_befristet') !== '1'; toggleEnde();
-  const md = document.getElementById('s_modell');
-  if (md && w('mietzins_modell')) { md.value = w('mietzins_modell'); modellChange(); }
-  const reihen = document.getElementById('staffel-rows');
-  if (reihen && (RG.staffel_ab || RG.staffel_netto)) {
-    reihen.innerHTML = '';
-    const ab = RG.staffel_ab || [], nt = RG.staffel_netto || [];
-    for (let i = 0; i < Math.max(ab.length, nt.length); i++) {
-      staffelAdd(); const z = reihen.lastElementChild;
-      z.querySelector('[name=staffel_ab]').value = ab[i] || '';
-      z.querySelector('[name=staffel_netto]').value = nt[i] || '';
-    }
+  if (w('mietzins_modell')) fwMzm.setzeModell(w('mietzins_modell'), true);
+  if (w('mietzins_modell') === 'staffel') {
+    const ab = RG.staffel_ab || [], eh = RG.staffel_erhoehung || [], zeilen = [];
+    for (let i = 0; i < Math.max(ab.length, eh.length); i++) zeilen.push({ab: ab[i] || '', erhoehung: eh[i] || ''});
+    fwMzm.stufenSetzen(zeilen);
   }
+  // Basis und Vereinbarungen des Indexes stammen aus der Eingabe, nicht aus dem Vorschlag
+  ['s_lik', 's_lik_stand'].forEach(id => { const e = document.getElementById(id); if (e && RG[e.name] && RG[e.name][0]) e.dataset.manuell = '1'; });
   const t = w('kuendigungstermine');
   if (t) document.querySelectorAll('.monat-cb').forEach(cb => {
     cb.checked = /ausser\s+Dezember/i.test(t) ? (cb.value !== 'Dezember') : t.indexOf(cb.value) !== -1; });
   const SKRIPT = ['einheit_id','mieter_id','mit_mieter_id','mieter_typ','ist_befristet',
-                  'kuendigungstermine','mitmieter_name','edit_id','staffel_ab','staffel_netto'];
+                  'kuendigungstermine','mitmieter_name','edit_id','mietzins_modell',
+                  'staffel_ab','staffel_erhoehung','staffel_prozent','staffel_netto'];
   document.querySelectorAll('#vform [name]').forEach(el => {
     if (SKRIPT.includes(el.name) || el.disabled) return;
     if (el.type === 'checkbox' || el.type === 'radio') {
@@ -601,7 +661,14 @@ function eingabenZurueck(){
 // öffnet der Assistent beim Start selbst (erstes Feld mit aria-invalid).
 function fehlerFeld(name){
   if (name === 'einheit_id') return document.getElementById('s_obj');
-  if (name === 'staffel_netto') return document.getElementById('staffel-rows');
+  if (name === 'staffelstufen' || name === 'staffel_netto') return document.getElementById('mzm-staffel-zeilen');
+  if (name === 'mietzins_modell') return document.querySelector('#vform input[name="mietzins_modell"]:checked');
+  // Meldung zu einer Staffelzeile: «feld[zeile]», Zeilen zählen ab 0
+  const zeile = name.match(/^(\w+)\[(\d+)\]$/);
+  if (zeile) {
+    const z = document.querySelectorAll('#mzm-staffel-zeilen .fw-mzm-zeile')[+zeile[2]];
+    return z ? (z.querySelector('[name="' + zeile[1] + '"]') || z.querySelector('[name]')) : document.getElementById('mzm-staffel-zeilen');
+  }
   return document.querySelector('#vform [name="' + name + '"]:not([type=hidden])');
 }
 function fehlerMarkieren(){
@@ -610,11 +677,13 @@ function fehlerMarkieren(){
   if (!FE) return;
   Object.keys(FE).forEach(name => {
     const el = fehlerFeld(name); if (!el) return;
+    // Meldungen an Staffelzeilen zeigt die Live-Prüfung an der Zeile selbst; hier nur das Feld markieren.
+    const inZeile = !!el.closest('.fw-mzm-zeile');
     const p = document.createElement('p');
-    p.className = 'fw-feldfehler'; p.id = 'fe_' + name; p.textContent = FE[name];
-    el.insertAdjacentElement('afterend', p);
+    p.className = 'fw-feldfehler'; p.id = 'fe_' + name.replace(/\W+/g, '_'); p.textContent = FE[name];
+    if (!inZeile) (el.closest('.fw-mzm-zeile-felder') || el).insertAdjacentElement('afterend', p);
     el.setAttribute('aria-invalid', 'true');
-    el.setAttribute('aria-describedby', p.id);
+    if (!inZeile) el.setAttribute('aria-describedby', p.id);
     el.addEventListener('input', () => el.removeAttribute('aria-invalid'), {once: true});
   });
  } catch (e) { if (window.console) console.warn('Fehler markieren', e); }
@@ -663,7 +732,8 @@ function objChange(){
     const frist = document.getElementById('s_frist');
     if (istGew && (frist.value === '3' || frist.value === '')) frist.value = '6';   // Art. 266d
     if (!istGew && frist.value === '6') frist.value = '3';
-    if (!istGew) { const md = document.getElementById('s_modell'); if (md) { md.value = 'fest'; modellChange(); } }
+    // Das Mietzinsmodell gilt für alle Mietarten; ein Zeitplan am Objekt geht den Stufen vor (Hinweis der Prüfung).
+    document.getElementById('mzm').dataset.zeitplan = (o.sollplan || []).length ? '1' : '0';
 
     // Einstellplatz (Parkplatz/Garage): Frist mind. 2 Wochen (Art. 266e), aber
     // eine längere Monatsfrist auf Monatsende ist möglich. 0 = 2 Wochen. KEINE
@@ -713,48 +783,25 @@ function applySollplan(){
   if(row){
     document.getElementById('s_netto').value = row.netto;
     if(!o.ist_einstellplatz) document.getElementById('s_nk').value = row.nk;
-    // Indexbasis (Ref-Zins/LIK) der Sollmietzins-Zeile → Vertragsbasis des
-    // neuen Vertrags (nur wenn an der Zeile erfasst; sonst bleiben die
-    // aktuellen Marktwerte vorbelegt).
+    // Referenzzinssatz der Sollmietzins-Zeile → Vertragsbasis des neuen Vertrags (nur wenn an der
+    // Zeile erfasst). Die Basis des Landesindexes kommt nicht von hier: Sie ist der Stand des
+    // Vormonats zum Mietbeginn (Index-Panel).
     if(row.ref != null) document.getElementById('s_ref').value = row.ref;
-    if(row.lik != null) document.getElementById('s_lik').value = row.lik;
   }
 }
 // Objekt-Staffelmiete-Vorlage → neuen Gewerbe-Vertrag als Staffelmiete vorbelegen.
-// Setzt Modell 'staffel' und füllt die Staffelstufen aus der Objekt-Vorlage.
+// Wählt 'staffel' und füllt die Stufen aus der Objekt-Vorlage. Die Vorlage hält absolute
+// Nettobeträge; der Vertrag erfasst die Erhöhung in CHF (Art. 269c lit. c OR), also wird ab dem
+// Netto im Mietzinsfeld umgerechnet. Ist ein Betrag nicht über dem Vorgänger, meldet die Prüfung es.
 function applyStaffelVorlage(){
   const o=curObj(); if(!o) return;
   const plan=o.staffelvorlage||[];
-  const md=document.getElementById('s_modell');
-  if(!plan.length || !md) return;
-  // Nur bei Gewerbe sinnvoll (Staffel-Box liegt in der Gewerbe-Box)
+  if(!plan.length) return;
+  // Nur bei Gewerbe sinnvoll
   if(o.kategorie !== 'gewerbe') return;
-  md.value='staffel'; modellChange();
-  const wrap=document.getElementById('staffel-rows'); if(!wrap) return;
-  wrap.innerHTML='';
-  plan.forEach(function(r){
-    staffelAdd();
-    const last=wrap.lastElementChild; if(!last) return;
-    const ab=last.querySelector('[name=staffel_ab]'); if(ab) ab.value=r.ab;
-    const nt=last.querySelector('[name=staffel_netto]'); if(nt) nt.value=r.netto;
-  });
+  fwMzm.setzeModell('staffel', true);
+  fwMzm.vorlage(plan);
   live();
-}
-function modellChange(){
-  const md = document.getElementById('s_modell'); if(!md) return;
-  document.getElementById('staffel-box').classList.toggle('hidden', md.value !== 'staffel');
-  document.getElementById('index-hint').classList.toggle('hidden', md.value !== 'index');
-  if(md.value === 'staffel' && !document.querySelector('#staffel-rows .staffel-row')) staffelAdd();
-}
-function staffelAdd(){
-  const wrap = document.getElementById('staffel-rows');
-  const row = document.createElement('div');
-  row.className = 'staffel-row flex items-center gap-2';
-  row.innerHTML = `
-    <input type="date" name="staffel_ab" oninput="live()" class="flex-1 fw-flaeche rounded-lg text-sm px-2 py-1.5">
-    <input type="number" step="0.01" name="staffel_netto" oninput="live()" placeholder="${UI.netto_chf}" class="w-28 fw-flaeche rounded-lg text-sm px-2 py-1.5">
-    <button type="button" onclick="this.closest('.staffel-row').remove(); live()" title="${UI.stufe_weg}" class="fw-faint hover:fw-kritisch text-sm px-1">{% zeichen 'loeschen' %}</button>`;
-  wrap.appendChild(row);
 }
 function mieterTab(m){
   mieterMode=m;
@@ -769,6 +816,9 @@ function toggleEnde(){
   const u=document.getElementById('unbefristet').checked;
   document.getElementById('s_ende').disabled=u; if(u) document.getElementById('s_ende').value='';
   const h=document.getElementById('ist_befristet_hidden'); if(h) h.value = u ? '0' : '1';
+  // Kündigungsverzicht des Vermieters: nur bei unbefristetem Vertrag; bei Befristung zählt das Ende
+  const vb=document.getElementById('verzicht-box'), vf=document.getElementById('s_verzicht');
+  if(vb && vf){ vb.classList.toggle('hidden', !u); vf.disabled = !u; }
   live();
 }
 function curMieter2(){
@@ -841,14 +891,11 @@ function dstr(v){ if(!v) return ''; const p=v.split('-'); return p[2]+'.'+p[1]+'
 
 // Live-Plausibilitätsprüfung nach Mietrecht — meldet direkt beim Erfassen,
 // wenn etwas gegen die gesetzlichen Vorgaben verstösst (Kaution, Frist, Modell).
-function _monthsBetween(a, b){ return (b.getFullYear()-a.getFullYear())*12 + (b.getMonth()-a.getMonth()); }
 function mietrechtCheck(){
   const o = curObj(); const kat = o ? o.kategorie : null;
   const warns = [];
   const netto = parseFloat(val('netto_mietzins')) || 0;
   const kaut  = parseFloat(val('kautions_betrag')) || 0;
-  const unbef = document.getElementById('unbefristet').checked;
-  const b = val('beginn'), e = val('ende');
 
   // Kaution: Wohnräume höchstens drei Monatsmieten (Art. 257e OR)
   if (kat === 'wohnen' && netto > 0 && kaut > netto*3 + 0.01)
@@ -861,16 +908,8 @@ function mietrechtCheck(){
   if (kat === 'gewerbe' && frist > 0 && frist < 6)
     warns.push('Kündigungsfrist unter dem Minimum von 6 Monaten für Geschäftsräume (Art. 266d OR).');
 
-  // Mietzinsmodell: Mindest-Vertragsdauer
-  const md = document.getElementById('s_modell');
-  const gewSichtbar = md && !document.getElementById('gewerbe-box').classList.contains('hidden');
-  const modell = gewSichtbar ? md.value : 'fest';
-  if (modell === 'index') {
-    if (unbef || !e) warns.push('Indexmiete verlangt einen befristeten Vertrag mit fester Dauer von mind. 5 Jahren (Art. 269b OR).');
-    else if (b && _monthsBetween(new Date(b), new Date(e)) < 60) warns.push('Indexmiete: feste Vertragsdauer von mind. 5 Jahren erforderlich (Art. 269b OR).');
-  }
-  if (modell === 'staffel' && !unbef && b && e && _monthsBetween(new Date(b), new Date(e)) < 36)
-    warns.push('Staffelmiete: Vertragsdauer von mind. 3 Jahren erforderlich (Art. 269c OR).');
+  // Die Mindestdauer von Index- und Staffelmiete steht nicht mehr hier: Sie prüft core/services/mietzinsmodell.py
+  // (Ampel im Schritt «Mietzins», fw-mietzinsmodell.js) und beim Speichern der Server.
 
   const box = document.getElementById('mietrecht-warn');
   const list = document.getElementById('mietrecht-warn-list');
@@ -942,6 +981,7 @@ function live(){
   const bruttoEl=document.getElementById('s_brutto'); if(bruttoEl) bruttoEl.value = "CHF "+fmt(brutto);
   const nkEcho=document.getElementById('nk-echo'); if(nkEcho) nkEcho.textContent = "CHF "+fmt(nk);
   mietrechtCheck();
+  fwMzm.planen();
 
   // Die Live-Vorschau rendert jetzt SERVERSEITIG dasselbe Template wie das PDF
   // (debounced), damit Vorschau und PDF nie auseinanderlaufen.
@@ -1050,15 +1090,22 @@ function buildSummary(){
       : `<div class="flex justify-between border-t fw-linie pt-1.5 mt-1.5"><span class="fw-mutet">Netto / NK</span><span class="font-medium">CHF ${fmt(netto)} / ${fmt(nk)}</span></div>
     <div class="flex justify-between"><span class="fw-mutet">Brutto/Monat</span><span class="font-bold fw-marke">CHF ${fmt(netto+nk)}</span></div>`}
     <div class="flex justify-between"><span class="fw-mutet">Kaution</span><span class="font-medium">CHF ${fmt(parseFloat(val('kautions_betrag'))||0)}</span></div>`;
+  // Mietzinsmodell: die Zeilen entstehen im Skript des Modells, Werte nur als Text
+  const sum = document.getElementById('summary');
+  fwMzm.zusammenfassung().forEach(function(z){
+    const zeile = document.createElement('div'); zeile.className = 'flex justify-between gap-3';
+    const k = document.createElement('span'); k.className = 'fw-mutet'; k.textContent = z[0];
+    const v = document.createElement('span'); v.className = 'font-medium text-right'; v.textContent = z[1];
+    zeile.appendChild(k); zeile.appendChild(v); sum.appendChild(zeile);
+  });
 }
 // Init
 const stepStyle=document.createElement('style');
 stepStyle.textContent='.pvsec{background:#f1f5f9;font-weight:700;font-size:12px;padding:4px 8px;margin-top:14px;border-radius:4px;}';
 document.head.appendChild(stepStyle);
 monateStandard();                    // Standard-Kündigungsmonate März/Juni/September
-document.getElementById('s_lik').value = AKT_LIK;   // Indexwerte vorbelegen
-document.getElementById('s_ref').value = AKT_REF;
-if(AKT_LIK_STAND){ document.getElementById('s_lik_stand').value = AKT_LIK_STAND; }
+document.getElementById('s_ref').value = AKT_REF;   // Referenzzinssatz vorbelegen
+fwMzm.init({geaendert: live});       // Mietzinsmodell: Kacheln, Stufen, Prüfung, Sperre
 setNeuTyp('person');
 prefillEditFromDraft();   // Entwurf-Werte GANZ ZULETZT setzen (nach der Init-Sequenz)
 eingabenZurueck();        // nach einem Fehler: die abgeschickten Werte (überschreiben den Entwurf)

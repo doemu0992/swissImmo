@@ -401,6 +401,18 @@ def fw_vertrag_status(request, pk):
     if request.method == 'POST':
         neu = request.POST.get('status', '')
         erlaubt = {'entwurf': 'Entwurf', 'aktiv': 'Aktiv', 'archiviert': 'Inaktiv / Archiviert'}
+        if neu == 'aktiv' and v.status == 'entwurf':
+            # Ein Entwurf wird erst aktiv, wenn sein Mietzinsmodell zulässig ist (Art. 269b/269c OR).
+            # Entwürfe aus der Zeit vor den harten Regeln können Verstösse tragen; sie lassen sich im
+            # Assistenten bearbeiten, hier bleibt der Status stehen.
+            from core.services.mietzinsmodell import pruefe_vertrag, sperren
+            offen = sperren(pruefe_vertrag(v))
+            if offen:
+                for b in offen:
+                    messages.error(request, '❌ ' + b.volltext)
+                messages.error(request, gettext('Der Vertrag bleibt Entwurf: Das Mietzinsmodell ist nicht zulässig. '
+                                                'Im Assistenten lässt es sich korrigieren.'))
+                return redirect(f'/neu/vertraege/{v.id}/')
         if neu in erlaubt:
             v.status = neu
             v.aktiv = (neu == 'aktiv')

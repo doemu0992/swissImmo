@@ -4,8 +4,6 @@ Single Source of Truth für alle Gesetzeszitate in der App: Dokumente (PDF),
 UI-Hinweise und Validierungen greifen hierauf zu, damit die Artikel überall
 konsistent und wartbar sind. Angaben nach bestem Wissen — juristisch prüfen.
 """
-from datetime import date
-
 
 # ── Artikel-Register (Schlüssel → Zitat + Kurztitel) ─────────────────────────
 ARTIKEL = {
@@ -135,35 +133,18 @@ def kuendigung_ref(kategorie, ist_einstellplatz=False):
 
 
 # ── Validierung Mietzinsmodell (Index/Staffel) ───────────────────────────────
-def _monate_zwischen(a: date, b: date) -> int:
-    return (b.year - a.year) * 12 + (b.month - a.month)
-
-
-def pruefe_mietzinsmodell(modell, beginn, ende):
-    """Prüft die gesetzlichen Mindestvoraussetzungen für Index-/Staffelmiete und
-    gibt eine Liste von Warnhinweisen zurück (leer = keine Beanstandung).
-
-    - Indexmiete (Art. 269b): setzt einen befristeten Vertrag mit fester Dauer
-      von mindestens 5 Jahren voraus.
-    - Staffelmiete (Art. 269c): Vertragsdauer von mindestens 3 Jahren.
+# Die Regeln stehen in `core/services/mietzinsmodell.py`. Die beiden Funktionen
+# hier bleiben für Altaufrufer (Vertragsassistent, Tests) und liefern wie bisher
+# Warntexte. Bis 27.10.2026 rechnete eine eigene `_monate_zwischen` nach
+# Kalendermonaten und ignorierte den Tag: Ein Vertrag vom 1.1.2026 bis
+# 31.12.2030 (genau fünf Jahre) galt mit «59 Monaten» als zu kurz.
+def pruefe_mietzinsmodell(modell, beginn, ende, ist_befristet=None, verzicht_bis=None):
+    """Warntexte zur Dauer von Index- (Art. 269b OR) und Staffelmiete (Art. 269c OR);
+    leer = keine Beanstandung. Ohne `ist_befristet` gilt ein gesetztes `ende` als Befristung.
     """
-    hinweise = []
-    if modell not in ('index', 'staffel'):
-        return hinweise
-    if not beginn:
-        return hinweise
-    if modell == 'index':
-        if not ende:
-            hinweise.append("Indexmiete (Art. 269b OR) setzt einen befristeten Vertrag "
-                            "mit fester Dauer von mindestens 5 Jahren voraus — es ist kein Mietende gesetzt.")
-        elif _monate_zwischen(beginn, ende) < 60:
-            hinweise.append("Indexmiete (Art. 269b OR) ist nur bei fester Vertragsdauer "
-                            "von mindestens 5 Jahren zulässig — die erfasste Dauer ist kürzer.")
-    elif modell == 'staffel':
-        if ende and _monate_zwischen(beginn, ende) < 36:
-            hinweise.append("Staffelmiete (Art. 269c OR) setzt eine Vertragsdauer von "
-                            "mindestens 3 Jahren voraus — die erfasste Dauer ist kürzer.")
-    return hinweise
+    from core.services.mietzinsmodell import dauer_befund
+    befund = dauer_befund(modell, beginn, ende, ist_befristet, verzicht_bis)
+    return [befund.volltext] if befund else []
 
 
 def runde_mietzins(betrag, schritt=None):
@@ -181,7 +162,7 @@ def runde_mietzins(betrag, schritt=None):
             * schritt).quantize(Decimal('0.01'))
 
 
-def index_anpassung_vorschlag(vertrag, aktuell_lik=None, wirksam_ab=None):
+def index_anpassung_vorschlag(vertrag, aktuell_lik=None, wirksam_ab=None, stand=None):
     """Berechnet die fällige Indexmiet-Anpassung (Art. 269b OR) für die amtliche
     Index-Mitteilung (Art. 269d): neuer Nettomietzins aus der LIK-Entwicklung
     seit der letzten Anpassung, anteilig zur vereinbarten Weitergabe.
@@ -196,11 +177,20 @@ def index_anpassung_vorschlag(vertrag, aktuell_lik=None, wirksam_ab=None):
     `basis_lik_punkte` des Vertragsbeginns. Sonst rechnete die zweite
     Indexanpassung den bereits weitergegebenen Anstieg ein zweites Mal.
 
-    Rückgabe-Dict oder None (kein Indexvertrag / keine Basis / LIK unverändert):
+    Die Rechnung steht in `core.services.index_anpassung.rechne` (Art. 17 VMWG):
+    Der Vorschlag wird auf 5 Rappen ABgerundet, damit er die Zunahme mal
+    Weitergabe nie überschreitet — die kaufmännische Rundung lag bis zu 2.5
+    Rappen darüber. Gegeben `stand` (ein Monat), kommt der LIK aus der Tabelle
+    in `core/services/lik.py`; ist der Monat dort nicht veröffentlicht, gibt es
+    keinen Vorschlag.
+
+    Rückgabe-Dict oder None (kein Indexvertrag / keine Basis / LIK unverändert /
+    Stand nicht veröffentlicht):
       neu_netto, alt_netto, basis_lik, aktuell_lik, delta_prozent, richtung
-      ('erhoehung' | 'senkung'), begruendung.
+      ('erhoehung' | 'senkung'), begruendung, hoechst_netto, weitergabe_prozent.
     """
     from decimal import Decimal
+    from core.services import index_anpassung as ia
     from rentals.services import bisheriger_stand
     if getattr(vertrag, 'mietzins_modell', 'fest') != 'index':
         return None
@@ -208,7 +198,9 @@ def index_anpassung_vorschlag(vertrag, aktuell_lik=None, wirksam_ab=None):
     basis_lik = Decimal(str(basis_lik or 0))
     if basis_lik <= 0:
         return None
-    if aktuell_lik is None:
+    if stand is not None:
+        aktuell_lik = ia.lik_punkte(stand)
+    elif aktuell_lik is None:
         try:
             from core.services.lik import aktueller_lik_wert
             _stand, aktuell_lik, _b = aktueller_lik_wert(live=False)
@@ -219,16 +211,16 @@ def index_anpassung_vorschlag(vertrag, aktuell_lik=None, wirksam_ab=None):
     aktuell_lik = Decimal(str(aktuell_lik))
     if aktuell_lik == basis_lik:
         return None   # LIK unverändert → nichts anzupassen
-    weiter = (vertrag.index_weitergabe_prozent or Decimal('100')) / Decimal('100')
-    faktor = Decimal('1') + (aktuell_lik - basis_lik) / basis_lik * weiter
-    alt_netto = Decimal(str(alt_netto or 0))
-    neu_netto = runde_mietzins(alt_netto * faktor)
+    rechnung = ia.rechne(alt_netto, basis_lik, aktuell_lik, vertrag.index_weitergabe_prozent)
+    alt_netto = rechnung.alt_netto
+    neu_netto = rechnung.vorschlag_netto
     if neu_netto == alt_netto:
         return None
     richtung = 'erhoehung' if neu_netto > alt_netto else 'senkung'
     delta_prozent = ((neu_netto - alt_netto) / alt_netto * Decimal('100')).quantize(Decimal('0.01')) \
         if alt_netto > 0 else Decimal('0')
-    weiter_txt = '' if weiter == Decimal('1') else f" (Weitergabe {vertrag.index_weitergabe_prozent}%)"
+    weiter_txt = '' if rechnung.weitergabe_prozent == Decimal('100') \
+        else f" (Weitergabe {format(rechnung.weitergabe_prozent.normalize(), 'f')}%)"
     wort = 'Indexanpassung' if richtung == 'erhoehung' else 'Indexanpassung (Senkung)'
     begruendung = (f"{wort} an den Landesindex der Konsumentenpreise (Art. 269b OR){weiter_txt}: "
                    f"LIK {basis_lik} → {aktuell_lik} Punkte. Nettomietzins CHF {alt_netto} → CHF {neu_netto}.")
@@ -236,17 +228,14 @@ def index_anpassung_vorschlag(vertrag, aktuell_lik=None, wirksam_ab=None):
         'neu_netto': neu_netto, 'alt_netto': alt_netto,
         'basis_lik': basis_lik, 'aktuell_lik': aktuell_lik,
         'delta_prozent': delta_prozent, 'richtung': richtung, 'begruendung': begruendung,
+        'hoechst_netto': rechnung.hoechst_netto, 'weitergabe_prozent': rechnung.weitergabe_prozent,
     }
 
 
 def staffel_pruefung(stufen):
-    """Prüft eine Liste von Staffelstufen (mit .ab_datum) auf die gesetzliche
-    Vorgabe: höchstens eine Erhöhung pro Jahr (Art. 269c OR)."""
-    hinweise = []
-    daten = sorted([s.ab_datum for s in stufen if getattr(s, 'ab_datum', None)])
-    for a, b in zip(daten, daten[1:]):
-        if _monate_zwischen(a, b) < 12:
-            hinweise.append("Staffelmiete (Art. 269c OR): Zwischen zwei Erhöhungen muss "
-                            "mindestens ein Jahr liegen — es liegen Stufen näher beieinander.")
-            break
-    return hinweise
+    """Warntexte, wenn zwei Staffelstufen (mit .ab_datum) weniger als zwölf Monate auseinanderliegen
+    (Art. 269c OR, höchstens eine Erhöhung pro Jahr). Der Abstand zum Mietbeginn gehört zu
+    `core.services.mietzinsmodell.pruefe`."""
+    from core.services import mietzinsmodell as regeln
+    befunde = regeln.abstand_befunde(None, regeln.stufen_normieren(stufen))
+    return [b.volltext for b in befunde[:1]]

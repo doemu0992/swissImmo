@@ -165,6 +165,7 @@ UEBERSETZT = (
     'fw/anfangsmietzins.html',
     'fw/formular_nachbildung.html',
     'fw/herabsetzung.html',
+    'fw/_mietzins_index.html',
     'fw/mietzins_anpassung.html',
     'fw/laeufe.html',
     'fw/lauf_detail.html',

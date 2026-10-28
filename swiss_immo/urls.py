@@ -91,6 +91,7 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
 # Modul 3 (27.10.2026): Handwerkerportal (Magic-Link je Auftrag) und Link-Verwaltung im Schaden
 from core.views.handwerker_portal import handwerker_auftrag, handwerker_auftrag_pdf, handwerker_auftrag_foto
 from core.views.fw.schaeden import fw_auftrag_link
+from core.views.fw.mietzinsmodell_pruefen import fw_mietzinsmodell_pruefen
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
 from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_zustaendig, fw_fallschritt_erledigen,
@@ -110,6 +111,7 @@ from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_
                            fw_schluessel_add, fw_schluessel_del, fw_schluessel_ausgabe, fw_schluessel_rueckgabe,
                            fw_sollmietzins_add, fw_sollmietzins_del, fw_objekt_nkart,
                            fw_staffel_add, fw_staffel_del, fw_staffelvorlage_add, fw_staffelvorlage_del,
+                           fw_staffel_mitteilung_erstellen, fw_staffel_mitteilung_versandt,
                            fw_anpassung_del,
                            fw_schaden_ausstattung, fw_ersatzplanung,
                            fw_wartungsfrist_neu, fw_wartungsfrist_bearbeiten, fw_wartungsfrist_loeschen,
@@ -285,6 +287,7 @@ urlpatterns = [
     path('neu/vertraege/neu/', fw_vertrag_neu, name='fw_vertrag_neu'),
     path('neu/vertraege/neu/speichern/', fw_vertrag_neu_speichern, name='fw_vertrag_neu_speichern'),
     path('neu/vertraege/vorschau/', fw_vertrag_vorschau, name='fw_vertrag_vorschau'),
+    path('neu/vertraege/mietzinsmodell/pruefen/', fw_mietzinsmodell_pruefen, name='fw_mietzinsmodell_pruefen'),
     path('neu/vertraege/<int:pk>/bearbeiten/', fw_vertrag_bearbeiten, name='fw_vertrag_bearbeiten'),
     path('neu/liegenschaften/<int:pk>/', fw_liegenschaft_detail, name='fw_liegenschaft_detail'),
     path('neu/liegenschaften/<int:pk>/frist/', fw_wartungsfrist_neu, name='fw_wartungsfrist_neu'),
@@ -328,6 +331,8 @@ urlpatterns = [
     path('neu/objekte/<int:pk>/nkart/', fw_objekt_nkart, name='fw_objekt_nkart'),
     path('neu/staffel/', fw_staffel_add, name='fw_staffel_add'),
     path('neu/staffel/<int:pk>/loeschen/', fw_staffel_del, name='fw_staffel_del'),
+    path('neu/staffel/<int:pk>/mitteilung/', fw_staffel_mitteilung_erstellen, name='fw_staffel_mitteilung_erstellen'),
+    path('neu/staffel/<int:pk>/mitteilung/versandt/', fw_staffel_mitteilung_versandt, name='fw_staffel_mitteilung_versandt'),
     path('neu/staffelvorlage/', fw_staffelvorlage_add, name='fw_staffelvorlage_add'),
     path('neu/staffelvorlage/<int:pk>/loeschen/', fw_staffelvorlage_del, name='fw_staffelvorlage_del'),
     path('neu/anpassung/<int:pk>/loeschen/', fw_anpassung_del, name='fw_anpassung_del'),

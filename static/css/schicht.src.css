@@ -3012,6 +3012,82 @@
         .fw-abn-eigen input{flex:1;min-width:0}
         /* ===== Ende MODUL assistent-seiten ===== */
 
+        /* ===== MODUL mietzinsmodell-wizard (27.10.2026) =====
+           Block «Mietzinsmodell» im Schritt «Mietzins» des Vertragsassistenten (fw/vertrag_neu.html,
+           static/js/fw-mietzinsmodell.js). Die Kacheln sind echte Radios: Das Radio deckt die ganze Kachel ab
+           (unsichtbar, aber anklickbar und mit Tastatur), das ⓘ liegt darüber. Die gewählte Kachel trägt
+           den Akzent (`.fw-kachel.akzent`, gesetzt vom Skript). Panels, Ampel und Befunde gehören zur
+           selben Karte. Farben nur über Tokens. */
+        .fw-mzm{display:flex;flex-direction:column;gap:16px}
+        .fw-mzm .hidden,.fw-mzm-fuss.hidden{display:none}
+        .fw-mzm-wahl{border:0;margin:0;padding:0;min-width:0}
+        .fw-mzm-wahl legend{padding:0;margin:0 0 8px}
+        .fw-mzm-kacheln{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+        @media (min-width:640px) and (max-width:1199px),(min-width:1700px){
+            .fw-mzm-kacheln{grid-template-columns:repeat(3,minmax(0,1fr))}}
+        .fw-mzm-kachel{min-height:0;padding:14px;gap:0;background:var(--ds-surface-2);box-shadow:none;border:1px solid var(--ds-line)}
+        .fw-mzm-kachel.akzent{border-color:transparent}
+        .fw-mzm-kachel input[type=radio]{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;z-index:1}
+        .fw-mzm-kachel label{position:relative;display:flex;flex-direction:column;gap:4px;min-height:44px;padding:0 30px 0 30px}
+        .fw-mzm-marke{position:absolute;left:0;top:1px;width:20px;height:20px;border-radius:var(--ds-pill);box-sizing:border-box;
+            border:2px solid var(--ds-line-stark);background:var(--ds-surface)}
+        .fw-mzm-kachel input:checked+label .fw-mzm-marke{border-color:#fff;background:#fff;box-shadow:inset 0 0 0 4px var(--ds-akzent)}
+        .fw-mzm-titel{font-size:15px;font-weight:600;letter-spacing:-.01em}
+        .fw-mzm-hilfe{position:absolute;top:10px;right:10px;z-index:2}
+        .fw-mzm-hilfe .fw-hilfe-knopf{margin:0}
+        .fw-mzm-kachel:has(input:focus-visible){outline:2px solid var(--ds-ink);outline-offset:2px}
+        .fw-mzm-rueck{margin:0;font-size:12.5px;color:var(--ds-muted)}
+        /* Ampel der festen Dauer */
+        .fw-mzm-ampel{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:var(--ds-radius);background:var(--ds-surface-2)}
+        .fw-mzm-ampel.gut{background:var(--ds-good-soft)}
+        .fw-mzm-ampel.krit{background:var(--ds-crit-soft)}
+        .fw-mzm-ampel.offen{background:var(--ds-info-soft)}
+        .fw-mzm-ampel-kopf{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
+        .fw-mzm-ampel-text{margin:0;font-size:13px;line-height:1.5;color:var(--ds-ink)}
+        .fw-mzm-ampel-fix{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+        .fw-mzm-artikel{font-size:12px;color:var(--ds-faint)}
+        /* Panels */
+        .fw-mzm-panel{display:flex;flex-direction:column;gap:12px;padding-top:16px;border-top:1px solid var(--ds-line)}
+        .fw-mzm-kopf{margin:0;font-size:14px;font-weight:600}
+        .fw-mzm-start{margin:0;font-size:13.5px;color:var(--ds-muted)}
+        .fw-mzm-start b{margin:0 4px;font-size:15px;color:var(--ds-ink)}
+        .fw-mzm-zeilen{display:flex;flex-direction:column;gap:10px}
+        .fw-mzm-leer{display:none;margin:0}
+        .fw-mzm-panel.leer .fw-mzm-leer{display:block}
+        .fw-mzm-zeile{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid var(--ds-line);border-radius:var(--ds-radius);background:var(--ds-surface)}
+        .fw-mzm-zeile[data-fehler]{border-color:var(--ds-crit)}
+        .fw-mzm-zeile-kopf{display:flex;align-items:center;justify-content:space-between;gap:8px}
+        .fw-mzm-zeile-titel{margin:0}
+        .fw-btn.fw-mzm-weg{width:40px;min-height:40px;padding:0;justify-content:center}
+        .fw-mzm-zeile-felder{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+        .fw-mzm-feld{display:flex;flex-direction:column;gap:4px;min-width:0;font-size:12px;color:var(--ds-muted)}
+        .fw-mzm-feld .fw-feld{width:100%;min-width:0}
+        .fw-mzm-neu{margin:0;font-size:13px;color:var(--ds-muted)}
+        .fw-mzm-neu output{font-weight:600;color:var(--ds-ink)}
+        .fw-mzm-zeilenbefund{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:4px}
+        .fw-mzm-zeilenbefund .fw-feldfehler{margin:0}
+        .fw-mzm-gen{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:var(--ds-radius);background:var(--ds-surface-2)}
+        .fw-mzm-gen .fw-hilfe,.fw-mzm-gen .fw-feldfehler{margin:0}
+        .fw-mzm-gen .fw-feldfehler:empty{display:none}
+        .fw-mzm-vorschlag{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0;font-size:12.5px;color:var(--ds-muted)}
+        .fw-mzm-beispiel{margin:0;padding:10px 12px;border-radius:var(--ds-radius);background:var(--ds-surface-2);font-size:13px;color:var(--ds-ink)}
+        /* Befunde: die Hinweis-Bausteine, enger gesetzt */
+        .fw-mzm-befunde{display:flex;flex-direction:column;gap:8px}
+        .fw-mzm-befunde:empty{display:none}
+        .fw-mzm-befunde .fw-hinweis{padding:10px 12px;border-bottom:0;border-radius:var(--ds-radius)}
+        .fw-mzm-fix{margin-top:8px}
+        /* Knöpfe, die sich nach einem Klick neu zeichnen, springen nicht unter dem Zeiger weg (Hover-Versatz flackert am Rand) */
+        .fw-mzm .fw-btn:hover,.fw-mzm .fw-btn:active{transform:none}
+        /* Fix-Knöpfe tragen ganze Sätze: umbrechen statt am Telefon abschneiden */
+        .fw-mzm-ampel .fw-btn,.fw-mzm-befunde .fw-btn,.fw-mzm-zeilenbefund .fw-btn{white-space:normal;text-align:left;height:auto;max-width:100%;justify-content:flex-start}
+        /* Grund der Sperre im Fuss des Assistenten */
+        .fw-mzm-fuss{flex:1 1 100%;order:-1;display:flex;align-items:flex-start;gap:8px;margin:0;font-size:12.5px;line-height:1.4;color:var(--ds-crit)}
+        .fw-mzm-fuss svg{flex:0 0 auto;margin-top:2px}
+        .fw-mzm-fuss-text{padding:0;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;text-decoration:underline;
+            display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-width:0}
+        .fw-assistent-fuss .fw-btn[disabled]{opacity:.5;cursor:not-allowed}
+        /* ===== Ende MODUL mietzinsmodell-wizard ===== */
+
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
         /* Vorlage: navmock/v2/vorschau (freigegeben, Stand «Kopfzeile v2»). Zeile 1 von links: Marke,
            Bestandsfilter `lg` (Kontext-Chip «BESTAND / Name»), die fünf Bereiche (schliessen bei jeder

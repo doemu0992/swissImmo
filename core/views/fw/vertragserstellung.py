@@ -8,6 +8,7 @@
 # Umzug lief das ueber _rest.py, jetzt direkt.
 
 import logging
+from dataclasses import dataclass, field
 from datetime import date, timedelta as _timedelta
 from decimal import Decimal
 
@@ -15,10 +16,12 @@ from django.db import transaction
 from django.utils.translation import gettext, gettext_lazy
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
 from django.utils import timezone
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
+from core.services import mietzinsmodell as regeln
 from crm.models import Mieter, Organisation
 from portfolio.models import Einheit, Liegenschaft
 from rentals.models import Mietvertrag
@@ -39,6 +42,52 @@ from core.tenancy import aktuelle_organisation
 def fw_vertrag_neu(request):
     return render(request, 'fw/vertrag_neu.html',
                   _assistent_kontext(request, request.GET.get('edit')))
+
+
+def _mzm_config(aktueller_lik):
+    """Konfiguration und Texte für static/js/fw-mietzinsmodell.js (Block «Mietzinsmodell»).
+
+    Alle Texte laufen hier durch `gettext`; das Skript setzt nur ein (`{name}`) und kennt keine Regel.
+    Die Mindestjahre stammen aus der Regelquelle, damit sie nirgends ein zweites Mal stehen.
+    """
+    return {
+        'url': reverse('fw_mietzinsmodell_pruefen'),
+        'jahre': regeln.MINDESTJAHRE,
+        'stufen_max': STUFEN_MAX,
+        'aktueller_lik': str(aktueller_lik),
+        'texte': {
+            'stufe': gettext('Stufe {n}'),
+            'stufe_weg': gettext('Stufe {n} entfernen'),
+            'ab': gettext('ab'),
+            'plus_chf': gettext('+ CHF'),
+            'neu_vor': gettext('→ neu CHF'),
+            'ampel_ok': gettext('Mindestdauer erfüllt'),
+            'ampel_nok': gettext('Mindestdauer nicht erfüllt'),
+            'ampel_offen': gettext('Dauer offen'),
+            'ampel_laedt': gettext('Prüfung läuft …'),
+            'ampel_unbekannt': gettext('Nicht geprüft'),
+            'ampel_ok_text': gettext('Fest bis {bis}. Verlangt ist die Dauer bis {soll} ({jahre} Jahre ab Mietbeginn).'),
+            'beginn_fehlt': gettext('Der Mietbeginn fehlt (Schritt «Konditionen»): Ohne ihn lässt sich die feste Dauer nicht beurteilen.'),
+            'nicht_erreichbar': gettext('Die Prüfung ist gerade nicht erreichbar. Der Server prüft beim Speichern trotzdem.'),
+            'rueck_staffel': gettext('Staffelstufen entfernt'),
+            'rueck_index': gettext('Index-Angaben entfernt'),
+            'gen_beginn': gettext('Zuerst den Mietbeginn im Schritt «Konditionen» eintragen.'),
+            'gen_betrag': gettext('Einen Betrag über 0 eintragen.'),
+            'gen_anzahl': gettext('Die Anzahl muss zwischen 1 und {max} liegen.'),
+            'vorschlag': gettext('Vorschlag: {punkte} Punkte, Stand {stand} (Vormonat des Mietbeginns).'),
+            'vorschlag_keiner': gettext('Für diesen Mietbeginn ist noch kein Indexstand veröffentlicht.'),
+            'beispiel': gettext('Beispiel: Bei LIK {lik} würde der Mietzins CHF {neu} betragen (heute CHF {alt}).'),
+            'beispiel_gleich': gettext('Beispiel: Bei LIK {lik} bliebe der Mietzins bei CHF {alt}.'),
+            'fuss_gesperrt': gettext('Gesperrt: {grund}'),
+            'fuss_weitere': gettext('(und {n} weitere)'),
+            'zus_modell': gettext('Mietzinsmodell'),
+            'zus_fest_bis': gettext('Feste Dauer bis'),
+            'zus_basis': gettext('Basis Landesindex'),
+            'zus_weitergabe': gettext('Weitergabe'),
+            'modelle': {'fest': gettext('Fester Mietzins'), 'staffel': gettext('Staffelmiete'),
+                        'index': gettext('Indexmiete')},
+        },
+    }
 
 
 def _assistent_kontext(request, edit_id=None, immer_zeigen=None):
@@ -174,6 +223,11 @@ def _assistent_kontext(request, edit_id=None, immer_zeigen=None):
             'verteilschluessel': ev.verteilschluessel or 'm2',
             'mwst_pflichtig': bool(ev.mwst_pflichtig), 'mwst_satz': float(ev.mwst_satz or 8.1),
             'mietzins_modell': ev.mietzins_modell or 'fest',
+            'verzicht_bis': ev.vermieter_kuendigungsverzicht_bis.isoformat() if ev.vermieter_kuendigungsverzicht_bis else '',
+            'stufen': _stufen_fuer_assistent(ev),
+            'basis_lik_stand': ev.basis_lik_stand.strftime('%Y-%m') if ev.basis_lik_stand else '',
+            'index_weitergabe_prozent': str(ev.index_weitergabe_prozent) if ev.index_weitergabe_prozent is not None else '',
+            'index_intervall_monate': ev.index_intervall_monate,
             'basis_referenzzinssatz': float(ev.basis_referenzzinssatz) if ev.basis_referenzzinssatz is not None else None,
             'basis_lik_punkte': float(ev.basis_lik_punkte) if ev.basis_lik_punkte is not None else None,
             'kautions_betrag': float(ev.kautions_betrag) if ev.kautions_betrag else '',
@@ -181,12 +235,14 @@ def _assistent_kontext(request, edit_id=None, immer_zeigen=None):
         }
 
     from core.services.docuseal_service import docuseal_konfiguriert
+    lik_vorgaben = _lik_assistent_defaults(vw)
     return {
         **basis, 'nav': 'vertraege',
+        'mzm_config': _mzm_config(lik_vorgaben['aktueller_lik']),
         'liegenschaften': liegenschaften, 'mieter': mieter,
         'verwaltung': verwaltung,
         'aktueller_ref_zins': float(vw.aktueller_referenzzinssatz) if vw else 1.25,
-        **_lik_assistent_defaults(vw),
+        **lik_vorgaben,
         'heute_iso': timezone.localdate().isoformat(),
         'vorwahl_einheit': vorwahl_einheit or '',
         'edit_vertrag': edit_vertrag, 'edit_json': edit_json,
@@ -240,8 +296,200 @@ ASSISTENT_ZAHLEN = (
     ('beginn', 'datum', gettext_lazy('Mietbeginn')),
     ('ende', 'datum', gettext_lazy('Mietende')),
     ('erstmals_kuendbar', 'datum', gettext_lazy('Erstmals kündbar auf')),
+    ('vermieter_kuendigungsverzicht_bis', 'datum', gettext_lazy('Vermieter verzichtet auf Kündigung bis')),
     ('kostensteigerung_datum', 'datum', gettext_lazy('Kostensteigerung per')),
 )
+
+
+#: Mehr Stufen sind ein Fehler in der Eingabe, keine Staffel (wie der Live-Endpunkt).
+STUFEN_MAX = 60
+
+
+def _stufen_fuer_assistent(vertrag):
+    """Die gespeicherten Stufen eines Entwurfs als Zeilen des Assistenten: Datum und Erhöhung in CHF.
+    Altstufen ohne Erhöhung (nur ein Betrag): die Erhöhung folgt aus dem Stand davor."""
+    zeilen = []
+    laufend = vertrag.netto_mietzins or Decimal('0')
+    for s in vertrag.staffelstufen.all().order_by('ab_datum', 'id'):
+        erh = s.erhoehung_chf if s.erhoehung_chf is not None else (s.netto_mietzins - laufend)
+        zeilen.append({'ab': s.ab_datum.isoformat(), 'erhoehung': format(erh, 'f')})
+        laufend = laufend + erh
+    return zeilen
+
+
+def _zahl(roh):
+    """Decimal aus einer Eingabe (Schweizer Schreibweise), sonst None. Unlesbares wird nicht erraten."""
+    t = _num((roh or '').strip())
+    if not t:
+        return None
+    try:
+        d = Decimal(t)
+    except Exception:
+        return None
+    return d if d.is_finite() and abs(d) < Decimal('1e9') else None
+
+
+def _tag(roh):
+    try:
+        return date.fromisoformat((roh or '').strip())
+    except ValueError:
+        return None
+
+
+def _monat(roh):
+    """JJJJ-MM (Feld type=month) → erster des Monats."""
+    teile = (roh or '').strip().split('-')
+    try:
+        return date(int(teile[0]), int(teile[1]), 1)
+    except (ValueError, IndexError):
+        return None
+
+
+def _nachkommastellen(d):
+    return max(0, -d.as_tuple().exponent)
+
+
+@dataclass
+class ModellEingabe:
+    """Das Mietzinsmodell, wie es der Assistent abgeschickt hat, samt Ergebnis der Prüfung.
+
+    `sperren` verhindern das Speichern; `fehler` (Feld → Meldung) sind dieselben Befunde in der Form,
+    in der der Assistent sie bei den Feldern zeigt. `altlast`: Die Sperren gehören zu einem
+    bestehenden Entwurf, dessen Mietzinsmodell nicht geändert wurde, und blockieren nicht.
+    """
+    modell: str = 'fest'
+    ist_befristet: bool = False          # befristet UND ein Ende gesetzt
+    ende: date | None = None             # nur bei Befristung
+    verzicht_bis: date | None = None     # nur bei einem unbefristeten Vertrag
+    stufen: list = field(default_factory=list)   # regeln.Stufe in der Reihenfolge der Eingabe
+    stufen_behalten: bool = False        # keine Staffelzeilen geschickt: die gespeicherten bleiben
+    basis_punkte: Decimal | None = None
+    basis_stand: date | None = None
+    weitergabe: Decimal = Decimal('100')
+    intervall: int = 12
+    sperren: list = field(default_factory=list)
+    fehler: dict = field(default_factory=dict)
+    altlast: bool = False
+
+    @property
+    def stufen_fuer_vorschau(self):
+        return [{'ab': s.ab, 'erhoehung': s.erhoehung_chf} for s in self.stufen]
+
+    @property
+    def meldungen(self):
+        """Alle Meldungen, ohne Doppelte, in der Reihenfolge der Entdeckung."""
+        return list(dict.fromkeys(self.fehler.values()))
+
+
+def _befund_schluessel(b):
+    feld = b.feld or 'mietzins_modell'
+    return f'{feld}[{b.zeile}]' if b.zeile is not None else feld
+
+
+def _signatur(modell, beginn, ende, ist_befristet, verzicht, stufen, punkte, stand, weitergabe, intervall):
+    """Was am Mietzinsmodell hängt — zum Vergleich mit dem gespeicherten Entwurf."""
+    sig = [modell, beginn, ende if ist_befristet else None, bool(ist_befristet), verzicht]
+    if modell == 'staffel':
+        sig.append(tuple(sorted(((s.ab, s.erhoehung_chf) for s in stufen),
+                                key=lambda z: (z[0] or date.min, z[1] if z[1] is not None else Decimal('-1e9')))))
+    if modell == 'index':
+        sig += [punkte, (stand.year, stand.month) if stand else None, weitergabe, intervall]
+    return tuple(sig)
+
+
+def _stufen_aus_vertrag(vertrag):
+    return [regeln.Stufe(ab=date.fromisoformat(z['ab']), erhoehung_chf=Decimal(z['erhoehung']))
+            for z in _stufen_fuer_assistent(vertrag)]
+
+
+def _modell_aus_eingabe(P, *, beginn, netto, vorhandener=None):
+    """Liest das Mietzinsmodell aus den Eingaben und hält es gegen `core/services/mietzinsmodell.pruefe`.
+
+    EINE Regelquelle: Der Live-Endpunkt des Assistenten und diese Stelle rufen dieselbe Prüfung. Der
+    Browser lässt sich umgehen, diese Stelle nicht. `beginn` ist der abgeschickte Mietbeginn oder
+    None; ohne ihn lässt sich die Dauer nicht beurteilen, und Index und Staffel werden abgelehnt.
+    `vorhandener`: der Entwurf, der bearbeitet wird. Ändert die Eingabe nichts am Mietzinsmodell, wird
+    er nicht wegen eines früheren Verstosses blockiert (Altlast).
+    """
+    e = ModellEingabe()
+    modell = (P.get('mietzins_modell') or 'fest').strip()
+    if modell not in regeln.MODELLE:
+        e.fehler['mietzins_modell'] = gettext('Unbekanntes Mietzinsmodell.')
+        modell = 'fest'
+    e.modell = modell
+    roh_befristet = P.get('ist_befristet') == '1'
+    ende = _tag(P.get('ende'))
+    e.ist_befristet = roh_befristet and ende is not None
+    e.ende = ende if roh_befristet else None
+    # Ein Verzicht des Vermieters ersetzt die Befristung; bei einem befristeten Vertrag zählt das Ende.
+    e.verzicht_bis = None if roh_befristet else _tag(P.get('vermieter_kuendigungsverzicht_bis'))
+
+    # Staffelzeilen: parallele Listen, wie im Assistenten
+    ab_l, erh_l, proz_l = (P.getlist(n) for n in ('staffel_ab', 'staffel_erhoehung', 'staffel_prozent'))
+    n = max(len(ab_l), len(erh_l), len(proz_l))
+    if n > STUFEN_MAX:
+        e.fehler['staffelstufen'] = gettext('Mehr als %(max)s Staffelstufen sind nicht möglich.') % {'max': STUFEN_MAX}
+        n = STUFEN_MAX
+    for i in range(n):
+        ab = _tag(ab_l[i]) if i < len(ab_l) else None
+        erh = _zahl(erh_l[i]) if i < len(erh_l) else None
+        proz_roh = (proz_l[i] if i < len(proz_l) else '').strip()
+        # Eine Prozentangabe gilt immer als Verstoss (Art. 269c lit. c OR), auch wenn sie unlesbar ist.
+        prozent = (_zahl(proz_roh) or Decimal('1')) if proz_roh else None
+        if erh is not None:
+            if abs(erh) >= Decimal('1e6'):
+                e.fehler[f'staffel_erhoehung[{i}]'] = gettext('Stufe %(nr)s: Die Erhöhung ist zu hoch.') % {'nr': i + 1}
+            elif _nachkommastellen(erh) > 2:
+                e.fehler[f'staffel_erhoehung[{i}]'] = gettext(
+                    'Stufe %(nr)s: Die Erhöhung ist auf den Rappen genau anzugeben.') % {'nr': i + 1}
+        e.stufen.append(regeln.Stufe(ab=ab, erhoehung_chf=erh, prozent=prozent))
+    leer = not any(s.ab or s.erhoehung_chf is not None or s.prozent for s in e.stufen)
+    if (leer and modell == 'staffel' and vorhandener is not None and vorhandener.mietzins_modell == 'staffel'
+            and vorhandener.staffelstufen.exists()):
+        # Das Formular brachte keine Staffeldaten mit (ältere Bearbeitungsmasken): die gespeicherten bleiben.
+        e.stufen = _stufen_aus_vertrag(vorhandener)
+        e.stufen_behalten = True
+
+    # Indexangaben: nur bei der Indexmiete gültig
+    w = _zahl(P.get('index_weitergabe_prozent'))
+    iv = _zahl(P.get('index_intervall_monate'))
+    punkte = _zahl(P.get('basis_lik_punkte'))
+    stand = _monat(P.get('basis_lik_stand'))
+    if modell == 'index':
+        if w is not None and _nachkommastellen(w) > 1:
+            e.fehler['index_weitergabe_prozent'] = gettext('Die Weitergabe hat höchstens eine Nachkommastelle.')
+        if punkte is not None and _nachkommastellen(punkte) > 1:
+            e.fehler['basis_lik_punkte'] = gettext('Die Basis des Landesindexes hat höchstens eine Nachkommastelle.')
+    elif modell == 'fest' and ((w is not None and w != regeln.VORGABE_WEITERGABE)
+                               or (iv is not None and iv != regeln.VORGABE_INTERVALL)):
+        e.fehler['index_weitergabe_prozent'] = gettext(
+            'Bei festem Mietzins darf keine Indexklausel stehen bleiben (Weitergabe, Mindestintervall).')
+
+    befunde = regeln.pruefe(
+        modell=modell, beginn=beginn, ende=e.ende, ist_befristet=roh_befristet, verzicht_bis=e.verzicht_bis,
+        netto=netto, stufen=e.stufen, basis_lik_punkte=punkte, basis_lik_stand=stand,
+        weitergabe_prozent=w, intervall_monate=iv)
+    e.sperren = regeln.sperren(befunde)
+    if modell in regeln.MINDESTJAHRE and beginn is None:
+        e.fehler['beginn'] = gettext('Der Mietbeginn fehlt: Ohne ihn lässt sich die feste Dauer nicht beurteilen.')
+
+    e.basis_punkte, e.basis_stand = punkte, stand
+    if modell == 'index':
+        e.weitergabe = w if w is not None else regeln.VORGABE_WEITERGABE
+        e.intervall = int(iv) if iv is not None and iv >= 1 else regeln.VORGABE_INTERVALL
+
+    if vorhandener is not None and e.sperren:
+        alt = _signatur(vorhandener.mietzins_modell, vorhandener.beginn, vorhandener.ende, vorhandener.ist_befristet,
+                        vorhandener.vermieter_kuendigungsverzicht_bis, _stufen_aus_vertrag(vorhandener),
+                        vorhandener.basis_lik_punkte, vorhandener.basis_lik_stand,
+                        vorhandener.index_weitergabe_prozent, vorhandener.index_intervall_monate)
+        neu = _signatur(modell, beginn, e.ende, e.ist_befristet, e.verzicht_bis, e.stufen, punkte, stand,
+                        e.weitergabe, e.intervall)
+        e.altlast = alt == neu
+    if not e.altlast:
+        for b in e.sperren:
+            e.fehler.setdefault(_befund_schluessel(b), b.volltext)
+    return e
 
 
 def _unlesbare_eingaben(P):
@@ -261,14 +509,26 @@ def _unlesbare_eingaben(P):
         except Exception:
             fehler.append((name, gettext('«%(eingabe)s» ist für «%(feld)s» nicht lesbar — nichts wurde gespeichert.')
                            % {'eingabe': roh[:40], 'feld': beschriftung}))
-    for roh in P.getlist('staffel_netto'):
+    # LIK-Stand-Monat (Feld type=month, JJJJ-MM): früher still durch den Vorgabewert ersetzt.
+    roh = (P.get('basis_lik_stand') or '').strip()
+    if roh and _monat(roh) is None:
+        fehler.append(('basis_lik_stand', gettext('«%(eingabe)s» ist für «%(feld)s» nicht lesbar — nichts wurde gespeichert.')
+                       % {'eingabe': roh[:40], 'feld': gettext('LIK Stand-Monat')}))
+    # Staffelzeilen: Datum und Erhöhung je Zeile. Der Betrag der Stufe («staffel_netto») gibt es nicht mehr:
+    # Art. 269c lit. c OR verlangt den Frankenbetrag der ERHÖHUNG.
+    for i, roh in enumerate(P.getlist('staffel_ab')):
         roh = (roh or '').strip()
-        if roh:
-            try:
-                Decimal(_num(roh))
-            except Exception:
-                fehler.append(('staffel_netto', gettext('«%(eingabe)s» ist als Staffelmiete nicht lesbar — nichts wurde gespeichert.')
-                                               % {'eingabe': roh[:40]}))
+        if roh and _tag(roh) is None:
+            fehler.append((f'staffel_ab[{i}]', gettext('Stufe %(nr)s: «%(eingabe)s» ist als Datum nicht lesbar — nichts wurde gespeichert.')
+                           % {'nr': i + 1, 'eingabe': roh[:40]}))
+    for i, roh in enumerate(P.getlist('staffel_erhoehung')):
+        roh = (roh or '').strip()
+        if roh and _zahl(roh) is None:
+            fehler.append((f'staffel_erhoehung[{i}]', gettext('Stufe %(nr)s: «%(eingabe)s» ist als Erhöhung nicht lesbar — nichts wurde gespeichert.')
+                           % {'nr': i + 1, 'eingabe': roh[:40]}))
+    if any((roh or '').strip() for roh in P.getlist('staffel_netto')):
+        fehler.append(('staffelstufen', gettext(
+            'Eine Staffelstufe wird als Erhöhung in Franken erfasst, nicht als neuer Mietzins — nichts wurde gespeichert.')))
     return fehler
 
 
@@ -307,6 +567,10 @@ def fw_vertrag_neu_speichern(request):
 
     _v_beginn = _datum_val('beginn') or timezone.localdate()
     _v_ende = _datum_val('ende')
+    # Bearbeiten-Modus: bestehenden ENTWURF aktualisieren statt neu anlegen.
+    edit_id = P.get('edit_id')
+    editing = (Mietvertrag.objects.filter(id=edit_id, status='entwurf').first()
+               if edit_id else None)
     # Feld → Meldung. Die Meldung steht beim Feld; der Assistent öffnet den
     # Schritt des ersten Fehlers, und alle Eingaben bleiben stehen.
     feld_fehler = {}
@@ -341,6 +605,12 @@ def fw_vertrag_neu_speichern(request):
     # war ein Serverfehler. Leer bleibt erlaubt (dann gilt die Vorgabe wie
     # bisher); nur, was eingetippt und nicht lesbar ist, hält hier an.
     for feld, meldung in _unlesbare_eingaben(P):
+        _fehler(feld, meldung)
+    # MIETZINSMODELL (Art. 269b/269c OR): hart, nicht als Warnung. Dieselbe Regelquelle wie die
+    # Live-Prüfung im Assistenten; der Browser lässt sich umgehen, diese Stelle nicht.
+    modell = _modell_aus_eingabe(P, beginn=_datum_val('beginn'), netto=_dec_val('netto_mietzins'),
+                                 vorhandener=editing)
+    for feld, meldung in modell.fehler.items():
         _fehler(feld, meldung)
     if feld_fehler:
         # Vorher: Meldungen oben, Weiterleitung auf einen LEEREN Assistenten —
@@ -413,23 +683,10 @@ def fw_vertrag_neu_speichern(request):
 
     beginn = datum('beginn') or timezone.localdate()
 
-    # LIK-Stand-Monat (aus dem die Basis-Punkte stammen): Formular-Override,
-    # sonst automatisch der neueste veröffentlichte Monat (BFS-Tabelle,
-    # Basis Dez. 2020), Fallback Account-Einstellung.
-    from core.services.lik import aktueller_lik_wert
     # Kein Rueckfall mehr: `Liegenschaft.organisation` ist seit Etappe 5
     # `null=False`, der `or`-Zweig war damit tot — und haette, waere er je
     # erreichbar geworden, die erste Verwaltung der Installation geliefert.
     _vw = einheit.liegenschaft.organisation
-    _auto_stand, _auto_pkt, _ = aktueller_lik_wert()
-    basis_lik_stand = _auto_stand or (_vw.aktueller_lik_stand if _vw else None)
-    _stand_raw = (P.get('basis_lik_stand') or '').strip()  # 'YYYY-MM' aus <input type=month>
-    if _stand_raw:
-        try:
-            _jahr, _monat = _stand_raw.split('-')[:2]
-            basis_lik_stand = date(int(_jahr), int(_monat), 1)
-        except Exception:
-            logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     # Kündigungsfrist: bei Geschäftsräumen gesetzlich min. 6 Monate (Art. 266d);
     # wird der Wert nicht gesetzt, greift der art-abhängige Default.
@@ -438,38 +695,35 @@ def fw_vertrag_neu_speichern(request):
         _kfrist = int(P.get('kuendigungsfrist') or _kfrist_default)
     except ValueError:
         _kfrist = _kfrist_default
-    # Indexparameter (E2.52). Beide steuerten die Anpassung seit jeher und
-    # liessen sich nicht erfassen; es galt still 100 % und 12 Monate.
-    def _idx(name, vorgabe, hoechstens=None):
-        try:
-            wert = Decimal(_num(P.get(name)) or str(vorgabe))
-        except Exception:
-            return vorgabe
-        if wert <= 0:
-            return vorgabe
-        return min(wert, hoechstens) if hoechstens is not None else wert
+    # Indexparameter (E2.52): Weitergabe und Mindestintervall gelten nur bei der Indexmiete. Bis
+    # 27.10.2026 kappte der Server eine Weitergabe über 100 % still auf 100 und ersetzte 0 oder weniger
+    # durch die Vorgabe; jetzt lehnt `_modell_aus_eingabe` das ab. Bei den anderen Modellen gelten die
+    # Vorgaben des Modells (100 %, 12 Monate).
+    _idx_weiter = modell.weitergabe
+    _idx_intervall = modell.intervall
+    _mietzins_modell = modell.modell
 
-    _idx_weiter = _idx('index_weitergabe_prozent', Decimal('100'), Decimal('100'))
-    _idx_intervall = int(_idx('index_intervall_monate', 12))
-
-    _mietzins_modell = P.get('mietzins_modell', 'fest')
-    if _mietzins_modell not in ('fest', 'index', 'staffel'):
-        _mietzins_modell = 'fest'
+    # Basis des Landesindexes: bei der Indexmiete die abgeschickte (geprüft), sonst der Stand des Monats
+    # VOR dem Mietbeginn; erst wenn die Tabelle dafür nichts hat, der Stand der Verwaltung von heute.
+    # Der aktuelle Stand wäre als Basis eines Vertrags, der früher begann, falsch.
+    _vor_stand, _vor_punkte = regeln.basis_lik_vorschlag(beginn)
+    if _mietzins_modell == 'index':
+        basis_lik_stand = modell.basis_stand
+    else:
+        from core.services.lik import aktueller_lik_wert
+        _auto_stand, _auto_pkt, _ = aktueller_lik_wert()
+        basis_lik_stand = modell.basis_stand or _vor_stand or _auto_stand or (_vw.aktueller_lik_stand if _vw else None)
+    _basis_punkte = modell.basis_punkte or (None if _mietzins_modell == 'index' else _vor_punkte)
 
     # Einstellplätze (Parkplatz/Garage, Art. 266e) haben keine separaten
     # Nebenkosten — serverseitig hart auf 0 setzen, egal was übermittelt wurde.
     _nk = Decimal('0.00') if einheit.ist_einstellplatz else dec('nebenkosten')
 
-    # Bearbeiten-Modus: bestehenden ENTWURF aktualisieren statt neu anlegen.
-    edit_id = P.get('edit_id')
-    editing = (Mietvertrag.objects.filter(id=edit_id, status='entwurf').first()
-               if edit_id else None)
-
     # Befristet = explizit angehakt (Checkbox «unbefristet» aus) UND ein Enddatum
     # gesetzt. So bleibt `ende` bei einem unbefristeten Vertrag leer, und ein
     # später via Kündigung gesetztes `ende` macht den Vertrag nicht «befristet».
-    _ende = datum('ende')
-    _ist_befristet = (P.get('ist_befristet') == '1') and bool(_ende)
+    _ende = modell.ende
+    _ist_befristet = modell.ist_befristet
 
     felder = dict(
         mieter=mieter, einheit=einheit,
@@ -479,6 +733,7 @@ def fw_vertrag_neu_speichern(request):
         # unbefristeten Vertrags abgelegt (der Kommentar unten versprach das schon,
         # der Code setzte es aber unbedingt; Review-Befund).
         beginn=beginn, ende=(_ende if _ist_befristet else None), ist_befristet=_ist_befristet,
+        vermieter_kuendigungsverzicht_bis=modell.verzicht_bis,
         erstmals_kuendbar_auf=datum('erstmals_kuendbar'),
         kuendigungsfrist_monate=_kfrist,
         index_weitergabe_prozent=_idx_weiter,
@@ -499,7 +754,7 @@ def fw_vertrag_neu_speichern(request):
         zweckbestimmung=P.get('zweckbestimmung', '').strip(),
         weitere_vorbehalte=P.get('weitere_vorbehalte', '').strip(),
         basis_referenzzinssatz=dec('basis_referenzzinssatz') or _stand_zins(einheit),
-        basis_lik_punkte=dec('basis_lik_punkte') or _stand_lik(einheit),
+        basis_lik_punkte=_basis_punkte or _stand_lik(einheit),
         basis_lik_stand=basis_lik_stand,
         kostensteigerung_datum=datum('kostensteigerung_datum'),
         kautions_betrag=dec('kautions_betrag') or None,
@@ -510,41 +765,31 @@ def fw_vertrag_neu_speichern(request):
     # Weitere WG-Mieter (bestehende Personen, mehrfach) — als M2M nach dem Save.
     _wg_ids = [i for i in P.getlist('weitere_mieter') if str(i).strip().isdigit()]
 
-    # Bringt das Formular überhaupt Staffeldaten mit? Das Bearbeiten-Formular
-    # eines Entwurfs befüllt die Staffelsektion NICHT — würde man die
-    # bestehenden Stufen trotzdem löschen und aus dem leeren Formular neu
-    # aufbauen, wären sie weg (stiller Verlust, das Modell stünde weiter auf
-    # «Staffel» ohne eine einzige Stufe → Miete stiege nie). Nur löschen, wenn
-    # echte Ersatzdaten kommen oder das Modell von «Staffel» weggewechselt wird.
-    _hat_staffel_input = any((ab or '').strip() for ab in P.getlist('staffel_ab'))
-
     with transaction.atomic():
         if editing:
             for _k, _v in felder.items():
                 setattr(editing, _k, _v)
             editing.save()
             vertrag = editing
-            if _hat_staffel_input or _mietzins_modell != 'staffel':
+            # Brachte das Formular keine Staffeldaten mit (ältere Bearbeitungsmasken), bleiben die
+            # gespeicherten Stufen; sonst stünde das Modell auf «Staffel» ohne eine einzige Stufe.
+            # Sie sind dann Teil der geprüften Eingabe (`stufen_behalten`).
+            if not modell.stufen_behalten:
                 vertrag.staffelstufen.all().delete()   # neu aus dem Formular aufbauen
         else:
             vertrag = Mietvertrag.objects.create(**felder)
-        # Staffelstufen (parallele Listen ab_datum/netto) — nur bei Staffelmiete
-        if _mietzins_modell == 'staffel':
+        # Staffelstufen: Datum und ERHÖHUNG in CHF (Art. 269c lit. c OR). `Staffelstufe.save()` leitet den
+        # Nettomietzins der Stufe aus Vorstufe und Erhöhung ab.
+        if _mietzins_modell == 'staffel' and not modell.stufen_behalten:
             from rentals.models import Staffelstufe
-            ab_list = P.getlist('staffel_ab')
-            netto_list = P.getlist('staffel_netto')
-            for i, ab in enumerate(ab_list):
-                try:
-                    ab_d = date.fromisoformat((ab or '').strip())
-                except ValueError:
-                    continue
-                betrag = dec(f'__staffel_{i}') if False else None
-                try:
-                    betrag = Decimal(_num(netto_list[i])) if i < len(netto_list) and str(netto_list[i]).strip() else None
-                except Exception:
-                    betrag = None
-                if ab_d and betrag and betrag > 0:
-                    Staffelstufe.objects.create(vertrag=vertrag, ab_datum=ab_d, netto_mietzins=betrag)
+            for ab_d, erh, neu_netto in regeln.stufen_berechnen(vertrag.netto_mietzins, modell.stufen):
+                # Eine Altlast (unverändert übernommener Entwurf) kann eine Stufe ohne positive Erhöhung
+                # tragen; die Datenbank lässt sie nur ohne Erhöhung zu.
+                Staffelstufe.objects.create(vertrag=vertrag, ab_datum=ab_d, netto_mietzins=neu_netto,
+                                            erhoehung_chf=erh if erh > 0 else None)
+        elif modell.stufen_behalten:
+            from rentals.models import Staffelstufe
+            Staffelstufe.kette_neu_rechnen(vertrag)   # der Netto-Mietzins kann sich geändert haben
         # WG: weitere Mieter setzen (Haupt- und 2. Mieter ausgenommen, keine Dubletten).
         if _wg_ids:
             aus = {mieter.id}
@@ -616,17 +861,13 @@ def fw_vertrag_neu_speichern(request):
     if (vertrag.netto_mietzins or Decimal('0')) <= 0:
         messages.warning(request, '⚠️ ' + gettext('Nettomietzins ist CHF 0 — bitte prüfen. Ohne Mietzins erzeugt der Mietenlauf keine Forderung.'))
 
-    # Mietrechtliche Plausibilitätsprüfung (Index ≥ 5 J / Staffel ≥ 3 J,
-    # max. 1 Staffelerhöhung/Jahr) — als Warnung, nicht blockierend.
-    try:
-        from core.services.mietrecht import pruefe_mietzinsmodell, staffel_pruefung
-        _warn = pruefe_mietzinsmodell(_mietzins_modell, vertrag.beginn, vertrag.ende)
-        if _mietzins_modell == 'staffel':
-            _warn += staffel_pruefung(list(vertrag.staffelstufen.all()))
-        for _w in _warn:
-            messages.warning(request, "⚠️ " + _w)
-    except Exception:
-        logger.debug("Fehler bewusst übergangen", exc_info=True)
+    # Mietzinsmodell (Art. 269b/269c OR): Verstösse hat `_modell_aus_eingabe` schon vor dem Speichern
+    # abgelehnt. Gemeldet wird hier nur noch eine Altlast, ein bestehender Entwurf mit unverändertem
+    # Modell, der nach den heutigen Regeln nicht mehr zulässig wäre.
+    if modell.altlast:
+        for b in modell.sperren:
+            messages.warning(request, '⚠️ ' + gettext('Mietzinsmodell dieses Entwurfs (unverändert, daher nicht gesperrt): %(text)s')
+                             % {'text': b.volltext})
 
     log_aktion(request, "Mietvertrag bearbeitet (Assistent)" if editing else "Mietvertrag erstellt (Assistent)",
                str(mieter), f"{einheit.bezeichnung}, ab {beginn}", ziel=vertrag)
@@ -661,6 +902,16 @@ def _stand_zins(einheit):
 def _stand_lik(einheit):
     from .mietprozess import _aktuelle_basis
     return _aktuelle_basis(einheit)[1]
+
+
+def _vorschau_sperre_html(meldungen):
+    """Der Rahmen der Vorschau (srcdoc) kennt die Stilschicht nicht: schlichtes HTML mit eigenen Angaben."""
+    from django.utils.html import format_html, format_html_join
+    return format_html(
+        '<div style="font-family:Helvetica,sans-serif;padding:24px;font-size:13px;line-height:1.5;color:#334155;">'
+        '<p style="margin:0 0 8px;font-weight:700;">{}</p><ul style="margin:0;padding-left:18px;">{}</ul></div>',
+        gettext('Vorschau nicht möglich: Das Mietzinsmodell ist noch nicht zulässig.'),
+        format_html_join('', '<li style="margin-bottom:4px;">{}</li>', ((m,) for m in meldungen)))
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
@@ -715,13 +966,19 @@ def fw_vertrag_vorschau(request):
                                           P.get('mit_nachname', '').strip()] if t)
 
     _nk = Decimal('0.00') if einheit.ist_einstellplatz else dec('nebenkosten')
-    _modell = P.get('mietzins_modell', 'fest')
-    if _modell not in ('fest', 'index', 'staffel'):
-        _modell = 'fest'
+    # Mietzinsmodell (Art. 269b/269c OR): Die Vorschau zeigt den Vertrag, wie er gedruckt wird. Ein Vertrag,
+    # den der Server nicht speichern würde, wird nicht als fertiger Vertrag gezeigt: statt seiner stehen
+    # die Befunde da. Dieselbe Prüfung wie beim Speichern.
+    modell = _modell_aus_eingabe(P, beginn=datum('beginn'), netto=dec('netto_mietzins'))
+    if modell.fehler:
+        return HttpResponse(_vorschau_sperre_html(modell.meldungen), content_type='text/html')
+    _modell = modell.modell
+    _vor_stand, _vor_punkte = regeln.basis_lik_vorschlag(datum('beginn') or timezone.localdate())
     # Transienter (nicht gespeicherter) Vertrag — nur zum Rendern.
     vertrag = Mietvertrag(
         mieter=mieter, einheit=einheit,
-        beginn=datum('beginn') or timezone.localdate(), ende=datum('ende'),
+        beginn=datum('beginn') or timezone.localdate(), ende=modell.ende, ist_befristet=modell.ist_befristet,
+        vermieter_kuendigungsverzicht_bis=modell.verzicht_bis,
         erstmals_kuendbar_auf=datum('erstmals_kuendbar'),
         kuendigungsfrist_monate=int(P.get('kuendigungsfrist') or 3),
         kuendigungstermine=P.get('kuendigungstermine', '').strip() or 'Ende jedes Monats ausser Dezember',
@@ -740,9 +997,13 @@ def fw_vertrag_vorschau(request):
         zweckbestimmung=P.get('zweckbestimmung', '').strip(),
         weitere_vorbehalte=P.get('weitere_vorbehalte', '').strip(),
         basis_referenzzinssatz=dec('basis_referenzzinssatz') or _stand_zins(einheit),
-        basis_lik_punkte=dec('basis_lik_punkte') or _stand_lik(einheit),
+        basis_lik_punkte=modell.basis_punkte or _vor_punkte or _stand_lik(einheit),
+        basis_lik_stand=modell.basis_stand or _vor_stand,
+        index_weitergabe_prozent=modell.weitergabe, index_intervall_monate=modell.intervall,
         kautions_betrag=dec('kautions_betrag') or None,
         kautions_konto=P.get('kautions_konto', '').strip())
+    # Die Stufen sind noch nicht gespeichert: Die Klausel liest sie von hier (`klausel_kontext`).
+    vertrag.vorschau_stufen = modell.stufen_fuer_vorschau
     try:
         html = render_vertrag_html(vertrag, mit_unterschrift=False)
     except Exception as exc:
@@ -779,7 +1040,9 @@ def fw_vertrag_bearbeiten(request, pk):
         alt = snapshot_model(v)
 
         from rentals.forms import VertragBearbeitenForm
-        form = VertragBearbeitenForm(P, entwurf=not gesperrt, beginn=v.beginn)
+        # `vertrag=v`: Das Formular hält Ende, Beginn, Kündigungsverzicht und Indexangaben gegen die Regeln
+        # des Mietzinsmodells (Art. 269b/269c OR) und lehnt Verstösse ab; ein unverändertes Modell nicht.
+        form = VertragBearbeitenForm(P, entwurf=not gesperrt, beginn=v.beginn, vertrag=v)
         if not form.is_valid():
             # Nichts wird gespeichert; das Formular kommt mit den Eingaben und
             # den Hinweisen am Feld zurück (Audit Etappe 2).
@@ -794,6 +1057,10 @@ def fw_vertrag_bearbeiten(request, pk):
         if v.status == 'aktiv':
             v.ist_befristet = bool(v.ende)
         v.erstmals_kuendbar_auf = cd.get('erstmals_kuendbar')
+        # Kündigungsverzicht des Vermieters (Art. 17 Abs. 4 VMWG): nur überschreiben, wenn das Feld
+        # mitgeschickt wurde, sonst löscht ein Formular ohne das Feld den Wert still.
+        if 'vermieter_kuendigungsverzicht_bis' in P:
+            v.vermieter_kuendigungsverzicht_bis = cd.get('vermieter_kuendigungsverzicht_bis')
         if cd.get('kuendigungsfrist'):
             v.kuendigungsfrist_monate = cd['kuendigungsfrist']
         # DIE INDEXPARAMETER SIND EDITIERBAR — MIT PROTOKOLLEINTRAG (E2.53)
@@ -895,7 +1162,7 @@ def fw_vertrag_bearbeiten(request, pk):
 #: Felder, deren Wert die Vorlage aus `wert` liest statt aus dem Vertrag: Nach
 #: einem Fehler steht dort die Eingabe. Ein unlesbares Datum oder ein Betrag
 #: wie «ca. 1800» hätte am Vertrag gar keinen Platz.
-VERTRAG_ROHWERTE = ('ende', 'erstmals_kuendbar', 'kuendigungsfrist', 'anzahl_personen',
+VERTRAG_ROHWERTE = ('ende', 'vermieter_kuendigungsverzicht_bis', 'erstmals_kuendbar', 'kuendigungsfrist', 'anzahl_personen',
                     'index_weitergabe_prozent', 'index_intervall_monate', 'beginn',
                     'netto_mietzins', 'nebenkosten', 'kautions_betrag', 'mwst_satz')
 
@@ -904,7 +1171,8 @@ def _vertrag_bearbeiten_rendern(request, v, gesperrt, form, status=200):
     from crm.models import Mieter
     if form is None:
         gespeichert = {
-            'ende': v.ende, 'erstmals_kuendbar': v.erstmals_kuendbar_auf,
+            'ende': v.ende, 'vermieter_kuendigungsverzicht_bis': v.vermieter_kuendigungsverzicht_bis,
+            'erstmals_kuendbar': v.erstmals_kuendbar_auf,
             'kuendigungsfrist': v.kuendigungsfrist_monate, 'anzahl_personen': v.anzahl_personen or 1,
             'index_weitergabe_prozent': v.index_weitergabe_prozent,
             'index_intervall_monate': v.index_intervall_monate, 'beginn': v.beginn,
@@ -914,9 +1182,11 @@ def _vertrag_bearbeiten_rendern(request, v, gesperrt, form, status=200):
         wert = {k: ('' if x is None else x.isoformat() if isinstance(x, date) else str(x))
                 for k, x in gespeichert.items()}
         feld_fehler = {}
+        formular_fehler = []
     else:
         wert = {k: form.data.get(k, '') for k in VERTRAG_ROHWERTE}
-        feld_fehler = {name: fehler[0] for name, fehler in form.errors.items()}
+        feld_fehler = {name: fehler[0] for name, fehler in form.errors.items() if name != '__all__'}
+        formular_fehler = list(form.non_field_errors())
         # Die Freitexte zeigt die Vorlage aus dem Vertrag — bei einem Fehler
         # also die Eingabe, nicht den gespeicherten Stand.
         for name in ('mitmieter_name', 'kuendigungstermine', 'mitbenutzung', 'nebenraeume',
@@ -932,7 +1202,8 @@ def _vertrag_bearbeiten_rendern(request, v, gesperrt, form, status=200):
         'nk_arten': Mietvertrag.NK_TYP_CHOICES,
         'verteil_choices': Mietvertrag.VERTEIL_CHOICES,
         'rhythmus_choices': Mietvertrag.ZAHLUNGSRHYTHMUS_CHOICES,
-        'wert': wert, 'feld_fehler': feld_fehler, 'anzahl_fehler': len(feld_fehler),
+        'wert': wert, 'feld_fehler': feld_fehler, 'formular_fehler': formular_fehler,
+        'anzahl_fehler': len(feld_fehler) + len(formular_fehler),
     }, status=status)
 
 

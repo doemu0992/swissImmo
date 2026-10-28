@@ -32815,3 +32815,1032 @@ msgstr "Altre sottoaree"
 
 msgid "Neue Schadenmeldungen"
 msgstr "Nuove segnalazioni di danno"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid ""
+"Die Dauer ist nicht fest: Der Vertrag ist weder befristet, noch verzichtet "
+"der Vermieter auf die Kündigung. Verlangt sind mindestens %(jahre)s Jahre ab"
+" Mietbeginn, also bis %(soll)s."
+msgstr ""
+"La durata non è vincolante: il contratto non è a tempo determinato e il "
+"locatore non rinuncia alla disdetta. È richiesta una durata di almeno "
+"%(jahre)s anni dall'inizio della locazione, quindi fino al %(soll)s."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid ""
+"Die feste Dauer endet am %(bis)s. Verlangt sind mindestens %(jahre)s Jahre "
+"ab Mietbeginn, also bis mindestens %(soll)s."
+msgstr ""
+"La durata vincolante termina il %(bis)s. Sono richiesti almeno %(jahre)s "
+"anni dall'inizio della locazione, quindi almeno fino al %(soll)s."
+
+#: core/services/mietzinsmodell.py
+msgid "Für die Staffelmiete gilt die Dauer sinngemäss wie bei der Indexmiete."
+msgstr ""
+"Per la pigione scalare la durata si valuta per analogia con la pigione "
+"indicizzata."
+
+#: core/services/mietzinsmodell.py
+msgid ""
+"Jede Anpassung wird mit dem amtlichen Formular angekündigt, mindestens 30 "
+"Tage vor einem Monatsende und erst nach Veröffentlichung des neuen "
+"Indexstandes. Sinkt der Index, sinkt der Mietzins entsprechend."
+msgstr ""
+"Ogni adeguamento è notificato con il modulo ufficiale, almeno 30 giorni "
+"prima della fine di un mese e solo dopo la pubblicazione del nuovo indice. "
+"Se l'indice scende, la pigione scende di conseguenza."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Laufzeit auf %(jahre)s Jahre setzen"
+msgstr "Impostare la durata a %(jahre)s anni"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Kündigungsverzicht des Vermieters bis %(datum)s eintragen"
+msgstr "Inserire la rinuncia del locatore alla disdetta fino al %(datum)s"
+
+#: core/services/mietzinsmodell.py
+msgid "Die Basis des Landesindexes (Punkte) fehlt."
+msgstr "Manca la base dell'indice (punti)."
+
+#: core/services/mietzinsmodell.py
+msgid "Der Stand-Monat der Index-Basis fehlt."
+msgstr "Manca il mese di riferimento della base dell'indice."
+
+#: core/services/mietzinsmodell.py
+msgid "Die Weitergabe der Teuerung in Prozent fehlt."
+msgstr "Manca la percentuale di trasferimento del rincaro."
+
+#: core/services/mietzinsmodell.py
+msgid "Als Index ist nur der Landesindex der Konsumentenpreise zulässig."
+msgstr ""
+"Come indice è ammesso soltanto l'indice nazionale dei prezzi al consumo."
+
+#: core/services/mietzinsmodell.py
+msgid "Das Mindestintervall muss mindestens 1 Monat betragen."
+msgstr "L'intervallo minimo deve essere di almeno 1 mese."
+
+#: core/services/mietzinsmodell.py
+msgid "Eine Indexklausel darf nicht mit Staffelstufen kombiniert werden."
+msgstr "Una clausola d'indicizzazione non può essere combinata con scaglioni."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid ""
+"Stufe %(nr)s: Zwischen Mietbeginn und der ersten Erhöhung müssen mindestens "
+"12 Monate liegen, frühestens am %(datum)s."
+msgstr ""
+"Scaglione %(nr)s: tra l'inizio della locazione e il primo aumento devono "
+"trascorrere almeno 12 mesi, al più presto il %(datum)s."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid ""
+"Stufe %(nr)s: Zwischen zwei Erhöhungen müssen mindestens 12 Monate liegen, "
+"frühestens am %(datum)s."
+msgstr ""
+"Scaglione %(nr)s: tra due aumenti devono trascorrere almeno 12 mesi, al più "
+"presto il %(datum)s."
+
+#: core/services/mietzinsmodell.py
+msgid "Eine Staffelmiete braucht mindestens eine Stufe."
+msgstr "Una pigione scalare richiede almeno uno scaglione."
+
+#: core/services/mietzinsmodell.py
+msgid ""
+"Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate"
+" vor ihrem Eintritt. Das amtliche Formular braucht es dafür nicht."
+msgstr ""
+"Ogni aumento è comunicato per scritto al conduttore, al più presto quattro "
+"mesi prima della sua entrata in vigore. Per questo non serve il modulo "
+"ufficiale."
+
+#: core/services/mietzinsmodell.py
+msgid ""
+"Zu diesem Vertrag bestehen zusätzlich datierte Mietzinskomponenten oder ein "
+"Zeitplan (etwa Gratismonate). Sie gehen den Staffelstufen vor."
+msgstr ""
+"Per questo contratto esistono inoltre componenti di pigione datate o un "
+"piano temporale (ad es. mesi gratuiti). Hanno la precedenza sugli scaglioni."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "LIK-Stand %(stand)s übernehmen (%(punkte)s Punkte)"
+msgstr "Riprendere l'indice di %(stand)s (%(punkte)s punti)"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stand %(stand)s eintragen"
+msgstr "Inserire il mese %(stand)s"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid ""
+"Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Weitergabe "
+"%(w)s %%)."
+msgstr ""
+"In una pigione scalare non può rimanere una clausola d'indicizzazione "
+"(trasferimento del %(w)s %%)."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid ""
+"Der Stand der Index-Basis (%(stand)s) liegt nach dem Mietbeginn "
+"(%(beginn)s)."
+msgstr ""
+"Il mese di riferimento della base dell'indice (%(stand)s) è successivo "
+"all'inizio della locazione (%(beginn)s)."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid ""
+"Für %(stand)s weist die LIK-Tabelle %(tabelle)s Punkte aus, erfasst sind "
+"%(punkte)s."
+msgstr ""
+"Per %(stand)s la tabella IPC indica %(tabelle)s punti; sono registrati "
+"%(punkte)s."
+
+#: core/services/mietzinsmodell.py
+msgid "Weitergabe eintragen: 100 %"
+msgstr "Inserire il trasferimento: 100 %"
+
+#: core/services/mietzinsmodell.py
+msgid "Die Weitergabe darf höchstens 100 Prozent der Teuerung betragen."
+msgstr "Il trasferimento non può superare il 100 per cento del rincaro."
+
+#: core/services/mietzinsmodell.py
+msgid "Landesindex der Konsumentenpreise wählen"
+msgstr "Scegliere l'indice nazionale dei prezzi al consumo"
+
+#: core/services/mietzinsmodell.py
+msgid "Intervall setzen auf 12 Monate"
+msgstr "Impostare l'intervallo a 12 mesi"
+
+#: core/services/mietzinsmodell.py
+msgid "Staffelstufen entfernen"
+msgstr "Rimuovere gli scaglioni"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe %(nr)s: Das Datum fehlt."
+msgstr "Scaglione %(nr)s: manca la data."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid ""
+"Stufe %(nr)s: Die Erhöhung muss als Frankenbetrag vereinbart werden, nicht "
+"in Prozent."
+msgstr ""
+"Scaglione %(nr)s: l'aumento va convenuto come importo in franchi, non in "
+"percentuale."
+
+#: core/services/mietzinsmodell.py
+msgid "Weitergabe zurücksetzen auf 100 %"
+msgstr "Ripristinare il trasferimento al 100 %"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid ""
+"Bei einer Staffelmiete darf keine Indexklausel stehen bleiben (Intervall "
+"%(m)s Monate)."
+msgstr ""
+"In una pigione scalare non può rimanere una clausola d'indicizzazione "
+"(intervallo di %(m)s mesi)."
+
+#: core/services/mietzinsmodell.py
+msgid "Bei festem Mietzins dürfen keine Staffelstufen stehen."
+msgstr "Con una pigione fissa non devono esserci scaglioni."
+
+#: core/services/mietzinsmodell.py
+msgid "Punkte der Tabelle übernehmen"
+msgstr "Riprendere i punti della tabella"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung in CHF fehlt."
+msgstr "Scaglione %(nr)s: manca l'aumento in CHF."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid ""
+"Stufe %(nr)s (%(datum)s) liegt nach dem Ende der festen Dauer (%(bis)s)."
+msgstr ""
+"Lo scaglione %(nr)s (%(datum)s) è successivo alla fine della durata "
+"vincolante (%(bis)s)."
+
+#: core/services/mietzinsmodell.py
+msgid "Intervall zurücksetzen auf 12 Monate"
+msgstr "Ripristinare l'intervallo a 12 mesi"
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung muss ein Frankenbetrag über 0 sein."
+msgstr ""
+"Scaglione %(nr)s: l'aumento deve essere un importo in franchi superiore a 0."
+
+#: core/services/mietzinsmodell.py
+#, python-format
+msgid "Stufe auf den %(datum)s legen"
+msgstr "Fissare lo scaglione al %(datum)s"
+
+#: core/hilfe.py
+msgid ""
+"Der Mietzins folgt dem Landesindex der Konsumentenpreise, nach oben wie nach"
+" unten und höchstens im Umfang der Teuerung (Art. 269b OR, Art. 17 VMWG). "
+"Der Vertrag muss mindestens fünf Jahre fest dauern; ein Kündigungsverzicht "
+"des Vermieters für fünf Jahre genügt (Art. 17 Abs. 4 VMWG). Jede Anpassung "
+"geht mit dem amtlichen Formular, mindestens 30 Tage vor einem Monatsende."
+msgstr ""
+"La pigione segue l'indice nazionale dei prezzi al consumo, sia al rialzo sia"
+" al ribasso e al massimo nella misura del rincaro (art. 269b CO, art. 17 "
+"OLAL). Il contratto deve avere una durata vincolante di almeno cinque anni; "
+"basta una rinuncia del locatore alla disdetta per cinque anni (art. 17 cpv. "
+"4 OLAL). Ogni adeguamento avviene con il modulo ufficiale, almeno 30 giorni "
+"prima della fine di un mese."
+
+#: core/hilfe.py
+msgid ""
+"Die Erhöhungen sind im Vertrag als Frankenbeträge vereinbart, höchstens "
+"einmal jährlich, bei einer Vertragsdauer von mindestens drei Jahren (Art. "
+"269c OR). Dass auch ein Kündigungsverzicht des Vermieters als feste Dauer "
+"zählt, ist sinngemäss von Art. 17 Abs. 4 VMWG übernommen. Der Mietzins folgt"
+" den Stufen — die Anpassung nach Referenzzins und Teuerung gilt für ihn "
+"nicht."
+msgstr ""
+"Gli aumenti sono convenuti nel contratto come importi in franchi, al massimo"
+" una volta all'anno, con una durata del contratto di almeno tre anni (art. "
+"269c CO). Il fatto che anche una rinuncia del locatore alla disdetta valga "
+"come durata vincolante è ripreso per analogia dall'art. 17 cpv. 4 OLAL. La "
+"pigione segue gli scaglioni — l'adeguamento secondo il tasso di riferimento "
+"e il rincaro non si applica."
+
+#: core/hilfe.py
+msgid "Index und Staffel zusammen?"
+msgstr "Indice e scaglioni insieme?"
+
+#: core/hilfe.py
+msgid ""
+"Eine Indexklausel darf nicht mit einer Staffelung kombiniert werden (Art. "
+"269b und 269c OR, BGE 124 III 57). Pro Vertrag gilt deshalb genau ein "
+"Mietzinsmodell: fest, Index oder Staffel."
+msgstr ""
+"Una clausola d'indicizzazione non può essere combinata con una scalarità "
+"(art. 269b e 269c CO, DTF 124 III 57). Per contratto vale quindi un solo "
+"modello di pigione: fissa, indicizzata o scalare."
+
+#: core/hilfe.py
+msgid "Kündigungsverzicht des Vermieters"
+msgstr "Rinuncia del locatore alla disdetta"
+
+#: core/hilfe.py
+msgid ""
+"Bei einem unbefristeten Vertrag zählt die Dauer als fest, wenn der Vermieter"
+" für die verlangte Zeit auf die Kündigung verzichtet: fünf Jahre bei der "
+"Indexmiete (Art. 17 Abs. 4 VMWG), drei Jahre bei der Staffelmiete "
+"(sinngemäss, Art. 269c OR). Die Frist läuft ab Mietbeginn; das genannte "
+"Enddatum zählt mit."
+msgstr ""
+"In un contratto a tempo indeterminato la durata è considerata vincolante se "
+"il locatore rinuncia alla disdetta per il periodo richiesto: cinque anni per"
+" la pigione indicizzata (art. 17 cpv. 4 OLAL), tre anni per la pigione "
+"scalare (per analogia, art. 269c CO). Il termine decorre dall'inizio della "
+"locazione; la data indicata è compresa."
+
+#: core/hilfe.py
+msgid "Mitteilung der Staffelerhöhung"
+msgstr "Comunicazione dell'aumento scalare"
+
+#: core/hilfe.py
+msgid "Jede Erhöhung wird dem Mieter schriftlich mitgeteilt, frühestens vier Monate vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Das amtliche Formular braucht es dafür nicht, die Mitteilung aber schon: Der Vertrag allein ersetzt sie nicht."
+msgstr "Ogni aumento è comunicato per scritto al conduttore, al più presto quattro mesi prima della sua entrata in vigore (art. 269d cpv. 5 CO, art. 19a OLAL). Per questo non serve il modulo ufficiale, ma la comunicazione sì: il solo contratto non la sostituisce."
+
+#: Mietzinsmodell-Wizard (27.10.2026)
+msgid "Vermieter verzichtet auf Kündigung bis"
+msgstr "Il locatore rinuncia alla disdetta fino al"
+
+msgid "Nur bei einem unbefristeten Vertrag. Zählt bei Index- und Staffelmiete als feste Dauer."
+msgstr "Solo per un contratto a tempo indeterminato. Vale come durata fissa per la pigione indicizzata e graduale."
+
+msgid "Mietzins, Mietzinsmodell und Zahlungsmodalitäten."
+msgstr "Pigione, modello di pigione e modalità di pagamento."
+
+msgid "Zweckbestimmung für Geschäftsräume."
+msgstr "Destinazione dei locali commerciali."
+
+msgid "Fester Mietzins"
+msgstr "Pigione fissa"
+
+msgid "Der Mietzins bleibt, bis er nach den Regeln des Mietrechts angepasst wird."
+msgstr "La pigione resta invariata finché non viene adeguata secondo le regole del diritto di locazione."
+
+msgid "Erhöhungen als Frankenbeträge, höchstens einmal jährlich. Feste Dauer mindestens 3 Jahre."
+msgstr "Aumenti in franchi, al massimo una volta all'anno. Durata fissa di almeno 3 anni."
+
+msgid "Der Mietzins folgt dem Landesindex der Konsumentenpreise. Feste Dauer mindestens 5 Jahre."
+msgstr "La pigione segue l'indice nazionale dei prezzi al consumo. Durata fissa di almeno 5 anni."
+
+msgid "Feste Dauer"
+msgstr "Durata fissa"
+
+msgid "Laufzeit ändern"
+msgstr "Modifica la durata"
+
+msgid "Startmietzins (netto)"
+msgstr "Pigione iniziale (netta)"
+
+msgid "aus dem Feld «Mietzins netto» oben"
+msgstr "dal campo «Pigione netta» qui sopra"
+
+msgid "Noch keine Stufe. Eine Stufe hinzufügen oder die Stufen erzeugen."
+msgstr "Ancora nessun gradino. Aggiungete un gradino o generate i gradini."
+
+msgid "Stufen erzeugen"
+msgstr "Genera i gradini"
+
+msgid "Jedes Jahr dieselbe Erhöhung, die erste 12 Monate nach Mietbeginn. Vorhandene Stufen werden ersetzt."
+msgstr "Ogni anno lo stesso aumento, il primo 12 mesi dopo l'inizio della locazione. I gradini esistenti vengono sostituiti."
+
+msgid "Jährlich + CHF"
+msgstr "Ogni anno + CHF"
+
+msgid "Wie oft"
+msgstr "Quante volte"
+
+msgid "Index"
+msgstr "Indice"
+
+msgid "Landesindex der Konsumentenpreise (BFS)"
+msgstr "Indice nazionale dei prezzi al consumo (UST)"
+
+#, python-format
+msgid "Basis %(basis)s = 100 Punkte"
+msgstr "Base %(basis)s = 100 punti"
+
+msgid "Vorschlag übernehmen"
+msgstr "Accetta il suggerimento"
+
+msgid "Anteil der Teuerung, der weitergegeben wird: über 0 und höchstens 100 Prozent."
+msgstr "Quota del rincaro trasferita: oltre 0 e al massimo 100 per cento."
+
+msgid "Mindestintervall (vertraglich, Monate)"
+msgstr "Intervallo minimo (contrattuale, mesi)"
+
+msgid "Aktuellen Referenzzinssatz übernehmen"
+msgstr "Adotta il tasso d'interesse di riferimento attuale"
+
+msgid "Stand bei Vertragsbeginn — Grundlage für spätere Mietzinsanpassungen."
+msgstr "Valore all'inizio del contratto — base per successivi adeguamenti della pigione."
+
+msgid "Lädt …"
+msgstr "Caricamento …"
+
+msgid "Stufe {n}"
+msgstr "Gradino {n}"
+
+msgid "Stufe {n} entfernen"
+msgstr "Rimuovi il gradino {n}"
+
+msgid "+ CHF"
+msgstr "+ CHF"
+
+msgid "→ neu CHF"
+msgstr "→ nuovo CHF"
+
+msgid "Mindestdauer erfüllt"
+msgstr "Durata minima rispettata"
+
+msgid "Mindestdauer nicht erfüllt"
+msgstr "Durata minima non rispettata"
+
+msgid "Dauer offen"
+msgstr "Durata aperta"
+
+msgid "Prüfung läuft …"
+msgstr "Verifica in corso …"
+
+msgid "Nicht geprüft"
+msgstr "Non verificato"
+
+msgid "Fest bis {bis}. Verlangt ist die Dauer bis {soll} ({jahre} Jahre ab Mietbeginn)."
+msgstr "Fissa fino al {bis}. La durata richiesta arriva fino al {soll} ({jahre} anni dall'inizio della locazione)."
+
+msgid "Der Mietbeginn fehlt (Schritt «Konditionen»): Ohne ihn lässt sich die feste Dauer nicht beurteilen."
+msgstr "Manca l'inizio della locazione (passo «Condizioni»): senza di esso la durata fissa non può essere valutata."
+
+msgid "Die Prüfung ist gerade nicht erreichbar. Der Server prüft beim Speichern trotzdem."
+msgstr "La verifica al momento non è raggiungibile. Il server verifica comunque al salvataggio."
+
+msgid "Staffelstufen entfernt"
+msgstr "Gradini rimossi"
+
+msgid "Index-Angaben entfernt"
+msgstr "Dati dell'indice rimossi"
+
+msgid "Zuerst den Mietbeginn im Schritt «Konditionen» eintragen."
+msgstr "Inserite prima l'inizio della locazione nel passo «Condizioni»."
+
+msgid "Einen Betrag über 0 eintragen."
+msgstr "Inserite un importo superiore a 0."
+
+msgid "Die Anzahl muss zwischen 1 und {max} liegen."
+msgstr "Il numero deve essere compreso tra 1 e {max}."
+
+msgid "Vorschlag: {punkte} Punkte, Stand {stand} (Vormonat des Mietbeginns)."
+msgstr "Suggerimento: {punkte} punti, stato {stand} (mese precedente l'inizio della locazione)."
+
+msgid "Für diesen Mietbeginn ist noch kein Indexstand veröffentlicht."
+msgstr "Per questo inizio di locazione non è ancora stato pubblicato alcun indice."
+
+msgid "Beispiel: Bei LIK {lik} würde der Mietzins CHF {neu} betragen (heute CHF {alt})."
+msgstr "Esempio: con IPC {lik} la pigione sarebbe di CHF {neu} (oggi CHF {alt})."
+
+msgid "Beispiel: Bei LIK {lik} bliebe der Mietzins bei CHF {alt}."
+msgstr "Esempio: con IPC {lik} la pigione resterebbe a CHF {alt}."
+
+msgid "Gesperrt: {grund}"
+msgstr "Bloccato: {grund}"
+
+msgid "(und {n} weitere)"
+msgstr "(e altri {n})"
+
+msgid "Feste Dauer bis"
+msgstr "Durata fissa fino al"
+
+msgid "Basis Landesindex"
+msgstr "Base dell'indice"
+
+msgid "Weitergabe"
+msgstr "Trasferimento"
+
+msgid "Unbekanntes Mietzinsmodell."
+msgstr "Modello di pigione sconosciuto."
+
+#, python-format
+msgid "Mehr als %(max)s Staffelstufen sind nicht möglich."
+msgstr "Più di %(max)s gradini non sono possibili."
+
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung ist zu hoch."
+msgstr "Gradino %(nr)s: l'aumento è troppo alto."
+
+#, python-format
+msgid "Stufe %(nr)s: Die Erhöhung ist auf den Rappen genau anzugeben."
+msgstr "Gradino %(nr)s: l'aumento va indicato al centesimo."
+
+msgid "Die Weitergabe hat höchstens eine Nachkommastelle."
+msgstr "Il trasferimento ha al massimo una cifra decimale."
+
+msgid "Die Basis des Landesindexes hat höchstens eine Nachkommastelle."
+msgstr "La base dell'indice ha al massimo una cifra decimale."
+
+msgid "Bei festem Mietzins darf keine Indexklausel stehen bleiben (Weitergabe, Mindestintervall)."
+msgstr "Con una pigione fissa non deve restare alcuna clausola d'indicizzazione (trasferimento, intervallo minimo)."
+
+msgid "Der Mietbeginn fehlt: Ohne ihn lässt sich die feste Dauer nicht beurteilen."
+msgstr "Manca l'inizio della locazione: senza di esso la durata fissa non può essere valutata."
+
+#, python-format
+msgid "Stufe %(nr)s: «%(eingabe)s» ist als Datum nicht lesbar — nichts wurde gespeichert."
+msgstr "Gradino %(nr)s: «%(eingabe)s» non è leggibile come data — non è stato salvato nulla."
+
+#, python-format
+msgid "Stufe %(nr)s: «%(eingabe)s» ist als Erhöhung nicht lesbar — nichts wurde gespeichert."
+msgstr "Gradino %(nr)s: «%(eingabe)s» non è leggibile come aumento — non è stato salvato nulla."
+
+msgid "Eine Staffelstufe wird als Erhöhung in Franken erfasst, nicht als neuer Mietzins — nichts wurde gespeichert."
+msgstr "Un gradino va registrato come aumento in franchi, non come nuova pigione — non è stato salvato nulla."
+
+#, python-format
+msgid "Mietzinsmodell dieses Entwurfs (unverändert, daher nicht gesperrt): %(text)s"
+msgstr "Modello di pigione di questa bozza (invariato, quindi non bloccato): %(text)s"
+
+msgid "Vorschau nicht möglich: Das Mietzinsmodell ist noch nicht zulässig."
+msgstr "Anteprima non possibile: il modello di pigione non è ancora ammissibile."
+
+msgid "Der Vertrag bleibt Entwurf: Das Mietzinsmodell ist nicht zulässig. Im Assistenten lässt es sich korrigieren."
+msgstr "Il contratto resta una bozza: il modello di pigione non è ammissibile. Si può correggere nell'assistente."
+
+msgid "Der Mietzins ist im Vertrag als fester Betrag vereinbart. Spätere Anpassungen gehen mit dem amtlichen Formular (Art. 269d OR); die Gründe stehen in Art. 269a OR, etwa Referenzzinssatz oder Kostensteigerung."
+msgstr "La pigione è convenuta nel contratto come importo fisso. Gli adeguamenti successivi avvengono con il modulo ufficiale (art. 269d CO); i motivi sono indicati nell'art. 269a CO, ad esempio il tasso d'interesse di riferimento o l'aumento dei costi."
+
+msgid "Weitergabe der Teuerung"
+msgstr "Trasferimento del rincaro"
+
+msgid "Der Anteil der Teuerung, der in den Mietzins einfliesst. Höchstens 100 Prozent: Die Erhöhung darf die Zunahme des Landesindexes nicht übersteigen (Art. 17 Abs. 1 VMWG). Sinkt der Index, ist der Mietzins entsprechend anzupassen (Art. 17 Abs. 2 VMWG)."
+msgstr "La quota di rincaro che confluisce nella pigione. Al massimo 100 per cento: l'aumento non può superare l'incremento dell'indice (art. 17 cpv. 1 OLAL). Se l'indice scende, la pigione va adeguata di conseguenza (art. 17 cpv. 2 OLAL)."
+
+msgid "Bekanntgabe des Indexstandes"
+msgstr "Pubblicazione del nuovo indice"
+
+msgid ""
+"Bei einer Indexmiete darf die Mitteilung erst nach der öffentlichen "
+"Bekanntgabe des neuen Indexstandes erfolgen (Art. 19 Abs. 2 VMWG). Annahme "
+"der Anwendung: Ein Monat gilt als bekannt gegeben, sobald er in ihrer LIK-"
+"Tabelle steht; ein Veröffentlichungsdatum des BFS ist nicht hinterlegt."
+msgstr ""
+"Per una pigione indicizzata la comunicazione può avvenire solo dopo la "
+"pubblicazione ufficiale del nuovo indice (art. 19 cpv. 2 OLAL). Ipotesi "
+"dell'applicazione: un mese è considerato pubblicato non appena figura nella "
+"sua tabella dell'IPC; non è registrata alcuna data di pubblicazione "
+"dell'UST."
+
+msgid "Höchstbetrag"
+msgstr "Importo massimo"
+
+msgid ""
+"Die Erhöhung darf die Zunahme des Landesindexes nicht übersteigen (Art. 17 "
+"Abs. 1 VMWG), bei vereinbarter Teil-Weitergabe nur deren Anteil. Sinkt der "
+"Index, ist der Mietzins nach unten anzupassen (Abs. 2). Der Vorschlag wird "
+"auf 5 Rappen abgerundet, damit er die Grenze nie überschreitet."
+msgstr ""
+"L'aumento non può superare l'aumento dell'indice nazionale (art. 17 cpv. 1 "
+"OLAL); in caso di riporto parziale convenuto, solo la relativa quota. Se "
+"l'indice scende, la pigione va ridotta (cpv. 2). La proposta è arrotondata "
+"per difetto a 5 centesimi, così da non superare mai il limite."
+
+msgid "Frist und Termin"
+msgstr "Termine e data"
+
+msgid ""
+"Die Anpassung ist mindestens 30 Tage im Voraus auf ein Monatsende "
+"anzukündigen (Art. 17 Abs. 3 VMWG). Die Anwendung rechnet ab Zugang beim "
+"Mieter, ohne bestätigten Zugang ab Versand plus Zustellpuffer. Frühere "
+"Termine stehen nicht zur Wahl."
+msgstr ""
+"L'adeguamento va annunciato almeno 30 giorni prima per la fine di un mese "
+"(art. 17 cpv. 3 OLAL). L'applicazione calcola dal ricevimento da parte "
+"dell'inquilino; senza ricevimento confermato, dall'invio più un margine di "
+"recapito. Le date anteriori non possono essere scelte."
+
+msgid "Vertragliche Grenzen"
+msgstr "Limiti contrattuali"
+
+msgid ""
+"Weitergabe, Mindestintervall und letzte Anpassung stammen aus dem "
+"Mietvertrag, nicht aus dem Gesetz. Ein laufendes Mindestintervall wird "
+"gemeldet, blockiert aber nicht: Der Vertrag entscheidet."
+msgstr ""
+"Il riporto, l'intervallo minimo e l'ultimo adeguamento derivano dal "
+"contratto di locazione, non dalla legge. Un intervallo minimo in corso viene"
+" segnalato, ma non blocca: decide il contratto."
+
+msgid "Amtliches Formular bei der Indexanpassung"
+msgstr "Modulo ufficiale per l'adeguamento all'indice"
+
+msgid ""
+"Das amtliche Formular (Art. 269d OR) gilt sinngemäss auch für die "
+"Indexanpassung (Art. 19 Abs. 2 VMWG). Nicht für jeden Kanton liegt ein "
+"Original vor; dann nennt die Anwendung die Lücke und erzeugt kein "
+"Ersatzformular."
+msgstr ""
+"Il modulo ufficiale (art. 269d CO) si applica per analogia anche "
+"all'adeguamento all'indice (art. 19 cpv. 2 OLAL). Non per ogni cantone "
+"esiste un originale; l'applicazione segnala allora la lacuna e non produce "
+"alcun modulo sostitutivo."
+
+msgid ""
+"Jede im Vertrag vereinbarte Erhöhung teilt der Vermieter schriftlich mit; "
+"ein amtliches Formular braucht es dafür nicht (Art. 269d Abs. 5 OR). Die "
+"Mitteilung darf frühestens vier Monate vor Eintritt der Erhöhung erfolgen "
+"(Art. 19a VMWG)."
+msgstr ""
+"Il locatore comunica per scritto ogni aumento convenuto nel contratto; non è"
+" necessario un modulo ufficiale (art. 269d cpv. 5 CO). La comunicazione può "
+"avvenire al più presto quattro mesi prima dell'entrata in vigore "
+"dell'aumento (art. 19a OLAL)."
+
+msgid "Mitteilungsfenster"
+msgstr "Finestra di comunicazione"
+
+msgid ""
+"Der erste Tag, an dem die Mitteilung versandt werden darf: vier Monate vor "
+"der Erhöhung. Bei einer Erhöhung am 31. März ist es der 1. Dezember, nicht "
+"der 30. November, der vier Monate und einen Tag davor liegt. Vorher erstellt"
+" die Anwendung kein Schreiben und nimmt kein Versanddatum an."
+msgstr ""
+"Il primo giorno in cui la comunicazione può essere inviata: quattro mesi "
+"prima dell'aumento. Per un aumento al 31 marzo è il 1° dicembre, non il 30 "
+"novembre, che precede di quattro mesi e un giorno. Prima di tale data "
+"l'applicazione non produce alcuna lettera e non registra alcuna data "
+"d'invio."
+
+msgid "Bitte den Monat des neuen LIK-Standes wählen."
+msgstr "Scegliere il mese del nuovo indice."
+
+#, python-format
+msgid ""
+"Der LIK-Stand %(monat)s ist nicht veröffentlicht. Eine Indexanpassung ist "
+"erst nach der Bekanntgabe des neuen Indexstandes möglich (Art. 19 Abs. 2 "
+"VMWG). Letzter verfügbarer Monat: %(letzter)s."
+msgstr ""
+"L'indice di %(monat)s non è pubblicato. Un adeguamento all'indice è "
+"possibile solo dopo la pubblicazione del nuovo indice (art. 19 cpv. 2 OLAL)."
+" Ultimo mese disponibile: %(letzter)s."
+
+#, python-format
+msgid "Der neue LIK-Stand (%(neu)s) liegt vor dem bisherigen (%(alt)s)."
+msgstr "Il nuovo indice (%(neu)s) è anteriore a quello attuale (%(alt)s)."
+
+#, python-format
+msgid ""
+"Der LIK ist gesunken (%(alt)s → %(neu)s Punkte): Der Mietzins ist nach unten"
+" anzupassen (Art. 17 Abs. 2 VMWG), höchstens CHF %(grenze)s."
+msgstr ""
+"L'indice è sceso (%(alt)s → %(neu)s punti): la pigione va ridotta (art. 17 "
+"cpv. 2 OLAL), al massimo CHF %(grenze)s."
+
+#, python-format
+msgid ""
+"Der LIK ist unverändert (%(lik)s Punkte): Eine Erhöhung ist nicht zulässig "
+"(Art. 17 Abs. 1 VMWG)."
+msgstr ""
+"L'indice è invariato (%(lik)s punti): un aumento non è ammesso (art. 17 cpv."
+" 1 OLAL)."
+
+#, python-format
+msgid ""
+"Die Erhöhung übersteigt die Indexzunahme mal Weitergabe (%(zunahme)s %% × "
+"%(w)s %%): höchstens CHF %(grenze)s netto (Art. 17 Abs. 1 VMWG)."
+msgstr ""
+"L'aumento supera l'aumento dell'indice moltiplicato per il riporto "
+"(%(zunahme)s %% × %(w)s %%): al massimo CHF %(grenze)s netto (art. 17 cpv. 1"
+" OLAL)."
+
+msgid "Bitte das Wirksamkeitsdatum angeben."
+msgstr "Indicare la data di efficacia."
+
+msgid ""
+"Die Indexanpassung kann nur auf ein Monatsende wirksam werden, also am "
+"Ersten des Folgemonats (Art. 17 Abs. 3 VMWG)."
+msgstr ""
+"L'adeguamento all'indice può avere effetto solo per la fine di un mese, cioè"
+" il primo del mese successivo (art. 17 cpv. 3 OLAL)."
+
+#, python-format
+msgid ""
+"Wirksamkeitsdatum zu früh: Die Ankündigung braucht mindestens 30 Tage bis "
+"zum Monatsende. Bei diesem Versand ist der früheste Termin der %(datum)s "
+"(Art. 17 Abs. 3 VMWG)."
+msgstr ""
+"Data di efficacia troppo vicina: l'annuncio richiede almeno 30 giorni fino "
+"alla fine del mese. Con questo invio la prima data possibile è il %(datum)s "
+"(art. 17 cpv. 3 OLAL)."
+
+#, python-format
+msgid ""
+"Vertragliche Grenze (kein Gesetzeswert): Das Mindestintervall von %(monate)s"
+" Monaten seit der letzten Anpassung (%(letzte)s) läuft bis %(ende)s."
+msgstr ""
+"Limite contrattuale (non prevista dalla legge): l'intervallo minimo di "
+"%(monate)s mesi dall'ultimo adeguamento (%(letzte)s) dura fino al %(ende)s."
+
+#, python-format
+msgid ""
+"Frühestens %(datum)s: mindestens 30 Tage bis zu einem Monatsende (Art. 17 "
+"Abs. 3 VMWG), gerechnet ab Zugang (vermutet %(zugang)s)."
+msgstr ""
+"Al più presto il %(datum)s: almeno 30 giorni fino alla fine di un mese (art."
+" 17 cpv. 3 OLAL), calcolati dal ricevimento (presunto il %(zugang)s)."
+
+#, python-format
+msgid ""
+"Höchstens CHF %(grenze)s (Art. 17 VMWG). Ein höherer Betrag wird abgelehnt."
+msgstr ""
+"Al massimo CHF %(grenze)s (art. 17 OLAL). Un importo più alto viene "
+"respinto."
+
+msgid "Erst nach einem veröffentlichten LIK-Stand möglich."
+msgstr "Possibile solo dopo la pubblicazione di un indice."
+
+msgid "Der LIK der Vertragsbasis fehlt — bitte die Basis-Punkte ergänzen."
+msgstr "L'IPC della base contrattuale manca: completare i punti di base."
+
+msgid ""
+"Die Stufe erhöht nicht: Eine Staffelmiete verlangt eine Erhöhung in Franken "
+"(Art. 269c OR)."
+msgstr ""
+"Questo scaglione non aumenta la pigione: una pigione scalare richiede un "
+"aumento in franchi (art. 269c CO)."
+
+msgid ""
+"Erhöhung und Netto der Stufe stimmen nicht überein — bitte die Stufe prüfen."
+msgstr ""
+"L'aumento e il netto dello scaglione non concordano: verificare lo "
+"scaglione."
+
+msgid "Der Vertrag ist keine Staffelmiete."
+msgstr "Il contratto non è una pigione scalare."
+
+msgid "Die Mitteilung ist bereits als versandt markiert."
+msgstr "La comunicazione è già contrassegnata come inviata."
+
+#, python-format
+msgid ""
+"Die Erhöhung gilt bereits (%(datum)s): Ein Schreiben im Voraus ist nicht "
+"mehr möglich."
+msgstr ""
+"L'aumento è già in vigore (%(datum)s): una lettera preventiva non è più "
+"possibile."
+
+#, python-format
+msgid ""
+"Zu früh: Die schriftliche Mitteilung darf frühestens vier Monate vor der "
+"Erhöhung erfolgen, also ab dem %(datum)s (Art. 19a VMWG)."
+msgstr ""
+"Troppo presto: la comunicazione scritta può avvenire al più presto quattro "
+"mesi prima dell'aumento, cioè dal %(datum)s (art. 19a OLAL)."
+
+msgid "Das Schreiben konnte nicht abgelegt werden."
+msgstr "La lettera non ha potuto essere archiviata."
+
+msgid "Das Versanddatum kann nicht in der Zukunft liegen."
+msgstr "La data d'invio non può essere nel futuro."
+
+#, python-format
+msgid ""
+"Zu früh versandt: Die schriftliche Mitteilung darf frühestens vier Monate "
+"vor der Erhöhung erfolgen, also ab dem %(datum)s (Art. 19a VMWG)."
+msgstr ""
+"Inviato troppo presto: la comunicazione scritta può avvenire al più presto "
+"quattro mesi prima dell'aumento, cioè dal %(datum)s (art. 19a OLAL)."
+
+msgid "Mitteilung der vereinbarten Mietzinserhöhung (Staffelmiete)"
+msgstr "Comunicazione dell'aumento di pigione convenuto (pigione scalare)"
+
+#, python-format
+msgid ""
+"Für das Mietobjekt <b>%(objekt)s</b> an der %(strasse)s, %(plz)s %(ort)s, "
+"ist im Mietvertrag mit Mietbeginn %(beginn)s eine Staffelmiete vereinbart "
+"(Art. 269c OR). Gestützt auf diese Vereinbarung teilen wir Ihnen die "
+"folgende Erhöhung des Nettomietzinses mit."
+msgstr ""
+"Per l'oggetto locato <b>%(objekt)s</b>, %(strasse)s, %(plz)s %(ort)s, nel "
+"contratto di locazione con inizio della locazione il %(beginn)s è convenuta "
+"una pigione scalare (art. 269c CO). Sulla base di tale accordo Vi "
+"comunichiamo il seguente aumento della pigione netta."
+
+msgid "Nettomietzins bisher"
+msgstr "Pigione netta attuale"
+
+msgid "Erhöhung"
+msgstr "Aumento"
+
+msgid "Neuer Nettomietzins"
+msgstr "Nuova pigione netta"
+
+msgid ""
+"Die Erhöhung ergibt sich aus der im Mietvertrag vereinbarten Staffel. Diese "
+"Mitteilung betrifft nur den Nettomietzins; die Nebenkosten sind davon nicht "
+"betroffen."
+msgstr ""
+"L'aumento deriva dalla scala convenuta nel contratto di locazione. La "
+"presente comunicazione riguarda solo la pigione netta; le spese accessorie "
+"non sono interessate."
+
+msgid ""
+"Schriftliche Mitteilung nach Art. 269d Abs. 5 OR. Für die Mitteilung einer "
+"im Vertrag vorgesehenen Staffelerhöhung ist kein amtliches Formular "
+"erforderlich."
+msgstr ""
+"Comunicazione scritta secondo l'art. 269d cpv. 5 CO. Per la comunicazione di"
+" un aumento scalare previsto nel contratto non è richiesto un modulo "
+"ufficiale."
+
+msgid "Indexstand"
+msgstr "Livello dell'indice"
+
+msgid ""
+"Neuer LIK-Stand, Höchstbetrag und vertragliche Grenzen. Mehr als die "
+"Indexzunahme mal Weitergabe ist nicht zulässig; sinkt der Index, ist die "
+"Anpassung nach unten zwingend."
+msgstr ""
+"Nuovo indice, importo massimo e limiti contrattuali. Non oltre l'aumento "
+"dell'indice moltiplicato per il riporto; se l'indice scende, la riduzione è "
+"obbligatoria."
+
+msgid ""
+"Der Mietzins folgt dem Landesindex der Konsumentenpreise. Erhöht werden darf"
+" höchstens um die Zunahme mal die vereinbarte Weitergabe, gesenkt werden "
+"muss bei sinkendem Index."
+msgstr ""
+"La pigione segue l'indice nazionale dei prezzi al consumo. Può essere "
+"aumentata al massimo dell'aumento moltiplicato per il riporto convenuto e "
+"deve essere ridotta se l'indice scende."
+
+msgid ""
+"Annahme der Anwendung: Ein Monat gilt als bekannt gegeben, sobald er in der "
+"LIK-Tabelle der Anwendung steht. Ein Veröffentlichungsdatum des BFS ist "
+"nicht hinterlegt."
+msgstr ""
+"Ipotesi dell'applicazione: un mese è considerato pubblicato non appena "
+"figura nella tabella dell'IPC dell'applicazione. Non è registrata alcuna "
+"data di pubblicazione dell'UST."
+
+msgid ""
+"Der LIK der Vertragsbasis ist nicht erfasst — bitte die Basis-Punkte "
+"ergänzen, auf denen der aktuelle Mietzins beruht. Sie werden auf dem Vertrag"
+" gespeichert."
+msgstr ""
+"L'IPC della base contrattuale non è registrato: completare i punti di base "
+"su cui poggia la pigione attuale. Vengono salvati nel contratto."
+
+#, python-format
+msgid ""
+"Für diesen Vertrag liegt bereits eine Anpassung vor: Gerechnet wird ab deren"
+" Stand — LIK %(lik)s, Netto CHF %(netto)s —, nicht ab der Vertragsbasis "
+"unten."
+msgstr ""
+"Per questo contratto esiste già un adeguamento: si calcola a partire dal suo"
+" stato — IPC %(lik)s, netto CHF %(netto)s —, non dalla base contrattuale "
+"sottostante."
+
+msgid "Der Index ist gesunken"
+msgstr "L'indice è sceso"
+
+msgid ""
+"Der Mietzins ist nach unten anzupassen (Art. 17 Abs. 2 VMWG). Der Assistent "
+"schlägt die Senkung vor und lässt keinen höheren Betrag zu."
+msgstr ""
+"La pigione va ridotta (art. 17 cpv. 2 OLAL). L'assistente propone la "
+"riduzione e non ammette alcun importo più alto."
+
+msgid "Neuer LIK-Stand (Monat)"
+msgstr "Nuovo indice (mese)"
+
+#, python-format
+msgid "letzter verfügbarer Monat: %(monat)s"
+msgstr "ultimo mese disponibile: %(monat)s"
+
+msgid "Neuer LIK"
+msgstr "Nuovo IPC"
+
+msgid "Veränderung"
+msgstr "variazione"
+
+msgid "Höchstens netto"
+msgstr "Netto massimo"
+
+msgid "auf 5 Rappen abgerundet"
+msgstr "arrotondato per difetto a 5 centesimi"
+
+msgid "Diese Werte stammen aus dem Mietvertrag, nicht aus dem Gesetz."
+msgstr "Questi valori derivano dal contratto di locazione, non dalla legge."
+
+msgid "Mindestintervall"
+msgstr "Intervallo minimo"
+
+msgid "Der Abstand zwischen zwei Anpassungen, den die Parteien im Vertrag vereinbaren. Die Ankündigung selbst erfolgt mit mindestens 30 Tagen auf ein Monatsende (Art. 17 Abs. 3 VMWG)."
+msgstr "L'intervallo tra due adeguamenti convenuto dalle parti nel contratto. La comunicazione stessa avviene con almeno 30 giorni per la fine di un mese (art. 17 cpv. 3 OLAL)."
+
+msgid "Monate"
+msgstr "mesi"
+
+msgid "Letzte Indexanpassung"
+msgstr "Ultimo adeguamento all'indice"
+
+msgid "keine erfasst"
+msgstr "nessuno registrato"
+
+#, python-format
+msgid "Lücke: Kein Originalformular für den Kanton %(kanton)s"
+msgstr "Lacuna: nessun modulo originale per il cantone %(kanton)s"
+
+#, python-format
+msgid ""
+"Die Anwendung erzeugt für die Indexanpassung kein Ersatzformular, auch keine"
+" Nachbildung. Originale liegen nur vor für: %(kantone)s. Verwenden Sie das "
+"Formular der kantonalen Behörde und erfassen Sie hier nur den Versand."
+msgstr ""
+"Per l'adeguamento all'indice l'applicazione non produce alcun modulo "
+"sostitutivo, nemmeno una riproduzione. Esistono originali solo per: "
+"%(kantone)s. Utilizzate il modulo dell'autorità cantonale e registrate qui "
+"soltanto l'invio."
+
+msgid ""
+"Verstanden: Die Mitteilung geht auf dem amtlichen Formular des Kantons; hier"
+" wird nur der Versand erfasst."
+msgstr ""
+"Compreso: la comunicazione avviene sul modulo ufficiale del cantone; qui si "
+"registra solo l'invio."
+
+msgid "Begründung auf dem Formular"
+msgstr "Motivazione sul modulo"
+
+msgid ""
+"Wird beim Speichern aus Indexstand, Zunahme, Weitergabe und Beträgen erzeugt"
+" (Art. 269b OR, Art. 17 VMWG). Ordentliche Gründe wie Referenzzins oder "
+"Kostensteigerung gibt es bei der Indexmiete nicht."
+msgstr ""
+"Generata al salvataggio a partire da indice, variazione, riporto e importi "
+"(art. 269b CO, art. 17 OLAL). I motivi ordinari come il tasso di riferimento"
+" o l'aumento dei costi non esistono per una pigione indicizzata."
+
+msgid "Kein veröffentlichter LIK-Stand gewählt."
+msgstr "Non è stato scelto alcun indice pubblicato."
+
+msgid ""
+"Der Betrag war höher als zulässig und wurde auf den Höchstbetrag "
+"zurückgesetzt (Art. 17 VMWG)."
+msgstr ""
+"L'importo superava il massimo ammesso ed è stato riportato all'importo "
+"massimo (art. 17 OLAL)."
+
+msgid "Der Nettomietzins bleibt unverändert."
+msgstr "La pigione netta rimane invariata."
+
+msgid "Staffelmiete: Mitteilung der Erhöhungen"
+msgstr "Pigione scalare: comunicazione degli aumenti"
+
+msgid ""
+"Jede vereinbarte Erhöhung wird schriftlich mitgeteilt, frühestens vier "
+"Monate vor ihrem Eintritt (Art. 269d Abs. 5 OR, Art. 19a VMWG). Ein "
+"amtliches Formular ist dafür nicht nötig."
+msgstr ""
+"Ogni aumento convenuto viene comunicato per scritto, al più presto quattro "
+"mesi prima della sua entrata in vigore (art. 269d cpv. 5 CO, art. 19a OLAL)."
+" Non è necessario un modulo ufficiale."
+
+#, python-format
+msgid "Erhöhung ab %(datum)s"
+msgstr "Aumento dal %(datum)s"
+
+#, python-format
+msgid "Mitteilung frühestens ab %(datum)s"
+msgstr "Comunicazione al più presto dal %(datum)s"
+
+#, python-format
+msgid "versandt am %(datum)s"
+msgstr "inviato il %(datum)s"
+
+#, python-format
+msgid "Schreiben erstellt am %(datum)s"
+msgstr "lettera redatta il %(datum)s"
+
+msgid ""
+"Die Erhöhung gilt bereits, ohne dass eine Mitteilung als versandt erfasst "
+"ist."
+msgstr ""
+"L'aumento è già in vigore senza che alcuna comunicazione sia registrata come"
+" inviata."
+
+msgid "versandt"
+msgstr "inviato"
+
+msgid "Mitteilung fällig"
+msgstr "Comunicazione da fare"
+
+msgid "Schreiben erstellt"
+msgstr "Lettera redatta"
+
+msgid "noch nicht im Fenster"
+msgstr "non ancora nella finestra"
+
+msgid "Schreiben öffnen"
+msgstr "Apri la lettera"
+
+msgid "Schreiben neu erstellen"
+msgstr "Crea di nuovo la lettera"
+
+msgid "Schreiben erstellen"
+msgstr "Crea la lettera"
+
+msgid "Als versandt markieren"
+msgstr "Segna come inviato"
+
+msgid "Noch keine Staffelstufen erfasst."
+msgstr "Nessuno scaglione ancora registrato."
+
+msgid "Der Nettomietzins bleibt unverändert — es gibt nichts mitzuteilen."
+msgstr "La pigione netta rimane invariata: non c'è nulla da comunicare."
+
+#, python-format
+msgid ""
+"Das höhere Nebenkosten-Akonto folgt nicht dem Index: Es kann frühestens auf "
+"%(datum)s wirksam werden (Kündigungsfrist + 10 Tage, Art. 269d OR)."
+msgstr ""
+"L'acconto più alto per le spese accessorie non segue l'indice: può avere "
+"effetto al più presto il %(datum)s (termine di disdetta + 10 giorni, art. "
+"269d CO)."
+
+msgid "Für die Indexanpassung erzeugt die Anwendung kein Ersatzformular."
+msgstr ""
+"Per l'adeguamento all'indice l'applicazione non produce alcun modulo "
+"sostitutivo."
+
+#, python-format
+msgid ""
+"Schreiben zur Erhöhung ab %(datum)s erstellt und in der Akte abgelegt "
+"(Reiter «Dokumente»)."
+msgstr ""
+"Lettera relativa all'aumento dal %(datum)s redatta e archiviata nel dossier "
+"(scheda «Documenti»)."
+
+msgid "Bitte ein gültiges Versanddatum angeben."
+msgstr "Indicare una data d'invio valida."
+
+#, python-format
+msgid "Mitteilung zur Erhöhung ab %(datum)s als versandt markiert."
+msgstr "Comunicazione dell'aumento dal %(datum)s contrassegnata come inviata."

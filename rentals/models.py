@@ -64,6 +64,12 @@ class Mietvertrag(OrganisationAusKette):
     # (per_datum) — erst dieses Flag macht die Unterscheidung eindeutig, statt
     # `ende IS NOT NULL` mehrdeutig als «befristet» zu interpretieren.
     ist_befristet = models.BooleanField("Befristetes Mietverhältnis", default=False)
+    #: Unbefristeter Vertrag, bei dem der Vermieter bis zu diesem Datum nicht kündigen kann.
+    #: VMWG Art. 17 Abs. 4: Für Index (Art. 269b OR, 5 J.) gilt der Vertrag als fest
+    #: abgeschlossen, wenn der Vermieter mindestens so lange nicht kündigen kann; die Staffelmiete
+    #: (Art. 269c OR, 3 J.) folgt derselben Auslegung. Leer = kein Verzicht.
+    vermieter_kuendigungsverzicht_bis = models.DateField(
+        "Vermieter verzichtet auf Kündigung bis", null=True, blank=True)
     ende = models.DateField(null=True, blank=True)
     erstmals_kuendbar_auf = models.DateField("Erstmals kündbar auf", null=True, blank=True) # 🔥 NEU
     kuendigungsfrist_monate = models.IntegerField("Kündigungsfrist (Monate)", default=3)
@@ -685,6 +691,30 @@ class Mietvertrag(OrganisationAusKette):
         except Exception:
             return 'neutral'
 
+    #: Felder, die über das Mietzinsmodell entscheiden. Ändert eine Bearbeitung keines davon,
+    #: blockiert `clean()` einen Altvertrag nicht wegen eines früheren Verstosses.
+    MODELL_FELDER = ('mietzins_modell', 'beginn', 'ende', 'ist_befristet', 'vermieter_kuendigungsverzicht_bis',
+                     'basis_lik_punkte', 'basis_lik_stand', 'index_weitergabe_prozent', 'index_intervall_monate')
+
+    def clean(self):
+        """Mietzinsmodell prüfen (Art. 269b/269c OR, `core/services/mietzinsmodell.py`).
+
+        Wirkt nur über `full_clean()` und ModelForms; `save()` bleibt unverändert, damit Altdaten nicht
+        brechen. Ein bestehender Vertrag, dessen Modellfelder unverändert sind, wird nicht blockiert
+        (Altverstösse meldet `manage.py mietzinsmodell_bestand`). Stufen werden nur geprüft, wenn der
+        Vertrag schon gespeichert ist; neue Stufen prüft, wer sie anlegt (`pruefe_vertrag(stufen=...)`).
+        """
+        from django.core.exceptions import ValidationError
+        from core.services.mietzinsmodell import pruefe_vertrag, sperren
+        super().clean()
+        if self.pk:
+            alt = type(self).alle_organisationen.filter(pk=self.pk).values(*self.MODELL_FELDER).first()
+            if alt is not None and all(alt[f] == getattr(self, f) for f in self.MODELL_FELDER):
+                return
+        fehler = sperren(pruefe_vertrag(self))
+        if fehler:
+            raise ValidationError([ValidationError(b.volltext, code=b.regel) for b in fehler])
+
     def save(self, *args, **kwargs):
         # Rücklauf-Zeitstempel setzen, sobald der Vertrag als unterzeichnet gilt
         # (nur beim erstmaligen Übergang → nicht bei jedem weiteren Save).
@@ -782,21 +812,82 @@ class Mietvertrag(OrganisationAusKette):
 
 class Staffelstufe(OrganisationAusKette):
     ORGANISATION_PFAD = 'vertrag'
-    """Eine vereinbarte Staffelmietstufe (Art. 269c OR): ab `ab_datum` gilt
-    `netto_mietzins`. Vorab im Vertrag vereinbart → im Mietenlauf automatisch
-    (keine erneute Ankündigung nötig)."""
+    # Eine vereinbarte Staffelmietstufe (Art. 269c OR): ab `ab_datum` gilt `netto_mietzins`, der aus
+    # der Vorstufe und `erhoehung_chf` folgt. Die Erhöhung ist vorab im Vertrag vereinbart, wird dem
+    # Mieter aber vor jedem Eintritt schriftlich mitgeteilt (Art. 269d Abs. 5 OR, Art. 19a VMWG).
     vertrag = models.ForeignKey(Mietvertrag, on_delete=models.CASCADE, related_name='staffelstufen')
     ab_datum = models.DateField("Gültig ab")
     netto_mietzins = models.DecimalField("Netto-Mietzins ab Stichtag", max_digits=8, decimal_places=2)
+    #: Art. 269c lit. c OR: Die Erhöhung wird als Frankenbetrag vereinbart — nie in Prozent.
+    #: Quelle der Wahrheit; `netto_mietzins` ist der daraus folgende Stand der Stufe.
+    erhoehung_chf = models.DecimalField("Erhöhung (CHF)", max_digits=8, decimal_places=2,
+                                        null=True, blank=True)
+    #: Schriftliche Mitteilung der Erhöhung (Art. 269d Abs. 5 OR, frühestens 4 Monate vorher,
+    #: Art. 19a VMWG): wann das Schreiben erstellt und wann es versandt wurde.
+    mitteilung_erstellt_am = models.DateField("Mitteilung erstellt am", null=True, blank=True)
+    mitteilung_versandt_am = models.DateField("Mitteilung versandt am", null=True, blank=True)
 
     class Meta:
         db_table = 'core_staffelstufe'
         ordering = ['ab_datum']
         verbose_name = "Staffelstufe"
         verbose_name_plural = "Staffelstufen"
+        constraints = [
+            # NULL bleibt erlaubt: Altstufen ohne positive Erhöhung (Migration 0050) meldet der
+            # Bestandsbericht, die Datenbank lehnt sie nicht nachträglich ab.
+            models.CheckConstraint(
+                condition=models.Q(erhoehung_chf__isnull=True) | models.Q(erhoehung_chf__gt=0),
+                name='staffelstufe_erhoehung_positiv'),
+        ]
 
     def __str__(self):
         return f"ab {self.ab_datum:%d.%m.%Y}: CHF {self.netto_mietzins}"
+
+    def save(self, *args, **kwargs):
+        """Ist `erhoehung_chf` gesetzt, folgt `netto_mietzins` aus Vorstufe + Erhöhung.
+
+        Danach werden die späteren Stufen nachgezogen: Wer eine Stufe einschiebt, ändert den Stand
+        aller folgenden. Ohne `erhoehung_chf` (Altweg) bleibt der übergebene Betrag stehen.
+        """
+        if self.erhoehung_chf is not None and self.vertrag_id and self.ab_datum:
+            self.netto_mietzins = self._vorstand() + self.erhoehung_chf
+            uf = kwargs.get('update_fields')
+            if uf is not None:
+                kwargs['update_fields'] = list(set(uf) | {'netto_mietzins'})
+        super().save(*args, **kwargs)
+        if self.erhoehung_chf is not None:
+            Staffelstufe.kette_neu_rechnen(self.vertrag)
+
+    def delete(self, *args, **kwargs):
+        vertrag = self.vertrag
+        ergebnis = super().delete(*args, **kwargs)
+        Staffelstufe.kette_neu_rechnen(vertrag)
+        return ergebnis
+
+    def _vorstand(self):
+        """Netto-Mietzins unmittelbar vor dieser Stufe: die vorige Stufe oder der Vertragsbeginn."""
+        vorige = [s for s in Staffelstufe.alle_organisationen.filter(vertrag_id=self.vertrag_id)
+                  .order_by('ab_datum', 'id') if (s.ab_datum, s.id) < (self.ab_datum, self.id or float('inf'))
+                  and s.pk != self.pk]
+        if vorige:
+            return vorige[-1].netto_mietzins
+        return self.vertrag.netto_mietzins or Decimal('0.00')
+
+    @staticmethod
+    def kette_neu_rechnen(vertrag):
+        """Rechnet den Netto-Mietzins aller Stufen eines Vertrags aus Beginn-Netto und Erhöhungen neu.
+
+        Stufen ohne `erhoehung_chf` (Altdaten) behalten ihren Betrag und sind Ausgangspunkt der
+        nächsten. Geschrieben wird per `update()`, damit `save()` nicht erneut anstösst."""
+        laufend = vertrag.netto_mietzins or Decimal('0.00')
+        for st in Staffelstufe.alle_organisationen.filter(vertrag_id=vertrag.pk).order_by('ab_datum', 'id'):
+            if st.erhoehung_chf is None:
+                laufend = st.netto_mietzins
+                continue
+            soll = laufend + st.erhoehung_chf
+            if st.netto_mietzins != soll:
+                Staffelstufe.alle_organisationen.filter(pk=st.pk).update(netto_mietzins=soll)
+            laufend = soll
 
 
 class VertragMietzins(OrganisationAusKette):
@@ -855,6 +946,17 @@ class VertragMietzins(OrganisationAusKette):
 
     def __str__(self):
         return f"ab {self.gueltig_ab:%d.%m.%Y}: Netto CHF {self.netto_mietzins} / NK CHF {self.nebenkosten}"
+
+
+def _auf_feldlaenge(text, modell, feld):
+    """Kürzt `text` auf die Länge des CharField `feld` (mit «…»).
+
+    SQLite prüft `max_length` nicht, PostgreSQL schon («value too long for type
+    character varying(200)»): Die ausführliche Index-Begründung sprengte so die Bemerkung der
+    Sollmietzins-Zeile — in der Sandbox unbemerkt, in der CI auf PostgreSQL ein Fehler.
+    """
+    grenze = modell._meta.get_field(feld).max_length
+    return text if len(text) <= grenze else text[:grenze - 1].rstrip() + '…'
 
 
 class MietzinsAnpassung(OrganisationAusKette):
@@ -990,7 +1092,7 @@ class MietzinsAnpassung(OrganisationAusKette):
                 'basis_referenzzinssatz': self.neuer_referenzzinssatz,
                 'basis_lik_punkte': self.neuer_lik_index,
                 'quelle_anpassung': self,
-                'notiz': " · ".join(teile),
+                'notiz': _auf_feldlaenge(" · ".join(teile), Sollmietzins, 'notiz'),
             })
 
 class Leerstand(OrganisationAusKette):

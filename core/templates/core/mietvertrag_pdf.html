@@ -100,7 +100,7 @@
 {% if mietzins_zeitplan %}
 <div class="subsec">Gestaffelter Mietzins / Gratismonate</div>
 {% for satz in mietzins_hinweise %}<p class="note" style="margin:2pt 0;">• {{ satz }}</p>{% endfor %}
-<p class="note">Übersicht der ab dem jeweiligen Datum geltenden Beträge (im Voraus vereinbart; einer erneuten Mitteilung bedarf es nicht). <b>Referenzmiete</b> = vereinbarter Bruttomietzins; ein <b>Rabatt/Erlass</b> mindert nur den in dieser Periode <b>tatsächlich geschuldeten</b> Betrag:</p>
+<p class="note">Übersicht der ab dem jeweiligen Datum geltenden Beträge (im Voraus vereinbart). <b>Referenzmiete</b> = vereinbarter Bruttomietzins; ein <b>Rabatt/Erlass</b> mindert nur den in dieser Periode <b>tatsächlich geschuldeten</b> Betrag:</p>
 <table style="width:100%; border-collapse:collapse; margin:4pt 0;">
     <tr style="border-bottom:1px solid #94a3b8;">
         <td style="width:31%; padding:4pt 6pt 4pt 0; font-weight:bold; color:#64748b;">Gültig ab</td>
@@ -125,18 +125,6 @@
 </table>
 <p class="note">Der Mietzins beruht auf den obigen Grundlagen. Änderungen des Referenzzinssatzes, des Landesindexes sowie allgemeine Kostensteigerungen berechtigen zu einer Anpassung des Mietzinses nach den Bestimmungen des OR und der VMWG.</p>
 
-{% if vertrag.mietzins_modell == 'index' %}
-<div class="subsec">4.4 Indexklausel (Art. 269b OR)</div>
-<p class="note">Der Nettomietzins ist an den Landesindex der Konsumentenpreise gekoppelt. Er wird zu {{ vertrag.index_weitergabe_prozent }} % der Indexveränderung angepasst, frühestens alle {{ vertrag.index_intervall_monate }} Monate. Basis ist der oben genannte Indexstand. Anpassungen werden dem Mieter mit amtlichem Formular unter Einhaltung einer Frist von mindestens 30 Tagen auf einen Kündigungstermin mitgeteilt (Art. 269d OR). Diese Klausel setzt einen festen Mietvertrag von mindestens fünf Jahren voraus.</p>
-{% elif vertrag.mietzins_modell == 'staffel' %}
-<div class="subsec">4.4 Staffelmietklausel (Art. 269c OR)</div>
-<p class="note">Die Parteien vereinbaren folgende gestaffelte Nettomietzinse. Die Staffelung gilt als im Voraus vereinbart; einer erneuten Mitteilung bedarf es nicht.</p>
-<table class="data">
-    <tr><td class="k">ab {{ vertrag.beginn|date:"d.m.Y" }}</td><td>CHF {{ miete_fmt }}</td></tr>
-    {% for s in vertrag.staffelstufen.all %}<tr><td class="k">ab {{ s.ab_datum|date:"d.m.Y" }}</td><td>CHF {{ s.netto_mietzins|floatformat:2 }}</td></tr>{% endfor %}
-</table>
-{% endif %}
-
 <div class="subsec">4.2 Mietzinszahlung</div>
 <p class="note">Der Mietzins ist jeweils am 1. Tag des Monats (Verfalldatum) im Voraus fällig. Bei Zahlungseingängen nach dem Verfalldatum ist der Vermieter berechtigt, einen Verzugszins sowie Mahn- und Umtriebsgebühren in usanzgemässer Höhe in Rechnung zu stellen.</p>
 
@@ -145,6 +133,8 @@
 
 <div class="subsec">4.4 Nebenkosten</div>
 <p class="note">Nebenkosten sind das Entgelt für die tatsächlichen Aufwendungen des Vermieters oder eines Dritten für Leistungen, die mit dem Gebrauch der Mietsache zusammenhängen, wie Heizungs-, Warmwasser- und Betriebskosten sowie öffentliche Abgaben. Abrechnungsart: {{ vertrag.get_nk_abrechnungsart_display }}. Verteilschlüssel: {{ vertrag.get_verteilschluessel_display }}.</p>
+
+{% include 'core/_mietzinsmodell_klausel.html' with kopf='subsec' nummer='4.5' %}
 
 {% if vertrag.weitere_vorbehalte or vertrag.besondere_vereinbarungen %}
 <div class="sec">5. Vorbehalte und besondere Vereinbarungen</div>
@@ -166,7 +156,7 @@
 <p class="note" style="margin-top:8pt; border-top:0.5pt solid #e2e8f0; padding-top:6pt;"><b>Massgebliche Gesetzesgrundlagen (OR):</b>
 Übergabe Art. 256 · Kaution Art. 257e · Zahlungsverzug Art. 257d · Nebenkosten Art. 257a–257b ·
 Kündigung Art. 266 ff.{% if vertrag.mietrecht_kategorie == 'wohnen' %} (Wohnräume Art. 266c){% elif vertrag.mietrecht_kategorie == 'gewerbe' %} (Geschäftsräume Art. 266d){% endif %},
-Form Art. 266l · Rückgabe Art. 267/267a{% if vertrag.ist_geschuetzt %} · Kündigungsschutz und Erstreckung Art. 271–272d{% endif %}{% if vertrag.mietzins_modell == 'index' %} · Indexklausel Art. 269b, Anpassung Art. 269d{% elif vertrag.mietzins_modell == 'staffel' %} · Staffelmiete Art. 269c{% endif %}.</p>
+Form Art. 266l · Rückgabe Art. 267/267a{% if vertrag.ist_geschuetzt %} · Kündigungsschutz und Erstreckung Art. 271–272d{% endif %}{% if vertrag.mietzins_modell == 'index' %} · Indexklausel Art. 269b, Anpassung Art. 269d, Art. 17 und 19 VMWG{% elif vertrag.mietzins_modell == 'staffel' %} · Staffelmiete Art. 269c, Mitteilung Art. 269d Abs. 5, Art. 19a VMWG{% endif %}.</p>
 
 <table class="sign">
     <tr>

@@ -207,7 +207,7 @@ def _formular_daten(v, anp, lik_basis):
     # «neu»; «bisher» bleibt das bisherige. Ohne Akonto-Änderung sind beide Spalten wie bis anhin.
     nk_neu = anp.neue_nebenkosten if anp.neue_nebenkosten is not None else v.effektive_nebenkosten(anp.wirksam_ab)
     nk_alt = anp.alte_nebenkosten if anp.neue_nebenkosten is not None and anp.alte_nebenkosten is not None else nk_neu
-    return {
+    daten = {
         'alt_netto': anp.alter_netto_mietzins, 'neu_netto': anp.neuer_netto_mietzins,
         'nebenkosten': nk_neu, 'alt_nebenkosten': nk_alt,
         'alt_zins': anp.alter_referenzzinssatz, 'neu_zins': anp.neuer_referenzzinssatz,
@@ -221,6 +221,15 @@ def _formular_daten(v, anp, lik_basis):
         'mit_vorbehalt': anp.vorbehalt_betrag is not None or anp.vorbehalt_prozent is not None,
         'vorbehalt_text': _vorbehalt_satz(anp),
     }
+    if v.mietzins_modell == 'index':
+        # Indexmiete (Art. 269b OR): Der einzige Grund ist der LIK mit der vollen
+        # Weitergabe. Die Füller der Kantonsformulare schreiben zu einer LIK-Änderung
+        # «40 % anrechenbar» (Teuerungsausgleich im Sinne von Art. 269a lit. e OR) und
+        # zu Referenzzins und Kostensteigerung eigene Gründe — alles falsch für den
+        # Index. Ohne diese Werte steht nur die Begründung der Anpassung im Formular.
+        daten.update(alt_zins=None, neu_zins=None, alt_lik=None, neu_lik=None,
+                     zins_pct=None, lik_pct=None, kosten_pct=None)
+    return daten
 
 
 def _formular_pdf(v, anp, vw, lik_basis, formular):
@@ -254,6 +263,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
     from django.http import HttpResponse
     from django.shortcuts import redirect
     from core.auth import log_aktion
+    from core.services import index_anpassung as idx
     from core.services import mietzinsanpassung as ablauf
     from core.services.formular_status import formular_status, kanton_fehlt_meldung
     from core.services.mietzins_rechner import kostensteigerung_pauschal_pct
@@ -307,7 +317,12 @@ def fw_mietzins_anpassung(request, vertrag_id):
                 logger.debug("Fehler bewusst übergangen", exc_info=True)
         v.save(update_fields=['basis_referenzzinssatz', 'basis_lik_punkte', 'basis_lik_stand'])
 
-        wirksam_ab = _datum(P.get('wirksam_ab')) or naechster_anpassungstermin(v, heute)
+        index_modus = v.mietzins_modell == 'index'
+        if index_modus:
+            # Art. 17 Abs. 3 VMWG: 30 Tage auf ein Monatsende, nicht die 10 Tage des Art. 269d OR.
+            wirksam_ab = _datum(P.get('wirksam_ab')) or idx.frueheste_wirksamkeit(heute)
+        else:
+            wirksam_ab = _datum(P.get('wirksam_ab')) or naechster_anpassungstermin(v, heute)
         alt_netto, alt_zins, alt_lik = bisheriger_stand(v, wirksam_ab)
         neu_netto = _dec(P.get('neu_netto'), str(alt_netto))
         # E1 (NK-Wizard): neues Nebenkosten-Akonto, leer = bleibt.
@@ -325,7 +340,29 @@ def fw_mietzins_anpassung(request, vertrag_id):
         # 10-tägigen Ankündigungsfrist wirksam werden — gemessen an einem Versand
         # HEUTE. Beim Versand prüft `versand_erfassen` mit dem echten Datum nach.
         # Verglichen wird mit dem EFFEKTIVEN bisherigen Mietzins (Befund A).
-        if neu_netto > (alt_netto or Decimal('0')) or (neu_nk is not None and neu_nk > alt_nk):
+        if index_modus:
+            # Indexmiete: LIK veröffentlicht, Höchstbetrag, Termin — alles serverseitig.
+            # Entwurf und PDF gelten als Versand HEUTE; beim Versand prüft
+            # `versand_erfassen` mit dem echten Datum nach.
+            stand = idx.stand_aus_text(P.get('lik_stand'))
+            versand = (_datum(P.get('versand_am')) or heute) if aktion == 'versandt' else heute
+            zugang = _datum(P.get('zugang_am')) if aktion == 'versandt' else None
+            meldungen = idx.pruefe(v, heute=heute, stand=stand, wirksam_ab=wirksam_ab, neu_netto=neu_netto,
+                                   versand_am=versand, zugang_am=zugang)
+            if neu_netto == (alt_netto or Decimal('0')) and (neu_nk is None or neu_nk == alt_nk):
+                meldungen.append(gettext('Der Nettomietzins bleibt unverändert — es gibt nichts mitzuteilen.'))
+            if neu_nk is not None and alt_nk is not None and neu_nk > alt_nk:
+                frueh_nk = naechster_anpassungstermin(v, heute)
+                if wirksam_ab < frueh_nk:
+                    meldungen.append(gettext(
+                        'Das höhere Nebenkosten-Akonto folgt nicht dem Index: Es kann frühestens auf %(datum)s '
+                        'wirksam werden (Kündigungsfrist + 10 Tage, Art. 269d OR).') % {
+                            'datum': frueh_nk.strftime('%d.%m.%Y')})
+            if meldungen:
+                for meldung in meldungen:
+                    messages.error(request, '❌ ' + meldung)
+                return redirect(zurueck)
+        elif neu_netto > (alt_netto or Decimal('0')) or (neu_nk is not None and neu_nk > alt_nk):
             frueh = naechster_anpassungstermin(v, heute)
             if wirksam_ab < frueh:
                 messages.error(request, '❌ ' + gettext(
@@ -334,8 +371,9 @@ def fw_mietzins_anpassung(request, vertrag_id):
                         'datum': frueh.strftime('%d.%m.%Y')})
                 return redirect(zurueck)
 
-        # Vorbehalt: wer ihn macht, beziffert ihn (CHF oder %).
-        mit_vorbehalt = P.get('mit_vorbehalt') == 'on'
+        # Vorbehalt: wer ihn macht, beziffert ihn (CHF oder %). Bei der Indexmiete gibt es
+        # keine ordentlichen Anpassungsgründe, die sich vorbehalten liessen.
+        mit_vorbehalt = P.get('mit_vorbehalt') == 'on' and not index_modus
         vb_betrag = _dec_oder_none(P.get('vorbehalt_betrag')) if mit_vorbehalt else None
         vb_prozent = _dec_oder_none(P.get('vorbehalt_prozent')) if mit_vorbehalt else None
         if mit_vorbehalt and vb_betrag is None and vb_prozent is None:
@@ -346,7 +384,8 @@ def fw_mietzins_anpassung(request, vertrag_id):
         # Die Anteile werden auf den Werten DIESES Formulars gerechnet (neu_zins,
         # neu_lik) — bis hierher auf dem Marktstand der Verwaltung, während das
         # Formular die eingegebenen Werte nannte.
-        pot = berechne_mietpotenzial(v, neu_zins, neu_lik, kosten_pct, wirksam_ab=wirksam_ab) or {}
+        pot = {} if index_modus else (
+            berechne_mietpotenzial(v, neu_zins, neu_lik, kosten_pct, wirksam_ab=wirksam_ab) or {})
         werte = {
             'wirksam_ab': wirksam_ab, 'neuer_netto_mietzins': neu_netto,
             'alter_netto_mietzins': alt_netto,
@@ -363,6 +402,22 @@ def fw_mietzins_anpassung(request, vertrag_id):
             'schlichtungsbehoerde': (P.get('schlichtungsbehoerde') or '').strip()[:300],
             'neue_nebenkosten': neu_nk, 'alte_nebenkosten': alt_nk,
         }
+        if index_modus:
+            lage = idx.lage(v, heute=heute, stand=stand, wirksam_ab=wirksam_ab, versand_am=versand,
+                            zugang_am=zugang)
+            rechnung = lage['rechnung']
+            delta = ((neu_netto - alt_netto) / alt_netto * Decimal('100')).quantize(Decimal('0.01')) \
+                if alt_netto else Decimal('0')
+            zusatz = (P.get('begruendung') or '').strip()
+            werte.update({
+                'alter_lik_index': rechnung.basis_lik, 'neuer_lik_index': rechnung.neu_lik,
+                'neuer_lik_stand': stand,
+                'alter_referenzzinssatz': alt_zins, 'neuer_referenzzinssatz': alt_zins,
+                'erhoehung_prozent_total': delta, 'lik_prozent': delta,
+                'zins_prozent': None, 'kosten_prozent': None, 'kosten_ausgeglichen_bis': None,
+                'begruendung': (idx.begruendung(rechnung, stand, neu_netto, lage['alt_stand'])
+                                + (' ' + zusatz if zusatz else '')),
+            })
         neu_angelegt = entwurf is None and ablauf.offener_entwurf(v) is None
         try:
             anp = ablauf.entwurf_speichern(v, werte, entwurf)
@@ -383,9 +438,16 @@ def fw_mietzins_anpassung(request, vertrag_id):
             messages.error(request, '⛔ ' + kanton_fehlt_meldung(lg))
             return redirect(zurueck)
         # Ohne Kantonsoriginal nur nach ausdrücklicher Bestätigung (Befund J).
-        if not formular['original'] and P.get('nachbildung_bestaetigt') != 'on':
-            messages.error(request, '⛔ ' + formular['warnung'])
-            return redirect(zurueck)
+        if not formular['original']:
+            if index_modus and aktion == 'pdf':
+                # Die Lücke wird genannt, nicht überbrückt: kein generisches Formular,
+                # auch keine Nachbildung mit Wasserzeichen (Art. 19 Abs. 2 VMWG).
+                messages.error(request, '⛔ ' + formular['warnung'] + ' ' + gettext(
+                    'Für die Indexanpassung erzeugt die Anwendung kein Ersatzformular.'))
+                return redirect(zurueck)
+            if P.get('nachbildung_bestaetigt') != 'on':
+                messages.error(request, '⛔ ' + formular['warnung'])
+                return redirect(zurueck)
 
         if aktion == 'pdf':
             pdf = _formular_pdf(v, anp, vw, lik_basis, formular)
@@ -421,24 +483,40 @@ def fw_mietzins_anpassung(request, vertrag_id):
 
     # --- GET: Assistent, vorbefüllt aus dem offenen Entwurf oder dem Vorschlag ---
     entwurf = ablauf.offener_entwurf(v)
-    naechster_termin = naechster_anpassungstermin(v, heute)
-    termin = entwurf.wirksam_ab if entwurf else naechster_termin
+    index_lage = None
+    if v.mietzins_modell == 'index':
+        # Indexmiete (Art. 269b OR, Art. 17 VMWG): Termin, Stand und Höchstbetrag kommen aus
+        # `index_anpassung.lage` — dieselbe Rechnung wie in der Live-Nachrechnung und beim Speichern.
+        index_lage = idx.lage(
+            v, heute=heute,
+            stand=idx.stand_aus_text(request.GET.get('lik_stand')) or (entwurf.neuer_lik_stand if entwurf else None),
+            wirksam_ab=entwurf.wirksam_ab if entwurf else None)
+        naechster_termin = index_lage['frueh']
+        termin = index_lage['termin']
+    else:
+        naechster_termin = naechster_anpassungstermin(v, heute)
+        termin = entwurf.wirksam_ab if entwurf else naechster_termin
     vortag = termin - _timedelta(days=1)
     alt_netto, alt_zins, alt_lik = bisheriger_stand(v, termin)
     # Allgemeine Kostensteigerung: Pauschale (0.5 %/Jahr) seit «ausgeglichen bis», sonst seit
     # Vertragsbeginn — als editierbarer Vorschlag, nicht automatisch weitergegeben.
     kosten_vorschlag = kostensteigerung_pauschal_pct(v.kostensteigerung_datum or v.beginn, heute)
-    pot = berechne_mietpotenzial(v, aktuell_ref, aktuell_lik, kosten_vorschlag, wirksam_ab=termin) or {}
-    for hinweis in pot.get('hinweise', []):
-        messages.warning(request, hinweis)
+    if index_lage is None:
+        pot = berechne_mietpotenzial(v, aktuell_ref, aktuell_lik, kosten_vorschlag, wirksam_ab=termin) or {}
+        for hinweis in pot.get('hinweise', []):
+            messages.warning(request, hinweis)
+    else:
+        # Referenzzins und Kostensteigerung sind keine Gründe einer Indexanpassung.
+        pot = {}
     vorschlag_netto = pot.get('neu_chf', alt_netto)
 
     # Indexmiete (Art. 269b): die amtliche Index-Mitteilung (Art. 269d) wird direkt
     # aus der LIK-Entwicklung vorbefüllt — neuer Nettomietzins + fertige Begründung.
     index_vorschlag = None
-    if v.mietzins_modell == 'index':
+    if index_lage is not None:
         from core.services.mietrecht import index_anpassung_vorschlag
-        index_vorschlag = index_anpassung_vorschlag(v, aktuell_lik, wirksam_ab=termin)
+        if index_lage['rechnung'] is not None:
+            index_vorschlag = index_anpassung_vorschlag(v, wirksam_ab=termin, stand=index_lage['stand'])
         if index_vorschlag:
             vorschlag_netto = index_vorschlag['neu_netto']
 
@@ -480,8 +558,14 @@ def fw_mietzins_anpassung(request, vertrag_id):
         'kosten_vorschlag': (entwurf.kosten_prozent if (entwurf and entwurf.kosten_prozent is not None)
                              else kosten_vorschlag),
         'entwurf': entwurf,
-        'begruendung': (entwurf.begruendung if entwurf else
-                        (index_vorschlag['begruendung'] if index_vorschlag else '')),
+        # Indexmiete: Die Begründung baut der Server (Rechtsgrundlage, beide Stände, Zunahme,
+        # Weitergabe); im Feld steht nur der eigene Zusatz.
+        'begruendung': ((idx.zusatz_aus(entwurf.begruendung) if index_lage is not None else entwurf.begruendung)
+                        if entwurf else ''),
+        'idx': index_lage,
+        'idx_luecke': idx.formular_luecke(formular) if index_lage is not None else None,
+        'idx_stand_optionen': ([(d, idx.lik_punkte(d)) for d in index_lage['staende']]
+                               if index_lage is not None else []),
         'schlichtungsbehoerde': entwurf.schlichtungsbehoerde if entwurf else '',
         'mit_vorbehalt': hat_vorbehalt,
         'vorbehalt_betrag': entwurf.vorbehalt_betrag if entwurf else v.mietzinsreserve_betrag,
@@ -506,9 +590,14 @@ def fw_mietzins_anpassung_rechnen(request, vertrag_id):
     v = get_object_or_404(Mietvertrag.objects.select_related('einheit__liegenschaft'), id=vertrag_id)
     heute = timezone.localdate()
     G = request.GET
-    wirksam_ab = _datum(G.get('wirksam_ab')) or naechster_anpassungstermin(v, heute)
     versand_am = _datum(G.get('versand_am')) or heute
     zugang_am = _datum(G.get('zugang_am'))
+    if v.mietzins_modell == 'index':
+        from core.services import index_anpassung as idx
+        return JsonResponse(idx.lage_json(idx.lage(
+            v, heute=heute, stand=idx.stand_aus_text(G.get('lik_stand')), wirksam_ab=_datum(G.get('wirksam_ab')),
+            versand_am=versand_am, zugang_am=zugang_am, basis_lik=_dec_oder_none(G.get('basis_lik')))))
+    wirksam_ab = _datum(G.get('wirksam_ab')) or naechster_anpassungstermin(v, heute)
     alt_netto, alt_zins, alt_lik = bisheriger_stand(v, wirksam_ab)
     pot = berechne_mietpotenzial(v, _dec(G.get('neu_zins'), str(alt_zins or 0)),
                                  _dec(G.get('neu_lik'), str(alt_lik or 0)),
