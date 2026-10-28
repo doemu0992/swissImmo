@@ -14,7 +14,7 @@
     </div>
     <div class="fw-phead-knoepfe">
         <a href="/neu/personen/{{ m.id }}/kontoauszug/" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' %}PDF</a>
-        <a href="/neu/personen/{{ m.id }}/" class="fw-btn">{% zeichen 'person' %}{% trans "Person" %}</a>
+        {% if ist_team %}<a href="/neu/personen/{{ m.id }}/" class="fw-btn">{% zeichen 'person' %}{% trans "Person" %}</a>{% endif %}
     </div>
 </div>
 

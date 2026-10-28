@@ -216,6 +216,68 @@ def _seiten_fuer_hauswart():
     return seiten
 
 
+def _ziel_erlaubt_fuer(rolle):
+    """Prüft positiv, ob die View hinter einem Ziel die Rolle nennt (`benoetigte_rollen`).
+
+    `darf_oeffnen` liefe bei einer View ohne Dekorator auf «ja»; für eine Rolle mit
+    engem Zuschnitt (Hauswartung, Buchhaltung) ist «unbekannt» ein «nein»."""
+    from django.urls import resolve
+
+    def erlaubt(ziel):
+        try:
+            rollen = getattr(resolve(ziel.split('?')[0]).func, 'benoetigte_rollen', None)
+        except Exception:
+            return False
+        return bool(rollen) and rolle in rollen
+    return erlaubt
+
+
+def _navigation_buchhaltung(user):
+    """Navigation, Palette, Suche und Kopf der Buchhaltung (nur Finanzen).
+
+    Dieselben fünf Bereiche wie beim Team, aber nur mit den Seiten, die ihre
+    Rolle öffnen darf. Ein Bereich ohne öffnbare Seite entfällt; zeigt sein Kopf
+    auf eine gesperrte Seite (die Läufe-Übersicht), führt er auf die erste
+    öffnbare. So gibt es weder Reiter noch Palette-Einträge, die in die 403 führen."""
+    from django.core.exceptions import PermissionDenied
+
+    from core.auth import ROLLE_BUCHHALTUNG
+    from core.services.palette_suche import sicht_von
+
+    erlaubt = _ziel_erlaubt_fuer(ROLLE_BUCHHALTUNG)
+    gruppen, palette = [], []
+    for g in nav_gruppen():
+        items = [dict(it, erlaubt=True) for it in g['items'] if erlaubt(it['ziel'])]
+        if not items and not erlaubt(g['ziel']):
+            continue
+        ziel = g['ziel'] if erlaubt(g['ziel']) else items[0]['ziel']
+        gruppen.append(dict(g, items=items, ziel=ziel,
+                            alle_keys=[g['key']] + [k for it in items for k in it['keys']]))
+        palette.append({'label': g['label'], 'url': ziel})
+        palette += [{'label': it['label'], 'url': it['ziel'], 'gruppe': g['label']} for it in items]
+    try:
+        suche = sicht_von(user)
+        suche_kontext = {'fw_suche_gruppen': ','.join(suche.gruppen), 'fw_suche_ziel': suche.suchseite}
+    except PermissionDenied:
+        suche_kontext = {}
+    mandanten = []
+    try:
+        from crm.models import Mitgliedschaft
+        mandanten = [m.organisation for m in
+                     Mitgliedschaft.alle_organisationen.filter(benutzer=user)
+                     .select_related('organisation').order_by('pk')[:20]]
+    except Exception:
+        pass
+    from core.tenancy import aktuelle_organisation
+    try:
+        aktiv = aktuelle_organisation()
+    except Exception:
+        aktiv = None
+    return {**_kopf_reduziert(user), 'fw_nav_gruppen': gruppen, 'fw_palette': palette,
+            'fw_einstellungen_keys': EINSTELLUNGEN_KEYS, 'fw_mandanten': mandanten,
+            'fw_mandant': aktiv, **suche_kontext}
+
+
 def _suche_ohne_team(user):
     """Was die Kopfzeile jemandem ohne Team-Rolle gibt: für die Hauswartung die
     eingeschränkte Suche, für alle anderen nichts (leer wie bisher).
@@ -244,9 +306,13 @@ def _kopf_reduziert(user):
     endete für die Hauswartung bzw. für Mieter und Eigentümer (2FA-Seiten) auf
     einer 403-Seite. Das Logo führt zur eigenen Startseite: für die Hauswartung
     die Schadenliste, sonst die Login-Weiche (`/nach-login/`, rollengerecht)."""
-    from core.auth import ist_nur_hauswart
-    return {'fw_kopf_reduziert': True,
-            'fw_kopf_start': '/neu/schaeden/' if ist_nur_hauswart(user) else '/nach-login/'}
+    from core.auth import ist_nur_buchhaltung, ist_nur_hauswart
+    start = '/nach-login/'
+    if ist_nur_hauswart(user):
+        start = '/neu/schaeden/'
+    elif ist_nur_buchhaltung(user):
+        start = '/neu/finanzen/'
+    return {'fw_kopf_reduziert': True, 'fw_kopf_start': start}
 
 
 def fw_navigation(request):
@@ -260,8 +326,10 @@ def fw_navigation(request):
     if not user or not user.is_authenticated:
         return {}
     try:
-        from core.auth import hat_rolle, TEAM_ROLLEN
+        from core.auth import hat_rolle, BUCHHALTUNG_ROLLEN, TEAM_ROLLEN
         if not hat_rolle(user, TEAM_ROLLEN):
+            if hat_rolle(user, BUCHHALTUNG_ROLLEN):
+                return _navigation_buchhaltung(user)
             return {**_kopf_reduziert(user), **_suche_ohne_team(user)}
     except Exception:
         return {}

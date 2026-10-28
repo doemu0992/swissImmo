@@ -21,6 +21,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from core.auth import rolle_erforderlich, TEAM_ROLLEN
+from core.auth import FINANZ_LESE_ROLLEN
 # Die Ansichten stehen weiterhin in arbeit.py — dort liegen auch die uebrigen
 # Arbeitsflaechen. Eine zweite Definition hier waere die klassische Stelle, an
 # der zwei Listen auseinanderlaufen.
@@ -254,7 +255,7 @@ def _vertretung_fuer(request, heute):
 REITER = ('heute', 'woche', 'haengt', 'ohnefrist')
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_dashboard(request):
     """Die Startseite: Aufgabenkacheln je Schwerpunkt, Arbeitsvorrat, Heute & morgen.
 
@@ -273,6 +274,13 @@ def fw_dashboard(request):
     ZUSAMMENFUEHRUNG (21.08.2026). Vorher gab es zwei Startflaechen: diese und
     `/neu/arbeit/` mit denselben Abschnitten. `fw_arbeit` leitet hierher um.
     """
+    from core.auth import hat_rolle
+    # Die Buchhaltung hat keinen Arbeitsvorrat der Bewirtschaftung (Fälle, Verträge,
+    # Personen): Ihre Startseite ist das Finanz-Cockpit.
+    if not hat_rolle(request.user, TEAM_ROLLEN):
+        from django.shortcuts import redirect
+        return redirect('/neu/finanzen/')
+
     from core.views.fw.arbeit import ALTE_ANSICHTEN
     from faelle.arbeitsvorrat import arbeitsvorrat, was_reisst
     from faelle.heute_kacheln import SCHWERPUNKTE, kacheln, schwerpunkt_von
@@ -602,7 +610,7 @@ def _finanzen_v8(basis, heute, deb, kred):
     }
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_finanzen(request):
     """Finanz-Cockpit — die Zahlen hinter den Finanzaufgaben.
 

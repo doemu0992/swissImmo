@@ -84,11 +84,19 @@ ZAHL_MAX = 99
 #: zusammen).
 HAUSWART_GRUPPEN = ('tickets',)
 
+#: Was die Buchhaltung suchen darf: nur die Finanzen (Debitoren- und
+#: Kreditorenrechnungen). Personen, Immobilien, Verträge, Tickets und Dokumente
+#: öffnet ihr keine Seite (Etappe 2, FUNK-08); ein Treffer dort wäre ein toter
+#: Link und zugleich eine Auskunft über Personen, die der Rolle nicht zusteht.
+BUCHHALTUNG_GRUPPEN = ('buchhaltung',)
+
 #: Die ausführliche Suche, auf die «Alle Ergebnisse» und das Formular ohne
 #: JavaScript führen: beim Team `/neu/suche/`, bei der Hauswartung (der diese
 #: Seite gesperrt ist) die Schadenliste, die dasselbe `?q=` kennt.
 SUCHSEITE_TEAM = '/neu/suche/'
 SUCHSEITE_HAUSWART = '/neu/schaeden/'
+#: Die Debitorenliste kennt dasselbe `?q=` (und `/neu/suche/` ist der Buchhaltung gesperrt).
+SUCHSEITE_BUCHHALTUNG = '/neu/debitoren/'
 
 #: Werte der Spalte `u_flag` bei Debitorenrechnungen (bei den übrigen Teilen 0/1).
 FLAG_UEBERFAELLIG = 1
@@ -633,13 +641,13 @@ class Sicht:
     """Was ein Benutzer in der aktiven Organisation durchsuchen darf."""
     __slots__ = ('benutzer', 'gruppen', 'nur_hauswart', 'suchseite')
 
-    def __init__(self, benutzer, gruppen, nur_hauswart):
+    def __init__(self, benutzer, gruppen, nur_hauswart, suchseite=None):
         self.benutzer, self.gruppen, self.nur_hauswart = benutzer, gruppen, nur_hauswart
-        self.suchseite = SUCHSEITE_HAUSWART if nur_hauswart else SUCHSEITE_TEAM
+        self.suchseite = suchseite or (SUCHSEITE_HAUSWART if nur_hauswart else SUCHSEITE_TEAM)
 
 
 def sicht_von(benutzer, rollen=None):
-    """Die Sicht des Benutzers; `PermissionDenied` ohne Team- oder Hauswartrolle.
+    """Die Sicht des Benutzers; `PermissionDenied` ohne Team-, Buchhaltungs- oder Hauswartrolle.
 
     `rollen`: die Rollen in der aktiven Organisation (`core.auth.eigene_rollen`),
     wenn der Aufrufer sie ohnehin gelesen hat — sonst eine Abfrage hier.
@@ -648,13 +656,16 @@ def sicht_von(benutzer, rollen=None):
     `HAUSWART_GRUPPEN`; hat jemand beide Rollen, gilt das Team (wie
     `core.auth.ist_nur_hauswart`).
     """
-    from core.auth import ROLLE_HAUSWART, TEAM_ROLLEN, eigene_rollen
+    from core.auth import ROLLE_BUCHHALTUNG, ROLLE_HAUSWART, TEAM_ROLLEN, eigene_rollen
     if getattr(benutzer, 'is_superuser', False):
         return Sicht(benutzer, GRUPPEN, False)
     if rollen is None:
         rollen = eigene_rollen(benutzer)
     if rollen & set(TEAM_ROLLEN):
         return Sicht(benutzer, GRUPPEN, False)
+    if ROLLE_BUCHHALTUNG in rollen:
+        return Sicht(benutzer, tuple(g for g in GRUPPEN if g in BUCHHALTUNG_GRUPPEN), False,
+                     SUCHSEITE_BUCHHALTUNG)
     if ROLLE_HAUSWART in rollen:
         return Sicht(benutzer, tuple(g for g in GRUPPEN if g in HAUSWART_GRUPPEN), True)
     raise PermissionDenied('Für die Suche fehlt die Berechtigung.')

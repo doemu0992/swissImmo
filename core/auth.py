@@ -2,13 +2,15 @@
 """
 Zentrales Rollen- & Berechtigungskonzept für swissImmo.
 
-Vier Rollen (Django-Groups, werden per Migration angelegt):
+Rollen (je Organisation an der `Mitgliedschaft`; Eigentümer als Django-Gruppe):
 
 | Rolle           | Darf                                                          |
 |-----------------|---------------------------------------------------------------|
-| Verwaltung      | Alles: Buchungsläufe, Löschen, Mahnungen, Verträge senden      |
-| Sachbearbeitung | Erfassen & Bearbeiten (Mieter, Tickets, Belege, Zahlungen)     |
-| Lesend          | Nur Ansicht & PDFs (Treuhand / Revision)                       |
+| Inhaber         | Alles, dazu Mitglieder, Abo, Zahlungsfreigabe-Limit            |
+| Verwalter       | Alles ausser Inhaber-Sachen: Läufe, Löschen, Betreibung        |
+| Sachbearbeiter  | Erfassen & Bearbeiten (Mieter, Tickets, Belege, Zahlungen)     |
+| Buchhaltung     | NUR Finanzen: Debitoren, Kreditoren, Buchungen, Berichte       |
+| Lesezugriff     | Nur Ansicht & PDFs (Treuhand / Revision)                       |
 | Eigentümer      | Nur das Eigentümer-Portal (/portal/), KEIN SPA-/API-Zugriff    |
 
 Superuser haben immer alle Rechte (Notfall-Zugang).
@@ -36,6 +38,13 @@ ROLLE_VERWALTER = "Verwalter"
 ROLLE_SACHBEARBEITER = "Sachbearbeiter"
 ROLLE_LESEZUGRIFF = "Lesezugriff"
 
+#: Nur Finanzen (Etappe 2, FUNK-08): Debitoren, Kreditoren, Buchungen, Berichte.
+#: Bewusst KEINE Team-Rolle, wie die Hauswartung: `TEAM_ROLLEN` ist die Sicht auf
+#: Stammdaten, Verträge und Personen, und die sieht die Buchhaltung nicht. Jede
+#: View, die nur `TEAM_ROLLEN` verlangt, antwortet ihr mit 403 (Standard ist
+#: «nein»). Frei ist sie nur dort, wo `FINANZ_*_ROLLEN` steht.
+ROLLE_BUCHHALTUNG = "Buchhaltung"
+
 #: Betriebsrolle für die Hauswartung. Bewusst KEINE Team-Rolle: Sie steht nicht
 #: in `TEAM_ROLLEN`, und jede View, die nur `TEAM_ROLLEN` verlangt (Finanzen,
 #: Mietzinse, Verträge, Personen, Einstellungen …), antwortet ihr mit 403.
@@ -53,6 +62,28 @@ ROLLE_EIGENTUEMER = "Eigentümer"
 TEAM_ROLLEN = (ROLLE_INHABER, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER, ROLLE_LESEZUGRIFF)
 SCHREIB_ROLLEN = (ROLLE_INHABER, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER)
 VERWALTUNGS_ROLLEN = (ROLLE_INHABER, ROLLE_VERWALTER)
+
+#: Rollen mit Finanzrechten: Sie dürfen Debitoren, Kreditoren und Buchungen sehen.
+BUCHHALTUNG_ROLLEN = (ROLLE_BUCHHALTUNG,)
+FINANZ_LESE_ROLLEN = TEAM_ROLLEN + BUCHHALTUNG_ROLLEN
+FINANZ_SCHREIB_ROLLEN = SCHREIB_ROLLEN + BUCHHALTUNG_ROLLEN
+#: Buchungsläufe, Zahlungen, Stornos: was bisher die Verwaltung allein tat und
+#: zum Tagesgeschäft der Buchhaltung gehört. Der Zahlungslauf ab Freigabelimit
+#: braucht trotzdem eine zweite Person (`finance/freigabe.py`).
+FINANZ_VERWALTUNGS_ROLLEN = VERWALTUNGS_ROLLEN + BUCHHALTUNG_ROLLEN
+
+#: Wer eine Zahlung ab dem Freigabelimit freigeben darf (Vier-Augen-Prinzip).
+#: Nur die Verwaltung: Die Buchhaltung erfasst und löst aus, sie gibt nicht frei.
+ZAHLUNGSFREIGABE_ROLLEN = VERWALTUNGS_ROLLEN
+
+#: Betreibung leitet nur die Verwaltung ein (Rechtsfolgen, Kosten; Etappe 2,
+#: SICH-11, `docs/KONZEPT-UI.md` §8).
+BETREIBUNGS_ROLLEN = VERWALTUNGS_ROLLEN
+
+#: Rollen, für die der zweite Faktor immer Pflicht ist, ob die Verwaltung den
+#: Schalter gesetzt hat oder nicht: Sie lösen Zahlungen aus oder leiten
+#: Betreibungen ein (Etappe 2, SICH-10).
+ZWEIFAKTOR_PFLICHT_ROLLEN = (ROLLE_INHABER, ROLLE_VERWALTER, ROLLE_BUCHHALTUNG)
 
 #: Was nur der Inhaber darf: Abo und Rechnung, die Organisation löschen,
 #: Mitglieder einladen. Heute noch nirgends verdrahtet — die Konstante steht
@@ -119,6 +150,26 @@ def hat_rolle(user, rollen):
         return False
     return Mitgliedschaft.objects.filter(
         benutzer=user, organisation=organisation, rolle__in=rollen).exists()
+
+
+def darf_mit(eigene, user, rollen):
+    """Wie `hat_rolle`, aber gegen schon gelesene Rollen (`eigene_rollen`).
+
+    Für Stellen, die mehrere Rollenfragen auf einmal beantworten (die
+    Oberflächen-Schalter in `_global_filter`): eine Abfrage statt einer je Frage.
+    Gleiche Regeln: Superuser dürfen, der Inhaber darf, was das Team darf."""
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+    return bool(set(eigene) & set(_mit_inhaber(rollen)))
+
+
+def ist_nur_buchhaltung(user):
+    """True wenn die Person in der aktiven Organisation Buchhaltung ist und
+    KEINE Team-Rolle hat. Sie sieht ausschliesslich die Finanzen (Navigation,
+    Suche, Startseite richten sich danach)."""
+    return hat_rolle(user, BUCHHALTUNG_ROLLEN) and not hat_rolle(user, TEAM_ROLLEN)
 
 
 def ist_nur_hauswart(user):

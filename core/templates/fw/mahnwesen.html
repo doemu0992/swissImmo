@@ -83,7 +83,7 @@
                     <span class="fw-chip {{ row.stufe.cls }}">● {{ row.stufe.label }}</span>
                 </td>
                 <td class="fw-strong whitespace-nowrap">
-                    {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="fw-link">{{ row.mieter }}</a>{% else %}{{ row.mieter }}{% endif %}
+                    {% if row.vertrag_id and ist_team %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="fw-link">{{ row.mieter }}</a>{% else %}{{ row.mieter }}{% endif %}
                 </td>
                 <td class="fw-mutet whitespace-nowrap">{{ row.objekt }}</td>
                 <td class="fw-mutet fw-num whitespace-nowrap">{{ row.faellig|date:"d.m.Y" }}</td>
@@ -248,7 +248,7 @@
             <tbody>
             {% for v in vorlauf %}
             <tr>
-                <td class="fw-strong whitespace-nowrap"><a href="/neu/vertraege/{{ v.vertrag_id }}/" class="fw-link">{{ v.mieter }}</a></td>
+                <td class="fw-strong whitespace-nowrap">{% if ist_team %}<a href="/neu/vertraege/{{ v.vertrag_id }}/" class="fw-link">{{ v.mieter }}</a>{% else %}{{ v.mieter }}{% endif %}</td>
                 <td class="fw-mutet whitespace-nowrap">{{ v.objekt }}</td>
                 <td>{{ v.r.titel }}</td>
                 <td class="fw-mutet fw-num whitespace-nowrap">{{ v.faellig|date:"d.m.Y" }}</td>

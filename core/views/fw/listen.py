@@ -28,6 +28,7 @@ from core.services.mahnstufen import (Mahnstufen as _Mahnstufen,
                                       eigentuemer_von_rechnung as _eigentuemer_von_rechnung)
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
+from core.auth import FINANZ_LESE_ROLLEN, FINANZ_SCHREIB_ROLLEN, FINANZ_VERWALTUNGS_ROLLEN
 from crm.models import Mieter, Organisation
 from finance.models import DebitorenRechnung, Zahlungseingang
 from portfolio.models import Einheit, Liegenschaft
@@ -67,7 +68,7 @@ def _mahnstufe(faellig, heute, status, eigentuemer=None, stufen=None):
     return {'label': _('Fällig'), 'cls': 'fw-warn-flaeche fw-warnton', 'tage': tage}
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_debitoren(request):
     heute = timezone.localdate()
     basis = _global_filter(request)
@@ -307,7 +308,7 @@ def _debitoren_csv(rechnungen, heute):
         zeilen())
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_debitor_neu(request):
     """Ad-hoc-Debitorenrechnung (Weiterverrechnung: Sonnerie/Schlüssel/Ersatz …).
     Bucht Debitor an das gewählte Ertragskonto (Standard 3600 «Übrige Erträge»)
@@ -368,7 +369,7 @@ def fw_debitor_neu(request):
     return redirect(ziel)
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_weiterverrechnung(request, kreditor_id):
     """Geführte Weiterverrechnung einer Lieferantenrechnung an einen Mieter.
 
@@ -699,7 +700,7 @@ def _mahngebuehr_historie_ausgleichen(rechnung, user=None):
     return n
 
 
-@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
 def fw_debitor_stornieren(request, pk):
     """Storniert eine (versehentlich erstellte) Debitorenrechnung revisionssicher:
     Status → storniert und alle zugehörigen Buchungen werden per Gegenbuchung
@@ -982,7 +983,7 @@ def _berichte_v8(heute, aktive_lg):
     }
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_berichte(request):
     """Berichte & Auswertungen — ein zentraler Ort für alle Reports/Exporte,
     mit ein paar aktuellen Kennzahlen je Bericht."""
@@ -1066,8 +1067,19 @@ def fw_berichte(request):
              'kennzahl': None, 'pdf': False},
         ]},
     ]
+    from core.auth import hat_rolle
+    v8 = _berichte_v8(heute, aktive_lg)
+    if not hat_rolle(request.user, TEAM_ROLLEN):
+        # Die Buchhaltung bekommt nur die Berichte, die sie öffnen darf (keine
+        # toten Links), und keine Mandatsliste: Sie führt Eigentümernamen.
+        from core.auth import darf_oeffnen, eigene_rollen
+        meine = eigene_rollen(request.user)
+        berichte = [dict(g, items=[i for i in g['items'] if darf_oeffnen(request.user, i['url'], meine)])
+                    for g in berichte]
+        berichte = [g for g in berichte if g['items']]
+        v8['mandat_zeilen'] = []
     return render(request, 'fw/berichte.html', {**basis, 'nav': 'berichte', 'berichte': berichte,
-                                                'heute': heute, **_berichte_v8(heute, aktive_lg)})
+                                                'heute': heute, **v8})
 
 
 AUSWERTUNG_TYPEN = [
@@ -1078,7 +1090,7 @@ AUSWERTUNG_TYPEN = [
 ]
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_betriebsrechnung_pdf(request, pk):
     """Gebäudescharfe Betriebsrechnung (Ertrag − Aufwand) einer Liegenschaft als
     PDF, für ein wählbares Kalenderjahr (?jahr=YYYY)."""
@@ -1169,7 +1181,7 @@ def fw_betriebskostenspiegel(request):
     })
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_auswertung(request):
     """Interaktive Auswertung: Kennzahl (Mietertrag/Aufwand/Reparaturen/Ergebnis)
     im Monatsverlauf eines Jahres + Vergleich je Liegenschaft — mit Filtern."""

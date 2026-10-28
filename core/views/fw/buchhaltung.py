@@ -19,6 +19,7 @@ from django.utils.translation import gettext as _
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
+from core.auth import FINANZ_LESE_ROLLEN
 from portfolio.models import Liegenschaft
 
 logger = logging.getLogger(__name__)
@@ -171,7 +172,7 @@ def _erfolg_bilanz(aktive_lg, jahr):
     }
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_buchhaltung(request):
     from finance.models import Buchung, Buchungskonto
     basis = _global_filter(request)
@@ -405,7 +406,7 @@ def fw_buchhaltung(request):
     })
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_kontenplan(request):
     """Kontenplan mit SALDENLISTE und Pflege der Konten.
 
@@ -423,12 +424,12 @@ def fw_kontenplan(request):
     from django.contrib import messages
     from django.db.models import Sum
     from finance.models import Buchungskonto, Buchung
-    from core.auth import log_aktion, hat_rolle, VERWALTUNGS_ROLLEN
+    from core.auth import log_aktion, hat_rolle, FINANZ_VERWALTUNGS_ROLLEN
 
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
     heute = timezone.localdate()
-    kann_schreiben = hat_rolle(request.user, VERWALTUNGS_ROLLEN)
+    kann_schreiben = hat_rolle(request.user, FINANZ_VERWALTUNGS_ROLLEN)
 
     if request.method == 'POST' and kann_schreiben:
         aktion = request.POST.get('aktion')
@@ -501,7 +502,7 @@ def fw_kontenplan(request):
     })
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_kontoblatt(request, nummer):
     """Kontoauszug/Kontoblatt eines Kontos: alle Buchungen mit laufendem Saldo.
     Bilanzkonten kumulativ (mit Eröffnungssaldo aus Vorjahren)."""
@@ -548,7 +549,7 @@ def fw_kontoblatt(request, nummer):
     })
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_buchhaltung_pdf(request):
     """Erfolgsrechnung und Bilanz als PDF.
 
@@ -585,7 +586,7 @@ def fw_buchhaltung_pdf(request):
     return resp
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_buchhaltung_export(request):
     """Exportiert das Buchungsjournal des Jahres als CSV (Treuhänder-Handover)."""
     import csv

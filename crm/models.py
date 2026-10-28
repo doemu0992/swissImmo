@@ -257,6 +257,9 @@ class Mitgliedschaft(models.Model):
     ROLLE_SACHBEARBEITER = 'Sachbearbeiter'
     ROLLE_LESEZUGRIFF = 'Lesezugriff'
     ROLLE_HAUSWART = 'Hauswart'
+    # Nur Finanzen (Etappe 2): Debitoren, Kreditoren, Buchungen, Berichte.
+    # Siehe `core/auth.py::ROLLE_BUCHHALTUNG`.
+    ROLLE_BUCHHALTUNG = 'Buchhaltung'
     # Beschriftung bewusst NICHT übersetzt: Die Rollennamen stehen auch in
     # den übersetzten Hilfetexten deutsch («<b>Verwalter</b> (accès complet
     # …)») — sie sind Begriffe des Produkts, keine Umgangssprache.
@@ -264,6 +267,7 @@ class Mitgliedschaft(models.Model):
         (ROLLE_INHABER, 'Inhaber'),
         (ROLLE_VERWALTER, 'Verwalter'),
         (ROLLE_SACHBEARBEITER, 'Sachbearbeiter'),
+        (ROLLE_BUCHHALTUNG, 'Buchhaltung'),
         (ROLLE_LESEZUGRIFF, 'Lesezugriff'),
         (ROLLE_HAUSWART, 'Hauswart'),
     ]

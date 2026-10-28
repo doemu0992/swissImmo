@@ -344,11 +344,11 @@ def zweifaktor_einrichten(request):
 @never_cache
 @login_required
 def zweifaktor_uebersicht(request):
-    from core.auth import SCHREIB_ROLLEN, hat_rolle
+    from core.auth import VERWALTUNGS_ROLLEN, hat_rolle
     from core.tenancy import aktuelle_organisation
 
     organisation = aktuelle_organisation()
-    darf_verwalten = hat_rolle(request.user, SCHREIB_ROLLEN) and organisation is not None
+    darf_verwalten = hat_rolle(request.user, VERWALTUNGS_ROLLEN) and organisation is not None
 
     faktor = ZweiterFaktor.objects.filter(benutzer=request.user).first()
     return render(request, 'core/zweifaktor_uebersicht.html', {
@@ -383,14 +383,17 @@ def _team_ohne_faktor(organisation):
 @never_cache
 @login_required
 def zweifaktor_pflicht_setzen(request):
-    """Den Schalter der Verwaltung umlegen — nur mit Schreibrolle."""
-    from core.auth import SCHREIB_ROLLEN, hat_rolle, log_aktion
+    """Den Schalter der Verwaltung umlegen — nur Verwalter und Inhaber (SICH-10).
+
+    Bis Etappe 2 genügte jede Schreibrolle: Wer ein Sachbearbeiter-Konto übernahm,
+    hob die einzige organisationsweite Sicherheitsrichtlinie auf."""
+    from core.auth import VERWALTUNGS_ROLLEN, hat_rolle, log_aktion
     from core.tenancy import aktuelle_organisation
 
     if request.method != 'POST':
         return redirect('zweifaktor_uebersicht')
     organisation = aktuelle_organisation()
-    if organisation is None or not hat_rolle(request.user, SCHREIB_ROLLEN):
+    if organisation is None or not hat_rolle(request.user, VERWALTUNGS_ROLLEN):
         messages.error(request, gettext('Dafür fehlt Ihnen die Berechtigung.'))
         return redirect('zweifaktor_uebersicht')
 
@@ -456,7 +459,19 @@ def zweifaktor_aus(request):
 # ---------------------------------------------------------------------------
 
 def _pflicht_fuer(benutzer) -> bool:
-    """Verlangt eine der Verwaltungen dieses Kontos den zweiten Faktor?
+    """Ist der zweite Faktor für dieses Konto Pflicht?
+
+    Zwei Gründe, ODER-verknüpft:
+
+    1. Eine der Verwaltungen des Kontos hat den Schalter gesetzt
+       (`Organisation.zweifaktor_pflicht`).
+    2. Das Konto hat in einer Verwaltung eine Rolle mit Finanz- oder
+       Betreibungsrechten (`ZWEIFAKTOR_PFLICHT_ROLLEN`: Inhaber, Verwalter,
+       Buchhaltung). Wer Zahlungen auslöst, freigibt oder eine Betreibung
+       einleitet, arbeitet nicht mit einem Passwort allein (SICH-10, Etappe 2).
+       Abschaltbar nur über die Konfiguration (`ZWEIFAKTOR_ROLLENPFLICHT`),
+       nicht über die Oberfläche: Ein Schalter, den die Verwaltung umlegt,
+       wäre genau die Lücke, die diese Regel schliessen soll.
 
     ODER, nicht UND: Wer für Verwaltung A arbeitet, die es verlangt, kann sich
     dem nicht dadurch entziehen, dass er auch in Verwaltung B Mitglied ist.
@@ -467,10 +482,16 @@ def _pflicht_fuer(benutzer) -> bool:
     """
     if not getattr(benutzer, 'is_authenticated', False):
         return False
+    from django.conf import settings
+    from django.db.models import Q
+
+    from core.auth import ZWEIFAKTOR_PFLICHT_ROLLEN
     from crm.models import Mitgliedschaft
 
-    return Mitgliedschaft.alle_organisationen.filter(
-        benutzer=benutzer, organisation__zweifaktor_pflicht=True).exists()
+    gruende = Q(organisation__zweifaktor_pflicht=True)
+    if getattr(settings, 'ZWEIFAKTOR_ROLLENPFLICHT', True):
+        gruende |= Q(rolle__in=ZWEIFAKTOR_PFLICHT_ROLLEN)
+    return Mitgliedschaft.alle_organisationen.filter(benutzer=benutzer).filter(gruende).exists()
 
 
 def zweifaktor_erzwingen(view):

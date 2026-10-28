@@ -12,7 +12,7 @@
         <p>{% trans "Miet-, Verwaltungs- und Eigentümerkonten mit QR-IBAN-Erkennung" %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/bankkonten/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">
-    <a href="/neu/liegenschaften/" class="fw-btn fw-primary" title="{% trans 'IBAN wird bei der Liegenschaft erfasst' %}">{% zeichen 'neu' %} {% trans "Konto hinterlegen" %}</a>
+    {% if ist_team %}<a href="/neu/liegenschaften/" class="fw-btn fw-primary" title="{% trans 'IBAN wird bei der Liegenschaft erfasst' %}">{% zeichen 'neu' %} {% trans "Konto hinterlegen" %}</a>{% endif %}
     </div>
 </div>
 
@@ -60,7 +60,7 @@
             {% endif %}
         </div>
 
-        {% if k.lg_id %}
+        {% if k.lg_id and ist_team %}
         <div class="fw-fuss">
             <a href="/neu/liegenschaften/{{ k.lg_id }}/" class="fw-link">{% trans "Liegenschaft ansehen" %} {% zeichen 'weiter' klasse='ml-1' %}</a>
         </div>

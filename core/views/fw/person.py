@@ -23,6 +23,7 @@ from django.utils.translation import gettext
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
+from core.auth import FINANZ_LESE_ROLLEN
 from crm.models import Mieter
 from finance.models import DebitorenRechnung, Zahlungseingang
 from portfolio.models import Liegenschaft, SchluesselAusgabe
@@ -251,7 +252,7 @@ def fw_mieter_portal_zugang(request, pk):
     return redirect(f'/neu/personen/{m.id}/')
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_mieterkonto_pdf(request, pk):
     """Kontoauszug (PDF) eines Mieters für die Verwaltung."""
     from django.http import HttpResponse
@@ -264,7 +265,7 @@ def fw_mieterkonto_pdf(request, pk):
     return resp
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_mieterkonto(request, pk):
     """Mieterkontoblatt (on-screen): alle Forderungen (Sollstellungen) und Zahlungen
     chronologisch mit laufendem Saldo — dieselbe Datenbasis wie der PDF-Auszug."""
@@ -306,7 +307,7 @@ def fw_mieterkonto(request, pk):
     })
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_mieterkonten(request):
     """Übersicht aller Mieterkonten: pro Mieter der aktuelle Saldo (Forderungen −
     Zahlungen). Einstieg ins einzelne Kontoblatt."""
@@ -372,7 +373,7 @@ def fw_mieterkonten(request):
     })
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_lieferantenkonten(request):
     """Übersicht Lieferantenkonten (Kreditoren): pro Lieferant offener Betrag
     (was die Verwaltung dem Lieferanten noch schuldet). Einstieg ins Kontoblatt."""
@@ -408,7 +409,7 @@ def fw_lieferantenkonten(request):
     })
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_lieferantenkonto(request):
     """Kontoblatt eines Lieferanten: alle Rechnungen (Belastung) und Zahlungen
     (Ausgang) chronologisch mit laufendem offenem Saldo. Lieferant via ?name=."""

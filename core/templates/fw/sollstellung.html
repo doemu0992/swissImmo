@@ -95,7 +95,7 @@
             {% for row in rows %}
             <tr>
                 <td>
-                    <a href="/neu/vertraege/{{ row.v.id }}/" class="fw-link">{{ row.mieter }}</a>
+                    {% if ist_team %}<a href="/neu/vertraege/{{ row.v.id }}/" class="fw-link">{{ row.mieter }}</a>{% else %}{{ row.mieter }}{% endif %}
                     <div class="fw-mono fw-sub2">MV-{{ row.v.id }}</div>
                 </td>
                 <td class="fw-mutet">{{ row.v.einheit.liegenschaft.strasse }}

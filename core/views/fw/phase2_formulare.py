@@ -13,12 +13,13 @@ from decimal import Decimal
 
 from django import forms
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy as _
 
-from core.auth import (SCHREIB_ROLLEN, TICKET_SCHREIB_ROLLEN, VERWALTUNGS_ROLLEN,
-                       TEAM_ROLLEN, log_aktion, rolle_erforderlich)
+from core.auth import (BETREIBUNGS_ROLLEN, SCHREIB_ROLLEN, TICKET_SCHREIB_ROLLEN, VERWALTUNGS_ROLLEN,
+                       TEAM_ROLLEN, hat_rolle, log_aktion, rolle_erforderlich)
 
 from ._basis import _global_filter
 
@@ -357,7 +358,7 @@ def _gewaehlt_ids(form):
     return [int(x) for x in form.data.getlist('weitere_rechnungen') if str(x).isdigit()]
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*BETREIBUNGS_ROLLEN)
 def fw_betreibung_neu(request, pk):
     """Betreibung einleiten — Assistent ab einer offenen Debitorenrechnung (pk = Rechnung).
 
@@ -416,7 +417,7 @@ def fw_betreibung_neu(request, pk):
     }, status=400 if request.method == 'POST' else 200)
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*BETREIBUNGS_ROLLEN)
 def fw_betreibung_bearbeiten(request, pk):
     """Stand und Daten einer Betreibung nachführen.
 
@@ -486,6 +487,10 @@ def fw_betreibung_pdf(request, pk):
         'vertrag__einheit__liegenschaft__eigentuemer', 'organisation'), pk=pk)
     pdf = betreibungsbegehren_pdf(b)
     if request.method == 'POST':
+        # Das Blatt in der Akte ablegen ist Teil des Betreibungsverfahrens: nur
+        # die Verwaltung (SICH-11). Die Vorschau (GET) bleibt der Schreibrolle.
+        if not hat_rolle(request.user, BETREIBUNGS_ROLLEN):
+            raise PermissionDenied('Das Betreibungsbegehren legt nur die Verwaltung ab.')
         if b.vertrag_id:
             ablegen(pdf, f"Betreibungsbegehren (Daten) {b.betreibungsnummer or '#' + str(b.pk)}",
                     kategorie='korrespondenz', vertrag=b.vertrag, dedup=True,
@@ -497,7 +502,7 @@ def fw_betreibung_pdf(request, pk):
     return resp
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*BETREIBUNGS_ROLLEN)
 def fw_betreibung_kosten(request, pk):
     """«Kosten dem Mieter belasten» — Betreibungskosten (Art. 68 SchKG) als Forderung.
 

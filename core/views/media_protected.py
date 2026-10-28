@@ -26,7 +26,7 @@ from django.core.exceptions import SuspiciousFileOperation
 from django.http import Http404, FileResponse
 from django.utils._os import safe_join
 
-from core.auth import hat_rolle, TEAM_ROLLEN
+from core.auth import BUCHHALTUNG_ROLLEN, hat_rolle, TEAM_ROLLEN
 
 # Prefixe mit sensiblen Personendaten/Dokumenten — immer Login-pflichtig.
 SENSIBLE_PREFIXE = (
@@ -42,6 +42,11 @@ SENSIBLE_PREFIXE = (
     # geschützt. Ausnahme sind Objektfotos, siehe `ist_objektfoto`.
     'uploads/',
 )
+#: Was die Buchhaltung ausser dem Team abrufen darf: die Belege der Kreditoren
+#: (Lieferantenrechnungen) und die Rechnungs-PDFs der Debitoren. Ausweiskopien,
+#: Lohnausweise, Verträge und Schadenfotos bleiben ihr verschlossen (Etappe 2).
+BUCHHALTUNG_PREFIXE = ('kreditoren_belege/', 'debitoren_rechnungen/')
+
 # Öffentliche Bild-Endungen (Objektfotos/Exposé — vom Portal-Feed anonym gebraucht).
 # .svg bewusst NICHT enthalten: SVG kann eingebettetes JavaScript ausführen (Stored XSS),
 # darf also nie inline und nie anonym ausgeliefert werden.
@@ -182,7 +187,11 @@ def geschuetzte_media(request, pfad):
 
     if not (ist_oeffentlich(rel) or ist_objektfoto(rel)):
         u = getattr(request, 'user', None)
-        if not (u and u.is_authenticated and hat_rolle(u, TEAM_ROLLEN)):
+        darf = bool(u and u.is_authenticated and (
+            hat_rolle(u, TEAM_ROLLEN)
+            or (ohne_organisationspraefix(rel).lower().startswith(BUCHHALTUNG_PREFIXE)
+                and hat_rolle(u, BUCHHALTUNG_ROLLEN))))
+        if not darf:
             raise Http404   # kein Existenz-Leak (404 statt 403)
 
         # UND ZWAR AUS DER RICHTIGEN VERWALTUNG (Etappe 6.5).

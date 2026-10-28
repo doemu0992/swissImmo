@@ -12,7 +12,7 @@ from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
-from core.auth import (rolle_erforderlich, HAUSWART_ROLLEN, ROLLE_VERWALTER, SCHREIB_ROLLEN,
+from core.auth import (rolle_erforderlich, BUCHHALTUNG_ROLLEN, HAUSWART_ROLLEN, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
 from crm.models import Mieter
 from portfolio.models import Einheit, Liegenschaft
@@ -462,7 +462,7 @@ def fw_suche(request):
     })
 
 
-@rolle_erforderlich(*TEAM_ROLLEN, *HAUSWART_ROLLEN)
+@rolle_erforderlich(*TEAM_ROLLEN, *HAUSWART_ROLLEN, *BUCHHALTUNG_ROLLEN)
 def fw_palette_suche(request):
     """Datensätze für die ⌘K-Palette und das Suchfeld der Kopfzeile, als JSON.
 

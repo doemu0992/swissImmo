@@ -21,6 +21,7 @@ from django.utils.translation import gettext_lazy
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
+from core.auth import FINANZ_LESE_ROLLEN, FINANZ_SCHREIB_ROLLEN, FINANZ_VERWALTUNGS_ROLLEN
 from portfolio.models import Liegenschaft
 
 logger = logging.getLogger(__name__)
@@ -84,7 +85,7 @@ def formular_fehler(form, feld_fehler):
     return fehler
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_kreditoren(request, *, formular=None):
     """Kreditorenliste. `formular` (Audit Etappe 2): Kommt ein Erfassen- oder
     Bearbeiten-Formular mit Fehlern zurück, rendert die Liste es mit der
@@ -93,7 +94,7 @@ def fw_kreditoren(request, *, formular=None):
     `bearb_id`/`bearb_werte`/`bearb_fehler`."""
     formular = formular or {}
     from finance.models import KreditorenRechnung
-    from core.auth import hat_rolle, VERWALTUNGS_ROLLEN
+    from core.auth import hat_rolle, FINANZ_VERWALTUNGS_ROLLEN
     from django.contrib import messages
     heute = timezone.localdate()
     basis = _global_filter(request)
@@ -241,7 +242,7 @@ def fw_kreditoren(request, *, formular=None):
         'total_offen': total_offen, 'total_neu': total_neu, 'anzahl_neu': anzahl_neu,
         'anzahl': gesamt_anzahl,
         'anzahl_zahlbar': _zb.count(),
-        'darf_bezahlen': hat_rolle(request.user, VERWALTUNGS_ROLLEN),
+        'darf_bezahlen': hat_rolle(request.user, FINANZ_VERWALTUNGS_ROLLEN),
         'aufwand_konten': aufwand_konten, 'liegenschaften': liegenschaften,
         'ki_aktiv': bool(getattr(settings, 'GROQ_API_KEY', None)),
         'rechnungs_mail': os.environ.get('RECHNUNGS_IMAP_USER', ''),
@@ -282,7 +283,7 @@ def fw_kreditoren(request, *, formular=None):
 #
 # `rolle_erforderlich` ersetzt zugleich `login_required` — ohne den Dekorator
 # gibt es also GAR KEINE Anmeldepruefung, nicht bloss keine Rollenpruefung.
-@rolle_erforderlich(ROLLE_VERWALTER)
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
 def fw_kreditor_bezahlen(request):
     """Bezahlt eine freigegebene Kreditorenrechnung — Kreditoren 2000 an Bank 1020
     (dieselbe Doppelbuchung wie die Finanz-API pay_kreditor)."""
@@ -377,7 +378,7 @@ def fw_kreditor_bezahlen(request):
     return redirect(ziel)
 
 
-@rolle_erforderlich(ROLLE_VERWALTER)
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
 def fw_zahllauf(request):
     """Zahllauf: Vorschlagsliste → Auswahl → pain.001 → Sammelbestätigung.
 
@@ -628,7 +629,7 @@ def fw_zahllauf(request):
     })
 
 
-@rolle_erforderlich(ROLLE_VERWALTER)
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
 def fw_kreditor_zahlung_zuruecksetzen(request, pk):
     """Setzt eine 'in Zahlung' stehende Rechnung auf 'freigegeben' zurück —
     falls die pain.001-Datei doch nicht ausgeführt wurde. Dann kommt sie im
@@ -657,7 +658,7 @@ def fw_kreditor_zahlung_zuruecksetzen(request, pk):
     return redirect(ziel)
 
 
-@rolle_erforderlich(ROLLE_VERWALTER)
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
 def fw_kreditor_zahlung_stornieren(request, pk):
     """Storniert eine VERBUCHTE Lieferantenzahlung revisionssicher: Gegenbuchung
     zur Zahlungsbuchung (2000 an Bank), Zahlung → 'storniert', der offene Posten
@@ -718,7 +719,7 @@ def fw_kreditor_zahlung_stornieren(request, pk):
     return redirect(naechstes)
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_kreditor_adresse(request, pk):
     """Anschrift einer Kreditorenrechnung ergänzen — auch nach der Freigabe.
 

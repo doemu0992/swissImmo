@@ -90,6 +90,14 @@ TESTING = ('test' in _sys.argv) or ('pytest' in _sys.argv[0] if _sys.argv else F
 if TESTING:
     IMAP_SCHLUESSEL = os.getenv('IMAP_SCHLUESSEL') or 'EV9Cq9O_Bf3KXTtRNITG9iiMDSNs7KZen9YgQQmA29c='
 
+# Zwei-Faktor-Pflicht nach Rolle (SICH-10, Etappe 2): Inhaber, Verwalter und
+# Buchhaltung brauchen den zweiten Faktor, auch wenn die Verwaltung den Schalter
+# nicht gesetzt hat. Im Betrieb an; in Testläufen und bei DEBUG (lokale
+# Entwicklung, E2E) aus, damit Testkonten ohne Telefon arbeiten. Ausdrücklich
+# übersteuerbar: ZWEIFAKTOR_ROLLENPFLICHT=True/False.
+ZWEIFAKTOR_ROLLENPFLICHT = os.getenv(
+    'ZWEIFAKTOR_ROLLENPFLICHT', str(not DEBUG and not TESTING)).strip().lower() in ('1', 'true', 'yes')
+
 # Clickjacking-Schutz: SAMEORIGIN erlaubt der App, EIGENE Seiten zu framen
 # (Cockpit-Modals laden /neu/-Seiten per iframe) — externes Framing bleibt
 # blockiert. 'DENY' (Django-Default) würde auch die eigenen Popups leer lassen.
