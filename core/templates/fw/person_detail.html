@@ -68,6 +68,10 @@ alten Liegenschaft betreut.
                     </form>
                     <div class="fw-menutrenner"></div>
                     {% endif %}
+                    <form method="post" action="/neu/personen/{{ m.id }}/auskunft/">
+                        {% csrf_token %}
+                        <button class="fw-menuzeile" title="{% trans 'Alle Daten dieser Person als ZIP (DSG Art. 25).' %}">{% zeichen 'herunterladen' klasse='w-4' %}{% trans "Auskunft (DSG Art. 25)" %}</button>
+                    </form>
                     {% include 'fw/_archivieren.html' with kuerzel='person' pk=m.id stil='menu' %}
                     <form method="post" action="/neu/personen/{{ m.id }}/loeschen/"
                           onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=m.display_name %}Person „{{ name }}“ wirklich löschen? Hängen Verträge, Rechnungen oder Dokumente an ihr, wird das Löschen abgelehnt. Journal und Adressen werden mitgelöscht.{% endblocktrans %}{% endfilter %}');">

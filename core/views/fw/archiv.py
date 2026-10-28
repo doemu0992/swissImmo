@@ -116,3 +116,23 @@ def fw_archiv_endgueltig_loeschen(request, kuerzel, pk):
     log_aktion(request, 'Nach Ablauf der Aufbewahrungsfrist gelöscht', name, '')
     messages.success(request, '🗑️ ' + gettext('«%(name)s» ist endgültig gelöscht.') % {'name': name})
     return redirect(ZIEL)
+
+
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+@require_POST
+def fw_person_auskunft(request, pk):
+    """Auskunftsrecht (DSG Art. 25): alle Daten der Person als ZIP (auskunft.json + Dokumente).
+
+    POST statt GET: Der Abruf schreibt einen Eintrag ins Audit-Log und ist kein Link, den
+    ein Vorschaubild oder eine Suchmaschine auslöst."""
+    from django.http import HttpResponse
+
+    from core.services.auskunft import auskunft_zip
+    from crm.models import Mieter
+    m = get_object_or_404(Mieter, pk=pk)
+    inhalt = auskunft_zip(m)
+    log_aktion(request, 'Auskunft nach DSG Art. 25 erstellt', m.display_name, '', ziel=m)
+    antwort = HttpResponse(inhalt, content_type='application/zip')
+    antwort['Content-Disposition'] = f'attachment; filename="auskunft-person-{m.pk}.zip"'
+    antwort['Cache-Control'] = 'no-store'
+    return antwort

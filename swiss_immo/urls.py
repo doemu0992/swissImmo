@@ -92,7 +92,7 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
 from core.views.handwerker_portal import handwerker_auftrag, handwerker_auftrag_pdf, handwerker_auftrag_foto
 from core.views.fw.schaeden import fw_auftrag_link
 from core.views.fw.mietzinsmodell_pruefen import fw_mietzinsmodell_pruefen
-from core.views.fw.archiv import fw_archiv, fw_archivieren, fw_wiederherstellen, fw_archiv_endgueltig_loeschen
+from core.views.fw.archiv import fw_person_auskunft, fw_archiv, fw_archivieren, fw_wiederherstellen, fw_archiv_endgueltig_loeschen
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
 from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_zustaendig, fw_fallschritt_erledigen,
@@ -603,6 +603,7 @@ urlpatterns = [
     path('neu/kommunikation/senden/', fw_kommunikation_senden, name='fw_kommunikation_senden'),
     path('neu/kommunikation/serienbrief/', fw_serienbrief_pdf, name='fw_serienbrief_pdf'),
     path('neu/archiv/', fw_archiv, name='fw_archiv'),
+    path('neu/personen/<int:pk>/auskunft/', fw_person_auskunft, name='fw_person_auskunft'),
     path('neu/archiv/<slug:kuerzel>/<int:pk>/archivieren/', fw_archivieren, name='fw_archivieren'),
     path('neu/archiv/<slug:kuerzel>/<int:pk>/wiederherstellen/', fw_wiederherstellen, name='fw_wiederherstellen'),
     path('neu/archiv/<slug:kuerzel>/<int:pk>/loeschen/', fw_archiv_endgueltig_loeschen, name='fw_archiv_endgueltig_loeschen'),
