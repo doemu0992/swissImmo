@@ -240,12 +240,23 @@ class BuchungQuerySet(TenantQuerySet):
       greppbar, mit Begründung, und im Log festgehalten. Das ist ein Zugang,
       kein Freibrief — er hinterlässt eine Zeile, die ein Prüfer findet.
 
-    NICHT damit gelöst: `_base_manager`, rohes SQL und die Kaskade beim Löschen
-    einer Organisation umgehen jeden QuerySet-Schutz. Das ist erst mit
-    DB-Triggern und Revisionslog (Etappe 2) zu schliessen.
+    Seit Etappe 2 trägt auch `Buchung._base_manager` diese Sperren
+    (`Meta.base_manager_name`), und auf PostgreSQL hält ein Trigger
+    (`finance/db_schutz.py`) rohes SQL, fremde Skripte und die Kaskade einer
+    Organisation auf. Die benannten Ausnahmen öffnen den Trigger nur für ihre
+    eigene Transaktion.
     """
 
     def _pruefe_nachtraeglich(self, felder):
+        from finance.db_schutz import ausnahme_aktiv
+        if ausnahme_aktiv():
+            return                              # benannte Ausnahme, Begründung im Log
+        if hasattr(felder, 'items'):
+            # `on_delete=SET_NULL` am Ersteller: Wird ein Konto gelöscht, leert Django die
+            # Spalte per `update()`. Das Leeren ändert den Beleg nicht (Betrag, Konten, Text
+            # bleiben); das Umschreiben auf einen anderen Benutzer bleibt gesperrt.
+            felder = {k: v for k, v in felder.items()
+                      if not (k in ('erstellt_von', 'erstellt_von_id') and v is None)}
         unerlaubt = _feldnamen(felder) - _NACHTRAEGLICH_ERLAUBT
         if unerlaubt:
             raise PermissionError(
@@ -274,6 +285,9 @@ class BuchungQuerySet(TenantQuerySet):
         return super().bulk_update(objs, fields, *args, **kwargs)
 
     def delete(self):
+        from finance.db_schutz import ausnahme_aktiv
+        if ausnahme_aktiv():
+            return super().delete()
         raise PermissionError(
             'Buchungen dürfen nicht gelöscht werden (Revisionssicherheit). '
             'Bitte stornieren statt löschen.')
@@ -292,16 +306,26 @@ class BuchungQuerySet(TenantQuerySet):
         """Ändert Buchungsfelder AUSNAHMSWEISE. Nur für Reparaturen und Testaufbau;
         die Begründung landet im Log."""
         self._begruenden(grund, 'Änderung')
-        return super().update(**felder)
+        from finance.db_schutz import ausnahme
+        with ausnahme(grund, self.db):
+            return super().update(**felder)
 
     def ausnahme_loeschen(self, grund):
         """Löscht Buchungen AUSNAHMSWEISE (Datenreset, Testaufbau); Begründung im Log."""
         self._begruenden(grund, 'Löschung')
-        return super().delete()
+        from finance.db_schutz import ausnahme
+        with ausnahme(grund, self.db):
+            return super().delete()
 
 
 class BuchungManager(TenantManager.from_queryset(BuchungQuerySet)):
     """`Buchung.objects`: filtert auf die Organisation und trägt die Sperren des QuerySets."""
+
+
+class BuchungBasisManager(models.Manager.from_queryset(BuchungQuerySet)):
+    """`Buchung._base_manager`: ungefiltert (Django braucht ihn für Rückbezüge und
+    `refresh_from_db`), aber mit denselben Sperren wie `objects`. Vorher war er ein
+    gewöhnlicher Manager, an dem `update()` und `delete()` ungeprüft durchliefen."""
 
 
 class BuchungAlleManager(AlleOrganisationenManager.from_queryset(BuchungQuerySet)):
@@ -348,6 +372,7 @@ class Buchung(OrganisationAusKette):
 
     objects = BuchungManager()
     alle_organisationen = BuchungAlleManager()
+    basis = BuchungBasisManager()
 
     def save(self, *args, **kwargs):
         # Die Organisation MUSS vor allem Weiteren feststehen: Periodensperre
@@ -485,8 +510,13 @@ class Buchung(OrganisationAusKette):
         """Revisionssicherheit: Buchungen sind append-only. Statt Löschen wird
         storniert (Gegenbuchung). Hard-Delete nur mit explizitem force=True
         (z.B. Testdaten-Cleanup / Storno-Paar-Bereinigung)."""
-        if kwargs.pop('force', False):
-            return super().delete(*args, **kwargs)
+        grund = kwargs.pop('force', False)
+        if grund:
+            from finance.db_schutz import ausnahme
+            logger.warning('Revisionsbruch: Löschung einer Buchung (force) — %s',
+                           grund if isinstance(grund, str) else 'ohne Begründung')
+            with ausnahme(grund if isinstance(grund, str) else 'Buchung.delete(force=True)', self._state.db or 'default'):
+                return super().delete(*args, **kwargs)
         raise PermissionError(
             "Buchungen dürfen nicht gelöscht werden (Revisionssicherheit). "
             "Bitte stornieren statt löschen."
@@ -497,12 +527,18 @@ class Buchung(OrganisationAusKette):
         verbose_name_plural = "Buchungen"
         ordering = ['-datum', '-id']
         db_table = 'core_buchung'
+        base_manager_name = 'basis'
         constraints = [
             # War `unique=True` auf dem Feld, also global. Jede Verwaltung
             # fuehrt ihre eigene Belegnummernfolge — siehe die Begruendung in
             # `save()`, wo auch die VERGABE je Organisation zaehlt.
             models.UniqueConstraint(fields=['organisation', 'beleg_nr'],
                                     name='uniq_beleg_nr_je_organisation'),
+            # Ein Original wird höchstens EINMAL storniert (Audit FIN-04: sechs
+            # parallele Stornos erzeugten sechs Gegenbuchungen). Die Datenbank
+            # hält, was die Zeilensperre in `storniere_buchung` verspricht.
+            models.UniqueConstraint(fields=['storno_von'], name='uniq_storno_je_original',
+                                    condition=models.Q(ist_storno=True, storno_von__isnull=False)),
         ]
 
 
@@ -670,7 +706,16 @@ class Zahlungseingang(OrganisationAusKette):
     # fortgeschrieben — eine Klärungsnotiz darin ginge verloren.
     klaerung_notiz = models.CharField("Klärungsnotiz", max_length=255, blank=True, default='')
 
-    class Meta: db_table = 'core_zahlungseingang'
+    class Meta:
+        db_table = 'core_zahlungseingang'
+        constraints = [
+            # Dieselbe Bank-Transaktion wird nur einmal verbucht (camt-Duplikatschutz
+            # beim Import war nur eine Abfrage vor dem Anlegen). Stornierte Zeilen
+            # zählen nicht: Nach einem Storno darf dieselbe Referenz neu gebucht werden.
+            models.UniqueConstraint(
+                fields=['organisation', 'bank_referenz'], name='uniq_bankreferenz_je_organisation',
+                condition=~models.Q(bank_referenz='') & ~models.Q(status='storniert')),
+        ]
 
 
 class Mahnung(OrganisationAusKette):
