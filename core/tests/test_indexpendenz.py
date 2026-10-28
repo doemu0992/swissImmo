@@ -1,251 +1,193 @@
-"""Die Indexpendenz muss den richtigen Zustelltermin nennen.
+"""Die Indexpendenz nennt die Frist der Indexmiete: Art. 17 Abs. 3 VMWG.
 
-DER BEFUND
+DER BEFUND (28.10.2026)
 
-`core/services/automation.py` erzeugte eine Pendenz mit dem Text:
+`core/services/automation.py` rechnete die Pendenz «Indexmiete anpassen» mit
+`mietzins_zustellung()` aus dem Regelwerk: Beginn der Kündigungsfrist minus
+zehn Tage (Art. 269d OR), dazu der Satz «Später zugestellt ist die Erhöhung
+nichtig». Für die Indexmiete gilt aber die Verordnung: Ankündigung mit
+mindestens 30 Tagen auf ein Monatsende (Art. 17 Abs. 3 VMWG), das amtliche
+Formular sinngemäss (Art. 19 Abs. 2 VMWG), und die Mitteilung erst nach der
+Bekanntgabe des neuen Indexstandes. Die Pendenz nannte damit einen Tag, der
+Monate vom richtigen entfernt lag, und eine Rechtsfolge, die für diesen Weg
+nicht belegt ist.
 
-    »Mit amtlichem Formular (Art. 269d) ankündigen, 30 Tage vor Termin.«
-
-Zweifach falsch:
-
-* **dreissig statt zehn Tage** — die dreissig sind die Anfechtungsfrist des
-  Mieters nach Art. 270b OR: andere Frist, andere Richtung (ab Empfang);
-* **»vor Termin« statt »vor Beginn der Kündigungsfrist«** — und der liegt eine
-  ganze Kündigungsfrist früher.
-
-Wer die Pendenz befolgte, stellte bei einer dreimonatigen Frist **drei Monate
-zu spät** zu. Eine verspätet zugestellte Erhöhung ist nichtig (Art. 269d
-Abs. 2 OR), nicht verschoben.
-
-Das ist der Unterschied zwischen einem ungenauen Kommentar und diesem Fall:
-Der Text stand nicht im Code, sondern **in der Aufgabe, die jemand liest und
-befolgt**. Er war die Anleitung zum Verlust.
-
-WARUM DIE PENDENZ JETZT FRÜHER FÄLLIG IST
-
-Sie war auf den Termin datiert. An dem Tag ist nichts mehr zu tun — die Frist
-ist abgelaufen. Fällig ist sie, wenn zugestellt sein muss.
-
-EINE RECHNUNG, NICHT ZWEI
-
-Gerechnet wird mit `mietzins_zustellung()` aus dem Regelwerk (E2.36) — genau
-der Rechnung, die die Regel prüft. Zwei Rechnungen für dieselbe Vorschrift
-widersprechen sich früher oder später; das war Befund B3 der Analyse.
+Gerechnet wird jetzt mit derselben Funktion wie im Assistenten
+(`core/services/index_anpassung.py`): `spaetester_zugang` ist die Umkehrung von
+`frueheste_wirksamkeit`. Die Tests unten lesen die erzeugte Pendenz, nicht den
+Quelltext.
 """
-import inspect
 import re
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase
 
-from core.services import automation
+from core.services import index_anpassung as ia
 
 
-class IndexpendenzTextTest(TestCase):
-    """Am Quelltext — die Pendenz entsteht nur bei gestiegenem LIK."""
+def _datum(text):
+    tag, monat, jahr = (int(t) for t in text.split('.'))
+    return date(jahr, monat, tag)
 
-    def _quelle(self):
-        return inspect.getsource(automation)
 
-    def test_die_dreissig_tage_sind_weg(self):
-        quelle = self._quelle()
-        ohne_kommentar = re.sub(r'^\s*#.*$', '', quelle, flags=re.M)
-        self.assertNotIn(
-            '30 Tage vor Termin', ohne_kommentar,
-            'Der alte Aufgabentext ist zurück. Er nennt die Anfechtungsfrist '
-            'des Mieters statt der Zustellfrist und misst sie ab dem falschen '
-            'Tag — wer ihm folgt, stellt zu spät zu.')
+class SpaetesterZugangTest(SimpleTestCase):
+    """Die Umkehrung der Fristrechnung des Assistenten, an Randfällen."""
 
-    def test_der_zustelltermin_wird_gerechnet(self):
-        quelle = self._quelle()
-        self.assertIn(
-            'mietzins_zustellung', quelle,
-            'Die Indexpendenz rechnet den Zustelltermin nicht mehr mit der '
-            'Regel — dann gibt es zwei Rechnungen für Art. 269d.')
+    def test_umkehrung_fuer_jeden_monatsersten_eines_jahres(self):
+        """Wer am spätesten Versandtag verschickt, erreicht den Termin — ein Tag später nicht.
 
-    def test_die_pendenz_ist_zur_zustellung_faellig(self):
-        """Nicht zum Termin — dann wäre sie eine Nachricht, keine Aufgabe."""
-        quelle = self._quelle()
-        self.assertIn(
-            'max(zustellung, heute)', quelle,
-            'Die Pendenz ist wieder auf den Termin datiert. An dem Tag ist '
-            'nichts mehr zu tun.')
+        Gegenprobe im selben Test: der Tag danach führt zu einem späteren Termin.
+        Deckt Schaltjahr (2028) und alle Monatslängen ab."""
+        for jahr in (2027, 2028):
+            for monat in range(1, 13):
+                termin = date(jahr, monat, 1)
+                versand = ia.spaetester_versand(termin)
+                self.assertEqual(ia.frueheste_wirksamkeit(versand), termin, termin)
+                self.assertGreater(ia.frueheste_wirksamkeit(versand + timedelta(days=1)), termin, termin)
 
-    def test_keine_sonderbehandlung_fuer_nebenobjekte(self):
-        """Die Kurzfrist-Verzweigung ist entfallen — und das ist die Antwort
-        auf eine Rechtsfrage, nicht eine Vereinfachung.
+    def test_zugang_dreissig_tage_vor_dem_monatsende(self):
+        # Termin 1.4.2027, Monatsende 31.3.2027: 30 Tage davor ist der 1.3.2027.
+        self.assertEqual(ia.spaetester_zugang(date(2027, 4, 1)), date(2027, 3, 1))
+        # Der 2.3. wäre zu spät: 30 Tage später liegt im April, das Monatsende am 30.4.
+        self.assertEqual(ia.fruehestes_monatsende(date(2027, 3, 2)), date(2027, 4, 30))
+        self.assertEqual(ia.fruehestes_monatsende(date(2027, 3, 1)), date(2027, 3, 31))
 
-        Sie fragte: Wie rechnet man die 269d-Frist bei einem Einstellplatz mit
-        Zwei-Wochen-Kuendigungsfrist? Die Frage davor war offen und wichtiger:
-        Faellt eine Mietzinserhoehung beim GESONDERT VERMIETETEN Einstellplatz
-        ueberhaupt unter Art. 269d?
+    def test_februar_und_schaltjahr(self):
+        self.assertEqual(ia.spaetester_zugang(date(2027, 3, 1)), date(2027, 1, 29))
+        self.assertEqual(ia.spaetester_zugang(date(2028, 3, 1)), date(2028, 1, 30))
 
-        Art. 269d steht im «Zweiten Abschnitt: Schutz vor missbraeuchlichen
-        Mietzinsen ... bei der Miete von WOHN- UND GESCHAEFTSRAEUMEN». Ein
-        allein vermieteter Parkplatz ist keines von beidem. Der Bestand zieht
-        dieselbe Linie schon bei der Kuendigung.
+    def test_versand_ist_zugang_minus_puffer(self):
+        termin = date(2027, 4, 1)
+        self.assertEqual(ia.spaetester_versand(termin, puffer_tage=0), ia.spaetester_zugang(termin))
+        self.assertEqual(ia.spaetester_versand(termin, puffer_tage=7), date(2027, 2, 22))
 
-        WARUM TROTZDEM DIE LANGE FRIST GERECHNET WIRD: Die Folgen sind
-        unsymmetrisch. Das Formular zu verwenden, wo es nicht noetig ist,
-        kostet ein Blatt Papier. Es wegzulassen, wo es noetig ist, macht die
-        Erhoehung NICHTIG. Bei einer Rechtsfrage ohne Bundesgerichtsentscheid
-        vermeidet man den teureren Irrtum.
-        """
-        quelle = self._quelle()
-        self.assertNotIn(
-            'kurzfrist', quelle,
-            'Die Kurzfrist-Verzweigung ist zurueck. Sie beantwortet eine '
-            'Frage, die vor ihr geklaert werden muesste — und sie meldet '
-            'einen Zustelltermin 24 Tage vor dem Termin, wo drei Monate '
-            'noetig waeren.')
-        self.assertIn(
-            'monate_roh if monate_roh > 0 else 3', quelle,
-            'Fehlt die Kuendigungsfrist, muss die gesetzliche Mindestfrist '
-            'fuer Wohnraeume gelten — die vorsichtigere Seite. `or 3` reicht '
-            'dafuer nicht: Es laesst negative Werte durch.')
-
-    def test_die_regel_liefert_den_erwarteten_tag(self):
-        from faelle.regelwerk import mietzins_zustellung
-
-        befund = mietzins_zustellung(termin=date(2027, 3, 31), frist_monate=3)
-        self.assertEqual(befund.vorschlag, date(2026, 12, 21))
-
-    def test_und_nicht_dreissig_tage_vor_dem_termin(self):
-        """Die Gegenprobe zum Befund.
-
-        Der alte Text hätte auf den 01.03.2027 geführt — mehr als ein
-        Vierteljahr zu spät.
-        """
-        from faelle.regelwerk import mietzins_zustellung
-
-        befund = mietzins_zustellung(termin=date(2027, 3, 31), frist_monate=3)
-        self.assertNotEqual(befund.vorschlag, date(2027, 3, 1))
-        self.assertLess(befund.vorschlag, date(2027, 1, 1),
-                        'Die Zustellung liegt im selben Quartal wie der '
-                        'Termin — dann wurde nicht ab Beginn der '
-                        'Kündigungsfrist gerechnet.')
+    def test_termin_ab(self):
+        self.assertEqual(ia.termin_ab(date(2027, 4, 1)), date(2027, 4, 1))
+        self.assertEqual(ia.termin_ab(date(2027, 4, 2)), date(2027, 5, 1))
+        self.assertEqual(ia.termin_ab(date(2027, 12, 31)), date(2028, 1, 1))
 
 
 class IndexpendenzWirdErzeugtTest(TestCase):
-    """Die Pendenz wird ERZEUGT und gelesen — nicht der Quelltext.
+    """Die Pendenz wird ERZEUGT und gelesen, nicht der Quelltext."""
 
-    WARUM DIESE KLASSE NÖTIG WAR
-
-    Die Prüfungen oben suchen Zeichenketten im Quelltext. Sie halten fest,
-    dass der alte Satz weg ist — aber sie sehen nicht, was in der Pendenz
-    steht, die jemand am Morgen liest. Zwei Fehler in der ersten Fassung
-    dieser Etappe blieben deshalb grün:
-
-    * Im Kurzfristfall stand »zehn Tage vor Beginn der **3-monatigen**
-      Kündigungsfrist«, während das Datum aus zwei Wochen gerechnet war.
-      Datum und Begründung widersprachen sich in einem Satz.
-    * `kurzfrist` prüfte nur `kuendigungsfrist_monate <= 0`, nicht
-      `ist_einstellplatz`. Eine Wohnung mit fehlender Frist hätte einen
-      Zustelltermin 24 Tage vor dem Termin bekommen statt gut drei Monate —
-      also genau den Fehler, den diese Etappe behebt.
-
-    Ein Test, der den Quelltext liest, kann so etwas nicht finden.
-    """
-
-    def _vertrag(self, typ='whg', frist_monate=3):
+    def _vertrag(self, letzte_anpassung=None, basis='100.0', frist_monate=3):
         from ._helfer import _basis_objekte
 
         lg, e, m, v = _basis_objekte()
-        e.typ = typ
-        e.save()
         v.mietzins_modell = 'index'
-        v.basis_lik_punkte = Decimal('100.0')     # aktueller Stand liegt darüber
+        v.basis_lik_punkte = Decimal(basis)
         v.index_intervall_monate = 12
-        # Der naechste Anpassungstermin muss in der ZUKUNFT liegen: Bei einem
-        # vergangenen Termin klemmt `max(zustellung, heute)` die Faelligkeit
-        # richtigerweise auf heute, und der Test unten pruefte dann die
-        # Klemme statt die Rechnung.
-        v.index_letzte_anpassung = date.today() - timedelta(days=200)
+        # Der nächste Termin muss in der ZUKUNFT liegen, sonst klemmt
+        # `max(versand_spaet, heute)` die Fälligkeit auf heute.
+        v.index_letzte_anpassung = letzte_anpassung or date.today() - timedelta(days=200)
         v.kuendigungsfrist_monate = frist_monate
         v.save()
         return v
 
-    def _pendenz(self, vertrag):
+    def _pendenz(self, vertrag, praefix='auto:index:'):
         from core.models import Pendenz
         from core.services.automation import generate_auto_pendenzen
 
         generate_auto_pendenzen(horizont_tage=365)
-        return Pendenz.objects.filter(
-            quelle__startswith=f'auto:index:{vertrag.id}:').first()
+        return Pendenz.objects.filter(quelle__startswith=f'{praefix}{vertrag.id}:').first()
 
-    def test_der_alte_satz_steht_in_keiner_pendenz(self):
-        pendenz = self._pendenz(self._vertrag())
-        self.assertIsNotNone(pendenz, 'Es entsteht gar keine Indexpendenz — '
-                                      'dann prüft der Rest hier nichts.')
-        self.assertNotIn('30 Tage vor Termin', pendenz.beschreibung)
-
-    def test_datum_und_begruendung_stimmen_ueberein(self):
-        """Der Fehler, der die Quelltextprüfungen nicht erreichte.
-
-        Im Text steht ein Datum und daneben, aus welcher Frist es kommt.
-        Beides muss zusammenpassen — sonst rechnet jemand nach, findet den
-        Widerspruch und glaubt der Pendenz danach nichts mehr.
-        """
-        from faelle.regelwerk import mietzins_zustellung
-
-        pendenz = self._pendenz(self._vertrag(frist_monate=3))
-        treffer = re.search(r'muss bis (\d{2}\.\d{2}\.\d{4}) beim Mieter sein '
-                            r'— zehn Tage vor Beginn der ([\w-]+) '
-                            r'Kündigungsfrist', pendenz.beschreibung)
+    def _termin(self, pendenz):
+        treffer = re.search(r'auf (\d{2}\.\d{2}\.\d{4})', pendenz.beschreibung)
         self.assertIsNotNone(treffer, pendenz.beschreibung)
-        self.assertEqual(treffer.group(2), '3-monatigen')
+        return _datum(treffer.group(1))
 
-        termin = re.search(r'möglich auf (\d{2}\.\d{2}\.\d{4})',
-                           pendenz.beschreibung)
-        termin_datum = date(*reversed([int(t) for t in
-                                       termin.group(1).split('.')]))
-        erwartet = mietzins_zustellung(termin=termin_datum,
-                                       frist_monate=3).vorschlag
-        self.assertEqual(treffer.group(1), erwartet.strftime('%d.%m.%Y'))
+    def test_der_text_nennt_art_17_abs_3_und_keine_nichtigkeit(self):
+        pendenz = self._pendenz(self._vertrag())
+        self.assertIsNotNone(pendenz, 'Es entsteht gar keine Indexpendenz — dann prüft der Rest hier nichts.')
+        text = pendenz.beschreibung
+        self.assertIn('Zugang spätestens bis', text)
+        self.assertIn('30 Tage vor dem Monatsende', text)
+        self.assertIn('Art. 17 Abs. 3 VMWG', text)
+        self.assertIn('Amtliches Formular', text)
+        self.assertIn('erst nach Bekanntgabe des neuen Indexstandes', text)
+        # Gegenprobe zum Befund: nichts mehr von Art. 269d, Kündigungsfrist, Nichtigkeit.
+        for alt in ('nichtig', 'Art. 269d', 'Kündigungsfrist', 'zehn Tage', 'beim Mieter sein'):
+            self.assertNotIn(alt, text)
 
-    def test_eine_wohnung_ohne_frist_faellt_nicht_auf_zwei_wochen(self):
-        """`kuendigungsfrist_monate = 0` auf einer Wohnung ist eine Datenlücke.
+    def test_zugang_und_faelligkeit_sind_die_umkehrung_des_assistenten(self):
+        """Das Datum im Text ist `spaetester_zugang(termin)`, die Fälligkeit der späteste Versand.
 
-        Der Bestand liest `<= 0` nur beim Einstellplatz als Zwei-Wochen-Frist
-        (`Mietvertrag.kuendigungsfrist_anzeige`). Griffe die Kurzfrist auch
-        hier, läge der Zustelltermin 24 Tage vor dem Termin statt gut drei
-        Monate — zu spät, und die Erhöhung wäre nichtig.
-        """
-        pendenz = self._pendenz(self._vertrag(typ='whg', frist_monate=0))
-        self.assertIn('3-monatigen', pendenz.beschreibung)
-        self.assertNotIn('2-wöchigen', pendenz.beschreibung)
+        Und: Versand an diesem Tag erreicht den Termin nach der Rechnung des
+        Assistenten (`frueheste_wirksamkeit`), ein Tag später nicht."""
+        pendenz = self._pendenz(self._vertrag())
+        termin = self._termin(pendenz)
+        self.assertEqual(termin.day, 1)
+        zugang = re.search(r'Zugang spätestens bis (\d{2}\.\d{2}\.\d{4})', pendenz.beschreibung)
+        self.assertEqual(_datum(zugang.group(1)), ia.spaetester_zugang(termin))
+        self.assertEqual(pendenz.faellig_am, ia.spaetester_versand(termin))
+        self.assertEqual(ia.frueheste_wirksamkeit(pendenz.faellig_am), termin)
+        self.assertGreater(ia.frueheste_wirksamkeit(pendenz.faellig_am + timedelta(days=1)), termin)
+        self.assertLess(pendenz.faellig_am, termin)
 
-    def test_die_pendenz_ist_vor_dem_termin_faellig(self):
-        """Nicht am Termin — an dem Tag ist die Frist abgelaufen."""
-        pendenz = self._pendenz(self._vertrag(frist_monate=3))
-        termin = re.search(r'möglich auf (\d{2}\.\d{2}\.\d{4})',
-                           pendenz.beschreibung)
-        termin_datum = date(*reversed([int(t) for t in
-                                       termin.group(1).split('.')]))
-        self.assertLess(
-            pendenz.faellig_am, termin_datum,
-            'Die Pendenz ist erst am Kündigungstermin fällig — dann ist sie '
-            'eine Nachricht und keine Aufgabe.')
+    def test_die_kuendigungsfrist_des_vertrags_ist_ohne_einfluss(self):
+        """Art. 17 Abs. 3 kennt die Kündigungsfrist nicht. Gegenprobe zum alten Verhalten:
+        dort verschob sich die Fälligkeit mit `kuendigungsfrist_monate`."""
+        ref = date.today() - timedelta(days=200)
+        a = self._pendenz(self._vertrag(letzte_anpassung=ref, frist_monate=3))
+        faellig_a, text_a = a.faellig_am, a.beschreibung
+        b = self._pendenz(self._vertrag(letzte_anpassung=ref, frist_monate=1))
+        self.assertEqual(b.faellig_am, faellig_a)
+        c = self._pendenz(self._vertrag(letzte_anpassung=ref, frist_monate=-1))
+        self.assertEqual(c.faellig_am, faellig_a)
+        self.assertEqual(re.sub(r'\d{2}\.\d{2}\.\d{4}', 'D', b.beschreibung), re.sub(r'\d{2}\.\d{2}\.\d{4}', 'D', text_a))
 
+    def test_termin_mitten_im_monat_wird_der_erste_des_folgemonats(self):
+        heute = date.today()
+        ziel = ia.plus_monate(date(heute.year, heute.month, 15), 5)       # der 15., fünf Monate voraus
+        pendenz = self._pendenz(self._vertrag(letzte_anpassung=ia.plus_monate(ziel, -12)))
+        self.assertIsNotNone(pendenz)
+        self.assertEqual(self._termin(pendenz), ia.termin_ab(ziel))
+        self.assertEqual(self._termin(pendenz).day, 1)
 
-    def test_eine_negative_frist_kippt_die_zustellung_nicht_hinter_den_termin(self):
-        """Ein `IntegerField` ohne Untergrenze nimmt auch -1 an.
+    def test_verpasste_frist_faellt_auf_heute_und_nennt_den_fruehesten_termin(self):
+        heute = date.today()
+        # Termin in zehn Tagen: der späteste Versand liegt Wochen zurück.
+        pendenz = self._pendenz(self._vertrag(letzte_anpassung=ia.plus_monate(heute + timedelta(days=10), -12)))
+        self.assertIsNotNone(pendenz)
+        self.assertEqual(pendenz.faellig_am, heute)
+        self.assertIn('reicht die Frist bei Versand heute nicht mehr', pendenz.beschreibung)
+        self.assertIn(f"frühester Termin bei Versand heute: {ia.frueheste_wirksamkeit(heute).strftime('%d.%m.%Y')}",
+                      pendenz.beschreibung)
 
-        `or 3` reicht den Wert durch, und `mietzins_zustellung()` rechnet
-        dann vorwärts: Zustellung am 20.04.2027 für einen Termin am
-        31.03.2027. Die Pendenz nennte damit einen Tag, an dem die Frist
-        längst abgelaufen ist — derselbe Fehler wie der alte Text, nur
-        anders erzeugt.
-        """
-        pendenz = self._pendenz(self._vertrag(frist_monate=-1))
-        termin = re.search(r'möglich auf (\d{2}\.\d{2}\.\d{4})',
-                           pendenz.beschreibung)
-        termin_datum = date(*reversed([int(t) for t in
-                                       termin.group(1).split('.')]))
-        zustell = re.search(r'muss bis (\d{2}\.\d{2}\.\d{4})',
-                            pendenz.beschreibung)
-        zustell_datum = date(*reversed([int(t) for t in
-                                        zustell.group(1).split('.')]))
-        self.assertLess(zustell_datum, termin_datum)
-        self.assertIn('3-monatigen', pendenz.beschreibung)
+    def test_rechtzeitige_pendenz_hat_keinen_verspaetungshinweis(self):
+        """Gegenprobe zum vorigen Test."""
+        pendenz = self._pendenz(self._vertrag())
+        self.assertNotIn('reicht die Frist', pendenz.beschreibung)
+
+    def test_senkung_hat_dieselbe_frist(self):
+        pendenz = self._pendenz(self._vertrag(basis='999.0'), praefix='auto:indexsenkung:')
+        self.assertIsNotNone(pendenz, 'Bei sinkendem LIK entsteht keine Senkungspendenz.')
+        self.assertTrue(pendenz.titel.startswith('Indexmiete senken'))
+        termin = self._termin(pendenz)
+        self.assertIn('Art. 17 Abs. 2 VMWG', pendenz.beschreibung)
+        self.assertIn('Art. 17 Abs. 3 VMWG', pendenz.beschreibung)
+        self.assertEqual(pendenz.faellig_am, ia.spaetester_versand(termin))
+        self.assertNotIn('Art. 269', pendenz.beschreibung)
+
+    def test_langer_titel_wird_auf_die_feldlaenge_gelegt(self):
+        """PostgreSQL lehnt einen Text über `max_length` ab; SQLite schweigt dazu."""
+        from core.models import Pendenz
+
+        v = self._vertrag()
+        m = v.mieter
+        m.typ = 'firma'
+        m.firmen_name = 'X' * 200
+        m.save()
+        pendenz = self._pendenz(v)
+        self.assertIsNotNone(pendenz)
+        self.assertEqual(len(pendenz.titel), Pendenz._meta.get_field('titel').max_length)
+
+    def test_kein_lik_anstieg_keine_pendenz(self):
+        """Gegenprobe: ohne Veränderung des Index entsteht nichts."""
+        from core.services.lik import aktueller_lik_wert
+
+        _stand, pkt, _b = aktueller_lik_wert(live=False)
+        v = self._vertrag(basis=str(pkt))
+        self.assertIsNone(self._pendenz(v))
+        self.assertIsNone(self._pendenz(v, praefix='auto:indexsenkung:'))

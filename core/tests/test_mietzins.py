@@ -161,7 +161,9 @@ class GewerbeMietzinsTests(TestCase):
         generate_auto_pendenzen(horizont_tage=120)
         p = Pendenz.objects.filter(vertrag=v, titel__icontains='Indexmiete anpassen').first()
         self.assertIsNotNone(p)
-        self.assertIn('Art. 269d', p.beschreibung)
+        # Indexmiete: Frist nach Art. 17 Abs. 3 VMWG, nicht Art. 269d OR (28.10.2026).
+        self.assertIn('Art. 17 Abs. 3 VMWG', p.beschreibung)
+        self.assertNotIn('Art. 269d', p.beschreibung)
 
     def test_kein_index_wenn_lik_nicht_gestiegen(self):
         from core.services.automation import generate_auto_pendenzen
