@@ -100,6 +100,7 @@ def public_datenschutz_view(request, einheit_id=None):
         'mehrdeutig': mehrdeutig,
         'stand': timezone.localdate(),
         'sprache': sprache,
+        'text_sprache': sprache,
         'seitentitel': seitentitel,
         'text_vorlage': text_vorlage,
     })

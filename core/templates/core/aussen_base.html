@@ -1,5 +1,5 @@
 {% load zeichen i18n %}<!DOCTYPE html>
-{% get_current_language as sprache %}<html lang="{{ sprache|slice:':2'|default:'de' }}">
+{% get_current_language as sprache %}<html lang="{% block lang %}{{ sprache|slice:':2'|default:'de' }}{% endblock %}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
