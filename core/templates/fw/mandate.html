@@ -9,7 +9,7 @@
         <p>{% blocktrans count n=rows|length %}{{ n }} Eigentümer, für den du Liegenschaften verwaltest.{% plural %}{{ n }} Eigentümer, für die du Liegenschaften verwaltest.{% endblocktrans %}</p>
     </div>
     <div class="fw-phead-knoepfe">
-        <a href="/neu/mandate/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Eigentümer erfassen" %}</a>
+        {% if kann_schreiben %}<a href="/neu/mandate/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Eigentümer erfassen" %}</a>{% endif %}
     </div>
 </div>
 
@@ -31,18 +31,20 @@
                 <td class="fw-mutet">{% if row.md.ort %}{{ row.md.plz }} {{ row.md.ort }}{% else %}—{% endif %}</td>
                 <td class="fw-right fw-num">{{ row.anzahl_lg }}</td>
                 <td class="fw-right"><span class="inline-flex flex-wrap items-center justify-end gap-3">
+                    {% if ist_verwaltung %}
                     <a href="/neu/mandate/{{ row.md.id }}/abrechnung/" class="fw-link whitespace-nowrap">{% trans "Abrechnung" %}</a>
                     <a href="/neu/mandate/{{ row.md.id }}/kontokorrent/" class="fw-link whitespace-nowrap">{% trans "Kontokorrent" %}</a>
                     <a href="/neu/mandate/{{ row.md.id }}/mahnstufen/" class="fw-link whitespace-nowrap">{% trans "Mahnstufen" %}</a>
-                    <a href="/neu/mandate/{{ row.md.id }}/bearbeiten/" class="fw-link whitespace-nowrap">{% trans "Bearbeiten" %}</a>
+                    {% endif %}
+                    {% if kann_schreiben %}<a href="/neu/mandate/{{ row.md.id }}/bearbeiten/" class="fw-link whitespace-nowrap">{% trans "Bearbeiten" %}</a>{% endif %}
                     {% include 'fw/_archivieren.html' with kuerzel='mandat' pk=row.md.id %}
-                    <form method="post" action="/neu/mandate/{{ row.md.id }}/loeschen/" class="inline"
+                    {% if ist_verwaltung %}<form method="post" action="/neu/mandate/{{ row.md.id }}/loeschen/" class="inline"
                           onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.md.firma_oder_name|safe %}Eigentümer «{{ name }}» löschen?{% endblocktrans %}{% if row.anzahl_lg %}
 
 {% blocktrans count n=row.anzahl_lg %}Achtung: {{ n }} Liegenschaft zugeordnet — Löschen wird blockiert, bitte zuerst Zuordnung entfernen.{% plural %}Achtung: {{ n }} Liegenschaften zugeordnet — Löschen wird blockiert, bitte zuerst Zuordnung entfernen.{% endblocktrans %}{% endif %}{% endfilter %}');">
                         {% csrf_token %}
                         <button class="fw-btn fw-knapp fw-rand-krit">{% zeichen 'loeschen' klasse='fw-fs-mikro' %}{% trans "Löschen" %}</button>
-                    </form></span>
+                    </form>{% endif %}</span>
                 </td>
             </tr>
             {% empty %}

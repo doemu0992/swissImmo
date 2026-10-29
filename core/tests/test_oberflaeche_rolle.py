@@ -138,7 +138,7 @@ class LesezugriffUndSachbearbeitungTests(RollenBasis):
     """
 
     #: Stand vom 29.10.2026, gemessen mit `tote_ziele` über die Startseiten unten. Nur senken.
-    BEKANNT_OFFEN = {'lesezugriff': 218, 'sachbearbeiter': 59}
+    BEKANNT_OFFEN = {'lesezugriff': 197, 'sachbearbeiter': 43}
 
     def _starts(self):
         a = self.a
