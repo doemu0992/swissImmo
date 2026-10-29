@@ -27,6 +27,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.apps import apps
+from django.db import connection
 from django.test import TestCase
 
 from core.tenancy import ohne_organisation, organisation_kontext
@@ -194,10 +195,16 @@ class ErweiterterBestand(MandantenFixture):
 
 
 def _modelle_mit_filter():
-    """Alle Modelle der eigenen Apps, deren `objects` ein Mandantenfilter ist."""
+    """Alle Modelle der eigenen Apps mit Mandantenfilter UND vorhandener Tabelle.
+
+    Die Tabelle gehört dazu: Im Gesamtlauf tragen Testmodule Modelle in die Registry ein, zu denen es nie eine
+    Tabelle gibt (`core.Haus`, `core.Zimmer` aus `test_tenant_manager.py`); eine Abfrage darauf bricht ab
+    (PostgreSQL: «relation does not exist»).
+    """
+    vorhanden = set(connection.introspection.table_names())
     return [m for m in apps.get_models()
             if m._meta.app_label in EIGENE_APPS and m._meta.label not in OHNE_MANDANTENFILTER
-            and hasattr(m, 'alle_organisationen')]
+            and hasattr(m, 'alle_organisationen') and not m._meta.proxy and m._meta.db_table in vorhanden]
 
 
 class Basis(TestCase):
@@ -220,9 +227,11 @@ class AbdeckungTests(Basis):
         for modell in _modelle_mit_filter():
             if modell._meta.label in OHNE_ZEILE:
                 continue
-            if not modell.alle_organisationen.filter(organisation=self.b.organisation).exists() \
-                    if 'organisation' in {f.name for f in modell._meta.get_fields()} else \
-                    not any(isinstance(o, modell) for o in self.b._alle_objekte()):
+            if any(f.name == 'organisation' for f in modell._meta.concrete_fields):
+                hat = modell.alle_organisationen.filter(organisation=self.b.organisation).exists()
+            else:                                           # Mandant nur über die Kette: das Fixture muss die Zeile halten
+                hat = any(isinstance(o, modell) for o in self.b._alle_objekte())
+            if not hat:
                 ohne.append(modell._meta.label)
         self.assertEqual(ohne, [], 'Modelle mit Mandantenfilter ohne Zeile im Isolationsbestand: Zeile in '
                                    'ErweiterterBestand._zusatz anlegen, oder in OHNE_ZEILE mit Grund eintragen. '

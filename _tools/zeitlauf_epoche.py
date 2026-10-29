@@ -3,7 +3,10 @@
 Der Zeitlauf (CI-Job `zeitlauf`) fährt die Suite mit einer Uhr, die auf einen kritischen Tag gestellt
 ist (`_tools/uhr_schieber.c`). Die Szenarien sind relativ zu heute, damit der Lauf nicht selbst altert:
 
-    jahreswechsel   31.12., 23:50 Uhr Zürcher Zeit (22:50 UTC): UTC- und Zürcher Tag liegen auseinander, Jahreswechsel
+    jahreswechsel   1.1., 00:20 Uhr Zürcher Zeit (23:20 UTC am 31.12.): UTC- und Zürcher Jahr liegen auseinander.
+                    Bewusst NACH Mitternacht gestartet: Ein Lauf von 23:50 überquert die Grenze mitten in der Suite,
+                    und Tests, die im Fixture das alte und in der Ansicht das neue Jahr sehen, werden rot, ohne dass
+                    ein Fehler im Code oder im Test läge (so geschehen am 29.10.2026 mit 9 Tests in `faelle`)
     neujahr         5. Januar, Mittag: Tabellen und feste Daten des Vorjahres sind überholt
     schaltag        nächster 29. Februar, Mittag
     sommernacht     1. Juli, 00:30 Uhr Zürcher Zeit (22:30 UTC am 30.06.): Monats- und Quartalsgrenze, Sommerzeit
@@ -25,7 +28,7 @@ def naechster(szenario, ab):
     """Der erste Zeitpunkt des Szenarios, der nach `ab` (Datum) liegt."""
     jahr = ab.year
     if szenario == 'jahreswechsel':
-        kandidaten = [_zeitpunkt(date(j, 12, 31), 23, 50) for j in (jahr, jahr + 1)]
+        kandidaten = [_zeitpunkt(date(j, 1, 1), 0, 20) for j in (jahr, jahr + 1)]
     elif szenario == 'neujahr':
         kandidaten = [_zeitpunkt(date(j, 1, 5), 12, 0) for j in (jahr, jahr + 1)]
     elif szenario == 'schaltag':
