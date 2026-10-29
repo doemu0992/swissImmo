@@ -94,7 +94,8 @@ class LikVertragTests(TestCase):
         from unittest import mock
 
         from core.services import lik as liks
-        vorjahr = date.today().year - 1
+        from django.utils import timezone
+        vorjahr = timezone.localdate().year - 1
         html = ('<html>Dezember 2020 = 100'
                 f'<table><tr><td>{vorjahr}</td>'
                 '<td>106.9</td><td>107.6</td><td>107.8</td><td>108.1</td>'
