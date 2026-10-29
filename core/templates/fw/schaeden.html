@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n rechte %}
 {% block title %}{% trans "Schadensfälle" %} — swissImmo{% endblock %}
 
 {% block content %}
@@ -18,12 +18,12 @@
         {% if kann_schreiben %}
         <button type="button" onclick="document.getElementById('neuschaden').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Schaden erfassen" %}</button>
         {% endif %}
-        <div class="relative" data-menu>
+        {% if request.user|darf:"/neu/schaeden/kosten/" %}<div class="relative" data-menu>
             <button type="button" data-menu-btn class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
             <div data-menu-list class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
                 <a href="/neu/schaeden/kosten/{{ lg_query }}" class="fw-menuzeile">{% zeichen 'geld' klasse='w-4' %}{% trans "Kostenübersicht" %}</a>
             </div>
-        </div>
+        </div>{% endif %}
     </div>
 </div>
 
