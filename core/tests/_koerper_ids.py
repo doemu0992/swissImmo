@@ -324,7 +324,10 @@ def sende_mit_inhalt(client, bestand, pfad, daten, als_json=False, methode='post
                 else:
                     antwort = client.post(pfad, daten)
             ergebnis['status'] = antwort.status_code
-            ergebnis['inhalt'] = antwort.content.decode('utf-8', 'ignore') if antwort.status_code == 200 else ''
+            # Datei-Antworten (Mandatsexport, ZIP) kennen kein `.content`: den Strom lesen.
+            roh = (b''.join(antwort.streaming_content) if getattr(antwort, 'streaming', False)
+                   else antwort.content) if antwort.status_code == 200 else b''
+            ergebnis['inhalt'] = roh.decode('utf-8', 'ignore')
             ergebnis['befunde'] = bestand.befunde(schreiber.tabellen)
             raise _Zurueck
     except _Zurueck:
