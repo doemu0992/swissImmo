@@ -86,27 +86,28 @@ class LikVertragTests(TestCase):
         self.assertEqual(pkt, Decimal('108.5'))
 
     def test_live_parser_extrahiert_monat_und_wert(self):
-        # Simuliert die HEV-Tabelle: Live-Parser muss Monat UND Wert lesen
+        # Simuliert die HEV-Tabelle: Live-Parser muss Monat UND Wert lesen.
+        #
+        # Das Jahr der Zeile ist das VORJAHR von heute (SICH-45): Der Parser sucht die Zeilen «dieses» und
+        # «letztes» Jahr und kappt das laufende Jahr auf den heutigen Monat. Mit der festen Zeile «2026» war der
+        # Test nur bis Ende 2027 richtig (ab 2028 sucht der Parser 2028 und 2027) und im Vorjahr vor Juni rot.
+        from unittest import mock
+
         from core.services import lik as liks
+        vorjahr = date.today().year - 1
         html = ('<html>Dezember 2020 = 100'
-                '<table><tr><td>2026</td>'
+                f'<table><tr><td>{vorjahr}</td>'
                 '<td>106.9</td><td>107.6</td><td>107.8</td><td>108.1</td>'
                 '<td>108.3</td><td>108.3</td></tr>'
-                '<tr><td>2025</td><td>106.8</td></tr></table></html>')
-        orig = liks.requests.get if hasattr(liks, 'requests') else None
-        import types
+                f'<tr><td>{vorjahr - 1}</td><td>106.8</td></tr></table></html>')
+
         class _Resp:
             text = html
-        import core.services.lik as _m
-        import requests as _rq
-        _saved = _rq.get
-        _rq.get = lambda *a, **k: _Resp()
-        try:
-            res = _m._fetch_live_lik()
-        finally:
-            _rq.get = _saved
+
+        with mock.patch('requests.get', lambda *a, **k: _Resp()):
+            res = liks._fetch_live_lik()
         self.assertIsNotNone(res)
-        self.assertEqual(res[0], date(2026, 6, 1))
+        self.assertEqual(res[0], date(vorjahr, 6, 1))
         self.assertEqual(res[1], Decimal('108.3'))
 
 
