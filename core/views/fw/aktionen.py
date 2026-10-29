@@ -970,7 +970,16 @@ def fw_einstellungen(request):
         # Der Wortlaut der Schlussbestimmungen gehört der Verwaltung, nicht dem Code.
         {'titel': _('Abnahmeprotokoll (Texte)'), 'sub': _('Wortlaut der Schlussbestimmungen: Haftung, Mietzinsdepot, Mängelrüge'),
          'url': '/neu/abnahme-texte/', 'icon': 'recht'},
+        # Das Archiv (Etappe 2) hatte keinen Link: Wer eine Akte archivierte, sah es
+        # nur einmal als Weiterleitung und fand es danach nicht wieder.
+        {'titel': _('Archiv'), 'sub': _('Archivierte Akten ansehen und wiederherstellen'),
+         'url': '/neu/archiv/', 'icon': 'dokument'},
     ]
+    # Kacheln, die die Rolle nicht öffnen darf (Logbuch, Archiv …), führten in die 403
+    # (DESIGN-07). Die Rollen werden einmal gelesen, nicht je Kachel.
+    from core.auth import darf_oeffnen, eigene_rollen
+    meine = eigene_rollen(request.user)
+    karten = [k for k in karten if darf_oeffnen(request.user, k['url'], meine)]
     return render(request, 'fw/einstellungen.html', {
         **basis, 'nav': 'einstellungen', 'karten': karten,
     })

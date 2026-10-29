@@ -317,14 +317,15 @@ def zweifaktor_einrichten(request):
             _sicherheit('Zweiter Faktor eingerichtet', request.user.get_username(),
                         request=request)
             return render(request, 'core/zweifaktor_codes.html',
-                          {'codes': codes, 'assistent': _einrichtungs_assistent(3)})
+                          {'codes': codes, 'assistent': _einrichtungs_assistent(3),
+                           'nav': 'account'})
         fehler = gettext('Der Code stimmt nicht. Uhrzeit des Telefons prüfen und neu versuchen.')
         schritt = 2
     else:
         fehler = ''
         schritt = 2 if request.GET.get('schritt') == '2' else 1
 
-    kontext = {'fehler': fehler, 'schritt': schritt,
+    kontext = {'nav': 'account', 'fehler': fehler, 'schritt': schritt,
                'assistent': _einrichtungs_assistent(schritt),
                'pflicht_hinweis': _pflicht_fuer(request.user)}
     if schritt == 1:
@@ -352,6 +353,7 @@ def zweifaktor_uebersicht(request):
 
     faktor = ZweiterFaktor.objects.filter(benutzer=request.user).first()
     return render(request, 'core/zweifaktor_uebersicht.html', {
+        'nav': 'account',
         'faktor': faktor if (faktor and faktor.ist_aktiv) else None,
         'offene_codes': Wiederherstellungscode.objects.filter(
             benutzer=request.user, eingeloest_am__isnull=True).count(),
@@ -426,7 +428,7 @@ def zweifaktor_codes_neu(request):
         return redirect('zweifaktor_einrichten')
     codes = _neue_codes(request.user)
     _sicherheit('Notfallcodes neu erzeugt', request.user.get_username(), request=request)
-    return render(request, 'core/zweifaktor_codes_neu.html', {'codes': codes})
+    return render(request, 'core/zweifaktor_codes_neu.html', {'codes': codes, 'nav': 'account'})
 
 
 @never_cache

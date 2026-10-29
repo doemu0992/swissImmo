@@ -17,6 +17,7 @@ from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 
 from core.auth import SCHREIB_ROLLEN, TEAM_ROLLEN, rolle_erforderlich
+from core.views.fw._basis import _global_filter
 from crm.models import Eigentuemer
 from finance.models import Buchungskonto
 from stweg import budget as bd
@@ -56,7 +57,7 @@ def stweg_schluessel(request, stweg_id):
                         'anteil': next((a.anteil for a in s.anteile.all() if a.einheit_id == e.pk), None)}
                        for e in einheiten]})
     return render(request, 'stweg/schluessel.html', {
-        'nav': 'stweg', 'lg': lg, 'schluessel': schluessel, 'art_choices': StwegSchluessel.ART_CHOICES,
+        **_global_filter(request), 'nav': 'stweg', 'lg': lg, 'schluessel': schluessel, 'art_choices': StwegSchluessel.ART_CHOICES,
         'konten': Buchungskonto.objects.filter(typ='aufwand').order_by('nummer'),
         'zuordnungen': StwegKostenzuordnung.objects.filter(liegenschaft=lg).select_related('konto', 'schluessel'),
         'alle_schluessel': lg.stweg_schluessel.all(),
@@ -191,7 +192,7 @@ def stweg_kostenart_zuordnen(request, stweg_id):
 def stweg_budget(request, stweg_id):
     lg = _gemeinschaft(stweg_id)
     return render(request, 'stweg/budget.html', {
-        'nav': 'stweg', 'lg': lg, 'budgets': StwegBudget.objects.filter(liegenschaft=lg),
+        **_global_filter(request), 'nav': 'stweg', 'lg': lg, 'budgets': StwegBudget.objects.filter(liegenschaft=lg),
         'jahr': timezone.localdate().year + 1})
 
 
@@ -227,7 +228,7 @@ def stweg_budget_detail(request, pk):
                                            ).select_related('versammlung').order_by('-versammlung__datum', 'nr')
     vs = list(StwegVorschreibung.objects.filter(budget=b).select_related('einheit', 'eigentuemer'))
     return render(request, 'stweg/budget_detail.html', {
-        'nav': 'stweg', 'lg': lg, 'b': b, 'positionen': b.positionen.select_related('schluessel'),
+        **_global_filter(request), 'nav': 'stweg', 'lg': lg, 'b': b, 'positionen': b.positionen.select_related('schluessel'),
         'vorschau': vorschau.items(), 'fehler': fehler, 'probleme': bd.pruefen(b) if b.status != 'genehmigt' else [],
         'schluessel': lg.stweg_schluessel.all(), 'traktanden': traktanden,
         'angehaengt': b.traktanden.select_related('versammlung'),

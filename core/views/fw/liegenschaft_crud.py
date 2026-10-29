@@ -456,7 +456,7 @@ def fw_suche(request):
 
     total = len(personen) + len(liegenschaften) + len(objekte) + len(vertraege)
     return render(request, 'fw/suche.html', {
-        **basis, 'nav': '', 'q': q, 'total': total,
+        **basis, 'nav': 'suche', 'q': q, 'total': total,
         'personen': personen, 'liegenschaften': liegenschaften,
         'objekte': objekte, 'vertraege': vertraege,
     })

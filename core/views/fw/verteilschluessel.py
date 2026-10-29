@@ -129,7 +129,7 @@ def _seite(request, lg, *, status=200, neu=None, neu_fehler=None, raster_id=None
             else:
                 s.raster = [{'e': e, 'wert': vorhanden.get(e.id, ''), 'fehler': None} for e in einheiten]
             s.summenfehler = summenfehler if raster_id == s.id else None
-    ctx = {**_global_filter(request), 'lg': lg, 'standards': standards, 'typen': TYPEN, 'kostenarten': KOSTENARTEN,
+    ctx = {**_global_filter(request), 'nav': 'liegenschaften', 'lg': lg, 'standards': standards, 'typen': TYPEN, 'kostenarten': KOSTENARTEN,
            'neu': neu or {'gueltig_ab': date.today().isoformat()}, 'neu_fehler': neu_fehler or {},
            'kann_schreiben': hat_rolle(request.user, SCHREIB_ROLLEN)}
     return render(request, 'fw/verteilschluessel.html', ctx, status=status)
