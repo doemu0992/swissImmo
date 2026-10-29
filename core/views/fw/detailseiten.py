@@ -1781,6 +1781,8 @@ def _formulare_prozesse(v, user=None):
              'url': f'/neu/vertraege/{v.id}/zahlungsvereinbarung/', 'sub': 'Ratenplan für einen Rückstand'},
             {'titel': 'Herabsetzungsbegehren (Art. 270a)', 'icon': 'trend',
              'url': f'/neu/vertraege/{v.id}/herabsetzung/', 'sub': 'Begehren des Mieters, 30 Tage Antwortfrist'},
+            {'titel': 'Verfahren (Art. 271a)', 'icon': 'recht',
+             'url': f'/neu/vertraege/{v.id}/verfahren/', 'sub': 'Schlichtung / Gericht: Kündigungssperre'},
             {'titel': 'Nutzungsentschädigung', 'icon': 'geld',
              'url': f'/neu/vertraege/{v.id}/nutzungsentschaedigung/', 'verfuegbar': v.ist_beendet,
              'sub': 'Mieter nach Vertragsende nicht ausgezogen'},
@@ -2140,6 +2142,7 @@ def fw_schlussabrechnung(request, vertrag_id):
                             vertrag=v, liegenschaft=lg_s, einheit=v.einheit,
                             titel="Schlussabrechnung (Nachzahlung)", datum=dat_s,
                             faellig_am=dat_s + _timedelta(days=30), betrag=neu_saldo, status='offen',
+                            forderungsart='sonstige',     # Schäden und Saldo gemischt: nicht Art. 257d
                             mwst_satz=(daten.get('mwst_satz') or Decimal('0.0')) if mwst_neu > 0 else Decimal('0.0'),
                             mwst_betrag=mwst_neu if mwst_neu > 0 else Decimal('0.00'))
                         if netto_neu != 0:
@@ -2449,6 +2452,17 @@ def _akte_kopfzahlen(v, total_offen, offene, pendenzen):
                      'Zertifikat sind nicht erfasst. Bis dahin fehlt der '
                      'Nachweis nach Art. 257e OR.'),
             'url': f'/neu/vertraege/{v.id}/#kaution', 'knopf': gettext('Erfassen')})
+    # Anfangsmietzins-Formular (Art. 270 Abs. 2 OR, MIET-04): Pflicht und Nachweis am Vertrag. Ohne Original
+    # und ohne Nachweis sagt die Akte es oben, nicht erst im Reiter «Mietzins».
+    from core.services.anfangsformular import anfangsformular_lage
+    af_lage = anfangsformular_lage(v.einheit if v.einheit_id else None, v)
+    if af_lage['gesperrt']:
+        chips.append(('crit', gettext('Formular-Nachweis fehlt')))
+        hinweise.append({
+            'art': 'warn', 'ikon': 'recht',
+            'titel': gettext('Anfangsmietzins-Formular erforderlich'),
+            'text': af_lage['hinweis'],
+            'url': f'/neu/vertraege/{v.id}/?tab=mietzins#vt-anfangsformular-nachweis', 'knopf': gettext('Nachweis erfassen')})
     # KEIN Hinweis auf eine fehlende Referenzzins-Basis: `basis_referenzzinssatz`
     # ist NOT NULL mit Vorgabewert aus `get_current_ref_zins`. Die Bedingung
     # koennte nie zutreffen — ein Hinweis, der nie erscheint, ist toter Code.
@@ -2456,6 +2470,7 @@ def _akte_kopfzahlen(v, total_offen, offene, pendenzen):
 
     eigentuemer = getattr(getattr(v.einheit, 'liegenschaft', None), 'eigentuemer', None)
     return {
+        'af_lage': af_lage,
         'kopf_chips': chips,
         'kopf_hinweise': hinweise,
         'kopf_netto': v.netto_mietzins or Decimal('0'),

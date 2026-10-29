@@ -287,6 +287,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
                 <p class="fw-klein mt-2">{% trans "Wartet auf Bestätigung durch Inhaber oder Verwalter." %}</p>
                 {% endif %}
                 {% if k.status != 'zurueckgezogen' %}
+                {% if k.absender == 'vermieter' %}<p class="fw-klein fw-warnton mt-1.5">{% trans "Vor dem Versand eigenhändig unterschreiben (Art. 266l OR, sonst nichtig, Art. 266o OR): Das PDF enthält kein Unterschriftsbild." %}</p>{% endif %}
                 <div class="flex items-center gap-3 mt-1.5">
                     {% if request.user|darf_schreiben %}
                     <form method="post" action="/neu/kuendigung/{{ k.id }}/formular/" target="_blank" class="inline">
@@ -491,6 +492,45 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
     </div>
     {% endif %}
 
+    {% if af_lage.erforderlich %}
+    {% comment %} MIET-04: Pflicht zum Anfangsmietzins-Formular. Ohne Original und ohne Nachweis bleibt der Entwurf Entwurf. {% endcomment %}
+    <div class="fw-card" id="vt-anfangsformular-nachweis">
+        <div class="fw-kopf">
+            <span class="fw-ikon">{% zeichen 'recht' %}</span><h2>{% trans "Anfangsmietzins-Formular" %}</h2>
+        </div>
+        <div class="px-5 py-3">
+            <div class="fw-hinweis {% if af_lage.gesperrt %}crit{% else %}warn{% endif %}">
+                <span class="fw-hi">{% zeichen 'warnung' %}</span>
+                <div class="fw-ht">{{ af_lage.hinweis }}</div>
+            </div>
+            {% if v.anfangsformular_nachweis %}
+            <p class="mt-3 text-sm">{% zeichen 'gut' klasse='fw-gut mr-1' %}<b>{{ v.get_anfangsformular_nachweis_display }}</b>{% if v.anfangsformular_datum %} · {{ v.anfangsformular_datum|date:"d.m.Y" }}{% endif %}{% if v.anfangsformular_notiz %} · {{ v.anfangsformular_notiz }}{% endif %}</p>
+            {% elif af_lage.nachweis %}
+            <p class="mt-3 text-sm">{% zeichen 'gut' klasse='fw-gut mr-1' %}{% trans "Das Formular liegt in der Akte." %}</p>
+            {% endif %}
+            {% if kann_schreiben and not af_lage.original and af_lage.grund != 'kanton_fehlt' %}
+            <form method="post" action="/neu/vertraege/{{ v.id }}/anfangsformular-nachweis/" class="mt-3">{% csrf_token %}
+                <div class="fw-formular">
+                    <div class="fw-feldblock"><label class="fw-label" for="vt_af_nachweis">{% trans "Nachweis" %}</label>
+                        <select name="anfangsformular_nachweis" id="vt_af_nachweis" class="fw-feld w-full">
+                            <option value="extern"{% if v.anfangsformular_nachweis == 'extern' %} selected{% endif %}>{% trans "Amtliches Formular extern verwendet und dem Mieter zugestellt" %}</option>
+                            {% if af_lage.pflicht == 'teilweise' %}<option value="nicht_betroffen"{% if v.anfangsformular_nachweis == 'nicht_betroffen' %} selected{% endif %}>{% trans "Formularpflicht trifft für dieses Objekt nicht zu" %}</option>{% endif %}
+                        </select></div>
+                    <div class="fw-feldblock"><label class="fw-label" for="vt_af_datum">{% trans "Datum der Zustellung" %}</label>
+                        <input type="date" name="anfangsformular_datum" id="vt_af_datum" value="{{ v.anfangsformular_datum|date:'Y-m-d' }}" class="fw-feld w-full"></div>
+                    <div class="fw-feldblock"><label class="fw-label" for="vt_af_notiz">{% trans "Bemerkung / Begründung" %}</label>
+                        <input name="anfangsformular_notiz" id="vt_af_notiz" maxlength="200" value="{{ v.anfangsformular_notiz }}" class="fw-feld w-full"></div>
+                </div>
+                <div class="mt-2 flex gap-2 flex-wrap">
+                    <button type="submit" class="fw-btn fw-primary fw-knapp">{% trans "Nachweis festhalten" %}</button>
+                    {% if v.anfangsformular_nachweis %}<button type="submit" name="aktion" value="entfernen" class="fw-btn fw-knapp">{% trans "Nachweis entfernen" %}</button>{% endif %}
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
     <div class="fw-card">
         <div class="fw-kopf">
             <span class="fw-ikon">{% zeichen 'bericht' %}</span><h2>{% trans "Amtliche Mietzinsanpassungen" %}</h2>
@@ -558,7 +598,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
                     {% if s.stufe.mitteilung_versandt_am %}· {% blocktrans with datum=s.stufe.mitteilung_versandt_am|date:"d.m.Y" %}versandt am {{ datum }}{% endblocktrans %}{% elif s.stufe.mitteilung_erstellt_am %}· {% blocktrans with datum=s.stufe.mitteilung_erstellt_am|date:"d.m.Y" %}Schreiben erstellt am {{ datum }}{% endblocktrans %}{% endif %}
                 </div>
                 {% if s.problem %}<div class="fw-s fw-warnton">{{ s.problem }}</div>{% endif %}
-                {% if s.verstrichen %}<div class="fw-s fw-warnton">{% trans "Die Erhöhung gilt bereits, ohne dass eine Mitteilung als versandt erfasst ist." %}</div>{% endif %}
+                {% if s.verstrichen %}<div class="fw-s fw-warnton">{% trans "Die Erhöhung ist eingetreten, ohne dass eine Mitteilung als versandt erfasst ist — sie wird nicht verrechnet, der bisherige Mietzins bleibt." %}</div>{% elif s.verspaetet %}<div class="fw-s fw-warnton">{% trans "Die Mitteilung wurde nicht rechtzeitig vor dem Eintritt versandt — die Stufe wird nicht verrechnet. Rechtsfolge mit einer Fachperson klären." %}</div>{% endif %}
             </div>
             <span class="fw-chip fw-dot {% if s.status == 'versandt' %}fw-good{% elif s.status == 'faellig' %}fw-warn{% elif s.status == 'erstellt' %}fw-info{% else %}fw-mut{% endif %}">{% if s.status == 'versandt' %}{% trans "versandt" %}{% elif s.status == 'faellig' %}{% trans "Mitteilung fällig" %}{% elif s.status == 'erstellt' %}{% trans "Schreiben erstellt" %}{% else %}{% trans "noch nicht im Fenster" %}{% endif %}</span>
             {% if z.dokument and z.dokument.datei %}<a href="{{ z.dokument.datei.url }}" target="_blank" rel="noopener" class="fw-btn fw-knapp">{% trans "Schreiben öffnen" %}</a>{% endif %}

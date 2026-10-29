@@ -181,6 +181,7 @@ def _assistent_kontext(request, edit_id=None, immer_zeigen=None):
                 'kaution_monate': e.standard_kautionsmonate or 3,
                 'vertrag_titel': e.vertrag_titel, 'kategorie': e.mietrecht_kategorie,
                 'ist_einstellplatz': e.ist_einstellplatz,
+                'af': _af_fuer_assistent(e, lg),
             })
         if not objekte:
             continue
@@ -234,6 +235,10 @@ def _assistent_kontext(request, edit_id=None, immer_zeigen=None):
             'basis_lik_punkte': float(ev.basis_lik_punkte) if ev.basis_lik_punkte is not None else None,
             'kautions_betrag': float(ev.kautions_betrag) if ev.kautions_betrag else '',
             'kautions_konto': ev.kautions_konto or '',
+            'nk_kostenarten': list(ev.nk_kostenarten or []),
+            'af_nachweis': ev.anfangsformular_nachweis,
+            'af_datum': ev.anfangsformular_datum.isoformat() if ev.anfangsformular_datum else '',
+            'af_notiz': ev.anfangsformular_notiz,
         }
 
     from core.services.docuseal_service import docuseal_konfiguriert
@@ -249,7 +254,28 @@ def _assistent_kontext(request, edit_id=None, immer_zeigen=None):
         'vorwahl_einheit': vorwahl_einheit or '',
         'edit_vertrag': edit_vertrag, 'edit_json': edit_json,
         'docuseal_konfiguriert': docuseal_konfiguriert(),
+        'nk_katalog': _nk_katalog(),
     }
+
+
+#: Vorauswahl der Nebenkostenarten im Assistenten: die typischen Betriebskosten. Verwaltungshonorar,
+#: Versicherungen und «Sonstige» bleiben bewusst ungewählt: Sie müssen aktiv vereinbart werden
+#: (Art. 257a Abs. 2 OR; BGE 135 III 591: eine Sammelposition genügt nicht).
+NK_VORGABE = ('heizung', 'wasser', 'lift', 'allgemeinstrom', 'hauswartung', 'kabel_tv', 'garten')
+
+
+def _nk_katalog():
+    """Die Kostenarten des Katalogs (`Verteilschluessel.KOSTENART_CHOICES`) für die Auswahl im Assistenten."""
+    from portfolio.models import Verteilschluessel
+    return [{'key': k, 'name': n, 'vorgabe': k in NK_VORGABE} for k, n in Verteilschluessel.KOSTENART_CHOICES]
+
+
+def _af_fuer_assistent(einheit, liegenschaft):
+    """Was der Assistent zum Anfangsmietzins-Formular (Art. 270 Abs. 2 OR) am Objekt anzeigt (MIET-04)."""
+    from core.services.anfangsformular import anfangsformular_lage
+    einheit.liegenschaft = liegenschaft   # schon geladen; vermeidet eine Abfrage je Objekt
+    lage = anfangsformular_lage(einheit)
+    return {k: lage[k] for k in ('erforderlich', 'pflicht', 'original', 'hinweis')}
 
 
 def _assistent_mit_fehlern(request, P, feld_fehler, einheit):
@@ -534,6 +560,44 @@ def _unlesbare_eingaben(P):
     return fehler
 
 
+def _anfangsformular_aus_eingabe(P, einheit, vertrag, aktiv, fehler):
+    """Nachweis zum Anfangsmietzins-Formular aus dem Assistenten (MIET-04, Art. 270 Abs. 2 OR).
+
+    Gibt (nachweis, datum, notiz) zurück. Wo keine Pflicht besteht oder ein Original vorliegt, bleibt alles
+    leer. Soll der Vertrag aktiv werden, in einem Pflichtkanton ohne Original-Formular, braucht er den
+    Nachweis — sonst meldet `fehler(feld, text)` es am Feld «aktiv_setzen»."""
+    from core.services.anfangsformular import anfangsformular_lage, nachweis_aus_eingabe
+    lage = anfangsformular_lage(einheit, vertrag) if einheit else None
+    if not lage or not lage['erforderlich'] or lage['original']:
+        return '', None, ''
+    art, datum, notiz, fehlermeldungen = nachweis_aus_eingabe(
+        lage, P.get('anfangsformular_nachweis'), P.get('anfangsformular_datum'), P.get('anfangsformular_notiz'))
+    for feld, text in fehlermeldungen.items():
+        fehler(feld, text)
+    if aktiv and lage['gesperrt'] and not art and not lage['nachweis']:
+        fehler('aktiv_setzen', lage['hinweis'] + ' ' + gettext(
+            'Zum Aktivieren den Nachweis im Schritt «Abschluss» erfassen — oder den Vertrag als Entwurf speichern.'))
+    return art, datum, notiz
+
+
+def _nk_kostenarten_aus_eingabe(P, einheit, nebenkosten, fehler):
+    """Die im Vertrag einzeln bezeichneten Nebenkostenarten (MIET-11, Art. 257a Abs. 2 OR).
+
+    Nur Schlüssel des Kataloges (`Verteilschluessel.KOSTENART_CHOICES`) in dessen Reihenfolge. Neue
+    Verträge mit Akonto oder Pauschale verlangen mindestens eine Art."""
+    from portfolio.models import Verteilschluessel
+    katalog = [k for k, _n in Verteilschluessel.KOSTENART_CHOICES]
+    gewaehlt = set(P.getlist('nk_kostenarten'))
+    arten = [k for k in katalog if k in gewaehlt]
+    ist_ep = bool(einheit and einheit.ist_einstellplatz)
+    if (P.get('nk_abrechnungsart', 'akonto') in ('akonto', 'pauschal') and not ist_ep
+            and nebenkosten > 0 and not arten):
+        fehler('nk_kostenarten', gettext(
+            'Bitte die Nebenkostenarten wählen, die der Mieter trägt: Sie müssen im Vertrag einzeln bezeichnet '
+            'sein (Art. 257a Abs. 2 OR). Nicht Aufgeführtes kann nicht abgerechnet werden.'))
+    return [] if ist_ep else arten
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_vertrag_neu_speichern(request):
     """Erstellt den Mietvertrag (+ optional neuen Mieter) aus dem Assistenten."""
@@ -608,12 +672,22 @@ def fw_vertrag_neu_speichern(request):
     # bisher); nur, was eingetippt und nicht lesbar ist, hält hier an.
     for feld, meldung in _unlesbare_eingaben(P):
         _fehler(feld, meldung)
+    # Kündigungsfrist unter der gesetzlichen Mindestfrist (Art. 266c/266d OR) wird abgelehnt (Audit MIET-08).
+    from rentals.services import kuendigungsfrist_fehler
+    _kf_fehler = kuendigungsfrist_fehler(P.get('kuendigungsfrist'), einheit)
+    if _kf_fehler:
+        _fehler('kuendigungsfrist', _kf_fehler)
     # MIETZINSMODELL (Art. 269b/269c OR): hart, nicht als Warnung. Dieselbe Regelquelle wie die
     # Live-Prüfung im Assistenten; der Browser lässt sich umgehen, diese Stelle nicht.
     modell = _modell_aus_eingabe(P, beginn=_datum_val('beginn'), netto=_dec_val('netto_mietzins'),
                                  vorhandener=editing)
     for feld, meldung in modell.fehler.items():
         _fehler(feld, meldung)
+    # MIET-04: Anfangsmietzins-Formular (Art. 270 Abs. 2 OR) — Nachweis, wo es kein Original gibt.
+    _af_art, _af_datum, _af_notiz = _anfangsformular_aus_eingabe(
+        P, einheit, editing, P.get('aktiv_setzen') == 'on', _fehler)
+    # MIET-11: Nebenkostenarten einzeln im Vertrag (Art. 257a Abs. 2 OR).
+    _nk_arten = _nk_kostenarten_aus_eingabe(P, einheit, _dec_val('nebenkosten'), _fehler)
     if feld_fehler:
         # Vorher: Meldungen oben, Weiterleitung auf einen LEEREN Assistenten —
         # sieben Schritte Eingaben waren weg (Audit Etappe 2, Nachtrag).
@@ -749,6 +823,8 @@ def fw_vertrag_neu_speichern(request):
         netto_mietzins=dec('netto_mietzins'), nebenkosten=_nk,
         nk_abrechnungsart=P.get('nk_abrechnungsart', 'akonto'),
         verteilschluessel=P.get('verteilschluessel', 'm2'),
+        nk_kostenarten=_nk_arten,
+        anfangsformular_nachweis=_af_art, anfangsformular_datum=_af_datum, anfangsformular_notiz=_af_notiz,
         zahlungsrhythmus=P.get('zahlungsrhythmus', 'monatlich'),
         mwst_pflichtig=P.get('mwst_pflichtig') == 'on',
         mwst_satz=dec('mwst_satz') or Decimal('8.1'),
@@ -851,17 +927,33 @@ def fw_vertrag_neu_speichern(request):
         # Amtliches Anfangsmietzins-Formular (Art. 270 Abs. 2 OR) automatisch
         # mitgenerieren, sofern Formularpflicht besteht — steht so zur
         # Schlüsselübergabe bereit (30-Tage-Anfechtungsfrist ab Erhalt).
+        # MIET-04: Der Grund wird nicht mehr verworfen. Pflicht ohne Original und ohne Nachweis kommt
+        # hier nicht mehr an (der Assistent hat sie abgewiesen); bleibt es dabei, dass nichts erstellt
+        # wurde, obwohl ein Original vorliegt, erfährt es die Verwaltung.
         try:
             erzeugt, _grund = anfangsmietzins_auto_ablegen(vertrag, verwaltung=_vw)
             if erzeugt:
                 messages.info(request, '📄 ' + gettext('Amtliches Anfangsmietzins-Formular wurde automatisch erstellt (Formularpflicht) — bei Schlüsselübergabe aushändigen.'))
+            elif _grund == 'kein_original' and vertrag.anfangsformular_nachweis:
+                messages.info(request, gettext('Anfangsmietzins-Formular: Nachweis am Vertrag festgehalten (%(art)s).')
+                              % {'art': vertrag.get_anfangsformular_nachweis_display()})
         except Exception:
-            logger.debug("Fehler bewusst übergangen", exc_info=True)
+            logger.warning("Anfangsmietzins-Formular für Vertrag %s nicht erstellt", vertrag.pk, exc_info=True)
+            messages.warning(request, gettext('Das Anfangsmietzins-Formular konnte nicht automatisch erstellt werden — '
+                                              'bitte unter «Anfangsmietzins» am Vertrag von Hand erstellen.'))
 
     # Nettomietzins 0 ist fast immer ein vergessenes Feld — warnen (nicht blockieren),
     # da ohne Mietzins die Sollstellung 0 verrechnet.
     if (vertrag.netto_mietzins or Decimal('0')) <= 0:
         messages.warning(request, '⚠️ ' + gettext('Nettomietzins ist CHF 0 — bitte prüfen. Ohne Mietzins erzeugt der Mietenlauf keine Forderung.'))
+
+    # MIET-04: Pflichtkanton ohne Original und ohne Nachweis — der Vertrag bleibt Entwurf; der Hinweis steht
+    # hier und am Vertrag, dazu eine Pendenz (idempotent). Aktiv wird er erst mit dem Nachweis.
+    from core.services.anfangsformular import anfangsformular_lage, pendenz_nachweis_anlegen
+    _af = anfangsformular_lage(einheit, vertrag)
+    if _af['gesperrt']:
+        messages.warning(request, '⚠️ ' + _af['hinweis'])
+        pendenz_nachweis_anlegen(vertrag, _af['hinweis'])
 
     # Mietzinsmodell (Art. 269b/269c OR): Verstösse hat `_modell_aus_eingabe` schon vor dem Speichern
     # abgelehnt. Gemeldet wird hier nur noch eine Altlast, ein bestehender Entwurf mit unverändertem
@@ -982,7 +1074,7 @@ def fw_vertrag_vorschau(request):
         beginn=datum('beginn') or timezone.localdate(), ende=modell.ende, ist_befristet=modell.ist_befristet,
         vermieter_kuendigungsverzicht_bis=modell.verzicht_bis,
         erstmals_kuendbar_auf=datum('erstmals_kuendbar'),
-        kuendigungsfrist_monate=int(P.get('kuendigungsfrist') or 3),
+        kuendigungsfrist_monate=int(P.get('kuendigungsfrist') or (6 if einheit.mietrecht_kategorie == 'gewerbe' else 3)),
         kuendigungstermine=P.get('kuendigungstermine', '').strip() or 'Ende jedes Monats ausser Dezember',
         mitmieter_name=mitmieter, familienwohnung=P.get('familienwohnung') == 'on',
         anzahl_personen=int(P.get('anzahl_personen') or 1),

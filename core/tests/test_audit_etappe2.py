@@ -519,7 +519,8 @@ class VertragAssistentLehntUnlesbaresAb(TestCase):
 
     def _speichern(self, **ueber):
         daten = {'einheit_id': str(self.frei.id), 'mieter_id': str(self.m.id),
-                 'netto_mietzins': '1800', 'nebenkosten': '250', 'beginn': '2025-04-01'}
+                 'netto_mietzins': '1800', 'nebenkosten': '250', 'beginn': '2025-04-01',
+                 'nk_kostenarten': ['heizung']}
         daten.update(ueber)
         return self.c.post('/neu/vertraege/neu/speichern/', daten, follow=True)
 
@@ -567,7 +568,7 @@ class VertragAssistentBehaeltEingaben(TestCase):
     def _speichern(self, **ueber):
         daten = {'einheit_id': str(self.frei.id), 'mieter_id': str(self.m.id),
                  'netto_mietzins': '1800', 'nebenkosten': '250', 'beginn': '2025-04-01',
-                 'besondere_vereinbarungen': 'Hund erlaubt'}
+                 'nk_kostenarten': ['heizung'], 'besondere_vereinbarungen': 'Hund erlaubt'}
         daten.update(ueber)
         return self.c.post('/neu/vertraege/neu/speichern/', daten)
 

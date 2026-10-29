@@ -34563,3 +34563,661 @@ msgstr "La demande n'a pas pu être traitée. Veuillez vérifier votre saisie."
 
 msgid "Die gewählte Liegenschaft gibt es nicht."
 msgstr "L'immeuble choisi n'existe pas."
+
+msgid "Abgeschlossen am"
+msgstr "Clôturé le"
+
+msgid "Abholeinladung (nicht abgeholt)"
+msgstr "Avis de retrait (non retiré)"
+
+msgid "Abholung / Zustellung"
+msgstr "Retrait / remise"
+
+msgid "Aktenzeichen / Behörde"
+msgstr "Numéro de dossier / autorité"
+
+msgid "Ausgang"
+msgstr "Issue"
+
+msgid "Ausnahme nach Art. 271a Abs. 3 OR liegt vor"
+msgstr "Une exception selon l'art. 271a al. 3 CO est réalisée"
+
+msgid ""
+"Ausnahmen (Art. 271a Abs. 3 OR): dringender Eigenbedarf des Vermieters oder "
+"naher Verwandter, Zahlungsrückstand (Art. 257d), schwere Verletzung der "
+"Sorgfaltspflicht (Art. 257f), Veräusserung der Sache (Art. 261), wichtige "
+"Gründe (Art. 266g), Konkurs des Mieters (Art. 266h)."
+msgstr ""
+"Exceptions (art. 271a al. 3 CO) : besoin urgent du bailleur ou de proches "
+"parents, demeure du locataire (art. 257d), violation grave du devoir de "
+"diligence (art. 257f), aliénation de la chose (art. 261), justes motifs "
+"(art. 266g), faillite du locataire (art. 266h)."
+
+msgid "Bitte Art und Gegenstand des Verfahrens wählen."
+msgstr "Veuillez choisir le type et l'objet de la procédure."
+
+msgid "Bitte ein Datum angeben, das nicht in der Zukunft liegt."
+msgstr "Veuillez indiquer une date qui n'est pas dans le futur."
+
+msgid "Bitte ein hängiges Verfahren und den Ausgang wählen."
+msgstr "Veuillez choisir une procédure pendante et son issue."
+
+msgid ""
+"Das Abschlussdatum darf weder vor Beginn des Verfahrens noch in der Zukunft "
+"liegen."
+msgstr ""
+"La date de clôture ne peut être ni antérieure au début de la procédure ni "
+"dans le futur."
+
+msgid "Das Datum ist"
+msgstr "La date correspond à"
+
+#, python-format
+msgid ""
+"Das Verfahren (%(gegenstand)s) wurde am %(ende)s abgeschlossen: %(ausgang)s."
+" Eine Kündigung des Vermieters vor Ablauf von drei Jahren, also bis und mit "
+"%(bis)s, ist anfechtbar (Art. 271a Abs. 1 lit. e OR)."
+msgstr ""
+"La procédure (%(gegenstand)s) a été clôturée le %(ende)s : %(ausgang)s. Une "
+"résiliation par le bailleur avant l'expiration de trois ans, soit jusqu'au "
+"%(bis)s inclus, est annulable (art. 271a al. 1 let. e CO)."
+
+#, python-format
+msgid ""
+"Der Vertrag ist befristet und endet am %(datum)s ohne Kündigung (Art. 266 "
+"OR). Eine ordentliche Kündigung sieht er nicht vor (kein «Erstmals kündbar "
+"auf»), sie wäre wirkungslos und kann nicht erfasst werden. Zieht der Mieter "
+"früher aus, das gewünschte Ende vor dem %(datum)s angeben (vorzeitige "
+"Rückgabe, Art. 264 OR); ausserordentliche Kündigungen, etwa wegen "
+"Zahlungsverzugs (Art. 257d OR), bleiben möglich. Einigen sich die Parteien "
+"auf ein früheres Ende, ist das ein Aufhebungsvertrag: Das Vertragsende unter"
+" «Vertrag bearbeiten» anpassen."
+msgstr ""
+"Le bail est de durée déterminée et prend fin le %(datum)s sans résiliation "
+"(art. 266 CO). Il ne prévoit pas de résiliation ordinaire (pas de « "
+"Résiliable pour la première fois au »), qui serait sans effet et ne peut "
+"donc pas être enregistrée. Si le locataire part plus tôt, indiquer la fin "
+"souhaitée avant le %(datum)s (restitution anticipée, art. 264 CO) ; les "
+"résiliations extraordinaires, par exemple pour demeure dans le paiement "
+"(art. 257d CO), restent possibles. Si les parties conviennent d'une fin "
+"anticipée, il s'agit d'une convention d'annulation : adapter la fin du bail "
+"sous « Modifier le contrat »."
+
+#, python-format
+msgid ""
+"Der Vertrag nennt eine Kündigungsfrist von %(vertrag)s Monat(en); gesetzlich"
+" sind mindestens %(gesetz)s Monate (Art. 266b–266d OR). Eine kürzere Frist "
+"gilt nicht, die Kündigung gilt auf den nächstmöglichen Termin (Art. 266a "
+"Abs. 2 OR) — gerechnet wurde mit %(gesetz)s Monaten."
+msgstr ""
+"Le contrat prévoit un délai de résiliation de %(vertrag)s mois ; le minimum "
+"légal est de %(gesetz)s mois (art. 266b à 266d CO). Un délai plus court "
+"n'est pas valable : la résiliation vaut pour le prochain terme possible "
+"(art. 266a al. 2 CO) — le calcul a été fait avec %(gesetz)s mois."
+
+msgid "Die Abholeinladung kann nicht vor dem Versand liegen."
+msgstr "L'avis de retrait ne peut pas précéder l'envoi."
+
+#, python-format
+msgid ""
+"Die Abholfrist läuft noch bis %(datum)s: Bis dahin kann der Mieter das "
+"Einschreiben noch abholen. Den Zugang erst danach als «nicht abgeholt» "
+"erfassen — oder die Abholung eintragen."
+msgstr ""
+"Le délai de retrait court encore jusqu'au %(datum)s : jusque-là, le "
+"locataire peut encore retirer l'envoi recommandé. N'enregistrer la réception"
+" comme « non retiré » qu'ensuite — ou saisir le retrait."
+
+#, python-format
+msgid ""
+"Die Frist wurde verlängert: Sie läuft %(tage)s Tage ab Zugang (Art. 257d "
+"Abs. 1 OR), und der Zugang liegt frühestens nach Postweg und siebentägiger "
+"Abholfrist des Einschreibens."
+msgstr ""
+"Le délai a été prolongé : il court %(tage)s jours dès la réception (art. "
+"257d al. 1 CO), et la réception intervient au plus tôt après le trajet "
+"postal et le délai de retrait de sept jours de l'envoi recommandé."
+
+#, python-format
+msgid ""
+"Die Kündigungsfrist beträgt mindestens %(min)s Monate (%(art)s). Eine "
+"kürzere Frist gilt nicht: Die Kündigung gälte auf den nächstmöglichen Termin"
+" (Art. 266a Abs. 2 OR)."
+msgstr ""
+"Le délai de résiliation est d'au moins %(min)s mois (%(art)s). Un délai plus"
+" court n'est pas valable : la résiliation vaudrait pour le prochain terme "
+"possible (art. 266a al. 2 CO)."
+
+msgid "Art. 266d OR (Geschäftsräume)"
+msgstr "art. 266d CO (locaux commerciaux)"
+
+msgid "Art. 266c OR (Wohnungen)"
+msgstr "art. 266c CO (logements)"
+
+msgid "Art. 266b OR"
+msgstr "art. 266b CO"
+
+#, python-format
+msgid ""
+"Die Mietzinsanpassung per %(wirksam)s ist angefochten (Status "
+"«angefochten»): Ein Schlichtungsverfahren läuft. Eine Kündigung des "
+"Vermieters während eines Verfahrens um die Mietsache ist anfechtbar (Art. "
+"271a Abs. 1 lit. d OR). Ist das Verfahren abgeschlossen, den Ausgang unter "
+"«Verfahren» erfassen."
+msgstr ""
+"L'adaptation de loyer au %(wirksam)s est contestée (statut « angefochten ») "
+": une procédure de conciliation est en cours. Une résiliation par le "
+"bailleur pendant une procédure relative à la chose louée est annulable (art."
+" 271a al. 1 let. d CO). Si la procédure est terminée, saisir l'issue sous « "
+"Procédures »."
+
+#, python-format
+msgid ""
+"Verfahren «%(art)s» (%(gegenstand)s), eingeleitet am %(beginn)s: "
+"%(zustand)s. Eine Kündigung des Vermieters während eines Verfahrens um die "
+"Mietsache ist anfechtbar (Art. 271a Abs. 1 lit. d OR)."
+msgstr ""
+"Procédure « %(art)s » (%(gegenstand)s), introduite le %(beginn)s : "
+"%(zustand)s. Une résiliation par le bailleur pendant une procédure relative "
+"à la chose louée est annulable (art. 271a al. 1 let. d CO)."
+
+msgid "läuft"
+msgstr "en cours"
+
+#, python-format
+msgid "lief bis %(ende)s"
+msgstr "a duré jusqu'au %(ende)s"
+
+msgid ""
+"Eine Kündigung des Vermieters ist anfechtbar, wenn sie während eines "
+"Schlichtungs- oder Gerichtsverfahrens um die Mietsache ausgesprochen wird "
+"(Art. 271a Abs. 1 lit. d OR) oder vor Ablauf von drei Jahren nach einem "
+"Verfahren, in dem der Vermieter unterlegen ist, die Klage zurückgezogen, auf"
+" die Anrufung des Richters verzichtet oder sich verglichen hat (lit. e). "
+"Dasselbe gilt für eine schriftlich nachgewiesene Einigung ausserhalb eines "
+"Verfahrens (Abs. 2). Die Erfassung einer Vermieterkündigung hält in diesen "
+"Zeiten an."
+msgstr ""
+"Une résiliation par le bailleur est annulable si elle est donnée pendant une"
+" procédure de conciliation ou judiciaire relative à la chose louée (art. "
+"271a al. 1 let. d CO) ou avant l'expiration de trois ans après une procédure"
+" dans laquelle le bailleur a succombé, retiré sa demande, renoncé à saisir "
+"le juge ou conclu une transaction (let. e). Il en va de même d'un accord "
+"prouvé par écrit en dehors d'une procédure (al. 2). La saisie d'une "
+"résiliation par le bailleur est suspendue pendant ces périodes."
+
+#, python-format
+msgid "Eingeleitet am %(d)s"
+msgstr "Introduite le %(d)s"
+
+msgid "Eingeleitet am (bei einer Einigung: Datum der Einigung)"
+msgstr "Introduite le (pour un accord : date de l'accord)"
+
+msgid "Erfasste Verfahren"
+msgstr "Procédures saisies"
+
+msgid ""
+"Es gibt keinen fälligen Rückstand an Mietzins oder Nebenkosten. Eine "
+"Fristansetzung mit Kündigungsandrohung nach Art. 257d OR setzt einen solchen"
+" voraus; andere Forderungen (Weiterverrechnung, Selbstbehalt, Mahngebühr) "
+"zählen nicht."
+msgstr ""
+"Il n'y a aucun arriéré échu de loyer ou de frais accessoires. La fixation "
+"d'un délai avec menace de résiliation selon l'art. 257d CO en suppose un ; "
+"les autres créances (refacturation, franchise, frais de rappel) ne comptent "
+"pas."
+
+msgid ""
+"Fristen laufen ab dem Tag, an dem ein Schreiben beim Empfänger ankommt — "
+"nicht ab dem Versand und nicht ab der Abholeinladung. Wird ein Einschreiben "
+"abgeholt, ist es der Tag der Abholung; wird es nicht abgeholt, gilt es am "
+"letzten Tag der siebentägigen Abholfrist als zugegangen (BGE 119 II 147). "
+"Ist der Zugang noch nicht bestätigt, rechnet die Anwendung vom "
+"spätestmöglichen Zugang (Postweg und Abholfrist) und sperrt eine Kündigung "
+"bis dahin."
+msgstr ""
+"Les délais courent dès le jour où un courrier parvient au destinataire — pas"
+" dès l'envoi ni dès l'avis de retrait. Si un envoi recommandé est retiré, "
+"c'est le jour du retrait ; s'il n'est pas retiré, il est réputé reçu le "
+"dernier jour du délai de retrait de sept jours (ATF 119 II 147). Tant que la"
+" réception n'est pas confirmée, l'application calcule à partir de la "
+"réception la plus tardive possible (trajet postal et délai de retrait) et "
+"bloque une résiliation jusque-là."
+
+msgid "Gegenstand"
+msgstr "Objet"
+
+msgid "Gerichtsverfahren"
+msgstr "Procédure judiciaire"
+
+msgid "Heute gesperrt"
+msgstr "Bloquée aujourd'hui"
+
+msgid "Kündigung / Erstreckung"
+msgstr "Résiliation / prolongation"
+
+#, python-format
+msgid ""
+"Kündigung des Vermieters anfechtbar bis und mit %(d)s (Art. 271a Abs. 1 lit."
+" e OR)."
+msgstr ""
+"Résiliation par le bailleur annulable jusqu'au %(d)s inclus (art. 271a al. 1"
+" let. e CO)."
+
+msgid ""
+"Kündigung in einer Sperrfrist nach Art. 271a OR erfasst, weil eine Ausnahme "
+"bestätigt wurde. Der Mieter kann sie anfechten."
+msgstr ""
+"Résiliation saisie pendant une période de protection selon l'art. 271a CO, "
+"une exception ayant été confirmée. Le locataire peut la contester."
+
+msgid ""
+"Liegt eine Ausnahme vor, das Kästchen «Ausnahme nach Art. 271a Abs. 3 OR "
+"liegt vor» setzen und die Kündigung erneut erfassen."
+msgstr ""
+"Si une exception existe, cocher la case « Une exception selon l'art. 271a "
+"al. 3 CO est réalisée » et saisir à nouveau la résiliation."
+
+msgid "Mieter hat das Begehren zurückgezogen"
+msgstr "Le locataire a retiré sa demande"
+
+msgid "Mieter hat das Verfahren missbräuchlich eingeleitet"
+msgstr "Le locataire a introduit la procédure de manière abusive"
+
+msgid "Mieter unterlegen"
+msgstr "Locataire ayant succombé"
+
+msgid "Mietrechtliche Verfahren (Art. 271a OR)"
+msgstr "Procédures en matière de bail (art. 271a CO)"
+
+msgid "Mietrechtliche Verfahren"
+msgstr "Procédures en matière de bail"
+
+msgid "Mietzins (Erhöhung, Anfangsmietzins, Herabsetzung)"
+msgstr "Loyer (augmentation, loyer initial, réduction)"
+
+msgid "Mietzins / Nebenkosten (Art. 257d OR)"
+msgstr "Loyer / frais accessoires (art. 257d CO)"
+
+msgid "Mängel / Gebrauch der Sache"
+msgstr "Défauts / usage de la chose"
+
+msgid "Schlichtungsverfahren"
+msgstr "Procédure de conciliation"
+
+msgid ""
+"Schriftliche Einigung ausserhalb eines Verfahrens (Art. 271a Abs. 2 OR)"
+msgstr "Accord écrit en dehors d'une procédure (art. 271a al. 2 CO)"
+
+msgid "Sonstige Forderung"
+msgstr "Autre créance"
+
+msgid "Sperrfrist nach Art. 271a OR"
+msgstr "Période de protection selon l'art. 271a CO"
+
+msgid ""
+"Tatsächliches Zustell-/Abholdatum aus Track & Trace — leer lassen, solange "
+"der Zugang nicht feststeht. Ab dem Zugang laufen die 30 Tage; bei "
+"Nichtabholung das Datum der Abholeinladung."
+msgstr ""
+"Date réelle de remise/retrait selon Track & Trace — laisser vide tant que la"
+" réception n'est pas établie. Les 30 jours courent dès la réception ; en cas"
+" de non-retrait, la date de l'avis de retrait."
+
+msgid "Verfahren abgeschlossen."
+msgstr "Procédure clôturée."
+
+#, python-format
+msgid ""
+"Verfahren abgeschlossen. Eine Kündigung des Vermieters ist bis und mit "
+"%(bis)s anfechtbar (Art. 271a Abs. 1 lit. e OR, drei Jahre)."
+msgstr ""
+"Procédure clôturée. Une résiliation par le bailleur est annulable jusqu'au "
+"%(bis)s inclus (art. 271a al. 1 let. e CO, trois ans)."
+
+msgid "Verfahren abschliessen"
+msgstr "Clôturer la procédure"
+
+msgid ""
+"Verfahren erfasst. Eine Kündigung des Vermieters ist ab jetzt gegen Art. "
+"271a OR geschützt und wird angehalten."
+msgstr ""
+"Procédure saisie. Dès maintenant, une résiliation par le bailleur est "
+"protégée par l'art. 271a CO et sera suspendue."
+
+msgid "Verfahren oder Einigung erfassen"
+msgstr "Saisir une procédure ou un accord"
+
+#, python-format
+msgid "Verfahren — %(name)s"
+msgstr "Procédures — %(name)s"
+
+msgid "Vergleich oder sonstige Einigung"
+msgstr "Transaction ou autre accord"
+
+msgid ""
+"Vermieter hat Forderung oder Klage zurückgezogen oder erheblich "
+"eingeschränkt"
+msgstr ""
+"Le bailleur a retiré sa prétention ou sa demande ou l'a considérablement "
+"restreinte"
+
+msgid "Vermieter hat auf die Anrufung des Richters verzichtet"
+msgstr "Le bailleur a renoncé à saisir le juge"
+
+msgid "Vermieter zu einem erheblichen Teil unterlegen"
+msgstr "Le bailleur a succombé dans une large mesure"
+
+msgid ""
+"Vor dem Versand eigenhändig unterschreiben (Art. 266l OR, sonst nichtig, "
+"Art. 266o OR): Das PDF enthält kein Unterschriftsbild."
+msgstr ""
+"Signer de sa main avant l'envoi (art. 266l CO, sinon nulle, art. 266o CO) : "
+"le PDF ne contient pas d'image de signature."
+
+msgid ""
+"Vor dem Versand eigenhändig unterschreiben: Die Fristansetzung mit "
+"Kündigungsandrohung braucht die Schriftform (Art. 257d Abs. 1 OR; Art. 13 "
+"und 14 OR). Die Anwendung setzt kein Unterschriftsbild ein — das PDF lässt "
+"die Unterschriftslinie frei."
+msgstr ""
+"Signer de sa main avant l'envoi : la fixation d'un délai avec menace de "
+"résiliation exige la forme écrite (art. 257d al. 1 CO ; art. 13 et 14 CO). "
+"L'application n'insère aucune image de signature — le PDF laisse la ligne de"
+" signature libre."
+
+msgid ""
+"Vor dem Versand eigenhändig unterschreiben: Die Kündigung braucht die "
+"Schriftform (Art. 266l Abs. 1 OR), sonst ist sie nichtig (Art. 266o OR). Die"
+" Anwendung setzt kein Unterschriftsbild ein — eine mechanisch nachgebildete "
+"Unterschrift ist bei der Kündigung nicht zugelassen (Art. 269d Abs. 4 OR "
+"gilt nur für Mietzinserhöhungen). Statt der Unterschrift von Hand genügt "
+"eine qualifizierte elektronische Signatur (Art. 14 Abs. 2bis OR)."
+msgstr ""
+"Signer de sa main avant l'envoi : la résiliation exige la forme écrite (art."
+" 266l al. 1 CO), sinon elle est nulle (art. 266o CO). L'application n'insère"
+" aucune image de signature — une signature reproduite mécaniquement n'est "
+"pas admise pour la résiliation (l'art. 269d al. 4 CO ne vaut que pour les "
+"hausses de loyer). Une signature électronique qualifiée remplace la "
+"signature manuscrite (art. 14 al. 2bis CO)."
+
+#, python-format
+msgid ""
+"Vorzeitige Rückgabe ohne angenommenen Ersatzmieter: Der Mieter haftet bis "
+"zum Ende der vereinbarten Vertragsdauer am %(termin)s (Art. 264 Abs. 2 OR)."
+msgstr ""
+"Restitution anticipée sans locataire de remplacement accepté : le locataire "
+"répond jusqu'à la fin de la durée convenue du bail, le %(termin)s (art. 264 "
+"al. 2 CO)."
+
+msgid ""
+"Zu diesem Vertrag ist kein Verfahren erfasst. Eine angefochtene "
+"Mietzinsanpassung zählt automatisch als laufendes Schlichtungsverfahren."
+msgstr ""
+"Aucune procédure n'est saisie pour ce contrat. Une adaptation de loyer "
+"contestée compte automatiquement comme procédure de conciliation en cours."
+
+#, python-format
+msgid "abgeschlossen am %(d)s"
+msgstr "clôturée le %(d)s"
+
+msgid "hängig"
+msgstr "pendante"
+
+msgid "hängig (nicht abgeschlossen)"
+msgstr "pendante (non clôturée)"
+
+msgid ""
+"Bei Zahlungsverzug setzt der Vermieter schriftlich eine Zahlungsfrist von "
+"mindestens 30 Tagen und droht die Kündigung an. Zahlt der Mieter nicht, ist "
+"eine Kündigung mit mindestens 30 Tagen Frist auf Ende eines Monats möglich. "
+"Genannt und angedroht werden nur fällige Mietzinse und Nebenkosten, keine "
+"anderen Forderungen."
+msgstr ""
+"En cas de retard de paiement, le bailleur fixe par écrit un délai de "
+"paiement d'au moins 30 jours et menace de résilier le bail. Si le locataire "
+"ne paie pas, une résiliation avec un préavis d'au moins 30 jours pour la fin"
+" d'un mois est possible. Seuls les loyers et frais accessoires échus sont "
+"mentionnés et font l'objet de la menace, à l'exclusion de toute autre "
+"créance."
+
+#, python-format
+msgid ""
+"Anfangsmietzins-Formular möglicherweise erforderlich (Art. 270 Abs. 2 OR, "
+"Kanton %(kanton)s: Formularpflicht nur für bestimmte Gemeinden oder "
+"Wohnungen); ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III "
+"583)."
+msgstr ""
+"Formule de loyer initial peut-être obligatoire (art. 270 al. 2 CO, canton "
+"%(kanton)s : obligation limitée à certaines communes ou à certains "
+"logements) ; sans la formule, la fixation du loyer est nulle (ATF 140 III "
+"583)."
+
+#, python-format
+msgid ""
+"Anfangsmietzins-Formular erforderlich (Art. 270 Abs. 2 OR, Kanton "
+"%(kanton)s); ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III"
+" 583)."
+msgstr ""
+"Formule de loyer initial obligatoire (art. 270 al. 2 CO, canton %(kanton)s) "
+"; sans la formule, la fixation du loyer est nulle (ATF 140 III 583)."
+
+msgid ""
+"Der Kanton der Liegenschaft ist nicht erfasst — ob der Anfangsmietzins das "
+"amtliche Formular braucht (Art. 270 Abs. 2 OR), lässt sich so nicht "
+"beurteilen. Ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III "
+"583). Bitte den Kanton bei der Liegenschaft erfassen."
+msgstr ""
+"Le canton de l'immeuble n'est pas saisi : on ne peut donc pas déterminer si "
+"le loyer initial exige la formule officielle (art. 270 al. 2 CO). Sans la "
+"formule, la fixation du loyer est nulle (ATF 140 III 583). Veuillez saisir "
+"le canton dans la fiche de l'immeuble."
+
+msgid ""
+"Das Formular des Kantons ist hinterlegt und wird beim Aktivieren automatisch"
+" in der Akte abgelegt."
+msgstr ""
+"La formule du canton est disponible et sera classée automatiquement dans le "
+"dossier lors de l'activation."
+
+msgid ""
+"Für diesen Kanton ist kein amtliches Original hinterlegt: Das Formular der "
+"kantonalen Behörde extern verwenden und den Nachweis am Vertrag festhalten."
+msgstr ""
+"Aucun original officiel n'est disponible pour ce canton : utiliser la "
+"formule de l'autorité cantonale en dehors de l'application et consigner la "
+"preuve dans le contrat."
+
+#, python-format
+msgid ""
+"%(hinweis)s Aktivieren erst, wenn der Nachweis am Vertrag festgehalten ist "
+"(«Formular extern verwendet», mit Datum)."
+msgstr ""
+"%(hinweis)s N'activer qu'une fois la preuve consignée dans le contrat (« "
+"formule utilisée en externe », avec la date)."
+
+msgid ""
+"Die Nebenkosten sind im Vertrag nicht einzeln bezeichnet (Art. 257a Abs. 2 "
+"OR, BGE 135 III 591): Was nicht klar und bestimmt vereinbart ist, trägt der "
+"Vermieter. Im Vertragsassistenten die Nebenkostenarten wählen."
+msgstr ""
+"Les frais accessoires ne sont pas désignés un à un dans le contrat (art. "
+"257a al. 2 CO, ATF 135 III 591) : ce qui n'est pas convenu de manière claire"
+" et précise est à la charge du bailleur. Choisir les types de frais "
+"accessoires dans l'assistant de contrat."
+
+msgid "Das Datum des Formulars ist nicht lesbar."
+msgstr "La date de la formule n'est pas lisible."
+
+msgid ""
+"Bitte das Datum angeben, an dem das Formular dem Mieter zugestellt wurde "
+"oder wird."
+msgstr ""
+"Veuillez indiquer la date à laquelle la formule a été ou sera remise au "
+"locataire."
+
+msgid ""
+"Diesen Nachweis gibt es nur, wo die Formularpflicht nur teilweise gilt "
+"(Neuenburg, Waadt). Hier besteht die Pflicht: das Formular der Behörde "
+"verwenden."
+msgstr ""
+"Cette preuve n'existe que là où l'obligation d'utiliser la formule est "
+"partielle (Neuchâtel, Vaud). Ici l'obligation s'applique : utiliser la "
+"formule de l'autorité."
+
+msgid ""
+"Bitte begründen, warum die Formularpflicht für dieses Objekt nicht zutrifft."
+msgstr ""
+"Veuillez justifier pourquoi l'obligation d'utiliser la formule ne s'applique"
+" pas à cet objet."
+
+msgid ""
+"ohne amtliches Formular ist die Mietzinsvereinbarung nichtig (Art. 270 Abs. "
+"2 OR; BGE 140 III 583)"
+msgstr ""
+"sans la formule officielle, la fixation du loyer est nulle (art. 270 al. 2 "
+"CO ; ATF 140 III 583)"
+
+msgid ""
+"wo die Formularpflicht gilt, ist die Mietzinsvereinbarung ohne amtliches "
+"Formular nichtig (Art. 270 Abs. 2 OR; BGE 140 III 583)"
+msgstr ""
+"là où l'obligation d'utiliser la formule s'applique, la fixation du loyer "
+"sans formule officielle est nulle (art. 270 al. 2 CO ; ATF 140 III 583)"
+
+msgid ""
+"nach dem Verzeichnis der Formularpflicht besteht in diesem Kanton keine "
+"Pflicht (Art. 270 Abs. 2 OR)"
+msgstr ""
+"selon le répertoire de l'obligation de formule, ce canton n'impose aucune "
+"obligation (art. 270 al. 2 CO)"
+
+#, python-format
+msgid ""
+"Vertrag %(name)s (%(e)s) nennt diese Kostenart nicht · Anteil beim "
+"Eigentümer"
+msgstr ""
+"Le contrat %(name)s (%(e)s) ne mentionne pas ce type de frais · part à la "
+"charge du propriétaire"
+
+msgid "Anfangsmietzins-Formular"
+msgstr "Formule de loyer initial"
+
+msgid "Das Formular liegt in der Akte."
+msgstr "La formule figure dans le dossier."
+
+msgid "Nachweis"
+msgstr "Preuve"
+
+msgid "Amtliches Formular extern verwendet und dem Mieter zugestellt"
+msgstr "Formule officielle utilisée en externe et remise au locataire"
+
+msgid "Formularpflicht trifft für dieses Objekt nicht zu"
+msgstr "L'obligation d'utiliser la formule ne s'applique pas à cet objet"
+
+msgid "Datum der Zustellung"
+msgstr "Date de remise"
+
+msgid "Bemerkung / Begründung"
+msgstr "Remarque / justification"
+
+msgid "Nachweis festhalten"
+msgstr "Consigner la preuve"
+
+msgid "Nachweis entfernen"
+msgstr "Supprimer la preuve"
+
+msgid ""
+"Die Erhöhung ist eingetreten, ohne dass eine Mitteilung als versandt erfasst"
+" ist — sie wird nicht verrechnet, der bisherige Mietzins bleibt."
+msgstr ""
+"L'augmentation est entrée en vigueur sans qu'aucune communication ne soit "
+"saisie comme envoyée — elle n'est pas facturée, le loyer actuel est "
+"maintenu."
+
+msgid ""
+"Die Mitteilung wurde nicht rechtzeitig vor dem Eintritt versandt — die Stufe"
+" wird nicht verrechnet. Rechtsfolge mit einer Fachperson klären."
+msgstr ""
+"La communication n'a pas été envoyée à temps avant l'entrée en vigueur — "
+"l'échelon n'est pas facturé. Faire clarifier la conséquence juridique par un"
+" spécialiste."
+
+msgid "Nebenkostenarten im Vertrag"
+msgstr "Types de frais accessoires dans le contrat"
+
+msgid ""
+"Nur angekreuzte Arten stehen im Vertrag und sind abrechenbar. Nebenkosten "
+"müssen klar und bestimmt vereinbart sein (Art. 257a Abs. 2 OR); was fehlt, "
+"trägt der Vermieter."
+msgstr ""
+"Seuls les types cochés figurent dans le contrat et peuvent être décomptés. "
+"Les frais accessoires doivent être convenus de manière claire et précise "
+"(art. 257a al. 2 CO) ; ce qui manque est à la charge du bailleur."
+
+msgid "Anfangsmietzins-Formular: Nachweis"
+msgstr "Formule de loyer initial : preuve"
+
+msgid ""
+"Für diesen Kanton ist kein amtliches Original hinterlegt. Das Formular der "
+"kantonalen Behörde wird ausserhalb der Anwendung verwendet; hier wird "
+"festgehalten, dass und wann."
+msgstr ""
+"Aucun original officiel n'est disponible pour ce canton. La formule de "
+"l'autorité cantonale est utilisée en dehors de l'application ; on consigne "
+"ici qu'elle l'a été et quand."
+
+msgid "Noch kein Nachweis (der Vertrag bleibt Entwurf)"
+msgstr "Pas encore de preuve (le contrat reste un brouillon)"
+
+msgid "Der Vertrag bleibt Entwurf."
+msgstr "Le contrat reste un brouillon."
+
+msgid "Nachweis entfernt."
+msgstr "Preuve supprimée."
+
+msgid "Für dieses Objekt ist kein Nachweis nötig."
+msgstr "Aucune preuve n'est nécessaire pour cet objet."
+
+msgid "Bitte wählen, was zutrifft."
+msgstr "Veuillez choisir ce qui convient."
+
+msgid "Nachweis zum Anfangsmietzins-Formular festgehalten."
+msgstr "Preuve relative à la formule de loyer initial consignée."
+
+msgid "Formular-Nachweis fehlt"
+msgstr "Preuve de la formule manquante"
+
+msgid "Anfangsmietzins-Formular erforderlich"
+msgstr "Formule de loyer initial obligatoire"
+
+msgid "Nachweis erfassen"
+msgstr "Saisir la preuve"
+
+msgid ""
+"Zum Aktivieren den Nachweis im Schritt «Abschluss» erfassen — oder den "
+"Vertrag als Entwurf speichern."
+msgstr ""
+"Pour activer, saisir la preuve à l'étape « Conclusion » — ou enregistrer le "
+"contrat comme brouillon."
+
+msgid ""
+"Bitte die Nebenkostenarten wählen, die der Mieter trägt: Sie müssen im "
+"Vertrag einzeln bezeichnet sein (Art. 257a Abs. 2 OR). Nicht Aufgeführtes "
+"kann nicht abgerechnet werden."
+msgstr ""
+"Veuillez choisir les types de frais accessoires supportés par le locataire :"
+" ils doivent être désignés un à un dans le contrat (art. 257a al. 2 CO). Ce "
+"qui n'y figure pas ne peut pas être décompté."
+
+#, python-format
+msgid "Anfangsmietzins-Formular: Nachweis am Vertrag festgehalten (%(art)s)."
+msgstr ""
+"Formule de loyer initial : preuve consignée dans le contrat (%(art)s)."
+
+msgid ""
+"Das Anfangsmietzins-Formular konnte nicht automatisch erstellt werden — "
+"bitte unter «Anfangsmietzins» am Vertrag von Hand erstellen."
+msgstr ""
+"La formule de loyer initial n'a pas pu être créée automatiquement — veuillez"
+" la créer à la main sous « Loyer initial » dans le contrat."

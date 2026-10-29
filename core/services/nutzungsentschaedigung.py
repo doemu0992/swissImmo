@@ -128,6 +128,8 @@ def _stelle_gesperrt(vertrag, jahr, monat, titel, user):
         beschreibung=(f'Entschädigung für die Weiternutzung vom {von:%d.%m.%Y} bis '
                       f'{bis:%d.%m.%Y} nach Vertragsende am {vertrag.ende:%d.%m.%Y}.'),
         betrag=total + mwst, faellig_am=von, status='offen',
+        # Entschädigung nach Vertragsende, kein Mietzins im Sinne von Art. 257d OR (konservativ).
+        forderungsart='sonstige',
         mwst_satz=satz if mwst else Decimal('0.0'), mwst_betrag=mwst)
     buche("1100", ertrag_konto, netto, f"{titel} {vertrag.mieter}",
           datum=von, liegenschaft=lg, debitor=rechnung, user=user)

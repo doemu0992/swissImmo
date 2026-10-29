@@ -351,6 +351,7 @@ def fw_debitor_neu(request):
             einheit=(vertrag.einheit if vertrag else None),
             titel=titel, beschreibung=(request.POST.get('beschreibung') or '').strip(),
             datum=heute, faellig_am=faellig, betrag=betrag + mwst, status='offen',
+            forderungsart='sonstige',     # freie Rechnung, kein Mietzins (Art. 257d OR)
             konto_haben=konto_haben,
             mwst_satz=satz if mwst else Decimal('0.0'), mwst_betrag=mwst,
         )
@@ -431,7 +432,8 @@ def fw_weiterverrechnung(request, kreditor_id):
                     titel=titel, beschreibung=f"Weiterverrechnung Lieferantenrechnung {k.lieferant}"
                                               + (f" · {k.referenz}" if k.referenz else ''),
                     datum=heute, faellig_am=heute + _timedelta(days=30), betrag=total,
-                    status='offen', quell_kreditor=k, weiterverrechnung_zuschlag=zuschlag)
+                    status='offen', quell_kreditor=k, weiterverrechnung_zuschlag=zuschlag,
+                    forderungsart='sonstige')
                 buche("1100", "1190", grund, f"Weiterverrechnung {vertrag.mieter}: {titel}",
                       datum=heute, liegenschaft=lg2, debitor=rechnung, kreditor=k, user=request.user)
                 # Der Aufwand wurde bei der Freigabe nur mit dem NETTO gebucht (Vorsteuer

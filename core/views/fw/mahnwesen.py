@@ -400,7 +400,7 @@ def _mahngebuehr_stellen(rechnung, stufe, gebuehr, user, heute):
         titel=f"Mahngebühr {stufe}. Mahnung",
         beschreibung=f"Mahngebühr zu: {rechnung.titel}",
         datum=heute, faellig_am=heute + _timedelta(days=30),
-        betrag=gebuehr, status='offen',
+        betrag=gebuehr, status='offen', forderungsart='sonstige',
         stammrechnung=rechnung,   # für Storno-Kaskade (Live-Test E)
     )
     buche("1100", "3600", gebuehr, f"Mahngebühr {stufe}. Mahnung {rechnung.vertrag.mieter}",

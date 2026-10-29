@@ -121,7 +121,13 @@ test.describe('Arbeitstag', () => {
     await page.fill('#s_nk', '200');
     await weiter.click();                                   // → Kaution
     await weiter.click();                                   // → Nebenkosten
+    // Art. 257a Abs. 2 OR: Die Nebenkostenarten stehen einzeln im Vertrag (Pflicht bei Akonto).
+    await page.locator('input[name="nk_kostenarten"][value="heizung"]').check();
     await weiter.click();                                   // → Abschluss
+    // Aktiv setzen braucht den Nachweis des Anfangsmietzins-Formulars (Art. 270 Abs. 2 OR).
+    await page.selectOption('#s_af_nachweis', 'extern');
+    await page.fill('#s_af_datum', iso(monatsanfang));
+    await page.fill('#s_af_notiz', 'E2E: Formular extern zugestellt');
     const speichern = page.locator('#btn-save');
     await expect(speichern).toBeVisible();
     await speichern.click();

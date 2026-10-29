@@ -15,6 +15,20 @@ Original-PDF unter `core/services/formulare/` liegt und die Feld-Koordinaten in
 > amtlich» und ohne Ablage in der Akte (`formular_fill.formular_status`,
 > `mit_wasserzeichen`).
 
+> **Seit 28.10.2026 (Audit MIET-04/FUNK-07): Anfangsmietzins-Formular in Pflichtkantonen
+> ohne Original.** Das Verzeichnis der Formularpflicht (`formularpflicht.py`, Ausgabe
+> September 2026 des BWO) nennt BS, BE, FR, GE, LU, ZG, ZH (Pflicht) sowie NE und VD
+> (teilweise). Nur BE hat ein Original für den Anfangsmietzins. In den übrigen Kantonen
+> ist die Mietzinsvereinbarung ohne Formular nichtig (Art. 270 Abs. 2 OR, BGE 140 III 583);
+> die Anwendung bildet das Formular **nicht** nach, sondern verlangt am Vertrag einen
+> **Nachweis** («Formular extern verwendet», mit Datum; `Mietvertrag.anfangsformular_*`):
+> ohne Nachweis wird der Entwurf weder im Assistenten noch über «Status ändern», den
+> Versand zur Unterschrift oder die Unterschrift aktiv, und eine Pendenz erinnert
+> (`core/services/anfangsformular.py`). Ein nicht erfasster Kanton gilt bei einer PLZ
+> in einem Pflichtkanton (oder mehrdeutiger PLZ mit Pflichtkandidat) als Pflicht.
+> NE/VD: Ob ein Objekt unter die Pflicht fällt, bestimmt die Gemeinde bzw. der Bezirk
+> (nicht abgebildet) — dort gibt es den Nachweis «Pflicht trifft nicht zu» mit Begründung.
+
 > **Download-Hinweis:** Die Behörden-PDFs können aus der Build-Umgebung nicht
 > automatisch heruntergeladen werden (Netzwerk-Policy → 403). Die Originale müssen
 > manuell geladen und beigelegt werden. Untenstehende Links wurden per Websuche

@@ -9,14 +9,25 @@ PLZ); ohne Kantonsoriginal eine sperrende Warnung mit der Rechtsfolge.
 """
 
 
-def _folge(typ):
+def _folge(typ, pflicht='ja'):
     """Die Folge je Formulartyp, mit der Fundstelle aus dem Gesetzesregister
-    (`core/services/gesetzestexte.py`: 269d «sonst nichtig», 266o «nichtig»)."""
+    (`core/services/gesetzestexte.py`: 269d «sonst nichtig», 266o «nichtig»).
+
+    Anfangsmietzins (MIET-04): Wo der Kanton die Formularpflicht eingeführt hat, ist die
+    Mietzinsvereinbarung ohne das Formular nichtig (Art. 270 Abs. 2 OR, BGE 140 III 583) — nicht bloss
+    «mangelhaft». Wo keine Pflicht besteht, sagt der Satz auch das."""
     from django.utils.translation import gettext
     if typ == 'kuendigung':
         return gettext('ohne amtliches Formular ist die Kündigung nichtig (Art. 266l/266o OR)')
     if typ == 'anfangsmietzins':
-        return gettext('ohne amtliches Formular ist die Mitteilung mangelhaft (Art. 270 Abs. 2 OR)')
+        if pflicht == 'ja':
+            return gettext('ohne amtliches Formular ist die Mietzinsvereinbarung nichtig '
+                           '(Art. 270 Abs. 2 OR; BGE 140 III 583)')
+        if pflicht == 'teilweise':
+            return gettext('wo die Formularpflicht gilt, ist die Mietzinsvereinbarung ohne amtliches Formular '
+                           'nichtig (Art. 270 Abs. 2 OR; BGE 140 III 583)')
+        return gettext('nach dem Verzeichnis der Formularpflicht besteht in diesem Kanton keine Pflicht '
+                       '(Art. 270 Abs. 2 OR)')
     return gettext('ohne amtliches Formular ist die Anpassung nichtig (Art. 269d OR)')
 
 
@@ -35,10 +46,14 @@ def formular_status(lg, typ):
     original = bool(kt) and hat_original(kt, typ)
     warnung = ''
     if kt and not original:
+        pflicht = 'ja'
+        if typ == 'anfangsmietzins':
+            from core.services.formularpflicht import formularpflicht_fuer_kanton
+            pflicht = formularpflicht_fuer_kanton(kt)[0]
         warnung = gettext(
             'Für Kanton %(kanton)s ist kein amtliches Originalformular hinterlegt — verwenden '
             'Sie das Formular der kantonalen Behörde; %(folge)s.') % {
-                'kanton': KANTON_NAMEN.get(kt, kt), 'folge': _folge(typ)}
+                'kanton': KANTON_NAMEN.get(kt, kt), 'folge': _folge(typ, pflicht)}
     return {
         'kanton': kt, 'kanton_name': KANTON_NAMEN.get(kt, '') if kt else '',
         'kanton_fehlt': kt is None, 'original': original, 'warnung': warnung,

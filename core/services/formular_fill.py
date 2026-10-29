@@ -220,12 +220,11 @@ def fill_kuendigung_so(vertrag, kuendigung, verwaltung=None, empfaenger=None):
             c.drawString(76, _y(yy), zeile); yy += 11
         # Ort/Datum
         c.drawString(76, _y(562), f"{ort_kopf}, {heute.strftime('%d.%m.%Y')}")
-        us = getattr(eigentuemer, 'unterschrift_bild', None) if eigentuemer else None
-        if us:
-            try:
-                c.drawImage(us.path, 330, _y(575) - 4, width=110, height=22, preserveAspectRatio=True, mask='auto')
-            except Exception:
-                logger.debug("Fehler bewusst übergangen", exc_info=True)
+        # KEIN Unterschriftsbild (Audit MIET-03): Die Kündigung verlangt die Schriftform (Art. 266l Abs. 1 OR), eine
+        # Kündigung, die dem nicht entspricht, ist nichtig (Art. 266o OR). Die mechanisch nachgebildete
+        # Unterschrift (Art. 269d Abs. 4 OR) ist ausdrücklich nur für Mietzinserhöhungen und einseitige
+        # Vertragsänderungen zugelassen, nicht für die Kündigung. Das Feld bleibt frei; unterschrieben wird von
+        # Hand (Hinweis im Versandschritt, `UNTERSCHRIFT_HINWEIS_KUENDIGUNG`).
 
     return _merge(SO_KUENDIGUNG, _overlay(zeichnen))
 

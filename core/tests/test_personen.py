@@ -122,7 +122,7 @@ class PersonFirmaVereinTests(TestCase):
         r = c.post('/neu/vertraege/neu/speichern/', {
             'einheit_id': str(e.id), 'mieter_typ': 'firma', 'firmen_name': 'Handels GmbH',
             'kontaktperson': 'Frau Meier', 'm_strasse': 'Weg 3', 'm_plz': '8000', 'm_ort': 'Zürich',
-            'netto_mietzins': '2000', 'nebenkosten': '200', 'beginn': '2025-01-01'})
+            'netto_mietzins': '2000', 'nebenkosten': '200', 'beginn': '2025-01-01', 'nk_kostenarten': ['heizung']})
         self.assertEqual(r.status_code, 302)
         m = Mieter.objects.get(firmen_name='Handels GmbH')
         self.assertEqual(m.typ, 'firma')
@@ -688,7 +688,7 @@ class AdressHistorieTests(TestCase):
         r = c.post('/neu/vertraege/neu/speichern/', {
             'mieter_id': str(m.id), 'einheit_id': str(e.id),
             'beginn': beginn.isoformat(), 'netto_mietzins': '1500', 'nebenkosten': '200',
-            'mietzins_modell': 'fest', 'kautions_betrag': '4500',
+            'mietzins_modell': 'fest', 'kautions_betrag': '4500', 'nk_kostenarten': ['heizung'],
         })
         self.assertIn(r.status_code, (200, 302))
         self.assertTrue(MieterAdresse.objects.filter(mieter=m, art='wohn', gueltig_ab=beginn).exists())

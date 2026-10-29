@@ -13,7 +13,7 @@
 <p class="note">Erneuerungen und Änderungen an der Mietsache darf der Mieter nur mit schriftlicher Zustimmung des Vermieters vornehmen (Art. 260a OR). Bei Rückgabe kann der Vermieter die Wiederherstellung des früheren Zustandes verlangen.</p>
 
 <div class="sec">4. Mietzins und Nebenkosten</div>
-<p class="note">Der Mietzins ist im Voraus auf den vereinbarten Verfalltermin zu bezahlen. Nebenkosten werden gemäss den Bestimmungen des Mietvertrags abgerechnet. Der Vermieter ist berechtigt, den Mietzins nach den gesetzlichen Bestimmungen (Referenzzinssatz, Landesindex der Konsumentenpreise, allgemeine Kostensteigerungen) anzupassen.</p>
+<p class="note">Der Mietzins ist im Voraus auf den vereinbarten Verfalltermin zu bezahlen. Nebenkosten werden gemäss den Bestimmungen des Mietvertrags abgerechnet{% if vertrag.nk_kostenarten_namen %}; verrechenbar sind nur die dort einzeln bezeichneten Nebenkostenarten ({{ vertrag.nk_kostenarten_namen|join:", " }}){% endif %}. Der Vermieter ist berechtigt, den Mietzins nach den gesetzlichen Bestimmungen (Referenzzinssatz, Landesindex der Konsumentenpreise, allgemeine Kostensteigerungen) anzupassen.</p>
 
 <div class="sec">5. Zahlungsverzug</div>
 <p class="note">Kommt der Mieter mit der Zahlung fälliger Mietzinse oder Nebenkosten in Rückstand, kann ihm der Vermieter schriftlich eine Zahlungsfrist von 30 Tagen ansetzen und ihm für den Fall der Nichtzahlung die Kündigung androhen (Art. 257d OR).</p>

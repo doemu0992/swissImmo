@@ -243,6 +243,7 @@ class MandantenFixture:
         self.bewerbung = Mietbewerbung.objects.create(
             einheit=self.einheit, vorname='Bewerber', nachname=k,
             geburtsdatum=date(1990, 5, 5), mobilnummer='079 000 00 00',
+            geschlecht='weiblich',   # eine ältere Bewerbung: das Formular fragt es seit MIET-13 nicht mehr
             email=f'bew-{k.lower()}@example.ch', beruf='Testperson',
             einkommen_jahr=Decimal('90000'))
         self.handwerker = Handwerker.objects.create(firma=f'Sanitaer {k} GmbH')

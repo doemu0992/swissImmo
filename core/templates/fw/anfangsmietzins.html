@@ -72,7 +72,7 @@
         {% if vormiete %}
         <div class="fw-hinweis">
             <span class="fw-hi fw-flaeche2 fw-mutet">{% zeichen 'verlauf' %}</span><div class="fw-ht">Vorschlag aus dem letzten Vertrag dieses Objekts
-            (ab {{ vormiete.beginn|date:"d.m.Y" }}) — bitte prüfen.</div>
+            (ab {{ vormiete.beginn|date:"d.m.Y" }}), Stand {{ vor_stichtag|date:"d.m.Y" }} — der zuletzt gültige Mietzins vor dem neuen Vertrag. Bitte prüfen.</div>
         </div>
         {% endif %}
         <div class="fw-formular fw-rumpf">

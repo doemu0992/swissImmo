@@ -307,3 +307,19 @@ Vorlagen und Admin-Tabellen, bewusst).
 - Originalformulare für die übrigen 23 Kantone.
 
 Wächter: `test_betreibung` (29), `test_zahlungsvereinbarung_sperre` (10), `test_abnahme_produktionsreife` (40), Mietzins-/Kündigungstests; Gegenproben je Test (u. a. 53 von 54 bzw. 28 von 29 Mutanten sofort rot, die übrigen nach Korrektur).
+
+## Etappe 1 Recht: Zahlungsverzug und Kündigung (28.10.2026, MIET-01/02/03/06/07/08/10)
+
+| Befund | Umgesetzt |
+|---|---|
+| MIET-01 Zugang Art. 257d | Die Frist läuft ab **Abholung**, bei Nichtabholung ab dem letzten Tag der 7-tägigen Abholfrist (BGE 119 II 147 E. 2), nicht ab der Abholeinladung. Vorläufiges Fristende = Versand + 1 Tag Postweg + 7 Tage Abholfrist + 30 Tage (`zahlungsverzug.provisorisches_fristende`); `kuendigung_sperre` sperrt bis dahin auch ohne bestätigten Zugang, danach meldet `kuendigung_hinweis`, dass der Zugang nie bestätigt wurde. «Zugang bestätigen» kennt `abgeholt` und `nicht_abgeholt` (Abholeinladung → Zugang fingiert, erst nach Ablauf der Abholfrist erfassbar; `Pendenz.zugang_fingiert`). |
+| MIET-02 Betrag | `DebitorenRechnung.forderungsart` (`miete` = Mietzins und Nebenkosten, `sonstige`): Fristansetzung, Rückstand, Sperre, Eskalation und Mahnbrief der letzten Stufe berücksichtigen nur `miete`; der Brief nennt jede Forderung mit Monat und Betrag (bis drei im Text, sonst Beilage). Jede Anlagestelle nennt die Art ausdrücklich (Wächter `test_forderungsart`). |
+| MIET-03 Unterschrift | Die 257d-Fristansetzung und die Vermieterkündigung (SO-Original, Nachbildung) tragen kein Unterschriftsbild mehr; die Linie ist beschriftet. Hinweis «eigenhändig unterschreiben» in der Kündigungsmaske, beim Erfassen, beim Formular-PDF, in der Vertragsakte und bei der Fristansetzung. Mietzins-Formulare (Art. 269d Abs. 4 OR) unverändert. |
+| MIET-10 Art. 78 OR | `core/services/fristen.py`: Samstag, Sonntag und acht bundesweit anerkannte Feiertage rücken das Fristende auf den nächsten Werktag. Angewandt auf das Fristende der 257d-Frist (Anlegen, Zugang, Sperre, Zahlung) und die 30-Tage-Anfechtungsfrist einer Vermieterkündigung. |
+| MIET-06 Art. 271a OR | `rentals.Mietverfahren` (Seite `/neu/vertraege/<id>/verfahren/`, Inhaber/Verwalter) und angefochtene Mietzinsanpassungen: Eine Vermieterkündigung während eines Verfahrens (lit. d) und drei Jahre danach (lit. e, Abs. 2) wird angehalten; fortfahren nur mit ausdrücklicher Bestätigung einer Ausnahme nach Abs. 3 (Vermerk in der Kündigung und im Protokoll). 257d/257f/266g/266h lösen nichts aus. |
+| MIET-07 befristet | Ordentliche Kündigung eines befristeten Vertrags ohne «Erstmals kündbar auf» wird weder vom Vermieter noch vom Mieter erfasst (Art. 266 Abs. 1 OR); der Mieter kann vorzeitig zurückgeben (Art. 264 OR, haftet bis zum Vertragsende). |
+| MIET-08 Mindestfrist | `max(vertraglich, gesetzlich)` in der Terminberechnung und im Regelwerk; Vertrag bearbeiten und Vertrag erfassen lehnen eine Frist unter 3 (Wohnen) bzw. 6 Monaten (Gewerbe) ab; Altverträge werden nur gewarnt. |
+
+Offene Fachpunkte (Fachperson): Samstag bei privaten Fristen (konservativ übersprungen); kantonale und ortsübliche Feiertage fehlen; Postweg von einem Tag im vorläufigen Fristende; Zugang bei Mitmietern; Faksimile bei der 257d-Fristansetzung (hier nicht zugelassen); lit. a–c und die Ausnahmen Eigenbedarf und Veräusserung des Art. 271a sind nicht aus Daten ablesbar.
+
+Wächter: `test_fristen_werktag`, `test_257d_zugang_betrag`, `test_forderungsart`, `test_kuendigung_unterschrift`, `test_kuendigung_recht`, `test_kuendigungsschutz`; Gegenproben mit 19 Mutanten (Art. 78 aus, Abholfrist 0, Fiktion auf die Abholeinladung, Art nicht gefiltert, Unterschriftsbild je Weg, Befristung/Mindestfrist/Maske aus, Sperrfrist d/e/Hook aus, Art an einer Anlagestelle vergessen, Sperre ohne Werktag, Zahlung ohne Werktag, Rückstand ohne Prüfung, Mahnbrief und Eskalation für Nebenforderungen) — alle rot.

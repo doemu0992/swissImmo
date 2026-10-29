@@ -57,6 +57,22 @@ class Mietvertrag(OrganisationAusKette):
     sign_status = models.CharField("Signatur-Status", max_length=20, choices=STATUS_CHOICES, default='offen')
     unterzeichnet_am = models.DateTimeField("Unterzeichnet am (Rücklauf)", null=True, blank=True)
 
+    #: Nachweis zum Anfangsmietzins-Formular (MIET-04, Art. 270 Abs. 2 OR): In den Kantonen mit Formularpflicht
+    #: ohne hinterlegtes Original verwendet die Verwaltung das Formular der Behörde ausserhalb der Anwendung.
+    #: Ohne Nachweis (Dokument in der Akte oder diese Bestätigung) wird der Vertrag nicht aktiviert
+    #: (`core/services/anfangsformular.py`).
+    ANFANGSFORMULAR_NACHWEIS = [
+        ('', '—'),
+        ('extern', _('Amtliches Formular extern verwendet und dem Mieter zugestellt')),
+        ('nicht_betroffen', _('Formularpflicht trifft für dieses Objekt nicht zu')),
+    ]
+    anfangsformular_nachweis = models.CharField("Anfangsmietzins-Formular: Nachweis", max_length=16,
+                                                choices=ANFANGSFORMULAR_NACHWEIS, blank=True, default='')
+    anfangsformular_datum = models.DateField("Anfangsmietzins-Formular: Datum der Zustellung/Bestätigung",
+                                             null=True, blank=True)
+    anfangsformular_notiz = models.CharField("Anfangsmietzins-Formular: Bemerkung (Nachweis, Begründung)",
+                                             max_length=200, blank=True, default='')
+
     # --- FRISTEN & TERMINE ---
     beginn = models.DateField()
     # `ist_befristet` trennt sauber das befristete Verhältnis (endet ohne Kündigung
@@ -107,6 +123,11 @@ class Mietvertrag(OrganisationAusKette):
     #: verteilt eine ausgeschlossene Kostenart nicht auf diesen Mieter; sein Anteil geht auf eine
     #: Eigentümerzeile. Der Freitext oben bleibt für das, was sich nicht zuordnen lässt.
     ausgeschlossene_kostenarten = models.JSONField("Ausgeschlossene Kostenarten", default=list, blank=True)
+    #: Die im Vertrag EINZELN bezeichneten Nebenkostenarten (MIET-11, Art. 257a Abs. 2 OR, BGE 135 III 591):
+    #: Opt-in statt Opt-out. Schlüssel wie oben. Leer = Altvertrag ohne Liste (die Abrechnung verteilt wie bisher alle
+    #: Kostenarten ausser den ausgeschlossenen); gefüllt = nur diese Arten sind verrechenbar. Neue Verträge verlangen
+    #: die Liste im Assistenten, solange Nebenkosten (Akonto/Pauschal) vereinbart sind.
+    nk_kostenarten = models.JSONField("Im Vertrag bezeichnete Nebenkostenarten", default=list, blank=True)
     zahlungsrhythmus = models.CharField("Zahlungsrhythmus", max_length=20, choices=ZAHLUNGSRHYTHMUS_CHOICES, default='monatlich') # 🔥 NEU
     mwst_pflichtig = models.BooleanField("MWST-pflichtig", default=False)             # 🔥 NEU (v.a. Gewerbe)
     mwst_satz = models.DecimalField("MWST-Satz (%)", max_digits=4, decimal_places=1, default=Decimal('8.1'))  # 🔥 NEU (Option Art. 22 MWSTG)
@@ -369,9 +390,10 @@ class Mietvertrag(OrganisationAusKette):
         if soll:
             return soll.netto_mietzins or Decimal('0.00')
         if self.mietzins_modell == 'staffel':
-            stufen = [s for s in self.staffelstufen.all()
-                      if s.ab_datum and s.ab_datum <= stichtag]
-            stufe = max(stufen, key=lambda s: (s.ab_datum, s.id or 0)) if stufen else None
+            # MIET-09: Eine Stufe gilt nur mit belegter, rechtzeitiger Mitteilung (Art. 269d Abs. 5 OR);
+            # sonst bleibt der bisherige Mietzins (`staffel_mitteilung.stufe_wirkt`, konservative Lesart).
+            from core.services.staffel_mitteilung import wirksame_stufe
+            stufe = wirksame_stufe(self.staffelstufen.all(), stichtag)
             return stufe.netto_mietzins if stufe else basis
         return basis
 
@@ -691,6 +713,14 @@ class Mietvertrag(OrganisationAusKette):
             return 'neutral'
         except Exception:
             return 'neutral'
+
+    @property
+    def nk_kostenarten_namen(self):
+        """Die im Vertrag bezeichneten Nebenkostenarten als Klartext, in der Reihenfolge des Katalogs
+        (`portfolio.Verteilschluessel.KOSTENART_CHOICES`). Leer bei einem Altvertrag ohne Liste."""
+        from portfolio.models import Verteilschluessel
+        gewaehlt = set(self.nk_kostenarten or [])
+        return [str(name) for key, name in Verteilschluessel.KOSTENART_CHOICES if key in gewaehlt]
 
     #: Felder, die über das Mietzinsmodell entscheiden. Ändert eine Bearbeitung keines davon,
     #: blockiert `clean()` einen Altvertrag nicht wegen eines früheren Verstosses.
@@ -1315,6 +1345,76 @@ class Kuendigung(OrganisationAusKette):
 
     def __str__(self):
         return f"Kündigung {self.vertrag} durch {self.get_absender_display()}"
+
+
+class Mietverfahren(OrganisationAusKette):
+    """Schlichtungs- oder Gerichtsverfahren um die Mietsache (oder eine schriftliche Einigung) am Vertrag.
+
+    GRUNDLAGE: Art. 271a OR — Kündigungsschutz bei der Miete von Wohn- und Geschäftsräumen (Audit MIET-06). Die
+    Kündigung durch den Vermieter ist anfechtbar, wenn sie ausgesprochen wird
+
+    · lit. d — **während** eines mit dem Mietverhältnis zusammenhängenden Schlichtungs- oder Gerichtsverfahrens,
+      ausser der Mieter hat es missbräuchlich eingeleitet;
+    · lit. e — **vor Ablauf von drei Jahren nach Abschluss** eines solchen Verfahrens, in dem der Vermieter
+      1. zu einem erheblichen Teil unterlegen ist, 2. seine Forderung oder Klage zurückgezogen oder erheblich
+      eingeschränkt hat, 3. auf die Anrufung des Richters verzichtet hat oder 4. mit dem Mieter einen Vergleich
+      geschlossen oder sich sonstwie geeinigt hat; Abs. 2: ebenso bei einer schriftlich nachgewiesenen Einigung
+      über eine Forderung aus dem Mietverhältnis ausserhalb eines Verfahrens.
+
+    Ausnahmen (Abs. 3, nur für lit. d und e): dringender Eigenbedarf, Zahlungsrückstand (Art. 257d), schwere
+    Verletzung der Sorgfaltspflicht (Art. 257f Abs. 3 und 4), Veräusserung (Art. 261), wichtige Gründe
+    (Art. 266g), Konkurs des Mieters (Art. 266h). Die Prüfung steht in `core/services/kuendigungsschutz.py`.
+
+    Vor diesem Modell kannte das System weder ein Verfahren noch dessen Ausgang; nur der Status
+    «angefochten» einer Mietzinsanpassung (`Mietzinsanpassung`) deutete eines an."""
+    ORGANISATION_PFAD = 'vertrag'
+
+    ART_SCHLICHTUNG = 'schlichtung'
+    ART_GERICHT = 'gericht'
+    ART_EINIGUNG = 'einigung'
+    ART_CHOICES = [
+        (ART_SCHLICHTUNG, _('Schlichtungsverfahren')),
+        (ART_GERICHT, _('Gerichtsverfahren')),
+        (ART_EINIGUNG, _('Schriftliche Einigung ausserhalb eines Verfahrens (Art. 271a Abs. 2 OR)')),
+    ]
+    GEGENSTAND_CHOICES = [
+        ('mietzins', _('Mietzins (Erhöhung, Anfangsmietzins, Herabsetzung)')),
+        ('maengel', _('Mängel / Gebrauch der Sache')),
+        ('nebenkosten', _('Nebenkosten')),
+        ('kuendigung', _('Kündigung / Erstreckung')),
+        ('sonstiges', _('Sonstiges')),
+    ]
+    AUSGANG_HAENGIG = 'haengig'
+    AUSGANG_CHOICES = [
+        (AUSGANG_HAENGIG, _('hängig (nicht abgeschlossen)')),
+        ('vermieter_unterlegen', _('Vermieter zu einem erheblichen Teil unterlegen')),
+        ('vermieter_zurueckgezogen', _('Vermieter hat Forderung oder Klage zurückgezogen oder erheblich eingeschränkt')),
+        ('vermieter_verzicht', _('Vermieter hat auf die Anrufung des Richters verzichtet')),
+        ('vergleich', _('Vergleich oder sonstige Einigung')),
+        ('mieter_unterlegen', _('Mieter unterlegen')),
+        ('mieter_zurueckgezogen', _('Mieter hat das Begehren zurückgezogen')),
+        ('missbraeuchlich', _('Mieter hat das Verfahren missbräuchlich eingeleitet')),
+    ]
+    #: Ausgänge, nach denen der Schutz drei Jahre weiterläuft (Art. 271a Abs. 1 lit. e Ziff. 1–4).
+    AUSGAENGE_NACHFRIST = ('vermieter_unterlegen', 'vermieter_zurueckgezogen', 'vermieter_verzicht', 'vergleich')
+
+    vertrag = models.ForeignKey(Mietvertrag, on_delete=models.PROTECT, related_name='verfahren')
+    art = models.CharField("Art", max_length=12, choices=ART_CHOICES, default=ART_SCHLICHTUNG)
+    gegenstand = models.CharField("Gegenstand", max_length=12, choices=GEGENSTAND_CHOICES, default='sonstiges')
+    eingeleitet_am = models.DateField("Eingeleitet am", default=datum_heute)
+    abgeschlossen_am = models.DateField("Abgeschlossen am", null=True, blank=True)
+    ausgang = models.CharField("Ausgang", max_length=24, choices=AUSGANG_CHOICES, default=AUSGANG_HAENGIG)
+    aktenzeichen = models.CharField("Aktenzeichen / Behörde", max_length=120, blank=True, default='')
+    bemerkung = models.TextField("Bemerkung", blank=True, default='')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Mietrechtliches Verfahren"
+        verbose_name_plural = "Mietrechtliche Verfahren"
+        ordering = ['-eingeleitet_am', '-pk']
+
+    def __str__(self):
+        return f"{self.get_art_display()} {self.vertrag} ({self.get_ausgang_display()})"
 
 
 class Abnahmeprotokoll(OrganisationAusKette):

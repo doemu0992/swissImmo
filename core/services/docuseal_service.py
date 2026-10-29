@@ -56,6 +56,12 @@ def docuseal_senden(vertrag):
         if offen:
             return (False, "Das Mietzinsmodell ist nicht zulässig — Versand nicht möglich: "
                            + ' '.join(b.volltext for b in offen))
+        # Mit der Unterschrift würde er aktiv: Anfangsmietzins-Formular (MIET-04) und einzeln bezeichnete
+        # Nebenkosten (MIET-11) müssen vorher stehen.
+        from core.services.anfangsformular import aktivierungssperren
+        gruende = aktivierungssperren(vertrag)
+        if gruende:
+            return (False, "Versand nicht möglich: " + ' '.join(gruende))
 
     try:
         import requests

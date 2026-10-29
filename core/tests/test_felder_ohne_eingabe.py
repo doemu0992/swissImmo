@@ -207,6 +207,10 @@ AUSNAHMEN = {
     'portfolio.SchluesselAusgabe.quittung': 'PDF aus `schluessel.ausgeben`, nicht gewählt',
     'portfolio.SchluesselAusgabe.quittung_rueckgabe': 'PDF aus `schluessel.zuruecknehmen`, nicht gewählt',
     'portfolio.SchluesselAusgabe.abnahme': 'gesetzt von `schluessel.abnahme_buchen` beim Abschluss der Abnahme',
+    'mietprozess.Mietbewerbung.geschlecht':
+     'wird seit MIET-13 nicht mehr erhoben (EDÖB-Merkblatt vom 15.7.2025: in der Auswahlphase unzulässig); '
+     'nur Altbewerbungen tragen noch einen Wert, den `platzhalter` und die Übernahme zum Mieter lesen — '
+     'die Anrede erhebt der Vertragsassistent',
 }
 
 #: OFFENE LUECKEN — angezeigt, aber nirgends erfassbar.

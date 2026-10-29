@@ -240,7 +240,8 @@ def _monatsende(jahr: int, monat: int) -> _dt.date:
 # Postweg + 7-Tage-Abholfrist eines Einschreibens: das Formular muss dem Mieter
 # ZUGEHEN (Empfangstheorie), nicht bloss versandt sein. Ohne Puffer wäre eine am
 # Stichtag versandte Erhöhung real zu spät zugestellt → erst am Folgetermin
-# wirksam bzw. anfechtbar. Gleicher Wert wie ZUSTELL_PUFFER in fw_verzug_257d.
+# wirksam bzw. anfechtbar. Die 257d-Fristansetzung rechnet getrennt mit Postweg und Abholfrist
+# (`core.services.zahlungsverzug.POSTWEG_TAGE`, `ABHOLFRIST_TAGE`) — dort entscheidet der Zugang über die Sperre.
 ZUSTELL_PUFFER_TAGE = 7
 
 
@@ -248,7 +249,7 @@ def vermuteter_zugang(versand_am: _dt.date, zugang_am: _dt.date = None) -> _dt.d
     """Bestätigter Zugang, sonst Versand + Zustellpuffer.
 
     Dieselbe Vermutung wie für Art. 269d (unten) und die 257d-Fristansetzung
-    (`fw_verzug_257d`): Massgebend ist, wann das Schreiben dem Empfänger
+    (`core.services.zahlungsverzug`): Massgebend ist, wann das Schreiben dem Empfänger
     ZUGEHT. Solange das nicht feststeht, wird spät angenommen — eine darauf
     gerechnete Frist endet dann eher zu spät als zu früh."""
     if zugang_am:
@@ -299,7 +300,10 @@ def berechne_kuendigungstermin(vertrag, eingang_datum: _dt.date) -> _dt.date:
             return vertrag.erstmals_kuendbar_auf
         return me
 
-    frist = int(vertrag.kuendigungsfrist_monate or 3)
+    # Die gesetzliche Frist (Wohnungen 3, Geschäftsräume 6 Monate, Art. 266c/266d OR) ist die Mindestfrist: Der
+    # Vertrag kann eine LÄNGERE vereinbaren (Art. 266a Abs. 1 OR); eine kürzere gilt nicht, die Kündigung gilt auf den
+    # nächstmöglichen Termin (Art. 266a Abs. 2 OR). Audit MIET-08: Bisher zählte allein der Vertragswert.
+    frist = max(int(vertrag.kuendigungsfrist_monate or 3), gesetzliche_frist_monate(vertrag))
     termine, _herkunft = kuendigungstermine_fuer(vertrag)
 
     # Ende der Kündigungsfrist: Eingang + Frist, Tag auf die Monatslänge
@@ -378,19 +382,51 @@ AO_GRUENDE_VERMIETER = frozenset({'257d', '257f', '266g', '266h', '266k'})
 AO_GRUENDE_MIETER = frozenset({'266g', '266i', '266k'})
 
 
+def gesetzliche_frist_fuer_einheit(einheit) -> int:
+    """Gesetzliche Kündigungsfrist in Monaten für die Objektart der Einheit (siehe `gesetzliche_frist_monate`)."""
+    kategorie = getattr(einheit, 'mietrecht_kategorie', 'wohnen')
+    if kategorie == 'gewerbe':
+        return 6
+    if kategorie == 'nebenobjekt' and getattr(einheit, 'ist_einstellplatz', False):
+        return 0
+    return 3
+
+
 def gesetzliche_frist_monate(vertrag) -> int:
     """Gesetzliche Kündigungsfrist in Monaten nach Objektart (`mietrecht.ARTIKEL`):
     Wohnungen 3 (Art. 266c), Geschäftsräume 6 (Art. 266d), übrige unbewegliche
     Sachen 3 (Art. 266b). 0 = gesondert vermieteter Einstellplatz: zwei Wochen auf
     Ende einer einmonatigen Mietdauer (Art. 266e) — `berechne_kuendigungstermin`
     rechnet <= 0 genau so."""
-    kategorie = getattr(vertrag, 'mietrecht_kategorie', 'wohnen')
     einheit = getattr(vertrag, 'einheit', None)
-    if kategorie == 'gewerbe':
-        return 6
-    if kategorie == 'nebenobjekt' and einheit is not None and getattr(einheit, 'ist_einstellplatz', False):
-        return 0
-    return 3
+    if einheit is None:
+        return 3
+    return gesetzliche_frist_fuer_einheit(einheit)
+
+
+def kuendigungsfrist_fehler(wert, einheit) -> str:
+    """Meldung, wenn die vereinbarte Kündigungsfrist (Monate) unter der gesetzlichen Mindestfrist der Objektart
+    liegt — sonst ''. Audit MIET-08: Art. 266c (Wohnungen, drei Monate) und Art. 266d OR (Geschäftsräume, sechs
+    Monate) sind Mindestfristen; eine kürzere vereinbarte Frist gilt nicht, die Kündigung gilt auf den
+    nächstmöglichen Termin (Art. 266a Abs. 2 OR). Die Erfassung nimmt sie darum nicht an.
+
+    `wert` darf eine Zahl, ein lesbarer Text oder leer sein (leer = es gilt die Vorgabe der Objektart)."""
+    from django.utils.translation import gettext
+    try:
+        monate = int(wert) if str(wert).strip() != '' and wert is not None else None
+    except (TypeError, ValueError):
+        return ''          # Unlesbares meldet die Eingabeprüfung, nicht diese
+    if monate is None:
+        return ''
+    kategorie = getattr(einheit, 'mietrecht_kategorie', 'wohnen')
+    minimum = gesetzliche_frist_fuer_einheit(einheit)
+    if monate >= minimum or minimum <= 0:
+        return ''
+    art = (gettext('Art. 266d OR (Geschäftsräume)') if kategorie == 'gewerbe'
+           else gettext('Art. 266c OR (Wohnungen)') if kategorie == 'wohnen' else gettext('Art. 266b OR'))
+    return gettext(
+        'Die Kündigungsfrist beträgt mindestens %(min)s Monate (%(art)s). Eine kürzere Frist gilt nicht: Die '
+        'Kündigung gälte auf den nächstmöglichen Termin (Art. 266a Abs. 2 OR).') % {'min': minimum, 'art': art}
 
 
 def ausserordentlicher_termin(vertrag, art: str, zugang: _dt.date):
@@ -510,16 +546,41 @@ def verarbeite_docuseal_event(payload):
         # über den Mandantenfilter, und die Pendenz braucht ihn ebenfalls.
         from core.services.mietzinsmodell import pruefe_vertrag, sperren
         from core.tenancy import organisation_kontext
+        from core.services.anfangsformular import aktivierungssperren
         with organisation_kontext(vertrag.organisation):
             offen = sperren(pruefe_vertrag(vertrag))
             if offen:
                 logger.warning("DocuSeal-Event: Vertrag %s unterzeichnet, Mietzinsmodell nicht zulässig — "
                                "bleibt Entwurf (%s)", vertrag.pk, ', '.join(b.regel for b in offen))
                 _pendenz_modell_gesperrt(vertrag, offen)
-        if not offen:
+            # MIET-04/MIET-11: ohne Anfangsmietzins-Formular (Art. 270 Abs. 2 OR) bzw. ohne einzeln
+            # bezeichnete Nebenkosten (Art. 257a Abs. 2 OR) wird der Vertrag nicht aktiv.
+            weitere = aktivierungssperren(vertrag)
+            if weitere:
+                logger.warning("DocuSeal-Event: Vertrag %s unterzeichnet, Voraussetzungen fehlen — bleibt Entwurf", vertrag.pk)
+                _pendenz_aktivierung_gesperrt(vertrag, weitere)
+        if not offen and not weitere:
             vertrag.status = 'aktiv'
     vertrag.save()   # → zentrale Ablage (Portal, Person, Objekt) via Model.save
     return True
+
+
+def _pendenz_aktivierung_gesperrt(vertrag, gruende):
+    """Pendenz «unterzeichnet, aber nicht aktiviert» wegen fehlendem Formular-Nachweis oder fehlenden
+    Nebenkostenarten — einmal je Vertrag (idempotent über `quelle`). Der Aufrufer hält den Mandantenkontext."""
+    from django.utils import timezone
+
+    from core.models import Pendenz
+    quelle = f'auto:aktivierungssperre:{vertrag.pk}'
+    if Pendenz.objects.filter(quelle=quelle, erledigt=False).exists():
+        return
+    titel = f'Vertrag unterzeichnet, aber nicht aktiv: {vertrag.mieter.display_name}'
+    Pendenz.objects.create(
+        quelle=quelle, titel=titel[:Pendenz._meta.get_field('titel').max_length],
+        kategorie='vertrag', faellig_am=timezone.localdate(), vertrag=vertrag,
+        liegenschaft=vertrag.einheit.liegenschaft if vertrag.einheit_id else None,
+        beschreibung=('Der Vertrag ist digital unterzeichnet, bleibt aber Entwurf: ' + ' '.join(gruende)
+                      + ' Nachholen, dann den Vertrag aktivieren.'))
 
 
 def _pendenz_modell_gesperrt(vertrag, befunde):

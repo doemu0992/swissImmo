@@ -82,6 +82,11 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
             v_start = max(start_date, v.beginn)
             v_ende = min(end_date, v.ende) if v.ende else end_date
             faktor = Decimal((v_ende - v_start).days + 1) / Decimal(last_day)
+            # MIET-09: Eine Staffelstufe ohne belegte, rechtzeitige Mitteilung wird nicht verrechnet
+            # (`effektiver_netto_mietzins`); die Verwaltung erfährt es als Pendenz.
+            if v.mietzins_modell == 'staffel':
+                from core.services.staffel_mitteilung import fehlende_mitteilung_pendenzen
+                fehlende_mitteilung_pendenzen(v, start_date)
             # --- Option B: Bruttobuchung ---
             # Referenz = die ECHTE vereinbarte Miete (Mieterspiegel/Bilanz-Ertrag),
             # verrechnet = was der Mieter effektiv zahlt (Referenz − Rabatt/Erlass).
@@ -118,6 +123,7 @@ def run_sollstellung(jahr, monat, user=None, liegenschaft=None):
                 vertrag=v, liegenschaft=v.einheit.liegenschaft, einheit=v.einheit,
                 titel=titel, betrag=netto_schuld, faellig_am=v_start,
                 mwst_satz=satz if mwst else Decimal('0.0'), mwst_betrag=mwst,
+                forderungsart='miete',     # Mietzins und Nebenkosten: Art. 257d OR
                 status='bezahlt' if netto_schuld <= 0 else 'offen')
             lg = v.einheit.liegenschaft if v.einheit_id else None
             ertrag_konto, nk_konto, nk_label = _konten_fuer(v)
@@ -377,7 +383,7 @@ def _mahnschritt_buchen(r, stufe, heute, offen, gebuehr, zins, tage, send_email,
                 vertrag=r.vertrag, liegenschaft=lg,
                 titel=" + ".join(teile), beschreibung=f"Zu: {r.titel}",
                 datum=heute, faellig_am=heute + timedelta(days=30),
-                betrag=zusatz, status='offen',
+                betrag=zusatz, status='offen', forderungsart='sonstige',
                 stammrechnung=r)   # für Storno-Kaskade (Live-Test E)
             # Ins Hauptbuch buchen (Forderung an übrigen Ertrag) — sonst driften
             # Nebenbuch (OP/Debitoren) und Hauptbuch (1100) auseinander, der

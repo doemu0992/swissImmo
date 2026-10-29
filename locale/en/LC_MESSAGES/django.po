@@ -34032,3 +34032,648 @@ msgstr "The request could not be processed. Please check your entry."
 
 msgid "Die gewählte Liegenschaft gibt es nicht."
 msgstr "The selected property does not exist."
+
+msgid "Abgeschlossen am"
+msgstr "Closed on"
+
+msgid "Abholeinladung (nicht abgeholt)"
+msgstr "Collection notice (not collected)"
+
+msgid "Abholung / Zustellung"
+msgstr "Collection / delivery"
+
+msgid "Aktenzeichen / Behörde"
+msgstr "File number / authority"
+
+msgid "Ausgang"
+msgstr "Outcome"
+
+msgid "Ausnahme nach Art. 271a Abs. 3 OR liegt vor"
+msgstr "An exception under Art. 271a para. 3 CO applies"
+
+msgid ""
+"Ausnahmen (Art. 271a Abs. 3 OR): dringender Eigenbedarf des Vermieters oder "
+"naher Verwandter, Zahlungsrückstand (Art. 257d), schwere Verletzung der "
+"Sorgfaltspflicht (Art. 257f), Veräusserung der Sache (Art. 261), wichtige "
+"Gründe (Art. 266g), Konkurs des Mieters (Art. 266h)."
+msgstr ""
+"Exceptions (Art. 271a para. 3 CO): urgent personal need of the landlord or "
+"close relatives, payment arrears (Art. 257d), serious breach of the duty of "
+"care (Art. 257f), sale of the property (Art. 261), good cause (Art. 266g), "
+"bankruptcy of the tenant (Art. 266h)."
+
+msgid "Bitte Art und Gegenstand des Verfahrens wählen."
+msgstr "Please choose the type and subject of the proceedings."
+
+msgid "Bitte ein Datum angeben, das nicht in der Zukunft liegt."
+msgstr "Please enter a date that is not in the future."
+
+msgid "Bitte ein hängiges Verfahren und den Ausgang wählen."
+msgstr "Please choose a pending proceeding and its outcome."
+
+msgid ""
+"Das Abschlussdatum darf weder vor Beginn des Verfahrens noch in der Zukunft "
+"liegen."
+msgstr ""
+"The closing date must be neither before the start of the proceedings nor in "
+"the future."
+
+msgid "Das Datum ist"
+msgstr "The date refers to"
+
+#, python-format
+msgid ""
+"Das Verfahren (%(gegenstand)s) wurde am %(ende)s abgeschlossen: %(ausgang)s."
+" Eine Kündigung des Vermieters vor Ablauf von drei Jahren, also bis und mit "
+"%(bis)s, ist anfechtbar (Art. 271a Abs. 1 lit. e OR)."
+msgstr ""
+"The proceedings (%(gegenstand)s) were concluded on %(ende)s: %(ausgang)s. A "
+"termination by the landlord before three years have passed, i.e. up to and "
+"including %(bis)s, is contestable (Art. 271a para. 1 let. e CO)."
+
+#, python-format
+msgid ""
+"Der Vertrag ist befristet und endet am %(datum)s ohne Kündigung (Art. 266 "
+"OR). Eine ordentliche Kündigung sieht er nicht vor (kein «Erstmals kündbar "
+"auf»), sie wäre wirkungslos und kann nicht erfasst werden. Zieht der Mieter "
+"früher aus, das gewünschte Ende vor dem %(datum)s angeben (vorzeitige "
+"Rückgabe, Art. 264 OR); ausserordentliche Kündigungen, etwa wegen "
+"Zahlungsverzugs (Art. 257d OR), bleiben möglich. Einigen sich die Parteien "
+"auf ein früheres Ende, ist das ein Aufhebungsvertrag: Das Vertragsende unter"
+" «Vertrag bearbeiten» anpassen."
+msgstr ""
+"The lease is for a fixed term and ends on %(datum)s without notice (Art. 266"
+" CO). It does not provide for ordinary termination (no “First terminable on”"
+" date), so such a notice would have no effect and cannot be recorded. If the"
+" tenant moves out earlier, enter the desired end date before %(datum)s "
+"(early return, Art. 264 CO); extraordinary terminations, for instance for "
+"payment default (Art. 257d CO), remain possible. If the parties agree on an "
+"earlier end, that is a termination agreement: adjust the lease end under "
+"“Edit lease”."
+
+#, python-format
+msgid ""
+"Der Vertrag nennt eine Kündigungsfrist von %(vertrag)s Monat(en); gesetzlich"
+" sind mindestens %(gesetz)s Monate (Art. 266b–266d OR). Eine kürzere Frist "
+"gilt nicht, die Kündigung gilt auf den nächstmöglichen Termin (Art. 266a "
+"Abs. 2 OR) — gerechnet wurde mit %(gesetz)s Monaten."
+msgstr ""
+"The lease states a notice period of %(vertrag)s month(s); the statutory "
+"minimum is %(gesetz)s months (Art. 266b–266d CO). A shorter period is not "
+"valid: the notice takes effect on the next possible date (Art. 266a para. 2 "
+"CO) — the calculation used %(gesetz)s months."
+
+msgid "Die Abholeinladung kann nicht vor dem Versand liegen."
+msgstr "The collection notice cannot be dated before dispatch."
+
+#, python-format
+msgid ""
+"Die Abholfrist läuft noch bis %(datum)s: Bis dahin kann der Mieter das "
+"Einschreiben noch abholen. Den Zugang erst danach als «nicht abgeholt» "
+"erfassen — oder die Abholung eintragen."
+msgstr ""
+"The collection period runs until %(datum)s: until then the tenant can still "
+"collect the registered letter. Only then record receipt as “not collected” —"
+" or record the collection."
+
+#, python-format
+msgid ""
+"Die Frist wurde verlängert: Sie läuft %(tage)s Tage ab Zugang (Art. 257d "
+"Abs. 1 OR), und der Zugang liegt frühestens nach Postweg und siebentägiger "
+"Abholfrist des Einschreibens."
+msgstr ""
+"The deadline was extended: it runs for %(tage)s days from receipt (Art. 257d"
+" para. 1 CO), and receipt occurs at the earliest after postal transit and "
+"the seven-day collection period of the registered letter."
+
+#, python-format
+msgid ""
+"Die Kündigungsfrist beträgt mindestens %(min)s Monate (%(art)s). Eine "
+"kürzere Frist gilt nicht: Die Kündigung gälte auf den nächstmöglichen Termin"
+" (Art. 266a Abs. 2 OR)."
+msgstr ""
+"The notice period is at least %(min)s months (%(art)s). A shorter period is "
+"not valid: the notice would take effect on the next possible date (Art. 266a"
+" para. 2 CO)."
+
+msgid "Art. 266d OR (Geschäftsräume)"
+msgstr "Art. 266d CO (commercial premises)"
+
+msgid "Art. 266c OR (Wohnungen)"
+msgstr "Art. 266c CO (residential premises)"
+
+msgid "Art. 266b OR"
+msgstr "Art. 266b CO"
+
+#, python-format
+msgid ""
+"Die Mietzinsanpassung per %(wirksam)s ist angefochten (Status "
+"«angefochten»): Ein Schlichtungsverfahren läuft. Eine Kündigung des "
+"Vermieters während eines Verfahrens um die Mietsache ist anfechtbar (Art. "
+"271a Abs. 1 lit. d OR). Ist das Verfahren abgeschlossen, den Ausgang unter "
+"«Verfahren» erfassen."
+msgstr ""
+"The rent adjustment effective %(wirksam)s has been contested (status "
+"“angefochten”): conciliation proceedings are pending. A termination by the "
+"landlord during proceedings concerning the leased property is contestable "
+"(Art. 271a para. 1 let. d CO). Once the proceedings are concluded, record "
+"the outcome under “Proceedings”."
+
+#, python-format
+msgid ""
+"Verfahren «%(art)s» (%(gegenstand)s), eingeleitet am %(beginn)s: "
+"%(zustand)s. Eine Kündigung des Vermieters während eines Verfahrens um die "
+"Mietsache ist anfechtbar (Art. 271a Abs. 1 lit. d OR)."
+msgstr ""
+"Proceedings “%(art)s” (%(gegenstand)s), initiated on %(beginn)s: "
+"%(zustand)s. A termination by the landlord during proceedings concerning the"
+" leased property is contestable (Art. 271a para. 1 let. d CO)."
+
+msgid "läuft"
+msgstr "pending"
+
+#, python-format
+msgid "lief bis %(ende)s"
+msgstr "ran until %(ende)s"
+
+msgid ""
+"Eine Kündigung des Vermieters ist anfechtbar, wenn sie während eines "
+"Schlichtungs- oder Gerichtsverfahrens um die Mietsache ausgesprochen wird "
+"(Art. 271a Abs. 1 lit. d OR) oder vor Ablauf von drei Jahren nach einem "
+"Verfahren, in dem der Vermieter unterlegen ist, die Klage zurückgezogen, auf"
+" die Anrufung des Richters verzichtet oder sich verglichen hat (lit. e). "
+"Dasselbe gilt für eine schriftlich nachgewiesene Einigung ausserhalb eines "
+"Verfahrens (Abs. 2). Die Erfassung einer Vermieterkündigung hält in diesen "
+"Zeiten an."
+msgstr ""
+"A termination by the landlord is contestable if given during conciliation or"
+" court proceedings concerning the leased property (Art. 271a para. 1 let. d "
+"CO) or within three years after proceedings in which the landlord largely "
+"lost, withdrew the claim, waived recourse to the court or reached a "
+"settlement (let. e). The same applies to an agreement proven in writing "
+"outside of proceedings (para. 2). Recording a termination by the landlord is"
+" halted during these periods."
+
+#, python-format
+msgid "Eingeleitet am %(d)s"
+msgstr "Initiated on %(d)s"
+
+msgid "Eingeleitet am (bei einer Einigung: Datum der Einigung)"
+msgstr "Initiated on (for an agreement: date of the agreement)"
+
+msgid "Erfasste Verfahren"
+msgstr "Recorded proceedings"
+
+msgid ""
+"Es gibt keinen fälligen Rückstand an Mietzins oder Nebenkosten. Eine "
+"Fristansetzung mit Kündigungsandrohung nach Art. 257d OR setzt einen solchen"
+" voraus; andere Forderungen (Weiterverrechnung, Selbstbehalt, Mahngebühr) "
+"zählen nicht."
+msgstr ""
+"There are no overdue arrears of rent or service charges. Setting a deadline "
+"with a threat of termination under Art. 257d CO requires them; other claims "
+"(recharged costs, deductible, reminder fees) do not count."
+
+msgid ""
+"Fristen laufen ab dem Tag, an dem ein Schreiben beim Empfänger ankommt — "
+"nicht ab dem Versand und nicht ab der Abholeinladung. Wird ein Einschreiben "
+"abgeholt, ist es der Tag der Abholung; wird es nicht abgeholt, gilt es am "
+"letzten Tag der siebentägigen Abholfrist als zugegangen (BGE 119 II 147). "
+"Ist der Zugang noch nicht bestätigt, rechnet die Anwendung vom "
+"spätestmöglichen Zugang (Postweg und Abholfrist) und sperrt eine Kündigung "
+"bis dahin."
+msgstr ""
+"Deadlines run from the day a letter reaches the recipient — not from "
+"dispatch and not from the collection notice. If a registered letter is "
+"collected, that is the day of collection; if it is not collected, it is "
+"deemed received on the last day of the seven-day collection period (BGE 119 "
+"II 147). As long as receipt is not confirmed, the application calculates "
+"from the latest possible receipt (postal transit and collection period) and "
+"blocks a termination until then."
+
+msgid "Gegenstand"
+msgstr "Subject"
+
+msgid "Gerichtsverfahren"
+msgstr "Court proceedings"
+
+msgid "Heute gesperrt"
+msgstr "Blocked today"
+
+msgid "Kündigung / Erstreckung"
+msgstr "Termination / extension"
+
+#, python-format
+msgid ""
+"Kündigung des Vermieters anfechtbar bis und mit %(d)s (Art. 271a Abs. 1 lit."
+" e OR)."
+msgstr ""
+"Termination by the landlord contestable up to and including %(d)s (Art. 271a"
+" para. 1 let. e CO)."
+
+msgid ""
+"Kündigung in einer Sperrfrist nach Art. 271a OR erfasst, weil eine Ausnahme "
+"bestätigt wurde. Der Mieter kann sie anfechten."
+msgstr ""
+"Termination recorded during a protection period under Art. 271a CO because "
+"an exception was confirmed. The tenant can contest it."
+
+msgid ""
+"Liegt eine Ausnahme vor, das Kästchen «Ausnahme nach Art. 271a Abs. 3 OR "
+"liegt vor» setzen und die Kündigung erneut erfassen."
+msgstr ""
+"If an exception applies, tick the box “An exception under Art. 271a para. 3 "
+"CO applies” and record the termination again."
+
+msgid "Mieter hat das Begehren zurückgezogen"
+msgstr "The tenant withdrew the request"
+
+msgid "Mieter hat das Verfahren missbräuchlich eingeleitet"
+msgstr "The tenant initiated the proceedings abusively"
+
+msgid "Mieter unterlegen"
+msgstr "Tenant lost"
+
+msgid "Mietrechtliche Verfahren (Art. 271a OR)"
+msgstr "Tenancy proceedings (Art. 271a CO)"
+
+msgid "Mietrechtliche Verfahren"
+msgstr "Tenancy proceedings"
+
+msgid "Mietzins (Erhöhung, Anfangsmietzins, Herabsetzung)"
+msgstr "Rent (increase, initial rent, reduction)"
+
+msgid "Mietzins / Nebenkosten (Art. 257d OR)"
+msgstr "Rent / service charges (Art. 257d CO)"
+
+msgid "Mängel / Gebrauch der Sache"
+msgstr "Defects / use of the property"
+
+msgid "Schlichtungsverfahren"
+msgstr "Conciliation proceedings"
+
+msgid ""
+"Schriftliche Einigung ausserhalb eines Verfahrens (Art. 271a Abs. 2 OR)"
+msgstr "Written agreement outside of proceedings (Art. 271a para. 2 CO)"
+
+msgid "Sonstige Forderung"
+msgstr "Other claim"
+
+msgid "Sperrfrist nach Art. 271a OR"
+msgstr "Protection period under Art. 271a CO"
+
+msgid ""
+"Tatsächliches Zustell-/Abholdatum aus Track & Trace — leer lassen, solange "
+"der Zugang nicht feststeht. Ab dem Zugang laufen die 30 Tage; bei "
+"Nichtabholung das Datum der Abholeinladung."
+msgstr ""
+"Actual delivery/collection date from Track & Trace — leave empty until "
+"receipt is established. The 30 days run from receipt; if not collected, the "
+"date of the collection notice."
+
+msgid "Verfahren abgeschlossen."
+msgstr "Proceedings concluded."
+
+#, python-format
+msgid ""
+"Verfahren abgeschlossen. Eine Kündigung des Vermieters ist bis und mit "
+"%(bis)s anfechtbar (Art. 271a Abs. 1 lit. e OR, drei Jahre)."
+msgstr ""
+"Proceedings concluded. A termination by the landlord is contestable up to "
+"and including %(bis)s (Art. 271a para. 1 let. e CO, three years)."
+
+msgid "Verfahren abschliessen"
+msgstr "Conclude proceedings"
+
+msgid ""
+"Verfahren erfasst. Eine Kündigung des Vermieters ist ab jetzt gegen Art. "
+"271a OR geschützt und wird angehalten."
+msgstr ""
+"Proceedings recorded. From now on a termination by the landlord is protected"
+" under Art. 271a CO and will be halted."
+
+msgid "Verfahren oder Einigung erfassen"
+msgstr "Record proceedings or an agreement"
+
+#, python-format
+msgid "Verfahren — %(name)s"
+msgstr "Proceedings — %(name)s"
+
+msgid "Vergleich oder sonstige Einigung"
+msgstr "Settlement or other agreement"
+
+msgid ""
+"Vermieter hat Forderung oder Klage zurückgezogen oder erheblich "
+"eingeschränkt"
+msgstr ""
+"The landlord withdrew the claim or action or restricted it considerably"
+
+msgid "Vermieter hat auf die Anrufung des Richters verzichtet"
+msgstr "The landlord waived recourse to the court"
+
+msgid "Vermieter zu einem erheblichen Teil unterlegen"
+msgstr "The landlord largely lost"
+
+msgid ""
+"Vor dem Versand eigenhändig unterschreiben (Art. 266l OR, sonst nichtig, "
+"Art. 266o OR): Das PDF enthält kein Unterschriftsbild."
+msgstr ""
+"Sign by hand before dispatch (Art. 266l CO, otherwise void, Art. 266o CO): "
+"the PDF contains no signature image."
+
+msgid ""
+"Vor dem Versand eigenhändig unterschreiben: Die Fristansetzung mit "
+"Kündigungsandrohung braucht die Schriftform (Art. 257d Abs. 1 OR; Art. 13 "
+"und 14 OR). Die Anwendung setzt kein Unterschriftsbild ein — das PDF lässt "
+"die Unterschriftslinie frei."
+msgstr ""
+"Sign by hand before dispatch: setting a deadline with a threat of "
+"termination requires written form (Art. 257d para. 1 CO; Art. 13 and 14 CO)."
+" The application inserts no signature image — the PDF leaves the signature "
+"line blank."
+
+msgid ""
+"Vor dem Versand eigenhändig unterschreiben: Die Kündigung braucht die "
+"Schriftform (Art. 266l Abs. 1 OR), sonst ist sie nichtig (Art. 266o OR). Die"
+" Anwendung setzt kein Unterschriftsbild ein — eine mechanisch nachgebildete "
+"Unterschrift ist bei der Kündigung nicht zugelassen (Art. 269d Abs. 4 OR "
+"gilt nur für Mietzinserhöhungen). Statt der Unterschrift von Hand genügt "
+"eine qualifizierte elektronische Signatur (Art. 14 Abs. 2bis OR)."
+msgstr ""
+"Sign by hand before dispatch: the termination requires written form (Art. "
+"266l para. 1 CO), otherwise it is void (Art. 266o CO). The application "
+"inserts no signature image — a mechanically reproduced signature is not "
+"permitted for a termination (Art. 269d para. 4 CO applies only to rent "
+"increases). A qualified electronic signature may replace the handwritten "
+"signature (Art. 14 para. 2bis CO)."
+
+#, python-format
+msgid ""
+"Vorzeitige Rückgabe ohne angenommenen Ersatzmieter: Der Mieter haftet bis "
+"zum Ende der vereinbarten Vertragsdauer am %(termin)s (Art. 264 Abs. 2 OR)."
+msgstr ""
+"Early return without an accepted replacement tenant: the tenant is liable "
+"until the end of the agreed lease term on %(termin)s (Art. 264 para. 2 CO)."
+
+msgid ""
+"Zu diesem Vertrag ist kein Verfahren erfasst. Eine angefochtene "
+"Mietzinsanpassung zählt automatisch als laufendes Schlichtungsverfahren."
+msgstr ""
+"No proceedings are recorded for this lease. A contested rent adjustment "
+"automatically counts as pending conciliation proceedings."
+
+#, python-format
+msgid "abgeschlossen am %(d)s"
+msgstr "concluded on %(d)s"
+
+msgid "hängig"
+msgstr "pending"
+
+msgid "hängig (nicht abgeschlossen)"
+msgstr "pending (not concluded)"
+
+msgid ""
+"Bei Zahlungsverzug setzt der Vermieter schriftlich eine Zahlungsfrist von "
+"mindestens 30 Tagen und droht die Kündigung an. Zahlt der Mieter nicht, ist "
+"eine Kündigung mit mindestens 30 Tagen Frist auf Ende eines Monats möglich. "
+"Genannt und angedroht werden nur fällige Mietzinse und Nebenkosten, keine "
+"anderen Forderungen."
+msgstr ""
+"If rent is overdue, the landlord sets a written payment deadline of at least"
+" 30 days and warns of termination. If the tenant does not pay, the lease can"
+" be terminated with at least 30 days' notice to the end of a month. Only "
+"overdue rent and service charges are named and threatened, no other claims."
+
+#, python-format
+msgid ""
+"Anfangsmietzins-Formular möglicherweise erforderlich (Art. 270 Abs. 2 OR, "
+"Kanton %(kanton)s: Formularpflicht nur für bestimmte Gemeinden oder "
+"Wohnungen); ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III "
+"583)."
+msgstr ""
+"Initial rent form possibly required (Art. 270 para. 2 CO, canton %(kanton)s:"
+" obligation applies only to certain municipalities or dwellings); without "
+"the form the rent agreement is void (BGE 140 III 583)."
+
+#, python-format
+msgid ""
+"Anfangsmietzins-Formular erforderlich (Art. 270 Abs. 2 OR, Kanton "
+"%(kanton)s); ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III"
+" 583)."
+msgstr ""
+"Initial rent form required (Art. 270 para. 2 CO, canton %(kanton)s); without"
+" the form the rent agreement is void (BGE 140 III 583)."
+
+msgid ""
+"Der Kanton der Liegenschaft ist nicht erfasst — ob der Anfangsmietzins das "
+"amtliche Formular braucht (Art. 270 Abs. 2 OR), lässt sich so nicht "
+"beurteilen. Ohne Formular ist die Mietzinsvereinbarung nichtig (BGE 140 III "
+"583). Bitte den Kanton bei der Liegenschaft erfassen."
+msgstr ""
+"The canton of the property is not recorded, so it cannot be determined "
+"whether the initial rent requires the official form (Art. 270 para. 2 CO). "
+"Without the form the rent agreement is void (BGE 140 III 583). Please enter "
+"the canton on the property."
+
+msgid ""
+"Das Formular des Kantons ist hinterlegt und wird beim Aktivieren automatisch"
+" in der Akte abgelegt."
+msgstr ""
+"The canton's form is on file and is saved to the record automatically on "
+"activation."
+
+msgid ""
+"Für diesen Kanton ist kein amtliches Original hinterlegt: Das Formular der "
+"kantonalen Behörde extern verwenden und den Nachweis am Vertrag festhalten."
+msgstr ""
+"No official original is on file for this canton: use the cantonal "
+"authority's form outside the application and record the proof on the "
+"contract."
+
+#, python-format
+msgid ""
+"%(hinweis)s Aktivieren erst, wenn der Nachweis am Vertrag festgehalten ist "
+"(«Formular extern verwendet», mit Datum)."
+msgstr ""
+"%(hinweis)s Activate only once the proof is recorded on the contract (“form "
+"used externally”, with date)."
+
+msgid ""
+"Die Nebenkosten sind im Vertrag nicht einzeln bezeichnet (Art. 257a Abs. 2 "
+"OR, BGE 135 III 591): Was nicht klar und bestimmt vereinbart ist, trägt der "
+"Vermieter. Im Vertragsassistenten die Nebenkostenarten wählen."
+msgstr ""
+"The ancillary costs are not itemised in the contract (Art. 257a para. 2 CO, "
+"BGE 135 III 591): anything not agreed clearly and specifically is borne by "
+"the landlord. Select the ancillary cost types in the contract assistant."
+
+msgid "Das Datum des Formulars ist nicht lesbar."
+msgstr "The date of the form is not readable."
+
+msgid ""
+"Bitte das Datum angeben, an dem das Formular dem Mieter zugestellt wurde "
+"oder wird."
+msgstr ""
+"Please enter the date on which the form was or will be delivered to the "
+"tenant."
+
+msgid ""
+"Diesen Nachweis gibt es nur, wo die Formularpflicht nur teilweise gilt "
+"(Neuenburg, Waadt). Hier besteht die Pflicht: das Formular der Behörde "
+"verwenden."
+msgstr ""
+"This proof exists only where the form obligation applies in part (Neuchâtel,"
+" Vaud). Here the obligation applies: use the authority’s form."
+
+msgid ""
+"Bitte begründen, warum die Formularpflicht für dieses Objekt nicht zutrifft."
+msgstr ""
+"Please explain why the form obligation does not apply to this property."
+
+msgid ""
+"ohne amtliches Formular ist die Mietzinsvereinbarung nichtig (Art. 270 Abs. "
+"2 OR; BGE 140 III 583)"
+msgstr ""
+"without the official form the rent agreement is void (Art. 270 para. 2 CO; "
+"BGE 140 III 583)"
+
+msgid ""
+"wo die Formularpflicht gilt, ist die Mietzinsvereinbarung ohne amtliches "
+"Formular nichtig (Art. 270 Abs. 2 OR; BGE 140 III 583)"
+msgstr ""
+"where the form obligation applies, a rent agreement without the official "
+"form is void (Art. 270 para. 2 CO; BGE 140 III 583)"
+
+msgid ""
+"nach dem Verzeichnis der Formularpflicht besteht in diesem Kanton keine "
+"Pflicht (Art. 270 Abs. 2 OR)"
+msgstr ""
+"according to the register of form obligations, this canton has no obligation"
+" (Art. 270 para. 2 CO)"
+
+#, python-format
+msgid ""
+"Vertrag %(name)s (%(e)s) nennt diese Kostenart nicht · Anteil beim "
+"Eigentümer"
+msgstr ""
+"Contract %(name)s (%(e)s) does not list this cost type · share borne by the "
+"owner"
+
+msgid "Anfangsmietzins-Formular"
+msgstr "Initial rent form"
+
+msgid "Das Formular liegt in der Akte."
+msgstr "The form is in the record."
+
+msgid "Nachweis"
+msgstr "Proof"
+
+msgid "Amtliches Formular extern verwendet und dem Mieter zugestellt"
+msgstr "Official form used externally and delivered to the tenant"
+
+msgid "Formularpflicht trifft für dieses Objekt nicht zu"
+msgstr "The form obligation does not apply to this property"
+
+msgid "Datum der Zustellung"
+msgstr "Date of delivery"
+
+msgid "Bemerkung / Begründung"
+msgstr "Note / reason"
+
+msgid "Nachweis festhalten"
+msgstr "Record proof"
+
+msgid "Nachweis entfernen"
+msgstr "Remove proof"
+
+msgid ""
+"Die Erhöhung ist eingetreten, ohne dass eine Mitteilung als versandt erfasst"
+" ist — sie wird nicht verrechnet, der bisherige Mietzins bleibt."
+msgstr ""
+"The increase has taken effect without any notice recorded as sent — it is "
+"not charged; the current rent stays."
+
+msgid ""
+"Die Mitteilung wurde nicht rechtzeitig vor dem Eintritt versandt — die Stufe"
+" wird nicht verrechnet. Rechtsfolge mit einer Fachperson klären."
+msgstr ""
+"The notice was not sent in time before the step took effect — the step is "
+"not charged. Have the legal consequence clarified by a specialist."
+
+msgid "Nebenkostenarten im Vertrag"
+msgstr "Ancillary cost types in the contract"
+
+msgid ""
+"Nur angekreuzte Arten stehen im Vertrag und sind abrechenbar. Nebenkosten "
+"müssen klar und bestimmt vereinbart sein (Art. 257a Abs. 2 OR); was fehlt, "
+"trägt der Vermieter."
+msgstr ""
+"Only ticked types appear in the contract and can be billed. Ancillary costs "
+"must be agreed clearly and specifically (Art. 257a para. 2 CO); anything "
+"missing is borne by the landlord."
+
+msgid "Anfangsmietzins-Formular: Nachweis"
+msgstr "Initial rent form: proof"
+
+msgid ""
+"Für diesen Kanton ist kein amtliches Original hinterlegt. Das Formular der "
+"kantonalen Behörde wird ausserhalb der Anwendung verwendet; hier wird "
+"festgehalten, dass und wann."
+msgstr ""
+"No official original is on file for this canton. The cantonal authority's "
+"form is used outside the application; this records that and when it was "
+"used."
+
+msgid "Noch kein Nachweis (der Vertrag bleibt Entwurf)"
+msgstr "No proof yet (the contract stays a draft)"
+
+msgid "Der Vertrag bleibt Entwurf."
+msgstr "The contract stays a draft."
+
+msgid "Nachweis entfernt."
+msgstr "Proof removed."
+
+msgid "Für dieses Objekt ist kein Nachweis nötig."
+msgstr "No proof is needed for this property."
+
+msgid "Bitte wählen, was zutrifft."
+msgstr "Please choose what applies."
+
+msgid "Nachweis zum Anfangsmietzins-Formular festgehalten."
+msgstr "Proof for the initial rent form recorded."
+
+msgid "Formular-Nachweis fehlt"
+msgstr "Form proof missing"
+
+msgid "Anfangsmietzins-Formular erforderlich"
+msgstr "Initial rent form required"
+
+msgid "Nachweis erfassen"
+msgstr "Record proof"
+
+msgid ""
+"Zum Aktivieren den Nachweis im Schritt «Abschluss» erfassen — oder den "
+"Vertrag als Entwurf speichern."
+msgstr ""
+"To activate, record the proof in the “Completion” step — or save the "
+"contract as a draft."
+
+msgid ""
+"Bitte die Nebenkostenarten wählen, die der Mieter trägt: Sie müssen im "
+"Vertrag einzeln bezeichnet sein (Art. 257a Abs. 2 OR). Nicht Aufgeführtes "
+"kann nicht abgerechnet werden."
+msgstr ""
+"Please select the ancillary cost types borne by the tenant: they must be "
+"itemised in the contract (Art. 257a para. 2 CO). Anything not listed cannot "
+"be billed."
+
+#, python-format
+msgid "Anfangsmietzins-Formular: Nachweis am Vertrag festgehalten (%(art)s)."
+msgstr "Initial rent form: proof recorded on the contract (%(art)s)."
+
+msgid ""
+"Das Anfangsmietzins-Formular konnte nicht automatisch erstellt werden — "
+"bitte unter «Anfangsmietzins» am Vertrag von Hand erstellen."
+msgstr ""
+"The initial rent form could not be created automatically — please create it "
+"manually under “Initial rent” on the contract."

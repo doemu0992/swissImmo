@@ -111,9 +111,15 @@ def pruefung_zum_vertrag(vertrag, zugang, gewuenschter_termin=None,
 
     parameter = dict(getattr(regel, 'parameter', None) or {})
     # Der Vertrag hat Vorrang vor dem Vorgabewert der Regel: Eine vereinbarte
-    # längere Frist ist gültig, eine kürzere wäre nichtig — Letzteres prüft die
-    # Regel nicht, das leistet die Vertragserfassung.
-    frist = int(vertrag.kuendigungsfrist_monate or 0) or parameter.get('frist_monate') or 3
+    # längere Frist ist gültig. Eine kürzere gilt nicht (Art. 266a Abs. 2 OR): Die
+    # gesetzliche Mindestfrist (Wohnungen 3, Geschäftsräume 6 Monate) setzt sich
+    # durch (Audit MIET-08). Die Vertragsmaske verhindert die kürzere Frist beim
+    # Erfassen und Ändern (`rentals/forms.py`); hier wird sie für Altverträge
+    # ausgeglichen. Bis 28.10.2026 stand an dieser Stelle der Verweis, das leiste die
+    # Vertragserfassung — sie tat es nicht.
+    from rentals.services import gesetzliche_frist_monate
+    frist = max(int(vertrag.kuendigungsfrist_monate or 0) or parameter.get('frist_monate') or 3,
+                gesetzliche_frist_monate(vertrag))
     termine = termine_aus_vertrag(vertrag) or list(parameter.get('termine') or [])
 
     befund, anwendung = pruefen(

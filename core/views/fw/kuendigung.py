@@ -28,6 +28,8 @@ from rentals.models import Mietvertrag
 
 from ._basis import _global_filter
 from core.services.dokumentsprache import auf_deutsch
+from core.services.unterschrift import UNTERSCHRIFT_HINWEIS_257D, UNTERSCHRIFT_HINWEIS_KUENDIGUNG
+from core.services.zahlungsverzug import ABHOLFRIST_TAGE, FRIST_TAGE, POSTWEG_TAGE
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +124,8 @@ def fw_kuendigung_erfassen(request, vertrag_id):
     from rentals.models import Kuendigung
     from rentals.services import (AO_GRUENDE_MIETER, AO_GRUENDE_VERMIETER, ZUSTELL_PUFFER_TAGE,
                                   ausserordentlicher_termin, berechne_kuendigungstermin,
-                                  vermuteter_zugang)
+                                  gesetzliche_frist_monate, vermuteter_zugang)
+    from core.services.kuendigungsverzicht import befristet_ohne_kuendigungsrecht, befristung_sperre_text
     from core.auth import log_aktion
     v = get_object_or_404(Mietvertrag, id=vertrag_id)
     basis = _global_filter(request)
@@ -167,12 +170,33 @@ def fw_kuendigung_erfassen(request, vertrag_id):
                     'Bitte den ausserordentlichen Grund wählen, der für diese Partei gilt.'))
                 return redirect(zurueck)
 
+        # Befristeter Vertrag ohne Kündigungsrecht (Audit MIET-07, Art. 266 Abs. 1 OR): Er endet ohne Kündigung. Der
+        # «nächste ordentliche Termin» ist dann das vereinbarte Vertragsende — nicht ein errechneter Termin, den es
+        # nicht gibt. Der Mieter kann nur vorzeitig zurückgeben (Art. 264 OR).
+        befristet_fest = (not ausserord) and befristet_ohne_kuendigungsrecht(v)
+        if befristet_fest:
+            termin = v.ende
+
         # Art. 264 OR: vorzeitige Rückgabe durch den Mieter.
         ersatzmieter = (P.get('ersatzmieter') or '').strip()[:2000]
         ersatz_angenommen = bool(ersatzmieter) and P.get('ersatzmieter_akzeptiert') == 'on'
         vorzeitig = (absender == 'mieter' and not ausserord and gewuenscht is not None
                      and termin is not None and gewuenscht < termin)
         ersatz_befreit = vorzeitig and ersatz_angenommen
+        befristung = befristung_sperre_text(v, ausserordentlich=ausserord, vorzeitige_rueckgabe=vorzeitig)
+        if befristung:
+            messages.error(request, '⛔ ' + befristung)
+            return redirect(zurueck)
+
+        # Art. 266a Abs. 2 / 266b–d OR (Audit MIET-08): Eine kürzere als die gesetzliche Frist gilt nicht; die
+        # Kündigung gilt auf den nächstmöglichen Termin. `berechne_kuendigungstermin` rechnet schon mit der
+        # gesetzlichen Mindestfrist — die Meldung sagt, dass der Vertrag etwas anderes enthält.
+        if not ausserord and 0 < (v.kuendigungsfrist_monate or 0) < gesetzliche_frist_monate(v):
+            messages.warning(request, '⚠️ ' + gettext(
+                'Der Vertrag nennt eine Kündigungsfrist von %(vertrag)s Monat(en); gesetzlich sind mindestens %(gesetz)s '
+                'Monate (Art. 266b–266d OR). Eine kürzere Frist gilt nicht, die Kündigung gilt auf den nächstmöglichen '
+                'Termin (Art. 266a Abs. 2 OR) — gerechnet wurde mit %(gesetz)s Monaten.') % {
+                    'vertrag': v.kuendigungsfrist_monate, 'gesetz': gesetzliche_frist_monate(v)})
 
         # Art. 266m OR: Familienwohnung, Kündigung durch den Mieter.
         zustimmung = P.get('zustimmung_ehegatte') == 'on'
@@ -201,7 +225,31 @@ def fw_kuendigung_erfassen(request, vertrag_id):
             if sperre:
                 messages.error(request, f'⛔ {sperre}')
                 return redirect(f'/neu/vertraege/{v.id}/kuendigen/?grund=verzug')
-        if not ausserord and not ersatz_befreit:
+            # Frist abgelaufen, aber Zugang des Einschreibens nie bestätigt: nicht sperren, aber sagen.
+            from core.services.zahlungsverzug import kuendigung_hinweis
+            hinweis_zugang = kuendigung_hinweis(v, eingang)
+            if hinweis_zugang:
+                messages.warning(request, '⚠️ ' + hinweis_zugang)
+        # KÜNDIGUNGSSCHUTZ (Audit MIET-06, Art. 271a Abs. 1 lit. d und e OR): Eine Vermieterkündigung während eines
+        # Schlichtungs- oder Gerichtsverfahrens um die Mietsache und in den drei Jahren danach (Vermieter
+        # unterlegen, Klage zurückgezogen, Vergleich) ist anfechtbar. Die Erfassung hält an und nennt den Grund; die
+        # Ausnahmen des Abs. 3 (Eigenbedarf, Veräusserung …) erkennt sie nicht aus Daten — der Erfasser bestätigt sie.
+        sperrfrist_vermerk = ''
+        if absender == 'vermieter':
+            from core.services.kuendigungsschutz import ausnahmen_hinweis, sperrfristen
+            schutz = sperrfristen(v, {eingang, zugang}, ausserordentlich_art=ao_art if ausserord else '')
+            if schutz:
+                if P.get('sperrfrist_ausnahme') != 'on':
+                    messages.error(request, '⛔ ' + ' '.join(sp.text for sp in schutz) + ' ' + ausnahmen_hinweis()
+                                   + ' ' + gettext('Liegt eine Ausnahme vor, das Kästchen «Ausnahme nach Art. 271a '
+                                                   'Abs. 3 OR liegt vor» setzen und die Kündigung erneut erfassen.'))
+                    return redirect(f'{zurueck}?sperrfrist=1')
+                sperrfrist_vermerk = (f'Sperrfrist Art. 271a OR: Ausnahme nach Abs. 3 bestätigt am {heute:%d.%m.%Y} '
+                                      f'({request.user}). ' + ' '.join(sp.text for sp in schutz))
+                messages.warning(request, '⚠️ ' + gettext(
+                    'Kündigung in einer Sperrfrist nach Art. 271a OR erfasst, weil eine Ausnahme bestätigt wurde. '
+                    'Der Mieter kann sie anfechten.'))
+        if not ausserord and not ersatz_befreit and not befristet_fest:
             from core.views.fw.regelwerk import folgekosten, pruefung_zum_vertrag
             from faelle.regelwerk import sperrt
             befund, regel_anwendung, regel = pruefung_zum_vertrag(
@@ -259,7 +307,12 @@ def fw_kuendigung_erfassen(request, vertrag_id):
                 '%(datum)s befreit.') % {'datum': gewuenscht.strftime('%d.%m.%Y')})
         elif gewuenscht and termin and gewuenscht < termin:
             per = termin
-            if vorzeitig:
+            if vorzeitig and befristet_fest:
+                messages.warning(request, '⚠️ ' + gettext(
+                    'Vorzeitige Rückgabe ohne angenommenen Ersatzmieter: Der Mieter haftet bis zum Ende der '
+                    'vereinbarten Vertragsdauer am %(termin)s (Art. 264 Abs. 2 OR).') % {
+                        'termin': termin.strftime('%d.%m.%Y')})
+            elif vorzeitig:
                 messages.warning(request, '⚠️ ' + gettext(
                     'Vorzeitige Rückgabe ohne angenommenen Ersatzmieter: Der Mieter haftet bis zum '
                     'nächsten ordentlichen Termin %(termin)s (Art. 264 OR).') % {
@@ -313,7 +366,8 @@ def fw_kuendigung_erfassen(request, vertrag_id):
             zustimmung_ehegatte=zustimmung,
             ersatzmieter=ersatzmieter, ersatzmieter_akzeptiert=ersatz_angenommen,
             erstreckung_bis=erstreckung, status='bestaetigt' if bestaetigen else 'erfasst',
-            bemerkung=P.get('bemerkung', '').strip(),
+            bemerkung=(P.get('bemerkung', '').strip() + ('\n\n' if P.get('bemerkung', '').strip() and sperrfrist_vermerk else '')
+                       + sperrfrist_vermerk),
         )
         benutzer = request.user if request.user.is_authenticated else None
 
@@ -350,7 +404,10 @@ def fw_kuendigung_erfassen(request, vertrag_id):
         # (Art. 271/273 OR) — ab Zugang, nicht ab Versand (Befund F).
         if k.absender == 'vermieter' and v.ist_geschuetzt:
             from core.models import Pendenz
-            frist = zugang + _timedelta(days=30)
+            # Art. 273 Abs. 1 OR: 30 Tage ab Empfang; der letzte Tag ist ein Werktag (Art. 78 OR) — fällt er auf
+            # einen Samstag, Sonntag oder Feiertag, kann der Mieter noch am nächsten Werktag anfechten.
+            from core.services.fristen import fristende as _fristende
+            frist = _fristende(zugang, 30)
             Pendenz.objects.create(
                 titel=f"Anfechtungsfrist Kündigung läuft ab – {v.mieter.display_name}",
                 beschreibung=("Der Mieter kann die Vermieterkündigung innert 30 Tagen ab Empfang bei der "
@@ -411,7 +468,8 @@ def fw_kuendigung_erfassen(request, vertrag_id):
         log_aktion(request, "Kündigung erfasst", str(v.mieter),
                    f"per {per.strftime('%d.%m.%Y') if per else '—'}"
                    + (f", erstreckt bis {erstreckung:%d.%m.%Y}" if erstreckung else "")
-                   + f", {n_pendenzen} Pendenzen{hinweis}{regel_spur}", ziel=v)
+                   + f", {n_pendenzen} Pendenzen{hinweis}{regel_spur}"
+                   + (", Sperrfrist Art. 271a OR: Ausnahme bestätigt" if sperrfrist_vermerk else ""), ziel=v)
         # Modul 5: Regel «Kündigung erfasst» — Begleitdokument; ein Fehler darin
         # kostet die erfasste Kündigung nicht.
         from core.services.dokument_regeln import dokument_fuer_ereignis
@@ -420,6 +478,8 @@ def fw_kuendigung_erfassen(request, vertrag_id):
             return render(request, 'fw/_modal_done.html', {
                 'msg': f"Kündigung erfasst · {n_pendenzen} Auszugs-Pendenzen"})
         messages.success(request, '✅ ' + gettext('Kündigung erfasst — Vertragsende %(wert)s · %(n_pendenzen)s Auszugs-Pendenzen erstellt%(hinweis)s.') % {'wert': vertragsende.strftime('%d.%m.%Y') if vertragsende else '—', 'n_pendenzen': n_pendenzen, 'hinweis': hinweis})
+        if absender == 'vermieter':
+            messages.warning(request, UNTERSCHRIFT_HINWEIS_KUENDIGUNG)
         return redirect(f'/neu/vertraege/{v.id}/')
 
     # Vorschau des nächsten Termins für heute — beim Mieter ab Eingang heute,
@@ -434,7 +494,10 @@ def fw_kuendigung_erfassen(request, vertrag_id):
     # Ohne lesbare Termine im Vertrag (und ohne Kantonsregel) ist der Termin
     # oben nur der früheste DENKBARE — das muss auf der Seite stehen.
     _termine, termine_herkunft = kuendigungstermine_fuer(v)
+    from core.services.kuendigungsschutz import ausnahmen_hinweis, sperrfristen
+    schutz_vorschau = sperrfristen(v, {heute, vermuteter_zugang(heute)})
     return render(request, 'fw/kuendigung_form.html', {
+        'schutz_vorschau': schutz_vorschau, 'schutz_ausnahmen': ausnahmen_hinweis() if schutz_vorschau else '',
         'termine_fehlen': termine_herkunft == TERMINE_FEHLEN,
         'termine_kanton': termine_herkunft == TERMINE_KANTON,
         **basis, 'nav': 'vertraege', 'v': v,
@@ -476,54 +539,70 @@ def fw_verzug_257d(request, vertrag_id):
     heute = timezone.localdate()
     lg = v.einheit.liegenschaft if v.einheit_id else None
 
-    # Offene, fällige Forderungen dieses Vertrags
-    offene = DebitorenRechnung.objects.filter(vertrag=v, status__in=['offen', 'teilbezahlt'])
-    faellige = [r for r in offene if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) <= heute]
+    # Fristansetzung nach Art. 257d Abs. 1 OR: Genannt und summiert werden nur die fälligen **Mietzinse und
+    # Nebenkosten** (Audit MIET-02) — dieselbe Auswahl wie `zahlungsverzug.gedeckte_forderungen`, die über die
+    # Wahrung der Frist entscheidet. Weiterverrechnung, Selbstbehalt, Schlussabrechnung, Mahngebühr und Zins
+    # gehören nicht in die Androhung; die Seite sagt, was ausgenommen ist.
+    from core.services.zahlungsverzug import provisorisches_fristende, verzugsforderungen
+    from core.services.fristen import fristende as _fristende, naechster_werktag
+    faellige = [r for r in verzugsforderungen(v, heute) if r.status in ('offen', 'teilbezahlt')]
     offen_total = sum((r.offener_betrag for r in faellige), Decimal('0.00'))
+    ids_gedeckt = {r.pk for r in faellige}
+    ausgenommen = [r for r in DebitorenRechnung.objects.filter(vertrag=v, status__in=['offen', 'teilbezahlt'])
+                   if r.pk not in ids_gedeckt and (r.faellig_am or r.datum) and (r.faellig_am or r.datum) <= heute]
+    ausgenommen_total = sum((r.offener_betrag for r in ausgenommen), Decimal('0.00'))
 
     # Mindestfrist: Wohn-/Geschäftsräume 30 Tage, sonst 10 Tage (Art. 257d Abs. 1).
-    # Die Frist läuft ab ZUGANG beim Mieter (Empfangstheorie), nicht ab Absendetag —
-    # daher einen Zustellpuffer (Postweg + 7-tägige Abholfrist beim eingeschriebenen
-    # Brief) aufschlagen, sonst wäre die Fristansetzung und eine darauf gestützte
-    # ausserordentliche Kündigung zu kurz und damit nichtig.
-    ZUSTELL_PUFFER = 7
+    # Die Frist läuft ab ZUGANG beim Mieter (Empfangstheorie), nicht ab Absendetag. Beim Einschreiben ist der
+    # Zugang die tatsächliche Abholung, bei Nichtabholung der letzte Tag der siebentägigen Abholfrist
+    # (BGE 119 II 147 E. 2) — nicht die Abholeinladung. Das vorläufige Fristende rechnet darum vom
+    # ungünstigsten Fall: Postweg + Abholfrist + Frist. Es ist nie zu kurz (Audit MIET-01); den genauen Zugang
+    # trägt «Zugang bestätigen» nach.
     min_frist = 30 if v.ist_geschuetzt else 10
-    # Standard-Frist: immer mindestens 30 Tage ab heute (Nutzerwunsch — 30 Tage ist
-    # für alle Objektarten sicher, da ≥ der gesetzlichen Mindestfrist). Bei Wohn-/
-    # Geschäftsräumen bleibt zusätzlich der Zustellpuffer erhalten (30+7 = 37 Tage),
-    # damit die Frist ab Zugang die gesetzlichen 30 Tage nicht unterschreitet.
-    default_frist = (heute + timedelta(days=max(30, min_frist + ZUSTELL_PUFFER))).isoformat()
+    zustell_tage = POSTWEG_TAGE + ABHOLFRIST_TAGE
+    # Standard-Frist: mindestens 30 Tage ab Zugang (30 Tage sind für alle Objektarten sicher, da ≥ der
+    # gesetzlichen Mindestfrist), zuzüglich Postweg und Abholfrist.
+    default_frist = _fristende(heute, max(FRIST_TAGE, min_frist) + zustell_tage).isoformat()
 
     if request.method == 'POST':
+        # Ohne fälligen Rückstand an Mietzins oder Nebenkosten gibt es nichts anzudrohen (Art. 257d Abs. 1 OR).
+        # Weiterverrechnung, Selbstbehalt oder Mahngebühr allein tragen keine Fristansetzung.
+        if offen_total <= 0:
+            messages.error(request, '⛔ ' + gettext(
+                'Es gibt keinen fälligen Rückstand an Mietzins oder Nebenkosten. Eine Fristansetzung mit '
+                'Kündigungsandrohung nach Art. 257d OR setzt einen solchen voraus; andere Forderungen '
+                '(Weiterverrechnung, Selbstbehalt, Mahngebühr) zählen nicht.'))
+            return redirect(f'/neu/vertraege/{v.id}/verzug/')
+        _min_frist_bis = _fristende(heute, min_frist + zustell_tage)
         try:
             frist = date.fromisoformat(request.POST.get('frist_bis') or default_frist)
         except ValueError:
-            frist = heute + timedelta(days=min_frist)
-        # Gesetzliche Mindestfrist SERVERSEITIG erzwingen: Für Wohn-/Geschäftsräume
-        # sind es 30 Tage (Art. 257d Abs. 1 OR). Ein aus dem Formular übermittelter
-        # zu kurzer Wert (z.B. 10 Tage) würde die Fristansetzung — und eine darauf
-        # gestützte ausserordentliche Kündigung — nichtig machen (Live-Test I).
-        _min_frist_bis = heute + timedelta(days=min_frist)
+            frist = _min_frist_bis
+        # Gesetzliche Mindestfrist SERVERSEITIG erzwingen: Für Wohn-/Geschäftsräume sind es 30 Tage
+        # (Art. 257d Abs. 1 OR) ab ZUGANG. Ein aus dem Formular übermittelter zu kurzer Wert würde die
+        # Fristansetzung zu kurz machen (Live-Test I). Ohne Versanddatum ist der Zugang unbekannt: Das
+        # vorläufige Fristende muss deshalb den Postweg und die siebentägige Abholfrist enthalten.
         if frist < _min_frist_bis:
             frist = _min_frist_bis
-            messages.info(request, f"Die Frist wurde auf die gesetzliche Mindestdauer "
-                                   f"({min_frist} Tage, Art. 257d Abs. 1 OR) verlängert.")
+            messages.info(request, gettext(
+                'Die Frist wurde verlängert: Sie läuft %(tage)s Tage ab Zugang (Art. 257d Abs. 1 OR), und der Zugang '
+                'liegt frühestens nach Postweg und siebentägiger Abholfrist des Einschreibens.') % {'tage': min_frist})
 
-        # Einschreiben-Zustellung + STRIKTE Empfangstheorie (Nutzerwunsch): Die
-        # 30-Tage-Frist läuft ab ZUGANG (Eintritt in den Machtbereich = Zustellung /
-        # Abholeinladung bei der Post), nicht ab Versand und OHNE 7-Tage-Abholfiktion.
-        # Beim Erfassen ist der Zugang noch unbekannt → faellig_am ist PROVISORISCH und
-        # wird über «Zugang bestätigen» (aus Track & Trace) auf zugang_am + frist_tage
-        # nachgezogen. FRIST_TAGE = 30 = Brieftext «innert 30 Tagen ab Erhalt».
+        # Einschreiben-Zustellung: Die Frist läuft ab ZUGANG (Empfangstheorie): bei Zustellung oder Abholung
+        # der Tag, an dem der Mieter das Schreiben erhält, bei Nichtabholung der letzte Tag der siebentägigen
+        # Abholfrist (BGE 119 II 147 E. 2) — NICHT ab der Abholeinladung. Beim Erfassen ist der Zugang noch
+        # unbekannt → faellig_am ist PROVISORISCH (Versand + Postweg + Abholfrist + Frist, nie zu kurz) und
+        # wird über «Zugang bestätigen» (aus Track & Trace) auf den Zugang + frist_tage nachgezogen.
+        # FRIST_TAGE = 30 = Brieftext «innert 30 Tagen ab Erhalt».
         sendungsnummer = (request.POST.get('sendungsnummer') or '').strip()[:40]
         try:
             versand_am = date.fromisoformat(request.POST.get('versand_am')) if request.POST.get('versand_am') else None
         except ValueError:
             versand_am = None
-        FRIST_TAGE = 30
-        POSTWEG_TAGE = 1  # geschätzter Postweg bis Zustellung/Abholeinladung (nur provisorisch)
         if versand_am:
-            frist = versand_am + timedelta(days=POSTWEG_TAGE + FRIST_TAGE)
+            frist = provisorisches_fristende(versand_am, FRIST_TAGE)
+        # Art. 78 OR: Das letzte Tag der Frist ist ein Werktag.
+        frist = naechster_werktag(frist)
         vw = v.organisation      # Briefkopf des Vertrags, nicht der aeltesten Verwaltung
         m = v.mieter
         # Dasselbe 257d-PDF wie /vertrag/<id>/mahnung/ (sauberer Brief mit
@@ -556,6 +635,8 @@ def fw_verzug_257d(request, vertrag_id):
 
         _monat = (min((r.faellig_am or r.datum) for r in faellige)).strftime('%m/%Y') if faellige else heute.strftime('%m/%Y')
         _betrag = f"{offen_total:.2f}"
+        # Jede verzugsbegründende Forderung einzeln mit Monat und Betrag (Audit MIET-02).
+        _positionen = [(r.titel, r.faellig_am or r.datum, r.offener_betrag) for r in faellige]
         pdf = None
         abgelegt = []
         for i, ovr in enumerate(zustellungen):
@@ -568,7 +649,8 @@ def fw_verzug_257d(request, vertrag_id):
             _ref = (faellige[0].qr_referenz if len(faellige) == 1 else '') or sammelreferenz(v.id)
             try:
                 _p = generate_mahnung_combined_pdf_bytes(v, vw, _monat, _betrag, heute,
-                                                         empfaenger=ovr, reference=_ref)
+                                                         empfaenger=ovr, reference=_ref,
+                                                         positionen=_positionen)
             except Exception:
                 logger.exception("257d: Zahlungsaufforderung für Vertrag %s nicht erzeugt", v.pk)
                 messages.error(request, '⛔ ' + gettext(
@@ -587,17 +669,20 @@ def fw_verzug_257d(request, vertrag_id):
                                    "per Einschreiben zustellen.")
         # Fristen-Pendenz: läuft am Fristende ab → dann ausserordentliche Kündigung möglich.
         # Bei Einschreiben ist faellig_am provisorisch (siehe oben) und wird über
-        # «Zugang bestätigen» definitiv gesetzt (zugang_am + frist_tage).
+        # «Zugang bestätigen» definitiv gesetzt (Zugang + frist_tage).
         _provisorisch = bool(versand_am or sendungsnummer)
         _bt = (f"Offene Miete CHF {offen_total:.2f}. "
                + (f"Einschreiben {sendungsnummer or '—'}"
                   + (f", versandt {versand_am:%d.%m.%Y}" if versand_am else "")
-                  + f". PROVISORISCH bis {frist:%d.%m.%Y} — definitive {FRIST_TAGE}-Tage-Frist läuft ab "
-                    "bestätigtem Zugang (strikte Empfangstheorie: Zustellung/Abholeinladung). "
+                  + f". PROVISORISCH bis {frist:%d.%m.%Y} — gerechnet vom spätestmöglichen Zugang (Versand + "
+                    f"{POSTWEG_TAGE} Tag Postweg + {ABHOLFRIST_TAGE} Tage Abholfrist + {FRIST_TAGE} Tage). Die "
+                    f"definitive {FRIST_TAGE}-Tage-Frist läuft ab bestätigtem Zugang: tatsächliche Abholung, bei "
+                    "Nichtabholung der letzte Tag der Abholfrist (BGE 119 II 147). "
                   if _provisorisch else
-                  f"Zahlungsfrist bis {frist:%d.%m.%Y} (Art. 257d Abs. 1 OR). ")
+                  f"Zahlungsfrist bis {frist:%d.%m.%Y} (Art. 257d Abs. 1 OR), gerechnet mit Postweg und "
+                  f"Abholfrist eines Einschreibens. ")
                + "Nach fruchtlosem Ablauf: ausserordentliche Kündigung mit 30 Tagen auf Monatsende "
-                 "(Art. 257d Abs. 2 OR).")
+                 "(Art. 257d Abs. 2 OR). Das Schreiben ist vor dem Versand eigenhändig zu unterschreiben.")
         from core.services.zahlungsverzug import fall_eroeffnen, quelle_fuer, vorschlaege_erledigen
         _benutzer = request.user if request.user.is_authenticated else None
         _frist_pendenz = Pendenz.objects.create(
@@ -626,73 +711,124 @@ def fw_verzug_257d(request, vertrag_id):
             resp['Content-Disposition'] = f'inline; filename="Zahlungsaufforderung_{v.mieter.nachname}.pdf"'
             return resp
         messages.success(request, '✅ ' + gettext('Zahlungsaufforderung erstellt – Frist bis %(frist)s. Fristen-Pendenz angelegt.') % {'frist': format(frist, '%d.%m.%Y')})
+        messages.warning(request, UNTERSCHRIFT_HINWEIS_257D)
         return redirect(f'/neu/vertraege/{v.id}/')
 
     return render(request, 'fw/verzug_257d.html', {
         **basis, 'nav': 'vertraege', 'v': v, 'lg': lg,
         'offen_total': offen_total, 'anzahl_faellig': len(faellige),
+        'faellige': faellige, 'ausgenommen_total': ausgenommen_total, 'ausgenommen_anzahl': len(ausgenommen),
+        'zustell_tage': zustell_tage, 'abholfrist_tage': ABHOLFRIST_TAGE,
         'min_frist': min_frist, 'default_frist': default_frist,
         'heute_iso': heute.isoformat(),
     })
 
 
-def _zugang_setzen(p, zugang):
+def _zugang_setzen(p, zugang, fingiert=False):
     """Trägt den bestätigten Zugang an der Fristen-Pendenz ein und zieht die Frist nach:
-    definitive Zahlungsfrist = Zugang + `frist_tage`. Gibt das neue Fristende zurück."""
-    from datetime import timedelta
+    definitive Zahlungsfrist = Zugang + `frist_tage` (ein Samstag, Sonntag oder Feiertag rückt auf den nächsten
+    Werktag, Art. 78 OR). Gibt das neue Fristende zurück.
+
+    `zugang` ist der Tag, an dem der Mieter das Schreiben erhalten hat — bei Nichtabholung (`fingiert=True`) der
+    letzte Tag der siebentägigen Abholfrist (BGE 119 II 147 E. 2), nicht die Abholeinladung."""
+    from core.services.zahlungsverzug import definitives_fristende
     tage = p.frist_tage or 30
-    neu_frist = zugang + timedelta(days=tage)
+    neu_frist = definitives_fristende(zugang, tage)
     p.zugang_am = zugang
+    p.zugang_fingiert = bool(fingiert)
     p.faellig_am = neu_frist
-    p.beschreibung = (f"Zugang bestätigt am {zugang:%d.%m.%Y}"
+    p.beschreibung = ((f"Zugang fingiert am {zugang:%d.%m.%Y} (Einschreiben nicht abgeholt: letzter Tag der "
+                       f"{ABHOLFRIST_TAGE}-tägigen Abholfrist)" if fingiert
+                       else f"Zugang bestätigt am {zugang:%d.%m.%Y} (Abholung/Zustellung)")
                       + (f" (Einschreiben {p.sendungsnummer})" if p.sendungsnummer else "")
                       + f". Definitive {tage}-Tage-Zahlungsfrist bis {neu_frist:%d.%m.%Y} "
-                        "(Art. 257d Abs. 1 OR, strikte Empfangstheorie). Nach fruchtlosem Ablauf: "
+                        "(Art. 257d Abs. 1 OR, Empfangstheorie; ein Wochenend- oder Feiertag rückt auf den "
+                        "nächsten Werktag, Art. 78 OR). Nach fruchtlosem Ablauf: "
                         "ausserordentliche Kündigung mit 30 Tagen auf Monatsende (Art. 257d Abs. 2 OR).")
-    p.save(update_fields=['zugang_am', 'faellig_am', 'beschreibung'])
+    p.save(update_fields=['zugang_am', 'zugang_fingiert', 'faellig_am', 'beschreibung'])
     if p.vertrag_id:
         from core.services.zahlungsverzug import fall_frist_nachfuehren
         fall_frist_nachfuehren(p.vertrag, neu_frist)
     return neu_frist
 
 
+def _zugang_aus_formular(post, versand_am, heute):
+    """(Zugangsdatum, fingiert, Fehlertext) aus den Feldern `zugang_am` und `zugang_art`.
+
+    `zugang_art`:
+    · `abgeholt` (Vorgabe) — `zugang_am` ist der Tag der Zustellung oder Abholung.
+    · `nicht_abgeholt` — `zugang_am` ist der Tag der Abholeinladung; der Zugang wird auf den letzten Tag der
+      siebentägigen Abholfrist fingiert. Das geht erst, wenn die Abholfrist abgelaufen ist; vorher kann der
+      Mieter das Schreiben noch abholen (und der Zugang wäre früher).
+    Ein Zugang vor dem Versand ist unmöglich; ein Zugang in der Zukunft wird auf heute geklemmt (wie bisher)."""
+    from core.services.zahlungsverzug import fiktiver_zugang
+    roh = post.get('zugang_am')
+    try:
+        tag = date.fromisoformat(roh) if roh else heute
+    except ValueError:
+        tag = heute
+    if post.get('zugang_art') == 'nicht_abgeholt':
+        if tag > heute:
+            tag = heute
+        fiktiv = fiktiver_zugang(tag)
+        if versand_am and tag < versand_am:
+            return None, False, gettext('Die Abholeinladung kann nicht vor dem Versand liegen.')
+        if fiktiv > heute:
+            return None, False, gettext(
+                'Die Abholfrist läuft noch bis %(datum)s: Bis dahin kann der Mieter das Einschreiben noch '
+                'abholen. Den Zugang erst danach als «nicht abgeholt» erfassen — oder die Abholung eintragen.'
+            ) % {'datum': f'{tag + _timedelta(days=ABHOLFRIST_TAGE):%d.%m.%Y}'}
+        return fiktiv, True, ''
+    if tag > heute:
+        tag = heute          # Zugang kann frühestens heute erfolgt sein — kein Zukunftsdatum
+    if versand_am and tag < versand_am:
+        return None, False, gettext('Der Zugang kann nicht vor dem Versand liegen.')
+    return tag, False, ''
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_verzug_zugang(request, pk):
-    """Bestätigt den ZUGANG eines 257d-Einschreibens (strikte Empfangstheorie):
-    Die 30-Tage-Zahlungsfrist läuft ab dem bestätigten Zugangsdatum (Eintritt in den
-    Machtbereich = Zustellung/Abholeinladung laut Track & Trace), NICHT ab Versand und
-    ohne 7-Tage-Fiktion. Setzt zugang_am und zieht faellig_am auf zugang_am + frist_tage
-    nach — so steht im Fristen-Center die korrekte, verlässliche Frist."""
+    """Bestätigt den ZUGANG eines 257d-Einschreibens (Empfangstheorie, BGE 119 II 147 E. 2).
+
+    Die 30-Tage-Zahlungsfrist läuft ab dem Tag, an dem der Mieter das Schreiben erhalten hat — NICHT ab Versand
+    und NICHT ab der Abholeinladung:
+
+    · `zugang_art=abgeholt` (Vorgabe): `zugang_am` ist der Tag der Zustellung bzw. tatsächlichen Abholung
+      (Track & Trace).
+    · `zugang_art=nicht_abgeholt`: `zugang_am` ist der Tag der Abholeinladung; der Zugang wird auf den letzten
+      Tag der siebentägigen Abholfrist fingiert (erst möglich, wenn diese Frist abgelaufen ist).
+
+    Setzt zugang_am und zieht faellig_am auf Zugang + frist_tage nach (Fristende auf den nächsten Werktag,
+    Art. 78 OR) — so steht im Fristen-Center die korrekte, verlässliche Frist."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from datetime import timedelta
     from core.models import Pendenz
     from core.auth import log_aktion
     p = get_object_or_404(Pendenz.objects.select_related('vertrag__mieter'), id=pk)
     if request.method != 'POST':
         return redirect('fw_fristen')
     heute = timezone.localdate()
-    try:
-        zugang = date.fromisoformat(request.POST.get('zugang_am')) if request.POST.get('zugang_am') else heute
-    except ValueError:
-        zugang = heute
-    # Zugang kann frühestens heute erfolgt sein — kein Zukunftsdatum.
-    if zugang > heute:
-        zugang = heute
-    tage = p.frist_tage or 30
-    neu_frist = _zugang_setzen(p, zugang)
-    log_aktion(request, "257d-Zugang bestätigt",
+    nxt = request.POST.get('next') or ''
+    ziel = nxt if nxt.startswith('/neu/') and '//' not in nxt[1:] else None
+    zugang, fingiert, fehler = _zugang_aus_formular(request.POST, p.versand_am, heute)
+    if fehler:
+        messages.error(request, '⛔ ' + fehler)
+        return redirect(ziel or 'fw_fristen')
+    neu_frist = _zugang_setzen(p, zugang, fingiert=fingiert)
+    log_aktion(request, "257d-Zugang fingiert (nicht abgeholt)" if fingiert else "257d-Zugang bestätigt",
                str(p.vertrag.mieter) if p.vertrag_id and p.vertrag and p.vertrag.mieter_id else p.titel,
-               f"Zugang {zugang:%d.%m.%Y}, Frist neu bis {neu_frist:%d.%m.%Y}",
+               f"Zugang {zugang:%d.%m.%Y}{' (fingiert)' if fingiert else ''}, Frist neu bis {neu_frist:%d.%m.%Y}",
                ziel=p.vertrag if p.vertrag_id else None)
-    messages.success(request, f"✅ Zugang bestätigt ({zugang:%d.%m.%Y}) — Zahlungsfrist läuft neu bis "
-                              f"{neu_frist:%d.%m.%Y} (Art. 257d Abs. 1 OR).")
+    if fingiert:
+        messages.success(request, f"✅ Einschreiben nicht abgeholt: Zugang fingiert am {zugang:%d.%m.%Y} "
+                                  f"(letzter Tag der Abholfrist) — Zahlungsfrist läuft bis {neu_frist:%d.%m.%Y} "
+                                  "(Art. 257d Abs. 1 OR).")
+    else:
+        messages.success(request, f"✅ Zugang bestätigt ({zugang:%d.%m.%Y}) — Zahlungsfrist läuft neu bis "
+                                  f"{neu_frist:%d.%m.%Y} (Art. 257d Abs. 1 OR).")
     # Zurück zur aufrufenden Seite (Fristen-Center, Vertrag oder Kontakt) statt stur
     # ins Fristen-Center — nur seiten-relative /neu/-Ziele zulassen (kein Open-Redirect).
-    nxt = request.POST.get('next') or ''
-    if nxt.startswith('/neu/') and '//' not in nxt[1:]:
-        return redirect(nxt)
-    return redirect('fw_fristen')
+    return redirect(ziel or 'fw_fristen')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
@@ -700,7 +836,8 @@ def fw_verzug_sendung(request, pk):
     """Korrigiert die Einschreiben-Sendungsnummer (und optional das Versanddatum)
     einer 257d-Frist-Pendenz — z.B. wenn die Track-&-Trace-Nummer vertippt wurde.
     Solange der Zugang noch nicht bestätigt ist, wird die provisorische Frist aus
-    dem neuen Versanddatum neu berechnet (Versand + 1 Tag Postweg + frist_tage)."""
+    dem neuen Versanddatum neu berechnet (Versand + 1 Tag Postweg + 7 Tage Abholfrist + frist_tage, auf den
+    nächsten Werktag gerückt)."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from datetime import timedelta
@@ -719,8 +856,9 @@ def fw_verzug_sendung(request, pk):
         except ValueError:
             vs = None
         if vs and vs <= heute:
+            from core.services.zahlungsverzug import provisorisches_fristende
             p.versand_am = vs
-            p.faellig_am = vs + timedelta(days=1 + (p.frist_tage or 30))
+            p.faellig_am = provisorisches_fristende(vs, p.frist_tage)
             felder += ['versand_am', 'faellig_am']
     p.save(update_fields=felder)
     if 'faellig_am' in felder and p.vertrag_id:
@@ -897,6 +1035,9 @@ def fw_kuendigung_formular(request, pk):
     else:
         pdf_bytes = kopien[0][1]
 
+    if k.absender == 'vermieter':
+        # Versandschritt: Das PDF trägt kein Unterschriftsbild (Audit MIET-03).
+        messages.warning(request, UNTERSCHRIFT_HINWEIS_KUENDIGUNG)
     resp = HttpResponse(bytes(pdf_bytes), content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Kuendigung_{k.vertrag.mieter.nachname}.pdf"'
     return resp
@@ -1067,6 +1208,98 @@ def _num_oder_leer(wert):
     return (wert or '').replace("'", '').replace(' ', '').replace(',', '.').strip()
 
 
+# Verfahren um die Mietsache zu erfassen und abzuschliessen ist Inhabern und Verwaltern vorbehalten wie die Kündigung
+# selbst: Ein abgeschlossenes Verfahren setzt die Sperrfrist des Art. 271a OR in Gang, ein falsch erfasstes nimmt
+# sie weg.
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+def fw_mietverfahren(request, vertrag_id):
+    """Schlichtungs- und Gerichtsverfahren sowie Einigungen am Vertrag (Art. 271a OR, Audit MIET-06).
+
+    Die Erfassung einer Vermieterkündigung (`fw_kuendigung_erfassen`) hält an, wenn sie in ein laufendes Verfahren
+    oder in die drei Jahre danach fällt (`core/services/kuendigungsschutz.py`). Dieses Formular ist die Quelle der
+    Daten. POST `aktion=neu`: Verfahren oder Einigung erfassen. POST `aktion=abschluss`: ein hängiges Verfahren mit
+    Datum und Ausgang abschliessen. Gelöscht wird nichts: Ein Fehler bei der Erfassung wird durch den Abschluss
+    mit dem passenden Ausgang berichtigt."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from core.services.kuendigungsschutz import drei_jahre_nach
+    from rentals.models import Mietverfahren
+
+    v = get_object_or_404(Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft'),
+                          id=vertrag_id)
+    basis = _global_filter(request)
+    heute = timezone.localdate()
+    zurueck = f'/neu/vertraege/{v.id}/verfahren/'
+
+    if request.method == 'POST':
+        aktion = request.POST.get('aktion')
+        if aktion == 'neu':
+            art = request.POST.get('art')
+            gegenstand = request.POST.get('gegenstand')
+            beginn = _datum_oder_none(request.POST.get('eingeleitet_am'))
+            if art not in dict(Mietverfahren.ART_CHOICES) or gegenstand not in dict(Mietverfahren.GEGENSTAND_CHOICES):
+                messages.error(request, gettext('Bitte Art und Gegenstand des Verfahrens wählen.'))
+                return redirect(zurueck)
+            if beginn is None or beginn > heute:
+                messages.error(request, gettext(
+                    'Bitte ein Datum angeben, das nicht in der Zukunft liegt.'))
+                return redirect(zurueck)
+            felder = dict(vertrag=v, art=art, gegenstand=gegenstand, eingeleitet_am=beginn,
+                          aktenzeichen=(request.POST.get('aktenzeichen') or '').strip()[:120],
+                          bemerkung=(request.POST.get('bemerkung') or '').strip()[:1000])
+            if art == Mietverfahren.ART_EINIGUNG:
+                # Art. 271a Abs. 2 OR: eine schriftlich nachgewiesene Einigung ausserhalb eines Verfahrens wirkt wie
+                # ein Vergleich — sie ist am selben Tag eingegangen und abgeschlossen.
+                felder.update(abgeschlossen_am=beginn, ausgang='vergleich')
+            vf = Mietverfahren.objects.create(**felder)
+            log_aktion(request, 'Mietrechtliches Verfahren erfasst', str(v.mieter),
+                       f'{vf.get_art_display()}, {vf.get_gegenstand_display()}, ab {beginn:%d.%m.%Y}', ziel=v)
+            messages.success(request, '✅ ' + gettext('Verfahren erfasst. Eine Kündigung des Vermieters ist ab jetzt '
+                                                     'gegen Art. 271a OR geschützt und wird angehalten.'))
+            return redirect(zurueck)
+        if aktion == 'abschluss':
+            vf = v.verfahren.filter(pk=request.POST.get('verfahren') or 0, abgeschlossen_am__isnull=True).first()
+            ausgang = request.POST.get('ausgang')
+            ende = _datum_oder_none(request.POST.get('abgeschlossen_am'))
+            erlaubt = {a for a, _t in Mietverfahren.AUSGANG_CHOICES if a != Mietverfahren.AUSGANG_HAENGIG}
+            if vf is None or ausgang not in erlaubt:
+                messages.error(request, gettext('Bitte ein hängiges Verfahren und den Ausgang wählen.'))
+                return redirect(zurueck)
+            if ende is None or ende > heute or ende < vf.eingeleitet_am:
+                messages.error(request, gettext(
+                    'Das Abschlussdatum darf weder vor Beginn des Verfahrens noch in der Zukunft liegen.'))
+                return redirect(zurueck)
+            vf.ausgang, vf.abgeschlossen_am = ausgang, ende
+            vf.save(update_fields=['ausgang', 'abgeschlossen_am'])
+            log_aktion(request, 'Mietrechtliches Verfahren abgeschlossen', str(v.mieter),
+                       f'{vf.get_ausgang_display()}, {ende:%d.%m.%Y}', ziel=v)
+            if ausgang in Mietverfahren.AUSGAENGE_NACHFRIST:
+                messages.warning(request, '⚠️ ' + gettext(
+                    'Verfahren abgeschlossen. Eine Kündigung des Vermieters ist bis und mit %(bis)s anfechtbar '
+                    '(Art. 271a Abs. 1 lit. e OR, drei Jahre).') % {'bis': f'{drei_jahre_nach(ende):%d.%m.%Y}'})
+            else:
+                messages.success(request, '✅ ' + gettext('Verfahren abgeschlossen.'))
+            return redirect(zurueck)
+        return redirect(zurueck)
+
+    from core.services.kuendigungsschutz import ausnahmen_hinweis, sperrfristen
+    verfahren = []
+    for vf in v.verfahren.all():
+        verfahren.append({
+            'v': vf, 'haengig': vf.abgeschlossen_am is None,
+            'bis': (drei_jahre_nach(vf.abgeschlossen_am)
+                    if vf.abgeschlossen_am and vf.ausgang in Mietverfahren.AUSGAENGE_NACHFRIST else None)})
+    return render(request, 'fw/verfahren.html', {
+        **basis, 'nav': 'vertraege', 'v': v, 'verfahren': verfahren,
+        'arten': Mietverfahren.ART_CHOICES, 'gegenstaende': Mietverfahren.GEGENSTAND_CHOICES,
+        'ausgaenge': [(a, t) for a, t in Mietverfahren.AUSGANG_CHOICES if a != Mietverfahren.AUSGANG_HAENGIG],
+        'heute_iso': heute.isoformat(),
+        'sperren': sperrfristen(v, {heute}), 'ausnahmen': ausnahmen_hinweis(),
+    })
+
+
 # Eine Zahlungsvereinbarung nimmt die gedeckten Forderungen aus dem Mahnlauf und
 # verschiebt ihre Fälligkeit im Gespräch mit dem Mieter — eine Entscheidung der
 # Verwaltung, wie die Fristansetzung.
@@ -1222,17 +1455,25 @@ def fw_dokument_zustellung(request, pk):
     if not (sendungsnummer or versand_am or zugang_am or (p and (p.sendungsnummer or p.versand_am))):
         messages.error(request, gettext('Bitte Sendungsnummer, Versand- oder Zugangsdatum angeben.'))
         return redirect(ziel)
+    # Zugang: Abholung/Zustellung, oder Abholeinladung eines nicht abgeholten Einschreibens (dann fingiert auf
+    # den letzten Tag der Abholfrist, BGE 119 II 147 E. 2).
+    zugang_fingiert = False
+    if zugang_am:
+        zugang_am, zugang_fingiert, fehler = _zugang_aus_formular(
+            request.POST, versand_am or (p.versand_am if p else None), heute)
+        if fehler:
+            messages.error(request, '⛔ ' + fehler)
+            return redirect(ziel)
 
     if d.zugang_pflichtig and not Dokument.objects.filter(pk=d.pk, zugang_pflichtig=True).exists():
         d.save(update_fields=['zugang_pflichtig'])
-    FRIST_TAGE = 30
-    POSTWEG_TAGE = 1
+    from core.services.zahlungsverzug import definitives_fristende, provisorisches_fristende
     benutzer = request.user if request.user.is_authenticated else None
     neu = p is None
     if neu:
         lg = v.einheit.liegenschaft if v.einheit_id else None
-        basis = zugang_am or versand_am or heute
-        frist = basis + timedelta(days=(0 if zugang_am else POSTWEG_TAGE) + FRIST_TAGE)
+        frist = (definitives_fristende(zugang_am, FRIST_TAGE) if zugang_am
+                 else provisorisches_fristende(versand_am or heute, FRIST_TAGE))
         p = Pendenz.objects.create(
             titel=f"Art. 257d: Zahlungsfrist läuft ab – {v.mieter.display_name}",
             beschreibung="Mahnung mit Kündigungsandrohung (Art. 257d OR) per Einschreiben.",
@@ -1245,16 +1486,18 @@ def fw_dokument_zustellung(request, pk):
     if not p.zugang_am:
         # Frist bleibt PROVISORISCH, bis der Zugang bestätigt ist.
         vs = p.versand_am or heute
-        p.faellig_am = vs + timedelta(days=POSTWEG_TAGE + (p.frist_tage or FRIST_TAGE))
+        p.faellig_am = provisorisches_fristende(vs, p.frist_tage)
         p.beschreibung = (
             f"Einschreiben {p.sendungsnummer or '—'}"
             + (f", versandt {p.versand_am:%d.%m.%Y}" if p.versand_am else "")
-            + f". PROVISORISCH bis {p.faellig_am:%d.%m.%Y} — definitive {p.frist_tage or FRIST_TAGE}-Tage-Frist "
-              "läuft ab bestätigtem Zugang (strikte Empfangstheorie). Nach fruchtlosem Ablauf: "
+            + f". PROVISORISCH bis {p.faellig_am:%d.%m.%Y} — gerechnet vom spätestmöglichen Zugang (Versand + "
+              f"{POSTWEG_TAGE} Tag Postweg + {ABHOLFRIST_TAGE} Tage Abholfrist + {p.frist_tage or FRIST_TAGE} Tage). "
+              f"Die definitive {p.frist_tage or FRIST_TAGE}-Tage-Frist läuft ab bestätigtem Zugang (Abholung, bei "
+              "Nichtabholung letzter Tag der Abholfrist; BGE 119 II 147). Nach fruchtlosem Ablauf: "
               "ausserordentliche Kündigung mit 30 Tagen auf Monatsende (Art. 257d Abs. 2 OR).")
     p.save()
     if zugang_am:
-        _zugang_setzen(p, zugang_am)
+        _zugang_setzen(p, zugang_am, fingiert=zugang_fingiert)
     if d.frist_pendenz_id != p.pk:
         d.frist_pendenz_id = p.pk
         d.save(update_fields=['frist_pendenz_id'])
@@ -1266,7 +1509,8 @@ def fw_dokument_zustellung(request, pk):
         fall_frist_nachfuehren(v, p.faellig_am)
     log_aktion(request, "257d-Zustellung erfasst", str(v.mieter),
                f"Einschreiben {p.sendungsnummer or '—'}"
-               + (f", Zugang {zugang_am:%d.%m.%Y}" if zugang_am else ", Zugang offen")
+               + (f", Zugang {zugang_am:%d.%m.%Y}{' (fingiert, nicht abgeholt)' if zugang_fingiert else ''}"
+                  if zugang_am else ", Zugang offen")
                + f", Frist bis {p.faellig_am:%d.%m.%Y}", ziel=v)
     if zugang_am:
         messages.success(request, '✅ ' + gettext('Zugang bestätigt (%(d)s) — Zahlungsfrist läuft bis %(f)s (Art. 257d Abs. 1 OR).')

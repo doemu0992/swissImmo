@@ -94,7 +94,7 @@ class Command(BaseCommand):
                 vertrag=v, titel="E2E offene Miete",
                 defaults=dict(liegenschaft=lg, einheit=e, datum=date(2024, 5, 1),
                               faellig_am=date(2024, 5, 5), betrag=Decimal("1700"),
-                              status="offen"))
+                              forderungsart="miete", status="offen"))
 
             # Eine Erfolgsbuchung im Jahr 2024, damit Erfolgsrechnung/Jahresabschluss
             # in der E2E-Welt etwas zu zeigen/abzuschliessen haben.
@@ -160,7 +160,8 @@ class Command(BaseCommand):
                     vertrag=v, titel=f"E2E Miete {monat:%m/%Y}",
                     defaults=dict(liegenschaft=lg, einheit=e, datum=monat,
                                   faellig_am=monat + timedelta(days=4),
-                                  betrag=Decimal("1700"), status="bezahlt"))
+                                  betrag=Decimal("1700"), forderungsart="miete",
+                                  status="bezahlt"))
 
             konto = Buchungskonto.objects.filter(nummer="1020").first()
             if konto is not None:

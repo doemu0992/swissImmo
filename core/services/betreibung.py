@@ -287,7 +287,7 @@ def kosten_belasten(b, user=None):
             vertrag=vertrag, liegenschaft=lg, titel=KOSTEN_TITEL,
             beschreibung=f"Zu: Betreibung {nr} ({haupt.titel})",
             datum=heute, faellig_am=heute + timedelta(days=30),
-            betrag=b.kosten, status='offen', stammrechnung=haupt)
+            betrag=b.kosten, status='offen', stammrechnung=haupt, forderungsart='sonstige')
         buche("1100", "3600", b.kosten, f"{KOSTEN_TITEL} {vertrag.mieter}",
               datum=heute, liegenschaft=lg, debitor=k, user=user)
         b.kosten_rechnung = k
