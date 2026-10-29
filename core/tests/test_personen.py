@@ -238,7 +238,10 @@ class LoeschbarkeitTests(TestCase):
         c = Client(); c.force_login(_team_user())
         r = c.post(f'/neu/schaeden/{t.id}/loeschen/')
         self.assertEqual(r.status_code, 302)
-        self.assertFalse(SchadenMeldung.objects.filter(id=t.id).exists())
+        # Etappe 2: Archiv statt Löschen — die Meldung bleibt, ist aber ausgeblendet.
+        from core.services import archiv
+        self.assertTrue(SchadenMeldung.objects.filter(id=t.id).exists())
+        self.assertTrue(archiv.ist_archiviert(t))
 
     def test_rentals_dokument_loeschen_ueberall(self):
         from core.services.ablage import ablegen
@@ -249,7 +252,9 @@ class LoeschbarkeitTests(TestCase):
         c = Client(); c.force_login(_team_user())
         r = c.post(f'/neu/dokument/{d.id}/loeschen/')
         self.assertEqual(r.status_code, 302)
-        self.assertFalse(Dokument.objects.filter(id=d.id).exists())
+        from core.services import archiv
+        self.assertTrue(Dokument.objects.filter(id=d.id).exists(), 'Etappe 2: archiviert statt gelöscht')
+        self.assertTrue(archiv.ist_archiviert(d))
 
     def test_portfolio_dokument_loeschen(self):
         from portfolio.models import Dokument as PDok
@@ -260,7 +265,9 @@ class LoeschbarkeitTests(TestCase):
         c = Client(); c.force_login(_team_user())
         r = c.post(f'/neu/dokumente/{d.id}/loeschen/')
         self.assertEqual(r.status_code, 302)
-        self.assertFalse(PDok.objects.filter(id=d.id).exists())
+        from core.services import archiv
+        self.assertTrue(PDok.objects.filter(id=d.id).exists(), 'Etappe 2: archiviert statt gelöscht')
+        self.assertTrue(archiv.ist_archiviert(d))
 
     def test_wartungsfrist_bearbeiten(self):
         from portfolio.models import Wartungsfrist

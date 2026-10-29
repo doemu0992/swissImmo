@@ -183,7 +183,9 @@ class DetailAktionsleisteTests(TestCase):
         t = SchadenMeldung.objects.create(liegenschaft=lg, betroffene_einheit=e, titel='X', beschreibung='y')
         sbody = c.get(f'/neu/schaeden/{t.id}/').content.decode()
         self.assertIn('id="sAktionen"', sbody)
-        self.assertIn('Schadensmeldung löschen', sbody)
+        # Seit Etappe 2 archiviert die Aktion (Art. 958f OR), statt zu löschen.
+        self.assertIn('/neu/archiv/schaden/', sbody)
+        self.assertIn('Archivieren', sbody)
 
     def test_loeschen_weiterhin_funktionsfaehig(self):
         # Der Löschen-Button im Dropdown postet weiterhin an die richtige URL

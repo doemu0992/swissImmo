@@ -527,17 +527,21 @@ class BankAbgleichP3Tests(TestCase):
         from finance.models import Zahlungseingang, Buchungskonto, Bankbewegung
         from finance.booking import ensure_kontenplan
         ensure_kontenplan()
+        # Je Aufruf eine eigene Bank-Referenz: dieselbe Transaktion wird nur einmal verbucht
+        # (Etappe 2, uniq_bankreferenz_je_organisation).
+        self._ref_zaehler = getattr(self, '_ref_zaehler', 0) + 1
+        ref = f'REF-{self._ref_zaehler}'
         k1190, _ = Buchungskonto.objects.get_or_create(
             nummer='1190', defaults={'bezeichnung': 'Durchlaufkonto', 'typ': 'bilanz'})
         bank = Buchungskonto.objects.get(nummer='1020')
         z = Zahlungseingang.objects.create(
             betrag=Decimal('200.00'), datum_eingang=date(2026, 7, 31),
             bemerkung='Bank-CSV UNGEKLÄRT: ', konto=k1190,
-            bank_referenz='REF-1', status='verbucht')
+            bank_referenz=ref, status='verbucht')
         Bankbewegung.objects.create(
             konto=bank, datum=date(2026, 7, 31), betrag=Decimal('200.00'),
             text=text, gegenpartei=gegenpartei, referenz=referenz,
-            bank_referenz='REF-1', status='verbucht', zahlung=z)
+            bank_referenz=ref, status='verbucht', zahlung=z)
         return z
 
     def test_ungeklaerte_zahlung_zeigt_den_auftraggeber(self):

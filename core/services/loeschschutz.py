@@ -10,10 +10,11 @@ Zahlungen und Mahnungen verloren still ihren Bezug (`SET_NULL`) und fielen aus
 Mieterkonto, Mahnlauf und Art. 257d OR. Geschäftsbücher und Buchungsbelege sind
 zehn Jahre aufzubewahren (Art. 958f OR).
 
-Etappe 0 sperrt das harte Löschen, sobald so etwas hängt. Das Archiv (Etappe 2)
-ist der vorgesehene Weg; bis dahin gilt: Liegenschaft und Vertrag haben ihr
-Archiv (Status), eine Person wird auf Wunsch anonymisiert (DSG), ein Mandat
-bleibt bestehen.
+Etappe 0 sperrt das harte Löschen, sobald so etwas hängt. Etappe 2 liefert den Weg
+dazu: das Archiv (`core/services/archiv.py`) mit Aufbewahrungsfrist. Ein archiviertes
+Objekt ist bis zum Fristende nicht löschbar (`hindernisse()` nennt die Frist);
+eine Person wird auf Wunsch zusätzlich anonymisiert (DSG), ein Mandat endet über
+«Archivieren» (Mandatsende).
 
 ZWEI SCHICHTEN, WIE BEI DER MANDANTENTRENNUNG
   1. Diese Datei: eine VERSTÄNDLICHE Antwort für die Oberfläche («es hängen noch
