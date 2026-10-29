@@ -17,13 +17,13 @@ stehen einzeln im Katalog und tragen dort die Kapsel «PDF»).
     </div>
     <div class="fw-phead-knoepfe">
         <a href="/neu/auswertung/{{ lg_query }}" class="fw-btn fw-primary">{% zeichen 'bericht' %}{% trans "Interaktive Auswertung" %}</a>
-        <div class="relative" data-menu>
+        {% if ist_team %}<div class="relative" data-menu>
             <button type="button" data-menu-btn class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
             <div data-menu-list class="hidden absolute right-0 mt-1.5 w-64 fw-card shadow-lg py-1.5 z-30">
                 <a href="/neu/berichte/betriebskostenspiegel/{{ lg_query }}" class="fw-menuzeile">{% zeichen 'zaehler' klasse='w-4' %}{% trans "Betriebskostenspiegel" %}</a>
                 <a href="/neu/berichte/leerstand-verlauf/" class="fw-menuzeile">{% zeichen 'bericht' klasse='w-4' %}{% trans "Leerstands-Verlauf" %}</a>
             </div>
-        </div>
+        </div>{% endif %}
     </div>
 </div>
 
@@ -57,7 +57,7 @@ stehen einzeln im Katalog und tragen dort die Kapsel «PDF»).
     </section>
 </div>
 
-<section class="fw-card">
+{% if ist_team %}<section class="fw-card">
     <div class="fw-kopf">
         <h2>{% trans "Kennzahlen je Mandat" %}</h2>
         <span class="fw-neben">{% blocktrans with datum=heute|date:"d.m.Y" %}Stand {{ datum }}{% endblocktrans %}</span>
@@ -88,7 +88,7 @@ stehen einzeln im Katalog und tragen dort die Kapsel «PDF»).
             </tbody>
         </table>
     </div>
-</section>
+</section>{% endif %}
 
 <h2 class="fw-subhead fw-bericht-katalog">{% trans "Alle Reports und Exporte an einem Ort." %}</h2>
 {% for g in berichte %}

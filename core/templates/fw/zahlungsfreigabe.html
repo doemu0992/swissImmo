@@ -1,0 +1,47 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n chf %}
+{% comment %}
+ZAHLUNGSFREIGABE — Freigabelimite der Kreditorenzahlungen (Vier-Augen-Prinzip).
+Das Limit steht an der Organisation; ändern darf es nur der Inhaber
+(`fw_zahlungsfreigabe_speichern`). Alle anderen sehen den Wert.
+{% endcomment %}
+{% block title %}{% trans "Zahlungsfreigabe" %} — swissImmo{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/einstellungen/">{% trans "Einstellungen" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Zahlungsfreigabe" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Zahlungsfreigabe" %}</h1>
+        <p>{% trans "Ab welchem Rechnungsbetrag eine zweite Person eine Lieferantenzahlung freigeben muss." %}</p>
+    </div>
+</div>
+
+<div class="fw-hinweis info max-w-3xl">
+    <span class="fw-hi">{% zeichen 'gesperrt' %}</span>
+    <div class="fw-ht">{% trans "Rechnungen ab diesem Betrag werden erst bezahlt oder in eine Zahlungsdatei genommen, wenn ein Verwalter oder der Inhaber die Zahlung freigegeben hat. Wer die Zahlung vorgelegt hat, darf sie nicht selbst freigeben. Die Freigabe gilt nur für den Betrag und die IBAN, die freigegeben wurden." %}</div>
+</div>
+
+<form method="post" action="/neu/einstellungen/zahlungsfreigabe/speichern/" class="max-w-3xl">
+    {% csrf_token %}
+    <div class="fw-card">
+        <div class="fw-kopf"><h3 class="fw-t">{% trans "Freigabelimite" %}</h3></div>
+        <div class="fw-formular fw-rumpf">
+            <div class="fw-feldblock"><label for="limit" class="fw-label">{% trans "Zahlungen ab (CHF, Rechnungsbetrag)" %}</label>
+                <input id="limit" name="freigabelimit" type="text" inputmode="decimal" autocomplete="off"
+                       value="{% if org.freigabelimit_kreditoren is not None %}{{ org.freigabelimit_kreditoren }}{% endif %}"
+                       class="fw-feld"{% if not darf_aendern %} disabled{% endif %}>
+                <p class="fw-mutet">{% trans "Vorgabe: CHF 5'000. Mit 0 braucht jede Zahlung eine Freigabe." %}</p></div>
+            <div class="fw-feldblock"><label class="fw-haekchen"><input type="checkbox" name="ohne_limit" class="fw-akzent"{% if org.freigabelimit_kreditoren is None %} checked{% endif %}{% if not darf_aendern %} disabled{% endif %}>{% trans "Kein Limit: Vier-Augen-Prinzip ausschalten" %}</label>
+                <p class="fw-mutet">{% trans "Nicht empfohlen. Die Änderung wird im Logbuch festgehalten." %}</p></div>
+        </div>
+        <div class="fw-fuss">
+            {% if darf_aendern %}<button type="submit" class="fw-btn fw-primary">{% trans "Speichern" %}</button>
+            {% else %}<span class="fw-mutet">{% trans "Nur der Inhaber ändert die Freigabelimite." %}</span>{% endif %}
+        </div>
+    </div>
+</form>
+{% endblock %}

@@ -21,6 +21,7 @@ from django.utils import timezone
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
+from core.auth import FINANZ_LESE_ROLLEN
 from portfolio.models import Liegenschaft
 from rentals.models import Mietvertrag
 
@@ -43,7 +44,7 @@ KAUTION_PILL = {
     'zurueckbezahlt': ('Zurückbezahlt',  'fw-flaeche2 fw-mutet'),
 }
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_kautionen(request):
     """Register aller Mietzinsdepots — separate Führung nach Art. 257e OR."""
     basis = _global_filter(request)

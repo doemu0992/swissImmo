@@ -10,6 +10,7 @@
 from django.shortcuts import get_object_or_404
 
 from core.auth import rolle_erforderlich, SCHREIB_ROLLEN, TEAM_ROLLEN
+from core.auth import FINANZ_LESE_ROLLEN, FINANZ_SCHREIB_ROLLEN
 from finance.models import DebitorenRechnung
 
 
@@ -17,7 +18,7 @@ from finance.models import DebitorenRechnung
 # QR-BELEG FÜR AD-HOC-DEBITORENRECHNUNG (z.B. Sonnerie, Ersatz)
 # ============================================================
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_debitor_qr_pdf(request, pk):
     """QR-Einzahlungsschein (A4) für eine beliebige Debitorenrechnung —
     ermöglicht Ad-hoc-Weiterverrechnungen (Schlüssel, Sonnerie, Ersatz …)
@@ -45,7 +46,7 @@ def fw_debitor_qr_pdf(request, pk):
     if pdf is None:
         return HttpResponse("Keine IBAN hinterlegt (Liegenschaft oder Verwaltung).", status=400)
     if request.method == 'POST':
-        if not hat_rolle(request.user, SCHREIB_ROLLEN):
+        if not hat_rolle(request.user, FINANZ_SCHREIB_ROLLEN):
             raise PermissionDenied
         # Ablage in die Akte (pro Rechnung eigener Titel)
         if r.vertrag_id:

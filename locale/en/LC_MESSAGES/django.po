@@ -34677,3 +34677,190 @@ msgid ""
 msgstr ""
 "The initial rent form could not be created automatically — please create it "
 "manually under “Initial rent” on the contract."
+
+msgid ""
+"<b>Buchhaltung</b> sieht und bucht nur Finanzen (Debitoren, Kreditoren, "
+"Buchungen, Berichte), keine Stammdaten, Verträge oder Personen. Zahlungen ab"
+" dem Freigabelimit gibt eine zweite Person aus der Verwaltung frei."
+msgstr ""
+"<b>Buchhaltung</b> (accounting) sees and books finances only (debtors, "
+"creditors, postings, reports), no master data, contracts or persons. "
+"Payments from the approval limit are approved by a second person from the "
+"management."
+
+msgid "Betrag oder IBAN wurden nach der Freigabe geändert."
+msgstr "The amount or IBAN was changed after approval."
+
+msgid "Rechnungsbetrag ab dem Freigabelimit"
+msgstr "Invoice amount at or above the approval limit"
+
+msgid "Freigabe ungültig"
+msgstr "Approval invalid"
+
+msgid "Vorgelegt von %(name)s"
+msgstr "Submitted by %(name)s"
+
+msgid ""
+"Zahlung von CHF %(betrag)s an %(name)s freigeben? Betrag und IBAN wurden "
+"geprüft."
+msgstr ""
+"Approve the payment of CHF %(betrag)s to %(name)s? Amount and IBAN have been"
+" checked."
+
+msgid "Zahlung freigeben"
+msgstr "Approve payment"
+
+msgid "wartet auf eine zweite Person"
+msgstr "waiting for a second person"
+
+msgid "Zur Freigabe vorlegen"
+msgstr "Submit for approval"
+
+msgid "Vorlage verwerfen"
+msgstr "Discard submission"
+
+msgid "Freigegeben von %(name)s"
+msgstr "Approved by %(name)s"
+
+msgid "Zahlung freigegeben"
+msgstr "Payment approved"
+
+msgid ""
+"Für die Zahlungsdatei fehlt die IBAN der Verwaltung. Bitte die Verwaltung "
+"bitten, sie zu hinterlegen."
+msgstr ""
+"The payment file is missing the management's IBAN. Please ask the management"
+" to enter it."
+
+msgid "Freigabe ungültig: Betrag oder IBAN wurden geändert."
+msgstr "Approval invalid: the amount or IBAN was changed."
+
+msgid ""
+"Zahlung vorgelegt von %(name)s, wartet auf die Freigabe einer zweiten "
+"Person."
+msgstr ""
+"Payment submitted by %(name)s, waiting for approval by a second person."
+
+msgid "Braucht die Freigabe einer zweiten Person (Freigabelimit)."
+msgstr "Needs approval by a second person (approval limit)."
+
+msgid "Zahlung freigegeben von %(name)s"
+msgstr "Payment approved by %(name)s"
+
+msgid "Zahlungsfreigabe"
+msgstr "Payment approval"
+
+msgid ""
+"Ab welchem Rechnungsbetrag eine zweite Person eine Lieferantenzahlung "
+"freigeben muss."
+msgstr ""
+"From which invoice amount a second person has to approve a supplier payment."
+
+msgid ""
+"Rechnungen ab diesem Betrag werden erst bezahlt oder in eine Zahlungsdatei "
+"genommen, wenn ein Verwalter oder der Inhaber die Zahlung freigegeben hat. "
+"Wer die Zahlung vorgelegt hat, darf sie nicht selbst freigeben. Die Freigabe"
+" gilt nur für den Betrag und die IBAN, die freigegeben wurden."
+msgstr ""
+"Invoices at or above this amount are only paid or put into a payment file "
+"once a manager or the owner has approved the payment. Whoever submitted the "
+"payment cannot approve it themselves. The approval only applies to the "
+"amount and IBAN that were approved."
+
+msgid "Freigabelimite"
+msgstr "Approval limit"
+
+msgid "Zahlungen ab (CHF, Rechnungsbetrag)"
+msgstr "Payments from (CHF, invoice amount)"
+
+msgid "Vorgabe: CHF 5'000. Mit 0 braucht jede Zahlung eine Freigabe."
+msgstr "Default: CHF 5'000. With 0 every payment needs approval."
+
+msgid "Kein Limit: Vier-Augen-Prinzip ausschalten"
+msgstr "No limit: switch off the four-eyes principle"
+
+msgid "Nicht empfohlen. Die Änderung wird im Logbuch festgehalten."
+msgstr "Not recommended. The change is recorded in the log."
+
+msgid "Nur der Inhaber ändert die Freigabelimite."
+msgstr "Only the owner changes the approval limit."
+
+msgid "Freigabelimite für Lieferantenzahlungen (Vier-Augen-Prinzip)"
+msgstr "Approval limit for supplier payments (four-eyes principle)"
+
+msgid ""
+"Zahlung nicht ausgelöst: Ab dem Freigabelimit gibt eine zweite Person die "
+"Zahlung frei. Sie ist vorgelegt und erscheint dort in der Liste."
+msgstr ""
+"Payment not triggered: from the approval limit a second person approves the "
+"payment. It has been submitted and appears in the list."
+
+msgid ""
+"%(n)s Rechnung(en) ausgelassen: Die Zahlung braucht die Freigabe einer "
+"zweiten Person (Freigabelimit). Sie ist vorgelegt."
+msgstr ""
+"%(n)s invoice(s) left out: the payment needs approval by a second person "
+"(approval limit). It has been submitted."
+
+msgid ""
+"Nur eine freigegebene, offene Rechnung lässt sich zur Zahlung vorlegen."
+msgstr "Only an approved, open invoice can be submitted for payment."
+
+msgid "Diese Rechnung liegt unter dem Freigabelimit — keine Freigabe nötig."
+msgstr "This invoice is below the approval limit — no approval needed."
+
+msgid "Die Zahlung ist zur Freigabe durch eine zweite Person vorgelegt."
+msgstr "The payment has been submitted for approval by a second person."
+
+msgid "Die Zahlung ist bereits vorgelegt oder freigegeben."
+msgstr "The payment has already been submitted or approved."
+
+msgid "Die Zahlung ist freigegeben und kann ausgelöst werden."
+msgstr "The payment is approved and can be triggered."
+
+msgid "Vorlage und Freigabe sind verworfen."
+msgstr "Submission and approval have been discarded."
+
+msgid "Bitte einen Betrag in CHF zwischen 0 und 99 999 999.99 eingeben."
+msgstr "Please enter an amount in CHF between 0 and 99 999 999.99."
+
+msgid "Freigabelimite gespeichert."
+msgstr "Approval limit saved."
+
+msgid ""
+"Betrag oder IBAN wurden nach der Freigabe geändert — die Zahlung braucht "
+"eine neue Freigabe durch eine zweite Person."
+msgstr ""
+"The amount or IBAN was changed after approval — the payment needs a new "
+"approval by a second person."
+
+msgid ""
+"Diese Zahlung braucht die Freigabe einer zweiten Person (Rechnungsbetrag ab "
+"dem Freigabelimit)."
+msgstr ""
+"This payment needs approval by a second person (invoice amount at or above "
+"the approval limit)."
+
+msgid ""
+"Nur eine freigegebene, noch offene Rechnung lässt sich zur Zahlung "
+"freigeben."
+msgstr "Only an approved, still open invoice can be approved for payment."
+
+msgid "Die Zahlung wurde noch nicht vorgelegt."
+msgstr "The payment has not been submitted yet."
+
+msgid ""
+"Wer die Zahlung vorgelegt hat, darf sie nicht selbst freigeben (Vier-Augen-"
+"Prinzip)."
+msgstr ""
+"Whoever submitted the payment cannot approve it themselves (four-eyes "
+"principle)."
+
+msgid "Die Zahlung ist bereits freigegeben."
+msgstr "The payment is already approved."
+
+msgid "%(n)s Zahlung wartet auf Ihre Freigabe (Vier-Augen-Prinzip)."
+msgid_plural "%(n)s Zahlungen warten auf Ihre Freigabe (Vier-Augen-Prinzip)."
+msgstr[0] "%(n)s payment is waiting for your approval (four-eyes principle)."
+msgstr[1] ""
+"%(n)s payments are waiting for your approval (four-eyes principle)."

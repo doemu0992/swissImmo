@@ -75,6 +75,9 @@ from core.views.application import public_application_view, public_datenschutz_v
 from core.views.dashboard_view import update_market_data_view
 
 # 2b. Eigentümer-Portal & Login-Weiche
+from core.views.fw.kreditoren import (fw_kreditor_zahlung_vorlegen, fw_kreditor_zahlung_freigeben,
+                                      fw_kreditor_zahlung_zuruecknehmen)
+from core.views.fw.zahlungsfreigabe import fw_zahlungsfreigabe, fw_zahlungsfreigabe_speichern
 from core.views.zweifaktor import (zweifaktor_login, zweifaktor_bestaetigen,
                                   zweifaktor_uebersicht, zweifaktor_einrichten,
                                   zweifaktor_codes_neu, zweifaktor_aus,
@@ -385,6 +388,11 @@ urlpatterns = [
     path('neu/kreditoren/', fw_kreditoren, name='fw_kreditoren'),
     path('neu/kreditoren/<int:kreditor_id>/weiterverrechnen/', fw_weiterverrechnung, name='fw_weiterverrechnung'),
     path('neu/kreditoren/<int:pk>/zahlung-zuruecksetzen/', fw_kreditor_zahlung_zuruecksetzen, name='fw_kreditor_zahlung_zuruecksetzen'),
+    path('neu/kreditoren/<int:pk>/zahlung-vorlegen/', fw_kreditor_zahlung_vorlegen, name='fw_kreditor_zahlung_vorlegen'),
+    path('neu/kreditoren/<int:pk>/zahlung-freigeben/', fw_kreditor_zahlung_freigeben, name='fw_kreditor_zahlung_freigeben'),
+    path('neu/kreditoren/<int:pk>/zahlung-zuruecknehmen/', fw_kreditor_zahlung_zuruecknehmen, name='fw_kreditor_zahlung_zuruecknehmen'),
+    path('neu/einstellungen/zahlungsfreigabe/', fw_zahlungsfreigabe, name='fw_zahlungsfreigabe'),
+    path('neu/einstellungen/zahlungsfreigabe/speichern/', fw_zahlungsfreigabe_speichern, name='fw_zahlungsfreigabe_speichern'),
     path('neu/kreditoren/zahlung/<int:pk>/stornieren/', fw_kreditor_zahlung_stornieren, name='fw_kreditor_zahlung_stornieren'),
     path('neu/zahllauf/', fw_zahllauf, name='fw_zahllauf'),
     path('neu/kreditoren/neu/', fw_kreditor_neu, name='fw_kreditor_neu'),

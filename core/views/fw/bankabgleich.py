@@ -29,6 +29,7 @@ from django.utils import timezone
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
+from core.auth import FINANZ_LESE_ROLLEN, FINANZ_SCHREIB_ROLLEN, FINANZ_VERWALTUNGS_ROLLEN
 from crm.models import Mieter
 from finance.models import DebitorenRechnung, Zahlungseingang
 from portfolio.models import Liegenschaft
@@ -56,7 +57,7 @@ def _qrr_referenz(rechnung):
     return ' '.join([ref[0:2], ref[2:7], ref[7:12], ref[12:17], ref[17:22], ref[22:27]])
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_bankabgleich(request):
     from django.db.models import Q as _Q, Sum
     from finance.models import Buchungskonto, KreditorenRechnung
@@ -337,7 +338,7 @@ def fw_bankabgleich(request):
     })
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_bankabgleich_verbuchen(request):
     """Verbucht eine (Teil-)Zahlung für einen offenen Posten — Bank an Debitoren,
     dieselbe Doppelbuchung + OP-Fortschreibung wie die Finanz-API."""
@@ -921,7 +922,7 @@ def _bank_csv_parse(raw):
     return eintraege
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_camt_import(request):
     """Alles oder nichts: ein unerwarteter Fehler mitten im Import rollt den
     GANZEN Import zurück (Kontoauszug, Bewegungen, Zahlungen, Buchungen).
@@ -1389,7 +1390,7 @@ def _camt_import_ausfuehren(request):
     return redirect(ziel)
 
 
-@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
 def fw_kontoauszug_rueckgaengig(request, pk):
     """Macht einen Bank-Import (camt.053 / CSV) rückgängig.
 

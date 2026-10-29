@@ -18,7 +18,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.translation import gettext_lazy
 from django.views.decorators.cache import never_cache
 
-from core.auth import hat_rolle, ist_eigentuemer, HAUSWART_ROLLEN, TEAM_ROLLEN
+from core.auth import (hat_rolle, ist_eigentuemer, BUCHHALTUNG_ROLLEN, FINANZ_LESE_ROLLEN,
+                       HAUSWART_ROLLEN, TEAM_ROLLEN)
 from rentals.models import Mietvertrag
 
 logger = logging.getLogger(__name__)
@@ -27,13 +28,15 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def nach_login_view(request):
-    """Login-Weiche: Team → /neu/, Eigentümer → Portal, Mieter → Mieterportal."""
+    """Login-Weiche: Team → /neu/, Buchhaltung → Finanzen, Eigentümer → Portal, Mieter → Mieterportal."""
     if getattr(request.user, 'eigentuemer_profil', None) is not None:
         return redirect('portal')
     if hat_rolle(request.user, TEAM_ROLLEN):
         return redirect('fw_dashboard')
     if hat_rolle(request.user, HAUSWART_ROLLEN):
         return redirect('fw_schaeden')
+    if hat_rolle(request.user, BUCHHALTUNG_ROLLEN):
+        return redirect('fw_finanzen')
     if ist_eigentuemer(request.user):
         return redirect('portal')
     if getattr(request.user, 'mieter_profil', None) is not None:
@@ -50,7 +53,7 @@ def portal_view(request):
 
     # Team-Mitglieder ohne Eigentuemer-Verknüpfung gehören in die neue Oberfläche
     if eigentuemer is None:
-        if hat_rolle(request.user, TEAM_ROLLEN):
+        if hat_rolle(request.user, FINANZ_LESE_ROLLEN):
             return redirect('fw_dashboard')
         return render(request, 'core/portal.html', {'eigentuemer': None})
 
@@ -447,7 +450,7 @@ def mieter_portal_view(request):
     Rechnungen und Schlüssel als kleine Kacheln, darunter das Mietobjekt."""
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None:
-        if hat_rolle(request.user, TEAM_ROLLEN):
+        if hat_rolle(request.user, FINANZ_LESE_ROLLEN):
             return redirect('fw_dashboard')
         if getattr(request.user, 'eigentuemer_profil', None) is not None:
             return redirect('portal')

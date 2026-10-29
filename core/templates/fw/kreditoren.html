@@ -28,6 +28,13 @@
     </div>
 </div>
 
+{% if zur_freigabe %}
+<div class="fw-hinweis warn max-w-3xl">
+    <span class="fw-hi">{% zeichen 'gesperrt' %}</span>
+    <div class="fw-ht">{% blocktrans count n=zur_freigabe trimmed %}{{ n }} Zahlung wartet auf Ihre Freigabe (Vier-Augen-Prinzip).{% plural %}{{ n }} Zahlungen warten auf Ihre Freigabe (Vier-Augen-Prinzip).{% endblocktrans %}</div>
+</div>
+{% endif %}
+
 <!-- KI-Rechnungsscanner: Upload → Beleg wird direkt gescannt und als Rechnung angelegt -->
 <div id="scanform" class="hidden fw-card">
     <div class="fw-kopf"><h2>{% zeichen 'einstellungen' klasse='fw-marke mr-1.5' %}{% trans "KI-Rechnungsscanner" %}</h2></div>
@@ -41,7 +48,7 @@
         <b>{{ mail }}</b> senden — PDF-/Foto-Anhänge werden automatisch gescannt und erscheinen hier als Status «Neu».{% endblocktrans %}</div>
     </div>
     {% endif %}
-    {% if not ki_aktiv %}
+    {% if not ki_aktiv and ist_team %}
     <div class="fw-hinweis warn mb-4">
         <span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht"><b>{% trans "KI nicht konfiguriert" %}</b> — {% blocktrans trimmed %}es läuft nur die regelbasierte Erkennung (IBAN/Betrag/Datum aus Text-PDFs; Foto-Belege werden nicht ausgelesen). Für die volle KI-Erkennung den <code>GROQ_API_KEY</code> unter
         <a href="/neu/integrationen/" class="underline">Integrationen</a> hinterlegen.{% endblocktrans %}</div>
@@ -196,6 +203,34 @@
                     <div class="flex flex-wrap sm:flex-nowrap items-center justify-end gap-2">
                         {% if row.beleg_url %}<a href="{{ row.beleg_url }}" target="_blank" rel="noopener" class="fw-ikon mut" title="{% trans 'Beleg ansehen' %}">{% zeichen 'hochladen' %}</a>{% endif %}
                         {% if row.kann_bezahlen and darf_bezahlen %}
+                        {% if row.va.sperre %}
+                        {% comment %} Vier-Augen-Prinzip: Ab dem Freigabelimit löst erst die zweite Person die Zahlung aus. {% endcomment %}
+                        <span class="fw-chip fw-warn-flaeche fw-warnton whitespace-nowrap" title="{% if row.va.geaendert %}{% trans 'Betrag oder IBAN wurden nach der Freigabe geändert.' %}{% else %}{% trans 'Rechnungsbetrag ab dem Freigabelimit' %}{% endif %}">
+                            {% if row.va.geaendert %}{% trans "Freigabe ungültig" %}{% elif row.va.vorgelegt %}{% blocktrans with name=row.va.vorleger %}Vorgelegt von {{ name }}{% endblocktrans %}{% else %}{% trans "Freigabe nötig" %}{% endif %}</span>
+                        {% if row.va.kann_freigeben %}
+                        <form method="post" action="/neu/kreditoren/{{ row.k.id }}/zahlung-freigeben/" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.lieferant|safe betrag=row.betrag|chf %}Zahlung von CHF {{ betrag }} an {{ name }} freigeben? Betrag und IBAN wurden geprüft.{% endblocktrans %}{% endfilter %}');" class="inline-flex items-center gap-2">
+                            {% csrf_token %}
+                            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                            <button type="submit" class="fw-btn fw-primary fw-knapp">{% zeichen 'gut' %} {% trans "Zahlung freigeben" %}</button>
+                        </form>
+                        {% elif row.va.selbst_vorgelegt %}
+                        <span class="fw-mutet text-xs">{% trans "wartet auf eine zweite Person" %}</span>
+                        {% elif not row.va.vorgelegt %}
+                        <form method="post" action="/neu/kreditoren/{{ row.k.id }}/zahlung-vorlegen/" class="inline-flex items-center gap-2">
+                            {% csrf_token %}
+                            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                            <button type="submit" class="fw-btn fw-knapp">{% zeichen 'senden' %} {% trans "Zur Freigabe vorlegen" %}</button>
+                        </form>
+                        {% endif %}
+                        {% if row.va.vorgelegt or row.va.geaendert %}
+                        <form method="post" action="/neu/kreditoren/{{ row.k.id }}/zahlung-zuruecknehmen/" class="inline">
+                            {% csrf_token %}
+                            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                            <button type="submit" class="fw-ikon mut" title="{% trans 'Vorlage verwerfen' %}">{% zeichen 'schliessen' %}</button>
+                        </form>
+                        {% endif %}
+                        {% else %}
+                        {% if row.va.noetig %}<span class="fw-chip fw-good whitespace-nowrap" title="{% blocktrans with name=row.va.freigeber %}Freigegeben von {{ name }}{% endblocktrans %}">{% zeichen 'gut' %} {% trans "Zahlung freigegeben" %}</span>{% endif %}
                         <form method="post" action="/neu/kreditoren/bezahlen/" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.lieferant|safe %}Zahlung an {{ name }} verbuchen?{% endblocktrans %}{% endfilter %}');" class="inline-flex items-center gap-1">
                             {% csrf_token %}
                             <input type="hidden" name="rechnung_id" value="{{ row.k.id }}">
@@ -213,6 +248,7 @@
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                             <button type="submit" class="fw-ikon mut" title="{% trans 'Zahllauf zurücksetzen' %}">{% zeichen 'lauf' %}</button>
                         </form>
+                        {% endif %}
                         {% endif %}
                         {% elif row.k.status == 'neu' and darf_bezahlen %}
                         <form method="post" action="/neu/kreditoren/{{ row.k.id }}/freigeben/" onsubmit="return confirm('{% filter escapejs %}{% trans "Rechnung freigeben und als Aufwand verbuchen?" %}{% endfilter %}');" class="inline-flex items-center gap-1.5">

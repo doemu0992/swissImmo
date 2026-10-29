@@ -35165,3 +35165,205 @@ msgid ""
 msgstr ""
 "Il modulo per la pigione iniziale non ha potuto essere creato "
 "automaticamente — crearlo a mano sotto «Pigione iniziale» nel contratto."
+
+msgid ""
+"<b>Buchhaltung</b> sieht und bucht nur Finanzen (Debitoren, Kreditoren, "
+"Buchungen, Berichte), keine Stammdaten, Verträge oder Personen. Zahlungen ab"
+" dem Freigabelimit gibt eine zweite Person aus der Verwaltung frei."
+msgstr ""
+"<b>Buchhaltung</b> vede e contabilizza solo le finanze (debitori, creditori,"
+" registrazioni, rapporti), nessun dato anagrafico, contratto o persona. I "
+"pagamenti a partire dal limite di approvazione li approva una seconda "
+"persona dell'amministrazione."
+
+msgid "Betrag oder IBAN wurden nach der Freigabe geändert."
+msgstr "L'importo o l'IBAN sono stati modificati dopo l'approvazione."
+
+msgid "Rechnungsbetrag ab dem Freigabelimit"
+msgstr "Importo della fattura a partire dal limite di approvazione"
+
+msgid "Freigabe ungültig"
+msgstr "Approvazione non valida"
+
+msgid "Vorgelegt von %(name)s"
+msgstr "Sottoposto da %(name)s"
+
+msgid ""
+"Zahlung von CHF %(betrag)s an %(name)s freigeben? Betrag und IBAN wurden "
+"geprüft."
+msgstr ""
+"Approvare il pagamento di CHF %(betrag)s a %(name)s? Importo e IBAN sono "
+"stati controllati."
+
+msgid "Zahlung freigeben"
+msgstr "Approvare il pagamento"
+
+msgid "wartet auf eine zweite Person"
+msgstr "attende una seconda persona"
+
+msgid "Zur Freigabe vorlegen"
+msgstr "Sottoporre per approvazione"
+
+msgid "Vorlage verwerfen"
+msgstr "Annullare la sottomissione"
+
+msgid "Freigegeben von %(name)s"
+msgstr "Approvato da %(name)s"
+
+msgid "Zahlung freigegeben"
+msgstr "Pagamento approvato"
+
+msgid ""
+"Für die Zahlungsdatei fehlt die IBAN der Verwaltung. Bitte die Verwaltung "
+"bitten, sie zu hinterlegen."
+msgstr ""
+"Nel file di pagamento manca l'IBAN dell'amministrazione. Chiedere "
+"all'amministrazione di inserirlo."
+
+msgid "Freigabe ungültig: Betrag oder IBAN wurden geändert."
+msgstr "Approvazione non valida: importo o IBAN sono stati modificati."
+
+msgid ""
+"Zahlung vorgelegt von %(name)s, wartet auf die Freigabe einer zweiten "
+"Person."
+msgstr ""
+"Pagamento sottoposto da %(name)s, in attesa dell'approvazione di una seconda"
+" persona."
+
+msgid "Braucht die Freigabe einer zweiten Person (Freigabelimit)."
+msgstr ""
+"Richiede l'approvazione di una seconda persona (limite di approvazione)."
+
+msgid "Zahlung freigegeben von %(name)s"
+msgstr "Pagamento approvato da %(name)s"
+
+msgid "Zahlungsfreigabe"
+msgstr "Approvazione dei pagamenti"
+
+msgid ""
+"Ab welchem Rechnungsbetrag eine zweite Person eine Lieferantenzahlung "
+"freigeben muss."
+msgstr ""
+"A partire da quale importo una seconda persona deve approvare un pagamento a"
+" un fornitore."
+
+msgid ""
+"Rechnungen ab diesem Betrag werden erst bezahlt oder in eine Zahlungsdatei "
+"genommen, wenn ein Verwalter oder der Inhaber die Zahlung freigegeben hat. "
+"Wer die Zahlung vorgelegt hat, darf sie nicht selbst freigeben. Die Freigabe"
+" gilt nur für den Betrag und die IBAN, die freigegeben wurden."
+msgstr ""
+"Le fatture a partire da questo importo vengono pagate o inserite in un file "
+"di pagamento solo dopo che un amministratore o il titolare ha approvato il "
+"pagamento. Chi ha sottoposto il pagamento non può approvarlo da solo. "
+"L'approvazione vale solo per l'importo e l'IBAN approvati."
+
+msgid "Freigabelimite"
+msgstr "Limite di approvazione"
+
+msgid "Zahlungen ab (CHF, Rechnungsbetrag)"
+msgstr "Pagamenti a partire da (CHF, importo della fattura)"
+
+msgid "Vorgabe: CHF 5'000. Mit 0 braucht jede Zahlung eine Freigabe."
+msgstr ""
+"Predefinito: CHF 5'000. Con 0 ogni pagamento richiede un'approvazione."
+
+msgid "Kein Limit: Vier-Augen-Prinzip ausschalten"
+msgstr "Nessun limite: disattivare il principio del doppio controllo"
+
+msgid "Nicht empfohlen. Die Änderung wird im Logbuch festgehalten."
+msgstr "Sconsigliato. La modifica viene registrata nel registro."
+
+msgid "Nur der Inhaber ändert die Freigabelimite."
+msgstr "Solo il titolare modifica il limite di approvazione."
+
+msgid "Freigabelimite für Lieferantenzahlungen (Vier-Augen-Prinzip)"
+msgstr ""
+"Limite di approvazione dei pagamenti ai fornitori (principio del doppio "
+"controllo)"
+
+msgid ""
+"Zahlung nicht ausgelöst: Ab dem Freigabelimit gibt eine zweite Person die "
+"Zahlung frei. Sie ist vorgelegt und erscheint dort in der Liste."
+msgstr ""
+"Pagamento non avviato: a partire dal limite di approvazione una seconda "
+"persona approva il pagamento. È stato sottoposto e compare nell'elenco."
+
+msgid ""
+"%(n)s Rechnung(en) ausgelassen: Die Zahlung braucht die Freigabe einer "
+"zweiten Person (Freigabelimit). Sie ist vorgelegt."
+msgstr ""
+"%(n)s fattura/e esclusa/e: il pagamento richiede l'approvazione di una "
+"seconda persona (limite di approvazione). È stato sottoposto."
+
+msgid ""
+"Nur eine freigegebene, offene Rechnung lässt sich zur Zahlung vorlegen."
+msgstr ""
+"Solo una fattura approvata e aperta può essere sottoposta al pagamento."
+
+msgid "Diese Rechnung liegt unter dem Freigabelimit — keine Freigabe nötig."
+msgstr ""
+"Questa fattura è sotto il limite di approvazione — nessuna approvazione "
+"necessaria."
+
+msgid "Die Zahlung ist zur Freigabe durch eine zweite Person vorgelegt."
+msgstr ""
+"Il pagamento è stato sottoposto all'approvazione di una seconda persona."
+
+msgid "Die Zahlung ist bereits vorgelegt oder freigegeben."
+msgstr "Il pagamento è già stato sottoposto o approvato."
+
+msgid "Die Zahlung ist freigegeben und kann ausgelöst werden."
+msgstr "Il pagamento è approvato e può essere avviato."
+
+msgid "Vorlage und Freigabe sind verworfen."
+msgstr "Sottomissione e approvazione sono state annullate."
+
+msgid "Bitte einen Betrag in CHF zwischen 0 und 99 999 999.99 eingeben."
+msgstr "Inserire un importo in CHF compreso tra 0 e 99 999 999.99."
+
+msgid "Freigabelimite gespeichert."
+msgstr "Limite di approvazione salvato."
+
+msgid ""
+"Betrag oder IBAN wurden nach der Freigabe geändert — die Zahlung braucht "
+"eine neue Freigabe durch eine zweite Person."
+msgstr ""
+"L'importo o l'IBAN sono stati modificati dopo l'approvazione — il pagamento "
+"richiede una nuova approvazione da parte di una seconda persona."
+
+msgid ""
+"Diese Zahlung braucht die Freigabe einer zweiten Person (Rechnungsbetrag ab "
+"dem Freigabelimit)."
+msgstr ""
+"Questo pagamento richiede l'approvazione di una seconda persona (importo "
+"della fattura a partire dal limite di approvazione)."
+
+msgid ""
+"Nur eine freigegebene, noch offene Rechnung lässt sich zur Zahlung "
+"freigeben."
+msgstr ""
+"Solo una fattura approvata e ancora aperta può essere approvata per il "
+"pagamento."
+
+msgid "Die Zahlung wurde noch nicht vorgelegt."
+msgstr "Il pagamento non è ancora stato sottoposto."
+
+msgid ""
+"Wer die Zahlung vorgelegt hat, darf sie nicht selbst freigeben (Vier-Augen-"
+"Prinzip)."
+msgstr ""
+"Chi ha sottoposto il pagamento non può approvarlo da solo (principio del "
+"doppio controllo)."
+
+msgid "Die Zahlung ist bereits freigegeben."
+msgstr "Il pagamento è già approvato."
+
+msgid "%(n)s Zahlung wartet auf Ihre Freigabe (Vier-Augen-Prinzip)."
+msgid_plural "%(n)s Zahlungen warten auf Ihre Freigabe (Vier-Augen-Prinzip)."
+msgstr[0] ""
+"%(n)s pagamento attende la sua approvazione (principio del doppio "
+"controllo)."
+msgstr[1] ""
+"%(n)s pagamenti attendono la sua approvazione (principio del doppio "
+"controllo)."

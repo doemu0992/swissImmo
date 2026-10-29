@@ -126,3 +126,38 @@ Erfolgskonten eines Jahres schliesst sie mit `abschluss_buchungen_q()` aus, sons
 das abgeschlossene Jahr Ertrag 0. Mit diesem Ausschluss rechnen jetzt: Kontokorrent,
 Honorarbasis, Erfolgsrechnung, **Mandatsabrechnung (Seite und PDF; FUNK-02)** und
 **Auswertung `/neu/auswertung/`** (derselbe Fehler, bei der Suche nach dem Zwilling gefunden).
+
+## 6. Vier-Augen-Prinzip bei Kreditorenzahlungen (Etappe 2, SICH-12)
+
+Eine Kreditorenrechnung mit Rechnungsbetrag >= `Organisation.freigabelimit_kreditoren`
+(Vorgabe CHF 5'000, leer = aus) wird erst bezahlt oder in eine Zahlungsdatei genommen,
+wenn `zahlung_freigegeben_von` gesetzt ist, die Freigabe zu Betrag und IBAN passt
+(`finance/freigabe.py::freigabe_gueltig`) und die Person von `zahlung_beantragt_von`
+verschieden ist. Eine Stelle entscheidet (`zahlung_sperre`).
+
+| Pfad | Stelle | Verhalten |
+|---|---|---|
+| Kreditor bezahlen | `kreditoren.fw_kreditor_bezahlen` | gesperrt, legt vor, Meldung, Protokoll |
+| Zahlungsdatei (pain.001) | `fw_zahllauf`, `datei` (`_auswahl`) | gesperrte Rechnungen fallen laut aus dem Lauf |
+| Sammelbestätigung | `fw_zahllauf`, `bezahlt` | wie oben, kein Verbuchen ohne Freigabe |
+| Zurücksetzen | `fw_zahllauf`, `zuruecksetzen` | bewusst frei (kein Geldabfluss) |
+| Teilzahlung | beide | Massgebend ist der Rechnungsbetrag, nicht der Teilbetrag |
+
+**Umgehungen, die geprüft wurden:** Teilzahlungen unter dem Limit (zu), IBAN-/Betragswechsel
+nach der Freigabe (Freigabe ungültig), erneutes Vorlegen durch den Freigeber (der erste
+Vorleger bleibt), Selbstfreigabe durch Inhaber/Verwalter (nicht möglich), Sammelbestätigung ohne
+Datei (zu), Rechnung in mehrere Rechnungen zerlegen (offen, siehe unten).
+
+**Ohne Schutz (bewusst, im Bericht an den Fachverantwortlichen):**
+
+* `aktionen.fw_bankbewegung_zuordnen` (Art `kreditor`) verbucht eine **bereits ausgeführte**
+  Bankbelastung auf eine Rechnung. Das ist die Nachführung eines Geldabflusses, den die Bank
+  schon getätigt hat, keine Auslösung; sie bleibt ohne Freigabe.
+* Eigentümerauszahlung (`eigentuemer_kontokorrent.buche_auszahlung`), Rückerstattung von
+  Mieterguthaben (`fw_guthaben_rueckerstatten`) und Kautionsrückzahlung sind Buchungen ohne
+  Zahlungsdatei und haben kein Vier-Augen-Prinzip (nur Verwaltung/Inhaber). Ob sie ab
+  einem Betrag eine zweite Person brauchen, ist ein Fachentscheid.
+* Mehrere kleine Rechnungen desselben Lieferanten, je unter dem Limit, werden einzeln
+  freigabefrei bezahlt. Eine Summenregel je Lieferant und Lauf ist nicht gebaut.
+* Wer in der Verwaltung allein arbeitet (nur ein Inhaber), kann Zahlungen ab dem Limit
+  nicht auslösen: Er stellt das Limit selbst höher oder ein zweites Konto wird angelegt.

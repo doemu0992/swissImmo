@@ -179,7 +179,7 @@
             </div>
             <div class="flex items-center gap-3 flex-wrap w-full">
                 {% if request.user|darf_schreiben %}<form method="post" action="/neu/debitoren/{{ row.r.id }}/qr-pdf/" target="_blank" class="inline">{% csrf_token %}<button type="submit" class="fw-link">{% zeichen 'bank' %} QR</button></form>{% else %}<a href="/neu/debitoren/{{ row.r.id }}/qr-pdf/" target="_blank" rel="noopener" class="fw-link">{% zeichen 'bank' %} QR</a>{% endif %}
-                {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="fw-link">{% trans "Vertrag" %}</a>{% endif %}
+                {% if row.vertrag_id and ist_team %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="fw-link">{% trans "Vertrag" %}</a>{% endif %}
                 {% if row.mahn and row.r.status == 'offen' or row.mahn and row.r.status == 'teilbezahlt' %}
                 <form method="post" action="/neu/debitoren/{{ row.r.id }}/abschreiben/" class="inline"
                       onsubmit="var g = prompt('Forderungsverlust CHF {{ row.offen }} buchen (Konto 3805)?\nGrund (z.B. Verlustschein, Betreibung erfolglos):'); if (g === null) return false; this.grund.value = g; return true;">
@@ -240,7 +240,7 @@
                 <td class="text-right">
                     <div class="flex flex-wrap items-center justify-end gap-2">
                     {% if request.user|darf_schreiben %}<form method="post" action="/neu/debitoren/{{ row.r.id }}/qr-pdf/" target="_blank" class="inline">{% csrf_token %}<button type="submit" class="fw-link" title="{% trans 'QR-Rechnung als PDF' %}">{% zeichen 'bank' %} QR</button></form>{% else %}<a href="/neu/debitoren/{{ row.r.id }}/qr-pdf/" target="_blank" rel="noopener" class="fw-link" title="{% trans 'QR-Rechnung als PDF' %}">{% zeichen 'bank' %} QR</a>{% endif %}
-                    {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Vertrag" %}{% endfilter %}',true)" class="fw-link">{% trans "Ansehen" %}</a>{% endif %}
+                    {% if row.vertrag_id and ist_team %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Vertrag" %}{% endfilter %}',true)" class="fw-link">{% trans "Ansehen" %}</a>{% endif %}
                     {% if row.mahn and row.r.status == 'offen' or row.mahn and row.r.status == 'teilbezahlt' %}
                     <form method="post" action="/neu/debitoren/{{ row.r.id }}/abschreiben/" class="inline"
                           onsubmit="var g = prompt('Forderungsverlust CHF {{ row.offen }} buchen (Konto 3805)?\nGrund (z.B. Verlustschein, Betreibung erfolglos):'); if (g === null) return false; this.grund.value = g; return true;">

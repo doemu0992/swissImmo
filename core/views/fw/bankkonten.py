@@ -12,6 +12,7 @@ from django.db.models import Q, Sum
 from django.shortcuts import render
 
 from core.auth import rolle_erforderlich, TEAM_ROLLEN
+from core.auth import FINANZ_LESE_ROLLEN
 from portfolio.models import Liegenschaft
 from rentals.models import Mietvertrag
 
@@ -45,7 +46,7 @@ def _ist_qr_iban(iban):
     return 30000 <= iid <= 31999
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_bankkonten(request):
     from crm.models import Organisation, Eigentuemer
     basis = _global_filter(request)

@@ -785,6 +785,25 @@ class KreditorenRechnung(OrganisationAusKette):
     handwerker = models.ForeignKey('crm.Handwerker', on_delete=models.SET_NULL, null=True, blank=True,
                                    related_name='kreditoren_rechnungen')
 
+    # VIER-AUGEN-PRINZIP für Zahlungen ab dem Freigabelimit der Organisation
+    # (Etappe 2, SICH-12, `finance/freigabe.py`). Wer die Zahlung auslösen will,
+    # legt sie vor (`zahlung_beantragt_*`); eine ZWEITE Person aus der Verwaltung
+    # gibt sie frei (`zahlung_freigegeben_*`). Die Freigabe gilt für genau den
+    # Betrag und die IBAN, die sie gesehen hat (`zahlung_freigabe_betrag/_iban`):
+    # Ändert sich eines, ist sie wertlos. Das Protokoll steht zusätzlich im
+    # Aktivitätslog.
+    zahlung_beantragt_von = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='+', verbose_name="Zahlung vorgelegt von")
+    zahlung_beantragt_am = models.DateTimeField("Zahlung vorgelegt am", null=True, blank=True)
+    zahlung_freigegeben_von = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='+', verbose_name="Zahlung freigegeben von")
+    zahlung_freigegeben_am = models.DateTimeField("Zahlung freigegeben am", null=True, blank=True)
+    zahlung_freigabe_betrag = models.DecimalField(
+        "Freigegebener Betrag", max_digits=10, decimal_places=2, null=True, blank=True)
+    zahlung_freigabe_iban = models.CharField("Freigegebene IBAN", max_length=50, blank=True)
+
     class Meta:
         verbose_name = "Kreditorenrechnung"
         db_table = 'core_kreditorenrechnung'

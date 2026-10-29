@@ -24,6 +24,7 @@ from django.utils.translation import gettext as _
 
 from core.tenancy import organisation_der_anfrage
 from core.auth import rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN, TEAM_ROLLEN
+from core.auth import FINANZ_LESE_ROLLEN, FINANZ_SCHREIB_ROLLEN
 from crm.models import Mieter
 from finance.models import DebitorenRechnung
 
@@ -43,7 +44,7 @@ from core.services.mahnstufen import (  # noqa: E402
 )
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_mahnwesen(request):
     heute = timezone.localdate()
     basis = _global_filter(request)
@@ -308,7 +309,7 @@ def aging_gruppen(qs, heute):
     return rows, total
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_debitoren_aging(request):
     """Debitoren-Altersstruktur (OP-Aging): offene Forderungen nach
     Fälligkeitsalter (nicht fällig / 1–30 / 31–60 / 61–90 / >90 Tage),
@@ -435,7 +436,7 @@ def _mahngebuehr_nachstellen(request, rechnung, mahnung, gebuehr=None):
     return redirect('fw_mahnwesen')
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_mahnung_erfassen(request):
     """Erfasst einen revisionssicheren Mahnschritt in der Historie und legt
     optional eine Mahngebühr als Debitorenrechnung an."""

@@ -15,6 +15,7 @@ from django.utils.translation import gettext
 from django.utils import timezone
 
 from core.auth import rolle_erforderlich, ROLLE_VERWALTER, TEAM_ROLLEN
+from core.auth import FINANZ_LESE_ROLLEN
 
 from ._basis import (_global_filter, _mwst_beleg, _mwst_bereits_verbucht,
                      _mwst_periode, _num)
@@ -32,7 +33,7 @@ from core.utils.parameter import jahr_streng
 
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_mwst(request):
     """MWST-Abrechnung: geschuldete Umsatzsteuer (2200) minus Vorsteuer (1170) = Zahllast."""
     basis = _global_filter(request)
@@ -85,7 +86,7 @@ def fw_mwst_einstellungen(request):
     return redirect(sicheres_ziel(request, '/neu/mwst/', 'zurueck'))
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_mwst_estv_export(request):
     """ESTV-Abrechnung als CSV (offizielle Ziffern) für den gewählten Zeitraum.
 

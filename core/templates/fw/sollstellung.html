@@ -11,7 +11,7 @@
    Freigabeleiste. Die Monatswahl steht rechts im Kopf. {% endcomment %}
 <div class="fw-phead fw-phead-lauf">
     <div>
-        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a><span aria-hidden="true">/</span><span>{% blocktrans with monat=monat_name %}Sollstellung {{ monat }}{% endblocktrans %}</span></nav>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}">{% if ist_team %}<a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a>{% else %}<span>{% trans "Läufe" %}</span>{% endif %}<span aria-hidden="true">/</span><span>{% blocktrans with monat=monat_name %}Sollstellung {{ monat }}{% endblocktrans %}</span></nav>
         <h1>{% blocktrans with monat=monat_name jahr=jahr %}Sollstellung {{ monat }} {{ jahr }}{% endblocktrans %} {% hilfe 'sollstellung' %}</h1>
         <p>{% if lauf %}{% blocktrans with datum=lauf.faellig_am|date:"d.m.Y" %}fällig {{ datum }}{% endblocktrans %} · {% if lauf.gestartet_am %}{% blocktrans with datum=lauf.gestartet_am|date:"d.m.Y" %}gestartet {{ datum }}{% endblocktrans %} · {% endif %}{% endif %}{% trans "Monatlicher Mietenlauf — erzeugt Debitorenrechnungen (Pro-Rata bei Ein-/Auszug mitten im Monat)" %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
     </div>
@@ -95,7 +95,7 @@
             {% for row in rows %}
             <tr>
                 <td>
-                    <a href="/neu/vertraege/{{ row.v.id }}/" class="fw-link">{{ row.mieter }}</a>
+                    {% if ist_team %}<a href="/neu/vertraege/{{ row.v.id }}/" class="fw-link">{{ row.mieter }}</a>{% else %}{{ row.mieter }}{% endif %}
                     <div class="fw-mono fw-sub2">MV-{{ row.v.id }}</div>
                 </td>
                 <td class="fw-mutet">{{ row.v.einheit.liegenschaft.strasse }}

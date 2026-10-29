@@ -27,7 +27,8 @@ from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy
 
-from core.auth import SCHREIB_ROLLEN, VERWALTUNGS_ROLLEN
+from core.auth import (FINANZ_SCHREIB_ROLLEN, FINANZ_VERWALTUNGS_ROLLEN, SCHREIB_ROLLEN, TEAM_ROLLEN,
+                       VERWALTUNGS_ROLLEN)
 from portfolio.models import Einheit, Liegenschaft
 from rentals.models import Mietvertrag
 from core.tenancy import aktuelle_organisation
@@ -113,7 +114,30 @@ def _global_filter(request):
         # Ersetzt keine Prüfung im View, blendet nur die Sackgasse aus.
         'kann_schreiben': hat_rolle(request.user, SCHREIB_ROLLEN),
         'ist_verwaltung': hat_rolle(request.user, VERWALTUNGS_ROLLEN),
+        # Für die Finanzseiten, die auch die Buchhaltung öffnet. Träge: Eine
+        # Abfrage nur dort, wo eine Vorlage den Wert wirklich liest (die
+        # Abfragezahl der übrigen Seiten bleibt, wie sie war).
+        'kann_finanz_schreiben': _TraegeRolle(request.user, FINANZ_SCHREIB_ROLLEN),
+        'ist_finanz_verwaltung': _TraegeRolle(request.user, FINANZ_VERWALTUNGS_ROLLEN),
+        # Gehört die Person zum Team (Stammdaten, Verträge, Personen) oder nur zur
+        # Buchhaltung? Vorlagen, die auf Akten verlinken, zeigen der Buchhaltung
+        # den Text statt eines Links in die 403.
+        'ist_team': _TraegeRolle(request.user, TEAM_ROLLEN),
     }
+
+
+class _TraegeRolle:
+    """`bool(...)` fragt erst beim Lesen nach der Rolle (siehe `_global_filter`)."""
+    __slots__ = ('_user', '_rollen', '_wert')
+
+    def __init__(self, user, rollen):
+        self._user, self._rollen, self._wert = user, rollen, None
+
+    def __bool__(self):
+        if self._wert is None:
+            from core.auth import hat_rolle
+            self._wert = bool(hat_rolle(self._user, self._rollen))
+        return self._wert
 
 
 def _kaution_bilanziert(vertrag):

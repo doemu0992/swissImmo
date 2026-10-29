@@ -14,7 +14,7 @@ hat genau einen Hauptknopf — den nächsten sinnvollen Schritt.
 
 <div class="fw-phead fw-phead-lauf">
     <div>
-        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a><span aria-hidden="true">/</span><span>{% trans "Bankabgleich" %}</span></nav>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}">{% if ist_team %}<a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a>{% else %}<span>{% trans "Läufe" %}</span>{% endif %}<span aria-hidden="true">/</span><span>{% trans "Bankabgleich" %}</span></nav>
         <h1>{% trans "Bankabgleich" %} {% hilfe 'bankabgleich' %}</h1>
         <p>{% trans "Zahlungseingänge klären, aufteilen und verbuchen — Sonderfälle wie Teil-, Sammel- und Überzahlungen inklusive" %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/bankabgleich/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
@@ -425,7 +425,7 @@ anderes schachteln.
             <div class="fw-zeile flex-wrap">
                 <span class="fw-chip fw-warn">{% trans "Teilbezahlt" %}</span>
                 <div class="fw-mitte">
-                    <div class="fw-t break-words">{% if t.r.vertrag_id %}<a href="/neu/vertraege/{{ t.r.vertrag_id }}/" class="fw-link">{{ t.mieter }}</a>{% else %}{{ t.mieter }}{% endif %} · {{ t.r.titel }}</div>
+                    <div class="fw-t break-words">{% if t.r.vertrag_id and ist_team %}<a href="/neu/vertraege/{{ t.r.vertrag_id }}/" class="fw-link">{{ t.mieter }}</a>{% else %}{{ t.mieter }}{% endif %} · {{ t.r.titel }}</div>
                     <div class="fw-s">{% blocktrans with datum=t.faellig|date:"d.m.Y" %}fällig {{ datum }}{% endblocktrans %} · {{ t.objekt }}</div>
                     <div class="fw-teil-fortschritt">
                         <progress class="fw-fortschritt" value="{{ t.prozent }}" max="100" aria-label="{% trans 'bezahlt' %} {{ t.prozent }} %">{{ t.prozent }} %</progress>
@@ -451,7 +451,7 @@ anderes schachteln.
                 {% else %}
                 <a href="/neu/mahnwesen/{{ lg_query }}" class="fw-btn fw-primary fw-knapp">{% trans "Rest mahnen" %}</a>
                 {% endif %}
-                {% if t.r.vertrag_id %}<a href="/neu/vertraege/{{ t.r.vertrag_id }}/zahlungsvereinbarung/" class="fw-btn fw-knapp">{% trans "Ratenplan" %}</a>{% endif %}
+                {% if t.r.vertrag_id and ist_team %}<a href="/neu/vertraege/{{ t.r.vertrag_id }}/zahlungsvereinbarung/" class="fw-btn fw-knapp">{% trans "Ratenplan" %}</a>{% endif %}
             </div>
             {% empty %}
             <div class="fw-leer">
@@ -637,7 +637,7 @@ anderes schachteln.
             <tr>
                 <td class="fw-num whitespace-nowrap"><span class="{% if row.ueberfaellig %}fw-strong fw-kritisch{% else %}fw-mutet{% endif %}">{{ row.faellig|date:"d.m.Y" }}</span></td>
                 <td class="fw-strong whitespace-nowrap">
-                    {% if row.r.vertrag_id %}<a href="/neu/vertraege/{{ row.r.vertrag_id }}/" class="fw-link">{{ row.mieter }}</a>{% else %}{{ row.mieter }}{% endif %}
+                    {% if row.r.vertrag_id and ist_team %}<a href="/neu/vertraege/{{ row.r.vertrag_id }}/" class="fw-link">{{ row.mieter }}</a>{% else %}{{ row.mieter }}{% endif %}
                     {% if row.r.status == 'teilbezahlt' %}<span class="fw-chip fw-warn">{% trans "Teilbezahlt" %}</span>{% endif %}
                 </td>
                 <td class="fw-mutet whitespace-nowrap">{{ row.objekt }}</td>

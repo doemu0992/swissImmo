@@ -35221,3 +35221,198 @@ msgid ""
 msgstr ""
 "La formule de loyer initial n'a pas pu être créée automatiquement — veuillez"
 " la créer à la main sous « Loyer initial » dans le contrat."
+
+msgid ""
+"<b>Buchhaltung</b> sieht und bucht nur Finanzen (Debitoren, Kreditoren, "
+"Buchungen, Berichte), keine Stammdaten, Verträge oder Personen. Zahlungen ab"
+" dem Freigabelimit gibt eine zweite Person aus der Verwaltung frei."
+msgstr ""
+"<b>Buchhaltung</b> ne voit et ne comptabilise que les finances (débiteurs, "
+"créanciers, écritures, rapports), ni données de base, ni contrats, ni "
+"personnes. Les paiements à partir de la limite de validation sont validés "
+"par une deuxième personne de la gérance."
+
+msgid "Betrag oder IBAN wurden nach der Freigabe geändert."
+msgstr "Le montant ou l'IBAN ont été modifiés après la validation."
+
+msgid "Rechnungsbetrag ab dem Freigabelimit"
+msgstr "Montant de la facture à partir de la limite de validation"
+
+msgid "Freigabe ungültig"
+msgstr "Validation caduque"
+
+msgid "Vorgelegt von %(name)s"
+msgstr "Soumis par %(name)s"
+
+msgid ""
+"Zahlung von CHF %(betrag)s an %(name)s freigeben? Betrag und IBAN wurden "
+"geprüft."
+msgstr ""
+"Valider le paiement de CHF %(betrag)s à %(name)s ? Le montant et l'IBAN ont "
+"été contrôlés."
+
+msgid "Zahlung freigeben"
+msgstr "Valider le paiement"
+
+msgid "wartet auf eine zweite Person"
+msgstr "attend une deuxième personne"
+
+msgid "Zur Freigabe vorlegen"
+msgstr "Soumettre pour validation"
+
+msgid "Vorlage verwerfen"
+msgstr "Annuler la soumission"
+
+msgid "Freigegeben von %(name)s"
+msgstr "Validé par %(name)s"
+
+msgid "Zahlung freigegeben"
+msgstr "Paiement validé"
+
+msgid ""
+"Für die Zahlungsdatei fehlt die IBAN der Verwaltung. Bitte die Verwaltung "
+"bitten, sie zu hinterlegen."
+msgstr ""
+"Le fichier de paiement n'a pas l'IBAN de la gérance. Veuillez demander à la "
+"gérance de l'enregistrer."
+
+msgid "Freigabe ungültig: Betrag oder IBAN wurden geändert."
+msgstr "Validation caduque : le montant ou l'IBAN ont été modifiés."
+
+msgid ""
+"Zahlung vorgelegt von %(name)s, wartet auf die Freigabe einer zweiten "
+"Person."
+msgstr ""
+"Paiement soumis par %(name)s, en attente de la validation d'une deuxième "
+"personne."
+
+msgid "Braucht die Freigabe einer zweiten Person (Freigabelimit)."
+msgstr ""
+"Nécessite la validation d'une deuxième personne (limite de validation)."
+
+msgid "Zahlung freigegeben von %(name)s"
+msgstr "Paiement validé par %(name)s"
+
+msgid "Zahlungsfreigabe"
+msgstr "Validation des paiements"
+
+msgid ""
+"Ab welchem Rechnungsbetrag eine zweite Person eine Lieferantenzahlung "
+"freigeben muss."
+msgstr ""
+"À partir de quel montant de facture une deuxième personne doit valider un "
+"paiement fournisseur."
+
+msgid ""
+"Rechnungen ab diesem Betrag werden erst bezahlt oder in eine Zahlungsdatei "
+"genommen, wenn ein Verwalter oder der Inhaber die Zahlung freigegeben hat. "
+"Wer die Zahlung vorgelegt hat, darf sie nicht selbst freigeben. Die Freigabe"
+" gilt nur für den Betrag und die IBAN, die freigegeben wurden."
+msgstr ""
+"Les factures à partir de ce montant ne sont payées ou reprises dans un "
+"fichier de paiement qu'une fois qu'un gérant ou le propriétaire a validé le "
+"paiement. Celui qui a soumis le paiement ne peut pas le valider lui-même. La"
+" validation ne vaut que pour le montant et l'IBAN validés."
+
+msgid "Freigabelimite"
+msgstr "Limite de validation"
+
+msgid "Zahlungen ab (CHF, Rechnungsbetrag)"
+msgstr "Paiements à partir de (CHF, montant de la facture)"
+
+msgid "Vorgabe: CHF 5'000. Mit 0 braucht jede Zahlung eine Freigabe."
+msgstr ""
+"Par défaut : CHF 5'000. Avec 0, chaque paiement nécessite une validation."
+
+msgid "Kein Limit: Vier-Augen-Prinzip ausschalten"
+msgstr "Pas de limite : désactiver le principe des quatre yeux"
+
+msgid "Nicht empfohlen. Die Änderung wird im Logbuch festgehalten."
+msgstr "Déconseillé. La modification est consignée dans le journal."
+
+msgid "Nur der Inhaber ändert die Freigabelimite."
+msgstr "Seul le propriétaire modifie la limite de validation."
+
+msgid "Freigabelimite für Lieferantenzahlungen (Vier-Augen-Prinzip)"
+msgstr ""
+"Limite de validation des paiements fournisseurs (principe des quatre yeux)"
+
+msgid ""
+"Zahlung nicht ausgelöst: Ab dem Freigabelimit gibt eine zweite Person die "
+"Zahlung frei. Sie ist vorgelegt und erscheint dort in der Liste."
+msgstr ""
+"Paiement non déclenché : à partir de la limite de validation, une deuxième "
+"personne valide le paiement. Il est soumis et apparaît dans la liste."
+
+msgid ""
+"%(n)s Rechnung(en) ausgelassen: Die Zahlung braucht die Freigabe einer "
+"zweiten Person (Freigabelimit). Sie ist vorgelegt."
+msgstr ""
+"%(n)s facture(s) omise(s) : le paiement nécessite la validation d'une "
+"deuxième personne (limite de validation). Il est soumis."
+
+msgid ""
+"Nur eine freigegebene, offene Rechnung lässt sich zur Zahlung vorlegen."
+msgstr "Seule une facture validée et ouverte peut être soumise pour paiement."
+
+msgid "Diese Rechnung liegt unter dem Freigabelimit — keine Freigabe nötig."
+msgstr ""
+"Cette facture est en dessous de la limite de validation — aucune validation "
+"nécessaire."
+
+msgid "Die Zahlung ist zur Freigabe durch eine zweite Person vorgelegt."
+msgstr "Le paiement est soumis pour validation par une deuxième personne."
+
+msgid "Die Zahlung ist bereits vorgelegt oder freigegeben."
+msgstr "Le paiement est déjà soumis ou validé."
+
+msgid "Die Zahlung ist freigegeben und kann ausgelöst werden."
+msgstr "Le paiement est validé et peut être déclenché."
+
+msgid "Vorlage und Freigabe sind verworfen."
+msgstr "La soumission et la validation sont annulées."
+
+msgid "Bitte einen Betrag in CHF zwischen 0 und 99 999 999.99 eingeben."
+msgstr "Veuillez saisir un montant en CHF entre 0 et 99 999 999.99."
+
+msgid "Freigabelimite gespeichert."
+msgstr "Limite de validation enregistrée."
+
+msgid ""
+"Betrag oder IBAN wurden nach der Freigabe geändert — die Zahlung braucht "
+"eine neue Freigabe durch eine zweite Person."
+msgstr ""
+"Le montant ou l'IBAN ont été modifiés après la validation — le paiement "
+"nécessite une nouvelle validation par une deuxième personne."
+
+msgid ""
+"Diese Zahlung braucht die Freigabe einer zweiten Person (Rechnungsbetrag ab "
+"dem Freigabelimit)."
+msgstr ""
+"Ce paiement nécessite la validation d'une deuxième personne (montant de la "
+"facture à partir de la limite de validation)."
+
+msgid ""
+"Nur eine freigegebene, noch offene Rechnung lässt sich zur Zahlung "
+"freigeben."
+msgstr ""
+"Seule une facture validée et encore ouverte peut être validée pour paiement."
+
+msgid "Die Zahlung wurde noch nicht vorgelegt."
+msgstr "Le paiement n'a pas encore été soumis."
+
+msgid ""
+"Wer die Zahlung vorgelegt hat, darf sie nicht selbst freigeben (Vier-Augen-"
+"Prinzip)."
+msgstr ""
+"Celui qui a soumis le paiement ne peut pas le valider lui-même (principe des"
+" quatre yeux)."
+
+msgid "Die Zahlung ist bereits freigegeben."
+msgstr "Le paiement est déjà validé."
+
+msgid "%(n)s Zahlung wartet auf Ihre Freigabe (Vier-Augen-Prinzip)."
+msgid_plural "%(n)s Zahlungen warten auf Ihre Freigabe (Vier-Augen-Prinzip)."
+msgstr[0] "%(n)s paiement attend votre validation (principe des quatre yeux)."
+msgstr[1] ""
+"%(n)s paiements attendent votre validation (principe des quatre yeux)."
