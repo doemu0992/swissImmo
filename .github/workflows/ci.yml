@@ -153,6 +153,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libcairo2-dev pkg-config
       - name: Abhängigkeiten installieren
         run: pip install -r requirements.txt
+      - name: PostgreSQL-Werkzeuge vorhanden?
+        # Die Sicherungs- und Wiederherstellungstests (test_sicherung, test_wiederherstellung_zaehlvergleich)
+        # überspringen sich, wo pg_dump/pg_restore fehlen. Auf dem Runner dürfen sie nicht still ausfallen.
+        run: command -v pg_dump pg_restore && pg_dump --version
       - name: Migrationen auf PostgreSQL
         run: python manage.py migrate --noinput
       - name: Tests auf PostgreSQL
