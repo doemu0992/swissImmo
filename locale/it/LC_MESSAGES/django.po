@@ -34512,3 +34512,13 @@ msgstr ""
 
 msgid "Die gewählte Liegenschaft gibt es nicht."
 msgstr "Lo stabile scelto non esiste."
+
+#, python-format
+msgid ""
+"Fehler: Die QR-Rechnung für %(einheit)s konnte nicht erzeugt werden "
+"(%(fehler)s). Das PDF wurde nicht ausgeliefert, damit keine "
+"Nachzahlung ohne Einzahlungsschein verschickt wird."
+msgstr ""
+"Errore: la fattura QR per %(einheit)s non ha potuto essere creata "
+"(%(fehler)s). Il PDF non è stato consegnato affinché non venga "
+"inviato alcun conguaglio senza polizza di versamento."

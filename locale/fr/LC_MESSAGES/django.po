@@ -34563,3 +34563,13 @@ msgstr "La demande n'a pas pu être traitée. Veuillez vérifier votre saisie."
 
 msgid "Die gewählte Liegenschaft gibt es nicht."
 msgstr "L'immeuble choisi n'existe pas."
+
+#, python-format
+msgid ""
+"Fehler: Die QR-Rechnung für %(einheit)s konnte nicht erzeugt werden "
+"(%(fehler)s). Das PDF wurde nicht ausgeliefert, damit keine "
+"Nachzahlung ohne Einzahlungsschein verschickt wird."
+msgstr ""
+"Erreur : la facture QR pour %(einheit)s n'a pas pu être créée "
+"(%(fehler)s). Le PDF n'a pas été remis afin qu'aucun rappel de "
+"paiement ne soit envoyé sans bulletin de versement."

@@ -262,6 +262,11 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry
     # Die Verwaltung des Laufs (Kontext): `r.organisation` wäre je Rechnung eine Abfrage.
     from core.tenancy import aktuelle_organisation
     kontext_org = aktuelle_organisation()
+    if kontext_org is not None:
+        # Frisch aus der Datenbank: Einstellungen der Verwaltung (Verzugsbeginn,
+        # Mindestabstand, Zinssatz) gelten ab dem Speichern, nicht erst ab der
+        # nächsten Anfrage. Eine Abfrage je Lauf statt einer je Rechnung.
+        kontext_org = type(kontext_org).objects.get(pk=kontext_org.pk)
 
     heute = timezone.localdate()
     # Abgeleitete Forderungen (Mahngebühr, Verzugszins — `stammrechnung`)
