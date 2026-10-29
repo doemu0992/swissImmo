@@ -1,0 +1,61 @@
+# Dependabot (SICH-28): hält die gepinnten Abhängigkeiten aktuell, bevor pip-audit rot wird.
+#
+# Wöchentlich, am Montag früh. Pull Requests statt stiller Änderungen: Jede Anhebung läuft durch die
+# volle CI (Tests auf SQLite und PostgreSQL, e2e) und wird von Hand gemergt. Dependabot merged nichts.
+#
+# Sicherheitsmeldungen (Dependabot security updates) laufen unabhängig von dieser Datei und ohne Wochentakt,
+# sofern sie in den Repository-Einstellungen aktiviert sind (Settings > Code security).
+
+version: 2
+
+updates:
+  # Python: requirements.txt (Laufzeit) und requirements-dev.txt (Ruff).
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:30"
+      timezone: Europe/Zurich
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "Abhängigkeit"
+    # Django bleibt auf der Langzeitfassung 5.2 (Sicherheitsfixes bis April 2028): kein Sprung auf 6.x
+    # ohne bewusste Migration. Patch-Fassungen von 5.2 kommen durch.
+    ignore:
+      - dependency-name: django
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+    groups:
+      # Kleine Fassungen gebündelt, damit nicht zwanzig PRs pro Woche entstehen; Hauptsprünge einzeln.
+      python-patches:
+        update-types: [patch, minor]
+        exclude-patterns: ["django", "pillow", "cryptography", "reportlab", "xhtml2pdf", "pypdf"]
+
+  # Node: Playwright (e2e), Tailwind (Stylesheet-Bau), Alpine, Vue, signature_pad (eingelagert unter static/).
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:45"
+      timezone: Europe/Zurich
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "Abhängigkeit"
+    # Playwright 1.56 gehört zum Browser-Stand der CI und zum Runner ubuntu-24.04; Anhebungen laufen
+    # über einen eigenen, bewusst geprüften PR (e2e), nicht über Dependabot.
+    ignore:
+      - dependency-name: "@playwright/test"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+
+  # GitHub Actions: checkout, setup-python, setup-node, upload-artifact.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Zurich
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "CI"

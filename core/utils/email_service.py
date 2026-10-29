@@ -8,26 +8,23 @@ from django.utils.html import escape
 from django.utils.translation import gettext
 
 from core.services.dokumentsprache import in_sprache, sprache_von
+from core.utils.absender import anzeigename, kopfzeilen
 from core.services.druckfarben import EMBER
 
 logger = logging.getLogger(__name__)
 
 
 # Helper to send mail via Hoststar
-def send_via_hoststar(to_email, subject, html_content, attachment_name=None, attachment_content=None, cc_list=None, weitere_anhaenge=None, reply_to=None):
+def send_via_hoststar(to_email, subject, html_content, attachment_name=None, attachment_content=None, cc_list=None, weitere_anhaenge=None, reply_to=None, organisation=None):
     try:
-        from_email = settings.DEFAULT_FROM_EMAIL
-        # Antworten gehen an das Antwort-Postfach der VERWALTUNG, die schreibt (`reply_to`),
-        # sonst an die globale Adresse aus der Umgebung.
-        reply_addr = reply_to or os.environ.get('EMAIL_REPLY_USER', 'reply@immoswiss.app')
-
+        # Absender und Antwortadresse der VERWALTUNG, die schreibt (FUNK-12, core/utils/absender.py).
+        # `organisation` (Objekt oder ID) ist nötig, wo kein Mandantenkontext besteht (eigener Thread).
         email = EmailMessage(
             subject=subject,
             body=html_content,
-            from_email=from_email,
             to=[to_email],
             cc=cc_list or [],
-            reply_to=[reply_addr]
+            **kopfzeilen(organisation, reply_to),
         )
         email.content_subtype = "html"
 
@@ -65,18 +62,20 @@ def send_ticket_receipt(ticket):
     _text3 = gettext('Thema')
     _text4 = gettext('Wir melden uns, sobald ein Handwerker beauftragt wurde.')
     _text5 = gettext('Freundliche Grüsse')
+    # Es schreibt die Verwaltung des Hauses, nicht die Plattform (FUNK-12): dieselbe Firma wie im Absendernamen.
+    unterschrift = escape(anzeigename(ticket.organisation) or 'immoswiss')
     html_msg = f"""
     <html><body>
     <h2>{_text1}</h2>
     <p>{_text2}: #{ticket.id}<br>{_text3}: {escape(ticket.titel)}</p>
     <p>{_text4}</p>
-    <p>{_text5}<br>ImmoSwiss Verwaltung</p>
+    <p>{_text5}<br>{unterschrift}</p>
     </body></html>
     """
     from tickets.workflow import reply_to
     # Die Adresse wird HIER im Anfrage-Thread bestimmt: der Mail-Thread hat keinen Mandantenkontext.
     threading.Thread(target=send_via_hoststar, args=(ticket.email_melder, subject, html_msg),
-                     kwargs={'reply_to': reply_to(ticket)}).start()
+                     kwargs={'reply_to': reply_to(ticket), 'organisation': ticket.organisation_id}).start()
 
 
 def send_handyman_notification(auftrag):
@@ -265,16 +264,14 @@ def _mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, 
     return send_via_hoststar(to_email, betreff, html)
 
 
-def send_report_mail(to_email, betreff, html_inhalt, anhaenge=None):
+def send_report_mail(to_email, betreff, html_inhalt, anhaenge=None, organisation=None):
     """Sendet eine HTML-Mail mit mehreren PDF-Anhängen. anhaenge = Liste von
     (dateiname, bytes). Gibt True/False zurück."""
     if not to_email:
         return False
     try:
-        from_email = settings.DEFAULT_FROM_EMAIL
-        reply_addr = os.environ.get('EMAIL_REPLY_USER', 'reply@immoswiss.app')
-        email = EmailMessage(subject=betreff, body=html_inhalt, from_email=from_email,
-                             to=[to_email], reply_to=[reply_addr])
+        email = EmailMessage(subject=betreff, body=html_inhalt, to=[to_email],
+                             **kopfzeilen(organisation))
         email.content_subtype = "html"
         for name, inhalt in (anhaenge or []):
             if inhalt:

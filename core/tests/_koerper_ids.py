@@ -30,6 +30,9 @@ kurz.
 """
 import json
 import re
+from unittest import mock
+
+import requests
 
 from django.apps import apps
 from django.conf import settings
@@ -316,13 +319,17 @@ def sende_mit_inhalt(client, bestand, pfad, daten, als_json=False, methode='post
 
     try:
         with transaction.atomic():
-            with connection.execute_wrapper(schreiber):
-                if methode == 'get':
-                    antwort = client.get(pfad)
-                elif als_json:
-                    antwort = client.post(pfad, json.dumps(daten), content_type='application/json')
-                else:
-                    antwort = client.post(pfad, daten)
+            # Kein Netz im Fuzz: Mehrere Routen rufen Bundesdienste und die HEV-Seite auf (Referenzzins, LIK, GWR).
+            # Ungepatcht dauert der Lauf je nach Umgebung Minuten und hängt von fremden Servern ab.
+            with mock.patch('requests.sessions.Session.request',
+                            side_effect=requests.exceptions.ConnectionError('kein Netz im Test')):
+                with connection.execute_wrapper(schreiber):
+                    if methode == 'get':
+                        antwort = client.get(pfad)
+                    elif als_json:
+                        antwort = client.post(pfad, json.dumps(daten), content_type='application/json')
+                    else:
+                        antwort = client.post(pfad, daten)
             ergebnis['status'] = antwort.status_code
             ergebnis['inhalt'] = antwort.content.decode('utf-8', 'ignore') if antwort.status_code == 200 else ''
             ergebnis['befunde'] = bestand.befunde(schreiber.tabellen)

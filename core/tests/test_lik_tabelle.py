@@ -6,7 +6,15 @@ die Tabelle mehr als drei Monate hinter dem Kalender liegt, und sagt, was zu tun
 
 Der Wächter hängt am heutigen Datum — und das ist Absicht: Er ist die Erinnerung, die Tabelle zu pflegen.
 Die übrigen Tests rechnen mit festen Daten und sind von der Uhr unabhängig.
+
+ABER NICHT IN JEDEM PULL REQUEST (SICH-45): Ein Wächter, der am 1. Januar 2027 ohne Codeänderung rot wird,
+blockiert jeden unbeteiligten PR und lehrt, rote Läufe zu übergehen. Darum läuft er nur, wenn `ZEIT_WAECHTER`
+gesetzt ist — im wöchentlichen Wartungslauf der CI (`.github/workflows/ci.yml`, Job «wartung»), der bei einem
+Rückstand rot wird und per Benachrichtigung auf die Pflege hinweist. Die Rückstandsrechnung selbst ist oben mit
+festen Daten getestet und läuft immer.
 """
+import os
+import unittest
 from datetime import date
 from decimal import Decimal
 from unittest import mock
@@ -77,6 +85,7 @@ class RueckstandTests(SimpleTestCase):
             self.assertIn('kein Monat', lik.tabelle_hinweis(date(2026, 10, 28)))
 
 
+@unittest.skipUnless(os.getenv('ZEIT_WAECHTER'), 'nur im wöchentlichen Wartungslauf der CI (ZEIT_WAECHTER=1)')
 class WaechterTests(SimpleTestCase):
 
     def test_die_tabelle_liegt_nicht_mehr_als_drei_monate_hinter_dem_kalender(self):

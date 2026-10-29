@@ -98,7 +98,8 @@ class MedienPruefenTests(TestCase):
 
     def test_ohne_streng_kein_fehlercode(self):
         self._dokument_mit_datei(name='dokumente/fehlt.pdf', anlegen=False)
-        self.pruefen()   # wirft nicht
+        ausgabe = self.pruefen()   # wirft nicht, meldet den Fund aber trotzdem
+        self.assertIn('dokumente/fehlt.pdf', ausgabe)
 
     # -- Fall 2: Datei da, Sicherung unvollständig --------------------
     def _tar_mit(self, *pfade):

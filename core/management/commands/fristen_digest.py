@@ -24,6 +24,8 @@ from datetime import timedelta
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.mail import EmailMultiAlternatives
+
+from core.utils.absender import kopfzeilen
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
@@ -139,8 +141,8 @@ class Command(BaseCommand):
                 f"[dry-run] {len(empfaenger)} Empfänger, nicht gesendet."))
             return True
 
-        mail = EmailMultiAlternatives(subject=betreff, body=text,
-                                      from_email=settings.DEFAULT_FROM_EMAIL, to=empfaenger)
+        mail = EmailMultiAlternatives(subject=betreff, body=text, to=empfaenger,
+                                      **kopfzeilen(organisation))
         mail.attach_alternative(html, "text/html")
         # iCal-Datei anhängen (Import in den Kalender)
         try:

@@ -483,7 +483,7 @@ EMAIL_USE_TLS = True
 EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '15'))
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = f'ImmoSwiss Verwaltung <{os.getenv("EMAIL_HOST_USER", "info@immoswiss.app")}>'
+DEFAULT_FROM_EMAIL = f'immoswiss <{os.getenv("EMAIL_HOST_USER", "info@immoswiss.app")}>'
 
 # Basis-URL für Links in E-Mails (Portal-Login etc.) — unabhängig vom Request-Host,
 # damit der Link auch aus Cron/Hintergrund-Jobs korrekt auf die Produktion zeigt.

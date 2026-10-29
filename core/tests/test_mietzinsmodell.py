@@ -548,7 +548,7 @@ class VertragCleanTests(TestCase):
 
     def test_fester_vertrag_wird_nie_beanstandet(self):
         v = _vertrag('fest', ist_befristet=False, ende=None)
-        v.clean()
+        self.assertIsNone(v.clean())     # `clean` wirft ValidationError, wenn es etwas beanstandet
 
     def test_altvertrag_wird_nicht_blockiert_solange_die_modellfelder_gleich_bleiben(self):
         v = _vertrag('index', ist_befristet=False, ende=None)    # Altverstoss: keine feste Dauer

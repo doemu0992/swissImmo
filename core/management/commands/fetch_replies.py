@@ -58,6 +58,7 @@ PAUSE_SEKUNDEN = 60
 #: sonst steht die ganze Verlaufskette in jeder Antwort.
 ZITAT_MUSTER = [
     r'ImmoSwiss Verwaltung\s+schrieb am',
+    r'via immoswiss\s+(schrieb|wrote)',
     r'schrieb am.*?um.*?:',
     r'On\s+.*?wrote:',
     r'Am\s+.*?schrieb.*?:',

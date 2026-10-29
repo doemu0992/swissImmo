@@ -24,6 +24,7 @@ from reportlab.lib.units import mm
 from reportlab.lib import colors
 
 # Eigene Imports
+from core.utils.absender import kopfzeilen
 from core.utils.billing import berechne_abrechnung
 from core.utils.qr_code import draw_qr_bill
 
@@ -383,7 +384,7 @@ def send_mahnung_email_view(request, vertrag_id):
             body=(f"Guten Tag, im Anhang finden Sie die {titel} "
                   f"für {monat_str} über CHF {betrag_str} (Kopie; das Original erhalten "
                   f"Sie auf dem Postweg)."),
-            from_email=settings.DEFAULT_FROM_EMAIL, to=[vertrag.mieter.email])
+            to=[vertrag.mieter.email], **kopfzeilen(verwaltung))
         email.attach(f"Mahnung_{stufe}_{monat_str.replace(' ', '_')}.pdf", pdf_bytes, 'application/pdf')
         email.send()
         log_aktion(request, f"{stufe}. Mahnung als Kopie versendet", str(vertrag),
@@ -423,7 +424,7 @@ def send_mahnung_email_view(request, vertrag_id):
         subject=f"Kopie: Mahnung mit Kündigungsandrohung (Art. 257d OR) — Original folgt per Einschreiben: {context['objekt_name']}",
         body=(f"Guten Tag, im Anhang finden Sie eine KOPIE der Mahnung für {monat_str}. "
               f"Die massgebende Fristansetzung erhalten Sie zusätzlich per Einschreiben."),
-        from_email=settings.DEFAULT_FROM_EMAIL, to=[vertrag.mieter.email],
+        to=[vertrag.mieter.email], **kopfzeilen(verwaltung),
     )
     email.attach_alternative(html_content, "text/html")
     email.attach(f"Mahnung_{monat_str.replace(' ','_')}.pdf", pdf_bytes, 'application/pdf')

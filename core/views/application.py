@@ -1,4 +1,5 @@
 # core/views/application.py
+from django.utils.translation import get_language
 from django.shortcuts import render, get_object_or_404
 from portfolio.models import Einheit
 
@@ -26,6 +27,15 @@ def public_application_view(request, einheit_id):
     return render(request, 'core/public_bewerbung_form.html', {
         'einheit': einheit
     })
+
+#: Sprache -> (Seitentitel, Textvorlage) der Datenschutzerklärung. Titel fest in der jeweiligen Sprache,
+#: weil der Text selbst mit ihr zusammen geprüft wird.
+DATENSCHUTZ_TEXTE = {
+    'de': ('Datenschutzerklärung', 'core/datenschutz/_text_de.html'),
+    'fr': ('Déclaration de protection des données', 'core/datenschutz/_text_fr.html'),
+    'it': ('Informativa sulla protezione dei dati', 'core/datenschutz/_text_it.html'),
+}
+
 
 def public_datenschutz_view(request, einheit_id=None):
     """Datenschutzerklärung — ohne Anmeldung erreichbar.
@@ -79,8 +89,17 @@ def public_datenschutz_view(request, einheit_id=None):
         elif len(moegliche) > 1:
             mehrdeutig = True
 
+    # Der Text liegt je Sprache in einer eigenen Vorlage. Deutsch ist massgebend; FR und IT sind Entwürfe
+    # (nicht rechtlich geprüft, Entscheid D11) und sagen das selbst. Jede andere Sprache zeigt Deutsch.
+    sprache = (get_language() or 'de')[:2]
+    if sprache not in DATENSCHUTZ_TEXTE:
+        sprache = 'de'
+    seitentitel, text_vorlage = DATENSCHUTZ_TEXTE[sprache]
     return render(request, 'core/public_datenschutz.html', {
         'verwaltung': verwaltung,
         'mehrdeutig': mehrdeutig,
         'stand': timezone.localdate(),
+        'sprache': sprache,
+        'seitentitel': seitentitel,
+        'text_vorlage': text_vorlage,
     })

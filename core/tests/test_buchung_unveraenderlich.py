@@ -146,6 +146,8 @@ class InstanzaenderungTests(UnveraenderlichBasis):
         frisch.save()
         frisch.betrag = Decimal('7.0')
         frisch.save()
+        frisch.refresh_from_db()
+        self.assertEqual(frisch.betrag, Decimal('7'))
 
     def test_storno_marke_darf_einmal_gesetzt_nicht_zurueckgenommen_werden(self):
         from finance.booking import storniere_buchung
