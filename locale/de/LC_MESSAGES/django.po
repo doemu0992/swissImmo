@@ -34164,3 +34164,557 @@ msgstr "Dokument archiviert."
 
 msgid "Schadensmeldung archiviert."
 msgstr "Schadensmeldung archiviert."
+
+#: Datenimport und Export (FUNK-09/13)
+
+msgid "Vorschau (bereit)"
+msgstr "Vorschau (bereit)"
+
+msgid "Vorschau mit Fehlern"
+msgstr "Vorschau mit Fehlern"
+
+msgid "Importiert"
+msgstr "Importiert"
+
+msgid "Abgebrochen (nichts importiert)"
+msgstr "Abgebrochen (nichts importiert)"
+
+msgid "Verworfen"
+msgstr "Verworfen"
+
+msgid "Semikolon"
+msgstr "Semikolon"
+
+msgid "Komma"
+msgstr "Komma"
+
+msgid "Tabulator"
+msgstr "Tabulator"
+
+msgid "Zeile %(n)s: erwartet «eigenes Konto;Konto im Zielsystem» und optional «;MWST-Code»."
+msgstr "Zeile %(n)s: erwartet «eigenes Konto;Konto im Zielsystem» und optional «;MWST-Code»."
+
+msgid "Zeile %(n)s: Eintrag zu lang."
+msgstr "Zeile %(n)s: Eintrag zu lang."
+
+msgid "Zeile %(n)s: das Konto %(k)s ist schon zugeordnet."
+msgstr "Zeile %(n)s: das Konto %(k)s ist schon zugeordnet."
+
+msgid "Objekte (Wohnungen, Gewerbe, Parkplätze)"
+msgstr "Objekte (Wohnungen, Gewerbe, Parkplätze)"
+
+msgid "Laufende Mietverträge"
+msgstr "Laufende Mietverträge"
+
+msgid "Ihr eigener Schlüssel; verknüpft die Liegenschaften"
+msgstr "Ihr eigener Schlüssel; verknüpft die Liegenschaften"
+
+msgid "Name oder Firma"
+msgstr "Name oder Firma"
+
+msgid "de, fr, it oder en; leer = de"
+msgstr "de, fr, it oder en; leer = de"
+
+msgid "Verwaltungshonorar in Prozent, 0 bis 100; leer = 0"
+msgstr "Verwaltungshonorar in Prozent, 0 bis 100; leer = 0"
+
+msgid "Ihr eigener Schlüssel; verknüpft die Objekte"
+msgstr "Ihr eigener Schlüssel; verknüpft die Objekte"
+
+msgid "vierstellig"
+msgstr "vierstellig"
+
+msgid "Schlüssel aus der Eigentümerdatei"
+msgstr "Schlüssel aus der Eigentümerdatei"
+
+msgid "Kürzel; bestimmt Formulare und Fristen. Leer = später eintragen"
+msgstr "Kürzel; bestimmt Formulare und Fristen. Leer = später eintragen"
+
+msgid "nur Mietliegenschaften; Stockwerkeigentum bitte in der Oberfläche anlegen"
+msgstr "nur Mietliegenschaften; Stockwerkeigentum bitte in der Oberfläche anlegen"
+
+msgid "Ihr eigener Schlüssel; verknüpft die Verträge"
+msgstr "Ihr eigener Schlüssel; verknüpft die Verträge"
+
+msgid "Schlüssel aus der Liegenschaftsdatei"
+msgstr "Schlüssel aus der Liegenschaftsdatei"
+
+msgid "whg (Wohnung), gew (Gewerbe), pp (Parkplatz), gar (Garage), bas (Bastelraum)"
+msgstr "whg (Wohnung), gew (Gewerbe), pp (Parkplatz), gar (Garage), bas (Bastelraum)"
+
+msgid "Soll-Nettomiete des Objekts (Referenz, ersetzt keinen Vertrag)"
+msgstr "Soll-Nettomiete des Objekts (Referenz, ersetzt keinen Vertrag)"
+
+msgid "Soll-Nebenkosten des Objekts"
+msgstr "Soll-Nebenkosten des Objekts"
+
+msgid "Leer = heute"
+msgstr "Leer = heute"
+
+msgid "person, firma oder verein; leer = person"
+msgstr "person, firma oder verein; leer = person"
+
+msgid "Pflicht bei Privatpersonen"
+msgstr "Pflicht bei Privatpersonen"
+
+msgid "Pflicht bei Firma und Verein"
+msgstr "Pflicht bei Firma und Verein"
+
+msgid "Leer = Schweiz"
+msgstr "Leer = Schweiz"
+
+msgid "Ihr eigener Schlüssel"
+msgstr "Ihr eigener Schlüssel"
+
+msgid "Schlüssel aus der Objektdatei"
+msgstr "Schlüssel aus der Objektdatei"
+
+msgid "Schlüssel aus der Mieterdatei"
+msgstr "Schlüssel aus der Mieterdatei"
+
+msgid "Zweite Vertragspartei (Ehegatte, Mitmieter)"
+msgstr "Zweite Vertragspartei (Ehegatte, Mitmieter)"
+
+msgid "aktiv oder gekuendigt; leer = aktiv"
+msgstr "aktiv oder gekuendigt; leer = aktiv"
+
+msgid "Ende der Befristung oder Kündigungstermin"
+msgstr "Ende der Befristung oder Kündigungstermin"
+
+msgid "ja oder nein; Pflicht, wenn ein Ende steht"
+msgstr "ja oder nein; Pflicht, wenn ein Ende steht"
+
+msgid "Franken pro Monat"
+msgstr "Franken pro Monat"
+
+msgid "Franken pro Monat; 0, wenn keine"
+msgstr "Franken pro Monat; 0, wenn keine"
+
+msgid "akonto, pauschal, inbegriffen oder direkt; leer = akonto"
+msgstr "akonto, pauschal, inbegriffen oder direkt; leer = akonto"
+
+msgid "monatlich, vierteljahr, halbjahr oder jahr"
+msgstr "monatlich, vierteljahr, halbjahr oder jahr"
+
+msgid "sperrkonto oder versicherung; Pflicht, wenn eine Kaution steht"
+msgstr "sperrkonto oder versicherung; Pflicht, wenn eine Kaution steht"
+
+msgid "IBAN des Sperrkontos"
+msgstr "IBAN des Sperrkontos"
+
+msgid "Leer = 3 (Wohnen) bzw. 6 (Geschäftsraum)"
+msgstr "Leer = 3 (Wohnen) bzw. 6 (Geschäftsraum)"
+
+msgid "fest oder index; leer = fest. Staffelmiete: nicht per Import"
+msgstr "fest oder index; leer = fest. Staffelmiete: nicht per Import"
+
+msgid "Referenzzinssatz zum Vertragsabschluss; leer = heutiger Stand"
+msgstr "Referenzzinssatz zum Vertragsabschluss; leer = heutiger Stand"
+
+msgid "LIK-Basis; bei Indexmiete Pflicht"
+msgstr "LIK-Basis; bei Indexmiete Pflicht"
+
+msgid "Monat der LIK-Basis; bei Indexmiete Pflicht"
+msgstr "Monat der LIK-Basis; bei Indexmiete Pflicht"
+
+msgid "Nur Indexmiete; leer = 100"
+msgstr "Nur Indexmiete; leer = 100"
+
+msgid "Nur Indexmiete; leer = 12"
+msgstr "Nur Indexmiete; leer = 12"
+
+msgid "Option nach Art. 22 MWSTG, nur Geschäftsräume"
+msgstr "Option nach Art. 22 MWSTG, nur Geschäftsräume"
+
+msgid "Pflicht, wenn mwst_pflichtig = ja"
+msgstr "Pflicht, wenn mwst_pflichtig = ja"
+
+msgid "«%(wert)s» ist kein Datum (erwartet: TT.MM.JJJJ oder JJJJ-MM-TT)."
+msgstr "«%(wert)s» ist kein Datum (erwartet: TT.MM.JJJJ oder JJJJ-MM-TT)."
+
+msgid "Das Jahr %(j)s ist nicht plausibel."
+msgstr "Das Jahr %(j)s ist nicht plausibel."
+
+msgid "Pflichtangabe fehlt."
+msgstr "Pflichtangabe fehlt."
+
+msgid "Zu lang: höchstens %(n)s Zeichen, hier %(m)s."
+msgstr "Zu lang: höchstens %(n)s Zeichen, hier %(m)s."
+
+msgid "«%(wert)s» ist keine Zahl."
+msgstr "«%(wert)s» ist keine Zahl."
+
+msgid "Höchstens %(n)s Nachkommastellen; es wird nicht gerundet."
+msgstr "Höchstens %(n)s Nachkommastellen; es wird nicht gerundet."
+
+msgid "Der Wert darf nicht unter %(n)s liegen."
+msgstr "Der Wert darf nicht unter %(n)s liegen."
+
+msgid "Der Wert darf nicht über %(n)s liegen."
+msgstr "Der Wert darf nicht über %(n)s liegen."
+
+msgid "«%(wert)s» ist kein Monat (erwartet: JJJJ-MM)."
+msgstr "«%(wert)s» ist kein Monat (erwartet: JJJJ-MM)."
+
+msgid "«%(wert)s» ist weder ja noch nein."
+msgstr "«%(wert)s» ist weder ja noch nein."
+
+msgid "«%(wert)s» ist nicht zulässig. Erlaubt: %(erlaubt)s."
+msgstr "«%(wert)s» ist nicht zulässig. Erlaubt: %(erlaubt)s."
+
+msgid "«%(wert)s» ist keine gültige IBAN."
+msgstr "«%(wert)s» ist keine gültige IBAN."
+
+msgid "«%(wert)s» ist keine gültige E-Mail-Adresse."
+msgstr "«%(wert)s» ist keine gültige E-Mail-Adresse."
+
+msgid "Der Schlüssel «%(s)s» ist nicht bekannt. Er muss in der Datei «%(datei)s» stehen (im selben oder in einem früheren Import)."
+msgstr "Der Schlüssel «%(s)s» ist nicht bekannt. Er muss in der Datei «%(datei)s» stehen (im selben oder in einem früheren Import)."
+
+msgid "Der Schlüssel «%(s)s» steht schon in Zeile %(n)s."
+msgstr "Der Schlüssel «%(s)s» steht schon in Zeile %(n)s."
+
+msgid "Eigentümer «%(n)s» besteht schon und wurde zugeordnet; nichts verändert."
+msgstr "Eigentümer «%(n)s» besteht schon und wurde zugeordnet; nichts verändert."
+
+msgid "Die Postleitzahl einer Liegenschaft hat vier Ziffern."
+msgstr "Die Postleitzahl einer Liegenschaft hat vier Ziffern."
+
+msgid "Stockwerkeigentum (STWEG) wird nicht importiert: Die Wertquoten müssen aufgehen. Bitte in der Oberfläche anlegen."
+msgstr "Stockwerkeigentum (STWEG) wird nicht importiert: Die Wertquoten müssen aufgehen. Bitte in der Oberfläche anlegen."
+
+msgid "«%(k)s» ist kein Kantonskürzel."
+msgstr "«%(k)s» ist kein Kantonskürzel."
+
+msgid "Die Liegenschaft «%(a)s» besteht schon und wurde zugeordnet; nichts verändert."
+msgstr "Die Liegenschaft «%(a)s» besteht schon und wurde zugeordnet; nichts verändert."
+
+msgid "Kein Kanton angegeben%(vorschlag)s: Formulare und Fristen je Kanton bleiben unvollständig, bis er eingetragen ist."
+msgstr "Kein Kanton angegeben%(vorschlag)s: Formulare und Fristen je Kanton bleiben unvollständig, bis er eingetragen ist."
+
+msgid "STWEG-Einheiten werden nicht importiert (Wertquoten, Stockwerkeigentümer)."
+msgstr "STWEG-Einheiten werden nicht importiert (Wertquoten, Stockwerkeigentümer)."
+
+msgid "Das Objekt «%(b)s» besteht in dieser Liegenschaft schon und wurde zugeordnet; nichts verändert."
+msgstr "Das Objekt «%(b)s» besteht in dieser Liegenschaft schon und wurde zugeordnet; nichts verändert."
+
+msgid "Bei einer Privatperson ist der Nachname Pflicht."
+msgstr "Bei einer Privatperson ist der Nachname Pflicht."
+
+msgid "Bei Firma und Verein ist der Firmenname Pflicht."
+msgstr "Bei Firma und Verein ist der Firmenname Pflicht."
+
+msgid "Das Geburtsdatum liegt in der Zukunft."
+msgstr "Das Geburtsdatum liegt in der Zukunft."
+
+msgid "Ein Mieter mit der E-Mail-Adresse «%(e)s» besteht schon. Dieser Eintrag wird trotzdem neu angelegt; Doppelte später zusammenführen."
+msgstr "Ein Mieter mit der E-Mail-Adresse «%(e)s» besteht schon. Dieser Eintrag wird trotzdem neu angelegt; Doppelte später zusammenführen."
+
+msgid "Hauptmieter und Mitmieter sind dieselbe Person."
+msgstr "Hauptmieter und Mitmieter sind dieselbe Person."
+
+msgid "Bei einem Enddatum angeben, ob der Vertrag befristet ist (ja) oder auf diesen Termin gekündigt wurde (nein)."
+msgstr "Bei einem Enddatum angeben, ob der Vertrag befristet ist (ja) oder auf diesen Termin gekündigt wurde (nein)."
+
+msgid "Ein befristeter Vertrag braucht ein Enddatum."
+msgstr "Ein befristeter Vertrag braucht ein Enddatum."
+
+msgid "Ein gekündigter Vertrag braucht den Kündigungstermin als Enddatum."
+msgstr "Ein gekündigter Vertrag braucht den Kündigungstermin als Enddatum."
+
+msgid "Ein befristeter Vertrag wird nicht gekündigt; Status «aktiv» verwenden."
+msgstr "Ein befristeter Vertrag wird nicht gekündigt; Status «aktiv» verwenden."
+
+msgid "Der Vertrag beginnt erst am %(d)s, ist aber als aktiv eingetragen."
+msgstr "Der Vertrag beginnt erst am %(d)s, ist aber als aktiv eingetragen."
+
+msgid "Das Ende (%(d)s) liegt in der Vergangenheit, der Vertrag ist aber als aktiv eingetragen."
+msgstr "Das Ende (%(d)s) liegt in der Vergangenheit, der Vertrag ist aber als aktiv eingetragen."
+
+msgid "Bei einer Kaution angeben, ob Sperrkonto oder Versicherung."
+msgstr "Bei einer Kaution angeben, ob Sperrkonto oder Versicherung."
+
+msgid "Staffelmieten werden nicht importiert: Die Stufen brauchen eine eigene Tabelle (Art. 269c OR). Den Vertrag in der Oberfläche erfassen."
+msgstr "Staffelmieten werden nicht importiert: Die Stufen brauchen eine eigene Tabelle (Art. 269c OR). Den Vertrag in der Oberfläche erfassen."
+
+msgid "Bei Indexmiete ist die Basis des Landesindexes (Punkte) Pflicht; sie wird nicht vorgegeben."
+msgstr "Bei Indexmiete ist die Basis des Landesindexes (Punkte) Pflicht; sie wird nicht vorgegeben."
+
+msgid "Bei Indexmiete ist der Stand-Monat der Index-Basis Pflicht."
+msgstr "Bei Indexmiete ist der Stand-Monat der Index-Basis Pflicht."
+
+msgid "Bei MWST-Pflicht den Steuersatz angeben; er wird nicht vorgegeben."
+msgstr "Bei MWST-Pflicht den Steuersatz angeben; er wird nicht vorgegeben."
+
+msgid "Der MWST-Satz wird ignoriert, weil mwst_pflichtig nicht «ja» ist."
+msgstr "Der MWST-Satz wird ignoriert, weil mwst_pflichtig nicht «ja» ist."
+
+msgid "Für Wohnräume gibt es keine MWST-Option (Art. 22 Abs. 2 lit. b MWSTG)."
+msgstr "Für Wohnräume gibt es keine MWST-Option (Art. 22 Abs. 2 lit. b MWSTG)."
+
+msgid "«Erstmals kündbar auf» liegt vor dem Beginn."
+msgstr "«Erstmals kündbar auf» liegt vor dem Beginn."
+
+msgid "Für Einstellplätze führt die Oberfläche keine Nebenkosten; der Wert wird so übernommen."
+msgstr "Für Einstellplätze führt die Oberfläche keine Nebenkosten; der Wert wird so übernommen."
+
+msgid "Dieser Vertrag besteht schon (gleiches Objekt, gleicher Mieter, gleicher Beginn)."
+msgstr "Dieser Vertrag besteht schon (gleiches Objekt, gleicher Mieter, gleicher Beginn)."
+
+msgid "Das Objekt ist im selben Zeitraum schon an %(m)s vermietet (Vertrag %(id)s, ab %(b)s)."
+msgstr "Das Objekt ist im selben Zeitraum schon an %(m)s vermietet (Vertrag %(id)s, ab %(b)s)."
+
+msgid "%(n)s Verträge ohne Basis-Referenzzinssatz: es gilt der heutige Stand. Mietzinsanpassungen nach Referenzzins sind dann erst ab heute zuverlässig."
+msgstr "%(n)s Verträge ohne Basis-Referenzzinssatz: es gilt der heutige Stand. Mietzinsanpassungen nach Referenzzins sind dann erst ab heute zuverlässig."
+
+msgid "%(n)s Verträge ohne LIK-Basis: es gilt der heutige Stand."
+msgstr "%(n)s Verträge ohne LIK-Basis: es gilt der heutige Stand."
+
+msgid "In der Datei fehlen Pflichtspalten: %(s)s."
+msgstr "In der Datei fehlen Pflichtspalten: %(s)s."
+
+msgid "Diese Spalten sind unbekannt und werden nicht gelesen: %(s)s."
+msgstr "Diese Spalten sind unbekannt und werden nicht gelesen: %(s)s."
+
+msgid "Die Datei enthält keine Datenzeilen."
+msgstr "Die Datei enthält keine Datenzeilen."
+
+msgid "Die Zeile konnte nicht gespeichert werden: %(e)s"
+msgstr "Die Zeile konnte nicht gespeichert werden: %(e)s"
+
+msgid "%(n)s Zeilen waren schon importiert oder entsprechen einem bestehenden Datensatz und wurden übersprungen."
+msgstr "%(n)s Zeilen waren schon importiert oder entsprechen einem bestehenden Datensatz und wurden übersprungen."
+
+msgid "Es wurde keine Datei hochgeladen."
+msgstr "Es wurde keine Datei hochgeladen."
+
+msgid "Dieser Import ist nicht mehr ausführbar. Bitte die Dateien neu hochladen."
+msgstr "Dieser Import ist nicht mehr ausführbar. Bitte die Dateien neu hochladen."
+
+msgid "Die Datei ist leer."
+msgstr "Die Datei ist leer."
+
+msgid "Die Datei ist grösser als 5 MB."
+msgstr "Die Datei ist grösser als 5 MB."
+
+msgid "Die Datei ist keine gültige Excel-Datei (.xlsx)."
+msgstr "Die Datei ist keine gültige Excel-Datei (.xlsx)."
+
+msgid "Das alte Excel-Format (.xls) wird nicht gelesen: als .xlsx oder CSV speichern."
+msgstr "Das alte Excel-Format (.xls) wird nicht gelesen: als .xlsx oder CSV speichern."
+
+msgid "Die Datei enthält keine Kopfzeile."
+msgstr "Die Datei enthält keine Kopfzeile."
+
+msgid "Die Datei hat mehr als %(n)s Spalten."
+msgstr "Die Datei hat mehr als %(n)s Spalten."
+
+msgid "Die Spalte «%(n)s» kommt mehrfach vor."
+msgstr "Die Spalte «%(n)s» kommt mehrfach vor."
+
+msgid "Höchstens %(n)s Zeilen je Datei."
+msgstr "Höchstens %(n)s Zeilen je Datei."
+
+msgid "Die Datei ist keine lesbare Textdatei (UTF-8 oder Windows-1252)."
+msgstr "Die Datei ist keine lesbare Textdatei (UTF-8 oder Windows-1252)."
+
+msgid "Die Datei ist keine Textdatei."
+msgstr "Die Datei ist keine Textdatei."
+
+msgid "Die CSV-Datei ist nicht lesbar: %(e)s"
+msgstr "Die CSV-Datei ist nicht lesbar: %(e)s"
+
+msgid "Die Excel-Datei ist zu gross."
+msgstr "Die Excel-Datei ist zu gross."
+
+msgid "Die Excel-Datei enthält unzulässige Angaben."
+msgstr "Die Excel-Datei enthält unzulässige Angaben."
+
+msgid "Die Excel-Datei ist beschädigt."
+msgstr "Die Excel-Datei ist beschädigt."
+
+msgid "Die Excel-Datei enthält kein Tabellenblatt."
+msgstr "Die Excel-Datei enthält kein Tabellenblatt."
+
+msgid "Export für Banana/Abacus"
+msgstr "Export für Banana/Abacus"
+
+msgid "Daten"
+msgstr "Daten"
+
+msgid "Bestehende Daten übernehmen und Ihre Daten exportieren."
+msgstr "Bestehende Daten übernehmen und Ihre Daten exportieren."
+
+msgid "Daten importieren"
+msgstr "Daten importieren"
+
+msgid "Eigentümer, Liegenschaften, Objekte, Mieter und laufende Verträge aus CSV oder Excel übernehmen — mit Vorschau und Fehlerliste."
+msgstr "Eigentümer, Liegenschaften, Objekte, Mieter und laufende Verträge aus CSV oder Excel übernehmen — mit Vorschau und Fehlerliste."
+
+msgid "Daten exportieren"
+msgstr "Daten exportieren"
+
+msgid "Mandatsexport (ZIP mit allen Daten und Dokumenten) und Buchungsjournal für Banana und Abacus."
+msgstr "Mandatsexport (ZIP mit allen Daten und Dokumenten) und Buchungsjournal für Banana und Abacus."
+
+msgid "Buchungsjournal für Banana und Abacus."
+msgstr "Buchungsjournal für Banana und Abacus."
+
+msgid "Exportieren"
+msgstr "Exportieren"
+
+msgid "Jeder Export wird im Logbuch festgehalten."
+msgstr "Jeder Export wird im Logbuch festgehalten."
+
+msgid "Buchungsjournal (Banana, Abacus, Treuhand)"
+msgstr "Buchungsjournal (Banana, Abacus, Treuhand)"
+
+msgid "Bis (eingeschlossen)"
+msgstr "Bis (eingeschlossen)"
+
+msgid "Spalten: Buchungsdatum, Belegnummer, Soll, Haben, Betrag, Text, MWST-Code (Überschriften unten einstellbar). Stornobuchungen stehen als eigene Zeilen. Es werden nur Buchungen gelesen, nichts wird verändert."
+msgstr "Spalten: Buchungsdatum, Belegnummer, Soll, Haben, Betrag, Text, MWST-Code (Überschriften unten einstellbar). Stornobuchungen stehen als eigene Zeilen. Es werden nur Buchungen gelesen, nichts wird verändert."
+
+msgid "Journal herunterladen (CSV)"
+msgstr "Journal herunterladen (CSV)"
+
+msgid "Einstellungen für das Buchungsjournal"
+msgstr "Einstellungen für das Buchungsjournal"
+
+msgid "Welche Spaltenüberschriften, Kontonummern und MWST-Codes Banana oder Abacus erwarten, ist hier nicht fest eingebaut: Das legt Ihre Buchhaltung fest. Die Vorgaben sind allgemeine Namen. Bitte mit einer Probedatei im Zielprogramm prüfen, bevor Sie ein ganzes Jahr übernehmen."
+msgstr "Welche Spaltenüberschriften, Kontonummern und MWST-Codes Banana oder Abacus erwarten, ist hier nicht fest eingebaut: Das legt Ihre Buchhaltung fest. Die Vorgaben sind allgemeine Namen. Bitte mit einer Probedatei im Zielprogramm prüfen, bevor Sie ein ganzes Jahr übernehmen."
+
+msgid "Überschrift «%(n)s»"
+msgstr "Überschrift «%(n)s»"
+
+msgid "Trennzeichen"
+msgstr "Trennzeichen"
+
+msgid "Datumsformat"
+msgstr "Datumsformat"
+
+msgid "Dezimalzeichen"
+msgstr "Dezimalzeichen"
+
+msgid "Kontenzuordnung"
+msgstr "Kontenzuordnung"
+
+msgid "Eine Zeile je Konto: eigene Kontonummer;Kontonummer im Zielprogramm, optional ;MWST-Code. Konten ohne Zeile werden mit ihrer eigenen Nummer exportiert. Eine Buchung trägt in swissImmo keinen Steuercode; der MWST-Code kommt nur aus dieser Zuordnung (zuerst das Soll-, dann das Habenkonto)."
+msgstr "Eine Zeile je Konto: eigene Kontonummer;Kontonummer im Zielprogramm, optional ;MWST-Code. Konten ohne Zeile werden mit ihrer eigenen Nummer exportiert. Eine Buchung trägt in swissImmo keinen Steuercode; der MWST-Code kommt nur aus dieser Zuordnung (zuerst das Soll-, dann das Habenkonto)."
+
+msgid "Mandatsexport (alle Daten)"
+msgstr "Mandatsexport (alle Daten)"
+
+msgid "Ein ZIP mit allen Daten Ihrer Verwaltung: je Tabelle eine CSV- und eine JSON-Datei, dazu die Dokumente. Für den Wechsel zu einem anderen System. Enthält Personendaten: sicher aufbewahren. Nicht enthalten sind Passwörter, Zugangsdaten und AHV-Nummern. Bei sehr grossen Beständen dauert die Erstellung länger; dann ohne Dokumente exportieren oder den Befehl «mandat_exportieren» auf dem Server verwenden."
+msgstr "Ein ZIP mit allen Daten Ihrer Verwaltung: je Tabelle eine CSV- und eine JSON-Datei, dazu die Dokumente. Für den Wechsel zu einem anderen System. Enthält Personendaten: sicher aufbewahren. Nicht enthalten sind Passwörter, Zugangsdaten und AHV-Nummern. Bei sehr grossen Beständen dauert die Erstellung länger; dann ohne Dokumente exportieren oder den Befehl «mandat_exportieren» auf dem Server verwenden."
+
+msgid "Dokumente einschliessen"
+msgstr "Dokumente einschliessen"
+
+msgid "Mandatsexport herunterladen (ZIP)"
+msgstr "Mandatsexport herunterladen (ZIP)"
+
+msgid "Importieren"
+msgstr "Importieren"
+
+msgid "Für den Wechsel von einer anderen Verwaltungssoftware."
+msgstr "Für den Wechsel von einer anderen Verwaltungssoftware."
+
+msgid "So geht es: Vorlage je Art herunterladen und füllen, die Dateien hier hochladen, die Vorschau prüfen und erst dann importieren. Die Vorschau schreibt nichts. Beim Import gilt alles oder nichts: Meldet auch nur eine Zeile einen Fehler, wird nichts angelegt. Die Verknüpfungen laufen über Ihre eigenen Schlüssel (Spalte «schluessel»); Zeilen mit einem schon importierten Schlüssel werden übersprungen."
+msgstr "So geht es: Vorlage je Art herunterladen und füllen, die Dateien hier hochladen, die Vorschau prüfen und erst dann importieren. Die Vorschau schreibt nichts. Beim Import gilt alles oder nichts: Meldet auch nur eine Zeile einen Fehler, wird nichts angelegt. Die Verknüpfungen laufen über Ihre eigenen Schlüssel (Spalte «schluessel»); Zeilen mit einem schon importierten Schlüssel werden übersprungen."
+
+msgid "Vorlage (CSV)"
+msgstr "Vorlage (CSV)"
+
+msgid "Datei (CSV oder Excel .xlsx)"
+msgstr "Datei (CSV oder Excel .xlsx)"
+
+msgid "Spalten dieser Datei"
+msgstr "Spalten dieser Datei"
+
+msgid "Pflicht"
+msgstr "Pflicht"
+
+msgid "z. B."
+msgstr "z. B."
+
+msgid "Prüfen (Trockenlauf)"
+msgstr "Prüfen (Trockenlauf)"
+
+msgid "%(f)s Fehler, %(h)s Hinweise"
+msgstr "%(f)s Fehler, %(h)s Hinweise"
+
+msgid "Noch kein Import."
+msgstr "Noch kein Import."
+
+msgid "Datenimport"
+msgstr "Datenimport"
+
+msgid "Die Vorschau ist fehlerfrei. Es wurde noch nichts angelegt. Mit «Jetzt importieren» werden genau diese Dateien übernommen."
+msgstr "Die Vorschau ist fehlerfrei. Es wurde noch nichts angelegt. Mit «Jetzt importieren» werden genau diese Dateien übernommen."
+
+msgid "Die Vorschau hat Fehler gefunden. Es wurde nichts angelegt. Die Dateien korrigieren und erneut hochladen."
+msgstr "Die Vorschau hat Fehler gefunden. Es wurde nichts angelegt. Die Dateien korrigieren und erneut hochladen."
+
+msgid "Der Import wurde abgebrochen, weil beim Ausführen Fehler auftraten. Es wurde nichts angelegt."
+msgstr "Der Import wurde abgebrochen, weil beim Ausführen Fehler auftraten. Es wurde nichts angelegt."
+
+msgid "Importiert am %(am)s. Die hochgeladenen Dateien sind gelöscht, dieses Protokoll bleibt."
+msgstr "Importiert am %(am)s. Die hochgeladenen Dateien sind gelöscht, dieses Protokoll bleibt."
+
+msgid "%(n)s Zeilen · %(neu)s neu · %(v)s übersprungen · %(f)s mit Fehler"
+msgstr "%(n)s Zeilen · %(neu)s neu · %(v)s übersprungen · %(f)s mit Fehler"
+
+msgid "Keine Datei verarbeitet."
+msgstr "Keine Datei verarbeitet."
+
+msgid "Fehler (%(n)s)"
+msgstr "Fehler (%(n)s)"
+
+msgid "Zeile %(n)s"
+msgstr "Zeile %(n)s"
+
+msgid "Hinweise (%(n)s)"
+msgstr "Hinweise (%(n)s)"
+
+msgid "Es werden die ersten 1000 Meldungen gezeigt; die Zahlen oben sind vollständig."
+msgstr "Es werden die ersten 1000 Meldungen gezeigt; die Zahlen oben sind vollständig."
+
+msgid "Jetzt importieren"
+msgstr "Jetzt importieren"
+
+msgid "Verwerfen"
+msgstr "Verwerfen"
+
+msgid "Neue Dateien hochladen"
+msgstr "Neue Dateien hochladen"
+
+msgid "Import für Wechselkunden, Mandatsexport, Buchungsjournal für Banana und Abacus"
+msgstr "Import für Wechselkunden, Mandatsexport, Buchungsjournal für Banana und Abacus"
+
+msgid "Die Datei «%(n)s» ist grösser als 5 MB."
+msgstr "Die Datei «%(n)s» ist grösser als 5 MB."
+
+msgid "Bitte mindestens eine Datei wählen."
+msgstr "Bitte mindestens eine Datei wählen."
+
+msgid "Import abgeschlossen: %(n)s Datensätze angelegt."
+msgstr "Import abgeschlossen: %(n)s Datensätze angelegt."
+
+msgid "Der Import wurde abgebrochen, es wurde nichts angelegt. Die Fehlerliste zeigt, was zu korrigieren ist."
+msgstr "Der Import wurde abgebrochen, es wurde nichts angelegt. Die Fehlerliste zeigt, was zu korrigieren ist."
+
+msgid "Die hochgeladenen Dateien wurden verworfen."
+msgstr "Die hochgeladenen Dateien wurden verworfen."
+
+msgid "Das Datum «von» liegt nach «bis»."
+msgstr "Das Datum «von» liegt nach «bis»."
+
+msgid "Die Überschrift «%(t)s» ist zu lang (höchstens 40 Zeichen)."
+msgstr "Die Überschrift «%(t)s» ist zu lang (höchstens 40 Zeichen)."
+
+msgid "Jede Spalte braucht eine eigene Überschrift."
+msgstr "Jede Spalte braucht eine eigene Überschrift."
+
+msgid "Die Einstellungen für das Buchungsjournal sind gespeichert."
+msgstr "Die Einstellungen für das Buchungsjournal sind gespeichert."

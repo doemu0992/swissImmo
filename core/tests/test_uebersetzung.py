@@ -60,6 +60,10 @@ SPRACHEN = ('de', 'fr', 'it', 'en')
 #: dieselbe Sperrklinke wie beim Farbklassen-Zaehler, nur andersherum.
 UEBERSETZT = (
     'fw/_archivieren.html',
+    'fw/daten.html',                 # Datenimport/-export (FUNK-09/13)
+    'fw/daten_export.html',
+    'fw/daten_import.html',
+    'fw/daten_import_lauf.html',
     'fw/archiv.html',
     '400.html',
     '403.html',

@@ -722,6 +722,10 @@ def _vertrag(ctx, z, lauf):
     basis_zins = z.zahl('basis_referenzzinssatz', minimum=Decimal('0'), maximum=Decimal('20'), ziffern=4)
     basis_lik = z.zahl('basis_lik_punkte', minimum=Decimal('0'), stellen=1, ziffern=6)
     basis_stand = z.monat('basis_lik_stand')
+    if modell == 'index' and basis_lik is None:
+        z.fehler('basis_lik_punkte', _('Bei Indexmiete ist die Basis des Landesindexes (Punkte) Pflicht; sie wird nicht vorgegeben.'))
+    if modell == 'index' and basis_stand is None and not z.roh('basis_lik_stand'):
+        z.fehler('basis_lik_stand', _('Bei Indexmiete ist der Stand-Monat der Index-Basis Pflicht.'))
     weitergabe = z.zahl('index_weitergabe_prozent', stellen=1, ziffern=5)
     intervall = z.ganzzahl('index_intervall_monate')
 

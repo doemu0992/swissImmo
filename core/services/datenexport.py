@@ -26,6 +26,7 @@ from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
 from django.apps import apps
+from django.db import connection
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 
@@ -90,10 +91,13 @@ def exportierbare_modelle():
     Folgt dem Modellbestand (wie der Datenreset): Ein neues Modell mit Organisationsbezug ist
     automatisch dabei. Ohne die Spalte gibt es keine Grenze, an der sich schneiden liesse."""
     modelle = []
+    vorhanden = set(connection.introspection.table_names())
     for modell in apps.get_models():
         meta = modell._meta
         if meta.app_label not in EIGENE_APPS or meta.proxy or not meta.managed:
             continue
+        if meta.db_table not in vorhanden:
+            continue            # z. B. ein Testmodell in der Registry, dem nie jemand eine Tabelle angelegt hat
         if meta.label in AUSGENOMMEN_MODELLE:
             continue
         if not any(f.name == 'organisation' for f in meta.concrete_fields):

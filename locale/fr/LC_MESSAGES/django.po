@@ -35555,3 +35555,557 @@ msgstr ""
 "Erreur : la facture QR pour %(einheit)s n'a pas pu être créée (%(fehler)s). "
 "Le PDF n'a pas été remis afin qu'aucun rappel de paiement ne soit envoyé "
 "sans bulletin de versement."
+
+#: Datenimport und Export (FUNK-09/13)
+
+msgid "Vorschau (bereit)"
+msgstr "Aperçu (prêt)"
+
+msgid "Vorschau mit Fehlern"
+msgstr "Aperçu avec erreurs"
+
+msgid "Importiert"
+msgstr "Importé"
+
+msgid "Abgebrochen (nichts importiert)"
+msgstr "Interrompu (rien importé)"
+
+msgid "Verworfen"
+msgstr "Rejeté"
+
+msgid "Semikolon"
+msgstr "Point-virgule"
+
+msgid "Komma"
+msgstr "Virgule"
+
+msgid "Tabulator"
+msgstr "Tabulation"
+
+msgid "Zeile %(n)s: erwartet «eigenes Konto;Konto im Zielsystem» und optional «;MWST-Code»."
+msgstr "Ligne %(n)s : attendu « compte propre;compte du système cible » et, en option, « ;code TVA »."
+
+msgid "Zeile %(n)s: Eintrag zu lang."
+msgstr "Ligne %(n)s : entrée trop longue."
+
+msgid "Zeile %(n)s: das Konto %(k)s ist schon zugeordnet."
+msgstr "Ligne %(n)s : le compte %(k)s est déjà affecté."
+
+msgid "Objekte (Wohnungen, Gewerbe, Parkplätze)"
+msgstr "Objets (logements, locaux commerciaux, places de parc)"
+
+msgid "Laufende Mietverträge"
+msgstr "Baux en cours"
+
+msgid "Ihr eigener Schlüssel; verknüpft die Liegenschaften"
+msgstr "Votre propre clé ; relie les immeubles"
+
+msgid "Name oder Firma"
+msgstr "Nom ou entreprise"
+
+msgid "de, fr, it oder en; leer = de"
+msgstr "de, fr, it ou en ; vide = de"
+
+msgid "Verwaltungshonorar in Prozent, 0 bis 100; leer = 0"
+msgstr "Honoraires de gérance en pourcent, 0 à 100 ; vide = 0"
+
+msgid "Ihr eigener Schlüssel; verknüpft die Objekte"
+msgstr "Votre propre clé ; relie les objets"
+
+msgid "vierstellig"
+msgstr "à quatre chiffres"
+
+msgid "Schlüssel aus der Eigentümerdatei"
+msgstr "Clé du fichier des propriétaires"
+
+msgid "Kürzel; bestimmt Formulare und Fristen. Leer = später eintragen"
+msgstr "Abréviation ; détermine formulaires et délais. Vide = à saisir plus tard"
+
+msgid "nur Mietliegenschaften; Stockwerkeigentum bitte in der Oberfläche anlegen"
+msgstr "uniquement immeubles locatifs ; propriété par étages : à créer dans l'interface"
+
+msgid "Ihr eigener Schlüssel; verknüpft die Verträge"
+msgstr "Votre propre clé ; relie les baux"
+
+msgid "Schlüssel aus der Liegenschaftsdatei"
+msgstr "Clé du fichier des immeubles"
+
+msgid "whg (Wohnung), gew (Gewerbe), pp (Parkplatz), gar (Garage), bas (Bastelraum)"
+msgstr "whg (logement), gew (commerce), pp (place de parc), gar (garage), bas (local de bricolage)"
+
+msgid "Soll-Nettomiete des Objekts (Referenz, ersetzt keinen Vertrag)"
+msgstr "Loyer net théorique de l'objet (référence, ne remplace pas un bail)"
+
+msgid "Soll-Nebenkosten des Objekts"
+msgstr "Charges théoriques de l'objet"
+
+msgid "Leer = heute"
+msgstr "Vide = aujourd'hui"
+
+msgid "person, firma oder verein; leer = person"
+msgstr "person, firma ou verein ; vide = person"
+
+msgid "Pflicht bei Privatpersonen"
+msgstr "Obligatoire pour les particuliers"
+
+msgid "Pflicht bei Firma und Verein"
+msgstr "Obligatoire pour entreprise et association"
+
+msgid "Leer = Schweiz"
+msgstr "Vide = Suisse"
+
+msgid "Ihr eigener Schlüssel"
+msgstr "Votre propre clé"
+
+msgid "Schlüssel aus der Objektdatei"
+msgstr "Clé du fichier des objets"
+
+msgid "Schlüssel aus der Mieterdatei"
+msgstr "Clé du fichier des locataires"
+
+msgid "Zweite Vertragspartei (Ehegatte, Mitmieter)"
+msgstr "Deuxième partie au contrat (conjoint, colocataire)"
+
+msgid "aktiv oder gekuendigt; leer = aktiv"
+msgstr "aktiv ou gekuendigt ; vide = aktiv"
+
+msgid "Ende der Befristung oder Kündigungstermin"
+msgstr "Fin de la durée déterminée ou terme de résiliation"
+
+msgid "ja oder nein; Pflicht, wenn ein Ende steht"
+msgstr "ja ou nein ; obligatoire si une fin est indiquée"
+
+msgid "Franken pro Monat"
+msgstr "Francs par mois"
+
+msgid "Franken pro Monat; 0, wenn keine"
+msgstr "Francs par mois ; 0 s'il n'y en a pas"
+
+msgid "akonto, pauschal, inbegriffen oder direkt; leer = akonto"
+msgstr "akonto, pauschal, inbegriffen ou direkt ; vide = akonto"
+
+msgid "monatlich, vierteljahr, halbjahr oder jahr"
+msgstr "monatlich, vierteljahr, halbjahr ou jahr"
+
+msgid "sperrkonto oder versicherung; Pflicht, wenn eine Kaution steht"
+msgstr "sperrkonto ou versicherung ; obligatoire si une garantie est indiquée"
+
+msgid "IBAN des Sperrkontos"
+msgstr "IBAN du compte bloqué"
+
+msgid "Leer = 3 (Wohnen) bzw. 6 (Geschäftsraum)"
+msgstr "Vide = 3 (habitation) ou 6 (locaux commerciaux)"
+
+msgid "fest oder index; leer = fest. Staffelmiete: nicht per Import"
+msgstr "fest ou index ; vide = fest. Loyer échelonné : pas par import"
+
+msgid "Referenzzinssatz zum Vertragsabschluss; leer = heutiger Stand"
+msgstr "Taux d'intérêt de référence à la conclusion du bail ; vide = état actuel"
+
+msgid "LIK-Basis; bei Indexmiete Pflicht"
+msgstr "Base IPC ; obligatoire pour le loyer indexé"
+
+msgid "Monat der LIK-Basis; bei Indexmiete Pflicht"
+msgstr "Mois de la base IPC ; obligatoire pour le loyer indexé"
+
+msgid "Nur Indexmiete; leer = 100"
+msgstr "Loyer indexé uniquement ; vide = 100"
+
+msgid "Nur Indexmiete; leer = 12"
+msgstr "Loyer indexé uniquement ; vide = 12"
+
+msgid "Option nach Art. 22 MWSTG, nur Geschäftsräume"
+msgstr "Option selon l'art. 22 LTVA, locaux commerciaux uniquement"
+
+msgid "Pflicht, wenn mwst_pflichtig = ja"
+msgstr "Obligatoire si mwst_pflichtig = ja"
+
+msgid "«%(wert)s» ist kein Datum (erwartet: TT.MM.JJJJ oder JJJJ-MM-TT)."
+msgstr "« %(wert)s » n'est pas une date (attendu : JJ.MM.AAAA ou AAAA-MM-JJ)."
+
+msgid "Das Jahr %(j)s ist nicht plausibel."
+msgstr "L'année %(j)s n'est pas plausible."
+
+msgid "Pflichtangabe fehlt."
+msgstr "Information obligatoire manquante."
+
+msgid "Zu lang: höchstens %(n)s Zeichen, hier %(m)s."
+msgstr "Trop long : %(n)s caractères au maximum, ici %(m)s."
+
+msgid "«%(wert)s» ist keine Zahl."
+msgstr "« %(wert)s » n'est pas un nombre."
+
+msgid "Höchstens %(n)s Nachkommastellen; es wird nicht gerundet."
+msgstr "Au plus %(n)s décimales ; il n'y a pas d'arrondi."
+
+msgid "Der Wert darf nicht unter %(n)s liegen."
+msgstr "La valeur ne doit pas être inférieure à %(n)s."
+
+msgid "Der Wert darf nicht über %(n)s liegen."
+msgstr "La valeur ne doit pas dépasser %(n)s."
+
+msgid "«%(wert)s» ist kein Monat (erwartet: JJJJ-MM)."
+msgstr "« %(wert)s » n'est pas un mois (attendu : AAAA-MM)."
+
+msgid "«%(wert)s» ist weder ja noch nein."
+msgstr "« %(wert)s » n'est ni ja ni nein."
+
+msgid "«%(wert)s» ist nicht zulässig. Erlaubt: %(erlaubt)s."
+msgstr "« %(wert)s » n'est pas admis. Valeurs autorisées : %(erlaubt)s."
+
+msgid "«%(wert)s» ist keine gültige IBAN."
+msgstr "« %(wert)s » n'est pas un IBAN valable."
+
+msgid "«%(wert)s» ist keine gültige E-Mail-Adresse."
+msgstr "« %(wert)s » n'est pas une adresse e-mail valable."
+
+msgid "Der Schlüssel «%(s)s» ist nicht bekannt. Er muss in der Datei «%(datei)s» stehen (im selben oder in einem früheren Import)."
+msgstr "La clé « %(s)s » est inconnue. Elle doit figurer dans le fichier « %(datei)s » (dans le même import ou dans un import précédent)."
+
+msgid "Der Schlüssel «%(s)s» steht schon in Zeile %(n)s."
+msgstr "La clé « %(s)s » figure déjà à la ligne %(n)s."
+
+msgid "Eigentümer «%(n)s» besteht schon und wurde zugeordnet; nichts verändert."
+msgstr "Le propriétaire « %(n)s » existe déjà et a été affecté ; rien modifié."
+
+msgid "Die Postleitzahl einer Liegenschaft hat vier Ziffern."
+msgstr "Le NPA d'un immeuble comporte quatre chiffres."
+
+msgid "Stockwerkeigentum (STWEG) wird nicht importiert: Die Wertquoten müssen aufgehen. Bitte in der Oberfläche anlegen."
+msgstr "La propriété par étages (PPE) n'est pas importée : les quotes-parts doivent concorder. Veuillez la créer dans l'interface."
+
+msgid "«%(k)s» ist kein Kantonskürzel."
+msgstr "« %(k)s » n'est pas une abréviation de canton."
+
+msgid "Die Liegenschaft «%(a)s» besteht schon und wurde zugeordnet; nichts verändert."
+msgstr "L'immeuble « %(a)s » existe déjà et a été affecté ; rien modifié."
+
+msgid "Kein Kanton angegeben%(vorschlag)s: Formulare und Fristen je Kanton bleiben unvollständig, bis er eingetragen ist."
+msgstr "Aucun canton indiqué%(vorschlag)s : formulaires et délais par canton restent incomplets tant qu'il n'est pas saisi."
+
+msgid "STWEG-Einheiten werden nicht importiert (Wertquoten, Stockwerkeigentümer)."
+msgstr "Les unités PPE ne sont pas importées (quotes-parts, propriétaires par étages)."
+
+msgid "Das Objekt «%(b)s» besteht in dieser Liegenschaft schon und wurde zugeordnet; nichts verändert."
+msgstr "L'objet « %(b)s » existe déjà dans cet immeuble et a été affecté ; rien modifié."
+
+msgid "Bei einer Privatperson ist der Nachname Pflicht."
+msgstr "Pour un particulier, le nom de famille est obligatoire."
+
+msgid "Bei Firma und Verein ist der Firmenname Pflicht."
+msgstr "Pour une entreprise ou une association, la raison sociale est obligatoire."
+
+msgid "Das Geburtsdatum liegt in der Zukunft."
+msgstr "La date de naissance est dans le futur."
+
+msgid "Ein Mieter mit der E-Mail-Adresse «%(e)s» besteht schon. Dieser Eintrag wird trotzdem neu angelegt; Doppelte später zusammenführen."
+msgstr "Un locataire avec l'adresse e-mail « %(e)s » existe déjà. Cette entrée est quand même créée ; fusionner les doublons plus tard."
+
+msgid "Hauptmieter und Mitmieter sind dieselbe Person."
+msgstr "Le locataire principal et le colocataire sont la même personne."
+
+msgid "Bei einem Enddatum angeben, ob der Vertrag befristet ist (ja) oder auf diesen Termin gekündigt wurde (nein)."
+msgstr "En cas de date de fin, indiquer si le bail est de durée déterminée (ja) ou résilié pour ce terme (nein)."
+
+msgid "Ein befristeter Vertrag braucht ein Enddatum."
+msgstr "Un bail de durée déterminée exige une date de fin."
+
+msgid "Ein gekündigter Vertrag braucht den Kündigungstermin als Enddatum."
+msgstr "Un bail résilié exige le terme de résiliation comme date de fin."
+
+msgid "Ein befristeter Vertrag wird nicht gekündigt; Status «aktiv» verwenden."
+msgstr "Un bail de durée déterminée n'est pas résilié ; utiliser le statut « aktiv »."
+
+msgid "Der Vertrag beginnt erst am %(d)s, ist aber als aktiv eingetragen."
+msgstr "Le bail ne commence que le %(d)s, mais est inscrit comme actif."
+
+msgid "Das Ende (%(d)s) liegt in der Vergangenheit, der Vertrag ist aber als aktiv eingetragen."
+msgstr "La fin (%(d)s) est dans le passé, mais le bail est inscrit comme actif."
+
+msgid "Bei einer Kaution angeben, ob Sperrkonto oder Versicherung."
+msgstr "Pour une garantie, indiquer s'il s'agit d'un compte bloqué ou d'une assurance."
+
+msgid "Staffelmieten werden nicht importiert: Die Stufen brauchen eine eigene Tabelle (Art. 269c OR). Den Vertrag in der Oberfläche erfassen."
+msgstr "Les loyers échelonnés ne sont pas importés : les paliers exigent une table propre (art. 269c CO). Saisir le bail dans l'interface."
+
+msgid "Bei Indexmiete ist die Basis des Landesindexes (Punkte) Pflicht; sie wird nicht vorgegeben."
+msgstr "Pour un loyer indexé, la base de l'indice (points) est obligatoire ; elle n'est pas présupposée."
+
+msgid "Bei Indexmiete ist der Stand-Monat der Index-Basis Pflicht."
+msgstr "Pour un loyer indexé, le mois de référence de la base de l'indice est obligatoire."
+
+msgid "Bei MWST-Pflicht den Steuersatz angeben; er wird nicht vorgegeben."
+msgstr "En cas d'assujettissement à la TVA, indiquer le taux ; il n'est pas présupposé."
+
+msgid "Der MWST-Satz wird ignoriert, weil mwst_pflichtig nicht «ja» ist."
+msgstr "Le taux de TVA est ignoré, car mwst_pflichtig n'est pas « ja »."
+
+msgid "Für Wohnräume gibt es keine MWST-Option (Art. 22 Abs. 2 lit. b MWSTG)."
+msgstr "Pour les logements, il n'y a pas d'option TVA (art. 22 al. 2 let. b LTVA)."
+
+msgid "«Erstmals kündbar auf» liegt vor dem Beginn."
+msgstr "« Résiliable pour la première fois le » est antérieur au début."
+
+msgid "Für Einstellplätze führt die Oberfläche keine Nebenkosten; der Wert wird so übernommen."
+msgstr "Pour les places de stationnement, l'interface ne gère pas de charges ; la valeur est reprise telle quelle."
+
+msgid "Dieser Vertrag besteht schon (gleiches Objekt, gleicher Mieter, gleicher Beginn)."
+msgstr "Ce bail existe déjà (même objet, même locataire, même début)."
+
+msgid "Das Objekt ist im selben Zeitraum schon an %(m)s vermietet (Vertrag %(id)s, ab %(b)s)."
+msgstr "L'objet est déjà loué à %(m)s pour la même période (bail %(id)s, dès le %(b)s)."
+
+msgid "%(n)s Verträge ohne Basis-Referenzzinssatz: es gilt der heutige Stand. Mietzinsanpassungen nach Referenzzins sind dann erst ab heute zuverlässig."
+msgstr "%(n)s baux sans taux de référence de base : l'état actuel s'applique. Les adaptations de loyer selon le taux de référence ne sont alors fiables qu'à partir d'aujourd'hui."
+
+msgid "%(n)s Verträge ohne LIK-Basis: es gilt der heutige Stand."
+msgstr "%(n)s baux sans base IPC : l'état actuel s'applique."
+
+msgid "In der Datei fehlen Pflichtspalten: %(s)s."
+msgstr "Colonnes obligatoires manquantes dans le fichier : %(s)s."
+
+msgid "Diese Spalten sind unbekannt und werden nicht gelesen: %(s)s."
+msgstr "Ces colonnes sont inconnues et ne sont pas lues : %(s)s."
+
+msgid "Die Datei enthält keine Datenzeilen."
+msgstr "Le fichier ne contient aucune ligne de données."
+
+msgid "Die Zeile konnte nicht gespeichert werden: %(e)s"
+msgstr "La ligne n'a pas pu être enregistrée : %(e)s"
+
+msgid "%(n)s Zeilen waren schon importiert oder entsprechen einem bestehenden Datensatz und wurden übersprungen."
+msgstr "%(n)s lignes étaient déjà importées ou correspondent à un enregistrement existant et ont été ignorées."
+
+msgid "Es wurde keine Datei hochgeladen."
+msgstr "Aucun fichier n'a été téléversé."
+
+msgid "Dieser Import ist nicht mehr ausführbar. Bitte die Dateien neu hochladen."
+msgstr "Cet import n'est plus exécutable. Veuillez téléverser à nouveau les fichiers."
+
+msgid "Die Datei ist leer."
+msgstr "Le fichier est vide."
+
+msgid "Die Datei ist grösser als 5 MB."
+msgstr "Le fichier dépasse 5 Mo."
+
+msgid "Die Datei ist keine gültige Excel-Datei (.xlsx)."
+msgstr "Le fichier n'est pas un fichier Excel valable (.xlsx)."
+
+msgid "Das alte Excel-Format (.xls) wird nicht gelesen: als .xlsx oder CSV speichern."
+msgstr "L'ancien format Excel (.xls) n'est pas lu : enregistrer en .xlsx ou CSV."
+
+msgid "Die Datei enthält keine Kopfzeile."
+msgstr "Le fichier ne contient pas de ligne d'en-tête."
+
+msgid "Die Datei hat mehr als %(n)s Spalten."
+msgstr "Le fichier a plus de %(n)s colonnes."
+
+msgid "Die Spalte «%(n)s» kommt mehrfach vor."
+msgstr "La colonne « %(n)s » apparaît plusieurs fois."
+
+msgid "Höchstens %(n)s Zeilen je Datei."
+msgstr "Au plus %(n)s lignes par fichier."
+
+msgid "Die Datei ist keine lesbare Textdatei (UTF-8 oder Windows-1252)."
+msgstr "Le fichier n'est pas un fichier texte lisible (UTF-8 ou Windows-1252)."
+
+msgid "Die Datei ist keine Textdatei."
+msgstr "Le fichier n'est pas un fichier texte."
+
+msgid "Die CSV-Datei ist nicht lesbar: %(e)s"
+msgstr "Le fichier CSV n'est pas lisible : %(e)s"
+
+msgid "Die Excel-Datei ist zu gross."
+msgstr "Le fichier Excel est trop volumineux."
+
+msgid "Die Excel-Datei enthält unzulässige Angaben."
+msgstr "Le fichier Excel contient des indications inadmissibles."
+
+msgid "Die Excel-Datei ist beschädigt."
+msgstr "Le fichier Excel est endommagé."
+
+msgid "Die Excel-Datei enthält kein Tabellenblatt."
+msgstr "Le fichier Excel ne contient aucune feuille."
+
+msgid "Export für Banana/Abacus"
+msgstr "Export pour Banana/Abacus"
+
+msgid "Daten"
+msgstr "Données"
+
+msgid "Bestehende Daten übernehmen und Ihre Daten exportieren."
+msgstr "Reprendre des données existantes et exporter vos données."
+
+msgid "Daten importieren"
+msgstr "Importer des données"
+
+msgid "Eigentümer, Liegenschaften, Objekte, Mieter und laufende Verträge aus CSV oder Excel übernehmen — mit Vorschau und Fehlerliste."
+msgstr "Reprendre propriétaires, immeubles, objets, locataires et baux en cours depuis CSV ou Excel — avec aperçu et liste d'erreurs."
+
+msgid "Daten exportieren"
+msgstr "Exporter des données"
+
+msgid "Mandatsexport (ZIP mit allen Daten und Dokumenten) und Buchungsjournal für Banana und Abacus."
+msgstr "Export du mandat (ZIP avec toutes les données et documents) et journal comptable pour Banana et Abacus."
+
+msgid "Buchungsjournal für Banana und Abacus."
+msgstr "Journal comptable pour Banana et Abacus."
+
+msgid "Exportieren"
+msgstr "Exporter"
+
+msgid "Jeder Export wird im Logbuch festgehalten."
+msgstr "Chaque export est consigné dans le journal."
+
+msgid "Buchungsjournal (Banana, Abacus, Treuhand)"
+msgstr "Journal comptable (Banana, Abacus, fiduciaire)"
+
+msgid "Bis (eingeschlossen)"
+msgstr "Au (inclus)"
+
+msgid "Spalten: Buchungsdatum, Belegnummer, Soll, Haben, Betrag, Text, MWST-Code (Überschriften unten einstellbar). Stornobuchungen stehen als eigene Zeilen. Es werden nur Buchungen gelesen, nichts wird verändert."
+msgstr "Colonnes : date d'écriture, numéro de pièce, débit, crédit, montant, texte, code TVA (intitulés réglables ci-dessous). Les écritures de contrepassation sont des lignes à part. Seules les écritures sont lues, rien n'est modifié."
+
+msgid "Journal herunterladen (CSV)"
+msgstr "Télécharger le journal (CSV)"
+
+msgid "Einstellungen für das Buchungsjournal"
+msgstr "Paramètres du journal comptable"
+
+msgid "Welche Spaltenüberschriften, Kontonummern und MWST-Codes Banana oder Abacus erwarten, ist hier nicht fest eingebaut: Das legt Ihre Buchhaltung fest. Die Vorgaben sind allgemeine Namen. Bitte mit einer Probedatei im Zielprogramm prüfen, bevor Sie ein ganzes Jahr übernehmen."
+msgstr "Les intitulés de colonnes, numéros de compte et codes TVA attendus par Banana ou Abacus ne sont pas figés ici : c'est votre comptabilité qui les définit. Les valeurs par défaut sont des noms généraux. Veuillez tester avec un fichier d'essai dans le logiciel cible avant de reprendre une année entière."
+
+msgid "Überschrift «%(n)s»"
+msgstr "Intitulé « %(n)s »"
+
+msgid "Trennzeichen"
+msgstr "Séparateur"
+
+msgid "Datumsformat"
+msgstr "Format de date"
+
+msgid "Dezimalzeichen"
+msgstr "Séparateur décimal"
+
+msgid "Kontenzuordnung"
+msgstr "Affectation des comptes"
+
+msgid "Eine Zeile je Konto: eigene Kontonummer;Kontonummer im Zielprogramm, optional ;MWST-Code. Konten ohne Zeile werden mit ihrer eigenen Nummer exportiert. Eine Buchung trägt in swissImmo keinen Steuercode; der MWST-Code kommt nur aus dieser Zuordnung (zuerst das Soll-, dann das Habenkonto)."
+msgstr "Une ligne par compte : numéro de compte propre;numéro de compte dans le logiciel cible, en option ;code TVA. Les comptes sans ligne sont exportés avec leur propre numéro. Une écriture ne porte pas de code fiscal dans swissImmo ; le code TVA provient uniquement de cette affectation (d'abord le compte débité, puis le compte crédité)."
+
+msgid "Mandatsexport (alle Daten)"
+msgstr "Export du mandat (toutes les données)"
+
+msgid "Ein ZIP mit allen Daten Ihrer Verwaltung: je Tabelle eine CSV- und eine JSON-Datei, dazu die Dokumente. Für den Wechsel zu einem anderen System. Enthält Personendaten: sicher aufbewahren. Nicht enthalten sind Passwörter, Zugangsdaten und AHV-Nummern. Bei sehr grossen Beständen dauert die Erstellung länger; dann ohne Dokumente exportieren oder den Befehl «mandat_exportieren» auf dem Server verwenden."
+msgstr "Un ZIP avec toutes les données de votre gérance : un fichier CSV et un fichier JSON par table, plus les documents. Pour le passage à un autre système. Contient des données personnelles : à conserver en lieu sûr. Ne sont pas inclus : mots de passe, données d'accès et numéros AVS. Pour de très gros volumes, la création est plus longue ; exporter alors sans documents ou utiliser la commande « mandat_exportieren » sur le serveur."
+
+msgid "Dokumente einschliessen"
+msgstr "Inclure les documents"
+
+msgid "Mandatsexport herunterladen (ZIP)"
+msgstr "Télécharger l'export du mandat (ZIP)"
+
+msgid "Importieren"
+msgstr "Importer"
+
+msgid "Für den Wechsel von einer anderen Verwaltungssoftware."
+msgstr "Pour le passage depuis un autre logiciel de gérance."
+
+msgid "So geht es: Vorlage je Art herunterladen und füllen, die Dateien hier hochladen, die Vorschau prüfen und erst dann importieren. Die Vorschau schreibt nichts. Beim Import gilt alles oder nichts: Meldet auch nur eine Zeile einen Fehler, wird nichts angelegt. Die Verknüpfungen laufen über Ihre eigenen Schlüssel (Spalte «schluessel»); Zeilen mit einem schon importierten Schlüssel werden übersprungen."
+msgstr "Marche à suivre : télécharger et remplir le modèle de chaque type, téléverser les fichiers ici, vérifier l'aperçu et seulement ensuite importer. L'aperçu n'écrit rien. À l'import, c'est tout ou rien : si une seule ligne signale une erreur, rien n'est créé. Les liens passent par vos propres clés (colonne « schluessel ») ; les lignes dont la clé a déjà été importée sont ignorées."
+
+msgid "Vorlage (CSV)"
+msgstr "Modèle (CSV)"
+
+msgid "Datei (CSV oder Excel .xlsx)"
+msgstr "Fichier (CSV ou Excel .xlsx)"
+
+msgid "Spalten dieser Datei"
+msgstr "Colonnes de ce fichier"
+
+msgid "Pflicht"
+msgstr "Obligatoire"
+
+msgid "z. B."
+msgstr "p. ex."
+
+msgid "Prüfen (Trockenlauf)"
+msgstr "Vérifier (essai à blanc)"
+
+msgid "%(f)s Fehler, %(h)s Hinweise"
+msgstr "%(f)s erreurs, %(h)s remarques"
+
+msgid "Noch kein Import."
+msgstr "Pas encore d'import."
+
+msgid "Datenimport"
+msgstr "Import de données"
+
+msgid "Die Vorschau ist fehlerfrei. Es wurde noch nichts angelegt. Mit «Jetzt importieren» werden genau diese Dateien übernommen."
+msgstr "L'aperçu est sans erreur. Rien n'a encore été créé. Avec « Importer maintenant », exactement ces fichiers sont repris."
+
+msgid "Die Vorschau hat Fehler gefunden. Es wurde nichts angelegt. Die Dateien korrigieren und erneut hochladen."
+msgstr "L'aperçu a trouvé des erreurs. Rien n'a été créé. Corriger les fichiers et les téléverser à nouveau."
+
+msgid "Der Import wurde abgebrochen, weil beim Ausführen Fehler auftraten. Es wurde nichts angelegt."
+msgstr "L'import a été interrompu, car des erreurs sont survenues à l'exécution. Rien n'a été créé."
+
+msgid "Importiert am %(am)s. Die hochgeladenen Dateien sind gelöscht, dieses Protokoll bleibt."
+msgstr "Importé le %(am)s. Les fichiers téléversés sont supprimés, ce protocole est conservé."
+
+msgid "%(n)s Zeilen · %(neu)s neu · %(v)s übersprungen · %(f)s mit Fehler"
+msgstr "%(n)s lignes · %(neu)s nouvelles · %(v)s ignorées · %(f)s avec erreur"
+
+msgid "Keine Datei verarbeitet."
+msgstr "Aucun fichier traité."
+
+msgid "Fehler (%(n)s)"
+msgstr "Erreurs (%(n)s)"
+
+msgid "Zeile %(n)s"
+msgstr "Ligne %(n)s"
+
+msgid "Hinweise (%(n)s)"
+msgstr "Remarques (%(n)s)"
+
+msgid "Es werden die ersten 1000 Meldungen gezeigt; die Zahlen oben sind vollständig."
+msgstr "Les 1000 premiers messages sont affichés ; les chiffres ci-dessus sont complets."
+
+msgid "Jetzt importieren"
+msgstr "Importer maintenant"
+
+msgid "Verwerfen"
+msgstr "Rejeter"
+
+msgid "Neue Dateien hochladen"
+msgstr "Téléverser de nouveaux fichiers"
+
+msgid "Import für Wechselkunden, Mandatsexport, Buchungsjournal für Banana und Abacus"
+msgstr "Import pour clients qui changent de logiciel, export du mandat, journal comptable pour Banana et Abacus"
+
+msgid "Die Datei «%(n)s» ist grösser als 5 MB."
+msgstr "Le fichier « %(n)s » dépasse 5 Mo."
+
+msgid "Bitte mindestens eine Datei wählen."
+msgstr "Veuillez choisir au moins un fichier."
+
+msgid "Import abgeschlossen: %(n)s Datensätze angelegt."
+msgstr "Import terminé : %(n)s enregistrements créés."
+
+msgid "Der Import wurde abgebrochen, es wurde nichts angelegt. Die Fehlerliste zeigt, was zu korrigieren ist."
+msgstr "L'import a été interrompu, rien n'a été créé. La liste d'erreurs montre ce qu'il faut corriger."
+
+msgid "Die hochgeladenen Dateien wurden verworfen."
+msgstr "Les fichiers téléversés ont été rejetés."
+
+msgid "Das Datum «von» liegt nach «bis»."
+msgstr "La date « de » est postérieure à « à »."
+
+msgid "Die Überschrift «%(t)s» ist zu lang (höchstens 40 Zeichen)."
+msgstr "L'intitulé « %(t)s » est trop long (40 caractères au maximum)."
+
+msgid "Jede Spalte braucht eine eigene Überschrift."
+msgstr "Chaque colonne a besoin de son propre intitulé."
+
+msgid "Die Einstellungen für das Buchungsjournal sind gespeichert."
+msgstr "Les paramètres du journal comptable sont enregistrés."

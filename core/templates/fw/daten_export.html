@@ -42,7 +42,7 @@ Die Überschriften und die Kontenzuordnung stehen NICHT im Code: Sie gehören de
         <span class="fw-hi">{% zeichen 'warnung' %}</span>
         <div class="fw-ht">{% trans "Welche Spaltenüberschriften, Kontonummern und MWST-Codes Banana oder Abacus erwarten, ist hier nicht fest eingebaut: Das legt Ihre Buchhaltung fest. Die Vorgaben sind allgemeine Namen. Bitte mit einer Probedatei im Zielprogramm prüfen, bevor Sie ein ganzes Jahr übernehmen." %}</div>
     </div>
-    <form method="post" action="/neu/einstellungen/daten/export/einstellung/" class="fw-formular" data-testid="daten-einstellung-form">
+    <form method="post" action="/neu/einstellungen/daten/export/format/" class="fw-formular" data-testid="daten-einstellung-form">
         {% csrf_token %}
         <div class="fw-rumpf">
             {% for s in spalten_liste %}

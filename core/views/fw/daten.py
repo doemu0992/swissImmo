@@ -16,15 +16,24 @@ import tempfile
 from datetime import date
 
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext
 
 from core.auth import (FINANZ_VERWALTUNGS_ROLLEN, VERWALTUNGS_ROLLEN, client_ip, hat_rolle,
                        rolle_erforderlich)
-from core.tenancy import organisation_der_anfrage
+from core.tenancy import OrganisationsFehler, organisation_der_anfrage
 
 from ._basis import _global_filter
+
+def _organisation(request):
+    """Die Organisation der Anfrage. Ohne Mitgliedschaft (auch ein Superuser) gibt es keine: 403, kein Raten."""
+    try:
+        return organisation_der_anfrage(request)
+    except OrganisationsFehler:
+        raise PermissionDenied('Keine aktive Organisation.')
+
 
 HUB = '/neu/einstellungen/daten/'
 IMPORT = '/neu/einstellungen/daten/import/'
@@ -38,7 +47,7 @@ def _protokollieren(request, aktion, objekt, details):
     bricht. Bei einem Export ist es umgekehrt: Ohne Eintrag darf er nicht stattfinden."""
     from core.models import AktivitaetsLog
     AktivitaetsLog.objects.create(
-        organisation=organisation_der_anfrage(request), benutzer=request.user, aktion=aktion[:100],
+        organisation=_organisation(request), benutzer=request.user, aktion=aktion[:100],
         objekt=str(objekt)[:200], details=str(details)[:2000], kategorie='sicherheit',
         ip_adresse=client_ip(request))
 
@@ -82,7 +91,7 @@ def fw_daten_import(request):
     if not dateien:
         messages.error(request, gettext('Bitte mindestens eine Datei wählen.'))
         return redirect(IMPORT)
-    lauf = vorschau_erstellen(organisation_der_anfrage(request), request.user, dateien)
+    lauf = vorschau_erstellen(_organisation(request), request.user, dateien)
     _protokollieren(request, 'Datenimport geprüft (Trockenlauf)', f'Import {lauf.pk}',
                     f'{lauf.get_status_display()} · Fehler: {lauf.anzahl_fehler} · Hinweise: {lauf.anzahl_hinweise} · '
                     f'Arten: {", ".join(dateien)}')
@@ -126,7 +135,7 @@ def fw_daten_import_ausfuehren(request, pk):
     from core.services.datenimport import AusfuehrungsFehler, lauf_ausfuehren
     if request.method != 'POST':
         return redirect(f'{IMPORT}{pk}/')
-    org = organisation_der_anfrage(request)
+    org = _organisation(request)
     get_object_or_404(DatenImportLauf.objects.only('pk'), pk=pk)       # fremd -> 404, bevor etwas geschieht
     try:
         lauf = lauf_ausfuehren(org, pk, request.user)
@@ -153,7 +162,7 @@ def fw_daten_import_verwerfen(request, pk):
     if request.method != 'POST':
         return redirect(f'{IMPORT}{pk}/')
     get_object_or_404(DatenImportLauf.objects.only('pk'), pk=pk)
-    lauf_verwerfen(organisation_der_anfrage(request), pk)
+    lauf_verwerfen(_organisation(request), pk)
     messages.success(request, gettext('Die hochgeladenen Dateien wurden verworfen.'))
     return redirect(IMPORT)
 
@@ -190,7 +199,7 @@ def fw_daten_export(request):
 
 
 @rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
-def fw_daten_export_einstellung(request):
+def fw_daten_export_format(request):
     """Speichert Überschriften, Formate und Kontenzuordnung (POST) der eigenen Organisation."""
     from core.services import datenexport
     if request.method != 'POST':
@@ -201,7 +210,6 @@ def fw_daten_export_einstellung(request):
     except datenexport.ZuordnungsFehler as e:
         messages.error(request, str(e))
         return redirect(EXPORT)
-    einst = datenexport.einstellung_holen(erstellen=True)
     spalten = {}
     for k in datenexport.SPALTEN_REIHENFOLGE:
         text = (P.get(f'spalte_{k}') or '').strip()
@@ -214,6 +222,7 @@ def fw_daten_export_einstellung(request):
     if len(set(namen)) != len(namen):
         messages.error(request, gettext('Jede Spalte braucht eine eigene Überschrift.'))
         return redirect(EXPORT)
+    einst = datenexport.einstellung_holen(erstellen=True)
     trenner = P.get('trenner', ';')
     einst.trenner = trenner if trenner in datenexport.TRENNER else ';'
     einst.datumsformat = 'iso' if P.get('datumsformat') == 'iso' else 'ch'
@@ -239,7 +248,7 @@ def fw_daten_export_journal(request):
         return redirect(EXPORT)
     text, stat = datenexport.journal_csv(von, bis)
     _protokollieren(
-        request, 'Buchungsjournal exportiert', organisation_der_anfrage(request).firma,
+        request, 'Buchungsjournal exportiert', _organisation(request).firma,
         f'{von:%d.%m.%Y} bis {bis:%d.%m.%Y} · {stat["zeilen"]} Buchungen · CHF {stat["summe"]}'
         + (f' · Konten ohne Zuordnung: {", ".join(stat["ohne_zuordnung"])}' if stat['ohne_zuordnung'] else ''))
     antwort = HttpResponse(text, content_type='text/csv; charset=utf-8')
@@ -255,7 +264,7 @@ def fw_daten_export_mandat(request):
     from core.services import datenexport
     if request.method != 'POST':
         return redirect(EXPORT)
-    org = organisation_der_anfrage(request)
+    org = _organisation(request)
     mit_dokumenten = request.POST.get('dokumente') == 'on'
     datei = tempfile.TemporaryFile()                                   # wird beim Schliessen der Antwort gelöscht
     try:
