@@ -16,6 +16,13 @@ async function keinQuerscroll(page: Page, was: string) {
   const [breite, fenster] = await page.evaluate(() => [document.documentElement.scrollWidth, window.innerWidth]);
   expect(breite, `${was}: Die Seite ist ${breite} px breit bei ${fenster} px Fenster (Querscroll).`)
     .toBeLessThanOrEqual(fenster + 1);
+  // Der Seitenrahmen schneidet Überstand ab (die Seite rollt dann nicht, der Inhalt ist aber abgeschnitten):
+  // deshalb zusätzlich die Inhaltsblöcke selbst messen.
+  const zuBreit = await page.evaluate(() => [...document.querySelectorAll(
+    '.fw-phead, .fw-phead *, .fw-card, .fw-card *, .fw-hinweis, .fw-hinweis *')]
+    .filter((el) => el.getBoundingClientRect().right > window.innerWidth + 1)
+    .map((el) => el.tagName + '.' + el.className).slice(0, 3));
+  expect(zuBreit, `${was}: Inhalt ragt über den Rand: ${zuBreit.join(', ')}`).toEqual([]);
 }
 
 const LIEGENSCHAFT_OK =
