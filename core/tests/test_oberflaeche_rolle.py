@@ -133,8 +133,8 @@ class LesezugriffUndSachbearbeitungTests(RollenBasis):
     Das Audit zählte für den Lesezugriff 169 tote Schreibaktionen auf 48 Seiten, für die
     Sachbearbeitung 25 auf 20 Seiten. Die Hauswartung ist bereinigt (Test oben, Null ohne Ausnahme);
     für diese beiden Rollen hält die Sperrklinke den Stand fest, bis die Vorlagen nachgezogen sind.
-    Gemessen wird auf dem Fixture-Bestand (kleiner als der des Audits): Die Zahlen unten sind deshalb
-    kleiner als 169 und 25, aber derselbe Fehler.
+    Gezählt wird je (Seite, Ziel) auf dem Fixture-Bestand, über alle erreichbaren Seiten. Das Audit zählte
+    verschiedene Aktionen; die Zahlen sind also nicht gleich, aber derselbe Fehler.
     """
 
     #: Stand vom 29.10.2026, gemessen mit `tote_ziele` über die Startseiten unten. Nur senken.
