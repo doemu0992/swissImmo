@@ -481,7 +481,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         <p class="fw-klein mb-3">{% trans "Werden im Exposé, im Portal-Feed und in der Vermarktungsliste verwendet. Das erste Foto ist das Titelbild." %}</p>
         <form method="post" action="/neu/objekte/{{ e.id }}/foto/" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
             {% csrf_token %}
-            <input name="fotos" type="file" accept="image/*" multiple required
+            <input name="fotos" type="file" aria-label="{% trans 'Fotos hinzufügen' %}" accept="image/*" multiple required
                    class="fw-datei">
             <button class="fw-btn fw-primary">{% zeichen 'hochladen' klasse='mr-1.5' %}{% trans "Hochladen" %}</button>
         </form>

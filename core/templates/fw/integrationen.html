@@ -58,7 +58,7 @@
                 <div class="fw-feldblock mt-3">
                     <label class="fw-label">{% trans "Feed-URL (JSON)" %}</label>
                     <div class="flex items-center gap-2">
-                        <input id="feedurl" readonly value="{{ request.scheme }}://{{ request.get_host }}{{ portal_feed_pfad }}"
+                        <input id="feedurl" readonly aria-label="{% trans 'Feed-URL (JSON)' %}" value="{{ request.scheme }}://{{ request.get_host }}{{ portal_feed_pfad }}"
                                class="fw-feld fw-mono flex-1 min-w-0">
                         <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feedurl').value)"
                                 class="fw-btn fw-rand-marke fw-knapp">{% zeichen 'kopieren' %}{% trans "Kopieren" %}</button>

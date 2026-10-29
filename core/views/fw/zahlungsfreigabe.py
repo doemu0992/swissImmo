@@ -13,6 +13,7 @@ from django.shortcuts import redirect, render
 from django.utils.translation import gettext
 
 from core.auth import INHABER_ROLLEN, TEAM_ROLLEN, hat_rolle, log_aktion, rolle_erforderlich
+from core.utils.betrag import betrag_normalisieren
 from core.tenancy import organisation_der_anfrage
 
 from ._basis import _global_filter
@@ -38,7 +39,7 @@ def fw_zahlungsfreigabe_speichern(request):
     if request.method != 'POST':
         return redirect(ZIEL)
     org = organisation_der_anfrage(request)
-    roh = (request.POST.get('freigabelimit') or '').strip().replace("'", '').replace('’', '').replace(',', '.')
+    roh = betrag_normalisieren(request.POST.get('freigabelimit'))
     if request.POST.get('ohne_limit') == 'on' or not roh:
         neu = None
     else:

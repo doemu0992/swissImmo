@@ -17,7 +17,7 @@
         <a href="/neu/mandate/{{ md.id }}/kontokorrent/?pdf=1{% if jahr %}&jahr={{ jahr }}{% endif %}" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' %}PDF</a>
         <a href="/neu/mandate/{{ md.id }}/abrechnung/{% if jahr %}?jahr={{ jahr }}{% endif %}" class="fw-btn">{% zeichen 'rechnung' %}{% trans "Abrechnung" %}</a>
         <form method="get" class="inline-flex items-center gap-1">
-            <select name="jahr" onchange="this.form.submit()" class="fw-feld">
+            <select name="jahr" aria-label="{% trans 'Jahr' %}" onchange="this.form.submit()" class="fw-feld">
                 <option value="alle" {% if not jahr %}selected{% endif %}>{% trans "Kumuliert" %}</option>
                 {% for j in jahre %}<option value="{{ j }}" {% if jahr == j %}selected{% endif %}>{{ j }}</option>{% endfor %}
             </select>

@@ -147,7 +147,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         <div class="px-5 py-4">
             <form method="post" action="/neu/schaeden/{{ t.id }}/status/" class="flex flex-wrap items-center gap-3">
                 {% csrf_token %}
-                <select name="status" class="fw-feld">
+                <select name="status" aria-label="{% trans 'Status' %}" class="fw-feld">
                     {% for key, val in status_wahl.items %}
                     <option value="{{ key }}" {% if t.status == key %}selected{% endif %}>{{ val.0 }}</option>
                     {% endfor %}
@@ -188,7 +188,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 {% if t.betroffene_einheit_id and kann_schreiben %}
                 <form method="post" action="/neu/schaeden/{{ t.id }}/ausstattung/" class="flex flex-col gap-2">
                     {% csrf_token %}
-                    <select name="ausstattung_id" class="fw-feld">
+                    <select name="ausstattung_id" aria-label="{% trans 'Betroffenes Element' %}" class="fw-feld">
                         <option value="">— {% trans "kein Element" %} —</option>
                         {% for el in ausstattung_elemente %}<option value="{{ el.id }}" {% if t.ausstattung_id == el.id %}selected{% endif %}>{{ el.raum }} · {{ el.kategorie }}</option>{% endfor %}
                     </select>
@@ -486,7 +486,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         <div class="fw-kopf"><h2>{% trans "Fotos hinzufügen" %}</h2></div>
         <form method="post" action="/neu/schaeden/{{ t.id }}/foto/" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3 fw-rumpf">
             {% csrf_token %}
-            <input name="fotos" type="file" accept="image/*" multiple required
+            <input name="fotos" type="file" aria-label="{% trans 'Fotos hinzufügen' %}" accept="image/*" multiple required
                    class="fw-datei">
             <button class="fw-btn fw-primary">{% zeichen 'hochladen' %}{% trans "Hochladen" %}</button>
         </form>

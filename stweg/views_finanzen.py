@@ -17,6 +17,7 @@ from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 
 from core.auth import SCHREIB_ROLLEN, TEAM_ROLLEN, rolle_erforderlich
+from core.utils.betrag import betrag_normalisieren
 from core.views.fw._basis import _global_filter
 from crm.models import Eigentuemer
 from finance.models import Buchungskonto
@@ -127,7 +128,7 @@ def stweg_schluessel_anteile(request, pk):
         return _zu_schluessel(lg)
     neu = {}
     for e in stimm_einheiten(lg):
-        roh = (request.POST.get(f'anteil_{e.pk}') or '').strip().replace("'", '').replace(',', '.')
+        roh = betrag_normalisieren(request.POST.get(f'anteil_{e.pk}'))
         if roh == '':
             continue
         try:

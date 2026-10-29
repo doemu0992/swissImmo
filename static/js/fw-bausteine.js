@@ -336,14 +336,81 @@
         });
     }
 
+    // BETRAGSFELD (DESIGN-28): <input type="text" inputmode="decimal" data-chf> zeigt «1'450.50».
+    //   data-chf   Betrag in CHF: zwei Stellen, Apostroph als Tausendertrenner
+    //   data-dezimal     andere Dezimalzahl (Zinssatz, Prozent, Punkte): Punkt als Dezimaltrenner, ohne Tausender
+    // Beim Verlassen des Feldes wird der Text in diese Form gebracht; tippen darf man «1450,5», «1 450.50»
+    // oder «CHF 1'450.50». Die Regeln sind dieselben wie im Server (`core/utils/betrag.py`), der den Wert
+    // ohnehin selbst einliest: Das Skript ist Anzeige, keine Prüfung. `type="number"` ist für Beträge
+    // verboten: Es verwirft «1'450.50», zeigt je nach Browsersprache Komma oder Punkt und lässt das
+    // Mausrad den Wert verändern.
+    var BETRAG_GRUPPIERUNG = /['’ʼ‘`´   \s]/g;
+    function zahlText(roh) {
+        var t = String(roh == null ? '' : roh).trim().replace(/−/g, '-')
+            .replace(/^(?:s?fr\.?|chf)\s*|\s*(?:s?fr\.?|chf)$/ig, '').replace(BETRAG_GRUPPIERUNG, '');
+        var komma = t.indexOf(',') >= 0, punkt = t.indexOf('.') >= 0;
+        if (komma && punkt) {
+            t = t.lastIndexOf(',') > t.lastIndexOf('.') ? t.replace(/\./g, '').replace(',', '.') : t.replace(/,/g, '');
+        } else if (komma) {
+            t = t.split(',').length > 2 ? t.replace(/,/g, '') : t.replace(',', '.');
+        } else if (t.split('.').length > 2) {
+            t = t.replace(/\./g, '');
+        }
+        return /^[+-]?(\d+(\.\d*)?|\.\d+)$/.test(t) ? t : null;
+    }
+    // Die Zahl hinter einem Text; 0, wenn es keine ist (wie `parseFloat(...) || 0`, aber für «1'450.50»).
+    function fwZahl(roh) {
+        var t = zahlText(roh);
+        return t === null ? 0 : parseFloat(t);
+    }
+    function betragAnzeige(t, stellen) {
+        var n = parseFloat(t);
+        var fest = (Math.round(Math.abs(n) * Math.pow(10, stellen)) / Math.pow(10, stellen)).toFixed(stellen);
+        var teile = fest.split('.');
+        teile[0] = teile[0].replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+        return (n < 0 && parseFloat(fest) !== 0 ? '-' : '') + teile.join('.');
+    }
+    function betragFormatieren(feld) {
+        var roh = feld.value;
+        if (!roh.trim()) { feld.removeAttribute('aria-invalid'); feld.setCustomValidity(''); return; }
+        var t = zahlText(roh);
+        if (t === null) {
+            feld.setAttribute('aria-invalid', 'true');
+            feld.setCustomValidity(feld.dataset.fehler || 'Bitte eine Zahl eingeben.');
+            return;
+        }
+        feld.removeAttribute('aria-invalid');
+        feld.setCustomValidity('');
+        feld.value = feld.hasAttribute('data-chf') ? betragAnzeige(t, parseInt(feld.dataset.stellen || '2', 10))
+                                                      : String(parseFloat(t));
+    }
+    function betragsfelder() {
+        var wahl = 'input[data-chf], input[data-dezimal]';
+        document.addEventListener('focusout', function (e) {
+            if (e.target.matches && e.target.matches(wahl)) betragFormatieren(e.target);
+        }, true);
+        document.addEventListener('input', function (e) {
+            if (e.target.matches && e.target.matches(wahl) && e.target.validationMessage) e.target.setCustomValidity('');
+        }, true);
+        document.querySelectorAll(wahl).forEach(function (f) { if (f.value) betragFormatieren(f); });
+    }
+    // Wert programmatisch setzen (z. B. Kaution = 3 Monatsmieten) und dabei gleich schön schreiben.
+    function fwBetragSetzen(feld, zahl) {
+        feld.value = String(zahl);
+        betragFormatieren(feld);
+    }
+
     function start() {
         document.querySelectorAll('.fw-assistent[data-assistent]').forEach(assistent);
         vorschauen();
         hilfe();
         hilfeboxen();
         prozessleisten();
+        betragsfelder();
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
     else start();
     window.fwAssistent = assistent;
+    window.fwZahl = fwZahl;
+    window.fwBetragSetzen = fwBetragSetzen;
 })();

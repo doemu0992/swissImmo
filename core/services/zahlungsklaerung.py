@@ -42,6 +42,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _, ngettext
 
 from core.services.zahlungszuordnung import ZuordnungsFehler, _park_konto, offene_rechnungen
+from core.utils.betrag import betrag_normalisieren
 
 #: Bis zu diesem offenen Rest bietet die Teilzahlungsliste «Kleindifferenz
 #: ausbuchen» an (z. B. von der Bank abgezogene Spesen). Gebucht wird über die
@@ -58,7 +59,7 @@ _TEIL = re.compile(r':(teil\d+|offen)$')
 
 def betrag_aus(roh):
     """CHF-Eingabe («1'410.50», «1410,5») als Decimal, sonst None."""
-    s = (roh or '').strip().replace("'", '').replace('’', '').replace(' ', '').replace(',', '.')
+    s = betrag_normalisieren(roh)
     if not s:
         return None
     try:

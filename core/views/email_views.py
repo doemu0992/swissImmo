@@ -1,3 +1,4 @@
+from core.utils.betrag import betrag_normalisieren
 from crm.models import Organisation, Mieter
 from portfolio.models import Liegenschaft, Einheit
 from rentals.models import Mietvertrag, Leerstand
@@ -264,7 +265,7 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
     if iban:
         try:
             c.showPage()
-            betrag_float = float(str(betrag_str).replace(',', '.'))
+            betrag_float = float(betrag_normalisieren(betrag_str))
 
             if verwaltung:
                 creditor = {'name': verwaltung.firma, 'line1': verwaltung.strasse,
@@ -394,7 +395,7 @@ def send_mahnung_email_view(request, vertrag_id):
     # 257d-Kündigungsandrohung: Betrag muss ein positiver Betrag sein — die Vorgabe
     # '0.00' liess eine Kündigungsandrohung über CHF 0.00 zu.
     try:
-        _betrag_ok = Decimal(str(betrag_str).replace(',', '.')) > 0
+        _betrag_ok = Decimal(betrag_normalisieren(betrag_str)) > 0
     except Exception:
         _betrag_ok = False
     if not _betrag_ok:

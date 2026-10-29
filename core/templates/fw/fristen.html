@@ -35,7 +35,7 @@
         <div class="fw-feldblock">
             <label class="fw-label">{% trans "Kalender abonnieren (aktualisiert sich automatisch)" %}</label>
             <div class="flex items-center gap-2">
-                <input id="feed-url" readonly value="{{ request.scheme }}://{{ request.get_host }}/fristen.ics?token={{ feed_token|urlencode }}"
+                <input id="feed-url" readonly aria-label="{% trans 'Kalender abonnieren (aktualisiert sich automatisch)' %}" value="{{ request.scheme }}://{{ request.get_host }}/fristen.ics?token={{ feed_token|urlencode }}"
                        class="fw-feld fw-mono flex-1 min-w-0">
                 <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feed-url').value); this.textContent='Kopiert ✓';"
                         class="fw-btn">{% trans "Kopieren" %}</button>

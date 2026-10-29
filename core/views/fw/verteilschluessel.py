@@ -17,6 +17,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext
 
 from core.auth import SCHREIB_ROLLEN, TEAM_ROLLEN, hat_rolle, log_aktion, rolle_erforderlich
+from core.utils.betrag import betrag_normalisieren
 from portfolio.models import Liegenschaft, LiegenschaftVerteilschluessel, Verteilschluessel
 
 from ._basis import _global_filter
@@ -94,7 +95,7 @@ def _raster_pruefen(daten, einheiten):
     """Prozentraster: je Einheit 0–100, Summe 100. Gibt (Werte, Fehler je Einheit, Summenfehler) zurück."""
     werte, fehler, summe = {}, {}, Decimal('0')
     for e in einheiten:
-        roh = (daten.get(f'pct_{e.id}') or '').strip().replace(',', '.')
+        roh = betrag_normalisieren(daten.get(f'pct_{e.id}'))
         if roh == '':
             werte[e.id] = Decimal('0')
             continue

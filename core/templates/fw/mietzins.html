@@ -65,7 +65,7 @@
             <tbody>
             {% for row in rows %}
             <tr>
-                <td class="pl-5 pr-1">{% if row.massenlauf %}<input type="checkbox" name="vertrag_id" value="{{ row.v.id }}" class="vertragWahl fw-akzent">{% endif %}</td>
+                <td class="pl-5 pr-1">{% if row.massenlauf %}<input type="checkbox" name="vertrag_id" aria-label="{% trans 'Vertrag auswählen' %}" value="{{ row.v.id }}" class="vertragWahl fw-akzent">{% endif %}</td>
                 <td class="fw-strong whitespace-nowrap">
                     <a href="/neu/vertraege/{{ row.v.id }}/" class="fw-link">{{ row.mieter }}</a>
                 </td>

@@ -19,6 +19,7 @@ from django.utils.dateparse import parse_date, parse_datetime
 from django.views.decorators.http import require_POST
 
 from core.auth import SCHREIB_ROLLEN, TEAM_ROLLEN, rolle_erforderlich
+from core.utils.betrag import betrag_normalisieren
 from core.views.fw._basis import _global_filter
 from core.models import Pendenz
 from portfolio.models import Einheit, Liegenschaft
@@ -423,7 +424,7 @@ def _betrag(wert):
     """Beträge aus dem Formular: «1'234.50», «1234,5» — sonst None."""
     from decimal import Decimal, InvalidOperation
     try:
-        return Decimal((wert or '').strip().replace("'", '').replace(',', '.')).quantize(Decimal('0.01'))
+        return Decimal(betrag_normalisieren(wert)).quantize(Decimal('0.01'))
     except InvalidOperation:
         return None
 
@@ -806,7 +807,7 @@ def _quote(wert):
     """Wertquote aus dem Formular: «200», «12,5» — nicht negativ, höchstens 99999.99."""
     from decimal import Decimal, InvalidOperation
     try:
-        q = Decimal((wert or '').strip().replace("'", '').replace(',', '.')).quantize(Decimal('0.01'))
+        q = Decimal(betrag_normalisieren(wert)).quantize(Decimal('0.01'))
     except InvalidOperation:
         return None
     return q if 0 <= q <= Decimal('99999.99') else None

@@ -28,7 +28,7 @@
         <div class="fw-kopf"><h2>{% trans a.titel %}</h2>
             <span class="fw-rechts fw-klein fw-faint">{% if a.eigen %}{% trans "Eigener Wortlaut" %}{% else %}{% trans "Standardtext" %}{% endif %}</span></div>
         <div class="fw-rumpf">
-            <textarea name="text_{{ a.schluessel }}" rows="6" maxlength="3000" class="fw-feld w-full">{{ a.text }}</textarea>
+            <textarea name="text_{{ a.schluessel }}" aria-label="{% trans a.titel %}" rows="6" maxlength="3000" class="fw-feld w-full">{{ a.text }}</textarea>
         </div>
     </div>
     {% endfor %}

@@ -206,6 +206,9 @@ MIDDLEWARE = [
     # Macht aus Eingaben, die nicht in ihr Feld passen (zu lang, zu gross, keine
     # Zahl), eine Meldung statt einer 500-Seite — siehe core/middleware_eingabe.py.
     'core.middleware_eingabe.EingabeFehlerMiddleware',
+    # Ganz innen, UNTER Common und GZip: Verbindet jedes `<label>` mit dem Feld daneben, damit ein
+    # Screenreader «Jahr» liest statt «Auswahl» (DESIGN-27, siehe core/utils/feldnamen.py).
+    'core.middleware_feldnamen.FeldnamenMiddleware',
 ]
 
 ROOT_URLCONF = 'swiss_immo.urls'
