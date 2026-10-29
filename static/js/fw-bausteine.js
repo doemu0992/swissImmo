@@ -32,6 +32,13 @@
     }
 
     function beschriftung(feld) {
+        // Eine Auswahl aus Karten oder Knöpfen: die Frage steht als <legend> im <fieldset>,
+        // die Beschriftung des einzelnen Knopfs ist sein Wert (siehe `wert`).
+        if (feld.type === 'radio') {
+            var fs = feld.closest('fieldset');
+            var lg = fs && fs.querySelector('legend');
+            if (lg) return lg.textContent.replace(/\*/g, '').trim();
+        }
         if (feld.id) {
             var l = document.querySelector('label[for="' + feld.id + '"]');
             if (l) return l.textContent.replace(/\*/g, '').trim();
@@ -46,7 +53,14 @@
 
     function wert(feld) {
         if (feld.type === 'checkbox') return feld.checked ? (feld.dataset.ja || '✓') : '';
-        if (feld.type === 'radio') return feld.checked ? beschriftung(feld) : '';
+        if (feld.type === 'radio') {
+            if (!feld.checked) return '';
+            var umschl = feld.closest('label');
+            return umschl ? umschl.textContent.replace(/\*/g, '').replace(/\s+/g, ' ').trim() : beschriftung(feld);
+        }
+        if (feld.type === 'file') {
+            return Array.prototype.map.call(feld.files || [], function (f) { return f.name; }).join(', ');
+        }
         if (feld.tagName === 'SELECT') {
             var o = feld.options[feld.selectedIndex];
             return o && feld.value ? o.textContent.trim() : '';

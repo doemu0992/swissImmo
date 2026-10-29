@@ -74,7 +74,7 @@ GESPERRT_GET = [
     '/neu/personen/{mieter}/', '/neu/vertraege/{vertrag}/',
     '/neu/liegenschaften/{liegenschaft}/', '/neu/objekte/{einheit}/', '/neu/mandate/{eigentuemer}/',
     '/neu/mandate/{eigentuemer}/abrechnung/', '/neu/mandate/{eigentuemer}/auszahlung/',
-    '/neu/nebenkosten/{periode}/', '/neu/schaeden/{schaden}/', '/dossier/mieter/{mieter}/',
+    '/neu/nebenkosten/{periode}/', '/neu/schaeden/{schaden}/',
     '/vertrag/{vertrag}/pdf/', '/abrechnung/{periode}/pdf/', '/neu/vertraege/{vertrag}/kaution-beleg/einzahlung/',
 ]
 

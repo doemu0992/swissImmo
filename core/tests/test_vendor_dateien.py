@@ -60,11 +60,12 @@ WURZEL = pathlib.Path(settings.BASE_DIR)
 #: die holen, die ausgeliefert wird. `^1.11.0` ergäbe heute bootstrap-icons
 #: 1.13.1: andere Schriftdatei, 28 Icons mehr, und der byteweise Nachweis in
 #: `docs/FREMDBIBLIOTHEKEN.md` wäre still hinfällig.
-VENDOR = {
-    'alpinejs': '3.13.3',
-    'signature_pad': '4.1.7',
-    'vue': '3.5.41',
-}
+VENDOR = {}
+# LEER SEIT ETAPPE 3 (29.10.2026): Alpine und Vue trugen nur noch die öffentliche Schadenmeldung und die
+# Bewerbung — beide laufen jetzt auf dem Assistenten der Anwendung (static/js/fw-bausteine.js). signature_pad
+# wurde von `modern_base.html` geladen, ohne dass irgendwo ein `SignaturePad` vorkam. Alle drei Dateien und
+# ihre Einträge in package.json sind entfallen: weniger Fremdcode, den man auf Schwachstellen beobachten muss.
+# Kommt eine Bibliothek zurück, wandert sie hierher mit ihrer Fassung (ohne Caret).
 
 #: Was nicht ins Repo geholt wurde, und warum es auch nicht zurueckkommen soll.
 #: bootstrap-icons hing als CDN-Verweis in `modern_base.html`, ohne dass eine
@@ -181,11 +182,8 @@ class VendorDateienTest(SimpleTestCase):
         # es lud, war `admin/dashboard_stats.html` — toter Code ohne Aufrufer,
         # doppelt vorhanden. Mit ihr fielen 204 KB weg, die niemand je geladen
         # hat. Die Bibliothek ist auch aus `package.json` entfernt.
-        for erwartet in ('js/alpine.min.js', 'js/vue.global.prod.js',
-                         'js/signature_pad.umd.min.js'):
-            self.assertIn(
-                erwartet, verweise,
-                f'`{erwartet}` wird von keiner Vorlage mehr geladen. Entweder '
-                'ist die Bibliothek weg — dann gehört sie aus package.json '
-                'und static/ ebenfalls heraus — oder der Verweis ist beim '
-                'Umbenennen verlorengegangen.')
+        # Etappe 3: Alpine, Vue und signature_pad werden von keiner Vorlage mehr geladen — und
+        # sind deshalb auch nicht mehr im Repo. Sie dürfen nicht stillschweigend zurückkehren.
+        for entfallen in ('js/alpine.min.js', 'js/vue.global.prod.js', 'js/signature_pad.umd.min.js'):
+            self.assertNotIn(entfallen, verweise, f'`{entfallen}` wird wieder geladen.')
+            self.assertIsNone(finders.find(entfallen), f'`{entfallen}` liegt wieder unter static/.')

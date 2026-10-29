@@ -1,7 +1,9 @@
-"""Anzeigenamen für den Raum- und Objektkatalog der öffentlichen Meldeformulare.
+"""Raum- und Objektkatalog der öffentlichen Meldeformulare, mit Anzeigenamen.
 
-`core/public_ticket_form.html` und `core/schaden_melden.html` führen Räume,
-Objekte und Anliegen als deutsche Wörter in ihren Alpine-Daten. Diese Wörter
+Das öffentliche Meldeformular (`core/schaden_melden.html`, erreichbar als
+`/schaden/melden/` und als Treppenhaus-Aushang `/report/<id>/`) führt Räume,
+Objekte und Anliegen als deutsche Wörter. Bis Etappe 3 standen sie doppelt in den
+Alpine-Daten zweier Vorlagen; jetzt stehen sie hier, einmal. Diese Wörter
 sind zugleich der GESPEICHERTE Wert: Sie landen als `raum`, `objekt`,
 `kategorie` bzw. im Titel der Meldung und werden von der Verwaltung gelesen,
 gefiltert und ausgewertet. Sie dürfen sich mit der Sprache nicht ändern.
@@ -80,6 +82,102 @@ BEGRIFFE = (
     pgettext_lazy('Raumkatalog', 'Klappe'), pgettext_lazy('Raumkatalog', 'Anderes'),
     pgettext_lazy('Raumkatalog', 'Sonstiges'),
 ) + ANLIEGEN
+
+
+# Die Räume, in der Reihenfolge der Auswahl: (deutscher Wert, Zeichen im Sprite).
+# «Anderer Raum» ist der Ausweg für alles, was die Liste nicht kennt (Garage,
+# Sitzplatz) — ohne ihn müsste man einen falschen Raum wählen, und die Verwaltung
+# bekäme einen Auftrag mit falschem Ort.
+RAEUME = (
+    ('Küche', 'kueche'), ('Bad', 'bad'), ('Korridor', 'korridor'), ('Zimmer', 'zimmer'),
+    ('Reduit', 'reduit'), ('Balkon/Terrasse', 'balkon'), ('Treppenhaus', 'treppenhaus'),
+    ('Waschküche', 'waschkueche'), ('Keller', 'keller'), ('Estrich', 'estrich'),
+    ('Veloraum', 'veloraum'), ('Briefkasten', 'briefkasten'), ('Anderer Raum', 'einheit'),
+)
+
+#: Was es in einem Raum gibt — aber nicht in jedem: Ein Briefkasten hat keine Decke, ein
+#: Balkon keine Steckdose. Wer das anwählt, meldet einen Schaden an etwas, das es dort
+#: nicht gibt, und die Verwaltung schickt einen Handwerker los (E2.51). `alle` gilt für
+#: die Innenräume, die hier nicht eigens aufgeführt sind.
+ALLGEMEIN = {
+    'alle': ('Licht', 'Steckdose', 'Fenster', 'Storen/Markise', 'Boden', 'Wand', 'Decke'),
+    'Reduit': ('Licht', 'Steckdose', 'Boden', 'Wand', 'Decke'),
+    'Balkon/Terrasse': ('Licht', 'Boden'),
+    'Keller': ('Licht', 'Steckdose', 'Boden', 'Wand', 'Decke'),
+    'Estrich': ('Licht', 'Boden', 'Wand', 'Decke'),
+    'Veloraum': ('Licht', 'Steckdose', 'Boden', 'Wand'),
+    'Treppenhaus': ('Licht', 'Boden', 'Wand', 'Decke', 'Fenster'),
+    'Briefkasten': (),
+}
+
+#: Gegenstände je Raum: (deutscher Wert, ist ein Gerät). Bei einem Gerät fragt das
+#: Aushang-Formular nach Marke und Seriennummer.
+OBJEKTE = {
+    'Küche': (('Kühlschrank', True), ('Geschirrspüler', True), ('Dampfabzug', True), ('Kochherd', True),
+              ('Backofen/Steamer', True), ('Spülbecken', False)),
+    'Bad': (('Lavabo', False), ('WC', False), ('Dusche', False), ('Badewanne', False),
+            ('Spiegelschrank', False), ('Lüftung', False)),
+    'Korridor': (('Wohnungstür', False), ('Gegensprechanlage', False), ('Einbauschrank', False)),
+    'Zimmer': (('Heizkörper', False), ('Einbauschrank', False), ('Zimmertür', False)),
+    'Reduit': (('Waschturm', True), ('Regal', False), ('Anschluss', False)),
+    'Balkon/Terrasse': (('Geländer', False), ('Sonnenstore', False), ('Abfluss', False), ('Balkontür', False)),
+    'Treppenhaus': (('Haustür', False), ('Treppe/Geländer', False), ('Lift', True)),
+    # `Secomat` steht hier seit jeher: ein Trocknungsgerät, in Schweizer Waschküchen so
+    # häufig wie der Tumbler und ein gängiger Störungsfall.
+    'Waschküche': (('Waschmaschine', True), ('Tumbler', True), ('Secomat', True),
+                   ('Waschbecken', False), ('Abfluss', False)),
+    'Keller': (('Kellerabteil', False), ('Kellertür', False), ('Feuchtigkeit', False)),
+    'Estrich': (('Estrichabteil', False), ('Dachfenster', False), ('Feuchtigkeit', False)),
+    'Veloraum': (('Veloständer', False), ('Tür/Schloss', False)),
+    'Briefkasten': (('Schloss', False), ('Beschriftung', False), ('Klappe', False)),
+    # Bewusst leer: Was dort steht, weiss nur die Meldung selbst.
+    'Anderer Raum': (),
+}
+
+#: Letzter Eintrag jeder Gegenstandsliste: der Ausweg für alles andere.
+ANDERES = 'Anderes'
+
+
+def _anzeige_tabelle():
+    """{deutscher Wert: Anzeige in der aktiven Sprache} für alle BEGRIFFE."""
+    with translation.override(None):
+        werte = [str(b) for b in BEGRIFFE]
+    return dict(zip(werte, (str(b) for b in BEGRIFFE)))
+
+
+def raum_katalog():
+    """Räume mit Gegenständen: [{'wert', 'anzeige', 'zeichen', 'objekte': [{'wert', 'anzeige', 'geraet'}]}].
+
+    Pro Raum zuerst, was dort steht, dann die allgemeinen Posten dieses Raums, zuletzt
+    «Anderes». Der Wert ist deutsch (er wird gespeichert), die Anzeige folgt der Sprache.
+    """
+    t = _anzeige_tabelle()
+    katalog = []
+    for raum, zeichen in RAEUME:
+        eigene = [(name, geraet) for name, geraet in OBJEKTE.get(raum, ())]
+        allgemein = [(name, False) for name in ALLGEMEIN.get(raum, ALLGEMEIN['alle'])]
+        objekte = [{'wert': n, 'anzeige': t[n], 'geraet': g} for n, g in eigene + allgemein + [(ANDERES, False)]]
+        katalog.append({'wert': raum, 'anzeige': t[raum], 'zeichen': zeichen, 'objekte': objekte})
+    return katalog
+
+
+register.simple_tag(raum_katalog, name='raum_katalog')
+
+
+#: Zeichen je Anliegen (docs/ZEICHEN.md: eines je Anliegen, kein Raumsymbol).
+ANLIEGEN_ZEICHEN = ('kritisch', 'senden', 'person', 'schluessel', 'dokument')
+
+
+def anliegen_karten():
+    """[{'wert' (deutsch, gespeichert), 'anzeige', 'zeichen', 'schaden'}] für die Auswahlkarten.
+
+    `schaden` ist wahr für die Schadensmeldung: Nur sie fragt nach Raum und Gegenstand.
+    """
+    return [{'wert': wert, 'anzeige': anzeige, 'zeichen': zeichen, 'schaden': i == 0}
+            for i, ((wert, anzeige), zeichen) in enumerate(zip(anliegen_auswahl(), ANLIEGEN_ZEICHEN))]
+
+
+register.simple_tag(anliegen_karten, name='anliegen_karten')
 
 
 @register.simple_tag

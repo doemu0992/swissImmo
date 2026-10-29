@@ -943,7 +943,7 @@ def fw_integrationen(request):
     integrationen = [
         {'key': 'email', 'name': _('E-Mail-Versand'), 'icon': 'senden', 'farbe': 'indigo',
          'aktiv': email_ok, 'status': _('Verbunden') if email_ok else _('Nicht konfiguriert'),
-         'beschreibung': _('Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über deinen SMTP-Server.'),
+         'beschreibung': _('Versende Mahnungen, Abrechnungen und Anschreiben direkt aus immoswiss über deinen SMTP-Server.'),
          'detail': (getattr(dj_settings, 'EMAIL_HOST', '') or '') if email_ok else _('E-Mail-Zugangsdaten in den Servereinstellungen hinterlegen.'),
          'aktion': 'test_email' if email_ok else None},
         {'key': 'docuseal', 'name': _('DocuSeal — digitale Signatur'), 'icon': 'vertrag', 'farbe': 'emerald',
@@ -1077,8 +1077,8 @@ def fw_integration_test_email(request):
             # Timeout, damit ein langsamer/nicht erreichbarer SMTP den Request nie blockiert.
             conn = get_connection(timeout=15)
             EmailMessage(
-                'swissImmo — Test-E-Mail',
-                'Diese Test-E-Mail bestätigt, dass der E-Mail-Versand korrekt konfiguriert ist.\n\nswissImmo',
+                'immoswiss — Test-E-Mail',
+                'Diese Test-E-Mail bestätigt, dass der E-Mail-Versand korrekt konfiguriert ist.\n\nimmoswiss',
                 getattr(dj_settings, 'DEFAULT_FROM_EMAIL', None),
                 [ziel], connection=conn,
             ).send(fail_silently=False)

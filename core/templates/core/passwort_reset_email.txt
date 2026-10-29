@@ -1,6 +1,6 @@
 Guten Tag
 
-Sie (oder jemand anderes) haben ein neues Passwort für das SwissImmo-Portal angefordert.
+Sie (oder jemand anderes) haben ein neues Passwort für das immoswiss-Portal angefordert.
 
 Neues Passwort setzen:
 {{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}

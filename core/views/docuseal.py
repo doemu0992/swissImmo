@@ -69,7 +69,7 @@ def link_callback(uri, rel):
 @require_POST
 def send_via_docuseal(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
-    DEFAULT_VERWALTUNG_NAME = getattr(settings, 'VERWALTUNG_NAME', "SwissImmo Verwaltung")
+    DEFAULT_VERWALTUNG_NAME = getattr(settings, 'VERWALTUNG_NAME', "immoswiss Verwaltung")
 
     # 1. Validierung
     api_key = getattr(settings, 'DOCUSEAL_API_KEY', None)

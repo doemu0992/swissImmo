@@ -1,29 +1,24 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Datenschutzerklärung – {{ verwaltung.firma|default:"Immobilienverwaltung" }}</title>
-{% include 'core/_assets_aussen.html' %}
-    <style>
-        body { font-family: 'IBM Plex Sans', sans-serif; }
-    </style>
-</head>
-<body class="fw-flaeche2 fw-strong antialiased">
+{% extends 'core/aussen_base.html' %}
+{% block title %}Datenschutzerklärung – {{ verwaltung.firma|default:"Immobilienverwaltung" }}{% endblock %}
+{% block eng %} eng{% endblock %}
+{% block content %}
 {% comment %}
     Ohne Anmeldung erreichbar — sie wird aus dem öffentlichen Bewerbungsformular
     verlinkt und muss dort lesbar sein, bevor jemand Daten abschickt.
     Die Angaben zur Verwaltung kommen aus dem Datensatz, damit hier kein
     zweiter, veraltender Ort für Firma und Adresse entsteht.
 {% endcomment %}
-<div class="max-w-3xl mx-auto px-4 py-12">
-    <h1 class="text-3xl font-bold mb-2">Datenschutzerklärung</h1>
-    <p class="text-sm fw-mutet mb-10">Stand: {{ stand|date:"d.m.Y" }}</p>
+<div class="fw-phead">
+    <div>
+        <h1>Datenschutzerklärung</h1>
+        <p>Stand: {{ stand|date:"d.m.Y" }}</p>
+    </div>
+</div>
 
-    <div class="fw-flaeche rounded-2xl border fw-linie p-8 space-y-8 leading-relaxed text-sm">
+<div class="fw-card"><div class="fw-rumpf fw-aussen-text">
 
         <section>
-            <h2 class="text-lg font-bold mb-2">1. Verantwortliche Stelle</h2>
+            <h2>1. Verantwortliche Stelle</h2>
             {% if mehrdeutig %}
             {% comment %} Ohne Objektbezug ist nicht bestimmbar, WELCHE Verwaltung die Daten
                erhebt. Eine geratene Firma waere schlimmer als keine: An dieser
@@ -43,46 +38,46 @@
         </section>
 
         <section>
-            <h2 class="text-lg font-bold mb-2">2. Welche Daten wir bearbeiten und wozu</h2>
-            <p class="font-bold mt-3">Wohnungsbewerbung</p>
+            <h2>2. Welche Daten wir bearbeiten und wozu</h2>
+            <p><strong>Wohnungsbewerbung</strong></p>
             <p>Zur Auswahl der Mieterschaft für ein bestimmtes Objekt: Name, Geburtsdatum,
             Kontaktangaben, Angaben zur Wohn- und Erwerbssituation, ungefähres Jahreseinkommen
             sowie ein Betreibungsregisterauszug. Ausweiskopie und Einkommensnachweise verlangen
             wir erst, wenn sich ein Vertragsabschluss konkretisiert — also von der ausgewählten
             Person oder einer engeren Auswahl, nicht von allen Interessentinnen und Interessenten.</p>
-            <p class="font-bold mt-3">Mietverhältnis</p>
+            <p><strong>Mietverhältnis</strong></p>
             <p>Zur Begründung, Verwaltung und Abwicklung des Mietvertrags: Stammdaten,
             Vertragsdaten, Zahlungen, Korrespondenz, Schaden- und Unterhaltsmeldungen.</p>
-            <p class="font-bold mt-3">Referenzauskünfte</p>
+            <p><strong>Referenzauskünfte</strong></p>
             <p>Geben Sie Kontaktangaben Ihrer bisherigen Vermieterschaft oder Ihres Arbeitgebers
             an, können wir diese für eine Referenzauskunft kontaktieren.</p>
         </section>
 
         <section>
-            <h2 class="text-lg font-bold mb-2">3. Wie lange wir die Daten aufbewahren</h2>
-            <table class="w-full text-left border-collapse mt-2">
+            <h2>3. Wie lange wir die Daten aufbewahren</h2>
+            <table>
                 <thead>
-                    <tr class="border-b fw-linie">
-                        <th class="py-2 pr-4 font-bold">Daten</th>
-                        <th class="py-2 font-bold">Dauer</th>
+                    <tr>
+                        <th>Daten</th>
+                        <th>Dauer</th>
                     </tr>
                 </thead>
-                <tbody class="align-top">
-                    <tr class="border-b fw-linie">
-                        <td class="py-2 pr-4">Unterlagen nicht berücksichtigter Bewerbungen</td>
-                        <td class="py-2">Löschung nach dem Vermietungsentscheid</td>
-                    </tr>
-                    <tr class="border-b fw-linie">
-                        <td class="py-2 pr-4">Übrige Angaben nicht berücksichtigter Bewerbungen</td>
-                        <td class="py-2">Anonymisierung spätestens nach einem Jahr</td>
-                    </tr>
-                    <tr class="border-b fw-linie">
-                        <td class="py-2 pr-4">Unterlagen der Mieterschaft</td>
-                        <td class="py-2">Während der Dauer des Mietverhältnisses</td>
+                <tbody>
+                    <tr>
+                        <td>Unterlagen nicht berücksichtigter Bewerbungen</td>
+                        <td>Löschung nach dem Vermietungsentscheid</td>
                     </tr>
                     <tr>
-                        <td class="py-2 pr-4">Buchungsbelege (Rechnungen, Zahlungen)</td>
-                        <td class="py-2">Zehn Jahre — gesetzliche Aufbewahrungspflicht (Art. 958f OR)</td>
+                        <td>Übrige Angaben nicht berücksichtigter Bewerbungen</td>
+                        <td>Anonymisierung spätestens nach einem Jahr</td>
+                    </tr>
+                    <tr>
+                        <td>Unterlagen der Mieterschaft</td>
+                        <td>Während der Dauer des Mietverhältnisses</td>
+                    </tr>
+                    <tr>
+                        <td>Buchungsbelege (Rechnungen, Zahlungen)</td>
+                        <td>Zehn Jahre — gesetzliche Aufbewahrungspflicht (Art. 958f OR)</td>
                     </tr>
                 </tbody>
             </table>
@@ -92,7 +87,7 @@
         </section>
 
         <section>
-            <h2 class="text-lg font-bold mb-2">4. Weitergabe</h2>
+            <h2>4. Weitergabe</h2>
             <p>Wir geben Ihre Daten nur weiter, soweit es für das Mietverhältnis nötig ist —
             etwa an die Eigentümerschaft, beauftragte Handwerksbetriebe für die Behebung eines
             gemeldeten Schadens, oder an Dienstleister für den Versand und die elektronische
@@ -101,7 +96,7 @@
         </section>
 
         <section>
-            <h2 class="text-lg font-bold mb-2">5. Ihre Rechte</h2>
+            <h2>5. Ihre Rechte</h2>
             <p>Sie haben das Recht auf <strong>Auskunft</strong> über die zu Ihnen bearbeiteten
             Daten, auf <strong>Berichtigung</strong> unrichtiger Angaben sowie auf
             <strong>Löschung</strong> oder Einschränkung der Bearbeitung, soweit keine
@@ -112,16 +107,12 @@
         </section>
 
         <section>
-            <h2 class="text-lg font-bold mb-2">6. Datensicherheit</h2>
+            <h2>6. Datensicherheit</h2>
             <p>Der Zugriff auf Ihre Daten ist auf die Personen beschränkt, die ihn für ihre
             Aufgabe brauchen; die Übertragung erfolgt verschlüsselt. Hochgeladene Unterlagen
             sind nicht öffentlich abrufbar.</p>
         </section>
-    </div>
+</div></div>
 
-    <p class="text-center text-xs fw-faint mt-8">
-        {% if not mehrdeutig %}{{ verwaltung.firma|default:"Immobilienverwaltung" }}{% endif %}
-    </p>
-</div>
-</body>
-</html>
+{% endblock %}
+{% block footer %}{% if not mehrdeutig %}{{ verwaltung.firma|default:"Immobilienverwaltung" }}{% endif %}{% endblock %}

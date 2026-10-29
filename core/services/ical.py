@@ -52,11 +52,11 @@ def _esc(text):
             .replace(';', '\\;').replace('\n', '\\n').replace('\r', ''))
 
 
-def build_ics(events, name='swissImmo Fristen'):
+def build_ics(events, name='immoswiss Fristen'):
     """events: Liste dicts mit uid, date (datetime.date), summary, description."""
     import datetime
     stamp = timezone.now().strftime('%Y%m%dT%H%M%SZ')
-    out = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//swissImmo//Fristen//DE',
+    out = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//immoswiss//Fristen//DE',
            'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
            f'X-WR-CALNAME:{_esc(name)}', 'X-PUBLISHED-TTL:PT6H']
     for e in events:

@@ -1,5 +1,15 @@
 # Fremdbibliotheken im Repo
 
+> **Stand 29.10.2026 (Etappe 3): Es liegt keine Fremdbibliothek mehr unter `static/js/`.**
+> Alpine und Vue trugen nur noch die öffentliche Schadenmeldung und das Bewerbungsformular; beide
+> laufen jetzt auf dem Assistenten der Anwendung (`static/js/fw-bausteine.js`, dazu `fw-meldung.js`
+> und `fw-bewerbung.js`). `signature_pad` wurde von `modern_base.html` geladen, ohne dass irgendwo
+> ein `SignaturePad` vorkam. Die drei Dateien und ihre Einträge in `package.json`/`package-lock.json`
+> sind entfernt (`npm uninstall … --package-lock-only`, nur Streichungen). Der Rest dieses Dokuments
+> beschreibt den Weg dorthin und bleibt als Begründung stehen, warum Fremdcode nicht still
+> zurückkehren soll (`core/tests/test_vendor_dateien.py` sperrt es).
+
+
 Fünf Bibliotheken kamen bis E2.23 zur Laufzeit von `cdn.jsdelivr.net` und
 `unpkg.com`. Drei der vier Vorlagen, die sie luden, sind öffentlich: jeder
 Aufruf schickte die IP-Adresse eines Mieters oder Bewerbers an einen Dritten,

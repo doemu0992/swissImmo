@@ -45,7 +45,10 @@ V11 (26.10.2026): Portal-Badge auf `fw-krit-voll` statt Fläche + `text-white`
 — `mieter_portal` (3 → 2): 135 in 20.
 Production-Check (26.10.2026): tote Vorlage `core/mietzins_form.html` (73)
 geloescht, alte Reiter-Umschaltung aus `base.html` (1 → 0), Admin-Koepfe auf das
-Ember-Schema (`text-primary-600` statt Blau): **STAND 55 in 15 Vorlagen**.
+Ember-Schema (`text-primary-600` statt Blau): 55 in 15.
+Etappe 3 (29.10.2026): Dossier entfallen (7), öffentliche Formulare, Datenschutz und Absageseite auf der
+Hülle `core/aussen_base.html` und den Bausteinen der Schicht, Passwort-Rückweg auf `fw-link`:
+**STAND 42 in 9 Vorlagen**.
 
 E2.84: DAS OVERLAY IST AUSGEBAUT — UND DIE WARNUNG VON E2.20 GEPRUEFT
 ---------------------------------------------------------------------
@@ -280,17 +283,11 @@ FARBMUSTER = re.compile(
 
 OBERGRENZE = {
     'core/templates/admin/finance/abrechnung_vorschau.html': 30,
-    'core/templates/core/_passwort_shell_bottom.html': 2,
-    'core/templates/core/dossier/base.html': 7,
     'core/templates/core/mieter_kuendigung.html': 1,
     'core/templates/core/mieter_portal.html': 2,
     'core/templates/core/mieter_rechnungen.html': 1,
-    'core/templates/core/mieter_schaden.html': 1,
     'core/templates/core/mieter_ticket_detail.html': 1,
     'core/templates/core/mieter_tickets.html': 2,
-    'core/templates/core/public_bewerbung_form.html': 1,
-    'core/templates/core/public_ticket_form.html': 1,
-    'core/templates/core/schaden_melden.html': 1,
     'core/templates/fw/_pipeline.html': 1,
     'core/templates/fw/_schicht.html': 2,
     'core/templates/fw/schaden_detail.html': 2,

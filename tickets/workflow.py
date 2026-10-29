@@ -366,7 +366,7 @@ def _ics(auftrag, termin_am, absagen=False):
     fmt = '%Y%m%dT%H%M%SZ'
     def esc(x):
         return str(x).replace('\\', '\\\\').replace(';', '\;').replace(',', '\\,').replace('\n', '\\n')
-    zeilen = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//swissImmo//Ticket//DE',
+    zeilen = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//immoswiss//Ticket//DE',
               'METHOD:CANCEL' if absagen else 'METHOD:PUBLISH', 'BEGIN:VEVENT',
               f'UID:auftrag-{auftrag.pk}@swissimmo',
               f"DTSTAMP:{start.strftime(fmt)}", f"DTSTART:{start.strftime(fmt)}",

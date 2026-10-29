@@ -43,18 +43,24 @@ class OeffentlichesFormularTests(TestCase):
         r = Client().get(f'/bewerben/{self.einheit.id}/')
         self.assertEqual(r.status_code, 200)
         html = r.content.decode()
-        for verboten in ('form.geschlecht', 'form.nationalitaet', 'form.heimatort',
+        # Seit Etappe 3 ein Formular mit `name=`-Feldern (vorher Vue mit `form.<feld>`).
+        for verboten in ('name="geschlecht"', 'name="nationalitaet"', 'name="heimatort"',
                          'Nationalität</label>', 'Heimatort (für Schweizer)', 'Geschlecht</label>'):
             self.assertNotIn(verboten, html, f'«{verboten}» darf im öffentlichen Formular nicht stehen')
         # Gegenrichtung: Das Formular ist sonst vollständig (Vorname/Geburtsdatum bleiben).
-        self.assertIn('form.vorname', html)
-        self.assertIn('form.geburtsdatum', html)
+        self.assertIn('name="vorname"', html)
+        self.assertIn('name="geburtsdatum"', html)
 
     def test_der_abschickende_code_sendet_die_felder_nicht(self):
-        """Das Formular schickt `form` als FormData; ein Vorgabewert «Schweiz» im Skript wäre ein Datenfehler."""
+        """Das Formular schickt seine Felder als FormData; ein Vorgabewert «Schweiz» im Skript wäre ein Datenfehler."""
+        from pathlib import Path
         html = Client().get(f'/bewerben/{self.einheit.id}/').content.decode()
-        self.assertNotIn("nationalitaet: 'Schweiz'", html)
-        self.assertNotIn("geschlecht: 'weiblich'", html)
+        skript = (Path(__file__).resolve().parents[2] / 'static' / 'js' / 'fw-bewerbung.js').read_text(encoding='utf-8')
+        for quelle in (html, skript):
+            self.assertNotIn("nationalitaet: 'Schweiz'", quelle)
+            self.assertNotIn("geschlecht: 'weiblich'", quelle)
+            self.assertNotIn('nationalitaet', quelle)
+            self.assertNotIn('heimatort', quelle)
 
 
 class ApiTests(TestCase):

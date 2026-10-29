@@ -123,7 +123,7 @@ def passendes_fenster(geheimnis: str, eingabe: str, zeitpunkt: float | None = No
     return None
 
 
-def einrichtungs_url(geheimnis: str, konto: str, herausgeber: str = 'swissImmo') -> str:
+def einrichtungs_url(geheimnis: str, konto: str, herausgeber: str = 'immoswiss') -> str:
     """Die `otpauth://`-Adresse, die die Authenticator-App einliest.
 
     Das Format ist nicht in einer RFC festgehalten, sondern eine Festlegung

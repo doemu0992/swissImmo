@@ -1,11 +1,11 @@
 {% extends 'fw/base.html' %}
 {% load zeichen %}
-{% block title %}Rechtsgrundlagen — swissImmo{% endblock %}
+{% block title %}Rechtsgrundlagen — immoswiss{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <div>
         <h1>Rechtsgrundlagen</h1>
-        <p>Mietrechtliche Artikel aus OR, VMWG und ZGB — mit Kurzfassung, Stichworten und Link zum amtlichen Volltext bei Fedlex. Wo ein Artikel in swissImmo angewandt wird, ist es vermerkt.</p>
+        <p>Mietrechtliche Artikel aus OR, VMWG und ZGB — mit Kurzfassung, Stichworten und Link zum amtlichen Volltext bei Fedlex. Wo ein Artikel in immoswiss angewandt wird, ist es vermerkt.</p>
     </div>
 </div>
 
@@ -39,7 +39,7 @@
             <div class="fw-s"><span>{{ a.kurz }}</span></div>
             {% if a.anwendung %}
             <div class="fw-s"><span class="fw-gut">
-                {% zeichen 'einstellungen' %} In swissImmo: {{ a.anwendung }}
+                {% zeichen 'einstellungen' %} In immoswiss: {{ a.anwendung }}
             </span></div>
             {% endif %}
             {% if a.stichworte %}

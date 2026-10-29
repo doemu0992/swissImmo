@@ -262,7 +262,7 @@ def fw_fristen_ical(request):
     basis = _global_filter(request)
     ics = build_ics(fristen_events(_offene_fristen_pendenzen(basis['aktive_lg'])))
     resp = HttpResponse(ics, content_type='text/calendar; charset=utf-8')
-    resp['Content-Disposition'] = 'attachment; filename="swissimmo-fristen.ics"'
+    resp['Content-Disposition'] = 'attachment; filename="immoswiss-fristen.ics"'
     return resp
 
 
@@ -285,7 +285,7 @@ def fristen_ical_feed(request):
     with kontext_des_objekts(organisation):
         ics = build_ics(fristen_events(_offene_fristen_pendenzen()))
     resp = HttpResponse(ics, content_type='text/calendar; charset=utf-8')
-    resp['Content-Disposition'] = 'inline; filename="swissimmo-fristen.ics"'
+    resp['Content-Disposition'] = 'inline; filename="immoswiss-fristen.ics"'
     return resp
 
 

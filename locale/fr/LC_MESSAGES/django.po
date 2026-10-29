@@ -910,8 +910,8 @@ msgstr ""
 "nouveau."
 
 #: core/templates/403.html:6
-msgid "Keine Berechtigung – swissImmo"
-msgstr "Accès refusé – swissImmo"
+msgid "Keine Berechtigung — immoswiss"
+msgstr "Accès refusé — immoswiss"
 
 #: core/templates/403.html:24
 msgid "Dafür fehlt Ihrer Rolle die Berechtigung"
@@ -932,8 +932,8 @@ msgid "Zur Übersicht"
 msgstr "Vers la vue d'ensemble"
 
 #: core/templates/404.html:6
-msgid "Seite nicht gefunden – swissImmo"
-msgstr "Page introuvable – swissImmo"
+msgid "Seite nicht gefunden — immoswiss"
+msgstr "Page introuvable — immoswiss"
 
 #: core/templates/404.html:22
 msgid "Seite nicht gefunden"
@@ -948,8 +948,8 @@ msgstr ""
 "le lien est obsolète."
 
 #: core/templates/500.html:6
-msgid "Ein Fehler ist aufgetreten – swissImmo"
-msgstr "Une erreur est survenue – swissImmo"
+msgid "Ein Fehler ist aufgetreten — immoswiss"
+msgstr "Une erreur est survenue — immoswiss"
 
 #: core/templates/500.html:23
 msgid "Ein Fehler ist aufgetreten"
@@ -1033,8 +1033,8 @@ msgid "Zurück zur Anmeldung"
 msgstr "Retour à la connexion"
 
 #: core/templates/core/_passwort_shell_top.html:7
-msgid "Passwort | SwissImmo Portal"
-msgstr "Mot de passe | Portail SwissImmo"
+msgid "Passwort — immoswiss"
+msgstr "Mot de passe — immoswiss"
 
 #: core/templates/core/_passwort_shell_top.html:18
 #: core/templates/core/login.html:187
@@ -1465,8 +1465,8 @@ msgid "Unterschrift Mieter"
 msgstr "Signature du locataire"
 
 #: core/templates/core/login.html:6
-msgid "Login | SwissImmo Portal"
-msgstr "Connexion | Portail SwissImmo"
+msgid "Login — immoswiss"
+msgstr "Connexion — immoswiss"
 
 #: core/templates/core/login.html:146
 msgid "Ihre Liegenschaften, sauber im Griff."
@@ -1493,8 +1493,8 @@ msgid "Eigentümer- &amp; Mieterportal inklusive"
 msgstr "Portails propriétaires &amp; locataires inclus"
 
 #: core/templates/core/login.html:154
-msgid "© swissImmo · Alle Angaben ohne Gewähr"
-msgstr "© swissImmo · Toutes les indications sans garantie"
+msgid "© immoswiss · Alle Angaben ohne Gewähr"
+msgstr "© immoswiss · Toutes les indications sans garantie"
 
 #: core/templates/core/login.html:164
 #: core/templates/core/portal_login.html:166
@@ -1730,8 +1730,8 @@ msgid "Neues Passwort wiederholen"
 msgstr "Répéter le nouveau mot de passe"
 
 #: core/templates/core/mieter_portal.html:4
-msgid "Mieterportal — SwissImmo"
-msgstr "Portail locataires — SwissImmo"
+msgid "Mieterportal — immoswiss"
+msgstr "Portail locataires — immoswiss"
 
 #: core/templates/core/mieter_portal.html:6
 #: core/templates/core/mieter_portal.html:7
@@ -2105,8 +2105,8 @@ msgstr ""
 "lien de réinitialisation. Vérifiez aussi le dossier des spams."
 
 #: core/templates/core/portal.html:6
-msgid "Eigentümer-Portal — SwissImmo"
-msgstr "Portail propriétaires — SwissImmo"
+msgid "Eigentümer-Portal — immoswiss"
+msgstr "Portail propriétaires — immoswiss"
 
 #: core/templates/core/portal.html:199
 msgid "Eigentümer-Portal"
@@ -2277,13 +2277,13 @@ msgstr ""
 "vous adresser à votre gérance pour que l'accès soit activé."
 
 #: core/templates/core/portal.html:344
-msgid "SwissImmo Eigentümer-Portal · Alle Angaben ohne Gewähr"
+msgid "immoswiss Eigentümer-Portal · Alle Angaben ohne Gewähr"
 msgstr ""
-"Portail propriétaires SwissImmo · Toutes les indications sans garantie"
+"Portail propriétaires immoswiss · Toutes les indications sans garantie"
 
 #: core/templates/core/portal_base.html:7
-msgid "Portal — SwissImmo"
-msgstr "Portail — SwissImmo"
+msgid "Portal — immoswiss"
+msgstr "Portail — immoswiss"
 
 #: core/templates/core/portal_base.html:32 core/templates/fw/base.html:138
 msgid "Menü schliessen"
@@ -2294,12 +2294,12 @@ msgid "Menü öffnen"
 msgstr "Ouvrir le menu"
 
 #: core/templates/core/portal_base.html:70
-msgid "SwissImmo Mieterportal · Alle Angaben ohne Gewähr"
-msgstr "Portail locataires SwissImmo · Toutes les indications sans garantie"
+msgid "immoswiss Mieterportal · Alle Angaben ohne Gewähr"
+msgstr "Portail locataires immoswiss · Toutes les indications sans garantie"
 
 #: core/templates/core/portal_login.html:6
-msgid "Portal-Login | SwissImmo"
-msgstr "Connexion au portail | SwissImmo"
+msgid "Portal-Login — immoswiss"
+msgstr "Connexion au portail — immoswiss"
 
 #: core/templates/core/portal_login.html:148
 msgid "Ihr persönliches Immobilien-Portal"
@@ -2326,12 +2326,12 @@ msgid "Schaden melden &amp; Kündigung erfassen"
 msgstr "Signaler un dégât &amp; saisir une résiliation"
 
 #: core/templates/core/portal_login.html:156
-msgid "© swissImmo · Sicheres Login für Mietende und Eigentümer"
-msgstr "© swissImmo · Connexion sécurisée pour locataires et propriétaires"
+msgid "© immoswiss · Sicheres Login für Mietende und Eigentümer"
+msgstr "© immoswiss · Connexion sécurisée pour locataires et propriétaires"
 
 #: core/templates/core/portal_login.html:163
-msgid "swissImmo Portal"
-msgstr "Portail swissImmo"
+msgid "immoswiss Portal"
+msgstr "Portail immoswiss"
 
 #: core/templates/core/portal_login.html:167
 msgid "Bitte melden Sie sich in Ihrem Portal an."
@@ -2363,8 +2363,8 @@ msgid "Postfach"
 msgstr "Boîte aux lettres"
 
 #: core/templates/core/postfach_form.html:8
-msgid "Zugangsdaten des Postfachs, aus dem swissImmo diese Mails abholt."
-msgstr "Accès de la boîte aux lettres dont swissImmo récupère ces e-mails."
+msgid "Zugangsdaten des Postfachs, aus dem immoswiss diese Mails abholt."
+msgstr "Accès de la boîte aux lettres dont immoswiss récupère ces e-mails."
 
 #: core/templates/core/postfach_form.html:23
 msgid ""
@@ -3062,11 +3062,11 @@ msgstr "Activer"
 
 #: core/templates/core/zweifaktor_uebersicht.html:8
 msgid ""
-"Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt swissImmo einen "
+"Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt immoswiss einen "
 "Code aus Ihrer Authenticator-App."
 msgstr ""
 "Protection supplémentaire pour votre compte : après le mot de passe, "
-"swissImmo demande un code de votre application d'authentification."
+"immoswiss demande un code de votre application d'authentification."
 
 #: core/templates/core/zweifaktor_uebersicht.html:24
 #: core/templates/fw/abonnement.html:38
@@ -3718,10 +3718,6 @@ msgstr "Valeur à neuf CHF"
 #: core/templates/fw/abnahme_neu.html:108
 msgid "Neuwert (optional, sonst vom Element)"
 msgstr "Valeur à neuf (facultatif, sinon celle de l'élément)"
-
-#: core/templates/fw/abonnement.html:3
-msgid "Abonnement · swissImmo"
-msgstr "Abonnement · swissImmo"
 
 #: core/templates/fw/abonnement.html:7 core/views/fw/aktionen.py:865
 msgid "Abonnement"
@@ -7520,8 +7516,8 @@ msgid "Integrationen"
 msgstr "Intégrations"
 
 #: core/templates/fw/integrationen.html:8
-msgid "Verbundene Dienste und Schnittstellen von swissImmo."
-msgstr "Services connectés et interfaces de swissImmo."
+msgid "Verbundene Dienste und Schnittstellen von immoswiss."
+msgstr "Services connectés et interfaces de immoswiss."
 
 #: core/templates/fw/integrationen.html:36
 msgid "Test-E-Mail senden"
@@ -18914,10 +18910,10 @@ msgstr "Non configuré"
 
 #: core/views/fw/profil.py:902
 msgid ""
-"Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über "
+"Versende Mahnungen, Abrechnungen und Anschreiben direkt aus immoswiss über "
 "deinen SMTP-Server."
 msgstr ""
-"Envoie rappels, décomptes et courriers directement depuis swissImmo via ton "
+"Envoie rappels, décomptes et courriers directement depuis immoswiss via ton "
 "serveur SMTP."
 
 #: core/views/fw/profil.py:903
@@ -30794,11 +30790,11 @@ msgstr "Aucun message pour l'instant."
 msgid "Auftraggeberin: %(firma)s"
 msgstr "Mandant : %(firma)s"
 
-msgid "Auftrag — SwissImmo"
-msgstr "Mandat — SwissImmo"
+msgid "Auftrag — immoswiss"
+msgstr "Mandat — immoswiss"
 
-msgid "SwissImmo · Auftrag für Handwerker"
-msgstr "SwissImmo · Mandat pour artisan"
+msgid "immoswiss · Auftrag für Handwerker"
+msgstr "immoswiss · Mandat pour artisan"
 
 msgid "Was möchten Sie tun?"
 msgstr "Que souhaitez-vous faire ?"
@@ -34551,8 +34547,8 @@ msgstr ""
 msgid "Die Eingabe wurde nicht gespeichert."
 msgstr "La saisie n'a pas été enregistrée."
 
-msgid "Ungültige Eingabe – swissImmo"
-msgstr "Saisie non valable – swissImmo"
+msgid "Ungültige Eingabe — immoswiss"
+msgstr "Saisie non valable — immoswiss"
 
 msgid "Ungültige Eingabe"
 msgstr "Saisie non valable"
@@ -35555,3 +35551,268 @@ msgstr ""
 "Erreur : la facture QR pour %(einheit)s n'a pas pu être créée (%(fehler)s). "
 "Le PDF n'a pas été remis afin qu'aucun rappel de paiement ne soit envoyé "
 "sans bulletin de versement."
+
+# --- Öffentliche Formulare, Aussenseiten (Etappe 3, 29.10.2026) ---
+
+msgid "Alle Angaben ohne Gewähr"
+msgstr "Toutes les indications sans garantie"
+
+msgid "Schaden oder Anliegen melden"
+msgstr "Signaler un dommage ou une demande"
+
+msgid "Ihre Meldung geht direkt an die Verwaltung."
+msgstr "Votre annonce est transmise directement à la gérance."
+
+msgid "Prüfen & absenden"
+msgstr "Vérifier et envoyer"
+
+msgid "Was ist passiert? Ein Foto hilft der Verwaltung, das Problem schneller einzuschätzen."
+msgstr "Que s'est-il passé ? Une photo aide la gérance à évaluer plus vite le problème."
+
+msgid "Bitte beschreiben Sie das Anliegen."
+msgstr "Veuillez décrire votre demande."
+
+msgid "Wie die Verwaltung Sie erreicht."
+msgstr "Comment la gérance peut vous joindre."
+
+msgid "Wir konnten Ihre Meldung keiner Liegenschaft zuordnen. Bitte verwenden Sie die E-Mail-Adresse, die bei Ihrer Verwaltung hinterlegt ist, oder melden Sie sich direkt bei Ihrer Verwaltung."
+msgstr "Nous n'avons pas pu attribuer votre annonce à un immeuble. Veuillez utiliser l'adresse e-mail enregistrée auprès de votre gérance ou vous adresser directement à elle."
+
+msgid "Dieses Objekt ist nicht mehr ausgeschrieben"
+msgstr "Cet objet n'est plus mis en location"
+
+msgid "Die Ausschreibung wurde beendet — vermutlich ist die Wohnung bereits vergeben. Bewerbungen können dafür keine mehr entgegengenommen werden."
+msgstr "L'annonce a été retirée — l'appartement est probablement déjà attribué. Plus aucune candidature ne peut être reçue pour cet objet."
+
+msgid "Bei Fragen wenden Sie sich bitte direkt an die Verwaltung."
+msgstr "Pour toute question, veuillez vous adresser directement à la gérance."
+
+#, python-format
+msgid "Bewerbung: %(name)s"
+msgstr "Candidature : %(name)s"
+
+msgid "Digitale Bewerbung"
+msgstr "Candidature numérique"
+
+msgid "Bewerbung eingereicht!"
+msgstr "Candidature envoyée !"
+
+msgid "Vielen Dank für Ihr Interesse. Wir haben Ihre Unterlagen erhalten und werden diese nun prüfen. Wir melden uns in Kürze bei Ihnen."
+msgstr "Merci de votre intérêt. Nous avons bien reçu vos documents et allons maintenant les examiner. Nous reviendrons vers vous prochainement."
+
+msgid "Die Verbindung wurde unterbrochen. Bitte versuchen Sie es erneut."
+msgstr "La connexion a été interrompue. Veuillez réessayer."
+
+msgid "Die Bewerbung konnte nicht gesendet werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut."
+msgstr "La candidature n'a pas pu être envoyée. Veuillez recharger la page et réessayer."
+
+msgid "Ein unbekannter Fehler ist aufgetreten."
+msgstr "Une erreur inconnue s'est produite."
+
+msgid "Bitte füllen Sie alle Formularfelder korrekt aus."
+msgstr "Veuillez remplir correctement tous les champs du formulaire."
+
+msgid "Prüfen & einreichen"
+msgstr "Vérifier et envoyer"
+
+msgid "Wer bewirbt sich?"
+msgstr "Qui postule ?"
+
+msgid "Bitte geben Sie Ihren Vornamen an."
+msgstr "Veuillez indiquer votre prénom."
+
+msgid "Bitte geben Sie Ihren Nachnamen an."
+msgstr "Veuillez indiquer votre nom."
+
+msgid "Bitte geben Sie Ihr Geburtsdatum an."
+msgstr "Veuillez indiquer votre date de naissance."
+
+msgid "Kontakt & Adresse"
+msgstr "Contact et adresse"
+
+msgid "Wie wir Sie erreichen und wo Sie heute wohnen."
+msgstr "Comment vous joindre et où vous habitez aujourd'hui."
+
+msgid "Mobilnummer"
+msgstr "Numéro de mobile"
+
+msgid "Bitte geben Sie Ihre Mobilnummer an."
+msgstr "Veuillez indiquer votre numéro de mobile."
+
+msgid "Bitte geben Sie Ihre E-Mail-Adresse an."
+msgstr "Veuillez indiquer votre adresse e-mail."
+
+msgid "Aktuelle Adresse (Strasse, Nr.)"
+msgstr "Adresse actuelle (rue, n°)"
+
+msgid "Bitte geben Sie Ihre Adresse an."
+msgstr "Veuillez indiquer votre adresse."
+
+msgid "Bitte geben Sie die Postleitzahl an."
+msgstr "Veuillez indiquer le code postal."
+
+msgid "Bitte geben Sie den Ort an."
+msgstr "Veuillez indiquer la localité."
+
+msgid "Aktuelles Mietverhältnis"
+msgstr "Bail actuel"
+
+msgid "Aktueller Vermieter / Verwaltung"
+msgstr "Bailleur / gérance actuel(le)"
+
+msgid "Bitte geben Sie Ihre aktuelle Vermieterschaft an."
+msgstr "Veuillez indiquer votre bailleur actuel."
+
+msgid "Telefon Vermieter"
+msgstr "Téléphone du bailleur"
+
+msgid "Bitte geben Sie die Telefonnummer Ihrer Vermieterschaft an."
+msgstr "Veuillez indiquer le numéro de téléphone de votre bailleur."
+
+msgid "Grund für den Umzug"
+msgstr "Motif du déménagement"
+
+msgid "Angaben zu Ihrer Erwerbstätigkeit und Ihrem ungefähren Einkommen."
+msgstr "Informations sur votre activité professionnelle et votre revenu approximatif."
+
+msgid "Bitte geben Sie Ihren Beruf an."
+msgstr "Veuillez indiquer votre profession."
+
+msgid "Bruttoeinkommen im Jahr (CHF)"
+msgstr "Revenu brut annuel (CHF)"
+
+msgid "weniger als 30’000"
+msgstr "moins de 30’000"
+
+msgid "mehr als 160’000"
+msgstr "plus de 160’000"
+
+msgid "Bitte geben Sie Ihren Arbeitgeber an."
+msgstr "Veuillez indiquer votre employeur."
+
+msgid "Angestellt seit"
+msgstr "Employé depuis"
+
+msgid "Bitte geben Sie an, seit wann Sie angestellt sind."
+msgstr "Veuillez indiquer depuis quand vous êtes employé(e)."
+
+msgid "Tel. Arbeitgeber"
+msgstr "Tél. employeur"
+
+msgid "Bitte geben Sie die Telefonnummer Ihres Arbeitgebers an."
+msgstr "Veuillez indiquer le numéro de téléphone de votre employeur."
+
+msgid "Anstellung ist unbefristet"
+msgstr "L'emploi est à durée indéterminée"
+
+msgid "Betreibungen in den letzten 2 Jahren?"
+msgstr "Poursuites au cours des 2 dernières années ?"
+
+msgid "Falls ja, bitte im letzten Schritt den Auszug hochladen."
+msgstr "Si oui, veuillez téléverser l'extrait à la dernière étape."
+
+msgid "Wer einzieht, und was für Sie sonst wichtig ist."
+msgstr "Qui emménage, et ce qui compte par ailleurs pour vous."
+
+msgid "Anzahl Erwachsene"
+msgstr "Nombre d'adultes"
+
+msgid "Anzahl Kinder"
+msgstr "Nombre d'enfants"
+
+msgid "Gibt es Haustiere?"
+msgstr "Y a-t-il des animaux domestiques ?"
+
+msgid "Welche Tiere? (Rasse/Art)"
+msgstr "Quels animaux ? (race/espèce)"
+
+msgid "Spielt jemand ein Instrument?"
+msgstr "Quelqu'un joue-t-il d'un instrument ?"
+
+msgid "Interesse an Parkplatz/Garage?"
+msgstr "Intéressé(e) par une place de parc/un garage ?"
+
+msgid "Schilder & Kaution"
+msgstr "Plaquettes et garantie"
+
+msgid "Text für Briefkasten"
+msgstr "Texte pour la boîte aux lettres"
+
+msgid "z.B. Muster"
+msgstr "p. ex. Dupont"
+
+msgid "Text für Klingel"
+msgstr "Texte pour la sonnette"
+
+msgid "Wunsch-Kautionsart"
+msgstr "Type de garantie souhaité"
+
+msgid "Klassisches Bankdepot (Mietzinskonto)"
+msgstr "Dépôt bancaire classique (compte de garantie de loyer)"
+
+msgid "Kautionsversicherung (z.B. Swisskaution)"
+msgstr "Assurance-cautionnement (p. ex. Swisscaution)"
+
+msgid "Unterlagen"
+msgstr "Documents"
+
+msgid "Betreibungsauszug und gewünschter Bezugstermin."
+msgstr "Extrait du registre des poursuites et date d'entrée souhaitée."
+
+msgid "Betreibungsregisterauszug"
+msgstr "Extrait du registre des poursuites"
+
+msgid "Nicht älter als 3 Monate."
+msgstr "Pas plus ancien que 3 mois."
+
+msgid "Auszug nachreichen"
+msgstr "Fournir l'extrait plus tard"
+
+msgid "Auszug hochladen"
+msgstr "Téléverser l'extrait"
+
+msgid "Bitte laden Sie einen Betreibungsauszug hoch oder wählen Sie «Auszug nachreichen»."
+msgstr "Veuillez téléverser un extrait du registre des poursuites ou choisir « Fournir l'extrait plus tard »."
+
+msgid "Keinen aktuellen Auszug zur Hand?"
+msgstr "Pas d'extrait récent sous la main ?"
+
+msgid "Hier beim Bund online bestellen (PDF)"
+msgstr "Commander en ligne auprès de la Confédération (PDF)"
+
+msgid "Weitere Dokumente (Optional)"
+msgstr "Autres documents (facultatif)"
+
+msgid "Motivationsschreiben, Referenzen etc."
+msgstr "Lettre de motivation, références, etc."
+
+msgid "Bitte wählen Sie einen gewünschten Bezugstermin aus."
+msgstr "Veuillez choisir une date d'entrée souhaitée."
+
+msgid "Ausweis und Einkommensnachweis"
+msgstr "Pièce d'identité et justificatif de revenu"
+
+msgid "Diese Unterlagen fragen wir erst an, wenn Sie in die engere Auswahl kommen — nicht schon jetzt von allen Interessentinnen und Interessenten."
+msgstr "Nous ne demandons ces documents que si vous entrez dans le choix restreint — pas déjà maintenant à tous les intéressés."
+
+msgid "Was mit Ihren Angaben geschieht"
+msgstr "Ce qu'il advient de vos données"
+
+#, python-format
+msgid "Ausführlich in der <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\" class=\"fw-link\">Datenschutzerklärung</a>."
+msgstr "Détails dans la <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\" class=\"fw-link\">déclaration de protection des données</a>."
+
+msgid "Verbindlich einreichen"
+msgstr "Envoyer de manière définitive"
+
+msgid "Ihre Angaben dienen <strong>ausschliesslich</strong> der Auswahl der Mieterschaft für dieses Objekt und werden für nichts anderes verwendet."
+msgstr "Vos indications servent <strong>exclusivement</strong> à choisir les locataires de cet objet et ne sont utilisées à aucune autre fin."
+
+msgid "Die angegebenen Kontakte bei Ihrer bisherigen Vermieterschaft und Ihrem Arbeitgeber können wir für eine <strong>Referenzauskunft kontaktieren</strong>."
+msgstr "Nous pouvons <strong>contacter pour une demande de référence</strong> les personnes indiquées chez votre bailleur actuel et votre employeur."
+
+msgid "Erhalten Sie die Wohnung nicht, werden Ihre Unterlagen einschliesslich Betreibungsauszug nach dem Vermietungsentscheid <strong>gelöscht</strong>."
+msgstr "Si vous n'obtenez pas l'appartement, vos documents, y compris l'extrait du registre des poursuites, sont <strong>supprimés</strong> après la décision de location."
+
+msgid "Sie haben jederzeit das Recht auf <strong>Auskunft, Berichtigung und Löschung</strong> Ihrer Daten."
+msgstr "Vous avez en tout temps le droit à des <strong>renseignements, à la rectification et à la suppression</strong> de vos données."

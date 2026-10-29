@@ -1,6 +1,6 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
-{% block title %}{% if ist_neu %}{% trans "Neuer Eigentümer" %}{% else %}{% blocktrans with name=md.firma_oder_name %}{{ name }} bearbeiten{% endblocktrans %}{% endif %} — swissImmo{% endblock %}
+{% block title %}{% if ist_neu %}{% trans "Neuer Eigentümer" %}{% else %}{% blocktrans with name=md.firma_oder_name %}{{ name }} bearbeiten{% endblocktrans %}{% endif %} — immoswiss{% endblock %}
 {% block content %}
 <nav class="fw-brotkrume mb-3">
     <a href="/neu/mandate/">{% trans "Mandate" %}</a>

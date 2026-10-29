@@ -88,7 +88,7 @@ def docuseal_senden(vertrag):
         context = {
             'vertrag': vertrag, 'mieter': mieter, 'einheit': einheit,
             'liegenschaft': liegenschaft, 'eigentuemer': eigentuemer, 'verwaltung': verwaltung,
-            'verwaltungs_name': getattr(settings, 'VERWALTUNG_NAME', 'SwissImmo Verwaltung'),
+            'verwaltungs_name': getattr(settings, 'VERWALTUNG_NAME', 'immoswiss Verwaltung'),
             'heute': timezone.localdate(),
             'miete_fmt': f"{netto:.2f}", 'nk_fmt': f"{nk:.2f}",
             'brutto_fmt': f"{(netto + nk):.2f}",

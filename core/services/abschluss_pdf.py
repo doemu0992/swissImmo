@@ -11,6 +11,7 @@ wertlos.
 import io
 from decimal import Decimal
 from core.services.dokumentsprache import nur_deutsch
+from core.services.druckfarben import EMBER
 
 
 def _fmt(d):
@@ -34,14 +35,14 @@ def generate_abschluss_pdf(daten, jahr, lg_name, verwaltung=None, erstellt_am=No
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
     w, h = A4
-    indigo = colors.HexColor("#4F46E5")
+    ember = colors.HexColor(EMBER)
     grau = colors.HexColor("#64748B")
     rose = colors.HexColor("#E11D48")
     jahr_txt = "alle Jahre" if jahr == 'alle' else str(jahr)
     c.setTitle(f"Erfolgsrechnung und Bilanz {jahr_txt}")
 
     def kopf(titel):
-        c.setFillColor(indigo)
+        c.setFillColor(ember)
         c.rect(0, h - 26 * mm, w, 26 * mm, fill=1, stroke=0)
         c.setFillColor(colors.white)
         c.setFont("Helvetica-Bold", 15)

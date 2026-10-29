@@ -89,7 +89,9 @@ UEBERSETZT = (
     'core/portal_login.html',
     'core/postfach_form.html',
     'core/postfach_liste.html',
-    'core/public_ticket_form.html',
+    'core/aussen_base.html',    # Etappe 3: Hülle der öffentlichen Seiten (ersetzt public_ticket_form und modern_base)
+    'core/public_bewerbung_form.html',
+    'core/public_bewerbung_geschlossen.html',
     'core/schaden_melden.html',
     'core/zweifaktor_bestaetigen.html',
     'core/_zweifaktor_codes_karte.html',   # Assistenten-Seiten (27.10.2026)

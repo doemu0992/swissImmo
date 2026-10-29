@@ -145,7 +145,7 @@ class Command(BaseCommand):
         # iCal-Datei anhängen (Import in den Kalender)
         try:
             from core.services.ical import build_ics, fristen_events
-            mail.attach("swissimmo-fristen.ics", build_ics(fristen_events(fristen)), "text/calendar")
+            mail.attach("immoswiss-fristen.ics", build_ics(fristen_events(fristen)), "text/calendar")
         except Exception:
             logger.debug("Fehler bewusst übergangen", exc_info=True)
         mail.send()
