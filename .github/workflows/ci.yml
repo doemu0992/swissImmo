@@ -14,7 +14,7 @@ jobs:
   # Bewusst ein eigener Job: So ist beim Blick auf den PR sofort erkennbar,
   # ob eine rote Ampel vom Linter oder von den Tests kommt.
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Python einrichten
@@ -36,7 +36,7 @@ jobs:
   # Das Ergebnis ändert sich auch ohne Codeänderung (neue Meldungen): Der Job läuft bei jedem
   # Push und Pull Request; wer es wöchentlich will, ergänzt oben einen `schedule`-Auslöser.
   pip-audit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Python einrichten
@@ -60,7 +60,7 @@ jobs:
           retention-days: 14
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Python einrichten
@@ -93,7 +93,7 @@ jobs:
   # PostgreSQL-Verbindung. Ohne das liefe ein vertippter DB_-Name still auf
   # SQLite weiter — und der Job wäre grün, ohne etwas zu prüfen.
   test-postgres:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
