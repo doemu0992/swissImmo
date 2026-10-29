@@ -136,7 +136,7 @@ class AdminLogoTests(TestCase):
         c = Client()
         c.force_login(su)
         inhalt = c.get('/admin/').content.decode()
-        self.assertIn('SwissImmo', inhalt, 'die Admin-Startseite wurde nicht gerendert')
+        self.assertIn('immoswiss', inhalt, 'die Admin-Startseite wurde nicht gerendert')
         self.assertNotIn('real_estate_agent', inhalt)
 
 

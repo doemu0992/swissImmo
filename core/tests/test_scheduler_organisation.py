@@ -221,4 +221,6 @@ class DsgAnonymisierenSchalttagTests(TestCase):
         Organisation.objects.create(firma='Schalttag AG', strasse='Weg 1', plz='8000', ort='Zürich')
         with mock.patch('core.management.commands.dsg_anonymisieren.timezone.localdate',
                         return_value=date(2028, 2, 29)):
-            call_command('dsg_anonymisieren', '--jahre', '10', stdout=mock.MagicMock())
+            fehler = StringIO()
+            call_command('dsg_anonymisieren', '--jahre', '10', stdout=StringIO(), stderr=fehler)
+        self.assertEqual(fehler.getvalue(), '', 'Der Lauf am 29.02. meldete einen Fehler.')

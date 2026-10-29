@@ -91,10 +91,13 @@ class SchluesselSindBekanntTests(SimpleTestCase):
 
     def test_jeder_menueeintrag_zeigt_auf_eine_aufloesbare_adresse(self):
         from django.urls import resolve
+        geprueft = 0
         for g in nav_gruppen():
             for ziel in [g['ziel']] + [it['ziel'] for it in g['items']]:
                 with self.subTest(ziel=ziel):
-                    resolve(ziel.split('?')[0])
+                    self.assertIsNotNone(resolve(ziel.split('?')[0]).func)
+                    geprueft += 1
+        self.assertGreater(geprueft, 10, 'Das Menüband enthält keine Einträge, es wurde nichts geprüft.')
 
 
 def _adressen_mit_hoechstens_einem_parameter():
