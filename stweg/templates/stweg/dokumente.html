@@ -28,7 +28,7 @@
     <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t"><a href="/neu/stweg/dokument/{{ d.pk }}/" target="_blank" rel="noopener">{{ d.titel }}</a></div>
         <div class="fw-s">{{ d.get_kategorie_display }} · {% blocktrans with ab=d.gueltig_ab|date:"d.m.Y" %}gültig ab {{ ab }}{% endblocktrans %}{% if d.gueltig_bis %} {% blocktrans with bis=d.gueltig_bis|date:"d.m.Y" %}bis {{ bis }}{% endblocktrans %}{% endif %}</div></div>
         <form method="post" action="/neu/stweg/dokument/{{ d.pk }}/sichtbar/">{% csrf_token %}<button class="fw-btn">{% if d.sichtbar %}Für Eigentümer sichtbar{% else %}Nur Verwaltung{% endif %}</button></form>
-        <form method="post" action="/neu/stweg/dokument/{{ d.pk }}/loeschen/">{% csrf_token %}<button class="fw-btn">{% trans "Löschen" %}</button></form></div>
+        {% include 'fw/_archivieren.html' with kuerzel='stwegdokument' pk=d.pk weiter=request.get_full_path %}</div>
     {% empty %}<div class="fw-rumpf"><p class="fw-leer">{% trans "Noch kein Dokument abgelegt." %}</p></div>{% endfor %}
     <details class="fw-aufklapp"><summary>{% trans "Dokument hochladen" %}</summary>
         <div class="fw-aufklapp-inhalt">

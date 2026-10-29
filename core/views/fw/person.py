@@ -87,7 +87,8 @@ def fw_person_detail(request, pk):
     from collections import defaultdict
     dok_buckets = defaultdict(list)
     vtr_meta = {}
-    for d in (RentalsDokument.objects.neueste().filter(_Q(mieter=m) | _Q(vertrag_id__in=_vids))
+    from core.services.archiv import ausblenden
+    for d in (ausblenden(RentalsDokument.objects.neueste()).filter(_Q(mieter=m) | _Q(vertrag_id__in=_vids))
               .select_related('einheit__liegenschaft', 'vertrag__einheit__liegenschaft')
               .distinct().order_by('-datum')):
         vid = d.vertrag_id
@@ -544,10 +545,16 @@ def fw_rentals_dokument_loeschen(request, pk):
     ref = request.META.get('HTTP_REFERER')
     ziel = ref or (f'/neu/personen/{d.mieter_id}/' if d.mieter_id else '/neu/dokumente/')
     if request.method == 'POST':
+        # Kein hartes Löschen (Art. 958f OR): Das Dokument geht ins Archiv und bleibt zehn Jahre.
+        from core.services import archiv
         titel = d.bezeichnung or d.titel or 'Dokument'
-        d.delete()
-        log_aktion(request, "Dokument gelöscht", titel, '')
-        messages.success(request, '🗑️ ' + gettext('Dokument gelöscht.'))
+        try:
+            archiv.archivieren(d, user=request.user, grund='Dokument entfernt')
+        except archiv.ArchivFehler as fehler:
+            messages.error(request, '❌ ' + str(fehler))
+            return redirect(ziel)
+        log_aktion(request, "Dokument archiviert", titel, '')
+        messages.success(request, '📦 ' + gettext('Dokument archiviert.'))
     return redirect(ziel)
 
 

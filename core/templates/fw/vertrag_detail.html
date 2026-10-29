@@ -63,6 +63,7 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
                     <button class="fw-menuzeile">{% zeichen 'vertrag' klasse='fw-marke w-4' %}{% if v.sign_status == 'offen' %}{% trans "Zur Unterschrift senden" %}{% else %}{% trans "Erneut zur Unterschrift" %}{% endif %}</button>
                 </form>
                 <div class="fw-menutrenner"></div>
+                {% include 'fw/_archivieren.html' with kuerzel='vertrag' pk=v.id stil='menu' %}
                 <form method="post" action="/neu/vertraege/{{ v.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% if rechnungs_rows %}{% blocktrans with r=rechnungs_rows|length z=zahlungen|length %}Diesen Vertrag wirklich löschen?
 
 Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelöscht werden. Setze ihn stattdessen auf «Inaktiv / Archiviert».{% endblocktrans %}{% else %}{% trans "Diesen Vertrag wirklich löschen?" %}{% endif %}{% endfilter %}');">
@@ -817,9 +818,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
                 <div class="fw-s">{{ d.kategorie }}{% if d.datum %} · {{ d.datum|date:"d.m.Y" }}{% endif %}{% if d.version > 1 %} · <a href="/neu/dokument/{{ d.id }}/verlauf/">{% blocktrans with n=d.version %}Version {{ n }}{% endblocktrans %}</a>{% endif %}
                     {% include 'fw/_zustellstatus.html' with d=d z=None %}{% include 'fw/_zustellung_erfassen.html' with d=d next=request.path %}</div></div>
             {% if d.datei %}<a href="{{ d.datei.url }}" target="_blank" rel="noopener" class="fw-btn fw-knapp">{% trans "Öffnen" %}</a>{% endif %}
-            <form method="post" action="/neu/dokument/{{ d.id }}/loeschen/" class="shrink-0" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=d.bezeichnung|default:d.titel %}Dokument «{{ name }}» löschen?{% endblocktrans %}{% endfilter %}');">{% csrf_token %}
-                <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
-            </form>
+            {% include 'fw/_archivieren.html' with kuerzel='dokument' pk=d.id weiter=request.get_full_path %}
         </div>
         {% empty %}
         <p class="fw-leer">{% trans "Keine abgelegten Dokumente." %}</p>

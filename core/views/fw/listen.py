@@ -1012,7 +1012,8 @@ def fw_berichte(request):
     kred_offen = sum((k.offener_betrag for k in kred), Decimal('0.00'))
 
     # --- Portfolio (Soll-Mietzins / Leerstand) ---
-    einh = Einheit.objects.all()
+    from core.services.archiv import ausblenden
+    einh = ausblenden(Einheit.objects.all())
     if aktive_lg:
         einh = einh.filter(liegenschaft=aktive_lg)
     einh = list(einh)
@@ -1381,7 +1382,8 @@ def fw_objekte(request):
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
-    einheiten = Einheit.objects.select_related('liegenschaft')
+    from core.services.archiv import ausblenden
+    einheiten = ausblenden(Einheit.objects.select_related('liegenschaft'))
     if aktive_lg:
         einheiten = einheiten.filter(liegenschaft=aktive_lg)
 
@@ -1663,7 +1665,8 @@ def fw_personen(request):
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
-    qs = Mieter.objects.all().order_by('nachname', 'firmen_name')
+    from core.services.archiv import ausblenden
+    qs = ausblenden(Mieter.objects.all()).order_by('nachname', 'firmen_name')
     if aktive_lg:
         # Haupt- ODER Mitmieter eines Vertrags in dieser Liegenschaft
         qs = qs.filter(Q(vertraege__einheit__liegenschaft=aktive_lg)

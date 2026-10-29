@@ -523,7 +523,8 @@ def fw_eigentuemer_liste(request):
     """Eigentümer (Eigentümer, für die verwaltet wird)."""
     from crm.models import Eigentuemer
     basis = _global_filter(request)
-    eigentuemer = Eigentuemer.objects.all().order_by('firma_oder_name')
+    from core.services.archiv import ausblenden
+    eigentuemer = ausblenden(Eigentuemer.objects.all()).order_by('firma_oder_name')
     rows = []
     for md in eigentuemer:
         anzahl_lg = Liegenschaft.objects.filter(eigentuemer=md).count()

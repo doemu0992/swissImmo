@@ -65,9 +65,10 @@ def fw_schaeden_board(request):
 
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
-    qs = (SchadenMeldung.objects
-          .select_related('liegenschaft', 'betroffene_einheit', 'gemeldet_von', 'zugewiesen_an')
-          .prefetch_related('handwerker_auftraege', 'nachrichten'))
+    from core.services.archiv import ausblenden
+    qs = ausblenden(SchadenMeldung.objects
+                    .select_related('liegenschaft', 'betroffene_einheit', 'gemeldet_von', 'zugewiesen_an')
+                    .prefetch_related('handwerker_auftraege', 'nachrichten'))
     if aktive_lg:
         qs = qs.filter(liegenschaft=aktive_lg)
     if ist_nur_hauswart(request.user):

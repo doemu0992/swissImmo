@@ -10,10 +10,11 @@ Zahlungen und Mahnungen verloren still ihren Bezug (`SET_NULL`) und fielen aus
 Mieterkonto, Mahnlauf und Art. 257d OR. Geschäftsbücher und Buchungsbelege sind
 zehn Jahre aufzubewahren (Art. 958f OR).
 
-Etappe 0 sperrt das harte Löschen, sobald so etwas hängt. Das Archiv (Etappe 2)
-ist der vorgesehene Weg; bis dahin gilt: Liegenschaft und Vertrag haben ihr
-Archiv (Status), eine Person wird auf Wunsch anonymisiert (DSG), ein Mandat
-bleibt bestehen.
+Etappe 0 sperrt das harte Löschen, sobald so etwas hängt. Etappe 2 liefert den Weg
+dazu: das Archiv (`core/services/archiv.py`) mit Aufbewahrungsfrist. Ein archiviertes
+Objekt ist bis zum Fristende nicht löschbar (`hindernisse()` nennt die Frist);
+eine Person wird auf Wunsch zusätzlich anonymisiert (DSG), ein Mandat endet über
+«Archivieren» (Mandatsende).
 
 ZWEI SCHICHTEN, WIE BEI DER MANDANTENTRENNUNG
   1. Diese Datei: eine VERSTÄNDLICHE Antwort für die Oberfläche («es hängen noch
@@ -151,7 +152,17 @@ def _eigentuemer(md):
     )
 
 
+def _ohne_abhaengige(_objekt):
+    """Dokument, Schadenmeldung und STWEG-Dokument tragen nichts, das an ihnen hängt;
+    für sie gilt allein die Aufbewahrungsfrist des Archivs (`hindernisse()`)."""
+    return []
+
+
 _PRUEFER = {
+    'rentals.Dokument': _ohne_abhaengige,
+    'portfolio.Dokument': _ohne_abhaengige,
+    'tickets.SchadenMeldung': _ohne_abhaengige,
+    'stweg.StwegDokument': _ohne_abhaengige,
     'crm.Mieter': _person,
     'rentals.Mietvertrag': _vertrag,
     'portfolio.Liegenschaft': _liegenschaft,
@@ -163,10 +174,14 @@ _PRUEFER = {
 _ALTERNATIVE = {
     'crm.Mieter': _('Beende die Verträge; auf Wunsch der Person kannst du ihre Daten über die '
                     'Datenschutz-Löschung (Anonymisierung) unkenntlich machen.'),
-    'rentals.Mietvertrag': _('Setze den Vertrag stattdessen auf «Inaktiv / Archiviert».'),
-    'portfolio.Liegenschaft': _('Setze die Liegenschaft stattdessen auf den Status «Archiviert».'),
-    'portfolio.Einheit': _('Beende die Verträge; das Objekt bleibt mit seiner Geschichte bestehen.'),
-    'crm.Eigentuemer': _('Das Mandat bleibt bestehen; ein Archiv für Mandate folgt.'),
+    'rentals.Mietvertrag': _('Archiviere den Vertrag stattdessen («Inaktiv / Archiviert»).'),
+    'portfolio.Liegenschaft': _('Setze die Liegenschaft stattdessen auf «Archiviert» (Archiv, Aufbewahrung zehn Jahre).'),
+    'portfolio.Einheit': _('Beende die Verträge und archiviere das Objekt; es bleibt mit seiner Geschichte bestehen.'),
+    'crm.Eigentuemer': _('Beende das Mandat über «Archivieren» (Mandatsende): Es bleibt zehn Jahre aufbewahrt.'),
+    'rentals.Dokument': _('Archiviere das Dokument stattdessen.'),
+    'portfolio.Dokument': _('Archiviere das Dokument stattdessen.'),
+    'tickets.SchadenMeldung': _('Archiviere die Schadenmeldung stattdessen.'),
+    'stweg.StwegDokument': _('Archiviere das Dokument stattdessen.'),
 }
 
 
@@ -175,7 +190,13 @@ def hindernisse(objekt):
     pruefer = _PRUEFER.get(objekt._meta.label)
     if pruefer is None:
         raise ValueError(f'Kein Löschschutz für {objekt._meta.label} vorgesehen.')
-    return pruefer(objekt)
+    gefunden = list(pruefer(objekt))
+    # Ein archiviertes Objekt ist bis zum Ende der Aufbewahrungsfrist nicht löschbar.
+    from core.services.archiv import frist_hindernis
+    frist = frist_hindernis(objekt)
+    if frist:
+        gefunden.append(frist)
+    return gefunden
 
 
 def pruefe_loeschbar(objekt):

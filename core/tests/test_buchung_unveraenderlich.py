@@ -5,10 +5,10 @@ Vorher galt das nur für `Buchung.delete()` an der Instanz. `save()` auf eine
 bestehende Buchung, `QuerySet.update()` und `QuerySet.delete()` änderten Betrag,
 Konten und Datum spurlos, auch in einer gesperrten Periode.
 
-NICHT Gegenstand (Etappe 2): DB-Trigger, Änderungslog, Hash-Kette. Wer
-`_base_manager`, rohes SQL oder die Kaskade einer Organisation benutzt, kommt
-weiterhin vorbei; `test_grenzen_sind_benannt` hält das fest, damit niemand
-mehr verspricht, als gebaut ist.
+Der DB-Trigger (PostgreSQL), der Basis-Manager und die Eindeutigkeiten stehen in
+`test_buchung_db_schutz`. Auf SQLite bleibt rohes SQL ungeschützt;
+`test_grenzen_sind_benannt` hält das fest, damit niemand mehr verspricht, als
+gebaut ist.
 """
 import logging
 from datetime import date
@@ -247,10 +247,16 @@ class DatenresetTests(UnveraenderlichBasis):
 class GrenzenTests(UnveraenderlichBasis):
 
     def test_grenzen_sind_benannt(self):
-        """Ehrlichkeit statt Versprechen: Diese Wege bleiben bis Etappe 2 (DB-Trigger)
-        offen. Fällt dieser Test, ist eine Grenze gefallen — dann Doku und Bericht
+        """Ehrlichkeit statt Versprechen. Seit Etappe 2 ist der Basis-Manager gesperrt
+        (siehe test_buchung_db_schutz); offen bleibt rohes SQL auf SQLite, wo es keinen
+        Trigger gibt. Fällt dieser Test, ist eine Grenze gefallen: Doku und Bericht
         nachziehen, nicht den Test löschen."""
+        from django.db import connection
+
         from finance.models import Buchung
-        # Der Basis-Manager ist ein gewöhnlicher Manager: kein Schutz.
-        self.assertEqual(Buchung._base_manager.filter(pk=self.b.pk).update(beleg_text='roh'), 1)
-        self.assertEqual(self.neu_lesen().beleg_text, 'roh')
+        with self.assertRaises(PermissionError):
+            Buchung._base_manager.filter(pk=self.b.pk).update(beleg_text='roh')
+        if connection.vendor == 'sqlite':
+            with connection.cursor() as cur:
+                cur.execute('UPDATE core_buchung SET beleg_text = %s WHERE id = %s', ['roh', self.b.pk])
+            self.assertEqual(self.neu_lesen().beleg_text, 'roh')

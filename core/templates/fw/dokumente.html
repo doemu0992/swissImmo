@@ -89,11 +89,7 @@
                 <td class="fw-right">
                     <a href="{{ e.url }}" target="_blank" rel="noopener" onclick="event.stopPropagation();" class="fw-btn fw-knapp">{% trans "Öffnen" %}</a>
                     {% if e.loeschbar %}
-                    <form method="post" action="/neu/dokumente/{{ e.id }}/loeschen/" class="inline" onclick="event.stopPropagation();" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=e.name %}Dokument «{{ name }}» löschen?{% endblocktrans %}{% endfilter %}');">
-                        {% csrf_token %}
-                        {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                        <button class="fw-btn fw-knapp fw-geist" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
-                    </form>
+                    {% include 'fw/_archivieren.html' with kuerzel='ablage' pk=e.id weiter=request.get_full_path %}
                     {% endif %}
                 </td>
             </tr>

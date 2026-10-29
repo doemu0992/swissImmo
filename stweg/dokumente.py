@@ -52,7 +52,8 @@ def hochladen(liegenschaft, kategorie, titel, datei, *, gueltig_ab=None, gueltig
 def aktuell(liegenschaft, kategorie, heute=None):
     """Die heute geltenden Dokumente der Kategorie (bei «ersetzend» höchstens eines)."""
     heute = heute or date.today()
-    gueltig = [d for d in K.objects.filter(liegenschaft=liegenschaft, kategorie=kategorie, gueltig_ab__lte=heute)
+    from core.services.archiv import ausblenden
+    gueltig = [d for d in ausblenden(K.objects.filter(liegenschaft=liegenschaft, kategorie=kategorie, gueltig_ab__lte=heute))
                if d.gueltig_bis is None or d.gueltig_bis >= heute]
     gueltig.sort(key=lambda d: (d.gueltig_ab, d.pk), reverse=True)
     return gueltig[:1] if kategorie in ERSETZEND else gueltig
@@ -60,6 +61,7 @@ def aktuell(liegenschaft, kategorie, heute=None):
 
 def pruefen(liegenschaft, heute=None):
     """Status je Pflichtkategorie: [{'kategorie', 'name', 'status': ok|fehlt|abgelaufen|automatisch, 'dokumente'}]."""
+    from core.services.archiv import ausblenden
     heute = heute or date.today()
     namen = dict(K.KATEGORIE_CHOICES)
     ergebnis = []
@@ -73,7 +75,7 @@ def pruefen(liegenschaft, heute=None):
         docs = aktuell(liegenschaft, kat, heute)
         if docs:
             status = 'ok'
-        elif K.objects.filter(liegenschaft=liegenschaft, kategorie=kat).exists():
+        elif ausblenden(K.objects.filter(liegenschaft=liegenschaft, kategorie=kat)).exists():
             status = 'abgelaufen'
         else:
             status = 'fehlt'

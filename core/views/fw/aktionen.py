@@ -555,10 +555,16 @@ def fw_dokument_loeschen(request, pk):
     from core.auth import log_aktion
     d = get_object_or_404(PDokument, id=pk)
     if request.method == 'POST':
+        # Kein hartes Löschen (Art. 958f OR): Das Dokument geht ins Archiv und bleibt zehn Jahre.
+        from core.services import archiv
         titel = d.titel
-        d.delete()
-        log_aktion(request, "Dokument gelöscht", titel, '')
-        messages.success(request, '🗑️ ' + gettext('Dokument gelöscht.'))
+        try:
+            archiv.archivieren(d, user=request.user, grund='Dokument entfernt')
+        except archiv.ArchivFehler as fehler:
+            messages.error(request, '❌ ' + str(fehler))
+        else:
+            log_aktion(request, "Dokument archiviert", titel, '')
+            messages.success(request, '📦 ' + gettext('Dokument archiviert.'))
     ziel = '/neu/dokumente/'
     if lgq := request.POST.get('lg'):
         ziel += f'?lg={lgq}'

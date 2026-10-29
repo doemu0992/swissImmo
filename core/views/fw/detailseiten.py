@@ -231,7 +231,8 @@ def fw_liegenschaft_detail(request, pk):
             soll_monat += vertrag.brutto_mietzins
         einheiten_rows.append({'einheit': e, 'vertrag': vertrag})
 
-    tickets = (SchadenMeldung.objects.filter(liegenschaft=lg)
+    from core.services.archiv import ausblenden
+    tickets = (ausblenden(SchadenMeldung.objects.filter(liegenschaft=lg))
                .exclude(status='erledigt').order_by('-erstellt_am')[:10])
 
     # Dokumente der Liegenschaft — nach Objekt (Einheit) gruppiert. Vertrags-
@@ -250,7 +251,7 @@ def fw_liegenschaft_detail(request, pk):
         if isinstance(val, _dt):
             return val.replace(tzinfo=None)
         return _dt.combine(val, _dt.min.time())
-    for d in (RentalsDokument.objects.neueste()
+    for d in (ausblenden(RentalsDokument.objects.neueste())
               .filter(Q(liegenschaft=lg) | Q(einheit__liegenschaft=lg))
               .filter(vertrag__isnull=True)
               .select_related('einheit').distinct().order_by('-datum')):
@@ -258,7 +259,7 @@ def fw_liegenschaft_detail(request, pk):
         buckets[eid].append({'titel': d.bezeichnung or d.titel, 'kategorie': d.kategorie,
                              'datum': d.ablage_zeit, 'url': d.datei.url if d.datei else None,
                              'id': d.id, 'del_url': f'/neu/dokument/{d.id}/loeschen/'})
-    for d in (PortfolioDokument.objects
+    for d in (ausblenden(PortfolioDokument.objects.all())
               .filter(Q(liegenschaft=lg) | Q(einheit__liegenschaft=lg))
               .select_related('einheit').distinct().order_by('-datum')):
         buckets[d.einheit_id].append({'titel': d.titel, 'kategorie': d.kategorie,
@@ -658,7 +659,8 @@ def fw_objekt_detail(request, pk):
                   .select_related('mieter', 'mitmieter')
                   .distinct().order_by('-beginn'))
     _dok_pro_vertrag = defaultdict(list)
-    for d in (RentalsDokument.objects.neueste().filter(vertrag__in=_vertraege)
+    from core.services.archiv import ausblenden
+    for d in (ausblenden(RentalsDokument.objects.neueste()).filter(vertrag__in=_vertraege)
               .order_by('-datum')):
         _dok_pro_vertrag[d.vertrag_id].append(d)
     verhaeltnisse = []
@@ -750,7 +752,8 @@ def fw_objekt_detail(request, pk):
     # ein Vorgang, kein Stammdatum. Bis 4b.11 waren sie auf der Objektakte
     # ueberhaupt nicht zu sehen — sie standen nur an der Liegenschaft.
     from tickets.models import SchadenMeldung
-    objekt_schaeden = list(SchadenMeldung.objects.filter(betroffene_einheit=e)
+    from core.services.archiv import ausblenden
+    objekt_schaeden = list(ausblenden(SchadenMeldung.objects.filter(betroffene_einheit=e))
                            .order_by('-erstellt_am')[:20])
     objekt_schaeden_offen = [s for s in objekt_schaeden if s.status != 'erledigt']
 
@@ -1871,7 +1874,8 @@ def fw_vertrag_detail(request, pk):
                  .order_by('-datum_eingang')[:15])
     anpassungen = v.anpassungen.order_by('-wirksam_ab')[:10]
     mietzins_komponenten = list(v.mietzins_komponenten.all())
-    dokumente = RentalsDokument.objects.neueste().filter(vertrag=v).order_by('-datum')[:15]
+    from core.services.archiv import ausblenden
+    dokumente = ausblenden(RentalsDokument.objects.neueste()).filter(vertrag=v).order_by('-datum')[:15]
 
     rechnungs_rows = []
     for r in rechnungen:
@@ -1898,7 +1902,7 @@ def fw_vertrag_detail(request, pk):
     # Vertrag — alles zum Mietverhältnis an EINEM Ort (kein Menü-Wechsel nötig).
     from tickets.models import SchadenMeldung
     from core.models import Pendenz
-    schaeden = list(SchadenMeldung.objects.filter(betroffene_einheit=v.einheit)
+    schaeden = list(ausblenden(SchadenMeldung.objects.filter(betroffene_einheit=v.einheit))
                     .order_by('-erstellt_am')[:15]) if v.einheit_id else []
     vertrag_pendenzen = []
     _heute = timezone.localdate()

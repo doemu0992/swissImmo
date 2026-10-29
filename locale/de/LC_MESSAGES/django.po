@@ -34032,3 +34032,135 @@ msgid "%(n)s Zahlung wartet auf Ihre Freigabe (Vier-Augen-Prinzip)."
 msgid_plural "%(n)s Zahlungen warten auf Ihre Freigabe (Vier-Augen-Prinzip)."
 msgstr[0] "%(n)s Zahlung wartet auf Ihre Freigabe (Vier-Augen-Prinzip)."
 msgstr[1] "%(n)s Zahlungen warten auf Ihre Freigabe (Vier-Augen-Prinzip)."
+
+# --- Archiv, Auskunftsrecht, Löschschutz (Etappe 2, 28.10.2026) ---
+msgid "Archiv"
+msgstr "Archiv"
+
+#, python-format
+msgid ""
+"Archivierte Liegenschaften, Objekte, Personen, Verträge, Mandate, Dokumente "
+"und Schadenmeldungen. Sie bleiben %(jahre)s Jahre aufbewahrt (Art. 958f OR) "
+"und lassen sich bis dahin nicht löschen."
+msgstr ""
+"Archivierte Liegenschaften, Objekte, Personen, Verträge, Mandate, Dokumente "
+"und Schadenmeldungen. Sie bleiben %(jahre)s Jahre aufbewahrt (Art. 958f OR) "
+"und lassen sich bis dahin nicht löschen."
+
+#, python-format
+msgid "Archiviert am %(am)s · aufzubewahren bis %(bis)s"
+msgstr "Archiviert am %(am)s · aufzubewahren bis %(bis)s"
+
+#, python-format
+msgid "Mandatsende %(ende)s"
+msgstr "Mandatsende %(ende)s"
+
+msgid "Wiederherstellen"
+msgstr "Wiederherstellen"
+
+msgid "Endgültig löschen"
+msgstr "Endgültig löschen"
+
+msgid "Das Archiv ist leer"
+msgstr "Das Archiv ist leer"
+
+msgid "Archivierte Objekte erscheinen hier und bleiben zehn Jahre aufbewahrt."
+msgstr ""
+"Archivierte Objekte erscheinen hier und bleiben zehn Jahre aufbewahrt."
+
+msgid ""
+"Bleibt zehn Jahre aufbewahrt (Art. 958f OR) und lässt sich wiederherstellen."
+msgstr ""
+"Bleibt zehn Jahre aufbewahrt (Art. 958f OR) und lässt sich wiederherstellen."
+
+msgid "Alle Daten dieser Person als ZIP (DSG Art. 25)."
+msgstr "Alle Daten dieser Person als ZIP (DSG Art. 25)."
+
+msgid "Auskunft (DSG Art. 25)"
+msgstr "Auskunft (DSG Art. 25)"
+
+msgid "Dokumente (Personen und Verträge)"
+msgstr "Dokumente (Personen und Verträge)"
+
+msgid "Dokumente (Ablage)"
+msgstr "Dokumente (Ablage)"
+
+#, python-format
+msgid "Es laufen noch %(n)s Mietverträge. Beende sie zuerst."
+msgstr "Es laufen noch %(n)s Mietverträge. Beende sie zuerst."
+
+#, python-format
+msgid ""
+"Dem Mandat sind noch %(n)s Liegenschaften zugeordnet, die nicht archiviert "
+"sind. Archiviere sie oder ordne sie einem anderen Mandat zu."
+msgstr ""
+"Dem Mandat sind noch %(n)s Liegenschaften zugeordnet, die nicht archiviert "
+"sind. Archiviere sie oder ordne sie einem anderen Mandat zu."
+
+msgid "Bereits archiviert."
+msgstr "Bereits archiviert."
+
+msgid "Nicht archiviert."
+msgstr "Nicht archiviert."
+
+#, python-format
+msgid "Aufbewahrungsfrist bis %(bis)s"
+msgstr "Aufbewahrungsfrist bis %(bis)s"
+
+msgid "Nur archivierte Objekte lassen sich endgültig löschen."
+msgstr "Nur archivierte Objekte lassen sich endgültig löschen."
+
+#, python-format
+msgid "Die Aufbewahrungsfrist läuft bis %(bis)s."
+msgstr "Die Aufbewahrungsfrist läuft bis %(bis)s."
+
+msgid ""
+"Setze die Liegenschaft stattdessen auf «Archiviert» (Archiv, Aufbewahrung "
+"zehn Jahre)."
+msgstr ""
+"Setze die Liegenschaft stattdessen auf «Archiviert» (Archiv, Aufbewahrung "
+"zehn Jahre)."
+
+msgid "Archiviere den Vertrag stattdessen («Inaktiv / Archiviert»)."
+msgstr "Archiviere den Vertrag stattdessen («Inaktiv / Archiviert»)."
+
+msgid ""
+"Beende die Verträge und archiviere das Objekt; es bleibt mit seiner "
+"Geschichte bestehen."
+msgstr ""
+"Beende die Verträge und archiviere das Objekt; es bleibt mit seiner "
+"Geschichte bestehen."
+
+msgid ""
+"Beende das Mandat über «Archivieren» (Mandatsende): Es bleibt zehn Jahre "
+"aufbewahrt."
+msgstr ""
+"Beende das Mandat über «Archivieren» (Mandatsende): Es bleibt zehn Jahre "
+"aufbewahrt."
+
+msgid "Archiviere das Dokument stattdessen."
+msgstr "Archiviere das Dokument stattdessen."
+
+msgid "Archiviere die Schadenmeldung stattdessen."
+msgstr "Archiviere die Schadenmeldung stattdessen."
+
+msgid "Ungültiges Datum für das Mandatsende."
+msgstr "Ungültiges Datum für das Mandatsende."
+
+#, python-format
+msgid "«%(name)s» ist archiviert und wird bis zum %(bis)s aufbewahrt."
+msgstr "«%(name)s» ist archiviert und wird bis zum %(bis)s aufbewahrt."
+
+#, python-format
+msgid "«%(name)s» ist wiederhergestellt."
+msgstr "«%(name)s» ist wiederhergestellt."
+
+#, python-format
+msgid "«%(name)s» ist endgültig gelöscht."
+msgstr "«%(name)s» ist endgültig gelöscht."
+
+msgid "Dokument archiviert."
+msgstr "Dokument archiviert."
+
+msgid "Schadensmeldung archiviert."
+msgstr "Schadensmeldung archiviert."

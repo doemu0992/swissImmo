@@ -55,11 +55,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     {% zeichen 'mehr' %}{% trans "Mehr" %}
                 </button>
                 <div id="sAktionen" data-menu-list role="menu" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
-                    <form method="post" action="/neu/schaeden/{{ t.id }}/loeschen/"
-                          onsubmit="return confirm('{% filter escapejs %}{% blocktrans with id=t.id %}Schadensmeldung #{{ id }} wirklich löschen? Fotos und Verlauf werden mitgelöscht.{% endblocktrans %}{% endfilter %}');">
-                        {% csrf_token %}
-                        <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}{% trans "Schadensmeldung löschen" %}</button>
-                    </form>
+                    {% include 'fw/_archivieren.html' with kuerzel='schaden' pk=t.id stil='menu' %}
                 </div>
             </div>
         </div>
