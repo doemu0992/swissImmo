@@ -96,7 +96,7 @@ python-stdnum==2.1
 pytz==2025.2
 PyYAML==6.0.3
 qrcodegen==1.8.0
-reportlab==4.4.7
+reportlab==5.1.0
 requests==2.33.0
 rlPyCairo==0.4.0
 rsa==4.9.1
