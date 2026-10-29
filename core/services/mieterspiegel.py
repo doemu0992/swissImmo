@@ -3,6 +3,7 @@ Mietzins (netto/NK/brutto) und Vertragsdaten sowie Soll-/Ist-/Leerstand-Summen.
 Das zentrale Bewirtschaftungs-Dokument für Eigentümer und Verwaltung."""
 from decimal import Decimal
 from core.services.dokumentsprache import nur_deutsch
+from core.services.druckfarben import EMBER
 
 
 def berechne_mieterspiegel(liegenschaften, stichtag=None):
@@ -133,10 +134,10 @@ def generate_mieterspiegel_pdf(spiegel, verwaltung=None, stichtag=None):
     c = canvas.Canvas(buf, pagesize=landscape(A4))
     w, h = landscape(A4)
     c.setTitle("Mieterspiegel")
-    indigo = colors.HexColor("#4F46E5")
+    ember = colors.HexColor(EMBER)
 
     def kopf(lg):
-        c.setFillColor(indigo)
+        c.setFillColor(ember)
         c.rect(0, h - 20 * mm, w, 20 * mm, fill=1, stroke=0)
         c.setFillColor(colors.white)
         c.setFont("Helvetica-Bold", 13)

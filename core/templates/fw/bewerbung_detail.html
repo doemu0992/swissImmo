@@ -131,7 +131,7 @@
             {% else %}
             <form method="post" action="/neu/bewerbungen/{{ b.id }}/status/" class="flex items-center gap-2 fw-rumpf">
                 {% csrf_token %}
-                <select name="status" class="fw-feld flex-1">
+                <select name="status" aria-label="{% trans 'Status' %}" class="fw-feld flex-1">
                     {% for key, label, cls in status_wahl %}
                     <option value="{{ key }}" {% if b.status == key %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}

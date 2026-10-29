@@ -8,13 +8,28 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Wartungsläufe (SICH-28, SICH-45): Das Ergebnis dieser Prüfungen ändert sich auch ohne Codeänderung
+  # (neue Schwachstellenmeldungen, ein Kalender, der weiterläuft). Sie gehören darum in einen Takt und
+  # nicht in jeden Pull Request, wo ein roter Lauf ohne eigenes Zutun nur Ratlosigkeit schafft.
+  schedule:
+    # Montag 04:17 UTC: pip-audit und der LIK-Wächter (Job `wartung`).
+    - cron: '17 4 * * 1'
+    # Am 1. des Monats 03:43 UTC: zusätzlich die Suite mit verschobener Uhr (Job `zeitlauf`).
+    - cron: '43 3 1 * *'
+  workflow_dispatch:
+
+# Standardrechte der Jobs auf Lesen beschränken; kein Job schreibt ins Repository.
+permissions:
+  contents: read
 
 jobs:
   # Läuft in Sekunden statt Minuten und braucht weder Datenbank noch Django.
   # Bewusst ein eigener Job: So ist beim Blick auf den PR sofort erkennbar,
   # ob eine rote Ampel vom Linter oder von den Tests kommt.
   lint:
-    runs-on: ubuntu-latest
+    # Runner festgelegt: `ubuntu-latest` ist inzwischen 26.04, und Playwright 1.56 unterstützt es nicht.
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Python einrichten
@@ -34,9 +49,10 @@ jobs:
   # und fragt die Schwachstellendatenbank ab, installiert wird nichts.
   #
   # Das Ergebnis ändert sich auch ohne Codeänderung (neue Meldungen): Der Job läuft bei jedem
-  # Push und Pull Request; wer es wöchentlich will, ergänzt oben einen `schedule`-Auslöser.
+  # Push und Pull Request und zusätzlich jeden Montag (`schedule` oben). Wird er dort rot,
+  # kommt die Benachrichtigung von GitHub, ohne dass jemand einen PR geöffnet hat.
   pip-audit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Python einrichten
@@ -60,7 +76,9 @@ jobs:
           retention-days: 14
 
   test:
-    runs-on: ubuntu-latest
+    # Runner festgelegt: `ubuntu-latest` ist inzwischen 26.04, und Playwright 1.56 unterstützt es nicht.
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Python einrichten
@@ -79,6 +97,12 @@ jobs:
         run: python manage.py check
       - name: Migrationen vollständig?
         run: python manage.py makemigrations --check --dry-run
+      - name: Härtung der Produktionseinstellungen (check --deploy)
+        # Jede Warnung muss mit Begründung in deploy-check-ignore.txt stehen (_tools/deploy_check_pruefen.py).
+        # DEBUG=False schaltet die Produktions-Härtung der Einstellungen ein; der Schlüssel ist für diesen Lauf erzeugt.
+        run: |
+          export DEBUG=False IMAP_SCHLUESSEL="$(python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')"
+          python manage.py check --deploy 2>&1 | tee deploy-check.txt | python _tools/deploy_check_pruefen.py deploy-check-ignore.txt
       - name: Tests
         run: python manage.py test --verbosity=2
 
@@ -93,7 +117,9 @@ jobs:
   # PostgreSQL-Verbindung. Ohne das liefe ein vertippter DB_-Name still auf
   # SQLite weiter — und der Job wäre grün, ohne etwas zu prüfen.
   test-postgres:
-    runs-on: ubuntu-latest
+    # Runner festgelegt: `ubuntu-latest` ist inzwischen 26.04, und Playwright 1.56 unterstützt es nicht.
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
@@ -127,12 +153,18 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libcairo2-dev pkg-config
       - name: Abhängigkeiten installieren
         run: pip install -r requirements.txt
+      - name: PostgreSQL-Werkzeuge vorhanden?
+        # Die Sicherungs- und Wiederherstellungstests (test_sicherung, test_wiederherstellung_zaehlvergleich)
+        # überspringen sich, wo pg_dump/pg_restore fehlen. Auf dem Runner dürfen sie nicht still ausfallen.
+        run: command -v pg_dump pg_restore && pg_dump --version
       - name: Migrationen auf PostgreSQL
         run: python manage.py migrate --noinput
       - name: Tests auf PostgreSQL
         run: python manage.py test --noinput --parallel 4
 
   e2e:
+    # Runner festgelegt: `ubuntu-latest` ist inzwischen 26.04, und Playwright 1.56 unterstützt es nicht.
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -166,3 +198,62 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 14
+
+  # Wöchentliche Wartung (Montag, Auslöser `schedule` oben; von Hand über «Run workflow»).
+  # Prüft, was von der Uhr abhängt und darum nie in einen PR gehört: Die LIK-Tabelle in
+  # core/services/lik.py wird von Hand nachgeführt und darf nicht mehr als drei Monate hinter
+  # dem Kalender liegen (MIET-14). Rot heisst: Monatswerte des BFS nachtragen, nicht raten.
+  wartung:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Systembibliotheken für pycairo
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libcairo2-dev pkg-config
+      - name: Abhängigkeiten installieren
+        run: pip install -r requirements.txt
+      - name: LIK-Tabelle aktuell?
+        env:
+          ZEIT_WAECHTER: "1"
+        run: python manage.py test core.tests.test_lik_tabelle --noinput --verbosity=2
+
+  # Monatlicher Zeitlauf (SICH-45): die ganze Suite mit einer Uhr, die auf einen kritischen Tag
+  # gestellt ist (_tools/uhr_schieber.c, Szenarien in _tools/zeitlauf_epoche.py). Findet Tests, die
+  # nur an einem bestimmten Kalendertag stimmen: Jahreswechsel, 29. Februar, Sommerzeit, Monatsgrenze.
+  # Rot heisst: ein Test (oder der Code) rechnet mit dem Datum von heute statt mit dem Tag, für den er
+  # geschrieben ist. Kostet vier volle Suite-Läufe im Monat; deshalb nicht öfter.
+  zeitlauf:
+    if: github.event.schedule == '43 3 1 * *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        szenario: [jahreswechsel, neujahr, schaltag, sommernacht]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Systembibliotheken für pycairo
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libcairo2-dev pkg-config
+      - name: Abhängigkeiten installieren
+        run: pip install -r requirements.txt
+      - name: Uhr-Schieber bauen
+        run: gcc -shared -fPIC -O2 -o "$RUNNER_TEMP/uhr_schieber.so" _tools/uhr_schieber.c -ldl
+      - name: Tests mit verschobener Uhr
+        env:
+          DEBUG: "False"
+          SECURE_SSL_REDIRECT: "False"
+        run: |
+          export FAKE_START="$(python _tools/zeitlauf_epoche.py "${{ matrix.szenario }}")"
+          echo "Szenario ${{ matrix.szenario }}: $(TZ=Europe/Zurich date -d "@$FAKE_START" '+%F %T %Z')"
+          LD_PRELOAD="$RUNNER_TEMP/uhr_schieber.so" python manage.py test --noinput --parallel 4

@@ -1,6 +1,6 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
-{% block title %}{% trans "Lebensdauertabelle" %} — swissImmo{% endblock %}
+{% block title %}{% trans "Lebensdauertabelle" %} — immoswiss{% endblock %}
 {% block content %}
 
 <nav class="fw-brotkrume mb-3">
@@ -54,8 +54,8 @@
                 {% for r in rows %}
                 <tr>
                     <td class="font-medium fw-strong">{{ r.kategorie }}</td>
-                    <td><input name="jahre_{{ r.id }}" value="{{ r.jahre }}" inputmode="numeric" class="fw-feld w-24 text-right"></td>
-                    <td><input name="bemerkung_{{ r.id }}" value="{{ r.bemerkung }}" class="fw-feld w-full"></td>
+                    <td><input name="jahre_{{ r.id }}" value="{{ r.jahre }}" inputmode="numeric" aria-label="{% blocktrans with k=r.kategorie %}Lebensdauer in Jahren: {{ k }}{% endblocktrans %}" class="fw-feld w-24 text-right"></td>
+                    <td><input name="bemerkung_{{ r.id }}" value="{{ r.bemerkung }}" aria-label="{% blocktrans with k=r.kategorie %}Bemerkung: {{ k }}{% endblocktrans %}" class="fw-feld w-full"></td>
                     <td class="fw-right">
                         <button type="submit" form="del_{{ r.id }}" class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}" onclick="return confirm('{% filter escapejs %}{% blocktrans with k=r.kategorie %}Kategorie «{{ k }}» löschen?{% endblocktrans %}{% endfilter %}');">{% zeichen 'loeschen' %}</button>
                     </td>

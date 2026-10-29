@@ -359,10 +359,11 @@ class SammelversandIsolationTests(TestCase):
         self.assertEqual(MietzinsAnpassung.alle_organisationen.get(pk=fremd.pk).status, 'versandt')
 
 
-class EntwurfInListeUndDossierTests(TestCase):
+class EntwurfInListeTests(TestCase):
     """Befund C, auch ausserhalb des Assistenten: Ein Entwurf ist keine Anpassung,
-    die gegolten hat — weder als «letzte Anpassung» der Mietzinsliste noch in der
-    Mietzins-Historie des Vertragsdossiers."""
+    die gegolten hat — nicht als «letzte Anpassung» der Mietzinsliste. (Das
+    Vertragsdossier, das dasselbe für die Aussenansicht zeigte, ist in Etappe 3
+    entfallen; die Akte führt Entwürfe bewusst mit Status auf.)"""
 
     def test_liste_zeigt_entwurf_nicht_als_letzte_anpassung(self):
         _lg, _e, v = _vertrag()
@@ -376,15 +377,6 @@ class EntwurfInListeUndDossierTests(TestCase):
         r = c.get('/neu/mietzins/')
         zeile = next(z for z in r.context['rows'] if z['v'].pk == v.pk)
         self.assertEqual(zeile['letzte_anpassung'], date(2025, 1, 1))
-
-    def test_dossier_fuehrt_nur_gebuchte_anpassungen(self):
-        _lg, _e, v = _vertrag()
-        gebucht = _anpassung(v, status='wirksam', wirksam_ab=date(2025, 1, 1))
-        _anpassung(v, status='entwurf', wirksam_ab=date(2031, 4, 1), neu='1600.00')
-        c = Client(); c.force_login(_team_user())
-        r = c.get(f'/dossier/vertrag/{v.id}/')
-        self.assertEqual(r.status_code, 200)
-        self.assertEqual([a.pk for a in r.context['anpassungen']], [gebucht.pk])
 
 
 class RechnenIsolationTests(TestCase):

@@ -84,7 +84,7 @@ class Command(BaseCommand):
             if opts['dry_run']:
                 self.stdout.write(f"  (dry-run) → {md.firma_oder_name} <{md.email}>")
                 continue
-            if send_report_mail(md.email, betreff, html, anhaenge):
+            if send_report_mail(md.email, betreff, html, anhaenge, organisation=organisation):
                 gesendet += 1
                 self.stdout.write(self.style.SUCCESS(f"  ✓ {md.firma_oder_name} <{md.email}>"))
 

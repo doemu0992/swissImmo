@@ -18,6 +18,7 @@ from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
 from core.auth import rolle_erforderlich, VERWALTUNGS_ROLLEN
+from core.utils.betrag import betrag_normalisieren
 from portfolio.models import Liegenschaft
 
 from ._basis import _global_filter, _num
@@ -212,7 +213,7 @@ def fw_eigentuemer_mahnstufen(request, pk):
             except ValueError:
                 ab = basis['ab_tage']
             try:
-                geb = Decimal(str(request.POST.get(f'gebuehr_{s}') or '0').replace(',', '.'))
+                geb = Decimal(betrag_normalisieren(request.POST.get(f'gebuehr_{s}')) or '0')
                 geb = max(Decimal('0'), geb)
             except Exception:
                 geb = Decimal('0')

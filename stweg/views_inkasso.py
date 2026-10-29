@@ -10,6 +10,8 @@ from django.utils.translation import gettext
 from django.views.decorators.http import require_POST
 
 from core.auth import SCHREIB_ROLLEN, TEAM_ROLLEN, rolle_erforderlich
+from core.utils.betrag import betrag_normalisieren
+from core.views.fw._basis import _global_filter
 from stweg import inkasso, zins
 from stweg.models import StwegInkassoFall, StwegInkassoPosition, StwegMahnung, StwegPfandrecht
 from stweg.validierung import stimm_einheiten
@@ -47,7 +49,7 @@ def stweg_inkasso(request, stweg_id):
                        'naechste': (inkasso.mahnstufe(fall) + 1) if inkasso.mahnstufe(fall) < inkasso.MAX_STUFE
                        else None})
     return render(request, 'stweg/inkasso.html', {
-        'nav': 'stweg', 'lg': lg, 'zeilen': zeilen, 'frist': inkasso.MAHNFRIST_TAGE,
+        **_global_filter(request), 'nav': 'stweg', 'lg': lg, 'zeilen': zeilen, 'frist': inkasso.MAHNFRIST_TAGE,
         'monate': inkasso.PFANDRECHT_MONATE})
 
 
@@ -106,7 +108,7 @@ def stweg_inkasso_kostenvorschuss(request, stweg_id):
         messages.error(request, gettext('Für diese Einheit ist kein Inkassofall offen.'))
         return _zurueck(lg)
     try:
-        betrag = Decimal((request.POST.get('betrag') or '0').replace("'", '').replace(',', '.').strip() or '0')
+        betrag = Decimal(betrag_normalisieren(request.POST.get('betrag')) or '0')
     except ArithmeticError:
         messages.error(request, gettext('Bitte einen gültigen Betrag eingeben.'))
         return _zurueck(lg)

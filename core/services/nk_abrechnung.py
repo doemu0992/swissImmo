@@ -11,6 +11,7 @@ from reportlab.pdfgen import canvas as _canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from core.services.dokumentsprache import nur_deutsch
+from core.services.druckfarben import EMBER_FLAECHE_RGB, EMBER_RGB
 
 
 def _chf(v):
@@ -30,7 +31,7 @@ def _draw_page(c, k):
     w, h = A4
     vw = k.get('verwaltung')
     # Kopf
-    c.setFillColorRGB(0.26, 0.22, 0.79)
+    c.setFillColorRGB(*EMBER_RGB)
     c.rect(0, h - 26 * mm, w, 26 * mm, fill=1, stroke=0)
     c.setFillColorRGB(1, 1, 1)
     c.setFont("Helvetica-Bold", 15)
@@ -94,7 +95,7 @@ def _draw_page(c, k):
 
     # Ihr Anteil-Block
     y -= 16 * mm
-    c.setFillColorRGB(0.95, 0.96, 1.0)
+    c.setFillColorRGB(*EMBER_FLAECHE_RGB)
     c.rect(20 * mm, y - 26 * mm, w - 40 * mm, 32 * mm, fill=1, stroke=0)
     c.setFillColorRGB(0.1, 0.1, 0.1)
     c.setFont("Helvetica-Bold", 10)
@@ -107,7 +108,7 @@ def _draw_page(c, k):
     c.drawString(24 * mm, y, "− Bezahlte Akontozahlungen")
     c.drawRightString(w - 24 * mm, y, f"CHF {_chf(k.get('akonto', 0))}")
     y -= 3 * mm
-    c.setStrokeColorRGB(0.7, 0.75, 0.85)
+    c.setStrokeColorRGB(*EMBER_RGB)
     c.line(24 * mm, y, w - 24 * mm, y)
     y -= 6 * mm
     saldo = Decimal(str(k.get('saldo', 0)))

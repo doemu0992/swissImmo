@@ -1,7 +1,8 @@
-{% load i18n zeichen %}
+{% load i18n zeichen rechte %}
 {% comment %}Archivieren statt Löschen (Etappe 2). Parameter: kuerzel (siehe core/services/archiv.py TYPEN), pk,
 stil ('menu' = Menüzeile, sonst kleiner Knopf), weiter (Rücksprung, optional).{% endcomment %}
-<form method="post" action="/neu/archiv/{{ kuerzel }}/{{ pk }}/archivieren/" class="inline">
+{% comment %}Wer nicht archivieren darf (Lesezugriff, Hauswart), sieht den Knopf nicht: Er endete in der 403 (ROUTE-02).{% endcomment %}
+{% if request.user|darf:"/neu/archiv/x/1/archivieren/" %}<form method="post" action="/neu/archiv/{{ kuerzel }}/{{ pk }}/archivieren/" class="inline">
     {% csrf_token %}
     {% if weiter %}<input type="hidden" name="weiter" value="{{ weiter }}">{% endif %}
     {% if stil == 'menu' %}
@@ -9,4 +10,4 @@ stil ('menu' = Menüzeile, sonst kleiner Knopf), weiter (Rücksprung, optional).
     {% else %}
     <button class="fw-btn fw-knapp" title="{% trans 'Bleibt zehn Jahre aufbewahrt (Art. 958f OR) und lässt sich wiederherstellen.' %}">{% zeichen 'verlauf' klasse='fw-fs-mikro' %}{% trans "Archivieren" %}</button>
     {% endif %}
-</form>
+</form>{% endif %}

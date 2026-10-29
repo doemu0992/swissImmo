@@ -1,6 +1,6 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n hilfe %}
-{% block title %}{% if ist_neu %}{% trans "Neue Person" %}{% else %}{% blocktrans with name=m.display_name %}{{ name }} bearbeiten{% endblocktrans %}{% endif %} — swissImmo{% endblock %}
+{% block title %}{% if ist_neu %}{% trans "Neue Person" %}{% else %}{% blocktrans with name=m.display_name %}{{ name }} bearbeiten{% endblocktrans %}{% endif %} — immoswiss{% endblock %}
 
 {% block content %}
 <nav class="fw-brotkrume mb-3">
@@ -354,7 +354,7 @@
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Interne Notizen" %}</h2></div>
         <div class="fw-rumpf space-y-4">
-        <textarea name="notizen" rows="3" class="fw-feld w-full">{{ m.notizen }}</textarea>
+        <textarea name="notizen" aria-label="{% trans 'Interne Notizen' %}" rows="3" class="fw-feld w-full">{{ m.notizen }}</textarea>
     </div>
     </div>
 

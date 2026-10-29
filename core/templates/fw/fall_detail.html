@@ -1,7 +1,7 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
 {% load chf %}
-{% block title %}{{ fall.nummer }} — swissImmo{% endblock %}
+{% block title %}{{ fall.nummer }} — immoswiss{% endblock %}
 
 {% block content %}
 <nav class="fw-brotkrume" style="margin-bottom:10px">
@@ -39,7 +39,7 @@
                     {% if kann_schreiben %}
                     <form method="post" action="/neu/faelle/{{ fall.pk }}/zustaendig/" class="inline">
                         {% csrf_token %}
-                        <select name="zustaendig" onchange="this.form.submit()" class="fw-feld-schlank">
+                        <select name="zustaendig" aria-label="{% trans 'Zuständig' %}" onchange="this.form.submit()" class="fw-feld-schlank">
                             <option value="">— {% trans "niemand" %} —</option>
                             {% for b in benutzer_auswahl %}
                             <option value="{{ b.pk }}" {% if fall.zustaendig_id == b.pk %}selected{% endif %}>{{ b.get_full_name|default:b.username }}</option>

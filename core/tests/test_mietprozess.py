@@ -925,7 +925,7 @@ class BewerbungDatenschutzTests(TestCase):
         """Gegenstück: Der Betreibungsregisterauszug darf mit dem Formular von
         allen eingefordert werden. Ohne diese Prüfung wäre «weniger fragen»
         auch durch das Leeren des ganzen Formulars erfüllt."""
-        self.assertIn("handleFile($event, 'betreibungsauszug')", self._formular())
+        self.assertIn('type="file" name="betreibungsauszug"', self._formular())   # Etappe 3: kein Vue mehr
 
     def test_formular_erfuellt_die_informationspflicht(self):
         """Art. 19 revDSG: Information bei der Beschaffung. Der EDÖB verlangt

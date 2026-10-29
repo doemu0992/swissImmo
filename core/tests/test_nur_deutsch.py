@@ -67,9 +67,7 @@ class NurDeutschTests(SimpleTestCase):
     def test_dokumente_ausserhalb_der_dienste(self):
         """Die Suche oben erkennt nur core/services; diese liegen anderswo."""
         from core.services import docuseal_service
-        from core.views import dossier
-        for funktion in (docuseal_service.docuseal_senden, dossier.mieter_dossier,
-                         dossier.liegenschaft_dossier, dossier.vertrag_dossier):
+        for funktion in (docuseal_service.docuseal_senden,):
             with self.subTest(funktion=funktion.__name__):
                 # `rolle_erforderlich` legt sich darum; der Dekorator steckt innen.
                 innen = getattr(funktion, '__wrapped__', funktion)

@@ -69,7 +69,7 @@ def auskunft_daten(mieter):
 
     daten = {
         'hinweis': ('Auskunft nach Art. 25 DSG. Enthält die Daten, die diese Verwaltung zur Person '
-                    'in swissImmo bearbeitet. Daten ausserhalb der Anwendung sind nicht enthalten.'),
+                    'in immoswiss bearbeitet. Daten ausserhalb der Anwendung sind nicht enthalten.'),
         'erstellt_am': datetime.now().astimezone().isoformat(timespec='seconds'),
         'person': _zeile(mieter),
         'adressen': _liste(mieter.adressen.all()),

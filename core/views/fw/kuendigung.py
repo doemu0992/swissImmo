@@ -28,6 +28,7 @@ from rentals.models import Mietvertrag
 
 from ._basis import _global_filter
 from core.services.dokumentsprache import auf_deutsch
+from core.utils.betrag import betrag_normalisieren
 from core.services.unterschrift import UNTERSCHRIFT_HINWEIS_257D, UNTERSCHRIFT_HINWEIS_KUENDIGUNG
 from core.services.zahlungsverzug import ABHOLFRIST_TAGE, FRIST_TAGE, POSTWEG_TAGE
 
@@ -1205,7 +1206,7 @@ def fw_herabsetzung(request, vertrag_id):
 
 def _num_oder_leer(wert):
     """'1''450.50' / '1450,5' → '1450.50'-artig; '' bei leer."""
-    return (wert or '').replace("'", '').replace(' ', '').replace(',', '.').strip()
+    return betrag_normalisieren(wert)
 
 
 # Verfahren um die Mietsache zu erfassen und abzuschliessen ist Inhabern und Verwaltern vorbehalten wie die Kündigung

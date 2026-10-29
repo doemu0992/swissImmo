@@ -573,7 +573,7 @@ class RechtsgrundlagenTests(TestCase):
     def test_anwendung_overlay(self):
         c = Client(); c.force_login(_team_user())
         r = c.get('/neu/rechtsgrundlagen/?q=257d')
-        self.assertContains(r, 'In swissImmo')      # Anwendungshinweis am Artikel
+        self.assertContains(r, 'In immoswiss')      # Anwendungshinweis am Artikel
 
 
 class KautionFreigabeTests(TestCase):

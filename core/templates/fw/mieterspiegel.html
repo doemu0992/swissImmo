@@ -1,7 +1,7 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
 {% load chf %}
-{% block title %}{% trans "Mieterspiegel" %} — swissImmo{% endblock %}
+{% block title %}{% trans "Mieterspiegel" %} — immoswiss{% endblock %}
 {% block content %}
 <nav class="fw-brotkrume mb-2.5">
     <a href="/neu/mieterspiegel/">{% trans "Mieterspiegel" %}</a>
@@ -16,7 +16,7 @@
     </div>
     <div class="fw-phead-knoepfe">
         {% if alle_lgs|length > 1 %}
-        <select onchange="if(this.value) window.location='/neu/mieterspiegel/?lg='+this.value" class="fw-feld">
+        <select aria-label="{% trans 'Liegenschaft' %}" onchange="if(this.value) window.location='/neu/mieterspiegel/?lg='+this.value" class="fw-feld">
             {% for l in alle_lgs %}<option value="{{ l.id }}" {% if l.id == aktive_lg.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>{% endfor %}
         </select>
         {% endif %}

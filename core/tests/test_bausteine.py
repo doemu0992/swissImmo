@@ -125,7 +125,7 @@ class NkProzessTests(SimpleTestCase):
             for p in (_Periode(_Lg()), _Periode(_Lg(), abgeschlossen=True)):
                 for x in self.schritte(p, **kw):
                     with self.subTest(schritt=x['titel']):
-                        resolve(x['url'].split('?')[0].split('#')[0])
+                        self.assertIsNotNone(resolve(x['url'].split('?')[0].split('#')[0]))
 
 
 class AssistentSeitenTests(TestCase):

@@ -50,10 +50,11 @@ def _werte(form):
     return werte
 
 
-def _seite(request, form, *, titel, hinweis='', zurueck, zurueck_text, senden, extra=None, status=200,
+def _seite(request, form, *, titel, hinweis='', zurueck, zurueck_text, senden, nav, extra=None, status=200,
            vorlage='fw/phase2_form.html'):
+    """`nav` ist Pflicht: Ohne Schlüssel leuchtet im Menüband kein Bereich (DESIGN-04)."""
     ctx = {**_global_filter(request), 'form': form, 'werte': _werte(form), 'titel': titel, 'hinweis': hinweis,
-           'zurueck': zurueck, 'zurueck_text': zurueck_text, 'senden': senden, **(extra or {})}
+           'zurueck': zurueck, 'zurueck_text': zurueck_text, 'senden': senden, 'nav': nav, **(extra or {})}
     return render(request, vorlage, ctx, status=status)
 
 
@@ -105,7 +106,7 @@ def fw_schaden_zuweisen(request, pk):
         return redirect(f'/neu/schaeden/{t.id}/')
     return _seite(request, form, titel=gettext('Ticket zuweisen'),
                   hinweis=t.titel, zurueck=f'/neu/schaeden/{t.id}/', zurueck_text=gettext('Ticket'),
-                  senden=gettext('Zuweisen'), status=400 if request.method == 'POST' else 200,
+                  senden=gettext('Zuweisen'), nav='schadensfaelle', status=400 if request.method == 'POST' else 200,
                   vorlage='fw/ticket_zuweisen.html')
 
 
@@ -155,8 +156,8 @@ def fw_nebenkosten_zustellung(request, pk):
                   hinweis=gettext('Mit dem Zustelldatum beginnt die Prüf- und Einsprachefrist (%(n)s Tage).')
                   % {'n': p.EINSPRACHE_TAGE},
                   zurueck=f'/neu/nebenkosten/{p.id}/', zurueck_text=p.bezeichnung,
-                  senden=gettext('Speichern'), status=400 if request.method == 'POST' else 200,
-                  vorlage='fw/nk_zustellung.html')
+                  senden=gettext('Speichern'), nav='nebenkosten',
+                  status=400 if request.method == 'POST' else 200, vorlage='fw/nk_zustellung.html')
 
 
 # ---------------------------------------------------------------- Betreibung
@@ -337,7 +338,7 @@ def fw_betreibungen(request):
     rows = list(qs)
     rows.sort(key=lambda b: (b.status in abgeschlossen, -b.begehren_am.toordinal()))
     return render(request, 'fw/betreibungen.html', {
-        **basis, 'rows': rows, 'abgeschlossen': abgeschlossen,
+        **basis, 'nav': 'mahnwesen', 'rows': rows, 'abgeschlossen': abgeschlossen,
         'summe_offen': sum((b.forderung for b in rows if b.status not in abgeschlossen), Decimal('0.00')),
     })
 
@@ -414,6 +415,7 @@ def fw_betreibung_neu(request, pk):
         **_global_filter(request), 'form': form, 'werte': _werte(form), 'r': haupt,
         'auswahl': form.auswahl, 'gewaehlt_ids': _gewaehlt_ids(form),
         'glaeubiger': gl, 'vertreter': vertreter, 'titel': gettext('Betreibung einleiten'),
+        'nav': 'mahnwesen',
     }, status=400 if request.method == 'POST' else 200)
 
 
@@ -465,7 +467,7 @@ def fw_betreibung_bearbeiten(request, pk):
         extra['fristen'] = {'rv': b.rechtsvorschlag_frist_bis, 'fortsetzung': b.fortsetzung_frist}
     return _seite(request, form, titel=gettext('Betreibung bearbeiten'),
                   hinweis=f'{b.debitoren_rechnung.titel}', zurueck='/neu/betreibungen/',
-                  zurueck_text=gettext('Betreibungen'), senden=gettext('Speichern'), extra=extra,
+                  zurueck_text=gettext('Betreibungen'), senden=gettext('Speichern'), nav='mahnwesen', extra=extra,
                   status=400 if request.method == 'POST' else 200, vorlage='fw/betreibung_form.html')
 
 
@@ -589,5 +591,5 @@ def fw_zaehlerstand_neu(request, pk):
         return redirect(f'/neu/liegenschaften/{lg.id}/')
     return _seite(request, form, titel=gettext('Zählerstand erfassen'), hinweis=str(lg),
                   zurueck=f'/neu/liegenschaften/{lg.id}/', zurueck_text=str(lg),
-                  senden=gettext('Speichern'), extra={'weiter_knopf': True},
+                  senden=gettext('Speichern'), nav='liegenschaften', extra={'weiter_knopf': True},
                   status=400 if request.method == 'POST' else 200)

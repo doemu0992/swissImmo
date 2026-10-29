@@ -281,3 +281,87 @@ class SchadenMeldenFormularTests(MeldeformularBasis):
         for _ in range(10):
             self.anonym.post(self.pfad, self.daten())
         self.assertEqual(self.anonym.post(self.pfad, self.daten()).status_code, 429)
+
+
+class GemeinsamesFormularTests(MeldeformularBasis):
+    """Etappe 3: Das Formular sendet Anliegen, Raum und Gegenstand statt eines fertigen Titels.
+
+    Gegenproben (29.10.2026): `titel_aus_wahl` in `_qr_formular` entfernen → `test_der_titel_entsteht…`
+    rot; die Zeile `kategorie=…` in `process_public_ticket_form` entfernen → `test_die_wahl_wird_gespeichert`
+    rot; `werte=request.POST` aus `_web_formular` entfernen → `test_die_website_behaelt_die_eingaben` rot.
+    """
+
+    def wahl(self, **extra):
+        daten = {'kategorie': 'Schadensmeldung', 'raum': 'Küche', 'objekt': 'Kühlschrank',
+                 'beschreibung': 'Kühlt nicht mehr.', 'anrede': 'Frau', 'vorname': 'Vera',
+                 'nachname': 'Muster', 'email': 'vera@example.ch', 'telefon': '0791234567'}
+        daten.update(extra)
+        return daten
+
+    def test_der_titel_entsteht_aus_der_wahl_nicht_im_browser(self):
+        antwort = self.anonym.post(self.pfad, self.wahl())
+        self.assertEqual(antwort.status_code, 200)
+        self.assertContains(antwort, 'Vielen Dank')
+        t = self.tickets().latest('pk')
+        self.assertEqual(t.titel, 'Schaden: Küche - Kühlschrank (Muster)')
+
+    def test_die_wahl_wird_gespeichert(self):
+        """Bis Etappe 3 behielt der Aushang Raum und Gegenstand nur im Titel; `/schaden/melden/` in Spalten."""
+        self.anonym.post(self.pfad, self.wahl())
+        t = self.tickets().latest('pk')
+        self.assertEqual((t.kategorie, t.raum, t.objekt), ('Schadensmeldung', 'Küche', 'Kühlschrank'))
+
+    def test_andere_anliegen_tragen_ihren_namen_ohne_raum(self):
+        self.anonym.post(self.pfad, self.wahl(kategorie='Allgemeine Anfrage', raum='', objekt=''))
+        t = self.tickets().latest('pk')
+        self.assertEqual(t.titel, 'Allgemeine Anfrage (Muster)')
+        self.assertFalse(t.raum)
+
+    def test_ein_gesendeter_titel_gilt_weiter(self):
+        """Ältere Formulare und Skripte senden den Titel selbst."""
+        self.anonym.post(self.pfad, self.wahl(titel='Eigener Titel'))
+        self.assertEqual(self.tickets().latest('pk').titel, 'Eigener Titel (Muster)')
+
+    def test_ohne_anliegen_und_ohne_titel_fehlt_der_titel(self):
+        daten = self.wahl()
+        daten.pop('kategorie')
+        antwort = self.anonym.post(self.pfad, daten)
+        self.assertEqual(antwort.status_code, 400)
+        self.assertContains(antwort, 'Bitte füllen Sie das Feld «Anliegen» aus.', status_code=400)
+
+    def test_zu_lange_wahl_ist_ein_formularfehler(self):
+        for feld in ('kategorie', 'raum', 'objekt'):
+            with self.subTest(feld=feld):
+                vorher = self.tickets().count()
+                antwort = self.anonym.post(self.pfad, self.wahl(**{feld: 'x' * 101}))
+                self.assertEqual(antwort.status_code, 400)
+                self.assertEqual(self.tickets().count(), vorher)
+
+    def test_nach_einem_fehler_bleibt_die_wahl_stehen_und_das_formular_springt_zur_pruefung(self):
+        antwort = self.anonym.post(self.pfad, self.wahl(beschreibung=''))
+        self.assertContains(antwort, 'name="raum" value="Küche" checked', status_code=400)
+        self.assertContains(antwort, 'name="objekt" value="Kühlschrank" disabled data-geraet="1" checked',
+                            status_code=400)
+        self.assertContains(antwort, ' data-fehler', status_code=400)
+        self.assertContains(antwort, 'value="Vera"', status_code=400)
+
+    def test_die_website_behaelt_die_eingaben_nach_einem_fehler(self):
+        antwort = self.anonym.post('/schaden/melden/', {
+            'kategorie': 'Schadensmeldung', 'raum': 'Küche', 'objekt': 'Herd', 'beschreibung': 'Defekt',
+            'vorname': 'Vera', 'nachname': 'Muster', 'email': 'unbekannt@example.org', 'telefon': '079',
+            'adresse': 'Testweg 1'})
+        # Die Adresse lässt sich keiner Liegenschaft zuordnen: Fehler, aber nichts muss neu getippt werden.
+        self.assertEqual(antwort.status_code, 200)
+        self.assertContains(antwort, 'Wir konnten Ihre Meldung keiner Liegenschaft zuordnen.')
+        self.assertContains(antwort, 'value="Vera"')
+        self.assertContains(antwort, 'value="unbekannt@example.org"')
+        self.assertContains(antwort, 'value="Testweg 1"')
+        self.assertContains(antwort, ' data-fehler')
+
+    def test_titel_aus_wahl(self):
+        from core.views.ticket_public import titel_aus_wahl
+        self.assertEqual(titel_aus_wahl('Schadensmeldung', 'Bad', 'WC'), 'Schaden: Bad - WC')
+        self.assertEqual(titel_aus_wahl('Schadensmeldung', 'Bad'), 'Schaden: Bad')
+        self.assertEqual(titel_aus_wahl('Schadensmeldung'), 'Schaden')
+        self.assertEqual(titel_aus_wahl('Schlüsselbestellung', 'Bad', 'WC'), 'Schlüsselbestellung')
+        self.assertEqual(titel_aus_wahl('', 'Bad', 'WC'), '')

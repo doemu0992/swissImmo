@@ -12,6 +12,7 @@ from reportlab.lib.units import mm
 from django.utils.translation import gettext
 
 from core.services.dokumentsprache import in_sprache, sprache_von
+from core.services.druckfarben import EMBER_RGB
 
 
 def _chf(v):
@@ -40,7 +41,7 @@ def _report(eigentuemer, daten):
     heute = datetime.date.today().strftime('%d.%m.%Y')
 
     def kopf(titel):
-        c.setFillColorRGB(0.12, 0.23, 0.54)
+        c.setFillColorRGB(*EMBER_RGB)
         c.rect(0, h - 30 * mm, w, 30 * mm, fill=1, stroke=0)
         c.setFillColorRGB(1, 1, 1)
         c.setFont("Helvetica-Bold", 16)

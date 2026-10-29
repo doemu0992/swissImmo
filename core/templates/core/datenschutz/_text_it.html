@@ -1,0 +1,113 @@
+<div class="fw-phead">
+    <div>
+        <h1>Informativa sulla protezione dei dati</h1>
+        <p>Stato: {{ stand|date:"d.m.Y" }}</p>
+    </div>
+</div>
+
+    {% comment %}
+        ENTWURF einer Übersetzung — nicht rechtlich geprüft (Entscheid D11: Rechtstexte bleiben deutsch
+        bis zur geprüften Übersetzung). Der Hinweis unten ist Teil des Entwurfs und fällt erst weg, wenn
+        eine Juristin oder ein Jurist die Fassung freigegeben hat. Massgebend ist die deutsche Fassung
+        (_text_de.html); bei jeder Änderung dort ist diese Datei nachzuführen.
+    {% endcomment %}
+    <p class="fw-hinweis" role="note">
+        Traduzione provvisoria, non verificata dal punto di vista giuridico. Fa fede unicamente la versione tedesca
+        di questa informativa; la si può visualizzare con il selettore della lingua (DE).
+    </p>
+
+    <div class="fw-card"><div class="fw-rumpf fw-aussen-text">
+
+        <section>
+            <h2>1. Titolare del trattamento</h2>
+            {% if mehrdeutig %}
+            {% comment %} Ohne Objektbezug ist nicht bestimmbar, WELCHE Verwaltung die Daten
+               erhebt. Eine geratene Firma waere schlimmer als keine. {% endcomment %}
+            <p>Titolare del trattamento è, di volta in volta, l’amministrazione dell’oggetto per il quale
+            presentate la candidatura. Consultate questa informativa dal modulo di candidatura dell’oggetto
+            interessato: vi è indicato il titolare con il suo nome.</p>
+            {% else %}
+            <p>
+                {{ verwaltung.firma|default:"Immobilienverwaltung" }}<br>
+                {% if verwaltung %}{{ verwaltung.strasse }}<br>{{ verwaltung.plz }} {{ verwaltung.ort }}<br>{% endif %}
+                {% if verwaltung.email %}{{ verwaltung.email }}{% endif %}
+            </p>
+            <p>Questo servizio è responsabile del trattamento dei vostri dati personali.
+            Potete rivolgervi ad esso per qualsiasi richiesta in materia di protezione dei dati.</p>
+            {% endif %}
+        </section>
+
+        <section>
+            <h2>2. Quali dati trattiamo e per quale scopo</h2>
+            <p>Candidatura per un alloggio</p>
+            <p>Per la scelta dei conduttori di un determinato oggetto: nome, data di nascita, recapiti,
+            indicazioni sulla situazione abitativa e professionale, reddito annuo approssimativo nonché un
+            estratto del registro delle esecuzioni. La copia del documento d’identità e i giustificativi di
+            reddito li richiediamo soltanto quando la conclusione del contratto si concretizza, cioè alla persona
+            scelta o a una cerchia ristretta di candidati, non a tutti gli interessati.</p>
+            <p>Rapporto di locazione</p>
+            <p>Per la conclusione, la gestione e l’esecuzione del contratto di locazione: dati anagrafici,
+            dati contrattuali, pagamenti, corrispondenza, segnalazioni di danni e di manutenzione.</p>
+            <p>Informazioni di referenza</p>
+            <p>Se indicate i recapiti del vostro locatore attuale o del vostro datore di lavoro, possiamo
+            contattarli per ottenere informazioni di referenza.</p>
+        </section>
+
+        <section>
+            <h2>3. Per quanto tempo conserviamo i dati</h2>
+            <table class="w-full text-left border-collapse mt-2">
+                <thead>
+                    <tr class="border-b fw-linie">
+                        <th class="py-2 pr-4 font-bold">Dati</th>
+                        <th class="py-2 font-bold">Durata</th>
+                    </tr>
+                </thead>
+                <tbody class="align-top">
+                    <tr class="border-b fw-linie">
+                        <td class="py-2 pr-4">Documenti delle candidature non accolte</td>
+                        <td class="py-2">Cancellazione dopo la decisione di locazione</td>
+                    </tr>
+                    <tr class="border-b fw-linie">
+                        <td class="py-2 pr-4">Altre indicazioni delle candidature non accolte</td>
+                        <td class="py-2">Anonimizzazione al più tardi dopo un anno</td>
+                    </tr>
+                    <tr class="border-b fw-linie">
+                        <td class="py-2 pr-4">Documenti dei conduttori</td>
+                        <td class="py-2">Per la durata del rapporto di locazione</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 pr-4">Documenti contabili (fatture, pagamenti)</td>
+                        <td class="py-2">Dieci anni — obbligo legale di conservazione (art. 958f CO)</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>Durante il periodo di conservazione non possiamo cancellare i documenti contabili.
+            Alla scadenza anonimizziamo i dati personali corrispondenti, in modo che la contabilità resti
+            verificabile ma il riferimento alla vostra persona venga meno.</p>
+        </section>
+
+        <section>
+            <h2>4. Comunicazione a terzi</h2>
+            <p>Comunichiamo i vostri dati soltanto nella misura necessaria al rapporto di locazione — ad esempio
+            al proprietario, alle imprese incaricate di riparare un danno segnalato o a fornitori di servizi per
+            l’invio e la firma elettronica di documenti. Questi sono vincolati contrattualmente allo scopo.
+            Non avviene alcuna vendita di dati.</p>
+        </section>
+
+        <section>
+            <h2>5. I vostri diritti</h2>
+            <p>Avete il diritto di ottenere <strong>informazioni</strong> sui dati trattati che vi riguardano,
+            alla <strong>rettifica</strong> delle indicazioni inesatte nonché alla <strong>cancellazione</strong>
+            o alla limitazione del trattamento, nella misura in cui non vi si oppone un obbligo legale di
+            conservazione. Rivolgetevi a tal fine al servizio indicato sopra.</p>
+            <p>Potete inoltre rivolgervi all’Incaricato federale della protezione dei dati e della
+            trasparenza (IFPDT).</p>
+        </section>
+
+        <section>
+            <h2>6. Sicurezza dei dati</h2>
+            <p>L’accesso ai vostri dati è limitato alle persone che ne hanno bisogno per svolgere il loro
+            compito; la trasmissione avviene in forma cifrata. I documenti caricati non sono accessibili
+            pubblicamente.</p>
+        </section>
+</div></div>

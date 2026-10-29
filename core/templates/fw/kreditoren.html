@@ -1,7 +1,7 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
 {% load chf %}
-{% block title %}{% trans "Kreditoren" %} — swissImmo{% endblock %}
+{% block title %}{% trans "Kreditoren" %} — immoswiss{% endblock %}
 
 {% block content %}
 
@@ -236,7 +236,7 @@
                             <input type="hidden" name="rechnung_id" value="{{ row.k.id }}">
                             <input type="hidden" name="erwartet_offen" value="{{ row.offen_betrag|stringformat:'.2f' }}">
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                            <input type="number" step="0.05" min="0" name="betrag" value="{{ row.offen_betrag|stringformat:'.2f' }}"
+                            <input type="text" inputmode="decimal" data-chf data-fehler="{% trans 'Bitte einen Betrag eingeben, z. B. 1450.50' %}" name="betrag" value="{{ row.offen_betrag|stringformat:'.2f' }}"
                                    class="fw-feld w-24 text-right" title="{% trans 'Betrag (Teilzahlung möglich)' %}">
                             <button type="submit" class="fw-btn fw-primary fw-knapp">
                                 {% zeichen 'speichern' %} {% if row.in_zahlung %}{% trans "Bestätigen" %}{% else %}{% trans "Bezahlen" %}{% endif %}
@@ -255,7 +255,7 @@
                             {% csrf_token %}
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                             {% if not row.k.konto_id %}
-                            <select name="konto_id" required class="fw-feld">
+                            <select name="konto_id" required aria-label="{% trans 'Aufwandskonto' %}" class="fw-feld">
                                 <option value="">{% trans "Aufwandskonto…" %}</option>
                                 {% for k in aufwand_konten %}<option value="{{ k.id }}">{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
                             </select>

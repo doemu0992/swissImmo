@@ -33,6 +33,7 @@ from ._basis import (_global_filter, _kaution_bilanziert, _num, _pendenz_ziel,
                      STATUS_PILL, VERTRAG_PILL)
 from .schluessel import schliessanlage_kontext as _schliessanlage_kontext
 from core.services.schluessel import akte as _schluessel_akte, ausgaben_von as _ausgaben_von
+from core.utils.betrag import betrag_normalisieren
 
 
 # ============================================================
@@ -500,8 +501,7 @@ def fw_budget_speichern(request, pk):
 
     # Schweizer Schreibweise: «31'000.00» ist die Form, die auf derselben
     # Seite ausgegeben wird. Wer sie zurueckkopiert, darf nicht scheitern.
-    roh = (request.POST.get('unterhalt') or '').replace("'", '').replace(' ', '')
-    roh = roh.replace('’', '').replace(',', '.')
+    roh = betrag_normalisieren(request.POST.get('unterhalt'))
     try:
         betrag = Decimal(roh)
     except (InvalidOperation, ValueError):

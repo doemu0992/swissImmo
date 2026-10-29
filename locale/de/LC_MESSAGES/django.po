@@ -909,8 +909,8 @@ msgstr ""
 "unterschreiben."
 
 #: core/templates/403.html:6
-msgid "Keine Berechtigung – swissImmo"
-msgstr "Keine Berechtigung – swissImmo"
+msgid "Keine Berechtigung — immoswiss"
+msgstr "Keine Berechtigung — immoswiss"
 
 #: core/templates/403.html:24
 msgid "Dafür fehlt Ihrer Rolle die Berechtigung"
@@ -932,8 +932,8 @@ msgid "Zur Übersicht"
 msgstr "Zur Übersicht"
 
 #: core/templates/404.html:6
-msgid "Seite nicht gefunden – swissImmo"
-msgstr "Seite nicht gefunden – swissImmo"
+msgid "Seite nicht gefunden — immoswiss"
+msgstr "Seite nicht gefunden — immoswiss"
 
 #: core/templates/404.html:22
 msgid "Seite nicht gefunden"
@@ -948,8 +948,8 @@ msgstr ""
 "entfernt oder der Link ist veraltet."
 
 #: core/templates/500.html:6
-msgid "Ein Fehler ist aufgetreten – swissImmo"
-msgstr "Ein Fehler ist aufgetreten – swissImmo"
+msgid "Ein Fehler ist aufgetreten — immoswiss"
+msgstr "Ein Fehler ist aufgetreten — immoswiss"
 
 #: core/templates/500.html:23
 msgid "Ein Fehler ist aufgetreten"
@@ -1033,8 +1033,8 @@ msgid "Zurück zur Anmeldung"
 msgstr "Zurück zur Anmeldung"
 
 #: core/templates/core/_passwort_shell_top.html:7
-msgid "Passwort | SwissImmo Portal"
-msgstr "Passwort | SwissImmo Portal"
+msgid "Passwort — immoswiss"
+msgstr "Passwort — immoswiss"
 
 #: core/templates/core/_passwort_shell_top.html:18
 #: core/templates/core/login.html:187
@@ -1461,8 +1461,8 @@ msgid "Unterschrift Mieter"
 msgstr "Unterschrift Mieter"
 
 #: core/templates/core/login.html:6
-msgid "Login | SwissImmo Portal"
-msgstr "Login | SwissImmo Portal"
+msgid "Login — immoswiss"
+msgstr "Login — immoswiss"
 
 #: core/templates/core/login.html:146
 msgid "Ihre Liegenschaften, sauber im Griff."
@@ -1489,8 +1489,8 @@ msgid "Eigentümer- &amp; Mieterportal inklusive"
 msgstr "Eigentümer- &amp; Mieterportal inklusive"
 
 #: core/templates/core/login.html:154
-msgid "© swissImmo · Alle Angaben ohne Gewähr"
-msgstr "© swissImmo · Alle Angaben ohne Gewähr"
+msgid "© immoswiss · Alle Angaben ohne Gewähr"
+msgstr "© immoswiss · Alle Angaben ohne Gewähr"
 
 #: core/templates/core/login.html:164
 #: core/templates/core/portal_login.html:166
@@ -1723,8 +1723,8 @@ msgid "Neues Passwort wiederholen"
 msgstr "Neues Passwort wiederholen"
 
 #: core/templates/core/mieter_portal.html:4
-msgid "Mieterportal — SwissImmo"
-msgstr "Mieterportal — SwissImmo"
+msgid "Mieterportal — immoswiss"
+msgstr "Mieterportal — immoswiss"
 
 #: core/templates/core/mieter_portal.html:6
 #: core/templates/core/mieter_portal.html:7
@@ -2098,8 +2098,8 @@ msgstr ""
 "Link zum Zurücksetzen gesendet. Bitte prüfen Sie auch den Spam-Ordner."
 
 #: core/templates/core/portal.html:6
-msgid "Eigentümer-Portal — SwissImmo"
-msgstr "Eigentümer-Portal — SwissImmo"
+msgid "Eigentümer-Portal — immoswiss"
+msgstr "Eigentümer-Portal — immoswiss"
 
 #: core/templates/core/portal.html:199
 msgid "Eigentümer-Portal"
@@ -2270,12 +2270,12 @@ msgstr ""
 "sich an Ihre Verwaltung, damit der Zugang freigeschaltet wird."
 
 #: core/templates/core/portal.html:344
-msgid "SwissImmo Eigentümer-Portal · Alle Angaben ohne Gewähr"
-msgstr "SwissImmo Eigentümer-Portal · Alle Angaben ohne Gewähr"
+msgid "immoswiss Eigentümer-Portal · Alle Angaben ohne Gewähr"
+msgstr "immoswiss Eigentümer-Portal · Alle Angaben ohne Gewähr"
 
 #: core/templates/core/portal_base.html:7
-msgid "Portal — SwissImmo"
-msgstr "Portal — SwissImmo"
+msgid "Portal — immoswiss"
+msgstr "Portal — immoswiss"
 
 #: core/templates/core/portal_base.html:32 core/templates/fw/base.html:138
 msgid "Menü schliessen"
@@ -2286,12 +2286,12 @@ msgid "Menü öffnen"
 msgstr "Menü öffnen"
 
 #: core/templates/core/portal_base.html:70
-msgid "SwissImmo Mieterportal · Alle Angaben ohne Gewähr"
-msgstr "SwissImmo Mieterportal · Alle Angaben ohne Gewähr"
+msgid "immoswiss Mieterportal · Alle Angaben ohne Gewähr"
+msgstr "immoswiss Mieterportal · Alle Angaben ohne Gewähr"
 
 #: core/templates/core/portal_login.html:6
-msgid "Portal-Login | SwissImmo"
-msgstr "Portal-Login | SwissImmo"
+msgid "Portal-Login — immoswiss"
+msgstr "Portal-Login — immoswiss"
 
 #: core/templates/core/portal_login.html:148
 msgid "Ihr persönliches Immobilien-Portal"
@@ -2318,12 +2318,12 @@ msgid "Schaden melden &amp; Kündigung erfassen"
 msgstr "Schaden melden &amp; Kündigung erfassen"
 
 #: core/templates/core/portal_login.html:156
-msgid "© swissImmo · Sicheres Login für Mietende und Eigentümer"
-msgstr "© swissImmo · Sicheres Login für Mietende und Eigentümer"
+msgid "© immoswiss · Sicheres Login für Mietende und Eigentümer"
+msgstr "© immoswiss · Sicheres Login für Mietende und Eigentümer"
 
 #: core/templates/core/portal_login.html:163
-msgid "swissImmo Portal"
-msgstr "swissImmo Portal"
+msgid "immoswiss Portal"
+msgstr "immoswiss Portal"
 
 #: core/templates/core/portal_login.html:167
 msgid "Bitte melden Sie sich in Ihrem Portal an."
@@ -2355,8 +2355,8 @@ msgid "Postfach"
 msgstr "Postfach"
 
 #: core/templates/core/postfach_form.html:8
-msgid "Zugangsdaten des Postfachs, aus dem swissImmo diese Mails abholt."
-msgstr "Zugangsdaten des Postfachs, aus dem swissImmo diese Mails abholt."
+msgid "Zugangsdaten des Postfachs, aus dem immoswiss diese Mails abholt."
+msgstr "Zugangsdaten des Postfachs, aus dem immoswiss diese Mails abholt."
 
 #: core/templates/core/postfach_form.html:23
 msgid ""
@@ -3047,10 +3047,10 @@ msgstr "Aktivieren"
 
 #: core/templates/core/zweifaktor_uebersicht.html:8
 msgid ""
-"Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt swissImmo einen "
+"Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt immoswiss einen "
 "Code aus Ihrer Authenticator-App."
 msgstr ""
-"Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt swissImmo einen "
+"Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt immoswiss einen "
 "Code aus Ihrer Authenticator-App."
 
 #: core/templates/core/zweifaktor_uebersicht.html:24
@@ -3703,10 +3703,6 @@ msgstr "Neuwert CHF"
 #: core/templates/fw/abnahme_neu.html:108
 msgid "Neuwert (optional, sonst vom Element)"
 msgstr "Neuwert (optional, sonst vom Element)"
-
-#: core/templates/fw/abonnement.html:3
-msgid "Abonnement · swissImmo"
-msgstr "Abonnement · swissImmo"
 
 #: core/templates/fw/abonnement.html:7 core/views/fw/aktionen.py:865
 msgid "Abonnement"
@@ -7492,8 +7488,8 @@ msgid "Integrationen"
 msgstr "Integrationen"
 
 #: core/templates/fw/integrationen.html:8
-msgid "Verbundene Dienste und Schnittstellen von swissImmo."
-msgstr "Verbundene Dienste und Schnittstellen von swissImmo."
+msgid "Verbundene Dienste und Schnittstellen von immoswiss."
+msgstr "Verbundene Dienste und Schnittstellen von immoswiss."
 
 #: core/templates/fw/integrationen.html:36
 msgid "Test-E-Mail senden"
@@ -18808,10 +18804,10 @@ msgstr "Nicht konfiguriert"
 
 #: core/views/fw/profil.py:902
 msgid ""
-"Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über "
+"Versende Mahnungen, Abrechnungen und Anschreiben direkt aus immoswiss über "
 "deinen SMTP-Server."
 msgstr ""
-"Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über "
+"Versende Mahnungen, Abrechnungen und Anschreiben direkt aus immoswiss über "
 "deinen SMTP-Server."
 
 #: core/views/fw/profil.py:903
@@ -30591,11 +30587,11 @@ msgstr "Noch keine Nachrichten."
 msgid "Auftraggeberin: %(firma)s"
 msgstr "Auftraggeberin: %(firma)s"
 
-msgid "Auftrag — SwissImmo"
-msgstr "Auftrag — SwissImmo"
+msgid "Auftrag — immoswiss"
+msgstr "Auftrag — immoswiss"
 
-msgid "SwissImmo · Auftrag für Handwerker"
-msgstr "SwissImmo · Auftrag für Handwerker"
+msgid "immoswiss · Auftrag für Handwerker"
+msgstr "immoswiss · Auftrag für Handwerker"
 
 msgid "Was möchten Sie tun?"
 msgstr "Was möchten Sie tun?"
@@ -33593,8 +33589,8 @@ msgstr ""
 msgid "Die Eingabe wurde nicht gespeichert."
 msgstr "Die Eingabe wurde nicht gespeichert."
 
-msgid "Ungültige Eingabe – swissImmo"
-msgstr "Ungültige Eingabe – swissImmo"
+msgid "Ungültige Eingabe — immoswiss"
+msgstr "Ungültige Eingabe — immoswiss"
 
 msgid "Ungültige Eingabe"
 msgstr "Ungültige Eingabe"
@@ -34164,3 +34160,453 @@ msgstr "Dokument archiviert."
 
 msgid "Schadensmeldung archiviert."
 msgstr "Schadensmeldung archiviert."
+
+# --- Öffentliche Formulare, Aussenseiten (Etappe 3, 29.10.2026) ---
+msgid "Alle Angaben ohne Gewähr"
+msgstr "Alle Angaben ohne Gewähr"
+
+msgid "Schaden oder Anliegen melden"
+msgstr "Schaden oder Anliegen melden"
+
+msgid "Ihre Meldung geht direkt an die Verwaltung."
+msgstr "Ihre Meldung geht direkt an die Verwaltung."
+
+msgid "Prüfen & absenden"
+msgstr "Prüfen & absenden"
+
+msgid ""
+"Was ist passiert? Ein Foto hilft der Verwaltung, das Problem schneller "
+"einzuschätzen."
+msgstr ""
+"Was ist passiert? Ein Foto hilft der Verwaltung, das Problem schneller "
+"einzuschätzen."
+
+msgid "Bitte beschreiben Sie das Anliegen."
+msgstr "Bitte beschreiben Sie das Anliegen."
+
+msgid "Wie die Verwaltung Sie erreicht."
+msgstr "Wie die Verwaltung Sie erreicht."
+
+msgid ""
+"Wir konnten Ihre Meldung keiner Liegenschaft zuordnen. Bitte verwenden Sie "
+"die E-Mail-Adresse, die bei Ihrer Verwaltung hinterlegt ist, oder melden Sie"
+" sich direkt bei Ihrer Verwaltung."
+msgstr ""
+"Wir konnten Ihre Meldung keiner Liegenschaft zuordnen. Bitte verwenden Sie "
+"die E-Mail-Adresse, die bei Ihrer Verwaltung hinterlegt ist, oder melden Sie"
+" sich direkt bei Ihrer Verwaltung."
+
+msgid "Dieses Objekt ist nicht mehr ausgeschrieben"
+msgstr "Dieses Objekt ist nicht mehr ausgeschrieben"
+
+msgid ""
+"Die Ausschreibung wurde beendet — vermutlich ist die Wohnung bereits "
+"vergeben. Bewerbungen können dafür keine mehr entgegengenommen werden."
+msgstr ""
+"Die Ausschreibung wurde beendet — vermutlich ist die Wohnung bereits "
+"vergeben. Bewerbungen können dafür keine mehr entgegengenommen werden."
+
+msgid "Bei Fragen wenden Sie sich bitte direkt an die Verwaltung."
+msgstr "Bei Fragen wenden Sie sich bitte direkt an die Verwaltung."
+
+#, python-format
+msgid "Bewerbung: %(name)s"
+msgstr "Bewerbung: %(name)s"
+
+msgid "Digitale Bewerbung"
+msgstr "Digitale Bewerbung"
+
+msgid "Bewerbung eingereicht!"
+msgstr "Bewerbung eingereicht!"
+
+msgid ""
+"Vielen Dank für Ihr Interesse. Wir haben Ihre Unterlagen erhalten und werden"
+" diese nun prüfen. Wir melden uns in Kürze bei Ihnen."
+msgstr ""
+"Vielen Dank für Ihr Interesse. Wir haben Ihre Unterlagen erhalten und werden"
+" diese nun prüfen. Wir melden uns in Kürze bei Ihnen."
+
+msgid "Die Verbindung wurde unterbrochen. Bitte versuchen Sie es erneut."
+msgstr "Die Verbindung wurde unterbrochen. Bitte versuchen Sie es erneut."
+
+msgid ""
+"Die Bewerbung konnte nicht gesendet werden. Bitte laden Sie die Seite neu "
+"und versuchen Sie es erneut."
+msgstr ""
+"Die Bewerbung konnte nicht gesendet werden. Bitte laden Sie die Seite neu "
+"und versuchen Sie es erneut."
+
+msgid "Ein unbekannter Fehler ist aufgetreten."
+msgstr "Ein unbekannter Fehler ist aufgetreten."
+
+msgid "Bitte füllen Sie alle Formularfelder korrekt aus."
+msgstr "Bitte füllen Sie alle Formularfelder korrekt aus."
+
+msgid "Prüfen & einreichen"
+msgstr "Prüfen & einreichen"
+
+msgid "Wer bewirbt sich?"
+msgstr "Wer bewirbt sich?"
+
+msgid "Bitte geben Sie Ihren Vornamen an."
+msgstr "Bitte geben Sie Ihren Vornamen an."
+
+msgid "Bitte geben Sie Ihren Nachnamen an."
+msgstr "Bitte geben Sie Ihren Nachnamen an."
+
+msgid "Bitte geben Sie Ihr Geburtsdatum an."
+msgstr "Bitte geben Sie Ihr Geburtsdatum an."
+
+msgid "Kontakt & Adresse"
+msgstr "Kontakt & Adresse"
+
+msgid "Wie wir Sie erreichen und wo Sie heute wohnen."
+msgstr "Wie wir Sie erreichen und wo Sie heute wohnen."
+
+msgid "Mobilnummer"
+msgstr "Mobilnummer"
+
+msgid "Bitte geben Sie Ihre Mobilnummer an."
+msgstr "Bitte geben Sie Ihre Mobilnummer an."
+
+msgid "Bitte geben Sie Ihre E-Mail-Adresse an."
+msgstr "Bitte geben Sie Ihre E-Mail-Adresse an."
+
+msgid "Aktuelle Adresse (Strasse, Nr.)"
+msgstr "Aktuelle Adresse (Strasse, Nr.)"
+
+msgid "Bitte geben Sie Ihre Adresse an."
+msgstr "Bitte geben Sie Ihre Adresse an."
+
+msgid "Bitte geben Sie die Postleitzahl an."
+msgstr "Bitte geben Sie die Postleitzahl an."
+
+msgid "Bitte geben Sie den Ort an."
+msgstr "Bitte geben Sie den Ort an."
+
+msgid "Aktuelles Mietverhältnis"
+msgstr "Aktuelles Mietverhältnis"
+
+msgid "Aktueller Vermieter / Verwaltung"
+msgstr "Aktueller Vermieter / Verwaltung"
+
+msgid "Bitte geben Sie Ihre aktuelle Vermieterschaft an."
+msgstr "Bitte geben Sie Ihre aktuelle Vermieterschaft an."
+
+msgid "Telefon Vermieter"
+msgstr "Telefon Vermieter"
+
+msgid "Bitte geben Sie die Telefonnummer Ihrer Vermieterschaft an."
+msgstr "Bitte geben Sie die Telefonnummer Ihrer Vermieterschaft an."
+
+msgid "Grund für den Umzug"
+msgstr "Grund für den Umzug"
+
+msgid "Angaben zu Ihrer Erwerbstätigkeit und Ihrem ungefähren Einkommen."
+msgstr "Angaben zu Ihrer Erwerbstätigkeit und Ihrem ungefähren Einkommen."
+
+msgid "Bitte geben Sie Ihren Beruf an."
+msgstr "Bitte geben Sie Ihren Beruf an."
+
+msgid "Bruttoeinkommen im Jahr (CHF)"
+msgstr "Bruttoeinkommen im Jahr (CHF)"
+
+msgid "weniger als 30’000"
+msgstr "weniger als 30’000"
+
+msgid "mehr als 160’000"
+msgstr "mehr als 160’000"
+
+msgid "Bitte geben Sie Ihren Arbeitgeber an."
+msgstr "Bitte geben Sie Ihren Arbeitgeber an."
+
+msgid "Angestellt seit"
+msgstr "Angestellt seit"
+
+msgid "Bitte geben Sie an, seit wann Sie angestellt sind."
+msgstr "Bitte geben Sie an, seit wann Sie angestellt sind."
+
+msgid "Tel. Arbeitgeber"
+msgstr "Tel. Arbeitgeber"
+
+msgid "Bitte geben Sie die Telefonnummer Ihres Arbeitgebers an."
+msgstr "Bitte geben Sie die Telefonnummer Ihres Arbeitgebers an."
+
+msgid "Anstellung ist unbefristet"
+msgstr "Anstellung ist unbefristet"
+
+msgid "Betreibungen in den letzten 2 Jahren?"
+msgstr "Betreibungen in den letzten 2 Jahren?"
+
+msgid "Falls ja, bitte im letzten Schritt den Auszug hochladen."
+msgstr "Falls ja, bitte im letzten Schritt den Auszug hochladen."
+
+msgid "Wer einzieht, und was für Sie sonst wichtig ist."
+msgstr "Wer einzieht, und was für Sie sonst wichtig ist."
+
+msgid "Anzahl Erwachsene"
+msgstr "Anzahl Erwachsene"
+
+msgid "Anzahl Kinder"
+msgstr "Anzahl Kinder"
+
+msgid "Gibt es Haustiere?"
+msgstr "Gibt es Haustiere?"
+
+msgid "Welche Tiere? (Rasse/Art)"
+msgstr "Welche Tiere? (Rasse/Art)"
+
+msgid "Spielt jemand ein Instrument?"
+msgstr "Spielt jemand ein Instrument?"
+
+msgid "Interesse an Parkplatz/Garage?"
+msgstr "Interesse an Parkplatz/Garage?"
+
+msgid "Schilder & Kaution"
+msgstr "Schilder & Kaution"
+
+msgid "Text für Briefkasten"
+msgstr "Text für Briefkasten"
+
+msgid "z.B. Muster"
+msgstr "z.B. Muster"
+
+msgid "Text für Klingel"
+msgstr "Text für Klingel"
+
+msgid "Wunsch-Kautionsart"
+msgstr "Wunsch-Kautionsart"
+
+msgid "Klassisches Bankdepot (Mietzinskonto)"
+msgstr "Klassisches Bankdepot (Mietzinskonto)"
+
+msgid "Kautionsversicherung (z.B. Swisskaution)"
+msgstr "Kautionsversicherung (z.B. Swisskaution)"
+
+msgid "Unterlagen"
+msgstr "Unterlagen"
+
+msgid "Betreibungsauszug und gewünschter Bezugstermin."
+msgstr "Betreibungsauszug und gewünschter Bezugstermin."
+
+msgid "Betreibungsregisterauszug"
+msgstr "Betreibungsregisterauszug"
+
+msgid "Nicht älter als 3 Monate."
+msgstr "Nicht älter als 3 Monate."
+
+msgid "Auszug nachreichen"
+msgstr "Auszug nachreichen"
+
+msgid "Auszug hochladen"
+msgstr "Auszug hochladen"
+
+msgid ""
+"Bitte laden Sie einen Betreibungsauszug hoch oder wählen Sie «Auszug "
+"nachreichen»."
+msgstr ""
+"Bitte laden Sie einen Betreibungsauszug hoch oder wählen Sie «Auszug "
+"nachreichen»."
+
+msgid "Keinen aktuellen Auszug zur Hand?"
+msgstr "Keinen aktuellen Auszug zur Hand?"
+
+msgid "Hier beim Bund online bestellen (PDF)"
+msgstr "Hier beim Bund online bestellen (PDF)"
+
+msgid "Weitere Dokumente (Optional)"
+msgstr "Weitere Dokumente (Optional)"
+
+msgid "Motivationsschreiben, Referenzen etc."
+msgstr "Motivationsschreiben, Referenzen etc."
+
+msgid "Bitte wählen Sie einen gewünschten Bezugstermin aus."
+msgstr "Bitte wählen Sie einen gewünschten Bezugstermin aus."
+
+msgid "Ausweis und Einkommensnachweis"
+msgstr "Ausweis und Einkommensnachweis"
+
+msgid ""
+"Diese Unterlagen fragen wir erst an, wenn Sie in die engere Auswahl kommen —"
+" nicht schon jetzt von allen Interessentinnen und Interessenten."
+msgstr ""
+"Diese Unterlagen fragen wir erst an, wenn Sie in die engere Auswahl kommen —"
+" nicht schon jetzt von allen Interessentinnen und Interessenten."
+
+msgid "Was mit Ihren Angaben geschieht"
+msgstr "Was mit Ihren Angaben geschieht"
+
+#, python-format
+msgid ""
+"Ausführlich in der <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\" "
+"class=\"fw-link\">Datenschutzerklärung</a>."
+msgstr ""
+"Ausführlich in der <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\" "
+"class=\"fw-link\">Datenschutzerklärung</a>."
+
+msgid "Verbindlich einreichen"
+msgstr "Verbindlich einreichen"
+
+msgid ""
+"Ihre Angaben dienen <strong>ausschliesslich</strong> der Auswahl der "
+"Mieterschaft für dieses Objekt und werden für nichts anderes verwendet."
+msgstr ""
+"Ihre Angaben dienen <strong>ausschliesslich</strong> der Auswahl der "
+"Mieterschaft für dieses Objekt und werden für nichts anderes verwendet."
+
+msgid ""
+"Die angegebenen Kontakte bei Ihrer bisherigen Vermieterschaft und Ihrem "
+"Arbeitgeber können wir für eine <strong>Referenzauskunft "
+"kontaktieren</strong>."
+msgstr ""
+"Die angegebenen Kontakte bei Ihrer bisherigen Vermieterschaft und Ihrem "
+"Arbeitgeber können wir für eine <strong>Referenzauskunft "
+"kontaktieren</strong>."
+
+msgid ""
+"Erhalten Sie die Wohnung nicht, werden Ihre Unterlagen einschliesslich "
+"Betreibungsauszug nach dem Vermietungsentscheid <strong>gelöscht</strong>."
+msgstr ""
+"Erhalten Sie die Wohnung nicht, werden Ihre Unterlagen einschliesslich "
+"Betreibungsauszug nach dem Vermietungsentscheid <strong>gelöscht</strong>."
+
+msgid ""
+"Sie haben jederzeit das Recht auf <strong>Auskunft, Berichtigung und "
+"Löschung</strong> Ihrer Daten."
+msgstr ""
+"Sie haben jederzeit das Recht auf <strong>Auskunft, Berichtigung und "
+"Löschung</strong> Ihrer Daten."
+
+#: core/templates/403.html:6
+msgid "Keine Berechtigung – swissImmo"
+msgstr "Keine Berechtigung – swissImmo"
+
+#: core/templates/404.html:6
+msgid "Seite nicht gefunden – swissImmo"
+msgstr "Seite nicht gefunden – swissImmo"
+
+#: core/templates/500.html:6
+msgid "Ein Fehler ist aufgetreten – swissImmo"
+msgstr "Ein Fehler ist aufgetreten – swissImmo"
+
+#: core/templates/core/_passwort_shell_top.html:7
+msgid "Passwort | SwissImmo Portal"
+msgstr "Passwort | SwissImmo Portal"
+
+#: core/templates/core/login.html:6
+msgid "Login | SwissImmo Portal"
+msgstr "Login | SwissImmo Portal"
+
+#: core/templates/core/login.html:154
+msgid "© swissImmo · Alle Angaben ohne Gewähr"
+msgstr "© swissImmo · Alle Angaben ohne Gewähr"
+
+#: core/templates/core/mieter_portal.html:4
+msgid "Mieterportal — SwissImmo"
+msgstr "Mieterportal — SwissImmo"
+
+#: core/templates/core/portal.html:6
+msgid "Eigentümer-Portal — SwissImmo"
+msgstr "Eigentümer-Portal — SwissImmo"
+
+#: core/templates/core/portal.html:344
+msgid "SwissImmo Eigentümer-Portal · Alle Angaben ohne Gewähr"
+msgstr "SwissImmo Eigentümer-Portal · Alle Angaben ohne Gewähr"
+
+#: core/templates/core/portal_base.html:7
+msgid "Portal — SwissImmo"
+msgstr "Portal — SwissImmo"
+
+#: core/templates/core/portal_base.html:70
+msgid "SwissImmo Mieterportal · Alle Angaben ohne Gewähr"
+msgstr "SwissImmo Mieterportal · Alle Angaben ohne Gewähr"
+
+#: core/templates/core/portal_login.html:6
+msgid "Portal-Login | SwissImmo"
+msgstr "Portal-Login | SwissImmo"
+
+#: core/templates/core/portal_login.html:156
+msgid "© swissImmo · Sicheres Login für Mietende und Eigentümer"
+msgstr "© swissImmo · Sicheres Login für Mietende und Eigentümer"
+
+#: core/templates/core/portal_login.html:163
+msgid "swissImmo Portal"
+msgstr "swissImmo Portal"
+
+#: core/templates/core/postfach_form.html:8
+msgid "Zugangsdaten des Postfachs, aus dem swissImmo diese Mails abholt."
+msgstr "Zugangsdaten des Postfachs, aus dem swissImmo diese Mails abholt."
+
+#: core/templates/core/zweifaktor_uebersicht.html:8
+msgid ""
+"Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt swissImmo einen "
+"Code aus Ihrer Authenticator-App."
+msgstr ""
+"Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt swissImmo einen "
+"Code aus Ihrer Authenticator-App."
+
+#: core/templates/fw/abonnement.html:3
+msgid "Abonnement · swissImmo"
+msgstr "Abonnement · swissImmo"
+
+#: core/templates/fw/integrationen.html:8
+msgid "Verbundene Dienste und Schnittstellen von swissImmo."
+msgstr "Verbundene Dienste und Schnittstellen von swissImmo."
+
+#: core/views/fw/profil.py:902
+msgid ""
+"Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über "
+"deinen SMTP-Server."
+msgstr ""
+"Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über "
+"deinen SMTP-Server."
+
+msgid "Auftrag — SwissImmo"
+msgstr "Auftrag — SwissImmo"
+
+msgid "SwissImmo · Auftrag für Handwerker"
+msgstr "SwissImmo · Auftrag für Handwerker"
+
+msgid "Ungültige Eingabe – swissImmo"
+msgstr "Ungültige Eingabe – swissImmo"
+
+msgid "Archivierte Akten ansehen und wiederherstellen"
+msgstr "Archivierte Akten ansehen und wiederherstellen"
+
+msgid "Ablaufdatum"
+msgstr "Ablaufdatum"
+
+msgid "Bitte eine Zahl eingeben."
+msgstr "Bitte eine Zahl eingeben."
+
+msgid "Bitte einen Betrag eingeben, z. B. 1450.50"
+msgstr "Bitte einen Betrag eingeben, z. B. 1450.50"
+
+msgid "Datei hochladen"
+msgstr "Datei hochladen"
+
+msgid "Kontoauszug (Datei)"
+msgstr "Kontoauszug (Datei)"
+
+msgid "MWST-Satz in Prozent"
+msgstr "MWST-Satz in Prozent"
+
+msgid "Rechnung auswählen"
+msgstr "Rechnung auswählen"
+
+msgid "Richtung"
+msgstr "Richtung"
+
+msgid "Unterschrift als Bilddatei"
+msgstr "Unterschrift als Bilddatei"
+
+msgid "Vertrag auswählen"
+msgstr "Vertrag auswählen"
+
+#, python-format
+msgid "Lebensdauer in Jahren: %(k)s"
+msgstr "Lebensdauer in Jahren: %(k)s"
+
+#, python-format
+msgid "Bemerkung: %(k)s"
+msgstr "Bemerkung: %(k)s"

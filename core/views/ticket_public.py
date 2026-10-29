@@ -19,17 +19,27 @@ def index_view(request):
 
 
 # ==========================================
-# 2. NEUES ALLGEMEINES SCHADENSFORMULAR
+# 2. ALLGEMEINES SCHADENSFORMULAR (WEBSITE)
 # ==========================================
+def _web_formular(request, status=200, **zusatz):
+    """Dieselbe Vorlage wie der Aushang (`core/schaden_melden.html`), Modus «web».
+
+    Die Eingaben kommen nach einem Fehler mit zurück — bis Etappe 3 stand das Formular
+    danach leer und die Meldung musste ganz neu getippt werden.
+    """
+    werte = request.POST if request.method == 'POST' else {}
+    return render(request, 'core/schaden_melden.html',
+                  {'modus': 'web', 'werte': werte, **zusatz}, status=status)
+
+
 def public_schaden_melden_view(request):
     if request.method == 'POST':
         # Öffentliches Formular: je IP nur wenige Meldungen pro Stunde,
         # sonst füllt ein Skript die Ticketlisten fremder Verwaltungen.
         from core.utils.throttle import client_ip, rate_limit
         if not rate_limit(f"schaden:{client_ip(request)}", limit=10, window_seconds=3600):
-            return render(request, 'core/schaden_melden.html', {
-                'fehler': 'Zu viele Meldungen in kurzer Zeit. Bitte später erneut versuchen.',
-                'liegenschaften_json': '[]'}, status=429)
+            return _web_formular(request, 429, fehler=[gettext(
+                'Zu viele Meldungen in kurzer Zeit. Bitte später erneut versuchen.')])
         # 1. Daten aus dem POST-Request holen
         kategorie = request.POST.get('kategorie', 'unbekannt')
         raum = request.POST.get('raum', '')
@@ -57,10 +67,9 @@ def public_schaden_melden_view(request):
                                    (adresse_text, 300, 'Adresse'),
                                    (request.POST.get('erreichbarkeit', ''), 20, 'Erreichbarkeit')):
             if len(wert) > grenze:
-                return render(request, 'core/schaden_melden.html', {
-                    'fehler': gettext('«%(feld)s» ist zu lang (höchstens %(n)s Zeichen).')
-                              % {'feld': name, 'n': grenze},
-                    'liegenschaften_json': '[]'}, status=400)
+                return _web_formular(request, 400, fehler=[
+                    gettext('«%(feld)s» ist zu lang (höchstens %(n)s Zeichen).')
+                    % {'feld': name, 'n': grenze}])
         foto = request.FILES.get('foto')
         # Öffentlicher (anonymer) Upload → Bild-Inhalt streng validieren.
         if foto is not None:
@@ -112,11 +121,10 @@ def public_schaden_melden_view(request):
         # die Adresse erneut erfragen; erfundene Zuordnungen sind schlechter
         # als eine ehrliche Rueckfrage.
         if not zugewiesene_liegenschaft:
-            return render(request, 'core/schaden_melden.html', {
-                'fehler': 'Wir konnten die Adresse keiner Liegenschaft zuordnen. '
-                          'Bitte wählen Sie Ihre Liegenschaft aus der Liste oder '
-                          'melden Sie sich direkt bei Ihrer Verwaltung.',
-                'liegenschaften_json': '[]'})
+            return _web_formular(request, fehler=[gettext(
+                'Wir konnten Ihre Meldung keiner Liegenschaft zuordnen. '
+                'Bitte verwenden Sie die E-Mail-Adresse, die bei Ihrer Verwaltung '
+                'hinterlegt ist, oder melden Sie sich direkt bei Ihrer Verwaltung.')])
 
         # 5. Ticket erstellen (Mit den neuen getrennten Namensfeldern)
         from core.tenancy import kontext_des_objekts
@@ -140,18 +148,13 @@ def public_schaden_melden_view(request):
                 zutritt='telefon' if erreichbarkeit in ['telefon', 'immer'] else 'passpartout'
             )
 
-        # WICHTIG: Auch beim Success-Return ein leeres JSON mitgeben, damit Alpine.js nicht abstürzt!
-        return render(request, 'core/schaden_melden.html', {'success': True, 'liegenschaften_json': '[]'})
+        return _web_formular(request, success=True)
 
     # GET-REQUEST: Das öffentliche (anonyme) Formular exponiert NICHT das gesamte
     # Portfolio (Adress-Enumeration / DSG) — der Melder trägt seine Adresse als
     # Freitext ein (Feld `adresse`, serverseitig via E-Mail/Fallback zugeordnet).
     # Der gebäudespezifische Einstieg ist der QR-Aushang /report/<liegenschaft_id>/.
-    context = {
-        'success': False,
-        'liegenschaften_json': '[]',
-    }
-    return render(request, 'core/schaden_melden.html', context)
+    return _web_formular(request)
 
 
 # ==========================================
@@ -175,6 +178,22 @@ def public_ticket_view(request, liegenschaft_id):
         return _qr_formular(request, liegenschaft)
 
 
+def titel_aus_wahl(kategorie, raum='', objekt=''):
+    """Titel einer Meldung aus der Wahl im Formular.
+
+    Eine Schadensmeldung heisst «Schaden: Küche - Kühlschrank» (ohne Gegenstand nur
+    «Schaden: Küche», ohne Raum «Schaden»); jedes andere Anliegen trägt seinen Namen.
+    Die Werte sind die deutschen Wörter des Katalogs, nie die übersetzte Anzeige.
+    """
+    from core.templatetags.raumkatalog import anliegen_auswahl
+    kategorie, raum, objekt = (kategorie or '').strip(), (raum or '').strip(), (objekt or '').strip()
+    if kategorie != anliegen_auswahl()[0][0]:     # nur die Schadensmeldung fragt nach Raum und Gegenstand
+        return kategorie
+    if raum and objekt:
+        return f'Schaden: {raum} - {objekt}'
+    return f'Schaden: {raum}' if raum else 'Schaden'
+
+
 def _qr_formular(request, liegenschaft):
     einheiten = Einheit.objects.filter(liegenschaft=liegenschaft).order_by('etage', 'bezeichnung')
     # KEINE Mieter-Namen / "Leerstand" ausgeben — diese Seite ist ohne Login über
@@ -186,8 +205,8 @@ def _qr_formular(request, liegenschaft):
     from tickets.services import MeldungUngueltig
 
     def formular(status=200, **zusatz):
-        return render(request, 'core/public_ticket_form.html', {
-            'liegenschaft': liegenschaft, 'einheiten': einheiten,
+        return render(request, 'core/schaden_melden.html', {
+            'modus': 'aushang', 'liegenschaft': liegenschaft, 'einheiten': einheiten,
             'zeitfenster': ZEITFENSTER, **zusatz}, status=status)
 
     if request.method == 'POST':
@@ -199,13 +218,20 @@ def _qr_formular(request, liegenschaft):
         if not rate_limit(f"report:{client_ip(request)}", limit=10, window_seconds=3600):
             return formular(429, fehler=[gettext(
                 'Zu viele Meldungen in kurzer Zeit. Bitte später erneut versuchen.')])
+        daten = request.POST
+        if not daten.get('titel') and daten.get('kategorie'):
+            # Das gemeinsame Formular sendet Anliegen, Raum und Gegenstand; der Titel der
+            # Meldung entsteht hier («Schaden: Küche - Kühlschrank»), nicht im Browser.
+            daten = daten.copy()
+            daten['titel'] = titel_aus_wahl(daten.get('kategorie', ''), daten.get('raum', ''),
+                                            daten.get('objekt', ''))
         try:
-            process_public_ticket_form(liegenschaft, request.POST, request.FILES)
+            process_public_ticket_form(liegenschaft, daten, request.FILES)
         except MeldungUngueltig as problem:
             # Die Eingaben kommen mit zurueck, damit niemand alles neu tippen muss.
-            return formular(400, fehler=problem.fehler, werte=request.POST, start_schritt=4,
+            return formular(400, fehler=problem.fehler, werte=request.POST,
                             erreichbarkeit_gewaehlt=request.POST.getlist('erreichbarkeit'))
-        return render(request, 'core/public_ticket_form.html', {'success': True, 'liegenschaft': liegenschaft})
+        return formular(success=True)
 
     return formular()
 

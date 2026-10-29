@@ -206,6 +206,9 @@ MIDDLEWARE = [
     # Macht aus Eingaben, die nicht in ihr Feld passen (zu lang, zu gross, keine
     # Zahl), eine Meldung statt einer 500-Seite — siehe core/middleware_eingabe.py.
     'core.middleware_eingabe.EingabeFehlerMiddleware',
+    # Ganz innen, UNTER Common und GZip: Verbindet jedes `<label>` mit dem Feld daneben, damit ein
+    # Screenreader «Jahr» liest statt «Auswahl» (DESIGN-27, siehe core/utils/feldnamen.py).
+    'core.middleware_feldnamen.FeldnamenMiddleware',
 ]
 
 ROOT_URLCONF = 'swiss_immo.urls'
@@ -483,7 +486,7 @@ EMAIL_USE_TLS = True
 EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '15'))
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = f'ImmoSwiss Verwaltung <{os.getenv("EMAIL_HOST_USER", "info@immoswiss.app")}>'
+DEFAULT_FROM_EMAIL = f'immoswiss <{os.getenv("EMAIL_HOST_USER", "info@immoswiss.app")}>'
 
 # Basis-URL für Links in E-Mails (Portal-Login etc.) — unabhängig vom Request-Host,
 # damit der Link auch aus Cron/Hintergrund-Jobs korrekt auf die Produktion zeigt.
@@ -523,10 +526,11 @@ LOGGING = {
 # ==========================================
 
 UNFOLD = {
-    "SITE_TITLE": "SwissImmo Verwaltung",
-    "SITE_HEADER": "SwissImmo",
+    "SITE_TITLE": "immoswiss Verwaltung",
+    "SITE_HEADER": "immoswiss",
     "SITE_URL": reverse_lazy("fw_dashboard"), # Logo-Klick fuehrt in die aktive Oberflaeche /neu/
-    "SITE_ICON": "real_estate_agent",
+    # Kein SITE_ICON: Unfold lädt den Wert als Bildadresse. «real_estate_agent» ist ein Name der
+    # Material-Symbole, kein Bild, und ergab ein gebrochenes Logo samt 404 auf jeder Admin-Seite (DESIGN-14).
 
     # --- GLOBALER CLEAN-LOOK (RAHMENLOS) & INLINE-EDITING ---
     "STYLES": [

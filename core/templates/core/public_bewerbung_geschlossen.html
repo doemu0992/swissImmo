@@ -1,48 +1,24 @@
-{% load zeichen %}<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Objekt nicht mehr ausgeschrieben – swissImmo</title>
-{% include 'core/_assets_aussen.html' %}
-    <style>
-        /* TOKEN STATT HEXWERT (E2.48)
+{% extends 'core/aussen_base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Dieses Objekt ist nicht mehr ausgeschrieben" %} — immoswiss{% endblock %}
+{% block eng %} eng{% endblock %}
+{% block content %}
+{% comment %}
+    Bewusst eine eigene Seite statt eines nackten 404: Wer hier landet, ist
+    einem Link gefolgt, der einmal richtig war — die Wohnung ist inzwischen
+    vergeben oder die Ausschreibung beendet. Eine Fehlerseite würde wie ein
+    Defekt aussehen. Absichtlich OHNE Angaben zum Objekt: Diese Seite ist
+    ohne Anmeldung erreichbar, und über die Nummer in der Adresse liesse
+    sich sonst der ganze Bestand durchprobieren.
 
-           Hier stand `#f8fafc`. Gemessen im Browser, Dunkelmodus:
-
-               Grund   rgb(248,250,252)   — eingefroren, folgte dem Modus nicht
-               Schrift rgb(228,237,238)   — folgte ihm sehr wohl
-
-           Fast weisse Schrift auf fast weissem Grund, Kontrast 1.14:1 —
-           gefordert sind 4.5:1. Der Text war nicht schwer zu lesen, er war
-           weg. Und zwar auf einer Seite, die ohne Anmeldung erreichbar ist
-           und die jemand sieht, weil er einem Link gefolgt ist, der einmal
-           richtig war.
-
-           Ein Hexwert wechselt nicht mit dem Modus, ein Token schon. */
-        /* Redesign v8: Schrift und Grund kommen aus der Schicht (`fw-body`);
-           bis dahin stand hier 'Nunito' — nie geladen, also Arial. */
-    </style>
-</head>
-<body class="fw-body min-h-screen flex items-center justify-center px-4 py-10">
-    {% comment %}
-        Bewusst eine eigene Seite statt eines nackten 404: Wer hier landet, ist
-        einem Link gefolgt, der einmal richtig war — die Wohnung ist inzwischen
-        vergeben oder die Ausschreibung beendet. Eine Fehlerseite würde wie ein
-        Defekt aussehen. Absichtlich OHNE Angaben zum Objekt: Diese Seite ist
-        ohne Anmeldung erreichbar, und über die Nummer in der Adresse liesse
-        sich sonst der ganze Bestand durchprobieren.
-    {% endcomment %}
-    <div class="w-full max-w-md fw-flaeche rounded-2xl border fw-linie shadow-md p-8 text-center">
-        <div class="w-14 h-14 rounded-full fw-flaeche2 fw-faint flex items-center justify-center mx-auto mb-5 text-2xl">{% zeichen 'gut' %}</div>
-        <h1 class="text-2xl font-semibold tracking-tight mb-3">Dieses Objekt ist nicht mehr ausgeschrieben</h1>
-        <p class="text-sm fw-mutet leading-relaxed">
-            Die Ausschreibung wurde beendet — vermutlich ist die Wohnung bereits
-            vergeben. Bewerbungen können dafür keine mehr entgegengenommen werden.
-        </p>
-        <p class="text-sm fw-mutet leading-relaxed mt-4">
-            Bei Fragen wenden Sie sich bitte direkt an die Verwaltung.
-        </p>
-    </div>
-</body>
-</html>
+    Etappe 3: dieselbe Hülle wie alle Aussenseiten (Grund und Schrift folgen dem
+    Hell-/Dunkelmodus), und ein Weg zurück (ROUTE-17 d: die Seite hatte keinen Link).
+{% endcomment %}
+<div class="fw-card fw-aussen-erfolg">
+    <div class="kreis">{% zeichen 'hinweis' %}</div>
+    <h1>{% trans "Dieses Objekt ist nicht mehr ausgeschrieben" %}</h1>
+    <p>{% trans "Die Ausschreibung wurde beendet — vermutlich ist die Wohnung bereits vergeben. Bewerbungen können dafür keine mehr entgegengenommen werden." %}</p>
+    <p>{% trans "Bei Fragen wenden Sie sich bitte direkt an die Verwaltung." %}</p>
+    <a href="{% url 'index' %}" class="fw-btn">{% trans "Zurück zur Startseite" %}</a>
+</div>
+{% endblock %}

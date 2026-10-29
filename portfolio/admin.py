@@ -190,7 +190,7 @@ class ZaehlerInline(NurLesenTabularInline):
             '<div class="flex items-center gap-3">'
             '<div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-50 text-gray-700 text-sm ring-1 ring-inset ring-gray-600/20">{}</div>'
             '<div><div class="font-bold text-gray-900">{}</div><div class="text-[10px] text-gray-500 uppercase tracking-wide">Zähler-Nr: {}</div></div>'
-            '</div>', icon, obj.get_typ_display(), obj.zaehler_nummer
+            '</div>', icon, obj.typ, obj.zaehler_nummer
         )
     @display(description="Aktion")
     def detail_link(self, obj):
@@ -217,7 +217,7 @@ class GeraetInline(NurLesenTabularInline):
             '<div class="flex items-center gap-3">'
             '<div class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 text-sm ring-1 ring-inset ring-slate-600/20">🔌</div>'
             '<div><div class="font-bold text-gray-900">{} {}</div><div class="text-[10px] text-gray-500 uppercase tracking-wide">Modell: {}</div></div>'
-            '</div>', getattr(obj, 'marke', ''), getattr(obj, 'typ', ''), getattr(obj, 'modell', '-')
+            '</div>', getattr(obj, 'marke', ''), obj.kategorie, getattr(obj, 'modell', '-')
         )
     @display(description="Garantie")
     def garantie_badge(self, obj):
@@ -538,7 +538,7 @@ class ZaehlerAdmin(NurLesenModelAdmin):
             '<div class="flex items-center gap-3">'
             '<div class="flex items-center justify-center w-9 h-9 rounded-xl bg-gray-100 text-gray-700 text-lg shadow-sm">{}</div>'
             '<div><div class="font-bold text-gray-900">{}</div><div class="text-xs text-gray-500">Nr: {}</div></div>'
-            '</div>', icon, obj.get_typ_display(), obj.zaehler_nummer
+            '</div>', icon, obj.typ, obj.zaehler_nummer
         )
 
     @display(description="Zuweisung")
@@ -556,17 +556,17 @@ class GeraetAdmin(NurLesenModelAdmin):
     list_filter = ('einheit__liegenschaft',)
 
     fieldsets = (
-        ('Geräte-Details', {'fields': (('typ', 'marke'), 'modell', ('installations_datum', 'garantie_bis'))}),
+        ('Geräte-Details', {'fields': (('kategorie', 'marke'), 'modell', ('installations_datum', 'garantie_bis'))}),
         ('Zuweisung', {'fields': ('einheit',)})
     )
 
-    @display(description="Gerät & Marke", ordering="typ")
+    @display(description="Gerät & Marke", ordering="kategorie")
     def geraet_profil(self, obj):
         return format_html(
             '<div class="flex items-center gap-3">'
             '<div class="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 text-sm ring-1 ring-inset ring-slate-600/20">🔌</div>'
             '<div><div class="font-bold text-gray-900">{} {}</div><div class="text-[10px] text-gray-500 uppercase tracking-wide">Modell: {}</div></div>'
-            '</div>', getattr(obj, 'marke', ''), getattr(obj, 'typ', ''), getattr(obj, 'modell', '-')
+            '</div>', getattr(obj, 'marke', ''), obj.kategorie, getattr(obj, 'modell', '-')
         )
 
     @display(description="Garantie-Status", label=True)

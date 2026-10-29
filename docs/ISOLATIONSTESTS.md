@@ -120,6 +120,23 @@ ein 500), verhindert aber die stille Zeile im fremden Mandanten. Der Weg für An
 `core/utils/formularid.eigenes_objekt(Modell, roh, …)`; für Personen des Teams
 `team_der_organisation(request.organisation)`.
 
+### G. Was das Fixture nicht anlegt (29.10.2026, SICH-27e)
+
+`MandantenFixture` legt nur Objekte an, die beim Bau schon bekannt waren. Der Manager-Test überspringt jedes
+Modell ohne Zeile bei B (richtig: er könnte nichts beweisen). Es hiess aber: 53 von 123 Modellen mit
+Mandantenfilter — Mahnung, Hypothek, Jahresabschluss, Zahlungsvereinbarung, Kreditorenzahlung,
+Eigentümerauszahlung, die STWEG-Abrechnung — waren nie geprüft. Das gemeinsame Fixture zu erweitern, verschiebt
+Zahlen in rund hundert Tests; darum erweitert `core/tests/test_isolation_abdeckung.py` es nur für die eigenen
+Läufe (`ErweiterterBestand`) und wacht darüber:
+
+* `test_jedes_mandantenmodell_hat_eine_zeile`: Ein neues Modell mit Mandantenfilter muss dort eine Zeile
+  bekommen (`_zusatz`) oder mit Grund in `OHNE_ZEILE` stehen. Sonst ist der Test rot.
+* `test_manager_zeigt_keine_fremden_zeilen`: Im Kontext von A sichtbar ist nichts von B und umgekehrt.
+
+**Rollen.** `test_isolation_rollen.py` fährt den Body-Fuzz (F) auch für Buchhaltung, Hauswart und Lesezugriff;
+`test_lesezugriff_schreibt_nie.py` verlangt, dass Lesezugriff auf KEINER POST-Route Zeilen schreibt (Ausnahmen:
+`DARF_AENDERN`, `OEFFENTLICH`, mit Grund).
+
 ## Wann ist ein Test ein Test
 
 Ein Isolationstest, der auch **ohne** den Filter grün wäre, prüft nichts. Das ist kein theoretisches Problem — es ist die wahrscheinlichste Art, wie diese Etappe scheitert, weil ein falsch aufgesetzter Test genauso grün aussieht wie ein richtiger.

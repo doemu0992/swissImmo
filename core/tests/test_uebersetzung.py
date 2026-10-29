@@ -89,7 +89,9 @@ UEBERSETZT = (
     'core/portal_login.html',
     'core/postfach_form.html',
     'core/postfach_liste.html',
-    'core/public_ticket_form.html',
+    'core/aussen_base.html',    # Etappe 3: Hülle der öffentlichen Seiten (ersetzt public_ticket_form und modern_base)
+    'core/public_bewerbung_form.html',
+    'core/public_bewerbung_geschlossen.html',
     'core/schaden_melden.html',
     'core/zweifaktor_bestaetigen.html',
     'core/_zweifaktor_codes_karte.html',   # Assistenten-Seiten (27.10.2026)
@@ -643,7 +645,7 @@ class AusgezeichneteVorlagenTests(SimpleTestCase):
         from django.template.loader import get_template
         for name in UEBERSETZT:
             with self.subTest(vorlage=name):
-                get_template(name)
+                self.assertIsNotNone(get_template(name))
 
     def test_uebersetzte_auswahl_hat_einen_festen_wert(self):
         """Eine `<option>` mit übersetzter Beschriftung braucht ein `value`.

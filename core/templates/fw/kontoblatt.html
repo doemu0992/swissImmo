@@ -1,7 +1,7 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
 {% load chf %}
-{% block title %}{% blocktrans with nr=konto.nummer %}Kontoblatt {{ nr }}{% endblocktrans %} — swissImmo{% endblock %}
+{% block title %}{% blocktrans with nr=konto.nummer %}Kontoblatt {{ nr }}{% endblocktrans %} — immoswiss{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <div>
@@ -15,7 +15,7 @@
     </div>
     <div class="fw-phead-knoepfe">
         <form method="get" class="flex items-center gap-1">
-            <select name="jahr" onchange="this.form.submit()" class="fw-feld">
+            <select name="jahr" aria-label="{% trans 'Jahr' %}" onchange="this.form.submit()" class="fw-feld">
                 {% for j in jahre %}<option value="{{ j }}" {% if jahr == j %}selected{% endif %}>{{ j }}</option>{% endfor %}
                 <option value="alle" {% if jahr == 'alle' %}selected{% endif %}>{% trans "Alle" %}</option>
             </select>

@@ -98,8 +98,12 @@ TABELLE = WURZEL / 'docs' / 'ZEICHEN.md'
 #: in einem `{% comment %}`-Block von `modern_base.html`. Die Sperrklinke
 #: zaehlt es mit, damit auch Erwaehnungen nicht wachsen — gerendert wird
 #: nichts davon.
-STAND_ZEICHEN = 1
-STAND_VORKOMMEN = 1
+#:
+#: ETAPPE 3 (29.10.2026): 1 -> 0. `modern_base.html` ist entfallen (die Schadenmeldung läuft auf der
+#: Hülle für Aussenseiten, `core/aussen_base.html`) — und mit ihr der letzte Erklärtext, der
+#: `fa-buildings` nannte. Im Bestand steht kein Font-Awesome-Name mehr; Zielzustand von D5.
+STAND_ZEICHEN = 0
+STAND_VORKOMMEN = 0
 
 #: Anzahl Zeichen mit fester Bedeutung, aus `docs/ZEICHEN.md`.
 #:
@@ -283,12 +287,21 @@ class ZeichensatzTest(SimpleTestCase):
                           f'wenn es zugeordnet wurde, hier austragen.')
 
     def test_die_messung_findet_ueberhaupt_etwas(self):
-        """Gegenprobe: Ein leeres Ergebnis wäre trivial grün."""
-        zeichen = _zeichen_im_bestand()
-        self.assertGreaterEqual(len(zeichen), 1,
-                           'Die Suche findet fast nichts — dann prüfen die '
-                           'Tests oben nichts.')
-        self.assertGreaterEqual(sum(zeichen.values()), 1)
+        """Gegenprobe: Ein leeres Ergebnis wäre trivial grün.
+
+        Seit Etappe 3 ist der Bestand frei von Font-Awesome-Namen (STAND 0). «Findet etwas» lässt sich
+        deshalb nicht mehr am Bestand belegen, sondern an einem angelegten: eine Vorlage und eine
+        Python-Datei mit je einem Namen — beide müssen gefunden werden, sonst sieht die Sperre nichts.
+        """
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            wurzel = pathlib.Path(tmp)
+            (wurzel / 'core' / 'templates').mkdir(parents=True)
+            (wurzel / 'core' / 'templates' / 'x.html').write_text(
+                '<i class="fa-solid fa-plug"></i>', encoding='utf-8')
+            (wurzel / 'core' / 'y.py').write_text("ICON = 'fa-bell'\n", encoding='utf-8')
+            self.assertEqual(_zeichen_im_bestand(wurzel), {'fa-plug': 1, 'fa-bell': 1})
+        self.assertEqual(_zeichen_im_bestand(), {}, 'Im Bestand steht wieder ein Font-Awesome-Name.')
 
     def test_die_suche_liest_auch_den_python_code(self):
         """Sonst wäre die Sperre an der Stelle blind, wo sie gebraucht wird.

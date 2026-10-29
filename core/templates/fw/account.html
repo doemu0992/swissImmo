@@ -1,7 +1,7 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
 {% load l10n %}
-{% block title %}{% trans "Account" %} — swissImmo{% endblock %}
+{% block title %}{% trans "Account" %} — immoswiss{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <div>
@@ -38,9 +38,9 @@
             {# Sonst loescht ein Speichern hier den Stundensatz: Die Ansicht setzt bei leerer Eingabe auf `None`. #}
             <input type="hidden" name="stundensatz" value="{% localize off %}{{ vw.stundensatz|default_if_none:'' }}{% endlocalize %}">
             <div class="fw-feldblock"><label class="fw-label">{% trans "Referenzzinssatz (%)" %}</label>
-                <input name="aktueller_referenzzinssatz" type="number" step="0.05" value="{% localize off %}{{ vw.aktueller_referenzzinssatz }}{% endlocalize %}" class="fw-feld"></div>
+                <input name="aktueller_referenzzinssatz" type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" value="{% localize off %}{{ vw.aktueller_referenzzinssatz }}{% endlocalize %}" class="fw-feld"></div>
             <div class="fw-feldblock"><label class="fw-label">{% trans "Landesindex LIK (Punkte)" %}</label>
-                <input name="aktueller_lik_punkte" type="number" step="0.1" value="{% localize off %}{{ vw.aktueller_lik_punkte }}{% endlocalize %}" class="fw-feld"></div>
+                <input name="aktueller_lik_punkte" type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" value="{% localize off %}{{ vw.aktueller_lik_punkte }}{% endlocalize %}" class="fw-feld"></div>
             <div class="fw-feldblock"><label class="fw-label">{% trans "LIK-Basis" %}</label>
                 <input name="lik_basis" type="text" value="{{ vw.lik_basis|default:'Dezember 2020' }}" placeholder="{% trans 'Dezember 2020' %}" class="fw-feld">
                 <p class="fw-hilfe">{% trans "Aktuelle Basis des BFS: «Dezember 2020 = 100»." %}</p></div>
@@ -74,7 +74,7 @@
                     {% else %}<span class="text-xs fw-faint">{% zeichen 'dokument' %}</span>{% endif %}
                 </div>
                 <div class="flex-1">
-                    <input type="file" name="logo" accept="image/png,image/jpeg,image/svg+xml"
+                    <input type="file" name="logo" aria-label="{% trans 'Firmenlogo' %}" accept="image/png,image/jpeg,image/svg+xml"
                            class="fw-datei w-full">
                     <p class="fw-hilfe">{% trans "PNG oder JPG, weisser Hintergrund wird transparent gemacht." %}</p>
                     {% if logo_url %}<label class="flex items-center gap-1.5 text-xs fw-kritisch mt-1.5 cursor-pointer">

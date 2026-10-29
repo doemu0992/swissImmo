@@ -8,25 +8,23 @@ from django.utils.html import escape
 from django.utils.translation import gettext
 
 from core.services.dokumentsprache import in_sprache, sprache_von
+from core.utils.absender import anzeigename, kopfzeilen
+from core.services.druckfarben import EMBER
 
 logger = logging.getLogger(__name__)
 
 
 # Helper to send mail via Hoststar
-def send_via_hoststar(to_email, subject, html_content, attachment_name=None, attachment_content=None, cc_list=None, weitere_anhaenge=None, reply_to=None):
+def send_via_hoststar(to_email, subject, html_content, attachment_name=None, attachment_content=None, cc_list=None, weitere_anhaenge=None, reply_to=None, organisation=None):
     try:
-        from_email = settings.DEFAULT_FROM_EMAIL
-        # Antworten gehen an das Antwort-Postfach der VERWALTUNG, die schreibt (`reply_to`),
-        # sonst an die globale Adresse aus der Umgebung.
-        reply_addr = reply_to or os.environ.get('EMAIL_REPLY_USER', 'reply@immoswiss.app')
-
+        # Absender und Antwortadresse der VERWALTUNG, die schreibt (FUNK-12, core/utils/absender.py).
+        # `organisation` (Objekt oder ID) ist nötig, wo kein Mandantenkontext besteht (eigener Thread).
         email = EmailMessage(
             subject=subject,
             body=html_content,
-            from_email=from_email,
             to=[to_email],
             cc=cc_list or [],
-            reply_to=[reply_addr]
+            **kopfzeilen(organisation, reply_to),
         )
         email.content_subtype = "html"
 
@@ -64,18 +62,20 @@ def send_ticket_receipt(ticket):
     _text3 = gettext('Thema')
     _text4 = gettext('Wir melden uns, sobald ein Handwerker beauftragt wurde.')
     _text5 = gettext('Freundliche Grüsse')
+    # Es schreibt die Verwaltung des Hauses, nicht die Plattform (FUNK-12): dieselbe Firma wie im Absendernamen.
+    unterschrift = escape(anzeigename(ticket.organisation) or 'immoswiss')
     html_msg = f"""
     <html><body>
     <h2>{_text1}</h2>
     <p>{_text2}: #{ticket.id}<br>{_text3}: {escape(ticket.titel)}</p>
     <p>{_text4}</p>
-    <p>{_text5}<br>ImmoSwiss Verwaltung</p>
+    <p>{_text5}<br>{unterschrift}</p>
     </body></html>
     """
     from tickets.workflow import reply_to
     # Die Adresse wird HIER im Anfrage-Thread bestimmt: der Mail-Thread hat keinen Mandantenkontext.
     threading.Thread(target=send_via_hoststar, args=(ticket.email_melder, subject, html_msg),
-                     kwargs={'reply_to': reply_to(ticket)}).start()
+                     kwargs={'reply_to': reply_to(ticket), 'organisation': ticket.organisation_id}).start()
 
 
 def send_handyman_notification(auftrag):
@@ -156,7 +156,7 @@ def send_neue_meldung_intern(ticket, to_emails):
               else f"{ticket.melder_vorname or ''} {ticket.melder_nachname or ''}".strip() or '—')
     html = f"""
     <html><body style="font-family:Arial,sans-serif;color:#0f172a;line-height:1.6;">
-      <h2 style="color:#4338ca;">Neue Schadenmeldung aus dem Mieterportal</h2>
+      <h2 style="color:{EMBER};">Neue Schadenmeldung aus dem Mieterportal</h2>
       <table cellpadding="6" style="border-collapse:collapse;">
         <tr><td style="color:#64748b;">Ticket</td><td><strong>#{ticket.id}</strong></td></tr>
         <tr><td style="color:#64748b;">Titel</td><td><strong>{escape(ticket.titel)}</strong></td></tr>
@@ -241,7 +241,7 @@ def _mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, 
     _text8 = gettext('Bitte ändern Sie Ihr Passwort nach dem ersten Login und bewahren Sie diese Angaben sicher auf. Diese E-Mail wurde automatisch erstellt.')
     html = f"""<html><body style="font-family:Arial,Helvetica,sans-serif;color:#0f172a;line-height:1.6;background:#f1f5f9;padding:24px;">
       <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;">
-        <div style="background:#4338ca;color:#fff;padding:20px 28px;font-size:18px;font-weight:600;">🔑 {_text1}</div>
+        <div style="background:{EMBER};color:#fff;padding:20px 28px;font-size:18px;font-weight:600;">🔑 {_text1}</div>
         <div style="padding:28px;">
           <p>{_text2}</p>
           <p>{_text3}</p>
@@ -252,10 +252,10 @@ def _mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, 
                 <td style="padding:6px 0;font-weight:700;font-family:monospace;">{passwort}</td></tr>
           </table>
           <p style="margin:24px 0;">
-            <a href="{login_url}" style="background:#4338ca;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;display:inline-block;">{_text6}</a>
+            <a href="{login_url}" style="background:{EMBER};color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;display:inline-block;">{_text6}</a>
           </p>
           <p style="color:#64748b;font-size:13px;">{_text7}<br>
-            <a href="{login_url}" style="color:#4338ca;">{login_url}</a></p>
+            <a href="{login_url}" style="color:{EMBER};">{login_url}</a></p>
           <p style="color:#94a3b8;font-size:12px;margin-top:20px;">{_text8}</p>
           {firma_zeile}
         </div>
@@ -264,16 +264,14 @@ def _mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, 
     return send_via_hoststar(to_email, betreff, html)
 
 
-def send_report_mail(to_email, betreff, html_inhalt, anhaenge=None):
+def send_report_mail(to_email, betreff, html_inhalt, anhaenge=None, organisation=None):
     """Sendet eine HTML-Mail mit mehreren PDF-Anhängen. anhaenge = Liste von
     (dateiname, bytes). Gibt True/False zurück."""
     if not to_email:
         return False
     try:
-        from_email = settings.DEFAULT_FROM_EMAIL
-        reply_addr = os.environ.get('EMAIL_REPLY_USER', 'reply@immoswiss.app')
-        email = EmailMessage(subject=betreff, body=html_inhalt, from_email=from_email,
-                             to=[to_email], reply_to=[reply_addr])
+        email = EmailMessage(subject=betreff, body=html_inhalt, to=[to_email],
+                             **kopfzeilen(organisation))
         email.content_subtype = "html"
         for name, inhalt in (anhaenge or []):
             if inhalt:
@@ -311,7 +309,7 @@ def _eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, login_
     firma_zeile = f"<p style='margin:24px 0 0;color:#94a3b8;font-size:13px;'>{absender_firma}</p>" if absender_firma else ""
     html = f"""<html><body style="font-family:Arial,Helvetica,sans-serif;color:#0f172a;line-height:1.6;background:#f1f5f9;padding:24px;">
       <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;">
-        <div style="background:#1e3a8a;color:#fff;padding:20px 28px;font-size:18px;font-weight:600;">🏠 {_kopf}</div>
+        <div style="background:{EMBER};color:#fff;padding:20px 28px;font-size:18px;font-weight:600;">🏠 {_kopf}</div>
         <div style="padding:28px;">
           <p>{_gruss}</p>
           <p>{_einleitung}</p>
@@ -322,10 +320,10 @@ def _eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, login_
                 <td style="padding:6px 0;font-weight:700;font-family:monospace;">{passwort}</td></tr>
           </table>
           <p style="margin:24px 0;">
-            <a href="{login_url}" style="background:#1e3a8a;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;display:inline-block;">{_login}</a>
+            <a href="{login_url}" style="background:{EMBER};color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;display:inline-block;">{_login}</a>
           </p>
           <p style="color:#64748b;font-size:13px;">{_adresse}<br>
-            <a href="{login_url}" style="color:#1e3a8a;">{login_url}</a></p>
+            <a href="{login_url}" style="color:{EMBER};">{login_url}</a></p>
           <p style="color:#94a3b8;font-size:12px;margin-top:20px;">{_hinweis}</p>
           {firma_zeile}
         </div>

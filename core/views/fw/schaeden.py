@@ -1037,7 +1037,7 @@ def fw_versicherungsfall(request, pk):
         vertraege = list(Mietvertrag.objects.filter(einheit=t.betroffene_einheit, status__in=('aktiv', 'gekuendigt'))
                          .select_related('mieter'))
     return render(request, 'fw/versicherungsfall.html', {
-        **basis, 'nav': 'schaeden', 't': t, 'faelle': faelle,
+        **basis, 'nav': 'schadensfaelle', 't': t, 'faelle': faelle,
         'policen': Versicherung.objects.filter(liegenschaft=t.liegenschaft),
         'vorschlag': vs.schadensumme_vorschlag(t), 'vertraege': vertraege,
         'heute_iso': heute.isoformat(),

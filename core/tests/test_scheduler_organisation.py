@@ -207,3 +207,20 @@ class KeinDoppelterTeillaufTests(ZweiBestaende):
                          stdout=StringIO(), stderr=StringIO())
         self.assertEqual(unterbefehl.call_count, 1,
                          f'Fristen-Mail {unterbefehl.call_count}× ausgelöst statt einmal.')
+
+
+class DsgAnonymisierenSchalttagTests(TestCase):
+    """Am 29. Februar darf die Frist-Grenze nicht an einem Jahr ohne Schalttag scheitern."""
+
+    def test_29_februar_bricht_nicht_ab(self):
+        from datetime import date
+        from unittest import mock
+
+        from django.core.management import call_command
+
+        Organisation.objects.create(firma='Schalttag AG', strasse='Weg 1', plz='8000', ort='Zürich')
+        with mock.patch('core.management.commands.dsg_anonymisieren.timezone.localdate',
+                        return_value=date(2028, 2, 29)):
+            fehler = StringIO()
+            call_command('dsg_anonymisieren', '--jahre', '10', stdout=StringIO(), stderr=fehler)
+        self.assertEqual(fehler.getvalue(), '', 'Der Lauf am 29.02. meldete einen Fehler.')

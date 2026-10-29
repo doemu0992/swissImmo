@@ -1,7 +1,7 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n hilfe %}
 {% load chf %}
-{% block title %}{% trans "Zahllauf" %} — swissImmo{% endblock %}
+{% block title %}{% trans "Zahllauf" %} — immoswiss{% endblock %}
 
 {% block content %}
 
@@ -104,7 +104,7 @@
         <table class="fw-table">
             <thead>
             <tr>
-                <th><input type="checkbox" onclick="fwZlAlle(this, 'vorschlag')" checked class="fw-akzent"></th>
+                <th><input type="checkbox" onclick="fwZlAlle(this, 'vorschlag')" aria-label="{% trans 'Alle auswählen' %}" checked class="fw-akzent"></th>
                 <th>{% trans "Lieferant" %}</th>
                 <th>{% trans "Objekt" %}</th>
                 <th>IBAN</th>
@@ -116,7 +116,7 @@
             {% for z in vorschlag %}
             <tr class="{% if not z.iban %}fw-warn-flaeche{% endif %}">
                 <td>
-                    <input type="checkbox" name="rechnung_ids" value="{{ z.k.id }}"
+                    <input type="checkbox" name="rechnung_ids" value="{{ z.k.id }}" aria-label="{% trans 'Rechnung auswählen' %}"
                            {% if z.iban %}checked{% else %}disabled title="{% trans 'Ohne IBAN nicht zahlbar' %}"{% endif %}
                            class="fw-akzent">
                 </td>
@@ -192,7 +192,7 @@
         <table class="fw-table">
             <thead>
             <tr>
-                <th><input type="checkbox" onclick="fwZlAlle(this, 'laufend')" checked class="fw-akzent"></th>
+                <th><input type="checkbox" onclick="fwZlAlle(this, 'laufend')" aria-label="{% trans 'Alle auswählen' %}" checked class="fw-akzent"></th>
                 <th>{% trans "Lieferant" %}</th>
                 <th>{% trans "Objekt" %}</th>
                 <th>{% trans "Ausführung" %}</th>
@@ -202,7 +202,7 @@
             <tbody data-gruppe="laufend">
             {% for z in laufend %}
             <tr>
-                <td><input type="checkbox" name="rechnung_ids" value="{{ z.k.id }}" checked class="fw-akzent"></td>
+                <td><input type="checkbox" name="rechnung_ids" value="{{ z.k.id }}" aria-label="{% trans 'Rechnung auswählen' %}" checked class="fw-akzent"></td>
                 <td class="fw-strong whitespace-nowrap">
                     {{ z.k.lieferant|default:"—" }}
                     {% if z.k.referenz %}<div class="fw-sub2">{{ z.k.referenz }}</div>{% endif %}

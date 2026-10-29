@@ -1,0 +1,9 @@
+# Ausnahmen für den CI-Schritt «check --deploy» (.github/workflows/ci.yml, _tools/deploy_check_pruefen.py).
+#
+# Jede Warnung von `manage.py check --deploy` macht den Schritt rot, ausser sie steht hier. Eine Kennung je
+# Zeile, HINTER «#» die Begründung mit Datum:
+#
+#     security.W019   # X_FRAME_OPTIONS = SAMEORIGIN ist Absicht: eigene Popups und PDF-Vorschau brauchen es; 29.10.2026
+#
+# Eine Zeile ohne Begründung wird abgewiesen, eine Ausnahme, die nichts mehr trifft, gemeldet.
+security.W019   # X_FRAME_OPTIONS = SAMEORIGIN ist Absicht (swiss_immo/settings.py): die eigenen Popups und die PDF-Vorschau im Rahmen brauchen es; 29.10.2026

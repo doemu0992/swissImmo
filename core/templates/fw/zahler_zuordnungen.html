@@ -1,6 +1,6 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
-{% block title %}{% trans "Gelernte Zahler" %} — swissImmo{% endblock %}
+{% block title %}{% trans "Gelernte Zahler" %} — immoswiss{% endblock %}
 
 {% block content %}
 
@@ -55,7 +55,7 @@
                         {% csrf_token %}
                         <input type="hidden" name="id" value="{{ z.id }}">
                         {# Kein Auto-Submit: Wer im Fahren scrollt, soll die Regel nicht versehentlich umbiegen. #}
-                        <select name="vertrag_id" class="fw-feld max-w-[13rem]">
+                        <select name="vertrag_id" aria-label="{% trans 'Vertrag' %}" class="fw-feld max-w-[13rem]">
                             {% for v in vertraege %}
                             <option value="{{ v.id }}" {% if v.id == z.vertrag_id %}selected{% endif %}>{{ v.label }}</option>
                             {% endfor %}

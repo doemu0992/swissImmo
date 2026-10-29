@@ -1,0 +1,112 @@
+<div class="fw-phead">
+    <div>
+        <h1>Déclaration de protection des données</h1>
+        <p>État : {{ stand|date:"d.m.Y" }}</p>
+    </div>
+</div>
+
+    {% comment %}
+        ENTWURF einer Übersetzung — nicht rechtlich geprüft (Entscheid D11: Rechtstexte bleiben deutsch
+        bis zur geprüften Übersetzung). Der Hinweis unten ist Teil des Entwurfs und fällt erst weg, wenn
+        eine Juristin oder ein Jurist die Fassung freigegeben hat. Massgebend ist die deutsche Fassung
+        (_text_de.html); bei jeder Änderung dort ist diese Datei nachzuführen.
+    {% endcomment %}
+    <p class="fw-hinweis" role="note">
+        Traduction provisoire, non vérifiée juridiquement. Seule la version allemande de cette déclaration fait foi ;
+        le sélecteur de langue permet de l’afficher (DE).
+    </p>
+
+    <div class="fw-card"><div class="fw-rumpf fw-aussen-text">
+
+        <section>
+            <h2>1. Responsable du traitement</h2>
+            {% if mehrdeutig %}
+            {% comment %} Ohne Objektbezug ist nicht bestimmbar, WELCHE Verwaltung die Daten
+               erhebt. Eine geratene Firma waere schlimmer als keine. {% endcomment %}
+            <p>Le responsable est, selon le cas, la gérance de l’objet pour lequel vous posez votre candidature.
+            Consultez cette déclaration depuis le formulaire de candidature de l’objet concerné : elle y
+            désigne le responsable nommément.</p>
+            {% else %}
+            <p>
+                {{ verwaltung.firma|default:"Immobilienverwaltung" }}<br>
+                {% if verwaltung %}{{ verwaltung.strasse }}<br>{{ verwaltung.plz }} {{ verwaltung.ort }}<br>{% endif %}
+                {% if verwaltung.email %}{{ verwaltung.email }}{% endif %}
+            </p>
+            <p>Ce service est responsable du traitement de vos données personnelles.
+            Vous pouvez lui adresser toute demande relative à la protection des données.</p>
+            {% endif %}
+        </section>
+
+        <section>
+            <h2>2. Données traitées et finalités</h2>
+            <p>Candidature à un logement</p>
+            <p>Pour choisir les locataires d’un objet déterminé : nom, date de naissance, coordonnées,
+            indications sur la situation de logement et la situation professionnelle, revenu annuel approximatif
+            ainsi qu’un extrait du registre des poursuites. Nous ne demandons la copie d’une pièce d’identité et
+            les justificatifs de revenu que lorsque la conclusion du contrat se concrétise, c’est-à-dire à la
+            personne retenue ou à un cercle restreint de candidats, et non à toutes les personnes intéressées.</p>
+            <p>Rapport de bail</p>
+            <p>Pour la conclusion, la gestion et l’exécution du contrat de bail : données personnelles,
+            données du contrat, paiements, correspondance, annonces de dommages et d’entretien.</p>
+            <p>Renseignements de référence</p>
+            <p>Si vous indiquez les coordonnées de votre bailleur actuel ou de votre employeur, nous pouvons les
+            contacter pour obtenir des renseignements de référence.</p>
+        </section>
+
+        <section>
+            <h2>3. Durée de conservation</h2>
+            <table class="w-full text-left border-collapse mt-2">
+                <thead>
+                    <tr class="border-b fw-linie">
+                        <th class="py-2 pr-4 font-bold">Données</th>
+                        <th class="py-2 font-bold">Durée</th>
+                    </tr>
+                </thead>
+                <tbody class="align-top">
+                    <tr class="border-b fw-linie">
+                        <td class="py-2 pr-4">Documents des candidatures non retenues</td>
+                        <td class="py-2">Suppression après la décision de location</td>
+                    </tr>
+                    <tr class="border-b fw-linie">
+                        <td class="py-2 pr-4">Autres indications des candidatures non retenues</td>
+                        <td class="py-2">Anonymisation au plus tard après un an</td>
+                    </tr>
+                    <tr class="border-b fw-linie">
+                        <td class="py-2 pr-4">Documents des locataires</td>
+                        <td class="py-2">Pendant la durée du rapport de bail</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 pr-4">Pièces comptables (factures, paiements)</td>
+                        <td class="py-2">Dix ans — obligation légale de conservation (art. 958f CO)</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>Nous ne pouvons pas supprimer les pièces comptables pendant le délai de conservation.
+            À l’expiration de ce délai, nous anonymisons les données personnelles correspondantes, de sorte que
+            la comptabilité reste vérifiable mais que le lien avec vous disparaît.</p>
+        </section>
+
+        <section>
+            <h2>4. Communication à des tiers</h2>
+            <p>Nous ne communiquons vos données que dans la mesure nécessaire au rapport de bail — par exemple
+            au propriétaire, aux entreprises mandatées pour réparer un dommage annoncé, ou à des prestataires
+            chargés de l’envoi et de la signature électronique de documents. Ceux-ci sont liés par contrat à la
+            finalité. Aucune donnée n’est vendue.</p>
+        </section>
+
+        <section>
+            <h2>5. Vos droits</h2>
+            <p>Vous avez le droit d’obtenir des <strong>renseignements</strong> sur les données traitées à votre
+            sujet, de faire <strong>rectifier</strong> les indications inexactes ainsi que de demander
+            l’<strong>effacement</strong> ou la limitation du traitement, pour autant qu’aucune obligation légale
+            de conservation ne s’y oppose. Adressez-vous pour cela au service indiqué ci-dessus.</p>
+            <p>Vous pouvez en outre vous adresser au Préposé fédéral à la protection des données et
+            à la transparence (PFPDT).</p>
+        </section>
+
+        <section>
+            <h2>6. Sécurité des données</h2>
+            <p>L’accès à vos données est réservé aux personnes qui en ont besoin pour accomplir leur tâche ;
+            la transmission est chiffrée. Les documents téléversés ne sont pas accessibles publiquement.</p>
+        </section>
+</div></div>

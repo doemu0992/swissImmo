@@ -1,7 +1,7 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n rechte hilfe %}
 {% load chf %}
-{% block title %}{% trans "Mahnwesen" %} — swissImmo{% endblock %}
+{% block title %}{% trans "Mahnwesen" %} — immoswiss{% endblock %}
 
 {% block content %}
 
@@ -100,7 +100,7 @@
                         <input type="hidden" name="stufe" value="{{ row.stufe.stufe }}">
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                         <label class="fw-klein">{% trans "Mahngebühr stellen (CHF)" %}
-                            <input type="number" name="gebuehr" step="0.05" min="0" value="{{ row.gebuehr_vorschlag|default_if_none:'' }}" class="fw-feld w-24 inline-block"></label>
+                            <input type="text" inputmode="decimal" data-chf data-fehler="{% trans 'Bitte einen Betrag eingeben, z. B. 1450.50' %}" name="gebuehr" value="{{ row.gebuehr_vorschlag|default_if_none:'' }}" class="fw-feld w-24 inline-block"></label>
                         <button type="submit" class="fw-btn fw-knapp">{% trans "Stellen" %}</button>
                     </form>
                     {% endif %}

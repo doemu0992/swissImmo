@@ -1,3 +1,4 @@
+from core.utils.betrag import betrag_normalisieren
 from crm.models import Organisation, Mieter
 from portfolio.models import Liegenschaft, Einheit
 from rentals.models import Mietvertrag, Leerstand
@@ -24,6 +25,7 @@ from reportlab.lib.units import mm
 from reportlab.lib import colors
 
 # Eigene Imports
+from core.utils.absender import kopfzeilen
 from core.utils.billing import berechne_abrechnung
 from core.utils.qr_code import draw_qr_bill
 
@@ -264,7 +266,7 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
     if iban:
         try:
             c.showPage()
-            betrag_float = float(str(betrag_str).replace(',', '.'))
+            betrag_float = float(betrag_normalisieren(betrag_str))
 
             if verwaltung:
                 creditor = {'name': verwaltung.firma, 'line1': verwaltung.strasse,
@@ -383,7 +385,7 @@ def send_mahnung_email_view(request, vertrag_id):
             body=(f"Guten Tag, im Anhang finden Sie die {titel} "
                   f"für {monat_str} über CHF {betrag_str} (Kopie; das Original erhalten "
                   f"Sie auf dem Postweg)."),
-            from_email=settings.DEFAULT_FROM_EMAIL, to=[vertrag.mieter.email])
+            to=[vertrag.mieter.email], **kopfzeilen(verwaltung))
         email.attach(f"Mahnung_{stufe}_{monat_str.replace(' ', '_')}.pdf", pdf_bytes, 'application/pdf')
         email.send()
         log_aktion(request, f"{stufe}. Mahnung als Kopie versendet", str(vertrag),
@@ -394,7 +396,7 @@ def send_mahnung_email_view(request, vertrag_id):
     # 257d-Kündigungsandrohung: Betrag muss ein positiver Betrag sein — die Vorgabe
     # '0.00' liess eine Kündigungsandrohung über CHF 0.00 zu.
     try:
-        _betrag_ok = Decimal(str(betrag_str).replace(',', '.')) > 0
+        _betrag_ok = Decimal(betrag_normalisieren(betrag_str)) > 0
     except Exception:
         _betrag_ok = False
     if not _betrag_ok:
@@ -423,7 +425,7 @@ def send_mahnung_email_view(request, vertrag_id):
         subject=f"Kopie: Mahnung mit Kündigungsandrohung (Art. 257d OR) — Original folgt per Einschreiben: {context['objekt_name']}",
         body=(f"Guten Tag, im Anhang finden Sie eine KOPIE der Mahnung für {monat_str}. "
               f"Die massgebende Fristansetzung erhalten Sie zusätzlich per Einschreiben."),
-        from_email=settings.DEFAULT_FROM_EMAIL, to=[vertrag.mieter.email],
+        to=[vertrag.mieter.email], **kopfzeilen(verwaltung),
     )
     email.attach_alternative(html_content, "text/html")
     email.attach(f"Mahnung_{monat_str.replace(' ','_')}.pdf", pdf_bytes, 'application/pdf')

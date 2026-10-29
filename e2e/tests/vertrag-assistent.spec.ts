@@ -143,7 +143,8 @@ for (const b of BREITEN) {
       await schrittIst(page, 6, 7, 'Nebenkosten');
       await page.locator('.fw-assistent-leiste li', { hasText: 'Mietzins' }).locator('button').click();
       await schrittIst(page, 4, 7, 'Mietzins');
-      await expect(page.locator('#s_netto')).toHaveValue('1234');
+      // Das Betragsfeld schreibt beim Verlassen «1'234.00» (DESIGN-28); der Server liest das ein.
+      await expect(page.locator('#s_netto')).toHaveValue("1'234.00");
 
       expect(fehler).toEqual([]);
     });

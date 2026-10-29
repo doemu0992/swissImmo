@@ -3,7 +3,7 @@
 {% load betreuung %}
 {% load rechte %}
 {% load chf %}
-{% block title %}{% blocktrans with name=v.mieter.display_name %}Vertrag {{ name }}{% endblocktrans %} — swissImmo{% endblock %}
+{% block title %}{% blocktrans with name=v.mieter.display_name %}Vertrag {{ name }}{% endblocktrans %} — immoswiss{% endblock %}
 
 {% block content %}
 
@@ -448,7 +448,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
                 <div class="fw-feldblock"><label class="fw-label">{% trans "Datum" %}</label>
                     <input type="date" name="zurueckbezahlt_am" class="fw-feld"></div>
                 <div class="fw-feldblock"><label class="fw-label">{% if v.ist_kautionsversicherung %}{% trans "Schadenforderung (CHF)" %}{% else %}{% trans "Einbehalt (CHF)" %}{% endif %}</label>
-                    <input type="number" step="0.05" name="abzug_betrag" value="0" class="fw-feld fw-num"></div>
+                    <input type="text" inputmode="decimal" data-chf data-fehler="{% trans 'Bitte einen Betrag eingeben, z. B. 1450.50' %}" name="abzug_betrag" value="0" class="fw-feld fw-num"></div>
                 <div class="fw-feldblock breit"><label class="fw-label">{% trans "Grund" %}</label>
                     <input name="abzug_grund" placeholder="{% trans 'z. B. Schäden, offene Miete' %}" class="fw-feld"></div>
             <div class="fw-feldblock breit"><label class="fw-haekchen"><input type="checkbox" name="abzug_verrechnen" class="fw-haken"> {% if v.ist_kautionsversicherung %}{% trans "Schadenforderung" %}{% else %}{% trans "Einbehalt" %}{% endif %} {% trans "als Debitoren-Weiterverrechnung buchen" %}</label></div>

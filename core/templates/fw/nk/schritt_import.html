@@ -14,7 +14,7 @@
     {% csrf_token %}<input type="hidden" name="aktion" value="hochladen">
     <div class="fw-kachel-kopf"><h2>{% trans "1 · Datei hochladen" %}</h2><span class="fw-neben">{% trans "CSV mit Kopfzeile, Trennzeichen ; , oder Tab" %}</span></div>
     <div class="fw-import-zeile">
-        <input type="file" name="datei" accept=".csv,.txt,text/csv" required class="fw-feld">
+        <input type="file" name="datei" aria-label="{% trans 'Datei hochladen' %}" accept=".csv,.txt,text/csv" required class="fw-feld">
         <button type="submit" class="fw-btn fw-primary">{% zeichen 'hochladen' %}{% trans "Hochladen" %}</button>
     </div>
     <p class="fw-kachel-text">{% trans "Gebraucht werden Zählernummer, Ablesedatum und Stand, optional die Art (Anfang, Zwischen, Ende). Die Datei wird nicht gespeichert." %}</p>

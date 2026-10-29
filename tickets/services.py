@@ -11,6 +11,7 @@ from reportlab.lib.utils import ImageReader
 
 from .models import SchadenMeldung, TicketNachricht, HandwerkerAuftrag
 from core.utils.email_service import send_ticket_receipt
+from core.services.druckfarben import EMBER_RGB
 
 # --- 1. INTERNE VERWALTUNGS-LOGIK ---
 
@@ -75,6 +76,8 @@ class MeldungUngueltig(ValueError):
 GRENZEN_QR = {
     'titel': 100, 'nachname': 70, 'vorname': 100, 'anrede': 20, 'email': 254,
     'telefon': 50, 'hersteller': 100, 'seriennummer': 100, 'beschreibung': 5000,
+    # Wahl im gemeinsamen Formular (Anliegen, Raum, Gegenstand): Spalten `kategorie`/`raum`/`objekt`.
+    'kategorie': 100, 'raum': 100, 'objekt': 100,
 }
 
 
@@ -116,6 +119,9 @@ def pruefe_oeffentliche_meldung(liegenschaft, post_data, files_data):
     telefon = text('telefon', True, _('Telefon'))
     hersteller = text('hersteller', False, _('Marke / Hersteller'))
     seriennummer = text('seriennummer', False, _('Seriennummer'))
+    kategorie = text('kategorie', False, _('Anliegen'))
+    raum = text('raum', False, _('Raum'))
+    objekt = text('objekt', False, _('Gegenstand'))
     if email and len(email) <= GRENZEN_QR['email']:
         try:
             validate_email(email)
@@ -144,6 +150,7 @@ def pruefe_oeffentliche_meldung(liegenschaft, post_data, files_data):
         'titel': titel, 'beschreibung': beschreibung, 'anrede': anrede,
         'vorname': vorname, 'nachname': nachname, 'email': email, 'telefon': telefon,
         'hersteller': hersteller, 'seriennummer': seriennummer, 'einheit': einheit,
+        'kategorie': kategorie, 'raum': raum, 'objekt': objekt,
         'foto': foto or None,
         'erreichbarkeit': gueltige_zeitfenster(post_data.getlist('erreichbarkeit')),
     }
@@ -186,7 +193,8 @@ def process_public_ticket_form(liegenschaft, post_data, files_data):
         liegenschaft=liegenschaft,
         email_melder=d['email'],
         tel_melder=d['telefon'],
-        gemeldet_von=None
+        gemeldet_von=None,
+        kategorie=d['kategorie'] or None, raum=d['raum'] or None, objekt=d['objekt'] or None,
     )
     if d['foto']:
         ticket.foto = d['foto']
@@ -211,8 +219,8 @@ def generate_qr_poster(liegenschaft, domain):
     c = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
 
-    # Header Balken (Blau)
-    c.setFillColorRGB(0.1, 0.4, 0.8)
+    # Header Balken (Ember)
+    c.setFillColorRGB(*EMBER_RGB)
     c.rect(0, height - 60*mm, width, 60*mm, fill=1, stroke=0)
 
     # Header Text

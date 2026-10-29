@@ -7,6 +7,7 @@ Read-only aus den bestehenden Finanzdaten. Ersetzt keine Steuerberatung.
 import io
 from decimal import Decimal
 from core.services.dokumentsprache import nur_deutsch
+from core.services.druckfarben import EMBER_RGB
 
 
 def _chf(v):
@@ -96,7 +97,7 @@ def generate_steuerauszug_pdf(eigentuemer, jahr):
     w, h = A4
     c.setTitle(f"Steuerauszug {jahr}")
 
-    c.setFillColorRGB(0.26, 0.22, 0.79)
+    c.setFillColorRGB(*EMBER_RGB)
     c.rect(0, h - 30 * mm, w, 30 * mm, fill=1, stroke=0)
     c.setFillColorRGB(1, 1, 1)
     c.setFont("Helvetica-Bold", 16)
@@ -142,7 +143,7 @@ def generate_steuerauszug_pdf(eigentuemer, jahr):
     # Total
     t = daten['total']
     y -= 2 * mm
-    c.setStrokeColorRGB(0.26, 0.22, 0.79)
+    c.setStrokeColorRGB(*EMBER_RGB)
     c.line(20 * mm, y, w - 20 * mm, y)
     y -= 7 * mm
     c.setFillColorRGB(0.1, 0.1, 0.1)

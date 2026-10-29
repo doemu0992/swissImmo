@@ -3,7 +3,7 @@
 {% load betreuung %}
 {% load chf %}
 {% load rechte %}
-{% block title %}{{ m.display_name }} — swissImmo{% endblock %}
+{% block title %}{{ m.display_name }} — immoswiss{% endblock %}
 
 {% block content %}
 
@@ -260,11 +260,11 @@ alten Liegenschaft betreut.
                 <summary>{% trans "Adresse hinzufügen" %}</summary>
                 <div class="fw-aufklapp-inhalt">
                     <form method="post" action="/neu/personen/{{ m.id }}/adresse/" class="fw-raster r6">{% csrf_token %}
-                        <select name="art" class="fw-feld fw-col-span-2">
+                        <select name="art" aria-label="{% trans 'Art' %}" class="fw-feld fw-col-span-2">
                             <option value="wohn">{% trans "Wohnadresse" %}</option>
                             <option value="korrespondenz">{% trans "Korrespondenzadresse" %}</option>
                         </select>
-                        <input type="date" name="gueltig_ab" value="{{ heute }}" class="fw-feld fw-col-span-2" required>
+                        <input type="date" name="gueltig_ab" aria-label="{% trans 'Gültig ab' %}" value="{{ heute }}" class="fw-feld fw-col-span-2" required>
                         <input name="strasse" placeholder="{% trans 'Strasse &amp; Nr. / c/o' %}" class="fw-feld fw-col-span-2">
                         <input name="adresszusatz" placeholder="{% trans 'Adresszusatz' %}" class="fw-feld fw-col-span-2">
                         <input name="plz" placeholder="{% trans 'PLZ' %}" class="fw-feld fw-col-span-1">
@@ -527,11 +527,11 @@ alten Liegenschaft betreut.
                     {% csrf_token %}
                     <input type="hidden" name="mieter_id" value="{{ m.id }}">
                     <div class="flex flex-wrap gap-2">
-                        <select name="typ" class="fw-feld">
+                        <select name="typ" aria-label="{% trans 'Art' %}" class="fw-feld">
                             <option value="telefon">{% trans "Telefon" %}</option><option value="email">{% trans "E-Mail" %}</option>
                             <option value="brief">{% trans "Brief" %}</option><option value="persoenlich">{% trans "Persönlich" %}</option><option value="notiz">{% trans "Notiz" %}</option>
                         </select>
-                        <select name="richtung" class="fw-feld">
+                        <select name="richtung" aria-label="{% trans 'Richtung' %}" class="fw-feld">
                             <option value="eingehend">{% trans "Eingehend" %}</option><option value="ausgehend">{% trans "Ausgehend" %}</option><option value="intern">{% trans "Intern" %}</option>
                         </select>
                         <input name="betreff" placeholder="{% trans 'Betreff (optional)' %}" class="fw-feld flex-1 min-w-[160px]">

@@ -1,7 +1,7 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n hilfe statisch %}
 {% load chf %}
-{% block title %}{% trans "Bankabgleich" %} — swissImmo{% endblock %}
+{% block title %}{% trans "Bankabgleich" %} — immoswiss{% endblock %}
 
 {% block content %}
 {% comment %}
@@ -66,7 +66,7 @@ hat genau einen Hauptknopf — den nächsten sinnvollen Schritt.
             <span class="fw-neben">{% trans "(camt.053-XML oder Bank-CSV)" %}</span>
         </div>
         <div class="fw-import-zeile">
-            <input type="file" name="camt_datei" accept=".xml,.csv,.txt,text/xml,application/xml,text/csv" required class="fw-feld">
+            <input type="file" name="camt_datei" aria-label="{% trans 'Kontoauszug (Datei)' %}" accept=".xml,.csv,.txt,text/xml,application/xml,text/csv" required class="fw-feld">
             {% if bankkonten|length > 1 %}
             {# Mehrere Bankkonten: vorher war «1020» im ganzen Import hart verdrahtet. #}
             <select name="bank_konto" class="fw-feld" aria-label="{% trans 'Bankkonto' %}">

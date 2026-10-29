@@ -30,6 +30,7 @@ Ein Vertrag, der dort einen Tag früher endet, gilt als zu kurz.
 """
 import calendar
 from dataclasses import dataclass
+from core.utils.betrag import betrag_normalisieren
 from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
 
@@ -109,7 +110,7 @@ def _dec(wert):
     if isinstance(wert, Decimal):
         return wert
     try:
-        return Decimal(str(wert).strip())
+        return Decimal(betrag_normalisieren(wert))
     except (InvalidOperation, ValueError):
         return None
 

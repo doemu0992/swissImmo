@@ -22,10 +22,13 @@ import logging
 
 from django.contrib import messages
 from django.utils.translation import gettext
+
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _, gettext_lazy
 from django.utils.dateparse import parse_date, parse_datetime
+
+from core.utils.betrag import betrag_normalisieren
 from django.views.decorators.http import require_POST
 
 from core.auth import rolle_erforderlich, SCHREIB_ROLLEN, TEAM_ROLLEN
@@ -136,7 +139,7 @@ def fw_zeit_erfassen(request, pk):
     if satz_roh:
         from decimal import Decimal, InvalidOperation
         try:
-            satz = Decimal(satz_roh.replace(',', '.'))
+            satz = Decimal(betrag_normalisieren(satz_roh))
         except InvalidOperation:
             messages.error(request, gettext('«%(satz_roh)s» ist kein Betrag.') % {'satz_roh': satz_roh})
             return redirect(f'/neu/faelle/{pk}/')
