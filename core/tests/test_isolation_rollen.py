@@ -19,6 +19,10 @@ from crm.models import Mitgliedschaft
 from .test_isolation import FremdeIdImBodyTests
 
 
+MIN_BUCHHALTUNG = 80      # gemessen 120
+MIN_HAUSWART = 30         # gemessen 58
+
+
 class FremdeIdImBodyWeitereRollenTests(FremdeIdImBodyTests):
 
     # Geerbte Tests: laufen in FremdeIdImBodyTests, hier abgeschaltet.
@@ -29,6 +33,10 @@ class FremdeIdImBodyWeitereRollenTests(FremdeIdImBodyTests):
     test_der_lauf_erreicht_die_bekannten_loecher = None
     test_der_nachweis_findet_ein_leck = None
     test_das_netz_verhindert_die_zeile_in_b_auch_ohne_pruefung_in_der_ansicht = None
+    test_ohne_kontext_gilt_das_netz_nicht = None
+    test_die_fremde_liegenschaft_im_formular_legt_nichts_an = None
+    test_die_eigene_liegenschaft_im_formular_geht_weiterhin = None
+    test_abwesenheit_nur_fuer_das_eigene_team = None
 
     @classmethod
     def setUpTestData(cls):
@@ -40,6 +48,14 @@ class FremdeIdImBodyWeitereRollenTests(FremdeIdImBodyTests):
             client = Client(raise_request_exception=False)
             client.force_login(benutzer)
             cls.clients[rolle] = client
+
+    def _erreichte_routen(self, rolle):
+        """Anzahl POST-Routen, bei denen die Rolle nicht schon am Rollen-Dekorator (403) scheitert."""
+        routen, _ = self.k.post_routen(self.a)
+        client = self.clients[rolle]
+        return sum(1 for name, pfad in routen
+                   if name not in self.k.OEFFENTLICH_BY_DESIGN
+                   and self.k.sende(client, self.bestand, pfad, dict(self.felder))[0] != 403)
 
     def _pruefen(self, rolle, als_json=False):
         befunde, _ = self._lauf(rolle, als_json=als_json)
@@ -60,6 +76,16 @@ class FremdeIdImBodyWeitereRollenTests(FremdeIdImBodyTests):
 
     def test_hauswart_json(self):
         self._pruefen(Mitgliedschaft.ROLLE_HAUSWART, als_json=True)
+
+    def test_die_rollen_erreichen_ihre_routen(self):
+        """Gegenprobe zur Reichweite: Ein Lauf, bei dem die Rolle überall am Dekorator scheitert, wäre grün und leer.
+
+        Die Mindestzahlen sind gemessen (29.10.2026) und bewusst darunter angesetzt.
+        """
+        for rolle, mindestens in ((Mitgliedschaft.ROLLE_BUCHHALTUNG, MIN_BUCHHALTUNG),
+                                  (Mitgliedschaft.ROLLE_HAUSWART, MIN_HAUSWART)):
+            with self.subTest(rolle=rolle):
+                self.assertGreaterEqual(self._erreichte_routen(rolle), mindestens)
 
     def test_die_weiteren_rollen_sind_angemeldet(self):
         """Selbstprüfung: Ein Client, der nicht angemeldet ist, bekäme überall 302 und der Lauf wäre grün."""

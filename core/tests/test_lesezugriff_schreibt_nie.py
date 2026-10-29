@@ -17,6 +17,10 @@ gelöscht) und `OEFFENTLICH`, jeweils mit Grund. Die Listen werden nie länger, 
 Gegenprobe: bei einer Schreib-View (z. B. `fw_pendenz_neu`) den Rollen-Dekorator auf `TEAM_ROLLEN` stellen,
 und der Lauf wird rot (Protokoll im Commit).
 """
+import json
+from unittest import mock
+
+import requests
 from django.contrib.auth import get_user_model
 from django.db import connection
 from django.test import Client, TestCase
@@ -64,12 +68,13 @@ class LesezugriffSchreibtNieTests(TestCase):
         ergebnis = {}
         try:
             with transaction.atomic():
-                with connection.execute_wrapper(schreiber):
-                    if als_json:
-                        import json
-                        antwort = self.client.post(pfad, json.dumps(self.felder), content_type='application/json')
-                    else:
-                        antwort = self.client.post(pfad, dict(self.felder))
+                with mock.patch('requests.sessions.Session.request',
+                                side_effect=requests.exceptions.ConnectionError('kein Netz im Test')):
+                    with connection.execute_wrapper(schreiber):
+                        if als_json:
+                            antwort = self.client.post(pfad, json.dumps(self.felder), content_type='application/json')
+                        else:
+                            antwort = self.client.post(pfad, dict(self.felder))
                 ergebnis['status'] = antwort.status_code
                 aenderungen = []
                 for tabelle in schreiber.tabellen:

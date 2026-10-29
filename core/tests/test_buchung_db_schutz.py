@@ -175,8 +175,9 @@ class EindeutigkeitTests(UnveraenderlichBasis):
     def test_stornos_verschiedener_originale_sind_unabhaengig(self):
         from finance.booking import buche
         zweite = buche('1020', '3000', Decimal('5.00'), 'Zweite', datum=date(2026, 3, 2))
-        self._storno_zu(self.b)
-        self._storno_zu(zweite)
+        erstes = self._storno_zu(self.b)
+        zweites = self._storno_zu(zweite)
+        self.assertEqual((erstes.storno_von_id, zweites.storno_von_id), (self.b.pk, zweite.pk))
 
     def test_bankreferenz_nur_einmal_je_organisation(self):
         from finance.models import Zahlungseingang

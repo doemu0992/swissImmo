@@ -643,7 +643,7 @@ class AusgezeichneteVorlagenTests(SimpleTestCase):
         from django.template.loader import get_template
         for name in UEBERSETZT:
             with self.subTest(vorlage=name):
-                get_template(name)
+                self.assertIsNotNone(get_template(name))
 
     def test_uebersetzte_auswahl_hat_einen_festen_wert(self):
         """Eine `<option>` mit übersetzter Beschriftung braucht ein `value`.

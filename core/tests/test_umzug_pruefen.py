@@ -104,7 +104,9 @@ class UmzugPruefenTests(TestCase):
     def test_ohne_streng_kein_fehlercode(self):
         # Zum blossen Nachsehen soll der Befehl nicht abbrechen.
         self._zu_grossen_betrag_einschmuggeln()
-        self.pruefen()   # wirft nicht
+        ausgabe = self.pruefen()   # wirft nicht, meldet den Fund aber trotzdem
+        self.assertIn('max_digits=10', ausgabe)
+        self.assertNotIn('Alle Werte passen', ausgabe)
 
     def test_zu_langer_text_wird_gefunden(self):
         # Dieselbe Falle bei CharField: SQLite kuerzt nicht, PostgreSQL weist ab.
