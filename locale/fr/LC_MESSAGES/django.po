@@ -35555,3 +35555,44 @@ msgstr ""
 "Erreur : la facture QR pour %(einheit)s n'a pas pu être créée (%(fehler)s). "
 "Le PDF n'a pas été remis afin qu'aucun rappel de paiement ne soit envoyé "
 "sans bulletin de versement."
+
+msgid "Archivierte Akten ansehen und wiederherstellen"
+msgstr "Consulter et restaurer les dossiers archivés"
+
+msgid "Ablaufdatum"
+msgstr "Date d'échéance"
+
+msgid "Bitte eine Zahl eingeben."
+msgstr "Veuillez saisir un nombre."
+
+msgid "Bitte einen Betrag eingeben, z. B. 1450.50"
+msgstr "Veuillez saisir un montant, p. ex. 1450.50"
+
+msgid "Datei hochladen"
+msgstr "Téléverser un fichier"
+
+msgid "Kontoauszug (Datei)"
+msgstr "Relevé de compte (fichier)"
+
+msgid "MWST-Satz in Prozent"
+msgstr "Taux de TVA en pourcent"
+
+msgid "Rechnung auswählen"
+msgstr "Sélectionner la facture"
+
+msgid "Richtung"
+msgstr "Sens"
+
+msgid "Unterschrift als Bilddatei"
+msgstr "Signature en fichier image"
+
+msgid "Vertrag auswählen"
+msgstr "Sélectionner le contrat"
+
+#, python-format
+msgid "Lebensdauer in Jahren: %(k)s"
+msgstr "Durée de vie en années : %(k)s"
+
+#, python-format
+msgid "Bemerkung: %(k)s"
+msgstr "Remarque : %(k)s"

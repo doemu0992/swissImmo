@@ -52,9 +52,15 @@
             /* Vorhang hinter Schublade, Palette und Dialog. */
             --ds-scrim:rgba(23,24,27,.38);
             --ds-glow:rgba(224,100,47,.07);--ds-glow-2:rgba(255,255,255,.55);
-            /* Ember-Akzent fuer Flaechen (Hauptkarte, aktiver Balken) — als Flaeche,
-               nie als Schrift auf Weiss (3.5:1). Weisse Schrift steht auf --ds-akzent-tief. */
+            /* Ember-Akzent fuer Flaechen (aktiver Balken, Punkte) — als Flaeche,
+               nie als Schrift auf Weiss (3.5:1). */
             --ds-akzent:#e0642f;--ds-akzent-hell:#f08a55;--ds-akzent-tief:#c4531f;
+            /* Die orange Hauptkarte (fw-kachel.akzent, fw-kpi.fw-accent) und der Avatar tragen WEISSE Schrift.
+               Gemessen am 29.10.2026 (DESIGN-10): Der Verlauf aus --ds-akzent und der Aufheller aus
+               --ds-akzent-hell erreichten 2.5:1 bis 3.5:1 (der Kommentar hier sagte 4.8:1). Diese drei Toene
+               sind die hellste und die dunkelste Stelle der Karte: Weiss darauf 5.2:1 / 6.1:1 / 7.7:1, auch
+               mit 92 % Deckung noch >= 4.5:1. Heller darf kein Pixel einer Karte mit weisser Kleinschrift sein. */
+            --ds-karte-hell:#b84a1a;--ds-karte-mitte:#a8421a;--ds-karte-tief:#8f3714;
             --ds-radius:24px;--ds-radius-sm:14px;--ds-pill:999px;
             /* Knoepfe und Felder (9), Kapsel-Etiketten (5), Dialoge (14). */
             --ds-radius-knopf:12px;--ds-radius-xs:8px;--ds-radius-lg:28px;
@@ -74,6 +80,7 @@
             --ds-scrim:rgba(0,0,0,.55);
             --ds-glow:rgba(240,138,85,.06);--ds-glow-2:rgba(255,255,255,.02);
             --ds-akzent:#e0642f;--ds-akzent-hell:#f08a55;--ds-akzent-tief:#c4531f;
+            --ds-karte-hell:#b84a1a;--ds-karte-mitte:#a8421a;--ds-karte-tief:#8f3714;
             color-scheme:dark;
         }}
         :root[data-theme="dark"]{
@@ -88,6 +95,7 @@
             --ds-scrim:rgba(0,0,0,.55);
             --ds-glow:rgba(240,138,85,.06);--ds-glow-2:rgba(255,255,255,.02);
             --ds-akzent:#e0642f;--ds-akzent-hell:#f08a55;--ds-akzent-tief:#c4531f;
+            --ds-karte-hell:#b84a1a;--ds-karte-mitte:#a8421a;--ds-karte-tief:#8f3714;
             color-scheme:dark;
         }
         .fw-num{font-variant-numeric:tabular-nums}
@@ -2259,7 +2267,7 @@
         .fw-werkzeug-kapsel .fw-pip{top:9px;right:10px;background:var(--ds-akzent);box-shadow:0 0 0 2px var(--ds-surface)}
         .fw-avatar-knopf{border:0;background:none;padding:0;cursor:pointer;border-radius:var(--ds-pill);display:grid}
         .fw-avatar.fw-avatar-gross{width:40px;height:40px;flex:0 0 40px;font-size:13px;font-weight:700;border:0;color:#fff;
-            background:linear-gradient(135deg,var(--ds-ink),var(--ds-akzent-tief))}
+            background:linear-gradient(135deg,var(--ds-karte-tief),var(--ds-karte-hell))}
         .fw-profil{left:auto;right:max(32px,env(safe-area-inset-right,0px));top:82px;bottom:auto;border:0;border-radius:var(--ds-radius);box-shadow:var(--ds-shadow-lg)}
         html._sbc .fw-profil{left:auto}
         .fw-taste{border-radius:var(--ds-radius-xs)}
@@ -2302,9 +2310,9 @@
         /* Gross nur, wo Platz ist — am Telefon gelten die Stufen der Kachelreihe (21 / 17 px) */
         @media (min-width:721px){.fw-kpis:not(.fw-stats) .fw-kpi .fw-v{font-size:32px}}
         /* Die Akzent-Kachel einer Kennzahlenreihe ist die orange Hauptkarte */
-        .fw-kpis:not(.fw-stats)>.fw-kpi.fw-accent{background:radial-gradient(120% 120% at 100% 0%,var(--ds-akzent-hell) 0%,transparent 55%),
-            linear-gradient(155deg,var(--ds-akzent-tief) 0%,#a8421a 100%);color:#fff}
-        .fw-kpis:not(.fw-stats)>.fw-kpi.fw-accent .fw-l,.fw-kpis:not(.fw-stats)>.fw-kpi.fw-accent .fw-f{color:rgba(255,255,255,.9)}
+        .fw-kpis:not(.fw-stats)>.fw-kpi.fw-accent{background:radial-gradient(120% 120% at 100% 0%,var(--ds-karte-hell) 0%,transparent 55%),
+            linear-gradient(155deg,var(--ds-karte-mitte) 0%,var(--ds-karte-tief) 100%);color:#fff}
+        .fw-kpis:not(.fw-stats)>.fw-kpi.fw-accent .fw-l,.fw-kpis:not(.fw-stats)>.fw-kpi.fw-accent .fw-f{color:rgba(255,255,255,.92)}
         .fw-kpis:not(.fw-stats)>.fw-kpi.fw-accent .fw-v{color:#fff}
         .fw-kpis:not(.fw-stats)>.fw-kpi.fw-accent:hover{box-shadow:0 26px 50px -22px rgba(196,83,31,.7)}
 
@@ -2422,7 +2430,7 @@
         .fw-kachel-zahl{font-size:40px;font-weight:500;letter-spacing:-.04em;line-height:1;margin-top:auto}
         .fw-kachel-zahl small{font-size:14px;font-weight:500;letter-spacing:0;color:var(--ds-muted);margin-left:6px}
         .fw-kachel-text{font-size:12.5px;color:var(--ds-muted);line-height:1.45;margin:0}
-        .fw-kachel.akzent{background:radial-gradient(120% 120% at 100% 0%,var(--ds-akzent-hell) 0%,transparent 55%),linear-gradient(160deg,var(--ds-akzent),var(--ds-akzent-tief));color:var(--ds-auf-satt)}
+        .fw-kachel.akzent{background:radial-gradient(120% 120% at 100% 0%,var(--ds-karte-hell) 0%,transparent 55%),linear-gradient(160deg,var(--ds-karte-mitte),var(--ds-karte-tief));color:var(--ds-auf-satt)}
         .fw-kachel.akzent,.fw-kachel.akzent .fw-kachel-text{color:#fff}
         .fw-kachel.dunkel{background:var(--ds-ink);color:var(--ds-surface)}
         .fw-kachel.dunkel .fw-kachel-text{color:var(--ds-line-stark)}
@@ -3199,7 +3207,7 @@
         .fw-bereichsreiter [hidden]{display:none!important}
         .fw-bereichsreiter-name{flex:none;display:flex;gap:6px;padding:0 8px 0 14px;font-size:11.5px;font-weight:600;
             letter-spacing:.08em;text-transform:uppercase;color:var(--ds-faint)}
-        .fw-bereichsreiter-name i{font-style:normal;opacity:.5}
+        .fw-bereichsreiter-name i{font-style:normal}
         .fw-bereichsreiter a{flex:none;display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 14px;border-radius:var(--ds-pill);
             font-size:13.5px;font-weight:500;color:var(--ds-muted);white-space:nowrap;text-decoration:none;transition:background .2s,color .2s}
         .fw-bereichsreiter a:hover{background:var(--ds-surface-2);color:var(--ds-ink)}

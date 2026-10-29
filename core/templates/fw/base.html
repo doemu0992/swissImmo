@@ -1,4 +1,4 @@
-{% load zeichen i18n statisch %}{% get_current_language as aktuelle_sprache %}
+{% load zeichen i18n statisch rechte %}{% get_current_language as aktuelle_sprache %}
 <!DOCTYPE html>
 <html lang="{{ aktuelle_sprache|slice:':2'|default:'de' }}">
 <head>
@@ -188,8 +188,8 @@ Detailseiten rufen sie beim Namen.
                    `core/navigation.py`). «Neuer Fall» fällt auf die Vollseite zurück, wo `fwModalOpen`
                    (Schublade, `fw/_fwmodal.html`) auf der Seite nicht geladen ist. {% endcomment %}
                 {% if not fw_kopf_reduziert %}
-                <a href="/neu/faelle/neu/" onclick="return window.fwModalOpen ? fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}') : true" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neuen Fall erfassen' %}"
-                   class="fw-knopf-rund fw-wz-neu">{% zeichen 'neu' %}</a>
+                {% if request.user|darf:"/neu/faelle/neu/" %}<a href="/neu/faelle/neu/" onclick="return window.fwModalOpen ? fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}') : true" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neuen Fall erfassen' %}"
+                   class="fw-knopf-rund fw-wz-neu">{% zeichen 'neu' %}</a>{% endif %}
                 <a href="/neu/zulauf/{{ lg_query }}" title="{% trans 'Mitteilungen' %}" aria-label="{% trans 'Mitteilungen' %}"
                    class="fw-knopf-rund{% if nav == 'zulauf' %} hier{% endif %}">{% zeichen 'glocke' %}<span class="fw-pip" data-zaehler="zulauf" hidden></span></a>
                 <a href="/neu/einstellungen/{{ lg_query }}" title="{% trans 'Einstellungen' %}" aria-label="{% trans 'Einstellungen' %}" class="fw-knopf-rund fw-wz-einst{% if nav in fw_einstellungen_keys %} hier{% endif %}">{% zeichen 'einstellungen' %}</a>
@@ -229,7 +229,7 @@ Detailseiten rufen sie beim Namen.
             {% comment %} Was die Kopfzeile bis 1023 px nicht mehr tragen kann: «Neuer Fall» und die
                Schublade. Ab 1024 px stehen beide nicht hier (`fw-profil-schnell`). {% endcomment %}
             <div class="fw-profil-schnell">
-                {% if not fw_kopf_reduziert %}<a href="/neu/faelle/neu/" onclick="fwProfilMenu();return window.fwModalOpen ? fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}') : true" class="fw-profil-link">{% zeichen 'neu' %} {% trans "Neuer Fall" %}</a>{% endif %}
+                {% if not fw_kopf_reduziert and request.user|darf:"/neu/faelle/neu/" %}<a href="/neu/faelle/neu/" onclick="fwProfilMenu();return window.fwModalOpen ? fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}') : true" class="fw-profil-link">{% zeichen 'neu' %} {% trans "Neuer Fall" %}</a>{% endif %}
                 <button type="button" onclick="fwProfilMenu();fwOpenMobileNav()" class="fw-profil-link">{% zeichen 'mehr' %} {% trans "Menü öffnen" %}</button>
                 <div class="fw-profil-trenner"></div>
             </div>

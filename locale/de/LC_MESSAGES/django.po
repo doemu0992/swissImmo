@@ -34164,3 +34164,44 @@ msgstr "Dokument archiviert."
 
 msgid "Schadensmeldung archiviert."
 msgstr "Schadensmeldung archiviert."
+
+msgid "Archivierte Akten ansehen und wiederherstellen"
+msgstr "Archivierte Akten ansehen und wiederherstellen"
+
+msgid "Ablaufdatum"
+msgstr "Ablaufdatum"
+
+msgid "Bitte eine Zahl eingeben."
+msgstr "Bitte eine Zahl eingeben."
+
+msgid "Bitte einen Betrag eingeben, z. B. 1450.50"
+msgstr "Bitte einen Betrag eingeben, z. B. 1450.50"
+
+msgid "Datei hochladen"
+msgstr "Datei hochladen"
+
+msgid "Kontoauszug (Datei)"
+msgstr "Kontoauszug (Datei)"
+
+msgid "MWST-Satz in Prozent"
+msgstr "MWST-Satz in Prozent"
+
+msgid "Rechnung auswählen"
+msgstr "Rechnung auswählen"
+
+msgid "Richtung"
+msgstr "Richtung"
+
+msgid "Unterschrift als Bilddatei"
+msgstr "Unterschrift als Bilddatei"
+
+msgid "Vertrag auswählen"
+msgstr "Vertrag auswählen"
+
+#, python-format
+msgid "Lebensdauer in Jahren: %(k)s"
+msgstr "Lebensdauer in Jahren: %(k)s"
+
+#, python-format
+msgid "Bemerkung: %(k)s"
+msgstr "Bemerkung: %(k)s"

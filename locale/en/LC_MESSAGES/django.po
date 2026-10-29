@@ -34998,3 +34998,44 @@ msgstr ""
 "Error: the QR bill for %(einheit)s could not be created (%(fehler)s). The "
 "PDF was not delivered so that no additional payment request is sent without "
 "a payment slip."
+
+msgid "Archivierte Akten ansehen und wiederherstellen"
+msgstr "View and restore archived records"
+
+msgid "Ablaufdatum"
+msgstr "Expiry date"
+
+msgid "Bitte eine Zahl eingeben."
+msgstr "Please enter a number."
+
+msgid "Bitte einen Betrag eingeben, z. B. 1450.50"
+msgstr "Please enter an amount, e.g. 1450.50"
+
+msgid "Datei hochladen"
+msgstr "Upload file"
+
+msgid "Kontoauszug (Datei)"
+msgstr "Bank statement (file)"
+
+msgid "MWST-Satz in Prozent"
+msgstr "VAT rate in percent"
+
+msgid "Rechnung auswählen"
+msgstr "Select invoice"
+
+msgid "Richtung"
+msgstr "Direction"
+
+msgid "Unterschrift als Bilddatei"
+msgstr "Signature as image file"
+
+msgid "Vertrag auswählen"
+msgstr "Select contract"
+
+#, python-format
+msgid "Lebensdauer in Jahren: %(k)s"
+msgstr "Service life in years: %(k)s"
+
+#, python-format
+msgid "Bemerkung: %(k)s"
+msgstr "Note: %(k)s"

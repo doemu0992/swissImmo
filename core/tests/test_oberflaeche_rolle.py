@@ -125,3 +125,42 @@ class HauswartSiehtNurErlaubtesTests(RollenBasis):
         ziele = {ziel for _seite, _art, ziel in tot}
         self.assertIn(f'/neu/schaeden/{self.a.schaden.pk}/auftrag/', ziele)
         self.assertIn(f'/neu/schaeden/{self.a.schaden.pk}/foto/', ziele)
+
+
+class LesezugriffUndSachbearbeitungTests(RollenBasis):
+    """Der Bestand ist noch nicht bereinigt: Die Zahl der toten Ziele darf nur sinken (ROUTE-02).
+
+    Das Audit zählte für den Lesezugriff 169 tote Schreibaktionen auf 48 Seiten, für die
+    Sachbearbeitung 25 auf 20 Seiten. Die Hauswartung ist bereinigt (Test oben, Null ohne Ausnahme);
+    für diese beiden Rollen hält die Sperrklinke den Stand fest, bis die Vorlagen nachgezogen sind.
+    Gemessen wird auf dem Fixture-Bestand (kleiner als der des Audits): Die Zahlen unten sind deshalb
+    kleiner als 169 und 25, aber derselbe Fehler.
+    """
+
+    #: Stand vom 29.10.2026, gemessen mit `tote_ziele` über die Startseiten unten. Nur senken.
+    BEKANNT_OFFEN = {'lesezugriff': 218, 'sachbearbeiter': 59}
+
+    def _starts(self):
+        a = self.a
+        return ['/neu/liegenschaften/', f'/neu/liegenschaften/{a.liegenschaft.pk}/', f'/neu/objekte/{a.einheit.pk}/',
+                f'/neu/personen/{a.mieter.pk}/', f'/neu/vertraege/{a.vertrag.pk}/', f'/neu/schaeden/{a.schaden.pk}/',
+                '/neu/debitoren/', '/neu/kreditoren/', '/neu/mandate/', '/neu/mahnwesen/', '/neu/finanzen/',
+                '/neu/laeufe/', '/neu/dienstleister/', '/neu/dokumente/', '/neu/termine/', '/neu/pendenzen/']
+
+    def test_der_kopf_bietet_neuer_fall_nur_an_wer_ihn_anlegen_darf(self):
+        """Der «+» im Kopf und im Profilmenü stand auf jeder Seite (139 Fundstellen im Audit) und endete
+        für den Lesezugriff in der 403."""
+        lese = self.client_von('lesezugriff').get('/neu/liegenschaften/').content.decode()
+        self.assertNotIn('href="/neu/faelle/neu/"', lese)
+        sach = self.client_von('sachbearbeiter').get('/neu/liegenschaften/').content.decode()
+        self.assertIn('href="/neu/faelle/neu/"', sach)
+
+    def test_die_zahl_toter_ziele_waechst_nicht(self):
+        for schluessel, rolle in (('lesezugriff', 'Lesezugriff'), ('sachbearbeiter', 'Sachbearbeiter')):
+            with self.subTest(rolle=rolle):
+                tot, besucht = tote_ziele(self.client_von(schluessel), rolle, self._starts(), hoechstens=250)
+                self.assertGreaterEqual(len(besucht), 10, 'die Seiten wurden nicht erreicht')
+                self.assertLessEqual(
+                    len(tot), self.BEKANNT_OFFEN[schluessel],
+                    f'{rolle}: {len(tot)} tote Ziele (bekannt: {self.BEKANNT_OFFEN[schluessel]}). '
+                    f'Neue Schreibknöpfe gehören hinter `kann_schreiben` bzw. `request.user|darf:"…"`.')

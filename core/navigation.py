@@ -121,10 +121,6 @@ def nav_gruppen():
         # der Benutzer nicht beantworten kann.
         _g('heute', _('Heute'), 'wartet', '/neu/', [
             _i(_('Zulauf'), '/neu/zulauf/', ['zulauf']),
-            # Der Serienbrief-Assistent stand bis DESIGN-05 in keinem Menüband
-            # (nur Profilmenü und ⌘K): Wer ihn aus «Heute» heraus braucht, fand
-            # ihn nicht, und die Seite markierte keinen Bereich.
-            _i(_('Kommunikation'), '/neu/kommunikation/', ['kommunikation']),
             _i(_('Termine'), '/neu/termine/', ['termine']),
             _i(_('Pendenzen'), '/neu/pendenzen/', ['pendenzen']),
             _i(_('Fristen'), '/neu/fristen/', ['fristen']),
@@ -132,7 +128,10 @@ def nav_gruppen():
             # wenn jemand wissen will, wer für wen einspringt — nicht, wenn
             # jemand Ferien einträgt.
             _i(_('Vertretung'), '/neu/abwesenheiten/', ['abwesenheiten']),
-        ], extra_keys=['dashboard', 'faelle', 'arbeit', 'suche']),
+        # `kommunikation` (Serienbrief-Assistent) und `suche` (Trefferliste) haben keinen eigenen Menüpunkt,
+        # leuchten aber unter «Heute» statt nirgends (DESIGN-04). Ob sie einen Punkt bekommen, ist offen
+        # (DESIGN-05: Entscheidungsfrage).
+        ], extra_keys=['dashboard', 'faelle', 'arbeit', 'suche', 'kommunikation']),
 
         # ── AKTEN ────────────────────────────────────────────────────────────
         # Die Register in der Reihenfolge, in der man sie aufschlägt: vom
@@ -146,7 +145,6 @@ def nav_gruppen():
             _i(_('Mietverhältnisse'), '/neu/vertraege/', ['vertraege']),
             _i(_('Personen'), '/neu/personen/', ['personen']),
             _i(_('Dienstleister'), '/neu/dienstleister/', ['dienstleister']),
-            _i(_('Dokumente'), '/neu/dokumente/', ['dokumente']),
             # Schaden und Mieterwechsel sind fachlich Fälle, keine Aktentypen.
             # Ihre Listen bleiben, bis die Fallansicht sie ersetzt.
             _i(_('Schäden'), '/neu/schaeden/', ['schadensfaelle'], section=_('Vorgänge')),
@@ -155,7 +153,8 @@ def nav_gruppen():
             _i(_('Vermarktung'), '/neu/vermarktung/', ['vermarktung']),
             _i(_('Bewerbungen'), '/neu/bewerbungen/', ['bewerbungen']),
             _i(_('Ersatz & Ausstattung'), '/neu/ersatzplanung/', ['assets']),
-        ], badge='schaeden'),
+        # `dokumente` (Ablage und Dokumentverlauf) leuchtet unter «Akten», ohne eigenen Menüpunkt (DESIGN-04/-05).
+        ], badge='schaeden', extra_keys=['dokumente']),
 
         # ── LÄUFE ────────────────────────────────────────────────────────────
         # Alles, was einen Zustand hat und blockieren kann. Der Bereich fehlte
@@ -356,6 +355,8 @@ def fw_navigation(request):
         for it in g['items']:
             palette.append({'label': it['label'], 'url': it['ziel'], 'gruppe': g['label']})
     palette += [
+        {'label': _('Dokumente'), 'url': '/neu/dokumente/'},
+        {'label': _('Kommunikation'), 'url': '/neu/kommunikation/'},
         {'label': _('Regelwerk'), 'url': '/neu/regelwerk/', 'gruppe': _('Einstellungen')},
         {'label': _('Einstellungen'), 'url': '/neu/einstellungen/'},
         {'label': _('Zwei-Faktor-Anmeldung'), 'url': '/konto/zwei-faktor/'},

@@ -370,17 +370,25 @@
         teile[0] = teile[0].replace(/\B(?=(\d{3})+(?!\d))/g, "'");
         return (n < 0 && parseFloat(fest) !== 0 ? '-' : '') + teile.join('.');
     }
+    // Meldung und `aria-invalid` setzt und löscht NUR dieses Skript (Marke `fwUngueltig`): Seiten mit eigener
+    // Prüfung (z. B. Weitergabe 0–100 % im Mietzinsmodell) behalten ihre Meldung.
+    function betragWiederGut(feld) {
+        if (!feld.dataset.fwUngueltig) return;
+        delete feld.dataset.fwUngueltig;
+        feld.removeAttribute('aria-invalid');
+        feld.setCustomValidity('');
+    }
     function betragFormatieren(feld) {
         var roh = feld.value;
-        if (!roh.trim()) { feld.removeAttribute('aria-invalid'); feld.setCustomValidity(''); return; }
+        if (!roh.trim()) { betragWiederGut(feld); return; }
         var t = zahlText(roh);
         if (t === null) {
+            feld.dataset.fwUngueltig = '1';
             feld.setAttribute('aria-invalid', 'true');
             feld.setCustomValidity(feld.dataset.fehler || 'Bitte eine Zahl eingeben.');
             return;
         }
-        feld.removeAttribute('aria-invalid');
-        feld.setCustomValidity('');
+        betragWiederGut(feld);
         feld.value = feld.hasAttribute('data-chf') ? betragAnzeige(t, parseInt(feld.dataset.stellen || '2', 10))
                                                       : String(parseFloat(t));
     }
@@ -390,7 +398,7 @@
             if (e.target.matches && e.target.matches(wahl)) betragFormatieren(e.target);
         }, true);
         document.addEventListener('input', function (e) {
-            if (e.target.matches && e.target.matches(wahl) && e.target.validationMessage) e.target.setCustomValidity('');
+            if (e.target.matches && e.target.matches(wahl)) betragWiederGut(e.target);
         }, true);
         document.querySelectorAll(wahl).forEach(function (f) { if (f.value) betragFormatieren(f); });
     }

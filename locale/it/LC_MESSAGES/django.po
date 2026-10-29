@@ -35507,3 +35507,44 @@ msgstr ""
 "Errore: la fattura QR per %(einheit)s non ha potuto essere creata "
 "(%(fehler)s). Il PDF non è stato consegnato affinché non venga inviato alcun"
 " conguaglio senza polizza di versamento."
+
+msgid "Archivierte Akten ansehen und wiederherstellen"
+msgstr "Consultare e ripristinare le pratiche archiviate"
+
+msgid "Ablaufdatum"
+msgstr "Data di scadenza"
+
+msgid "Bitte eine Zahl eingeben."
+msgstr "Inserire un numero."
+
+msgid "Bitte einen Betrag eingeben, z. B. 1450.50"
+msgstr "Inserire un importo, ad es. 1450.50"
+
+msgid "Datei hochladen"
+msgstr "Caricare un file"
+
+msgid "Kontoauszug (Datei)"
+msgstr "Estratto conto (file)"
+
+msgid "MWST-Satz in Prozent"
+msgstr "Aliquota IVA in percento"
+
+msgid "Rechnung auswählen"
+msgstr "Selezionare la fattura"
+
+msgid "Richtung"
+msgstr "Direzione"
+
+msgid "Unterschrift als Bilddatei"
+msgstr "Firma come file immagine"
+
+msgid "Vertrag auswählen"
+msgstr "Selezionare il contratto"
+
+#, python-format
+msgid "Lebensdauer in Jahren: %(k)s"
+msgstr "Durata di vita in anni: %(k)s"
+
+#, python-format
+msgid "Bemerkung: %(k)s"
+msgstr "Osservazione: %(k)s"

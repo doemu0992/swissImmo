@@ -489,6 +489,10 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
 
 <script src="{% statisch 'js/fw-mietzinsmodell.js' %}"></script>
 <script>
+// Beträge und Zinssätze stehen als Text wie «1'450.50» in den Feldern (DESIGN-28). Das Skript der Seite läuft
+// vor `fw-bausteine.js` (defer), das `window.fwZahl` erst später bereitstellt: Bis dahin liest dieser Ersatz
+// dieselbe Schreibweise, danach gilt die gemeinsame Funktion.
+const zahlAus = (t) => window.fwZahl ? window.fwZahl(t) : (parseFloat(String(t == null ? '' : t).replace(/['\u2019\s]/g, '').replace(',', '.')) || 0);
 // Texte der Oberfläche in der Sprache der Sitzung. Die Vertragsvorschau und die
 // mietrechtlichen Warnungen weiter unten bleiben bewusst deutsch.
 const UI = {
@@ -544,7 +548,7 @@ function indexUebernehmen(btn){
                  setTimeout(()=>{ btn.textContent=label; }, 2500); }
     }).catch(()=>{ if(btn){ btn.disabled=false; btn.textContent=label; } });
 }
-function kautionSet(monate){ const netto=fwZahl(document.getElementById('s_netto').value); fwBetragSetzen(document.getElementById('s_kaution'), (netto*monate).toFixed(2)); live(); }
+function kautionSet(monate){ const netto=zahlAus(document.getElementById('s_netto').value); (window.fwBetragSetzen || ((f, w) => { f.value = w; }))(document.getElementById('s_kaution'), (netto*monate).toFixed(2)); live(); }
 
 // Liegenschaften/Mieter-Dropdowns füllen
 document.getElementById('s_lg').innerHTML = '<option value="">' + UI.lg_waehlen + '</option>' +
@@ -953,8 +957,8 @@ function dstr(v){ if(!v) return ''; const p=v.split('-'); return p[2]+'.'+p[1]+'
 function mietrechtCheck(){
   const o = curObj(); const kat = o ? o.kategorie : null;
   const warns = [];
-  const netto = fwZahl(val('netto_mietzins'));
-  const kaut  = fwZahl(val('kautions_betrag'));
+  const netto = zahlAus(val('netto_mietzins'));
+  const kaut  = zahlAus(val('kautions_betrag'));
 
   // Kaution: Wohnräume höchstens drei Monatsmieten (Art. 257e OR)
   if (kat === 'wohnen' && netto > 0 && kaut > netto*3 + 0.01)
@@ -1026,8 +1030,8 @@ function fitPreviewFrame(){
 function live(){
   const l=curLg(), o=curObj(), m=curMieter();
   const vm = l?l.vermieter:{name:'{{ verwaltung.firma }}',strasse:'{{ verwaltung.strasse }}',plz:'{{ verwaltung.plz }}',ort:'{{ verwaltung.ort }}'};
-  const netto=fwZahl(val('netto_mietzins')), nk=fwZahl(val('nebenkosten')), brutto=netto+nk;
-  const kaut=fwZahl(val('kautions_betrag'));
+  const netto=zahlAus(val('netto_mietzins')), nk=zahlAus(val('nebenkosten')), brutto=netto+nk;
+  const kaut=zahlAus(val('kautions_betrag'));
   const unbef=document.getElementById('unbefristet').checked;
   const adr = o? (l.strasse+', '+l.plz+' '+l.ort):'';
   document.getElementById('f_mieter_id').value = (mieterMode==='best')?document.getElementById('s_mieter').value:'';
@@ -1132,7 +1136,7 @@ function live(){
 function buildSummary(){
   const l=curLg(), o=curObj(), m=curMieter();
   const eps = !!(o && o.ist_einstellplatz);
-  const netto=fwZahl(val('netto_mietzins')), nk=eps?0:fwZahl(val('nebenkosten'));
+  const netto=zahlAus(val('netto_mietzins')), nk=eps?0:zahlAus(val('nebenkosten'));
   const fristTxt = eps
     ? ((parseInt(val('kuendigungsfrist'))>0) ? (val('kuendigungsfrist')+' Monate auf Monatsende') : '2 Wochen auf Monatsende (Art. 266e OR)')
     : ((val('kuendigungsfrist')||3)+' Monate');
@@ -1148,7 +1152,7 @@ function buildSummary(){
       ? `<div class="flex justify-between border-t fw-linie pt-1.5 mt-1.5"><span class="fw-mutet">Mietzins/Monat</span><span class="font-bold fw-marke">CHF ${fmt(netto)}</span></div>`
       : `<div class="flex justify-between border-t fw-linie pt-1.5 mt-1.5"><span class="fw-mutet">Netto / NK</span><span class="font-medium">CHF ${fmt(netto)} / ${fmt(nk)}</span></div>
     <div class="flex justify-between"><span class="fw-mutet">Brutto/Monat</span><span class="font-bold fw-marke">CHF ${fmt(netto+nk)}</span></div>`}
-    <div class="flex justify-between"><span class="fw-mutet">Kaution</span><span class="font-medium">CHF ${fmt(fwZahl(val('kautions_betrag')))}</span></div>
+    <div class="flex justify-between"><span class="fw-mutet">Kaution</span><span class="font-medium">CHF ${fmt(zahlAus(val('kautions_betrag')))}</span></div>
     ${eps?'':`<div class="flex justify-between gap-3"><span class="fw-mutet">Nebenkostenarten</span><span class="font-medium text-right">${nkNamen().join(', ')||'—'}</span></div>`}`;
   // Mietzinsmodell: die Zeilen entstehen im Skript des Modells, Werte nur als Text
   const sum = document.getElementById('summary');
