@@ -526,7 +526,8 @@ UNFOLD = {
     "SITE_TITLE": "SwissImmo Verwaltung",
     "SITE_HEADER": "SwissImmo",
     "SITE_URL": reverse_lazy("fw_dashboard"), # Logo-Klick fuehrt in die aktive Oberflaeche /neu/
-    "SITE_ICON": "real_estate_agent",
+    # Kein SITE_ICON: Unfold lädt den Wert als Bildadresse. «real_estate_agent» ist ein Name der
+    # Material-Symbole, kein Bild, und ergab ein gebrochenes Logo samt 404 auf jeder Admin-Seite (DESIGN-14).
 
     # --- GLOBALER CLEAN-LOOK (RAHMENLOS) & INLINE-EDITING ---
     "STYLES": [

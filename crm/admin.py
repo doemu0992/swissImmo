@@ -28,6 +28,24 @@ except ImportError:
     update_verwaltung_rates = None
 
 
+_KONTAKT_KNOPF = ('inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 text-xs font-medium text-gray-600 '
+                  'hover:bg-gray-100 ring-1 ring-inset ring-gray-200 w-max')
+
+
+def _kontakt_html(tel, mail):
+    """Telefon und E-Mail als Knöpfe. Beide Werte sind Eingaben und werden maskiert: Vorher standen sie
+    ungeprüft in einem f-String (gespeichertes Skript im Admin) und `format_html` ohne Argumente
+    (in Django 6 entfernt)."""
+    teile = []
+    if tel:
+        teile.append(format_html('<a href="tel:{0}" class="{1}">📞 {0}</a>', tel, _KONTAKT_KNOPF))
+    if mail:
+        teile.append(format_html('<a href="mailto:{0}" class="{1}">✉️ {0}</a>', mail, _KONTAKT_KNOPF))
+    if not teile:
+        return format_html('<span class="text-xs text-gray-400">-</span>')
+    return format_html('<div class="flex flex-col gap-1">{}</div>', mark_safe(''.join(teile)))
+
+
 # ==========================================
 # 0. SICHERHEITS-CHECK (Gegen Reload-Abstürze)
 # ==========================================
@@ -185,7 +203,8 @@ class MieterAdmin(NurLesenModelAdmin):
             'classes': ('map-fieldset',),
         }),
         ("Mieterdaten", {
-            "fields": ("anrede", "vorname", "nachname", "email", "telefon", "geburtsdatum")
+            "fields": ("anrede", "vorname", "nachname", "email", "mobile", "telefon_privat", "telefon_geschaeft",
+                       "geburtsdatum")
         }),
         ("Adresse", {
             "fields": ("strasse", "plz", "ort")
@@ -241,11 +260,7 @@ class MieterAdmin(NurLesenModelAdmin):
 
     @display(description="Kontakt")
     def kontakt_info(self, obj):
-        html = '<div class="flex flex-col gap-1">'
-        tel, mail = getattr(obj, 'telefon', None), getattr(obj, 'email', None)
-        if tel: html += f'<a href="tel:{tel}" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 text-xs font-medium text-gray-600 hover:bg-gray-100 ring-1 ring-inset ring-gray-200 w-max">📞 {tel}</a>'
-        if mail: html += f'<a href="mailto:{mail}" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 text-xs font-medium text-gray-600 hover:bg-gray-100 ring-1 ring-inset ring-gray-200 w-max">✉️ {mail}</a>'
-        return format_html(html or '<span class="text-xs text-gray-400">-</span>')
+        return _kontakt_html(obj.mobile or obj.telefon_privat or obj.telefon_geschaeft, obj.email)
 
     @display(description="Standort")
     def standort_info(self, obj): return getattr(obj, 'ort', '-')
@@ -263,7 +278,7 @@ class MieterAdmin(NurLesenModelAdmin):
 @admin.register(Handwerker)
 class HandwerkerAdmin(NurLesenModelAdmin):
     list_display = ('handwerker_profil', 'kontakt_info', 'standort_info', 'schnell_aktionen')
-    search_fields = ('firma', 'gewerk')
+    search_fields = ('firma', 'branche')
 
     readonly_fields = ('handwerker_full_header',)
 
@@ -273,7 +288,7 @@ class HandwerkerAdmin(NurLesenModelAdmin):
             'classes': ('map-fieldset',),
         }),
         ("Handwerker Profil", {
-            "fields": ("firma", "gewerk", "email", "telefon", "iban")
+            "fields": ("firma", "kontaktperson", "branche", "email", "telefon")
         }),
     )
 
@@ -281,8 +296,8 @@ class HandwerkerAdmin(NurLesenModelAdmin):
     def handwerker_full_header(self, obj):
         if not obj.pk: return format_html('<div class="p-4 bg-orange-50 text-orange-700 rounded-xl font-bold border border-orange-100">✨ Neuen Handwerker anlegen</div>')
 
-        gewerk = getattr(obj, 'gewerk', '')
-        icon = "💧" if "sanitär" in str(gewerk).lower() else "⚡" if "elektro" in str(gewerk).lower() else "🎨" if "maler" in str(gewerk).lower() else "🔧"
+        gewerk = obj.get_branche_display()
+        icon = {"sanitaer": "💧", "elektro": "⚡", "maler": "🎨"}.get(obj.branche, "🔧")
         schluessel = obj.schluesselausgabe_set.filter(rueckgabe_am__isnull=True).count() if hasattr(obj, 'schluesselausgabe_set') else 0
         addr_query = urllib.parse.quote(f"{obj.strasse}, {obj.plz} {obj.ort}") if getattr(obj, 'strasse', None) else ""
 
@@ -300,11 +315,8 @@ class HandwerkerAdmin(NurLesenModelAdmin):
 
     @display(description="Handwerker & Gewerk", ordering="firma")
     def handwerker_profil(self, obj):
-        gewerk = getattr(obj, 'gewerk', '')
-        icon = "🔧"
-        if "sanitär" in str(gewerk).lower(): icon = "💧"
-        elif "elektro" in str(gewerk).lower(): icon = "⚡"
-        elif "maler" in str(gewerk).lower(): icon = "🎨"
+        gewerk = obj.get_branche_display()
+        icon = {"sanitaer": "💧", "elektro": "⚡", "maler": "🎨"}.get(obj.branche, "🔧")
         return format_html(
             '<div class="flex items-center gap-3">'
             '<div class="flex items-center justify-center w-9 h-9 rounded-xl bg-orange-100 text-orange-700 text-lg shadow-sm">{}</div>'
@@ -315,11 +327,7 @@ class HandwerkerAdmin(NurLesenModelAdmin):
 
     @display(description="Kontakt")
     def kontakt_info(self, obj):
-        html = '<div class="flex flex-col gap-1">'
-        tel, mail = getattr(obj, 'telefon', None), getattr(obj, 'email', None)
-        if tel: html += f'<a href="tel:{tel}" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 text-xs font-medium text-gray-600 hover:bg-gray-100 ring-1 ring-inset ring-gray-200 w-max">📞 {tel}</a>'
-        if mail: html += f'<a href="mailto:{mail}" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 text-xs font-medium text-gray-600 hover:bg-gray-100 ring-1 ring-inset ring-gray-200 w-max">✉️ {mail}</a>'
-        return format_html(html or '<span class="text-xs text-gray-400">-</span>')
+        return _kontakt_html(getattr(obj, 'telefon', None), getattr(obj, 'email', None))
 
     @display(description="Standort")
     def standort_info(self, obj): return getattr(obj, 'ort', '-')
@@ -383,11 +391,7 @@ class EigentuemerAdmin(NurLesenModelAdmin):
 
     @display(description="Kontakt")
     def kontakt_info(self, obj):
-        html = '<div class="flex flex-col gap-1">'
-        tel, mail = getattr(obj, 'telefon', None), getattr(obj, 'email', None)
-        if tel: html += f'<a href="tel:{tel}" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 text-xs font-medium text-gray-600 hover:bg-gray-100 ring-1 ring-inset ring-gray-200 w-max">📞 {tel}</a>'
-        if mail: html += f'<a href="mailto:{mail}" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 text-xs font-medium text-gray-600 hover:bg-gray-100 ring-1 ring-inset ring-gray-200 w-max">✉️ {mail}</a>'
-        return format_html(html or '<span class="text-xs text-gray-400">-</span>')
+        return _kontakt_html(getattr(obj, 'telefon', None), getattr(obj, 'email', None))
 
     @display(description="Standort")
     def standort_info(self, obj): return getattr(obj, 'ort', '-')
