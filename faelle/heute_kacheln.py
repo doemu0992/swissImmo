@@ -15,8 +15,9 @@ Portfolio; auf der Startseite steht, was eine Handlung auslöst.
 
 SCHWERPUNKT STATT NEUER ROLLEN
 
-Eine Rolle «Buchhaltung» gibt es nicht, und eine neue Rolle griffe ins
-Berechtigungsmodell. Der Schwerpunkt wählt nur die Kacheln:
+Der Schwerpunkt wählt nur die Kacheln und ändert kein Recht. (Die Rolle
+«Buchhaltung» gibt es seit Etappe 2 in `core/auth.py`; ihre Startseite ist das
+Finanz-Cockpit, nicht diese Kacheln.)
 
     bewirtschaftung   Fristen, nicht zugewiesene Tickets, Posteingang, Freigaben
     buchhaltung       überfällige Rechnungen, Klärungsfälle, Läufe, Kreditoren

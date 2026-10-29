@@ -10,7 +10,7 @@ Rolle, wie im Betrieb (`core.auth.hat_rolle` liest nur sie).
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
+from django.test import Client, TestCase, TransactionTestCase
 
 from ._isolation import MandantenFixture
 
@@ -28,27 +28,27 @@ ROLLEN_A = {
 }
 
 
-class RollenBasis(TestCase):
-    """Verwaltung A mit allen Rollen, Verwaltung B daneben."""
+def _aufbau(ziel):
+    """Legt Verwaltung A (alle Rollen) und B an und hängt sie an `ziel` (Klasse oder Instanz)."""
+    from crm.models import Mitgliedschaft
 
-    @classmethod
-    def setUpTestData(cls):
-        from crm.models import Mitgliedschaft
+    ziel.a = MandantenFixture('A', '8000', 'Zürich')
+    ziel.b = MandantenFixture('B', '3000', 'Bern')
+    ziel.org = ziel.a.organisation
+    ziel.benutzer = {}
+    for schluessel, rolle in ROLLEN_A.items():
+        if schluessel == 'inhaber':
+            u = ziel.a.benutzer      # das Fixture legt ihn als Inhaber an
+        else:
+            u = User.objects.create_user(username=f'a_{schluessel}', password='x',
+                                         email=f'{schluessel}@example.ch')
+            Mitgliedschaft.alle_organisationen.create(
+                benutzer=u, organisation=ziel.org, rolle=rolle)
+        ziel.benutzer[schluessel] = u
 
-        cls.a = MandantenFixture('A', '8000', 'Zürich')
-        cls.b = MandantenFixture('B', '3000', 'Bern')
-        cls.org = cls.a.organisation
-        cls.benutzer = {}
-        for schluessel, rolle in ROLLEN_A.items():
-            if schluessel == 'inhaber':
-                u = cls.a.benutzer
-                Mitgliedschaft.alle_organisationen.filter(benutzer=u).update(rolle=rolle)
-            else:
-                u = User.objects.create_user(username=f'a_{schluessel}', password='x',
-                                             email=f'{schluessel}@example.ch')
-                Mitgliedschaft.alle_organisationen.create(
-                    benutzer=u, organisation=cls.org, rolle=rolle)
-            cls.benutzer[schluessel] = u
+
+class _Werkzeug:
+    """Bausteine für beide Basisklassen."""
 
     def client_von(self, schluessel):
         c = Client(raise_request_exception=False)
@@ -70,3 +70,19 @@ class RollenBasis(TestCase):
         werte.update(kw)
         with organisation_kontext(self.org):
             return KreditorenRechnung.objects.create(**werte)
+
+
+class RollenBasis(_Werkzeug, TestCase):
+    """Verwaltung A mit allen Rollen, Verwaltung B daneben (Daten je Klasse, Rollback je Test)."""
+
+    @classmethod
+    def setUpTestData(cls):
+        _aufbau(cls)
+
+
+class RollenBasisTransaktion(_Werkzeug, TransactionTestCase):
+    """Wie `RollenBasis`, aber ohne umschliessende Transaktion: Für Tests mit echten Threads
+    (eigene Datenbankverbindung je Thread), die die Daten committed sehen müssen."""
+
+    def setUp(self):
+        _aufbau(self)

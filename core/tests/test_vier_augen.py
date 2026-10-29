@@ -18,14 +18,16 @@ from django.contrib.messages import get_messages
 from django.utils import timezone
 
 from ._parallel import NUR_POSTGRES, parallel
-from ._rollen import RollenBasis
+from ._rollen import RollenBasis, RollenBasisTransaktion
 
 IBAN = 'CH9300762011623852957'
 
 
-class VierAugenBasis(RollenBasis):
+class _VierAugenWerkzeug:
+    """Bausteine für beide Basisklassen (mit und ohne umschliessende Transaktion)."""
 
     def setUp(self):
+        super().setUp()
         from core.tenancy import organisation_kontext
         from finance.booking import ensure_kontenplan
         self.org.iban = 'CH5604835012345678009'
@@ -64,6 +66,10 @@ class VierAugenBasis(RollenBasis):
 
     def vorlegen(self, rolle, k):
         return self.post(rolle, f'/neu/kreditoren/{k.pk}/zahlung-vorlegen/')
+
+
+class VierAugenBasis(_VierAugenWerkzeug, RollenBasis):
+    pass
 
 
 class LimitTests(VierAugenBasis):
@@ -394,7 +400,7 @@ class EinstellungTests(VierAugenBasis):
 
 
 @NUR_POSTGRES
-class ParallelTests(VierAugenBasis):
+class ParallelTests(_VierAugenWerkzeug, RollenBasisTransaktion):
     """Echte Threads gegen PostgreSQL (SQLite serialisiert Schreiber und verdeckt Rennen)."""
 
     def test_gleichzeitiges_vorlegen_zweier_personen_hat_einen_vorleger(self):
