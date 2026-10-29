@@ -13,9 +13,141 @@ Betreibungsauszug) physisch gelöscht — diese besonders schützenswerten Daten
 haben keine Aufbewahrungspflicht.
 """
 import logging
+import os
+import re
+
+from django.db.models import Q
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
+
+#: Ersatztext für geschwärzte Stellen.
+GESCHWAERZT = '[anonymisiert]'
+
+#: Fachpunkt F2 (Audit): Die Vertragsdatei ist ein Geschäftsdokument (Art. 958f OR) UND trägt den
+#: Namen im Inhalt. Standard: Datei und Inhalt bleiben aufbewahrt, aber der Dateiname wird
+#: neutral (`Vertrag_<Name>.pdf` -> `Dokument_<id>.pdf`). Auf `True` setzen, wenn die Fachperson
+#: entscheidet, dass die Datei beim Löschbegehren selbst entfernt wird.
+VERTRAGSDATEI_LOESCHEN = False
+
+#: Was nach der Anonymisierung bewusst stehen bleibt (mit Grund): Buchungsbelege und
+#: Rechnungstitel sind unveränderlich bzw. Belege (Art. 958f OR). Der Test
+#: `test_dsg_vollstaendig` hält diese Liste klein.
+AUFBEWAHRT = {
+    'finance.Buchung.beleg_text': 'Buchungsbeleg, unveränderlich (Art. 958f OR)',
+    'finance.DebitorenRechnung.titel': 'Rechnungsbeleg (Art. 958f OR)',
+}
+
+
+def _kennzeichen(mieter):
+    """Die Zeichenfolgen, an denen die Person in Freitexten erkennbar ist (längste zuerst)."""
+    roh = [
+        f'{mieter.vorname} {mieter.nachname}'.strip(), mieter.nachname, mieter.vorname, mieter.firmen_name,
+        mieter.kontaktperson, mieter.email, mieter.ebill_email, mieter.telefon_privat, mieter.telefon_geschaeft,
+        mieter.mobile, mieter.iban, mieter.zahler_iban, mieter.zahler_name, mieter.strasse, mieter.ahv_nummer,
+        mieter.arbeitgeber, mieter.notfall_name, mieter.notfall_telefon,
+    ]
+    # Mindestlänge: «Ab» oder «Zi» in Freitexten zu schwärzen, zerstörte mehr als es schützt.
+    return sorted({str(t).strip() for t in roh if t and len(str(t).strip()) >= 4}, key=len, reverse=True)
+
+
+def _schwaerzen(text, kennzeichen):
+    if not text:
+        return text
+    for k in kennzeichen:
+        text = re.sub(re.escape(k), GESCHWAERZT, text, flags=re.IGNORECASE)
+    return text
+
+
+def _felder_schwaerzen(zeilen, felder, kennzeichen):
+    """Schwärzt `felder` in jeder Zeile von `zeilen` (nur Zeilen, die sich ändern, werden gespeichert)."""
+    n = 0
+    for z in zeilen:
+        geaendert = []
+        for f in felder:
+            alt = getattr(z, f, '') or ''
+            neu = _schwaerzen(alt, kennzeichen)
+            if neu != alt:
+                setattr(z, f, neu)
+                geaendert.append(f)
+        if geaendert:
+            z.save(update_fields=geaendert)
+            n += 1
+    return n
+
+
+def _dateiname_neutralisieren(dokument, pid):
+    """Benennt die Datei eines Dokuments um (`Vertrag_<Name>.pdf` -> `Dokument_<id>.pdf`), mit gleichem Inhalt.
+
+    Mit `VERTRAGSDATEI_LOESCHEN` wird die Datei stattdessen entfernt."""
+    if not dokument.datei:
+        return
+    try:
+        if VERTRAGSDATEI_LOESCHEN:
+            dokument.datei.delete(save=False)
+            dokument.datei = ''
+            dokument.save(update_fields=['datei'])
+            return
+        speicher = dokument.datei.storage
+        alt = dokument.datei.name
+        ordner, datei = os.path.split(alt)
+        endung = os.path.splitext(datei)[1]
+        with speicher.open(alt, 'rb') as quelle:
+            from django.core.files.base import ContentFile
+            neu = speicher.save(os.path.join(ordner, f'Dokument_{dokument.pk}{endung}'), ContentFile(quelle.read()))
+        speicher.delete(alt)
+        dokument.datei.name = neu
+        dokument.save(update_fields=['datei'])
+    except Exception:                                            # noqa: BLE001
+        logger.exception('DSG: Dateiname von Dokument %s konnte nicht neutralisiert werden', dokument.pk)
+
+
+def _freitexte_anonymisieren(mieter, kennzeichen, pid):
+    """Schwärzt die Person in allen Freitexten, die an ihr hängen (Audit SICH-07: 16 Spalten)."""
+    from core.models import AktivitaetsLog, Archiveintrag
+    from crm.models import Kommunikation
+    from finance.models import Zahlungseingang
+    from rentals.models import Dokument, Mietvertrag
+    from tickets.models import SchadenMeldung, TicketNachricht
+
+    vertraege = Mietvertrag.objects.filter(mieter=mieter)
+    _felder_schwaerzen(Kommunikation.objects.filter(mieter=mieter), ('betreff', 'inhalt'), kennzeichen)
+    _felder_schwaerzen(vertraege, ('mitmieter_name',), kennzeichen)
+    _felder_schwaerzen(Zahlungseingang.objects.filter(vertrag__in=vertraege), ('bemerkung', 'bank_referenz', 'klaerung_notiz'),
+                       kennzeichen)
+
+    # Schadenmeldungen: die der Person und die mit ihrer Kontaktangabe (Meldung per QR-Aushang).
+    from django.db.models import Q
+    bedingung = Q(gemeldet_von=mieter)
+    for kontakt in (mieter.email, mieter.mobile, mieter.telefon_privat):
+        if kontakt:
+            bedingung |= Q(email_melder__iexact=kontakt) | Q(tel_melder=kontakt)
+    meldungen = list(SchadenMeldung.objects.filter(bedingung).distinct())
+    for sm in meldungen:
+        sm.melder_vorname, sm.melder_nachname = 'Anonymisiert', f'#{pid}'
+        sm.email_melder, sm.tel_melder = '', ''
+        sm.save(update_fields=['melder_vorname', 'melder_nachname', 'email_melder', 'tel_melder'])
+    _felder_schwaerzen(meldungen, ('titel', 'beschreibung'), kennzeichen)
+    _felder_schwaerzen(TicketNachricht.objects.filter(ticket__in=[sm.pk for sm in meldungen]),
+                       ('absender_name', 'nachricht'), kennzeichen)
+
+    # Dokumente: Bezeichnung schwärzen, Dateiname neutral.
+    dokumente = list(Dokument.objects.filter(Q(mieter=mieter) | Q(vertrag__in=vertraege)).distinct())
+    _felder_schwaerzen(dokumente, ('bezeichnung',), kennzeichen)
+    for d in dokumente:
+        _dateiname_neutralisieren(d, pid)
+
+    # Audit-Log und Archiv: Spur bleibt (wer, wann, was), der Name nicht.
+    def _enthaelt(*feldnamen):
+        q = Q(pk__in=[])
+        for k in kennzeichen:
+            for f in feldnamen:
+                q |= Q(**{f'{f}__icontains': k})
+        return q
+
+    _felder_schwaerzen(AktivitaetsLog.objects.filter(_enthaelt('objekt', 'details')), ('objekt', 'details'), kennzeichen)
+    _felder_schwaerzen(Archiveintrag.objects.filter(_enthaelt('bezeichnung', 'grund')), ('bezeichnung', 'grund'),
+                       kennzeichen)
 
 
 
@@ -66,6 +198,10 @@ def anonymisiere_person(mieter, *, grund='', user=None):
             b.save()
         except Exception:
             logger.debug("Fehler bewusst übergangen", exc_info=True)
+
+    # 2b) Freitexte, Korrespondenz, Schadenakten, Dateinamen (VOR dem Überschreiben der Stammdaten,
+    #     denn die Kennzeichen kommen aus ihnen).
+    _freitexte_anonymisieren(mieter, _kennzeichen(mieter), pid)
 
     # 3) Stammdaten der Person überschreiben (Buchungsbelege bleiben unberührt).
     mieter.anrede = ''; mieter.kontaktperson = ''

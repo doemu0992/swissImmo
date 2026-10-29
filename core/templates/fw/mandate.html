@@ -35,6 +35,7 @@
                     <a href="/neu/mandate/{{ row.md.id }}/kontokorrent/" class="fw-link whitespace-nowrap">{% trans "Kontokorrent" %}</a>
                     <a href="/neu/mandate/{{ row.md.id }}/mahnstufen/" class="fw-link whitespace-nowrap">{% trans "Mahnstufen" %}</a>
                     <a href="/neu/mandate/{{ row.md.id }}/bearbeiten/" class="fw-link whitespace-nowrap">{% trans "Bearbeiten" %}</a>
+                    {% include 'fw/_archivieren.html' with kuerzel='mandat' pk=row.md.id %}
                     <form method="post" action="/neu/mandate/{{ row.md.id }}/loeschen/" class="inline"
                           onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.md.firma_oder_name|safe %}Eigentümer «{{ name }}» löschen?{% endblocktrans %}{% if row.anzahl_lg %}
 

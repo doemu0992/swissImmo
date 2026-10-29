@@ -207,6 +207,23 @@ def bankkonten():
             .exclude(nummer=KAUTIONSSPERRKONTO).order_by('nummer'))
 
 
+def bank_nr_aus_eingabe(roh, standard='1020'):
+    """Die gewählte Bankkonto-Nummer aus einem Formular, sonst `standard`.
+
+    Eine Bankauswahl bietet das Kautionssperrkonto 1015 nicht an; die Prüfung muss
+    aber auch serverseitig gelten, denn ein Formular lässt sich von Hand ändern.
+    Unbekannte Nummern und alles, was kein Bankkonto ist (1015, 2000, 3000 …),
+    fallen auf das Standardkonto zurück. Eine Abfrage, nur wenn die Eingabe vom
+    Standard abweicht."""
+    from finance.models import Buchungskonto
+    nr = (roh or '').strip()
+    if not nr or nr == standard:
+        return standard
+    if not ist_bankkonto(nr) or not Buchungskonto.objects.filter(nummer=nr).exists():
+        return standard
+    return nr
+
+
 def kontosaldo(konto):
     """Soll minus Haben über alle Buchungen des Kontos (Storni zählen mit und
     heben ihr Original auf)."""

@@ -257,7 +257,7 @@ in die jeweilige Liste.
                 <a href="/neu/lieferantenkonten/{{ lg_query }}" class="fw-link">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Lieferantenkonten" %}</a>
                 <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-link">{% zeichen 'bericht' klasse='mr-1' %}{% trans "Debitoren-Aging" %}</a>
                 <a href="/neu/mwst/" class="fw-link">{% zeichen 'bericht' klasse='mr-1' %}MWST</a>
-                <a href="/neu/nebenkosten/{{ lg_query }}" class="fw-link">{% zeichen 'kritisch' klasse='mr-1' %}{% trans "Nebenkosten" %}</a>
+                {% if ist_team %}<a href="/neu/nebenkosten/{{ lg_query }}" class="fw-link">{% zeichen 'kritisch' klasse='mr-1' %}{% trans "Nebenkosten" %}</a>{% endif %}
                 <a href="/neu/anlagen/{{ lg_query }}" class="fw-link">{% zeichen 'bank' klasse='mr-1' %}{% trans "Abschluss" %}</a>
             </div>
         </div>

@@ -7,7 +7,7 @@
 
 <div class="fw-phead fw-phead-lauf">
     <div>
-        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a><span aria-hidden="true">/</span><span>{% trans "Zahllauf" %}</span></nav>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}">{% if ist_team %}<a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a>{% else %}<span>{% trans "Läufe" %}</span>{% endif %}<span aria-hidden="true">/</span><span>{% trans "Zahllauf" %}</span></nav>
         <h1>{% trans "Zahllauf" %} {% hilfe 'zahllauf' %}</h1>
         <p>
             {% trans "Rechnungen auswählen → Zahlungsdatei (pain.001) erzeugen → nach der Bankbestätigung den ganzen Lauf auf einmal verbuchen" %}
@@ -38,8 +38,8 @@
     <div class="fw-hinweis warn">
         <span class="fw-hi">{% zeichen 'warnung' %}</span>
         <div class="fw-ht fliess">
-    {% blocktrans trimmed %}Für die Zahlungsdatei fehlt die <b>IBAN der Verwaltung</b> —
-    unter <a href="/neu/account/" class="underline font-semibold">Profil → Account</a> hinterlegen.{% endblocktrans %}
+    {% if ist_team %}    {% blocktrans trimmed %}Für die Zahlungsdatei fehlt die <b>IBAN der Verwaltung</b> —
+    unter <a href="/neu/account/" class="underline font-semibold">Profil → Account</a> hinterlegen.{% endblocktrans %}{% else %}{% trans "Für die Zahlungsdatei fehlt die IBAN der Verwaltung. Bitte die Verwaltung bitten, sie zu hinterlegen." %}{% endif %}
         </div>
     </div>
 </div>
@@ -58,7 +58,7 @@
                     <span class="fw-strong">{{ f.lieferant }}</span> — {{ f.texte|join:"; " }}
                     {% if f.id and f.adresse %}<a href="/neu/kreditoren/{{ f.id }}/adresse/?next=/neu/zahllauf/" class="fw-link">{% trans "Anschrift ergänzen" %}</a>
                     {% elif f.id %}<a href="/neu/kreditoren/?q={{ f.lieferant|urlencode }}" class="fw-link">{% trans "In den Kreditoren öffnen" %}</a>
-                    {% else %}<a href="/neu/account/" class="fw-link">{% trans "Profil → Account" %}</a>{% endif %}
+                    {% elif ist_team %}<a href="/neu/account/" class="fw-link">{% trans "Profil → Account" %}</a>{% endif %}
                 </li>
                 {% endfor %}
             </ul>
@@ -124,6 +124,8 @@
                     {{ z.k.lieferant|default:"—" }}
                     {% if z.k.referenz %}<div class="fw-sub2">{{ z.k.referenz }}</div>{% endif %}
                     {% for t in z.probleme %}<div class="fw-sub2 fw-warnton">{{ t }}</div>{% endfor %}
+                    {% if z.va.sperre %}<div class="fw-sub2 fw-warnton">{% if z.va.geaendert %}{% trans "Freigabe ungültig: Betrag oder IBAN wurden geändert." %}{% elif z.va.vorgelegt %}{% blocktrans with name=z.va.vorleger %}Zahlung vorgelegt von {{ name }}, wartet auf die Freigabe einer zweiten Person.{% endblocktrans %}{% else %}{% trans "Braucht die Freigabe einer zweiten Person (Freigabelimit)." %}{% endif %} <a href="/neu/kreditoren/?q={{ z.k.lieferant|urlencode }}" class="fw-link fw-klein">{% trans "In den Kreditoren öffnen" %}</a></div>
+                    {% elif z.va.noetig %}<div class="fw-sub2 fw-gut">{% blocktrans with name=z.va.freigeber %}Zahlung freigegeben von {{ name }}{% endblocktrans %}</div>{% endif %}
                     {% if z.adresse_fehlt %}<a href="/neu/kreditoren/{{ z.k.id }}/adresse/?next=/neu/zahllauf/" class="fw-link fw-klein">{% trans "Anschrift ergänzen" %}</a>{% endif %}
                 </td>
                 <td class="fw-mutet whitespace-nowrap">{{ z.objekt }}</td>

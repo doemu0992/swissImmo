@@ -46,7 +46,8 @@ def fw_dokumente(request):
     eintraege = []
 
     # 1) Vertrags-/Mieter-Ablage (rentals)
-    rqs = RDok.objects.neueste().select_related('liegenschaft', 'mieter', 'vertrag', 'einheit').order_by('-datum')
+    from core.services.archiv import ausblenden
+    rqs = ausblenden(RDok.objects.neueste()).select_related('liegenschaft', 'mieter', 'vertrag', 'einheit').order_by('-datum')
     if aktive_lg:
         rqs = rqs.filter(Q(liegenschaft=aktive_lg) | Q(einheit__liegenschaft=aktive_lg))
     for d in rqs:
@@ -67,7 +68,7 @@ def fw_dokumente(request):
         })
 
     # 2) Objekt-/Liegenschafts-Ablage (portfolio)
-    pqs = PDok.objects.select_related('liegenschaft', 'einheit').order_by('-datum')
+    pqs = ausblenden(PDok.objects.all()).select_related('liegenschaft', 'einheit').order_by('-datum')
     if aktive_lg:
         pqs = pqs.filter(Q(liegenschaft=aktive_lg) | Q(einheit__liegenschaft=aktive_lg))
     for d in pqs:

@@ -27,6 +27,7 @@ from django.utils.translation import gettext as _
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
+from core.auth import FINANZ_LESE_ROLLEN, FINANZ_SCHREIB_ROLLEN, FINANZ_VERWALTUNGS_ROLLEN
 from core.services.iban import formatiere_iban, ist_gueltige_iban, normalisiere_iban
 from crm.models import Mieter, Organisation
 from finance.models import DebitorenRechnung, Zahlungseingang
@@ -44,7 +45,7 @@ from core.tenancy import aktuelle_organisation
 # CREATE-/ACTION-VIEWS: alles in /neu/ (ersetzt /app/-Links)
 # ============================================================
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_kreditor_neu(request):
     """Kreditorenrechnung erfassen (Status neu → im Kreditoren-Tab freigeben)."""
     from django.shortcuts import redirect
@@ -136,7 +137,7 @@ def fw_kreditor_neu(request):
     return redirect(ziel)
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_kreditor_scan(request):
     """KI-Rechnungsscanner: Belege hochladen (auch MEHRERE gleichzeitig) → jeder
     wird DIREKT gescannt (Groq-KI, Vision für Foto-Belege, Regex-Fallback) und
@@ -184,7 +185,7 @@ def _kreditor_scan_meldung(request, kr, daten, dateiname):
         messages.warning(request, gettext('Beleg «%(dateiname)s» gespeichert, aber nicht auslesbar: %(get)s Werte bitte manuell ergänzen.') % {'dateiname': dateiname, 'get': daten.get('hinweis')})
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_kreditor_bearbeiten(request, pk):
     """Korrigiert eine noch nicht verbuchte Kreditorenrechnung (Status Neu) —
     v.a. zum Nachbessern gescannter Werte. Verbuchte Rechnungen sind gesperrt."""
@@ -258,7 +259,7 @@ def fw_kreditor_bearbeiten(request, pk):
     return redirect(ziel)
 
 
-@rolle_erforderlich(ROLLE_VERWALTER)
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
 def fw_kreditor_freigeben(request, pk):
     """Kreditorenrechnung freigeben: bucht Aufwand (netto) an Kreditoren (2000)
     + Vorsteuer-Split (1170). Erfordert ein Aufwandskonto."""
@@ -442,7 +443,7 @@ def fw_vertrag_mietzins_del(request, pk):
     return redirect(ziel)
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_kreditor_position_add(request, pk):
     """Fügt einer noch nicht verbuchten Kreditorenrechnung eine Kostenposition
     hinzu (Konto + optional Objekt + Betrag + HNK). Ermöglicht das Aufteilen
@@ -477,7 +478,7 @@ def fw_kreditor_position_add(request, pk):
     return redirect('/neu/kreditoren/')
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_kreditor_position_del(request, pk):
     """Entfernt eine Kostenposition (nur solange die Rechnung unverbucht ist)."""
     from django.shortcuts import redirect
@@ -554,10 +555,16 @@ def fw_dokument_loeschen(request, pk):
     from core.auth import log_aktion
     d = get_object_or_404(PDokument, id=pk)
     if request.method == 'POST':
+        # Kein hartes Löschen (Art. 958f OR): Das Dokument geht ins Archiv und bleibt zehn Jahre.
+        from core.services import archiv
         titel = d.titel
-        d.delete()
-        log_aktion(request, "Dokument gelöscht", titel, '')
-        messages.success(request, '🗑️ ' + gettext('Dokument gelöscht.'))
+        try:
+            archiv.archivieren(d, user=request.user, grund='Dokument entfernt')
+        except archiv.ArchivFehler as fehler:
+            messages.error(request, '❌ ' + str(fehler))
+        else:
+            log_aktion(request, "Dokument archiviert", titel, '')
+            messages.success(request, '📦 ' + gettext('Dokument archiviert.'))
     ziel = '/neu/dokumente/'
     if lgq := request.POST.get('lg'):
         ziel += f'?lg={lgq}'
@@ -691,7 +698,7 @@ def fw_nebenkosten_loeschen(request, pk):
     return redirect('fw_nebenkosten')
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_buchung_neu(request):
     """Manuelle Buchung erfassen (Soll an Haben)."""
     from django.shortcuts import redirect
@@ -759,7 +766,7 @@ def fw_buchung_neu(request):
     return _zurueck()
 
 
-@rolle_erforderlich(ROLLE_VERWALTER)
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
 def fw_buchung_stornieren(request, pk):
     """Storniert eine Journalbuchung durch eine revisionssichere Gegenbuchung.
     Die Originalbuchung bleibt erhalten (append-only, OR 958f). Nur Verwaltung —
@@ -942,6 +949,8 @@ def fw_einstellungen(request):
         {'titel': _('Abonnement'), 'sub': _('Plan und Rechnungsstellung'), 'url': '/neu/abonnement/', 'icon': 'einstellungen'},
         {'titel': _('Anmeldung & Sicherheit'), 'sub': _('Zwei-Faktor-Anmeldung für Sie und Ihr Team'),
          'url': '/konto/zwei-faktor/', 'icon': 'gesperrt'},
+        {'titel': _('Zahlungsfreigabe'), 'sub': _('Freigabelimite für Lieferantenzahlungen (Vier-Augen-Prinzip)'),
+         'url': '/neu/einstellungen/zahlungsfreigabe/', 'icon': 'gesperrt'},
         {'titel': _('Postfächer'), 'sub': _('E-Mail-Eingang für Ticket-Antworten und Rechnungen'),
          'url': '/neu/postfaecher/', 'icon': 'wartet'},
         {'titel': _('Logbuch'), 'sub': _('Wer hat wann was geändert'), 'url': '/neu/logbuch/', 'icon': 'verlauf'},
@@ -969,7 +978,7 @@ def fw_einstellungen(request):
 
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_zahlung_zuordnen(request):
     """Ordnet eine geparkte Zahlung (Durchlaufkonto 1190 / Mieterguthaben 2030)
     nachträglich einer offenen Debitorenrechnung zu — Audit-Befund «1190 ist
@@ -1015,7 +1024,7 @@ def fw_zahlung_zuordnen(request):
     return _r(ziel)
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_zahlungen_sammel_zuordnen(request):
     """Ordnet mehrere geparkte Zahlungen auf einen Schlag EINEM Mieter zu.
 
@@ -1087,7 +1096,7 @@ def fw_zahlungen_sammel_zuordnen(request):
     return redirect(ziel)
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_zahler_zuordnungen(request):
     """Die gelernten Absender: wer zahlt für welchen Mietvertrag.
 
@@ -1129,7 +1138,7 @@ def fw_zahler_zuordnungen(request):
     })
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_zahler_zuordnung_speichern(request):
     """Gelernten Absender auf einen anderen Vertrag umbiegen oder vergessen.
 
@@ -1182,7 +1191,7 @@ def fw_zahler_zuordnung_speichern(request):
     return redirect('fw_zahler_zuordnungen')
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_bankbewegung_zuordnen(request):
     """Ordnet eine offene Bankbewegung zu und bucht sie.
 
@@ -1327,7 +1336,7 @@ def fw_bankbewegung_zuordnen(request):
     return redirect(ziel)
 
 
-@rolle_erforderlich(ROLLE_VERWALTER)
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
 def fw_mwst_verbuchen(request):
     """Bucht die MWST-Abrechnung einer Periode aus (Audit K4/N2).
 
@@ -1441,7 +1450,7 @@ def fw_mwst_verbuchen(request):
     return redirect(ziel)
 
 
-@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
 def fw_zahlung_stornieren(request, pk):
     """Storniert einen Zahlungseingang revisionssicher (Audit W7): Gegenbuchungen
     zu allen Buchungen der Zahlung, Status → storniert, OP-Status der Rechnung

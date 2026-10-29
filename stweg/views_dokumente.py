@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 
+from core.services.archiv import ausblenden
 from core.auth import SCHREIB_ROLLEN, TEAM_ROLLEN, rolle_erforderlich
 from stweg import dokumente as dok
 from stweg.models import StwegDokument
@@ -39,7 +40,7 @@ def stweg_dokumente(request, stweg_id):
     lg = _gemeinschaft(stweg_id)
     return render(request, 'stweg/dokumente.html', {
         'nav': 'stweg', 'lg': lg, 'status': dok.pruefen(lg),
-        'dokumente': StwegDokument.objects.filter(liegenschaft=lg),
+        'dokumente': ausblenden(StwegDokument.objects.filter(liegenschaft=lg)),
         'kategorien': StwegDokument.KATEGORIE_CHOICES})
 
 
@@ -70,10 +71,15 @@ def stweg_dokument_download(request, pk):
 def stweg_dokument_loeschen(request, pk):
     d = get_object_or_404(StwegDokument.objects.select_related('liegenschaft'), pk=pk)
     lg = d.liegenschaft
-    d.datei.delete(save=False)
-    d.delete()
+    # Kein hartes Löschen (Art. 958f OR): Archiv statt Löschen.
+    from core.services import archiv
+    try:
+        archiv.archivieren(d, user=request.user, grund='Dokument entfernt')
+    except archiv.ArchivFehler as fehler:
+        messages.error(request, str(fehler))
+        return redirect(f'/neu/stweg/{lg.pk}/dokumente/')
     dok.aufgaben_nachziehen(lg)
-    messages.success(request, gettext('Dokument gelöscht.'))
+    messages.success(request, gettext('Dokument archiviert.'))
     return redirect(f'/neu/stweg/{lg.pk}/dokumente/')
 
 

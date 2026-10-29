@@ -14,11 +14,13 @@ from django.utils.translation import gettext, ngettext
 
 from core.auth import (ROLLE_VERWALTER, SCHREIB_ROLLEN, VERWALTUNGS_ROLLEN, hat_rolle, log_aktion,
                        rolle_erforderlich)
+from core.auth import FINANZ_SCHREIB_ROLLEN, FINANZ_VERWALTUNGS_ROLLEN
 from finance.models import DebitorenRechnung, Zahlungseingang
 from rentals.models import Mietvertrag
 
 from ._basis import _global_filter
 from .bankabgleich import _ziel
+from finance.booking import bankkonten as bankkonten_der_verwaltung, bank_nr_aus_eingabe
 
 
 def _geparkt(zahlung):
@@ -72,7 +74,7 @@ def _vorbefuellen(zahlung, gruppen, vorschlaege):
     return vorschlag
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_zahlung_aufteilen(request, pk):
     """Split-Screen-Assistent: links die Zahlung, rechts die offenen Posten.
 
@@ -124,7 +126,7 @@ def fw_zahlung_aufteilen(request, pk):
         'vorschlag_summe': sum(vorschlag.values(), Decimal('0.00')),
         'rest_vertraege': rest_vertraege,
         'darf_zurueck': hat_rolle(request.user, (ROLLE_VERWALTER,)),
-        'bankkonten': Buchungskonto.objects.filter(nummer__startswith='10').order_by('nummer'),
+        'bankkonten': bankkonten_der_verwaltung(),
         'ziel': ziel,
     })
 
@@ -165,7 +167,7 @@ def _aufteilen_buchen(request, zahlung, ziel):
                 rest_vertrag = (Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft')
                                 .filter(pk=request.POST.get('rest_vertrag') or 0).first())
             erg = zk.aufteilen(z, teile, rest_ziel=rest_ziel, rest_vertrag=rest_vertrag,
-                               bank_nr=(request.POST.get('bank_konto') or '1020').strip(),
+                               bank_nr=bank_nr_aus_eingabe(request.POST.get('bank_konto')),
                                user=request.user)
     except ZuordnungsFehler as exc:
         messages.error(request, f"❌ {exc}")
@@ -188,7 +190,7 @@ def _aufteilen_buchen(request, zahlung, ziel):
     return redirect(ziel)
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_zahlung_kaution(request, pk):
     """Ungeklärte Zahlung (1190) als Kaution eines Vertrags erkennen."""
     from core.services.zahlungsklaerung import als_kaution
@@ -214,7 +216,7 @@ def fw_zahlung_kaution(request, pk):
     return redirect(ziel)
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_zahlung_notiz(request, pk):
     """Klärungsnotiz an einer ungeklärten Zahlung."""
     ziel = _ziel(request)
@@ -227,7 +229,7 @@ def fw_zahlung_notiz(request, pk):
     return redirect(ziel)
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_guthaben_verwendung(request, pk):
     """Wofür ein Mieterguthaben (2030) gedacht ist."""
     ziel = _ziel(request)
@@ -245,7 +247,7 @@ def fw_guthaben_verwendung(request, pk):
     return redirect(ziel)
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_verrechnung_rueckgaengig(request, pk):
     """Nur die Verrechnung eines Guthabens aufheben — der Geldeingang bleibt."""
     from core.services.zahlungsklaerung import verrechnung_rueckgaengig
@@ -271,7 +273,7 @@ def fw_verrechnung_rueckgaengig(request, pk):
     return redirect(ziel)
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_zuordnung_aufheben(request, pk):
     """Eine falsch zugeordnete Bankzahlung zurück in die Klärungsfälle — der
     Geldeingang bleibt, nur die Zuordnung fällt weg (anders als «Stornieren»)."""
@@ -298,7 +300,7 @@ def fw_zuordnung_aufheben(request, pk):
     return redirect(ziel)
 
 
-@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
 def fw_guthaben_wiederherstellen(request, pk):
     """Den Eingang einer samt Zuordnung stornierten Zahlung wiederherstellen —
     als Guthaben (2030) oder als Klärungsfall (1190)."""

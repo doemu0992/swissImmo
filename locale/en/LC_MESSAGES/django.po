@@ -34677,3 +34677,324 @@ msgid ""
 msgstr ""
 "The initial rent form could not be created automatically — please create it "
 "manually under “Initial rent” on the contract."
+
+msgid ""
+"<b>Buchhaltung</b> sieht und bucht nur Finanzen (Debitoren, Kreditoren, "
+"Buchungen, Berichte), keine Stammdaten, Verträge oder Personen. Zahlungen ab"
+" dem Freigabelimit gibt eine zweite Person aus der Verwaltung frei."
+msgstr ""
+"<b>Buchhaltung</b> (accounting) sees and books finances only (debtors, "
+"creditors, postings, reports), no master data, contracts or persons. "
+"Payments from the approval limit are approved by a second person from the "
+"management."
+
+msgid "Betrag oder IBAN wurden nach der Freigabe geändert."
+msgstr "The amount or IBAN was changed after approval."
+
+msgid "Rechnungsbetrag ab dem Freigabelimit"
+msgstr "Invoice amount at or above the approval limit"
+
+msgid "Freigabe ungültig"
+msgstr "Approval invalid"
+
+msgid "Vorgelegt von %(name)s"
+msgstr "Submitted by %(name)s"
+
+msgid ""
+"Zahlung von CHF %(betrag)s an %(name)s freigeben? Betrag und IBAN wurden "
+"geprüft."
+msgstr ""
+"Approve the payment of CHF %(betrag)s to %(name)s? Amount and IBAN have been"
+" checked."
+
+msgid "Zahlung freigeben"
+msgstr "Approve payment"
+
+msgid "wartet auf eine zweite Person"
+msgstr "waiting for a second person"
+
+msgid "Zur Freigabe vorlegen"
+msgstr "Submit for approval"
+
+msgid "Vorlage verwerfen"
+msgstr "Discard submission"
+
+msgid "Freigegeben von %(name)s"
+msgstr "Approved by %(name)s"
+
+msgid "Zahlung freigegeben"
+msgstr "Payment approved"
+
+msgid ""
+"Für die Zahlungsdatei fehlt die IBAN der Verwaltung. Bitte die Verwaltung "
+"bitten, sie zu hinterlegen."
+msgstr ""
+"The payment file is missing the management's IBAN. Please ask the management"
+" to enter it."
+
+msgid "Freigabe ungültig: Betrag oder IBAN wurden geändert."
+msgstr "Approval invalid: the amount or IBAN was changed."
+
+msgid ""
+"Zahlung vorgelegt von %(name)s, wartet auf die Freigabe einer zweiten "
+"Person."
+msgstr ""
+"Payment submitted by %(name)s, waiting for approval by a second person."
+
+msgid "Braucht die Freigabe einer zweiten Person (Freigabelimit)."
+msgstr "Needs approval by a second person (approval limit)."
+
+msgid "Zahlung freigegeben von %(name)s"
+msgstr "Payment approved by %(name)s"
+
+msgid "Zahlungsfreigabe"
+msgstr "Payment approval"
+
+msgid ""
+"Ab welchem Rechnungsbetrag eine zweite Person eine Lieferantenzahlung "
+"freigeben muss."
+msgstr ""
+"From which invoice amount a second person has to approve a supplier payment."
+
+msgid ""
+"Rechnungen ab diesem Betrag werden erst bezahlt oder in eine Zahlungsdatei "
+"genommen, wenn ein Verwalter oder der Inhaber die Zahlung freigegeben hat. "
+"Wer die Zahlung vorgelegt hat, darf sie nicht selbst freigeben. Die Freigabe"
+" gilt nur für den Betrag und die IBAN, die freigegeben wurden."
+msgstr ""
+"Invoices at or above this amount are only paid or put into a payment file "
+"once a manager or the owner has approved the payment. Whoever submitted the "
+"payment cannot approve it themselves. The approval only applies to the "
+"amount and IBAN that were approved."
+
+msgid "Freigabelimite"
+msgstr "Approval limit"
+
+msgid "Zahlungen ab (CHF, Rechnungsbetrag)"
+msgstr "Payments from (CHF, invoice amount)"
+
+msgid "Vorgabe: CHF 5'000. Mit 0 braucht jede Zahlung eine Freigabe."
+msgstr "Default: CHF 5'000. With 0 every payment needs approval."
+
+msgid "Kein Limit: Vier-Augen-Prinzip ausschalten"
+msgstr "No limit: switch off the four-eyes principle"
+
+msgid "Nicht empfohlen. Die Änderung wird im Logbuch festgehalten."
+msgstr "Not recommended. The change is recorded in the log."
+
+msgid "Nur der Inhaber ändert die Freigabelimite."
+msgstr "Only the owner changes the approval limit."
+
+msgid "Freigabelimite für Lieferantenzahlungen (Vier-Augen-Prinzip)"
+msgstr "Approval limit for supplier payments (four-eyes principle)"
+
+msgid ""
+"Zahlung nicht ausgelöst: Ab dem Freigabelimit gibt eine zweite Person die "
+"Zahlung frei. Sie ist vorgelegt und erscheint dort in der Liste."
+msgstr ""
+"Payment not triggered: from the approval limit a second person approves the "
+"payment. It has been submitted and appears in the list."
+
+msgid ""
+"%(n)s Rechnung(en) ausgelassen: Die Zahlung braucht die Freigabe einer "
+"zweiten Person (Freigabelimit). Sie ist vorgelegt."
+msgstr ""
+"%(n)s invoice(s) left out: the payment needs approval by a second person "
+"(approval limit). It has been submitted."
+
+msgid ""
+"Nur eine freigegebene, offene Rechnung lässt sich zur Zahlung vorlegen."
+msgstr "Only an approved, open invoice can be submitted for payment."
+
+msgid "Diese Rechnung liegt unter dem Freigabelimit — keine Freigabe nötig."
+msgstr "This invoice is below the approval limit — no approval needed."
+
+msgid "Die Zahlung ist zur Freigabe durch eine zweite Person vorgelegt."
+msgstr "The payment has been submitted for approval by a second person."
+
+msgid "Die Zahlung ist bereits vorgelegt oder freigegeben."
+msgstr "The payment has already been submitted or approved."
+
+msgid "Die Zahlung ist freigegeben und kann ausgelöst werden."
+msgstr "The payment is approved and can be triggered."
+
+msgid "Vorlage und Freigabe sind verworfen."
+msgstr "Submission and approval have been discarded."
+
+msgid "Bitte einen Betrag in CHF zwischen 0 und 99 999 999.99 eingeben."
+msgstr "Please enter an amount in CHF between 0 and 99 999 999.99."
+
+msgid "Freigabelimite gespeichert."
+msgstr "Approval limit saved."
+
+msgid ""
+"Betrag oder IBAN wurden nach der Freigabe geändert — die Zahlung braucht "
+"eine neue Freigabe durch eine zweite Person."
+msgstr ""
+"The amount or IBAN was changed after approval — the payment needs a new "
+"approval by a second person."
+
+msgid ""
+"Diese Zahlung braucht die Freigabe einer zweiten Person (Rechnungsbetrag ab "
+"dem Freigabelimit)."
+msgstr ""
+"This payment needs approval by a second person (invoice amount at or above "
+"the approval limit)."
+
+msgid ""
+"Nur eine freigegebene, noch offene Rechnung lässt sich zur Zahlung "
+"freigeben."
+msgstr "Only an approved, still open invoice can be approved for payment."
+
+msgid "Die Zahlung wurde noch nicht vorgelegt."
+msgstr "The payment has not been submitted yet."
+
+msgid ""
+"Wer die Zahlung vorgelegt hat, darf sie nicht selbst freigeben (Vier-Augen-"
+"Prinzip)."
+msgstr ""
+"Whoever submitted the payment cannot approve it themselves (four-eyes "
+"principle)."
+
+msgid "Die Zahlung ist bereits freigegeben."
+msgstr "The payment is already approved."
+
+msgid "%(n)s Zahlung wartet auf Ihre Freigabe (Vier-Augen-Prinzip)."
+msgid_plural "%(n)s Zahlungen warten auf Ihre Freigabe (Vier-Augen-Prinzip)."
+msgstr[0] "%(n)s payment is waiting for your approval (four-eyes principle)."
+msgstr[1] ""
+"%(n)s payments are waiting for your approval (four-eyes principle)."
+
+# --- Archiv, Auskunftsrecht, Löschschutz (Etappe 2, 28.10.2026) ---
+msgid "Archiv"
+msgstr "Archive"
+
+#, python-format
+msgid ""
+"Archivierte Liegenschaften, Objekte, Personen, Verträge, Mandate, Dokumente "
+"und Schadenmeldungen. Sie bleiben %(jahre)s Jahre aufbewahrt (Art. 958f OR) "
+"und lassen sich bis dahin nicht löschen."
+msgstr ""
+"Archived properties, units, persons, contracts, mandates, documents and "
+"damage reports. They are kept for %(jahre)s years (Art. 958f CO) and cannot "
+"be deleted until then."
+
+#, python-format
+msgid "Archiviert am %(am)s · aufzubewahren bis %(bis)s"
+msgstr "Archived on %(am)s · retain until %(bis)s"
+
+#, python-format
+msgid "Mandatsende %(ende)s"
+msgstr "Mandate ends %(ende)s"
+
+msgid "Wiederherstellen"
+msgstr "Restore"
+
+msgid "Endgültig löschen"
+msgstr "Delete permanently"
+
+msgid "Das Archiv ist leer"
+msgstr "The archive is empty"
+
+msgid "Archivierte Objekte erscheinen hier und bleiben zehn Jahre aufbewahrt."
+msgstr "Archived items appear here and are kept for ten years."
+
+msgid ""
+"Bleibt zehn Jahre aufbewahrt (Art. 958f OR) und lässt sich wiederherstellen."
+msgstr "Kept for ten years (Art. 958f CO) and can be restored."
+
+msgid "Alle Daten dieser Person als ZIP (DSG Art. 25)."
+msgstr "All data of this person as a ZIP file (FADP Art. 25)."
+
+msgid "Auskunft (DSG Art. 25)"
+msgstr "Access request (FADP Art. 25)"
+
+msgid "Dokumente (Personen und Verträge)"
+msgstr "Documents (persons and contracts)"
+
+msgid "Dokumente (Ablage)"
+msgstr "Documents (filing)"
+
+#, python-format
+msgid "Es laufen noch %(n)s Mietverträge. Beende sie zuerst."
+msgstr "%(n)s tenancy agreements are still running. End them first."
+
+#, python-format
+msgid ""
+"Dem Mandat sind noch %(n)s Liegenschaften zugeordnet, die nicht archiviert "
+"sind. Archiviere sie oder ordne sie einem anderen Mandat zu."
+msgstr ""
+"%(n)s properties that are not archived are still assigned to the mandate. "
+"Archive them or assign them to another mandate."
+
+msgid "Bereits archiviert."
+msgstr "Already archived."
+
+msgid "Nicht archiviert."
+msgstr "Not archived."
+
+#, python-format
+msgid "Aufbewahrungsfrist bis %(bis)s"
+msgstr "Retention period until %(bis)s"
+
+msgid "Nur archivierte Objekte lassen sich endgültig löschen."
+msgstr "Only archived items can be deleted permanently."
+
+#, python-format
+msgid "Die Aufbewahrungsfrist läuft bis %(bis)s."
+msgstr "The retention period runs until %(bis)s."
+
+msgid ""
+"Setze die Liegenschaft stattdessen auf «Archiviert» (Archiv, Aufbewahrung "
+"zehn Jahre)."
+msgstr "Set the property to \"Archived\" instead (archive, ten-year retention)."
+
+msgid "Archiviere den Vertrag stattdessen («Inaktiv / Archiviert»)."
+msgstr "Archive the contract instead (\"Inactive / Archived\")."
+
+msgid ""
+"Beende die Verträge und archiviere das Objekt; es bleibt mit seiner "
+"Geschichte bestehen."
+msgstr "End the contracts and archive the unit; it is kept with its history."
+
+msgid ""
+"Beende das Mandat über «Archivieren» (Mandatsende): Es bleibt zehn Jahre "
+"aufbewahrt."
+msgstr "End the mandate via \"Archive\" (mandate end): it is kept for ten years."
+
+msgid "Archiviere das Dokument stattdessen."
+msgstr "Archive the document instead."
+
+msgid "Archiviere die Schadenmeldung stattdessen."
+msgstr "Archive the damage report instead."
+
+msgid "Ungültiges Datum für das Mandatsende."
+msgstr "Invalid date for the mandate end."
+
+#, python-format
+msgid "«%(name)s» ist archiviert und wird bis zum %(bis)s aufbewahrt."
+msgstr "\"%(name)s\" is archived and will be kept until %(bis)s."
+
+#, python-format
+msgid "«%(name)s» ist wiederhergestellt."
+msgstr "\"%(name)s\" has been restored."
+
+#, python-format
+msgid "«%(name)s» ist endgültig gelöscht."
+msgstr "\"%(name)s\" has been deleted permanently."
+
+msgid "Dokument archiviert."
+msgstr "Document archived."
+
+msgid "Schadensmeldung archiviert."
+msgstr "Damage report archived."
+
+#, python-format
+msgid ""
+"Fehler: Die QR-Rechnung für %(einheit)s konnte nicht erzeugt werden "
+"(%(fehler)s). Das PDF wurde nicht ausgeliefert, damit keine Nachzahlung ohne"
+" Einzahlungsschein verschickt wird."
+msgstr ""
+"Error: the QR bill for %(einheit)s could not be created (%(fehler)s). The "
+"PDF was not delivered so that no additional payment request is sent without "
+"a payment slip."

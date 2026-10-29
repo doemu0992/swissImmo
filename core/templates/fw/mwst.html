@@ -5,7 +5,7 @@
 {% block content %}
 <div class="fw-phead">
     <div>
-        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a><span aria-hidden="true">/</span><span>{% trans "MWST" %}</span></nav>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}">{% if ist_team %}<a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a>{% else %}<span>{% trans "Läufe" %}</span>{% endif %}<span aria-hidden="true">/</span><span>{% trans "MWST" %}</span></nav>
         <h1>{% trans "MWST-Abrechnung" %} {% hilfe 'mwst_option' %}</h1>
         <p>{% trans "Geschuldete Umsatzsteuer minus Vorsteuer = Zahllast gegenüber der ESTV." %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %}{% endif %}</p>
     </div>

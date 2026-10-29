@@ -75,6 +75,9 @@ from core.views.application import public_application_view, public_datenschutz_v
 from core.views.dashboard_view import update_market_data_view
 
 # 2b. Eigentümer-Portal & Login-Weiche
+from core.views.fw.kreditoren import (fw_kreditor_zahlung_vorlegen, fw_kreditor_zahlung_freigeben,
+                                      fw_kreditor_zahlung_zuruecknehmen)
+from core.views.fw.zahlungsfreigabe import fw_zahlungsfreigabe, fw_zahlungsfreigabe_speichern
 from core.views.zweifaktor import (zweifaktor_login, zweifaktor_bestaetigen,
                                   zweifaktor_uebersicht, zweifaktor_einrichten,
                                   zweifaktor_codes_neu, zweifaktor_aus,
@@ -92,6 +95,7 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
 from core.views.handwerker_portal import handwerker_auftrag, handwerker_auftrag_pdf, handwerker_auftrag_foto
 from core.views.fw.schaeden import fw_auftrag_link
 from core.views.fw.mietzinsmodell_pruefen import fw_mietzinsmodell_pruefen
+from core.views.fw.archiv import fw_person_auskunft, fw_archiv, fw_archivieren, fw_wiederherstellen, fw_archiv_endgueltig_loeschen
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
 from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_zustaendig, fw_fallschritt_erledigen,
@@ -385,6 +389,11 @@ urlpatterns = [
     path('neu/kreditoren/', fw_kreditoren, name='fw_kreditoren'),
     path('neu/kreditoren/<int:kreditor_id>/weiterverrechnen/', fw_weiterverrechnung, name='fw_weiterverrechnung'),
     path('neu/kreditoren/<int:pk>/zahlung-zuruecksetzen/', fw_kreditor_zahlung_zuruecksetzen, name='fw_kreditor_zahlung_zuruecksetzen'),
+    path('neu/kreditoren/<int:pk>/zahlung-vorlegen/', fw_kreditor_zahlung_vorlegen, name='fw_kreditor_zahlung_vorlegen'),
+    path('neu/kreditoren/<int:pk>/zahlung-freigeben/', fw_kreditor_zahlung_freigeben, name='fw_kreditor_zahlung_freigeben'),
+    path('neu/kreditoren/<int:pk>/zahlung-zuruecknehmen/', fw_kreditor_zahlung_zuruecknehmen, name='fw_kreditor_zahlung_zuruecknehmen'),
+    path('neu/einstellungen/zahlungsfreigabe/', fw_zahlungsfreigabe, name='fw_zahlungsfreigabe'),
+    path('neu/einstellungen/zahlungsfreigabe/speichern/', fw_zahlungsfreigabe_speichern, name='fw_zahlungsfreigabe_speichern'),
     path('neu/kreditoren/zahlung/<int:pk>/stornieren/', fw_kreditor_zahlung_stornieren, name='fw_kreditor_zahlung_stornieren'),
     path('neu/zahllauf/', fw_zahllauf, name='fw_zahllauf'),
     path('neu/kreditoren/neu/', fw_kreditor_neu, name='fw_kreditor_neu'),
@@ -604,6 +613,11 @@ urlpatterns = [
     path('neu/kommunikation/', fw_kommunikation, name='fw_kommunikation'),
     path('neu/kommunikation/senden/', fw_kommunikation_senden, name='fw_kommunikation_senden'),
     path('neu/kommunikation/serienbrief/', fw_serienbrief_pdf, name='fw_serienbrief_pdf'),
+    path('neu/archiv/', fw_archiv, name='fw_archiv'),
+    path('neu/personen/<int:pk>/auskunft/', fw_person_auskunft, name='fw_person_auskunft'),
+    path('neu/archiv/<slug:kuerzel>/<int:pk>/archivieren/', fw_archivieren, name='fw_archivieren'),
+    path('neu/archiv/<slug:kuerzel>/<int:pk>/wiederherstellen/', fw_wiederherstellen, name='fw_wiederherstellen'),
+    path('neu/archiv/<slug:kuerzel>/<int:pk>/loeschen/', fw_archiv_endgueltig_loeschen, name='fw_archiv_endgueltig_loeschen'),
     path('neu/mahnstufen/', fw_mahnstufen, name='fw_mahnstufen'),
     path('neu/mahnstufen/einstellungen/', fw_mahnwesen_einstellungen, name='fw_mahnwesen_einstellungen'),
     path('neu/mahnstufen/eigentuemer/<int:pk>/zuruecksetzen/', fw_eigentuemer_mahnstufen_zuruecksetzen, name='fw_eigentuemer_mahnstufen_zuruecksetzen'),

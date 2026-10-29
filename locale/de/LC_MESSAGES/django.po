@@ -33842,3 +33842,325 @@ msgid ""
 msgstr ""
 "Das Anfangsmietzins-Formular konnte nicht automatisch erstellt werden — "
 "bitte unter «Anfangsmietzins» am Vertrag von Hand erstellen."
+
+msgid ""
+"<b>Buchhaltung</b> sieht und bucht nur Finanzen (Debitoren, Kreditoren, "
+"Buchungen, Berichte), keine Stammdaten, Verträge oder Personen. Zahlungen ab"
+" dem Freigabelimit gibt eine zweite Person aus der Verwaltung frei."
+msgstr ""
+"<b>Buchhaltung</b> sieht und bucht nur Finanzen (Debitoren, Kreditoren, "
+"Buchungen, Berichte), keine Stammdaten, Verträge oder Personen. Zahlungen ab"
+" dem Freigabelimit gibt eine zweite Person aus der Verwaltung frei."
+
+msgid "Betrag oder IBAN wurden nach der Freigabe geändert."
+msgstr "Betrag oder IBAN wurden nach der Freigabe geändert."
+
+msgid "Rechnungsbetrag ab dem Freigabelimit"
+msgstr "Rechnungsbetrag ab dem Freigabelimit"
+
+msgid "Freigabe ungültig"
+msgstr "Freigabe ungültig"
+
+msgid "Vorgelegt von %(name)s"
+msgstr "Vorgelegt von %(name)s"
+
+msgid ""
+"Zahlung von CHF %(betrag)s an %(name)s freigeben? Betrag und IBAN wurden "
+"geprüft."
+msgstr ""
+"Zahlung von CHF %(betrag)s an %(name)s freigeben? Betrag und IBAN wurden "
+"geprüft."
+
+msgid "Zahlung freigeben"
+msgstr "Zahlung freigeben"
+
+msgid "wartet auf eine zweite Person"
+msgstr "wartet auf eine zweite Person"
+
+msgid "Zur Freigabe vorlegen"
+msgstr "Zur Freigabe vorlegen"
+
+msgid "Vorlage verwerfen"
+msgstr "Vorlage verwerfen"
+
+msgid "Freigegeben von %(name)s"
+msgstr "Freigegeben von %(name)s"
+
+msgid "Zahlung freigegeben"
+msgstr "Zahlung freigegeben"
+
+msgid ""
+"Für die Zahlungsdatei fehlt die IBAN der Verwaltung. Bitte die Verwaltung "
+"bitten, sie zu hinterlegen."
+msgstr ""
+"Für die Zahlungsdatei fehlt die IBAN der Verwaltung. Bitte die Verwaltung "
+"bitten, sie zu hinterlegen."
+
+msgid "Freigabe ungültig: Betrag oder IBAN wurden geändert."
+msgstr "Freigabe ungültig: Betrag oder IBAN wurden geändert."
+
+msgid ""
+"Zahlung vorgelegt von %(name)s, wartet auf die Freigabe einer zweiten "
+"Person."
+msgstr ""
+"Zahlung vorgelegt von %(name)s, wartet auf die Freigabe einer zweiten "
+"Person."
+
+msgid "Braucht die Freigabe einer zweiten Person (Freigabelimit)."
+msgstr "Braucht die Freigabe einer zweiten Person (Freigabelimit)."
+
+msgid "Zahlung freigegeben von %(name)s"
+msgstr "Zahlung freigegeben von %(name)s"
+
+msgid "Zahlungsfreigabe"
+msgstr "Zahlungsfreigabe"
+
+msgid ""
+"Ab welchem Rechnungsbetrag eine zweite Person eine Lieferantenzahlung "
+"freigeben muss."
+msgstr ""
+"Ab welchem Rechnungsbetrag eine zweite Person eine Lieferantenzahlung "
+"freigeben muss."
+
+msgid ""
+"Rechnungen ab diesem Betrag werden erst bezahlt oder in eine Zahlungsdatei "
+"genommen, wenn ein Verwalter oder der Inhaber die Zahlung freigegeben hat. "
+"Wer die Zahlung vorgelegt hat, darf sie nicht selbst freigeben. Die Freigabe"
+" gilt nur für den Betrag und die IBAN, die freigegeben wurden."
+msgstr ""
+"Rechnungen ab diesem Betrag werden erst bezahlt oder in eine Zahlungsdatei "
+"genommen, wenn ein Verwalter oder der Inhaber die Zahlung freigegeben hat. "
+"Wer die Zahlung vorgelegt hat, darf sie nicht selbst freigeben. Die Freigabe"
+" gilt nur für den Betrag und die IBAN, die freigegeben wurden."
+
+msgid "Freigabelimite"
+msgstr "Freigabelimite"
+
+msgid "Zahlungen ab (CHF, Rechnungsbetrag)"
+msgstr "Zahlungen ab (CHF, Rechnungsbetrag)"
+
+msgid "Vorgabe: CHF 5'000. Mit 0 braucht jede Zahlung eine Freigabe."
+msgstr "Vorgabe: CHF 5'000. Mit 0 braucht jede Zahlung eine Freigabe."
+
+msgid "Kein Limit: Vier-Augen-Prinzip ausschalten"
+msgstr "Kein Limit: Vier-Augen-Prinzip ausschalten"
+
+msgid "Nicht empfohlen. Die Änderung wird im Logbuch festgehalten."
+msgstr "Nicht empfohlen. Die Änderung wird im Logbuch festgehalten."
+
+msgid "Nur der Inhaber ändert die Freigabelimite."
+msgstr "Nur der Inhaber ändert die Freigabelimite."
+
+msgid "Freigabelimite für Lieferantenzahlungen (Vier-Augen-Prinzip)"
+msgstr "Freigabelimite für Lieferantenzahlungen (Vier-Augen-Prinzip)"
+
+msgid ""
+"Zahlung nicht ausgelöst: Ab dem Freigabelimit gibt eine zweite Person die "
+"Zahlung frei. Sie ist vorgelegt und erscheint dort in der Liste."
+msgstr ""
+"Zahlung nicht ausgelöst: Ab dem Freigabelimit gibt eine zweite Person die "
+"Zahlung frei. Sie ist vorgelegt und erscheint dort in der Liste."
+
+msgid ""
+"%(n)s Rechnung(en) ausgelassen: Die Zahlung braucht die Freigabe einer "
+"zweiten Person (Freigabelimit). Sie ist vorgelegt."
+msgstr ""
+"%(n)s Rechnung(en) ausgelassen: Die Zahlung braucht die Freigabe einer "
+"zweiten Person (Freigabelimit). Sie ist vorgelegt."
+
+msgid ""
+"Nur eine freigegebene, offene Rechnung lässt sich zur Zahlung vorlegen."
+msgstr ""
+"Nur eine freigegebene, offene Rechnung lässt sich zur Zahlung vorlegen."
+
+msgid "Diese Rechnung liegt unter dem Freigabelimit — keine Freigabe nötig."
+msgstr "Diese Rechnung liegt unter dem Freigabelimit — keine Freigabe nötig."
+
+msgid "Die Zahlung ist zur Freigabe durch eine zweite Person vorgelegt."
+msgstr "Die Zahlung ist zur Freigabe durch eine zweite Person vorgelegt."
+
+msgid "Die Zahlung ist bereits vorgelegt oder freigegeben."
+msgstr "Die Zahlung ist bereits vorgelegt oder freigegeben."
+
+msgid "Die Zahlung ist freigegeben und kann ausgelöst werden."
+msgstr "Die Zahlung ist freigegeben und kann ausgelöst werden."
+
+msgid "Vorlage und Freigabe sind verworfen."
+msgstr "Vorlage und Freigabe sind verworfen."
+
+msgid "Bitte einen Betrag in CHF zwischen 0 und 99 999 999.99 eingeben."
+msgstr "Bitte einen Betrag in CHF zwischen 0 und 99 999 999.99 eingeben."
+
+msgid "Freigabelimite gespeichert."
+msgstr "Freigabelimite gespeichert."
+
+msgid ""
+"Betrag oder IBAN wurden nach der Freigabe geändert — die Zahlung braucht "
+"eine neue Freigabe durch eine zweite Person."
+msgstr ""
+"Betrag oder IBAN wurden nach der Freigabe geändert — die Zahlung braucht "
+"eine neue Freigabe durch eine zweite Person."
+
+msgid ""
+"Diese Zahlung braucht die Freigabe einer zweiten Person (Rechnungsbetrag ab "
+"dem Freigabelimit)."
+msgstr ""
+"Diese Zahlung braucht die Freigabe einer zweiten Person (Rechnungsbetrag ab "
+"dem Freigabelimit)."
+
+msgid ""
+"Nur eine freigegebene, noch offene Rechnung lässt sich zur Zahlung "
+"freigeben."
+msgstr ""
+"Nur eine freigegebene, noch offene Rechnung lässt sich zur Zahlung "
+"freigeben."
+
+msgid "Die Zahlung wurde noch nicht vorgelegt."
+msgstr "Die Zahlung wurde noch nicht vorgelegt."
+
+msgid ""
+"Wer die Zahlung vorgelegt hat, darf sie nicht selbst freigeben (Vier-Augen-"
+"Prinzip)."
+msgstr ""
+"Wer die Zahlung vorgelegt hat, darf sie nicht selbst freigeben (Vier-Augen-"
+"Prinzip)."
+
+msgid "Die Zahlung ist bereits freigegeben."
+msgstr "Die Zahlung ist bereits freigegeben."
+
+msgid "%(n)s Zahlung wartet auf Ihre Freigabe (Vier-Augen-Prinzip)."
+msgid_plural "%(n)s Zahlungen warten auf Ihre Freigabe (Vier-Augen-Prinzip)."
+msgstr[0] "%(n)s Zahlung wartet auf Ihre Freigabe (Vier-Augen-Prinzip)."
+msgstr[1] "%(n)s Zahlungen warten auf Ihre Freigabe (Vier-Augen-Prinzip)."
+
+# --- Archiv, Auskunftsrecht, Löschschutz (Etappe 2, 28.10.2026) ---
+msgid "Archiv"
+msgstr "Archiv"
+
+#, python-format
+msgid ""
+"Archivierte Liegenschaften, Objekte, Personen, Verträge, Mandate, Dokumente "
+"und Schadenmeldungen. Sie bleiben %(jahre)s Jahre aufbewahrt (Art. 958f OR) "
+"und lassen sich bis dahin nicht löschen."
+msgstr ""
+"Archivierte Liegenschaften, Objekte, Personen, Verträge, Mandate, Dokumente "
+"und Schadenmeldungen. Sie bleiben %(jahre)s Jahre aufbewahrt (Art. 958f OR) "
+"und lassen sich bis dahin nicht löschen."
+
+#, python-format
+msgid "Archiviert am %(am)s · aufzubewahren bis %(bis)s"
+msgstr "Archiviert am %(am)s · aufzubewahren bis %(bis)s"
+
+#, python-format
+msgid "Mandatsende %(ende)s"
+msgstr "Mandatsende %(ende)s"
+
+msgid "Wiederherstellen"
+msgstr "Wiederherstellen"
+
+msgid "Endgültig löschen"
+msgstr "Endgültig löschen"
+
+msgid "Das Archiv ist leer"
+msgstr "Das Archiv ist leer"
+
+msgid "Archivierte Objekte erscheinen hier und bleiben zehn Jahre aufbewahrt."
+msgstr ""
+"Archivierte Objekte erscheinen hier und bleiben zehn Jahre aufbewahrt."
+
+msgid ""
+"Bleibt zehn Jahre aufbewahrt (Art. 958f OR) und lässt sich wiederherstellen."
+msgstr ""
+"Bleibt zehn Jahre aufbewahrt (Art. 958f OR) und lässt sich wiederherstellen."
+
+msgid "Alle Daten dieser Person als ZIP (DSG Art. 25)."
+msgstr "Alle Daten dieser Person als ZIP (DSG Art. 25)."
+
+msgid "Auskunft (DSG Art. 25)"
+msgstr "Auskunft (DSG Art. 25)"
+
+msgid "Dokumente (Personen und Verträge)"
+msgstr "Dokumente (Personen und Verträge)"
+
+msgid "Dokumente (Ablage)"
+msgstr "Dokumente (Ablage)"
+
+#, python-format
+msgid "Es laufen noch %(n)s Mietverträge. Beende sie zuerst."
+msgstr "Es laufen noch %(n)s Mietverträge. Beende sie zuerst."
+
+#, python-format
+msgid ""
+"Dem Mandat sind noch %(n)s Liegenschaften zugeordnet, die nicht archiviert "
+"sind. Archiviere sie oder ordne sie einem anderen Mandat zu."
+msgstr ""
+"Dem Mandat sind noch %(n)s Liegenschaften zugeordnet, die nicht archiviert "
+"sind. Archiviere sie oder ordne sie einem anderen Mandat zu."
+
+msgid "Bereits archiviert."
+msgstr "Bereits archiviert."
+
+msgid "Nicht archiviert."
+msgstr "Nicht archiviert."
+
+#, python-format
+msgid "Aufbewahrungsfrist bis %(bis)s"
+msgstr "Aufbewahrungsfrist bis %(bis)s"
+
+msgid "Nur archivierte Objekte lassen sich endgültig löschen."
+msgstr "Nur archivierte Objekte lassen sich endgültig löschen."
+
+#, python-format
+msgid "Die Aufbewahrungsfrist läuft bis %(bis)s."
+msgstr "Die Aufbewahrungsfrist läuft bis %(bis)s."
+
+msgid ""
+"Setze die Liegenschaft stattdessen auf «Archiviert» (Archiv, Aufbewahrung "
+"zehn Jahre)."
+msgstr ""
+"Setze die Liegenschaft stattdessen auf «Archiviert» (Archiv, Aufbewahrung "
+"zehn Jahre)."
+
+msgid "Archiviere den Vertrag stattdessen («Inaktiv / Archiviert»)."
+msgstr "Archiviere den Vertrag stattdessen («Inaktiv / Archiviert»)."
+
+msgid ""
+"Beende die Verträge und archiviere das Objekt; es bleibt mit seiner "
+"Geschichte bestehen."
+msgstr ""
+"Beende die Verträge und archiviere das Objekt; es bleibt mit seiner "
+"Geschichte bestehen."
+
+msgid ""
+"Beende das Mandat über «Archivieren» (Mandatsende): Es bleibt zehn Jahre "
+"aufbewahrt."
+msgstr ""
+"Beende das Mandat über «Archivieren» (Mandatsende): Es bleibt zehn Jahre "
+"aufbewahrt."
+
+msgid "Archiviere das Dokument stattdessen."
+msgstr "Archiviere das Dokument stattdessen."
+
+msgid "Archiviere die Schadenmeldung stattdessen."
+msgstr "Archiviere die Schadenmeldung stattdessen."
+
+msgid "Ungültiges Datum für das Mandatsende."
+msgstr "Ungültiges Datum für das Mandatsende."
+
+#, python-format
+msgid "«%(name)s» ist archiviert und wird bis zum %(bis)s aufbewahrt."
+msgstr "«%(name)s» ist archiviert und wird bis zum %(bis)s aufbewahrt."
+
+#, python-format
+msgid "«%(name)s» ist wiederhergestellt."
+msgstr "«%(name)s» ist wiederhergestellt."
+
+#, python-format
+msgid "«%(name)s» ist endgültig gelöscht."
+msgstr "«%(name)s» ist endgültig gelöscht."
+
+msgid "Dokument archiviert."
+msgstr "Dokument archiviert."
+
+msgid "Schadensmeldung archiviert."
+msgstr "Schadensmeldung archiviert."

@@ -10,6 +10,7 @@ from django.utils.translation import gettext
 from django.utils import timezone
 
 from core.auth import rolle_erforderlich, SCHREIB_ROLLEN, TEAM_ROLLEN
+from core.auth import FINANZ_LESE_ROLLEN
 from portfolio.models import Liegenschaft
 
 from ._basis import _global_filter, _num
@@ -19,7 +20,7 @@ from ._basis import _global_filter, _num
 # HYPOTHEKEN (Finanzierung je Liegenschaft)
 # ============================================================
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_hypotheken(request):
     """Hypotheken je Liegenschaft: Schuld, Zinssatz/-kosten, Ablauf/Fälligkeit.
     Gruppiert nach Liegenschaft (Akkordeon), mit Erfassen/Löschen und

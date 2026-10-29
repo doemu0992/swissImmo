@@ -55,9 +55,15 @@ def standard_mahnstufen_anlegen(organisation):
 def _organisation_bestimmen(eigentuemer, organisation):
     if organisation is not None:
         return organisation
-    org = getattr(eigentuemer, 'organisation', None)
-    if org is not None:
-        return org
+    org_id = getattr(eigentuemer, 'organisation_id', None)
+    if org_id is not None:
+        # Im Mandantenkontext ist es fast immer dieselbe Verwaltung: das schon
+        # geladene Objekt nehmen statt einer Abfrage je Zeile einer Liste.
+        from core.tenancy import aktuelle_organisation
+        kontext = aktuelle_organisation()
+        if kontext is not None and kontext.pk == org_id:
+            return kontext
+        return eigentuemer.organisation
     from core.organisation_kette import organisation_bestimmen
     return organisation_bestimmen()
 
@@ -163,6 +169,16 @@ class Mahnstufen:
             if tage >= s['ab_tage']:
                 return s
         return None
+
+    def gebuehr_fuer_stufe(self, stufe, eigentuemer=None, organisation=None):
+        """Wie `gebuehr_fuer_stufe` (auch inaktive Stufen), aus den einmal geladenen Stufen."""
+        org = _organisation_bestimmen(eigentuemer, organisation)
+        if org.pk not in self._je_organisation:
+            self._je_organisation[org.pk] = stufen_der_organisation(org)
+        for s in _uebersteuert(self._je_organisation[org.pk], eigentuemer):
+            if s['stufe'] == stufe:
+                return Decimal(s['gebuehr'])
+        return Decimal('0.00')
 
     def tage_im_verzug(self, faellig, heute, eigentuemer=None, organisation=None):
         """Tage seit Fälligkeit — oder None, solange der Verzug nach der Einstellung

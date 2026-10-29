@@ -72,7 +72,6 @@ PFLICHT = {
         '/schaeden/{{ t.id }}/status/',
         '/schaeden/{{ t.id }}/auftrag/',
         '/schaeden/{{ t.id }}/ausstattung/',
-        '/schaeden/{{ t.id }}/loeschen/',
     ]),
 }
 
@@ -128,6 +127,17 @@ class AktionenTests(TestCase):
         self.assertTrue(
             fuehrt(ziele('fw/_einschreiben_zugang.html'), '/zugang/'),
             'Der Baustein fuehrt kein /zugang/ mehr.')
+
+    def test_archivieren_steht_im_baustein_und_die_akten_binden_ihn_ein(self):
+        """Etappe 2: Archiv statt Löschen (Art. 958f OR). Die Adresse entsteht im Baustein
+        aus Kürzel und ID, deshalb prüft dieser Test die Einbindung je Akte."""
+        self.assertTrue(fuehrt(ziele('fw/_archivieren.html'), '/archivieren/'))
+        for pfad, kuerzel in (('fw/schaden_detail.html', 'schaden'), ('fw/liegenschaft_detail.html', 'liegenschaft'),
+                              ('fw/person_detail.html', 'person'), ('fw/vertrag_detail.html', 'vertrag'),
+                              ('fw/objekt_detail.html', 'objekt')):
+            quelle = (WURZEL / pfad).read_text(encoding='utf-8')
+            with self.subTest(vorlage=pfad):
+                self.assertRegex(quelle, r"include 'fw/_archivieren.html' with kuerzel='%s'" % kuerzel)
 
     def test_die_pruefung_wuerde_einen_verlust_bemerken(self):
         """Gegenprobe: eine erfundene Aktion darf nicht als vorhanden gelten."""

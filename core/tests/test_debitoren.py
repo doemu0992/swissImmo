@@ -986,6 +986,12 @@ class FinanzUIP5Tests(TestCase):
         from finance.booking import ensure_kontenplan
         ensure_kontenplan()
         lg, e, m, v = _basis_objekte()
+        # Geprüft wird das Einlesen des Betrags mit Apostroph, nicht das Vier-Augen-
+        # Prinzip (Etappe 2: ab CHF 5'000 braucht die Zahlung eine zweite Person;
+        # `test_vier_augen.py`). Darum ohne Limite.
+        o = _test_organisation()
+        o.freigabelimit_kreditoren = None
+        o.save(update_fields=['freigabelimit_kreditoren'])
         kr = KreditorenRechnung.objects.create(
             lieferant='Grossbau AG', betrag=Decimal('12500.00'),
             datum=date(2024, 5, 1), liegenschaft=lg, status='freigegeben')

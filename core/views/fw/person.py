@@ -23,6 +23,7 @@ from django.utils.translation import gettext
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
+from core.auth import FINANZ_LESE_ROLLEN
 from crm.models import Mieter
 from finance.models import DebitorenRechnung, Zahlungseingang
 from portfolio.models import Liegenschaft, SchluesselAusgabe
@@ -86,7 +87,8 @@ def fw_person_detail(request, pk):
     from collections import defaultdict
     dok_buckets = defaultdict(list)
     vtr_meta = {}
-    for d in (RentalsDokument.objects.neueste().filter(_Q(mieter=m) | _Q(vertrag_id__in=_vids))
+    from core.services.archiv import ausblenden
+    for d in (ausblenden(RentalsDokument.objects.neueste()).filter(_Q(mieter=m) | _Q(vertrag_id__in=_vids))
               .select_related('einheit__liegenschaft', 'vertrag__einheit__liegenschaft')
               .distinct().order_by('-datum')):
         vid = d.vertrag_id
@@ -251,7 +253,7 @@ def fw_mieter_portal_zugang(request, pk):
     return redirect(f'/neu/personen/{m.id}/')
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_mieterkonto_pdf(request, pk):
     """Kontoauszug (PDF) eines Mieters für die Verwaltung."""
     from django.http import HttpResponse
@@ -264,7 +266,7 @@ def fw_mieterkonto_pdf(request, pk):
     return resp
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_mieterkonto(request, pk):
     """Mieterkontoblatt (on-screen): alle Forderungen (Sollstellungen) und Zahlungen
     chronologisch mit laufendem Saldo — dieselbe Datenbasis wie der PDF-Auszug."""
@@ -306,7 +308,7 @@ def fw_mieterkonto(request, pk):
     })
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_mieterkonten(request):
     """Übersicht aller Mieterkonten: pro Mieter der aktuelle Saldo (Forderungen −
     Zahlungen). Einstieg ins einzelne Kontoblatt."""
@@ -372,7 +374,7 @@ def fw_mieterkonten(request):
     })
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_lieferantenkonten(request):
     """Übersicht Lieferantenkonten (Kreditoren): pro Lieferant offener Betrag
     (was die Verwaltung dem Lieferanten noch schuldet). Einstieg ins Kontoblatt."""
@@ -408,7 +410,7 @@ def fw_lieferantenkonten(request):
     })
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_lieferantenkonto(request):
     """Kontoblatt eines Lieferanten: alle Rechnungen (Belastung) und Zahlungen
     (Ausgang) chronologisch mit laufendem offenem Saldo. Lieferant via ?name=."""
@@ -543,10 +545,16 @@ def fw_rentals_dokument_loeschen(request, pk):
     ref = request.META.get('HTTP_REFERER')
     ziel = ref or (f'/neu/personen/{d.mieter_id}/' if d.mieter_id else '/neu/dokumente/')
     if request.method == 'POST':
+        # Kein hartes Löschen (Art. 958f OR): Das Dokument geht ins Archiv und bleibt zehn Jahre.
+        from core.services import archiv
         titel = d.bezeichnung or d.titel or 'Dokument'
-        d.delete()
-        log_aktion(request, "Dokument gelöscht", titel, '')
-        messages.success(request, '🗑️ ' + gettext('Dokument gelöscht.'))
+        try:
+            archiv.archivieren(d, user=request.user, grund='Dokument entfernt')
+        except archiv.ArchivFehler as fehler:
+            messages.error(request, '❌ ' + str(fehler))
+            return redirect(ziel)
+        log_aktion(request, "Dokument archiviert", titel, '')
+        messages.success(request, '📦 ' + gettext('Dokument archiviert.'))
     return redirect(ziel)
 
 

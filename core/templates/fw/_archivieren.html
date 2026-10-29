@@ -1,0 +1,12 @@
+{% load i18n zeichen %}
+{% comment %}Archivieren statt Löschen (Etappe 2). Parameter: kuerzel (siehe core/services/archiv.py TYPEN), pk,
+stil ('menu' = Menüzeile, sonst kleiner Knopf), weiter (Rücksprung, optional).{% endcomment %}
+<form method="post" action="/neu/archiv/{{ kuerzel }}/{{ pk }}/archivieren/" class="inline">
+    {% csrf_token %}
+    {% if weiter %}<input type="hidden" name="weiter" value="{{ weiter }}">{% endif %}
+    {% if stil == 'menu' %}
+    <button class="fw-menuzeile" title="{% trans 'Bleibt zehn Jahre aufbewahrt (Art. 958f OR) und lässt sich wiederherstellen.' %}">{% zeichen 'verlauf' klasse='w-4' %}{% trans "Archivieren" %}</button>
+    {% else %}
+    <button class="fw-btn fw-knapp" title="{% trans 'Bleibt zehn Jahre aufbewahrt (Art. 958f OR) und lässt sich wiederherstellen.' %}">{% zeichen 'verlauf' klasse='fw-fs-mikro' %}{% trans "Archivieren" %}</button>
+    {% endif %}
+</form>

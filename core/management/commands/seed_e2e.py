@@ -233,6 +233,25 @@ class Command(BaseCommand):
                 defaults=dict(rolle=Mitgliedschaft.ROLLE_HAUSWART))
             lg.hauswarte.add(hauswart)
 
+            # Rolle «Buchhaltung» und eine zweite Person für das Vier-Augen-Prinzip
+            # (vier-augen.spec.ts): e2e-buchhaltung legt die Zahlung über CHF 5'000
+            # vor, e2e-zweiter (Verwalter) gibt sie frei.
+            for name, rolle in (("e2e-buchhaltung", Mitgliedschaft.ROLLE_BUCHHALTUNG),
+                                ("e2e-zweiter", Mitgliedschaft.ROLLE_VERWALTER)):
+                konto, _ = User.objects.get_or_create(username=name)
+                konto.set_password("e2e-pass")
+                konto.is_active = True
+                konto.save()
+                Mitgliedschaft.objects.get_or_create(
+                    benutzer=konto, organisation=org, defaults=dict(rolle=rolle))
+            KreditorenRechnung.objects.get_or_create(
+                lieferant="E2E Bau AG", referenz="E2E-RF-GROSS",
+                defaults=dict(liegenschaft=lg, status="freigegeben",
+                              datum=date(2024, 3, 1), faellig_am=date(2024, 3, 31),
+                              betrag=Decimal("12000"), iban="CH9300762011623852957",
+                              lieferant_strasse="Bauweg", lieferant_hausnummer="2",
+                              lieferant_plz="8005", lieferant_ort="Zürich"))
+
         # Läufe der laufenden Periode (Karten auf «Läufe», Zähler in der Leiste).
         # Der Befehl setzt seinen Mandantenkontext selbst.
         from django.core.management import call_command

@@ -21,12 +21,15 @@ from django.utils.translation import gettext_lazy
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
+from core.auth import (FINANZ_LESE_ROLLEN, FINANZ_SCHREIB_ROLLEN, FINANZ_VERWALTUNGS_ROLLEN,
+                       ZAHLUNGSFREIGABE_ROLLEN)
 from portfolio.models import Liegenschaft
 
 logger = logging.getLogger(__name__)
 
 from ._basis import _global_filter, _num
 from core.tenancy import aktuelle_organisation
+from finance.booking import bankkonten as bankkonten_der_verwaltung, bank_nr_aus_eingabe
 
 
 # ============================================================
@@ -84,7 +87,49 @@ def formular_fehler(form, feld_fehler):
     return fehler
 
 
-@rolle_erforderlich(*TEAM_ROLLEN)
+def _name(user):
+    return (user.get_full_name() or user.get_username()) if user else ''
+
+
+def _vier_augen(k, user, organisation, darf_freigeben):
+    """Der Stand des Vier-Augen-Prinzips einer Rechnung für Liste und Zahllauf.
+
+    `sperre`: Die Zahlung ist gesperrt, bis eine zweite Person freigibt.
+    `kann_freigeben`: Diese Person darf freigeben (Rolle UND nicht der Vorleger)."""
+    from finance.freigabe import braucht_zahlungsfreigabe, freigabe_gueltig
+    if not braucht_zahlungsfreigabe(k, organisation):
+        return {'noetig': False, 'sperre': False}
+    gueltig = freigabe_gueltig(k)
+    vorgelegt = bool(k.zahlung_beantragt_von_id) and not gueltig
+    return {
+        'noetig': True, 'sperre': not gueltig, 'gueltig': gueltig, 'vorgelegt': vorgelegt,
+        'vorleger': _name(k.zahlung_beantragt_von), 'freigeber': _name(k.zahlung_freigegeben_von),
+        'geaendert': bool(k.zahlung_freigegeben_von_id) and not gueltig,
+        'kann_freigeben': bool(vorgelegt and darf_freigeben and k.zahlung_beantragt_von_id != user.pk),
+        'selbst_vorgelegt': bool(vorgelegt and k.zahlung_beantragt_von_id == user.pk),
+    }
+
+
+def _vier_augen_pruefen(request, k):
+    """Sperre des Vier-Augen-Prinzips für eine Zahlung. Gibt die Meldung zurück oder `None`.
+
+    Eine gesperrte Zahlung wird zugleich zur Freigabe vorgelegt (wer sie auslösen
+    wollte, steht damit als Vorleger fest), und der Versuch kommt ins Protokoll —
+    die zweite Person sieht sie dann in der Liste, ohne dass jemand nachfassen muss."""
+    from core.auth import log_aktion
+    from finance.freigabe import vorlegen, zahlung_sperre
+    sperre = zahlung_sperre(k, aktuelle_organisation())
+    if not sperre:
+        return None
+    if vorlegen(k, request.user):
+        log_aktion(request, 'Zahlung zur Freigabe vorgelegt', k.lieferant or f'Rechnung #{k.id}',
+                   f'CHF {k.betrag} · automatisch beim Auslösen der Zahlung')
+    log_aktion(request, 'Zahlung gesperrt (Vier-Augen-Prinzip)', k.lieferant or f'Rechnung #{k.id}',
+               f'CHF {k.betrag} · {sperre}')
+    return sperre
+
+
+@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
 def fw_kreditoren(request, *, formular=None):
     """Kreditorenliste. `formular` (Audit Etappe 2): Kommt ein Erfassen- oder
     Bearbeiten-Formular mit Fehlern zurück, rendert die Liste es mit der
@@ -93,7 +138,7 @@ def fw_kreditoren(request, *, formular=None):
     `bearb_id`/`bearb_werte`/`bearb_fehler`."""
     formular = formular or {}
     from finance.models import KreditorenRechnung
-    from core.auth import hat_rolle, VERWALTUNGS_ROLLEN
+    from core.auth import hat_rolle, FINANZ_VERWALTUNGS_ROLLEN, ZAHLUNGSFREIGABE_ROLLEN
     from django.contrib import messages
     heute = timezone.localdate()
     basis = _global_filter(request)
@@ -102,7 +147,7 @@ def fw_kreditoren(request, *, formular=None):
     # prefetch_related: ohne 'zahlungen' löst offener_betrag je Zeile eine eigene
     # SUM-Abfrage aus, ohne 'positionen' je Zeile zwei weitere (N+1 → Timeout).
     qs = (KreditorenRechnung.objects.exclude(status='storniert')
-          .select_related('liegenschaft', 'konto')
+          .select_related('liegenschaft', 'konto', 'zahlung_beantragt_von', 'zahlung_freigegeben_von')
           .prefetch_related('zahlungen', 'positionen__konto', 'positionen__einheit'))
     if aktive_lg:
         qs = qs.filter(liegenschaft=aktive_lg)
@@ -173,7 +218,14 @@ def fw_kreditoren(request, *, formular=None):
     _neu = [k for k in zeilen if k.status == 'neu' and k.iban]
     _profile = {p.name_key: p for p in LieferantProfil.objects.filter(
         name_key__in={lieferant_key(k.lieferant) for k in _neu})} if _neu else {}
+    organisation = aktuelle_organisation()
+    darf_freigeben = hat_rolle(request.user, ZAHLUNGSFREIGABE_ROLLEN)
+    zur_freigabe = 0
     for k in zeilen:
+        va = _vier_augen(k, request.user, organisation, darf_freigeben) \
+            if k.status in ('freigegeben', 'in_zahlung', 'teilbezahlt') else {'noetig': False, 'sperre': False}
+        if va.get('kann_freigeben'):
+            zur_freigabe += 1
         label, cls = KRED_PILL.get(k.status, (k.status, 'fw-flaeche2 fw-mutet'))
         _gelernt = (iban_abweichung(k, profil=_profile.get(lieferant_key(k.lieferant)))
                     if k.status == 'neu' and k.iban else '')
@@ -198,6 +250,7 @@ def fw_kreditoren(request, *, formular=None):
             'beleg_url': k.beleg_scan.url if k.beleg_scan else None,
             'beleg_ist_pdf': bool(k.beleg_scan and str(k.beleg_scan.name).lower().endswith('.pdf')),
             'kann_bezahlen': k.status in ('freigegeben', 'in_zahlung', 'teilbezahlt'),
+            'va': va,
             'in_zahlung': k.status == 'in_zahlung',
             'teilbezahlt': k.status == 'teilbezahlt',
             'letzte_zahlung': letzte_zahlung,
@@ -241,7 +294,8 @@ def fw_kreditoren(request, *, formular=None):
         'total_offen': total_offen, 'total_neu': total_neu, 'anzahl_neu': anzahl_neu,
         'anzahl': gesamt_anzahl,
         'anzahl_zahlbar': _zb.count(),
-        'darf_bezahlen': hat_rolle(request.user, VERWALTUNGS_ROLLEN),
+        'darf_bezahlen': hat_rolle(request.user, FINANZ_VERWALTUNGS_ROLLEN),
+        'zur_freigabe': zur_freigabe,
         'aufwand_konten': aufwand_konten, 'liegenschaften': liegenschaften,
         'ki_aktiv': bool(getattr(settings, 'GROQ_API_KEY', None)),
         'rechnungs_mail': os.environ.get('RECHNUNGS_IMAP_USER', ''),
@@ -282,7 +336,7 @@ def fw_kreditoren(request, *, formular=None):
 #
 # `rolle_erforderlich` ersetzt zugleich `login_required` — ohne den Dekorator
 # gibt es also GAR KEINE Anmeldepruefung, nicht bloss keine Rollenpruefung.
-@rolle_erforderlich(ROLLE_VERWALTER)
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
 def fw_kreditor_bezahlen(request):
     """Bezahlt eine freigegebene Kreditorenrechnung — Kreditoren 2000 an Bank 1020
     (dieselbe Doppelbuchung wie die Finanz-API pay_kreditor)."""
@@ -322,9 +376,7 @@ def fw_kreditor_bezahlen(request):
         valuta = date.fromisoformat(request.POST.get('valuta') or '')
     except ValueError:
         valuta = timezone.localdate()
-    bank_nr = (request.POST.get('bank_konto') or '1020').strip()
-    if not Buchungskonto.objects.filter(nummer=bank_nr).exists():
-        bank_nr = '1020'
+    bank_nr = bank_nr_aus_eingabe(request.POST.get('bank_konto'))
     erwartet = erwarteter_betrag(request.POST)
     try:
         with transaction.atomic():
@@ -338,6 +390,12 @@ def fw_kreditor_bezahlen(request):
             sperre = freigabe_sperre(k)
             if sperre:
                 messages.error(request, f'⛔ {sperre}')
+                return redirect('fw_kreditoren')
+            sperre = _vier_augen_pruefen(request, k)
+            if sperre:
+                messages.error(request, '⛔ ' + gettext(
+                    'Zahlung nicht ausgelöst: Ab dem Freigabelimit gibt eine zweite Person die Zahlung frei. '
+                    'Sie ist vorgelegt und erscheint dort in der Liste.'))
                 return redirect('fw_kreditoren')
             offen = k.offener_betrag
             if erwartet is not None and erwartet != offen:
@@ -377,7 +435,7 @@ def fw_kreditor_bezahlen(request):
     return redirect(ziel)
 
 
-@rolle_erforderlich(ROLLE_VERWALTER)
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
 def fw_zahllauf(request):
     """Zahllauf: Vorschlagsliste → Auswahl → pain.001 → Sammelbestätigung.
 
@@ -406,7 +464,7 @@ def fw_zahllauf(request):
             z += f'?lg={aktive_lg.id}'
         return z
 
-    def _auswahl(status, sperren=False):
+    def _auswahl(status, sperren=False, vier_augen=True):
         """Die gewählten Rechnungen im verlangten Status. Mit `sperren=True` werden
         die Zeilen gesperrt UND der Status erst danach gelesen — nur innerhalb
         von `transaction.atomic()` zu benutzen."""
@@ -419,15 +477,23 @@ def fw_zahllauf(request):
         # Rechnungen mit ausstehender/abgelehnter Eigentümerfreigabe fallen aus
         # der Auswahl — laut, nicht still (finance/freigabe.py).
         from finance.freigabe import freigabe_sperre
-        frei, gesperrt_n = [], 0
+        frei, gesperrt_n, vier_augen_n = [], 0, 0
         for k in qs.select_related('liegenschaft'):
             if freigabe_sperre(k):
                 gesperrt_n += 1
+            elif vier_augen and _vier_augen_pruefen(request, k):
+                # Vier-Augen-Prinzip: Rechnungen ab dem Limit fallen aus dem Lauf,
+                # bis eine zweite Person die Zahlung freigegeben hat — laut, nicht still.
+                vier_augen_n += 1
             else:
                 frei.append(k)
         if gesperrt_n:
             messages.error(request, '⛔ ' + gettext(
                 '%(n)s Rechnung(en) ausgelassen: Eigentümerfreigabe der Reparatur fehlt oder wurde abgelehnt.') % {'n': gesperrt_n})
+        if vier_augen_n:
+            messages.error(request, '⛔ ' + gettext(
+                '%(n)s Rechnung(en) ausgelassen: Die Zahlung braucht die Freigabe einer zweiten Person '
+                '(Freigabelimit). Sie ist vorgelegt.') % {'n': vier_augen_n})
         return frei
 
     def _datum(name, standard):
@@ -508,9 +574,7 @@ def fw_zahllauf(request):
             if not rechnungen:
                 messages.error(request, gettext('Keine Rechnung ausgewählt.'))
                 return redirect(_ziel())
-            bank_nr = (request.POST.get('bank_konto') or '1020').strip()
-            if not Buchungskonto.objects.filter(nummer=bank_nr).exists():
-                bank_nr = '1020'
+            bank_nr = bank_nr_aus_eingabe(request.POST.get('bank_konto'))
             valuta = _datum('valuta', heute)
             from finance.booking import buche
             n, summe, gesperrt, schon = 0, Decimal('0.00'), 0, 0
@@ -563,7 +627,7 @@ def fw_zahllauf(request):
             with transaction.atomic():
                 # Gesperrt: Läuft gleichzeitig die Sammelbestätigung, darf eine
                 # eben bezahlte Rechnung nicht wieder «freigegeben» werden.
-                rechnungen = _auswahl(['in_zahlung'], sperren=True)
+                rechnungen = _auswahl(['in_zahlung'], sperren=True, vier_augen=False)
                 for r in rechnungen:
                     r.status = 'freigegeben'
                     r.save(update_fields=['status'])
@@ -579,12 +643,15 @@ def fw_zahllauf(request):
     # nie zur Zahlung vorgeschlagen (Live-Test H9).
     qs = (KreditorenRechnung.objects
           .filter(status__in=['freigegeben', 'in_zahlung', 'teilbezahlt'])
-          .select_related('liegenschaft')
+          .select_related('liegenschaft', 'zahlung_beantragt_von', 'zahlung_freigegeben_von')
           .prefetch_related('zahlungen')
           .order_by('faellig_am', 'id'))
     if aktive_lg:
         qs = qs.filter(liegenschaft=aktive_lg)
 
+    from core.auth import ZAHLUNGSFREIGABE_ROLLEN, hat_rolle
+    vw = aktuelle_organisation()
+    darf_freigeben = hat_rolle(request.user, ZAHLUNGSFREIGABE_ROLLEN)
     vorschlag, laufend = [], []
     summe_vorschlag = Decimal('0.00')
     summe_laufend = Decimal('0.00')
@@ -606,6 +673,7 @@ def fw_zahllauf(request):
             # Klick sichtbar, statt erst als Ablehnung danach.
             beanstandet = pruefe_zahlung(r)
             zeile['probleme'] = [t for _c, t in beanstandet]
+            zeile['va'] = _vier_augen(r, request.user, vw, darf_freigeben)
             zeile['adresse_fehlt'] = any(c == 'adresse' for c, _t in beanstandet)
             vorschlag.append(zeile); summe_vorschlag += offen
             if not zeile['iban']:
@@ -623,12 +691,12 @@ def fw_zahllauf(request):
         'ohne_iban': ohne_iban, 'heute': heute,
         'fehler_liste': request.session.pop('zahllauf_fehler', []),
         'verwaltung_iban': ((vw.iban if vw else '') or '').strip(),
-        'bankkonten': Buchungskonto.objects.filter(nummer__startswith='10').order_by('nummer'),
+        'bankkonten': bankkonten_der_verwaltung(),
         'meldung': list(_msg.get_messages(request)),
     })
 
 
-@rolle_erforderlich(ROLLE_VERWALTER)
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
 def fw_kreditor_zahlung_zuruecksetzen(request, pk):
     """Setzt eine 'in Zahlung' stehende Rechnung auf 'freigegeben' zurück —
     falls die pain.001-Datei doch nicht ausgeführt wurde. Dann kommt sie im
@@ -657,7 +725,7 @@ def fw_kreditor_zahlung_zuruecksetzen(request, pk):
     return redirect(ziel)
 
 
-@rolle_erforderlich(ROLLE_VERWALTER)
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
 def fw_kreditor_zahlung_stornieren(request, pk):
     """Storniert eine VERBUCHTE Lieferantenzahlung revisionssicher: Gegenbuchung
     zur Zahlungsbuchung (2000 an Bank), Zahlung → 'storniert', der offene Posten
@@ -718,7 +786,7 @@ def fw_kreditor_zahlung_stornieren(request, pk):
     return redirect(naechstes)
 
 
-@rolle_erforderlich(*SCHREIB_ROLLEN)
+@rolle_erforderlich(*FINANZ_SCHREIB_ROLLEN)
 def fw_kreditor_adresse(request, pk):
     """Anschrift einer Kreditorenrechnung ergänzen — auch nach der Freigabe.
 
@@ -783,3 +851,93 @@ def fw_kreditor_adresse(request, pk):
         **basis, 'nav': 'kreditoren', 'k': k, 'werte': werte, 'fehler': fehler,
         'anzahl_fehler': len(fehler), 'ziel': ziel,
     }, status=400 if fehler else 200)
+
+
+# ---------------------------------------------------------------------------
+# VIER-AUGEN-PRINZIP: Zahlung vorlegen, freigeben, zurücknehmen
+# ---------------------------------------------------------------------------
+
+def _zurueck(request):
+    ziel = '/neu/kreditoren/'
+    if lg := request.POST.get('lg'):
+        ziel += f'?lg={lg}'
+    return ziel
+
+
+def _gesperrt_holen(pk):
+    """Die Rechnung gesperrt lesen: Vorlegen und Freigeben stehen nicht gleichzeitig an."""
+    from finance.models import KreditorenRechnung
+    get_object_or_404(KreditorenRechnung, id=pk)         # Mandantengrenze zuerst (fremde ID -> 404)
+    return KreditorenRechnung.objects.select_for_update(of=('self',)).get(pk=pk)
+
+
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
+def fw_kreditor_zahlung_vorlegen(request, pk):
+    """Eine Zahlung ab dem Freigabelimit der zweiten Person zur Freigabe vorlegen."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from finance.freigabe import braucht_zahlungsfreigabe, vorlegen
+    if request.method != 'POST':
+        return redirect('fw_kreditoren')
+    with transaction.atomic():
+        k = _gesperrt_holen(pk)
+        if k.status not in ('freigegeben', 'in_zahlung', 'teilbezahlt'):
+            messages.error(request, gettext('Nur eine freigegebene, offene Rechnung lässt sich zur Zahlung vorlegen.'))
+        elif not braucht_zahlungsfreigabe(k, aktuelle_organisation()):
+            messages.info(request, gettext('Diese Rechnung liegt unter dem Freigabelimit — keine Freigabe nötig.'))
+        elif vorlegen(k, request.user):
+            log_aktion(request, 'Zahlung zur Freigabe vorgelegt', k.lieferant or f'Rechnung #{k.id}',
+                       f'CHF {k.betrag}')
+            messages.success(request, '✅ ' + gettext('Die Zahlung ist zur Freigabe durch eine zweite Person vorgelegt.'))
+        else:
+            messages.info(request, gettext('Die Zahlung ist bereits vorgelegt oder freigegeben.'))
+    return redirect(_zurueck(request))
+
+
+@rolle_erforderlich(*ZAHLUNGSFREIGABE_ROLLEN)
+def fw_kreditor_zahlung_freigeben(request, pk):
+    """Die vorgelegte Zahlung freigeben. Nur Verwalter und Inhaber, und nie die Person,
+    die sie vorgelegt hat (Vier-Augen-Prinzip)."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from finance.freigabe import FreigabeFehler, freigeben
+    if request.method != 'POST':
+        return redirect('fw_kreditoren')
+    with transaction.atomic():
+        k = _gesperrt_holen(pk)
+        try:
+            freigeben(k, request.user)
+        except FreigabeFehler as exc:
+            log_aktion(request, 'Zahlungsfreigabe abgelehnt', k.lieferant or f'Rechnung #{k.id}',
+                       f'CHF {k.betrag} · {exc}')
+            messages.error(request, '⛔ ' + str(exc))
+        else:
+            log_aktion(request, 'Zahlung freigegeben (Vier-Augen-Prinzip)', k.lieferant or f'Rechnung #{k.id}',
+                       f'CHF {k.betrag} · IBAN {k.zahlung_freigabe_iban} · vorgelegt von '
+                       f'{_name(k.zahlung_beantragt_von)}')
+            messages.success(request, '✅ ' + gettext('Die Zahlung ist freigegeben und kann ausgelöst werden.'))
+    return redirect(_zurueck(request))
+
+
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
+def fw_kreditor_zahlung_zuruecknehmen(request, pk):
+    """Vorlage oder Freigabe verwerfen. Die Zahlung ist danach wieder gesperrt."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from finance.freigabe import zuruecknehmen
+    if request.method != 'POST':
+        return redirect('fw_kreditoren')
+    with transaction.atomic():
+        k = _gesperrt_holen(pk)
+        if k.zahlung_beantragt_von_id or k.zahlung_freigegeben_von_id:
+            zuruecknehmen(k)
+            log_aktion(request, 'Zahlungsfreigabe zurückgenommen', k.lieferant or f'Rechnung #{k.id}',
+                       f'CHF {k.betrag}')
+            messages.success(request, gettext('Vorlage und Freigabe sind verworfen.'))
+    return redirect(_zurueck(request))

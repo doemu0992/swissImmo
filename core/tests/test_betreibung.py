@@ -246,7 +246,9 @@ class VerlustscheinTests(_Basis):
         c = Client()
         c.force_login(_team_user('Sachbearbeiter'))
         antwort = c.post(f'/neu/betreibungen/{b.id}/', self._daten(b))
-        self.assertContains(antwort, 'status_fehler', status_code=400)
+        # Seit Etappe 2 (SICH-11) ist die ganze Bearbeitung der Betreibung der
+        # Verwaltung vorbehalten: 403 statt der früheren Formularmeldung (400).
+        self.assertEqual(antwort.status_code, 403)
         b.refresh_from_db()
         self.r1.refresh_from_db()
         self.assertEqual((b.status, self.r1.status), ('begehren', 'offen'))

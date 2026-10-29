@@ -13,6 +13,7 @@ from django.utils.translation import gettext
 from django.utils import timezone
 
 from core.auth import rolle_erforderlich, ROLLE_VERWALTER, TEAM_ROLLEN
+from core.auth import FINANZ_VERWALTUNGS_ROLLEN
 from portfolio.models import Liegenschaft
 
 from ._basis import _global_filter, _num
@@ -23,7 +24,7 @@ from core.tenancy import aktuelle_organisation
 # ANLAGEN & ABSCHLUSS (AfA, Erneuerungsfonds, Periodensperre)
 # ============================================================
 
-@rolle_erforderlich(ROLLE_VERWALTER)
+@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
 def fw_anlagen(request):
     """Anlagenbuchhaltung (lineare AfA), Erneuerungsfonds und Periodensperre."""
     from django.shortcuts import redirect

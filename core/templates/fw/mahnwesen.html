@@ -7,15 +7,15 @@
 
 <div class="fw-phead fw-phead-lauf">
     <div>
-        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a><span aria-hidden="true">/</span><span>{% trans "Mahnwesen" %}</span></nav>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}">{% if ist_team %}<a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a>{% else %}<span>{% trans "Läufe" %}</span>{% endif %}<span aria-hidden="true">/</span><span>{% trans "Mahnwesen" %}</span></nav>
         <h1>{% trans "Mahnwesen" %} {% hilfe 'mahnstufen' %}</h1>
         <p>{% trans "Überfällige Forderungen nach Mahnstufe · Mahnung inkl. QR-Rechnung direkt erzeugen" %}
             {% if aktive_lg %}· {% trans "gefiltert auf" %} <span class="fw-strong">{{ aktive_lg.strasse }}</span>
             <a href="/neu/mahnwesen/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">
-        <a href="/neu/betreibungen/" class="fw-btn">{% zeichen 'recht' %}{% trans "Betreibungen" %}</a>
-        <a href="/neu/mahnstufen/" class="fw-btn">{% zeichen 'einstellungen' %}{% trans "Mahnstufen anpassen" %}</a>
+        {% if ist_team %}<a href="/neu/betreibungen/" class="fw-btn">{% zeichen 'recht' %}{% trans "Betreibungen" %}</a>
+        <a href="/neu/mahnstufen/" class="fw-btn">{% zeichen 'einstellungen' %}{% trans "Mahnstufen anpassen" %}</a>{% endif %}
         <a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-btn">{% zeichen 'bericht' %}{% trans "Altersstruktur (OP-Aging) ansehen" %}</a>
     </div>
 </div>
@@ -59,7 +59,7 @@
             <a href="?stufe={{ wert }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
                class="{% if stufe_filter == wert %}hier{% endif %}">{{ label }}</a>
             {% endfor %}
-        <span class="ml-auto fw-klein">{% blocktrans count n=rows|length %}{{ n }} Position{% plural %}{{ n }} Positionen{% endblocktrans %}
+        <span class="ml-auto fw-klein">{% blocktrans count n=anzahl_positionen %}{{ n }} Position{% plural %}{{ n }} Positionen{% endblocktrans %}
             · {% blocktrans with n=offen_gesamt_n summe=offen_gesamt_summe|chf %}Offene Forderungen insgesamt: {{ n }} (CHF {{ summe }}){% endblocktrans %}</span>
     </div>
 
@@ -83,7 +83,7 @@
                     <span class="fw-chip {{ row.stufe.cls }}">● {{ row.stufe.label }}</span>
                 </td>
                 <td class="fw-strong whitespace-nowrap">
-                    {% if row.vertrag_id %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="fw-link">{{ row.mieter }}</a>{% else %}{{ row.mieter }}{% endif %}
+                    {% if row.vertrag_id and ist_team %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="fw-link">{{ row.mieter }}</a>{% else %}{{ row.mieter }}{% endif %}
                 </td>
                 <td class="fw-mutet whitespace-nowrap">{{ row.objekt }}</td>
                 <td class="fw-mutet fw-num whitespace-nowrap">{{ row.faellig|date:"d.m.Y" }}</td>
@@ -152,6 +152,7 @@
             </tbody>
         </table>
     </div>
+    {% include 'fw/_seiten.html' %}
 
     <!-- Stufen-Legende -->
     <div class="fw-fuss justify-start gap-x-6">
@@ -248,7 +249,7 @@
             <tbody>
             {% for v in vorlauf %}
             <tr>
-                <td class="fw-strong whitespace-nowrap"><a href="/neu/vertraege/{{ v.vertrag_id }}/" class="fw-link">{{ v.mieter }}</a></td>
+                <td class="fw-strong whitespace-nowrap">{% if ist_team %}<a href="/neu/vertraege/{{ v.vertrag_id }}/" class="fw-link">{{ v.mieter }}</a>{% else %}{{ v.mieter }}{% endif %}</td>
                 <td class="fw-mutet whitespace-nowrap">{{ v.objekt }}</td>
                 <td>{{ v.r.titel }}</td>
                 <td class="fw-mutet fw-num whitespace-nowrap">{{ v.faellig|date:"d.m.Y" }}</td>
@@ -270,13 +271,14 @@
             </tbody>
         </table>
     </div>
+    {% include 'fw/_seiten.html' with seite=vorlauf_seite query_ohne_seite=vorlauf_query param='vseite' %}
 </div>
 {% endif %}
 {% comment %} Freigabeleiste nach konzept-v8 (Läufe): Der Mahnlauf wandert aus dem
    Seitenkopf nach unten — Optionen links, Knopf rechts. {% endcomment %}
 {% comment %} Die Leiste steht IMMER da: Vorher nur bei `anzahl_total` — eine heute fällige
    Miete (noch unter der ersten Stufe) hatte damit gar keinen Knopf. {% endcomment %}
-<form method="post" action="/neu/mahnwesen/lauf/" class="fw-freigabe">
+{% if ist_verwaltung %}<form method="post" action="/neu/mahnwesen/lauf/" class="fw-freigabe">
     {% csrf_token %}
     {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
     <div class="fw-ht">
@@ -289,5 +291,5 @@
             onclick="return confirm('{% filter escapejs %}{% trans "Mahnlauf ERZWINGEN? Jede Forderung im Verzug bekommt jetzt die nächste Mahnstufe — auch wenn deren Frist noch nicht erreicht ist. Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt." %}{% endfilter %}');">{% zeichen 'kritisch' %}{% trans "Mahnlauf erzwingen" %}</button>
     <button type="submit" class="fw-btn fw-primary"
             onclick="return confirm('{% filter escapejs %}{% trans "Mahnlauf über alle fälligen Forderungen ausführen? Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt." %}{% endfilter %}');">{% zeichen 'kritisch' %}{% trans "Mahnlauf ausführen" %}</button>
-</form>
+</form>{% endif %}
 {% endblock %}
