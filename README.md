@@ -198,6 +198,13 @@ npm run css:alle
 - **Sicherung und Wiederherstellung**: `docs/SICHERUNG.md`; dort auch, wie die
   Abhängigkeiten auf bekannte Schwachstellen geprüft werden (CI-Job `pip-audit`).
 
+- **CI** (`.github/workflows/ci.yml`, alle Jobs auf `ubuntu-24.04`): bei jedem Push und Pull Request Ruff,
+  `pip-audit`, Django-Check samt `check --deploy` (Ausnahmen mit Begründung in `deploy-check-ignore.txt`),
+  Tests auf SQLite und PostgreSQL, e2e. Zusätzlich im Zeitplan: montags `pip-audit` und der LIK-Wächter
+  (`wartung`; rot heisst: Monatswerte des BFS in `core/services/lik.py` nachtragen), am 1. des Monats die ganze
+  Suite mit verschobener Uhr (`zeitlauf`, Szenarien in `_tools/zeitlauf_epoche.py`). Dependabot:
+  `.github/dependabot.yml`. Tests dürfen nicht an den Kalendertag gebunden sein: `core/tests/test_zeit_waechter.py`.
+
 ## Projektaufbau
 
 ```
