@@ -406,6 +406,9 @@ def fw_navigation(request):
                          'fw_suche_ziel': suche.suchseite}
     except PermissionDenied:
         suche_kontext = {}
+    # «Neuer Fall» im Kopf nur, wo die Rolle ihn anlegen darf (ROUTE-02): aus den schon gelesenen Rollen, ohne
+    # zusätzliche Abfrage je Seite.
     return {'fw_nav_gruppen': gruppen, 'fw_palette': palette,
             'fw_einstellungen_keys': EINSTELLUNGEN_KEYS,
+            'fw_neuer_fall': darf_oeffnen(user, '/neu/faelle/neu/', meine),
             'fw_mandanten': mandanten, 'fw_mandant': aktiv, **suche_kontext}

@@ -45,7 +45,8 @@ V11 (26.10.2026): Portal-Badge auf `fw-krit-voll` statt Fläche + `text-white`
 — `mieter_portal` (3 → 2): 135 in 20.
 Production-Check (26.10.2026): tote Vorlage `core/mietzins_form.html` (73)
 geloescht, alte Reiter-Umschaltung aus `base.html` (1 → 0), Admin-Koepfe auf das
-Ember-Schema (`text-primary-600` statt Blau): **STAND 55 in 15 Vorlagen**.
+Ember-Schema (`text-primary-600` statt Blau). Etappe 3 (29.10.2026): `_passwort_shell_bottom` (2 → 0),
+`fw-link` statt `text-indigo-600` (3.31:1 im Dunkelmodus): **STAND 53 in 14 Vorlagen**.
 
 E2.84: DAS OVERLAY IST AUSGEBAUT — UND DIE WARNUNG VON E2.20 GEPRUEFT
 ---------------------------------------------------------------------
@@ -280,7 +281,6 @@ FARBMUSTER = re.compile(
 
 OBERGRENZE = {
     'core/templates/admin/finance/abrechnung_vorschau.html': 30,
-    'core/templates/core/_passwort_shell_bottom.html': 2,
     'core/templates/core/dossier/base.html': 7,
     'core/templates/core/mieter_kuendigung.html': 1,
     'core/templates/core/mieter_portal.html': 2,
