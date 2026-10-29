@@ -941,9 +941,14 @@ class ReviewNachbesserungTests(TestCase):
         lg = Liegenschaft.objects.create(organisation=_test_organisation(), strasse='Inserat 2', plz='3000', ort='Bern')
         e = Einheit.objects.create(liegenschaft=lg, bezeichnung='2 Zi', typ='whg',
                                    zur_ausschreibung=True)
+        from pathlib import Path
         html = Client().get(f'/bewerben/{e.id}/').content.decode()
-        self.assertNotIn("zivilstand: 'ledig'", html)
-        self.assertIn("zivilstand: ''", html)
+        skript = (Path(__file__).resolve().parents[2] / 'static' / 'js' / 'fw-bewerbung.js').read_text(encoding='utf-8')
+        # Etappe 3: kein Vue-Modell mehr. Das Formular fragt den Zivilstand nicht (kein Feld), das Skript
+        # sendet ihn leer — nie einen Vorgabewert.
+        self.assertNotIn('name="zivilstand"', html)
+        self.assertNotIn('ledig', html + skript)
+        self.assertIn("'zivilstand'", skript)
 
     def test_zivilstand_darf_leer_bleiben(self):
         b = self._bewerbung()
