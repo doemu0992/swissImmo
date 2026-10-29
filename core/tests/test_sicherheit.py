@@ -120,7 +120,9 @@ class SecurityBatchTests(TestCase):
         idx = src.find('def fw_buchung_stornieren')
         self.assertNotEqual(idx, -1, f"fw_buchung_stornieren nicht in {quelle} gefunden")
         deko = src[max(0, idx - 120):idx]
-        self.assertRegex(deko, r"rolle_erforderlich\(ROLLE_VERWALTER\)")
+        # Verwaltung ODER Buchhaltung (Etappe 2: die Gegenbuchung ist Buchhalterarbeit);
+        # Sachbearbeiter und Lesezugriff bleiben ausgeschlossen.
+        self.assertRegex(deko, r"rolle_erforderlich\((ROLLE_VERWALTER|\*FINANZ_VERWALTUNGS_ROLLEN)\)")
 
     def test_oeffentliches_schadenformular_leakt_kein_portfolio(self):
         # Das anonyme Schadenformular darf nicht das gesamte Portfolio (alle

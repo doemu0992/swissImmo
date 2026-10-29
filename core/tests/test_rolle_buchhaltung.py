@@ -39,6 +39,7 @@ BUCHHALTUNG_DARF = {
     'fw_kreditor_adresse', 'fw_kreditor_freigeben', 'fw_kreditor_position_add',
     'fw_kreditor_position_del', 'fw_kreditor_bezahlen', 'fw_zahllauf',
     'fw_kreditor_zahlung_zuruecksetzen', 'fw_kreditor_zahlung_stornieren',
+    'fw_kreditor_zahlung_vorlegen', 'fw_kreditor_zahlung_zuruecknehmen',
     'fw_lieferantenkonten', 'fw_lieferantenkonto', 'fw_weiterverrechnung',
     # Buchungen und Konten
     'fw_buchhaltung', 'fw_buchhaltung_export', 'fw_buchhaltung_pdf', 'fw_kontoblatt',

@@ -351,17 +351,27 @@ Erfasste Regelfamilien:
 
 ## 8. Rollen und Kompetenzen
 
-Rollen gemäss Vorgabe: **Inhaber, Verwalter, Sachbearbeiter, Lesezugriff**. Die
-Mandatszuteilung begrenzt zusätzlich, **welche** Akten überhaupt sichtbar sind.
+Rollen gemäss Vorgabe: **Inhaber, Verwalter, Sachbearbeiter, Lesezugriff**, seit
+Etappe 2 (28.10.2026) dazu **Buchhaltung** (nur Finanzen: Debitoren, Kreditoren,
+Buchungen, Bank, MWST, Berichte; keine Stammdaten, Verträge, Personen, Mandate,
+Einstellungen). Die Buchhaltung ist keine Team-Rolle: Was eine Ansicht nicht
+ausdrücklich für sie öffnet (`FINANZ_*_ROLLEN` in `core/auth.py`), antwortet mit
+403; Navigation, Suche (nur Gruppe «Buchhaltung»), Startseite (Finanz-Cockpit),
+Exporte, Portale, API und Mediendateien (nur Kreditorenbelege und
+Debitoren-Rechnungen) richten sich danach. Die Mandatszuteilung begrenzt
+zusätzlich, **welche** Akten überhaupt sichtbar sind.
 
 | Handlung | Inhaber | Verwalter | Sachbearbeiter | Lesezugriff |
 |---|---|---|---|---|
 | Akten und Fälle lesen | ✓ | ✓ | ✓ | ✓ |
 | Akten bearbeiten, Fälle führen | ✓ | ✓ | ✓ | — |
 | Kündigung erfassen, bestätigen oder zurücknehmen | ✓ | ✓ | — | — |
-| Rechnungen freigeben | ✓ | bis Limit | bis Limit | — |
+| Rechnungen freigeben (Aufwand buchen) | ✓ | ✓ | — | — |
+| Zahlung an Lieferanten auslösen (Bezahlen, Zahllauf) | ✓ | ✓ | — | — |
+| Zahlung ab Freigabelimite **freigeben** (zweite Person) | ✓ | ✓ | — | — |
+| Freigabelimite einstellen | ✓ | — | — | — |
 | Zahllauf auslösen | ✓ | ✓ | — | — |
-| Mahnlauf und Betreibung | ✓ | ✓ | — | — |
+| Mahnlauf und Betreibung (einleiten, nachführen, Kosten, Datenblatt ablegen) | ✓ | ✓ | — | — |
 | Zahlungsverzug: Frist ansetzen (Art. 257d OR)³ | ✓ | ✓ | — | — |
 | Nebenkostenabrechnung freigeben (verbuchen, an die Mieter versenden)⁴ | ✓ | ✓ | — | — |
 | Mitglieder und Rollen verwalten | ✓ | — | — | — |
@@ -387,6 +397,22 @@ Sachbearbeitung weiterhin — das hält die bereits angesetzte Frist richtig.
 ⁴ Seit 28.09.2026 auch der Versand. Er legt die Abrechnung jedes Mieters in
 dessen Akte und damit ins Mieterportal — bis dahin konnte die Sachbearbeitung
 so auch eine nicht verbuchte Periode an alle Mieter geben.
+
+Die Rolle **Buchhaltung** hat in dieser Tabelle dieselben Rechte wie die
+Verwaltung bei «Rechnungen freigeben» und «Zahlung auslösen», aber keine bei
+«Zahlung freigeben», «Betreibung», «Mitglieder» und «Abo».
+
+**Vier-Augen-Prinzip (Etappe 2).** Eine Lieferantenrechnung ab der Freigabelimite
+der Organisation (Vorgabe CHF 5'000, Rechnungsbetrag, einstellbar nur durch den
+Inhaber, `/neu/einstellungen/zahlungsfreigabe/`) wird erst bezahlt oder in eine
+Zahlungsdatei genommen, wenn eine zweite Person aus der Verwaltung die Zahlung
+freigegeben hat. Wer die Zahlung vorgelegt hat (auch automatisch beim Versuch,
+sie auszulösen), darf sie nicht freigeben. Die Freigabe gilt für genau den Betrag
+und die IBAN, die freigegeben wurden. Alle Schritte stehen im Logbuch.
+
+**Zwei-Faktor-Anmeldung.** Den Schalter für die ganze Verwaltung stellen Verwalter
+und Inhaber (vorher jede Schreibrolle). Für Inhaber, Verwalter und Buchhaltung
+ist der zweite Faktor immer Pflicht (`ZWEIFAKTOR_ROLLENPFLICHT`, im Betrieb an).
 
 **Vertretung** ist zeitlich begrenzt, nicht dauerhafte Rechteerweiterung. Sie endet
 automatisch; offene Fristen bleiben bei beiden sichtbar.

@@ -185,6 +185,7 @@ UEBERSETZT = (
     'fw/maengelruege.html',
     'fw/mahnlauf_trockenlauf.html',
     'fw/mahnstufen.html',
+    'fw/zahlungsfreigabe.html',
     'fw/mahnwesen.html',
     'fw/mandat_abrechnung.html',
     'fw/mandat_detail.html',

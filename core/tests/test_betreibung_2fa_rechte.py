@@ -63,6 +63,21 @@ class BetreibungNurVerwaltungTests(RollenBasis):
                 with self.subTest(rolle=rolle, aktion=name):
                     self.assertNotEqual(c.get(url).status_code, 403)
 
+    def test_datenblatt_vorschau_fuer_die_schreibrolle_ablegen_nur_verwaltung(self):
+        """GET (Vorschau) bleibt der Schreibrolle; POST legt das Blatt in der Akte ab: Verwaltung."""
+        from core.tenancy import organisation_kontext
+        from rentals.models import Dokument
+        url = f'/neu/betreibungen/{self.a.betreibung.pk}/pdf/'
+        self.assertEqual(self.client_von('sachbearbeiter').get(url).status_code, 200)
+        with organisation_kontext(self.org):
+            vorher = Dokument.objects.count()
+        self.assertEqual(self.client_von('sachbearbeiter').post(url).status_code, 403)
+        with organisation_kontext(self.org):
+            self.assertEqual(Dokument.objects.count(), vorher)
+        self.assertEqual(self.client_von('verwalter').post(url).status_code, 200)
+        with organisation_kontext(self.org):
+            self.assertEqual(Dokument.objects.count(), vorher + 1)
+
     def test_die_liste_bleibt_dem_team_lesbar(self):
         for rolle in ('sachbearbeiter', 'lesezugriff', 'verwalter'):
             with self.subTest(rolle=rolle):
