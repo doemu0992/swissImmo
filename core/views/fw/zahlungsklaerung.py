@@ -20,6 +20,7 @@ from rentals.models import Mietvertrag
 
 from ._basis import _global_filter
 from .bankabgleich import _ziel
+from finance.booking import bankkonten as bankkonten_der_verwaltung, bank_nr_aus_eingabe
 
 
 def _geparkt(zahlung):
@@ -125,7 +126,7 @@ def fw_zahlung_aufteilen(request, pk):
         'vorschlag_summe': sum(vorschlag.values(), Decimal('0.00')),
         'rest_vertraege': rest_vertraege,
         'darf_zurueck': hat_rolle(request.user, (ROLLE_VERWALTER,)),
-        'bankkonten': Buchungskonto.objects.filter(nummer__startswith='10').order_by('nummer'),
+        'bankkonten': bankkonten_der_verwaltung(),
         'ziel': ziel,
     })
 
@@ -166,7 +167,7 @@ def _aufteilen_buchen(request, zahlung, ziel):
                 rest_vertrag = (Mietvertrag.objects.select_related('mieter', 'einheit__liegenschaft')
                                 .filter(pk=request.POST.get('rest_vertrag') or 0).first())
             erg = zk.aufteilen(z, teile, rest_ziel=rest_ziel, rest_vertrag=rest_vertrag,
-                               bank_nr=(request.POST.get('bank_konto') or '1020').strip(),
+                               bank_nr=bank_nr_aus_eingabe(request.POST.get('bank_konto')),
                                user=request.user)
     except ZuordnungsFehler as exc:
         messages.error(request, f"❌ {exc}")

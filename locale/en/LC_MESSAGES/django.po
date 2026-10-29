@@ -34988,3 +34988,13 @@ msgstr "Document archived."
 
 msgid "Schadensmeldung archiviert."
 msgstr "Damage report archived."
+
+#, python-format
+msgid ""
+"Fehler: Die QR-Rechnung für %(einheit)s konnte nicht erzeugt werden "
+"(%(fehler)s). Das PDF wurde nicht ausgeliefert, damit keine Nachzahlung ohne"
+" Einzahlungsschein verschickt wird."
+msgstr ""
+"Error: the QR bill for %(einheit)s could not be created (%(fehler)s). The "
+"PDF was not delivered so that no additional payment request is sent without "
+"a payment slip."

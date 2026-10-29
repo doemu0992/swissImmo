@@ -38,6 +38,7 @@ from rentals.models import Mietvertrag
 logger = logging.getLogger(__name__)
 
 from ._basis import _global_filter, _num, _park_konto
+from finance.booking import bankkonten as bankkonten_der_verwaltung, bank_nr_aus_eingabe
 
 
 # ============================================================
@@ -292,7 +293,7 @@ def fw_bankabgleich(request):
         })
     sammel_vertraege.sort(key=lambda x: x['label'].lower())
 
-    bankkonten = Buchungskonto.objects.filter(nummer__startswith='10').order_by('nummer')
+    bankkonten = bankkonten_der_verwaltung()
 
     from django.contrib import messages
     return render(request, 'fw/bankabgleich.html', {
@@ -495,7 +496,7 @@ def fw_guthaben_rueckerstatten(request):
         if valuta is None or valuta > timezone.localdate():
             messages.error(request, gettext('Ungültiges oder zukünftiges Valutadatum.'))
             return redirect('fw_bankabgleich')
-    bank_nr = (request.POST.get('bank_konto') or '1020').strip()
+    bank_nr = bank_nr_aus_eingabe(request.POST.get('bank_konto'))
     from core.services.zahlungsklaerung import zurueckueberweisen, ZuordnungsFehler
     try:
         with transaction.atomic():
@@ -999,7 +1000,7 @@ def _camt_import_ausfuehren(request):
 
     # Zielkonto der Bank: wählbar, damit mehrere Bankkonten buchbar sind.
     # Vorher war «1020» im ganzen Import hart verdrahtet (Praxis-Audit).
-    bank_nr = (request.POST.get('bank_konto') or '1020').strip()
+    bank_nr = bank_nr_aus_eingabe(request.POST.get('bank_konto'))
     konto_bank_obj = Buchungskonto.objects.filter(nummer=bank_nr).first()
     if konto_bank_obj is None:
         bank_nr, konto_bank_obj = '1020', _park_konto('1020')

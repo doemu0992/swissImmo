@@ -40,6 +40,7 @@ def _hauswart_pruefen(request, ticket):
 from core.tenancy import aktuelle_organisation
 from core.services.dokumentsprache import auf_deutsch
 from core.utils.parameter import jahr_streng
+from finance.booking import bank_nr_aus_eingabe
 
 
 # ============================================================
@@ -1017,7 +1018,7 @@ def fw_versicherungsfall(request, pk):
                     except ValueError:
                         datum = heute
                     vs.entschaedigung_verbuchen(vf, dec('betrag'), datum=datum,
-                                                bank=(request.POST.get('bank_konto') or '1020').strip(),
+                                                bank=bank_nr_aus_eingabe(request.POST.get('bank_konto')),
                                                 benutzer=request.user)
                     log_aktion(request, 'Versicherungsleistung verbucht', f'Ticket #{t.id}', f'CHF {vf.entschaedigung_erhalten}')
                     messages.success(request, '✅ ' + gettext('Versicherungsleistung verbucht.'))

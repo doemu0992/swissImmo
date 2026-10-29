@@ -15,6 +15,7 @@ from collections import defaultdict
 from datetime import timedelta as _timedelta
 from decimal import Decimal
 
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.utils.translation import gettext
 from django.db.models import Q
@@ -29,6 +30,7 @@ from crm.models import Mieter
 from finance.models import DebitorenRechnung
 
 from ._basis import _global_filter, _num
+from ._liste import PRO_SEITE, blaettern, query_ohne
 
 
 # ============================================================
@@ -49,6 +51,10 @@ def fw_mahnwesen(request):
     heute = timezone.localdate()
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
+    # Die Verwaltung dieser Anfrage: `r.organisation` wäre je Rechnung eine
+    # eigene Abfrage, und der Manager liefert ohnehin nur Rechnungen dieser
+    # Verwaltung (SICH-09).
+    organisation = organisation_der_anfrage(request)
 
     qs = (DebitorenRechnung.objects
           .filter(status__in=['offen', 'teilbezahlt'])
@@ -98,17 +104,17 @@ def fw_mahnwesen(request):
             continue
         # Der Fälligkeitstag ist Tag 0; wann der Verzug beginnt, stellt die Verwaltung ein.
         tage = stufen_laden.tage_im_verzug(faellig, heute, _eigentuemer_von_rechnung(r),
-                                           organisation=r.organisation)
+                                           organisation=organisation)
         if tage is None:
             if _offen > 0:
                 grund = (gettext('Noch nicht fällig (fällig am %(d)s)') % {'d': faellig.strftime('%d.%m.%Y')}
                          if faellig > heute else
                          gettext('Der Verzug beginnt erst %(n)s Tage nach Fälligkeit (Einstellung der Verwaltung)')
-                         % {'n': r.organisation.mahn_verzug_ab_tag})
+                         % {'n': organisation.mahn_verzug_ab_tag})
                 ohne_mahnfall.append((r, faellig, _offen, grund))
             continue
         stufe = stufen_laden.stufe_fuer_tage(tage, _eigentuemer_von_rechnung(r),
-                                             organisation=r.organisation)
+                                             organisation=organisation)
         offen = r.offener_betrag
         if offen <= 0:
             continue
@@ -151,12 +157,32 @@ def fw_mahnwesen(request):
 
     stufe_chips = [('', _('Alle Stufen'))] + [(str(s['stufe']), s['label']) for s in legende]
 
+    # Blättern VOR den Zeilendetails: Nur die Zeilen der angezeigten Seite
+    # brauchen Mahnung, Zustellnachweis und Gebührenstand. Summen und Zähler
+    # oben stammen aus allen Mahnfällen und ändern sich dadurch nicht.
+    seite, query_ohne_seite = blaettern(request, rows, pro_seite=PRO_SEITE)
+    anzahl_positionen = seite.paginator.count
+    rows = list(seite.object_list)
+
     # Letzte erfasste Mahnung je Rechnung + Historie
     from finance.models import Mahnung
     from rentals.models import Dokument as RDok
+    rechnung_ids = [row['r'].id for row in rows]
     letzte_je_rechnung = {}
-    for mn in Mahnung.objects.all().order_by('datum'):
+    for mn in Mahnung.objects.filter(debitoren_rechnung_id__in=rechnung_ids).order_by('datum'):
         letzte_je_rechnung[mn.debitoren_rechnung_id] = mn
+    # Gebührenrechnungen (Folgeforderungen) und Mahnschreiben der Seite in je EINER
+    # Abfrage; je Zeile waren es bis zu sechs (SICH-09).
+    folgen = defaultdict(list)
+    for f in DebitorenRechnung.objects.filter(stammrechnung_id__in=rechnung_ids,
+                                              titel__startswith='Mahngebühr '):
+        folgen[f.stammrechnung_id].append(f)
+    vertrag_ids = {row['vertrag_id'] for row in rows
+                   if row['vertrag_id'] and letzte_je_rechnung.get(row['r'].id)}
+    dokumente = defaultdict(list)
+    for d in (RDok.objects.filter(vertrag_id__in=vertrag_ids)
+              .filter(Q(zugang_pflichtig=True) | Q(titel__contains='. Mahnung')).order_by('-id')):
+        dokumente[d.vertrag_id].append(d)
     for row in rows:
         row['letzte_mahnung'] = letzte_je_rechnung.get(row['r'].id)
         lm = row['letzte_mahnung']
@@ -164,21 +190,25 @@ def fw_mahnwesen(request):
         # Hier werden Sendungsnummer und Zugang erfasst, direkt an der Mahnung.
         zd = None
         if lm and row['vertrag_id']:
-            _dok = RDok.objects.filter(vertrag_id=row['vertrag_id'])
-            zd = _dok.filter(zugang_pflichtig=True).order_by('-id').first()
+            _dok = dokumente.get(row['vertrag_id'], [])
+            zd = next((d for d in _dok if d.zugang_pflichtig), None)
             if (zd is None and row['stufe'].get('kuendigung') and lm.stufe == row['stufe']['stufe']):
                 # Älteres Schreiben dieser Stufe, abgelegt, bevor die Akte Zustellnachweise kannte:
                 # Es trägt noch kein `zugang_pflichtig` und wird beim Erfassen so geführt.
-                zd = _dok.filter(titel__startswith=f"{lm.stufe}. Mahnung").order_by('-id').first()
+                zd = next((d for d in _dok if (d.titel or '').startswith(f"{lm.stufe}. Mahnung")), None)
         row['zustell_dok'] = zd
+        eigene_folgen = folgen.get(row['r'].id, [])
         # Erfasst, aber ihre Gebührenrechnung wurde storniert/gelöscht: «Erfassen» stellt sie neu.
         row['gebuehr_fehlt'] = bool(lm and lm.stufe == row['stufe']['stufe']
-                                    and _mahngebuehr_fehlt(row['r'], lm))
+                                    and _mahngebuehr_fehlt(row['r'], lm, folgen=eigene_folgen,
+                                                           stufen=stufen_laden, organisation=organisation))
         # Mahnung dieser Stufe erfasst, aber keine gültige Gebührenrechnung dazu: Die Zeile bietet
         # an, sie zu stellen — mit dem Betrag, der zur Mahnung gehört (frei änderbar).
         row['gebuehr_stellbar'] = bool(lm and lm.stufe == row['stufe']['stufe'] and row['vertrag_id']
-                                       and _mahngebuehr_rechnung(row['r'], lm.stufe) is None)
-        row['gebuehr_vorschlag'] = (_mahngebuehr_soll(row['r'], lm) if row['gebuehr_stellbar'] else None)
+                                       and _mahngebuehr_rechnung(row['r'], lm.stufe, folgen=eigene_folgen) is None)
+        row['gebuehr_vorschlag'] = (_mahngebuehr_soll(row['r'], lm, folgen=eigene_folgen,
+                                                      stufen=stufen_laden, organisation=organisation)
+                                    if row['gebuehr_stellbar'] else None)
 
     historie_qs = (Mahnung.objects.select_related('vertrag__mieter', 'debitoren_rechnung')
                    .order_by('-datum', '-id'))
@@ -197,7 +227,7 @@ def fw_mahnwesen(request):
               .values('debitoren_rechnung_id').annotate(mx=Max('stufe'))}
     vorlauf_rows = []
     for r, faellig, tage, offen in vorlauf:
-        aktive = sorted(stufen_laden.config(_eigentuemer_von_rechnung(r), organisation=r.organisation),
+        aktive = sorted(stufen_laden.config(_eigentuemer_von_rechnung(r), organisation=organisation),
                         key=lambda x: x['stufe'])
         naechste = next((s for s in aktive if s['stufe'] > (bisher.get(r.id) or 0)), None)
         if naechste is None:
@@ -219,6 +249,10 @@ def fw_mahnwesen(request):
             'vertrag_id': r.vertrag_id,
         })
     vorlauf_rows.sort(key=lambda x: (x['faellig'], x['mieter']))
+    # Eigene Seitenleiste mit eigenem Parameter, damit beide Listen unabhängig blättern.
+    vorlauf_seite = Paginator(vorlauf_rows, PRO_SEITE).get_page(request.GET.get('vseite') or 1)
+    vorlauf_query = query_ohne(request, 'vseite', 'export')
+    vorlauf_rows = list(vorlauf_seite.object_list)
     context = {
         **basis, 'nav': 'mahnwesen', 'rows': rows, 'heute_iso': heute.isoformat(),
         'stufe_filter': stufe_filter, 'stufe_chips': stufe_chips,
@@ -230,10 +264,13 @@ def fw_mahnwesen(request):
              'mieter': r.vertrag.mieter.display_name if r.vertrag_id else '—'}
             for r, f, o, g in sorted(ohne_mahnfall, key=lambda x: x[1])[:50]],
         'offen_gesamt_n': offen_gesamt_n, 'offen_gesamt_summe': offen_gesamt_summe,
-        'verzugszins': organisation_der_anfrage(request).verzugszins_prozent.normalize(),
+        'verzugszins': organisation.verzugszins_prozent.normalize(),
         'counts': counts, 'summe': summe,
         'anzahl_total': sum(counts.values()),
         'historie': historie,
+        'seite': seite, 'query_ohne_seite': query_ohne_seite,
+        'vorlauf_seite': vorlauf_seite, 'vorlauf_query': vorlauf_query,
+        'anzahl_positionen': anzahl_positionen,
     }
     return render(request, 'fw/mahnwesen.html', context)
 
@@ -354,39 +391,61 @@ def fw_debitoren_aging(request):
 # MAHN-HISTORIE (revisionssicher) + Mahngebühren
 # ============================================================
 
-def _mahngebuehr_rechnung(rechnung, stufe):
+def _mahngebuehr_rechnung(rechnung, stufe, folgen=None):
     """Die gültige (nicht stornierte) Gebührenrechnung dieser Stufe — oder None.
 
     Der Titel kann mit Verzugszins zusammengesetzt sein («Mahngebühr 1. Mahnung + Verzugszins
-    5%», so stellt ihn der Mahnlauf), darum `startswith`."""
+    5%», so stellt ihn der Mahnlauf), darum `startswith`.
+
+    `folgen`: schon geladene Folgeforderungen der Rechnung (Listenansicht, eine
+    Abfrage für alle Zeilen). Ohne sie fragt die Funktion selbst."""
+    praefix = f"Mahngebühr {stufe}."
+    if folgen is not None:
+        return next((f for f in folgen
+                     if (f.titel or '').startswith(praefix) and f.status != 'storniert'), None)
     return (rechnung.folgeforderungen
-            .filter(titel__startswith=f"Mahngebühr {stufe}.")
+            .filter(titel__startswith=praefix)
             .exclude(status='storniert').first())
 
 
-def _mahngebuehr_soll(rechnung, mahnung):
+def _mahngebuehr_soll(rechnung, mahnung, folgen=None, stufen=None, organisation=None):
     """Die Gebühr, die zur erfassten Mahnung gehört.
 
     Wird die Gebührenrechnung storniert, setzt die Stornierung die Gebühr in der Historie auf 0
     (`_mahngebuehr_historie_ausgleichen`). Dann zählt, was storniert wurde — der Betrag der
     stornierten Gebührenrechnung — und erst danach die Gebühr der Stufe aus den Einstellungen
-    (die inzwischen auch anders stehen kann)."""
+    (die inzwischen auch anders stehen kann).
+
+    `folgen`, `stufen` (ein `Mahnstufen`) und `organisation` kommen aus der Liste, die sie
+    einmal lädt; ohne sie liest die Funktion je Aufruf selbst."""
     from core.services.mahnstufen import gebuehr_fuer_stufe, eigentuemer_von_rechnung
     if mahnung.gebuehr > 0:
         return mahnung.gebuehr
-    storniert = (rechnung.folgeforderungen
-                 .filter(titel__startswith=f"Mahngebühr {mahnung.stufe}.", status='storniert',
-                         betrag__gt=0).order_by('-id').first())
+    praefix = f"Mahngebühr {mahnung.stufe}."
+    if folgen is not None:
+        storniert = next((f for f in sorted(folgen, key=lambda f: -f.id)
+                          if (f.titel or '').startswith(praefix) and f.status == 'storniert'
+                          and f.betrag > 0), None)
+    else:
+        storniert = (rechnung.folgeforderungen
+                     .filter(titel__startswith=praefix, status='storniert',
+                             betrag__gt=0).order_by('-id').first())
     if storniert is not None:
         return Decimal(storniert.betrag)
+    organisation = organisation or rechnung.organisation
+    if stufen is not None:
+        return stufen.gebuehr_fuer_stufe(mahnung.stufe, eigentuemer_von_rechnung(rechnung),
+                                         organisation=organisation)
     return gebuehr_fuer_stufe(mahnung.stufe, eigentuemer_von_rechnung(rechnung),
-                              organisation=rechnung.organisation)
+                              organisation=organisation)
 
 
-def _mahngebuehr_fehlt(rechnung, mahnung):
+def _mahngebuehr_fehlt(rechnung, mahnung, folgen=None, stufen=None, organisation=None):
     """Die Mahnung hätte eine Gebühr, aber es gibt keine gültige Gebührenrechnung dazu."""
-    return (bool(rechnung.vertrag_id) and _mahngebuehr_soll(rechnung, mahnung) > 0
-            and _mahngebuehr_rechnung(rechnung, mahnung.stufe) is None)
+    return (bool(rechnung.vertrag_id)
+            and _mahngebuehr_soll(rechnung, mahnung, folgen=folgen, stufen=stufen,
+                                  organisation=organisation) > 0
+            and _mahngebuehr_rechnung(rechnung, mahnung.stufe, folgen=folgen) is None)
 
 
 def _mahngebuehr_stellen(rechnung, stufe, gebuehr, user, heute):

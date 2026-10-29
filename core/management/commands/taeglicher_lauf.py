@@ -22,12 +22,16 @@ Bewerbungs-Bereinigung greifen über `Mieter.objects` bzw.
 
 Der Aktivitätslog wird je Verwaltung geschrieben; er ist selbst Mandantendaten.
 """
+import logging
+
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
 from core.models import AktivitaetsLog
 from core.services.automation import generate_auto_pendenzen, run_adress_umzuege
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -54,9 +58,15 @@ class Command(BaseCommand):
         # Fristen, ausgelöst von jemandem, der eine einzelne Verwaltung
         # nachziehen wollte. Die Teilläufe kennen ihre eigene Einschränkung;
         # wo sie keine haben (`fristen_digest`), wird sie durchgereicht.
+        # Fehler je Verwaltung werden gesammelt: Eine defekte Verwaltung darf
+        # Marktdaten, Fristen-Mail und die übrigen Verwaltungen nicht anhalten
+        # (SICH-05). Am Ende endet der Befehl trotzdem mit Fehler.
+        pendenz_fehler = []
         neu = generate_auto_pendenzen(horizont_tage=opts['horizont'], user=None,
-                                      organisation=nur_eine)
+                                      organisation=nur_eine, fehler=pendenz_fehler)
         gemeinsam.append(f"{neu} neue Pendenz(en)")
+        for organisation, ausnahme in pendenz_fehler:
+            self.stderr.write(f'FEHLER {organisation}: Auto-Pendenzen: {ausnahme}')
 
         # Marktdaten (Referenzzins/LIK) best-effort aktualisieren
         try:
@@ -68,6 +78,7 @@ class Command(BaseCommand):
                 update_verwaltung_rates(Organisation.objects.get(pk=nur_eine))
             gemeinsam.append("Marktdaten aktualisiert")
         except Exception as e:
+            logger.warning('Tageslauf: Marktdaten übersprungen', exc_info=True)
             gemeinsam.append(f"Marktdaten übersprungen ({e})")
 
         # Wöchentliches Fristen-Mail am gewählten Wochentag (Standard Montag)
@@ -80,15 +91,18 @@ class Command(BaseCommand):
                     call_command('fristen_digest', organisation=nur_eine)
                 gemeinsam.append("Fristen-Mail versendet")
             except Exception as e:
+                logger.warning('Tageslauf: Fristen-Mail übersprungen', exc_info=True)
                 gemeinsam.append(f"Fristen-Mail übersprungen ({e})")
 
         # ── Teile ohne eigene Schleife: je Verwaltung ─────────────────────
         _, fehler = je_organisation(
             lambda organisation: self._je_verwaltung(organisation, gemeinsam),
             auswahl=opts.get('organisation'), ausgabe=self.stderr)
-        if fehler:
-            raise CommandError(f"Täglicher Lauf: {len(fehler)} Verwaltung(en) abgebrochen — "
-                               f"{', '.join(str(o) for o, _ in fehler)}.")
+        betroffen = [o for o, _ in pendenz_fehler] + [o for o, _ in fehler]
+        if betroffen:
+            namen = ', '.join(dict.fromkeys(str(o) for o in betroffen))
+            raise CommandError(f"Täglicher Lauf: Fehler bei {len({o.pk for o in betroffen})} "
+                               f"Verwaltung(en) — {namen}.")
 
     def _je_verwaltung(self, organisation, gemeinsam):
         details = list(gemeinsam)
