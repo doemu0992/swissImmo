@@ -8,7 +8,7 @@ from django.utils.html import escape
 from django.utils.translation import gettext
 
 from core.services.dokumentsprache import in_sprache, sprache_von
-from core.utils.absender import kopfzeilen
+from core.utils.absender import anzeigename, kopfzeilen
 
 logger = logging.getLogger(__name__)
 
@@ -61,12 +61,14 @@ def send_ticket_receipt(ticket):
     _text3 = gettext('Thema')
     _text4 = gettext('Wir melden uns, sobald ein Handwerker beauftragt wurde.')
     _text5 = gettext('Freundliche Grüsse')
+    # Es schreibt die Verwaltung des Hauses, nicht die Plattform (FUNK-12): dieselbe Firma wie im Absendernamen.
+    unterschrift = escape(anzeigename(ticket.organisation) or 'immoswiss')
     html_msg = f"""
     <html><body>
     <h2>{_text1}</h2>
     <p>{_text2}: #{ticket.id}<br>{_text3}: {escape(ticket.titel)}</p>
     <p>{_text4}</p>
-    <p>{_text5}<br>ImmoSwiss Verwaltung</p>
+    <p>{_text5}<br>{unterschrift}</p>
     </body></html>
     """
     from tickets.workflow import reply_to

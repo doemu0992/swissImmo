@@ -83,6 +83,21 @@ class AbsenderTests(TestCase):
             send_via_hoststar('mieter@example.ch', 'Betreff', '<p>x</p>')
         self.assertEqual(mail.outbox[0].reply_to, ['info@beispiel.ch'])
 
+    def test_eingangsbestaetigung_unterschreibt_mit_der_verwaltung_des_hauses(self):
+        from core.utils.email_service import send_ticket_receipt
+        from portfolio.models import Liegenschaft
+        from tickets.models import SchadenMeldung
+        with organisation_kontext(self.a):
+            lg = Liegenschaft.objects.create(strasse='Weg 1', plz='8000', ort='Zürich', organisation=self.a)
+            ticket = SchadenMeldung.objects.create(liegenschaft=lg, titel='Hahn', beschreibung='tropft',
+                                                   email_melder='melder@example.ch')
+        with mock.patch('threading.Thread.start', lambda self: self.run()):
+            send_ticket_receipt(ticket)
+        m = mail.outbox[-1]
+        self.assertIn('Muster Verwaltung AG', m.body)
+        self.assertNotIn('ImmoSwiss Verwaltung', m.body)
+        self.assertEqual(m.reply_to, ['mieter@muster.ch'])
+
     def test_reportmail_geht_mit_der_verwaltung_raus(self):
         self.assertTrue(send_report_mail('eig@example.ch', 'Report', '<p>x</p>', organisation=self.b))
         self.assertEqual(mail.outbox[0].reply_to, ['info@beispiel.ch'])
