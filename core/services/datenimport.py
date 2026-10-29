@@ -39,6 +39,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 
 from core.services.datenimport_lesen import DateiFehler, kopf_normieren, lese_tabelle
+from core.utils.betrag import betrag_parsen
 from core.tenancy import organisation_kontext
 from core.zeit import datum_heute
 
@@ -288,12 +289,9 @@ class _Zeile:
             if pflicht:
                 self.fehler(feld, _('Pflichtangabe fehlt.'))
             return None
-        for weg in ("'", '’', ' ', ' ', 'CHF', 'chf', 'Fr.', 'fr.'):
-            t = t.replace(weg, '')
-        t = t.replace(',', '.')
         try:
-            d = Decimal(t)
-        except InvalidOperation:
+            d = betrag_parsen(t)
+        except ValueError:
             self.fehler(feld, _('«%(wert)s» ist keine Zahl.') % {'wert': self.roh(feld)})
             return None
         if not d.is_finite():
