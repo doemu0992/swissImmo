@@ -11,6 +11,7 @@ from unittest import mock
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
+from django.utils import timezone
 
 from ._helfer import (Einheit, Liegenschaft, Mieter, Mietvertrag, _seed_konten, _team_user,
                       _test_organisation)
@@ -420,7 +421,10 @@ class AkontoE1Tests(_Basis):
     def test_entwurf_traegt_das_neue_akonto(self):
         from rentals.models import MietzinsAnpassung
         r = self.c.post(f'/neu/mietzins/{self.v1.id}/anpassung/', {
-            'aktion': 'entwurf', 'neu_netto': '1000', 'neu_nk': '50', 'wirksam_ab': '2027-04-01'})
+            'aktion': 'entwurf', 'neu_netto': '1000', 'neu_nk': '50',
+            # Termin mit genügend Vorlauf, egal an welchem Tag die Suite läuft (SICH-45):
+            # ein fester Termin 2027-04-01 lag ab Januar 2027 zu nah.
+            'wirksam_ab': f'{timezone.localdate().year + 1}-04-01'})
         self.assertEqual(r.status_code, 302)
         anp = MietzinsAnpassung.objects.get(vertrag=self.v1)
         self.assertEqual((anp.alte_nebenkosten, anp.neue_nebenkosten), (Decimal('10.00'), Decimal('50.00')))
