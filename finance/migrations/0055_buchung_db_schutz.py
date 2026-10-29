@@ -25,7 +25,7 @@ def _trigger_weg(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("finance", "0053_datum_vorgabe_zuercher_tag"),
+        ("finance", "0054_debitorenrechnung_forderungsart"),
     ]
 
     operations = [

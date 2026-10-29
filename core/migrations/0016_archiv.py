@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0014_postfaecher_aus_umgebung"),
+        ("core", "0015_pendenz_zugang_fingiert"),
         ("crm", "0054_vorlage_ereignis_version_briefkopf"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]

@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("finance", "0053_datum_vorgabe_zuercher_tag"),
+        ("finance", "0055_buchung_db_schutz"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
