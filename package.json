@@ -11,7 +11,7 @@
     "css:alle": "npm run css"
   },
   "devDependencies": {
-    "@playwright/test": "1.56.0",
+    "@playwright/test": "1.56.1",
     "tailwindcss": "3.4.19"
   }
 }
