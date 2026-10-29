@@ -79,20 +79,22 @@ kennt, soll den vierten nicht neu lernen müssen.
             </div>
         </div>
         <div class="fw-akte-rechts">
-            <a href="/neu/mandate/{{ md.id }}/bearbeiten/" class="fw-btn">{% zeichen 'bearbeiten' %}{% trans "Bearbeiten" %}</a>
+            {% if kann_schreiben %}<a href="/neu/mandate/{{ md.id }}/bearbeiten/" class="fw-btn">{% zeichen 'bearbeiten' %}{% trans "Bearbeiten" %}</a>
             <div class="relative" data-menu>
                 <button type="button" data-menu-btn aria-haspopup="menu" aria-expanded="false" aria-controls="mdAktionen"
                         class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
                 <div id="mdAktionen" data-menu-list role="menu" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
+                    {% if ist_verwaltung %}
                     <a href="/neu/mandate/{{ md.id }}/abrechnung/" class="fw-menuzeile">{% zeichen 'rechnung' klasse='w-4' %}{% trans "Eigentümerabrechnung" %}</a>
                     <a href="/neu/mandate/{{ md.id }}/kontokorrent/" class="fw-menuzeile">{% zeichen 'recht' klasse='w-4' %}{% trans "Kontokorrent" %}</a>
                     <a href="/neu/mandate/{{ md.id }}/auszahlung/" class="fw-menuzeile">{% zeichen 'geld' klasse='w-4' %}{% trans "Auszahlung erfassen" %}</a>
                     <div class="fw-menutrenner"></div>
                     <a href="/neu/mandate/{{ md.id }}/honorar/" class="fw-menuzeile">{% zeichen 'bericht' klasse='w-4' %}{% trans "Honorar" %}</a>
                     <a href="/neu/mandate/{{ md.id }}/mahnstufen/" class="fw-menuzeile">{% zeichen 'senden' klasse='w-4' %}{% trans "Mahnstufen" %}</a>
+                    {% endif %}
                     <a href="/neu/mandate/{{ md.id }}/portal-zugang/" class="fw-menuzeile">{% zeichen 'schluessel' klasse='w-4' %}{% trans "Portalzugang" %}</a>
                 </div>
-            </div>
+            </div>{% endif %}
         </div>
     </div>
 
@@ -208,7 +210,7 @@ hier dasselbe Muster.
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-t">{% trans "Auszahlungen" %}</span>
             <span class="fw-neben">{{ auszahlungen|length }}</span>
-            <span class="fw-rechts"><a href="/neu/mandate/{{ md.id }}/auszahlung/" class="fw-btn fw-primary">{% zeichen 'neu' %}{% trans "Erfassen" %}</a></span></div>
+            {% if ist_verwaltung %}<span class="fw-rechts"><a href="/neu/mandate/{{ md.id }}/auszahlung/" class="fw-btn fw-primary">{% zeichen 'neu' %}{% trans "Erfassen" %}</a></span>{% endif %}</div>
         {% for a in auszahlungen %}
         <div class="fw-zeile">
             <span class="fw-marker {% if a.ausgefuehrt_am %}good{% else %}warn{% endif %}"></span>
@@ -221,10 +223,10 @@ hier dasselbe Muster.
         {% empty %}
         <p class="fw-leer">{% trans "Keine Auszahlung erfasst." %}</p>
         {% endfor %}
-        <div class="fw-fuss">
+        {% if ist_verwaltung %}<div class="fw-fuss">
             <a href="/neu/mandate/{{ md.id }}/kontokorrent/" class="fw-link">{% trans "Kontokorrent" %}</a>
             <a href="/neu/mandate/{{ md.id }}/abrechnung/" class="fw-link">{% trans "Eigentümerabrechnung" %}</a>
-        </div>
+        </div>{% endif %}
     </div>
 </div>
 

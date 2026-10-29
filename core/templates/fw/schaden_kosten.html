@@ -16,7 +16,7 @@
     </div>
     <form method="get" class="fw-phead-knoepfe">
         {% if request.GET.lg %}<input type="hidden" name="lg" value="{{ request.GET.lg }}">{% endif %}
-        <select name="jahr" onchange="this.form.submit()" class="fw-feld">
+        <select name="jahr" aria-label="{% trans 'Jahr' %}" onchange="this.form.submit()" class="fw-feld">
             <option value="0" {% if not jahr %}selected{% endif %}>{% trans "Alle Jahre" %}</option>
             {% for j in jahre %}<option value="{{ j }}" {% if jahr == j %}selected{% endif %}>{{ j }}</option>{% endfor %}
         </select>

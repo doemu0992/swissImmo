@@ -30,6 +30,7 @@ abgewiesen, Telefonnummer und Auftrags-PDF (das sie enthält) entfallen.
 import logging
 import os
 from datetime import datetime
+from core.utils.betrag import betrag_normalisieren
 from decimal import Decimal, InvalidOperation
 from functools import wraps
 
@@ -99,7 +100,7 @@ def _protokoll(request, auftrag, aktion, details=''):
 
 
 def _betrag(roh):
-    roh = (roh or '').replace("'", '').replace(' ', '').replace(',', '.').strip()
+    roh = betrag_normalisieren(roh)
     if not roh:
         return None
     try:

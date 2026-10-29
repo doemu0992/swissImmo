@@ -34162,7 +34162,6 @@ msgid "Schadensmeldung archiviert."
 msgstr "Schadensmeldung archiviert."
 
 # --- Öffentliche Formulare, Aussenseiten (Etappe 3, 29.10.2026) ---
-
 msgid "Alle Angaben ohne Gewähr"
 msgstr "Alle Angaben ohne Gewähr"
 
@@ -34175,8 +34174,12 @@ msgstr "Ihre Meldung geht direkt an die Verwaltung."
 msgid "Prüfen & absenden"
 msgstr "Prüfen & absenden"
 
-msgid "Was ist passiert? Ein Foto hilft der Verwaltung, das Problem schneller einzuschätzen."
-msgstr "Was ist passiert? Ein Foto hilft der Verwaltung, das Problem schneller einzuschätzen."
+msgid ""
+"Was ist passiert? Ein Foto hilft der Verwaltung, das Problem schneller "
+"einzuschätzen."
+msgstr ""
+"Was ist passiert? Ein Foto hilft der Verwaltung, das Problem schneller "
+"einzuschätzen."
 
 msgid "Bitte beschreiben Sie das Anliegen."
 msgstr "Bitte beschreiben Sie das Anliegen."
@@ -34184,14 +34187,24 @@ msgstr "Bitte beschreiben Sie das Anliegen."
 msgid "Wie die Verwaltung Sie erreicht."
 msgstr "Wie die Verwaltung Sie erreicht."
 
-msgid "Wir konnten Ihre Meldung keiner Liegenschaft zuordnen. Bitte verwenden Sie die E-Mail-Adresse, die bei Ihrer Verwaltung hinterlegt ist, oder melden Sie sich direkt bei Ihrer Verwaltung."
-msgstr "Wir konnten Ihre Meldung keiner Liegenschaft zuordnen. Bitte verwenden Sie die E-Mail-Adresse, die bei Ihrer Verwaltung hinterlegt ist, oder melden Sie sich direkt bei Ihrer Verwaltung."
+msgid ""
+"Wir konnten Ihre Meldung keiner Liegenschaft zuordnen. Bitte verwenden Sie "
+"die E-Mail-Adresse, die bei Ihrer Verwaltung hinterlegt ist, oder melden Sie"
+" sich direkt bei Ihrer Verwaltung."
+msgstr ""
+"Wir konnten Ihre Meldung keiner Liegenschaft zuordnen. Bitte verwenden Sie "
+"die E-Mail-Adresse, die bei Ihrer Verwaltung hinterlegt ist, oder melden Sie"
+" sich direkt bei Ihrer Verwaltung."
 
 msgid "Dieses Objekt ist nicht mehr ausgeschrieben"
 msgstr "Dieses Objekt ist nicht mehr ausgeschrieben"
 
-msgid "Die Ausschreibung wurde beendet — vermutlich ist die Wohnung bereits vergeben. Bewerbungen können dafür keine mehr entgegengenommen werden."
-msgstr "Die Ausschreibung wurde beendet — vermutlich ist die Wohnung bereits vergeben. Bewerbungen können dafür keine mehr entgegengenommen werden."
+msgid ""
+"Die Ausschreibung wurde beendet — vermutlich ist die Wohnung bereits "
+"vergeben. Bewerbungen können dafür keine mehr entgegengenommen werden."
+msgstr ""
+"Die Ausschreibung wurde beendet — vermutlich ist die Wohnung bereits "
+"vergeben. Bewerbungen können dafür keine mehr entgegengenommen werden."
 
 msgid "Bei Fragen wenden Sie sich bitte direkt an die Verwaltung."
 msgstr "Bei Fragen wenden Sie sich bitte direkt an die Verwaltung."
@@ -34206,14 +34219,22 @@ msgstr "Digitale Bewerbung"
 msgid "Bewerbung eingereicht!"
 msgstr "Bewerbung eingereicht!"
 
-msgid "Vielen Dank für Ihr Interesse. Wir haben Ihre Unterlagen erhalten und werden diese nun prüfen. Wir melden uns in Kürze bei Ihnen."
-msgstr "Vielen Dank für Ihr Interesse. Wir haben Ihre Unterlagen erhalten und werden diese nun prüfen. Wir melden uns in Kürze bei Ihnen."
+msgid ""
+"Vielen Dank für Ihr Interesse. Wir haben Ihre Unterlagen erhalten und werden"
+" diese nun prüfen. Wir melden uns in Kürze bei Ihnen."
+msgstr ""
+"Vielen Dank für Ihr Interesse. Wir haben Ihre Unterlagen erhalten und werden"
+" diese nun prüfen. Wir melden uns in Kürze bei Ihnen."
 
 msgid "Die Verbindung wurde unterbrochen. Bitte versuchen Sie es erneut."
 msgstr "Die Verbindung wurde unterbrochen. Bitte versuchen Sie es erneut."
 
-msgid "Die Bewerbung konnte nicht gesendet werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut."
-msgstr "Die Bewerbung konnte nicht gesendet werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut."
+msgid ""
+"Die Bewerbung konnte nicht gesendet werden. Bitte laden Sie die Seite neu "
+"und versuchen Sie es erneut."
+msgstr ""
+"Die Bewerbung konnte nicht gesendet werden. Bitte laden Sie die Seite neu "
+"und versuchen Sie es erneut."
 
 msgid "Ein unbekannter Fehler ist aufgetreten."
 msgstr "Ein unbekannter Fehler ist aufgetreten."
@@ -34380,8 +34401,12 @@ msgstr "Auszug nachreichen"
 msgid "Auszug hochladen"
 msgstr "Auszug hochladen"
 
-msgid "Bitte laden Sie einen Betreibungsauszug hoch oder wählen Sie «Auszug nachreichen»."
-msgstr "Bitte laden Sie einen Betreibungsauszug hoch oder wählen Sie «Auszug nachreichen»."
+msgid ""
+"Bitte laden Sie einen Betreibungsauszug hoch oder wählen Sie «Auszug "
+"nachreichen»."
+msgstr ""
+"Bitte laden Sie einen Betreibungsauszug hoch oder wählen Sie «Auszug "
+"nachreichen»."
 
 msgid "Keinen aktuellen Auszug zur Hand?"
 msgstr "Keinen aktuellen Auszug zur Hand?"
@@ -34401,27 +34426,187 @@ msgstr "Bitte wählen Sie einen gewünschten Bezugstermin aus."
 msgid "Ausweis und Einkommensnachweis"
 msgstr "Ausweis und Einkommensnachweis"
 
-msgid "Diese Unterlagen fragen wir erst an, wenn Sie in die engere Auswahl kommen — nicht schon jetzt von allen Interessentinnen und Interessenten."
-msgstr "Diese Unterlagen fragen wir erst an, wenn Sie in die engere Auswahl kommen — nicht schon jetzt von allen Interessentinnen und Interessenten."
+msgid ""
+"Diese Unterlagen fragen wir erst an, wenn Sie in die engere Auswahl kommen —"
+" nicht schon jetzt von allen Interessentinnen und Interessenten."
+msgstr ""
+"Diese Unterlagen fragen wir erst an, wenn Sie in die engere Auswahl kommen —"
+" nicht schon jetzt von allen Interessentinnen und Interessenten."
 
 msgid "Was mit Ihren Angaben geschieht"
 msgstr "Was mit Ihren Angaben geschieht"
 
 #, python-format
-msgid "Ausführlich in der <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\" class=\"fw-link\">Datenschutzerklärung</a>."
-msgstr "Ausführlich in der <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\" class=\"fw-link\">Datenschutzerklärung</a>."
+msgid ""
+"Ausführlich in der <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\" "
+"class=\"fw-link\">Datenschutzerklärung</a>."
+msgstr ""
+"Ausführlich in der <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\" "
+"class=\"fw-link\">Datenschutzerklärung</a>."
 
 msgid "Verbindlich einreichen"
 msgstr "Verbindlich einreichen"
 
-msgid "Ihre Angaben dienen <strong>ausschliesslich</strong> der Auswahl der Mieterschaft für dieses Objekt und werden für nichts anderes verwendet."
-msgstr "Ihre Angaben dienen <strong>ausschliesslich</strong> der Auswahl der Mieterschaft für dieses Objekt und werden für nichts anderes verwendet."
+msgid ""
+"Ihre Angaben dienen <strong>ausschliesslich</strong> der Auswahl der "
+"Mieterschaft für dieses Objekt und werden für nichts anderes verwendet."
+msgstr ""
+"Ihre Angaben dienen <strong>ausschliesslich</strong> der Auswahl der "
+"Mieterschaft für dieses Objekt und werden für nichts anderes verwendet."
 
-msgid "Die angegebenen Kontakte bei Ihrer bisherigen Vermieterschaft und Ihrem Arbeitgeber können wir für eine <strong>Referenzauskunft kontaktieren</strong>."
-msgstr "Die angegebenen Kontakte bei Ihrer bisherigen Vermieterschaft und Ihrem Arbeitgeber können wir für eine <strong>Referenzauskunft kontaktieren</strong>."
+msgid ""
+"Die angegebenen Kontakte bei Ihrer bisherigen Vermieterschaft und Ihrem "
+"Arbeitgeber können wir für eine <strong>Referenzauskunft "
+"kontaktieren</strong>."
+msgstr ""
+"Die angegebenen Kontakte bei Ihrer bisherigen Vermieterschaft und Ihrem "
+"Arbeitgeber können wir für eine <strong>Referenzauskunft "
+"kontaktieren</strong>."
 
-msgid "Erhalten Sie die Wohnung nicht, werden Ihre Unterlagen einschliesslich Betreibungsauszug nach dem Vermietungsentscheid <strong>gelöscht</strong>."
-msgstr "Erhalten Sie die Wohnung nicht, werden Ihre Unterlagen einschliesslich Betreibungsauszug nach dem Vermietungsentscheid <strong>gelöscht</strong>."
+msgid ""
+"Erhalten Sie die Wohnung nicht, werden Ihre Unterlagen einschliesslich "
+"Betreibungsauszug nach dem Vermietungsentscheid <strong>gelöscht</strong>."
+msgstr ""
+"Erhalten Sie die Wohnung nicht, werden Ihre Unterlagen einschliesslich "
+"Betreibungsauszug nach dem Vermietungsentscheid <strong>gelöscht</strong>."
 
-msgid "Sie haben jederzeit das Recht auf <strong>Auskunft, Berichtigung und Löschung</strong> Ihrer Daten."
-msgstr "Sie haben jederzeit das Recht auf <strong>Auskunft, Berichtigung und Löschung</strong> Ihrer Daten."
+msgid ""
+"Sie haben jederzeit das Recht auf <strong>Auskunft, Berichtigung und "
+"Löschung</strong> Ihrer Daten."
+msgstr ""
+"Sie haben jederzeit das Recht auf <strong>Auskunft, Berichtigung und "
+"Löschung</strong> Ihrer Daten."
+
+#: core/templates/403.html:6
+msgid "Keine Berechtigung – swissImmo"
+msgstr "Keine Berechtigung – swissImmo"
+
+#: core/templates/404.html:6
+msgid "Seite nicht gefunden – swissImmo"
+msgstr "Seite nicht gefunden – swissImmo"
+
+#: core/templates/500.html:6
+msgid "Ein Fehler ist aufgetreten – swissImmo"
+msgstr "Ein Fehler ist aufgetreten – swissImmo"
+
+#: core/templates/core/_passwort_shell_top.html:7
+msgid "Passwort | SwissImmo Portal"
+msgstr "Passwort | SwissImmo Portal"
+
+#: core/templates/core/login.html:6
+msgid "Login | SwissImmo Portal"
+msgstr "Login | SwissImmo Portal"
+
+#: core/templates/core/login.html:154
+msgid "© swissImmo · Alle Angaben ohne Gewähr"
+msgstr "© swissImmo · Alle Angaben ohne Gewähr"
+
+#: core/templates/core/mieter_portal.html:4
+msgid "Mieterportal — SwissImmo"
+msgstr "Mieterportal — SwissImmo"
+
+#: core/templates/core/portal.html:6
+msgid "Eigentümer-Portal — SwissImmo"
+msgstr "Eigentümer-Portal — SwissImmo"
+
+#: core/templates/core/portal.html:344
+msgid "SwissImmo Eigentümer-Portal · Alle Angaben ohne Gewähr"
+msgstr "SwissImmo Eigentümer-Portal · Alle Angaben ohne Gewähr"
+
+#: core/templates/core/portal_base.html:7
+msgid "Portal — SwissImmo"
+msgstr "Portal — SwissImmo"
+
+#: core/templates/core/portal_base.html:70
+msgid "SwissImmo Mieterportal · Alle Angaben ohne Gewähr"
+msgstr "SwissImmo Mieterportal · Alle Angaben ohne Gewähr"
+
+#: core/templates/core/portal_login.html:6
+msgid "Portal-Login | SwissImmo"
+msgstr "Portal-Login | SwissImmo"
+
+#: core/templates/core/portal_login.html:156
+msgid "© swissImmo · Sicheres Login für Mietende und Eigentümer"
+msgstr "© swissImmo · Sicheres Login für Mietende und Eigentümer"
+
+#: core/templates/core/portal_login.html:163
+msgid "swissImmo Portal"
+msgstr "swissImmo Portal"
+
+#: core/templates/core/postfach_form.html:8
+msgid "Zugangsdaten des Postfachs, aus dem swissImmo diese Mails abholt."
+msgstr "Zugangsdaten des Postfachs, aus dem swissImmo diese Mails abholt."
+
+#: core/templates/core/zweifaktor_uebersicht.html:8
+msgid ""
+"Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt swissImmo einen "
+"Code aus Ihrer Authenticator-App."
+msgstr ""
+"Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt swissImmo einen "
+"Code aus Ihrer Authenticator-App."
+
+#: core/templates/fw/abonnement.html:3
+msgid "Abonnement · swissImmo"
+msgstr "Abonnement · swissImmo"
+
+#: core/templates/fw/integrationen.html:8
+msgid "Verbundene Dienste und Schnittstellen von swissImmo."
+msgstr "Verbundene Dienste und Schnittstellen von swissImmo."
+
+#: core/views/fw/profil.py:902
+msgid ""
+"Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über "
+"deinen SMTP-Server."
+msgstr ""
+"Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über "
+"deinen SMTP-Server."
+
+msgid "Auftrag — SwissImmo"
+msgstr "Auftrag — SwissImmo"
+
+msgid "SwissImmo · Auftrag für Handwerker"
+msgstr "SwissImmo · Auftrag für Handwerker"
+
+msgid "Ungültige Eingabe – swissImmo"
+msgstr "Ungültige Eingabe – swissImmo"
+
+msgid "Archivierte Akten ansehen und wiederherstellen"
+msgstr "Archivierte Akten ansehen und wiederherstellen"
+
+msgid "Ablaufdatum"
+msgstr "Ablaufdatum"
+
+msgid "Bitte eine Zahl eingeben."
+msgstr "Bitte eine Zahl eingeben."
+
+msgid "Bitte einen Betrag eingeben, z. B. 1450.50"
+msgstr "Bitte einen Betrag eingeben, z. B. 1450.50"
+
+msgid "Datei hochladen"
+msgstr "Datei hochladen"
+
+msgid "Kontoauszug (Datei)"
+msgstr "Kontoauszug (Datei)"
+
+msgid "MWST-Satz in Prozent"
+msgstr "MWST-Satz in Prozent"
+
+msgid "Rechnung auswählen"
+msgstr "Rechnung auswählen"
+
+msgid "Richtung"
+msgstr "Richtung"
+
+msgid "Unterschrift als Bilddatei"
+msgstr "Unterschrift als Bilddatei"
+
+msgid "Vertrag auswählen"
+msgstr "Vertrag auswählen"
+
+#, python-format
+msgid "Lebensdauer in Jahren: %(k)s"
+msgstr "Lebensdauer in Jahren: %(k)s"
+
+#, python-format
+msgid "Bemerkung: %(k)s"
+msgstr "Bemerkung: %(k)s"

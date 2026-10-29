@@ -35,19 +35,16 @@ from core.tenancy import aktuelle_organisation
 
 
 def _num(wert):
-    """Normalisiert eine im Formular eingegebene Zahl zu einem Decimal-tauglichen
-    String: Schweizer Tausender-Apostroph (' und ’) raus, Komma → Punkt, CHF/
-    Leerzeichen raus.
+    """Normalisiert eine im Formular eingegebene Zahl zu einem Decimal-tauglichen String.
 
-    Nötig, weil Beträge über den `chf`-Filter mit Apostroph angezeigt werden
-    (CHF 12'500.00) und exakt so wieder ins Formular zurückkommen — `Decimal()`
-    warf darauf eine InvalidOperation und die Aktion brach ab bzw. fiel still auf
-    den Standardwert zurück (Praxis-Audit).
+    Nötig, weil Beträge über den `chf`-Filter mit Apostroph angezeigt werden (CHF 12'500.00) und
+    exakt so wieder ins Formular zurückkommen — `Decimal()` warf darauf eine InvalidOperation und
+    die Aktion brach ab bzw. fiel still auf den Standardwert zurück (Praxis-Audit).
+
+    Die Regeln stehen in `core.utils.betrag` (DESIGN-28): ein Parser für alle Formulare.
     """
-    t = str(wert or '').strip()
-    for weg in ("'", "\u2019", "\u00a0", " ", "CHF", "chf"):
-        t = t.replace(weg, '')
-    return t.replace(',', '.')
+    from core.utils.betrag import betrag_normalisieren
+    return betrag_normalisieren(wert)
 
 
 def _global_filter(request):

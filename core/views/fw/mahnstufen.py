@@ -17,6 +17,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext
 
 from core.auth import rolle_erforderlich, VERWALTUNGS_ROLLEN, log_aktion
+from core.utils.betrag import betrag_normalisieren
 from core.tenancy import organisation_der_anfrage
 from crm.models import MahnStufe
 
@@ -38,7 +39,7 @@ def _zahl(roh, standard=None):
 
 def _betrag(roh):
     """Betrag >= 0 (Komma oder Punkt), leer = 0.00; ungültig = None."""
-    text = str(roh or '0').strip().replace(',', '.') or '0'
+    text = betrag_normalisieren(roh) or '0'
     try:
         betrag = Decimal(text).quantize(Decimal('0.01'))
     except InvalidOperation:

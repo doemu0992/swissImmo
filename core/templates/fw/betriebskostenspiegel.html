@@ -14,7 +14,7 @@
         <p>{% trans "Aufwand je Liegenschaft, umgelegt auf CHF/m² — quervergleichbar." %}</p>
     </div>
     <form method="get" class="fw-phead-knoepfe">
-        <select name="jahr" onchange="this.form.submit()" class="fw-feld">
+        <select name="jahr" aria-label="{% trans 'Jahr' %}" onchange="this.form.submit()" class="fw-feld">
             {% for j in jahre %}<option value="{{ j }}" {% if j == jahr %}selected{% endif %}>{{ j }}</option>{% endfor %}
         </select>
         {% if lg_query %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}

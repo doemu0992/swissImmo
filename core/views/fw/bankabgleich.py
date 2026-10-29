@@ -863,18 +863,8 @@ def _bank_csv_parse(raw):
                          "optional «Referenz», «Mitteilung», «Auftraggeber».")
 
     def _dec(s):
-        s = (s or '').strip().replace("'", '').replace(' ', '').replace(' ', '')
-        s = s.replace('CHF', '').replace('chf', '')
-        if not s:
-            return None
-        if ',' in s and '.' not in s:
-            s = s.replace(',', '.')
-        else:
-            s = s.replace(',', '')
-        try:
-            return Decimal(s)
-        except Exception:
-            return None
+        from core.utils.betrag import betrag_oder_none
+        return betrag_oder_none(s)
 
     def _datum(s):
         from datetime import datetime as _dt

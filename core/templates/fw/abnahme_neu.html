@@ -91,21 +91,21 @@
 <template id="mangelTpl">
     <div class="mangel-row border fw-linie rounded-lg p-3 space-y-2">
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
-            <select name="m_raum" class="fw-feld fw-col-span-3">
+            <select name="m_raum" aria-label="{% trans 'Raum' %}" class="fw-feld fw-col-span-3">
                 {# Raumname ist gespeicherter Wert: bleibt unübersetzt #}{% for r in raeume %}<option>{{ r }}</option>{% endfor %}
             </select>
             <input name="m_beschreibung" placeholder="{% trans 'Mangel beschreiben' %}" class="fw-feld fw-col-span-4">
-            <select name="m_verursacher" class="fw-feld fw-col-span-2">
+            <select name="m_verursacher" aria-label="{% trans 'Verursacher' %}" class="fw-feld fw-col-span-2">
                 <option value="abnutzung">{% trans "Abnutzung" %}</option><option value="mieter">{% trans "Mieter" %}</option><option value="vermieter">{% trans "Vermieter" %}</option>
             </select>
             <input name="m_kosten" inputmode="decimal" placeholder="CHF" class="fw-feld fw-col-span-1 text-right" title="{% trans 'Reparatur-/Ersatzkosten' %}">
-            <label class="fw-col-span-1 text-center cursor-pointer fw-faint hover:fw-marke" title="{% trans 'Foto' %}">{% zeichen 'dokument' %}<input type="file" data-foto accept="image/*" capture="environment" class="hidden"></label>
+            <label class="fw-col-span-1 text-center cursor-pointer fw-faint hover:fw-marke" title="{% trans 'Foto' %}">{% zeichen 'dokument' %}<input type="file" data-foto aria-label="{% trans 'Foto' %}" accept="image/*" capture="environment" class="hidden"></label>
             <input type="hidden" name="m_zeile" value="">
             <button type="button" onclick="this.closest('.mangel-row').remove()" title="{% trans 'Diesen Mangel entfernen' %}" class="fw-col-span-1 fw-ikon mut gefahr">{% zeichen 'loeschen' %}</button>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
             <span class="fw-col-span-3 fw-klein">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Raumbuch-Element" %}</span>
-            <select name="m_ausstattung" class="fw-feld fw-col-span-6 fw-mutet">
+            <select name="m_ausstattung" aria-label="{% trans 'Raumbuch-Element' %}" class="fw-feld fw-col-span-6 fw-mutet">
                 <option value="">— {% trans "kein Element (voller Betrag)" %} —</option>
                 {% for el in elemente %}<option value="{{ el.id }}">{{ el.raum }} · {{ el.kategorie }}{% if el.einbau_datum %} ({{ el.einbau_datum|date:"Y" }}){% endif %}</option>{% endfor %}
             </select>

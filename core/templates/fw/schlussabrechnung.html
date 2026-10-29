@@ -62,7 +62,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
                 <input name="pos_text" value="{{ p.text }}" placeholder="{% trans 'Bezeichnung' %}" class="fw-feld fw-col-span-6">
                 <input name="pos_betrag" value="{{ p.betrag|unlocalize }}" inputmode="decimal" class="pos-betrag fw-feld fw-col-span-3 fw-num text-right" placeholder="{% trans 'Betrag CHF' %}">
-                <select name="pos_richtung" class="pos-richtung fw-feld {% if v.mwst_pflichtig %}fw-col-span-2{% else %}fw-col-span-3{% endif %}">
+                <select name="pos_richtung" aria-label="{% trans 'Richtung' %}" class="pos-richtung fw-feld {% if v.mwst_pflichtig %}fw-col-span-2{% else %}fw-col-span-3{% endif %}">
                     <option value="zulasten" selected>{% trans "zulasten Mieter" %}</option>
                     <option value="zugunsten">{% trans "zugunsten Mieter" %}</option>
                 </select>
@@ -79,7 +79,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
                 <input name="pos_text" placeholder="{% trans 'Bezeichnung' %}" class="fw-feld fw-col-span-6">
                 <input name="pos_betrag" inputmode="decimal" class="pos-betrag fw-feld fw-col-span-3 fw-num text-right" placeholder="{% trans 'Betrag CHF' %}">
-                <select name="pos_richtung" class="pos-richtung fw-feld {% if v.mwst_pflichtig %}fw-col-span-2{% else %}fw-col-span-3{% endif %}">
+                <select name="pos_richtung" aria-label="{% trans 'Richtung' %}" class="pos-richtung fw-feld {% if v.mwst_pflichtig %}fw-col-span-2{% else %}fw-col-span-3{% endif %}">
                     <option value="zulasten">{% trans "zulasten Mieter" %}</option>
                     <option value="zugunsten">{% trans "zugunsten Mieter" %}</option>
                 </select>

@@ -51,7 +51,7 @@ Jetzt liest `_zaehle` den **Syntaxbaum**. Der kennt Verschachtelung und
 Anführungszeichen von sich aus, und er kennt keine Kommentare. Docstrings
 werden ausgenommen — sie sind Prosa, sonst zählte dieser Erklärtext hier mit.
 
-**STAND 474 in 5 Dateien.**
+**STAND 452 in 5 Dateien.**
 
 Alles davon steht in `admin.py`: Djangos eigene Oberfläche lädt die
 Komponentenschicht nicht. Views und Dienste sind seit E2.20 auf null.
@@ -59,7 +59,7 @@ Komponentenschicht nicht. Views und Dienste sind seit E2.20 auf null.
 DIE ADMIN-FRAGE IST ENTSCHIEDEN: SIE BLEIBEN
 =============================================
 
-Diese 474 plus 191 in sechs Admin-Vorlagen — zusammen 665 — werden NICHT
+Diese 452 plus 191 in sechs Admin-Vorlagen — zusammen 643 — werden NICHT
 umgestellt. Das ist eine Entscheidung, kein übersehener Rest.
 
 WARUM
@@ -85,7 +85,7 @@ Nicht «null überall», sondern **null in dem, was wir selbst rendern**. Django
 Admin ist eine fremde Oberfläche mit fremdem Gestaltungssystem — Werkzeugkasten,
 nicht Produkt.
 
-Die 474 unten sind damit keine Schuld, sondern eine Grenze. Die Obergrenze
+Die 452 unten sind damit keine Schuld, sondern eine Grenze. Die Obergrenze
 hält sie fest: Sie darf nicht wachsen.
 
 WANN DIESE ENTSCHEIDUNG ZU ÜBERDENKEN IST
@@ -119,9 +119,10 @@ FARBMUSTER = re.compile(
 
 
 #: Stand vom 24.08.2026, finance 29.09.2026 (Audit Etappe 0: toter
-#: «Senden»-Knopf entfernt). Obergrenze je Datei — nur senken.
+#: «Senden»-Knopf entfernt; crm/admin.py 29.10.2026: Kontakt-Knöpfe ohne f-String-Klassenketten).
+#: Obergrenze je Datei — nur senken.
 OBERGRENZE = {
-    'crm/admin.py': 112,
+    'crm/admin.py': 90,
     'finance/admin.py': 59,
     'portfolio/admin.py': 189,
     'rentals/admin.py': 63,

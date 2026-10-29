@@ -105,7 +105,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
                 <button type="button" data-ntyp="verein" onclick="setNeuTyp('verein')" class="ntyp-btn fw-fchip">{% trans "Verein / Stiftung" %}</button>
             </div>
             <div id="neu-namen" class="fw-raster r3">
-                <select name="anrede" oninput="live()" class="fw-feld"><option value="Herr">{% trans "Herr" %}</option><option value="Frau">{% trans "Frau" %}</option><option value="">—</option></select>
+                <select name="anrede" oninput="live()" aria-label="{% trans 'Anrede' %}" class="fw-feld"><option value="Herr">{% trans "Herr" %}</option><option value="Frau">{% trans "Frau" %}</option><option value="">—</option></select>
                 <input name="vorname" oninput="live()" placeholder="{% trans 'Vorname' %}" class="fw-feld">
                 <input name="nachname" oninput="live()" placeholder="{% trans 'Nachname' %}" class="fw-feld" data-pflicht="{% trans 'Bitte den Nachnamen des Mieters erfassen.' %}">
             </div>
@@ -143,7 +143,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
             </div>
             <div id="mieter2-neu" class="hidden space-y-3">
                 <div class="fw-raster r3">
-                    <select name="mit_anrede" oninput="live()" class="fw-feld"><option value="Frau">{% trans "Frau" %}</option><option value="Herr">{% trans "Herr" %}</option><option value="">—</option></select>
+                    <select name="mit_anrede" oninput="live()" aria-label="{% trans 'Anrede' %}" class="fw-feld"><option value="Frau">{% trans "Frau" %}</option><option value="Herr">{% trans "Herr" %}</option><option value="">—</option></select>
                     <input name="mit_vorname" oninput="live()" placeholder="{% trans 'Vorname' %}" class="fw-feld">
                     <input name="mit_nachname" oninput="live()" placeholder="{% trans 'Nachname' %}" class="fw-feld">
                 </div>
@@ -225,9 +225,9 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
         </select>
         <div class="fw-formular">
             <div class="fw-feldblock"><label class="fw-label" for="s_netto"><span id="netto-label">{% trans "Mietzins netto (CHF) *" %}</span></label>
-                <input name="netto_mietzins" id="s_netto" type="number" step="0.01" oninput="live()" class="fw-feld w-full"></div>
+                <input name="netto_mietzins" id="s_netto" type="text" inputmode="decimal" data-chf data-fehler="{% trans 'Bitte einen Betrag eingeben, z. B. 1450.50' %}" oninput="live()" class="fw-feld w-full"></div>
             <div id="nk-field-box"><label class="fw-label mb-1" for="s_nk"><span id="nk-label">{% trans "Nebenkosten (CHF) *" %}</span></label>
-                <input name="nebenkosten" id="s_nk" type="number" step="0.01" oninput="live()" class="fw-feld w-full"></div>
+                <input name="nebenkosten" id="s_nk" type="text" inputmode="decimal" data-chf data-fehler="{% trans 'Bitte einen Betrag eingeben, z. B. 1450.50' %}" oninput="live()" class="fw-feld w-full"></div>
         </div>
         <div id="brutto-box">
             <label class="fw-label mb-1 mt-3">{% trans "Mietzins brutto (CHF)" %}</label>
@@ -238,7 +238,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
                 <input type="checkbox" name="mwst_pflichtig" id="s_mwst" onchange="document.getElementById('mwst-satz-box').classList.toggle('hidden', !this.checked); live()" class="fw-akzent"> {% trans "MWST-pflichtig" %} <span class="text-xs fw-faint">{% trans "(optiert, v. a. Gewerbe)" %}</span>
             </label>
             <div id="mwst-satz-box" class="hidden flex items-center gap-1.5">
-                <input type="number" step="0.1" name="mwst_satz" value="8.1" oninput="live()" class="fw-feld fw-num w-20 text-right">
+                <input type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" name="mwst_satz" aria-label="{% trans 'MWST-Satz in Prozent' %}" value="8.1" oninput="live()" class="fw-feld fw-num w-20 text-right">
                 <span class="text-xs fw-faint">{% trans "% Satz" %}</span>
             </div>
         </div>
@@ -313,7 +313,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
                 <p class="fw-hilfe">{% trans "Jedes Jahr dieselbe Erhöhung, die erste 12 Monate nach Mietbeginn. Vorhandene Stufen werden ersetzt." %}</p>
                 <div class="fw-mzm-zeile-felder">
                     <label class="fw-mzm-feld"><span>{% trans "Jährlich + CHF" %}</span>
-                        <input type="number" step="0.01" inputmode="decimal" id="mzm-gen-betrag" class="fw-feld fw-num"></label>
+                        <input type="text" inputmode="decimal" data-chf data-fehler="{% trans 'Bitte einen Betrag eingeben, z. B. 1450.50' %}" id="mzm-gen-betrag" class="fw-feld fw-num"></label>
                     <label class="fw-mzm-feld"><span>{% trans "Wie oft" %}</span>
                         <input type="number" step="1" min="1" inputmode="numeric" id="mzm-gen-anzahl" value="2" class="fw-feld fw-num"></label>
                 </div>
@@ -326,7 +326,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
             <h4 class="fw-mzm-kopf">{% trans "Index" %}: {% trans "Landesindex der Konsumentenpreise (BFS)" %} {% hilfe 'lik' %}</h4>
             <div class="fw-formular">
                 <div class="fw-feldblock"><label class="fw-label" for="s_lik">{% trans "Basis Konsumentenpreisindex (LIK)" %}</label>
-                    <input name="basis_lik_punkte" id="s_lik" type="number" step="0.1" inputmode="decimal" oninput="live()" class="fw-feld fw-num">
+                    <input name="basis_lik_punkte" id="s_lik" type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" oninput="live()" class="fw-feld fw-num">
                     <p class="fw-hilfe">{% blocktrans with basis=lik_basis %}Basis {{ basis }} = 100 Punkte{% endblocktrans %}</p></div>
                 <div class="fw-feldblock"><label class="fw-label" for="s_lik_stand">{% trans "LIK Stand-Monat" %}</label>
                     <input name="basis_lik_stand" id="s_lik_stand" type="month" oninput="live()" class="fw-feld">
@@ -336,7 +336,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
                 <button type="button" id="mzm-vorschlag-knopf" class="fw-btn fw-knapp fw-rand-marke hidden">{% trans "Vorschlag übernehmen" %}</button></p>
             <div class="fw-formular">
                 <div class="fw-feldblock"><label class="fw-label" for="s_weitergabe">{% trans "Weitergabe (%)" %} {% hilfe 'index_weitergabe' %}</label>
-                    <input name="index_weitergabe_prozent" id="s_weitergabe" type="number" step="0.1" inputmode="decimal" value="100" oninput="live()" class="fw-feld fw-num">
+                    <input name="index_weitergabe_prozent" id="s_weitergabe" type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" value="100" oninput="live()" class="fw-feld fw-num">
                     <p class="fw-hilfe">{% trans "Anteil der Teuerung, der weitergegeben wird: über 0 und höchstens 100 Prozent." %}</p></div>
                 <div class="fw-feldblock"><label class="fw-label" for="s_intervall">{% trans "Mindestintervall (vertraglich, Monate)" %} {% hilfe 'index_intervall' %}</label>
                     <input name="index_intervall_monate" id="s_intervall" type="number" step="1" inputmode="numeric" value="12" oninput="live()" class="fw-feld fw-num">
@@ -359,7 +359,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
         <p class="text-xs fw-faint mb-3">{% trans "Stand bei Vertragsbeginn — Grundlage für spätere Mietzinsanpassungen." %}</p>
         <div class="fw-formular">
             <div class="fw-feldblock"><label class="fw-label" for="s_ref">{% trans "Stand Referenzzinssatz (%)" %} {% hilfe 'referenzzins' %}</label>
-                <input name="basis_referenzzinssatz" id="s_ref" type="number" step="0.05" oninput="live()" class="fw-feld w-full"></div>
+                <input name="basis_referenzzinssatz" id="s_ref" type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" oninput="live()" class="fw-feld w-full"></div>
         </div>
         <label class="fw-label mb-1 mt-3">{% trans "Kostensteigerung ausgeglichen bis / Letzte Kostenaufrechnung" %}</label>
         <input name="kostensteigerung_datum" type="date" oninput="live()" class="fw-feld w-full">
@@ -370,7 +370,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
     <div class="fw-assistent-schritt-kopf"></div>
     <div class="fw-card"><div class="fw-rumpf">
         <label class="fw-label mb-1" for="s_kaution">{% trans "Höhe der Sicherheitsleistung (CHF) *" %} {% hilfe 'kaution' %}</label>
-        <input name="kautions_betrag" id="s_kaution" type="number" step="0.01" value="0" oninput="live()" class="fw-feld w-full mb-2">
+        <input name="kautions_betrag" id="s_kaution" type="text" inputmode="decimal" data-chf data-fehler="{% trans 'Bitte einen Betrag eingeben, z. B. 1450.50' %}" value="0" oninput="live()" class="fw-feld w-full mb-2">
         <div class="flex flex-wrap gap-2 mb-4">
             <button type="button" onclick="kautionSet(0)" class="fw-btn fw-knapp">{% trans "Keine" %}</button>
             <button type="button" onclick="kautionSet(1)" class="fw-btn fw-knapp">{% trans "1 Monat" %}</button>
@@ -489,6 +489,10 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
 
 <script src="{% statisch 'js/fw-mietzinsmodell.js' %}"></script>
 <script>
+// Beträge und Zinssätze stehen als Text wie «1'450.50» in den Feldern (DESIGN-28). Das Skript der Seite läuft
+// vor `fw-bausteine.js` (defer), das `window.fwZahl` erst später bereitstellt: Bis dahin liest dieser Ersatz
+// dieselbe Schreibweise, danach gilt die gemeinsame Funktion.
+const zahlAus = (t) => window.fwZahl ? window.fwZahl(t) : (parseFloat(String(t == null ? '' : t).replace(/['\u2019\s]/g, '').replace(',', '.')) || 0);
 // Texte der Oberfläche in der Sprache der Sitzung. Die Vertragsvorschau und die
 // mietrechtlichen Warnungen weiter unten bleiben bewusst deutsch.
 const UI = {
@@ -544,7 +548,7 @@ function indexUebernehmen(btn){
                  setTimeout(()=>{ btn.textContent=label; }, 2500); }
     }).catch(()=>{ if(btn){ btn.disabled=false; btn.textContent=label; } });
 }
-function kautionSet(monate){ const netto=parseFloat(document.getElementById('s_netto').value)||0; document.getElementById('s_kaution').value=(netto*monate).toFixed(2); live(); }
+function kautionSet(monate){ const netto=zahlAus(document.getElementById('s_netto').value); (window.fwBetragSetzen || ((f, w) => { f.value = w; }))(document.getElementById('s_kaution'), (netto*monate).toFixed(2)); live(); }
 
 // Liegenschaften/Mieter-Dropdowns füllen
 document.getElementById('s_lg').innerHTML = '<option value="">' + UI.lg_waehlen + '</option>' +
@@ -953,8 +957,8 @@ function dstr(v){ if(!v) return ''; const p=v.split('-'); return p[2]+'.'+p[1]+'
 function mietrechtCheck(){
   const o = curObj(); const kat = o ? o.kategorie : null;
   const warns = [];
-  const netto = parseFloat(val('netto_mietzins')) || 0;
-  const kaut  = parseFloat(val('kautions_betrag')) || 0;
+  const netto = zahlAus(val('netto_mietzins'));
+  const kaut  = zahlAus(val('kautions_betrag'));
 
   // Kaution: Wohnräume höchstens drei Monatsmieten (Art. 257e OR)
   if (kat === 'wohnen' && netto > 0 && kaut > netto*3 + 0.01)
@@ -1026,8 +1030,8 @@ function fitPreviewFrame(){
 function live(){
   const l=curLg(), o=curObj(), m=curMieter();
   const vm = l?l.vermieter:{name:'{{ verwaltung.firma }}',strasse:'{{ verwaltung.strasse }}',plz:'{{ verwaltung.plz }}',ort:'{{ verwaltung.ort }}'};
-  const netto=parseFloat(val('netto_mietzins'))||0, nk=parseFloat(val('nebenkosten'))||0, brutto=netto+nk;
-  const kaut=parseFloat(val('kautions_betrag'))||0;
+  const netto=zahlAus(val('netto_mietzins')), nk=zahlAus(val('nebenkosten')), brutto=netto+nk;
+  const kaut=zahlAus(val('kautions_betrag'));
   const unbef=document.getElementById('unbefristet').checked;
   const adr = o? (l.strasse+', '+l.plz+' '+l.ort):'';
   document.getElementById('f_mieter_id').value = (mieterMode==='best')?document.getElementById('s_mieter').value:'';
@@ -1132,7 +1136,7 @@ function live(){
 function buildSummary(){
   const l=curLg(), o=curObj(), m=curMieter();
   const eps = !!(o && o.ist_einstellplatz);
-  const netto=parseFloat(val('netto_mietzins'))||0, nk=eps?0:(parseFloat(val('nebenkosten'))||0);
+  const netto=zahlAus(val('netto_mietzins')), nk=eps?0:zahlAus(val('nebenkosten'));
   const fristTxt = eps
     ? ((parseInt(val('kuendigungsfrist'))>0) ? (val('kuendigungsfrist')+' Monate auf Monatsende') : '2 Wochen auf Monatsende (Art. 266e OR)')
     : ((val('kuendigungsfrist')||3)+' Monate');
@@ -1148,7 +1152,7 @@ function buildSummary(){
       ? `<div class="flex justify-between border-t fw-linie pt-1.5 mt-1.5"><span class="fw-mutet">Mietzins/Monat</span><span class="font-bold fw-marke">CHF ${fmt(netto)}</span></div>`
       : `<div class="flex justify-between border-t fw-linie pt-1.5 mt-1.5"><span class="fw-mutet">Netto / NK</span><span class="font-medium">CHF ${fmt(netto)} / ${fmt(nk)}</span></div>
     <div class="flex justify-between"><span class="fw-mutet">Brutto/Monat</span><span class="font-bold fw-marke">CHF ${fmt(netto+nk)}</span></div>`}
-    <div class="flex justify-between"><span class="fw-mutet">Kaution</span><span class="font-medium">CHF ${fmt(parseFloat(val('kautions_betrag'))||0)}</span></div>
+    <div class="flex justify-between"><span class="fw-mutet">Kaution</span><span class="font-medium">CHF ${fmt(zahlAus(val('kautions_betrag')))}</span></div>
     ${eps?'':`<div class="flex justify-between gap-3"><span class="fw-mutet">Nebenkostenarten</span><span class="font-medium text-right">${nkNamen().join(', ')||'—'}</span></div>`}`;
   // Mietzinsmodell: die Zeilen entstehen im Skript des Modells, Werte nur als Text
   const sum = document.getElementById('summary');

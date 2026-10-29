@@ -18,7 +18,7 @@
         <span class="fw-ikon">{% zeichen 'bank' %}</span><h2>{% trans "Anlagegüter" %}</h2>
         <form method="post" class="fw-rechts">{% csrf_token %}
             <input type="hidden" name="aktion" value="afa_lauf">
-            <input type="number" name="jahr" value="{{ jahr_default }}" class="fw-feld w-24 text-right">
+            <input type="number" name="jahr" aria-label="{% trans 'Jahr' %}" value="{{ jahr_default }}" class="fw-feld w-24 text-right">
             <button onclick="return confirm('{% filter escapejs %}{% trans "AfA-Lauf für das Jahr buchen? (idempotent)" %}{% endfilter %}');" class="fw-btn fw-primary fw-knapp">{% zeichen 'kritisch' klasse='mr-1' %}{% trans "AfA-Lauf" %}</button>
         </form>
     </div>
@@ -92,7 +92,7 @@
         <span class="fw-ikon">{% zeichen 'geld' %}</span><h2>{% trans "Erneuerungsfonds (Rückstellung)" %}</h2>
         <form method="post" class="fw-rechts">{% csrf_token %}
             <input type="hidden" name="aktion" value="fonds_lauf">
-            <input type="number" name="jahr" value="{{ jahr_default }}" class="fw-feld w-24 text-right">
+            <input type="number" name="jahr" aria-label="{% trans 'Jahr' %}" value="{{ jahr_default }}" class="fw-feld w-24 text-right">
             <button onclick="return confirm('{% filter escapejs %}{% trans "Jährliche Einlagen für das Jahr buchen?" %}{% endfilter %}');" class="fw-btn fw-primary fw-knapp">{% zeichen 'kritisch' klasse='mr-1' %}{% trans "Einlage buchen" %}</button>
         </form>
     </div>

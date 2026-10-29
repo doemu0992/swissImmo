@@ -17,6 +17,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext
 
 from core.auth import SCHREIB_ROLLEN, TEAM_ROLLEN, hat_rolle, log_aktion, rolle_erforderlich
+from core.utils.betrag import betrag_normalisieren
 from portfolio.models import Liegenschaft, LiegenschaftVerteilschluessel, Verteilschluessel
 
 from ._basis import _global_filter
@@ -94,7 +95,7 @@ def _raster_pruefen(daten, einheiten):
     """Prozentraster: je Einheit 0–100, Summe 100. Gibt (Werte, Fehler je Einheit, Summenfehler) zurück."""
     werte, fehler, summe = {}, {}, Decimal('0')
     for e in einheiten:
-        roh = (daten.get(f'pct_{e.id}') or '').strip().replace(',', '.')
+        roh = betrag_normalisieren(daten.get(f'pct_{e.id}'))
         if roh == '':
             werte[e.id] = Decimal('0')
             continue
@@ -129,7 +130,7 @@ def _seite(request, lg, *, status=200, neu=None, neu_fehler=None, raster_id=None
             else:
                 s.raster = [{'e': e, 'wert': vorhanden.get(e.id, ''), 'fehler': None} for e in einheiten]
             s.summenfehler = summenfehler if raster_id == s.id else None
-    ctx = {**_global_filter(request), 'lg': lg, 'standards': standards, 'typen': TYPEN, 'kostenarten': KOSTENARTEN,
+    ctx = {**_global_filter(request), 'nav': 'liegenschaften', 'lg': lg, 'standards': standards, 'typen': TYPEN, 'kostenarten': KOSTENARTEN,
            'neu': neu or {'gueltig_ab': date.today().isoformat()}, 'neu_fehler': neu_fehler or {},
            'kann_schreiben': hat_rolle(request.user, SCHREIB_ROLLEN)}
     return render(request, 'fw/verteilschluessel.html', ctx, status=status)

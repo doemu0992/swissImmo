@@ -48,7 +48,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 {% if offen_seit > 30 and t.status != 'erledigt' %}<span class="fw-chip fw-crit">{% blocktrans with n=offen_seit %}seit {{ n }} Tagen offen{% endblocktrans %}</span>{% endif %}
             </div>
         </div>
-        <div class="fw-akte-rechts">
+        {% if kann_schreiben %}<div class="fw-akte-rechts">
             <div class="relative" data-menu>
                 <button type="button" data-menu-btn aria-haspopup="menu" aria-expanded="false" aria-controls="sAktionen"
                         class="fw-btn fw-knapp">
@@ -58,7 +58,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     {% include 'fw/_archivieren.html' with kuerzel='schaden' pk=t.id stil='menu' %}
                 </div>
             </div>
-        </div>
+        </div>{% endif %}
     </div>
 
     <div class="fw-kzn">
@@ -66,7 +66,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div class="fw-l">{% trans "Kosten" %}</div>
             <div class="fw-w">CHF {{ kosten_effektiv|chf }}</div>
             <div class="fw-f">{% if kosten_geschaetzt %}{% blocktrans with b=kosten_geschaetzt|chf %}geschätzt {{ b }}{% endblocktrans %}{% else %}{% trans "keine Schätzung" %}{% endif %}</div>
-            <div class="fw-f"><a href="/neu/schaeden/{{ t.id }}/versicherung/" class="fw-link">{% trans "Versicherungsfall" %}</a></div>
+            {% if request.user|darf:"/neu/schaeden/1/versicherung/" %}<div class="fw-f"><a href="/neu/schaeden/{{ t.id }}/versicherung/" class="fw-link">{% trans "Versicherungsfall" %}</a></div>{% endif %}
         </div>
         <div>
             <div class="fw-l">{% trans "Aufträge" %}</div>
@@ -97,7 +97,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
        in den Stammdaten — dieselbe Entscheidung wie beim Vertrag: Der Status
        gehoert zur Sache, nicht in eine Kopfzeile, die auf dem Handy hoch
        wird. `faelle/test_aktionen_vollstaendig.py` haelt ihn fest. {% endcomment %}
-    {% if stweg_bauteile %}
+    {% if stweg_bauteile and kann_schreiben %}
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'hinweis' %}</span>
             <h2>{% trans "Kostenträger (STWEG)" %}</h2>
@@ -139,6 +139,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         </div>
     </div>
 
+    {% if request.user|darf:"/neu/schaeden/1/status/" %}
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'hinweis' %}</span>
             <h2>{% trans "Status" %}</h2>
@@ -146,7 +147,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         <div class="px-5 py-4">
             <form method="post" action="/neu/schaeden/{{ t.id }}/status/" class="flex flex-wrap items-center gap-3">
                 {% csrf_token %}
-                <select name="status" class="fw-feld">
+                <select name="status" aria-label="{% trans 'Status' %}" class="fw-feld">
                     {% for key, val in status_wahl.items %}
                     <option value="{{ key }}" {% if t.status == key %}selected{% endif %}>{{ val.0 }}</option>
                     {% endfor %}
@@ -158,6 +159,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             </form>
         </div>
     </div>
+    {% endif %}
 
     <div class="fw-grid2">
         <div class="fw-card">
@@ -183,10 +185,10 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <!-- Raumbuch-Element verknüpfen -->
             <div class="mt-2 pt-2 border-t fw-linie">
                 <h4 class="fw-subhead mb-2">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Betroffenes Element" %}</h4>
-                {% if t.betroffene_einheit_id %}
+                {% if t.betroffene_einheit_id and kann_schreiben %}
                 <form method="post" action="/neu/schaeden/{{ t.id }}/ausstattung/" class="flex flex-col gap-2">
                     {% csrf_token %}
-                    <select name="ausstattung_id" class="fw-feld">
+                    <select name="ausstattung_id" aria-label="{% trans 'Betroffenes Element' %}" class="fw-feld">
                         <option value="">— {% trans "kein Element" %} —</option>
                         {% for el in ausstattung_elemente %}<option value="{{ el.id }}" {% if t.ausstattung_id == el.id %}selected{% endif %}>{{ el.raum }} · {{ el.kategorie }}</option>{% endfor %}
                     </select>
@@ -194,6 +196,8 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 </form>
                 {% if t.ausstattung_id %}<p class="fw-hilfe mt-2">{% trans "Fliesst in Reparaturhistorie & Lebenszykluskosten des Elements." %} <a href="/neu/objekte/{{ t.betroffene_einheit_id }}/#obj-raumbuch" class="fw-link">{% trans "Raumbuch" %}</a></p>{% endif %}
                 {% if not ausstattung_elemente %}<p class="fw-klein mt-1">{% trans "Noch keine Ausstattung am Objekt erfasst." %}</p>{% endif %}
+                {% elif t.betroffene_einheit_id %}
+                <p class="fw-klein">{% if t.ausstattung_id %}{{ t.ausstattung.raum }} · {{ t.ausstattung.kategorie }}{% else %}{% trans "kein Element" %}{% endif %}</p>
                 {% else %}
                 <p class="fw-klein">{% trans "Kein Mietobjekt zugeordnet." %}</p>
                 {% endif %}
@@ -206,6 +210,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 <!-- VERLAUF -->
 <div data-panel="sc" id="sc-chronik" class="hidden">
     <!-- Antwort an Melder -->
+    {% if kann_schreiben %}
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'senden' %}</span><h2>{% trans "Antwort an Melder" %}</h2>{% if melder_email %} <span class="fw-neben">({{ melder_email }})</span>{% endif %}</div>
         <form method="post" action="/neu/schaeden/{{ t.id }}/antwort/" class="fw-rumpf">
@@ -215,6 +220,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             {% if not melder_email %}<span class="fw-klein fw-warnton ml-2">{% trans "Kein E-Mail des Melders — wird nur im Verlauf gespeichert." %}</span>{% endif %}
         </form>
     </div>
+    {% endif %}
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Verlauf" %}</h2></div>
         {% for n in nachrichten %}
@@ -306,6 +312,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 <div data-panel="sc" id="sc-handwerker" class="hidden">
     {% load chf %}
     <!-- Handwerker beauftragen (automatisiert) -->
+    {% if kann_schreiben %}
     <div class="fw-card">
         <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'arbeit' %}</span><h2>{% trans "Handwerker beauftragen" %}</h2></div>
         <div class="fw-rumpf">
@@ -334,6 +341,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         {% endif %}
         </div>
     </div>
+    {% endif %}
 
     {% comment %} Die Kostensummen sind nach «Finanzen» gewandert (4b.3). Hier
        stehen die Auftraege — wer macht was, seit wann. Geld gehoert in den
@@ -358,8 +366,8 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     {% if a.bemerkung %}<div class="fw-klein mt-1">{{ a.bemerkung|truncatechars:100 }}</div>{% endif %}
                 </div>
                 <div class="fw-rechts">
-                    <a href="/neu/auftrag/{{ a.id }}/pdf/" target="_blank" rel="noopener" class="fw-btn fw-knapp">{% zeichen 'drucken' %}{% trans "Auftrags-PDF" %}</a>
-                    {% if a.kreditoren_rechnung_id %}
+                    {% if request.user|darf:"/neu/auftrag/1/pdf/" %}<a href="/neu/auftrag/{{ a.id }}/pdf/" target="_blank" rel="noopener" class="fw-btn fw-knapp">{% zeichen 'drucken' %}{% trans "Auftrags-PDF" %}</a>{% endif %}
+                    {% if a.kreditoren_rechnung_id and request.user|darf:"/neu/kreditoren/" %}
                     <a href="/neu/kreditoren/" class="fw-link">{% zeichen 'extern' klasse='mr-1' %}{% blocktrans with id=a.kreditoren_rechnung_id %}Kreditor #{{ id }}{% endblocktrans %}</a>
                     {% endif %}
                 </div>
@@ -375,7 +383,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     {% elif a.link_status == 'abgelaufen' %}<span class="fw-chip fw-warn">{% trans "abgelaufen" %}</span>
                     {% else %}{% trans "Noch kein Link. Er entsteht mit der Auftrags-Mail — oder hier." %}{% endif %}
                 </p>
-                <div class="flex flex-wrap gap-2 mt-2">
+                {% if kann_schreiben %}<div class="flex flex-wrap gap-2 mt-2">
                     <form method="post" action="/neu/auftrag/{{ a.id }}/link/"{% if a.link_status == 'aktiv' %} onsubmit="return confirm('{% trans "Neuen Link erzeugen? Der bisherige öffnet danach nichts mehr." %}')"{% endif %}>
                         {% csrf_token %}<input type="hidden" name="aktion" value="neu">
                         <button class="fw-btn fw-knapp">{% zeichen 'neu' %}{% if a.link_status == 'kein' %}{% trans "Link erzeugen" %}{% else %}{% trans "Neuen Link erzeugen" %}{% endif %}</button>
@@ -386,9 +394,12 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                         <button class="fw-btn fw-knapp">{% zeichen 'gesperrt' %}{% trans "Link widerrufen" %}</button>
                     </form>
                     {% endif %}
-                </div>
+                </div>{% endif %}
             </div>
-            {% if a.status != 'storniert' %}
+            {% if a.status != 'storniert' and not kann_schreiben and a.termin_status == 'vereinbart' %}
+            <div class="fw-rumpf"><div class="fw-chip fw-good">{% zeichen 'termin' %} {% blocktrans with d=a.termin_am|date:"d.m.Y, H:i" %}Termin: {{ d }} Uhr{% endblocktrans %}</div></div>
+            {% endif %}
+            {% if a.status != 'storniert' and kann_schreiben %}
             <div class="fw-rumpf">
                 {% if a.termin_status == 'vereinbart' %}
                 <div class="fw-chip fw-good mb-2">{% zeichen 'termin' %} {% blocktrans with d=a.termin_am|date:"d.m.Y, H:i" %}Termin: {{ d }} Uhr{% endblocktrans %}</div>
@@ -471,15 +482,15 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 
 <!-- FOTOS -->
 <div data-panel="sc" id="sc-dokumente" class="hidden">
-    <div class="fw-card">
+    {% if kann_schreiben %}<div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Fotos hinzufügen" %}</h2></div>
         <form method="post" action="/neu/schaeden/{{ t.id }}/foto/" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3 fw-rumpf">
             {% csrf_token %}
-            <input name="fotos" type="file" accept="image/*" multiple required
+            <input name="fotos" type="file" aria-label="{% trans 'Fotos hinzufügen' %}" accept="image/*" multiple required
                    class="fw-datei">
             <button class="fw-btn fw-primary">{% zeichen 'hochladen' %}{% trans "Hochladen" %}</button>
         </form>
-    </div>
+    </div>{% endif %}
 
     {% if fotos or t.foto %}
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -494,11 +505,11 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <a href="{{ f.bild.url }}" target="_blank" rel="noopener" title="{% trans 'Foto in voller Grösse öffnen' %}" class="block">
                 <img src="{{ f.bild.url }}" alt="Foto" class="fw-bild">
             </a>
-            <form method="post" action="/neu/schaeden/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1"
+            {% if kann_schreiben %}<form method="post" action="/neu/schaeden/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1"
                   onsubmit="return confirm('{% filter escapejs %}{% trans "Foto löschen?" %}{% endfilter %}');">
                 {% csrf_token %}
                 <button class="w-7 h-7 rounded-full fw-flaeche hover:fw-krit-flaeche fw-kritisch text-xs shadow" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
-            </form>
+            </form>{% endif %}
             {% if f.hochgeladen_am %}<span class="absolute bottom-1 left-1 fw-fs-mikro fw-vorhang text-white px-1.5 py-0.5 rounded">{{ f.hochgeladen_am|date:"d.m.Y" }}</span>{% endif %}
         </div>
         {% endfor %}

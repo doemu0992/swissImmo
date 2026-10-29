@@ -35505,7 +35505,6 @@ msgstr ""
 " conguaglio senza polizza di versamento."
 
 # --- Öffentliche Formulare, Aussenseiten (Etappe 3, 29.10.2026) ---
-
 msgid "Alle Angaben ohne Gewähr"
 msgstr "Tutte le indicazioni senza garanzia"
 
@@ -35518,8 +35517,12 @@ msgstr "La Sua segnalazione viene inoltrata direttamente all'amministrazione."
 msgid "Prüfen & absenden"
 msgstr "Verificare e inviare"
 
-msgid "Was ist passiert? Ein Foto hilft der Verwaltung, das Problem schneller einzuschätzen."
-msgstr "Che cosa è successo? Una foto aiuta l'amministrazione a valutare più rapidamente il problema."
+msgid ""
+"Was ist passiert? Ein Foto hilft der Verwaltung, das Problem schneller "
+"einzuschätzen."
+msgstr ""
+"Che cosa è successo? Una foto aiuta l'amministrazione a valutare più "
+"rapidamente il problema."
 
 msgid "Bitte beschreiben Sie das Anliegen."
 msgstr "Descriva la Sua richiesta."
@@ -35527,14 +35530,24 @@ msgstr "Descriva la Sua richiesta."
 msgid "Wie die Verwaltung Sie erreicht."
 msgstr "Come l'amministrazione può raggiungerLa."
 
-msgid "Wir konnten Ihre Meldung keiner Liegenschaft zuordnen. Bitte verwenden Sie die E-Mail-Adresse, die bei Ihrer Verwaltung hinterlegt ist, oder melden Sie sich direkt bei Ihrer Verwaltung."
-msgstr "Non è stato possibile assegnare la Sua segnalazione a uno stabile. Utilizzi l'indirizzo e-mail registrato presso la Sua amministrazione oppure si rivolga direttamente ad essa."
+msgid ""
+"Wir konnten Ihre Meldung keiner Liegenschaft zuordnen. Bitte verwenden Sie "
+"die E-Mail-Adresse, die bei Ihrer Verwaltung hinterlegt ist, oder melden Sie"
+" sich direkt bei Ihrer Verwaltung."
+msgstr ""
+"Non è stato possibile assegnare la Sua segnalazione a uno stabile. Utilizzi "
+"l'indirizzo e-mail registrato presso la Sua amministrazione oppure si "
+"rivolga direttamente ad essa."
 
 msgid "Dieses Objekt ist nicht mehr ausgeschrieben"
 msgstr "Questo oggetto non è più in locazione"
 
-msgid "Die Ausschreibung wurde beendet — vermutlich ist die Wohnung bereits vergeben. Bewerbungen können dafür keine mehr entgegengenommen werden."
-msgstr "L'annuncio è stato terminato — l'appartamento è probabilmente già assegnato. Per questo oggetto non è più possibile accettare candidature."
+msgid ""
+"Die Ausschreibung wurde beendet — vermutlich ist die Wohnung bereits "
+"vergeben. Bewerbungen können dafür keine mehr entgegengenommen werden."
+msgstr ""
+"L'annuncio è stato terminato — l'appartamento è probabilmente già assegnato."
+" Per questo oggetto non è più possibile accettare candidature."
 
 msgid "Bei Fragen wenden Sie sich bitte direkt an die Verwaltung."
 msgstr "Per qualsiasi domanda si rivolga direttamente all'amministrazione."
@@ -35549,14 +35562,21 @@ msgstr "Candidatura digitale"
 msgid "Bewerbung eingereicht!"
 msgstr "Candidatura inviata!"
 
-msgid "Vielen Dank für Ihr Interesse. Wir haben Ihre Unterlagen erhalten und werden diese nun prüfen. Wir melden uns in Kürze bei Ihnen."
-msgstr "Grazie per il Suo interesse. Abbiamo ricevuto i Suoi documenti e li esamineremo ora. La contatteremo a breve."
+msgid ""
+"Vielen Dank für Ihr Interesse. Wir haben Ihre Unterlagen erhalten und werden"
+" diese nun prüfen. Wir melden uns in Kürze bei Ihnen."
+msgstr ""
+"Grazie per il Suo interesse. Abbiamo ricevuto i Suoi documenti e li "
+"esamineremo ora. La contatteremo a breve."
 
 msgid "Die Verbindung wurde unterbrochen. Bitte versuchen Sie es erneut."
 msgstr "La connessione è stata interrotta. Riprovi."
 
-msgid "Die Bewerbung konnte nicht gesendet werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut."
-msgstr "Non è stato possibile inviare la candidatura. Ricarichi la pagina e riprovi."
+msgid ""
+"Die Bewerbung konnte nicht gesendet werden. Bitte laden Sie die Seite neu "
+"und versuchen Sie es erneut."
+msgstr ""
+"Non è stato possibile inviare la candidatura. Ricarichi la pagina e riprovi."
 
 msgid "Ein unbekannter Fehler ist aufgetreten."
 msgstr "Si è verificato un errore sconosciuto."
@@ -35625,7 +35645,8 @@ msgid "Grund für den Umzug"
 msgstr "Motivo del trasloco"
 
 msgid "Angaben zu Ihrer Erwerbstätigkeit und Ihrem ungefähren Einkommen."
-msgstr "Indicazioni sulla Sua attività lucrativa e sul Suo reddito approssimativo."
+msgstr ""
+"Indicazioni sulla Sua attività lucrativa e sul Suo reddito approssimativo."
 
 msgid "Bitte geben Sie Ihren Beruf an."
 msgstr "Indichi la Sua professione."
@@ -35723,8 +35744,12 @@ msgstr "Inoltrare l'estratto in seguito"
 msgid "Auszug hochladen"
 msgstr "Caricare l'estratto"
 
-msgid "Bitte laden Sie einen Betreibungsauszug hoch oder wählen Sie «Auszug nachreichen»."
-msgstr "Carichi un estratto del registro delle esecuzioni oppure scelga «Inoltrare l'estratto in seguito»."
+msgid ""
+"Bitte laden Sie einen Betreibungsauszug hoch oder wählen Sie «Auszug "
+"nachreichen»."
+msgstr ""
+"Carichi un estratto del registro delle esecuzioni oppure scelga «Inoltrare "
+"l'estratto in seguito»."
 
 msgid "Keinen aktuellen Auszug zur Hand?"
 msgstr "Non ha un estratto recente a portata di mano?"
@@ -35744,27 +35769,189 @@ msgstr "Scelga una data di entrata desiderata."
 msgid "Ausweis und Einkommensnachweis"
 msgstr "Documento d'identità e prova del reddito"
 
-msgid "Diese Unterlagen fragen wir erst an, wenn Sie in die engere Auswahl kommen — nicht schon jetzt von allen Interessentinnen und Interessenten."
-msgstr "Richiediamo questi documenti solo se Lei rientra nella cerchia ristretta — non già ora a tutti gli interessati."
+msgid ""
+"Diese Unterlagen fragen wir erst an, wenn Sie in die engere Auswahl kommen —"
+" nicht schon jetzt von allen Interessentinnen und Interessenten."
+msgstr ""
+"Richiediamo questi documenti solo se Lei rientra nella cerchia ristretta — "
+"non già ora a tutti gli interessati."
 
 msgid "Was mit Ihren Angaben geschieht"
 msgstr "Che cosa succede con i Suoi dati"
 
 #, python-format
-msgid "Ausführlich in der <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\" class=\"fw-link\">Datenschutzerklärung</a>."
-msgstr "Dettagli nell'<a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\" class=\"fw-link\">informativa sulla protezione dei dati</a>."
+msgid ""
+"Ausführlich in der <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\" "
+"class=\"fw-link\">Datenschutzerklärung</a>."
+msgstr ""
+"Dettagli nell'<a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\" "
+"class=\"fw-link\">informativa sulla protezione dei dati</a>."
 
 msgid "Verbindlich einreichen"
 msgstr "Inviare in modo vincolante"
 
-msgid "Ihre Angaben dienen <strong>ausschliesslich</strong> der Auswahl der Mieterschaft für dieses Objekt und werden für nichts anderes verwendet."
-msgstr "I Suoi dati servono <strong>esclusivamente</strong> alla scelta degli inquilini per questo oggetto e non vengono utilizzati per nessun altro scopo."
+msgid ""
+"Ihre Angaben dienen <strong>ausschliesslich</strong> der Auswahl der "
+"Mieterschaft für dieses Objekt und werden für nichts anderes verwendet."
+msgstr ""
+"I Suoi dati servono <strong>esclusivamente</strong> alla scelta degli "
+"inquilini per questo oggetto e non vengono utilizzati per nessun altro "
+"scopo."
 
-msgid "Die angegebenen Kontakte bei Ihrer bisherigen Vermieterschaft und Ihrem Arbeitgeber können wir für eine <strong>Referenzauskunft kontaktieren</strong>."
-msgstr "Possiamo <strong>contattare per una richiesta di referenze</strong> i recapiti indicati presso il Suo locatore attuale e il Suo datore di lavoro."
+msgid ""
+"Die angegebenen Kontakte bei Ihrer bisherigen Vermieterschaft und Ihrem "
+"Arbeitgeber können wir für eine <strong>Referenzauskunft "
+"kontaktieren</strong>."
+msgstr ""
+"Possiamo <strong>contattare per una richiesta di referenze</strong> i "
+"recapiti indicati presso il Suo locatore attuale e il Suo datore di lavoro."
 
-msgid "Erhalten Sie die Wohnung nicht, werden Ihre Unterlagen einschliesslich Betreibungsauszug nach dem Vermietungsentscheid <strong>gelöscht</strong>."
-msgstr "Se non ottiene l'appartamento, i Suoi documenti, compreso l'estratto del registro delle esecuzioni, vengono <strong>eliminati</strong> dopo la decisione di locazione."
+msgid ""
+"Erhalten Sie die Wohnung nicht, werden Ihre Unterlagen einschliesslich "
+"Betreibungsauszug nach dem Vermietungsentscheid <strong>gelöscht</strong>."
+msgstr ""
+"Se non ottiene l'appartamento, i Suoi documenti, compreso l'estratto del "
+"registro delle esecuzioni, vengono <strong>eliminati</strong> dopo la "
+"decisione di locazione."
 
-msgid "Sie haben jederzeit das Recht auf <strong>Auskunft, Berichtigung und Löschung</strong> Ihrer Daten."
-msgstr "Ha in ogni momento il diritto a <strong>informazioni, rettifica e cancellazione</strong> dei Suoi dati."
+msgid ""
+"Sie haben jederzeit das Recht auf <strong>Auskunft, Berichtigung und "
+"Löschung</strong> Ihrer Daten."
+msgstr ""
+"Ha in ogni momento il diritto a <strong>informazioni, rettifica e "
+"cancellazione</strong> dei Suoi dati."
+
+#: core/templates/403.html:6
+msgid "Keine Berechtigung – swissImmo"
+msgstr "Accesso negato – swissImmo"
+
+#: core/templates/404.html:6
+msgid "Seite nicht gefunden – swissImmo"
+msgstr "Pagina non trovata – swissImmo"
+
+#: core/templates/500.html:6
+msgid "Ein Fehler ist aufgetreten – swissImmo"
+msgstr "Si è verificato un errore – swissImmo"
+
+#: core/templates/core/_passwort_shell_top.html:7
+msgid "Passwort | SwissImmo Portal"
+msgstr "Password | Portale SwissImmo"
+
+#: core/templates/core/login.html:6
+msgid "Login | SwissImmo Portal"
+msgstr "Accesso | Portale SwissImmo"
+
+#: core/templates/core/login.html:154
+msgid "© swissImmo · Alle Angaben ohne Gewähr"
+msgstr "© swissImmo · Tutte le indicazioni senza garanzia"
+
+#: core/templates/core/mieter_portal.html:4
+msgid "Mieterportal — SwissImmo"
+msgstr "Portale inquilini — SwissImmo"
+
+#: core/templates/core/portal.html:6
+msgid "Eigentümer-Portal — SwissImmo"
+msgstr "Portale proprietari — SwissImmo"
+
+#: core/templates/core/portal.html:344
+msgid "SwissImmo Eigentümer-Portal · Alle Angaben ohne Gewähr"
+msgstr "Portale proprietari SwissImmo · Tutte le indicazioni senza garanzia"
+
+#: core/templates/core/portal_base.html:7
+msgid "Portal — SwissImmo"
+msgstr "Portale — SwissImmo"
+
+#: core/templates/core/portal_base.html:70
+msgid "SwissImmo Mieterportal · Alle Angaben ohne Gewähr"
+msgstr "Portale inquilini SwissImmo · Tutte le indicazioni senza garanzia"
+
+#: core/templates/core/portal_login.html:6
+msgid "Portal-Login | SwissImmo"
+msgstr "Accesso al portale | SwissImmo"
+
+#: core/templates/core/portal_login.html:156
+msgid "© swissImmo · Sicheres Login für Mietende und Eigentümer"
+msgstr "© swissImmo · Accesso sicuro per inquilini e proprietari"
+
+#: core/templates/core/portal_login.html:163
+msgid "swissImmo Portal"
+msgstr "Portale swissImmo"
+
+#: core/templates/core/postfach_form.html:8
+msgid "Zugangsdaten des Postfachs, aus dem swissImmo diese Mails abholt."
+msgstr ""
+"Credenziali della casella postale da cui swissImmo preleva queste e-mail."
+
+#: core/templates/core/zweifaktor_uebersicht.html:8
+msgid ""
+"Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt swissImmo einen "
+"Code aus Ihrer Authenticator-App."
+msgstr ""
+"Protezione aggiuntiva per il suo account: dopo la password swissImmo chiede "
+"un codice della sua app di autenticazione."
+
+#: core/templates/fw/abonnement.html:3
+msgid "Abonnement · swissImmo"
+msgstr "Abbonamento · swissImmo"
+
+#: core/templates/fw/integrationen.html:8
+msgid "Verbundene Dienste und Schnittstellen von swissImmo."
+msgstr "Servizi collegati e interfacce di swissImmo."
+
+#: core/views/fw/profil.py:902
+msgid ""
+"Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über "
+"deinen SMTP-Server."
+msgstr ""
+"Invia solleciti, conteggi e lettere direttamente da swissImmo tramite il tuo"
+" server SMTP."
+
+msgid "Auftrag — SwissImmo"
+msgstr "Incarico — SwissImmo"
+
+msgid "SwissImmo · Auftrag für Handwerker"
+msgstr "SwissImmo · Incarico per artigiano"
+
+msgid "Ungültige Eingabe – swissImmo"
+msgstr "Inserimento non valido – swissImmo"
+
+msgid "Archivierte Akten ansehen und wiederherstellen"
+msgstr "Consultare e ripristinare le pratiche archiviate"
+
+msgid "Ablaufdatum"
+msgstr "Data di scadenza"
+
+msgid "Bitte eine Zahl eingeben."
+msgstr "Inserire un numero."
+
+msgid "Bitte einen Betrag eingeben, z. B. 1450.50"
+msgstr "Inserire un importo, ad es. 1450.50"
+
+msgid "Datei hochladen"
+msgstr "Caricare un file"
+
+msgid "Kontoauszug (Datei)"
+msgstr "Estratto conto (file)"
+
+msgid "MWST-Satz in Prozent"
+msgstr "Aliquota IVA in percento"
+
+msgid "Rechnung auswählen"
+msgstr "Selezionare la fattura"
+
+msgid "Richtung"
+msgstr "Direzione"
+
+msgid "Unterschrift als Bilddatei"
+msgstr "Firma come file immagine"
+
+msgid "Vertrag auswählen"
+msgstr "Selezionare il contratto"
+
+#, python-format
+msgid "Lebensdauer in Jahren: %(k)s"
+msgstr "Durata di vita in anni: %(k)s"
+
+#, python-format
+msgid "Bemerkung: %(k)s"
+msgstr "Osservazione: %(k)s"

@@ -124,6 +124,14 @@ class OrganisationMiddleware:
                     benutzer, getattr(request, 'session', None))
                 if organisation is not None:
                     setze_organisation(organisation)
+                elif vorher is None and request.path.startswith('/admin/') and not request.path.startswith(
+                        ('/admin/login/', '/admin/logout/')):
+                    # Ein Konto ohne Verwaltung (typisch: ein Superuser, den es nur im Admin gibt) hat
+                    # keinen Mandanten. Jede Liste dort wirft `OrganisationsFehler` (500): ehrlicher ist
+                    # eine Absage (DESIGN-15). Nur ohne umgebenden Kontext (`vorher`): Wer ihn ausdrücklich
+                    # gesetzt hat (Test, Management-Befehl), arbeitet absichtlich in einer Verwaltung.
+                    from django.core.exceptions import PermissionDenied
+                    raise PermissionDenied('Dieses Konto gehört keiner Verwaltung an.')
                 request.organisation = organisation
             else:
                 request.organisation = None

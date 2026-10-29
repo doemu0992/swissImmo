@@ -34996,7 +34996,6 @@ msgstr ""
 "a payment slip."
 
 # --- Öffentliche Formulare, Aussenseiten (Etappe 3, 29.10.2026) ---
-
 msgid "Alle Angaben ohne Gewähr"
 msgstr "All information without guarantee"
 
@@ -35009,8 +35008,12 @@ msgstr "Your report goes straight to the property management."
 msgid "Prüfen & absenden"
 msgstr "Review and send"
 
-msgid "Was ist passiert? Ein Foto hilft der Verwaltung, das Problem schneller einzuschätzen."
-msgstr "What happened? A photo helps the property management assess the problem faster."
+msgid ""
+"Was ist passiert? Ein Foto hilft der Verwaltung, das Problem schneller "
+"einzuschätzen."
+msgstr ""
+"What happened? A photo helps the property management assess the problem "
+"faster."
 
 msgid "Bitte beschreiben Sie das Anliegen."
 msgstr "Please describe your request."
@@ -35018,17 +35021,27 @@ msgstr "Please describe your request."
 msgid "Wie die Verwaltung Sie erreicht."
 msgstr "How the property management can reach you."
 
-msgid "Wir konnten Ihre Meldung keiner Liegenschaft zuordnen. Bitte verwenden Sie die E-Mail-Adresse, die bei Ihrer Verwaltung hinterlegt ist, oder melden Sie sich direkt bei Ihrer Verwaltung."
-msgstr "We could not assign your report to a property. Please use the e-mail address on file with your property management, or contact them directly."
+msgid ""
+"Wir konnten Ihre Meldung keiner Liegenschaft zuordnen. Bitte verwenden Sie "
+"die E-Mail-Adresse, die bei Ihrer Verwaltung hinterlegt ist, oder melden Sie"
+" sich direkt bei Ihrer Verwaltung."
+msgstr ""
+"We could not assign your report to a property. Please use the e-mail address"
+" on file with your property management, or contact them directly."
 
 msgid "Dieses Objekt ist nicht mehr ausgeschrieben"
 msgstr "This unit is no longer advertised"
 
-msgid "Die Ausschreibung wurde beendet — vermutlich ist die Wohnung bereits vergeben. Bewerbungen können dafür keine mehr entgegengenommen werden."
-msgstr "The listing has ended — the apartment has probably been let already. Applications can no longer be accepted for it."
+msgid ""
+"Die Ausschreibung wurde beendet — vermutlich ist die Wohnung bereits "
+"vergeben. Bewerbungen können dafür keine mehr entgegengenommen werden."
+msgstr ""
+"The listing has ended — the apartment has probably been let already. "
+"Applications can no longer be accepted for it."
 
 msgid "Bei Fragen wenden Sie sich bitte direkt an die Verwaltung."
-msgstr "If you have questions, please contact the property management directly."
+msgstr ""
+"If you have questions, please contact the property management directly."
 
 #, python-format
 msgid "Bewerbung: %(name)s"
@@ -35040,14 +35053,21 @@ msgstr "Digital application"
 msgid "Bewerbung eingereicht!"
 msgstr "Application submitted!"
 
-msgid "Vielen Dank für Ihr Interesse. Wir haben Ihre Unterlagen erhalten und werden diese nun prüfen. Wir melden uns in Kürze bei Ihnen."
-msgstr "Thank you for your interest. We have received your documents and will now review them. We will get back to you shortly."
+msgid ""
+"Vielen Dank für Ihr Interesse. Wir haben Ihre Unterlagen erhalten und werden"
+" diese nun prüfen. Wir melden uns in Kürze bei Ihnen."
+msgstr ""
+"Thank you for your interest. We have received your documents and will now "
+"review them. We will get back to you shortly."
 
 msgid "Die Verbindung wurde unterbrochen. Bitte versuchen Sie es erneut."
 msgstr "The connection was interrupted. Please try again."
 
-msgid "Die Bewerbung konnte nicht gesendet werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut."
-msgstr "The application could not be sent. Please reload the page and try again."
+msgid ""
+"Die Bewerbung konnte nicht gesendet werden. Bitte laden Sie die Seite neu "
+"und versuchen Sie es erneut."
+msgstr ""
+"The application could not be sent. Please reload the page and try again."
 
 msgid "Ein unbekannter Fehler ist aufgetreten."
 msgstr "An unknown error occurred."
@@ -35214,8 +35234,12 @@ msgstr "Submit the extract later"
 msgid "Auszug hochladen"
 msgstr "Upload the extract"
 
-msgid "Bitte laden Sie einen Betreibungsauszug hoch oder wählen Sie «Auszug nachreichen»."
-msgstr "Please upload a debt enforcement register extract or choose “Submit the extract later”."
+msgid ""
+"Bitte laden Sie einen Betreibungsauszug hoch oder wählen Sie «Auszug "
+"nachreichen»."
+msgstr ""
+"Please upload a debt enforcement register extract or choose “Submit the "
+"extract later”."
 
 msgid "Keinen aktuellen Auszug zur Hand?"
 msgstr "No current extract at hand?"
@@ -35235,27 +35259,187 @@ msgstr "Please choose a preferred move-in date."
 msgid "Ausweis und Einkommensnachweis"
 msgstr "ID and proof of income"
 
-msgid "Diese Unterlagen fragen wir erst an, wenn Sie in die engere Auswahl kommen — nicht schon jetzt von allen Interessentinnen und Interessenten."
-msgstr "We only ask for these documents if you make the shortlist — not from all applicants at this stage."
+msgid ""
+"Diese Unterlagen fragen wir erst an, wenn Sie in die engere Auswahl kommen —"
+" nicht schon jetzt von allen Interessentinnen und Interessenten."
+msgstr ""
+"We only ask for these documents if you make the shortlist — not from all "
+"applicants at this stage."
 
 msgid "Was mit Ihren Angaben geschieht"
 msgstr "What happens to your information"
 
 #, python-format
-msgid "Ausführlich in der <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\" class=\"fw-link\">Datenschutzerklärung</a>."
-msgstr "Details in the <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\" class=\"fw-link\">privacy statement</a>."
+msgid ""
+"Ausführlich in der <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\" "
+"class=\"fw-link\">Datenschutzerklärung</a>."
+msgstr ""
+"Details in the <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\" "
+"class=\"fw-link\">privacy statement</a>."
 
 msgid "Verbindlich einreichen"
 msgstr "Submit binding application"
 
-msgid "Ihre Angaben dienen <strong>ausschliesslich</strong> der Auswahl der Mieterschaft für dieses Objekt und werden für nichts anderes verwendet."
-msgstr "Your details are used <strong>exclusively</strong> to select the tenants for this unit and for nothing else."
+msgid ""
+"Ihre Angaben dienen <strong>ausschliesslich</strong> der Auswahl der "
+"Mieterschaft für dieses Objekt und werden für nichts anderes verwendet."
+msgstr ""
+"Your details are used <strong>exclusively</strong> to select the tenants for"
+" this unit and for nothing else."
 
-msgid "Die angegebenen Kontakte bei Ihrer bisherigen Vermieterschaft und Ihrem Arbeitgeber können wir für eine <strong>Referenzauskunft kontaktieren</strong>."
-msgstr "We may <strong>contact for a reference</strong> the contacts you give at your current landlord and your employer."
+msgid ""
+"Die angegebenen Kontakte bei Ihrer bisherigen Vermieterschaft und Ihrem "
+"Arbeitgeber können wir für eine <strong>Referenzauskunft "
+"kontaktieren</strong>."
+msgstr ""
+"We may <strong>contact for a reference</strong> the contacts you give at "
+"your current landlord and your employer."
 
-msgid "Erhalten Sie die Wohnung nicht, werden Ihre Unterlagen einschliesslich Betreibungsauszug nach dem Vermietungsentscheid <strong>gelöscht</strong>."
-msgstr "If you do not get the apartment, your documents, including the debt enforcement extract, are <strong>deleted</strong> after the letting decision."
+msgid ""
+"Erhalten Sie die Wohnung nicht, werden Ihre Unterlagen einschliesslich "
+"Betreibungsauszug nach dem Vermietungsentscheid <strong>gelöscht</strong>."
+msgstr ""
+"If you do not get the apartment, your documents, including the debt "
+"enforcement extract, are <strong>deleted</strong> after the letting "
+"decision."
 
-msgid "Sie haben jederzeit das Recht auf <strong>Auskunft, Berichtigung und Löschung</strong> Ihrer Daten."
-msgstr "You have the right at any time to <strong>information, correction and deletion</strong> of your data."
+msgid ""
+"Sie haben jederzeit das Recht auf <strong>Auskunft, Berichtigung und "
+"Löschung</strong> Ihrer Daten."
+msgstr ""
+"You have the right at any time to <strong>information, correction and "
+"deletion</strong> of your data."
+
+#: core/templates/403.html:6
+msgid "Keine Berechtigung – swissImmo"
+msgstr "No permission – swissImmo"
+
+#: core/templates/404.html:6
+msgid "Seite nicht gefunden – swissImmo"
+msgstr "Page not found – swissImmo"
+
+#: core/templates/500.html:6
+msgid "Ein Fehler ist aufgetreten – swissImmo"
+msgstr "An error occurred – swissImmo"
+
+#: core/templates/core/_passwort_shell_top.html:7
+msgid "Passwort | SwissImmo Portal"
+msgstr "Password | SwissImmo portal"
+
+#: core/templates/core/login.html:6
+msgid "Login | SwissImmo Portal"
+msgstr "Login | SwissImmo portal"
+
+#: core/templates/core/login.html:154
+msgid "© swissImmo · Alle Angaben ohne Gewähr"
+msgstr "© swissImmo · All information without guarantee"
+
+#: core/templates/core/mieter_portal.html:4
+msgid "Mieterportal — SwissImmo"
+msgstr "Tenant portal — SwissImmo"
+
+#: core/templates/core/portal.html:6
+msgid "Eigentümer-Portal — SwissImmo"
+msgstr "Owner portal — SwissImmo"
+
+#: core/templates/core/portal.html:344
+msgid "SwissImmo Eigentümer-Portal · Alle Angaben ohne Gewähr"
+msgstr "SwissImmo owner portal · All information without guarantee"
+
+#: core/templates/core/portal_base.html:7
+msgid "Portal — SwissImmo"
+msgstr "Portal — SwissImmo"
+
+#: core/templates/core/portal_base.html:70
+msgid "SwissImmo Mieterportal · Alle Angaben ohne Gewähr"
+msgstr "SwissImmo tenant portal · All information without guarantee"
+
+#: core/templates/core/portal_login.html:6
+msgid "Portal-Login | SwissImmo"
+msgstr "Portal login | SwissImmo"
+
+#: core/templates/core/portal_login.html:156
+msgid "© swissImmo · Sicheres Login für Mietende und Eigentümer"
+msgstr "© swissImmo · Secure login for tenants and owners"
+
+#: core/templates/core/portal_login.html:163
+msgid "swissImmo Portal"
+msgstr "swissImmo portal"
+
+#: core/templates/core/postfach_form.html:8
+msgid "Zugangsdaten des Postfachs, aus dem swissImmo diese Mails abholt."
+msgstr "Credentials of the mailbox from which swissImmo fetches these emails."
+
+#: core/templates/core/zweifaktor_uebersicht.html:8
+msgid ""
+"Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt swissImmo einen "
+"Code aus Ihrer Authenticator-App."
+msgstr ""
+"Extra protection for your account: after the password, swissImmo asks for a "
+"code from your authenticator app."
+
+#: core/templates/fw/abonnement.html:3
+msgid "Abonnement · swissImmo"
+msgstr "Subscription · swissImmo"
+
+#: core/templates/fw/integrationen.html:8
+msgid "Verbundene Dienste und Schnittstellen von swissImmo."
+msgstr "Connected services and interfaces of swissImmo."
+
+#: core/views/fw/profil.py:902
+msgid ""
+"Versende Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über "
+"deinen SMTP-Server."
+msgstr ""
+"Send reminders, statements and letters directly from swissImmo via your SMTP"
+" server."
+
+msgid "Auftrag — SwissImmo"
+msgstr "Work order — SwissImmo"
+
+msgid "SwissImmo · Auftrag für Handwerker"
+msgstr "SwissImmo · Work order for tradesperson"
+
+msgid "Ungültige Eingabe – swissImmo"
+msgstr "Invalid entry – swissImmo"
+
+msgid "Archivierte Akten ansehen und wiederherstellen"
+msgstr "View and restore archived records"
+
+msgid "Ablaufdatum"
+msgstr "Expiry date"
+
+msgid "Bitte eine Zahl eingeben."
+msgstr "Please enter a number."
+
+msgid "Bitte einen Betrag eingeben, z. B. 1450.50"
+msgstr "Please enter an amount, e.g. 1450.50"
+
+msgid "Datei hochladen"
+msgstr "Upload file"
+
+msgid "Kontoauszug (Datei)"
+msgstr "Bank statement (file)"
+
+msgid "MWST-Satz in Prozent"
+msgstr "VAT rate in percent"
+
+msgid "Rechnung auswählen"
+msgstr "Select invoice"
+
+msgid "Richtung"
+msgstr "Direction"
+
+msgid "Unterschrift als Bilddatei"
+msgstr "Signature as image file"
+
+msgid "Vertrag auswählen"
+msgstr "Select contract"
+
+#, python-format
+msgid "Lebensdauer in Jahren: %(k)s"
+msgstr "Service life in years: %(k)s"
+
+#, python-format
+msgid "Bemerkung: %(k)s"
+msgstr "Note: %(k)s"

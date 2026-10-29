@@ -19,6 +19,8 @@ from django.utils.dateparse import parse_date, parse_datetime
 from django.views.decorators.http import require_POST
 
 from core.auth import SCHREIB_ROLLEN, TEAM_ROLLEN, rolle_erforderlich
+from core.utils.betrag import betrag_normalisieren
+from core.views.fw._basis import _global_filter
 from core.models import Pendenz
 from portfolio.models import Einheit, Liegenschaft
 from stweg import anfragen as anf
@@ -69,7 +71,7 @@ def stweg_uebersicht(request):
             'naechste': (Versammlung.objects.filter(liegenschaft=lg, datum__gte=timezone.now())
                          .order_by('datum').first()),
         })
-    return render(request, 'stweg/uebersicht.html', {'nav': 'stweg', 'gemeinschaften': gemeinschaften})
+    return render(request, 'stweg/uebersicht.html', {**_global_filter(request), 'nav': 'stweg', 'gemeinschaften': gemeinschaften})
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
@@ -81,7 +83,7 @@ def stweg_gemeinschaft(request, stweg_id):
     except WertquotenFehler as e:
         quoten_fehler = str(e.message)
     return render(request, 'stweg/gemeinschaft.html', {
-        'nav': 'stweg', 'lg': lg, 'quoten_fehler': quoten_fehler,
+        **_global_filter(request), 'nav': 'stweg', 'lg': lg, 'quoten_fehler': quoten_fehler,
         'quoten_summe': wertquoten_summe(lg),
         'einheiten': stimm_einheiten(lg).select_related('stockwerkeigentuemer').order_by('bezeichnung'),
         'versammlungen': Versammlung.objects.filter(liegenschaft=lg),
@@ -156,7 +158,7 @@ def stweg_versammlung(request, pk):
         t.stimmen_je_einheit = [(e, stimmen.get(e.pk, '')) for e in einheiten
                                 if e.anwesenheit != Anwesenheit.ABWESEND]
     return render(request, 'stweg/versammlung.html', {
-        'nav': 'stweg', 'v': v, 'lg': lg, 'traktanden': traktanden, 'einheiten': einheiten,
+        **_global_filter(request), 'nav': 'stweg', 'v': v, 'lg': lg, 'traktanden': traktanden, 'einheiten': einheiten,
         'einladung_probleme': einladung_pruefen(v) if v.status in (v.ENTWURF, v.EINGELADEN) else [],
         'protokoll_probleme': protokoll_pruefen(v),
         'praesenz': beschluss.praesenz(v) if v.status != v.ENTWURF else None,
@@ -422,7 +424,7 @@ def _betrag(wert):
     """Beträge aus dem Formular: «1'234.50», «1234,5» — sonst None."""
     from decimal import Decimal, InvalidOperation
     try:
-        return Decimal((wert or '').strip().replace("'", '').replace(',', '.')).quantize(Decimal('0.01'))
+        return Decimal(betrag_normalisieren(wert)).quantize(Decimal('0.01'))
     except InvalidOperation:
         return None
 
@@ -461,7 +463,7 @@ def stweg_abrechnung(request, stweg_id):
     # Lesen legt nichts an: den Fonds gibt es erst mit der ersten Einlage.
     fonds = Erneuerungsfonds.objects.filter(liegenschaft=lg).first()
     return render(request, 'stweg/abrechnung.html', {
-        'nav': 'stweg', 'lg': lg, 'jahr': jahr, 'abrechnung': abrechnung, 'einheiten': einheiten,
+        **_global_filter(request), 'nav': 'stweg', 'lg': lg, 'jahr': jahr, 'abrechnung': abrechnung, 'einheiten': einheiten,
         'vorschau': None if abrechnung else service.kostenzeilen(jahr),
         'vorschau_total': None if abrechnung else service.allgemeine_kosten(jahr),
         'akontos': StwegAkonto.objects.filter(einheit__liegenschaft=lg, datum__year=jahr)
@@ -719,7 +721,7 @@ def stweg_zirkular(request, pk):
     for e in einheiten:
         e.stimme = stimmen.get(e.pk)
     return render(request, 'stweg/zirkular.html', {
-        'nav': 'stweg', 'z': z, 'lg': z.liegenschaft, 'einheiten': einheiten,
+        **_global_filter(request), 'nav': 'stweg', 'z': z, 'lg': z.liegenschaft, 'einheiten': einheiten,
         'probleme': zk.pruefen(z) if z.status in (z.ENTWURF, z.LAUFEND) else [],
         'zaehlung': zk.auswerten(z) if z.status != z.ENTWURF else None,
         'vollstaendig': zk.vollstaendig(z), 'frist_vorbei': timezone.localdate() > z.frist_bis,
@@ -805,7 +807,7 @@ def _quote(wert):
     """Wertquote aus dem Formular: «200», «12,5» — nicht negativ, höchstens 99999.99."""
     from decimal import Decimal, InvalidOperation
     try:
-        q = Decimal((wert or '').strip().replace("'", '').replace(',', '.')).quantize(Decimal('0.01'))
+        q = Decimal(betrag_normalisieren(wert)).quantize(Decimal('0.01'))
     except InvalidOperation:
         return None
     return q if 0 <= q <= Decimal('99999.99') else None
@@ -826,7 +828,7 @@ def stweg_einheiten(request, stweg_id):
     neben = list(lg.einheiten.filter(gehoert_zu__isnull=False).select_related('gehoert_zu').order_by('bezeichnung'))
     summe = wertquoten_summe(lg)
     return render(request, 'stweg/einheiten.html', {
-        'nav': 'stweg', 'lg': lg, 'einheiten': haupt, 'nebenraeume': neben,
+        **_global_filter(request), 'nav': 'stweg', 'lg': lg, 'einheiten': haupt, 'nebenraeume': neben,
         'summe': summe, 'passt': summe == lg.wertquote_total,
         'eigentuemer': Eigentuemer.objects.all().order_by('firma_oder_name'),
         'ohne_eigentuemer': sum(1 for e in haupt if e.stockwerkeigentuemer_id is None),
@@ -967,7 +969,7 @@ def stweg_aktivieren(request, stweg_id):
 def stweg_vorgaben(request, stweg_id):
     lg = _gemeinschaft(stweg_id)
     return render(request, 'stweg/vorgaben.html', {
-        'nav': 'stweg', 'lg': lg, 'v': vorgaben.vorgaben_von(lg), 'system_frist': vorgaben.SYSTEM_EINLADUNGSFRIST})
+        **_global_filter(request), 'nav': 'stweg', 'lg': lg, 'v': vorgaben.vorgaben_von(lg), 'system_frist': vorgaben.SYSTEM_EINLADUNGSFRIST})
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

@@ -72,7 +72,7 @@ Das Formular MUSS enctype="multipart/form-data" haben.
 
             {# --- Datei-Upload --- #}
             <div data-us-panel="datei" class="hidden">
-                <input type="file" name="unterschrift_bild" accept="image/png,image/jpeg"
+                <input type="file" name="unterschrift_bild" aria-label="{% trans 'Unterschrift als Bilddatei' %}" accept="image/png,image/jpeg"
                        class="fw-datei w-full">
                 <p class="text-xs fw-faint mt-1">{% trans "Unterschrift auf weissem Papier abfotografieren — der weisse Hintergrund wird automatisch transparent." %}</p>
             </div>

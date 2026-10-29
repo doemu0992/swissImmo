@@ -62,7 +62,7 @@ from django.utils.translation import gettext as _
 #: und keine Tagesarbeit.
 EINSTELLUNGEN_KEYS = ['einstellungen', 'account', 'abonnement', 'benutzer',
                       'logbuch', 'vorlagen', 'integrationen', 'rechtsgrundlagen',
-                      'regelwerk']
+                      'regelwerk', 'archiv']
 
 #: Die Seiten des Einstellungs-Bereichs.
 #:
@@ -86,6 +86,7 @@ EINSTELLUNGEN_ZIELE = [
     '/neu/rechtsgrundlagen/',
     '/neu/regelwerk/',
     '/neu/einstellungen/zahlungsfreigabe/',
+    '/neu/archiv/',
 ]
 
 
@@ -127,7 +128,10 @@ def nav_gruppen():
             # wenn jemand wissen will, wer für wen einspringt — nicht, wenn
             # jemand Ferien einträgt.
             _i(_('Vertretung'), '/neu/abwesenheiten/', ['abwesenheiten']),
-        ], extra_keys=['dashboard', 'faelle', 'arbeit']),
+        # `kommunikation` (Serienbrief-Assistent) und `suche` (Trefferliste) haben keinen eigenen Menüpunkt,
+        # leuchten aber unter «Heute» statt nirgends (DESIGN-04). Ob sie einen Punkt bekommen, ist offen
+        # (DESIGN-05: Entscheidungsfrage).
+        ], extra_keys=['dashboard', 'faelle', 'arbeit', 'suche', 'kommunikation']),
 
         # ── AKTEN ────────────────────────────────────────────────────────────
         # Die Register in der Reihenfolge, in der man sie aufschlägt: vom
@@ -149,7 +153,8 @@ def nav_gruppen():
             _i(_('Vermarktung'), '/neu/vermarktung/', ['vermarktung']),
             _i(_('Bewerbungen'), '/neu/bewerbungen/', ['bewerbungen']),
             _i(_('Ersatz & Ausstattung'), '/neu/ersatzplanung/', ['assets']),
-        ], badge='schaeden'),
+        # `dokumente` (Ablage und Dokumentverlauf) leuchtet unter «Akten», ohne eigenen Menüpunkt (DESIGN-04/-05).
+        ], badge='schaeden', extra_keys=['dokumente']),
 
         # ── LÄUFE ────────────────────────────────────────────────────────────
         # Alles, was einen Zustand hat und blockieren kann. Der Bereich fehlte
@@ -401,6 +406,9 @@ def fw_navigation(request):
                          'fw_suche_ziel': suche.suchseite}
     except PermissionDenied:
         suche_kontext = {}
+    # «Neuer Fall» im Kopf nur, wo die Rolle ihn anlegen darf (ROUTE-02): aus den schon gelesenen Rollen, ohne
+    # zusätzliche Abfrage je Seite.
     return {'fw_nav_gruppen': gruppen, 'fw_palette': palette,
             'fw_einstellungen_keys': EINSTELLUNGEN_KEYS,
+            'fw_neuer_fall': darf_oeffnen(user, '/neu/faelle/neu/', meine),
             'fw_mandanten': mandanten, 'fw_mandant': aktiv, **suche_kontext}

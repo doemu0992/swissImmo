@@ -4,6 +4,7 @@ import binascii
 import io
 
 from django.core.files.base import ContentFile
+from core.utils.betrag import betrag_normalisieren
 
 MAX_UNTERSCHRIFT_BYTES = 750 * 1024        # eine Unterschrift als PNG ist wenige Kilobyte
 MAX_UNTERSCHRIFT_PIXEL = (2000, 1000)
@@ -49,7 +50,7 @@ def _betrag(text):
     """CHF-Betrag aus dem Formular; None bei leer, unlesbar oder negativ.
     Höchstens 99'999.99 (Feldgrösse) — ein Schlüssel kostet nicht mehr."""
     from decimal import Decimal, InvalidOperation
-    text = (text or '').strip().replace("'", '').replace(',', '.')
+    text = betrag_normalisieren(text)
     if not text:
         return None
     try:

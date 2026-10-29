@@ -13,6 +13,7 @@ from django.views.decorators.http import require_POST
 
 from core.services.archiv import ausblenden
 from core.auth import SCHREIB_ROLLEN, TEAM_ROLLEN, rolle_erforderlich
+from core.views.fw._basis import _global_filter
 from stweg import dokumente as dok
 from stweg.models import StwegDokument
 from stweg.views import _gemeinschaft
@@ -39,7 +40,7 @@ def datei_antwort(d, feld='datei'):
 def stweg_dokumente(request, stweg_id):
     lg = _gemeinschaft(stweg_id)
     return render(request, 'stweg/dokumente.html', {
-        'nav': 'stweg', 'lg': lg, 'status': dok.pruefen(lg),
+        **_global_filter(request), 'nav': 'stweg', 'lg': lg, 'status': dok.pruefen(lg),
         'dokumente': ausblenden(StwegDokument.objects.filter(liegenschaft=lg)),
         'kategorien': StwegDokument.KATEGORIE_CHOICES})
 
