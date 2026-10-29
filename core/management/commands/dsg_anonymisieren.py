@@ -41,7 +41,10 @@ class Command(BaseCommand):
 
     def _anonymisieren(self, organisation, opts):
         heute = timezone.localdate()
-        grenze = heute.replace(year=heute.year - opts['jahre'])
+        try:
+            grenze = heute.replace(year=heute.year - opts['jahre'])
+        except ValueError:                      # 29. Februar in einem Jahr ohne Schalttag
+            grenze = heute.replace(year=heute.year - opts['jahre'], day=28)
         kandidaten = []
         for m in Mieter.objects.filter(anonymisiert=False, typ='person'):
             ok, _ = kann_anonymisieren(m)
