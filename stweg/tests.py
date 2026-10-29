@@ -50,6 +50,8 @@ class WertquotenValidierungTests(TestCase):
         lg, _ = neue_stweg(quoten=(20, 30, 50), total=100)
         lg.status = 'aktiv'
         lg.save()
+        lg.refresh_from_db()
+        self.assertEqual(lg.status, 'aktiv')     # gespeichert, nicht nur «ohne Fehler»
 
     def test_neue_stweg_nicht_direkt_aktiv(self):
         with self.assertRaises(WertquotenFehler):
@@ -68,6 +70,8 @@ class WertquotenValidierungTests(TestCase):
     def test_entwurf_darf_unvollstaendig_sein(self):
         lg, _ = neue_stweg(quoten=(200, 300))
         lg.save()                                   # Entwurf: keine Prüfung
+        lg.refresh_from_db()
+        self.assertEqual(lg.status, 'entwurf')
 
 
 class VerteilungTests(TestCase):
@@ -400,6 +404,8 @@ class NebenraeumeTests(TestCase):
         Einheit.objects.create(liegenschaft=lg, bezeichnung='Garage', typ='gar', wertquote=Decimal(100))
         lg.status = 'aktiv'
         lg.save()                                                     # 200+300+400+100
+        lg.refresh_from_db()
+        self.assertEqual(lg.status, 'aktiv')
 
     def test_nebenraum_ohne_eigentuemer_blockiert_keine_einladung_und_keine_abstimmung(self):
         from stweg.test_versammlung import sonnenblick, versammlung

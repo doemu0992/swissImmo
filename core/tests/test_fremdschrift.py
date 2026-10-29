@@ -37,7 +37,6 @@ DEKLARATION = re.compile(r'font-family\s*:\s*([^;}"<]+)', re.I)
 ALTFAELLE = {
     'core/templates/modern_base.html',
     'core/templates/core/public_ticket_form.html',
-    'core/templates/core/public_datenschutz.html',
     'core/templates/core/dossier/base.html',
     'static/css/fairwalter_theme.css',
     'core/templates/fw/kommunikation.html',  # Druckfenster «Brief», Zeile 327: Inter ist nicht geladen
