@@ -68,6 +68,10 @@ from .verteilschluessel import *      # noqa: F401,F403 — Verteilschlüssel de
 from .nk_wizard import *              # noqa: F401,F403 — Nebenkosten-Wizard (Modul 1)
 from .staffel_mitteilung import *      # noqa: F401,F403 — Staffelmiete: Mitteilung der Erhöhung (Art. 269d Abs. 5 OR)
 from .anfangsformular import *          # noqa: F401,F403 — Nachweis zum Anfangsmietzins-Formular (Art. 270 Abs. 2 OR)
+from .daten import (  # noqa: F401 — Einstellungen «Daten»: Import für Wechselkunden, Mandats- und Buchungsexport
+    fw_daten, fw_daten_import, fw_daten_import_vorlage, fw_daten_import_lauf, fw_daten_import_ausfuehren,
+    fw_daten_import_verwerfen, fw_daten_export, fw_daten_export_einstellung, fw_daten_export_journal,
+    fw_daten_export_mandat)
 from .buchhaltung import *   # noqa: F401,F403 — Block 5
 from .mietzins import *      # noqa: F401,F403 — Block 5
 from .kreditoren import *    # noqa: F401,F403 — Block 4

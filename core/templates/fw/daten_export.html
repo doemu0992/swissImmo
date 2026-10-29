@@ -1,0 +1,87 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% comment %}
+DATENEXPORT — Mandatsexport (ZIP) und Buchungsjournal für Banana/Abacus mit Einstellungen.
+Die Überschriften und die Kontenzuordnung stehen NICHT im Code: Sie gehören der Buchhaltung der Verwaltung.
+{% endcomment %}
+{% block title %}{% trans "Daten exportieren" %} — swissImmo{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/einstellungen/">{% trans "Einstellungen" %}</a>
+    {% zeichen 'weiter' %}
+    <a href="/neu/einstellungen/daten/">{% trans "Daten" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Exportieren" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Daten exportieren" %}</h1>
+        <p>{% trans "Jeder Export wird im Logbuch festgehalten." %}</p>
+    </div>
+</div>
+
+<div class="fw-card max-w-3xl mb-3">
+    <div class="fw-kopf"><h3 class="fw-t">{% trans "Buchungsjournal (Banana, Abacus, Treuhand)" %}</h3></div>
+    <form method="post" action="/neu/einstellungen/daten/export/journal/" class="fw-formular" data-testid="daten-journal-form">
+        {% csrf_token %}
+        <div class="fw-rumpf">
+            <div class="fw-feldblock"><label for="exp-von" class="fw-label">{% trans "Von" %}</label>
+                <input id="exp-von" name="von" type="date" value="{{ von }}" class="fw-feld" required></div>
+            <div class="fw-feldblock"><label for="exp-bis" class="fw-label">{% trans "Bis (eingeschlossen)" %}</label>
+                <input id="exp-bis" name="bis" type="date" value="{{ bis }}" class="fw-feld" required></div>
+            <p class="fw-mutet">{% trans "Spalten: Buchungsdatum, Belegnummer, Soll, Haben, Betrag, Text, MWST-Code (Überschriften unten einstellbar). Stornobuchungen stehen als eigene Zeilen. Es werden nur Buchungen gelesen, nichts wird verändert." %}</p>
+        </div>
+        <div class="fw-fuss"><button type="submit" class="fw-btn fw-primary" data-testid="daten-journal-export">{% zeichen 'herunterladen' klasse='mr-1' %}{% trans "Journal herunterladen (CSV)" %}</button></div>
+    </form>
+</div>
+
+<div class="fw-card max-w-3xl mb-3">
+    <div class="fw-kopf"><h3 class="fw-t">{% trans "Einstellungen für das Buchungsjournal" %}</h3></div>
+    <div class="fw-hinweis warn mx-3 mt-2">
+        <span class="fw-hi">{% zeichen 'warnung' %}</span>
+        <div class="fw-ht">{% trans "Welche Spaltenüberschriften, Kontonummern und MWST-Codes Banana oder Abacus erwarten, ist hier nicht fest eingebaut: Das legt Ihre Buchhaltung fest. Die Vorgaben sind allgemeine Namen. Bitte mit einer Probedatei im Zielprogramm prüfen, bevor Sie ein ganzes Jahr übernehmen." %}</div>
+    </div>
+    <form method="post" action="/neu/einstellungen/daten/export/einstellung/" class="fw-formular" data-testid="daten-einstellung-form">
+        {% csrf_token %}
+        <div class="fw-rumpf">
+            {% for s in spalten_liste %}
+            <div class="fw-feldblock"><label for="spalte_{{ s.k }}" class="fw-label">{% blocktrans with n=s.standard %}Überschrift «{{ n }}»{% endblocktrans %}</label>
+                <input id="spalte_{{ s.k }}" name="spalte_{{ s.k }}" type="text" maxlength="40" value="{{ s.wert }}" class="fw-feld"></div>
+            {% endfor %}
+            <div class="fw-feldblock"><label for="trenner" class="fw-label">{% trans "Trennzeichen" %}</label>
+                <select id="trenner" name="trenner" class="fw-feld">
+                    {% for wert, name in trenner_liste %}<option value="{{ wert }}"{% if einst.trenner == wert %} selected{% endif %}>{{ name }}</option>{% endfor %}
+                </select></div>
+            <div class="fw-feldblock"><label for="datumsformat" class="fw-label">{% trans "Datumsformat" %}</label>
+                <select id="datumsformat" name="datumsformat" class="fw-feld">
+                    <option value="ch"{% if einst.datumsformat == 'ch' %} selected{% endif %}>TT.MM.JJJJ</option>
+                    <option value="iso"{% if einst.datumsformat == 'iso' %} selected{% endif %}>JJJJ-MM-TT</option>
+                </select></div>
+            <div class="fw-feldblock"><label for="dezimal" class="fw-label">{% trans "Dezimalzeichen" %}</label>
+                <select id="dezimal" name="dezimal" class="fw-feld">
+                    <option value="."{% if einst.dezimal == '.' %} selected{% endif %}>1500.00</option>
+                    <option value=","{% if einst.dezimal == ',' %} selected{% endif %}>1500,00</option>
+                </select></div>
+            <div class="fw-feldblock"><label for="konten" class="fw-label">{% trans "Kontenzuordnung" %}</label>
+                <textarea id="konten" name="konten" rows="6" class="fw-feld" spellcheck="false" placeholder="1020;1000&#10;4000;3000;M81">{{ konten_text }}</textarea>
+                <p class="fw-mutet">{% trans "Eine Zeile je Konto: eigene Kontonummer;Kontonummer im Zielprogramm, optional ;MWST-Code. Konten ohne Zeile werden mit ihrer eigenen Nummer exportiert. Eine Buchung trägt in swissImmo keinen Steuercode; der MWST-Code kommt nur aus dieser Zuordnung (zuerst das Soll-, dann das Habenkonto)." %}</p></div>
+        </div>
+        <div class="fw-fuss"><button type="submit" class="fw-btn fw-primary" data-testid="daten-einstellung-speichern">{% trans "Einstellungen speichern" %}</button></div>
+    </form>
+</div>
+
+{% if darf_mandat %}
+<div class="fw-card max-w-3xl mb-4">
+    <div class="fw-kopf"><h3 class="fw-t">{% trans "Mandatsexport (alle Daten)" %}</h3></div>
+    <form method="post" action="/neu/einstellungen/daten/export/mandat/" class="fw-formular" data-testid="daten-mandat-form">
+        {% csrf_token %}
+        <div class="fw-rumpf">
+            <p class="fw-mutet">{% trans "Ein ZIP mit allen Daten Ihrer Verwaltung: je Tabelle eine CSV- und eine JSON-Datei, dazu die Dokumente. Für den Wechsel zu einem anderen System. Enthält Personendaten: sicher aufbewahren. Nicht enthalten sind Passwörter, Zugangsdaten und AHV-Nummern. Bei sehr grossen Beständen dauert die Erstellung länger; dann ohne Dokumente exportieren oder den Befehl «mandat_exportieren» auf dem Server verwenden." %}</p>
+            <div class="fw-feldblock"><label class="fw-haekchen"><input type="checkbox" name="dokumente" class="fw-akzent" checked>{% trans "Dokumente einschliessen" %}</label></div>
+        </div>
+        <div class="fw-fuss"><button type="submit" class="fw-btn fw-primary" data-testid="daten-mandat-export">{% zeichen 'herunterladen' klasse='mr-1' %}{% trans "Mandatsexport herunterladen (ZIP)" %}</button></div>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

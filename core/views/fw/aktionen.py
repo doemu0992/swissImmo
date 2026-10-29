@@ -951,6 +951,8 @@ def fw_einstellungen(request):
          'url': '/konto/zwei-faktor/', 'icon': 'gesperrt'},
         {'titel': _('Zahlungsfreigabe'), 'sub': _('Freigabelimite für Lieferantenzahlungen (Vier-Augen-Prinzip)'),
          'url': '/neu/einstellungen/zahlungsfreigabe/', 'icon': 'gesperrt'},
+        {'titel': _('Daten'), 'sub': _('Import für Wechselkunden, Mandatsexport, Buchungsjournal für Banana und Abacus'),
+         'url': '/neu/einstellungen/daten/', 'icon': 'dokument'},
         {'titel': _('Postfächer'), 'sub': _('E-Mail-Eingang für Ticket-Antworten und Rechnungen'),
          'url': '/neu/postfaecher/', 'icon': 'wartet'},
         {'titel': _('Logbuch'), 'sub': _('Wer hat wann was geändert'), 'url': '/neu/logbuch/', 'icon': 'verlauf'},
