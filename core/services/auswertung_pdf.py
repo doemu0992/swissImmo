@@ -3,6 +3,7 @@ und je Liegenschaft, mit einfachen Balken (ohne externe Chart-Library)."""
 import io
 from decimal import Decimal
 from core.services.dokumentsprache import nur_deutsch
+from core.services.druckfarben import EMBER
 
 
 def _fmt(d):
@@ -22,12 +23,12 @@ def generate_auswertung_pdf(typ_label, jahr, lg_name, total, monate, lg_rows, ve
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
     w, h = A4
-    indigo = colors.HexColor("#4F46E5")
+    ember = colors.HexColor(EMBER)
     rose = colors.HexColor("#E11D48")
     c.setTitle(f"Auswertung {typ_label} {jahr}")
 
     # Kopf
-    c.setFillColor(indigo)
+    c.setFillColor(ember)
     c.rect(0, h - 26 * mm, w, 26 * mm, fill=1, stroke=0)
     c.setFillColor(colors.white)
     c.setFont("Helvetica-Bold", 15)
@@ -63,7 +64,7 @@ def generate_auswertung_pdf(typ_label, jahr, lg_name, total, monate, lg_rows, ve
             c.drawString(20 * mm, y0, label_fn(z)[:28])
             # Balken
             frac = float(abs(wert) / maxabs) if maxabs else 0
-            c.setFillColor(rose if wert < 0 else indigo)
+            c.setFillColor(rose if wert < 0 else ember)
             c.rect(bar_x, y0 - 1 * mm, max(bar_w * frac, 0.4), 3.2 * mm, fill=1, stroke=0)
             c.setFillColor(rose if wert < 0 else colors.black)
             c.setFont("Helvetica", 9)

@@ -147,7 +147,7 @@ def pruefe_migrationsstand():
 _SEITE = """<!DOCTYPE html>
 <html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Wartungsarbeiten – swissImmo</title>
+<title>Wartungsarbeiten — immoswiss</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
          background: #f8fafc; color: #1e293b; display: flex; align-items: center;
@@ -160,7 +160,7 @@ _SEITE = """<!DOCTYPE html>
 </style></head>
 <body><main>
   <h1>Wartungsarbeiten</h1>
-  <p>swissImmo wird gerade aktualisiert und ist in wenigen Minuten wieder
+  <p>immoswiss wird gerade aktualisiert und ist in wenigen Minuten wieder
      erreichbar.</p>
   <p>Es gehen keine Daten verloren — gespeicherte Eingaben bleiben erhalten.</p>
   <p class="klein">Bitte in Kürze neu laden.</p>

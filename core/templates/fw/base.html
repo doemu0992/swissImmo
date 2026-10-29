@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>{% block title %}swissImmo{% endblock %}</title>
+    <title>{% block title %}immoswiss{% endblock %}</title>
     <script>/* Theme früh setzen (kein Flash) */(function(){try{var t=localStorage.getItem('fw-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2230%22 fill=%22%23b04416%22/><path d=%22M24 50 L50 27 L76 50 M32 45 V75 H68 V45%22 fill=%22none%22 stroke=%22white%22 stroke-width=%227%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
 {% include 'fw/_assets.html' %}
@@ -70,7 +70,7 @@ Detailseiten rufen sie beim Namen.
         <div class="fw-side-kopf sb-logo">
             <a href="{% if fw_kopf_reduziert %}{{ fw_kopf_start }}{% else %}/neu/{% endif %}" title="{% trans 'Zur Übersicht' %}" class="fw-marke-zeichen">si</a>
             <div class="fw-marke-text sb-logotext">
-                <a href="{% if fw_kopf_reduziert %}{{ fw_kopf_start }}{% else %}/neu/{% endif %}">swissImmo</a>
+                <a href="{% if fw_kopf_reduziert %}{{ fw_kopf_start }}{% else %}/neu/{% endif %}">immoswiss</a>
                 {% if fw_mandant and fw_mandanten|length <= 1 %}<small class="fw-faint" title="{{ fw_mandant.firma }}">{{ fw_mandant.firma }}</small>{% endif %}
             </div>
             <button type="button" onclick="fwToggleSidebar()" title="{% trans 'Menü ein-/ausklappen' %}" class="fw-side-knopf fw-nur-breit">

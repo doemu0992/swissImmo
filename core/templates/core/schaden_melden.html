@@ -1,293 +1,218 @@
-{% extends "modern_base.html" %}
-{% load zeichen i18n raumkatalog %}
-
+{% extends 'core/aussen_base.html' %}
+{% load zeichen i18n raumkatalog statisch %}
+{% block title %}{% trans "Schaden oder Anliegen melden" %} — immoswiss{% endblock %}
 {% block content %}
-{% raum_anzeige %}
+{% comment %}
+EIN FORMULAR FÜR DIE SCHADENMELDUNG (Etappe 3, 29.10.2026)
 
-<script id="liegenschaften-daten" type="application/json">
- {{ liegenschaften_json|default:'[]'|safe }}
-</script>
+Bis hierher gab es die Meldung dreifach: `/schaden/melden/` (Website, Alpine), `/report/<id>/`
+(Aushang im Treppenhaus, Alpine, zweite Vorlage) und das Portalformular. Wer eine Korrektur
+machte, traf eine der Vorlagen — `/schaden/melden/` blieb einmal falsch, weil nur der
+Aushang geändert war. Diese Vorlage bedient jetzt beide öffentlichen Wege; der Unterschied
+steht in `modus`:
 
-<div class="max-w-4xl mx-auto" x-data="{
- step: 1,
- formData: {
- kategorie: '',
- raum: '',
- objekt: ''
- },
- adresseSuche: '',
- ausgewaehlteLiegenschaftId: '',
- /* 🔥 Hier greift Alpine jetzt sicher auf die Daten zu */
- liegenschaften: JSON.parse(document.getElementById('liegenschaften-daten').textContent),
- showDropdown: false,
- /* ANZEIGE ≠ WERT: kategorie, raum und objekt bleiben die deutschen Woerter
-    unten — sie werden gespeichert. Angezeigt wird t(…), die Uebersetzung aus
-    core/templatetags/raumkatalog.py. */
- anzeige: JSON.parse(document.getElementById('raum-anzeige').textContent),
- t(wert) { return this.anzeige[wert] || wert; },
+  aushang  die Liegenschaft ist durch den QR-Code bekannt (`liegenschaft`): Einheit zur
+           Auswahl, Anrede, Erreichbarkeit als Zeitfenster, bei Geräten Marke und Seriennummer.
+  web      die Liegenschaft folgt aus der E-Mail-Adresse der Mieterin bzw. des Mieters; die
+           Adresse wird frei eingetragen, die Erreichbarkeit ist eine Auswahl.
 
- get gefilterteLiegenschaften() {
- if (this.adresseSuche.length < 2) return [];
- return this.liegenschaften.filter(l =>
- l.text.toLowerCase().includes(this.adresseSuche.toLowerCase())
- );
- },
- selectLiegenschaft(l) {
- this.adresseSuche = l.text;
- this.ausgewaehlteLiegenschaftId = l.id;
- this.showDropdown = false;
- },
- selectCategory(cat) {
- this.formData.kategorie = cat;
- if(cat === 'Schadensmeldung') {
- this.step = 2;
- } else {
- this.formData.raum = '';
- this.formData.objekt = '';
- this.step = 4;
- }
- window.scrollTo({ top: 0, behavior: 'smooth' });
- },
- raeume: [
- { name: 'Küche', z: 'kueche' }, { name: 'Bad', z: 'bad' },
- { name: 'Korridor', z: 'korridor' }, { name: 'Zimmer', z: 'zimmer' },
- { name: 'Reduit', z: 'reduit' }, { name: 'Balkon/Terrasse', z: 'balkon' },
- { name: 'Treppenhaus', z: 'treppenhaus' }, { name: 'Waschküche', z: 'waschkueche' },
- { name: 'Keller', z: 'keller' }, { name: 'Estrich', z: 'estrich' },
- { name: 'Veloraum', z: 'veloraum' }, { name: 'Briefkasten', z: 'briefkasten' },
- // AUSWEG, DER IN E2.55 VERLOREN GING: Die alte, fest verdrahtete Liste
- // hatte «Anderer Raum»; die datengetriebene nicht mehr. Wer eine Garage
- // oder den Sitzplatz meldet, musste sonst einen falschen Raum waehlen —
- // und die Verwaltung bekaeme einen Auftrag mit falschem Ort.
- { name: 'Anderer Raum', z: 'einheit' }
- ],
- allgemein: {
- alle: ['Licht', 'Steckdose', 'Fenster', 'Storen/Markise', 'Boden', 'Wand', 'Decke'],
- 'Reduit': ['Licht', 'Steckdose', 'Boden', 'Wand', 'Decke'],
- 'Balkon/Terrasse': ['Licht', 'Boden'],
- 'Keller': ['Licht', 'Steckdose', 'Boden', 'Wand', 'Decke'],
- 'Estrich': ['Licht', 'Boden', 'Wand', 'Decke'],
- 'Veloraum': ['Licht', 'Steckdose', 'Boden', 'Wand'],
- 'Treppenhaus': ['Licht', 'Boden', 'Wand', 'Decke', 'Fenster'],
- 'Briefkasten': []
- },
- objekte: {
- 'Küche': ['Kühlschrank', 'Geschirrspüler', 'Dampfabzug', 'Kochherd', 'Backofen/Steamer', 'Spülbecken'],
- 'Bad': ['Lavabo', 'WC', 'Dusche', 'Badewanne', 'Spiegelschrank', 'Lüftung'],
- 'Korridor': ['Wohnungstür', 'Gegensprechanlage', 'Einbauschrank'],
- 'Zimmer': ['Heizkörper', 'Einbauschrank', 'Zimmertür'],
- 'Reduit': ['Waschturm', 'Regal', 'Anschluss'],
- 'Balkon/Terrasse': ['Geländer', 'Sonnenstore', 'Abfluss', 'Balkontür'],
- 'Treppenhaus': ['Haustür', 'Treppe/Geländer', 'Lift'],
- 'Waschküche': ['Waschmaschine', 'Tumbler', 'Secomat', 'Waschbecken', 'Abfluss'],
- 'Keller': ['Kellerabteil', 'Kellertür', 'Feuchtigkeit'],
- 'Estrich': ['Estrichabteil', 'Dachfenster', 'Feuchtigkeit'],
- 'Veloraum': ['Veloständer', 'Tür/Schloss'],
- 'Briefkasten': ['Schloss', 'Beschriftung', 'Klappe'],
- // Bewusst leer: Was dort steht, weiss nur die Meldung selbst.
- // Die allgemeinen Posten kommen ueber `allgemein.alle` dazu.
- 'Anderer Raum': []
- },
- objekteFuerRaum() {
- const eigen = this.objekte[this.formData.raum] || [];
- const auch = this.allgemein[this.formData.raum] || this.allgemein.alle;
- return [...eigen, ...auch, 'Anderes'];
- },
- selectRoom(raum) {
- this.formData.raum = raum;
- this.step = 3;
- window.scrollTo({ top: 0, behavior: 'smooth' });
- },
- selectObject(obj) {
- this.formData.objekt = obj;
- this.step = 4;
- window.scrollTo({ top: 0, behavior: 'smooth' });
- }
-}">
-
- {% if success %}
- <div class="fw-flaeche rounded-2xl shadow-[0_1px_2px_rgba(23,26,43,0.05),0_10px_30px_rgba(23,26,43,0.08)] border fw-linie p-10 text-center">
- <div class="w-20 h-20 fw-gut-flaeche fw-gut rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
- {% zeichen 'gut' %}
- </div>
- <h2 class="text-3xl font-bold fw-strong mb-4">{% trans "Vielen Dank!" %}</h2>
- <p class="fw-mutet font-medium mb-8">{% trans "Ihre Meldung wurde erfolgreich an die Verwaltung übermittelt. Wir werden uns in Kürze darum kümmern." %}</p>
- <a href="{% url 'index' %}" class="inline-block fw-btn fw-primary px-6 py-3 rounded-xl font-bold hover:fw-balken-voll transition-colors">
- {% trans "Zurück zur Startseite" %}
- </a>
- </div>
-
- {% else %}
-
- <div class="mb-8">
- <div class="w-full fw-flaeche2 border fw-linie rounded-full h-2.5 overflow-hidden">
- <div class="h-2.5 rounded-full transition-all duration-500 ease-out fw-balken-voll " :style="'width: ' + (step * 25) + '%'"></div>
- </div>
- </div>
-
- <form action="" method="POST" enctype="multipart/form-data" class="fw-flaeche rounded-2xl shadow-[0_1px_2px_rgba(23,26,43,0.05),0_10px_30px_rgba(23,26,43,0.08)] border fw-linie p-6 sm:p-10 min-h-[400px] relative">
- {% csrf_token %}
-
- <input type="hidden" name="kategorie" x-model="formData.kategorie">
- <input type="hidden" name="raum" x-model="formData.raum">
- <input type="hidden" name="objekt" x-model="formData.objekt">
- <input type="hidden" name="liegenschaft_id" x-model="ausgewaehlteLiegenschaftId">
-
- <div x-show="step === 1" x-transition>
- <h2 class="text-2xl font-bold fw-strong mb-8 text-center">{% trans "Worum geht es?" %}</h2>
-
- <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
- <button type="button" @click="selectCategory('Schadensmeldung')" class="group fw-flaeche2 border fw-linie rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:fw-linie-marke hover:fw-markenflaeche hover:shadow-md transition-all">
- {% zeichen 'kritisch' klasse='text-4xl fw-faint group-hover:fw-marke transition-colors' %}
- <span class="font-bold fw-mutet group-hover:fw-marke text-sm">{% trans "Schadensmeldung" %}</span>
- </button>
- <button type="button" @click="selectCategory('Allgemeine Anfrage')" class="group fw-flaeche2 border fw-linie rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:fw-linie-marke hover:fw-markenflaeche hover:shadow-md transition-all">
- {% zeichen 'senden' klasse='text-4xl fw-faint group-hover:fw-marke transition-colors' %}
- <span class="font-bold fw-mutet group-hover:fw-marke text-sm">{% trans "Allgemeine Anfrage" %}</span>
- </button>
- <button type="button" @click="selectCategory('Namensschilder')" class="group fw-flaeche2 border fw-linie rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:fw-linie-marke hover:fw-markenflaeche hover:shadow-md transition-all">
- {% zeichen 'person' klasse='text-4xl fw-faint group-hover:fw-marke transition-colors' %}
- <span class="font-bold fw-mutet group-hover:fw-marke text-sm text-center">{% trans "Namensschilder-bestellung" %}</span>
- </button>
- <button type="button" @click="selectCategory('Schlüsselbestellung')" class="group fw-flaeche2 border fw-linie rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:fw-linie-marke hover:fw-markenflaeche hover:shadow-md transition-all">
- {% zeichen 'schluessel' klasse='text-4xl fw-faint group-hover:fw-marke transition-colors' %}
- <span class="font-bold fw-mutet group-hover:fw-marke text-sm text-center">{% trans "Schlüsselbestellung" %}</span>
- </button>
- <button type="button" @click="selectCategory('Frage zu Dokumenten')" class="group fw-flaeche2 border fw-linie rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:fw-linie-marke hover:fw-markenflaeche hover:shadow-md transition-all">
- {% zeichen 'dokument' klasse='text-4xl fw-faint group-hover:fw-marke transition-colors' %}
- <span class="font-bold fw-mutet group-hover:fw-marke text-sm text-center">{% trans "Frage zu Dokumenten" %}</span>
- </button>
- </div>
- </div>
-
- <div x-show="step === 2" x-transition style="display: none;">
- <button type="button" @click="step = 1" class="absolute top-6 left-6 fw-faint hover:fw-mutet">{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
- <h2 class="text-2xl font-bold fw-strong mb-8 text-center mt-10 md:mt-0">{% trans "In welchem Raum?" %}</h2>
-
- <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
- <template x-for="r in raeume" :key="r.name">
- <button type="button" @click="selectRoom(r.name)" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-2 aspect-square hover:fw-linie-marke hover:shadow-md transition">
- {% comment %} Je Raum sein EIGENES Zeichen. Alpine setzt das `href` zur Laufzeit —
-    ein Django-Baustein kann das nicht, weil `r` erst im Browser entsteht
-    (der Fehler aus E2.51). {% endcomment %}
- <svg class="fw-zeichen fw-marke text-3xl" aria-hidden="true"><use :href="'#z-' + r.z"></use></svg>
- <span class="font-bold fw-mutet text-xs text-center leading-tight" x-text="t(r.name)"></span>
- </button>
- </template>
- </div>
- </div>
-
- <div x-show="step === 3" x-transition style="display: none;">
- <button type="button" @click="step = 2" class="absolute top-6 left-6 fw-faint hover:fw-mutet">{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
- <h2 class="text-2xl font-bold fw-strong mb-8 text-center mt-10 md:mt-0">{% trans "Was genau ist betroffen?" %}</h2>
-
- <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
- <template x-for="o in objekteFuerRaum()" :key="o">
- {% comment %} KEIN Zeichen: Der Name steht daneben und sagt alles. `docs/ZEICHEN.md`
-    — «das Symbol wiederholt ihn nur». Vorher trugen die Objekte Zeichen,
-    die nicht passten: Kuehlschrank als Zifferblatt, Fenster als Pfeil. {% endcomment %}
- <button type="button" @click="selectObject(o)" class="group fw-flaeche2 border fw-linie rounded-xl p-4 flex flex-col items-center justify-center gap-2 aspect-square hover:fw-linie-marke hover:shadow-md transition">
- <span class="font-bold fw-mutet text-xs text-center leading-tight" x-text="t(o)"></span>
- </button>
- </template>
- </div>
- </div>
-
- <div x-show="step === 4" x-transition style="display: none;">
- <button type="button" @click="step = formData.kategorie === 'Schadensmeldung' ? 3 : 1" class="absolute top-6 left-6 fw-faint hover:fw-mutet">{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
-
- <h2 class="text-2xl font-bold fw-strong mb-6 text-center mt-10 md:mt-0">{% trans "Details &amp; Kontaktdaten" %}</h2>
-
- <div class="flex flex-wrap gap-2 justify-center mb-6">
- <span class="fw-markenflaeche fw-marke px-3 py-1 rounded-full text-xs font-bold" x-show="formData.kategorie" x-text="t(formData.kategorie)"></span>
- <span class="fw-markenflaeche fw-marke px-3 py-1 rounded-full text-xs font-bold" x-show="formData.raum" x-text="t(formData.raum)"></span>
- <span class="fw-markenflaeche fw-marke px-3 py-1 rounded-full text-xs font-bold" x-show="formData.objekt" x-text="t(formData.objekt)"></span>
- </div>
-
- <div class="space-y-5">
-
- <div class="relative" @click.away="showDropdown = false">
- <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "Liegenschaft / Adresse" %} *</label>
- <input
- type="text"
- name="adresse"
- required
- x-model="adresseSuche"
- @input="showDropdown = true"
- @focus="showDropdown = true"
- class="w-full fw-flaeche2 border fw-linie p-3 rounded-xl text-sm font-medium focus:ring-4 fw-fokusring focus:fw-linie-marke outline-none"
- placeholder="{% trans 'Tippen Sie Ihre Strasse ein (z.B. Selzach)...' %}"
- autocomplete="off"
- >
-
- <div
- x-show="showDropdown && gefilterteLiegenschaften.length > 0"
- class="absolute z-50 left-0 right-0 mt-1 fw-flaeche border fw-linie rounded-xl shadow-xl max-h-60 overflow-y-auto"
- style="display: none;"
- >
- <template x-for="l in gefilterteLiegenschaften" :key="l.id">
- <button
- type="button"
- @click="selectLiegenschaft(l)"
- class="w-full text-left px-4 py-3 text-sm fw-ink hover:fw-markenflaeche hover:fw-marke font-bold border-b fw-linie transition-colors last:border-0"
- >
- {% zeichen 'liegenschaft' klasse='fw-marke mr-2' %} <span x-text="l.text"></span>
- </button>
- </template>
- </div>
- </div>
-
- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
- <div>
- <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "Vorname" %} *</label>
- <input type="text" name="vorname" required class="w-full fw-flaeche2 border fw-linie p-3 rounded-xl text-sm font-medium focus:ring-4 fw-fokusring focus:fw-linie-marke outline-none" placeholder="{% trans 'Ihr Vorname' %}">
- </div>
- <div>
- <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "Nachname" %} *</label>
- <input type="text" name="nachname" required class="w-full fw-flaeche2 border fw-linie p-3 rounded-xl text-sm font-medium focus:ring-4 fw-fokusring focus:fw-linie-marke outline-none" placeholder="{% trans 'Ihr Nachname' %}">
- </div>
- </div>
-
- <div>
- <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "Kurze Beschreibung des Problems" %} *</label>
- <textarea name="beschreibung" required rows="3" class="w-full fw-flaeche2 border fw-linie p-3 rounded-xl text-sm font-medium focus:ring-4 fw-fokusring focus:fw-linie-marke outline-none" placeholder="{% trans 'Bitte beschreiben Sie das Anliegen...' %}"></textarea>
- </div>
-
- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
- <div>
- <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "E-Mail Adresse" %} *</label>
- <input type="email" name="email" required class="w-full fw-flaeche2 border fw-linie p-3 rounded-xl text-sm font-medium focus:ring-4 fw-fokusring focus:fw-linie-marke outline-none" placeholder="{% trans 'Ihre E-Mail' %}">
- </div>
- <div>
- <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "Telefonnummer" %} *</label>
- <input type="tel" name="telefon" required class="w-full fw-flaeche2 border fw-linie p-3 rounded-xl text-sm font-medium focus:ring-4 fw-fokusring focus:fw-linie-marke outline-none" placeholder="{% trans 'Für Rückfragen' %}">
- </div>
- </div>
-
- <div>
- <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "Wie sind Sie am besten erreichbar? / Zutritt zur Wohnung" %} *</label>
- <select name="erreichbarkeit" required class="w-full fw-flaeche2 border fw-linie p-3 rounded-xl text-sm font-medium focus:ring-4 fw-fokusring focus:fw-linie-marke outline-none fw-ink font-bold">
- <option value="telefon">{% trans "Bitte telefonisch kontaktieren zwecks Termin" %}</option>
- <option value="email">{% trans "Bitte per E-Mail kontaktieren" %}</option>
- <option value="schluesselbox">{% trans "Handwerker darf via Schlüsselbox / Deponierung direkt rein" %}</option>
- <option value="immer">{% trans "Ich bin meistens Zuhause (Zutritt unkompliziert)" %}</option>
- </select>
- </div>
-
- <div>
- <label class="block text-[10px] font-bold uppercase tracking-widest fw-faint mb-1">{% trans "Foto hochladen (Optional)" %}</label>
- <input type="file" name="foto" accept="image/*" class="fw-datei w-full">
- </div>
-
- <div class="pt-4">
- <button type="submit" class="w-full fw-gut-voll text-white py-4 rounded-xl font-bold fw-schatten-gut hover:-translate-y-0.5 transition-all text-lg hover:brightness-105">
- {% trans "Meldung jetzt absenden" %} {% zeichen 'senden' klasse='ml-2' %}
- </button>
- </div>
- </div>
- </div>
-
- </form>
- {% endif %}
+Die Schritte sind der Assistent der Anwendung (`fw-assistent`, static/js/fw-bausteine.js).
+Raum und Gegenstand gibt es nur für die Schadensmeldung; `static/js/fw-meldung.js` blendet
+die beiden Schritte ein und aus. Räume und Gegenstände kommen aus
+core/templatetags/raumkatalog.py (Wert deutsch, Anzeige in der Sprache der Seite).
+{% endcomment %}
+{% if success %}
+<div class="fw-card fw-aussen-erfolg" role="status">
+    <div class="kreis">{% zeichen 'gut' %}</div>
+    <h1>{% trans "Vielen Dank!" %}</h1>
+    {% if modus == 'aushang' %}<p>{% trans "Wir haben Ihre Meldung erhalten und eine Bestätigung per E-Mail gesendet." %}</p>
+    <a href="" class="fw-btn fw-primary">{% trans "Zurück zum Start" %}</a>
+    {% else %}<p>{% trans "Ihre Meldung wurde erfolgreich an die Verwaltung übermittelt. Wir werden uns in Kürze darum kümmern." %}</p>
+    <a href="{% url 'index' %}" class="fw-btn fw-primary">{% trans "Zurück zur Startseite" %}</a>{% endif %}
 </div>
+{% else %}
+{% raum_katalog as katalog %}{% anliegen_karten as anliegen %}
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Schaden oder Anliegen melden" %}</h1>
+        <p>{% if liegenschaft %}{{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }}{% else %}{% trans "Ihre Meldung geht direkt an die Verwaltung." %}{% endif %}</p>
+    </div>
+</div>
+
+{% if fehler %}
+<div class="fw-formfehler" role="alert" id="meldungFehler">
+    <b>{% trans "Ihre Meldung wurde noch nicht gesendet." %}</b>
+    <ul class="mt-1 list-disc pl-5">{% for f in fehler %}<li>{{ f }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data" id="meldungForm" data-modus="{{ modus }}"{% if fehler %} data-fehler{% endif %}
+      class="fw-assistent" {% trans "Prüfen & absenden" as pruef_titel %}{% include 'fw/_assistent_attribute.html' with pruefen=pruef_titel %}>
+    {% csrf_token %}
+    {% include 'fw/_assistent_leiste.html' %}
+    <div class="fw-assistent-inhalt">
+
+        <section data-schritt="{% trans 'Anliegen' %}" data-schritt-text="{% trans 'Worum geht es?' %}">
+            <div class="fw-assistent-schritt-kopf"></div>
+            <div class="fw-card"><div class="fw-rumpf">
+                <fieldset class="fw-wahlgruppe">
+                    <legend class="sr-only">{% trans "Anliegen" %}</legend>
+                    <div class="fw-wahlraster">
+                        {% for a in anliegen %}
+                        <label class="fw-wahl">
+                            <input type="radio" name="kategorie" value="{{ a.wert }}" required data-schaden="{% if a.schaden %}1{% else %}0{% endif %}"{% if werte.kategorie == a.wert %} checked{% endif %}>
+                            {% zeichen a.zeichen %}
+                            <span>{{ a.anzeige }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+            </div></div>
+        </section>
+
+        <section data-schritt="{% trans 'Raum' %}" data-schritt-text="{% trans 'In welchem Raum?' %}" class="hidden" id="meldungRaum">
+            <div class="fw-assistent-schritt-kopf"></div>
+            <div class="fw-card"><div class="fw-rumpf">
+                <fieldset class="fw-wahlgruppe">
+                    <legend class="sr-only">{% trans "Raum" %}</legend>
+                    <div class="fw-wahlraster">
+                        {% for r in katalog %}
+                        <label class="fw-wahl">
+                            <input type="radio" name="raum" value="{{ r.wert }}"{% if werte.raum == r.wert %} checked{% endif %}>
+                            {% zeichen r.zeichen %}
+                            <span>{{ r.anzeige }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+            </div></div>
+        </section>
+
+        <section data-schritt="{% trans 'Gegenstand' %}" data-schritt-text="{% trans 'Was genau ist betroffen?' %}" class="hidden" id="meldungObjekt">
+            <div class="fw-assistent-schritt-kopf"></div>
+            <div class="fw-card"><div class="fw-rumpf">
+                {% for r in katalog %}
+                <fieldset class="fw-wahlgruppe hidden" data-raum="{{ r.wert }}">
+                    <legend class="sr-only">{% trans "Gegenstand" %}</legend>
+                    <div class="fw-wahlraster">
+                        {% for o in r.objekte %}
+                        <label class="fw-wahl klein">
+                            <input type="radio" name="objekt" value="{{ o.wert }}" disabled data-geraet="{% if o.geraet %}1{% else %}0{% endif %}"{% if werte.raum == r.wert and werte.objekt == o.wert %} checked{% endif %}>
+                            <span>{{ o.anzeige }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+                {% endfor %}
+            </div></div>
+        </section>
+
+        <section data-schritt="{% trans 'Beschreibung' %}" data-schritt-text="{% trans 'Was ist passiert? Ein Foto hilft der Verwaltung, das Problem schneller einzuschätzen.' %}">
+            <div class="fw-assistent-schritt-kopf"></div>
+            <div class="fw-card"><div class="fw-rumpf">
+                <div class="fw-feldgruppe">
+                    <div class="fw-feldblock">
+                        <label for="m-beschreibung" class="fw-label">{% trans "Kurze Beschreibung des Problems" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <textarea id="m-beschreibung" name="beschreibung" rows="4" required maxlength="5000" aria-required="true" data-pflicht="{% trans 'Bitte beschreiben Sie das Anliegen.' %}" placeholder="{% trans 'Bitte beschreiben Sie das Anliegen...' %}" class="fw-feld w-full">{{ werte.beschreibung }}</textarea>
+                    </div>
+                    {% if modus == 'aushang' %}
+                    <div class="fw-feldgruppe zwei hidden breit" id="meldungGeraet">
+                        <div class="fw-feldblock">
+                            <label for="m-hersteller" class="fw-label">{% trans "Marke / Hersteller" %}</label>
+                            <input id="m-hersteller" type="text" name="hersteller" maxlength="100" value="{{ werte.hersteller }}" class="fw-feld w-full">
+                        </div>
+                        <div class="fw-feldblock">
+                            <label for="m-seriennummer" class="fw-label">{% trans "Seriennummer" %}</label>
+                            <input id="m-seriennummer" type="text" name="seriennummer" maxlength="100" value="{{ werte.seriennummer }}" class="fw-feld w-full">
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="fw-feldblock">
+                        <label for="m-foto" class="fw-label">{% trans "Foto (Optional)" %}</label>
+                        <input id="m-foto" type="file" name="foto" accept="image/*" class="fw-datei w-full">
+                    </div>
+                </div>
+            </div></div>
+        </section>
+
+        <section data-schritt="{% trans 'Kontakt' %}" data-schritt-text="{% trans 'Wie die Verwaltung Sie erreicht.' %}">
+            <div class="fw-assistent-schritt-kopf"></div>
+            <div class="fw-card"><div class="fw-rumpf">
+                <div class="fw-feldgruppe zwei">
+                    {% if modus == 'aushang' %}
+                    <div class="fw-feldblock breit">
+                        <label for="m-anrede" class="fw-label">{% trans "Anrede" %}</label>
+                        <select id="m-anrede" name="anrede" class="fw-feld w-full">
+                            <option value="Frau"{% if werte.anrede == 'Frau' %} selected{% endif %}>{% trans "Frau" %}</option>
+                            <option value="Herr"{% if werte.anrede == 'Herr' %} selected{% endif %}>{% trans "Herr" %}</option>
+                            <option value="Firma"{% if werte.anrede == 'Firma' %} selected{% endif %}>{% trans "Firma" %}</option>
+                        </select>
+                    </div>
+                    {% endif %}
+                    <div class="fw-feldblock">
+                        <label for="m-vorname" class="fw-label">{% trans "Vorname" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="m-vorname" type="text" name="vorname" required maxlength="100" aria-required="true" autocomplete="given-name" value="{{ werte.vorname }}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock">
+                        <label for="m-nachname" class="fw-label">{% trans "Nachname" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="m-nachname" type="text" name="nachname" required maxlength="70" aria-required="true" autocomplete="family-name" value="{{ werte.nachname }}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock">
+                        <label for="m-email" class="fw-label">{% trans "E-Mail" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="m-email" type="email" name="email" required maxlength="254" aria-required="true" autocomplete="email" value="{{ werte.email }}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock">
+                        <label for="m-telefon" class="fw-label">{% trans "Telefon" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="m-telefon" type="tel" name="telefon" required maxlength="50" aria-required="true" autocomplete="tel" value="{{ werte.telefon }}" class="fw-feld w-full">
+                    </div>
+                    {% if modus == 'aushang' %}
+                    <div class="fw-feldblock breit">
+                        <label for="m-einheit" class="fw-label">{% trans "Betroffene Einheit (Optional)" %}</label>
+                        <select id="m-einheit" name="einheit_id" class="fw-feld w-full">
+                            <option value="">-- {% trans "Bitte wählen" %} --</option>
+                            {% for einheit in einheiten %}<option value="{{ einheit.id }}"{% if werte.einheit_id == einheit.id|stringformat:"s" %} selected{% endif %}>{{ einheit.bezeichnung }}{% if einheit.etage %} · {{ einheit.etage }}{% endif %}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <fieldset class="fw-wahlgruppe breit">
+                        <legend>{% trans "Erreichbarkeit (für Handwerker)" %}</legend>
+                        <div class="fw-zeitfenster">
+                            {% comment %} Zeitfenster aus tickets/meldung.py (ZEITFENSTER) — dieselben wie im Mieterportal. {% endcomment %}
+                            {% for fenster in zeitfenster %}
+                            <label class="fw-haekchen"><input type="checkbox" name="erreichbarkeit" value="{{ fenster }}"{% if fenster in erreichbarkeit_gewaehlt %} checked{% endif %}> {{ fenster }}</label>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+                    {% else %}
+                    <div class="fw-feldblock breit">
+                        <label for="m-adresse" class="fw-label">{% trans "Liegenschaft / Adresse" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="m-adresse" type="text" name="adresse" required maxlength="300" aria-required="true" autocomplete="off" value="{{ werte.adresse }}" placeholder="{% trans 'Tippen Sie Ihre Strasse ein (z.B. Selzach)...' %}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock breit">
+                        <label for="m-erreichbarkeit" class="fw-label">{% trans "Wie sind Sie am besten erreichbar? / Zutritt zur Wohnung" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <select id="m-erreichbarkeit" name="erreichbarkeit" required class="fw-feld w-full">
+                            <option value="telefon"{% if werte.erreichbarkeit == 'telefon' %} selected{% endif %}>{% trans "Bitte telefonisch kontaktieren zwecks Termin" %}</option>
+                            <option value="email"{% if werte.erreichbarkeit == 'email' %} selected{% endif %}>{% trans "Bitte per E-Mail kontaktieren" %}</option>
+                            <option value="schluesselbox"{% if werte.erreichbarkeit == 'schluesselbox' %} selected{% endif %}>{% trans "Handwerker darf via Schlüsselbox / Deponierung direkt rein" %}</option>
+                            <option value="immer"{% if werte.erreichbarkeit == 'immer' %} selected{% endif %}>{% trans "Ich bin meistens Zuhause (Zutritt unkompliziert)" %}</option>
+                        </select>
+                    </div>
+                    {% endif %}
+                </div>
+            </div></div>
+        </section>
+
+        <section class="fw-assistent-pruefen fw-card"><div class="fw-rumpf fw-assistent-zusammenfassung"></div></section>
+
+        <div class="fw-assistent-fuss">
+            <button type="button" class="fw-btn" data-assistent-zurueck data-assistent-nur-js>{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
+            <span class="stand" data-assistent-nur-js></span>
+            <div class="rechts">
+                <button type="button" class="fw-btn fw-primary" data-assistent-weiter data-assistent-nur-js>{% trans "Weiter" %} {% zeichen 'weiter' %}</button>
+                <button type="submit" data-assistent-absenden class="fw-btn fw-primary">{% zeichen 'senden' %} {% trans "Meldung absenden" %}</button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endif %}
 {% endblock %}
+{% block scripts %}{% if not success %}<script defer src="{% statisch 'js/fw-meldung.js' %}"></script>{% endif %}{% endblock %}

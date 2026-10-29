@@ -4,6 +4,7 @@ Ergänzt die automatische Auftrags-E-Mail um einen sauberen Beleg."""
 import io
 from decimal import Decimal
 from core.services.dokumentsprache import nur_deutsch
+from core.services.druckfarben import EMBER
 
 
 def _fmt(d):
@@ -29,7 +30,7 @@ def generate_auftrag_pdf(auftrag, verwaltung=None):
     c = canvas.Canvas(buf, pagesize=A4)
     w, h = A4
     c.setTitle(f"Reparaturauftrag #{auftrag.id} — {hw.firma if hw else ''}")
-    indigo = colors.HexColor("#4F46E5")
+    ember = colors.HexColor(EMBER)
 
     # Absender
     if verwaltung:
@@ -48,7 +49,7 @@ def generate_auftrag_pdf(auftrag, verwaltung=None):
             c.drawString(20 * mm, y - 5 * mm, hw.kontaktperson)
 
     # Titel
-    c.setFillColor(indigo)
+    c.setFillColor(ember)
     c.setFont("Helvetica-Bold", 17)
     c.drawString(20 * mm, h - 72 * mm, "Reparaturauftrag")
     c.setFillColor(colors.grey)

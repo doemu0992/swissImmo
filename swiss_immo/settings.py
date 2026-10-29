@@ -523,8 +523,8 @@ LOGGING = {
 # ==========================================
 
 UNFOLD = {
-    "SITE_TITLE": "SwissImmo Verwaltung",
-    "SITE_HEADER": "SwissImmo",
+    "SITE_TITLE": "immoswiss Verwaltung",
+    "SITE_HEADER": "immoswiss",
     "SITE_URL": reverse_lazy("fw_dashboard"), # Logo-Klick fuehrt in die aktive Oberflaeche /neu/
     "SITE_ICON": "real_estate_agent",
 

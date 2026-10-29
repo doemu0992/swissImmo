@@ -1,7 +1,7 @@
 {% load zeichen i18n %}
 {% include 'core/_passwort_shell_top.html' %}
 {% if validlink %}
-<h3 class="text-lg font-bold fw-strong mb-2">{% trans "Neues Passwort setzen" %}</h3>
+<h1 class="text-lg font-bold fw-strong mb-2">{% trans "Neues Passwort setzen" %}</h1>
 {% if form.errors %}<div class="fw-krit-flaeche border fw-linie-krit fw-kritisch text-sm p-4 rounded-xl mb-4 font-medium">
     {% for field in form %}{% for e in field.errors %}<p>{{ e }}</p>{% endfor %}{% endfor %}
     {% for e in form.non_field_errors %}<p>{{ e }}</p>{% endfor %}
@@ -23,7 +23,7 @@
 {% else %}
 <div class="text-center py-4">
     <span class="w-14 h-14 rounded-2xl fw-krit-flaeche fw-kritisch flex items-center justify-center mx-auto mb-4">{% zeichen 'extern' klasse='text-xl' %}</span>
-    <h3 class="text-lg font-bold fw-strong mb-2">{% trans "Link ungültig" %}</h3>
+    <h1 class="text-lg font-bold fw-strong mb-2">{% trans "Link ungültig" %}</h1>
     <p class="text-sm fw-mutet">{% trans "Der Link wurde bereits verwendet oder ist abgelaufen." %} <a href="/passwort/vergessen/" class="fw-marke font-semibold">{% trans "Neuen Link anfordern" %}</a></p>
 </div>
 {% endif %}

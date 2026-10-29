@@ -3,6 +3,7 @@ nach Restnutzungsdauer. Basis für die Erneuerungsfonds-Planung des Eigentümers
 import io
 from decimal import Decimal
 from core.services.dokumentsprache import nur_deutsch
+from core.services.druckfarben import EMBER
 
 
 def _fmt(d):
@@ -25,14 +26,14 @@ def generate_ersatzplanung_pdf(daten, lg_name, verwaltung=None, deckung=None):
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
     w, h = A4
-    indigo = colors.HexColor("#4F46E5")
+    ember = colors.HexColor(EMBER)
     rose = colors.HexColor("#E11D48")
     amber = colors.HexColor("#D97706")
     grey = colors.HexColor("#64748B")
     c.setTitle(f"Ersatzplanung {lg_name}")
 
     # Kopf
-    c.setFillColor(indigo)
+    c.setFillColor(ember)
     c.rect(0, h - 26 * mm, w, 26 * mm, fill=1, stroke=0)
     c.setFillColor(colors.white)
     c.setFont("Helvetica-Bold", 15)
@@ -102,7 +103,7 @@ def generate_ersatzplanung_pdf(daten, lg_name, verwaltung=None, deckung=None):
             c.setFont("Helvetica", 9); c.setFillColor(colors.black)
             c.drawString(20 * mm, y, str(b['jahr']))
             frac = float(b['summe'] / maxb) if maxb else 0
-            c.setFillColor(indigo)
+            c.setFillColor(ember)
             c.rect(bar_x, y - 1 * mm, max(bar_w * frac, 0.4), 3.4 * mm, fill=1, stroke=0)
             c.setFillColor(colors.black); c.setFont("Helvetica", 9)
             c.drawRightString(w - 20 * mm, y, f"CHF {_fmt(b['summe'])}")

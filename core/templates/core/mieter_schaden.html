@@ -6,19 +6,27 @@
 {% block nav %}{% include 'core/_mieter_nav.html' with aktiv='schaden' %}{% endblock %}
 
 {% block content %}
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold tracking-tight fw-strong">{% trans "Schaden / Reparatur melden" %}</h1>
-        <p class="fw-mutet mt-1">{% trans "Ihre Meldung geht direkt an die Verwaltung — Sie erhalten eine Bestätigung per E-Mail." %}</p>
+    <div class="fw-phead">
+        <div>
+            <h1>{% trans "Schaden / Reparatur melden" %}</h1>
+            <p>{% trans "Ihre Meldung geht direkt an die Verwaltung — Sie erhalten eine Bestätigung per E-Mail." %}</p>
+        </div>
     </div>
 
     {% if objekte %}
-    <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden">
-        <form method="post" action="/mieter/schaden/" enctype="multipart/form-data" class="p-5 space-y-4">
-            {% csrf_token %}
+    {% comment %}
+        Etappe 3: dieselben Bausteine wie die öffentliche Schadenmeldung (`core/schaden_melden.html`):
+        Felder `fw-feld`, Zeitfenster `fw-haekchen`, Knopf `fw-btn fw-primary`. Das Portal bleibt eine
+        Seite mit einem Formular — wer angemeldet ist, kennt sein Objekt und braucht keine Schritte.
+    {% endcomment %}
+    <form method="post" action="/mieter/schaden/" enctype="multipart/form-data" class="fw-card">
+        {% csrf_token %}
+        <div class="fw-rumpf">
+        <div class="fw-feldgruppe">
             {% if objekte|length > 1 %}
-            <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1.5">{% trans "Objekt" %}</label>
-                <select name="vertrag_id" class="w-full fw-flaeche2 border fw-linie rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke">
+            <div class="fw-feldblock">
+                <label for="m-objekt" class="fw-label">{% trans "Objekt" %}</label>
+                <select id="m-objekt" name="vertrag_id" class="fw-feld w-full">
                     {% for o in objekte %}<option value="{{ o.vertrag.id }}">{{ o.adresse }} · {{ o.einheit.bezeichnung }}</option>{% endfor %}
                 </select>
             </div>
@@ -26,56 +34,55 @@
             {% comment %} Kategorie, Zutritt und Erreichbarkeit (Modul 3): dieselben Werte wie das QR-Formular —
                Anliegen aus raumkatalog.ANLIEGEN, Zutritt aus SchadenMeldung.ZUTRITT_CHOICES,
                Zeitfenster aus tickets/meldung.py. {% endcomment %}
-            <div>
-                <label for="m-kategorie" class="block text-xs font-semibold fw-mutet mb-1.5">{% trans "Worum geht es?" %}</label>
-                <select id="m-kategorie" name="kategorie" class="w-full fw-flaeche2 border fw-linie rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke">
+            <div class="fw-feldblock">
+                <label for="m-kategorie" class="fw-label">{% trans "Worum geht es?" %}</label>
+                <select id="m-kategorie" name="kategorie" class="fw-feld w-full">
                     {% for wert, anzeige in kategorien %}<option value="{{ wert }}">{{ anzeige }}</option>{% endfor %}
                 </select>
             </div>
-            <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1.5">{% trans "Was ist betroffen?" %}</label>
-                <input name="titel" required placeholder="{% trans 'z.B. Wasserhahn tropft' %}"
-                       class="w-full fw-flaeche2 border fw-linie rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke placeholder:fw-faint">
+            <div class="fw-feldblock">
+                <label for="m-titel" class="fw-label">{% trans "Was ist betroffen?" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                <input id="m-titel" name="titel" required aria-required="true" maxlength="200" placeholder="{% trans 'z.B. Wasserhahn tropft' %}" class="fw-feld w-full">
             </div>
-            <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1.5">{% trans "Raum" %} <span class="fw-faint font-normal">{% trans "(optional)" %}</span></label>
-                <input name="raum" placeholder="{% trans 'z.B. Badezimmer' %}"
-                       class="w-full fw-flaeche2 border fw-linie rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke placeholder:fw-faint">
+            <div class="fw-feldblock">
+                <label for="m-raum" class="fw-label">{% trans "Raum" %} <span class="fw-faint">{% trans "(optional)" %}</span></label>
+                <input id="m-raum" name="raum" maxlength="100" placeholder="{% trans 'z.B. Badezimmer' %}" class="fw-feld w-full">
             </div>
-            <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1.5">{% trans "Beschreibung" %}</label>
-                <textarea name="beschreibung" rows="5" required placeholder="{% trans 'Bitte beschreiben Sie das Problem möglichst genau.' %}"
-                          class="w-full fw-flaeche2 border fw-linie rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke placeholder:fw-faint"></textarea>
+            <div class="fw-feldblock">
+                <label for="m-beschreibung" class="fw-label">{% trans "Beschreibung" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                <textarea id="m-beschreibung" name="beschreibung" rows="5" required aria-required="true" placeholder="{% trans 'Bitte beschreiben Sie das Problem möglichst genau.' %}" class="fw-feld w-full"></textarea>
             </div>
-            <fieldset class="space-y-2">
-                <legend class="block text-xs font-semibold fw-mutet mb-1.5">{% trans "Zutritt zur Wohnung" %}</legend>
+            <fieldset class="fw-wahlgruppe">
+                <legend>{% trans "Zutritt zur Wohnung" %}</legend>
+                <div class="fw-feldgruppe">
                 {% for wert, anzeige in zutritt_wahl %}
                 <label class="fw-haekchen"><input type="radio" name="zutritt" value="{{ wert }}"{% if forloop.first %} checked{% endif %}> {{ anzeige }}</label>
                 {% endfor %}
+                </div>
             </fieldset>
-            <fieldset>
-                <legend class="block text-xs font-semibold fw-mutet mb-1.5">{% trans "Erreichbarkeit (für Handwerker)" %} <span class="fw-faint font-normal">{% trans "(optional)" %}</span></legend>
-                <div class="grid grid-cols-2 gap-3">
+            <fieldset class="fw-wahlgruppe">
+                <legend>{% trans "Erreichbarkeit (für Handwerker)" %} <span class="fw-faint">{% trans "(optional)" %}</span></legend>
+                <div class="fw-zeitfenster">
                     {% for fenster in zeitfenster %}
                     <label class="fw-haekchen"><input type="checkbox" name="erreichbarkeit" value="{{ fenster }}"> {{ fenster }}</label>
                     {% endfor %}
                 </div>
             </fieldset>
-            <div>
-                <label class="block text-xs font-semibold fw-mutet mb-1.5">{% trans "Fotos" %} <span class="fw-faint font-normal">{% trans "(optional, mehrere möglich)" %}</span></label>
-                <input type="file" name="fotos" multiple accept="image/*"
-                       class="fw-datei w-full">
-                <p class="text-xs fw-faint mt-1">{% trans "Ein Foto hilft der Verwaltung, das Problem schneller einzuschätzen." %}</p>
+            <div class="fw-feldblock">
+                <label for="m-fotos" class="fw-label">{% trans "Fotos" %} <span class="fw-faint">{% trans "(optional, mehrere möglich)" %}</span></label>
+                <input id="m-fotos" type="file" name="fotos" multiple accept="image/*" class="fw-datei w-full">
+                <span class="fw-hilfe">{% trans "Ein Foto hilft der Verwaltung, das Problem schneller einzuschätzen." %}</span>
             </div>
-            <button type="submit" class="w-full sm:w-auto fw-balken-voll hover:fw-balken-voll transition-colors text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg fw-schatten-marke flex items-center justify-center gap-2">
-                {% zeichen 'senden' %} {% trans "Meldung senden" %}
-            </button>
-        </form>
-    </div>
+            <div>
+                <button type="submit" class="fw-btn fw-primary">{% zeichen 'senden' %} {% trans "Meldung senden" %}</button>
+            </div>
+        </div>
+        </div>
+    </form>
     {% else %}
-    <div class="rounded-2xl fw-warn-flaeche border fw-linie-warn fw-warnton p-5 flex items-start gap-3">
-        {% zeichen 'hinweis' klasse='mt-0.5' %}
-        <p class="text-sm">{% trans "Ihrem Konto ist aktuell kein aktives Mietobjekt zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung." %}</p>
+    <div class="fw-hinweis warn">
+        <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+        <div class="fw-ht">{% trans "Ihrem Konto ist aktuell kein aktives Mietobjekt zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung." %}</div>
     </div>
     {% endif %}
 {% endblock %}

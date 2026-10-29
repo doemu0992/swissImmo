@@ -1,198 +1,242 @@
-{% load zeichen %}
-{% load static %}
-<!DOCTYPE html>
-<html lang="de">
-<head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Bewerbung: {{ einheit.bezeichnung }} - swissImmo</title>
-{% include 'core/_assets_aussen.html' %}
- <script src="{% static 'js/vue.global.prod.js' %}"></script>
- <style>
- /* Redesign v8: Schrift und Grund aus der Schicht (`fw-body`). Hier stand
-    'Nunito' — nie geladen, der Browser nahm Arial. */
- .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
- .fade-enter-from, .fade-leave-to { opacity: 0; }
- </style>
-</head>
-<body class="fw-body min-h-screen flex flex-col items-center py-10 px-4">
+{% extends 'core/aussen_base.html' %}
+{% load zeichen i18n statisch %}
+{% block title %}{% blocktrans with name=einheit.bezeichnung %}Bewerbung: {{ name }}{% endblocktrans %} — immoswiss{% endblock %}
+{% block content %}
+{% comment %}
+DAS ÖFFENTLICHE BEWERBUNGSFORMULAR AUF DEM STANDARD (Etappe 3, 29.10.2026)
 
- <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+Bis hierher ein Vue-Assistent mit eigener Fortschrittsleiste und Knöpfen aus Tailwind-Klassen;
+der Kopf war ein `fw-btn` (DESIGN-24: Marke und Titel standen in einer schwarzen Kapsel, am
+Telefon blieb vom Titel ein «K»). Jetzt der Assistent der Anwendung (`fw-assistent`,
+static/js/fw-bausteine.js) auf der Hülle für Aussenseiten. Vue ist entfallen.
 
- <div id="app" class="w-full max-w-3xl">
+Gesendet wird weiter an `/api/mietprozess/public/bewerben` (mietprozess/api.py); das Skript
+`static/js/fw-bewerbung.js` übernimmt nur das Absenden und die Anzeige der Antwort. Die Felder
+heissen wie die Parameter der Schnittstelle.
+{% endcomment %}
+<div class="fw-phead">
+    <div>
+        <h1>{{ einheit.bezeichnung }}</h1>
+        <p>{{ einheit.liegenschaft.strasse }}, {{ einheit.liegenschaft.plz }} {{ einheit.liegenschaft.ort }} · {% trans "Digitale Bewerbung" %}</p>
+    </div>
+</div>
 
- <div v-if="success" class="fw-flaeche rounded-3xl shadow-xl p-12 text-center animate-fade-in">
- <div class="w-24 h-24 fw-gut-flaeche fw-gut rounded-full flex items-center justify-center text-5xl mx-auto mb-6">
- {% zeichen 'gut' %}
- </div>
- <h1 class="text-3xl font-semibold tracking-tight fw-strong mb-4">Bewerbung eingereicht!</h1>
- <p class="fw-mutet text-lg mb-8">Vielen Dank für dein Interesse. Wir haben deine Unterlagen erhalten und werden diese nun prüfen. Wir melden uns in Kürze bei dir.</p>
- <a href="/" class="fw-btn fw-primary">Zurück zur Startseite</a>
- </div>
+<div class="fw-card fw-aussen-erfolg hidden" id="bewerbungErfolg" role="status" tabindex="-1">
+    <div class="kreis">{% zeichen 'gut' %}</div>
+    <h2>{% trans "Bewerbung eingereicht!" %}</h2>
+    <p>{% trans "Vielen Dank für Ihr Interesse. Wir haben Ihre Unterlagen erhalten und werden diese nun prüfen. Wir melden uns in Kürze bei Ihnen." %}</p>
+    <a href="{% url 'index' %}" class="fw-btn fw-primary">{% trans "Zurück zur Startseite" %}</a>
+</div>
 
- <div v-else class="fw-flaeche rounded-3xl shadow-xl overflow-hidden">
+<div class="fw-formfehler hidden" role="alert" id="bewerbungFehler" tabindex="-1"><b></b></div>
 
- <div class="fw-btn fw-primary p-8">
- <div class="flex items-center gap-3 mb-6">
- <div class="w-10 h-10 rounded-xl fw-markenflaeche flex items-center justify-center text-sm shadow-lg fw-schatten-marke">{% zeichen 'liegenschaft' %}</div>
- <span class="text-xl font-bold tracking-tighter">swissImmo</span>
- </div>
- <p class="fw-marke font-bold uppercase tracking-widest text-xs mb-1">Digitale Bewerbung</p>
- <h1 class="text-3xl font-semibold tracking-tight mb-2">{{ einheit.bezeichnung }}</h1>
- <p class="fw-faint flex items-center gap-2">{% zeichen 'liegenschaft' %} {{ einheit.liegenschaft.strasse }}, {{ einheit.liegenschaft.plz }} {{ einheit.liegenschaft.ort }}</p>
- </div>
+<form method="post" id="bewerbungForm" enctype="multipart/form-data" class="fw-assistent"
+      data-api="/api/mietprozess/public/bewerben" data-netzfehler="{% trans 'Die Verbindung wurde unterbrochen. Bitte versuchen Sie es erneut.' %}"
+      data-serverfehler="{% trans 'Die Bewerbung konnte nicht gesendet werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut.' %}"
+      data-unbekannt="{% trans 'Ein unbekannter Fehler ist aufgetreten.' %}"
+      data-ungueltig="{% trans 'Bitte füllen Sie alle Formularfelder korrekt aus.' %}"
+      {% trans "Prüfen & einreichen" as pruef_titel %}{% include 'fw/_assistent_attribute.html' with pruefen=pruef_titel %}>
+    {% csrf_token %}
+    <input type="hidden" name="einheit_id" value="{{ einheit.id }}">
+    {% include 'fw/_assistent_leiste.html' %}
+    <div class="fw-assistent-inhalt">
 
- <div class="fw-flaeche2 border-b fw-linie p-4 flex justify-between items-center px-8">
- <div class="flex items-center gap-2 w-full">
- <div v-for="s in 5" :key="s" class="h-2 flex-1 rounded-full transition-all duration-300" :class="step >= s ? 'fw-markenflaeche' : 'fw-balken'"></div>
- </div>
- <span class="ml-4 text-xs font-bold fw-faint whitespace-nowrap">Schritt {% verbatim %}{{ step }}{% endverbatim %} von 5</span>
- </div>
+        <section data-schritt="{% trans 'Person' %}" data-schritt-text="{% trans 'Wer bewirbt sich?' %}">
+            <div class="fw-assistent-schritt-kopf"></div>
+            <div class="fw-card"><div class="fw-rumpf">
+                {% comment %}Zivilstand bewusst NICHT gefragt: Der EDÖB hält die Frage für die Auswahl der Mieterschaft für nicht verhältnismässig (SVIT-Branchenempfehlung DSG, Anhang E). Das Feld existiert im Modell weiter und wird beim Vertragsabschluss erhoben.{% endcomment %}
+                {% comment %}Geschlecht, Nationalität und Heimatort bewusst NICHT gefragt (MIET-13): Der EDÖB hält Angaben wie Nationalität in der Auswahlphase nicht für verhältnismässig (Merkblatt Anmeldeformulare für Mietwohnungen, 15.7.2025). Anrede und Personalien werden mit dem Vertragsabschluss erhoben.{% endcomment %}
+                <div class="fw-feldgruppe zwei">
+                    <div class="fw-feldblock">
+                        <label for="b-vorname" class="fw-label">{% trans "Vorname" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="b-vorname" type="text" name="vorname" required aria-required="true" autocomplete="given-name" data-pflicht="{% trans 'Bitte geben Sie Ihren Vornamen an.' %}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock">
+                        <label for="b-nachname" class="fw-label">{% trans "Nachname" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="b-nachname" type="text" name="nachname" required aria-required="true" autocomplete="family-name" data-pflicht="{% trans 'Bitte geben Sie Ihren Nachnamen an.' %}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock">
+                        <label for="b-geburtsdatum" class="fw-label">{% trans "Geburtsdatum" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="b-geburtsdatum" type="date" name="geburtsdatum" required aria-required="true" autocomplete="bday" data-pflicht="{% trans 'Bitte geben Sie Ihr Geburtsdatum an.' %}" class="fw-feld w-full">
+                    </div>
+                </div>
+            </div></div>
+        </section>
 
- <div class="p-8">
+        <section data-schritt="{% trans 'Kontakt & Adresse' %}" data-schritt-text="{% trans 'Wie wir Sie erreichen und wo Sie heute wohnen.' %}">
+            <div class="fw-assistent-schritt-kopf"></div>
+            <div class="fw-card"><div class="fw-rumpf">
+                <div class="fw-feldgruppe zwei">
+                    <div class="fw-feldblock">
+                        <label for="b-mobil" class="fw-label">{% trans "Mobilnummer" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="b-mobil" type="tel" name="mobilnummer" required aria-required="true" autocomplete="tel" data-pflicht="{% trans 'Bitte geben Sie Ihre Mobilnummer an.' %}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock">
+                        <label for="b-email" class="fw-label">{% trans "E-Mail" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="b-email" type="email" name="email" required aria-required="true" autocomplete="email" data-pflicht="{% trans 'Bitte geben Sie Ihre E-Mail-Adresse an.' %}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock breit">
+                        <label for="b-adresse" class="fw-label">{% trans "Aktuelle Adresse (Strasse, Nr.)" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="b-adresse" type="text" name="adresse" required aria-required="true" autocomplete="street-address" data-pflicht="{% trans 'Bitte geben Sie Ihre Adresse an.' %}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock">
+                        <label for="b-plz" class="fw-label">{% trans "PLZ" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="b-plz" type="text" name="plz" required aria-required="true" inputmode="numeric" autocomplete="postal-code" data-pflicht="{% trans 'Bitte geben Sie die Postleitzahl an.' %}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock">
+                        <label for="b-ort" class="fw-label">{% trans "Ort" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="b-ort" type="text" name="ort" required aria-required="true" autocomplete="address-level2" data-pflicht="{% trans 'Bitte geben Sie den Ort an.' %}" class="fw-feld w-full">
+                    </div>
+                </div>
+            </div></div>
+            <div class="fw-card">
+                <div class="fw-kopf"><h2>{% trans "Aktuelles Mietverhältnis" %}</h2></div>
+                <div class="fw-rumpf">
+                <div class="fw-feldgruppe zwei">
+                    <div class="fw-feldblock">
+                        <label for="b-vermieter" class="fw-label">{% trans "Aktueller Vermieter / Verwaltung" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="b-vermieter" type="text" name="aktueller_vermieter" required aria-required="true" data-pflicht="{% trans 'Bitte geben Sie Ihre aktuelle Vermieterschaft an.' %}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock">
+                        <label for="b-vermieter-tel" class="fw-label">{% trans "Telefon Vermieter" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="b-vermieter-tel" type="tel" name="telefon_vermieter" required aria-required="true" data-pflicht="{% trans 'Bitte geben Sie die Telefonnummer Ihrer Vermieterschaft an.' %}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock breit">
+                        <label for="b-grund" class="fw-label">{% trans "Grund für den Umzug" %}</label>
+                        <input id="b-grund" type="text" name="grund_fuer_wechsel" class="fw-feld w-full">
+                    </div>
+                </div>
+                </div>
+            </div>
+        </section>
 
- <div v-if="error" class="fw-krit-flaeche border fw-linie-krit fw-kritisch p-4 rounded-xl mb-6 text-sm font-bold flex items-center gap-3 animate-fade-in">
- {% zeichen 'warnung' klasse='text-lg' %}
- {% verbatim %}{{ error }}{% endverbatim %}
- </div>
+        <section data-schritt="{% trans 'Beruf & Finanzen' %}" data-schritt-text="{% trans 'Angaben zu Ihrer Erwerbstätigkeit und Ihrem ungefähren Einkommen.' %}">
+            <div class="fw-assistent-schritt-kopf"></div>
+            <div class="fw-card"><div class="fw-rumpf">
+                <div class="fw-feldgruppe zwei">
+                    <div class="fw-feldblock">
+                        <label for="b-status" class="fw-label">{% trans "Erwerbsstatus" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <select id="b-status" name="erwerbsstatus" required aria-required="true" class="fw-feld w-full">
+                            <option value="angestellt">{% trans "Angestellt" %}</option>
+                            <option value="selbstaendig">{% trans "Selbständig" %}</option>
+                            <option value="student">{% trans "Student" %}</option>
+                            <option value="pensioniert">{% trans "Pensioniert" %}</option>
+                            <option value="iv_bezueger">{% trans "IV Bezüger" %}</option>
+                            <option value="arbeitslos">{% trans "Arbeitslos" %}</option>
+                        </select>
+                    </div>
+                    <div class="fw-feldblock">
+                        <label for="b-beruf" class="fw-label">{% trans "Beruf" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="b-beruf" type="text" name="beruf" required aria-required="true" data-pflicht="{% trans 'Bitte geben Sie Ihren Beruf an.' %}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock breit">
+                        <label for="b-einkommen" class="fw-label">{% trans "Bruttoeinkommen im Jahr (CHF)" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        {% comment %}Die Werte sind die Texte, die `bewerber_scoring.parse_einkommen` liest — nicht ändern, nur die Anzeige wird übersetzt.{% endcomment %}
+                        <select id="b-einkommen" name="einkommen_jahr" required aria-required="true" class="fw-feld w-full">
+                            <option value="">-- {% trans "Bitte wählen" %} --</option>
+                            <option value="weniger als 30’000">{% trans "weniger als 30’000" %}</option>
+                            <option>30’000 - 40’000</option><option>40’000 - 50’000</option><option>50’000 - 60’000</option>
+                            <option>60’000 - 70’000</option><option>70’000 - 80’000</option><option>80’000 - 90’000</option><option>90’000 - 100’000</option>
+                            <option>100’000 - 120’000</option><option>120’000 - 160’000</option>
+                            <option value="mehr als 160’000">{% trans "mehr als 160’000" %}</option>
+                        </select>
+                    </div>
+                </div>
+            </div></div>
+            <div class="fw-card" id="bewerbungAngestellt">
+                <div class="fw-kopf"><h2>{% trans "Anstellung" %}</h2></div>
+                <div class="fw-rumpf">
+                <div class="fw-feldgruppe zwei">
+                    <div class="fw-feldblock">
+                        <label for="b-arbeitgeber" class="fw-label">{% trans "Arbeitgeber" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="b-arbeitgeber" type="text" name="arbeitgeber" data-pflicht="{% trans 'Bitte geben Sie Ihren Arbeitgeber an.' %}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock">
+                        <label for="b-seit" class="fw-label">{% trans "Angestellt seit" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="b-seit" type="date" name="angestellt_seit" data-pflicht="{% trans 'Bitte geben Sie an, seit wann Sie angestellt sind.' %}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock">
+                        <label for="b-ag-tel" class="fw-label">{% trans "Tel. Arbeitgeber" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="b-ag-tel" type="tel" name="telefon_arbeitgeber" data-pflicht="{% trans 'Bitte geben Sie die Telefonnummer Ihres Arbeitgebers an.' %}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock">
+                        <span class="fw-label">&nbsp;</span>
+                        <label class="fw-haekchen"><input type="checkbox" name="ist_unbefristet" checked> {% trans "Anstellung ist unbefristet" %}</label>
+                    </div>
+                </div>
+                </div>
+            </div>
+            <div class="fw-card"><div class="fw-rumpf">
+                <label class="fw-haekchen"><input type="checkbox" name="hat_betreibungen"> <span><b>{% trans "Betreibungen in den letzten 2 Jahren?" %}</b><br><span class="fw-hilfe">{% trans "Falls ja, bitte im letzten Schritt den Auszug hochladen." %}</span></span></label>
+            </div></div>
+        </section>
 
- <div v-show="step === 1" class="space-y-5 animate-fade-in">
- <h2 class="text-2xl font-bold fw-strong mb-6">Wer bewirbt sich?</h2>
- <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Vorname *</label><input v-model="form.vorname" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Nachname *</label><input v-model="form.nachname" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
- </div>
- {% comment %}Zivilstand bewusst NICHT gefragt: Der EDÖB hält die Frage für die Auswahl der Mieterschaft für nicht verhältnismässig (SVIT-Branchenempfehlung DSG, Anhang E). Das Feld existiert im Modell weiter und wird beim Vertragsabschluss erhoben.{% endcomment %}
- <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Geburtsdatum *</label><input v-model="form.geburtsdatum" type="date" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
- </div>
- {% comment %}Geschlecht, Nationalität und Heimatort bewusst NICHT gefragt (MIET-13): Der EDÖB hält Angaben wie Nationalität in der Auswahlphase nicht für verhältnismässig (Merkblatt Anmeldeformulare für Mietwohnungen, 15.7.2025). Anrede und Personalien werden mit dem Vertragsabschluss erhoben.{% endcomment %}
- </div>
+        <section data-schritt="{% trans 'Wohnen' %}" data-schritt-text="{% trans 'Wer einzieht, und was für Sie sonst wichtig ist.' %}">
+            <div class="fw-assistent-schritt-kopf"></div>
+            <div class="fw-card"><div class="fw-rumpf">
+                <div class="fw-feldgruppe zwei">
+                    <div class="fw-feldblock">
+                        <label for="b-erwachsene" class="fw-label">{% trans "Anzahl Erwachsene" %}</label>
+                        <input id="b-erwachsene" type="number" name="anzahl_erwachsene" min="1" max="20" value="1" inputmode="numeric" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock">
+                        <label for="b-kinder" class="fw-label">{% trans "Anzahl Kinder" %}</label>
+                        <input id="b-kinder" type="number" name="anzahl_kinder" min="0" max="20" value="0" inputmode="numeric" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock breit">
+                        <label class="fw-haekchen"><input type="checkbox" name="haustiere" id="b-haustiere"> {% trans "Gibt es Haustiere?" %}</label>
+                    </div>
+                    <div class="fw-feldblock breit hidden" id="bewerbungTiere">
+                        <label for="b-tiere" class="fw-label">{% trans "Welche Tiere? (Rasse/Art)" %}</label>
+                        <input id="b-tiere" type="text" name="haustiere_details" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock breit">
+                        <label class="fw-haekchen"><input type="checkbox" name="musikinstrumente"> {% trans "Spielt jemand ein Instrument?" %}</label>
+                    </div>
+                    <div class="fw-feldblock breit">
+                        <label class="fw-haekchen"><input type="checkbox" name="interesse_parkplatz"> {% trans "Interesse an Parkplatz/Garage?" %}</label>
+                    </div>
+                </div>
+            </div></div>
+            <div class="fw-card">
+                <div class="fw-kopf"><h2>{% trans "Schilder & Kaution" %}</h2></div>
+                <div class="fw-rumpf">
+                <div class="fw-feldgruppe zwei">
+                    <div class="fw-feldblock">
+                        <label for="b-briefkasten" class="fw-label">{% trans "Text für Briefkasten" %}</label>
+                        <input id="b-briefkasten" type="text" name="schild_briefkasten" placeholder="{% trans 'z.B. Muster' %}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock">
+                        <label for="b-klingel" class="fw-label">{% trans "Text für Klingel" %}</label>
+                        <input id="b-klingel" type="text" name="schild_sonnerie" placeholder="{% trans 'z.B. Muster' %}" class="fw-feld w-full">
+                    </div>
+                    <div class="fw-feldblock breit">
+                        <label for="b-kaution" class="fw-label">{% trans "Wunsch-Kautionsart" %}</label>
+                        <select id="b-kaution" name="wunsch_kautions_typ" class="fw-feld w-full">
+                            <option value="bank">{% trans "Klassisches Bankdepot (Mietzinskonto)" %}</option>
+                            <option value="swisskaution">{% trans "Kautionsversicherung (z.B. Swisskaution)" %}</option>
+                        </select>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </section>
 
- <div v-show="step === 2" class="space-y-5 animate-fade-in">
- <h2 class="text-2xl font-bold fw-strong mb-6">Kontakt & Aktuelle Adresse</h2>
- <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Mobilnummer *</label><input v-model="form.mobilnummer" type="tel" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">E-Mail Adresse *</label><input v-model="form.email" type="email" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
- </div>
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Aktuelle Adresse (Strasse, Nr.) *</label><input v-model="form.adresse" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
- <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">PLZ *</label><input v-model="form.plz" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Ort *</label><input v-model="form.ort" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
- </div>
-
- <h3 class="font-bold fw-strong mt-8 mb-4">Aktuelles Mietverhältnis</h3>
- <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Aktueller Vermieter / Verwaltung *</label><input v-model="form.aktueller_vermieter" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Telefon Vermieter *</label><input v-model="form.telefon_vermieter" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
- </div>
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Grund für den Umzug</label><input v-model="form.grund_fuer_wechsel" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
- </div>
-
- <div v-show="step === 3" class="space-y-5 animate-fade-in">
- <h2 class="text-2xl font-bold fw-strong mb-6">Beruf & Finanzen</h2>
- <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Erwerbsstatus *</label>
- <select v-model="form.erwerbsstatus" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none">
- <option value="angestellt">Angestellt</option><option value="selbstaendig">Selbständig</option><option value="student">Student</option><option value="pensioniert">Pensioniert</option><option value="iv_bezueger">IV Bezüger</option><option value="arbeitslos">Arbeitslos</option>
- </select>
- </div>
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Beruf *</label><input v-model="form.beruf" type="text" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none"></div>
- </div>
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Bruttoeinkommen im Jahr (CHF) *</label>
- <select v-model="form.einkommen_jahr" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none">
- <option>weniger als 30’000</option><option>30’000 - 40’000</option><option>40’000 - 50’000</option><option>50’000 - 60’000</option>
- <option>60’000 - 70’000</option><option>70’000 - 80’000</option><option>80’000 - 90’000</option><option>90’000 - 100’000</option>
- <option>100’000 - 120’000</option><option>120’000 - 160’000</option><option>mehr als 160’000</option>
- </select>
- </div>
- <div v-if="form.erwerbsstatus === 'angestellt'" class="grid grid-cols-1 md:grid-cols-2 gap-5 p-5 fw-flaeche2 border fw-linie rounded-xl">
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Arbeitgeber *</label><input v-model="form.arbeitgeber" type="text" class="w-full fw-flaeche border fw-linie p-3 rounded-lg font-bold"></div>
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Angestellt seit *</label><input v-model="form.angestellt_seit" type="date" class="w-full fw-flaeche border fw-linie p-3 rounded-lg font-bold"></div>
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Tel. Arbeitgeber *</label><input v-model="form.telefon_arbeitgeber" type="text" class="w-full fw-flaeche border fw-linie p-3 rounded-lg font-bold"></div>
- <div class="flex items-end">
- <label class="flex items-center gap-3 cursor-pointer">
- <input type="checkbox" v-model="form.ist_unbefristet" class="w-5 h-5 rounded fw-marke fw-fokusring">
- <span class="text-sm font-bold">Anstellung ist unbefristet</span>
- </label>
- </div>
- </div>
- <div class="mt-6 border-t fw-linie pt-6">
- <label class="flex items-center justify-between p-4 fw-krit-flaeche border fw-linie-krit rounded-xl cursor-pointer hover:fw-krit-flaeche transition-colors">
- <div><p class="font-bold fw-kritisch">Betreibungen in den letzten 2 Jahren?</p><p class="text-xs fw-kritisch">Falls ja, bitte im nächsten Schritt Auszug hochladen.</p></div>
- <input type="checkbox" v-model="form.hat_betreibungen" class="w-6 h-6 rounded fw-kritisch focus:fw-ring-krit">
- </label>
- </div>
- </div>
-
- <div v-show="step === 4" class="space-y-5 animate-fade-in">
- <h2 class="text-2xl font-bold fw-strong mb-6">Wohnungsdetails & Extras</h2>
- <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Anzahl Erwachsene</label><input v-model="form.anzahl_erwachsene" type="number" min="1" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold outline-none"></div>
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Anzahl Kinder</label><input v-model="form.anzahl_kinder" type="number" min="0" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold outline-none"></div>
- </div>
-
- <div class="space-y-3">
- <label class="flex items-center justify-between p-4 fw-flaeche2 border fw-linie rounded-xl cursor-pointer hover:fw-flaeche2 transition-colors">
- <span class="font-bold fw-strong">{% zeichen 'arbeit' klasse='w-6 fw-faint' %} Gibt es Haustiere?</span>
- <input type="checkbox" v-model="form.haustiere" class="w-5 h-5 rounded fw-marke fw-fokusring">
- </label>
- <div v-if="form.haustiere" class="pl-10"><input v-model="form.haustiere_details" type="text" placeholder="Welche Tiere? (Rasse/Art)" class="w-full fw-flaeche border fw-linie p-3 rounded-xl text-sm"></div>
-
- <label class="flex items-center justify-between p-4 fw-flaeche2 border fw-linie rounded-xl cursor-pointer hover:fw-flaeche2 transition-colors">
- <span class="font-bold fw-strong">{% zeichen 'hinweis' klasse='w-6 fw-faint' %} Spielt jemand ein Instrument?</span>
- <input type="checkbox" v-model="form.musikinstrumente" class="w-5 h-5 rounded fw-marke fw-fokusring">
- </label>
-
- <label class="flex items-center justify-between p-4 fw-flaeche2 border fw-linie rounded-xl cursor-pointer hover:fw-flaeche2 transition-colors">
- <span class="font-bold fw-strong">{% zeichen 'einheit' klasse='w-6 fw-faint' %} Interesse an Parkplatz/Garage?</span>
- <input type="checkbox" v-model="form.interesse_parkplatz" class="w-5 h-5 rounded fw-marke fw-fokusring">
- </label>
- </div>
-
- <div class="pt-4 border-t fw-linie">
- <h3 class="font-bold fw-strong mb-4">Schilder & Kaution</h3>
- <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Text für Briefkasten</label><input v-model="form.schild_briefkasten" type="text" placeholder="z.B. Muster" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold"></div>
- <div><label class="block text-xs font-bold uppercase fw-faint mb-2">Text für Klingel</label><input v-model="form.schild_sonnerie" type="text" placeholder="z.B. Muster" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold"></div>
- </div>
- <div>
- <label class="block text-xs font-bold uppercase fw-faint mb-2">Wunsch-Kautionsart</label>
- <select v-model="form.wunsch_kautions_typ" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold outline-none">
- <option value="bank">Klassisches Bankdepot (Mietzinskonto)</option>
- <option value="swisskaution">Kautionsversicherung (z.B. Swisskaution)</option>
- </select>
- </div>
- </div>
- </div>
-
- <div v-show="step === 5" class="space-y-5 animate-fade-in">
- <h2 class="text-2xl font-bold fw-strong mb-6">Dokumente hochladen</h2>
-
- <div class="border fw-linie rounded-xl p-5 hover:fw-linie-marke transition-colors">
- <div class="flex justify-between items-start mb-4">
- <div>
- <h4 class="font-bold fw-strong">Betreibungsregisterauszug *</h4>
- <p class="text-xs fw-mutet mt-1">Nicht älter als 3 Monate.</p>
- </div>
- <div class="flex items-center gap-2">
- <input type="checkbox" v-model="form.digitaler_betreibungsauszug" id="digital_b" class="w-4 h-4 fw-marke rounded">
- <label for="digital_b" class="text-xs font-bold fw-marke cursor-pointer">Auszug nachreichen</label>
- </div>
- </div>
-
- <div v-if="!form.digitaler_betreibungsauszug">
- <div class="fw-info-flaeche border fw-linie p-3 rounded-xl mb-4 text-xs fw-info">
- {% zeichen 'hinweis' klasse='mr-1' %} Keinen aktuellen Auszug zur Hand?
- <a href="https://www.e-service.admin.ch/crex/cms/content/strafregister/uebersicht_de" target="_blank" rel="noopener" class="font-bold underline hover:fw-info">
- Hier beim Bund online bestellen (PDF)
- </a>
- </div>
- <input type="file" @change="handleFile($event, 'betreibungsauszug')" class="fw-datei w-full">
- </div>
- </div>
-
- {% comment %}
+        <section data-schritt="{% trans 'Unterlagen' %}" data-schritt-text="{% trans 'Betreibungsauszug und gewünschter Bezugstermin.' %}">
+            <div class="fw-assistent-schritt-kopf"></div>
+            <div class="fw-card"><div class="fw-rumpf">
+                <div class="fw-feldgruppe">
+                    <div class="fw-feldblock">
+                        <span class="fw-label">{% trans "Betreibungsregisterauszug" %} <span class="fw-pflicht" aria-hidden="true">*</span></span>
+                        <span class="fw-hilfe">{% trans "Nicht älter als 3 Monate." %}</span>
+                        <label class="fw-haekchen"><input type="checkbox" name="digitaler_betreibungsauszug" id="b-nachreichen"> {% trans "Auszug nachreichen" %}</label>
+                    </div>
+                    <div class="fw-feldblock" id="bewerbungAuszug">
+                        <label for="b-auszug" class="fw-label">{% trans "Auszug hochladen" %}</label>
+                        <input id="b-auszug" type="file" name="betreibungsauszug" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,application/pdf,image/*" class="fw-datei w-full" data-pflicht="{% trans 'Bitte laden Sie einen Betreibungsauszug hoch oder wählen Sie «Auszug nachreichen».' %}">
+                        <span class="fw-hilfe">{% trans "Keinen aktuellen Auszug zur Hand?" %} <a href="https://www.e-service.admin.ch/crex/cms/content/strafregister/uebersicht_de" target="_blank" rel="noopener" class="fw-link">{% trans "Hier beim Bund online bestellen (PDF)" %}</a></span>
+                    </div>
+                    {% comment %}
                         Ausweiskopie und Lohnausweis werden hier NICHT verlangt.
                         Der EDÖB geht von einem zweistufigen Verfahren aus: Belege
                         zum Einkommen dürfen erst von der ausgewählten Person oder
@@ -204,176 +248,54 @@
                         Der Betreibungsregisterauszug darf dagegen von allen verlangt
                         werden und bleibt oben stehen.
                     {% endcomment %}
- <div class="fw-flaeche2 border fw-linie rounded-xl p-5">
- <h4 class="font-bold fw-strong mb-1">Ausweis und Einkommensnachweis</h4>
- <p class="text-xs fw-mutet">Diese Unterlagen fragen wir erst an, wenn Sie in
- die engere Auswahl kommen — nicht schon jetzt von allen Interessentinnen und
- Interessenten.</p>
- </div>
+                    <div class="fw-feldblock">
+                        <label for="b-weitere" class="fw-label">{% trans "Weitere Dokumente (Optional)" %}</label>
+                        <input id="b-weitere" type="file" name="weitere_dokumente" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,application/pdf,image/*" class="fw-datei w-full">
+                        <span class="fw-hilfe">{% trans "Motivationsschreiben, Referenzen etc." %}</span>
+                    </div>
+                    <div class="fw-feldblock">
+                        <label for="b-bezug" class="fw-label">{% trans "Gewünschter Bezugstermin" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                        <input id="b-bezug" type="date" name="gewuenschter_bezugstermin" required aria-required="true" data-pflicht="{% trans 'Bitte wählen Sie einen gewünschten Bezugstermin aus.' %}" class="fw-feld w-full">
+                    </div>
+                </div>
+            </div></div>
+            <div class="fw-hinweis info"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">
+                <b>{% trans "Ausweis und Einkommensnachweis" %}</b>
+                <p>{% trans "Diese Unterlagen fragen wir erst an, wenn Sie in die engere Auswahl kommen — nicht schon jetzt von allen Interessentinnen und Interessenten." %}</p>
+            </div></div>
+            {% comment %}
+                Informationspflicht nach Art. 19 revDSG: Wer Personendaten
+                beschafft, muss die betroffene Person darüber informieren —
+                Zweck, Verantwortliche, Empfänger. Der EDÖB verlangt zudem
+                ausdrücklich den Hinweis, dass die angegebenen Kontakte bei
+                Vermieterschaft und Arbeitgeber für Referenzen angerufen
+                werden können. Beides stand hier bisher nirgends.
+                Sichtbar auf dem letzten Eingabeschritt, nicht in einer Fusszeile versteckt.
+            {% endcomment %}
+            <div class="fw-hinweis info"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">
+                <b>{% trans "Was mit Ihren Angaben geschieht" %}</b>
+                <ul class="list-disc pl-5 mt-1">
+                    <li>{% blocktrans %}Ihre Angaben dienen <strong>ausschliesslich</strong> der Auswahl der Mieterschaft für dieses Objekt und werden für nichts anderes verwendet.{% endblocktrans %}</li>
+                    <li>{% blocktrans %}Die angegebenen Kontakte bei Ihrer bisherigen Vermieterschaft und Ihrem Arbeitgeber können wir für eine <strong>Referenzauskunft kontaktieren</strong>.{% endblocktrans %}</li>
+                    <li>{% blocktrans %}Erhalten Sie die Wohnung nicht, werden Ihre Unterlagen einschliesslich Betreibungsauszug nach dem Vermietungsentscheid <strong>gelöscht</strong>.{% endblocktrans %}</li>
+                    <li>{% blocktrans %}Sie haben jederzeit das Recht auf <strong>Auskunft, Berichtigung und Löschung</strong> Ihrer Daten.{% endblocktrans %}</li>
+                </ul>
+                {% url 'public_datenschutz_objekt' einheit.id as datenschutz_url %}
+                <p class="mt-2">{% blocktrans with url=datenschutz_url %}Ausführlich in der <a href="{{ url }}" target="_blank" rel="noopener" class="fw-link">Datenschutzerklärung</a>.{% endblocktrans %}</p>
+            </div></div>
+        </section>
 
- <div class="border fw-linie rounded-xl p-5 hover:fw-linie-marke transition-colors">
- <h4 class="font-bold fw-strong mb-1">Weitere Dokumente (Optional)</h4>
- <p class="text-xs fw-mutet mb-3">Motivationsschreiben, Referenzen etc.</p>
- <input type="file" @change="handleFile($event, 'weitere_dokumente')" class="fw-datei w-full">
- </div>
+        <section class="fw-assistent-pruefen fw-card"><div class="fw-rumpf fw-assistent-zusammenfassung"></div></section>
 
- <div>
- <label class="block text-xs font-bold uppercase fw-faint mb-2 mt-4">Gewünschter Bezugstermin *</label>
- <input v-model="form.gewuenschter_bezugstermin" type="date" class="w-full fw-flaeche2 border fw-linie p-3.5 rounded-xl font-bold focus:ring-2 fw-fokusring outline-none">
- </div>
- </div>
-
- {% comment %}
-                    Informationspflicht nach Art. 19 revDSG: Wer Personendaten
-                    beschafft, muss die betroffene Person darüber informieren —
-                    Zweck, Verantwortliche, Empfänger. Der EDÖB verlangt zudem
-                    ausdrücklich den Hinweis, dass die angegebenen Kontakte bei
-                    Vermieterschaft und Arbeitgeber für Referenzen angerufen
-                    werden können. Beides stand hier bisher nirgends.
-                    Sichtbar auf jedem Schritt, nicht in einer Fusszeile versteckt.
-                {% endcomment %}
- <div v-show="step === 5" class="mt-8 fw-flaeche2 border fw-linie rounded-xl p-5 text-xs fw-mutet leading-relaxed">
- <p class="font-bold fw-strong mb-2 text-sm">Was mit Ihren Angaben geschieht</p>
- <ul class="space-y-1.5 list-disc pl-4">
- <li>Ihre Angaben dienen <strong>ausschliesslich</strong> der Auswahl der
- Mieterschaft für dieses Objekt und werden für nichts anderes verwendet.</li>
- <li>Die angegebenen Kontakte bei Ihrer bisherigen Vermieterschaft und Ihrem
- Arbeitgeber können wir für eine <strong>Referenzauskunft kontaktieren</strong>.</li>
- <li>Erhalten Sie die Wohnung nicht, werden Ihre Unterlagen einschliesslich
- Betreibungsauszug nach dem Vermietungsentscheid <strong>gelöscht</strong>.</li>
- <li>Sie haben jederzeit das Recht auf <strong>Auskunft, Berichtigung und
- Löschung</strong> Ihrer Daten.</li>
- </ul>
- <p class="mt-3">Ausführlich in der
- <a href="{% url 'public_datenschutz_objekt' einheit.id %}" target="_blank" rel="noopener"
- class="fw-marke font-bold underline">Datenschutzerklärung</a>.</p>
- </div>
-
- <div class="flex justify-between items-center mt-10 pt-6 border-t fw-linie">
- <button v-if="step > 1" @click="step--" class="fw-faint font-bold hover:fw-strong transition-colors px-4 py-2">{% zeichen 'zurueck' klasse='mr-2' %} Zurück</button>
- <div v-else></div> <button v-if="step < 5" @click="nextStep" class="fw-btn fw-primary px-8 py-3.5 rounded-xl font-bold fw-schatten-marke hover:fw-balken-voll transition-all flex items-center gap-2">
- Weiter {% zeichen 'weiter' %}
- </button>
-
- <button v-if="step === 5" @click="submitForm" :disabled="isSubmitting" class="fw-gut-voll text-white px-8 py-3.5 rounded-xl font-bold fw-schatten-gut transition-all flex items-center gap-2 disabled:opacity-50">
- <svg v-if="isSubmitting" class="fw-zeichen fw-dreht" aria-hidden="true"><use href="#z-laedt"/></svg>
- <span v-else>{% zeichen 'senden' klasse='mr-2' %} Verbindlich einreichen</span>
- </button>
- </div>
-
- </div>
- </div>
- </div>
-
- <script>
- const { createApp } = Vue;
-
- createApp({
- data() {
- return {
- step: 1,
- isSubmitting: false,
- success: false,
- error: null,
- form: {
- einheit_id: '{{ einheit.id }}',
- vorname: '', nachname: '', zivilstand: '', geburtsdatum: '',
- mobilnummer: '', email: '', adresse: '', plz: '', ort: '',
- aktueller_vermieter: '', kontaktperson_vermieter: '', telefon_vermieter: '', email_vermieter: '',
- erwerbsstatus: 'angestellt', beruf: '', einkommen_jahr: '70’000 - 80’000',
- arbeitgeber: '', angestellt_seit: '', kontaktperson_arbeitgeber: '', telefon_arbeitgeber: '', email_arbeitgeber: '', ist_unbefristet: true,
- hat_betreibungen: false, grund_fuer_wechsel: '',
- anzahl_erwachsene: 1, anzahl_kinder: 0, haustiere: false, haustiere_details: '',
- musikinstrumente: false, interesse_parkplatz: false, gewuenschter_bezugstermin: '', bemerkungen: '',
- schild_briefkasten: '', schild_sonnerie: '', wunsch_kautions_typ: 'bank',
- digitaler_betreibungsauszug: false
- },
- files: {
- betreibungsauszug: null, ausweiskopie: null, lohnausweis: null, weitere_dokumente: null
- }
- }
- },
- methods: {
- nextStep() {
- this.error = null;
- if (this.step === 1 && (!this.form.vorname || !this.form.nachname || !this.form.geburtsdatum)) {
- this.error = "Bitte fülle Vorname, Nachname und Geburtsdatum aus."; return;
- }
- if (this.step === 2 && (!this.form.mobilnummer || !this.form.email || !this.form.adresse || !this.form.aktueller_vermieter)) {
- this.error = "Bitte fülle alle Pflichtfelder (mit *) aus."; return;
- }
- if (this.step === 3 && (!this.form.beruf || (this.form.erwerbsstatus === 'angestellt' && !this.form.arbeitgeber))) {
- this.error = "Bitte fülle deine Berufs- und Arbeitgeberdaten aus."; return;
- }
- window.scrollTo({ top: 0, behavior: 'smooth' });
- this.step++;
- },
- handleFile(event, field) {
- this.files[field] = event.target.files[0];
- },
- async submitForm() {
- this.error = null;
- if (!this.form.gewuenschter_bezugstermin) {
- this.error = "Bitte wähle einen gewünschten Bezugstermin aus."; return;
- }
- if (!this.form.digitaler_betreibungsauszug && !this.files.betreibungsauszug) {
- this.error = "Bitte lade einen Betreibungsauszug hoch oder wähle den digitalen Bezug."; return;
- }
-
- this.isSubmitting = true;
- const formData = new FormData();
-
- for (const key in this.form) {
- formData.append(key, this.form[key]);
- }
- for (const key in this.files) {
- if (this.files[key]) {
- formData.append(key, this.files[key]);
- }
- }
-
- const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
- try {
- const res = await fetch('/api/mietprozess/public/bewerben', {
- method: 'POST',
- headers: {
- 'X-CSRFToken': csrfToken
- },
- body: formData
- });
-
- const textResponse = await res.text();
- let data;
- try {
- data = JSON.parse(textResponse);
- } catch (parseError) {
- console.error("Kein JSON vom Server. Server antwortete mit:", textResponse);
- this.error = "Serverfehler (HTML erhalten). Lade die Seite neu oder prüfe die PythonAnywhere Error Logs.";
- this.isSubmitting = false;
- return;
- }
-
- if (res.ok) {
- this.success = true;
- window.scrollTo({ top: 0, behavior: 'smooth' });
- } else {
- if (res.status === 422) {
- console.error("Validation Error:", data);
- this.error = "Bitte fülle alle Formularfelder korrekt aus. (" + JSON.stringify(data.detail) + ")";
- } else {
- this.error = data.error || "Ein unbekannter Fehler ist aufgetreten.";
- }
- }
- } catch (e) {
- this.error = "Totaler Netzwerkfehler. Verbindung abgebrochen.";
- console.error(e);
- } finally {
- this.isSubmitting = false;
- }
- }
- }
- }).mount('#app');
- </script>
-</body>
-</html>
+        <div class="fw-assistent-fuss">
+            <button type="button" class="fw-btn" data-assistent-zurueck data-assistent-nur-js>{% zeichen 'zurueck' %} {% trans "Zurück" %}</button>
+            <span class="stand" data-assistent-nur-js></span>
+            <div class="rechts">
+                <button type="button" class="fw-btn fw-primary" data-assistent-weiter data-assistent-nur-js>{% trans "Weiter" %} {% zeichen 'weiter' %}</button>
+                <button type="submit" data-assistent-absenden class="fw-btn fw-primary" id="bewerbungSenden">{% zeichen 'senden' %} {% trans "Verbindlich einreichen" %}</button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+{% block scripts %}<script defer src="{% statisch 'js/fw-bewerbung.js' %}"></script>{% endblock %}

@@ -3,6 +3,7 @@ Zahlungseingänge als Haben) mit laufendem Saldo — für Team + Mieterportal.""
 import io
 from decimal import Decimal
 from core.services.dokumentsprache import nur_deutsch
+from core.services.druckfarben import EMBER_RGB
 
 
 def _rueckerstattungen(zahlungen):
@@ -164,7 +165,7 @@ def generate_mieterkonto_pdf(mieter, verwaltung=None, von=None, bis=None):
     w, h = A4
 
     def kopf():
-        c.setFillColorRGB(0.12, 0.23, 0.54)
+        c.setFillColorRGB(*EMBER_RGB)
         c.rect(0, h - 28 * mm, w, 28 * mm, fill=1, stroke=0)
         c.setFillColorRGB(1, 1, 1)
         c.setFont("Helvetica-Bold", 15)

@@ -2,7 +2,7 @@
 {% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}
 <html lang="{{ LANGUAGE_CODE|default:"de" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
 <head>
-<title>{% block title %}SwissImmo Verwaltung{% endblock %}</title>
+<title>{% block title %}immoswiss Verwaltung{% endblock %}</title>
 <link rel="stylesheet" type="text/css" href="{% block stylesheet %}{% static "admin/css/base.css" %}{% endblock %}">
 {% block extrastyle %}{% endblock %}
 {% if LANGUAGE_BIDI %}<link rel="stylesheet" type="text/css" href="{% block stylesheet_rtl %}{% static "admin/css/rtl.css" %}{% endblock %}">{% endif %}
@@ -56,7 +56,7 @@
 <div id="container">
     {% if not is_popup %}
     <div id="header">
-        <div id="branding"><h1 id="site-name"><a href="{% url 'admin:index' %}">SwissImmo Verwaltung</a></h1></div>
+        <div id="branding"><h1 id="site-name"><a href="{% url 'admin:index' %}">immoswiss Verwaltung</a></h1></div>
         <div id="user-tools" style="text-align:right;">Willkommen, <strong>{% firstof user.get_short_name user.get_username %}</strong>. / <a href="{% url 'admin:logout' %}">Abmelden</a></div>
     </div>
     {% endif %}

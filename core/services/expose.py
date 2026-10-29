@@ -4,6 +4,7 @@ Das Dokument für Portale/Interessenten in der Nachmietersuche."""
 import logging
 import io
 from decimal import Decimal
+from core.services.druckfarben import EMBER
 
 logger = logging.getLogger(__name__)
 
@@ -51,10 +52,10 @@ def _expose_pdf(einheit, verwaltung, bewerbung_url=None):
     w, h = A4
     c.setTitle(f"Exposé {objekt_titel(einheit)} — {lg.strasse if lg else einheit.bezeichnung}")
 
-    indigo = colors.HexColor("#4F46E5")
+    ember = colors.HexColor(EMBER)
 
     # Kopfband
-    c.setFillColor(indigo)
+    c.setFillColor(ember)
     c.rect(0, h - 42 * mm, w, 42 * mm, fill=1, stroke=0)
     c.setFillColor(colors.white)
     c.setFont("Helvetica-Bold", 22)

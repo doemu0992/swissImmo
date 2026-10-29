@@ -28,7 +28,7 @@ from mietprozess.api import router as mietprozess_router
 # auch /api/openapi.json ab — das Schema war bis zum Security-Audit anonym
 # abrufbar und beschrieb jedes Feld des Bewerbungsformulars samt Uploads.
 api = NinjaAPI(
-    title="swissImmo API",
+    title="immoswiss API",
     version="2.0.0",
     description="Nur noch öffentliche Endpunkte: Bewerbungsformular und DocuSeal-Webhook.",
     auth=auth_lesen,
@@ -174,8 +174,7 @@ from core.views.fw.schluessel import (fw_liegenschaft_schliessanlage, fw_schlies
                                       fw_liegenschaft_schluessel_ausgabe, fw_liegenschaft_schluessel_ruecknahme,
                                       fw_schluessel_faellig)
 
-# 2d. Dossier-Seiten (Detailseiten pro Mieter/Liegenschaft/Vertrag)
-from core.views.dossier import mieter_dossier, liegenschaft_dossier, vertrag_dossier
+import core.views.alte_adressen as _alt  # noqa: E402  Weiterleitungen entfallener Seiten
 
 # 3. Verträge & Mietzins
 from core.views.contracts import mietzins_anpassung_view, generiere_amtliches_formular
@@ -687,10 +686,13 @@ urlpatterns = [
     path('auftrag/<str:token>/foto/<int:nr>/', handwerker_auftrag_foto, name='handwerker_auftrag_foto'),
     path('neu/auftrag/<int:pk>/link/', fw_auftrag_link, name='fw_auftrag_link'),
 
-    # --- DOSSIER-SEITEN (Team-intern: alles zu einem Mieter/Objekt/Vertrag) ---
-    path('dossier/mieter/<int:mieter_id>/', mieter_dossier, name='dossier_mieter'),
-    path('dossier/liegenschaft/<int:liegenschaft_id>/', liegenschaft_dossier, name='dossier_liegenschaft'),
-    path('dossier/vertrag/<int:vertrag_id>/', vertrag_dossier, name='dossier_vertrag'),
+    # --- ALTE DOSSIER-ADRESSEN (Etappe 3: die Seiten sind entfallen) ---
+    # Lesezeichen und alte Mails landen in der Akte; dort gilt die Rollen- und
+    # Mandantenpruefung. Die Zieladresse wird nicht geprueft: Eine fremde Nummer
+    # ergibt in der Akte 404, nicht hier.
+    path('dossier/mieter/<int:pk>/', _alt.dossier_mieter),
+    path('dossier/liegenschaft/<int:pk>/', _alt.dossier_liegenschaft),
+    path('dossier/vertrag/<int:pk>/', _alt.dossier_vertrag),
 
     # --- ADMIN-ZUGÄNGE & SYSTEM ---
     path('admin/update-marktdaten/', update_market_data_view, name='update_marktdaten'),

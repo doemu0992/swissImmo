@@ -118,7 +118,7 @@ class EinrichtungsUrlTests(SimpleTestCase):
         url = totp.einrichtungs_url('JBSWY3DPEHPK3PXP', 'anna@example.ch')
         self.assertTrue(url.startswith('otpauth://totp/'))
         self.assertIn('secret=JBSWY3DPEHPK3PXP', url)
-        self.assertIn('issuer=swissImmo', url)
+        self.assertIn('issuer=immoswiss', url)
         self.assertIn('period=30', url)
         self.assertIn('digits=6', url)
 
@@ -127,7 +127,7 @@ class EinrichtungsUrlTests(SimpleTestCase):
         # den falschen Kontonamen — oder gar nichts.
         url = totp.einrichtungs_url('JBSWY3DPEHPK3PXP', 'a b:c@example.ch')
         self.assertNotIn(' ', url)
-        self.assertIn('swissImmo%3Aa%20b%3Ac%40example.ch', url)
+        self.assertIn('immoswiss%3Aa%20b%3Ac%40example.ch', url)
 
     def test_qr_ist_ein_svg_und_enthaelt_keine_datei(self):
         svg = totp.qr_svg(totp.einrichtungs_url(totp.geheimnis_erzeugen(), 'a@b.ch'))
