@@ -39,6 +39,8 @@ BEWUSST_DEUTSCH = {
     ('faelle', 'Regel', 'art'),
     ('portfolio', 'Liegenschaft', 'geak_klasse'),
     ('portfolio', 'Liegenschaft', 'geak_klasse_gesamt'),
+    # Datumsmuster («TT.MM.JJJJ») sind eine technische Angabe, kein Satz (Export, FUNK-13).
+    ('core', 'DatenExportEinstellung', 'datumsformat'),
 }
 
 

@@ -35443,3 +35443,702 @@ msgstr "Service life in years: %(k)s"
 #, python-format
 msgid "Bemerkung: %(k)s"
 msgstr "Note: %(k)s"
+
+#: Datenimport und Export (FUNK-09/13)
+msgid "Vorschau (bereit)"
+msgstr "Preview (ready)"
+
+msgid "Vorschau mit Fehlern"
+msgstr "Preview with errors"
+
+msgid "Importiert"
+msgstr "Imported"
+
+msgid "Abgebrochen (nichts importiert)"
+msgstr "Aborted (nothing imported)"
+
+msgid "Verworfen"
+msgstr "Discarded"
+
+msgid "Semikolon"
+msgstr "Semicolon"
+
+msgid "Komma"
+msgstr "Comma"
+
+msgid "Tabulator"
+msgstr "Tab"
+
+msgid ""
+"Zeile %(n)s: erwartet «eigenes Konto;Konto im Zielsystem» und optional "
+"«;MWST-Code»."
+msgstr ""
+"Line %(n)s: expected “own account;account in the target system” and "
+"optionally “;VAT code”."
+
+msgid "Zeile %(n)s: Eintrag zu lang."
+msgstr "Line %(n)s: entry too long."
+
+msgid "Zeile %(n)s: das Konto %(k)s ist schon zugeordnet."
+msgstr "Line %(n)s: account %(k)s is already mapped."
+
+msgid "Objekte (Wohnungen, Gewerbe, Parkplätze)"
+msgstr "Units (apartments, commercial, parking)"
+
+msgid "Laufende Mietverträge"
+msgstr "Current leases"
+
+msgid "Ihr eigener Schlüssel; verknüpft die Liegenschaften"
+msgstr "Your own key; links the properties"
+
+msgid "Name oder Firma"
+msgstr "Name or company"
+
+msgid "de, fr, it oder en; leer = de"
+msgstr "de, fr, it or en; empty = de"
+
+msgid "Verwaltungshonorar in Prozent, 0 bis 100; leer = 0"
+msgstr "Management fee in percent, 0 to 100; empty = 0"
+
+msgid "Ihr eigener Schlüssel; verknüpft die Objekte"
+msgstr "Your own key; links the units"
+
+msgid "vierstellig"
+msgstr "four digits"
+
+msgid "Schlüssel aus der Eigentümerdatei"
+msgstr "Key from the owners file"
+
+msgid "Kürzel; bestimmt Formulare und Fristen. Leer = später eintragen"
+msgstr "Abbreviation; determines forms and deadlines. Empty = enter later"
+
+msgid ""
+"nur Mietliegenschaften; Stockwerkeigentum bitte in der Oberfläche anlegen"
+msgstr "rental properties only; condominium: please create in the interface"
+
+msgid "Ihr eigener Schlüssel; verknüpft die Verträge"
+msgstr "Your own key; links the leases"
+
+msgid "Schlüssel aus der Liegenschaftsdatei"
+msgstr "Key from the properties file"
+
+msgid ""
+"whg (Wohnung), gew (Gewerbe), pp (Parkplatz), gar (Garage), bas (Bastelraum)"
+msgstr ""
+"whg (apartment), gew (commercial), pp (parking space), gar (garage), bas "
+"(hobby room)"
+
+msgid "Soll-Nettomiete des Objekts (Referenz, ersetzt keinen Vertrag)"
+msgstr "Target net rent of the unit (reference, does not replace a lease)"
+
+msgid "Soll-Nebenkosten des Objekts"
+msgstr "Target service charges of the unit"
+
+msgid "Leer = heute"
+msgstr "Empty = today"
+
+msgid "person, firma oder verein; leer = person"
+msgstr "person, firma or verein; empty = person"
+
+msgid "Pflicht bei Privatpersonen"
+msgstr "Required for individuals"
+
+msgid "Pflicht bei Firma und Verein"
+msgstr "Required for company and association"
+
+msgid "Leer = Schweiz"
+msgstr "Empty = Switzerland"
+
+msgid "Ihr eigener Schlüssel"
+msgstr "Your own key"
+
+msgid "Schlüssel aus der Objektdatei"
+msgstr "Key from the units file"
+
+msgid "Schlüssel aus der Mieterdatei"
+msgstr "Key from the tenants file"
+
+msgid "Zweite Vertragspartei (Ehegatte, Mitmieter)"
+msgstr "Second contracting party (spouse, co-tenant)"
+
+msgid "aktiv oder gekuendigt; leer = aktiv"
+msgstr "aktiv or gekuendigt; empty = aktiv"
+
+msgid "Ende der Befristung oder Kündigungstermin"
+msgstr "End of the fixed term or termination date"
+
+msgid "ja oder nein; Pflicht, wenn ein Ende steht"
+msgstr "ja or nein; required if an end date is given"
+
+msgid "Franken pro Monat"
+msgstr "Francs per month"
+
+msgid "Franken pro Monat; 0, wenn keine"
+msgstr "Francs per month; 0 if none"
+
+msgid "akonto, pauschal, inbegriffen oder direkt; leer = akonto"
+msgstr "akonto, pauschal, inbegriffen or direkt; empty = akonto"
+
+msgid "monatlich, vierteljahr, halbjahr oder jahr"
+msgstr "monatlich, vierteljahr, halbjahr or jahr"
+
+msgid "sperrkonto oder versicherung; Pflicht, wenn eine Kaution steht"
+msgstr "sperrkonto or versicherung; required if a deposit is given"
+
+msgid "IBAN des Sperrkontos"
+msgstr "IBAN of the blocked account"
+
+msgid "Leer = 3 (Wohnen) bzw. 6 (Geschäftsraum)"
+msgstr "Empty = 3 (residential) or 6 (commercial)"
+
+msgid "fest oder index; leer = fest. Staffelmiete: nicht per Import"
+msgstr "fest or index; empty = fest. Stepped rent: not via import"
+
+msgid "Referenzzinssatz zum Vertragsabschluss; leer = heutiger Stand"
+msgstr "Reference interest rate at lease signing; empty = current rate"
+
+msgid "LIK-Basis; bei Indexmiete Pflicht"
+msgstr "CPI base; required for indexed rent"
+
+msgid "Monat der LIK-Basis; bei Indexmiete Pflicht"
+msgstr "Month of the CPI base; required for indexed rent"
+
+msgid "Nur Indexmiete; leer = 100"
+msgstr "Indexed rent only; empty = 100"
+
+msgid "Nur Indexmiete; leer = 12"
+msgstr "Indexed rent only; empty = 12"
+
+msgid "Option nach Art. 22 MWSTG, nur Geschäftsräume"
+msgstr "Option under Art. 22 VAT Act, commercial premises only"
+
+msgid "Pflicht, wenn mwst_pflichtig = ja"
+msgstr "Required if mwst_pflichtig = ja"
+
+msgid "«%(wert)s» ist kein Datum (erwartet: TT.MM.JJJJ oder JJJJ-MM-TT)."
+msgstr "“%(wert)s” is not a date (expected: DD.MM.YYYY or YYYY-MM-DD)."
+
+msgid "Das Jahr %(j)s ist nicht plausibel."
+msgstr "The year %(j)s is not plausible."
+
+msgid "Pflichtangabe fehlt."
+msgstr "Required value is missing."
+
+msgid "Zu lang: höchstens %(n)s Zeichen, hier %(m)s."
+msgstr "Too long: at most %(n)s characters, here %(m)s."
+
+msgid "«%(wert)s» ist keine Zahl."
+msgstr "“%(wert)s” is not a number."
+
+msgid "Höchstens %(n)s Nachkommastellen; es wird nicht gerundet."
+msgstr "At most %(n)s decimal places; values are not rounded."
+
+msgid "Der Wert darf nicht unter %(n)s liegen."
+msgstr "The value must not be below %(n)s."
+
+msgid "Der Wert darf nicht über %(n)s liegen."
+msgstr "The value must not exceed %(n)s."
+
+msgid "«%(wert)s» ist kein Monat (erwartet: JJJJ-MM)."
+msgstr "“%(wert)s” is not a month (expected: YYYY-MM)."
+
+msgid "«%(wert)s» ist weder ja noch nein."
+msgstr "“%(wert)s” is neither ja nor nein."
+
+msgid "«%(wert)s» ist nicht zulässig. Erlaubt: %(erlaubt)s."
+msgstr "“%(wert)s” is not allowed. Allowed: %(erlaubt)s."
+
+msgid "«%(wert)s» ist keine gültige IBAN."
+msgstr "“%(wert)s” is not a valid IBAN."
+
+msgid "«%(wert)s» ist keine gültige E-Mail-Adresse."
+msgstr "“%(wert)s” is not a valid email address."
+
+msgid ""
+"Der Schlüssel «%(s)s» ist nicht bekannt. Er muss in der Datei «%(datei)s» "
+"stehen (im selben oder in einem früheren Import)."
+msgstr ""
+"The key “%(s)s” is unknown. It must be in the file “%(datei)s” (in this or "
+"an earlier import)."
+
+msgid "Der Schlüssel «%(s)s» steht schon in Zeile %(n)s."
+msgstr "The key “%(s)s” is already in line %(n)s."
+
+msgid ""
+"Eigentümer «%(n)s» besteht schon und wurde zugeordnet; nichts verändert."
+msgstr "Owner “%(n)s” already exists and was assigned; nothing changed."
+
+msgid "Die Postleitzahl einer Liegenschaft hat vier Ziffern."
+msgstr "The postcode of a property has four digits."
+
+msgid ""
+"Stockwerkeigentum (STWEG) wird nicht importiert: Die Wertquoten müssen "
+"aufgehen. Bitte in der Oberfläche anlegen."
+msgstr ""
+"Condominium (STWEG) is not imported: the value shares must add up. Please "
+"create it in the interface."
+
+msgid "«%(k)s» ist kein Kantonskürzel."
+msgstr "“%(k)s” is not a canton abbreviation."
+
+msgid ""
+"Die Liegenschaft «%(a)s» besteht schon und wurde zugeordnet; nichts "
+"verändert."
+msgstr ""
+"The property “%(a)s” already exists and was assigned; nothing changed."
+
+msgid ""
+"Kein Kanton angegeben%(vorschlag)s: Formulare und Fristen je Kanton bleiben "
+"unvollständig, bis er eingetragen ist."
+msgstr ""
+"No canton given%(vorschlag)s: forms and deadlines per canton remain "
+"incomplete until it is entered."
+
+msgid ""
+"STWEG-Einheiten werden nicht importiert (Wertquoten, Stockwerkeigentümer)."
+msgstr "Condominium units are not imported (value shares, unit owners)."
+
+msgid ""
+"Das Objekt «%(b)s» besteht in dieser Liegenschaft schon und wurde "
+"zugeordnet; nichts verändert."
+msgstr ""
+"The unit “%(b)s” already exists in this property and was assigned; nothing "
+"changed."
+
+msgid "Bei einer Privatperson ist der Nachname Pflicht."
+msgstr "For an individual the last name is required."
+
+msgid "Bei Firma und Verein ist der Firmenname Pflicht."
+msgstr "For a company or association the company name is required."
+
+msgid "Das Geburtsdatum liegt in der Zukunft."
+msgstr "The date of birth is in the future."
+
+msgid ""
+"Ein Mieter mit der E-Mail-Adresse «%(e)s» besteht schon. Dieser Eintrag wird"
+" trotzdem neu angelegt; Doppelte später zusammenführen."
+msgstr ""
+"A tenant with the email address “%(e)s” already exists. This entry is "
+"created anyway; merge duplicates later."
+
+msgid "Hauptmieter und Mitmieter sind dieselbe Person."
+msgstr "The main tenant and the co-tenant are the same person."
+
+msgid ""
+"Bei einem Enddatum angeben, ob der Vertrag befristet ist (ja) oder auf "
+"diesen Termin gekündigt wurde (nein)."
+msgstr ""
+"With an end date, state whether the lease is fixed-term (ja) or terminated "
+"for this date (nein)."
+
+msgid "Ein befristeter Vertrag braucht ein Enddatum."
+msgstr "A fixed-term lease needs an end date."
+
+msgid "Ein gekündigter Vertrag braucht den Kündigungstermin als Enddatum."
+msgstr "A terminated lease needs the termination date as end date."
+
+msgid ""
+"Ein befristeter Vertrag wird nicht gekündigt; Status «aktiv» verwenden."
+msgstr "A fixed-term lease is not terminated; use the status “aktiv”."
+
+msgid "Der Vertrag beginnt erst am %(d)s, ist aber als aktiv eingetragen."
+msgstr "The lease only starts on %(d)s but is entered as active."
+
+msgid ""
+"Das Ende (%(d)s) liegt in der Vergangenheit, der Vertrag ist aber als aktiv "
+"eingetragen."
+msgstr "The end (%(d)s) is in the past but the lease is entered as active."
+
+msgid "Bei einer Kaution angeben, ob Sperrkonto oder Versicherung."
+msgstr "For a deposit, state whether blocked account or insurance."
+
+msgid ""
+"Staffelmieten werden nicht importiert: Die Stufen brauchen eine eigene "
+"Tabelle (Art. 269c OR). Den Vertrag in der Oberfläche erfassen."
+msgstr ""
+"Stepped rents are not imported: the steps need their own table (Art. 269c "
+"CO). Please enter the lease in the interface."
+
+msgid ""
+"Bei Indexmiete ist die Basis des Landesindexes (Punkte) Pflicht; sie wird "
+"nicht vorgegeben."
+msgstr ""
+"For indexed rent the index base (points) is required; it is not assumed."
+
+msgid "Bei Indexmiete ist der Stand-Monat der Index-Basis Pflicht."
+msgstr "For indexed rent the reference month of the index base is required."
+
+msgid "Bei MWST-Pflicht den Steuersatz angeben; er wird nicht vorgegeben."
+msgstr "With VAT liability, state the rate; it is not assumed."
+
+msgid "Der MWST-Satz wird ignoriert, weil mwst_pflichtig nicht «ja» ist."
+msgstr "The VAT rate is ignored because mwst_pflichtig is not “ja”."
+
+msgid "Für Wohnräume gibt es keine MWST-Option (Art. 22 Abs. 2 lit. b MWSTG)."
+msgstr ""
+"There is no VAT option for residential premises (Art. 22 para. 2 lit. b VAT "
+"Act)."
+
+msgid "«Erstmals kündbar auf» liegt vor dem Beginn."
+msgstr "“First terminable on” is before the start."
+
+msgid ""
+"Für Einstellplätze führt die Oberfläche keine Nebenkosten; der Wert wird so "
+"übernommen."
+msgstr ""
+"The interface keeps no service charges for parking spaces; the value is "
+"taken as is."
+
+msgid ""
+"Dieser Vertrag besteht schon (gleiches Objekt, gleicher Mieter, gleicher "
+"Beginn)."
+msgstr "This lease already exists (same unit, same tenant, same start)."
+
+msgid ""
+"Das Objekt ist im selben Zeitraum schon an %(m)s vermietet (Vertrag %(id)s, "
+"ab %(b)s)."
+msgstr ""
+"The unit is already rented to %(m)s in the same period (lease %(id)s, from "
+"%(b)s)."
+
+msgid ""
+"%(n)s Verträge ohne Basis-Referenzzinssatz: es gilt der heutige Stand. "
+"Mietzinsanpassungen nach Referenzzins sind dann erst ab heute zuverlässig."
+msgstr ""
+"%(n)s leases without a base reference rate: the current rate applies. Rent "
+"adjustments by reference rate are then reliable only from today."
+
+msgid "%(n)s Verträge ohne LIK-Basis: es gilt der heutige Stand."
+msgstr "%(n)s leases without CPI base: the current level applies."
+
+msgid "In der Datei fehlen Pflichtspalten: %(s)s."
+msgstr "Required columns are missing in the file: %(s)s."
+
+msgid "Diese Spalten sind unbekannt und werden nicht gelesen: %(s)s."
+msgstr "These columns are unknown and are not read: %(s)s."
+
+msgid "Die Datei enthält keine Datenzeilen."
+msgstr "The file contains no data rows."
+
+msgid "Die Zeile konnte nicht gespeichert werden: %(e)s"
+msgstr "The row could not be saved: %(e)s"
+
+msgid ""
+"%(n)s Zeilen waren schon importiert oder entsprechen einem bestehenden "
+"Datensatz und wurden übersprungen."
+msgstr ""
+"%(n)s rows were already imported or match an existing record and were "
+"skipped."
+
+msgid "Es wurde keine Datei hochgeladen."
+msgstr "No file was uploaded."
+
+msgid ""
+"Dieser Import ist nicht mehr ausführbar. Bitte die Dateien neu hochladen."
+msgstr "This import can no longer be run. Please upload the files again."
+
+msgid "Die Datei ist leer."
+msgstr "The file is empty."
+
+msgid "Die Datei ist grösser als 5 MB."
+msgstr "The file is larger than 5 MB."
+
+msgid "Die Datei ist keine gültige Excel-Datei (.xlsx)."
+msgstr "The file is not a valid Excel file (.xlsx)."
+
+msgid ""
+"Das alte Excel-Format (.xls) wird nicht gelesen: als .xlsx oder CSV "
+"speichern."
+msgstr "The old Excel format (.xls) is not read: save as .xlsx or CSV."
+
+msgid "Die Datei enthält keine Kopfzeile."
+msgstr "The file contains no header row."
+
+msgid "Die Datei hat mehr als %(n)s Spalten."
+msgstr "The file has more than %(n)s columns."
+
+msgid "Die Spalte «%(n)s» kommt mehrfach vor."
+msgstr "The column “%(n)s” appears more than once."
+
+msgid "Höchstens %(n)s Zeilen je Datei."
+msgstr "At most %(n)s rows per file."
+
+msgid "Die Datei ist keine lesbare Textdatei (UTF-8 oder Windows-1252)."
+msgstr "The file is not a readable text file (UTF-8 or Windows-1252)."
+
+msgid "Die Datei ist keine Textdatei."
+msgstr "The file is not a text file."
+
+msgid "Die CSV-Datei ist nicht lesbar: %(e)s"
+msgstr "The CSV file is not readable: %(e)s"
+
+msgid "Die Excel-Datei ist zu gross."
+msgstr "The Excel file is too large."
+
+msgid "Die Excel-Datei enthält unzulässige Angaben."
+msgstr "The Excel file contains invalid content."
+
+msgid "Die Excel-Datei ist beschädigt."
+msgstr "The Excel file is damaged."
+
+msgid "Die Excel-Datei enthält kein Tabellenblatt."
+msgstr "The Excel file contains no sheet."
+
+msgid "Export für Banana/Abacus"
+msgstr "Export for Banana/Abacus"
+
+msgid "Daten"
+msgstr "Data"
+
+msgid "Bestehende Daten übernehmen und Ihre Daten exportieren."
+msgstr "Take over existing data and export your data."
+
+msgid "Daten importieren"
+msgstr "Import data"
+
+msgid ""
+"Eigentümer, Liegenschaften, Objekte, Mieter und laufende Verträge aus CSV "
+"oder Excel übernehmen — mit Vorschau und Fehlerliste."
+msgstr ""
+"Import owners, properties, units, tenants and current leases from CSV or "
+"Excel — with preview and error list."
+
+msgid "Daten exportieren"
+msgstr "Export data"
+
+msgid ""
+"Mandatsexport (ZIP mit allen Daten und Dokumenten) und Buchungsjournal für "
+"Banana und Abacus."
+msgstr ""
+"Mandate export (ZIP with all data and documents) and accounting journal for "
+"Banana and Abacus."
+
+msgid "Buchungsjournal für Banana und Abacus."
+msgstr "Accounting journal for Banana and Abacus."
+
+msgid "Exportieren"
+msgstr "Export"
+
+msgid "Jeder Export wird im Logbuch festgehalten."
+msgstr "Every export is recorded in the log."
+
+msgid "Buchungsjournal (Banana, Abacus, Treuhand)"
+msgstr "Accounting journal (Banana, Abacus, trustee)"
+
+msgid "Bis (eingeschlossen)"
+msgstr "To (inclusive)"
+
+msgid ""
+"Spalten: Buchungsdatum, Belegnummer, Soll, Haben, Betrag, Text, MWST-Code "
+"(Überschriften unten einstellbar). Stornobuchungen stehen als eigene Zeilen."
+" Es werden nur Buchungen gelesen, nichts wird verändert."
+msgstr ""
+"Columns: booking date, document number, debit, credit, amount, text, VAT "
+"code (headings adjustable below). Reversals appear as separate lines. "
+"Bookings are only read, nothing is changed."
+
+msgid "Journal herunterladen (CSV)"
+msgstr "Download journal (CSV)"
+
+msgid "Einstellungen für das Buchungsjournal"
+msgstr "Settings for the accounting journal"
+
+msgid ""
+"Welche Spaltenüberschriften, Kontonummern und MWST-Codes Banana oder Abacus "
+"erwarten, ist hier nicht fest eingebaut: Das legt Ihre Buchhaltung fest. Die"
+" Vorgaben sind allgemeine Namen. Bitte mit einer Probedatei im Zielprogramm "
+"prüfen, bevor Sie ein ganzes Jahr übernehmen."
+msgstr ""
+"Which column headings, account numbers and VAT codes Banana or Abacus expect"
+" is not fixed here: your accounting decides. The defaults are general names."
+" Please test with a sample file in the target program before taking over a "
+"whole year."
+
+msgid "Überschrift «%(n)s»"
+msgstr "Heading “%(n)s”"
+
+msgid "Trennzeichen"
+msgstr "Separator"
+
+msgid "Datumsformat"
+msgstr "Date format"
+
+msgid "Dezimalzeichen"
+msgstr "Decimal separator"
+
+msgid "Kontenzuordnung"
+msgstr "Account mapping"
+
+msgid ""
+"Eine Zeile je Konto: eigene Kontonummer;Kontonummer im Zielprogramm, "
+"optional ;MWST-Code. Konten ohne Zeile werden mit ihrer eigenen Nummer "
+"exportiert. Eine Buchung trägt in immoswiss keinen Steuercode; der MWST-Code"
+" kommt nur aus dieser Zuordnung (zuerst das Soll-, dann das Habenkonto)."
+msgstr ""
+"One line per account: own account number;account number in the target "
+"program, optionally ;VAT code. Accounts without a line are exported with "
+"their own number. A booking carries no tax code in immoswiss; the VAT code "
+"comes only from this mapping (debit account first, then credit account)."
+
+msgid "Mandatsexport (alle Daten)"
+msgstr "Mandate export (all data)"
+
+msgid ""
+"Ein ZIP mit allen Daten Ihrer Verwaltung: je Tabelle eine CSV- und eine "
+"JSON-Datei, dazu die Dokumente. Für den Wechsel zu einem anderen System. "
+"Enthält Personendaten: sicher aufbewahren. Nicht enthalten sind Passwörter, "
+"Zugangsdaten und AHV-Nummern. Bei sehr grossen Beständen dauert die "
+"Erstellung länger; dann ohne Dokumente exportieren oder den Befehl "
+"«mandat_exportieren» auf dem Server verwenden."
+msgstr ""
+"A ZIP with all data of your management: one CSV and one JSON file per table,"
+" plus the documents. For switching to another system. Contains personal "
+"data: store securely. Not included: passwords, access credentials and AHV "
+"numbers. For very large data sets creation takes longer; then export without"
+" documents or use the command “mandat_exportieren” on the server."
+
+msgid "Dokumente einschliessen"
+msgstr "Include documents"
+
+msgid "Mandatsexport herunterladen (ZIP)"
+msgstr "Download mandate export (ZIP)"
+
+msgid "Importieren"
+msgstr "Import"
+
+msgid "Für den Wechsel von einer anderen Verwaltungssoftware."
+msgstr "For switching from another property management software."
+
+msgid ""
+"So geht es: Vorlage je Art herunterladen und füllen, die Dateien hier "
+"hochladen, die Vorschau prüfen und erst dann importieren. Die Vorschau "
+"schreibt nichts. Beim Import gilt alles oder nichts: Meldet auch nur eine "
+"Zeile einen Fehler, wird nichts angelegt. Die Verknüpfungen laufen über Ihre"
+" eigenen Schlüssel (Spalte «schluessel»); Zeilen mit einem schon "
+"importierten Schlüssel werden übersprungen."
+msgstr ""
+"How it works: download and fill in the template for each type, upload the "
+"files here, check the preview and only then import. The preview writes "
+"nothing. The import is all or nothing: if even one row reports an error, "
+"nothing is created. Links use your own keys (column “schluessel”); rows with"
+" an already imported key are skipped."
+
+msgid "Vorlage (CSV)"
+msgstr "Template (CSV)"
+
+msgid "Datei (CSV oder Excel .xlsx)"
+msgstr "File (CSV or Excel .xlsx)"
+
+msgid "Spalten dieser Datei"
+msgstr "Columns of this file"
+
+msgid "Pflicht"
+msgstr "Required"
+
+msgid "z. B."
+msgstr "e.g."
+
+msgid "Prüfen (Trockenlauf)"
+msgstr "Check (dry run)"
+
+msgid "%(f)s Fehler, %(h)s Hinweise"
+msgstr "%(f)s errors, %(h)s notes"
+
+msgid "Noch kein Import."
+msgstr "No import yet."
+
+msgid "Datenimport"
+msgstr "Data import"
+
+msgid ""
+"Die Vorschau ist fehlerfrei. Es wurde noch nichts angelegt. Mit «Jetzt "
+"importieren» werden genau diese Dateien übernommen."
+msgstr ""
+"The preview is error-free. Nothing has been created yet. “Import now” takes "
+"over exactly these files."
+
+msgid ""
+"Die Vorschau hat Fehler gefunden. Es wurde nichts angelegt. Die Dateien "
+"korrigieren und erneut hochladen."
+msgstr ""
+"The preview found errors. Nothing was created. Correct the files and upload "
+"them again."
+
+msgid ""
+"Der Import wurde abgebrochen, weil beim Ausführen Fehler auftraten. Es wurde"
+" nichts angelegt."
+msgstr ""
+"The import was aborted because errors occurred during execution. Nothing was"
+" created."
+
+msgid ""
+"Importiert am %(am)s. Die hochgeladenen Dateien sind gelöscht, dieses "
+"Protokoll bleibt."
+msgstr "Imported on %(am)s. The uploaded files are deleted, this log remains."
+
+msgid "%(n)s Zeilen · %(neu)s neu · %(v)s übersprungen · %(f)s mit Fehler"
+msgstr "%(n)s rows · %(neu)s new · %(v)s skipped · %(f)s with error"
+
+msgid "Keine Datei verarbeitet."
+msgstr "No file processed."
+
+msgid "Fehler (%(n)s)"
+msgstr "Errors (%(n)s)"
+
+msgid "Zeile %(n)s"
+msgstr "Row %(n)s"
+
+msgid "Hinweise (%(n)s)"
+msgstr "Notes (%(n)s)"
+
+msgid ""
+"Es werden die ersten 1000 Meldungen gezeigt; die Zahlen oben sind "
+"vollständig."
+msgstr "The first 1000 messages are shown; the figures above are complete."
+
+msgid "Jetzt importieren"
+msgstr "Import now"
+
+msgid "Verwerfen"
+msgstr "Discard"
+
+msgid "Neue Dateien hochladen"
+msgstr "Upload new files"
+
+msgid ""
+"Import für Wechselkunden, Mandatsexport, Buchungsjournal für Banana und "
+"Abacus"
+msgstr ""
+"Import for switching customers, mandate export, accounting journal for "
+"Banana and Abacus"
+
+msgid "Die Datei «%(n)s» ist grösser als 5 MB."
+msgstr "The file “%(n)s” is larger than 5 MB."
+
+msgid "Bitte mindestens eine Datei wählen."
+msgstr "Please choose at least one file."
+
+msgid "Import abgeschlossen: %(n)s Datensätze angelegt."
+msgstr "Import complete: %(n)s records created."
+
+msgid ""
+"Der Import wurde abgebrochen, es wurde nichts angelegt. Die Fehlerliste "
+"zeigt, was zu korrigieren ist."
+msgstr ""
+"The import was aborted, nothing was created. The error list shows what to "
+"correct."
+
+msgid "Die hochgeladenen Dateien wurden verworfen."
+msgstr "The uploaded files were discarded."
+
+msgid "Das Datum «von» liegt nach «bis»."
+msgstr "The date “from” is after “to”."
+
+msgid "Die Überschrift «%(t)s» ist zu lang (höchstens 40 Zeichen)."
+msgstr "The heading “%(t)s” is too long (40 characters at most)."
+
+msgid "Jede Spalte braucht eine eigene Überschrift."
+msgstr "Each column needs its own heading."
+
+msgid "Die Einstellungen für das Buchungsjournal sind gespeichert."
+msgstr "The settings for the accounting journal are saved."

@@ -1,6 +1,6 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
-{% load chf %}
+{% load chf rechte %}
 {% block title %}{% trans "Buchhaltung" %} — immoswiss{% endblock %}
 
 {% block content %}
@@ -33,6 +33,8 @@
            class="fw-btn fw-knapp">{% zeichen 'drucken' klasse='mr-1' %}{% trans "Erfolgsrechnung &amp; Bilanz (PDF)" %}</a>
         <a href="/neu/buchhaltung/export/?jahr={{ jahr }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}"
            class="fw-btn fw-knapp">{% zeichen 'herunterladen' klasse='mr-1' %}{% trans "Journal-Export (CSV)" %}</a>
+        {% if request.user|darf:"/neu/einstellungen/daten/export/" %}<a href="/neu/einstellungen/daten/export/"
+           class="fw-btn fw-knapp">{% zeichen 'herunterladen' klasse='mr-1' %}{% trans "Export für Banana/Abacus" %}</a>{% endif %}
     </div>
     {% endif %}
 </div>

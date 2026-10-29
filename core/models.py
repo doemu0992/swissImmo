@@ -483,3 +483,132 @@ class Archiveintrag(models.Model):
 
     def __str__(self):
         return f"{self.typ} #{self.objekt_id} ({self.bezeichnung})"
+
+
+class DatenImportLauf(models.Model):
+    """Ein Datenimport (Wechselkunden, FUNK-09): Vorschau, Ausführung und Protokoll.
+
+    Der Ablauf hat zwei Schritte mit DERSELBEN Datei: Die Vorschau (Trockenlauf) legt
+    die hochgeladenen Dateien hier ab, prüft sie vollständig und schreibt nichts in den
+    Bestand. «Jetzt importieren» liest genau diese abgelegten Bytes, nicht eine zweite
+    Hochladung, und führt alles in EINER Transaktion aus. Danach werden die Dateien
+    gelöscht (`daten` leer); das Protokoll mit Zählern und Meldungen bleibt.
+    """
+    STATUS_VORSCHAU = 'vorschau'          # Trockenlauf ohne Fehler, kann ausgeführt werden
+    STATUS_FEHLERHAFT = 'fehlerhaft'      # Trockenlauf mit Fehlern, nichts ausführbar
+    STATUS_IMPORTIERT = 'importiert'
+    STATUS_ABGEBROCHEN = 'abgebrochen'    # Ausführung hat Fehler gefunden, nichts geschrieben
+    STATUS_VERWORFEN = 'verworfen'
+    STATUS_CHOICES = [
+        (STATUS_VORSCHAU, _('Vorschau (bereit)')),
+        (STATUS_FEHLERHAFT, _('Vorschau mit Fehlern')),
+        (STATUS_IMPORTIERT, _('Importiert')),
+        (STATUS_ABGEBROCHEN, _('Abgebrochen (nichts importiert)')),
+        (STATUS_VERWORFEN, _('Verworfen')),
+    ]
+
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
+                                     related_name='%(app_label)s_%(class)s', verbose_name='Organisation')
+    benutzer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
+                                 blank=True, related_name='+', verbose_name="Durchgeführt von")
+    erstellt_am = models.DateTimeField("Erstellt am", auto_now_add=True)
+    ausgefuehrt_am = models.DateTimeField("Importiert am", null=True, blank=True)
+    status = models.CharField("Status", max_length=12, choices=STATUS_CHOICES, default=STATUS_VORSCHAU)
+    #: Die hochgeladenen Dateien als ZIP (Name -> Inhalt) bis zur Ausführung; danach leer.
+    daten = models.BinaryField("Hochgeladene Dateien", blank=True, default=b'', editable=False)
+    #: Zähler je Art: {'liegenschaften': {'zeilen': 12, 'neu': 10, 'vorhanden': 2, 'fehler': 0}, …}
+    zaehler = models.JSONField("Zähler je Art", default=dict, blank=True)
+    #: Meldungen: [{'art', 'zeile', 'feld', 'stufe' ('fehler'|'hinweis'), 'text'}, …], höchstens 1000.
+    meldungen = models.JSONField("Meldungen", default=list, blank=True)
+    anzahl_fehler = models.PositiveIntegerField("Fehler", default=0)
+    anzahl_hinweise = models.PositiveIntegerField("Hinweise", default=0)
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            self.organisation_id = organisation_bestimmen().pk
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Datenimport"
+        verbose_name_plural = "Datenimporte"
+        ordering = ['-erstellt_am', '-id']
+
+    def __str__(self):
+        return f"Datenimport {self.pk} ({self.status})"
+
+
+class DatenImportReferenz(models.Model):
+    """Der Schlüssel der Quelldatei zum angelegten Datensatz.
+
+    Die Dateien nennen ihre Verknüpfungen mit eigenen Schlüsseln (Liegenschaft «L1»,
+    Objekt «L1-3»). Diese Tabelle hält fest, welcher Datensatz hier daraus wurde. Damit
+    lässt sich ein Import in Etappen machen (Verträge einen Tag nach den Objekten), und
+    eine zweite Hochladung derselben Zeile legt nichts doppelt an.
+    """
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
+                                     related_name='%(app_label)s_%(class)s', verbose_name='Organisation')
+    art = models.CharField("Art", max_length=20)
+    schluessel = models.CharField("Schlüssel der Quelldatei", max_length=120)
+    objekt_id = models.PositiveBigIntegerField("Datensatz-ID")
+    lauf = models.ForeignKey(DatenImportLauf, on_delete=models.SET_NULL, null=True, blank=True,
+                             related_name='referenzen')
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            self.organisation_id = organisation_bestimmen().pk
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Import-Referenz"
+        verbose_name_plural = "Import-Referenzen"
+        constraints = [models.UniqueConstraint(fields=['organisation', 'art', 'schluessel'],
+                                               name='uniq_importreferenz_je_organisation')]
+
+    def __str__(self):
+        return f"{self.art}:{self.schluessel} -> {self.objekt_id}"
+
+
+class DatenExportEinstellung(models.Model):
+    """Wie das Buchungsjournal für ein Buchhaltungsprogramm aussieht (FUNK-13).
+
+    Spaltenüberschriften, Zahlen- und Datumsformat und die Zuordnung des eigenen Kontenplans
+    zu dem des Zielsystems stehen NICHT im Code: Welche Überschriften Banana oder Abacus
+    erwarten und wie ein Treuhänder seine Konten nummeriert, weiss die Buchhaltung der
+    Verwaltung, nicht diese Anwendung. Die Vorgaben sind die allgemeinen Namen aus dem
+    Auftrag (Buchungsdatum, Belegnummer, Soll, Haben, Betrag, Text, MWST-Code).
+    """
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
+                                     related_name='%(app_label)s_%(class)s', verbose_name='Organisation')
+    #: {'datum': 'Buchungsdatum', 'beleg': 'Belegnummer', 'soll': 'Soll', 'haben': 'Haben',
+    #:  'betrag': 'Betrag', 'text': 'Text', 'mwst': 'MWST-Code'}
+    spalten = models.JSONField("Spaltenüberschriften", default=dict, blank=True)
+    #: {'1020': {'konto': '1000', 'mwst': ''}} — eigene Kontonummer -> Konto im Zielsystem + MWST-Code
+    konten = models.JSONField("Kontenzuordnung", default=dict, blank=True)
+    trenner = models.CharField("Trennzeichen", max_length=1, default=';')
+    datumsformat = models.CharField("Datumsformat", max_length=3, default='ch',
+                                    choices=[('ch', 'TT.MM.JJJJ'), ('iso', 'JJJJ-MM-TT')])
+    dezimal = models.CharField("Dezimalzeichen", max_length=1, default='.')
+    aktualisiert_am = models.DateTimeField("Aktualisiert am", auto_now=True)
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            self.organisation_id = organisation_bestimmen().pk
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Export-Einstellung"
+        verbose_name_plural = "Export-Einstellungen"
+        constraints = [models.UniqueConstraint(fields=['organisation'],
+                                               name='uniq_exporteinstellung_je_organisation')]
+
+    def __str__(self):
+        return f"Export-Einstellung {self.organisation_id}"

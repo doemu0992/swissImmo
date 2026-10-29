@@ -58,7 +58,7 @@ class ErweiterterBestand(MandantenFixture):
 
     def _zusatz(self):
         from crm.models import MieterAdresse, ReferenzzinsStand
-        from core.models import AktivitaetsLog, Archiveintrag
+        from core.models import AktivitaetsLog, Archiveintrag, DatenExportEinstellung, DatenImportReferenz
         from finance.models import (Abschreibung, Anlage, Bankbewegung, EigentuemerAuszahlung, Erneuerungsfonds,
                                     ErneuerungsfondsBewegung, Hypothek, Jahresabschluss, Kontoauszug,
                                     KreditorenZahlung, KreditorPosition, LieferantProfil, Mahnung,
@@ -150,6 +150,9 @@ class ErweiterterBestand(MandantenFixture):
         self._neu('archiveintrag', lambda: Archiveintrag.objects.create(
             organisation=org, typ='mieter', objekt_id=self.mieter.pk, archiviert_am=heute,
             aufbewahren_bis=heute + timedelta(days=3650)))
+        self._neu('datenimportreferenz', lambda: DatenImportReferenz.objects.create(
+            organisation=org, art='mieter', schluessel=f'M-{k}', objekt_id=self.mieter.pk))
+        self._neu('datenexporteinstellung', lambda: DatenExportEinstellung.objects.create(organisation=org))
 
         # --- STWEG ----------------------------------------------------------------------------------------
         from stweg.models import (Anwesenheit, Stimme, StimmeEreignis, StwegAbrechnungAnteil, StwegAbrechnungKosten,
