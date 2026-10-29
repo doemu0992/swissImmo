@@ -69,7 +69,7 @@ jobs:
         run: python _tools/pip_audit_pruefen.py pip-audit.json pip-audit-ignore.txt
       - name: Bericht als Artefakt
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pip-audit
           path: pip-audit.json
@@ -193,7 +193,7 @@ jobs:
         run: npx playwright test
       - name: Playwright-Report als Artefakt
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: playwright-report/
