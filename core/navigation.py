@@ -87,6 +87,7 @@ EINSTELLUNGEN_ZIELE = [
     '/neu/regelwerk/',
     '/neu/einstellungen/zahlungsfreigabe/',
     '/neu/archiv/',
+    '/neu/einstellungen/daten/',
 ]
 
 

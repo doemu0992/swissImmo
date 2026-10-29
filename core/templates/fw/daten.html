@@ -1,0 +1,42 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% comment %}
+DATEN — Einstieg zu Import (Wechselkunden) und Export. Jede Rolle sieht nur, was ihre Views erlauben:
+Import und Mandatsexport Inhaber/Verwalter, das Buchungsjournal zusätzlich die Buchhaltung.
+{% endcomment %}
+{% block title %}{% trans "Daten" %} — immoswiss{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/einstellungen/">{% trans "Einstellungen" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Daten" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Daten" %}</h1>
+        <p>{% trans "Bestehende Daten übernehmen und Ihre Daten exportieren." %}</p>
+    </div>
+</div>
+
+<div class="fw-card">
+    {% if darf_import %}
+    <a href="/neu/einstellungen/daten/import/" class="fw-zeile klick" data-testid="daten-import-link">
+        <span class="fw-ikon">{% zeichen 'hochladen' %}</span>
+        <div class="fw-mitte">
+            <div class="fw-t">{% trans "Daten importieren" %}</div>
+            <div class="fw-s">{% trans "Eigentümer, Liegenschaften, Objekte, Mieter und laufende Verträge aus CSV oder Excel übernehmen — mit Vorschau und Fehlerliste." %}</div>
+        </div>
+        <span class="fw-faint">{% zeichen 'weiter' %}</span>
+    </a>
+    {% endif %}
+    <a href="/neu/einstellungen/daten/export/" class="fw-zeile klick" data-testid="daten-export-link">
+        <span class="fw-ikon">{% zeichen 'herunterladen' %}</span>
+        <div class="fw-mitte">
+            <div class="fw-t">{% trans "Daten exportieren" %}</div>
+            <div class="fw-s">{% if darf_mandat %}{% trans "Mandatsexport (ZIP mit allen Daten und Dokumenten) und Buchungsjournal für Banana und Abacus." %}{% else %}{% trans "Buchungsjournal für Banana und Abacus." %}{% endif %}</div>
+        </div>
+        <span class="fw-faint">{% zeichen 'weiter' %}</span>
+    </a>
+</div>
+{% endblock %}

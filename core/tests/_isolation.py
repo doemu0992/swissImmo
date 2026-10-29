@@ -74,7 +74,10 @@ PARAMETER_MODELL = {
 # keine fremde ID, die der Sweep einsetzen könnte. Geprüft von Hand in
 # `core/tests/test_portale_modul3.py` (fremder, falscher, abgelaufener und
 # widerrufener Token; kein zweiter Auftrag über denselben Token).
-KEINE_OBJEKT_ID = {'nummer', 'pfad', 'zweck', 'token'}
+#
+# `art` (FUNK-09) ist die Dateiart der Importvorlage (`/neu/einstellungen/daten/import/vorlage/<art>/`):
+# eine feste Auswahl aus fünf Namen, die eine Kopfzeile liefert und keinen Datensatz berührt.
+KEINE_OBJEKT_ID = {'nummer', 'pfad', 'zweck', 'token', 'art'}
 
 
 class MandantenFixture:
@@ -428,6 +431,14 @@ class MandantenFixture:
             regel_stand=date(2026, 1, 15), fall=self.fall,
             befund=Regelanwendung.BEANSTANDET, meldung=f'Prüfung {k}')
 
+        # Datenimport (FUNK-09): ein Protokoll je Mandant. Die URLs `fw_daten_import_*` nehmen seine
+        # `pk`; ein fremdes Protokoll darf weder lesbar noch ausführbar sein (404).
+        from core.models import DatenImportLauf
+        self.datenimport = DatenImportLauf.objects.create(
+            organisation=self.organisation, status=DatenImportLauf.STATUS_FEHLERHAFT,
+            meldungen=[{'art': 'liegenschaften', 'zeile': 2, 'feld': 'plz', 'stufe': 'fehler',
+                        'text': f'Fehler {k}'}], anzahl_fehler=1)
+
     def _benutzer(self):
         """Team-Benutzer dieses Mandanten — Gruppe UND Mitgliedschaft.
 
@@ -494,6 +505,8 @@ class MandantenFixture:
     #: gewinnt, deshalb stehen die spezifischeren Muster vorn.
     #: Abgelesen aus dem `get_object_or_404` der jeweiligen View, nicht geraten.
     NAME_MUSTER = (
+        # Datenimport: `pk` ist das Protokoll des Imports (FUNK-09).
+        ('daten_import',    'datenimport'),
         # Mahnstufen je Organisation: `fw_mahnstufe_loeschen` nimmt die `pk` einer
         # Stufe. Ein POST auf eine FREMDE Stufe darf nichts löschen (404).
         ('mahnstufe',       'mahnstufe'),

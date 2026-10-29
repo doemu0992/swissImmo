@@ -1,0 +1,106 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% comment %}
+DATENIMPORT — Vorschau und Protokoll eines Laufs: Zähler je Art, Fehlerliste je Zeile, Hinweise.
+«Jetzt importieren» gibt es nur bei einer fehlerfreien Vorschau.
+{% endcomment %}
+{% block title %}{% trans "Datenimport" %} — immoswiss{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/einstellungen/">{% trans "Einstellungen" %}</a>
+    {% zeichen 'weiter' %}
+    <a href="/neu/einstellungen/daten/">{% trans "Daten" %}</a>
+    {% zeichen 'weiter' %}
+    <a href="/neu/einstellungen/daten/import/">{% trans "Importieren" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{{ lauf.erstellt_am|date:"d.m.Y H:i" }}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Datenimport" %}</h1>
+        <p>{{ lauf.erstellt_am|date:"d.m.Y H:i" }} · {{ lauf.benutzer|default:"—" }}</p>
+    </div>
+    <span class="fw-chip {% if lauf.status == 'importiert' %}fw-good{% elif lauf.status == 'vorschau' %}fw-info{% elif lauf.status == 'verworfen' %}fw-mut{% else %}fw-crit{% endif %}" data-testid="daten-import-status">{{ lauf.get_status_display }}</span>
+</div>
+
+{% if lauf.status == 'vorschau' %}
+<div class="fw-hinweis good max-w-3xl">
+    <span class="fw-hi">{% zeichen 'gut' %}</span>
+    <div class="fw-ht">{% trans "Die Vorschau ist fehlerfrei. Es wurde noch nichts angelegt. Mit «Jetzt importieren» werden genau diese Dateien übernommen." %}</div>
+</div>
+{% elif lauf.status == 'fehlerhaft' %}
+<div class="fw-hinweis crit max-w-3xl">
+    <span class="fw-hi">{% zeichen 'kritisch' %}</span>
+    <div class="fw-ht">{% trans "Die Vorschau hat Fehler gefunden. Es wurde nichts angelegt. Die Dateien korrigieren und erneut hochladen." %}</div>
+</div>
+{% elif lauf.status == 'abgebrochen' %}
+<div class="fw-hinweis crit max-w-3xl">
+    <span class="fw-hi">{% zeichen 'kritisch' %}</span>
+    <div class="fw-ht">{% trans "Der Import wurde abgebrochen, weil beim Ausführen Fehler auftraten. Es wurde nichts angelegt." %}</div>
+</div>
+{% elif lauf.status == 'importiert' %}
+<div class="fw-hinweis good max-w-3xl">
+    <span class="fw-hi">{% zeichen 'gut' %}</span>
+    <div class="fw-ht">{% blocktrans with am=lauf.ausgefuehrt_am|date:"d.m.Y H:i" %}Importiert am {{ am }}. Die hochgeladenen Dateien sind gelöscht, dieses Protokoll bleibt.{% endblocktrans %}</div>
+</div>
+{% endif %}
+
+<div class="fw-card max-w-3xl mt-3">
+    <div class="fw-kopf"><h3 class="fw-t">{% trans "Übersicht" %}</h3></div>
+    <div class="fw-rumpf">
+    {% for z in zaehler %}
+        <div class="py-2" data-testid="daten-import-zaehler">
+            <b class="fw-strong">{{ z.titel }}</b>
+            <p class="fw-mutet">{% blocktrans with n=z.zeilen neu=z.neu v=z.vorhanden f=z.fehler %}{{ n }} Zeilen · {{ neu }} neu · {{ v }} übersprungen · {{ f }} mit Fehler{% endblocktrans %}</p>
+        </div>
+    {% empty %}
+        <p class="fw-mutet">{% trans "Keine Datei verarbeitet." %}</p>
+    {% endfor %}
+    </div>
+</div>
+
+{% if meldungen.fehler %}
+<div class="fw-card max-w-3xl mt-3" data-testid="daten-import-fehler">
+    <div class="fw-kopf"><h3 class="fw-t">{% blocktrans with n=lauf.anzahl_fehler %}Fehler ({{ n }}){% endblocktrans %}</h3></div>
+    <div class="fw-rumpf">
+    {% for m in meldungen.fehler %}
+        <div class="py-2">
+            <b class="fw-strong">{{ m.art_titel }}{% if m.zeile %} · {% blocktrans with n=m.zeile %}Zeile {{ n }}{% endblocktrans %}{% endif %}{% if m.feld %} · <code>{{ m.feld }}</code>{% endif %}</b>
+            <p class="fw-mutet">{{ m.text }}</p>
+        </div>
+    {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if meldungen.hinweis %}
+<div class="fw-card max-w-3xl mt-3">
+    <div class="fw-kopf"><h3 class="fw-t">{% blocktrans with n=lauf.anzahl_hinweise %}Hinweise ({{ n }}){% endblocktrans %}</h3></div>
+    <div class="fw-rumpf">
+    {% for m in meldungen.hinweis %}
+        <div class="py-2">
+            <b class="fw-strong">{{ m.art_titel }}{% if m.zeile %} · {% blocktrans with n=m.zeile %}Zeile {{ n }}{% endblocktrans %}{% endif %}{% if m.feld %} · <code>{{ m.feld }}</code>{% endif %}</b>
+            <p class="fw-mutet">{{ m.text }}</p>
+        </div>
+    {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if abgeschnitten %}<p class="fw-mutet max-w-3xl mt-2">{% trans "Es werden die ersten 1000 Meldungen gezeigt; die Zahlen oben sind vollständig." %}</p>{% endif %}
+
+<div class="flex gap-2 flex-wrap mt-4 mb-4 max-w-3xl">
+    {% if ausfuehrbar %}
+    <form method="post" action="/neu/einstellungen/daten/import/{{ lauf.pk }}/ausfuehren/">{% csrf_token %}
+        <button type="submit" class="fw-btn fw-primary" data-testid="daten-import-ausfuehren">{% trans "Jetzt importieren" %}</button>
+    </form>
+    {% endif %}
+    {% if lauf.status == 'vorschau' or lauf.status == 'fehlerhaft' %}
+    <form method="post" action="/neu/einstellungen/daten/import/{{ lauf.pk }}/verwerfen/">{% csrf_token %}
+        <button type="submit" class="fw-btn fw-knapp">{% trans "Verwerfen" %}</button>
+    </form>
+    {% endif %}
+    <a href="/neu/einstellungen/daten/import/" class="fw-btn fw-knapp">{% trans "Neue Dateien hochladen" %}</a>
+</div>
+{% endblock %}

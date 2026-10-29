@@ -1,0 +1,81 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% comment %}
+DATENIMPORT — Dateien hochladen. Der erste Schritt ist immer ein Trockenlauf: Er prüft jede Zeile,
+schreibt nichts in den Bestand und führt zur Vorschau (daten_import_lauf.html). Karten statt
+Tabellen: bei 390 px ohne Querscroll.
+{% endcomment %}
+{% block title %}{% trans "Daten importieren" %} — immoswiss{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/einstellungen/">{% trans "Einstellungen" %}</a>
+    {% zeichen 'weiter' %}
+    <a href="/neu/einstellungen/daten/">{% trans "Daten" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Importieren" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Daten importieren" %}</h1>
+        <p>{% trans "Für den Wechsel von einer anderen Verwaltungssoftware." %}</p>
+    </div>
+</div>
+
+<div class="fw-hinweis info max-w-3xl">
+    <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+    <div class="fw-ht">{% blocktrans trimmed %}
+        So geht es: Vorlage je Art herunterladen und füllen, die Dateien hier hochladen, die Vorschau prüfen und erst dann importieren.
+        Die Vorschau schreibt nichts. Beim Import gilt alles oder nichts: Meldet auch nur eine Zeile einen Fehler, wird nichts angelegt.
+        Die Verknüpfungen laufen über Ihre eigenen Schlüssel (Spalte «schluessel»); Zeilen mit einem schon importierten Schlüssel werden übersprungen.
+    {% endblocktrans %}</div>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="max-w-3xl mt-3" data-testid="daten-import-form">
+    {% csrf_token %}
+    {% for a in arten %}
+    <div class="fw-card mb-3">
+        <div class="fw-kopf">
+            <h3 class="fw-t">{{ forloop.counter }}. {{ a.titel }}</h3>
+            <a href="/neu/einstellungen/daten/import/vorlage/{{ a.art }}/" class="fw-btn fw-knapp">{% zeichen 'herunterladen' klasse='mr-1' %}{% trans "Vorlage (CSV)" %}</a>
+        </div>
+        <div class="fw-formular fw-rumpf">
+            <div class="fw-feldblock">
+                <label for="datei_{{ a.art }}" class="fw-label">{% trans "Datei (CSV oder Excel .xlsx)" %}</label>
+                <input id="datei_{{ a.art }}" name="datei_{{ a.art }}" type="file" accept=".csv,.xlsx,text/csv" class="fw-feld">
+            </div>
+            <details>
+                <summary class="fw-mutet">{% trans "Spalten dieser Datei" %}</summary>
+                <ul class="mt-2">
+                {% for s in a.spalten %}
+                    <li class="py-1"><code>{{ s.name }}</code>{% if s.pflicht %} <span class="fw-chip fw-warn">{% trans "Pflicht" %}</span>{% endif %}
+                        {% if s.text %}<span class="fw-mutet"> — {{ s.text }}</span>{% endif %}
+                        {% if s.beispiel %}<span class="fw-faint"> ({% trans "z. B." %} {{ s.beispiel }})</span>{% endif %}</li>
+                {% endfor %}
+                </ul>
+            </details>
+        </div>
+    </div>
+    {% endfor %}
+    <div class="mb-4">
+        <button type="submit" class="fw-btn fw-primary" data-testid="daten-import-pruefen">{% trans "Prüfen (Trockenlauf)" %}</button>
+    </div>
+</form>
+
+<div class="fw-card max-w-3xl">
+    <div class="fw-kopf"><h3 class="fw-t">{% trans "Protokoll" %}</h3></div>
+    <div class="fw-rumpf">
+    {% for l in laeufe %}
+        <a href="/neu/einstellungen/daten/import/{{ l.pk }}/" class="flex items-center gap-3 flex-wrap py-2">
+            <div class="grow min-w-0">
+                <b class="fw-strong">{{ l.erstellt_am|date:"d.m.Y H:i" }}</b>
+                <p class="fw-mutet">{{ l.benutzer|default:"—" }} · {% blocktrans with f=l.anzahl_fehler h=l.anzahl_hinweise %}{{ f }} Fehler, {{ h }} Hinweise{% endblocktrans %}</p>
+            </div>
+            <span class="fw-chip {% if l.status == 'importiert' %}fw-good{% elif l.status == 'vorschau' %}fw-info{% elif l.status == 'verworfen' %}fw-mut{% else %}fw-crit{% endif %}">{{ l.get_status_display }}</span>
+        </a>
+    {% empty %}
+        <p class="fw-mutet">{% trans "Noch kein Import." %}</p>
+    {% endfor %}
+    </div>
+</div>
+{% endblock %}
