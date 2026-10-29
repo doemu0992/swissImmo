@@ -107,6 +107,21 @@ STILL = ('hash', 'geheim', 'token', 'ip_', '_am', 'anonymisiert', 'is_',
 AUSNAHMEN = {
     'core.Archiveintrag.aufbewahren_bis':
      'gesetzt von `core.services.archiv.archivieren`: 31.12. des zehnten Jahres nach dem Archivieren (Art. 958f OR)',
+    'core.Archiveintrag.archiviert_von':
+     'gesetzt von `core.services.archiv.archivieren` aus dem angemeldeten Benutzer',
+    'core.Archiveintrag.mandatsende':
+     'gesetzt von `core.services.archiv.archivieren` beim Mandat (heute oder das im Archiv-Dialog eingegebene Datum)',
+    'crm.Organisation.freigabelimit_kreditoren':
+     'Formular `/neu/einstellungen/zahlungsfreigabe/` (Feld `freigabelimit`, dazu `ohne_limit`), '
+     'eigene Ansicht statt Organisationsformular',
+    'finance.KreditorenRechnung.zahlung_beantragt_von':
+     'gesetzt von `finance.freigabe` beim Vorlegen der Zahlung (Vier-Augen-Prinzip), nie von Hand',
+    'finance.KreditorenRechnung.zahlung_freigegeben_von':
+     'gesetzt von `finance.freigabe` bei der Freigabe durch die zweite Person, nie von Hand',
+    'finance.KreditorenRechnung.zahlung_freigabe_betrag':
+     'gesetzt von `finance.freigabe`: der freigegebene Betrag; eine Änderung danach sperrt wieder',
+    'finance.KreditorenRechnung.zahlung_freigabe_iban':
+     'gesetzt von `finance.freigabe`: die freigegebene IBAN; eine Änderung danach sperrt wieder',
     'core.Archiveintrag.vorher_status':
      'gesetzt von `core.services.archiv.archivieren`: Status vor dem Archivieren, für das Wiederherstellen',
     'rentals.Dokument.vorgaenger':

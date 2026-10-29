@@ -16,6 +16,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.core.files.base import ContentFile
+from django.db import transaction
 from django.test import override_settings
 
 from .test_loeschschutz import LoeschBasis
@@ -49,7 +50,10 @@ def _rest_in_datenbank():
                 continue
             for muster in KENNZEICHEN:
                 try:
-                    n = modell._base_manager.filter(**{f'{feld.name}__contains': muster}).count()
+                    # Savepoint: Ein Fehler (z. B. verschlüsseltes Feld) darf auf PostgreSQL nicht die
+                    # ganze Test-Transaktion abbrechen, sonst scheitert jede folgende Abfrage.
+                    with transaction.atomic():
+                        n = modell._base_manager.filter(**{f'{feld.name}__contains': muster}).count()
                 except Exception:                                          # noqa: BLE001  (verschlüsselte Felder u. ä.)
                     continue
                 if n:
