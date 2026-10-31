@@ -107,8 +107,12 @@ class Command(BaseCommand):
                 'der Verwaltung unter «Postfächer» hinterlegen.'))
             return
 
+        from core.funktionen import hintergrund_erlaubt
         for postfach in postfaecher:
             self.stdout.write(f'{postfach.organisation} · {postfach.benutzer}')
+            if not hintergrund_erlaubt(postfach.organisation):
+                self.stdout.write('   Abonnement im Lesemodus (Zahlung überfällig) — übersprungen.')
+                continue
             try:
                 # DER KONTEXT — siehe Kopf. Ohne ihn wirft jeder Zugriff auf
                 # SchadenMeldung.objects, und zwar zu Recht.

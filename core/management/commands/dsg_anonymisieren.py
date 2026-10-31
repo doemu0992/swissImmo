@@ -34,7 +34,8 @@ class Command(BaseCommand):
         from core.tenancy import je_organisation
 
         _, fehler = je_organisation(lambda organisation: self._anonymisieren(organisation, opts),
-                                    auswahl=opts.get('organisation'), ausgabe=self.stderr)
+                                    auswahl=opts.get('organisation'), ausgabe=self.stderr,
+                                    abo_pruefen=False)  # gesetzliche DSG-Pflicht, läuft auch im Lesemodus
         if fehler:
             raise CommandError(f"{len(fehler)} Verwaltung(en) abgebrochen — "
                                f"{', '.join(str(o) for o, _ in fehler)}.")

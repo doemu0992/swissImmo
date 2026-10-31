@@ -59,6 +59,8 @@ SPRACHEN = ('de', 'fr', 'it', 'en')
 #: Vorlagen, die bereits ausgezeichnet sind. Diese Liste darf nur WACHSEN —
 #: dieselbe Sperrklinke wie beim Farbklassen-Zaehler, nur andersherum.
 UEBERSETZT = (
+    'fw/_abo_hinweis.html',          # Funktionsfreigabe: Hinweis bei Zahlungsverzug / gesperrtem Modul
+    'fw/abonnement_bestaetigen.html',
     'fw/_archivieren.html',
     'fw/daten.html',                 # Datenimport/-export (FUNK-09/13)
     'fw/daten_export.html',

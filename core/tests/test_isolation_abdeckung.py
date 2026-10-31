@@ -109,6 +109,10 @@ class ErweiterterBestand(MandantenFixture):
         self._neu('nebenkostenlernregel', lambda: NebenkostenLernRegel.objects.create(
             organisation=org, suchwort=f'hauswart{k.lower()}', kategorie_zuweisung='hauswart'))
 
+        # --- Abonnement (Funktionsfreigabe) --------------------------------------------------------------
+        from abo.models import Abonnement
+        self._neu('abonnement', lambda: Abonnement.alle_organisationen.create(organisation=org))
+
         # --- Personen und Verträge ------------------------------------------------------------------------
         self._neu('mieteradresse', lambda: MieterAdresse.objects.create(
             organisation=org, mieter=self.mieter, gueltig_ab=heute))

@@ -328,7 +328,22 @@ def scan_beleg(file_path):
     (v.a. Datum), (3) QR-Daten übersteuern das KI-Ergebnis."""
     endung = os.path.splitext(str(file_path))[1].lower()
     qr = _qr_rechnung_dekodieren(file_path, endung)
-    return _qr_anwenden(_scan_basis(file_path, endung), qr)
+    if not _belegerkennung_offen():
+        # Modul «OCR-/KI-Dokumentenerkennung» nicht gebucht: kein Aufruf an die
+        # KI, kein Textscan. Der Schweizer QR-Code (lokal, ohne Fremddienst) und
+        # der Upload selbst bleiben; die Felder erfasst die Person von Hand.
+        basis = _leer("gesperrt", "Belegerkennung ist im Abonnement nicht enthalten — Felder bitte von Hand erfassen.")
+    else:
+        basis = _scan_basis(file_path, endung)
+    return _qr_anwenden(basis, qr)
+
+
+def _belegerkennung_offen():
+    """Ohne Mandantenkontext (kein Auftrag einer Verwaltung) wird nichts gesperrt."""
+    from core.funktionen import hat_funktion
+    from core.tenancy import aktuelle_organisation
+    organisation = aktuelle_organisation()
+    return organisation is None or hat_funktion(organisation, 'belegerkennung')
 
 
 def _scan_basis(file_path, endung):

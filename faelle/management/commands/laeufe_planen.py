@@ -50,7 +50,10 @@ class Command(BaseCommand):
                 self.stdout.write('Keine Organisation gefunden — nichts zu tun.')
             return
 
+        from core.funktionen import hintergrund_erlaubt
         for org in organisationen:
+            if not hintergrund_erlaubt(org):
+                continue          # Abonnement im Lesemodus: keine Läufe planen
             neue_arten, neue_laeufe = planen(org, stichtag)
             geschlossen = 0
             if opt['abgleichen']:

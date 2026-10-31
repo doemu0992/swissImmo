@@ -20,6 +20,7 @@ from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from core.auth import rolle_erforderlich, log_aktion, ROLLE_VERWALTER
+from abo.zugang import funktion_erforderlich
 from django.core.files.base import ContentFile
 from django.conf import settings
 from django.contrib.staticfiles import finders
@@ -66,6 +67,7 @@ def link_callback(uri, rel):
 # Nur POST: Der Aufruf schickt den Vertrag an DocuSeal (externer Dienst, Mail an
 # den Mieter). Ein GET-Link löste das bei jedem Prefetch aus.
 @rolle_erforderlich(ROLLE_VERWALTER)
+@funktion_erforderlich('signatur')
 @require_POST
 def send_via_docuseal(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)

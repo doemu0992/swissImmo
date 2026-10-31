@@ -115,17 +115,13 @@ def organisation_anlegen(firma: str, benutzername: str, email: str,
 
     Benutzer = get_user_model()
 
-    # `abo_plan` bleibt auf dem Vorgabewert des Modells (`'team'`).
-    #
-    # Seit 29.09.2026 kommen die Stufen start/team/professional/enterprise
-    # aus `core/funktionen.py` (D7, docs/AUFTRAG-ABOSTUFEN.md). Offen bleibt
-    # der zweite Teil von D7: `abo_plan` entfällt zugunsten von
-    # `abo.Abonnement` mit Testphase und Zahlungsanbieter (Phase 3, E3).
-    #
-    # Solange keine Prüfstelle den Plan abfragt (gemessen: keine — die
-    # Stufe kommt heute aus `core/funktionen.py:stufe_von`), hat das keine
-    # Wirkung ausser auf der Abo-Seite.
+    # Stufe und Intervall bleiben auf den Vorgabewerten des Modells (`'team'`,
+    # monatlich). Die Abonnement-Zeile legt die Funktionsfreigabe an: ohne
+    # Bestandsschutz, ohne zugebuchte Module, ohne Abrechnungsbeginn — der
+    # Betreiber setzt `abrechnung_ab`, wenn die Rechnungsstellung beginnt.
     organisation = Organisation.objects.create(firma=firma)
+    from abo.dienst import abonnement_anlegen
+    abonnement_anlegen(organisation)
 
     benutzer = Benutzer.objects.filter(username__iexact=benutzername).first()
     neu = benutzer is None

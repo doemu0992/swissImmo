@@ -80,8 +80,12 @@ class Command(BaseCommand):
                 'Einstellungen der Verwaltung unter «Postfächer» hinterlegen.'))
             return
 
+        from core.funktionen import hintergrund_erlaubt
         for postfach in postfaecher:
             self.stdout.write(f'{postfach.organisation} · {postfach.benutzer}')
+            if not hintergrund_erlaubt(postfach.organisation):
+                self.stdout.write('   Abonnement im Lesemodus (Zahlung überfällig) — übersprungen.')
+                continue
             try:
                 with organisation_kontext(postfach.organisation):
                     self._ein_postfach(postfach, importiere_rechnungsmail_bytes)

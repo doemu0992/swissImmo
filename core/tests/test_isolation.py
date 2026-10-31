@@ -74,7 +74,7 @@ from ._isolation import KEINE_OBJEKT_ID, MandantenFixture
 # über 30 STWEG-Modelle — ausgerechnet die Beschlüsse, Abrechnungen und
 # Pfandrechte einer Verwaltung.
 EIGENE_APPS = ('benutzer', 'core', 'crm', 'portfolio', 'rentals', 'finance', 'tickets',
-               'mietprozess', 'faelle', 'stweg')
+               'mietprozess', 'faelle', 'stweg', 'abo')
 
 # ---------------------------------------------------------------------------
 # Ausnahmen vom Registrylauf — benannt und begründet, nicht ausgefiltert.
