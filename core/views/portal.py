@@ -261,8 +261,8 @@ def portal_steuerauszug_pdf(request):
     eigentuemer = getattr(request.user, 'eigentuemer_profil', None)
     if eigentuemer is None:
         raise Http404
-    import datetime
-    heute = datetime.date.today()
+    from core.zeit import datum_heute
+    heute = datum_heute()
     try:
         jahr = int(request.GET.get('jahr') or (heute.year - 1))
     except (TypeError, ValueError):
