@@ -36732,3 +36732,281 @@ msgstr "Chaque colonne a besoin de son propre intitulé."
 
 msgid "Die Einstellungen für das Buchungsjournal sind gespeichert."
 msgstr "Les paramètres du journal comptable sont enregistrés."
+
+#: Eigentümerportal v2 (Etappe 4)
+
+msgid "Meine Eigentumseinheiten"
+msgstr "Mes unités de propriété"
+
+msgid "Profil und Sprache"
+msgstr "Profil et langue"
+
+msgid "Eigentümerportal — immoswiss"
+msgstr "Portail propriétaire — immoswiss"
+
+msgid "immoswiss Eigentümerportal · Alle Angaben ohne Gewähr"
+msgstr "Portail propriétaire immoswiss · Sans garantie"
+
+msgid "Mandat beendet"
+msgstr "Mandat terminé"
+
+msgid "Das Mandat endete am %(datum)s."
+msgstr "Le mandat a pris fin le %(datum)s."
+
+msgid "Das Mandat wurde am %(datum)s archiviert."
+msgstr "Le mandat a été archivé le %(datum)s."
+
+msgid "Ihre Unterlagen bleiben zur Einsicht. Änderungen und neue Anfragen sind über das Portal nicht mehr möglich."
+msgstr "Vos documents restent consultables. Les modifications et les nouvelles demandes ne sont plus possibles via le portail."
+
+msgid "Abrechnungen — Eigentümerportal"
+msgstr "Décomptes — Portail propriétaire"
+
+msgid "Abrechnungen und Auszahlungen"
+msgstr "Décomptes et versements"
+
+msgid "Eigentümerabrechnung je Jahr, Kontokorrent und Auszahlungen."
+msgstr "Décompte propriétaire par année, compte courant et versements."
+
+msgid "Ertrag (alle Jahre)"
+msgstr "Produits (toutes les années)"
+
+msgid "Aufwand (alle Jahre)"
+msgstr "Charges (toutes les années)"
+
+msgid "Guthaben laut Kontokorrent"
+msgstr "Avoir selon le compte courant"
+
+msgid "Der Auszahlungstermin wird von Ihrer Verwaltung festgelegt."
+msgstr "La date du versement est fixée par votre gérance."
+
+msgid "Eigentümerabrechnung je Jahr"
+msgstr "Décompte propriétaire par année"
+
+msgid "Keine Buchungen"
+msgstr "Aucune écriture"
+
+msgid "Ertrag CHF %(e)s · Aufwand CHF %(a)s"
+msgstr "Produits CHF %(e)s · Charges CHF %(a)s"
+
+msgid "Ergebnis CHF %(s)s"
+msgstr "Résultat CHF %(s)s"
+
+msgid "Bisher wurde keine Auszahlung verbucht."
+msgstr "Aucun versement n'a encore été comptabilisé."
+
+msgid "Keine offenen Posten. Alle Mieten sind bezahlt."
+msgstr "Aucun poste ouvert. Tous les loyers sont payés."
+
+msgid "Steuerauszug"
+msgstr "Relevé fiscal"
+
+msgid "Liegenschaftsrechnung für die Steuererklärung."
+msgstr "Compte d'immeuble pour la déclaration d'impôt."
+
+msgid "Dokumente — Eigentümerportal"
+msgstr "Documents — Portail propriétaire"
+
+msgid "Unterlagen zu Ihren Liegenschaften, die Ihre Verwaltung für Sie freigegeben hat."
+msgstr "Documents relatifs à vos immeubles, mis à votre disposition par votre gérance."
+
+msgid "Baujahr %(jahr)s"
+msgstr "Année de construction %(jahr)s"
+
+msgid "Archivierte Liegenschaft"
+msgstr "Immeuble archivé"
+
+msgid "Archiviert am %(datum)s."
+msgstr "Archivé le %(datum)s."
+
+msgid "Die Angaben sind nur noch zur Einsicht."
+msgstr "Les informations ne sont plus que consultables."
+
+msgid "Soll-Nettomiete / Monat"
+msgstr "Loyer net théorique / mois"
+
+msgid "Objekte und Belegung"
+msgstr "Objets et occupation"
+
+msgid "%(n)s Zimmer"
+msgstr "%(n)s pièces"
+
+msgid "bis %(datum)s"
+msgstr "jusqu'au %(datum)s"
+
+msgid "CHF %(netto)s netto · CHF %(brutto)s brutto pro Monat"
+msgstr "CHF %(netto)s net · CHF %(brutto)s brut par mois"
+
+msgid "Keine Objekte erfasst"
+msgstr "Aucun objet saisi"
+
+msgid "Zu dieser Liegenschaft sind noch keine Objekte erfasst."
+msgstr "Aucun objet n'a encore été saisi pour cet immeuble."
+
+msgid "Für diese Liegenschaft hat die Verwaltung noch keine Dokumente freigegeben."
+msgstr "La gérance n'a pas encore mis de documents à disposition pour cet immeuble."
+
+msgid "Liegenschaften — Eigentümerportal"
+msgstr "Immeubles — Portail propriétaire"
+
+msgid "Ihre Liegenschaften mit Objekten und Belegung."
+msgstr "Vos immeubles avec leurs objets et leur occupation."
+
+msgid "Voll vermietet"
+msgstr "Entièrement loué"
+
+msgid "Soll-Nettomiete CHF %(betrag)s pro Monat"
+msgstr "Loyer net théorique CHF %(betrag)s par mois"
+
+msgid "Archivierte Liegenschaften"
+msgstr "Immeubles archivés"
+
+msgid "Archiviert am %(datum)s"
+msgstr "Archivé le %(datum)s"
+
+msgid "Mitteilungen — Eigentümerportal"
+msgstr "Messages — Portail propriétaire"
+
+msgid "Mitteilungen an die Verwaltung"
+msgstr "Messages à la gérance"
+
+msgid "Stellen Sie Ihrer Verwaltung eine Frage oder melden Sie ein Anliegen. Sie antwortet per E-Mail oder Telefon."
+msgstr "Posez une question à votre gérance ou signalez une demande. Elle vous répond par e-mail ou par téléphone."
+
+msgid "Kontakt zur Verwaltung"
+msgstr "Contact avec la gérance"
+
+msgid "An die Verwaltung senden"
+msgstr "Envoyer à la gérance"
+
+msgid "Sie haben noch keine Anfrage gestellt."
+msgstr "Vous n'avez pas encore envoyé de demande."
+
+msgid "Profil und Sprache — Eigentümerportal"
+msgstr "Profil et langue — Portail propriétaire"
+
+msgid "Profil"
+msgstr "Profil"
+
+msgid "Ihre Angaben, Sprache und Zugang."
+msgstr "Vos informations, votre langue et votre accès."
+
+msgid "Ihre Angaben"
+msgstr "Vos informations"
+
+msgid "Auszahlung auf"
+msgstr "Versement sur"
+
+msgid "Angaben ändert die Verwaltung. Teilen Sie eine Änderung über die Mitteilungen mit."
+msgstr "Les informations sont modifiées par la gérance. Communiquez un changement via les messages."
+
+msgid "Änderung mitteilen"
+msgstr "Communiquer une modification"
+
+msgid "Sprache und Darstellung"
+msgstr "Langue et affichage"
+
+msgid "Sprache des Portals"
+msgstr "Langue du portail"
+
+msgid "Sprache der Briefe und Abrechnungen"
+msgstr "Langue des courriers et des décomptes"
+
+msgid "Automatisch"
+msgstr "Automatique"
+
+msgid "Der aktuelle Stand Ihrer Liegenschaften auf einen Blick."
+msgstr "L'état actuel de vos immeubles en un coup d'œil."
+
+msgid "Ablehnen"
+msgstr "Refuser"
+
+msgid "Kennzahlen"
+msgstr "Indicateurs"
+
+msgid "leere Objekte von %(n)s · Leerstandsquote %(q)s %%"
+msgstr "objets vacants sur %(n)s · taux de vacance %(q)s %%"
+
+msgid "pro Monat"
+msgstr "par mois"
+
+msgid "Soll-Nettomiete der laufenden Mietverträge."
+msgstr "Loyer net théorique des baux en cours."
+
+msgid "Gebucht %(jahr)s: CHF %(betrag)s"
+msgstr "Comptabilisé %(jahr)s : CHF %(betrag)s"
+
+msgid "Noch nichts überfällig."
+msgstr "Rien n'est encore en retard."
+
+msgid "Alle Mieten sind bezahlt."
+msgstr "Tous les loyers sont payés."
+
+msgid "Nächste Auszahlung"
+msgstr "Prochain versement"
+
+msgid "Guthaben laut Kontokorrent. Der Auszahlungstermin wird von Ihrer Verwaltung festgelegt."
+msgstr "Avoir selon le compte courant. La date du versement est fixée par votre gérance."
+
+msgid "Kein Guthaben zur Auszahlung."
+msgstr "Aucun avoir à verser."
+
+msgid "Zuletzt am %(datum)s: CHF %(betrag)s"
+msgstr "Dernier versement le %(datum)s : CHF %(betrag)s"
+
+msgid "Ihre Liegenschaften"
+msgstr "Vos immeubles"
+
+msgid "Berichte zum Herunterladen"
+msgstr "Rapports à télécharger"
+
+msgid "Im Eigentümerportal sichtbar (nur bei Liegenschaft oder Objekt)"
+msgstr "Visible dans le portail propriétaire (uniquement pour un immeuble ou un objet)"
+
+msgid "Für den Eigentümer im Portal sichtbar schalten"
+msgstr "Rendre visible pour le propriétaire dans le portail"
+
+msgid "Im Eigentümerportal"
+msgstr "Dans le portail propriétaire"
+
+msgid "Nicht im Portal"
+msgstr "Pas dans le portail"
+
+msgid "Allgemeine Frage"
+msgstr "Question générale"
+
+msgid "Abrechnung oder Auszahlung"
+msgstr "Décompte ou versement"
+
+msgid "Unterhalt oder Schaden"
+msgstr "Entretien ou sinistre"
+
+msgid "Änderung meiner Angaben"
+msgstr "Modification de mes informations"
+
+msgid "Mandat oder Vertrag"
+msgstr "Mandat ou contrat"
+
+msgid "Das Mandat ist beendet. Bitte wenden Sie sich direkt an die Verwaltung."
+msgstr "Le mandat est terminé. Veuillez vous adresser directement à la gérance."
+
+msgid "Der Betreff ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "L'objet est trop long (%(n)s caractères au maximum)."
+
+msgid "Bitte Ihre Nachricht eingeben."
+msgstr "Veuillez saisir votre message."
+
+msgid "Die Nachricht ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "Le message est trop long (%(n)s caractères au maximum)."
+
+msgid "Bitte die Art der Anfrage wählen."
+msgstr "Veuillez choisir le type de demande."
+
+msgid "Bitte eine Ihrer Liegenschaften wählen."
+msgstr "Veuillez choisir l'un de vos immeubles."
+
+msgid "Korrespondenzsprache gespeichert."
+msgstr "Langue de correspondance enregistrée."
+
+msgid "Bitte eine der angebotenen Sprachen wählen."
+msgstr "Veuillez choisir une des langues proposées."
