@@ -26,7 +26,7 @@ async function rechnungErfassen(page: Page, lieferant: string, betrag: string, r
   await page.getByRole('button', { name: /Rechnung erfassen/ }).first().click();
   await page.fill('#kr-lieferant', lieferant);
   await page.fill('#kr-betrag', betrag);
-  await page.fill('#kr-iban', 'CH93 0076 2011 6238 5295 7');
+  await page.fill('#kr-iban', 'CH66 0076 2011 6238 5295 8');   // eigene IBAN: Der Seed zahlt dieselbe IBAN (CH93…) an eine andere Rechnung
   await page.fill('#kr-referenz', referenz);
   await page.locator('#kredform button', { hasText: 'Erfassen' }).click();
   await expect(page.locator('body')).toContainText(referenz);
