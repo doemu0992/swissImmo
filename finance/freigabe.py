@@ -201,8 +201,9 @@ def summenregel_gruppen(rechnungen, organisation):
     """Gruppen von Rechnungen desselben Kreditors, die zusammen die Limite erreichen.
 
     Gibt eine Liste von Wörterbüchern zurück: `lieferant`, `rechnungen` (alle der Gruppe),
-    `summe`, `limit`. Nur Gruppen ab zwei Rechnungen, deren Summe die Limite erreicht UND in
-    der mindestens eine Rechnung einzeln darunter liegt (sonst wirkt die Einzelregel schon)."""
+    `summe`, `limit`. Gezählt werden die Rechnungen, die einzeln UNTER der Limite liegen (die übrigen
+    braucht die Einzelregel); gemeldet wird eine Gruppe ab zwei solchen Rechnungen, deren Summe die
+    Limite erreicht."""
     from finance.lieferanten import lieferant_key
     limit = limit_der(organisation)
     rechnungen = list(rechnungen)
@@ -235,11 +236,13 @@ def summenregel_gruppen(rechnungen, organisation):
         gruppen.setdefault(wurzel(i), []).append(r)
     ergebnis = []
     for mitglieder in gruppen.values():
-        if len(mitglieder) < 2:
-            continue
-        summe = sum((m.betrag or Decimal('0.00') for m in mitglieder), Decimal('0.00'))
-        if summe >= limit and any((m.betrag or Decimal('0.00')) < limit for m in mitglieder):
-            ergebnis.append({'lieferant': mitglieder[0].lieferant or '', 'rechnungen': mitglieder,
+        # Gezählt werden nur die Rechnungen, die einzeln unter der Limite liegen: Eine Rechnung ab der
+        # Limite braucht die Freigabe ohnehin, und sie soll eine kleine Rechnung desselben Zahlungsempfängers
+        # nicht mit in die Sperre ziehen. Wer 20'000 stückelt, landet in den kleinen Rechnungen.
+        klein = [m for m in mitglieder if (m.betrag or Decimal('0.00')) < limit]
+        summe = sum((m.betrag or Decimal('0.00') for m in klein), Decimal('0.00'))
+        if len(klein) >= 2 and summe >= limit:
+            ergebnis.append({'lieferant': klein[0].lieferant or '', 'rechnungen': klein,
                              'summe': summe, 'limit': limit})
     return ergebnis
 

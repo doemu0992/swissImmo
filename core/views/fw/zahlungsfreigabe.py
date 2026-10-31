@@ -18,7 +18,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext
 
-from core.auth import (FINANZ_VERWALTUNGS_ROLLEN, INHABER_ROLLEN, TEAM_ROLLEN, VERWALTUNGS_ROLLEN,
+from core.auth import (INHABER_ROLLEN, TEAM_ROLLEN, VERWALTUNGS_ROLLEN,
                        ZAHLUNGSFREIGABE_ROLLEN, hat_rolle, log_aktion, rolle_erforderlich)
 from core.utils.betrag import betrag_normalisieren
 from core.tenancy import organisation_der_anfrage
@@ -40,6 +40,9 @@ def fw_zahlungsfreigabe(request):
         **_global_filter(request), 'nav': 'einstellungen', 'org': org,
         'darf_aendern': hat_rolle(request.user, INHABER_ROLLEN),
         'offene_auszahlungen': AuszahlungsFreigabe.objects.filter(verbraucht_am__isnull=True).count(),
+        # Die Seite der Auszahlungen ist Sache der Verwaltung (sie löst die Auszahlungen aus); wer sie nicht
+        # öffnen darf, bekommt die Zahl ohne Link (kein toter Link).
+        'darf_auszahlungen': hat_rolle(request.user, VERWALTUNGS_ROLLEN),
     })
 
 
@@ -107,7 +110,7 @@ def _ziel_der(antrag):
     return '/neu/bankabgleich/'
 
 
-@rolle_erforderlich(*FINANZ_VERWALTUNGS_ROLLEN)
+@rolle_erforderlich(*VERWALTUNGS_ROLLEN)
 def fw_auszahlungsfreigaben(request):
     """Offene und zuletzt ausgeführte Auszahlungsfreigaben der Organisation."""
     from finance.models import AuszahlungsFreigabe

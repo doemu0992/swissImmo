@@ -482,8 +482,6 @@ class FreigabeWegTests(_Basis):
         html = self.client_von('verwalter').get(SEITE).content.decode()
         self.assertNotIn(f'{SEITE}{self.antrag_e.pk}/freigeben/', html)       # der Vorleger sieht keinen Knopf
         self.assertIn('vorgelegt', html)
-        html = self.client_von('buchhaltung').get(SEITE).content.decode()
-        self.assertNotIn(f'{SEITE}{self.antrag_e.pk}/freigeben/', html)
 
     def test_leere_seite_sagt_es(self):
         self.post('verwalter', f'{SEITE}{self.antrag_e.pk}/zuruecknehmen/')
@@ -491,7 +489,7 @@ class FreigabeWegTests(_Basis):
         self.assertIn('Keine Auszahlung wartet auf Freigabe', html)
 
     def test_seite_gesperrt_fuer_fremde_rollen(self):
-        for rolle in ('sachbearbeiter', 'lesezugriff', 'hauswart'):
+        for rolle in ('buchhaltung', 'sachbearbeiter', 'lesezugriff', 'hauswart'):
             with self.subTest(rolle=rolle):
                 self.assertEqual(self.client_von(rolle).get(SEITE).status_code, 403)
 
@@ -572,6 +570,24 @@ class SummenregelTests(_Basis):
               for i, name in enumerate(('Alpha GmbH', 'Beta GmbH', 'Gamma GmbH'))]
         antwort, _m = self._datei('buchhaltung', *ks)
         self.assertFalse(self.ist_datei(antwort))
+
+    def test_eine_grosse_rechnung_zieht_kleine_nicht_in_die_sperre(self):
+        """Die grosse braucht die Freigabe ohnehin; die beiden kleinen (zusammen 1'600) gehen durch."""
+        gross = self.kreditor('8000.00', referenz='R-G')
+        k1, k2 = self.kreditor('800.00', referenz='R-1'), self.kreditor('800.00', referenz='R-2')
+        antwort, meldungen = self._datei('buchhaltung', gross, k1, k2)
+        self.assertTrue(self.ist_datei(antwort), meldungen)
+        self.assertEqual(self.stand(gross).status, 'freigegeben')
+        self.assertEqual(self.stand(k1).status, 'in_zahlung')
+
+    def test_kleine_neben_einer_grossen_zaehlen_unter_sich_zusammen(self):
+        gross = self.kreditor('8000.00', referenz='R-G')
+        k1, k2 = self.kreditor('3000.00', referenz='R-1'), self.kreditor('3000.00', referenz='R-2')
+        antwort, meldungen = self._datei('buchhaltung', gross, k1, k2)
+        self.assertFalse(self.ist_datei(antwort))
+        text = ' '.join(meldungen)
+        self.assertIn("6'000.00", text)
+        self.assertNotIn('R-G (', text, 'Die grosse Rechnung gehört nicht in die Erklärung der Summe.')
 
     def test_nur_die_ausgewaehlten_zaehlen(self):
         """Die Summe bildet sich über den Lauf, nicht über alle offenen Rechnungen des Kreditors."""

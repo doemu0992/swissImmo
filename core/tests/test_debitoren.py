@@ -971,6 +971,9 @@ class FinanzUIP5Tests(TestCase):
         from finance.booking import buche
         lg.eigentuemer = md
         lg.save()
+        # Etappe 4: Ab der Freigabelimite (Vorgabe CHF 5'000) braucht die Auszahlung eine zweite Person. Dieser Test
+        # prüft das Lesen des Betrags mit Apostroph, nicht das Vier-Augen-Prinzip (`test_vier_augen_auszahlung`).
+        type(lg.organisation).objects.filter(pk=lg.organisation_id).update(freigabelimit_kreditoren=None)
         buche('1020', '3000', Decimal('20000'), 'Mieteingang', datum=date(2024, 4, 1), liegenschaft=lg)
         saldo_vorher = self._saldo('1020')
         c = Client(); c.force_login(_team_user())
