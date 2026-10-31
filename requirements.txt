@@ -72,7 +72,7 @@ pdfrw==0.4
 pillow==13.0.0
 proto-plus==1.27.1
 protobuf==5.29.6
-pyasn1==0.6.4
+pyasn1==0.6.5
 pyasn1_modules==0.4.2
 pycairo==1.29.0
 pycparser==2.23
@@ -86,7 +86,7 @@ pyhanko-certvalidator==0.29.0
 # gar nicht (TS-13/P0.5). psycopg 3 ist die von Django 5.2 empfohlene Fassung.
 psycopg[binary]==3.2.13
 pyparsing==3.3.2
-pypdf==6.21.2
+pypdf==6.21.4
 pypdfium2==5.4.0
 pyphen==0.17.2
 python-bidi==0.6.7
