@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n rechte %}
 {% block title %}{% trans "Dokumente" %} — immoswiss{% endblock %}
 
 {% block content %}
@@ -90,11 +90,13 @@
                 <td class="fw-right">
                     <a href="{{ e.url }}" target="_blank" rel="noopener" onclick="event.stopPropagation();" class="fw-btn fw-knapp">{% trans "Öffnen" %}</a>
                     {% if e.loeschbar %}
+                    {% if request.user|darf:"/neu/dokumente/1/eigentuemerportal/" %}
                     <form method="post" action="{% url 'fw_ablage_portal_toggle' e.id %}" class="inline" onclick="event.stopPropagation();">
                         {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
                         <button type="submit" class="fw-btn fw-knapp{% if e.portal %} fw-leise{% endif %}" aria-pressed="{% if e.portal %}true{% else %}false{% endif %}"
                                 title="{% trans 'Für den Eigentümer im Portal sichtbar schalten' %}">{% if e.portal %}{% trans "Im Eigentümerportal" %}{% else %}{% trans "Nicht im Portal" %}{% endif %}</button>
                     </form>
+                    {% elif e.portal %}<span class="fw-chip fw-mut">{% trans "Im Eigentümerportal" %}</span>{% endif %}
                     {% include 'fw/_archivieren.html' with kuerzel='ablage' pk=e.id weiter=request.get_full_path %}
                     {% endif %}
                 </td>

@@ -443,6 +443,15 @@ class FreigabeImTeamTests(PortalWelt):
         self.team.post(f'/neu/dokumente/{self.dok_a_intern.pk}/eigentuemerportal/')
         self.assertEqual(self.get(f'/portal/dokument/{self.dok_a_intern.pk}/').status_code, 404)
 
+    def test_schalter_in_der_dokumentenliste_nur_fuer_wer_ihn_benutzen_darf(self):
+        ziel = f'/neu/dokumente/{self.dok_a.pk}/eigentuemerportal/'
+        self.assertContains(self.team.get('/neu/dokumente/'), ziel)
+        lesend = Client()
+        lesend.force_login(_team_user('Lesend'))
+        antwort = lesend.get('/neu/dokumente/')
+        self.assertContains(antwort, 'AlphaVertrag')            # die Liste selbst ist lesbar
+        self.assertNotContains(antwort, ziel)                   # der Schreibknopf nicht (kein toter Knopf)
+
     def test_nur_post_aendert(self):
         self.team.get(f'/neu/dokumente/{self.dok_a_intern.pk}/eigentuemerportal/')
         self.dok_a_intern.refresh_from_db()
