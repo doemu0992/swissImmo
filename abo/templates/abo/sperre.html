@@ -1,0 +1,46 @@
+{% load i18n zeichen %}{% get_current_language as sprache %}<!DOCTYPE html>
+<html lang="{{ sprache|slice:':2'|default:'de' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Nicht im Abonnement — immoswiss" %}</title>
+{% include 'core/_assets_aussen.html' %}
+</head>
+<body class="fw-body min-h-screen flex items-center justify-center px-4 py-10">
+    {% comment %}
+        Die Seite statt einer 403: Sie sagt, was fehlt, dass die Daten erhalten
+        bleiben und wo es sich freischalten lässt. Wer nicht zum Team gehört
+        (Eigentümer, Mieter), sieht nur die neutrale Fassung ohne Verkaufstext.
+    {% endcomment %}
+    <div class="w-full max-w-md fw-flaeche rounded-2xl border fw-linie shadow-md p-8 text-center" role="alert">
+        <div class="w-14 h-14 rounded-full fw-warn-flaeche fw-warnton flex items-center justify-center mx-auto mb-5 text-2xl">{% zeichen 'gesperrt' %}</div>
+        {% if art == 'modul' %}
+            <h1 class="text-2xl font-semibold tracking-tight mb-3">{% trans "Diese Funktion ist nicht im Abonnement" %}</h1>
+            <p class="text-sm fw-mutet leading-relaxed mb-2"><b>{{ merkmal }}</b></p>
+            {% if darf_upgraden %}
+            <p class="text-sm fw-mutet leading-relaxed">{% trans "Ihre Daten sind erhalten und bleiben lesbar. Mit einer höheren Stufe oder dem passenden Modul ist die Funktion wieder frei." %}</p>
+            {% else %}
+            <p class="text-sm fw-mutet leading-relaxed">{% trans "Diese Funktion ist für diese Verwaltung zurzeit nicht freigeschaltet." %}</p>
+            {% endif %}
+        {% elif art == 'lesemodus' %}
+            <h1 class="text-2xl font-semibold tracking-tight mb-3">{% trans "Der Zugang ist schreibgeschützt" %}</h1>
+            {% if darf_upgraden %}
+            <p class="text-sm fw-mutet leading-relaxed">{% trans "Eine Rechnung für das Abonnement ist lange überfällig. Sie können alle Daten weiter lesen und exportieren, aber nichts ändern. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht." %}</p>
+            {% else %}
+            <p class="text-sm fw-mutet leading-relaxed">{% trans "Diese Verwaltung ist zurzeit schreibgeschützt. Lesen und Exportieren ist weiter möglich." %}</p>
+            {% endif %}
+        {% else %}
+            <h1 class="text-2xl font-semibold tracking-tight mb-3">{% trans "Die Grenze der Stufe ist erreicht" %}</h1>
+            <p class="text-sm fw-mutet leading-relaxed">
+                {% if darf_upgraden %}{% blocktrans with n=grenze %}Mit der aktuellen Stufe lassen sich höchstens {{ n }} anlegen. Alles Vorhandene bleibt unverändert lesbar. Mit einer höheren Stufe geht es weiter.{% endblocktrans %}
+                {% else %}{% trans "Es lassen sich zurzeit keine weiteren anlegen." %}{% endif %}
+            </p>
+        {% endif %}
+        {% if darf_upgraden %}
+        <a href="/neu/abonnement/" class="mt-6 fw-btn fw-primary">{% trans "Zum Abonnement" %}</a>
+        {% else %}
+        <a href="/nach-login/" class="mt-6 fw-btn fw-primary">{% trans "Zur Übersicht" %}</a>
+        {% endif %}
+    </div>
+</body>
+</html>

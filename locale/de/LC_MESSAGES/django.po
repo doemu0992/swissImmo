@@ -35579,3 +35579,303 @@ msgid ""
 msgstr ""
 "Auszahlungen ab der Freigabelimite erscheinen hier, sobald jemand sie "
 "auslöst."
+
+msgid "Stufe, Nutzung, Module und Rechnungen Ihrer Verwaltung."
+msgstr "Stufe, Nutzung, Module und Rechnungen Ihrer Verwaltung."
+
+msgid "Preise und Limiten sind Platzhalter — vom Betreiber festzulegen."
+msgstr "Preise und Limiten sind Platzhalter — vom Betreiber festzulegen."
+
+msgid "Es werden noch keine Rechnungen mit diesen Preisen gestellt."
+msgstr "Es werden noch keine Rechnungen mit diesen Preisen gestellt."
+
+msgid "Der MWST-Satz auf Abo-Rechnungen ist ebenfalls noch nicht festgelegt."
+msgstr "Der MWST-Satz auf Abo-Rechnungen ist ebenfalls noch nicht festgelegt."
+
+msgid "Ihr Abonnement"
+msgstr "Ihr Abonnement"
+
+msgid ""
+"Bestandsschutz: Bis Sie einen Plan wählen, bleiben alle Funktionen offen und"
+" es gelten keine Mengengrenzen."
+msgstr ""
+"Bestandsschutz: Bis Sie einen Plan wählen, bleiben alle Funktionen offen und"
+" es gelten keine Mengengrenzen."
+
+msgid "Noch nicht gestartet — es wird nichts in Rechnung gestellt."
+msgstr "Noch nicht gestartet — es wird nichts in Rechnung gestellt."
+
+msgid ""
+"Ihr Bestand liegt über der Grenze dieser Stufe. Alle Daten bleiben les- und "
+"exportierbar; es lassen sich nur keine neuen anlegen."
+msgstr ""
+"Ihr Bestand liegt über der Grenze dieser Stufe. Alle Daten bleiben les- und "
+"exportierbar; es lassen sich nur keine neuen anlegen."
+
+msgid ""
+"Die Grenze ist erreicht. Neue lassen sich erst mit einer höheren Stufe "
+"anlegen."
+msgstr ""
+"Die Grenze ist erreicht. Neue lassen sich erst mit einer höheren Stufe "
+"anlegen."
+
+msgid "Funktionen und Module"
+msgstr "Funktionen und Module"
+
+msgid "Zubuchbares Modul — beim Betreiber anfragen."
+msgstr "Zubuchbares Modul — beim Betreiber anfragen."
+
+msgid "Freigeschaltet"
+msgstr "Freigeschaltet"
+
+msgid ""
+"Gesperrte Funktionen bleiben sichtbar, Ihre Daten bleiben erhalten und "
+"lesbar. Es wird nichts gelöscht."
+msgstr ""
+"Gesperrte Funktionen bleiben sichtbar, Ihre Daten bleiben erhalten und "
+"lesbar. Es wird nichts gelöscht."
+
+msgid "Platzhalterpreise"
+msgstr "Platzhalterpreise"
+
+msgid "PDF mit QR-Rechnung"
+msgstr "PDF mit QR-Rechnung"
+
+msgid "Noch keine Rechnung gestellt."
+msgstr "Noch keine Rechnung gestellt."
+
+msgid ""
+"Den Plan und die Rechnungen sieht und ändert nur der Inhaber der Verwaltung."
+msgstr ""
+"Den Plan und die Rechnungen sieht und ändert nur der Inhaber der Verwaltung."
+
+msgid ""
+"Eine Rechnung ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist "
+"schreibgeschützt: Sie können alle Daten lesen und exportieren, aber nichts "
+"ändern, und es laufen keine automatischen Läufe. Mit dem Zahlungseingang ist"
+" alles wieder offen. Es wird nichts gelöscht."
+msgstr ""
+"Eine Rechnung ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist "
+"schreibgeschützt: Sie können alle Daten lesen und exportieren, aber nichts "
+"ändern, und es laufen keine automatischen Läufe. Mit dem Zahlungseingang ist"
+" alles wieder offen. Es wird nichts gelöscht."
+
+msgid ""
+"Eine Rechnung ist überfällig. Bleibt die Zahlung länger als %(tage)s Tage "
+"aus, wird Ihr Zugang schreibgeschützt. Ihre Daten bleiben in jedem Fall "
+"erhalten."
+msgstr ""
+"Eine Rechnung ist überfällig. Bleibt die Zahlung länger als %(tage)s Tage "
+"aus, wird Ihr Zugang schreibgeschützt. Ihre Daten bleiben in jedem Fall "
+"erhalten."
+
+msgid "Ab Stufe %(stufe)s."
+msgstr "Ab Stufe %(stufe)s."
+
+msgid "Fällig am %(datum)s"
+msgstr "Fällig am %(datum)s"
+
+msgid ""
+"Zahlbar innert %(tage)s Tagen mit dem QR-Einzahlungsschein. Die Zahlung "
+"bestätigt der Betreiber von Hand."
+msgstr ""
+"Zahlbar innert %(tage)s Tagen mit dem QR-Einzahlungsschein. Die Zahlung "
+"bestätigt der Betreiber von Hand."
+
+msgid "Plan wechseln"
+msgstr "Plan wechseln"
+
+msgid ""
+"Bitte prüfen, was sich damit schliesst. Ihre Daten bleiben in jedem Fall "
+"erhalten."
+msgstr ""
+"Bitte prüfen, was sich damit schliesst. Ihre Daten bleiben in jedem Fall "
+"erhalten."
+
+msgid "Diese Funktionen werden gesperrt"
+msgstr "Diese Funktionen werden gesperrt"
+
+msgid ""
+"Gesperrte Funktionen bleiben sichtbar. Alle bisherigen Daten bleiben lesbar "
+"und exportierbar; es lässt sich dort nur nichts Neues mehr erfassen. Mit "
+"einem höheren Plan ist alles wieder frei."
+msgstr ""
+"Gesperrte Funktionen bleiben sichtbar. Alle bisherigen Daten bleiben lesbar "
+"und exportierbar; es lässt sich dort nur nichts Neues mehr erfassen. Mit "
+"einem höheren Plan ist alles wieder frei."
+
+msgid "Wechsel auf «%(name)s»"
+msgstr "Wechsel auf «%(name)s»"
+
+msgid ""
+"Sie führen %(n)s Einheiten, diese Stufe fasst höchstens %(deckel)s. Die "
+"vorhandenen Einheiten bleiben vollständig erhalten; es lassen sich nur keine"
+" neuen anlegen."
+msgstr ""
+"Sie führen %(n)s Einheiten, diese Stufe fasst höchstens %(deckel)s. Die "
+"vorhandenen Einheiten bleiben vollständig erhalten; es lassen sich nur keine"
+" neuen anlegen."
+
+msgid "Nicht im Abonnement — immoswiss"
+msgstr "Nicht im Abonnement — immoswiss"
+
+msgid "Diese Funktion ist nicht im Abonnement"
+msgstr "Diese Funktion ist nicht im Abonnement"
+
+msgid ""
+"Ihre Daten sind erhalten und bleiben lesbar. Mit einer höheren Stufe oder "
+"dem passenden Modul ist die Funktion wieder frei."
+msgstr ""
+"Ihre Daten sind erhalten und bleiben lesbar. Mit einer höheren Stufe oder "
+"dem passenden Modul ist die Funktion wieder frei."
+
+msgid "Diese Funktion ist für diese Verwaltung zurzeit nicht freigeschaltet."
+msgstr "Diese Funktion ist für diese Verwaltung zurzeit nicht freigeschaltet."
+
+msgid "Der Zugang ist schreibgeschützt"
+msgstr "Der Zugang ist schreibgeschützt"
+
+msgid ""
+"Eine Rechnung für das Abonnement ist lange überfällig. Sie können alle Daten"
+" weiter lesen und exportieren, aber nichts ändern. Mit dem Zahlungseingang "
+"ist alles wieder offen. Es wird nichts gelöscht."
+msgstr ""
+"Eine Rechnung für das Abonnement ist lange überfällig. Sie können alle Daten"
+" weiter lesen und exportieren, aber nichts ändern. Mit dem Zahlungseingang "
+"ist alles wieder offen. Es wird nichts gelöscht."
+
+msgid ""
+"Diese Verwaltung ist zurzeit schreibgeschützt. Lesen und Exportieren ist "
+"weiter möglich."
+msgstr ""
+"Diese Verwaltung ist zurzeit schreibgeschützt. Lesen und Exportieren ist "
+"weiter möglich."
+
+msgid "Die Grenze der Stufe ist erreicht"
+msgstr "Die Grenze der Stufe ist erreicht"
+
+msgid "Es lassen sich zurzeit keine weiteren anlegen."
+msgstr "Es lassen sich zurzeit keine weiteren anlegen."
+
+msgid "Zum Abonnement"
+msgstr "Zum Abonnement"
+
+msgid ""
+"Mit der aktuellen Stufe lassen sich höchstens %(n)s anlegen. Alles "
+"Vorhandene bleibt unverändert lesbar. Mit einer höheren Stufe geht es "
+"weiter."
+msgstr ""
+"Mit der aktuellen Stufe lassen sich höchstens %(n)s anlegen. Alles "
+"Vorhandene bleibt unverändert lesbar. Mit einer höheren Stufe geht es "
+"weiter."
+
+msgid ""
+"Zahlung überfällig: Der Zugang ist schreibgeschützt. Lesen und Exportieren "
+"geht weiter."
+msgstr ""
+"Zahlung überfällig: Der Zugang ist schreibgeschützt. Lesen und Exportieren "
+"geht weiter."
+
+msgid "Eine Rechnung für das Abonnement ist überfällig."
+msgstr "Eine Rechnung für das Abonnement ist überfällig."
+
+msgid ""
+"«%(name)s» ist nicht im Abonnement: Sie sehen Ihre Daten, können aber nichts"
+" Neues erfassen."
+msgstr ""
+"«%(name)s» ist nicht im Abonnement: Sie sehen Ihre Daten, können aber nichts"
+" Neues erfassen."
+
+msgid "Ab dem %(datum)s wird der Zugang schreibgeschützt."
+msgstr "Ab dem %(datum)s wird der Zugang schreibgeschützt."
+
+msgid ""
+"Bestand von %(n)s Einheiten übersteigt die Stufe (höchstens %(d)s); "
+"abgerechnet zum Preis der Stufe."
+msgstr ""
+"Bestand von %(n)s Einheiten übersteigt die Stufe (höchstens %(d)s); "
+"abgerechnet zum Preis der Stufe."
+
+msgid "immoswiss: Ihr Zugang ist schreibgeschützt"
+msgstr "immoswiss: Ihr Zugang ist schreibgeschützt"
+
+msgid ""
+"Die Rechnung für Ihr Abonnement ist seit mehr als %(tage)s Tagen überfällig."
+" Ihr Zugang ist deshalb schreibgeschützt: Sie können alle Daten weiter lesen"
+" und exportieren, aber nichts mehr ändern, und es laufen keine automatischen"
+" Läufe mehr. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts "
+"gelöscht."
+msgstr ""
+"Die Rechnung für Ihr Abonnement ist seit mehr als %(tage)s Tagen überfällig."
+" Ihr Zugang ist deshalb schreibgeschützt: Sie können alle Daten weiter lesen"
+" und exportieren, aber nichts mehr ändern, und es laufen keine automatischen"
+" Läufe mehr. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts "
+"gelöscht."
+
+msgid "immoswiss: Zahlungserinnerung zum Abonnement"
+msgstr "immoswiss: Zahlungserinnerung zum Abonnement"
+
+msgid ""
+"Die Rechnung für Ihr Abonnement ist überfällig. Bitte begleichen Sie sie mit"
+" dem QR-Einzahlungsschein, den Sie unter Einstellungen > Abonnement finden. "
+"Bleibt die Zahlung länger aus, wird Ihr Zugang nach %(tage)s Tagen "
+"schreibgeschützt. Ihre Daten bleiben in jedem Fall erhalten."
+msgstr ""
+"Die Rechnung für Ihr Abonnement ist überfällig. Bitte begleichen Sie sie mit"
+" dem QR-Einzahlungsschein, den Sie unter Einstellungen > Abonnement finden. "
+"Bleibt die Zahlung länger aus, wird Ihr Zugang nach %(tage)s Tagen "
+"schreibgeschützt. Ihre Daten bleiben in jedem Fall erhalten."
+
+msgid "Datenexport (Buchungsjournal, Mandatspaket, Auskunft)"
+msgstr "Datenexport (Buchungsjournal, Mandatspaket, Auskunft)"
+
+msgid "Betreibung: Rechtsöffnung, Forderungen, Kosten"
+msgstr "Betreibung: Rechtsöffnung, Forderungen, Kosten"
+
+msgid "Datenimport (Stammdaten und Salden aus anderen Programmen)"
+msgstr "Datenimport (Stammdaten und Salden aus anderen Programmen)"
+
+msgid "Stockwerkeigentum: Versammlung, Beschlüsse, Fonds, Abrechnung"
+msgstr "Stockwerkeigentum: Versammlung, Beschlüsse, Fonds, Abrechnung"
+
+msgid "OCR- und KI-Dokumentenerkennung"
+msgstr "OCR- und KI-Dokumentenerkennung"
+
+msgid "Eigene Auswertungen und Exportvorlagen"
+msgstr "Eigene Auswertungen und Exportvorlagen"
+
+msgid ""
+"Für diese Rechnung ist beim Betreiber noch keine Zahlungsverbindung "
+"festgelegt."
+msgstr ""
+"Für diese Rechnung ist beim Betreiber noch keine Zahlungsverbindung "
+"festgelegt."
+
+msgid ""
+"Die digitale Unterschrift ist im Abonnement nicht enthalten. Unter "
+"Einstellungen > Abonnement lässt sie sich zubuchen."
+msgstr ""
+"Die digitale Unterschrift ist im Abonnement nicht enthalten. Unter "
+"Einstellungen > Abonnement lässt sie sich zubuchen."
+
+msgid ""
+"Belegerkennung ist im Abonnement nicht enthalten — Felder bitte von Hand "
+"erfassen."
+msgstr ""
+"Belegerkennung ist im Abonnement nicht enthalten — Felder bitte von Hand "
+"erfassen."
+
+msgid "Abrechnung ab"
+msgstr "Abrechnung ab"
+
+msgid "Nutzer"
+msgstr "Nutzer"
+
+msgid "unbegrenzt"
+msgstr "unbegrenzt"
+
+msgid "Gesperrt"
+msgstr "Gesperrt"
+
+msgid "gesperrt"
+msgstr "gesperrt"

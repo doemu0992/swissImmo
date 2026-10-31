@@ -79,7 +79,6 @@ OBERGRENZE = {
     'fw/_listwerkzeug.html': 1,
     'fw/_unterschrift_feld.html': 2,
     'fw/_zeichen.html': 1,
-    'fw/abonnement.html': 2,
     'fw/auswertung.html': 2,
     'fw/dashboard.html': 1,
     'fw/ersatzplanung.html': 1,

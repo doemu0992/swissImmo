@@ -3198,6 +3198,25 @@ und einen Stilblock enthaelt.
         .fw-feldgruppe textarea.fw-feld{min-height:110px;resize:vertical}
         /* ===== Ende MODUL Aussenseiten ===== */
 
+        /* ===== MODUL Abo (31.10.2026) ===== */
+        .fw-nutzung{display:grid;gap:6px;padding:13px 16px;border-bottom:1px solid var(--ds-line)}
+        .fw-nutzung:last-child{border-bottom:0}
+        .fw-nutzung-kopf{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+        progress.fw-nutzung-spur{appearance:none;-webkit-appearance:none;width:100%;height:8px;border:0;border-radius:var(--ds-pill);background:var(--ds-line);overflow:hidden;color:var(--ds-brand)}
+        progress.fw-nutzung-spur::-webkit-progress-bar{background:var(--ds-line)}
+        progress.fw-nutzung-spur::-webkit-progress-value{background:var(--ds-brand);border-radius:var(--ds-pill)}
+        progress.fw-nutzung-spur::-moz-progress-bar{background:var(--ds-brand);border-radius:var(--ds-pill)}
+        progress.fw-nutzung-spur.warn{color:var(--ds-warn)}
+        progress.fw-nutzung-spur.warn::-webkit-progress-value{background:var(--ds-warn)}
+        progress.fw-nutzung-spur.warn::-moz-progress-bar{background:var(--ds-warn)}
+        progress.fw-nutzung-spur.crit{color:var(--ds-crit)}
+        progress.fw-nutzung-spur.crit::-webkit-progress-value{background:var(--ds-crit)}
+        progress.fw-nutzung-spur.crit::-moz-progress-bar{background:var(--ds-crit)}
+        .fw-abo-zeile{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+        .fw-abo-rechts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+        .fw-abo-schloss{margin-left:6px;font-size:11px;font-weight:600;color:var(--ds-warn)}
+        /* ===== Ende MODUL Abo ===== */
+
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
         /* Vorlage: navmock/v2/vorschau (freigegeben, Stand «Kopfzeile v2»). Zeile 1 von links: Marke,
            Bestandsfilter `lg` (Kontext-Chip «BESTAND / Name»), die fünf Bereiche (schliessen bei jeder

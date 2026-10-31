@@ -367,9 +367,18 @@ def fw_navigation(request):
     # Die Rollen werden EINMAL gelesen, nicht je Eintrag.
     from core.auth import darf_oeffnen, eigene_rollen
     meine = eigene_rollen(user)
+    # Gesperrte Module bleiben im Menü sichtbar und tragen ein Zeichen: ein
+    # Eintrag, der verschwindet, verkauft nichts und lässt Daten unauffindbar
+    # wirken (abo/zugang.py, eine Tabelle für Menü und Sperre).
+    from abo.zugang import merkmal_der_view
+    from core.funktionen import hat_funktion
+    from core.tenancy import aktuelle_organisation as _aktive_organisation
+    organisation = _aktive_organisation()
     for g in gruppen:
         for it in g['items']:
             it['erlaubt'] = darf_oeffnen(user, it['ziel'], meine)
+            merkmal = merkmal_der_view(it['ziel'])
+            it['gesperrt'] = bool(merkmal and not user.is_superuser and not hat_funktion(organisation, merkmal))
     palette = [p for p in palette if darf_oeffnen(user, p['url'], meine)]
     # Die Organisationen dieses Benutzers — fuer die Auswahl im Kopf der
     # Leiste (E1.2). `alle_organisationen` ist hier notwendig und richtig: Die

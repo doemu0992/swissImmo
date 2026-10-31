@@ -1,0 +1,18 @@
+{% load i18n zeichen %}
+{% if abo_hinweis %}
+<div class="fw-card" role="status">
+    {% if abo_hinweis.modul %}
+    <div class="fw-hinweis info"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">
+        {% blocktrans with name=abo_hinweis.modul %}«{{ name }}» ist nicht im Abonnement: Sie sehen Ihre Daten, können aber nichts Neues erfassen.{% endblocktrans %}
+        <a href="/neu/abonnement/">{% trans "Zum Abonnement" %}</a>
+    </div></div>
+    {% endif %}
+    {% if abo_hinweis.zustand %}
+    <div class="fw-hinweis {% if abo_hinweis.lesemodus %}crit{% else %}warn{% endif %}"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">
+        {% if abo_hinweis.lesemodus %}{% trans "Zahlung überfällig: Der Zugang ist schreibgeschützt. Lesen und Exportieren geht weiter." %}
+        {% else %}{% trans "Eine Rechnung für das Abonnement ist überfällig." %}{% if abo_hinweis.lesemodus_ab %} {% blocktrans with datum=abo_hinweis.lesemodus_ab|date:"d.m.Y" %}Ab dem {{ datum }} wird der Zugang schreibgeschützt.{% endblocktrans %}{% endif %}{% endif %}
+        <a href="/neu/abonnement/">{% trans "Zum Abonnement" %}</a>
+    </div></div>
+    {% endif %}
+</div>
+{% endif %}

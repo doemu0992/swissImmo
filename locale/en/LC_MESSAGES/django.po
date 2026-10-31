@@ -36690,3 +36690,296 @@ msgid ""
 msgstr ""
 "Payouts at or above the approval limit appear here as soon as someone "
 "triggers them."
+
+msgid "Stufe, Nutzung, Module und Rechnungen Ihrer Verwaltung."
+msgstr "Plan, usage, modules and invoices of your property management."
+
+msgid "Preise und Limiten sind Platzhalter — vom Betreiber festzulegen."
+msgstr "Prices and limits are placeholders — to be set by the operator."
+
+msgid "Es werden noch keine Rechnungen mit diesen Preisen gestellt."
+msgstr "No invoices are issued with these prices yet."
+
+msgid "Der MWST-Satz auf Abo-Rechnungen ist ebenfalls noch nicht festgelegt."
+msgstr "The VAT rate on subscription invoices has not been set yet either."
+
+msgid "Ihr Abonnement"
+msgstr "Your subscription"
+
+msgid ""
+"Bestandsschutz: Bis Sie einen Plan wählen, bleiben alle Funktionen offen und"
+" es gelten keine Mengengrenzen."
+msgstr ""
+"Grandfathering: until you choose a plan, all functions stay open and no "
+"quantity limits apply."
+
+msgid "Noch nicht gestartet — es wird nichts in Rechnung gestellt."
+msgstr "Not started yet — nothing is invoiced."
+
+msgid ""
+"Ihr Bestand liegt über der Grenze dieser Stufe. Alle Daten bleiben les- und "
+"exportierbar; es lassen sich nur keine neuen anlegen."
+msgstr ""
+"Your portfolio is above the limit of this plan. All data stays readable and "
+"exportable; you just cannot add new records."
+
+msgid ""
+"Die Grenze ist erreicht. Neue lassen sich erst mit einer höheren Stufe "
+"anlegen."
+msgstr ""
+"The limit has been reached. New records can only be added with a higher "
+"plan."
+
+msgid "Funktionen und Module"
+msgstr "Functions and modules"
+
+msgid "Zubuchbares Modul — beim Betreiber anfragen."
+msgstr "Bookable module — ask the operator."
+
+msgid "Freigeschaltet"
+msgstr "Enabled"
+
+msgid ""
+"Gesperrte Funktionen bleiben sichtbar, Ihre Daten bleiben erhalten und "
+"lesbar. Es wird nichts gelöscht."
+msgstr ""
+"Locked functions stay visible, your data is kept and stays readable. Nothing"
+" is deleted."
+
+msgid "Platzhalterpreise"
+msgstr "Placeholder prices"
+
+msgid "PDF mit QR-Rechnung"
+msgstr "PDF with QR bill"
+
+msgid "Noch keine Rechnung gestellt."
+msgstr "No invoice issued yet."
+
+msgid ""
+"Den Plan und die Rechnungen sieht und ändert nur der Inhaber der Verwaltung."
+msgstr ""
+"Only the owner of the property management sees and changes the plan and the "
+"invoices."
+
+msgid ""
+"Eine Rechnung ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist "
+"schreibgeschützt: Sie können alle Daten lesen und exportieren, aber nichts "
+"ändern, und es laufen keine automatischen Läufe. Mit dem Zahlungseingang ist"
+" alles wieder offen. Es wird nichts gelöscht."
+msgstr ""
+"An invoice has been overdue for more than %(tage)s days. Your access is "
+"read-only: you can read and export all data but change nothing, and no "
+"automatic runs are executed. Once payment is received, everything is open "
+"again. Nothing is deleted."
+
+msgid ""
+"Eine Rechnung ist überfällig. Bleibt die Zahlung länger als %(tage)s Tage "
+"aus, wird Ihr Zugang schreibgeschützt. Ihre Daten bleiben in jedem Fall "
+"erhalten."
+msgstr ""
+"An invoice is overdue. If payment is still missing after %(tage)s days, your"
+" access becomes read-only. Your data is kept in any case."
+
+msgid "Ab Stufe %(stufe)s."
+msgstr "From plan %(stufe)s."
+
+msgid "Fällig am %(datum)s"
+msgstr "Due on %(datum)s"
+
+msgid ""
+"Zahlbar innert %(tage)s Tagen mit dem QR-Einzahlungsschein. Die Zahlung "
+"bestätigt der Betreiber von Hand."
+msgstr ""
+"Payable within %(tage)s days with the QR payment slip. The operator confirms"
+" the payment by hand."
+
+msgid "Plan wechseln"
+msgstr "Change plan"
+
+msgid ""
+"Bitte prüfen, was sich damit schliesst. Ihre Daten bleiben in jedem Fall "
+"erhalten."
+msgstr "Please check what this closes. Your data is kept in any case."
+
+msgid "Diese Funktionen werden gesperrt"
+msgstr "These functions will be locked"
+
+msgid ""
+"Gesperrte Funktionen bleiben sichtbar. Alle bisherigen Daten bleiben lesbar "
+"und exportierbar; es lässt sich dort nur nichts Neues mehr erfassen. Mit "
+"einem höheren Plan ist alles wieder frei."
+msgstr ""
+"Locked functions stay visible. All existing data stays readable and "
+"exportable; you just cannot enter anything new there. With a higher plan "
+"everything is free again."
+
+msgid "Wechsel auf «%(name)s»"
+msgstr "Switch to “%(name)s”"
+
+msgid ""
+"Sie führen %(n)s Einheiten, diese Stufe fasst höchstens %(deckel)s. Die "
+"vorhandenen Einheiten bleiben vollständig erhalten; es lassen sich nur keine"
+" neuen anlegen."
+msgstr ""
+"You manage %(n)s units, this plan allows at most %(deckel)s. The existing "
+"units are fully kept; you just cannot add new ones."
+
+msgid "Nicht im Abonnement — immoswiss"
+msgstr "Not in your subscription — immoswiss"
+
+msgid "Diese Funktion ist nicht im Abonnement"
+msgstr "This function is not part of the subscription"
+
+msgid ""
+"Ihre Daten sind erhalten und bleiben lesbar. Mit einer höheren Stufe oder "
+"dem passenden Modul ist die Funktion wieder frei."
+msgstr ""
+"Your data is kept and stays readable. With a higher plan or the matching "
+"module the function is free again."
+
+msgid "Diese Funktion ist für diese Verwaltung zurzeit nicht freigeschaltet."
+msgstr "This function is currently not enabled for this property management."
+
+msgid "Der Zugang ist schreibgeschützt"
+msgstr "Access is read-only"
+
+msgid ""
+"Eine Rechnung für das Abonnement ist lange überfällig. Sie können alle Daten"
+" weiter lesen und exportieren, aber nichts ändern. Mit dem Zahlungseingang "
+"ist alles wieder offen. Es wird nichts gelöscht."
+msgstr ""
+"A subscription invoice has been overdue for a long time. You can keep "
+"reading and exporting all data but change nothing. Once payment is received,"
+" everything is open again. Nothing is deleted."
+
+msgid ""
+"Diese Verwaltung ist zurzeit schreibgeschützt. Lesen und Exportieren ist "
+"weiter möglich."
+msgstr ""
+"This property management is currently read-only. Reading and exporting "
+"remain possible."
+
+msgid "Die Grenze der Stufe ist erreicht"
+msgstr "The plan limit has been reached"
+
+msgid "Es lassen sich zurzeit keine weiteren anlegen."
+msgstr "No more can be added at the moment."
+
+msgid "Zum Abonnement"
+msgstr "Go to subscription"
+
+msgid ""
+"Mit der aktuellen Stufe lassen sich höchstens %(n)s anlegen. Alles "
+"Vorhandene bleibt unverändert lesbar. Mit einer höheren Stufe geht es "
+"weiter."
+msgstr ""
+"With the current plan at most %(n)s can be created. Everything that exists "
+"stays readable unchanged. A higher plan lets you continue."
+
+msgid ""
+"Zahlung überfällig: Der Zugang ist schreibgeschützt. Lesen und Exportieren "
+"geht weiter."
+msgstr ""
+"Payment overdue: access is read-only. Reading and exporting continue to "
+"work."
+
+msgid "Eine Rechnung für das Abonnement ist überfällig."
+msgstr "A subscription invoice is overdue."
+
+msgid ""
+"«%(name)s» ist nicht im Abonnement: Sie sehen Ihre Daten, können aber nichts"
+" Neues erfassen."
+msgstr ""
+"“%(name)s” is not part of the subscription: you can see your data but cannot"
+" enter anything new."
+
+msgid "Ab dem %(datum)s wird der Zugang schreibgeschützt."
+msgstr "From %(datum)s access becomes read-only."
+
+msgid ""
+"Bestand von %(n)s Einheiten übersteigt die Stufe (höchstens %(d)s); "
+"abgerechnet zum Preis der Stufe."
+msgstr ""
+"The portfolio of %(n)s units exceeds the plan (at most %(d)s); invoiced at "
+"the price of the plan."
+
+msgid "immoswiss: Ihr Zugang ist schreibgeschützt"
+msgstr "immoswiss: your access is read-only"
+
+msgid ""
+"Die Rechnung für Ihr Abonnement ist seit mehr als %(tage)s Tagen überfällig."
+" Ihr Zugang ist deshalb schreibgeschützt: Sie können alle Daten weiter lesen"
+" und exportieren, aber nichts mehr ändern, und es laufen keine automatischen"
+" Läufe mehr. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts "
+"gelöscht."
+msgstr ""
+"The invoice for your subscription has been overdue for more than %(tage)s "
+"days. Your access is therefore read-only: you can keep reading and exporting"
+" all data but change nothing, and no automatic runs are executed any more. "
+"Once payment is received, everything is open again. Nothing is deleted."
+
+msgid "immoswiss: Zahlungserinnerung zum Abonnement"
+msgstr "immoswiss: payment reminder for the subscription"
+
+msgid ""
+"Die Rechnung für Ihr Abonnement ist überfällig. Bitte begleichen Sie sie mit"
+" dem QR-Einzahlungsschein, den Sie unter Einstellungen > Abonnement finden. "
+"Bleibt die Zahlung länger aus, wird Ihr Zugang nach %(tage)s Tagen "
+"schreibgeschützt. Ihre Daten bleiben in jedem Fall erhalten."
+msgstr ""
+"The invoice for your subscription is overdue. Please pay it with the QR "
+"payment slip you find under Settings > Subscription. If payment is still "
+"missing, your access becomes read-only after %(tage)s days. Your data is "
+"kept in any case."
+
+msgid "Datenexport (Buchungsjournal, Mandatspaket, Auskunft)"
+msgstr "Data export (accounting journal, mandate package, subject access)"
+
+msgid "Betreibung: Rechtsöffnung, Forderungen, Kosten"
+msgstr "Debt collection: removal of objection, claims, costs"
+
+msgid "Datenimport (Stammdaten und Salden aus anderen Programmen)"
+msgstr "Data import (master data and balances from other programs)"
+
+msgid "Stockwerkeigentum: Versammlung, Beschlüsse, Fonds, Abrechnung"
+msgstr "Condominium: meeting, resolutions, funds, statement"
+
+msgid "OCR- und KI-Dokumentenerkennung"
+msgstr "OCR and AI document recognition"
+
+msgid "Eigene Auswertungen und Exportvorlagen"
+msgstr "Custom reports and export templates"
+
+msgid ""
+"Für diese Rechnung ist beim Betreiber noch keine Zahlungsverbindung "
+"festgelegt."
+msgstr "The operator has not yet set payment details for this invoice."
+
+msgid ""
+"Die digitale Unterschrift ist im Abonnement nicht enthalten. Unter "
+"Einstellungen > Abonnement lässt sie sich zubuchen."
+msgstr ""
+"Digital signature is not part of the subscription. It can be added under "
+"Settings > Subscription."
+
+msgid ""
+"Belegerkennung ist im Abonnement nicht enthalten — Felder bitte von Hand "
+"erfassen."
+msgstr ""
+"Document recognition is not part of the subscription — please enter the "
+"fields by hand."
+
+msgid "Abrechnung ab"
+msgstr "Billing from"
+
+msgid "Nutzer"
+msgstr "Users"
+
+msgid "unbegrenzt"
+msgstr "unlimited"
+
+msgid "Gesperrt"
+msgstr "Locked"
+
+msgid "gesperrt"
+msgstr "locked"

@@ -44,6 +44,7 @@ class Command(BaseCommand):
     def handle(self, *args, **opts):
         from crm.models import Organisation
 
+        from core.funktionen import hintergrund_erlaubt
         from core.tenancy import organisation_kontext
 
         gesendet = 0
@@ -51,6 +52,8 @@ class Command(BaseCommand):
         if opts.get('organisation') is not None:
             organisationen = organisationen.filter(pk=opts['organisation'])
         for organisation in organisationen:
+            if not hintergrund_erlaubt(organisation):
+                continue          # Abonnement im Lesemodus: kein Versand
             # Der Kontext gilt für den ganzen Lauf dieser Verwaltung; seit
             # Etappe 6.2 filtert die Pendenz-Abfrage darüber. Der ausdrückliche
             # `organisation=`-Filter in `_fuer_organisation` ist damit

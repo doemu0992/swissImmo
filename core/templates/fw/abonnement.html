@@ -5,21 +5,118 @@
 <div class="fw-phead">
     <div>
         <h1>{% trans "Abonnement" %}</h1>
-        <p>{% blocktrans count n=einheiten %}Monatspreis nach Stufe — aktuell <span style="color:var(--ds-ink);font-weight:600">{{ n }}</span> Einheit im System.{% plural %}Monatspreis nach Stufe — aktuell <span style="color:var(--ds-ink);font-weight:600">{{ n }}</span> Einheiten im System.{% endblocktrans %}</p>
+        <p>{% trans "Stufe, Nutzung, Module und Rechnungen Ihrer Verwaltung." %}</p>
     </div>
 </div>
 
+{% if platzhalter %}
+<div class="fw-card"><div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">
+    <b>{% trans "Preise und Limiten sind Platzhalter — vom Betreiber festzulegen." %}</b>
+    {% trans "Es werden noch keine Rechnungen mit diesen Preisen gestellt." %}
+    {% if mwst_offen %}{% trans "Der MWST-Satz auf Abo-Rechnungen ist ebenfalls noch nicht festgelegt." %}{% endif %}
+</div></div></div>
+{% endif %}
+
+{% if zustand != 'aktiv' %}
+<div class="fw-card"><div class="fw-hinweis {% if zustand == 'lesemodus' %}crit{% else %}warn{% endif %}"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">
+    {% if zustand == 'lesemodus' %}
+        {% blocktrans with tage=lesemodus_tage %}Eine Rechnung ist seit mehr als {{ tage }} Tagen überfällig. Ihr Zugang ist schreibgeschützt: Sie können alle Daten lesen und exportieren, aber nichts ändern, und es laufen keine automatischen Läufe. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht.{% endblocktrans %}
+    {% else %}
+        {% blocktrans with tage=lesemodus_tage %}Eine Rechnung ist überfällig. Bleibt die Zahlung länger als {{ tage }} Tage aus, wird Ihr Zugang schreibgeschützt. Ihre Daten bleiben in jedem Fall erhalten.{% endblocktrans %}
+    {% endif %}
+</div></div></div>
+{% endif %}
+
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Ihr Abonnement" %}</h2>
+        <span class="fw-rechts">
+            <span class="fw-chip fw-brand">{{ aktiver_plan_name }}</span>
+            <span class="fw-chip">{% if jaehrlich %}{% trans "Jährlich" %}{% else %}{% trans "Monatlich" %}{% endif %}</span>
+        </span>
+    </div>
+    {% if abo.uneingeschraenkt %}
+    <div class="fw-hinweis info"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">{% trans "Bestandsschutz: Bis Sie einen Plan wählen, bleiben alle Funktionen offen und es gelten keine Mengengrenzen." %}</div></div>
+    {% endif %}
+    {% if abo.abrechnung_ab %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{% trans "Abrechnung ab" %}</div><div class="fw-s">{{ abo.abrechnung_ab|date:"d.m.Y" }}</div></div></div>
+    {% else %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{% trans "Abrechnung" %}</div><div class="fw-s">{% trans "Noch nicht gestartet — es wird nichts in Rechnung gestellt." %}</div></div></div>
+    {% endif %}
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Nutzung" %}</h2></div>
+    {% for n in nutzung %}
+    <div class="fw-nutzung">
+        <div class="fw-nutzung-kopf">
+            <span class="fw-t">{% if n.was == 'einheiten' %}{% trans "Einheiten" %}{% else %}{% trans "Nutzer" %}{% endif %}</span>
+            <span class="fw-num">{{ n.anzahl }}{% if n.anlegen_bis is not None %} / {{ n.anlegen_bis }}{% elif n.grenze %} / {{ n.grenze }}{% else %} · {% trans "unbegrenzt" %}{% endif %}</span>
+        </div>
+        {% if n.anlegen_bis is not None or n.grenze %}
+        <progress class="fw-nutzung-spur{% if n.darueber %} crit{% elif n.voll or n.prozent >= 90 %} warn{% endif %}" max="100" value="{{ n.prozent }}">{{ n.prozent }} %</progress>
+        {% endif %}
+        {% if n.darueber %}
+        <p class="fw-hilfe">{% trans "Ihr Bestand liegt über der Grenze dieser Stufe. Alle Daten bleiben les- und exportierbar; es lassen sich nur keine neuen anlegen." %}</p>
+        {% elif n.voll %}
+        <p class="fw-hilfe">{% trans "Die Grenze ist erreicht. Neue lassen sich erst mit einer höheren Stufe anlegen." %}</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Funktionen und Module" %}</h2></div>
+    {% for m in module %}
+    <div class="fw-zeile">
+        <div class="fw-mitte"><div class="fw-t">{{ m.name }}</div>
+            {% if not m.offen %}<div class="fw-s">
+                {% if m.zubuchbar %}{% trans "Zubuchbares Modul — beim Betreiber anfragen." %}
+                {% else %}{% blocktrans with stufe=m.ab %}Ab Stufe {{ stufe }}.{% endblocktrans %}{% endif %}
+            </div>{% endif %}
+        </div>
+        <span class="fw-rechts">{% if m.offen %}<span class="fw-chip fw-good fw-dot">{% trans "Freigeschaltet" %}</span>{% else %}<span class="fw-chip fw-warn">{% trans "Gesperrt" %}</span>{% endif %}</span>
+    </div>
+    {% endfor %}
+    <p class="fw-hilfe p-4">{% trans "Gesperrte Funktionen bleiben sichtbar, Ihre Daten bleiben erhalten und lesbar. Es wird nichts gelöscht." %}</p>
+</div>
+
+{% if kann_abo_aendern %}
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Rechnungen" %}</h2></div>
+    {% for r in rechnungen %}
+    <div class="fw-zeile">
+        <div class="fw-mitte">
+            <div class="fw-t">{{ r.nummer }} · {{ r.periode_von|date:"d.m.Y" }}–{{ r.periode_bis|date:"d.m.Y" }}</div>
+            <div class="fw-s">{% blocktrans with datum=r.faellig_am|date:"d.m.Y" %}Fällig am {{ datum }}{% endblocktrans %}{% if r.platzhalter %} · {% trans "Platzhalterpreise" %}{% endif %}</div>
+        </div>
+        <span class="fw-abo-rechts">
+            <span class="fw-num">CHF {{ r.brutto|chf:2 }}</span>
+            {% if r.status == 'bezahlt' %}<span class="fw-chip fw-good fw-dot">{% trans "Bezahlt" %}</span>
+            {% elif r.status == 'storniert' %}<span class="fw-chip">{% trans "Storniert" %}</span>
+            {% else %}<span class="fw-chip fw-warn">{% trans "Offen" %}</span>{% endif %}
+            <a class="fw-btn fw-leise" href="{% url 'fw_abo_rechnung_pdf' r.pk %}">{% trans "PDF mit QR-Rechnung" %}</a>
+        </span>
+    </div>
+    {% empty %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-s">{% trans "Noch keine Rechnung gestellt." %}</div></div></div>
+    {% endfor %}
+    <p class="fw-hilfe p-4">{% blocktrans with tage=zahlungsfrist_tage %}Zahlbar innert {{ tage }} Tagen mit dem QR-Einzahlungsschein. Die Zahlung bestätigt der Betreiber von Hand.{% endblocktrans %}</p>
+</div>
+{% endif %}
+
 {% if not kann_abo_aendern %}
-<div class="fw-card"><div class="fw-hinweis info"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">{% trans "Den Plan kann nur der Inhaber der Verwaltung ändern." %}</div></div></div>
+<div class="fw-card"><div class="fw-hinweis info"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">{% trans "Den Plan und die Rechnungen sieht und ändert nur der Inhaber der Verwaltung." %}</div></div></div>
 {% else %}
-<!-- Monatlich / Jährlich -->
+{% comment %} Intervall umstellen beendet den Bestandsschutz nicht (intervall_nur). {% endcomment %}
 <div class="fw-filters"><div class="fw-segment">
     <form method="post">{% csrf_token %}
         <input type="hidden" name="plan" value="{{ aktiver_plan }}">
+        <input type="hidden" name="intervall_nur" value="1">
         <button type="submit" class="{% if not jaehrlich %}an{% endif %}">{% trans "Monatlich" %}</button>
     </form>
     <form method="post">{% csrf_token %}
         <input type="hidden" name="plan" value="{{ aktiver_plan }}">
+        <input type="hidden" name="intervall_nur" value="1">
         <input type="hidden" name="jaehrlich" value="on">
         <button type="submit" class="{% if jaehrlich %}an{% endif %}">
             {% trans "Jährlich" %} <span class="fw-gut">−{{ rabatt_prozent }} %</span></button>

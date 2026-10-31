@@ -2206,6 +2206,22 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-feldgruppe{display:grid;grid-template-columns:minmax(0,1fr);gap:14px 16px}
         @media (min-width:640px){.fw-feldgruppe.zwei{grid-template-columns:repeat(2,minmax(0,1fr))}.fw-feldgruppe .breit{grid-column:1 / -1}}
         .fw-feldgruppe textarea.fw-feld{min-height:110px;resize:vertical}
+        .fw-nutzung{display:grid;gap:6px;padding:13px 16px;border-bottom:1px solid var(--ds-line)}
+        .fw-nutzung:last-child{border-bottom:0}
+        .fw-nutzung-kopf{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+        progress.fw-nutzung-spur{appearance:none;-webkit-appearance:none;width:100%;height:8px;border:0;border-radius:var(--ds-pill);background:var(--ds-line);overflow:hidden;color:var(--ds-brand)}
+        progress.fw-nutzung-spur::-webkit-progress-bar{background:var(--ds-line)}
+        progress.fw-nutzung-spur::-webkit-progress-value{background:var(--ds-brand);border-radius:var(--ds-pill)}
+        progress.fw-nutzung-spur::-moz-progress-bar{background:var(--ds-brand);border-radius:var(--ds-pill)}
+        progress.fw-nutzung-spur.warn{color:var(--ds-warn)}
+        progress.fw-nutzung-spur.warn::-webkit-progress-value{background:var(--ds-warn)}
+        progress.fw-nutzung-spur.warn::-moz-progress-bar{background:var(--ds-warn)}
+        progress.fw-nutzung-spur.crit{color:var(--ds-crit)}
+        progress.fw-nutzung-spur.crit::-webkit-progress-value{background:var(--ds-crit)}
+        progress.fw-nutzung-spur.crit::-moz-progress-bar{background:var(--ds-crit)}
+        .fw-abo-zeile{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+        .fw-abo-rechts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+        .fw-abo-schloss{margin-left:6px;font-size:11px;font-weight:600;color:var(--ds-warn)}
         .fw-kopf-z1{display:flex;align-items:center;gap:12px}
         .fw-kopf-z2{position:relative;margin-top:10px;min-width:0}
         @media (max-width:1023px){

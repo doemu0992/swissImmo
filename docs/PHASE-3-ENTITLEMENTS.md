@@ -49,6 +49,34 @@ diesen Tabellen Code, ohne dass die Regeln über 329 Ansichten verstreuen?**
 
 ---
 
+> ## Nachtrag 31.10.2026 — umgesetzt (Etappe 4, Funktionsfreigabe)
+>
+> Gebaut ist die Prüfstelle samt Abonnement, Sperrseite, Lesemodus und
+> QR-Rechnung der Plattform. **Kein Zahlungsanbieter** (D6): Die Rechnung geht
+> per QR-Rechnung hinaus, der Zahlungseingang wird von Hand bestätigt.
+>
+> | Teil | Wo |
+> |---|---|
+> | die eine Prüfstelle | `core/funktionen.py`: `hat_funktion`, `anlege_grenze`, `darf_schreiben`, `hintergrund_erlaubt` |
+> | Abonnement, Abo-Rechnung | App `abo`: `Abonnement` (Zubuchungen, Bestandsschutz, Zahlungszustand), `AboRechnung` |
+> | Guard | `abo/zugang.py`: eine Tabelle Pfad → Merkmal (Middleware und Menü), Dekorator `funktion_erforderlich` |
+> | Sperrseite statt 403 | `abo/templates/abo/sperre.html` (HTTP 402) |
+> | Lesemodus | `abo/middleware.py`; Hintergrundläufe über `core.tenancy.je_organisation` und die Schleifen ausserhalb |
+> | Grenzen | `abo/signale.py`: `pre_save` auf Einheit und Mitgliedschaft, nur NEUE Datensätze |
+> | Abrechnung | `manage.py abo_abrechnung` (täglich, idempotent), Betreiber: `manage.py abo_einstellen` |
+>
+> **Bestandsschutz:** Jede bestehende Verwaltung hat `uneingeschraenkt=True` (Migration
+> `abo/0002`) und behält alles, bis sie selbst einen Plan wählt. **Preise, MWST, Fristen
+> sind Platzhalter** in `settings.py` (Block «ABONNEMENT UND PLATTFORM-RECHNUNG»);
+> `ABO_PREISE_FESTGELEGT=False` hält die Rechnungsstellung an.
+>
+> Abweichend vom Entwurf unten: **Stufe und Intervall bleiben an
+> `Organisation.abo_plan`/`abo_jaehrlich`** (D7-Rest: der Umzug nach `Abonnement`
+> ist mechanisch und offen); der Zustand ist gespeichert, nicht berechnet, damit
+> keine Seite eine zusätzliche Abfrage kostet.
+
+---
+
 ## 0. Was heute gilt — nachgemessen, nicht erinnert
 
 | | Befund |

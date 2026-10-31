@@ -517,6 +517,7 @@ def generate_auto_pendenzen(horizont_tage=90, user=None, organisation=None, fehl
     """
     from crm.models import Organisation
 
+    from core.funktionen import hintergrund_erlaubt
     from core.tenancy import organisation_kontext
 
     gesamt = 0
@@ -527,6 +528,9 @@ def generate_auto_pendenzen(horizont_tage=90, user=None, organisation=None, fehl
     if nur_eine is not None:
         alle = alle.filter(pk=getattr(nur_eine, 'pk', nur_eine))
     for organisation in alle:
+        if not hintergrund_erlaubt(organisation):
+            # Abonnement im Lesemodus: keine Läufe im Namen dieser Verwaltung.
+            continue
         if fehler is None:
             with organisation_kontext(organisation):
                 gesamt += _pendenzen_fuer_organisation(horizont_tage, user)
