@@ -251,7 +251,8 @@ class HintergrundTests(Basis):
             schleife = re.search(r'organisation_kontext\(|je_organisation\(|Organisation\.objects', quelle)
             if not schleife or name in einmalig or name.startswith('_'):
                 continue
-            if 'hintergrund_erlaubt' in quelle or ('je_organisation(' in quelle and 'abo_pruefen=False' not in quelle):
+            # Der AUFRUF zählt, nicht der Name: ein Import ohne Prüfung schützt nichts.
+            if 'not hintergrund_erlaubt(' in quelle or ('je_organisation(' in quelle and 'abo_pruefen=False' not in quelle):
                 continue
             ohne.append(f'{pfad.relative_to(wurzel)}')
         self.assertEqual(ohne, [], 'Befehl mit Verwaltungsschleife ohne Lesemodus-Prüfung '

@@ -371,6 +371,25 @@ class GrenzenTests(Basis):
         # Gegenprobe: andere Verwaltung mit Platz, gleiche Person.
         Mitgliedschaft.alle_organisationen.create(benutzer=u3, organisation=self.b.organisation, rolle='Verwalter')
 
+    def test_benutzer_anlegen_ueber_die_oberflaeche_laesst_kein_halbes_konto_zurueck(self):
+        """Grenze erreicht: Sperrseite, und es entsteht weder Konto noch Mitgliedschaft."""
+        from crm.models import Mitgliedschaft
+        self._abo('start')                                    # 2 Nutzer
+        u2 = User.objects.create_user(username='zweiter_v', password='x')
+        Mitgliedschaft.alle_organisationen.create(benutzer=u2, organisation=self.a.organisation, rolle='Verwalter')
+        konten = User.objects.count()
+        c = self._client()
+        antwort = c.post('/neu/benutzer/neu/', {'username': 'dritter_v', 'passwort': 'Sehr-geheim-123', 'rolle': 'Verwalter'})
+        self.assertEqual(antwort.status_code, 402)
+        self.assertContains(antwort, 'Grenze der Stufe', status_code=402)
+        self.assertEqual(User.objects.count(), konten)
+        self.assertFalse(User.objects.filter(username='dritter_v').exists())
+        # Gegenprobe: in einer Stufe mit Platz geht dieselbe Anfrage durch.
+        plan_wechseln(self.a.organisation, 'team', False)
+        self.assertEqual(c.post('/neu/benutzer/neu/', {'username': 'dritter_v', 'passwort': 'Sehr-geheim-123',
+                                                       'rolle': 'Verwalter'}).status_code, 302)
+        self.assertTrue(User.objects.filter(username='dritter_v').exists())
+
     def test_view_zeigt_grenzseite_statt_fehler(self):
         """Die Ausnahme wird zur klaren Seite (Middleware), nicht zur 500."""
         from django.http import HttpResponse
