@@ -76,7 +76,7 @@ class Command(BaseCommand):
             # --- Portal Eigentümer AG ---
             eig = eigentuemer("Portal Eigentümer AG", "e2e-eigentuemer")
             lg = liegenschaft(eig, "Portalweg 1", "Zürich")
-            lg_alt = liegenschaft(eig, "Altweg 9", "Zürich")
+            lg_alt = liegenschaft(eig, "Zuletztweg 9", "Zürich")
             einheiten = {}
             for bez, typ, netto in (("Portal-Whg 1", "whg", "1800"), ("Portal-Whg 2", "whg", "1600"),
                                     ("Portal-Atelier", "gew", "2100")):

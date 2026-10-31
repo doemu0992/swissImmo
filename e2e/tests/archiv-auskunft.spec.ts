@@ -15,11 +15,12 @@ async function ersterLink(page: Page, liste: string, muster: RegExp): Promise<st
   return treffer as string;
 }
 
-test('Das Archiv ist leer und sagt es', async ({ page }) => {
+test('Das Archiv nennt die Aufbewahrung und zeigt archivierte Einträge mit Frist', async ({ page }) => {
   await login(page);
   await goto(page, '/neu/archiv/');
   await expect(page.getByRole('heading', { name: 'Archiv' })).toBeVisible();
-  await expect(page.locator('body')).toContainText('Das Archiv ist leer');
+  await expect(page.locator('body')).toContainText('10 Jahre aufbewahrt');
+  await expect(page.locator('body')).toContainText('aufzubewahren bis');
 });
 
 test('Eine Liegenschaft mit laufendem Vertrag lässt sich nicht archivieren', async ({ page }) => {

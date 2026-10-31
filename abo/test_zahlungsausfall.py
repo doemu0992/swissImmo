@@ -240,7 +240,7 @@ class HintergrundTests(Basis):
             'abo_einstellen',
             # Nur lesend (Prüfbericht, schreibt nichts, versendet nichts): Lesen bleibt im Lesemodus erlaubt.
             'stweg_audit',
-            'seed_e2e_abo',
+            'seed_e2e_abo', 'seed_e2e_eigentuemer',
             # Gesetzliche Pflicht (DSG), läuft auch im Lesemodus (abo_pruefen=False, begründet im Befehl).
             'dsg_anonymisieren', 'bewerbungen_bereinigen',
         }

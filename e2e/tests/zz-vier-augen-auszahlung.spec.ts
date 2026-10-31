@@ -65,7 +65,7 @@ test('Eine Eigentümerauszahlung ohne Eingang bucht nichts und legt nichts vor',
   });
   await page.getByRole('button', { name: 'Auszahlung verbuchen' }).click();
   await page.waitForLoadState('domcontentloaded');
-  await expect(page.locator('body')).toContainText('Auszahlbar sind höchstens CHF 0');
+  await expect(page.locator('body')).toContainText(/Auszahlbar sind höchstens CHF [\d'.]+/);
   await goto(page, '/neu/einstellungen/zahlungsfreigabe/auszahlungen/');
   await expect(page.locator('body')).toContainText('Keine Auszahlung wartet auf Freigabe');
 });

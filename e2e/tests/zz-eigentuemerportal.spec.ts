@@ -6,7 +6,7 @@ import { goto, warteAufURL } from './helpers';
 // Daten aus `seed_e2e_eigentuemer` (läuft in `run-server.sh` nach `seed_e2e`):
 //   e2e-eigentuemer        Portal Eigentümer AG: Portalweg 1 (drei Objekte, eines leer, überfällige
 //                          Posten, Erträge, eine Auszahlung, ein freigegebenes und ein internes Dokument)
-//                          und das archivierte Altweg 9
+//                          und das archivierte Zuletztweg 9
 //   e2e-eigentuemer-fremd  Fremder Eigentümer AG DERSELBEN Verwaltung: Fremdgasse 7
 //   e2e-eigentuemer-ende   Ehemaliger Eigentümer AG: Mandat und Liegenschaft archiviert
 // Alle mit Passwort e2e-pass. Die Spec ändert nichts am Bestand ausser einer Anfrage («zz-…»: sie legt
@@ -97,7 +97,7 @@ test.describe('Eigentümer mit Liegenschaften', () => {
     await anmelden(page, 'e2e-eigentuemer');
     await goto(page, '/portal/liegenschaften/');
     await expect(page.getByText('Portalweg 1')).toBeVisible();
-    await expect(page.locator('[data-block="archiv"]')).toContainText('Altweg 9');
+    await expect(page.locator('[data-block="archiv"]')).toContainText('Zuletztweg 9');
     await expect(page.locator('[data-block="archiv"]')).toContainText('Archiviert am');
     await expect(page.getByText('Fremdgasse 7')).toHaveCount(0);   // Gegenprobe: anderer Eigentümer, gleiche Verwaltung
     expect(await quer(page)).toBeLessThanOrEqual(0);
