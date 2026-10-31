@@ -9,11 +9,11 @@ Es gibt keinen Zahlungsanbieter (ENTSCHEIDE-V7 D6): Die Rechnung geht per
 QR-Rechnung hinaus, der Zahlungseingang wird von Hand bestätigt
 (`als_bezahlt`).
 """
+import calendar
 import logging
 from datetime import timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
-from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
@@ -150,13 +150,21 @@ def intervall_von(organisation):
     return 'jaehrlich' if organisation.abo_jaehrlich else 'monatlich'
 
 
+def _plus_monate(tag, monate):
+    """`tag` plus ganze Monate; der Tag wird auf das Monatsende geklemmt (31.01. + 1 Monat = 28./29.02.)."""
+    gesamt = tag.year * 12 + (tag.month - 1) + monate
+    jahr, monat = divmod(gesamt, 12)
+    monat += 1
+    return tag.replace(year=jahr, month=monat, day=min(tag.day, calendar.monthrange(jahr, monat)[1]))
+
+
 def naechste_periode(abo, organisation):
     """(von, bis) der nächsten unverrechneten Periode, oder None ohne Abrechnungsbeginn."""
     if abo.abrechnung_ab is None:
         return None
     von = abo.abgerechnet_bis + timedelta(days=1) if abo.abgerechnet_bis else abo.abrechnung_ab
     monate = 12 if organisation.abo_jaehrlich else 1
-    return von, von + relativedelta(months=monate) - timedelta(days=1)
+    return von, _plus_monate(von, monate) - timedelta(days=1)
 
 
 def betrag_fuer(stufe, einheiten, jaehrlich):
