@@ -1,0 +1,28 @@
+{% load zeichen i18n %}
+{% comment %}Gemeinsame Leiste des Eigentümerportals. Parameter: aktiv
+(uebersicht|liegenschaften|abrechnungen|dokumente|mitteilungen|profil){% endcomment %}
+<a href="{% url 'portal' %}" class="fw-nav-eintrag{% if aktiv == 'uebersicht' %} hier{% endif %}"{% if aktiv == 'uebersicht' %} aria-current="page"{% endif %}>
+    {% zeichen 'trend' %} {% trans "Übersicht" %}
+</a>
+<a href="{% url 'portal_liegenschaften' %}" class="fw-nav-eintrag{% if aktiv == 'liegenschaften' %} hier{% endif %}"{% if aktiv == 'liegenschaften' %} aria-current="page"{% endif %}>
+    {% zeichen 'liegenschaft' %} {% trans "Liegenschaften" %}
+</a>
+<a href="{% url 'portal_abrechnungen' %}" class="fw-nav-eintrag{% if aktiv == 'abrechnungen' %} hier{% endif %}"{% if aktiv == 'abrechnungen' %} aria-current="page"{% endif %}>
+    {% zeichen 'geld' %} {% trans "Abrechnungen" %}
+</a>
+<a href="{% url 'portal_dokumente' %}" class="fw-nav-eintrag{% if aktiv == 'dokumente' %} hier{% endif %}"{% if aktiv == 'dokumente' %} aria-current="page"{% endif %}>
+    {% zeichen 'dokument' %} {% trans "Dokumente" %}
+</a>
+<a href="{% url 'portal_mitteilungen' %}" class="fw-nav-eintrag{% if aktiv == 'mitteilungen' %} hier{% endif %}"{% if aktiv == 'mitteilungen' %} aria-current="page"{% endif %}>
+    {% zeichen 'senden' %} {% trans "Mitteilungen" %}
+</a>
+{% if hat_stweg %}
+<div class="fw-nav-abschnitt">{% trans "Stockwerkeigentum" %}</div>
+<a href="{% url 'portal_stweg' %}" class="fw-nav-eintrag">
+    {% zeichen 'einheit' %} {% trans "Meine Eigentumseinheiten" %}
+</a>
+{% endif %}
+<div class="fw-nav-abschnitt">{% trans "Konto" %}</div>
+<a href="{% url 'portal_profil' %}" class="fw-nav-eintrag{% if aktiv == 'profil' %} hier{% endif %}"{% if aktiv == 'profil' %} aria-current="page"{% endif %}>
+    {% zeichen 'person' %} {% trans "Profil und Sprache" %}
+</a>

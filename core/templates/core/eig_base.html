@@ -1,0 +1,25 @@
+{% extends 'core/portal_base.html' %}
+{% load zeichen i18n %}
+{% comment %}
+Hülle aller Seiten des Eigentümerportals (v2): Leiste, Titel, Hinweis bei beendetem
+Mandat. Die Seiten füllen `seite` und setzen `nav` mit ihrem Schlüssel.
+{% endcomment %}
+{% block title %}{% trans "Eigentümerportal — immoswiss" %}{% endblock %}
+{% block brand_icon %}<svg class="fw-zeichen fw-auf-marke text-sm" aria-hidden="true"><use href="#z-liegenschaft"/></svg>{% endblock %}
+{% block brand %}{% trans "Eigentümerportal" %}{% endblock %}
+{% block brand_mobile %}{% trans "Eigentümerportal" %}{% endblock %}
+{% block footer %}{% trans "immoswiss Eigentümerportal · Alle Angaben ohne Gewähr" %}{% endblock %}
+
+{% block content %}
+    {% if mandat_ende %}
+    <div class="fw-hinweis fw-meldung warn" role="status" data-block="mandatsende">
+        <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+        <div class="fw-ht">
+            <b>{% trans "Mandat beendet" %}</b>
+            {% if mandat_ende.mandatsende %}{% blocktrans with datum=mandat_ende.mandatsende|date:"d.m.Y" %}Das Mandat endete am {{ datum }}.{% endblocktrans %}{% else %}{% blocktrans with datum=mandat_ende.archiviert_am|date:"d.m.Y" %}Das Mandat wurde am {{ datum }} archiviert.{% endblocktrans %}{% endif %}
+            {% trans "Ihre Unterlagen bleiben zur Einsicht. Änderungen und neue Anfragen sind über das Portal nicht mehr möglich." %}
+        </div>
+    </div>
+    {% endif %}
+    {% block seite %}{% endblock %}
+{% endblock %}

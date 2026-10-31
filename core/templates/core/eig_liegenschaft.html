@@ -1,0 +1,78 @@
+{% extends 'core/eig_base.html' %}
+{% load zeichen i18n chf %}
+{% block title %}{{ lg.strasse }} — {% trans "Eigentümerportal" %}{% endblock %}
+{% block brand_mobile %}{% trans "Liegenschaft" %}{% endblock %}
+{% block nav %}{% include 'core/_eig_nav.html' with aktiv='liegenschaften' %}{% endblock %}
+
+{% block seite %}
+    <nav class="fw-brotkrume mb-3" aria-label="{% trans 'Pfad' %}">
+        <a href="{% url 'portal_liegenschaften' %}">{% trans "Liegenschaften" %}</a>
+    </nav>
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold tracking-tight fw-strong">{{ lg.strasse }}</h1>
+        <p class="fw-mutet mt-1">{{ lg.plz }} {{ lg.ort }}{% if lg.baujahr %} · {% blocktrans with jahr=lg.baujahr %}Baujahr {{ jahr }}{% endblocktrans %}{% endif %}</p>
+    </div>
+
+    {% if archiviert %}
+    <div class="fw-hinweis fw-meldung warn" role="status" data-block="archiviert">
+        <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+        <div class="fw-ht">
+            <b>{% trans "Archivierte Liegenschaft" %}</b>
+            {% blocktrans with datum=archiviert.archiviert_am|date:"d.m.Y" %}Archiviert am {{ datum }}.{% endblocktrans %}{% if archiviert.grund %} {{ archiviert.grund }}.{% endif %}
+            {% trans "Die Angaben sind nur noch zur Einsicht." %}
+        </div>
+    </div>
+    {% endif %}
+
+    <section class="fw-kpis fw-stats mb-6" aria-label="{% trans 'Belegung' %}">
+        <div class="fw-kpi"><div class="fw-l">{% trans "Objekte" %}</div><div class="fw-v">{{ objekte }}</div></div>
+        <div class="fw-kpi"><div class="fw-l">{% trans "Vermietet" %}</div><div class="fw-v">{{ belegt }}</div></div>
+        <div class="fw-kpi"><div class="fw-l">{% trans "Leer" %}</div><div class="fw-v{% if leer %} fw-warn{% endif %}">{{ leer }}</div></div>
+        <div class="fw-kpi"><div class="fw-l">{% trans "Soll-Nettomiete / Monat" %}</div><div class="fw-v">CHF {{ soll_netto|chf }}</div></div>
+    </section>
+
+    <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden mb-6" aria-label="{% trans 'Objekte' %}">
+        <div class="px-5 py-4 border-b fw-linie"><h2 class="font-bold fw-strong">{% trans "Objekte und Belegung" %}</h2></div>
+        {% for z in zeilen %}
+        <div class="px-5 py-3.5 border-b fw-linie" data-objekt="{{ z.einheit.pk }}">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                    <div class="font-semibold text-sm fw-strong">{{ z.einheit.bezeichnung }}</div>
+                    <div class="text-xs fw-mutet">{{ z.einheit.get_typ_display }}{% if z.einheit.zimmer %} · {% blocktrans with n=z.einheit.zimmer %}{{ n }} Zimmer{% endblocktrans %}{% endif %}{% if z.einheit.flaeche_m2 %} · {{ z.einheit.flaeche_m2|chf:0 }} m²{% endif %}</div>
+                </div>
+                {% if z.vertrag %}
+                    {% if z.vertrag.status == 'gekuendigt' %}<span class="fw-chip fw-warn">{% trans "Gekündigt" %}</span>{% else %}<span class="fw-chip fw-good">{% trans "Vermietet" %}</span>{% endif %}
+                {% else %}<span class="fw-chip fw-warn">{% trans "Leerstand" %}</span>{% endif %}
+            </div>
+            {% if z.vertrag %}
+            <div class="text-sm fw-ink mt-2">{{ z.vertrag.mieter }}</div>
+            <div class="text-xs fw-mutet">{% blocktrans with datum=z.vertrag.beginn|date:"d.m.Y" %}seit {{ datum }}{% endblocktrans %}{% if z.vertrag.ende %} · {% blocktrans with datum=z.vertrag.ende|date:"d.m.Y" %}bis {{ datum }}{% endblocktrans %}{% endif %}</div>
+            <div class="text-sm font-semibold fw-strong mt-1">{% blocktrans with netto=z.netto|chf brutto=z.brutto|chf %}CHF {{ netto }} netto · CHF {{ brutto }} brutto pro Monat{% endblocktrans %}</div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="p-8 text-center">
+            <p class="font-semibold fw-ink">{% trans "Keine Objekte erfasst" %}</p>
+            <p class="text-sm fw-faint mt-1">{% trans "Zu dieser Liegenschaft sind noch keine Objekte erfasst." %}</p>
+        </div>
+        {% endfor %}
+    </section>
+
+    <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden" aria-label="{% trans 'Dokumente' %}">
+        <div class="flex items-center justify-between px-5 py-4 border-b fw-linie">
+            <h2 class="font-bold fw-strong">{% trans "Dokumente" %}</h2>
+            <a href="{% url 'portal_dokumente' %}" class="fw-btn fw-knapp">{% trans "Alle Dokumente" %} {% zeichen 'weiter' %}</a>
+        </div>
+        {% for d in dokumente %}
+        <a href="{% url 'portal_dokument_download' d.pk %}" class="flex items-center justify-between gap-3 px-5 py-3 border-b fw-linie">
+            <span class="min-w-0">
+                <span class="block text-sm font-semibold fw-strong">{{ d.titel }}</span>
+                <span class="block text-xs fw-mutet">{{ d.datum|date:"d.m.Y" }}</span>
+            </span>
+            {% zeichen 'herunterladen' klasse='fw-mutet' %}
+        </a>
+        {% empty %}
+        <p class="p-5 text-sm fw-mutet">{% trans "Für diese Liegenschaft hat die Verwaltung noch keine Dokumente freigegeben." %}</p>
+        {% endfor %}
+    </section>
+{% endblock %}

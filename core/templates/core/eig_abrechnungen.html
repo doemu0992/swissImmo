@@ -1,0 +1,82 @@
+{% extends 'core/eig_base.html' %}
+{% load zeichen i18n chf %}
+{% block title %}{% trans "Abrechnungen — Eigentümerportal" %}{% endblock %}
+{% block brand_mobile %}{% trans "Abrechnungen" %}{% endblock %}
+{% block nav %}{% include 'core/_eig_nav.html' with aktiv='abrechnungen' %}{% endblock %}
+
+{% block seite %}
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold tracking-tight fw-strong">{% trans "Abrechnungen und Auszahlungen" %}</h1>
+        <p class="fw-mutet mt-1">{% trans "Eigentümerabrechnung je Jahr, Kontokorrent und Auszahlungen." %}</p>
+    </div>
+
+    <section class="fw-kpis fw-stats mb-6" aria-label="{% trans 'Kontokorrent' %}" data-block="kontokorrent">
+        <div class="fw-kpi"><div class="fw-l">{% trans "Ertrag (alle Jahre)" %}</div><div class="fw-v">CHF {{ konto.ertrag|chf }}</div></div>
+        <div class="fw-kpi"><div class="fw-l">{% trans "Aufwand (alle Jahre)" %}</div><div class="fw-v">CHF {{ konto.aufwand|chf }}</div></div>
+        <div class="fw-kpi"><div class="fw-l">{% trans "Bereits ausbezahlt" %}</div><div class="fw-v">CHF {{ konto.ausbezahlt|chf }}</div></div>
+        <div class="fw-kpi"><div class="fw-l">{% trans "Guthaben laut Kontokorrent" %}</div><div class="fw-v{% if konto.guthaben > 0 %} fw-good{% endif %}">CHF {{ konto.guthaben|chf }}</div>
+            <div class="fw-f">{% trans "Der Auszahlungstermin wird von Ihrer Verwaltung festgelegt." %}</div></div>
+    </section>
+
+    <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden mb-6" aria-label="{% trans 'Eigentümerabrechnung' %}" data-block="jahre">
+        <div class="px-5 py-4 border-b fw-linie"><h2 class="font-bold fw-strong">{% trans "Eigentümerabrechnung je Jahr" %}</h2></div>
+        {% for j in jahre %}
+        <div class="flex items-center justify-between gap-3 px-5 py-3.5 border-b fw-linie" data-jahr="{{ j.jahr }}">
+            <div class="min-w-0">
+                <div class="font-semibold text-sm fw-strong">{{ j.jahr }}{% if j.laufend %} <span class="fw-chip fw-info">{% trans "laufend" %}</span>{% endif %}</div>
+                {% if j.leer %}
+                <div class="text-xs fw-mutet">{% trans "Keine Buchungen" %}</div>
+                {% else %}
+                <div class="text-xs fw-mutet">{% blocktrans with e=j.totals.ertrag|chf a=j.totals.aufwand|chf %}Ertrag CHF {{ e }} · Aufwand CHF {{ a }}{% endblocktrans %}</div>
+                <div class="text-sm font-semibold fw-strong">{% blocktrans with s=j.totals.saldo|chf %}Ergebnis CHF {{ s }}{% endblocktrans %}</div>
+                {% endif %}
+            </div>
+            {% if not j.leer %}
+            <a href="{% url 'portal_abrechnung_pdf' %}?jahr={{ j.jahr }}" target="_blank" rel="noopener" class="fw-btn fw-knapp shrink-0">{% zeichen 'herunterladen' %} PDF</a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </section>
+
+    <section id="auszahlungen" class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden mb-6" aria-label="{% trans 'Auszahlungen' %}" data-block="auszahlungen">
+        <div class="flex items-center justify-between gap-3 px-5 py-4 border-b fw-linie">
+            <h2 class="font-bold fw-strong">{% trans "Auszahlungen" %}</h2>
+            <a href="{% url 'portal_kontokorrent_pdf' %}" target="_blank" rel="noopener" class="fw-btn fw-knapp">{% zeichen 'herunterladen' %} {% trans "Kontokorrent" %}</a>
+        </div>
+        {% for a in auszahlungen %}
+        <div class="flex items-center justify-between gap-3 px-5 py-3.5 border-b fw-linie">
+            <div class="min-w-0">
+                <div class="font-semibold text-sm fw-strong">{{ a.datum|date:"d.m.Y" }}</div>
+                {% if a.bemerkung %}<div class="text-xs fw-mutet">{{ a.bemerkung }}</div>{% endif %}
+            </div>
+            <div class="text-right shrink-0">
+                <div class="font-bold text-sm fw-strong">CHF {{ a.betrag|chf }}</div>
+                {% if a.status == 'storniert' %}<span class="fw-chip fw-mut">{% trans "Storniert" %}</span>{% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <p class="p-5 text-sm fw-mutet">{% trans "Bisher wurde keine Auszahlung verbucht." %}</p>
+        {% endfor %}
+    </section>
+
+    <section id="offene-posten" class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden mb-6" aria-label="{% trans 'Offene Posten' %}" data-block="offene-posten">
+        <div class="px-5 py-4 border-b fw-linie"><h2 class="font-bold fw-strong">{% trans "Offene Posten" %}</h2></div>
+        {% for o in offene %}
+        <div class="flex items-center justify-between gap-3 px-5 py-3.5 border-b fw-linie">
+            <div class="min-w-0">
+                <div class="font-semibold text-sm fw-strong">{{ o.titel }}</div>
+                <div class="text-xs fw-mutet">{{ o.liegenschaft.strasse }} · {% blocktrans with datum=o.faellig|date:"d.m.Y" %}fällig {{ datum }}{% endblocktrans %}{% if o.ueberfaellig %} · <span class="fw-kritisch font-semibold">{% trans "überfällig" %}</span>{% endif %}</div>
+            </div>
+            <div class="font-bold text-sm fw-strong shrink-0">CHF {{ o.betrag|chf }}</div>
+        </div>
+        {% empty %}
+        <p class="p-5 text-sm fw-mutet">{% trans "Keine offenen Posten. Alle Mieten sind bezahlt." %}</p>
+        {% endfor %}
+    </section>
+
+    <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5" aria-label="{% trans 'Steuerauszug' %}">
+        <h2 class="font-bold fw-strong mb-1">{% trans "Steuerauszug" %}</h2>
+        <p class="text-sm fw-mutet mb-3">{% trans "Liegenschaftsrechnung für die Steuererklärung." %}</p>
+        <a class="fw-btn" href="{% url 'portal_steuerauszug_pdf' %}?jahr={{ steuerjahr }}" target="_blank" rel="noopener">{% zeichen 'recht' %} {% blocktrans with jahr=steuerjahr %}Steuerauszug {{ jahr }}{% endblocktrans %}</a>
+    </section>
+{% endblock %}

@@ -538,6 +538,11 @@ class Dokument(OrganisationAusKette):
     kategorie = models.CharField(max_length=50, default='Allgemein')
     datei = models.FileField(upload_to=get_smart_upload_path)
     datum = models.DateField(default=datum_heute)
+    # Sichtbarkeit im Eigentümerportal: Standard NICHT sichtbar, wie beim
+    # Mieterportal (`rentals.Dokument.im_portal_sichtbar`). Die Objektablage
+    # enthält auch Internes (Offerten, Notizen, Schriftverkehr mit Dritten);
+    # der Eigentümer sieht nur, was die Verwaltung freigegeben hat.
+    im_portal_sichtbar = models.BooleanField("Im Eigentümerportal sichtbar", default=False)
 
     class Meta:
         verbose_name = "Dokument"

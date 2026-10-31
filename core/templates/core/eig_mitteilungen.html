@@ -1,0 +1,73 @@
+{% extends 'core/eig_base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Mitteilungen — Eigentümerportal" %}{% endblock %}
+{% block brand_mobile %}{% trans "Mitteilungen" %}{% endblock %}
+{% block nav %}{% include 'core/_eig_nav.html' with aktiv='mitteilungen' %}{% endblock %}
+
+{% block seite %}
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold tracking-tight fw-strong">{% trans "Mitteilungen an die Verwaltung" %}</h1>
+        <p class="fw-mutet mt-1">{% trans "Stellen Sie Ihrer Verwaltung eine Frage oder melden Sie ein Anliegen. Sie antwortet per E-Mail oder Telefon." %}</p>
+    </div>
+
+    {% if mandat_ende %}
+    <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 mb-6" data-block="kontakt">
+        <h2 class="font-bold fw-strong mb-1">{% trans "Kontakt zur Verwaltung" %}</h2>
+        <p class="text-sm fw-mutet">{{ verwaltung.firma }}{% if verwaltung.email %} · <a href="mailto:{{ verwaltung.email }}" class="fw-marke">{{ verwaltung.email }}</a>{% endif %}{% if verwaltung.telefon %} · {{ verwaltung.telefon }}{% endif %}</p>
+    </section>
+    {% elif not liegenschaften %}
+    <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-10 text-center mb-6">
+        <p class="font-semibold fw-ink">{% trans "Noch keine Liegenschaften" %}</p>
+        <p class="text-sm fw-faint mt-1">{% trans "Ihrem Konto sind noch keine Liegenschaften zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung." %}</p>
+    </div>
+    {% else %}
+    <form method="post" class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-4 mb-6 max-w-2xl" data-block="formular">
+        {% csrf_token %}
+        {% if fehler %}
+        <div class="fw-hinweis crit" role="alert" id="mitteilung-fehler">
+            <span class="fw-hi">{% zeichen 'kritisch' %}</span>
+            <div class="fw-ht">{{ fehler }}</div>
+        </div>
+        {% endif %}
+        <div>
+            <label for="m-liegenschaft" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Liegenschaft" %}</label>
+            <select id="m-liegenschaft" name="liegenschaft" required class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5">
+                {% if liegenschaften|length > 1 %}<option value="">{% trans "Bitte wählen" %}</option>{% endif %}
+                {% for lg in liegenschaften %}<option value="{{ lg.pk }}"{% if eingabe.liegenschaft == lg.pk|stringformat:"s" %} selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="m-art" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Worum geht es?" %}</label>
+            <select id="m-art" name="art" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5">
+                {% for key, label in arten %}<option value="{{ key }}"{% if eingabe.art == key %} selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="m-betreff" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Betreff" %}</label>
+            <input id="m-betreff" name="betreff" type="text" required maxlength="{{ betreff_max }}" value="{{ eingabe.betreff }}" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5">
+        </div>
+        <div>
+            <label for="m-text" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Nachricht" %}</label>
+            <textarea id="m-text" name="text" rows="5" required maxlength="{{ text_max }}" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5">{{ eingabe.text }}</textarea>
+        </div>
+        <button type="submit" class="fw-btn fw-primary">{% zeichen 'senden' %} {% trans "An die Verwaltung senden" %}</button>
+    </form>
+    {% endif %}
+
+    <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden" aria-label="{% trans 'Meine Anfragen' %}" data-block="verlauf">
+        <div class="px-5 py-4 border-b fw-linie"><h2 class="font-bold fw-strong">{% trans "Meine Anfragen" %}</h2></div>
+        {% for a in anfragen %}
+        <div class="px-5 py-3.5 border-b fw-linie">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                    <div class="font-semibold text-sm fw-strong">{{ a.titel }}</div>
+                    <div class="text-xs fw-mutet">{{ a.erstellt_am|date:"d.m.Y H:i" }}{% if a.liegenschaft %} · {{ a.liegenschaft.strasse }}{% endif %}</div>
+                </div>
+                {% if a.erledigt %}<span class="fw-chip fw-good">{% trans "Erledigt" %}</span>{% else %}<span class="fw-chip fw-warn">{% trans "In Bearbeitung" %}</span>{% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <p class="p-5 text-sm fw-mutet">{% trans "Sie haben noch keine Anfrage gestellt." %}</p>
+        {% endfor %}
+    </section>
+{% endblock %}

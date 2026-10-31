@@ -1,0 +1,101 @@
+{% extends 'core/eig_base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Profil und Sprache — Eigentümerportal" %}{% endblock %}
+{% block brand_mobile %}{% trans "Profil" %}{% endblock %}
+{% block nav %}{% include 'core/_eig_nav.html' with aktiv='profil' %}{% endblock %}
+
+{% block seite %}
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold tracking-tight fw-strong">{% trans "Profil und Sprache" %}</h1>
+        <p class="fw-mutet mt-1">{% trans "Ihre Angaben, Sprache und Zugang." %}</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-5 items-start">
+        <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-3" aria-label="{% trans 'Ihre Angaben' %}" data-block="angaben">
+            <h2 class="font-bold fw-strong">{% trans "Ihre Angaben" %}</h2>
+            <dl class="text-sm space-y-2">
+                <div><dt class="text-xs font-semibold fw-mutet">{% trans "Name" %}</dt><dd class="fw-strong font-semibold">{{ eigentuemer.firma_oder_name }}</dd></div>
+                {% if eigentuemer.kontaktperson %}<div><dt class="text-xs font-semibold fw-mutet">{% trans "Kontaktperson" %}</dt><dd>{{ eigentuemer.kontaktperson }}</dd></div>{% endif %}
+                <div><dt class="text-xs font-semibold fw-mutet">{% trans "Adresse" %}</dt><dd>{{ eigentuemer.strasse }}{% if eigentuemer.plz or eigentuemer.ort %}, {{ eigentuemer.plz }} {{ eigentuemer.ort }}{% endif %}</dd></div>
+                <div><dt class="text-xs font-semibold fw-mutet">{% trans "E-Mail" %}</dt><dd>{{ eigentuemer.email|default:"—" }}</dd></div>
+                <div><dt class="text-xs font-semibold fw-mutet">{% trans "Telefon" %}</dt><dd>{{ eigentuemer.telefon|default:"—" }}</dd></div>
+                <div><dt class="text-xs font-semibold fw-mutet">{% trans "Auszahlung auf" %}</dt><dd>{% if eigentuemer.iban %}{{ eigentuemer.iban }}{% if eigentuemer.bank_name %} · {{ eigentuemer.bank_name }}{% endif %}{% else %}—{% endif %}</dd></div>
+            </dl>
+            <p class="text-xs fw-mutet">{% trans "Angaben ändert die Verwaltung. Teilen Sie eine Änderung über die Mitteilungen mit." %}</p>
+            {% if not mandat_ende %}<a href="{% url 'portal_mitteilungen' %}" class="fw-btn fw-knapp">{% zeichen 'senden' %} {% trans "Änderung mitteilen" %}</a>{% endif %}
+        </section>
+
+        <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-4" aria-label="{% trans 'Sprache und Darstellung' %}" data-block="sprache">
+            <h2 class="font-bold fw-strong">{% trans "Sprache und Darstellung" %}</h2>
+            <div>
+                <div class="text-xs font-semibold fw-mutet mb-1">{% trans "Sprache des Portals" %}</div>
+                {% include 'core/_sprachwahl.html' with rahmen='fw-segment' knopf='' aktiv='an' passiv='' %}
+            </div>
+            <form method="post" class="space-y-2">
+                {% csrf_token %}
+                <input type="hidden" name="aktion" value="sprache">
+                <label for="p-sprache" class="block text-xs font-semibold fw-mutet">{% trans "Sprache der Briefe und Abrechnungen" %}</label>
+                <select id="p-sprache" name="sprache" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5">
+                    {% for key, label in sprachen %}<option value="{{ key }}"{% if eigentuemer.sprache == key %} selected{% endif %}>{{ label }}</option>{% endfor %}
+                </select>
+                <button type="submit" class="fw-btn fw-knapp">{% zeichen 'speichern' %} {% trans "Speichern" %}</button>
+            </form>
+            <div>
+                <div class="text-xs font-semibold fw-mutet mb-1" id="darstellung-label">{% trans "Darstellung" %}</div>
+                <div class="fw-segment" role="group" aria-labelledby="darstellung-label">
+                    <button type="button" data-theme-wahl="light" aria-pressed="false">{% trans "Hell" %}</button>
+                    <button type="button" data-theme-wahl="dark" aria-pressed="false">{% trans "Dunkel" %}</button>
+                    <button type="button" data-theme-wahl="auto" aria-pressed="false">{% trans "Automatisch" %}</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-4" aria-label="{% trans 'Passwort ändern' %}" data-block="passwort">
+            <h2 class="font-bold fw-strong">{% trans "Passwort ändern" %}</h2>
+            <form method="post" class="space-y-3">
+                {% csrf_token %}
+                <input type="hidden" name="aktion" value="passwort">
+                {% if passwort.errors %}
+                <div class="fw-hinweis crit" role="alert">
+                    <span class="fw-hi">{% zeichen 'kritisch' %}</span>
+                    <div class="fw-ht">{% for field in passwort %}{% for e in field.errors %}<p>{{ e }}</p>{% endfor %}{% endfor %}{% for e in passwort.non_field_errors %}<p>{{ e }}</p>{% endfor %}</div>
+                </div>
+                {% endif %}
+                <div><label for="p-alt" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Aktuelles Passwort" %}</label>
+                    <input id="p-alt" type="password" name="old_password" required autocomplete="current-password" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></div>
+                <div><label for="p-neu1" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Neues Passwort" %}</label>
+                    <input id="p-neu1" type="password" name="new_password1" required autocomplete="new-password" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></div>
+                <div><label for="p-neu2" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Neues Passwort wiederholen" %}</label>
+                    <input id="p-neu2" type="password" name="new_password2" required autocomplete="new-password" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></div>
+                <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %} {% trans "Passwort ändern" %}</button>
+            </form>
+        </section>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var wurzel = document.documentElement;
+    function setze(wahl) {
+        try {
+            if (wahl === 'auto') { localStorage.removeItem('fw-theme'); wurzel.removeAttribute('data-theme'); }
+            else { localStorage.setItem('fw-theme', wahl); wurzel.setAttribute('data-theme', wahl); }
+        } catch (e) { if (wahl !== 'auto') wurzel.setAttribute('data-theme', wahl); }
+        markiere();
+    }
+    function markiere() {
+        var jetzt = wurzel.getAttribute('data-theme') || 'auto';
+        document.querySelectorAll('[data-theme-wahl]').forEach(function (b) {
+            var an = b.getAttribute('data-theme-wahl') === jetzt;
+            b.setAttribute('aria-pressed', an ? 'true' : 'false');
+            b.classList.toggle('an', an);
+        });
+    }
+    document.querySelectorAll('[data-theme-wahl]').forEach(function (b) {
+        b.addEventListener('click', function () { setze(b.getAttribute('data-theme-wahl')); });
+    });
+    markiere();
+})();
+</script>
+{% endblock %}

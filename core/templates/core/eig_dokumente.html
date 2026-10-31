@@ -1,0 +1,36 @@
+{% extends 'core/eig_base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Dokumente — Eigentümerportal" %}{% endblock %}
+{% block brand_mobile %}{% trans "Dokumente" %}{% endblock %}
+{% block nav %}{% include 'core/_eig_nav.html' with aktiv='dokumente' %}{% endblock %}
+
+{% block seite %}
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold tracking-tight fw-strong">{% trans "Dokumente" %}</h1>
+        <p class="fw-mutet mt-1">{% trans "Unterlagen zu Ihren Liegenschaften, die Ihre Verwaltung für Sie freigegeben hat." %}</p>
+    </div>
+
+    {% for g in gruppen %}
+    <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden mb-6" aria-label="{{ g.lg.strasse }}" data-block="dokumente">
+        <div class="px-5 py-4 border-b fw-linie">
+            <h2 class="font-bold fw-strong">{{ g.lg.strasse }}</h2>
+            <div class="text-xs fw-mutet">{{ g.lg.plz }} {{ g.lg.ort }}</div>
+        </div>
+        {% for d in g.dokumente %}
+        <a href="{% url 'portal_dokument_download' d.pk %}" class="flex items-center justify-between gap-3 px-5 py-3 border-b fw-linie">
+            <span class="min-w-0">
+                <span class="block text-sm font-semibold fw-strong">{{ d.titel }}</span>
+                <span class="block text-xs fw-mutet">{{ d.kategorie }} · {{ d.datum|date:"d.m.Y" }}{% if d.einheit %} · {{ d.einheit.bezeichnung }}{% endif %}</span>
+            </span>
+            {% zeichen 'herunterladen' klasse='fw-mutet' %}
+        </a>
+        {% endfor %}
+    </section>
+    {% empty %}
+    <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-10 text-center">
+        <span class="w-14 h-14 rounded-2xl fw-flaeche2 fw-faint flex items-center justify-center mx-auto mb-4">{% zeichen 'dokument' klasse='text-xl' %}</span>
+        <p class="font-semibold fw-ink">{% trans "Noch keine Dokumente" %}</p>
+        <p class="text-sm fw-faint mt-1">{% trans "Sobald Ihre Verwaltung Unterlagen freigibt, erscheinen sie hier." %}</p>
+    </div>
+    {% endfor %}
+{% endblock %}
