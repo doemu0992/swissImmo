@@ -688,6 +688,7 @@ class ParallelTests(_Werkzeug, RollenBasisTransaktion):
 
         ergebnisse = parallel(2, arbeit)
         self.assertEqual([e for e in ergebnisse if isinstance(e, BaseException)], [])
+        self.assertEqual(ergebnisse, [302, 302], 'Keine der beiden Anfragen darf mit einem Serverfehler enden.')
         # Entweder ist der Antrag weg, oder er ist freigegeben — nie halb.
         for a in self.antraege():
             if a.freigegeben_von_id:

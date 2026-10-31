@@ -141,7 +141,10 @@ def fw_auszahlungsfreigabe_freigeben(request, pk):
     get_object_or_404(AuszahlungsFreigabe, pk=pk)                       # fremde ID -> 404
     with transaction.atomic():
         antrag = (AuszahlungsFreigabe.objects.select_for_update(of=('self',))
-                  .select_related('organisation').get(pk=pk))
+                  .select_related('organisation').filter(pk=pk).first())
+        if antrag is None:                  # zwischen Prüfung und Sperre zurückgenommen oder ausgeführt
+            messages.error(request, '⛔ ' + gettext('Dieser Antrag wurde inzwischen zurückgenommen.'))
+            return redirect(AUSZAHLUNGEN)
         try:
             auszahlung_freigeben(antrag, request.user, gesehen_betrag=request.POST.get('betrag'),
                                  gesehen_iban=request.POST.get('iban'))
