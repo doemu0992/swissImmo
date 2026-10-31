@@ -25,6 +25,7 @@ class Command(BaseCommand):
     help = 'Prüft alle Mietverträge auf Anpassungspotenzial'
 
     def handle(self, *args, **options):
+        from core.funktionen import hintergrund_erlaubt
         from core.tenancy import organisation_kontext
 
         organisationen = list(Organisation.objects.order_by('pk'))
@@ -34,6 +35,8 @@ class Command(BaseCommand):
             return
 
         for verwaltung in organisationen:
+            if not hintergrund_erlaubt(verwaltung):
+                continue          # Abonnement im Lesemodus: kein Lauf
             with organisation_kontext(verwaltung):
                 self._scannen(verwaltung)
 

@@ -1,0 +1,78 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n chf %}
+{% comment %}
+AUSZAHLUNGEN FREIGEBEN — Vier-Augen-Prinzip für Eigentümerauszahlung, Rückerstattung von
+Mieterguthaben und Kautionsrückzahlung (Etappe 4, `finance/freigabe.py`). Karten statt Tabelle:
+bei 390 px ohne seitliches Scrollen.
+{% endcomment %}
+{% block title %}{% trans "Auszahlungen freigeben" %} — immoswiss{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/einstellungen/">{% trans "Einstellungen" %}</a>
+    {% zeichen 'weiter' %}
+    <a href="/neu/einstellungen/zahlungsfreigabe/">{% trans "Zahlungsfreigabe" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Auszahlungen" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Auszahlungen freigeben" %}</h1>
+        <p>{% trans "Auszahlungen ab der Freigabelimite brauchen die Freigabe einer zweiten Person." %}</p>
+    </div>
+</div>
+
+<div class="fw-hinweis info max-w-3xl">
+    <span class="fw-hi">{% zeichen 'gesperrt' %}</span>
+    <div class="fw-ht">{% trans "Eigentümerauszahlungen, Rückerstattungen von Mieterguthaben und Kautionsrückzahlungen ab der Freigabelimite werden erst gebucht, wenn ein Verwalter oder der Inhaber sie freigegeben hat. Wer die Auszahlung ausgelöst hat, darf sie nicht selbst freigeben. Die Freigabe gilt einmal und nur für den Betrag und die IBAN, die auf dieser Seite stehen." %}</div>
+</div>
+
+<h2 class="fw-t mt-4 mb-2">{% trans "Offen" %}</h2>
+{% for a in offen %}
+<div class="fw-card max-w-3xl mb-3" id="antrag-{{ a.pk }}">
+    <div class="fw-kopf">
+        <h3 class="fw-t">{{ a.get_art_display }}</h3>
+        {% if a.gueltig %}<span class="fw-chip gut">{% trans "Freigegeben" %}</span>
+        {% elif a.freigegeben_von_id %}<span class="fw-chip warn">{% trans "Freigabe ungültig" %}</span>
+        {% else %}<span class="fw-chip warn">{% trans "Wartet auf Freigabe" %}</span>{% endif %}
+    </div>
+    <div class="fw-rumpf">
+        <p class="fw-strong">{{ a.bezug_text|default:"—" }}</p>
+        <p>{% trans "Betrag" %}: <b>CHF {{ a.betrag|chf }}</b></p>
+        <p class="fw-mutet">{% trans "IBAN des Empfängers" %}: <span class="fw-mono">{{ a.iban|default:"—" }}</span></p>
+        <p class="fw-mutet">{% blocktrans with name=a.vorleger|default:"—" %}Vorgelegt von {{ name }}{% endblocktrans %} · {{ a.beantragt_am|date:"d.m.Y H:i" }}</p>
+        {% if a.gueltig %}<p class="fw-gut">{% blocktrans with name=a.freigeber %}Freigegeben von {{ name }}. Die Auszahlung kann jetzt ausgelöst werden.{% endblocktrans %} <a href="{{ a.ziel }}" class="fw-link">{% trans "Zur Auszahlung" %}</a></p>
+        {% elif a.freigegeben_von_id %}<p class="fw-warnton">{% trans "Betrag oder IBAN wurden nach der Freigabe geändert. Die Auszahlung muss erneut ausgelöst und freigegeben werden." %}</p>
+        {% elif a.eigene %}<p class="fw-mutet">{% trans "Sie haben diese Auszahlung vorgelegt. Eine zweite Person muss sie freigeben." %}</p>{% endif %}
+    </div>
+    <div class="fw-fuss">
+        {% if a.kann_freigeben %}
+        <form method="post" action="/neu/einstellungen/zahlungsfreigabe/auszahlungen/{{ a.pk }}/freigeben/">
+            {% csrf_token %}
+            <input type="hidden" name="betrag" value="{{ a.betrag }}">
+            <input type="hidden" name="iban" value="{{ a.iban }}">
+            <button type="submit" class="fw-btn fw-primary">{% blocktrans with betrag=a.betrag|chf %}CHF {{ betrag }} freigeben{% endblocktrans %}</button>
+        </form>
+        {% endif %}
+        <form method="post" action="/neu/einstellungen/zahlungsfreigabe/auszahlungen/{{ a.pk }}/zuruecknehmen/">
+            {% csrf_token %}
+            <button type="submit" class="fw-btn">{% trans "Zurücknehmen" %}</button>
+        </form>
+    </div>
+</div>
+{% empty %}
+{% include 'fw/_empty.html' with icon='gut' titel=_('Keine Auszahlung wartet auf Freigabe.') subtext=_('Auszahlungen ab der Freigabelimite erscheinen hier, sobald jemand sie auslöst.') %}
+{% endfor %}
+
+{% if erledigt %}
+<h2 class="fw-t mt-6 mb-2">{% trans "Zuletzt ausgeführt" %}</h2>
+<div class="fw-card max-w-3xl">
+    <div class="fw-rumpf">
+        {% for a in erledigt %}
+        <p><span class="fw-strong">{{ a.get_art_display }}</span> · {{ a.bezug_text|default:"—" }} · <b>CHF {{ a.betrag|chf }}</b>
+            <span class="fw-mutet">· {% blocktrans with vorleger=a.beantragt_von.get_username|default:"—" freigeber=a.freigegeben_von.get_username|default:"—" %}vorgelegt von {{ vorleger }}, freigegeben von {{ freigeber }}{% endblocktrans %} · {{ a.verbraucht_am|date:"d.m.Y" }}</span></p>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

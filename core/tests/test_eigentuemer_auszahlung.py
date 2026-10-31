@@ -310,6 +310,10 @@ class AuszahlungParallelTests(_Basis, TransactionTestCase):
 
     def setUp(self):
         self.aufbau()
+        # Etappe 4: Ab der Freigabelimite (Vorgabe CHF 5'000) braucht eine Auszahlung die Freigabe einer zweiten
+        # Person; diese Tests zahlen 15'000 aus. Ihr Gegenstand ist die Deckung unter Gleichzeitigkeit, nicht das
+        # Vier-Augen-Prinzip (dort: `test_vier_augen_auszahlung.ParallelTests`).
+        type(self.org).objects.filter(pk=self.org.pk).update(freigabelimit_kreditoren=None)
 
     def _parallel_auszahlen(self, anzahl, betrag, md_ids=None):
         def lauf(i):

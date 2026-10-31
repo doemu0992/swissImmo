@@ -203,7 +203,7 @@ Detailseiten rufen sie beim Namen.
                 <span class="fw-bereichsreiter-name" aria-hidden="true">{{ g.label }}<i>/</i></span>
                 {% for it in g.items %}{% if it.erlaubt %}
                 {% if it.section and not forloop.first %}<span class="fw-bereichsreiter-trenner" aria-hidden="true"></span>{% endif %}
-                <a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}{% if it.section %} data-abschnitt="{{ it.section }}"{% endif %}>{{ it.label }}{% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-z crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}</a>
+                <a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}{% if it.section %} data-abschnitt="{{ it.section }}"{% endif %}>{{ it.label }}{% if it.gesperrt %}<span class="fw-abo-schloss">{% trans 'gesperrt' %}</span>{% endif %}{% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-z crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}</a>
                 {% endif %}{% endfor %}
                 {% comment %} «Mehr»: bleibt unsichtbar, bis das Skript Punkte aus dem Band nimmt. {% endcomment %}
                 <button type="button" class="fw-mehr" id="fwMehr" aria-expanded="false" aria-controls="fwMehrPop" hidden>
@@ -299,6 +299,7 @@ Detailseiten rufen sie beim Namen.
         {% endif %}
 
         <main class="fw-inhalt">
+            {% include 'fw/_abo_hinweis.html' %}
             {% block content %}{% endblock %}
         </main>
     </div>

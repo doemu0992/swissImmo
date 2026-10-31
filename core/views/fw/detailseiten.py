@@ -23,6 +23,7 @@ from django.utils.translation import gettext, ngettext
 from core.auth import (darf_oeffnen, rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
 from crm.models import Mieter, Organisation
+from finance.freigabe import AuszahlungGesperrt
 from finance.models import DebitorenRechnung, Zahlungseingang
 from portfolio.models import Einheit, Liegenschaft
 from rentals.models import Mietvertrag
@@ -2194,6 +2195,9 @@ def fw_schlussabrechnung(request, vertrag_id):
                     # und ausbezahlt: 1015 und 2010 rutschten ins Minus und offene
                     # Mietforderungen galten als getilgt (Audit, kritisch).
                     kaution_bil = _kaution_bilanziert(v)
+                    #: Was in diesem Schritt an den Mieter geht (Kaution; unten kommt das Guthaben dazu).
+                    #: Grundlage des Vier-Augen-Prinzips (Etappe 4), Schritt 3.
+                    auszahlung_gesamt = Decimal('0.00')
                     if kaution_verrechnen and (v.kautions_betrag or 0) > 0 \
                             and kaution_bil <= 0 and not v.ist_kautionsversicherung:
                         # Kaution vereinbart, aber nie eingegangen (oder bereits
@@ -2238,6 +2242,7 @@ def fw_schlussabrechnung(request, vertrag_id):
                                 # jeweils am zugehörigen Zahlungseingang: nur so hebt der Storno
                                 # einer Verrechnung ihre Buchung mit auf.
                                 if rueck > 0:
+                                    auszahlung_gesamt += rueck
                                     buche("2010", "1020", rueck, f"{beleg_k} — Rückzahlung an Mieter",
                                           datum=dat_s, liegenschaft=lg_s, user=request.user)
                             # OP-Nebenbuch nachführen: die verrechnete Kaution tilgt die
@@ -2271,6 +2276,16 @@ def fw_schlussabrechnung(request, vertrag_id):
                     # ausgezogenen Mieter dauerhaft auf 2030 stehen (Audit).
                     guthaben_pos = _guthaben_positionen(v)
                     guthaben_offen = sum((z.betrag for z in guthaben_pos), Decimal('0.00'))
+                    # VIER-AUGEN-PRINZIP (Etappe 4): Kaution und Guthaben gehen zusammen an den Mieter.
+                    # Erreicht die Summe die Freigabelimite, braucht die Auszahlung die Freigabe einer
+                    # zweiten Person; fehlt sie, rollt die ganze Schlussabrechnung zurück
+                    # (`AuszahlungGesperrt`, unten gemeldet). Die Prüfung gilt für die Summe, damit sich
+                    # eine Auszahlung nicht in Kaution und Guthaben unter der Limite zerlegen lässt.
+                    auszahlung_gesamt += guthaben_offen
+                    if auszahlung_gesamt > 0:
+                        from finance.freigabe import auszahlung_pruefen
+                        auszahlung_pruefen('schlussabrechnung', v.pk, auszahlung_gesamt, v.mieter.iban,
+                                           organisation=v.organisation, bezug_text=str(v.mieter))
                     if guthaben_offen > 0:
                         # Je Guthaben-Position gebucht und am Zahlungseingang verankert: Ein
                         # Storno der Position hebt so auch ihre Auszahlung auf.
@@ -2284,6 +2299,12 @@ def fw_schlussabrechnung(request, vertrag_id):
                         v.kautions_rueckzahlung_betrag = (
                             (v.kautions_rueckzahlung_betrag or Decimal('0.00')) + guthaben_offen)
                         v.save(update_fields=['kautions_rueckzahlung_betrag'])
+            except AuszahlungGesperrt as gesperrt:
+                from core.views.fw.zahlungsfreigabe import auszahlung_gesperrt_melden
+                auszahlung_gesperrt_melden(request, gesperrt)
+                if request.POST.get('embed'):
+                    return render(request, 'fw/_modal_done.html', {'msg': gettext('Die Auszahlung braucht die Freigabe einer zweiten Person.')})
+                return redirect(f'/neu/vertraege/{v.id}/')
             except PermissionError as exc:
                 # Rückdatierter Auszug in eine gesperrte Periode: als Meldung
                 # zeigen statt als HTTP 500 (Audit).

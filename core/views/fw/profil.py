@@ -1138,45 +1138,103 @@ def _abo_plaene(einheiten, jaehrlich, aktiver_plan):
     return plaene
 
 
+def _abo_module(organisation):
+    """Zubuchbare Module und Funktionen mit Stand: offen oder gesperrt, ab welcher Stufe."""
+    from core import funktionen as f
+    zeilen = []
+    for schluessel, name in list(f.MODULE.items()):
+        zeilen.append({'schluessel': schluessel, 'name': gettext(name), 'offen': f.hat_funktion(organisation, schluessel),
+                       'ab': None, 'zubuchbar': True})
+    for schluessel, name in f.FUNKTIONEN.items():
+        ab = next((f.STUFEN_NAMEN[s] for s in f.STUFEN_REIHENFOLGE if schluessel in f.STUFEN[s]), None)
+        zeilen.append({'schluessel': schluessel, 'name': name, 'offen': f.hat_funktion(organisation, schluessel),
+                       'ab': ab, 'zubuchbar': False})
+    return zeilen
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_abonnemente(request):
-    """Abo-/Preisseite: vier Stufen aus core.funktionen, aktueller Plan wählbar."""
+    """Abo-Seite: Stufe, Nutzung, Module, Rechnungen, Planwahl (Stufen aus core.funktionen)."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from crm.models import Organisation
+    from abo import dienst
+    from abo.models import AboRechnung
+    from core import funktionen as f
     from core.auth import INHABER_ROLLEN, log_aktion, hat_rolle
+    from crm.models import Organisation
     vw = aktuelle_organisation()
     basis = _global_filter(request)
 
     # Den Plan wählt der Inhaber (docs/KONZEPT-UI.md §8) — er bestimmt die
-    # Rechnung. Bis 28.09.2026 genügte SCHREIB_ROLLEN, also auch die
-    # Sachbearbeitung. Ansehen dürfen weiterhin alle Team-Rollen.
+    # Rechnung. Ansehen dürfen weiterhin alle Team-Rollen.
     kann_abo_aendern = hat_rolle(request.user, INHABER_ROLLEN)
     if request.method == 'POST' and not kann_abo_aendern:
         messages.error(request, gettext('Den Abo-Plan kann nur der Inhaber ändern.'))
         return redirect('/neu/abonnement/')
     if request.method == 'POST':
         plan = request.POST.get('plan')
+        jaehrlich = request.POST.get('jaehrlich') == 'on'
         if plan in dict(Organisation.ABO_CHOICES):
-            vw.abo_plan = plan
-            vw.abo_jaehrlich = request.POST.get('jaehrlich') == 'on'
-            vw.save(update_fields=['abo_plan', 'abo_jaehrlich'])
-            log_aktion(request, "Abo-Plan gewählt", plan, 'jährlich' if vw.abo_jaehrlich else 'monatlich')
+            if request.POST.get('intervall_nur'):
+                # Nur das Intervall umstellen: beendet den Bestandsschutz nicht.
+                vw.abo_jaehrlich = jaehrlich
+                vw.save(update_fields=['abo_jaehrlich'])
+                log_aktion(request, "Abo-Intervall gewählt", plan, 'jährlich' if jaehrlich else 'monatlich')
+                return redirect('/neu/abonnement/')
+            folgen = dienst.folgen_des_wechsels(vw, plan)
+            if (folgen['schliesst'] or folgen['bestand_ueber']) and not request.POST.get('bestaetigt'):
+                # Erst zeigen, was sich schliesst. Daten bleiben in jedem Fall.
+                return render(request, 'fw/abonnement_bestaetigen.html', {
+                    **basis, 'nav': 'abonnement', 'plan': plan, 'plan_name': dict(Organisation.ABO_CHOICES)[plan],
+                    'jaehrlich': jaehrlich,
+                    'schliesst': [f.FUNKTIONEN[k] for k in folgen['schliesst']],
+                    'bestand_ueber': folgen['bestand_ueber'], 'deckel': folgen['deckel']})
+            dienst.plan_wechseln(vw, plan, jaehrlich)
+            log_aktion(request, "Abo-Plan gewählt", plan, 'jährlich' if jaehrlich else 'monatlich')
             messages.success(request, '✅ ' + gettext('Plan «%(wert)s» aktiviert.') % {'wert': dict(Organisation.ABO_CHOICES)[plan]})
         return redirect('/neu/abonnement/')
 
+    from django.conf import settings as dj_settings
     from core.funktionen import JAHRESRABATT, PREISSTAND
 
-    einheiten = Einheit.objects.count()
+    nutzung = dienst.nutzung_von(vw)
+    einheiten = next(n['anzahl'] for n in nutzung if n['was'] == 'einheiten')
     jaehrlich = vw.abo_jaehrlich
     plaene = _abo_plaene(einheiten, jaehrlich, vw.abo_plan)
+    abo = f.abonnement_von(vw)
+    rechnungen = list(AboRechnung.objects.all()[:24]) if kann_abo_aendern else []
 
     return render(request, 'fw/abonnement.html', {
         **basis, 'nav': 'abonnement', 'plaene': plaene, 'einheiten': einheiten,
         'jaehrlich': jaehrlich, 'aktiver_plan': vw.abo_plan,
+        'aktiver_plan_name': f.STUFEN_NAMEN.get(vw.abo_plan, vw.abo_plan),
         'kann_abo_aendern': kann_abo_aendern,
         'rabatt_prozent': int(JAHRESRABATT * 100), 'preisstand': PREISSTAND,
+        'abo': abo, 'zustand': f.zustand_von(vw), 'nutzung': nutzung,
+        'module': _abo_module(vw), 'rechnungen': rechnungen,
+        'platzhalter': not dj_settings.ABO_PREISE_FESTGELEGT,
+        'mwst_offen': dj_settings.ABO_MWST_SATZ is None,
+        'lesemodus_tage': dj_settings.ABO_LESEMODUS_NACH_TAGEN,
+        'zahlungsfrist_tage': dj_settings.ABO_ZAHLUNGSFRIST_TAGE,
     })
+
+
+@rolle_erforderlich(*INHABER_ROLLEN)
+def fw_abo_rechnung_pdf(request, pk):
+    """Die Abo-Rechnung als PDF mit QR-Einzahlungsschein. Nur der Inhaber; fremde IDs sind 404."""
+    from django.http import HttpResponse
+    from django.shortcuts import redirect
+    from abo.models import AboRechnung
+    from abo.rechnung_pdf import abo_rechnung_pdf
+    rechnung = get_object_or_404(AboRechnung.objects.select_related('organisation'), pk=pk)
+    pdf = abo_rechnung_pdf(rechnung)
+    if pdf is None:
+        from django.contrib import messages
+        messages.warning(request, gettext('Für diese Rechnung ist beim Betreiber noch keine Zahlungsverbindung festgelegt.'))
+        return redirect('/neu/abonnement/')
+    antwort = HttpResponse(pdf, content_type='application/pdf')
+    antwort['Content-Disposition'] = f'inline; filename="{rechnung.nummer}.pdf"'
+    return antwort
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)

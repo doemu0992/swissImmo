@@ -24,6 +24,7 @@ from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
 from core.auth import FINANZ_LESE_ROLLEN
 from portfolio.models import Liegenschaft
 from rentals.models import Mietvertrag
+from finance.freigabe import AuszahlungGesperrt
 
 from ._basis import _global_filter, _kaution_bilanziert, _num
 
@@ -243,6 +244,13 @@ def fw_kaution_aktion(request, vertrag_id):
                         _buche("1100", "3600", abzug, f"Schadenersatz {v.mieter}",
                                datum=dat_k, liegenschaft=lg_k, debitor=rech_e, user=request.user)
                 elif (v.kautions_betrag or 0) > 0 and not already:
+                    # VIER-AUGEN-PRINZIP (Etappe 4): Die Rückzahlung an den Mieter braucht ab der
+                    # Freigabelimite die Freigabe einer zweiten Person. Die Prüfung steht VOR der ersten
+                    # Buchung; fehlt die Freigabe, rollt die ganze Transaktion zurück (`AuszahlungGesperrt`).
+                    if rueck > 0:
+                        from finance.freigabe import auszahlung_pruefen
+                        auszahlung_pruefen('kaution', v.pk, rueck, v.mieter.iban,
+                                           organisation=v.organisation, bezug_text=str(v.mieter))
                     _buche("1020", "1015", v.kautions_betrag, f"{beleg} — Sperrkonto freigegeben",
                            datum=dat_k, liegenschaft=lg_k, user=request.user)
                     if rueck > 0:
@@ -253,6 +261,10 @@ def fw_kaution_aktion(request, vertrag_id):
                                datum=dat_k, liegenschaft=lg_k, user=request.user)
         except _KautionSchonAufgeloest:
             messages.error(request, '❌ ' + gettext('Für diesen Vertrag ist keine Kaution bilanziert (nicht einbezahlt oder bereits aufgelöst).'))
+            return redirect(f'/neu/vertraege/{v.id}/')
+        except AuszahlungGesperrt as gesperrt:
+            from core.views.fw.zahlungsfreigabe import auszahlung_gesperrt_melden
+            auszahlung_gesperrt_melden(request, gesperrt)
             return redirect(f'/neu/vertraege/{v.id}/')
         except PermissionError as exc:
             messages.error(request, f"❌ {exc}")

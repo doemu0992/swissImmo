@@ -16,4 +16,6 @@ python manage.py migrate -v0
 python manage.py seed_e2e
 python manage.py seed_e2e_mietzins
 python manage.py seed_e2e_mandanten
+python manage.py seed_e2e_eigentuemer
+python manage.py seed_e2e_abo
 exec python manage.py runserver 127.0.0.1:8811 --noreload

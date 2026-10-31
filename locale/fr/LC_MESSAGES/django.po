@@ -36732,3 +36732,869 @@ msgstr "Chaque colonne a besoin de son propre intitulé."
 
 msgid "Die Einstellungen für das Buchungsjournal sind gespeichert."
 msgstr "Les paramètres du journal comptable sont enregistrés."
+
+#: Eigentümerportal v2 (Etappe 4)
+msgid "Meine Eigentumseinheiten"
+msgstr "Mes unités de propriété"
+
+msgid "Profil und Sprache"
+msgstr "Profil et langue"
+
+msgid "Eigentümerportal — immoswiss"
+msgstr "Portail propriétaire — immoswiss"
+
+msgid "immoswiss Eigentümerportal · Alle Angaben ohne Gewähr"
+msgstr "Portail propriétaire immoswiss · Sans garantie"
+
+msgid "Mandat beendet"
+msgstr "Mandat terminé"
+
+msgid "Das Mandat endete am %(datum)s."
+msgstr "Le mandat a pris fin le %(datum)s."
+
+msgid "Das Mandat wurde am %(datum)s archiviert."
+msgstr "Le mandat a été archivé le %(datum)s."
+
+msgid ""
+"Ihre Unterlagen bleiben zur Einsicht. Änderungen und neue Anfragen sind über"
+" das Portal nicht mehr möglich."
+msgstr ""
+"Vos documents restent consultables. Les modifications et les nouvelles "
+"demandes ne sont plus possibles via le portail."
+
+msgid "Abrechnungen — Eigentümerportal"
+msgstr "Décomptes — Portail propriétaire"
+
+msgid "Abrechnungen und Auszahlungen"
+msgstr "Décomptes et versements"
+
+msgid "Eigentümerabrechnung je Jahr, Kontokorrent und Auszahlungen."
+msgstr "Décompte propriétaire par année, compte courant et versements."
+
+msgid "Ertrag (alle Jahre)"
+msgstr "Produits (toutes les années)"
+
+msgid "Aufwand (alle Jahre)"
+msgstr "Charges (toutes les années)"
+
+msgid "Guthaben laut Kontokorrent"
+msgstr "Avoir selon le compte courant"
+
+msgid "Der Auszahlungstermin wird von Ihrer Verwaltung festgelegt."
+msgstr "La date du versement est fixée par votre gérance."
+
+msgid "Eigentümerabrechnung je Jahr"
+msgstr "Décompte propriétaire par année"
+
+msgid "Keine Buchungen"
+msgstr "Aucune écriture"
+
+msgid "Ertrag CHF %(e)s · Aufwand CHF %(a)s"
+msgstr "Produits CHF %(e)s · Charges CHF %(a)s"
+
+msgid "Ergebnis CHF %(s)s"
+msgstr "Résultat CHF %(s)s"
+
+msgid "Bisher wurde keine Auszahlung verbucht."
+msgstr "Aucun versement n'a encore été comptabilisé."
+
+msgid "Keine offenen Posten. Alle Mieten sind bezahlt."
+msgstr "Aucun poste ouvert. Tous les loyers sont payés."
+
+msgid "Steuerauszug"
+msgstr "Relevé fiscal"
+
+msgid "Liegenschaftsrechnung für die Steuererklärung."
+msgstr "Compte d'immeuble pour la déclaration d'impôt."
+
+msgid "Dokumente — Eigentümerportal"
+msgstr "Documents — Portail propriétaire"
+
+msgid ""
+"Unterlagen zu Ihren Liegenschaften, die Ihre Verwaltung für Sie freigegeben "
+"hat."
+msgstr ""
+"Documents relatifs à vos immeubles, mis à votre disposition par votre "
+"gérance."
+
+msgid "Baujahr %(jahr)s"
+msgstr "Année de construction %(jahr)s"
+
+msgid "Archivierte Liegenschaft"
+msgstr "Immeuble archivé"
+
+msgid "Archiviert am %(datum)s."
+msgstr "Archivé le %(datum)s."
+
+msgid "Die Angaben sind nur noch zur Einsicht."
+msgstr "Les informations ne sont plus que consultables."
+
+msgid "Soll-Nettomiete / Monat"
+msgstr "Loyer net théorique / mois"
+
+msgid "Objekte und Belegung"
+msgstr "Objets et occupation"
+
+msgid "%(n)s Zimmer"
+msgstr "%(n)s pièces"
+
+msgid "bis %(datum)s"
+msgstr "jusqu'au %(datum)s"
+
+msgid "CHF %(netto)s netto · CHF %(brutto)s brutto pro Monat"
+msgstr "CHF %(netto)s net · CHF %(brutto)s brut par mois"
+
+msgid "Keine Objekte erfasst"
+msgstr "Aucun objet saisi"
+
+msgid "Zu dieser Liegenschaft sind noch keine Objekte erfasst."
+msgstr "Aucun objet n'a encore été saisi pour cet immeuble."
+
+msgid ""
+"Für diese Liegenschaft hat die Verwaltung noch keine Dokumente freigegeben."
+msgstr ""
+"La gérance n'a pas encore mis de documents à disposition pour cet immeuble."
+
+msgid "Liegenschaften — Eigentümerportal"
+msgstr "Immeubles — Portail propriétaire"
+
+msgid "Ihre Liegenschaften mit Objekten und Belegung."
+msgstr "Vos immeubles avec leurs objets et leur occupation."
+
+msgid "Voll vermietet"
+msgstr "Entièrement loué"
+
+msgid "Soll-Nettomiete CHF %(betrag)s pro Monat"
+msgstr "Loyer net théorique CHF %(betrag)s par mois"
+
+msgid "Archivierte Liegenschaften"
+msgstr "Immeubles archivés"
+
+msgid "Archiviert am %(datum)s"
+msgstr "Archivé le %(datum)s"
+
+msgid "Mitteilungen — Eigentümerportal"
+msgstr "Messages — Portail propriétaire"
+
+msgid "Mitteilungen an die Verwaltung"
+msgstr "Messages à la gérance"
+
+msgid ""
+"Stellen Sie Ihrer Verwaltung eine Frage oder melden Sie ein Anliegen. Sie "
+"antwortet per E-Mail oder Telefon."
+msgstr ""
+"Posez une question à votre gérance ou signalez une demande. Elle vous répond"
+" par e-mail ou par téléphone."
+
+msgid "Kontakt zur Verwaltung"
+msgstr "Contact avec la gérance"
+
+msgid "An die Verwaltung senden"
+msgstr "Envoyer à la gérance"
+
+msgid "Sie haben noch keine Anfrage gestellt."
+msgstr "Vous n'avez pas encore envoyé de demande."
+
+msgid "Profil und Sprache — Eigentümerportal"
+msgstr "Profil et langue — Portail propriétaire"
+
+msgid "Profil"
+msgstr "Profil"
+
+msgid "Ihre Angaben, Sprache und Zugang."
+msgstr "Vos informations, votre langue et votre accès."
+
+msgid "Ihre Angaben"
+msgstr "Vos informations"
+
+msgid "Auszahlung auf"
+msgstr "Versement sur"
+
+msgid ""
+"Angaben ändert die Verwaltung. Teilen Sie eine Änderung über die "
+"Mitteilungen mit."
+msgstr ""
+"Les informations sont modifiées par la gérance. Communiquez un changement "
+"via les messages."
+
+msgid "Änderung mitteilen"
+msgstr "Communiquer une modification"
+
+msgid "Sprache und Darstellung"
+msgstr "Langue et affichage"
+
+msgid "Sprache des Portals"
+msgstr "Langue du portail"
+
+msgid "Sprache der Briefe und Abrechnungen"
+msgstr "Langue des courriers et des décomptes"
+
+msgid "Automatisch"
+msgstr "Automatique"
+
+msgid "Der aktuelle Stand Ihrer Liegenschaften auf einen Blick."
+msgstr "L'état actuel de vos immeubles en un coup d'œil."
+
+msgid "Ablehnen"
+msgstr "Refuser"
+
+msgid "Kennzahlen"
+msgstr "Indicateurs"
+
+msgid "leere Objekte von %(n)s · Leerstandsquote %(q)s %%"
+msgstr "objets vacants sur %(n)s · taux de vacance %(q)s %%"
+
+msgid "pro Monat"
+msgstr "par mois"
+
+msgid "Soll-Nettomiete der laufenden Mietverträge."
+msgstr "Loyer net théorique des baux en cours."
+
+msgid "Gebucht %(jahr)s: CHF %(betrag)s"
+msgstr "Comptabilisé %(jahr)s : CHF %(betrag)s"
+
+msgid "Noch nichts überfällig."
+msgstr "Rien n'est encore en retard."
+
+msgid "Alle Mieten sind bezahlt."
+msgstr "Tous les loyers sont payés."
+
+msgid "Nächste Auszahlung"
+msgstr "Prochain versement"
+
+msgid ""
+"Guthaben laut Kontokorrent. Der Auszahlungstermin wird von Ihrer Verwaltung "
+"festgelegt."
+msgstr ""
+"Avoir selon le compte courant. La date du versement est fixée par votre "
+"gérance."
+
+msgid "Kein Guthaben zur Auszahlung."
+msgstr "Aucun avoir à verser."
+
+msgid "Zuletzt am %(datum)s: CHF %(betrag)s"
+msgstr "Dernier versement le %(datum)s : CHF %(betrag)s"
+
+msgid "Ihre Liegenschaften"
+msgstr "Vos immeubles"
+
+msgid "Berichte zum Herunterladen"
+msgstr "Rapports à télécharger"
+
+msgid "Im Eigentümerportal sichtbar (nur bei Liegenschaft oder Objekt)"
+msgstr ""
+"Visible dans le portail propriétaire (uniquement pour un immeuble ou un "
+"objet)"
+
+msgid "Für den Eigentümer im Portal sichtbar schalten"
+msgstr "Rendre visible pour le propriétaire dans le portail"
+
+msgid "Im Eigentümerportal"
+msgstr "Dans le portail propriétaire"
+
+msgid "Nicht im Portal"
+msgstr "Pas dans le portail"
+
+msgid "Allgemeine Frage"
+msgstr "Question générale"
+
+msgid "Abrechnung oder Auszahlung"
+msgstr "Décompte ou versement"
+
+msgid "Unterhalt oder Schaden"
+msgstr "Entretien ou sinistre"
+
+msgid "Änderung meiner Angaben"
+msgstr "Modification de mes informations"
+
+msgid "Mandat oder Vertrag"
+msgstr "Mandat ou contrat"
+
+msgid ""
+"Das Mandat ist beendet. Bitte wenden Sie sich direkt an die Verwaltung."
+msgstr ""
+"Le mandat est terminé. Veuillez vous adresser directement à la gérance."
+
+msgid "Der Betreff ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "L'objet est trop long (%(n)s caractères au maximum)."
+
+msgid "Bitte Ihre Nachricht eingeben."
+msgstr "Veuillez saisir votre message."
+
+msgid "Die Nachricht ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "Le message est trop long (%(n)s caractères au maximum)."
+
+msgid "Bitte die Art der Anfrage wählen."
+msgstr "Veuillez choisir le type de demande."
+
+msgid "Bitte eine Ihrer Liegenschaften wählen."
+msgstr "Veuillez choisir l'un de vos immeubles."
+
+msgid "Korrespondenzsprache gespeichert."
+msgstr "Langue de correspondance enregistrée."
+
+msgid "Bitte eine der angebotenen Sprachen wählen."
+msgstr "Veuillez choisir une des langues proposées."
+
+msgid ""
+"Diese Zahlung braucht die Freigabe einer zweiten Person (zusammen mit den "
+"übrigen Rechnungen desselben Kreditors im Zahllauf erreicht sie das "
+"Freigabelimit)."
+msgstr ""
+"Ce paiement nécessite la validation d'une deuxième personne (avec les autres"
+" factures du même créancier dans le lot de paiement, il atteint la limite de"
+" validation)."
+
+msgid ""
+"Betrag oder IBAN wurden nach der Freigabe geändert — die Auszahlung braucht "
+"eine neue Freigabe durch eine zweite Person."
+msgstr ""
+"Le montant ou l'IBAN ont été modifiés après la validation : le versement "
+"nécessite une nouvelle validation par une deuxième personne."
+
+#, python-format
+msgid ""
+"Diese Auszahlung braucht die Freigabe einer zweiten Person (Betrag ab dem "
+"Freigabelimit von CHF %(limit)s)."
+msgstr ""
+"Ce versement nécessite la validation d'une deuxième personne (montant à "
+"partir de la limite de validation de CHF %(limit)s)."
+
+msgid "Diese Auszahlung wurde bereits ausgeführt."
+msgstr "Ce versement a déjà été exécuté."
+
+msgid "Dieser Betrag liegt unter dem Freigabelimit — keine Freigabe nötig."
+msgstr ""
+"Ce montant est inférieur à la limite de validation : aucune validation n'est"
+" nécessaire."
+
+msgid "Die Auszahlung wurde noch nicht vorgelegt."
+msgstr "Le versement n'a pas encore été soumis."
+
+msgid ""
+"Wer die Auszahlung vorgelegt hat, darf sie nicht selbst freigeben (Vier-"
+"Augen-Prinzip)."
+msgstr ""
+"La personne qui a soumis le versement ne peut pas le valider elle-même "
+"(principe des quatre yeux)."
+
+msgid "Die Auszahlung ist bereits freigegeben."
+msgstr "Le versement est déjà validé."
+
+msgid ""
+"Betrag oder IBAN haben sich seit dem Öffnen der Seite geändert. Bitte die "
+"Seite neu laden und die Angaben erneut prüfen."
+msgstr ""
+"Le montant ou l'IBAN ont changé depuis l'ouverture de la page. Veuillez "
+"recharger la page et vérifier à nouveau les indications."
+
+#, python-format
+msgid ""
+"%(text)s Sie ist vorgelegt und erscheint unter Einstellungen → "
+"Zahlungsfreigabe → Auszahlungen; danach die Auszahlung erneut auslösen."
+msgstr ""
+"%(text)s Il a été soumis et apparaît sous Paramètres → Validation des "
+"paiements → Versements ; ensuite, déclencher à nouveau le versement."
+
+msgid "Dieser Antrag wurde inzwischen zurückgenommen."
+msgstr "Cette demande a entre-temps été retirée."
+
+msgid ""
+"Die Auszahlung ist freigegeben. Sie kann jetzt ausgelöst werden; die "
+"Freigabe gilt für einmal."
+msgstr ""
+"Le versement est validé. Il peut maintenant être déclenché ; la validation "
+"n'est valable qu'une fois."
+
+#, python-format
+msgid ""
+"«%(lieferant)s»: Die Rechnungen %(rechnungen)s ergeben zusammen CHF "
+"%(summe)s und erreichen damit das Freigabelimit von CHF %(limit)s. Jede "
+"dieser Rechnungen braucht die Freigabe einer zweiten Person."
+msgstr ""
+"« %(lieferant)s » : les factures %(rechnungen)s totalisent CHF %(summe)s et "
+"atteignent ainsi la limite de validation de CHF %(limit)s. Chacune de ces "
+"factures nécessite la validation d'une deuxième personne."
+
+#, python-format
+msgid "Das Format «%(p)s» gibt es nicht."
+msgstr "Le format « %(p)s » n'existe pas."
+
+msgid "Die Auszahlung braucht die Freigabe einer zweiten Person."
+msgstr "Le versement nécessite la validation d'une deuxième personne."
+
+msgid "Banana Buchhaltung"
+msgstr "Comptabilité Banana"
+
+msgid "Eigentümerauszahlung"
+msgstr "Versement au propriétaire"
+
+msgid "Rückerstattung Mieterguthaben"
+msgstr "Remboursement d'avoir de locataire"
+
+msgid "Rücküberweisung Fremdeingang"
+msgstr "Retour d'un paiement étranger"
+
+msgid "Kautionsrückzahlung"
+msgstr "Remboursement de la garantie de loyer"
+
+msgid "Auszahlung aus der Schlussabrechnung"
+msgstr "Versement issu du décompte final"
+
+msgid "Auszahlungen freigeben"
+msgstr "Valider les versements"
+
+msgid ""
+"Auszahlungen ab der Freigabelimite brauchen die Freigabe einer zweiten "
+"Person."
+msgstr ""
+"Les versements à partir de la limite de validation nécessitent la validation"
+" d'une deuxième personne."
+
+msgid ""
+"Eigentümerauszahlungen, Rückerstattungen von Mieterguthaben und "
+"Kautionsrückzahlungen ab der Freigabelimite werden erst gebucht, wenn ein "
+"Verwalter oder der Inhaber sie freigegeben hat. Wer die Auszahlung ausgelöst"
+" hat, darf sie nicht selbst freigeben. Die Freigabe gilt einmal und nur für "
+"den Betrag und die IBAN, die auf dieser Seite stehen."
+msgstr ""
+"Les versements aux propriétaires, les remboursements d'avoirs de locataires "
+"et les remboursements de garanties de loyer à partir de la limite de "
+"validation ne sont comptabilisés qu'une fois validés par un gestionnaire ou "
+"par le titulaire. La personne qui a déclenché le versement ne peut pas le "
+"valider elle-même. La validation vaut une seule fois et uniquement pour le "
+"montant et l'IBAN indiqués sur cette page."
+
+msgid "IBAN des Empfängers"
+msgstr "IBAN du destinataire"
+
+msgid "Zur Auszahlung"
+msgstr "Vers le versement"
+
+msgid ""
+"Betrag oder IBAN wurden nach der Freigabe geändert. Die Auszahlung muss "
+"erneut ausgelöst und freigegeben werden."
+msgstr ""
+"Le montant ou l'IBAN ont été modifiés après la validation. Le versement doit"
+" être déclenché et validé à nouveau."
+
+msgid ""
+"Sie haben diese Auszahlung vorgelegt. Eine zweite Person muss sie freigeben."
+msgstr "Vous avez soumis ce versement. Une deuxième personne doit le valider."
+
+msgid "Zuletzt ausgeführt"
+msgstr "Exécutés récemment"
+
+#, python-format
+msgid "Freigegeben von %(name)s. Die Auszahlung kann jetzt ausgelöst werden."
+msgstr "Validé par %(name)s. Le versement peut maintenant être déclenché."
+
+#, python-format
+msgid "CHF %(betrag)s freigeben"
+msgstr "Valider CHF %(betrag)s"
+
+#, python-format
+msgid "vorgelegt von %(vorleger)s, freigegeben von %(freigeber)s"
+msgstr "soumis par %(vorleger)s, validé par %(freigeber)s"
+
+msgid ""
+"Dieselbe Limite gilt für Eigentümerauszahlungen, die Rückerstattung von "
+"Mieterguthaben und Kautionsrückzahlungen. Rechnungen desselben Kreditors in "
+"einem Zahllauf zählen zusammen."
+msgstr ""
+"La même limite s'applique aux versements aux propriétaires, aux "
+"remboursements d'avoirs de locataires et aux remboursements de garanties de "
+"loyer. Les factures du même créancier dans un lot de paiement sont "
+"additionnées."
+
+msgid "Summenregel: mehrere Rechnungen desselben Kreditors"
+msgstr "Règle de somme : plusieurs factures du même créancier"
+
+msgid ""
+"Einzeln liegen diese Rechnungen unter dem Freigabelimit, zusammen erreichen "
+"sie es. Sie gehören nur in die Zahlungsdatei, wenn eine zweite Person sie "
+"freigegeben hat:"
+msgstr ""
+"Prises séparément, ces factures sont inférieures à la limite de validation ;"
+" ensemble, elles l'atteignent. Elles n'entrent dans le fichier de paiement "
+"que si une deuxième personne les a validées :"
+
+msgid ""
+"Freie Zuordnung (Überschriften und Format unten einstellbar, für Abacus und "
+"andere)"
+msgstr ""
+"Attribution libre (intitulés et format réglables ci-dessous, pour Abacus et "
+"autres)"
+
+msgid "Banana Buchhaltung (feste Vorgabe von Banana)"
+msgstr "Comptabilité Banana (format imposé par Banana)"
+
+msgid ""
+"Freie Zuordnung: Spalten Buchungsdatum, Belegnummer, Soll, Haben, Betrag, "
+"Text, MWST-Code (Überschriften unten einstellbar). Stornobuchungen stehen "
+"als eigene Zeilen. Es werden nur Buchungen gelesen, nichts wird verändert."
+msgstr ""
+"Attribution libre : colonnes Date de comptabilisation, Numéro de pièce, "
+"Débit, Crédit, Montant, Texte, Code TVA (intitulés réglables ci-dessous). "
+"Les écritures d'annulation figurent sur des lignes distinctes. Les écritures"
+" sont seulement lues, rien n'est modifié."
+
+msgid "Import in Banana"
+msgstr "Importation dans Banana"
+
+msgid "Format «Banana Buchhaltung» wählen und die Datei (.txt) herunterladen."
+msgstr ""
+"Choisir le format « Comptabilité Banana » et télécharger le fichier (.txt)."
+
+msgid ""
+"In Banana die Buchhaltung öffnen und «Aktionen > In Buchhaltung importieren "
+"> Text file with column headers» wählen (auf Deutsch: Aktionen > In "
+"Buchhaltung importieren)."
+msgstr ""
+"Ouvrir la comptabilité dans Banana et choisir « Actions > Importer dans la "
+"comptabilité > Text file with column headers » (dans la version allemande : "
+"Aktionen > In Buchhaltung importieren)."
+
+msgid ""
+"Die Datei wählen. Die Kopfzeile (Date, Doc, Description, AccountDebit, "
+"AccountCredit, Amount, VatCode, ExternalReference) erkennt Banana von "
+"selbst."
+msgstr ""
+"Choisir le fichier. Banana reconnaît seul la ligne d'en-tête (Date, Doc, "
+"Description, AccountDebit, AccountCredit, Amount, VatCode, "
+"ExternalReference)."
+
+msgid ""
+"Die Kontonummern in der Datei kommen aus der Kontenzuordnung unten: Tragen "
+"Sie dort die Kontonummern Ihres Banana-Kontenplans ein, sonst gehen die "
+"Nummern von immoswiss in die Datei. Die ExternalReference (immoswiss-Jahr-"
+"Buchungs-ID) ist je Buchung eindeutig. Datum yyyy-mm-dd, Tabulator als "
+"Trennzeichen, Betrag mit Punkt: Das setzt das Format selbst."
+msgstr ""
+"Les numéros de compte du fichier proviennent de l'attribution des comptes "
+"ci-dessous : saisissez-y les numéros de votre plan comptable Banana, sinon "
+"les numéros d'immoswiss sont repris dans le fichier. La ExternalReference "
+"(immoswiss-année-ID de l'écriture) est unique pour chaque écriture. Date "
+"yyyy-mm-dd, tabulation comme séparateur, montant avec point : le format les "
+"définit lui-même."
+
+#, python-format
+msgid "%(n)s Auszahlung wartet auf Freigabe"
+msgid_plural "%(n)s Auszahlungen warten auf Freigabe"
+msgstr[0] "%(n)s versement attend la validation"
+msgstr[1] "%(n)s versements attendent la validation"
+
+msgid "Keine Auszahlung wartet auf Freigabe."
+msgstr "Aucun versement n'attend de validation."
+
+msgid ""
+"Auszahlungen ab der Freigabelimite erscheinen hier, sobald jemand sie "
+"auslöst."
+msgstr ""
+"Les versements à partir de la limite de validation apparaissent ici dès que "
+"quelqu'un les déclenche."
+
+msgid "Stufe, Nutzung, Module und Rechnungen Ihrer Verwaltung."
+msgstr "Niveau, utilisation, modules et factures de votre gérance."
+
+msgid "Preise und Limiten sind Platzhalter — vom Betreiber festzulegen."
+msgstr ""
+"Les prix et les limites sont des valeurs provisoires — à fixer par "
+"l'exploitant."
+
+msgid "Es werden noch keine Rechnungen mit diesen Preisen gestellt."
+msgstr "Aucune facture n'est encore établie avec ces prix."
+
+msgid "Der MWST-Satz auf Abo-Rechnungen ist ebenfalls noch nicht festgelegt."
+msgstr ""
+"Le taux de TVA sur les factures d'abonnement n'est pas non plus encore fixé."
+
+msgid "Ihr Abonnement"
+msgstr "Votre abonnement"
+
+msgid ""
+"Bestandsschutz: Bis Sie einen Plan wählen, bleiben alle Funktionen offen und"
+" es gelten keine Mengengrenzen."
+msgstr ""
+"Garantie des acquis : tant que vous ne choisissez pas de formule, toutes les"
+" fonctions restent ouvertes et aucune limite de quantité ne s'applique."
+
+msgid "Noch nicht gestartet — es wird nichts in Rechnung gestellt."
+msgstr "Pas encore démarrée — rien n'est facturé."
+
+msgid ""
+"Ihr Bestand liegt über der Grenze dieser Stufe. Alle Daten bleiben les- und "
+"exportierbar; es lassen sich nur keine neuen anlegen."
+msgstr ""
+"Votre parc dépasse la limite de ce niveau. Toutes les données restent "
+"lisibles et exportables ; il n'est simplement plus possible d'en créer de "
+"nouvelles."
+
+msgid ""
+"Die Grenze ist erreicht. Neue lassen sich erst mit einer höheren Stufe "
+"anlegen."
+msgstr ""
+"La limite est atteinte. De nouveaux éléments ne peuvent être créés qu'avec "
+"un niveau supérieur."
+
+msgid "Funktionen und Module"
+msgstr "Fonctions et modules"
+
+msgid "Zubuchbares Modul — beim Betreiber anfragen."
+msgstr "Module à ajouter — à demander à l'exploitant."
+
+msgid "Freigeschaltet"
+msgstr "Activé"
+
+msgid ""
+"Gesperrte Funktionen bleiben sichtbar, Ihre Daten bleiben erhalten und "
+"lesbar. Es wird nichts gelöscht."
+msgstr ""
+"Les fonctions bloquées restent visibles, vos données sont conservées et "
+"lisibles. Rien n'est supprimé."
+
+msgid "Platzhalterpreise"
+msgstr "Prix provisoires"
+
+msgid "PDF mit QR-Rechnung"
+msgstr "PDF avec facture QR"
+
+msgid "Noch keine Rechnung gestellt."
+msgstr "Aucune facture établie pour le moment."
+
+msgid ""
+"Den Plan und die Rechnungen sieht und ändert nur der Inhaber der Verwaltung."
+msgstr ""
+"Seul le titulaire de la gérance voit et modifie la formule et les factures."
+
+msgid ""
+"Eine Rechnung ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist "
+"schreibgeschützt: Sie können alle Daten lesen und exportieren, aber nichts "
+"ändern, und es laufen keine automatischen Läufe. Mit dem Zahlungseingang ist"
+" alles wieder offen. Es wird nichts gelöscht."
+msgstr ""
+"Une facture est en souffrance depuis plus de %(tage)s jours. Votre accès est"
+" en lecture seule : vous pouvez lire et exporter toutes les données, mais "
+"rien modifier, et aucun traitement automatique ne s'exécute. Dès réception "
+"du paiement, tout est de nouveau ouvert. Rien n'est supprimé."
+
+msgid ""
+"Eine Rechnung ist überfällig. Bleibt die Zahlung länger als %(tage)s Tage "
+"aus, wird Ihr Zugang schreibgeschützt. Ihre Daten bleiben in jedem Fall "
+"erhalten."
+msgstr ""
+"Une facture est en souffrance. Si le paiement tarde plus de %(tage)s jours, "
+"votre accès passe en lecture seule. Vos données sont conservées dans tous "
+"les cas."
+
+msgid "Ab Stufe %(stufe)s."
+msgstr "À partir du niveau %(stufe)s."
+
+msgid "Fällig am %(datum)s"
+msgstr "Échéance le %(datum)s"
+
+msgid ""
+"Zahlbar innert %(tage)s Tagen mit dem QR-Einzahlungsschein. Die Zahlung "
+"bestätigt der Betreiber von Hand."
+msgstr ""
+"Payable dans les %(tage)s jours avec le bulletin de versement QR. "
+"L'exploitant confirme le paiement à la main."
+
+msgid "Plan wechseln"
+msgstr "Changer de formule"
+
+msgid ""
+"Bitte prüfen, was sich damit schliesst. Ihre Daten bleiben in jedem Fall "
+"erhalten."
+msgstr ""
+"Veuillez vérifier ce qui se ferme ainsi. Vos données sont conservées dans "
+"tous les cas."
+
+msgid "Diese Funktionen werden gesperrt"
+msgstr "Ces fonctions seront bloquées"
+
+msgid ""
+"Gesperrte Funktionen bleiben sichtbar. Alle bisherigen Daten bleiben lesbar "
+"und exportierbar; es lässt sich dort nur nichts Neues mehr erfassen. Mit "
+"einem höheren Plan ist alles wieder frei."
+msgstr ""
+"Les fonctions bloquées restent visibles. Toutes les données existantes "
+"restent lisibles et exportables ; il n'est simplement plus possible d'y "
+"saisir du nouveau. Avec une formule supérieure, tout est de nouveau libre."
+
+msgid "Wechsel auf «%(name)s»"
+msgstr "Passage à « %(name)s »"
+
+msgid ""
+"Sie führen %(n)s Einheiten, diese Stufe fasst höchstens %(deckel)s. Die "
+"vorhandenen Einheiten bleiben vollständig erhalten; es lassen sich nur keine"
+" neuen anlegen."
+msgstr ""
+"Vous gérez %(n)s unités, ce niveau en admet au maximum %(deckel)s. Les "
+"unités existantes sont intégralement conservées ; il n'est simplement plus "
+"possible d'en créer de nouvelles."
+
+msgid "Nicht im Abonnement — immoswiss"
+msgstr "Pas dans l'abonnement — immoswiss"
+
+msgid "Diese Funktion ist nicht im Abonnement"
+msgstr "Cette fonction n'est pas incluse dans l'abonnement"
+
+msgid ""
+"Ihre Daten sind erhalten und bleiben lesbar. Mit einer höheren Stufe oder "
+"dem passenden Modul ist die Funktion wieder frei."
+msgstr ""
+"Vos données sont conservées et restent lisibles. Avec un niveau supérieur ou"
+" le module correspondant, la fonction est de nouveau libre."
+
+msgid "Diese Funktion ist für diese Verwaltung zurzeit nicht freigeschaltet."
+msgstr "Cette fonction n'est actuellement pas activée pour cette gérance."
+
+msgid "Der Zugang ist schreibgeschützt"
+msgstr "L'accès est en lecture seule"
+
+msgid ""
+"Eine Rechnung für das Abonnement ist lange überfällig. Sie können alle Daten"
+" weiter lesen und exportieren, aber nichts ändern. Mit dem Zahlungseingang "
+"ist alles wieder offen. Es wird nichts gelöscht."
+msgstr ""
+"Une facture d'abonnement est en souffrance depuis longtemps. Vous pouvez "
+"continuer à lire et exporter toutes les données, mais rien modifier. Dès "
+"réception du paiement, tout est de nouveau ouvert. Rien n'est supprimé."
+
+msgid ""
+"Diese Verwaltung ist zurzeit schreibgeschützt. Lesen und Exportieren ist "
+"weiter möglich."
+msgstr ""
+"Cette gérance est actuellement en lecture seule. La lecture et l'export "
+"restent possibles."
+
+msgid "Die Grenze der Stufe ist erreicht"
+msgstr "La limite du niveau est atteinte"
+
+msgid "Es lassen sich zurzeit keine weiteren anlegen."
+msgstr "Il n'est actuellement pas possible d'en créer d'autres."
+
+msgid "Zum Abonnement"
+msgstr "Vers l'abonnement"
+
+msgid ""
+"Mit der aktuellen Stufe lassen sich höchstens %(n)s anlegen. Alles "
+"Vorhandene bleibt unverändert lesbar. Mit einer höheren Stufe geht es "
+"weiter."
+msgstr ""
+"Avec le niveau actuel, on ne peut en créer que %(n)s au maximum. Tout ce qui"
+" existe reste lisible tel quel. Avec un niveau supérieur, c'est de nouveau "
+"possible."
+
+msgid ""
+"Zahlung überfällig: Der Zugang ist schreibgeschützt. Lesen und Exportieren "
+"geht weiter."
+msgstr ""
+"Paiement en souffrance : l'accès est en lecture seule. La lecture et "
+"l'export restent possibles."
+
+msgid "Eine Rechnung für das Abonnement ist überfällig."
+msgstr "Une facture d'abonnement est en souffrance."
+
+msgid ""
+"«%(name)s» ist nicht im Abonnement: Sie sehen Ihre Daten, können aber nichts"
+" Neues erfassen."
+msgstr ""
+"« %(name)s » n'est pas dans l'abonnement : vous voyez vos données mais ne "
+"pouvez rien saisir de nouveau."
+
+msgid "Ab dem %(datum)s wird der Zugang schreibgeschützt."
+msgstr "À partir du %(datum)s, l'accès passera en lecture seule."
+
+msgid ""
+"Bestand von %(n)s Einheiten übersteigt die Stufe (höchstens %(d)s); "
+"abgerechnet zum Preis der Stufe."
+msgstr ""
+"Le parc de %(n)s unités dépasse le niveau (maximum %(d)s) ; facturé au prix "
+"du niveau."
+
+msgid "immoswiss: Ihr Zugang ist schreibgeschützt"
+msgstr "immoswiss : votre accès est en lecture seule"
+
+msgid ""
+"Die Rechnung für Ihr Abonnement ist seit mehr als %(tage)s Tagen überfällig."
+" Ihr Zugang ist deshalb schreibgeschützt: Sie können alle Daten weiter lesen"
+" und exportieren, aber nichts mehr ändern, und es laufen keine automatischen"
+" Läufe mehr. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts "
+"gelöscht."
+msgstr ""
+"La facture de votre abonnement est en souffrance depuis plus de %(tage)s "
+"jours. Votre accès est donc en lecture seule : vous pouvez continuer à lire "
+"et exporter toutes les données, mais plus rien modifier, et aucun traitement"
+" automatique ne s'exécute plus. Dès réception du paiement, tout est de "
+"nouveau ouvert. Rien n'est supprimé."
+
+msgid "immoswiss: Zahlungserinnerung zum Abonnement"
+msgstr "immoswiss : rappel de paiement pour l'abonnement"
+
+msgid ""
+"Die Rechnung für Ihr Abonnement ist überfällig. Bitte begleichen Sie sie mit"
+" dem QR-Einzahlungsschein, den Sie unter Einstellungen > Abonnement finden. "
+"Bleibt die Zahlung länger aus, wird Ihr Zugang nach %(tage)s Tagen "
+"schreibgeschützt. Ihre Daten bleiben in jedem Fall erhalten."
+msgstr ""
+"La facture de votre abonnement est en souffrance. Veuillez la régler avec le"
+" bulletin de versement QR que vous trouvez sous Paramètres > Abonnement. Si "
+"le paiement tarde, votre accès passe en lecture seule après %(tage)s jours. "
+"Vos données sont conservées dans tous les cas."
+
+msgid "Datenexport (Buchungsjournal, Mandatspaket, Auskunft)"
+msgstr ""
+"Export de données (journal comptable, paquet de mandat, renseignement)"
+
+msgid "Betreibung: Rechtsöffnung, Forderungen, Kosten"
+msgstr "Poursuites : mainlevée, créances, frais"
+
+msgid "Datenimport (Stammdaten und Salden aus anderen Programmen)"
+msgstr "Import de données (données de base et soldes d'autres programmes)"
+
+msgid "Stockwerkeigentum: Versammlung, Beschlüsse, Fonds, Abrechnung"
+msgstr "Propriété par étages : assemblée, décisions, fonds, décompte"
+
+msgid "OCR- und KI-Dokumentenerkennung"
+msgstr "Reconnaissance de documents par OCR et IA"
+
+msgid "Eigene Auswertungen und Exportvorlagen"
+msgstr "Évaluations personnalisées et modèles d'export"
+
+msgid ""
+"Für diese Rechnung ist beim Betreiber noch keine Zahlungsverbindung "
+"festgelegt."
+msgstr ""
+"Pour cette facture, l'exploitant n'a pas encore fixé de coordonnées de "
+"paiement."
+
+msgid ""
+"Die digitale Unterschrift ist im Abonnement nicht enthalten. Unter "
+"Einstellungen > Abonnement lässt sie sich zubuchen."
+msgstr ""
+"La signature numérique n'est pas incluse dans l'abonnement. Elle peut être "
+"ajoutée sous Paramètres > Abonnement."
+
+msgid ""
+"Belegerkennung ist im Abonnement nicht enthalten — Felder bitte von Hand "
+"erfassen."
+msgstr ""
+"La reconnaissance de pièces n'est pas incluse dans l'abonnement — veuillez "
+"saisir les champs à la main."
+
+msgid "Abrechnung ab"
+msgstr "Facturation dès le"
+
+msgid "Nutzer"
+msgstr "Utilisateurs"
+
+msgid "unbegrenzt"
+msgstr "illimité"
+
+msgid "Gesperrt"
+msgstr "Bloqué"
+
+msgid "gesperrt"
+msgstr "bloqué"

@@ -59,6 +59,8 @@ SPRACHEN = ('de', 'fr', 'it', 'en')
 #: Vorlagen, die bereits ausgezeichnet sind. Diese Liste darf nur WACHSEN —
 #: dieselbe Sperrklinke wie beim Farbklassen-Zaehler, nur andersherum.
 UEBERSETZT = (
+    'fw/_abo_hinweis.html',          # Funktionsfreigabe: Hinweis bei Zahlungsverzug / gesperrtem Modul
+    'fw/abonnement_bestaetigen.html',
     'fw/_archivieren.html',
     'fw/daten.html',                 # Datenimport/-export (FUNK-09/13)
     'fw/daten_export.html',
@@ -88,7 +90,15 @@ UEBERSETZT = (
     'core/passwort_reset_complete.html',
     'core/passwort_reset_confirm.html',
     'core/passwort_reset_done.html',
-    'core/portal.html',
+    'core/_eig_nav.html',                  # Eigentümerportal v2 (Etappe 4)
+    'core/eig_abrechnungen.html',
+    'core/eig_base.html',
+    'core/eig_dokumente.html',
+    'core/eig_liegenschaft.html',
+    'core/eig_liegenschaften.html',
+    'core/eig_mitteilungen.html',
+    'core/eig_profil.html',
+    'core/eig_uebersicht.html',
     'core/portal_base.html',
     'core/portal_login.html',
     'core/postfach_form.html',
@@ -194,6 +204,7 @@ UEBERSETZT = (
     'fw/mahnlauf_trockenlauf.html',
     'fw/mahnstufen.html',
     'fw/zahlungsfreigabe.html',
+    'fw/auszahlungsfreigaben.html',  # Vier-Augen-Prinzip für Auszahlungen (Etappe 4)
     'fw/mahnwesen.html',
     'fw/mandat_abrechnung.html',
     'fw/mandat_detail.html',

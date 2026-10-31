@@ -25,12 +25,38 @@ deshalb Pflicht, nicht Dokumentation.
 from decimal import Decimal
 
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist
 from django.utils.translation import gettext_lazy as _
 
 
 class UnbekannteFunktion(KeyError):
     """Ein Funktionsschlüssel, der nicht im Katalog steht."""
+
+
+class FunktionGesperrt(PermissionError):
+    """Die Funktion ist im Abonnement dieser Verwaltung nicht freigeschaltet.
+
+    Wird von Diensten geworfen, die auch ohne Oberfläche laufen (Versand,
+    Hintergrundläufe). Die Oberfläche fängt sie in `abo.middleware` und zeigt
+    die Sperrseite mit dem Weg zum Upgrade statt einer 403 ohne Erklärung.
+    """
+
+    def __init__(self, schluessel):
+        self.schluessel = schluessel
+        super().__init__(f'Funktion {schluessel!r} ist nicht freigeschaltet.')
+
+
+class GrenzeErreicht(Exception):
+    """Eine Mengengrenze verhindert das Anlegen eines NEUEN Datensatzes.
+
+    Bestehende Datensätze bleiben davon unberührt: Die Grenze begrenzt das
+    Anlegen, nie das Lesen (docs/PHASE-3-ENTITLEMENTS.md §2 B).
+    """
+
+    def __init__(self, was, grenze):
+        self.was = was
+        self.grenze = grenze
+        super().__init__(f'Grenze für {was!r} erreicht: {grenze}.')
 
 
 # ---------------------------------------------------------------------------
@@ -47,11 +73,21 @@ FUNKTIONEN = {
     'nebenkostenlauf':      _('Nebenkostenabrechnung als geführter Lauf'),
     'vor_ort':              _('Vor-Ort-Modus für Abnahme und Besichtigung'),
     'mieterportal':         _('Portalzugang für die Mieterschaft'),
+    # Auskunft und Datenübergabe gehören in jede Stufe (DSG: Auskunftsrecht;
+    # MARKT.md §7: «Alle Daten lesbar und exportierbar»). Der Schlüssel steht im
+    # Katalog, damit die Sperrtabelle ihn kennt, nicht damit er sperrt.
+    'datenexport':          _('Datenexport (Buchungsjournal, Mandatspaket, Auskunft)'),
 
     # ab Stufe «team»
     'faelle':               _('Fallmaschine: Vorgänge mit Schritten und Fristen'),
     'zulauf':               _('Posteingang mit Zuordnungsvorschlag'),
     'eigentuemerportal':    _('Portalzugang für die Eigentümerschaft'),
+    # Zuschnitt der drei folgenden ist VORLÄUFIG: Sie liegen in «team», weil
+    # das die Stufe ist, die heute jede Verwaltung hat. Wohin sie gehören, ist
+    # eine Entscheidung des Betreibers (Bericht, Fachpunkt 1).
+    'betreibung':           _('Betreibung: Rechtsöffnung, Forderungen, Kosten'),
+    'datenimport':          _('Datenimport (Stammdaten und Salden aus anderen Programmen)'),
+    'stweg':                _('Stockwerkeigentum: Versammlung, Beschlüsse, Fonds, Abrechnung'),
 
     # ab Stufe «professional»
     'mandatsrentabilitaet': _('Honorarertrag gegen erfassten Aufwand'),
@@ -61,9 +97,9 @@ FUNKTIONEN = {
 # Zubuchbare Module. Stehen bewusst getrennt: Sie hängen nicht an der Stufe,
 # sondern werden einzeln gebucht (Vorgabe Phase 3).
 MODULE = {
-    'signatur':             'Digitale Unterschrift',
-    'belegerkennung':       'OCR- und KI-Dokumentenerkennung',
-    'reporting_erweitert':  'Eigene Auswertungen und Exportvorlagen',
+    'signatur':             _('Digitale Unterschrift'),
+    'belegerkennung':       _('OCR- und KI-Dokumentenerkennung'),
+    'reporting_erweitert':  _('Eigene Auswertungen und Exportvorlagen'),
 }
 
 # ---------------------------------------------------------------------------
@@ -82,8 +118,9 @@ MODULE = {
 # ---------------------------------------------------------------------------
 _AUFBAUEND = (
     ('start',        ('akten', 'dokumente', 'monatslauf', 'fristenwaechter',
-                      'nebenkostenlauf', 'vor_ort', 'mieterportal')),
-    ('team',         ('faelle', 'zulauf', 'eigentuemerportal')),
+                      'nebenkostenlauf', 'vor_ort', 'mieterportal', 'datenexport')),
+    ('team',         ('faelle', 'zulauf', 'eigentuemerportal',
+                      'betreibung', 'datenimport', 'stweg')),
     ('professional', ('mandatsrentabilitaet', 'schnittstellen')),
     # Enterprise unterscheidet sich über Grenzen und Betreuung, nicht über
     # Funktionen.
@@ -155,26 +192,55 @@ SUPPORT = {
     'enterprise':   _('Support mit SLA, Onboarding und Datenimport inklusive'),
 }
 
-#: Bis Phase 3 gilt diese Stufe für jede Verwaltung. Über die Einstellungen
-#: übersteuerbar, damit die Sperrpfade überhaupt testbar sind.
+#: Diese Stufe gilt für eine Verwaltung ohne gespeicherte Stufe (Stub-Objekte in
+#: Tests, Organisation ohne `abo_plan`). Über die Einstellungen übersteuerbar,
+#: damit die Sperrpfade testbar sind, ohne eine Organisation umzubauen.
 VORGABE_STUFE = 'team'
 
+#: Zahlungszustände einer Verwaltung (abo.Abonnement.zustand).
+ZUSTAND_AKTIV = 'aktiv'
+ZUSTAND_MAHNUNG = 'mahnung'
+ZUSTAND_LESEMODUS = 'lesemodus'
 
-def stufe_von(organisation):
-    """Die Abostufe einer Verwaltung.
 
-    **Bis Phase 3 fest hinterlegt.** Genau diese Funktion wird dort durch den
-    Zugriff auf die echten Abodaten ersetzt; alles andere in diesem Modul und
-    alle Aufrufer bleiben unverändert.
+def abonnement_von(organisation):
+    """Die Abonnement-Zeile der Verwaltung, oder `None`.
+
+    `None` heisst «nicht verwaltet»: Organisationen, die vor der
+    Funktionsfreigabe entstanden oder ausserhalb des Onboardings angelegt
+    wurden, haben keine Zeile und werden nicht eingeschränkt — weder bei
+    Modulen noch bei Mengen noch im Zahlungszustand. Das ist die sichere
+    Richtung für Bestand, und sie ist an dieser einen Stelle festgelegt.
     """
     if organisation is None:
         return None
-    stufe = getattr(settings, 'SWISSIMMO_VORGABE_STUFE', VORGABE_STUFE)
+    try:
+        return organisation.abonnement
+    except (ObjectDoesNotExist, AttributeError):
+        return None
+
+
+def _frei(organisation):
+    """Bestandsschutz oder nicht verwaltet: nichts wird eingeschränkt."""
+    abo = abonnement_von(organisation)
+    return abo is None or abo.uneingeschraenkt
+
+
+def stufe_von(organisation):
+    """Die Abostufe einer Verwaltung — die EINE Stelle, die sie bestimmt.
+
+    Quelle ist `Organisation.abo_plan`. Die Einstellung überschreibt sie
+    (nur für Tests und Notfälle); fehlt beides, gilt `VORGABE_STUFE`.
+    """
+    if organisation is None:
+        return None
+    stufe = getattr(settings, 'SWISSIMMO_VORGABE_STUFE', None) \
+        or getattr(organisation, 'abo_plan', None) or VORGABE_STUFE
     if stufe not in STUFEN:
         # Ohne diese Prüfung käme weiter unten ein nacktes `KeyError('premium')`
-        # heraus — ohne Hinweis, woher der Wert stammt. Ab Phase 3 liefert diese
-        # Funktion echte Abodaten; eine umbenannte oder abgelaufene Stufe ist
-        # dann ein realistischer Fall und darf nicht als Rätsel ankommen.
+        # heraus — ohne Hinweis, woher der Wert stammt. Eine umbenannte oder
+        # abgelaufene Stufe ist mit echten Abodaten ein realistischer Fall und
+        # darf nicht als Rätsel ankommen.
         raise ImproperlyConfigured(
             f'{stufe!r} ist keine bekannte Abostufe. '
             f'Bekannt: {sorted(STUFEN)}.')
@@ -190,24 +256,49 @@ def hat_funktion(organisation, schluessel):
 
     Ohne Organisation (anonym, oder Kontext noch nicht gesetzt) ist die Antwort
     `False`. Das ist die sichere Richtung: im Zweifel nicht freigeben.
+
+    Freigeschaltet ist eine Funktion durch die Stufe, durch eine Zubuchung
+    (`Abonnement.zusatzmodule`) oder durch Bestandsschutz. Die Zahlungssperre
+    (Lesemodus) ist KEINE Funktionsfrage und steht in `darf_schreiben`.
     """
-    if schluessel in MODULE:
-        return _hat_modul(organisation, schluessel)
-    if schluessel not in FUNKTIONEN:
+    if schluessel not in FUNKTIONEN and schluessel not in MODULE:
         raise UnbekannteFunktion(
             f'{schluessel!r} steht weder in FUNKTIONEN noch in MODULE. '
             f'Neue Funktionen gehören in den Katalog in core/funktionen.py.')
+    if organisation is None:
+        return False
+    abo = abonnement_von(organisation)
+    if abo is not None and abo.uneingeschraenkt:
+        return True
+    if schluessel in MODULE:
+        # Zubuchbar, hängt nicht an der Stufe. Ohne Abonnement-Zeile offen.
+        return abo is None or schluessel in (abo.zusatzmodule or [])
     stufe = stufe_von(organisation)
     if stufe is None:
         return False
-    return schluessel in STUFEN[stufe]
+    return schluessel in STUFEN[stufe] or (
+        abo is not None and schluessel in (abo.zusatzmodule or []))
 
 
-def _hat_modul(organisation, schluessel):
-    """Zubuchbares Modul. Bis Phase 3 sind alle Module aktiv."""
-    if organisation is None:
-        return False
-    return True
+def zustand_von(organisation):
+    """Zahlungszustand: 'aktiv', 'mahnung' oder 'lesemodus'. Ohne Zeile: aktiv."""
+    abo = abonnement_von(organisation)
+    return abo.zustand if abo is not None else ZUSTAND_AKTIV
+
+
+def darf_schreiben(organisation):
+    """False im Lesemodus (Zahlung lange überfällig). Lesen und Export bleiben."""
+    return zustand_von(organisation) != ZUSTAND_LESEMODUS
+
+
+def hintergrund_erlaubt(organisation):
+    """Dürfen Läufe und Versand im Namen dieser Verwaltung laufen?
+
+    Ein Mahnlauf, der nach dem Zahlungsausfall weiterläuft, verschickt Post im
+    Namen einer Verwaltung, die dafür nicht mehr zahlt (MARKT.md §7: «Keine
+    Hintergrundläufe, kein Versand»). Im Lesemodus ist die Antwort `False`.
+    """
+    return darf_schreiben(organisation)
 
 
 def grenze(organisation, was):
@@ -219,6 +310,9 @@ def grenze(organisation, was):
     aus demselben Grund wie in `hat_funktion`: Ohne Organisation gäbe ein
     Tippfehler sonst schweigend 0 zurück, und 0 sieht aus wie eine echte
     Grenze. Gesperrt wäre dann alles, und niemand wüsste warum.
+
+    Das ist die Grenze der Stufe (im Grundpreis enthalten). Wo das ANLEGEN
+    endet, sagt `anlege_grenze`.
     """
     if was not in GRENZ_ARTEN:
         raise UnbekannteFunktion(
@@ -227,6 +321,27 @@ def grenze(organisation, was):
     stufe = stufe_von(organisation)
     if stufe is None:
         return 0
+    return GRENZEN[stufe][was]
+
+
+def anlege_grenze(organisation, was):
+    """Höchstzahl, bis zu der NEUE Datensätze angelegt werden dürfen, oder `None`.
+
+    Bei Einheiten ist das der Deckel der Stufe (Grundumfang plus Zusatzpakete,
+    die der Abrechnungslauf verrechnet), bei Nutzern die Grenze der Stufe.
+    `None` heisst: keine Grenze — auch bei Bestandsschutz und nicht verwalteten
+    Organisationen. Die Grenze begrenzt nur das Anlegen; was schon da ist,
+    bleibt les- und exportierbar.
+    """
+    if was not in GRENZ_ARTEN:
+        raise UnbekannteFunktion(
+            f'{was!r} ist keine bekannte Mengengrenze. '
+            f'Bekannt: {sorted(GRENZ_ARTEN)}')
+    if organisation is None or _frei(organisation):
+        return None
+    stufe = stufe_von(organisation)
+    if was == 'einheiten':
+        return PREISE[stufe]['deckel']
     return GRENZEN[stufe][was]
 
 

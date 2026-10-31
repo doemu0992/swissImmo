@@ -45,7 +45,7 @@ def _organisation_fuer(benutzer, session=None):
     # Weg an der Isolation vorbei.
     mitgliedschaften = list(
         Mitgliedschaft.alle_organisationen.filter(benutzer=benutzer)
-        .select_related('organisation').order_by('pk')[:5])
+        .select_related('organisation', 'organisation__abonnement').order_by('pk')[:5])
 
     if mitgliedschaften:
         if len(mitgliedschaften) > 1 and session is not None:
@@ -62,7 +62,7 @@ def _organisation_fuer(benutzer, session=None):
     # Portal-Konten: über den Datensatz, an dem sie hängen.
     profil = getattr(benutzer, 'eigentuemer_profil', None)
     if profil is not None:
-        lg = profil.liegenschaften.select_related('organisation').first()
+        lg = profil.liegenschaften.select_related('organisation', 'organisation__abonnement').first()
         if lg is not None:
             return lg.organisation
 
@@ -75,7 +75,8 @@ def _organisation_fuer(benutzer, session=None):
         # Weg an der Isolation vorbei gedacht ist.
         vertrag = (Mietvertrag.alle_organisationen
                    .filter(mieter=profil)
-                   .select_related('einheit__liegenschaft__organisation')
+                   .select_related('einheit__liegenschaft__organisation',
+                                   'einheit__liegenschaft__organisation__abonnement')
                    .order_by('-id').first())
         if vertrag is not None and vertrag.einheit_id:
             return vertrag.einheit.liegenschaft.organisation

@@ -153,11 +153,43 @@ Datei (zu), Rechnung in mehrere Rechnungen zerlegen (offen, siehe unten).
 * `aktionen.fw_bankbewegung_zuordnen` (Art `kreditor`) verbucht eine **bereits ausgeführte**
   Bankbelastung auf eine Rechnung. Das ist die Nachführung eines Geldabflusses, den die Bank
   schon getätigt hat, keine Auslösung; sie bleibt ohne Freigabe.
-* Eigentümerauszahlung (`eigentuemer_kontokorrent.buche_auszahlung`), Rückerstattung von
-  Mieterguthaben (`fw_guthaben_rueckerstatten`) und Kautionsrückzahlung sind Buchungen ohne
-  Zahlungsdatei und haben kein Vier-Augen-Prinzip (nur Verwaltung/Inhaber). Ob sie ab
-  einem Betrag eine zweite Person brauchen, ist ein Fachentscheid.
-* Mehrere kleine Rechnungen desselben Lieferanten, je unter dem Limit, werden einzeln
-  freigabefrei bezahlt. Eine Summenregel je Lieferant und Lauf ist nicht gebaut.
+* Mehrere kleine Rechnungen desselben Lieferanten, die nicht im selben Zahllauf stehen,
+  sondern einzeln über «Bezahlen» gezahlt werden, zählen nicht zusammen (die Summenregel gilt
+  je Zahllauf, siehe unten). Ob eine Tagessumme je Lieferant gelten soll, ist ein Fachentscheid.
 * Wer in der Verwaltung allein arbeitet (nur ein Inhaber), kann Zahlungen ab dem Limit
   nicht auslösen: Er stellt das Limit selbst höher oder ein zweites Konto wird angelegt.
+
+### Auszahlungen ohne Rechnung (Etappe 4)
+
+Eigentümerauszahlung, Rückerstattung von Mieterguthaben (auch Rücküberweisung eines
+Fremdeingangs) und Rückzahlung einer Kaution (auch aus der Schlussabrechnung) brauchen ab
+derselben Limite die Freigabe einer zweiten Person. Es gibt keine Rechnung, an der die Freigabe
+hängen könnte; der Antrag ist eine Zeile `finance.AuszahlungsFreigabe` (ein offener je
+Auszahlung). Ablauf wie bei Kreditoren: Wer auszahlen will, löst aus und legt damit vor, nichts
+wird gebucht; eine zweite Person (Inhaber/Verwalter, nie der Vorleger) gibt unter Einstellungen →
+Zahlungsfreigabe → Auszahlungen frei und bestätigt den Betrag und die IBAN, die sie sah; die
+Auszahlung wird erneut ausgelöst. **Die Freigabe wird in der Transaktion der Buchung verbraucht**
+(`auszahlung_pruefen`): eine Freigabe, eine Auszahlung.
+
+| Pfad | Stelle (Prüfung steht im Dienst) | Art | Empfänger-IBAN |
+|---|---|---|---|
+| Eigentümerauszahlung | `eigentuemer_kontokorrent.buche_auszahlung` | `eigentuemer` | `Eigentuemer.iban` |
+| Mieterguthaben zurück | `zahlungsklaerung.zurueckueberweisen` | `guthaben` | `Mieter.iban` |
+| Fremdeingang zurück | dieselbe Funktion | `fremdeingang` | leer (keine bekannt) |
+| Kaution zurück | `kautionen.fw_kaution_aktion` (Rückzahlung an den Mieter) | `kaution` | `Mieter.iban` |
+| Schlussabrechnung | `detailseiten.fw_schlussabrechnung` (Kaution + Guthaben als Summe) | `schlussabrechnung` | `Mieter.iban` |
+
+Massgebend ist der Betrag, der an den Empfänger geht (bei der Kaution die Rückzahlung, nicht der
+Einbehalt). Ändert sich Betrag oder IBAN nach der Freigabe, gilt sie nicht. Es gibt keine
+Zahlungsdatei für diese Wege; Commands buchen keine dieser Auszahlungen (geprüft:
+`grep` auf `buche_auszahlung`, `zurueckueberweisen`, `EigentuemerAuszahlung`, `2010 an 1020`).
+
+### Summenregel je Kreditor und Zahllauf (Etappe 4)
+
+Die Rechnungen desselben Kreditors in einem Zahllauf (Zahlungsdatei und Sammelbestätigung) zählen
+zusammen. Erreicht die Summe die Limite, braucht jede dieser Rechnungen die Freigabe (derselbe
+Weg wie sonst), auch wenn sie einzeln darunter liegt. «Derselbe Kreditor» heisst: derselbe
+normalisierte Lieferantenname (`finance.lieferanten.lieferant_key`) ODER dieselbe IBAN, verkettet.
+Die Meldung nennt die Rechnungen, die Summe und die Limite; die Zahllauf-Seite zeigt es vorab.
+`KreditorenRechnung.zahlung_gruppensumme` hält die Summe fest, damit Freigeben im Kreditorenfenster
+möglich ist; hebt der Inhaber die Limite über die Summe an, fällt die Sperre von selbst.

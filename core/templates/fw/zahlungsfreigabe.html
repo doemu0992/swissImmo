@@ -25,6 +25,13 @@ Das Limit steht an der Organisation; ändern darf es nur der Inhaber
     <div class="fw-ht">{% trans "Rechnungen ab diesem Betrag werden erst bezahlt oder in eine Zahlungsdatei genommen, wenn ein Verwalter oder der Inhaber die Zahlung freigegeben hat. Wer die Zahlung vorgelegt hat, darf sie nicht selbst freigeben. Die Freigabe gilt nur für den Betrag und die IBAN, die freigegeben wurden." %}</div>
 </div>
 
+<div class="fw-hinweis info max-w-3xl">
+    <span class="fw-hi">{% zeichen 'geld' %}</span>
+    <div class="fw-ht">{% trans "Dieselbe Limite gilt für Eigentümerauszahlungen, die Rückerstattung von Mieterguthaben und Kautionsrückzahlungen. Rechnungen desselben Kreditors in einem Zahllauf zählen zusammen." %}
+        {% if darf_auszahlungen %}<a href="/neu/einstellungen/zahlungsfreigabe/auszahlungen/" class="fw-link">{% blocktrans count n=offene_auszahlungen %}{{ n }} Auszahlung wartet auf Freigabe{% plural %}{{ n }} Auszahlungen warten auf Freigabe{% endblocktrans %}</a>
+        {% else %}<b>{% blocktrans count n=offene_auszahlungen %}{{ n }} Auszahlung wartet auf Freigabe{% plural %}{{ n }} Auszahlungen warten auf Freigabe{% endblocktrans %}</b>{% endif %}</div>
+</div>
+
 <form method="post" action="/neu/einstellungen/zahlungsfreigabe/speichern/" class="max-w-3xl">
     {% csrf_token %}
     <div class="fw-card">

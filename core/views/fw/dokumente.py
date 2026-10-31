@@ -78,7 +78,7 @@ def fw_dokumente(request):
         eintraege.append({
             'name': d.titel or 'Dokument', 'kat': d.kategorie or 'sonstiges', 'datum': d.datum,
             'url': d.datei.url, 'kontext': kontext, 'quelle': 'Objektablage',
-            'id': d.id, 'loeschbar': True,
+            'id': d.id, 'loeschbar': True, 'portal': d.im_portal_sichtbar,
         })
 
     # Kategorien für Chips (aus vorhandenen)

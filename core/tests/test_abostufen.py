@@ -38,6 +38,11 @@ FREIGABE_VOR_DEM_UMBAU = frozenset({
     'nebenkostenlauf', 'vor_ort', 'eigentuemerportal', 'mieterportal',
 })
 
+#: Seit der Funktionsfreigabe (Etappe 4) tragen vier weitere Funktionen einen Schlüssel, die vorher
+#: keinen hatten, weil nichts sie abfragte. Sie liegen in der Vorgabestufe «team»: Eine Verwaltung
+#: ohne gewählte Stufe verliert dadurch nichts. Der Test hält fest, dass das die EINZIGEN Neuen sind.
+NEUE_SCHLUESSEL_ETAPPE_4 = frozenset({'datenexport', 'betreibung', 'datenimport', 'stweg'})
+
 
 class _Org:
     """Genügt für `hat_funktion` — braucht kein echtes Modell."""
@@ -46,8 +51,9 @@ class _Org:
 class VerhaltensneutralTests(SimpleTestCase):
 
     def test_vorgabe_gibt_genau_die_zehn_schluessel_von_heute_frei(self):
+        """Die zehn von damals, plus genau die vier neuen Modulschlüssel (siehe oben)."""
         frei = {k for k in f.FUNKTIONEN if f.hat_funktion(_Org(), k)}
-        self.assertEqual(frei, FREIGABE_VOR_DEM_UMBAU)
+        self.assertEqual(frei, FREIGABE_VOR_DEM_UMBAU | NEUE_SCHLUESSEL_ETAPPE_4)
 
     def test_vorgabestufe_ist_team(self):
         self.assertEqual(f.VORGABE_STUFE, 'team')

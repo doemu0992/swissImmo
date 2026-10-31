@@ -77,13 +77,17 @@ from core.views.dashboard_view import update_market_data_view
 # 2b. Eigentümer-Portal & Login-Weiche
 from core.views.fw.kreditoren import (fw_kreditor_zahlung_vorlegen, fw_kreditor_zahlung_freigeben,
                                       fw_kreditor_zahlung_zuruecknehmen)
-from core.views.fw.zahlungsfreigabe import fw_zahlungsfreigabe, fw_zahlungsfreigabe_speichern
+from core.views.fw.zahlungsfreigabe import (fw_auszahlungsfreigabe_freigeben, fw_auszahlungsfreigabe_zuruecknehmen,
+                                            fw_auszahlungsfreigaben, fw_zahlungsfreigabe, fw_zahlungsfreigabe_speichern)
 from core.views.zweifaktor import (zweifaktor_login, zweifaktor_bestaetigen,
                                   zweifaktor_uebersicht, zweifaktor_einrichten,
                                   zweifaktor_codes_neu, zweifaktor_aus,
                                   zweifaktor_pflicht_setzen)
 from core.views.postfach import (postfach_liste, postfach_form, postfach_test,
                                  postfach_loeschen)
+from core.views.eigentuemer_portal import (portal_liegenschaften, portal_liegenschaft, portal_abrechnungen,
+                                           portal_abrechnung_pdf, portal_dokumente, portal_mitteilungen,
+                                           portal_profil, fw_ablage_portal_toggle)
 from core.views.portal import (portal_view, nach_login_view, portal_dokument_download, portal_report_pdf, portal_freigabe,
                                 portal_steuerauszug_pdf, portal_kontokorrent_pdf,
                                 mieter_portal_view, mieter_dokument_download, mieter_schaden_melden, mieter_rechnung_qr,
@@ -96,6 +100,9 @@ from core.views.handwerker_portal import handwerker_auftrag, handwerker_auftrag_
 from core.views.fw.schaeden import fw_auftrag_link
 from core.views.fw.mietzinsmodell_pruefen import fw_mietzinsmodell_pruefen
 from core.views.fw.archiv import fw_person_auskunft, fw_archiv, fw_archivieren, fw_wiederherstellen, fw_archiv_endgueltig_loeschen
+
+# Abonnement: Rechnung als PDF mit QR-Einzahlungsschein (Funktionsfreigabe, Etappe 4)
+from core.views.fw.profil import fw_abo_rechnung_pdf
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
 from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_zustaendig, fw_fallschritt_erledigen,
@@ -396,6 +403,9 @@ urlpatterns = [
     path('neu/kreditoren/<int:pk>/zahlung-zuruecknehmen/', fw_kreditor_zahlung_zuruecknehmen, name='fw_kreditor_zahlung_zuruecknehmen'),
     path('neu/einstellungen/zahlungsfreigabe/', fw_zahlungsfreigabe, name='fw_zahlungsfreigabe'),
     path('neu/einstellungen/zahlungsfreigabe/speichern/', fw_zahlungsfreigabe_speichern, name='fw_zahlungsfreigabe_speichern'),
+    path('neu/einstellungen/zahlungsfreigabe/auszahlungen/', fw_auszahlungsfreigaben, name='fw_auszahlungsfreigaben'),
+    path('neu/einstellungen/zahlungsfreigabe/auszahlungen/<int:pk>/freigeben/', fw_auszahlungsfreigabe_freigeben, name='fw_auszahlungsfreigabe_freigeben'),
+    path('neu/einstellungen/zahlungsfreigabe/auszahlungen/<int:pk>/zuruecknehmen/', fw_auszahlungsfreigabe_zuruecknehmen, name='fw_auszahlungsfreigabe_zuruecknehmen'),
     # Einstellungen «Daten»: Import für Wechselkunden, Mandatsexport, Buchungsjournal (FUNK-09/13)
     path('neu/einstellungen/daten/', fw_daten, name='fw_daten'),
     path('neu/einstellungen/daten/import/', fw_daten_import, name='fw_daten_import'),
@@ -623,6 +633,7 @@ urlpatterns = [
     path('neu/integrationen/portal-token/', fw_integration_portal_token, name='fw_integration_portal_token'),
     path('neu/vermarktung/feed.json', fw_vermarktung_feed, name='fw_vermarktung_feed'),
     path('neu/abonnement/', fw_abonnemente, name='fw_abonnemente'),
+    path('neu/abonnement/rechnung/<int:pk>/pdf/', fw_abo_rechnung_pdf, name='fw_abo_rechnung_pdf'),
     path('neu/kommunikation/', fw_kommunikation, name='fw_kommunikation'),
     path('neu/kommunikation/senden/', fw_kommunikation_senden, name='fw_kommunikation_senden'),
     path('neu/kommunikation/serienbrief/', fw_serienbrief_pdf, name='fw_serienbrief_pdf'),
@@ -672,6 +683,15 @@ urlpatterns = [
     # --- EIGENTÜMER-PORTAL (read-only, nur eigener Eigentuemer) ---
     path('portal/stweg/', include('stweg.portal_urls')),
     path('portal/', portal_view, name='portal'),
+    # Eigentümerportal v2 (core/views/eigentuemer_portal.py)
+    path('portal/liegenschaften/', portal_liegenschaften, name='portal_liegenschaften'),
+    path('portal/liegenschaften/<int:pk>/', portal_liegenschaft, name='portal_liegenschaft'),
+    path('portal/abrechnungen/', portal_abrechnungen, name='portal_abrechnungen'),
+    path('portal/abrechnungen/pdf/', portal_abrechnung_pdf, name='portal_abrechnung_pdf'),
+    path('portal/dokumente/', portal_dokumente, name='portal_dokumente'),
+    path('portal/mitteilungen/', portal_mitteilungen, name='portal_mitteilungen'),
+    path('portal/profil/', portal_profil, name='portal_profil'),
+    path('neu/dokumente/<int:pk>/eigentuemerportal/', fw_ablage_portal_toggle, name='fw_ablage_portal_toggle'),
     path('portal/dokument/<int:pk>/', portal_dokument_download, name='portal_dokument_download'),
     path('portal/report/', portal_report_pdf, name='portal_report_pdf'),
     path('portal/steuerauszug/', portal_steuerauszug_pdf, name='portal_steuerauszug_pdf'),

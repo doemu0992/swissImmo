@@ -1,0 +1,33 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Plan wechseln" %} — immoswiss{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <h1>{% blocktrans with name=plan_name %}Wechsel auf «{{ name }}»{% endblocktrans %}</h1>
+        <p>{% trans "Bitte prüfen, was sich damit schliesst. Ihre Daten bleiben in jedem Fall erhalten." %}</p>
+    </div>
+</div>
+
+<div class="fw-card">
+    {% if schliesst %}
+    <div class="fw-kopf"><h2>{% trans "Diese Funktionen werden gesperrt" %}</h2></div>
+    {% for name in schliesst %}
+    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ name }}</div></div></div>
+    {% endfor %}
+    <p class="fw-hilfe p-4">{% trans "Gesperrte Funktionen bleiben sichtbar. Alle bisherigen Daten bleiben lesbar und exportierbar; es lässt sich dort nur nichts Neues mehr erfassen. Mit einem höheren Plan ist alles wieder frei." %}</p>
+    {% endif %}
+    {% if bestand_ueber %}
+    <div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">
+        {% blocktrans with n=bestand_ueber deckel=deckel %}Sie führen {{ n }} Einheiten, diese Stufe fasst höchstens {{ deckel }}. Die vorhandenen Einheiten bleiben vollständig erhalten; es lassen sich nur keine neuen anlegen.{% endblocktrans %}
+    </div></div>
+    {% endif %}
+    <form method="post" class="p-4 flex gap-3 flex-wrap">{% csrf_token %}
+        <input type="hidden" name="plan" value="{{ plan }}">
+        {% if jaehrlich %}<input type="hidden" name="jaehrlich" value="on">{% endif %}
+        <input type="hidden" name="bestaetigt" value="1">
+        <button type="submit" class="fw-btn fw-primary">{% trans "Plan wechseln" %}</button>
+        <a class="fw-btn fw-leise" href="/neu/abonnement/">{% trans "Abbrechen" %}</a>
+    </form>
+</div>
+{% endblock %}

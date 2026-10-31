@@ -192,6 +192,12 @@ def fw_benutzer_form(request, pk=None):
                 return redirect(request.path)
             ziel = User(username=username)
         pw = P.get('passwort', '').strip()
+        if organisation is not None and not (
+                ziel.pk and Mitgliedschaft.objects.filter(benutzer=ziel, organisation=organisation).exists()):
+            # Neue Mitgliedschaft: die Nutzergrenze des Abonnements VOR dem Speichern prüfen, sonst bliebe
+            # ein Konto ohne Mitgliedschaft zurück. Wirft GrenzeErreicht (Sperrseite), schreibt nichts.
+            from abo.dienst import pruefe_anlegen
+            pruefe_anlegen(organisation.pk, 'nutzer')
         if nur_mitgliedschaft:
             # Konto mit weiterer Mitgliedschaft: Passwort, E-Mail, Name und
             # Aktiv-Flag gehoeren der Person und ihren anderen Verwaltungen.

@@ -124,6 +124,22 @@ AUSNAHMEN = {
      'gesetzt von `finance.freigabe`: der freigegebene Betrag; eine Änderung danach sperrt wieder',
     'finance.KreditorenRechnung.zahlung_freigabe_iban':
      'gesetzt von `finance.freigabe`: die freigegebene IBAN; eine Änderung danach sperrt wieder',
+    'finance.KreditorenRechnung.zahlung_gruppensumme':
+     'gesetzt von `finance.freigabe.vorlegen`, wenn die Summenregel des Zahllaufs die Vorlage auslöst (Etappe 4), nie von Hand',
+    'finance.AuszahlungsFreigabe.art':
+     'gesetzt von `finance.freigabe.auszahlung_vorlegen` aus dem Auszahlungsweg (Eigentümer, Guthaben, Kaution), nie von Hand',
+    'finance.AuszahlungsFreigabe.bezug_id':
+     'gesetzt von `finance.freigabe.auszahlung_vorlegen`: Primärschlüssel des Gegenstands der Auszahlung, nie von Hand',
+    'finance.AuszahlungsFreigabe.bezug_text':
+     'gesetzt von `finance.freigabe.auszahlung_vorlegen`: Name des Empfängers zur Anzeige, nie von Hand',
+    'finance.AuszahlungsFreigabe.betrag':
+     'gesetzt von `finance.freigabe.auszahlung_vorlegen`: der Betrag der ausgelösten Auszahlung; die Freigabe bestätigt ihn nur',
+    'finance.AuszahlungsFreigabe.iban':
+     'gesetzt von `finance.freigabe.auszahlung_vorlegen` aus dem Empfänger der Auszahlung, nie von Hand',
+    'finance.AuszahlungsFreigabe.freigabe_betrag':
+     'gesetzt von `finance.freigabe.auszahlung_freigeben`: der freigegebene Betrag; eine Änderung danach sperrt wieder',
+    'finance.AuszahlungsFreigabe.freigabe_iban':
+     'gesetzt von `finance.freigabe.auszahlung_freigeben`: die freigegebene IBAN; eine Änderung danach sperrt wieder',
     'core.Archiveintrag.vorher_status':
      'gesetzt von `core.services.archiv.archivieren`: Status vor dem Archivieren, für das Wiederherstellen',
     'rentals.Dokument.vorgaenger':

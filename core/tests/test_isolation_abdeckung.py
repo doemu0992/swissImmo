@@ -59,7 +59,8 @@ class ErweiterterBestand(MandantenFixture):
     def _zusatz(self):
         from crm.models import MieterAdresse, ReferenzzinsStand
         from core.models import AktivitaetsLog, Archiveintrag, DatenExportEinstellung, DatenImportReferenz
-        from finance.models import (Abschreibung, Anlage, Bankbewegung, EigentuemerAuszahlung, Erneuerungsfonds,
+        from finance.models import (Abschreibung, Anlage, AuszahlungsFreigabe, Bankbewegung, EigentuemerAuszahlung,
+                                    Erneuerungsfonds,
                                     ErneuerungsfondsBewegung, Hypothek, Jahresabschluss, Kontoauszug,
                                     KreditorenZahlung, KreditorPosition, LieferantProfil, Mahnung,
                                     MietzinsKontrolle, NebenkostenBeleg, NebenkostenLernRegel, ZahlerZuordnung,
@@ -86,6 +87,8 @@ class ErweiterterBestand(MandantenFixture):
             organisation=org, kreditor=self.kreditor, betrag=Decimal('500')))
         self._neu('eigentuemerauszahlung', lambda: EigentuemerAuszahlung.objects.create(
             organisation=org, eigentuemer=self.eigentuemer, betrag=Decimal('800')))
+        self._neu('auszahlungsfreigabe', lambda: AuszahlungsFreigabe.objects.create(
+            organisation=org, art='eigentuemer', bezug_id=self.eigentuemer.pk, betrag=Decimal('8000')))
         self._neu('bankbewegung', lambda: Bankbewegung.objects.create(
             organisation=org, konto=self.konto_soll, datum=heute, betrag=Decimal('100')))
         self._neu('kontoauszug', lambda: Kontoauszug.objects.create(organisation=org, konto=self.konto_soll))
@@ -108,6 +111,10 @@ class ErweiterterBestand(MandantenFixture):
             organisation=org, name_norm=f'mieter {k.lower()}', vertrag=self.vertrag))
         self._neu('nebenkostenlernregel', lambda: NebenkostenLernRegel.objects.create(
             organisation=org, suchwort=f'hauswart{k.lower()}', kategorie_zuweisung='hauswart'))
+
+        # --- Abonnement (Funktionsfreigabe) --------------------------------------------------------------
+        from abo.models import Abonnement
+        self._neu('abonnement', lambda: Abonnement.alle_organisationen.create(organisation=org))
 
         # --- Personen und Verträge ------------------------------------------------------------------------
         self._neu('mieteradresse', lambda: MieterAdresse.objects.create(

@@ -41,6 +41,12 @@ def docuseal_konfiguriert():
 @nur_deutsch
 def docuseal_senden(vertrag):
     """Sendet den Vertrag zur Unterschrift. Returns (ok: bool, meldung: str)."""
+    from core.funktionen import hat_funktion
+    if not hat_funktion(vertrag.organisation, 'signatur'):
+        # Modul «Digitale Unterschrift» nicht gebucht: nichts geht an DocuSeal.
+        # Bereits versandte Unterschriften laufen über den Webhook weiter zurück.
+        return (False, "Die digitale Unterschrift ist im Abonnement nicht enthalten. "
+                       "Unter Einstellungen > Abonnement lässt sie sich zubuchen.")
     api_key = getattr(settings, 'DOCUSEAL_API_KEY', None)
     if not api_key:
         return (False, "DocuSeal ist nicht konfiguriert (API-Key fehlt). "

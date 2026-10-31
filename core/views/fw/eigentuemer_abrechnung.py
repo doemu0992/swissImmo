@@ -253,6 +253,8 @@ def fw_eigentuemer_auszahlung(request, pk):
     from finance.booking import konto as _konto
     from core.auth import log_aktion
     from core.services.eigentuemer_kontokorrent import AuszahlungNichtMoeglich, buche_auszahlung
+    from core.views.fw.zahlungsfreigabe import auszahlung_gesperrt_melden
+    from finance.freigabe import AuszahlungGesperrt
     md = get_object_or_404(Eigentuemer, id=pk)
     if request.method != 'POST':
         return redirect('fw_eigentuemer_kontokorrent', pk=md.id)
@@ -279,6 +281,10 @@ def fw_eigentuemer_auszahlung(request, pk):
     try:
         buchung = buche_auszahlung(md, betrag, bank=bank, datum=datum, bemerkung=bemerkung,
                                    user=request.user, stand=request.POST.get('stand') or None)
+    except AuszahlungGesperrt as gesperrt:
+        # Vier-Augen-Prinzip: ab der Freigabelimite nichts gebucht, die Auszahlung ist vorgelegt.
+        auszahlung_gesperrt_melden(request, gesperrt)
+        return redirect('fw_eigentuemer_kontokorrent', pk=md.id)
     except (AuszahlungNichtMoeglich, PermissionError) as e:
         messages.error(request, '❌ ' + str(e))
         return redirect('fw_eigentuemer_kontokorrent', pk=md.id)

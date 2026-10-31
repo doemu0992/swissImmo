@@ -139,6 +139,7 @@ INSTALLED_APPS = [
     'mietprozess',  # Bewerber- & Mietprozesse
     'faelle',       # Fallmaschine (Phase 4a)
     'stweg',        # Stockwerkeigentum: Wertquoten, Fonds, Abrechnung
+    'abo',          # Abonnement, Funktionsfreigabe, Plattform-Rechnung
 
     # --- Standard Django ---
     'django.contrib.admin',
@@ -200,6 +201,10 @@ MIDDLEWARE = [
     # und darf erst greifen, wenn der Kontext gesetzt ist. Erzwingt die
     # Einrichtung des zweiten Faktors, wenn eine Verwaltung ihn verlangt.
     'core.middleware_zweifaktor.ZweiFaktorPflichtMiddleware',
+    # Nach dem Mandantenkontext und der Anmeldung: Sie braucht beides. Sperrt
+    # Module, die das Abonnement nicht enthält, und im Lesemodus (Zahlung lange
+    # überfällig) jeden Schreibweg. Siehe abo/middleware.py.
+    'abo.middleware.AboMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Nach der Meldungs-Schicht (sie legt Meldungen ab, die der Rücksprung zeigt).
@@ -230,6 +235,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'core.context_processors.fw_badges',
                 'core.navigation.fw_navigation',
+                'abo.kontext.abo_hinweis',
             ],
         },
     },
@@ -592,6 +598,35 @@ UNFOLD = {
             },
         ],
     },
+}
+
+# ==========================================
+# 10b. ABONNEMENT UND PLATTFORM-RECHNUNG
+# ==========================================
+# ALLES IN DIESEM BLOCK IST PLATZHALTER — VOM BETREIBER FESTZULEGEN.
+# Die Preise und Mengengrenzen der Stufen stehen in core/funktionen.py (eine
+# Quelle, D7); sie sind Einführungspreise ohne Kostenrechnung. Solange
+# ABO_PREISE_FESTGELEGT False ist, weist die Abo-Seite das aus und der
+# Abrechnungslauf (`manage.py abo_abrechnung`) stellt keine Rechnung aus.
+ABO_PREISE_FESTGELEGT = False
+# MWST auf Abo-Rechnungen: FACHPUNKT, nicht geraten. None = nicht festgelegt; die
+# Rechnung weist dann keine MWST aus und sagt das. Zahl in Prozent, z. B. Decimal('8.1').
+ABO_MWST_SATZ = None
+# Zahlungsfrist der Rechnung (Tage ab Rechnungsdatum), Beginn der Mahnung und
+# des Lesemodus (Tage NACH Fälligkeit). Vorschlag aus docs/MARKT.md §7:
+# Hinweis ab Tag 1, Lesemodus ab Tag 15.
+ABO_ZAHLUNGSFRIST_TAGE = 30
+ABO_MAHNUNG_NACH_TAGEN = 1
+ABO_LESEMODUS_NACH_TAGEN = 15
+# Rechnungssteller («Plattform») und Zahlungsempfänger der QR-Rechnung.
+ABO_RECHNUNGSSTELLER = {
+    'name': '',      # vom Betreiber festzulegen
+    'strasse': '',
+    'plz': '',
+    'ort': '',
+    'iban': '',      # QR-IBAN (Institut 30000–31999) für die QR-Referenz, sonst IBAN
+    'uid': '',       # MWST-/UID-Nummer, falls mehrwertsteuerpflichtig
+    'email': '',     # Absender der Zahlungserinnerung
 }
 
 # ==========================================

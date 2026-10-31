@@ -36142,3 +36142,844 @@ msgstr "Each column needs its own heading."
 
 msgid "Die Einstellungen für das Buchungsjournal sind gespeichert."
 msgstr "The settings for the accounting journal are saved."
+
+#: Eigentümerportal v2 (Etappe 4)
+msgid "Meine Eigentumseinheiten"
+msgstr "My owned units"
+
+msgid "Profil und Sprache"
+msgstr "Profile and language"
+
+msgid "Eigentümerportal — immoswiss"
+msgstr "Owner portal — immoswiss"
+
+msgid "immoswiss Eigentümerportal · Alle Angaben ohne Gewähr"
+msgstr "immoswiss owner portal · All information without guarantee"
+
+msgid "Mandat beendet"
+msgstr "Mandate ended"
+
+msgid "Das Mandat endete am %(datum)s."
+msgstr "The mandate ended on %(datum)s."
+
+msgid "Das Mandat wurde am %(datum)s archiviert."
+msgstr "The mandate was archived on %(datum)s."
+
+msgid ""
+"Ihre Unterlagen bleiben zur Einsicht. Änderungen und neue Anfragen sind über"
+" das Portal nicht mehr möglich."
+msgstr ""
+"Your documents remain available for viewing. Changes and new requests are no"
+" longer possible through the portal."
+
+msgid "Abrechnungen — Eigentümerportal"
+msgstr "Statements — Owner portal"
+
+msgid "Abrechnungen und Auszahlungen"
+msgstr "Statements and payouts"
+
+msgid "Eigentümerabrechnung je Jahr, Kontokorrent und Auszahlungen."
+msgstr "Owner statement per year, current account and payouts."
+
+msgid "Ertrag (alle Jahre)"
+msgstr "Income (all years)"
+
+msgid "Aufwand (alle Jahre)"
+msgstr "Expenses (all years)"
+
+msgid "Guthaben laut Kontokorrent"
+msgstr "Balance per current account"
+
+msgid "Der Auszahlungstermin wird von Ihrer Verwaltung festgelegt."
+msgstr "The payout date is set by your property manager."
+
+msgid "Eigentümerabrechnung je Jahr"
+msgstr "Owner statement per year"
+
+msgid "Keine Buchungen"
+msgstr "No bookings"
+
+msgid "Ertrag CHF %(e)s · Aufwand CHF %(a)s"
+msgstr "Income CHF %(e)s · Expenses CHF %(a)s"
+
+msgid "Ergebnis CHF %(s)s"
+msgstr "Result CHF %(s)s"
+
+msgid "Bisher wurde keine Auszahlung verbucht."
+msgstr "No payout has been booked so far."
+
+msgid "Keine offenen Posten. Alle Mieten sind bezahlt."
+msgstr "No open items. All rents are paid."
+
+msgid "Steuerauszug"
+msgstr "Tax statement"
+
+msgid "Liegenschaftsrechnung für die Steuererklärung."
+msgstr "Property accounts for your tax return."
+
+msgid "Dokumente — Eigentümerportal"
+msgstr "Documents — Owner portal"
+
+msgid ""
+"Unterlagen zu Ihren Liegenschaften, die Ihre Verwaltung für Sie freigegeben "
+"hat."
+msgstr ""
+"Documents about your properties that your property manager has released to "
+"you."
+
+msgid "Baujahr %(jahr)s"
+msgstr "Built %(jahr)s"
+
+msgid "Archivierte Liegenschaft"
+msgstr "Archived property"
+
+msgid "Archiviert am %(datum)s."
+msgstr "Archived on %(datum)s."
+
+msgid "Die Angaben sind nur noch zur Einsicht."
+msgstr "The information is now for viewing only."
+
+msgid "Soll-Nettomiete / Monat"
+msgstr "Target net rent / month"
+
+msgid "Objekte und Belegung"
+msgstr "Units and occupancy"
+
+msgid "%(n)s Zimmer"
+msgstr "%(n)s rooms"
+
+msgid "bis %(datum)s"
+msgstr "until %(datum)s"
+
+msgid "CHF %(netto)s netto · CHF %(brutto)s brutto pro Monat"
+msgstr "CHF %(netto)s net · CHF %(brutto)s gross per month"
+
+msgid "Keine Objekte erfasst"
+msgstr "No units recorded"
+
+msgid "Zu dieser Liegenschaft sind noch keine Objekte erfasst."
+msgstr "No units have been recorded for this property yet."
+
+msgid ""
+"Für diese Liegenschaft hat die Verwaltung noch keine Dokumente freigegeben."
+msgstr ""
+"Your property manager has not released any documents for this property yet."
+
+msgid "Liegenschaften — Eigentümerportal"
+msgstr "Properties — Owner portal"
+
+msgid "Ihre Liegenschaften mit Objekten und Belegung."
+msgstr "Your properties with units and occupancy."
+
+msgid "Voll vermietet"
+msgstr "Fully let"
+
+msgid "Soll-Nettomiete CHF %(betrag)s pro Monat"
+msgstr "Target net rent CHF %(betrag)s per month"
+
+msgid "Archivierte Liegenschaften"
+msgstr "Archived properties"
+
+msgid "Archiviert am %(datum)s"
+msgstr "Archived on %(datum)s"
+
+msgid "Mitteilungen — Eigentümerportal"
+msgstr "Messages — Owner portal"
+
+msgid "Mitteilungen an die Verwaltung"
+msgstr "Messages to your property manager"
+
+msgid ""
+"Stellen Sie Ihrer Verwaltung eine Frage oder melden Sie ein Anliegen. Sie "
+"antwortet per E-Mail oder Telefon."
+msgstr ""
+"Ask your property manager a question or report a concern. They will reply by"
+" e-mail or phone."
+
+msgid "Kontakt zur Verwaltung"
+msgstr "Contact your property manager"
+
+msgid "An die Verwaltung senden"
+msgstr "Send to your property manager"
+
+msgid "Sie haben noch keine Anfrage gestellt."
+msgstr "You have not sent any request yet."
+
+msgid "Profil und Sprache — Eigentümerportal"
+msgstr "Profile and language — Owner portal"
+
+msgid "Profil"
+msgstr "Profile"
+
+msgid "Ihre Angaben, Sprache und Zugang."
+msgstr "Your details, language and access."
+
+msgid "Ihre Angaben"
+msgstr "Your details"
+
+msgid "Auszahlung auf"
+msgstr "Payout to"
+
+msgid ""
+"Angaben ändert die Verwaltung. Teilen Sie eine Änderung über die "
+"Mitteilungen mit."
+msgstr ""
+"Your property manager changes these details. Tell them about a change "
+"through the messages."
+
+msgid "Änderung mitteilen"
+msgstr "Report a change"
+
+msgid "Sprache und Darstellung"
+msgstr "Language and appearance"
+
+msgid "Sprache des Portals"
+msgstr "Portal language"
+
+msgid "Sprache der Briefe und Abrechnungen"
+msgstr "Language of letters and statements"
+
+msgid "Automatisch"
+msgstr "Automatic"
+
+msgid "Der aktuelle Stand Ihrer Liegenschaften auf einen Blick."
+msgstr "The current status of your properties at a glance."
+
+msgid "Ablehnen"
+msgstr "Decline"
+
+msgid "Kennzahlen"
+msgstr "Key figures"
+
+msgid "leere Objekte von %(n)s · Leerstandsquote %(q)s %%"
+msgstr "vacant units out of %(n)s · vacancy rate %(q)s %%"
+
+msgid "pro Monat"
+msgstr "per month"
+
+msgid "Soll-Nettomiete der laufenden Mietverträge."
+msgstr "Target net rent of current leases."
+
+msgid "Gebucht %(jahr)s: CHF %(betrag)s"
+msgstr "Booked %(jahr)s: CHF %(betrag)s"
+
+msgid "Noch nichts überfällig."
+msgstr "Nothing is overdue yet."
+
+msgid "Alle Mieten sind bezahlt."
+msgstr "All rents are paid."
+
+msgid "Nächste Auszahlung"
+msgstr "Next payout"
+
+msgid ""
+"Guthaben laut Kontokorrent. Der Auszahlungstermin wird von Ihrer Verwaltung "
+"festgelegt."
+msgstr ""
+"Balance per current account. The payout date is set by your property "
+"manager."
+
+msgid "Kein Guthaben zur Auszahlung."
+msgstr "No balance to pay out."
+
+msgid "Zuletzt am %(datum)s: CHF %(betrag)s"
+msgstr "Last on %(datum)s: CHF %(betrag)s"
+
+msgid "Ihre Liegenschaften"
+msgstr "Your properties"
+
+msgid "Berichte zum Herunterladen"
+msgstr "Reports to download"
+
+msgid "Im Eigentümerportal sichtbar (nur bei Liegenschaft oder Objekt)"
+msgstr "Visible in the owner portal (only for a property or unit)"
+
+msgid "Für den Eigentümer im Portal sichtbar schalten"
+msgstr "Make visible to the owner in the portal"
+
+msgid "Im Eigentümerportal"
+msgstr "In the owner portal"
+
+msgid "Nicht im Portal"
+msgstr "Not in the portal"
+
+msgid "Allgemeine Frage"
+msgstr "General question"
+
+msgid "Abrechnung oder Auszahlung"
+msgstr "Statement or payout"
+
+msgid "Unterhalt oder Schaden"
+msgstr "Maintenance or damage"
+
+msgid "Änderung meiner Angaben"
+msgstr "Change to my details"
+
+msgid "Mandat oder Vertrag"
+msgstr "Mandate or contract"
+
+msgid ""
+"Das Mandat ist beendet. Bitte wenden Sie sich direkt an die Verwaltung."
+msgstr "The mandate has ended. Please contact your property manager directly."
+
+msgid "Der Betreff ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "The subject is too long (at most %(n)s characters)."
+
+msgid "Bitte Ihre Nachricht eingeben."
+msgstr "Please enter your message."
+
+msgid "Die Nachricht ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "The message is too long (at most %(n)s characters)."
+
+msgid "Bitte die Art der Anfrage wählen."
+msgstr "Please choose the type of request."
+
+msgid "Bitte eine Ihrer Liegenschaften wählen."
+msgstr "Please choose one of your properties."
+
+msgid "Korrespondenzsprache gespeichert."
+msgstr "Correspondence language saved."
+
+msgid "Bitte eine der angebotenen Sprachen wählen."
+msgstr "Please choose one of the offered languages."
+
+msgid ""
+"Diese Zahlung braucht die Freigabe einer zweiten Person (zusammen mit den "
+"übrigen Rechnungen desselben Kreditors im Zahllauf erreicht sie das "
+"Freigabelimit)."
+msgstr ""
+"This payment needs approval by a second person (together with the other "
+"invoices from the same creditor in the payment run it reaches the approval "
+"limit)."
+
+msgid ""
+"Betrag oder IBAN wurden nach der Freigabe geändert — die Auszahlung braucht "
+"eine neue Freigabe durch eine zweite Person."
+msgstr ""
+"The amount or IBAN was changed after approval: the payout needs a new "
+"approval by a second person."
+
+#, python-format
+msgid ""
+"Diese Auszahlung braucht die Freigabe einer zweiten Person (Betrag ab dem "
+"Freigabelimit von CHF %(limit)s)."
+msgstr ""
+"This payout needs approval by a second person (amount at or above the "
+"approval limit of CHF %(limit)s)."
+
+msgid "Diese Auszahlung wurde bereits ausgeführt."
+msgstr "This payout has already been made."
+
+msgid "Dieser Betrag liegt unter dem Freigabelimit — keine Freigabe nötig."
+msgstr "This amount is below the approval limit: no approval is needed."
+
+msgid "Die Auszahlung wurde noch nicht vorgelegt."
+msgstr "The payout has not been submitted yet."
+
+msgid ""
+"Wer die Auszahlung vorgelegt hat, darf sie nicht selbst freigeben (Vier-"
+"Augen-Prinzip)."
+msgstr ""
+"Whoever submitted the payout may not approve it themselves (four-eyes "
+"principle)."
+
+msgid "Die Auszahlung ist bereits freigegeben."
+msgstr "The payout is already approved."
+
+msgid ""
+"Betrag oder IBAN haben sich seit dem Öffnen der Seite geändert. Bitte die "
+"Seite neu laden und die Angaben erneut prüfen."
+msgstr ""
+"The amount or IBAN has changed since the page was opened. Please reload the "
+"page and check the details again."
+
+#, python-format
+msgid ""
+"%(text)s Sie ist vorgelegt und erscheint unter Einstellungen → "
+"Zahlungsfreigabe → Auszahlungen; danach die Auszahlung erneut auslösen."
+msgstr ""
+"%(text)s It has been submitted and appears under Settings → Payment approval"
+" → Payouts; then trigger the payout again."
+
+msgid "Dieser Antrag wurde inzwischen zurückgenommen."
+msgstr "This request has been withdrawn in the meantime."
+
+msgid ""
+"Die Auszahlung ist freigegeben. Sie kann jetzt ausgelöst werden; die "
+"Freigabe gilt für einmal."
+msgstr ""
+"The payout is approved. It can now be triggered; the approval is valid once "
+"only."
+
+#, python-format
+msgid ""
+"«%(lieferant)s»: Die Rechnungen %(rechnungen)s ergeben zusammen CHF "
+"%(summe)s und erreichen damit das Freigabelimit von CHF %(limit)s. Jede "
+"dieser Rechnungen braucht die Freigabe einer zweiten Person."
+msgstr ""
+"“%(lieferant)s”: the invoices %(rechnungen)s add up to CHF %(summe)s and "
+"thus reach the approval limit of CHF %(limit)s. Each of these invoices needs"
+" approval by a second person."
+
+#, python-format
+msgid "Das Format «%(p)s» gibt es nicht."
+msgstr "The format “%(p)s” does not exist."
+
+msgid "Die Auszahlung braucht die Freigabe einer zweiten Person."
+msgstr "The payout needs approval by a second person."
+
+msgid "Banana Buchhaltung"
+msgstr "Banana Accounting"
+
+msgid "Eigentümerauszahlung"
+msgstr "Owner payout"
+
+msgid "Rückerstattung Mieterguthaben"
+msgstr "Tenant credit refund"
+
+msgid "Rücküberweisung Fremdeingang"
+msgstr "Return of an unmatched receipt"
+
+msgid "Kautionsrückzahlung"
+msgstr "Deposit repayment"
+
+msgid "Auszahlung aus der Schlussabrechnung"
+msgstr "Payout from the final statement"
+
+msgid "Auszahlungen freigeben"
+msgstr "Approve payouts"
+
+msgid ""
+"Auszahlungen ab der Freigabelimite brauchen die Freigabe einer zweiten "
+"Person."
+msgstr ""
+"Payouts at or above the approval limit need approval by a second person."
+
+msgid ""
+"Eigentümerauszahlungen, Rückerstattungen von Mieterguthaben und "
+"Kautionsrückzahlungen ab der Freigabelimite werden erst gebucht, wenn ein "
+"Verwalter oder der Inhaber sie freigegeben hat. Wer die Auszahlung ausgelöst"
+" hat, darf sie nicht selbst freigeben. Die Freigabe gilt einmal und nur für "
+"den Betrag und die IBAN, die auf dieser Seite stehen."
+msgstr ""
+"Owner payouts, refunds of tenant credits and deposit repayments at or above "
+"the approval limit are only booked once a manager or the owner of the "
+"account has approved them. Whoever triggered the payout may not approve it "
+"themselves. The approval is valid once and only for the amount and IBAN "
+"shown on this page."
+
+msgid "IBAN des Empfängers"
+msgstr "Recipient IBAN"
+
+msgid "Zur Auszahlung"
+msgstr "Go to the payout"
+
+msgid ""
+"Betrag oder IBAN wurden nach der Freigabe geändert. Die Auszahlung muss "
+"erneut ausgelöst und freigegeben werden."
+msgstr ""
+"The amount or IBAN was changed after approval. The payout must be triggered "
+"and approved again."
+
+msgid ""
+"Sie haben diese Auszahlung vorgelegt. Eine zweite Person muss sie freigeben."
+msgstr "You submitted this payout. A second person must approve it."
+
+msgid "Zuletzt ausgeführt"
+msgstr "Recently executed"
+
+#, python-format
+msgid "Freigegeben von %(name)s. Die Auszahlung kann jetzt ausgelöst werden."
+msgstr "Approved by %(name)s. The payout can now be triggered."
+
+#, python-format
+msgid "CHF %(betrag)s freigeben"
+msgstr "Approve CHF %(betrag)s"
+
+#, python-format
+msgid "vorgelegt von %(vorleger)s, freigegeben von %(freigeber)s"
+msgstr "submitted by %(vorleger)s, approved by %(freigeber)s"
+
+msgid ""
+"Dieselbe Limite gilt für Eigentümerauszahlungen, die Rückerstattung von "
+"Mieterguthaben und Kautionsrückzahlungen. Rechnungen desselben Kreditors in "
+"einem Zahllauf zählen zusammen."
+msgstr ""
+"The same limit applies to owner payouts, refunds of tenant credits and "
+"deposit repayments. Invoices from the same creditor in one payment run are "
+"added together."
+
+msgid "Summenregel: mehrere Rechnungen desselben Kreditors"
+msgstr "Sum rule: several invoices from the same creditor"
+
+msgid ""
+"Einzeln liegen diese Rechnungen unter dem Freigabelimit, zusammen erreichen "
+"sie es. Sie gehören nur in die Zahlungsdatei, wenn eine zweite Person sie "
+"freigegeben hat:"
+msgstr ""
+"Individually these invoices are below the approval limit, together they "
+"reach it. They only go into the payment file once a second person has "
+"approved them:"
+
+msgid ""
+"Freie Zuordnung (Überschriften und Format unten einstellbar, für Abacus und "
+"andere)"
+msgstr ""
+"Free mapping (headings and format can be set below, for Abacus and others)"
+
+msgid "Banana Buchhaltung (feste Vorgabe von Banana)"
+msgstr "Banana Accounting (fixed format required by Banana)"
+
+msgid ""
+"Freie Zuordnung: Spalten Buchungsdatum, Belegnummer, Soll, Haben, Betrag, "
+"Text, MWST-Code (Überschriften unten einstellbar). Stornobuchungen stehen "
+"als eigene Zeilen. Es werden nur Buchungen gelesen, nichts wird verändert."
+msgstr ""
+"Free mapping: columns posting date, document number, debit, credit, amount, "
+"text, VAT code (headings can be set below). Reversal entries appear as "
+"separate rows. Entries are only read, nothing is changed."
+
+msgid "Import in Banana"
+msgstr "Import into Banana"
+
+msgid "Format «Banana Buchhaltung» wählen und die Datei (.txt) herunterladen."
+msgstr "Choose the “Banana Accounting” format and download the file (.txt)."
+
+msgid ""
+"In Banana die Buchhaltung öffnen und «Aktionen > In Buchhaltung importieren "
+"> Text file with column headers» wählen (auf Deutsch: Aktionen > In "
+"Buchhaltung importieren)."
+msgstr ""
+"Open the accounting file in Banana and choose “Actions > Import into "
+"Accounting > Text file with column headers” (in German: Aktionen > In "
+"Buchhaltung importieren)."
+
+msgid ""
+"Die Datei wählen. Die Kopfzeile (Date, Doc, Description, AccountDebit, "
+"AccountCredit, Amount, VatCode, ExternalReference) erkennt Banana von "
+"selbst."
+msgstr ""
+"Choose the file. Banana recognises the header row (Date, Doc, Description, "
+"AccountDebit, AccountCredit, Amount, VatCode, ExternalReference) by itself."
+
+msgid ""
+"Die Kontonummern in der Datei kommen aus der Kontenzuordnung unten: Tragen "
+"Sie dort die Kontonummern Ihres Banana-Kontenplans ein, sonst gehen die "
+"Nummern von immoswiss in die Datei. Die ExternalReference (immoswiss-Jahr-"
+"Buchungs-ID) ist je Buchung eindeutig. Datum yyyy-mm-dd, Tabulator als "
+"Trennzeichen, Betrag mit Punkt: Das setzt das Format selbst."
+msgstr ""
+"The account numbers in the file come from the account mapping below: enter "
+"the account numbers of your Banana chart of accounts there, otherwise the "
+"immoswiss numbers go into the file. The ExternalReference (immoswiss-year-"
+"entry ID) is unique for each entry. Date yyyy-mm-dd, tab as separator, "
+"amount with a decimal point: the format sets these itself."
+
+#, python-format
+msgid "%(n)s Auszahlung wartet auf Freigabe"
+msgid_plural "%(n)s Auszahlungen warten auf Freigabe"
+msgstr[0] "%(n)s payout is waiting for approval"
+msgstr[1] "%(n)s payouts are waiting for approval"
+
+msgid "Keine Auszahlung wartet auf Freigabe."
+msgstr "No payout is waiting for approval."
+
+msgid ""
+"Auszahlungen ab der Freigabelimite erscheinen hier, sobald jemand sie "
+"auslöst."
+msgstr ""
+"Payouts at or above the approval limit appear here as soon as someone "
+"triggers them."
+
+msgid "Stufe, Nutzung, Module und Rechnungen Ihrer Verwaltung."
+msgstr "Plan, usage, modules and invoices of your property management."
+
+msgid "Preise und Limiten sind Platzhalter — vom Betreiber festzulegen."
+msgstr "Prices and limits are placeholders — to be set by the operator."
+
+msgid "Es werden noch keine Rechnungen mit diesen Preisen gestellt."
+msgstr "No invoices are issued with these prices yet."
+
+msgid "Der MWST-Satz auf Abo-Rechnungen ist ebenfalls noch nicht festgelegt."
+msgstr "The VAT rate on subscription invoices has not been set yet either."
+
+msgid "Ihr Abonnement"
+msgstr "Your subscription"
+
+msgid ""
+"Bestandsschutz: Bis Sie einen Plan wählen, bleiben alle Funktionen offen und"
+" es gelten keine Mengengrenzen."
+msgstr ""
+"Grandfathering: until you choose a plan, all functions stay open and no "
+"quantity limits apply."
+
+msgid "Noch nicht gestartet — es wird nichts in Rechnung gestellt."
+msgstr "Not started yet — nothing is invoiced."
+
+msgid ""
+"Ihr Bestand liegt über der Grenze dieser Stufe. Alle Daten bleiben les- und "
+"exportierbar; es lassen sich nur keine neuen anlegen."
+msgstr ""
+"Your portfolio is above the limit of this plan. All data stays readable and "
+"exportable; you just cannot add new records."
+
+msgid ""
+"Die Grenze ist erreicht. Neue lassen sich erst mit einer höheren Stufe "
+"anlegen."
+msgstr ""
+"The limit has been reached. New records can only be added with a higher "
+"plan."
+
+msgid "Funktionen und Module"
+msgstr "Functions and modules"
+
+msgid "Zubuchbares Modul — beim Betreiber anfragen."
+msgstr "Bookable module — ask the operator."
+
+msgid "Freigeschaltet"
+msgstr "Enabled"
+
+msgid ""
+"Gesperrte Funktionen bleiben sichtbar, Ihre Daten bleiben erhalten und "
+"lesbar. Es wird nichts gelöscht."
+msgstr ""
+"Locked functions stay visible, your data is kept and stays readable. Nothing"
+" is deleted."
+
+msgid "Platzhalterpreise"
+msgstr "Placeholder prices"
+
+msgid "PDF mit QR-Rechnung"
+msgstr "PDF with QR bill"
+
+msgid "Noch keine Rechnung gestellt."
+msgstr "No invoice issued yet."
+
+msgid ""
+"Den Plan und die Rechnungen sieht und ändert nur der Inhaber der Verwaltung."
+msgstr ""
+"Only the owner of the property management sees and changes the plan and the "
+"invoices."
+
+msgid ""
+"Eine Rechnung ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist "
+"schreibgeschützt: Sie können alle Daten lesen und exportieren, aber nichts "
+"ändern, und es laufen keine automatischen Läufe. Mit dem Zahlungseingang ist"
+" alles wieder offen. Es wird nichts gelöscht."
+msgstr ""
+"An invoice has been overdue for more than %(tage)s days. Your access is "
+"read-only: you can read and export all data but change nothing, and no "
+"automatic runs are executed. Once payment is received, everything is open "
+"again. Nothing is deleted."
+
+msgid ""
+"Eine Rechnung ist überfällig. Bleibt die Zahlung länger als %(tage)s Tage "
+"aus, wird Ihr Zugang schreibgeschützt. Ihre Daten bleiben in jedem Fall "
+"erhalten."
+msgstr ""
+"An invoice is overdue. If payment is still missing after %(tage)s days, your"
+" access becomes read-only. Your data is kept in any case."
+
+msgid "Ab Stufe %(stufe)s."
+msgstr "From plan %(stufe)s."
+
+msgid "Fällig am %(datum)s"
+msgstr "Due on %(datum)s"
+
+msgid ""
+"Zahlbar innert %(tage)s Tagen mit dem QR-Einzahlungsschein. Die Zahlung "
+"bestätigt der Betreiber von Hand."
+msgstr ""
+"Payable within %(tage)s days with the QR payment slip. The operator confirms"
+" the payment by hand."
+
+msgid "Plan wechseln"
+msgstr "Change plan"
+
+msgid ""
+"Bitte prüfen, was sich damit schliesst. Ihre Daten bleiben in jedem Fall "
+"erhalten."
+msgstr "Please check what this closes. Your data is kept in any case."
+
+msgid "Diese Funktionen werden gesperrt"
+msgstr "These functions will be locked"
+
+msgid ""
+"Gesperrte Funktionen bleiben sichtbar. Alle bisherigen Daten bleiben lesbar "
+"und exportierbar; es lässt sich dort nur nichts Neues mehr erfassen. Mit "
+"einem höheren Plan ist alles wieder frei."
+msgstr ""
+"Locked functions stay visible. All existing data stays readable and "
+"exportable; you just cannot enter anything new there. With a higher plan "
+"everything is free again."
+
+msgid "Wechsel auf «%(name)s»"
+msgstr "Switch to “%(name)s”"
+
+msgid ""
+"Sie führen %(n)s Einheiten, diese Stufe fasst höchstens %(deckel)s. Die "
+"vorhandenen Einheiten bleiben vollständig erhalten; es lassen sich nur keine"
+" neuen anlegen."
+msgstr ""
+"You manage %(n)s units, this plan allows at most %(deckel)s. The existing "
+"units are fully kept; you just cannot add new ones."
+
+msgid "Nicht im Abonnement — immoswiss"
+msgstr "Not in your subscription — immoswiss"
+
+msgid "Diese Funktion ist nicht im Abonnement"
+msgstr "This function is not part of the subscription"
+
+msgid ""
+"Ihre Daten sind erhalten und bleiben lesbar. Mit einer höheren Stufe oder "
+"dem passenden Modul ist die Funktion wieder frei."
+msgstr ""
+"Your data is kept and stays readable. With a higher plan or the matching "
+"module the function is free again."
+
+msgid "Diese Funktion ist für diese Verwaltung zurzeit nicht freigeschaltet."
+msgstr "This function is currently not enabled for this property management."
+
+msgid "Der Zugang ist schreibgeschützt"
+msgstr "Access is read-only"
+
+msgid ""
+"Eine Rechnung für das Abonnement ist lange überfällig. Sie können alle Daten"
+" weiter lesen und exportieren, aber nichts ändern. Mit dem Zahlungseingang "
+"ist alles wieder offen. Es wird nichts gelöscht."
+msgstr ""
+"A subscription invoice has been overdue for a long time. You can keep "
+"reading and exporting all data but change nothing. Once payment is received,"
+" everything is open again. Nothing is deleted."
+
+msgid ""
+"Diese Verwaltung ist zurzeit schreibgeschützt. Lesen und Exportieren ist "
+"weiter möglich."
+msgstr ""
+"This property management is currently read-only. Reading and exporting "
+"remain possible."
+
+msgid "Die Grenze der Stufe ist erreicht"
+msgstr "The plan limit has been reached"
+
+msgid "Es lassen sich zurzeit keine weiteren anlegen."
+msgstr "No more can be added at the moment."
+
+msgid "Zum Abonnement"
+msgstr "Go to subscription"
+
+msgid ""
+"Mit der aktuellen Stufe lassen sich höchstens %(n)s anlegen. Alles "
+"Vorhandene bleibt unverändert lesbar. Mit einer höheren Stufe geht es "
+"weiter."
+msgstr ""
+"With the current plan at most %(n)s can be created. Everything that exists "
+"stays readable unchanged. A higher plan lets you continue."
+
+msgid ""
+"Zahlung überfällig: Der Zugang ist schreibgeschützt. Lesen und Exportieren "
+"geht weiter."
+msgstr ""
+"Payment overdue: access is read-only. Reading and exporting continue to "
+"work."
+
+msgid "Eine Rechnung für das Abonnement ist überfällig."
+msgstr "A subscription invoice is overdue."
+
+msgid ""
+"«%(name)s» ist nicht im Abonnement: Sie sehen Ihre Daten, können aber nichts"
+" Neues erfassen."
+msgstr ""
+"“%(name)s” is not part of the subscription: you can see your data but cannot"
+" enter anything new."
+
+msgid "Ab dem %(datum)s wird der Zugang schreibgeschützt."
+msgstr "From %(datum)s access becomes read-only."
+
+msgid ""
+"Bestand von %(n)s Einheiten übersteigt die Stufe (höchstens %(d)s); "
+"abgerechnet zum Preis der Stufe."
+msgstr ""
+"The portfolio of %(n)s units exceeds the plan (at most %(d)s); invoiced at "
+"the price of the plan."
+
+msgid "immoswiss: Ihr Zugang ist schreibgeschützt"
+msgstr "immoswiss: your access is read-only"
+
+msgid ""
+"Die Rechnung für Ihr Abonnement ist seit mehr als %(tage)s Tagen überfällig."
+" Ihr Zugang ist deshalb schreibgeschützt: Sie können alle Daten weiter lesen"
+" und exportieren, aber nichts mehr ändern, und es laufen keine automatischen"
+" Läufe mehr. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts "
+"gelöscht."
+msgstr ""
+"The invoice for your subscription has been overdue for more than %(tage)s "
+"days. Your access is therefore read-only: you can keep reading and exporting"
+" all data but change nothing, and no automatic runs are executed any more. "
+"Once payment is received, everything is open again. Nothing is deleted."
+
+msgid "immoswiss: Zahlungserinnerung zum Abonnement"
+msgstr "immoswiss: payment reminder for the subscription"
+
+msgid ""
+"Die Rechnung für Ihr Abonnement ist überfällig. Bitte begleichen Sie sie mit"
+" dem QR-Einzahlungsschein, den Sie unter Einstellungen > Abonnement finden. "
+"Bleibt die Zahlung länger aus, wird Ihr Zugang nach %(tage)s Tagen "
+"schreibgeschützt. Ihre Daten bleiben in jedem Fall erhalten."
+msgstr ""
+"The invoice for your subscription is overdue. Please pay it with the QR "
+"payment slip you find under Settings > Subscription. If payment is still "
+"missing, your access becomes read-only after %(tage)s days. Your data is "
+"kept in any case."
+
+msgid "Datenexport (Buchungsjournal, Mandatspaket, Auskunft)"
+msgstr "Data export (accounting journal, mandate package, subject access)"
+
+msgid "Betreibung: Rechtsöffnung, Forderungen, Kosten"
+msgstr "Debt collection: removal of objection, claims, costs"
+
+msgid "Datenimport (Stammdaten und Salden aus anderen Programmen)"
+msgstr "Data import (master data and balances from other programs)"
+
+msgid "Stockwerkeigentum: Versammlung, Beschlüsse, Fonds, Abrechnung"
+msgstr "Condominium: meeting, resolutions, funds, statement"
+
+msgid "OCR- und KI-Dokumentenerkennung"
+msgstr "OCR and AI document recognition"
+
+msgid "Eigene Auswertungen und Exportvorlagen"
+msgstr "Custom reports and export templates"
+
+msgid ""
+"Für diese Rechnung ist beim Betreiber noch keine Zahlungsverbindung "
+"festgelegt."
+msgstr "The operator has not yet set payment details for this invoice."
+
+msgid ""
+"Die digitale Unterschrift ist im Abonnement nicht enthalten. Unter "
+"Einstellungen > Abonnement lässt sie sich zubuchen."
+msgstr ""
+"Digital signature is not part of the subscription. It can be added under "
+"Settings > Subscription."
+
+msgid ""
+"Belegerkennung ist im Abonnement nicht enthalten — Felder bitte von Hand "
+"erfassen."
+msgstr ""
+"Document recognition is not part of the subscription — please enter the "
+"fields by hand."
+
+msgid "Abrechnung ab"
+msgstr "Billing from"
+
+msgid "Nutzer"
+msgstr "Users"
+
+msgid "unbegrenzt"
+msgstr "unlimited"
+
+msgid "Gesperrt"
+msgstr "Locked"
+
+msgid "gesperrt"
+msgstr "locked"

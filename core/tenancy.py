@@ -177,7 +177,7 @@ def kontext_des_objekts(objekt):
         yield organisation
 
 
-def je_organisation(arbeit, auswahl=None, ausgabe=None):
+def je_organisation(arbeit, auswahl=None, ausgabe=None, abo_pruefen=True):
     """Führt `arbeit(organisation)` je Verwaltung mit gesetztem Kontext aus.
 
     DER WEG FÜR JEDEN SCHEDULER-BEFEHL. Ein Management-Command läuft ohne
@@ -197,6 +197,14 @@ def je_organisation(arbeit, auswahl=None, ausgabe=None):
     kann. Der Scheduler sieht so, dass etwas schieflief, und trotzdem hat
     jede heile Verwaltung ihren Lauf.
 
+    VERWALTUNGEN IM LESEMODUS WERDEN ÜBERSPRUNGEN (`abo_pruefen=True`). Ein
+    Lauf im Namen einer Verwaltung, deren Abonnement nicht bezahlt ist, verschickt
+    Post und bucht Forderungen für jemanden, der dafür nicht zahlt
+    (`core.funktionen.hintergrund_erlaubt`). Der Lauf nennt das, statt es zu
+    verschweigen. Nur die Läufe, die auch im Lesemodus laufen müssen — der
+    Abrechnungslauf selbst und die gesetzlichen DSG-Läufe —, übergeben
+    `abo_pruefen=False`.
+
     Gibt `(ergebnisse, fehler)` zurück: `ergebnisse` ist die Liste der
     Rückgabewerte von `arbeit`, `fehler` eine Liste `(organisation, ausnahme)`.
     """
@@ -209,7 +217,14 @@ def je_organisation(arbeit, auswahl=None, ausgabe=None):
             raise ValueError(f'Keine Verwaltung mit ID {auswahl}.')
 
     ergebnisse, fehler = [], []
-    for organisation in organisationen:
+    for organisation in organisationen.select_related('abonnement'):
+        if abo_pruefen:
+            from core.funktionen import hintergrund_erlaubt
+            if not hintergrund_erlaubt(organisation):
+                logger.warning('%s: Abonnement im Lesemodus, Lauf übersprungen', organisation)
+                if ausgabe is not None:
+                    ausgabe.write(f'ÜBERSPRUNGEN {organisation}: Abonnement im Lesemodus (Zahlung überfällig).')
+                continue
         try:
             with organisation_kontext(organisation):
                 ergebnisse.append(arbeit(organisation))

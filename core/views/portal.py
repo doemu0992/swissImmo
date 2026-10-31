@@ -49,21 +49,22 @@ def nach_login_view(request):
 @never_cache
 @login_required
 def portal_view(request):
+    """Übersicht des Eigentümerportals (v2): Kennzahlen, Freigaben, Wege zu den Seiten."""
     eigentuemer = getattr(request.user, 'eigentuemer_profil', None)
 
     # Team-Mitglieder ohne Eigentuemer-Verknüpfung gehören in die neue Oberfläche
     if eigentuemer is None:
         if hat_rolle(request.user, FINANZ_LESE_ROLLEN):
             return redirect('fw_dashboard')
-        return render(request, 'core/portal.html', {'eigentuemer': None})
+        return render(request, 'core/eig_uebersicht.html', {'eigentuemer': None})
 
-    daten = _portfolio_daten(eigentuemer)
-    freigaben = _offene_freigaben(eigentuemer)
     from django.utils import timezone
-    steuerjahr = timezone.localdate().year - 1
-    return render(request, 'core/portal.html', {
-        'eigentuemer': eigentuemer, 'freigaben': freigaben, 'steuerjahr': steuerjahr,
-        'hat_stweg': eigentuemer.stweg_einheiten.exists(), **daten})
+    from core.services import eigentuemer_portal as dienst
+    return render(request, 'core/eig_uebersicht.html', {
+        'eigentuemer': eigentuemer, 'mandat_ende': dienst.mandat_status(eigentuemer),
+        'freigaben': _offene_freigaben(eigentuemer),
+        'hat_stweg': eigentuemer.stweg_einheiten.exists(),
+        'steuerjahr': timezone.localdate().year - 1, 'u': dienst.uebersicht(eigentuemer)})
 
 
 def _offene_freigaben(eigentuemer):
@@ -235,23 +236,9 @@ def _portfolio_daten(eigentuemer):
 
 @login_required
 def portal_dokument_download(request, pk):
-    """Dokument-Download — nur für Dokumente von Liegenschaften des eigenen Eigentümer."""
-    from portfolio.models import Dokument as PDokument
-    eigentuemer = getattr(request.user, 'eigentuemer_profil', None)
-    if eigentuemer is None:
-        raise Http404
-    dok = get_object_or_404(PDokument, pk=pk)
-    if not dok.liegenschaft_id or dok.liegenschaft.eigentuemer_id != eigentuemer.id:
-        raise Http404
-    try:
-        f = dok.datei.open('rb')
-    except Exception:
-        raise Http404
-    resp = HttpResponse(f.read(), content_type='application/octet-stream')
-    import os
-    name = os.path.basename(dok.datei.name)
-    resp['Content-Disposition'] = f'attachment; filename="{name}"'
-    return resp
+    """Dokument-Download — nur freigegebene Dokumente der eigenen Liegenschaften und Objekte."""
+    from core.views.eigentuemer_portal import portal_dokument_herunterladen
+    return portal_dokument_herunterladen(request, pk)
 
 
 @login_required
@@ -274,8 +261,8 @@ def portal_steuerauszug_pdf(request):
     eigentuemer = getattr(request.user, 'eigentuemer_profil', None)
     if eigentuemer is None:
         raise Http404
-    import datetime
-    heute = datetime.date.today()
+    from core.zeit import datum_heute
+    heute = datum_heute()
     try:
         jahr = int(request.GET.get('jahr') or (heute.year - 1))
     except (TypeError, ValueError):

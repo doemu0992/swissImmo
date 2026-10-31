@@ -439,6 +439,15 @@ class MandantenFixture:
             meldungen=[{'art': 'liegenschaften', 'zeile': 2, 'feld': 'plz', 'stufe': 'fehler',
                         'text': f'Fehler {k}'}], anzahl_fehler=1)
 
+        # Abo-Rechnung (Funktionsfreigabe): `fw_abo_rechnung_pdf` nimmt ihre `pk`; die Rechnung einer
+        # fremden Verwaltung darf weder lesbar noch als PDF abrufbar sein (404).
+        from abo.models import AboRechnung
+        self.abo_rechnung = AboRechnung.objects.create(
+            organisation=self.organisation, nummer=f'AB-ISO-{k}', periode_von=date(2024, 1, 1),
+            periode_bis=date(2024, 1, 31), stufe='team', intervall='monatlich', einheiten=1,
+            netto=Decimal('119'), brutto=Decimal('119'), rechnungsdatum=date(2024, 1, 1),
+            faellig_am=date(2024, 1, 31))
+
     def _benutzer(self):
         """Team-Benutzer dieses Mandanten — Gruppe UND Mitgliedschaft.
 
@@ -507,6 +516,8 @@ class MandantenFixture:
     NAME_MUSTER = (
         # Datenimport: `pk` ist das Protokoll des Imports (FUNK-09).
         ('daten_import',    'datenimport'),
+        # Abo-Rechnung: `fw_abo_rechnung_pdf` nimmt die `pk` einer Rechnung der Plattform.
+        ('abo_rechnung',    'abo_rechnung'),
         # Mahnstufen je Organisation: `fw_mahnstufe_loeschen` nimmt die `pk` einer
         # Stufe. Ein POST auf eine FREMDE Stufe darf nichts löschen (404).
         ('mahnstufe',       'mahnstufe'),
@@ -629,6 +640,8 @@ class MandantenFixture:
         ('rentals_dokument', 'dokument_rentals'),
         ('dokument_portal', 'dokument_rentals'),
         ('portal_dokument', 'dokument_portfolio'),
+        # Eigentümerportal v2: das Team gibt ein Dokument der Objektablage frei (`pk` = portfolio.Dokument).
+        ('ablage_portal',   'dokument_portfolio'),
         ('dokument',        'dokument_portfolio'),
         ('expose',          'einheit'),
         ('geraet',          'geraet'),
