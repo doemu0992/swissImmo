@@ -848,6 +848,11 @@ class KreditorenRechnung(OrganisationAusKette):
     zahlung_freigabe_betrag = models.DecimalField(
         "Freigegebener Betrag", max_digits=10, decimal_places=2, null=True, blank=True)
     zahlung_freigabe_iban = models.CharField("Freigegebene IBAN", max_length=50, blank=True)
+    #: Summenregel (Etappe 4): Die Rechnungen desselben Kreditors in einem Zahllauf ergaben zusammen
+    #: diesen Betrag, der die Freigabelimite erreicht, obwohl diese Rechnung allein darunter liegt.
+    #: Gesetzt, wenn der Zahllauf sie deshalb zur Freigabe vorgelegt hat; gelöscht beim Zurücknehmen.
+    zahlung_gruppensumme = models.DecimalField(
+        "Summe des Kreditors im Zahllauf", max_digits=12, decimal_places=2, null=True, blank=True)
 
     class Meta:
         verbose_name = "Kreditorenrechnung"
@@ -1396,6 +1401,62 @@ class EigentuemerAuszahlung(models.Model):
 
     def __str__(self):
         return f"Auszahlung {self.eigentuemer_id} — CHF {self.betrag} ({self.datum})"
+
+
+class AuszahlungsFreigabe(models.Model):
+    """Vier-Augen-Freigabe einer Auszahlung ab der Freigabelimite (Etappe 4, `finance/freigabe.py`).
+
+    Eigentümerauszahlung, Rückerstattung von Mieterguthaben und Rückzahlung einer Kaution sind
+    Buchungen ohne Zahlungsdatei: Es gibt keine Rechnung, an der die Freigabe hängen könnte
+    (anders als bei `KreditorenRechnung.zahlung_*`). Diese Zeile ist der Antrag. Eine Auszahlung
+    hat zu jedem Zeitpunkt höchstens einen OFFENEN Antrag (`verbraucht_am` leer); wird sie
+    ausgeführt, wird der Antrag in derselben Transaktion verbraucht und gilt nicht noch einmal.
+
+    Die Freigabe gilt für genau den Betrag und die IBAN, die die freigebende Person gesehen hat
+    (`freigabe_betrag`, `freigabe_iban`).
+    """
+    ART = [('eigentuemer', gettext_lazy('Eigentümerauszahlung')),
+           ('guthaben', gettext_lazy('Rückerstattung Mieterguthaben')),
+           ('fremdeingang', gettext_lazy('Rücküberweisung Fremdeingang')),
+           ('kaution', gettext_lazy('Kautionsrückzahlung')),
+           ('schlussabrechnung', gettext_lazy('Auszahlung aus der Schlussabrechnung'))]
+
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
+                                     related_name='%(app_label)s_%(class)s', verbose_name='Organisation')
+    art = models.CharField("Art", max_length=20, choices=ART)
+    #: Primärschlüssel des Gegenstands: Eigentümer, Zahlungseingang (Guthaben, Fremdeingang) oder Mietvertrag.
+    bezug_id = models.PositiveIntegerField("Bezug")
+    bezug_text = models.CharField("Empfänger", max_length=200, blank=True, default='')
+    betrag = models.DecimalField("Betrag", max_digits=12, decimal_places=2)
+    iban = models.CharField("IBAN des Empfängers", max_length=50, blank=True, default='')
+    beantragt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
+                                      blank=True, related_name='+')
+    beantragt_am = models.DateTimeField(default=timezone.now)
+    freigegeben_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
+                                        blank=True, related_name='+')
+    freigegeben_am = models.DateTimeField(null=True, blank=True)
+    freigabe_betrag = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    freigabe_iban = models.CharField(max_length=50, blank=True, default='')
+    verbraucht_am = models.DateTimeField("Ausgeführt am", null=True, blank=True)
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            self.organisation_id = organisation_bestimmen().pk
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Auszahlungsfreigabe"
+        verbose_name_plural = "Auszahlungsfreigaben"
+        ordering = ['-beantragt_am', '-id']
+        constraints = [models.UniqueConstraint(
+            fields=['organisation', 'art', 'bezug_id'], condition=models.Q(verbraucht_am__isnull=True),
+            name='uniq_auszahlungsfreigabe_offen')]
+
+    def __str__(self):
+        return f"{self.get_art_display()} #{self.bezug_id} — CHF {self.betrag}"
 
 
 class Hypothek(OrganisationAusKette):

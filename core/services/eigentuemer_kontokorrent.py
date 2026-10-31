@@ -238,6 +238,13 @@ def buche_auszahlung(eigentuemer, betrag, *, bank, datum, bemerkung='', user=Non
             raise AuszahlungNichtMoeglich(_(
                 'Das Bankkonto %(nummer)s deckt die Auszahlung nicht: Saldo CHF %(saldo)s, '
                 'verlangt CHF %(betrag)s.') % {'nummer': bank.nummer, 'saldo': saldo, 'betrag': betrag})
+        # VIER-AUGEN-PRINZIP (Etappe 4): Ab der Freigabelimite braucht die Auszahlung die Freigabe
+        # einer zweiten Person. Die Freigabe wird in dieser Transaktion verbraucht; fehlt sie, wird
+        # nichts gebucht (`AuszahlungGesperrt`). Die Prüfung steht im Dienst, damit auch ein Command
+        # oder eine andere Ansicht sie trifft.
+        from finance.freigabe import auszahlung_pruefen
+        auszahlung_pruefen('eigentuemer', eigentuemer.pk, betrag, eigentuemer.iban,
+                           organisation=eigentuemer.organisation, bezug_text=eigentuemer.firma_oder_name)
         buchung = buche('2850', bank, betrag,
                         f"Auszahlung Eigentümer {eigentuemer.firma_oder_name}"
                         + (f" — {bemerkung}" if bemerkung else ""),
