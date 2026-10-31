@@ -16,12 +16,13 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.http import Http404, HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext
 from django.views.decorators.cache import never_cache
 
+from core.auth import SCHREIB_ROLLEN, log_aktion, rolle_erforderlich
 from core.services import eigentuemer_portal as dienst
-from core.utils.parameter import jahr_streng
+from core.utils.parameter import jahr_streng, sicheres_ziel
 from core.zeit import datum_heute
 
 
@@ -156,6 +157,21 @@ def portal_profil(request, eigentuemer):
                 return redirect('portal_profil')
     return render(request, 'core/eig_profil.html', _kontext(
         eigentuemer, sprachen=sprachen, passwort=passwort))
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_ablage_portal_toggle(request, pk):
+    """Team: gibt ein Dokument der Objektablage für das Eigentümerportal frei oder blendet es aus.
+
+    Ohne Freigabe sieht der Eigentümer es nicht (Standard: nicht sichtbar). Nur POST."""
+    from portfolio.models import Dokument
+    d = get_object_or_404(Dokument, pk=pk)
+    if request.method == 'POST':
+        d.im_portal_sichtbar = not d.im_portal_sichtbar
+        d.save(update_fields=['im_portal_sichtbar'])
+        log_aktion(request, 'Dokument-Portalsichtbarkeit (Eigentümer)', d.titel,
+                   'sichtbar' if d.im_portal_sichtbar else 'ausgeblendet')
+    return redirect(sicheres_ziel(request, '/neu/dokumente/'))
 
 
 @never_cache

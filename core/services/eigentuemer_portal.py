@@ -361,8 +361,9 @@ def anfrage_senden(eigentuemer, benutzer, *, liegenschaft_pk, art, betreff, text
         raise AnfrageFehler(gettext('Die Nachricht ist zu lang (höchstens %(n)s Zeichen).') % {'n': TEXT_MAX})
     if art not in dict(ANFRAGE_ARTEN):
         raise AnfrageFehler(gettext('Bitte die Art der Anfrage wählen.'))
+    from core.utils.parameter import id_param
     lg = (eigene_liegenschaften(eigentuemer).exclude(status='archiviert')
-          .filter(pk=liegenschaft_pk or None).first())
+          .filter(pk=id_param(liegenschaft_pk)).first())
     if lg is None:
         raise AnfrageFehler(gettext('Bitte eine Ihrer Liegenschaften wählen.'))
     with translation.override('de'):

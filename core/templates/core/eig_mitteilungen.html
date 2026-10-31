@@ -10,6 +10,13 @@
         <p class="fw-mutet mt-1">{% trans "Stellen Sie Ihrer Verwaltung eine Frage oder melden Sie ein Anliegen. Sie antwortet per E-Mail oder Telefon." %}</p>
     </div>
 
+    {% if fehler %}
+    <div class="fw-hinweis crit mb-4" role="alert" id="mitteilung-fehler">
+        <span class="fw-hi">{% zeichen 'kritisch' %}</span>
+        <div class="fw-ht">{{ fehler }}</div>
+    </div>
+    {% endif %}
+
     {% if mandat_ende %}
     <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 mb-6" data-block="kontakt">
         <h2 class="font-bold fw-strong mb-1">{% trans "Kontakt zur Verwaltung" %}</h2>
@@ -23,12 +30,6 @@
     {% else %}
     <form method="post" class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-4 mb-6 max-w-2xl" data-block="formular">
         {% csrf_token %}
-        {% if fehler %}
-        <div class="fw-hinweis crit" role="alert" id="mitteilung-fehler">
-            <span class="fw-hi">{% zeichen 'kritisch' %}</span>
-            <div class="fw-ht">{{ fehler }}</div>
-        </div>
-        {% endif %}
         <div>
             <label for="m-liegenschaft" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Liegenschaft" %}</label>
             <select id="m-liegenschaft" name="liegenschaft" required class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5">
