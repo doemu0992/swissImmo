@@ -36144,7 +36144,6 @@ msgid "Die Einstellungen für das Buchungsjournal sind gespeichert."
 msgstr "The settings for the accounting journal are saved."
 
 #: Eigentümerportal v2 (Etappe 4)
-
 msgid "Meine Eigentumseinheiten"
 msgstr "My owned units"
 
@@ -36166,8 +36165,12 @@ msgstr "The mandate ended on %(datum)s."
 msgid "Das Mandat wurde am %(datum)s archiviert."
 msgstr "The mandate was archived on %(datum)s."
 
-msgid "Ihre Unterlagen bleiben zur Einsicht. Änderungen und neue Anfragen sind über das Portal nicht mehr möglich."
-msgstr "Your documents remain available for viewing. Changes and new requests are no longer possible through the portal."
+msgid ""
+"Ihre Unterlagen bleiben zur Einsicht. Änderungen und neue Anfragen sind über"
+" das Portal nicht mehr möglich."
+msgstr ""
+"Your documents remain available for viewing. Changes and new requests are no"
+" longer possible through the portal."
 
 msgid "Abrechnungen — Eigentümerportal"
 msgstr "Statements — Owner portal"
@@ -36217,8 +36220,12 @@ msgstr "Property accounts for your tax return."
 msgid "Dokumente — Eigentümerportal"
 msgstr "Documents — Owner portal"
 
-msgid "Unterlagen zu Ihren Liegenschaften, die Ihre Verwaltung für Sie freigegeben hat."
-msgstr "Documents about your properties that your property manager has released to you."
+msgid ""
+"Unterlagen zu Ihren Liegenschaften, die Ihre Verwaltung für Sie freigegeben "
+"hat."
+msgstr ""
+"Documents about your properties that your property manager has released to "
+"you."
 
 msgid "Baujahr %(jahr)s"
 msgstr "Built %(jahr)s"
@@ -36253,8 +36260,10 @@ msgstr "No units recorded"
 msgid "Zu dieser Liegenschaft sind noch keine Objekte erfasst."
 msgstr "No units have been recorded for this property yet."
 
-msgid "Für diese Liegenschaft hat die Verwaltung noch keine Dokumente freigegeben."
-msgstr "Your property manager has not released any documents for this property yet."
+msgid ""
+"Für diese Liegenschaft hat die Verwaltung noch keine Dokumente freigegeben."
+msgstr ""
+"Your property manager has not released any documents for this property yet."
 
 msgid "Liegenschaften — Eigentümerportal"
 msgstr "Properties — Owner portal"
@@ -36280,8 +36289,12 @@ msgstr "Messages — Owner portal"
 msgid "Mitteilungen an die Verwaltung"
 msgstr "Messages to your property manager"
 
-msgid "Stellen Sie Ihrer Verwaltung eine Frage oder melden Sie ein Anliegen. Sie antwortet per E-Mail oder Telefon."
-msgstr "Ask your property manager a question or report a concern. They will reply by e-mail or phone."
+msgid ""
+"Stellen Sie Ihrer Verwaltung eine Frage oder melden Sie ein Anliegen. Sie "
+"antwortet per E-Mail oder Telefon."
+msgstr ""
+"Ask your property manager a question or report a concern. They will reply by"
+" e-mail or phone."
 
 msgid "Kontakt zur Verwaltung"
 msgstr "Contact your property manager"
@@ -36307,8 +36320,12 @@ msgstr "Your details"
 msgid "Auszahlung auf"
 msgstr "Payout to"
 
-msgid "Angaben ändert die Verwaltung. Teilen Sie eine Änderung über die Mitteilungen mit."
-msgstr "Your property manager changes these details. Tell them about a change through the messages."
+msgid ""
+"Angaben ändert die Verwaltung. Teilen Sie eine Änderung über die "
+"Mitteilungen mit."
+msgstr ""
+"Your property manager changes these details. Tell them about a change "
+"through the messages."
 
 msgid "Änderung mitteilen"
 msgstr "Report a change"
@@ -36355,8 +36372,12 @@ msgstr "All rents are paid."
 msgid "Nächste Auszahlung"
 msgstr "Next payout"
 
-msgid "Guthaben laut Kontokorrent. Der Auszahlungstermin wird von Ihrer Verwaltung festgelegt."
-msgstr "Balance per current account. The payout date is set by your property manager."
+msgid ""
+"Guthaben laut Kontokorrent. Der Auszahlungstermin wird von Ihrer Verwaltung "
+"festgelegt."
+msgstr ""
+"Balance per current account. The payout date is set by your property "
+"manager."
 
 msgid "Kein Guthaben zur Auszahlung."
 msgstr "No balance to pay out."
@@ -36397,7 +36418,8 @@ msgstr "Change to my details"
 msgid "Mandat oder Vertrag"
 msgstr "Mandate or contract"
 
-msgid "Das Mandat ist beendet. Bitte wenden Sie sich direkt an die Verwaltung."
+msgid ""
+"Das Mandat ist beendet. Bitte wenden Sie sich direkt an die Verwaltung."
 msgstr "The mandate has ended. Please contact your property manager directly."
 
 msgid "Der Betreff ist zu lang (höchstens %(n)s Zeichen)."
@@ -36420,3 +36442,251 @@ msgstr "Correspondence language saved."
 
 msgid "Bitte eine der angebotenen Sprachen wählen."
 msgstr "Please choose one of the offered languages."
+
+msgid ""
+"Diese Zahlung braucht die Freigabe einer zweiten Person (zusammen mit den "
+"übrigen Rechnungen desselben Kreditors im Zahllauf erreicht sie das "
+"Freigabelimit)."
+msgstr ""
+"This payment needs approval by a second person (together with the other "
+"invoices from the same creditor in the payment run it reaches the approval "
+"limit)."
+
+msgid ""
+"Betrag oder IBAN wurden nach der Freigabe geändert — die Auszahlung braucht "
+"eine neue Freigabe durch eine zweite Person."
+msgstr ""
+"The amount or IBAN was changed after approval: the payout needs a new "
+"approval by a second person."
+
+#, python-format
+msgid ""
+"Diese Auszahlung braucht die Freigabe einer zweiten Person (Betrag ab dem "
+"Freigabelimit von CHF %(limit)s)."
+msgstr ""
+"This payout needs approval by a second person (amount at or above the "
+"approval limit of CHF %(limit)s)."
+
+msgid "Diese Auszahlung wurde bereits ausgeführt."
+msgstr "This payout has already been made."
+
+msgid "Dieser Betrag liegt unter dem Freigabelimit — keine Freigabe nötig."
+msgstr "This amount is below the approval limit: no approval is needed."
+
+msgid "Die Auszahlung wurde noch nicht vorgelegt."
+msgstr "The payout has not been submitted yet."
+
+msgid ""
+"Wer die Auszahlung vorgelegt hat, darf sie nicht selbst freigeben (Vier-"
+"Augen-Prinzip)."
+msgstr ""
+"Whoever submitted the payout may not approve it themselves (four-eyes "
+"principle)."
+
+msgid "Die Auszahlung ist bereits freigegeben."
+msgstr "The payout is already approved."
+
+msgid ""
+"Betrag oder IBAN haben sich seit dem Öffnen der Seite geändert. Bitte die "
+"Seite neu laden und die Angaben erneut prüfen."
+msgstr ""
+"The amount or IBAN has changed since the page was opened. Please reload the "
+"page and check the details again."
+
+#, python-format
+msgid ""
+"%(text)s Sie ist vorgelegt und erscheint unter Einstellungen → "
+"Zahlungsfreigabe → Auszahlungen; danach die Auszahlung erneut auslösen."
+msgstr ""
+"%(text)s It has been submitted and appears under Settings → Payment approval"
+" → Payouts; then trigger the payout again."
+
+msgid "Dieser Antrag wurde inzwischen zurückgenommen."
+msgstr "This request has been withdrawn in the meantime."
+
+msgid ""
+"Die Auszahlung ist freigegeben. Sie kann jetzt ausgelöst werden; die "
+"Freigabe gilt für einmal."
+msgstr ""
+"The payout is approved. It can now be triggered; the approval is valid once "
+"only."
+
+#, python-format
+msgid ""
+"«%(lieferant)s»: Die Rechnungen %(rechnungen)s ergeben zusammen CHF "
+"%(summe)s und erreichen damit das Freigabelimit von CHF %(limit)s. Jede "
+"dieser Rechnungen braucht die Freigabe einer zweiten Person."
+msgstr ""
+"“%(lieferant)s”: the invoices %(rechnungen)s add up to CHF %(summe)s and "
+"thus reach the approval limit of CHF %(limit)s. Each of these invoices needs"
+" approval by a second person."
+
+#, python-format
+msgid "Das Format «%(p)s» gibt es nicht."
+msgstr "The format “%(p)s” does not exist."
+
+msgid "Die Auszahlung braucht die Freigabe einer zweiten Person."
+msgstr "The payout needs approval by a second person."
+
+msgid "Banana Buchhaltung"
+msgstr "Banana Accounting"
+
+msgid "Eigentümerauszahlung"
+msgstr "Owner payout"
+
+msgid "Rückerstattung Mieterguthaben"
+msgstr "Tenant credit refund"
+
+msgid "Rücküberweisung Fremdeingang"
+msgstr "Return of an unmatched receipt"
+
+msgid "Kautionsrückzahlung"
+msgstr "Deposit repayment"
+
+msgid "Auszahlung aus der Schlussabrechnung"
+msgstr "Payout from the final statement"
+
+msgid "Auszahlungen freigeben"
+msgstr "Approve payouts"
+
+msgid ""
+"Auszahlungen ab der Freigabelimite brauchen die Freigabe einer zweiten "
+"Person."
+msgstr ""
+"Payouts at or above the approval limit need approval by a second person."
+
+msgid ""
+"Eigentümerauszahlungen, Rückerstattungen von Mieterguthaben und "
+"Kautionsrückzahlungen ab der Freigabelimite werden erst gebucht, wenn ein "
+"Verwalter oder der Inhaber sie freigegeben hat. Wer die Auszahlung ausgelöst"
+" hat, darf sie nicht selbst freigeben. Die Freigabe gilt einmal und nur für "
+"den Betrag und die IBAN, die auf dieser Seite stehen."
+msgstr ""
+"Owner payouts, refunds of tenant credits and deposit repayments at or above "
+"the approval limit are only booked once a manager or the owner of the "
+"account has approved them. Whoever triggered the payout may not approve it "
+"themselves. The approval is valid once and only for the amount and IBAN "
+"shown on this page."
+
+msgid "IBAN des Empfängers"
+msgstr "Recipient IBAN"
+
+msgid "Zur Auszahlung"
+msgstr "Go to the payout"
+
+msgid ""
+"Betrag oder IBAN wurden nach der Freigabe geändert. Die Auszahlung muss "
+"erneut ausgelöst und freigegeben werden."
+msgstr ""
+"The amount or IBAN was changed after approval. The payout must be triggered "
+"and approved again."
+
+msgid ""
+"Sie haben diese Auszahlung vorgelegt. Eine zweite Person muss sie freigeben."
+msgstr "You submitted this payout. A second person must approve it."
+
+msgid "Zuletzt ausgeführt"
+msgstr "Recently executed"
+
+#, python-format
+msgid "Freigegeben von %(name)s. Die Auszahlung kann jetzt ausgelöst werden."
+msgstr "Approved by %(name)s. The payout can now be triggered."
+
+#, python-format
+msgid "CHF %(betrag)s freigeben"
+msgstr "Approve CHF %(betrag)s"
+
+#, python-format
+msgid "vorgelegt von %(vorleger)s, freigegeben von %(freigeber)s"
+msgstr "submitted by %(vorleger)s, approved by %(freigeber)s"
+
+msgid ""
+"Dieselbe Limite gilt für Eigentümerauszahlungen, die Rückerstattung von "
+"Mieterguthaben und Kautionsrückzahlungen. Rechnungen desselben Kreditors in "
+"einem Zahllauf zählen zusammen."
+msgstr ""
+"The same limit applies to owner payouts, refunds of tenant credits and "
+"deposit repayments. Invoices from the same creditor in one payment run are "
+"added together."
+
+msgid "Summenregel: mehrere Rechnungen desselben Kreditors"
+msgstr "Sum rule: several invoices from the same creditor"
+
+msgid ""
+"Einzeln liegen diese Rechnungen unter dem Freigabelimit, zusammen erreichen "
+"sie es. Sie gehören nur in die Zahlungsdatei, wenn eine zweite Person sie "
+"freigegeben hat:"
+msgstr ""
+"Individually these invoices are below the approval limit, together they "
+"reach it. They only go into the payment file once a second person has "
+"approved them:"
+
+msgid ""
+"Freie Zuordnung (Überschriften und Format unten einstellbar, für Abacus und "
+"andere)"
+msgstr ""
+"Free mapping (headings and format can be set below, for Abacus and others)"
+
+msgid "Banana Buchhaltung (feste Vorgabe von Banana)"
+msgstr "Banana Accounting (fixed format required by Banana)"
+
+msgid ""
+"Freie Zuordnung: Spalten Buchungsdatum, Belegnummer, Soll, Haben, Betrag, "
+"Text, MWST-Code (Überschriften unten einstellbar). Stornobuchungen stehen "
+"als eigene Zeilen. Es werden nur Buchungen gelesen, nichts wird verändert."
+msgstr ""
+"Free mapping: columns posting date, document number, debit, credit, amount, "
+"text, VAT code (headings can be set below). Reversal entries appear as "
+"separate rows. Entries are only read, nothing is changed."
+
+msgid "Import in Banana"
+msgstr "Import into Banana"
+
+msgid "Format «Banana Buchhaltung» wählen und die Datei (.txt) herunterladen."
+msgstr "Choose the “Banana Accounting” format and download the file (.txt)."
+
+msgid ""
+"In Banana die Buchhaltung öffnen und «Aktionen > In Buchhaltung importieren "
+"> Text file with column headers» wählen (auf Deutsch: Aktionen > In "
+"Buchhaltung importieren)."
+msgstr ""
+"Open the accounting file in Banana and choose “Actions > Import into "
+"Accounting > Text file with column headers” (in German: Aktionen > In "
+"Buchhaltung importieren)."
+
+msgid ""
+"Die Datei wählen. Die Kopfzeile (Date, Doc, Description, AccountDebit, "
+"AccountCredit, Amount, VatCode, ExternalReference) erkennt Banana von "
+"selbst."
+msgstr ""
+"Choose the file. Banana recognises the header row (Date, Doc, Description, "
+"AccountDebit, AccountCredit, Amount, VatCode, ExternalReference) by itself."
+
+msgid ""
+"Die Kontonummern in der Datei kommen aus der Kontenzuordnung unten: Tragen "
+"Sie dort die Kontonummern Ihres Banana-Kontenplans ein, sonst gehen die "
+"Nummern von immoswiss in die Datei. Die ExternalReference (immoswiss-Jahr-"
+"Buchungs-ID) ist je Buchung eindeutig. Datum yyyy-mm-dd, Tabulator als "
+"Trennzeichen, Betrag mit Punkt: Das setzt das Format selbst."
+msgstr ""
+"The account numbers in the file come from the account mapping below: enter "
+"the account numbers of your Banana chart of accounts there, otherwise the "
+"immoswiss numbers go into the file. The ExternalReference (immoswiss-year-"
+"entry ID) is unique for each entry. Date yyyy-mm-dd, tab as separator, "
+"amount with a decimal point: the format sets these itself."
+
+#, python-format
+msgid "%(n)s Auszahlung wartet auf Freigabe"
+msgid_plural "%(n)s Auszahlungen warten auf Freigabe"
+msgstr[0] "%(n)s payout is waiting for approval"
+msgstr[1] "%(n)s payouts are waiting for approval"
+
+msgid "Keine Auszahlung wartet auf Freigabe."
+msgstr "No payout is waiting for approval."
+
+msgid ""
+"Auszahlungen ab der Freigabelimite erscheinen hier, sobald jemand sie "
+"auslöst."
+msgstr ""
+"Payouts at or above the approval limit appear here as soon as someone "
+"triggers them."

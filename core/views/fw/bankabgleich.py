@@ -498,6 +498,8 @@ def fw_guthaben_rueckerstatten(request):
             return redirect('fw_bankabgleich')
     bank_nr = bank_nr_aus_eingabe(request.POST.get('bank_konto'))
     from core.services.zahlungsklaerung import zurueckueberweisen, ZuordnungsFehler
+    from core.views.fw.zahlungsfreigabe import auszahlung_gesperrt_melden
+    from finance.freigabe import AuszahlungGesperrt
     try:
         with transaction.atomic():
             z = get_object_or_404(
@@ -508,6 +510,10 @@ def fw_guthaben_rueckerstatten(request):
             # gehört, geht an den Absender zurück.
             war_guthaben = bool(z.konto_id and z.konto.nummer == '2030')
             zurueckueberweisen(z, bank_nr=bank_nr, valuta=valuta, user=request.user)
+    except AuszahlungGesperrt as gesperrt:
+        # Vier-Augen-Prinzip: ab der Freigabelimite nichts gebucht, die Rückzahlung ist vorgelegt.
+        auszahlung_gesperrt_melden(request, gesperrt)
+        return redirect(ziel)
     except ZuordnungsFehler as exc:
         messages.error(request, f"❌ {exc}")
         return redirect(ziel)

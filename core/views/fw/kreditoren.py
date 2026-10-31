@@ -91,13 +91,13 @@ def _name(user):
     return (user.get_full_name() or user.get_username()) if user else ''
 
 
-def _vier_augen(k, user, organisation, darf_freigeben):
+def _vier_augen(k, user, organisation, darf_freigeben, gruppensumme=None):
     """Der Stand des Vier-Augen-Prinzips einer Rechnung für Liste und Zahllauf.
 
     `sperre`: Die Zahlung ist gesperrt, bis eine zweite Person freigibt.
     `kann_freigeben`: Diese Person darf freigeben (Rolle UND nicht der Vorleger)."""
     from finance.freigabe import braucht_zahlungsfreigabe, freigabe_gueltig
-    if not braucht_zahlungsfreigabe(k, organisation):
+    if not braucht_zahlungsfreigabe(k, organisation, gruppensumme):
         return {'noetig': False, 'sperre': False}
     gueltig = freigabe_gueltig(k)
     vorgelegt = bool(k.zahlung_beantragt_von_id) and not gueltig
@@ -110,20 +110,33 @@ def _vier_augen(k, user, organisation, darf_freigeben):
     }
 
 
-def _vier_augen_pruefen(request, k):
+def summenregel_text(gruppe):
+    """Erklärt, welche Rechnungen desselben Kreditors zusammen die Freigabelimite erreichen."""
+    from core.templatetags.chf import chf
+    teile = '; '.join(f"{r.referenz or '#' + str(r.pk)} (CHF {chf(r.betrag)})" for r in gruppe['rechnungen'])
+    return gettext(
+        '«%(lieferant)s»: Die Rechnungen %(rechnungen)s ergeben zusammen CHF %(summe)s und erreichen damit '
+        'das Freigabelimit von CHF %(limit)s. Jede dieser Rechnungen braucht die Freigabe einer zweiten Person.'
+    ) % {'lieferant': gruppe['lieferant'], 'rechnungen': teile, 'summe': chf(gruppe['summe']),
+         'limit': chf(gruppe['limit'])}
+
+
+def _vier_augen_pruefen(request, k, gruppensumme=None):
     """Sperre des Vier-Augen-Prinzips für eine Zahlung. Gibt die Meldung zurück oder `None`.
 
     Eine gesperrte Zahlung wird zugleich zur Freigabe vorgelegt (wer sie auslösen
     wollte, steht damit als Vorleger fest), und der Versuch kommt ins Protokoll —
-    die zweite Person sieht sie dann in der Liste, ohne dass jemand nachfassen muss."""
+    die zweite Person sieht sie dann in der Liste, ohne dass jemand nachfassen muss.
+    `gruppensumme`: die Summe der Rechnungen desselben Kreditors im Zahllauf (Summenregel)."""
     from core.auth import log_aktion
     from finance.freigabe import vorlegen, zahlung_sperre
-    sperre = zahlung_sperre(k, aktuelle_organisation())
+    sperre = zahlung_sperre(k, aktuelle_organisation(), gruppensumme)
     if not sperre:
         return None
-    if vorlegen(k, request.user):
+    if vorlegen(k, request.user, gruppensumme):
         log_aktion(request, 'Zahlung zur Freigabe vorgelegt', k.lieferant or f'Rechnung #{k.id}',
-                   f'CHF {k.betrag} · automatisch beim Auslösen der Zahlung')
+                   f'CHF {k.betrag} · automatisch beim Auslösen der Zahlung'
+                   + (f' · Summenregel: CHF {gruppensumme} desselben Kreditors im Zahllauf' if gruppensumme else ''))
     log_aktion(request, 'Zahlung gesperrt (Vier-Augen-Prinzip)', k.lieferant or f'Rechnung #{k.id}',
                f'CHF {k.betrag} · {sperre}')
     return sperre
@@ -476,17 +489,29 @@ def fw_zahllauf(request):
             qs = qs.filter(liegenschaft=aktive_lg)
         # Rechnungen mit ausstehender/abgelehnter Eigentümerfreigabe fallen aus
         # der Auswahl — laut, nicht still (finance/freigabe.py).
-        from finance.freigabe import freigabe_sperre
+        from finance.freigabe import freigabe_sperre, gruppensumme_je_rechnung, summenregel_gruppen
         frei, gesperrt_n, vier_augen_n = [], 0, 0
-        for k in qs.select_related('liegenschaft'):
+        auswahl = list(qs.select_related('liegenschaft'))
+        # SUMMENREGEL (Etappe 4): Die Rechnungen desselben Kreditors in diesem Lauf zählen zusammen.
+        # Erreichen sie die Limite, braucht jede von ihnen die Freigabe einer zweiten Person, auch
+        # wenn sie einzeln darunter liegt.
+        gruppen = summenregel_gruppen([k for k in auswahl if not freigabe_sperre(k)],
+                                      aktuelle_organisation()) if vier_augen else []
+        summen = gruppensumme_je_rechnung(gruppen)
+        gebremst = set()
+        for k in auswahl:
             if freigabe_sperre(k):
                 gesperrt_n += 1
-            elif vier_augen and _vier_augen_pruefen(request, k):
+            elif vier_augen and _vier_augen_pruefen(request, k, summen.get(k.pk)):
                 # Vier-Augen-Prinzip: Rechnungen ab dem Limit fallen aus dem Lauf,
                 # bis eine zweite Person die Zahlung freigegeben hat — laut, nicht still.
                 vier_augen_n += 1
+                gebremst.add(k.pk)
             else:
                 frei.append(k)
+        for g in gruppen:
+            if any(r.pk in gebremst for r in g['rechnungen']):
+                messages.error(request, '⛔ ' + summenregel_text(g))
         if gesperrt_n:
             messages.error(request, '⛔ ' + gettext(
                 '%(n)s Rechnung(en) ausgelassen: Eigentümerfreigabe der Reparatur fehlt oder wurde abgelehnt.') % {'n': gesperrt_n})
@@ -656,7 +681,13 @@ def fw_zahllauf(request):
     summe_vorschlag = Decimal('0.00')
     summe_laufend = Decimal('0.00')
     ohne_iban = 0
-    for r in qs:
+    alle = list(qs)
+    # Summenregel (Etappe 4): vorab erklärt, was beim Auswählen passiert. Gerechnet wird über die
+    # vorgeschlagenen Rechnungen mit IBAN (nur die sind vorausgewählt).
+    from finance.freigabe import gruppensumme_je_rechnung, summenregel_gruppen
+    gruppen = summenregel_gruppen([r for r in alle if r.status != 'in_zahlung' and (r.iban or '').strip()], vw)
+    summen = gruppensumme_je_rechnung(gruppen)
+    for r in alle:
         offen = r.offener_betrag
         zeile = {
             'k': r, 'offen': offen,
@@ -673,7 +704,7 @@ def fw_zahllauf(request):
             # Klick sichtbar, statt erst als Ablehnung danach.
             beanstandet = pruefe_zahlung(r)
             zeile['probleme'] = [t for _c, t in beanstandet]
-            zeile['va'] = _vier_augen(r, request.user, vw, darf_freigeben)
+            zeile['va'] = _vier_augen(r, request.user, vw, darf_freigeben, summen.get(r.pk))
             zeile['adresse_fehlt'] = any(c == 'adresse' for c, _t in beanstandet)
             vorschlag.append(zeile); summe_vorschlag += offen
             if not zeile['iban']:
@@ -689,6 +720,7 @@ def fw_zahllauf(request):
         'vorschlag': vorschlag, 'laufend': laufend,
         'summe_vorschlag': summe_vorschlag, 'summe_laufend': summe_laufend,
         'ohne_iban': ohne_iban, 'heute': heute,
+        'summenregel': [summenregel_text(g) for g in gruppen],
         'fehler_liste': request.session.pop('zahllauf_fehler', []),
         'verwaltung_iban': ((vw.iban if vw else '') or '').strip(),
         'bankkonten': bankkonten_der_verwaltung(),

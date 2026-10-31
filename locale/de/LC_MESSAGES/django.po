@@ -35326,3 +35326,256 @@ msgstr "Jede Spalte braucht eine eigene Überschrift."
 
 msgid "Die Einstellungen für das Buchungsjournal sind gespeichert."
 msgstr "Die Einstellungen für das Buchungsjournal sind gespeichert."
+
+msgid ""
+"Diese Zahlung braucht die Freigabe einer zweiten Person (zusammen mit den "
+"übrigen Rechnungen desselben Kreditors im Zahllauf erreicht sie das "
+"Freigabelimit)."
+msgstr ""
+"Diese Zahlung braucht die Freigabe einer zweiten Person (zusammen mit den "
+"übrigen Rechnungen desselben Kreditors im Zahllauf erreicht sie das "
+"Freigabelimit)."
+
+msgid ""
+"Betrag oder IBAN wurden nach der Freigabe geändert — die Auszahlung braucht "
+"eine neue Freigabe durch eine zweite Person."
+msgstr ""
+"Betrag oder IBAN wurden nach der Freigabe geändert — die Auszahlung braucht "
+"eine neue Freigabe durch eine zweite Person."
+
+#, python-format
+msgid ""
+"Diese Auszahlung braucht die Freigabe einer zweiten Person (Betrag ab dem "
+"Freigabelimit von CHF %(limit)s)."
+msgstr ""
+"Diese Auszahlung braucht die Freigabe einer zweiten Person (Betrag ab dem "
+"Freigabelimit von CHF %(limit)s)."
+
+msgid "Diese Auszahlung wurde bereits ausgeführt."
+msgstr "Diese Auszahlung wurde bereits ausgeführt."
+
+msgid "Dieser Betrag liegt unter dem Freigabelimit — keine Freigabe nötig."
+msgstr "Dieser Betrag liegt unter dem Freigabelimit — keine Freigabe nötig."
+
+msgid "Die Auszahlung wurde noch nicht vorgelegt."
+msgstr "Die Auszahlung wurde noch nicht vorgelegt."
+
+msgid ""
+"Wer die Auszahlung vorgelegt hat, darf sie nicht selbst freigeben (Vier-"
+"Augen-Prinzip)."
+msgstr ""
+"Wer die Auszahlung vorgelegt hat, darf sie nicht selbst freigeben (Vier-"
+"Augen-Prinzip)."
+
+msgid "Die Auszahlung ist bereits freigegeben."
+msgstr "Die Auszahlung ist bereits freigegeben."
+
+msgid ""
+"Betrag oder IBAN haben sich seit dem Öffnen der Seite geändert. Bitte die "
+"Seite neu laden und die Angaben erneut prüfen."
+msgstr ""
+"Betrag oder IBAN haben sich seit dem Öffnen der Seite geändert. Bitte die "
+"Seite neu laden und die Angaben erneut prüfen."
+
+#, python-format
+msgid ""
+"%(text)s Sie ist vorgelegt und erscheint unter Einstellungen → "
+"Zahlungsfreigabe → Auszahlungen; danach die Auszahlung erneut auslösen."
+msgstr ""
+"%(text)s Sie ist vorgelegt und erscheint unter Einstellungen → "
+"Zahlungsfreigabe → Auszahlungen; danach die Auszahlung erneut auslösen."
+
+msgid "Dieser Antrag wurde inzwischen zurückgenommen."
+msgstr "Dieser Antrag wurde inzwischen zurückgenommen."
+
+msgid ""
+"Die Auszahlung ist freigegeben. Sie kann jetzt ausgelöst werden; die "
+"Freigabe gilt für einmal."
+msgstr ""
+"Die Auszahlung ist freigegeben. Sie kann jetzt ausgelöst werden; die "
+"Freigabe gilt für einmal."
+
+#, python-format
+msgid ""
+"«%(lieferant)s»: Die Rechnungen %(rechnungen)s ergeben zusammen CHF "
+"%(summe)s und erreichen damit das Freigabelimit von CHF %(limit)s. Jede "
+"dieser Rechnungen braucht die Freigabe einer zweiten Person."
+msgstr ""
+"«%(lieferant)s»: Die Rechnungen %(rechnungen)s ergeben zusammen CHF "
+"%(summe)s und erreichen damit das Freigabelimit von CHF %(limit)s. Jede "
+"dieser Rechnungen braucht die Freigabe einer zweiten Person."
+
+#, python-format
+msgid "Das Format «%(p)s» gibt es nicht."
+msgstr "Das Format «%(p)s» gibt es nicht."
+
+msgid "Die Auszahlung braucht die Freigabe einer zweiten Person."
+msgstr "Die Auszahlung braucht die Freigabe einer zweiten Person."
+
+msgid "Banana Buchhaltung"
+msgstr "Banana Buchhaltung"
+
+msgid "Eigentümerauszahlung"
+msgstr "Eigentümerauszahlung"
+
+msgid "Rückerstattung Mieterguthaben"
+msgstr "Rückerstattung Mieterguthaben"
+
+msgid "Rücküberweisung Fremdeingang"
+msgstr "Rücküberweisung Fremdeingang"
+
+msgid "Kautionsrückzahlung"
+msgstr "Kautionsrückzahlung"
+
+msgid "Auszahlung aus der Schlussabrechnung"
+msgstr "Auszahlung aus der Schlussabrechnung"
+
+msgid "Auszahlungen freigeben"
+msgstr "Auszahlungen freigeben"
+
+msgid ""
+"Auszahlungen ab der Freigabelimite brauchen die Freigabe einer zweiten "
+"Person."
+msgstr ""
+"Auszahlungen ab der Freigabelimite brauchen die Freigabe einer zweiten "
+"Person."
+
+msgid ""
+"Eigentümerauszahlungen, Rückerstattungen von Mieterguthaben und "
+"Kautionsrückzahlungen ab der Freigabelimite werden erst gebucht, wenn ein "
+"Verwalter oder der Inhaber sie freigegeben hat. Wer die Auszahlung ausgelöst"
+" hat, darf sie nicht selbst freigeben. Die Freigabe gilt einmal und nur für "
+"den Betrag und die IBAN, die auf dieser Seite stehen."
+msgstr ""
+"Eigentümerauszahlungen, Rückerstattungen von Mieterguthaben und "
+"Kautionsrückzahlungen ab der Freigabelimite werden erst gebucht, wenn ein "
+"Verwalter oder der Inhaber sie freigegeben hat. Wer die Auszahlung ausgelöst"
+" hat, darf sie nicht selbst freigeben. Die Freigabe gilt einmal und nur für "
+"den Betrag und die IBAN, die auf dieser Seite stehen."
+
+msgid "IBAN des Empfängers"
+msgstr "IBAN des Empfängers"
+
+msgid "Zur Auszahlung"
+msgstr "Zur Auszahlung"
+
+msgid ""
+"Betrag oder IBAN wurden nach der Freigabe geändert. Die Auszahlung muss "
+"erneut ausgelöst und freigegeben werden."
+msgstr ""
+"Betrag oder IBAN wurden nach der Freigabe geändert. Die Auszahlung muss "
+"erneut ausgelöst und freigegeben werden."
+
+msgid ""
+"Sie haben diese Auszahlung vorgelegt. Eine zweite Person muss sie freigeben."
+msgstr ""
+"Sie haben diese Auszahlung vorgelegt. Eine zweite Person muss sie freigeben."
+
+msgid "Zuletzt ausgeführt"
+msgstr "Zuletzt ausgeführt"
+
+#, python-format
+msgid "Freigegeben von %(name)s. Die Auszahlung kann jetzt ausgelöst werden."
+msgstr "Freigegeben von %(name)s. Die Auszahlung kann jetzt ausgelöst werden."
+
+#, python-format
+msgid "CHF %(betrag)s freigeben"
+msgstr "CHF %(betrag)s freigeben"
+
+#, python-format
+msgid "vorgelegt von %(vorleger)s, freigegeben von %(freigeber)s"
+msgstr "vorgelegt von %(vorleger)s, freigegeben von %(freigeber)s"
+
+msgid ""
+"Dieselbe Limite gilt für Eigentümerauszahlungen, die Rückerstattung von "
+"Mieterguthaben und Kautionsrückzahlungen. Rechnungen desselben Kreditors in "
+"einem Zahllauf zählen zusammen."
+msgstr ""
+"Dieselbe Limite gilt für Eigentümerauszahlungen, die Rückerstattung von "
+"Mieterguthaben und Kautionsrückzahlungen. Rechnungen desselben Kreditors in "
+"einem Zahllauf zählen zusammen."
+
+msgid "Summenregel: mehrere Rechnungen desselben Kreditors"
+msgstr "Summenregel: mehrere Rechnungen desselben Kreditors"
+
+msgid ""
+"Einzeln liegen diese Rechnungen unter dem Freigabelimit, zusammen erreichen "
+"sie es. Sie gehören nur in die Zahlungsdatei, wenn eine zweite Person sie "
+"freigegeben hat:"
+msgstr ""
+"Einzeln liegen diese Rechnungen unter dem Freigabelimit, zusammen erreichen "
+"sie es. Sie gehören nur in die Zahlungsdatei, wenn eine zweite Person sie "
+"freigegeben hat:"
+
+msgid ""
+"Freie Zuordnung (Überschriften und Format unten einstellbar, für Abacus und "
+"andere)"
+msgstr ""
+"Freie Zuordnung (Überschriften und Format unten einstellbar, für Abacus und "
+"andere)"
+
+msgid "Banana Buchhaltung (feste Vorgabe von Banana)"
+msgstr "Banana Buchhaltung (feste Vorgabe von Banana)"
+
+msgid ""
+"Freie Zuordnung: Spalten Buchungsdatum, Belegnummer, Soll, Haben, Betrag, "
+"Text, MWST-Code (Überschriften unten einstellbar). Stornobuchungen stehen "
+"als eigene Zeilen. Es werden nur Buchungen gelesen, nichts wird verändert."
+msgstr ""
+"Freie Zuordnung: Spalten Buchungsdatum, Belegnummer, Soll, Haben, Betrag, "
+"Text, MWST-Code (Überschriften unten einstellbar). Stornobuchungen stehen "
+"als eigene Zeilen. Es werden nur Buchungen gelesen, nichts wird verändert."
+
+msgid "Import in Banana"
+msgstr "Import in Banana"
+
+msgid "Format «Banana Buchhaltung» wählen und die Datei (.txt) herunterladen."
+msgstr ""
+"Format «Banana Buchhaltung» wählen und die Datei (.txt) herunterladen."
+
+msgid ""
+"In Banana die Buchhaltung öffnen und «Aktionen > In Buchhaltung importieren "
+"> Text file with column headers» wählen (auf Deutsch: Aktionen > In "
+"Buchhaltung importieren)."
+msgstr ""
+"In Banana die Buchhaltung öffnen und «Aktionen > In Buchhaltung importieren "
+"> Text file with column headers» wählen (auf Deutsch: Aktionen > In "
+"Buchhaltung importieren)."
+
+msgid ""
+"Die Datei wählen. Die Kopfzeile (Date, Doc, Description, AccountDebit, "
+"AccountCredit, Amount, VatCode, ExternalReference) erkennt Banana von "
+"selbst."
+msgstr ""
+"Die Datei wählen. Die Kopfzeile (Date, Doc, Description, AccountDebit, "
+"AccountCredit, Amount, VatCode, ExternalReference) erkennt Banana von "
+"selbst."
+
+msgid ""
+"Die Kontonummern in der Datei kommen aus der Kontenzuordnung unten: Tragen "
+"Sie dort die Kontonummern Ihres Banana-Kontenplans ein, sonst gehen die "
+"Nummern von immoswiss in die Datei. Die ExternalReference (immoswiss-Jahr-"
+"Buchungs-ID) ist je Buchung eindeutig. Datum yyyy-mm-dd, Tabulator als "
+"Trennzeichen, Betrag mit Punkt: Das setzt das Format selbst."
+msgstr ""
+"Die Kontonummern in der Datei kommen aus der Kontenzuordnung unten: Tragen "
+"Sie dort die Kontonummern Ihres Banana-Kontenplans ein, sonst gehen die "
+"Nummern von immoswiss in die Datei. Die ExternalReference (immoswiss-Jahr-"
+"Buchungs-ID) ist je Buchung eindeutig. Datum yyyy-mm-dd, Tabulator als "
+"Trennzeichen, Betrag mit Punkt: Das setzt das Format selbst."
+
+#, python-format
+msgid "%(n)s Auszahlung wartet auf Freigabe"
+msgid_plural "%(n)s Auszahlungen warten auf Freigabe"
+msgstr[0] "%(n)s Auszahlung wartet auf Freigabe"
+msgstr[1] "%(n)s Auszahlungen warten auf Freigabe"
+
+msgid "Keine Auszahlung wartet auf Freigabe."
+msgstr "Keine Auszahlung wartet auf Freigabe."
+
+msgid ""
+"Auszahlungen ab der Freigabelimite erscheinen hier, sobald jemand sie "
+"auslöst."
+msgstr ""
+"Auszahlungen ab der Freigabelimite erscheinen hier, sobald jemand sie "
+"auslöst."

@@ -264,6 +264,14 @@ def zurueckueberweisen(zahlung, *, bank_nr='1020', valuta=None, user=None):
             text = f"Rückerstattung Guthaben {zahlung.vertrag.mieter} [Z{zahlung.pk}]"
         else:
             text = f"Rücküberweisung Fremdeingang [Z{zahlung.pk}]"
+        # VIER-AUGEN-PRINZIP (Etappe 4): Ab der Freigabelimite gibt eine zweite Person die Rückzahlung
+        # frei. Die Freigabe wird in dieser Transaktion verbraucht; fehlt sie, wird nichts gebucht
+        # (`AuszahlungGesperrt`). Empfänger-IBAN: die des Mieters; ein Fremdeingang hat keine (leer).
+        from finance.freigabe import auszahlung_pruefen
+        mieter = zahlung.vertrag.mieter if zahlung.vertrag_id else None
+        auszahlung_pruefen('guthaben' if park_nr == '2030' else 'fremdeingang', zahlung.pk, zahlung.betrag,
+                           mieter.iban if mieter else '', organisation=zahlung.organisation,
+                           bezug_text=str(mieter) if mieter else f'Fremdeingang #{zahlung.pk}')
         buche(park_nr, bank_nr, zahlung.betrag, text, datum=valuta, liegenschaft=lg,
               zahlung=zahlung, user=user)
         zahlung.konto = None
