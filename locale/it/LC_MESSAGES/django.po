@@ -36676,3 +36676,281 @@ msgstr "Ogni colonna ha bisogno di una propria intestazione."
 
 msgid "Die Einstellungen für das Buchungsjournal sind gespeichert."
 msgstr "Le impostazioni del giornale contabile sono state salvate."
+
+#: Eigentümerportal v2 (Etappe 4)
+
+msgid "Meine Eigentumseinheiten"
+msgstr "Le mie unità di proprietà"
+
+msgid "Profil und Sprache"
+msgstr "Profilo e lingua"
+
+msgid "Eigentümerportal — immoswiss"
+msgstr "Portale proprietari — immoswiss"
+
+msgid "immoswiss Eigentümerportal · Alle Angaben ohne Gewähr"
+msgstr "Portale proprietari immoswiss · Senza garanzia"
+
+msgid "Mandat beendet"
+msgstr "Mandato terminato"
+
+msgid "Das Mandat endete am %(datum)s."
+msgstr "Il mandato è terminato il %(datum)s."
+
+msgid "Das Mandat wurde am %(datum)s archiviert."
+msgstr "Il mandato è stato archiviato il %(datum)s."
+
+msgid "Ihre Unterlagen bleiben zur Einsicht. Änderungen und neue Anfragen sind über das Portal nicht mehr möglich."
+msgstr "I vostri documenti restano consultabili. Modifiche e nuove richieste non sono più possibili tramite il portale."
+
+msgid "Abrechnungen — Eigentümerportal"
+msgstr "Conteggi — Portale proprietari"
+
+msgid "Abrechnungen und Auszahlungen"
+msgstr "Conteggi e versamenti"
+
+msgid "Eigentümerabrechnung je Jahr, Kontokorrent und Auszahlungen."
+msgstr "Conteggio del proprietario per anno, conto corrente e versamenti."
+
+msgid "Ertrag (alle Jahre)"
+msgstr "Ricavi (tutti gli anni)"
+
+msgid "Aufwand (alle Jahre)"
+msgstr "Costi (tutti gli anni)"
+
+msgid "Guthaben laut Kontokorrent"
+msgstr "Avere secondo il conto corrente"
+
+msgid "Der Auszahlungstermin wird von Ihrer Verwaltung festgelegt."
+msgstr "La data del versamento è stabilita dalla vostra amministrazione."
+
+msgid "Eigentümerabrechnung je Jahr"
+msgstr "Conteggio del proprietario per anno"
+
+msgid "Keine Buchungen"
+msgstr "Nessuna registrazione"
+
+msgid "Ertrag CHF %(e)s · Aufwand CHF %(a)s"
+msgstr "Ricavi CHF %(e)s · Costi CHF %(a)s"
+
+msgid "Ergebnis CHF %(s)s"
+msgstr "Risultato CHF %(s)s"
+
+msgid "Bisher wurde keine Auszahlung verbucht."
+msgstr "Finora non è stato registrato alcun versamento."
+
+msgid "Keine offenen Posten. Alle Mieten sind bezahlt."
+msgstr "Nessuna partita aperta. Tutte le pigioni sono pagate."
+
+msgid "Steuerauszug"
+msgstr "Estratto fiscale"
+
+msgid "Liegenschaftsrechnung für die Steuererklärung."
+msgstr "Conto dello stabile per la dichiarazione fiscale."
+
+msgid "Dokumente — Eigentümerportal"
+msgstr "Documenti — Portale proprietari"
+
+msgid "Unterlagen zu Ihren Liegenschaften, die Ihre Verwaltung für Sie freigegeben hat."
+msgstr "Documenti sui vostri stabili, messi a vostra disposizione dalla vostra amministrazione."
+
+msgid "Baujahr %(jahr)s"
+msgstr "Anno di costruzione %(jahr)s"
+
+msgid "Archivierte Liegenschaft"
+msgstr "Stabile archiviato"
+
+msgid "Archiviert am %(datum)s."
+msgstr "Archiviato il %(datum)s."
+
+msgid "Die Angaben sind nur noch zur Einsicht."
+msgstr "Le informazioni sono ormai solo consultabili."
+
+msgid "Soll-Nettomiete / Monat"
+msgstr "Pigione netta teorica / mese"
+
+msgid "Objekte und Belegung"
+msgstr "Oggetti e occupazione"
+
+msgid "%(n)s Zimmer"
+msgstr "%(n)s locali"
+
+msgid "bis %(datum)s"
+msgstr "fino al %(datum)s"
+
+msgid "CHF %(netto)s netto · CHF %(brutto)s brutto pro Monat"
+msgstr "CHF %(netto)s netti · CHF %(brutto)s lordi al mese"
+
+msgid "Keine Objekte erfasst"
+msgstr "Nessun oggetto registrato"
+
+msgid "Zu dieser Liegenschaft sind noch keine Objekte erfasst."
+msgstr "Per questo stabile non sono ancora stati registrati oggetti."
+
+msgid "Für diese Liegenschaft hat die Verwaltung noch keine Dokumente freigegeben."
+msgstr "L'amministrazione non ha ancora reso disponibili documenti per questo stabile."
+
+msgid "Liegenschaften — Eigentümerportal"
+msgstr "Stabili — Portale proprietari"
+
+msgid "Ihre Liegenschaften mit Objekten und Belegung."
+msgstr "I vostri stabili con oggetti e occupazione."
+
+msgid "Voll vermietet"
+msgstr "Completamente locato"
+
+msgid "Soll-Nettomiete CHF %(betrag)s pro Monat"
+msgstr "Pigione netta teorica CHF %(betrag)s al mese"
+
+msgid "Archivierte Liegenschaften"
+msgstr "Stabili archiviati"
+
+msgid "Archiviert am %(datum)s"
+msgstr "Archiviato il %(datum)s"
+
+msgid "Mitteilungen — Eigentümerportal"
+msgstr "Messaggi — Portale proprietari"
+
+msgid "Mitteilungen an die Verwaltung"
+msgstr "Messaggi all'amministrazione"
+
+msgid "Stellen Sie Ihrer Verwaltung eine Frage oder melden Sie ein Anliegen. Sie antwortet per E-Mail oder Telefon."
+msgstr "Ponete una domanda alla vostra amministrazione o segnalate una richiesta. Risponde per e-mail o per telefono."
+
+msgid "Kontakt zur Verwaltung"
+msgstr "Contatto con l'amministrazione"
+
+msgid "An die Verwaltung senden"
+msgstr "Invia all'amministrazione"
+
+msgid "Sie haben noch keine Anfrage gestellt."
+msgstr "Non avete ancora inviato alcuna richiesta."
+
+msgid "Profil und Sprache — Eigentümerportal"
+msgstr "Profilo e lingua — Portale proprietari"
+
+msgid "Profil"
+msgstr "Profilo"
+
+msgid "Ihre Angaben, Sprache und Zugang."
+msgstr "I vostri dati, la lingua e l'accesso."
+
+msgid "Ihre Angaben"
+msgstr "I vostri dati"
+
+msgid "Auszahlung auf"
+msgstr "Versamento su"
+
+msgid "Angaben ändert die Verwaltung. Teilen Sie eine Änderung über die Mitteilungen mit."
+msgstr "I dati vengono modificati dall'amministrazione. Comunicate una modifica tramite i messaggi."
+
+msgid "Änderung mitteilen"
+msgstr "Comunicare una modifica"
+
+msgid "Sprache und Darstellung"
+msgstr "Lingua e visualizzazione"
+
+msgid "Sprache des Portals"
+msgstr "Lingua del portale"
+
+msgid "Sprache der Briefe und Abrechnungen"
+msgstr "Lingua delle lettere e dei conteggi"
+
+msgid "Automatisch"
+msgstr "Automatico"
+
+msgid "Der aktuelle Stand Ihrer Liegenschaften auf einen Blick."
+msgstr "Lo stato attuale dei vostri stabili a colpo d'occhio."
+
+msgid "Ablehnen"
+msgstr "Rifiutare"
+
+msgid "Kennzahlen"
+msgstr "Indicatori"
+
+msgid "leere Objekte von %(n)s · Leerstandsquote %(q)s %%"
+msgstr "oggetti sfitti su %(n)s · tasso di sfitto %(q)s %%"
+
+msgid "pro Monat"
+msgstr "al mese"
+
+msgid "Soll-Nettomiete der laufenden Mietverträge."
+msgstr "Pigione netta teorica dei contratti di locazione in corso."
+
+msgid "Gebucht %(jahr)s: CHF %(betrag)s"
+msgstr "Contabilizzato %(jahr)s: CHF %(betrag)s"
+
+msgid "Noch nichts überfällig."
+msgstr "Nulla è ancora scaduto."
+
+msgid "Alle Mieten sind bezahlt."
+msgstr "Tutte le pigioni sono pagate."
+
+msgid "Nächste Auszahlung"
+msgstr "Prossimo versamento"
+
+msgid "Guthaben laut Kontokorrent. Der Auszahlungstermin wird von Ihrer Verwaltung festgelegt."
+msgstr "Avere secondo il conto corrente. La data del versamento è stabilita dalla vostra amministrazione."
+
+msgid "Kein Guthaben zur Auszahlung."
+msgstr "Nessun avere da versare."
+
+msgid "Zuletzt am %(datum)s: CHF %(betrag)s"
+msgstr "Ultimo versamento il %(datum)s: CHF %(betrag)s"
+
+msgid "Ihre Liegenschaften"
+msgstr "I vostri stabili"
+
+msgid "Berichte zum Herunterladen"
+msgstr "Rapporti da scaricare"
+
+msgid "Im Eigentümerportal sichtbar (nur bei Liegenschaft oder Objekt)"
+msgstr "Visibile nel portale proprietari (solo per stabile o oggetto)"
+
+msgid "Für den Eigentümer im Portal sichtbar schalten"
+msgstr "Rendere visibile al proprietario nel portale"
+
+msgid "Im Eigentümerportal"
+msgstr "Nel portale proprietari"
+
+msgid "Nicht im Portal"
+msgstr "Non nel portale"
+
+msgid "Allgemeine Frage"
+msgstr "Domanda generale"
+
+msgid "Abrechnung oder Auszahlung"
+msgstr "Conteggio o versamento"
+
+msgid "Unterhalt oder Schaden"
+msgstr "Manutenzione o danno"
+
+msgid "Änderung meiner Angaben"
+msgstr "Modifica dei miei dati"
+
+msgid "Mandat oder Vertrag"
+msgstr "Mandato o contratto"
+
+msgid "Das Mandat ist beendet. Bitte wenden Sie sich direkt an die Verwaltung."
+msgstr "Il mandato è terminato. Rivolgetevi direttamente all'amministrazione."
+
+msgid "Der Betreff ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "L'oggetto è troppo lungo (al massimo %(n)s caratteri)."
+
+msgid "Bitte Ihre Nachricht eingeben."
+msgstr "Inserite il vostro messaggio."
+
+msgid "Die Nachricht ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "Il messaggio è troppo lungo (al massimo %(n)s caratteri)."
+
+msgid "Bitte die Art der Anfrage wählen."
+msgstr "Scegliete il tipo di richiesta."
+
+msgid "Bitte eine Ihrer Liegenschaften wählen."
+msgstr "Scegliete uno dei vostri stabili."
+
+msgid "Korrespondenzsprache gespeichert."
+msgstr "Lingua di corrispondenza salvata."
+
+msgid "Bitte eine der angebotenen Sprachen wählen."
+msgstr "Scegliete una delle lingue proposte."

@@ -84,6 +84,9 @@ from core.views.zweifaktor import (zweifaktor_login, zweifaktor_bestaetigen,
                                   zweifaktor_pflicht_setzen)
 from core.views.postfach import (postfach_liste, postfach_form, postfach_test,
                                  postfach_loeschen)
+from core.views.eigentuemer_portal import (portal_liegenschaften, portal_liegenschaft, portal_abrechnungen,
+                                           portal_abrechnung_pdf, portal_dokumente, portal_mitteilungen,
+                                           portal_profil, fw_ablage_portal_toggle)
 from core.views.portal import (portal_view, nach_login_view, portal_dokument_download, portal_report_pdf, portal_freigabe,
                                 portal_steuerauszug_pdf, portal_kontokorrent_pdf,
                                 mieter_portal_view, mieter_dokument_download, mieter_schaden_melden, mieter_rechnung_qr,
@@ -672,6 +675,15 @@ urlpatterns = [
     # --- EIGENTÜMER-PORTAL (read-only, nur eigener Eigentuemer) ---
     path('portal/stweg/', include('stweg.portal_urls')),
     path('portal/', portal_view, name='portal'),
+    # Eigentümerportal v2 (core/views/eigentuemer_portal.py)
+    path('portal/liegenschaften/', portal_liegenschaften, name='portal_liegenschaften'),
+    path('portal/liegenschaften/<int:pk>/', portal_liegenschaft, name='portal_liegenschaft'),
+    path('portal/abrechnungen/', portal_abrechnungen, name='portal_abrechnungen'),
+    path('portal/abrechnungen/pdf/', portal_abrechnung_pdf, name='portal_abrechnung_pdf'),
+    path('portal/dokumente/', portal_dokumente, name='portal_dokumente'),
+    path('portal/mitteilungen/', portal_mitteilungen, name='portal_mitteilungen'),
+    path('portal/profil/', portal_profil, name='portal_profil'),
+    path('neu/dokumente/<int:pk>/eigentuemerportal/', fw_ablage_portal_toggle, name='fw_ablage_portal_toggle'),
     path('portal/dokument/<int:pk>/', portal_dokument_download, name='portal_dokument_download'),
     path('portal/report/', portal_report_pdf, name='portal_report_pdf'),
     path('portal/steuerauszug/', portal_steuerauszug_pdf, name='portal_steuerauszug_pdf'),

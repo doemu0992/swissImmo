@@ -36142,3 +36142,281 @@ msgstr "Each column needs its own heading."
 
 msgid "Die Einstellungen für das Buchungsjournal sind gespeichert."
 msgstr "The settings for the accounting journal are saved."
+
+#: Eigentümerportal v2 (Etappe 4)
+
+msgid "Meine Eigentumseinheiten"
+msgstr "My owned units"
+
+msgid "Profil und Sprache"
+msgstr "Profile and language"
+
+msgid "Eigentümerportal — immoswiss"
+msgstr "Owner portal — immoswiss"
+
+msgid "immoswiss Eigentümerportal · Alle Angaben ohne Gewähr"
+msgstr "immoswiss owner portal · All information without guarantee"
+
+msgid "Mandat beendet"
+msgstr "Mandate ended"
+
+msgid "Das Mandat endete am %(datum)s."
+msgstr "The mandate ended on %(datum)s."
+
+msgid "Das Mandat wurde am %(datum)s archiviert."
+msgstr "The mandate was archived on %(datum)s."
+
+msgid "Ihre Unterlagen bleiben zur Einsicht. Änderungen und neue Anfragen sind über das Portal nicht mehr möglich."
+msgstr "Your documents remain available for viewing. Changes and new requests are no longer possible through the portal."
+
+msgid "Abrechnungen — Eigentümerportal"
+msgstr "Statements — Owner portal"
+
+msgid "Abrechnungen und Auszahlungen"
+msgstr "Statements and payouts"
+
+msgid "Eigentümerabrechnung je Jahr, Kontokorrent und Auszahlungen."
+msgstr "Owner statement per year, current account and payouts."
+
+msgid "Ertrag (alle Jahre)"
+msgstr "Income (all years)"
+
+msgid "Aufwand (alle Jahre)"
+msgstr "Expenses (all years)"
+
+msgid "Guthaben laut Kontokorrent"
+msgstr "Balance per current account"
+
+msgid "Der Auszahlungstermin wird von Ihrer Verwaltung festgelegt."
+msgstr "The payout date is set by your property manager."
+
+msgid "Eigentümerabrechnung je Jahr"
+msgstr "Owner statement per year"
+
+msgid "Keine Buchungen"
+msgstr "No bookings"
+
+msgid "Ertrag CHF %(e)s · Aufwand CHF %(a)s"
+msgstr "Income CHF %(e)s · Expenses CHF %(a)s"
+
+msgid "Ergebnis CHF %(s)s"
+msgstr "Result CHF %(s)s"
+
+msgid "Bisher wurde keine Auszahlung verbucht."
+msgstr "No payout has been booked so far."
+
+msgid "Keine offenen Posten. Alle Mieten sind bezahlt."
+msgstr "No open items. All rents are paid."
+
+msgid "Steuerauszug"
+msgstr "Tax statement"
+
+msgid "Liegenschaftsrechnung für die Steuererklärung."
+msgstr "Property accounts for your tax return."
+
+msgid "Dokumente — Eigentümerportal"
+msgstr "Documents — Owner portal"
+
+msgid "Unterlagen zu Ihren Liegenschaften, die Ihre Verwaltung für Sie freigegeben hat."
+msgstr "Documents about your properties that your property manager has released to you."
+
+msgid "Baujahr %(jahr)s"
+msgstr "Built %(jahr)s"
+
+msgid "Archivierte Liegenschaft"
+msgstr "Archived property"
+
+msgid "Archiviert am %(datum)s."
+msgstr "Archived on %(datum)s."
+
+msgid "Die Angaben sind nur noch zur Einsicht."
+msgstr "The information is now for viewing only."
+
+msgid "Soll-Nettomiete / Monat"
+msgstr "Target net rent / month"
+
+msgid "Objekte und Belegung"
+msgstr "Units and occupancy"
+
+msgid "%(n)s Zimmer"
+msgstr "%(n)s rooms"
+
+msgid "bis %(datum)s"
+msgstr "until %(datum)s"
+
+msgid "CHF %(netto)s netto · CHF %(brutto)s brutto pro Monat"
+msgstr "CHF %(netto)s net · CHF %(brutto)s gross per month"
+
+msgid "Keine Objekte erfasst"
+msgstr "No units recorded"
+
+msgid "Zu dieser Liegenschaft sind noch keine Objekte erfasst."
+msgstr "No units have been recorded for this property yet."
+
+msgid "Für diese Liegenschaft hat die Verwaltung noch keine Dokumente freigegeben."
+msgstr "Your property manager has not released any documents for this property yet."
+
+msgid "Liegenschaften — Eigentümerportal"
+msgstr "Properties — Owner portal"
+
+msgid "Ihre Liegenschaften mit Objekten und Belegung."
+msgstr "Your properties with units and occupancy."
+
+msgid "Voll vermietet"
+msgstr "Fully let"
+
+msgid "Soll-Nettomiete CHF %(betrag)s pro Monat"
+msgstr "Target net rent CHF %(betrag)s per month"
+
+msgid "Archivierte Liegenschaften"
+msgstr "Archived properties"
+
+msgid "Archiviert am %(datum)s"
+msgstr "Archived on %(datum)s"
+
+msgid "Mitteilungen — Eigentümerportal"
+msgstr "Messages — Owner portal"
+
+msgid "Mitteilungen an die Verwaltung"
+msgstr "Messages to your property manager"
+
+msgid "Stellen Sie Ihrer Verwaltung eine Frage oder melden Sie ein Anliegen. Sie antwortet per E-Mail oder Telefon."
+msgstr "Ask your property manager a question or report a concern. They will reply by e-mail or phone."
+
+msgid "Kontakt zur Verwaltung"
+msgstr "Contact your property manager"
+
+msgid "An die Verwaltung senden"
+msgstr "Send to your property manager"
+
+msgid "Sie haben noch keine Anfrage gestellt."
+msgstr "You have not sent any request yet."
+
+msgid "Profil und Sprache — Eigentümerportal"
+msgstr "Profile and language — Owner portal"
+
+msgid "Profil"
+msgstr "Profile"
+
+msgid "Ihre Angaben, Sprache und Zugang."
+msgstr "Your details, language and access."
+
+msgid "Ihre Angaben"
+msgstr "Your details"
+
+msgid "Auszahlung auf"
+msgstr "Payout to"
+
+msgid "Angaben ändert die Verwaltung. Teilen Sie eine Änderung über die Mitteilungen mit."
+msgstr "Your property manager changes these details. Tell them about a change through the messages."
+
+msgid "Änderung mitteilen"
+msgstr "Report a change"
+
+msgid "Sprache und Darstellung"
+msgstr "Language and appearance"
+
+msgid "Sprache des Portals"
+msgstr "Portal language"
+
+msgid "Sprache der Briefe und Abrechnungen"
+msgstr "Language of letters and statements"
+
+msgid "Automatisch"
+msgstr "Automatic"
+
+msgid "Der aktuelle Stand Ihrer Liegenschaften auf einen Blick."
+msgstr "The current status of your properties at a glance."
+
+msgid "Ablehnen"
+msgstr "Decline"
+
+msgid "Kennzahlen"
+msgstr "Key figures"
+
+msgid "leere Objekte von %(n)s · Leerstandsquote %(q)s %%"
+msgstr "vacant units out of %(n)s · vacancy rate %(q)s %%"
+
+msgid "pro Monat"
+msgstr "per month"
+
+msgid "Soll-Nettomiete der laufenden Mietverträge."
+msgstr "Target net rent of current leases."
+
+msgid "Gebucht %(jahr)s: CHF %(betrag)s"
+msgstr "Booked %(jahr)s: CHF %(betrag)s"
+
+msgid "Noch nichts überfällig."
+msgstr "Nothing is overdue yet."
+
+msgid "Alle Mieten sind bezahlt."
+msgstr "All rents are paid."
+
+msgid "Nächste Auszahlung"
+msgstr "Next payout"
+
+msgid "Guthaben laut Kontokorrent. Der Auszahlungstermin wird von Ihrer Verwaltung festgelegt."
+msgstr "Balance per current account. The payout date is set by your property manager."
+
+msgid "Kein Guthaben zur Auszahlung."
+msgstr "No balance to pay out."
+
+msgid "Zuletzt am %(datum)s: CHF %(betrag)s"
+msgstr "Last on %(datum)s: CHF %(betrag)s"
+
+msgid "Ihre Liegenschaften"
+msgstr "Your properties"
+
+msgid "Berichte zum Herunterladen"
+msgstr "Reports to download"
+
+msgid "Im Eigentümerportal sichtbar (nur bei Liegenschaft oder Objekt)"
+msgstr "Visible in the owner portal (only for a property or unit)"
+
+msgid "Für den Eigentümer im Portal sichtbar schalten"
+msgstr "Make visible to the owner in the portal"
+
+msgid "Im Eigentümerportal"
+msgstr "In the owner portal"
+
+msgid "Nicht im Portal"
+msgstr "Not in the portal"
+
+msgid "Allgemeine Frage"
+msgstr "General question"
+
+msgid "Abrechnung oder Auszahlung"
+msgstr "Statement or payout"
+
+msgid "Unterhalt oder Schaden"
+msgstr "Maintenance or damage"
+
+msgid "Änderung meiner Angaben"
+msgstr "Change to my details"
+
+msgid "Mandat oder Vertrag"
+msgstr "Mandate or contract"
+
+msgid "Das Mandat ist beendet. Bitte wenden Sie sich direkt an die Verwaltung."
+msgstr "The mandate has ended. Please contact your property manager directly."
+
+msgid "Der Betreff ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "The subject is too long (at most %(n)s characters)."
+
+msgid "Bitte Ihre Nachricht eingeben."
+msgstr "Please enter your message."
+
+msgid "Die Nachricht ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "The message is too long (at most %(n)s characters)."
+
+msgid "Bitte die Art der Anfrage wählen."
+msgstr "Please choose the type of request."
+
+msgid "Bitte eine Ihrer Liegenschaften wählen."
+msgstr "Please choose one of your properties."
+
+msgid "Korrespondenzsprache gespeichert."
+msgstr "Correspondence language saved."
+
+msgid "Bitte eine der angebotenen Sprachen wählen."
+msgstr "Please choose one of the offered languages."

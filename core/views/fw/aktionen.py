@@ -537,6 +537,7 @@ def fw_dokument_neu(request):
         liegenschaft=lg,
         einheit=Einheit.objects.filter(id=request.POST.get('einheit_id') or None).first() if request.POST.get('einheit_id') else None,
         datei=request.FILES['datei'],
+        im_portal_sichtbar=request.POST.get('im_portal_sichtbar') == '1',
     )
     log_aktion(request, "Dokument hochgeladen", request.POST.get('titel', ''), '')
     messages.success(request, '✅ ' + gettext('Dokument hochgeladen.'))

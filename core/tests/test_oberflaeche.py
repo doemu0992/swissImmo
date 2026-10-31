@@ -725,7 +725,7 @@ class FaviconKonsistenzTests(TestCase):
 
     AUSSEN_TEMPLATES = [
         'core/login.html', 'core/portal_login.html',
-        'core/portal_base.html', 'core/portal.html',
+        'core/portal_base.html',
         '403.html', '404.html', '500.html',
     ]
 

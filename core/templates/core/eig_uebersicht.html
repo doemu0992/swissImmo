@@ -1,0 +1,104 @@
+{% extends 'core/eig_base.html' %}
+{% load zeichen i18n chf %}
+{% block nav %}{% include 'core/_eig_nav.html' with aktiv='uebersicht' %}{% endblock %}
+
+{% block seite %}
+{% if eigentuemer %}
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold tracking-tight fw-strong">{% blocktrans with name=eigentuemer.firma_oder_name %}Guten Tag, {{ name }}{% endblocktrans %}</h1>
+        <p class="fw-mutet mt-1">{% trans "Der aktuelle Stand Ihrer Liegenschaften auf einen Blick." %}</p>
+    </div>
+
+    {% if freigaben %}
+    <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden mb-6" aria-label="{% trans 'Reparaturen zur Freigabe' %}" data-block="freigaben">
+        <div class="flex items-center justify-between px-5 py-4 border-b fw-linie">
+            <h2 class="font-bold fw-strong">{% trans "Reparaturen zur Freigabe" %}</h2>
+            <span class="fw-chip fw-warn">{{ freigaben|length }}</span>
+        </div>
+        {% for f in freigaben %}
+        <form method="post" action="{% url 'portal_freigabe' f.id %}" class="px-5 py-4 border-b fw-linie space-y-3">
+            {% csrf_token %}
+            <div>
+                <div class="font-semibold text-sm fw-strong">{{ f.titel }}</div>
+                <div class="text-xs fw-mutet mt-0.5">{{ f.liegenschaft }} · {{ f.handwerker }}{% if f.bemerkung %} · {{ f.bemerkung }}{% endif %}</div>
+                <div class="text-sm font-bold fw-strong mt-1">{% if f.kosten %}CHF {{ f.kosten|chf }}{% else %}—{% endif %}</div>
+            </div>
+            <div>
+                <label for="kommentar-{{ f.id }}" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kommentar (optional)" %}</label>
+                <input id="kommentar-{{ f.id }}" type="text" name="kommentar" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5">
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button type="submit" name="aktion" value="freigeben" class="fw-btn fw-gutknopf">{% zeichen 'gut' %} {% trans "Freigeben" %}</button>
+                <button type="submit" name="aktion" value="ablehnen" class="fw-btn">{% zeichen 'kritisch' %} {% trans "Ablehnen" %}</button>
+            </div>
+        </form>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    <section class="fw-bento" aria-label="{% trans 'Kennzahlen' %}">
+        <a href="{% url 'portal_liegenschaften' %}" class="fw-kachel akzent b-l" data-kachel="leerstand">
+            <div class="fw-kachel-kopf"><h2>{% trans "Leerstand" %}</h2>{% zeichen 'einheit' %}</div>
+            <div class="fw-kachel-zahl fw-num">{{ u.leer }}</div>
+            <p class="fw-kachel-text">{% blocktrans with n=u.objekte q=u.leerquote|floatformat:1 %}leere Objekte von {{ n }} · Leerstandsquote {{ q }} %{% endblocktrans %}</p>
+        </a>
+
+        <a href="{% url 'portal_abrechnungen' %}" class="fw-kachel b-l" data-kachel="mietertrag">
+            <div class="fw-kachel-kopf"><h2>{% trans "Mietertrag" %}</h2>{% zeichen 'geld' %}</div>
+            <div class="fw-kachel-zahl fw-num">{{ u.soll_monat|chf }}<small>CHF {% trans "pro Monat" %}</small></div>
+            <p class="fw-kachel-text">{% trans "Soll-Nettomiete der laufenden Mietverträge." %} {% blocktrans with jahr=u.jahr betrag=u.gebucht_jahr|chf %}Gebucht {{ jahr }}: CHF {{ betrag }}{% endblocktrans %}</p>
+        </a>
+
+        <a href="{% url 'portal_abrechnungen' %}#offene-posten" class="fw-kachel b-l" data-kachel="offene-posten">
+            <div class="fw-kachel-kopf"><h2>{% trans "Offene Posten" %}</h2>{% zeichen 'rechnung' %}</div>
+            <div class="fw-kachel-zahl fw-num">{{ u.offen|chf }}<small>CHF</small></div>
+            <p class="fw-kachel-text">{% if u.ueberfaellig %}<span class="fw-kritisch font-semibold">{% blocktrans with betrag=u.ueberfaellig|chf %}davon CHF {{ betrag }} überfällig{% endblocktrans %}</span>{% elif u.offen %}{% trans "Noch nichts überfällig." %}{% else %}{% trans "Alle Mieten sind bezahlt." %}{% endif %}</p>
+        </a>
+
+        <a href="{% url 'portal_abrechnungen' %}#auszahlungen" class="fw-kachel b-l" data-kachel="auszahlung">
+            <div class="fw-kachel-kopf"><h2>{% trans "Nächste Auszahlung" %}</h2>{% zeichen 'bank' %}</div>
+            <div class="fw-kachel-zahl fw-num">{% if u.konto.guthaben > 0 %}{{ u.konto.guthaben|chf }}<small>CHF</small>{% else %}—{% endif %}</div>
+            <p class="fw-kachel-text">{% if u.konto.guthaben > 0 %}{% trans "Guthaben laut Kontokorrent. Der Auszahlungstermin wird von Ihrer Verwaltung festgelegt." %}{% else %}{% trans "Kein Guthaben zur Auszahlung." %}{% endif %}{% if u.konto.letzte_auszahlung %} {% blocktrans with datum=u.konto.letzte_auszahlung.datum|date:"d.m.Y" betrag=u.konto.letzte_auszahlung.betrag|chf %}Zuletzt am {{ datum }}: CHF {{ betrag }}{% endblocktrans %}{% endif %}</p>
+        </a>
+    </section>
+
+    <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden mb-6" aria-label="{% trans 'Ihre Liegenschaften' %}">
+        <div class="flex items-center justify-between px-5 py-4 border-b fw-linie">
+            <h2 class="font-bold fw-strong">{% trans "Ihre Liegenschaften" %}</h2>
+            <a href="{% url 'portal_liegenschaften' %}" class="fw-btn fw-knapp">{% trans "Alle anzeigen" %} {% zeichen 'weiter' %}</a>
+        </div>
+        {% for k in u.karten %}
+        <a href="{% url 'portal_liegenschaft' k.lg.pk %}" class="flex items-center justify-between gap-3 px-5 py-3.5 border-b fw-linie" data-liegenschaft="{{ k.lg.pk }}">
+            <span class="min-w-0">
+                <span class="block font-semibold text-sm fw-strong">{{ k.lg.strasse }}</span>
+                <span class="block text-xs fw-mutet">{{ k.lg.plz }} {{ k.lg.ort }}</span>
+            </span>
+            <span class="flex flex-wrap justify-end gap-1.5">
+                {% if k.archiviert %}<span class="fw-chip fw-mut">{% trans "Archiviert" %}</span>
+                {% else %}{% if k.leer %}<span class="fw-chip fw-warn">{% blocktrans with n=k.leer %}{{ n }} leer{% endblocktrans %}</span>{% endif %}
+                {% if k.ueberfaellig %}<span class="fw-chip fw-crit">{% trans "Überfällig" %}</span>{% endif %}{% endif %}
+            </span>
+        </a>
+        {% empty %}
+        <div class="p-8 text-center">
+            <p class="font-semibold fw-ink">{% trans "Noch keine Liegenschaften" %}</p>
+            <p class="text-sm fw-faint mt-1">{% trans "Ihrem Konto sind noch keine Liegenschaften zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung." %}</p>
+        </div>
+        {% endfor %}
+    </section>
+
+    <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 mb-6" aria-label="{% trans 'Berichte' %}">
+        <h2 class="font-bold fw-strong mb-3">{% trans "Berichte zum Herunterladen" %}</h2>
+        <div class="flex flex-wrap gap-2">
+            <a class="fw-btn fw-primary" href="{% url 'portal_report_pdf' %}" target="_blank" rel="noopener">{% zeichen 'bericht' %} {% trans "Portfolio-Report" %}</a>
+            <a class="fw-btn" href="{% url 'portal_steuerauszug_pdf' %}?jahr={{ steuerjahr }}" target="_blank" rel="noopener">{% zeichen 'recht' %} {% blocktrans with jahr=steuerjahr %}Steuerauszug {{ jahr }}{% endblocktrans %}</a>
+            <a class="fw-btn" href="{% url 'portal_kontokorrent_pdf' %}" target="_blank" rel="noopener">{% zeichen 'geld' %} {% trans "Kontokorrent" %}</a>
+        </div>
+    </section>
+{% else %}
+    <div class="fw-hinweis fw-meldung warn" role="status">
+        <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+        <div class="fw-ht">{% trans "Ihr Login ist noch keinem Eigentümer-Dossier zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung, damit der Zugang freigeschaltet wird." %}</div>
+    </div>
+{% endif %}
+{% endblock %}

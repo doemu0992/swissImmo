@@ -629,6 +629,8 @@ class MandantenFixture:
         ('rentals_dokument', 'dokument_rentals'),
         ('dokument_portal', 'dokument_rentals'),
         ('portal_dokument', 'dokument_portfolio'),
+        # Eigentümerportal v2: das Team gibt ein Dokument der Objektablage frei (`pk` = portfolio.Dokument).
+        ('ablage_portal',   'dokument_portfolio'),
         ('dokument',        'dokument_portfolio'),
         ('expose',          'einheit'),
         ('geraet',          'geraet'),

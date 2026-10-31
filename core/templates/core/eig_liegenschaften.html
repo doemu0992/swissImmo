@@ -1,0 +1,53 @@
+{% extends 'core/eig_base.html' %}
+{% load zeichen i18n chf %}
+{% block title %}{% trans "Liegenschaften — Eigentümerportal" %}{% endblock %}
+{% block brand_mobile %}{% trans "Liegenschaften" %}{% endblock %}
+{% block nav %}{% include 'core/_eig_nav.html' with aktiv='liegenschaften' %}{% endblock %}
+
+{% block seite %}
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold tracking-tight fw-strong">{% trans "Liegenschaften" %}</h1>
+        <p class="fw-mutet mt-1">{% trans "Ihre Liegenschaften mit Objekten und Belegung." %}</p>
+    </div>
+
+    {% if aktive %}
+    <div class="grid md:grid-cols-2 gap-5 items-start mb-6" data-block="aktiv">
+        {% for k in aktive %}
+        <a href="{% url 'portal_liegenschaft' k.lg.pk %}" class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 block" data-liegenschaft="{{ k.lg.pk }}">
+            <div class="font-bold fw-strong">{{ k.lg.strasse }}</div>
+            <div class="text-sm fw-mutet">{{ k.lg.plz }} {{ k.lg.ort }}{% if k.lg.baujahr %} · {% blocktrans with jahr=k.lg.baujahr %}Baujahr {{ jahr }}{% endblocktrans %}{% endif %}</div>
+            <div class="flex flex-wrap gap-1.5 mt-3">
+                <span class="fw-chip fw-mut">{% blocktrans count n=k.objekte %}{{ n }} Objekt{% plural %}{{ n }} Objekte{% endblocktrans %}</span>
+                {% if k.leer %}<span class="fw-chip fw-warn">{% blocktrans with n=k.leer %}{{ n }} leer{% endblocktrans %}</span>{% else %}<span class="fw-chip fw-good">{% trans "Voll vermietet" %}</span>{% endif %}
+                {% if k.ueberfaellig %}<span class="fw-chip fw-crit">{% blocktrans with betrag=k.ueberfaellig|chf %}CHF {{ betrag }} überfällig{% endblocktrans %}</span>{% endif %}
+            </div>
+            <div class="text-sm fw-mutet mt-3">{% blocktrans with betrag=k.soll_monat|chf %}Soll-Nettomiete CHF {{ betrag }} pro Monat{% endblocktrans %}</div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if archivierte %}
+    <h2 class="font-bold fw-strong mb-3">{% trans "Archivierte Liegenschaften" %}</h2>
+    <div class="grid md:grid-cols-2 gap-5 items-start mb-6" data-block="archiv">
+        {% for k in archivierte %}
+        <a href="{% url 'portal_liegenschaft' k.lg.pk %}" class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 block" data-liegenschaft="{{ k.lg.pk }}">
+            <div class="font-bold fw-strong">{{ k.lg.strasse }}</div>
+            <div class="text-sm fw-mutet">{{ k.lg.plz }} {{ k.lg.ort }}</div>
+            <div class="flex flex-wrap gap-1.5 mt-3">
+                <span class="fw-chip fw-mut">{% blocktrans with datum=k.archiviert.archiviert_am|date:"d.m.Y" %}Archiviert am {{ datum }}{% endblocktrans %}</span>
+            </div>
+            {% if k.archiviert.grund %}<div class="text-sm fw-mutet mt-3">{{ k.archiviert.grund }}</div>{% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not karten %}
+    <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-10 text-center">
+        <span class="w-14 h-14 rounded-2xl fw-flaeche2 fw-faint flex items-center justify-center mx-auto mb-4">{% zeichen 'liegenschaft' klasse='text-xl' %}</span>
+        <p class="font-semibold fw-ink">{% trans "Noch keine Liegenschaften" %}</p>
+        <p class="text-sm fw-faint mt-1">{% trans "Ihrem Konto sind noch keine Liegenschaften zugeordnet. Bitte wenden Sie sich an Ihre Verwaltung." %}</p>
+    </div>
+    {% endif %}
+{% endblock %}

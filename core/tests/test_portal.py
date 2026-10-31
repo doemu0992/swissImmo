@@ -27,7 +27,9 @@ class EigentuemerPortalTests(TestCase):
         r = c.get('/portal/')
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Leerstandsquote')
-        self.assertContains(r, 'Bruttorendite')  # versicherungswert gesetzt
+        # Die «Bruttorendite» aus Jahresmiete ÷ Gebäudeversicherungswert ist keine übliche
+        # Definition (Audit FUNK-10) und steht im Portal v2 nicht mehr.
+        self.assertNotContains(r, 'Bruttorendite')
 
     def test_report_pdf(self):
         md, lg, u = self._eigentuemer_login()
@@ -816,7 +818,7 @@ class NachtN5EigentuemerTests(TestCase):
             faellig_am=date.today() - timedelta(days=35), status='offen')
         c = Client(); c.force_login(u)
         body = c.get('/portal/').content.decode()
-        self.assertIn('Ausstände offen', body)
+        self.assertIn('Offene Posten', body)      # Portal v2: «Ausstände offen» heisst jetzt «Offene Posten»
         self.assertIn("1'800", body)
         self.assertIn('überfällig', body)
 
@@ -902,6 +904,7 @@ class PortalFremdzugriffTests(TestCase):
     #: HTTP-Methode.
     ERWARTET = {
         'portal_dokument_download': ('get', lambda d: d['fremd_lg_dok'].id),
+        'portal_liegenschaft':      ('get', lambda d: d['fremd_lg'].id),
         'portal_freigabe':          ('post', lambda d: d['fremd_auftrag'].id),
         'mieter_dokument_download': ('get', lambda d: d['fremd_dok'].id),
         'mieter_ticket_detail':     ('get', lambda d: d['fremd_ticket'].id),
@@ -958,7 +961,10 @@ class PortalFremdzugriffTests(TestCase):
                        vertrag=a['v'], mieter=a['m'], einheit=a['e'], liegenschaft=a['lg'],
                        im_portal_sichtbar=True)
         dok.datei.save('a.pdf', ContentFile(b'%PDF-1.4 A'), save=True)
-        lgdok = PDokument(liegenschaft=a['lg'], titel='A-Liegenschaft', kategorie='x')
+        # Freigegeben: Der Eigentümer lädt nur, was die Verwaltung ihm freigegeben hat
+        # (Standard: nicht sichtbar). Ohne die Freigabe wäre die Gegenprobe unten wertlos.
+        lgdok = PDokument(liegenschaft=a['lg'], titel='A-Liegenschaft', kategorie='x',
+                          im_portal_sichtbar=True)
         lgdok.datei.save('alg.pdf', ContentFile(b'%PDF-1.4 A'), save=True)
         rech = DebitorenRechnung.objects.create(vertrag=a['v'], liegenschaft=a['lg'],
                                                 titel='A-Miete', betrag=Decimal('1500'),
@@ -971,7 +977,7 @@ class PortalFremdzugriffTests(TestCase):
         kuend = Kuendigung.objects.create(vertrag=a['v'], absender='mieter',
                                           eingang_datum=date(2026, 1, 5),
                                           per_datum=date(2026, 3, 31))
-        return {'a': a, 'b': b, 'fremd_dok': dok, 'fremd_lg_dok': lgdok,
+        return {'a': a, 'b': b, 'fremd_dok': dok, 'fremd_lg_dok': lgdok, 'fremd_lg': a['lg'],
                 'fremd_rechnung': rech, 'fremd_ticket': ticket,
                 'fremd_auftrag': auftrag, 'fremd_kuendigung': kuend}
 
