@@ -30,7 +30,24 @@ Die Überschriften und die Kontenzuordnung stehen NICHT im Code: Sie gehören de
                 <input id="exp-von" name="von" type="date" value="{{ von }}" class="fw-feld" required></div>
             <div class="fw-feldblock"><label for="exp-bis" class="fw-label">{% trans "Bis (eingeschlossen)" %}</label>
                 <input id="exp-bis" name="bis" type="date" value="{{ bis }}" class="fw-feld" required></div>
-            <p class="fw-mutet">{% trans "Spalten: Buchungsdatum, Belegnummer, Soll, Haben, Betrag, Text, MWST-Code (Überschriften unten einstellbar). Stornobuchungen stehen als eigene Zeilen. Es werden nur Buchungen gelesen, nichts wird verändert." %}</p>
+            <fieldset class="fw-feldblock" data-testid="daten-preset">
+                <legend class="fw-label">{% trans "Format" %}</legend>
+                <label class="fw-haekchen"><input type="radio" name="preset" value="" class="fw-akzent" checked>{% trans "Freie Zuordnung (Überschriften und Format unten einstellbar, für Abacus und andere)" %}</label>
+                <label class="fw-haekchen"><input type="radio" name="preset" value="banana" class="fw-akzent" data-testid="daten-preset-banana">{% trans "Banana Buchhaltung (feste Vorgabe von Banana)" %}</label>
+            </fieldset>
+            <p class="fw-mutet">{% trans "Freie Zuordnung: Spalten Buchungsdatum, Belegnummer, Soll, Haben, Betrag, Text, MWST-Code (Überschriften unten einstellbar). Stornobuchungen stehen als eigene Zeilen. Es werden nur Buchungen gelesen, nichts wird verändert." %}</p>
+            <div class="fw-hinweis info" data-testid="daten-banana-hinweis">
+                <span class="fw-hi">{% zeichen 'hinweis' %}</span>
+                <div class="fw-ht">
+                    <b>{% trans "Import in Banana" %}</b>
+                    <ol>
+                        <li>{% trans "Format «Banana Buchhaltung» wählen und die Datei (.txt) herunterladen." %}</li>
+                        <li>{% trans "In Banana die Buchhaltung öffnen und «Aktionen > In Buchhaltung importieren > Text file with column headers» wählen (auf Deutsch: Aktionen > In Buchhaltung importieren)." %}</li>
+                        <li>{% trans "Die Datei wählen. Die Kopfzeile (Date, Doc, Description, AccountDebit, AccountCredit, Amount, VatCode, ExternalReference) erkennt Banana von selbst." %}</li>
+                    </ol>
+                    {% trans "Die Kontonummern in der Datei kommen aus der Kontenzuordnung unten: Tragen Sie dort die Kontonummern Ihres Banana-Kontenplans ein, sonst gehen die Nummern von immoswiss in die Datei. Die ExternalReference (immoswiss-Jahr-Buchungs-ID) ist je Buchung eindeutig. Datum yyyy-mm-dd, Tabulator als Trennzeichen, Betrag mit Punkt: Das setzt das Format selbst." %}
+                </div>
+            </div>
         </div>
         <div class="fw-fuss"><button type="submit" class="fw-btn fw-primary" data-testid="daten-journal-export">{% zeichen 'herunterladen' klasse='mr-1' %}{% trans "Journal herunterladen (CSV)" %}</button></div>
     </form>

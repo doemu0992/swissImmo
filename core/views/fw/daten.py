@@ -246,13 +246,23 @@ def fw_daten_export_journal(request):
     if fehler:
         messages.error(request, fehler)
         return redirect(EXPORT)
-    text, stat = datenexport.journal_csv(von, bis)
+    preset = request.POST.get('preset') or None
+    if preset is not None and preset not in datenexport.PRESETS:
+        messages.error(request, gettext('Das Format «%(p)s» gibt es nicht.') % {'p': preset[:40]})
+        return redirect(EXPORT)
+    text, stat = datenexport.journal_csv(von, bis, preset=preset)
     _protokollieren(
         request, 'Buchungsjournal exportiert', _organisation(request).firma,
         f'{von:%d.%m.%Y} bis {bis:%d.%m.%Y} · {stat["zeilen"]} Buchungen · CHF {stat["summe"]}'
+        + (f' · Format: {datenexport.PRESETS[preset]}' if preset else '')
         + (f' · Konten ohne Zuordnung: {", ".join(stat["ohne_zuordnung"])}' if stat['ohne_zuordnung'] else ''))
-    antwort = HttpResponse(text, content_type='text/csv; charset=utf-8')
-    antwort['Content-Disposition'] = f'attachment; filename="Buchungsjournal_{von:%Y%m%d}_{bis:%Y%m%d}.csv"'
+    if preset == datenexport.BANANA:
+        # Banana liest «Text file with column headers»; Tabulator-getrennt, daher .txt statt .csv.
+        antwort = HttpResponse(text, content_type='text/plain; charset=utf-8')
+        antwort['Content-Disposition'] = f'attachment; filename="Banana_Buchungen_{von:%Y%m%d}_{bis:%Y%m%d}.txt"'
+    else:
+        antwort = HttpResponse(text, content_type='text/csv; charset=utf-8')
+        antwort['Content-Disposition'] = f'attachment; filename="Buchungsjournal_{von:%Y%m%d}_{bis:%Y%m%d}.csv"'
     antwort['X-Export-Zeilen'] = str(stat['zeilen'])
     antwort['X-Export-Ohne-Zuordnung'] = str(len(stat['ohne_zuordnung']))
     return antwort

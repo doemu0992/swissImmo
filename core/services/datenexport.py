@@ -52,6 +52,18 @@ SPALTEN_VORGABE = {
 SPALTEN_REIHENFOLGE = ('datum', 'beleg', 'soll', 'haben', 'betrag', 'text', 'mwst')
 TRENNER = {';': gettext_lazy('Semikolon'), ',': gettext_lazy('Komma'), '\t': gettext_lazy('Tabulator')}
 
+#: Preset «Banana Buchhaltung» (Etappe 4). Belegt am 29.10.2026 nach https://www.banana.ch/doc/en/node/9947:
+#: Datei «Text file with column headers» (Banana: Aktionen > In Buchhaltung importieren), Tabulator als
+#: Trennzeichen, Kopfzeile mit den englischen Feldnamen (Gross-/Kleinschreibung zählt), Datum yyyy-mm-dd,
+#: Betrag mit Punkt als Dezimalzeichen, UTF-8. `ExternalReference` ist je Buchung eindeutig
+#: (`immoswiss-<Jahr>-<Buchungs-ID>`; die Buchungs-ID ist der Primärschlüssel, also nie doppelt).
+#: Die Kopfzeile ist Teil der Spezifikation und KEINE Einstellung der Organisation: Der Preset setzt sie.
+#: Die Kontenzuordnung (eigenes Konto -> Konto in Banana, MWST-Code) bleibt die der Organisation.
+BANANA = 'banana'
+BANANA_SPALTEN = ('Date', 'Doc', 'Description', 'AccountDebit', 'AccountCredit', 'Amount', 'VatCode',
+                  'ExternalReference')
+PRESETS = {BANANA: gettext_lazy('Banana Buchhaltung')}
+
 
 # ── Wert -> Text / JSON ───────────────────────────────────────────────────────
 def _wert(wert):
@@ -319,25 +331,31 @@ def konten_parsen(text):
     return konten
 
 
-def journal_csv(von, bis, einstellung=None):
+def journal_csv(von, bis, einstellung=None, preset=None):
     """Das Buchungsjournal von `von` bis `bis` (beide eingeschlossen) als (Text, Statistik).
 
     Liest nur. Stornobuchungen stehen als eigene Zeilen (Gegenbuchung mit vertauschtem Soll/Haben
     und positivem Betrag), damit die Summe im Zielprogramm stimmt. Die MWST-Code-Spalte
     füllt die Zuordnung der Organisation: Eine Buchung trägt in swissImmo keinen Steuercode (die MWST
     wird auf eigene Konten gebucht), der Code ergibt sich also nur über das Konto, dem er in der Zuordnung
-    zugewiesen ist (zuerst das Soll-, dann das Habenkonto)."""
+    zugewiesen ist (zuerst das Soll-, dann das Habenkonto).
+
+    `preset='banana'`: Format nach der Spezifikation von Banana (siehe `BANANA_SPALTEN`); Überschriften,
+    Trennzeichen, Datums- und Zahlenformat der Organisation gelten dann nicht, die Kontenzuordnung schon."""
     from finance.models import Buchung
     einstellung = einstellung or einstellung_holen()
+    banana = preset == BANANA
     spalten = spalten_von(einstellung)
     konten = einstellung.konten if isinstance(einstellung.konten, dict) else {}
     trenner = einstellung.trenner if einstellung.trenner in TRENNER else ';'
     dezimal = einstellung.dezimal if einstellung.dezimal in ('.', ',') else '.'
     datumsformat = '%Y-%m-%d' if einstellung.datumsformat == 'iso' else '%d.%m.%Y'
+    if banana:
+        trenner, dezimal, datumsformat = '\t', '.', '%Y-%m-%d'
 
     puffer = io.StringIO()
     w = csv.writer(puffer, delimiter=trenner, lineterminator='\r\n')
-    w.writerow([spalten[k] for k in SPALTEN_REIHENFOLGE])
+    w.writerow(list(BANANA_SPALTEN) if banana else [spalten[k] for k in SPALTEN_REIHENFOLGE])
     statistik = {'zeilen': 0, 'ohne_zuordnung': set(), 'summe': Decimal('0.00')}
     qs = (Buchung.objects.filter(datum__gte=von, datum__lte=bis)
           .select_related('soll_konto', 'haben_konto').order_by('datum', 'beleg_nr', 'pk'))
@@ -353,10 +371,20 @@ def journal_csv(von, bis, einstellung=None):
         soll, mwst_s = konto(b.soll_konto)
         haben, mwst_h = konto(b.haben_konto)
         betrag = f'{b.betrag:.2f}'.replace('.', dezimal)
-        w.writerow([_csv_zelle(x) for x in (
-            b.datum.strftime(datumsformat), b.beleg_nr if b.beleg_nr is not None else b.pk,
-            soll, haben, betrag, b.beleg_text, mwst_s or mwst_h)])
+        beleg = b.beleg_nr if b.beleg_nr is not None else b.pk
+        if banana:
+            # Ein Tabulator oder Zeilenumbruch im Text würde die Spalten verschieben.
+            text = re.sub(r'[\t\r\n]+', ' ', b.beleg_text or '')
+            w.writerow([_csv_zelle(x) for x in (
+                b.datum.strftime(datumsformat), beleg, text, soll, haben, betrag, mwst_s or mwst_h,
+                f'immoswiss-{b.datum.year}-{b.pk}')])
+        else:
+            w.writerow([_csv_zelle(x) for x in (
+                b.datum.strftime(datumsformat), beleg, soll, haben, betrag, b.beleg_text, mwst_s or mwst_h)])
         statistik['zeilen'] += 1
         statistik['summe'] += b.betrag
     statistik['ohne_zuordnung'] = sorted(statistik['ohne_zuordnung'])
-    return '﻿' + puffer.getvalue(), statistik
+    # Banana liest die Kopfzeile als Feldnamen: Ein BOM davor machte aus «Date» einen anderen Feldnamen.
+    # Die freie Variante behält es, damit Excel die Umlaute richtig liest.
+    bom = '' if banana else '﻿'
+    return bom + puffer.getvalue(), statistik
