@@ -37538,3 +37538,53 @@ msgstr "Bloccato"
 
 msgid "gesperrt"
 msgstr "bloccato"
+
+msgid "Bitte wählen, ob Mahngebühren vereinbart sind."
+msgstr "Si prega di scegliere se sono state convenute spese di sollecito."
+
+msgid "Mahngebühren sind im Vertrag vereinbart: Das Mahnwesen verrechnet sie."
+msgstr ""
+"Le spese di sollecito sono convenute nel contratto: la gestione dei "
+"solleciti le addebita."
+
+msgid ""
+"Mahngebühren sind nicht vereinbart: Das Mahnwesen verrechnet für diesen "
+"Vertrag keine Gebühr (Mahnung und Verzugszins bleiben)."
+msgstr ""
+"Le spese di sollecito non sono convenute: la gestione dei solleciti non "
+"addebita alcuna spesa per questo contratto (sollecito e interesse di mora "
+"restano)."
+
+msgid ""
+"Im Vertrag vereinbart: Das Mahnwesen verrechnet die Gebühr der Mahnstufe."
+msgstr ""
+"Convenuto nel contratto: la gestione dei solleciti addebita le spese del "
+"livello di sollecito."
+
+msgid ""
+"Nicht vereinbart: Das Mahnwesen verrechnet für diesen Vertrag keine "
+"Mahngebühr. Mahnung und Verzugszins bleiben."
+msgstr ""
+"Non convenuto: la gestione dei solleciti non addebita spese di sollecito per"
+" questo contratto. Sollecito e interesse di mora restano."
+
+msgid ""
+"Mahngebühren brauchen eine vertragliche Grundlage (Art. 106 OR). Die Vorlage"
+" von immoswiss enthält sie; bei Verträgen anderer Herkunft bitte prüfen."
+msgstr ""
+"Le spese di sollecito richiedono una base contrattuale (art. 106 CO). Il "
+"modello di immoswiss la contiene; per contratti di altra provenienza si "
+"prega di verificare."
+
+msgid "Als nicht vereinbart festhalten"
+msgstr "Registrare come non convenuto"
+
+msgid "Als vereinbart festhalten"
+msgstr "Registrare come convenuto"
+
+msgid ""
+"Gebühr oder sonstige Forderung: gewöhnliche Mahnung, keine "
+"Kündigungsandrohung (Art. 257d OR gilt nur für Miete und Nebenkosten)."
+msgstr ""
+"Spese o altro credito: sollecito ordinario, senza comminatoria di disdetta "
+"(l'art. 257d CO vale solo per pigione e spese accessorie)."

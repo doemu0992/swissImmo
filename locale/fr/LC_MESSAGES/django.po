@@ -37598,3 +37598,52 @@ msgstr "Bloqué"
 
 msgid "gesperrt"
 msgstr "bloqué"
+
+msgid "Bitte wählen, ob Mahngebühren vereinbart sind."
+msgstr "Veuillez choisir si des frais de rappel sont convenus."
+
+msgid "Mahngebühren sind im Vertrag vereinbart: Das Mahnwesen verrechnet sie."
+msgstr ""
+"Les frais de rappel sont convenus dans le contrat : la gestion des rappels "
+"les facture."
+
+msgid ""
+"Mahngebühren sind nicht vereinbart: Das Mahnwesen verrechnet für diesen "
+"Vertrag keine Gebühr (Mahnung und Verzugszins bleiben)."
+msgstr ""
+"Les frais de rappel ne sont pas convenus : la gestion des rappels ne facture"
+" aucun frais pour ce contrat (le rappel et l'intérêt moratoire demeurent)."
+
+msgid ""
+"Im Vertrag vereinbart: Das Mahnwesen verrechnet die Gebühr der Mahnstufe."
+msgstr ""
+"Convenu dans le contrat : la gestion des rappels facture les frais du niveau"
+" de rappel."
+
+msgid ""
+"Nicht vereinbart: Das Mahnwesen verrechnet für diesen Vertrag keine "
+"Mahngebühr. Mahnung und Verzugszins bleiben."
+msgstr ""
+"Non convenu : la gestion des rappels ne facture aucun frais de rappel pour "
+"ce contrat. Le rappel et l'intérêt moratoire demeurent."
+
+msgid ""
+"Mahngebühren brauchen eine vertragliche Grundlage (Art. 106 OR). Die Vorlage"
+" von immoswiss enthält sie; bei Verträgen anderer Herkunft bitte prüfen."
+msgstr ""
+"Les frais de rappel exigent une base contractuelle (art. 106 CO). Le modèle "
+"d'immoswiss la contient ; pour les contrats d'une autre origine, veuillez "
+"vérifier."
+
+msgid "Als nicht vereinbart festhalten"
+msgstr "Consigner comme non convenu"
+
+msgid "Als vereinbart festhalten"
+msgstr "Consigner comme convenu"
+
+msgid ""
+"Gebühr oder sonstige Forderung: gewöhnliche Mahnung, keine "
+"Kündigungsandrohung (Art. 257d OR gilt nur für Miete und Nebenkosten)."
+msgstr ""
+"Frais ou autre créance : rappel ordinaire, sans menace de résiliation "
+"(l'art. 257d CO ne vaut que pour le loyer et les charges)."

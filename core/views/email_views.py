@@ -355,7 +355,7 @@ def send_mahnung_email_view(request, vertrag_id):
     if rid and stufe_roh:
         from finance.models import DebitorenRechnung
         from core.services.mahnbrief import forderungs_monat, mahnbrief_pdf, titel_fuer
-        from core.services.mahnstufen import eigentuemer_von_rechnung, mahnstufen_config
+        from core.services.mahnstufen import eigentuemer_von_rechnung, gebuehr_fuer_vertrag, mahnstufen_config
         rechnung = get_object_or_404(DebitorenRechnung, pk=rid, vertrag=vertrag)
         if rechnung.offener_betrag <= 0:
             messages.error(request, gettext('Diese Forderung ist nicht mehr offen.'))
@@ -373,7 +373,7 @@ def send_mahnung_email_view(request, vertrag_id):
         betrag_str = f"{rechnung.offener_betrag:.2f}"
         pdf_bytes = mahnbrief_pdf(
             vertrag, verwaltung, stufe=stufe, monat=monat_str, betrag=betrag_str,
-            datum=heute, gebuehr=cfg['gebuehr'] if cfg else None,
+            datum=heute, gebuehr=gebuehr_fuer_vertrag(vertrag, cfg['gebuehr']) if cfg else None,
             letzte_stufe=bool(cfg and cfg['kuendigung']), rechnung=rechnung)
         # Die Kopie geht per E-Mail an den Mieter: Er darf sie im Portal sehen.
         ablage_mahnung(vertrag, stufe=stufe, datum=heute, pdf_bytes=pdf_bytes,
@@ -480,7 +480,7 @@ def generate_mahnung_pdf_view(request, vertrag_id):
     if rid and stufe_roh:
         from finance.models import DebitorenRechnung
         from core.services.mahnbrief import forderungs_monat, mahnbrief_pdf
-        from core.services.mahnstufen import eigentuemer_von_rechnung, mahnstufen_config
+        from core.services.mahnstufen import eigentuemer_von_rechnung, gebuehr_fuer_vertrag, mahnstufen_config
         rechnung = get_object_or_404(DebitorenRechnung, pk=rid, vertrag=vertrag)
         # Nur Stufen, die die Verwaltung eingerichtet hat (crm.MahnStufe); sonst die erste.
         stufen = sorted(mahnstufen_config(eigentuemer_von_rechnung(rechnung),
@@ -494,7 +494,7 @@ def generate_mahnung_pdf_view(request, vertrag_id):
         pdf_bytes = mahnbrief_pdf(
             vertrag, verwaltung, stufe=stufe, monat=forderungs_monat(rechnung),
             betrag=f"{rechnung.offener_betrag:.2f}", datum=heute,
-            gebuehr=cfg['gebuehr'] if cfg else None,
+            gebuehr=gebuehr_fuer_vertrag(vertrag, cfg['gebuehr']) if cfg else None,
             letzte_stufe=bool(cfg and cfg['kuendigung']), rechnung=rechnung)
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = (

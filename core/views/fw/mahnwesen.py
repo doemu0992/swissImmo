@@ -148,6 +148,9 @@ def fw_mahnwesen(request):
             'objekt': (f"{lg.strasse}, {lg.ort}" if lg else '—'),
             'faellig': faellig,
             'vertrag_id': r.vertrag_id,
+            # Art. 257d OR droht nur bei Mietzins und Nebenkosten an: Eine Gebühr oder sonstige Forderung bekommt auch
+            # auf der Stufe «mit Kündigungsandrohung» ein gewöhnliches Mahnschreiben (`mahnbrief_pdf`).
+            'ohne_androhung': bool(stufe.get('kuendigung') and getattr(r, 'forderungsart', 'miete') != 'miete'),
             'hat_email': bool(r.vertrag and r.vertrag.mieter.email),
             'monat': monat,
             'mahn_url': (f"/vertrag/{r.vertrag_id}/mahnung/?rechnung={r.id}&stufe={stufe['stufe']}"
@@ -432,12 +435,13 @@ def _mahngebuehr_soll(rechnung, mahnung, folgen=None, stufen=None, organisation=
                              betrag__gt=0).order_by('-id').first())
     if storniert is not None:
         return Decimal(storniert.betrag)
+    from core.services.mahnstufen import gebuehr_fuer_vertrag
     organisation = organisation or rechnung.organisation
     if stufen is not None:
-        return stufen.gebuehr_fuer_stufe(mahnung.stufe, eigentuemer_von_rechnung(rechnung),
-                                         organisation=organisation)
-    return gebuehr_fuer_stufe(mahnung.stufe, eigentuemer_von_rechnung(rechnung),
-                              organisation=organisation)
+        return gebuehr_fuer_vertrag(rechnung.vertrag, stufen.gebuehr_fuer_stufe(
+            mahnung.stufe, eigentuemer_von_rechnung(rechnung), organisation=organisation))
+    return gebuehr_fuer_vertrag(rechnung.vertrag, gebuehr_fuer_stufe(
+        mahnung.stufe, eigentuemer_von_rechnung(rechnung), organisation=organisation))
 
 
 def _mahngebuehr_fehlt(rechnung, mahnung, folgen=None, stufen=None, organisation=None):
@@ -570,8 +574,8 @@ def fw_mahnung_erfassen(request):
     # hartcodiert (fw.MAHN_GEBUEHR). Ein aus dem Formular übermittelter Wert
     # überschreibt sie (manuelle Anpassung); fehlt er, gilt die konfigurierte
     # Gebühr (z.B. 0 → dann wird KEINE 40.- geschrieben, Nutzer-Bug behoben).
-    from core.services.mahnstufen import gebuehr_fuer_stufe, eigentuemer_von_rechnung
-    _cfg_geb = gebuehr_fuer_stufe(stufe, eigentuemer_von_rechnung(rechnung))
+    from core.services.mahnstufen import eigentuemer_von_rechnung, gebuehr_fuer_stufe, gebuehr_fuer_vertrag
+    _cfg_geb = gebuehr_fuer_vertrag(rechnung.vertrag, gebuehr_fuer_stufe(stufe, eigentuemer_von_rechnung(rechnung)))
     _posted = _num(request.POST.get('gebuehr'))
     try:
         gebuehr = Decimal(str(_posted)) if _posted not in (None, '') else _cfg_geb

@@ -210,6 +210,18 @@ def gebuehr_fuer_stufe(stufe, eigentuemer=None, organisation=None):
     return Decimal('0.00')
 
 
+def gebuehr_fuer_vertrag(vertrag, gebuehr):
+    """Die Mahngebühr, die für diesen Vertrag tatsächlich verrechnet wird.
+
+    Mahngebühren brauchen eine vertragliche Grundlage (oder einen nachgewiesenen Verzugsschaden, Art. 106 OR).
+    Hat der Vertrag sie nicht vereinbart (`Mietvertrag.mahngebuehr_vereinbart` False), ist sie 0.00; Mahnung und
+    Verzugszins bleiben. Ohne Vertrag oder bei Vorgabe (True) bleibt die Gebühr der Stufe unverändert: Das
+    laufende Verhalten ändert sich nur dort, wo die Verwaltung den Schalter am Vertrag selbst umlegt."""
+    if vertrag is not None and getattr(vertrag, 'mahngebuehr_vereinbart', True) is False:
+        return Decimal('0.00')
+    return gebuehr
+
+
 def eigentuemer_von_rechnung(r):
     """Eigentuemer (Eigentuemer) einer DebitorenRechnung ueber ihre Liegenschaft."""
     lg = getattr(r, 'liegenschaft', None)

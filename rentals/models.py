@@ -90,6 +90,11 @@ class Mietvertrag(OrganisationAusKette):
     ende = models.DateField(null=True, blank=True)
     erstmals_kuendbar_auf = models.DateField("Erstmals kündbar auf", null=True, blank=True) # 🔥 NEU
     kuendigungsfrist_monate = models.IntegerField("Kündigungsfrist (Monate)", default=3)
+    #: Ob der Vertrag Mahn- und Umtriebsgebühren vorsieht. Mahngebühren brauchen eine vertragliche Grundlage
+    #: (oder einen nachgewiesenen Verzugsschaden, Art. 106 OR). Vorgabe True: Die Vertragsvorlage enthält die
+    #: Klausel, und bestehende Verträge verhalten sich wie bisher. Bei False verrechnet das Mahnwesen keine
+    #: Mahngebühr (Mahnung und Verzugszins bleiben).
+    mahngebuehr_vereinbart = models.BooleanField("Mahngebühren im Vertrag vereinbart", default=True)
     kuendigungstermine = models.CharField("Kündigungstermine", max_length=100, default="Ende jedes Monats ausser Dezember", blank=True)
 
     # --- OBJEKT & NUTZUNG (🔥 NEU) ---
