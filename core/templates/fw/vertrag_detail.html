@@ -678,20 +678,8 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
             </tbody>
         </table></div>
     </div>
-    {% if total_offen > 0 %}
-    <div class="fw-card"><div class="fw-hinweis crit">
-        <span class="fw-hi">{% zeichen 'warnung' %}</span>
-        <div class="fw-ht">
-            <b>{% blocktrans with b=total_offen|chf %}Offener Betrag: CHF {{ b }}{% endblocktrans %}</b>
-            Bei Zahlungsverzug: Frist ansetzen (Art. 257d OR) — Zahlungsaufforderung mit 30-Tage-Frist, danach ausserordentliche Kündigung möglich.
-        </div>
-        {% if request.user|darf:"/neu/vertraege/1/verzug/" %}
-        <a href="/neu/vertraege/{{ v.id }}/verzug/" class="fw-btn fw-gefahr fw-knapp">
-            {% zeichen 'recht' %} Zahlungsverzug 257d
-        </a>
-        {% endif %}
-    </div></div>
-    {% endif %}
+    {% comment %} Der Rückstand mit den Knöpfen (Zahlungsverzug 257d, Konto, Zahlung) steht einmal oben in der Ansage;
+       ein zweiter roter Balken hier führte zur selben Seite und nannte pauschal 30 Tage (bei Parkplätzen gilt 10). {% endcomment %}
     {% if vertrag_fristen %}
     <div class="fw-card">
         <div class="fw-kopf">
