@@ -7,10 +7,11 @@ Gegenprobe: den zweiten Balken (`fw-hinweis crit` mit «Offener Betrag») wieder
 und der Test wird rot.
 """
 import re
-from datetime import date, timedelta
+from datetime import timedelta
 from decimal import Decimal
 
 from django.test import Client, TestCase
+from django.utils import timezone
 
 from ._helfer import _basis_objekte, _team_user
 
@@ -20,7 +21,7 @@ class RueckstandEinmalTests(TestCase):
     def setUp(self):
         from finance.models import DebitorenRechnung
         self.lg, self.e, self.m, self.v = _basis_objekte()
-        heute = date.today()
+        heute = timezone.localdate()
         DebitorenRechnung.objects.create(
             vertrag=self.v, liegenschaft=self.lg, einheit=self.e, titel='Miete & NK 08/2026',
             datum=heute - timedelta(days=40), faellig_am=heute - timedelta(days=35),
