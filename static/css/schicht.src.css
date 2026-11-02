@@ -1767,7 +1767,7 @@
         .fw-ansage{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:16px 20px;margin-bottom:24px;
             border-radius:var(--ds-radius);border:1px solid var(--ds-line);background:var(--ds-surface)}
         .fw-ansage>.fw-zeichen{flex:0 0 auto}
-        .fw-ansage.crit{background:var(--ds-crit-soft);border-color:transparent}
+        .fw-ansage.crit{background:var(--ds-crit-soft);border-color:color-mix(in srgb,var(--ds-crit) 30%,transparent)}
         .fw-ansage.crit>.fw-zeichen{color:var(--ds-crit)}
         .fw-ansage .fw-mitte{flex:1 1 220px;min-width:0}
         .fw-ansage .fw-mitte b{display:block;font-weight:600;color:var(--ds-ink)}
