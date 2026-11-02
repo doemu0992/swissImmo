@@ -113,7 +113,13 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
     dieselbe Funktion wie beim Knopf «Mahnung mit Kündigungsandrohung». Der Wortlaut
     steht an EINER Stelle; er ist hier weder nachgebaut noch durch Titel/Text der
     Verwaltung (`brief_titel`, `brief_text`) veränderbar.
+
+    Ohne vertraglich vereinbarte Mahngebühr (`Mietvertrag.mahngebuehr_vereinbart` False) steht im Brief
+    keine Gebühr, auch wenn ein Aufrufer sie übergibt (`gebuehr_fuer_vertrag`).
     """
+    from core.services.mahnstufen import gebuehr_fuer_vertrag
+    if gebuehr is not None:
+        gebuehr = gebuehr_fuer_vertrag(vertrag, gebuehr)
     if letzte_stufe:
         # Ein als Mieter erfasster Stockwerkeigentümer bekommt nie das 257d-Schreiben: es wird ein gewöhnliches
         # Mahnschreiben der Stufe (siehe `core.services.zahlungsverzug.eigentuemer_als_mieter`).

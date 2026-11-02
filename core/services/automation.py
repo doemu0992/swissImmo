@@ -346,7 +346,8 @@ def run_mahnlauf(aktive_lg=None, send_email=True, mit_zins=False, user=None, dry
                 and (heute - hoechste.datum).days < org.mahn_mindestabstand_tage):
             continue
 
-        gebuehr = _s['gebuehr']
+        from core.services.mahnstufen import gebuehr_fuer_vertrag
+        gebuehr = gebuehr_fuer_vertrag(r.vertrag, _s['gebuehr'])
         # Verzugszins nur als DELTA zur bereits fakturierten Summe (Art. 104 OR:
         # derselbe Verzugszeitraum darf nicht bei jeder Mahnstufe erneut verzinst
         # werden — früher stellte Stufe 3 die vollen 60 Tage nochmals in Rechnung,

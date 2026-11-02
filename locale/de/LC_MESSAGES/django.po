@@ -35879,3 +35879,49 @@ msgstr "Gesperrt"
 
 msgid "gesperrt"
 msgstr "gesperrt"
+
+msgid "Bitte wählen, ob Mahngebühren vereinbart sind."
+msgstr "Bitte wählen, ob Mahngebühren vereinbart sind."
+
+msgid "Mahngebühren sind im Vertrag vereinbart: Das Mahnwesen verrechnet sie."
+msgstr ""
+"Mahngebühren sind im Vertrag vereinbart: Das Mahnwesen verrechnet sie."
+
+msgid ""
+"Mahngebühren sind nicht vereinbart: Das Mahnwesen verrechnet für diesen "
+"Vertrag keine Gebühr (Mahnung und Verzugszins bleiben)."
+msgstr ""
+"Mahngebühren sind nicht vereinbart: Das Mahnwesen verrechnet für diesen "
+"Vertrag keine Gebühr (Mahnung und Verzugszins bleiben)."
+
+msgid ""
+"Im Vertrag vereinbart: Das Mahnwesen verrechnet die Gebühr der Mahnstufe."
+msgstr ""
+"Im Vertrag vereinbart: Das Mahnwesen verrechnet die Gebühr der Mahnstufe."
+
+msgid ""
+"Nicht vereinbart: Das Mahnwesen verrechnet für diesen Vertrag keine "
+"Mahngebühr. Mahnung und Verzugszins bleiben."
+msgstr ""
+"Nicht vereinbart: Das Mahnwesen verrechnet für diesen Vertrag keine "
+"Mahngebühr. Mahnung und Verzugszins bleiben."
+
+msgid ""
+"Mahngebühren brauchen eine vertragliche Grundlage (Art. 106 OR). Die Vorlage"
+" von immoswiss enthält sie; bei Verträgen anderer Herkunft bitte prüfen."
+msgstr ""
+"Mahngebühren brauchen eine vertragliche Grundlage (Art. 106 OR). Die Vorlage"
+" von immoswiss enthält sie; bei Verträgen anderer Herkunft bitte prüfen."
+
+msgid "Als nicht vereinbart festhalten"
+msgstr "Als nicht vereinbart festhalten"
+
+msgid "Als vereinbart festhalten"
+msgstr "Als vereinbart festhalten"
+
+msgid ""
+"Gebühr oder sonstige Forderung: gewöhnliche Mahnung, keine "
+"Kündigungsandrohung (Art. 257d OR gilt nur für Miete und Nebenkosten)."
+msgstr ""
+"Gebühr oder sonstige Forderung: gewöhnliche Mahnung, keine "
+"Kündigungsandrohung (Art. 257d OR gilt nur für Miete und Nebenkosten)."

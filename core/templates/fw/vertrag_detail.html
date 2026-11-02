@@ -532,6 +532,22 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
     </div>
     {% endif %}
 
+    <div class="fw-card" id="vt-mahngebuehr">
+        <div class="fw-kopf">
+            <span class="fw-ikon">{% zeichen 'geld' %}</span><h2>{% trans "Mahngebühren" %}</h2>
+        </div>
+        <div class="px-5 py-3">
+            <p class="text-sm">{% if v.mahngebuehr_vereinbart %}{% trans "Im Vertrag vereinbart: Das Mahnwesen verrechnet die Gebühr der Mahnstufe." %}{% else %}{% trans "Nicht vereinbart: Das Mahnwesen verrechnet für diesen Vertrag keine Mahngebühr. Mahnung und Verzugszins bleiben." %}{% endif %}</p>
+            <p class="fw-mutet text-sm mt-1">{% trans "Mahngebühren brauchen eine vertragliche Grundlage (Art. 106 OR). Die Vorlage von immoswiss enthält sie; bei Verträgen anderer Herkunft bitte prüfen." %}</p>
+            {% if kann_schreiben %}
+            <form method="post" action="/neu/vertraege/{{ v.id }}/mahngebuehr/" class="mt-3">{% csrf_token %}
+                <input type="hidden" name="vereinbart" value="{% if v.mahngebuehr_vereinbart %}0{% else %}1{% endif %}">
+                <button type="submit" class="fw-btn fw-knapp">{% if v.mahngebuehr_vereinbart %}{% trans "Als nicht vereinbart festhalten" %}{% else %}{% trans "Als vereinbart festhalten" %}{% endif %}</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
     <div class="fw-card">
         <div class="fw-kopf">
             <span class="fw-ikon">{% zeichen 'bericht' %}</span><h2>{% trans "Amtliche Mietzinsanpassungen" %}</h2>

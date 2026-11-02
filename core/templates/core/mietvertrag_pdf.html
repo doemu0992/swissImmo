@@ -126,7 +126,7 @@
 <p class="note">Der Mietzins beruht auf den obigen Grundlagen. Änderungen des Referenzzinssatzes, des Landesindexes sowie allgemeine Kostensteigerungen berechtigen zu einer Anpassung des Mietzinses nach den Bestimmungen des OR und der VMWG.</p>
 
 <div class="subsec">4.2 Mietzinszahlung</div>
-<p class="note">Der Mietzins ist jeweils am 1. Tag des Monats (Verfalldatum) im Voraus fällig. Bei Zahlungseingängen nach dem Verfalldatum ist der Vermieter berechtigt, einen Verzugszins sowie Mahn- und Umtriebsgebühren in usanzgemässer Höhe in Rechnung zu stellen.</p>
+<p class="note">Der Mietzins ist jeweils am 1. Tag des Monats (Verfalldatum) im Voraus fällig. Bei Zahlungseingängen nach dem Verfalldatum ist der Vermieter berechtigt, einen Verzugszins{% if vertrag.mahngebuehr_vereinbart %} sowie Mahn- und Umtriebsgebühren in usanzgemässer Höhe{% endif %} in Rechnung zu stellen.</p>
 
 <div class="subsec">4.3 Mietzinsdepot</div>
 <p class="note">Zur Sicherstellung sämtlicher vermieterseitiger Ansprüche aus dem Mietverhältnis leistet der Mieter eine Sicherheit im Sinne von Art. 257e OR von <b>CHF {{ kaution_fmt }}</b>.{% if vertrag.kautions_konto %} Kautionskonto: {{ vertrag.kautions_konto }}.{% endif %} Die Sicherheitsleistung muss bis zur Schlüsselübergabe erfolgt sein.</p>

@@ -36983,3 +36983,50 @@ msgstr "Locked"
 
 msgid "gesperrt"
 msgstr "locked"
+
+msgid "Bitte wählen, ob Mahngebühren vereinbart sind."
+msgstr "Please choose whether dunning fees have been agreed."
+
+msgid "Mahngebühren sind im Vertrag vereinbart: Das Mahnwesen verrechnet sie."
+msgstr ""
+"Dunning fees are agreed in the contract: the dunning module charges them."
+
+msgid ""
+"Mahngebühren sind nicht vereinbart: Das Mahnwesen verrechnet für diesen "
+"Vertrag keine Gebühr (Mahnung und Verzugszins bleiben)."
+msgstr ""
+"Dunning fees are not agreed: the dunning module charges no fee for this "
+"contract (the reminder and default interest remain)."
+
+msgid ""
+"Im Vertrag vereinbart: Das Mahnwesen verrechnet die Gebühr der Mahnstufe."
+msgstr ""
+"Agreed in the contract: the dunning module charges the fee of the dunning "
+"level."
+
+msgid ""
+"Nicht vereinbart: Das Mahnwesen verrechnet für diesen Vertrag keine "
+"Mahngebühr. Mahnung und Verzugszins bleiben."
+msgstr ""
+"Not agreed: the dunning module charges no dunning fee for this contract. The"
+" reminder and default interest remain."
+
+msgid ""
+"Mahngebühren brauchen eine vertragliche Grundlage (Art. 106 OR). Die Vorlage"
+" von immoswiss enthält sie; bei Verträgen anderer Herkunft bitte prüfen."
+msgstr ""
+"Dunning fees need a contractual basis (Art. 106 CO). The immoswiss template "
+"contains it; please check contracts of other origin."
+
+msgid "Als nicht vereinbart festhalten"
+msgstr "Record as not agreed"
+
+msgid "Als vereinbart festhalten"
+msgstr "Record as agreed"
+
+msgid ""
+"Gebühr oder sonstige Forderung: gewöhnliche Mahnung, keine "
+"Kündigungsandrohung (Art. 257d OR gilt nur für Miete und Nebenkosten)."
+msgstr ""
+"Fee or other claim: ordinary reminder, no threat of termination (Art. 257d "
+"CO applies only to rent and ancillary costs)."
