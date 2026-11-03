@@ -333,7 +333,9 @@ class MitmieterPortalTests(TestCase):
         self.assertTrue(pdf.startswith(b'%PDF'))
         # Template-Logik direkt prüfen: beide Namen im Adressblock
         from django.template.loader import get_template
+        from core.services.dokument_service import _empfaenger_zeilen
         html = get_template('core/dok_begleitbrief.html').render({
+            'adressfenster': True, 'empfaenger_zeilen': _empfaenger_zeilen(m1, m2, m2.display_name),
             'vertrag': v, 'mieter': m1, 'mitmieter': m2, 'mitmieter_name': m2.display_name,
             'einheit': e, 'liegenschaft': lg, 'heute': date.today(),
             'vermieter_name': 'V AG', 'brutto_fmt': '0.00', 'kaution_fmt': '0.00', 'signed': False,
