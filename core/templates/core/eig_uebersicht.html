@@ -15,12 +15,13 @@
             <h2 class="font-bold fw-strong">{% trans "Reparaturen zur Freigabe" %}</h2>
             <span class="fw-chip fw-warn">{{ freigaben|length }}</span>
         </div>
+        <div class="px-5 py-3 border-b fw-linie"><a href="{% url 'portal_schaeden' %}?status=offen" class="text-sm font-semibold">{% trans "Alle Schäden, Aufträge und Entscheide ansehen" %} {% zeichen 'weiter' %}</a></div>
         {% for f in freigaben %}
         <form method="post" action="{% url 'portal_freigabe' f.id %}" class="px-5 py-4 border-b fw-linie space-y-3">
             {% csrf_token %}
             <div>
-                <div class="font-semibold text-sm fw-strong">{{ f.titel }}</div>
-                <div class="text-xs fw-mutet mt-0.5">{{ f.liegenschaft }} · {{ f.handwerker }}{% if f.bemerkung %} · {{ f.bemerkung }}{% endif %}</div>
+                <div class="font-semibold text-sm fw-strong"><a href="{% url 'portal_schaden' f.ticket_id %}">{{ f.titel }}</a></div>
+                <div class="text-xs fw-mutet mt-0.5">{{ f.liegenschaft }} · {{ f.handwerker }}</div>
                 <div class="text-sm font-bold fw-strong mt-1">{% if f.kosten %}CHF {{ f.kosten|chf }}{% else %}—{% endif %}</div>
             </div>
             <div>

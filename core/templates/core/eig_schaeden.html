@@ -1,0 +1,70 @@
+{% extends 'core/eig_base.html' %}
+{% load zeichen i18n chf %}
+{% block title %}{% trans "Schäden und Aufträge — Eigentümerportal" %}{% endblock %}
+{% block brand_mobile %}{% trans "Schäden und Aufträge" %}{% endblock %}
+{% block nav %}{% include 'core/_eig_nav.html' with aktiv='schaeden' %}{% endblock %}
+
+{% block seite %}
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold tracking-tight fw-strong">{% trans "Schäden und Aufträge" %}</h1>
+        <p class="fw-mutet mt-1">{% trans "Was in Ihren Liegenschaften gemeldet, beauftragt und freigegeben wurde." %}</p>
+    </div>
+
+    <section class="fw-kpis fw-stats mb-6" aria-label="{% trans 'Kennzahlen' %}" data-block="kennzahlen">
+        <div class="fw-kpi"><div class="fw-l">{% trans "Schäden" %}</div><div class="fw-v">{{ kennzahlen.anzahl }}</div></div>
+        <div class="fw-kpi"><div class="fw-l">{% trans "Offen" %}</div><div class="fw-v{% if kennzahlen.offen %} fw-warn{% endif %}">{{ kennzahlen.offen }}</div></div>
+        <div class="fw-kpi"><div class="fw-l">{% trans "Kosten effektiv" %}</div><div class="fw-v">{% if kennzahlen.effektiv is not None %}CHF {{ kennzahlen.effektiv|chf }}{% else %}—{% endif %}</div></div>
+        <div class="fw-kpi"><div class="fw-l">{% trans "Geschätzt, noch offen" %}</div><div class="fw-v">{% if kennzahlen.geschaetzt_offen is not None %}CHF {{ kennzahlen.geschaetzt_offen|chf }}{% else %}—{% endif %}</div></div>
+    </section>
+
+    <form method="get" class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 mb-6 space-y-3" aria-label="{% trans 'Filter' %}" data-block="filter">
+        <div>
+            <label for="f-lg" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Liegenschaft" %}</label>
+            <select id="f-lg" name="liegenschaft" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5">
+                <option value="">{% trans "Alle Liegenschaften" %}</option>
+                {% for lg in liegenschaften %}<option value="{{ lg.pk }}"{% if filter.liegenschaft == lg.pk %} selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="f-status" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Status" %}</label>
+            <select id="f-status" name="status" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5">
+                <option value="">{% trans "Alle" %}</option>
+                {% for key, label in stati %}<option value="{{ key }}"{% if filter.status == key %} selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="f-jahr" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Jahr der Meldung" %}</label>
+            <select id="f-jahr" name="jahr" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5">
+                <option value="">{% trans "Alle Jahre" %}</option>
+                {% for j in jahre %}<option value="{{ j }}"{% if filter.jahr == j %} selected{% endif %}>{{ j }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <button type="submit" class="fw-btn fw-primary">{% zeichen 'filtern' %} {% trans "Filtern" %}</button>
+            {% if filter_aktiv %}<a href="{% url 'portal_schaeden' %}" class="fw-btn">{% trans "Filter zurücksetzen" %}</a>{% endif %}
+        </div>
+    </form>
+
+    <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden mb-6" aria-label="{% trans 'Schäden' %}" data-block="liste">
+        {% for z in zeilen %}{% include 'core/_eig_schaden_zeile.html' %}
+        {% empty %}
+        <div class="p-8 text-center" data-block="leer">
+            {% if filter_aktiv %}
+            <p class="font-semibold fw-ink">{% trans "Keine Schäden für diese Auswahl" %}</p>
+            <p class="text-sm fw-faint mt-1">{% trans "Ändern Sie den Filter oder setzen Sie ihn zurück." %}</p>
+            {% else %}
+            <p class="font-semibold fw-ink">{% trans "Noch keine Schäden" %}</p>
+            <p class="text-sm fw-faint mt-1">{% trans "Für Ihre Liegenschaften wurde bisher kein Schaden gemeldet." %}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </section>
+
+    {% if seite.has_other_pages %}
+    <nav class="flex flex-wrap gap-2 mb-6" aria-label="{% trans 'Seiten' %}">
+        {% if seite.has_previous %}<a class="fw-btn" href="?{% if filter.liegenschaft %}liegenschaft={{ filter.liegenschaft }}&amp;{% endif %}{% if filter.status %}status={{ filter.status }}&amp;{% endif %}{% if filter.jahr %}jahr={{ filter.jahr }}&amp;{% endif %}seite={{ seite.previous_page_number }}">{% zeichen 'zurueck' %} {% trans "Zurück" %}</a>{% endif %}
+        <span class="fw-chip fw-mut">{% blocktrans with n=seite.number m=seite.paginator.num_pages %}Seite {{ n }} von {{ m }}{% endblocktrans %}</span>
+        {% if seite.has_next %}<a class="fw-btn" href="?{% if filter.liegenschaft %}liegenschaft={{ filter.liegenschaft }}&amp;{% endif %}{% if filter.status %}status={{ filter.status }}&amp;{% endif %}{% if filter.jahr %}jahr={{ filter.jahr }}&amp;{% endif %}seite={{ seite.next_page_number }}">{% trans "Weiter" %} {% zeichen 'weiter' %}</a>{% endif %}
+    </nav>
+    {% endif %}
+{% endblock %}

@@ -79,11 +79,11 @@ def _offene_freigaben(eigentuemer):
         t = a.ticket
         out.append({
             'id': a.id,
+            'ticket_id': t.pk,
             'titel': t.titel,
             'liegenschaft': f"{t.liegenschaft.strasse}, {t.liegenschaft.ort}" if t.liegenschaft_id else '—',
             'handwerker': a.handwerker.firma if a.handwerker_id else '—',
             'kosten': a.kosten_geschaetzt,
-            'bemerkung': a.bemerkung,
         })
     return out
 
@@ -99,8 +99,16 @@ def portal_freigabe(request, pk):
     lg_ids = list(eigentuemer.liegenschaften.values_list('id', flat=True))
     a = get_object_or_404(HandwerkerAuftrag.objects.select_related('ticket'),
                           pk=pk, ticket__liegenschaft_id__in=lg_ids)
+    # Rücksprung: die Schadensseite schickt `next` mit, sonst die Übersicht (nur Pfade dieser Anwendung).
+    from core.utils.parameter import sicheres_ziel
+    ziel = sicheres_ziel(request, '/portal/')
     if a.freigabe_status != 'ausstehend':
-        return redirect('portal')
+        return redirect(ziel)
+    # Nach Mandatsende nimmt das Portal keinen Entscheid mehr an (die Seite blendet das Formular aus, der direkte
+    # POST wird hier abgewiesen).
+    from core.services import eigentuemer_portal as _dienst
+    if _dienst.mandat_status(eigentuemer) is not None:
+        return redirect(ziel)
     aktion = request.POST.get('aktion')
     kommentar = (request.POST.get('kommentar') or '').strip()
     if aktion == 'freigeben':
@@ -108,7 +116,7 @@ def portal_freigabe(request, pk):
     elif aktion == 'ablehnen':
         a.freigabe_status = 'abgelehnt'
     else:
-        return redirect('portal')
+        return redirect(ziel)
     a.freigabe_datum = timezone.now()
     a.freigabe_kommentar = kommentar
     a.save(update_fields=['freigabe_status', 'freigabe_datum', 'freigabe_kommentar'])
@@ -121,7 +129,14 @@ def portal_freigabe(request, pk):
             is_intern=True)
     except Exception:
         logger.debug("Fehler bewusst übergangen", exc_info=True)
-    return redirect('portal')
+    # Verwaltung und Handwerker erfahren den Entscheid per Mail (nicht erst beim nächsten Cockpit-Besuch).
+    try:
+        from tickets.workflow import freigabe_entscheid_melden
+        freigabe_entscheid_melden(a, a.freigabe_status == 'freigegeben', kommentar,
+                                  von=f'Eigentümer {eigentuemer.firma_oder_name}')
+    except Exception:
+        logger.exception("Freigabe-Entscheid zu Auftrag #%s: Mail an Verwaltung/Handwerker fehlgeschlagen", a.pk)
+    return redirect(ziel)
 
 
 def _portfolio_daten(eigentuemer):
@@ -773,25 +788,28 @@ def mieter_schaden_melden(request):
 
 
 def _benachrichtige_neue_meldung(ticket, vertrag):
-    """Mieter erhält Eingangsbestätigung, Verwaltung/Eigentümer die Meldung.
-    Fehler beim Mailversand dürfen die Schadenmeldung nie blockieren."""
+    """Mieter erhält Eingangsbestätigung (in seiner Korrespondenzsprache), Verwaltung/Eigentümer die
+    Meldung. Fehler beim Mailversand dürfen die Schadenmeldung nie blockieren — sie stehen im Protokoll."""
     from core.utils.email_service import send_ticket_email, send_neue_meldung_intern
-    from crm.models import Organisation
+    from core.services.ticket_workflow import melder_sprache
+    from tickets.meldung_mails import eingangsbestaetigung_text
     # Mieter-Bestätigung
     try:
         if ticket.email_melder:
-            body = (f"Guten Tag\n\nWir haben Ihre Schadenmeldung '{ticket.titel}' erhalten "
-                    f"(Ticket #{ticket.id}) und kümmern uns darum. Sobald ein Handwerker "
-                    f"beauftragt wurde, informieren wir Sie.\n\n"
-                    f"Freundliche Grüsse\nIhre Liegenschaftsverwaltung")
-            send_ticket_email(ticket.email_melder, f"Eingangsbestätigung: {ticket.titel} (Ticket #{ticket.id})", body)
+            betreff, body = eingangsbestaetigung_text(ticket, melder_sprache(ticket))
+            if not send_ticket_email(ticket.email_melder, betreff, body, organisation=ticket.organisation_id):
+                logger.warning("Eingangsbestätigung zu Ticket #%s nicht gesendet", ticket.pk)
     except Exception:
-        logger.debug("Fehler bewusst übergangen", exc_info=True)
+        logger.exception("Eingangsbestätigung zu Ticket #%s fehlgeschlagen", ticket.pk)
     # Verwaltung/Eigentümer-Benachrichtigung
     try:
-        send_neue_meldung_intern(ticket, _verwaltung_empfaenger(ticket.liegenschaft))
+        empfaenger = _verwaltung_empfaenger(ticket.liegenschaft)
+        if not empfaenger:
+            logger.warning("Ticket #%s: weder Verwaltung noch Eigentümer haben eine E-Mail-Adresse, "
+                           "die neue Meldung erscheint nur im Cockpit", ticket.pk)
+        send_neue_meldung_intern(ticket, empfaenger)
     except Exception:
-        logger.debug("Fehler bewusst übergangen", exc_info=True)
+        logger.exception("Benachrichtigung der Verwaltung zu Ticket #%s fehlgeschlagen", ticket.pk)
 
 
 def _verwaltung_empfaenger(lg):
@@ -925,10 +943,15 @@ def mieter_ticket_nachricht(request, pk):
         from core.utils.email_service import send_ticket_email
         body = (f"Neue Nachricht von {mieter.display_name} zu Ticket #{t.id} ({t.titel}):\n\n"
                 f"{text}\n\nBitte im Cockpit unter Schadensfälle beantworten.")
-        for adr in _verwaltung_empfaenger(t.liegenschaft):
-            send_ticket_email(adr, f"Mieter-Nachricht zu Ticket #{t.id}: {t.titel}", body)
+        empfaenger = _verwaltung_empfaenger(t.liegenschaft)
+        if not empfaenger:
+            logger.warning("Ticket #%s: keine E-Mail-Adresse der Verwaltung, die Mieter-Nachricht "
+                           "erscheint nur im Cockpit", t.pk)
+        for adr in empfaenger:
+            send_ticket_email(adr, f"Mieter-Nachricht zu Ticket #{t.id}: {t.titel}", body,
+                              organisation=t.organisation_id)
     except Exception:
-        logger.debug("Fehler bewusst übergangen", exc_info=True)
+        logger.exception("Mail an die Verwaltung zu Ticket #%s fehlgeschlagen", t.pk)
     messages.success(request, '✅ ' + gettext('Ihre Nachricht wurde übermittelt. Die Verwaltung meldet sich.'))
     return redirect(f'/mieter/ticket/{t.id}/')
 

@@ -153,6 +153,27 @@ class HandwerkerAuftrag(OrganisationAusKette):
     kosten_effektiv = models.DecimalField("Effektive Kosten (CHF)", max_digits=10, decimal_places=2, null=True, blank=True)
     kreditoren_rechnung = models.ForeignKey('finance.KreditorenRechnung', on_delete=models.SET_NULL, null=True, blank=True, related_name='handwerker_auftraege')
 
+    # Abschluss ohne Rechnung (tickets/workflow.py: ohne_rechnung_freigeben). Die Sperre
+    # «kein Abschluss ohne Handwerkerrechnung» bleibt; dies ist die AUSDRÜCKLICHE Freigabe,
+    # die `abschluss_pruefen` prüft: Grund, Freitext, wer, wann. Leer = keine Freigabe.
+    OHNE_RECHNUNG_CHOICES = [
+        ('kostenlos', _('Kostenlos (Garantie, Kulanz)')),
+        ('direkt_eigentuemer', _('Rechnung geht direkt an den Eigentümer')),
+        ('folgt_spaeter', _('Rechnung folgt später')),
+        ('noch_nicht_erfasst', _('Rechnung liegt vor, ist aber noch nicht erfasst')),
+        ('nicht_ausgefuehrt', _('Auftrag nicht ausgeführt')),
+        ('eigenleistung', _('Eigenleistung (Hauswart, Verwaltung)')),
+        ('anderer', _('Anderer Grund (Freitext)')),
+    ]
+    ohne_rechnung_grund = models.CharField("Ohne Rechnung abgeschlossen: Grund", max_length=20,
+                                           choices=OHNE_RECHNUNG_CHOICES, blank=True, default='')
+    ohne_rechnung_text = models.TextField("Ohne Rechnung abgeschlossen: Bemerkung", blank=True, default='')
+    ohne_rechnung_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+                                          null=True, blank=True, related_name='+', editable=False,
+                                          verbose_name="Ohne Rechnung freigegeben von")
+    ohne_rechnung_am = models.DateTimeField("Ohne Rechnung freigegeben am", null=True, blank=True,
+                                            editable=False)
+
     # Terminvereinbarung Handwerker <-> Mieter (tickets/workflow.py: termin_festlegen)
     TERMIN_CHOICES = [
         ('offen', _('Kein Termin')),
@@ -192,6 +213,15 @@ class HandwerkerAuftrag(OrganisationAusKette):
             models.UniqueConstraint(fields=['token_hash'], condition=models.Q(token_hash__isnull=False),
                                     name='uniq_handwerkerauftrag_token_hash'),
         ]
+
+    @property
+    def ohne_rechnung_freigegeben(self):
+        return bool(self.ohne_rechnung_grund)
+
+    def clean(self):
+        if self.ohne_rechnung_grund == 'anderer' and not (self.ohne_rechnung_text or '').strip():
+            from django.core.exceptions import ValidationError
+            raise ValidationError('Bei «Anderer Grund» ist eine Bemerkung Pflicht.', code='text_fehlt')
 
     @property
     def freigabe_ausstehend(self):

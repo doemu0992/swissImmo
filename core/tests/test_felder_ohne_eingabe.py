@@ -380,6 +380,9 @@ ALIAS = {
     'rentals.Mietvertrag.mietzinsreserve_prozent': 'vorbehalt_prozent',
     # Modul 2: Die Rücknahmeseite hat dasselbe Zeichenfeld `unterschrift` wie die Ausgabe.
     'portfolio.SchluesselAusgabe.unterschrift_rueckgabe': 'unterschrift',
+    # Abschluss ohne Rechnung (Ticketseite): Das Formular heisst `grund`/`text`; Person und Zeit setzt der Dienst.
+    'tickets.HandwerkerAuftrag.ohne_rechnung_grund': 'grund',
+    'tickets.HandwerkerAuftrag.ohne_rechnung_text': 'text',
 }
 
 

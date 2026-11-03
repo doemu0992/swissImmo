@@ -90,7 +90,11 @@
             sp.querySelector('[data-leer]').classList.toggle('hidden', n > 0);
         });
     }
-    function fehler(t) { text.textContent = t; meldung.classList.remove('hidden'); meldung.scrollIntoView({block: 'nearest'}); }
+    function fehler(t, weiter, label) {
+        text.textContent = t;
+        if (weiter) { var l = document.createElement('a'); l.href = weiter; l.className = 'fw-link'; l.textContent = ' ' + label; text.appendChild(l); }
+        meldung.classList.remove('hidden'); meldung.scrollIntoView({block: 'nearest'});
+    }
 
     board.addEventListener('dragstart', function (e) {
         var k = e.target.closest && e.target.closest('.fw-karte'); if (!k) return;
@@ -123,7 +127,7 @@
                       var s = karte.querySelector('.fw-karte-wahl');
                       if (s) { s.innerHTML = ''; a[1].ziele.forEach(function (z) { var o = new Option(z[1], z[0]); o.selected = z[0] === a[1].status; s.add(o); }); }
                   }
-                  else { vorher.appendChild(karte); zaehlen(); fehler(a[1].meldung); }   // … und bei Sperre zurück
+                  else { vorher.appendChild(karte); zaehlen(); fehler(a[1].meldung, a[1].weiter, a[1].weiter_label); }   // … und bei Sperre zurück
               }).catch(function () { vorher.appendChild(karte); zaehlen(); fehler('{% filter escapejs %}{% trans "Verbindung unterbrochen — Zustand nicht geändert." %}{% endfilter %}'); });
         });
     });

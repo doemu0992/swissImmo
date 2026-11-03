@@ -1,11 +1,14 @@
 {% load zeichen i18n %}
 {% comment %}Gemeinsame Leiste des Eigentümerportals. Parameter: aktiv
-(uebersicht|liegenschaften|abrechnungen|dokumente|mitteilungen|profil){% endcomment %}
+(uebersicht|liegenschaften|schaeden|abrechnungen|dokumente|mitteilungen|profil){% endcomment %}
 <a href="{% url 'portal' %}" class="fw-nav-eintrag{% if aktiv == 'uebersicht' %} hier{% endif %}"{% if aktiv == 'uebersicht' %} aria-current="page"{% endif %}>
     {% zeichen 'trend' %} {% trans "Übersicht" %}
 </a>
 <a href="{% url 'portal_liegenschaften' %}" class="fw-nav-eintrag{% if aktiv == 'liegenschaften' %} hier{% endif %}"{% if aktiv == 'liegenschaften' %} aria-current="page"{% endif %}>
     {% zeichen 'liegenschaft' %} {% trans "Liegenschaften" %}
+</a>
+<a href="{% url 'portal_schaeden' %}" class="fw-nav-eintrag{% if aktiv == 'schaeden' %} hier{% endif %}"{% if aktiv == 'schaeden' %} aria-current="page"{% endif %}>
+    {% zeichen 'arbeit' %} {% trans "Schäden und Aufträge" %}
 </a>
 <a href="{% url 'portal_abrechnungen' %}" class="fw-nav-eintrag{% if aktiv == 'abrechnungen' %} hier{% endif %}"{% if aktiv == 'abrechnungen' %} aria-current="page"{% endif %}>
     {% zeichen 'geld' %} {% trans "Abrechnungen" %}

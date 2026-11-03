@@ -72,7 +72,7 @@ def erinnerungen_senden(jetzt=None):
     Gibt ``dict(art -> Anzahl gesendet)`` zurück. Einzelne Fehler werden
     protokolliert und stoppen den Lauf nicht.
     """
-    from core.services.ticket_workflow import vorlage_text
+    from core.services.ticket_workflow import melder_sprache, vorlage_text
     from core.utils.email_service import send_ticket_email
     from .models import HandwerkerAuftrag, SchadenMeldung
     from .workflow import melder_adresse, reply_to
@@ -125,8 +125,9 @@ def erinnerungen_senden(jetzt=None):
         if not adresse or not _faellig(t, 'mieter', t.aktualisiert_am, jetzt):
             continue
         try:
-            betreff, text = vorlage_text('ticket_erinnerung_mieter', t)
-            ok = send_ticket_email(adresse, betreff, text, reply_to=reply_to(t))
+            betreff, text = vorlage_text('ticket_erinnerung_mieter', t, sprache=melder_sprache(t))
+            ok = send_ticket_email(adresse, betreff, text, reply_to=reply_to(t),
+                                   organisation=t.organisation_id)
         except Exception:
             logger.exception("Erinnerung (Mieter) zu Ticket #%s fehlgeschlagen", t.pk)
             ok = False

@@ -58,6 +58,25 @@
         {% endfor %}
     </section>
 
+    <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden mb-6" aria-label="{% trans 'Reparaturhistorie' %}" data-block="reparaturen">
+        <div class="flex items-center justify-between px-5 py-4 border-b fw-linie">
+            <h2 class="font-bold fw-strong">{% trans "Reparaturhistorie" %}</h2>
+            <a href="{% url 'portal_schaeden' %}?liegenschaft={{ lg.pk }}" class="fw-btn fw-knapp">{% trans "Alle Schäden" %} {% zeichen 'weiter' %}</a>
+        </div>
+        {% for z in reparaturen.zeilen %}
+        <a href="{% url 'portal_schaeden' %}?liegenschaft={{ lg.pk }}&amp;jahr={{ z.jahr }}" class="flex items-center justify-between gap-3 px-5 py-3 border-b fw-linie" data-jahr="{{ z.jahr }}">
+            <span class="min-w-0">
+                <span class="block text-sm font-semibold fw-strong">{{ z.jahr }}</span>
+                <span class="block text-xs fw-mutet">{% blocktrans count n=z.anzahl %}{{ n }} Schaden{% plural %}{{ n }} Schäden{% endblocktrans %}{% if z.offen %} · {% blocktrans with n=z.offen %}{{ n }} offen{% endblocktrans %}{% endif %}</span>
+            </span>
+            <span class="text-sm font-semibold fw-strong text-right">{% if z.effektiv is not None %}CHF {{ z.effektiv|chf }}{% elif z.geschaetzt_offen is not None %}<span class="fw-mutet">{% blocktrans with betrag=z.geschaetzt_offen|chf %}CHF {{ betrag }} geschätzt{% endblocktrans %}</span>{% else %}—{% endif %}</span>
+        </a>
+        {% empty %}
+        <p class="p-5 text-sm fw-mutet">{% trans "Für diese Liegenschaft wurde bisher kein Schaden gemeldet." %}</p>
+        {% endfor %}
+        {% if reparaturen.zeilen %}<p class="px-5 py-3 text-xs fw-mutet">{% trans "Kosten nach Jahr der Meldung; ohne stornierte Aufträge." %}</p>{% endif %}
+    </section>
+
     <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden" aria-label="{% trans 'Dokumente' %}">
         <div class="flex items-center justify-between px-5 py-4 border-b fw-linie">
             <h2 class="font-bold fw-strong">{% trans "Dokumente" %}</h2>

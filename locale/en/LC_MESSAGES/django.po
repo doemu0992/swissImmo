@@ -37030,3 +37030,431 @@ msgid ""
 msgstr ""
 "Fee or other claim: ordinary reminder, no threat of termination (Art. 257d "
 "CO applies only to rent and ancillary costs)."
+
+#, python-format
+msgid "Eingangsbestätigung: %(titel)s (Ticket #%(id)s)"
+msgstr "Confirmation of receipt: %(titel)s (Ticket #%(id)s)"
+
+#, python-format
+msgid ""
+"Guten Tag\n"
+"\n"
+"Wir haben Ihre Schadenmeldung '%(titel)s' erhalten (Ticket #%(id)s) und kümmern uns darum. Sobald ein Handwerker beauftragt wurde, informieren wir Sie.\n"
+"\n"
+"Freundliche Grüsse\n"
+"Ihre Liegenschaftsverwaltung"
+msgstr ""
+"Hello\n"
+"\n"
+"We have received your damage report '%(titel)s' (Ticket #%(id)s) and are taking care of it. We will let you know as soon as a tradesperson has been commissioned.\n"
+"\n"
+"Kind regards\n"
+"Your property management"
+
+#, python-format
+msgid "Reparaturfreigabe angefragt — %(strasse)s"
+msgstr "Repair approval requested — %(strasse)s"
+
+#, python-format
+msgid ""
+"Guten Tag %(name)s\n"
+"\n"
+"Für Ihre Liegenschaft %(adresse)s liegt eine Reparatur zur Freigabe bereit:\n"
+"\n"
+"Schaden: %(schaden)s\n"
+"Geschätzte Kosten: %(kosten)s\n"
+"\n"
+"Bitte melden Sie sich im Eigentümer-Portal an, um die Reparatur freizugeben oder abzulehnen.\n"
+"\n"
+"Freundliche Grüsse\n"
+"Ihre Verwaltung"
+msgstr ""
+"Hello %(name)s\n"
+"\n"
+"A repair is awaiting approval for your property %(adresse)s:\n"
+"\n"
+"Damage: %(schaden)s\n"
+"Estimated cost: %(kosten)s\n"
+"\n"
+"Please log in to the owner portal to approve or reject the repair.\n"
+"\n"
+"Kind regards\n"
+"Your property management"
+
+#, python-format
+msgid "Die Eingangsbestätigung an %(email)s konnte nicht gesendet werden."
+msgstr "The confirmation of receipt to %(email)s could not be sent."
+
+msgid ""
+"Auftrag storniert, der Handwerker wurde NICHT informiert (keine E-Mail-"
+"Adresse oder Versand fehlgeschlagen) — bitte direkt benachrichtigen."
+msgstr ""
+"Job cancelled, the tradesperson was NOT informed (no email address or "
+"sending failed) — please notify them directly."
+
+msgid "Termin abgesagt."
+msgstr "Appointment cancelled."
+
+msgid "Termin gesetzt."
+msgstr "Appointment set."
+
+msgid "Mieter nicht informiert"
+msgstr "Tenant not informed"
+
+msgid "Handwerker nicht informiert"
+msgstr "Tradesperson not informed"
+
+msgid "(keine E-Mail-Adresse oder Versand fehlgeschlagen)."
+msgstr "(no email address or sending failed)."
+
+msgid ""
+"Der Eigentümer wurde nicht per E-Mail benachrichtigt (keine E-Mail-Adresse "
+"oder Versand fehlgeschlagen) — er sieht die Anfrage im Portal."
+msgstr ""
+"The owner was not notified by email (no email address or sending failed) — "
+"they can see the request in the portal."
+
+msgid "Ihre Schadenmeldung wurde weitergegeben (Ticket #{ticket_id})"
+msgstr "Your damage report has been passed on (Ticket #{ticket_id})"
+
+msgid ""
+"Guten Tag {melder_name}\n"
+"\n"
+"Vielen Dank für Ihre Meldung „{schaden}“.\n"
+"\n"
+"Wir haben den Auftrag an die Firma {handwerker} weitergegeben. Diese wird sich in Kürze für einen Termin bei Ihnen melden.\n"
+"\n"
+"Freundliche Grüsse\n"
+"Ihre Liegenschaftsverwaltung"
+msgstr ""
+"Hello {melder_name}\n"
+"\n"
+"Thank you for your report \"{schaden}\".\n"
+"\n"
+"We have passed the job on to {handwerker}. They will contact you shortly to arrange an appointment.\n"
+"\n"
+"Kind regards\n"
+"Your property management"
+
+msgid "Schaden behoben (Ticket #{ticket_id})"
+msgstr "Damage repaired (Ticket #{ticket_id})"
+
+msgid ""
+"Guten Tag {melder_name}\n"
+"\n"
+"Der von Ihnen gemeldete Schaden „{schaden}“ wurde behoben und das Ticket abgeschlossen.\n"
+"\n"
+"Sollte das Problem weiterhin bestehen, melden Sie sich bitte bei uns.\n"
+"\n"
+"Freundliche Grüsse\n"
+"Ihre Liegenschaftsverwaltung"
+msgstr ""
+"Hello {melder_name}\n"
+"\n"
+"The damage you reported, \"{schaden}\", has been repaired and the ticket is closed.\n"
+"\n"
+"If the problem persists, please get in touch with us.\n"
+"\n"
+"Kind regards\n"
+"Your property management"
+
+msgid "Statusupdate zu Ihrer Meldung (Ticket #{ticket_id})"
+msgstr "Status update on your report (Ticket #{ticket_id})"
+
+msgid ""
+"Guten Tag {melder_name}\n"
+"\n"
+"Der Status Ihrer Schadenmeldung „{schaden}“ wurde aktualisiert: {status}.\n"
+"\n"
+"Freundliche Grüsse\n"
+"Ihre Liegenschaftsverwaltung"
+msgstr ""
+"Hello {melder_name}\n"
+"\n"
+"The status of your report \"{schaden}\" has been updated: {status}.\n"
+"\n"
+"Kind regards\n"
+"Your property management"
+
+msgid "Termin für Ihre Reparatur: {termin} (Ticket #{ticket_id})"
+msgstr "Appointment for your repair: {termin} (Ticket #{ticket_id})"
+
+msgid ""
+"Guten Tag {melder_name}\n"
+"\n"
+"für „{schaden}“ wurde ein Termin vereinbart:\n"
+"\n"
+"Wann: {termin}\n"
+"Wer: {handwerker}\n"
+"Wo: {objekt}\n"
+"\n"
+"Bitte stellen Sie den Zutritt sicher. Können Sie nicht, antworten Sie auf diese Mail, dann verschieben wir den Termin. Der Kalendereintrag hängt an.\n"
+"\n"
+"Freundliche Grüsse\n"
+"Ihre Liegenschaftsverwaltung"
+msgstr ""
+"Hello {melder_name}\n"
+"\n"
+"an appointment has been arranged for \"{schaden}\":\n"
+"\n"
+"When: {termin}\n"
+"Who: {handwerker}\n"
+"Where: {objekt}\n"
+"\n"
+"Please make sure access is possible. If you cannot, reply to this email and we will reschedule. The calendar entry is attached.\n"
+"\n"
+"Kind regards\n"
+"Your property management"
+
+msgid "Termin abgesagt (Ticket #{ticket_id})"
+msgstr "Appointment cancelled (Ticket #{ticket_id})"
+
+msgid ""
+"Guten Tag\n"
+"\n"
+"Der Termin für „{schaden}“ ({objekt}) am {termin} wurde abgesagt. Ein neuer Termin folgt.\n"
+"\n"
+"Freundliche Grüsse\n"
+"Ihre Liegenschaftsverwaltung"
+msgstr ""
+"Hello\n"
+"\n"
+"The appointment on {termin} for \"{schaden}\" ({objekt}) has been cancelled. A new appointment will follow.\n"
+"\n"
+"Kind regards\n"
+"Your property management"
+
+msgid "Erinnerung zu Ihrer Meldung (Ticket #{ticket_id})"
+msgstr "Reminder about your report (Ticket #{ticket_id})"
+
+msgid ""
+"Guten Tag {melder_name}\n"
+"\n"
+"zu Ihrer Meldung „{schaden}“ warten wir auf Ihre Rückmeldung. Bitte antworten Sie auf diese Mail.\n"
+"\n"
+"Freundliche Grüsse\n"
+"Ihre Liegenschaftsverwaltung"
+msgstr ""
+"Hello {melder_name}\n"
+"\n"
+"we are waiting for your reply regarding your report \"{schaden}\". Please reply to this email.\n"
+"\n"
+"Kind regards\n"
+"Your property management"
+
+msgid "Kostenlos (Garantie, Kulanz)"
+msgstr "Free of charge (warranty, goodwill)"
+
+msgid "Rechnung geht direkt an den Eigentümer"
+msgstr "Invoice goes directly to the owner"
+
+msgid "Rechnung folgt später"
+msgstr "Invoice to follow"
+
+msgid "Rechnung liegt vor, ist aber noch nicht erfasst"
+msgstr "Invoice received but not yet recorded"
+
+msgid "Auftrag nicht ausgeführt"
+msgstr "Order not carried out"
+
+msgid "Eigenleistung (Hauswart, Verwaltung)"
+msgstr "In-house work (caretaker, property management)"
+
+msgid "Anderer Grund (Freitext)"
+msgstr "Other reason (free text)"
+
+msgid "Das Ticket ist schon erledigt."
+msgstr "The ticket is already closed."
+
+msgid "Ungültige Frist."
+msgstr "Invalid deadline."
+
+msgid "Ticket ohne Rechnung abgeschlossen (Begründung festgehalten)."
+msgstr "Ticket closed without an invoice (reason recorded)."
+
+msgid "Pendenz «Rechnung ausstehend» angelegt."
+msgstr "Task \"Invoice outstanding\" created."
+
+msgid ""
+"Zu diesem Ticket läuft noch ein Versicherungsfall (Entschädigung offen) — er"
+" bleibt bestehen."
+msgstr ""
+"An insurance claim is still open for this ticket (compensation pending) — it"
+" remains open."
+
+msgid "Ticket öffnen"
+msgstr "Open ticket"
+
+msgid "Abschliessen ohne Rechnung"
+msgstr "Close without an invoice"
+
+msgid "Standard: kein Abschluss ohne Handwerkerrechnung"
+msgstr "Default: no closing without the tradesperson invoice"
+
+msgid "Für diese Aufträge ist keine Kreditorenrechnung verknüpft:"
+msgstr "No supplier invoice is linked to these orders:"
+
+msgid ""
+"Entweder die Rechnung beim Auftrag verknüpfen — oder das Ticket bewusst ohne"
+" Rechnung abschliessen. Die Begründung wird mit Person und Zeit festgehalten"
+" und steht im Verlauf."
+msgstr ""
+"Either link the invoice to the order or deliberately close the ticket "
+"without one. The reason is recorded with the person and time and appears in "
+"the history."
+
+msgid "— Grund wählen —"
+msgstr "— Choose a reason —"
+
+msgid ""
+"Pendenz bei «folgt später» / «noch nicht erfasst»: Rechnung erwartet in"
+msgstr "Task for \"to follow\" / \"not yet recorded\": invoice expected in"
+
+msgid "%(tage)s Tagen"
+msgstr "%(tage)s days"
+
+msgid "Bemerkung (bei «Anderer Grund» Pflicht)"
+msgstr "Remark (required for \"Other reason\")"
+
+msgid "Ohne Rechnung abschliessen"
+msgstr "Close without an invoice"
+
+msgid "Ohne Rechnung abschliessen darf nur die Verwaltung."
+msgstr "Only property management may close without an invoice."
+
+msgid "Ohne Rechnung: %(g)s"
+msgstr "Without invoice: %(g)s"
+
+msgid "Freigegeben von %(wer)s, %(wann)s"
+msgstr "Approved by %(wer)s, %(wann)s"
+
+msgid "Passende Rechnung gefunden (noch nicht verknüpft)"
+msgstr "Matching invoice found (not yet linked)"
+
+msgid "Diese Rechnung verknüpfen"
+msgstr "Link this invoice"
+
+#, python-format
+msgid "Handwerker %(firma)s"
+msgstr "Contractor %(firma)s"
+
+msgid "Meldung eingegangen"
+msgstr "Report received"
+
+msgid "Auftrag vergeben"
+msgstr "Job awarded"
+
+msgid "Auftrag storniert"
+msgstr "Job cancelled"
+
+msgid "Freigabe angefragt"
+msgstr "Approval requested"
+
+msgid "Freigabe erteilt"
+msgstr "Approval granted"
+
+msgid "Freigabe abgelehnt"
+msgstr "Approval declined"
+
+msgid "Arbeit erledigt"
+msgstr "Work completed"
+
+msgid "Rechnung eingegangen"
+msgstr "Invoice received"
+
+msgid "Schaden abgeschlossen"
+msgstr "Damage case closed"
+
+msgid "Schäden und Aufträge — Eigentümerportal"
+msgstr "Damage and jobs — Owner portal"
+
+msgid "Schäden und Aufträge"
+msgstr "Damage and jobs"
+
+msgid ""
+"Was in Ihren Liegenschaften gemeldet, beauftragt und freigegeben wurde."
+msgstr "What has been reported, commissioned and approved in your properties."
+
+msgid "Kosten effektiv"
+msgstr "Actual costs"
+
+msgid "Geschätzt, noch offen"
+msgstr "Estimated, still open"
+
+msgid "Jahr der Meldung"
+msgstr "Year reported"
+
+msgid "Keine Schäden für diese Auswahl"
+msgstr "No damage cases for this selection"
+
+msgid "Ändern Sie den Filter oder setzen Sie ihn zurück."
+msgstr "Change the filter or reset it."
+
+msgid "Noch keine Schäden"
+msgstr "No damage cases yet"
+
+msgid "Für Ihre Liegenschaften wurde bisher kein Schaden gemeldet."
+msgstr "No damage has been reported for your properties so far."
+
+#, python-format
+msgid "Seite %(n)s von %(m)s"
+msgstr "Page %(n)s of %(m)s"
+
+#, python-format
+msgid "Gemeldet am %(datum)s"
+msgstr "Reported on %(datum)s"
+
+#, python-format
+msgid "erledigt am %(datum)s"
+msgstr "done on %(datum)s"
+
+#, python-format
+msgid "Erledigt am %(datum)s"
+msgstr "Done on %(datum)s"
+
+#, python-format
+msgid "CHF %(betrag)s geschätzt"
+msgstr "CHF %(betrag)s estimated"
+
+#, python-format
+msgid "Beauftragt am %(datum)s"
+msgstr "Commissioned on %(datum)s"
+
+msgid "abgesagt"
+msgstr "cancelled"
+
+msgid "Entschieden am"
+msgstr "Decided on"
+
+msgid "Ihr Kommentar:"
+msgstr "Your comment:"
+
+msgid "Zu diesem Schaden wurde noch kein Handwerker beauftragt."
+msgstr "No contractor has been commissioned for this damage case yet."
+
+msgid "Alle Schäden, Aufträge und Entscheide ansehen"
+msgstr "View all damage cases, jobs and decisions"
+
+msgid "Reparaturhistorie"
+msgstr "Repair history"
+
+msgid "Alle Schäden"
+msgstr "All damage cases"
+
+msgid "Für diese Liegenschaft wurde bisher kein Schaden gemeldet."
+msgstr "No damage has been reported for this property so far."
+
+msgid "Kosten nach Jahr der Meldung; ohne stornierte Aufträge."
+msgstr "Costs by year reported; excluding cancelled jobs."
+
+#, python-format
+msgid "%(n)s Auftrag"
+msgid_plural "%(n)s Aufträge"
+msgstr[0] "%(n)s job"
+msgstr[1] "%(n)s jobs"
+
+#, python-format
+msgid "%(n)s Schaden"
+msgid_plural "%(n)s Schäden"
+msgstr[0] "%(n)s damage case"
+msgstr[1] "%(n)s damage cases"
