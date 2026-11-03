@@ -35926,7 +35926,6 @@ msgstr ""
 "Gebühr oder sonstige Forderung: gewöhnliche Mahnung, keine "
 "Kündigungsandrohung (Art. 257d OR gilt nur für Miete und Nebenkosten)."
 
-<<<<<<< HEAD
 #, python-format
 msgid "Eingangsbestätigung: %(titel)s (Ticket #%(id)s)"
 msgstr "Eingangsbestätigung: %(titel)s (Ticket #%(id)s)"
@@ -35981,8 +35980,12 @@ msgstr ""
 msgid "Die Eingangsbestätigung an %(email)s konnte nicht gesendet werden."
 msgstr "Die Eingangsbestätigung an %(email)s konnte nicht gesendet werden."
 
-msgid "Auftrag storniert, der Handwerker wurde NICHT informiert (keine E-Mail-Adresse oder Versand fehlgeschlagen) — bitte direkt benachrichtigen."
-msgstr "Auftrag storniert, der Handwerker wurde NICHT informiert (keine E-Mail-Adresse oder Versand fehlgeschlagen) — bitte direkt benachrichtigen."
+msgid ""
+"Auftrag storniert, der Handwerker wurde NICHT informiert (keine E-Mail-"
+"Adresse oder Versand fehlgeschlagen) — bitte direkt benachrichtigen."
+msgstr ""
+"Auftrag storniert, der Handwerker wurde NICHT informiert (keine E-Mail-"
+"Adresse oder Versand fehlgeschlagen) — bitte direkt benachrichtigen."
 
 msgid "Termin abgesagt."
 msgstr "Termin abgesagt."
@@ -35999,8 +36002,12 @@ msgstr "Handwerker nicht informiert"
 msgid "(keine E-Mail-Adresse oder Versand fehlgeschlagen)."
 msgstr "(keine E-Mail-Adresse oder Versand fehlgeschlagen)."
 
-msgid "Der Eigentümer wurde nicht per E-Mail benachrichtigt (keine E-Mail-Adresse oder Versand fehlgeschlagen) — er sieht die Anfrage im Portal."
-msgstr "Der Eigentümer wurde nicht per E-Mail benachrichtigt (keine E-Mail-Adresse oder Versand fehlgeschlagen) — er sieht die Anfrage im Portal."
+msgid ""
+"Der Eigentümer wurde nicht per E-Mail benachrichtigt (keine E-Mail-Adresse "
+"oder Versand fehlgeschlagen) — er sieht die Anfrage im Portal."
+msgstr ""
+"Der Eigentümer wurde nicht per E-Mail benachrichtigt (keine E-Mail-Adresse "
+"oder Versand fehlgeschlagen) — er sieht die Anfrage im Portal."
 
 msgid "Ihre Schadenmeldung wurde weitergegeben (Ticket #{ticket_id})"
 msgstr "Ihre Schadenmeldung wurde weitergegeben (Ticket #{ticket_id})"
@@ -36129,7 +36136,7 @@ msgstr ""
 "\n"
 "Freundliche Grüsse\n"
 "Ihre Liegenschaftsverwaltung"
-=======
+
 msgid "Kostenlos (Garantie, Kulanz)"
 msgstr "Kostenlos (Garantie, Kulanz)"
 
@@ -36163,8 +36170,12 @@ msgstr "Ticket ohne Rechnung abgeschlossen (Begründung festgehalten)."
 msgid "Pendenz «Rechnung ausstehend» angelegt."
 msgstr "Pendenz «Rechnung ausstehend» angelegt."
 
-msgid "Zu diesem Ticket läuft noch ein Versicherungsfall (Entschädigung offen) — er bleibt bestehen."
-msgstr "Zu diesem Ticket läuft noch ein Versicherungsfall (Entschädigung offen) — er bleibt bestehen."
+msgid ""
+"Zu diesem Ticket läuft noch ein Versicherungsfall (Entschädigung offen) — er"
+" bleibt bestehen."
+msgstr ""
+"Zu diesem Ticket läuft noch ein Versicherungsfall (Entschädigung offen) — er"
+" bleibt bestehen."
 
 msgid "Ticket öffnen"
 msgstr "Ticket öffnen"
@@ -36178,14 +36189,22 @@ msgstr "Standard: kein Abschluss ohne Handwerkerrechnung"
 msgid "Für diese Aufträge ist keine Kreditorenrechnung verknüpft:"
 msgstr "Für diese Aufträge ist keine Kreditorenrechnung verknüpft:"
 
-msgid "Entweder die Rechnung beim Auftrag verknüpfen — oder das Ticket bewusst ohne Rechnung abschliessen. Die Begründung wird mit Person und Zeit festgehalten und steht im Verlauf."
-msgstr "Entweder die Rechnung beim Auftrag verknüpfen — oder das Ticket bewusst ohne Rechnung abschliessen. Die Begründung wird mit Person und Zeit festgehalten und steht im Verlauf."
+msgid ""
+"Entweder die Rechnung beim Auftrag verknüpfen — oder das Ticket bewusst ohne"
+" Rechnung abschliessen. Die Begründung wird mit Person und Zeit festgehalten"
+" und steht im Verlauf."
+msgstr ""
+"Entweder die Rechnung beim Auftrag verknüpfen — oder das Ticket bewusst ohne"
+" Rechnung abschliessen. Die Begründung wird mit Person und Zeit festgehalten"
+" und steht im Verlauf."
 
 msgid "— Grund wählen —"
 msgstr "— Grund wählen —"
 
-msgid "Pendenz bei «folgt später» / «noch nicht erfasst»: Rechnung erwartet in"
-msgstr "Pendenz bei «folgt später» / «noch nicht erfasst»: Rechnung erwartet in"
+msgid ""
+"Pendenz bei «folgt später» / «noch nicht erfasst»: Rechnung erwartet in"
+msgstr ""
+"Pendenz bei «folgt später» / «noch nicht erfasst»: Rechnung erwartet in"
 
 msgid "%(tage)s Tagen"
 msgstr "%(tage)s Tagen"
@@ -36210,4 +36229,132 @@ msgstr "Passende Rechnung gefunden (noch nicht verknüpft)"
 
 msgid "Diese Rechnung verknüpfen"
 msgstr "Diese Rechnung verknüpfen"
->>>>>>> worktree-agent-aa07a6f807322a7df
+
+#, python-format
+msgid "Handwerker %(firma)s"
+msgstr "Handwerker %(firma)s"
+
+msgid "Meldung eingegangen"
+msgstr "Meldung eingegangen"
+
+msgid "Auftrag vergeben"
+msgstr "Auftrag vergeben"
+
+msgid "Auftrag storniert"
+msgstr "Auftrag storniert"
+
+msgid "Freigabe angefragt"
+msgstr "Freigabe angefragt"
+
+msgid "Freigabe erteilt"
+msgstr "Freigabe erteilt"
+
+msgid "Freigabe abgelehnt"
+msgstr "Freigabe abgelehnt"
+
+msgid "Arbeit erledigt"
+msgstr "Arbeit erledigt"
+
+msgid "Rechnung eingegangen"
+msgstr "Rechnung eingegangen"
+
+msgid "Schaden abgeschlossen"
+msgstr "Schaden abgeschlossen"
+
+msgid "Schäden und Aufträge — Eigentümerportal"
+msgstr "Schäden und Aufträge — Eigentümerportal"
+
+msgid "Schäden und Aufträge"
+msgstr "Schäden und Aufträge"
+
+msgid ""
+"Was in Ihren Liegenschaften gemeldet, beauftragt und freigegeben wurde."
+msgstr ""
+"Was in Ihren Liegenschaften gemeldet, beauftragt und freigegeben wurde."
+
+msgid "Kennzahlen"
+msgstr "Kennzahlen"
+
+msgid "Kosten effektiv"
+msgstr "Kosten effektiv"
+
+msgid "Geschätzt, noch offen"
+msgstr "Geschätzt, noch offen"
+
+msgid "Jahr der Meldung"
+msgstr "Jahr der Meldung"
+
+msgid "Keine Schäden für diese Auswahl"
+msgstr "Keine Schäden für diese Auswahl"
+
+msgid "Ändern Sie den Filter oder setzen Sie ihn zurück."
+msgstr "Ändern Sie den Filter oder setzen Sie ihn zurück."
+
+msgid "Noch keine Schäden"
+msgstr "Noch keine Schäden"
+
+msgid "Für Ihre Liegenschaften wurde bisher kein Schaden gemeldet."
+msgstr "Für Ihre Liegenschaften wurde bisher kein Schaden gemeldet."
+
+#, python-format
+msgid "Seite %(n)s von %(m)s"
+msgstr "Seite %(n)s von %(m)s"
+
+#, python-format
+msgid "Gemeldet am %(datum)s"
+msgstr "Gemeldet am %(datum)s"
+
+#, python-format
+msgid "erledigt am %(datum)s"
+msgstr "erledigt am %(datum)s"
+
+#, python-format
+msgid "Erledigt am %(datum)s"
+msgstr "Erledigt am %(datum)s"
+
+#, python-format
+msgid "CHF %(betrag)s geschätzt"
+msgstr "CHF %(betrag)s geschätzt"
+
+#, python-format
+msgid "Beauftragt am %(datum)s"
+msgstr "Beauftragt am %(datum)s"
+
+msgid "abgesagt"
+msgstr "abgesagt"
+
+msgid "Entschieden am"
+msgstr "Entschieden am"
+
+msgid "Ihr Kommentar:"
+msgstr "Ihr Kommentar:"
+
+msgid "Zu diesem Schaden wurde noch kein Handwerker beauftragt."
+msgstr "Zu diesem Schaden wurde noch kein Handwerker beauftragt."
+
+msgid "Alle Schäden, Aufträge und Entscheide ansehen"
+msgstr "Alle Schäden, Aufträge und Entscheide ansehen"
+
+msgid "Reparaturhistorie"
+msgstr "Reparaturhistorie"
+
+msgid "Alle Schäden"
+msgstr "Alle Schäden"
+
+msgid "Für diese Liegenschaft wurde bisher kein Schaden gemeldet."
+msgstr "Für diese Liegenschaft wurde bisher kein Schaden gemeldet."
+
+msgid "Kosten nach Jahr der Meldung; ohne stornierte Aufträge."
+msgstr "Kosten nach Jahr der Meldung; ohne stornierte Aufträge."
+
+#, python-format
+msgid "%(n)s Auftrag"
+msgid_plural "%(n)s Aufträge"
+msgstr[0] "%(n)s Auftrag"
+msgstr[1] "%(n)s Aufträge"
+
+#, python-format
+msgid "%(n)s Schaden"
+msgid_plural "%(n)s Schäden"
+msgstr[0] "%(n)s Schaden"
+msgstr[1] "%(n)s Schäden"

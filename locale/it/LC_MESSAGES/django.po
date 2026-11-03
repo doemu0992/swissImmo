@@ -37589,7 +37589,6 @@ msgstr ""
 "Spese o altro credito: sollecito ordinario, senza comminatoria di disdetta "
 "(l'art. 257d CO vale solo per pigione e spese accessorie)."
 
-<<<<<<< HEAD
 #, python-format
 msgid "Eingangsbestätigung: %(titel)s (Ticket #%(id)s)"
 msgstr "Conferma di ricezione: %(titel)s (Ticket #%(id)s)"
@@ -37644,8 +37643,12 @@ msgstr ""
 msgid "Die Eingangsbestätigung an %(email)s konnte nicht gesendet werden."
 msgstr "La conferma di ricezione a %(email)s non ha potuto essere inviata."
 
-msgid "Auftrag storniert, der Handwerker wurde NICHT informiert (keine E-Mail-Adresse oder Versand fehlgeschlagen) — bitte direkt benachrichtigen."
-msgstr "Incarico annullato, l'artigiano NON è stato informato (nessun indirizzo e-mail o invio non riuscito) — lo avvisi direttamente."
+msgid ""
+"Auftrag storniert, der Handwerker wurde NICHT informiert (keine E-Mail-"
+"Adresse oder Versand fehlgeschlagen) — bitte direkt benachrichtigen."
+msgstr ""
+"Incarico annullato, l'artigiano NON è stato informato (nessun indirizzo "
+"e-mail o invio non riuscito) — lo avvisi direttamente."
 
 msgid "Termin abgesagt."
 msgstr "Appuntamento annullato."
@@ -37662,8 +37665,12 @@ msgstr "Artigiano non informato"
 msgid "(keine E-Mail-Adresse oder Versand fehlgeschlagen)."
 msgstr "(nessun indirizzo e-mail o invio non riuscito)."
 
-msgid "Der Eigentümer wurde nicht per E-Mail benachrichtigt (keine E-Mail-Adresse oder Versand fehlgeschlagen) — er sieht die Anfrage im Portal."
-msgstr "Il proprietario non è stato informato via e-mail (nessun indirizzo e-mail o invio non riuscito) — vede la richiesta nel portale."
+msgid ""
+"Der Eigentümer wurde nicht per E-Mail benachrichtigt (keine E-Mail-Adresse "
+"oder Versand fehlgeschlagen) — er sieht die Anfrage im Portal."
+msgstr ""
+"Il proprietario non è stato informato via e-mail (nessun indirizzo e-mail o "
+"invio non riuscito) — vede la richiesta nel portale."
 
 msgid "Ihre Schadenmeldung wurde weitergegeben (Ticket #{ticket_id})"
 msgstr "La sua segnalazione di danno è stata inoltrata (Ticket #{ticket_id})"
@@ -37710,7 +37717,8 @@ msgstr ""
 "La sua amministrazione immobiliare"
 
 msgid "Statusupdate zu Ihrer Meldung (Ticket #{ticket_id})"
-msgstr "Aggiornamento sullo stato della sua segnalazione (Ticket #{ticket_id})"
+msgstr ""
+"Aggiornamento sullo stato della sua segnalazione (Ticket #{ticket_id})"
 
 msgid ""
 "Guten Tag {melder_name}\n"
@@ -37792,7 +37800,7 @@ msgstr ""
 "\n"
 "Cordiali saluti\n"
 "La sua amministrazione immobiliare"
-=======
+
 msgid "Kostenlos (Garantie, Kulanz)"
 msgstr "Gratuito (garanzia, cortesia)"
 
@@ -37826,8 +37834,12 @@ msgstr "Ticket chiuso senza fattura (motivazione registrata)."
 msgid "Pendenz «Rechnung ausstehend» angelegt."
 msgstr "Pendenza «Fattura in sospeso» creata."
 
-msgid "Zu diesem Ticket läuft noch ein Versicherungsfall (Entschädigung offen) — er bleibt bestehen."
-msgstr "Per questo ticket è ancora in corso un caso assicurativo (indennizzo aperto) — resta aperto."
+msgid ""
+"Zu diesem Ticket läuft noch ein Versicherungsfall (Entschädigung offen) — er"
+" bleibt bestehen."
+msgstr ""
+"Per questo ticket è ancora in corso un caso assicurativo (indennizzo aperto)"
+" — resta aperto."
 
 msgid "Ticket öffnen"
 msgstr "Apri il ticket"
@@ -37836,18 +37848,26 @@ msgid "Abschliessen ohne Rechnung"
 msgstr "Chiudere senza fattura"
 
 msgid "Standard: kein Abschluss ohne Handwerkerrechnung"
-msgstr "Per impostazione predefinita: nessuna chiusura senza fattura dell'artigiano"
+msgstr ""
+"Per impostazione predefinita: nessuna chiusura senza fattura dell'artigiano"
 
 msgid "Für diese Aufträge ist keine Kreditorenrechnung verknüpft:"
 msgstr "Nessuna fattura fornitore è collegata a questi incarichi:"
 
-msgid "Entweder die Rechnung beim Auftrag verknüpfen — oder das Ticket bewusst ohne Rechnung abschliessen. Die Begründung wird mit Person und Zeit festgehalten und steht im Verlauf."
-msgstr "Collegare la fattura all'incarico oppure chiudere volutamente il ticket senza fattura. La motivazione viene registrata con persona e ora ed è visibile nella cronologia."
+msgid ""
+"Entweder die Rechnung beim Auftrag verknüpfen — oder das Ticket bewusst ohne"
+" Rechnung abschliessen. Die Begründung wird mit Person und Zeit festgehalten"
+" und steht im Verlauf."
+msgstr ""
+"Collegare la fattura all'incarico oppure chiudere volutamente il ticket "
+"senza fattura. La motivazione viene registrata con persona e ora ed è "
+"visibile nella cronologia."
 
 msgid "— Grund wählen —"
 msgstr "— Scegliere un motivo —"
 
-msgid "Pendenz bei «folgt später» / «noch nicht erfasst»: Rechnung erwartet in"
+msgid ""
+"Pendenz bei «folgt später» / «noch nicht erfasst»: Rechnung erwartet in"
 msgstr "Pendenza per «seguirà» / «non ancora registrata»: fattura attesa tra"
 
 msgid "%(tage)s Tagen"
@@ -37873,4 +37893,128 @@ msgstr "Fattura corrispondente trovata (non ancora collegata)"
 
 msgid "Diese Rechnung verknüpfen"
 msgstr "Collega questa fattura"
->>>>>>> worktree-agent-aa07a6f807322a7df
+
+#, python-format
+msgid "Handwerker %(firma)s"
+msgstr "Artigiano %(firma)s"
+
+msgid "Meldung eingegangen"
+msgstr "Segnalazione ricevuta"
+
+msgid "Auftrag vergeben"
+msgstr "Incarico assegnato"
+
+msgid "Auftrag storniert"
+msgstr "Incarico annullato"
+
+msgid "Freigabe angefragt"
+msgstr "Approvazione richiesta"
+
+msgid "Freigabe erteilt"
+msgstr "Approvazione concessa"
+
+msgid "Freigabe abgelehnt"
+msgstr "Approvazione rifiutata"
+
+msgid "Arbeit erledigt"
+msgstr "Lavori eseguiti"
+
+msgid "Rechnung eingegangen"
+msgstr "Fattura ricevuta"
+
+msgid "Schaden abgeschlossen"
+msgstr "Danno chiuso"
+
+msgid "Schäden und Aufträge — Eigentümerportal"
+msgstr "Danni e incarichi — Portale proprietari"
+
+msgid "Schäden und Aufträge"
+msgstr "Danni e incarichi"
+
+msgid ""
+"Was in Ihren Liegenschaften gemeldet, beauftragt und freigegeben wurde."
+msgstr "Ciò che è stato segnalato, incaricato e approvato nei vostri stabili."
+
+msgid "Kosten effektiv"
+msgstr "Costi effettivi"
+
+msgid "Geschätzt, noch offen"
+msgstr "Stimato, ancora aperto"
+
+msgid "Jahr der Meldung"
+msgstr "Anno della segnalazione"
+
+msgid "Keine Schäden für diese Auswahl"
+msgstr "Nessun danno per questa selezione"
+
+msgid "Ändern Sie den Filter oder setzen Sie ihn zurück."
+msgstr "Modificate il filtro o reimpostatelo."
+
+msgid "Noch keine Schäden"
+msgstr "Ancora nessun danno"
+
+msgid "Für Ihre Liegenschaften wurde bisher kein Schaden gemeldet."
+msgstr "Finora non è stato segnalato alcun danno per i vostri stabili."
+
+#, python-format
+msgid "Seite %(n)s von %(m)s"
+msgstr "Pagina %(n)s di %(m)s"
+
+#, python-format
+msgid "Gemeldet am %(datum)s"
+msgstr "Segnalato il %(datum)s"
+
+#, python-format
+msgid "erledigt am %(datum)s"
+msgstr "evaso il %(datum)s"
+
+#, python-format
+msgid "Erledigt am %(datum)s"
+msgstr "Evaso il %(datum)s"
+
+#, python-format
+msgid "CHF %(betrag)s geschätzt"
+msgstr "CHF %(betrag)s stimato"
+
+#, python-format
+msgid "Beauftragt am %(datum)s"
+msgstr "Incaricato il %(datum)s"
+
+msgid "abgesagt"
+msgstr "annullato"
+
+msgid "Entschieden am"
+msgstr "Deciso il"
+
+msgid "Ihr Kommentar:"
+msgstr "Il vostro commento:"
+
+msgid "Zu diesem Schaden wurde noch kein Handwerker beauftragt."
+msgstr "Per questo danno non è ancora stato incaricato alcun artigiano."
+
+msgid "Alle Schäden, Aufträge und Entscheide ansehen"
+msgstr "Vedi tutti i danni, incarichi e decisioni"
+
+msgid "Reparaturhistorie"
+msgstr "Cronologia delle riparazioni"
+
+msgid "Alle Schäden"
+msgstr "Tutti i danni"
+
+msgid "Für diese Liegenschaft wurde bisher kein Schaden gemeldet."
+msgstr "Finora non è stato segnalato alcun danno per questo stabile."
+
+msgid "Kosten nach Jahr der Meldung; ohne stornierte Aufträge."
+msgstr "Costi per anno della segnalazione; senza incarichi annullati."
+
+#, python-format
+msgid "%(n)s Auftrag"
+msgid_plural "%(n)s Aufträge"
+msgstr[0] "%(n)s incarico"
+msgstr[1] "%(n)s incarichi"
+
+#, python-format
+msgid "%(n)s Schaden"
+msgid_plural "%(n)s Schäden"
+msgstr[0] "%(n)s danno"
+msgstr[1] "%(n)s danni"

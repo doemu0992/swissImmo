@@ -8,8 +8,11 @@ Drei Eigentümer derselben Verwaltung, jeder mit eigenem Login (Passwort e2e-pas
 * `e2e-eigentuemer`  Portal Eigentümer AG: eine aktive Liegenschaft (drei Objekte,
   eines leer, ein überfälliger offener Posten, Erträge, eine Auszahlung, ein
   freigegebenes und ein internes Dokument) und eine archivierte.
+  Dazu Schäden an Portalweg 1: einer erledigt (Auftrag freigegeben, Rechnung), einer offen
+  (Freigabe ausstehend), beide mit Geheimnissen im Text (Beschreibung, Melder, Bemerkung,
+  Nachricht, IBAN), die das Portal nie zeigen darf.
 * `e2e-eigentuemer-fremd`  Fremder Eigentümer AG: eigene Liegenschaft und ein
-  freigegebenes Dokument. Die Gegenprobe: Er darf von den anderen nichts sehen.
+  freigegebenes Dokument und ein Schaden mit ausstehender Freigabe. Die Gegenprobe: Er darf von den anderen nichts sehen.
 * `e2e-eigentuemer-ende`  Ehemaliger Eigentümer AG: Mandat mit Mandatsende
   archiviert, seine Liegenschaft ebenfalls.
 """
@@ -137,5 +140,55 @@ class Command(BaseCommand):
                 if not archiv.ist_archiviert(objekt):
                     archiv.archivieren(objekt, grund=grund, mandatsende=mandatsende)
 
+            # --- Schäden und Aufträge (additiv; Spec zz-eigentuemer-schaeden) ---
+            self._schaeden(lg, einheiten["Portal-Whg 1"], lg_fremd, heute)
+
         self.stdout.write(self.style.SUCCESS(
             "Eigentümerportal-Daten bereit (e2e-eigentuemer, e2e-eigentuemer-fremd, e2e-eigentuemer-ende)."))
+
+    def _schaeden(self, lg, einheit, lg_fremd, heute):
+        """Zwei Schäden an Portalweg 1 (einer erledigt mit Rechnung, einer offen mit ausstehender
+        Freigabe, beide mit Geheimnissen, die das Portal nie zeigen darf) und einer an der Fremdgasse.
+        Idempotent über den Titel."""
+        from datetime import datetime
+        from decimal import Decimal
+
+        from django.utils import timezone
+
+        from crm.models import Handwerker
+        from finance.models import KreditorenRechnung
+        from tickets.models import HandwerkerAuftrag, SchadenMeldung, TicketNachricht
+
+        def zeit(jahr, monat, tag):
+            return timezone.make_aware(datetime(jahr, monat, tag, 9, 30))
+
+        hw, _ = Handwerker.objects.get_or_create(firma="Portal Sanitär AG", defaults=dict(email="hw-e2e@example.ch"))
+        if not SchadenMeldung.objects.filter(titel="Portal Wasserhahn tropft").exists():
+            t = SchadenMeldung.objects.create(
+                titel="Portal Wasserhahn tropft", liegenschaft=lg, betroffene_einheit=einheit,
+                kategorie="Sanitär", bauteil="kueche_sanitaer", status="in_bearbeitung",
+                melder_vorname="Geheimmelder", email_melder="geheimmelder-e2e@example.ch",
+                tel_melder="079 111 22 33", beschreibung="GEHEIME-BESCHREIBUNG")
+            rechnung = KreditorenRechnung.objects.create(
+                liegenschaft=lg, lieferant=hw.firma, betrag=Decimal("480.00"), status="neu",
+                datum=date(heute.year - 1, 5, 2), iban="CH9300762011623852957")
+            HandwerkerAuftrag.objects.create(
+                ticket=t, handwerker=hw, bemerkung="GEHEIME-BEMERKUNG", kosten_geschaetzt=Decimal("500.00"),
+                kosten_effektiv=Decimal("480.00"), kreditoren_rechnung=rechnung,
+                freigabe_status="freigegeben", freigabe_datum=zeit(heute.year - 1, 3, 10),
+                freigabe_kommentar="Bitte zügig.")
+            TicketNachricht.objects.create(ticket=t, absender_name="Verwaltung", typ="chat",
+                                           nachricht="GEHEIME-NACHRICHT", is_intern=False)
+            t.status = "erledigt"
+            t.save()
+            SchadenMeldung.objects.filter(pk=t.pk).update(erstellt_am=zeit(heute.year - 1, 3, 4))
+            HandwerkerAuftrag.objects.filter(ticket=t).update(beauftragt_am=zeit(heute.year - 1, 3, 6))
+        if not SchadenMeldung.objects.filter(titel="Portal Dach undicht").exists():
+            t = SchadenMeldung.objects.create(titel="Portal Dach undicht", liegenschaft=lg, kategorie="Dach",
+                                              status="in_bearbeitung", beschreibung="GEHEIME-BESCHREIBUNG")
+            HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw, kosten_geschaetzt=Decimal("3200.00"),
+                                             freigabe_status="ausstehend")
+        if not SchadenMeldung.objects.filter(titel="Fremdgasse Schaden").exists():
+            t = SchadenMeldung.objects.create(titel="Fremdgasse Schaden", liegenschaft=lg_fremd, status="neu")
+            HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw, kosten_geschaetzt=Decimal("7654.32"),
+                                             freigabe_status="ausstehend")

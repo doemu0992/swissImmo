@@ -37648,7 +37648,6 @@ msgstr ""
 "Frais ou autre créance : rappel ordinaire, sans menace de résiliation "
 "(l'art. 257d CO ne vaut que pour le loyer et les charges)."
 
-<<<<<<< HEAD
 #, python-format
 msgid "Eingangsbestätigung: %(titel)s (Ticket #%(id)s)"
 msgstr "Accusé de réception : %(titel)s (Ticket #%(id)s)"
@@ -37703,8 +37702,12 @@ msgstr ""
 msgid "Die Eingangsbestätigung an %(email)s konnte nicht gesendet werden."
 msgstr "L'accusé de réception à %(email)s n'a pas pu être envoyé."
 
-msgid "Auftrag storniert, der Handwerker wurde NICHT informiert (keine E-Mail-Adresse oder Versand fehlgeschlagen) — bitte direkt benachrichtigen."
-msgstr "Mandat annulé, l'artisan n'a PAS été informé (pas d'adresse e-mail ou échec de l'envoi) — veuillez l'avertir directement."
+msgid ""
+"Auftrag storniert, der Handwerker wurde NICHT informiert (keine E-Mail-"
+"Adresse oder Versand fehlgeschlagen) — bitte direkt benachrichtigen."
+msgstr ""
+"Mandat annulé, l'artisan n'a PAS été informé (pas d'adresse e-mail ou échec "
+"de l'envoi) — veuillez l'avertir directement."
 
 msgid "Termin abgesagt."
 msgstr "Rendez-vous annulé."
@@ -37721,8 +37724,12 @@ msgstr "Artisan non informé"
 msgid "(keine E-Mail-Adresse oder Versand fehlgeschlagen)."
 msgstr "(pas d'adresse e-mail ou échec de l'envoi)."
 
-msgid "Der Eigentümer wurde nicht per E-Mail benachrichtigt (keine E-Mail-Adresse oder Versand fehlgeschlagen) — er sieht die Anfrage im Portal."
-msgstr "Le propriétaire n'a pas été informé par e-mail (pas d'adresse e-mail ou échec de l'envoi) — il voit la demande dans le portail."
+msgid ""
+"Der Eigentümer wurde nicht per E-Mail benachrichtigt (keine E-Mail-Adresse "
+"oder Versand fehlgeschlagen) — er sieht die Anfrage im Portal."
+msgstr ""
+"Le propriétaire n'a pas été informé par e-mail (pas d'adresse e-mail ou "
+"échec de l'envoi) — il voit la demande dans le portail."
 
 msgid "Ihre Schadenmeldung wurde weitergegeben (Ticket #{ticket_id})"
 msgstr "Votre annonce de dommage a été transmise (Ticket #{ticket_id})"
@@ -37851,7 +37858,7 @@ msgstr ""
 "\n"
 "Avec nos meilleures salutations\n"
 "Votre gérance immobilière"
-=======
+
 msgid "Kostenlos (Garantie, Kulanz)"
 msgstr "Gratuit (garantie, geste commercial)"
 
@@ -37885,8 +37892,12 @@ msgstr "Ticket clos sans facture (motif consigné)."
 msgid "Pendenz «Rechnung ausstehend» angelegt."
 msgstr "Tâche « Facture en attente » créée."
 
-msgid "Zu diesem Ticket läuft noch ein Versicherungsfall (Entschädigung offen) — er bleibt bestehen."
-msgstr "Un cas d'assurance est encore en cours pour ce ticket (indemnité ouverte) — il reste ouvert."
+msgid ""
+"Zu diesem Ticket läuft noch ein Versicherungsfall (Entschädigung offen) — er"
+" bleibt bestehen."
+msgstr ""
+"Un cas d'assurance est encore en cours pour ce ticket (indemnité ouverte) — "
+"il reste ouvert."
 
 msgid "Ticket öffnen"
 msgstr "Ouvrir le ticket"
@@ -37900,13 +37911,20 @@ msgstr "Par défaut : pas de clôture sans facture de l'artisan"
 msgid "Für diese Aufträge ist keine Kreditorenrechnung verknüpft:"
 msgstr "Aucune facture fournisseur n'est liée à ces mandats :"
 
-msgid "Entweder die Rechnung beim Auftrag verknüpfen — oder das Ticket bewusst ohne Rechnung abschliessen. Die Begründung wird mit Person und Zeit festgehalten und steht im Verlauf."
-msgstr "Soit lier la facture au mandat, soit clore volontairement le ticket sans facture. Le motif est consigné avec la personne et l'heure et figure dans l'historique."
+msgid ""
+"Entweder die Rechnung beim Auftrag verknüpfen — oder das Ticket bewusst ohne"
+" Rechnung abschliessen. Die Begründung wird mit Person und Zeit festgehalten"
+" und steht im Verlauf."
+msgstr ""
+"Soit lier la facture au mandat, soit clore volontairement le ticket sans "
+"facture. Le motif est consigné avec la personne et l'heure et figure dans "
+"l'historique."
 
 msgid "— Grund wählen —"
 msgstr "— Choisir un motif —"
 
-msgid "Pendenz bei «folgt später» / «noch nicht erfasst»: Rechnung erwartet in"
+msgid ""
+"Pendenz bei «folgt später» / «noch nicht erfasst»: Rechnung erwartet in"
 msgstr "Tâche pour « suivra » / « pas encore saisie » : facture attendue dans"
 
 msgid "%(tage)s Tagen"
@@ -37932,4 +37950,128 @@ msgstr "Facture correspondante trouvée (pas encore liée)"
 
 msgid "Diese Rechnung verknüpfen"
 msgstr "Lier cette facture"
->>>>>>> worktree-agent-aa07a6f807322a7df
+
+#, python-format
+msgid "Handwerker %(firma)s"
+msgstr "Artisan %(firma)s"
+
+msgid "Meldung eingegangen"
+msgstr "Signalement reçu"
+
+msgid "Auftrag vergeben"
+msgstr "Mandat attribué"
+
+msgid "Auftrag storniert"
+msgstr "Mandat annulé"
+
+msgid "Freigabe angefragt"
+msgstr "Validation demandée"
+
+msgid "Freigabe erteilt"
+msgstr "Validation accordée"
+
+msgid "Freigabe abgelehnt"
+msgstr "Validation refusée"
+
+msgid "Arbeit erledigt"
+msgstr "Travaux terminés"
+
+msgid "Rechnung eingegangen"
+msgstr "Facture reçue"
+
+msgid "Schaden abgeschlossen"
+msgstr "Sinistre clôturé"
+
+msgid "Schäden und Aufträge — Eigentümerportal"
+msgstr "Sinistres et mandats — Portail propriétaire"
+
+msgid "Schäden und Aufträge"
+msgstr "Sinistres et mandats"
+
+msgid ""
+"Was in Ihren Liegenschaften gemeldet, beauftragt und freigegeben wurde."
+msgstr "Ce qui a été signalé, commandé et validé dans vos immeubles."
+
+msgid "Kosten effektiv"
+msgstr "Coûts effectifs"
+
+msgid "Geschätzt, noch offen"
+msgstr "Estimé, encore ouvert"
+
+msgid "Jahr der Meldung"
+msgstr "Année du signalement"
+
+msgid "Keine Schäden für diese Auswahl"
+msgstr "Aucun sinistre pour cette sélection"
+
+msgid "Ändern Sie den Filter oder setzen Sie ihn zurück."
+msgstr "Modifiez le filtre ou réinitialisez-le."
+
+msgid "Noch keine Schäden"
+msgstr "Pas encore de sinistres"
+
+msgid "Für Ihre Liegenschaften wurde bisher kein Schaden gemeldet."
+msgstr "Aucun sinistre n'a encore été signalé pour vos immeubles."
+
+#, python-format
+msgid "Seite %(n)s von %(m)s"
+msgstr "Page %(n)s sur %(m)s"
+
+#, python-format
+msgid "Gemeldet am %(datum)s"
+msgstr "Signalé le %(datum)s"
+
+#, python-format
+msgid "erledigt am %(datum)s"
+msgstr "terminé le %(datum)s"
+
+#, python-format
+msgid "Erledigt am %(datum)s"
+msgstr "Terminé le %(datum)s"
+
+#, python-format
+msgid "CHF %(betrag)s geschätzt"
+msgstr "CHF %(betrag)s estimé"
+
+#, python-format
+msgid "Beauftragt am %(datum)s"
+msgstr "Mandaté le %(datum)s"
+
+msgid "abgesagt"
+msgstr "annulé"
+
+msgid "Entschieden am"
+msgstr "Décidé le"
+
+msgid "Ihr Kommentar:"
+msgstr "Votre commentaire :"
+
+msgid "Zu diesem Schaden wurde noch kein Handwerker beauftragt."
+msgstr "Aucun artisan n'a encore été mandaté pour ce sinistre."
+
+msgid "Alle Schäden, Aufträge und Entscheide ansehen"
+msgstr "Voir tous les sinistres, mandats et décisions"
+
+msgid "Reparaturhistorie"
+msgstr "Historique des réparations"
+
+msgid "Alle Schäden"
+msgstr "Tous les sinistres"
+
+msgid "Für diese Liegenschaft wurde bisher kein Schaden gemeldet."
+msgstr "Aucun sinistre n'a encore été signalé pour cet immeuble."
+
+msgid "Kosten nach Jahr der Meldung; ohne stornierte Aufträge."
+msgstr "Coûts selon l'année du signalement ; sans les mandats annulés."
+
+#, python-format
+msgid "%(n)s Auftrag"
+msgid_plural "%(n)s Aufträge"
+msgstr[0] "%(n)s mandat"
+msgstr[1] "%(n)s mandats"
+
+#, python-format
+msgid "%(n)s Schaden"
+msgid_plural "%(n)s Schäden"
+msgstr[0] "%(n)s sinistre"
+msgstr[1] "%(n)s sinistres"

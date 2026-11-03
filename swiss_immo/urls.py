@@ -87,7 +87,7 @@ from core.views.postfach import (postfach_liste, postfach_form, postfach_test,
                                  postfach_loeschen)
 from core.views.eigentuemer_portal import (portal_liegenschaften, portal_liegenschaft, portal_abrechnungen,
                                            portal_abrechnung_pdf, portal_dokumente, portal_mitteilungen,
-                                           portal_profil, fw_ablage_portal_toggle)
+                                           portal_profil, fw_ablage_portal_toggle, portal_schaeden, portal_schaden)
 from core.views.portal import (portal_view, nach_login_view, portal_dokument_download, portal_report_pdf, portal_freigabe,
                                 portal_steuerauszug_pdf, portal_kontokorrent_pdf,
                                 mieter_portal_view, mieter_dokument_download, mieter_schaden_melden, mieter_rechnung_qr,
@@ -688,6 +688,8 @@ urlpatterns = [
     # Eigentümerportal v2 (core/views/eigentuemer_portal.py)
     path('portal/liegenschaften/', portal_liegenschaften, name='portal_liegenschaften'),
     path('portal/liegenschaften/<int:pk>/', portal_liegenschaft, name='portal_liegenschaft'),
+    path('portal/schaeden/', portal_schaeden, name='portal_schaeden'),
+    path('portal/schaeden/<int:pk>/', portal_schaden, name='portal_schaden'),
     path('portal/abrechnungen/', portal_abrechnungen, name='portal_abrechnungen'),
     path('portal/abrechnungen/pdf/', portal_abrechnung_pdf, name='portal_abrechnung_pdf'),
     path('portal/dokumente/', portal_dokumente, name='portal_dokumente'),

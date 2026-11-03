@@ -88,7 +88,7 @@ test.describe('Eigentümer mit Liegenschaften', () => {
     await expect(page.locator('[data-kachel="auszahlung"]')).toContainText('Zuletzt am');
     expect(await quer(page)).toBeLessThanOrEqual(0);
     await menueOeffnen(page);
-    for (const text of ['Übersicht', 'Liegenschaften', 'Abrechnungen', 'Dokumente', 'Anfragen', 'Profil und Sprache']) {
+    for (const text of ['Übersicht', 'Liegenschaften', 'Schäden und Aufträge', 'Abrechnungen', 'Dokumente', 'Anfragen', 'Profil und Sprache']) {
       await expect(page.locator('#pSidebar').getByRole('link', { name: text })).toBeVisible();
     }
   });
@@ -190,7 +190,7 @@ test.describe('Eigentümer mit Liegenschaften', () => {
     test(`Kontrast und Querscrollen aller Seiten (${modus})`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: modus });
       await anmelden(page, 'e2e-eigentuemer');
-      for (const pfad of ['/portal/', '/portal/liegenschaften/', '/portal/abrechnungen/', '/portal/dokumente/',
+      for (const pfad of ['/portal/', '/portal/liegenschaften/', '/portal/schaeden/', '/portal/abrechnungen/', '/portal/dokumente/',
         '/portal/mitteilungen/', '/portal/profil/']) {
         await goto(page, pfad);
         await page.waitForTimeout(700);                 // Einblendung der Inhalte abwarten

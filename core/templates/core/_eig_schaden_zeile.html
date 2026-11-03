@@ -1,0 +1,17 @@
+{% load i18n chf %}{% comment %}Eine Zeile der Schadensliste. Parameter: z (Wörterbuch aus eigentuemer_schaeden){% endcomment %}
+<a href="{% url 'portal_schaden' z.id %}" class="block px-5 py-3.5 border-b fw-linie" data-schaden="{{ z.id }}">
+    <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+            <div class="font-semibold text-sm fw-strong">{{ z.titel }}</div>
+            <div class="text-xs fw-mutet">{{ z.liegenschaft.strasse }}{% if z.objekt %} · {{ z.objekt }}{% endif %}{% if z.bauteil %} · {{ z.bauteil }}{% endif %}</div>
+            <div class="text-xs fw-mutet">{% blocktrans with datum=z.gemeldet_am|date:"d.m.Y" %}Gemeldet am {{ datum }}{% endblocktrans %}{% if z.kategorie %} · {{ z.kategorie }}{% endif %}{% if z.erledigt_am %} · {% blocktrans with datum=z.erledigt_am|date:"d.m.Y" %}erledigt am {{ datum }}{% endblocktrans %}{% endif %}</div>
+        </div>
+        {% if z.erledigt %}<span class="fw-chip fw-good">{% trans "Erledigt" %}</span>{% else %}<span class="fw-chip fw-warn">{{ z.status_text }}</span>{% endif %}
+    </div>
+    <div class="flex flex-wrap gap-1.5 mt-2">
+        {% if z.ausstehend %}<span class="fw-chip fw-crit">{% trans "Freigabe ausstehend" %}</span>{% endif %}
+        {% if z.anzahl_auftraege %}<span class="fw-chip fw-mut">{% blocktrans count n=z.anzahl_auftraege %}{{ n }} Auftrag{% plural %}{{ n }} Aufträge{% endblocktrans %}</span>{% endif %}
+        {% if z.effektiv is not None %}<span class="fw-chip fw-mut">CHF {{ z.effektiv|chf }}</span>
+        {% elif z.geschaetzt_offen is not None %}<span class="fw-chip fw-mut">{% blocktrans with betrag=z.geschaetzt_offen|chf %}CHF {{ betrag }} geschätzt{% endblocktrans %}</span>{% endif %}
+    </div>
+</a>

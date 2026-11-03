@@ -1,0 +1,77 @@
+{% extends 'core/eig_base.html' %}
+{% load zeichen i18n chf %}
+{% block title %}{{ s.titel }} — {% trans "Eigentümerportal" %}{% endblock %}
+{% block brand_mobile %}{% trans "Schaden" %}{% endblock %}
+{% block nav %}{% include 'core/_eig_nav.html' with aktiv='schaeden' %}{% endblock %}
+
+{% block seite %}
+    <nav class="fw-brotkrume mb-3" aria-label="{% trans 'Pfad' %}">
+        <a href="{% url 'portal_schaeden' %}">{% trans "Schäden und Aufträge" %}</a>
+    </nav>
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold tracking-tight fw-strong">{{ s.titel }}</h1>
+        <p class="fw-mutet mt-1"><a href="{% url 'portal_liegenschaft' s.liegenschaft.pk %}">{{ s.liegenschaft.strasse }}, {{ s.liegenschaft.ort }}</a>{% if s.objekt %} · {{ s.objekt }}{% endif %}{% if s.bauteil %} · {{ s.bauteil }}{% endif %}</p>
+        <div class="flex flex-wrap gap-1.5 mt-3">
+            {% if s.erledigt %}<span class="fw-chip fw-good">{% trans "Erledigt" %}</span>{% else %}<span class="fw-chip fw-warn">{{ s.status_text }}</span>{% endif %}
+            {% if s.kategorie %}<span class="fw-chip fw-mut">{{ s.kategorie }}</span>{% endif %}
+            <span class="fw-chip fw-mut">{% blocktrans with datum=s.gemeldet_am|date:"d.m.Y" %}Gemeldet am {{ datum }}{% endblocktrans %}</span>
+            {% if s.erledigt_am %}<span class="fw-chip fw-mut">{% blocktrans with datum=s.erledigt_am|date:"d.m.Y" %}Erledigt am {{ datum }}{% endblocktrans %}</span>{% endif %}
+        </div>
+    </div>
+
+    <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden mb-6" aria-label="{% trans 'Aufträge' %}" data-block="auftraege">
+        <div class="px-5 py-4 border-b fw-linie"><h2 class="font-bold fw-strong">{% trans "Aufträge" %}</h2></div>
+        {% for a in s.auftraege %}
+        <div class="px-5 py-4 border-b fw-linie space-y-2" data-auftrag="{{ a.id }}">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                    <div class="font-semibold text-sm fw-strong">{{ a.firma }}</div>
+                    <div class="text-xs fw-mutet">{% blocktrans with datum=a.beauftragt_am|date:"d.m.Y" %}Beauftragt am {{ datum }}{% endblocktrans %}</div>
+                </div>
+                {% if a.storniert %}<span class="fw-chip fw-mut">{% trans "Storniert" %}</span>
+                {% elif a.freigabe == 'ausstehend' %}<span class="fw-chip fw-crit">{{ a.freigabe_text }}</span>
+                {% elif a.freigabe == 'freigegeben' %}<span class="fw-chip fw-good">{{ a.freigabe_text }}</span>
+                {% elif a.freigabe == 'abgelehnt' %}<span class="fw-chip fw-crit">{{ a.freigabe_text }}</span>
+                {% else %}<span class="fw-chip fw-mut">{{ a.freigabe_text }}</span>{% endif %}
+            </div>
+            <dl class="text-sm space-y-1">
+                <div class="flex justify-between gap-3"><dt class="fw-mutet">{% trans "Termin" %}</dt><dd class="fw-ink text-right">{% if a.termin %}{{ a.termin|date:"d.m.Y H:i" }}{% elif a.termin_abgesagt %}{% trans "abgesagt" %}{% else %}—{% endif %}</dd></div>
+                <div class="flex justify-between gap-3"><dt class="fw-mutet">{% trans "Kostenschätzung" %}</dt><dd class="fw-ink text-right">{% if a.geschaetzt is not None %}CHF {{ a.geschaetzt|chf }}{% else %}—{% endif %}</dd></div>
+                <div class="flex justify-between gap-3"><dt class="fw-mutet">{% trans "Effektive Kosten" %}</dt><dd class="fw-ink text-right">{% if a.effektiv is not None %}CHF {{ a.effektiv|chf }}{% else %}—{% endif %}</dd></div>
+                <div class="flex justify-between gap-3"><dt class="fw-mutet">{% trans "Rechnung" %}</dt><dd class="fw-ink text-right">{% if a.rechnung %}{% trans "Ja" %}{% if a.rechnung_betrag is not None %} · CHF {{ a.rechnung_betrag|chf }}{% endif %}{% elif a.rechnung_storniert %}{% trans "storniert" %}{% else %}{% trans "Nein" %}{% endif %}</dd></div>
+                {% if a.freigabe_datum %}<div class="flex justify-between gap-3"><dt class="fw-mutet">{% trans "Entschieden am" %}</dt><dd class="fw-ink text-right">{{ a.freigabe_datum|date:"d.m.Y" }}</dd></div>{% endif %}
+            </dl>
+            {% if a.freigabe_kommentar %}<p class="text-sm fw-ink"><span class="fw-mutet">{% trans "Ihr Kommentar:" %}</span> {{ a.freigabe_kommentar }}</p>{% endif %}
+            {% if a.freigabe == 'ausstehend' and not a.storniert and not mandat_ende %}
+            <form method="post" action="{% url 'portal_freigabe' a.id %}" class="space-y-3 mt-1" data-block="freigabe">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'portal_schaden' s.id %}">
+                <div>
+                    <label for="kommentar-{{ a.id }}" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Kommentar (optional)" %}</label>
+                    <input id="kommentar-{{ a.id }}" type="text" name="kommentar" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5">
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button type="submit" name="aktion" value="freigeben" class="fw-btn fw-gutknopf">{% zeichen 'gut' %} {% trans "Freigeben" %}</button>
+                    <button type="submit" name="aktion" value="ablehnen" class="fw-btn">{% zeichen 'kritisch' %} {% trans "Ablehnen" %}</button>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p class="p-5 text-sm fw-mutet" data-block="keine-auftraege">{% trans "Zu diesem Schaden wurde noch kein Handwerker beauftragt." %}</p>
+        {% endfor %}
+    </section>
+
+    <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden" aria-label="{% trans 'Verlauf' %}" data-block="verlauf">
+        <div class="px-5 py-4 border-b fw-linie"><h2 class="font-bold fw-strong">{% trans "Verlauf" %}</h2></div>
+        {% for e in s.verlauf %}
+        <div class="px-5 py-3 border-b fw-linie" data-ereignis="{{ e.art }}">
+            <div class="flex items-start justify-between gap-3">
+                <span class="font-semibold text-sm fw-strong min-w-0">{{ e.titel }}</span>
+                <span class="text-xs fw-mutet text-right">{% if e.datum %}{{ e.datum|date:"d.m.Y" }}{% endif %}</span>
+            </div>
+            <div class="text-xs fw-mutet">{{ e.akteur }}{% if e.termin %} · {{ e.termin|date:"d.m.Y H:i" }}{% elif e.text %} · {{ e.text }}{% endif %}</div>
+        </div>
+        {% endfor %}
+    </section>
+{% endblock %}

@@ -906,6 +906,7 @@ class PortalFremdzugriffTests(TestCase):
         'portal_dokument_download': ('get', lambda d: d['fremd_lg_dok'].id),
         'portal_liegenschaft':      ('get', lambda d: d['fremd_lg'].id),
         'portal_freigabe':          ('post', lambda d: d['fremd_auftrag'].id),
+        'portal_schaden':           ('get', lambda d: d['fremd_ticket'].id),
         'mieter_dokument_download': ('get', lambda d: d['fremd_dok'].id),
         'mieter_ticket_detail':     ('get', lambda d: d['fremd_ticket'].id),
         'mieter_ticket_nachricht':  ('post', lambda d: d['fremd_ticket'].id),
