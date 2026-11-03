@@ -37,7 +37,7 @@ test.describe('Vertragserfassung auf Französisch', () => {
     await expect(page.locator('#f_kuendigungstermine')).toHaveValue('März, Juni, September');
 
     // Anrede: angezeigt «Monsieur», gespeichert «Herr»
-    const herr = page.locator('select[name="anrede"] option').first();
+    const herr = page.locator('select[name="anrede"] option[value="Herr"]');
     await expect(herr).toHaveText('Monsieur');
     expect(await herr.evaluate((o: HTMLOptionElement) => o.value)).toBe('Herr');
 
