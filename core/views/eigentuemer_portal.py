@@ -22,7 +22,8 @@ from django.views.decorators.cache import never_cache
 
 from core.auth import SCHREIB_ROLLEN, log_aktion, rolle_erforderlich
 from core.services import eigentuemer_portal as dienst
-from core.utils.parameter import jahr_streng, sicheres_ziel
+from core.services import eigentuemer_schaeden as schaeden
+from core.utils.parameter import id_param, jahr_param, jahr_streng, sicheres_ziel
 from core.zeit import datum_heute
 
 
@@ -64,7 +65,33 @@ def portal_liegenschaft(request, eigentuemer, pk):
         raise Http404
     dokumente = [d for d in dienst.sichtbare_dokumente(eigentuemer)
                  if (d.liegenschaft_id or d.einheit.liegenschaft_id) == pk][:10]
-    return render(request, 'core/eig_liegenschaft.html', _kontext(eigentuemer, dokumente=dokumente, **daten))
+    return render(request, 'core/eig_liegenschaft.html', _kontext(
+        eigentuemer, dokumente=dokumente, reparaturen=schaeden.historie(eigentuemer, pk), **daten))
+
+
+@eigentuemer_seite
+def portal_schaeden(request, eigentuemer):
+    """Schäden und Aufträge der eigenen Liegenschaften; Filter: Liegenschaft, Status, Jahr."""
+    lg = id_param(request.GET.get('liegenschaft'))
+    status = request.GET.get('status')
+    status = status if status in dict(schaeden.STATUS_FILTER) else None
+    jahr = jahr_param(request.GET.get('jahr'))
+    ergebnis = schaeden.liste(eigentuemer, liegenschaft=lg, status=status, jahr=jahr,
+                              seite=request.GET.get('seite') or 1)
+    return render(request, 'core/eig_schaeden.html', _kontext(
+        eigentuemer, filter={'liegenschaft': lg, 'status': status, 'jahr': jahr},
+        filter_aktiv=bool(lg or status or jahr),
+        liegenschaften=list(dienst.eigene_liegenschaften(eigentuemer)), stati=schaeden.STATUS_FILTER,
+        jahre=schaeden.jahre_der_schaeden(eigentuemer), **ergebnis))
+
+
+@eigentuemer_seite
+def portal_schaden(request, eigentuemer, pk):
+    """Ein Schaden mit Aufträgen, Freigabestand und Verlauf. Fremde Nummer: 404."""
+    daten = schaeden.detail(eigentuemer, pk) if id_param(pk) else None
+    if daten is None:
+        raise Http404
+    return render(request, 'core/eig_schaden.html', _kontext(eigentuemer, s=daten))
 
 
 @eigentuemer_seite

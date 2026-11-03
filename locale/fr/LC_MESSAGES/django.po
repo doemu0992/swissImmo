@@ -37647,3 +37647,127 @@ msgid ""
 msgstr ""
 "Frais ou autre créance : rappel ordinaire, sans menace de résiliation "
 "(l'art. 257d CO ne vaut que pour le loyer et les charges)."
+
+#, python-format
+msgid "Handwerker %(firma)s"
+msgstr "Artisan %(firma)s"
+
+msgid "Meldung eingegangen"
+msgstr "Signalement reçu"
+
+msgid "Auftrag vergeben"
+msgstr "Mandat attribué"
+
+msgid "Auftrag storniert"
+msgstr "Mandat annulé"
+
+msgid "Freigabe angefragt"
+msgstr "Validation demandée"
+
+msgid "Freigabe erteilt"
+msgstr "Validation accordée"
+
+msgid "Freigabe abgelehnt"
+msgstr "Validation refusée"
+
+msgid "Arbeit erledigt"
+msgstr "Travaux terminés"
+
+msgid "Rechnung eingegangen"
+msgstr "Facture reçue"
+
+msgid "Schaden abgeschlossen"
+msgstr "Sinistre clôturé"
+
+msgid "Schäden und Aufträge — Eigentümerportal"
+msgstr "Sinistres et mandats — Portail propriétaire"
+
+msgid "Schäden und Aufträge"
+msgstr "Sinistres et mandats"
+
+msgid "Was in Ihren Liegenschaften gemeldet, beauftragt und freigegeben wurde."
+msgstr "Ce qui a été signalé, commandé et validé dans vos immeubles."
+
+msgid "Kosten effektiv"
+msgstr "Coûts effectifs"
+
+msgid "Geschätzt, noch offen"
+msgstr "Estimé, encore ouvert"
+
+msgid "Jahr der Meldung"
+msgstr "Année du signalement"
+
+msgid "Keine Schäden für diese Auswahl"
+msgstr "Aucun sinistre pour cette sélection"
+
+msgid "Ändern Sie den Filter oder setzen Sie ihn zurück."
+msgstr "Modifiez le filtre ou réinitialisez-le."
+
+msgid "Noch keine Schäden"
+msgstr "Pas encore de sinistres"
+
+msgid "Für Ihre Liegenschaften wurde bisher kein Schaden gemeldet."
+msgstr "Aucun sinistre n'a encore été signalé pour vos immeubles."
+
+#, python-format
+msgid "Seite %(n)s von %(m)s"
+msgstr "Page %(n)s sur %(m)s"
+
+#, python-format
+msgid "Gemeldet am %(datum)s"
+msgstr "Signalé le %(datum)s"
+
+#, python-format
+msgid "erledigt am %(datum)s"
+msgstr "terminé le %(datum)s"
+
+#, python-format
+msgid "Erledigt am %(datum)s"
+msgstr "Terminé le %(datum)s"
+
+#, python-format
+msgid "CHF %(betrag)s geschätzt"
+msgstr "CHF %(betrag)s estimé"
+
+#, python-format
+msgid "Beauftragt am %(datum)s"
+msgstr "Mandaté le %(datum)s"
+
+msgid "abgesagt"
+msgstr "annulé"
+
+msgid "Entschieden am"
+msgstr "Décidé le"
+
+msgid "Ihr Kommentar:"
+msgstr "Votre commentaire :"
+
+msgid "Zu diesem Schaden wurde noch kein Handwerker beauftragt."
+msgstr "Aucun artisan n'a encore été mandaté pour ce sinistre."
+
+msgid "Alle Schäden, Aufträge und Entscheide ansehen"
+msgstr "Voir tous les sinistres, mandats et décisions"
+
+msgid "Reparaturhistorie"
+msgstr "Historique des réparations"
+
+msgid "Alle Schäden"
+msgstr "Tous les sinistres"
+
+msgid "Für diese Liegenschaft wurde bisher kein Schaden gemeldet."
+msgstr "Aucun sinistre n'a encore été signalé pour cet immeuble."
+
+msgid "Kosten nach Jahr der Meldung; ohne stornierte Aufträge."
+msgstr "Coûts selon l'année du signalement ; sans les mandats annulés."
+
+#, python-format
+msgid "%(n)s Auftrag"
+msgid_plural "%(n)s Aufträge"
+msgstr[0] "%(n)s mandat"
+msgstr[1] "%(n)s mandats"
+
+#, python-format
+msgid "%(n)s Schaden"
+msgid_plural "%(n)s Schäden"
+msgstr[0] "%(n)s sinistre"
+msgstr[1] "%(n)s sinistres"

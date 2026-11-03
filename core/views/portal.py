@@ -79,6 +79,7 @@ def _offene_freigaben(eigentuemer):
         t = a.ticket
         out.append({
             'id': a.id,
+            'ticket_id': t.pk,
             'titel': t.titel,
             'liegenschaft': f"{t.liegenschaft.strasse}, {t.liegenschaft.ort}" if t.liegenschaft_id else '—',
             'handwerker': a.handwerker.firma if a.handwerker_id else '—',
@@ -99,8 +100,11 @@ def portal_freigabe(request, pk):
     lg_ids = list(eigentuemer.liegenschaften.values_list('id', flat=True))
     a = get_object_or_404(HandwerkerAuftrag.objects.select_related('ticket'),
                           pk=pk, ticket__liegenschaft_id__in=lg_ids)
+    # Rücksprung: die Schadensseite schickt `next` mit, sonst die Übersicht (nur Pfade dieser Anwendung).
+    from core.utils.parameter import sicheres_ziel
+    ziel = sicheres_ziel(request, '/portal/')
     if a.freigabe_status != 'ausstehend':
-        return redirect('portal')
+        return redirect(ziel)
     aktion = request.POST.get('aktion')
     kommentar = (request.POST.get('kommentar') or '').strip()
     if aktion == 'freigeben':
@@ -108,7 +112,7 @@ def portal_freigabe(request, pk):
     elif aktion == 'ablehnen':
         a.freigabe_status = 'abgelehnt'
     else:
-        return redirect('portal')
+        return redirect(ziel)
     a.freigabe_datum = timezone.now()
     a.freigabe_kommentar = kommentar
     a.save(update_fields=['freigabe_status', 'freigabe_datum', 'freigabe_kommentar'])
@@ -121,7 +125,7 @@ def portal_freigabe(request, pk):
             is_intern=True)
     except Exception:
         logger.debug("Fehler bewusst übergangen", exc_info=True)
-    return redirect('portal')
+    return redirect(ziel)
 
 
 def _portfolio_daten(eigentuemer):
