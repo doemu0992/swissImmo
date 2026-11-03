@@ -138,7 +138,7 @@ class MandantenFixture:
             liegenschaft=self.liegenschaft, bezeichnung=f'3.5 Zi {k}', typ='whg',
             nettomiete_aktuell=Decimal('1500'), nebenkosten_aktuell=Decimal('200'))
         self.mieter = Mieter.objects.create(
-            typ='person', vorname='Mieter', nachname=k, email=f'mieter-{k.lower()}@example.ch',
+            typ='person', anrede='Herr', vorname='Mieter', nachname=k, email=f'mieter-{k.lower()}@example.ch',
             strasse=f'{k}-Gasse 2', plz=plz, ort=ort)
         self.vertrag = Mietvertrag.objects.create(
             mieter=self.mieter, einheit=self.einheit, beginn=date(2024, 1, 1),

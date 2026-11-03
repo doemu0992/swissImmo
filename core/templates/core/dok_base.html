@@ -1,58 +1,48 @@
-{% load i18n %}<!DOCTYPE html>
+{% load i18n dok_tags %}{% if not briefkopf %}{% briefkopf_von verwaltung as briefkopf %}{% endif %}<!DOCTYPE html>
 <html lang="{{ dokumentsprache|default:'de' }}">
 <head>
 <meta charset="utf-8">
 <style>
-    @page { size: A4 portrait; margin: 2.2cm 2cm 2cm 2cm;
-        @frame footer { -pdf-frame-content: footerContent; bottom: 0.8cm; margin-left: 2cm; margin-right: 2cm; height: 1.3cm; } }
-    body { font-family: Helvetica, sans-serif; font-size: 9.5pt; color: #1e293b; line-height: 1.5; }
-    h1 { font-size: 15pt; margin: 0 0 4pt 0; }
-    h2 { font-size: 11pt; margin: 14pt 0 4pt 0; }
-    .kopf { font-size: 8pt; color: #64748b; border-bottom: 1px solid #e2e8f0; padding-bottom: 4pt; margin-bottom: 12pt; }
-    .subtitle { font-size: 9pt; color: #64748b; margin-bottom: 12pt; }
-    .sec { background-color: #f1f5f9; font-weight: bold; font-size: 10pt; padding: 4pt 7pt; margin: 12pt 0 5pt 0; }
-    .note { font-size: 8.5pt; color: #475569; margin: 4pt 0; }
-    .adr { margin: 4pt 0 14pt 0; }
-    ol { margin: 4pt 0 4pt 16pt; padding: 0; }
-    ol li { margin: 3pt 0; }
-    ul { margin: 4pt 0 4pt 16pt; padding: 0; }
-    ul li { margin: 2.5pt 0; }
-    table.data { width: 100%; border-collapse: collapse; margin: 4pt 0; }
-    table.data td { padding: 3pt 0; vertical-align: top; }
-    table.data td.k { color: #64748b; width: 42%; }
-    table.form { width: 100%; border-collapse: collapse; margin: 4pt 0; }
-    table.form td { border: 0.75pt solid #cbd5e1; padding: 5pt 6pt; font-size: 8.5pt; }
-    /* Beide Spalten mit Breite: Ohne sie verteilte xhtml2pdf die Breite nach
-       Inhalt — mit leeren Feldern (Telefon, Geburtsdatum) wurde die rechte
-       Spalte schmal, Namen und Adresse brachen Wort für Wort um. */
-    table.form td { width: 60%; }
-    table.form td.k { background-color: #f8fafc; color: #475569; width: 40%; }
-    p { margin: 6pt 0; }
-    .sign { width: 100%; margin-top: 26pt; }
-    .sign td { width: 240pt; vertical-align: bottom; padding-top: 30pt; font-size: 8pt; color: #64748b; }
-    .sigline { border-top: 1px solid #94a3b8; padding-top: 3pt; }
-    .logo { margin: 0 0 6pt 0; }
-    .empfaenger { margin-top: 22pt; }
-    .ortdatum { text-align: right; font-size: 8.5pt; color: #64748b; margin-bottom: 14pt; }
-    .unterschrift { margin-top: 14pt; }
-    .unterschrift-name { font-size: 9pt; }
-    .fusszeile { font-size: 7pt; color: #64748b; }
-    {% if briefkopf.farbe %}
-    .kopf { border-bottom: 1.5pt solid {{ briefkopf.farbe }}; }
-    h1, h2 { color: {{ briefkopf.farbe }}; }
-    {% endif %}
+{% block stil %}{% include "core/_dok_stil.html" %}{% endblock %}
+{% block stil_extra %}{% endblock %}
 </style>
 </head>
 <body>
 
 {% comment %}
-Briefkopf je Verwaltung (Modul 5): Logo, Farbe, Fusszeile und Unterschrift
-kommen aus `briefkopf` (core/services/briefkopf.py). Fehlt er, bleibt das
-Dokument, wie es war. Die Unterschrift steht nur dort, wo das Dokument sie
-verlangt (`mit_unterschrift`) — ein Merkblatt unterschreibt niemand.
+Grundlayout aller PDF-Dokumente (Welle 1): Briefkopf (Logo, Farbe, Fusszeile der
+Verwaltung DES DATENSATZES, core/services/briefkopf.py), Seitenkopf ab Seite 2,
+Fusszeile mit «Seite x von y», einheitliche Typografie (core/_dok_stil.html).
+
+Eine Vorlage erweitert diese Basis und füllt `inhalt`. Wahlweise im Kontext:
+  dok_titel, dok_ref     Titel und Referenz im Seitenkopf ab Seite 2
+  Paraphen-Zeile im Fuss (Verträge): Block `visum` füllen UND Block `stil` mit
+                         {% include "core/_dok_stil.html" with visum=True %} überschreiben (grösserer Fuss)
+  adressfenster          True: Empfängerfeld rechts (Briefe, siehe _dok_adressfenster.html)
+  mit_unterschrift       Name und Unterschrift der Verwaltung unter dem Inhalt
+Blöcke: kopf, inhalt, fuss_zeile, fuss_seite, seitenkopf_titel, seitenkopf_ref, visum, stil, stil_extra.
+Die Unterschrift steht nur dort, wo das Dokument sie verlangt — ein Merkblatt
+unterschreibt niemand.
 {% endcomment %}
-{% if briefkopf.logo_pfad %}<div class="logo"><img src="{{ briefkopf.logo_pfad }}" height="40"></div>{% endif %}
-<div class="kopf">{{ vermieter_name }} | {{ vermieter_strasse }} | {{ vermieter_plz }} {{ vermieter_ort }}</div>
+<div id="seitenkopfInhalt">
+    <table class="sk"><tr>
+        <td>{% block seitenkopf_titel %}{{ dok_titel }}{% endblock %}</td>
+        <td class="sk-r">{% block seitenkopf_ref %}{{ dok_ref }}{% endblock %}</td>
+    </tr></table>
+</div>
+
+<div id="fussInhalt">
+    {% block visum %}{% endblock %}
+    {% if briefkopf.fusszeile %}<div class="fusszeile">{{ briefkopf.fusszeile }}</div>{% endif %}
+    <table class="fuss"><tr>
+        <td>{% block fuss_zeile %}{{ vermieter_name }}{% if liegenschaft %} · {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }}{% endif %} · {% blocktrans trimmed with datum=heute|date:"d.m.Y" %}erstellt am {{ datum }}{% endblocktrans %}{% endblock %}</td>
+        <td class="fuss-r">{% block fuss_seite %}{% blocktrans trimmed %}Seite <pdf:pagenumber> von <pdf:pagecount>{% endblocktrans %}{% endblock %}</td>
+    </tr></table>
+</div>
+
+<pdf:nexttemplate name="weiter" />
+{% block kopf %}{% include "core/_dok_briefkopf.html" %}{% endblock %}
+{% if adressfenster %}<table class="fenster-platz"><tr><td>&nbsp;</td></tr></table>{% endif %}
 
 {% block inhalt %}{% endblock %}
 
@@ -62,11 +52,6 @@ verlangt (`mit_unterschrift`) — ein Merkblatt unterschreibt niemand.
     <span class="unterschrift-name">{{ briefkopf.firma|default:vermieter_name }}</span>
 </div>
 {% endif %}
-
-<div id="footerContent" style="font-size:7pt;color:#94a3b8;text-align:center;">
-    {% if briefkopf.fusszeile %}<span class="fusszeile">{{ briefkopf.fusszeile }}</span><br>{% endif %}
-    {{ vermieter_name }}{% if liegenschaft %} · {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }}{% endif %} · {% blocktrans trimmed with datum=heute|date:"d.m.Y" %}erstellt am {{ datum }}{% endblocktrans %} · {% blocktrans trimmed %}Seite <pdf:pagenumber> von <pdf:pagecount>{% endblocktrans %}
-</div>
 
 </body>
 </html>

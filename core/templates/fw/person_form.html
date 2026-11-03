@@ -77,7 +77,7 @@
         <div class="fw-raster r4">
             <div><label class="fw-label mb-1">{% trans "Anrede" %}</label>
                 <select name="anrede" class="fw-feld w-full">
-                    {% for a in "Herr,Frau,Familie" %}{% endfor %}
+                    <option value="" {% if not m.anrede %}selected{% endif %}>—</option>
                     <option value="Herr" {% if m.anrede == 'Herr' %}selected{% endif %}>{% trans "Herr" %}</option>
                     <option value="Frau" {% if m.anrede == 'Frau' %}selected{% endif %}>{% trans "Frau" %}</option>
                     <option value="Familie" {% if m.anrede == 'Familie' %}selected{% endif %}>{% trans "Familie" %}</option>
