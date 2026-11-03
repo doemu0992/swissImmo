@@ -166,7 +166,7 @@ class Command(BaseCommand):
         if not SchadenMeldung.objects.filter(titel="Portal Wasserhahn tropft").exists():
             t = SchadenMeldung.objects.create(
                 titel="Portal Wasserhahn tropft", liegenschaft=lg, betroffene_einheit=einheit,
-                kategorie="Sanitär", bauteil="kueche_sanitaer", status="in_bearbeitung",
+                kategorie="Sanitär", bauteil="kueche_sanitaer", status="in_bearbeitung", gelesen=True,
                 melder_vorname="Geheimmelder", email_melder="geheimmelder-e2e@example.ch",
                 tel_melder="079 111 22 33", beschreibung="GEHEIME-BESCHREIBUNG")
             rechnung = KreditorenRechnung.objects.create(
@@ -185,10 +185,10 @@ class Command(BaseCommand):
             HandwerkerAuftrag.objects.filter(ticket=t).update(beauftragt_am=zeit(heute.year - 1, 3, 6))
         if not SchadenMeldung.objects.filter(titel="Portal Dach undicht").exists():
             t = SchadenMeldung.objects.create(titel="Portal Dach undicht", liegenschaft=lg, kategorie="Dach",
-                                              status="in_bearbeitung", beschreibung="GEHEIME-BESCHREIBUNG")
+                                              status="in_bearbeitung", gelesen=True, beschreibung="GEHEIME-BESCHREIBUNG")
             HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw, kosten_geschaetzt=Decimal("3200.00"),
                                              freigabe_status="ausstehend")
         if not SchadenMeldung.objects.filter(titel="Fremdgasse Schaden").exists():
-            t = SchadenMeldung.objects.create(titel="Fremdgasse Schaden", liegenschaft=lg_fremd, status="neu")
+            t = SchadenMeldung.objects.create(titel="Fremdgasse Schaden", liegenschaft=lg_fremd, status="neu", gelesen=True)
             HandwerkerAuftrag.objects.create(ticket=t, handwerker=hw, kosten_geschaetzt=Decimal("7654.32"),
                                              freigabe_status="ausstehend")
