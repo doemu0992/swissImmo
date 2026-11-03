@@ -39,7 +39,7 @@ class Command(BaseCommand):
             hw, _ = Handwerker.objects.get_or_create(firma="E2E Direkt Sanitär", defaults=dict(telefon="044 000 00 01"))
             ticket, _ = SchadenMeldung.objects.get_or_create(
                 titel="E2E Direkt Heizung",
-                defaults=dict(liegenschaft=lg, betroffene_einheit=e, status="in_bearbeitung", gemeldet_von=m,
+                defaults=dict(liegenschaft=lg, betroffene_einheit=e, status="in_bearbeitung", gemeldet_von=m, gelesen=True,
                               beschreibung="Die Heizung im Wohnzimmer bleibt kalt.", zutritt="telefon"))
             auftrag, _ = HandwerkerAuftrag.objects.get_or_create(
                 ticket=ticket, handwerker=hw, defaults=dict(status="offen"))
@@ -63,7 +63,7 @@ class Command(BaseCommand):
                               nebenkosten=Decimal("150"), status="aktiv"))
             ft, _ = SchadenMeldung.objects.get_or_create(
                 titel="E2E Fremd Ticket",
-                defaults=dict(liegenschaft=lg, betroffene_einheit=e2, status="in_bearbeitung", gemeldet_von=fremd,
+                defaults=dict(liegenschaft=lg, betroffene_einheit=e2, status="in_bearbeitung", gemeldet_von=fremd, gelesen=True,
                               beschreibung="Fremde Meldung.", zutritt="telefon"))
             fhw, _ = Handwerker.objects.get_or_create(firma="E2E Fremd Sanitär", defaults=dict(telefon="044 000 00 02"))
             HandwerkerAuftrag.objects.get_or_create(ticket=ft, handwerker=fhw, defaults=dict(status="offen"))
