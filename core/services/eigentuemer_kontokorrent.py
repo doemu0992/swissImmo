@@ -266,44 +266,32 @@ def _fmt(d):
 def generate_kontokorrent_pdf(eigentuemer, jahr, verwaltung=None):
     """Kontokorrent-Auszug für den Eigentümer: Ergebnis je Liegenschaft,
     Auszahlungen und offener Saldo — das Dokument für den Eigentümer."""
+    import datetime
     import io
     from reportlab.lib.pagesizes import A4
-    from reportlab.pdfgen import canvas
     from reportlab.lib.units import mm
     from reportlab.lib import colors
 
+    from core.services.dok_layout import DokCanvas
+
     kk = kontokorrent(eigentuemer, jahr=jahr)
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
-    w, h = A4
     periode = str(jahr) if jahr else "kumuliert (alle Jahre)"
+    c = DokCanvas(buf, organisation=verwaltung, absender=['Verwaltung', '', ''],
+                  titel="Kontokorrent Eigentümer", ref=f"{eigentuemer.firma_oder_name} · {periode}")
+    w, h = A4
     c.setTitle(f"Kontokorrent {eigentuemer.firma_oder_name} {periode}")
 
-    # Absender
-    if verwaltung:
-        c.setFont("Helvetica-Bold", 9)
-        c.drawString(20 * mm, h - 20 * mm, verwaltung.firma or "")
-        c.setFont("Helvetica", 9)
-        c.drawString(20 * mm, h - 24 * mm, verwaltung.strasse or "")
-        c.drawString(20 * mm, h - 28 * mm, f"{verwaltung.plz or ''} {verwaltung.ort or ''}".strip())
-    # Empfänger
-    c.setFont("Helvetica", 11)
-    c.drawString(20 * mm, h - 48 * mm, eigentuemer.firma_oder_name)
-    if eigentuemer.kontaktperson:
-        c.drawString(20 * mm, h - 53 * mm, eigentuemer.kontaktperson)
-    c.drawString(20 * mm, h - 58 * mm, eigentuemer.strasse or "")
-    c.drawString(20 * mm, h - 63 * mm, f"{eigentuemer.plz or ''} {eigentuemer.ort or ''}".strip())
-
-    # Titel
-    c.setFont("Helvetica-Bold", 15)
-    c.drawString(20 * mm, h - 80 * mm, "Kontokorrent Eigentümer")
-    c.setFont("Helvetica", 9)
-    c.setFillColor(colors.grey)
-    c.drawString(20 * mm, h - 85 * mm, f"Periode: {periode}")
+    # Empfänger (Eigentümer) im Fenster, Ort/Datum und Titel: gemeinsames Briefgerüst
+    ort = (getattr(verwaltung, 'ort', '') or '') if verwaltung else ''
+    y = c.brief([eigentuemer.firma_oder_name, eigentuemer.kontaktperson or '', eigentuemer.strasse or "",
+                 f"{eigentuemer.plz or ''} {eigentuemer.ort or ''}".strip()],
+                f"{ort + ', ' if ort else ''}{datetime.date.today().strftime('%d.%m.%Y')}",
+                "Kontokorrent Eigentümer", untertitel=f"Periode: {periode}")
     c.setFillColor(colors.black)
 
     # Ergebnis je Liegenschaft
-    y = h - 98 * mm
+    y -= 2 * mm
     c.setFillColor(colors.HexColor("#EEF0F5"))
     c.rect(18 * mm, y - 2 * mm, 174 * mm, 8 * mm, fill=1, stroke=0)
     c.setFillColor(colors.black)
@@ -316,7 +304,7 @@ def generate_kontokorrent_pdf(eigentuemer, jahr, verwaltung=None):
     c.setFont("Helvetica", 9)
     for z in kk['zeilen']:
         if y < 60 * mm:
-            c.showPage(); y = h - 30 * mm
+            c.showPage(); y = c.Y_FOLGE
         c.drawString(22 * mm, y, f"{z['lg'].strasse}, {z['lg'].ort}"[:52])
         c.drawRightString(120 * mm, y, _fmt(z['ertrag']))
         c.drawRightString(155 * mm, y, _fmt(z['aufwand']))
@@ -350,7 +338,7 @@ def generate_kontokorrent_pdf(eigentuemer, jahr, verwaltung=None):
             h_sum = Decimal('0.00')
             for z in h_zeilen:
                 if y < 45 * mm:
-                    c.showPage(); y = h - 30 * mm
+                    c.showPage(); y = c.Y_FOLGE
                 status = "verbucht" if z['gebucht'] else "offen"
                 c.drawString(22 * mm, y, f"{z['lg'].strasse}"[:40])
                 c.setFillColor(colors.grey)
@@ -372,7 +360,7 @@ def generate_kontokorrent_pdf(eigentuemer, jahr, verwaltung=None):
     c.setFont("Helvetica", 9)
     for a in kk['auszahlungen']:
         if y < 45 * mm:
-            c.showPage(); y = h - 30 * mm
+            c.showPage(); y = c.Y_FOLGE
         txt = a.datum.strftime('%d.%m.%Y') + (f" · {a.bemerkung}" if a.bemerkung else "")
         c.drawString(22 * mm, y, txt[:60])
         c.drawRightString(188 * mm, y, _fmt(a.betrag))
@@ -387,6 +375,8 @@ def generate_kontokorrent_pdf(eigentuemer, jahr, verwaltung=None):
 
     # Offener Saldo
     y -= 16 * mm
+    if y < 52 * mm:
+        c.showPage(); y = c.Y_FOLGE - 6 * mm
     offen = kk['offen']
     c.setFillColor(colors.HexColor("#ECFDF5") if offen >= 0 else colors.HexColor("#FEF2F2"))
     c.rect(18 * mm, y - 6 * mm, 174 * mm, 16 * mm, fill=1, stroke=0)
@@ -396,10 +386,11 @@ def generate_kontokorrent_pdf(eigentuemer, jahr, verwaltung=None):
     c.drawString(22 * mm, y, label)
     c.drawRightString(188 * mm, y, f"CHF {_fmt(abs(offen))}")
 
-    c.setFont("Helvetica", 8); c.setFillColor(colors.grey)
-    c.drawString(20 * mm, 18 * mm, "Ergebnis der bewirtschafteten Liegenschaften (inkl. Verwaltungshonorar) abzüglich der geleisteten Auszahlungen.")
+    y -= 14 * mm
+    c.setFont("Helvetica", 8); c.setFillColor(colors.HexColor("#4b5563"))
+    c.drawString(20 * mm, y, "Ergebnis der bewirtschafteten Liegenschaften (inkl. Verwaltungshonorar) abzüglich der geleisteten Auszahlungen.")
     if eigentuemer.iban:
-        c.drawString(20 * mm, 14 * mm, f"Auszahlung auf: {eigentuemer.iban}")
+        c.drawString(20 * mm, y - 4 * mm, f"Auszahlung auf: {eigentuemer.iban}")
     c.setFillColor(colors.black)
 
     c.showPage(); c.save(); buf.seek(0)

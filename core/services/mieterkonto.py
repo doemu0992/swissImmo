@@ -3,7 +3,6 @@ Zahlungseingänge als Haben) mit laufendem Saldo — für Team + Mieterportal.""
 import io
 from decimal import Decimal
 from core.services.dokumentsprache import nur_deutsch
-from core.services.druckfarben import EMBER_RGB
 
 
 def _rueckerstattungen(zahlungen):
@@ -156,25 +155,28 @@ def saldi_fuer_mieter(mieter_liste):
 @nur_deutsch
 def generate_mieterkonto_pdf(mieter, verwaltung=None, von=None, bis=None):
     from reportlab.lib.pagesizes import A4
-    from reportlab.pdfgen import canvas
     from reportlab.lib.units import mm
+
+    from core.services.dok_layout import DokCanvas
 
     zeilen, endsaldo = berechne_mieterkonto(mieter, von=von, bis=bis)
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
+    c = DokCanvas(buf, organisation=verwaltung, absender=['Verwaltung', '', ''],
+                  titel="Kontoauszug Mieter", ref=mieter.display_name)
     w, h = A4
 
     def kopf():
-        c.setFillColorRGB(*EMBER_RGB)
-        c.rect(0, h - 28 * mm, w, 28 * mm, fill=1, stroke=0)
-        c.setFillColorRGB(1, 1, 1)
+        """Titel unter dem Briefkopf (Seite 1); ab Seite 2 trägt ihn der Seitenkopf. Gibt die Höhe darunter zurück."""
+        if c.seite_nr > 1:
+            return c.Y_FOLGE
+        c.setFillColor(c.akzent)
         c.setFont("Helvetica-Bold", 15)
-        c.drawString(20 * mm, h - 17 * mm, "Kontoauszug Mieter")
+        c.drawString(20 * mm, c.Y_INHALT, "Kontoauszug Mieter")
+        c.setFillColorRGB(0.22, 0.25, 0.32)
         c.setFont("Helvetica", 9)
-        c.drawString(20 * mm, h - 23 * mm, mieter.display_name)
-        if verwaltung:
-            c.drawRightString(w - 20 * mm, h - 17 * mm, verwaltung.firma)
+        c.drawString(20 * mm, c.Y_INHALT - 6 * mm, mieter.display_name)
         c.setFillColorRGB(0, 0, 0)
+        return c.Y_INHALT - 16 * mm
 
     def spaltenkopf(y):
         c.setFont("Helvetica-Bold", 8.5); c.setFillColorRGB(0.4, 0.45, 0.5)
@@ -187,8 +189,7 @@ def generate_mieterkonto_pdf(mieter, verwaltung=None, von=None, bis=None):
         c.setStrokeColorRGB(0.8, 0.82, 0.85)
         c.line(20 * mm, y - 2 * mm, 190 * mm, y - 2 * mm)
 
-    kopf()
-    y = h - 40 * mm
+    y = kopf()
     spaltenkopf(y)
     y -= 8 * mm
     c.setFont("Helvetica", 9)
@@ -199,8 +200,8 @@ def generate_mieterkonto_pdf(mieter, verwaltung=None, von=None, bis=None):
         return f"{float(v):,.2f}".replace(',', "'")
 
     for b in zeilen:
-        if y < 25 * mm:
-            c.showPage(); kopf(); y = h - 40 * mm; spaltenkopf(y); y -= 8 * mm; c.setFont("Helvetica", 9)
+        if y < 32 * mm:
+            c.showPage(); y = kopf(); spaltenkopf(y); y -= 8 * mm; c.setFont("Helvetica", 9)
         c.drawString(20 * mm, y, b['datum'].strftime('%d.%m.%Y'))
         c.drawString(42 * mm, y, (b['text'] or '')[:52])
         c.drawRightString(135 * mm, y, chf(b['soll']))
@@ -213,8 +214,10 @@ def generate_mieterkonto_pdf(mieter, verwaltung=None, von=None, bis=None):
         c.drawString(20 * mm, y, "Keine Buchungen im Zeitraum.")
         c.setFillColorRGB(0, 0, 0)
 
-    # Endsaldo
+    # Endsaldo (Linie und Summenzeile bleiben zusammen)
     y -= 4 * mm
+    if y < 40 * mm:
+        c.showPage(); y = c.Y_FOLGE
     c.setStrokeColorRGB(0.4, 0.45, 0.5); c.setLineWidth(1)
     c.line(120 * mm, y, 190 * mm, y)
     y -= 7 * mm

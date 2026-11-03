@@ -3,8 +3,8 @@ zum Schadensfall: Objekt, Schadenbeschreibung, Zutritt/Kontakt, Kostenrahmen.
 Ergänzt die automatische Auftrags-E-Mail um einen sauberen Beleg."""
 import io
 from decimal import Decimal
+from core.services.dok_layout import DokCanvas
 from core.services.dokumentsprache import nur_deutsch
-from core.services.druckfarben import EMBER
 
 
 def _fmt(d):
@@ -17,7 +17,6 @@ def _fmt(d):
 @nur_deutsch
 def generate_auftrag_pdf(auftrag, verwaltung=None):
     from reportlab.lib.pagesizes import A4
-    from reportlab.pdfgen import canvas
     from reportlab.lib.units import mm
     from reportlab.lib import colors
 
@@ -27,35 +26,16 @@ def generate_auftrag_pdf(auftrag, verwaltung=None):
     einheit = t.betroffene_einheit if t else None
 
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
+    c = DokCanvas(buf, organisation=verwaltung, absender=['Verwaltung', '', ''],
+                  titel='Reparaturauftrag', ref=f"Auftrag Nr. {auftrag.id}")
     w, h = A4
     c.setTitle(f"Reparaturauftrag #{auftrag.id} — {hw.firma if hw else ''}")
-    ember = colors.HexColor(EMBER)
 
-    # Absender
-    if verwaltung:
-        c.setFont("Helvetica-Bold", 9)
-        c.drawString(20 * mm, h - 20 * mm, verwaltung.firma or "")
-        c.setFont("Helvetica", 9)
-        c.drawString(20 * mm, h - 24 * mm, verwaltung.strasse or "")
-        c.drawString(20 * mm, h - 28 * mm, f"{verwaltung.plz or ''} {verwaltung.ort or ''}".strip())
-
-    # Empfänger (Handwerker)
-    c.setFont("Helvetica", 11)
-    y = h - 46 * mm
-    if hw:
-        c.drawString(20 * mm, y, hw.firma or "")
-        if hw.kontaktperson:
-            c.drawString(20 * mm, y - 5 * mm, hw.kontaktperson)
-
-    # Titel
-    c.setFillColor(ember)
-    c.setFont("Helvetica-Bold", 17)
-    c.drawString(20 * mm, h - 72 * mm, "Reparaturauftrag")
-    c.setFillColor(colors.grey)
-    c.setFont("Helvetica", 9)
-    c.drawString(20 * mm, h - 78 * mm, f"Auftrag Nr. {auftrag.id} · Ticket #{t.id if t else '—'} · {auftrag.beauftragt_am:%d.%m.%Y}")
-    c.setFillColor(colors.black)
+    # Empfänger (Handwerker) im Fenster, Datum und Betreff: gemeinsames Briefgerüst
+    ort = (getattr(verwaltung, 'ort', '') or '') if verwaltung else ''
+    y_text = c.brief([hw.firma or '' if hw else '', hw.kontaktperson if hw and hw.kontaktperson else ''],
+                     f"{ort + ', ' if ort else ''}{auftrag.beauftragt_am:%d.%m.%Y}", "Reparaturauftrag",
+                     untertitel=f"Auftrag Nr. {auftrag.id} · Ticket #{t.id if t else '—'} · {auftrag.beauftragt_am:%d.%m.%Y}")
 
     def block(label, y0):
         c.setFont("Helvetica-Bold", 10)
@@ -69,7 +49,7 @@ def generate_auftrag_pdf(auftrag, verwaltung=None):
             y0 -= 5.2 * mm
         return y0
 
-    y = h - 92 * mm
+    y = y_text
     # Objekt
     y = block("Objekt", y)
     if lg:
@@ -118,14 +98,15 @@ def generate_auftrag_pdf(auftrag, verwaltung=None):
         c.setFont("Helvetica", 9)
         c.drawString(24 * mm, y, f"Fotos zum Schaden: {n_fotos + (1 if t and t.foto else 0)} (auf Anfrage bei der Verwaltung).")
 
-    # Fussbox
+    # Schlusshinweis (früher ein Kasten am Blattfuss, der nun der Fusszeile gehört)
+    y -= 8 * mm
     c.setFillColor(colors.HexColor("#F1F5F9"))
-    c.rect(0, 0, w, 24 * mm, fill=1, stroke=0)
+    c.rect(20 * mm, y - 12 * mm, 170 * mm, 17 * mm, fill=1, stroke=0)
     c.setFillColor(colors.black)
     c.setFont("Helvetica", 9)
-    c.drawString(20 * mm, 15 * mm, "Rechnung bitte mit Angabe von Auftrags- und Ticketnummer an die Verwaltung.")
+    c.drawString(24 * mm, y - 1 * mm, "Rechnung bitte mit Angabe von Auftrags- und Ticketnummer an die Verwaltung.")
     if verwaltung and getattr(verwaltung, 'email', ''):
-        c.drawString(20 * mm, 10 * mm, f"Rückfragen: {verwaltung.email}" + (f" · {verwaltung.telefon}" if getattr(verwaltung, 'telefon', '') else ""))
+        c.drawString(24 * mm, y - 8 * mm, f"Rückfragen: {verwaltung.email}" + (f" · {verwaltung.telefon}" if getattr(verwaltung, 'telefon', '') else ""))
 
     c.showPage(); c.save(); buf.seek(0)
     return buf.read()

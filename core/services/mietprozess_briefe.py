@@ -11,9 +11,9 @@ import io
 import datetime
 from decimal import Decimal
 
-from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
-from reportlab.pdfgen import canvas
+
+from core.services.dok_layout import LINKS, DokCanvas
 from core.services.dokumentsprache import nur_deutsch
 
 logger = logging.getLogger(__name__)
@@ -50,40 +50,31 @@ def _wrap(text, breite):
 
 def _brief(absender, empfaenger_zeilen, ort, betreff, absaetze, gruss_name,
            signatur=()):
-    """Rendert einen einfachen A4-Geschäftsbrief und gibt die PDF-Bytes zurück."""
+    """Rendert einen einfachen A4-Geschäftsbrief und gibt die PDF-Bytes zurück.
+
+    Layout der Briefe: `core/services/dok_layout.py` (Briefkopf mit Logo, Adressfenster rechts,
+    Fusszeile mit Seitenzahl). Der Briefkopf kommt aus der Verwaltung des Vertrags (`signatur`
+    trägt (Eigentümer, Verwaltung)); ohne Verwaltung aus den Absenderzeilen."""
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
+    vw = signatur[1] if len(signatur) > 1 else None
+    c = DokCanvas(buf, organisation=vw, absender=absender, titel=betreff, ref=ort)
     heute = datetime.date.today().strftime('%d.%m.%Y')
-    # Absender
-    c.setFont("Helvetica", 8)
-    c.drawString(25 * mm, 280 * mm, ' · '.join(z for z in absender if z))
-    # Empfänger
-    c.setFont("Helvetica", 11)
-    y = 255 * mm
-    for z in empfaenger_zeilen:
-        c.drawString(120 * mm, y, z); y -= 5.2 * mm
-    # Ort/Datum
-    c.setFont("Helvetica", 10)
-    c.drawString(120 * mm, y - 6 * mm, f"{ort}, {heute}")
-    # Betreff
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(25 * mm, 225 * mm, betreff)
+    ty = c.brief(empfaenger_zeilen, f"{ort}, {heute}", betreff)
     # Text
     c.setFont("Helvetica", 10.5)
-    ty = 213 * mm
     for absatz in absaetze:
         for zeile in _wrap(absatz, 92):
-            c.drawString(25 * mm, ty, zeile); ty -= 5.4 * mm
+            c.drawString(LINKS, ty, zeile); ty -= 5.4 * mm
         ty -= 3.5 * mm
         if ty < 45 * mm:
-            c.showPage(); c.setFont("Helvetica", 10.5); ty = 270 * mm
+            c.showPage(); c.setFont("Helvetica", 10.5); ty = c.Y_FOLGE
     # Grussformel + digitale Unterschrift zwischen Gruss und Name
     ty -= 4 * mm
-    c.drawString(25 * mm, ty, "Freundliche Grüsse")
+    c.drawString(LINKS, ty, "Freundliche Grüsse")
     if signatur:
         from core.services.unterschrift import unterschrift_zeichnen
-        unterschrift_zeichnen(c, 25 * mm, ty - 15 * mm, *signatur)
-    c.drawString(25 * mm, ty - 16 * mm, gruss_name)
+        unterschrift_zeichnen(c, LINKS, ty - 15 * mm, *signatur)
+    c.drawString(LINKS, ty - 16 * mm, gruss_name)
     c.showPage(); c.save(); buf.seek(0)
     return buf.read()
 

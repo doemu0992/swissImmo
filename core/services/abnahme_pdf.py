@@ -16,13 +16,12 @@ Seit 10/2026 (Produktionsreife der Abnahme):
 import io
 from decimal import Decimal
 
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
 from reportlab.lib.utils import ImageReader, simpleSplit
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from core.services.abnahme_texte import schlussbestimmungen
+from core.services.dok_layout import DokCanvas
 from core.services.dokumentsprache import nur_deutsch
 
 
@@ -62,49 +61,28 @@ VERURS_LABEL = {'abnutzung': 'normale Abnutzung', 'mieter': 'Mieter (Schaden)', 
 NICHT_UNTERZEICHNET = 'nicht unterzeichnet'
 
 
-class _GezaehlteSeiten(canvas.Canvas):
-    """Canvas, der am Ende «Seite x von y» auf jede Seite schreibt.
-
-    Die Gesamtzahl steht erst fest, wenn alles gezeichnet ist: Die Seiten
-    werden deshalb zurückgehalten und beim Speichern nummeriert (das übliche
-    Vorgehen mit reportlab)."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._seiten = []
-
-    def showPage(self):
-        self._seiten.append(dict(self.__dict__))
-        self._startPage()
-
-    def save(self):
-        gesamt = len(self._seiten)
-        for zustand in self._seiten:
-            self.__dict__.update(zustand)
-            self.setFont("Helvetica", 7.5)
-            self.setFillColor(colors.grey)
-            self.drawRightString(190 * mm, 10 * mm, f"Seite {self._pageNumber} von {gesamt}")
-            self.setFillColor(colors.black)
-            super().showPage()
-        super().save()
-
-
 @nur_deutsch
 def generate_abnahme_pdf(prot, verwaltung=None):
     from core.services.zeitwert import OHNE_LEBENSDAUER
     buf = io.BytesIO()
-    c = _GezaehlteSeiten(buf, pagesize=A4)
     v = prot.vertrag
     e = v.einheit
     lg = e.liegenschaft
+    # Briefkopf, Seitenkopf und «Seite x von y» (früher eine eigene Zählung hier): core/services/dok_layout.py
+    c = DokCanvas(buf, organisation=verwaltung or getattr(lg, 'organisation', None),
+                  absender=['Verwaltung', lg.strasse, f"{lg.plz} {lg.ort}"],
+                  titel=f"Wohnungsabnahme — {prot.get_typ_display()}",
+                  ref=f"{e.bezeichnung} · {v.mieter.nachname}")
     c.setTitle(f"Abnahmeprotokoll {v.mieter.nachname}")
-    UNTEN = 22 * mm                    # Platz für die Seitenzahl
+    UNTEN = c.UNTEN                    # Platz für die Fusszeile
 
-    y = 280 * mm
+    y = c.Y_INHALT
+    c.setFillColor(c.akzent)
     c.setFont("Helvetica-Bold", 15)
     c.drawString(20 * mm, y, f"Wohnungsabnahme — {prot.get_typ_display()}")
+    c.setFillColor(colors.black)
     y -= 7 * mm
-    c.setFont("Helvetica", 10); c.setFillColor(colors.grey)
+    c.setFont("Helvetica", 10); c.setFillColor(colors.HexColor("#374151"))
     c.drawString(20 * mm, y, f"{e.bezeichnung}, {lg.strasse}, {lg.plz} {lg.ort}")
     y -= 5 * mm
     c.drawString(20 * mm, y, f"Mieter: {v.mieter.vorname} {v.mieter.nachname} · Datum: {prot.datum.strftime('%d.%m.%Y')}")
@@ -168,7 +146,7 @@ def generate_abnahme_pdf(prot, verwaltung=None):
             n = max(len(mangel_zeilen) + (1 if hinweis else 0), len(raum_zeilen))
             hoehe = 4.4 * mm * n + 1.4 * mm
             if y - hoehe < UNTEN:
-                c.showPage(); y = 280 * mm; maengel_kopf()
+                c.showPage(); y = c.Y_FOLGE; maengel_kopf()
             c.setFont("Helvetica", 9)
             c.drawString(20 * mm, y, mangel_nr[m.id])
             for i, t in enumerate(raum_zeilen):
@@ -204,7 +182,7 @@ def generate_abnahme_pdf(prot, verwaltung=None):
     schluessel = list(prot.schluessel.all())
     schluessel_kosten = sum((z.kosten_mieter for z in schluessel), Decimal('0.00'))
     if y < 40 * mm:
-        c.showPage(); y = 280 * mm
+        c.showPage(); y = c.Y_FOLGE
     y -= 2 * mm
     c.setStrokeColor(colors.HexColor("#e2e8f0")); c.line(20 * mm, y, 190 * mm, y); y -= 6 * mm
     c.setFont("Helvetica-Bold", 10)
@@ -233,7 +211,7 @@ def generate_abnahme_pdf(prot, verwaltung=None):
     if positionen:
         vorg = prot.vorgaenger
         if y < 60 * mm:
-            c.showPage(); y = 280 * mm
+            c.showPage(); y = c.Y_FOLGE
         c.setFont("Helvetica-Bold", 11); c.drawString(20 * mm, y, "Bewertete Bauteile")
         y -= 2 * mm
         c.setStrokeColor(colors.HexColor("#e2e8f0")); c.line(20 * mm, y, 190 * mm, y)
@@ -268,7 +246,7 @@ def generate_abnahme_pdf(prot, verwaltung=None):
             zeilen = (simpleSplit(bemerkung, "Helvetica", 8, 56 * mm)[:3]) or ['']
             hoehe = 4.2 * mm * len(zeilen) + 0.8 * mm
             if y - hoehe < UNTEN + 15 * mm:
-                c.showPage(); y = 280 * mm; kopfzeile()
+                c.showPage(); y = c.Y_FOLGE; kopfzeile()
             c.setFont("Helvetica", 8)
             c.drawString(20 * mm, y, str(nummern[pos.id]))
             c.drawString(28 * mm, y, _kuerzen(pos.raum or '—', 8, 16 * mm))
@@ -285,7 +263,7 @@ def generate_abnahme_pdf(prot, verwaltung=None):
     # Schlüsselverzeichnis: Soll gegen Ist, Nummern setzen die der Bauteile fort.
     if schluessel:
         if y < 60 * mm:
-            c.showPage(); y = 280 * mm
+            c.showPage(); y = c.Y_FOLGE
         c.setFont("Helvetica-Bold", 11); c.drawString(20 * mm, y, "Schlüsselverzeichnis")
         y -= 2 * mm
         c.setStrokeColor(colors.HexColor("#e2e8f0")); c.line(20 * mm, y, 190 * mm, y)
@@ -299,7 +277,7 @@ def generate_abnahme_pdf(prot, verwaltung=None):
         c.setFont("Helvetica", 8)
         for i, z in enumerate(schluessel, start=len(positionen) + 1):
             if y < UNTEN + 10 * mm:
-                c.showPage(); y = 280 * mm; c.setFont("Helvetica", 8)
+                c.showPage(); y = c.Y_FOLGE; c.setFont("Helvetica", 8)
             c.drawString(20 * mm, y, str(i))
             c.drawString(28 * mm, y, _kuerzen(z.bezeichnung, 8, 44 * mm))
             c.drawString(75 * mm, y, _kuerzen(z.anlage or '—', 8, 50 * mm))
@@ -313,13 +291,13 @@ def generate_abnahme_pdf(prot, verwaltung=None):
     if prot.bemerkungen:
         # Reicht der Platz nicht, geht es auf einer neuen Seite weiter.
         if y < 60 * mm:
-            c.showPage(); y = 280 * mm
+            c.showPage(); y = c.Y_FOLGE
         c.setFont("Helvetica-Bold", 9); c.drawString(20 * mm, y, "Bemerkungen:"); y -= 5 * mm
         c.setFont("Helvetica", 9)
         for line in prot.bemerkungen.split('\n'):
             for chunk in (simpleSplit(line, "Helvetica", 9, 170 * mm) or ['']):
                 if y < UNTEN + 20 * mm:
-                    c.showPage(); y = 280 * mm; c.setFont("Helvetica", 9)
+                    c.showPage(); y = c.Y_FOLGE; c.setFont("Helvetica", 9)
                 c.drawString(20 * mm, y, chunk); y -= 5 * mm
         y -= 3 * mm
 
@@ -327,7 +305,7 @@ def generate_abnahme_pdf(prot, verwaltung=None):
     absaetze = schlussbestimmungen(prot)
     if absaetze:
         if y < 70 * mm:
-            c.showPage(); y = 280 * mm
+            c.showPage(); y = c.Y_FOLGE
         c.setFont("Helvetica-Bold", 11); c.drawString(20 * mm, y, "Schlussbestimmungen")
         y -= 2 * mm
         c.setStrokeColor(colors.HexColor("#e2e8f0")); c.line(20 * mm, y, 190 * mm, y)
@@ -335,7 +313,7 @@ def generate_abnahme_pdf(prot, verwaltung=None):
         for titel, text in absaetze:
             zeilen = simpleSplit(text, "Helvetica", 8.5, 170 * mm)
             if y - (len(zeilen) + 1) * 4.2 * mm < UNTEN + 5 * mm:
-                c.showPage(); y = 280 * mm
+                c.showPage(); y = c.Y_FOLGE
             c.setFont("Helvetica-Bold", 9); c.drawString(20 * mm, y, titel); y -= 5 * mm
             c.setFont("Helvetica", 8.5)
             for zeile_text in zeilen:
@@ -346,7 +324,7 @@ def generate_abnahme_pdf(prot, verwaltung=None):
     # Ohne Bild steht «nicht unterzeichnet» unter der Linie — ein getippter oder
     # vorbelegter Name allein ist keine Unterschrift.
     if y < 75 * mm:
-        c.showPage(); y = 280 * mm
+        c.showPage(); y = c.Y_FOLGE
     y -= 4 * mm
     c.setFont("Helvetica-Bold", 11)
     c.drawString(20 * mm, y, "Unterschriften")
@@ -376,7 +354,7 @@ def generate_abnahme_pdf(prot, verwaltung=None):
     # Nach der Abnahme entdeckte Mängel: getrennt und ausdrücklich nicht unterzeichnet.
     if nachmaengel:
         if y < 60 * mm:
-            c.showPage(); y = 280 * mm
+            c.showPage(); y = c.Y_FOLGE
         c.setFont("Helvetica-Bold", 11)
         c.drawString(20 * mm, y, "Nach der Abnahme entdeckte Mängel (Art. 267a Abs. 3 OR)")
         y -= 5 * mm
@@ -399,7 +377,7 @@ def generate_abnahme_pdf(prot, verwaltung=None):
                for m in maengel + nachmaengel if m.foto and m.id not in aus_positionen]
     if bilder:
         c.showPage()
-        y = 280 * mm
+        y = c.Y_FOLGE
         c.setFont("Helvetica-Bold", 13); c.drawString(20 * mm, y, "Bilder")
         y -= 3 * mm
         c.setStrokeColor(colors.HexColor("#e2e8f0")); c.line(20 * mm, y, 190 * mm, y)
@@ -416,12 +394,12 @@ def generate_abnahme_pdf(prot, verwaltung=None):
                     y -= zellen_hoehe
                     spalte = 0
                 if y - 14 * mm - zellen_hoehe < UNTEN:
-                    c.showPage(); y = 280 * mm
+                    c.showPage(); y = c.Y_FOLGE
                 raum = bild_raum
                 c.setFont("Helvetica-Bold", 10); c.drawString(20 * mm, y, raum or '—')
                 y -= 7 * mm
             if spalte == 0 and y - zellen_hoehe < UNTEN:
-                c.showPage(); y = 280 * mm
+                c.showPage(); y = c.Y_FOLGE
             x = 20 * mm + spalte * 88 * mm
             c.setFont("Helvetica", 8)
             c.drawString(x, y, _kuerzen(beschriftung, 8, zellen_breite))

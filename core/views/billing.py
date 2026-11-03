@@ -21,6 +21,7 @@ import reportlab.lib.utils
 
 from decimal import Decimal
 
+from core.services.dok_layout import LINKS, DokCanvas
 from core.utils.billing import hole_abrechnung
 from core.utils.qr_code import draw_qr_bill, ist_qr_iban, qrr_referenz
 
@@ -97,50 +98,36 @@ def qr_rechnung_pdf(request, vertrag_id):
     ])
 
     buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
+    c = DokCanvas(buffer, organisation=verwaltung, absender=[creditor_name, creditor_line1, creditor_line2],
+                  titel="Mietrechnung", ref=monat_jahr)
     c.setTitle(f"Mietrechnung {monat_jahr}")
+    # Der Zahlteil unten (von Hand gezeichnet, Swiss QR Bill) füllt die untere Blatthälfte: keine Fusszeile.
+    c.ohne_fuss()
 
-    if verwaltung and verwaltung.logo:
-        try: c.drawImage(verwaltung.logo.path, 150*mm, 265*mm, width=40*mm, preserveAspectRatio=True, mask='auto')
-        except: pass
-
-    c.setFillColor(colors.black)
-    c.setFont("Helvetica-Bold", 18)
-    c.drawString(20*mm, 270*mm, "Mietrechnung")
-    c.setFont("Helvetica", 10)
-    c.setFillColor(colors.darkgrey)
-    c.drawString(20*mm, 264*mm, f"Monat: {monat_jahr}")
-    c.setStrokeColor(colors.lightgrey)
-    c.line(20*mm, 258*mm, 190*mm, 258*mm)
+    # Rechnungsempfänger im Fenster, Datum und Betreff: gemeinsames Briefgerüst
+    y_start = c.brief([debtor_name, debtor_line1, debtor_line2],
+                      f"Datum: {datetime.date.today().strftime('%d.%m.%Y')}", "Mietrechnung",
+                      untertitel=f"Monat: {monat_jahr}")
 
     c.setFillColor(colors.black)
     c.setFont("Helvetica", 9)
-    y_start = 245*mm
-    c.drawString(20*mm, y_start, "Rechnungsempfänger:")
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(20*mm, y_start - 6*mm, debtor_name)
-    c.setFont("Helvetica", 11)
-    c.drawString(20*mm, y_start - 11*mm, debtor_line1)
-    c.drawString(20*mm, y_start - 16*mm, debtor_line2)
-
-    c.setFont("Helvetica", 9)
-    c.drawString(110*mm, y_start, "Objekt / Details:")
+    c.drawString(20*mm, y_start, "Objekt / Details:")
     c.setFont("Helvetica-Bold", 10)
-    c.drawString(110*mm, y_start - 6*mm, f"{einheit.liegenschaft.strasse}")
-    c.drawString(110*mm, y_start - 11*mm, f"{einheit.bezeichnung}")
+    c.drawString(20*mm, y_start - 6*mm, f"{einheit.liegenschaft.strasse}")
+    c.drawString(20*mm, y_start - 11*mm, f"{einheit.bezeichnung}")
 
-    y_tab = y_start - 35*mm
+    y_tab = y_start - 25*mm
     c.setStrokeColor(colors.lightgrey)
-    c.line(110*mm, y_tab + 4*mm, 190*mm, y_tab + 4*mm)
+    c.line(20*mm, y_tab + 4*mm, 190*mm, y_tab + 4*mm)
     c.setFont("Helvetica", 10)
-    c.drawString(110*mm, y_tab, "Nettomiete")
+    c.drawString(20*mm, y_tab, "Nettomiete")
     c.drawRightString(190*mm, y_tab, f"CHF {vertrag.netto_mietzins:,.2f}".replace(",", "'"))
-    c.drawString(110*mm, y_tab - 6*mm, "Nebenkosten")
+    c.drawString(20*mm, y_tab - 6*mm, "Nebenkosten")
     c.drawRightString(190*mm, y_tab - 6*mm, f"CHF {vertrag.nebenkosten:,.2f}".replace(",", "'"))
     c.setLineWidth(0.5)
-    c.line(110*mm, y_tab - 10*mm, 190*mm, y_tab - 10*mm)
+    c.line(20*mm, y_tab - 10*mm, 190*mm, y_tab - 10*mm)
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(110*mm, y_tab - 16*mm, "Totalbetrag")
+    c.drawString(20*mm, y_tab - 16*mm, "Totalbetrag")
     c.drawRightString(190*mm, y_tab - 16*mm, f"CHF {total_betrag:,.2f}".replace(",", "'"))
 
     c.setDash(1, 4)
@@ -234,14 +221,6 @@ def qr_rechnung_pdf(request, vertrag_id):
 # 2. NEBENKOSTEN ABRECHNUNG
 # ==========================================
 
-def draw_header(c, verwaltung):
-    if not verwaltung: return
-    if verwaltung.logo:
-        try: c.drawImage(verwaltung.logo.path, 20*mm, 270*mm, height=15*mm, preserveAspectRatio=True, mask='auto')
-        except: pass
-    c.setFont("Helvetica", 8)
-    c.drawRightString(190*mm, 280*mm, f"{verwaltung.firma} | {verwaltung.strasse} | {verwaltung.plz} {verwaltung.ort}")
-
 @rolle_erforderlich(ROLLE_VERWALTER, ROLLE_SACHBEARBEITER, ROLLE_LESEZUGRIFF)
 def abrechnung_pdf_view(request, periode_id):
     periode = get_object_or_404(AbrechnungsPeriode, pk=periode_id)
@@ -269,55 +248,51 @@ def abrechnung_pdf_view(request, periode_id):
         creditor = {'name': "Immobilienverwaltung", 'line1': liegenschaft.strasse, 'line2': f"{liegenschaft.plz} {liegenschaft.ort}"}
 
     buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
+    c = DokCanvas(buffer, organisation=verwaltung,
+                  absender=[creditor['name'], creditor['line1'], creditor['line2']],
+                  titel=f"Nebenkostenabrechnung {periode.bezeichnung}", ref=liegenschaft.strasse)
     c.setTitle(f"NK {periode.bezeichnung}")
 
-    for row in abrechnungen:
+    for nr, row in enumerate(abrechnungen):
+        if nr:
+            c.neues_dokument()
         if row['typ'] in ('leerstand', 'eigentuemer'):
             if eigentuemer: debtor = {'name': eigentuemer.firma_oder_name, 'line1': eigentuemer.strasse, 'line2': f"{eigentuemer.plz} {eigentuemer.ort}"}
             else: debtor = {'name': "Eigentümer (Leerstand)", 'line1': '', 'line2': ''}
         else:
             debtor = {'name': row['name'], 'line1': liegenschaft.strasse, 'line2': f"{liegenschaft.plz} {liegenschaft.ort}"}
 
-        draw_header(c, verwaltung)
-        c.setFont("Helvetica", 11)
-        c.drawString(25*mm, 245*mm, debtor['name'])
-        c.drawString(25*mm, 240*mm, debtor['line1'])
-        c.drawString(25*mm, 235*mm, debtor['line2'])
+        # Adressfenster, Ort/Datum, Betreff: gemeinsames Briefgerüst (core/services/dok_layout.py)
+        y0 = c.brief([debtor['name'], debtor['line1'], debtor['line2']],
+                     f"{liegenschaft.ort}, {datetime.date.today().strftime('%d.%m.%Y')}",
+                     f"Nebenkostenabrechnung: {periode.bezeichnung}")
 
         c.setFont("Helvetica", 10)
-        c.drawRightString(190*mm, 245*mm, f"Datum: {datetime.date.today().strftime('%d.%m.%Y')}")
-        c.drawRightString(190*mm, 240*mm, f"Liegenschaft: {liegenschaft.ort}")
+        c.drawString(LINKS, y0, f"Objekt: {row['einheit']}")
+        c.drawString(LINKS, y0 - 5*mm, f"Abrechnungsperiode: {periode.start_datum.strftime('%d.%m.%Y')} bis {periode.ende_datum.strftime('%d.%m.%Y')}")
 
-        c.setFont("Helvetica-Bold", 14)
-        c.drawString(20*mm, 210*mm, f"Nebenkostenabrechnung: {periode.bezeichnung}")
+        if row.get('tage'): c.drawString(LINKS, y0 - 10*mm, f"Ihre Mietdauer: {row.get('tage')} Tage")
 
-        c.setFont("Helvetica", 10)
-        c.drawString(20*mm, 200*mm, f"Objekt: {row['einheit']}")
-        c.drawString(20*mm, 195*mm, f"Abrechnungsperiode: {periode.start_datum.strftime('%d.%m.%Y')} bis {periode.ende_datum.strftime('%d.%m.%Y')}")
-
-        if row.get('tage'): c.drawString(20*mm, 190*mm, f"Ihre Mietdauer: {row.get('tage')} Tage")
-
-        y = 170*mm
+        y = y0 - 25*mm
         c.setFillColorRGB(0.9, 0.9, 0.9)
-        c.rect(20*mm, y-2*mm, 170*mm, 8*mm, fill=1, stroke=0)
+        c.rect(LINKS, y-2*mm, 170*mm, 8*mm, fill=1, stroke=0)
         c.setFillColorRGB(0, 0, 0)
         c.setFont("Helvetica-Bold", 10)
-        c.drawString(25*mm, y, "Beschreibung")
+        c.drawString(LINKS + 5*mm, y, "Beschreibung")
         c.drawRightString(185*mm, y, "Betrag (CHF)")
 
         y -= 10*mm
         c.setFont("Helvetica", 10)
-        c.drawString(25*mm, y, f"Ihr Anteil an den Gesamtkosten ({periode.bezeichnung})")
+        c.drawString(LINKS + 5*mm, y, f"Ihr Anteil an den Gesamtkosten ({periode.bezeichnung})")
         c.drawRightString(185*mm, y, f"{row['kosten_anteil']:.2f}")
         y -= 6*mm
 
         if row['akonto'] > 0:
-            c.drawString(25*mm, y, "Abzüglich Ihre Akontozahlungen")
+            c.drawString(LINKS + 5*mm, y, "Abzüglich Ihre Akontozahlungen")
             c.drawRightString(185*mm, y, f"- {row['akonto']:.2f}")
             y -= 8*mm
 
-        c.line(20*mm, y, 190*mm, y)
+        c.line(LINKS, y, 190*mm, y)
         y -= 8*mm
 
         saldo = row['saldo']
@@ -325,16 +300,16 @@ def abrechnung_pdf_view(request, periode_id):
 
         c.setFont("Helvetica-Bold", 12)
         if row['nachzahlung']:
-            c.drawString(25*mm, y, "Nachzahlung zu Ihren Lasten:")
+            c.drawString(LINKS + 5*mm, y, "Nachzahlung zu Ihren Lasten:")
             text_info = "Bitte begleichen Sie den Betrag innert 30 Tagen."
         else:
-            c.drawString(25*mm, y, "Guthaben zu Ihren Gunsten:")
+            c.drawString(LINKS + 5*mm, y, "Guthaben zu Ihren Gunsten:")
             text_info = "Das Guthaben wird auf Ihr Konto überwiesen."
 
         c.drawRightString(185*mm, y, f"CHF {betrag_abs:.2f}")
         y -= 10*mm
         c.setFont("Helvetica", 10)
-        c.drawString(25*mm, y, text_info)
+        c.drawString(LINKS + 5*mm, y, text_info)
 
         c.showPage()
 

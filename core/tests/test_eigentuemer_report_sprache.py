@@ -45,12 +45,17 @@ def _daten():
 class ReportTests(SimpleTestCase):
 
     def _texte(self, sprache):
+        from reportlab.pdfgen import canvas as _rl
         texte = []
-        leinwand = mock.MagicMock()
-        leinwand.drawString.side_effect = lambda _x, _y, t: texte.append(t)
-        leinwand.drawRightString.side_effect = lambda _x, _y, t: texte.append(t)
         md = SimpleNamespace(firma_oder_name='Dupont SA', sprache=sprache)
-        with mock.patch.object(portfolio_report.canvas, 'Canvas', return_value=leinwand), \
+        # Der Report läuft über `DokCanvas` (gemeinsames Layout, Unterklasse von reportlab Canvas):
+        # mitgeschrieben wird auf der Basisklasse, was auf das Blatt kommt.
+        zeichne = _rl.Canvas.drawString
+        zeichne_rechts = _rl.Canvas.drawRightString
+        with mock.patch.object(_rl.Canvas, 'drawString',
+                               lambda self, x, y, t, *a, **k: (texte.append(t), zeichne(self, x, y, t, *a, **k))[1]), \
+                mock.patch.object(_rl.Canvas, 'drawRightString',
+                                  lambda self, x, y, t, *a, **k: (texte.append(t), zeichne_rechts(self, x, y, t, *a, **k))[1]), \
                 mock.patch('core.views.portal._portfolio_daten', side_effect=lambda _md: _daten()), \
                 translation.override('de'):
             portfolio_report.generate_portfolio_report_fuer(md)

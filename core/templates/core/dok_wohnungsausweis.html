@@ -1,50 +1,50 @@
 {% extends "core/dok_base.html" %}
 {% load i18n %}
 {% block inhalt %}
-<h1>{% trans "Wohnungsausweis" %}</h1>
-<div class="subtitle">{% trans "Angaben zum Mietobjekt und zu den Mietern" %}</div>
+<div class="titel">{% trans "Wohnungsausweis" %}</div>
+<div class="untertitel">{% trans "Angaben zum Mietobjekt und zu den Mietern" %}</div>
 
-<div class="sec">{% trans "Mietobjekt" %}</div>
-<table class="form">
-    <tr><td class="k">{% trans "Objekt" %}</td><td>{{ einheit.bezeichnung }}</td></tr>
-    <tr><td class="k">{% trans "Stockwerk" %}</td><td>{{ einheit.etage|default:"—" }}</td></tr>
-    <tr><td class="k">{% trans "Adresse" %}</td><td>{{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }}</td></tr>
-    <tr><td class="k">EGID / EWID</td><td>{{ liegenschaft.egid|default:"—" }} / {{ einheit.ewid|default:"—" }}</td></tr>
-    <tr><td class="k">{% trans "Mietbeginn" %}</td><td>{{ vertrag.beginn|date:"d.m.Y" }}</td></tr>
-    <tr><td class="k">{% trans "Bruttomietzins" %}</td><td>CHF {{ brutto_fmt }}</td></tr>
+<div class="art">{% trans "Mietobjekt" %}</div>
+<table class="data">
+    <tr><td class="k">{% trans "Objekt" %}</td><td class="v">{{ einheit.bezeichnung }}</td></tr>
+    <tr><td class="k">{% trans "Stockwerk" %}</td><td class="v">{{ einheit.etage|default:"—" }}</td></tr>
+    <tr><td class="k">{% trans "Adresse" %}</td><td class="v">{{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }}</td></tr>
+    <tr><td class="k">EGID / EWID</td><td class="v">{{ liegenschaft.egid|default:"—" }} / {{ einheit.ewid|default:"—" }}</td></tr>
+    <tr><td class="k">{% trans "Mietbeginn" %}</td><td class="v">{{ vertrag.beginn|date:"d.m.Y" }}</td></tr>
+    <tr><td class="k">{% trans "Bruttomietzins" %}</td><td class="v">CHF {{ brutto_fmt }}</td></tr>
 </table>
 
-<div class="sec">{% trans "Mieter" %}</div>
-<table class="form">
-    <tr><td class="k">{% trans "Name / Vorname" %}</td><td>{{ mieter.display_name }}</td></tr>
-    <tr><td class="k">{% trans "Bisherige Adresse" %}</td><td>{{ mieter.strasse }}, {{ mieter.plz }} {{ mieter.ort }}</td></tr>
-    <tr><td class="k">{% trans "Telefon" %}</td><td>{{ mieter.telefon|default:"" }}</td></tr>
-    <tr><td class="k">{% trans "E-Mail" %}</td><td>{{ mieter.email|default:"" }}</td></tr>
-    <tr><td class="k">{% trans "Geburtsdatum" %}</td><td>{{ mieter.geburtsdatum|date:"d.m.Y"|default:"" }}</td></tr>
-    <tr><td class="k">{% trans "Heimatort / Nationalität" %}</td><td>&nbsp;</td></tr>
+<div class="art">{% trans "Mieter" %}</div>
+<table class="data">
+    <tr><td class="k">{% trans "Name / Vorname" %}</td><td class="v">{{ mieter.display_name }}</td></tr>
+    <tr><td class="k">{% trans "Bisherige Adresse" %}</td><td class="v">{{ mieter.strasse }}, {{ mieter.plz }} {{ mieter.ort }}</td></tr>
+    <tr><td class="k">{% trans "Telefon" %}</td><td class="v">{{ mieter.telefon|default:"" }}</td></tr>
+    <tr><td class="k">{% trans "E-Mail" %}</td><td class="v">{{ mieter.email|default:"" }}</td></tr>
+    <tr><td class="k">{% trans "Geburtsdatum" %}</td><td class="v">{{ mieter.geburtsdatum|date:"d.m.Y"|default:"" }}</td></tr>
+    <tr><td class="k">{% trans "Heimatort / Nationalität" %}</td><td class="v">&nbsp;</td></tr>
 </table>
 
 {% if vertrag.mitmieter or vertrag.mitmieter_name %}
-<div class="sec">{% trans "Mitmieter" %}</div>
-<table class="form">
-    <tr><td class="k">{% trans "Name / Vorname" %}</td><td>{% if vertrag.mitmieter %}{{ vertrag.mitmieter.display_name }}{% else %}{{ vertrag.mitmieter_name }}{% endif %}</td></tr>
-    <tr><td class="k">{% trans "Bisherige Adresse" %}</td><td>{% if vertrag.mitmieter %}{{ vertrag.mitmieter.strasse }}, {{ vertrag.mitmieter.plz }} {{ vertrag.mitmieter.ort }}{% endif %}</td></tr>
-    <tr><td class="k">{% trans "Telefon" %}</td><td>{% if vertrag.mitmieter %}{{ vertrag.mitmieter.telefon|default:"" }}{% endif %}</td></tr>
-    <tr><td class="k">{% trans "E-Mail" %}</td><td>{% if vertrag.mitmieter %}{{ vertrag.mitmieter.email|default:"" }}{% endif %}</td></tr>
+<div class="art">{% trans "Mitmieter" %}</div>
+<table class="data">
+    <tr><td class="k">{% trans "Name / Vorname" %}</td><td class="v">{% if vertrag.mitmieter %}{{ vertrag.mitmieter.display_name }}{% else %}{{ vertrag.mitmieter_name }}{% endif %}</td></tr>
+    <tr><td class="k">{% trans "Bisherige Adresse" %}</td><td class="v">{% if vertrag.mitmieter %}{{ vertrag.mitmieter.strasse }}, {{ vertrag.mitmieter.plz }} {{ vertrag.mitmieter.ort }}{% endif %}</td></tr>
+    <tr><td class="k">{% trans "Telefon" %}</td><td class="v">{% if vertrag.mitmieter %}{{ vertrag.mitmieter.telefon|default:"" }}{% endif %}</td></tr>
+    <tr><td class="k">{% trans "E-Mail" %}</td><td class="v">{% if vertrag.mitmieter %}{{ vertrag.mitmieter.email|default:"" }}{% endif %}</td></tr>
 </table>
 {% endif %}
 
-<div class="sec">{% trans "Weitere im Haushalt lebende Personen" %}</div>
-<table class="form">
-    <tr><td class="k">{% trans "Anzahl erwachsene Personen" %}</td><td>{{ vertrag.anzahl_personen }}</td></tr>
-    <tr><td class="k">{% trans "Kinder (Anzahl / Jahrgänge)" %}</td><td>&nbsp;</td></tr>
-    <tr><td class="k">{% trans "Haustiere" %}</td><td>&nbsp;</td></tr>
+<div class="art">{% trans "Weitere im Haushalt lebende Personen" %}</div>
+<table class="data">
+    <tr><td class="k">{% trans "Anzahl erwachsene Personen" %}</td><td class="v">{{ vertrag.anzahl_personen }}</td></tr>
+    <tr><td class="k">{% trans "Kinder (Anzahl / Jahrgänge)" %}</td><td class="v">&nbsp;</td></tr>
+    <tr><td class="k">{% trans "Haustiere" %}</td><td class="v">&nbsp;</td></tr>
 </table>
 
-<table class="sign">
-    <tr>
-        <td><div class="sigline">{% trans "Ort, Datum" %}</div></td>
-        <td><div class="sigline">{% trans "Unterschrift Mieter" %}</div></td>
-    </tr>
+<table class="halten"><tr><td>
+<table class="unterschriften">
+    <tr><td class="platz sig-feld">&nbsp;</td><td class="luecke">&nbsp;</td><td class="platz sig-feld">&nbsp;</td></tr>
+    <tr><td class="platz sig-unter">{% trans "Ort, Datum" %}</td><td class="luecke">&nbsp;</td><td class="platz sig-unter">{% trans "Unterschrift Mieter" %}</td></tr>
 </table>
+</td></tr></table>
 {% endblock %}

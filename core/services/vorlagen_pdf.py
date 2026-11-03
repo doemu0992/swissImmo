@@ -105,6 +105,9 @@ def dokument_kontext(*, betreff, inhalt, format, sprache, kontext, organisation)
         'vermieter_plz': (organisation.plz if organisation else ''),
         'vermieter_ort': (organisation.ort if organisation else ''),
         'ort': (organisation.ort if organisation else ''),
+        # Briefe mit Empfänger tragen das Adressfenster (Layout: core/templates/core/_dok_adressfenster.html)
+        'adressfenster': bool(kontext.get('mieter.name', '')),
+        'empfaenger_zeilen': [kontext.get('mieter.name', ''), kontext.get('mieter.strasse', ''), ort_zeile],
         'empfaenger': {'name': kontext.get('mieter.name', ''),
                        'strasse': kontext.get('mieter.strasse', ''),
                        'plz_ort': ort_zeile},

@@ -11,7 +11,6 @@ wertlos.
 import io
 from decimal import Decimal
 from core.services.dokumentsprache import nur_deutsch
-from core.services.druckfarben import EMBER
 
 
 def _fmt(d):
@@ -28,35 +27,34 @@ def generate_abschluss_pdf(daten, jahr, lg_name, verwaltung=None, erstellt_am=No
     `daten` ist das Dict aus `_erfolg_bilanz`. Gibt PDF-Bytes zurück.
     """
     from reportlab.lib.pagesizes import A4
-    from reportlab.pdfgen import canvas
+    from core.services.dok_layout import DokCanvas
     from reportlab.lib.units import mm
     from reportlab.lib import colors
 
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
+    c = DokCanvas(buf, organisation=verwaltung, absender=['Verwaltung', '', ''],
+                  titel='Erfolgsrechnung und Bilanz', ref=f"{'alle Jahre' if jahr == 'alle' else jahr} · {lg_name}")
     w, h = A4
-    ember = colors.HexColor(EMBER)
-    grau = colors.HexColor("#64748B")
+    grau = colors.HexColor("#4b5563")
     rose = colors.HexColor("#E11D48")
     jahr_txt = "alle Jahre" if jahr == 'alle' else str(jahr)
     c.setTitle(f"Erfolgsrechnung und Bilanz {jahr_txt}")
 
     def kopf(titel):
-        c.setFillColor(ember)
-        c.rect(0, h - 26 * mm, w, 26 * mm, fill=1, stroke=0)
-        c.setFillColor(colors.white)
+        """Titel des Abschnitts unter Briefkopf (Seite 1) bzw. Seitenkopf; gibt die Höhe darunter zurück."""
+        c.titel_kopf = titel
+        y = c.Y_INHALT if c.seite_nr == 1 else c.Y_FOLGE
+        c.setFillColor(c.akzent)
         c.setFont("Helvetica-Bold", 15)
-        c.drawString(20 * mm, h - 13 * mm, titel)
+        c.drawString(20 * mm, y, titel)
+        c.setFillColor(colors.HexColor("#374151"))
         c.setFont("Helvetica", 10)
-        c.drawString(20 * mm, h - 20 * mm, f"Geschäftsjahr {jahr_txt} · {lg_name}")
-        if verwaltung is not None:
-            c.setFont("Helvetica", 9)
-            c.drawRightString(w - 20 * mm, h - 13 * mm, getattr(verwaltung, 'firma', '') or "")
+        c.drawString(20 * mm, y - 6 * mm, f"Geschäftsjahr {jahr_txt} · {lg_name}")
         if erstellt_am is not None:
             c.setFont("Helvetica", 8)
-            c.drawRightString(w - 20 * mm, h - 20 * mm,
-                              f"erstellt {erstellt_am.strftime('%d.%m.%Y')}")
+            c.drawRightString(w - 20 * mm, y - 6 * mm, f"erstellt {erstellt_am.strftime('%d.%m.%Y')}")
         c.setFillColor(colors.black)
+        return y - 17 * mm
 
     def zeilen_block(titel, zeilen, total_label, total, y0, negativ_rot=False):
         """Kontenliste mit Nummer, Bezeichnung und Saldo; gibt neues y zurück."""
@@ -73,8 +71,8 @@ def generate_abschluss_pdf(daten, jahr, lg_name, verwaltung=None, erstellt_am=No
             c.setFillColor(colors.black)
             y0 -= 6 * mm
         for z in zeilen:
-            if y0 < 30 * mm:
-                c.showPage(); kopf(titel + " (Fortsetzung)"); y0 = h - 40 * mm
+            if y0 < 34 * mm:
+                c.showPage(); y0 = kopf(titel + " (Fortsetzung)")
             c.setFont("Helvetica", 9); c.setFillColor(grau)
             c.drawString(20 * mm, y0, str(z['nummer']))
             c.setFillColor(colors.black)
@@ -94,8 +92,7 @@ def generate_abschluss_pdf(daten, jahr, lg_name, verwaltung=None, erstellt_am=No
         return y0 - 10 * mm
 
     # ---------- Seite 1: Erfolgsrechnung ----------
-    kopf("Erfolgsrechnung")
-    y = h - 40 * mm
+    y = kopf("Erfolgsrechnung")
     y = zeilen_block("Ertrag", daten['ertraege'], "Total Ertrag",
                      daten['total_ertrag'], y)
     y = zeilen_block("Aufwand", daten['aufwaende'], "Total Aufwand",
@@ -103,7 +100,7 @@ def generate_abschluss_pdf(daten, jahr, lg_name, verwaltung=None, erstellt_am=No
 
     erfolg = daten['erfolg']
     if y < 40 * mm:
-        c.showPage(); kopf("Erfolgsrechnung"); y = h - 40 * mm
+        c.showPage(); y = kopf("Erfolgsrechnung")
     c.setFillColor(colors.HexColor("#F1F5F9"))
     c.rect(20 * mm, y - 4 * mm, w - 40 * mm, 12 * mm, fill=1, stroke=0)
     c.setFillColor(colors.black)
@@ -115,15 +112,14 @@ def generate_abschluss_pdf(daten, jahr, lg_name, verwaltung=None, erstellt_am=No
 
     # ---------- Seite 2: Bilanz ----------
     c.showPage()
-    kopf("Bilanz")
-    y = h - 40 * mm
+    y = kopf("Bilanz")
     y = zeilen_block("Aktiven", daten['aktiven'], "Total Aktiven",
                      daten['total_aktiven'], y, negativ_rot=True)
     y = zeilen_block("Passiven", daten['passiven'], "Total Passiven",
                      daten['total_passiven'], y, negativ_rot=True)
 
     if y < 46 * mm:
-        c.showPage(); kopf("Bilanz"); y = h - 40 * mm
+        c.showPage(); y = kopf("Bilanz")
     # Eigenkapital-Herleitung: NOCH OFFENER Vortrag + noch offenes Jahresergebnis.
     # Ohne diese Zeilen ist nicht nachvollziehbar, warum die Bilanz aufgeht. Nach
     # dem Jahresabschluss ist das Ergebnis gegen 2970 gebucht und in den Passiven
@@ -161,8 +157,11 @@ def generate_abschluss_pdf(daten, jahr, lg_name, verwaltung=None, erstellt_am=No
                  else f"Differenz Aktiven − Passiven: CHF {_fmt(diff)}")
     c.setFillColor(colors.black)
 
+    y -= 10 * mm
+    if y < 30 * mm:
+        c.showPage(); y = kopf("Bilanz")
     c.setFont("Helvetica", 7.5); c.setFillColor(grau)
-    c.drawString(20 * mm, 12 * mm,
+    c.drawString(20 * mm, y,
                  "Erfolgsrechnung ohne Abschlussbuchungen (Saldierung gegen 2970); "
                  "Bilanz kumulativ bis Jahresende.")
     c.setFillColor(colors.black)

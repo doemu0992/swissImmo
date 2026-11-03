@@ -12,10 +12,9 @@ zur juristisch geprüften Übersetzung (Entscheid D11).
 """
 import io
 
-from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
-from reportlab.pdfgen import canvas
 
+from core.services.dok_layout import LINKS, UNTEN, DokCanvas
 from core.services.dokumentsprache import nur_deutsch
 
 #: Art. 270a Abs. 3 OR: Anrufung der Schlichtungsbehörde innert 30 Tagen.
@@ -58,37 +57,17 @@ def antwortbrief_pdf(vertrag, ergebnis, antwort_am, eingang_am=None, begruendung
     lg = einheit.liegenschaft if einheit else None
 
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
+    c = DokCanvas(buf, organisation=org, titel='Antwort auf das Herabsetzungsbegehren', ref=mieter.display_name)
     c.setTitle('Antwort auf das Herabsetzungsbegehren')
 
-    # Absender (Verwaltung des Vertrags)
-    c.setFont('Helvetica-Bold', 10)
-    y = 280 * mm
-    c.drawString(25 * mm, y, getattr(org, 'firma', '') or '')
-    c.setFont('Helvetica', 10)
-    for zeile in (getattr(org, 'strasse', ''), f"{getattr(org, 'plz', '') or ''} {getattr(org, 'ort', '') or ''}".strip()):
-        if zeile:
-            y -= 5 * mm
-            c.drawString(25 * mm, y, zeile)
-
-    # Empfänger (Mieter)
-    c.setFont('Helvetica', 11)
-    y = 250 * mm
-    for zeile in (mieter.display_name, mieter.strasse or (lg.strasse if lg else ''),
-                  f"{mieter.plz or ''} {mieter.ort or ''}".strip() or (f"{lg.plz} {lg.ort}" if lg else '')):
-        if zeile:
-            c.drawString(120 * mm, y, zeile)
-            y -= 5 * mm
-
-    c.setFont('Helvetica', 10)
+    # Empfänger (Mieter) im Fenster, Ort/Datum, Betreff — Briefkopf der Verwaltung des Vertrags
     ort = getattr(org, 'ort', '') or ''
-    c.drawString(120 * mm, 215 * mm, f"{ort + ', ' if ort else ''}{antwort_am:%d.%m.%Y}")
-
-    c.setFont('Helvetica-Bold', 12)
-    c.drawString(25 * mm, 200 * mm, 'Ihr Herabsetzungsbegehren (Art. 270a OR)')
-    c.setFont('Helvetica', 10)
     objekt = f"{einheit.bezeichnung}, {lg.strasse}, {lg.plz} {lg.ort}" if (einheit and lg) else str(einheit or '')
-    c.drawString(25 * mm, 194 * mm, f"Mietobjekt: {objekt}")
+    y = c.brief([mieter.display_name, mieter.strasse or (lg.strasse if lg else ''),
+                 f"{mieter.plz or ''} {mieter.ort or ''}".strip() or (f"{lg.plz} {lg.ort}" if lg else '')],
+                f"{ort + ', ' if ort else ''}{antwort_am:%d.%m.%Y}",
+                'Ihr Herabsetzungsbegehren (Art. 270a OR)', untertitel=f"Mietobjekt: {objekt}")
+    c.setFont('Helvetica', 10)
 
     eingang = f" vom {eingang_am:%d.%m.%Y}" if eingang_am else ''
     absaetze = [f"Sehr geehrte Damen und Herren\n\nWir beziehen uns auf Ihr Begehren um Herabsetzung "
@@ -111,10 +90,13 @@ def antwortbrief_pdf(vertrag, ergebnis, antwort_am, eingang_am=None, begruendung
                         "Tagen ab Erhalt die Schlichtungsbehörde anrufen (Art. 270a Abs. 3 OR).")
     absaetze.append('Freundliche Grüsse\n\n' + (getattr(org, 'firma', '') or ''))
 
-    y = 182 * mm
     for absatz in absaetze:
         for zeile in _zeilen(absatz):
-            c.drawString(25 * mm, y, zeile)
+            if y < UNTEN:
+                c.showPage()
+                c.setFont('Helvetica', 10)
+                y = c.Y_FOLGE
+            c.drawString(LINKS, y, zeile)
             y -= 5 * mm
         y -= 3 * mm
     c.showPage()

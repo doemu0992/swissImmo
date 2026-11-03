@@ -15,12 +15,13 @@ DOKUMENT_TYPEN = {
     'hausordnung':            ('core/dok_hausordnung.html',            'Hausordnung', {}),
     'merkblatt-lueften':      ('core/dok_merkblatt_lueften.html',      'Merkblatt Lüften', {}),
     'wohnungsausweis':        ('core/dok_wohnungsausweis.html',        'Wohnungsausweis', {}),
-    'begleitbrief':           ('core/dok_begleitbrief.html',           'Begleitbrief Mietvertrag', {'signed': False}),
-    'begleitbrief-signiert':  ('core/dok_begleitbrief.html',           'Begleitbrief unterzeichneter Vertrag', {'signed': True}),
-    'kuendigungsbestaetigung': ('core/dok_kuendigungsbestaetigung.html', 'Kündigungsbestätigung', {}),
+    # Briefe tragen das Adressfenster (Schweizer C5/6, Fenster rechts): `adressfenster` im Kontext.
+    'begleitbrief':           ('core/dok_begleitbrief.html',           'Begleitbrief Mietvertrag', {'signed': False, 'adressfenster': True}),
+    'begleitbrief-signiert':  ('core/dok_begleitbrief.html',           'Begleitbrief unterzeichneter Vertrag', {'signed': True, 'adressfenster': True}),
+    'kuendigungsbestaetigung': ('core/dok_kuendigungsbestaetigung.html', 'Kündigungsbestätigung', {'adressfenster': True}),
     # Staffelmiete: schriftliche Mitteilung einer vereinbarten Erhöhung (Art. 269d Abs. 5 OR). Kein amtliches
     # Formular. Braucht die Stufe: `generate_dokument_pdf_bytes(..., extra_context={...})`, siehe staffel_mitteilung.py.
-    'staffel-mitteilung':     ('core/dok_staffel_mitteilung.html',     'Staffelmiete – Mitteilung der Erhöhung', {}),
+    'staffel-mitteilung':     ('core/dok_staffel_mitteilung.html',     'Staffelmiete – Mitteilung der Erhöhung', {'adressfenster': True}),
 }
 
 #: Typen, die nur mit zusätzlichem Kontext sinnvoll sind (hier: die Staffelstufe). Die allgemeine
@@ -34,6 +35,20 @@ NUR_MIT_KONTEXT = frozenset({'staffel-mitteilung'})
 #: (core/services/dokumentsprache.py).
 IN_MIETERSPRACHE = frozenset({'wohnungsausweis', 'merkblatt-lueften', 'begleitbrief', 'begleitbrief-signiert',
                               'staffel-mitteilung'})
+
+
+def _empfaenger_zeilen(mieter, mitmieter, mitmieter_name):
+    """Die Adresszeilen im Fenster: Mieter, ggf. zweiter Mieter, Strasse, PLZ Ort
+    (Adresse des Mieters, sonst die des Mitmieters — wie bisher im Briefkopf der Vorlagen)."""
+    zeilen = [mieter.display_name]
+    if mitmieter:
+        zeilen.append(mitmieter.display_name)
+    elif mitmieter_name:
+        zeilen.append(mitmieter_name)
+    quelle = mieter if mieter.strasse else (mitmieter if mitmieter and mitmieter.strasse else None)
+    if quelle is not None:
+        zeilen += [quelle.strasse, f"{quelle.plz or ''} {quelle.ort or ''}".strip()]
+    return zeilen
 
 
 def generate_dokument_pdf_bytes(vertrag, doc_type, extra_context=None):
@@ -77,6 +92,7 @@ def generate_dokument_pdf_bytes(vertrag, doc_type, extra_context=None):
     mitmieter_name = (mitmieter.display_name if mitmieter else (vertrag.mitmieter_name or '')).strip()
 
     context = {
+        'empfaenger_zeilen': _empfaenger_zeilen(vertrag.mieter, mitmieter, mitmieter_name),
         'vertrag': vertrag, 'mieter': vertrag.mieter, 'einheit': einheit,
         'mitmieter': mitmieter, 'mitmieter_name': mitmieter_name,
         'liegenschaft': liegenschaft, 'eigentuemer': eigentuemer, 'verwaltung': verwaltung,

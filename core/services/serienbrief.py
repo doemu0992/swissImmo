@@ -4,9 +4,9 @@ import logging
 import io
 import datetime
 
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
+
+from core.services.dok_layout import LINKS, DokCanvas
 from core.services.dokumentsprache import nur_deutsch
 
 logger = logging.getLogger(__name__)
@@ -52,57 +52,34 @@ def generate_serienbrief_pdf(absender, betreff, text, empfaenger, logo_path=None
     `signatur`: Objekte (Verwaltung/Eigentuemer) in Unterzeichner-Reihenfolge — der
     Brief bekommt damit die digitale Unterschrift über den Absendernamen."""
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
+    c = DokCanvas(buf, absender=[absender.get('firma', ''), absender.get('strasse', ''),
+                                 f"{absender.get('plz', '')} {absender.get('ort', '')}".strip()],
+                  logo=logo_path, titel=(betreff or '')[:70])
     heute = datetime.date.today().strftime('%d.%m.%Y')
     ort_abs = absender.get('ort', '')
 
-    for e in empfaenger:
-        # Logo (optional, oben links)
-        if logo_path:
-            try:
-                from reportlab.lib.utils import ImageReader
-                img = ImageReader(logo_path)
-                iw, ih = img.getSize()
-                bh = 18 * mm
-                bw = bh * (iw / ih) if ih else bh
-                c.drawImage(img, 25 * mm, 265 * mm, width=bw, height=bh,
-                            preserveAspectRatio=True, mask='auto')
-            except Exception:
-                logger.debug("Fehler bewusst übergangen", exc_info=True)
-        # Absender-Zeile
-        c.setFont("Helvetica", 8); c.setFillColorRGB(0.4, 0.4, 0.4)
-        c.drawString(25 * mm, 272 * mm, f"{absender.get('firma','')} · {absender.get('strasse','')} · {absender.get('plz','')} {absender.get('ort','')}")
-        c.setFillColorRGB(0, 0, 0)
-        # Empfänger-Adressblock (Fenstercouvert rechts)
-        c.setFont("Helvetica", 11)
-        y = 250 * mm
-        c.drawString(120 * mm, y, e.get('name', '')); y -= 5 * mm
-        if e.get('strasse'):
-            c.drawString(120 * mm, y, e['strasse']); y -= 5 * mm
-        c.drawString(120 * mm, y, f"{e.get('plz','')} {e.get('ort','')}".strip())
-        # Ort/Datum
-        c.setFont("Helvetica", 10)
-        c.drawRightString(185 * mm, 225 * mm, f"{ort_abs}, {heute}")
-        # Betreff
-        c.setFont("Helvetica-Bold", 11)
-        c.drawString(25 * mm, 210 * mm, _ersetze(betreff, e))
+    for nr, e in enumerate(empfaenger):
+        if nr:
+            c.neues_dokument()
+        # Fenster (Adressfeld rechts), Ort/Datum und Betreff: gemeinsames Briefgerüst
+        yy = c.brief([e.get('name', ''), e.get('strasse', ''), f"{e.get('plz','')} {e.get('ort','')}".strip()],
+                     f"{ort_abs}, {heute}", _ersetze(betreff, e))
         # Body
         c.setFont("Helvetica", 10.5)
-        yy = 198 * mm
         for zeile in _wrap(_ersetze(text, e), 92):
             if yy < 40 * mm:
                 break
-            c.drawString(25 * mm, yy, zeile)
+            c.drawString(LINKS, yy, zeile)
             yy -= 5.6 * mm
         # Grussformel + digitale Unterschrift darüber
         yy -= 6 * mm
-        c.drawString(25 * mm, yy, "Freundliche Grüsse")
+        c.drawString(LINKS, yy, "Freundliche Grüsse")
         yy -= 12 * mm
         if signatur:
             from core.services.unterschrift import unterschrift_zeichnen
-            unterschrift_zeichnen(c, 25 * mm, yy + 1 * mm, *signatur)
+            unterschrift_zeichnen(c, LINKS, yy + 1 * mm, *signatur)
         c.setFont("Helvetica-Bold", 10)
-        c.drawString(25 * mm, yy, absender.get('firma', ''))
+        c.drawString(LINKS, yy, absender.get('firma', ''))
         c.showPage()
 
     c.save(); buf.seek(0)

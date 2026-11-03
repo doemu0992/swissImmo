@@ -8,10 +8,10 @@ import io
 import datetime
 from decimal import Decimal
 
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
+
+from core.services.dok_layout import DokCanvas
 from core.services.dokumentsprache import nur_deutsch
 
 logger = logging.getLogger(__name__)
@@ -121,24 +121,17 @@ def berechne_schlussabrechnung(vertrag, auszug_datum, positionen, kaution_verrec
 @nur_deutsch
 def generate_schlussabrechnung_pdf(vertrag, daten, verwaltung=None):
     buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
     mieter = vertrag.mieter
     einheit = vertrag.einheit
     lg = einheit.liegenschaft
     eigentuemer = lg.eigentuemer if lg else None
-    c.setTitle(f"Schlussabrechnung {mieter.nachname}")
-
-    if verwaltung and getattr(verwaltung, 'logo', None):
-        try:
-            c.drawImage(verwaltung.logo.path, 155*mm, 272*mm, width=40*mm, preserveAspectRatio=True, mask='auto')
-        except Exception:
-            logger.debug("Fehler bewusst übergangen", exc_info=True)
 
     absender = eigentuemer.firma_oder_name if eigentuemer else (verwaltung.firma if verwaltung else 'Immobilienverwaltung')
     a_str = (eigentuemer.strasse if eigentuemer else (verwaltung.strasse if verwaltung else '')) or ''
     a_ort = (f"{eigentuemer.plz} {eigentuemer.ort}" if eigentuemer else (f"{verwaltung.plz} {verwaltung.ort}" if verwaltung else '')) or ''
-    c.setFont("Helvetica-Bold", 9); c.drawString(20*mm, 280*mm, absender)
-    c.setFont("Helvetica", 9); c.drawString(20*mm, 276*mm, a_str); c.drawString(20*mm, 272*mm, a_ort)
+    c = DokCanvas(buffer, organisation=verwaltung, absender=[absender, a_str, a_ort],
+                  titel="Schlussabrechnung", ref=f"{mieter.display_name} · {einheit.bezeichnung}")
+    c.setTitle(f"Schlussabrechnung {mieter.nachname}")
 
     # Empfänger (Auszugsadresse: zum heutigen Stichtag gültige Zustelladresse aus
     # der datierten Adress-Historie — Korrespondenzadresse hat Vorrang, sonst
@@ -146,32 +139,30 @@ def generate_schlussabrechnung_pdf(vertrag, daten, verwaltung=None):
     _zs, _zz, _zplz, _zort = mieter.zustelladresse()
     ziel_strasse = _zs or mieter.strasse or ''
     ziel_ort = f"{_zplz or mieter.plz or ''} {_zort or mieter.ort or ''}".strip()
-    c.setFont("Helvetica", 11)
-    c.drawString(20*mm, 250*mm, f"{mieter.vorname} {mieter.nachname}")
-    c.drawString(20*mm, 245*mm, ziel_strasse)
-    c.drawString(20*mm, 240*mm, ziel_ort)
-
-    c.setFont("Helvetica-Bold", 15)
-    c.drawString(20*mm, 220*mm, "Schlussabrechnung")
-    c.setFont("Helvetica", 9); c.setFillColor(colors.grey)
     az = daten['auszug_datum']
     az_str = az.strftime('%d.%m.%Y') if hasattr(az, 'strftime') else str(az)
-    c.drawString(20*mm, 214*mm, f"Mietobjekt: {einheit.bezeichnung}, {lg.strasse}, {lg.plz} {lg.ort}")
-    c.drawString(20*mm, 209*mm, f"Auszug per: {az_str}")
+    ort = (getattr(verwaltung, 'ort', '') or '') if verwaltung else ''
+    y0 = c.brief([f"{mieter.vorname} {mieter.nachname}", ziel_strasse, ziel_ort],
+                 f"{ort + ', ' if ort else ''}{datetime.date.today().strftime('%d.%m.%Y')}", "Schlussabrechnung",
+                 untertitel=f"Auszug per: {az_str}")
+    c.setFont("Helvetica", 9); c.setFillColor(colors.HexColor("#374151"))
+    c.drawString(20*mm, y0 + 3*mm, f"Mietobjekt: {einheit.bezeichnung}, {lg.strasse}, {lg.plz} {lg.ort}")
     c.setFillColor(colors.black)
 
     # Tabelle
-    y = 196*mm
-    c.setFillColor(colors.HexColor("#EEF0F5")); c.rect(18*mm, y-2*mm, 174*mm, 8*mm, fill=1, stroke=0)
-    c.setFillColor(colors.black); c.setFont("Helvetica-Bold", 9)
-    c.drawString(22*mm, y, "Position")
-    c.drawRightString(150*mm, y, "zulasten")
-    c.drawRightString(186*mm, y, "zugunsten")
-    y -= 9*mm
-    c.setFont("Helvetica", 10)
+    def tabellenkopf(y):
+        c.setFillColor(colors.HexColor("#EEF0F5")); c.rect(18*mm, y-2*mm, 174*mm, 8*mm, fill=1, stroke=0)
+        c.setFillColor(colors.black); c.setFont("Helvetica-Bold", 9)
+        c.drawString(22*mm, y, "Position")
+        c.drawRightString(150*mm, y, "zulasten")
+        c.drawRightString(186*mm, y, "zugunsten")
+        c.setFont("Helvetica", 10)
+        return y - 9*mm
+
+    y = tabellenkopf(y0 - 8*mm)
     for z in daten['zeilen']:
         if y < 60*mm:
-            c.showPage(); y = 270*mm
+            c.showPage(); y = tabellenkopf(c.Y_FOLGE)
         c.drawString(22*mm, y, z['text'][:60])
         if z['zulasten']:
             c.drawRightString(150*mm, y, _fmt(z['betrag']))
@@ -179,6 +170,9 @@ def generate_schlussabrechnung_pdf(vertrag, daten, verwaltung=None):
             c.drawRightString(186*mm, y, _fmt(z['betrag']))
         y -= 6*mm
 
+    # Ab hier ein zusammenhängender Block (Saldo, Hinweise, Gruss, Unterschrift, Rechtshinweis): nie über einen Seitenumbruch
+    if y < c.UNTEN + 78*mm:
+        c.showPage(); y = c.Y_FOLGE
     y -= 2*mm
     c.setLineWidth(0.6); c.line(18*mm, y, 192*mm, y); y -= 8*mm
 
@@ -204,18 +198,20 @@ def generate_schlussabrechnung_pdf(vertrag, daten, verwaltung=None):
             c.drawString(20*mm, y-5*mm, f"IBAN: {mieter.iban}")
     c.setFillColor(colors.black)
 
+    y -= 14*mm
     c.setFont("Helvetica", 10)
-    c.drawString(20*mm, 42*mm, "Freundliche Grüsse")
+    c.drawString(20*mm, y, "Freundliche Grüsse")
     # Digitale Unterschrift zwischen Gruss und Absendername — der Absender oben
     # ist der Eigentuemer (sonst die Verwaltung), also unterschreibt er auch.
     from core.services.unterschrift import unterschrift_zeichnen
-    unterschrift_zeichnen(c, 20*mm, 34*mm, eigentuemer, verwaltung, max_hoehe=7*mm)
-    c.setFont("Helvetica-Bold", 10); c.drawString(20*mm, 33*mm, absender)
+    unterschrift_zeichnen(c, 20*mm, y - 8*mm, eigentuemer, verwaltung, max_hoehe=7*mm)
+    c.setFont("Helvetica-Bold", 10); c.drawString(20*mm, y - 9*mm, absender)
 
     # Rechtlicher Hinweis (Rückgabe/Mängelrüge + Kaution)
-    c.setFont("Helvetica", 6.5); c.setFillColor(colors.grey)
-    c.drawString(20*mm, 16*mm, "Rückgabe der Mietsache: Art. 267 OR; Prüfung und Mängelrüge des Vermieters: Art. 267a OR.")
-    c.drawString(20*mm, 13*mm, "Mietzinsdepot / Kaution: Art. 257e OR (Freigabe durch die Bank i.d.R. ein Jahr nach Mietende ohne Betreibung/Klage).")
+    y -= 19*mm
+    c.setFont("Helvetica", 6.5); c.setFillColor(colors.HexColor("#4b5563"))
+    c.drawString(20*mm, y, "Rückgabe der Mietsache: Art. 267 OR; Prüfung und Mängelrüge des Vermieters: Art. 267a OR.")
+    c.drawString(20*mm, y - 3*mm, "Mietzinsdepot / Kaution: Art. 257e OR (Freigabe durch die Bank i.d.R. ein Jahr nach Mietende ohne Betreibung/Klage).")
     c.setFillColor(colors.black)
 
     c.showPage(); c.save(); buffer.seek(0)

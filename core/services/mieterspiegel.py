@@ -3,7 +3,6 @@ Mietzins (netto/NK/brutto) und Vertragsdaten sowie Soll-/Ist-/Leerstand-Summen.
 Das zentrale Bewirtschaftungs-Dokument für Eigentümer und Verwaltung."""
 from decimal import Decimal
 from core.services.dokumentsprache import nur_deutsch
-from core.services.druckfarben import EMBER
 
 
 def berechne_mieterspiegel(liegenschaften, stichtag=None):
@@ -126,28 +125,30 @@ def _fmt(d):
 def generate_mieterspiegel_pdf(spiegel, verwaltung=None, stichtag=None):
     import io
     from reportlab.lib.pagesizes import A4, landscape
-    from reportlab.pdfgen import canvas
     from reportlab.lib.units import mm
     from reportlab.lib import colors
 
+    from core.services.dok_layout import DokCanvas
+
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=landscape(A4))
+    c = DokCanvas(buf, organisation=verwaltung, absender=['Verwaltung', '', ''], pagesize=landscape(A4),
+                  rand=15 * mm, titel="Mieterspiegel" + (f" · Stichtag {stichtag:%d.%m.%Y}" if stichtag else ""))
     w, h = landscape(A4)
     c.setTitle("Mieterspiegel")
-    ember = colors.HexColor(EMBER)
 
     def kopf(lg):
-        c.setFillColor(ember)
-        c.rect(0, h - 20 * mm, w, 20 * mm, fill=1, stroke=0)
-        c.setFillColor(colors.white)
+        """Titel des Blocks unter Briefkopf (Seite 1) bzw. Seitenkopf; gibt die Höhe darunter zurück."""
+        c.ref_kopf = f"{lg.strasse}, {lg.plz} {lg.ort}"
+        y = c.Y_INHALT if c.seite_nr == 1 else c.Y_FOLGE
+        c.setFillColor(c.akzent)
         c.setFont("Helvetica-Bold", 13)
-        c.drawString(15 * mm, h - 13 * mm, f"Mieterspiegel — {lg.strasse}, {lg.plz} {lg.ort}")
+        c.drawString(15 * mm, y, f"Mieterspiegel — {lg.strasse}, {lg.plz} {lg.ort}")
+        c.setFillColor(colors.HexColor("#374151"))
         c.setFont("Helvetica", 8)
-        if verwaltung:
-            c.drawRightString(w - 15 * mm, h - 9 * mm, verwaltung.firma or "")
         if stichtag:
-            c.drawRightString(w - 15 * mm, h - 15 * mm, f"Stichtag {stichtag:%d.%m.%Y}")
+            c.drawRightString(w - 15 * mm, y, f"Stichtag {stichtag:%d.%m.%Y}")
         c.setFillColor(colors.black)
+        return y - 8 * mm
 
     cols = [
         ("Einheit", 15), ("Typ", 55), ("m²", 82), ("Mieter", 98),
@@ -167,14 +168,13 @@ def generate_mieterspiegel_pdf(spiegel, verwaltung=None, stichtag=None):
 
     for block in spiegel:
         lg = block['lg']
-        kopf(lg)
-        y = h - 28 * mm
+        y = kopf(lg)
         spaltenkopf(y)
         y -= 6 * mm
         c.setFont("Helvetica", 8)
         for z in block['zeilen']:
-            if y < 25 * mm:
-                c.showPage(); kopf(lg); y = h - 28 * mm; spaltenkopf(y); y -= 6 * mm; c.setFont("Helvetica", 8)
+            if y < 32 * mm:
+                c.showPage(); y = kopf(lg); spaltenkopf(y); y -= 6 * mm; c.setFont("Helvetica", 8)
             if not z['belegt']:
                 c.setFillColor(colors.HexColor("#B45309"))
             c.drawString(15 * mm, y, str(z['bezeichnung'])[:16])
@@ -206,9 +206,8 @@ def generate_mieterspiegel_pdf(spiegel, verwaltung=None, stichtag=None):
         c.showPage()
 
     if not spiegel:
-        kopf_leer = c
         c.setFont("Helvetica", 11)
-        c.drawString(20 * mm, h - 40 * mm, "Keine Liegenschaften.")
+        c.drawString(15 * mm, c.Y_INHALT, "Keine Liegenschaften.")
         c.showPage()
     c.save(); buf.seek(0)
     return buf.read()

@@ -7,12 +7,11 @@ import io
 import datetime
 
 from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from django.utils.translation import gettext
 
+from core.services.dok_layout import DokCanvas
 from core.services.dokumentsprache import in_sprache, sprache_von
-from core.services.druckfarben import EMBER_RGB
 
 
 def _chf(v):
@@ -36,22 +35,21 @@ def generate_portfolio_report(eigentuemer, daten):
 
 def _report(eigentuemer, daten):
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
+    c = DokCanvas(buf, organisation=getattr(eigentuemer, 'organisation', None),
+                  absender=[eigentuemer.firma_oder_name, '', ''],
+                  titel=gettext('Portfolio-Report'), ref=eigentuemer.firma_oder_name)
     w, h = A4
     heute = datetime.date.today().strftime('%d.%m.%Y')
 
-    def kopf(titel):
-        c.setFillColorRGB(*EMBER_RGB)
-        c.rect(0, h - 30 * mm, w, 30 * mm, fill=1, stroke=0)
-        c.setFillColorRGB(1, 1, 1)
-        c.setFont("Helvetica-Bold", 16)
-        c.drawString(20 * mm, h - 18 * mm, titel)
-        c.setFont("Helvetica", 9)
-        c.drawString(20 * mm, h - 24 * mm, gettext('%(name)s · Stand %(datum)s') % {'name': eigentuemer.firma_oder_name, 'datum': heute})
-        c.setFillColorRGB(0, 0, 0)
-
-    kopf(gettext('Portfolio-Report'))
-    y = h - 42 * mm
+    # Titel unter dem Briefkopf (früher ein Farbband); ab Seite 2 trägt der Seitenkopf ihn
+    c.setFillColor(c.akzent)
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(20 * mm, c.Y_INHALT, gettext('Portfolio-Report'))
+    c.setFillColorRGB(0.22, 0.25, 0.32)
+    c.setFont("Helvetica", 9)
+    c.drawString(20 * mm, c.Y_INHALT - 6 * mm, gettext('%(name)s · Stand %(datum)s') % {'name': eigentuemer.firma_oder_name, 'datum': heute})
+    c.setFillColorRGB(0, 0, 0)
+    y = c.Y_INHALT - 18 * mm
 
     # KPI-Block
     kpis = [
@@ -80,8 +78,8 @@ def _report(eigentuemer, daten):
     # Objektliste je Liegenschaft
     c.setFillColorRGB(0, 0, 0)
     for lg in daten['liegenschaften']:
-        if y < 45 * mm:
-            c.showPage(); kopf(gettext('Portfolio-Report (Forts.)')); y = h - 42 * mm
+        if y < 50 * mm:
+            c.showPage(); y = c.Y_FOLGE
         c.setFont("Helvetica-Bold", 11)
         c.drawString(20 * mm, y, lg['adresse'])
         c.setFont("Helvetica", 9); c.setFillColorRGB(0.3, 0.5, 0.3)
@@ -91,8 +89,8 @@ def _report(eigentuemer, daten):
         y -= 6 * mm
         c.setFont("Helvetica", 8.5)
         for e in lg['einheiten']:
-            if y < 25 * mm:
-                c.showPage(); kopf(gettext('Portfolio-Report (Forts.)')); y = h - 42 * mm
+            if y < 30 * mm:
+                c.showPage(); y = c.Y_FOLGE
                 c.setFont("Helvetica", 8.5)
             mieter = e['mieter'] or gettext('LEERSTAND')
             zeile = f"  {e['bezeichnung']} · {e['typ']}"
@@ -109,8 +107,10 @@ def _report(eigentuemer, daten):
 
     # Fussnote
     if daten.get('bruttorendite') is not None:
-        c.setFont("Helvetica-Oblique", 7); c.setFillColorRGB(0.5, 0.5, 0.5)
-        c.drawString(20 * mm, 15 * mm,
+        if y < 32 * mm:
+            c.showPage(); y = c.Y_FOLGE
+        c.setFont("Helvetica-Oblique", 7); c.setFillColorRGB(0.3, 0.3, 0.3)
+        c.drawString(20 * mm, y,
                      "* " + gettext("Bruttorendite = aktueller Jahres-Mietertrag (Ist, ohne Leerstand) / Gebäudeversicherungswert (Näherung, ersetzt keine Verkehrswertschätzung)."))
 
     c.save(); buf.seek(0)

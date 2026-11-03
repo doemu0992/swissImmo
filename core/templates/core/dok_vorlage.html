@@ -6,10 +6,8 @@ Ein Dokument aus einer Vorlage (Modul 5, core/services/vorlagen_pdf.py).
 dok_base.html.
 {% endcomment %}
 {% block inhalt %}
-<div class="adr empfaenger">
-    {{ empfaenger.name }}{% if empfaenger.strasse %}<br>{{ empfaenger.strasse }}{% endif %}{% if empfaenger.plz_ort %}<br>{{ empfaenger.plz_ort }}{% endif %}
-</div>
+{% include "core/_dok_adressfenster.html" with zeilen=empfaenger_zeilen %}
 <div class="ortdatum">{% if ort %}{{ ort }}, {% endif %}{{ heute|date:"d.m.Y" }}</div>
-{% if betreff %}<h2>{{ betreff }}</h2>{% endif %}
+{% if betreff %}<div class="betreff">{{ betreff }}</div>{% endif %}
 <div class="vorlage-text">{{ text_html|safe }}</div>
 {% endblock %}

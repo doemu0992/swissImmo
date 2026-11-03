@@ -7,10 +7,10 @@ import io
 import datetime
 from decimal import Decimal
 
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
+
+from core.services.dok_layout import DokCanvas
 from core.services.dokumentsprache import nur_deutsch
 from core.services.mietzins_rechner import anteil_suffix
 
@@ -45,7 +45,6 @@ def generate_amtliches_formular_pdf(vertrag, daten, verwaltung=None, eigentuemer
     alt_lik, neu_lik, zins_pct, lik_pct, kosten_pct, total_pct, wirksam_ab (date),
     begruendung, schlichtungsbehoerde (str), mit_vorbehalt (bool), vorbehalt_text."""
     buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
     mieter = vertrag.mieter
     einheit = vertrag.einheit
     liegenschaft = einheit.liegenschaft
@@ -68,50 +67,27 @@ def generate_amtliches_formular_pdf(vertrag, daten, verwaltung=None, eigentuemer
         absender_strasse = verwaltung.strasse or ""
         absender_ort = f"{verwaltung.plz or ''} {verwaltung.ort or ''}".strip()
 
+    c = DokCanvas(buffer, organisation=verwaltung, absender=[absender_name, absender_strasse, absender_ort],
+                  titel="Mitteilung einer Mietzinsanpassung", ref=f"{einheit.bezeichnung} · {liegenschaft.strasse}")
     c.setTitle(f"Mietzinsanpassung {mieter.nachname}")
 
-    # Logo
-    if verwaltung and getattr(verwaltung, 'logo', None):
-        try:
-            c.drawImage(verwaltung.logo.path, 155*mm, 272*mm, width=40*mm, preserveAspectRatio=True, mask='auto')
-        except Exception:
-            logger.debug("Fehler bewusst übergangen", exc_info=True)
-
-    # Absender
-    c.setFont("Helvetica-Bold", 9)
-    c.drawString(20*mm, 280*mm, absender_name)
-    c.setFont("Helvetica", 9)
-    c.drawString(20*mm, 276*mm, absender_strasse)
-    c.drawString(20*mm, 272*mm, absender_ort)
-
-    # Empfänger (Fensterkuvert)
-    c.setFont("Helvetica", 11)
-    c.drawString(20*mm, 250*mm, f"{mieter.vorname} {mieter.nachname}")
-    c.drawString(20*mm, 245*mm, mieter.strasse or "")
-    c.drawString(20*mm, 240*mm, f"{mieter.plz or ''} {mieter.ort or ''}".strip())
-
-    # Ort/Datum
+    # Empfänger im Fenster, Ort/Datum, Titel: gemeinsames Briefgerüst (core/services/dok_layout.py)
     heute = datetime.date.today()
     ort_kopf = (absender_ort.split(' ', 1)[-1] if absender_ort else liegenschaft.ort) or ""
-    c.drawRightString(190*mm, 240*mm, f"{ort_kopf}, {heute.strftime('%d.%m.%Y')}")
-
-    # Titel
-    c.setFont("Helvetica-Bold", 13)
-    c.drawString(20*mm, 222*mm, "Mitteilung einer Mietzinsanpassung")
-    c.setFont("Helvetica", 8)
-    c.setFillColor(colors.grey)
-    c.drawString(20*mm, 217*mm, "Amtliches Formular gemäss Art. 269d OR / Art. 19 VMWG")
-    c.setFillColor(colors.black)
+    y0 = c.brief([f"{mieter.vorname} {mieter.nachname}", mieter.strasse or "",
+                  f"{mieter.plz or ''} {mieter.ort or ''}".strip()],
+                 f"{ort_kopf}, {heute.strftime('%d.%m.%Y')}", "Mitteilung einer Mietzinsanpassung",
+                 untertitel="Amtliches Formular gemäss Art. 269d OR / Art. 19 VMWG")
 
     # Objekt
     c.setFont("Helvetica", 10)
-    c.drawString(20*mm, 208*mm, f"Mietobjekt: {einheit.bezeichnung}, {liegenschaft.strasse}, {liegenschaft.plz} {liegenschaft.ort}")
+    c.drawString(20*mm, y0 + 3*mm, f"Mietobjekt: {einheit.bezeichnung}, {liegenschaft.strasse}, {liegenschaft.plz} {liegenschaft.ort}")
     wirksam = daten['wirksam_ab']
     wtxt = wirksam.strftime('%d.%m.%Y') if hasattr(wirksam, 'strftime') else str(wirksam)
-    c.drawString(20*mm, 203*mm, f"Wirksam ab: {wtxt}")
+    c.drawString(20*mm, y0 - 2*mm, f"Wirksam ab: {wtxt}")
 
     # --- Gegenüberstellung bisher/neu ---
-    y = 190*mm
+    y = y0 - 14*mm
     c.setFillColor(colors.HexColor("#EEF0F5"))
     c.rect(18*mm, y - 30*mm, 174*mm, 34*mm, fill=1, stroke=0)
     c.setFillColor(colors.black)
@@ -151,7 +127,7 @@ def generate_amtliches_formular_pdf(vertrag, daten, verwaltung=None, eigentuemer
     c.setFillColor(colors.black)
 
     # --- Begründung mit Bezifferung ---
-    y = 145*mm
+    y = yy - 16*mm
     c.setFont("Helvetica-Bold", 10)
     c.drawString(20*mm, y, "Begründung der Anpassung")
     c.setFont("Helvetica", 9)
@@ -176,6 +152,10 @@ def generate_amtliches_formular_pdf(vertrag, daten, verwaltung=None, eigentuemer
         gruende = ["Anpassung an die aktuellen Grundlagen (Referenzzinssatz und Teuerung)."]
     for g in gruende:
         for zeile in _wrap(f"• {g}", 100):
+            if y < c.UNTEN:
+                c.showPage()
+                y = c.Y_FOLGE
+                c.setFont("Helvetica", 9)
             c.drawString(22*mm, y, zeile)
             y -= 5*mm
 
@@ -188,11 +168,18 @@ def generate_amtliches_formular_pdf(vertrag, daten, verwaltung=None, eigentuemer
         y -= 5*mm
         for zeile in _wrap(daten.get('vorbehalt_text') or
                            "Weitere Erhöhungsgründe bleiben vorbehalten (nicht ausgeschöpfte Reserven).", 100):
+            if y < c.UNTEN:
+                c.showPage()
+                y = c.Y_FOLGE
+                c.setFont("Helvetica", 9)
             c.drawString(22*mm, y, zeile)
             y -= 5*mm
 
-    # --- Rechtsmittelbelehrung (Pflicht) ---
-    y = 78*mm
+    # --- Rechtsmittelbelehrung (Pflicht) und Unterschrift: ein Block, nie über einen Seitenumbruch ---
+    y -= 6*mm
+    if y < c.UNTEN + 66*mm:
+        c.showPage()
+        y = c.Y_FOLGE
     c.setFillColor(colors.HexColor("#FEF3C7"))
     c.rect(18*mm, y - 20*mm, 174*mm, 26*mm, fill=1, stroke=0)
     c.setFillColor(colors.black)
@@ -209,19 +196,19 @@ def generate_amtliches_formular_pdf(vertrag, daten, verwaltung=None, eigentuemer
         y -= 4.5*mm
 
     # --- Unterschrift ---
-    y = 42*mm
+    y -= 12*mm
     c.setFont("Helvetica", 10)
     c.drawString(20*mm, y, "Freundliche Grüsse")
     if unterschrift_pfad:
         try:
-            c.drawImage(unterschrift_pfad, 20*mm, y - 22*mm, width=48*mm, preserveAspectRatio=True, mask='auto')
+            c.drawImage(unterschrift_pfad, 20*mm, y - 21*mm, width=48*mm, preserveAspectRatio=True, mask='auto')
         except Exception:
             logger.debug("Fehler bewusst übergangen", exc_info=True)
     c.setFont("Helvetica-Bold", 10)
-    c.drawString(20*mm, 14*mm, absender_name)
+    c.drawString(20*mm, y - 24*mm, absender_name)
     c.setFont("Helvetica", 8)
-    c.setFillColor(colors.grey)
-    c.drawString(20*mm, 10*mm, "Vermieter / bevollmächtigte Vertretung")
+    c.setFillColor(colors.HexColor("#4b5563"))
+    c.drawString(20*mm, y - 28*mm, "Vermieter / bevollmächtigte Vertretung")
     c.setFillColor(colors.black)
 
     c.showPage()

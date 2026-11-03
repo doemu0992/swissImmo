@@ -19,16 +19,17 @@ WAS DIESE DOKUMENTE NICHT SIND
 import io
 from decimal import Decimal
 
-from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
-from reportlab.pdfgen import canvas
 
+from core.services.dok_layout import DokCanvas
+from core.services.dok_layout import LINKS as _LINKS
+from core.services.dok_layout import RECHTS as _RECHTS
 from core.services.dokumentsprache import nur_deutsch
 from core.services.mietprozess_briefe import _fr, _kontext, _wrap
 
-LINKS = 25 * mm
-RECHTS = 185 * mm
-UNTEN = 25 * mm
+LINKS = _LINKS
+RECHTS = _RECHTS
+UNTEN = 32 * mm
 
 
 class _Seite:
@@ -40,7 +41,7 @@ class _Seite:
     def platz(self, hoehe):
         if self.y - hoehe < UNTEN:
             self.c.showPage()
-            self.y = 270 * mm
+            self.y = self.c.Y_FOLGE
 
     def zeile(self, text, *, fett=False, groesse=10, x=LINKS, abstand=5 * mm):
         self.platz(abstand)
@@ -98,18 +99,14 @@ def zahlungsvereinbarung_pdf(vb):
     vertreten = (vw.firma if (eig and vw) else '')
 
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
+    c = DokCanvas(buf, organisation=vw, absender=absender, titel="Zahlungsvereinbarung mit Schuldanerkennung",
+                  ref=mieter.display_name)
     c.setTitle("Zahlungsvereinbarung mit Schuldanerkennung")
-    c.setFont("Helvetica", 8)
-    c.drawString(LINKS, 280 * mm, ' · '.join(z for z in absender if z))
-    s = _Seite(c, 255 * mm)
-    for z in empf:
-        s.zeile(z, x=120 * mm, groesse=11, abstand=5.2 * mm)
-    s.y -= 6 * mm
     from django.utils import timezone
-    s.zeile(f"{ort}, {_datum(timezone.localtime(vb.erfasst_am).date() if vb.erfasst_am else None)}", x=120 * mm)
-    s.y -= 6 * mm
-    s.zeile("Zahlungsvereinbarung mit Schuldanerkennung", fett=True, groesse=13, abstand=8 * mm)
+    y = c.brief(empf, f"{ort}, {_datum(timezone.localtime(vb.erfasst_am).date() if vb.erfasst_am else None)}",
+                "Zahlungsvereinbarung mit Schuldanerkennung")
+    s = _Seite(c, y)
+    c.setFont("Helvetica", 10)
 
     s.zeile("Parteien", fett=True)
     s.absatz(f"Vermieterin / Gläubigerin: {vermieter}"
@@ -174,9 +171,11 @@ def betreibungsbegehren_pdf(b):
     gl, vertreter = glaeubiger(b)
 
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
+    c = DokCanvas(buf, organisation=b.organisation,
+                  absender=gl[:3], titel="Betreibungsbegehren - Daten (Vorlage)",
+                  ref=mieter.display_name if mieter is not None else '')
     c.setTitle("Betreibungsbegehren - Daten (Vorlage)")
-    s = _Seite(c, 275 * mm)
+    s = _Seite(c, c.Y_INHALT)
     s.zeile("Betreibungsbegehren — Daten für das amtliche Formular", fett=True, groesse=13, abstand=6 * mm)
     s.absatz("Vorlage: Diese Seite ist NICHT das amtliche Betreibungsbegehren. Sie fasst die Angaben "
              "zusammen, die auf dem Formular des Betreibungsamts bzw. in eSchKG einzutragen sind.",
@@ -229,7 +228,7 @@ def betreibungsbegehren_pdf(b):
         s.absatz(b.bemerkung)
 
     c.setFont("Helvetica", 8)
-    c.drawString(LINKS, 15 * mm, "Vorlage der Verwaltung, kein amtliches Formular. Massgebend ist das "
+    c.drawString(LINKS, 29 * mm, "Vorlage der Verwaltung, kein amtliches Formular. Massgebend ist das "
                                  "Betreibungsbegehren auf dem Formular des Betreibungsamts.")
     c.showPage()
     c.save()
