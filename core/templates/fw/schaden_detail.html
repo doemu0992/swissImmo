@@ -161,6 +161,41 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     </div>
     {% endif %}
 
+    {% if ohne_rechnung_frage %}
+    <div class="fw-card" id="ohne-rechnung">
+        <div class="fw-kopf"><span class="fw-ikon">{% zeichen 'hinweis' %}</span>
+            <h2>{% trans "Abschliessen ohne Rechnung" %}</h2>
+            <span class="fw-neben">{% trans "Standard: kein Abschluss ohne Handwerkerrechnung" %}</span></div>
+        <div class="px-5 py-4">
+            <p class="text-sm">{% blocktrans trimmed %}Für diese Aufträge ist keine Kreditorenrechnung verknüpft:{% endblocktrans %}
+                {% for a in sperrende_auftraege %}<b>{{ a.handwerker }}</b>{% if not forloop.last %}, {% endif %}{% endfor %}.</p>
+            <p class="fw-klein mt-1">{% blocktrans trimmed %}Entweder die Rechnung beim Auftrag verknüpfen — oder das Ticket bewusst ohne Rechnung abschliessen. Die Begründung wird mit Person und Zeit festgehalten und steht im Verlauf.{% endblocktrans %}</p>
+            {% if kann_schreiben %}
+            <form method="post" action="/neu/schaeden/{{ t.id }}/ohne-rechnung/" class="fw-formular items-end mt-3">
+                {% csrf_token %}
+                <div class="fw-feldblock"><label class="fw-label" for="orGrund">{% trans "Grund" %}</label>
+                    <select name="grund" id="orGrund" required class="fw-feld w-full">
+                        <option value="">{% trans "— Grund wählen —" %}</option>
+                        {% for wert, bez in ohne_rechnung_gruende %}<option value="{{ wert }}">{{ bez }}</option>{% endfor %}
+                    </select></div>
+                <div class="fw-feldblock"><label class="fw-label" for="orFrist">{% trans "Pendenz bei «folgt später» / «noch nicht erfasst»: Rechnung erwartet in" %}</label>
+                    <select name="frist_tage" id="orFrist" class="fw-feld w-full">
+                        {% for tage in ohne_rechnung_fristen %}<option value="{{ tage }}"{% if tage == ohne_rechnung_frist %} selected{% endif %}>{% blocktrans %}{{ tage }} Tagen{% endblocktrans %}</option>{% endfor %}
+                    </select></div>
+                <div class="fw-feldblock"><label class="fw-label" for="orText">{% trans "Bemerkung (bei «Anderer Grund» Pflicht)" %}</label>
+                    <textarea name="text" id="orText" rows="2" class="fw-feld w-full"></textarea></div>
+                <div>
+                    <label class="fw-haekchen mb-2"><input type="checkbox" name="melder_informieren" class="fw-haken" checked>{% trans "Melder per E-Mail informieren" %}</label>
+                    <button class="w-full fw-btn fw-primary fw-knapp">{% trans "Ohne Rechnung abschliessen" %}</button>
+                </div>
+            </form>
+            {% else %}
+            <p class="fw-klein mt-2">{% trans "Ohne Rechnung abschliessen darf nur die Verwaltung." %}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
     <div class="fw-grid2">
         <div class="fw-card">
             <div class="fw-kopf"><h2>{% trans "Schadensbeschreibung" %}</h2></div>
@@ -362,6 +397,10 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     {% elif a.freigabe_status == 'abgelehnt' %}
                     <span class="fw-chip fw-crit mt-1">{% trans "✗ Abgelehnt" %}</span>
                     {% endif %}
+                    {% if a.ohne_rechnung_grund %}
+                    <div class="mt-1"><span class="fw-chip fw-warn">{% blocktrans with g=a.get_ohne_rechnung_grund_display %}Ohne Rechnung: {{ g }}{% endblocktrans %}</span></div>
+                    <div class="fw-klein mt-1">{% blocktrans with wer=a.ohne_rechnung_von.get_full_name|default:a.ohne_rechnung_von.username|default:"—" wann=a.ohne_rechnung_am|date:"d.m.Y, H:i" %}Freigegeben von {{ wer }}, {{ wann }}{% endblocktrans %}{% if a.ohne_rechnung_text %} · „{{ a.ohne_rechnung_text|truncatechars:160 }}"{% endif %}</div>
+                    {% endif %}
                     {% if a.freigabe_kommentar %}<div class="fw-klein mt-1">„{{ a.freigabe_kommentar }}"</div>{% endif %}
                     {% if a.bemerkung %}<div class="fw-klein mt-1">{{ a.bemerkung|truncatechars:100 }}</div>{% endif %}
                 </div>
@@ -427,7 +466,19 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 </form>
                 {% endif %}
             </div>
-            {% if not a.kreditoren_rechnung_id and rechnungen_frei %}
+            {% if a.rechnung_vorschlaege %}
+            <div class="fw-rumpf">
+                <div class="fw-label">{% trans "Passende Rechnung gefunden (noch nicht verknüpft)" %}</div>
+                {% for r in a.rechnung_vorschlaege %}
+                <form method="post" action="/neu/auftrag/{{ a.id }}/rechnung/" class="flex flex-wrap items-center gap-2 mt-2">
+                    {% csrf_token %}<input type="hidden" name="rechnung_id" value="{{ r.id }}"><input type="hidden" name="abschliessen" value="on">
+                    <span class="text-sm">#{{ r.id }} · {{ r.lieferant|default:"—" }} · CHF {{ r.betrag|default_if_none:"—" }}</span>
+                    <button class="fw-btn fw-knapp">{% trans "Diese Rechnung verknüpfen" %}</button>
+                </form>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if a.rechnung_fehlt and rechnungen_frei %}
             <form method="post" action="/neu/auftrag/{{ a.id }}/rechnung/" class="fw-formular items-end fw-rumpf">
                 {% csrf_token %}
                 <div class="fw-feldblock"><label class="fw-label">{% trans "Handwerkerrechnung verknüpfen" %}</label>
