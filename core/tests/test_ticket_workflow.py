@@ -332,7 +332,8 @@ class TerminTests(TestCase):
         self.assertEqual(sorted(m.to[0] for m in mail.outbox[-2:]), ['hans@example.ch', 'hw@example.ch'])
         for m in mail.outbox[-2:]:
             name, inhalt, mime = m.attachments[0]
-            self.assertEqual((name, mime), ('Termin.ics', 'text/calendar'))
+            # iMIP (RFC 6047): die Methode gehört in den Inhaltstyp, sonst zeigt der Client keine Einladung/Absage.
+            self.assertEqual((name, mime), ('Termin.ics', 'text/calendar; method=PUBLISH'))
             self.assertIn('METHOD:PUBLISH', inhalt)
             self.assertIn('03.11.2026', m.body)
         a.refresh_from_db(); t.refresh_from_db()

@@ -121,6 +121,13 @@ def portal_freigabe(request, pk):
             is_intern=True)
     except Exception:
         logger.debug("Fehler bewusst übergangen", exc_info=True)
+    # Verwaltung und Handwerker erfahren den Entscheid per Mail (nicht erst beim nächsten Cockpit-Besuch).
+    try:
+        from tickets.workflow import freigabe_entscheid_melden
+        freigabe_entscheid_melden(a, a.freigabe_status == 'freigegeben', kommentar,
+                                  von=f'Eigentümer {eigentuemer.firma_oder_name}')
+    except Exception:
+        logger.exception("Freigabe-Entscheid zu Auftrag #%s: Mail an Verwaltung/Handwerker fehlgeschlagen", a.pk)
     return redirect('portal')
 
 
@@ -773,25 +780,28 @@ def mieter_schaden_melden(request):
 
 
 def _benachrichtige_neue_meldung(ticket, vertrag):
-    """Mieter erhält Eingangsbestätigung, Verwaltung/Eigentümer die Meldung.
-    Fehler beim Mailversand dürfen die Schadenmeldung nie blockieren."""
+    """Mieter erhält Eingangsbestätigung (in seiner Korrespondenzsprache), Verwaltung/Eigentümer die
+    Meldung. Fehler beim Mailversand dürfen die Schadenmeldung nie blockieren — sie stehen im Protokoll."""
     from core.utils.email_service import send_ticket_email, send_neue_meldung_intern
-    from crm.models import Organisation
+    from core.services.ticket_workflow import melder_sprache
+    from tickets.meldung_mails import eingangsbestaetigung_text
     # Mieter-Bestätigung
     try:
         if ticket.email_melder:
-            body = (f"Guten Tag\n\nWir haben Ihre Schadenmeldung '{ticket.titel}' erhalten "
-                    f"(Ticket #{ticket.id}) und kümmern uns darum. Sobald ein Handwerker "
-                    f"beauftragt wurde, informieren wir Sie.\n\n"
-                    f"Freundliche Grüsse\nIhre Liegenschaftsverwaltung")
-            send_ticket_email(ticket.email_melder, f"Eingangsbestätigung: {ticket.titel} (Ticket #{ticket.id})", body)
+            betreff, body = eingangsbestaetigung_text(ticket, melder_sprache(ticket))
+            if not send_ticket_email(ticket.email_melder, betreff, body, organisation=ticket.organisation_id):
+                logger.warning("Eingangsbestätigung zu Ticket #%s nicht gesendet", ticket.pk)
     except Exception:
-        logger.debug("Fehler bewusst übergangen", exc_info=True)
+        logger.exception("Eingangsbestätigung zu Ticket #%s fehlgeschlagen", ticket.pk)
     # Verwaltung/Eigentümer-Benachrichtigung
     try:
-        send_neue_meldung_intern(ticket, _verwaltung_empfaenger(ticket.liegenschaft))
+        empfaenger = _verwaltung_empfaenger(ticket.liegenschaft)
+        if not empfaenger:
+            logger.warning("Ticket #%s: weder Verwaltung noch Eigentümer haben eine E-Mail-Adresse, "
+                           "die neue Meldung erscheint nur im Cockpit", ticket.pk)
+        send_neue_meldung_intern(ticket, empfaenger)
     except Exception:
-        logger.debug("Fehler bewusst übergangen", exc_info=True)
+        logger.exception("Benachrichtigung der Verwaltung zu Ticket #%s fehlgeschlagen", ticket.pk)
 
 
 def _verwaltung_empfaenger(lg):
@@ -925,10 +935,15 @@ def mieter_ticket_nachricht(request, pk):
         from core.utils.email_service import send_ticket_email
         body = (f"Neue Nachricht von {mieter.display_name} zu Ticket #{t.id} ({t.titel}):\n\n"
                 f"{text}\n\nBitte im Cockpit unter Schadensfälle beantworten.")
-        for adr in _verwaltung_empfaenger(t.liegenschaft):
-            send_ticket_email(adr, f"Mieter-Nachricht zu Ticket #{t.id}: {t.titel}", body)
+        empfaenger = _verwaltung_empfaenger(t.liegenschaft)
+        if not empfaenger:
+            logger.warning("Ticket #%s: keine E-Mail-Adresse der Verwaltung, die Mieter-Nachricht "
+                           "erscheint nur im Cockpit", t.pk)
+        for adr in empfaenger:
+            send_ticket_email(adr, f"Mieter-Nachricht zu Ticket #{t.id}: {t.titel}", body,
+                              organisation=t.organisation_id)
     except Exception:
-        logger.debug("Fehler bewusst übergangen", exc_info=True)
+        logger.exception("Mail an die Verwaltung zu Ticket #%s fehlgeschlagen", t.pk)
     messages.success(request, '✅ ' + gettext('Ihre Nachricht wurde übermittelt. Die Verwaltung meldet sich.'))
     return redirect(f'/mieter/ticket/{t.id}/')
 

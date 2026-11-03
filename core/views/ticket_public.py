@@ -1,4 +1,6 @@
 # core/views/ticket_public.py
+import logging
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.utils.translation import gettext
@@ -10,6 +12,9 @@ from rentals.models import Mietvertrag
 from tickets.models import SchadenMeldung
 from tickets.services import process_public_ticket_form, generate_qr_poster
 from crm.models import Mieter
+
+logger = logging.getLogger(__name__)
+
 
 # ==========================================
 # 1. LANDING PAGE (STARTSEITE)
@@ -126,10 +131,17 @@ def public_schaden_melden_view(request):
                 'Bitte verwenden Sie die E-Mail-Adresse, die bei Ihrer Verwaltung '
                 'hinterlegt ist, oder melden Sie sich direkt bei Ihrer Verwaltung.')])
 
+        # Ein Mieter einer ANDEREN Verwaltung gehört nicht ans Ticket: Wählt der Melder die Liegenschaft
+        # von B und nennt die Adresse eines Mieters von A, stünden dessen Name und Anschrift im Ticket
+        # (und in den Mails) von B. Die Verknüpfung gilt nur innerhalb derselben Verwaltung.
+        if gefundener_mieter and gefundener_mieter.organisation_id != zugewiesene_liegenschaft.organisation_id:
+            gefundener_mieter = None
+            zugewiesene_einheit = None
+
         # 5. Ticket erstellen (Mit den neuen getrennten Namensfeldern)
         from core.tenancy import kontext_des_objekts
         with kontext_des_objekts(zugewiesene_liegenschaft):
-            SchadenMeldung.objects.create(
+            ticket = SchadenMeldung.objects.create(
                 liegenschaft=zugewiesene_liegenschaft,
                 betroffene_einheit=zugewiesene_einheit,
                 gemeldet_von=gefundener_mieter,
@@ -147,6 +159,15 @@ def public_schaden_melden_view(request):
                 prioritaet='mittel',
                 zutritt='telefon' if erreichbarkeit in ['telefon', 'immer'] else 'passpartout'
             )
+            # Eingangsbestätigung an den Melder, Benachrichtigung an die Verwaltung (wie beim Aushang
+            # und im Mieterportal). Ein Mailfehler verliert die Meldung nie.
+            from tickets.meldung_mails import HERKUNFT_WEB, verwaltung_informieren
+            from core.utils.email_service import send_ticket_receipt
+            try:
+                send_ticket_receipt(ticket)
+            except Exception:
+                logger.exception("Eingangsbestätigung zu Ticket #%s fehlgeschlagen", ticket.pk)
+            verwaltung_informieren(ticket, HERKUNFT_WEB)
 
         return _web_formular(request, success=True)
 

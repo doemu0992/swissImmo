@@ -1,6 +1,7 @@
 import logging
 import threading
 import os
+from html import escape as html_escape
 from django.core.mail import EmailMessage
 from django.conf import settings
 from django.utils import dateformat, translation
@@ -15,12 +16,18 @@ logger = logging.getLogger(__name__)
 
 
 # Helper to send mail via Hoststar
+def _einzeilig(text):
+    """Betreff ohne Zeilenumbruch: Django verwirft eine Mail mit Umbruch im Betreff (BadHeaderError,
+    Schutz vor Header-Einschleusung) — der Titel einer öffentlichen Meldung darf das nicht auslösen."""
+    return ' '.join(str(text or '').split())
+
+
 def send_via_hoststar(to_email, subject, html_content, attachment_name=None, attachment_content=None, cc_list=None, weitere_anhaenge=None, reply_to=None, organisation=None):
     try:
         # Absender und Antwortadresse der VERWALTUNG, die schreibt (FUNK-12, core/utils/absender.py).
         # `organisation` (Objekt oder ID) ist nötig, wo kein Mandantenkontext besteht (eigener Thread).
         email = EmailMessage(
-            subject=subject,
+            subject=_einzeilig(subject),
             body=html_content,
             to=[to_email],
             cc=cc_list or [],
@@ -35,10 +42,12 @@ def send_via_hoststar(to_email, subject, html_content, attachment_name=None, att
             email.attach(name, inhalt, mime)
 
         email.send(fail_silently=False)
-        print(f"✅ Mail sent to {to_email}")
+        logger.info("Mail an %s gesendet: %s", to_email, email.subject)
         return True
     except Exception as e:
-        print(f"❌ Mail Error: {e}")
+        # Eine Warnung mit Empfänger und Grund: Das Protokoll ist die einzige Spur, wenn der
+        # Aufrufer (ein Thread, ein Hintergrundlauf) das False nicht beachtet.
+        logger.warning("Mail an %s nicht gesendet (%s): %s", to_email, _einzeilig(subject), e, exc_info=True)
         return False
 
 # ---------------------------------------------------------
@@ -78,72 +87,7 @@ def send_ticket_receipt(ticket):
                      kwargs={'reply_to': reply_to(ticket), 'organisation': ticket.organisation_id}).start()
 
 
-def send_handyman_notification(auftrag):
-    """
-    Sends detailed order to Handyman AND info to Tenant.
-    """
-    ticket = auftrag.ticket
-    hw = auftrag.handwerker
-
-    # 1. MAIL TO HANDYMAN
-    if hw.email:
-        subject = f"Auftrag: {ticket.liegenschaft.strasse} (Ticket #{ticket.id})"
-
-        # Safe attribute access
-        eigentuemer_info = "Keine Rechnungsadresse"
-        if ticket.liegenschaft.eigentuemer:
-            m = ticket.liegenschaft.eigentuemer
-            eigentuemer_info = f"{m.firma_oder_name}, {m.strasse}, {m.plz} {m.ort}"
-        elif ticket.liegenschaft.organisation:
-            v = ticket.liegenschaft.organisation
-            eigentuemer_info = f"{v.firma}, {v.strasse}, {v.plz} {v.ort}"
-
-        auftrags_text = escape(auftrag.bemerkung) if auftrag.bemerkung else "Bitte Auftrag ausführen."
-
-        html_hw = f"""
-        <html><body style="font-family: Arial, sans-serif;">
-            <p>Guten Tag,</p>
-            <p>{auftrags_text.replace(chr(10), '<br>')}</p>
-            <hr>
-            <table width="100%" cellpadding="5" style="border:1px solid #ddd;">
-                <tr style="background:#eee;"><td><strong>Objekt:</strong></td><td>{ticket.liegenschaft.strasse}, {ticket.liegenschaft.ort}</td></tr>
-                <tr><td><strong>Schaden:</strong></td><td>{escape(ticket.titel)}<br>{escape(ticket.beschreibung)}</td></tr>
-                <tr style="background:#eee;"><td><strong>Kontakt vor Ort:</strong></td><td>{escape(ticket.gemeldet_von)}<br>{escape(ticket.tel_melder)}</td></tr>
-                <tr><td><strong>Rechnung an:</strong></td><td>{eigentuemer_info}</td></tr>
-            </table>
-            <p style="font-size:0.8em; color:gray;">Bitte Ticket #{ticket.id} als Referenz nutzen.</p>
-        </body></html>
-        """
-
-        # Handle Photo
-        att_name = None
-        att_content = None
-        if ticket.foto:
-            try:
-                with ticket.foto.open('rb') as f:
-                    att_content = f.read()
-                    att_name = os.path.basename(ticket.foto.name)
-            except:
-                logger.debug("Fehler bewusst übergangen", exc_info=True)
-
-        threading.Thread(target=send_via_hoststar, args=(hw.email, subject, html_hw, att_name, att_content)).start()
-
-    # 2. MAIL TO TENANT
-    if ticket.email_melder:
-        sub_m = f"Handwerker beauftragt [Ticket #{ticket.id}]"
-        html_m = f"""
-        <html><body>
-        <p>Guten Tag,</p>
-        <p>Ein Handwerker wurde beauftragt:</p>
-        <div style="background:#f9f9f9; padding:10px; border:1px solid #ddd;">
-            <strong>{hw.firma}</strong><br>Tel: {hw.telefon}
-        </div>
-        <p>Die Firma meldet sich für einen Termin.</p>
-        </body></html>
-        """
-        threading.Thread(target=send_via_hoststar, args=(ticket.email_melder, sub_m, html_m)).start()
-
-def send_neue_meldung_intern(ticket, to_emails):
+def send_neue_meldung_intern(ticket, to_emails, herkunft='aus dem Mieterportal'):
     """Benachrichtigt die Verwaltung über eine neu eingegangene Schadenmeldung
     (z.B. aus dem Mieterportal). to_emails: Liste von Empfängeradressen."""
     empf = [e for e in (to_emails or []) if e]
@@ -156,7 +100,7 @@ def send_neue_meldung_intern(ticket, to_emails):
               else f"{ticket.melder_vorname or ''} {ticket.melder_nachname or ''}".strip() or '—')
     html = f"""
     <html><body style="font-family:Arial,sans-serif;color:#0f172a;line-height:1.6;">
-      <h2 style="color:{EMBER};">Neue Schadenmeldung aus dem Mieterportal</h2>
+      <h2 style="color:{EMBER};">Neue Schadenmeldung {escape(herkunft)}</h2>
       <table cellpadding="6" style="border-collapse:collapse;">
         <tr><td style="color:#64748b;">Ticket</td><td><strong>#{ticket.id}</strong></td></tr>
         <tr><td style="color:#64748b;">Titel</td><td><strong>{escape(ticket.titel)}</strong></td></tr>
@@ -171,7 +115,7 @@ def send_neue_meldung_intern(ticket, to_emails):
     betreff = f"Neue Schadenmeldung #{ticket.id}: {ticket.titel}"
     ok = False
     for adr in empf:
-        ok = send_via_hoststar(adr, betreff, html) or ok
+        ok = send_via_hoststar(adr, betreff, html, organisation=ticket.organisation_id) or ok
     return ok
 
 
@@ -196,13 +140,18 @@ def journal_email(betreff, inhalt, *, mieter=None, vertrag=None, liegenschaft=No
         return False
 
 
-def send_ticket_email(to_email, betreff, inhalt_text, foto_field=None, reply_to=None):
+def send_ticket_email(to_email, betreff, inhalt_text, foto_field=None, reply_to=None, organisation=None,
+                      weitere_anhaenge=None):
     """Sendet eine Ticket-Mail (aus Vorlage) synchron. inhalt_text ist Klartext
-    mit Zeilenumbrüchen; wird zu HTML gewandelt. Gibt True/False zurück."""
+    mit Zeilenumbrüchen; wird zu HTML gewandelt. Gibt True/False zurück.
+
+    Der Text wird MASKIERT: Titel und Beschreibung stammen von Melderinnen und Meldern (öffentliches
+    Formular, ohne Anmeldung) und stehen über die Platzhalter in Mails an Mieter, Handwerker und
+    Eigentümer. Als HTML eingesetzt wären sie eine Einschleusung in eine Mail «der Verwaltung»."""
     if not to_email:
         return False
     html = "<html><body style='font-family:Arial,sans-serif;color:#333;line-height:1.5;'>"
-    html += inhalt_text.replace('\n', '<br>')
+    html += _klartext_als_html(inhalt_text)
     html += "</body></html>"
     att_name = att_content = None
     if foto_field:
@@ -212,7 +161,13 @@ def send_ticket_email(to_email, betreff, inhalt_text, foto_field=None, reply_to=
                 att_name = os.path.basename(foto_field.name)
         except Exception:
             att_name = att_content = None
-    return send_via_hoststar(to_email, betreff, html, att_name, att_content, reply_to=reply_to)
+    return send_via_hoststar(to_email, betreff, html, att_name, att_content, reply_to=reply_to,
+                             organisation=organisation, weitere_anhaenge=weitere_anhaenge)
+
+
+def _klartext_als_html(text):
+    """Klartext → HTML-Fragment: maskiert, Zeilenumbrüche als <br>."""
+    return html_escape(text or '', quote=False).replace('\n', '<br>')
 
 
 def send_mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma='',
@@ -270,7 +225,7 @@ def send_report_mail(to_email, betreff, html_inhalt, anhaenge=None, organisation
     if not to_email:
         return False
     try:
-        email = EmailMessage(subject=betreff, body=html_inhalt, to=[to_email],
+        email = EmailMessage(subject=_einzeilig(betreff), body=html_inhalt, to=[to_email],
                              **kopfzeilen(organisation))
         email.content_subtype = "html"
         for name, inhalt in (anhaenge or []):
@@ -278,10 +233,10 @@ def send_report_mail(to_email, betreff, html_inhalt, anhaenge=None, organisation
                 mime = 'application/pdf' if name.lower().endswith('.pdf') else 'application/octet-stream'
                 email.attach(name, inhalt, mime)
         email.send(fail_silently=False)
-        print(f"✅ Report-Mail an {to_email} ({len(anhaenge or [])} Anhang/Anhänge)")
+        logger.info("Report-Mail an %s gesendet (%s Anhänge)", to_email, len(anhaenge or []))
         return True
     except Exception as e:
-        print(f"❌ Report-Mail Fehler: {e}")
+        logger.warning("Report-Mail an %s nicht gesendet: %s", to_email, e, exc_info=True)
         return False
 
 
