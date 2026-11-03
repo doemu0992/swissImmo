@@ -50,7 +50,9 @@ class _Seite:
                               betreff, untertitel=untertitel)
 
     def zeile(self, text, *, fett=False, gr=10, abstand=5):
-        if self.y < self.c.UNTEN:
+        # Eine fette Zeile ist meist eine Überschrift: sie bleibt mit den nächsten Zeilen auf einer Seite
+        # (kein Titel allein am Seitenende).
+        if self.y - (12 * self.mm if fett else 0) < self.c.UNTEN:
             self.c.showPage()
             self.y = self.c.Y_FOLGE
         if fett and gr >= 13:
