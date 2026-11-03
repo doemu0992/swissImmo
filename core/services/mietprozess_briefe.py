@@ -64,12 +64,14 @@ def _brief(absender, empfaenger_zeilen, ort, betreff, absaetze, gruss_name,
     c.setFont("Helvetica", 10.5)
     for absatz in absaetze:
         for zeile in _wrap(absatz, 92):
+            if ty < c.UNTEN + 4 * mm:           # Zeile für Zeile umbrechen, nie in die Fusszeile schreiben
+                c.showPage(); c.setFont("Helvetica", 10.5); ty = c.Y_FOLGE
             c.drawString(LINKS, ty, zeile); ty -= 5.4 * mm
         ty -= 3.5 * mm
-        if ty < 45 * mm:
-            c.showPage(); c.setFont("Helvetica", 10.5); ty = c.Y_FOLGE
     # Grussformel + digitale Unterschrift zwischen Gruss und Name
     ty -= 4 * mm
+    if ty < c.UNTEN + 22 * mm:                   # Gruss, Unterschrift und Name bleiben zusammen
+        c.showPage(); c.setFont("Helvetica", 10.5); ty = c.Y_FOLGE
     c.drawString(LINKS, ty, "Freundliche Grüsse")
     if signatur:
         from core.services.unterschrift import unterschrift_zeichnen

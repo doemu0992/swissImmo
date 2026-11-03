@@ -9,6 +9,8 @@ Gegenproben (von Hand gemacht, rot gesehen, zurückgebaut):
 * in `serienbrief.py` `c.neues_dokument()` entfernen → `test_sammel_pdf_zaehlt_je_dokument` rot
 * in `core/utils/qr_code.py` den Aufruf `c.ohne_fuss()` entfernen → `test_seite_mit_einzahlungsschein_ohne_fusszeile` rot
 * in `DokCanvas.save` den Seitenkopf-Aufruf `self._seitenkopf()` entfernen → `test_seitenkopf_erst_ab_seite_2` rot
+* in `mietprozess_briefe._brief` die Zeilenprüfung `if ty < c.UNTEN + 4 * mm` entfernen → `test_langer_absatz_laeuft_nicht_in_die_fusszeile` rot
+* in `dok_base.html` den Block `seitenkopf_ref` leeren oder in `dok_hausordnung.html` den Block `seitenkopf_titel` entfernen → `test_beilagen_haben_seitenkopf_ab_seite_2` rot
 """
 import io
 import shutil
@@ -285,6 +287,26 @@ class LayoutBasis(TestCase):
             with self.subTest(beilage=typ):
                 seite = seiten(generate_dokument_pdf_bytes(self.frisch(), typ))[0]
                 self.assertEqual([w for w in im_fenster(seite) if w['top'] > 41 * MM and 'Muster' in w['text']], [])
+
+    def test_langer_absatz_laeuft_nicht_in_die_fusszeile(self):
+        from core.services import mietprozess_briefe as mp
+        lang = [{'raum': 'Bad', 'beschreibung': 'Spiegel zerbrochen ' * 10, 'betrag': 200}] * 14   # ein einziger Absatz
+        s = seiten(mp.rueckgabe_maengelruege_pdf(self.frisch(), lang))
+        self.assertGreaterEqual(len(s), 2)
+        for _t, woerter, _b, _w, hoehe in s:
+            for w in woerter:
+                self.assertTrue(w['bottom'] <= hoehe - 24 * MM or w['top'] >= hoehe - 22 * MM,
+                                f"«{w['text']}» steht im unteren Rand")
+
+    def test_beilagen_haben_seitenkopf_ab_seite_2(self):
+        from core.services.dokument_service import generate_dokument_pdf_bytes
+        for typ in ('hausordnung', 'allgemeine-bedingungen'):
+            with self.subTest(beilage=typ):
+                s = seiten(generate_dokument_pdf_bytes(self.frisch(), typ))
+                self.assertGreaterEqual(len(s), 2)
+                kopf = ' '.join(w['text'] for w in s[1][1] if w['top'] < 16 * MM)
+                self.assertIn('Teststrasse 1', kopf)                          # Referenz
+                self.assertTrue(kopf.startswith(('Hausordnung', 'Allgemeine')), kopf)   # und Titel
 
     def test_garagenvertrag_unterschriften_nie_allein(self):
         """Verschieden lange Staffeltabellen schieben den Schlussblock über die Seitengrenze: der letzte

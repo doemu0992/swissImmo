@@ -34,6 +34,7 @@
 </table>
 {% endif %}
 
+<table class="halten"><tr><td>
 <div class="art">{% trans "Weitere im Haushalt lebende Personen" %}</div>
 <table class="data">
     <tr><td class="k">{% trans "Anzahl erwachsene Personen" %}</td><td class="v">{{ vertrag.anzahl_personen }}</td></tr>
@@ -41,10 +42,10 @@
     <tr><td class="k">{% trans "Haustiere" %}</td><td class="v">&nbsp;</td></tr>
 </table>
 
-<table class="halten"><tr><td>
 <table class="unterschriften">
     <tr><td class="platz sig-feld">&nbsp;</td><td class="luecke">&nbsp;</td><td class="platz sig-feld">&nbsp;</td></tr>
     <tr><td class="platz sig-unter">{% trans "Ort, Datum" %}</td><td class="luecke">&nbsp;</td><td class="platz sig-unter">{% trans "Unterschrift Mieter" %}</td></tr>
 </table>
 </td></tr></table>
 {% endblock %}
+{% block seitenkopf_titel %}{% trans "Wohnungsausweis" %}{% endblock %}
