@@ -285,13 +285,13 @@ class PortalSprachenTests(TestCase):
 
         from stweg import pdf as pdf_modul
         gesehen = []
-        echt = pdf_modul._kopf
+        echt = pdf_modul._Seite.__init__
 
-        def beobachten(seite, v):
+        def beobachten(seite, *args, **kw):
             gesehen.append(translation.get_language())
-            return echt(seite, v)
+            return echt(seite, *args, **kw)
 
-        with translation.override('fr'), mock.patch.object(pdf_modul, '_kopf', beobachten):
+        with translation.override('fr'), mock.patch.object(pdf_modul._Seite, '__init__', beobachten):
             pdf_modul.einladung_pdf(self.v)
             pdf_modul.protokoll_pdf(self.v)
         self.assertEqual(gesehen, ['de', 'de'])

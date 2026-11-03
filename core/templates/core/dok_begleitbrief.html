@@ -1,28 +1,17 @@
 {% extends "core/dok_base.html" %}
 {% load i18n %}
 {% block inhalt %}
-<div style="margin-top:6pt;">
-    {{ vermieter_name }}<br>{{ vermieter_strasse }}<br>{{ vermieter_plz }} {{ vermieter_ort }}
-</div>
-
-<div style="margin-top:26pt;" class="adr">
-    {{ mieter.display_name }}<br>
-    {% if mitmieter %}{{ mitmieter.display_name }}<br>{% elif mitmieter_name %}{{ mitmieter_name }}<br>{% endif %}
-    {% if mieter.strasse %}{{ mieter.strasse }}<br>{{ mieter.plz }} {{ mieter.ort }}{% elif mitmieter and mitmieter.strasse %}{{ mitmieter.strasse }}<br>{{ mitmieter.plz }} {{ mitmieter.ort }}{% endif %}
-</div>
-
-<div style="text-align:right; font-size:8.5pt; color:#64748b; margin-bottom:18pt;">
-    {{ liegenschaft.ort }}, {{ heute|date:"d.m.Y" }}
-</div>
+{% include "core/_dok_adressfenster.html" with zeilen=empfaenger_zeilen %}
+<div class="ortdatum">{{ liegenschaft.ort }}, {{ heute|date:"d.m.Y" }}</div>
 
 {% if signed %}
-<h2 style="margin-top:0;">{% trans "Ihr unterzeichneter Mietvertrag" %}</h2>
+<div class="betreff">{% trans "Ihr unterzeichneter Mietvertrag" %}</div>
 <p>{% trans "Sehr geehrte Mieterschaft" %}</p>
 <p>{% blocktrans trimmed with objekt=einheit.bezeichnung strasse=liegenschaft.strasse plz=liegenschaft.plz ort=liegenschaft.ort %}Wir freuen uns, Ihnen den beidseitig unterzeichneten Mietvertrag für das Mietobjekt <b>{{ objekt }}</b> an der {{ strasse }}, {{ plz }} {{ ort }}, zuzustellen. Bitte bewahren Sie dieses Exemplar sorgfältig auf.{% endblocktrans %}</p>
 <p>{% blocktrans trimmed with beginn=vertrag.beginn|date:"d.m.Y" kaution=kaution_fmt %}Ihr Mietverhältnis beginnt am <b>{{ beginn }}</b>. Die Übergabe der Wohnung und der Schlüssel wird separat mit Ihnen vereinbart. Bitte stellen Sie sicher, dass die vereinbarte Sicherheitsleistung (Mietzinsdepot) von <b>CHF {{ kaution }}</b> bis zur Schlüsselübergabe geleistet ist.{% endblocktrans %}</p>
 <p>{% trans "Wir wünschen Ihnen einen guten Start in Ihrem neuen Zuhause und stehen Ihnen bei Fragen gerne zur Verfügung." %}</p>
 {% else %}
-<h2 style="margin-top:0;">{% trans "Ihr Mietvertrag zur Unterzeichnung" %}</h2>
+<div class="betreff">{% trans "Ihr Mietvertrag zur Unterzeichnung" %}</div>
 <p>{% trans "Sehr geehrte Mieterschaft" %}</p>
 <p>{% blocktrans trimmed with objekt=einheit.bezeichnung strasse=liegenschaft.strasse plz=liegenschaft.plz ort=liegenschaft.ort %}Wir freuen uns, Ihnen den Mietvertrag für das Mietobjekt <b>{{ objekt }}</b> an der {{ strasse }}, {{ plz }} {{ ort }}, in zweifacher Ausfertigung zuzustellen.{% endblocktrans %}</p>
 <p>{% blocktrans trimmed %}Bitte prüfen Sie den Vertrag, unterzeichnen Sie beide Exemplare und senden Sie <b>ein</b> unterzeichnetes Exemplar innert 10 Tagen an uns zurück. Das zweite Exemplar erhalten Sie beidseitig unterzeichnet zurück und ist für Ihre Unterlagen bestimmt.{% endblocktrans %}</p>
@@ -30,11 +19,12 @@
 <p>{% trans "Dem Vertrag liegen die Allgemeinen Bedingungen, die Hausordnung sowie das Merkblatt «Richtig Lüften und Pflegen» bei. Für Fragen stehen wir Ihnen gerne zur Verfügung." %}</p>
 {% endif %}
 
-<p style="margin-top:18pt;">{% trans "Freundliche Grüsse" %}</p>
-<p style="margin-top:2pt;">{{ vermieter_name }}</p>
+<p class="gruss">{% trans "Freundliche Grüsse" %}</p>
+<p>{{ vermieter_name }}</p>
 
-<div style="margin-top:22pt; font-size:8pt; color:#64748b;">
+<div class="beilagen">
     {% trans "Beilagen:" %}
     {% if signed %}{% trans "Unterzeichneter Mietvertrag" %}{% else %}{% trans "Mietvertrag (2 Exemplare), Allgemeine Bedingungen, Hausordnung, Merkblatt Lüften" %}{% endif %}
 </div>
 {% endblock %}
+{% block seitenkopf_titel %}{% trans "Ihr Mietvertrag zur Unterzeichnung" %}{% endblock %}

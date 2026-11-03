@@ -6,12 +6,13 @@ import logging
 import io
 from decimal import Decimal
 
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
+import datetime
+
 from reportlab.lib.units import mm
 from reportlab.lib import colors
 from django.utils.translation import gettext
 
+from core.services.dok_layout import DokCanvas
 from core.services.dokumentsprache import in_sprache, sprache_von
 
 logger = logging.getLogger(__name__)
@@ -34,42 +35,22 @@ def generate_mandat_abrechnung_pdf(eigentuemer, jahr, zeilen, totals, von, bis, 
 
 def _pdf(eigentuemer, jahr, zeilen, totals, von, bis, verwaltung):
     buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
+    c = DokCanvas(buffer, organisation=verwaltung, absender=['Verwaltung', '', ''],
+                  titel=gettext('Eigentümerabrechnung %(jahr)s') % {'jahr': jahr}, ref=eigentuemer.firma_oder_name)
     c.setTitle(gettext('Mandatsabrechnung %(name)s %(jahr)s') % {'name': eigentuemer.firma_oder_name, 'jahr': jahr})
 
-    if verwaltung and getattr(verwaltung, 'logo', None):
-        try:
-            c.drawImage(verwaltung.logo.path, 155*mm, 272*mm, width=40*mm, preserveAspectRatio=True, mask='auto')
-        except Exception:
-            logger.debug("Fehler bewusst übergangen", exc_info=True)
-
-    # Absender
-    if verwaltung:
-        c.setFont("Helvetica-Bold", 9)
-        c.drawString(20*mm, 280*mm, verwaltung.firma or "")
-        c.setFont("Helvetica", 9)
-        c.drawString(20*mm, 276*mm, verwaltung.strasse or "")
-        c.drawString(20*mm, 272*mm, f"{verwaltung.plz or ''} {verwaltung.ort or ''}".strip())
-
-    # Empfänger (Eigentümer)
-    c.setFont("Helvetica", 11)
-    c.drawString(20*mm, 250*mm, eigentuemer.firma_oder_name)
-    if eigentuemer.kontaktperson:
-        c.drawString(20*mm, 245*mm, eigentuemer.kontaktperson)
-    c.drawString(20*mm, 240*mm, eigentuemer.strasse or "")
-    c.drawString(20*mm, 235*mm, f"{eigentuemer.plz or ''} {eigentuemer.ort or ''}".strip())
-
-    # Titel
-    c.setFont("Helvetica-Bold", 15)
-    c.drawString(20*mm, 218*mm, gettext('Eigentümerabrechnung %(jahr)s') % {'jahr': jahr})
-    c.setFont("Helvetica", 9)
-    c.setFillColor(colors.grey)
-    c.drawString(20*mm, 212*mm, gettext('Abrechnungsperiode: %(von)s – %(bis)s') % {
-        'von': von.strftime('%d.%m.%Y'), 'bis': bis.strftime('%d.%m.%Y')})
+    # Empfänger (Eigentümer) im Fenster, Ort/Datum und Titel: gemeinsames Briefgerüst
+    ort = (getattr(verwaltung, 'ort', '') or '') if verwaltung else ''
+    y_titel = c.brief([eigentuemer.firma_oder_name, eigentuemer.kontaktperson or '', eigentuemer.strasse or '',
+                       f"{eigentuemer.plz or ''} {eigentuemer.ort or ''}".strip()],
+                      f"{ort + ', ' if ort else ''}{datetime.date.today().strftime('%d.%m.%Y')}",
+                      gettext('Eigentümerabrechnung %(jahr)s') % {'jahr': jahr},
+                      untertitel=gettext('Abrechnungsperiode: %(von)s – %(bis)s') % {
+                          'von': von.strftime('%d.%m.%Y'), 'bis': bis.strftime('%d.%m.%Y')})
     c.setFillColor(colors.black)
 
     # Tabellenkopf
-    y = 198*mm
+    y = y_titel - 6*mm
     c.setFillColor(colors.HexColor("#EEF0F5"))
     c.rect(18*mm, y - 2*mm, 174*mm, 8*mm, fill=1, stroke=0)
     c.setFillColor(colors.black)
@@ -84,7 +65,7 @@ def _pdf(eigentuemer, jahr, zeilen, totals, von, bis, verwaltung):
     for z in zeilen:
         if y < 60*mm:
             c.showPage()
-            y = 270*mm
+            y = c.Y_FOLGE
         lg = z['lg']
         c.drawString(22*mm, y, f"{lg.strasse}, {lg.ort}"[:52])
         c.drawRightString(120*mm, y, _fmt(z['ertrag']))
@@ -122,12 +103,13 @@ def _pdf(eigentuemer, jahr, zeilen, totals, von, bis, verwaltung):
     c.drawString(22*mm, y, label)
     c.drawRightString(188*mm, y, f"CHF {_fmt(abs(saldo))}")
 
-    # Fusszeile
+    # Hinweise (stehen unter der Auszahlungsbox; die Fusszeile gehört dem Grundlayout)
+    y -= 12*mm
     c.setFont("Helvetica", 8)
-    c.setFillColor(colors.grey)
-    c.drawString(20*mm, 20*mm, gettext('Diese Abrechnung basiert auf den verbuchten Erträgen und Aufwänden der zugeordneten Liegenschaften.'))
+    c.setFillColor(colors.HexColor("#4b5563"))
+    c.drawString(20*mm, y, gettext('Diese Abrechnung basiert auf den verbuchten Erträgen und Aufwänden der zugeordneten Liegenschaften.'))
     if eigentuemer.iban:
-        c.drawString(20*mm, 16*mm, gettext('Auszahlung auf: %(iban)s') % {'iban': eigentuemer.iban})
+        c.drawString(20*mm, y - 4*mm, gettext('Auszahlung auf: %(iban)s') % {'iban': eigentuemer.iban})
     c.setFillColor(colors.black)
 
     c.showPage()

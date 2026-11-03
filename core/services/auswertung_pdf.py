@@ -16,33 +16,31 @@ def _fmt(d):
 @nur_deutsch
 def generate_auswertung_pdf(typ_label, jahr, lg_name, total, monate, lg_rows, verwaltung=None):
     from reportlab.lib.pagesizes import A4
-    from reportlab.pdfgen import canvas
     from reportlab.lib.units import mm
     from reportlab.lib import colors
 
+    from core.services.dok_layout import DokCanvas
+
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
+    c = DokCanvas(buf, organisation=verwaltung, absender=['Verwaltung', '', ''],
+                  titel=f"Auswertung: {typ_label}", ref=f"Geschäftsjahr {jahr} · {lg_name}")
     w, h = A4
     ember = colors.HexColor(EMBER)
     rose = colors.HexColor("#E11D48")
     c.setTitle(f"Auswertung {typ_label} {jahr}")
 
-    # Kopf
-    c.setFillColor(ember)
-    c.rect(0, h - 26 * mm, w, 26 * mm, fill=1, stroke=0)
-    c.setFillColor(colors.white)
+    # Titel unter dem Briefkopf (früher ein Farbband)
+    c.setFillColor(c.akzent)
     c.setFont("Helvetica-Bold", 15)
-    c.drawString(20 * mm, h - 13 * mm, f"Auswertung: {typ_label}")
+    c.drawString(20 * mm, c.Y_INHALT, f"Auswertung: {typ_label}")
+    c.setFillColor(colors.HexColor("#374151"))
     c.setFont("Helvetica", 10)
-    c.drawString(20 * mm, h - 20 * mm, f"Geschäftsjahr {jahr} · {lg_name}")
-    if verwaltung:
-        c.setFont("Helvetica", 9)
-        c.drawRightString(w - 20 * mm, h - 13 * mm, verwaltung.firma or "")
+    c.drawString(20 * mm, c.Y_INHALT - 6 * mm, f"Geschäftsjahr {jahr} · {lg_name}")
     c.setFillColor(colors.black)
 
     # Total
-    y = h - 40 * mm
-    c.setFont("Helvetica", 10); c.setFillColor(colors.HexColor("#64748B"))
+    y = c.Y_INHALT - 18 * mm
+    c.setFont("Helvetica", 10); c.setFillColor(colors.HexColor("#374151"))
     c.drawString(20 * mm, y, "Jahres-Total")
     c.setFillColor(rose if (total or 0) < 0 else colors.black)
     c.setFont("Helvetica-Bold", 16)
@@ -57,8 +55,8 @@ def generate_auswertung_pdf(typ_label, jahr, lg_name, total, monate, lg_rows, ve
         bar_x = 62 * mm
         bar_w = 95 * mm
         for z in zeilen:
-            if y0 < 22 * mm:
-                c.showPage(); y0 = h - 25 * mm
+            if y0 < 30 * mm:
+                c.showPage(); y0 = c.Y_FOLGE
             wert = Decimal(str(z['wert']))
             c.setFont("Helvetica", 9); c.setFillColor(colors.black)
             c.drawString(20 * mm, y0, label_fn(z)[:28])
@@ -80,12 +78,15 @@ def generate_auswertung_pdf(typ_label, jahr, lg_name, total, monate, lg_rows, ve
     if lg_rows:
         y -= 8 * mm
         if y < 60 * mm:
-            c.showPage(); y = h - 25 * mm
+            c.showPage(); y = c.Y_FOLGE
         lz = [{'wert': r['wert'], 'name': f"{r['lg'].strasse}, {r['lg'].ort}"} for r in lg_rows]
         y = balken_tabelle("Je Liegenschaft", lz, lambda z: z['name'], y)
 
-    c.setFont("Helvetica-Oblique", 8); c.setFillColor(colors.HexColor("#94A3B8"))
-    c.drawString(20 * mm, 12 * mm, "Aus den verbuchten Bewegungen des Hauptbuchs (Stornos ausgeschlossen).")
+    y -= 4 * mm
+    if y < 30 * mm:
+        c.showPage(); y = c.Y_FOLGE
+    c.setFont("Helvetica-Oblique", 8); c.setFillColor(colors.HexColor("#4b5563"))
+    c.drawString(20 * mm, y, "Aus den verbuchten Bewegungen des Hauptbuchs (Stornos ausgeschlossen).")
     c.setFillColor(colors.black)
 
     c.showPage(); c.save(); buf.seek(0)

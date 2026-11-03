@@ -13,11 +13,10 @@ import io
 import logging
 
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader, simpleSplit
-from reportlab.pdfgen import canvas
 
+from core.services.dok_layout import DokCanvas
 from core.services.dokumentsprache import nur_deutsch
 
 logger = logging.getLogger(__name__)
@@ -41,16 +40,15 @@ def quittung_pdf(*, art, liegenschaft, empfaenger, datum, zeilen, rueckgabe_bis=
     `anzahl`, `art` (haupt/gruppe/einzel), `typ`, `nummer`, `tueren` (Text)
     und bei der Rücknahme `status` ('zurueck' oder 'verloren')."""
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
-    c.setTitle('Schlüsselquittung')
-    c.setFont('Helvetica', 8)
-    c.drawString(20 * mm, 282 * mm, ' · '.join(_absender(liegenschaft)))
-
     titel = 'Schlüsselquittung · Ausgabe' if art == 'ausgabe' else 'Schlüsselquittung · Rücknahme'
+    lg_ort = f"{liegenschaft.strasse}, {liegenschaft.plz} {liegenschaft.ort}" if liegenschaft else ''
+    c = DokCanvas(buf, organisation=getattr(liegenschaft, 'organisation', None), absender=_absender(liegenschaft),
+                  titel=titel, ref=lg_ort)
+    c.setTitle('Schlüsselquittung')
     c.setFont('Helvetica-Bold', 15)
-    c.drawString(20 * mm, 265 * mm, titel)
+    c.drawString(20 * mm, c.Y_INHALT, titel)
     c.setFont('Helvetica', 10)
-    y = 255 * mm
+    y = c.Y_INHALT - 10 * mm
     lg_text = f"{liegenschaft.strasse}, {liegenschaft.plz} {liegenschaft.ort}" if liegenschaft else ''
     for label, wert in (('Liegenschaft', lg_text),
                         ('Empfänger' if art == 'ausgabe' else 'Zurückgegeben von', empfaenger),
@@ -77,7 +75,7 @@ def quittung_pdf(*, art, liegenschaft, empfaenger, datum, zeilen, rueckgabe_bis=
         tueren = simpleSplit(z.get('tueren') or '–', 'Helvetica', 8, 66 * mm)[:3] or ['–']
         hoehe = max(len(teile), len(tueren)) * 4.4 * mm + 1.5 * mm
         if y - hoehe < 70 * mm:
-            c.showPage(); y = 275 * mm
+            c.showPage(); y = c.Y_FOLGE
         c.setFont('Helvetica', 9)
         c.drawString(20 * mm, y, str(z.get('anzahl') or 0))
         for i, t in enumerate(teile):

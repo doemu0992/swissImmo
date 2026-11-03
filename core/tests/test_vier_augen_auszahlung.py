@@ -474,6 +474,35 @@ class FreigabeWegTests(_Basis):
         seite = c.get(SEITE).content.decode()
         self.assertNotIn('Eigentuemer A', seite)
 
+    def test_zurueckgenommener_antrag_meldet_statt_404(self):
+        """Antrag zwischen Anzeige und Klick zurückgenommen: Meldung und Weiterleitung, kein 404/500."""
+        pk = self.antrag_e.pk
+        self.post('verwalter', f'{SEITE}{pk}/zuruecknehmen/')
+        self.assertEqual(self.antraege(), [])
+        for rolle, ende, daten in (('verwalter2', 'freigeben/', {'betrag': '7500.00', 'iban': IBAN_EIGENTUEMER}),
+                                   ('inhaber', 'zuruecknehmen/', None)):
+            with self.subTest(ende=ende):
+                antwort, meldungen = self.post(rolle, f'{SEITE}{pk}/{ende}', daten)
+                self.assertEqual(antwort.status_code, 302)
+                self.assertEqual(antwort['Location'], SEITE)
+                self.assertTrue(any('inzwischen zurückgenommen' in m for m in meldungen), meldungen)
+        self.assertEqual(len(self.protokoll('Auszahlungsfreigabe zurückgenommen')), 1)
+
+    def test_unbekannte_und_fremde_id_bleiben_404_auch_nach_rueckname(self):
+        """Das Fehlen darf nichts verraten: nie vergebene ID und fremde (auch zurückgenommene) ID sind 404."""
+        from django.test import Client
+        pk = self.antrag_e.pk
+        self.post('verwalter', f'{SEITE}{pk}/zuruecknehmen/')
+        fremd = Client(raise_request_exception=False)
+        fremd.force_login(self.b.benutzer)
+        for rolle_client in (self.client_von('verwalter2'), self.client_von('inhaber'), fremd):
+            for ende in ('freigeben/', 'zuruecknehmen/'):
+                with self.subTest(ende=ende):
+                    self.assertEqual(rolle_client.post(f'{SEITE}{pk + 1000}/{ende}').status_code, 404)
+        for ende in ('freigeben/', 'zuruecknehmen/'):
+            with self.subTest(fremd_zurueckgenommen=ende):
+                self.assertEqual(fremd.post(f'{SEITE}{pk}/{ende}').status_code, 404)
+
     def test_seite_zeigt_den_antrag_und_die_knoepfe_je_person(self):
         html = self.client_von('verwalter2').get(SEITE).content.decode()
         self.assertIn('Eigentuemer A', html)

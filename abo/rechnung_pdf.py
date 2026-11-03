@@ -27,10 +27,9 @@ def steller():
 def abo_rechnung_pdf(rechnung):
     """PDF-Bytes der Rechnung, oder `None`, wenn der Betreiber keine IBAN festgelegt hat."""
     from reportlab.lib import colors
-    from reportlab.lib.pagesizes import A4
     from reportlab.lib.units import mm
-    from reportlab.pdfgen import canvas
 
+    from core.services.dok_layout import DokCanvas
     from core.utils.qr_code import draw_qr_bill
 
     s = steller()
@@ -46,30 +45,19 @@ def abo_rechnung_pdf(rechnung):
               'plz': org.plz or '', 'ort': org.ort or ''}
 
     puffer = io.BytesIO()
-    c = canvas.Canvas(puffer, pagesize=A4)
+    # Briefkopf des Rechnungsstellers (der Plattform, nicht der Verwaltung), Adressfenster für die Organisation
+    c = DokCanvas(puffer, absender=[s.get('name') or 'Plattform', s.get('strasse', ''),
+                                    f"{s.get('plz', '')} {s.get('ort', '')}".strip()],
+                  titel=f'Rechnung {rechnung.nummer}', ref=org.firma)
     c.setTitle(f'Rechnung {rechnung.nummer}')
-    c.setFont('Helvetica-Bold', 18)
-    c.drawString(20 * mm, 270 * mm, 'Rechnung')
+    y = c.brief([debtor['name'], debtor['line1'], debtor['line2']], f'Datum: {rechnung.rechnungsdatum:%d.%m.%Y}',
+                'Rechnung', untertitel=f'{rechnung.nummer} · Abonnement immoswiss')
     c.setFont('Helvetica', 10)
-    c.setFillColor(colors.darkgrey)
-    c.drawString(20 * mm, 263 * mm, f'{rechnung.nummer} · Abonnement immoswiss')
-    c.setFillColor(colors.black)
-
-    y = 250 * mm
-    c.setFont('Helvetica', 9)
-    c.drawString(20 * mm, y, 'Rechnungsempfänger:')
-    c.setFont('Helvetica-Bold', 11)
-    c.drawString(20 * mm, y - 6 * mm, debtor['name'])
-    c.setFont('Helvetica', 11)
-    c.drawString(20 * mm, y - 11 * mm, debtor['line1'])
-    c.drawString(20 * mm, y - 16 * mm, debtor['line2'])
-    c.setFont('Helvetica', 10)
-    c.drawRightString(190 * mm, y, f'Datum: {rechnung.rechnungsdatum:%d.%m.%Y}')
-    c.drawRightString(190 * mm, y - 5 * mm, f'Fällig: {rechnung.faellig_am:%d.%m.%Y}')
+    c.drawRightString(190 * mm, c.hoehe - 93 * mm, f'Fällig: {rechnung.faellig_am:%d.%m.%Y}')
     if s.get('uid'):
-        c.drawRightString(190 * mm, y - 10 * mm, f"MWST-Nr.: {s['uid']}")
+        c.drawRightString(190 * mm, c.hoehe - 98 * mm, f"MWST-Nr.: {s['uid']}")
 
-    yt = y - 40 * mm
+    yt = y - 14 * mm
     c.setStrokeColor(colors.lightgrey)
     c.line(20 * mm, yt + 5 * mm, 190 * mm, yt + 5 * mm)
     c.setFont('Helvetica', 10)

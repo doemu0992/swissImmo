@@ -4,7 +4,6 @@ Das Dokument für Portale/Interessenten in der Nachmietersuche."""
 import logging
 import io
 from decimal import Decimal
-from core.services.druckfarben import EMBER
 
 logger = logging.getLogger(__name__)
 
@@ -42,36 +41,39 @@ def generate_expose_pdf(einheit, verwaltung=None, bewerbung_url=None):
 
 def _expose_pdf(einheit, verwaltung, bewerbung_url=None):
     from reportlab.lib.pagesizes import A4
-    from reportlab.pdfgen import canvas
     from reportlab.lib.units import mm
     from reportlab.lib import colors
 
+    from core.services.dok_layout import DokCanvas
+
     lg = einheit.liegenschaft
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
+    c = DokCanvas(buf, organisation=verwaltung,
+                  absender=['Verwaltung', lg.strasse if lg else '', f"{lg.plz} {lg.ort}" if lg else ''],
+                  titel=f"Exposé {objekt_titel(einheit)}", ref=f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else einheit.bezeichnung)
     w, h = A4
     c.setTitle(f"Exposé {objekt_titel(einheit)} — {lg.strasse if lg else einheit.bezeichnung}")
 
-    ember = colors.HexColor(EMBER)
-
-    # Kopfband
-    c.setFillColor(ember)
-    c.rect(0, h - 42 * mm, w, 42 * mm, fill=1, stroke=0)
-    c.setFillColor(colors.white)
-    c.setFont("Helvetica-Bold", 22)
-    c.drawString(20 * mm, h - 22 * mm, objekt_titel(einheit))
+    # Titelblock unter dem Briefkopf (früher ein Farbband über die ganze Seitenbreite)
+    y0 = c.Y_INHALT
+    c.setFillColor(c.akzent)
+    c.setFont("Helvetica-Bold", 20)
+    c.drawString(20 * mm, y0 - 6 * mm, objekt_titel(einheit))
+    c.setFillColor(colors.HexColor("#374151"))
     c.setFont("Helvetica", 12)
     if lg:
-        c.drawString(20 * mm, h - 31 * mm, f"{lg.strasse}, {lg.plz} {lg.ort}")
-    c.setFont("Helvetica-Bold", 11)
+        c.drawString(20 * mm, y0 - 13 * mm, f"{lg.strasse}, {lg.plz} {lg.ort}")
     brutto = (einheit.nettomiete_aktuell or Decimal('0')) + (einheit.nebenkosten_aktuell or Decimal('0'))
-    c.drawRightString(w - 20 * mm, h - 22 * mm, f"CHF {_fmt(brutto)}/Mt.")
+    c.setFillColor(c.akzent)
+    c.setFont("Helvetica-Bold", 13)
+    c.drawRightString(w - 20 * mm, y0 - 6 * mm, f"CHF {_fmt(brutto)}/Mt.")
+    c.setFillColor(colors.HexColor("#374151"))
     c.setFont("Helvetica", 9)
-    c.drawRightString(w - 20 * mm, h - 28 * mm, "inkl. Nebenkosten")
+    c.drawRightString(w - 20 * mm, y0 - 12 * mm, "inkl. Nebenkosten")
     c.setFillColor(colors.black)
 
     # Titelbild (erstes Objekt-Foto), falls vorhanden
-    y = h - 58 * mm
+    y = y0 - 24 * mm
     titelbild = einheit.fotos.first()
     if titelbild:
         try:
@@ -131,25 +133,28 @@ def _expose_pdf(einheit, verwaltung, bewerbung_url=None):
         from textwrap import wrap
         for para in einheit.ausschreibung_notiz.splitlines():
             for line in (wrap(para, 95) or ['']):
-                if y < 45 * mm:
-                    c.showPage(); y = h - 25 * mm; c.setFont("Helvetica", 10)
+                if y < 78 * mm:
+                    c.showPage(); y = c.Y_FOLGE; c.setFont("Helvetica", 10)
                 c.drawString(24 * mm, y, line); y -= 5.5 * mm
 
-    # Kontakt-Fussbox
+    # Kontaktbox (früher ein Band am Blattfuss, das nun der Fusszeile gehört): im Fluss, auf der letzten Seite
+    if y < 80 * mm:
+        c.showPage(); y = c.Y_FOLGE
+    boden = y - 14 * mm - 36 * mm        # Unterkante der Box
     c.setFillColor(colors.HexColor("#F1F5F9"))
-    c.rect(0, 0, w, 34 * mm, fill=1, stroke=0)
+    c.rect(20 * mm, boden, w - 40 * mm, 36 * mm, fill=1, stroke=0)
     c.setFillColor(colors.black)
     c.setFont("Helvetica-Bold", 11)
-    c.drawString(20 * mm, 25 * mm, "Interessiert? Kontaktieren Sie uns")
+    c.drawString(25 * mm, boden + 28 * mm, "Interessiert? Kontaktieren Sie uns")
     c.setFont("Helvetica", 10)
     if verwaltung:
         zeile = verwaltung.firma or ""
         tel = getattr(verwaltung, 'telefon', '') or ''
         mail = getattr(verwaltung, 'email', '') or ''
-        c.drawString(20 * mm, 18 * mm, zeile)
+        c.drawString(25 * mm, boden + 21 * mm, zeile)
         kontakt = " · ".join([x for x in [tel, mail] if x])
         if kontakt:
-            c.drawString(20 * mm, 12 * mm, kontakt)
+            c.drawString(25 * mm, boden + 15 * mm, kontakt)
     if bewerbung_url:
         from reportlab.graphics.barcode.qr import QrCodeWidget
         from reportlab.graphics.shapes import Drawing
@@ -159,13 +164,13 @@ def _expose_pdf(einheit, verwaltung, bewerbung_url=None):
         x0, y0, x1, y1 = qr.getBounds()
         zeichnung = Drawing(seite, seite, transform=[seite / (x1 - x0), 0, 0, seite / (y1 - y0), 0, 0])
         zeichnung.add(qr)
-        renderPDF.draw(zeichnung, c, w - 20 * mm - seite, 5 * mm)
+        renderPDF.draw(zeichnung, c, w - 25 * mm - seite, boden + 5 * mm)
         c.setFont("Helvetica-Bold", 9); c.setFillColor(colors.black)
-        c.drawRightString(w - 20 * mm - seite - 3 * mm, 18 * mm, "Online bewerben")
-        c.setFont("Helvetica", 8); c.setFillColor(colors.HexColor("#64748B"))
-        c.drawRightString(w - 20 * mm - seite - 3 * mm, 13 * mm, "QR-Code scannen")
-    c.setFont("Helvetica-Oblique", 8); c.setFillColor(colors.HexColor("#94A3B8"))
-    c.drawString(20 * mm, 5 * mm, "Angaben ohne Gewähr. Kein Rechtsanspruch aus diesem Exposé.")
+        c.drawRightString(w - 25 * mm - seite - 3 * mm, boden + 21 * mm, "Online bewerben")
+        c.setFont("Helvetica", 8); c.setFillColor(colors.HexColor("#374151"))
+        c.drawRightString(w - 25 * mm - seite - 3 * mm, boden + 16 * mm, "QR-Code scannen")
+    c.setFont("Helvetica-Oblique", 8); c.setFillColor(colors.HexColor("#4b5563"))
+    c.drawString(25 * mm, boden + 4 * mm, "Angaben ohne Gewähr. Kein Rechtsanspruch aus diesem Exposé.")
 
     c.showPage(); c.save(); buf.seek(0)
     return buf.read()

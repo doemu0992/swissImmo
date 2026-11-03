@@ -6,8 +6,9 @@ import io
 import datetime
 
 from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
+
+from core.services.dok_layout import DokCanvas
 from core.services.dokumentsprache import nur_deutsch
 
 
@@ -43,22 +44,27 @@ def _kopfzeile(gezeigt, gesamt):
 
 
 @nur_deutsch
-def logbuch_pdf(eintraege, erstellt_von='', heute=None, gesamt=None):
+def logbuch_pdf(eintraege, erstellt_von='', heute=None, gesamt=None, organisation=None):
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
+    c = DokCanvas(buf, organisation=organisation, absender=['Logbuch', '', ''],
+                  titel='Logbuch — Auditbericht', ref=f'{len(eintraege)} Einträge')
     W, H = A4
     heute = heute or datetime.date.today().strftime('%d.%m.%Y')
 
-    def kopf():
-        c.setFont("Helvetica-Bold", 15)
-        c.drawString(20 * mm, H - 20 * mm, "Logbuch — Auditbericht")
-        c.setFont("Helvetica", 8.5); c.setFillColorRGB(0.4, 0.4, 0.4)
-        c.drawString(20 * mm, H - 26 * mm,
-                     f"Erstellt am {heute}{(' von ' + erstellt_von) if erstellt_von else ''} · "
-                     + _kopfzeile(len(eintraege), gesamt))
+    def kopf(erste):
+        """Titel (nur Seite 1) und Spaltenkopf (jede Seite) unter Briefkopf bzw. Seitenkopf."""
+        y = c.Y_INHALT if erste else c.Y_FOLGE
+        if erste:
+            c.setFillColor(c.akzent)
+            c.setFont("Helvetica-Bold", 15)
+            c.drawString(20 * mm, y, "Logbuch — Auditbericht")
+            c.setFont("Helvetica", 8.5); c.setFillColorRGB(0.22, 0.25, 0.32)
+            c.drawString(20 * mm, y - 6 * mm,
+                         f"Erstellt am {heute}{(' von ' + erstellt_von) if erstellt_von else ''} · "
+                         + _kopfzeile(len(eintraege), gesamt))
+            y -= 14 * mm
         c.setFillColorRGB(0, 0, 0)
         c.setFont("Helvetica-Bold", 8)
-        y = H - 34 * mm
         c.drawString(20 * mm, y, "Zeitpunkt")
         c.drawString(52 * mm, y, "Benutzer")
         c.drawString(85 * mm, y, "Aktion")
@@ -67,7 +73,7 @@ def logbuch_pdf(eintraege, erstellt_von='', heute=None, gesamt=None):
         c.line(20 * mm, y - 1.5 * mm, W - 20 * mm, y - 1.5 * mm)
         return y - 6 * mm
 
-    y = kopf()
+    y = kopf(True)
     c.setFont("Helvetica", 7.5)
     for e in eintraege:
         wer = (e.benutzer.get_full_name() or e.benutzer.username) if e.benutzer else 'System'
@@ -77,9 +83,9 @@ def logbuch_pdf(eintraege, erstellt_von='', heute=None, gesamt=None):
         det_zeilen = _wrap(detail, 55)
         hoehe = max(len(det_zeilen), 1) * 3.6 * mm + 1.5 * mm
 
-        if y - hoehe < 20 * mm:
+        if y - hoehe < 30 * mm:
             c.showPage()
-            y = kopf()
+            y = kopf(False)
             c.setFont("Helvetica", 7.5)
 
         try:
@@ -94,8 +100,12 @@ def logbuch_pdf(eintraege, erstellt_von='', heute=None, gesamt=None):
         y -= hoehe
 
     # Fusszeile: Aufbewahrung
-    c.setFont("Helvetica-Oblique", 7); c.setFillColorRGB(0.45, 0.45, 0.45)
-    c.drawString(20 * mm, 14 * mm,
+    y -= 4 * mm
+    if y < 30 * mm:
+        c.showPage()
+        y = c.Y_FOLGE
+    c.setFont("Helvetica-Oblique", 7); c.setFillColorRGB(0.3, 0.3, 0.3)
+    c.drawString(20 * mm, y,
                  "Geschäftsbücher und Belege sind 10 Jahre aufzubewahren (Art. 958f OR).")
     c.setFillColorRGB(0, 0, 0)
     c.showPage()

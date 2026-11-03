@@ -7,11 +7,13 @@ Abrechnung (Kostenpositionen + Verteilschlüssel + Anteil − Akonto = Saldo).
 import io
 from decimal import Decimal
 
-from reportlab.pdfgen import canvas as _canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
+
+from core.services.dok_layout import DokCanvas
 from core.services.dokumentsprache import nur_deutsch
-from core.services.druckfarben import EMBER_FLAECHE_RGB, EMBER_RGB
+from core.services.druckfarben import EMBER_FLAECHE_RGB
+from core.zeit import datum_heute
 
 
 def _chf(v):
@@ -30,36 +32,17 @@ def _draw_page(c, k):
     """Zeichnet eine Mieter-Abrechnung auf die aktuelle Canvas-Seite."""
     w, h = A4
     vw = k.get('verwaltung')
-    # Kopf
-    c.setFillColorRGB(*EMBER_RGB)
-    c.rect(0, h - 26 * mm, w, 26 * mm, fill=1, stroke=0)
-    c.setFillColorRGB(1, 1, 1)
-    c.setFont("Helvetica-Bold", 15)
-    c.drawString(20 * mm, h - 13 * mm, "Nebenkostenabrechnung")
-    c.setFont("Helvetica", 9)
-    c.drawString(20 * mm, h - 20 * mm, k.get('periode', ''))
-
-    # Absender (Verwaltung)
-    c.setFillColorRGB(0.4, 0.45, 0.5)
-    c.setFont("Helvetica", 8)
-    if vw:
-        c.drawRightString(w - 20 * mm, h - 12 * mm, vw.firma or '')
-        c.drawRightString(w - 20 * mm, h - 16 * mm, f"{vw.strasse or ''}")
-        c.drawRightString(w - 20 * mm, h - 20 * mm, f"{vw.plz or ''} {vw.ort or ''}")
-
-    # Empfänger-Adresse
+    # Empfänger im Fenster, Ort/Datum, Titel: gemeinsames Briefgerüst (core/services/dok_layout.py)
+    ort = (getattr(vw, 'ort', '') or '') if vw else ''
+    heute = datum_heute().strftime('%d.%m.%Y')
+    y = c.brief(list(k.get('adresse', [])), f"{ort + ', ' if ort else ''}{heute}", "Nebenkostenabrechnung",
+                untertitel=f"Abrechnungsperiode: {k.get('periode', '')}")
     c.setFillColorRGB(0.1, 0.1, 0.1)
-    y = h - 44 * mm
-    c.setFont("Helvetica", 11)
-    for line in k.get('adresse', []):
-        c.drawString(20 * mm, y, line)
-        y -= 5 * mm
 
-    y -= 6 * mm
     c.setFont("Helvetica", 9)
-    c.setFillColorRGB(0.4, 0.45, 0.5)
-    c.drawString(20 * mm, y, f"Objekt: {k.get('objekt', '')}   ·   Abrechnungsperiode: {k.get('periode', '')}")
-    y -= 10 * mm
+    c.setFillColorRGB(0.22, 0.25, 0.32)
+    c.drawString(20 * mm, y + 3 * mm, f"Objekt: {k.get('objekt', '')}")
+    y -= 4 * mm
 
     # Kostenpositionen der Liegenschaft (Transparenz)
     c.setFillColorRGB(0.4, 0.45, 0.5)
@@ -75,7 +58,7 @@ def _draw_page(c, k):
     c.setFillColorRGB(0.1, 0.1, 0.1)
     for pos in k.get('positionen', []):
         if y < 60 * mm:
-            c.showPage(); y = h - 25 * mm
+            c.showPage(); y = c.Y_FOLGE
         c.drawString(20 * mm, y, str(pos.get('kategorie') or pos.get('text') or '—')[:52])
         c.setFillColorRGB(0.5, 0.55, 0.6)
         c.drawString(120 * mm, y, _SCHLUESSEL_LABEL.get(pos.get('schluessel'), pos.get('schluessel') or '—'))
@@ -93,8 +76,11 @@ def _draw_page(c, k):
     c.setFillColorRGB(0.1, 0.1, 0.1)
     c.drawRightString(w - 20 * mm, y, f"CHF {_chf(k.get('total_kosten', 0))}")
 
-    # Ihr Anteil-Block
+    # Ihr Anteil-Block (zusammenhängend: der Kasten wird nicht über einen Seitenumbruch gerissen)
     y -= 16 * mm
+    if y < 82 * mm:
+        c.showPage()
+        y = c.Y_FOLGE - 4 * mm
     c.setFillColorRGB(*EMBER_FLAECHE_RGB)
     c.rect(20 * mm, y - 26 * mm, w - 40 * mm, 32 * mm, fill=1, stroke=0)
     c.setFillColorRGB(0.1, 0.1, 0.1)
@@ -108,7 +94,7 @@ def _draw_page(c, k):
     c.drawString(24 * mm, y, "− Bezahlte Akontozahlungen")
     c.drawRightString(w - 24 * mm, y, f"CHF {_chf(k.get('akonto', 0))}")
     y -= 3 * mm
-    c.setStrokeColorRGB(*EMBER_RGB)
+    c.setStrokeColor(c.akzent)
     c.line(24 * mm, y, w - 24 * mm, y)
     y -= 6 * mm
     saldo = Decimal(str(k.get('saldo', 0)))
@@ -132,7 +118,7 @@ def _draw_page(c, k):
     def _platz(y):
         if y < 34 * mm:
             c.showPage()
-            return h - 25 * mm
+            return c.Y_FOLGE
         return y
 
     teile = k.get('aufschluesselung') or []
@@ -169,25 +155,35 @@ def _draw_page(c, k):
 
     # Rechtsgrundlagen (VMWG / OR) — konsistent zur klassischen Abrechnung
     from core.services.mietrecht import ref as _mr
-    c.setFillColorRGB(0.5, 0.55, 0.6)
+    y -= 6 * mm
+    if y < 32 * mm:
+        c.showPage()
+        y = c.Y_FOLGE
+    c.setFillColorRGB(0.3, 0.33, 0.4)
     c.setFont("Helvetica", 7.5)
-    c.drawString(20 * mm, 22 * mm,
+    c.drawString(20 * mm, y,
                  f"Umgelegt werden nur die vertraglich vereinbarten Nebenkosten ({_mr('nebenkosten')}, VMWG Art. 4-8) nach dem vereinbarten Verteilschlüssel.")
-    c.drawString(20 * mm, 18 * mm,
+    c.drawString(20 * mm, y - 4 * mm,
                  "Einsicht in die Originalbelege ist nach Art. 257b Abs. 2 OR nach Terminvereinbarung jederzeit möglich.")
     if nachzahlung:
-        c.drawString(20 * mm, 14 * mm,
+        c.drawString(20 * mm, y - 8 * mm,
                      "Bitte begleichen Sie die Nachzahlung innert 30 Tagen. Beanstandungen sind innert 30 Tagen schriftlich mitzuteilen.")
     else:
-        c.drawString(20 * mm, 14 * mm,
+        c.drawString(20 * mm, y - 8 * mm,
                      "Ein allfälliges Guthaben wird Ihnen gutgeschrieben. Beanstandungen sind innert 30 Tagen schriftlich mitzuteilen.")
+
+
+def _neue_canvas(buf, k, titel):
+    """Canvas mit dem Briefkopf der Verwaltung der Abrechnung (`k['verwaltung']`)."""
+    return DokCanvas(buf, organisation=k.get('verwaltung'), absender=['Verwaltung', '', ''], titel=titel,
+                     ref=(k.get('adresse') or [''])[0])
 
 
 @nur_deutsch
 def generate_nk_pdf_einzeln(kontext):
     """Ein Mieter → einseitige Abrechnung (Bytes)."""
     buf = io.BytesIO()
-    c = _canvas.Canvas(buf, pagesize=A4)
+    c = _neue_canvas(buf, kontext, f"Nebenkostenabrechnung {kontext.get('periode', '')}")
     c.setTitle(f"Nebenkostenabrechnung {kontext.get('periode','')}")
     _draw_page(c, kontext)
     c.showPage()
@@ -199,9 +195,13 @@ def generate_nk_pdf_einzeln(kontext):
 def generate_nk_pdf_sammel(kontext_liste):
     """Mehrere Mieter → ein Sammel-PDF (eine Seite pro Mieter)."""
     buf = io.BytesIO()
-    c = _canvas.Canvas(buf, pagesize=A4)
+    erster = kontext_liste[0] if kontext_liste else {}
+    c = _neue_canvas(buf, erster, "Nebenkostenabrechnung")
     c.setTitle("Nebenkostenabrechnungen (Sammel)")
-    for k in kontext_liste:
+    for nr, k in enumerate(kontext_liste):
+        if nr:
+            c.neues_dokument()
+            c.ref_kopf = (k.get('adresse') or [''])[0]
         _draw_page(c, k)
         c.showPage()
     c.save()

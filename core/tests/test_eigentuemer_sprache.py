@@ -51,13 +51,18 @@ class AbrechnungTests(SimpleTestCase):
 
     def _texte(self, sprache):
         """Alle Texte, die auf das PDF gezeichnet werden."""
+        from reportlab.pdfgen import canvas as _rl
         texte = []
-        leinwand = mock.MagicMock()
-        leinwand.drawString.side_effect = lambda _x, _y, t: texte.append(t)
-        leinwand.drawRightString.side_effect = lambda _x, _y, t: texte.append(t)
         md = SimpleNamespace(firma_oder_name='Rossi SA', kontaktperson='', strasse='Via 1', plz='6900',
                              ort='Lugano', iban='CH00', sprache=sprache)
-        with mock.patch.object(mandat_abrechnung.canvas, 'Canvas', return_value=leinwand), \
+        # Die Abrechnung läuft über `DokCanvas` (gemeinsames Layout, Unterklasse von reportlab Canvas):
+        # mitgeschrieben wird auf der Basisklasse, was auf das Blatt kommt.
+        zeichne = _rl.Canvas.drawString
+        zeichne_rechts = _rl.Canvas.drawRightString
+        with mock.patch.object(_rl.Canvas, 'drawString',
+                               lambda self, x, y, t, *a, **k: (texte.append(t), zeichne(self, x, y, t, *a, **k))[1]), \
+                mock.patch.object(_rl.Canvas, 'drawRightString',
+                                  lambda self, x, y, t, *a, **k: (texte.append(t), zeichne_rechts(self, x, y, t, *a, **k))[1]), \
                 translation.override('de'):
             mandat_abrechnung.generate_mandat_abrechnung_pdf(
                 md, 2025, [], {'ertrag': Decimal('0'), 'aufwand': Decimal('0'), 'saldo': Decimal('0')},

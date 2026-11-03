@@ -145,42 +145,26 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
             reference=getattr(rechnung, 'qr_referenz', None) or None,
             gebuehr=gebuehr, gebuehr_reference=gebuehr_ref)
 
-    from reportlab.lib.pagesizes import A4
     from reportlab.lib.units import mm
-    from reportlab.pdfgen import canvas
 
+    from core.services.dok_layout import LINKS, DokCanvas
     from core.utils.qr_code import draw_qr_bill
 
     m = vertrag.mieter
     eigene = _eigener_brief(vertrag, stufe)
     erste = _ist_erste_stufe(vertrag, stufe)
     buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
-    links = 25 * mm
-    fenster = 120 * mm
-
-    if verwaltung:
-        c.setFont("Helvetica-Bold", 10)
-        c.drawString(links, 280 * mm, verwaltung.firma)
-        c.setFont("Helvetica", 9)
-        c.drawString(links, 275 * mm, f"{verwaltung.strasse}, {verwaltung.plz} {verwaltung.ort}")
-
-    y = 250 * mm
-    c.setFont("Helvetica", 11)
-    if getattr(m, 'firma', None):
-        c.drawString(fenster, y, m.firma); y -= 5 * mm
-    c.drawString(fenster, y, f"{m.vorname} {m.nachname}".strip())
-    c.drawString(fenster, y - 5 * mm, m.strasse or '')
-    c.drawString(fenster, y - 10 * mm, f"{m.plz} {m.ort}")
-
-    c.setFont("Helvetica", 10)
-    c.drawString(links, 210 * mm, f"{verwaltung.ort if verwaltung else ''}, {datum:%d.%m.%Y}")
-    c.setFont("Helvetica-Bold", 12)
-    titel = titel_fuer(vertrag, stufe, letzte_stufe)
-    c.drawString(links, 195 * mm, titel)
-    c.setFont("Helvetica-Bold", 10)
+    lg0 = vertrag.einheit.liegenschaft
+    c = DokCanvas(buffer, organisation=verwaltung,
+                  absender=['Verwaltung', lg0.strasse, f"{lg0.plz} {lg0.ort}"],
+                  titel=titel_fuer(vertrag, stufe, letzte_stufe), ref=vertrag.einheit.bezeichnung)
     e = vertrag.einheit
-    c.drawString(links, 189 * mm, f"Mietobjekt: {e.bezeichnung}, {e.liegenschaft.strasse}")
+    titel = titel_fuer(vertrag, stufe, letzte_stufe)
+    # Adressfenster, Ort/Datum, Betreff: gemeinsames Briefgerüst (core/services/dok_layout.py)
+    ty = c.brief([getattr(m, 'firma', None) or '', f"{m.vorname} {m.nachname}".strip(), m.strasse or '',
+                  f"{m.plz} {m.ort}"],
+                 f"{verwaltung.ort if verwaltung else ''}, {datum:%d.%m.%Y}", titel,
+                 untertitel=f"Mietobjekt: {e.bezeichnung}, {e.liegenschaft.strasse}")
 
     anrede = getattr(m, 'anrede', '')
     if anrede == "Herr":
@@ -211,10 +195,9 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
                "bitte als gegenstandslos.", "", "Freundliche Grüsse", "",
                verwaltung.firma if verwaltung else "Die Vermieterschaft"]
 
-    ty = 175 * mm
     for zeile in zeilen:
         c.setFont("Helvetica", 11)
-        c.drawString(links, ty, zeile)
+        c.drawString(LINKS, ty, zeile)
         ty -= 5.5 * mm
 
     lg = e.liegenschaft

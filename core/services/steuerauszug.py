@@ -7,7 +7,6 @@ Read-only aus den bestehenden Finanzdaten. Ersetzt keine Steuerberatung.
 import io
 from decimal import Decimal
 from core.services.dokumentsprache import nur_deutsch
-from core.services.druckfarben import EMBER_RGB
 
 
 def _chf(v):
@@ -87,32 +86,34 @@ def steuerauszug_daten(eigentuemer, jahr):
 @nur_deutsch
 def generate_steuerauszug_pdf(eigentuemer, jahr):
     """Erzeugt den Steuerauszug als PDF (Bytes)."""
-    from reportlab.pdfgen import canvas as _canvas
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.units import mm
 
+    from core.services.dok_layout import DokCanvas
+
     daten = steuerauszug_daten(eigentuemer, jahr)
     buf = io.BytesIO()
-    c = _canvas.Canvas(buf, pagesize=A4)
+    c = DokCanvas(buf, organisation=getattr(eigentuemer, 'organisation', None),
+                  absender=[daten['eigentuemer'], '', ''], titel=f"Steuerauszug {jahr}", ref=daten['eigentuemer'])
     w, h = A4
     c.setTitle(f"Steuerauszug {jahr}")
 
-    c.setFillColorRGB(*EMBER_RGB)
-    c.rect(0, h - 30 * mm, w, 30 * mm, fill=1, stroke=0)
-    c.setFillColorRGB(1, 1, 1)
+    # Titel unter dem Briefkopf (früher ein Farbband)
+    c.setFillColor(c.akzent)
     c.setFont("Helvetica-Bold", 16)
-    c.drawString(20 * mm, h - 15 * mm, f"Steuerauszug {jahr}")
+    c.drawString(20 * mm, c.Y_INHALT, f"Steuerauszug {jahr}")
+    c.setFillColorRGB(0.22, 0.25, 0.32)
     c.setFont("Helvetica", 10)
-    c.drawString(20 * mm, h - 23 * mm, f"{daten['eigentuemer']} · Liegenschaftsrechnung (vereinfacht)")
+    c.drawString(20 * mm, c.Y_INHALT - 7 * mm, f"{daten['eigentuemer']} · Liegenschaftsrechnung (vereinfacht)")
 
     c.setFillColorRGB(0.1, 0.1, 0.1)
-    y = h - 42 * mm
+    y = c.Y_INHALT - 20 * mm
     # Tabellenkopf
     c.setFont("Helvetica-Bold", 8.5)
     c.setFillColorRGB(0.4, 0.45, 0.5)
     c.drawString(20 * mm, y, "LIEGENSCHAFT")
-    c.drawRightString(w - 62 * mm, y, "MIETERTRÄGE")
-    c.drawRightString(w - 40 * mm, y, "AUSGABEN")
+    c.drawRightString(w - 88 * mm, y, "MIETERTRÄGE")
+    c.drawRightString(w - 58 * mm, y, "AUSGABEN")
     c.drawRightString(w - 20 * mm, y, "AfA / NETTO")
     y -= 3 * mm
     c.setStrokeColorRGB(0.85, 0.87, 0.9)
@@ -121,19 +122,19 @@ def generate_steuerauszug_pdf(eigentuemer, jahr):
 
     c.setFont("Helvetica", 9)
     for z in daten['zeilen']:
-        if y < 40 * mm:
-            c.showPage(); y = h - 25 * mm
+        if y < 45 * mm:
+            c.showPage(); y = c.Y_FOLGE
         lg = z['lg']
         c.setFillColorRGB(0.1, 0.1, 0.1)
         c.drawString(20 * mm, y, f"{lg.strasse}, {lg.plz} {lg.ort}"[:48])
-        c.drawRightString(w - 62 * mm, y, _chf(z['ertrag']))
-        c.drawRightString(w - 40 * mm, y, _chf(z['ausgaben']))
+        c.drawRightString(w - 88 * mm, y, _chf(z['ertrag']))
+        c.drawRightString(w - 58 * mm, y, _chf(z['ausgaben']))
         c.setFillColorRGB(0.5, 0.55, 0.6)
         c.drawRightString(w - 20 * mm, y, f"AfA {_chf(z['afa'])}")
         y -= 4.5 * mm
         if z['honorar']:
             c.setFillColorRGB(0.5, 0.55, 0.6)
-            c.drawRightString(w - 40 * mm, y, f"Verwaltungshonorar {_chf(z['honorar'])}")
+            c.drawRightString(w - 58 * mm, y, f"Verwaltungshonorar {_chf(z['honorar'])}")
         c.setFillColorRGB(0.0, 0.5, 0.25) if z['netto'] >= 0 else c.setFillColorRGB(0.8, 0.1, 0.1)
         c.setFont("Helvetica-Bold", 9)
         c.drawRightString(w - 20 * mm, y, f"Netto CHF {_chf(z['netto'])}")
@@ -143,25 +144,27 @@ def generate_steuerauszug_pdf(eigentuemer, jahr):
     # Total
     t = daten['total']
     y -= 2 * mm
-    c.setStrokeColorRGB(*EMBER_RGB)
+    c.setStrokeColor(c.akzent)
     c.line(20 * mm, y, w - 20 * mm, y)
     y -= 7 * mm
     c.setFillColorRGB(0.1, 0.1, 0.1)
     c.setFont("Helvetica-Bold", 10)
     c.drawString(20 * mm, y, "TOTAL PORTFOLIO")
-    c.drawRightString(w - 62 * mm, y, _chf(t['ertrag']))
-    c.drawRightString(w - 40 * mm, y, _chf(t['ausgaben']))
+    c.drawRightString(w - 88 * mm, y, _chf(t['ertrag']))
+    c.drawRightString(w - 58 * mm, y, _chf(t['ausgaben']))
     c.drawRightString(w - 20 * mm, y, f"Netto CHF {_chf(t['netto'])}")
     if t['honorar']:
         y -= 5 * mm
         c.setFont("Helvetica", 8.5)
         c.setFillColorRGB(0.4, 0.45, 0.5)
         c.drawString(20 * mm, y, "davon Verwaltungshonorar (Konto 4500, im Netto berücksichtigt)")
-        c.drawRightString(w - 40 * mm, y, _chf(t['honorar']))
+        c.drawRightString(w - 58 * mm, y, _chf(t['honorar']))
 
     y -= 16 * mm
+    if y < 34 * mm:
+        c.showPage(); y = c.Y_FOLGE
     c.setFont("Helvetica", 7.5)
-    c.setFillColorRGB(0.5, 0.55, 0.6)
+    c.setFillColorRGB(0.3, 0.33, 0.4)
     c.drawString(20 * mm, y, "Mieterträge = verbuchte Zahlungseingänge (Ist). Ausgaben = erfasste Kreditorenrechnungen + Verwaltungshonorar (Konto 4500).")
     c.drawString(20 * mm, y - 4 * mm, "AfA = gebuchte Abschreibungen des Jahres. Vereinfachte Aufstellung — keine Steuerberatung.")
 

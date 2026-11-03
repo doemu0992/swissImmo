@@ -6,9 +6,9 @@ beide Ehegatten müssen kündigen)."""
 import io
 import datetime
 
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
+
+from core.services.dok_layout import LINKS, DokCanvas
 from core.services.dokumentsprache import nur_deutsch
 
 
@@ -30,7 +30,6 @@ def _wrap(text, breite):
 def generate_kuendigung_mieter_pdf(vertrag, kuendigung, verwaltung=None, eigentuemer=None):
     """vertrag: Mietvertrag, kuendigung: Kuendigung (per_datum/berechneter_termin)."""
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
     mieter = vertrag.mieter
     einheit = vertrag.einheit
     lg = einheit.liegenschaft if einheit else None
@@ -56,38 +55,14 @@ def generate_kuendigung_mieter_pdf(vertrag, kuendigung, verwaltung=None, eigentu
     per_str = per.strftime('%d.%m.%Y') if per else 'nächstmöglichen Termin'
     heute = datetime.date.today().strftime('%d.%m.%Y')
 
-    # Absenderblock oben links
-    c.setFont("Helvetica", 10)
-    y = 280 * mm
-    c.drawString(25 * mm, y, a_name); y -= 5 * mm
-    if a_str:
-        c.drawString(25 * mm, y, a_str); y -= 5 * mm
-    if a_ort:
-        c.drawString(25 * mm, y, a_ort)
-
-    # Vermerk Einschreiben
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(25 * mm, 258 * mm, "Einschreiben")
-
-    # Empfängerblock (Fenstercouvert rechts)
-    c.setFont("Helvetica", 11)
-    y = 250 * mm
-    c.drawString(120 * mm, y, e_name); y -= 5 * mm
-    if e_str:
-        c.drawString(120 * mm, y, e_str); y -= 5 * mm
-    if e_ort:
-        c.drawString(120 * mm, y, e_ort)
-
-    # Ort/Datum
-    c.setFont("Helvetica", 10)
+    # Absender ist der Mieter (er kündigt): sein Name und seine Adresse stehen im Briefkopf,
+    # nicht die der Verwaltung. Empfänger im Fenster rechts, Einschreiben-Vermerk links davon.
+    c = DokCanvas(buf, absender=[a_name, a_str, a_ort], titel='Kündigung des Mietvertrags', ref=a_name)
     ort_abs = (mieter.ort or (lg.ort if lg else '')) or ''
-    c.drawRightString(185 * mm, 225 * mm, f"{ort_abs}, {heute}".strip(', '))
-
-    # Betreff
     objekt = einheit.bezeichnung if einheit else ''
     objekt_adr = f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else ''
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(25 * mm, 212 * mm, f"Kündigung des Mietvertrags per {per_str}")
+    yy = c.brief([e_name, e_str, e_ort], f"{ort_abs}, {heute}".strip(', '),
+                 f"Kündigung des Mietvertrags per {per_str}", einschreiben=True)
 
     # Text
     familienwohnung = bool(getattr(vertrag, 'familienwohnung', False)) or bool(getattr(vertrag, 'mitmieter_name', ''))
@@ -107,38 +82,37 @@ def generate_kuendigung_mieter_pdf(vertrag, kuendigung, verwaltung=None, eigentu
         body += f"\n\nBemerkung: {kuendigung.bemerkung}"
 
     c.setFont("Helvetica", 10.5)
-    yy = 200 * mm
     for zeile in _wrap(body, 90):
         if yy < 80 * mm:
             break
-        c.drawString(25 * mm, yy, zeile)
+        c.drawString(LINKS, yy, zeile)
         yy -= 5.8 * mm
 
     # Grussformel
     yy -= 6 * mm
     c.setFont("Helvetica", 10.5)
-    c.drawString(25 * mm, yy, "Freundliche Grüsse")
+    c.drawString(LINKS, yy, "Freundliche Grüsse")
 
     # Unterschriftszeilen (bei Familienwohnung zwei)
     yy -= 24 * mm
     c.setStrokeColorRGB(0.3, 0.3, 0.3)
-    c.line(25 * mm, yy, 90 * mm, yy)
+    c.line(LINKS, yy, 85 * mm, yy)
     c.setFont("Helvetica", 9)
-    c.drawString(25 * mm, yy - 5 * mm, a_name)
+    c.drawString(LINKS, yy - 5 * mm, a_name)
     if familienwohnung:
         c.line(110 * mm, yy, 175 * mm, yy)
         zweit = getattr(vertrag, 'mitmieter_name', '') or 'Mitmieter/in'
         c.drawString(110 * mm, yy - 5 * mm, zweit)
         c.setFont("Helvetica-Oblique", 8)
         c.setFillColorRGB(0.45, 0.45, 0.45)
-        c.drawString(25 * mm, yy - 12 * mm,
+        c.drawString(LINKS, yy - 12 * mm,
                      "Familienwohnung: Die Kündigung ist nur mit der Unterschrift beider Ehegatten/Partner gültig (Art. 266m OR).")
         c.setFillColorRGB(0, 0, 0)
 
     # Fusszeile Hinweis
     c.setFont("Helvetica-Oblique", 7.5)
     c.setFillColorRGB(0.5, 0.5, 0.5)
-    c.drawString(25 * mm, 22 * mm,
+    c.drawString(LINKS, 30 * mm,
                  "Bitte per Einschreiben versenden. Massgebend für die Fristwahrung ist der Zugang beim Vermieter, nicht der Poststempel.")
     c.setFillColorRGB(0, 0, 0)
 
