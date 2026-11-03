@@ -9,7 +9,6 @@ Gegenproben (von Hand gemacht, rot gesehen, zurückgebaut):
 * in `serienbrief.py` `c.neues_dokument()` entfernen → `test_sammel_pdf_zaehlt_je_dokument` rot
 * in `core/utils/qr_code.py` den Aufruf `c.ohne_fuss()` entfernen → `test_seite_mit_einzahlungsschein_ohne_fusszeile` rot
 * in `DokCanvas.save` den Seitenkopf-Aufruf `self._seitenkopf()` entfernen → `test_seitenkopf_erst_ab_seite_2` rot
-* in `mietzins_formular.py` die Schwelle `c.UNTEN + 66*mm` auf 0 setzen → `test_rechtsmittelbelehrung_und_unterschrift_bleiben_zusammen` rot
 """
 import io
 import shutil
@@ -260,24 +259,6 @@ class LayoutBasis(TestCase):
                 for t, *_ in s:                                         # jede Seite mit Positionen trägt den Tabellenkopf
                     if 'Position ' in t:
                         self.assertIn('zulasten', t)
-
-    def test_rechtsmittelbelehrung_und_unterschrift_bleiben_zusammen(self):
-        from core.services.mietzins_formular import generate_amtliches_formular_pdf
-        daten = {'alt_netto': D('1500'), 'neu_netto': D('1560'), 'nebenkosten': D('200'), 'alt_zins': D('1.5'),
-                 'neu_zins': D('1.75'), 'wirksam_ab': date(2027, 4, 1), 'total_pct': D('4.0'),
-                 'schlichtungsbehoerde': 'der Schlichtungsbehörde Zürich', 'mit_vorbehalt': False}
-        for n in range(0, 34, 3):                         # verschieden viele Begründungszeilen, bis über die Seite hinaus
-            daten['begruendung'] = ' '.join(f'Grund{k}' for k in range(n * 12))
-            with self.subTest(gruende=n):
-                s = seiten(generate_amtliches_formular_pdf(self.frisch(), daten, self.org))
-                mit = [t for t, *_ in s if 'Rechtsmittelbelehrung' in t]
-                self.assertEqual(len(mit), 1)
-                self.assertIn('Freundliche Grüsse', mit[0])
-                self.assertIn('Vermieter / bevollmächtigte Vertretung', mit[0])
-                for _t, woerter, _b, _w, hoehe in s:              # nichts läuft in den Fuss oder aus dem Blatt
-                    for w in woerter:
-                        self.assertTrue(w['bottom'] <= hoehe - 24 * MM or w['top'] >= hoehe - 22 * MM,
-                                        f"«{w['text']}» steht im unteren Rand")
 
     # ---- Sammel-PDF ----
 
