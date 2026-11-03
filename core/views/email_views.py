@@ -19,12 +19,10 @@ from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 
 # ReportLab (PDF)
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
-from reportlab.lib import colors
 
 # Eigene Imports
+from core.services.dok_layout import LINKS, DokCanvas
 from core.utils.absender import kopfzeilen
 from core.utils.billing import berechne_abrechnung
 from core.utils.qr_code import draw_qr_bill
@@ -41,21 +39,11 @@ def get_aktueller_monat():
     heute = datetime.date.today()
     return f"{monate[heute.month - 1]} {heute.year}"
 
-def draw_header(c, verwaltung):
-    """ Zeichnet das Logo und die Absenderzeile oben """
-    if not verwaltung: return
-    if verwaltung.logo:
-        try:
-            c.drawImage(verwaltung.logo.path, 20*mm, 270*mm, height=15*mm, preserveAspectRatio=True, mask='auto')
-        except: pass
-    c.setFont("Helvetica", 8)
-    c.drawRightString(190*mm, 280*mm, f"{verwaltung.firma} | {verwaltung.strasse} | {verwaltung.plz} {verwaltung.ort}")
-
-
 def generate_single_pdf_bytes(periode, row, verwaltung, liegenschaft, vertrag):
     """ Erzeugt das NK-Abrechnung-PDF im Speicher (inkl. QR auf Seite 2) """
     buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
+    c = DokCanvas(buffer, organisation=verwaltung, absender=["Immobilienverwaltung", liegenschaft.strasse, f"{liegenschaft.plz} {liegenschaft.ort}"],
+                  titel=f"Nebenkostenabrechnung {periode.bezeichnung}", ref=liegenschaft.strasse)
 
     if verwaltung:
         creditor = {'name': verwaltung.firma, 'line1': verwaltung.strasse,
@@ -68,22 +56,21 @@ def generate_single_pdf_bytes(periode, row, verwaltung, liegenschaft, vertrag):
 
     debtor = {'name': f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}", 'line1': vertrag.mieter.strasse, 'line2': f"{vertrag.mieter.plz} {vertrag.mieter.ort}"} if vertrag else {'name': row['name'], 'line1': '', 'line2': ''}
 
-    draw_header(c, verwaltung)
-    c.setFont("Helvetica", 11); c.drawString(25*mm, 245*mm, debtor['name']); c.drawString(25*mm, 240*mm, debtor['line1']); c.drawString(25*mm, 235*mm, debtor['line2'])
-    c.setFont("Helvetica", 10); c.drawRightString(190*mm, 245*mm, f"Datum: {datetime.date.today().strftime('%d.%m.%Y')}"); c.drawRightString(190*mm, 240*mm, f"Liegenschaft: {liegenschaft.ort}")
-    c.setFont("Helvetica-Bold", 14); c.drawString(20*mm, 210*mm, f"Nebenkostenabrechnung: {periode.bezeichnung}")
+    y0 = c.brief([debtor['name'], debtor['line1'], debtor['line2']],
+                 f"{liegenschaft.ort}, {datetime.date.today().strftime('%d.%m.%Y')}",
+                 f"Nebenkostenabrechnung: {periode.bezeichnung}")
 
     # Kostenauflistung...
-    y = 170*mm
-    c.setFillColorRGB(0.9, 0.9, 0.9); c.rect(20*mm, y-2*mm, 170*mm, 8*mm, fill=1, stroke=0); c.setFillColorRGB(0, 0, 0)
-    c.setFont("Helvetica-Bold", 10); c.drawString(25*mm, y, "Beschreibung"); c.drawRightString(185*mm, y, "Betrag (CHF)")
-    y -= 10*mm; c.setFont("Helvetica", 10); c.drawString(25*mm, y, f"Kostenanteil"); c.drawRightString(185*mm, y, f"{row['kosten_anteil']:.2f}")
+    y = y0 - 15*mm
+    c.setFillColorRGB(0.9, 0.9, 0.9); c.rect(LINKS, y-2*mm, 170*mm, 8*mm, fill=1, stroke=0); c.setFillColorRGB(0, 0, 0)
+    c.setFont("Helvetica-Bold", 10); c.drawString(LINKS + 5*mm, y, "Beschreibung"); c.drawRightString(185*mm, y, "Betrag (CHF)")
+    y -= 10*mm; c.setFont("Helvetica", 10); c.drawString(LINKS + 5*mm, y, f"Kostenanteil"); c.drawRightString(185*mm, y, f"{row['kosten_anteil']:.2f}")
     y -= 6*mm; akonto = row.get('akonto', 0)
-    if akonto > 0: c.drawString(25*mm, y, "Abzüglich Akonto Zahlungen"); c.drawRightString(185*mm, y, f"- {akonto:.2f}"); y -= 8*mm
-    c.line(20*mm, y, 190*mm, y); y -= 8*mm; betrag = abs(row['saldo'])
+    if akonto > 0: c.drawString(LINKS + 5*mm, y, "Abzüglich Akonto Zahlungen"); c.drawRightString(185*mm, y, f"- {akonto:.2f}"); y -= 8*mm
+    c.line(LINKS, y, 190*mm, y); y -= 8*mm; betrag = abs(row['saldo'])
     c.setFont("Helvetica-Bold", 12)
     label = "Nachzahlung zu Ihren Lasten:" if row['nachzahlung'] else "Guthaben zu Ihren Gunsten:"
-    c.drawString(25*mm, y, label); c.drawRightString(185*mm, y, f"CHF {betrag:.2f}")
+    c.drawString(LINKS + 5*mm, y, label); c.drawRightString(185*mm, y, f"CHF {betrag:.2f}")
 
     c.showPage()
     if row['nachzahlung'] and liegenschaft.iban:
@@ -107,14 +94,14 @@ def _aufstellung_zeichnen(c, positionen, betrag_str, verwaltung, vertrag):
     def kopf(fortsetzung):
         c.showPage()
         c.setFont("Helvetica-Bold", 12)
-        c.drawString(25*mm, 270*mm, "Aufstellung der ausstehenden Beträge" + (" (Fortsetzung)" if fortsetzung else ""))
+        c.drawString(LINKS, 270*mm, "Aufstellung der ausstehenden Beträge" + (" (Fortsetzung)" if fortsetzung else ""))
         c.setFont("Helvetica", 9)
-        c.drawString(25*mm, 264*mm, f"Beilage zur Zahlungsaufforderung nach Art. 257d OR – {vertrag.einheit.bezeichnung}")
+        c.drawString(LINKS, 264*mm, f"Beilage zur Zahlungsaufforderung nach Art. 257d OR – {vertrag.einheit.bezeichnung}")
         c.setFont("Helvetica-Bold", 10)
-        c.drawString(25*mm, 254*mm, "Bezeichnung")
+        c.drawString(LINKS, 254*mm, "Bezeichnung")
         c.drawString(115*mm, 254*mm, "Fällig am")
-        c.drawRightString(185*mm, 254*mm, "Betrag CHF")
-        c.line(25*mm, 252*mm, 185*mm, 252*mm)
+        c.drawRightString(190*mm, 254*mm, "Betrag CHF")
+        c.line(LINKS, 252*mm, 190*mm, 252*mm)
         return 246*mm
 
     y = kopf(False)
@@ -123,16 +110,16 @@ def _aufstellung_zeichnen(c, positionen, betrag_str, verwaltung, vertrag):
         if y < 30*mm:
             y = kopf(True)
             c.setFont("Helvetica", 10)
-        c.drawString(25*mm, y, str(bez)[:60])
+        c.drawString(LINKS, y, str(bez)[:60])
         c.drawString(115*mm, y, f"{faellig:%d.%m.%Y}")
-        c.drawRightString(185*mm, y, f"{betrag:.2f}")
+        c.drawRightString(190*mm, y, f"{betrag:.2f}")
         y -= 6*mm
     if y < 40*mm:
         y = kopf(True)
-    c.line(25*mm, y + 3*mm, 185*mm, y + 3*mm)
+    c.line(LINKS, y + 3*mm, 190*mm, y + 3*mm)
     c.setFont("Helvetica-Bold", 10)
-    c.drawString(25*mm, y - 3*mm, "Total ausstehend")
-    c.drawRightString(185*mm, y - 3*mm, f"{betrag_str}")
+    c.drawString(LINKS, y - 3*mm, "Total ausstehend")
+    c.drawRightString(190*mm, y - 3*mm, f"{betrag_str}")
 
 
 # 🔥 VERBESSERT: Hilfsfunktion für das kombinierte PDF (Brief S1 + QR S2)
@@ -164,7 +151,9 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
     from core.services.zahlungsverzug import pruefe_kein_eigentuemer
     pruefe_kein_eigentuemer(vertrag)
     buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
+    c = DokCanvas(buffer, organisation=verwaltung, absender=['Verwaltung', vertrag.einheit.liegenschaft.strasse,
+                                                           f"{vertrag.einheit.liegenschaft.plz} {vertrag.einheit.liegenschaft.ort}"],
+                  titel='Zahlungsverzug gemäss Art. 257d OR', ref=vertrag.einheit.bezeichnung)
     _e = empfaenger or {}
     r_firma   = _e.get('firma')   if empfaenger else getattr(vertrag.mieter, 'firma', None)
     r_name    = _e.get('name')    if empfaenger else f"{vertrag.mieter.vorname} {vertrag.mieter.nachname}"
@@ -174,35 +163,17 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
     r_anrede  = _e.get('anrede')  if empfaenger else getattr(vertrag.mieter, 'anrede', '')
 
     # --- SEITE 1: DAS JURISTISCHE SCHREIBEN ---
-    left_margin = 25*mm
-    right_window_margin = 120*mm
-
-    c.setFont("Helvetica-Bold", 10)
-    if verwaltung:
-        c.drawString(left_margin, 280*mm, verwaltung.firma)
-        c.setFont("Helvetica", 9)
-        c.drawString(left_margin, 275*mm, f"{verwaltung.strasse}, {verwaltung.plz} {verwaltung.ort}")
-
-    y_addr = 250*mm
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(right_window_margin, y_addr, "EINSCHREIBEN")
-
-    y_addr -= 8*mm
-    c.setFont("Helvetica", 11)
+    left_margin = LINKS
 
     firma_name = r_firma
-    if firma_name:
-        c.drawString(right_window_margin, y_addr, firma_name); y_addr -= 5*mm
+    # Adressfenster (Einschreiben-Vermerk links davon), Ort/Datum und Betreff: gemeinsames Briefgerüst
+    text_y = c.brief([firma_name, r_name, r_strasse or '', r_ortline],
+                     f"{verwaltung.ort if verwaltung else 'Ort'}, {heute.strftime('%d.%m.%Y')}",
+                     "Zahlungsverzug gemäss Art. 257d OR – Kündigungsandrohung",
+                     untertitel=f"Mietobjekt: {vertrag.einheit.bezeichnung}, {vertrag.einheit.liegenschaft.strasse}",
+                     einschreiben="EINSCHREIBEN")
 
-    c.drawString(right_window_margin, y_addr, r_name)
-    c.drawString(right_window_margin, y_addr-5*mm, r_strasse or '')
-    c.drawString(right_window_margin, y_addr-10*mm, r_ortline)
-
-    c.setFont("Helvetica", 10); c.drawString(left_margin, 210*mm, f"{verwaltung.ort if verwaltung else 'Ort'}, {heute.strftime('%d.%m.%Y')}")
-    c.setFont("Helvetica-Bold", 12); c.drawString(left_margin, 195*mm, f"Zahlungsverzug gemäss Art. 257d OR – Kündigungsandrohung")
-    c.setFont("Helvetica-Bold", 10); c.drawString(left_margin, 189*mm, f"Mietobjekt: {vertrag.einheit.bezeichnung}, {vertrag.einheit.liegenschaft.strasse}")
-
-    c.setFont("Helvetica", 11); text_y = 175*mm
+    c.setFont("Helvetica", 11)
     salutation = "Sehr geehrte Damen und Herren,"
     if r_anrede == "Herr": salutation = f"Sehr geehrter Herr {r_nachn},"
     elif r_anrede == "Frau": salutation = f"Sehr geehrte Frau {r_nachn},"

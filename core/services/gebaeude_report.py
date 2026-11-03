@@ -6,7 +6,8 @@ from datetime import date
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
-from reportlab.pdfgen import canvas
+
+from core.services.dok_layout import DokCanvas
 from core.services.dokumentsprache import nur_deutsch
 
 
@@ -23,16 +24,15 @@ def betriebsrechnung_pdf(lg, jahr=None, verwaltung=None):
     rendite = liegenschaft_rendite(lg)
 
     buf = BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
+    c = DokCanvas(buf, organisation=verwaltung, absender=['Liegenschaftsverwaltung', lg.strasse, f"{lg.plz} {lg.ort}"],
+                  titel=f"Betriebsrechnung {jahr}", ref=f"{lg.strasse}, {lg.plz} {lg.ort}")
     w, h = A4
-    y = h - 24 * mm
+    y = c.Y_INHALT
 
-    absender = (verwaltung.firma if verwaltung else '') or 'Liegenschaftsverwaltung'
-    c.setFont("Helvetica-Bold", 8)
-    c.drawString(20 * mm, h - 15 * mm, absender)
-
+    c.setFillColor(c.akzent)
     c.setFont("Helvetica-Bold", 15)
     c.drawString(20 * mm, y, f"Betriebsrechnung {jahr}")
+    c.setFillColorRGB(0, 0, 0)
     y -= 7 * mm
     c.setFont("Helvetica", 10)
     c.drawString(20 * mm, y, f"{lg.strasse}, {lg.plz} {lg.ort}")
@@ -40,6 +40,9 @@ def betriebsrechnung_pdf(lg, jahr=None, verwaltung=None):
 
     def zeile(label, betrag, bold=False, indent=0):
         nonlocal y
+        if y < c.UNTEN + 22 * mm:          # Summenzeilen und Nettoergebnis folgen: nicht unten am Blattrand
+            c.showPage()
+            y = c.Y_FOLGE
         c.setFont("Helvetica-Bold" if bold else "Helvetica", 9)
         c.drawString((22 + indent) * mm, y, label[:70])
         c.drawRightString(190 * mm, y, f"CHF {_chf(betrag)}")
@@ -77,7 +80,7 @@ def betriebsrechnung_pdf(lg, jahr=None, verwaltung=None):
 
     c.setStrokeColorRGB(0.2, 0.2, 0.2)
     c.line(20 * mm, y + 2 * mm, 190 * mm, y + 2 * mm)
-    y -= 1 * mm
+    y -= 3 * mm                              # Abstand zur Linie: die Schrift soll sie nicht berühren
     c.setFont("Helvetica-Bold", 11)
     ergebnis = daten['ergebnis']
     c.drawString(22 * mm, y, "Nettoergebnis (Ertrag − Aufwand)")
@@ -94,7 +97,7 @@ def betriebsrechnung_pdf(lg, jahr=None, verwaltung=None):
         y -= 5 * mm
 
     c.setFont("Helvetica-Oblique", 7)
-    c.drawString(20 * mm, 12 * mm,
+    c.drawString(20 * mm, y,
                  "Grundlage: verbuchte Erträge/Aufwände dieser Liegenschaft im Kalenderjahr. "
                  "Nicht zugeordnete Buchungen sind nicht enthalten.")
     c.showPage()

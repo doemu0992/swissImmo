@@ -457,7 +457,7 @@ def fw_logbuch(request):
         gesamt = qs.count()
         pdf = logbuch_pdf(list(qs[:GRENZE]),
                           erstellt_von=(request.user.get_full_name() or request.user.username),
-                          gesamt=gesamt)
+                          gesamt=gesamt, organisation=aktuelle_organisation())
         resp = HttpResponse(pdf, content_type='application/pdf')
         resp['Content-Disposition'] = 'inline; filename="Logbuch-Auditbericht.pdf"'
         return resp

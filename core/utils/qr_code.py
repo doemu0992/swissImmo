@@ -191,6 +191,12 @@ def draw_qr_bill(c, iban, creditor, debtor, amount, reason, reference=None):
         ref_typ, ref_val, reason[:140], "EPD", ""
     ])
 
+    # Der Zahlteil füllt die untere Blatthälfte: ein Dokument mit gemeinsamem Layout
+    # (core/services/dok_layout.py) setzt auf dieser Seite keine Fusszeile. Reine Meldung an die
+    # Canvas, am Zeichnen des Einzahlungsscheins ändert sich nichts.
+    if hasattr(c, 'ohne_fuss'):
+        c.ohne_fuss()
+
     # 2. Zeichnen Starten (Unten am Blatt)
 
     # Perforationslinie

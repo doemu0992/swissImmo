@@ -27,7 +27,7 @@ unterschreibt niemand.
 <div id="seitenkopfInhalt">
     <table class="sk"><tr>
         <td>{% block seitenkopf_titel %}{{ dok_titel }}{% endblock %}</td>
-        <td class="sk-r">{% block seitenkopf_ref %}{{ dok_ref }}{% endblock %}</td>
+        <td class="sk-r">{% block seitenkopf_ref %}{% if dok_ref %}{{ dok_ref }}{% elif einheit and liegenschaft %}{{ einheit.bezeichnung }} · {{ liegenschaft.strasse }}, {{ liegenschaft.ort }}{% endif %}{% endblock %}</td>
     </tr></table>
 </div>
 

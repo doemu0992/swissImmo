@@ -25,10 +25,9 @@ def schuldner_name(vertrag):
 @nur_deutsch
 def generate_debitor_qr_pdf(rechnung):
     """Gibt die PDF-Bytes zurück oder None, wenn keine IBAN hinterlegt ist."""
-    from reportlab.pdfgen import canvas as _canvas
-    from reportlab.lib.pagesizes import A4 as _A4
     from reportlab.lib.units import mm as _mm
     from reportlab.lib import colors as _colors
+    from core.services.dok_layout import DokCanvas
     from core.utils.qr_code import draw_qr_bill
 
     r = rechnung
@@ -70,34 +69,18 @@ def generate_debitor_qr_pdf(rechnung):
     ref = r.qr_referenz or None
 
     buf = io.BytesIO()
-    c = _canvas.Canvas(buf, pagesize=_A4)
+    c = DokCanvas(buf, organisation=vw, absender=[creditor['name'], creditor['line1'], creditor['line2']],
+                  titel=f"Rechnung {r.titel}", ref=debtor['name'])
     c.setTitle(f"Rechnung {r.titel}")
-    if vw and getattr(vw, 'logo', None):
-        try:
-            c.drawImage(vw.logo.path, 150 * _mm, 265 * _mm, width=40 * _mm, preserveAspectRatio=True, mask='auto')
-        except Exception:
-            logger.debug("Fehler bewusst übergangen", exc_info=True)
-    c.setFillColor(_colors.black)
-    c.setFont("Helvetica-Bold", 18)
-    c.drawString(20 * _mm, 270 * _mm, "Rechnung")
-    c.setFont("Helvetica", 10)
-    c.setFillColor(_colors.darkgrey)
-    c.drawString(20 * _mm, 263 * _mm, r.titel)
+    y = c.brief([debtor['name'], debtor['line1'], debtor['line2']], f"Datum: {r.datum.strftime('%d.%m.%Y')}",
+                "Rechnung", untertitel=r.titel)
     c.setFillColor(_colors.black)
 
-    y = 245 * _mm
-    c.setFont("Helvetica", 9); c.drawString(20 * _mm, y, "Rechnungsempfänger:")
-    c.setFont("Helvetica-Bold", 11); c.drawString(20 * _mm, y - 6 * _mm, debtor['name'])
-    c.setFont("Helvetica", 11)
-    c.drawString(20 * _mm, y - 11 * _mm, debtor['line1'])
-    c.drawString(20 * _mm, y - 16 * _mm, debtor['line2'])
-
     c.setFont("Helvetica", 10)
-    c.drawRightString(190 * _mm, y, f"Datum: {r.datum.strftime('%d.%m.%Y')}")
     if r.faellig_am:
-        c.drawRightString(190 * _mm, y - 5 * _mm, f"Fällig: {r.faellig_am.strftime('%d.%m.%Y')}")
+        c.drawRightString(190 * _mm, c.hoehe - 93 * _mm, f"Fällig: {r.faellig_am.strftime('%d.%m.%Y')}")
 
-    yt = y - 40 * _mm
+    yt = y - 14 * _mm
     c.setStrokeColor(_colors.lightgrey); c.line(20 * _mm, yt + 5 * _mm, 190 * _mm, yt + 5 * _mm)
     def _chf(wert):
         return f"CHF {float(wert):,.2f}".replace(",", "'")
@@ -120,7 +103,7 @@ def generate_debitor_qr_pdf(rechnung):
         uid = getattr(vw, 'mwst_uid', '') or ''
         if uid:
             c.setFont("Helvetica", 9)
-            c.drawRightString(190 * _mm, y - 10 * _mm, f"MWST-Nr.: {uid}")
+            c.drawRightString(190 * _mm, c.hoehe - 98 * _mm, f"MWST-Nr.: {uid}")
         yt -= 20 * _mm
     else:
         c.drawRightString(190 * _mm, yt, _chf(r.betrag))

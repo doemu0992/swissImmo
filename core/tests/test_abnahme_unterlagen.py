@@ -396,9 +396,10 @@ class PdfUnterlagenTests(Basis):
                                 if ueberschrift in text.split('\n'):
                                     self.assertIn(erste_zeile, text,
                                                   f"{extra}/{schluessel}/{zeilen}: «{ueberschrift}» steht allein am Seitenende")
-                            # Die Seitenzahl («Seite x von y») steht absichtlich im unteren
-                            # Rand; sie hat einen eigenen Test (SeitenzahlTests).
-                            woerter = [w for w in seite.extract_words() if w['top'] < seite.height - 14 * mm]
+                            # Die Fusszeile des gemeinsamen Layouts (Verwaltung, «erstellt am», «Seite x von y»)
+                            # steht absichtlich im unteren Rand (ab 22 mm); die Seitenzahl hat einen eigenen
+                            # Test (SeitenzahlTests).
+                            woerter = [w for w in seite.extract_words() if w['top'] < seite.height - 22 * mm]
                             for w in woerter:
                                 self.assertLessEqual(w['bottom'], seite.height - 24 * mm,
                                                      f"{extra}/{schluessel}/{zeilen}: «{w['text']}» steht im unteren Rand")

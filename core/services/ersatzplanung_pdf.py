@@ -19,33 +19,30 @@ STATUS_LABEL = {'faellig': 'fällig', 'bald': 'bald', 'ok': 'ok', 'unbekannt': '
 @nur_deutsch
 def generate_ersatzplanung_pdf(daten, lg_name, verwaltung=None, deckung=None):
     from reportlab.lib.pagesizes import A4
-    from reportlab.pdfgen import canvas
+    from core.services.dok_layout import DokCanvas
     from reportlab.lib.units import mm
     from reportlab.lib import colors
 
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
+    c = DokCanvas(buf, organisation=verwaltung, absender=['Verwaltung', '', ''],
+                  titel="Ersatz- & Budgetplanung", ref=lg_name)
     w, h = A4
     ember = colors.HexColor(EMBER)
     rose = colors.HexColor("#E11D48")
     amber = colors.HexColor("#D97706")
-    grey = colors.HexColor("#64748B")
+    grey = colors.HexColor("#4b5563")
     c.setTitle(f"Ersatzplanung {lg_name}")
 
-    # Kopf
-    c.setFillColor(ember)
-    c.rect(0, h - 26 * mm, w, 26 * mm, fill=1, stroke=0)
-    c.setFillColor(colors.white)
+    # Titel unter dem Briefkopf (früher ein Farbband)
+    c.setFillColor(c.akzent)
     c.setFont("Helvetica-Bold", 15)
-    c.drawString(20 * mm, h - 13 * mm, "Ersatz- & Budgetplanung")
+    c.drawString(20 * mm, c.Y_INHALT, "Ersatz- & Budgetplanung")
+    c.setFillColor(colors.HexColor("#374151"))
     c.setFont("Helvetica", 10)
-    c.drawString(20 * mm, h - 20 * mm, lg_name)
-    if verwaltung:
-        c.setFont("Helvetica", 9)
-        c.drawRightString(w - 20 * mm, h - 13 * mm, verwaltung.firma or "")
+    c.drawString(20 * mm, c.Y_INHALT - 6 * mm, lg_name)
     c.setFillColor(colors.black)
 
-    y = h - 38 * mm
+    y = c.Y_INHALT - 20 * mm
 
     # Kennzahlen-Zeile
     c.setFont("Helvetica", 9); c.setFillColor(grey)
@@ -98,8 +95,8 @@ def generate_ersatzplanung_pdf(daten, lg_name, verwaltung=None, deckung=None):
         maxb = max([b['summe'] for b in jb] + [Decimal('0.01')])
         bar_x, bar_w = 42 * mm, 110 * mm
         for b in jb:
-            if y < 30 * mm:
-                c.showPage(); y = h - 25 * mm
+            if y < 32 * mm:
+                c.showPage(); y = c.Y_FOLGE
             c.setFont("Helvetica", 9); c.setFillColor(colors.black)
             c.drawString(20 * mm, y, str(b['jahr']))
             frac = float(b['summe'] / maxb) if maxb else 0
@@ -112,7 +109,7 @@ def generate_ersatzplanung_pdf(daten, lg_name, verwaltung=None, deckung=None):
     # Elementliste
     y -= 6 * mm
     if y < 45 * mm:
-        c.showPage(); y = h - 25 * mm
+        c.showPage(); y = c.Y_FOLGE
     c.setFont("Helvetica-Bold", 11)
     c.drawString(20 * mm, y, "Elemente nach Restnutzungsdauer")
     y -= 7 * mm
@@ -126,8 +123,8 @@ def generate_ersatzplanung_pdf(daten, lg_name, verwaltung=None, deckung=None):
     y -= 5 * mm
 
     for r in daten['rows']:
-        if y < 20 * mm:
-            c.showPage(); y = h - 25 * mm
+        if y < 32 * mm:
+            c.showPage(); y = c.Y_FOLGE
         # BEFUND 21.08.2026: Hier stand `a = r['a']` mit `a.kategorie` und
         # `a.raum`. Seit Phase 4b.20 enthaelt `rows` auch GERAETE, und die
         # tragen `'a': None` — der Schluessel gehoert der Ausstattung. Sobald
@@ -157,8 +154,11 @@ def generate_ersatzplanung_pdf(daten, lg_name, verwaltung=None, deckung=None):
         c.drawRightString(w - 20 * mm, y, _fmt(r['neuwert']) if r['neuwert'] else "—")
         y -= 7.5 * mm
 
-    c.setFont("Helvetica-Oblique", 8); c.setFillColor(colors.HexColor("#94A3B8"))
-    c.drawString(20 * mm, 12 * mm, "Ersatzjahr = Einbaujahr + Lebensdauer (paritätische Tabelle). Budget = Neuwert im Horizont.")
+    y -= 2 * mm
+    if y < 30 * mm:
+        c.showPage(); y = c.Y_FOLGE
+    c.setFont("Helvetica-Oblique", 8); c.setFillColor(colors.HexColor("#4b5563"))
+    c.drawString(20 * mm, y, "Ersatzjahr = Einbaujahr + Lebensdauer (paritätische Tabelle). Budget = Neuwert im Horizont.")
     c.setFillColor(colors.black)
 
     c.showPage(); c.save(); buf.seek(0)

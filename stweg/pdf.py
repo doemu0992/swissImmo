@@ -25,25 +25,54 @@ def _umbruch(text, breite=95):
 
 
 class _Seite:
-    """Schreibt Zeilen und blättert selbst um."""
+    """Schreibt Zeilen und blättert selbst um.
 
-    def __init__(self, titel):
-        from reportlab.lib.pagesizes import A4
+    Briefkopf (Logo, Anschrift der Verwaltung), Seitenkopf, Fusszeile «Seite x von y» und bei Briefen
+    das Adressfenster kommen aus `core/services/dok_layout.py` (gemeinsames Layout aller Dokumente)."""
+
+    def __init__(self, titel, organisation=None, ref=''):
         from reportlab.lib.units import mm
-        from reportlab.pdfgen import canvas
+
+        from core.services.dok_layout import DokCanvas
         self.mm = mm
         self.buf = io.BytesIO()
-        self.c = canvas.Canvas(self.buf, pagesize=A4)
+        self.c = DokCanvas(self.buf, organisation=organisation, absender=['Verwaltung', '', ''],
+                           titel=titel, ref=ref)
         self.c.setTitle(titel)
-        self.w, self.h = A4
-        self.y = self.h - 25 * mm
+        self.y = self.c.Y_INHALT
+
+    def brief(self, empfaenger, betreff, untertitel=None):
+        """Adressfenster, Ort/Datum und Betreff (Briefe an einen Eigentümer)."""
+        from core.zeit import datum_heute
+        org = self.c.bk
+        ort = org.get('plz_ort', '').split(' ', 1)[-1] if org.get('plz_ort') else ''
+        self.y = self.c.brief([z for z in empfaenger if z], f"{ort + ', ' if ort else ''}{datum_heute():%d.%m.%Y}",
+                              betreff, untertitel=untertitel)
 
     def zeile(self, text, *, fett=False, gr=10, abstand=5):
-        if self.y < 25 * self.mm:
+        # Eine fette Zeile ist meist eine Überschrift: sie bleibt mit den nächsten Zeilen auf einer Seite
+        # (kein Titel allein am Seitenende).
+        if self.y - (12 * self.mm if fett else 0) < self.c.UNTEN:
             self.c.showPage()
-            self.y = self.h - 25 * self.mm
+            self.y = self.c.Y_FOLGE
+        if fett and gr >= 13:
+            self.c.setFillColor(self.c.akzent)
         self.c.setFont('Helvetica-Bold' if fett else 'Helvetica', gr)
         self.c.drawString(20 * self.mm, self.y, text)
+        self.c.setFillColorRGB(0.07, 0.09, 0.15)
+        self.y -= abstand * self.mm
+
+    def spalten(self, zellen, *, fett=False, gr=9, abstand=4):
+        """Eine Tabellenzeile: `zellen` = [(Text, x in mm, 'l' oder 'r'), …]."""
+        if self.y < self.c.UNTEN:
+            self.c.showPage()
+            self.y = self.c.Y_FOLGE
+        self.c.setFont('Helvetica-Bold' if fett else 'Helvetica', gr)
+        for text, x, ausrichtung in zellen:
+            if ausrichtung == 'r':
+                self.c.drawRightString(x * self.mm, self.y, text)
+            else:
+                self.c.drawString(x * self.mm, self.y, text)
         self.y -= abstand * self.mm
 
     def absatz(self, text, **kw):
@@ -58,26 +87,23 @@ class _Seite:
         return self.buf.getvalue()
 
 
-def _kopf(s, v):
-    org = v.liegenschaft.organisation
-    s.zeile(org.firma or '', fett=True, gr=11)
-    s.zeile(f"{org.strasse}, {org.plz} {org.ort}".strip(', '), gr=9)
-    s.luecke(6)
+def _empfaenger(eig):
+    """Adresszeilen eines Eigentümers für das Adressfenster."""
+    if eig is None:
+        return []
+    return [eig.firma_oder_name, eig.strasse or '', f"{eig.plz} {eig.ort}".strip()]
 
 
 @nur_deutsch
 def einladung_pdf(versammlung, eigentuemer=None):
     v = versammlung
-    s = _Seite(f"Einladung {v.titel}")
-    _kopf(s, v)
+    s = _Seite(f"Einladung {v.titel}", v.liegenschaft.organisation, ref=str(v.liegenschaft))
     if eigentuemer is not None:
-        s.zeile(eigentuemer.firma_oder_name)
-        if eigentuemer.strasse:
-            s.zeile(eigentuemer.strasse)
-        s.zeile(f"{eigentuemer.plz} {eigentuemer.ort}".strip())
-        s.luecke(6)
-    s.zeile(f"Einladung zur {v.get_art_display()}", fett=True, gr=14, abstand=7)
-    s.zeile(f"Stockwerkeigentümergemeinschaft {v.liegenschaft}", gr=11)
+        s.brief(_empfaenger(eigentuemer), f"Einladung zur {v.get_art_display()}",
+                untertitel=f"Stockwerkeigentümergemeinschaft {v.liegenschaft}")
+    else:
+        s.zeile(f"Einladung zur {v.get_art_display()}", fett=True, gr=14, abstand=7)
+        s.zeile(f"Stockwerkeigentümergemeinschaft {v.liegenschaft}", gr=11)
     s.luecke(4)
     s.zeile(f"Datum: {v.datum:%d.%m.%Y}, {v.datum:%H:%M} Uhr")
     if v.ort:
@@ -104,8 +130,7 @@ def einladung_pdf(versammlung, eigentuemer=None):
 def protokoll_pdf(versammlung):
     from stweg.beschluss import praesenz
     v = versammlung
-    s = _Seite(f"Protokoll {v.titel}")
-    _kopf(s, v)
+    s = _Seite(f"Protokoll {v.titel}", v.liegenschaft.organisation, ref=str(v.liegenschaft))
     s.zeile(f"Protokoll der {v.get_art_display()}", fett=True, gr=14, abstand=7)
     s.zeile(f"Stockwerkeigentümergemeinschaft {v.liegenschaft}", gr=11)
     s.zeile(f"{v.datum:%d.%m.%Y}, {v.datum:%H:%M} Uhr" + (f" · {v.ort}" if v.ort else ''))
@@ -194,27 +219,21 @@ def abrechnung_pdf(abrechnung, eigentuemer=None):
     mit `eigentuemer`: nur dessen Einheiten (der Beleg für den Eigentümer)."""
     a = abrechnung
     lg = a.liegenschaft
-    s = _Seite(f"Abrechnung {a.jahr} {lg}")
-    org = lg.organisation
-    s.zeile(org.firma or '', fett=True, gr=11)
-    s.zeile(f"{org.strasse}, {org.plz} {org.ort}".strip(', '), gr=9)
-    s.luecke(6)
+    s = _Seite(f"Abrechnung {a.jahr} {lg}", lg.organisation, ref=str(lg))
     if eigentuemer is not None:
-        s.zeile(eigentuemer.firma_oder_name)
-        if eigentuemer.strasse:
-            s.zeile(eigentuemer.strasse)
-        s.zeile(f"{eigentuemer.plz} {eigentuemer.ort}".strip())
-        s.luecke(6)
-    s.zeile(f"Jahresabrechnung {a.jahr}", fett=True, gr=14, abstand=7)
-    s.zeile(f"Stockwerkeigentümergemeinschaft {lg}", gr=11)
+        s.brief(_empfaenger(eigentuemer), f"Jahresabrechnung {a.jahr}",
+                untertitel=f"Stockwerkeigentümergemeinschaft {lg}")
+    else:
+        s.zeile(f"Jahresabrechnung {a.jahr}", fett=True, gr=14, abstand=7)
+        s.zeile(f"Stockwerkeigentümergemeinschaft {lg}", gr=11)
     if a.status != a.STATUS_ABGESCHLOSSEN:
         s.zeile("ENTWURF — noch nicht abgeschlossen", fett=True)
     s.luecke(5)
     s.zeile("Allgemeine Kosten", fett=True, gr=12, abstand=6)
     for k in a.kostenzeilen.all():
         text = ' · '.join(x for x in (k.lieferant, k.text) if x)
-        datum = f"{k.datum:%d.%m.%Y}" if k.datum else '          '
-        s.zeile(f"{datum}  {text[:60]:<60}  CHF {_chf(k.betrag):>12}", gr=9, abstand=4)
+        datum = f"{k.datum:%d.%m.%Y}" if k.datum else ''
+        s.spalten([(datum, 20, 'l'), (text[:60], 42, 'l'), (f"CHF {_chf(k.betrag)}", 190, 'r')])
     s.zeile(f"Total Kosten: CHF {_chf(a.gesamtkosten)}", fett=True)
     s.luecke(5)
     s.zeile("Verteilung nach Schlüsseln", fett=True, gr=12, abstand=6)
@@ -253,11 +272,7 @@ def abrechnung_pdf(abrechnung, eigentuemer=None):
 def zirkular_pdf(z):
     """Antrag (laufend) bzw. Antrag mit Ergebnis (abgeschlossen)."""
     lg = z.liegenschaft
-    s = _Seite(f"Zirkularbeschluss {z.titel}")
-    org = lg.organisation
-    s.zeile(org.firma or '', fett=True, gr=11)
-    s.zeile(f"{org.strasse}, {org.plz} {org.ort}".strip(', '), gr=9)
-    s.luecke(6)
+    s = _Seite(f"Zirkularbeschluss {z.titel}", lg.organisation, ref=str(lg))
     s.zeile("Zirkularbeschluss", fett=True, gr=14, abstand=7)
     s.zeile(f"Stockwerkeigentümergemeinschaft {lg}", gr=11)
     s.luecke(3)
@@ -290,18 +305,9 @@ def vorschreibung_pdf(budget, eigentuemer):
     Schlüsseln und die Raten, danach ein QR-Zahlteil je Rate (ohne gültige IBAN entfällt er)."""
     from stweg.models import StwegVorschreibung
     lg = budget.liegenschaft
-    s = _Seite(f"Akonto-Rechnung {budget.jahr} {lg}")
-    org = lg.organisation
-    s.zeile(org.firma or '', fett=True, gr=11)
-    s.zeile(f"{org.strasse}, {org.plz} {org.ort}".strip(', '), gr=9)
-    s.luecke(6)
-    s.zeile(eigentuemer.firma_oder_name)
-    if eigentuemer.strasse:
-        s.zeile(eigentuemer.strasse)
-    s.zeile(f"{eigentuemer.plz} {eigentuemer.ort}".strip())
-    s.luecke(6)
-    s.zeile(f"Akonto-Rechnung {budget.jahr}", fett=True, gr=14, abstand=7)
-    s.zeile(f"Stockwerkeigentümergemeinschaft {lg}", gr=11)
+    s = _Seite(f"Akonto-Rechnung {budget.jahr} {lg}", lg.organisation, ref=str(lg))
+    s.brief(_empfaenger(eigentuemer), f"Akonto-Rechnung {budget.jahr}",
+            untertitel=f"Stockwerkeigentümergemeinschaft {lg}")
     s.zeile("Grundlage: von der Versammlung genehmigtes Budget.", gr=9)
     s.luecke(4)
     vs = list(StwegVorschreibung.objects.filter(budget=budget, eigentuemer=eigentuemer)
@@ -341,19 +347,13 @@ def mahnung_pdf(mahnung):
     e = fall.einheit
     lg = e.liegenschaft
     eig = fall.eigentuemer or e.stockwerkeigentuemer
-    s = _Seite(f"{mahnung.stufe}. Mahnung {lg}")
     org = lg.organisation
-    s.zeile(org.firma or '', fett=True, gr=11)
-    s.zeile(f"{org.strasse}, {org.plz} {org.ort}".strip(', '), gr=9)
-    s.luecke(6)
-    if eig is not None:
-        s.zeile(eig.firma_oder_name)
-        if eig.strasse:
-            s.zeile(eig.strasse)
-        s.zeile(f"{eig.plz} {eig.ort}".strip())
-    s.luecke(6)
+    s = _Seite(f"{mahnung.stufe}. Mahnung {lg}", org, ref=str(lg))
     zeilen = inkasso.mahntext(mahnung)
-    s.zeile(zeilen[0], fett=True, gr=14, abstand=7)
+    if eig is not None:
+        s.brief(_empfaenger(eig), zeilen[0])
+    else:
+        s.zeile(zeilen[0], fett=True, gr=14, abstand=7)
     for z in zeilen[1:]:
         if z:
             s.absatz(z, gr=10, abstand=5)
@@ -378,15 +378,9 @@ def retention_pdf(fall):
     lg = e.liegenschaft
     eig = fall.eigentuemer or e.stockwerkeigentuemer
     org = lg.organisation
-    s = _Seite(f"Retentionsrecht {lg}")
-    s.zeile(org.firma or '', fett=True, gr=11)
-    s.zeile(f"{org.strasse}, {org.plz} {org.ort}".strip(', '), gr=9)
-    s.luecke(6)
-    if eig is not None:
-        s.zeile(eig.firma_oder_name)
-    s.luecke(5)
-    s.zeile("Mitteilung: Ausübung des Retentionsrechts (Art. 712k ZGB)", fett=True, gr=13, abstand=7)
-    s.zeile(f"Stockwerkeigentümergemeinschaft {lg} · Einheit {e.bezeichnung}")
+    s = _Seite(f"Retentionsrecht {lg}", org, ref=str(lg))
+    s.brief(_empfaenger(eig), "Mitteilung: Ausübung des Retentionsrechts (Art. 712k ZGB)",
+            untertitel=f"Stockwerkeigentümergemeinschaft {lg} · Einheit {e.bezeichnung}")
     s.luecke(3)
     s.absatz("Die Gemeinschaft macht wegen der offenen Beitragsforderungen das Retentionsrecht an den beweglichen "
              "Sachen geltend, die sich in den Räumen der Einheit befinden und zu deren Einrichtung oder Gebrauch "
@@ -418,15 +412,10 @@ def pfandrecht_pdf(pfandrecht):
     lg = e.liegenschaft
     eig = fall.eigentuemer or e.stockwerkeigentuemer
     org = lg.organisation
-    s = _Seite(f"Pfandrecht {lg}")
-    s.zeile(org.firma or '', fett=True, gr=11)
-    s.zeile(f"{org.strasse}, {org.plz} {org.ort}".strip(', '), gr=9)
-    s.luecke(5)
-    _hinweis(s)
-    s.zeile(f"Grundbuchamt {lg.ort or ''}{' (' + lg.kanton + ')' if lg.kanton else ''}".strip(), fett=True)
-    s.luecke(5)
-    s.zeile("Antrag auf Eintragung eines Gemeinschaftspfandrechts (Art. 712i ZGB)", fett=True, gr=13, abstand=7)
-    s.luecke(2)
+    s = _Seite(f"Pfandrecht {lg}", org, ref=str(lg))
+    grundbuchamt = f"Grundbuchamt {lg.ort or ''}{' (' + lg.kanton + ')' if lg.kanton else ''}".strip()
+    _hinweis_oben(s)                                   # zuerst gezeichnet, zuerst gelesen
+    s.brief([grundbuchamt], "Antrag auf Eintragung eines Gemeinschaftspfandrechts (Art. 712i ZGB)")
     s.zeile("Gläubigerin", fett=True)
     s.zeile(f"Stockwerkeigentümergemeinschaft {lg.strasse}, {lg.plz} {lg.ort}")
     s.zeile(f"vertreten durch die Verwaltung {org.firma or ''}")
@@ -451,7 +440,8 @@ def pfandrecht_pdf(pfandrecht):
     for z in pf.zeilen:
         if z['pfandberechtigt']:
             d = date_fromiso(z['datum'])
-            s.zeile(f"{d:%d.%m.%Y}  {z['text'][:50]:<50}  CHF {_chf(Decimal(z['offen'])):>12}", gr=9, abstand=4)
+            s.spalten([(f"{d:%d.%m.%Y}", 20, 'l'), (z['text'][:50], 42, 'l'),
+                       (f"CHF {_chf(Decimal(z['offen']))}", 190, 'r')])
     ausgeschlossen = [z for z in pf.zeilen if not z['pfandberechtigt']]
     if ausgeschlossen:
         s.luecke(3)
@@ -459,7 +449,8 @@ def pfandrecht_pdf(pfandrecht):
                 f"{_chf(pf.betrag_ausgeschlossen)}", fett=True, gr=9)
         for z in ausgeschlossen:
             d = date_fromiso(z['datum'])
-            s.zeile(f"{d:%d.%m.%Y}  {z['text'][:50]:<50}  CHF {_chf(Decimal(z['offen'])):>12}", gr=8, abstand=4)
+            s.spalten([(f"{d:%d.%m.%Y}", 20, 'l'), (z['text'][:50], 42, 'l'),
+                       (f"CHF {_chf(Decimal(z['offen']))}", 190, 'r')], gr=8)
     s.luecke(4)
     s.absatz("Beilagen: Reglement bzw. Beschluss über die Beiträge, Mahnungen, Aufstellung der Forderungen.", gr=9,
              abstand=4)
@@ -486,6 +477,16 @@ def _hinweis(s):
     s.luecke(3)
 
 
+def _hinweis_oben(s):
+    """Der Hinweis in einem Brief: links neben dem Adressfenster, also vor dem Betreff und damit zuerst gelesen."""
+    c = s.c
+    c.setFont('Helvetica-Bold', 8)
+    y = c.hoehe - 48 * s.mm
+    for z in _umbruch(HINWEIS_RECHT, breite=52):
+        c.drawString(20 * s.mm, y, z)
+        y -= 3.6 * s.mm
+
+
 @nur_deutsch
 def handaenderung_pdf(wechsel, *, jahresbetrag=None):
     """Handänderungs-Abrechnung (pro rata temporis) zwischen Verkäufer und Käufer."""
@@ -494,9 +495,7 @@ def handaenderung_pdf(wechsel, *, jahresbetrag=None):
     e = wechsel.einheit
     lg = e.liegenschaft
     org = lg.organisation
-    s = _Seite(f"Handänderung {lg}")
-    s.zeile(org.firma or '', fett=True, gr=11)
-    s.luecke(2)
+    s = _Seite(f"Handänderung {lg}", org, ref=str(lg))
     _hinweis(s)
     s.zeile(f"Handänderungs-Abrechnung {a['jahr']}", fett=True, gr=13, abstand=7)
     s.zeile(f"{lg.strasse}, {lg.plz} {lg.ort} — Einheit «{e.bezeichnung}»")
@@ -507,11 +506,11 @@ def handaenderung_pdf(wechsel, *, jahresbetrag=None):
     s.zeile(f"Jahresbetrag CHF {_chf(a['jahresbetrag'])}  ({a['quelle']})", fett=True)
     s.zeile(f"Tage: Verkäufer {a['verkaeufer_tage']}, Käufer {a['kaeufer_tage']} von {a['jahrestage']}", gr=9)
     s.luecke(3)
-    s.zeile(f"{'':<22}{'Verkäufer':>14}{'Käufer':>14}", fett=True, gr=9)
+    s.spalten([('', 20, 'l'), ('Verkäufer', 140, 'r'), ('Käufer', 190, 'r')], fett=True)
     for text, v, k in (("Kostenanteil (pro rata)", a['verkaeufer_anteil'], a['kaeufer_anteil']),
                        ("Akonto bezahlt", a['akonto_verkaeufer'], a['akonto_kaeufer']),
                        ("Saldo (− = zu viel bezahlt)", a['saldo_verkaeufer'], a['saldo_kaeufer'])):
-        s.zeile(f"{text:<22}{_chf(v):>14}{_chf(k):>14}", gr=9, abstand=4)
+        s.spalten([(text, 20, 'l'), (_chf(v), 140, 'r'), (_chf(k), 190, 'r')])
     s.luecke(3)
     ausgleich = a['ausgleich_verkaeufer_an_kaeufer']
     if ausgleich >= 0:
@@ -540,9 +539,7 @@ def zinsabrechnung_pdf(einheit, stichtag=None):
     eig = einheit.stockwerkeigentuemer
     org = lg.organisation
     stand = inkasso.forderungen(einheit, stichtag)
-    s = _Seite(f"Zinsabrechnung {lg}")
-    s.zeile(org.firma or '', fett=True, gr=11)
-    s.luecke(2)
+    s = _Seite(f"Zinsabrechnung {lg}", org, ref=str(lg))
     _hinweis(s)
     s.zeile(f"Zinsabrechnung per {stichtag:%d.%m.%Y}", fett=True, gr=13, abstand=7)
     s.zeile(f"{lg.strasse}, {lg.plz} {lg.ort} — Einheit «{einheit.bezeichnung}»")
@@ -553,15 +550,15 @@ def zinsabrechnung_pdf(einheit, stichtag=None):
     s.luecke(3)
     s.zeile("Forderungen", fett=True)
     for c in stand:
-        s.zeile(f"{c['datum']:%d.%m.%Y}  {c['text'][:46]:<46}  {_chf(c['betrag']):>10}  offen {_chf(c['offen']):>10}",
-                gr=8, abstand=4)
+        s.spalten([(f"{c['datum']:%d.%m.%Y}", 20, 'l'), (c['text'][:46], 42, 'l'),
+                   (_chf(c['betrag']), 150, 'r'), (f"offen {_chf(c['offen'])}", 190, 'r')], gr=8)
         for von, bis, kap, tage, z in c.get('abschnitte', []):
             s.zeile(f"      {von:%d.%m.%Y}–{bis:%d.%m.%Y}: {tage} Tage auf CHF {_chf(kap)} = CHF {_chf(z)}", gr=8,
                     abstand=4)
     s.luecke(3)
     s.zeile("Zahlungen und ihre Anrechnung (Kosten, Zinsen, Kapital — Art. 85 Abs. 1 OR)", fett=True)
     for z in StwegAkonto.objects.filter(einheit=einheit, datum__lte=stichtag).order_by('datum', 'id'):
-        s.zeile(f"{z.datum:%d.%m.%Y}  CHF {_chf(z.betrag):>10}:  Kosten {_chf(z.an_kosten)}, Zinsen {_chf(z.an_zins)}, "
+        s.zeile(f"{z.datum:%d.%m.%Y}  CHF {_chf(z.betrag)}:  Kosten {_chf(z.an_kosten)}, Zinsen {_chf(z.an_zins)}, "
                 f"Kapital {_chf(z.kapital)}", gr=8, abstand=4)
     s.luecke(3)
     zinsen = sum((c['offen'] for c in stand if c['art'] == 'zins'), Decimal('0.00'))
