@@ -34,6 +34,20 @@ gehört ein Begleitbrief. Dieselbe Vorlage dient dem PDF, der Live-Vorschau und 
         {% if vertrag.mitmieter_name %}<br><br><span class="partei-name">{{ vertrag.mitmieter_name }}</span>{% endif %}
     </td>
 </tr></table>
+{% if vertrag.nebenkosten and not einheit.ist_einstellplatz %}
+<table class="kasten"><tr>
+    <td class="zelle eck"><div class="lbl">MIETBEGINN</div><div class="wert">{{ vertrag.beginn|date:"d.m.Y" }}</div></td>
+    <td class="zelle eck"><div class="lbl">NETTOMIETZINS</div><div class="wert">CHF {{ miete_fmt }}</div></td>
+    <td class="zelle eck"><div class="lbl">NEBENKOSTEN</div><div class="wert">CHF {{ nk_fmt }}</div></td>
+    <td class="zelle eck"><div class="lbl">BRUTTOMIETZINS</div><div class="wert">CHF {{ brutto_fmt }}</div></td>
+</tr></table>
+{% else %}
+<table class="kasten"><tr>
+    <td class="zelle eck3"><div class="lbl">MIETBEGINN</div><div class="wert">{{ vertrag.beginn|date:"d.m.Y" }}</div></td>
+    <td class="zelle eck3"><div class="lbl">MIETENDE</div><div class="wert">{% if vertrag.ende %}{{ vertrag.ende|date:"d.m.Y" }}{% else %}unbefristet{% endif %}</div></td>
+    <td class="zelle eck3"><div class="lbl">MIETZINS</div><div class="wert">CHF {{ miete_fmt }}</div></td>
+</tr></table>
+{% endif %}
 
 <div class="art"><span class="nr">2</span>&nbsp; Mietobjekt</div>
 <table class="data">
@@ -63,7 +77,7 @@ gehört ein Begleitbrief. Dieselbe Vorlage dient dem PDF, der Live-Vorschau und 
 {% if mietzins_zeitplan %}
 <p class="fliess"><b>Gestaffelter Mietzins / Gratismonate</b></p>
 {% for satz in mietzins_hinweise %}<p class="fliess">• {{ satz }}</p>{% endfor %}
-<table class="zeit">
+<table class="zeit" repeat="1">
     <tr>
         <td class="h" width="31%">Gültig ab</td>
         <td class="h r" width="23%">Mietzins</td>

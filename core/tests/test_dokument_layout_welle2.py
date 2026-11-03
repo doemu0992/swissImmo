@@ -306,15 +306,58 @@ class LayoutBasis(TestCase):
                 self.assertEqual([w for w in im_fenster(seite) if w['top'] > 41 * MM and 'Muster' in w['text']], [])
 
     def test_garagenvertrag_unterschriften_nie_allein(self):
+        """Verschieden lange Staffeltabellen schieben den Schlussblock über die Seitengrenze: der letzte
+        Absatz und die Unterschriften stehen immer zusammen auf einer Seite."""
         from core.services.pdf_service import generate_vertrag_pdf_bytes
+        from portfolio.models import Sollmietzins
         self.e.typ = 'pp'
         self.e.save()
-        for hinweis in ('', 'Zusatz ' * 30):
-            self.v.besondere_vereinbarungen = hinweis
-            self.v.save()
-            with self.subTest(hinweis=bool(hinweis)):
+        gesehen = set()
+        for n in range(0, 17):
+            if n:
+                Sollmietzins.objects.create(einheit=self.e, gueltig_ab=date(2024, 1, 1) if n == 1 else
+                                            date(2024 + (n - 1) // 12, (n - 1) % 12 + 1, 1),
+                                            netto_mietzins=D('150') + n, nebenkosten=D('0'))
+            with self.subTest(zeilen=n):
                 s = seiten(generate_vertrag_pdf_bytes(self.frisch()))
+                gesehen.add(len(s))
                 mit = [t for t, *_ in s if 'Unterschriften' in t.split('\n')]
                 self.assertEqual(len(mit), 1)
                 self.assertIn('Der Mietzins ist jeweils am 1. Tag', mit[0])
                 self.assertIn('Seite 1 von', s[0][0])
+        self.assertGreaterEqual(len(gesehen), 2)          # Gegenprobe der Reihe: sie geht wirklich über die Seitengrenze
+
+    def test_garagenvertrag_grundlayout_und_docuseal_marken(self):
+        """Briefkopf, Seitenkopf ab Seite 2, Fusszeile, kein Adressfenster; die DocuSeal-Marken bleiben
+        je einmal im Text (Wortlaut unverändert), auch im Kontext der DocuSeal-Wege (ohne `briefkopf`)."""
+        from django.template.loader import get_template
+
+        from core.services.pdf_service import generate_vertrag_pdf_bytes
+        from core.views.docuseal import link_callback
+        self.e.typ = 'pp'
+        self.e.save()
+        marken = ('{{Unterschrift Mieter;role=Mieter;type=signature;required=true}}',
+                  '{{Ort Mieter;role=Mieter;type=text;required=true}}',
+                  '{{Datum Mieter;role=Mieter;type=date;required=true}}')
+        s = seiten(generate_vertrag_pdf_bytes(self.frisch()))
+        self.assertIn('Testverwaltung AG', s[0][0].split('\n')[0])
+        self.assertIn('Mietvertrag für einen Parkplatz', s[1][0].split('\n')[0])          # Seitenkopf ab Seite 2
+        self.assertNotRegex(s[0][0], r'Testverwaltung AG · Teststrasse 1 · 8000')        # keine Absenderzeile des Fensters
+        text = ' '.join(' '.join(t.split()) for t, *_ in s)
+        for marke in marken:
+            self.assertEqual(text.count(marke), 1, marke)
+        # DocuSeal-Weg: eigener Kontext ohne `briefkopf` und ohne Zeitplan
+        from xhtml2pdf import pisa
+        v = self.frisch()
+        ctx = {'vertrag': v, 'mieter': v.mieter, 'einheit': v.einheit, 'liegenschaft': v.einheit.liegenschaft,
+               'eigentuemer': None, 'verwaltung': v.einheit.liegenschaft.organisation,
+               'heute': date(2026, 11, 3), 'miete_fmt': '1500.00', 'nk_fmt': '0.00', 'brutto_fmt': '1500.00',
+               'kaution_fmt': '0.00', 'unterschrift_path': None}
+        puffer = io.BytesIO()
+        status = pisa.CreatePDF(get_template('core/mietvertrag_garage.html').render(ctx), dest=puffer,
+                                link_callback=link_callback)
+        self.assertFalse(status.err)
+        text = ' '.join(' '.join(t.split()) for t, *_ in seiten(puffer.getvalue()))
+        for marke in marken:
+            self.assertEqual(text.count(marke), 1, marke)
+        self.assertIn('Testverwaltung AG', text)
