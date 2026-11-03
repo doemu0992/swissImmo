@@ -161,7 +161,7 @@ def _basis_objekte():
                                      versicherungswert=Decimal('1000000'))
     e = Einheit.objects.create(liegenschaft=lg, bezeichnung='3.5 Zi', typ='whg',
                                nettomiete_aktuell=Decimal('1500'), nebenkosten_aktuell=Decimal('200'))
-    m = Mieter.objects.create(typ='person', vorname='Hans', nachname='Muster',
+    m = Mieter.objects.create(typ='person', anrede='Herr', vorname='Hans', nachname='Muster',
                               email='hans@example.ch', strasse='Seeweg 3', plz='8000', ort='Zürich')
     v = Mietvertrag.objects.create(mieter=m, einheit=e, beginn=date(2024, 1, 1),
                                    netto_mietzins=Decimal('1500'), nebenkosten=Decimal('200'),

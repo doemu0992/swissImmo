@@ -444,7 +444,7 @@ class Mieter(models.Model):
     kontaktperson = models.CharField("Kontaktperson", max_length=100, blank=True, default='')
 
     # --- PRIVATPERSON ---
-    anrede = models.CharField("Anrede", max_length=20, blank=True, default='Herr')
+    anrede = models.CharField("Anrede", max_length=20, blank=True, default='')
     vorname = models.CharField("Vorname", max_length=100, blank=True, default='')
     nachname = models.CharField("Nachname", max_length=100, blank=True, default='')
     geburtsdatum = models.DateField("Geburtsdatum", null=True, blank=True)

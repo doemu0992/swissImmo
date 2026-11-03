@@ -404,3 +404,15 @@ class MieterMailTests(_Basis):
             self.assertTrue(body.startswith('Guten Tag Eva Test\n'), entscheid)
 
 
+
+
+class AnredeVorgabeTests(TestCase):
+    """Ein Mieter ohne gewählte Anrede wird mit Vorname und Nachname begrüsst, nie stillschweigend als «Herr»."""
+
+    def test_neuer_mieter_hat_keine_anrede_und_gruss_mit_vollem_namen(self):
+        from crm.models import Mieter
+        from core.services.anrede import mieter_gruss
+        m = Mieter(typ='person', vorname='Alex', nachname='Muster')
+        self.assertEqual(m.anrede, '')
+        self.assertEqual(mieter_gruss(m), 'Guten Tag Alex Muster')
+        # Gegenprobe-Hinweis: stünde die Modellvorgabe wieder auf 'Herr', stünde hier «Guten Tag Herr Muster».
