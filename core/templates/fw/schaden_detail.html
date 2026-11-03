@@ -439,7 +439,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div class="fw-rumpf" data-block="direktkanal" data-auftrag="{{ a.id }}">
                 <div class="fw-label">{% trans "Direkt zwischen Mieter und Handwerker" %}</div>
                 {% if a.termin_status == 'vorgeschlagen' and a.termin_vorschlag_am %}
-                <div class="fw-chip fw-warn mt-1" data-zustand="vorgeschlagen">{% zeichen 'termin' %} {% blocktrans with d=a.termin_vorschlag_am|date:"d.m.Y, H:i" v=a.termin_vorschlag_von %}Terminvorschlag ({{ v }}): {{ d }} Uhr — noch nicht bestätigt{% endblocktrans %}</div>
+                <div class="fw-hinweis warn mt-1" data-zustand="vorgeschlagen"><span class="fw-hi">{% zeichen 'termin' %}</span><div class="fw-ht">{% blocktrans with d=a.termin_vorschlag_am|date:"d.m.Y, H:i" v=a.termin_vorschlag_von %}Terminvorschlag ({{ v }}): {{ d }} Uhr — noch nicht bestätigt{% endblocktrans %}</div></div>
                 {% endif %}
                 <p class="fw-klein mt-1">{% trans "Mieter und Handwerker stimmen sich selbst ab, auch den Termin. Sie sehen mit; die Verwaltung wird erst informiert, wenn der Termin steht oder abgesagt wird." %}</p>
                 {% for n in a.direkt %}

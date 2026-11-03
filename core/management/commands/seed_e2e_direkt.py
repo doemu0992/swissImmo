@@ -46,7 +46,8 @@ class Command(BaseCommand):
             if not TicketNachricht.objects.filter(ticket=ticket, typ="direkt").exists():
                 TicketNachricht.objects.create(
                     ticket=ticket, typ="direkt", auftrag=auftrag, seite="handwerker",
-                    absender_name=hw.firma, nachricht="Guten Tag, wann passt es Ihnen?", gelesen=True)
+                    absender_name=hw.firma, nachricht="Guten Tag, wann passt es Ihnen?", gelesen=True,
+                    is_intern=True)  # wie direktkanal.schreiben: nicht im allgemeinen Verlauf
 
             fremd, _ = Mieter.objects.get_or_create(
                 email="e2e-fremd-mieter@example.ch",
