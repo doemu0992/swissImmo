@@ -36372,3 +36372,141 @@ msgstr "Guten Tag Frau %(name)s"
 
 msgid "Gruss an den Empfänger (Guten Tag Herr Muster)"
 msgstr "Gruss an den Empfänger (Guten Tag Herr Muster)"
+
+msgid "Terminvorschlag: %(d)s Uhr"
+msgstr "Terminvorschlag: %(d)s Uhr"
+
+msgid "von Ihnen — Antwort der Gegenseite steht aus."
+msgstr "von Ihnen — Antwort der Gegenseite steht aus."
+
+msgid "von %(n)s"
+msgstr "von %(n)s"
+
+msgid "Noch kein Termin vereinbart."
+msgstr "Noch kein Termin vereinbart."
+
+msgid "Gegenvorschlag machen"
+msgstr "Gegenvorschlag machen"
+
+msgid "Hinweis (optional)"
+msgstr "Hinweis (optional)"
+
+msgid "Vorschlag senden"
+msgstr "Vorschlag senden"
+
+msgid "%(n)s bestätigt den Termin oder macht einen Gegenvorschlag. Die Verwaltung wird informiert, sobald der Termin steht."
+msgstr "%(n)s bestätigt den Termin oder macht einen Gegenvorschlag. Die Verwaltung wird informiert, sobald der Termin steht."
+
+msgid "Nachrichten mit %(n)s"
+msgstr "Nachrichten mit %(n)s"
+
+msgid "%(n)s erhält Ihre Nachricht zusätzlich per E-Mail und kann direkt darauf antworten."
+msgstr "%(n)s erhält Ihre Nachricht zusätzlich per E-Mail und kann direkt darauf antworten."
+
+msgid "Termin und Nachrichten · %(titel)s"
+msgstr "Termin und Nachrichten · %(titel)s"
+
+msgid "Termin und Nachrichten"
+msgstr "Termin und Nachrichten"
+
+msgid "Der Auftrag ist abgeschlossen — die Seite ist nur noch lesbar."
+msgstr "Der Auftrag ist abgeschlossen — die Seite ist nur noch lesbar."
+
+msgid "Termin und Nachrichten mit dem Mieter"
+msgstr "Termin und Nachrichten mit dem Mieter"
+
+msgid "Termin und Nachrichten mit %(f)s"
+msgstr "Termin und Nachrichten mit %(f)s"
+
+msgid "Direkt Mieter ↔ Handwerker"
+msgstr "Direkt Mieter ↔ Handwerker"
+
+msgid "Direkt zwischen Mieter und Handwerker"
+msgstr "Direkt zwischen Mieter und Handwerker"
+
+msgid "Terminvorschlag (%(v)s): %(d)s Uhr — noch nicht bestätigt"
+msgstr "Terminvorschlag (%(v)s): %(d)s Uhr — noch nicht bestätigt"
+
+msgid "Mieter und Handwerker stimmen sich selbst ab, auch den Termin. Sie sehen mit; die Verwaltung wird erst informiert, wenn der Termin steht oder abgesagt wird."
+msgstr "Mieter und Handwerker stimmen sich selbst ab, auch den Termin. Sie sehen mit; die Verwaltung wird erst informiert, wenn der Termin steht oder abgesagt wird."
+
+msgid "Noch keine Direktnachrichten."
+msgstr "Noch keine Direktnachrichten."
+
+msgid "Als Verwaltung an Mieter und Handwerker schreiben"
+msgstr "Als Verwaltung an Mieter und Handwerker schreiben"
+
+msgid "Nachricht an Mieter und Handwerker gesendet."
+msgstr "Nachricht an Mieter und Handwerker gesendet."
+
+msgid "Nachricht gesendet."
+msgstr "Nachricht gesendet."
+
+msgid "Terminvorschlag gesendet. Die Gegenseite bestätigt oder macht einen anderen Vorschlag."
+msgstr "Terminvorschlag gesendet. Die Gegenseite bestätigt oder macht einen anderen Vorschlag."
+
+msgid "Terminvorschlag gespeichert. Die Gegenseite sieht ihn im Portal."
+msgstr "Terminvorschlag gespeichert. Die Gegenseite sieht ihn im Portal."
+
+msgid "Termin bestätigt. Beide Seiten erhalten den Kalendereintrag."
+msgstr "Termin bestätigt. Beide Seiten erhalten den Kalendereintrag."
+
+msgid "Termin abgesagt. Schlagen Sie einen neuen Termin vor."
+msgstr "Termin abgesagt. Schlagen Sie einen neuen Termin vor."
+
+msgid "Unbekannter Absender."
+msgstr "Unbekannter Absender."
+
+msgid "Der Auftrag ist abgeschlossen — der Chat ist nur noch lesbar."
+msgstr "Der Auftrag ist abgeschlossen — der Chat ist nur noch lesbar."
+
+msgid "%(gruss)s\n\n%(wer)s schreibt zu «%(schaden)s»:\n\n%(text)s\n\nSie können direkt auf diese Mail antworten — Ihre Antwort geht an den Handwerker. Oder öffnen Sie den Chat:\n%(link)s"
+msgstr "%(gruss)s\n\n%(wer)s schreibt zu «%(schaden)s»:\n\n%(text)s\n\nSie können direkt auf diese Mail antworten — Ihre Antwort geht an den Handwerker. Oder öffnen Sie den Chat:\n%(link)s"
+
+msgid "%(gruss)s\n\n%(wer)s schreibt zu «%(schaden)s»:\n\n%(text)s\n\nSie können direkt auf diese Mail antworten — Ihre Antwort geht an den Mieter. Oder öffnen Sie den Chat:\n%(link)s"
+msgstr "%(gruss)s\n\n%(wer)s schreibt zu «%(schaden)s»:\n\n%(text)s\n\nSie können direkt auf diese Mail antworten — Ihre Antwort geht an den Mieter. Oder öffnen Sie den Chat:\n%(link)s"
+
+msgid "Termin vorgeschlagen"
+msgstr "Termin vorgeschlagen"
+
+msgid "Direktnachricht Mieter/Handwerker"
+msgstr "Direktnachricht Mieter/Handwerker"
+
+msgid "Unbekannte Seite."
+msgstr "Unbekannte Seite."
+
+msgid "Der Auftrag ist abgeschlossen."
+msgstr "Der Auftrag ist abgeschlossen."
+
+msgid "Der Termin liegt zu weit in der Zukunft."
+msgstr "Der Termin liegt zu weit in der Zukunft."
+
+msgid "Der Hinweis ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "Der Hinweis ist zu lang (höchstens %(n)s Zeichen)."
+
+msgid "Terminvorschlag: %(zeit)s"
+msgstr "Terminvorschlag: %(zeit)s"
+
+msgid "%(gruss)s\n\n%(wer)s schlägt für «%(schaden)s» folgenden Termin vor:\n\nWann: %(zeit)s\n%(hinweis)s\nBestätigen oder einen anderen Termin vorschlagen (ohne Anmeldung):\n%(link)s\n\nSie können auch direkt auf diese Mail antworten. Verbindlich wird der Termin erst, wenn Sie ihn bestätigen."
+msgstr "%(gruss)s\n\n%(wer)s schlägt für «%(schaden)s» folgenden Termin vor:\n\nWann: %(zeit)s\n%(hinweis)s\nBestätigen oder einen anderen Termin vorschlagen (ohne Anmeldung):\n%(link)s\n\nSie können auch direkt auf diese Mail antworten. Verbindlich wird der Termin erst, wenn Sie ihn bestätigen."
+
+msgid "Hinweis: %(h)s"
+msgstr "Hinweis: %(h)s"
+
+msgid "Es gibt keinen offenen Terminvorschlag."
+msgstr "Es gibt keinen offenen Terminvorschlag."
+
+msgid "Der Vorschlag wurde inzwischen geändert. Bitte den aktuellen ansehen."
+msgstr "Der Vorschlag wurde inzwischen geändert. Bitte den aktuellen ansehen."
+
+msgid "Der Vorschlag stammt von Ihnen — die Gegenseite muss ihn bestätigen."
+msgstr "Der Vorschlag stammt von Ihnen — die Gegenseite muss ihn bestätigen."
+
+msgid "Es gibt keinen vereinbarten Termin."
+msgstr "Es gibt keinen vereinbarten Termin."
+
+msgid "{gruss}\n\nfür „{schaden}“ wurde ein Termin vereinbart:\n\nWann: {termin}\nWer: {handwerker}\nWo: {objekt}\n\nBitte stellen Sie den Zutritt sicher. Bei Verhinderung antworten Sie direkt auf diese Mail oder schreiben Sie dem Handwerker im Mieterportal — Sie stimmen den neuen Termin direkt mit ihm ab. Der Kalendereintrag hängt an.\n\nFreundliche Grüsse\nIhre Liegenschaftsverwaltung"
+msgstr "{gruss}\n\nfür „{schaden}“ wurde ein Termin vereinbart:\n\nWann: {termin}\nWer: {handwerker}\nWo: {objekt}\n\nBitte stellen Sie den Zutritt sicher. Bei Verhinderung antworten Sie direkt auf diese Mail oder schreiben Sie dem Handwerker im Mieterportal — Sie stimmen den neuen Termin direkt mit ihm ab. Der Kalendereintrag hängt an.\n\nFreundliche Grüsse\nIhre Liegenschaftsverwaltung"
+
+msgid "{gruss}\n\nDer Termin für „{schaden}“ ({objekt}) ist festgelegt: {termin}.\nMieter: {melder_name} ({melder_tel}).\nDer Kalendereintrag hängt an. Können Sie den Termin nicht einhalten, antworten Sie direkt auf diese Mail — Ihre Antwort geht an den Mieter, den neuen Termin stimmen Sie direkt mit ihm ab.\n\nFreundliche Grüsse\nIhre Liegenschaftsverwaltung"
+msgstr "{gruss}\n\nDer Termin für „{schaden}“ ({objekt}) ist festgelegt: {termin}.\nMieter: {melder_name} ({melder_tel}).\nDer Kalendereintrag hängt an. Können Sie den Termin nicht einhalten, antworten Sie direkt auf diese Mail — Ihre Antwort geht an den Mieter, den neuen Termin stimmen Sie direkt mit ihm ab.\n\nFreundliche Grüsse\nIhre Liegenschaftsverwaltung"

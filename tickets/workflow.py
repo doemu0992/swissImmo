@@ -639,6 +639,10 @@ def _termin_mails(auftrag, termin_am, kat_mieter, kat_hw, absagen=False):
                                          empfaenger=empfaenger)
             html = ("<html><body style='font-family:Arial,sans-serif'>"
                     + _klartext_als_html(inhalt) + "</body></html>")
+            # Auftragsmarke: Die Antwort auf diese Mail landet im Direktkanal Mieter/Handwerker
+            # (tickets/direktkanal.py) statt nur im Verlauf der Verwaltung.
+            from .direktkanal import marke
+            betreff = f"{betreff} {marke(auftrag)}"
             return send_via_hoststar(adresse, betreff, html, weitere_anhaenge=ics,
                                      reply_to=reply_to(ticket), organisation=ticket.organisation_id)
         except Exception:
@@ -663,7 +667,11 @@ def termin_festlegen(auftrag, termin_am):
     ticket = auftrag.ticket
     with transaction.atomic():
         auftrag.termin_am, auftrag.termin_status = termin_am, 'vereinbart'
-        auftrag.save(update_fields=['termin_am', 'termin_status'])
+        # Ein offener Vorschlag (Terminabstimmung Mieter/Handwerker) ist damit erledigt.
+        auftrag.termin_vorschlag_am, auftrag.termin_vorschlag_von = None, ''
+        auftrag.termin_vorschlag_hinweis = ''
+        auftrag.save(update_fields=['termin_am', 'termin_status', 'termin_vorschlag_am',
+                                    'termin_vorschlag_von', 'termin_vorschlag_hinweis'])
         if ticket.status == 'in_bearbeitung':
             wechsle_status(ticket, 'warte_auf_handwerker')
     m_ok, h_ok = _termin_mails(auftrag, termin_am, 'ticket_termin', 'ticket_termin_handwerker')
@@ -688,8 +696,13 @@ def termin_absagen(auftrag):
     return m_ok, h_ok
 
 
-def antwort_zuordnen(ticket, absender, inhalt):
+def antwort_zuordnen(ticket, absender, inhalt, auftrag_id=None, kopf=None):
     """Eingehende Mail einem Ticket zuordnen und den Fluss nachführen.
+
+    Trägt der Betreff eine Auftragsmarke (``auftrag_id``) und kommt die Mail vom Mieter oder vom Handwerker
+    dieses Auftrags, ist es Direktkanal: Chat-Nachricht am Auftrag + Mail an die Gegenseite, die
+    Verwaltung wird nicht angefasst (``direktkanal.aus_mail``); Rückgabe ``'direkt_mieter'`` bzw.
+    ``'direkt_handwerker'``. Sonst (keine Marke, unbekannter Absender, automatische Mail) wie bisher.
 
     ``absender`` ist der rohe From-Header. Kommt er von der Adresse eines
     Handwerkers, der einen Auftrag am Ticket hat, wird die Nachricht als
@@ -698,7 +711,11 @@ def antwort_zuordnen(ticket, absender, inhalt):
     Verwaltung ist wieder am Zug. Gibt ``'handwerker'`` oder ``'melder'`` zurück.
     """
     from email.utils import parseaddr
+    from . import direktkanal
     from .models import TicketNachricht
+    direkt = direktkanal.aus_mail(ticket, auftrag_id, absender, inhalt, kopf)
+    if direkt:
+        return f'direkt_{direkt}'
     adresse = parseaddr(absender)[1].strip().lower()
     hw = None
     if adresse:

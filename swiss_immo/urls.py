@@ -92,10 +92,11 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
                                 portal_steuerauszug_pdf, portal_kontokorrent_pdf,
                                 mieter_portal_view, mieter_dokument_download, mieter_schaden_melden, mieter_rechnung_qr,
                                 mieter_kontoauszug_pdf, mieter_kuendigung, mieter_kuendigung_pdf,
-                                mieter_tickets_view, mieter_ticket_detail, mieter_ticket_nachricht,
+                                mieter_tickets_view, mieter_ticket_detail, mieter_ticket_nachricht, mieter_ticket_direkt,
                                 mieter_rechnungen_view, mieter_dokumente_view, mieter_schaden_formular,
                                 mieter_konto_view, mieter_daten_view, mieter_passwort_view)
 # Modul 3 (27.10.2026): Handwerkerportal (Magic-Link je Auftrag) und Link-Verwaltung im Schaden
+from core.views.direkt_link import direkt_link
 from core.views.handwerker_portal import handwerker_auftrag, handwerker_auftrag_pdf, handwerker_auftrag_foto
 from core.views.fw.schaeden import fw_auftrag_link
 from core.views.fw.mietzinsmodell_pruefen import fw_mietzinsmodell_pruefen
@@ -143,7 +144,7 @@ from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_
                            fw_kreditor_zahlung_zuruecksetzen, fw_kreditor_zahlung_stornieren,
                            fw_dienstleister_neu, fw_dienstleister_bearbeiten, fw_dienstleister_loeschen, fw_dokument_neu, fw_dokument_loeschen, fw_nebenkosten_neu, fw_nebenkosten_loeschen,
                            fw_buchung_neu, fw_buchung_stornieren, fw_kommunikation_senden, fw_serienbrief_pdf,
-                           fw_schaeden, fw_schaden_kosten, fw_schaden_detail, fw_schaden_foto_upload, fw_schaden_foto_loeschen, fw_schaden_loeschen, fw_auftrag_kosten, fw_auftrag_nachricht, fw_auftrag_termin, fw_auftrag_rechnung, fw_auftrag_storno, fw_versicherungsfall, fw_auftrag_pdf,
+                           fw_schaeden, fw_schaden_kosten, fw_schaden_detail, fw_schaden_foto_upload, fw_schaden_foto_loeschen, fw_schaden_loeschen, fw_auftrag_kosten, fw_auftrag_nachricht, fw_auftrag_direkt, fw_auftrag_termin, fw_auftrag_rechnung, fw_auftrag_storno, fw_versicherungsfall, fw_auftrag_pdf,
                            fw_schaden_auftrag, fw_schaden_status, fw_schaden_ohne_rechnung, fw_schaeden_board, fw_schaden_verschieben, fw_kalender, fw_portfolio, fw_leerstand, fw_team, fw_schaden_kostentraeger, fw_schaden_zuweisen, fw_nebenkosten_zustellung, fw_betreibungen, fw_betreibung_neu, fw_betreibung_bearbeiten, fw_betreibung_pdf, fw_betreibung_kosten, fw_zaehlerstand_neu, fw_verteilschluessel, fw_schaden_antwort, fw_schaden_neu,
                            fw_dienstleister, fw_buchhaltung, fw_kontoblatt, fw_kontenplan, fw_buchhaltung_export, fw_buchhaltung_pdf, fw_anlagen,
                            fw_sollstellung, fw_sollstellung_run,
@@ -438,6 +439,7 @@ urlpatterns = [
     path('neu/schaeden/<int:pk>/', fw_schaden_detail, name='fw_schaden_detail'),
     path('neu/auftrag/<int:pk>/kosten/', fw_auftrag_kosten, name='fw_auftrag_kosten'),
     path('neu/auftrag/<int:pk>/nachricht/', fw_auftrag_nachricht, name='fw_auftrag_nachricht'),
+    path('neu/auftrag/<int:pk>/direkt/', fw_auftrag_direkt, name='fw_auftrag_direkt'),
     path('neu/auftrag/<int:pk>/termin/', fw_auftrag_termin, name='fw_auftrag_termin'),
     path('neu/auftrag/<int:pk>/rechnung/', fw_auftrag_rechnung, name='fw_auftrag_rechnung'),
     path('neu/auftrag/<int:pk>/storno/', fw_auftrag_storno, name='fw_auftrag_storno'),
@@ -710,6 +712,7 @@ urlpatterns = [
     path('mieter/tickets/', mieter_tickets_view, name='mieter_tickets'),
     path('mieter/ticket/<int:pk>/', mieter_ticket_detail, name='mieter_ticket_detail'),
     path('mieter/ticket/<int:pk>/nachricht/', mieter_ticket_nachricht, name='mieter_ticket_nachricht'),
+    path('mieter/ticket/<int:pk>/direkt/<int:auftrag_id>/', mieter_ticket_direkt, name='mieter_ticket_direkt'),
     path('mieter/rechnung/<int:pk>/', mieter_rechnung_qr, name='mieter_rechnung_qr'),
     path('mieter/kontoauszug/', mieter_kontoauszug_pdf, name='mieter_kontoauszug_pdf'),
     path('mieter/konto/', mieter_konto_view, name='mieter_konto'),
@@ -720,6 +723,7 @@ urlpatterns = [
 
     # --- MODUL 3: HANDWERKERPORTAL (öffentlich, Token statt Konto; E6) ---
     path('auftrag/<str:token>/', handwerker_auftrag, name='handwerker_auftrag'),
+    path('direkt/<str:signiert>/', direkt_link, name='direkt_link'),
     path('auftrag/<str:token>/pdf/', handwerker_auftrag_pdf, name='handwerker_auftrag_pdf'),
     path('auftrag/<str:token>/foto/<int:nr>/', handwerker_auftrag_foto, name='handwerker_auftrag_foto'),
     path('neu/auftrag/<int:pk>/link/', fw_auftrag_link, name='fw_auftrag_link'),

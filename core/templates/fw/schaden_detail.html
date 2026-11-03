@@ -266,7 +266,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div class="fw-mitte">
                 <div class="flex items-center gap-2 flex-wrap">
                     <span class="fw-t">{{ n.absender_name }}</span>
-                    {% if n.is_intern %}<span class="fw-chip fw-mut">{% trans "intern" %}</span>{% endif %}
+                    {% if n.typ == 'direkt' %}<span class="fw-chip fw-info">{% trans "Direkt Mieter ↔ Handwerker" %}</span>{% elif n.is_intern %}<span class="fw-chip fw-mut">{% trans "intern" %}</span>{% endif %}
                     <span class="fw-klein">{{ n.erstellt_am|date:"d.m.Y H:i" }}</span>
                 </div>
                 <p class="mt-1 whitespace-pre-line">{{ n.nachricht }}</p>
@@ -435,6 +435,31 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     {% endif %}
                 </div>{% endif %}
             </div>
+            {% if a.status != 'storniert' %}
+            <div class="fw-rumpf" data-block="direktkanal" data-auftrag="{{ a.id }}">
+                <div class="fw-label">{% trans "Direkt zwischen Mieter und Handwerker" %}</div>
+                {% if a.termin_status == 'vorgeschlagen' and a.termin_vorschlag_am %}
+                <div class="fw-chip fw-warn mt-1" data-zustand="vorgeschlagen">{% zeichen 'termin' %} {% blocktrans with d=a.termin_vorschlag_am|date:"d.m.Y, H:i" v=a.termin_vorschlag_von %}Terminvorschlag ({{ v }}): {{ d }} Uhr — noch nicht bestätigt{% endblocktrans %}</div>
+                {% endif %}
+                <p class="fw-klein mt-1">{% trans "Mieter und Handwerker stimmen sich selbst ab, auch den Termin. Sie sehen mit; die Verwaltung wird erst informiert, wenn der Termin steht oder abgesagt wird." %}</p>
+                {% for n in a.direkt %}
+                <div class="fw-hw-nachricht{% if n.seite == 'verwaltung' %} eigen{% endif %}" data-seite="{{ n.seite }}">
+                    <span class="fw-klein">{{ n.absender_name }} ({{ n.get_seite_display }}) · {{ n.erstellt_am|date:"d.m.Y, H:i" }}</span>
+                    <p>{{ n.nachricht }}</p>
+                </div>
+                {% empty %}
+                <p class="fw-klein">{% trans "Noch keine Direktnachrichten." %}</p>
+                {% endfor %}
+                {% if kann_schreiben %}
+                <form method="post" action="/neu/auftrag/{{ a.id }}/direkt/" class="fw-formular mt-2">
+                    {% csrf_token %}
+                    <label class="fw-label">{% trans "Als Verwaltung an Mieter und Handwerker schreiben" %}</label>
+                    <textarea name="text" rows="2" required maxlength="2000" class="fw-feld w-full"></textarea>
+                    <button class="fw-btn fw-knapp mt-2">{% zeichen 'senden' %}{% trans "Senden" %}</button>
+                </form>
+                {% endif %}
+            </div>
+            {% endif %}
             {% if a.status != 'storniert' and not kann_schreiben and a.termin_status == 'vereinbart' %}
             <div class="fw-rumpf"><div class="fw-chip fw-good">{% zeichen 'termin' %} {% blocktrans with d=a.termin_am|date:"d.m.Y, H:i" %}Termin: {{ d }} Uhr{% endblocktrans %}</div></div>
             {% endif %}

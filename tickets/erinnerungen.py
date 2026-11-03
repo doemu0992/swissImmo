@@ -90,7 +90,8 @@ def erinnerungen_senden(jetzt=None):
             continue
         hat_geantwortet = t.nachrichten.filter(
             typ='handwerker_mail', empfaenger_handwerker=a.handwerker,
-            is_von_verwaltung=False).exists()
+            is_von_verwaltung=False).exists() or t.nachrichten.filter(
+            typ='direkt', seite='handwerker', auftrag=a).exists()    # Chat mit dem Mieter zählt als Rückmeldung
         if hat_geantwortet or not _faellig(t, 'auftrag', a.beauftragt_am, jetzt):
             continue
         try:

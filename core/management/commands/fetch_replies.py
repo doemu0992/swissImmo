@@ -135,6 +135,12 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(f'   {fehler}'))
             return
 
+        # Gebündelte Chat-Nachrichten, deren Fenster vorbei ist, als Mail an die Gegenseite (Direktkanal).
+        try:
+            from tickets.direktkanal import ausstehende_zustellen
+            ausstehende_zustellen()
+        except Exception:                                      # noqa: BLE001
+            logger.exception('%s: Zustellung gebündelter Chat-Nachrichten fehlgeschlagen', postfach.organisation)
         if fehlgeschlagen:
             postfach.fehler_vermerken(
                 f'{fehlgeschlagen} von {verarbeitet + fehlgeschlagen} Mails liessen sich '
@@ -178,8 +184,15 @@ class Command(BaseCommand):
             self.stdout.write('   Inhalt leer — übersprungen.')
             return
 
+        # Auftragsmarke «[A12]» im Betreff: Antwort im Direktkanal Mieter/Handwerker (tickets/direktkanal.py).
+        from tickets.direktkanal import auftrag_id_aus_betreff
         from tickets.workflow import antwort_zuordnen
-        seite = antwort_zuordnen(ticket, absender, inhalt)
+        seite = antwort_zuordnen(ticket, absender, inhalt, auftrag_id=auftrag_id_aus_betreff(betreff),
+                                 kopf=dict(nachricht.items()))
+        if seite.startswith('direkt_'):
+            self.stdout.write(self.style.SUCCESS(
+                f'   In Ticket #{nummer} im Chat übernommen und der Gegenseite zugestellt ({seite[7:]}).'))
+            return
         self.stdout.write(self.style.SUCCESS(
             f'   In Ticket #{nummer} übernommen ({"Handwerker" if seite == "handwerker" else "Melder"}).'))
 

@@ -37472,3 +37472,141 @@ msgstr "Hello Ms %(name)s"
 
 msgid "Gruss an den Empfänger (Guten Tag Herr Muster)"
 msgstr "Greeting for the recipient (Hello Mr Muster)"
+
+msgid "Terminvorschlag: %(d)s Uhr"
+msgstr "Proposed appointment: %(d)s"
+
+msgid "von Ihnen — Antwort der Gegenseite steht aus."
+msgstr "from you — the other party has not replied yet."
+
+msgid "von %(n)s"
+msgstr "from %(n)s"
+
+msgid "Noch kein Termin vereinbart."
+msgstr "No appointment agreed yet."
+
+msgid "Gegenvorschlag machen"
+msgstr "Make a counter-proposal"
+
+msgid "Hinweis (optional)"
+msgstr "Note (optional)"
+
+msgid "Vorschlag senden"
+msgstr "Send proposal"
+
+msgid "%(n)s bestätigt den Termin oder macht einen Gegenvorschlag. Die Verwaltung wird informiert, sobald der Termin steht."
+msgstr "%(n)s confirms the appointment or makes a counter-proposal. The property management is informed as soon as the appointment is set."
+
+msgid "Nachrichten mit %(n)s"
+msgstr "Messages with %(n)s"
+
+msgid "%(n)s erhält Ihre Nachricht zusätzlich per E-Mail und kann direkt darauf antworten."
+msgstr "%(n)s also receives your message by e-mail and can reply to it directly."
+
+msgid "Termin und Nachrichten · %(titel)s"
+msgstr "Appointment and messages · %(titel)s"
+
+msgid "Termin und Nachrichten"
+msgstr "Appointment and messages"
+
+msgid "Der Auftrag ist abgeschlossen — die Seite ist nur noch lesbar."
+msgstr "The job is completed — this page is now read-only."
+
+msgid "Termin und Nachrichten mit dem Mieter"
+msgstr "Appointment and messages with the tenant"
+
+msgid "Termin und Nachrichten mit %(f)s"
+msgstr "Appointment and messages with %(f)s"
+
+msgid "Direkt Mieter ↔ Handwerker"
+msgstr "Direct tenant ↔ tradesperson"
+
+msgid "Direkt zwischen Mieter und Handwerker"
+msgstr "Directly between tenant and tradesperson"
+
+msgid "Terminvorschlag (%(v)s): %(d)s Uhr — noch nicht bestätigt"
+msgstr "Proposed appointment (%(v)s): %(d)s — not yet confirmed"
+
+msgid "Mieter und Handwerker stimmen sich selbst ab, auch den Termin. Sie sehen mit; die Verwaltung wird erst informiert, wenn der Termin steht oder abgesagt wird."
+msgstr "Tenant and tradesperson arrange things themselves, including the appointment. You read along; the property management is only informed once the appointment is set or cancelled."
+
+msgid "Noch keine Direktnachrichten."
+msgstr "No direct messages yet."
+
+msgid "Als Verwaltung an Mieter und Handwerker schreiben"
+msgstr "Write to tenant and tradesperson as property management"
+
+msgid "Nachricht an Mieter und Handwerker gesendet."
+msgstr "Message sent to tenant and tradesperson."
+
+msgid "Nachricht gesendet."
+msgstr "Message sent."
+
+msgid "Terminvorschlag gesendet. Die Gegenseite bestätigt oder macht einen anderen Vorschlag."
+msgstr "Proposal sent. The other party will confirm or suggest another time."
+
+msgid "Terminvorschlag gespeichert. Die Gegenseite sieht ihn im Portal."
+msgstr "Proposal saved. The other party sees it in the portal."
+
+msgid "Termin bestätigt. Beide Seiten erhalten den Kalendereintrag."
+msgstr "Appointment confirmed. Both sides receive the calendar entry."
+
+msgid "Termin abgesagt. Schlagen Sie einen neuen Termin vor."
+msgstr "Appointment cancelled. Please propose a new one."
+
+msgid "Unbekannter Absender."
+msgstr "Unknown sender."
+
+msgid "Der Auftrag ist abgeschlossen — der Chat ist nur noch lesbar."
+msgstr "The job is completed — the chat is now read-only."
+
+msgid "%(gruss)s\n\n%(wer)s schreibt zu «%(schaden)s»:\n\n%(text)s\n\nSie können direkt auf diese Mail antworten — Ihre Antwort geht an den Handwerker. Oder öffnen Sie den Chat:\n%(link)s"
+msgstr "%(gruss)s\n\n%(wer)s writes about “%(schaden)s”:\n\n%(text)s\n\nYou can reply directly to this e-mail — your reply goes to the tradesperson. Or open the chat:\n%(link)s"
+
+msgid "%(gruss)s\n\n%(wer)s schreibt zu «%(schaden)s»:\n\n%(text)s\n\nSie können direkt auf diese Mail antworten — Ihre Antwort geht an den Mieter. Oder öffnen Sie den Chat:\n%(link)s"
+msgstr "%(gruss)s\n\n%(wer)s writes about “%(schaden)s”:\n\n%(text)s\n\nYou can reply directly to this e-mail — your reply goes to the tenant. Or open the chat:\n%(link)s"
+
+msgid "Termin vorgeschlagen"
+msgstr "Appointment proposed"
+
+msgid "Direktnachricht Mieter/Handwerker"
+msgstr "Direct message tenant/tradesperson"
+
+msgid "Unbekannte Seite."
+msgstr "Unknown party."
+
+msgid "Der Auftrag ist abgeschlossen."
+msgstr "The job is completed."
+
+msgid "Der Termin liegt zu weit in der Zukunft."
+msgstr "The appointment is too far in the future."
+
+msgid "Der Hinweis ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "The note is too long (at most %(n)s characters)."
+
+msgid "Terminvorschlag: %(zeit)s"
+msgstr "Proposed appointment: %(zeit)s"
+
+msgid "%(gruss)s\n\n%(wer)s schlägt für «%(schaden)s» folgenden Termin vor:\n\nWann: %(zeit)s\n%(hinweis)s\nBestätigen oder einen anderen Termin vorschlagen (ohne Anmeldung):\n%(link)s\n\nSie können auch direkt auf diese Mail antworten. Verbindlich wird der Termin erst, wenn Sie ihn bestätigen."
+msgstr "%(gruss)s\n\n%(wer)s proposes the following appointment for “%(schaden)s”:\n\nWhen: %(zeit)s\n%(hinweis)s\nConfirm or suggest another time (no login needed):\n%(link)s\n\nYou can also reply directly to this e-mail. The appointment only becomes binding once you confirm it."
+
+msgid "Hinweis: %(h)s"
+msgstr "Note: %(h)s"
+
+msgid "Es gibt keinen offenen Terminvorschlag."
+msgstr "There is no open appointment proposal."
+
+msgid "Der Vorschlag wurde inzwischen geändert. Bitte den aktuellen ansehen."
+msgstr "The proposal has changed in the meantime. Please look at the current one."
+
+msgid "Der Vorschlag stammt von Ihnen — die Gegenseite muss ihn bestätigen."
+msgstr "The proposal is yours — the other party has to confirm it."
+
+msgid "Es gibt keinen vereinbarten Termin."
+msgstr "There is no agreed appointment."
+
+msgid "{gruss}\n\nfür „{schaden}“ wurde ein Termin vereinbart:\n\nWann: {termin}\nWer: {handwerker}\nWo: {objekt}\n\nBitte stellen Sie den Zutritt sicher. Bei Verhinderung antworten Sie direkt auf diese Mail oder schreiben Sie dem Handwerker im Mieterportal — Sie stimmen den neuen Termin direkt mit ihm ab. Der Kalendereintrag hängt an.\n\nFreundliche Grüsse\nIhre Liegenschaftsverwaltung"
+msgstr "{gruss}\n\nan appointment has been agreed for “{schaden}”:\n\nWhen: {termin}\nWho: {handwerker}\nWhere: {objekt}\n\nPlease make sure access is possible. If you cannot make it, reply directly to this e-mail or write to the tradesperson in the tenant portal — you agree the new appointment directly with them. The calendar entry is attached.\n\nKind regards\nYour property management"
+
+msgid "{gruss}\n\nDer Termin für „{schaden}“ ({objekt}) ist festgelegt: {termin}.\nMieter: {melder_name} ({melder_tel}).\nDer Kalendereintrag hängt an. Können Sie den Termin nicht einhalten, antworten Sie direkt auf diese Mail — Ihre Antwort geht an den Mieter, den neuen Termin stimmen Sie direkt mit ihm ab.\n\nFreundliche Grüsse\nIhre Liegenschaftsverwaltung"
+msgstr "{gruss}\n\nThe appointment for “{schaden}” ({objekt}) is set: {termin}.\nTenant: {melder_name} ({melder_tel}).\nThe calendar entry is attached. If you cannot keep the appointment, reply directly to this e-mail — your reply goes to the tenant, and you agree the new appointment directly with them.\n\nKind regards\nYour property management"
