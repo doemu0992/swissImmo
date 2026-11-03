@@ -1,69 +1,71 @@
-{% load chf %}
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<style>
-    @page { size: A4 portrait; margin: 2.2cm 2cm 2cm 2cm;
-        @frame footer { -pdf-frame-content: footerContent; bottom: 1cm; margin-left: 2cm; margin-right: 2cm; height: 1cm; } }
-    body { font-family: Helvetica, sans-serif; font-size: 9.5pt; color: #1e293b; line-height: 1.5; }
-    h1 { font-size: 15pt; margin: 0 0 6pt 0; }
-    .kopf { font-size: 8pt; color: #64748b; border-bottom: 1px solid #e2e8f0; padding-bottom: 4pt; margin-bottom: 12pt; }
-    .disclaimer { font-size: 8pt; color: #64748b; margin-bottom: 12pt; }
-    .sec { background-color: #f1f5f9; font-weight: bold; font-size: 10pt; padding: 4pt 7pt; margin: 14pt 0 6pt 0; }
-    .subsec { font-weight: bold; font-size: 9pt; color: #334155; margin: 9pt 0 3pt 0; }
-    .sublabel { font-weight: bold; font-size: 8pt; color: #64748b; margin: 6pt 0 2pt 0; }
-    .note { font-size: 8pt; color: #64748b; margin: 3pt 0; }
-    .fam { font-size: 8pt; color: #b45309; background-color: #fffbeb; padding: 4pt 6pt; margin: 5pt 0; }
-    table.data { width: 100%; border-collapse: collapse; margin: 4pt 0; }
-    table.data td { padding: 2.5pt 0; vertical-align: top; }
-    table.data td.k { color: #64748b; width: 38%; }
-    table.data td.b { font-weight: bold; }
-    p { margin: 5pt 0; }
-    .sign { width: 100%; margin-top: 22pt; }
-    .sign td { width: 240pt; vertical-align: top; padding-top: 30pt; font-size: 8pt; color: #64748b; }
-    .sigline { border-top: 1px solid #94a3b8; padding-top: 3pt; }
-    .sigimg { height: 36pt; }
-</style>
-</head>
-<body>
+{% extends "core/dok_base.html" %}{% load chf %}
+{% comment %}
+Mietvertrag Wohnen/Gewerbe (Welle 1 des Dokumentendesigns). Basis: dok_base.html
+(Briefkopf, Seitenkopf ab Seite 2, Fusszeile «Seite x von y», Stil in _dok_stil.html).
 
-{% if eigentuemer %}{% with vname=eigentuemer.firma_oder_name vstr=eigentuemer.strasse vplz=eigentuemer.plz vort=eigentuemer.ort %}
-<div class="kopf">{{ vname }} | {{ vstr }} | {{ vplz }} {{ vort }}</div>
-{% endwith %}{% else %}
-<div class="kopf">{{ verwaltung.firma }} | {{ verwaltung.strasse }} | {{ verwaltung.plz }} {{ verwaltung.ort }}</div>
-{% endif %}
+Gliederung: Titelblock (Titel, Objekt, Vertragsparteien, Eckdaten) und Artikel 1 ff. mit
+Klauseln 1.1, 1.2 …. Rechtsinhalt und bedingte Klauseln unverändert gegenüber dem Stand
+vor dem Umbau. Die DocuSeal-Textmarken im Mieter-Block bleiben Text im PDF (weiss gesetzt);
+Wortlaut der Marken NICHT ändern. Kein Empfängerblock: Zum Vertrag gehört immer ein Begleitbrief.
 
-<h1>{{ vertrag.vertrag_titel }}</h1>
-<div class="disclaimer">Einfachheitshalber wird auf die weiblichen Formen «Mieterin, Vermieterin» etc. verzichtet und stattdessen «Mieter, Vermieter» etc. als Oberbegriff verwendet.</div>
+Dieselbe Vorlage dient dem PDF (pdf_service), der Live-Vorschau und den DocuSeal-Wegen, deren
+Kontext von Hand gebaut wird — darum nur Werte, die dort auch vorkommen.
+{% endcomment %}
+{% block stil %}{% include "core/_dok_stil.html" with visum=True %}{% endblock %}
+{% block seitenkopf_titel %}{{ vertrag.vertrag_titel }}{% endblock %}
+{% block seitenkopf_ref %}{{ einheit.bezeichnung }} · {{ liegenschaft.strasse }}, {{ liegenschaft.ort }} · {{ mieter.display_name }}{% endblock %}
+{% block fuss_zeile %}{% if eigentuemer %}{{ eigentuemer.firma_oder_name }}{% else %}{{ verwaltung.firma }}{% endif %} · {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }} · erstellt am {{ heute|date:"d.m.Y" }}{% endblock %}
+{% block fuss_seite %}Seite <pdf:pagenumber> von <pdf:pagecount>{% endblock %}
+{% block visum %}<table class="visum"><tr>
+    <td class="vl">Visum</td><td>Vermieter</td><td class="vs">&nbsp;</td><td>Mieter{% if vertrag.mitmieter or vertrag.mitmieter_name %} 1{% endif %}</td>{% if vertrag.mitmieter or vertrag.mitmieter_name %}<td class="vs">&nbsp;</td><td>Mieter 2</td>{% endif %}
+</tr></table>{% endblock %}
 
-<div class="sec">1. Vertragsparteien</div>
-<div class="sublabel">Vermieter</div>
-{% if eigentuemer %}
-{{ eigentuemer.firma_oder_name }}<br>{{ eigentuemer.strasse }}<br>{{ eigentuemer.plz }} {{ eigentuemer.ort }}
-{% else %}
-{{ verwaltung.firma }}<br>{{ verwaltung.strasse }}<br>{{ verwaltung.plz }} {{ verwaltung.ort }}
-{% endif %}
-<div class="note">Nachstehend «Vermieter» genannt.</div>
-{% if verwaltung %}
-<div class="sublabel">Vertreten durch:</div>
-{{ verwaltung.firma }}<br>{{ verwaltung.strasse }}<br>{{ verwaltung.plz }} {{ verwaltung.ort }}
-{% endif %}
+{% block inhalt %}
+{% with vb=vertrag.weitere_vorbehalte|default:vertrag.besondere_vereinbarungen %}
 
-<div class="sublabel">Mieter</div>
-{{ mieter.display_name }}{% if mieter.strasse %}<br>{{ mieter.strasse }}{% endif %}{% if mieter.plz %}<br>{{ mieter.plz }} {{ mieter.ort }}{% endif %}
-{% if vertrag.mitmieter %}
-<div style="margin-top:6pt;">{{ vertrag.mitmieter.display_name }}{% if vertrag.mitmieter.strasse %}<br>{{ vertrag.mitmieter.strasse }}{% endif %}{% if vertrag.mitmieter.plz %}<br>{{ vertrag.mitmieter.plz }} {{ vertrag.mitmieter.ort }}{% endif %}</div>
-{% elif vertrag.mitmieter_name %}
-<div style="margin-top:6pt;">{{ vertrag.mitmieter_name }}{% if mieter.strasse %}<br>{{ mieter.strasse }}{% endif %}{% if mieter.plz %}<br>{{ mieter.plz }} {{ mieter.ort }}{% endif %}</div>
-{% endif %}
-<div class="note">Nachstehend «Mieter» genannt.</div>
+{# ===== Titelblock ===== #}
+<div class="titel">{{ vertrag.vertrag_titel }}</div>
+<div class="untertitel">{{ einheit.bezeichnung }}{% if einheit.etage %}, {{ einheit.etage }}{% endif %} · {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }}</div>
+
+<table class="kasten"><tr>
+    <td class="zelle">
+        <div class="lbl">VERMIETER</div>
+        {% if eigentuemer %}<span class="partei-name">{{ eigentuemer.firma_oder_name }}</span><br>{{ eigentuemer.strasse }}<br>{{ eigentuemer.plz }} {{ eigentuemer.ort }}
+        {% else %}<span class="partei-name">{{ verwaltung.firma }}</span><br>{{ verwaltung.strasse }}<br>{{ verwaltung.plz }} {{ verwaltung.ort }}{% endif %}
+        {% if eigentuemer and verwaltung %}<div class="vertr">Vertreten durch:<br>{{ verwaltung.firma }}, {{ verwaltung.strasse }}, {{ verwaltung.plz }} {{ verwaltung.ort }}</div>{% endif %}
+    </td>
+    <td class="luecke">&nbsp;</td>
+    <td class="zelle">
+        <div class="lbl">MIETER</div>
+        <span class="partei-name">{{ mieter.display_name }}</span>{% if mieter.strasse %}<br>{{ mieter.strasse }}{% endif %}{% if mieter.plz %}<br>{{ mieter.plz }} {{ mieter.ort }}{% endif %}
+        {% if vertrag.mitmieter %}<br><br><span class="partei-name">{{ vertrag.mitmieter.display_name }}</span>{% if vertrag.mitmieter.strasse %}<br>{{ vertrag.mitmieter.strasse }}{% endif %}{% if vertrag.mitmieter.plz %}<br>{{ vertrag.mitmieter.plz }} {{ vertrag.mitmieter.ort }}{% endif %}
+        {% elif vertrag.mitmieter_name %}<br><br><span class="partei-name">{{ vertrag.mitmieter_name }}</span>{% if mieter.strasse %}<br>{{ mieter.strasse }}{% endif %}{% if mieter.plz %}<br>{{ mieter.plz }} {{ mieter.ort }}{% endif %}{% endif %}
+    </td>
+</tr></table>
+
+<table class="kasten"><tr>
+    <td class="zelle eck"><div class="lbl">MIETBEGINN</div><div class="wert">{{ vertrag.beginn|date:"d.m.Y" }}</div></td>
+    <td class="zelle eck"><div class="lbl">NETTOMIETZINS</div><div class="wert">CHF {{ miete_fmt }}</div></td>
+    <td class="zelle eck"><div class="lbl">BRUTTOMIETZINS</div><div class="wert">CHF {{ brutto_fmt }}</div></td>
+    <td class="zelle eck"><div class="lbl">MIETZINSDEPOT</div><div class="wert">CHF {{ kaution_fmt }}</div></td>
+</tr></table>
+
+{# ===== 1 ===== #}
+<div class="art"><span class="nr">1</span>&nbsp; Vertragsparteien</div>
+<div class="sub"><span class="nr">1.1</span>&nbsp; Bezeichnung</div>
+<p class="fliess">Die oben als Vermieter bezeichnete Partei ist nachstehend «Vermieter» genannt, die als Mieter bezeichnete Partei nachstehend «Mieter».</p>
+<div class="sub"><span class="nr">1.2</span>&nbsp; Haftung</div>
+<p class="fliess">Alle aufgeführten Personen haften für sämtliche Verbindlichkeiten solidarisch.</p>
+<div class="sub"><span class="nr">1.3</span>&nbsp; Sprachform</div>
+<p class="fliess">Einfachheitshalber wird auf die weiblichen Formen «Mieterin, Vermieterin» etc. verzichtet und stattdessen «Mieter, Vermieter» etc. als Oberbegriff verwendet.</p>
 {% if vertrag.familienwohnung %}
+<div class="sub"><span class="nr">1.4</span>&nbsp; Familienwohnung</div>
 <div class="fam"><b>Familienwohnung</b> (Art. 266n / 169 OR): Eine Kündigung durch den Vermieter ist beiden Ehegatten separat mit amtlichem Formular zuzustellen.</div>
 {% endif %}
-<p class="note">Alle aufgeführten Personen haften für sämtliche Verbindlichkeiten solidarisch.</p>
 
-<div class="sec">2. Mietsache</div>
+{# ===== 2 ===== #}
+<div class="art"><span class="nr">2</span>&nbsp; Mietsache</div>
+<div class="sub2"><span class="nr">2.1</span>&nbsp; Mietobjekt</div>
 <table class="data">
     <tr><td class="k">Mietobjekt</td><td>{{ einheit.bezeichnung }}</td></tr>
     <tr><td class="k">Stockwerk</td><td>{{ einheit.etage|default:"—" }}</td></tr>
@@ -73,23 +75,29 @@
     {% if vertrag.nebenraeume %}<tr><td class="k">Nebenräume</td><td>{{ vertrag.nebenraeume }}</td></tr>{% endif %}
     {% if vertrag.mitbenutzung %}<tr><td class="k">Zur Mitbenützung</td><td>{{ vertrag.mitbenutzung }}</td></tr>{% endif %}
 </table>
+<div class="sub"><span class="nr">2.2</span>&nbsp; Gebrauchszweck</div>
 {% if vertrag.mietrecht_kategorie == 'gewerbe' %}
-<p class="note">Der Mieter verpflichtet sich, die Mietsache während der gesamten Mietdauer ausschliesslich zum folgenden Zweck zu gebrauchen: <b>{{ vertrag.zweckbestimmung|default:"gemäss separater Vereinbarung" }}</b>. Eine Änderung der Nutzung bedarf der vorgängigen schriftlichen Zustimmung des Vermieters.</p>
+<p class="fliess">Der Mieter verpflichtet sich, die Mietsache während der gesamten Mietdauer ausschliesslich zum folgenden Zweck zu gebrauchen: <b>{{ vertrag.zweckbestimmung|default:"gemäss separater Vereinbarung" }}</b>. Eine Änderung der Nutzung bedarf der vorgängigen schriftlichen Zustimmung des Vermieters.</p>
 {% else %}
-<p class="note">Der Mieter verpflichtet sich, die Mietsache während der gesamten Mietdauer zum vertraglich vereinbarten Zweck, das heisst als Wohnung, zu gebrauchen. Eine wesentliche Gebrauchsänderung ist nur mit ausdrücklicher Zustimmung des Vermieters gestattet.</p>
+<p class="fliess">Der Mieter verpflichtet sich, die Mietsache während der gesamten Mietdauer zum vertraglich vereinbarten Zweck, das heisst als Wohnung, zu gebrauchen. Eine wesentliche Gebrauchsänderung ist nur mit ausdrücklicher Zustimmung des Vermieters gestattet.</p>
 {% endif %}
 
-<div class="sec">3. Mietdauer und Kündigung</div>
+{# ===== 3 ===== #}
+<div class="art"><span class="nr">3</span>&nbsp; Mietdauer und Kündigung</div>
+<div class="sub2"><span class="nr">3.1</span>&nbsp; Mietdauer</div>
 <table class="data">
     <tr><td class="k">Mietbeginn</td><td>{{ vertrag.beginn|date:"d.m.Y" }}</td></tr>
     <tr><td class="k">Mietende</td><td>{% if vertrag.ende %}{{ vertrag.ende|date:"d.m.Y" }}{% else %}unbefristet{% endif %}</td></tr>
     <tr><td class="k">Kündigungsfrist</td><td>{{ vertrag.kuendigungsfrist_monate }} Monate</td></tr>
     <tr><td class="k">Kündigungstermine</td><td>{{ vertrag.kuendigungstermine }}</td></tr>
 </table>
-{% if vertrag.erstmals_kuendbar_auf %}<p class="note">Der Vertrag ist erstmals kündbar auf {{ vertrag.erstmals_kuendbar_auf|date:"d.m.Y" }}.</p>{% endif %}
-<p class="note">Die Kündigung dieses Mietvertrages durch den Mieter hat mit Einschreibebrief, jene des Vermieters hat mit amtlichem Formular zu erfolgen.</p>
+{% if vertrag.erstmals_kuendbar_auf %}<p class="fliess">Der Vertrag ist erstmals kündbar auf {{ vertrag.erstmals_kuendbar_auf|date:"d.m.Y" }}.</p>{% endif %}
+<div class="sub"><span class="nr">3.2</span>&nbsp; Form der Kündigung</div>
+<p class="fliess">Die Kündigung dieses Mietvertrages durch den Mieter hat mit Einschreibebrief, jene des Vermieters hat mit amtlichem Formular zu erfolgen.</p>
 
-<div class="sec">4. Mietzins</div>
+{# ===== 4 ===== #}
+<div class="art"><span class="nr">4</span>&nbsp; Mietzins</div>
+<div class="sub2"><span class="nr">4.1</span>&nbsp; Mietzins und Nebenkosten</div>
 <table class="data">
     <tr><td class="k">Nettomietzins</td><td>CHF {{ miete_fmt }}</td></tr>
     <tr><td class="k">Nebenkosten ({{ vertrag.get_nk_abrechnungsart_display }})</td><td>CHF {{ nk_fmt }}</td></tr>
@@ -98,104 +106,99 @@
 </table>
 
 {% if mietzins_zeitplan %}
-<div class="subsec">Gestaffelter Mietzins / Gratismonate</div>
-{% for satz in mietzins_hinweise %}<p class="note" style="margin:2pt 0;">• {{ satz }}</p>{% endfor %}
-<p class="note">Übersicht der ab dem jeweiligen Datum geltenden Beträge (im Voraus vereinbart). <b>Referenzmiete</b> = vereinbarter Bruttomietzins; ein <b>Rabatt/Erlass</b> mindert nur den in dieser Periode <b>tatsächlich geschuldeten</b> Betrag:</p>
-<table style="width:100%; border-collapse:collapse; margin:4pt 0;">
-    <tr style="border-bottom:1px solid #94a3b8;">
-        <td style="width:31%; padding:4pt 6pt 4pt 0; font-weight:bold; color:#64748b;">Gültig ab</td>
-        <td style="width:23%; padding:4pt 6pt; font-weight:bold; text-align:right;">Referenzmiete</td>
-        <td style="width:23%; padding:4pt 6pt; font-weight:bold; text-align:right;">Rabatt/Erlass</td>
-        <td style="width:23%; padding:4pt 0 4pt 6pt; font-weight:bold; text-align:right;">Zu bezahlen</td></tr>
+<p class="fliess"><b>Gestaffelter Mietzins / Gratismonate</b></p>
+{% for satz in mietzins_hinweise %}<p class="fliess">• {{ satz }}</p>{% endfor %}
+<p class="hinweis">Übersicht der ab dem jeweiligen Datum geltenden Beträge (im Voraus vereinbart). <b>Referenzmiete</b> = vereinbarter Bruttomietzins; ein <b>Rabatt/Erlass</b> mindert nur den in dieser Periode <b>tatsächlich geschuldeten</b> Betrag:</p>
+<table class="zeit">
+    <tr>
+        <td class="h" width="31%">Gültig ab</td>
+        <td class="h r" width="23%">Referenzmiete</td>
+        <td class="h r" width="23%">Rabatt/Erlass</td>
+        <td class="h r" width="23%">Zu bezahlen</td></tr>
     {% for k in mietzins_zeitplan %}
-    <tr style="border-bottom:1px solid #e2e8f0;">
-        <td style="padding:4pt 6pt 4pt 0;">{{ k.gueltig_ab|date:"d.m.Y" }}{% if k.notiz %}<br><span style="color:#94a3b8; font-size:8pt;">{{ k.notiz }}</span>{% endif %}</td>
-        <td style="padding:4pt 6pt; text-align:right;">CHF {{ k.brutto|floatformat:2 }}</td>
-        <td style="padding:4pt 6pt; text-align:right; color:#b45309;">{% if k.hat_rabatt %}– CHF {{ k.rabatt_gesamt|floatformat:2 }}{% else %}–{% endif %}</td>
-        <td style="padding:4pt 0 4pt 6pt; text-align:right; font-weight:bold;">CHF {{ k.verrechnet_brutto|floatformat:2 }}{% if k.verrechnet_brutto == 0 %}<br><span style="color:#94a3b8; font-size:8pt; font-weight:normal;">mietzinsfrei</span>{% endif %}</td></tr>
+    <tr>
+        <td>{{ k.gueltig_ab|date:"d.m.Y" }}{% if k.notiz %}<br><span class="klein">{{ k.notiz }}</span>{% endif %}</td>
+        <td class="r">CHF {{ k.brutto|floatformat:2 }}</td>
+        <td class="r rabatt">{% if k.hat_rabatt %}– CHF {{ k.rabatt_gesamt|floatformat:2 }}{% else %}–{% endif %}</td>
+        <td class="r"><b>CHF {{ k.verrechnet_brutto|floatformat:2 }}</b>{% if k.verrechnet_brutto == 0 %}<br><span class="klein">mietzinsfrei</span>{% endif %}</td></tr>
     {% endfor %}
 </table>
 {% endif %}
 
-<div class="subsec">4.1 Mietzinsbasis</div>
+<div class="sub2"><span class="nr">4.2</span>&nbsp; Mietzinsbasis</div>
 <table class="data">
     <tr><td class="k">Referenzzinssatz</td><td>{{ vertrag.beginn|date:"m.Y" }}, {{ ref_fmt }}%</td></tr>
     <tr><td class="k">Landesindex der Konsumentenpreise</td><td>Basis {{ lik_basis }}{% if lik_stand_label %}, Stand {{ lik_stand_label }}{% endif %}: {{ lik_pkt }} Pkt.</td></tr>
     {% if vertrag.kostensteigerung_datum %}<tr><td class="k">Kostensteigerung ausgeglichen bis</td><td>{{ vertrag.kostensteigerung_datum|date:"m.Y" }}</td></tr>{% endif %}
 </table>
-<p class="note">Der Mietzins beruht auf den obigen Grundlagen. Änderungen des Referenzzinssatzes, des Landesindexes sowie allgemeine Kostensteigerungen berechtigen zu einer Anpassung des Mietzinses nach den Bestimmungen des OR und der VMWG.</p>
+<p class="fliess">Der Mietzins beruht auf den obigen Grundlagen. Änderungen des Referenzzinssatzes, des Landesindexes sowie allgemeine Kostensteigerungen berechtigen zu einer Anpassung des Mietzinses nach den Bestimmungen des OR und der VMWG.</p>
 
-<div class="subsec">4.2 Mietzinszahlung</div>
-<p class="note">Der Mietzins ist jeweils am 1. Tag des Monats (Verfalldatum) im Voraus fällig. Bei Zahlungseingängen nach dem Verfalldatum ist der Vermieter berechtigt, einen Verzugszins{% if vertrag.mahngebuehr_vereinbart %} sowie Mahn- und Umtriebsgebühren in usanzgemässer Höhe{% endif %} in Rechnung zu stellen.</p>
+<div class="sub"><span class="nr">4.3</span>&nbsp; Mietzinszahlung</div>
+<p class="fliess">Der Mietzins ist jeweils am 1. Tag des Monats (Verfalldatum) im Voraus fällig. Bei Zahlungseingängen nach dem Verfalldatum ist der Vermieter berechtigt, einen Verzugszins{% if vertrag.mahngebuehr_vereinbart %} sowie Mahn- und Umtriebsgebühren in usanzgemässer Höhe{% endif %} in Rechnung zu stellen.</p>
 
-<div class="subsec">4.3 Mietzinsdepot</div>
-<p class="note">Zur Sicherstellung sämtlicher vermieterseitiger Ansprüche aus dem Mietverhältnis leistet der Mieter eine Sicherheit im Sinne von Art. 257e OR von <b>CHF {{ kaution_fmt }}</b>.{% if vertrag.kautions_konto %} Kautionskonto: {{ vertrag.kautions_konto }}.{% endif %} Die Sicherheitsleistung muss bis zur Schlüsselübergabe erfolgt sein.</p>
+<div class="sub"><span class="nr">4.4</span>&nbsp; Mietzinsdepot</div>
+<p class="fliess">Zur Sicherstellung sämtlicher vermieterseitiger Ansprüche aus dem Mietverhältnis leistet der Mieter eine Sicherheit im Sinne von Art. 257e OR von <b>CHF {{ kaution_fmt }}</b>.{% if vertrag.kautions_konto %} Kautionskonto: {{ vertrag.kautions_konto }}.{% endif %} Die Sicherheitsleistung muss bis zur Schlüsselübergabe erfolgt sein.</p>
 
-<div class="subsec">4.4 Nebenkosten</div>
-<p class="note">Nebenkosten sind das Entgelt für die tatsächlichen Aufwendungen des Vermieters oder eines Dritten für Leistungen, die mit dem Gebrauch der Mietsache zusammenhängen, wie Heizungs-, Warmwasser- und Betriebskosten sowie öffentliche Abgaben. Abrechnungsart: {{ vertrag.get_nk_abrechnungsart_display }}. Verteilschlüssel: {{ vertrag.get_verteilschluessel_display }}.</p>
+<div class="sub"><span class="nr">4.5</span>&nbsp; Nebenkosten</div>
+<p class="fliess">Nebenkosten sind das Entgelt für die tatsächlichen Aufwendungen des Vermieters oder eines Dritten für Leistungen, die mit dem Gebrauch der Mietsache zusammenhängen, wie Heizungs-, Warmwasser- und Betriebskosten sowie öffentliche Abgaben. Abrechnungsart: {{ vertrag.get_nk_abrechnungsart_display }}. Verteilschlüssel: {{ vertrag.get_verteilschluessel_display }}.</p>
 {% if vertrag.nk_kostenarten_namen %}
-<p class="note">Der Mieter trägt folgende Nebenkosten, die hier einzeln bezeichnet sind (Art. 257a Abs. 2 OR): <b>{{ vertrag.nk_kostenarten_namen|join:", " }}</b>. Nicht aufgeführte Kosten sind nicht vereinbart und werden dem Mieter nicht belastet.</p>
+<p class="fliess">Der Mieter trägt folgende Nebenkosten, die hier einzeln bezeichnet sind (Art. 257a Abs. 2 OR): <b>{{ vertrag.nk_kostenarten_namen|join:", " }}</b>. Nicht aufgeführte Kosten sind nicht vereinbart und werden dem Mieter nicht belastet.</p>
 {% endif %}
 
-{% include 'core/_mietzinsmodell_klausel.html' with kopf='subsec' nummer='4.5' %}
+{% include 'core/_mietzinsmodell_klausel.html' with kopf='sub' absatz='fliess' nummer='4.6' %}
 
+{# ===== 5 ff. (Nummern folgen den bedingten Vorbehalten) ===== #}
 {% if vertrag.weitere_vorbehalte or vertrag.besondere_vereinbarungen %}
-<div class="sec">5. Vorbehalte und besondere Vereinbarungen</div>
-{% if vertrag.weitere_vorbehalte %}<div class="subsec">Mietzinsvorbehalte</div><p class="note">{{ vertrag.weitere_vorbehalte|linebreaksbr }}</p>{% endif %}
-{% if vertrag.besondere_vereinbarungen %}<div class="subsec">Besondere Bestimmungen</div><p class="note">{{ vertrag.besondere_vereinbarungen|linebreaksbr }}</p>{% endif %}
-<div class="sec">6. Allgemeine Bedingungen und Hausordnung</div>
-{% else %}
-<div class="sec">5. Allgemeine Bedingungen und Hausordnung</div>
+<div class="art"><span class="nr">5</span>&nbsp; Vorbehalte und besondere Vereinbarungen</div>
+{% if vertrag.weitere_vorbehalte %}<div class="sub2"><span class="nr">5.1</span>&nbsp; Mietzinsvorbehalte</div><p class="fliess">{{ vertrag.weitere_vorbehalte|linebreaksbr }}</p>{% endif %}
+{% if vertrag.besondere_vereinbarungen %}<div class="sub2"><span class="nr">{% if vertrag.weitere_vorbehalte %}5.2{% else %}5.1{% endif %}</span>&nbsp; Besondere Bestimmungen</div><p class="fliess">{{ vertrag.besondere_vereinbarungen|linebreaksbr }}</p>{% endif %}
 {% endif %}
-<p class="note">Die allgemeinen Bedingungen zum Mietvertrag und die Hausordnung bilden einen integrierenden Bestandteil dieses Vertrags. Die Parteien bestätigen mit ihren Unterschriften, dass sie ein vollständiges Exemplar erhalten haben und sich mit dem Inhalt einverstanden erklären. Jede Änderung oder Ergänzung bedarf zu ihrer Gültigkeit der Schriftform.</p>
 
-{% if vertrag.weitere_vorbehalte or vertrag.besondere_vereinbarungen %}
-<div class="sec">7. Datenschutz &amp; anwendbares Recht</div>
-{% else %}
-<div class="sec">6. Datenschutz &amp; anwendbares Recht</div>
-{% endif %}
-<p class="note">Im Rahmen der Leistungserbringung werden personenbezogene Daten (Name, E-Mail-Adresse, Angaben zum Mietobjekt) zum Betrieb der Verwaltungs-Plattform verarbeitet. Soweit in diesem Vertrag nichts anderes vereinbart ist, gelten die Bestimmungen des Schweizerischen Obligationenrechts (Art. 253 ff. OR). Gerichtsstand ist der Ort der gemieteten Sache.</p>
+<div class="art"><span class="nr">{{ vb|yesno:"6,5" }}</span>&nbsp; Allgemeine Bedingungen und Hausordnung</div>
+<p class="fliess">Die allgemeinen Bedingungen zum Mietvertrag und die Hausordnung bilden einen integrierenden Bestandteil dieses Vertrags. Die Parteien bestätigen mit ihren Unterschriften, dass sie ein vollständiges Exemplar erhalten haben und sich mit dem Inhalt einverstanden erklären. Jede Änderung oder Ergänzung bedarf zu ihrer Gültigkeit der Schriftform.</p>
 
-<p class="note" style="margin-top:8pt; border-top:0.5pt solid #e2e8f0; padding-top:6pt;"><b>Massgebliche Gesetzesgrundlagen (OR):</b>
+{# Ab hier ein unteilbarer Block: letzter Artikel, Beilagen und Unterschriften stehen immer zusammen auf einer Seite (xhtml2pdf teilt eine Tabellenzelle nicht). #}
+{% if halten_aus %}<div>{% else %}<table class="halten"><tr><td>{% endif %}
+<div class="art"><span class="nr">{{ vb|yesno:"7,6" }}</span>&nbsp; Datenschutz &amp; anwendbares Recht</div>
+<p class="fliess">Im Rahmen der Leistungserbringung werden personenbezogene Daten (Name, E-Mail-Adresse, Angaben zum Mietobjekt) zum Betrieb der Verwaltungs-Plattform verarbeitet. Soweit in diesem Vertrag nichts anderes vereinbart ist, gelten die Bestimmungen des Schweizerischen Obligationenrechts (Art. 253 ff. OR). Gerichtsstand ist der Ort der gemieteten Sache.</p>
+
+<p class="hinweis"><b>Massgebliche Gesetzesgrundlagen (OR):</b>
 Übergabe Art. 256 · Kaution Art. 257e · Zahlungsverzug Art. 257d · Nebenkosten Art. 257a–257b ·
 Kündigung Art. 266 ff.{% if vertrag.mietrecht_kategorie == 'wohnen' %} (Wohnräume Art. 266c){% elif vertrag.mietrecht_kategorie == 'gewerbe' %} (Geschäftsräume Art. 266d){% endif %},
 Form Art. 266l · Rückgabe Art. 267/267a{% if vertrag.ist_geschuetzt %} · Kündigungsschutz und Erstreckung Art. 271–272d{% endif %}{% if vertrag.mietzins_modell == 'index' %} · Indexklausel Art. 269b, Anpassung Art. 269d, Art. 17 und 19 VMWG{% elif vertrag.mietzins_modell == 'staffel' %} · Staffelmiete Art. 269c, Mitteilung Art. 269d Abs. 5, Art. 19a VMWG{% endif %}.</p>
 
-<table class="sign">
+<p class="fliess"><b>Beilagen zu diesem Vertrag:</b> Allgemeine Bedingungen zum Mietvertrag · Hausordnung</p>
+
+<div class="art">Unterschriften</div>
+<table class="unterschriften">
     <tr>
-        <td>
-            <div class="sublabel">Vermieter</div>
-            {% if unterschrift_path %}<img src="{{ unterschrift_path }}" class="sigimg"><br>{% endif %}
-            <div class="sigline">{% if eigentuemer %}{{ eigentuemer.ort }}{% elif verwaltung %}{{ verwaltung.ort }}{% endif %}, {{ heute|date:"d.m.Y" }} / Unterschrift</div>
-        </td>
-        <td>
-            {% if vertrag.mitmieter or vertrag.mitmieter_name %}
-                <div class="sublabel">Mieter 1: {{ mieter.display_name }}</div>
-                <br><span style="color:#ffffff;font-size:13pt;">{% verbatim %}{{Unterschrift Mieter;role=Mieter;type=signature;required=true}}{% endverbatim %}</span><br>
-                <div class="sigline">Unterschrift</div>
-                <table style="width:100%;margin-top:14pt;">
-                    <tr><td style="width:58pt;padding:3pt 0;color:#64748b;">Ort</td><td style="padding:3pt 0 3pt 10pt;"><span style="color:#ffffff;">{% verbatim %}{{Ort Mieter;role=Mieter;type=text;required=true}}{% endverbatim %}</span></td></tr>
-                    <tr><td style="padding:3pt 0;color:#64748b;">Datum</td><td style="padding:3pt 0 3pt 10pt;"><span style="color:#ffffff;">{% verbatim %}{{Datum Mieter;role=Mieter;type=date;required=true}}{% endverbatim %}</span></td></tr>
-                </table>
-                <div style="margin-top:22pt;" class="sublabel">Mieter 2: {% if vertrag.mitmieter %}{{ vertrag.mitmieter.display_name }}{% else %}{{ vertrag.mitmieter_name }}{% endif %}</div>
-                <br><br>
-                <div class="sigline">Ort, Datum / Unterschrift</div>
-            {% else %}
-                <div class="sublabel">Mieter</div>
-                <br><span style="color:#ffffff;font-size:13pt;">{% verbatim %}{{Unterschrift Mieter;role=Mieter;type=signature;required=true}}{% endverbatim %}</span><br>
-                <div class="sigline">Unterschrift</div>
-                <table style="width:100%;margin-top:14pt;">
-                    <tr><td style="width:58pt;padding:3pt 0;color:#64748b;">Ort</td><td style="padding:3pt 0 3pt 10pt;"><span style="color:#ffffff;">{% verbatim %}{{Ort Mieter;role=Mieter;type=text;required=true}}{% endverbatim %}</span></td></tr>
-                    <tr><td style="padding:3pt 0;color:#64748b;">Datum</td><td style="padding:3pt 0 3pt 10pt;"><span style="color:#ffffff;">{% verbatim %}{{Datum Mieter;role=Mieter;type=date;required=true}}{% endverbatim %}</span></td></tr>
-                </table>
-            {% endif %}
-        </td>
+        <td class="platz sig-name">Vermieter</td><td class="luecke">&nbsp;</td>
+        <td class="platz sig-name">Mieter{% if vertrag.mitmieter or vertrag.mitmieter_name %} 1: {{ mieter.display_name }}{% endif %}</td>
+    </tr>
+    <tr>
+        <td class="platz sig-feld">{% if unterschrift_path %}<img src="{{ unterschrift_path }}" class="sigimg">{% else %}&nbsp;{% endif %}</td><td class="luecke">&nbsp;</td>
+        <td class="platz sig-feld"><span class="tag-sig">{% verbatim %}{{Unterschrift Mieter;role=Mieter;type=signature;required=true}}{% endverbatim %}</span></td>
+    </tr>
+    <tr><td class="platz sig-unter">Unterschrift</td><td class="luecke">&nbsp;</td><td class="platz sig-unter">Unterschrift</td></tr>
+    <tr>
+        <td class="platz sig-ort">Ort: {% if eigentuemer %}{{ eigentuemer.ort }}{% elif verwaltung %}{{ verwaltung.ort }}{% endif %}</td><td class="luecke">&nbsp;</td>
+        <td class="platz sig-ort">Ort: <span class="tag">{% verbatim %}{{Ort Mieter;role=Mieter;type=text;required=true}}{% endverbatim %}</span></td>
+    </tr>
+    <tr>
+        <td class="platz sig-ort">Datum: {{ heute|date:"d.m.Y" }}</td><td class="luecke">&nbsp;</td>
+        <td class="platz sig-ort">Datum: <span class="tag">{% verbatim %}{{Datum Mieter;role=Mieter;type=date;required=true}}{% endverbatim %}</span></td>
     </tr>
 </table>
+{% if vertrag.mitmieter or vertrag.mitmieter_name %}
+<table class="unterschriften zweite">
+    <tr><td class="platz sig-name">Mieter 2: {% if vertrag.mitmieter %}{{ vertrag.mitmieter.display_name }}{% else %}{{ vertrag.mitmieter_name }}{% endif %}</td><td class="luecke">&nbsp;</td><td class="platz">&nbsp;</td></tr>
+    <tr><td class="platz sig-feld">&nbsp;</td><td class="luecke">&nbsp;</td><td class="platz">&nbsp;</td></tr>
+    <tr><td class="platz sig-unter">Unterschrift</td><td class="luecke">&nbsp;</td><td class="platz">&nbsp;</td></tr>
+    <tr><td class="platz sig-ort">Ort:</td><td class="luecke">&nbsp;</td><td class="platz">&nbsp;</td></tr>
+    <tr><td class="platz sig-ort">Datum:</td><td class="luecke">&nbsp;</td><td class="platz">&nbsp;</td></tr>
+</table>
+{% endif %}
+{% if halten_aus %}</div>{% else %}</td></tr></table>{% endif %}
 
-<div id="footerContent" style="font-size:7pt;color:#94a3b8;text-align:center;">
-    {% if eigentuemer %}{{ eigentuemer.firma_oder_name }}{% else %}{{ verwaltung.firma }}{% endif %} · {{ liegenschaft.strasse }}, {{ liegenschaft.plz }} {{ liegenschaft.ort }} · erstellt am {{ heute|date:"d.m.Y" }} · Seite <pdf:pagenumber> von <pdf:pagecount>
-</div>
-
-</body>
-</html>
+{% endwith %}
+{% endblock %}

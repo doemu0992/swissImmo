@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.template.loader import get_template
 from django.utils import timezone
+from reportlab.platypus.doctemplate import LayoutError
 from xhtml2pdf import pisa
 from crm.models import Organisation
 from core.services.dokumentsprache import nur_deutsch
@@ -140,12 +141,22 @@ def render_vertrag_html(vertrag, *, mit_unterschrift=True):
     return get_template(template_name).render(context)
 
 
+def _pdf_aus_html(html):
+    result_buffer = io.BytesIO()
+    pisa_status = pisa.CreatePDF(html, dest=result_buffer, link_callback=link_callback, encoding='utf-8')
+    if pisa_status.err: raise Exception(f"Fehler bei der PDF Generierung: {pisa_status.err}")
+    return result_buffer.getvalue()
+
+
 @nur_deutsch
 def generate_vertrag_pdf_bytes(vertrag):
     template_name, context = build_vertrag_context(vertrag)
-    html = get_template(template_name).render(context)
-    result_buffer = io.BytesIO()
-    pisa_status = pisa.CreatePDF(html, dest=result_buffer, link_callback=link_callback, encoding='utf-8')
-
-    if pisa_status.err: raise Exception(f"Fehler bei der PDF Generierung: {pisa_status.err}")
-    return result_buffer.getvalue()
+    try:
+        return _pdf_aus_html(get_template(template_name).render(context))
+    except LayoutError:
+        # Der Schlussblock (letzter Artikel, Beilagen, Unterschriften) steht als eine
+        # unteilbare Tabellenzelle auf einer Seite. Wird er höher als eine Seite
+        # (sehr lange Angaben), bricht xhtml2pdf ab: dann ohne Zusammenhalt setzen,
+        # statt gar kein PDF zu liefern.
+        context['halten_aus'] = True
+        return _pdf_aus_html(get_template(template_name).render(context))

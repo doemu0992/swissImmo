@@ -1,0 +1,142 @@
+{% comment %}
+Gemeinsames Stylesheet aller PDF-Dokumente (Welle 1 des Dokumentendesigns).
+Wird INNERHALB von <style> eingebunden (dok_base.html). Für xhtml2pdf: kein Flex,
+kein Grid, keine Fremdschrift (Helvetica ist eine PDF-Standardschrift, nichts
+wird geladen oder eingebettet).
+
+Parameter aus dem Kontext (alle optional):
+  briefkopf.farbe   Akzentfarbe der Organisation (#rrggbb, geprüft). Leer = neutrales Dunkelgrau.
+  adressfenster     True: Empfängerfeld rechts (Format C5/6, SN 010130) auf Seite 1.
+  visum             True: Paraphen-Zeile im Seitenfuss (Verträge).
+
+Seitenvorlagen: `@page` (ohne Namen) ist in xhtml2pdf IMMER die erste Seite,
+`@page weiter` gilt ab Seite 2 (umgeschaltet mit <pdf:nexttemplate> in dok_base.html).
+Der Seitenkopf (Titel + Referenz) steht nur auf `weiter`.
+
+Klassen für die Dokumente:
+  .titel .untertitel            Titelblock
+  .art                          Artikelüberschrift «1  Vertragsparteien»
+  .sub  (.nr)                   Klausel «1.1  Titel» mit Nummer
+  .fliess                       Fliesstext 10 pt (dunkel)
+  .hinweis                      Randbemerkung 8.5 pt
+  table.data (td.k, td.b)       Schlüssel/Wert-Tabelle mit feinen Linien
+  table.zeit (td.h, td.r)       Tabelle mit Kopfzeile (Zeitplan, Staffel)
+  table.kasten (td.zelle)       Kasten mit Rahmen (Parteien, Eckdaten)
+  .unterschriften               Unterschriftsraster (siehe mietvertrag_pdf.html)
+  Alte Klassen der bisherigen Dokumente (.kopf .sec .note .adr .form .sign …) bleiben gültig.
+{% endcomment %}{% firstof briefkopf.farbe "#1f2937" as akzent %}
+    @page { size: A4 portrait; margin: 1.5cm 2cm {% if visum %}3.5cm{% else %}2.3cm{% endif %} 2cm;
+        @frame fuss { -pdf-frame-content: fussInhalt; bottom: 0.6cm; margin-left: 2cm; margin-right: 2cm; height: {% if visum %}2.6cm{% else %}1.5cm{% endif %}; }
+        {% if adressfenster %}@frame empfaenger { -pdf-frame-content: empfaengerInhalt; left: 11.8cm; top: 4.5cm; width: 8.5cm; height: 3.4cm; }{% endif %} }
+    @page weiter { size: A4 portrait; margin: 2.7cm 2cm {% if visum %}3.5cm{% else %}2.3cm{% endif %} 2cm;
+        @frame seitenkopf { -pdf-frame-content: seitenkopfInhalt; top: 1.1cm; margin-left: 2cm; margin-right: 2cm; height: 1.1cm; }
+        @frame fuss { -pdf-frame-content: fussInhalt; bottom: 0.6cm; margin-left: 2cm; margin-right: 2cm; height: {% if visum %}2.6cm{% else %}1.5cm{% endif %}; } }
+
+    body { font-family: Helvetica, sans-serif; font-size: 10pt; color: #111827; line-height: 1.45; }
+    p { margin: 4pt 0; }
+    h1 { font-size: 15pt; margin: 0 0 4pt 0; color: {{ akzent }}; }
+    h2 { font-size: 11pt; margin: 14pt 0 4pt 0; color: {{ akzent }}; }
+
+    /* Briefkopf */
+    table.bk { width: 100%; border-collapse: collapse; margin-bottom: 14pt; }
+    table.bk td { vertical-align: top; padding: 0 0 7pt 0; border-bottom: 1.5pt solid {{ akzent }}; }
+    td.bk-l { width: 55%; }
+    td.bk-r { width: 45%; text-align: right; font-size: 8.5pt; color: #374151; line-height: 1.35; }
+    .bk-name { font-size: 14pt; font-weight: bold; color: {{ akzent }}; }
+    table.fenster-platz { width: 100%; border-collapse: collapse; }
+    table.fenster-platz td { height: 4.6cm; padding: 0; }
+    .logo { margin: 0 0 6pt 0; }
+
+    /* Seitenkopf ab Seite 2 und Seitenfuss */
+    table.sk { width: 100%; border-collapse: collapse; }
+    table.sk td { font-size: 8.5pt; color: #374151; padding: 0 0 3pt 0; border-bottom: 0.75pt solid {{ akzent }}; }
+    td.sk-r { text-align: right; }
+    table.fuss { width: 100%; border-collapse: collapse; }
+    table.fuss td { font-size: 7.5pt; color: #4b5563; padding: 3pt 0 0 0; border-top: 0.5pt solid #9ca3af; vertical-align: top; }
+    td.fuss-r { text-align: right; width: 22%; }
+    .fusszeile { font-size: 7.5pt; color: #4b5563; margin: 0 0 1pt 0; }
+    table.visum { width: 100%; border-collapse: collapse; margin: 0 0 4pt 0; }
+    table.visum td { font-size: 7.5pt; color: #374151; padding: 8pt 0 0 0; border-bottom: 0.5pt solid #6b7280; }
+    table.visum td.vl { width: 11%; border-bottom: 0; }
+    table.visum td.vs { width: 4%; border-bottom: 0; }
+
+    /* Titel und Gliederung */
+    .titel { font-size: 20pt; font-weight: bold; color: {{ akzent }}; margin: 2pt 0 2pt 0; line-height: 1.15; }
+    .untertitel { font-size: 10.5pt; color: #374151; margin: 0 0 10pt 0; }
+    .art { font-size: 11.5pt; font-weight: bold; color: {{ akzent }}; margin: 16pt 0 5pt 0; padding-bottom: 2pt; border-bottom: 0.75pt solid #9ca3af; -pdf-keep-with-next: true; }
+    .sub { font-size: 10pt; font-weight: bold; color: #111827; margin: 9pt 0 2pt 0; -pdf-keep-with-next: true; }
+    /* wie .sub, aber ohne Bindung an das Folgende: vor Tabellen (xhtml2pdf hielte sonst die ganze Tabelle zusammen und liesse unten Seite leer) und vor frei erfassten, womöglich langen Texten */
+    .sub2 { font-size: 10pt; font-weight: bold; color: #111827; margin: 9pt 0 2pt 0; }
+    .nr { color: {{ akzent }}; }
+    .fliess { font-size: 10pt; color: #111827; margin: 3pt 0; }
+    .hinweis { font-size: 8.5pt; color: #374151; margin: 3pt 0; }
+    .fam { font-size: 9.5pt; color: #7c2d12; background-color: #fff7ed; padding: 5pt 7pt; margin: 6pt 0; border: 0.5pt solid #fdba74; }
+    ul.liste { margin: 3pt 0 3pt 14pt; padding: 0; }
+    ul.liste li { margin: 2pt 0; }
+
+    /* Tabellen mit feinen Linien */
+    table.data { width: 100%; border-collapse: collapse; margin: 3pt 0 7pt 0; }
+    table.data td { padding: 3.5pt 4pt 3.5pt 0; vertical-align: top; border-bottom: 0.5pt solid #d1d5db; }
+    table.data td.k { color: #374151; width: 38%; }
+    table.data td.b { font-weight: bold; }
+    table.zeit { width: 100%; border-collapse: collapse; margin: 4pt 0; }
+    table.zeit td { padding: 4pt 6pt 4pt 0; vertical-align: top; border-bottom: 0.5pt solid #d1d5db; }
+    table.zeit td.h { font-weight: bold; color: #374151; border-bottom: 1pt solid #6b7280; font-size: 9pt; }
+    table.zeit td.r { text-align: right; padding-right: 0; }
+    .rabatt { color: #92400e; }
+    .klein { color: #4b5563; font-size: 8.5pt; font-weight: normal; }
+
+    /* Kästen: Vertragsparteien, Eckdaten */
+    table.kasten { width: 100%; border-collapse: collapse; margin: 8pt 0; }
+    table.kasten td.zelle { border: 0.75pt solid #9ca3af; background-color: #f9fafb; padding: 7pt 9pt; vertical-align: top; width: 48%; font-size: 10pt; }
+    table.kasten td.luecke { width: 4%; border: 0; padding: 0; }
+    table.kasten td.eck { width: 25%; }
+    .lbl { font-size: 7.5pt; font-weight: bold; color: #4b5563; margin: 0 0 3pt 0; }
+    .wert { font-size: 11pt; font-weight: bold; color: #111827; }
+    .partei-name { font-weight: bold; }
+    .vertr { margin-top: 5pt; padding-top: 4pt; border-top: 0.5pt solid #d1d5db; font-size: 8.5pt; color: #374151; }
+
+    /* Unteilbarer Block: xhtml2pdf teilt eine einzelne Tabellenzelle nicht, `page-break-inside: avoid`
+       wirkt auf <div> nicht (belegt im PDF). */
+    table.halten { width: 100%; border-collapse: collapse; margin: 0; }
+    table.halten td { padding: 6pt 0 0 0; vertical-align: top; }
+
+    /* Unterschriftsraster: gleiche Spalten, gleiche Zeilenhöhen */
+    table.unterschriften { width: 100%; border-collapse: collapse; margin-top: 4pt; }
+    table.zweite { margin-top: 10pt; }
+    table.unterschriften td { vertical-align: bottom; padding: 0; font-size: 9.5pt; }
+    table.unterschriften td.sig-ort { padding: 6pt 0 1pt 0; border-bottom: 0.75pt solid #111827; }
+    table.unterschriften td.platz { width: 48%; }
+    table.unterschriften td.luecke { width: 4%; }
+    table.unterschriften td.sig-name { font-weight: bold; padding-bottom: 2pt; }
+    table.unterschriften td.sig-feld { height: 40pt; border-bottom: 0.75pt solid #111827; }
+    table.unterschriften td.sig-unter { font-size: 7.5pt; color: #4b5563; padding: 3pt 0 0 0; }
+    .sigimg { height: 36pt; }
+    .tag { color: #ffffff; font-size: 7.5pt; }
+    .tag-sig { color: #ffffff; font-size: 13pt; }
+
+    /* Bestehende Klassen der Dokumente auf dok_base.html */
+    .kopf { font-size: 8pt; color: #374151; border-bottom: 1px solid #d1d5db; padding-bottom: 4pt; margin-bottom: 12pt; }
+    .subtitle { font-size: 9pt; color: #374151; margin-bottom: 12pt; }
+    .sec { background-color: #f1f5f9; font-weight: bold; font-size: 10pt; padding: 4pt 7pt; margin: 12pt 0 5pt 0; }
+    .note { font-size: 9pt; color: #374151; margin: 4pt 0; }
+    .adr { margin: 4pt 0 14pt 0; }
+    ol { margin: 4pt 0 4pt 16pt; padding: 0; }
+    ol li { margin: 3pt 0; }
+    ul { margin: 4pt 0 4pt 16pt; padding: 0; }
+    ul li { margin: 2.5pt 0; }
+    table.form { width: 100%; border-collapse: collapse; margin: 4pt 0; }
+    table.form td { border: 0.75pt solid #cbd5e1; padding: 5pt 6pt; font-size: 8.5pt; }
+    /* Beide Spalten mit Breite: Ohne sie verteilte xhtml2pdf die Breite nach
+       Inhalt — mit leeren Feldern (Telefon, Geburtsdatum) wurde die rechte
+       Spalte schmal, Namen und Adresse brachen Wort für Wort um. */
+    table.form td { width: 60%; }
+    table.form td.k { background-color: #f8fafc; color: #475569; width: 40%; }
+    .sign { width: 100%; margin-top: 26pt; }
+    .sign td { width: 240pt; vertical-align: bottom; padding-top: 30pt; font-size: 8pt; color: #374151; }
+    .sigline { border-top: 1px solid #94a3b8; padding-top: 3pt; }
+    .empfaenger { margin-top: 22pt; }
+    .ortdatum { text-align: right; font-size: 8.5pt; color: #374151; margin-bottom: 14pt; }
+    .unterschrift { margin-top: 14pt; }
+    .unterschrift-name { font-size: 9pt; }
+    .absenderzeile { font-size: 7pt; color: #4b5563; border-bottom: 0.5pt solid #9ca3af; padding-bottom: 1pt; margin-bottom: 3pt; }
