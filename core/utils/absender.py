@@ -69,6 +69,14 @@ def absender(organisation=None):
     return formataddr((f'{name} via {_plattform_name()}', _konto_adresse()))
 
 
+def absender_person(name):
+    """From-Header für Mails im Namen einer Person: «<Name> via immoswiss», Adresse des SMTP-Kontos."""
+    sauber = re.sub(r'\s+', ' ', _UNERWUENSCHT.sub(' ', name or '')).strip()[:_MAX_NAME].strip()
+    if not sauber:
+        return settings.DEFAULT_FROM_EMAIL
+    return formataddr((f'{sauber} via {_plattform_name()}', _konto_adresse()))
+
+
 def antwortadresse(organisation=None, reply_to=None):
     """Reply-To als Liste mit genau einer Adresse (siehe Kopf für die Reihenfolge)."""
     if reply_to and '@' in reply_to:

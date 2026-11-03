@@ -912,6 +912,8 @@ class PortalFremdzugriffTests(TestCase):
         'mieter_dokument_download': ('get', lambda d: d['fremd_dok'].id),
         'mieter_ticket_detail':     ('get', lambda d: d['fremd_ticket'].id),
         'mieter_ticket_nachricht':  ('post', lambda d: d['fremd_ticket'].id),
+        # Zwei IDs (Ticket, Auftrag): der Direktchat mit dem Handwerker
+        'mieter_ticket_direkt':     ('post', lambda d: (d['fremd_ticket'].id, d['fremd_auftrag'].id)),
         'mieter_rechnung_qr':       ('get', lambda d: d['fremd_rechnung'].id),
         'mieter_kuendigung_pdf':    ('get', lambda d: d['fremd_kuendigung'].id),
     }
@@ -1004,7 +1006,8 @@ class PortalFremdzugriffTests(TestCase):
             if name not in adressen:
                 continue                  # Adresse entfernt — nicht Sache dieses Tests
             wer = 'eig_user' if name.startswith('portal_') else 'mieter_user'
-            url = reverse(name, args=[hole_id(d)])
+            ids = hole_id(d)
+            url = reverse(name, args=list(ids) if isinstance(ids, tuple) else [ids])
 
             def anfrage(welt):
                 c = Client(); c.force_login(d[welt][wer])

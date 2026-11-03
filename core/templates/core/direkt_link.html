@@ -1,0 +1,22 @@
+{% extends 'core/handwerker_base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% blocktrans with titel=t.titel %}Termin und Nachrichten · {{ titel }}{% endblocktrans %}{% endblock %}
+{% block kopf %}{% trans "Termin und Nachrichten" %}{% endblock %}
+
+{% block content %}
+{% comment %}
+Signierter Mail-Link des Direktkanals (core/views/direkt_link.py): ohne Anmeldung, fuer Mieter UND Handwerker.
+Zeigt nur den Auftrag, Titel und Adresse des Schadens — keine Kontaktdaten der Gegenseite.
+{% endcomment %}
+<section class="fw-card" aria-labelledby="dl-titel">
+    <div class="fw-kopf"><h1 id="dl-titel" class="fw-hw-titel">{{ t.titel }}</h1></div>
+    <div class="fw-rumpf">
+        <ul class="fw-hw-fakten">
+            <li><span class="fw-label">{% trans "Adresse" %}</span><b>{{ lg.strasse }}, {{ lg.plz }} {{ lg.ort }}</b></li>
+            <li><span class="fw-label">{% trans "Handwerker" %}</span><b>{{ auftrag.handwerker.firma }}</b></li>
+        </ul>
+        {% if not direkt_offen %}<p class="fw-klein">{% trans "Der Auftrag ist abgeschlossen — die Seite ist nur noch lesbar." %}</p>{% endif %}
+    </div>
+</section>
+{% include 'core/_direkt_block.html' with offen=direkt_offen aktion_url='' titel=_('Termin und Nachrichten') %}
+{% endblock %}

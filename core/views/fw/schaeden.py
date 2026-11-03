@@ -351,6 +351,12 @@ def fw_schaden_detail(request, pk):
     for a in auftraege:
         a.ticket = t                     # kein Nachladen je Auftrag in link_status
         a.link_status = link_status(a)
+    # Direktkanal Mieter/Handwerker je Auftrag (Mitleser): eine Abfrage fuer alle Auftraege des Tickets.
+    direkt = {}
+    for n in t.nachrichten.filter(typ='direkt').order_by('erstellt_am', 'pk'):
+        direkt.setdefault(n.auftrag_id, []).append(n)
+    for a in auftraege:
+        a.direkt = direkt.get(a.id, [])
     kosten_geschaetzt = sum((a.kosten_geschaetzt or Decimal('0')) for a in auftraege)
     kosten_effektiv = sum((a.kosten_effektiv or Decimal('0')) for a in auftraege)
 
@@ -836,6 +842,32 @@ def fw_auftrag_nachricht(request, pk):
     else:
         messages.error(request, gettext('Versand fehlgeschlagen — die Nachricht steht im Verlauf.'))
     return redirect(f'/neu/schaeden/{a.ticket_id}/?tab=handwerker')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_auftrag_direkt(request, pk):
+    """Die Verwaltung schreibt in den Direktkanal Mieter/Handwerker eines Auftrags (als «Verwaltung» markiert).
+
+    Beide Seiten sehen die Nachricht in ihrem Chat und bekommen sie per Mail. Die Verwaltung ist sonst
+    Mitleser: Sie wird durch Chat-Nachrichten nicht per Mail benachrichtigt."""
+    from django.contrib import messages
+    from django.core.exceptions import ValidationError
+    from django.shortcuts import redirect
+    from tickets import direktkanal
+    from tickets.models import HandwerkerAuftrag
+    from core.auth import log_aktion
+    a = get_object_or_404(HandwerkerAuftrag.objects.select_related('ticket', 'handwerker'), id=pk)
+    ziel = f'/neu/schaeden/{a.ticket_id}/?tab=handwerker'
+    if request.method != 'POST':
+        return redirect(ziel)
+    try:
+        direktkanal.schreiben(a, 'verwaltung', request.POST.get('text', ''),
+                              name=(request.user.get_full_name() or request.user.username))
+        log_aktion(request, "Nachricht im Direktkanal", f"Ticket #{a.ticket_id}", a.handwerker.firma)
+        messages.success(request, '✅ ' + gettext('Nachricht an Mieter und Handwerker gesendet.'))
+    except ValidationError as e:
+        messages.error(request, '⛔ ' + ' '.join(e.messages))
+    return redirect(ziel)
 
 
 def _termin_hinweis(kopf, mieter_ok, handwerker_ok):

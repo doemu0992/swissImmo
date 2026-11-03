@@ -95,6 +95,9 @@ OFFEN_FUER_ANGEMELDETE = (
     # Modul 3: Handwerker-Link je Auftrag — ohne Konto, Token statt Rolle;
     # unbekannt/abgelaufen/widerrufen → 404. Eigene Tests in test_portale_modul3.py.
     '/auftrag/',
+    # Direktkanal Mieter/Handwerker: signierter Mail-Link (tickets/direktkanal.py), Signatur statt Rolle;
+    # ungueltig/abgelaufen/widerrufen -> 404. Eigene Tests in test_direktkanal.py (SignierterLinkTests).
+    '/direkt/',
 )
 
 

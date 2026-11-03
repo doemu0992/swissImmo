@@ -1,0 +1,72 @@
+{% load zeichen i18n %}
+{% comment %}
+Direktkanal Mieter <-> Handwerker eines Auftrags: Terminabstimmung und Chat. Gemeinsam fuer das Mieterportal,
+die Auftragsseite des Handwerkers und den signierten Mail-Link.
+Erwartet: auftrag, seite ('mieter'/'handwerker'), chat (Liste), offen (darf geschrieben werden),
+gegenseite (Name), aktion_url (leer = dieselbe Seite), termin_min, vorschlag_kennung, titel.
+{% endcomment %}
+<section class="fw-card" aria-labelledby="dk-{{ auftrag.pk }}" data-karte="direkt" data-auftrag="{{ auftrag.pk }}" data-seite="{{ seite }}">
+    <div class="fw-kopf"><h2 id="dk-{{ auftrag.pk }}">{{ titel }}</h2></div>
+    <div class="fw-rumpf">
+        <div data-block="terminabstimmung">
+        {% if auftrag.termin_status == 'vereinbart' and auftrag.termin_am %}
+            <p class="fw-hw-text">{% blocktrans with d=auftrag.termin_am|date:"D d.m.Y, H:i" %}Vereinbart: {{ d }} Uhr{% endblocktrans %}</p>
+        {% elif auftrag.termin_status == 'vorgeschlagen' and auftrag.termin_vorschlag_am %}
+            <p class="fw-hw-text" data-zustand="vorgeschlagen">{% blocktrans with d=auftrag.termin_vorschlag_am|date:"D d.m.Y, H:i" %}Terminvorschlag: {{ d }} Uhr{% endblocktrans %}{% if auftrag.termin_vorschlag_von == seite %} · {% trans "von Ihnen — Antwort der Gegenseite steht aus." %}{% else %} · {% blocktrans with n=gegenseite %}von {{ n }}{% endblocktrans %}{% endif %}</p>
+            {% if auftrag.termin_vorschlag_hinweis %}<p class="fw-klein">{{ auftrag.termin_vorschlag_hinweis }}</p>{% endif %}
+            {% if offen and auftrag.termin_vorschlag_von != seite %}
+            <form method="post" action="{{ aktion_url }}" class="fw-hw-zeile">
+                {% csrf_token %}<input type="hidden" name="aktion" value="vorschlag_bestaetigen"><input type="hidden" name="kennung" value="{{ vorschlag_kennung }}">
+                <button class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Termin bestätigen" %}</button>
+            </form>
+            {% endif %}
+        {% else %}
+            <p class="fw-hw-text">{% trans "Noch kein Termin vereinbart." %}</p>
+        {% endif %}
+        {% if offen %}
+            {% if auftrag.termin_status == 'vereinbart' %}
+            <form method="post" action="{{ aktion_url }}" class="fw-hw-zeile">
+                {% csrf_token %}<input type="hidden" name="aktion" value="termin_absagen">
+                <button class="fw-btn">{% trans "Termin absagen" %}</button>
+            </form>
+            {% endif %}
+            <form method="post" action="{{ aktion_url }}" class="fw-hw-formular">
+                {% csrf_token %}<input type="hidden" name="aktion" value="termin_vorschlagen">
+                <div class="fw-feldblock">
+                    <label class="fw-label" for="dk-termin-{{ auftrag.pk }}">{% if auftrag.termin_status == 'offen' or auftrag.termin_status == 'abgesagt' %}{% trans "Termin vorschlagen" %}{% elif auftrag.termin_status == 'vorgeschlagen' and auftrag.termin_vorschlag_von != seite %}{% trans "Gegenvorschlag machen" %}{% else %}{% trans "Anderen Termin vorschlagen" %}{% endif %}</label>
+                    <input id="dk-termin-{{ auftrag.pk }}" type="datetime-local" name="termin" required min="{{ termin_min }}" class="fw-feld">
+                </div>
+                <div class="fw-feldblock">
+                    <label class="fw-label" for="dk-hinweis-{{ auftrag.pk }}">{% trans "Hinweis (optional)" %}</label>
+                    <input id="dk-hinweis-{{ auftrag.pk }}" type="text" name="hinweis" maxlength="300" class="fw-feld">
+                </div>
+                <button class="fw-btn">{% zeichen 'termin' %}{% trans "Vorschlag senden" %}</button>
+                <p class="fw-klein">{% blocktrans with n=gegenseite %}{{ n }} bestätigt den Termin oder macht einen Gegenvorschlag. Die Verwaltung wird informiert, sobald der Termin steht.{% endblocktrans %}</p>
+            </form>
+        {% endif %}
+        </div>
+
+        <h3 class="fw-label mt-4">{% blocktrans with n=gegenseite %}Nachrichten mit {{ n }}{% endblocktrans %}</h3>
+        <div data-block="chat">
+        {% for n in chat %}
+        <div class="fw-hw-nachricht{% if n.seite == seite %} eigen{% endif %}" data-seite="{{ n.seite }}">
+            <span class="fw-klein">{{ n.absender_name }}{% if n.seite == 'verwaltung' %} ({% trans "Verwaltung" %}){% endif %} · {{ n.erstellt_am|date:"d.m.Y, H:i" }}</span>
+            <p>{{ n.nachricht }}</p>
+        </div>
+        {% empty %}
+        <p class="fw-klein">{% trans "Noch keine Nachrichten." %}</p>
+        {% endfor %}
+        </div>
+        {% if offen %}
+        <form method="post" action="{{ aktion_url }}" class="fw-hw-formular">
+            {% csrf_token %}<input type="hidden" name="aktion" value="direkt">
+            <div class="fw-feldblock">
+                <label class="fw-label" for="dk-text-{{ auftrag.pk }}">{% trans "Nachricht" %}</label>
+                <textarea id="dk-text-{{ auftrag.pk }}" name="text" rows="3" required maxlength="2000" class="fw-feld"></textarea>
+            </div>
+            <button class="fw-btn">{% zeichen 'senden' %}{% trans "Senden" %}</button>
+            <p class="fw-klein">{% blocktrans with n=gegenseite %}{{ n }} erhält Ihre Nachricht zusätzlich per E-Mail und kann direkt darauf antworten.{% endblocktrans %}</p>
+        </form>
+        {% endif %}
+    </div>
+</section>

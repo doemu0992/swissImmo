@@ -44,28 +44,20 @@ Aktionskarten fehlen ganz.
     </div>
 </section>
 
+{% include 'core/_direkt_block.html' with seite='handwerker' chat=chat offen=direkt_offen gegenseite=mieter_name aktion_url='' titel=_('Termin und Nachrichten mit dem Mieter') %}
+
 {% if not abgeschlossen %}
+{% if auftrag.termin_status == 'vereinbart' and auftrag.termin_am %}
 <section class="fw-card" aria-labelledby="hw-termin" data-karte="termin">
     <div class="fw-kopf"><h2 id="hw-termin">{% trans "Termin" %}</h2></div>
     <div class="fw-rumpf">
-        {% if auftrag.termin_status == 'vereinbart' and auftrag.termin_am %}
-        <p class="fw-hw-text">{% blocktrans with d=auftrag.termin_am|date:"D d.m.Y, H:i" %}Vereinbart: {{ d }} Uhr{% endblocktrans %}</p>
         <form method="post" class="fw-hw-zeile">
             {% csrf_token %}<input type="hidden" name="aktion" value="termin_bestaetigen">
             <button class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Termin bestätigen" %}</button>
         </form>
-        {% endif %}
-        <form method="post" class="fw-hw-formular">
-            {% csrf_token %}<input type="hidden" name="aktion" value="termin">
-            <div class="fw-feldblock">
-                <label class="fw-label" for="hw-termin-feld">{% if auftrag.termin_status == 'vereinbart' %}{% trans "Anderen Termin vorschlagen" %}{% else %}{% trans "Termin vorschlagen" %}{% endif %}</label>
-                <input id="hw-termin-feld" type="datetime-local" name="termin" required min="{{ termin_min }}" class="fw-feld">
-            </div>
-            <button class="fw-btn">{% zeichen 'termin' %}{% trans "Termin setzen" %}</button>
-            <p class="fw-klein">{% trans "Der Mieter erhält eine Mail mit Kalendereintrag." %}</p>
-        </form>
     </div>
 </section>
+{% endif %}
 
 <section class="fw-card" aria-labelledby="hw-arbeit" data-karte="arbeit">
     <div class="fw-kopf"><h2 id="hw-arbeit">{% trans "Arbeit" %}</h2></div>
