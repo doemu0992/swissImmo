@@ -18,4 +18,5 @@ python manage.py seed_e2e_mietzins
 python manage.py seed_e2e_mandanten
 python manage.py seed_e2e_eigentuemer
 python manage.py seed_e2e_abo
+python manage.py seed_e2e_direkt
 exec python manage.py runserver 127.0.0.1:8811 --noreload
