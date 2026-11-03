@@ -279,8 +279,10 @@ class DokCanvas(canvas.Canvas):
         self.fenster(empfaenger)
         y = self.hoehe - 88 * mm
         if einschreiben:
+            # Der Zustellvermerk steht ÜBER der Empfängeradresse (Schweizer Briefnorm), bündig mit dem Fenster.
             self.setFont('Helvetica-Bold', 10)
-            self.drawString(self.links, self.hoehe - 55 * mm, einschreiben if isinstance(einschreiben, str) else 'Einschreiben')
+            self.drawString(FENSTER_X, self.hoehe - FENSTER_OBEN + 4 * mm,
+                            einschreiben if isinstance(einschreiben, str) else 'Einschreiben')
         self.setFont('Helvetica', 9)
         self.setFillColor(GRAU)
         self.drawRightString(self.rand_rechts, y, ort_datum)

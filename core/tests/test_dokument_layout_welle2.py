@@ -71,6 +71,22 @@ class DokCanvasTests(SimpleTestCase):
             self.assertIn(f'Seite {nr} von 3', seite[0])
             self.assertIn('erstellt am', seite[0])
 
+    def test_einschreiben_steht_ueber_der_empfaengeradresse(self):
+        """Der Vermerk «Einschreiben» steht über dem Adressfenster, nicht daneben und nicht darunter."""
+        import io as _io
+        buf = _io.BytesIO()
+        c = DokCanvas(buf, absender=['Muster Immobilien AG', 'Bahnhofstrasse 10', '8001 Zürich'],
+                      titel='Kündigung', ref='Hans Muster')
+        c.brief(['Hans Muster', 'Seeweg 3', '8000 Zürich'], 'Zürich, 03.11.2026', 'Kündigung', einschreiben=True)
+        c.showPage()
+        c.save()
+        with pdfplumber.open(_io.BytesIO(buf.getvalue())) as pdf:
+            woerter = pdf.pages[0].extract_words()
+        ein = next(w for w in woerter if w['text'] == 'Einschreiben')
+        name = next(w for w in woerter if w['text'] == 'Seeweg')
+        self.assertLess(ein['bottom'], name['top'], 'Einschreiben muss über der Adresse stehen')
+        self.assertAlmostEqual(ein['x0'], 118 * mm, delta=2, msg='Einschreiben steht bündig mit der Adresse')
+
     def test_seitenkopf_erst_ab_seite_2(self):
         s = seiten(self._pdf())
         self.assertNotIn('Mieterkonto', s[0][0])                         # Seite 1: Briefkopf, kein Seitenkopf
