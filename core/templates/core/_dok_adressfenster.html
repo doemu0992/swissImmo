@@ -1,0 +1,20 @@
+{% comment %}
+Adressfenster für Briefe im Format C5/6 mit Fenster RECHTS (Schweizer Briefpapier,
+SN 010130). Nur für Briefe — der Mietvertrag hat keinen Empfängerblock (es liegt
+immer ein Begleitbrief bei).
+
+Verwendung in einer Briefvorlage (Welle 2):
+    {% extends "core/dok_base.html" %}
+    {% block inhalt %}
+      {% include "core/_dok_adressfenster.html" with zeilen=empfaenger_zeilen %}
+      ... Brieftext ...
+    {% endblock %}
+und im Kontext `adressfenster=True` (dann gibt dok_base.html Platz und das Feld
+steht absolut bei 11.8 cm / 4.5 cm). `zeilen` ist eine Liste von Textzeilen
+(Name, Zusatz, Strasse, PLZ Ort). Die Masse sind der gängigen Fensterlage
+nachempfunden und gehören einmal gegen einen echten C5/6-Umschlag
+ausgedruckt geprüft. Ohne `adressfenster` im Kontext zeichnet der Baustein nichts.
+{% endcomment %}{% if adressfenster %}<div id="empfaengerInhalt">
+    <div class="absenderzeile">{% firstof briefkopf.firma vermieter_name %}{% if briefkopf.strasse %} · {{ briefkopf.strasse }} · {{ briefkopf.plz_ort }}{% endif %}</div>
+    {% for z in zeilen %}{% if z %}{{ z }}<br>{% endif %}{% endfor %}
+</div>{% endif %}
