@@ -287,7 +287,12 @@ class MailNachChatTests(TestCase):
     def test_eigene_absenderadresse_wird_nicht_weitergeleitet(self):
         from django.conf import settings
         from tickets.workflow import antwort_zuordnen
+        from email.utils import parseaddr
         t, a = _auftrag_einfach()
+        # Die Adresse des Handwerkers ist (versehentlich/Weiterleitungsregel) die Absenderadresse der Plattform:
+        # eine Mail von ihr ist unser eigenes Echo und wird nicht noch einmal weitergeleitet.
+        a.handwerker.email = parseaddr(settings.DEFAULT_FROM_EMAIL)[1]
+        a.handwerker.save()
         antwort_zuordnen(t, settings.DEFAULT_FROM_EMAIL, 'Echo', auftrag_id=a.pk)
         self.assertEqual(a.direktnachrichten.count(), 0)
         self.assertEqual(mail.outbox, [])
