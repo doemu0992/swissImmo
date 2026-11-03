@@ -15,7 +15,8 @@ from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
 from django.db import transaction
-from django.shortcuts import get_object_or_404, redirect, render
+from django.http import Http404
+from django.shortcuts import redirect, render
 from django.utils.translation import gettext
 
 from core.auth import (INHABER_ROLLEN, TEAM_ROLLEN, VERWALTUNGS_ROLLEN,
@@ -134,6 +135,25 @@ def fw_auszahlungsfreigaben(request):
     })
 
 
+AKTION_ZURUECKGENOMMEN = 'Auszahlungsfreigabe zurückgenommen'
+LOG_ZIEL = 'auszahlungsfreigabe'     # ziel_typ, den `log_aktion(ziel=antrag)` für das Modell schreibt
+
+
+def _antrag_fehlt(pk):
+    """Der Antrag ist für diese Organisation nicht da: 404, ausser sie hat ihn selbst zurückgenommen.
+
+    Ein gelöschter Antrag der EIGENEN Organisation und eine nie vergebene oder FREMDE ID sehen in der
+    Datenbank gleich aus. Würde das Fehlen verschieden beantwortet, verriete die Antwort, ob eine
+    fremde ID existiert (Zählen über fortlaufende IDs). Beides bleibt darum 404, ausser die eigene
+    Organisation hat genau diesen Antrag nachweislich zurückgenommen: Das Zurücknehmen schreibt ins
+    Aktivitätslog (mandantengefiltert) mit dem Antrag als Ziel. Nur dann ist es ein Rennen mit einer
+    gleichzeitigen Rücknahme und kein Zugriff auf Fremdes.
+    """
+    from core.models import AktivitaetsLog
+    if not AktivitaetsLog.objects.filter(aktion=AKTION_ZURUECKGENOMMEN, ziel_typ=LOG_ZIEL, ziel_id=pk).exists():
+        raise Http404
+
+
 @rolle_erforderlich(*ZAHLUNGSFREIGABE_ROLLEN)
 def fw_auszahlungsfreigabe_freigeben(request, pk):
     """Gibt einen vorgelegten Antrag frei: nie der Vorleger, nur für den gesehenen Betrag und IBAN."""
@@ -141,11 +161,11 @@ def fw_auszahlungsfreigabe_freigeben(request, pk):
     from finance.models import AuszahlungsFreigabe
     if request.method != 'POST':
         return redirect(AUSZAHLUNGEN)
-    get_object_or_404(AuszahlungsFreigabe, pk=pk)                       # fremde ID -> 404
     with transaction.atomic():
         antrag = (AuszahlungsFreigabe.objects.select_for_update(of=('self',))
                   .select_related('organisation').filter(pk=pk).first())
-        if antrag is None:                  # zwischen Prüfung und Sperre zurückgenommen oder ausgeführt
+        if antrag is None:                  # fremde oder unbekannte ID -> 404; sonst inzwischen zurückgenommen
+            _antrag_fehlt(pk)
             messages.error(request, '⛔ ' + gettext('Dieser Antrag wurde inzwischen zurückgenommen.'))
             return redirect(AUSZAHLUNGEN)
         try:
@@ -171,13 +191,16 @@ def fw_auszahlungsfreigabe_zuruecknehmen(request, pk):
     from finance.models import AuszahlungsFreigabe
     if request.method != 'POST':
         return redirect(AUSZAHLUNGEN)
-    get_object_or_404(AuszahlungsFreigabe, pk=pk)
     with transaction.atomic():
-        antrag = (AuszahlungsFreigabe.objects.select_for_update(of=('self',))
-                  .filter(pk=pk, verbraucht_am__isnull=True).first())
-        if antrag is not None:
-            log_aktion(request, 'Auszahlungsfreigabe zurückgenommen', antrag.bezug_text or antrag.get_art_display(),
-                       f'{antrag.get_art_display()} · CHF {antrag.betrag}', kategorie='sicherheit')
+        # Sperren statt vorher ohne Sperre prüfen: Die Vorprüfung sah einen Antrag, den eine gleichzeitige
+        # Rücknahme im nächsten Augenblick löschte. Fehlt er hier, entscheidet `_antrag_fehlt`.
+        antrag = AuszahlungsFreigabe.objects.select_for_update(of=('self',)).filter(pk=pk).first()
+        if antrag is None:
+            _antrag_fehlt(pk)
+            messages.error(request, '⛔ ' + gettext('Dieser Antrag wurde inzwischen zurückgenommen.'))
+        elif antrag.verbraucht_am is None:
+            log_aktion(request, AKTION_ZURUECKGENOMMEN, antrag.bezug_text or antrag.get_art_display(),
+                       f'{antrag.get_art_display()} · CHF {antrag.betrag}', ziel=antrag, kategorie='sicherheit')
             antrag.delete()
             messages.success(request, gettext('Vorlage und Freigabe sind verworfen.'))
     return redirect(AUSZAHLUNGEN)
