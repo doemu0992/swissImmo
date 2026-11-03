@@ -73,9 +73,11 @@ def mieter_gruss(mieter, sprache=None):
     Vorgabewert ohne Aussage über die Kontaktperson."""
     if mieter is None:
         return mail_gruss(sprache=sprache)
-    if mieter.typ in ('firma', 'verein') and mieter.firmen_name:
-        return mail_gruss(firma=mieter.firmen_name, kontaktperson=mieter.kontaktperson, sprache=sprache)
-    return mail_gruss(mieter.anrede, mieter.vorname, mieter.nachname, sprache=sprache)
+    firma = getattr(mieter, 'firmen_name', '') or ''
+    if getattr(mieter, 'typ', '') in ('firma', 'verein') and firma:
+        return mail_gruss(firma=firma, kontaktperson=getattr(mieter, 'kontaktperson', ''), sprache=sprache)
+    return mail_gruss(getattr(mieter, 'anrede', ''), getattr(mieter, 'vorname', ''),
+                      getattr(mieter, 'nachname', ''), sprache=sprache)
 
 
 def eigentuemer_gruss(eigentuemer, sprache=None):
