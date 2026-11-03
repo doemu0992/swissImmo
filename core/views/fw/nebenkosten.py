@@ -418,7 +418,8 @@ def fw_nebenkosten_mail(request, pk):
             gescheitert.append(name)
             continue
         betreff = f"Nebenkostenabrechnung {p.bezeichnung}"
-        html = mail_text(k, p.bezeichnung)
+        from core.services.anrede import mieter_gruss
+        html = mail_text(k, p.bezeichnung, mieter_gruss(m, 'de'))
         dateiname = f"Nebenkostenabrechnung_{p.bezeichnung}_{v.id}.pdf".replace(' ', '_').replace('/', '-')
         if not send_via_hoststar(adresse, betreff, html, dateiname, pdf, reply_to=reply_to):
             gescheitert.append(name)

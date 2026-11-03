@@ -125,7 +125,7 @@ ALIASE = {
     'ort': 'mieter.ort',
     'adresse': 'mieter.adresse',
     # Schadensfall (ticket_kontext) — nur dort mit Wert
-    'melder_name': None, 'melder_tel': None, 'schaden': None, 'ticket_id': None,
+    'gruss': None, 'melder_name': None, 'melder_tel': None, 'schaden': None, 'ticket_id': None,
     'handwerker': None, 'status': None, 'termin': None,
     # Mahnschreiben (crm.MahnStufe.brief_text) — nur dort mit Wert
     'monat': None, 'betrag': None, 'gebuehr': None, 'mieter': 'mieter.name',

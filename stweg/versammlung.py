@@ -8,6 +8,7 @@ from core.utils.email_service import send_via_hoststar
 from stweg.models import Anwesenheit, StwegVersand, Versammlung
 from stweg.pdf import einladung_pdf, protokoll_pdf
 from stweg.validierung import WertquotenFehler, pruefe_wertquoten, stimm_einheiten
+from core.services.anrede import eigentuemer_gruss_html
 
 
 class VersammlungsFehler(ValueError):
@@ -109,7 +110,7 @@ def einladung_versenden(versammlung, *, heute=None):
         if e.pk in schon:
             continue
         html = ("<html><body style='font-family:Arial,sans-serif;line-height:1.5'>"
-                f"<p>Guten Tag {e.firma_oder_name}</p>"
+                f"<p>{eigentuemer_gruss_html(e)}</p>"
                 f"<p>wir laden Sie zur {v.get_art_display()} der Gemeinschaft "
                 f"{v.liegenschaft} ein: <strong>{timezone.localtime(v.datum):%d.%m.%Y, %H:%M} Uhr</strong>"
                 f"{', ' + v.ort if v.ort else ''}. Traktanden und Anträge finden Sie in der Beilage.</p>"
@@ -169,7 +170,7 @@ def protokoll_versenden(versammlung):
         if e.pk in schon:
             continue
         html = ("<html><body style='font-family:Arial,sans-serif;line-height:1.5'>"
-                f"<p>Guten Tag {e.firma_oder_name}</p>"
+                f"<p>{eigentuemer_gruss_html(e)}</p>"
                 f"<p>in der Beilage das Protokoll der {v.get_art_display()} vom "
                 f"{timezone.localtime(v.datum):%d.%m.%Y}.</p>"
                 f"<p>Freundliche Grüsse<br>{org.firma}</p></body></html>")

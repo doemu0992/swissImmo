@@ -19,6 +19,7 @@ from django.views.decorators.http import require_POST
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
+from core.services.anrede import mail_gruss
 from crm.models import Mieter
 from portfolio.models import Einheit
 from rentals.models import Mietvertrag
@@ -234,6 +235,9 @@ def _bewerber_mail(b, entscheid):
     brutto = (e.nettomiete_aktuell or Decimal('0')) + (e.nebenkosten_aktuell or Decimal('0')) if e else Decimal('0')
     ctx = {
         'bewerber_name': f"{b.vorname} {b.nachname}",
+        # Die Bewerbung kennt keine verlässliche Anrede (Geschlecht wird nicht mehr erhoben):
+        # «Guten Tag Vorname Nachname».
+        'gruss': mail_gruss(vorname=b.vorname, nachname=b.nachname, sprache='de'),
         'objekt': objekt, 'liegenschaft': lg.strasse if lg else '',
         'miete': f"CHF {brutto:.2f}", 'vermieter': (vw.firma if vw else 'Ihre Liegenschaftsverwaltung'),
         'datum': timezone.now().strftime('%d.%m.%Y'),
@@ -248,12 +252,12 @@ def _bewerber_mail(b, entscheid):
             betreff = betreff.replace('{' + k + '}', str(val))
     elif entscheid == 'zusage':
         betreff = f"Zusage für Ihre Wohnungsbewerbung – {objekt}"
-        body = (f"Guten Tag {ctx['bewerber_name']}\n\nWir freuen uns, Ihnen das Mietobjekt "
+        body = (f"{ctx['gruss']}\n\nWir freuen uns, Ihnen das Mietobjekt "
                 f"{objekt} zusagen zu können. Wir melden uns in Kürze mit den Vertragsunterlagen.\n\n"
                 f"Freundliche Grüsse\n{ctx['vermieter']}")
     else:
         betreff = f"Ihre Wohnungsbewerbung – {objekt}"
-        body = (f"Guten Tag {ctx['bewerber_name']}\n\nVielen Dank für Ihre Bewerbung für {objekt} "
+        body = (f"{ctx['gruss']}\n\nVielen Dank für Ihre Bewerbung für {objekt} "
                 f"und Ihr Interesse. Wir haben uns für eine andere Bewerbung entschieden und wünschen "
                 f"Ihnen bei der weiteren Wohnungssuche viel Erfolg.\n\nFreundliche Grüsse\n{ctx['vermieter']}")
     return betreff, body
@@ -332,7 +336,7 @@ def fw_bewerber_besichtigung(request, pk):
     ok = False
     if b.email:
         betreff = f"Einladung zur Besichtigung — {lg.strasse}, {b.einheit.bezeichnung}"
-        body = (f"Guten Tag {b.vorname} {b.nachname}\n\n"
+        body = (f"{mail_gruss(vorname=b.vorname, nachname=b.nachname, sprache='de')}\n\n"
                 f"Gerne laden wir Sie zur Besichtigung des Objekts "
                 f"{lg.strasse}, {lg.plz} {lg.ort} ({b.einheit.bezeichnung}) ein.\n\n"
                 f"Termin: {_termin_text(termin)}\n"

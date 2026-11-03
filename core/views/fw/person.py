@@ -227,6 +227,7 @@ def fw_mieter_portal_zugang(request, pk):
     # Zugangsdaten per E-Mail an den Mieter senden (Benutzername, Passwort, Login-Link)
     mail_ok = False
     if m.email:
+        from core.services.anrede import mieter_gruss
         from core.utils.email_service import send_mieter_portal_zugang
         # Absender der Zugangsmail: die Verwaltung DIESES Mieters.
         vw = m.organisation
@@ -242,7 +243,8 @@ def fw_mieter_portal_zugang(request, pk):
             anrede = (f"{gettext(m.anrede)} " if m.anrede else "") + (m.nachname or m.display_name)
         mail_ok = send_mieter_portal_zugang(
             m.email, anrede.strip(), u.username, passwort, login_url,
-            absender_firma=(vw.firma if vw else ''), sprache=sprache_von(m))
+            absender_firma=(vw.firma if vw else ''), sprache=sprache_von(m),
+            gruss=mieter_gruss(m, sprache_von(m)))
 
     if mail_ok:
         messages.success(request, '✅ ' + gettext('Portal-Zugang aktiv. Zugangsdaten wurden an %(email)s gesendet. (Benutzername: %(username)s)') % {'email': m.email, 'username': u.username})

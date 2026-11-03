@@ -790,6 +790,7 @@ PLATZHALTER_HILFE = [
     ('{miete}', gettext_lazy('Bruttomietzins')),
     # Schadensfall-/Ticket-Vorlagen
     ('{handwerker}', gettext_lazy('Beauftragte Handwerkerfirma (Schaden)')),
+    ('{gruss}', gettext_lazy('Gruss an den Empfänger (Guten Tag Herr Muster)')),
     ('{melder_name}', gettext_lazy('Name des Melders (Schaden)')),
     ('{melder_tel}', gettext_lazy('Telefon des Melders (Schaden)')),
     ('{schaden}', gettext_lazy('Titel des Schadens')),

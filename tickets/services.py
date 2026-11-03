@@ -196,6 +196,9 @@ def process_public_ticket_form(liegenschaft, post_data, files_data):
         email_melder=d['email'],
         tel_melder=d['telefon'],
         gemeldet_von=None,
+        # Name und Anrede für den Mailgruss; vorher stand der Name nur im Beschreibungstext.
+        melder_anrede=d['anrede'] if d['anrede'] in ('Herr', 'Frau') else '',
+        melder_vorname=d['vorname'], melder_nachname=d['nachname'],
         kategorie=d['kategorie'] or None, raum=d['raum'] or None, objekt=d['objekt'] or None,
     )
     if d['foto']:

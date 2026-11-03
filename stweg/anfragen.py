@@ -10,6 +10,7 @@ from core.models import Pendenz
 from core.services.dokumentsprache import in_sprache
 from stweg.aufgaben import PREFIX, erledigen
 from stweg.models import StwegAnfrage
+from core.services.anrede import eigentuemer_gruss_html
 
 
 
@@ -67,7 +68,7 @@ def beantworten(anfrage, antwort, *, per_mail=True):
         from core.utils.email_service import send_via_hoststar
         from tickets.workflow import reply_to
         html = ("<html><body style='font-family:Arial,sans-serif;line-height:1.5'>"
-                f"<p>Guten Tag {eig.firma_oder_name}</p>"
+                f"<p>{eigentuemer_gruss_html(eig)}</p>"
                 f"<p>zu Ihrer Anfrage «{anfrage.betreff}»:</p>"
                 f"<p style='white-space:pre-line'>{antwort}</p>"
                 f"<p>Freundliche Grüsse<br>{anfrage.liegenschaft.organisation.firma}</p></body></html>")

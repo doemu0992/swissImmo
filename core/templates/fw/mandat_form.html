@@ -25,6 +25,12 @@
         <div class="fw-raster r2">
             <div><label for="md-kontakt" class="fw-label mb-1">{% trans "Kontaktperson" %}</label>
                 <input id="md-kontakt" name="kontaktperson" value="{{ md.kontaktperson }}" class="fw-feld w-full"></div>
+            <div><label for="md-anrede" class="fw-label mb-1">{% trans "Anrede" %}</label>
+                <select id="md-anrede" name="anrede" class="fw-feld w-full">
+                    <option value="" {% if not md.anrede %}selected{% endif %}>—</option>
+                    <option value="Herr" {% if md.anrede == 'Herr' %}selected{% endif %}>{% trans "Herr" %}</option>
+                    <option value="Frau" {% if md.anrede == 'Frau' %}selected{% endif %}>{% trans "Frau" %}</option>
+                </select></div>
             <div><label for="md-email" class="fw-label mb-1">{% trans "E-Mail" %}</label>
                 <input id="md-email" type="email" name="email" value="{{ md.email }}" class="fw-feld w-full"></div>
             <div><label for="md-sprache" class="fw-label mb-1">{% trans "Korrespondenzsprache" %}</label>

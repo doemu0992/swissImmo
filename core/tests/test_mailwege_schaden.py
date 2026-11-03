@@ -410,7 +410,7 @@ class SpracheTests(_Basis):
         with translation.override('fr'):
             auftrag_vergeben(t, _handwerker())
         hw = [m for m in mail.outbox if m.to == ['hw@example.ch']][0]
-        self.assertIn('Sehr geehrte Damen und Herren', _text(hw))
+        self.assertIn('Guten Tag Sanitär AG', _text(hw))
 
     def test_erinnerung_an_den_mieter_franzoesisch(self):
         from tickets.erinnerungen import erinnerungen_senden

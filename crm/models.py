@@ -333,6 +333,10 @@ class Eigentuemer(models.Model):
     )
     firma_oder_name = models.CharField("Name / Firma (Eigentümer)", max_length=100)
     kontaktperson = models.CharField("Kontaktperson", max_length=100, blank=True)
+    #: Anrede für den Mailgruss («Guten Tag Frau Meier»); leer = Name bzw. Firma wie bisher.
+    #: Gilt der Kontaktperson, sofern eine erfasst ist, sonst dem Eigentümer selbst.
+    anrede = models.CharField("Anrede", max_length=10, blank=True, default='',
+                              choices=[('', '—'), ('Herr', _('Herr')), ('Frau', _('Frau'))])
     strasse = models.CharField("Strasse & Nr.", max_length=100, blank=True)
     plz = models.CharField("PLZ", max_length=10, blank=True)
     ort = models.CharField("Ort", max_length=100, blank=True)

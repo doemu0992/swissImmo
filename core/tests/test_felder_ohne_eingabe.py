@@ -105,6 +105,9 @@ STILL = ('hash', 'geheim', 'token', 'ip_', '_am', 'anonymisiert', 'is_',
 #: Wer hier etwas eintraegt, sagt: «Das setzt ein Lauf, ein Import oder eine
 #: Vorlage.» Wer es weglaesst und trotzdem kein Formular baut, wird rot.
 AUSNAHMEN = {
+    'tickets.SchadenMeldung.melder_anrede':
+     'gesetzt aus dem Feld «Anrede» der öffentlichen Meldeformulare (`core.views.ticket_public`, '
+     '`tickets.services`); nur Herr/Frau, für den Mailgruss (`core.services.anrede`)',
     'core.DatenImportLauf.anzahl_hinweise':
      'gezählt von `core.services.datenimport` aus den Meldungen des Laufs (Protokoll, nie von Hand)',
     'core.Archiveintrag.aufbewahren_bis':

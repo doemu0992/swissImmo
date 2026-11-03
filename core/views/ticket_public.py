@@ -54,6 +54,9 @@ def public_schaden_melden_view(request):
         # Neue Strukturierte Kontaktdaten
         vorname = request.POST.get('vorname', '').strip()
         nachname = request.POST.get('nachname', '').strip()
+        # Nur Herr/Frau sind eine Anrede für den Mailgruss; «Firma» oder Fremdes wird nicht gespeichert.
+        anrede = request.POST.get('anrede', '').strip()
+        anrede = anrede if anrede in ('Herr', 'Frau') else ''
         email = request.POST.get('email', '').strip()
         telefon = request.POST.get('telefon', '').strip()
         erreichbarkeit = request.POST.get('erreichbarkeit', 'telefon')
@@ -145,6 +148,7 @@ def public_schaden_melden_view(request):
                 liegenschaft=zugewiesene_liegenschaft,
                 betroffene_einheit=zugewiesene_einheit,
                 gemeldet_von=gefundener_mieter,
+                melder_anrede=anrede,
                 melder_vorname=vorname,   # 🔥 NEU: Sicher gespeichert
                 melder_nachname=nachname, # 🔥 NEU: Sicher gespeichert
                 kategorie=kategorie,

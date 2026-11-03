@@ -73,7 +73,7 @@ STANDARD_VORLAGEN = [
         'kategorie': 'ticket_eingang',
         'betreff': 'Eingangsbestätigung: {schaden} (Ticket #{ticket_id})',
         'inhalt': (
-            "Guten Tag {melder_name}\n\n"
+            "{gruss}\n\n"
             "Vielen Dank für Ihre Meldung. Wir bestätigen den Eingang Ihrer "
             "Schadenmeldung „{schaden}“ in der Liegenschaft {liegenschaft} "
             "(Ticket #{ticket_id}).\n\n"
@@ -87,7 +87,7 @@ STANDARD_VORLAGEN = [
         'kategorie': 'ticket_handwerker',
         'betreff': 'Reparaturauftrag: {objekt} (Ticket #{ticket_id})',
         'inhalt': (
-            "Sehr geehrte Damen und Herren\n\n"
+            "{gruss}\n\n"
             "Wir beauftragen Sie mit der Behebung des folgenden Schadens:\n\n"
             "Objekt: {objekt}\nSchaden: {schaden}\n\n"
             "Bitte kontaktieren Sie den Mieter {melder_name} ({melder_tel}) direkt zur "
@@ -100,7 +100,7 @@ STANDARD_VORLAGEN = [
         'kategorie': 'ticket_melder',
         'betreff': 'Ihre Schadenmeldung wurde weitergegeben (Ticket #{ticket_id})',
         'inhalt': (
-            "Guten Tag {melder_name}\n\n"
+            "{gruss}\n\n"
             "Vielen Dank für Ihre Meldung „{schaden}“.\n\n"
             "Wir haben den Auftrag an die Firma {handwerker} weitergegeben. Diese wird "
             "sich in Kürze für einen Termin bei Ihnen melden.\n\n"
@@ -112,7 +112,7 @@ STANDARD_VORLAGEN = [
         'kategorie': 'ticket_erledigt',
         'betreff': 'Schaden behoben (Ticket #{ticket_id})',
         'inhalt': (
-            "Guten Tag {melder_name}\n\n"
+            "{gruss}\n\n"
             "Der von Ihnen gemeldete Schaden „{schaden}“ wurde behoben und das Ticket "
             "abgeschlossen.\n\n"
             "Sollte das Problem weiterhin bestehen, melden Sie sich bitte bei uns.\n\n"
