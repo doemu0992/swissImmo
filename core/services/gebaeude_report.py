@@ -80,7 +80,7 @@ def betriebsrechnung_pdf(lg, jahr=None, verwaltung=None):
 
     c.setStrokeColorRGB(0.2, 0.2, 0.2)
     c.line(20 * mm, y + 2 * mm, 190 * mm, y + 2 * mm)
-    y -= 1 * mm
+    y -= 3 * mm                              # Abstand zur Linie: die Schrift soll sie nicht berühren
     c.setFont("Helvetica-Bold", 11)
     ergebnis = daten['ergebnis']
     c.drawString(22 * mm, y, "Nettoergebnis (Ertrag − Aufwand)")
