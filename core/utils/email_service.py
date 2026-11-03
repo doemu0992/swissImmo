@@ -22,16 +22,23 @@ def _einzeilig(text):
     return ' '.join(str(text or '').split())
 
 
-def send_via_hoststar(to_email, subject, html_content, attachment_name=None, attachment_content=None, cc_list=None, weitere_anhaenge=None, reply_to=None, organisation=None):
+def send_via_hoststar(to_email, subject, html_content, attachment_name=None, attachment_content=None, cc_list=None, weitere_anhaenge=None, reply_to=None, organisation=None, absender_name=None, headers=None):
     try:
         # Absender und Antwortadresse der VERWALTUNG, die schreibt (FUNK-12, core/utils/absender.py).
         # `organisation` (Objekt oder ID) ist nötig, wo kein Mandantenkontext besteht (eigener Thread).
+        # `absender_name`: Direktkanal Mieter/Handwerker — «<Name> via immoswiss» statt der Firma der
+        # Verwaltung; die Adresse der Gegenseite wird nie preisgegeben (Antworten laufen über das Postfach).
+        kopf = kopfzeilen(organisation, reply_to)
+        if absender_name:
+            from core.utils.absender import absender_person
+            kopf['from_email'] = absender_person(absender_name)
         email = EmailMessage(
             subject=_einzeilig(subject),
             body=html_content,
             to=[to_email],
             cc=cc_list or [],
-            **kopfzeilen(organisation, reply_to),
+            headers=headers or None,
+            **kopf,
         )
         email.content_subtype = "html"
 

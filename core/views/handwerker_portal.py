@@ -29,7 +29,6 @@ abgewiesen, Telefonnummer und Auftrags-PDF (das sie enthält) entfallen.
 """
 import logging
 import os
-from datetime import datetime
 from core.utils.betrag import betrag_normalisieren
 from decimal import Decimal, InvalidOperation
 from functools import wraps
@@ -143,7 +142,7 @@ def handwerker_auftrag(request, auftrag, token):
     """Die Einzelseite des Auftrags; POST führt eine Aktion aus."""
     from tickets.handwerker_zugang import ist_abgeschlossen
     from tickets.meldung import ohne_kontaktblock
-    from tickets import workflow
+    from tickets import direkt_aktionen, direktkanal, workflow
 
     abgeschlossen = ist_abgeschlossen(auftrag)
     ticket = auftrag.ticket
@@ -154,16 +153,10 @@ def handwerker_auftrag(request, auftrag, token):
             return redirect('handwerker_auftrag', token=token)
         aktion = request.POST.get('aktion', '')
         try:
-            if aktion == 'termin':
-                try:
-                    wann = datetime.strptime(request.POST.get('termin', ''), '%Y-%m-%dT%H:%M')
-                except ValueError:
-                    raise ValidationError(gettext('Bitte Datum und Zeit angeben.'))
-                wann = timezone.make_aware(wann)
-                if wann < timezone.now():
-                    raise ValidationError(gettext('Der Termin liegt in der Vergangenheit.'))
-                workflow.termin_festlegen(auftrag, wann)
-                messages.success(request, gettext('Termin gesetzt. Der Mieter erhält eine Mail mit Kalendereintrag.'))
+            if aktion in direkt_aktionen.AKTIONEN:
+                # Direktkanal zum Mieter: Chat und Terminabstimmung (Vorschlag -> Bestätigung des Mieters).
+                # Bis 3.11.2026 setzte `termin` den Termin sofort; jetzt ist es ein Vorschlag.
+                messages.success(request, direkt_aktionen.ausfuehren(auftrag, 'handwerker', request.POST))
             elif aktion == 'termin_bestaetigen':
                 workflow.termin_bestaetigen(auftrag)
                 messages.success(request, gettext('Termin bestätigt.'))
@@ -213,6 +206,9 @@ def handwerker_auftrag(request, auftrag, token):
         'beschreibung': ohne_kontaktblock(ticket.beschreibung),
         'fotos': [nr for nr, _bild in _fotos(ticket)],
         'verlauf': verlauf,
+        'chat': list(direktkanal.verlauf(auftrag)), 'direkt_offen': not abgeschlossen,
+        'mieter_name': direktkanal.mieter_name(ticket),
+        'vorschlag_kennung': direkt_aktionen.kennung(auftrag),
         'termin_min': timezone.localtime().strftime('%Y-%m-%dT%H:%M'),
         'verwaltung': ticket.organisation,
     })

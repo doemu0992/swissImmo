@@ -181,9 +181,16 @@ class HandwerkerAuftrag(OrganisationAusKette):
         ('offen', _('Kein Termin')),
         ('vereinbart', _('Termin vereinbart')),
         ('abgesagt', _('Termin abgesagt')),
+        ('vorgeschlagen', _('Termin vorgeschlagen')),
     ]
     termin_am = models.DateTimeField("Termin", null=True, blank=True)
-    termin_status = models.CharField("Terminstatus", max_length=12, choices=TERMIN_CHOICES, default='offen')
+    termin_status = models.CharField("Terminstatus", max_length=20, choices=TERMIN_CHOICES, default='offen')
+    # Terminabstimmung Mieter <-> Handwerker (tickets/termin_abstimmung.py): ein offener Vorschlag.
+    # `termin_am` bleibt der VEREINBARTE Termin; erst die Bestaetigung der Gegenseite setzt ihn.
+    termin_vorschlag_am = models.DateTimeField("Terminvorschlag", null=True, blank=True, editable=False)
+    termin_vorschlag_von = models.CharField("Terminvorschlag von", max_length=12, blank=True, default='', editable=False)
+    termin_vorschlag_hinweis = models.CharField("Hinweis zum Terminvorschlag", max_length=300, blank=True, default='',
+                                               editable=False)
 
     # 🔥 Reparaturfreigabe durch den Eigentümer (Portal)
     FREIGABE_CHOICES = [
@@ -240,7 +247,13 @@ class TicketNachricht(OrganisationAusKette):
         ('mail_antwort', _('Mail Antwort')),
         ('antwort_senden', _('Antwort Senden')),
         ('handwerker_mail', _('Handwerker Mail')),
-        ('email', _('Ausgehende E-Mail'))
+        ('email', _('Ausgehende E-Mail')),
+        ('direkt', _('Direktnachricht Mieter/Handwerker')),
+    ]
+    SEITE_CHOICES = [
+        ('mieter', _('Mieter')),
+        ('handwerker', _('Handwerker')),
+        ('verwaltung', _('Verwaltung')),
     ]
     typ = models.CharField(max_length=20, choices=TYP_CHOICES, default='chat')
     nachricht = models.TextField()
@@ -255,6 +268,12 @@ class TicketNachricht(OrganisationAusKette):
     is_intern = models.BooleanField(default=False)
     is_von_verwaltung = models.BooleanField(default=False)
     erstellt_am = models.DateTimeField(auto_now_add=True)
+    # Direktkanal Mieter <-> Handwerker (tickets/direktkanal.py): zu welchem Auftrag, von welcher Seite,
+    # und wann die Mail an die Gegenseite hinausging (leer = noch nicht zugestellt, siehe Buendelung).
+    auftrag = models.ForeignKey('tickets.HandwerkerAuftrag', on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='direktnachrichten', editable=False)
+    seite = models.CharField(max_length=12, choices=SEITE_CHOICES, blank=True, default='', editable=False)
+    zugestellt_am = models.DateTimeField(null=True, blank=True, editable=False)
 
     class Meta:
         ordering = ['-erstellt_am']

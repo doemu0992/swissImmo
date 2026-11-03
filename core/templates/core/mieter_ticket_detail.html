@@ -37,6 +37,11 @@
         <p class="text-sm fw-mutet mt-2">{% trans "Zutritt:" %} {{ t.get_zutritt_display }}</p>
     </div>
 
+    {% for b in direkt_bloecke %}
+    {% blocktrans with f=b.auftrag.handwerker.firma asvar titel_text %}Termin und Nachrichten mit {{ f }}{% endblocktrans %}
+    {% include 'core/_direkt_block.html' with auftrag=b.auftrag seite='mieter' chat=b.chat offen=b.offen vorschlag_kennung=b.kennung gegenseite=b.auftrag.handwerker.firma aktion_url=b.url titel=titel_text %}
+    {% endfor %}
+
     <!-- Verlauf -->
     <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden mb-5">
         <div class="px-5 py-4 border-b fw-linie">

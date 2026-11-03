@@ -356,8 +356,15 @@ class HandwerkerAktionenTests(HandwerkerBasis):
         wann = (timezone.localtime() + timedelta(days=2)).replace(hour=9, minute=0, second=0, microsecond=0)
         self.client.post(self.url, {'aktion': 'termin', 'termin': wann.strftime('%Y-%m-%dT%H:%M')})
         a = _neu(self.auftrag)
+        # Seit 3.11.2026 ist das ein VORSCHLAG: Der Mieter bestätigt (tickets/termin_abstimmung.py), erst
+        # dann steht der Termin. Bis dahin hat der Handwerker keinen Termin gesetzt.
+        self.assertEqual(a.termin_status, 'vorgeschlagen')
+        self.assertIsNone(a.termin_am)
+        self.assertEqual(timezone.localtime(a.termin_vorschlag_am).hour, 9)
+        from tickets.workflow import termin_festlegen
+        termin_festlegen(a, wann)                                     # der Weg der Verwaltung bleibt
+        a = _neu(self.auftrag)
         self.assertEqual(a.termin_status, 'vereinbart')
-        self.assertEqual(timezone.localtime(a.termin_am).hour, 9)
         self.assertEqual(a.ticket.status, 'warte_auf_handwerker')    # termin_festlegen
         self.client.post(self.url, {'aktion': 'termin_bestaetigen'})
         from tickets.models import TicketNachricht

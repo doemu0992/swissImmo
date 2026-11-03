@@ -65,8 +65,9 @@ DEFAULT_VORLAGEN.update({
             "{gruss}\n\n"
             "für „{schaden}“ wurde ein Termin vereinbart:\n\n"
             "Wann: {termin}\nWer: {handwerker}\nWo: {objekt}\n\n"
-            "Bitte stellen Sie den Zutritt sicher. Können Sie nicht, antworten Sie auf diese "
-            "Mail, dann verschieben wir den Termin. Der Kalendereintrag hängt an.\n\n"
+            "Bitte stellen Sie den Zutritt sicher. Bei Verhinderung antworten Sie direkt auf diese Mail "
+            "oder schreiben Sie dem Handwerker im Mieterportal — Sie stimmen den neuen Termin direkt mit "
+            "ihm ab. Der Kalendereintrag hängt an.\n\n"
             "Freundliche Grüsse\nIhre Liegenschaftsverwaltung"
         ),
     },
@@ -74,7 +75,9 @@ DEFAULT_VORLAGEN.update({
         'betreff': 'Termin bestätigt: {termin} (Ticket #{ticket_id})',
         'inhalt': (
             "{gruss}\n\nDer Termin für „{schaden}“ ({objekt}) ist festgelegt: {termin}.\n"
-            "Mieter: {melder_name} ({melder_tel}).\nDer Kalendereintrag hängt an.\n\n"
+            "Mieter: {melder_name} ({melder_tel}).\nDer Kalendereintrag hängt an. Können Sie den Termin "
+            "nicht einhalten, antworten Sie direkt auf diese Mail — Ihre Antwort geht an den Mieter, den "
+            "neuen Termin stimmen Sie direkt mit ihm ab.\n\n"
             "Freundliche Grüsse\nIhre Liegenschaftsverwaltung"
         ),
     },

@@ -38089,3 +38089,141 @@ msgstr "Bonjour Madame %(name)s"
 
 msgid "Gruss an den Empfänger (Guten Tag Herr Muster)"
 msgstr "Salutation au destinataire (Bonjour Monsieur Muster)"
+
+msgid "Terminvorschlag: %(d)s Uhr"
+msgstr "Proposition de rendez-vous : %(d)s"
+
+msgid "von Ihnen — Antwort der Gegenseite steht aus."
+msgstr "de votre part — la réponse de l'autre partie est en attente."
+
+msgid "von %(n)s"
+msgstr "de %(n)s"
+
+msgid "Noch kein Termin vereinbart."
+msgstr "Aucun rendez-vous convenu pour le moment."
+
+msgid "Gegenvorschlag machen"
+msgstr "Faire une contre-proposition"
+
+msgid "Hinweis (optional)"
+msgstr "Remarque (facultatif)"
+
+msgid "Vorschlag senden"
+msgstr "Envoyer la proposition"
+
+msgid "%(n)s bestätigt den Termin oder macht einen Gegenvorschlag. Die Verwaltung wird informiert, sobald der Termin steht."
+msgstr "%(n)s confirme le rendez-vous ou fait une contre-proposition. La gérance est informée dès que le rendez-vous est fixé."
+
+msgid "Nachrichten mit %(n)s"
+msgstr "Messages avec %(n)s"
+
+msgid "%(n)s erhält Ihre Nachricht zusätzlich per E-Mail und kann direkt darauf antworten."
+msgstr "%(n)s reçoit votre message également par e-mail et peut y répondre directement."
+
+msgid "Termin und Nachrichten · %(titel)s"
+msgstr "Rendez-vous et messages · %(titel)s"
+
+msgid "Termin und Nachrichten"
+msgstr "Rendez-vous et messages"
+
+msgid "Der Auftrag ist abgeschlossen — die Seite ist nur noch lesbar."
+msgstr "Le mandat est terminé — la page est en lecture seule."
+
+msgid "Termin und Nachrichten mit dem Mieter"
+msgstr "Rendez-vous et messages avec le locataire"
+
+msgid "Termin und Nachrichten mit %(f)s"
+msgstr "Rendez-vous et messages avec %(f)s"
+
+msgid "Direkt Mieter ↔ Handwerker"
+msgstr "Direct locataire ↔ artisan"
+
+msgid "Direkt zwischen Mieter und Handwerker"
+msgstr "Directement entre locataire et artisan"
+
+msgid "Terminvorschlag (%(v)s): %(d)s Uhr — noch nicht bestätigt"
+msgstr "Proposition de rendez-vous (%(v)s) : %(d)s — pas encore confirmée"
+
+msgid "Mieter und Handwerker stimmen sich selbst ab, auch den Termin. Sie sehen mit; die Verwaltung wird erst informiert, wenn der Termin steht oder abgesagt wird."
+msgstr "Le locataire et l'artisan s'entendent eux-mêmes, y compris sur le rendez-vous. Vous lisez en parallèle ; la gérance n'est informée que lorsque le rendez-vous est fixé ou annulé."
+
+msgid "Noch keine Direktnachrichten."
+msgstr "Pas encore de messages directs."
+
+msgid "Als Verwaltung an Mieter und Handwerker schreiben"
+msgstr "Écrire au locataire et à l'artisan en tant que gérance"
+
+msgid "Nachricht an Mieter und Handwerker gesendet."
+msgstr "Message envoyé au locataire et à l'artisan."
+
+msgid "Nachricht gesendet."
+msgstr "Message envoyé."
+
+msgid "Terminvorschlag gesendet. Die Gegenseite bestätigt oder macht einen anderen Vorschlag."
+msgstr "Proposition envoyée. L'autre partie confirme ou fait une autre proposition."
+
+msgid "Terminvorschlag gespeichert. Die Gegenseite sieht ihn im Portal."
+msgstr "Proposition enregistrée. L'autre partie la voit dans le portail."
+
+msgid "Termin bestätigt. Beide Seiten erhalten den Kalendereintrag."
+msgstr "Rendez-vous confirmé. Les deux parties reçoivent l'invitation au calendrier."
+
+msgid "Termin abgesagt. Schlagen Sie einen neuen Termin vor."
+msgstr "Rendez-vous annulé. Proposez-en un nouveau."
+
+msgid "Unbekannter Absender."
+msgstr "Expéditeur inconnu."
+
+msgid "Der Auftrag ist abgeschlossen — der Chat ist nur noch lesbar."
+msgstr "Le mandat est terminé — le chat est en lecture seule."
+
+msgid "%(gruss)s\n\n%(wer)s schreibt zu «%(schaden)s»:\n\n%(text)s\n\nSie können direkt auf diese Mail antworten — Ihre Antwort geht an den Handwerker. Oder öffnen Sie den Chat:\n%(link)s"
+msgstr "%(gruss)s\n\n%(wer)s écrit au sujet de « %(schaden)s » :\n\n%(text)s\n\nVous pouvez répondre directement à cet e-mail — votre réponse ira à l'artisan. Ou ouvrez le chat :\n%(link)s"
+
+msgid "%(gruss)s\n\n%(wer)s schreibt zu «%(schaden)s»:\n\n%(text)s\n\nSie können direkt auf diese Mail antworten — Ihre Antwort geht an den Mieter. Oder öffnen Sie den Chat:\n%(link)s"
+msgstr "%(gruss)s\n\n%(wer)s écrit au sujet de « %(schaden)s » :\n\n%(text)s\n\nVous pouvez répondre directement à cet e-mail — votre réponse ira au locataire. Ou ouvrez le chat :\n%(link)s"
+
+msgid "Termin vorgeschlagen"
+msgstr "Rendez-vous proposé"
+
+msgid "Direktnachricht Mieter/Handwerker"
+msgstr "Message direct locataire/artisan"
+
+msgid "Unbekannte Seite."
+msgstr "Partie inconnue."
+
+msgid "Der Auftrag ist abgeschlossen."
+msgstr "Le mandat est terminé."
+
+msgid "Der Termin liegt zu weit in der Zukunft."
+msgstr "Le rendez-vous est trop éloigné dans le futur."
+
+msgid "Der Hinweis ist zu lang (höchstens %(n)s Zeichen)."
+msgstr "La remarque est trop longue (%(n)s caractères au maximum)."
+
+msgid "Terminvorschlag: %(zeit)s"
+msgstr "Proposition de rendez-vous : %(zeit)s"
+
+msgid "%(gruss)s\n\n%(wer)s schlägt für «%(schaden)s» folgenden Termin vor:\n\nWann: %(zeit)s\n%(hinweis)s\nBestätigen oder einen anderen Termin vorschlagen (ohne Anmeldung):\n%(link)s\n\nSie können auch direkt auf diese Mail antworten. Verbindlich wird der Termin erst, wenn Sie ihn bestätigen."
+msgstr "%(gruss)s\n\n%(wer)s propose le rendez-vous suivant pour « %(schaden)s » :\n\nQuand : %(zeit)s\n%(hinweis)s\nConfirmer ou proposer un autre rendez-vous (sans connexion) :\n%(link)s\n\nVous pouvez aussi répondre directement à cet e-mail. Le rendez-vous n'est définitif qu'une fois que vous l'avez confirmé."
+
+msgid "Hinweis: %(h)s"
+msgstr "Remarque : %(h)s"
+
+msgid "Es gibt keinen offenen Terminvorschlag."
+msgstr "Il n'y a pas de proposition de rendez-vous en cours."
+
+msgid "Der Vorschlag wurde inzwischen geändert. Bitte den aktuellen ansehen."
+msgstr "La proposition a été modifiée entre-temps. Veuillez consulter la version actuelle."
+
+msgid "Der Vorschlag stammt von Ihnen — die Gegenseite muss ihn bestätigen."
+msgstr "La proposition vient de vous — l'autre partie doit la confirmer."
+
+msgid "Es gibt keinen vereinbarten Termin."
+msgstr "Il n'y a pas de rendez-vous convenu."
+
+msgid "{gruss}\n\nfür „{schaden}“ wurde ein Termin vereinbart:\n\nWann: {termin}\nWer: {handwerker}\nWo: {objekt}\n\nBitte stellen Sie den Zutritt sicher. Bei Verhinderung antworten Sie direkt auf diese Mail oder schreiben Sie dem Handwerker im Mieterportal — Sie stimmen den neuen Termin direkt mit ihm ab. Der Kalendereintrag hängt an.\n\nFreundliche Grüsse\nIhre Liegenschaftsverwaltung"
+msgstr "{gruss}\n\npour « {schaden} », un rendez-vous a été convenu :\n\nQuand : {termin}\nQui : {handwerker}\nOù : {objekt}\n\nVeuillez garantir l'accès. En cas d'empêchement, répondez directement à cet e-mail ou écrivez à l'artisan dans le portail locataire — vous convenez du nouveau rendez-vous directement avec lui. L'invitation au calendrier est jointe.\n\nMeilleures salutations\nVotre gérance immobilière"
+
+msgid "{gruss}\n\nDer Termin für „{schaden}“ ({objekt}) ist festgelegt: {termin}.\nMieter: {melder_name} ({melder_tel}).\nDer Kalendereintrag hängt an. Können Sie den Termin nicht einhalten, antworten Sie direkt auf diese Mail — Ihre Antwort geht an den Mieter, den neuen Termin stimmen Sie direkt mit ihm ab.\n\nFreundliche Grüsse\nIhre Liegenschaftsverwaltung"
+msgstr "{gruss}\n\nLe rendez-vous pour « {schaden} » ({objekt}) est fixé : {termin}.\nLocataire : {melder_name} ({melder_tel}).\nL'invitation au calendrier est jointe. Si vous ne pouvez pas respecter le rendez-vous, répondez directement à cet e-mail — votre réponse ira au locataire, vous convenez du nouveau rendez-vous directement avec lui.\n\nMeilleures salutations\nVotre gérance immobilière"

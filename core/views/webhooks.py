@@ -43,6 +43,11 @@ def brevo_inbound_webhook(request):
                     # wuesste der Datensatz nicht, wem er gehoert.
                     from core.tenancy import kontext_des_objekts
                     with kontext_des_objekts(ticket):
+                        # Auftragsmarke «[A12]»: Antwort im Direktkanal Mieter/Handwerker, nicht beim Ticket.
+                        from tickets.direktkanal import aus_mail, auftrag_id_aus_betreff
+                        kopf = data.get('Headers') if isinstance(data.get('Headers'), dict) else {}
+                        if aus_mail(ticket, auftrag_id_aus_betreff(subject), sender, text_body, kopf):
+                            return JsonResponse({'status': 'ok, chat'})
                         TicketNachricht.objects.create(
                             ticket=ticket,
                             absender_name=sender,

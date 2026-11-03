@@ -870,6 +870,7 @@ def mieter_ticket_detail(request, pk):
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None:
         return redirect('mieter_portal')
+    from django.utils import timezone
     from tickets.meldung import ohne_kontaktblock
     t = get_object_or_404(_mieter_tickets(mieter).select_related('liegenschaft'), pk=pk)
     label, cls = TICKET_STATUS_PILL.get(t.status, (t.status, 'fw-flaeche2 fw-mutet'))
@@ -881,12 +882,49 @@ def mieter_ticket_detail(request, pk):
         verlauf = verlauf.exclude(typ__in=_MELDER_KORRESPONDENZ)
     termine = list(t.handwerker_auftraege.filter(termin_status='vereinbart', termin_am__isnull=False)
                    .exclude(status='storniert').select_related('handwerker').order_by('termin_am'))
+    # Direktkanal zum Handwerker (Chat + Terminabstimmung), je Auftrag — nur für den Melder selbst.
+    direkt_bloecke = []
+    if eigen:
+        from tickets import direkt_aktionen, direktkanal
+        auftraege = (t.handwerker_auftraege.exclude(status='storniert')
+                     .select_related('handwerker', 'ticket').order_by('beauftragt_am'))
+        for a in auftraege:
+            direkt_bloecke.append({'auftrag': a, 'chat': list(direktkanal.verlauf(a)),
+                                   'offen': direktkanal.ist_offen(a), 'kennung': direkt_aktionen.kennung(a),
+                                   'url': f'/mieter/ticket/{t.id}/direkt/{a.id}/'})
     return render(request, 'core/mieter_ticket_detail.html', {
+        'direkt_bloecke': direkt_bloecke, 'termin_min': timezone.localtime().strftime('%Y-%m-%dT%H:%M'),
         'mieter': mieter, 't': t, 'status_label': label, 'status_cls': cls,
         'verlauf': verlauf, 'eigen': eigen, 'termine': termine,
         'beschreibung': t.beschreibung if eigen else ohne_kontaktblock(t.beschreibung),
         'objekt': f"{t.liegenschaft.strasse}, {t.liegenschaft.ort}" if t.liegenschaft_id else '—',
     })
+
+
+@never_cache
+@login_required
+def mieter_ticket_direkt(request, pk, auftrag_id):
+    """Chat und Terminabstimmung des Mieters mit dem Handwerker EINES Auftrags (POST).
+
+    Nur der Melder des Tickets (`gemeldet_von`) darf — wer das Ticket nur über die Einheit sieht, nicht.
+    Fremde Tickets und fremde Aufträge: 404 (ein Auftrag wird nur über SEIN Ticket gefunden)."""
+    from django.contrib import messages
+    from django.core.exceptions import ValidationError
+    from tickets import direkt_aktionen
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None or request.method != 'POST':
+        return redirect('mieter_portal')
+    t = get_object_or_404(_mieter_tickets(mieter).filter(gemeldet_von=mieter), pk=pk)
+    auftrag = get_object_or_404(t.handwerker_auftraege.exclude(status='storniert')
+                                .select_related('handwerker', 'ticket'), pk=auftrag_id)
+    try:
+        meldung = direkt_aktionen.ausfuehren(auftrag, 'mieter', request.POST)
+        if meldung is None:
+            raise ValidationError(gettext('Unbekannte Aktion.'))
+        messages.success(request, '✅ ' + meldung)
+    except ValidationError as e:
+        messages.error(request, ' '.join(e.messages))
+    return redirect(f'/mieter/ticket/{t.id}/')
 
 
 #: Wohin eine Nachricht des Mieters das Ticket bringt — nur über erlaubte

@@ -55,6 +55,7 @@ PARAMETER_MODELL = {
     'pfad':            None,          # Dateipfad, keine Objekt-ID — Bauform C
     'zweck':           None,          # 'antworten'/'rechnungen' — keine Objekt-ID
     'token':           None,          # Handwerker-Link (Modul 3) — Geheimnis, keine Objekt-ID
+    'signiert':        None,          # signierter Mail-Link des Direktkanals — Signatur, keine Objekt-ID
 }
 
 # Die Parameter ohne Objektbezug. Sie sind KEINE Ausnahme im Sinne von
@@ -75,9 +76,13 @@ PARAMETER_MODELL = {
 # `core/tests/test_portale_modul3.py` (fremder, falscher, abgelaufener und
 # widerrufener Token; kein zweiter Auftrag über denselben Token).
 #
+# `signiert` (3.11.2026) ist der Mail-Link des Direktkanals `/direkt/<signiert>/`: Auftrag und Seite stehen
+# in der Signatur, es gibt keine fremde ID zum Einsetzen. Geprueft von Hand in `core/tests/test_direktkanal.py`
+# (SignierterLinkTests: gefaelscht, abgelaufen, widerrufen, nur der eigene Auftrag).
+#
 # `art` (FUNK-09) ist die Dateiart der Importvorlage (`/neu/einstellungen/daten/import/vorlage/<art>/`):
 # eine feste Auswahl aus fünf Namen, die eine Kopfzeile liefert und keinen Datensatz berührt.
-KEINE_OBJEKT_ID = {'nummer', 'pfad', 'zweck', 'token', 'art'}
+KEINE_OBJEKT_ID = {'nummer', 'pfad', 'zweck', 'token', 'art', 'signiert'}
 
 
 class MandantenFixture:
