@@ -267,6 +267,32 @@ class FreigabeTests(SchadenWelt):
         self.assertIn('Wasserhahn tropft', self.seite())
 
 
+class HaertungTests(SchadenWelt):
+    """Nach Mandatsende nimmt auch der direkte POST keinen Entscheid mehr an; die Übersicht zeigt keine interne
+    Bemerkung der Verwaltung an den Handwerker (Gegenprobe: die Zeile in `portal_freigabe` bzw. die Bemerkung in
+    `_offene_freigaben` wieder einsetzen, und der jeweilige Test wird rot)."""
+
+    def test_direkter_post_nach_mandatsende_aendert_nichts(self):
+        self.a_offen.freigabe_status = 'ausstehend'
+        self.a_offen.save()
+        _vertraege_beenden(self.lg_a)
+        archiv.archivieren(self.lg_a, grund='Verkauft')
+        archiv.archivieren(self.a, grund='Mandat beendet', mandatsende=date(2026, 3, 31))
+        self.client_a.post(f'/portal/freigabe/{self.a_offen.pk}/', {'aktion': 'freigeben'})
+        self.a_offen.refresh_from_db()
+        self.assertEqual(self.a_offen.freigabe_status, 'ausstehend')
+
+    def test_vor_mandatsende_gilt_der_entscheid(self):
+        self.client_a.post(f'/portal/freigabe/{self.a_offen.pk}/', {'aktion': 'freigeben'})
+        self.a_offen.refresh_from_db()
+        self.assertEqual(self.a_offen.freigabe_status, 'freigegeben')
+
+    def test_uebersicht_zeigt_die_interne_bemerkung_nicht(self):
+        HandwerkerAuftrag.objects.filter(pk=self.a_offen.pk).update(
+            bemerkung='INTERNE-ANWEISUNG-AN-HANDWERKER', freigabe_status='ausstehend')
+        self.assertNotIn('INTERNE-ANWEISUNG-AN-HANDWERKER', self.seite('/portal/'))
+
+
 class FilterTests(SchadenWelt):
     def test_status(self):
         offen = self.seite('/portal/schaeden/?status=offen')

@@ -21,7 +21,7 @@
             {% csrf_token %}
             <div>
                 <div class="font-semibold text-sm fw-strong"><a href="{% url 'portal_schaden' f.ticket_id %}">{{ f.titel }}</a></div>
-                <div class="text-xs fw-mutet mt-0.5">{{ f.liegenschaft }} · {{ f.handwerker }}{% if f.bemerkung %} · {{ f.bemerkung }}{% endif %}</div>
+                <div class="text-xs fw-mutet mt-0.5">{{ f.liegenschaft }} · {{ f.handwerker }}</div>
                 <div class="text-sm font-bold fw-strong mt-1">{% if f.kosten %}CHF {{ f.kosten|chf }}{% else %}—{% endif %}</div>
             </div>
             <div>

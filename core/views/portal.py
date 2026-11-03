@@ -84,7 +84,6 @@ def _offene_freigaben(eigentuemer):
             'liegenschaft': f"{t.liegenschaft.strasse}, {t.liegenschaft.ort}" if t.liegenschaft_id else '—',
             'handwerker': a.handwerker.firma if a.handwerker_id else '—',
             'kosten': a.kosten_geschaetzt,
-            'bemerkung': a.bemerkung,
         })
     return out
 
@@ -104,6 +103,11 @@ def portal_freigabe(request, pk):
     from core.utils.parameter import sicheres_ziel
     ziel = sicheres_ziel(request, '/portal/')
     if a.freigabe_status != 'ausstehend':
+        return redirect(ziel)
+    # Nach Mandatsende nimmt das Portal keinen Entscheid mehr an (die Seite blendet das Formular aus, der direkte
+    # POST wird hier abgewiesen).
+    from core.services import eigentuemer_portal as _dienst
+    if _dienst.mandat_status(eigentuemer) is not None:
         return redirect(ziel)
     aktion = request.POST.get('aktion')
     kommentar = (request.POST.get('kommentar') or '').strip()
