@@ -24,6 +24,7 @@ from stweg.models import StwegBudget, StwegBudgetPosition, StwegVorschreibung
 from stweg.schluessel import SchluesselFehler, verteile
 from stweg.validierung import WertquotenFehler, pruefe_wertquoten, stimm_einheiten
 from stweg.verteilung import verteile_nach_quoten
+from core.services.anrede import eigentuemer_gruss_html
 
 NULL = Decimal('0.00')
 
@@ -201,7 +202,7 @@ def vorschreibungen_versenden(budget):
             ergebnis['post'].append(eig)
             continue
         html = ("<html><body style='font-family:Arial,sans-serif;line-height:1.5'>"
-                f"<p>Guten Tag {eig.firma_oder_name}</p>"
+                f"<p>{eigentuemer_gruss_html(eig)}</p>"
                 f"<p>die Versammlung hat das Budget {budget.jahr} der Gemeinschaft {budget.liegenschaft} "
                 "genehmigt. In der Beilage Ihre Akonto-Rechnung mit Zahlteilen.</p>"
                 f"<p>Freundliche Grüsse<br>{org.firma}</p></body></html>")

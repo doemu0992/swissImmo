@@ -348,6 +348,7 @@ def send_mahnung_email_view(request, vertrag_id):
 
     heute = datetime.date.today()
     from core.services.ablage import ablage_mahnung
+    from core.services.anrede import mieter_gruss
 
     # Aus der Mahnliste (`rechnung` + `stufe`): die Kopie der MAHNUNG dieser Stufe,
     # mit Monat und offenem Betrag der Forderung. Sie ist keine 257d-Androhung.
@@ -382,7 +383,7 @@ def send_mahnung_email_view(request, vertrag_id):
         titel = titel_fuer(vertrag, stufe, bool(cfg and cfg['kuendigung']))
         email = EmailMultiAlternatives(
             subject=f"{titel}: {objekt}",
-            body=(f"Guten Tag, im Anhang finden Sie die {titel} "
+            body=(f"{mieter_gruss(vertrag.mieter, 'de')}, im Anhang finden Sie die {titel} "
                   f"für {monat_str} über CHF {betrag_str} (Kopie; das Original erhalten "
                   f"Sie auf dem Postweg)."),
             to=[vertrag.mieter.email], **kopfzeilen(verwaltung))
@@ -416,6 +417,7 @@ def send_mahnung_email_view(request, vertrag_id):
         'firma_name': verwaltung.firma if verwaltung else 'Ihre Verwaltung',
         'logo_url': request.build_absolute_uri(verwaltung.logo.url) if verwaltung and verwaltung.logo else "",
         'mieter_name': anzeige_name,
+        'gruss': mieter_gruss(vertrag.mieter, 'de'),
         'objekt_name': f"{vertrag.einheit.bezeichnung} ({vertrag.einheit.liegenschaft.strasse})",
         'monat': monat_str, 'betrag': betrag_str,
     }
@@ -423,7 +425,7 @@ def send_mahnung_email_view(request, vertrag_id):
     html_content = render_to_string('emails/email_mahnung.html', context)
     email = EmailMultiAlternatives(
         subject=f"Kopie: Mahnung mit Kündigungsandrohung (Art. 257d OR) — Original folgt per Einschreiben: {context['objekt_name']}",
-        body=(f"Guten Tag, im Anhang finden Sie eine KOPIE der Mahnung für {monat_str}. "
+        body=(f"{context['gruss']}, im Anhang finden Sie eine KOPIE der Mahnung für {monat_str}. "
               f"Die massgebende Fristansetzung erhalten Sie zusätzlich per Einschreiben."),
         to=[vertrag.mieter.email], **kopfzeilen(verwaltung),
     )

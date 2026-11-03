@@ -14,6 +14,7 @@ from stweg.models import Stimme, Traktandum, Zirkularbeschluss, ZirkularStimme, 
 from stweg.pdf import zirkular_pdf
 from stweg.validierung import WertquotenFehler, pruefe_wertquoten, stimm_einheiten
 from stweg.versammlung import VersammlungsFehler
+from core.services.anrede import eigentuemer_gruss_html
 
 
 def _empfaenger(z):
@@ -80,7 +81,7 @@ def versenden(z, *, heute=None):
         if e.pk in schon:
             continue
         html = ("<html><body style='font-family:Arial,sans-serif;line-height:1.5'>"
-                f"<p>Guten Tag {e.firma_oder_name}</p>"
+                f"<p>{eigentuemer_gruss_html(e)}</p>"
                 f"<p>die Gemeinschaft {z.liegenschaft} stimmt auf dem Zirkularweg über «{z.titel}» ab. "
                 f"Bitte stimmen Sie bis <strong>{z.frist_bis:%d.%m.%Y}</strong> im Eigentümerportal ab. "
                 "Den Antrag finden Sie in der Beilage.</p>"
@@ -172,7 +173,7 @@ def ergebnis_versenden(z):
         if e.pk in schon:
             continue
         html = ("<html><body style='font-family:Arial,sans-serif;line-height:1.5'>"
-                f"<p>Guten Tag {e.firma_oder_name}</p>"
+                f"<p>{eigentuemer_gruss_html(e)}</p>"
                 f"<p>die Abstimmung «{z.titel}» ist abgeschlossen: <strong>{z.get_ergebnis_display()}</strong>. "
                 "Einzelheiten in der Beilage.</p>"
                 f"<p>Freundliche Grüsse<br>{org.firma}</p></body></html>")

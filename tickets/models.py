@@ -35,6 +35,8 @@ class SchadenMeldung(OrganisationAusKette):
     raum = models.CharField("Raum", max_length=100, blank=True, null=True)
     objekt = models.CharField("Objekt", max_length=100, blank=True, null=True)
 
+    #: Anrede aus dem Meldeformular («Herr»/«Frau»; «Firma» wird nicht gespeichert) für den Mailgruss.
+    melder_anrede = models.CharField("Anrede Melder", max_length=10, blank=True, default='')
     melder_vorname = models.CharField("Vorname Melder", max_length=100, blank=True, null=True)
     melder_nachname = models.CharField("Nachname Melder", max_length=100, blank=True, null=True)
 

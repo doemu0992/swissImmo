@@ -39,9 +39,11 @@ def eingangsbestaetigung_text(ticket, sprache):
     zugeordnet."""
     from django.utils.translation import gettext as _
     from core.services.dokumentsprache import in_sprache
+    from core.services.ticket_workflow import melder_gruss
     with in_sprache(sprache):
         betreff = _("Eingangsbestätigung: %(titel)s (Ticket #%(id)s)") % {'titel': ticket.titel, 'id': ticket.id}
-        text = _("Guten Tag\n\nWir haben Ihre Schadenmeldung '%(titel)s' erhalten (Ticket #%(id)s) und "
+        text = _("%(gruss)s\n\nWir haben Ihre Schadenmeldung '%(titel)s' erhalten (Ticket #%(id)s) und "
                  "kümmern uns darum. Sobald ein Handwerker beauftragt wurde, informieren wir Sie.\n\n"
-                 "Freundliche Grüsse\nIhre Liegenschaftsverwaltung") % {'titel': ticket.titel, 'id': ticket.id}
+                 "Freundliche Grüsse\nIhre Liegenschaftsverwaltung") % {
+            'gruss': melder_gruss(ticket), 'titel': ticket.titel, 'id': ticket.id}
     return betreff, text

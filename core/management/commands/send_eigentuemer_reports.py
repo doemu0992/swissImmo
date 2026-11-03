@@ -44,6 +44,7 @@ class Command(BaseCommand):
         from django.utils import translation
         from django.utils.translation import gettext
         from crm.models import Eigentuemer
+        from core.services.anrede import eigentuemer_gruss
         from core.services.dokumentsprache import in_sprache, sprache_von
         from core.services.portfolio_report import generate_portfolio_report_fuer
         from core.services.steuerauszug import generate_steuerauszug_pdf
@@ -73,7 +74,7 @@ class Command(BaseCommand):
             ]
             # Begleitmail in der Sprache des Eigentümers (D11).
             with in_sprache(sprache_von(md)):
-                gruss = gettext('Guten Tag %(name)s') % {'name': md.firma_oder_name}
+                gruss = eigentuemer_gruss(md)
                 text = gettext('Im Anhang finden Sie den aktuellen Portfolio-Report sowie den '
                                'Steuerauszug %(jahr)s zu Ihren Liegenschaften. Alle Details '
                                'jederzeit in Ihrem Eigentümer-Portal.') % {'jahr': jahr}

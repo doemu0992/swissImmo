@@ -23,6 +23,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.utils.html import escape
 from django.core.mail import EmailMultiAlternatives
 
 from core.utils.absender import kopfzeilen
@@ -67,6 +68,19 @@ class Command(BaseCommand):
 
         if gesendet == 0:
             self.stdout.write(self.style.SUCCESS("Keine anstehenden Fristen — kein Mail gesendet."))
+
+    @staticmethod
+    def _gruss(organisation, empfaenger):
+        """Ein einziger Empfänger aus dem Team wird persönlich gegrüsst (Vorname Nachname aus dem
+        Benutzer); bei mehreren oder der allgemeinen Adresse der Verwaltung bleibt es bei «Guten Tag»."""
+        from crm.models import Mitgliedschaft
+        from core.services.anrede import benutzer_gruss, mail_gruss
+        if len(empfaenger) != 1:
+            return mail_gruss(sprache='de')
+        m = (Mitgliedschaft.objects.filter(organisation=organisation, benutzer__is_active=True,
+                                           benutzer__email=empfaenger[0])
+             .select_related('benutzer').first())
+        return benutzer_gruss(m.benutzer if m else None, 'de')
 
     def _fuer_organisation(self, organisation, opts):
         """Ein Lauf für eine Verwaltung. Gibt zurück, ob gesendet wurde."""
@@ -128,11 +142,12 @@ class Command(BaseCommand):
             html_zeilen.append('</ul>')
 
         betreff = f"Fristen-Übersicht: {len(ueberfaellig)} überfällig, {len(anstehend)} anstehend"
-        text = ("Guten Tag\n\nAnstehende und überfällige Fristen der nächsten "
+        gruss = self._gruss(organisation, empfaenger)
+        text = (f"{gruss}\n\nAnstehende und überfällige Fristen der nächsten "
                 f"{opts['tage']} Tage:\n" + "\n".join(text_zeilen) +
                 "\n\nÖffnen im Fristen-Center der Verwaltung.\n")
         html = ("<div style='font-family:sans-serif;font-size:14px;color:#222'>"
-                "<p>Guten Tag</p><p>Anstehende und überfällige Fristen der nächsten "
+                f"<p>{escape(gruss)}</p><p>Anstehende und überfällige Fristen der nächsten "
                 f"{opts['tage']} Tage:</p>" + "".join(html_zeilen) +
                 "<p style='color:#888;font-size:12px'>Automatischer Fristen-Report · "
                 "Details im Fristen-Center der Verwaltung.</p></div>")

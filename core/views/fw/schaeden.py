@@ -291,12 +291,14 @@ def fw_schaden_neu(request):
     ok = False
     if t.email_melder:
         from crm.models import Vorlage
-        from core.services.ticket_workflow import ticket_kontext
+        from core.services.ticket_workflow import _alte_anrede_ersetzen, ticket_kontext
         betreff = f"Eingangsbestätigung: {t.titel} (Ticket #{t.id})"
         v = Vorlage.objects.filter(kategorie='ticket_eingang').first()
+        from core.services.ticket_workflow import melder_gruss, melder_sprache
+        k_gruss = melder_gruss(t, sprache=melder_sprache(t))
         if v and v.inhalt:
             k = ticket_kontext(t)
-            body = v.inhalt
+            body = _alte_anrede_ersetzen(v.inhalt)
             for kk, vv in k.items():
                 body = body.replace('{' + kk + '}', str(vv))
             if v.betreff:
@@ -304,7 +306,7 @@ def fw_schaden_neu(request):
                 for kk, vv in k.items():
                     betreff = betreff.replace('{' + kk + '}', str(vv))
         else:
-            body = (f"Guten Tag\n\nWir haben Ihre Schadenmeldung '{t.titel}' erhalten (Ticket #{t.id}) "
+            body = (f"{k_gruss}\n\nWir haben Ihre Schadenmeldung '{t.titel}' erhalten (Ticket #{t.id}) "
                     f"und kümmern uns darum. Wir melden uns, sobald ein Handwerker beauftragt wurde.\n\n"
                     f"Freundliche Grüsse\nIhre Liegenschaftsverwaltung")
         ok = send_ticket_email(t.email_melder, betreff, body, organisation=t.organisation_id)

@@ -66,6 +66,8 @@ def send_ticket_receipt(ticket):
     # die Person es ausgefüllt hat (D11: Sprache des Empfängers).
     subject = gettext('Eingangsbestätigung: %(titel)s [Ticket #%(id)s]') % {'titel': ticket.titel, 'id': ticket.id}
 
+    from core.services.ticket_workflow import melder_gruss
+    _gruss = melder_gruss(ticket)
     _text1 = gettext('Wir haben Ihre Meldung erhalten')
     _text2 = gettext('Ticket-Nr.')
     _text3 = gettext('Thema')
@@ -76,6 +78,7 @@ def send_ticket_receipt(ticket):
     html_msg = f"""
     <html><body>
     <h2>{_text1}</h2>
+    <p>{escape(_gruss)}</p>
     <p>{_text2}: #{ticket.id}<br>{_text3}: {escape(ticket.titel)}</p>
     <p>{_text4}</p>
     <p>{_text5}<br>{unterschrift}</p>
@@ -171,7 +174,7 @@ def _klartext_als_html(text):
 
 
 def send_mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma='',
-                              sprache='de'):
+                              sprache='de', gruss=None):
     """Sendet dem Mieter seine Portal-Zugangsdaten (Benutzername, Passwort,
     Erklärung, Login-Link). Gibt True/False zurück.
 
@@ -180,14 +183,14 @@ def send_mieter_portal_zugang(to_email, anrede_name, username, passwort, login_u
     if not to_email:
         return False
     with in_sprache(sprache):
-        return _mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma)
+        return _mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma, gruss)
 
 
-def _mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma):
+def _mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma, gruss=None):
     betreff = gettext('Ihr Zugang zum Mieterportal')
     firma_zeile = f"<p style='margin:24px 0 0;color:#94a3b8;font-size:13px;'>{absender_firma}</p>" if absender_firma else ""
     _text1 = gettext('Ihr Mieterportal')
-    _text2 = gettext('Guten Tag %(name)s') % {'name': anrede_name}
+    _text2 = gruss or gettext('Guten Tag %(name)s') % {'name': anrede_name}
     _text3 = gettext('Für Sie wurde ein persönlicher Zugang zum Mieterportal eingerichtet. Dort sehen Sie jederzeit Ihren Mietvertrag, offene Rechnungen (inkl. QR-Einzahlschein), Ihren Kontoauszug und Ihre Dokumente — und Sie können bequem eine Reparatur oder einen Schaden melden.')
     _text4 = gettext('Benutzername')
     _text5 = gettext('Passwort')
@@ -241,20 +244,20 @@ def send_report_mail(to_email, betreff, html_inhalt, anhaenge=None, organisation
 
 
 def send_eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma='',
-                                   sprache='de'):
+                                   sprache='de', gruss=None):
     """Sendet dem Eigentümer seine Portal-Zugangsdaten. True/False.
 
     `sprache`: Korrespondenzsprache des Eigentümers (D11)."""
     if not to_email:
         return False
     with in_sprache(sprache):
-        return _eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma)
+        return _eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma, gruss)
 
 
-def _eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma):
+def _eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma, gruss=None):
     betreff = gettext('Ihr Zugang zum Eigentümer-Portal')
     _kopf = gettext('Ihr Eigentümer-Portal')
-    _gruss = gettext('Guten Tag %(name)s') % {'name': anrede_name}
+    _gruss = gruss or gettext('Guten Tag %(name)s') % {'name': anrede_name}
     _einleitung = gettext('Für Sie wurde ein persönlicher Zugang zum Eigentümer-Portal eingerichtet. Dort sehen Sie jederzeit den Stand Ihrer Liegenschaften: Rendite-Cockpit, offene Reparatur-Freigaben, Portfolio-Report und Steuerauszug.')
     _benutzer = gettext('Benutzername')
     _passwort = gettext('Passwort')
@@ -301,12 +304,12 @@ def send_payment_reminder(vertrag, monat_datum, offener_betrag):
     # Art. 257d OR: kein Rechtstext, deshalb übersetzt.
     betrag = f"{offener_betrag:,.2f}"
     objekt = vertrag.einheit.bezeichnung
-    name = f"{mieter.vorname} {mieter.nachname}"
     with in_sprache(sprache_von(mieter)):
         monat_str = dateformat.format(monat_datum, 'F Y')
         subject = gettext('Zahlungserinnerung: Miete %(monat)s - %(objekt)s') % {'monat': monat_str, 'objekt': objekt}
         _text1 = gettext('Zahlungserinnerung')
-        _text2 = gettext('Guten Tag %(name)s,') % {'name': name}
+        from core.services.anrede import mieter_gruss
+        _text2 = mieter_gruss(mieter) + ','
         _text3 = gettext('Bei der Kontrolle unserer Konten haben wir festgestellt, dass die Miete für den Monat <strong>%(monat)s</strong> für das Objekt <strong>%(objekt)s</strong> noch nicht vollständig beglichen wurde.') % {'monat': monat_str, 'objekt': objekt}
         _text4 = gettext('Ausstehender Betrag: CHF %(betrag)s') % {'betrag': betrag}
         _text5 = gettext('Sollten Sie die Zahlung bereits getätigt haben, betrachten Sie dieses Schreiben bitte als gegenstandslos. Andernfalls bitten wir Sie um eine zeitnahe Überweisung.')

@@ -48,6 +48,7 @@ from stweg.zins import KAPITAL_ARTEN, oldest_first, zinsforderungen
 from stweg.zins import satz as zins_satz
 from stweg.models import (StwegAbrechnung, StwegAbrechnungPosition, StwegAkonto, StwegInkassoFall,
                           StwegInkassoPosition, StwegMahnung, StwegPfandrecht, StwegVorschreibung)
+from core.services.anrede import eigentuemer_gruss_html
 
 NULL = Decimal('0.00')
 PFANDRECHT_MONATE = 36
@@ -364,7 +365,7 @@ def mahnung_versenden(mahnung):
     zeilen = mahntext(mahnung)
     org = e.liegenschaft.organisation
     html = ("<html><body style='font-family:Arial,sans-serif;line-height:1.5'>"
-            f"<p>Guten Tag {eig.firma_oder_name}</p><p>{zeilen[0]} — Einheit {e.bezeichnung}, Total offen "
+            f"<p>{eigentuemer_gruss_html(eig)}</p><p>{zeilen[0]} — Einheit {e.bezeichnung}, Total offen "
             f"CHF {_chf(mahnung.betrag)}, zahlbar bis {mahnung.frist_bis:%d.%m.%Y}. Einzelheiten in der Beilage.</p>"
             f"<p>Freundliche Grüsse<br>{org.firma}</p></body></html>")
     ohne_kuendigung(html)

@@ -164,6 +164,7 @@ hier dasselbe Muster.
             <tbody>
                 <tr><td data-label="Feld">{% trans "Firma / Name" %}</td><td data-label="Wert">{{ md.firma_oder_name }}</td></tr>
                 <tr><td data-label="Feld">{% trans "Kontaktperson" %}</td><td data-label="Wert">{{ md.kontaktperson|default:"—" }}</td></tr>
+                <tr><td data-label="Feld">{% trans "Anrede" %}</td><td data-label="Wert">{% if md.anrede == 'Herr' %}{% trans "Herr" %}{% elif md.anrede == 'Frau' %}{% trans "Frau" %}{% else %}—{% endif %}</td></tr>
                 <tr><td data-label="Feld">{% trans "Adresse" %}</td><td data-label="Wert">{% if md.strasse %}{{ md.strasse }}, {{ md.plz }} {{ md.ort }}{% else %}—{% endif %}</td></tr>
                 <tr><td data-label="Feld">{% trans "E-Mail" %}</td><td data-label="Wert">{{ md.email|default:"—" }}</td></tr>
                 <tr><td data-label="Feld">{% trans "Telefon" %}</td><td data-label="Wert">{{ md.telefon|default:"—" }}</td></tr>

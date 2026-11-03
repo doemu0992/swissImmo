@@ -43,6 +43,8 @@ def fw_eigentuemer_form(request, pk=None):
         obj = md or Eigentuemer()
         obj.firma_oder_name = P.get('firma_oder_name', '').strip()
         obj.kontaktperson = P.get('kontaktperson', '').strip()
+        # Nur Herr/Frau; alles andere (auch eine gefälschte Eingabe) heisst «keine Anrede».
+        obj.anrede = P.get('anrede') if P.get('anrede') in ('Herr', 'Frau') else ''
         obj.strasse = P.get('strasse', '').strip()
         obj.plz = P.get('plz', '').strip()
         obj.ort = P.get('ort', '').strip()
@@ -145,6 +147,7 @@ def fw_eigentuemer_portal_zugang(request, pk):
 
     mail_ok = False
     if md.email:
+        from core.services.anrede import eigentuemer_gruss
         from core.utils.email_service import send_eigentuemer_portal_zugang
         from crm.models import Organisation
         from django.conf import settings as _settings
@@ -153,7 +156,8 @@ def fw_eigentuemer_portal_zugang(request, pk):
         login_url = _settings.PORTAL_BASE_URL.rstrip('/') + '/portal/login/'
         mail_ok = send_eigentuemer_portal_zugang(
             md.email, md.firma_oder_name, u.username, passwort, login_url,
-            absender_firma=(vw.firma if vw else ''), sprache=md.sprache)
+            absender_firma=(vw.firma if vw else ''), sprache=md.sprache,
+            gruss=eigentuemer_gruss(md, md.sprache))
 
     if mail_ok:
         messages.success(request, '✅ ' + gettext('Portal-Zugang aktiv. Zugangsdaten wurden an %(email)s gesendet. (Benutzername: %(username)s)') % {'email': md.email, 'username': u.username})

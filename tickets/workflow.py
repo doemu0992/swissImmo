@@ -631,11 +631,12 @@ def _termin_mails(auftrag, termin_am, kat_mieter, kat_hw, absagen=False):
     ics = [('Termin.ics', _ics(auftrag, termin_am, absagen), f'text/calendar; method={methode}')]
     text = _termin_text(termin_am)
 
-    def senden(adresse, kat, sprache):
+    def senden(adresse, kat, sprache, empfaenger):
         if not adresse:
             return False
         try:
-            betreff, inhalt = vorlage_text(kat, ticket, handwerker=hw, termin=text, sprache=sprache)
+            betreff, inhalt = vorlage_text(kat, ticket, handwerker=hw, termin=text, sprache=sprache,
+                                         empfaenger=empfaenger)
             html = ("<html><body style='font-family:Arial,sans-serif'>"
                     + _klartext_als_html(inhalt) + "</body></html>")
             return send_via_hoststar(adresse, betreff, html, weitere_anhaenge=ics,
@@ -643,8 +644,8 @@ def _termin_mails(auftrag, termin_am, kat_mieter, kat_hw, absagen=False):
         except Exception:
             logger.exception("Termin-Mail zu Ticket #%s fehlgeschlagen", ticket.pk)
             return False
-    return (senden(melder_adresse(ticket), kat_mieter, melder_sprache(ticket)),
-            senden(hw.email, kat_hw, None))
+    return (senden(melder_adresse(ticket), kat_mieter, melder_sprache(ticket), 'melder'),
+            senden(hw.email, kat_hw, None, 'handwerker'))
 
 
 def termin_festlegen(auftrag, termin_am):
@@ -797,6 +798,7 @@ def eigentuemer_um_freigabe_bitten(auftrag):
     sonst ''. Der Verlauf hält fest, ob die Bitte hinausging — «Freigabe angefordert» allein sagt
     nichts darüber."""
     from django.utils.translation import gettext as _
+    from core.services.anrede import eigentuemer_gruss
     from core.services.dokumentsprache import in_sprache, sprache_von
     from core.utils.email_service import send_ticket_email
     ticket = auftrag.ticket
@@ -809,13 +811,13 @@ def eigentuemer_um_freigabe_bitten(auftrag):
     with in_sprache(sprache_von(eigentuemer)):
         kosten_txt = f"CHF {auftrag.kosten_geschaetzt}" if auftrag.kosten_geschaetzt else _("noch offen")
         betreff = _("Reparaturfreigabe angefragt — %(strasse)s") % {'strasse': lg.strasse}
-        text = _("Guten Tag %(name)s\n\n"
+        text = _("%(gruss)s\n\n"
                  "Für Ihre Liegenschaft %(adresse)s liegt eine Reparatur zur Freigabe bereit:\n\n"
                  "Schaden: %(schaden)s\n"
                  "Geschätzte Kosten: %(kosten)s\n\n"
                  "Bitte melden Sie sich im Eigentümer-Portal an, um die Reparatur "
                  "freizugeben oder abzulehnen.\n\nFreundliche Grüsse\nIhre Verwaltung") % {
-            'name': eigentuemer.kontaktperson or eigentuemer.firma_oder_name,
+            'gruss': eigentuemer_gruss(eigentuemer),
             'adresse': f"{lg.strasse}, {lg.plz} {lg.ort}", 'schaden': ticket.titel, 'kosten': kosten_txt}
     ok = send_ticket_email(eigentuemer.email, betreff, text, reply_to=reply_to(ticket),
                            organisation=ticket.organisation_id)
@@ -856,6 +858,7 @@ def freigabe_entscheid_melden(auftrag, freigegeben, kommentar='', von=''):
     Die Verwaltung bekommt den Kommentar des Eigentümers, der Handwerker NICHT (er ist eine interne
     Begründung). Der Verlauf nennt, wer die Nachricht bekam. Fehler werden protokolliert, nie
     geworfen: Der Entscheid gilt auch, wenn eine Mail scheitert."""
+    from core.services.anrede import handwerker_gruss
     from core.utils.email_service import send_ticket_email
     ticket, hw = auftrag.ticket, auftrag.handwerker
     wort = 'freigegeben' if freigegeben else 'abgelehnt'
@@ -867,11 +870,11 @@ def freigabe_entscheid_melden(auftrag, freigegeben, kommentar='', von=''):
         gesendet.append('Verwaltung')
     if hw.email:
         if freigegeben:
-            inhalt = (f"Guten Tag\n\ndie Eigentümerschaft hat die Reparatur «{ticket.titel}» freigegeben. "
+            inhalt = (f"{handwerker_gruss(hw, 'de')}\n\ndie Eigentümerschaft hat die Reparatur «{ticket.titel}» freigegeben. "
                       f"Sie können die Arbeiten gemäss Auftrag ausführen.\n\n"
                       f"Freundliche Grüsse\nIhre Liegenschaftsverwaltung")
         else:
-            inhalt = (f"Guten Tag\n\ndie Eigentümerschaft hat die Reparatur «{ticket.titel}» nicht freigegeben. "
+            inhalt = (f"{handwerker_gruss(hw, 'de')}\n\ndie Eigentümerschaft hat die Reparatur «{ticket.titel}» nicht freigegeben. "
                       f"Bitte führen Sie die Arbeiten vorerst nicht aus; die Verwaltung meldet sich bei Ihnen.\n\n"
                       f"Freundliche Grüsse\nIhre Liegenschaftsverwaltung")
         try:

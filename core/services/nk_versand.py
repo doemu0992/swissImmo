@@ -103,8 +103,10 @@ def antwortadresse(organisation_id):
     return pf.benutzer if pf and '@' in (pf.benutzer or '') else None
 
 
-def mail_text(k, periode_bezeichnung):
-    """Begleittext der Mail (HTML). Deutsch, wie das angehängte Dokument (`nk_abrechnung` ist fest deutsch)."""
+def mail_text(k, periode_bezeichnung, gruss='Guten Tag'):
+    """Begleittext der Mail (HTML). Deutsch, wie das angehängte Dokument (`nk_abrechnung` ist fest deutsch).
+
+    `gruss`: die fertige Grusszeile («Guten Tag Frau Muster», `anrede.mieter_gruss`)."""
     from html import escape
     saldo = Decimal(str(k.get('saldo') or 0))
     if saldo > 0:
@@ -115,7 +117,7 @@ def mail_text(k, periode_bezeichnung):
         ergebnis = "Die Abrechnung geht auf; es ergibt sich weder eine Nachzahlung noch ein Guthaben."
     vw = k['verwaltung']
     absender = escape(getattr(vw, 'firma', '') or 'Ihre Verwaltung')
-    return (f"<p>Guten Tag</p>"
+    return (f"<p>{escape(gruss)}</p>"
             f"<p>im Anhang finden Sie die Nebenkostenabrechnung <b>{escape(periode_bezeichnung)}</b> "
             f"für {escape(k.get('objekt') or '')}.</p><p>{ergebnis}</p>"
             f"<p>Sie können die Abrechnung und die Belege bei uns einsehen; Einwendungen teilen Sie uns bitte "
