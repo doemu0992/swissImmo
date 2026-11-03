@@ -1,7 +1,7 @@
 # tickets/services.py
 import io
+import logging
 import segno
-from django.core.mail import send_mail
 from django.conf import settings
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
@@ -12,6 +12,8 @@ from reportlab.lib.utils import ImageReader
 from .models import SchadenMeldung, TicketNachricht, HandwerkerAuftrag
 from core.utils.email_service import send_ticket_receipt
 from core.services.druckfarben import EMBER_RGB
+
+logger = logging.getLogger(__name__)
 
 # --- 1. INTERNE VERWALTUNGS-LOGIK ---
 
@@ -200,11 +202,14 @@ def process_public_ticket_form(liegenschaft, post_data, files_data):
         ticket.foto = d['foto']
     ticket.save()
 
-    # Bestätigungs-Email via Brevo senden
+    # Eingangsbestätigung an den Melder, Benachrichtigung an die Verwaltung. Ein Mailfehler
+    # darf die Meldung nie verlieren; er steht im Protokoll.
     try:
         send_ticket_receipt(ticket)
-    except Exception as e:
-        print(f"Fehler beim Mailversand: {e}")
+    except Exception:
+        logger.exception("Eingangsbestätigung zu Ticket #%s fehlgeschlagen", ticket.pk)
+    from .meldung_mails import HERKUNFT_AUSHANG, verwaltung_informieren
+    verwaltung_informieren(ticket, HERKUNFT_AUSHANG)
 
     return ticket
 

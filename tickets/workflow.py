@@ -23,10 +23,12 @@ gilt damit für Ansicht, Admin und Skripte. Nicht erfasst:
 ``QuerySet.update()`` — wie bei jeder Modellregel.
 """
 import logging
+from datetime import timedelta
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +54,9 @@ UEBERGAENGE = {
 }
 
 AUFTRAG_STORNIERT = 'storniert'
+
+#: Innerhalb dieser Frist gilt ein zweiter Auftrag an denselben Handwerker als Doppelklick.
+DOPPELT_SEKUNDEN = 120
 
 
 class UngueltigerUebergang(ValidationError):
@@ -183,16 +188,17 @@ def melder_benachrichtigen(ticket, kategorie, handwerker=None, text=None, betref
     Gibt True zurück, wenn tatsächlich versendet wurde. Fehler werden
     protokolliert, nie geworfen.
     """
-    from core.services.ticket_workflow import vorlage_text
+    from core.services.ticket_workflow import melder_sprache, vorlage_text
     from core.utils.email_service import send_ticket_email
     from .models import TicketNachricht
     adresse = melder_adresse(ticket)
     if not adresse:
         return False
     try:
-        v_betreff, v_text = vorlage_text(kategorie, ticket, handwerker=handwerker)
+        v_betreff, v_text = vorlage_text(kategorie, ticket, handwerker=handwerker,
+                                         sprache=melder_sprache(ticket))
         ok = send_ticket_email(adresse, betreff or v_betreff, text or v_text,
-                               reply_to=reply_to(ticket))
+                               reply_to=reply_to(ticket), organisation=ticket.organisation_id)
     except Exception:
         logger.exception("Melder-Mail zu Ticket #%s (%s) fehlgeschlagen", ticket.pk, kategorie)
         return False
@@ -229,6 +235,38 @@ def handwerker_zuweisen(ticket, handwerker, bemerkung=''):
     return auftrag
 
 
+#: Höchstens so viele Fotos und so viele Bytes gehen als Anhang mit: Ein Postfach lehnt Mails über
+#: etwa 20-25 MB ab, und das PDF kommt dazu. Was nicht mitgeht, steht im Handwerkerportal.
+FOTOS_MAX_ANZAHL = 5
+FOTOS_MAX_BYTES = 12 * 1024 * 1024
+
+
+def foto_anhaenge(ticket):
+    """Fotos des Tickets als Mail-Anhänge ``(name, bytes, mimetype)``.
+
+    Das Einzelfoto der Erstmeldung (``SchadenMeldung.foto``, QR-Aushang) UND die Zusatzfotos
+    (``SchadenFoto``: Mieterportal, interne Erfassung). Bis zum 3.11.2026 ging nur das erste mit."""
+    import mimetypes
+    import os
+    quellen = [ticket.foto] if ticket.foto else []
+    quellen += [f.bild for f in ticket.fotos.all() if f.bild]
+    anhaenge, gesamt = [], 0
+    for datei in quellen[:FOTOS_MAX_ANZAHL]:
+        try:
+            with datei.open('rb') as f:
+                inhalt = f.read()
+        except Exception:
+            logger.warning("Foto zu Ticket #%s nicht lesbar, Auftrag geht ohne", ticket.pk)
+            continue
+        if gesamt + len(inhalt) > FOTOS_MAX_BYTES:
+            logger.info("Foto zu Ticket #%s ausgelassen (Mailgrösse)", ticket.pk)
+            continue
+        gesamt += len(inhalt)
+        name = os.path.basename(datei.name)
+        anhaenge.append((name, inhalt, mimetypes.guess_type(name)[0] or 'image/jpeg'))
+    return anhaenge
+
+
 def arbeitsauftrag_senden(auftrag, text=''):
     """Arbeitsauftrag als PDF per E-Mail an den Handwerker.
 
@@ -239,7 +277,7 @@ def arbeitsauftrag_senden(auftrag, text=''):
     """
     from core.services.handwerker_auftrag_pdf import generate_auftrag_pdf
     from core.services.ticket_workflow import vorlage_text
-    from core.utils.email_service import send_via_hoststar
+    from core.utils.email_service import _klartext_als_html, send_via_hoststar
     from .models import TicketNachricht
 
     ticket, hw = auftrag.ticket, auftrag.handwerker
@@ -247,14 +285,7 @@ def arbeitsauftrag_senden(auftrag, text=''):
     versendet = False
     betreff, inhalt = vorlage_text('ticket_handwerker', ticket, handwerker=hw)
     inhalt = text or auftrag.bemerkung or inhalt
-    anhaenge = []
-    if ticket.foto:
-        try:
-            import os
-            with ticket.foto.open('rb') as f:
-                anhaenge.append((os.path.basename(ticket.foto.name), f.read(), 'image/jpeg'))
-        except Exception:
-            logger.warning("Foto zu Ticket #%s nicht lesbar, Auftrag geht ohne", ticket.pk)
+    anhaenge = foto_anhaenge(ticket)
     if hw.email:
         # Handwerkerportal (Modul 3): Der Link öffnet genau diesen Auftrag. Er
         # entsteht nur, wenn eine Mail hinausgeht — der Klartext steht nirgends
@@ -264,12 +295,13 @@ def arbeitsauftrag_senden(auftrag, text=''):
         url = link_url(link_erzeugen(auftrag))
         inhalt = (f"{inhalt}\n\nAuftrag online ansehen, Termin bestätigen, Offerte oder "
                   f"Rechnung hochladen:\n{url}")
+        # Maskiert (Titel und Beschreibung stammen vom Melder), danach erst der Link als Anker.
         html = ("<html><body style='font-family:Arial,sans-serif'>"
-                + inhalt.replace('\n', '<br>').replace(url, f"<a href='{url}'>{url}</a>")
+                + _klartext_als_html(inhalt).replace(url, f"<a href='{url}'>{url}</a>")
                 + "</body></html>")
         versendet = send_via_hoststar(
             hw.email, betreff, html, f"Reparaturauftrag_{auftrag.id}.pdf", pdf,
-            weitere_anhaenge=anhaenge, reply_to=reply_to(ticket))
+            weitere_anhaenge=anhaenge, reply_to=reply_to(ticket), organisation=ticket.organisation_id)
     TicketNachricht.objects.create(
         ticket=ticket, absender_name='System', typ='handwerker_mail',
         empfaenger_handwerker=hw, is_intern=True, is_von_verwaltung=True,
@@ -286,6 +318,13 @@ def auftrag_vergeben(ticket, handwerker, text=''):
     Rückgabe: ``dict(auftrag, handwerker_versendet, melder_informiert)``. Die
     Zuweisung gilt auch dann, wenn ein Versand scheitert — der Verlauf nennt es.
     """
+    doppelt = (ticket.handwerker_auftraege.filter(handwerker=handwerker)
+               .exclude(status=AUFTRAG_STORNIERT)
+               .filter(beauftragt_am__gte=timezone.now() - timedelta(seconds=DOPPELT_SEKUNDEN)).exists())
+    if doppelt:
+        # Doppelklick oder Neuladen nach dem Absenden: kein zweiter Auftrag, keine zweite Mail.
+        raise ValidationError(
+            f'{handwerker.firma} wurde soeben schon für dieses Ticket beauftragt.', code='doppelt')
     auftrag = handwerker_zuweisen(ticket, handwerker, text)
     _pdf, hw_ok = arbeitsauftrag_senden(auftrag, text)
     melder_ok = melder_benachrichtigen(ticket, 'ticket_melder', handwerker=handwerker)
@@ -347,7 +386,8 @@ def nachricht_an_handwerker(auftrag, text, absender='Verwaltung'):
         return False
     betreff = f"{ticket.titel} (Ticket #{ticket.pk})"
     try:
-        ok = send_ticket_email(hw.email, betreff, text, reply_to=reply_to(ticket))
+        ok = send_ticket_email(hw.email, betreff, text, reply_to=reply_to(ticket),
+                               organisation=ticket.organisation_id)
     except Exception:
         logger.exception("Mail an Handwerker zu Ticket #%s fehlgeschlagen", ticket.pk)
         ok = False
@@ -359,17 +399,25 @@ def nachricht_an_handwerker(auftrag, text, absender='Verwaltung'):
 
 
 def _ics(auftrag, termin_am, absagen=False):
-    """Kalendereintrag (iCalendar) für den Termin; 1 Stunde, UTC."""
-    from datetime import timedelta, timezone as dt_tz
+    """Kalendereintrag (iCalendar) für den Termin; 1 Stunde, UTC.
+
+    Ein Termin, der sich verschieben und absagen lässt, trägt immer dieselbe UID und eine
+    STEIGENDE ``SEQUENCE`` (RFC 5546): Ohne sie ignorieren Outlook und Apple Mail die Absage
+    und lassen den alten Termin stehen. Die Folgenummer ist der Zeitpunkt der Mail in Sekunden —
+    jede spätere Mail ist höher als jede frühere, ohne dass ein Zähler gespeichert werden muss.
+    ``DTSTAMP`` ist der Zeitpunkt der Mail, nicht der des Termins."""
+    from datetime import timezone as dt_tz
     t = auftrag.ticket
     start = termin_am.astimezone(dt_tz.utc)
+    jetzt = timezone.now().astimezone(dt_tz.utc)
     fmt = '%Y%m%dT%H%M%SZ'
     def esc(x):
-        return str(x).replace('\\', '\\\\').replace(';', '\;').replace(',', '\\,').replace('\n', '\\n')
+        return str(x).replace('\\', '\\\\').replace(';', '\\;').replace(',', '\\,').replace('\n', '\\n')
     zeilen = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//immoswiss//Ticket//DE',
               'METHOD:CANCEL' if absagen else 'METHOD:PUBLISH', 'BEGIN:VEVENT',
               f'UID:auftrag-{auftrag.pk}@swissimmo',
-              f"DTSTAMP:{start.strftime(fmt)}", f"DTSTART:{start.strftime(fmt)}",
+              f"SEQUENCE:{int(jetzt.timestamp())}",
+              f"DTSTAMP:{jetzt.strftime(fmt)}", f"DTSTART:{start.strftime(fmt)}",
               f"DTEND:{(start + timedelta(hours=1)).strftime(fmt)}",
               f"SUMMARY:{esc(f'Reparatur: {t.titel} (Ticket #{t.pk})')}",
               f"DESCRIPTION:{esc(f'{auftrag.handwerker.firma} — Ticket #{t.pk}')}",
@@ -384,26 +432,31 @@ def _termin_text(termin_am):
 
 
 def _termin_mails(auftrag, termin_am, kat_mieter, kat_hw, absagen=False):
-    """Mails an Mieter und Handwerker; gibt (mieter_ok, hw_ok) zurück."""
-    from core.services.ticket_workflow import vorlage_text
-    from core.utils.email_service import send_via_hoststar
+    """Mails an Mieter und Handwerker; gibt (mieter_ok, hw_ok) zurück.
+
+    Der Mieter liest in seiner Korrespondenzsprache, der Handwerker deutsch. Der Text wird
+    maskiert (Titel und Beschreibung stammen vom Melder)."""
+    from core.services.ticket_workflow import melder_sprache, vorlage_text
+    from core.utils.email_service import _klartext_als_html, send_via_hoststar
     ticket, hw = auftrag.ticket, auftrag.handwerker
-    ics = [('Termin.ics', _ics(auftrag, termin_am, absagen), 'text/calendar')]
+    methode = 'CANCEL' if absagen else 'PUBLISH'
+    ics = [('Termin.ics', _ics(auftrag, termin_am, absagen), f'text/calendar; method={methode}')]
     text = _termin_text(termin_am)
 
-    def senden(adresse, kat):
+    def senden(adresse, kat, sprache):
         if not adresse:
             return False
         try:
-            betreff, inhalt = vorlage_text(kat, ticket, handwerker=hw, termin=text)
+            betreff, inhalt = vorlage_text(kat, ticket, handwerker=hw, termin=text, sprache=sprache)
             html = ("<html><body style='font-family:Arial,sans-serif'>"
-                    + inhalt.replace('\n', '<br>') + "</body></html>")
+                    + _klartext_als_html(inhalt) + "</body></html>")
             return send_via_hoststar(adresse, betreff, html, weitere_anhaenge=ics,
-                                     reply_to=reply_to(ticket))
+                                     reply_to=reply_to(ticket), organisation=ticket.organisation_id)
         except Exception:
             logger.exception("Termin-Mail zu Ticket #%s fehlgeschlagen", ticket.pk)
             return False
-    return senden(melder_adresse(ticket), kat_mieter), senden(hw.email, kat_hw)
+    return (senden(melder_adresse(ticket), kat_mieter, melder_sprache(ticket)),
+            senden(hw.email, kat_hw, None))
 
 
 def termin_festlegen(auftrag, termin_am):
@@ -529,7 +582,8 @@ def auftrag_stornieren(auftrag, grund=''):
             betreff, text = vorlage_text('ticket_auftrag_storniert', ticket, handwerker=hw)
             if grund:
                 text += f"\n\nGrund: {grund}"
-            ok = send_ticket_email(hw.email, betreff, text, reply_to=reply_to(ticket))
+            ok = send_ticket_email(hw.email, betreff, text, reply_to=reply_to(ticket),
+                                   organisation=ticket.organisation_id)
         except Exception:
             logger.exception("Storno-Mail zu Ticket #%s fehlgeschlagen", ticket.pk)
     from .models import TicketNachricht
@@ -549,27 +603,98 @@ def auftrag_stornieren(auftrag, grund=''):
 def eigentuemer_um_freigabe_bitten(auftrag):
     """Mail an die Eigentümerschaft: eine Reparatur wartet auf ihre Freigabe.
 
-    Aus `fw_auftrag_kosten` hierher gezogen (Text unverändert), damit die
-    Offerte aus dem Handwerkerportal denselben Weg nimmt. Gibt die Adresse
-    zurück, an die versendet wurde, sonst ''.
-    """
+    Aus `fw_auftrag_kosten` hierher gezogen, damit die Offerte aus dem Handwerkerportal denselben
+    Weg nimmt. Die Mail kommt von der Verwaltung des Hauses (Absender, Antwortadresse) und steht in
+    der Korrespondenzsprache des Eigentümers. Gibt die Adresse zurück, an die versendet wurde,
+    sonst ''. Der Verlauf hält fest, ob die Bitte hinausging — «Freigabe angefordert» allein sagt
+    nichts darüber."""
+    from django.utils.translation import gettext as _
+    from core.services.dokumentsprache import in_sprache, sprache_von
     from core.utils.email_service import send_ticket_email
     ticket = auftrag.ticket
     eigentuemer = getattr(ticket.liegenschaft, 'eigentuemer', None) if ticket.liegenschaft_id else None
     if not (eigentuemer and eigentuemer.email):
+        _protokoll(ticket, f"Freigabe-Bitte für Auftrag #{auftrag.id} NICHT versendet "
+                           f"({'kein Eigentümer erfasst' if not eigentuemer else 'keine E-Mail-Adresse beim Eigentümer'}).")
         return ''
     lg = ticket.liegenschaft
-    kosten_txt = f"CHF {auftrag.kosten_geschaetzt}" if auftrag.kosten_geschaetzt else "noch offen"
-    text = (f"Guten Tag {eigentuemer.kontaktperson or eigentuemer.firma_oder_name}\n\n"
-            f"Für Ihre Liegenschaft {lg.strasse}, {lg.plz} {lg.ort} liegt eine Reparatur "
-            f"zur Freigabe bereit:\n\n"
-            f"Schaden: {ticket.titel}\n"
-            f"Geschätzte Kosten: {kosten_txt}\n\n"
-            f"Bitte melden Sie sich im Eigentümer-Portal an, um die Reparatur "
-            f"freizugeben oder abzulehnen.\n\nFreundliche Grüsse\nIhre Verwaltung")
-    if send_ticket_email(eigentuemer.email, f"Reparaturfreigabe angefragt — {lg.strasse}", text):
-        return eigentuemer.email
-    return ''
+    with in_sprache(sprache_von(eigentuemer)):
+        kosten_txt = f"CHF {auftrag.kosten_geschaetzt}" if auftrag.kosten_geschaetzt else _("noch offen")
+        betreff = _("Reparaturfreigabe angefragt — %(strasse)s") % {'strasse': lg.strasse}
+        text = _("Guten Tag %(name)s\n\n"
+                 "Für Ihre Liegenschaft %(adresse)s liegt eine Reparatur zur Freigabe bereit:\n\n"
+                 "Schaden: %(schaden)s\n"
+                 "Geschätzte Kosten: %(kosten)s\n\n"
+                 "Bitte melden Sie sich im Eigentümer-Portal an, um die Reparatur "
+                 "freizugeben oder abzulehnen.\n\nFreundliche Grüsse\nIhre Verwaltung") % {
+            'name': eigentuemer.kontaktperson or eigentuemer.firma_oder_name,
+            'adresse': f"{lg.strasse}, {lg.plz} {lg.ort}", 'schaden': ticket.titel, 'kosten': kosten_txt}
+    ok = send_ticket_email(eigentuemer.email, betreff, text, reply_to=reply_to(ticket),
+                           organisation=ticket.organisation_id)
+    _protokoll(ticket, f"Freigabe-Bitte für Auftrag #{auftrag.id} "
+                       + ("per E-Mail an den Eigentümer gesendet." if ok else
+                          "an den Eigentümer NICHT versendet (Versand fehlgeschlagen)."))
+    return eigentuemer.email if ok else ''
+
+
+# ---------------------------------------------------------------------------
+# Meldungen an die Verwaltung (aus dem Handwerkerportal, aus dem Eigentümerportal)
+# ---------------------------------------------------------------------------
+
+def verwaltung_benachrichtigen(ticket, betreff, text):
+    """Mail an die Verwaltung des Tickets (``Organisation.email``). True, wenn versendet.
+
+    Was Handwerker im Portal tun, stand bisher nur im Verlauf und als Badge: Wer nicht im Cockpit
+    sass, erfuhr von einer Offerte oder Rechnung nichts. Fehlt die Adresse, steht das im Protokoll.
+    Der Betreff trägt die Ticketnummer OHNE «Ticket #»: Eine Antwort darauf soll nicht von
+    ``fetch_replies`` als Nachricht des Melders ins Ticket gelegt werden."""
+    from core.utils.email_service import send_ticket_email
+    org = ticket.organisation
+    adresse = (getattr(org, 'email', '') or '').strip()
+    if not adresse:
+        logger.warning("Ticket #%s: Verwaltung ohne E-Mail-Adresse, «%s» nur im Verlauf", ticket.pk, betreff)
+        return False
+    try:
+        return send_ticket_email(adresse, f"{betreff} (Schadenfall {ticket.pk})", text,
+                                 organisation=ticket.organisation_id)
+    except Exception:
+        logger.exception("Mail an die Verwaltung zu Ticket #%s fehlgeschlagen", ticket.pk)
+        return False
+
+
+def freigabe_entscheid_melden(auftrag, freigegeben, kommentar='', von=''):
+    """Der Eigentümer hat über die Reparatur entschieden: Verwaltung und Handwerker erfahren es.
+
+    Die Verwaltung bekommt den Kommentar des Eigentümers, der Handwerker NICHT (er ist eine interne
+    Begründung). Der Verlauf nennt, wer die Nachricht bekam. Fehler werden protokolliert, nie
+    geworfen: Der Entscheid gilt auch, wenn eine Mail scheitert."""
+    from core.utils.email_service import send_ticket_email
+    ticket, hw = auftrag.ticket, auftrag.handwerker
+    wort = 'freigegeben' if freigegeben else 'abgelehnt'
+    kommentar = (kommentar or '').strip()
+    gesendet = []
+    text = (f"{von or 'Der Eigentümer'} hat die Reparatur «{ticket.titel}» (Auftrag #{auftrag.id}, "
+            f"{hw.firma}) {wort}." + (f"\n\nKommentar: {kommentar}" if kommentar else ''))
+    if verwaltung_benachrichtigen(ticket, f"Reparatur {wort}: {ticket.titel}", text):
+        gesendet.append('Verwaltung')
+    if hw.email:
+        if freigegeben:
+            inhalt = (f"Guten Tag\n\ndie Eigentümerschaft hat die Reparatur «{ticket.titel}» freigegeben. "
+                      f"Sie können die Arbeiten gemäss Auftrag ausführen.\n\n"
+                      f"Freundliche Grüsse\nIhre Liegenschaftsverwaltung")
+        else:
+            inhalt = (f"Guten Tag\n\ndie Eigentümerschaft hat die Reparatur «{ticket.titel}» nicht freigegeben. "
+                      f"Bitte führen Sie die Arbeiten vorerst nicht aus; die Verwaltung meldet sich bei Ihnen.\n\n"
+                      f"Freundliche Grüsse\nIhre Liegenschaftsverwaltung")
+        try:
+            if send_ticket_email(hw.email, f"Reparatur {wort} (Ticket #{ticket.pk})", inhalt,
+                                 reply_to=reply_to(ticket), organisation=ticket.organisation_id):
+                gesendet.append(hw.firma)
+        except Exception:
+            logger.exception("Freigabe-Mail an Handwerker zu Ticket #%s fehlgeschlagen", ticket.pk)
+    _protokoll(ticket, f"Eigentümer-Entscheid ({wort}) per E-Mail gemeldet an: "
+                       f"{', '.join(gesendet) if gesendet else 'niemanden (Versand nicht möglich)'}.")
+    return gesendet
 
 
 def _vom_handwerker(auftrag, text, datei=None):
@@ -602,6 +727,10 @@ def nachricht_von_handwerker(auftrag, text):
             wechsle_status(ticket, 'in_bearbeitung')
         except ValidationError:
             logger.exception("Ticket #%s: Rückwechsel nach Handwerker-Nachricht nicht möglich", ticket.pk)
+    verwaltung_benachrichtigen(
+        ticket, f"Nachricht von {auftrag.handwerker.firma}",
+        f"{auftrag.handwerker.firma} schreibt zu «{ticket.titel}» (Auftrag #{auftrag.id}):\n\n{text}\n\n"
+        f"Bitte im Cockpit unter Schadensfälle beantworten.")
     return n
 
 
@@ -627,6 +756,11 @@ def handwerker_meldet(auftrag, was):
     ziel, text = HANDWERKER_MELDUNGEN[was]
     ticket = auftrag.ticket
     _vom_handwerker(auftrag, f"{auftrag.handwerker.firma} meldet: {text}.")
+    if was == 'erledigt':          # «begonnen» ist Information, «erledigt» löst Arbeit aus: die Rechnung
+        verwaltung_benachrichtigen(
+            ticket, f"{auftrag.handwerker.firma}: Arbeit erledigt",
+            f"{auftrag.handwerker.firma} meldet die Arbeit zu «{ticket.titel}» (Auftrag #{auftrag.id}) als erledigt. "
+            f"Die Rechnung fehlt noch.")
     if ticket.status == ziel:
         return False
     if ziel in UEBERGAENGE.get(ticket.status, ()):
@@ -683,6 +817,10 @@ def offerte_erfassen(auftrag, betrag, datei):
             eigentuemer_um_freigabe_bitten(auftrag)
         except Exception:
             logger.exception("Freigabe-Mail zu Auftrag #%s fehlgeschlagen", auftrag.pk)
+    verwaltung_benachrichtigen(
+        auftrag.ticket, f"Offerte von {auftrag.handwerker.firma}: CHF {betrag}",
+        f"{auftrag.handwerker.firma} hat zu «{auftrag.ticket.titel}» (Auftrag #{auftrag.id}) eine Offerte über "
+        f"CHF {betrag} hochgeladen." + (" Die Freigabe der Eigentümerschaft wurde angefordert." if anfordern else ''))
     return anfordern
 
 
@@ -710,4 +848,8 @@ def rechnung_einreichen(auftrag, betrag, datei):
         rechnung_verknuepfen(auftrag, kr, abschliessen=False)
         _vom_handwerker(auftrag, f"Rechnung {hw.firma}: CHF {betrag} hochgeladen "
                                  f"(Kreditor #{kr.pk}, Entwurf zur Kontrolle).")
+    verwaltung_benachrichtigen(
+        ticket, f"Rechnung von {hw.firma}: CHF {betrag}",
+        f"{hw.firma} hat zu «{ticket.titel}» (Auftrag #{auftrag.id}) eine Rechnung über CHF {betrag} hochgeladen. "
+        f"Sie liegt als Entwurf in den Kreditoren (#{kr.pk}) zur Kontrolle.")
     return kr

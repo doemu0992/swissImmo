@@ -307,7 +307,7 @@ def fw_schaden_neu(request):
             body = (f"Guten Tag\n\nWir haben Ihre Schadenmeldung '{t.titel}' erhalten (Ticket #{t.id}) "
                     f"und kümmern uns darum. Wir melden uns, sobald ein Handwerker beauftragt wurde.\n\n"
                     f"Freundliche Grüsse\nIhre Liegenschaftsverwaltung")
-        ok = send_ticket_email(t.email_melder, betreff, body)
+        ok = send_ticket_email(t.email_melder, betreff, body, organisation=t.organisation_id)
 
     log_aktion(request, "Schaden intern erfasst", f"Ticket #{t.id}", titel)
     if ok:
@@ -316,6 +316,10 @@ def fw_schaden_neu(request):
     else:
         meldung = gettext('Ticket #%(id)s erstellt.') % {'id': t.id}
     messages.success(request, '✅ ' + meldung)
+    if t.email_melder and not ok:
+        # Die Adresse ist erfasst, die Mail ging nicht: nicht stillschweigend übergehen.
+        messages.warning(request, gettext('Die Eingangsbestätigung an %(email)s konnte nicht gesendet werden.')
+                         % {'email': t.email_melder})
     return redirect(f'/neu/schaeden/{t.id}/')
 
 
@@ -679,6 +683,7 @@ def fw_schaden_antwort(request, pk):
     from tickets.models import SchadenMeldung, TicketNachricht
     from core.utils.email_service import send_ticket_email
     from core.auth import log_aktion
+    from tickets.workflow import melder_adresse, reply_to
 
     if request.method != 'POST':
         return redirect(f'/neu/schaeden/{pk}/')
@@ -694,9 +699,16 @@ def fw_schaden_antwort(request, pk):
         t.status = 'in_bearbeitung'
         t.save()
 
-    melder_email = t.email_melder or (t.gemeldet_von.email if t.gemeldet_von_id else '')
-    ok = send_ticket_email(melder_email, f"Ihre Meldung (Ticket #{t.id})", text) if melder_email else False
-    log_aktion(request, "Ticket-Antwort gesendet", f"Ticket #{t.id}", '')
+    melder_email = melder_adresse(t)
+    ok = (send_ticket_email(melder_email, f"Ihre Meldung (Ticket #{t.id})", text, reply_to=reply_to(t),
+                            organisation=t.organisation_id) if melder_email else False)
+    if not ok:
+        # Der Eintrag oben bleibt (der Mieter sieht ihn im Portal); intern steht, dass keine Mail ging.
+        TicketNachricht.objects.create(
+            ticket=t, absender_name='System', typ='system', is_intern=True,
+            nachricht="Antwort an den Melder NICHT versendet "
+                      f"({'keine E-Mail-Adresse' if not melder_email else 'Versand fehlgeschlagen'}).")
+    log_aktion(request, "Ticket-Antwort gesendet" if ok else "Ticket-Antwort gespeichert", f"Ticket #{t.id}", '')
     if ok:
         messages.success(request, '✅ ' + gettext('Antwort an %(melder_email)s gesendet.') % {'melder_email': melder_email})
     elif melder_email:
@@ -748,6 +760,16 @@ def fw_auftrag_nachricht(request, pk):
     return redirect(f'/neu/schaeden/{a.ticket_id}/?tab=handwerker')
 
 
+def _termin_hinweis(kopf, mieter_ok, handwerker_ok):
+    """«Termin gesetzt.» + wer NICHT informiert wurde (keine Adresse oder Versand fehlgeschlagen)."""
+    fehlt = []
+    if not mieter_ok:
+        fehlt.append(gettext('Mieter nicht informiert'))
+    if not handwerker_ok:
+        fehlt.append(gettext('Handwerker nicht informiert'))
+    return f"{kopf} " + ' · '.join(fehlt) + ' ' + gettext('(keine E-Mail-Adresse oder Versand fehlgeschlagen).')
+
+
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_auftrag_termin(request, pk):
     """Termin eines Auftrags setzen/verschieben oder absagen; Mieter und Handwerker
@@ -765,17 +787,23 @@ def fw_auftrag_termin(request, pk):
         return redirect(ziel)
     try:
         if request.POST.get('aktion') == 'absagen':
-            termin_absagen(a)
+            m_ok, h_ok = termin_absagen(a)
             log_aktion(request, "Termin abgesagt", f"Ticket #{a.ticket_id}", a.handwerker.firma)
-            messages.success(request, '✅ ' + gettext('Termin abgesagt, beide Seiten informiert.'))
+            if m_ok and h_ok:
+                messages.success(request, '✅ ' + gettext('Termin abgesagt, beide Seiten informiert.'))
+            else:
+                messages.warning(request, '⚠️ ' + _termin_hinweis(gettext('Termin abgesagt.'), m_ok, h_ok))
         else:
             try:
                 wann = datetime.strptime(request.POST.get('termin', ''), '%Y-%m-%dT%H:%M')
             except ValueError:
                 raise ValidationError(gettext('Ungültiges Datum.'))
-            termin_festlegen(a, wann)
+            m_ok, h_ok = termin_festlegen(a, wann)
             log_aktion(request, "Termin festgelegt", f"Ticket #{a.ticket_id}", a.handwerker.firma)
-            messages.success(request, '✅ ' + gettext('Termin gesetzt, Mieter und Handwerker informiert.'))
+            if m_ok and h_ok:
+                messages.success(request, '✅ ' + gettext('Termin gesetzt, Mieter und Handwerker informiert.'))
+            else:
+                messages.warning(request, '⚠️ ' + _termin_hinweis(gettext('Termin gesetzt.'), m_ok, h_ok))
     except ValidationError as e:
         messages.error(request, '⛔ ' + ' '.join(e.messages))
     return redirect(ziel)
@@ -829,9 +857,14 @@ def fw_auftrag_storno(request, pk):
     if request.method != 'POST':
         return redirect(ziel)
     try:
-        auftrag_stornieren(a, request.POST.get('grund', ''))
+        informiert = auftrag_stornieren(a, request.POST.get('grund', ''))
         log_aktion(request, "Auftrag storniert", f"Ticket #{a.ticket_id}", a.handwerker.firma)
-        messages.success(request, '✅ ' + gettext('Auftrag storniert, Handwerker informiert.'))
+        if informiert:
+            messages.success(request, '✅ ' + gettext('Auftrag storniert, Handwerker informiert.'))
+        else:
+            messages.warning(request, '⚠️ ' + gettext(
+                'Auftrag storniert, der Handwerker wurde NICHT informiert (keine E-Mail-Adresse oder Versand '
+                'fehlgeschlagen) — bitte direkt benachrichtigen.'))
     except ValidationError as e:
         messages.error(request, '⛔ ' + ' '.join(e.messages))
     return redirect(ziel)
@@ -925,6 +958,10 @@ def fw_auftrag_kosten(request, pk):
         adresse = eigentuemer_um_freigabe_bitten(a)
         mail_info = f" E-Mail an {adresse} gesendet." if adresse else ""
         messages.info(request, 'ℹ️ ' + gettext('Reparatur zur Freigabe an den Eigentümer weitergeleitet (Portal).%(mail_info)s') % {'mail_info': mail_info})
+        if not adresse:
+            messages.warning(request, '⚠️ ' + gettext(
+                'Der Eigentümer wurde nicht per E-Mail benachrichtigt (keine E-Mail-Adresse oder Versand '
+                'fehlgeschlagen) — er sieht die Anfrage im Portal.'))
 
     # Optional Kreditorenrechnung erstellen
     if request.POST.get('kreditor_erstellen') == 'on' and a.kosten_effektiv and not a.kreditoren_rechnung_id:

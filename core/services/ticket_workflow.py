@@ -1,9 +1,9 @@
 """Automatisierter Schadensfall-Workflow: Vorlagen-Texte + Platzhalter-Ersetzung
 für die Kommunikation rund um ein Ticket (Handwerker beauftragen, Melder informieren)."""
 
-from django.utils.translation import gettext_lazy
+from django.utils.translation import gettext, gettext_lazy
 
-from core.services.dokumentsprache import auf_deutsch
+from core.services.dokumentsprache import STANDARD, auf_deutsch, in_sprache, sprache_von
 
 # Standard-Vorlagen (greifen, wenn keine passende Vorlage in der DB existiert).
 DEFAULT_VORLAGEN = {
@@ -110,6 +110,25 @@ DEFAULT_VORLAGEN.update({
     },
 })
 
+#: Vorlagen, die an den MIETER (Melder) gehen: Sie erscheinen in dessen Korrespondenzsprache
+#: (D11, `Mieter.sprache`). Alle übrigen gehen an Handwerker und bleiben deutsch — der
+#: Handwerker hat im Bestand keine Sprache. `ticket_termin_abgesagt` geht an beide: Die Sprache
+#: bestimmt der Aufrufer.
+MIETER_VORLAGEN = (
+    'ticket_melder', 'ticket_erledigt', 'ticket_melder_status',
+    'ticket_termin', 'ticket_termin_abgesagt', 'ticket_erinnerung_mieter',
+)
+
+
+def melder_sprache(ticket):
+    """Korrespondenzsprache des Melders: `Mieter.sprache`, wenn das Ticket an einem Mieter hängt.
+
+    Wer über den Aushang oder intern erfasst wurde, ist keiner Person im Bestand zugeordnet:
+    Deutsch (die Bestätigung nach dem Absenden folgt der Sprache der Anfrage, siehe
+    `send_ticket_receipt`)."""
+    return sprache_von(ticket.gemeldet_von) if ticket.gemeldet_von_id else STANDARD
+
+
 TICKET_PLATZHALTER = [
     ('{melder_name}', gettext_lazy('Name des Melders')),
     ('{melder_tel}', gettext_lazy('Telefon des Melders')),
@@ -129,7 +148,7 @@ def ticket_kontext(ticket, handwerker=None, status=None, termin=None):
     ALS AUCH die allgemeinen Vorlagen-Platzhalter ({mieter_name}, {vermieter},
     {datum}, {objekt}, {liegenschaft}) — damit Vorlagen mit beliebigen der in der
     Editor-Hilfe gelisteten Platzhalter funktionieren."""
-    import datetime
+    from core.zeit import datum_heute
     lg = ticket.liegenschaft
     melder = (ticket.gemeldet_von.display_name if ticket.gemeldet_von_id
               else f"{ticket.melder_vorname or ''} {ticket.melder_nachname or ''}".strip() or 'Mieter')
@@ -168,7 +187,7 @@ def ticket_kontext(ticket, handwerker=None, status=None, termin=None):
         'objekt': objekt,
         'liegenschaft': f"{lg.strasse}, {lg.ort}" if lg else '',
         'vermieter': vermieter,
-        'datum': datetime.date.today().strftime('%d.%m.%Y'),
+        'datum': datum_heute().strftime('%d.%m.%Y'),
     }
 
 
@@ -179,17 +198,25 @@ def _ersetze(text, kontext):
     return ersetze(text, kontext)
 
 
-def vorlage_text(kategorie, ticket, handwerker=None, status=None, termin=None):
+def vorlage_text(kategorie, ticket, handwerker=None, status=None, termin=None, sprache=None):
     """Gibt (betreff, inhalt) für eine Ticket-Kategorie zurück — aus der DB-Vorlage
-    (erste passende) oder aus DEFAULT_VORLAGEN, mit ersetzten Platzhaltern."""
+    (erste passende) oder aus DEFAULT_VORLAGEN, mit ersetzten Platzhaltern.
+
+    `sprache`: Sprache des Empfängers. Ohne Angabe Deutsch — nie die der angemeldeten Person:
+    Wer mit französischer Oberfläche beauftragt, schreibt dem Handwerker trotzdem deutsch. Übersetzt
+    werden nur die Standardtexte; eine eigene DB-Vorlage der Verwaltung gilt, wie sie geschrieben ist."""
     from crm.models import Vorlage
-    db_kat = kategorie if kategorie != 'ticket_melder_status' else 'ticket_melder'
-    v = Vorlage.objects.filter(kategorie=db_kat).order_by('name').first()
-    if v and (v.inhalt or v.betreff):
-        betreff = v.betreff or DEFAULT_VORLAGEN.get(kategorie, {}).get('betreff', '')
-        inhalt = v.inhalt or DEFAULT_VORLAGEN.get(kategorie, {}).get('inhalt', '')
-    else:
+    with in_sprache(sprache or STANDARD):
+        db_kat = kategorie if kategorie != 'ticket_melder_status' else 'ticket_melder'
+        v = Vorlage.objects.filter(kategorie=db_kat).order_by('name').first()
         d = DEFAULT_VORLAGEN.get(kategorie, {})
-        betreff, inhalt = d.get('betreff', ''), d.get('inhalt', '')
-    kontext = ticket_kontext(ticket, handwerker=handwerker, status=status, termin=termin)
-    return _ersetze(betreff, kontext), _ersetze(inhalt, kontext)
+        standard = {k: gettext(d[k]) if d.get(k) else '' for k in ('betreff', 'inhalt')}
+        if v and (v.inhalt or v.betreff):
+            betreff = v.betreff or standard['betreff']
+            inhalt = v.inhalt or standard['inhalt']
+        else:
+            betreff, inhalt = standard['betreff'], standard['inhalt']
+        # Der Status in der Sprache des Empfängers (nicht fest deutsch wie im Protokoll).
+        status = status or str(ticket.get_status_display())
+        kontext = ticket_kontext(ticket, handwerker=handwerker, status=status, termin=termin)
+        return _ersetze(betreff, kontext), _ersetze(inhalt, kontext)
