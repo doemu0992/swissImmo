@@ -11,6 +11,8 @@ Gegenproben (von Hand gemacht, rot gesehen, zurückgebaut):
 * in `DokCanvas.save` den Seitenkopf-Aufruf `self._seitenkopf()` entfernen → `test_seitenkopf_erst_ab_seite_2` rot
 * in `mietprozess_briefe._brief` die Zeilenprüfung `if ty < c.UNTEN + 4 * mm` entfernen → `test_langer_absatz_laeuft_nicht_in_die_fusszeile` rot
 * in `dok_base.html` den Block `seitenkopf_ref` leeren oder in `dok_hausordnung.html` den Block `seitenkopf_titel` entfernen → `test_beilagen_haben_seitenkopf_ab_seite_2` rot
+* in `DokCanvas.showPage` die Zeilen `self.setFont(zustand[0], zustand[1])` und `setFillColor` entfernen → `test_schrift_gilt_auf_der_folgeseite_weiter` rot
+* in `steuerauszug.py` die Spalte `w - 58 * mm` wieder auf `w - 40 * mm` setzen → `test_steuerauszug_spalten_ueberdecken_sich_nicht` rot
 """
 import io
 import shutil
@@ -287,6 +289,34 @@ class LayoutBasis(TestCase):
             with self.subTest(beilage=typ):
                 seite = seiten(generate_dokument_pdf_bytes(self.frisch(), typ))[0]
                 self.assertEqual([w for w in im_fenster(seite) if w['top'] > 41 * MM and 'Muster' in w['text']], [])
+
+    def test_schrift_gilt_auf_der_folgeseite_weiter(self):
+        from core.services.nk_abrechnung import generate_nk_pdf_einzeln
+        k = {'verwaltung': self.org, 'periode': '2025', 'adresse': ['Hans Muster', 'Seeweg 3', '8000 Zürich'],
+             'objekt': '3.5 Zi', 'positionen': [{'kategorie': f'Kosten {i}', 'schluessel': 'm2', 'betrag': D('10')}
+                                                for i in range(45)],
+             'total_kosten': D('100'), 'kosten_anteil': D('15'), 'akonto': D('10'), 'saldo': D('5'),
+             'nachzahlung': True}
+        s = seiten(generate_nk_pdf_einzeln(k))
+        self.assertEqual(len(s), 2)
+        def hoehe(seite, wort):
+            return [w['bottom'] - w['top'] for w in seite[1] if w['text'] == wort][0]
+        self.assertAlmostEqual(hoehe(s[0], '10.00'), hoehe(s[1], '10.00'), delta=0.3)   # Seite 2 wie Seite 1 gesetzt
+
+    def test_steuerauszug_spalten_ueberdecken_sich_nicht(self):
+        from unittest import mock
+
+        from core.services.steuerauszug import generate_steuerauszug_pdf
+        zeile = {'lg': self.lg, 'ertrag': D('120000'), 'ausgaben': D('45000'), 'afa': D('1000'),
+                 'honorar': D('8000'), 'netto': D('74000')}
+        daten = {'eigentuemer': 'Eva Eigner', 'zeilen': [zeile],
+                 'total': {'ertrag': D('120000'), 'ausgaben': D('45000'), 'netto': D('74000'), 'honorar': D('8000')}}
+        with mock.patch('core.services.steuerauszug.steuerauszug_daten', return_value=daten):
+            text = seiten(generate_steuerauszug_pdf(self.m, 2026))[0][0]
+        # überdeckten sich die Spalten, liefe der Text ineinander und wäre so nicht mehr lesbar
+        for erwartet in ("Verwaltungshonorar 8'000.00", "Netto CHF 74'000.00", "AfA 1'000.00"):
+            self.assertIn(erwartet, text)
+        self.assertRegex(text, r"TOTAL PORTFOLIO\s+120'000.00\s+45'000.00\s+Netto CHF 74'000.00")
 
     def test_langer_absatz_laeuft_nicht_in_die_fusszeile(self):
         from core.services import mietprozess_briefe as mp

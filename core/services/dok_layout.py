@@ -67,6 +67,7 @@ class DokCanvas(canvas.Canvas):
                  logo=None, pagesize=A4, rand=LINKS, **kw):
         super().__init__(filename, pagesize=pagesize, **kw)
         self._saved = []
+        self._basis_n = len(self._code)
         self._flags = []
         self._flag = {}
         self.breite, self.hoehe = pagesize
@@ -111,14 +112,23 @@ class DokCanvas(canvas.Canvas):
         self._flag['neu'] = True
 
     def showPage(self):
+        # Schrift, Farben und Linienstärke gelten auf der Folgeseite weiter: reportlab setzt sie mit jeder
+        # neuen Seite auf Helvetica 12 / schwarz zurück, eine Tabelle über den Seitenumbruch bekäme sonst
+        # auf Seite 2 eine andere Schrift als auf Seite 1.
+        zustand = (self._fontname, self._fontsize, self._fillColorObj, self._strokeColorObj, self._lineWidth)
         self._saved.append(dict(self.__dict__))
         self.seite_nr += 1
         self._flags.append(self._flag)
         self._flag = {}
         self._startPage()
+        self.setFont(zustand[0], zustand[1])
+        self.setFillColor(zustand[2])
+        self.setStrokeColor(zustand[3])
+        self.setLineWidth(zustand[4])
+        self._basis_n = len(self._code)         # was schon in der Seite steht, ist kein Inhalt
 
     def save(self):
-        if self._code:
+        if len(self._code) > self._basis_n:
             self.showPage()
         # Dokumente (Folgen von Seiten ab einer mit `neu`) nummerieren
         gruppen = []

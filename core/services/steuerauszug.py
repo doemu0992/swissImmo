@@ -112,8 +112,8 @@ def generate_steuerauszug_pdf(eigentuemer, jahr):
     c.setFont("Helvetica-Bold", 8.5)
     c.setFillColorRGB(0.4, 0.45, 0.5)
     c.drawString(20 * mm, y, "LIEGENSCHAFT")
-    c.drawRightString(w - 62 * mm, y, "MIETERTRÄGE")
-    c.drawRightString(w - 40 * mm, y, "AUSGABEN")
+    c.drawRightString(w - 88 * mm, y, "MIETERTRÄGE")
+    c.drawRightString(w - 58 * mm, y, "AUSGABEN")
     c.drawRightString(w - 20 * mm, y, "AfA / NETTO")
     y -= 3 * mm
     c.setStrokeColorRGB(0.85, 0.87, 0.9)
@@ -127,14 +127,14 @@ def generate_steuerauszug_pdf(eigentuemer, jahr):
         lg = z['lg']
         c.setFillColorRGB(0.1, 0.1, 0.1)
         c.drawString(20 * mm, y, f"{lg.strasse}, {lg.plz} {lg.ort}"[:48])
-        c.drawRightString(w - 62 * mm, y, _chf(z['ertrag']))
-        c.drawRightString(w - 40 * mm, y, _chf(z['ausgaben']))
+        c.drawRightString(w - 88 * mm, y, _chf(z['ertrag']))
+        c.drawRightString(w - 58 * mm, y, _chf(z['ausgaben']))
         c.setFillColorRGB(0.5, 0.55, 0.6)
         c.drawRightString(w - 20 * mm, y, f"AfA {_chf(z['afa'])}")
         y -= 4.5 * mm
         if z['honorar']:
             c.setFillColorRGB(0.5, 0.55, 0.6)
-            c.drawRightString(w - 40 * mm, y, f"Verwaltungshonorar {_chf(z['honorar'])}")
+            c.drawRightString(w - 58 * mm, y, f"Verwaltungshonorar {_chf(z['honorar'])}")
         c.setFillColorRGB(0.0, 0.5, 0.25) if z['netto'] >= 0 else c.setFillColorRGB(0.8, 0.1, 0.1)
         c.setFont("Helvetica-Bold", 9)
         c.drawRightString(w - 20 * mm, y, f"Netto CHF {_chf(z['netto'])}")
@@ -150,15 +150,15 @@ def generate_steuerauszug_pdf(eigentuemer, jahr):
     c.setFillColorRGB(0.1, 0.1, 0.1)
     c.setFont("Helvetica-Bold", 10)
     c.drawString(20 * mm, y, "TOTAL PORTFOLIO")
-    c.drawRightString(w - 62 * mm, y, _chf(t['ertrag']))
-    c.drawRightString(w - 40 * mm, y, _chf(t['ausgaben']))
+    c.drawRightString(w - 88 * mm, y, _chf(t['ertrag']))
+    c.drawRightString(w - 58 * mm, y, _chf(t['ausgaben']))
     c.drawRightString(w - 20 * mm, y, f"Netto CHF {_chf(t['netto'])}")
     if t['honorar']:
         y -= 5 * mm
         c.setFont("Helvetica", 8.5)
         c.setFillColorRGB(0.4, 0.45, 0.5)
         c.drawString(20 * mm, y, "davon Verwaltungshonorar (Konto 4500, im Netto berücksichtigt)")
-        c.drawRightString(w - 40 * mm, y, _chf(t['honorar']))
+        c.drawRightString(w - 58 * mm, y, _chf(t['honorar']))
 
     y -= 16 * mm
     if y < 34 * mm:
