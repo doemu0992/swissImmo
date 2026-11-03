@@ -37648,6 +37648,7 @@ msgstr ""
 "Frais ou autre créance : rappel ordinaire, sans menace de résiliation "
 "(l'art. 257d CO ne vaut que pour le loyer et les charges)."
 
+<<<<<<< HEAD
 #, python-format
 msgid "Eingangsbestätigung: %(titel)s (Ticket #%(id)s)"
 msgstr "Accusé de réception : %(titel)s (Ticket #%(id)s)"
@@ -37850,3 +37851,85 @@ msgstr ""
 "\n"
 "Avec nos meilleures salutations\n"
 "Votre gérance immobilière"
+=======
+msgid "Kostenlos (Garantie, Kulanz)"
+msgstr "Gratuit (garantie, geste commercial)"
+
+msgid "Rechnung geht direkt an den Eigentümer"
+msgstr "La facture est adressée directement au propriétaire"
+
+msgid "Rechnung folgt später"
+msgstr "La facture suivra"
+
+msgid "Rechnung liegt vor, ist aber noch nicht erfasst"
+msgstr "La facture est disponible mais pas encore saisie"
+
+msgid "Auftrag nicht ausgeführt"
+msgstr "Mandat non exécuté"
+
+msgid "Eigenleistung (Hauswart, Verwaltung)"
+msgstr "Travail effectué en interne (concierge, gérance)"
+
+msgid "Anderer Grund (Freitext)"
+msgstr "Autre motif (texte libre)"
+
+msgid "Das Ticket ist schon erledigt."
+msgstr "Le ticket est déjà clos."
+
+msgid "Ungültige Frist."
+msgstr "Délai invalide."
+
+msgid "Ticket ohne Rechnung abgeschlossen (Begründung festgehalten)."
+msgstr "Ticket clos sans facture (motif consigné)."
+
+msgid "Pendenz «Rechnung ausstehend» angelegt."
+msgstr "Tâche « Facture en attente » créée."
+
+msgid "Zu diesem Ticket läuft noch ein Versicherungsfall (Entschädigung offen) — er bleibt bestehen."
+msgstr "Un cas d'assurance est encore en cours pour ce ticket (indemnité ouverte) — il reste ouvert."
+
+msgid "Ticket öffnen"
+msgstr "Ouvrir le ticket"
+
+msgid "Abschliessen ohne Rechnung"
+msgstr "Clore sans facture"
+
+msgid "Standard: kein Abschluss ohne Handwerkerrechnung"
+msgstr "Par défaut : pas de clôture sans facture de l'artisan"
+
+msgid "Für diese Aufträge ist keine Kreditorenrechnung verknüpft:"
+msgstr "Aucune facture fournisseur n'est liée à ces mandats :"
+
+msgid "Entweder die Rechnung beim Auftrag verknüpfen — oder das Ticket bewusst ohne Rechnung abschliessen. Die Begründung wird mit Person und Zeit festgehalten und steht im Verlauf."
+msgstr "Soit lier la facture au mandat, soit clore volontairement le ticket sans facture. Le motif est consigné avec la personne et l'heure et figure dans l'historique."
+
+msgid "— Grund wählen —"
+msgstr "— Choisir un motif —"
+
+msgid "Pendenz bei «folgt später» / «noch nicht erfasst»: Rechnung erwartet in"
+msgstr "Tâche pour « suivra » / « pas encore saisie » : facture attendue dans"
+
+msgid "%(tage)s Tagen"
+msgstr "%(tage)s jours"
+
+msgid "Bemerkung (bei «Anderer Grund» Pflicht)"
+msgstr "Remarque (obligatoire pour « Autre motif »)"
+
+msgid "Ohne Rechnung abschliessen"
+msgstr "Clore sans facture"
+
+msgid "Ohne Rechnung abschliessen darf nur die Verwaltung."
+msgstr "Seule la gérance peut clore sans facture."
+
+msgid "Ohne Rechnung: %(g)s"
+msgstr "Sans facture : %(g)s"
+
+msgid "Freigegeben von %(wer)s, %(wann)s"
+msgstr "Validé par %(wer)s, %(wann)s"
+
+msgid "Passende Rechnung gefunden (noch nicht verknüpft)"
+msgstr "Facture correspondante trouvée (pas encore liée)"
+
+msgid "Diese Rechnung verknüpfen"
+msgstr "Lier cette facture"
+>>>>>>> worktree-agent-aa07a6f807322a7df

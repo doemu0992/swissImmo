@@ -339,7 +339,7 @@ def fw_schaden_detail(request, pk):
     s_label, s_cls = TICKET_PILL.get(t.status, (t.status, 'fw-flaeche2 fw-mutet'))
     p_label, p_cls = PRIO_PILL.get((t.prioritaet or '').lower(), (t.prioritaet or 'Mittel', 'fw-flaeche2 fw-mutet'))
     nachrichten = t.nachrichten.order_by('erstellt_am')
-    auftraege = t.handwerker_auftraege.select_related('handwerker').order_by('-beauftragt_am')
+    auftraege = t.handwerker_auftraege.select_related('handwerker', 'kreditoren_rechnung', 'ohne_rechnung_von').order_by('-beauftragt_am')
     melder = (t.gemeldet_von.display_name if t.gemeldet_von_id
               else f"{t.melder_vorname or ''} {t.melder_nachname or ''}".strip() or '—')
 
@@ -388,13 +388,26 @@ def fw_schaden_detail(request, pk):
     # Verknüpfbare Rechnungen: dieselbe Liegenschaft (oder ohne), nicht storniert, an keinem
     # Auftrag hängend. `objects` filtert auf die eigene Verwaltung.
     from finance.models import KreditorenRechnung
+    from tickets.models import HandwerkerAuftrag
+    from tickets.workflow import (OHNE_RECHNUNG_FRIST_STANDARD, OHNE_RECHNUNG_FRISTEN,
+                                  passende_rechnungen)
+    # Eine stornierte Rechnung am Auftrag zählt nicht (wie in der Sperre): Auftrag braucht eine neue.
+    for a in auftraege:
+        a.rechnung_fehlt = (a.status != 'storniert' and (
+            not a.kreditoren_rechnung_id or a.kreditoren_rechnung.status == 'storniert'))
     rechnungen_frei = []
-    if any(a.status != 'storniert' and not a.kreditoren_rechnung_id for a in auftraege):
+    if any(a.rechnung_fehlt for a in auftraege):
         rechnungen_frei = list(
             KreditorenRechnung.objects.filter(handwerker_auftraege__isnull=True)
             .exclude(status='storniert')
             .filter(Q(liegenschaft=t.liegenschaft) | Q(liegenschaft__isnull=True))
             .order_by('-id')[:50])
+    # Abschluss ohne Rechnung: sperrende Aufträge (ohne Rechnung UND ohne Freigabe) und
+    # «existiert, aber nicht verknüpft»-Vorschläge (gleicher Lieferant oder Betrag).
+    sperrende = [a for a in auftraege if a.rechnung_fehlt and not a.ohne_rechnung_grund]
+    for a in auftraege:
+        a.rechnung_vorschlaege = passende_rechnungen(a, rechnungen_frei) if a.rechnung_fehlt else []
+    ohne_rechnung_frage = bool(sperrende) and t.status != 'erledigt'
 
     tab_liste = _reiter_aus_alt('schaden', [
         ('uebersicht', 'Übersicht', None),
@@ -422,6 +435,9 @@ def fw_schaden_detail(request, pk):
         'melder_email': melder_email, 'status_wahl': TICKET_PILL,
         'ueberfaellig': __import__('tickets.sla', fromlist=['x']).ist_ueberfaellig(t),
         'rechnungen_frei': rechnungen_frei,
+        'ohne_rechnung_frage': ohne_rechnung_frage, 'sperrende_auftraege': sperrende,
+        'ohne_rechnung_gruende': HandwerkerAuftrag.OHNE_RECHNUNG_CHOICES,
+        'ohne_rechnung_fristen': OHNE_RECHNUNG_FRISTEN, 'ohne_rechnung_frist': OHNE_RECHNUNG_FRIST_STANDARD,
         'meldung': list(messages.get_messages(request)),
     })
 
@@ -653,7 +669,16 @@ def fw_schaden_status(request, pk):
         messages.error(request, gettext('Ungültiger Status.'))
         return redirect(f'/neu/schaeden/{t.id}/')
     from django.core.exceptions import ValidationError
-    from tickets.workflow import wechsle_status
+    from tickets.workflow import auftraege_ohne_rechnung, sperre_text, wechsle_status
+    if neu == 'erledigt' and t.status != 'erledigt':
+        # Standardverhalten bleibt: ohne Rechnung kein Abschluss. Statt nur «gesperrt» zu
+        # melden, nennt die Meldung die Wege; «Ohne Rechnung abschliessen» (eigene Aktion
+        # weiter unten) ist der ausdrückliche Weg und der Verwaltung vorbehalten.
+        offen = auftraege_ohne_rechnung(t)
+        if offen:
+            from core.auth import hat_rolle
+            messages.error(request, '⛔ ' + sperre_text(t, offen, hat_rolle(request.user, SCHREIB_ROLLEN)))
+            return redirect(f'/neu/schaeden/{t.id}/#ohne-rechnung')
     informieren = request.POST.get('melder_informieren') == 'on'
     melder_email = t.email_melder or (t.gemeldet_von.email if t.gemeldet_von_id else '')
     n_vorher = t.nachrichten.count()
@@ -672,6 +697,57 @@ def fw_schaden_status(request, pk):
 
     log_aktion(request, "Ticket-Status geändert", f"Ticket #{t.id}", auf_deutsch(t.get_status_display))
     messages.success(request, '✅ ' + gettext('Status: %(get_status_display)s%(info)s.') % {'get_status_display': t.get_status_display(), 'info': info})
+    _versicherung_hinweis(request, t)
+    return redirect(f'/neu/schaeden/{t.id}/')
+
+
+def _versicherung_hinweis(request, t):
+    """Ein erledigtes Ticket mit offenem Versicherungsfall: der Fall läuft weiter — sagen, nicht still lassen."""
+    from django.contrib import messages
+    if t.status == 'erledigt' and t.versicherungsfaelle.filter(status__in=('gemeldet', 'abklaerung')).exists():
+        messages.warning(request, '⚠️ ' + gettext(
+            'Zu diesem Ticket läuft noch ein Versicherungsfall (Entschädigung offen) — er bleibt bestehen.'))
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)      # eine Entscheidung der Verwaltung, nicht des Hauswarts
+def fw_schaden_ohne_rechnung(request, pk):
+    """Ticket ausdrücklich OHNE Handwerkerrechnung abschliessen: Grund aus der Liste (Pflicht),
+    Bemerkung, bei «Rechnung folgt später» eine Frist für die Pendenz. Die Sperre bleibt das
+    Standardverhalten; dies ist die bewusste Freigabe (`tickets.workflow.ohne_rechnung_abschliessen`)."""
+    from django.contrib import messages
+    from django.core.exceptions import ValidationError
+    from django.shortcuts import redirect
+    from core.auth import log_aktion
+    from tickets.models import SchadenMeldung
+    from tickets.workflow import (OHNE_RECHNUNG_ERWARTET, ohne_rechnung_abschliessen)
+
+    if request.method != 'POST':
+        return redirect(f'/neu/schaeden/{pk}/')
+    t = get_object_or_404(SchadenMeldung.objects.select_related('liegenschaft', 'betroffene_einheit', 'gemeldet_von'), id=pk)
+    ziel = f'/neu/schaeden/{t.id}/#ohne-rechnung'
+    if t.status == 'erledigt':
+        messages.info(request, gettext('Das Ticket ist schon erledigt.'))
+        return redirect(f'/neu/schaeden/{t.id}/')
+    grund = request.POST.get('grund', '')
+    frist = request.POST.get('frist_tage', '')
+    try:
+        frist_tage = int(frist) if frist else None
+    except ValueError:
+        messages.error(request, '⛔ ' + gettext('Ungültige Frist.'))
+        return redirect(ziel)
+    try:
+        freigegeben = ohne_rechnung_abschliessen(
+            t, grund, request.POST.get('text', ''), user=request.user, frist_tage=frist_tage,
+            melder_informieren=request.POST.get('melder_informieren') == 'on')
+    except ValidationError as e:
+        t.refresh_from_db()
+        messages.error(request, '⛔ ' + ' '.join(e.messages))
+        return redirect(ziel)
+    log_aktion(request, "Ticket ohne Rechnung abgeschlossen", f"Ticket #{t.id}", grund)
+    extra = (' ' + gettext('Pendenz «Rechnung ausstehend» angelegt.')) if (
+        freigegeben and grund in OHNE_RECHNUNG_ERWARTET) else ''
+    messages.success(request, '✅ ' + gettext('Ticket ohne Rechnung abgeschlossen (Begründung festgehalten).') + extra)
+    _versicherung_hinweis(request, t)
     return redirect(f'/neu/schaeden/{t.id}/')
 
 
@@ -836,6 +912,7 @@ def fw_auftrag_rechnung(request, pk):
         a.ticket.refresh_from_db()
         if a.ticket.status == 'erledigt':
             messages.success(request, '✅ ' + gettext('Rechnung verknüpft — Ticket abgeschlossen.'))
+            _versicherung_hinweis(request, a.ticket)
         else:
             messages.success(request, '✅ ' + gettext('Rechnung verknüpft.'))
     except ValidationError as e:

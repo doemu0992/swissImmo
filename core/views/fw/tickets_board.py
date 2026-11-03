@@ -13,7 +13,10 @@ WAS SICH NICHT ÄNDERT
   Liste, dieselben Sichtrechte (der Hauswart sieht nur seine Liegenschaften).
 * Jeder Statuswechsel läuft über `tickets.workflow.wechsle_status`. Die Sperre
   «nicht erledigt ohne Handwerkerrechnung» gilt also auch beim Ziehen; die Karte
-  springt zurück und die Meldung sagt warum.
+  springt zurück und die Meldung sagt warum — und führt zur Ticketseite, wo die
+  Rechnung verknüpft oder «Ohne Rechnung abschliessen» (mit Begründung) gewählt wird.
+  Auch ein Ticket in «Warte auf Handwerker» bietet «Erledigt» an, damit dieser Weg
+  nicht am Board scheitert.
 * Vier Spalten, sechs Zustände: «Wartet auf Dritte» fasst Mieter, Handwerker und
   Rechnung zusammen. Wer eine Karte dorthin zieht, bekommt den ersten Zustand der
   Spalte, den der Fluss von hier aus erlaubt (`tickets.workflow.UEBERGAENGE`);
@@ -49,6 +52,16 @@ ERLEDIGT_TAGE = 30
 ERLEDIGT_MAX = 20
 
 
+def _ziele(t):
+    """Zustände, die die Karte anbietet: der jetzige, die erlaubten und — bei fehlender
+    Rechnung — «Erledigt» (die Wahl führt dann zur Begründung statt ins Leere)."""
+    from tickets.workflow import erlaubte_ziele, hat_sperrende_auftraege
+    ziele = [t.status] + erlaubte_ziele(t.status)
+    if t.status != 'erledigt' and 'erledigt' not in ziele and hat_sperrende_auftraege(t):
+        ziele.append('erledigt')
+    return ziele
+
+
 def _initialen(user):
     name = (user.get_full_name() or user.username or '').strip()
     teile = name.replace('.', ' ').split()
@@ -60,7 +73,6 @@ def fw_schaeden_board(request):
     from faelle.schaeden import zeilen
     from tickets.models import SchadenMeldung
     from tickets.sla import ist_ueberfaellig
-    from tickets.workflow import erlaubte_ziele
     from django.db.models import Q
 
     basis = _global_filter(request)
@@ -68,7 +80,7 @@ def fw_schaeden_board(request):
     from core.services.archiv import ausblenden
     qs = ausblenden(SchadenMeldung.objects
                     .select_related('liegenschaft', 'betroffene_einheit', 'gemeldet_von', 'zugewiesen_an')
-                    .prefetch_related('handwerker_auftraege', 'nachrichten'))
+                    .prefetch_related('handwerker_auftraege__kreditoren_rechnung', 'nachrichten'))
     if aktive_lg:
         qs = qs.filter(liegenschaft=aktive_lg)
     if ist_nur_hauswart(request.user):
@@ -108,7 +120,7 @@ def fw_schaeden_board(request):
     spalten = []
     labels = dict(SchadenMeldung.STATUS_CHOICES)
     for z in karten:
-        z['ziele'] = [(w, labels[w]) for w in [z['t'].status] + erlaubte_ziele(z['t'].status)]
+        z['ziele'] = [(w, labels[w]) for w in _ziele(z['t'])]
     for schluessel, label, zustaende in SPALTEN:
         eigene = [z for z in karten if z['t'].status in zustaende]
         # Dringendes und Überfälliges nach oben, dann das Älteste.
@@ -135,20 +147,20 @@ def _darf_schreiben(request):
     return hat_rolle(request.user, TICKET_SCHREIB_ROLLEN)
 
 
-def _antwort(request, t, ok, text, status=200):
+def _antwort(request, t, ok, text, status=200, weiter=''):
     """JSON für das Ziehen, Weiterleitung mit Meldung für das Auswahlfeld."""
     from tickets.models import SchadenMeldung
-    from tickets.workflow import erlaubte_ziele
     als_json = (request.headers.get('x-requested-with') == 'XMLHttpRequest'
                 or 'application/json' in request.headers.get('accept', ''))
     if als_json:
         labels = dict(SchadenMeldung.STATUS_CHOICES)
         return JsonResponse({
             'ok': ok, 'meldung': str(text), 'status': t.status, 'label': str(t.get_status_display()),
-            'ziele': [[w, str(labels[w])] for w in [t.status] + erlaubte_ziele(t.status)]},
+            'ziele': [[w, str(labels[w])] for w in _ziele(t)],
+            **({'weiter': weiter, 'weiter_label': str(gettext('Ticket öffnen'))} if weiter else {})},
             status=status)
     (messages.success if ok else messages.error)(request, text)
-    return redirect('/neu/schaeden/board/')
+    return redirect(weiter or '/neu/schaeden/board/')
 
 
 @rolle_erforderlich(*TICKET_SCHREIB_ROLLEN)
@@ -157,7 +169,8 @@ def fw_schaden_verschieben(request, pk):
     """Statuswechsel vom Board — als Ziehen (JSON) oder Auswahlfeld (Formular)."""
     from django.core.exceptions import ValidationError
     from tickets.models import SchadenMeldung, TicketNachricht
-    from tickets.workflow import erlaubte_ziele, wechsle_status
+    from tickets.workflow import (auftraege_ohne_rechnung, erlaubte_ziele, sperre_text,
+                                  wechsle_status)
     from core.services.dokumentsprache import auf_deutsch
 
     t = get_object_or_404(SchadenMeldung.objects.select_related('liegenschaft'), id=pk)
@@ -171,6 +184,8 @@ def fw_schaden_verschieben(request, pk):
             neu = t.status
         else:
             neu = next((z for z in zustaende if z in erlaubte_ziele(t.status)), '')
+        if not neu and spalte == 'erledigt':
+            neu = 'erledigt'           # Rechnung fehlt? -> unten die Meldung mit dem Weg, statt «nicht vorgesehen»
         if not neu:
             return _antwort(request, t, False, gettext(
                 'Von «%(von)s» ist kein Wechsel in diese Spalte vorgesehen.') % {
@@ -183,6 +198,15 @@ def fw_schaden_verschieben(request, pk):
         return antwort(False, gettext('Ungültiger Status.'), 400)
     if neu == t.status:
         return antwort(True, gettext('Keine Änderung.'))
+    if neu == 'erledigt':
+        offen = auftraege_ohne_rechnung(t)
+        if offen:
+            # Standard bleibt gesperrt. Die Meldung nennt die Wege und führt zur Ticketseite,
+            # wo «Ohne Rechnung abschliessen» (Begründung, Verwaltung) bzw. das Verknüpfen liegt.
+            from core.auth import SCHREIB_ROLLEN, hat_rolle
+            return _antwort(request, t, False,
+                            sperre_text(t, offen, hat_rolle(request.user, SCHREIB_ROLLEN)), 409,
+                            weiter=f'/neu/schaeden/{t.id}/#ohne-rechnung')
     try:
         wechsle_status(t, neu, melder_informieren=False)
     except ValidationError as e:

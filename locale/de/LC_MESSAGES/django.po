@@ -35926,6 +35926,7 @@ msgstr ""
 "Gebühr oder sonstige Forderung: gewöhnliche Mahnung, keine "
 "Kündigungsandrohung (Art. 257d OR gilt nur für Miete und Nebenkosten)."
 
+<<<<<<< HEAD
 #, python-format
 msgid "Eingangsbestätigung: %(titel)s (Ticket #%(id)s)"
 msgstr "Eingangsbestätigung: %(titel)s (Ticket #%(id)s)"
@@ -36128,3 +36129,85 @@ msgstr ""
 "\n"
 "Freundliche Grüsse\n"
 "Ihre Liegenschaftsverwaltung"
+=======
+msgid "Kostenlos (Garantie, Kulanz)"
+msgstr "Kostenlos (Garantie, Kulanz)"
+
+msgid "Rechnung geht direkt an den Eigentümer"
+msgstr "Rechnung geht direkt an den Eigentümer"
+
+msgid "Rechnung folgt später"
+msgstr "Rechnung folgt später"
+
+msgid "Rechnung liegt vor, ist aber noch nicht erfasst"
+msgstr "Rechnung liegt vor, ist aber noch nicht erfasst"
+
+msgid "Auftrag nicht ausgeführt"
+msgstr "Auftrag nicht ausgeführt"
+
+msgid "Eigenleistung (Hauswart, Verwaltung)"
+msgstr "Eigenleistung (Hauswart, Verwaltung)"
+
+msgid "Anderer Grund (Freitext)"
+msgstr "Anderer Grund (Freitext)"
+
+msgid "Das Ticket ist schon erledigt."
+msgstr "Das Ticket ist schon erledigt."
+
+msgid "Ungültige Frist."
+msgstr "Ungültige Frist."
+
+msgid "Ticket ohne Rechnung abgeschlossen (Begründung festgehalten)."
+msgstr "Ticket ohne Rechnung abgeschlossen (Begründung festgehalten)."
+
+msgid "Pendenz «Rechnung ausstehend» angelegt."
+msgstr "Pendenz «Rechnung ausstehend» angelegt."
+
+msgid "Zu diesem Ticket läuft noch ein Versicherungsfall (Entschädigung offen) — er bleibt bestehen."
+msgstr "Zu diesem Ticket läuft noch ein Versicherungsfall (Entschädigung offen) — er bleibt bestehen."
+
+msgid "Ticket öffnen"
+msgstr "Ticket öffnen"
+
+msgid "Abschliessen ohne Rechnung"
+msgstr "Abschliessen ohne Rechnung"
+
+msgid "Standard: kein Abschluss ohne Handwerkerrechnung"
+msgstr "Standard: kein Abschluss ohne Handwerkerrechnung"
+
+msgid "Für diese Aufträge ist keine Kreditorenrechnung verknüpft:"
+msgstr "Für diese Aufträge ist keine Kreditorenrechnung verknüpft:"
+
+msgid "Entweder die Rechnung beim Auftrag verknüpfen — oder das Ticket bewusst ohne Rechnung abschliessen. Die Begründung wird mit Person und Zeit festgehalten und steht im Verlauf."
+msgstr "Entweder die Rechnung beim Auftrag verknüpfen — oder das Ticket bewusst ohne Rechnung abschliessen. Die Begründung wird mit Person und Zeit festgehalten und steht im Verlauf."
+
+msgid "— Grund wählen —"
+msgstr "— Grund wählen —"
+
+msgid "Pendenz bei «folgt später» / «noch nicht erfasst»: Rechnung erwartet in"
+msgstr "Pendenz bei «folgt später» / «noch nicht erfasst»: Rechnung erwartet in"
+
+msgid "%(tage)s Tagen"
+msgstr "%(tage)s Tagen"
+
+msgid "Bemerkung (bei «Anderer Grund» Pflicht)"
+msgstr "Bemerkung (bei «Anderer Grund» Pflicht)"
+
+msgid "Ohne Rechnung abschliessen"
+msgstr "Ohne Rechnung abschliessen"
+
+msgid "Ohne Rechnung abschliessen darf nur die Verwaltung."
+msgstr "Ohne Rechnung abschliessen darf nur die Verwaltung."
+
+msgid "Ohne Rechnung: %(g)s"
+msgstr "Ohne Rechnung: %(g)s"
+
+msgid "Freigegeben von %(wer)s, %(wann)s"
+msgstr "Freigegeben von %(wer)s, %(wann)s"
+
+msgid "Passende Rechnung gefunden (noch nicht verknüpft)"
+msgstr "Passende Rechnung gefunden (noch nicht verknüpft)"
+
+msgid "Diese Rechnung verknüpfen"
+msgstr "Diese Rechnung verknüpfen"
+>>>>>>> worktree-agent-aa07a6f807322a7df

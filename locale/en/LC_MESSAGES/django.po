@@ -37031,6 +37031,7 @@ msgstr ""
 "Fee or other claim: ordinary reminder, no threat of termination (Art. 257d "
 "CO applies only to rent and ancillary costs)."
 
+<<<<<<< HEAD
 #, python-format
 msgid "Eingangsbestätigung: %(titel)s (Ticket #%(id)s)"
 msgstr "Confirmation of receipt: %(titel)s (Ticket #%(id)s)"
@@ -37233,3 +37234,85 @@ msgstr ""
 "\n"
 "Kind regards\n"
 "Your property management"
+=======
+msgid "Kostenlos (Garantie, Kulanz)"
+msgstr "Free of charge (warranty, goodwill)"
+
+msgid "Rechnung geht direkt an den Eigentümer"
+msgstr "Invoice goes directly to the owner"
+
+msgid "Rechnung folgt später"
+msgstr "Invoice to follow"
+
+msgid "Rechnung liegt vor, ist aber noch nicht erfasst"
+msgstr "Invoice received but not yet recorded"
+
+msgid "Auftrag nicht ausgeführt"
+msgstr "Order not carried out"
+
+msgid "Eigenleistung (Hauswart, Verwaltung)"
+msgstr "In-house work (caretaker, property management)"
+
+msgid "Anderer Grund (Freitext)"
+msgstr "Other reason (free text)"
+
+msgid "Das Ticket ist schon erledigt."
+msgstr "The ticket is already closed."
+
+msgid "Ungültige Frist."
+msgstr "Invalid deadline."
+
+msgid "Ticket ohne Rechnung abgeschlossen (Begründung festgehalten)."
+msgstr "Ticket closed without an invoice (reason recorded)."
+
+msgid "Pendenz «Rechnung ausstehend» angelegt."
+msgstr "Task \"Invoice outstanding\" created."
+
+msgid "Zu diesem Ticket läuft noch ein Versicherungsfall (Entschädigung offen) — er bleibt bestehen."
+msgstr "An insurance claim is still open for this ticket (compensation pending) — it remains open."
+
+msgid "Ticket öffnen"
+msgstr "Open ticket"
+
+msgid "Abschliessen ohne Rechnung"
+msgstr "Close without an invoice"
+
+msgid "Standard: kein Abschluss ohne Handwerkerrechnung"
+msgstr "Default: no closing without the tradesperson invoice"
+
+msgid "Für diese Aufträge ist keine Kreditorenrechnung verknüpft:"
+msgstr "No supplier invoice is linked to these orders:"
+
+msgid "Entweder die Rechnung beim Auftrag verknüpfen — oder das Ticket bewusst ohne Rechnung abschliessen. Die Begründung wird mit Person und Zeit festgehalten und steht im Verlauf."
+msgstr "Either link the invoice to the order or deliberately close the ticket without one. The reason is recorded with the person and time and appears in the history."
+
+msgid "— Grund wählen —"
+msgstr "— Choose a reason —"
+
+msgid "Pendenz bei «folgt später» / «noch nicht erfasst»: Rechnung erwartet in"
+msgstr "Task for \"to follow\" / \"not yet recorded\": invoice expected in"
+
+msgid "%(tage)s Tagen"
+msgstr "%(tage)s days"
+
+msgid "Bemerkung (bei «Anderer Grund» Pflicht)"
+msgstr "Remark (required for \"Other reason\")"
+
+msgid "Ohne Rechnung abschliessen"
+msgstr "Close without an invoice"
+
+msgid "Ohne Rechnung abschliessen darf nur die Verwaltung."
+msgstr "Only property management may close without an invoice."
+
+msgid "Ohne Rechnung: %(g)s"
+msgstr "Without invoice: %(g)s"
+
+msgid "Freigegeben von %(wer)s, %(wann)s"
+msgstr "Approved by %(wer)s, %(wann)s"
+
+msgid "Passende Rechnung gefunden (noch nicht verknüpft)"
+msgstr "Matching invoice found (not yet linked)"
+
+msgid "Diese Rechnung verknüpfen"
+msgstr "Link this invoice"
+>>>>>>> worktree-agent-aa07a6f807322a7df

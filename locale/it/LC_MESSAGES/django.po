@@ -37589,6 +37589,7 @@ msgstr ""
 "Spese o altro credito: sollecito ordinario, senza comminatoria di disdetta "
 "(l'art. 257d CO vale solo per pigione e spese accessorie)."
 
+<<<<<<< HEAD
 #, python-format
 msgid "Eingangsbestätigung: %(titel)s (Ticket #%(id)s)"
 msgstr "Conferma di ricezione: %(titel)s (Ticket #%(id)s)"
@@ -37791,3 +37792,85 @@ msgstr ""
 "\n"
 "Cordiali saluti\n"
 "La sua amministrazione immobiliare"
+=======
+msgid "Kostenlos (Garantie, Kulanz)"
+msgstr "Gratuito (garanzia, cortesia)"
+
+msgid "Rechnung geht direkt an den Eigentümer"
+msgstr "La fattura va direttamente al proprietario"
+
+msgid "Rechnung folgt später"
+msgstr "La fattura seguirà"
+
+msgid "Rechnung liegt vor, ist aber noch nicht erfasst"
+msgstr "La fattura è disponibile ma non ancora registrata"
+
+msgid "Auftrag nicht ausgeführt"
+msgstr "Incarico non eseguito"
+
+msgid "Eigenleistung (Hauswart, Verwaltung)"
+msgstr "Lavoro svolto internamente (custode, amministrazione)"
+
+msgid "Anderer Grund (Freitext)"
+msgstr "Altro motivo (testo libero)"
+
+msgid "Das Ticket ist schon erledigt."
+msgstr "Il ticket è già chiuso."
+
+msgid "Ungültige Frist."
+msgstr "Termine non valido."
+
+msgid "Ticket ohne Rechnung abgeschlossen (Begründung festgehalten)."
+msgstr "Ticket chiuso senza fattura (motivazione registrata)."
+
+msgid "Pendenz «Rechnung ausstehend» angelegt."
+msgstr "Pendenza «Fattura in sospeso» creata."
+
+msgid "Zu diesem Ticket läuft noch ein Versicherungsfall (Entschädigung offen) — er bleibt bestehen."
+msgstr "Per questo ticket è ancora in corso un caso assicurativo (indennizzo aperto) — resta aperto."
+
+msgid "Ticket öffnen"
+msgstr "Apri il ticket"
+
+msgid "Abschliessen ohne Rechnung"
+msgstr "Chiudere senza fattura"
+
+msgid "Standard: kein Abschluss ohne Handwerkerrechnung"
+msgstr "Per impostazione predefinita: nessuna chiusura senza fattura dell'artigiano"
+
+msgid "Für diese Aufträge ist keine Kreditorenrechnung verknüpft:"
+msgstr "Nessuna fattura fornitore è collegata a questi incarichi:"
+
+msgid "Entweder die Rechnung beim Auftrag verknüpfen — oder das Ticket bewusst ohne Rechnung abschliessen. Die Begründung wird mit Person und Zeit festgehalten und steht im Verlauf."
+msgstr "Collegare la fattura all'incarico oppure chiudere volutamente il ticket senza fattura. La motivazione viene registrata con persona e ora ed è visibile nella cronologia."
+
+msgid "— Grund wählen —"
+msgstr "— Scegliere un motivo —"
+
+msgid "Pendenz bei «folgt später» / «noch nicht erfasst»: Rechnung erwartet in"
+msgstr "Pendenza per «seguirà» / «non ancora registrata»: fattura attesa tra"
+
+msgid "%(tage)s Tagen"
+msgstr "%(tage)s giorni"
+
+msgid "Bemerkung (bei «Anderer Grund» Pflicht)"
+msgstr "Osservazione (obbligatoria per «Altro motivo»)"
+
+msgid "Ohne Rechnung abschliessen"
+msgstr "Chiudere senza fattura"
+
+msgid "Ohne Rechnung abschliessen darf nur die Verwaltung."
+msgstr "Solo l'amministrazione può chiudere senza fattura."
+
+msgid "Ohne Rechnung: %(g)s"
+msgstr "Senza fattura: %(g)s"
+
+msgid "Freigegeben von %(wer)s, %(wann)s"
+msgstr "Approvato da %(wer)s, %(wann)s"
+
+msgid "Passende Rechnung gefunden (noch nicht verknüpft)"
+msgstr "Fattura corrispondente trovata (non ancora collegata)"
+
+msgid "Diese Rechnung verknüpfen"
+msgstr "Collega questa fattura"
+>>>>>>> worktree-agent-aa07a6f807322a7df

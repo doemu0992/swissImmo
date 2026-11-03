@@ -21,6 +21,17 @@ Aufträgen, nicht am Statuswort «warte_auf_handwerker»: Wer den Status
 Die Sperre sitzt in ``SchadenMeldung.save()`` (über ``abschluss_pruefen``) und
 gilt damit für Ansicht, Admin und Skripte. Nicht erfasst:
 ``QuerySet.update()`` — wie bei jeder Modellregel.
+
+DER AUSDRÜCKLICHE WEG «OHNE RECHNUNG ABSCHLIESSEN»
+
+Es gibt reale Fälle ohne Handwerkerrechnung (Garantie/Kulanz, Rechnung geht an den
+Eigentümer, Auftrag nicht ausgeführt, Eigenleistung, Rechnung folgt). Die Sperre
+wird dafür nicht umgangen, sondern ihr wird eine Freigabe vorgelegt:
+``ohne_rechnung_freigeben`` hält am Auftrag Grund, Bemerkung, Person und Zeit fest;
+``auftraege_ohne_rechnung`` (und damit ``abschluss_pruefen``) zählt einen so
+freigegebenen Auftrag nicht mehr. ``ohne_rechnung_abschliessen`` ist der ganze Weg
+in einem Griff (auch ab «Warte auf Handwerker»). «Rechnung folgt später» legt eine
+Pendenz an, die das Verknüpfen der Rechnung erledigt.
 """
 import logging
 from datetime import timedelta
@@ -29,6 +40,7 @@ from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
+from django.db.models import Q
 
 logger = logging.getLogger(__name__)
 
@@ -53,10 +65,20 @@ UEBERGAENGE = {
     'erledigt':             {'in_bearbeitung'},
 }
 
+#: Zusätzlich erlaubt, wenn der Abschluss ausdrücklich «ohne Rechnung» geschieht.
+UEBERGAENGE_OHNE_RECHNUNG = {
+    'warte_auf_handwerker': {'erledigt'},
+}
+
 AUFTRAG_STORNIERT = 'storniert'
 
 #: Innerhalb dieser Frist gilt ein zweiter Auftrag an denselben Handwerker als Doppelklick.
 DOPPELT_SEKUNDEN = 120
+#: Gründe, bei denen die Rechnung noch erwartet wird: Sie bekommen eine Pendenz.
+OHNE_RECHNUNG_ERWARTET = ('folgt_spaeter', 'noch_nicht_erfasst')
+#: Wählbare Fristen (Tage) für die Pendenz «Rechnung ausstehend».
+OHNE_RECHNUNG_FRISTEN = (7, 14, 30, 60, 90)
+OHNE_RECHNUNG_FRIST_STANDARD = 30
 
 
 class UngueltigerUebergang(ValidationError):
@@ -72,13 +94,22 @@ def erlaubte_ziele(status):
     return sorted(UEBERGAENGE.get(status, ()))
 
 
-def auftraege_ohne_rechnung(ticket):
-    """Aufträge des Tickets, denen noch keine Kreditorenrechnung zugeordnet ist."""
+def auftraege_ohne_rechnung(ticket, freigegebene_mitzaehlen=False):
+    """Aufträge des Tickets, die den Abschluss sperren: ohne (gültige) Kreditorenrechnung.
+
+    Eine stornierte Rechnung zählt nicht als Rechnung. Ein Auftrag, den die
+    Verwaltung ausdrücklich «ohne Rechnung» freigegeben hat, sperrt nicht mehr
+    (``freigegebene_mitzaehlen=True`` liefert ihn trotzdem, für die Anzeige).
+    """
     if not ticket.pk:
         return []
-    return list(ticket.handwerker_auftraege
-                .filter(kreditoren_rechnung__isnull=True)
-                .exclude(status=AUFTRAG_STORNIERT))
+    qs = (ticket.handwerker_auftraege
+          .filter(Q(kreditoren_rechnung__isnull=True) | Q(kreditoren_rechnung__status='storniert'))
+          .exclude(status=AUFTRAG_STORNIERT)
+          .select_related('handwerker', 'kreditoren_rechnung'))
+    if not freigegebene_mitzaehlen:
+        qs = qs.filter(ohne_rechnung_grund='')
+    return list(qs)
 
 
 class KostentraegerFehlt(ValidationError):
@@ -109,11 +140,50 @@ def abschluss_pruefen(ticket):
     kostentraeger_pruefen(ticket)
     offen = auftraege_ohne_rechnung(ticket)
     if offen:
-        namen = ', '.join(str(a.handwerker) for a in offen)
-        raise AbschlussGesperrt(
-            f"Ticket #{ticket.pk} kann nicht erledigt werden: Für den Auftrag an "
-            f"{namen} ist noch keine Kreditorenrechnung verknüpft.",
-            code='rechnung_fehlt')
+        raise AbschlussGesperrt(sperre_text(ticket, offen), code='rechnung_fehlt')
+
+
+def hat_sperrende_auftraege(ticket):
+    """Wie ``auftraege_ohne_rechnung``, aber in Python über die (vorgeladenen) Aufträge — für Listen
+    und das Board, ohne Abfrage je Ticket."""
+    for a in ticket.handwerker_auftraege.all():
+        if a.status == AUFTRAG_STORNIERT or a.ohne_rechnung_grund:
+            continue
+        if not a.kreditoren_rechnung_id or a.kreditoren_rechnung.status == 'storniert':
+            return True
+    return False
+
+
+def passende_rechnungen(auftrag, kandidaten):
+    """Von den unverknüpften Rechnungen die, die zum Auftrag passen könnten: gleicher Lieferant
+    (Name enthält die Firma des Handwerkers oder umgekehrt, ohne Gross-/Kleinschreibung) oder
+    Betrag gleich den effektiven bzw. geschätzten Kosten. Nur ein Hinweis — verknüpft wird per Klick."""
+    firma = (auftrag.handwerker.firma or '').strip().lower()
+    betraege = {b for b in (auftrag.kosten_effektiv, auftrag.kosten_geschaetzt) if b}
+    treffer = []
+    for r in kandidaten:
+        lieferant = (r.lieferant or '').strip().lower()
+        gleicher_lieferant = bool(firma and lieferant and (firma in lieferant or lieferant in firma))
+        gleicher_betrag = r.betrag is not None and r.betrag in betraege
+        if gleicher_lieferant or gleicher_betrag:
+            treffer.append(r)
+    return treffer
+
+
+def sperre_text(ticket, offen=None, ohne_rechnung_moeglich=True):
+    """Die Meldung der Sperre — mit den Wegen, wie es weitergeht (statt nur «gesperrt»)."""
+    offen = auftraege_ohne_rechnung(ticket) if offen is None else offen
+    namen = ', '.join(str(a.handwerker) for a in offen)
+    text = (f"Ticket #{ticket.pk} kann nicht erledigt werden: Für den Auftrag an "
+            f"{namen} ist noch keine Kreditorenrechnung verknüpft. Weiter: "
+            f"(1) die Rechnung beim Auftrag verknüpfen (Reiter «Handwerker & Kosten»)")
+    if ohne_rechnung_moeglich:
+        text += (", oder (2) «Ohne Rechnung abschliessen» mit Begründung "
+                 "(kostenlos/Garantie, Rechnung direkt an den Eigentümer, Rechnung folgt später, "
+                 "Auftrag nicht ausgeführt, Eigenleistung).")
+    else:
+        text += ". Ohne Rechnung abschliessen darf nur die Verwaltung."
+    return text
 
 
 #: Statuswechsel, über die der Melder automatisch informiert wird, und die
@@ -126,13 +196,17 @@ MELDER_INFO = {
 }
 
 
-def wechsle_status(ticket, neu, melder_informieren=False):
+def wechsle_status(ticket, neu, melder_informieren=False, ohne_rechnung=False):
     """Statuswechsel nach dem Flussplan; speichert das Ticket.
 
     Gleicher Status ist ein No-op. Unbekannter Status oder nicht erlaubter
     Übergang -> ``UngueltigerUebergang``; fehlende Rechnung beim Abschluss ->
     ``AbschlussGesperrt`` (aus ``save()``). Bei einem Fehler bleibt der
     Status am Objekt unverändert.
+
+    ``ohne_rechnung`` öffnet den ausdrücklichen Weg ``warte_auf_handwerker -> erledigt``
+    (``UEBERGAENGE_OHNE_RECHNUNG``); die Sperre prüft trotzdem, ob die Aufträge
+    eine Rechnung oder eine Freigabe haben. Nur ``ohne_rechnung_abschliessen`` setzt es.
 
     Mit ``melder_informieren`` geht nach erfolgreichem Wechsel automatisch eine
     Mail an den Melder (nur für Status aus ``MELDER_INFO``); Mailfehler
@@ -143,7 +217,10 @@ def wechsle_status(ticket, neu, melder_informieren=False):
         return ticket
     if neu not in UEBERGAENGE:
         raise UngueltigerUebergang(f"Unbekannter Status «{neu}».", code='unbekannt')
-    if neu not in UEBERGAENGE.get(alt, ()):
+    erlaubt = set(UEBERGAENGE.get(alt, ()))
+    if ohne_rechnung:
+        erlaubt |= UEBERGAENGE_OHNE_RECHNUNG.get(alt, set())
+    if neu not in erlaubt:
         raise UngueltigerUebergang(
             f"Übergang {alt} -> {neu} ist nicht vorgesehen.", code='uebergang')
     ticket.status = neu
@@ -346,6 +423,11 @@ def rechnung_verknuepfen(auftrag, rechnung, abschliessen=True):
     if rechnung.status == 'storniert':
         raise ValidationError('Eine stornierte Rechnung kann nicht verknüpft werden.',
                               code='storniert')
+    if auftrag.kreditoren_rechnung_id and auftrag.kreditoren_rechnung_id != rechnung.pk \
+            and auftrag.kreditoren_rechnung.status != 'storniert':
+        raise ValidationError('Zum Auftrag ist schon eine Rechnung verknüpft.', code='doppelt')
+    if rechnung.handwerker_auftraege.exclude(pk=auftrag.pk).exists():
+        raise ValidationError('Die Rechnung hängt schon an einem anderen Auftrag.', code='vergeben')
     abgeschlossen = False
     with transaction.atomic():
         auftrag.kreditoren_rechnung = rechnung
@@ -354,6 +436,7 @@ def rechnung_verknuepfen(auftrag, rechnung, abschliessen=True):
         auftrag.save()
         _protokoll(ticket, f"Handwerkerrechnung {rechnung.lieferant} "
                            f"(CHF {rechnung.betrag}) mit Auftrag #{auftrag.id} verknüpft.")
+        _pendenz_rechnung_erledigen(auftrag)
         if abschliessen and not auftraege_ohne_rechnung(ticket):
             if ticket.status in ('in_bearbeitung', 'warte_auf_handwerker'):
                 wechsle_status(ticket, 'wartet_auf_rechnung')
@@ -366,6 +449,111 @@ def rechnung_verknuepfen(auftrag, rechnung, abschliessen=True):
     if abgeschlossen:
         melder_benachrichtigen(ticket, 'ticket_erledigt')
     return auftrag
+
+
+# ---------------------------------------------------------------------------
+# Abschluss ohne Rechnung (ausdrücklicher Weg)
+# ---------------------------------------------------------------------------
+
+def _pendenz_quelle(auftrag):
+    # Bewusst NICHT «auto:…»: Die Automatik (core/services/automation.py) räumt
+    # «auto:rechnung:…» nach dem Ticketstatus ab; diese Pendenz endet mit der Rechnung.
+    return f"ticket:rechnung_ausstehend:{auftrag.pk}"
+
+
+def _pendenz_rechnung_erledigen(auftrag):
+    from django.utils import timezone
+
+    from core.models import Pendenz
+    Pendenz.objects.filter(quelle=_pendenz_quelle(auftrag), erledigt=False).update(
+        erledigt=True, erledigt_am=timezone.localdate())
+
+
+def ohne_rechnung_freigeben(auftrag, grund, text='', user=None, frist_tage=None):
+    """Einen Auftrag ausdrücklich «ohne Rechnung» freigeben: Grund, Person und Zeit festhalten.
+
+    ``grund`` aus ``HandwerkerAuftrag.OHNE_RECHNUNG_CHOICES``; «anderer» braucht eine
+    Bemerkung. Bei «Rechnung folgt später» / «liegt vor, noch nicht erfasst» entsteht eine
+    Pendenz «Rechnung ausstehend» (``frist_tage``, Standard 30), die das Verknüpfen der
+    Rechnung erledigt. Der Verlauf des Tickets hält es fest. Ein Auftrag mit gültiger
+    Rechnung oder ein stornierter braucht keine Freigabe -> ``ValidationError``.
+    """
+    from django.utils import timezone
+
+    from core.models import Pendenz
+    from .models import HandwerkerAuftrag
+    if grund not in dict(HandwerkerAuftrag.OHNE_RECHNUNG_CHOICES):
+        raise ValidationError('Bitte einen Grund wählen.', code='grund')
+    text = (text or '').strip()
+    if grund == 'anderer' and not text:
+        raise ValidationError('Bei «Anderer Grund» bitte eine Bemerkung angeben.', code='text_fehlt')
+    if auftrag.status == AUFTRAG_STORNIERT:
+        raise ValidationError('Der Auftrag ist storniert.', code='storniert')
+    if auftrag.kreditoren_rechnung_id and auftrag.kreditoren_rechnung.status != 'storniert':
+        raise ValidationError('Zum Auftrag ist schon eine Rechnung verknüpft.', code='doppelt')
+    if frist_tage is None:
+        frist_tage = OHNE_RECHNUNG_FRIST_STANDARD
+    if frist_tage not in OHNE_RECHNUNG_FRISTEN:
+        raise ValidationError('Ungültige Frist.', code='frist')
+    ticket = auftrag.ticket
+    bezeichnung = dict(HandwerkerAuftrag.OHNE_RECHNUNG_CHOICES)[grund]
+    wer = (user.get_full_name() or user.get_username()) if user is not None and user.pk else 'System'
+    with transaction.atomic():
+        auftrag.ohne_rechnung_grund = grund
+        auftrag.ohne_rechnung_text = text
+        auftrag.ohne_rechnung_von = user if user is not None and user.pk else None
+        auftrag.ohne_rechnung_am = timezone.now()
+        auftrag.save(update_fields=['ohne_rechnung_grund', 'ohne_rechnung_text',
+                                    'ohne_rechnung_von', 'ohne_rechnung_am'])
+        zusatz = ''
+        if grund in OHNE_RECHNUNG_ERWARTET:
+            faellig = timezone.localdate() + timedelta(days=frist_tage)
+            Pendenz.objects.update_or_create(
+                quelle=_pendenz_quelle(auftrag),
+                defaults={
+                    'titel': f"Rechnung ausstehend: Ticket #{ticket.pk} {ticket.titel}"[:200],
+                    'beschreibung': (f"Ticket ohne Rechnung abgeschlossen ({bezeichnung}). Rechnung von "
+                                     f"{auftrag.handwerker.firma} erfassen und mit Auftrag #{auftrag.pk} "
+                                     f"verknüpfen."),
+                    'kategorie': 'finanzen', 'faellig_am': faellig, 'erledigt': False,
+                    'erledigt_am': None, 'liegenschaft': ticket.liegenschaft,
+                    'erstellt_von': user if user is not None and user.pk else None})
+            zusatz = f" Pendenz «Rechnung ausstehend» bis {faellig:%d.%m.%Y}."
+        _protokoll(ticket, f"Auftrag #{auftrag.pk} an {auftrag.handwerker.firma} ohne Rechnung "
+                           f"freigegeben ({bezeichnung}) von {wer}."
+                           + (f" Bemerkung: {text}" if text else "") + zusatz)
+    return auftrag
+
+
+def ohne_rechnung_abschliessen(ticket, grund, text='', user=None, frist_tage=None,
+                               melder_informieren=False):
+    """Das Ticket ausdrücklich ohne Rechnung abschliessen.
+
+    Gibt jedem Auftrag, der den Abschluss sperrt, die Freigabe (gleicher Grund) und setzt
+    dann den Status — auch ab «Warte auf Handwerker». Alles in einer Transaktion: scheitert
+    der Abschluss (z. B. STWEG: Kostenträger fehlt), bleibt auch keine Freigabe zurück.
+    Der Melder bekommt die «erledigt»-Mail erst nach dem Commit. Ohne Aufträge hält der
+    Verlauf den Grund fest. Gibt die Liste der freigegebenen Aufträge zurück.
+    """
+    from .models import HandwerkerAuftrag
+    if ticket.status == 'erledigt':
+        return []
+    if grund not in dict(HandwerkerAuftrag.OHNE_RECHNUNG_CHOICES):
+        raise ValidationError('Bitte einen Grund wählen.', code='grund')
+    if grund == 'anderer' and not (text or '').strip():
+        raise ValidationError('Bei «Anderer Grund» bitte eine Bemerkung angeben.', code='text_fehlt')
+    freigegeben = []
+    with transaction.atomic():
+        for a in auftraege_ohne_rechnung(ticket):
+            freigegeben.append(ohne_rechnung_freigeben(a, grund, text, user, frist_tage))
+        if not freigegeben:
+            wer = (user.get_full_name() or user.get_username()) if user is not None and user.pk else 'System'
+            _protokoll(ticket, f"Ohne Rechnung abgeschlossen ({dict(HandwerkerAuftrag.OHNE_RECHNUNG_CHOICES)[grund]}) "
+                               f"von {wer}." + (f" Bemerkung: {(text or '').strip()}" if (text or '').strip() else ''))
+        wechsle_status(ticket, 'erledigt', ohne_rechnung=True)
+    if melder_informieren:
+        melder_benachrichtigen(ticket, MELDER_INFO['erledigt'])
+    return freigegeben
 
 
 # ---------------------------------------------------------------------------
