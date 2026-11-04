@@ -9,6 +9,7 @@ Payload in den bestehenden Modulen).
 """
 import io
 import pathlib
+from decimal import Decimal
 from unittest import mock
 
 import pdfplumber
@@ -229,3 +230,20 @@ class EineStelleTests(SimpleTestCase):
                     '"Konto / Zahlbar an"' in text:
                 fundorte.append(str(pfad.relative_to(wurzel)))
         self.assertEqual(fundorte, [])
+
+
+class DatenblockMietrechnungTests(SimpleTestCase):
+    """Die Mietrechnung (core/views/billing.py) schreibt strukturierte Adressen («S») in den QR-Datenblock.
+    Die kombinierte Adresse («K») weist die Bank ab dem SIC-Release vom 13.11.2026 ab."""
+
+    def test_adressen_sind_strukturiert(self):
+        from core.views.billing import qr_datenblock
+        zeilen = qr_datenblock('CH4431999123000889012', 'Muster Immobilien AG', 'Bahnhofstrasse 10', '8001 Zürich',
+                               'Hans Muster', 'Seeweg 3', '8000 Zürich',
+                               Decimal('1700.00'), 'NON', '', 'Miete 11/2026').split('\n')
+        self.assertEqual(zeilen[4:11], ['S', 'Muster Immobilien AG', 'Bahnhofstrasse', '10', '8001', 'Zürich', 'CH'])
+        self.assertEqual(zeilen[0:4], ['SPC', '0200', '1', 'CH4431999123000889012'])
+        self.assertNotIn('K', zeilen)
+        # Schuldner: Index nach Betrag/Währung (11 + 7 leere Felder + Betrag + Währung = 20)
+        self.assertEqual(zeilen[20:27], ['S', 'Hans Muster', 'Seeweg', '3', '8000', 'Zürich', 'CH'])
+        self.assertEqual(zeilen[18:20], ['1700.00', 'CHF'])

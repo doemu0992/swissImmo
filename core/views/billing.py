@@ -35,6 +35,22 @@ def format_iban(iban):
     iban = iban.replace(" ", "")
     return " ".join(iban[i:i+4] for i in range(0, len(iban), 4))
 
+def qr_datenblock(iban, gl_name, gl_zeile1, gl_zeile2, sd_name, sd_zeile1, sd_zeile2,
+                  betrag, ref_typ, ref_val, mitteilung):
+    """Datenblock des Swiss QR Codes mit STRUKTURIERTEN Adressen («S»).
+
+    Die kombinierte Adresse («K») wird mit dem SIC-Release vom 13.11.2026 abgewiesen
+    (siehe `core.utils.qr_code.adressblock`)."""
+    from core.utils.qr_code import adressblock
+    return "\n".join([
+        "SPC", "0200", "1", iban,
+        *adressblock({'name': gl_name, 'line1': gl_zeile1, 'line2': gl_zeile2}),
+        "", "", "", "", "", "", "", f"{betrag:.2f}", "CHF",
+        *adressblock({'name': sd_name, 'line1': sd_zeile1, 'line2': sd_zeile2}, pflicht=False),
+        ref_typ, ref_val, mitteilung, "EPD", ""
+    ])
+
+
 @rolle_erforderlich(ROLLE_VERWALTER, ROLLE_SACHBEARBEITER)
 def qr_rechnung_pdf(request, vertrag_id):
     vertrag = get_object_or_404(Mietvertrag, pk=vertrag_id)
@@ -76,13 +92,9 @@ def qr_rechnung_pdf(request, vertrag_id):
     else:
         ref_typ, ref_val = "NON", ""
 
-    qr_data = "\n".join([
-        "SPC", "0200", "1", raw_iban,
-        "K", creditor_name, creditor_line1, creditor_line2, "", "", "CH",
-        "", "", "", "", "", "", "", f"{total_betrag:.2f}", "CHF",
-        "K", debtor_name, debtor_line1, debtor_line2, "", "", "CH",
-        ref_typ, ref_val, mitteilung, "EPD", ""
-    ])
+    qr_data = qr_datenblock(raw_iban, creditor_name, creditor_line1, creditor_line2,
+                            debtor_name, debtor_line1, debtor_line2,
+                            total_betrag, ref_typ, ref_val, mitteilung)
 
     buffer = io.BytesIO()
     c = DokCanvas(buffer, organisation=verwaltung, absender=[creditor_name, creditor_line1, creditor_line2],
