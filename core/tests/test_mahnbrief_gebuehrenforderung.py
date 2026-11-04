@@ -131,7 +131,7 @@ class BriefTests(TestCase):
         # 60.00 = 40.00 Gebühr (Mahnung Stufe 2) + 20.00 Zins
         text = self._brief(self.gemischt)
         self.assertIn('Mahngebühren: CHF 40.00', text)
-        self.assertIn('Verzugszins: CHF 20.00', text)
+        self.assertIn('Verzugszinsen: CHF 20.00', text)
         self.assertIn('Total: CHF 60.00', text)
         self.assertNotIn('Für diese Mahnung stellen wir', text)
 

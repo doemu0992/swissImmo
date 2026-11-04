@@ -101,7 +101,7 @@ def _eigener_text(vorlage, **werte):
     return zeilen
 
 
-_ART_TEXT = {'forderung': "Forderung", 'gebuehr': "Mahngebühren", 'zins': "Verzugszins",
+_ART_TEXT = {'forderung': "Forderung", 'gebuehr': "Mahngebühren", 'zins': "Verzugszinsen",
              'gebuehr_zins': "Mahngebühren und Verzugszins"}
 
 

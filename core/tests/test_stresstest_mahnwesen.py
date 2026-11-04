@@ -67,7 +67,7 @@ class MahnbriefTests(TestCase):
         self.assertIn('Dezember', text, 'Falscher Monat im Mahnbrief.')
         self.assertIn(str(self.faellig.year), text)
         self.assertIn('Zahlungsverzug gemäss Art. 257d OR – Kündigungsandrohung', text)
-        self.assertIn('EINSCHREIBEN', text)
+        self.assertIn('Einschreiben', text)
         self.assertIn('30 TAGEN', text)
         self.assertIn('KÜNDIGUNGSANDROHUNG', text)
 
