@@ -38227,3 +38227,35 @@ msgstr "{gruss}\n\npour « {schaden} », un rendez-vous a été convenu :\n\nQua
 
 msgid "{gruss}\n\nDer Termin für „{schaden}“ ({objekt}) ist festgelegt: {termin}.\nMieter: {melder_name} ({melder_tel}).\nDer Kalendereintrag hängt an. Können Sie den Termin nicht einhalten, antworten Sie direkt auf diese Mail — Ihre Antwort geht an den Mieter, den neuen Termin stimmen Sie direkt mit ihm ab.\n\nFreundliche Grüsse\nIhre Liegenschaftsverwaltung"
 msgstr "{gruss}\n\nLe rendez-vous pour « {schaden} » ({objekt}) est fixé : {termin}.\nLocataire : {melder_name} ({melder_tel}).\nL'invitation au calendrier est jointe. Si vous ne pouvez pas respecter le rendez-vous, répondez directement à cet e-mail — votre réponse ira au locataire, vous convenez du nouveau rendez-vous directement avec lui.\n\nMeilleures salutations\nVotre gérance immobilière"
+
+#: core/utils/qr_code.py
+msgid "Zahlteil"
+msgstr "Section paiement"
+
+#: core/utils/qr_code.py
+msgid "Empfangsschein"
+msgstr "Récépissé"
+
+#: core/utils/qr_code.py
+msgid "Konto / Zahlbar an"
+msgstr "Compte / Payable à"
+
+#: core/utils/qr_code.py
+msgid "Zusätzliche Informationen"
+msgstr "Informations supplémentaires"
+
+#: core/utils/qr_code.py
+msgid "Zahlbar durch"
+msgstr "Payable par"
+
+#: core/utils/qr_code.py
+msgid "Zahlbar durch (Name/Adresse)"
+msgstr "Payable par (nom/adresse)"
+
+#: core/utils/qr_code.py
+msgid "Währung"
+msgstr "Monnaie"
+
+#: core/utils/qr_code.py
+msgid "Annahmestelle"
+msgstr "Point de dépôt"
