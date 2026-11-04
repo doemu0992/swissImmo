@@ -52,7 +52,7 @@
             <p class="text-sm fw-mutet">{% blocktrans with bis=antwort.alt_bis|date:"d.m.Y" %}Die bisherige Adresse gilt noch bis {{ bis }}.{% endblocktrans %}</p>
             {% endif %}
             {% if darf_erneuern %}
-            <form method="post" action="{% url 'antwortadresse_erneuern' %}"
+            <form method="post" action="/neu/postfaecher/antwortadresse/erneuern/"
                   onsubmit="return confirm('{% filter escapejs %}{% trans "Neue Adresse erzeugen? Die bisherige Adresse gilt noch 30 Tage, danach nicht mehr." %}{% endfilter %}');">
                 {% csrf_token %}
                 <button class="fw-btn fw-knapp">{% zeichen 'lauf' %}{% trans "Adresse erneuern" %}</button>
