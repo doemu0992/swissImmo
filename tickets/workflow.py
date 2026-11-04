@@ -237,8 +237,9 @@ def wechsle_status(ticket, neu, melder_informieren=False, ohne_rechnung=False):
 def reply_to(ticket):
     """Antwortadresse der Verwaltung des Tickets, in dieser Reihenfolge:
 
-    1. ihr aktives eigenes «Antworten»-Postfach — genau das, das ``fetch_replies`` abruft. Wo es
-       eingerichtet ist, ändert sich nichts.
+    1. ihr aktives eigenes «Antworten»-Postfach — genau das, das ``fetch_replies`` abruft — SOFERN seine
+       Zugangsdaten lesbar sind (``Postfach.zugang_lesbar``). Ist der Schlüssel gewechselt worden, holt
+       ``fetch_replies`` dort nichts mehr; eine Antwort an dieses Postfach bliebe liegen. Dann gilt 2.
     2. sonst die Antwortadresse der Plattform ``<kennung>@<ANTWORT_DOMAIN>`` (nur für Tickets und nur, wenn
        der Empfang auf dem Server eingerichtet ist: ``antwort_eingang.eingang_aktiv``). Die Kennung ordnet
        die Antwort der Verwaltung zu (Webhook, ``core/services/antwort_eingang.py``).
@@ -254,7 +255,7 @@ def reply_to(ticket):
           .filter(organisation_id=ticket.organisation_id,
                   zweck=Postfach.ZWECK_ANTWORTEN, aktiv=True)
           .order_by('pk').first())
-    if pf and '@' in (pf.benutzer or ''):
+    if pf and '@' in (pf.benutzer or '') and pf.zugang_lesbar:
         return pf.benutzer
     from .models import SchadenMeldung
     if isinstance(ticket, SchadenMeldung) and eingang_aktiv():

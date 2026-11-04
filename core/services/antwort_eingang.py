@@ -6,7 +6,15 @@ Jede Verwaltung bekommt automatisch eine eigene Adresse ``<kennung>@<ANTWORT_DOM
 Chat-Mails tragen sie als Reply-To; eine Antwort kommt über den Brevo-Inbound-Webhook
 (``core/views/webhooks.py``) zurück, und die **Empfängeradresse** sagt, zu welcher Verwaltung sie gehört.
 Die Verwaltung braucht kein eigenes Postfach. Hat sie eines (``core.Postfach``, Zweck «antworten»,
-aktiv), gilt weiter dieses: ``tickets.workflow.reply_to``.
+aktiv UND lesbar), gilt weiter dieses: ``tickets.workflow.reply_to``.
+
+ZWEITE ADRESSE: EINGEHENDE RECHNUNGEN (Entscheid 4.11.2026)
+
+Zu jeder Kennung gehört eine zweite Adresse ``<kennung>-rechnungen@<ANTWORT_DOMAIN>`` für Kreditoren-
+rechnungen. Sie hat dieselbe Kennung (also dieselbe Erneuerung und dasselbe 30-Tage-Fenster) und nur den
+festen Zusatz ``-rechnungen``; ``zuordnung_zu_adresse`` liefert ``(Verwaltung, Zweck)``. Die Kennung bleibt
+der nicht erratbare Teil, der Zusatz ist öffentlich. Wer sein eigenes Postfach behalten will, richtet dort
+eine Weiterleitung auf diese Adresse ein — es werden keine Zugangsdaten hinterlegt.
 
 WARUM DIE EMPFÄNGERADRESSE UND NICHT DER BETREFF
 
@@ -53,6 +61,13 @@ TEXT_MAX = 10000
 STANDARD_DOMAIN = 'immoswiss.app'
 GLOBALE_ADRESSE_LOKAL = 'reply'
 
+ZWECK_ANTWORTEN = 'antworten'
+ZWECK_RECHNUNGEN = 'rechnungen'
+#: Zusatz hinter der Kennung für die Rechnungsadresse. Eine Kennung selbst endet nie darauf: ``neue_kennung``
+#: lässt den Zufallsteil ``rechnungen`` nicht zu (sonst wäre ``x-rechnungen`` zugleich Kennung und Rechnungs-
+#: adresse von ``x``).
+RECHNUNGS_ZUSATZ = '-rechnungen'
+
 #: Ab hier beginnt das zitierte Original. Alles danach wird abgeschnitten — sonst steht die ganze
 #: Verlaufskette in jeder Antwort. (Vorher in ``fetch_replies``.)
 ZITAT_MUSTER = [
@@ -94,6 +109,8 @@ def neue_kennung(firma=''):
     while True:
         zufall = ''.join(secrets.choice(KENNUNG_ZEICHEN) for _ in range(KENNUNG_LAENGE))
         kennung = f'{_praefix(firma)}-{zufall}'
+        if zufall == RECHNUNGS_ZUSATZ[1:]:
+            continue
         if not (Organisation.objects.filter(antwort_kennung=kennung).exists()
                 or Organisation.objects.filter(antwort_kennung_alt=kennung).exists()):
             return kennung
@@ -103,8 +120,13 @@ def antwort_adresse(organisation):
     return f'{organisation.antwort_kennung}@{antwort_domain()}'
 
 
+def rechnungs_adresse(organisation):
+    return f'{organisation.antwort_kennung}{RECHNUNGS_ZUSATZ}@{antwort_domain()}'
+
+
 def kennung_erneuern(organisation, jetzt=None):
-    """Neue Kennung; die bisherige gilt noch ``ALT_GUELTIG``. Gibt die neue Adresse zurück."""
+    """Neue Kennung; die bisherige gilt noch ``ALT_GUELTIG`` (für beide Adressen: Antworten und Rechnungen
+    hängen an derselben Kennung). Gibt die neue Antwortadresse zurück."""
     jetzt = jetzt or timezone.now()
     organisation.antwort_kennung_alt = organisation.antwort_kennung
     organisation.antwort_kennung_alt_bis = jetzt + ALT_GUELTIG
@@ -130,25 +152,46 @@ def rein_adresse(wert):
     return adresse if adresse.count('@') == 1 else ''
 
 
-def organisation_zu_adresse(adresse, jetzt=None):
-    """Die Verwaltung, der diese Empfängeradresse gehört — oder ``None``.
+def zuordnung_zu_adresse(adresse, jetzt=None):
+    """``(Verwaltung, Zweck)`` zu dieser Empfängeradresse — oder ``None``.
 
+    Zweck ist ``ZWECK_ANTWORTEN`` (``<kennung>@…``) oder ``ZWECK_RECHNUNGEN`` (``<kennung>-rechnungen@…``).
     Nur Adressen auf ``ANTWORT_DOMAIN``. Gilt die aktuelle Kennung oder die vorherige innerhalb ihres
     Fensters. ``Organisation`` selbst trägt keinen Mandantenfilter (sie IST der Mandant)."""
-    from crm.models import Organisation
     adresse = rein_adresse(adresse)
     if not adresse:
         return None
     lokal, domain = adresse.split('@')
     if domain != antwort_domain() or not lokal:
         return None
-    org = Organisation.objects.filter(antwort_kennung=lokal).first()
+    org = _organisation_zu_kennung(lokal, jetzt)
+    if org is not None:
+        return org, ZWECK_ANTWORTEN
+    if lokal.endswith(RECHNUNGS_ZUSATZ):
+        org = _organisation_zu_kennung(lokal[:-len(RECHNUNGS_ZUSATZ)], jetzt)
+        if org is not None:
+            return org, ZWECK_RECHNUNGEN
+    return None
+
+
+def _organisation_zu_kennung(kennung, jetzt=None):
+    from crm.models import Organisation
+    if not kennung:
+        return None
+    org = Organisation.objects.filter(antwort_kennung=kennung).first()
     if org is not None:
         return org
-    org = Organisation.objects.filter(antwort_kennung_alt=lokal).first()
+    org = Organisation.objects.filter(antwort_kennung_alt=kennung).first()
     if org is not None and alte_kennung_gilt(org, jetzt):
         return org
     return None
+
+
+def organisation_zu_adresse(adresse, jetzt=None):
+    """Die Verwaltung, der diese ANTWORTadresse gehört — oder ``None`` (die Rechnungsadresse zählt hier
+    nicht: dafür ``zuordnung_zu_adresse``)."""
+    treffer = zuordnung_zu_adresse(adresse, jetzt)
+    return treffer[0] if treffer and treffer[1] == ZWECK_ANTWORTEN else None
 
 
 def ist_plattform_adresse(adresse):

@@ -481,6 +481,9 @@ BREVO_WEBHOOK_SECRET = os.getenv('BREVO_WEBHOOK_SECRET')
 # zeigen auf Brevo Inbound Parsing; siehe docs/ANTWORTADRESSEN.md. Ohne BREVO_WEBHOOK_SECRET bleibt es beim
 # bisherigen Reply-To (kein Versand an eine Adresse, die nichts empfängt).
 ANTWORT_DOMAIN = (os.getenv('ANTWORT_DOMAIN') or 'immoswiss.app').strip().lower()
+# API-Schluessel von Brevo, nur um die Anhaenge eingehender Rechnungsmails zu laden (Brevo liefert sie nicht
+# im Webhook mit). Ohne ihn kommen Rechnungsmails an, aber ohne Anhang; das Logbuch der Verwaltung nennt es.
+BREVO_API_KEY = os.getenv('BREVO_API_KEY')
 
 # SMTP KONFIGURATION (HOSTSTAR) - BLEIBT AKTIV!
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
