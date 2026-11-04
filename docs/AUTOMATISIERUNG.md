@@ -12,6 +12,8 @@ Basis-Kommando (Pfad/venv anpassen):
 | `mahnlauf` | wöchentlich (z.B. Mo 07:00) | Sammel-Mahnlauf über alle fälligen Debitoren + Zahlungserinnerung per E-Mail. Optional `--zins` (5% Verzugszins), `--kein-versand` |
 | `monatslauf` | monatlich (1. um 05:00) | Sollstellung (Mietenlauf) für den aktuellen Monat. `--jahr/--monat` überschreiben |
 | `jahresabschluss_lauf` | jährlich (2. Januar) | Lineare Abschreibungen (AfA) + Erneuerungsfonds-Einlagen fürs Vorjahr. `--jahr` überschreibt |
+| `fetch_plattform_eingang --einmal` | so oft wie möglich, ideal jede Minute (Scheduled Task im kürzesten Takt, den der Tarif erlaubt) | Holt Antworten auf Tickets und Rechnungen aus dem Plattform-Postfach (Hoststar-Sammelpostfach, Catch-all), siehe `docs/ANTWORTADRESSEN.md`, Variante A. Ohne `PLATTFORM_IMAP_*` in der `.env` meldet er das und beendet sich |
+| `fetch_plattform_eingang --dauerlauf` | Always-on-Task (Schleife alle 60 s im Befehl selbst) | Dasselbe als Dauerläufer, beendet sich sauber bei SIGTERM/SIGINT. Nur eine der beiden Formen einrichten. Nach Änderungen der `.env` den Task neu starten |
 
 Alle Läufe sind **idempotent** — mehrfaches Ausführen erzeugt keine Duplikate.
 Jeder Lauf schreibt einen Eintrag ins Aktivitätslog (`AktivitaetsLog`).
