@@ -69,12 +69,12 @@ class PlattformMail(models.Model):
 
     Die Idempotenz je Verwaltung (nie doppelt anlegen) bleibt bei ``tickets.EingegangeneMail``.
     """
-    schluessel = models.CharField("Schluessel", max_length=255, unique=True)
-    versuche = models.PositiveSmallIntegerField("Fehlversuche", default=0)
-    ergebnis = models.CharField("Ausgang", max_length=30, blank=True, default='')
-    letzter_fehler = models.CharField("Letzter Fehler", max_length=300, blank=True, default='')
+    schluessel = models.CharField("Schluessel", max_length=255, unique=True, editable=False)
+    versuche = models.PositiveSmallIntegerField("Fehlversuche", default=0, editable=False)
+    ergebnis = models.CharField("Ausgang", max_length=30, blank=True, default='', editable=False)
+    letzter_fehler = models.CharField("Letzter Fehler", max_length=300, blank=True, default='', editable=False)
     erstellt_am = models.DateTimeField("Erstmals gesehen", auto_now_add=True)
-    erledigt_am = models.DateTimeField("Erledigt am", null=True, blank=True, db_index=True)
+    erledigt_am = models.DateTimeField("Erledigt am", null=True, blank=True, db_index=True, editable=False)
 
     class Meta:
         verbose_name = "Plattform-Mail"
@@ -91,9 +91,9 @@ class PlattformEingangStatus(models.Model):
     sie dem Inhaber. ``letzter_fehler`` ist bewusst OHNE Servername und Benutzer formuliert, weil jede
     Verwaltung ihn sieht.
     """
-    letzter_abruf = models.DateTimeField("Letzter Abruf", null=True, blank=True)
-    letzter_erfolg = models.DateTimeField("Letzter Abruf ohne Fehler", null=True, blank=True)
-    letzter_fehler = models.CharField("Letzter Fehler", max_length=300, blank=True, default='')
+    letzter_abruf = models.DateTimeField("Letzter Abruf", null=True, blank=True, editable=False)
+    letzter_erfolg = models.DateTimeField("Letzter Abruf ohne Fehler", null=True, blank=True, editable=False)
+    letzter_fehler = models.CharField("Letzter Fehler", max_length=300, blank=True, default='', editable=False)
 
     class Meta:
         verbose_name = "Status Plattform-Postfach"

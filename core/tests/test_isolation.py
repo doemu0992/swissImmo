@@ -1010,12 +1010,12 @@ class AusnahmenSindBegruendetTests(TestCase):
     entschieden, nur repariert. Diese Klasse macht das Wachsen sichtbar.
     """
 
-    def test_es_sind_genau_diese_fuenf(self):
+    def test_es_sind_genau_diese_sieben(self):
         # Der Name zählt bewusst mit: Wächst die Liste, ändert sich auch er,
         # und die Änderung steht im Diff statt in einer Zahl im Rumpf.
         self.assertEqual(sorted(OHNE_MANDANTENFILTER),
-                         ['benutzer.Benutzer', 'core.SicherheitsEreignis',
-                          'core.Wiederherstellungscode', 'core.ZweiterFaktor',
+                         ['benutzer.Benutzer', 'core.PlattformEingangStatus', 'core.PlattformMail',
+                          'core.SicherheitsEreignis', 'core.Wiederherstellungscode', 'core.ZweiterFaktor',
                           'crm.Organisation'],
                          'Die Ausnahmeliste hat sich geändert. Das ist eine Entscheidung, '
                          'keine Reparatur: Grund in OHNE_MANDANTENFILTER schreiben und '

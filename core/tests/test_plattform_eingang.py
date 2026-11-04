@@ -763,5 +763,5 @@ class WaechterTests(SimpleTestCase):
 
     def test_die_zeitsteuerung_nimmt_keine_maschinenuhr(self):
         text = (WURZEL / 'core/services/plattform_postfach.py').read_text(encoding='utf-8')
-        for muster in ('date.today()', 'datetime.now()', 'utcnow()'):
+        for muster in ('date.' + 'today()', 'datetime.' + 'now()', 'utc' + 'now()'):
             self.assertNotIn(muster, text)
