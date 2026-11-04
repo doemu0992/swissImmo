@@ -202,9 +202,7 @@ class EckmarkenTests(SimpleTestCase):
     def test_leerfelder_haben_die_masse(self):
         pdf = pdf_von(debtor={'name': '', 'line1': '', 'line2': ''}, amount=None)
         seite = pdf.pages[0]
-        xs = lambda lns: sorted({round(ln['x0'] / mm) for ln in lns} | {round(ln['x1'] / mm) for ln in lns})
         kurze = [ln for ln in seite.lines if max(abs(ln['x1'] - ln['x0']), abs(ln['bottom'] - ln['top'])) < 4 * mm]
-        # Zahlteil: Zahlbar durch 65 mm, Betrag 40 mm breit (Eckmarken an den Rändern)
         # Die Aussenkanten der Eckmarken (x0 bzw. x1 in mm) sind die Feldgrenzen.
         kanten = {round(x / mm, 1) for ln in kurze for x in (ln['x0'], ln['x1'])}
         # Zahlteil: Zahlbar durch 118 → 183 (65 mm), Betrag 82 → 122 (40 mm)
