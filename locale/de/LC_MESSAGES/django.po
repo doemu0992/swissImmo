@@ -36815,3 +36815,111 @@ msgstr "Adresse erneuern"
 #: core/views/postfach.py
 msgid "Die Antwortadresse wurde erneuert. Die bisherige Adresse gilt noch 30 Tage."
 msgstr "Die Antwortadresse wurde erneuert. Die bisherige Adresse gilt noch 30 Tage."
+
+#: core/templates/core/postfach_liste.html
+msgid "E-Mail-Eingang"
+msgstr "E-Mail-Eingang"
+
+#: core/templates/core/postfach_liste.html
+msgid "Antworten auf Ticket-Mails und Rechnungen Ihrer Lieferanten kommen über zwei Adressen bei uns an. Sie hinterlegen keine Passwörter und müssen nichts einrichten."
+msgstr "Antworten auf Ticket-Mails und Rechnungen Ihrer Lieferanten kommen über zwei Adressen bei uns an. Sie hinterlegen keine Passwörter und müssen nichts einrichten."
+
+#: core/templates/core/postfach_liste.html
+msgid "Antworten auf Tickets"
+msgstr "Antworten auf Tickets"
+
+#: core/templates/core/postfach_liste.html
+msgid "Antworten von Mietern und Handwerkern auf Ticket-Mails kommen an diese Adresse und erscheinen im Ticket und im Chat."
+msgstr "Antworten von Mietern und Handwerkern auf Ticket-Mails kommen an diese Adresse und erscheinen im Ticket und im Chat."
+
+#: core/templates/core/postfach_liste.html
+msgid "Ihr eigenes Postfach ist eingerichtet, aber seine Zugangsdaten lassen sich nicht lesen. Deshalb gilt diese Adresse. Mehr unter «Erweitert» weiter unten."
+msgstr "Ihr eigenes Postfach ist eingerichtet, aber seine Zugangsdaten lassen sich nicht lesen. Deshalb gilt diese Adresse. Mehr unter «Erweitert» weiter unten."
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang eingerichtet. Es gilt diese Adresse: Ticket-Mails tragen sie als Antwortadresse."
+msgstr "Empfang eingerichtet. Es gilt diese Adresse: Ticket-Mails tragen sie als Antwortadresse."
+
+#: core/templates/core/postfach_liste.html
+msgid "Letzter Eingang: %(zeit)s"
+msgstr "Letzter Eingang: %(zeit)s"
+
+#: core/templates/core/postfach_liste.html
+msgid "Noch nichts eingegangen."
+msgstr "Noch nichts eingegangen."
+
+#: core/templates/core/postfach_liste.html
+msgid "Eingehende Rechnungen"
+msgstr "Eingehende Rechnungen"
+
+#: core/templates/core/postfach_liste.html
+msgid "Rechnungen an diese Adresse weiterleiten — oder im eigenen Mailprogramm eine Weiterleitungsregel einrichten. Aus jedem PDF- oder Bild-Anhang entsteht eine Kreditorenrechnung mit dem Status «Neu»."
+msgstr "Rechnungen an diese Adresse weiterleiten — oder im eigenen Mailprogramm eine Weiterleitungsregel einrichten. Aus jedem PDF- oder Bild-Anhang entsteht eine Kreditorenrechnung mit dem Status «Neu»."
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang eingerichtet. Rechnungen an diese Adresse landen in den Kreditoren."
+msgstr "Empfang eingerichtet. Rechnungen an diese Adresse landen in den Kreditoren."
+
+#: core/templates/core/postfach_liste.html
+msgid "Mails kommen an, aber die Anhänge lassen sich auf dem Server noch nicht laden. Der Eingang steht dann nur im Logbuch, und es entsteht keine Rechnung. Bitte melden Sie sich bei uns."
+msgstr "Mails kommen an, aber die Anhänge lassen sich auf dem Server noch nicht laden. Der Eingang steht dann nur im Logbuch, und es entsteht keine Rechnung. Bitte melden Sie sich bei uns."
+
+#: core/templates/core/postfach_liste.html
+msgid "Der Empfang ist auf dem Server noch nicht eingerichtet. Rechnungen an diese Adresse kommen noch nicht an."
+msgstr "Der Empfang ist auf dem Server noch nicht eingerichtet. Rechnungen an diese Adresse kommen noch nicht an."
+
+#: core/templates/core/postfach_liste.html
+msgid "Zusätzlich wird Ihr eigenes Postfach abgerufen: %(adresse)s."
+msgstr "Zusätzlich wird Ihr eigenes Postfach abgerufen: %(adresse)s."
+
+#: core/templates/core/postfach_liste.html
+msgid "So leiten Sie weiter"
+msgstr "So leiten Sie weiter"
+
+#: core/templates/core/postfach_liste.html
+msgid "Einstellungen → Alle Einstellungen → Weiterleitung und POP/IMAP → Weiterleitungsadresse hinzufügen. Gmail schickt zuerst einen Bestätigungscode an diese Adresse; er steht meist im Betreff der Mail, die Sie im Logbuch unter «Rechnungsmail ohne Anhang abgerufen» finden."
+msgstr "Einstellungen → Alle Einstellungen → Weiterleitung und POP/IMAP → Weiterleitungsadresse hinzufügen. Gmail schickt zuerst einen Bestätigungscode an diese Adresse; er steht meist im Betreff der Mail, die Sie im Logbuch unter «Rechnungsmail ohne Anhang abgerufen» finden."
+
+#: core/templates/core/postfach_liste.html
+msgid "Einstellungen → E-Mail → Regeln, neue Regel «Weiterleiten an» mit dieser Adresse; oder unter Weiterleitung die ganze Post umleiten."
+msgstr "Einstellungen → E-Mail → Regeln, neue Regel «Weiterleiten an» mit dieser Adresse; oder unter Weiterleitung die ganze Post umleiten."
+
+#: core/templates/core/postfach_liste.html
+msgid "Im Webmail unter Einstellungen → Weiterleitung (oder Filter) eine Weiterleitung auf diese Adresse anlegen; der Hoster hilft, wenn der Menüpunkt anders heisst."
+msgstr "Im Webmail unter Einstellungen → Weiterleitung (oder Filter) eine Weiterleitung auf diese Adresse anlegen; der Hoster hilft, wenn der Menüpunkt anders heisst."
+
+#: core/templates/core/postfach_liste.html
+msgid "Die bisherigen Adressen gelten noch bis %(bis)s."
+msgstr "Die bisherigen Adressen gelten noch bis %(bis)s."
+
+#: core/templates/core/postfach_liste.html
+msgid "Eine Adresse in falsche Hände geraten? Erneuern Sie beide Adressen. Die bisherigen gelten noch 30 Tage; Weiterleitungen müssen Sie danach auf die neue Rechnungsadresse umstellen."
+msgstr "Eine Adresse in falsche Hände geraten? Erneuern Sie beide Adressen. Die bisherigen gelten noch 30 Tage; Weiterleitungen müssen Sie danach auf die neue Rechnungsadresse umstellen."
+
+#: core/templates/core/postfach_liste.html
+msgid "Erweitert: eigenes Postfach per IMAP abrufen"
+msgstr "Erweitert: eigenes Postfach per IMAP abrufen"
+
+#: core/templates/core/postfach_liste.html
+msgid "Einfacher geht es mit einer Weiterleitung auf die Adressen oben: Dafür hinterlegen Sie keine Zugangsdaten, und es bricht nichts, wenn Sie Ihr Passwort ändern. Nur wenn das nicht möglich ist, rufen wir Ihr Postfach selbst ab."
+msgstr "Einfacher geht es mit einer Weiterleitung auf die Adressen oben: Dafür hinterlegen Sie keine Zugangsdaten, und es bricht nichts, wenn Sie Ihr Passwort ändern. Nur wenn das nicht möglich ist, rufen wir Ihr Postfach selbst ab."
+
+#: core/templates/core/postfach_liste.html
+msgid "Die Zugangsdaten lassen sich nicht lesen."
+msgstr "Die Zugangsdaten lassen sich nicht lesen."
+
+#: core/templates/core/postfach_liste.html
+msgid "Der Schlüssel auf dem Server wurde gewechselt. Dieses Postfach wird nicht mehr abgerufen. Geben Sie die Zugangsdaten neu ein oder löschen Sie das Postfach und nutzen Sie stattdessen eine Weiterleitung auf die Adressen oben."
+msgstr "Der Schlüssel auf dem Server wurde gewechselt. Dieses Postfach wird nicht mehr abgerufen. Geben Sie die Zugangsdaten neu ein oder löschen Sie das Postfach und nutzen Sie stattdessen eine Weiterleitung auf die Adressen oben."
+
+#: core/templates/core/postfach_liste.html
+msgid "Neu eingeben"
+msgstr "Neu eingeben"
+
+#: core/templates/core/postfach_liste.html
+msgid "Die Adressen wurden erneuert. Die bisherigen Adressen gelten noch 30 Tage — stellen Sie Weiterleitungen auf die neue Rechnungsadresse um."
+msgstr "Die Adressen wurden erneuert. Die bisherigen Adressen gelten noch 30 Tage — stellen Sie Weiterleitungen auf die neue Rechnungsadresse um."
+
+#: core/templates/core/postfach_liste.html
+msgid "Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei Bedarf"
+msgstr "Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei Bedarf"

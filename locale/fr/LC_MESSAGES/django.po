@@ -38571,3 +38571,111 @@ msgstr "Renouveler l'adresse"
 #: core/views/postfach.py
 msgid "Die Antwortadresse wurde erneuert. Die bisherige Adresse gilt noch 30 Tage."
 msgstr "L'adresse de réponse a été renouvelée. L'ancienne adresse reste valable encore 30 jours."
+
+#: core/templates/core/postfach_liste.html
+msgid "E-Mail-Eingang"
+msgstr "Réception e-mail"
+
+#: core/templates/core/postfach_liste.html
+msgid "Antworten auf Ticket-Mails und Rechnungen Ihrer Lieferanten kommen über zwei Adressen bei uns an. Sie hinterlegen keine Passwörter und müssen nichts einrichten."
+msgstr "Les réponses aux e-mails de ticket et les factures de vos fournisseurs nous parviennent via deux adresses. Vous n'enregistrez aucun mot de passe et n'avez rien à configurer."
+
+#: core/templates/core/postfach_liste.html
+msgid "Antworten auf Tickets"
+msgstr "Réponses aux tickets"
+
+#: core/templates/core/postfach_liste.html
+msgid "Antworten von Mietern und Handwerkern auf Ticket-Mails kommen an diese Adresse und erscheinen im Ticket und im Chat."
+msgstr "Les réponses des locataires et des artisans aux e-mails de ticket arrivent à cette adresse et apparaissent dans le ticket et dans le chat."
+
+#: core/templates/core/postfach_liste.html
+msgid "Ihr eigenes Postfach ist eingerichtet, aber seine Zugangsdaten lassen sich nicht lesen. Deshalb gilt diese Adresse. Mehr unter «Erweitert» weiter unten."
+msgstr "Votre propre boîte aux lettres est configurée, mais ses identifiants sont illisibles. C'est donc cette adresse qui s'applique. Plus de détails sous « Avancé » ci-dessous."
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang eingerichtet. Es gilt diese Adresse: Ticket-Mails tragen sie als Antwortadresse."
+msgstr "Réception configurée. Cette adresse s'applique : les e-mails de ticket la portent comme adresse de réponse."
+
+#: core/templates/core/postfach_liste.html
+msgid "Letzter Eingang: %(zeit)s"
+msgstr "Dernière réception : %(zeit)s"
+
+#: core/templates/core/postfach_liste.html
+msgid "Noch nichts eingegangen."
+msgstr "Rien reçu pour l'instant."
+
+#: core/templates/core/postfach_liste.html
+msgid "Eingehende Rechnungen"
+msgstr "Factures entrantes"
+
+#: core/templates/core/postfach_liste.html
+msgid "Rechnungen an diese Adresse weiterleiten — oder im eigenen Mailprogramm eine Weiterleitungsregel einrichten. Aus jedem PDF- oder Bild-Anhang entsteht eine Kreditorenrechnung mit dem Status «Neu»."
+msgstr "Transférez les factures à cette adresse — ou configurez une règle de transfert dans votre programme de messagerie. Chaque pièce jointe PDF ou image devient une facture fournisseur au statut « Nouveau »."
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang eingerichtet. Rechnungen an diese Adresse landen in den Kreditoren."
+msgstr "Réception configurée. Les factures envoyées à cette adresse arrivent dans les créanciers."
+
+#: core/templates/core/postfach_liste.html
+msgid "Mails kommen an, aber die Anhänge lassen sich auf dem Server noch nicht laden. Der Eingang steht dann nur im Logbuch, und es entsteht keine Rechnung. Bitte melden Sie sich bei uns."
+msgstr "Les e-mails arrivent, mais les pièces jointes ne peuvent pas encore être chargées sur le serveur. La réception n'apparaît alors que dans le journal et aucune facture n'est créée. Veuillez nous contacter."
+
+#: core/templates/core/postfach_liste.html
+msgid "Der Empfang ist auf dem Server noch nicht eingerichtet. Rechnungen an diese Adresse kommen noch nicht an."
+msgstr "La réception n'est pas encore configurée sur le serveur. Les factures envoyées à cette adresse n'arrivent pas encore."
+
+#: core/templates/core/postfach_liste.html
+msgid "Zusätzlich wird Ihr eigenes Postfach abgerufen: %(adresse)s."
+msgstr "Votre propre boîte aux lettres est en plus relevée : %(adresse)s."
+
+#: core/templates/core/postfach_liste.html
+msgid "So leiten Sie weiter"
+msgstr "Comment transférer"
+
+#: core/templates/core/postfach_liste.html
+msgid "Einstellungen → Alle Einstellungen → Weiterleitung und POP/IMAP → Weiterleitungsadresse hinzufügen. Gmail schickt zuerst einen Bestätigungscode an diese Adresse; er steht meist im Betreff der Mail, die Sie im Logbuch unter «Rechnungsmail ohne Anhang abgerufen» finden."
+msgstr "Paramètres → Voir tous les paramètres → Transfert et POP/IMAP → Ajouter une adresse de transfert. Gmail envoie d'abord un code de confirmation à cette adresse ; il figure en général dans l'objet du message, que vous trouvez dans le journal sous « Rechnungsmail ohne Anhang abgerufen »."
+
+#: core/templates/core/postfach_liste.html
+msgid "Einstellungen → E-Mail → Regeln, neue Regel «Weiterleiten an» mit dieser Adresse; oder unter Weiterleitung die ganze Post umleiten."
+msgstr "Paramètres → Courrier → Règles, nouvelle règle « Transférer à » avec cette adresse ; ou rediriger tout le courrier sous Transfert."
+
+#: core/templates/core/postfach_liste.html
+msgid "Im Webmail unter Einstellungen → Weiterleitung (oder Filter) eine Weiterleitung auf diese Adresse anlegen; der Hoster hilft, wenn der Menüpunkt anders heisst."
+msgstr "Dans le webmail, sous Paramètres → Transfert (ou Filtre), créez un transfert vers cette adresse ; l'hébergeur vous aide si l'entrée de menu porte un autre nom."
+
+#: core/templates/core/postfach_liste.html
+msgid "Die bisherigen Adressen gelten noch bis %(bis)s."
+msgstr "Les anciennes adresses restent valables jusqu'au %(bis)s."
+
+#: core/templates/core/postfach_liste.html
+msgid "Eine Adresse in falsche Hände geraten? Erneuern Sie beide Adressen. Die bisherigen gelten noch 30 Tage; Weiterleitungen müssen Sie danach auf die neue Rechnungsadresse umstellen."
+msgstr "Une adresse est tombée en de mauvaises mains ? Renouvelez les deux adresses. Les anciennes restent valables 30 jours ; vous devrez ensuite faire pointer les transferts vers la nouvelle adresse de factures."
+
+#: core/templates/core/postfach_liste.html
+msgid "Erweitert: eigenes Postfach per IMAP abrufen"
+msgstr "Avancé : relever sa propre boîte aux lettres par IMAP"
+
+#: core/templates/core/postfach_liste.html
+msgid "Einfacher geht es mit einer Weiterleitung auf die Adressen oben: Dafür hinterlegen Sie keine Zugangsdaten, und es bricht nichts, wenn Sie Ihr Passwort ändern. Nur wenn das nicht möglich ist, rufen wir Ihr Postfach selbst ab."
+msgstr "Plus simple : un transfert vers les adresses ci-dessus. Vous n'enregistrez aucun identifiant et rien ne se casse si vous changez de mot de passe. Ce n'est que si ce n'est pas possible que nous relevons votre boîte nous-mêmes."
+
+#: core/templates/core/postfach_liste.html
+msgid "Die Zugangsdaten lassen sich nicht lesen."
+msgstr "Les identifiants sont illisibles."
+
+#: core/templates/core/postfach_liste.html
+msgid "Der Schlüssel auf dem Server wurde gewechselt. Dieses Postfach wird nicht mehr abgerufen. Geben Sie die Zugangsdaten neu ein oder löschen Sie das Postfach und nutzen Sie stattdessen eine Weiterleitung auf die Adressen oben."
+msgstr "La clé sur le serveur a été changée. Cette boîte n'est plus relevée. Saisissez à nouveau les identifiants, ou supprimez la boîte et utilisez à la place un transfert vers les adresses ci-dessus."
+
+#: core/templates/core/postfach_liste.html
+msgid "Neu eingeben"
+msgstr "Saisir à nouveau"
+
+#: core/templates/core/postfach_liste.html
+msgid "Die Adressen wurden erneuert. Die bisherigen Adressen gelten noch 30 Tage — stellen Sie Weiterleitungen auf die neue Rechnungsadresse um."
+msgstr "Les adresses ont été renouvelées. Les anciennes restent valables 30 jours — faites pointer les transferts vers la nouvelle adresse de factures."
+
+#: core/templates/core/postfach_liste.html
+msgid "Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei Bedarf"
+msgstr "Adresses pour les réponses aux tickets et les factures, propre boîte aux lettres seulement si nécessaire"

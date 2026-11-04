@@ -1,11 +1,11 @@
 {% extends 'fw/base.html' %}
 {% load i18n zeichen %}
-{% block title %}{% trans "Postfächer" %} — immoswiss{% endblock %}
+{% block title %}{% trans "E-Mail-Eingang" %} — immoswiss{% endblock %}
 {% block content %}
 <div class="fw-phead">
     <div>
-        <h1>{% trans "Postfächer" %}</h1>
-        <p>{% trans "Der E-Mail-Eingang Ihrer Verwaltung: Antworten auf Ticket-Mails und eingehende Kreditorenrechnungen werden aus diesen Postfächern abgeholt." %}</p>
+        <h1>{% trans "E-Mail-Eingang" %}</h1>
+        <p>{% trans "Antworten auf Ticket-Mails und Rechnungen Ihrer Lieferanten kommen über zwei Adressen bei uns an. Sie hinterlegen keine Passwörter und müssen nichts einrichten." %}</p>
     </div>
 </div>
 
@@ -16,19 +16,11 @@
         <div class="fw-ht">{{ m }}</div></div></div>
     {% endfor %}{% endif %}
 
-    {% if schluessel_fehlt %}
-    <div class="fw-card"><div class="fw-hinweis warn">
-        <span class="fw-hi">{% zeichen 'warnung' %}</span>
-        <div class="fw-ht"><b>{% blocktrans with name=schluessel_name %}Auf dem Server fehlt {{ name }}.{% endblocktrans %}</b>
-        {% trans "Ohne diesen Schlüssel lassen sich Zugangsdaten nicht verschlüsselt ablegen — Speichern schlägt fehl. Bitte melden Sie sich bei uns." %}</div>
-    </div></div>
-    {% endif %}
-
     {% if antwort %}
     <div class="fw-card" id="antwortadresse">
         <div class="fw-rumpf space-y-3">
-            <div class="fw-t">{% trans "Ihre Antwortadresse" %}</div>
-            <p class="text-sm fw-mutet">{% trans "Antworten von Mietern und Handwerkern auf Ticket-Mails kommen hierher und erscheinen im Ticket und im Chat. Sie müssen nichts einrichten. Haben Sie ein eigenes Postfach hinterlegt, gilt dieses." %}</p>
+            <div class="fw-t">{% trans "Antworten auf Tickets" %}</div>
+            <p class="text-sm fw-mutet">{% trans "Antworten von Mietern und Handwerkern auf Ticket-Mails kommen an diese Adresse und erscheinen im Ticket und im Chat." %}</p>
             <div class="fw-feldblock">
                 <label class="fw-label" for="antwortadresse-feld">{% trans "Adresse" %}</label>
                 <div class="flex items-center gap-2">
@@ -38,37 +30,102 @@
                             onclick="var b=this;navigator.clipboard.writeText(document.getElementById('antwortadresse-feld').value).then(function(){b.textContent=b.dataset.kopiert;});">{% zeichen 'kopieren' %}{% trans "Kopieren" %}</button>
                 </div>
             </div>
+            {% if antwort.postfach_unlesbar %}
+            <div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'warnung' %}</span>
+                <div class="fw-ht">{% trans "Ihr eigenes Postfach ist eingerichtet, aber seine Zugangsdaten lassen sich nicht lesen. Deshalb gilt diese Adresse. Mehr unter «Erweitert» weiter unten." %}</div></div>
+            {% endif %}
             {% if antwort.eigenes_postfach %}
             <div class="fw-hinweis info"><span class="fw-hi">{% zeichen 'hinweis' %}</span>
                 <div class="fw-ht">{% blocktrans with adresse=antwort.eigenes_postfach %}Es gilt Ihr eigenes Postfach: {{ adresse }}. Die Adresse oben ist als Reserve bereit und wird verwendet, sobald Sie das eigene Postfach abschalten.{% endblocktrans %}</div></div>
             {% elif antwort.plattform_gilt %}
             <div class="fw-hinweis good"><span class="fw-hi">{% zeichen 'gut' %}</span>
-                <div class="fw-ht">{% trans "Es gilt diese Adresse: Ticket-Mails tragen sie als Antwortadresse." %}</div></div>
+                <div class="fw-ht">{% trans "Empfang eingerichtet. Es gilt diese Adresse: Ticket-Mails tragen sie als Antwortadresse." %}</div></div>
             {% else %}
             <div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'warnung' %}</span>
                 <div class="fw-ht">{% trans "Der Empfang ist auf dem Server noch nicht eingerichtet. Bis dahin tragen Ticket-Mails weiterhin Ihre bisherige Antwortadresse." %}</div></div>
             {% endif %}
-            {% if antwort.alt_bis %}
-            <p class="text-sm fw-mutet">{% blocktrans with bis=antwort.alt_bis|date:"d.m.Y" %}Die bisherige Adresse gilt noch bis {{ bis }}.{% endblocktrans %}</p>
+            <p class="text-sm fw-mutet">
+                {% if antwort.letzter_eingang %}{% blocktrans with zeit=antwort.letzter_eingang|date:"d.m.Y H:i" %}Letzter Eingang: {{ zeit }}{% endblocktrans %}{% else %}{% trans "Noch nichts eingegangen." %}{% endif %}
+            </p>
+        </div>
+    </div>
+
+    <div class="fw-card" id="rechnungsadresse">
+        <div class="fw-rumpf space-y-3">
+            <div class="fw-t">{% trans "Eingehende Rechnungen" %}</div>
+            <p class="text-sm fw-mutet">{% trans "Rechnungen an diese Adresse weiterleiten — oder im eigenen Mailprogramm eine Weiterleitungsregel einrichten. Aus jedem PDF- oder Bild-Anhang entsteht eine Kreditorenrechnung mit dem Status «Neu»." %}</p>
+            <div class="fw-feldblock">
+                <label class="fw-label" for="rechnungsadresse-feld">{% trans "Adresse" %}</label>
+                <div class="flex items-center gap-2">
+                    <input id="rechnungsadresse-feld" readonly value="{{ rechnung.adresse }}" onfocus="this.select()"
+                           class="fw-feld fw-mono flex-1 min-w-0">
+                    <button type="button" class="fw-btn fw-knapp" data-kopiert="{% trans 'Kopiert' %}"
+                            onclick="var b=this;navigator.clipboard.writeText(document.getElementById('rechnungsadresse-feld').value).then(function(){b.textContent=b.dataset.kopiert;});">{% zeichen 'kopieren' %}{% trans "Kopieren" %}</button>
+                </div>
+            </div>
+            {% if rechnung.eingang_ok and rechnung.anhaenge_ok %}
+            <div class="fw-hinweis good"><span class="fw-hi">{% zeichen 'gut' %}</span>
+                <div class="fw-ht">{% trans "Empfang eingerichtet. Rechnungen an diese Adresse landen in den Kreditoren." %}</div></div>
+            {% elif rechnung.eingang_ok %}
+            <div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'warnung' %}</span>
+                <div class="fw-ht">{% trans "Mails kommen an, aber die Anhänge lassen sich auf dem Server noch nicht laden. Der Eingang steht dann nur im Logbuch, und es entsteht keine Rechnung. Bitte melden Sie sich bei uns." %}</div></div>
+            {% else %}
+            <div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'warnung' %}</span>
+                <div class="fw-ht">{% trans "Der Empfang ist auf dem Server noch nicht eingerichtet. Rechnungen an diese Adresse kommen noch nicht an." %}</div></div>
             {% endif %}
-            {% if darf_erneuern %}
+            {% if rechnung.eigenes_postfach %}
+            <div class="fw-hinweis info"><span class="fw-hi">{% zeichen 'hinweis' %}</span>
+                <div class="fw-ht">{% blocktrans with adresse=rechnung.eigenes_postfach %}Zusätzlich wird Ihr eigenes Postfach abgerufen: {{ adresse }}.{% endblocktrans %}</div></div>
+            {% endif %}
+            <p class="text-sm fw-mutet">
+                {% if rechnung.letzter_eingang %}{% blocktrans with zeit=rechnung.letzter_eingang|date:"d.m.Y H:i" %}Letzter Eingang: {{ zeit }}{% endblocktrans %}{% else %}{% trans "Noch nichts eingegangen." %}{% endif %}
+            </p>
+            <div class="space-y-1 text-sm">
+                <div class="fw-t">{% trans "So leiten Sie weiter" %}</div>
+                <p><b>Gmail:</b> {% trans "Einstellungen → Alle Einstellungen → Weiterleitung und POP/IMAP → Weiterleitungsadresse hinzufügen. Gmail schickt zuerst einen Bestätigungscode an diese Adresse; er steht meist im Betreff der Mail, die Sie im Logbuch unter «Rechnungsmail ohne Anhang abgerufen» finden." %}</p>
+                <p><b>Outlook / Microsoft 365:</b> {% trans "Einstellungen → E-Mail → Regeln, neue Regel «Weiterleiten an» mit dieser Adresse; oder unter Weiterleitung die ganze Post umleiten." %}</p>
+                <p><b>Hoststar / Webmail:</b> {% trans "Im Webmail unter Einstellungen → Weiterleitung (oder Filter) eine Weiterleitung auf diese Adresse anlegen; der Hoster hilft, wenn der Menüpunkt anders heisst." %}</p>
+            </div>
+        </div>
+    </div>
+
+    {% if darf_erneuern %}
+    <div class="fw-card">
+        <div class="fw-rumpf space-y-3">
+            {% if antwort.alt_bis %}
+            <p class="text-sm fw-mutet">{% blocktrans with bis=antwort.alt_bis|date:"d.m.Y" %}Die bisherigen Adressen gelten noch bis {{ bis }}.{% endblocktrans %}</p>
+            {% endif %}
+            <p class="text-sm fw-mutet">{% trans "Eine Adresse in falsche Hände geraten? Erneuern Sie beide Adressen. Die bisherigen gelten noch 30 Tage; Weiterleitungen müssen Sie danach auf die neue Rechnungsadresse umstellen." %}</p>
             <form method="post" action="/neu/postfaecher/antwortadresse/erneuern/"
                   onsubmit="return confirm('{% filter escapejs %}{% trans "Neue Adresse erzeugen? Die bisherige Adresse gilt noch 30 Tage, danach nicht mehr." %}{% endfilter %}');">
                 {% csrf_token %}
                 <button class="fw-btn fw-knapp">{% zeichen 'lauf' %}{% trans "Adresse erneuern" %}</button>
             </form>
-            {% endif %}
         </div>
+    </div>
+    {% elif antwort.alt_bis %}
+    <p class="text-sm fw-mutet">{% blocktrans with bis=antwort.alt_bis|date:"d.m.Y" %}Die bisherigen Adressen gelten noch bis {{ bis }}.{% endblocktrans %}</p>
+    {% endif %}
+    {% endif %}
+
+    <details class="fw-card fw-aufklapp" id="erweitert"{% if erweitert_offen %} open{% endif %}>
+    <summary>{% trans "Erweitert: eigenes Postfach per IMAP abrufen" %}</summary>
+    <div class="fw-aufklapp-inhalt">
+    <p class="text-sm fw-mutet mb-3">{% trans "Einfacher geht es mit einer Weiterleitung auf die Adressen oben: Dafür hinterlegen Sie keine Zugangsdaten, und es bricht nichts, wenn Sie Ihr Passwort ändern. Nur wenn das nicht möglich ist, rufen wir Ihr Postfach selbst ab." %}</p>
+
+    {% if schluessel_fehlt %}
+    <div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'warnung' %}</span>
+        <div class="fw-ht"><b>{% blocktrans with name=schluessel_name %}Auf dem Server fehlt {{ name }}.{% endblocktrans %}</b>
+        {% trans "Ohne diesen Schlüssel lassen sich Zugangsdaten nicht verschlüsselt ablegen — Speichern schlägt fehl. Bitte melden Sie sich bei uns." %}</div>
     </div>
     {% endif %}
 
-    <div class="fw-card">
     {% for zeile in zeilen %}
     <div class="fw-zeile">
-        {% if zeile.postfach and zeile.postfach.aktiv and not zeile.postfach.letzter_fehler %}
-            <span class="fw-marker good"></span>
-        {% elif zeile.postfach and zeile.postfach.letzter_fehler %}
+        {% if zeile.unlesbar or zeile.postfach.letzter_fehler %}
             <span class="fw-marker crit"></span>
+        {% elif zeile.postfach and zeile.postfach.aktiv %}
+            <span class="fw-marker good"></span>
         {% elif zeile.postfach %}
             <span class="fw-marker warn"></span>
         {% else %}
@@ -94,6 +151,12 @@
                             · {% blocktrans with zeit=zeile.postfach.letzter_test|date:"d.m.Y H:i" %}Zuletzt geprüft: {{ zeit }}{% endblocktrans %}
                         {% endif %}
                     </span></div>
+                    {% if zeile.unlesbar %}
+                    <div class="fw-befund crit mt-2 p-3 text-sm">
+                        <b>{% trans "Die Zugangsdaten lassen sich nicht lesen." %}</b><br>
+                        {% trans "Der Schlüssel auf dem Server wurde gewechselt. Dieses Postfach wird nicht mehr abgerufen. Geben Sie die Zugangsdaten neu ein oder löschen Sie das Postfach und nutzen Sie stattdessen eine Weiterleitung auf die Adressen oben." %}
+                    </div>
+                    {% endif %}
                     {% if zeile.postfach.letzter_fehler %}
                     <div class="fw-befund crit mt-2 p-3 text-sm">
                         <b>{% trans "Letzter Fehler" %}{% if zeile.postfach.letzter_fehler_am %}
@@ -111,13 +174,15 @@
             {% if darf_aendern %}
             <div class="flex flex-wrap gap-2">
                 <a href="{% url 'postfach_form' zeile.zweck %}"
-                   class="fw-btn fw-knapp{% if not zeile.postfach %} fw-primary{% endif %}">
-                    {% if zeile.postfach %}{% trans "Bearbeiten" %}{% else %}{% trans "Einrichten" %}{% endif %}</a>
+                   class="fw-btn fw-knapp{% if not zeile.postfach or zeile.unlesbar %} fw-primary{% endif %}">
+                    {% if zeile.unlesbar %}{% trans "Neu eingeben" %}{% elif zeile.postfach %}{% trans "Bearbeiten" %}{% else %}{% trans "Einrichten" %}{% endif %}</a>
                 {% if zeile.postfach %}
+                {% if not zeile.unlesbar %}
                 <form method="post" action="{% url 'postfach_test' zeile.zweck %}">
                     {% csrf_token %}
                     <button class="fw-btn fw-knapp">{% trans "Verbindung prüfen" %}</button>
                 </form>
+                {% endif %}
                 <form method="post" action="{% url 'postfach_loeschen' zeile.zweck %}"
                       onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=zeile.bezeichnung|safe %}Postfach «{{ name }}» wirklich löschen? Der Abruf für diesen Zweck ist danach abgeschaltet.{% endblocktrans %}{% endfilter %}');">
                     {% csrf_token %}
@@ -128,12 +193,13 @@
             {% endif %}
     </div>
     {% endfor %}
-    </div>
 
     {% if not darf_aendern %}
     <p class="fw-hilfe">
         {% trans "Postfächer ändern dürfen Inhaber und Verwalter." %}
     </p>
     {% endif %}
+    </div>
+    </details>
 </div>
 {% endblock %}
