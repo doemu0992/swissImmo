@@ -222,9 +222,6 @@ class KontextLebensdauerKlasseTests(SimpleTestCase):
                 super().setUpClass()
                 setze_organisation(Organisation(pk=4711, firma='Geist AG'))
 
-            def test_x(self):
-                pass
-
         self.assertIsNone(aktuelle_organisation())
         Probe.setUpClass()
         self.assertEqual(aktuelle_organisation().pk, 4711)
