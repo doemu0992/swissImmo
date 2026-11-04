@@ -36655,3 +36655,127 @@ msgstr "Alles geprüft"
 
 msgid "Keine Privatperson mit unbestätigter Anrede «Herr»."
 msgstr "Keine Privatperson mit unbestätigter Anrede «Herr»."
+
+#: core/templates/fw/mahnwesen.html
+msgid ""
+"Mahngebühr bzw. Verzugszins: Das Schreiben nennt sie so; es wird keine "
+"weitere Mahngebühr erhoben."
+msgstr ""
+"Mahngebühr bzw. Verzugszins: Das Schreiben nennt sie so; es wird keine "
+"weitere Mahngebühr erhoben."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid "Fensterprobe"
+msgstr "Fensterprobe"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid "Fensterprobe: sechs lange Zeilen"
+msgstr "Fensterprobe: sechs lange Zeilen"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+#, python-format
+msgid "Umschlagfenster (Annahme, %(b)s × %(h)s mm)"
+msgstr "Umschlagfenster (Annahme, %(b)s × %(h)s mm)"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+#, python-format
+msgid "Falzmarke %(mm)s mm"
+msgstr "Falzmarke %(mm)s mm"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+#, python-format
+msgid "= %(mm)s mm (Massstab-Kontrolle)"
+msgstr "= %(mm)s mm (Massstab-Kontrolle)"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid ""
+"Auf Papier drucken (Massstab 100 %, nicht «An Seite anpassen»), an den "
+"Falzmarken in drei Teile falten und in den Fensterumschlag legen: Die "
+"Adresse muss im Fenster stehen."
+msgstr ""
+"Auf Papier drucken (Massstab 100 %, nicht «An Seite anpassen»), an den "
+"Falzmarken in drei Teile falten und in den Fensterumschlag legen: Die "
+"Adresse muss im Fenster stehen."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+#, python-format
+msgid ""
+"Mindestens %(mm)s mm Rand zum Fensterrand; der Zustellvermerk darf nicht im "
+"Fenster stehen."
+msgstr ""
+"Mindestens %(mm)s mm Rand zum Fensterrand; der Zustellvermerk darf nicht im "
+"Fenster stehen."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid ""
+"Der rote Umriss ist eine Annahme, kein gemessener Wert: Massgebend ist Ihr "
+"Umschlag. Sitzt die Adresse nicht richtig, stellen Sie den Versatz in den "
+"Briefkopf-Einstellungen ein."
+msgstr ""
+"Der rote Umriss ist eine Annahme, kein gemessener Wert: Massgebend ist Ihr "
+"Umschlag. Sitzt die Adresse nicht richtig, stellen Sie den Versatz in den "
+"Briefkopf-Einstellungen ein."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+#, python-format
+msgid ""
+"Aktuelle Adresslage: Versatz x = %(x)s mm (nach rechts), y = %(y)s mm (nach "
+"unten)."
+msgstr ""
+"Aktuelle Adresslage: Versatz x = %(x)s mm (nach rechts), y = %(y)s mm (nach "
+"unten)."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+#, python-format
+msgid ""
+"«%(roh)s» ist kein Versatz zwischen -10 und 10 mm — Versatz %(name)s "
+"unverändert."
+msgstr ""
+"«%(roh)s» ist kein Versatz zwischen -10 und 10 mm — Versatz %(name)s "
+"unverändert."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid "nach rechts"
+msgstr "nach rechts"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid "nach unten"
+msgstr "nach unten"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid "Adresse im Fenster: nach rechts (mm)"
+msgstr "Adresse im Fenster: nach rechts (mm)"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid "Adresse im Fenster: nach unten (mm)"
+msgstr "Adresse im Fenster: nach unten (mm)"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid "Fensterprobe drucken (PDF)"
+msgstr "Fensterprobe drucken (PDF)"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid ""
+"Drucken Sie die Fensterprobe, falten Sie sie an den Falzmarken und legen Sie"
+" sie in Ihren Fensterumschlag. Steht die Adresse nicht im Fenster, "
+"verschieben Sie sie hier (±10 mm, 0 = Norm); die Briefe folgen dem Versatz."
+msgstr ""
+"Drucken Sie die Fensterprobe, falten Sie sie an den Falzmarken und legen Sie"
+" sie in Ihren Fensterumschlag. Steht die Adresse nicht im Fenster, "
+"verschieben Sie sie hier (±10 mm, 0 = Norm); die Briefe folgen dem Versatz."

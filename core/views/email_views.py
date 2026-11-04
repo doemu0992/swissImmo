@@ -173,7 +173,7 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
                      f"{verwaltung.ort if verwaltung else 'Ort'}, {heute.strftime('%d.%m.%Y')}",
                      "Zahlungsverzug gemäss Art. 257d OR – Kündigungsandrohung",
                      untertitel=f"Mietobjekt: {vertrag.einheit.bezeichnung}, {vertrag.einheit.liegenschaft.strasse}",
-                     einschreiben="EINSCHREIBEN")
+                     einschreiben=True)
 
     c.setFont("Helvetica", 11)
     salutation = "Sehr geehrte Damen und Herren,"

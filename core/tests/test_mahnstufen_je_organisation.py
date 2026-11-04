@@ -788,7 +788,7 @@ class MahnschreibenPassendZurStufeTests(TestCase):
                                                      brief_titel='Anderer Titel', brief_text='Anderer Text')
         text = self._brief(1, True, Decimal('40.00'))
         for satz in (
-            'EINSCHREIBEN',
+            'Einschreiben',
             'Zahlungsverzug gemäss Art. 257d OR – Kündigungsandrohung',
             'Bei der Kontrolle unserer Mietzinseingänge mussten wir leider feststellen, dass für den '
             'Monat Oktober 2026 noch ein Betrag von CHF 100.00 ausstehend ist.',
