@@ -69,7 +69,7 @@ class ErweiterterBestand(MandantenFixture):
                                       Verteilschluessel, ZaehlerStand)
         from rentals.models import (AbnahmeMangel, AbnahmePosition, AbnahmeSchluessel, AbnahmeText, Leerstand,
                                     Mietverfahren, VertragMietzins)
-        from tickets.models import SchadenFoto, TicketNachricht, Versicherungsfall
+        from tickets.models import EingegangeneMail, SchadenFoto, TicketNachricht, Versicherungsfall
 
         k = self.kuerzel
         heute = date(2025, 6, 1)
@@ -111,6 +111,9 @@ class ErweiterterBestand(MandantenFixture):
             organisation=org, name_norm=f'mieter {k.lower()}', vertrag=self.vertrag))
         self._neu('nebenkostenlernregel', lambda: NebenkostenLernRegel.objects.create(
             organisation=org, suchwort=f'hauswart{k.lower()}', kategorie_zuweisung='hauswart'))
+
+        self._neu('eingegangene_mail', lambda: EingegangeneMail.objects.create(
+            organisation=org, message_id=f'mail-{k.lower()}@example.ch'))
 
         # --- Abonnement (Funktionsfreigabe) --------------------------------------------------------------
         from abo.models import Abonnement

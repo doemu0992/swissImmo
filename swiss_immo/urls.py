@@ -84,7 +84,7 @@ from core.views.zweifaktor import (zweifaktor_login, zweifaktor_bestaetigen,
                                   zweifaktor_codes_neu, zweifaktor_aus,
                                   zweifaktor_pflicht_setzen)
 from core.views.postfach import (postfach_liste, postfach_form, postfach_test,
-                                 postfach_loeschen)
+                                 postfach_loeschen, antwortadresse_erneuern)
 from core.views.eigentuemer_portal import (portal_liegenschaften, portal_liegenschaft, portal_abrechnungen,
                                            portal_abrechnung_pdf, portal_dokumente, portal_mitteilungen,
                                            portal_profil, fw_ablage_portal_toggle, portal_schaeden, portal_schaden)
@@ -260,6 +260,7 @@ urlpatterns = [
     # E-Mail-Eingang je Verwaltung. Unter /neu/, weil es zur Verwaltung gehört
     # und nicht zum Konto — anders als der zweite Faktor, der am Menschen hängt.
     path('neu/postfaecher/', postfach_liste, name='postfach_liste'),
+    path('neu/postfaecher/antwortadresse/erneuern/', antwortadresse_erneuern, name='antwortadresse_erneuern'),
     path('neu/postfaecher/<str:zweck>/', postfach_form, name='postfach_form'),
     path('neu/postfaecher/<str:zweck>/test/', postfach_test, name='postfach_test'),
     path('neu/postfaecher/<str:zweck>/loeschen/', postfach_loeschen, name='postfach_loeschen'),

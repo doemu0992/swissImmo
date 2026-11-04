@@ -105,6 +105,9 @@ STILL = ('hash', 'geheim', 'token', 'ip_', '_am', 'anonymisiert', 'is_',
 #: Wer hier etwas eintraegt, sagt: «Das setzt ein Lauf, ein Import oder eine
 #: Vorlage.» Wer es weglaesst und trotzdem kein Formular baut, wird rot.
 AUSNAHMEN = {
+    'tickets.EingegangeneMail.message_id':
+     'gesetzt vom Brevo-Webhook (`core.views.webhooks`) aus der MessageId der eingegangenen Mail; reine '
+     'Idempotenzmarke, nie Eingabe (Antwortadressen, 4.11.2026)',
     'crm.Mieter.anrede_geprueft':
      'gesetzt vom Server, sobald die Anrede bewusst gewählt wird: Schnellauswahl «Anrede prüfen» '
      '(`fw_person_anrede_setzen`), Personenformular bei geänderter Anrede, Vertragsassistent; '
