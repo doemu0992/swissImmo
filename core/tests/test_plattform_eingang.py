@@ -476,6 +476,8 @@ class FehlerUndPoisonTests(Basis):
             self.lauf(z)
         s = PlattformEingangStatus.holen()
         self.assertIn('Keine Verbindung', s.letzter_fehler)
+        for text in ('imap.example.ch', 'eingang@x.ch', 'geheim'):
+            self.assertNotIn(text, s.letzter_fehler)
         z = Zustand()
         z.login_fehler = True
         with self.assertRaises(AbrufFehler):
