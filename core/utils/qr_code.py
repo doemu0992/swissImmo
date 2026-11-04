@@ -15,14 +15,15 @@ from django.conf import settings
 from django.utils import dateformat, timezone, translation
 from django.utils.translation import gettext as _
 
-from core.utils.betrag import betrag_text
+from core.utils.betrag import betrag_text_zahlteil
 
 logger = logging.getLogger(__name__)
 
 
 def format_iban(iban):
-    """Formatiert IBAN in 4er Blöcke"""
-    if not iban: return ""
+    """Formatiert IBAN in 4er Blöcke, linksbündig («CH43 3199 9000 0012 6578 9»)."""
+    if not iban:
+        return ""
     iban = iban.replace(" ", "")
     return " ".join(iban[i:i+4] for i in range(0, len(iban), 4))
 
@@ -156,10 +157,23 @@ QR_OBEN = 17
 WAEHRUNG_OBEN = 72
 PT = 25.4 / 72                                              # 1 pt in mm
 
-#: (Schriftgrösse, Zeilenabstand) in pt: Überschrift und Wert, je Teil.
+#: (Schriftgrösse, Zeilenabstand) in pt laut Style Guide: Überschrift, Wert, Betrag, je Teil.
+#: Der Empfangsschein trägt zusätzlich die Annahmestelle (6 pt fett / 8), der Zahlteil die
+#: «Weitere Informationen» (7 pt / 8).
 SCHRIFT_TITEL = 11
-SCHRIFT_EMPFANGSSCHEIN = {'kopf': (6, 8), 'wert': (8, 9)}
-SCHRIFT_ZAHLTEIL = {'kopf': (8, 9), 'wert': (10, 11)}
+SCHRIFT_EMPFANGSSCHEIN = {'kopf': (6, 9), 'wert': (8, 9), 'betrag': (8, 11), 'annahme': (6, 8)}
+SCHRIFT_ZAHLTEIL = {'kopf': (8, 11), 'wert': (10, 11), 'betrag': (10, 13), 'weitere': (7, 8)}
+#: Zeilenlänge für Angaben, die der Style Guide kürzen lässt (Mitteilung, Alternative Verfahren).
+ZEILENLAENGE = 90
+WEITERE_OBEN = 91                                           # Weitere Informationen: unten im Zahlteil
+ANNAHMESTELLE_OBEN = 93
+
+
+def zeile_kuerzen(text, laenge=ZEILENLAENGE):
+    """Style Guide: Ist eine Zeile länger als ca. 90 Zeichen, steht sie mit «…» am Ende gekürzt da.
+    Nur für Angaben, die nicht Personendaten sind — Namen und Adressen werden umbrochen, nie gekürzt."""
+    text = ' '.join(str(text or '').split())
+    return text if len(text) <= laenge else text[:laenge - 1].rstrip() + '…'
 
 
 def zahlteil_texte(sprache='de'):
@@ -177,6 +191,7 @@ def zahlteil_texte(sprache='de'):
             'waehrung': _("Währung"),
             'betrag': _("Betrag"),
             'annahmestelle': _("Annahmestelle"),
+            'weitere': _("Weitere Informationen"),
         }
 
 
@@ -245,31 +260,36 @@ def _leeres_feld(c, links, oben, breite, hoehe):
     x0, x1 = links * mm, (links + breite) * mm
     y0, y1 = (ZONE_HOEHE - oben) * mm, (ZONE_HOEHE - oben - hoehe) * mm
     for x, dx in ((x0, 3*mm), (x1, -3*mm)):
-        for y, dy in ((y0, -2*mm), (y1, 2*mm)):
+        for y, dy in ((y0, -3*mm), (y1, 3*mm)):
             c.line(x, y, x + dx, y)
             c.line(x, y, x, y + dy)
     c.restoreState()
 
 
-def _spalte(c, links, breite, oben, bloecke, groessen, luecke):
+def _spalte(c, links, breite, oben, bloecke, groessen):
     """Zeichnet Blöcke aus Überschrift + Zeilen (oder einem leeren Feld) untereinander.
-    Lange Zeilen werden auf `breite` umbrochen. Gibt die Position (oben, mm) unter dem
-    letzten Block zurück."""
-    kopf, _abstand = groessen['kopf']
+
+    Zeilenabstände laut Style Guide: Von der Überschrift zur ersten Zeile gilt der Abstand der
+    Überschrift, danach der des Werts; zwischen zwei Blöcken bleibt eine Leerzeile.
+    Lange Zeilen werden auf `breite` umbrochen (Pflichtangaben) oder auf 90 Zeichen mit «…» gekürzt
+    (Block mit `kuerzen`). Gibt die Position (oben, mm) unter dem letzten Block zurück."""
+    kopf, kopf_abstand = groessen['kopf']
     wert, wert_abstand = groessen['wert']
     y = oben
-    for nr, (titel, zeilen, feld) in enumerate(bloecke):
+    for nr, (titel, zeilen, feld, kuerzen) in enumerate(bloecke):
         if nr:
-            y += luecke
+            y += wert_abstand * PT                       # Leerzeile zwischen den Blöcken
         c.setFont("Helvetica-Bold", kopf)
         c.drawString(links * mm, (ZONE_HOEHE - y) * mm, titel)
-        y += wert_abstand * PT
         if feld:
-            _leeres_feld(c, links, y - 1, *feld)
-            y += feld[1]
+            _leeres_feld(c, links, y + 1.5, *feld)
+            y += 1.5 + feld[1]
             continue
+        y += kopf_abstand * PT
         c.setFont("Helvetica", wert)
         for zeile in zeilen:
+            if kuerzen:
+                zeile = zeile_kuerzen(zeile)
             for teil in text_umbrechen(zeile, "Helvetica", wert, breite):
                 c.drawString(links * mm, (ZONE_HOEHE - y) * mm, teil)
                 y += wert_abstand * PT
@@ -281,18 +301,38 @@ def _adresszeilen(angaben):
             if z and z.strip()]
 
 
+def _waehrung_betrag(c, t, links, betrag_links, oben, groessen, betrag_anzeige, feld):
+    """Block «Währung / Betrag»: Überschriften, «CHF», der Betrag — oder, ohne Betrag, das Leerfeld."""
+    kopf, kopf_abstand = groessen['kopf']
+    wert, _abstand = groessen['betrag']
+    c.setFont("Helvetica-Bold", kopf)
+    c.drawString(links * mm, (ZONE_HOEHE - oben) * mm, t['waehrung'])
+    c.drawString(betrag_links * mm, (ZONE_HOEHE - oben) * mm, t['betrag'])
+    c.setFont("Helvetica", wert)
+    zeile = oben + kopf_abstand * PT
+    c.drawString(links * mm, (ZONE_HOEHE - zeile) * mm, "CHF")
+    if betrag_anzeige:
+        c.drawString(betrag_links * mm, (ZONE_HOEHE - zeile) * mm, betrag_anzeige)
+    else:
+        _leeres_feld(c, betrag_links, oben + 1.5, *feld)
+
+
 def zahlteil_zeichnen(c, *, qr_data, iban, creditor, debtor, amount, reason,
-                      ref_typ='NON', ref_val='', sprache='de'):
+                      ref_typ='NON', ref_val='', sprache='de', alternative_verfahren=()):
     """Zeichnet Empfangsschein und Zahlteil in die untere Blatthälfte (105 mm).
 
     Eine einzige Stelle für alle QR-Rechnungen. `qr_data` ist der fertige Datenteil des
     QR-Codes — er wird hier nur abgebildet, nie verändert. `amount` darf fehlen (None):
     dann bleibt das Betragsfeld als Rahmen zum Ausfüllen leer. Ohne Schuldner steht an
-    der Stelle ebenfalls ein leerer Rahmen."""
-    t = zahlteil_texte(sprache)
+    der Stelle ebenfalls ein leerer Rahmen. `sprache`: Sprache des Empfängers (wie alle
+    Dokumente, `dokumentsprache.sprache_von`); unbekannt oder leer → Deutsch.
+    `alternative_verfahren`: die Zeilen aus dem Datenteil, gedruckt unter «Weitere Informationen»."""
+    from core.services.dokumentsprache import gueltige_sprache
+    t = zahlteil_texte(gueltige_sprache(sprache))
     iban_text = format_iban(iban)
     ref_text = referenz_formatieren(ref_typ, ref_val) if ref_typ in ('QRR', 'SCOR') and ref_val else ''
-    betrag_anzeige = betrag_text(Decimal(str(amount))) if amount is not None else ''
+    # Gedruckt mit Blank als Tausendertrenner («1 590.00»); der Datenteil bleibt ohne Trenner.
+    betrag_anzeige = betrag_text_zahlteil(Decimal(str(amount))) if amount is not None else ''
     hat_schuldner = bool(debtor and (debtor.get('name') or '').strip())
 
     # Hinweis an die Canvas: Auf dieser Seite steht keine Fusszeile (Zahlteil füllt die Hälfte).
@@ -323,34 +363,25 @@ def zahlteil_zeichnen(c, *, qr_data, iban, creditor, debtor, amount, reason,
     c.drawString(RAND*mm, (ZONE_HOEHE - 10)*mm, t['empfangsschein'])
     c.drawString(ZT_LINKS*mm, (ZONE_HOEHE - 10)*mm, t['zahlteil'])
 
-    # --- Empfangsschein ---
-    rs_bloecke = [(t['konto'], [iban_text, *_adresszeilen(creditor)], None)]
+    # --- Empfangsschein: Konto, Referenz, Zahlbar durch, Währung / Betrag, Annahmestelle ---
+    rs_bloecke = [(t['konto'], [iban_text, *_adresszeilen(creditor)], None, False)]
     if ref_text:
-        rs_bloecke.append((t['referenz'], [ref_text], None))
+        rs_bloecke.append((t['referenz'], [ref_text], None, False))
     if hat_schuldner:
-        rs_bloecke.append((t['zahlbar_durch'], _adresszeilen(debtor), None))
+        rs_bloecke.append((t['zahlbar_durch'], _adresszeilen(debtor), None, False))
     else:
-        rs_bloecke.append((t['zahlbar_durch_leer'], [], (RS_TEXTBREITE, 20)))
-    _spalte(c, RAND, RS_TEXTBREITE, 15, rs_bloecke, SCHRIFT_EMPFANGSSCHEIN, luecke=2)
+        rs_bloecke.append((t['zahlbar_durch_leer'], [], (RS_TEXTBREITE, 20), False))
+    _spalte(c, RAND, RS_TEXTBREITE, 15, rs_bloecke, SCHRIFT_EMPFANGSSCHEIN)
 
-    # Währung / Betrag (Empfangsschein: Überschrift 6 pt, Werte 8 pt)
-    kopf, _abstand = SCHRIFT_EMPFANGSSCHEIN['kopf']
-    wert, _abstand = SCHRIFT_EMPFANGSSCHEIN['wert']
-    c.setFont("Helvetica-Bold", kopf)
-    c.drawString(RAND*mm, (ZONE_HOEHE - WAEHRUNG_OBEN)*mm, t['waehrung'])
-    c.drawString((RAND + 12)*mm, (ZONE_HOEHE - WAEHRUNG_OBEN)*mm, t['betrag'])
-    c.setFont("Helvetica", wert)
-    c.drawString(RAND*mm, (ZONE_HOEHE - WAEHRUNG_OBEN - 5)*mm, "CHF")
-    if betrag_anzeige:
-        c.drawString((RAND + 12)*mm, (ZONE_HOEHE - WAEHRUNG_OBEN - 5)*mm, betrag_anzeige)
-    else:
-        _leeres_feld(c, RAND + 22, WAEHRUNG_OBEN - 1, 30, 10)
+    _waehrung_betrag(c, t, RAND, RAND + 12, WAEHRUNG_OBEN, SCHRIFT_EMPFANGSSCHEIN, betrag_anzeige, (30, 10))
 
     # Annahmestelle (rechtsbündig am rechten Textrand)
+    kopf, _abstand = SCHRIFT_EMPFANGSSCHEIN['annahme']
     c.setFont("Helvetica-Bold", kopf)
-    c.drawRightString((EMPFANGSSCHEIN_BREITE - RAND)*mm, (ZONE_HOEHE - 86)*mm, t['annahmestelle'])
+    c.drawRightString((EMPFANGSSCHEIN_BREITE - RAND)*mm, (ZONE_HOEHE - ANNAHMESTELLE_OBEN)*mm,
+                      t['annahmestelle'])
 
-    # --- Zahlteil ---
+    # --- Zahlteil: QR-Code, Währung / Betrag, Konto, Referenz, Mitteilung, Zahlbar durch, Weitere ---
     qr = segno.make(qr_data, error='M')
     qr_img = io.BytesIO()
     qr.save(qr_img, kind='png', scale=8, border=0)       # 46 mm sind die Module, ohne Ruhezone
@@ -359,31 +390,28 @@ def zahlteil_zeichnen(c, *, qr_data, iban, creditor, debtor, amount, reason,
                 width=46*mm, height=46*mm)
     draw_cross(c, (ZT_LINKS + 23)*mm, (ZONE_HOEHE - QR_OBEN - 23)*mm)
 
-    kopf, _abstand = SCHRIFT_ZAHLTEIL['kopf']
-    wert, _abstand = SCHRIFT_ZAHLTEIL['wert']
-    c.setFont("Helvetica-Bold", kopf)
-    c.drawString(ZT_LINKS*mm, (ZONE_HOEHE - WAEHRUNG_OBEN)*mm, t['waehrung'])
-    c.drawString((ZT_LINKS + 15)*mm, (ZONE_HOEHE - WAEHRUNG_OBEN)*mm, t['betrag'])
-    c.setFont("Helvetica", wert)
-    c.drawString(ZT_LINKS*mm, (ZONE_HOEHE - WAEHRUNG_OBEN - 5)*mm, "CHF")
-    if betrag_anzeige:
-        c.drawString((ZT_LINKS + 15)*mm, (ZONE_HOEHE - WAEHRUNG_OBEN - 5)*mm, betrag_anzeige)
-    else:
-        _leeres_feld(c, ZT_LINKS + 15, WAEHRUNG_OBEN + 3, 40, 15)
+    _waehrung_betrag(c, t, ZT_LINKS, ZT_LINKS + 15, WAEHRUNG_OBEN, SCHRIFT_ZAHLTEIL, betrag_anzeige, (40, 15))
 
-    zt_bloecke = [(t['konto'], [iban_text, *_adresszeilen(creditor)], None)]
+    zt_bloecke = [(t['konto'], [iban_text, *_adresszeilen(creditor)], None, False)]
     if ref_text:
-        zt_bloecke.append((t['referenz'], [ref_text], None))
+        zt_bloecke.append((t['referenz'], [ref_text], None, False))
     if (reason or '').strip():
-        zt_bloecke.append((t['info'], [reason], None))
+        zt_bloecke.append((t['info'], [reason], None, True))
     if hat_schuldner:
-        zt_bloecke.append((t['zahlbar_durch'], _adresszeilen(debtor), None))
+        zt_bloecke.append((t['zahlbar_durch'], _adresszeilen(debtor), None, False))
     else:
-        zt_bloecke.append((t['zahlbar_durch_leer'], [], (65, 25)))
-    _spalte(c, ZT_DETAIL_LINKS, ZT_TEXTBREITE, 10, zt_bloecke, SCHRIFT_ZAHLTEIL, luecke=3)
+        zt_bloecke.append((t['zahlbar_durch_leer'], [], (65, 25), False))
+    ende = _spalte(c, ZT_DETAIL_LINKS, ZT_TEXTBREITE, 10, zt_bloecke, SCHRIFT_ZAHLTEIL)
+
+    weitere = [z for z in (alternative_verfahren or ()) if (z or '').strip()][:2]
+    if weitere:
+        _spalte(c, ZT_DETAIL_LINKS, ZT_TEXTBREITE, max(WEITERE_OBEN, ende + 2),
+                [(t['weitere'], [z[:100] for z in weitere], None, True)],
+                {'kopf': SCHRIFT_ZAHLTEIL['weitere'], 'wert': SCHRIFT_ZAHLTEIL['weitere']})
 
 
-def draw_qr_bill(c, iban, creditor, debtor, amount, reason, reference=None, sprache='de'):
+def draw_qr_bill(c, iban, creditor, debtor, amount, reason, reference=None, sprache='de',
+                 alternative_verfahren=()):
     """
     Zeichnet den offiziellen QR-Teil unten auf das Blatt.
     Funktioniert für Mietzins UND Nebenkosten.
@@ -421,6 +449,9 @@ def draw_qr_bill(c, iban, creditor, debtor, amount, reason, reference=None, spra
         'line2': debtor.get('line2', '')[:70],
     }
 
+    # Alternative Verfahren: höchstens zwei Zeilen zu 100 Zeichen; ohne bleibt ein leeres Feld.
+    av = [z.strip()[:100] for z in (alternative_verfahren or ()) if (z or '').strip()][:2] or [""]
+
     # QR Daten Payload (SIX Specs) — strukturierte Adressen, siehe adressblock().
     qr_data = "\n".join([
         "SPC", "0200", "1", raw_iban,
@@ -428,12 +459,13 @@ def draw_qr_bill(c, iban, creditor, debtor, amount, reason, reference=None, spra
         "", "", "", "", "", "", "",
         f"{amount:.2f}" if amount is not None else "", "CHF",
         *adressblock(debtor, pflicht=False),
-        ref_typ, ref_val, reason[:140], "EPD", ""
+        ref_typ, ref_val, reason[:140], "EPD", *av
     ])
 
     # Gezeichnet wird in zahlteil_zeichnen(): die Darstellung nach Style Guide, an einer Stelle.
     zahlteil_zeichnen(c, qr_data=qr_data, iban=raw_iban, creditor=creditor_data, debtor=debtor_data,
-                      amount=amount, reason=reason, ref_typ=ref_typ, ref_val=ref_val, sprache=sprache)
+                      amount=amount, reason=reason, ref_typ=ref_typ, ref_val=ref_val, sprache=sprache,
+                      alternative_verfahren=[z for z in av if z])
 
 
 def generate_mieter_qr_pdf(mieter, vertrag, verwaltung):

@@ -37642,3 +37642,7 @@ msgstr "Currency"
 #: core/utils/qr_code.py
 msgid "Annahmestelle"
 msgstr "Acceptance point"
+
+#: core/utils/qr_code.py
+msgid "Weitere Informationen"
+msgstr "Further information"

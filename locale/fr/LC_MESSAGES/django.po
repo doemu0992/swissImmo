@@ -38259,3 +38259,7 @@ msgstr "Monnaie"
 #: core/utils/qr_code.py
 msgid "Annahmestelle"
 msgstr "Point de dépôt"
+
+#: core/utils/qr_code.py
+msgid "Weitere Informationen"
+msgstr "Informations additionnelles"

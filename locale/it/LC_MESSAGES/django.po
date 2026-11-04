@@ -38202,3 +38202,7 @@ msgstr "Valuta"
 #: core/utils/qr_code.py
 msgid "Annahmestelle"
 msgstr "Punto di accettazione"
+
+#: core/utils/qr_code.py
+msgid "Weitere Informationen"
+msgstr "Informazioni aggiuntive"
