@@ -704,6 +704,7 @@ def fw_vertrag_neu_speichern(request):
         mieter = Mieter.objects.create(
             typ=neu_typ,
             anrede=P.get('anrede', 'Herr') if neu_typ == 'person' else '',
+            anrede_geprueft=neu_typ == 'person' and bool(P.get('anrede')),    # im Formular gewählt
             vorname=P.get('vorname', '').strip(),
             nachname=P.get('nachname', '').strip(),
             firmen_name=P.get('firmen_name', '').strip(),

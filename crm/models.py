@@ -445,6 +445,10 @@ class Mieter(models.Model):
 
     # --- PRIVATPERSON ---
     anrede = models.CharField("Anrede", max_length=20, blank=True, default='')
+    #: Die Anrede wurde bewusst gewählt oder bestätigt. Bis PR #161 war «Herr» die Vorgabe; ein
+    #: bestehendes «Herr» kann deshalb falsch sein. Ohne dieses Merkmal liesse sich ein bestätigtes
+    #: «Herr» nicht von der alten Vorgabe unterscheiden (Liste «Anrede prüfen», fw_personen).
+    anrede_geprueft = models.BooleanField("Anrede geprüft", default=False)
     vorname = models.CharField("Vorname", max_length=100, blank=True, default='')
     nachname = models.CharField("Nachname", max_length=100, blank=True, default='')
     geburtsdatum = models.DateField("Geburtsdatum", null=True, blank=True)

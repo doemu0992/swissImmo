@@ -37642,3 +37642,34 @@ msgstr "Currency"
 #: core/utils/qr_code.py
 msgid "Annahmestelle"
 msgstr "Acceptance point"
+
+msgid "Anrede prüfen"
+msgstr "Check salutation"
+
+msgid "Keine Anrede"
+msgstr "No salutation"
+
+msgid "keine Anrede"
+msgstr "no salutation"
+
+msgid "Ungültige Anrede."
+msgstr "Invalid salutation."
+
+#, python-format
+msgid "%(name)s: Anrede «%(anrede)s» gespeichert."
+msgstr "%(name)s: salutation “%(anrede)s” saved."
+
+msgid "Liste «Anrede prüfen» exportiert (CSV)"
+msgstr "“Check salutation” list exported (CSV)"
+
+msgid "Bis vor Kurzem war «Herr» vorgegeben. Bitte je Person die richtige Anrede wählen oder «Herr» bestätigen; danach verschwindet die Zeile."
+msgstr "Until recently “Herr” was preset. Please choose the correct salutation for each person or confirm “Herr”; the row then disappears."
+
+msgid "Liste als CSV"
+msgstr "List as CSV"
+
+msgid "Alles geprüft"
+msgstr "All checked"
+
+msgid "Keine Privatperson mit unbestätigter Anrede «Herr»."
+msgstr "No private person with an unconfirmed salutation “Herr”."

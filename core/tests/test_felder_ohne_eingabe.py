@@ -105,6 +105,10 @@ STILL = ('hash', 'geheim', 'token', 'ip_', '_am', 'anonymisiert', 'is_',
 #: Wer hier etwas eintraegt, sagt: «Das setzt ein Lauf, ein Import oder eine
 #: Vorlage.» Wer es weglaesst und trotzdem kein Formular baut, wird rot.
 AUSNAHMEN = {
+    'crm.Mieter.anrede_geprueft':
+     'gesetzt vom Server, sobald die Anrede bewusst gewählt wird: Schnellauswahl «Anrede prüfen» '
+     '(`fw_person_anrede_setzen`), Personenformular bei geänderter Anrede, Vertragsassistent; '
+     'kein eigenes Eingabefeld (ein Häkchen «geprüft» ohne gewählte Anrede wäre sinnlos)',
     'tickets.SchadenMeldung.melder_anrede':
      'gesetzt aus dem Feld «Anrede» der öffentlichen Meldeformulare (`core.views.ticket_public`, '
      '`tickets.services`); nur Herr/Frau, für den Mailgruss (`core.services.anrede`)',

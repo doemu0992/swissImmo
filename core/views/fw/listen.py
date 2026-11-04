@@ -1675,6 +1675,16 @@ def fw_personen(request):
     typ_filter = request.GET.get('typ', '')
     if typ_filter in ('person', 'firma', 'verein'):
         qs = qs.filter(typ=typ_filter)
+    # «Anrede prüfen»: Privatpersonen mit «Herr», das nie bestätigt wurde (bis PR #161 war «Herr»
+    # die Vorgabe). Zählung vor Suche/Typ, damit der Reiter immer die ganze Aufgabe nennt.
+    anrede_offen = ausblenden(Mieter.objects.filter(typ='person', anrede='Herr', anrede_geprueft=False))
+    if aktive_lg:
+        anrede_offen = anrede_offen.filter(
+            Q(vertraege__einheit__liegenschaft=aktive_lg)
+            | Q(vertraege_als_mitmieter__einheit__liegenschaft=aktive_lg)).distinct()
+    anrede_pruefen = request.GET.get('anrede') == 'pruefen'
+    if anrede_pruefen:
+        qs = qs.filter(id__in=anrede_offen.values('id'))
     q = (request.GET.get('q') or '').strip()
     if q:
         bedingung = (Q(vorname__icontains=q) | Q(nachname__icontains=q)
@@ -1722,6 +1732,8 @@ def fw_personen(request):
     qs = sortieren(qs, PERSON_SORTEN, sort)
 
     if request.GET.get('export') == 'csv':
+        if anrede_pruefen:
+            return _anrede_csv(request, qs, zeile)
         return _personen_csv(request, qs, zeile)
 
     seite, query_ohne_seite = blaettern(request, qs)
@@ -1731,9 +1743,12 @@ def fw_personen(request):
         **basis, 'nav': 'personen', 'rows': rows,
         'seite': seite, 'query_ohne_seite': query_ohne_seite, 'treffer': seite.paginator.count,
         'typ_filter': typ_filter, 'q': q,
-        'typ_chips': [(k, label, query_mit(request, typ=k)) for k, label in
+        'typ_chips': [(k, label, query_mit(request, typ=k, anrede=None)) for k, label in
                       [('', _('Alle')), ('person', _('Privatpersonen')), ('firma', _('Firmen')),
                        ('verein', _('Vereine'))]],
+        'anrede_pruefen': anrede_pruefen, 'anrede_offen': anrede_offen.count(),
+        'anrede_chip_url': query_mit(request, anrede='pruefen', typ=None),
+        'zurueck': request.get_full_path(),
         # Über die Abfrage gezählt, nicht über die Seite.
         'mit_vertrag_count': qs.filter(id__in=list(vertrag_je_mieter)).count(),
         'sort': sort, 'sorten': [(k, x.label) for k, x in PERSON_SORTEN.items()],
@@ -1751,6 +1766,22 @@ PERSON_SORTEN = {
                       felder=('ort', 'nachname', 'firmen_name', 'id')),
     'neueste': Sortierung(gettext_lazy('Zuletzt erfasst'), None, felder=('-id',)),
 }
+
+
+def _anrede_csv(request, qs, zeile):
+    """Die Liste «Anrede prüfen» als CSV: Name, Objekt, Anrede, E-Mail (nur Kontaktdaten)."""
+    from core.models import AktivitaetsLog
+
+    AktivitaetsLog.objects.create(
+        benutzer=request.user, kategorie='sonstiges',
+        aktion=gettext('Liste «Anrede prüfen» exportiert (CSV)'),
+        objekt=gettext('%(n)s Personen') % {'n': qs.count()},
+        details=request.GET.urlencode()[:2000])
+    return csv_antwort(
+        f'Anrede_pruefen_{timezone.localdate():%Y-%m-%d}.csv',
+        [_('Name'), _('Objekt'), _('Anrede'), _('E-Mail')],
+        ([z['m'].display_name, z['objekt'] or '', z['m'].anrede, z['m'].email]
+         for z in (zeile(m) for m in qs.iterator(chunk_size=500))))
 
 
 def _personen_csv(request, qs, zeile):

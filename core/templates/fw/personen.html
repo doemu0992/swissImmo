@@ -21,8 +21,11 @@
     <div class="fw-kopf">
         <div class="fw-filters fw-nomb">
             {% for wert, label, url in typ_chips %}
-            <a href="{{ url }}" class="fw-fchip{% if typ_filter == wert %} fw-on{% endif %}">{{ label }}</a>
+            <a href="{{ url }}" class="fw-fchip{% if typ_filter == wert and not anrede_pruefen %} fw-on{% endif %}">{{ label }}</a>
             {% endfor %}
+            {% if anrede_offen or anrede_pruefen %}
+            <a href="{{ anrede_chip_url }}" class="fw-fchip{% if anrede_pruefen %} fw-on{% endif %}">{% trans "Anrede prüfen" %} ({{ anrede_offen }})</a>
+            {% endif %}
         </div>
         {% if seite.paginator.num_pages == 1 %}
         {% include 'fw/_listwerkzeug.html' with suchname='q' suchwert=q suchtext=_('Name, E-Mail, Ort oder Telefon …') suchlabel=_('Personen durchsuchen') livesuche='#personenListe' imkopf=True %}
@@ -32,6 +35,31 @@
     </div>
 
     <div id="personenListe">
+    {% if anrede_pruefen %}
+    <!-- Anrede prüfen: eine Liste für alle Breiten, je Zeile die Schnellauswahl -->
+    <p class="fw-sub2 px-4 pt-3">{% trans "Bis vor Kurzem war «Herr» vorgegeben. Bitte je Person die richtige Anrede wählen oder «Herr» bestätigen; danach verschwindet die Zeile." %}
+        <a href="{{ csv_url }}" download class="fw-link">{% trans "Liste als CSV" %}</a></p>
+    {% for row in rows %}
+    <div class="fw-zeile" data-zeile>
+        <span class="fw-ikon">{% zeichen 'person' %}</span>
+        <div class="fw-mitte">
+            <a href="/neu/personen/{{ row.m.id }}/" class="fw-t truncate block">{{ row.m.display_name }}</a>
+            {% if row.m.email %}<div class="fw-s truncate">{{ row.m.email }}</div>{% endif %}
+            {% if row.objekt %}<div class="mt-1"><span class="fw-chip fw-good truncate max-w-full">{{ row.objekt }}</span></div>{% endif %}
+        </div>
+        <form method="post" action="/neu/personen/{{ row.m.id }}/anrede/" class="flex flex-wrap gap-2">{% csrf_token %}
+            <input type="hidden" name="zurueck" value="{{ zurueck }}">
+            <button name="anrede" value="Herr" class="fw-btn fw-knapp">{% trans "Herr" %}</button>
+            <button name="anrede" value="Frau" class="fw-btn fw-knapp">{% trans "Frau" %}</button>
+            <button name="anrede" value="" class="fw-btn fw-knapp fw-geist">{% trans "Keine Anrede" %}</button>
+        </form>
+    </div>
+    {% empty %}
+    <div class="px-4">
+        {% if q %}{% include 'fw/_empty.html' with icon='suchen' titel=_('Keine Treffer') subtext=_('Für diesen Filter wurden keine Personen gefunden.') %}{% else %}{% include 'fw/_empty.html' with icon='gut' titel=_('Alles geprüft') subtext=_('Keine Privatperson mit unbestätigter Anrede «Herr».') %}{% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
     <!-- Mobile: Karten -->
     <div class="md:hidden">
         {% for row in rows %}
@@ -103,6 +131,7 @@
             </tbody>
         </table>
     </div>
+    {% endif %}
     </div>
     {% include 'fw/_seiten.html' %}
 </div>

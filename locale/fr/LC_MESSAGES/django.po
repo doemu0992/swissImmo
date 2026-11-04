@@ -38259,3 +38259,34 @@ msgstr "Monnaie"
 #: core/utils/qr_code.py
 msgid "Annahmestelle"
 msgstr "Point de dépôt"
+
+msgid "Anrede prüfen"
+msgstr "Vérifier la civilité"
+
+msgid "Keine Anrede"
+msgstr "Sans civilité"
+
+msgid "keine Anrede"
+msgstr "sans civilité"
+
+msgid "Ungültige Anrede."
+msgstr "Civilité invalide."
+
+#, python-format
+msgid "%(name)s: Anrede «%(anrede)s» gespeichert."
+msgstr "%(name)s : civilité « %(anrede)s » enregistrée."
+
+msgid "Liste «Anrede prüfen» exportiert (CSV)"
+msgstr "Liste « Vérifier la civilité » exportée (CSV)"
+
+msgid "Bis vor Kurzem war «Herr» vorgegeben. Bitte je Person die richtige Anrede wählen oder «Herr» bestätigen; danach verschwindet die Zeile."
+msgstr "Jusqu'à récemment, « Herr » était la valeur par défaut. Veuillez choisir la bonne civilité pour chaque personne ou confirmer « Herr » ; la ligne disparaît ensuite."
+
+msgid "Liste als CSV"
+msgstr "Liste en CSV"
+
+msgid "Alles geprüft"
+msgstr "Tout vérifié"
+
+msgid "Keine Privatperson mit unbestätigter Anrede «Herr»."
+msgstr "Aucune personne privée avec la civilité « Herr » non confirmée."
