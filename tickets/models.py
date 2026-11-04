@@ -3,6 +3,7 @@ import uuid
 from django.conf import settings
 from django.db import models
 from core.organisation_kette import OrganisationAusKette
+from core.tenancy import AlleOrganisationenManager, TenantManager
 from core.utils import get_smart_upload_path
 from django.utils.translation import gettext_lazy as _
 
@@ -335,3 +336,33 @@ class Versicherungsfall(OrganisationAusKette):
         if self.schadensumme is None:
             return None
         return max(self.schadensumme - (self.selbstbehalt or Decimal('0')), Decimal('0.00'))
+
+
+class EingegangeneMail(models.Model):
+    """Eine über den Webhook eingegangene Mail (nur die Message-ID) — damit ein Wiederholversand
+    desselben Webhooks (Brevo wiederholt bei Fehlern) die Antwort nicht doppelt ablegt.
+
+    Je Verwaltung eindeutig. Der Eintrag entsteht in derselben Transaktion wie die Verarbeitung: scheitert
+    sie, verschwindet er mit, und der Wiederholversand holt sie nach. Es wird kein Inhalt gespeichert.
+    """
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
+                                     related_name='eingegangene_mails', verbose_name='Organisation')
+    message_id = models.CharField(max_length=255)
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    class Meta:
+        verbose_name = "Eingegangene Mail"
+        verbose_name_plural = "Eingegangene Mails"
+        constraints = [
+            models.UniqueConstraint(fields=['organisation', 'message_id'],
+                                    name='uniq_eingegangene_mail_organisation_message'),
+        ]
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            from core.organisation_kette import organisation_bestimmen
+            self.organisation_id = organisation_bestimmen().pk
+        super().save(*args, **kwargs)

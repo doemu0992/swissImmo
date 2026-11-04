@@ -157,6 +157,17 @@ class Organisation(models.Model):
         "Verzugszins (% p.a.)", max_digits=4, decimal_places=2, default=Decimal('5.00'),
         help_text="Gesetzlich 5 % (Art. 104 OR); vertraglich abweichend möglich.")
 
+    # Antwortadresse der Plattform: `<antwort_kennung>@<ANTWORT_DOMAIN>`. Die Kennung ist zufaellig und
+    # nicht erratbar; sie ordnet eine eingehende Mail der Verwaltung zu (`core/services/antwort_eingang.py`).
+    # Nie ein Formularfeld: erzeugt beim Anlegen, erneuert nur ueber «Adresse erneuern».
+    antwort_kennung = models.CharField("Antwort-Kennung", max_length=40, unique=True, editable=False, blank=True)
+    # Die Kennung vor der letzten Erneuerung bleibt bis `antwort_kennung_alt_bis` gueltig (30 Tage), damit
+    # Antworten auf bereits versandte Mails nicht verloren gehen.
+    antwort_kennung_alt = models.CharField("Vorherige Antwort-Kennung", max_length=40, blank=True, default='',
+                                           editable=False, db_index=True)
+    antwort_kennung_alt_bis = models.DateTimeField("Vorherige Kennung gueltig bis", null=True, blank=True,
+                                                   editable=False)
+
     class Meta:
         verbose_name = "Organisation"
         verbose_name_plural = "Organisationen"
@@ -170,6 +181,9 @@ class Organisation(models.Model):
     def save(self, *args, **kwargs):
         _unterschrift_aufbereiten(self, 'sig_vw_')
         neu = self._state.adding
+        if not self.antwort_kennung:
+            from core.services.antwort_eingang import neue_kennung
+            self.antwort_kennung = neue_kennung(self.firma)
         super().save(*args, **kwargs)
         if neu:
             # Jede neue Verwaltung startet mit den Standard-Mahnstufen. Danach
