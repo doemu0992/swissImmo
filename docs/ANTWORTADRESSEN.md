@@ -19,7 +19,8 @@ eigenes Postfach behalten will, richtet im Mailprogramm eine **Weiterleitung** a
 hinterlegt keine Zugangsdaten. Das alte Verfahren (eigenes Postfach per IMAP) bleibt als Sonderfall unter
 «Erweitert» erhalten.
 
-Damit das funktioniert, nimmt Brevo (der Dienst, der schon Ihre Mails versendet) für eine eigene Empfangsadresse
+Damit das funktioniert, nimmt Brevo (ein Dienst für E-Mail-Empfang und -Versand; den Versand der Plattform erledigt
+weiterhin Ihr bisheriger Mailanbieter, Brevo wird hier nur für den EMPFANG gebraucht) für eine eigene Empfangsadresse
 alle Mails entgegen und schickt sie uns. Dafür richten Sie jetzt einmalig Folgendes ein.
 
 **Zwei Dinge vorab, die Sie entscheiden müssen:**
@@ -27,8 +28,8 @@ alle Mails entgegen und schickt sie uns. Dafür richten Sie jetzt einmalig Folge
 * **Kosten.** Prüfen Sie bei Brevo, ob Ihr Tarif das «Inbound Parsing» (Empfang eingehender Mails) enthält und was es
   kostet. Das ist Ihre Entscheidung; die Anwendung löst keine Kosten von sich aus aus.
 * **Datenschutz.** Rechnungen der Verwaltungen (Namen, IBAN, Beträge) laufen kurz über Brevo, bevor wir sie abholen.
-  Brevo ist bereits Ihr Versanddienst; prüfen Sie, ob Ihr Auftragsbearbeitungsvertrag mit Brevo das Empfangen
-  abdeckt, und nennen Sie Brevo in der Datenschutzerklärung, falls das noch nicht so ist.
+  Brevo ist ein zusätzlicher Dienstleister (Auftragsbearbeiter): schliessen Sie den Auftragsbearbeitungsvertrag mit
+  Brevo ab bzw. prüfen Sie, dass er das Empfangen abdeckt, und nennen Sie Brevo in der Datenschutzerklärung.
 
 ## Was Sie am Ende haben
 
@@ -45,8 +46,9 @@ mehrmals.
 
 ### Schritt 1: Brevo-Konto
 
-Sie haben schon eines (der Versand läuft darüber). Melden Sie sich bei <https://app.brevo.com> an. Prüfen Sie dort
-Ihren Tarif auf «Inbound Parsing» bzw. «Eingehende E-Mails» (siehe «Kosten» oben).
+Falls Sie noch kein Konto haben, legen Sie unter <https://www.brevo.com> eines an (die Anmeldung läuft über
+<https://app.brevo.com>). Prüfen Sie dort Ihren Tarif auf «Inbound Parsing» bzw. «Eingehende E-Mails» (siehe «Kosten»
+oben). Der Versand der Plattform bleibt bei Ihrem bisherigen Mailanbieter; Brevo empfängt nur.
 
 ### Schritt 2: Empfangsdomain bei Brevo hinzufügen
 
