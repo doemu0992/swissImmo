@@ -25,6 +25,7 @@ from reportlab.lib.units import mm
 from core.services.dok_layout import LINKS, DokCanvas
 from core.utils.absender import kopfzeilen
 from core.utils.billing import berechne_abrechnung
+from core.services.dokumentsprache import sprache_von
 from core.utils.qr_code import draw_qr_bill
 
 logger = logging.getLogger(__name__)
@@ -75,7 +76,8 @@ def generate_single_pdf_bytes(periode, row, verwaltung, liegenschaft, vertrag):
     c.showPage()
     if row['nachzahlung'] and liegenschaft.iban:
         try:
-            draw_qr_bill(c, liegenschaft.iban, creditor, debtor, betrag, f"NK {periode.bezeichnung}")
+            draw_qr_bill(c, liegenschaft.iban, creditor, debtor, betrag, f"NK {periode.bezeichnung}",
+                         sprache=sprache_von(vertrag.mieter if vertrag else None))
             c.showPage()
         except Exception:
             # Früher `except: pass`: Die Abrechnung ging mit einer Nachzahlung OHNE
@@ -260,13 +262,13 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
                 gebuehr_reference = gebuehr_reference or sammelreferenz(vertrag.id)
             draw_qr_bill(c, iban, creditor, debtor, betrag_float,
                          f"Mahnung {monat_str} {vertrag.einheit.bezeichnung}",
-                         reference=reference)
+                         reference=reference, sprache=sprache_von(vertrag.mieter))
             # SEPARATER Einzahlungsschein für die Mahngebühr — eigener Betrag, eigene Referenz.
             if gebuehr and gebuehr > 0:
                 c.showPage()
                 draw_qr_bill(c, iban, creditor, debtor, float(gebuehr),
                              f"Mahngebühr {monat_str} {vertrag.einheit.bezeichnung}",
-                             reference=gebuehr_reference)
+                             reference=gebuehr_reference, sprache=sprache_von(vertrag.mieter))
         except Exception:
             # Früher `except: pass`: Das Schreiben ging OHNE Einzahlungsschein
             # hinaus, und niemand erfuhr davon — bei einer Zahlungsaufforderung

@@ -15,6 +15,7 @@ from django.conf import settings
 from django.utils import dateformat, timezone, translation
 from django.utils.translation import gettext as _
 
+from core.services.dokumentsprache import sprache_von
 from core.utils.betrag import betrag_text_zahlteil
 
 logger = logging.getLogger(__name__)
@@ -512,7 +513,7 @@ def generate_mieter_qr_pdf(mieter, vertrag, verwaltung):
     c.drawString(20*mm, 235*mm, "Bitte verwenden Sie den untenstehenden Einzahlungsschein für Ihre Überweisung.")
 
     # 3. QR-Funktion aufrufen (zeichnet unten den Zahlteil)
-    draw_qr_bill(c, iban, creditor, debtor, float(amount), reason, reference=ref)
+    draw_qr_bill(c, iban, creditor, debtor, float(amount), reason, reference=ref, sprache=sprache_von(mieter))
 
     c.save()
 
@@ -663,7 +664,8 @@ def generate_mahnung_pdf(vertrag, offener_betrag, verwaltung):
     c.showPage()
 
     # --- 9. QR Code unten anfügen ---
-    draw_qr_bill(c, iban, creditor, debtor, float(offener_betrag), reason, reference=ref)
+    draw_qr_bill(c, iban, creditor, debtor, float(offener_betrag), reason, reference=ref,
+                 sprache=sprache_von(mieter))
 
     c.save()
     return f"{settings.MEDIA_URL}qr_rechnungen/{filename}"
