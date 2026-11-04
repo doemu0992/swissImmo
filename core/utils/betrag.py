@@ -79,3 +79,12 @@ def betrag_text(wert, stellen=2):
     except ValueError:
         return ''
     return f'{zahl:,.{int(stellen)}f}'.replace(',', "'")
+
+
+def betrag_text_zahlteil(wert, stellen=2):
+    """«1 590.00»: die Schreibweise des QR-Zahlteils (Style Guide QR-Rechnung, SIX): BLANK als
+    Tausendertrenner, Punkt als Dezimaltrenner, immer zwei Nachkommastellen.
+
+    Nur für den gedruckten Zahlteil. Der Datenteil des QR-Codes schreibt den Betrag ohne
+    Trenner («1590.00»), alle übrigen Dokumente behalten den Apostroph (`betrag_text`)."""
+    return betrag_text(wert, stellen).replace("'", ' ')

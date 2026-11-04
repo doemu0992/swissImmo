@@ -6,7 +6,7 @@ Rechtstext-nahe Dokumente: fest deutsch, bis ihr Wortlaut juristisch geprüft
 import io
 from decimal import Decimal
 
-from core.services.dokumentsprache import nur_deutsch
+from core.services.dokumentsprache import nur_deutsch, sprache_von
 from stweg.validierung import zahl
 
 
@@ -187,7 +187,8 @@ def _qr_basis(lg, eigentuemer, betrag, ref_a, ref_b, grund):
     # `qrr_referenz` nennt ihre Parameter noch nach dem Mietmodell (vertrag_id, rechnung_id),
     # rechnet aber nur mit den Zahlen.
     referenz, _ = qrr_referenz(ref_a, ref_b)
-    return {'iban': iban, 'creditor': creditor, 'debtor': debtor, 'referenz': referenz, 'grund': grund[:140]}
+    return {'iban': iban, 'creditor': creditor, 'debtor': debtor, 'referenz': referenz, 'grund': grund[:140],
+            'sprache': sprache_von(eigentuemer)}
 
 
 def _qr_daten(abrechnung, eigentuemer, betrag):
@@ -210,7 +211,7 @@ def _qr_zeichnen(seite, daten, betrag):
     from core.utils.qr_code import draw_qr_bill
     seite.c.showPage()
     draw_qr_bill(seite.c, daten['iban'], daten['creditor'], daten['debtor'], betrag,
-                 daten['grund'], reference=daten['referenz'])
+                 daten['grund'], reference=daten['referenz'], sprache=daten['sprache'])
 
 
 @nur_deutsch

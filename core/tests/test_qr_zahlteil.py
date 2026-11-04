@@ -117,7 +117,7 @@ class SchriftgroessenTests(SimpleTestCase):
         self.assertEqual(self.groesse(pdf, 'Konto', True), (6.0, True))
         self.assertEqual(self.groesse(pdf, 'Referenz', True), (6.0, True))
         self.assertEqual(self.groesse(pdf, 'Muster', True), (8.0, False))
-        self.assertEqual(self.groesse(pdf, '1\'450.50', True), (8.0, False))      # Betrag 8 pt
+        self.assertEqual(self.groesse(pdf, '450.50', True), (8.0, False))      # Betrag 8 pt
         self.assertEqual(self.groesse(pdf, 'Währung', True), (6.0, True))
 
     def test_zahlteil(self):
@@ -126,7 +126,7 @@ class SchriftgroessenTests(SimpleTestCase):
         self.assertEqual(self.groesse(pdf, 'Konto', False), (8.0, True))
         self.assertEqual(self.groesse(pdf, 'Zusätzliche', False), (8.0, True))
         self.assertEqual(self.groesse(pdf, 'Muster', False), (10.0, False))
-        self.assertEqual(self.groesse(pdf, '1\'450.50', False), (10.0, False))
+        self.assertEqual(self.groesse(pdf, '450.50', False), (10.0, False))
         self.assertEqual(self.groesse(pdf, 'Währung', False), (8.0, True))
 
     def test_reihenfolge_im_zahlteil(self):
@@ -186,7 +186,7 @@ class FelderTests(SimpleTestCase):
         for text in (text_links(pdf), text_rechts(pdf)):
             self.assertIn('Zahlbar durch', text)
             self.assertIn('Hans Muster', text)
-            self.assertIn("1'450.50", text)
+            self.assertIn('1 450.50', text)
 
     def test_perforation_senkrecht_zwischen_den_teilen(self):
         pdf = zahlteil_pdf()

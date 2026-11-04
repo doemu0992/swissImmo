@@ -1115,7 +1115,7 @@ class QrBetragFormatTests(TestCase):
     (1,887 vs. 1'887). Der QR-Datenblock selbst war korrekt; nur die gedruckte
     Anzeige nicht."""
 
-    def test_zahlteil_zeigt_apostroph_kein_komma(self):
+    def test_zahlteil_zeigt_blank_kein_komma(self):
         import io
         from unittest import mock
         from core.utils import qr_code
@@ -1135,7 +1135,8 @@ class QrBetragFormatTests(TestCase):
         self.assertTrue(betraege, 'Betrag wurde nicht gezeichnet')
         for t in betraege:
             self.assertNotIn(',', t, f'Komma im Zahlbetrag: «{t}»')
-            self.assertIn("'", t, f'Kein Apostroph-Tausender: «{t}»')
+            # Style Guide QR-Rechnung (SIX): Tausendertrenner im Zahlteil ist das Blank, nicht der Apostroph.
+            self.assertEqual(t, '1 234 567.89')
 
 
 class CamtGesperrtePeriodeQSTests(TestCase):

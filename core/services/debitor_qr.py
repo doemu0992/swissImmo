@@ -2,7 +2,7 @@
 Wiederverwendet von der Team-Ansicht und vom Mieterportal."""
 import logging
 import io
-from core.services.dokumentsprache import nur_deutsch
+from core.services.dokumentsprache import nur_deutsch, sprache_von
 
 logger = logging.getLogger(__name__)
 
@@ -112,6 +112,7 @@ def generate_debitor_qr_pdf(rechnung):
     c.drawString(20 * _mm, yt - 11 * _mm, "Zu bezahlen")
     c.drawRightString(190 * _mm, yt - 11 * _mm, _chf(betrag))
 
-    draw_qr_bill(c, iban, creditor, debtor, betrag, r.titel, reference=ref)
+    # Der Zahlteil folgt der Sprache des Mieters (D11), auch wenn der Brief darüber deutsch bleibt.
+    draw_qr_bill(c, iban, creditor, debtor, betrag, r.titel, reference=ref, sprache=sprache_von(mieter))
     c.showPage(); c.save(); buf.seek(0)
     return buf.read()
