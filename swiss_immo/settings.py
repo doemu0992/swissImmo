@@ -477,6 +477,10 @@ DOCUSEAL_DOWNLOAD_HOSTS = {
 # Optional: gemeinsames Secret für den Brevo-Inbound-Webhook (Query-Param ?token=
 # oder Header "X-Webhook-Secret"). Wenn gesetzt, werden nur signierte Requests akzeptiert.
 BREVO_WEBHOOK_SECRET = os.getenv('BREVO_WEBHOOK_SECRET')
+# Domain der Antwortadressen (`<kennung>@<ANTWORT_DOMAIN>`, je Verwaltung). Die MX-Einträge dieser Domain
+# zeigen auf Brevo Inbound Parsing; siehe docs/ANTWORTADRESSEN.md. Ohne BREVO_WEBHOOK_SECRET bleibt es beim
+# bisherigen Reply-To (kein Versand an eine Adresse, die nichts empfängt).
+ANTWORT_DOMAIN = (os.getenv('ANTWORT_DOMAIN') or 'immoswiss.app').strip().lower()
 
 # SMTP KONFIGURATION (HOSTSTAR) - BLEIBT AKTIV!
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

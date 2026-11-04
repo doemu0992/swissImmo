@@ -37,16 +37,15 @@ Aufruf:
     python manage.py fetch_replies                  # Dauerschleife (alle 60 s)
 """
 import email
-import html
 import logging
-import re
 import time
 from email.header import decode_header
 
 from django.core.management.base import BaseCommand
 from django.db import connections
-from django.utils.html import strip_tags
 
+from core.services.antwort_eingang import (ZITAT_MUSTER as ZITAT_MUSTER_GEMEINSAM, html_zu_text,
+                                           leerzeilen_zusammenfassen, zitat_abschneiden)
 from core.services.postfach_abruf import AbrufFehler, hole_ungelesene, postfaecher_fuer
 from core.tenancy import organisation_kontext
 
@@ -54,21 +53,7 @@ logger = logging.getLogger(__name__)
 
 PAUSE_SEKUNDEN = 60
 
-#: Ab hier beginnt das zitierte Original. Alles danach wird abgeschnitten —
-#: sonst steht die ganze Verlaufskette in jeder Antwort.
-ZITAT_MUSTER = [
-    r'ImmoSwiss Verwaltung\s+schrieb am',
-    r'via immoswiss\s+(schrieb|wrote)',
-    r'schrieb am.*?um.*?:',
-    r'On\s+.*?wrote:',
-    r'Am\s+.*?schrieb.*?:',
-    r'-+Original\s+Message-+',
-    r'From:\s+.*',
-    r'Von:\s+.*',
-    r'Gesendet von meinem iPhone',
-    r'Sent from my iPhone',
-]
-
+ZITAT_MUSTER = ZITAT_MUSTER_GEMEINSAM
 PLATZHALTER = '[[ZEILENUMBRUCH]]'
 
 
@@ -105,10 +90,11 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING(
                 'Kein eingerichtetes Antwort-Postfach gefunden. In den Einstellungen '
                 'der Verwaltung unter «Postfächer» hinterlegen.'))
-            return
 
         from core.funktionen import hintergrund_erlaubt
+        mit_postfach = set()
         for postfach in postfaecher:
+            mit_postfach.add(postfach.organisation_id)
             self.stdout.write(f'{postfach.organisation} · {postfach.benutzer}')
             if not hintergrund_erlaubt(postfach.organisation):
                 self.stdout.write('   Abonnement im Lesemodus (Zahlung überfällig) — übersprungen.')
@@ -125,6 +111,21 @@ class Command(BaseCommand):
                 # niemandem mehr Antworten ankamen.
                 logger.exception('%s: Abruf abgebrochen', postfach.organisation)
                 self.stdout.write(self.style.ERROR(f'   FEHLER: {fehler}'))
+        self._ohne_postfach(nur_verwaltung, mit_postfach)
+
+    def _ohne_postfach(self, nur_verwaltung, mit_postfach):
+        """Verwaltungen ohne eigenes Postfach antworten über die Plattformadresse (Webhook). Dort gibt es
+        nichts abzuholen, aber gebündelte Chat-Nachrichten des Direktkanals warten auf ihre Mail."""
+        from core.tenancy import je_organisation
+        from tickets.direktkanal import ausstehende_zustellen
+
+        def zustellen(organisation):
+            if organisation.pk not in mit_postfach:
+                ausstehende_zustellen()
+
+        _ergebnisse, fehler = je_organisation(zustellen, auswahl=nur_verwaltung, ausgabe=self.stdout)
+        for organisation, ausnahme in fehler:
+            logger.error('%s: Zustellung gebündelter Chat-Nachrichten fehlgeschlagen: %s', organisation, ausnahme)
 
     def _ein_postfach(self, postfach):
         try:
@@ -157,38 +158,31 @@ class Command(BaseCommand):
         ist der Unterschied zur alten Fassung: Ein Fehler ist hier ein Fehler
         und keine Protokollzeile.
         """
-        from tickets.models import SchadenMeldung
+        from core.services.antwort_eingang import eingehende_antwort_verarbeiten, ticketnummer_aus_betreff
+        from core.tenancy import aktuelle_organisation
 
         nachricht = email.message_from_bytes(roh)
         betreff = self._betreff(nachricht)
         absender = nachricht.get('From', 'Unbekannt')
         self.stdout.write(f'   Prüfe: {betreff}')
 
-        treffer = re.search(r'Ticket #(\d+)', betreff, re.IGNORECASE)
-        if not treffer:
+        nummer = ticketnummer_aus_betreff(betreff, locker=False)
+        if not nummer:
             self.stdout.write('   Keine Ticketnummer im Betreff — übersprungen.')
             return
-        nummer = treffer.group(1)
-
-        # `objects` und NICHT `alle_organisationen`: Der gefilterte Manager ist
-        # hier die eigentliche Absicherung. Eine Nummer aus einem fremden
-        # Bestand findet damit nichts, statt fremde Post zu ergänzen.
-        ticket = SchadenMeldung.objects.filter(pk=nummer).first()
-        if ticket is None:
-            self.stdout.write(self.style.WARNING(
-                f'   Ticket #{nummer} gibt es in dieser Verwaltung nicht — übersprungen.'))
-            return
-
         inhalt = self._inhalt(nachricht)
         if not inhalt.strip():
             self.stdout.write('   Inhalt leer — übersprungen.')
             return
 
-        # Auftragsmarke «[A12]» im Betreff: Antwort im Direktkanal Mieter/Handwerker (tickets/direktkanal.py).
-        from tickets.direktkanal import auftrag_id_aus_betreff
-        from tickets.workflow import antwort_zuordnen
-        seite = antwort_zuordnen(ticket, absender, inhalt, auftrag_id=auftrag_id_aus_betreff(betreff),
-                                 kopf=dict(nachricht.items()))
+        # Dieselbe Zuordnung wie beim Webhook (core/services/antwort_eingang.py): Ticketnummer NUR in dieser
+        # Verwaltung (gefilterter Manager), Auftragsmarke «[A12]» -> Direktkanal Mieter/Handwerker.
+        seite = eingehende_antwort_verarbeiten(aktuelle_organisation(), absender, betreff, inhalt,
+                                               kopf=dict(nachricht.items()), locker=False)
+        if seite == 'ohne_ticket':
+            self.stdout.write(self.style.WARNING(
+                f'   Ticket #{nummer} gibt es in dieser Verwaltung nicht — übersprungen.'))
+            return
         if seite.startswith('direkt_'):
             self.stdout.write(self.style.SUCCESS(
                 f'   In Ticket #{nummer} im Chat übernommen und der Gegenseite zugestellt ({seite[7:]}).'))
@@ -235,44 +229,13 @@ class Command(BaseCommand):
         return self._zitat_abschneiden(roh_text or '').strip()
 
     def aufbereiten(self, html_inhalt):
-        """HTML-Mail zu lesbarem Text.
-
-        Der Umweg über einen Platzhalter ist Absicht: `strip_tags` wirft die
-        Tags weg, ohne einen Umbruch zu hinterlassen — aus einer Mail mit zehn
-        Absätzen würde sonst eine einzige Textwurst. Also erst die
-        block-schliessenden Tags durch eine Marke ersetzen, dann entkernen,
-        dann die Marke zum Umbruch machen.
-        """
-        if not html_inhalt:
-            return ''
-        text = html_inhalt
-        text = re.sub(r'<br\s*/?>', PLATZHALTER, text, flags=re.IGNORECASE)
-        text = re.sub(r'</(div|p|h[1-6]|table|tr|li|blockquote)>', PLATZHALTER, text,
-                      flags=re.IGNORECASE)
-        text = re.sub(r'<(div|p|h[1-6]|table|tr|li|blockquote)[^>]*>', PLATZHALTER, text,
-                      flags=re.IGNORECASE)
-        text = re.sub(r'</?(td|th)[^>]*>', ' ', text, flags=re.IGNORECASE)
-        text = strip_tags(text)
-        text = text.replace(PLATZHALTER, '\n')
-        text = html.unescape(text).replace('\xa0', ' ')
-        text = self._zitat_abschneiden(text)
-        return self._leerzeilen_zusammenfassen(text)
+        """HTML-Mail zu lesbarem Text (gemeinsam mit dem Webhook: ``antwort_eingang.html_zu_text``)."""
+        return html_zu_text(html_inhalt)
 
     @staticmethod
     def _zitat_abschneiden(text):
-        frueheste = len(text)
-        for muster in ZITAT_MUSTER:
-            treffer = re.search(muster, text, re.IGNORECASE)
-            if treffer and treffer.start() < frueheste:
-                frueheste = treffer.start()
-        return text[:frueheste]
+        return zitat_abschneiden(text)
 
     @staticmethod
     def _leerzeilen_zusammenfassen(text):
-        ergebnis = ''
-        for zeile in (z.strip() for z in text.splitlines()):
-            if zeile:
-                ergebnis += zeile + '\n'
-            elif not ergebnis.endswith('\n\n'):
-                ergebnis += '\n'
-        return ergebnis.strip()
+        return leerzeilen_zusammenfassen(text)

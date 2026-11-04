@@ -235,20 +235,34 @@ def wechsle_status(ticket, neu, melder_informieren=False, ohne_rechnung=False):
 
 
 def reply_to(ticket):
-    """Antwortadresse der Verwaltung des Tickets: ihr aktives «Antworten»-Postfach.
+    """Antwortadresse der Verwaltung des Tickets, in dieser Reihenfolge:
 
-    Das ist genau das Postfach, das ``fetch_replies`` für diese Verwaltung abruft —
-    eine Antwort auf eine Ticket-Mail landet damit im richtigen Bestand. Ohne
-    eingerichtetes Postfach (oder ohne Adresse als Benutzername) ``None``: dann
-    gilt die globale Adresse. Der Absender (From) bleibt global — er hängt am
-    SMTP-Konto.
+    1. ihr aktives eigenes «Antworten»-Postfach — genau das, das ``fetch_replies`` abruft. Wo es
+       eingerichtet ist, ändert sich nichts.
+    2. sonst die Antwortadresse der Plattform ``<kennung>@<ANTWORT_DOMAIN>`` (nur für Tickets und nur, wenn
+       der Empfang auf dem Server eingerichtet ist: ``antwort_eingang.eingang_aktiv``). Die Kennung ordnet
+       die Antwort der Verwaltung zu (Webhook, ``core/services/antwort_eingang.py``).
+    3. sonst ``None``: dann gilt die Adresse der Verwaltung bzw. die globale (``core.utils.absender``).
+
+    Auch Mahnungen, Zirkulare und Budgets rufen ``reply_to`` mit ihrem Objekt auf: Für sie bleibt es bei 1.
+    — eine Antwort darauf hat kein Ticket, und der Eingang würde sie nicht ablegen. Der Absender (From)
+    bleibt global — er hängt am SMTP-Konto.
     """
     from core.models import Postfach
+    from core.services.antwort_eingang import antwort_adresse, eingang_aktiv
     pf = (Postfach.alle_organisationen
           .filter(organisation_id=ticket.organisation_id,
                   zweck=Postfach.ZWECK_ANTWORTEN, aktiv=True)
           .order_by('pk').first())
-    return pf.benutzer if pf and '@' in (pf.benutzer or '') else None
+    if pf and '@' in (pf.benutzer or ''):
+        return pf.benutzer
+    from .models import SchadenMeldung
+    if isinstance(ticket, SchadenMeldung) and eingang_aktiv():
+        from crm.models import Organisation
+        org = Organisation.objects.filter(pk=ticket.organisation_id).only('antwort_kennung').first()
+        if org is not None and org.antwort_kennung:
+            return antwort_adresse(org)
+    return None
 
 
 def melder_adresse(ticket):
@@ -732,7 +746,7 @@ def antwort_zuordnen(ticket, absender, inhalt, auftrag_id=None, kopf=None):
         seite = 'handwerker'
     else:
         TicketNachricht.objects.create(
-            ticket=ticket, absender_name=absender, typ='mail_antwort',
+            ticket=ticket, absender_name=(absender or '')[:100], typ='mail_antwort',
             nachricht=inhalt, gelesen=False)
         wartet_auf = 'warte_auf_mieter'
         seite = 'melder'
