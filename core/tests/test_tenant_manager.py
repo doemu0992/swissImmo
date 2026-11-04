@@ -11,7 +11,7 @@ einem echten. Grund: Der Manager muss auch dann noch beweisbar richtig sein,
 wenn sich die echten Modelle ändern.
 """
 from django.db import connection, models
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase
 
 from core.tenancy import (AlleOrganisationenManager, OrganisationsFehler,
                           TenantManager, ohne_organisation, organisation_kontext)
@@ -203,3 +203,31 @@ class KontextLebensdauerTests(TestCase):
             aktuelle_organisation(),
             'Der Mandantenkontext ist aus einem anderen Test übergelaufen — '
             'ab hier hängt jedes Ergebnis von der Reihenfolge ab.')
+
+
+class KontextLebensdauerKlasseTests(SimpleTestCase):
+    """Auch der Kontext aus `setUpClass`/`setUpTestData` überlebt die Klasse nicht.
+
+    Die Kopie je Test (`KontextLebensdauerTests`) greift dort nicht, weil unittest
+    `setUpClass` ausserhalb von `run` aufruft. Folge war eine Geister-Organisation,
+    die den nächsten Anmeldelog auf PostgreSQL an einen Fremdschlüssel scheitern liess.
+    """
+
+    def test_kontext_aus_set_up_class_ist_nach_der_klasse_weg(self):
+        from core.tenancy import aktuelle_organisation, setze_organisation
+
+        class Probe(SimpleTestCase):
+            @classmethod
+            def setUpClass(cls):
+                super().setUpClass()
+                setze_organisation(Organisation(pk=4711, firma='Geist AG'))
+
+            def test_x(self):
+                pass
+
+        self.assertIsNone(aktuelle_organisation())
+        Probe.setUpClass()
+        self.assertEqual(aktuelle_organisation().pk, 4711)
+        Probe.tearDownClass()
+        Probe.doClassCleanups()
+        self.assertIsNone(aktuelle_organisation())
