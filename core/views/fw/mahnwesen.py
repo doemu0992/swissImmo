@@ -43,6 +43,7 @@ from core.services.mahnstufen import (  # noqa: E402
     mahnstufen_config as _mahnstufen_config,
     Mahnstufen,
     eigentuemer_von_rechnung as _eigentuemer_von_rechnung,
+    ist_abgeleitet,
 )
 
 
@@ -151,6 +152,8 @@ def fw_mahnwesen(request):
             # Art. 257d OR droht nur bei Mietzins und Nebenkosten an: Eine Gebühr oder sonstige Forderung bekommt auch
             # auf der Stufe «mit Kündigungsandrohung» ein gewöhnliches Mahnschreiben (`mahnbrief_pdf`).
             'ohne_androhung': bool(stufe.get('kuendigung') and getattr(r, 'forderungsart', 'miete') != 'miete'),
+            # Mahngebühr/Verzugszins: Das Schreiben nennt sie so, und es kommt keine weitere Gebühr dazu.
+            'abgeleitet': ist_abgeleitet(r),
             'hat_email': bool(r.vertrag and r.vertrag.mieter.email),
             'monat': monat,
             'mahn_url': (f"/vertrag/{r.vertrag_id}/mahnung/?rechnung={r.id}&stufe={stufe['stufe']}"
@@ -435,12 +438,12 @@ def _mahngebuehr_soll(rechnung, mahnung, folgen=None, stufen=None, organisation=
                              betrag__gt=0).order_by('-id').first())
     if storniert is not None:
         return Decimal(storniert.betrag)
-    from core.services.mahnstufen import gebuehr_fuer_vertrag
+    from core.services.mahnstufen import gebuehr_fuer_forderung
     organisation = organisation or rechnung.organisation
     if stufen is not None:
-        return gebuehr_fuer_vertrag(rechnung.vertrag, stufen.gebuehr_fuer_stufe(
+        return gebuehr_fuer_forderung(rechnung.vertrag, rechnung, stufen.gebuehr_fuer_stufe(
             mahnung.stufe, eigentuemer_von_rechnung(rechnung), organisation=organisation))
-    return gebuehr_fuer_vertrag(rechnung.vertrag, gebuehr_fuer_stufe(
+    return gebuehr_fuer_forderung(rechnung.vertrag, rechnung, gebuehr_fuer_stufe(
         mahnung.stufe, eigentuemer_von_rechnung(rechnung), organisation=organisation))
 
 
@@ -553,7 +556,7 @@ def fw_mahnung_erfassen(request):
         if _mahngebuehr_rechnung(rechnung, stufe) is None:
             if _betrag is None and _mahngebuehr_soll(rechnung, hoechste) > 0:
                 return _mahngebuehr_nachstellen(request, rechnung, hoechste)
-            if _betrag is not None and _betrag > 0:
+            if _betrag is not None and _betrag > 0 and not ist_abgeleitet(rechnung):
                 return _mahngebuehr_nachstellen(request, rechnung, hoechste, gebuehr=_betrag)
             messages.info(request, gettext(
                 'Die %(stufe)s. Mahnung ist bereits erfasst; ihre Mahngebühr beträgt CHF 0.00 '
@@ -574,14 +577,16 @@ def fw_mahnung_erfassen(request):
     # hartcodiert (fw.MAHN_GEBUEHR). Ein aus dem Formular übermittelter Wert
     # überschreibt sie (manuelle Anpassung); fehlt er, gilt die konfigurierte
     # Gebühr (z.B. 0 → dann wird KEINE 40.- geschrieben, Nutzer-Bug behoben).
-    from core.services.mahnstufen import eigentuemer_von_rechnung, gebuehr_fuer_stufe, gebuehr_fuer_vertrag
-    _cfg_geb = gebuehr_fuer_vertrag(rechnung.vertrag, gebuehr_fuer_stufe(stufe, eigentuemer_von_rechnung(rechnung)))
+    from core.services.mahnstufen import eigentuemer_von_rechnung, gebuehr_fuer_forderung, gebuehr_fuer_stufe
+    _cfg_geb = gebuehr_fuer_forderung(rechnung.vertrag, rechnung,
+                                      gebuehr_fuer_stufe(stufe, eigentuemer_von_rechnung(rechnung)))
     _posted = _num(request.POST.get('gebuehr'))
     try:
         gebuehr = Decimal(str(_posted)) if _posted not in (None, '') else _cfg_geb
     except Exception:
         gebuehr = _cfg_geb
-    if gebuehr < 0:
+    if gebuehr < 0 or ist_abgeleitet(rechnung):
+        # Auch ein von Hand eingegebener Betrag: keine Gebühr auf eine Mahngebühr bzw. einen Verzugszins.
         gebuehr = Decimal('0.00')
 
     heute = timezone.localdate()

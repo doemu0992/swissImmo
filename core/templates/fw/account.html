@@ -98,6 +98,16 @@
                 <input id="acc-bk-fuss" name="briefkopf_fusszeile" value="{{ vw.briefkopf_fusszeile }}" maxlength="240" class="fw-feld">
                 <p class="fw-hilfe">{% trans "Eine Zeile am Seitenfuss, z. B. Handelsregister oder Bankverbindung." %}</p></div>
         </div>
+        {% comment %}Adresslage der Briefe im Fensterumschlag: Versatz gegenüber der Norm, dazu die Fensterprobe zum Ausdrucken.{% endcomment %}
+        <div class="fw-raster r3">
+            <div class="fw-feldblock"><label for="acc-av-x" class="fw-label">{% trans "Adresse im Fenster: nach rechts (mm)" %}</label>
+                <input id="acc-av-x" name="adress_versatz_x_mm" inputmode="decimal" value="{% localize off %}{{ vw.adress_versatz_x_mm }}{% endlocalize %}" class="fw-feld fw-num"></div>
+            <div class="fw-feldblock"><label for="acc-av-y" class="fw-label">{% trans "Adresse im Fenster: nach unten (mm)" %}</label>
+                <input id="acc-av-y" name="adress_versatz_y_mm" inputmode="decimal" value="{% localize off %}{{ vw.adress_versatz_y_mm }}{% endlocalize %}" class="fw-feld fw-num"></div>
+            <div class="fw-feldblock"><span class="fw-label">{% trans "Fensterprobe" %}</span>
+                <a href="/neu/account/fensterprobe/" target="_blank" rel="noopener" class="fw-btn fw-knapp">{% zeichen 'drucken' %} {% trans "Fensterprobe drucken (PDF)" %}</a></div>
+        </div>
+        <p class="fw-hilfe">{% trans "Drucken Sie die Fensterprobe, falten Sie sie an den Falzmarken und legen Sie sie in Ihren Fensterumschlag. Steht die Adresse nicht im Fenster, verschieben Sie sie hier (±10 mm, 0 = Norm); die Briefe folgen dem Versatz." %}</p>
         <script>
         (function () {
             var wahl = document.getElementById('acc-bk-wahl'), feld = document.getElementById('acc-bk-farbe');

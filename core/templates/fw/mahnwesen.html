@@ -81,6 +81,7 @@
             <tr>
                 <td>
                     <span class="fw-chip {{ row.stufe.cls }}">● {{ row.stufe.label }}</span>
+                    {% if row.abgeleitet %}<div class="fw-klein fw-mutet mt-1">{% trans "Mahngebühr bzw. Verzugszins: Das Schreiben nennt sie so; es wird keine weitere Mahngebühr erhoben." %}</div>{% endif %}
                     {% if row.ohne_androhung %}<div class="fw-klein fw-mutet mt-1">{% trans "Gebühr oder sonstige Forderung: gewöhnliche Mahnung, keine Kündigungsandrohung (Art. 257d OR gilt nur für Miete und Nebenkosten)." %}</div>{% endif %}
                 </td>
                 <td class="fw-strong whitespace-nowrap">

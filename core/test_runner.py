@@ -42,11 +42,38 @@ _UMHUELLT = '_mandanten_kontext_umhuellt'
 
 
 def kontext_je_test_aktivieren():
-    """Hüllt `SimpleTestCase.run` in eine Kontext-Kopie. Idempotent."""
+    """Hüllt `SimpleTestCase.run` in eine Kontext-Kopie. Idempotent.
+
+    Und räumt den Kontext, den `setUpClass`/`setUpTestData` hinterlässt, am Ende
+    der Klasse wieder ab. Das reicht die Kopie je Test NICHT ab: unittest ruft
+    `setUpClass` ausserhalb von `run` auf. `_test_organisation()` in
+    `setUpTestData` setzte die Organisation deshalb für den ganzen Prozess, und
+    sie blieb nach dem Rollback der Klasse stehen, obwohl die Zeile längst weg
+    war. Der nächste Test, der sich anmeldet (`force_login` → Signal →
+    `log_aktion`), schrieb seinen Logeintrag auf diese Geister-Organisation:
+    auf SQLite folgenlos, auf PostgreSQL ein Fremdschlüsselfehler beim
+    `SET CONSTRAINTS ALL IMMEDIATE` am Testende, der die Verbindung des Workers
+    schloss und jeden weiteren Test dieses Workers mitriss (PR #167).
+    """
     if getattr(SimpleTestCase, _UMHUELLT, False):
         return
 
     original = SimpleTestCase.run
+    set_up_class_original = SimpleTestCase.setUpClass.__func__
+
+    def set_up_class(cls):
+        from core.tenancy import _kontextfrei, _organisation
+        vorher = (_organisation.get(), _kontextfrei.get())
+
+        def wiederherstellen():
+            _organisation.set(vorher[0])
+            _kontextfrei.set(vorher[1])
+
+        # Klassen-Cleanups laufen nach `tearDownClass`, auch bei Fehler in setUpClass.
+        cls.addClassCleanup(wiederherstellen)
+        set_up_class_original(cls)
+
+    SimpleTestCase.setUpClass = classmethod(set_up_class)
 
     def run(self, result=None):
         return contextvars.copy_context().run(original, self, result)

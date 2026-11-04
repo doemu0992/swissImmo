@@ -38351,3 +38351,128 @@ msgstr "Nessuna persona privata con il titolo «Herr» non confermato."
 #: core/utils/qr_code.py
 msgid "Weitere Informationen"
 msgstr "Informazioni aggiuntive"
+
+#: core/templates/fw/mahnwesen.html
+msgid ""
+"Mahngebühr bzw. Verzugszins: Das Schreiben nennt sie so; es wird keine "
+"weitere Mahngebühr erhoben."
+msgstr ""
+"Spese di sollecito o interessi di mora: la lettera li indica come tali; non "
+"vengono addebitate ulteriori spese di sollecito."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid "Fensterprobe"
+msgstr "Prova della finestra"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid "Fensterprobe: sechs lange Zeilen"
+msgstr "Prova della finestra: sei righe lunghe"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+#, python-format
+msgid "Umschlagfenster (Annahme, %(b)s × %(h)s mm)"
+msgstr "Finestra della busta (ipotesi, %(b)s × %(h)s mm)"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+#, python-format
+msgid "Falzmarke %(mm)s mm"
+msgstr "Segno di piegatura %(mm)s mm"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+#, python-format
+msgid "= %(mm)s mm (Massstab-Kontrolle)"
+msgstr "= %(mm)s mm (controllo della scala)"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid ""
+"Auf Papier drucken (Massstab 100 %, nicht «An Seite anpassen»), an der "
+"Falzmarke in der Mitte falten und in den Fensterumschlag legen: Die Adresse "
+"muss im Fenster stehen."
+msgstr ""
+"Stampare su carta (scala 100 %, non «Adatta alla pagina»), piegare a metà al"
+" segno di piegatura e inserire nella busta con finestra: l'indirizzo deve "
+"apparire nella finestra."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+#, python-format
+msgid ""
+"Mindestens %(mm)s mm Rand zum Fensterrand; der Zustellvermerk darf nicht im "
+"Fenster stehen."
+msgstr ""
+"Almeno %(mm)s mm di margine dal bordo della finestra; la dicitura di "
+"spedizione non deve comparire nella finestra."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid ""
+"Der rote Umriss ist eine Annahme, kein gemessener Wert: Massgebend ist Ihr "
+"Umschlag. Sitzt die Adresse nicht richtig, stellen Sie den Versatz in den "
+"Briefkopf-Einstellungen ein."
+msgstr ""
+"Il contorno rosso è un'ipotesi, non un valore misurato: fa fede la vostra "
+"busta. Se l'indirizzo non è posizionato correttamente, impostate lo "
+"scostamento nelle impostazioni dell'intestazione."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+#, python-format
+msgid ""
+"Aktuelle Adresslage: Versatz x = %(x)s mm (nach rechts), y = %(y)s mm (nach "
+"unten)."
+msgstr ""
+"Posizione attuale dell'indirizzo: scostamento x = %(x)s mm (verso destra), y"
+" = %(y)s mm (verso il basso)."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+#, python-format
+msgid ""
+"«%(roh)s» ist kein Versatz zwischen -10 und 10 mm — Versatz %(name)s "
+"unverändert."
+msgstr ""
+"«%(roh)s» non è uno scostamento tra -10 e 10 mm — scostamento %(name)s "
+"invariato."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid "nach rechts"
+msgstr "verso destra"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid "nach unten"
+msgstr "verso il basso"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid "Adresse im Fenster: nach rechts (mm)"
+msgstr "Indirizzo nella finestra: verso destra (mm)"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid "Adresse im Fenster: nach unten (mm)"
+msgstr "Indirizzo nella finestra: verso il basso (mm)"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid "Fensterprobe drucken (PDF)"
+msgstr "Stampare la prova della finestra (PDF)"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py,
+#: core/templates/fw/account.html
+msgid ""
+"Drucken Sie die Fensterprobe, falten Sie sie an den Falzmarken und legen Sie"
+" sie in Ihren Fensterumschlag. Steht die Adresse nicht im Fenster, "
+"verschieben Sie sie hier (±10 mm, 0 = Norm); die Briefe folgen dem Versatz."
+msgstr ""
+"Stampate la prova della finestra, piegatela ai segni di piegatura e "
+"inseritela nella vostra busta con finestra. Se l'indirizzo non appare nella "
+"finestra, spostatelo qui (±10 mm, 0 = norma); le lettere seguono lo "
+"scostamento."
