@@ -238,6 +238,14 @@ class WebhookEingangTests(TestCase):
         n = TicketNachricht.alle_organisationen.get(ticket=t, typ='mail_antwort')
         self.assertEqual(len(n.nachricht), 10000)
 
+    def test_antworttext_kuerzt_jede_quelle_selbst(self):
+        from core.services.antwort_eingang import TEXT_MAX, antworttext
+        lang = 'x' * (TEXT_MAX + 500)
+        for item in ({'ExtractedMarkdownMessage': lang}, {'RawTextBody': lang}, {'RawHtmlBody': f'<p>{lang}</p>'}):
+            self.assertEqual(len(antworttext(item)), TEXT_MAX, item.keys())
+        self.assertEqual(antworttext({'ExtractedMarkdownMessage': 'Neu.', 'RawTextBody': 'Alt.'}), 'Neu.')
+        self.assertEqual(antworttext({'RawTextBody': 'Ja.\n\nAm 01.11.2026 um 10:00 schrieb X:\n> Zitat'}), 'Ja.')
+
     def test_secret_fehlt_oder_falsch_ergibt_403_und_legt_nichts_an(self):
         from tickets.models import TicketNachricht
         t, _a = _auftrag_einfach()

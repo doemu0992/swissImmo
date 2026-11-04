@@ -37913,3 +37913,39 @@ msgstr ""
 "Print the window check, fold it at the fold marks and put it in your window "
 "envelope. If the address does not appear in the window, move it here (±10 "
 "mm, 0 = standard); the letters follow the offset."
+
+#: core/templates/core/postfach_liste.html
+msgid "Ihre Antwortadresse"
+msgstr "Your reply address"
+
+#: core/templates/core/postfach_liste.html
+msgid "Antworten von Mietern und Handwerkern auf Ticket-Mails kommen hierher und erscheinen im Ticket und im Chat. Sie müssen nichts einrichten. Haben Sie ein eigenes Postfach hinterlegt, gilt dieses."
+msgstr "Replies from tenants and tradespeople to ticket emails arrive here and appear in the ticket and in the chat. You do not have to set anything up. If you have stored your own mailbox, that one applies."
+
+#: core/templates/core/postfach_liste.html
+msgid "Es gilt Ihr eigenes Postfach: %(adresse)s. Die Adresse oben ist als Reserve bereit und wird verwendet, sobald Sie das eigene Postfach abschalten."
+msgstr "Your own mailbox applies: %(adresse)s. The address above is ready as a reserve and will be used as soon as you switch off your own mailbox."
+
+#: core/templates/core/postfach_liste.html
+msgid "Es gilt diese Adresse: Ticket-Mails tragen sie als Antwortadresse."
+msgstr "This address applies: ticket emails carry it as the reply address."
+
+#: core/templates/core/postfach_liste.html
+msgid "Der Empfang ist auf dem Server noch nicht eingerichtet. Bis dahin tragen Ticket-Mails weiterhin Ihre bisherige Antwortadresse."
+msgstr "Receiving is not yet set up on the server. Until then, ticket emails keep carrying your current reply address."
+
+#: core/templates/core/postfach_liste.html
+msgid "Die bisherige Adresse gilt noch bis %(bis)s."
+msgstr "The previous address remains valid until %(bis)s."
+
+#: core/templates/core/postfach_liste.html
+msgid "Neue Adresse erzeugen? Die bisherige Adresse gilt noch 30 Tage, danach nicht mehr."
+msgstr "Generate a new address? The previous one remains valid for 30 more days, then no longer."
+
+#: core/templates/core/postfach_liste.html
+msgid "Adresse erneuern"
+msgstr "Renew address"
+
+#: core/views/postfach.py
+msgid "Die Antwortadresse wurde erneuert. Die bisherige Adresse gilt noch 30 Tage."
+msgstr "The reply address has been renewed. The previous address remains valid for 30 more days."
