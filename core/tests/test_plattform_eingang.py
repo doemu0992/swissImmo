@@ -417,12 +417,13 @@ class FehlerUndPoisonTests(Basis):
         z = Zustand()
         z.hinein(self._mail_a())
         with mock.patch('core.services.antwort_eingang.eingehende_antwort_verarbeiten', side_effect=ValueError('x')):
-            for versuch in range(1, pp.MAX_VERSUCHE):
+            for versuch in range(1, min(pp.MAX_VERSUCHE, 10)):
                 zahlen = self.lauf(z)
                 self.assertEqual(zahlen['fehlgeschlagen'], 1, versuch)
                 self.assertFalse(z.gelesen(1), versuch)
             with self.assertLogs('core.services.plattform_postfach', 'ERROR') as protokoll:
                 zahlen = self.lauf(z)
+        self.assertEqual(pp.MAX_VERSUCHE, 5, 'Die Zahl der Versuche ist Teil der Zusage in der Anleitung.')
         self.assertEqual((zahlen['aufgegeben'], zahlen['fehlgeschlagen']), (1, 0))
         self.assertTrue(z.gelesen(1))
         (eintrag,) = _plattform_mails().values()
