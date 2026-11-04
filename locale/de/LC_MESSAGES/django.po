@@ -36510,3 +36510,34 @@ msgstr "{gruss}\n\nfür „{schaden}“ wurde ein Termin vereinbart:\n\nWann: {t
 
 msgid "{gruss}\n\nDer Termin für „{schaden}“ ({objekt}) ist festgelegt: {termin}.\nMieter: {melder_name} ({melder_tel}).\nDer Kalendereintrag hängt an. Können Sie den Termin nicht einhalten, antworten Sie direkt auf diese Mail — Ihre Antwort geht an den Mieter, den neuen Termin stimmen Sie direkt mit ihm ab.\n\nFreundliche Grüsse\nIhre Liegenschaftsverwaltung"
 msgstr "{gruss}\n\nDer Termin für „{schaden}“ ({objekt}) ist festgelegt: {termin}.\nMieter: {melder_name} ({melder_tel}).\nDer Kalendereintrag hängt an. Können Sie den Termin nicht einhalten, antworten Sie direkt auf diese Mail — Ihre Antwort geht an den Mieter, den neuen Termin stimmen Sie direkt mit ihm ab.\n\nFreundliche Grüsse\nIhre Liegenschaftsverwaltung"
+
+msgid "Anrede prüfen"
+msgstr "Anrede prüfen"
+
+msgid "Keine Anrede"
+msgstr "Keine Anrede"
+
+msgid "keine Anrede"
+msgstr "keine Anrede"
+
+msgid "Ungültige Anrede."
+msgstr "Ungültige Anrede."
+
+#, python-format
+msgid "%(name)s: Anrede «%(anrede)s» gespeichert."
+msgstr "%(name)s: Anrede «%(anrede)s» gespeichert."
+
+msgid "Liste «Anrede prüfen» exportiert (CSV)"
+msgstr "Liste «Anrede prüfen» exportiert (CSV)"
+
+msgid "Bis vor Kurzem war «Herr» vorgegeben. Bitte je Person die richtige Anrede wählen oder «Herr» bestätigen; danach verschwindet die Zeile."
+msgstr "Bis vor Kurzem war «Herr» vorgegeben. Bitte je Person die richtige Anrede wählen oder «Herr» bestätigen; danach verschwindet die Zeile."
+
+msgid "Liste als CSV"
+msgstr "Liste als CSV"
+
+msgid "Alles geprüft"
+msgstr "Alles geprüft"
+
+msgid "Keine Privatperson mit unbestätigter Anrede «Herr»."
+msgstr "Keine Privatperson mit unbestätigter Anrede «Herr»."

@@ -581,6 +581,7 @@ def _vertrag_aus_bewerbung(request, b):
             # Seit MIET-13 wird das Geschlecht nicht mehr erfragt: ohne Angabe bleibt die Anrede leer
             # (der Vertragsassistent erhebt sie), statt «Herr» zu raten.
             anrede={'weiblich': 'Frau', 'maennlich': 'Herr'}.get(b.geschlecht, ''),
+            anrede_geprueft=b.geschlecht in ('weiblich', 'maennlich'),     # Angabe der Person selbst
             vorname=b.vorname, nachname=b.nachname,
             geburtsdatum=b.geburtsdatum, zivilstand=b.zivilstand or '',
             nationalitaet=b.nationalitaet or '', heimatort=b.heimatort or '',

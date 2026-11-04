@@ -20,6 +20,7 @@ from core.services.geheimnis import SchluesselFehlt
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.translation import gettext
+from django.views.decorators.http import require_POST
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
@@ -683,6 +684,42 @@ def fw_person_adresse_loeschen(request, pk):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def fw_person_anrede_setzen(request, pk):
+    """Schnellauswahl aus der Liste «Anrede prüfen»: Herr (bestätigen) / Frau / keine Anrede.
+
+    Nur POST. Danach gilt die Anrede als geprüft, die Zeile verschwindet aus der Liste.
+    Fremde Personen: 404 (der Mieter-Manager filtert auf die Verwaltung); Firmen und Vereine
+    haben keine Anrede: 404.
+    """
+    from django.http import Http404
+    from django.shortcuts import redirect
+    from django.utils.http import url_has_allowed_host_and_scheme
+    from core.auth import log_aktion
+
+    m = get_object_or_404(Mieter, id=pk)
+    if m.typ != 'person':
+        raise Http404
+    wahl = request.POST.get('anrede')
+    if wahl not in ('Herr', 'Frau', ''):
+        messages.error(request, gettext('Ungültige Anrede.'))
+    else:
+        alt = m.anrede
+        m.anrede = wahl
+        m.anrede_geprueft = True
+        m.save(update_fields=['anrede', 'anrede_geprueft'])
+        log_aktion(request, "Anrede geprüft", m.display_name,
+                   f"Anrede: {alt or '—'} → {wahl or '—'}", ziel=m)
+        messages.success(request, '✅ ' + gettext('%(name)s: Anrede «%(anrede)s» gespeichert.') % {
+            'name': m.display_name, 'anrede': wahl or gettext('keine Anrede')})
+    ziel = request.POST.get('zurueck', '')
+    if not (ziel.startswith('/neu/personen/') and url_has_allowed_host_and_scheme(
+            ziel, allowed_hosts={request.get_host()}, require_https=request.is_secure())):
+        ziel = '/neu/personen/?anrede=pruefen'
+    return redirect(ziel)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_person_form(request, pk=None):
     """Person (Mieter/Kontakt) erfassen oder bearbeiten — Fairwalter-Stil."""
     from django.shortcuts import redirect
@@ -701,7 +738,10 @@ def fw_person_form(request, pk=None):
         alt_snap = snapshot_model(Mieter.objects.get(pk=m.pk)) if m is not None else {}
         obj = m or Mieter()
         obj.typ = P.get('typ', 'person')
+        anrede_vorher = obj.anrede
         obj.anrede = P.get('anrede', '').strip()
+        if obj.anrede and obj.anrede != anrede_vorher:
+            obj.anrede_geprueft = True      # bewusst gewählt (nicht die frühere Vorgabe «Herr»)
         obj.vorname = P.get('vorname', '').strip()
         obj.nachname = P.get('nachname', '').strip()
         obj.firmen_name = P.get('firmen_name', '').strip()

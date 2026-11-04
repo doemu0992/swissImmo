@@ -38202,3 +38202,34 @@ msgstr "Valuta"
 #: core/utils/qr_code.py
 msgid "Annahmestelle"
 msgstr "Punto di accettazione"
+
+msgid "Anrede prüfen"
+msgstr "Verificare il titolo"
+
+msgid "Keine Anrede"
+msgstr "Nessun titolo"
+
+msgid "keine Anrede"
+msgstr "nessun titolo"
+
+msgid "Ungültige Anrede."
+msgstr "Titolo non valido."
+
+#, python-format
+msgid "%(name)s: Anrede «%(anrede)s» gespeichert."
+msgstr "%(name)s: titolo «%(anrede)s» salvato."
+
+msgid "Liste «Anrede prüfen» exportiert (CSV)"
+msgstr "Elenco «Verificare il titolo» esportato (CSV)"
+
+msgid "Bis vor Kurzem war «Herr» vorgegeben. Bitte je Person die richtige Anrede wählen oder «Herr» bestätigen; danach verschwindet die Zeile."
+msgstr "Fino a poco tempo fa «Herr» era il valore predefinito. Scegliere il titolo corretto per ogni persona o confermare «Herr»; la riga poi scompare."
+
+msgid "Liste als CSV"
+msgstr "Elenco in CSV"
+
+msgid "Alles geprüft"
+msgstr "Tutto verificato"
+
+msgid "Keine Privatperson mit unbestätigter Anrede «Herr»."
+msgstr "Nessuna persona privata con il titolo «Herr» non confermato."
