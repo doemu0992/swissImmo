@@ -38512,3 +38512,111 @@ msgstr "Rinnovare l'indirizzo"
 #: core/views/postfach.py
 msgid "Die Antwortadresse wurde erneuert. Die bisherige Adresse gilt noch 30 Tage."
 msgstr "L'indirizzo di risposta è stato rinnovato. Il vecchio indirizzo resta valido ancora 30 giorni."
+
+#: core/templates/core/postfach_liste.html
+msgid "E-Mail-Eingang"
+msgstr "Posta in arrivo"
+
+#: core/templates/core/postfach_liste.html
+msgid "Antworten auf Ticket-Mails und Rechnungen Ihrer Lieferanten kommen über zwei Adressen bei uns an. Sie hinterlegen keine Passwörter und müssen nichts einrichten."
+msgstr "Le risposte alle e-mail dei ticket e le fatture dei fornitori ci arrivano tramite due indirizzi. Non registrate password e non dovete configurare nulla."
+
+#: core/templates/core/postfach_liste.html
+msgid "Antworten auf Tickets"
+msgstr "Risposte ai ticket"
+
+#: core/templates/core/postfach_liste.html
+msgid "Antworten von Mietern und Handwerkern auf Ticket-Mails kommen an diese Adresse und erscheinen im Ticket und im Chat."
+msgstr "Le risposte di inquilini e artigiani alle e-mail dei ticket arrivano a questo indirizzo e compaiono nel ticket e nella chat."
+
+#: core/templates/core/postfach_liste.html
+msgid "Ihr eigenes Postfach ist eingerichtet, aber seine Zugangsdaten lassen sich nicht lesen. Deshalb gilt diese Adresse. Mehr unter «Erweitert» weiter unten."
+msgstr "La vostra casella è configurata, ma le sue credenziali non sono leggibili. Vale quindi questo indirizzo. Maggiori dettagli sotto «Avanzate»."
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang eingerichtet. Es gilt diese Adresse: Ticket-Mails tragen sie als Antwortadresse."
+msgstr "Ricezione configurata. Vale questo indirizzo: le e-mail dei ticket lo riportano come indirizzo di risposta."
+
+#: core/templates/core/postfach_liste.html
+msgid "Letzter Eingang: %(zeit)s"
+msgstr "Ultima ricezione: %(zeit)s"
+
+#: core/templates/core/postfach_liste.html
+msgid "Noch nichts eingegangen."
+msgstr "Ancora nulla ricevuto."
+
+#: core/templates/core/postfach_liste.html
+msgid "Eingehende Rechnungen"
+msgstr "Fatture in arrivo"
+
+#: core/templates/core/postfach_liste.html
+msgid "Rechnungen an diese Adresse weiterleiten — oder im eigenen Mailprogramm eine Weiterleitungsregel einrichten. Aus jedem PDF- oder Bild-Anhang entsteht eine Kreditorenrechnung mit dem Status «Neu»."
+msgstr "Inoltrate le fatture a questo indirizzo — oppure impostate una regola di inoltro nel vostro programma di posta. Ogni allegato PDF o immagine diventa una fattura fornitore con stato «Nuovo»."
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang eingerichtet. Rechnungen an diese Adresse landen in den Kreditoren."
+msgstr "Ricezione configurata. Le fatture inviate a questo indirizzo finiscono tra i creditori."
+
+#: core/templates/core/postfach_liste.html
+msgid "Mails kommen an, aber die Anhänge lassen sich auf dem Server noch nicht laden. Der Eingang steht dann nur im Logbuch, und es entsteht keine Rechnung. Bitte melden Sie sich bei uns."
+msgstr "Le e-mail arrivano, ma gli allegati non possono ancora essere caricati sul server. La ricezione compare allora solo nel registro e non viene creata alcuna fattura. Contattateci."
+
+#: core/templates/core/postfach_liste.html
+msgid "Der Empfang ist auf dem Server noch nicht eingerichtet. Rechnungen an diese Adresse kommen noch nicht an."
+msgstr "La ricezione non è ancora configurata sul server. Le fatture inviate a questo indirizzo non arrivano ancora."
+
+#: core/templates/core/postfach_liste.html
+msgid "Zusätzlich wird Ihr eigenes Postfach abgerufen: %(adresse)s."
+msgstr "Viene inoltre prelevata la vostra casella: %(adresse)s."
+
+#: core/templates/core/postfach_liste.html
+msgid "So leiten Sie weiter"
+msgstr "Come inoltrare"
+
+#: core/templates/core/postfach_liste.html
+msgid "Einstellungen → Alle Einstellungen → Weiterleitung und POP/IMAP → Weiterleitungsadresse hinzufügen. Gmail schickt zuerst einen Bestätigungscode an diese Adresse; er steht meist im Betreff der Mail, die Sie im Logbuch unter «Rechnungsmail ohne Anhang abgerufen» finden."
+msgstr "Impostazioni → Visualizza tutte le impostazioni → Inoltro e POP/IMAP → Aggiungi un indirizzo di inoltro. Gmail invia prima un codice di conferma a questo indirizzo; di solito si trova nell'oggetto del messaggio, che trovate nel registro sotto «Rechnungsmail ohne Anhang abgerufen»."
+
+#: core/templates/core/postfach_liste.html
+msgid "Einstellungen → E-Mail → Regeln, neue Regel «Weiterleiten an» mit dieser Adresse; oder unter Weiterleitung die ganze Post umleiten."
+msgstr "Impostazioni → Posta → Regole, nuova regola «Inoltra a» con questo indirizzo; oppure inoltrare tutta la posta sotto Inoltro."
+
+#: core/templates/core/postfach_liste.html
+msgid "Im Webmail unter Einstellungen → Weiterleitung (oder Filter) eine Weiterleitung auf diese Adresse anlegen; der Hoster hilft, wenn der Menüpunkt anders heisst."
+msgstr "Nel webmail, sotto Impostazioni → Inoltro (o Filtro), create un inoltro verso questo indirizzo; l'hoster vi aiuta se la voce di menu ha un altro nome."
+
+#: core/templates/core/postfach_liste.html
+msgid "Die bisherigen Adressen gelten noch bis %(bis)s."
+msgstr "I vecchi indirizzi restano validi fino al %(bis)s."
+
+#: core/templates/core/postfach_liste.html
+msgid "Eine Adresse in falsche Hände geraten? Erneuern Sie beide Adressen. Die bisherigen gelten noch 30 Tage; Weiterleitungen müssen Sie danach auf die neue Rechnungsadresse umstellen."
+msgstr "Un indirizzo è finito in mani sbagliate? Rinnovate entrambi gli indirizzi. I vecchi restano validi 30 giorni; poi dovrete reindirizzare gli inoltri al nuovo indirizzo delle fatture."
+
+#: core/templates/core/postfach_liste.html
+msgid "Erweitert: eigenes Postfach per IMAP abrufen"
+msgstr "Avanzate: prelevare la propria casella via IMAP"
+
+#: core/templates/core/postfach_liste.html
+msgid "Einfacher geht es mit einer Weiterleitung auf die Adressen oben: Dafür hinterlegen Sie keine Zugangsdaten, und es bricht nichts, wenn Sie Ihr Passwort ändern. Nur wenn das nicht möglich ist, rufen wir Ihr Postfach selbst ab."
+msgstr "Più semplice: un inoltro verso gli indirizzi qui sopra. Non registrate credenziali e non si rompe nulla se cambiate la password. Solo se ciò non è possibile preleviamo noi la vostra casella."
+
+#: core/templates/core/postfach_liste.html
+msgid "Die Zugangsdaten lassen sich nicht lesen."
+msgstr "Le credenziali non sono leggibili."
+
+#: core/templates/core/postfach_liste.html
+msgid "Der Schlüssel auf dem Server wurde gewechselt. Dieses Postfach wird nicht mehr abgerufen. Geben Sie die Zugangsdaten neu ein oder löschen Sie das Postfach und nutzen Sie stattdessen eine Weiterleitung auf die Adressen oben."
+msgstr "La chiave sul server è stata cambiata. Questa casella non viene più prelevata. Inserite di nuovo le credenziali oppure eliminate la casella e usate invece un inoltro verso gli indirizzi qui sopra."
+
+#: core/templates/core/postfach_liste.html
+msgid "Neu eingeben"
+msgstr "Inserire di nuovo"
+
+#: core/templates/core/postfach_liste.html
+msgid "Die Adressen wurden erneuert. Die bisherigen Adressen gelten noch 30 Tage — stellen Sie Weiterleitungen auf die neue Rechnungsadresse um."
+msgstr "Gli indirizzi sono stati rinnovati. I vecchi restano validi 30 giorni — reindirizzate gli inoltri al nuovo indirizzo delle fatture."
+
+#: core/templates/core/postfach_liste.html
+msgid "Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei Bedarf"
+msgstr "Indirizzi per risposte ai ticket e fatture, casella propria solo se necessario"

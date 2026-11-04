@@ -108,6 +108,9 @@ AUSNAHMEN = {
     'tickets.EingegangeneMail.message_id':
      'gesetzt vom Brevo-Webhook (`core.views.webhooks`) aus der MessageId der eingegangenen Mail; reine '
      'Idempotenzmarke, nie Eingabe (Antwortadressen, 4.11.2026)',
+    'tickets.EingegangeneMail.zweck':
+     'gesetzt vom Brevo-Webhook aus der Empfängeradresse («antworten» oder «rechnungen»); dient nur der Anzeige '
+     '«Letzter Eingang» je Adresse (E-Mail-Eingang, 4.11.2026)',
     'crm.Mieter.anrede_geprueft':
      'gesetzt vom Server, sobald die Anrede bewusst gewählt wird: Schnellauswahl «Anrede prüfen» '
      '(`fw_person_anrede_setzen`), Personenformular bei geänderter Anrede, Vertragsassistent; '

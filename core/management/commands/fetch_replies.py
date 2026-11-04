@@ -88,8 +88,8 @@ class Command(BaseCommand):
 
         if not postfaecher.exists():
             self.stdout.write(self.style.WARNING(
-                'Kein eingerichtetes Antwort-Postfach gefunden. In den Einstellungen '
-                'der Verwaltung unter «Postfächer» hinterlegen.'))
+                'Kein eigenes Antwort-Postfach (IMAP) eingerichtet. Antworten kommen '
+                'über die Plattformadresse (Einstellungen, E-Mail-Eingang).'))
 
         from core.funktionen import hintergrund_erlaubt
         mit_postfach = set()

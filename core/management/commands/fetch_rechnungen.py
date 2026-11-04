@@ -76,8 +76,9 @@ class Command(BaseCommand):
             # Keine stille Null: Ohne diese Zeile sähe ein leerer Lauf genauso
             # aus wie ein Lauf ohne neue Mails.
             self.stdout.write(self.style.WARNING(
-                'Kein eingerichtetes Rechnungs-Postfach gefunden. In den '
-                'Einstellungen der Verwaltung unter «Postfächer» hinterlegen.'))
+                'Kein eigenes Rechnungs-Postfach (IMAP) eingerichtet. Üblich ist das seit '
+                'dem 4.11.2026 nicht mehr: Rechnungen kommen per Weiterleitung an die '
+                'Rechnungsadresse (Einstellungen, E-Mail-Eingang).'))
             return
 
         from core.funktionen import hintergrund_erlaubt
