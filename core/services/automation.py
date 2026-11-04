@@ -668,6 +668,11 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
             p.erledigt_am = heute
             p.save(update_fields=['erledigt', 'erledigt_am'])
 
+    # a3b1) Termin offen: Mieter und Handwerker finden nach TERMIN_OFFEN_TAGE keinen Termin
+    # (tickets/termin_pendenz.py). Nur die Pendenz, kein Mail; schliesst sich selbst.
+    from tickets.termin_pendenz import termin_offen_pendenzen
+    termin_offen_pendenzen(heute, _ensure)
+
     # a3c) Zahlungsvereinbarungen bewerten: erfüllt oder gebrochen.
     from core.services.zahlungsvereinbarung import pruefen_alle
     pruefen_alle()

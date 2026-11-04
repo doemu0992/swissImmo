@@ -291,6 +291,11 @@ def _pendenz_ziel(p):
     if q.startswith('schluessel:verlust-intern:') and p.liegenschaft_id:
         return (f'/neu/liegenschaften/{p.liegenschaft_id}/?tab=stammdaten#schliessanlage',
                 gettext('Schliessanlage öffnen'), False, False)
+    if q.startswith('auto:termin:'):
+        # auto:termin:<Auftrag>:<Ticket> (tickets/termin_pendenz.py)
+        ticket_id = q.rsplit(':', 1)[-1]
+        if ticket_id.isdigit():
+            return (f'/neu/schaeden/{ticket_id}/', gettext('Ticket öffnen'), False, False)
     if p.vertrag_id:
         if q.startswith(('257d-vorschlag:', '257d-einschreiben:')):
             return (f'/neu/vertraege/{p.vertrag_id}/verzug/', gettext('Fristansetzung starten'), False, False)
