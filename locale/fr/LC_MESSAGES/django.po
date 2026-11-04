@@ -38267,3 +38267,105 @@ msgid ""
 msgstr ""
 "Frais de rappel ou intérêts moratoires : le courrier les désigne ainsi"
 " ; aucun nouveau frais de rappel n'est perçu."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py, core/templates/fw/account.html
+msgid "Fensterprobe"
+msgstr "Test de fenêtre"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py, core/templates/fw/account.html
+msgid "Fensterprobe: sechs lange Zeilen"
+msgstr "Test de fenêtre : six longues lignes"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py, core/templates/fw/account.html
+#, python-format
+msgid "Umschlagfenster (Annahme, %(b)s × %(h)s mm)"
+msgstr "Fenêtre de l'enveloppe (hypothèse, %(b)s × %(h)s mm)"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py, core/templates/fw/account.html
+#, python-format
+msgid "Falzmarke %(mm)s mm"
+msgstr "Repère de pliage %(mm)s mm"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py, core/templates/fw/account.html
+#, python-format
+msgid "= %(mm)s mm (Massstab-Kontrolle)"
+msgstr "= %(mm)s mm (contrôle de l'échelle)"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py, core/templates/fw/account.html
+msgid ""
+"Auf Papier drucken (Massstab 100 %, nicht «An Seite anpassen»), an den"
+" Falzmarken in drei Teile falten und in den Fensterumschlag legen: Die"
+" Adresse muss im Fenster stehen."
+msgstr ""
+"Imprimer sur papier (échelle 100 %, pas « Ajuster à la page »), plier "
+"en trois aux repères de pliage et glisser dans l'enveloppe à fenêtre :"
+" l'adresse doit apparaître dans la fenêtre."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py, core/templates/fw/account.html
+#, python-format
+msgid ""
+"Mindestens %(mm)s mm Rand zum Fensterrand; der Zustellvermerk darf "
+"nicht im Fenster stehen."
+msgstr ""
+"Au moins %(mm)s mm de marge par rapport au bord de la fenêtre ; la "
+"mention d'expédition ne doit pas figurer dans la fenêtre."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py, core/templates/fw/account.html
+msgid ""
+"Der rote Umriss ist eine Annahme, kein gemessener Wert: Massgebend ist"
+" Ihr Umschlag. Sitzt die Adresse nicht richtig, stellen Sie den "
+"Versatz in den Briefkopf-Einstellungen ein."
+msgstr ""
+"Le contour rouge est une hypothèse, pas une valeur mesurée : c'est "
+"votre enveloppe qui fait foi. Si l'adresse n'est pas bien placée, "
+"réglez le décalage dans les paramètres de l'en-tête."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py, core/templates/fw/account.html
+#, python-format
+msgid ""
+"Aktuelle Adresslage: Versatz x = %(x)s mm (nach rechts), y = %(y)s mm "
+"(nach unten)."
+msgstr ""
+"Position actuelle de l'adresse : décalage x = %(x)s mm (vers la "
+"droite), y = %(y)s mm (vers le bas)."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py, core/templates/fw/account.html
+#, python-format
+msgid ""
+"«%(roh)s» ist kein Versatz zwischen -10 und 10 mm — Versatz %(name)s "
+"unverändert."
+msgstr ""
+"« %(roh)s » n'est pas un décalage entre -10 et 10 mm — décalage "
+"%(name)s inchangé."
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py, core/templates/fw/account.html
+msgid "nach rechts"
+msgstr "vers la droite"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py, core/templates/fw/account.html
+msgid "nach unten"
+msgstr "vers le bas"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py, core/templates/fw/account.html
+msgid "Adresse im Fenster: nach rechts (mm)"
+msgstr "Adresse dans la fenêtre : vers la droite (mm)"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py, core/templates/fw/account.html
+msgid "Adresse im Fenster: nach unten (mm)"
+msgstr "Adresse dans la fenêtre : vers le bas (mm)"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py, core/templates/fw/account.html
+msgid "Fensterprobe drucken (PDF)"
+msgstr "Imprimer le test de fenêtre (PDF)"
+
+#: core/services/fensterprobe.py, core/views/fw/profil.py, core/templates/fw/account.html
+msgid ""
+"Drucken Sie die Fensterprobe, falten Sie sie an den Falzmarken und "
+"legen Sie sie in Ihren Fensterumschlag. Steht die Adresse nicht im "
+"Fenster, verschieben Sie sie hier (±10 mm, 0 = Norm); die Briefe "
+"folgen dem Versatz."
+msgstr ""
+"Imprimez le test de fenêtre, pliez-le aux repères de pliage et "
+"glissez-le dans votre enveloppe à fenêtre. Si l'adresse n'apparaît pas"
+" dans la fenêtre, décalez-la ici (±10 mm, 0 = norme) ; les lettres "
+"suivent ce décalage."

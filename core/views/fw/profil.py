@@ -142,6 +142,21 @@ def fw_account(request):
                     '«%(farbe)s» ist keine Farbe im Format #RRGGBB — Briefkopf-Farbe unverändert.') % {'farbe': farbe})
         if 'briefkopf_fusszeile' in P:
             vw.briefkopf_fusszeile = (P.get('briefkopf_fusszeile') or '').strip()[:240]
+        # Adresslage (Versatz in mm, ±10): FEHLT das Feld, bleibt der Wert (zwei Formulare, eine Ansicht).
+        # Ein ungültiger Wert ändert nichts und sagt es.
+        for feld, name in (('adress_versatz_x_mm', gettext_lazy('nach rechts')),
+                           ('adress_versatz_y_mm', gettext_lazy('nach unten'))):
+            if feld in P:
+                roh = (_num(P.get(feld)) or '').strip()
+                try:
+                    wert = Decimal(roh) if roh else Decimal('0.0')
+                    if not (Decimal('-10') <= wert <= Decimal('10')):
+                        raise ValueError(roh)
+                    setattr(vw, feld, wert.quantize(Decimal('0.1')))
+                except Exception:
+                    messages.error(request, gettext(
+                        '«%(roh)s» ist kein Versatz zwischen -10 und 10 mm — Versatz %(name)s unverändert.')
+                        % {'roh': P.get(feld), 'name': name})
         vw.save()
         if _zins_alt != vw.aktueller_referenzzinssatz:
             from core.services.referenzzins import aenderung_festhalten
@@ -169,6 +184,18 @@ def fw_account(request):
         # Der Reset verlangt bei aktivem zweitem Faktor zusätzlich den Code.
         'reset_braucht_code': _hat_aktiven_zweiten_faktor(request.user),
     })
+
+
+@rolle_erforderlich(*TEAM_ROLLEN)
+def fw_fensterprobe(request):
+    """Fensterprobe zum Ausdrucken: aktuelle Adresslage, Fensterumriss, Falzmarken, Raster (nur lesen).
+
+    Enthält keine Daten der Verwaltung ausser dem Briefkopf und dem Versatz DER EIGENEN Verwaltung."""
+    from django.http import HttpResponse
+    from core.services.fensterprobe import fensterprobe_pdf
+    antwort = HttpResponse(fensterprobe_pdf(aktuelle_organisation()), content_type='application/pdf')
+    antwort['Content-Disposition'] = 'inline; filename="Fensterprobe.pdf"'
+    return antwort
 
 
 def _hat_aktiven_zweiten_faktor(benutzer):

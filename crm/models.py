@@ -5,7 +5,7 @@ from decimal import Decimal
 from PIL import Image
 from django.core.files.base import ContentFile
 from django.conf import settings
-from django.core.validators import RegexValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 
 from core.funktionen import STUFEN_NAMEN, STUFEN_REIHENFOLGE
@@ -94,6 +94,17 @@ class Organisation(models.Model):
     briefkopf_fusszeile = models.CharField(
         "Briefkopf-Fusszeile", max_length=240, blank=True, default='',
         help_text="Eine Zeile am Seitenfuss, z. B. Handelsregister oder Bankverbindung.")
+    # Adresslage der Briefe mit Fenster (C5/6, Fenster rechts): Versatz gegenüber der Norm in mm. 0 = unverändert.
+    # Gleicht ein Umschlag aus, dessen Fenster etwas anders liegt; die Fensterprobe zeigt, ob es nötig ist.
+    # x positiv = nach rechts, y positiv = nach unten. Begrenzt auf ±10 mm: Mehr verlässt das Fenster.
+    adress_versatz_x_mm = models.DecimalField(
+        "Adresslage: Versatz nach rechts (mm)", max_digits=4, decimal_places=1, default=Decimal('0.0'),
+        validators=[MinValueValidator(Decimal('-10')), MaxValueValidator(Decimal('10'))],
+        help_text="Nur nötig, wenn die Adresse im Fensterumschlag nicht mittig sitzt. 0 = Norm.")
+    adress_versatz_y_mm = models.DecimalField(
+        "Adresslage: Versatz nach unten (mm)", max_digits=4, decimal_places=1, default=Decimal('0.0'),
+        validators=[MinValueValidator(Decimal('-10')), MaxValueValidator(Decimal('10'))],
+        help_text="Nur nötig, wenn die Adresse im Fensterumschlag nicht mittig sitzt. 0 = Norm.")
     aktueller_referenzzinssatz = models.DecimalField("Aktueller Ref.Zins", max_digits=4, decimal_places=2, default=1.25)
     # Verwaltungshonorar auf die Nebenkosten-Abrechnung (Standard 3 %) — vorher hart codiert
     nk_honorar_prozent = models.DecimalField("NK-Verwaltungshonorar (%)", max_digits=4, decimal_places=2, default=3.00)
