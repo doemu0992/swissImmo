@@ -24,6 +24,44 @@
     </div></div>
     {% endif %}
 
+    {% if antwort %}
+    <div class="fw-card" id="antwortadresse">
+        <div class="fw-rumpf space-y-3">
+            <div class="fw-t">{% trans "Ihre Antwortadresse" %}</div>
+            <p class="text-sm fw-mutet">{% trans "Antworten von Mietern und Handwerkern auf Ticket-Mails kommen hierher und erscheinen im Ticket und im Chat. Sie müssen nichts einrichten. Haben Sie ein eigenes Postfach hinterlegt, gilt dieses." %}</p>
+            <div class="fw-feldblock">
+                <label class="fw-label" for="antwortadresse-feld">{% trans "Adresse" %}</label>
+                <div class="flex items-center gap-2">
+                    <input id="antwortadresse-feld" readonly value="{{ antwort.adresse }}" onfocus="this.select()"
+                           class="fw-feld fw-mono flex-1 min-w-0">
+                    <button type="button" class="fw-btn fw-knapp" data-kopiert="{% trans 'Kopiert' %}"
+                            onclick="var b=this;navigator.clipboard.writeText(document.getElementById('antwortadresse-feld').value).then(function(){b.textContent=b.dataset.kopiert;});">{% zeichen 'kopieren' %}{% trans "Kopieren" %}</button>
+                </div>
+            </div>
+            {% if antwort.eigenes_postfach %}
+            <div class="fw-hinweis info"><span class="fw-hi">{% zeichen 'hinweis' %}</span>
+                <div class="fw-ht">{% blocktrans with adresse=antwort.eigenes_postfach %}Es gilt Ihr eigenes Postfach: {{ adresse }}. Die Adresse oben ist als Reserve bereit und wird verwendet, sobald Sie das eigene Postfach abschalten.{% endblocktrans %}</div></div>
+            {% elif antwort.plattform_gilt %}
+            <div class="fw-hinweis good"><span class="fw-hi">{% zeichen 'gut' %}</span>
+                <div class="fw-ht">{% trans "Es gilt diese Adresse: Ticket-Mails tragen sie als Antwortadresse." %}</div></div>
+            {% else %}
+            <div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'warnung' %}</span>
+                <div class="fw-ht">{% trans "Der Empfang ist auf dem Server noch nicht eingerichtet. Bis dahin tragen Ticket-Mails weiterhin Ihre bisherige Antwortadresse." %}</div></div>
+            {% endif %}
+            {% if antwort.alt_bis %}
+            <p class="text-sm fw-mutet">{% blocktrans with bis=antwort.alt_bis|date:"d.m.Y" %}Die bisherige Adresse gilt noch bis {{ bis }}.{% endblocktrans %}</p>
+            {% endif %}
+            {% if darf_erneuern %}
+            <form method="post" action="{% url 'antwortadresse_erneuern' %}"
+                  onsubmit="return confirm('{% filter escapejs %}{% trans "Neue Adresse erzeugen? Die bisherige Adresse gilt noch 30 Tage, danach nicht mehr." %}{% endfilter %}');">
+                {% csrf_token %}
+                <button class="fw-btn fw-knapp">{% zeichen 'lauf' %}{% trans "Adresse erneuern" %}</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
     <div class="fw-card">
     {% for zeile in zeilen %}
     <div class="fw-zeile">

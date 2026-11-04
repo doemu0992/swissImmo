@@ -29,7 +29,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from core.auth import TEAM_ROLLEN, VERWALTUNGS_ROLLEN, hat_rolle, log_aktion, rolle_erforderlich
+from core.auth import INHABER_ROLLEN, TEAM_ROLLEN, VERWALTUNGS_ROLLEN, hat_rolle, log_aktion, rolle_erforderlich
 from core.models import Postfach
 from core.services.geheimnis import UMGEBUNGSNAME, schluessel_vorhanden
 from core.views.fw._basis import _global_filter
@@ -66,12 +66,47 @@ def postfach_liste(request):
     return render(request, 'core/postfach_liste.html', {
         **basis, 'nav': 'einstellungen', 'zeilen': zeilen,
         'darf_aendern': _darf_aendern(request),
+        'darf_erneuern': hat_rolle(getattr(request, 'user', None), INHABER_ROLLEN),
+        'antwort': _antwortadresse_karte(request, vorhanden.get(Postfach.ZWECK_ANTWORTEN)),
         # Ohne Schlüssel lässt sich kein Passwort ablegen. Das gehört auf die
         # Seite und nicht in ein Serverprotokoll — sonst speichert jemand
         # dreimal und versteht die Fehlermeldung nicht.
         'schluessel_fehlt': not schluessel_vorhanden(),
         'schluessel_name': UMGEBUNGSNAME,
     })
+
+
+def _antwortadresse_karte(request, antwort_postfach):
+    """Die Karte «Ihre Antwortadresse»: nur die Adresse der EIGENEN Verwaltung (aus dem Kontext) und
+    welche Adresse gerade gilt (eigenes Postfach oder Plattformadresse)."""
+    from crm.models import Organisation
+    from core.services.antwort_eingang import alte_kennung_gilt, antwort_adresse, eingang_aktiv
+    org = Organisation.objects.filter(pk=request.organisation.pk).first()
+    if org is None:
+        return None
+    eigenes = bool(antwort_postfach and antwort_postfach.aktiv and '@' in (antwort_postfach.benutzer or ''))
+    return {
+        'adresse': antwort_adresse(org),
+        'eigenes_postfach': antwort_postfach.benutzer if eigenes else '',
+        'plattform_gilt': not eigenes and eingang_aktiv(),
+        'eingang_fehlt': not eigenes and not eingang_aktiv(),
+        'alt_bis': org.antwort_kennung_alt_bis if alte_kennung_gilt(org) else None,
+    }
+
+
+@rolle_erforderlich(*INHABER_ROLLEN)
+@require_POST
+def antwortadresse_erneuern(request):
+    """Neue Kennung für die Antwortadresse der Verwaltung. Die bisherige bleibt 30 Tage gültig.
+
+    Nur der Inhaber: Mails, die schon unterwegs sind, tragen die alte Adresse. Protokolliert."""
+    from crm.models import Organisation
+    from core.services.antwort_eingang import kennung_erneuern
+    org = get_object_or_404(Organisation.objects.filter(pk=request.organisation.pk))
+    kennung_erneuern(org)
+    log_aktion(request, 'Antwortadresse erneuert', org.firma, 'Die bisherige Adresse gilt noch 30 Tage.')
+    messages.success(request, gettext('Die Antwortadresse wurde erneuert. Die bisherige Adresse gilt noch 30 Tage.'))
+    return redirect('postfach_liste')
 
 
 @rolle_erforderlich(*VERWALTUNGS_ROLLEN)
