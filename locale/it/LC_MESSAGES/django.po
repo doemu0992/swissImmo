@@ -38620,3 +38620,27 @@ msgstr "Gli indirizzi sono stati rinnovati. I vecchi restano validi 30 giorni �
 #: core/templates/core/postfach_liste.html
 msgid "Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei Bedarf"
 msgstr "Indirizzi per risposte ai ticket e fatture, casella propria solo se necessario"
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang über das Plattform-Postfach und über Brevo."
+msgstr "Ricezione tramite la casella della piattaforma e tramite Brevo."
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang über das Plattform-Postfach."
+msgstr "Ricezione tramite la casella della piattaforma."
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang über Brevo."
+msgstr "Ricezione tramite Brevo."
+
+#: core/templates/core/postfach_liste.html
+msgid "Plattform-Postfach zuletzt abgerufen: %(zeit)s"
+msgstr "Casella della piattaforma consultata l'ultima volta: %(zeit)s"
+
+#: core/templates/core/postfach_liste.html
+msgid "Plattform-Postfach noch nie abgerufen."
+msgstr "Casella della piattaforma mai consultata."
+
+#: core/templates/core/postfach_liste.html
+msgid "Fehler: %(fehler)s"
+msgstr "Errore: %(fehler)s"

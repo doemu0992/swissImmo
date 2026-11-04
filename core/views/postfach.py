@@ -77,12 +77,26 @@ def postfach_liste(request):
         'darf_erneuern': hat_rolle(getattr(request, 'user', None), INHABER_ROLLEN),
         'antwort': karten and karten['antwort'], 'rechnung': karten and karten['rechnung'],
         'erweitert_offen': any(z['postfach'] for z in zeilen),
+        'plattform_status': _plattform_status(request),
         # Ohne Schlüssel lässt sich kein Passwort ablegen. Das gehört auf die
         # Seite und nicht in ein Serverprotokoll — sonst speichert jemand
         # dreimal und versteht die Fehlermeldung nicht.
         'schluessel_fehlt': not schluessel_vorhanden(),
         'schluessel_name': UMGEBUNGSNAME,
     })
+
+
+def _plattform_status(request):
+    """Die kleine Zeile «Plattform-Postfach zuletzt abgerufen» — nur für den Inhaber und nur, wenn das
+    Plattform-Postfach eingerichtet ist. Sie betrifft die ganze Installation, darum steht dort kein Servername
+    und kein Benutzer (der Fehlertext ist schon so formuliert, siehe ``plattform_postfach.verbinden``)."""
+    from core.models import PlattformEingangStatus
+    from core.services.plattform_postfach import plattform_eingang_status
+    if not plattform_eingang_status()['imap'] or not hat_rolle(getattr(request, 'user', None), INHABER_ROLLEN):
+        return None
+    eintrag = PlattformEingangStatus.objects.filter(pk=1).first()
+    return {'abruf': eintrag.letzter_abruf if eintrag else None,
+            'fehler': eintrag.letzter_fehler if eintrag else ''}
 
 
 def _letzter_eingang(zweck):
@@ -98,11 +112,12 @@ def _adresskarten(request, vorhanden):
     Verwaltung (aus dem Kontext), ob der Empfang auf dem Server eingerichtet ist und wann zuletzt etwas kam."""
     from crm.models import Organisation
     from core.services import antwort_eingang as ae
-    from core.services.rechnungseingang import api_schluessel
+    from core.services.plattform_postfach import plattform_eingang_status
     org = Organisation.objects.filter(pk=request.organisation.pk).first()
     if org is None:
         return None
-    eingang = ae.eingang_aktiv()
+    kanaele = plattform_eingang_status()
+    eingang = kanaele['eingerichtet']
     antwort_pf = vorhanden.get(Postfach.ZWECK_ANTWORTEN)
     # Ein eigenes Postfach gilt nur, wenn es nutzbar ist (wie `tickets.workflow.reply_to`).
     eigenes = bool(antwort_pf and antwort_pf.aktiv and '@' in (antwort_pf.benutzer or '')
@@ -115,6 +130,7 @@ def _adresskarten(request, vorhanden):
             'eigenes_postfach': antwort_pf.benutzer if eigenes else '',
             'plattform_gilt': not eigenes and eingang,
             'eingang_fehlt': not eigenes and not eingang,
+            'kanal_brevo': kanaele['brevo'], 'kanal_imap': kanaele['imap'],
             'postfach_unlesbar': unlesbar,
             'alt_bis': org.antwort_kennung_alt_bis if ae.alte_kennung_gilt(org) else None,
             'letzter_eingang': _letzter_eingang(ae.ZWECK_ANTWORTEN),
@@ -122,7 +138,10 @@ def _adresskarten(request, vorhanden):
         'rechnung': {
             'adresse': ae.rechnungs_adresse(org),
             'eingang_ok': eingang,
-            'anhaenge_ok': bool(api_schluessel()),
+            # Anhänge lassen sich nur dann nicht laden, wenn Brevo der EINZIGE Kanal ist und der Schlüssel fehlt;
+            # über das Plattform-Postfach liegen sie in der Mail selbst.
+            'anhaenge_ok': not kanaele['anhaenge_fehlen'],
+            'kanal_brevo': kanaele['brevo'], 'kanal_imap': kanaele['imap'],
             'eigenes_postfach': rechnung_pf.benutzer if (rechnung_pf and rechnung_pf.aktiv
                                                          and rechnung_pf.zugang_lesbar) else '',
             'alt_bis': org.antwort_kennung_alt_bis if ae.alte_kennung_gilt(org) else None,

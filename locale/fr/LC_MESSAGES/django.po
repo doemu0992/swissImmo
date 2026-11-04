@@ -38679,3 +38679,27 @@ msgstr "Les adresses ont été renouvelées. Les anciennes restent valables 30 j
 #: core/templates/core/postfach_liste.html
 msgid "Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei Bedarf"
 msgstr "Adresses pour les réponses aux tickets et les factures, propre boîte aux lettres seulement si nécessaire"
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang über das Plattform-Postfach und über Brevo."
+msgstr "Réception via la boîte aux lettres de la plateforme et via Brevo."
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang über das Plattform-Postfach."
+msgstr "Réception via la boîte aux lettres de la plateforme."
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang über Brevo."
+msgstr "Réception via Brevo."
+
+#: core/templates/core/postfach_liste.html
+msgid "Plattform-Postfach zuletzt abgerufen: %(zeit)s"
+msgstr "Boîte aux lettres de la plateforme relevée pour la dernière fois : %(zeit)s"
+
+#: core/templates/core/postfach_liste.html
+msgid "Plattform-Postfach noch nie abgerufen."
+msgstr "Boîte aux lettres de la plateforme jamais relevée."
+
+#: core/templates/core/postfach_liste.html
+msgid "Fehler: %(fehler)s"
+msgstr "Erreur : %(fehler)s"

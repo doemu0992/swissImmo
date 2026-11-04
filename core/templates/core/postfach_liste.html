@@ -40,6 +40,7 @@
             {% elif antwort.plattform_gilt %}
             <div class="fw-hinweis good"><span class="fw-hi">{% zeichen 'gut' %}</span>
                 <div class="fw-ht">{% trans "Empfang eingerichtet. Es gilt diese Adresse: Ticket-Mails tragen sie als Antwortadresse." %}</div></div>
+            <p class="text-sm fw-mutet">{% if antwort.kanal_imap and antwort.kanal_brevo %}{% trans "Empfang über das Plattform-Postfach und über Brevo." %}{% elif antwort.kanal_imap %}{% trans "Empfang über das Plattform-Postfach." %}{% else %}{% trans "Empfang über Brevo." %}{% endif %}</p>
             {% else %}
             <div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'warnung' %}</span>
                 <div class="fw-ht">{% trans "Der Empfang ist auf dem Server noch nicht eingerichtet. Bis dahin tragen Ticket-Mails weiterhin Ihre bisherige Antwortadresse." %}</div></div>
@@ -66,6 +67,7 @@
             {% if rechnung.eingang_ok and rechnung.anhaenge_ok %}
             <div class="fw-hinweis good"><span class="fw-hi">{% zeichen 'gut' %}</span>
                 <div class="fw-ht">{% trans "Empfang eingerichtet. Rechnungen an diese Adresse landen in den Kreditoren." %}</div></div>
+            <p class="text-sm fw-mutet">{% if rechnung.kanal_imap and rechnung.kanal_brevo %}{% trans "Empfang über das Plattform-Postfach und über Brevo." %}{% elif rechnung.kanal_imap %}{% trans "Empfang über das Plattform-Postfach." %}{% else %}{% trans "Empfang über Brevo." %}{% endif %}</p>
             {% elif rechnung.eingang_ok %}
             <div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'warnung' %}</span>
                 <div class="fw-ht">{% trans "Mails kommen an, aber die Anhänge lassen sich auf dem Server noch nicht laden. Der Eingang steht dann nur im Logbuch, und es entsteht keine Rechnung. Bitte melden Sie sich bei uns." %}</div></div>
@@ -88,6 +90,10 @@
             </div>
         </div>
     </div>
+
+    {% if plattform_status %}
+    <p class="text-sm fw-mutet" id="plattform-postfach-status">{% if plattform_status.abruf %}{% blocktrans with zeit=plattform_status.abruf|date:"d.m.Y H:i" %}Plattform-Postfach zuletzt abgerufen: {{ zeit }}{% endblocktrans %}{% else %}{% trans "Plattform-Postfach noch nie abgerufen." %}{% endif %}{% if plattform_status.fehler %} / {% blocktrans with fehler=plattform_status.fehler %}Fehler: {{ fehler }}{% endblocktrans %}{% endif %}</p>
+    {% endif %}
 
     {% if darf_erneuern %}
     <div class="fw-card">

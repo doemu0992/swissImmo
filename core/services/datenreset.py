@@ -57,6 +57,8 @@ BEHALTEN = {
     # Betreiberlog und Konto-Sicherheit gehören der Installation bzw. dem Konto,
     # nicht der Verwaltung.
     'core.SicherheitsEreignis': 'Betreiberlog der Installation',
+    'core.PlattformMail': 'Abrufprotokoll des Plattform-Postfachs (plattformweit)',
+    'core.PlattformEingangStatus': 'Abrufstatus des Plattform-Postfachs (plattformweit)',
     'core.ZweiterFaktor': 'hängt am Konto, nicht an der Verwaltung',
     'core.Wiederherstellungscode': 'Notfallcodes eines Kontos',
     # Konfiguration der Fallmaschine (wird vom Betrieb angelegt, nicht erfasst).

@@ -92,9 +92,12 @@ def antwort_domain():
 
 
 def eingang_aktiv():
-    """Ist der Empfang auf diesem Server eingerichtet? Ohne Webhook-Secret kann keine Mail ankommen —
-    dann bleibt es beim bisherigen Reply-To, statt Antworten an eine tote Adresse zu schicken."""
-    return bool(getattr(settings, 'BREVO_WEBHOOK_SECRET', None))
+    """Ist der Empfang auf diesem Server eingerichtet? Mindestens ein Kanal muss stehen: der Brevo-Webhook
+    (``BREVO_WEBHOOK_SECRET``) oder das Plattform-Postfach per IMAP (``PLATTFORM_IMAP_*``,
+    ``core.services.plattform_postfach``). Ohne Kanal kann keine Mail ankommen — dann bleibt es beim bisherigen
+    Reply-To, statt Antworten an eine tote Adresse zu schicken."""
+    from core.services.plattform_postfach import plattform_eingang_status
+    return plattform_eingang_status()['eingerichtet']
 
 
 def _praefix(firma):
