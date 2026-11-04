@@ -21,6 +21,7 @@ from decimal import Decimal
 
 from core.services.dok_layout import LINKS, DokCanvas
 from core.utils.billing import hole_abrechnung
+from core.services.dokumentsprache import gueltige_sprache, sprache_von
 from core.utils.qr_code import draw_qr_bill, ist_qr_iban, qrr_referenz, zahlteil_zeichnen
 
 logger = logging.getLogger(__name__)
@@ -135,7 +136,8 @@ def qr_rechnung_pdf(request, vertrag_id):
         c, qr_data=qr_data, iban=raw_iban,
         creditor={'name': creditor_name, 'line1': creditor_line1, 'line2': creditor_line2},
         debtor={'name': debtor_name, 'line1': debtor_line1, 'line2': debtor_line2},
-        amount=total_betrag, reason=mitteilung, ref_typ=ref_typ, ref_val=ref_val)
+        amount=total_betrag, reason=mitteilung, ref_typ=ref_typ, ref_val=ref_val,
+        sprache=sprache_von(mieter))
 
     c.showPage()
     c.save()
@@ -170,6 +172,10 @@ def abrechnung_pdf_view(request, periode_id):
                     for z in ergebnis.get('abrechnungen', [])]
     verwaltung = liegenschaft.organisation
     eigentuemer = liegenschaft.eigentuemer
+    # Sprache des Empfängers je Zeile (D11): Mieter nach Vertrag, sonst Eigentümer.
+    sprachen = {vid: gueltige_sprache(code) for vid, code in Mietvertrag.objects.filter(
+        pk__in=[z['vertrag_id'] for z in abrechnungen if z.get('vertrag_id')]
+    ).values_list('pk', 'mieter__sprache')}
 
     if not liegenschaft.iban:
         return HttpResponse("Fehler: Keine IBAN bei der Liegenschaft hinterlegt!", status=400)
@@ -251,7 +257,9 @@ def abrechnung_pdf_view(request, periode_id):
                 if ist_qr_iban(liegenschaft.iban) and row.get('vertrag_id'):
                     nk_ref, _ = qrr_referenz(row['vertrag_id'], 900000 + (periode.id or 0))
                 draw_qr_bill(c, liegenschaft.iban, creditor, debtor, betrag_abs,
-                             f"NK {periode.bezeichnung} - {row['einheit']}", reference=nk_ref)
+                             f"NK {periode.bezeichnung} - {row['einheit']}", reference=nk_ref,
+                             sprache=sprachen.get(row.get('vertrag_id')) or sprache_von(
+                                 eigentuemer if row['typ'] in ('leerstand', 'eigentuemer') else None))
                 c.showPage()
             except Exception as e:
                 # Früher `print`: Die Abrechnung ging mit einer Nachzahlung OHNE

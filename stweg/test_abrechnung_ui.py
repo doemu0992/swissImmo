@@ -196,6 +196,17 @@ class QrZahlteilTests(TestCase):
         self.assertEqual(args[4], Decimal('1000.00'))
         self.assertIn('2026', args[5])
 
+    def test_zahlteil_folgt_der_sprache_des_eigentuemers(self):
+        from unittest import mock
+
+        from core.utils import qr_code
+        self.abschliessen(self.IBAN)
+        self.carla.sprache = 'it'
+        self.carla.save()
+        with mock.patch('core.utils.qr_code.draw_qr_bill', wraps=qr_code.draw_qr_bill) as zeichnen:
+            self.pdf(self.carla)
+        self.assertEqual(zeichnen.call_args.kwargs['sprache'], 'it')
+
     def test_guthaben_bekommt_keinen_zahlteil(self):
         self.abschliessen(self.IBAN)
         self.assertEqual(self.seiten(self.pdf(self.anna)), 1)
