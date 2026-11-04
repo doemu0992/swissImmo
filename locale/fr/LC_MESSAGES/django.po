@@ -38451,13 +38451,13 @@ msgstr "= %(mm)s mm (contrôle de l'échelle)"
 #: core/services/fensterprobe.py, core/views/fw/profil.py,
 #: core/templates/fw/account.html
 msgid ""
-"Auf Papier drucken (Massstab 100 %, nicht «An Seite anpassen»), an den "
-"Falzmarken in drei Teile falten und in den Fensterumschlag legen: Die "
-"Adresse muss im Fenster stehen."
+"Auf Papier drucken (Massstab 100 %, nicht «An Seite anpassen»), an der "
+"Falzmarke in der Mitte falten und in den Fensterumschlag legen: Die Adresse "
+"muss im Fenster stehen."
 msgstr ""
 "Imprimer sur papier (échelle 100 %, pas « Ajuster à la page »), plier en "
-"trois aux repères de pliage et glisser dans l'enveloppe à fenêtre : "
-"l'adresse doit apparaître dans la fenêtre."
+"deux au repère de pliage et glisser dans l'enveloppe à fenêtre : l'adresse "
+"doit apparaître dans la fenêtre."
 
 #: core/services/fensterprobe.py, core/views/fw/profil.py,
 #: core/templates/fw/account.html

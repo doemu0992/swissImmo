@@ -38391,12 +38391,12 @@ msgstr "= %(mm)s mm (controllo della scala)"
 #: core/services/fensterprobe.py, core/views/fw/profil.py,
 #: core/templates/fw/account.html
 msgid ""
-"Auf Papier drucken (Massstab 100 %, nicht «An Seite anpassen»), an den "
-"Falzmarken in drei Teile falten und in den Fensterumschlag legen: Die "
-"Adresse muss im Fenster stehen."
+"Auf Papier drucken (Massstab 100 %, nicht «An Seite anpassen»), an der "
+"Falzmarke in der Mitte falten und in den Fensterumschlag legen: Die Adresse "
+"muss im Fenster stehen."
 msgstr ""
-"Stampare su carta (scala 100 %, non «Adatta alla pagina»), piegare in tre ai"
-" segni di piegatura e inserire nella busta con finestra: l'indirizzo deve "
+"Stampare su carta (scala 100 %, non «Adatta alla pagina»), piegare a metà al"
+" segno di piegatura e inserire nella busta con finestra: l'indirizzo deve "
 "apparire nella finestra."
 
 #: core/services/fensterprobe.py, core/views/fw/profil.py,

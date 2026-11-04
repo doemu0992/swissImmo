@@ -37829,12 +37829,12 @@ msgstr "= %(mm)s mm (scale check)"
 #: core/services/fensterprobe.py, core/views/fw/profil.py,
 #: core/templates/fw/account.html
 msgid ""
-"Auf Papier drucken (Massstab 100 %, nicht «An Seite anpassen»), an den "
-"Falzmarken in drei Teile falten und in den Fensterumschlag legen: Die "
-"Adresse muss im Fenster stehen."
+"Auf Papier drucken (Massstab 100 %, nicht «An Seite anpassen»), an der "
+"Falzmarke in der Mitte falten und in den Fensterumschlag legen: Die Adresse "
+"muss im Fenster stehen."
 msgstr ""
-"Print on paper (scale 100 %, not \"Fit to page\"), fold in three at the fold"
-" marks and put it in the window envelope: the address must appear in the "
+"Print on paper (scale 100 %, not \"Fit to page\"), fold in half at the fold "
+"mark and put it in the window envelope: the address must appear in the "
 "window."
 
 #: core/services/fensterprobe.py, core/views/fw/profil.py,

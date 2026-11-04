@@ -36695,13 +36695,13 @@ msgstr "= %(mm)s mm (Massstab-Kontrolle)"
 #: core/services/fensterprobe.py, core/views/fw/profil.py,
 #: core/templates/fw/account.html
 msgid ""
-"Auf Papier drucken (Massstab 100 %, nicht «An Seite anpassen»), an den "
-"Falzmarken in drei Teile falten und in den Fensterumschlag legen: Die "
-"Adresse muss im Fenster stehen."
+"Auf Papier drucken (Massstab 100 %, nicht «An Seite anpassen»), an der "
+"Falzmarke in der Mitte falten und in den Fensterumschlag legen: Die Adresse "
+"muss im Fenster stehen."
 msgstr ""
-"Auf Papier drucken (Massstab 100 %, nicht «An Seite anpassen»), an den "
-"Falzmarken in drei Teile falten und in den Fensterumschlag legen: Die "
-"Adresse muss im Fenster stehen."
+"Auf Papier drucken (Massstab 100 %, nicht «An Seite anpassen»), an der "
+"Falzmarke in der Mitte falten und in den Fensterumschlag legen: Die Adresse "
+"muss im Fenster stehen."
 
 #: core/services/fensterprobe.py, core/views/fw/profil.py,
 #: core/templates/fw/account.html

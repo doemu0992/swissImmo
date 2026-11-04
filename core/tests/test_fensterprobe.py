@@ -47,14 +47,14 @@ class ProbeInhaltTests(SimpleTestCase):
         self.assertEqual(len(seiten), 2)
         text, woerter, linien, rechtecke = seiten[0]
         flach = ' '.join(text.split())
-        for erwartet in ('Fensterprobe', 'Falzmarke 99 mm', 'Falzmarke 198 mm', 'Massstab-Kontrolle',
+        for erwartet in ('Fensterprobe', 'Falzmarke 148.5 mm', 'Massstab-Kontrolle',
                          'Die Adresse muss im Fenster stehen', 'Umschlagfenster (Annahme'):
             self.assertIn(erwartet, flach)
-        # Falzmarken: kurze waagrechte Striche am Rand, bei 99 und 198 mm von oben (A4 in drei gleiche Teile)
+        # Falzmarken: kurze waagrechte Striche am Rand, bei 148.5 mm von oben (A4 einmal in der Mitte gefaltet)
         for y_mm in FALZMARKEN_MM:
             marken = [l for l in linien if abs(l['top'] / MM - y_mm) < 0.3 and l['x0'] < 1 and (l['x1'] - l['x0']) / MM < 10]
             self.assertTrue(marken, f'Falzmarke bei {y_mm} mm fehlt.')
-        self.assertEqual(FALZMARKEN_MM, (99, 198))
+        self.assertEqual(FALZMARKEN_MM, (148.5,))
         # Massstabsstrecke: genau 100 mm lang
         strecken = [l for l in linien if abs((l['x1'] - l['x0']) / MM - MASSSTAB_MM) < 0.2 and abs(l['top'] - l['bottom']) < 0.5]
         self.assertTrue(strecken, 'Die 100-mm-Strecke fehlt oder hat die falsche Länge.')
@@ -181,9 +181,9 @@ class ProbeSpracheTests(SimpleTestCase):
 
     def test_falzmarke_und_hinweis_in_den_drei_sprachen(self):
         from django.utils import translation
-        erwartet = {'fr': ('Repère de pliage 99 mm', "l'adresse doit apparaître dans la fenêtre"),
-                    'it': ('Segno di piegatura 99 mm', "l'indirizzo deve apparire nella finestra"),
-                    'en': ('Fold mark 99 mm', 'the address must appear in the window')}
+        erwartet = {'fr': ('Repère de pliage 148.5 mm', "l'adresse doit apparaître dans la fenêtre"),
+                    'it': ('Segno di piegatura 148.5 mm', "l'indirizzo deve apparire nella finestra"),
+                    'en': ('Fold mark 148.5 mm', 'the address must appear in the window')}
         for sprache, (marke, hinweis) in erwartet.items():
             with self.subTest(sprache=sprache), translation.override(sprache):
                 text = ' '.join(_seiten(fensterprobe_pdf(_org()))[0][0].split())

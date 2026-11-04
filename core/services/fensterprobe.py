@@ -20,8 +20,8 @@ from reportlab.lib.utils import simpleSplit
 from core.services import dok_layout as dl
 from core.services.dok_layout import DokCanvas, adressfeld_masse
 
-#: Falzmarken von oben: A4 (297 mm) in drei gleiche Teile, wie es in C5/6 (114 x 229 mm) passt.
-FALZMARKEN_MM = (99, 198)
+#: Falzmarke von oben: A4 (297 mm) wird einmal in der Mitte gefaltet (Angabe des Nutzers: kein Dreifachfalz).
+FALZMARKEN_MM = (148.5,)
 #: Länge der Strecke zur Kontrolle des Druckmassstabs.
 MASSSTAB_MM = 100
 
@@ -103,7 +103,7 @@ def _massstab(c, y):
 
 def _hinweis(c, y, versatz_text):
     texte = [
-        _('Auf Papier drucken (Massstab 100 %, nicht «An Seite anpassen»), an den Falzmarken in drei Teile falten '
+        _('Auf Papier drucken (Massstab 100 %, nicht «An Seite anpassen»), an der Falzmarke in der Mitte falten '
           'und in den Fensterumschlag legen: Die Adresse muss im Fenster stehen.'),
         _('Mindestens %(mm)s mm Rand zum Fensterrand; der Zustellvermerk darf nicht im Fenster stehen.')
         % {'mm': int(dl.FENSTER_RAND_MIN / mm)},
