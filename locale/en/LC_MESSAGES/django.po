@@ -38057,3 +38057,27 @@ msgstr "The addresses have been renewed. The previous addresses stay valid for 3
 #: core/templates/core/postfach_liste.html
 msgid "Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei Bedarf"
 msgstr "Addresses for ticket replies and invoices, own mailbox only if needed"
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang über das Plattform-Postfach und über Brevo."
+msgstr "Received via the platform mailbox and via Brevo."
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang über das Plattform-Postfach."
+msgstr "Received via the platform mailbox."
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang über Brevo."
+msgstr "Received via Brevo."
+
+#: core/templates/core/postfach_liste.html
+msgid "Plattform-Postfach zuletzt abgerufen: %(zeit)s"
+msgstr "Platform mailbox last checked: %(zeit)s"
+
+#: core/templates/core/postfach_liste.html
+msgid "Plattform-Postfach noch nie abgerufen."
+msgstr "Platform mailbox has never been checked."
+
+#: core/templates/core/postfach_liste.html
+msgid "Fehler: %(fehler)s"
+msgstr "Error: %(fehler)s"

@@ -36923,3 +36923,27 @@ msgstr "Die Adressen wurden erneuert. Die bisherigen Adressen gelten noch 30 Tag
 #: core/templates/core/postfach_liste.html
 msgid "Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei Bedarf"
 msgstr "Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei Bedarf"
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang über das Plattform-Postfach und über Brevo."
+msgstr "Empfang über das Plattform-Postfach und über Brevo."
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang über das Plattform-Postfach."
+msgstr "Empfang über das Plattform-Postfach."
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang über Brevo."
+msgstr "Empfang über Brevo."
+
+#: core/templates/core/postfach_liste.html
+msgid "Plattform-Postfach zuletzt abgerufen: %(zeit)s"
+msgstr "Plattform-Postfach zuletzt abgerufen: %(zeit)s"
+
+#: core/templates/core/postfach_liste.html
+msgid "Plattform-Postfach noch nie abgerufen."
+msgstr "Plattform-Postfach noch nie abgerufen."
+
+#: core/templates/core/postfach_liste.html
+msgid "Fehler: %(fehler)s"
+msgstr "Fehler: %(fehler)s"

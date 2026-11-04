@@ -241,3 +241,81 @@ def rechnungsmail_verarbeiten(organisation, item, absender, betreff, jetzt=None)
         _logbuch('Rechnungsmail ohne Anhang abgerufen' if not angelegt else 'Rechnungsmail teilweise abgerufen',
                  objekt, 'Nicht übernommen: ' + '; '.join(fehler)[:900])
     return f'ok, {angelegt} invoice(s)' if angelegt else 'attachments not loaded'
+
+
+# --- Anhänge direkt aus der Mail (Plattform-Postfach per IMAP, ohne Brevo) ----------------------------------------
+
+def anhaenge_aus_mail(msg):
+    """Die brauchbaren Anhänge einer eingelesenen Mail (``email.message.Message``). Gibt
+    ``(kandidaten, uebergangen)`` zurück: ``kandidaten`` sind Dicts ``name``, ``typ``, ``inhalt`` (Bytes),
+    ``uebergangen`` Gründe fürs Protokoll.
+
+    DIESELBEN REGELN wie ``auswahl_anhaenge`` (Brevo): Typ PDF/JPEG/PNG (``application/octet-stream`` nur mit
+    passender Endung), Dateikopf passt zum Typ (Magic-Bytes), höchstens ``MAX_GROESSE`` Byte und
+    ``MAX_ANHAENGE`` Anhänge, Signaturlogos (kleine Bilder, Inline-Bilder ohne Endung) zählen nicht. Der Text
+    der Mail selbst (ohne Dateiname) ist kein Anhang. Eine weitergeleitete Mail als Anhang
+    (``message/rfc822``) wird durchsucht: ``walk`` geht hinein."""
+    kandidaten, uebergangen = [], []
+    for teil in msg.walk():
+        if teil.is_multipart():
+            continue
+        name = str(teil.get_filename() or '')
+        typ = teil.get_content_type()
+        if not name and typ in ('text/plain', 'text/html'):
+            continue
+        endung = _endung(name)
+        if typ in UNSPEZIFISCH and endung in ENDUNGEN:
+            typ = ENDUNGEN[endung]
+        if typ not in TYPEN:
+            if name:
+                uebergangen.append(f'{name}: Typ {typ or "unbekannt"}')
+            continue
+        inhalt = teil.get_payload(decode=True) or b''
+        groesse = len(inhalt)
+        if not groesse:
+            uebergangen.append(f'{name or "(ohne Name)"}: leer')
+            continue
+        if groesse > MAX_GROESSE:
+            uebergangen.append(f'{name}: zu gross ({groesse} Byte)')
+            continue
+        if not magic_passt(inhalt, typ):
+            uebergangen.append(f'{name or "(ohne Name)"}: Dateiinhalt passt nicht zum Typ')
+            continue
+        if typ != 'application/pdf' and (groesse < MIN_BILD or (teil.get('Content-ID') and not endung)):
+            uebergangen.append(f'{name or "(ohne Name)"}: Signaturbild')
+            continue
+        if len(kandidaten) >= MAX_ANHAENGE:
+            uebergangen.append(f'{name}: mehr als {MAX_ANHAENGE} Anhänge')
+            continue
+        if not endung:
+            name = (name or 'beleg') + {'application/pdf': '.pdf', 'image/jpeg': '.jpg', 'image/png': '.png'}[typ]
+        kandidaten.append({'name': name, 'typ': typ, 'inhalt': inhalt})
+    return kandidaten, uebergangen
+
+
+def rechnungsmail_aus_mail_verarbeiten(organisation, msg, absender, betreff, jetzt=None):
+    """Eine Mail an die Rechnungsadresse von ``organisation`` verarbeiten, wenn die Anhänge in der Mail selbst
+    liegen (Plattform-Postfach). Mandantenkontext gesetzt; der Aufrufer prüft Spam und Idempotenz.
+
+    Der Ausgang wie bei ``rechnungsmail_verarbeiten``: ``'ok, N invoice(s)'`` oder ``'no attachment'``. Ohne
+    brauchbaren Anhang steht ein Logbucheintrag da (kein Brevo-Schlüssel nötig). Wirft bei Fehlern des
+    Beleg-Imports; die Transaktion des Aufrufers rollt alles zurück, und der Abruf wiederholt die Mail."""
+    from core.services.belegimport import anhang_importieren
+
+    jetzt = jetzt or timezone.now()
+    adresse = parseaddr(absender or '')[1].strip()[:100] or (absender or 'Unbekannt')[:100]
+    objekt = f'{adresse} · {(betreff or "(ohne Betreff)")[:80]}'
+    kandidaten, uebergangen = anhaenge_aus_mail(msg)
+    for grund in uebergangen:
+        logger.info('Rechnungseingang (Verwaltung %s): Anhang übergangen — %s', organisation.pk, grund)
+    if not kandidaten:
+        _logbuch('Rechnungsmail ohne Anhang abgerufen', objekt,
+                 'Kein PDF- oder Bild-Anhang gefunden.' + (f' Übergangen: {"; ".join(uebergangen)[:600]}'
+                                                            if uebergangen else ''))
+        return 'no attachment'
+    for k in kandidaten:
+        anhang_importieren(k['inhalt'], k['name'], adresse, betreff=betreff or '',
+                           eingang=timezone.localtime(jetzt))
+    if uebergangen:
+        _logbuch('Rechnungsmail teilweise abgerufen', objekt, 'Nicht übernommen: ' + '; '.join(uebergangen)[:900])
+    return f'ok, {len(kandidaten)} invoice(s)'

@@ -241,8 +241,9 @@ def reply_to(ticket):
        Zugangsdaten lesbar sind (``Postfach.zugang_lesbar``). Ist der Schlüssel gewechselt worden, holt
        ``fetch_replies`` dort nichts mehr; eine Antwort an dieses Postfach bliebe liegen. Dann gilt 2.
     2. sonst die Antwortadresse der Plattform ``<kennung>@<ANTWORT_DOMAIN>`` (nur für Tickets und nur, wenn
-       der Empfang auf dem Server eingerichtet ist: ``antwort_eingang.eingang_aktiv``). Die Kennung ordnet
-       die Antwort der Verwaltung zu (Webhook, ``core/services/antwort_eingang.py``).
+       MINDESTENS EIN Empfangskanal eingerichtet ist: Brevo-Webhook oder Plattform-Postfach per IMAP,
+       ``plattform_postfach.plattform_eingang_status``). Die Kennung ordnet die Antwort der Verwaltung zu
+       (``core/services/antwort_eingang.py``).
     3. sonst ``None``: dann gilt die Adresse der Verwaltung bzw. die globale (``core.utils.absender``).
 
     Auch Mahnungen, Zirkulare und Budgets rufen ``reply_to`` mit ihrem Objekt auf: Für sie bleibt es bei 1.
@@ -250,7 +251,8 @@ def reply_to(ticket):
     bleibt global — er hängt am SMTP-Konto.
     """
     from core.models import Postfach
-    from core.services.antwort_eingang import antwort_adresse, eingang_aktiv
+    from core.services.antwort_eingang import antwort_adresse
+    from core.services.plattform_postfach import plattform_eingang_status
     pf = (Postfach.alle_organisationen
           .filter(organisation_id=ticket.organisation_id,
                   zweck=Postfach.ZWECK_ANTWORTEN, aktiv=True)
@@ -258,7 +260,7 @@ def reply_to(ticket):
     if pf and '@' in (pf.benutzer or '') and pf.zugang_lesbar:
         return pf.benutzer
     from .models import SchadenMeldung
-    if isinstance(ticket, SchadenMeldung) and eingang_aktiv():
+    if isinstance(ticket, SchadenMeldung) and plattform_eingang_status()['eingerichtet']:
         from crm.models import Organisation
         org = Organisation.objects.filter(pk=ticket.organisation_id).only('antwort_kennung').first()
         if org is not None and org.antwort_kennung:
