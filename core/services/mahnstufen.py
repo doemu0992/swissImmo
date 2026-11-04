@@ -222,6 +222,77 @@ def gebuehr_fuer_vertrag(vertrag, gebuehr):
     return gebuehr
 
 
+#: Titelanfänge der vom Mahnwesen selbst gestellten Forderungen (`mahnwesen._mahngebuehr_stellen`,
+#: `automation._mahnschritt_buchen`). Der Titel ist die einzige Kennung, die auch einer Forderung bleibt, deren
+#: `stammrechnung` gelöscht wurde (SET_NULL).
+_TITEL_MAHNGEBUEHR = 'Mahngebühr'
+_TITEL_ZINS = 'Verzugszins'
+
+
+def abgeleitete_art(rechnung):
+    """Was für eine vom Mahnwesen gestellte Forderung ist das? 'gebuehr', 'zins', 'gebuehr_zins' — oder None.
+
+    Massgebend ist der Titel («Mahngebühr 1. Mahnung», «Verzugszins 5%», «Mahngebühr 2. Mahnung + Verzugszins
+    5%»), nicht `stammrechnung`: Betreibungskosten hängen auch an einer Stammrechnung, sind aber keine
+    Mahngebühr und dürfen im Brief nicht so heissen."""
+    titel = (getattr(rechnung, 'titel', '') or '').strip()
+    gebuehr = titel.startswith(_TITEL_MAHNGEBUEHR)
+    zins = _TITEL_ZINS in titel and (gebuehr or titel.startswith(_TITEL_ZINS))
+    if gebuehr and zins:
+        return 'gebuehr_zins'
+    return 'gebuehr' if gebuehr else ('zins' if zins else None)
+
+
+def ist_abgeleitet(rechnung):
+    """Mahngebühr, Verzugszins oder Kosten, die aus einer anderen Forderung entstanden sind.
+
+    Auf sie wird keine weitere Mahngebühr erhoben: Eine Gebühr auf eine Gebühr hat keine vertragliche Grundlage
+    (Art. 106 OR verlangt einen nachgewiesenen Verzugsschaden; die Gebühr der Hauptforderung deckt ihn), und
+    Zinseszins schliesst Art. 105 Abs. 3 OR aus. `fw_mahnung_erfassen` und der Mahnlauf mahnen sie schon bisher
+    nicht selbst; die Liste und das PDF taten es."""
+    return bool(getattr(rechnung, 'stammrechnung_id', None)) or abgeleitete_art(rechnung) is not None
+
+
+def gebuehr_fuer_forderung(vertrag, rechnung, gebuehr):
+    """Die Mahngebühr, die für DIESE Forderung tatsächlich verrechnet wird — eine Quelle für Brief, Liste,
+    Trockenlauf und Buchung. 0.00 bei einer abgeleiteten Forderung; sonst wie `gebuehr_fuer_vertrag`."""
+    if gebuehr is None:
+        return None
+    if ist_abgeleitet(rechnung):
+        return Decimal('0.00')
+    return gebuehr_fuer_vertrag(vertrag, gebuehr)
+
+
+def zusammensetzung(rechnung, offen):
+    """Woraus der offene Betrag besteht: [(Art, Betrag), …] mit Art 'forderung', 'gebuehr' oder 'zins'.
+
+    Eine Mietforderung (oder jede andere gewöhnliche Forderung) ist 'forderung'. Mahngebühr und Verzugszins
+    stehen für sich. Eine zusammengesetzte Forderung («Mahngebühr … + Verzugszins …») wird aufgeteilt, wenn die
+    Gebühr der Mahnung bekannt ist: Eine Teilzahlung deckt nach Art. 85 Abs. 1 OR zuerst die Kosten, dann den
+    Zins — der Rest der Gebühr ist also `Gebühr – bereits bezahlt`. Ohne Aufteilung bleibt 'gebuehr_zins'."""
+    offen = Decimal(offen)
+    art = abgeleitete_art(rechnung)
+    if art is None:
+        return [('forderung', offen)]
+    if art in ('gebuehr', 'zins'):
+        return [(art, offen)]
+    import re
+
+    from finance.models import Mahnung
+    treffer = re.match(r'\s*Mahngeb.hr\s+(\d+)\.', rechnung.titel or '')
+    stamm_id = getattr(rechnung, 'stammrechnung_id', None)
+    if treffer and stamm_id:
+        # Ausdrücklich nach der Stammrechnung gefiltert: das Schreiben entsteht auch im Scheduler ohne Anfrage.
+        mahnung = (Mahnung.alle_organisationen
+                   .filter(debitoren_rechnung_id=stamm_id, stufe=int(treffer.group(1))).first())
+        if mahnung is not None and mahnung.gebuehr > 0:
+            bezahlt = max(Decimal('0.00'), Decimal(rechnung.betrag) - offen)
+            gebuehr_rest = min(offen, max(Decimal('0.00'), Decimal(mahnung.gebuehr) - bezahlt))
+            teile = [('gebuehr', gebuehr_rest), ('zins', offen - gebuehr_rest)]
+            return [(a, b) for a, b in teile if b > 0] or [('gebuehr_zins', offen)]
+    return [('gebuehr_zins', offen)]
+
+
 def eigentuemer_von_rechnung(r):
     """Eigentuemer (Eigentuemer) einer DebitorenRechnung ueber ihre Liegenschaft."""
     lg = getattr(r, 'liegenschaft', None)

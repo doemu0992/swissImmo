@@ -38259,3 +38259,11 @@ msgstr "Monnaie"
 #: core/utils/qr_code.py
 msgid "Annahmestelle"
 msgstr "Point de dépôt"
+
+#: core/templates/fw/mahnwesen.html
+msgid ""
+"Mahngebühr bzw. Verzugszins: Das Schreiben nennt sie so; es wird keine"
+" weitere Mahngebühr erhoben."
+msgstr ""
+"Frais de rappel ou intérêts moratoires : le courrier les désigne ainsi"
+" ; aucun nouveau frais de rappel n'est perçu."

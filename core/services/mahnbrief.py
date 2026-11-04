@@ -101,6 +101,34 @@ def _eigener_text(vorlage, **werte):
     return zeilen
 
 
+_ART_TEXT = {'forderung': "Forderung", 'gebuehr': "Mahngebühren", 'zins': "Verzugszins",
+             'gebuehr_zins': "Mahngebühren und Verzugszins"}
+
+
+def _text_abgeleitet(teile, monat, betrag, erste):
+    """Text einer Mahnung, deren offener Betrag aus Mahngebühren und/oder Verzugszins besteht.
+
+    Ein Teil: «… für den Monat Oktober 2026 noch Mahngebühren von CHF 40.00 offen sind.» Mehrere Teile werden
+    einzeln aufgeführt (Art und Betrag), darunter das Total. Der Wortlaut der Verwaltung (`brief_text`) gilt
+    nicht: Er spricht von der Miete (`{monat}`, `{betrag}`) und wäre hier falsch."""
+    if len(teile) == 1:
+        was = _ART_TEXT[teile[0][0]]
+        if erste:
+            return ["bei der Kontrolle unserer Zahlungseingänge haben wir festgestellt, dass für den",
+                    f"Monat {monat} noch {was} von CHF {betrag} offen sind.", "",
+                    "Sicher haben Sie die Zahlung nur übersehen. Wir bitten Sie, den Betrag",
+                    "in den nächsten Tagen zu überweisen."]
+        return [f"trotz unserer früheren Schreiben sind die {was} für den Monat {monat}",
+                f"über CHF {betrag} weiterhin offen.", "",
+                "Wir bitten Sie, den Betrag umgehend zu überweisen."]
+    zeilen = [f"bei der Kontrolle unserer Zahlungseingänge haben wir festgestellt, dass für den Monat",
+              f"{monat} noch folgende Beträge offen sind:", ""]
+    zeilen += [f"   {_ART_TEXT[art]}: CHF {b:.2f}" for art, b in teile]
+    zeilen += [f"   Total: CHF {betrag}", "",
+               "Wir bitten Sie, den Betrag in den nächsten Tagen zu überweisen."]
+    return zeilen
+
+
 @nur_deutsch
 def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
                   gebuehr=None, letzte_stufe=False, rechnung=None):
@@ -117,9 +145,10 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
     Ohne vertraglich vereinbarte Mahngebühr (`Mietvertrag.mahngebuehr_vereinbart` False) steht im Brief
     keine Gebühr, auch wenn ein Aufrufer sie übergibt (`gebuehr_fuer_vertrag`).
     """
-    from core.services.mahnstufen import gebuehr_fuer_vertrag
+    from core.services.mahnstufen import gebuehr_fuer_forderung
     if gebuehr is not None:
-        gebuehr = gebuehr_fuer_vertrag(vertrag, gebuehr)
+        # Vertrag UND Forderung: Auf eine Mahngebühr oder einen Verzugszins gibt es keine weitere Gebühr.
+        gebuehr = gebuehr_fuer_forderung(vertrag, rechnung, gebuehr)
     if letzte_stufe:
         # Ein als Mieter erfasster Stockwerkeigentümer bekommt nie das 257d-Schreiben: es wird ein gewöhnliches
         # Mahnschreiben der Stufe (siehe `core.services.zahlungsverzug.eigentuemer_als_mieter`).
@@ -175,7 +204,12 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
         gruss = "Sehr geehrte Damen und Herren,"
 
     zeilen = [gruss, ""]
-    if eigene and eigene.brief_text.strip():
+    # Besteht der offene Betrag aus Mahngebühren oder Verzugszins (nicht aus Miete), sagt der Brief das.
+    from core.services.mahnstufen import zusammensetzung
+    teile = zusammensetzung(rechnung, str(betrag).replace(',', '.')) if rechnung is not None else []
+    if teile and teile[0][0] != 'forderung':
+        zeilen += _text_abgeleitet(teile, monat, betrag, erste)
+    elif eigene and eigene.brief_text.strip():
         # Wortlaut der Verwaltung (crm.MahnStufe.brief_text) statt des Standardtexts.
         zeilen += _eigener_text(eigene.brief_text, monat=monat, betrag=betrag,
                                 gebuehr=f"{gebuehr:.2f}" if gebuehr else "0.00",

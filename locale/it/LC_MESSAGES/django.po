@@ -38202,3 +38202,11 @@ msgstr "Valuta"
 #: core/utils/qr_code.py
 msgid "Annahmestelle"
 msgstr "Punto di accettazione"
+
+#: core/templates/fw/mahnwesen.html
+msgid ""
+"Mahngebühr bzw. Verzugszins: Das Schreiben nennt sie so; es wird keine"
+" weitere Mahngebühr erhoben."
+msgstr ""
+"Spese di sollecito o interessi di mora: la lettera li indica come "
+"tali; non vengono addebitate ulteriori spese di sollecito."

@@ -36510,3 +36510,11 @@ msgstr "{gruss}\n\nfür „{schaden}“ wurde ein Termin vereinbart:\n\nWann: {t
 
 msgid "{gruss}\n\nDer Termin für „{schaden}“ ({objekt}) ist festgelegt: {termin}.\nMieter: {melder_name} ({melder_tel}).\nDer Kalendereintrag hängt an. Können Sie den Termin nicht einhalten, antworten Sie direkt auf diese Mail — Ihre Antwort geht an den Mieter, den neuen Termin stimmen Sie direkt mit ihm ab.\n\nFreundliche Grüsse\nIhre Liegenschaftsverwaltung"
 msgstr "{gruss}\n\nDer Termin für „{schaden}“ ({objekt}) ist festgelegt: {termin}.\nMieter: {melder_name} ({melder_tel}).\nDer Kalendereintrag hängt an. Können Sie den Termin nicht einhalten, antworten Sie direkt auf diese Mail — Ihre Antwort geht an den Mieter, den neuen Termin stimmen Sie direkt mit ihm ab.\n\nFreundliche Grüsse\nIhre Liegenschaftsverwaltung"
+
+#: core/templates/fw/mahnwesen.html
+msgid ""
+"Mahngebühr bzw. Verzugszins: Das Schreiben nennt sie so; es wird keine"
+" weitere Mahngebühr erhoben."
+msgstr ""
+"Mahngebühr bzw. Verzugszins: Das Schreiben nennt sie so; es wird keine"
+" weitere Mahngebühr erhoben."

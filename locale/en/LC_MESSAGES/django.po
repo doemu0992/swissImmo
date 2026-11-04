@@ -37642,3 +37642,11 @@ msgstr "Currency"
 #: core/utils/qr_code.py
 msgid "Annahmestelle"
 msgstr "Acceptance point"
+
+#: core/templates/fw/mahnwesen.html
+msgid ""
+"Mahngebühr bzw. Verzugszins: Das Schreiben nennt sie so; es wird keine"
+" weitere Mahngebühr erhoben."
+msgstr ""
+"Reminder fee or default interest: the letter states it as such; no "
+"further reminder fee is charged."
