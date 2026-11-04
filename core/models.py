@@ -187,6 +187,23 @@ class Postfach(models.Model):
             return bool(self.mandant_id and self.anwendung_id and self.refresh_token_geheim)
         return bool(self.server and self.passwort_geheim)
 
+    @property
+    def zugang_lesbar(self) -> bool:
+        """Lassen sich die hinterlegten Zugangsdaten mit dem AKTUELLEN Schlüssel entschlüsseln?
+
+        Billiger Test ohne Netz (kein IMAP): Fernet prüft beim Entschlüsseln die Signatur. ``False`` bei
+        gewechseltem oder fehlendem ``IMAP_SCHLUESSEL`` (Fehlertext «lässt sich mit dem aktuellen … nicht
+        lesen»). Ein Postfach ohne gespeichertes Geheimnis ist hier ``True`` — es gibt nichts zu lesen; ob es
+        vollständig ist, sagt ``ist_einsatzbereit``. Ein unlesbares Postfach gilt für ``tickets.workflow.
+        reply_to`` NICHT als aktiv: dann springt die Plattformadresse ein."""
+        from core.services.geheimnis import GeheimtextKaputt, SchluesselFehlt
+        try:
+            self.passwort
+            self.refresh_token
+        except (SchluesselFehlt, GeheimtextKaputt):
+            return False
+        return True
+
     def fehler_vermerken(self, text: str):
         from django.utils import timezone
 

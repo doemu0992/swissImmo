@@ -1,4 +1,12 @@
-"""Postfächer einrichten — Liste, Formular, Verbindungstest.
+"""E-Mail-Eingang — die Plattformadressen (Standard) und eigene Postfächer per IMAP (Erweitert).
+
+STAND 4.11.2026. Der Standard braucht keine Zugangsdaten: Antworten auf Tickets und eingehende Rechnungen
+laufen über zwei Adressen der Plattform (``core/services/antwort_eingang.py``), je Verwaltung, und wer sein
+eigenes Postfach behalten will, richtet dort eine Weiterleitung ein. Der IMAP-Abruf mit hinterlegten
+Zugangsdaten bleibt als Sonderfall («Erweitert»), und die Seite sagt, dass die Weiterleitung einfacher ist —
+Passwörter ändern sich, die Verschlüsselung der Zugangsdaten macht jede Änderung mühsam.
+
+Der ursprüngliche Text dieses Moduls (Postfächer einrichten) gilt für den Erweitert-Teil:
 
 Bis hierher lagen die Zugangsdaten in Umgebungsvariablen; ändern hiess: jemand
 mit Serverzugang bearbeitet eine Datei. Für **eine** Verwaltung ging das. Ab der
@@ -52,22 +60,23 @@ def _darf_aendern(request):
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def postfach_liste(request):
-    """Beide Zwecke nebeneinander — auch der noch nicht eingerichtete.
+    """Oben die zwei Plattformadressen, darunter eingeklappt die eigenen Postfächer.
 
-    Bewusst beide Zeilen immer, statt nur der vorhandenen: Ein Zweck, den es
-    nicht gibt, ist der häufigere Zustand und der, den man sucht. Eine leere
-    Liste beantwortete die Frage «wo richte ich den Rechnungseingang ein?»
-    nicht.
+    Bei den Postfächern bewusst beide Zeilen immer, statt nur der vorhandenen: Ein Zweck, den es
+    nicht gibt, ist der häufigere Zustand und der, den man sucht.
     """
     basis = _global_filter(request)
     vorhanden = {p.zweck: p for p in Postfach.objects.all()}
-    zeilen = [{'zweck': wert, 'bezeichnung': text, 'postfach': vorhanden.get(wert)}
+    zeilen = [{'zweck': wert, 'bezeichnung': text, 'postfach': vorhanden.get(wert),
+               'unlesbar': bool(vorhanden.get(wert)) and not vorhanden[wert].zugang_lesbar}
               for wert, text in Postfach.ZWECKE]
+    karten = _adresskarten(request, vorhanden)
     return render(request, 'core/postfach_liste.html', {
         **basis, 'nav': 'einstellungen', 'zeilen': zeilen,
         'darf_aendern': _darf_aendern(request),
         'darf_erneuern': hat_rolle(getattr(request, 'user', None), INHABER_ROLLEN),
-        'antwort': _antwortadresse_karte(request, vorhanden.get(Postfach.ZWECK_ANTWORTEN)),
+        'antwort': karten and karten['antwort'], 'rechnung': karten and karten['rechnung'],
+        'erweitert_offen': any(z['postfach'] for z in zeilen),
         # Ohne Schlüssel lässt sich kein Passwort ablegen. Das gehört auf die
         # Seite und nicht in ein Serverprotokoll — sonst speichert jemand
         # dreimal und versteht die Fehlermeldung nicht.
@@ -76,36 +85,67 @@ def postfach_liste(request):
     })
 
 
-def _antwortadresse_karte(request, antwort_postfach):
-    """Die Karte «Ihre Antwortadresse»: nur die Adresse der EIGENEN Verwaltung (aus dem Kontext) und
-    welche Adresse gerade gilt (eigenes Postfach oder Plattformadresse)."""
+def _letzter_eingang(zweck):
+    """Wann zuletzt eine Mail an diese Adresse der EIGENEN Verwaltung ankam (``objects`` filtert über den
+    Mandantenkontext des Requests)."""
+    from tickets.models import EingegangeneMail
+    eintrag = EingegangeneMail.objects.filter(zweck=zweck).order_by('-erstellt_am').first()
+    return eintrag.erstellt_am if eintrag else None
+
+
+def _adresskarten(request, vorhanden):
+    """Die zwei Karten «Antworten auf Tickets» und «Eingehende Rechnungen»: nur die Adressen der EIGENEN
+    Verwaltung (aus dem Kontext), ob der Empfang auf dem Server eingerichtet ist und wann zuletzt etwas kam."""
     from crm.models import Organisation
-    from core.services.antwort_eingang import alte_kennung_gilt, antwort_adresse, eingang_aktiv
+    from core.services import antwort_eingang as ae
+    from core.services.rechnungseingang import api_schluessel
     org = Organisation.objects.filter(pk=request.organisation.pk).first()
     if org is None:
         return None
-    eigenes = bool(antwort_postfach and antwort_postfach.aktiv and '@' in (antwort_postfach.benutzer or ''))
+    eingang = ae.eingang_aktiv()
+    antwort_pf = vorhanden.get(Postfach.ZWECK_ANTWORTEN)
+    # Ein eigenes Postfach gilt nur, wenn es nutzbar ist (wie `tickets.workflow.reply_to`).
+    eigenes = bool(antwort_pf and antwort_pf.aktiv and '@' in (antwort_pf.benutzer or '')
+                   and antwort_pf.zugang_lesbar)
+    unlesbar = bool(antwort_pf and antwort_pf.aktiv and not antwort_pf.zugang_lesbar)
+    rechnung_pf = vorhanden.get(Postfach.ZWECK_RECHNUNGEN)
     return {
-        'adresse': antwort_adresse(org),
-        'eigenes_postfach': antwort_postfach.benutzer if eigenes else '',
-        'plattform_gilt': not eigenes and eingang_aktiv(),
-        'eingang_fehlt': not eigenes and not eingang_aktiv(),
-        'alt_bis': org.antwort_kennung_alt_bis if alte_kennung_gilt(org) else None,
+        'antwort': {
+            'adresse': ae.antwort_adresse(org),
+            'eigenes_postfach': antwort_pf.benutzer if eigenes else '',
+            'plattform_gilt': not eigenes and eingang,
+            'eingang_fehlt': not eigenes and not eingang,
+            'postfach_unlesbar': unlesbar,
+            'alt_bis': org.antwort_kennung_alt_bis if ae.alte_kennung_gilt(org) else None,
+            'letzter_eingang': _letzter_eingang(ae.ZWECK_ANTWORTEN),
+        },
+        'rechnung': {
+            'adresse': ae.rechnungs_adresse(org),
+            'eingang_ok': eingang,
+            'anhaenge_ok': bool(api_schluessel()),
+            'eigenes_postfach': rechnung_pf.benutzer if (rechnung_pf and rechnung_pf.aktiv
+                                                         and rechnung_pf.zugang_lesbar) else '',
+            'alt_bis': org.antwort_kennung_alt_bis if ae.alte_kennung_gilt(org) else None,
+            'letzter_eingang': _letzter_eingang(ae.ZWECK_RECHNUNGEN),
+        },
     }
 
 
 @rolle_erforderlich(*INHABER_ROLLEN)
 @require_POST
 def antwortadresse_erneuern(request):
-    """Neue Kennung für die Antwortadresse der Verwaltung. Die bisherige bleibt 30 Tage gültig.
+    """Neue Kennung für die Plattformadressen der Verwaltung (Antworten UND Rechnungen hängen an derselben
+    Kennung). Die bisherige bleibt 30 Tage gültig.
 
-    Nur der Inhaber: Mails, die schon unterwegs sind, tragen die alte Adresse. Protokolliert."""
+    Nur der Inhaber: Mails, die schon unterwegs sind, tragen die alte Adresse, und eine eingerichtete
+    Weiterleitung im Mailprogramm muss auf die neue Rechnungsadresse umgestellt werden. Protokolliert."""
     from crm.models import Organisation
     from core.services.antwort_eingang import kennung_erneuern
     org = get_object_or_404(Organisation.objects.filter(pk=request.organisation.pk))
     kennung_erneuern(org)
-    log_aktion(request, 'Antwortadresse erneuert', org.firma, 'Die bisherige Adresse gilt noch 30 Tage.')
-    messages.success(request, gettext('Die Antwortadresse wurde erneuert. Die bisherige Adresse gilt noch 30 Tage.'))
+    log_aktion(request, 'Antwortadresse erneuert', org.firma,
+               'Antwort- und Rechnungsadresse. Die bisherigen Adressen gelten noch 30 Tage.')
+    messages.success(request, gettext('Die Adressen wurden erneuert. Die bisherigen Adressen gelten noch 30 Tage — stellen Sie Weiterleitungen auf die neue Rechnungsadresse um.'))
     return redirect('postfach_liste')
 
 
@@ -188,6 +228,9 @@ def _speichern(request, postfach, zweck):
 
     if verfahren == Postfach.VERFAHREN_PASSWORT and not postfach.passwort_geheim:
         return ['Passwort fehlt.']
+    if not neu and not (neues_passwort or neuer_token) and not postfach.zugang_lesbar:
+        # «Leer heisst unverändert» hilft hier nicht: Das Gespeicherte ist unlesbar (Schlüssel gewechselt).
+        return ['Die gespeicherten Zugangsdaten lassen sich nicht mehr lesen — bitte das Passwort neu eingeben.']
     if verfahren == Postfach.VERFAHREN_OAUTH2 and not (postfach.mandant_id
                                                        and postfach.anwendung_id):
         return ['Für OAuth2 werden Verzeichnis-ID und Anwendungs-ID gebraucht.']

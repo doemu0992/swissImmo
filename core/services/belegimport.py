@@ -85,6 +85,35 @@ def beleg_importieren(datei, liegenschaft=None, quelle=''):
     return kr, daten
 
 
+def dateiname_saeubern(dateiname):
+    """Nur der Basename, keine Pfad-Tricks, keine Sonderzeichen."""
+    return re.sub(r'[^\w.\-]', '_', (dateiname or '').split('/')[-1].split('\\')[-1])[:90]
+
+
+def anhang_importieren(inhalt, dateiname, absender_kurz, betreff='', eingang=None):
+    """EIN Anhang einer Rechnungsmail → Kreditorenrechnung (Status Neu) samt Logbucheintrag.
+
+    Der gemeinsame Weg für den IMAP-Abruf (``importiere_rechnungsmail``) und den Brevo-Webhook
+    (``core.services.rechnungseingang``): gleicher Scanner, gleiche Herkunftsangabe, gleiches Logbuch.
+    Läuft im Mandantenkontext des Aufrufers. ``betreff`` und ``eingang`` (Datum) ergänzen die Herkunft,
+    wenn bekannt. Gibt ``(rechnung, scandaten)`` zurück."""
+    dateiname = dateiname_saeubern(dateiname) or 'beleg'
+    quelle = f"Per E-Mail von {absender_kurz}"
+    if betreff:
+        quelle += f" · «{betreff.strip()[:80]}»"
+    if eingang is not None:
+        quelle += f" · eingegangen {eingang:%d.%m.%Y}"
+    kr, daten = beleg_importieren(ContentFile(inhalt, name=dateiname), quelle=quelle)
+    logger.info("Rechnungsmail-Import: %s von %s → Rechnung #%s (%s)",
+                dateiname, absender_kurz, kr.id, daten.get('methode'))
+    # Ins Aktivitätslog (Benutzer = System) → sichtbar im Logbuch und im
+    # Verlauf des Lieferantenkontos (Abgleich über den Lieferantennamen).
+    from core.auth import log_aktion
+    log_aktion(None, "Rechnung per E-Mail eingegangen", kr.lieferant or dateiname,
+               f"Von {absender_kurz} · CHF {kr.betrag or 0} · Methode: {daten.get('methode')}")
+    return kr, daten
+
+
 def _decode_mime(wert):
     if not wert:
         return ''
@@ -122,17 +151,7 @@ def importiere_rechnungsmail(msg):
             continue
         if not dateiname:
             dateiname = 'beleg.pdf' if ctype == 'application/pdf' else f"beleg.{ctype.split('/')[-1]}"
-        # Dateiname säubern (nur Basename, keine Pfad-Tricks)
-        dateiname = re.sub(r'[^\w.\-]', '_', dateiname.split('/')[-1].split('\\')[-1])[:90]
-        kr, daten = beleg_importieren(ContentFile(inhalt, name=dateiname),
-                                      quelle=f"Per E-Mail von {absender_kurz}")
-        logger.info("Rechnungsmail-Import: %s von %s → Rechnung #%s (%s)",
-                    dateiname, absender_kurz, kr.id, daten.get('methode'))
-        # Ins Aktivitätslog (Benutzer = System) → sichtbar im Logbuch und im
-        # Verlauf des Lieferantenkontos (Abgleich über den Lieferantennamen).
-        from core.auth import log_aktion
-        log_aktion(None, "Rechnung per E-Mail eingegangen", kr.lieferant or dateiname,
-                   f"Von {absender_kurz} · CHF {kr.betrag or 0} · Methode: {daten.get('methode')}")
+        kr, _daten = anhang_importieren(inhalt, dateiname, absender_kurz)
         rechnungen.append(kr)
     return rechnungen
 

@@ -14,7 +14,13 @@ geraten. Nur ohne Plattformadresse (altes ``reply@…`` oder flaches Altformat o
 über die Ticketnummer im Betreff wie bisher.
 
 Die Verarbeitung selbst ist ``core.services.antwort_eingang.eingehende_antwort_verarbeiten`` (dieselbe wie
-beim IMAP-Abruf). Anhänge werden ignoriert, HTML nie übernommen. Dieselbe ``MessageId`` wird je Verwaltung
+beim IMAP-Abruf). HTML wird nie übernommen. Anhänge von ANTWORTEN werden ignoriert.
+
+RECHNUNGEN. Geht die Mail an ``<kennung>-rechnungen@<ANTWORT_DOMAIN>``, ist es keine Antwort, sondern eine
+Kreditorenrechnung: ``core.services.rechnungseingang`` lädt die Anhänge und legt sie über den gemeinsamen
+Beleg-Import an (siehe dort für Grenzen und Fehlerverhalten). Dieselbe Zuordnung über die Empfängeradresse,
+derselbe Mandantenkontext, dieselbe Idempotenz. Eine Mail an BEIDE Adressen derselben Verwaltung ist
+mehrdeutig und wird verworfen wie eine an zwei Verwaltungen. Dieselbe ``MessageId`` wird je Verwaltung
 nur einmal verarbeitet (``tickets.EingegangeneMail``).
 """
 import hmac
@@ -80,13 +86,16 @@ def _eine_mail(item):
     empfaenger = _adressen(item.get('Recipients') or item.get('To') or [])
 
     verwaltungen = {}
+    zwecke = set()
     for adresse in empfaenger:
-        org = ae.organisation_zu_adresse(adresse)
-        if org is not None:
-            verwaltungen[org.pk] = org
-    if len(verwaltungen) > 1:
-        logger.warning("Brevo-Webhook: Mail an mehrere Verwaltungen, verworfen")
+        treffer = ae.zuordnung_zu_adresse(adresse)
+        if treffer is not None:
+            verwaltungen[treffer[0].pk] = treffer[0]
+            zwecke.add(treffer[1])
+    if len(verwaltungen) > 1 or len(zwecke) > 1:
+        logger.warning("Brevo-Webhook: Mail an mehrere Verwaltungen oder Adressen, verworfen")
         return IGNORIERT
+    zweck = next(iter(zwecke), ae.ZWECK_ANTWORTEN)
 
     if verwaltungen:
         organisation = next(iter(verwaltungen.values()))
@@ -108,13 +117,17 @@ def _eine_mail(item):
 
     with kontext_des_objekts(organisation):
         if not hintergrund_erlaubt(organisation):
-            logger.info("Brevo-Webhook: Verwaltung %s im Lesemodus, Antwort nicht verarbeitet", organisation.pk)
+            logger.info("Brevo-Webhook: Verwaltung %s im Lesemodus, Mail nicht verarbeitet", organisation.pk)
             return IGNORIERT
         with transaction.atomic():
             if mail_id:
-                _eintrag, neu = EingegangeneMail.objects.get_or_create(message_id=mail_id)
+                _eintrag, neu = EingegangeneMail.objects.get_or_create(
+                    message_id=mail_id, defaults={'zweck': zweck})
                 if not neu:
                     return 'duplicate', 200
+            if zweck == ae.ZWECK_RECHNUNGEN:
+                from core.services.rechnungseingang import rechnungsmail_verarbeiten
+                return rechnungsmail_verarbeiten(organisation, item, absender, betreff), 200
             ergebnis = ae.eingehende_antwort_verarbeiten(organisation, absender, betreff, text, kopf)
     if ergebnis == 'ohne_ticket':
         return ('empty', 200) if mit_ticket is not None else IGNORIERT

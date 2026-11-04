@@ -37949,3 +37949,111 @@ msgstr "Renew address"
 #: core/views/postfach.py
 msgid "Die Antwortadresse wurde erneuert. Die bisherige Adresse gilt noch 30 Tage."
 msgstr "The reply address has been renewed. The previous address remains valid for 30 more days."
+
+#: core/templates/core/postfach_liste.html
+msgid "E-Mail-Eingang"
+msgstr "Email inbox"
+
+#: core/templates/core/postfach_liste.html
+msgid "Antworten auf Ticket-Mails und Rechnungen Ihrer Lieferanten kommen über zwei Adressen bei uns an. Sie hinterlegen keine Passwörter und müssen nichts einrichten."
+msgstr "Replies to ticket emails and invoices from your suppliers reach us through two addresses. You store no passwords and do not have to set anything up."
+
+#: core/templates/core/postfach_liste.html
+msgid "Antworten auf Tickets"
+msgstr "Replies to tickets"
+
+#: core/templates/core/postfach_liste.html
+msgid "Antworten von Mietern und Handwerkern auf Ticket-Mails kommen an diese Adresse und erscheinen im Ticket und im Chat."
+msgstr "Replies from tenants and tradespeople to ticket emails arrive at this address and appear in the ticket and in the chat."
+
+#: core/templates/core/postfach_liste.html
+msgid "Ihr eigenes Postfach ist eingerichtet, aber seine Zugangsdaten lassen sich nicht lesen. Deshalb gilt diese Adresse. Mehr unter «Erweitert» weiter unten."
+msgstr "Your own mailbox is set up, but its credentials cannot be read. This address applies instead. More under “Advanced” below."
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang eingerichtet. Es gilt diese Adresse: Ticket-Mails tragen sie als Antwortadresse."
+msgstr "Receiving is set up. This address applies: ticket emails carry it as reply address."
+
+#: core/templates/core/postfach_liste.html
+msgid "Letzter Eingang: %(zeit)s"
+msgstr "Last received: %(zeit)s"
+
+#: core/templates/core/postfach_liste.html
+msgid "Noch nichts eingegangen."
+msgstr "Nothing received yet."
+
+#: core/templates/core/postfach_liste.html
+msgid "Eingehende Rechnungen"
+msgstr "Incoming invoices"
+
+#: core/templates/core/postfach_liste.html
+msgid "Rechnungen an diese Adresse weiterleiten — oder im eigenen Mailprogramm eine Weiterleitungsregel einrichten. Aus jedem PDF- oder Bild-Anhang entsteht eine Kreditorenrechnung mit dem Status «Neu»."
+msgstr "Forward invoices to this address — or set up a forwarding rule in your own mail program. Every PDF or image attachment becomes a supplier invoice with the status “New”."
+
+#: core/templates/core/postfach_liste.html
+msgid "Empfang eingerichtet. Rechnungen an diese Adresse landen in den Kreditoren."
+msgstr "Receiving is set up. Invoices sent to this address end up in the payables."
+
+#: core/templates/core/postfach_liste.html
+msgid "Mails kommen an, aber die Anhänge lassen sich auf dem Server noch nicht laden. Der Eingang steht dann nur im Logbuch, und es entsteht keine Rechnung. Bitte melden Sie sich bei uns."
+msgstr "Emails arrive, but the attachments cannot be loaded on the server yet. The receipt then only shows in the log and no invoice is created. Please contact us."
+
+#: core/templates/core/postfach_liste.html
+msgid "Der Empfang ist auf dem Server noch nicht eingerichtet. Rechnungen an diese Adresse kommen noch nicht an."
+msgstr "Receiving is not yet set up on the server. Invoices sent to this address do not arrive yet."
+
+#: core/templates/core/postfach_liste.html
+msgid "Zusätzlich wird Ihr eigenes Postfach abgerufen: %(adresse)s."
+msgstr "In addition, your own mailbox is fetched: %(adresse)s."
+
+#: core/templates/core/postfach_liste.html
+msgid "So leiten Sie weiter"
+msgstr "How to forward"
+
+#: core/templates/core/postfach_liste.html
+msgid "Einstellungen → Alle Einstellungen → Weiterleitung und POP/IMAP → Weiterleitungsadresse hinzufügen. Gmail schickt zuerst einen Bestätigungscode an diese Adresse; er steht meist im Betreff der Mail, die Sie im Logbuch unter «Rechnungsmail ohne Anhang abgerufen» finden."
+msgstr "Settings → See all settings → Forwarding and POP/IMAP → Add a forwarding address. Gmail first sends a confirmation code to this address; it is usually in the subject of the message, which you find in the log under “Rechnungsmail ohne Anhang abgerufen”."
+
+#: core/templates/core/postfach_liste.html
+msgid "Einstellungen → E-Mail → Regeln, neue Regel «Weiterleiten an» mit dieser Adresse; oder unter Weiterleitung die ganze Post umleiten."
+msgstr "Settings → Mail → Rules, new rule “Forward to” with this address; or redirect all mail under Forwarding."
+
+#: core/templates/core/postfach_liste.html
+msgid "Im Webmail unter Einstellungen → Weiterleitung (oder Filter) eine Weiterleitung auf diese Adresse anlegen; der Hoster hilft, wenn der Menüpunkt anders heisst."
+msgstr "In webmail, under Settings → Forwarding (or Filter), create a forward to this address; the host can help if the menu item is named differently."
+
+#: core/templates/core/postfach_liste.html
+msgid "Die bisherigen Adressen gelten noch bis %(bis)s."
+msgstr "The previous addresses remain valid until %(bis)s."
+
+#: core/templates/core/postfach_liste.html
+msgid "Eine Adresse in falsche Hände geraten? Erneuern Sie beide Adressen. Die bisherigen gelten noch 30 Tage; Weiterleitungen müssen Sie danach auf die neue Rechnungsadresse umstellen."
+msgstr "An address fell into the wrong hands? Renew both addresses. The previous ones stay valid for 30 days; afterwards you must point forwards to the new invoice address."
+
+#: core/templates/core/postfach_liste.html
+msgid "Erweitert: eigenes Postfach per IMAP abrufen"
+msgstr "Advanced: fetch your own mailbox via IMAP"
+
+#: core/templates/core/postfach_liste.html
+msgid "Einfacher geht es mit einer Weiterleitung auf die Adressen oben: Dafür hinterlegen Sie keine Zugangsdaten, und es bricht nichts, wenn Sie Ihr Passwort ändern. Nur wenn das nicht möglich ist, rufen wir Ihr Postfach selbst ab."
+msgstr "Simpler: a forward to the addresses above. You store no credentials and nothing breaks when you change your password. Only if that is not possible do we fetch your mailbox ourselves."
+
+#: core/templates/core/postfach_liste.html
+msgid "Die Zugangsdaten lassen sich nicht lesen."
+msgstr "The credentials cannot be read."
+
+#: core/templates/core/postfach_liste.html
+msgid "Der Schlüssel auf dem Server wurde gewechselt. Dieses Postfach wird nicht mehr abgerufen. Geben Sie die Zugangsdaten neu ein oder löschen Sie das Postfach und nutzen Sie stattdessen eine Weiterleitung auf die Adressen oben."
+msgstr "The key on the server was changed. This mailbox is no longer fetched. Enter the credentials again, or delete the mailbox and use a forward to the addresses above instead."
+
+#: core/templates/core/postfach_liste.html
+msgid "Neu eingeben"
+msgstr "Enter again"
+
+#: core/templates/core/postfach_liste.html
+msgid "Die Adressen wurden erneuert. Die bisherigen Adressen gelten noch 30 Tage — stellen Sie Weiterleitungen auf die neue Rechnungsadresse um."
+msgstr "The addresses have been renewed. The previous addresses stay valid for 30 days — point forwards to the new invoice address."
+
+#: core/templates/core/postfach_liste.html
+msgid "Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei Bedarf"
+msgstr "Addresses for ticket replies and invoices, own mailbox only if needed"

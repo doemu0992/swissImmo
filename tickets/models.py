@@ -348,6 +348,8 @@ class EingegangeneMail(models.Model):
     organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
                                      related_name='eingegangene_mails', verbose_name='Organisation')
     message_id = models.CharField(max_length=255)
+    # An welche Plattformadresse die Mail ging: 'antworten' oder 'rechnungen' (fuer «letzter Eingang»).
+    zweck = models.CharField(max_length=20, default='antworten')
     erstellt_am = models.DateTimeField(auto_now_add=True)
 
     objects = TenantManager()

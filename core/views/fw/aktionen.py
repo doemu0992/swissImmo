@@ -954,7 +954,7 @@ def fw_einstellungen(request):
          'url': '/neu/einstellungen/zahlungsfreigabe/', 'icon': 'gesperrt'},
         {'titel': _('Daten'), 'sub': _('Import für Wechselkunden, Mandatsexport, Buchungsjournal für Banana und Abacus'),
          'url': '/neu/einstellungen/daten/', 'icon': 'dokument'},
-        {'titel': _('Postfächer'), 'sub': _('E-Mail-Eingang für Ticket-Antworten und Rechnungen'),
+        {'titel': _('E-Mail-Eingang'), 'sub': _('Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei Bedarf'),
          'url': '/neu/postfaecher/', 'icon': 'wartet'},
         {'titel': _('Logbuch'), 'sub': _('Wer hat wann was geändert'), 'url': '/neu/logbuch/', 'icon': 'verlauf'},
         {'titel': _('Rechtsgrundlagen'), 'sub': _('OR/VMWG-Artikel mit Anwendung im Programm'), 'url': '/neu/rechtsgrundlagen/', 'icon': 'recht'},
