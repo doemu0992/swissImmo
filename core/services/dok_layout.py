@@ -47,9 +47,69 @@ RECHTS = 190 * mm
 Y_FOLGE = 272 * mm
 #: Unterkante des Inhalts (darunter steht die Fusszeile).
 UNTEN = 26 * mm
-#: Adressfenster C5/6 rechts: linke Kante und obere Kante (von oben gemessen).
+
+# ---------------------------------------------------------------------------------------------------------------------
+# ADRESSLAGE (Briefe für Fensterumschläge C5/6, Fenster rechts)
+#
+# HERKUNFT UND STAND DER PRÜFUNG, ehrlich:
+# * ADRESSFELD (118 mm von links, 45 mm von oben): aus der Erinnerung an die Schweizer Briefnorm SN 010130 gesetzt,
+#   NIE gegen die Norm oder einen echten Umschlag geprüft. Die Post-Spezifikation «Briefe – Gestaltung»
+#   (post.ch/-/media/portal-opp/pm/dokumente/briefe-spezifikation-gestaltung.pdf) nennt keine Fensterkoordinaten für
+#   C5/6; der Abruf war in der Umgebung der letzten Prüfung nicht möglich (403 des Proxys). Herstellerdatenblätter
+#   (Couvert-Fabrik, Biella, Mayer-Bestpac) sind nicht eingesehen.
+# * UMSCHLAGFENSTER (115 / 42 mm, 90 x 45 mm): eine ANNAHME, nicht gemessen. Sie liegt in der üblichen Spanne für
+#   C5/6 mit Fenster rechts (links ca. 115–120 mm, oben ca. 42–50 mm, ca. 90–100 x 25–45 mm) und ist so gewählt, dass
+#   das Adressfeld 3 mm Rand zum Fensterrand hat. Die Fensterprobe (`core/services/fensterprobe.py`) zeigt sie
+#   zum Nachmessen am echten Umschlag; der Versatz in den Briefkopf-Einstellungen gleicht eine Abweichung aus.
+# * Falzmarken bei 99 und 198 mm: A4 (297 mm) in drei gleiche Teile gefaltet, wie es in C5/6 (114 x 229 mm) passt.
+#   (DIN 5008 kennt für C6/5 «Form B» 105/210 mm; das ist ein anderer Falz.)
+# Alle Masse stehen hier und nur hier; `fenster()`, `brief()` und die Fensterprobe lesen sie.
+# ---------------------------------------------------------------------------------------------------------------------
+#: Adressfeld: linke Kante und obere Kante (von oben gemessen). Name bleibt FENSTER_*, weil Tests ihn kennen.
 FENSTER_X = 118 * mm
 FENSTER_OBEN = 45 * mm
+#: Das Adressfeld endet am Textrand der Seite: Absenderlinie, Anschrift und Zustellvermerk sind gleich breit.
+ADRESSFELD_BREITE = RECHTS - FENSTER_X
+ADRESS_SCHRIFT = 10            # pt
+ADRESS_SCHRIFT_MIN = 8         # pt: schmäler wird nicht geschrieben, darüber hinaus wird gekürzt
+ADRESS_ZEILENABSTAND = 12      # pt
+ADRESS_ZEILEN_MAX = 6          # mehr Zeilen passen nicht ins Fenster; weniger als 3 ist unüblich (Name, Strasse, Ort)
+ADRESS_ZEILEN_MIN = 3
+ABSENDER_SCHRIFT = 7           # pt: Rücksendeangabe über der Anschrift
+#: Abstand der ersten Anschriftzeile unter der Oberkante des Adressfelds: Absenderzeile (8 pt), Linie, dann die Anschrift.
+ABSENDER_GRUNDLINIE = 8        # pt unter FENSTER_OBEN
+ADRESS_ERSTE_ZEILE = 22        # pt unter FENSTER_OBEN
+#: Das Umschlagfenster (ANNAHME, siehe oben): links, oben, Breite, Höhe in mm.
+UMSCHLAGFENSTER = (115.0, 42.0, 90.0, 45.0)
+#: Mindestrand der Anschrift zum Fensterrand.
+FENSTER_RAND_MIN = 3 * mm
+#: Zustellvermerk («Einschreiben») über dem Adressfeld: Schrift, Grundlinie über der Oberkante des Adressfelds und
+#: der geforderte Mindestabstand (Schriftunterkante) zur Briefkopflinie und zur Absenderzeile.
+VERMERK_SCHRIFT = 10           # pt, fett
+VERMERK_GRUNDLINIE = 5 * mm
+VERMERK_ABSTAND_MIN = 4 * mm
+#: Der Briefkopf eines Briefs reicht höchstens bis hierher (von oben gemessen): darunter ist der Streifen für den Vermerk.
+KOPF_MAX_BRIEF = 30 * mm
+LOGO_HOEHE_BRIEF = 32.0        # pt (ca. 11 mm); in Dokumenten ohne Adressfenster bleibt es bei 40 pt
+
+
+def _versatz(organisation, feld):
+    """Versatz der Adresslage in mm aus der Einstellung der Verwaltung; ohne Verwaltung oder Wert: 0."""
+    try:
+        return float(getattr(organisation, feld, 0) or 0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def adressfeld_masse(zeilen=ADRESS_ZEILEN_MAX, versatz_x=0.0, versatz_y=0.0):
+    """Das Adressfeld (Absenderzeile bis letzte Anschriftzeile) in mm, von links oben: (links, oben, rechts, unten).
+
+    Dieselben Konstanten wie `DokCanvas.fenster`; die Fensterprobe und die Tests rechnen damit."""
+    links = FENSTER_X / mm + versatz_x
+    oben = FENSTER_OBEN / mm + versatz_y
+    letzte_grundlinie = ADRESS_ERSTE_ZEILE + (min(zeilen, ADRESS_ZEILEN_MAX) - 1) * ADRESS_ZEILENABSTAND
+    unten = oben + (letzte_grundlinie + 0.22 * ADRESS_SCHRIFT) * 25.4 / 72     # Unterlänge ca. 0.22 der Schrift
+    return links, oben, links + ADRESSFELD_BREITE / mm, unten
 
 
 def _kuerzen(text, schrift, groesse, breite):
@@ -89,17 +149,45 @@ class DokCanvas(canvas.Canvas):
             bk = dict(bk, logo_pfad=logo if hoehe_logo else '', logo_breite=breite, logo_hoehe=hoehe_logo)
         self.bk = bk
         self.akzent = HexColor(bk.get('farbe') or AKZENT_STANDARD)
+        #: Versatz der Adresslage in mm (Einstellung der Verwaltung; 0 = Norm). x nach rechts, y nach unten.
+        self.versatz_x = _versatz(organisation, 'adress_versatz_x_mm')
+        self.versatz_y = _versatz(organisation, 'adress_versatz_y_mm')
+        self._kompakt = False
+        self._zeilenhoehe = 11.5
         self._rechts = self._rechte_zeilen()
-        logo_h = bk.get('logo_hoehe') or 0
-        hoehe_kopf = max(logo_h or 20.0, len(self._rechts) * 11.5)
-        #: y der Linie unter dem Briefkopf (Seite 1)
-        self.y_linie = self.hoehe - 15 * mm - hoehe_kopf - 7
-        #: obere Kante des Inhalts auf Seite 1 (Berichte, Abrechnungen, Verträge)
-        self.Y_INHALT = self.y_linie - 9 * mm
+        self._kopf_geometrie()
         self.Y_FOLGE = Y_FOLGE if self.hoehe > 400 else self.hoehe - 25 * mm
         self.UNTEN = UNTEN
         self.LINKS = rand
         self.RECHTS = self.rand_rechts
+
+    def _kopf_geometrie(self):
+        logo_h = self.bk.get('logo_hoehe') or 0
+        hoehe_kopf = max(logo_h or 20.0, len(self._rechts) * self._zeilenhoehe)
+        #: y der Linie unter dem Briefkopf (Seite 1)
+        self.y_linie = self.hoehe - 15 * mm - hoehe_kopf - (6 if self._kompakt else 7)
+        #: obere Kante des Inhalts auf Seite 1 (Berichte, Abrechnungen, Verträge)
+        self.Y_INHALT = self.y_linie - 9 * mm
+
+    def _kopf_fuer_brief(self):
+        """Kompakter Briefkopf für Briefe mit Adressfenster.
+
+        Unter der Linie des Briefkopfs muss über dem Adressfenster Platz für den Zustellvermerk bleiben (Abstand
+        zur Linie UND zum Fenster, siehe `brief`). Mit 40-pt-Logo und vier Kontaktzeilen reichte der Kopf bis
+        38 mm; jetzt reicht er höchstens bis `KOPF_MAX_BRIEF`: Logo auf `LOGO_HOEHE_BRIEF` skaliert, die Kontaktdaten
+        in drei Zeilen (Name, Strasse und Ort, Telefon und E-Mail). Dokumente ohne Adressblock behalten den Kopf."""
+        if self._kompakt:
+            return
+        self._kompakt = True
+        self._zeilenhoehe = 11.0
+        pfad = self.bk.get('logo_pfad')
+        if pfad:
+            from core.services.briefkopf import _logo_masse
+            b, h = _logo_masse(pfad, hoehe=LOGO_HOEHE_BRIEF)
+            if b and h:
+                self.bk = dict(self.bk, logo_breite=b, logo_hoehe=h)
+        self._rechts = self._rechte_zeilen()
+        self._kopf_geometrie()
 
     # ---- Seitenverwaltung -------------------------------------------------
 
@@ -160,6 +248,10 @@ class DokCanvas(canvas.Canvas):
         zeilen = []
         if bk.get('logo_pfad') and bk.get('firma'):
             zeilen.append(('b', bk['firma']))
+        if self._kompakt:
+            adresse = ', '.join(t for t in (bk.get('strasse'), bk.get('plz_ort')) if t)
+            kontakt = ' · '.join(t for t in (bk.get('telefon'), bk.get('email')) if t)
+            return zeilen + [('n', t) for t in (adresse, kontakt) if t]
         if bk.get('strasse'):
             zeilen.append(('n', bk['strasse']))
         if bk.get('plz_ort'):
@@ -197,7 +289,7 @@ class DokCanvas(canvas.Canvas):
             self.setFillColor(GRAU)
             self.setFont('Helvetica-Bold' if art == 'b' else 'Helvetica', 8.5)
             self.drawRightString(self.rand_rechts, y, text)
-            y -= 11.5
+            y -= self._zeilenhoehe
         self.setStrokeColor(self.akzent)
         self.setLineWidth(1.5)
         self.line(self.links, self.y_linie, self.rand_rechts, self.y_linie)
@@ -252,36 +344,57 @@ class DokCanvas(canvas.Canvas):
 
     # ---- Briefe -----------------------------------------------------------
 
+    def adressfeld_oben(self):
+        """Obere Kante des Adressfelds (y, reportlab-Koordinate) samt Versatz der Verwaltung."""
+        return self.hoehe - FENSTER_OBEN - self.versatz_y * mm
+
+    def adressfeld_links(self):
+        return FENSTER_X + self.versatz_x * mm
+
     def fenster(self, zeilen, absenderzeile=None):
-        """Empfängerfeld im Fenster rechts (C5/6). `absenderzeile` steht 7 pt klein darüber;
-        Vorgabe: Firma · Strasse · PLZ Ort des Briefkopfs."""
+        """Empfängerfeld im Fenster rechts (C5/6). `absenderzeile` steht klein darüber;
+        Vorgabe: Firma · Strasse · PLZ Ort des Briefkopfs.
+
+        Alles liegt zwischen `FENSTER_X` und dem Textrand (`ADRESSFELD_BREITE`): die Linie unter der Absenderzeile
+        endet am Textrand, eine zu breite Zeile wird schmaler gesetzt (nicht unter `ADRESS_SCHRIFT_MIN`), dann
+        gekürzt. Höchstens `ADRESS_ZEILEN_MAX` Zeilen."""
         bk = self.bk
         if absenderzeile is None:
             absenderzeile = ' · '.join(t for t in (bk.get('firma', ''), bk.get('strasse', ''), bk.get('plz_ort', '')) if t)
-        y = self.hoehe - FENSTER_OBEN - 8
-        self.setFont('Helvetica', 7)
+        x = self.adressfeld_links()
+        oben = self.adressfeld_oben()
+        y = oben - ABSENDER_GRUNDLINIE
+        self.setFont('Helvetica', ABSENDER_SCHRIFT)
         self.setFillColor(GRAU_HELL)
-        self.drawString(FENSTER_X, y, absenderzeile[:70])
+        self.drawString(x, y, _kuerzen(absenderzeile, 'Helvetica', ABSENDER_SCHRIFT, ADRESSFELD_BREITE))
         self.setStrokeColor(LINIE)
         self.setLineWidth(0.5)
-        self.line(FENSTER_X, y - 2, FENSTER_X + 85 * mm, y - 2)
+        self.line(x, y - 2, x + ADRESSFELD_BREITE, y - 2)
         self.setFillColor(TEXT)
-        self.setFont('Helvetica', 10.5)
-        y -= 14
-        for z in [z for z in zeilen if z][:6]:
-            self.drawString(FENSTER_X, y, z)
-            y -= 12.5
+        y = oben - ADRESS_ERSTE_ZEILE
+        for z in [z for z in zeilen if z][:ADRESS_ZEILEN_MAX]:
+            groesse = ADRESS_SCHRIFT
+            while groesse > ADRESS_SCHRIFT_MIN and stringWidth(z, 'Helvetica', groesse) > ADRESSFELD_BREITE:
+                groesse -= 0.5
+            self.setFont('Helvetica', groesse)
+            self.drawString(x, y, _kuerzen(z, 'Helvetica', groesse, ADRESSFELD_BREITE))
+            y -= ADRESS_ZEILENABSTAND
         self.setStrokeColor(TEXT)
         self.setLineWidth(1)
 
     def brief(self, empfaenger, ort_datum, betreff, untertitel=None, einschreiben=False):
-        """Fenster, Ort/Datum und Betreff. Gibt die Höhe zurück, ab der der Brieftext beginnt."""
+        """Fenster, Ort/Datum und Betreff. Gibt die Höhe zurück, ab der der Brieftext beginnt.
+
+        `einschreiben` (True oder der Text des Vermerks): Der Zustellvermerk steht in einem freien Streifen ÜBER dem
+        Adressfeld (Schweizer Briefnorm), bündig mit der Anschrift, `VERMERK_GRUNDLINIE` über deren Oberkante — mit
+        Abstand zur Linie des Briefkopfs (kompakter Kopf, `_kopf_fuer_brief`) und zur Absenderzeile."""
+        self._kopf_fuer_brief()
         self.fenster(empfaenger)
         y = self.hoehe - 88 * mm
         if einschreiben:
-            # Der Zustellvermerk steht ÜBER der Empfängeradresse (Schweizer Briefnorm), bündig mit dem Fenster.
-            self.setFont('Helvetica-Bold', 10)
-            self.drawString(FENSTER_X, self.hoehe - FENSTER_OBEN + 4 * mm,
+            self.setFont('Helvetica-Bold', VERMERK_SCHRIFT)
+            self.setFillColor(TEXT)
+            self.drawString(self.adressfeld_links(), self.adressfeld_oben() + VERMERK_GRUNDLINIE,
                             einschreiben if isinstance(einschreiben, str) else 'Einschreiben')
         self.setFont('Helvetica', 9)
         self.setFillColor(GRAU)
