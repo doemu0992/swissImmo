@@ -24,7 +24,7 @@ Häkchen: Sie sind Mahnungen und drohen nichts an.
 import io
 import logging
 
-from core.services.dokumentsprache import nur_deutsch, sprache_von
+from core.services.dokumentsprache import nur_deutsch
 
 logger = logging.getLogger(__name__)
 
@@ -216,8 +216,7 @@ def mahnbrief_pdf(vertrag, verwaltung, *, stufe, monat, betrag, datum,
                       'line1': m.strasse or '', 'line2': f"{m.plz} {m.ort}"}
             draw_qr_bill(c, iban, creditor, debtor, float(str(betrag).replace(',', '.')),
                          f"{titel} {monat} {e.bezeichnung}",
-                         reference=getattr(rechnung, 'qr_referenz', None) or None,
-                         sprache=sprache_von(m))
+                         reference=getattr(rechnung, 'qr_referenz', None) or None)   # Mahnungen bleiben deutsch (dokumentsprache)
         except Exception:
             # Früher `pass`: Das Mahnschreiben ging OHNE Einzahlungsschein hinaus
             # und niemand erfuhr davon. Wie beim 257d-Schreiben: protokollieren

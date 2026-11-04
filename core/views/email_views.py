@@ -262,13 +262,13 @@ def generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_s
                 gebuehr_reference = gebuehr_reference or sammelreferenz(vertrag.id)
             draw_qr_bill(c, iban, creditor, debtor, betrag_float,
                          f"Mahnung {monat_str} {vertrag.einheit.bezeichnung}",
-                         reference=reference, sprache=sprache_von(vertrag.mieter))
+                         reference=reference)   # Mahnungen bleiben deutsch (dokumentsprache)
             # SEPARATER Einzahlungsschein für die Mahngebühr — eigener Betrag, eigene Referenz.
             if gebuehr and gebuehr > 0:
                 c.showPage()
                 draw_qr_bill(c, iban, creditor, debtor, float(gebuehr),
                              f"Mahngebühr {monat_str} {vertrag.einheit.bezeichnung}",
-                             reference=gebuehr_reference, sprache=sprache_von(vertrag.mieter))
+                             reference=gebuehr_reference)
         except Exception:
             # Früher `except: pass`: Das Schreiben ging OHNE Einzahlungsschein
             # hinaus, und niemand erfuhr davon — bei einer Zahlungsaufforderung

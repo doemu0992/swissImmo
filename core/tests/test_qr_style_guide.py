@@ -298,7 +298,9 @@ class AufruferGebenDieSpracheDesMietersWeiterTests(TestCase):
             'core.utils.qr_code.draw_qr_bill',
             lambda: mahnbrief_pdf(self.a.vertrag, self.a.organisation, stufe=1, monat='März 2026',
                                   betrag='1700.00', datum=date(2026, 3, 20), letzte_stufe=False))
-        self.assertEqual(sprachen, {'fr'})
+        # Mahnungen bleiben wegen des Rechtstexts deutsch (core.services.dokumentsprache): Zahlteil und Brief
+        # stehen in derselben Sprache.
+        self.assertEqual(sprachen, {None})
 
     def test_mahnschreiben_257d_mit_gebuehr(self):
         from core.views.email_views import generate_mahnung_combined_pdf_bytes
@@ -306,7 +308,7 @@ class AufruferGebenDieSpracheDesMietersWeiterTests(TestCase):
             generate_mahnung_combined_pdf_bytes(
                 self.a.vertrag, self.a.organisation, 'März 2026', '1700.00', date(2026, 3, 20),
                 gebuehr=Decimal('20'))
-        self.assertEqual({kw.get('sprache') for _a, kw in zeichnen.call_args_list}, {'fr'})
+        self.assertEqual({kw.get('sprache') for _a, kw in zeichnen.call_args_list}, {None})   # deutsch wie der Brief
         self.assertEqual(zeichnen.call_count, 2)
 
     def test_mietrechnung_view(self):
