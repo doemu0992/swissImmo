@@ -152,6 +152,14 @@ OHNE_MANDANTENFILTER = {
     # hat. Eine eigene Tabelle sagt es im Namen.
     'core.SicherheitsEreignis': 'Betreiberlog — Ereignisse ohne bestimmbaren Mandanten',
 
+    # Das Sammelpostfach der Plattform (`fetch_plattform_eingang`) enthaelt auch Mails, die KEINER Verwaltung
+    # gehoeren (Spam an erfundene Adressen). Das Abrufprotokoll (nur Schluessel, Ausgang, Zaehler, kein Inhalt)
+    # kann deshalb keine Organisation tragen; die Zuordnung zur Verwaltung und die Idempotenz je Verwaltung
+    # bleiben bei `tickets.EingegangeneMail` (mit Mandantenfilter). Der Status ist eine einzige Zeile fuer die
+    # ganze Installation.
+    'core.PlattformMail': 'Abrufprotokoll des Plattform-Postfachs — Mails ohne bestimmbare Verwaltung',
+    'core.PlattformEingangStatus': 'Abrufstatus des Plattform-Postfachs — eine Zeile fuer die Installation',
+
     # Der zweite Anmeldefaktor und seine Notfallcodes hängen am KONTO, nicht
     # an der Verwaltung — aus demselben Grund wie `benutzer.Benutzer` ganz
     # oben: Eine Treuhänderin, die zwei Verwaltungen betreut, ist EIN Mensch

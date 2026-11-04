@@ -53,6 +53,61 @@ class SicherheitsEreignis(models.Model):
         return f"{self.zeitpunkt:%d.%m.%Y %H:%M} {self.aktion} — {self.objekt}"
 
 
+class PlattformMail(models.Model):
+    """Eine Mail des Plattform-Postfachs, die der Abruf (``fetch_plattform_eingang``) schon angefasst hat.
+
+    PLATTFORMWEIT, OHNE ORGANISATION (steht in ``OHNE_MANDANTENFILTER``): Das Sammelpostfach enthaelt auch Mails,
+    die KEINER Verwaltung gehoeren (Spam an erfundene Adressen). Fuer sie gibt es keine Organisation, aber der
+    Abruf muss sich merken, dass er sie ignoriert hat. Gespeichert wird nur der Schluessel (Message-ID, ersatzweise
+    ein Hash der Kopfzeilen), der Ausgang und ein Zaehler — KEIN Inhalt, KEIN Absender.
+
+    Drei Aufgaben:
+    * Poison-Schutz: ``versuche`` zaehlt Fehlschlaege; ab ``MAX_VERSUCHE`` gilt die Mail als erledigt
+      (``ergebnis='aufgegeben'``), damit eine kaputte Mail den Abruf nicht ewig blockiert.
+    * Aufraeumen: geloescht wird im Postfach NUR, was hier mit ``erledigt_am`` vermerkt ist.
+    * Wiederaufnahme: blieb ``\\Seen`` nach dem Verarbeiten aus, erkennt der naechste Lauf die Mail hieran wieder.
+
+    Die Idempotenz je Verwaltung (nie doppelt anlegen) bleibt bei ``tickets.EingegangeneMail``.
+    """
+    schluessel = models.CharField("Schluessel", max_length=255, unique=True)
+    versuche = models.PositiveSmallIntegerField("Fehlversuche", default=0)
+    ergebnis = models.CharField("Ausgang", max_length=30, blank=True, default='')
+    letzter_fehler = models.CharField("Letzter Fehler", max_length=300, blank=True, default='')
+    erstellt_am = models.DateTimeField("Erstmals gesehen", auto_now_add=True)
+    erledigt_am = models.DateTimeField("Erledigt am", null=True, blank=True, db_index=True)
+
+    class Meta:
+        verbose_name = "Plattform-Mail"
+        verbose_name_plural = "Plattform-Mails"
+
+    def __str__(self):
+        return f"{self.schluessel[:40]} ({self.ergebnis or 'offen'})"
+
+
+class PlattformEingangStatus(models.Model):
+    """Wann das Plattform-Postfach zuletzt abgerufen wurde und mit welchem Fehler — genau eine Zeile.
+
+    Plattformweit (kein Organisationsbezug, siehe ``OHNE_MANDANTENFILTER``). Die Seite «E-Mail-Eingang» zeigt
+    sie dem Inhaber. ``letzter_fehler`` ist bewusst OHNE Servername und Benutzer formuliert, weil jede
+    Verwaltung ihn sieht.
+    """
+    letzter_abruf = models.DateTimeField("Letzter Abruf", null=True, blank=True)
+    letzter_erfolg = models.DateTimeField("Letzter Abruf ohne Fehler", null=True, blank=True)
+    letzter_fehler = models.CharField("Letzter Fehler", max_length=300, blank=True, default='')
+
+    class Meta:
+        verbose_name = "Status Plattform-Postfach"
+        verbose_name_plural = "Status Plattform-Postfach"
+
+    @classmethod
+    def holen(cls):
+        eintrag, _neu = cls.objects.get_or_create(pk=1)
+        return eintrag
+
+    def __str__(self):
+        return f"Plattform-Postfach, Abruf {self.letzter_abruf or 'noch nie'}"
+
+
 class Postfach(models.Model):
     """Das E-Mail-Postfach EINER Verwaltung — Antworten oder Rechnungen.
 

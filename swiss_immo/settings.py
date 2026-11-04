@@ -485,6 +485,17 @@ ANTWORT_DOMAIN = (os.getenv('ANTWORT_DOMAIN') or 'immoswiss.app').strip().lower(
 # im Webhook mit). Ohne ihn kommen Rechnungsmails an, aber ohne Anhang; das Logbuch der Verwaltung nennt es.
 BREVO_API_KEY = os.getenv('BREVO_API_KEY')
 
+# Plattform-Postfach (Variante A, kein neuer Anbieter): EIN Sammelpostfach beim Mailhoster, auf das der Hoster
+# das Catch-all der ANTWORT_DOMAIN legt. `manage.py fetch_plattform_eingang` ruft es per IMAP ab und ordnet
+# jede Mail ueber die Empfaengeradresse einer Verwaltung zu. Die Zugangsdaten stehen NUR hier (.env), nicht je
+# Verwaltung in der Datenbank. Eingerichtet ist der Kanal erst, wenn Host, Benutzer und Passwort gesetzt sind.
+# Siehe docs/ANTWORTADRESSEN.md.
+PLATTFORM_IMAP_HOST = (os.getenv('PLATTFORM_IMAP_HOST') or '').strip()
+PLATTFORM_IMAP_PORT = int(os.getenv('PLATTFORM_IMAP_PORT') or 993)
+PLATTFORM_IMAP_BENUTZER = (os.getenv('PLATTFORM_IMAP_BENUTZER') or '').strip()
+PLATTFORM_IMAP_PASSWORT = os.getenv('PLATTFORM_IMAP_PASSWORT') or ''
+PLATTFORM_IMAP_ORDNER = (os.getenv('PLATTFORM_IMAP_ORDNER') or 'INBOX').strip() or 'INBOX'
+
 # SMTP KONFIGURATION (HOSTSTAR) - BLEIBT AKTIV!
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'lx37.hoststar.hosting'
