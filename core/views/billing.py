@@ -12,18 +12,16 @@ from django.utils.translation import gettext
 from core.auth import rolle_erforderlich, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER, ROLLE_LESEZUGRIFF
 
 # Profi-Tools
-import segno
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.lib import colors
-import reportlab.lib.utils
 
 from decimal import Decimal
 
 from core.services.dok_layout import LINKS, DokCanvas
 from core.utils.billing import hole_abrechnung
-from core.utils.qr_code import draw_qr_bill, ist_qr_iban, qrr_referenz
+from core.utils.qr_code import draw_qr_bill, ist_qr_iban, qrr_referenz, zahlteil_zeichnen
 
 logger = logging.getLogger(__name__)
 
@@ -37,14 +35,21 @@ def format_iban(iban):
     iban = iban.replace(" ", "")
     return " ".join(iban[i:i+4] for i in range(0, len(iban), 4))
 
-def draw_cross(c, x, y):
-    c.setFillColorRGB(0, 0, 0)
-    c.rect(x - 3.5*mm, y - 3.5*mm, 7*mm, 7*mm, fill=1, stroke=0)
-    c.setFillColorRGB(1, 1, 1)
-    bar_width = 1.1 * mm
-    bar_length = 3.8 * mm
-    c.rect(x - bar_width/2, y - bar_length/2, bar_width, bar_length, fill=1, stroke=0)
-    c.rect(x - bar_length/2, y - bar_width/2, bar_length, bar_width, fill=1, stroke=0)
+def qr_datenblock(iban, gl_name, gl_zeile1, gl_zeile2, sd_name, sd_zeile1, sd_zeile2,
+                  betrag, ref_typ, ref_val, mitteilung):
+    """Datenblock des Swiss QR Codes mit STRUKTURIERTEN Adressen («S»).
+
+    Die kombinierte Adresse («K») wird mit dem SIC-Release vom 13.11.2026 abgewiesen
+    (siehe `core.utils.qr_code.adressblock`)."""
+    from core.utils.qr_code import adressblock
+    return "\n".join([
+        "SPC", "0200", "1", iban,
+        *adressblock({'name': gl_name, 'line1': gl_zeile1, 'line2': gl_zeile2}),
+        "", "", "", "", "", "", "", f"{betrag:.2f}", "CHF",
+        *adressblock({'name': sd_name, 'line1': sd_zeile1, 'line2': sd_zeile2}, pflicht=False),
+        ref_typ, ref_val, mitteilung, "EPD", ""
+    ])
+
 
 @rolle_erforderlich(ROLLE_VERWALTER, ROLLE_SACHBEARBEITER)
 def qr_rechnung_pdf(request, vertrag_id):
@@ -61,7 +66,6 @@ def qr_rechnung_pdf(request, vertrag_id):
     if errors: return HttpResponse(f"Fehler:<br>- " + "<br>- ".join(errors), status=400)
 
     raw_iban = liegenschaft.iban.replace(" ", "")
-    formatted_iban = format_iban(raw_iban)
     total_betrag = vertrag.netto_mietzins + vertrag.nebenkosten
 
     creditor_name = eigentuemer.firma_oder_name if eigentuemer else "Immobilienverwaltung"
@@ -83,19 +87,14 @@ def qr_rechnung_pdf(request, vertrag_id):
             monat_id = int(yyyy_str) * 100 + int(mm_str)
         except (ValueError, IndexError):
             monat_id = int(datetime.date.today().strftime('%Y%m'))
-        ref_raw, ref_formatiert = qrr_referenz(vertrag.id, monat_id)
+        ref_raw, _formatiert = qrr_referenz(vertrag.id, monat_id)
         ref_typ, ref_val = "QRR", ref_raw
     else:
         ref_typ, ref_val = "NON", ""
-        ref_formatiert = ""
 
-    qr_data = "\n".join([
-        "SPC", "0200", "1", raw_iban,
-        "K", creditor_name, creditor_line1, creditor_line2, "", "", "CH",
-        "", "", "", "", "", "", "", f"{total_betrag:.2f}", "CHF",
-        "K", debtor_name, debtor_line1, debtor_line2, "", "", "CH",
-        ref_typ, ref_val, mitteilung, "EPD", ""
-    ])
+    qr_data = qr_datenblock(raw_iban, creditor_name, creditor_line1, creditor_line2,
+                            debtor_name, debtor_line1, debtor_line2,
+                            total_betrag, ref_typ, ref_val, mitteilung)
 
     buffer = io.BytesIO()
     c = DokCanvas(buffer, organisation=verwaltung, absender=[creditor_name, creditor_line1, creditor_line2],
@@ -130,80 +129,13 @@ def qr_rechnung_pdf(request, vertrag_id):
     c.drawString(20*mm, y_tab - 16*mm, "Totalbetrag")
     c.drawRightString(190*mm, y_tab - 16*mm, f"CHF {total_betrag:,.2f}".replace(",", "'"))
 
-    c.setDash(1, 4)
-    c.setStrokeColor(colors.black)
-    c.setLineWidth(0.5)
-    c.line(0, 105*mm, 210*mm, 105*mm)
-    c.setDash([])
-    c.setFillColor(colors.black)
-    c.setFont("ZapfDingbats", 10)
-    c.drawString(10*mm, 107*mm, "✂")
-
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(67*mm, 95*mm, "Zahlteil")
-    c.drawString(5*mm, 95*mm, "Empfangsschein")
-
-    qr = segno.make(qr_data, error='M')
-    qr_img = io.BytesIO()
-    qr.save(qr_img, kind='png', scale=4)
-    qr_img.seek(0)
-    c.drawImage(reportlab.lib.utils.ImageReader(qr_img), 67*mm, 42*mm, width=46*mm, height=46*mm)
-    draw_cross(c, 67*mm + 23*mm, 42*mm + 23*mm)
-
-    def draw_details(x, is_receipt=False):
-        c.setFillColor(colors.black)
-        y = 90*mm
-        lh = 3.5*mm
-        c.setFont("Helvetica-Bold", 8)
-        c.drawString(x, y, "Konto / Zahlbar an")
-        y -= lh
-        c.setFont("Helvetica", 8)
-        c.drawString(x, y, formatted_iban)
-        y -= lh
-        c.drawString(x, y, creditor_name)
-        y -= lh
-        c.drawString(x, y, creditor_line1)
-        y -= lh
-        c.drawString(x, y, creditor_line2)
-        if ref_formatiert:
-            y -= (lh * 1.5)
-            c.setFont("Helvetica-Bold", 8)
-            c.drawString(x, y, "Referenz")
-            y -= lh
-            c.setFont("Helvetica", 8)
-            c.drawString(x, y, ref_formatiert)
-        if is_receipt:
-            y -= (lh * 1.5)
-            c.setFont("Helvetica-Bold", 8)
-            c.drawString(x, y, "Information")
-            y -= lh
-            c.setFont("Helvetica", 7)
-            c.drawString(x, y, mitteilung)
-            y -= (lh * 0.5)
-        else:
-            y -= (lh * (1.5 if ref_formatiert else 3))
-        y -= (lh * 1.5)
-        c.setFont("Helvetica-Bold", 8)
-        c.drawString(x, y, "Zahlbar durch")
-        y -= lh
-        c.setFont("Helvetica", 8)
-        c.drawString(x, y, debtor_name)
-        y -= lh
-        c.drawString(x, y, debtor_line1)
-        y -= lh
-        c.drawString(x, y, debtor_line2)
-
-    draw_details(5*mm, is_receipt=True)
-    c.setFillColor(colors.black)
-    c.setFont("Helvetica-Bold", 8); c.drawString(5*mm, 15*mm, "Währung"); c.drawString(18*mm, 15*mm, "Betrag")
-    c.setFont("Helvetica", 10); c.drawString(5*mm, 10*mm, "CHF"); c.drawString(18*mm, 10*mm, f"{total_betrag:,.2f}".replace(",", "'"))
-
-    draw_details(118*mm, is_receipt=False)
-    c.setFillColor(colors.black)
-    c.setFont("Helvetica-Bold", 8); c.drawString(67*mm, 15*mm, "Währung"); c.drawString(82*mm, 15*mm, "Betrag")
-    c.setFont("Helvetica", 10); c.drawString(67*mm, 10*mm, "CHF"); c.drawString(82*mm, 10*mm, f"{total_betrag:,.2f}".replace(",", "'"))
-    c.setFont("Helvetica-Bold", 7); c.drawString(118*mm, 35*mm, "Zusätzliche Informationen")
-    c.setFont("Helvetica", 7); c.drawString(118*mm, 32*mm, mitteilung)
+    # Zahlteil und Empfangsschein: eine gemeinsame Darstellung nach Style Guide (core.utils.qr_code).
+    # Der Datenteil oben bleibt, wie er ist; gezeichnet wird nur.
+    zahlteil_zeichnen(
+        c, qr_data=qr_data, iban=raw_iban,
+        creditor={'name': creditor_name, 'line1': creditor_line1, 'line2': creditor_line2},
+        debtor={'name': debtor_name, 'line1': debtor_line1, 'line2': debtor_line2},
+        amount=total_betrag, reason=mitteilung, ref_typ=ref_typ, ref_val=ref_val)
 
     c.showPage()
     c.save()

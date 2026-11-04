@@ -37610,3 +37610,35 @@ msgstr "{gruss}\n\nan appointment has been agreed for “{schaden}”:\n\nWhen: 
 
 msgid "{gruss}\n\nDer Termin für „{schaden}“ ({objekt}) ist festgelegt: {termin}.\nMieter: {melder_name} ({melder_tel}).\nDer Kalendereintrag hängt an. Können Sie den Termin nicht einhalten, antworten Sie direkt auf diese Mail — Ihre Antwort geht an den Mieter, den neuen Termin stimmen Sie direkt mit ihm ab.\n\nFreundliche Grüsse\nIhre Liegenschaftsverwaltung"
 msgstr "{gruss}\n\nThe appointment for “{schaden}” ({objekt}) is set: {termin}.\nTenant: {melder_name} ({melder_tel}).\nThe calendar entry is attached. If you cannot keep the appointment, reply directly to this e-mail — your reply goes to the tenant, and you agree the new appointment directly with them.\n\nKind regards\nYour property management"
+
+#: core/utils/qr_code.py
+msgid "Zahlteil"
+msgstr "Payment part"
+
+#: core/utils/qr_code.py
+msgid "Empfangsschein"
+msgstr "Receipt"
+
+#: core/utils/qr_code.py
+msgid "Konto / Zahlbar an"
+msgstr "Account / Payable to"
+
+#: core/utils/qr_code.py
+msgid "Zusätzliche Informationen"
+msgstr "Additional information"
+
+#: core/utils/qr_code.py
+msgid "Zahlbar durch"
+msgstr "Payable by"
+
+#: core/utils/qr_code.py
+msgid "Zahlbar durch (Name/Adresse)"
+msgstr "Payable by (name/address)"
+
+#: core/utils/qr_code.py
+msgid "Währung"
+msgstr "Currency"
+
+#: core/utils/qr_code.py
+msgid "Annahmestelle"
+msgstr "Acceptance point"

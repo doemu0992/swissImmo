@@ -38170,3 +38170,35 @@ msgstr "{gruss}\n\nper «{schaden}» è stato concordato un appuntamento:\n\nQua
 
 msgid "{gruss}\n\nDer Termin für „{schaden}“ ({objekt}) ist festgelegt: {termin}.\nMieter: {melder_name} ({melder_tel}).\nDer Kalendereintrag hängt an. Können Sie den Termin nicht einhalten, antworten Sie direkt auf diese Mail — Ihre Antwort geht an den Mieter, den neuen Termin stimmen Sie direkt mit ihm ab.\n\nFreundliche Grüsse\nIhre Liegenschaftsverwaltung"
 msgstr "{gruss}\n\nL'appuntamento per «{schaden}» ({objekt}) è fissato: {termin}.\nInquilino: {melder_name} ({melder_tel}).\nL'invito al calendario è allegato. Se non potete rispettare l'appuntamento, rispondete direttamente a questa e-mail — la vostra risposta andrà all'inquilino, il nuovo appuntamento lo concordate direttamente con lui.\n\nCordiali saluti\nLa vostra amministrazione immobiliare"
+
+#: core/utils/qr_code.py
+msgid "Zahlteil"
+msgstr "Sezione pagamento"
+
+#: core/utils/qr_code.py
+msgid "Empfangsschein"
+msgstr "Ricevuta"
+
+#: core/utils/qr_code.py
+msgid "Konto / Zahlbar an"
+msgstr "Conto / Pagabile a"
+
+#: core/utils/qr_code.py
+msgid "Zusätzliche Informationen"
+msgstr "Informazioni supplementari"
+
+#: core/utils/qr_code.py
+msgid "Zahlbar durch"
+msgstr "Pagabile da"
+
+#: core/utils/qr_code.py
+msgid "Zahlbar durch (Name/Adresse)"
+msgstr "Pagabile da (nome/indirizzo)"
+
+#: core/utils/qr_code.py
+msgid "Währung"
+msgstr "Valuta"
+
+#: core/utils/qr_code.py
+msgid "Annahmestelle"
+msgstr "Punto di accettazione"
