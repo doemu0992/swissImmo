@@ -36785,60 +36785,100 @@ msgid "Ihre Antwortadresse"
 msgstr "Ihre Antwortadresse"
 
 #: core/templates/core/postfach_liste.html
-msgid "Antworten von Mietern und Handwerkern auf Ticket-Mails kommen hierher und erscheinen im Ticket und im Chat. Sie müssen nichts einrichten. Haben Sie ein eigenes Postfach hinterlegt, gilt dieses."
-msgstr "Antworten von Mietern und Handwerkern auf Ticket-Mails kommen hierher und erscheinen im Ticket und im Chat. Sie müssen nichts einrichten. Haben Sie ein eigenes Postfach hinterlegt, gilt dieses."
+msgid ""
+"Antworten von Mietern und Handwerkern auf Ticket-Mails kommen hierher und "
+"erscheinen im Ticket und im Chat. Sie müssen nichts einrichten. Haben Sie "
+"ein eigenes Postfach hinterlegt, gilt dieses."
+msgstr ""
+"Antworten von Mietern und Handwerkern auf Ticket-Mails kommen hierher und "
+"erscheinen im Ticket und im Chat. Sie müssen nichts einrichten. Haben Sie "
+"ein eigenes Postfach hinterlegt, gilt dieses."
 
 #: core/templates/core/postfach_liste.html
-msgid "Es gilt Ihr eigenes Postfach: %(adresse)s. Die Adresse oben ist als Reserve bereit und wird verwendet, sobald Sie das eigene Postfach abschalten."
-msgstr "Es gilt Ihr eigenes Postfach: %(adresse)s. Die Adresse oben ist als Reserve bereit und wird verwendet, sobald Sie das eigene Postfach abschalten."
+msgid ""
+"Es gilt Ihr eigenes Postfach: %(adresse)s. Die Adresse oben ist als Reserve "
+"bereit und wird verwendet, sobald Sie das eigene Postfach abschalten."
+msgstr ""
+"Es gilt Ihr eigenes Postfach: %(adresse)s. Die Adresse oben ist als Reserve "
+"bereit und wird verwendet, sobald Sie das eigene Postfach abschalten."
 
 #: core/templates/core/postfach_liste.html
 msgid "Es gilt diese Adresse: Ticket-Mails tragen sie als Antwortadresse."
 msgstr "Es gilt diese Adresse: Ticket-Mails tragen sie als Antwortadresse."
 
 #: core/templates/core/postfach_liste.html
-msgid "Der Empfang ist auf dem Server noch nicht eingerichtet. Bis dahin tragen Ticket-Mails weiterhin Ihre bisherige Antwortadresse."
-msgstr "Der Empfang ist auf dem Server noch nicht eingerichtet. Bis dahin tragen Ticket-Mails weiterhin Ihre bisherige Antwortadresse."
+msgid ""
+"Der Empfang ist auf dem Server noch nicht eingerichtet. Bis dahin tragen "
+"Ticket-Mails weiterhin Ihre bisherige Antwortadresse."
+msgstr ""
+"Der Empfang ist auf dem Server noch nicht eingerichtet. Bis dahin tragen "
+"Ticket-Mails weiterhin Ihre bisherige Antwortadresse."
 
 #: core/templates/core/postfach_liste.html
 msgid "Die bisherige Adresse gilt noch bis %(bis)s."
 msgstr "Die bisherige Adresse gilt noch bis %(bis)s."
 
 #: core/templates/core/postfach_liste.html
-msgid "Neue Adresse erzeugen? Die bisherige Adresse gilt noch 30 Tage, danach nicht mehr."
-msgstr "Neue Adresse erzeugen? Die bisherige Adresse gilt noch 30 Tage, danach nicht mehr."
+msgid ""
+"Neue Adresse erzeugen? Die bisherige Adresse gilt noch 30 Tage, danach nicht"
+" mehr."
+msgstr ""
+"Neue Adresse erzeugen? Die bisherige Adresse gilt noch 30 Tage, danach nicht"
+" mehr."
 
 #: core/templates/core/postfach_liste.html
 msgid "Adresse erneuern"
 msgstr "Adresse erneuern"
 
 #: core/views/postfach.py
-msgid "Die Antwortadresse wurde erneuert. Die bisherige Adresse gilt noch 30 Tage."
-msgstr "Die Antwortadresse wurde erneuert. Die bisherige Adresse gilt noch 30 Tage."
+msgid ""
+"Die Antwortadresse wurde erneuert. Die bisherige Adresse gilt noch 30 Tage."
+msgstr ""
+"Die Antwortadresse wurde erneuert. Die bisherige Adresse gilt noch 30 Tage."
 
 #: core/templates/core/postfach_liste.html
 msgid "E-Mail-Eingang"
 msgstr "E-Mail-Eingang"
 
 #: core/templates/core/postfach_liste.html
-msgid "Antworten auf Ticket-Mails und Rechnungen Ihrer Lieferanten kommen über zwei Adressen bei uns an. Sie hinterlegen keine Passwörter und müssen nichts einrichten."
-msgstr "Antworten auf Ticket-Mails und Rechnungen Ihrer Lieferanten kommen über zwei Adressen bei uns an. Sie hinterlegen keine Passwörter und müssen nichts einrichten."
+msgid ""
+"Antworten auf Ticket-Mails und Rechnungen Ihrer Lieferanten kommen über zwei"
+" Adressen bei uns an. Sie hinterlegen keine Passwörter und müssen nichts "
+"einrichten."
+msgstr ""
+"Antworten auf Ticket-Mails und Rechnungen Ihrer Lieferanten kommen über zwei"
+" Adressen bei uns an. Sie hinterlegen keine Passwörter und müssen nichts "
+"einrichten."
 
 #: core/templates/core/postfach_liste.html
 msgid "Antworten auf Tickets"
 msgstr "Antworten auf Tickets"
 
 #: core/templates/core/postfach_liste.html
-msgid "Antworten von Mietern und Handwerkern auf Ticket-Mails kommen an diese Adresse und erscheinen im Ticket und im Chat."
-msgstr "Antworten von Mietern und Handwerkern auf Ticket-Mails kommen an diese Adresse und erscheinen im Ticket und im Chat."
+msgid ""
+"Antworten von Mietern und Handwerkern auf Ticket-Mails kommen an diese "
+"Adresse und erscheinen im Ticket und im Chat."
+msgstr ""
+"Antworten von Mietern und Handwerkern auf Ticket-Mails kommen an diese "
+"Adresse und erscheinen im Ticket und im Chat."
 
 #: core/templates/core/postfach_liste.html
-msgid "Ihr eigenes Postfach ist eingerichtet, aber seine Zugangsdaten lassen sich nicht lesen. Deshalb gilt diese Adresse. Mehr unter «Erweitert» weiter unten."
-msgstr "Ihr eigenes Postfach ist eingerichtet, aber seine Zugangsdaten lassen sich nicht lesen. Deshalb gilt diese Adresse. Mehr unter «Erweitert» weiter unten."
+msgid ""
+"Ihr eigenes Postfach ist eingerichtet, aber seine Zugangsdaten lassen sich "
+"nicht lesen. Deshalb gilt diese Adresse. Mehr unter «Erweitert» weiter "
+"unten."
+msgstr ""
+"Ihr eigenes Postfach ist eingerichtet, aber seine Zugangsdaten lassen sich "
+"nicht lesen. Deshalb gilt diese Adresse. Mehr unter «Erweitert» weiter "
+"unten."
 
 #: core/templates/core/postfach_liste.html
-msgid "Empfang eingerichtet. Es gilt diese Adresse: Ticket-Mails tragen sie als Antwortadresse."
-msgstr "Empfang eingerichtet. Es gilt diese Adresse: Ticket-Mails tragen sie als Antwortadresse."
+msgid ""
+"Empfang eingerichtet. Es gilt diese Adresse: Ticket-Mails tragen sie als "
+"Antwortadresse."
+msgstr ""
+"Empfang eingerichtet. Es gilt diese Adresse: Ticket-Mails tragen sie als "
+"Antwortadresse."
 
 #: core/templates/core/postfach_liste.html
 msgid "Letzter Eingang: %(zeit)s"
@@ -36853,20 +36893,38 @@ msgid "Eingehende Rechnungen"
 msgstr "Eingehende Rechnungen"
 
 #: core/templates/core/postfach_liste.html
-msgid "Rechnungen an diese Adresse weiterleiten — oder im eigenen Mailprogramm eine Weiterleitungsregel einrichten. Aus jedem PDF- oder Bild-Anhang entsteht eine Kreditorenrechnung mit dem Status «Neu»."
-msgstr "Rechnungen an diese Adresse weiterleiten — oder im eigenen Mailprogramm eine Weiterleitungsregel einrichten. Aus jedem PDF- oder Bild-Anhang entsteht eine Kreditorenrechnung mit dem Status «Neu»."
+msgid ""
+"Rechnungen an diese Adresse weiterleiten — oder im eigenen Mailprogramm eine"
+" Weiterleitungsregel einrichten. Aus jedem PDF- oder Bild-Anhang entsteht "
+"eine Kreditorenrechnung mit dem Status «Neu»."
+msgstr ""
+"Rechnungen an diese Adresse weiterleiten — oder im eigenen Mailprogramm eine"
+" Weiterleitungsregel einrichten. Aus jedem PDF- oder Bild-Anhang entsteht "
+"eine Kreditorenrechnung mit dem Status «Neu»."
 
 #: core/templates/core/postfach_liste.html
-msgid "Empfang eingerichtet. Rechnungen an diese Adresse landen in den Kreditoren."
-msgstr "Empfang eingerichtet. Rechnungen an diese Adresse landen in den Kreditoren."
+msgid ""
+"Empfang eingerichtet. Rechnungen an diese Adresse landen in den Kreditoren."
+msgstr ""
+"Empfang eingerichtet. Rechnungen an diese Adresse landen in den Kreditoren."
 
 #: core/templates/core/postfach_liste.html
-msgid "Mails kommen an, aber die Anhänge lassen sich auf dem Server noch nicht laden. Der Eingang steht dann nur im Logbuch, und es entsteht keine Rechnung. Bitte melden Sie sich bei uns."
-msgstr "Mails kommen an, aber die Anhänge lassen sich auf dem Server noch nicht laden. Der Eingang steht dann nur im Logbuch, und es entsteht keine Rechnung. Bitte melden Sie sich bei uns."
+msgid ""
+"Mails kommen an, aber die Anhänge lassen sich auf dem Server noch nicht "
+"laden. Der Eingang steht dann nur im Logbuch, und es entsteht keine "
+"Rechnung. Bitte melden Sie sich bei uns."
+msgstr ""
+"Mails kommen an, aber die Anhänge lassen sich auf dem Server noch nicht "
+"laden. Der Eingang steht dann nur im Logbuch, und es entsteht keine "
+"Rechnung. Bitte melden Sie sich bei uns."
 
 #: core/templates/core/postfach_liste.html
-msgid "Der Empfang ist auf dem Server noch nicht eingerichtet. Rechnungen an diese Adresse kommen noch nicht an."
-msgstr "Der Empfang ist auf dem Server noch nicht eingerichtet. Rechnungen an diese Adresse kommen noch nicht an."
+msgid ""
+"Der Empfang ist auf dem Server noch nicht eingerichtet. Rechnungen an diese "
+"Adresse kommen noch nicht an."
+msgstr ""
+"Der Empfang ist auf dem Server noch nicht eingerichtet. Rechnungen an diese "
+"Adresse kommen noch nicht an."
 
 #: core/templates/core/postfach_liste.html
 msgid "Zusätzlich wird Ihr eigenes Postfach abgerufen: %(adresse)s."
@@ -36877,52 +36935,100 @@ msgid "So leiten Sie weiter"
 msgstr "So leiten Sie weiter"
 
 #: core/templates/core/postfach_liste.html
-msgid "Einstellungen → Alle Einstellungen → Weiterleitung und POP/IMAP → Weiterleitungsadresse hinzufügen. Gmail schickt zuerst einen Bestätigungscode an diese Adresse; er steht meist im Betreff der Mail, die Sie im Logbuch unter «Rechnungsmail ohne Anhang abgerufen» finden."
-msgstr "Einstellungen → Alle Einstellungen → Weiterleitung und POP/IMAP → Weiterleitungsadresse hinzufügen. Gmail schickt zuerst einen Bestätigungscode an diese Adresse; er steht meist im Betreff der Mail, die Sie im Logbuch unter «Rechnungsmail ohne Anhang abgerufen» finden."
+msgid ""
+"Einstellungen → Alle Einstellungen → Weiterleitung und POP/IMAP → "
+"Weiterleitungsadresse hinzufügen. Gmail schickt zuerst einen "
+"Bestätigungscode an diese Adresse; er steht meist im Betreff der Mail, die "
+"Sie im Logbuch unter «Rechnungsmail ohne Anhang abgerufen» finden."
+msgstr ""
+"Einstellungen → Alle Einstellungen → Weiterleitung und POP/IMAP → "
+"Weiterleitungsadresse hinzufügen. Gmail schickt zuerst einen "
+"Bestätigungscode an diese Adresse; er steht meist im Betreff der Mail, die "
+"Sie im Logbuch unter «Rechnungsmail ohne Anhang abgerufen» finden."
 
 #: core/templates/core/postfach_liste.html
-msgid "Einstellungen → E-Mail → Regeln, neue Regel «Weiterleiten an» mit dieser Adresse; oder unter Weiterleitung die ganze Post umleiten."
-msgstr "Einstellungen → E-Mail → Regeln, neue Regel «Weiterleiten an» mit dieser Adresse; oder unter Weiterleitung die ganze Post umleiten."
+msgid ""
+"Einstellungen → E-Mail → Regeln, neue Regel «Weiterleiten an» mit dieser "
+"Adresse; oder unter Weiterleitung die ganze Post umleiten."
+msgstr ""
+"Einstellungen → E-Mail → Regeln, neue Regel «Weiterleiten an» mit dieser "
+"Adresse; oder unter Weiterleitung die ganze Post umleiten."
 
 #: core/templates/core/postfach_liste.html
-msgid "Im Webmail unter Einstellungen → Weiterleitung (oder Filter) eine Weiterleitung auf diese Adresse anlegen; der Hoster hilft, wenn der Menüpunkt anders heisst."
-msgstr "Im Webmail unter Einstellungen → Weiterleitung (oder Filter) eine Weiterleitung auf diese Adresse anlegen; der Hoster hilft, wenn der Menüpunkt anders heisst."
+msgid ""
+"Im Webmail unter Einstellungen → Weiterleitung (oder Filter) eine "
+"Weiterleitung auf diese Adresse anlegen; der Hoster hilft, wenn der "
+"Menüpunkt anders heisst."
+msgstr ""
+"Im Webmail unter Einstellungen → Weiterleitung (oder Filter) eine "
+"Weiterleitung auf diese Adresse anlegen; der Hoster hilft, wenn der "
+"Menüpunkt anders heisst."
 
 #: core/templates/core/postfach_liste.html
 msgid "Die bisherigen Adressen gelten noch bis %(bis)s."
 msgstr "Die bisherigen Adressen gelten noch bis %(bis)s."
 
 #: core/templates/core/postfach_liste.html
-msgid "Eine Adresse in falsche Hände geraten? Erneuern Sie beide Adressen. Die bisherigen gelten noch 30 Tage; Weiterleitungen müssen Sie danach auf die neue Rechnungsadresse umstellen."
-msgstr "Eine Adresse in falsche Hände geraten? Erneuern Sie beide Adressen. Die bisherigen gelten noch 30 Tage; Weiterleitungen müssen Sie danach auf die neue Rechnungsadresse umstellen."
+msgid ""
+"Eine Adresse in falsche Hände geraten? Erneuern Sie beide Adressen. Die "
+"bisherigen gelten noch 30 Tage; Weiterleitungen müssen Sie danach auf die "
+"neue Rechnungsadresse umstellen."
+msgstr ""
+"Eine Adresse in falsche Hände geraten? Erneuern Sie beide Adressen. Die "
+"bisherigen gelten noch 30 Tage; Weiterleitungen müssen Sie danach auf die "
+"neue Rechnungsadresse umstellen."
 
 #: core/templates/core/postfach_liste.html
 msgid "Erweitert: eigenes Postfach per IMAP abrufen"
 msgstr "Erweitert: eigenes Postfach per IMAP abrufen"
 
 #: core/templates/core/postfach_liste.html
-msgid "Einfacher geht es mit einer Weiterleitung auf die Adressen oben: Dafür hinterlegen Sie keine Zugangsdaten, und es bricht nichts, wenn Sie Ihr Passwort ändern. Nur wenn das nicht möglich ist, rufen wir Ihr Postfach selbst ab."
-msgstr "Einfacher geht es mit einer Weiterleitung auf die Adressen oben: Dafür hinterlegen Sie keine Zugangsdaten, und es bricht nichts, wenn Sie Ihr Passwort ändern. Nur wenn das nicht möglich ist, rufen wir Ihr Postfach selbst ab."
+msgid ""
+"Einfacher geht es mit einer Weiterleitung auf die Adressen oben: Dafür "
+"hinterlegen Sie keine Zugangsdaten, und es bricht nichts, wenn Sie Ihr "
+"Passwort ändern. Nur wenn das nicht möglich ist, rufen wir Ihr Postfach "
+"selbst ab."
+msgstr ""
+"Einfacher geht es mit einer Weiterleitung auf die Adressen oben: Dafür "
+"hinterlegen Sie keine Zugangsdaten, und es bricht nichts, wenn Sie Ihr "
+"Passwort ändern. Nur wenn das nicht möglich ist, rufen wir Ihr Postfach "
+"selbst ab."
 
 #: core/templates/core/postfach_liste.html
 msgid "Die Zugangsdaten lassen sich nicht lesen."
 msgstr "Die Zugangsdaten lassen sich nicht lesen."
 
 #: core/templates/core/postfach_liste.html
-msgid "Der Schlüssel auf dem Server wurde gewechselt. Dieses Postfach wird nicht mehr abgerufen. Geben Sie die Zugangsdaten neu ein oder löschen Sie das Postfach und nutzen Sie stattdessen eine Weiterleitung auf die Adressen oben."
-msgstr "Der Schlüssel auf dem Server wurde gewechselt. Dieses Postfach wird nicht mehr abgerufen. Geben Sie die Zugangsdaten neu ein oder löschen Sie das Postfach und nutzen Sie stattdessen eine Weiterleitung auf die Adressen oben."
+msgid ""
+"Der Schlüssel auf dem Server wurde gewechselt. Dieses Postfach wird nicht "
+"mehr abgerufen. Geben Sie die Zugangsdaten neu ein oder löschen Sie das "
+"Postfach und nutzen Sie stattdessen eine Weiterleitung auf die Adressen "
+"oben."
+msgstr ""
+"Der Schlüssel auf dem Server wurde gewechselt. Dieses Postfach wird nicht "
+"mehr abgerufen. Geben Sie die Zugangsdaten neu ein oder löschen Sie das "
+"Postfach und nutzen Sie stattdessen eine Weiterleitung auf die Adressen "
+"oben."
 
 #: core/templates/core/postfach_liste.html
 msgid "Neu eingeben"
 msgstr "Neu eingeben"
 
 #: core/templates/core/postfach_liste.html
-msgid "Die Adressen wurden erneuert. Die bisherigen Adressen gelten noch 30 Tage — stellen Sie Weiterleitungen auf die neue Rechnungsadresse um."
-msgstr "Die Adressen wurden erneuert. Die bisherigen Adressen gelten noch 30 Tage — stellen Sie Weiterleitungen auf die neue Rechnungsadresse um."
+msgid ""
+"Die Adressen wurden erneuert. Die bisherigen Adressen gelten noch 30 Tage — "
+"stellen Sie Weiterleitungen auf die neue Rechnungsadresse um."
+msgstr ""
+"Die Adressen wurden erneuert. Die bisherigen Adressen gelten noch 30 Tage — "
+"stellen Sie Weiterleitungen auf die neue Rechnungsadresse um."
 
 #: core/templates/core/postfach_liste.html
-msgid "Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei Bedarf"
-msgstr "Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei Bedarf"
+msgid ""
+"Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei "
+"Bedarf"
+msgstr ""
+"Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei "
+"Bedarf"
 
 #: core/templates/core/postfach_liste.html
 msgid "Empfang über das Plattform-Postfach und über Brevo."
@@ -36947,3 +37053,110 @@ msgstr "Plattform-Postfach noch nie abgerufen."
 #: core/templates/core/postfach_liste.html
 msgid "Fehler: %(fehler)s"
 msgstr "Fehler: %(fehler)s"
+
+#: core/services/raumbuch_assistent.py:31
+msgid "Küche"
+msgstr "Küche"
+
+#: core/services/raumbuch_assistent.py:32
+msgid "Wohnzimmer / Essen"
+msgstr "Wohnzimmer / Essen"
+
+#: core/services/raumbuch_assistent.py:33
+msgid "Schlafzimmer"
+msgstr "Schlafzimmer"
+
+#: core/services/raumbuch_assistent.py:34
+msgid "Weitere Zimmer"
+msgstr "Weitere Zimmer"
+
+#: core/services/raumbuch_assistent.py:35
+msgid "Bad / WC"
+msgstr "Bad / WC"
+
+#: core/services/raumbuch_assistent.py:36
+msgid "Gäste-WC"
+msgstr "Gäste-WC"
+
+#: core/services/raumbuch_assistent.py:37
+msgid "Korridor / Entrée"
+msgstr "Korridor / Entrée"
+
+#: core/services/raumbuch_assistent.py:38
+msgid "Balkon / Terrasse"
+msgstr "Balkon / Terrasse"
+
+#: core/services/raumbuch_assistent.py:39
+msgid "Reduit"
+msgstr "Reduit"
+
+#: core/services/raumbuch_assistent.py:41
+msgid "Estrich / Dachabteil"
+msgstr "Estrich / Dachabteil"
+
+#: core/templates/fw/objekt_detail.html:600
+msgid "Raumbuch-Assistent"
+msgstr "Raumbuch-Assistent"
+
+#: core/templates/fw/objekt_detail.html:602
+msgid ""
+"Wähle die Zimmerzahl: Der Assistent schlägt die Räume der Wohnung vor. Passe"
+" die Zahlen an und lege alle Räume mit ihrer Standard-Ausstattung auf einmal"
+" an. Räume, die es schon gibt, bleiben unverändert."
+msgstr ""
+"Wähle die Zimmerzahl: Der Assistent schlägt die Räume der Wohnung vor. Passe"
+" die Zahlen an und lege alle Räume mit ihrer Standard-Ausstattung auf einmal"
+" an. Räume, die es schon gibt, bleiben unverändert."
+
+#: core/templates/fw/objekt_detail.html:610
+msgid "Halbe Zimmer (z. B. Essnische, Büro) erscheinen als weiteres Zimmer."
+msgstr "Halbe Zimmer (z. B. Essnische, Büro) erscheinen als weiteres Zimmer."
+
+#: core/templates/fw/objekt_detail.html:620
+msgid "Räume anlegen"
+msgstr "Räume anlegen"
+
+#: core/templates/fw/objekt_detail.html:639
+msgid "Einzelnen Raum aus Katalog anlegen"
+msgstr "Einzelnen Raum aus Katalog anlegen"
+
+#: core/templates/fw/objekt_detail.html:648
+msgid "Raumname (leer = automatisch)"
+msgstr "Raumname (leer = automatisch)"
+
+#: core/templates/fw/objekt_detail.html:649
+msgid "z. B. Schlafzimmer 2"
+msgstr "z. B. Schlafzimmer 2"
+
+#: core/templates/fw/objekt_detail.html:791
+#, python-format
+msgid "Raum «%(raum)s» mit %(n)s Elementen löschen?"
+msgstr "Raum «%(raum)s» mit %(n)s Elementen löschen?"
+
+#: core/templates/fw/objekt_detail.html:794
+msgid "Raum löschen"
+msgstr "Raum löschen"
+
+#: core/views/fw/detailseiten.py:1019
+#, python-format
+msgid "%(n)s Räume angelegt: %(namen)s. Jetzt Details je Element ergänzen."
+msgstr "%(n)s Räume angelegt: %(namen)s. Jetzt Details je Element ergänzen."
+
+#: core/views/fw/detailseiten.py:1022
+#, python-format
+msgid "Schon vorhanden und nicht nochmals angelegt: %(namen)s."
+msgstr "Schon vorhanden und nicht nochmals angelegt: %(namen)s."
+
+#: core/views/fw/detailseiten.py:1025
+msgid "Kein Raum gewählt."
+msgstr "Kein Raum gewählt."
+
+#: core/views/fw/detailseiten.py:1042
+#, python-format
+msgid "Raum «%(raum)s» mit %(n)s Elementen entfernt."
+msgstr "Raum «%(raum)s» mit %(n)s Elementen entfernt."
+
+#: core/views/fw/detailseiten.py:1044
+#, python-format
+msgid "Den Raum «%(raum)s» gibt es nicht (mehr)."
+msgstr "Den Raum «%(raum)s» gibt es nicht (mehr)."

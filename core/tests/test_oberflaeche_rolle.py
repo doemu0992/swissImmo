@@ -155,6 +155,19 @@ class LesezugriffUndSachbearbeitungTests(RollenBasis):
         sach = self.client_von('sachbearbeiter').get('/neu/liegenschaften/').content.decode()
         self.assertIn('href="/neu/faelle/neu/"', sach)
 
+    def test_raumbuch_assistent_und_raum_loeschen_nur_fuer_wer_schreiben_darf(self):
+        """Die neuen Schreibknöpfe des Raumbuchs standen dem Lesezugriff offen (199 statt 197 tote Ziele).
+        Gegenprobe: in `objekt_detail.html` die `{% if kann_schreiben %}` um den Assistenten entfernen -> rot."""
+        from portfolio.models import Ausstattung
+        Ausstattung.objects.create(einheit=self.a.einheit, raum='Küche', kategorie='Herd')
+        seite = f'/neu/objekte/{self.a.einheit.pk}/'
+        lese = self.client_von('lesezugriff').get(seite).content.decode()
+        self.assertNotIn('ausstattung/assistent/', lese)
+        self.assertNotIn('ausstattung/raum-loeschen/', lese)
+        sach = self.client_von('sachbearbeiter').get(seite).content.decode()
+        self.assertIn('ausstattung/assistent/', sach)
+        self.assertIn('ausstattung/raum-loeschen/', sach)
+
     def test_die_zahl_toter_ziele_waechst_nicht(self):
         for schluessel, rolle in (('lesezugriff', 'Lesezugriff'), ('sachbearbeiter', 'Sachbearbeiter')):
             with self.subTest(rolle=rolle):

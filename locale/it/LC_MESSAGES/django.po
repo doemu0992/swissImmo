@@ -38482,60 +38482,102 @@ msgid "Ihre Antwortadresse"
 msgstr "Il vostro indirizzo di risposta"
 
 #: core/templates/core/postfach_liste.html
-msgid "Antworten von Mietern und Handwerkern auf Ticket-Mails kommen hierher und erscheinen im Ticket und im Chat. Sie müssen nichts einrichten. Haben Sie ein eigenes Postfach hinterlegt, gilt dieses."
-msgstr "Le risposte di inquilini e artigiani alle e-mail dei ticket arrivano qui e compaiono nel ticket e nella chat. Non dovete configurare nulla. Se avete registrato una casella di posta propria, vale quella."
+msgid ""
+"Antworten von Mietern und Handwerkern auf Ticket-Mails kommen hierher und "
+"erscheinen im Ticket und im Chat. Sie müssen nichts einrichten. Haben Sie "
+"ein eigenes Postfach hinterlegt, gilt dieses."
+msgstr ""
+"Le risposte di inquilini e artigiani alle e-mail dei ticket arrivano qui e "
+"compaiono nel ticket e nella chat. Non dovete configurare nulla. Se avete "
+"registrato una casella di posta propria, vale quella."
 
 #: core/templates/core/postfach_liste.html
-msgid "Es gilt Ihr eigenes Postfach: %(adresse)s. Die Adresse oben ist als Reserve bereit und wird verwendet, sobald Sie das eigene Postfach abschalten."
-msgstr "Vale la vostra casella di posta: %(adresse)s. L'indirizzo qui sopra è pronto come riserva e verrà usato non appena disattivate la casella propria."
+msgid ""
+"Es gilt Ihr eigenes Postfach: %(adresse)s. Die Adresse oben ist als Reserve "
+"bereit und wird verwendet, sobald Sie das eigene Postfach abschalten."
+msgstr ""
+"Vale la vostra casella di posta: %(adresse)s. L'indirizzo qui sopra è pronto"
+" come riserva e verrà usato non appena disattivate la casella propria."
 
 #: core/templates/core/postfach_liste.html
 msgid "Es gilt diese Adresse: Ticket-Mails tragen sie als Antwortadresse."
-msgstr "Vale questo indirizzo: le e-mail dei ticket lo riportano come indirizzo di risposta."
+msgstr ""
+"Vale questo indirizzo: le e-mail dei ticket lo riportano come indirizzo di "
+"risposta."
 
 #: core/templates/core/postfach_liste.html
-msgid "Der Empfang ist auf dem Server noch nicht eingerichtet. Bis dahin tragen Ticket-Mails weiterhin Ihre bisherige Antwortadresse."
-msgstr "La ricezione non è ancora configurata sul server. Fino ad allora le e-mail dei ticket riportano il vostro indirizzo di risposta attuale."
+msgid ""
+"Der Empfang ist auf dem Server noch nicht eingerichtet. Bis dahin tragen "
+"Ticket-Mails weiterhin Ihre bisherige Antwortadresse."
+msgstr ""
+"La ricezione non è ancora configurata sul server. Fino ad allora le e-mail "
+"dei ticket riportano il vostro indirizzo di risposta attuale."
 
 #: core/templates/core/postfach_liste.html
 msgid "Die bisherige Adresse gilt noch bis %(bis)s."
 msgstr "Il vecchio indirizzo resta valido fino al %(bis)s."
 
 #: core/templates/core/postfach_liste.html
-msgid "Neue Adresse erzeugen? Die bisherige Adresse gilt noch 30 Tage, danach nicht mehr."
-msgstr "Generare un nuovo indirizzo? Il vecchio resta valido ancora 30 giorni, poi non più."
+msgid ""
+"Neue Adresse erzeugen? Die bisherige Adresse gilt noch 30 Tage, danach nicht"
+" mehr."
+msgstr ""
+"Generare un nuovo indirizzo? Il vecchio resta valido ancora 30 giorni, poi "
+"non più."
 
 #: core/templates/core/postfach_liste.html
 msgid "Adresse erneuern"
 msgstr "Rinnovare l'indirizzo"
 
 #: core/views/postfach.py
-msgid "Die Antwortadresse wurde erneuert. Die bisherige Adresse gilt noch 30 Tage."
-msgstr "L'indirizzo di risposta è stato rinnovato. Il vecchio indirizzo resta valido ancora 30 giorni."
+msgid ""
+"Die Antwortadresse wurde erneuert. Die bisherige Adresse gilt noch 30 Tage."
+msgstr ""
+"L'indirizzo di risposta è stato rinnovato. Il vecchio indirizzo resta valido"
+" ancora 30 giorni."
 
 #: core/templates/core/postfach_liste.html
 msgid "E-Mail-Eingang"
 msgstr "Posta in arrivo"
 
 #: core/templates/core/postfach_liste.html
-msgid "Antworten auf Ticket-Mails und Rechnungen Ihrer Lieferanten kommen über zwei Adressen bei uns an. Sie hinterlegen keine Passwörter und müssen nichts einrichten."
-msgstr "Le risposte alle e-mail dei ticket e le fatture dei fornitori ci arrivano tramite due indirizzi. Non registrate password e non dovete configurare nulla."
+msgid ""
+"Antworten auf Ticket-Mails und Rechnungen Ihrer Lieferanten kommen über zwei"
+" Adressen bei uns an. Sie hinterlegen keine Passwörter und müssen nichts "
+"einrichten."
+msgstr ""
+"Le risposte alle e-mail dei ticket e le fatture dei fornitori ci arrivano "
+"tramite due indirizzi. Non registrate password e non dovete configurare "
+"nulla."
 
 #: core/templates/core/postfach_liste.html
 msgid "Antworten auf Tickets"
 msgstr "Risposte ai ticket"
 
 #: core/templates/core/postfach_liste.html
-msgid "Antworten von Mietern und Handwerkern auf Ticket-Mails kommen an diese Adresse und erscheinen im Ticket und im Chat."
-msgstr "Le risposte di inquilini e artigiani alle e-mail dei ticket arrivano a questo indirizzo e compaiono nel ticket e nella chat."
+msgid ""
+"Antworten von Mietern und Handwerkern auf Ticket-Mails kommen an diese "
+"Adresse und erscheinen im Ticket und im Chat."
+msgstr ""
+"Le risposte di inquilini e artigiani alle e-mail dei ticket arrivano a "
+"questo indirizzo e compaiono nel ticket e nella chat."
 
 #: core/templates/core/postfach_liste.html
-msgid "Ihr eigenes Postfach ist eingerichtet, aber seine Zugangsdaten lassen sich nicht lesen. Deshalb gilt diese Adresse. Mehr unter «Erweitert» weiter unten."
-msgstr "La vostra casella è configurata, ma le sue credenziali non sono leggibili. Vale quindi questo indirizzo. Maggiori dettagli sotto «Avanzate»."
+msgid ""
+"Ihr eigenes Postfach ist eingerichtet, aber seine Zugangsdaten lassen sich "
+"nicht lesen. Deshalb gilt diese Adresse. Mehr unter «Erweitert» weiter "
+"unten."
+msgstr ""
+"La vostra casella è configurata, ma le sue credenziali non sono leggibili. "
+"Vale quindi questo indirizzo. Maggiori dettagli sotto «Avanzate»."
 
 #: core/templates/core/postfach_liste.html
-msgid "Empfang eingerichtet. Es gilt diese Adresse: Ticket-Mails tragen sie als Antwortadresse."
-msgstr "Ricezione configurata. Vale questo indirizzo: le e-mail dei ticket lo riportano come indirizzo di risposta."
+msgid ""
+"Empfang eingerichtet. Es gilt diese Adresse: Ticket-Mails tragen sie als "
+"Antwortadresse."
+msgstr ""
+"Ricezione configurata. Vale questo indirizzo: le e-mail dei ticket lo "
+"riportano come indirizzo di risposta."
 
 #: core/templates/core/postfach_liste.html
 msgid "Letzter Eingang: %(zeit)s"
@@ -38550,20 +38592,39 @@ msgid "Eingehende Rechnungen"
 msgstr "Fatture in arrivo"
 
 #: core/templates/core/postfach_liste.html
-msgid "Rechnungen an diese Adresse weiterleiten — oder im eigenen Mailprogramm eine Weiterleitungsregel einrichten. Aus jedem PDF- oder Bild-Anhang entsteht eine Kreditorenrechnung mit dem Status «Neu»."
-msgstr "Inoltrate le fatture a questo indirizzo — oppure impostate una regola di inoltro nel vostro programma di posta. Ogni allegato PDF o immagine diventa una fattura fornitore con stato «Nuovo»."
+msgid ""
+"Rechnungen an diese Adresse weiterleiten — oder im eigenen Mailprogramm eine"
+" Weiterleitungsregel einrichten. Aus jedem PDF- oder Bild-Anhang entsteht "
+"eine Kreditorenrechnung mit dem Status «Neu»."
+msgstr ""
+"Inoltrate le fatture a questo indirizzo — oppure impostate una regola di "
+"inoltro nel vostro programma di posta. Ogni allegato PDF o immagine diventa "
+"una fattura fornitore con stato «Nuovo»."
 
 #: core/templates/core/postfach_liste.html
-msgid "Empfang eingerichtet. Rechnungen an diese Adresse landen in den Kreditoren."
-msgstr "Ricezione configurata. Le fatture inviate a questo indirizzo finiscono tra i creditori."
+msgid ""
+"Empfang eingerichtet. Rechnungen an diese Adresse landen in den Kreditoren."
+msgstr ""
+"Ricezione configurata. Le fatture inviate a questo indirizzo finiscono tra i"
+" creditori."
 
 #: core/templates/core/postfach_liste.html
-msgid "Mails kommen an, aber die Anhänge lassen sich auf dem Server noch nicht laden. Der Eingang steht dann nur im Logbuch, und es entsteht keine Rechnung. Bitte melden Sie sich bei uns."
-msgstr "Le e-mail arrivano, ma gli allegati non possono ancora essere caricati sul server. La ricezione compare allora solo nel registro e non viene creata alcuna fattura. Contattateci."
+msgid ""
+"Mails kommen an, aber die Anhänge lassen sich auf dem Server noch nicht "
+"laden. Der Eingang steht dann nur im Logbuch, und es entsteht keine "
+"Rechnung. Bitte melden Sie sich bei uns."
+msgstr ""
+"Le e-mail arrivano, ma gli allegati non possono ancora essere caricati sul "
+"server. La ricezione compare allora solo nel registro e non viene creata "
+"alcuna fattura. Contattateci."
 
 #: core/templates/core/postfach_liste.html
-msgid "Der Empfang ist auf dem Server noch nicht eingerichtet. Rechnungen an diese Adresse kommen noch nicht an."
-msgstr "La ricezione non è ancora configurata sul server. Le fatture inviate a questo indirizzo non arrivano ancora."
+msgid ""
+"Der Empfang ist auf dem Server noch nicht eingerichtet. Rechnungen an diese "
+"Adresse kommen noch nicht an."
+msgstr ""
+"La ricezione non è ancora configurata sul server. Le fatture inviate a "
+"questo indirizzo non arrivano ancora."
 
 #: core/templates/core/postfach_liste.html
 msgid "Zusätzlich wird Ihr eigenes Postfach abgerufen: %(adresse)s."
@@ -38574,52 +38635,98 @@ msgid "So leiten Sie weiter"
 msgstr "Come inoltrare"
 
 #: core/templates/core/postfach_liste.html
-msgid "Einstellungen → Alle Einstellungen → Weiterleitung und POP/IMAP → Weiterleitungsadresse hinzufügen. Gmail schickt zuerst einen Bestätigungscode an diese Adresse; er steht meist im Betreff der Mail, die Sie im Logbuch unter «Rechnungsmail ohne Anhang abgerufen» finden."
-msgstr "Impostazioni → Visualizza tutte le impostazioni → Inoltro e POP/IMAP → Aggiungi un indirizzo di inoltro. Gmail invia prima un codice di conferma a questo indirizzo; di solito si trova nell'oggetto del messaggio, che trovate nel registro sotto «Rechnungsmail ohne Anhang abgerufen»."
+msgid ""
+"Einstellungen → Alle Einstellungen → Weiterleitung und POP/IMAP → "
+"Weiterleitungsadresse hinzufügen. Gmail schickt zuerst einen "
+"Bestätigungscode an diese Adresse; er steht meist im Betreff der Mail, die "
+"Sie im Logbuch unter «Rechnungsmail ohne Anhang abgerufen» finden."
+msgstr ""
+"Impostazioni → Visualizza tutte le impostazioni → Inoltro e POP/IMAP → "
+"Aggiungi un indirizzo di inoltro. Gmail invia prima un codice di conferma a "
+"questo indirizzo; di solito si trova nell'oggetto del messaggio, che trovate"
+" nel registro sotto «Rechnungsmail ohne Anhang abgerufen»."
 
 #: core/templates/core/postfach_liste.html
-msgid "Einstellungen → E-Mail → Regeln, neue Regel «Weiterleiten an» mit dieser Adresse; oder unter Weiterleitung die ganze Post umleiten."
-msgstr "Impostazioni → Posta → Regole, nuova regola «Inoltra a» con questo indirizzo; oppure inoltrare tutta la posta sotto Inoltro."
+msgid ""
+"Einstellungen → E-Mail → Regeln, neue Regel «Weiterleiten an» mit dieser "
+"Adresse; oder unter Weiterleitung die ganze Post umleiten."
+msgstr ""
+"Impostazioni → Posta → Regole, nuova regola «Inoltra a» con questo "
+"indirizzo; oppure inoltrare tutta la posta sotto Inoltro."
 
 #: core/templates/core/postfach_liste.html
-msgid "Im Webmail unter Einstellungen → Weiterleitung (oder Filter) eine Weiterleitung auf diese Adresse anlegen; der Hoster hilft, wenn der Menüpunkt anders heisst."
-msgstr "Nel webmail, sotto Impostazioni → Inoltro (o Filtro), create un inoltro verso questo indirizzo; l'hoster vi aiuta se la voce di menu ha un altro nome."
+msgid ""
+"Im Webmail unter Einstellungen → Weiterleitung (oder Filter) eine "
+"Weiterleitung auf diese Adresse anlegen; der Hoster hilft, wenn der "
+"Menüpunkt anders heisst."
+msgstr ""
+"Nel webmail, sotto Impostazioni → Inoltro (o Filtro), create un inoltro "
+"verso questo indirizzo; l'hoster vi aiuta se la voce di menu ha un altro "
+"nome."
 
 #: core/templates/core/postfach_liste.html
 msgid "Die bisherigen Adressen gelten noch bis %(bis)s."
 msgstr "I vecchi indirizzi restano validi fino al %(bis)s."
 
 #: core/templates/core/postfach_liste.html
-msgid "Eine Adresse in falsche Hände geraten? Erneuern Sie beide Adressen. Die bisherigen gelten noch 30 Tage; Weiterleitungen müssen Sie danach auf die neue Rechnungsadresse umstellen."
-msgstr "Un indirizzo è finito in mani sbagliate? Rinnovate entrambi gli indirizzi. I vecchi restano validi 30 giorni; poi dovrete reindirizzare gli inoltri al nuovo indirizzo delle fatture."
+msgid ""
+"Eine Adresse in falsche Hände geraten? Erneuern Sie beide Adressen. Die "
+"bisherigen gelten noch 30 Tage; Weiterleitungen müssen Sie danach auf die "
+"neue Rechnungsadresse umstellen."
+msgstr ""
+"Un indirizzo è finito in mani sbagliate? Rinnovate entrambi gli indirizzi. I"
+" vecchi restano validi 30 giorni; poi dovrete reindirizzare gli inoltri al "
+"nuovo indirizzo delle fatture."
 
 #: core/templates/core/postfach_liste.html
 msgid "Erweitert: eigenes Postfach per IMAP abrufen"
 msgstr "Avanzate: prelevare la propria casella via IMAP"
 
 #: core/templates/core/postfach_liste.html
-msgid "Einfacher geht es mit einer Weiterleitung auf die Adressen oben: Dafür hinterlegen Sie keine Zugangsdaten, und es bricht nichts, wenn Sie Ihr Passwort ändern. Nur wenn das nicht möglich ist, rufen wir Ihr Postfach selbst ab."
-msgstr "Più semplice: un inoltro verso gli indirizzi qui sopra. Non registrate credenziali e non si rompe nulla se cambiate la password. Solo se ciò non è possibile preleviamo noi la vostra casella."
+msgid ""
+"Einfacher geht es mit einer Weiterleitung auf die Adressen oben: Dafür "
+"hinterlegen Sie keine Zugangsdaten, und es bricht nichts, wenn Sie Ihr "
+"Passwort ändern. Nur wenn das nicht möglich ist, rufen wir Ihr Postfach "
+"selbst ab."
+msgstr ""
+"Più semplice: un inoltro verso gli indirizzi qui sopra. Non registrate "
+"credenziali e non si rompe nulla se cambiate la password. Solo se ciò non è "
+"possibile preleviamo noi la vostra casella."
 
 #: core/templates/core/postfach_liste.html
 msgid "Die Zugangsdaten lassen sich nicht lesen."
 msgstr "Le credenziali non sono leggibili."
 
 #: core/templates/core/postfach_liste.html
-msgid "Der Schlüssel auf dem Server wurde gewechselt. Dieses Postfach wird nicht mehr abgerufen. Geben Sie die Zugangsdaten neu ein oder löschen Sie das Postfach und nutzen Sie stattdessen eine Weiterleitung auf die Adressen oben."
-msgstr "La chiave sul server è stata cambiata. Questa casella non viene più prelevata. Inserite di nuovo le credenziali oppure eliminate la casella e usate invece un inoltro verso gli indirizzi qui sopra."
+msgid ""
+"Der Schlüssel auf dem Server wurde gewechselt. Dieses Postfach wird nicht "
+"mehr abgerufen. Geben Sie die Zugangsdaten neu ein oder löschen Sie das "
+"Postfach und nutzen Sie stattdessen eine Weiterleitung auf die Adressen "
+"oben."
+msgstr ""
+"La chiave sul server è stata cambiata. Questa casella non viene più "
+"prelevata. Inserite di nuovo le credenziali oppure eliminate la casella e "
+"usate invece un inoltro verso gli indirizzi qui sopra."
 
 #: core/templates/core/postfach_liste.html
 msgid "Neu eingeben"
 msgstr "Inserire di nuovo"
 
 #: core/templates/core/postfach_liste.html
-msgid "Die Adressen wurden erneuert. Die bisherigen Adressen gelten noch 30 Tage — stellen Sie Weiterleitungen auf die neue Rechnungsadresse um."
-msgstr "Gli indirizzi sono stati rinnovati. I vecchi restano validi 30 giorni — reindirizzate gli inoltri al nuovo indirizzo delle fatture."
+msgid ""
+"Die Adressen wurden erneuert. Die bisherigen Adressen gelten noch 30 Tage — "
+"stellen Sie Weiterleitungen auf die neue Rechnungsadresse um."
+msgstr ""
+"Gli indirizzi sono stati rinnovati. I vecchi restano validi 30 giorni — "
+"reindirizzate gli inoltri al nuovo indirizzo delle fatture."
 
 #: core/templates/core/postfach_liste.html
-msgid "Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei Bedarf"
-msgstr "Indirizzi per risposte ai ticket e fatture, casella propria solo se necessario"
+msgid ""
+"Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei "
+"Bedarf"
+msgstr ""
+"Indirizzi per risposte ai ticket e fatture, casella propria solo se "
+"necessario"
 
 #: core/templates/core/postfach_liste.html
 msgid "Empfang über das Plattform-Postfach und über Brevo."
@@ -38644,3 +38751,114 @@ msgstr "Casella della piattaforma mai consultata."
 #: core/templates/core/postfach_liste.html
 msgid "Fehler: %(fehler)s"
 msgstr "Errore: %(fehler)s"
+
+#: core/services/raumbuch_assistent.py:31
+msgid "Küche"
+msgstr "Cucina"
+
+#: core/services/raumbuch_assistent.py:32
+msgid "Wohnzimmer / Essen"
+msgstr "Soggiorno / zona pranzo"
+
+#: core/services/raumbuch_assistent.py:33
+msgid "Schlafzimmer"
+msgstr "Camera da letto"
+
+#: core/services/raumbuch_assistent.py:34
+msgid "Weitere Zimmer"
+msgstr "Altri locali"
+
+#: core/services/raumbuch_assistent.py:35
+msgid "Bad / WC"
+msgstr "Bagno / WC"
+
+#: core/services/raumbuch_assistent.py:36
+msgid "Gäste-WC"
+msgstr "WC ospiti"
+
+#: core/services/raumbuch_assistent.py:37
+msgid "Korridor / Entrée"
+msgstr "Corridoio / ingresso"
+
+#: core/services/raumbuch_assistent.py:38
+msgid "Balkon / Terrasse"
+msgstr "Balcone / terrazza"
+
+#: core/services/raumbuch_assistent.py:39
+msgid "Reduit"
+msgstr "Ripostiglio"
+
+#: core/services/raumbuch_assistent.py:41
+msgid "Estrich / Dachabteil"
+msgstr "Soffitta / scomparto del sottotetto"
+
+#: core/templates/fw/objekt_detail.html:600
+msgid "Raumbuch-Assistent"
+msgstr "Assistente inventario dei locali"
+
+#: core/templates/fw/objekt_detail.html:602
+msgid ""
+"Wähle die Zimmerzahl: Der Assistent schlägt die Räume der Wohnung vor. Passe"
+" die Zahlen an und lege alle Räume mit ihrer Standard-Ausstattung auf einmal"
+" an. Räume, die es schon gibt, bleiben unverändert."
+msgstr ""
+"Scegliete il numero di locali: l’assistente propone i locali "
+"dell’appartamento. Adattate i numeri e create tutti i locali con le "
+"dotazioni standard in un’unica volta. I locali già esistenti rimangono "
+"invariati."
+
+#: core/templates/fw/objekt_detail.html:610
+msgid "Halbe Zimmer (z. B. Essnische, Büro) erscheinen als weiteres Zimmer."
+msgstr ""
+"I mezzi locali (p. es. angolo pranzo, studio) compaiono come locale "
+"aggiuntivo."
+
+#: core/templates/fw/objekt_detail.html:620
+msgid "Räume anlegen"
+msgstr "Creare i locali"
+
+#: core/templates/fw/objekt_detail.html:639
+msgid "Einzelnen Raum aus Katalog anlegen"
+msgstr "Creare un singolo locale dal catalogo"
+
+#: core/templates/fw/objekt_detail.html:648
+msgid "Raumname (leer = automatisch)"
+msgstr "Nome del locale (vuoto = automatico)"
+
+#: core/templates/fw/objekt_detail.html:649
+msgid "z. B. Schlafzimmer 2"
+msgstr "p. es. Camera da letto 2"
+
+#: core/templates/fw/objekt_detail.html:791
+#, python-format
+msgid "Raum «%(raum)s» mit %(n)s Elementen löschen?"
+msgstr "Eliminare il locale «%(raum)s» con %(n)s elementi?"
+
+#: core/templates/fw/objekt_detail.html:794
+msgid "Raum löschen"
+msgstr "Eliminare il locale"
+
+#: core/views/fw/detailseiten.py:1019
+#, python-format
+msgid "%(n)s Räume angelegt: %(namen)s. Jetzt Details je Element ergänzen."
+msgstr ""
+"%(n)s locali creati: %(namen)s. Ora completate i dettagli di ogni elemento."
+
+#: core/views/fw/detailseiten.py:1022
+#, python-format
+msgid "Schon vorhanden und nicht nochmals angelegt: %(namen)s."
+msgstr "Già presente e non creato di nuovo: %(namen)s."
+
+#: core/views/fw/detailseiten.py:1025
+msgid "Kein Raum gewählt."
+msgstr "Nessun locale scelto."
+
+#: core/views/fw/detailseiten.py:1042
+#, python-format
+msgid "Raum «%(raum)s» mit %(n)s Elementen entfernt."
+msgstr "Locale «%(raum)s» con %(n)s elementi rimosso."
+
+#: core/views/fw/detailseiten.py:1044
+#, python-format
+msgid "Den Raum «%(raum)s» gibt es nicht (mehr)."
+msgstr "Il locale «%(raum)s» non esiste (più)."

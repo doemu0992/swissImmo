@@ -229,7 +229,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     </select>
                     <button class="fw-btn fw-knapp self-start">{% trans "Verknüpfen" %}</button>
                 </form>
-                {% if t.ausstattung_id %}<p class="fw-hilfe mt-2">{% trans "Fliesst in Reparaturhistorie & Lebenszykluskosten des Elements." %} <a href="/neu/objekte/{{ t.betroffene_einheit_id }}/#obj-raumbuch" class="fw-link">{% trans "Raumbuch" %}</a></p>{% endif %}
+                {% if t.ausstattung_id %}<p class="fw-hilfe mt-2">{% trans "Fliesst in Reparaturhistorie & Lebenszykluskosten des Elements." %} <a href="/neu/objekte/{{ t.betroffene_einheit_id }}/?tab=ausstattung" class="fw-link">{% trans "Raumbuch" %}</a></p>{% endif %}
                 {% if not ausstattung_elemente %}<p class="fw-klein mt-1">{% trans "Noch keine Ausstattung am Objekt erfasst." %}</p>{% endif %}
                 {% elif t.betroffene_einheit_id %}
                 <p class="fw-klein">{% if t.ausstattung_id %}{{ t.ausstattung.raum }} · {{ t.ausstattung.kategorie }}{% else %}{% trans "kein Element" %}{% endif %}</p>

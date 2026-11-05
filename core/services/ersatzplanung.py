@@ -121,7 +121,7 @@ def berechne_ersatzplanung(aktive_lg=None, heute=None, horizont_jahre=10):
             'lebensdauer': a.effektive_lebensdauer(),
             'einbau': a.einbau_datum,
             'garantie_bis': a.garantie_bis,
-            'ziel_url': f'/neu/objekte/{a.einheit_id}/#obj-raumbuch',
+            'ziel_url': f'/neu/objekte/{a.einheit_id}/?tab=ausstattung',
         }
         rows.append(row)
         # Budget nur innerhalb des Horizonts und nur mit bekanntem Neuwert

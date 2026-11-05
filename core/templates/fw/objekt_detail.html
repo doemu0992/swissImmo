@@ -585,9 +585,50 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 <!-- ===== BEREICH: AUSSTATTUNG ===== -->
 <div data-panel="obj" id="obj-ausstattung" class="hidden">
 <div class="fw-subhead">{% trans "Raumbuch" %}</div>
+    {% if kann_schreiben %}
+    <!-- Assistent: Räume aus der Wohnungsgrösse -->
+    <div class="fw-card" id="raum-assistent">
+        <div class="fw-kopf"><h2>{% trans "Raumbuch-Assistent" %}</h2></div>
+        <div class="fw-rumpf">
+        <p class="fw-klein mb-3">{% trans "Wähle die Zimmerzahl: Der Assistent schlägt die Räume der Wohnung vor. Passe die Zahlen an und lege alle Räume mit ihrer Standard-Ausstattung auf einmal an. Räume, die es schon gibt, bleiben unverändert." %}</p>
+        <form method="post" action="/neu/objekte/{{ e.id }}/ausstattung/assistent/" class="space-y-4">
+            {% csrf_token %}
+            <div class="flex flex-wrap items-end gap-3">
+                <div><label class="fw-label mb-1" for="ra-zimmer">{% trans "Zimmerzahl" %}</label>
+                    <select id="ra-zimmer" class="fw-feld">
+                        {% for z in assistent_vorschlaege %}<option value="{{ z }}"{% if z|floatformat:"-1" == assistent_zimmer|floatformat:"-1" %} selected{% endif %}>{{ z }}</option>{% endfor %}
+                    </select></div>
+                <span class="fw-klein">{% trans "Halbe Zimmer (z. B. Essnische, Büro) erscheinen als weiteres Zimmer." %}</span>
+            </div>
+            <div class="fw-raster r3">
+                {% for typ, beschriftung in assistent_typen %}
+                <div><label class="fw-label mb-1" for="ra-{{ forloop.counter }}">{{ beschriftung }}</label>
+                    <input id="ra-{{ forloop.counter }}" type="number" min="0" max="10" inputmode="numeric" name="anzahl_{{ typ }}" data-typ="{{ typ }}"
+                           value="{% for t, n in assistent_start.items %}{% if t == typ %}{{ n }}{% endif %}{% endfor %}" class="fw-feld w-full"></div>
+                {% endfor %}
+            </div>
+            {{ assistent_vorschlaege|json_script:"ra-vorschlaege" }}
+            <div class="flex justify-end"><button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Räume anlegen" %}</button></div>
+        </form>
+        <script>
+        // Die Zahlen je Raumtyp kommen vom Server (core/services/raumbuch_assistent.py); der Browser schlägt nur nach.
+        (function () {
+            var wahl = document.getElementById('ra-zimmer'), daten = document.getElementById('ra-vorschlaege');
+            if (!wahl || !daten) return;
+            var tabelle = JSON.parse(daten.textContent);
+            wahl.addEventListener('change', function () {
+                var v = tabelle[wahl.value]; if (!v) return;
+                document.querySelectorAll('#raum-assistent input[data-typ]').forEach(function (i) { i.value = v[i.getAttribute('data-typ')] || 0; });
+            });
+        })();
+        </script>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Schnellerfassung ganzer Raum aus Katalog -->
     <div class="fw-card">
-        <div class="fw-kopf"><h2>{% trans "Raum aus Katalog anlegen" %}</h2></div>
+        <div class="fw-kopf"><h2>{% trans "Einzelnen Raum aus Katalog anlegen" %}</h2></div>
         <div class="fw-rumpf">
         <p class="fw-klein mb-3">{% trans "Lädt die typische Ausstattung eines Raumtyps mit Standard-Lebensdauern — danach Details je Element ergänzen. Die Räume entstehen aus den Elementen." %}</p>
         <form method="post" action="/neu/objekte/{{ e.id }}/ausstattung/katalog/" class="flex flex-wrap items-end gap-3">
@@ -596,6 +637,8 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <select name="raumtyp" class="fw-feld">
                     {% for rt in raumtypen %}<option value="{{ rt }}">{{ rt }}</option>{% endfor %}
                 </select></div>
+            <div><label class="fw-label mb-1">{% trans "Raumname (leer = automatisch)" %}</label>
+                <input name="raumname" maxlength="60" placeholder="{% trans 'z. B. Schlafzimmer 2' %}" class="fw-feld"></div>
             <button class="fw-btn fw-primary">{% zeichen 'mehr' klasse='mr-1.5' %}{% trans "Katalog laden" %}</button>
         </form>
     </div>
@@ -736,6 +779,15 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 </tbody>
             </table>
             </div>
+            {% if kann_schreiben %}
+            <div class="px-5 py-3 border-t fw-linie flex justify-end">
+                <form method="post" action="/neu/objekte/{{ e.id }}/ausstattung/raum-loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with raum=r.raum n=r.elemente|length %}Raum «{{ raum }}» mit {{ n }} Elementen löschen?{% endblocktrans %}{% endfilter %}');">
+                    {% csrf_token %}
+                    <input type="hidden" name="raum" value="{{ r.raum }}">
+                    <button class="fw-btn fw-rand-krit">{% zeichen 'loeschen' klasse='mr-1.5' %}{% trans "Raum löschen" %}</button>
+                </form>
+            </div>
+            {% endif %}
         </details>
         {% endfor %}
     </div>

@@ -23,7 +23,28 @@ from rentals.models import Dokument
 
 from ._isolation import MandantenFixture
 
-MEDIA = tempfile.mkdtemp()
+class EigeneMedien:
+    """Jede Testklasse bekommt ein EIGENES Medienverzeichnis und räumt nur dieses auf.
+
+    Vorher gab es ein Verzeichnis auf Modulebene (`MEDIA = tempfile.mkdtemp()`), das beim Import entstand. Beim
+    parallelen Lauf erben alle Prozesse denselben Pfad; räumte ein Prozess am Ende seiner Klasse auf, brach in einem
+    anderen das Speichern mitten im Test ab («Ablage gescheitert», `ablegen` gab None zurück). Welche Klassen
+    gleichzeitig laufen, hängt von der Verteilung der Tests ab — ein neuer Test an anderer Stelle konnte das auslösen.
+
+    Gegenprobe: `cls._medien` durch ein festes Verzeichnis ersetzen und die Datei parallel laufen lassen -> sporadisch rot."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls._medien = tempfile.mkdtemp()
+        cls._medien_einstellung = override_settings(MEDIA_ROOT=cls._medien)
+        cls._medien_einstellung.enable()
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        cls._medien_einstellung.disable()
+        shutil.rmtree(cls._medien, ignore_errors=True)
 HEUTE = date.today()
 
 
@@ -235,8 +256,7 @@ class AuswahlTests(TestCase):
         self.assertEqual(nach['kuendigung_erfasst']['status'], 'aus')
 
 
-@override_settings(MEDIA_ROOT=MEDIA)
-class RegelTests(TestCase):
+class RegelTests(EigeneMedien, TestCase):
     """Regel erzeugt Dokument; ohne Regel keines; ein Fehler kostet den
     Hauptablauf nicht. Gegenproben: in `dokument_fuer_ereignis` das
     `try/except` entfernen → `test_fehler_kostet_den_hauptablauf_nicht` rot
@@ -247,11 +267,6 @@ class RegelTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.a = MandantenFixture('A', '8000', 'Zürich')
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        shutil.rmtree(MEDIA, ignore_errors=True)
 
     def setUp(self):
         self.client.force_login(self.a.benutzer)
@@ -325,8 +340,7 @@ class RegelTests(TestCase):
                 self.assertEqual(quelle.count(f"dokument_fuer_ereignis('{ereignis}'"), n)
 
 
-@override_settings(MEDIA_ROOT=MEDIA)
-class FassungenTests(TestCase):
+class FassungenTests(EigeneMedien, TestCase):
     """`ablegen(dedup=True)` legt eine neue Fassung an. Gegenproben: in
     `ablegen` die Zeile `dok.vorgaenger = vorhanden` entfernen →
     `test_dedup_legt_neue_fassung_an` und `test_listen_zeigen_nur_die_neueste`
@@ -338,11 +352,6 @@ class FassungenTests(TestCase):
     def setUpTestData(cls):
         cls.a = MandantenFixture('A', '8000', 'Zürich')
         cls.b = MandantenFixture('B', '3000', 'Bern')
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        shutil.rmtree(MEDIA, ignore_errors=True)
 
     def _ablegen(self, inhalt):
         from core.services.ablage import ablegen
@@ -508,8 +517,7 @@ class SpeichernTests(TestCase):
         self.assertIn(f'/neu/vorlagen/neu/?von={vl.pk}&amp;sprache=fr', inhalt)
 
 
-@override_settings(MEDIA_ROOT=MEDIA)
-class VorschauIsolationTests(TestCase):
+class VorschauIsolationTests(EigeneMedien, TestCase):
     """Vorschau und Probe-PDF nur mit eigenen Datensätzen. Gegenproben: in
     `_quelle` `Mietvertrag.objects` durch `Mietvertrag.alle_organisationen`
     ersetzen → `test_fremder_vertrag_ist_404` rot; in
@@ -520,11 +528,6 @@ class VorschauIsolationTests(TestCase):
     def setUpTestData(cls):
         cls.a = MandantenFixture('A', '8000', 'Zürich')
         cls.b = MandantenFixture('B', '3000', 'Bern')
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        shutil.rmtree(MEDIA, ignore_errors=True)
 
     def setUp(self):
         self.client.force_login(self.a.benutzer)
@@ -577,8 +580,7 @@ class VorschauIsolationTests(TestCase):
         self.assertIsNotNone(aktive_vorlage('kuendigung_erfasst', organisation=self.a.organisation))
 
 
-@override_settings(MEDIA_ROOT=MEDIA)
-class BriefkopfTests(TestCase):
+class BriefkopfTests(EigeneMedien, TestCase):
     """Gegenproben: den Validator `HEX_FARBE` am Feld entfernen →
     `test_farbe_wird_validiert` rot; in `fw_account` den Validatoraufruf
     entfernen → `test_account_lehnt_ungueltige_farbe_ab` rot; in
