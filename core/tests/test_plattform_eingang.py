@@ -570,6 +570,24 @@ class CommandTests(Basis):
         self.assertIn('verarbeitet: 1', ausgabe)
         self.assertEqual(_nachrichten(self.a.schaden).count(), 1)
 
+    def test_durchlauf_stellt_gebuendelte_chat_nachrichten_zu(self):
+        """Chat von Mieter/Handwerker: eine zweite Nachricht innerhalb von 5 Minuten wartet auf einen Lauf.
+        Läuft nur der Plattform-Eingang (kein `fetch_replies`), muss er sie zustellen.
+        Gegenprobe: in `durchlauf` den Aufruf `self.zustellen()` entfernen -> dieser Test rot."""
+        z = Zustand()
+        with _fake(z), mock.patch('tickets.direktkanal.ausstehende_zustellen') as zustellen:
+            self._ausfuehren('--einmal')
+        # je Verwaltung ein Aufruf (A und B)
+        self.assertGreaterEqual(zustellen.call_count, 2)
+
+    def test_zustellung_laeuft_auch_wenn_der_postfachabruf_scheitert(self):
+        from core.services.postfach_abruf import AbrufFehler
+        with mock.patch('core.services.plattform_postfach.abrufen', side_effect=AbrufFehler('weg')), \
+                mock.patch('tickets.direktkanal.ausstehende_zustellen') as zustellen:
+            ausgabe = self._ausfuehren('--einmal')
+        self.assertIn('FEHLER', ausgabe)
+        self.assertTrue(zustellen.called)
+
     def test_ohne_angabe_laeuft_ein_einzelner_durchlauf(self):
         z = Zustand()
         with _fake(z):
