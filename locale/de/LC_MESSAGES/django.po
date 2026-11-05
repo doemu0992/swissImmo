@@ -37160,3 +37160,7 @@ msgstr "Raum «%(raum)s» mit %(n)s Elementen entfernt."
 #, python-format
 msgid "Den Raum «%(raum)s» gibt es nicht (mehr)."
 msgstr "Den Raum «%(raum)s» gibt es nicht (mehr)."
+
+#: core/services/raumbuch_assistent.py:42
+msgid "Waschküche"
+msgstr "Waschküche"
