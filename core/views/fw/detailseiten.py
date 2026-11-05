@@ -636,10 +636,20 @@ def fw_wartungsfrist_bearbeiten(request, pk):
     return redirect(f'/neu/liegenschaften/{lg_id}/?tab=fristen')
 
 
+def _assistent_zimmer(einheit):
+    """Zimmerzahl der Einheit für den Raumbuch-Assistenten, auf halbe Zimmer gerundet und auf 1…8 begrenzt."""
+    from decimal import Decimal
+    z = einheit.zimmer if einheit.zimmer else Decimal('3')
+    z = min(max(Decimal(z), Decimal('1')), Decimal('8'))
+    return (z * 2).to_integral_value() / 2
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_objekt_detail(request, pk):
     from portfolio.models import Geraet, Zaehler, Ausstattung
     from core.services.raumkatalog import RAUMTYPEN, RAUM_KATALOG
+    from core.services import raumbuch_assistent as _ra
+    from core.services.raumbuch_assistent import ASSISTENT_TYPEN
     e = get_object_or_404(Einheit.objects.select_related('liegenschaft'), id=pk)
     basis = _global_filter(request)
 
@@ -813,6 +823,10 @@ def fw_objekt_detail(request, pk):
         'ausst_count': ausst_count,
         'raumtypen': RAUMTYPEN,
         'raum_katalog': RAUM_KATALOG,
+        'assistent_typen': ASSISTENT_TYPEN,
+        'assistent_zimmer': _assistent_zimmer(e),
+        'assistent_start': _ra.vorschlag(_assistent_zimmer(e)),
+        'assistent_vorschlaege': _ra.vorschlaege_je_zimmerzahl(),
         'zustand_choices': Ausstattung.ZUSTAND,
         'geraet_kategorien': GERAET_KATEGORIEN,
         'zaehler_typen': ZAEHLER_TYPEN,
@@ -836,13 +850,13 @@ def fw_ausstattung_add(request, pk):
     from core.auth import log_aktion
     e = get_object_or_404(Einheit, id=pk)
     if request.method != 'POST':
-        return redirect(f'/neu/objekte/{e.id}/#obj-raumbuch')
+        return redirect(f'/neu/objekte/{e.id}/?tab=ausstattung')
 
     raum = (request.POST.get('raum') or '').strip()
     kategorie = (request.POST.get('kategorie') or '').strip()
     if not raum or not kategorie:
         messages.error(request, gettext('Raum und Kategorie sind Pflichtfelder.'))
-        return redirect(f'/neu/objekte/{e.id}/#obj-raumbuch')
+        return redirect(f'/neu/objekte/{e.id}/?tab=ausstattung')
 
     def _dec(x):
         try:
@@ -888,7 +902,7 @@ def fw_ausstattung_add(request, pk):
         a.save(update_fields=['foto'])
     log_aktion(request, "Ausstattung erfasst", e.bezeichnung, f"{raum} · {kategorie}")
     messages.success(request, '✅ ' + gettext('«%(kategorie)s» im Raum «%(raum)s» erfasst.') % {'kategorie': kategorie, 'raum': raum})
-    return redirect(f'/neu/objekte/{e.id}/#obj-raumbuch')
+    return redirect(f'/neu/objekte/{e.id}/?tab=ausstattung')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
@@ -903,7 +917,7 @@ def fw_ausstattung_edit(request, pk):
     a = get_object_or_404(Ausstattung.objects.select_related('einheit'), id=pk)
     eid = a.einheit_id
     if request.method != 'POST':
-        return redirect(f'/neu/objekte/{eid}/#obj-raumbuch')
+        return redirect(f'/neu/objekte/{eid}/?tab=ausstattung')
 
     def _dec(x):
         try:
@@ -929,7 +943,7 @@ def fw_ausstattung_edit(request, pk):
     kategorie = (P.get('kategorie') or '').strip()
     if not raum or not kategorie:
         messages.error(request, gettext('Raum und Kategorie sind Pflichtfelder.'))
-        return redirect(f'/neu/objekte/{eid}/#obj-raumbuch')
+        return redirect(f'/neu/objekte/{eid}/?tab=ausstattung')
     a.raum = raum
     a.kategorie = kategorie
     a.bezeichnung = (P.get('bezeichnung') or '').strip()
@@ -948,44 +962,87 @@ def fw_ausstattung_edit(request, pk):
     a.save()
     log_aktion(request, "Ausstattung bearbeitet", a.einheit.bezeichnung, f"{raum} · {kategorie}")
     messages.success(request, '✅ ' + gettext('«%(kategorie)s» aktualisiert.') % {'kategorie': kategorie})
-    return redirect(f'/neu/objekte/{eid}/#obj-raumbuch')
+    return redirect(f'/neu/objekte/{eid}/?tab=ausstattung')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_ausstattung_katalog(request, pk):
-    """Legt für einen Raumtyp die Standard-Ausstattung aus dem Katalog an
-    (Schnellerfassung). Vorhandene Elemente werden nicht dupliziert."""
+    """Legt für einen Raumtyp die Standard-Ausstattung aus dem Katalog an (Schnellerfassung).
+
+    Der Raumname ist getrennt vom Typ (`core/services/raumbuch_assistent.py`): «Zimmer» und «Schlafzimmer» werden
+    durchnummeriert, ein angegebener Name gilt wörtlich, alle anderen Typen gibt es einmal je Wohnung.
+    Vorhandene Elemente werden nicht dupliziert."""
     from django.shortcuts import redirect
     from django.contrib import messages
     from portfolio.models import Ausstattung
     from core.services.raumkatalog import RAUM_KATALOG
+    from core.services import raumbuch_assistent as ra
     from core.auth import log_aktion
     e = get_object_or_404(Einheit, id=pk)
     if request.method != 'POST':
-        return redirect(f'/neu/objekte/{e.id}/#obj-raumbuch')
+        return redirect(f'/neu/objekte/{e.id}/?tab=ausstattung')
 
     raumtyp = (request.POST.get('raumtyp') or '').strip()
-    elemente = RAUM_KATALOG.get(raumtyp)
-    if not elemente:
+    if raumtyp not in RAUM_KATALOG:
         messages.error(request, gettext('Unbekannter Raumtyp.'))
-        return redirect(f'/neu/objekte/{e.id}/#obj-raumbuch')
+        return redirect(f'/neu/objekte/{e.id}/?tab=ausstattung')
 
-    vorhanden = set(Ausstattung.objects.filter(einheit=e, raum=raumtyp)
-                    .values_list('kategorie', flat=True))
-    n = 0
-    for i, (kat, jahre) in enumerate(elemente):
-        if kat in vorhanden:
-            continue
-        Ausstattung.objects.create(
-            einheit=e, raum=raumtyp, kategorie=kat,
-            lebensdauer_jahre=jahre, zustand='gut', sortierung=i)
-        n += 1
-    if n:
-        log_aktion(request, "Raumkatalog geladen", e.bezeichnung, f"{raumtyp}: {n} Elemente")
-        messages.success(request, '✅ ' + gettext('%(n)s Element(e) für «%(raumtyp)s» angelegt — jetzt Details ergänzen.') % {'n': n, 'raumtyp': raumtyp})
+    wunsch = ra.bereinigt(request.POST.get('raumname'))
+    vorhandene = list(dict.fromkeys(Ausstattung.objects.filter(einheit=e).values_list('raum', flat=True)))
+    if wunsch:
+        raum = wunsch
     else:
-        messages.info(request, gettext('«%(raumtyp)s» ist bereits vollständig erfasst.') % {'raumtyp': raumtyp})
-    return redirect(f'/neu/objekte/{e.id}/#obj-raumbuch')
+        namen = ra.neue_namen(raumtyp, 1, vorhandene)
+        # Ein einmaliger Typ, der schon da ist: wie bisher «bereits vollständig» (ergänzt fehlende Elemente).
+        raum = namen[0] if namen else raumtyp
+    n = ra.raum_anlegen(e, raumtyp, raum)
+    if n:
+        log_aktion(request, "Raumkatalog geladen", e.bezeichnung, f"{raum}: {n} Elemente")
+        messages.success(request, '✅ ' + gettext('%(n)s Element(e) für «%(raumtyp)s» angelegt — jetzt Details ergänzen.') % {'n': n, 'raumtyp': raum})
+    else:
+        messages.info(request, gettext('«%(raumtyp)s» ist bereits vollständig erfasst.') % {'raumtyp': raum})
+    return redirect(f'/neu/objekte/{e.id}/?tab=ausstattung')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_ausstattung_assistent(request, pk):
+    """Raumbuch-Assistent: legt die Räume einer Wohnung aus der Zahl je Raumtyp an (Vorschlag aus der Zimmerzahl)."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from core.services import raumbuch_assistent as ra
+    from core.auth import log_aktion
+    e = get_object_or_404(Einheit, id=pk)
+    if request.method == 'POST':
+        angelegt, uebersprungen = ra.anlegen(e, ra.plan_aus_formular(request.POST))
+        if angelegt:
+            log_aktion(request, "Raumbuch-Assistent", e.bezeichnung, ', '.join(angelegt))
+            messages.success(request, '✅ ' + gettext('%(n)s Räume angelegt: %(namen)s. Jetzt Details je Element ergänzen.')
+                             % {'n': len(angelegt), 'namen': ', '.join(angelegt)})
+        if uebersprungen:
+            messages.info(request, gettext('Schon vorhanden und nicht nochmals angelegt: %(namen)s.')
+                          % {'namen': ', '.join(uebersprungen)})
+        if not angelegt and not uebersprungen:
+            messages.error(request, gettext('Kein Raum gewählt.'))
+    return redirect(f'/neu/objekte/{e.id}/?tab=ausstattung')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_ausstattung_raum_loeschen(request, pk):
+    """Entfernt einen ganzen Raum (alle seine Elemente) — z. B. wenn er falsch angelegt wurde."""
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    from portfolio.models import Ausstattung
+    from core.auth import log_aktion
+    e = get_object_or_404(Einheit, id=pk)
+    raum = (request.POST.get('raum') or '').strip()
+    if request.method == 'POST' and raum:
+        anzahl, _einzeln = Ausstattung.objects.filter(einheit=e, raum=raum).delete()
+        if anzahl:
+            log_aktion(request, "Raum gelöscht", e.bezeichnung, f"{raum}: {anzahl} Elemente")
+            messages.success(request, gettext('Raum «%(raum)s» mit %(n)s Elementen entfernt.') % {'raum': raum, 'n': anzahl})
+        else:
+            messages.info(request, gettext('Den Raum «%(raum)s» gibt es nicht (mehr).') % {'raum': raum})
+    return redirect(f'/neu/objekte/{e.id}/?tab=ausstattung')
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
@@ -999,7 +1056,7 @@ def fw_ausstattung_del(request, pk):
     if request.method == 'POST':
         a.delete()
         messages.success(request, gettext('Ausstattungselement entfernt.'))
-    return redirect(f'/neu/objekte/{eid}/#obj-raumbuch')
+    return redirect(f'/neu/objekte/{eid}/?tab=ausstattung')
 
 
 # --- Geräte (Objekt + allgemeine Liegenschafts-Geräte wie Heizung/Boiler) ---

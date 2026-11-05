@@ -627,7 +627,7 @@ class AusstattungEditKatalogTests(TestCase):
             # keine Duplikate innerhalb eines Raums
             self.assertEqual(len(kats), len(set(kats)), f"{raum} hat Duplikate")
             # Elektro-Basis überall (ausser reine Aussen-/Technikräume)
-            if raum not in ('Balkon / Terrasse', 'Heizung / Technik', 'Keller / Estrich'):
+            if raum not in ('Balkon / Terrasse', 'Heizung / Technik'):
                 self.assertIn('Beleuchtung', kats, f"{raum} ohne Beleuchtung")
                 self.assertIn('Steckdosen', kats, f"{raum} ohne Steckdosen")
 

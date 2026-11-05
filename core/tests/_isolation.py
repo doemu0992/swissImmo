@@ -637,6 +637,8 @@ class MandantenFixture:
         ('asset',           'geraet'),
         ('ausstattung_add', 'einheit'),
         ('ausstattung_katalog', 'einheit'),
+        ('ausstattung_assistent', 'einheit'),
+        ('ausstattung_raum_loeschen', 'einheit'),
         ('ausstattung',     'ausstattung'),
         ('betriebsrechnung', 'liegenschaft'),
         ('bewerber',        'bewerbung'),

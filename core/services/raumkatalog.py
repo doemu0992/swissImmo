@@ -52,6 +52,16 @@ RAUM_KATALOG = {
         ('Bodenbelag / Parkett', 25), ('Teppich', 10),
         ('Einbauschrank', 25), ('Heizkörper / Radiator', 30),
     ] + _INNEN_BASIS,
+    'Schlafzimmer': [
+        ('Bodenbelag / Parkett', 25), ('Teppich', 10),
+        ('Einbauschrank', 25), ('Heizkörper / Radiator', 30),
+    ] + _INNEN_BASIS,
+    'Gäste-WC': [
+        ('WC / Spülkasten', 35), ('Lavabo / Handwaschbecken', 35), ('Armaturen', 20),
+        ('Spiegel / Spiegelschrank', 15), ('Wandplatten', 30), ('Bodenplatten', 30),
+        ('Ventilator / Entlüftung', 15), ('Accessoires / Papierhalter', 15),
+        ('Decke / Anstrich', 8), ('Türe', 30),
+    ] + _ALLGEMEIN_ELEKTRO,
     'Korridor / Entrée': [
         ('Bodenbelag', 20), ('Einbauschrank / Garderobe', 25),
         ('Wohnungseingangstür', 30), ('Gegensprechanlage / Video', 20),
@@ -63,10 +73,15 @@ RAUM_KATALOG = {
         ('Waschbecken / Ausguss', 25), ('Regale / Tablare', 20),
         ('Wände / Anstrich', 8), ('Bodenbelag', 20), ('Tür', 30),
     ] + _ALLGEMEIN_ELEKTRO,
-    'Keller / Estrich': [
+    'Kellerabteil': [
         ('Kellerabteil / Lattenverschlag', 30), ('Regale / Tablare', 20),
         ('Wände', 8), ('Bodenbelag', 20), ('Kellertür', 30),
-        ('Beleuchtung', 15), ('Lichtschalter', 25),
+        ('Beleuchtung', 15), ('Lichtschalter', 25), ('Steckdosen', 25),
+    ],
+    'Estrich / Dachabteil': [
+        ('Abteil / Lattenverschlag', 30), ('Regale / Tablare', 20),
+        ('Wände', 8), ('Bodenbelag', 20), ('Tür / Luke', 30),
+        ('Beleuchtung', 15), ('Lichtschalter', 25), ('Steckdosen', 25),
     ],
     'Balkon / Terrasse': [
         ('Bodenbelag / Plattenbelag', 20), ('Geländer / Brüstung', 40),
@@ -82,7 +97,14 @@ RAUM_KATALOG = {
     ],
 }
 
-RAUMTYPEN = list(RAUM_KATALOG.keys())
+# Reihenfolge in der Auswahl: Wohnbereich, Nassräume, Nebenräume, Technik.
+_REIHENFOLGE = ['Küche', 'Wohnzimmer', 'Schlafzimmer', 'Zimmer', 'Bad / WC', 'Gäste-WC',
+                'Korridor / Entrée', 'Balkon / Terrasse', 'Reduit / Waschküche', 'Kellerabteil',
+                'Estrich / Dachabteil', 'Heizung / Technik']
+RAUMTYPEN = [t for t in _REIHENFOLGE if t in RAUM_KATALOG] + [t for t in RAUM_KATALOG if t not in _REIHENFOLGE]
+
+#: Typen, von denen es mehrere Räume gibt: «Zimmer 1», «Zimmer 2», «Schlafzimmer 1» …
+NUMMERIERT = ('Zimmer', 'Schlafzimmer')
 
 # Kategorie -> Jahre (aggregiert aus dem Katalog, für die Lebensdauertabelle)
 STANDARD_LEBENSDAUER = {}
