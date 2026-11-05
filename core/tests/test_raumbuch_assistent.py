@@ -16,7 +16,9 @@ from ._helfer import _basis_objekte, _team_user
 
 
 def _raeume(einheit):
-    return list(dict.fromkeys(Ausstattung.objects.filter(einheit=einheit).order_by('raum').values_list('raum', flat=True)))
+    # In Python sortiert: die Datenbank sortiert je nach Sortierfolge anders («Küche» vs «Kellerabteil»,
+    # Leerzeichen), SQLite und PostgreSQL liefern sonst verschiedene Reihenfolgen.
+    return sorted(set(Ausstattung.objects.filter(einheit=einheit).values_list('raum', flat=True)))
 
 
 class VorschlagTests(TestCase):
