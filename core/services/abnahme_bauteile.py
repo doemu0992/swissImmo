@@ -56,6 +56,10 @@ WASCHKUECHE = [
     'Boden', 'Decke', 'Wände', 'Leuchten', 'Schalter/Steckdosen', 'Türe', 'Türrahmen',
     'Waschmaschine', 'Tumbler/Trockner', 'Waschbecken/Ausguss',
 ]
+REDUIT = [
+    'Boden', 'Decke', 'Wände', 'Leuchten', 'Schalter/Steckdosen', 'Türe', 'Türrahmen',
+    'Regale/Tablare', 'Waschturm',
+]
 TECHNIK = [
     'Boden', 'Wände', 'Türe', 'Heizung/Wärmeerzeuger', 'Boiler/Warmwasserspeicher',
     'Sicherungskasten/Elektroverteilung',
@@ -69,12 +73,13 @@ ALLGEMEIN = [
 BAUTEILE = {
     'kueche': KUECHE, 'bad': BAD, 'wc': WC, 'wohnzimmer': WOHNZIMMER, 'zimmer': ZIMMER,
     'korridor': KORRIDOR, 'balkon': BALKON, 'keller': KELLER, 'waschkueche': WASCHKUECHE,
-    'technik': TECHNIK, 'garage': GARAGE, 'allgemein': ALLGEMEIN,
+    'technik': TECHNIK, 'reduit': REDUIT, 'garage': GARAGE, 'allgemein': ALLGEMEIN,
 }
 
 # Reihenfolge ist Bedeutung: «Waschküche» enthält «küche», «Gäste-WC» ist kein Bad.
 _ERKENNUNG = [
-    ('waschkueche', r'waschk[üu]e?che|reduit'),
+    ('waschkueche', r'waschk[üu]e?che'),
+    ('reduit', r'reduit'),
     ('kueche', r'k[üu]e?che|kochnische'),
     ('bad', r'\bbad|dusche'),
     ('wc', r'\bwc\b|toilette'),

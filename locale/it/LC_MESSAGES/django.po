@@ -38862,3 +38862,7 @@ msgstr "Locale «%(raum)s» con %(n)s elementi rimosso."
 #, python-format
 msgid "Den Raum «%(raum)s» gibt es nicht (mehr)."
 msgstr "Il locale «%(raum)s» non esiste (più)."
+
+#: core/services/raumbuch_assistent.py:42
+msgid "Waschküche"
+msgstr "Lavanderia"

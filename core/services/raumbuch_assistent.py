@@ -38,7 +38,8 @@ ASSISTENT_TYPEN = [
     ('Gäste-WC', _('Gäste-WC')),
     ('Korridor / Entrée', _('Korridor / Entrée')),
     ('Balkon / Terrasse', _('Balkon / Terrasse')),
-    ('Reduit / Waschküche', _('Reduit')),
+    ('Reduit', _('Reduit')),
+    ('Waschküche', _('Waschküche')),
     ('Kellerabteil', _('Kellerabteil')),
     ('Estrich / Dachabteil', _('Estrich / Dachabteil')),
 ]
@@ -64,7 +65,7 @@ def vorschlag(zimmer):
         'Küche': 1, 'Wohnzimmer': 1,
         'Schlafzimmer': max(ganz - 1, 0), 'Zimmer': halb,
         'Bad / WC': 1, 'Gäste-WC': 1 if z >= Decimal('4.5') else 0,
-        'Korridor / Entrée': 1, 'Balkon / Terrasse': 1, 'Reduit / Waschküche': 0,
+        'Korridor / Entrée': 1, 'Balkon / Terrasse': 1, 'Reduit': 0, 'Waschküche': 0,
         'Kellerabteil': 1, 'Estrich / Dachabteil': 0,
     }
 

@@ -642,7 +642,7 @@ class AusstattungEditKatalogTests(TestCase):
         from core.services.raumkatalog import RAUMTYPEN
         _lg, e, _m, _v = _basis_objekte()
         c = Client(); c.force_login(_team_user())
-        # Alle Raumtypen laden lassen (auch neue: Heizung/Technik, Reduit/Waschküche)
+        # Alle Raumtypen laden lassen (auch neue: Heizung/Technik, Reduit, Waschküche)
         for rt in RAUMTYPEN:
             r = c.post(f'/neu/objekte/{e.id}/ausstattung/katalog/', {'raumtyp': rt})
             self.assertEqual(r.status_code, 302)

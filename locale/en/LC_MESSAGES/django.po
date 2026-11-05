@@ -38288,3 +38288,7 @@ msgstr "Room “%(raum)s” with %(n)s elements removed."
 #, python-format
 msgid "Den Raum «%(raum)s» gibt es nicht (mehr)."
 msgstr "The room “%(raum)s” no longer exists."
+
+#: core/services/raumbuch_assistent.py:42
+msgid "Waschküche"
+msgstr "Laundry room"

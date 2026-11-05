@@ -19,7 +19,7 @@ class RaumtypTests(SimpleTestCase):
     def test_freie_namen_werden_erkannt(self):
         faelle = {
             'Küche': 'kueche', 'Küche Turmstrasse (saniert)': 'kueche', 'Kueche': 'kueche',
-            'Waschküche': 'waschkueche', 'Reduit': 'waschkueche',          # nicht «Küche»
+            'Waschküche': 'waschkueche', 'Reduit': 'reduit',                # eigener Raum, nicht die Waschküche
             'Bad': 'bad', 'Bad/WC': 'bad', 'Bad Turmstrasse (saniert)': 'bad', 'Dusche': 'bad',
             'WC': 'wc', 'Gäste-WC': 'wc', 'Toilette': 'wc',                # kein «Bad»
             'Wohnzimmer': 'wohnzimmer', 'Wohnen/Essen': 'wohnzimmer', 'Esszimmer': 'wohnzimmer',

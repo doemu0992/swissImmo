@@ -54,6 +54,37 @@ class NamenTests(TestCase):
         self.assertEqual(ra.neue_namen('Küche', 1, ['küche']), [])
 
 
+class ReduitUndWaschkuecheTests(TestCase):
+    """Reduit (Abstellraum der Wohnung, oft mit Waschturm) und Waschküche sind zwei Räume mit eigener Ausstattung.
+    Gegenprobe: im Katalog wieder den Schlüssel «Reduit / Waschküche» einsetzen -> rot."""
+
+    def test_zwei_typen_mit_eigener_ausstattung(self):
+        from core.services.raumkatalog import RAUM_KATALOG, RAUMTYPEN
+        self.assertNotIn('Reduit / Waschküche', RAUMTYPEN)
+        reduit = [k for k, _ in RAUM_KATALOG['Reduit']]
+        wasch = [k for k, _ in RAUM_KATALOG['Waschküche']]
+        self.assertIn('Waschturm (Waschmaschine / Tumbler)', reduit)
+        self.assertNotIn('Waschmaschine', reduit)
+        self.assertIn('Waschmaschine', wasch)
+        self.assertIn('Waschbecken / Ausguss', wasch)
+
+    def test_der_assistent_legt_beide_getrennt_an(self):
+        _lg, e, _m, _v = _basis_objekte()
+        c = Client()
+        c.force_login(_team_user())
+        c.post(f'/neu/objekte/{e.id}/ausstattung/assistent/', {'anzahl_Reduit': '1', 'anzahl_Waschküche': '1'})
+        self.assertEqual(_raeume(e), ['Reduit', 'Waschküche'])
+        self.assertFalse(Ausstattung.objects.filter(einheit=e, raum='Reduit', kategorie='Waschmaschine').exists())
+        self.assertTrue(Ausstattung.objects.filter(einheit=e, raum='Waschküche', kategorie='Waschmaschine').exists())
+
+    def test_die_abnahme_unterscheidet_beide(self):
+        from core.services.abnahme_bauteile import BAUTEILE, raumtyp
+        self.assertEqual((raumtyp('Reduit'), raumtyp('Waschküche')), ('reduit', 'waschkueche'))
+        self.assertEqual(raumtyp('Reduit / Waschküche'), 'waschkueche')       # bestehende Namen bleiben gültig
+        self.assertNotIn('Waschmaschine', BAUTEILE['reduit'])
+        self.assertIn('Waschmaschine', BAUTEILE['waschkueche'])
+
+
 class KatalogLadenTests(TestCase):
     def setUp(self):
         _lg, self.e, _m, _v = _basis_objekte()

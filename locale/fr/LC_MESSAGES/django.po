@@ -38925,3 +38925,7 @@ msgstr "Pièce « %(raum)s » avec %(n)s éléments supprimée."
 #, python-format
 msgid "Den Raum «%(raum)s» gibt es nicht (mehr)."
 msgstr "La pièce « %(raum)s » n’existe plus."
+
+#: core/services/raumbuch_assistent.py:42
+msgid "Waschküche"
+msgstr "Buanderie"

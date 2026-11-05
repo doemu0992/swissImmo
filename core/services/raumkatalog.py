@@ -68,10 +68,14 @@ RAUM_KATALOG = {
         ('Sicherungskasten / Elektroverteilung', 30),
         ('Wände / Anstrich', 8), ('Decke / Anstrich', 8),
     ] + _ALLGEMEIN_ELEKTRO,
-    'Reduit / Waschküche': [
-        ('Waschmaschine', 15), ('Tumbler / Trockner', 15),
-        ('Waschbecken / Ausguss', 25), ('Regale / Tablare', 20),
+    'Reduit': [
+        ('Waschturm (Waschmaschine / Tumbler)', 15), ('Regale / Tablare', 20),
         ('Wände / Anstrich', 8), ('Bodenbelag', 20), ('Tür', 30),
+    ] + _ALLGEMEIN_ELEKTRO,
+    'Waschküche': [
+        ('Waschmaschine', 15), ('Tumbler / Trockner', 15),
+        ('Waschbecken / Ausguss', 25), ('Wäscheaufhängung / Trocknungsgestell', 15),
+        ('Regale / Tablare', 20), ('Wände / Anstrich', 8), ('Bodenbelag', 20), ('Tür', 30),
     ] + _ALLGEMEIN_ELEKTRO,
     'Kellerabteil': [
         ('Kellerabteil / Lattenverschlag', 30), ('Regale / Tablare', 20),
@@ -99,7 +103,7 @@ RAUM_KATALOG = {
 
 # Reihenfolge in der Auswahl: Wohnbereich, Nassräume, Nebenräume, Technik.
 _REIHENFOLGE = ['Küche', 'Wohnzimmer', 'Schlafzimmer', 'Zimmer', 'Bad / WC', 'Gäste-WC',
-                'Korridor / Entrée', 'Balkon / Terrasse', 'Reduit / Waschküche', 'Kellerabteil',
+                'Korridor / Entrée', 'Balkon / Terrasse', 'Reduit', 'Waschküche', 'Kellerabteil',
                 'Estrich / Dachabteil', 'Heizung / Technik']
 RAUMTYPEN = [t for t in _REIHENFOLGE if t in RAUM_KATALOG] + [t for t in RAUM_KATALOG if t not in _REIHENFOLGE]
 
