@@ -585,6 +585,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 <!-- ===== BEREICH: AUSSTATTUNG ===== -->
 <div data-panel="obj" id="obj-ausstattung" class="hidden">
 <div class="fw-subhead">{% trans "Raumbuch" %}</div>
+    {% if kann_schreiben %}
     <!-- Assistent: Räume aus der Wohnungsgrösse -->
     <div class="fw-card" id="raum-assistent">
         <div class="fw-kopf"><h2>{% trans "Raumbuch-Assistent" %}</h2></div>
@@ -623,6 +624,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         </script>
         </div>
     </div>
+    {% endif %}
 
     <!-- Schnellerfassung ganzer Raum aus Katalog -->
     <div class="fw-card">
@@ -777,6 +779,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 </tbody>
             </table>
             </div>
+            {% if kann_schreiben %}
             <div class="px-5 py-3 border-t fw-linie flex justify-end">
                 <form method="post" action="/neu/objekte/{{ e.id }}/ausstattung/raum-loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with raum=r.raum n=r.elemente|length %}Raum «{{ raum }}» mit {{ n }} Elementen löschen?{% endblocktrans %}{% endfilter %}');">
                     {% csrf_token %}
@@ -784,6 +787,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     <button class="fw-btn fw-rand-krit">{% zeichen 'loeschen' klasse='mr-1.5' %}{% trans "Raum löschen" %}</button>
                 </form>
             </div>
+            {% endif %}
         </details>
         {% endfor %}
     </div>
