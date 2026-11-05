@@ -21,7 +21,7 @@ SCHUTZ VOR SCHLEIFEN UND FLUT
   sie (oder eine Abwesenheitsnotiz, ein Mailer-Daemon, die eigene Absenderadresse) zurück, wird nichts
   weitergeleitet (``automatisch``).
 * **Bündelung:** Die erste Nachricht geht sofort per Mail. Weitere Nachrichten derselben Seite innerhalb
-  von ``BUENDELUNG`` (5 Minuten) nach der letzten Mail warten und gehen gesammelt in EINER Mail hinaus —
+  von ``BUENDELUNG`` (1 Minute) nach der letzten Mail warten und gehen gesammelt in EINER Mail hinaus —
   spätestens, wenn ``fetch_replies`` (jede Minute) ``ausstehende_zustellen`` aufruft.
 * Die Verwaltung wird durch den Direktkanal NICHT per Mail benachrichtigt. Sie liest im Verlauf mit.
   (Nur «Termin steht» / Absage: ``termin_abstimmung``.)
@@ -46,7 +46,7 @@ SEITEN = ('mieter', 'handwerker', 'verwaltung')
 #: Längenlimit einer Nachricht (Chat). Mail-Antworten werden auf diese Länge gekürzt.
 MAX_LAENGE = 2000
 #: Mindestabstand zwischen zwei Mails derselben Seite an die Gegenseite.
-BUENDELUNG = timedelta(minutes=5)
+BUENDELUNG = timedelta(minutes=1)
 #: So lange gilt der signierte Link (Chat/Termin ohne Anmeldung).
 LINK_GUELTIG_SEKUNDEN = 30 * 24 * 3600
 _SALT = 'direktkanal-link'

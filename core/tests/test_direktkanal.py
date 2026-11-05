@@ -171,7 +171,7 @@ class ChatNachMailTests(TestCase):
 class BuendelungTests(TestCase):
     """Mehrere Chat-Nachrichten kurz hintereinander fluten die Gegenseite nicht.
 
-    Die erste geht sofort, weitere innerhalb von `BUENDELUNG` (5 Minuten) warten und gehen gesammelt in EINER
+    Die erste geht sofort, weitere innerhalb von `BUENDELUNG` (1 Minute) warten und gehen gesammelt in EINER
     Mail hinaus (`fetch_replies` ruft `ausstehende_zustellen` jede Minute).
 
     Gegenprobe: `BUENDELUNG = timedelta(0)` -> `test_fuenf_nachrichten_ergeben_zwei_mails` rot.
@@ -183,12 +183,12 @@ class BuendelungTests(TestCase):
         t0 = timezone.now()
         direktkanal.schreiben(a, 'mieter', 'Erste Nachricht', jetzt=t0)
         for i, text in enumerate(('Zweite', 'Dritte', 'Vierte', 'Fuenfte'), start=1):
-            direktkanal.schreiben(a, 'mieter', f'{text} Nachricht', jetzt=t0 + timedelta(seconds=30 * i))
+            direktkanal.schreiben(a, 'mieter', f'{text} Nachricht', jetzt=t0 + timedelta(seconds=10 * i))
         self.assertEqual(len(mail.outbox), 1)                        # nur die erste ist hinaus
         self.assertEqual(a.direktnachrichten.filter(zugestellt_am__isnull=True).count(), 4)
-        self.assertEqual(direktkanal.ausstehende_zustellen(jetzt=t0 + timedelta(minutes=2)), 0)
+        self.assertEqual(direktkanal.ausstehende_zustellen(jetzt=t0 + timedelta(seconds=50)), 0)
         self.assertEqual(len(mail.outbox), 1)                        # Fenster noch offen
-        self.assertEqual(direktkanal.ausstehende_zustellen(jetzt=t0 + timedelta(minutes=6)), 1)
+        self.assertEqual(direktkanal.ausstehende_zustellen(jetzt=t0 + timedelta(minutes=2)), 1)
         self.assertEqual(len(mail.outbox), 2)
         sammel = _text(mail.outbox[1])
         for wort in ('Zweite', 'Dritte', 'Vierte', 'Fuenfte'):
@@ -202,7 +202,7 @@ class BuendelungTests(TestCase):
         t, a = _auftrag_einfach()
         t0 = timezone.now()
         direktkanal.schreiben(a, 'handwerker', 'Eins', jetzt=t0)
-        direktkanal.schreiben(a, 'handwerker', 'Zwei', jetzt=t0 + timedelta(minutes=1))
+        direktkanal.schreiben(a, 'handwerker', 'Zwei', jetzt=t0 + timedelta(seconds=30))
         direktkanal.schreiben(a, 'handwerker', 'Drei', jetzt=t0 + timedelta(minutes=10))
         self.assertEqual(len(mail.outbox), 2)
         self.assertIn('Zwei', _text(mail.outbox[1]))
