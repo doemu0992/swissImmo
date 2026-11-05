@@ -2425,6 +2425,10 @@
             border-radius:var(--ds-radius-lg);box-shadow:var(--ds-shadow-sm);color:inherit;text-decoration:none;min-height:150px}
         a.fw-kachel{transition:transform .25s var(--ds-ease),box-shadow .25s var(--ds-ease)}
         a.fw-kachel:hover{transform:translateY(-3px);box-shadow:var(--ds-shadow)}
+        /* Der Zeiger darf die gehobene Karte nicht verlieren: Steht er in den unteren 3 px, lag er nach dem Heben
+           ausserhalb, die Karte fiel zurück, hob sich wieder — sie flackerte in jedem Bild (und Playwright fand sie
+           nie «stabil»). Der Streifen unter der Karte gehört zum Link und hält den Hover. */
+        a.fw-kachel::after{content:"";position:absolute;left:0;right:0;top:100%;height:6px}
         .fw-kachel-kopf{display:flex;align-items:center;justify-content:space-between;gap:10px}
         .fw-kachel-kopf h2,.fw-kachel-kopf h3{margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em}
         .fw-kachel-zahl{font-size:40px;font-weight:500;letter-spacing:-.04em;line-height:1;margin-top:auto}

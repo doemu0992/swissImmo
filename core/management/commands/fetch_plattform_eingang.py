@@ -79,7 +79,25 @@ class Command(BaseCommand):
                 # nicht im Hauptthread (Tests); dann gibt es nichts zu verdrahten
                 logger.debug('Signal %s nicht verdrahtet (kein Hauptthread)', nummer)
 
+    def zustellen(self):
+        """Gebündelte Chat-Nachrichten des Direktkanals zustellen (alle Verwaltungen).
+
+        Mieter und Handwerker schreiben im Chat; geht innerhalb von 5 Minuten eine zweite Nachricht
+        derselben Seite hinaus, wartet sie auf diesen Lauf — ebenso eine Mail, die beim ersten Versuch
+        nicht rausging. Früher kam das nur von ``fetch_replies``; wo nur der Plattform-Eingang läuft,
+        blieben solche Nachrichten für immer liegen."""
+        from core.tenancy import je_organisation
+        from tickets.direktkanal import ausstehende_zustellen
+        _ergebnisse, fehler = je_organisation(lambda _organisation: ausstehende_zustellen())
+        for organisation, ausnahme in fehler:
+            logger.error('%s: Zustellung gebündelter Chat-Nachrichten fehlgeschlagen: %s', organisation, ausnahme)
+
     def durchlauf(self):
+        # Zuerst zustellen: ein Ausfall des Postfach-Abrufs darf ausgehende Chat-Mails nicht aufhalten.
+        try:
+            self.zustellen()
+        except Exception:                                      # noqa: BLE001
+            logger.exception('Plattform-Postfach: Zustellung gebündelter Chat-Nachrichten fehlgeschlagen')
         try:
             zahlen = pp.abrufen(ausgabe=self.stdout.write)
         except AbrufFehler as fehler:

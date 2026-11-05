@@ -24,9 +24,11 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-# Aktuelle Groq-Produktionsmodelle (das frühere llama3-8b-8192 ist abgeschaltet).
-GROQ_TEXT_MODEL = "llama-3.3-70b-versatile"
-GROQ_VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
+# Groq schaltet Modelle regelmässig ab (llama-3.3-70b-versatile und llama-4-scout
+# liefern 404). Die Namen stehen deshalb in der Umgebung (GROQ_TEXT_MODEL /
+# GROQ_VISION_MODEL) und lassen sich ohne neuen Code tauschen.
+GROQ_TEXT_MODEL = "openai/gpt-oss-120b"
+GROQ_VISION_MODEL = "qwen/qwen3.6-27b"
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 MAX_TEXT_CHARS = 12000          # lange PDFs kürzen (Kerndaten stehen vorne)
 BILD_ENDUNGEN = ('.jpg', '.jpeg', '.png', '.webp')
@@ -231,6 +233,10 @@ def _normalisiere(daten, methode, hinweis=""):
     return out
 
 
+def _groq_modell(art, standard):
+    return getattr(settings, f"GROQ_{art}_MODEL", None) or standard
+
+
 def _groq_call(messages, model, api_key):
     resp = requests.post(GROQ_URL, timeout=45, json={
         "model": model, "messages": messages, "temperature": 0,
@@ -242,7 +248,7 @@ def _groq_call(messages, model, api_key):
 
 def _scan_text_ki(full_text, api_key):
     daten = _groq_call([{"role": "user", "content": f"{_PROMPT}\n\nRechnungstext:\n{full_text[:MAX_TEXT_CHARS]}"}],
-                       GROQ_TEXT_MODEL, api_key)
+                       _groq_modell("TEXT", GROQ_TEXT_MODEL), api_key)
     return _normalisiere(daten, "ki", "KI-Texterkennung (Groq)")
 
 
@@ -251,7 +257,7 @@ def _scan_bild_ki(png_bytes, api_key, mime="image/png"):
     daten = _groq_call([{"role": "user", "content": [
         {"type": "text", "text": _PROMPT},
         {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}},
-    ]}], GROQ_VISION_MODEL, api_key)
+    ]}], _groq_modell("VISION", GROQ_VISION_MODEL), api_key)
     return _normalisiere(daten, "vision", "KI-Bilderkennung (Groq Vision)")
 
 

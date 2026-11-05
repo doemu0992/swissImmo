@@ -463,6 +463,9 @@ CKEDITOR_CONFIGS = {'default': {'toolbar': 'full', 'height': 300, 'width': '100%
 # Gemini-Anbindung, und lädt dazu ein, einen echten Schlüssel zu hinterlegen,
 # der dann ohne Zweck in der Umgebung steht.
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')  # Für den KI-Rechnungs-Scanner (finance/utils.py)
+# Modellnamen tauschbar, weil Groq Modelle abschaltet (leer = Standard in finance/utils.py)
+GROQ_TEXT_MODEL = os.getenv('GROQ_TEXT_MODEL') or None
+GROQ_VISION_MODEL = os.getenv('GROQ_VISION_MODEL') or None
 DOCUSEAL_API_KEY = os.getenv('DOCUSEAL_API_KEY')
 DOCUSEAL_URL = "https://api.docuseal.com"
 # Optional: gemeinsames Secret für den DocuSeal-Webhook. Wenn gesetzt, muss
