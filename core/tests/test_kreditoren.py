@@ -332,8 +332,15 @@ class KIRechnungsscannerTests(TestCase):
         with override_settings(GROQ_API_KEY='test-key'), \
              patch('finance.utils.requests.post', return_value=antwort) as mocked:
             c.post('/neu/kreditoren/scan/', {'beleg_scan': f})
-            # Aktuelles Modell wird verwendet (llama3-8b-8192 ist abgeschaltet)
-            self.assertEqual(mocked.call_args.kwargs['json']['model'], 'llama-3.3-70b-versatile')
+            # Standardmodell (llama-3.3-70b-versatile ist bei Groq abgeschaltet → 404)
+            self.assertEqual(mocked.call_args.kwargs['json']['model'], 'openai/gpt-oss-120b')
+        antwort.json.reset_mock()
+        f2 = SimpleUploadedFile('rechnung2.pdf', self._text_pdf(), content_type='application/pdf')
+        with override_settings(GROQ_API_KEY='test-key', GROQ_TEXT_MODEL='neues/modell'), \
+             patch('finance.utils.requests.post', return_value=antwort) as mocked:
+            c.post('/neu/kreditoren/scan/', {'beleg_scan': f2})
+            # Gegenprobe: das Modell ist per Umgebung tauschbar
+            self.assertEqual(mocked.call_args.kwargs['json']['model'], 'neues/modell')
         k = KreditorenRechnung.objects.latest('id')
         self.assertEqual(k.lieferant, 'Elektro Muster GmbH')
         self.assertEqual(k.betrag, Decimal('1234.55'))
