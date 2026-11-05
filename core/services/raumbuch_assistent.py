@@ -16,9 +16,11 @@ Der Assistent schlägt aus der Zimmerzahl vor, welche Räume die Wohnung hat —
 wird deshalb nur als ein weiteres «Zimmer» vorgeschlagen.
 """
 import re
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 
 from django.utils.translation import gettext_lazy as _
+
+from core.utils.betrag import betrag_oder_none
 
 from .raumkatalog import NUMMERIERT, RAUM_KATALOG
 
@@ -44,11 +46,9 @@ ZIMMER_MIN, ZIMMER_MAX = Decimal('1'), Decimal('8')
 
 
 def _zahl(wert):
-    try:
-        z = Decimal(str(wert).replace(',', '.').strip())
-    except (InvalidOperation, ValueError, AttributeError):
-        return None
-    return z if z > 0 else None
+    """Die Zimmerzahl als Decimal (> 0), sonst None. Gelesen wird über `core.utils.betrag` wie jede Zahl im Programm."""
+    z = betrag_oder_none(wert)
+    return z if z is not None and z > 0 else None
 
 
 def vorschlag(zimmer):
