@@ -78,45 +78,9 @@ class AdminNamenLoesenSichAufTests(TestCase):
             label_for_field('telefon', Mieter, admin.site._registry[Mieter])
 
 
-class AdminSeitenOeffnenTests(TestCase):
-    """Sicht 2: Liste und Änderungsseite jedes Modells mit Datensatz öffnen sich."""
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.a = MandantenFixture('A', '8000', 'Zürich')
-        cls.super = get_user_model().objects.create_superuser('su-seiten', 'su2@example.ch', 'x')
-        Mitgliedschaft.alle_organisationen.create(
-            benutzer=cls.super, organisation=cls.a.organisation, rolle=Mitgliedschaft.ROLLE_INHABER)
-
-    def setUp(self):
-        self.client = Client(raise_request_exception=False)
-        self.client.force_login(self.super)
-
-    def test_listen_und_aenderungsseiten_stuerzen_nicht_ab(self):
-        objekte = {}
-        for o in self.a._alle_objekte():
-            objekte.setdefault(type(o), o)
-        abgestuerzt, geprueft = [], 0
-        for modell, _ma in _admins():
-            app, name = modell._meta.app_label, modell._meta.model_name
-            urls = [f'/admin/{app}/{name}/']
-            if modell in objekte:
-                urls.append(f'/admin/{app}/{name}/{objekte[modell].pk}/change/')
-            for url in urls:
-                geprueft += 1
-                antwort = self.client.get(url)
-                if antwort.status_code >= 500:
-                    abgestuerzt.append((antwort.status_code, url))
-        self.assertGreater(geprueft, 40, 'auffällig wenige Seiten geprüft')
-        self.assertEqual(abgestuerzt, [])
-
-    def test_mieter_und_handwerker_zeigen_ihre_felder(self):
-        mieter = self.client.get(f'/admin/crm/mieter/{self.a.mieter.pk}/change/')
-        self.assertEqual(mieter.status_code, 200)
-        self.assertContains(mieter, 'Telefon Privat')
-        handwerker = self.client.get(f'/admin/crm/handwerker/{self.a.handwerker.pk}/change/')
-        self.assertEqual(handwerker.status_code, 200)
-        self.assertContains(handwerker, 'Branche')
+class AdminKontaktTests(TestCase):
+    """Die Admin-Seiten selbst gibt es nicht mehr (Route entfernt, siehe test_admin_entfernt); die Hilfsfunktion bleibt
+    bis zum Aufräumen der Admin-Klassen geprüft."""
 
     def test_kontakt_knoepfe_maskieren_eingaben(self):
         """Telefon und E-Mail stehen nicht ungeprüft im Markup (vorher: f-String in `format_html`)."""
@@ -124,29 +88,3 @@ class AdminSeitenOeffnenTests(TestCase):
         html = str(_kontakt_html('<script>x</script>', 'a@b.ch'))
         self.assertNotIn('<script>', html)
         self.assertIn('&lt;script&gt;', html)
-
-
-class AdminLogoTests(TestCase):
-    def test_kein_bildaufruf_auf_einen_symbolnamen(self):
-        """DESIGN-14: `SITE_ICON = "real_estate_agent"` wurde als Bildadresse geladen (404, gebrochenes Logo)."""
-        a = MandantenFixture('A', '8000', 'Zürich')
-        su = get_user_model().objects.create_superuser('su-logo', 'su4@example.ch', 'x')
-        Mitgliedschaft.alle_organisationen.create(
-            benutzer=su, organisation=a.organisation, rolle=Mitgliedschaft.ROLLE_INHABER)
-        c = Client()
-        c.force_login(su)
-        inhalt = c.get('/admin/').content.decode()
-        self.assertIn('immoswiss', inhalt, 'die Admin-Startseite wurde nicht gerendert')
-        self.assertNotIn('real_estate_agent', inhalt)
-
-
-class AdminOhneMitgliedschaftTests(TestCase):
-    """Ein Superuser ohne Mitgliedschaft hat keinen Mandanten: 403 mit Text statt Fehler 500."""
-
-    def test_liste_ohne_mitgliedschaft_gibt_403(self):
-        su = get_user_model().objects.create_superuser('su-ohne', 'su3@example.ch', 'x')
-        c = Client(raise_request_exception=False)
-        c.force_login(su)
-        for url in ('/admin/crm/mieter/', '/admin/rentals/mietvertrag/', '/admin/portfolio/liegenschaft/'):
-            with self.subTest(url=url):
-                self.assertEqual(c.get(url).status_code, 403)

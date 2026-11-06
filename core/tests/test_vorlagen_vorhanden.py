@@ -104,16 +104,3 @@ class MahnstufenSeiteTests(TestCase):
         antwort = self.c.get(f'/neu/mandate/{self.md.id}/mahnstufen/')
         self.assertContains(antwort, 'Frais de rappel (CHF)')
         self.assertNotContains(antwort, 'Mahngebühr (CHF)')
-
-
-class AdminEigentuemerTests(TestCase):
-
-    def test_eigentuemer_im_admin(self):
-        from crm.models import Eigentuemer
-        md = Eigentuemer.objects.create(organisation=_test_organisation(), firma_oder_name='Stiftung Aare')
-        admin = get_user_model().objects.create_superuser('admin_vorlagen', 'a@example.ch', 'x')
-        c = Client()
-        c.force_login(admin)
-        antwort = c.get(f'/admin/crm/eigentuemer/{md.id}/change/')
-        self.assertEqual(antwort.status_code, 200)
-        self.assertContains(antwort, 'Stiftung Aare')

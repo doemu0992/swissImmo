@@ -1,5 +1,4 @@
 # swiss_immo/urls.py
-from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
@@ -72,7 +71,6 @@ def healthz_view(request):
 from core.views.application import public_application_view, public_datenschutz_view
 
 # 2. Das neue Admin-Cockpit (Bereinigt um das alte Dashboard)
-from core.views.dashboard_view import update_market_data_view
 
 # 2b. Eigentümer-Portal & Login-Weiche
 from core.views.fw.kreditoren import (fw_kreditor_zahlung_vorlegen, fw_kreditor_zahlung_freigeben,
@@ -750,8 +748,8 @@ urlpatterns = [
     path('dossier/vertrag/<int:pk>/', _alt.dossier_vertrag),
 
     # --- ADMIN-ZUGÄNGE & SYSTEM ---
-    path('admin/update-marktdaten/', update_market_data_view, name='update_marktdaten'),
-    path('admin/', admin.site.urls),
+    # Die alte Django-Admin gibt es nicht mehr: Sie war ein zweiter Passwort-Login ohne zweiten Faktor.
+    # Alles läuft über /neu/ (Anmeldung: `login`).
 
     # ==========================================
     # 🔌 DIE NEUE SCHNITTSTELLE FÜR VUE.JS
