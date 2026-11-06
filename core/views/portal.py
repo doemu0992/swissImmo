@@ -144,6 +144,7 @@ def _portfolio_daten(eigentuemer):
     from portfolio.models import Dokument as PDokument
     from finance.models import DebitorenRechnung
     from django.utils import timezone
+    from core.services.rendite import liegenschaft_renditen
     heute = timezone.localdate()
     liegenschaften = []
     total_soll = Decimal('0.00')
@@ -153,7 +154,13 @@ def _portfolio_daten(eigentuemer):
     total_ausstand = Decimal('0.00')
     total_ueberfaellig = Decimal('0.00')
 
-    for lg in eigentuemer.liegenschaften.all().prefetch_related('einheiten'):
+    lgs = list(eigentuemer.liegenschaften.all().prefetch_related('einheiten'))
+    # Die Rendite kommt aus EINER Rechnung (`rendite.py`): Netto-Sollmiete ohne Nebenkosten durch Verkehrswert,
+    # ersatzweise Anlagekosten. Der Versicherungswert ist als Nenner ungeeignet; fehlt ein Wert, gibt es keine
+    # Rendite statt einer Näherung (derselbe Name zeigte hier sonst eine andere Zahl als in der Verwaltung).
+    renditen = liegenschaft_renditen(lgs, heute)
+
+    for lg in lgs:
         einheiten_rows = []
         lg_soll = Decimal('0.00')
         lg_einheiten = 0
@@ -189,7 +196,7 @@ def _portfolio_daten(eigentuemer):
         vw = lg.versicherungswert or Decimal('0.00')
         total_versicherungswert += vw
         lg_jahr = lg_soll * 12
-        lg_rendite = (float(lg_jahr) / float(vw) * 100) if vw else None
+        lg_rendite = renditen[lg.pk]['bruttorendite']
         lg_leer = lg_einheiten - lg_vermietet
 
         dok_qs = PDokument.objects.filter(liegenschaft=lg).order_by('-datum')[:20]
@@ -231,7 +238,11 @@ def _portfolio_daten(eigentuemer):
 
     total_leer = total_einheiten - total_vermietet
     jahres_soll = total_soll * 12
-    bruttorendite = (float(jahres_soll) / float(total_versicherungswert) * 100) if total_versicherungswert else None
+    # Gesamtrendite: über den Gesamtwert gewichtet (grosse Häuser zählen mehr), nur Liegenschaften mit Wert.
+    wert_summe = sum((r['wert'] for r in renditen.values() if r['wert']), Decimal('0'))
+    netto_mit_wert = sum((r['jahres_netto'] for r in renditen.values() if r['wert']), Decimal('0'))
+    bruttorendite = (float(netto_mit_wert) / float(wert_summe) * 100) if wert_summe else None
+    rendite_ohne_wert = sum(1 for r in renditen.values() if not r['wert'])
     leerquote = (total_leer / total_einheiten * 100) if total_einheiten else 0
 
     return {
@@ -243,6 +254,7 @@ def _portfolio_daten(eigentuemer):
         'total_leer': total_leer,
         'total_versicherungswert': total_versicherungswert if total_versicherungswert else None,
         'bruttorendite': bruttorendite,
+        'rendite_ohne_wert': rendite_ohne_wert,
         'leerquote': leerquote,
         'total_ausstand': total_ausstand,
         'total_ueberfaellig': total_ueberfaellig,

@@ -39216,3 +39216,17 @@ msgstr ""
 
 msgid "Es wurde nichts gelöscht."
 msgstr "Rien n'a été supprimé."
+
+msgid "nicht berechenbar"
+msgstr "non calculable"
+
+msgid ""
+"Bruttorendite = Netto-Sollmietzins (ohne Nebenkosten) / Verkehrswert, "
+"ersatzweise Anlagekosten. Ohne hinterlegten Wert keine Rendite."
+msgstr ""
+"Rendement brut = loyer net théorique (sans charges) / valeur vénale, à "
+"défaut coûts d'investissement. Sans valeur enregistrée, pas de rendement."
+
+msgid "Liegenschaften ohne hinterlegten Wert (nicht in der Rendite): %(n)s"
+msgstr ""
+"Immeubles sans valeur enregistrée (non inclus dans le rendement) : %(n)s"
