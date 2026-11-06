@@ -7,6 +7,7 @@ informiert, wenn der Termin steht oder abgesagt wird.
 
 Jede Klasse nennt ihre GEGENPROBE im Docstring (Code temporär ändern -> der Test wird rot).
 """
+import re
 from datetime import timedelta
 from email.message import EmailMessage
 from unittest import mock
@@ -887,8 +888,14 @@ class SignierterLinkTests(_PortalBasis):
         from tickets import termin_abstimmung
         with organisation_kontext(self.a.organisation):
             termin_abstimmung.vorschlagen(self.a.dk_auftrag, 'handwerker', _zeit())
-        url = self._link('mieter')
-        self.assertIn(url, _text(mail.outbox[0]))
+        # Der Link trägt einen Sekunden-Zeitstempel: ein zweiter, danach erzeugter Link kann sich über eine
+        # Sekundengrenze hinweg unterscheiden (CI-Fehler). Darum den Link aus der Mail nehmen und nur
+        # den Inhalt (vor dem Zeitstempel) mit dem erwarteten vergleichen.
+        erwartet = self._link('mieter')
+        treffer = re.search(r'/direkt/[^/\'"<>\s]+/', _text(mail.outbox[0]))
+        self.assertIsNotNone(treffer, 'Die Mail enthält keinen Direktlink')
+        url = treffer.group(0)
+        self.assertEqual(url.split(':')[0], erwartet.split(':')[0])
         r = Client().get(url)
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'value="vorschlag_bestaetigen"')
