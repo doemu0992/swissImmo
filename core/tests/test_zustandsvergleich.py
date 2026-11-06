@@ -137,6 +137,39 @@ class AnzeigeTests(Basis):
         r = self.c.get(f'/neu/abnahme/{prot.id}/vorort/')
         self.assertContains(r, 'Gebraucht')
 
+    def test_vorort_gibt_dem_browser_den_rang_des_vorzustands_mit(self):
+        """Der Browser rechnet beim Bewerten nach: `data-vor-rang` (0 neu i.O., 1 normal, 2 übermässig) steht auf der Karte.
+        Gegenprobe: in `abnahme_vorort.html` das Attribut entfernen -> rot."""
+        import re
+        _element(self.einheit, zustand='gut')
+        einzug = self.protokoll('einzug')
+        self.bewerten(einzug, 'normal')
+        html = self.c.get(f'/neu/abnahme/{einzug.id}/vorort/').content.decode()
+        raumbuch = re.search(r'data-pos="%d"[^>]*data-vor-rang="(\d*)"' % einzug.positionen.get(bezeichnung='Teppich').id, html)
+        self.assertEqual(raumbuch.group(1), '0')                    # Raumbuch «gut» zählt wie neu i.O.
+        self.abschliessen(einzug)
+        auszug = self.protokoll('auszug')
+        pos = auszug.positionen.get(bezeichnung='Teppich')
+        html = self.c.get(f'/neu/abnahme/{auszug.id}/vorort/').content.decode()
+        vorgaenger = re.search(r'data-pos="%d"[^>]*data-vor-rang="(\d*)"' % pos.id, html)
+        self.assertEqual(vorgaenger.group(1), '1')                  # Vorgänger-Protokoll: normale Abnutzung
+        ohne = einzug.positionen.exclude(ausstattung__isnull=False).first()
+        html2 = self.c.get(f'/neu/abnahme/{auszug.id}/vorort/').content.decode()
+        leer = re.search(r'data-pos="%d"[^>]*data-vor-rang="(\d*)"' % auszug.positionen.exclude(ausstattung__isnull=False).first().id, html2)
+        self.assertEqual(leer.group(1), '')                         # ohne Vorzustand: leer
+        self.assertIsNotNone(ohne)
+
+    def test_vorort_zeigt_die_veraenderung_schon_beim_laden(self):
+        _element(self.einheit)
+        einzug = self.protokoll('einzug')
+        self.bewerten(einzug, 'normal')
+        self.abschliessen(einzug)
+        auszug = self.protokoll('auszug')
+        self.bewerten(auszug, 'uebermaessig')
+        html = self.c.get(f'/neu/abnahme/{auszug.id}/vorort/').content.decode()
+        self.assertIn('data-art="schlechter"', html)
+        self.assertIn('data-msg-schlechter=', html)
+
     def test_pdf_wird_mit_vergleich_erzeugt(self):
         _element(self.einheit)
         einzug = self.protokoll('einzug')

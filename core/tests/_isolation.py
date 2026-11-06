@@ -636,6 +636,9 @@ class MandantenFixture:
         ('anpassung',       'anpassung'),
         ('asset',           'geraet'),
         ('ausstattung_add', 'einheit'),
+        # Gemeinschaftsräume: `pk` ist die LIEGENSCHAFT (nicht die Einheit). Muss vor den Mustern «ausstattung_…» stehen.
+        ('lg_ausstattung', 'liegenschaft'),
+        ('lg_gemeinschaft', 'liegenschaft'),
         ('ausstattung_katalog', 'einheit'),
         ('ausstattung_assistent', 'einheit'),
         ('ausstattung_raum_loeschen', 'einheit'),

@@ -104,18 +104,25 @@ def neue_namen(typ, anzahl, vorhandene):
     return [typ] if anzahl > 0 and typ.casefold() not in vorhandene_klein else []
 
 
-def raum_anlegen(einheit, typ, name):
+def bezug(traeger):
+    """Der Fremdschlüssel einer Ausstattung: ``{'einheit': …}`` für eine Wohnung, ``{'liegenschaft': …}`` für ein Haus."""
+    from portfolio.models import Einheit
+    return {'einheit': traeger} if isinstance(traeger, Einheit) else {'liegenschaft': traeger}
+
+
+def raum_anlegen(traeger, typ, name):
     """Legt die Katalog-Ausstattung des Typs unter dem Raumnamen an (vorhandene Kategorien bleiben).
-    Gibt die Zahl neuer Elemente zurück."""
+    ``traeger``: die Wohnung oder die Liegenschaft. Gibt die Zahl neuer Elemente zurück."""
     from portfolio.models import Ausstattung
     elemente = RAUM_KATALOG[typ]
-    vorhanden = set(Ausstattung.objects.filter(einheit=einheit, raum=name).values_list('kategorie', flat=True))
+    fk = bezug(traeger)
+    vorhanden = set(Ausstattung.objects.filter(raum=name, **fk).values_list('kategorie', flat=True))
     neu = 0
     for i, (kat, jahre) in enumerate(elemente):
         if kat in vorhanden:
             continue
-        Ausstattung.objects.create(einheit=einheit, raum=name, kategorie=kat,
-                                   lebensdauer_jahre=jahre, zustand='gut', sortierung=i)
+        Ausstattung.objects.create(raum=name, kategorie=kat, lebensdauer_jahre=jahre, zustand='gut',
+                                   sortierung=i, **fk)
         neu += 1
     return neu
 
@@ -149,4 +156,24 @@ def anlegen(einheit, plan):
             raum_anlegen(einheit, typ, name)
             vorhandene.append(name)
             angelegt.append(name)
+    return angelegt, uebersprungen
+
+
+def gemeinschaft_anlegen(liegenschaft, typen):
+    """Legt die gewählten Gemeinschaftsräume des Hauses an (je Typ einer; ein vorhandener bleibt unverändert).
+    Gibt ``(angelegte Raumnamen, übersprungene Typen)`` zurück."""
+    from portfolio.models import Ausstattung
+    from .raumkatalog import GEMEINSCHAFT_TYPEN
+    vorhandene = list(dict.fromkeys(Ausstattung.objects.filter(liegenschaft=liegenschaft).values_list('raum', flat=True)))
+    angelegt, uebersprungen = [], []
+    for typ in GEMEINSCHAFT_TYPEN:
+        if typ not in typen:
+            continue
+        namen = neue_namen(typ, 1, vorhandene)
+        if not namen:
+            uebersprungen.append(typ)
+            continue
+        raum_anlegen(liegenschaft, typ, namen[0])
+        vorhandene.append(namen[0])
+        angelegt.append(namen[0])
     return angelegt, uebersprungen

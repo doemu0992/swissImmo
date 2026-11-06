@@ -38353,3 +38353,39 @@ msgstr "Add room"
 #: core/templates/fw/objekt_detail.html:769
 msgid "Assistent, Katalog oder eigenes Element"
 msgstr "Assistant, catalogue or custom element"
+
+#: core/templates/fw/liegenschaft_detail.html:307
+msgid "Gemeinschaftsräume"
+msgstr "Communal rooms"
+
+#: core/templates/fw/liegenschaft_detail.html:308
+msgid ""
+"Waschküche, Trockenraum, Veloraum …: Räume, die allen Wohnungen des Hauses "
+"gehören. Sie erscheinen nicht in der Wohnungsabnahme."
+msgstr ""
+"Laundry room, drying room, bike room …: rooms that belong to all apartments "
+"of the building. They do not appear in an apartment’s handover inspection."
+
+#: core/templates/fw/liegenschaft_detail.html:309
+msgid ""
+"Noch keine Gemeinschaftsräume erfasst. Lege unten die Waschküche, den "
+"Trockenraum oder den Veloraum an."
+msgstr ""
+"No communal rooms recorded yet. Create the laundry room, drying room or bike"
+" room below."
+
+#: core/templates/fw/liegenschaft_detail.html:315
+msgid "Gemeinschaftsraum hinzufügen"
+msgstr "Add communal room"
+
+#: core/templates/fw/liegenschaft_detail.html:320
+msgid ""
+"Wähle die Räume des Hauses: Jeder wird mit seiner Standard-Ausstattung und "
+"den Lebensdauern angelegt. Räume, die es schon gibt, bleiben unverändert."
+msgstr ""
+"Choose the rooms of the building: each is created with its standard "
+"equipment and service lives. Rooms that already exist remain unchanged."
+
+#: core/templates/fw/liegenschaft_detail.html:335
+msgid "z. B. Waschküche Haus B"
+msgstr "e.g. Laundry room building B"

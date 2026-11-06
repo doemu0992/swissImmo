@@ -729,8 +729,10 @@ def fw_abnahme_vorort(request, pk):
         'vertrag__mieter', 'vertrag__einheit__liegenschaft'), id=pk)
     if prot.abgeschlossen:
         return redirect(f'/neu/abnahme/{prot.id}/')
-    positionen = list(prot.positionen.select_related('vorgaenger_position__protokoll__vertrag__mieter',
-                                                     'mangel__ausstattung'))
+    # `mit_vergleich` setzt je Position `.vor` (Vorzustand samt Rang) und `.veraenderung`: Die Seite zeigt den
+    # Vergleich beim Laden und rechnet ihn beim Bewerten im Browser nach (Rang je Stufe).
+    positionen = mit_vergleich(prot.positionen.select_related(
+        'vorgaenger_position__protokoll__vertrag__mieter', 'mangel__ausstattung', 'ausstattung', 'protokoll'))
     gruppen = {}
     for pos in positionen:
         gruppen.setdefault(pos.raum, []).append(pos)

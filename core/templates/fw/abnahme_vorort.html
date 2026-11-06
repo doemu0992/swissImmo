@@ -52,6 +52,9 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
 .vo-legende small { display: block; margin-bottom: .6rem; color: var(--ds-muted); }
 .vo-wievor { display: block; width: 100%; margin-bottom: .8rem; min-height: 2.75rem; }
 .vo-vor { margin-top: .5rem; font-size: .85rem; color: var(--ds-muted); }
+.vo-vergleich { margin-top: .5rem; font-size: .85rem; font-weight: 600; color: var(--ds-muted); }
+.vo-vergleich[data-art="schlechter"] { color: var(--ds-warn); }
+.vo-vergleich[data-art="besser"] { color: var(--ds-good); }
 .vo-warn { margin-top: .7rem; padding: .7rem .8rem; border-radius:var(--ds-radius-lg); background: var(--ds-warn-soft); color: var(--ds-ink); }
 .vo-warn p { margin: 0 0 .5rem; font-weight: 600; }
 .vo-entscheid { display: grid; gap: .4rem; }
@@ -86,7 +89,7 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
 
 <div class="vo" id="vo" data-url="/neu/abnahme/{{ p.id }}/vorort/position/"
      data-raeume="{{ letzter }}" data-msg-ok="{% trans 'Gespeichert' %}" data-msg-fehler="{% trans 'Nicht gespeichert — bitte erneut versuchen' %}"
-     data-msg-offen="{% trans 'noch offen' %}"
+     data-msg-offen="{% trans 'noch offen' %}" data-msg-gleich="{% trans 'gleich geblieben' %}" data-msg-schlechter="{% trans 'schlechter' %}" data-msg-besser="{% trans 'besser' %}"
      data-msg-offline="{% trans 'Kein Empfang — {n} Änderung(en) auf dem Gerät gespeichert, werden bei Empfang gesendet' %}"
      data-msg-unterschrift-verwaltung="{% trans 'Die Unterschrift der Verwaltung fehlt.' %}"
      data-msg-unterschrift-mieter="{% trans 'Die Unterschrift des Mieters fehlt. War er nicht da, «Mieter abwesend» wählen und den Grund angeben.' %}"
@@ -129,7 +132,7 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
     {% if vorgaenger %}<button type="button" class="fw-btn vo-wievor" data-wie-vor>{% trans "Wie Vorprotokoll übernehmen (nur i.O. und Normal)" %}</button>{% endif %}
 
     {% for pos in raum.positionen %}
-    <section class="vo-karte" data-pos="{{ pos.id }}" data-zustand="{{ pos.zustand }}" data-vor="{{ pos.vorgaenger_position.zustand }}">
+    <section class="vo-karte" data-pos="{{ pos.id }}" data-zustand="{{ pos.zustand }}" data-vor="{{ pos.vorgaenger_position.zustand }}" data-vor-rang="{{ pos.vor.rang }}">
         <div class="vo-kopf">
             <h3 data-nr="{{ forloop.counter }}">{{ forloop.counter }}. {{ pos.bezeichnung }}</h3>
             <button type="button" class="vo-ikon" data-kommentar aria-label="{% trans 'Kommentar' %}" title="{% trans 'Kommentar' %}">{% zeichen 'hinweis' %}</button>
@@ -144,6 +147,7 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
                 aria-checked="{% if pos.zustand == z %}true{% else %}false{% endif %}" aria-label="{{ label }}">{% zeichen 'gut' %}</button></div>
             {% endfor %}
         </div>
+        <p class="vo-vergleich" data-vergleich data-art="{{ pos.veraenderung|default:'' }}" aria-live="polite"{% if not pos.veraenderung %} hidden{% endif %}>{{ pos.veraenderung_text }}</p>
         {% if pos.vorgaenger_position %}{% with vp=pos.vorgaenger_position %}
         <div class="vo-vor">{{ vp.protokoll.get_typ_display }} {{ vp.protokoll.datum|date:"d.m.Y" }}:
             <b>{{ vp.get_zustand_display|default:"—" }}</b>{% if vp.kommentar %} · {{ vp.kommentar }}{% endif %}{% if vp.foto %} · <a href="{{ vp.foto.url }}" target="_blank" rel="noopener">{% trans "Foto" %}</a>{% endif %}</div>
@@ -395,6 +399,21 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
         var warn = karte.querySelector('[data-vorbestand]');
         if (warn) warn.hidden = z !== 'uebermaessig';
         if (z === 'uebermaessig') mehr.hidden = false;
+        vergleichen(karte, z);
+    }
+
+    // Vorzustand gegen den neuen Zustand: gleich, schlechter, besser. Die Rangfolge steht auf der Karte
+    // (`data-vor-rang`, vom Server aus Vorgänger-Protokoll oder Raumbuch); ohne Vorzustand bleibt die Zeile weg.
+    var RANG = { io: 0, normal: 1, uebermaessig: 2 };
+    function vergleichen(karte, z) {
+        var ziel = karte.querySelector('[data-vergleich]');
+        if (!ziel) return;
+        var vor = karte.dataset.vorRang, jetzt = RANG[z];
+        if (vor === '' || vor === undefined || jetzt === undefined) { ziel.hidden = true; ziel.dataset.art = ''; return; }
+        var art = jetzt === +vor ? 'gleich' : (jetzt > +vor ? 'schlechter' : 'besser');
+        ziel.dataset.art = art;
+        ziel.textContent = root.dataset['msg' + art.charAt(0).toUpperCase() + art.slice(1)] || art;
+        ziel.hidden = false;
     }
 
     // Nach einem Neuladen ohne Empfang zeigt die Seite den Stand von vor den Eingaben;

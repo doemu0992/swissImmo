@@ -91,10 +91,12 @@ def berechne_ersatzplanung(aktive_lg=None, heute=None, horizont_jahre=10):
     heute = heute or date.today()
     aktuelles_jahr = heute.year
 
-    qs = (Ausstattung.objects.select_related('einheit__liegenschaft')
+    from django.db.models import Q
+    qs = (Ausstattung.objects.select_related('einheit__liegenschaft', 'liegenschaft')
           .prefetch_related('schaeden__handwerker_auftraege'))
     if aktive_lg:
-        qs = qs.filter(einheit__liegenschaft=aktive_lg)
+        # Wohnungs-Ausstattung UND Gemeinschaftsräume des Hauses (Waschküche, Veloraum …)
+        qs = qs.filter(Q(einheit__liegenschaft=aktive_lg) | Q(liegenschaft=aktive_lg))
 
     rows = []
     n = {'faellig': 0, 'bald': 0, 'ok': 0, 'unbekannt': 0}
@@ -113,7 +115,8 @@ def berechne_ersatzplanung(aktive_lg=None, heute=None, horizont_jahre=10):
             'lebenszyklus': a.lebenszyklus_kosten(),
             'reparaturkosten': a.reparatur_kosten_total(),
             'schaden_anzahl': a.schaeden.count(),
-            'standort': f"{a.einheit.liegenschaft.strasse} · {a.einheit.bezeichnung}",
+            'standort': (f"{a.einheit.liegenschaft.strasse} · {a.einheit.bezeichnung}" if a.einheit_id
+                         else f"{a.liegenschaft.strasse} · Gemeinschaftsräume"),
             # Einheitliche Anzeigefelder, damit die Vorlage nicht zwischen
             # Ausstattung und Geraet verzweigen muss.
             'bezeichnung': a.kategorie,
@@ -121,7 +124,8 @@ def berechne_ersatzplanung(aktive_lg=None, heute=None, horizont_jahre=10):
             'lebensdauer': a.effektive_lebensdauer(),
             'einbau': a.einbau_datum,
             'garantie_bis': a.garantie_bis,
-            'ziel_url': f'/neu/objekte/{a.einheit_id}/?tab=ausstattung',
+            'ziel_url': (f'/neu/objekte/{a.einheit_id}/?tab=ausstattung' if a.einheit_id
+                         else f'/neu/liegenschaften/{a.liegenschaft_id}/#gemeinschaft'),
         }
         rows.append(row)
         # Budget nur innerhalb des Horizonts und nur mit bekanntem Neuwert

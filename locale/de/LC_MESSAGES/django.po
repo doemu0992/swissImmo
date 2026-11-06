@@ -37225,3 +37225,39 @@ msgstr "Raum hinzufügen"
 #: core/templates/fw/objekt_detail.html:769
 msgid "Assistent, Katalog oder eigenes Element"
 msgstr "Assistent, Katalog oder eigenes Element"
+
+#: core/templates/fw/liegenschaft_detail.html:307
+msgid "Gemeinschaftsräume"
+msgstr "Gemeinschaftsräume"
+
+#: core/templates/fw/liegenschaft_detail.html:308
+msgid ""
+"Waschküche, Trockenraum, Veloraum …: Räume, die allen Wohnungen des Hauses "
+"gehören. Sie erscheinen nicht in der Wohnungsabnahme."
+msgstr ""
+"Waschküche, Trockenraum, Veloraum …: Räume, die allen Wohnungen des Hauses "
+"gehören. Sie erscheinen nicht in der Wohnungsabnahme."
+
+#: core/templates/fw/liegenschaft_detail.html:309
+msgid ""
+"Noch keine Gemeinschaftsräume erfasst. Lege unten die Waschküche, den "
+"Trockenraum oder den Veloraum an."
+msgstr ""
+"Noch keine Gemeinschaftsräume erfasst. Lege unten die Waschküche, den "
+"Trockenraum oder den Veloraum an."
+
+#: core/templates/fw/liegenschaft_detail.html:315
+msgid "Gemeinschaftsraum hinzufügen"
+msgstr "Gemeinschaftsraum hinzufügen"
+
+#: core/templates/fw/liegenschaft_detail.html:320
+msgid ""
+"Wähle die Räume des Hauses: Jeder wird mit seiner Standard-Ausstattung und "
+"den Lebensdauern angelegt. Räume, die es schon gibt, bleiben unverändert."
+msgstr ""
+"Wähle die Räume des Hauses: Jeder wird mit seiner Standard-Ausstattung und "
+"den Lebensdauern angelegt. Räume, die es schon gibt, bleiben unverändert."
+
+#: core/templates/fw/liegenschaft_detail.html:335
+msgid "z. B. Waschküche Haus B"
+msgstr "z. B. Waschküche Haus B"

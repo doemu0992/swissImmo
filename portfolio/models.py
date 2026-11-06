@@ -716,11 +716,16 @@ class Ausstattung(OrganisationAusKette):
     """Ausstattungselement eines Objekts (Raumbuch). Der Raum entsteht aus den
     Assets heraus — `raum` ist ein Attribut, das Raumbuch ist die Gruppierung.
     Grundlage für Abnahme (Zeitwert nach Lebensdauertabelle) und Reparaturhistorie."""
-    ORGANISATION_PFAD = 'einheit__liegenschaft'
+    # Entweder-oder, wie beim Gerät: an einer Wohnung (Einheit) ODER an der Liegenschaft — dort stehen die
+    # Gemeinschaftsräume (Waschküche, Trockenraum, Veloraum …), die allen Wohnungen gehören und nicht in jede
+    # Wohnungsabnahme.
+    ORGANISATION_PFAD = ('einheit__liegenschaft', 'liegenschaft')
     ZUSTAND = [('neuwertig', _('Neuwertig')), ('gut', _('Gut')),
                ('gebraucht', _('Gebraucht')), ('defekt', _('Defekt'))]
 
-    einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='ausstattung')
+    einheit = models.ForeignKey(Einheit, on_delete=models.CASCADE, related_name='ausstattung', null=True, blank=True)
+    liegenschaft = models.ForeignKey(Liegenschaft, on_delete=models.CASCADE, related_name='gemeinschaft_ausstattung',
+                                     null=True, blank=True)
     raum = models.CharField("Raum", max_length=60)
     kategorie = models.CharField("Kategorie", max_length=80)
     bezeichnung = models.CharField("Bezeichnung / Detail", max_length=120, blank=True, default='')
@@ -743,6 +748,13 @@ class Ausstattung(OrganisationAusKette):
         verbose_name_plural = "Ausstattung"
         ordering = ['raum', 'sortierung', 'id']
         db_table = 'core_ausstattung'
+        constraints = [
+            # Genau ein Bezug: ohne ihn gäbe es keinen Weg zur Verwaltung, mit beiden zwei widersprüchliche.
+            models.CheckConstraint(
+                condition=(models.Q(einheit__isnull=False, liegenschaft__isnull=True)
+                           | models.Q(einheit__isnull=True, liegenschaft__isnull=False)),
+                name='%(app_label)s_%(class)s_genau_ein_bezug'),
+        ]
 
     def __str__(self):
         return f"{self.raum} · {self.kategorie}"

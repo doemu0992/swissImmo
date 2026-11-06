@@ -172,6 +172,20 @@ class LesezugriffUndSachbearbeitungTests(RollenBasis):
         self.assertIn('raum-hinzufuegen', sach)
         self.assertIn('Element hinzufügen', sach)
 
+    def test_gemeinschaftsraeume_nur_fuer_wer_schreiben_darf(self):
+        """Raum hinzufügen und Element hinzufügen bei den Gemeinschaftsräumen der Liegenschaft: wie bei der Wohnung."""
+        from portfolio.models import Ausstattung
+        Ausstattung.objects.create(liegenschaft=self.a.liegenschaft, raum='Waschküche', kategorie='Waschmaschine')
+        seite = f'/neu/liegenschaften/{self.a.liegenschaft.pk}/'
+        lese = self.client_von('lesezugriff').get(seite).content.decode()
+        self.assertIn('Waschküche', lese)                         # lesen darf er
+        self.assertNotIn('gemeinschaft-hinzufuegen', lese)
+        self.assertNotIn('Element hinzufügen', lese)
+        self.assertNotIn('ausstattung/raum-loeschen/', lese)
+        sach = self.client_von('sachbearbeiter').get(seite).content.decode()
+        self.assertIn('gemeinschaft-hinzufuegen', sach)
+        self.assertIn('Element hinzufügen', sach)
+
     def test_die_zahl_toter_ziele_waechst_nicht(self):
         for schluessel, rolle in (('lesezugriff', 'Lesezugriff'), ('sachbearbeiter', 'Sachbearbeiter')):
             with self.subTest(rolle=rolle):

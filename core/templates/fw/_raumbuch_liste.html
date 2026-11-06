@@ -1,0 +1,163 @@
+{% comment %}Raumliste (Raumbuch): Räume zuklappbar, Elemente als Tabelle bzw. Karten am Handy. Für Wohnung UND Liegenschaft.
+   Erwartet: raeume (Liste aus `_raumbuch_zeilen`), rb_basis (z. B. /neu/objekte/12), rb_leer (Text ohne Räume),
+   kann_schreiben, zustand_choices.{% endcomment %}{% load i18n zeichen chf l10n %}
+    <!-- Raumbuch (Räume aus Assets) -->
+    {% if raeume %}
+    <div class="space-y-4">
+        {% for r in raeume %}
+        <details class="group fw-card">
+            <summary class="px-5 py-3 fw-flaeche2 flex items-center gap-2 cursor-pointer select-none hover:fw-flaeche2 list-none">
+                {% zeichen 'weiter' klasse='text-xs fw-faint transition-transform group-open:rotate-90' %}
+                {% zeichen 'einheit' klasse='fw-marke' %}
+                <span class="fw-strong">{{ r.raum }}</span>
+                <span class="fw-klein">· {% blocktrans count n=r.elemente|length %}{{ n }} Element{% plural %}{{ n }} Elemente{% endblocktrans %}</span>
+                {% if r.n_faellig %}<span class="px-1.5 py-0.5 rounded fw-fs-mikro font-semibold fw-krit-flaeche fw-kritisch">{{ r.n_faellig }} {% trans "Ersatz fällig" %}</span>{% endif %}
+                {% if r.n_defekt %}<span class="px-1.5 py-0.5 rounded fw-fs-mikro font-semibold fw-warn-flaeche fw-warnton">{{ r.n_defekt }} {% trans "defekt" %}</span>{% endif %}
+            </summary>
+            <div class="border-t fw-linie">
+            <table class="fw-table" data-stack>
+                <thead><tr>
+                    <th>{% trans "Kategorie" %}</th>
+                    <th>{% trans "Marke / Modell" %}</th>
+                    <th>{% trans "Einbau" %}</th>
+                    <th class="fw-right">{% trans "Neuwert" %}</th>
+                    <th class="fw-right">{% trans "Zeitwert" %}</th>
+                    <th>{% trans "Zustand" %}</th>
+                    <th></th>
+                </tr></thead>
+                <tbody>
+                {% for row in r.elemente %}
+                <tr class="fw-hover">
+                    <td data-stack-titel data-label="{% trans 'Kategorie' %}">
+                        <div class="font-medium fw-strong">{{ row.a.kategorie }}
+                            {% if row.ersatz_status == 'faellig' %}<span class="ml-1 px-1.5 py-0.5 rounded fw-fs-mikro font-semibold fw-krit-flaeche fw-kritisch">{% trans "Ersatz fällig" %}</span>{% elif row.ersatz_status == 'bald' %}<span class="ml-1 px-1.5 py-0.5 rounded fw-fs-mikro font-semibold fw-warn-flaeche fw-warnton">{% trans "bald fällig" %}</span>{% endif %}</div>
+                        {% if row.a.bezeichnung %}<div class="fw-klein">{{ row.a.bezeichnung }}</div>{% endif %}
+                        <div class="flex items-center gap-2 mt-0.5">
+                            {% if row.a.foto %}<a href="{{ row.a.foto.url }}" target="_blank" rel="noopener" class="fw-link fw-fs-klein">{% zeichen 'dokument' klasse='mr-0.5' %}{% trans "Foto" %}</a>{% endif %}
+                            {% if row.abnahmen %}<details class="fw-fs-klein fw-mutet"><summary class="cursor-pointer">{% blocktrans count n=row.abnahmen|length %}{{ n }} Abnahme{% plural %}{{ n }} Abnahmen{% endblocktrans %}</summary>
+                                <ul class="mt-1 space-y-0.5">
+                                {% for ab in row.abnahmen %}<li>{{ ab.protokoll.datum|date:"d.m.Y" }} · {{ ab.protokoll.get_typ_display }} · {{ ab.protokoll.vertrag.mieter }} — <b>{{ ab.get_zustand_display }}</b>{% if ab.raumbuch_zustand_vorher %} <span class="fw-faint">({% trans "Raumbuch vorher" %}: {{ ab.raumbuch_zustand_vorher_label }})</span>{% endif %}{% if ab.kommentar %} · {{ ab.kommentar }}{% endif %}</li>{% endfor %}
+                                </ul></details>{% endif %}
+                            {% if row.schaden_anzahl %}<span class="fw-fs-klein fw-mutet">{% zeichen 'arbeit' klasse='mr-0.5 fw-faint' %}{% blocktrans count n=row.schaden_anzahl %}{{ n }} Reparatur{% plural %}{{ n }} Reparaturen{% endblocktrans %} · CHF {{ row.reparaturkosten|chf }}</span>{% endif %}
+                        </div>
+                    </td>
+                    <td class="fw-mutet" data-label="{% trans 'Marke / Modell' %}"{% if not row.a.marke and not row.a.modell %} data-leer{% endif %}>{% if row.a.marke or row.a.modell %}{{ row.a.marke }} {{ row.a.modell }}{% else %}—{% endif %}</td>
+                    <td class="fw-mutet whitespace-nowrap" data-label="{% trans 'Einbau' %}"{% if not row.a.einbau_datum and not row.lebensdauer %} data-leer{% endif %}>{% if row.a.einbau_datum %}{{ row.a.einbau_datum|date:"m.Y" }}{% else %}—{% endif %}{% if row.lebensdauer %} <span class="fw-klein">· {{ row.lebensdauer }}J</span>{% endif %}</td>
+                    <td class="fw-ink whitespace-nowrap fw-right" data-label="{% trans 'Neuwert' %}"{% if not row.a.neuwert %} data-leer{% endif %}>{% if row.a.neuwert %}{{ row.a.neuwert|chf }}{% else %}—{% endif %}</td>
+                    <td data-label="{% trans 'Zeitwert' %}"{% if not row.zeitwert %} data-leer{% endif %} class="px-5 py-2.5 text-right whitespace-nowrap {% if row.zeitwert %}fw-strong font-semibold{% else %}fw-faint{% endif %}">{% if row.zeitwert %}{{ row.zeitwert|chf }}{% else %}—{% endif %}</td>
+                    <td data-label="{% trans 'Zustand' %}"><span class="px-2 py-0.5 rounded text-xs font-semibold {% if row.a.zustand == 'defekt' %}fw-krit-flaeche fw-kritisch{% elif row.a.zustand == 'gebraucht' %}fw-warn-flaeche fw-warnton{% else %}fw-gut-flaeche fw-gut{% endif %}">{{ row.a.get_zustand_display }}</span></td>
+                    <td class="whitespace-nowrap fw-right" data-label="">
+                        <div class="flex items-center justify-end gap-1">
+                        <button type="button" onclick="document.getElementById('edit-{{ row.a.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
+                        <form method="post" action="/neu/ausstattung/{{ row.a.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Element löschen?" %}{% endfilter %}');">
+                            {% csrf_token %}
+                            <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
+                        </form>
+                        </div>
+                    </td>
+                </tr>
+                <!-- Inline-Bearbeitung -->
+                <tr id="edit-{{ row.a.id }}" class="hidden fw-markiert">
+                    <td colspan="7">
+                        <form method="post" action="/neu/ausstattung/{{ row.a.id }}/bearbeiten/" enctype="multipart/form-data" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {% csrf_token %}
+                            <div><label class="fw-label mb-1">{% trans "Raum" %}</label>
+                                <input name="raum" value="{{ row.a.raum }}" required class="fw-feld w-full"></div>
+                            <div><label class="fw-label mb-1">{% trans "Kategorie" %}</label>
+                                <input name="kategorie" value="{{ row.a.kategorie }}" required class="fw-feld w-full"></div>
+                            <div><label class="fw-label mb-1">{% trans "Marke" %}</label>
+                                <input name="marke" value="{{ row.a.marke }}" class="fw-feld w-full"></div>
+                            <div><label class="fw-label mb-1">{% trans "Modell" %}</label>
+                                <input name="modell" value="{{ row.a.modell }}" class="fw-feld w-full"></div>
+                            <div><label class="fw-label mb-1">{% trans "Material" %}</label>
+                                <input name="material" value="{{ row.a.material }}" class="fw-feld w-full"></div>
+                            <div><label class="fw-label mb-1">{% trans "Bezeichnung / Detail" %}</label>
+                                <input name="bezeichnung" value="{{ row.a.bezeichnung }}" class="fw-feld w-full"></div>
+                            <div><label class="fw-label mb-1">{% trans "Einbau / Anschaffung" %}</label>
+                                <input type="date" name="einbau_datum" value="{{ row.a.einbau_datum|date:'Y-m-d' }}" class="fw-feld w-full"></div>
+                            <div><label class="fw-label mb-1">{% trans "Neuwert (CHF)" %}</label>
+                                <input name="neuwert" value="{{ row.a.neuwert|default_if_none:'' }}" inputmode="decimal" class="fw-feld w-full"></div>
+                            <div><label class="fw-label mb-1">{% trans "Lebensdauer (J)" %}</label>
+                                <input name="lebensdauer_jahre" value="{{ row.a.lebensdauer_jahre|default_if_none:'' }}" inputmode="numeric" placeholder="{{ row.lebensdauer|default_if_none:'aus Tabelle' }}" class="fw-feld w-full"></div>
+                            <div><label class="fw-label mb-1">{% trans "Zustand" %}</label>
+                                <select name="zustand" class="fw-feld w-full">
+                                    {% for val, lbl in zustand_choices %}<option value="{{ val }}" {% if row.a.zustand == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+                                </select></div>
+                            <div><label class="fw-label mb-1">{% trans "Garantie bis" %}</label>
+                                <input type="date" name="garantie_bis" value="{{ row.a.garantie_bis|date:'Y-m-d' }}" class="fw-feld w-full"></div>
+                            <div><label class="fw-label mb-1">{% trans "Menge" %}</label>
+                                <input name="menge" value="{{ row.a.menge }}" inputmode="numeric" class="fw-feld w-full"></div>
+                            <div class="fw-col-span-2"><label class="fw-label mb-1">{% trans "Notiz" %}</label>
+                                <input name="notiz" value="{{ row.a.notiz }}" class="fw-feld w-full"></div>
+                            <div class="fw-col-span-2"><label class="fw-label mb-1">{% trans "Foto" %} {% if row.a.foto %}<span class="fw-mutet">{% trans "(ersetzt bestehendes)" %}</span>{% endif %}</label>
+                                <input type="file" name="foto" accept="image/*" class="fw-datei w-full"></div>
+                            <div class="col-span-2 fw-col-span-4 flex items-center gap-2 justify-end">
+                                <button type="button" onclick="document.getElementById('edit-{{ row.a.id }}').classList.add('hidden')" class="fw-btn">{% trans "Abbrechen" %}</button>
+                                <button class="fw-btn fw-primary">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}</button>
+                            </div>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+            {% if kann_schreiben %}
+            <div class="px-5 py-3 border-t fw-linie space-y-3">
+                <details>
+                    <summary class="fw-btn cursor-pointer inline-flex">{% zeichen 'mehr' klasse='mr-1.5' %}{% trans "Element hinzufügen" %}</summary>
+                    <form method="post" action="{{ rb_basis }}/ausstattung/" enctype="multipart/form-data" class="fw-raster r3 mt-3">
+                        {% csrf_token %}
+                        <input type="hidden" name="raum" value="{{ r.raum }}">
+                        <div><label class="fw-label mb-1">{% trans "Kategorie *" %}</label>
+                            <input name="kategorie" required placeholder="{% trans 'z.B. Kochherd / Glaskeramik' %}" class="fw-feld w-full"></div>
+                        <div><label class="fw-label mb-1">{% trans "Marke" %}</label>
+                            <input name="marke" class="fw-feld w-full"></div>
+                        <div><label class="fw-label mb-1">{% trans "Modell" %}</label>
+                            <input name="modell" class="fw-feld w-full"></div>
+                        <div><label class="fw-label mb-1">{% trans "Einbau / Anschaffung" %}</label>
+                            <input type="date" name="einbau_datum" class="fw-feld w-full"></div>
+                        <div><label class="fw-label mb-1">{% trans "Neuwert (CHF)" %}</label>
+                            <input name="neuwert" inputmode="decimal" placeholder="0.00" class="fw-feld w-full"></div>
+                        <div><label class="fw-label mb-1">{% trans "Zustand" %}</label>
+                            <select name="zustand" class="fw-feld w-full">
+                                {% for val, lbl in zustand_choices %}<option value="{{ val }}" {% if val == 'gut' %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+                            </select></div>
+                        <details class="fw-col-span-3">
+                            <summary class="fw-link cursor-pointer">{% trans "Weitere Felder" %}</summary>
+                            <div class="fw-raster r3 mt-3">
+                                <div><label class="fw-label mb-1">{% trans "Bezeichnung / Detail" %}</label>
+                                    <input name="bezeichnung" class="fw-feld w-full"></div>
+                                <div><label class="fw-label mb-1">{% trans "Material" %}</label>
+                                    <input name="material" class="fw-feld w-full"></div>
+                                <div><label class="fw-label mb-1">{% trans "Lebensdauer (Jahre)" %}</label>
+                                    <input name="lebensdauer_jahre" inputmode="numeric" placeholder="{% trans 'aus Tabelle' %}" class="fw-feld w-full"></div>
+                                <div><label class="fw-label mb-1">{% trans "Garantie bis" %}</label>
+                                    <input type="date" name="garantie_bis" class="fw-feld w-full"></div>
+                                <div><label class="fw-label mb-1">{% trans "Menge" %}</label>
+                                    <input name="menge" inputmode="numeric" value="1" class="fw-feld w-full"></div>
+                                <div><label class="fw-label mb-1">{% trans "Notiz" %}</label>
+                                    <input name="notiz" class="fw-feld w-full"></div>
+                                <div class="fw-col-span-2"><label class="fw-label mb-1">{% trans "Foto" %}</label>
+                                    <input type="file" name="foto" accept="image/*" class="fw-datei w-full"></div>
+                            </div>
+                        </details>
+                        <div class="fw-col-span-3 flex justify-end"><button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Erfassen" %}</button></div>
+                    </form>
+                </details>
+                <div class="flex justify-end">
+                    <form method="post" action="{{ rb_basis }}/ausstattung/raum-loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with raum=r.raum n=r.elemente|length %}Raum «{{ raum }}» mit {{ n }} Elementen löschen?{% endblocktrans %}{% endfilter %}');">
+                        {% csrf_token %}
+                        <input type="hidden" name="raum" value="{{ r.raum }}">
+                        <button class="fw-btn fw-rand-krit">{% zeichen 'loeschen' klasse='mr-1.5' %}{% trans "Raum löschen" %}</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </details>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="fw-card"><div class="fw-leer">{{ rb_leer }}</div></div>
+    {% endif %}
+

@@ -295,6 +295,42 @@ Liegenschaft ohne Betreuung soll auffallen.
 
     {% comment %} Technik: bis 4b.3 ein eigener Reiter. Geraete und Zaehler
        beschreiben die Anlage — Stammdaten, nicht Verlauf. {% endcomment %}
+    {% comment %} Gemeinschaftsräume: das Raumbuch des Hauses (nicht einer Wohnung). Gleiche Liste wie bei der Wohnung. {% endcomment %}
+    <div class="fw-subhead" id="gemeinschaft">{% trans "Gemeinschaftsräume" %}</div>
+    <p class="fw-klein mb-3">{% trans "Waschküche, Trockenraum, Veloraum …: Räume, die allen Wohnungen des Hauses gehören. Sie erscheinen nicht in der Wohnungsabnahme." %}</p>
+    {% trans "Noch keine Gemeinschaftsräume erfasst. Lege unten die Waschküche, den Trockenraum oder den Veloraum an." as rb_leer_gem %}
+    {% include "fw/_raumbuch_liste.html" with raeume=gemeinschaft_raeume rb_basis=gem_basis rb_leer=rb_leer_gem %}
+    {% if kann_schreiben %}
+    <details class="group fw-card mt-4" id="gemeinschaft-hinzufuegen"{% if not gemeinschaft_raeume %} open{% endif %}>
+        <summary class="px-5 py-3 fw-flaeche2 flex items-center gap-2 cursor-pointer select-none list-none">
+            {% zeichen 'weiter' klasse='text-xs fw-faint transition-transform group-open:rotate-90' %}
+            <span class="fw-strong">{% trans "Gemeinschaftsraum hinzufügen" %}</span>
+        </summary>
+        <div class="border-t fw-linie fw-rumpf space-y-4">
+            <form method="post" action="{{ gem_basis }}/ausstattung/gemeinschaft/" class="space-y-3">
+                {% csrf_token %}
+                <p class="fw-klein">{% trans "Wähle die Räume des Hauses: Jeder wird mit seiner Standard-Ausstattung und den Lebensdauern angelegt. Räume, die es schon gibt, bleiben unverändert." %}</p>
+                <div class="fw-raster r3">
+                    {% for typ in gemeinschaft_typen %}
+                    <label class="flex items-center gap-2"><input type="checkbox" name="typ" value="{{ typ }}"> <span>{{ typ }}</span></label>
+                    {% endfor %}
+                </div>
+                <div class="flex justify-end"><button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Räume anlegen" %}</button></div>
+            </form>
+            <form method="post" action="{{ gem_basis }}/ausstattung/katalog/" class="flex flex-wrap items-end gap-3">
+                {% csrf_token %}
+                <div><label class="fw-label mb-1">{% trans "Raumtyp" %}</label>
+                    <select name="raumtyp" class="fw-feld">
+                        {% for typ in gemeinschaft_typen %}<option value="{{ typ }}">{{ typ }}</option>{% endfor %}
+                    </select></div>
+                <div><label class="fw-label mb-1">{% trans "Raumname (leer = automatisch)" %}</label>
+                    <input name="raumname" maxlength="60" placeholder="{% trans 'z. B. Waschküche Haus B' %}" class="fw-feld"></div>
+                <button class="fw-btn">{% zeichen 'mehr' klasse='mr-1.5' %}{% trans "Katalog laden" %}</button>
+            </form>
+        </div>
+    </details>
+    {% endif %}
+
     <div class="fw-subhead">{% trans "Technik" %}</div>
     <datalist id="lggeraetkat">{% for k in geraet_kategorien %}<option value="{{ k }}"></option>{% endfor %}</datalist>
     <datalist id="lgzaehlertyp">{% for t in zaehler_typen %}<option value="{{ t }}"></option>{% endfor %}</datalist>
