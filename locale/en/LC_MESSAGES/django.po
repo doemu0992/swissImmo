@@ -38574,3 +38574,16 @@ msgstr ""
 
 msgid "Es wurde nichts gelöscht."
 msgstr "Nothing was deleted."
+
+msgid "nicht berechenbar"
+msgstr "not calculable"
+
+msgid ""
+"Bruttorendite = Netto-Sollmietzins (ohne Nebenkosten) / Verkehrswert, "
+"ersatzweise Anlagekosten. Ohne hinterlegten Wert keine Rendite."
+msgstr ""
+"Gross yield = net target rent (excluding service charges) / market value, or"
+" acquisition cost if none. No yield without a stored value."
+
+msgid "Liegenschaften ohne hinterlegten Wert (nicht in der Rendite): %(n)s"
+msgstr "Properties without a stored value (not included in the yield): %(n)s"

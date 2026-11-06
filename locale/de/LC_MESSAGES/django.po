@@ -37448,3 +37448,16 @@ msgstr ""
 
 msgid "Es wurde nichts gelöscht."
 msgstr "Es wurde nichts gelöscht."
+
+msgid "nicht berechenbar"
+msgstr "nicht berechenbar"
+
+msgid ""
+"Bruttorendite = Netto-Sollmietzins (ohne Nebenkosten) / Verkehrswert, "
+"ersatzweise Anlagekosten. Ohne hinterlegten Wert keine Rendite."
+msgstr ""
+"Bruttorendite = Netto-Sollmietzins (ohne Nebenkosten) / Verkehrswert, "
+"ersatzweise Anlagekosten. Ohne hinterlegten Wert keine Rendite."
+
+msgid "Liegenschaften ohne hinterlegten Wert (nicht in der Rendite): %(n)s"
+msgstr "Liegenschaften ohne hinterlegten Wert (nicht in der Rendite): %(n)s"

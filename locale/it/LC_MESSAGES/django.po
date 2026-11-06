@@ -39154,3 +39154,17 @@ msgstr ""
 
 msgid "Es wurde nichts gelöscht."
 msgstr "Non è stato eliminato nulla."
+
+msgid "nicht berechenbar"
+msgstr "non calcolabile"
+
+msgid ""
+"Bruttorendite = Netto-Sollmietzins (ohne Nebenkosten) / Verkehrswert, "
+"ersatzweise Anlagekosten. Ohne hinterlegten Wert keine Rendite."
+msgstr ""
+"Rendimento lordo = pigione netta teorica (senza spese accessorie) / valore "
+"venale, in subordine costi d'investimento. Senza valore registrato nessun "
+"rendimento."
+
+msgid "Liegenschaften ohne hinterlegten Wert (nicht in der Rendite): %(n)s"
+msgstr "Immobili senza valore registrato (non inclusi nel rendimento): %(n)s"
