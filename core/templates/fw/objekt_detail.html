@@ -587,8 +587,8 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 <div class="fw-subhead">{% trans "Raumbuch" %}</div>
     <div class="flex flex-wrap items-center gap-2 mb-3" aria-label="{% trans 'Springen zu' %}">
         <span class="fw-klein">{% trans "Springen zu" %}:</span>
-        <button type="button" class="fw-btn fw-leise" onclick="document.getElementById('obj-geraete').scrollIntoView({behavior:'smooth'})">{% trans "Geräte" %}</button>
-        <button type="button" class="fw-btn fw-leise" onclick="document.getElementById('obj-zaehler').scrollIntoView({behavior:'smooth'})">{% trans "Zähler" %}</button>
+        <button type="button" class="fw-btn fw-leise" onclick="document.getElementById('anker-geraete').scrollIntoView({behavior:'smooth'})">{% trans "Geräte" %}</button>
+        <button type="button" class="fw-btn fw-leise" onclick="document.getElementById('anker-zaehler').scrollIntoView({behavior:'smooth'})">{% trans "Zähler" %}</button>
         <button type="button" class="fw-btn fw-leise" onclick="document.getElementById('schluessel').scrollIntoView({behavior:'smooth'})">{% trans "Schlüssel" %}</button>
     </div>
     <!-- Raumbuch (Räume aus Assets) -->
@@ -856,7 +856,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     </details>
     {% endif %}
 
-<div class="fw-subhead" id="obj-geraete">{% trans "Geräte" %}</div>
+<div class="fw-subhead" id="anker-geraete">{% trans "Geräte" %}</div>
     <datalist id="geraetkat">{% for k in geraet_kategorien %}<option value="{{ k }}"></option>{% endfor %}</datalist>
     <div class="fw-card">
         <div class="fw-tablewrap"><table class="fw-table">
@@ -941,7 +941,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         </form>
     </div>
     </div>
-<div class="fw-subhead" id="obj-zaehler">{% trans "Zähler" %}</div>
+<div class="fw-subhead" id="anker-zaehler">{% trans "Zähler" %}</div>
     <datalist id="zaehlertyp">{% for t in zaehler_typen %}<option value="{{ t }}"></option>{% endfor %}</datalist>
     <div class="fw-card">
         <div class="fw-tablewrap"><table class="fw-table">
