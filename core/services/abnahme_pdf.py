@@ -22,6 +22,7 @@ from reportlab.lib.utils import ImageReader, simpleSplit
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from core.services.abnahme_texte import schlussbestimmungen
 from core.services.dok_layout import DokCanvas
+from core.services.zustandsvergleich import mit_vergleich
 from core.services.dokumentsprache import nur_deutsch
 
 
@@ -206,10 +207,12 @@ def generate_abnahme_pdf(prot, verwaltung=None):
     # aufbauenden Protokollen zusätzlich der Vorzustand aus dem Vorgänger.
     # Die Nummer läuft durch Bauteile und Schlüssel (wie im Praxisprotokoll)
     # und verbindet die Tabelle mit den Bildern am Ende.
-    positionen = list(prot.positionen.select_related('vorgaenger_position__protokoll'))
+    positionen = mit_vergleich(prot.positionen.select_related('vorgaenger_position__protokoll', 'ausstattung', 'protokoll'))
     nummern = {pos.id: i for i, pos in enumerate(positionen, start=1)}
     if positionen:
         vorg = prot.vorgaenger
+        # Die Spalte «Vorzustand» gibt es mit Vorgänger-Protokoll oder, wenn das Raumbuch einen Stand vor der Abnahme kennt.
+        zeige_vor = vorg is not None or any(p.vor for p in positionen)
         if y < 60 * mm:
             c.showPage(); y = c.Y_FOLGE
         c.setFont("Helvetica-Bold", 11); c.drawString(20 * mm, y, "Bewertete Bauteile")
@@ -223,14 +226,20 @@ def generate_abnahme_pdf(prot, verwaltung=None):
             c.setFillColor(colors.black)
             y -= 6 * mm
 
+        if vorg is None and zeige_vor:
+            c.setFont("Helvetica", 7); c.setFillColor(colors.grey)
+            c.drawString(20 * mm, y, "Vorzustand: Stand des Raumbuchs vor dieser Abnahme (kein Vorgänger-Protokoll).")
+            c.setFillColor(colors.black)
+            y -= 5 * mm
+
         # Spalten (mm): Nr 20, Raum 28, Bauteil 45, Vorzustand 87, Zustand 110, Kommentar 134–190
-        bauteil_breite = (40 if vorg is not None else 62) * mm
+        bauteil_breite = (40 if zeige_vor else 62) * mm
 
         def kopfzeile():
             nonlocal y
             c.setFont("Helvetica-Bold", 8); c.setFillColor(colors.grey)
             c.drawString(20 * mm, y, "Nr"); c.drawString(28 * mm, y, "Raum"); c.drawString(45 * mm, y, "Bauteil")
-            if vorg is not None:
+            if zeige_vor:
                 c.drawString(87 * mm, y, "Vorzustand")
             c.drawString(110 * mm, y, "Zustand"); c.drawString(134 * mm, y, "Kommentar")
             c.setFillColor(colors.black)
@@ -238,6 +247,8 @@ def generate_abnahme_pdf(prot, verwaltung=None):
         kopfzeile()
         for pos in positionen:
             bemerkung = pos.kommentar or ''
+            if pos.veraenderung in ('schlechter', 'besser'):
+                bemerkung = (f'[{pos.veraenderung} als Vorzustand] ' + bemerkung).strip()
             if pos.vorbestand_entscheid == 'vorbestehend':
                 bemerkung = ('[vorbestehend] ' + bemerkung).strip()
             elif pos.vorbestand_entscheid == 'mieter':
@@ -251,9 +262,15 @@ def generate_abnahme_pdf(prot, verwaltung=None):
             c.drawString(20 * mm, y, str(nummern[pos.id]))
             c.drawString(28 * mm, y, _kuerzen(pos.raum or '—', 8, 16 * mm))
             c.drawString(45 * mm, y, _kuerzen(pos.bezeichnung or '', 8, bauteil_breite))
-            if vorg is not None:
+            if zeige_vor:
                 vp = pos.vorgaenger_position
-                c.drawString(87 * mm, y, ZUSTAND_LABEL.get(vp.zustand, '—') if vp else '—')
+                if vp is not None:
+                    vor_text = ZUSTAND_LABEL.get(vp.zustand, '—')
+                elif pos.vor:
+                    vor_text = pos.vor['text'].split(': ', 1)[-1]          # Raumbuch-Stand ohne Vorspann
+                else:
+                    vor_text = '—'
+                c.drawString(87 * mm, y, _kuerzen(vor_text, 8, 22 * mm))
             c.drawString(110 * mm, y, ZUSTAND_LABEL.get(pos.zustand, 'offen'))
             for i, zeile_text in enumerate(zeilen):
                 c.drawString(134 * mm, y - i * 4.2 * mm, zeile_text)

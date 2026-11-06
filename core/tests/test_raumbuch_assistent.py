@@ -196,3 +196,47 @@ class RaumLoeschenTests(TestCase):
         self.assertContains(r, 'Raumbuch-Assistent')
         self.assertContains(r, 'ausstattung/raum-loeschen/')
         self.assertContains(r, 'anzahl_Schlafzimmer')
+
+
+class AnordnungTests(TestCase):
+    """Reiter «Ausstattung»: die Räume stehen vor den Erfassungsformularen (vorher drei lange Formulare davor).
+
+    Gegenprobe: den Block `raum-hinzufuegen` in `objekt_detail.html` wieder VOR die Raumliste setzen -> rot."""
+
+    def setUp(self):
+        _lg, self.e, _m, _v = _basis_objekte()
+        self.c = Client()
+        self.c.force_login(_team_user())
+        self.seite = f'/neu/objekte/{self.e.id}/?tab=ausstattung'
+
+    def _html(self):
+        return self.c.get(self.seite).content.decode()
+
+    def test_raeume_stehen_vor_den_formularen(self):
+        self.c.post(f'/neu/objekte/{self.e.id}/ausstattung/katalog/', {'raumtyp': 'Küche'})
+        html = self._html()
+        self.assertLess(html.index('<summary class="px-5 py-3 fw-flaeche2 flex items-center gap-2 cursor-pointer select-none hover:fw-flaeche2 list-none">'),
+                        html.index('id="raum-hinzufuegen"'))
+
+    def test_hinzufuegen_ist_zu_wenn_es_raeume_gibt_und_offen_wenn_nicht(self):
+        import re
+        leer = self._html()
+        self.assertRegex(leer, r'id="raum-hinzufuegen"[^>]* open')
+        self.assertRegex(leer, r'id="raum-assistent"[^>]* open')
+        self.c.post(f'/neu/objekte/{self.e.id}/ausstattung/katalog/', {'raumtyp': 'Küche'})
+        voll = self._html()
+        self.assertIsNone(re.search(r'id="raum-hinzufuegen"[^>]* open', voll))
+        self.assertIsNone(re.search(r'id="raum-assistent"[^>]* open', voll))
+
+    def test_element_formular_sitzt_im_raum_mit_festem_raumnamen(self):
+        self.c.post(f'/neu/objekte/{self.e.id}/ausstattung/katalog/', {'raumtyp': 'Küche'})
+        html = self._html()
+        self.assertIn('<input type="hidden" name="raum" value="Küche">', html)
+        # das Formular im Raum legt tatsächlich im richtigen Raum an
+        self.c.post(f'/neu/objekte/{self.e.id}/ausstattung/', {'raum': 'Küche', 'kategorie': 'Weinkühler', 'marke': 'Liebherr'})
+        self.assertTrue(Ausstattung.objects.filter(einheit=self.e, raum='Küche', kategorie='Weinkühler', marke='Liebherr').exists())
+
+    def test_raum_zeigt_warnhinweise_in_der_kopfzeile(self):
+        self.c.post(f'/neu/objekte/{self.e.id}/ausstattung/katalog/', {'raumtyp': 'Küche'})
+        Ausstattung.objects.filter(einheit=self.e, raum='Küche', kategorie='Backofen').update(zustand='defekt')
+        self.assertIn('1 defekt', self._html())

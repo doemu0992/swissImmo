@@ -1680,6 +1680,11 @@ class AbnahmePosition(OrganisationAusKette):
                  ('vorbestehend', _('Vorbestehend, nicht belasten'))]
     vorbestand_entscheid = models.CharField("Entscheid Vorbestand", max_length=12, choices=ENTSCHEID,
                                             blank=True, default='')
+    # Was im Raumbuch stand, bevor dieses Protokoll den Zustand dort nachgeführt hat (leer: nicht nachgeführt,
+    # z. B. ohne Raumbuch-Element). Der Vorzustand für Bauteile ohne Vorgänger-Protokoll — und der Beleg dafür,
+    # dass die Abnahme einen von Hand gepflegten Wert überschrieben hat.
+    raumbuch_zustand_vorher = models.CharField("Raumbuch-Zustand vor dieser Abnahme", max_length=12,
+                                               blank=True, default='')
 
     class Meta:
         db_table = 'core_abnahmeposition'
@@ -1687,6 +1692,11 @@ class AbnahmePosition(OrganisationAusKette):
 
     def __str__(self):
         return f"{self.raum}: {self.bezeichnung} ({self.zustand or 'offen'})"
+
+    @property
+    def raumbuch_zustand_vorher_label(self):
+        from portfolio.models import Ausstattung
+        return dict(Ausstattung.ZUSTAND).get(self.raumbuch_zustand_vorher, self.raumbuch_zustand_vorher)
 
     @property
     def vorbestand_warnung(self):

@@ -37164,3 +37164,64 @@ msgstr "Den Raum «%(raum)s» gibt es nicht (mehr)."
 #: core/services/raumbuch_assistent.py:42
 msgid "Waschküche"
 msgstr "Waschküche"
+
+#: core/services/zustandsvergleich.py:68
+#, python-format
+msgid "Raumbuch: %(zustand)s"
+msgstr "Raumbuch: %(zustand)s"
+
+#: core/services/zustandsvergleich.py:86
+msgid "gleich geblieben"
+msgstr "gleich geblieben"
+
+#: core/services/zustandsvergleich.py:86
+msgid "schlechter"
+msgstr "schlechter"
+
+#: core/services/zustandsvergleich.py:87
+msgid "besser"
+msgstr "besser"
+
+#: core/templates/fw/objekt_detail.html:730
+#, python-format
+msgid "%(n)s Abnahme"
+msgid_plural "%(n)s Abnahmen"
+msgstr[0] "%(n)s Abnahme"
+msgstr[1] "%(n)s Abnahmen"
+
+#: core/templates/fw/objekt_detail.html:732
+msgid "Raumbuch vorher"
+msgstr "Raumbuch vorher"
+
+#: core/templates/fw/objekt_detail.html:598
+#: core/templates/fw/objekt_detail.html:599
+msgid "Springen zu"
+msgstr "Springen zu"
+
+#: core/templates/fw/objekt_detail.html:615
+msgid "defekt"
+msgstr "defekt"
+
+#: core/templates/fw/objekt_detail.html:708
+msgid "Element hinzufügen"
+msgstr "Element hinzufügen"
+
+#: core/templates/fw/objekt_detail.html:727
+msgid "Weitere Felder"
+msgstr "Weitere Felder"
+
+#: core/templates/fw/objekt_detail.html:761
+msgid ""
+"Noch keine Ausstattung erfasst. Starte mit dem Raumbuch-Assistenten: Er legt"
+" alle Räume der Wohnung auf einmal an."
+msgstr ""
+"Noch keine Ausstattung erfasst. Starte mit dem Raumbuch-Assistenten: Er legt"
+" alle Räume der Wohnung auf einmal an."
+
+#: core/templates/fw/objekt_detail.html:768
+msgid "Raum hinzufügen"
+msgstr "Raum hinzufügen"
+
+#: core/templates/fw/objekt_detail.html:769
+msgid "Assistent, Katalog oder eigenes Element"
+msgstr "Assistent, Katalog oder eigenes Element"

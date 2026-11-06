@@ -105,6 +105,9 @@ STILL = ('hash', 'geheim', 'token', 'ip_', '_am', 'anonymisiert', 'is_',
 #: Wer hier etwas eintraegt, sagt: «Das setzt ein Lauf, ein Import oder eine
 #: Vorlage.» Wer es weglaesst und trotzdem kein Formular baut, wird rot.
 AUSNAHMEN = {
+    'rentals.AbnahmePosition.raumbuch_zustand_vorher':
+     'gesetzt beim Abschluss einer Abnahme (`core.services.zustandsvergleich.raumbuch_aktualisieren`): der '
+     'Raumbuch-Zustand des Elements vor dieser Abnahme; nie Eingabe (Zustandsvergleich, 6.11.2026)',
     'tickets.EingegangeneMail.message_id':
      'gesetzt vom Brevo-Webhook (`core.views.webhooks`) aus der MessageId der eingegangenen Mail; reine '
      'Idempotenzmarke, nie Eingabe (Antwortadressen, 4.11.2026)',

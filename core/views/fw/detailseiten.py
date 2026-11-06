@@ -722,6 +722,8 @@ def fw_objekt_detail(request, pk):
     # Ausstattung/Raumbuch — die Räume entstehen aus den erfassten Assets.
     ausst = list(Ausstattung.objects.filter(einheit=e)
                  .prefetch_related('schaeden__handwerker_auftraege'))
+    from core.services.zustandsvergleich import verlauf_je_element
+    zustandsverlauf = verlauf_je_element(e)        # Bewertungen aus Abnahmen je Element, eine Abfrage
     raeume = []
     for a in ausst:
         zw = a.zeitwert()
@@ -729,11 +731,15 @@ def fw_objekt_detail(request, pk):
         row = {'a': a, 'zeitwert': zw, 'lebensdauer': a.effektive_lebensdauer(),
                'rest': a.rest_jahre(), 'ersatz_status': a.ersatz_status(),
                'schaden_anzahl': n_schaden,
-               'reparaturkosten': a.reparatur_kosten_total() if n_schaden else None}
+               'reparaturkosten': a.reparatur_kosten_total() if n_schaden else None,
+               'abnahmen': zustandsverlauf.get(a.id, [])}
         if raeume and raeume[-1]['raum'] == a.raum:
             raeume[-1]['elemente'].append(row)
         else:
             raeume.append({'raum': a.raum, 'elemente': [row]})
+    for r in raeume:
+        r['n_faellig'] = sum(1 for x in r['elemente'] if x['ersatz_status'] == 'faellig')
+        r['n_defekt'] = sum(1 for x in r['elemente'] if x['a'].zustand == 'defekt')
     ausst_count = len(ausst)
 
     # Schlüssel des Objekts als Karten (Modul 2). Ausgabe und Rücknahme laufen

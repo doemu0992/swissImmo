@@ -38292,3 +38292,64 @@ msgstr "The room “%(raum)s” no longer exists."
 #: core/services/raumbuch_assistent.py:42
 msgid "Waschküche"
 msgstr "Laundry room"
+
+#: core/services/zustandsvergleich.py:68
+#, python-format
+msgid "Raumbuch: %(zustand)s"
+msgstr "Room inventory: %(zustand)s"
+
+#: core/services/zustandsvergleich.py:86
+msgid "gleich geblieben"
+msgstr "unchanged"
+
+#: core/services/zustandsvergleich.py:86
+msgid "schlechter"
+msgstr "worse"
+
+#: core/services/zustandsvergleich.py:87
+msgid "besser"
+msgstr "better"
+
+#: core/templates/fw/objekt_detail.html:730
+#, python-format
+msgid "%(n)s Abnahme"
+msgid_plural "%(n)s Abnahmen"
+msgstr[0] "%(n)s inspection"
+msgstr[1] "%(n)s inspections"
+
+#: core/templates/fw/objekt_detail.html:732
+msgid "Raumbuch vorher"
+msgstr "Room inventory before"
+
+#: core/templates/fw/objekt_detail.html:598
+#: core/templates/fw/objekt_detail.html:599
+msgid "Springen zu"
+msgstr "Jump to"
+
+#: core/templates/fw/objekt_detail.html:615
+msgid "defekt"
+msgstr "defective"
+
+#: core/templates/fw/objekt_detail.html:708
+msgid "Element hinzufügen"
+msgstr "Add element"
+
+#: core/templates/fw/objekt_detail.html:727
+msgid "Weitere Felder"
+msgstr "More fields"
+
+#: core/templates/fw/objekt_detail.html:761
+msgid ""
+"Noch keine Ausstattung erfasst. Starte mit dem Raumbuch-Assistenten: Er legt"
+" alle Räume der Wohnung auf einmal an."
+msgstr ""
+"No equipment recorded yet. Start with the room inventory assistant: it "
+"creates all rooms of the apartment at once."
+
+#: core/templates/fw/objekt_detail.html:768
+msgid "Raum hinzufügen"
+msgstr "Add room"
+
+#: core/templates/fw/objekt_detail.html:769
+msgid "Assistent, Katalog oder eigenes Element"
+msgstr "Assistant, catalogue or custom element"

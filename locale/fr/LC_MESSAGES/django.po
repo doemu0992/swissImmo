@@ -38929,3 +38929,64 @@ msgstr "La pièce « %(raum)s » n’existe plus."
 #: core/services/raumbuch_assistent.py:42
 msgid "Waschküche"
 msgstr "Buanderie"
+
+#: core/services/zustandsvergleich.py:68
+#, python-format
+msgid "Raumbuch: %(zustand)s"
+msgstr "Inventaire : %(zustand)s"
+
+#: core/services/zustandsvergleich.py:86
+msgid "gleich geblieben"
+msgstr "inchangé"
+
+#: core/services/zustandsvergleich.py:86
+msgid "schlechter"
+msgstr "pire"
+
+#: core/services/zustandsvergleich.py:87
+msgid "besser"
+msgstr "meilleur"
+
+#: core/templates/fw/objekt_detail.html:730
+#, python-format
+msgid "%(n)s Abnahme"
+msgid_plural "%(n)s Abnahmen"
+msgstr[0] "%(n)s état des lieux"
+msgstr[1] "%(n)s états des lieux"
+
+#: core/templates/fw/objekt_detail.html:732
+msgid "Raumbuch vorher"
+msgstr "Inventaire avant"
+
+#: core/templates/fw/objekt_detail.html:598
+#: core/templates/fw/objekt_detail.html:599
+msgid "Springen zu"
+msgstr "Aller à"
+
+#: core/templates/fw/objekt_detail.html:615
+msgid "defekt"
+msgstr "défectueux"
+
+#: core/templates/fw/objekt_detail.html:708
+msgid "Element hinzufügen"
+msgstr "Ajouter un élément"
+
+#: core/templates/fw/objekt_detail.html:727
+msgid "Weitere Felder"
+msgstr "Autres champs"
+
+#: core/templates/fw/objekt_detail.html:761
+msgid ""
+"Noch keine Ausstattung erfasst. Starte mit dem Raumbuch-Assistenten: Er legt"
+" alle Räume der Wohnung auf einmal an."
+msgstr ""
+"Aucun équipement saisi. Commencez avec l’assistant d’inventaire : il crée "
+"toutes les pièces du logement en une fois."
+
+#: core/templates/fw/objekt_detail.html:768
+msgid "Raum hinzufügen"
+msgstr "Ajouter une pièce"
+
+#: core/templates/fw/objekt_detail.html:769
+msgid "Assistent, Katalog oder eigenes Element"
+msgstr "Assistant, catalogue ou élément personnalisé"
