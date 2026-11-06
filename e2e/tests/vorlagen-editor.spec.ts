@@ -26,7 +26,7 @@ test.describe('Vorlagen-Editor', () => {
 
     // Regeln: je Ereignis eine Kachel
     await goto(page, '/neu/vorlagen/');
-    await expect(page.locator('.fw-regel')).toHaveCount(6);
+    await expect(page.locator('.fw-regel')).toHaveCount(7);
     const kachel = page.locator('.fw-regel[data-ereignis="kuendigung_erfasst"]');
     await expect(kachel.locator('.fw-kachel-kopf .fw-chip')).toHaveText('aus');
     await kachel.getByRole('link', { name: /Vorlage anlegen/ }).click();
