@@ -362,15 +362,31 @@ def snapshot(obj, felder):
     return snap
 
 
-def diff_text(alt, neu, labels=None):
-    """Baut 'Feld: alt → neu'-Zeilen aus zwei Snapshots. Leer, wenn nichts änderte."""
+#: Felder, deren WERT nie im Audit-Log steht. Das Log ist die Revisionsspur und wird breit gelesen und lange aufbewahrt;
+#: ein Klartext-Wert hätte dort mehr Leser als am Datensatz. Der Log sagt nur «geändert». Verschlüsselt gespeicherte
+#: Felder (`VerschluesseltesCharField`) kommen automatisch dazu, siehe `diff_model`.
+SENSIBLE_FELDER = frozenset({
+    'ahv_nummer',           # AHV-Nummer (verschlüsselt gespeichert; beim Lesen Klartext)
+    'iban', 'zahler_iban',  # Kontoverbindungen von Personen und Liegenschaften
+    'portal_feed_token',    # Geheimnis in der Adresse des Portal-Feeds
+    'password', 'geheimnis',
+})
+
+
+def diff_text(alt, neu, labels=None, verbergen=SENSIBLE_FELDER):
+    """Baut 'Feld: alt → neu'-Zeilen aus zwei Snapshots. Leer, wenn nichts änderte.
+
+    Felder in `verbergen` erscheinen nur als «geändert»: Die Änderung wird weiter erkannt, der Wert bleibt draussen."""
     labels = labels or {}
     zeilen = []
     for f, altwert in (alt or {}).items():
         neuwert = (neu or {}).get(f)
         if str(altwert or '') != str(neuwert or ''):
             name = labels.get(f, f)
-            zeilen.append(f"{name}: {altwert or '—'} → {neuwert or '—'}")
+            if f in verbergen:
+                zeilen.append(f"{name}: geändert")
+            else:
+                zeilen.append(f"{name}: {altwert or '—'} → {neuwert or '—'}")
     return ' · '.join(zeilen)
 
 
@@ -407,8 +423,11 @@ def snapshot_model(obj):
 
 def diff_model(alt, neu, obj):
     """Vorher→Nachher-Text mit den verbose_name des Modells als Feldbeschriftung."""
-    labels = {f.name: str(getattr(f, 'verbose_name', f.name)) for f in _diffbare_felder(obj)}
-    return diff_text(alt, neu, labels)
+    from core.verschluesselt import VerschluesseltesCharField
+    felder = _diffbare_felder(obj)
+    labels = {f.name: str(getattr(f, 'verbose_name', f.name)) for f in felder}
+    verbergen = SENSIBLE_FELDER | {f.name for f in felder if isinstance(f, VerschluesseltesCharField)}
+    return diff_text(alt, neu, labels, verbergen)
 
 
 def konto_freigeben(benutzer, organisation=None):
