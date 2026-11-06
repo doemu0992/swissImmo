@@ -77,11 +77,11 @@ def send_via_docuseal(request, vertrag_id):
     api_key = getattr(settings, 'DOCUSEAL_API_KEY', None)
     if not api_key:
         messages.error(request, '❌ ' + gettext('API-Key fehlt in settings.py'))
-        return redirect(request.META.get('HTTP_REFERER', 'admin:index'))
+        return redirect(request.META.get('HTTP_REFERER', 'fw_dashboard'))
 
     if not vertrag.mieter.email:
         messages.error(request, '❌ ' + gettext('Abbruch: Mieter hat keine E-Mail.'))
-        return redirect(request.META.get('HTTP_REFERER', 'admin:index'))
+        return redirect(request.META.get('HTTP_REFERER', 'fw_dashboard'))
 
     # 2. PDF Generieren
     try:
@@ -137,7 +137,7 @@ def send_via_docuseal(request, vertrag_id):
     except Exception as e:
         logger.error(f"PDF Gen Error: {e}")
         messages.error(request, '❌ ' + gettext('PDF Fehler: %(str)s') % {'str': str(e)})
-        return redirect(request.META.get('HTTP_REFERER', 'admin:index'))
+        return redirect(request.META.get('HTTP_REFERER', 'fw_dashboard'))
 
     # 3. API Request an DocuSeal
     try:
@@ -183,7 +183,7 @@ def send_via_docuseal(request, vertrag_id):
         logger.error(f"DocuSeal Exception: {e}")
         messages.error(request, '❌ ' + gettext('Fehler beim Senden: %(str)s') % {'str': str(e)})
 
-    return redirect(request.META.get('HTTP_REFERER', 'admin:index'))
+    return redirect(request.META.get('HTTP_REFERER', 'fw_dashboard'))
 
 
 # 🔥 HIER IST DER REPARIERTE WEBHOOK 🔥

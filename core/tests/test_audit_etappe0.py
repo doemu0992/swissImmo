@@ -8,6 +8,7 @@ import re
 from datetime import date
 from decimal import Decimal
 
+from unittest import mock
 from django.core import mail
 from django.test import TestCase, Client
 
@@ -36,8 +37,10 @@ class GetOhneNebenwirkung(TestCase):
         self.assertEqual(r.status_code, 405)
 
     def test_marktdaten_import_nicht_ueber_get(self):
-        r = self.c.get('/admin/update-marktdaten/')
-        self.assertEqual(r.status_code, 405)
+        with mock.patch('core.utils.market_data.update_verwaltung_rates') as import_lauf:
+            r = self.c.get('/neu/marktdaten/aktualisieren/')
+        self.assertEqual(r.status_code, 302)
+        import_lauf.assert_not_called()            # GET holt nichts aus dem Internet
 
     def test_ruege_267a_nicht_ueber_get(self):
         from rentals.models import Abnahmeprotokoll, AbnahmeMangel, Dokument

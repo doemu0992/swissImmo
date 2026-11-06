@@ -99,7 +99,6 @@ angelegten Konto anmelden. Sie landen im Dashboard unter `/neu/`.
 | `/login/` | Anmeldung für das Verwaltungsteam |
 | `/neu/` | Hauptanwendung (Dashboard und alle Module) |
 | `/portal/` | Eigentümer-Portal |
-| `/admin/` | Django-Admin (nur für Superuser, Notfallzugang) |
 | `/healthz/` | Zustandsprüfung für Monitoring |
 | `/api/` | REST-Schnittstelle (Session-Anmeldung, rollenbasiert) |
 
