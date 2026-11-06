@@ -327,6 +327,7 @@ class RegelTests(EigeneMedien, TestCase):
         wurzel = pathlib.Path(settings.BASE_DIR) / 'core' / 'views' / 'fw'
         erwartet = {
             'vertrag_erstellt': ('vertragserstellung.py', 1),
+            'vertrag_haustier': ('vertragserstellung.py', 1),
             'bewerber_zugesagt': ('mietprozess.py', 1),
             'kuendigung_erfasst': ('kuendigung.py', 1),
             'mza_versandt': ('mietzins.py', 1),
