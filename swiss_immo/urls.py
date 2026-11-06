@@ -192,6 +192,7 @@ import core.views.alte_adressen as _alt  # noqa: E402  Weiterleitungen entfallen
 from core.views.contracts import mietzins_anpassung_view, generiere_amtliches_formular
 
 # Modul 5 (27.10.2026): Dokumenten-Automatisierung — Editor, Vorschau, Regeln, Fassungen
+from core.views.fw.vorlagen_brief import fw_vorlage_brief, fw_vorlage_brief_fertig
 from core.views.fw.vorlagen_editor import (fw_vorlage_vorschau, fw_vorlage_probe_pdf,
                                            fw_vorlage_regel_umschalten, fw_rentals_dokument_verlauf)
 
@@ -637,6 +638,8 @@ urlpatterns = [
     path('neu/vorlagen/neu/', fw_vorlage_form, name='fw_vorlage_neu'),
     path('neu/vorlagen/<int:pk>/bearbeiten/', fw_vorlage_form, name='fw_vorlage_bearbeiten'),
     path('neu/vorlagen/<int:pk>/loeschen/', fw_vorlage_loeschen, name='fw_vorlage_loeschen'),
+    path('neu/vorlagen/<int:pk>/brief/', fw_vorlage_brief, name='fw_vorlage_brief'),
+    path('neu/vorlagen/<int:pk>/brief/fertig/', fw_vorlage_brief_fertig, name='fw_vorlage_brief_fertig'),
     # Modul 5: Live-Vorschau, Probe-PDF, Regel an/aus, Fassungen eines Dokuments
     path('neu/vorlagen/vorschau/', fw_vorlage_vorschau, name='fw_vorlage_vorschau'),
     path('neu/vorlagen/probe-pdf/', fw_vorlage_probe_pdf, name='fw_vorlage_probe_pdf'),

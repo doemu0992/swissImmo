@@ -1,0 +1,24 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Briefe erstellt" %} — immoswiss{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Briefe erstellt" %}</h1>
+        <p>{{ vorlage.name }}</p>
+    </div>
+</div>
+<div class="fw-card">
+    {% for z in zeilen %}
+    <div class="fw-zeile">
+        <div class="fw-mitte">
+            <div class="fw-t">{{ z.dokument.mieter.display_name }}</div>
+            <div class="fw-s">{{ z.dokument.bezeichnung }}</div>
+            {% if z.pendenz %}<div class="fw-s">{{ z.pendenz.titel }} · {% trans "fällig" %} {{ z.pendenz.faellig_am|date:"d.m.Y" }}</div>{% endif %}
+        </div>
+        {% if z.dokument.datei %}<a href="{{ z.dokument.datei.url }}" target="_blank" rel="noopener" class="fw-btn fw-knapp">{% trans "Öffnen" %}</a>{% endif %}
+        {% if z.pendenz %}<a href="/neu/fristen/" class="fw-btn fw-knapp fw-geist">{% trans "Fristen" %}</a>{% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

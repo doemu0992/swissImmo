@@ -54,6 +54,7 @@ GRUPPEN = OrderedDict([
     ('verwaltung', _('Verwaltung')),
     ('bewerbung', _('Bewerbung')),
     ('datum', _('Datum')),
+    ('frist', _('Frist')),
 ])
 
 
@@ -73,6 +74,7 @@ REGISTRY = OrderedDict((p.schluessel, p) for p in (
     _p('mieter.plz', _('PLZ'), '8400'),
     _p('mieter.ort', _('Ort'), 'Winterthur'),
     _p('mieter.email', _('E-Mail'), 'lea.frei@example.ch'),
+    _p('mieter.haustiere', _('Haustiere (Angabe im Mieterstamm)'), 'eine Katze'),
     _p('objekt.bezeichnung', _('Bezeichnung des Objekts'), '3.5-Zimmer-Wohnung, 2. OG'),
     _p('objekt.adresse', _('Adresse der Liegenschaft'), 'Seestrasse 12, 8000 Zürich'),
     _p('objekt.strasse', _('Strasse der Liegenschaft'), 'Seestrasse 12'),
@@ -97,6 +99,9 @@ REGISTRY = OrderedDict((p.schluessel, p) for p in (
     _p('bewerbung.bezugstermin', _('Gewünschter Bezugstermin'), '01.01.2027'),
     _p('datum.heute', _('Heutiges Datum'), '27.10.2026'),
     _p('datum.jahr', _('Laufendes Jahr'), '2026'),
+    _p('frist.datum_lang', _('Fristende, ausgeschrieben'), '13. November 2026'),
+    _p('frist.datum', _('Fristende'), '13.11.2026'),
+    _p('frist.tage', _('Frist in Tagen'), '10'),
 ))
 
 #: Die alten Schreibweisen → ihr neuer Schlüssel. `None` heisst: Der Name ist
@@ -115,6 +120,7 @@ ALIASE = {
     'liegenschaft': 'objekt.strasse',
     'vermieter': 'verwaltung.vermieter',
     'datum': 'datum.heute',
+    'frist': 'frist.datum_lang',
     'miete': 'vertrag.mietzins_brutto',
     'bewerber_name': 'bewerbung.name',
     # Serienbrief (core/services/serienbrief.py)
@@ -235,7 +241,8 @@ def briefanrede(anrede_kurz, nachname, *, firma=False):
     return gettext('Guten Tag %(name)s') % {'name': nachname}
 
 
-def kontext_fuer(vertrag=None, bewerbung=None, mieter=None, organisation=None, sprache=None):
+def kontext_fuer(vertrag=None, bewerbung=None, mieter=None, organisation=None, sprache=None,
+                 frist_datum=None, frist_tage=None):
     """Alle Platzhalterwerte für einen Vertrag, eine Bewerbung oder eine Person.
 
     Baut auf `build_vertrag_context` (Beträge, Vertragsdaten) und `_kontext`
@@ -319,6 +326,7 @@ def kontext_fuer(vertrag=None, bewerbung=None, mieter=None, organisation=None, s
             'mieter.nachname': mieter.nachname or '',
             'mieter.anrede_kurz': mieter.anrede or '',
             'mieter.email': mieter.email or '',
+            'mieter.haustiere': ((mieter.haustiere_details or '').strip() or (gettext('ein Haustier') if mieter.haustiere else '')),
         })
         s, _zusatz, plz, ort = mieter.zustelladresse()
         k.update({'mieter.strasse': s or '', 'mieter.plz': plz or '', 'mieter.ort': ort or ''})
@@ -348,4 +356,12 @@ def kontext_fuer(vertrag=None, bewerbung=None, mieter=None, organisation=None, s
             'verwaltung.email': org.email or '',
         })
         k['verwaltung.vermieter'] = vermieter or org.firma or ''
+    # Die Frist, die der Brief setzt (core/services/brief_aus_vorlage.py): Datum (kurz und ausgeschrieben) und/oder Tage.
+    if frist_datum:
+        from django.utils.formats import date_format
+        k['frist.datum'] = _datum(frist_datum)
+        with in_sprache(sprache or STANDARD):
+            k['frist.datum_lang'] = date_format(frist_datum, 'j. F Y')
+    if frist_tage:
+        k['frist.tage'] = str(frist_tage)
     return k

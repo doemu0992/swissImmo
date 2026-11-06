@@ -45,7 +45,8 @@ MUSTERTEXT = {
                                'Freundliche Grüsse'),
 }
 
-FELDER = ('name', 'kategorie', 'betreff', 'inhalt', 'format', 'sprache', 'ereignis', 'gueltig_ab', 'aktiv')
+FELDER = ('name', 'kategorie', 'betreff', 'inhalt', 'format', 'sprache', 'ereignis', 'gueltig_ab', 'aktiv',
+          'einschreiben', 'frist_art', 'frist_tage')
 
 
 def _gueltig(wert, choices):
@@ -76,7 +77,18 @@ def formular_lesen(P, vl):
         'ereignis': P.get('ereignis', alt('ereignis', '')),
         'gueltig_ab': alt('gueltig_ab', None),
         'aktiv': ('aktiv' in P) if 'aktiv_feld' in P else alt('aktiv', True),
+        'einschreiben': ('einschreiben' in P) if 'einschreiben_feld' in P else alt('einschreiben', False),
+        'frist_art': P.get('frist_art', alt('frist_art', '')),
+        'frist_tage': alt('frist_tage', None),
     }
+    if 'frist_tage' in P:
+        roh = (P.get('frist_tage') or '').strip()
+        if roh.isdigit() and 0 < int(roh) <= 365:
+            werte['frist_tage'] = int(roh)
+        else:
+            werte['frist_tage'] = None
+            if roh:
+                fehler.append(gettext('Die Fristdauer ist eine Zahl von 1 bis 365 Tagen.'))
     if 'gueltig_ab' in P:
         roh = (P.get('gueltig_ab') or '').strip()
         try:
@@ -94,6 +106,18 @@ def formular_lesen(P, vl):
         fehler.append(gettext('Unbekannte Sprache.'))
     if werte['ereignis'] and not _gueltig(werte['ereignis'], Vorlage.EREIGNIS_CHOICES):
         fehler.append(gettext('Unbekanntes Ereignis.'))
+    if not _gueltig(werte['frist_art'], Vorlage.FRIST_ART_CHOICES):
+        fehler.append(gettext('Unbekannte Fristart.'))
+        werte['frist_art'] = ''
+    elif werte['frist_art'] and not werte['frist_tage']:
+        fehler.append(gettext('Für die Frist bitte die Dauer in Tagen angeben.'))
+    if not werte['frist_art']:
+        werte['frist_tage'] = None
+    text = werte['betreff'] + '\n' + werte['inhalt']
+    if ('{frist}' in text or '{frist.datum}' in text or '{frist.datum_lang}' in text) and werte['frist_art'] != 'datum':
+        fehler.append(gettext('Der Text nennt ein Fristdatum ({frist}), die Frist ist aber nicht «Festes Datum».'))
+    if '{frist.tage}' in text and not werte['frist_art']:
+        fehler.append(gettext('Der Text nennt die Fristdauer ({frist.tage}), die Vorlage hat aber keine Frist.'))
     falsch = unbekannte(werte['betreff'] + '\n' + werte['inhalt'])
     if falsch:
         fehler.append(gettext('Unbekannte Platzhalter: %(liste)s. Erlaubt sind die Platzhalter in der Liste '
@@ -112,7 +136,8 @@ def formular_vorbelegung(G, vl):
     if vl is not None:
         return {f: getattr(vl, f) for f in FELDER}
     werte = {'name': '', 'kategorie': 'brief', 'betreff': '', 'inhalt': '', 'format': 'text',
-             'sprache': 'de', 'ereignis': '', 'gueltig_ab': None, 'aktiv': True}
+             'sprache': 'de', 'ereignis': '', 'gueltig_ab': None, 'aktiv': True,
+             'einschreiben': False, 'frist_art': '', 'frist_tage': None}
     von = (G.get('von') or '').strip()
     if von.isdigit():
         quelle = Vorlage.objects.filter(pk=int(von)).first()       # eigene oder System
@@ -160,6 +185,7 @@ def formular_kontext(request, vl, werte):
         'version': (vl.version if vl is not None else 1),
         'kategorien': Vorlage.KATEGORIE_CHOICES, 'formate': Vorlage.FORMAT_CHOICES,
         'sprachen': Vorlage.SPRACHE_CHOICES, 'ereignisse': Vorlage.EREIGNIS_CHOICES,
+        'frist_arten': Vorlage.FRIST_ART_CHOICES,
         'gruppen': gruppiert(),
         'alte_platzhalter': [(c, b) for c, b in PLATZHALTER_HILFE if c.strip('{}') in ALIASE],
         'fassungen': fassungen,

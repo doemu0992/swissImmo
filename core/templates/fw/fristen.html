@@ -58,8 +58,8 @@
         <span class="fw-marker{% if e.tage < 0 %} crit{% elif e.tage <= 7 %} warn{% endif %}"></span>
         <div class="fw-mitte">
             <div class="fw-t">{{ e.titel }}</div>
-            <div class="fw-s"><span>{% if e.bezug %}{{ e.bezug }}{% endif %}{% if e.art %} · <span class="fw-marke-kapsel">{{ e.art }}</span>{% endif %}{% if e.p.sendungsnummer and not e.p.zugang_am %} · <b class="fw-warnton">{% trans "Frist provisorisch" %}</b>{% endif %}</span></div>
-            {% if e.p.sendungsnummer %}
+            <div class="fw-s"><span>{% if e.bezug %}{{ e.bezug }}{% endif %}{% if e.art %} · <span class="fw-marke-kapsel">{{ e.art }}</span>{% endif %}{% if e.p.frist_provisorisch %} · <b class="fw-warnton">{% trans "Frist provisorisch" %}</b>{% endif %}</span></div>
+            {% if e.p.sendungsnummer or e.p.einschreiben %}
             {% include 'fw/_einschreiben_zugang.html' with p=e.p zugang_heute=heute_iso zugang_next='/neu/fristen/' %}
             {% endif %}
         </div>

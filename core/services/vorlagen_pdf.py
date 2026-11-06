@@ -91,7 +91,7 @@ def text_als_html(inhalt, format, kontext):
     return linebreaks(ersetze(inhalt, kontext), autoescape=True)
 
 
-def dokument_kontext(*, betreff, inhalt, format, sprache, kontext, organisation):
+def dokument_kontext(*, betreff, inhalt, format, sprache, kontext, organisation, einschreiben=False):
     """Der Vorlagen-Kontext für `dok_vorlage.html` (PDF) und die Vorschau."""
     bk = briefkopf_kontext(organisation)
     ort_zeile = f"{kontext.get('mieter.plz', '')} {kontext.get('mieter.ort', '')}".strip()
@@ -107,6 +107,7 @@ def dokument_kontext(*, betreff, inhalt, format, sprache, kontext, organisation)
         'ort': (organisation.ort if organisation else ''),
         # Briefe mit Empfänger tragen das Adressfenster (Layout: core/templates/core/_dok_adressfenster.html)
         'adressfenster': bool(kontext.get('mieter.name', '')),
+        'einschreiben': bool(einschreiben and kontext.get('mieter.name', '')),
         'empfaenger_zeilen': [kontext.get('mieter.name', ''), kontext.get('mieter.strasse', ''), ort_zeile],
         'empfaenger': {'name': kontext.get('mieter.name', ''),
                        'strasse': kontext.get('mieter.strasse', ''),
@@ -116,7 +117,7 @@ def dokument_kontext(*, betreff, inhalt, format, sprache, kontext, organisation)
     }
 
 
-def vorlage_pdf(vorlage, kontext, organisation):
+def vorlage_pdf(vorlage, kontext, organisation, einschreiben=False):
     """PDF-Bytes einer Vorlage (gespeichert oder nur im Formular) mit Kontext.
 
     `vorlage` braucht `betreff`, `inhalt`, `format` und `sprache` — eine
@@ -125,7 +126,7 @@ def vorlage_pdf(vorlage, kontext, organisation):
     sprache = getattr(vorlage, 'sprache', '') or 'de'
     ctx = dokument_kontext(betreff=vorlage.betreff, inhalt=vorlage.inhalt,
                            format=getattr(vorlage, 'format', 'text'), sprache=sprache,
-                           kontext=kontext, organisation=organisation)
+                           kontext=kontext, organisation=organisation, einschreiben=einschreiben)
     from core.services.pdf_service import link_callback
     with in_sprache(sprache):
         html = get_template('core/dok_vorlage.html').render(ctx)

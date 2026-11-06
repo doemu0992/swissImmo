@@ -733,6 +733,9 @@ def _zugang_setzen(p, zugang, fingiert=False):
     `zugang` ist der Tag, an dem der Mieter das Schreiben erhalten hat — bei Nichtabholung (`fingiert=True`) der
     letzte Tag der siebentägigen Abholfrist (BGE 119 II 147 E. 2), nicht die Abholeinladung."""
     from core.services.zahlungsverzug import definitives_fristende
+    from core.services.brief_aus_vorlage import ist_brief_pendenz
+    if ist_brief_pendenz(p):
+        return _brief_zugang_setzen(p, zugang, fingiert)
     tage = p.frist_tage or 30
     neu_frist = definitives_fristende(zugang, tage)
     p.zugang_am = zugang
@@ -751,6 +754,30 @@ def _zugang_setzen(p, zugang, fingiert=False):
         from core.services.zahlungsverzug import fall_frist_nachfuehren
         fall_frist_nachfuehren(p.vertrag, neu_frist)
     return neu_frist
+
+
+def _brief_zugang_setzen(p, zugang, fingiert=False):
+    """Zugang eines Briefs aus einer Vorlage (Einschreiben, `quelle` «brief:…»). Gibt das Fristende zurück (oder None).
+
+    Frist «Tage ab Zugang» (`frist_tage` gesetzt): Fristende = Zugang + Tage, ein Nicht-Werktag rückt auf den nächsten
+    (Art. 78 OR). Frist «festes Datum» oder keine Frist: das Fristende bleibt, wie es im Brief steht. Kein 257d-Fall,
+    kein Fall an der Vertragsakte."""
+    from core.services.zahlungsverzug import definitives_fristende
+    p.zugang_am = zugang
+    p.zugang_fingiert = bool(fingiert)
+    felder = ['zugang_am', 'zugang_fingiert', 'beschreibung']
+    art = (f"Einschreiben nicht abgeholt: Zugang fingiert am {zugang:%d.%m.%Y} (letzter Tag der "
+           f"{ABHOLFRIST_TAGE}-tägigen Abholfrist)" if fingiert
+           else f"Zugang bestätigt am {zugang:%d.%m.%Y} (Abholung/Zustellung)")
+    neu_frist = None
+    if p.frist_tage:
+        neu_frist = definitives_fristende(zugang, p.frist_tage)
+        p.faellig_am = neu_frist
+        felder.append('faellig_am')
+        art += f". Frist von {p.frist_tage} Tagen läuft bis {neu_frist:%d.%m.%Y}"
+    p.beschreibung = (art + (f" (Einschreiben {p.sendungsnummer})" if p.sendungsnummer else '') + '.')
+    p.save(update_fields=felder)
+    return neu_frist or p.faellig_am
 
 
 def _zugang_aus_formular(post, versand_am, heute):
@@ -816,6 +843,17 @@ def fw_verzug_zugang(request, pk):
         messages.error(request, '⛔ ' + fehler)
         return redirect(ziel or 'fw_fristen')
     neu_frist = _zugang_setzen(p, zugang, fingiert=fingiert)
+    from core.services.brief_aus_vorlage import ist_brief_pendenz
+    if ist_brief_pendenz(p):
+        log_aktion(request, "Einschreiben: Zugang fingiert (nicht abgeholt)" if fingiert else "Einschreiben: Zugang bestätigt",
+                   p.titel, f"Zugang {zugang:%d.%m.%Y}{' (fingiert)' if fingiert else ''}"
+                   + (f", Frist bis {neu_frist:%d.%m.%Y}" if neu_frist else ''),
+                   ziel=p.vertrag if p.vertrag_id else None)
+        messages.success(request, '✅ ' + (gettext('Einschreiben nicht abgeholt: Zugang fingiert am %(datum)s.')
+                                           if fingiert else gettext('Zugang bestätigt (%(datum)s).'))
+                         % {'datum': f'{zugang:%d.%m.%Y}'}
+                         + ((' ' + gettext('Frist bis %(frist)s.') % {'frist': f'{neu_frist:%d.%m.%Y}'}) if p.frist_tage and neu_frist else ''))
+        return redirect(ziel or 'fw_fristen')
     log_aktion(request, "257d-Zugang fingiert (nicht abgeholt)" if fingiert else "257d-Zugang bestätigt",
                str(p.vertrag.mieter) if p.vertrag_id and p.vertrag and p.vertrag.mieter_id else p.titel,
                f"Zugang {zugang:%d.%m.%Y}{' (fingiert)' if fingiert else ''}, Frist neu bis {neu_frist:%d.%m.%Y}",
@@ -858,14 +896,19 @@ def fw_verzug_sendung(request, pk):
             vs = None
         if vs and vs <= heute:
             from core.services.zahlungsverzug import provisorisches_fristende
+            from core.services.brief_aus_vorlage import ist_brief_pendenz
             p.versand_am = vs
-            p.faellig_am = provisorisches_fristende(vs, p.frist_tage)
-            felder += ['versand_am', 'faellig_am']
+            felder.append('versand_am')
+            # Brief mit festem Fristdatum (oder ohne Frist): das Datum steht im Brief, es wird nicht neu gerechnet.
+            if not ist_brief_pendenz(p) or p.frist_tage:
+                p.faellig_am = provisorisches_fristende(vs, p.frist_tage)
+                felder.append('faellig_am')
     p.save(update_fields=felder)
-    if 'faellig_am' in felder and p.vertrag_id:
+    from core.services.brief_aus_vorlage import ist_brief_pendenz as _brief
+    if 'faellig_am' in felder and p.vertrag_id and not _brief(p):
         from core.services.zahlungsverzug import fall_frist_nachfuehren
         fall_frist_nachfuehren(p.vertrag, p.faellig_am)
-    log_aktion(request, "257d-Sendungsnummer korrigiert",
+    log_aktion(request, "Einschreiben-Sendungsnummer erfasst" if _brief(p) else "257d-Sendungsnummer korrigiert",
                str(p.vertrag.mieter) if p.vertrag_id and p.vertrag and p.vertrag.mieter_id else p.titel,
                p.sendungsnummer or '—', ziel=p.vertrag if p.vertrag_id else None)
     messages.success(request, '✅ ' + (gettext('Sendungsnummer aktualisiert.') if p.sendungsnummer

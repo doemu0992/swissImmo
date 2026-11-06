@@ -712,10 +712,10 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
                         {% if e.p.beschreibung %}<div class="fw-klein leading-relaxed">{{ e.p.beschreibung }}</div>{% endif %}
                     </div>
                     <span class="text-xs font-semibold shrink-0 whitespace-nowrap {% if e.ueberfaellig %}fw-kritisch{% else %}fw-mutet{% endif %}">
-                        {{ e.p.faellig_am|date:"d.m.Y" }}{% if e.p.sendungsnummer and not e.p.zugang_am %} · <span class="fw-warnton">{% trans "provisorisch" %}</span>{% endif %}
+                        {{ e.p.faellig_am|date:"d.m.Y" }}{% if e.p.frist_provisorisch %} · <span class="fw-warnton">{% trans "provisorisch" %}</span>{% endif %}
                     </span>
                 </div>
-                {% if e.p.sendungsnummer %}<div class="ml-5">{% include 'fw/_einschreiben_zugang.html' with p=e.p zugang_heute=heute_iso zugang_next=vt_fin_zugang_next %}</div>{% endif %}
+                {% if e.p.sendungsnummer or e.p.einschreiben %}<div class="ml-5">{% include 'fw/_einschreiben_zugang.html' with p=e.p zugang_heute=heute_iso zugang_next=vt_fin_zugang_next %}</div>{% endif %}
             </div>
             {% endfor %}
         </div>
@@ -916,10 +916,10 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
                         <div class="fw-t truncate" title="{{ e.p.titel }}">{{ e.p.titel }}</div>
                         {% if e.p.beschreibung %}<div class="fw-klein leading-relaxed">{{ e.p.beschreibung }}</div>{% endif %}
                     </div>
-                    {% if e.p.faellig_am %}<span class="text-xs font-semibold fw-mutet shrink-0 whitespace-nowrap">{{ e.p.faellig_am|date:"d.m.Y" }}{% if e.p.sendungsnummer and not e.p.zugang_am %} · <span class="fw-warnton">{% trans "provisorisch" %}</span>{% endif %}</span>{% endif %}
+                    {% if e.p.faellig_am %}<span class="text-xs font-semibold fw-mutet shrink-0 whitespace-nowrap">{{ e.p.faellig_am|date:"d.m.Y" }}{% if e.p.frist_provisorisch %} · <span class="fw-warnton">{% trans "provisorisch" %}</span>{% endif %}</span>{% endif %}
                     {% if e.url %}<a href="{{ e.url }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.p.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"{% endif %} class="fw-btn fw-rand-marke fw-knapp shrink-0 whitespace-nowrap">{{ e.label }}</a>{% endif %}
                 </div>
-                {% if e.p.sendungsnummer %}<div class="ml-5">{% include 'fw/_einschreiben_zugang.html' with p=e.p zugang_heute=heute_iso zugang_next=vt_zugang_next %}</div>{% endif %}
+                {% if e.p.sendungsnummer or e.p.einschreiben %}<div class="ml-5">{% include 'fw/_einschreiben_zugang.html' with p=e.p zugang_heute=heute_iso zugang_next=vt_zugang_next %}</div>{% endif %}
             </div>
             {% empty %}
             <p class="fw-leer">{% trans "Keine offenen Pendenzen zu diesem Vertrag." %}</p>

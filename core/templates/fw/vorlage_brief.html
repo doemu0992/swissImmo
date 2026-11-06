@@ -1,0 +1,38 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Brief erstellen" %} — immoswiss{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Brief erstellen" %}</h1>
+        <p>{{ vorlage.name }}</p>
+    </div>
+</div>
+{% if fehler %}<div class="fw-card" role="alert">{% for f in fehler %}<p class="fw-s">{{ f }}</p>{% endfor %}</div>{% endif %}
+<form method="post" class="fw-card" id="brief-form">
+    {% csrf_token %}
+    <div class="fw-feldblock breit">
+        <span class="fw-label">{% trans "Empfänger" %}</span>
+        {% for m in empfaenger %}
+        <label class="fw-vl-schalter"><input type="checkbox" name="mieter" value="{{ m.id }}" {% if m.id in gewaehlt %}checked{% endif %}> {{ m.display_name }}</label>
+        {% empty %}<p class="fw-hilfe">{% trans "Keine Mieter mit aktivem Vertrag." %}</p>{% endfor %}
+    </div>
+    <div class="fw-feldblock breit">
+        <span class="fw-label">{% trans "Versand" %}</span>
+        <label class="fw-vl-schalter"><input type="checkbox" name="einschreiben" value="1" {% if werte.einschreiben %}checked{% endif %}> {% trans "Als Einschreiben versenden" %}</label>
+        {% if werte.einschreiben or vorlage.einschreiben %}<p class="fw-hilfe">{% trans "Nach dem Versand erfasst du bei der Pendenz die Sendungsnummer und bestätigst den Zugang." %}</p>{% endif %}
+    </div>
+    {% if vorlage.frist_art == 'datum' %}
+    <div class="fw-feldblock"><label for="bf-datum" class="fw-label">{% trans "Frist bis" %}</label>
+        <input id="bf-datum" name="frist_datum" type="date" min="{{ heute|date:'Y-m-d' }}" value="{{ werte.frist_datum|date:'Y-m-d' }}" class="fw-feld"></div>
+    {% elif vorlage.frist_art == 'zugang' %}
+    <div class="fw-feldblock"><label for="bf-tage" class="fw-label">{% trans "Frist (Tage ab Zugang)" %}</label>
+        <input id="bf-tage" name="frist_tage" type="number" min="1" max="365" inputmode="numeric" value="{{ werte.frist_tage|default_if_none:'' }}" class="fw-feld w-28">
+        <p class="fw-hilfe">{% trans "Das Fristende steht fest, sobald der Zugang bestätigt ist." %}</p></div>
+    {% endif %}
+    <div class="fw-formular-fuss">
+        <a href="/neu/vorlagen/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+        <button type="submit" class="fw-btn fw-primary">{% zeichen 'dokument' %}{% trans "Brief erstellen" %}</button>
+    </div>
+</form>
+{% endblock %}
