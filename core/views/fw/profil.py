@@ -254,7 +254,15 @@ def fw_datenreset(request):
             messages.error(request, gettext('Der Code für die Zwei-Faktor-Anmeldung stimmt nicht — nichts wurde gelöscht.'))
             return redirect('/neu/account/#gefahrenzone')
 
-    # --- 3. Sicherung -------------------------------------------------------
+    # --- 3. Aufbewahrungspflicht --------------------------------------------
+    # Vor der Sicherung: Wo ohnehin nichts gelöscht werden darf, braucht es keine.
+    grund = datenreset.aufbewahrung_sperre(organisation_der_anfrage(request))
+    if grund:
+        log_aktion(request, "Datenreset abgelehnt", "Aufbewahrungspflicht", grund[:300])
+        messages.error(request, grund + ' ' + gettext('Es wurde nichts gelöscht.'))
+        return redirect('/neu/account/#gefahrenzone')
+
+    # --- 4. Sicherung -------------------------------------------------------
     try:
         datenreset.sicherung_erstellen()
     except datenreset.ResetFehler as fehler:
@@ -264,7 +272,7 @@ def fw_datenreset(request):
             % {'grund': fehler})
         return redirect('/neu/account/#gefahrenzone')
 
-    # --- 4. Löschen: alles oder nichts --------------------------------------
+    # --- 5. Löschen: alles oder nichts --------------------------------------
     organisation = organisation_der_anfrage(request)
     try:
         with transaction.atomic():

@@ -166,6 +166,7 @@
     <div class="fw-kopf"><span class="fw-ikon crit">{% zeichen 'warnung' %}</span><h2 class="fw-kritisch">{% trans "Gefahrenzone" %}</h2></div>
     <div class="p-5">
     <p class="text-sm fw-mutet mb-4">{% blocktrans trimmed %}Löscht <span class="font-semibold">alle</span> Daten (Liegenschaften, Objekte, Verträge, Personen, Buchungen, Rechnungen, Schäden, Vorlagen, Mandate und Verwaltungs-Stammdaten) und startet mit einer leeren Datenbank. Benutzerkonten und Rollen bleiben erhalten.{% endblocktrans %} <span class="font-semibold fw-kritisch">{% trans "Dieser Schritt kann nicht rückgängig gemacht werden." %}</span> {% trans "Vorher wird automatisch eine Sicherung der Datenbank erstellt; schlägt sie fehl, wird nichts gelöscht. Das Audit-Log bleibt erhalten." %}</p>
+    <p class="text-sm fw-mutet mb-4">{% trans "Nicht möglich, solange Buchungen der gesetzlichen Aufbewahrungsfrist unterliegen (10 Jahre, Art. 958f OR) oder die Buchhaltung abgeschlossen ist." %}</p>
     <form method="post" action="/neu/datenreset/" onsubmit="return confirm('{% filter escapejs %}{% trans "Wirklich ALLE Daten unwiderruflich löschen und von vorne beginnen?" %}{% endfilter %}');" class="flex flex-wrap items-end gap-3">
         {% csrf_token %}
         <div class="fw-feldblock">

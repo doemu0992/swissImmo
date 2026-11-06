@@ -22,6 +22,10 @@ Jetzt gilt:
   Fremdschlüsseln, nicht aus einer abgeschriebenen Liste.
 * **Zuerst gesichert.** `manage.py sicherung` läuft vorher; ohne gelungene
   Sicherung gibt es keinen Reset.
+* **Nicht gegen die Aufbewahrungspflicht.** Geschäftsbücher sind zehn Jahre aufzubewahren (Art. 958f OR, GeBüV): bis
+  zum Ende des zehnten Jahres nach dem Geschäftsjahr, in dem gebucht wurde. Solange eine Buchung darunter fällt oder
+  die Buchhaltung bis zu einem Stichtag abgeschlossen ist (Periodensperre), läuft kein Reset (`aufbewahrung_sperre`).
+  Ohne diese Sperre löschte der Inhaber mit einem Wort im Formular, was das Gesetz zu behalten verlangt.
 * **Das Audit-Log bleibt.** Es ist die Spur dessen, was hier geschieht
   (Revisionspflicht, Art. 957 ff. OR / GeBüV); ein Reset, der seine eigene Spur
   löscht, wäre der bequemste Weg, sie zu verwischen.
@@ -70,6 +74,41 @@ BEHALTEN = {
     'faelle.Regelsatz': 'Regelwerk der Verwaltung (Grundsatz)',
     'faelle.Regel': 'Regelwerk der Verwaltung (Grundsatz)',
 }
+
+
+#: Aufbewahrungsfrist der Geschäftsbücher in Jahren (Art. 958f Abs. 1 OR).
+AUFBEWAHRUNG_JAHRE = 10
+
+
+def aufbewahrung_sperre(organisation, heute=None):
+    """Der Grund, warum kein Reset laufen darf — oder `None`, wenn nichts dagegen spricht.
+
+    Zwei Gründe:
+
+    * Die Buchhaltung ist bis zu einem Stichtag abgeschlossen (`Organisation.buchung_gesperrt_bis`).
+    * Es gibt eine Buchung, deren Aufbewahrungsfrist noch läuft. Die Frist endet zehn Jahre nach dem Ende des
+      Geschäftsjahres der Buchung; als Geschäftsjahr gilt das Kalenderjahr. Eine Buchung vom 15.03.2016 ist also
+      bis 31.12.2026 aufzubewahren und am 01.01.2027 löschbar.
+    """
+    from datetime import date
+
+    from django.utils.translation import gettext
+
+    from finance.models import Buchung
+
+    heute = heute or date.today()
+    if organisation.buchung_gesperrt_bis:
+        return gettext(
+            'Die Buchhaltung ist bis %(datum)s abgeschlossen. Abgeschlossene Perioden und ihre Buchungen unterliegen '
+            'der Aufbewahrungspflicht (Art. 958f OR) und lassen sich nicht zurücksetzen.'
+        ) % {'datum': f'{organisation.buchung_gesperrt_bis:%d.%m.%Y}'}
+    grenze = date(heute.year - AUFBEWAHRUNG_JAHRE, 1, 1)
+    if Buchung._base_manager.filter(organisation=organisation, datum__gte=grenze).exists():
+        return gettext(
+            'Es gibt Buchungen, die der gesetzlichen Aufbewahrungsfrist von %(jahre)s Jahren unterliegen '
+            '(Art. 958f OR). Sie dürfen nicht gelöscht werden, deshalb ist ein Zurücksetzen nicht möglich.'
+        ) % {'jahre': AUFBEWAHRUNG_JAHRE}
+    return None
 
 
 class ResetFehler(Exception):
@@ -192,6 +231,10 @@ def setze_zurueck(organisation):
     from core.services.mahnstufen import standard_mahnstufen_anlegen
     from core.services.raumkatalog import seed_lebensdauer
     from finance.booking import ensure_kontenplan
+
+    grund = aufbewahrung_sperre(organisation)
+    if grund:
+        raise ResetFehler(grund)
 
     modelle = betroffene_modelle()
     _leeren(modelle, organisation)

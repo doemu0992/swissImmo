@@ -238,7 +238,10 @@ class DatenresetTests(UnveraenderlichBasis):
         cache.clear()
         # Seit SICH-03 verlangt der Reset Passwort und eine gelungene Sicherung (Stub, wie in
         # test_plattform.DatenResetTests: unter SQLite im Speicher kann `sicherung` nicht lesen).
-        with patch('core.services.datenreset.sicherung_erstellen', return_value=''):
+        # Die Aufbewahrungssperre (Art. 958f OR) ist hier ausgeschaltet: Geprüft wird der Mechanismus
+        # `ausnahme_loeschen`. Die Sperre selbst prüft `test_datenreset.AufbewahrungSperreTests`.
+        with patch('core.services.datenreset.sicherung_erstellen', return_value=''), \
+                patch('core.services.datenreset.aufbewahrung_sperre', return_value=None):
             antwort = c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN', 'passwort': 'x'}, secure=True)
         self.assertEqual(antwort.status_code, 302)
         self.assertFalse(Buchung.objects.exists())
