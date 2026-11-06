@@ -38320,3 +38320,36 @@ msgstr[1] "%(n)s inspections"
 #: core/templates/fw/objekt_detail.html:732
 msgid "Raumbuch vorher"
 msgstr "Room inventory before"
+
+#: core/templates/fw/objekt_detail.html:598
+#: core/templates/fw/objekt_detail.html:599
+msgid "Springen zu"
+msgstr "Jump to"
+
+#: core/templates/fw/objekt_detail.html:615
+msgid "defekt"
+msgstr "defective"
+
+#: core/templates/fw/objekt_detail.html:708
+msgid "Element hinzufügen"
+msgstr "Add element"
+
+#: core/templates/fw/objekt_detail.html:727
+msgid "Weitere Felder"
+msgstr "More fields"
+
+#: core/templates/fw/objekt_detail.html:761
+msgid ""
+"Noch keine Ausstattung erfasst. Starte mit dem Raumbuch-Assistenten: Er legt"
+" alle Räume der Wohnung auf einmal an."
+msgstr ""
+"No equipment recorded yet. Start with the room inventory assistant: it "
+"creates all rooms of the apartment at once."
+
+#: core/templates/fw/objekt_detail.html:768
+msgid "Raum hinzufügen"
+msgstr "Add room"
+
+#: core/templates/fw/objekt_detail.html:769
+msgid "Assistent, Katalog oder eigenes Element"
+msgstr "Assistant, catalogue or custom element"

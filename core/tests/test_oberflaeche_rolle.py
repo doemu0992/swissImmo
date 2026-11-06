@@ -137,8 +137,8 @@ class LesezugriffUndSachbearbeitungTests(RollenBasis):
     verschiedene Aktionen; die Zahlen sind also nicht gleich, aber derselbe Fehler.
     """
 
-    #: Stand vom 29.10.2026, gemessen mit `tote_ziele` über die Startseiten unten. Nur senken.
-    BEKANNT_OFFEN = {'lesezugriff': 197, 'sachbearbeiter': 43}
+    #: Stand vom 06.11.2026 (Raumbuch-Formulare hinter kann_schreiben: 197 -> 195), gemessen mit `tote_ziele` über die Startseiten unten. Nur senken.
+    BEKANNT_OFFEN = {'lesezugriff': 195, 'sachbearbeiter': 43}
 
     def _starts(self):
         a = self.a
@@ -164,9 +164,13 @@ class LesezugriffUndSachbearbeitungTests(RollenBasis):
         lese = self.client_von('lesezugriff').get(seite).content.decode()
         self.assertNotIn('ausstattung/assistent/', lese)
         self.assertNotIn('ausstattung/raum-loeschen/', lese)
+        self.assertNotIn('raum-hinzufuegen', lese)
+        self.assertNotIn('Element hinzufügen', lese)
         sach = self.client_von('sachbearbeiter').get(seite).content.decode()
         self.assertIn('ausstattung/assistent/', sach)
         self.assertIn('ausstattung/raum-loeschen/', sach)
+        self.assertIn('raum-hinzufuegen', sach)
+        self.assertIn('Element hinzufügen', sach)
 
     def test_die_zahl_toter_ziele_waechst_nicht(self):
         for schluessel, rolle in (('lesezugriff', 'Lesezugriff'), ('sachbearbeiter', 'Sachbearbeiter')):

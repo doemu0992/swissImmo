@@ -38957,3 +38957,36 @@ msgstr[1] "%(n)s états des lieux"
 #: core/templates/fw/objekt_detail.html:732
 msgid "Raumbuch vorher"
 msgstr "Inventaire avant"
+
+#: core/templates/fw/objekt_detail.html:598
+#: core/templates/fw/objekt_detail.html:599
+msgid "Springen zu"
+msgstr "Aller à"
+
+#: core/templates/fw/objekt_detail.html:615
+msgid "defekt"
+msgstr "défectueux"
+
+#: core/templates/fw/objekt_detail.html:708
+msgid "Element hinzufügen"
+msgstr "Ajouter un élément"
+
+#: core/templates/fw/objekt_detail.html:727
+msgid "Weitere Felder"
+msgstr "Autres champs"
+
+#: core/templates/fw/objekt_detail.html:761
+msgid ""
+"Noch keine Ausstattung erfasst. Starte mit dem Raumbuch-Assistenten: Er legt"
+" alle Räume der Wohnung auf einmal an."
+msgstr ""
+"Aucun équipement saisi. Commencez avec l’assistant d’inventaire : il crée "
+"toutes les pièces du logement en une fois."
+
+#: core/templates/fw/objekt_detail.html:768
+msgid "Raum hinzufügen"
+msgstr "Ajouter une pièce"
+
+#: core/templates/fw/objekt_detail.html:769
+msgid "Assistent, Katalog oder eigenes Element"
+msgstr "Assistant, catalogue ou élément personnalisé"

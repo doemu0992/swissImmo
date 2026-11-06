@@ -737,6 +737,9 @@ def fw_objekt_detail(request, pk):
             raeume[-1]['elemente'].append(row)
         else:
             raeume.append({'raum': a.raum, 'elemente': [row]})
+    for r in raeume:
+        r['n_faellig'] = sum(1 for x in r['elemente'] if x['ersatz_status'] == 'faellig')
+        r['n_defekt'] = sum(1 for x in r['elemente'] if x['a'].zustand == 'defekt')
     ausst_count = len(ausst)
 
     # Schlüssel des Objekts als Karten (Modul 2). Ausgabe und Rücknahme laufen

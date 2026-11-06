@@ -38894,3 +38894,36 @@ msgstr[1] "%(n)s verbali"
 #: core/templates/fw/objekt_detail.html:732
 msgid "Raumbuch vorher"
 msgstr "Inventario prima"
+
+#: core/templates/fw/objekt_detail.html:598
+#: core/templates/fw/objekt_detail.html:599
+msgid "Springen zu"
+msgstr "Vai a"
+
+#: core/templates/fw/objekt_detail.html:615
+msgid "defekt"
+msgstr "difettoso"
+
+#: core/templates/fw/objekt_detail.html:708
+msgid "Element hinzufügen"
+msgstr "Aggiungere un elemento"
+
+#: core/templates/fw/objekt_detail.html:727
+msgid "Weitere Felder"
+msgstr "Altri campi"
+
+#: core/templates/fw/objekt_detail.html:761
+msgid ""
+"Noch keine Ausstattung erfasst. Starte mit dem Raumbuch-Assistenten: Er legt"
+" alle Räume der Wohnung auf einmal an."
+msgstr ""
+"Nessuna dotazione registrata. Iniziate con l’assistente inventario: crea "
+"tutti i locali dell’appartamento in una volta."
+
+#: core/templates/fw/objekt_detail.html:768
+msgid "Raum hinzufügen"
+msgstr "Aggiungere un locale"
+
+#: core/templates/fw/objekt_detail.html:769
+msgid "Assistent, Katalog oder eigenes Element"
+msgstr "Assistente, catalogo o elemento proprio"
