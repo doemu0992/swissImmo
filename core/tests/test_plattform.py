@@ -306,7 +306,10 @@ class DatenResetTests(TestCase):
 
     def _reset(self, client, passwort='x', bestaetigung='LÖSCHEN', **extra):
         from unittest.mock import patch
-        with patch('core.services.datenreset.sicherung_erstellen', return_value=''):
+        # Ohne die Aufbewahrungssperre (Art. 958f OR): Hier geht es um den Reset selbst, die Sperre prüft
+        # `test_datenreset.AufbewahrungSperreTests`.
+        with patch('core.services.datenreset.sicherung_erstellen', return_value=''), \
+                patch('core.services.datenreset.aufbewahrung_sperre', return_value=None):
             return client.post('/neu/datenreset/', {'bestaetigung': bestaetigung,
                                                     'passwort': passwort, **extra}, secure=True)
 
