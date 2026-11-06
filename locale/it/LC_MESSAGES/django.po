@@ -38866,3 +38866,31 @@ msgstr "Il locale «%(raum)s» non esiste (più)."
 #: core/services/raumbuch_assistent.py:42
 msgid "Waschküche"
 msgstr "Lavanderia"
+
+#: core/services/zustandsvergleich.py:68
+#, python-format
+msgid "Raumbuch: %(zustand)s"
+msgstr "Inventario: %(zustand)s"
+
+#: core/services/zustandsvergleich.py:86
+msgid "gleich geblieben"
+msgstr "invariato"
+
+#: core/services/zustandsvergleich.py:86
+msgid "schlechter"
+msgstr "peggiore"
+
+#: core/services/zustandsvergleich.py:87
+msgid "besser"
+msgstr "migliore"
+
+#: core/templates/fw/objekt_detail.html:730
+#, python-format
+msgid "%(n)s Abnahme"
+msgid_plural "%(n)s Abnahmen"
+msgstr[0] "%(n)s verbale"
+msgstr[1] "%(n)s verbali"
+
+#: core/templates/fw/objekt_detail.html:732
+msgid "Raumbuch vorher"
+msgstr "Inventario prima"

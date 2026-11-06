@@ -24,6 +24,7 @@ from rentals.models import Mietvertrag
 
 from ._basis import _global_filter, _num
 from core.services.dokumentsprache import auf_deutsch
+from core.services.zustandsvergleich import mit_vergleich
 
 logger = logging.getLogger(__name__)
 
@@ -167,7 +168,7 @@ def fw_abnahme_detail(request, pk):
         # getrennt: Nur die ersten stehen im unterzeichneten Protokoll.
         'maengel': [m for m in maengel if m.entdeckt_am is None],
         'nachmaengel': [m for m in maengel if m.entdeckt_am is not None],
-        'positionen': prot.positionen.select_related('vorgaenger_position__protokoll'),
+        'positionen': mit_vergleich(prot.positionen.select_related('vorgaenger_position__protokoll', 'ausstattung', 'protokoll')),
         'schluessel': prot.schluessel.all(),
         'hat_mieter_maengel': ruege_noetig,
         'ruege_frist': ab.ruege_frist(prot.datum),

@@ -717,6 +717,10 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                         {% if row.a.bezeichnung %}<div class="fw-klein">{{ row.a.bezeichnung }}</div>{% endif %}
                         <div class="flex items-center gap-2 mt-0.5">
                             {% if row.a.foto %}<a href="{{ row.a.foto.url }}" target="_blank" rel="noopener" class="fw-link fw-fs-klein">{% zeichen 'dokument' klasse='mr-0.5' %}{% trans "Foto" %}</a>{% endif %}
+                            {% if row.abnahmen %}<details class="fw-fs-klein fw-mutet"><summary class="cursor-pointer">{% blocktrans count n=row.abnahmen|length %}{{ n }} Abnahme{% plural %}{{ n }} Abnahmen{% endblocktrans %}</summary>
+                                <ul class="mt-1 space-y-0.5">
+                                {% for ab in row.abnahmen %}<li>{{ ab.protokoll.datum|date:"d.m.Y" }} · {{ ab.protokoll.get_typ_display }} · {{ ab.protokoll.vertrag.mieter }} — <b>{{ ab.get_zustand_display }}</b>{% if ab.raumbuch_zustand_vorher %} <span class="fw-faint">({% trans "Raumbuch vorher" %}: {{ ab.raumbuch_zustand_vorher_label }})</span>{% endif %}{% if ab.kommentar %} · {{ ab.kommentar }}{% endif %}</li>{% endfor %}
+                                </ul></details>{% endif %}
                             {% if row.schaden_anzahl %}<span class="fw-fs-klein fw-mutet">{% zeichen 'arbeit' klasse='mr-0.5 fw-faint' %}{% blocktrans count n=row.schaden_anzahl %}{{ n }} Reparatur{% plural %}{{ n }} Reparaturen{% endblocktrans %} · CHF {{ row.reparaturkosten|chf }}</span>{% endif %}
                         </div>
                     </td>

@@ -155,7 +155,9 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
                 <button type="button" data-entscheid="vorbestehend" aria-pressed="{% if pos.vorbestand_entscheid == 'vorbestehend' %}true{% else %}false{% endif %}">{% trans "Vorbestehend, nicht belasten" %}</button>
             </div>
         </div>
-        {% endif %}{% endwith %}{% endif %}
+        {% endif %}{% endwith %}{% elif pos.ausstattung %}
+        <div class="vo-vor">{% trans "Raumbuch" %}: <b>{{ pos.ausstattung.get_zustand_display }}</b></div>
+        {% endif %}
         <div class="vo-mehr" {% if not pos.kommentar and pos.zustand != 'uebermaessig' and not pos.foto %}hidden{% endif %}>
             <label class="vo-feld"><span class="fw-label">{% trans "Bezeichnung" %}</span>
                 <input class="fw-feld" name="bezeichnung" data-feld="bezeichnung" maxlength="120" value="{{ pos.bezeichnung }}"></label>

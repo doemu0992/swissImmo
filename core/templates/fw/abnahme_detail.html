@@ -216,12 +216,13 @@
     <div class="fw-kopf"><h2>{% trans "Bewertete Bauteile" %}</h2><span class="fw-neben">{{ positionen|length }}</span></div>
     <div class="fw-tablewrap">
 <table class="fw-table">
-        <thead><tr><th>{% trans "Raum" %}</th><th>{% trans "Bauteil" %}</th>{% if p.vorgaenger %}<th>{% trans "Vorzustand" %}</th>{% endif %}<th>{% trans "Zustand" %}</th><th>{% trans "Kommentar" %}</th></tr></thead>
+        <thead><tr><th>{% trans "Raum" %}</th><th>{% trans "Bauteil" %}</th><th>{% trans "Vorzustand" %}</th><th>{% trans "Zustand" %}</th><th>{% trans "Veränderung" %}</th><th>{% trans "Kommentar" %}</th></tr></thead>
         <tbody>
             {% for pos in positionen %}
             <tr><td>{{ pos.raum }}</td><td class="fw-strong">{{ pos.bezeichnung }}</td>
-                {% if p.vorgaenger %}<td>{{ pos.vorgaenger_position.get_zustand_display|default:"—" }}</td>{% endif %}
+                <td>{{ pos.vor.text|default:"—" }}</td>
                 <td><span class="fw-chip {% if pos.zustand == 'io' %}fw-good{% elif pos.zustand == 'normal' %}fw-warn{% elif pos.zustand == 'uebermaessig' %}fw-crit{% else %}fw-mut{% endif %}">{{ pos.get_zustand_display }}</span></td>
+                <td>{% if pos.veraenderung %}<span class="fw-chip {% if pos.veraenderung == 'schlechter' %}fw-warn{% elif pos.veraenderung == 'besser' %}fw-good{% else %}fw-mut{% endif %}">{{ pos.veraenderung_text }}</span>{% else %}—{% endif %}</td>
                 <td>{{ pos.kommentar|default:"—" }}{% if pos.vorbestand_entscheid == 'vorbestehend' %} · <b>{% trans "Vorbestehend" %}</b>{% elif pos.vorbestand_entscheid == 'mieter' %} · <b>{% trans "Dem Mieter belastet" %}</b>{% endif %}</td></tr>
             {% endfor %}
         </tbody>

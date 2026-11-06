@@ -203,6 +203,14 @@ def abschluss_folgen(prot, user=None):
 
     Gibt die Zeilen des Schlüsselverzeichnisses zurück, die nicht gebucht
     werden konnten (None, wenn die Buchung fehlschlug)."""
+    # Das Raumbuch folgt der Abnahme (core/services/zustandsvergleich.py). Ein Fehler hier darf den schon
+    # gespeicherten Abschluss nicht zurücknehmen.
+    try:
+        from core.services.zustandsvergleich import raumbuch_aktualisieren
+        raumbuch_aktualisieren(prot)
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception('Raumbuch nach Abnahme %s nicht nachgeführt', prot.pk)
     if prot.typ != 'auszug':
         return schluessel_folgen(prot, user)
     from core.services.automation import erledige_pendenzen_fuer
