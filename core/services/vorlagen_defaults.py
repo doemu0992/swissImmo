@@ -122,6 +122,11 @@ STANDARD_VORLAGEN = [
 ]
 
 
+def alle_standard_vorlagen():
+    from core.services.vorlagen_briefe import BRIEF_VORLAGEN
+    return STANDARD_VORLAGEN + BRIEF_VORLAGEN
+
+
 def seed_standard_vorlagen():
     """Legt fehlende Standardvorlagen an (idempotent). Gibt Anzahl erstellter zurück."""
     from crm.models import Vorlage
@@ -143,7 +148,7 @@ def seed_standard_vorlagen():
 
 def _anlegen(Vorlage):
     erstellt = 0
-    for d in STANDARD_VORLAGEN:
+    for d in alle_standard_vorlagen():
         # `alle_organisationen`: Diese Vorlagen SIND die mitgelieferten
         # (`organisation IS NULL`) und gelten fuer alle Verwaltungen. Die
         # Vorhandenseins-Pruefung muss sie deshalb unabhaengig vom Kontext

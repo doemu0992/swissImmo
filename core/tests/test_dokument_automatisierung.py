@@ -74,13 +74,13 @@ class PlatzhalterTests(SimpleTestCase):
         """Bestehende Vorlagen in Kundendaten dürfen beim Speichern nicht abgelehnt werden."""
         from core.services.platzhalter import unbekannte
         from core.services.ticket_workflow import TICKET_PLATZHALTER
-        from core.services.vorlagen_defaults import STANDARD_VORLAGEN
+        from core.services.vorlagen_defaults import alle_standard_vorlagen
         from core.views.fw.profil import PLATZHALTER_HILFE
         alte = ' '.join(c for c, _b in PLATZHALTER_HILFE) + ' '.join(c for c, _b in TICKET_PLATZHALTER)
         alte += ' {name} {anrede} {strasse} {plz} {ort} {adresse} {monat} {betrag} {gebuehr} {mieter} {termin}'
         alte += ' {bewerber_name}'
         self.assertEqual(unbekannte(alte), [])
-        for v in STANDARD_VORLAGEN:
+        for v in alle_standard_vorlagen():
             with self.subTest(vorlage=v['name']):
                 self.assertEqual(unbekannte(v['betreff'] + v['inhalt']), [])
 
@@ -327,6 +327,7 @@ class RegelTests(EigeneMedien, TestCase):
         wurzel = pathlib.Path(settings.BASE_DIR) / 'core' / 'views' / 'fw'
         erwartet = {
             'vertrag_erstellt': ('vertragserstellung.py', 1),
+            'vertrag_haustier': ('vertragserstellung.py', 1),
             'bewerber_zugesagt': ('mietprozess.py', 1),
             'kuendigung_erfasst': ('kuendigung.py', 1),
             'mza_versandt': ('mietzins.py', 1),

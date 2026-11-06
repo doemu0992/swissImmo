@@ -38389,3 +38389,162 @@ msgstr ""
 #: core/templates/fw/liegenschaft_detail.html:335
 msgid "z. B. Waschküche Haus B"
 msgstr "e.g. Laundry room building B"
+
+msgid "Unbekannte Fristart."
+msgstr "Unknown deadline type."
+
+msgid "Bitte das Fristdatum angeben."
+msgstr "Please enter the deadline date."
+
+msgid "Das Fristdatum muss in der Zukunft liegen."
+msgstr "The deadline date must be in the future."
+
+msgid "Bitte die Fristdauer in Tagen angeben (1 bis %(max)s)."
+msgstr "Please enter the deadline in days (1 to %(max)s)."
+
+msgid ""
+"Im Brief stehen Platzhalter ohne Wert: %(liste)s. Bitte die Frist in der "
+"Vorlage oder beim Erstellen angeben."
+msgstr ""
+"The letter contains placeholders without a value: %(liste)s. Please set the "
+"deadline in the template or when creating the letter."
+
+msgid "Frist bis %(datum)s."
+msgstr "Deadline: %(datum)s."
+
+msgid ""
+"Frist: %(tage)s Tage ab Zugang des Schreibens. Provisorisch bis %(datum)s; "
+"mit der Bestätigung des Zugangs steht das Fristende fest."
+msgstr ""
+"Deadline: %(tage)s days from receipt of the letter. Provisional until "
+"%(datum)s; confirming receipt fixes the end of the deadline."
+
+msgid ""
+"Einschreiben: nach dem Versand die Sendungsnummer erfassen, danach den "
+"Zugang bestätigen."
+msgstr ""
+"Registered mail: after sending, enter the tracking number, then confirm "
+"receipt."
+
+msgid "Einschreiben an %(name)s: %(betreff)s"
+msgstr "Registered mail to %(name)s: %(betreff)s"
+
+msgid "Frist (Einschreiben) %(name)s: %(betreff)s"
+msgstr "Deadline (registered mail) %(name)s: %(betreff)s"
+
+msgid "Frist %(name)s: %(betreff)s"
+msgstr "Deadline %(name)s: %(betreff)s"
+
+msgid "nichts — die Tierhaltebewilligung entsteht nur über diese Regel"
+msgstr "nothing — the pet permission is created only by this rule"
+
+msgid "Haustiere (Angabe im Mieterstamm)"
+msgstr "Pets (as stated in the tenant record)"
+
+msgid "Fristende, ausgeschrieben"
+msgstr "End of deadline, written out"
+
+msgid "Fristende"
+msgstr "End of deadline"
+
+msgid "Frist in Tagen"
+msgstr "Deadline in days"
+
+msgid "ein Haustier"
+msgstr "a pet"
+
+msgid "Sendungsnummer erfassen"
+msgstr "Enter tracking number"
+
+msgid "Brief erstellen"
+msgstr "Create letter"
+
+msgid "Keine Mieter mit aktivem Vertrag."
+msgstr "No tenants with an active contract."
+
+msgid "Als Einschreiben versenden"
+msgstr "Send as registered mail"
+
+msgid ""
+"Nach dem Versand erfasst du bei der Pendenz die Sendungsnummer und "
+"bestätigst den Zugang."
+msgstr ""
+"After sending, you enter the tracking number on the task and confirm "
+"receipt."
+
+msgid "Frist bis"
+msgstr "Deadline until"
+
+msgid "Frist (Tage ab Zugang)"
+msgstr "Deadline (days from receipt)"
+
+msgid "Das Fristende steht fest, sobald der Zugang bestätigt ist."
+msgstr "The end of the deadline is fixed once receipt is confirmed."
+
+msgid "Briefe erstellt"
+msgstr "Letters created"
+
+msgid ""
+"Der Brief trägt «Einschreiben» über der Adresse. Nach dem Versand erfasst du"
+" bei der Pendenz die Sendungsnummer und bestätigst den Zugang."
+msgstr ""
+"The letter shows “Registered mail” above the address. After sending, you "
+"enter the tracking number on the task and confirm receipt."
+
+msgid "Dauer (Tage)"
+msgstr "Duration (days)"
+
+msgid ""
+"Festes Datum: im Text «{frist}» (z. B. 13. November 2026); vorbelegt mit "
+"Versand plus Dauer, beim Erstellen änderbar. Tage ab Zugang: im Text "
+"«{frist.tage}»; das Fristende steht erst fest, wenn der Zugang bestätigt "
+"ist."
+msgstr ""
+"Fixed date: in the text “{frist}” (e.g. 13 November 2026); prefilled with "
+"sending date plus duration, editable when creating. Days from receipt: in "
+"the text “{frist.tage}”; the end of the deadline is fixed only once receipt "
+"is confirmed."
+
+msgid "Einschreiben nicht abgeholt: Zugang fingiert am %(datum)s."
+msgstr "Registered mail not collected: receipt deemed on %(datum)s."
+
+msgid "Zugang bestätigt (%(datum)s)."
+msgstr "Receipt confirmed (%(datum)s)."
+
+msgid "Frist bis %(frist)s."
+msgstr "Deadline: %(frist)s."
+
+msgid "Keine Briefe zum Anzeigen."
+msgstr "No letters to show."
+
+msgid "Die Fristdauer ist eine Zahl von 1 bis 365 Tagen."
+msgstr "The deadline duration is a number from 1 to 365 days."
+
+msgid "Für die Frist bitte die Dauer in Tagen angeben."
+msgstr "Please enter the duration in days for the deadline."
+
+msgid ""
+"Der Text nennt ein Fristdatum ({frist}), die Frist ist aber nicht «Festes "
+"Datum»."
+msgstr ""
+"The text mentions a deadline date ({frist}), but the deadline is not “Fixed "
+"date”."
+
+msgid ""
+"Der Text nennt die Fristdauer ({frist.tage}), die Vorlage hat aber keine "
+"Frist."
+msgstr ""
+"The text mentions the deadline duration ({frist.tage}), but the template has"
+" no deadline."
+
+msgid "Vertrag erstellt, Haustier angegeben"
+msgstr "Contract created, pet stated"
+
+msgid "Keine Frist"
+msgstr "No deadline"
+
+msgid "Festes Datum (ab Versand)"
+msgstr "Fixed date (from sending)"
+
+msgid "Tage ab Zugang des Schreibens"
+msgstr "Days from receipt of the letter"

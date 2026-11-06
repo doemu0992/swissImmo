@@ -792,6 +792,7 @@ class Vorlage(models.Model):
     #: bleiben fest verdrahtet und im Original.
     EREIGNIS_CHOICES = [
         ('vertrag_erstellt', _('Vertrag erstellt')),
+        ('vertrag_haustier', _('Vertrag erstellt, Haustier angegeben')),
         ('bewerber_zugesagt', _('Bewerbung zugesagt')),
         ('kuendigung_erfasst', _('Kündigung erfasst')),
         ('mza_versandt', _('Mietzinsanpassung versandt')),
@@ -806,6 +807,19 @@ class Vorlage(models.Model):
     sprache = models.CharField("Sprache", max_length=2, choices=SPRACHE_CHOICES, default='de')
     ereignis = models.CharField("Ereignis", max_length=30, choices=EREIGNIS_CHOICES,
                                 blank=True, default='')
+    #: Brief als Einschreiben versenden: «Einschreiben» über der Adresse, und es entsteht eine Pendenz, an der man die
+    #: Sendungsnummer erfasst (Track & Trace, Zugang bestätigen).
+    einschreiben = models.BooleanField("Als Einschreiben versenden", default=False)
+    FRIST_ART_CHOICES = [
+        ('', _('Keine Frist')),
+        ('datum', _('Festes Datum (ab Versand)')),
+        ('zugang', _('Tage ab Zugang des Schreibens')),
+    ]
+    #: Die Frist, die der Brief setzt. `datum`: Versanddatum plus `frist_tage`, im Brief als `{frist}`, beim Erstellen
+    #: änderbar. `zugang`: `frist_tage` Tage ab Erhalt des Schreibens (`{frist.tage}`); das Datum steht erst fest,
+    #: wenn der Zugang bestätigt ist (Empfangstheorie, wie bei der Fristansetzung nach Art. 257d OR).
+    frist_art = models.CharField("Frist", max_length=6, choices=FRIST_ART_CHOICES, blank=True, default='')
+    frist_tage = models.PositiveSmallIntegerField("Fristdauer (Tage)", null=True, blank=True)
     #: Zählt jedes Speichern einer eigenen Vorlage (`fw_vorlage_form`). Eine
     #: Kopie der Systemvorlage setzt die Zählung der Vorlage fort, aus der sie
     #: entsteht.

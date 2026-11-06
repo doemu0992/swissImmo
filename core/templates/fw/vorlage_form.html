@@ -62,6 +62,21 @@ stehen beide untereinander (`fw-raster l2`). Gespeichert wird über
             <div class="fw-feldblock"><span class="fw-label">{% trans "Status" %}</span>
                 <input type="hidden" name="aktiv_feld" value="1">
                 <label class="fw-vl-schalter"><input type="checkbox" name="aktiv" value="1" {% if werte.aktiv %}checked{% endif %}> {% trans "aktiv" %}</label></div>
+            <div class="fw-feldblock breit" id="vf-versand">
+                <span class="fw-label">{% trans "Versand" %}</span>
+                <input type="hidden" name="einschreiben_feld" value="1">
+                <label class="fw-vl-schalter"><input type="checkbox" name="einschreiben" value="1" {% if werte.einschreiben %}checked{% endif %}> {% trans "Als Einschreiben versenden" %}</label>
+                <p class="fw-hilfe">{% trans "Der Brief trägt «Einschreiben» über der Adresse. Nach dem Versand erfasst du bei der Pendenz die Sendungsnummer und bestätigst den Zugang." %}</p>
+                <div class="flex flex-wrap items-end gap-3 mt-2">
+                    <div><label for="vf-frist-art" class="fw-label">{% trans "Frist" %}</label>
+                        <select id="vf-frist-art" name="frist_art" class="fw-feld">
+                            {% for val, lbl in frist_arten %}<option value="{{ val }}" {% if werte.frist_art == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+                        </select></div>
+                    <div id="vf-frist-tage-block"{% if not werte.frist_art %} hidden{% endif %}><label for="vf-frist-tage" class="fw-label">{% trans "Dauer (Tage)" %}</label>
+                        <input id="vf-frist-tage" name="frist_tage" type="number" min="1" max="365" inputmode="numeric" value="{{ werte.frist_tage|default_if_none:'' }}" class="fw-feld w-28"></div>
+                </div>
+                <p class="fw-hilfe">{% trans "Festes Datum: im Text «{frist}» (z. B. 13. November 2026); vorbelegt mit Versand plus Dauer, beim Erstellen änderbar. Tage ab Zugang: im Text «{frist.tage}»; das Fristende steht erst fest, wenn der Zugang bestätigt ist." %}</p>
+            </div>
             <div class="fw-feldblock breit"><label for="vf-betreff" class="fw-label">{% trans "Betreff" %}</label>
                 <input id="vf-betreff" name="betreff" value="{{ werte.betreff }}" class="fw-feld"></div>
             <div class="fw-feldblock breit"><label for="vf-inhalt" class="fw-label">{% trans "Inhalt" %}</label>
@@ -133,6 +148,8 @@ stehen beide untereinander (`fw-raster l2`). Gespeichert wird über
     document.querySelectorAll('[data-einfuegen]').forEach(function (b) {
         b.addEventListener('click', function () { einfuegen(letztes, b.getAttribute('data-einfuegen')); });
     });
+    var fristArt = document.getElementById('vf-frist-art'), fristBlock = document.getElementById('vf-frist-tage-block');
+    if (fristArt && fristBlock) fristArt.addEventListener('change', function () { fristBlock.hidden = !fristArt.value; });
     var sprache = document.getElementById('vf-sprache');
     document.querySelectorAll('#vf-sprachen [data-sprache]').forEach(function (b) {
         b.addEventListener('click', function () {

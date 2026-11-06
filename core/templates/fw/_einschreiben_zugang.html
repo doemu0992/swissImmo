@@ -1,4 +1,4 @@
-{% load zeichen %}
+{% load zeichen i18n %}
 {% comment %}
 Einschreiben-Zeile für eine 257d-Frist-Pendenz: Track & Trace (Swiss Post) +
 «Zugang bestätigen» (Empfangstheorie, BGE 119 II 147: Abholung bzw. letzter Tag der Abholfrist). Wird im Fristen-Center, auf der
@@ -8,14 +8,25 @@ Parameter (per {% include ... with %}):
   zugang_heute – heutiges Datum als 'YYYY-MM-DD' (Default + max für das Datumsfeld)
   zugang_next  – seiten-relatives /neu/-Ziel für den Rücksprung nach Bestätigung
 {% endcomment %}
-{% if p.sendungsnummer %}
+{% if p.sendungsnummer or p.einschreiben %}
 <div class="mt-2 flex items-center gap-2 flex-wrap fw-fs-klein">
+    {% if p.sendungsnummer %}
     <a href="https://www.post.ch/swisspost-tracking?formattedParcelCodes={{ p.sendungsnummer|urlencode }}&p_language=de"
        target="_blank" rel="noopener"
        class="fw-link inline-flex items-center gap-1">
         {% zeichen 'lauf' %} Track &amp; Trace
         <span class="font-mono fw-klein">{{ p.sendungsnummer }}</span>
     </a>
+    {% else %}
+    {% comment %}Einschreiben aus einer Vorlage: Die Sendungsnummer gibt es erst nach dem Versand an der Post.{% endcomment %}
+    <form method="post" action="/neu/fristen/verzug/{{ p.id }}/sendung/" class="inline-flex items-center gap-1.5 flex-wrap">
+        {% csrf_token %}
+        {% if zugang_next %}<input type="hidden" name="next" value="{{ zugang_next }}">{% endif %}
+        <input type="text" name="sendungsnummer" required inputmode="numeric" placeholder="{% trans 'Sendungsnummer' %}" class="fw-feld font-mono w-56" aria-label="{% trans 'Sendungsnummer' %}">
+        {% if not p.zugang_am %}<input type="date" name="versand_am" value="{{ p.versand_am|date:'Y-m-d' }}" max="{{ zugang_heute }}" title="{% trans 'Versanddatum' %}" class="fw-feld">{% endif %}
+        <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %} {% trans "Sendungsnummer erfassen" %}</button>
+    </form>
+    {% endif %}
     {% if p.zugang_am %}
     <span class="fw-chip fw-good" {% if p.zugang_fingiert %}title="Nicht abgeholt: Der Zugang gilt am letzten Tag der siebentägigen Abholfrist als erfolgt (BGE 119 II 147)."{% endif %}>
         {% zeichen 'gut' %} Zugang {{ p.zugang_am|date:"d.m.Y" }}{% if p.zugang_fingiert %} (fingiert){% endif %}
@@ -38,6 +49,7 @@ Parameter (per {% include ... with %}):
         </button>
     </form>
     {% endif %}
+    {% if p.sendungsnummer %}
     <details class="fw-fs-klein">
         <summary class="fw-link cursor-pointer select-none">{% zeichen 'bearbeiten' klasse='mr-0.5' %}Nummer korrigieren</summary>
         <form method="post" action="/neu/fristen/verzug/{{ p.id }}/sendung/" class="mt-1.5 flex items-center gap-1.5 flex-wrap">
@@ -54,5 +66,6 @@ Parameter (per {% include ... with %}):
             </button>
         </form>
     </details>
+    {% endif %}
 </div>
 {% endif %}

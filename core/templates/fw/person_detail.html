@@ -613,12 +613,12 @@ alten Liegenschaft betreut.
             <span class="fw-marker {% if e.ueberfaellig %}crit{% else %}warn{% endif %}"></span>
             <div class="fw-mitte">
                 <div class="fw-t">{{ e.p.titel }}</div>
-                <div class="fw-s">{% if e.p.vertrag %}{{ e.p.vertrag.einheit.bezeichnung }} · {% endif %}{% if e.ueberfaellig %}{% trans "überfällig" %}{% else %}{% blocktrans count n=e.tage %}in {{ n }} Tag{% plural %}in {{ n }} Tagen{% endblocktrans %}{% endif %}{% if e.p.beschreibung %} · {{ e.p.beschreibung }}{% endif %}{% if e.p.sendungsnummer and not e.p.zugang_am %} · {% trans "provisorisch" %}{% endif %}</div>
+                <div class="fw-s">{% if e.p.vertrag %}{{ e.p.vertrag.einheit.bezeichnung }} · {% endif %}{% if e.ueberfaellig %}{% trans "überfällig" %}{% else %}{% blocktrans count n=e.tage %}in {{ n }} Tag{% plural %}in {{ n }} Tagen{% endblocktrans %}{% endif %}{% if e.p.beschreibung %} · {{ e.p.beschreibung }}{% endif %}{% if e.p.frist_provisorisch %} · {% trans "provisorisch" %}{% endif %}</div>
                 {% comment %} Einschreiben-Zugang: aus dem Finanzen-Bereich hierher
                    gezogen. Er war dort die einzige Stelle, an der sich der Zugang
                    erfassen liess — waere er beim Zusammenlegen mitgegangen, haette
                    die strikte Empfangstheorie kein Bedienelement mehr. {% endcomment %}
-                {% if e.p.sendungsnummer %}{% include 'fw/_einschreiben_zugang.html' with p=e.p zugang_heute=heute_iso zugang_next=pe_zugang_next %}{% endif %}
+                {% if e.p.sendungsnummer or e.p.einschreiben %}{% include 'fw/_einschreiben_zugang.html' with p=e.p zugang_heute=heute_iso zugang_next=pe_zugang_next %}{% endif %}
             </div>
             <div class="fw-zeit">{{ e.p.faellig_am|date:"d.m.Y" }}</div>
         </div>

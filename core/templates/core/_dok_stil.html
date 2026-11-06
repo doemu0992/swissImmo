@@ -7,6 +7,7 @@ wird geladen oder eingebettet).
 Parameter aus dem Kontext (alle optional):
   briefkopf.farbe   Akzentfarbe der Organisation (#rrggbb, geprüft). Leer = neutrales Dunkelgrau.
   adressfenster     True: Empfängerfeld rechts (Format C5/6, SN 010130) auf Seite 1.
+  einschreiben      True (mit adressfenster): Zustellvermerk «Einschreiben» in einem freien Streifen über dem Adressfeld.
   visum             True: Paraphen-Zeile im Seitenfuss (Verträge).
 
 Seitenvorlagen: `@page` (ohne Namen) ist in xhtml2pdf IMMER die erste Seite,
@@ -27,7 +28,8 @@ Klassen für die Dokumente:
 {% endcomment %}{% firstof briefkopf.farbe "#1f2937" as akzent %}
     @page { size: A4 portrait; margin: 1.5cm 2cm {% if visum %}3.5cm{% else %}2.3cm{% endif %} 2cm;
         @frame fuss { -pdf-frame-content: fussInhalt; bottom: 0.6cm; margin-left: 2cm; margin-right: 2cm; height: {% if visum %}2.6cm{% else %}1.5cm{% endif %}; }
-        {% if adressfenster %}@frame empfaenger { -pdf-frame-content: empfaengerInhalt; left: 11.8cm; top: 4.5cm; width: 8.5cm; height: 3.4cm; }{% endif %} }
+        {% if adressfenster %}@frame empfaenger { -pdf-frame-content: empfaengerInhalt; left: 11.8cm; top: 4.5cm; width: 8.5cm; height: 3.4cm; }{% endif %}
+        {% if adressfenster and einschreiben %}@frame einschreiben { -pdf-frame-content: einschreibenInhalt; left: 11.8cm; top: 3.85cm; width: 8.5cm; height: 0.6cm; }{% endif %} }
     @page weiter { size: A4 portrait; margin: 2.7cm 2cm {% if visum %}3.5cm{% else %}2.3cm{% endif %} 2cm;
         @frame seitenkopf { -pdf-frame-content: seitenkopfInhalt; top: 1.1cm; margin-left: 2cm; margin-right: 2cm; height: 1.1cm; }
         @frame fuss { -pdf-frame-content: fussInhalt; bottom: 0.6cm; margin-left: 2cm; margin-right: 2cm; height: {% if visum %}2.6cm{% else %}1.5cm{% endif %}; } }

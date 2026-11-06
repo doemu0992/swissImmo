@@ -254,6 +254,9 @@ UEBERSETZT = (
     'fw/vertrag_detail.html',
     'fw/vertrag_neu.html',
     'fw/vorlage_form.html',
+    'fw/_einschreiben_zugang.html',
+    'fw/vorlage_brief.html',
+    'fw/vorlage_brief_fertig.html',
     'fw/vorlagen.html',
     'fw/_vorlage_vorschau.html',   # Modul 5: Live-Vorschau
     'fw/dokument_verlauf.html',    # Modul 5: Fassungen eines Dokuments

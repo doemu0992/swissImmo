@@ -487,6 +487,8 @@ class Pendenz(OrganisationAusKette):
     # Nichtabholung der letzte Tag der 7-tägigen Abholfrist (BGE 119 II 147
     # E. 2), NICHT die Abholeinladung. Den Zugang bestätigt der Nutzer aus
     # Track&Trace. Bis dahin ist faellig_am provisorisch (und nie zu kurz).
+    #: Die Pendenz gehört zu einem Einschreiben (auch ohne Sendungsnummer: sie wird erst nach dem Versand erfasst).
+    einschreiben = models.BooleanField("Einschreiben", default=False)
     sendungsnummer = models.CharField("Sendungsnummer (Einschreiben)", max_length=40, blank=True, default='')
     versand_am = models.DateField("Versendet am", null=True, blank=True)
     zugang_am = models.DateField("Zugang bestätigt am", null=True, blank=True)
@@ -506,6 +508,14 @@ class Pendenz(OrganisationAusKette):
 
     def __str__(self):
         return f"{self.titel} ({'erledigt' if self.erledigt else 'offen'})"
+
+    @property
+    def frist_provisorisch(self):
+        """Das Fristende ist noch nicht verlässlich: Einschreiben mit Nummer, Zugang unbestätigt. Ausgenommen ein Brief aus
+        einer Vorlage mit FESTEM Fristdatum: Das Datum steht im Brief und ändert sich mit dem Zugang nicht."""
+        if not self.sendungsnummer or self.zugang_am:
+            return False
+        return not ((self.quelle or '').startswith('brief:') and not self.frist_tage)
 
 
 class Archiveintrag(models.Model):

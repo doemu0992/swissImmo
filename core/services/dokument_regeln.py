@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 #: Nachgesehen an den Aufrufstellen, nicht aus dem Konzept übernommen.
 FEST_VERDRAHTET = {
     'vertrag_erstellt': _('Mietvertrag mit Beilagen, Anfangsmietzins-Formular, wo Pflicht'),
+    'vertrag_haustier': _('nichts — die Tierhaltebewilligung entsteht nur über diese Regel'),
     'bewerber_zugesagt': _('E-Mail aus der Vorlage «Bewerber – Zusage»'),
     'kuendigung_erfasst': _('Pendenzen der Auszugscheckliste; das amtliche Formular entsteht beim Abruf'),
     'mza_versandt': _('amtliches Formular in der Akte (nur das Kantonsoriginal)'),
