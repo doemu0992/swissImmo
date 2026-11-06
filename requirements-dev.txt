@@ -10,4 +10,4 @@
 
 -r requirements.txt
 
-ruff==0.15.8
+ruff==0.17.3
