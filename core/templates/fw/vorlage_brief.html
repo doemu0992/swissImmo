@@ -11,11 +11,14 @@
 {% if fehler %}<div class="fw-card" role="alert">{% for f in fehler %}<p class="fw-s">{{ f }}</p>{% endfor %}</div>{% endif %}
 <form method="post" class="fw-card" id="brief-form">
     {% csrf_token %}
+    <div class="fw-formular p-5">
     <div class="fw-feldblock breit">
         <span class="fw-label">{% trans "Empfänger" %}</span>
+        <div class="flex flex-col gap-2 mt-1">
         {% for m in empfaenger %}
         <label class="fw-vl-schalter"><input type="checkbox" name="mieter" value="{{ m.id }}" {% if m.id in gewaehlt %}checked{% endif %}> {{ m.display_name }}</label>
         {% empty %}<p class="fw-hilfe">{% trans "Keine Mieter mit aktivem Vertrag." %}</p>{% endfor %}
+        </div>
     </div>
     <div class="fw-feldblock breit">
         <span class="fw-label">{% trans "Versand" %}</span>
@@ -33,6 +36,7 @@
     <div class="fw-formular-fuss">
         <a href="/neu/vorlagen/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
         <button type="submit" class="fw-btn fw-primary">{% zeichen 'dokument' %}{% trans "Brief erstellen" %}</button>
+    </div>
     </div>
 </form>
 {% endblock %}
