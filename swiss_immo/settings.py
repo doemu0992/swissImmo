@@ -448,6 +448,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 MEDIA_URL = '/media/'
+# Ein Zähler für alle Prozesse (Login-Fehlversuche, Formular-Limits): siehe `swiss_immo/cache_config.py`.
+from swiss_immo.cache_config import caches_fuer  # noqa: E402
+CACHES = caches_fuer(TESTING, BASE_DIR, os.getenv('CACHE_VERZEICHNIS') or None)
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -11,6 +11,8 @@ __pycache__/
 
 # Ordner die wir nicht im Code brauchen
 media/
+cache_dateien/
+e2e_cache/
 staticfiles/
 .virtualenvs/
 # E2E / Playwright
