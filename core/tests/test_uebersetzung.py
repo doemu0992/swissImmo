@@ -223,6 +223,7 @@ UEBERSETZT = (
     'fw/nk_zustellung.html',
     'fw/objekt_ausschreiben.html',
     'fw/objekt_detail.html',
+    'fw/_raumbuch_liste.html',        # Raumliste von Wohnung und Gemeinschaftsräumen (aus objekt_detail herausgelöst)
     'fw/objekt_form.html',
     'fw/objekte.html',
     'fw/pendenzen.html',

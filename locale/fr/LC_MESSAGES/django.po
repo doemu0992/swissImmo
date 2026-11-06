@@ -38990,3 +38990,40 @@ msgstr "Ajouter une pièce"
 #: core/templates/fw/objekt_detail.html:769
 msgid "Assistent, Katalog oder eigenes Element"
 msgstr "Assistant, catalogue ou élément personnalisé"
+
+#: core/templates/fw/liegenschaft_detail.html:307
+msgid "Gemeinschaftsräume"
+msgstr "Locaux communs"
+
+#: core/templates/fw/liegenschaft_detail.html:308
+msgid ""
+"Waschküche, Trockenraum, Veloraum …: Räume, die allen Wohnungen des Hauses "
+"gehören. Sie erscheinen nicht in der Wohnungsabnahme."
+msgstr ""
+"Buanderie, séchoir, local à vélos … : pièces qui appartiennent à tous les "
+"logements de l’immeuble. Elles ne figurent pas dans l’état des lieux d’un "
+"logement."
+
+#: core/templates/fw/liegenschaft_detail.html:309
+msgid ""
+"Noch keine Gemeinschaftsräume erfasst. Lege unten die Waschküche, den "
+"Trockenraum oder den Veloraum an."
+msgstr ""
+"Aucun local commun saisi. Créez ci-dessous la buanderie, le séchoir ou le "
+"local à vélos."
+
+#: core/templates/fw/liegenschaft_detail.html:315
+msgid "Gemeinschaftsraum hinzufügen"
+msgstr "Ajouter un local commun"
+
+#: core/templates/fw/liegenschaft_detail.html:320
+msgid ""
+"Wähle die Räume des Hauses: Jeder wird mit seiner Standard-Ausstattung und "
+"den Lebensdauern angelegt. Räume, die es schon gibt, bleiben unverändert."
+msgstr ""
+"Choisissez les locaux de l’immeuble : chacun est créé avec son équipement "
+"standard et ses durées de vie. Les locaux déjà existants restent inchangés."
+
+#: core/templates/fw/liegenschaft_detail.html:335
+msgid "z. B. Waschküche Haus B"
+msgstr "p. ex. Buanderie bâtiment B"

@@ -93,6 +93,29 @@ RAUM_KATALOG = {
         ('Sonnenschutz-Motor', 15), ('Aussenbeleuchtung', 15),
         ('Steckdose (aussen)', 25), ('Wasseranschluss (aussen)', 25),
     ],
+    'Trockenraum': [
+        ('Wäscheleinen / Trocknungsgestell', 15), ('Raumentfeuchter / Lüftung', 15),
+        ('Wände / Anstrich', 8), ('Bodenbelag', 20), ('Tür', 30), ('Fenster', 30),
+    ] + _ALLGEMEIN_ELEKTRO,
+    'Veloraum': [
+        ('Veloständer / Bügel', 20), ('Wände / Anstrich', 8), ('Bodenbelag', 20),
+        ('Tür / Tor', 30), ('Schliessanlage / Schloss', 20),
+    ] + _ALLGEMEIN_ELEKTRO,
+    'Treppenhaus / Eingang': [
+        ('Haustür', 30), ('Briefkastenanlage', 30), ('Gegensprechanlage / Video', 20),
+        ('Treppenbelag', 25), ('Geländer', 40), ('Wände / Anstrich', 8), ('Decke / Anstrich', 8),
+        ('Fenster', 30),
+    ] + _ALLGEMEIN_ELEKTRO,
+    'Gemeinschaftsraum': [
+        ('Bodenbelag / Parkett', 25), ('Wände / Anstrich', 8), ('Decke / Anstrich', 8),
+        ('Fenster', 30), ('Storen / Rollladen', 25), ('Tür', 30), ('Möblierung', 15),
+        ('Küchenzeile / Office', 20),
+    ] + _ALLGEMEIN_ELEKTRO,
+    'Einstellhalle': [
+        ('Garagentor / Antrieb', 20), ('Bodenbelag / Beschichtung', 25), ('Markierungen / Nummerierung', 10),
+        ('Lüftung', 20), ('Brandmelder / Löschmittel', 10), ('Wände / Anstrich', 8),
+        ('Schranke / Zufahrtskontrolle', 15),
+    ] + _ALLGEMEIN_ELEKTRO,
     'Heizung / Technik': [
         ('Heizung / Wärmeerzeuger', 30), ('Heizkörper / Radiatoren', 30),
         ('Bodenheizung-Verteiler', 30), ('Boiler / Warmwasserspeicher', 20),
@@ -105,7 +128,14 @@ RAUM_KATALOG = {
 _REIHENFOLGE = ['Küche', 'Wohnzimmer', 'Schlafzimmer', 'Zimmer', 'Bad / WC', 'Gäste-WC',
                 'Korridor / Entrée', 'Balkon / Terrasse', 'Reduit', 'Waschküche', 'Kellerabteil',
                 'Estrich / Dachabteil', 'Heizung / Technik']
-RAUMTYPEN = [t for t in _REIHENFOLGE if t in RAUM_KATALOG] + [t for t in RAUM_KATALOG if t not in _REIHENFOLGE]
+#: Räume, die allen Wohnungen eines Hauses gehören: Sie stehen im Raumbuch der LIEGENSCHAFT, nicht in dem einer Wohnung
+#: und nicht in der Wohnungsabnahme. «Waschküche» und «Heizung / Technik» gibt es in beiden Welten (eigene Waschküche
+#: in der Wohnung, Heizraum im Haus), darum stehen sie in beiden Listen.
+GEMEINSCHAFT_TYPEN = ['Waschküche', 'Trockenraum', 'Veloraum', 'Treppenhaus / Eingang', 'Gemeinschaftsraum',
+                      'Einstellhalle', 'Heizung / Technik']
+_NUR_GEMEINSCHAFT = {'Trockenraum', 'Veloraum', 'Treppenhaus / Eingang', 'Gemeinschaftsraum', 'Einstellhalle'}
+RAUMTYPEN = [t for t in _REIHENFOLGE if t in RAUM_KATALOG and t not in _NUR_GEMEINSCHAFT] + \
+            [t for t in RAUM_KATALOG if t not in _REIHENFOLGE and t not in _NUR_GEMEINSCHAFT]
 
 #: Typen, von denen es mehrere Räume gibt: «Zimmer 1», «Zimmer 2», «Schlafzimmer 1» …
 NUMMERIERT = ('Zimmer', 'Schlafzimmer')
