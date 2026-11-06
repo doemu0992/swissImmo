@@ -38964,3 +38964,165 @@ msgstr ""
 #: core/templates/fw/liegenschaft_detail.html:335
 msgid "z. B. Waschküche Haus B"
 msgstr "p. es. Lavanderia edificio B"
+
+msgid "Unbekannte Fristart."
+msgstr "Tipo di termine sconosciuto."
+
+msgid "Bitte das Fristdatum angeben."
+msgstr "Indicare la data del termine."
+
+msgid "Das Fristdatum muss in der Zukunft liegen."
+msgstr "La data del termine deve essere nel futuro."
+
+msgid "Bitte die Fristdauer in Tagen angeben (1 bis %(max)s)."
+msgstr "Indicare la durata del termine in giorni (da 1 a %(max)s)."
+
+msgid ""
+"Im Brief stehen Platzhalter ohne Wert: %(liste)s. Bitte die Frist in der "
+"Vorlage oder beim Erstellen angeben."
+msgstr ""
+"La lettera contiene segnaposto senza valore: %(liste)s. Indicare il termine "
+"nel modello o durante la creazione."
+
+msgid "Frist bis %(datum)s."
+msgstr "Termine fino al %(datum)s."
+
+msgid ""
+"Frist: %(tage)s Tage ab Zugang des Schreibens. Provisorisch bis %(datum)s; "
+"mit der Bestätigung des Zugangs steht das Fristende fest."
+msgstr ""
+"Termine: %(tage)s giorni dal ricevimento della lettera. Provvisorio fino al "
+"%(datum)s; con la conferma del ricevimento il termine è definitivo."
+
+msgid ""
+"Einschreiben: nach dem Versand die Sendungsnummer erfassen, danach den "
+"Zugang bestätigen."
+msgstr ""
+"Raccomandata: dopo la spedizione registrare il numero di tracciamento, poi "
+"confermare il ricevimento."
+
+msgid "Einschreiben an %(name)s: %(betreff)s"
+msgstr "Raccomandata a %(name)s: %(betreff)s"
+
+msgid "Frist (Einschreiben) %(name)s: %(betreff)s"
+msgstr "Termine (raccomandata) %(name)s: %(betreff)s"
+
+msgid "Frist %(name)s: %(betreff)s"
+msgstr "Termine %(name)s: %(betreff)s"
+
+msgid "nichts — die Tierhaltebewilligung entsteht nur über diese Regel"
+msgstr ""
+"niente — l'autorizzazione per animali domestici nasce solo da questa regola"
+
+msgid "Haustiere (Angabe im Mieterstamm)"
+msgstr "Animali domestici (indicazione nell'anagrafica dell'inquilino)"
+
+msgid "Fristende, ausgeschrieben"
+msgstr "Fine del termine, per esteso"
+
+msgid "Fristende"
+msgstr "Fine del termine"
+
+msgid "Frist in Tagen"
+msgstr "Termine in giorni"
+
+msgid "ein Haustier"
+msgstr "un animale domestico"
+
+msgid "Sendungsnummer erfassen"
+msgstr "Registrare il numero di tracciamento"
+
+msgid "Brief erstellen"
+msgstr "Crea lettera"
+
+msgid "Keine Mieter mit aktivem Vertrag."
+msgstr "Nessun inquilino con contratto attivo."
+
+msgid "Als Einschreiben versenden"
+msgstr "Spedire come raccomandata"
+
+msgid ""
+"Nach dem Versand erfasst du bei der Pendenz die Sendungsnummer und "
+"bestätigst den Zugang."
+msgstr ""
+"Dopo la spedizione registri il numero di tracciamento nella pendenza e "
+"confermi il ricevimento."
+
+msgid "Frist bis"
+msgstr "Termine fino al"
+
+msgid "Frist (Tage ab Zugang)"
+msgstr "Termine (giorni dal ricevimento)"
+
+msgid "Das Fristende steht fest, sobald der Zugang bestätigt ist."
+msgstr ""
+"La fine del termine è definitiva non appena il ricevimento è confermato."
+
+msgid "Briefe erstellt"
+msgstr "Lettere create"
+
+msgid ""
+"Der Brief trägt «Einschreiben» über der Adresse. Nach dem Versand erfasst du"
+" bei der Pendenz die Sendungsnummer und bestätigst den Zugang."
+msgstr ""
+"La lettera reca la dicitura «Raccomandata» sopra l'indirizzo. Dopo la "
+"spedizione registri il numero di tracciamento nella pendenza e confermi il "
+"ricevimento."
+
+msgid "Dauer (Tage)"
+msgstr "Durata (giorni)"
+
+msgid ""
+"Festes Datum: im Text «{frist}» (z. B. 13. November 2026); vorbelegt mit "
+"Versand plus Dauer, beim Erstellen änderbar. Tage ab Zugang: im Text "
+"«{frist.tage}»; das Fristende steht erst fest, wenn der Zugang bestätigt "
+"ist."
+msgstr ""
+"Data fissa: nel testo «{frist}» (p. es. 13 novembre 2026); precompilata con "
+"spedizione più durata, modificabile alla creazione. Giorni dal ricevimento: "
+"nel testo «{frist.tage}»; la fine del termine è definitiva solo con la "
+"conferma del ricevimento."
+
+msgid "Einschreiben nicht abgeholt: Zugang fingiert am %(datum)s."
+msgstr "Raccomandata non ritirata: ricevimento fittizio il %(datum)s."
+
+msgid "Zugang bestätigt (%(datum)s)."
+msgstr "Ricevimento confermato (%(datum)s)."
+
+msgid "Frist bis %(frist)s."
+msgstr "Termine fino al %(frist)s."
+
+msgid "Keine Briefe zum Anzeigen."
+msgstr "Nessuna lettera da mostrare."
+
+msgid "Die Fristdauer ist eine Zahl von 1 bis 365 Tagen."
+msgstr "La durata del termine è un numero da 1 a 365 giorni."
+
+msgid "Für die Frist bitte die Dauer in Tagen angeben."
+msgstr "Per il termine indicare la durata in giorni."
+
+msgid ""
+"Der Text nennt ein Fristdatum ({frist}), die Frist ist aber nicht «Festes "
+"Datum»."
+msgstr ""
+"Il testo cita una data del termine ({frist}), ma il termine non è «Data "
+"fissa»."
+
+msgid ""
+"Der Text nennt die Fristdauer ({frist.tage}), die Vorlage hat aber keine "
+"Frist."
+msgstr ""
+"Il testo cita la durata del termine ({frist.tage}), ma il modello non ha un "
+"termine."
+
+msgid "Vertrag erstellt, Haustier angegeben"
+msgstr "Contratto creato, animale domestico indicato"
+
+msgid "Keine Frist"
+msgstr "Nessun termine"
+
+msgid "Festes Datum (ab Versand)"
+msgstr "Data fissa (dalla spedizione)"
+
+msgid "Tage ab Zugang des Schreibens"
+msgstr "Giorni dal ricevimento della lettera"
