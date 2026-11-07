@@ -1,0 +1,18 @@
+{% extends "emails/rahmen_karte.html" %}
+{% block inhalt %}
+      <p>{{ gruss }}</p>
+      <p>{{ einleitung }}</p>
+      <table style="margin:20px 0;border-collapse:collapse;">
+        <tr><td style="padding:6px 16px 6px 0;color:#64748b;">{{ benutzer_text }}</td>
+            <td style="padding:6px 0;font-weight:700;font-family:monospace;">{{ username }}</td></tr>
+        <tr><td style="padding:6px 16px 6px 0;color:#64748b;">{{ passwort_text }}</td>
+            <td style="padding:6px 0;font-weight:700;font-family:monospace;">{{ passwort }}</td></tr>
+      </table>
+      <p style="margin:24px 0;">
+        <a href="{{ login_url }}" style="background:{{ EMBER }};color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;display:inline-block;">{{ login_text }}</a>
+      </p>
+      <p style="color:#64748b;font-size:13px;">{{ adresse_text }}<br>
+        <a href="{{ login_url }}" style="color:{{ EMBER }};">{{ login_url }}</a></p>
+      <p style="color:#94a3b8;font-size:12px;margin-top:20px;">{{ hinweis }}</p>
+      {% if absender_firma %}<p style="margin:24px 0 0;color:#94a3b8;font-size:13px;">{{ absender_firma }}</p>{% endif %}
+{% endblock %}

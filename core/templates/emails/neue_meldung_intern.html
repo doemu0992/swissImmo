@@ -1,0 +1,13 @@
+{% extends "emails/rahmen_schlicht.html" %}
+{% block inhalt %}
+<h2 style="color:{{ EMBER }};">Neue Schadenmeldung {{ herkunft }}</h2>
+<table cellpadding="6" style="border-collapse:collapse;">
+  <tr><td style="color:#64748b;">Ticket</td><td><strong>#{{ ticket.id }}</strong></td></tr>
+  <tr><td style="color:#64748b;">Titel</td><td><strong>{{ ticket.titel }}</strong></td></tr>
+  <tr><td style="color:#64748b;">Objekt</td><td>{{ objekt }} · {{ einheit }}</td></tr>
+  <tr><td style="color:#64748b;">Raum</td><td>{{ ticket.raum|default:"—" }}</td></tr>
+  <tr><td style="color:#64748b;">Melder</td><td>{{ melder }}<br>{{ ticket.email_melder|default:"" }} {{ ticket.tel_melder|default:"" }}</td></tr>
+</table>
+<p style="margin-top:12px;white-space:pre-line;">{{ ticket.beschreibung|default:"" }}</p>
+<p style="color:#94a3b8;font-size:12px;margin-top:20px;">Diese Meldung erscheint in der Software unter Schadensfälle.</p>
+{% endblock %}
