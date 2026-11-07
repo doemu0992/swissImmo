@@ -24,7 +24,7 @@
             <div class="fw-feldblock">
                 <label class="fw-label" for="antwortadresse-feld">{% trans "Adresse" %}</label>
                 <div class="flex items-center gap-2">
-                    <input id="antwortadresse-feld" readonly value="{{ antwort.adresse }}" onfocus="this.select()"
+                    <input id="antwortadresse-feld" readonly value="{{ antwort.adresse }}" data-auswaehlen
                            class="fw-feld fw-mono flex-1 min-w-0">
                     <button type="button" class="fw-btn fw-knapp" data-kopiert="{% trans 'Kopiert' %}"
                             onclick="var b=this;navigator.clipboard.writeText(document.getElementById('antwortadresse-feld').value).then(function(){b.textContent=b.dataset.kopiert;});">{% zeichen 'kopieren' %}{% trans "Kopieren" %}</button>
@@ -58,7 +58,7 @@
             <div class="fw-feldblock">
                 <label class="fw-label" for="rechnungsadresse-feld">{% trans "Adresse" %}</label>
                 <div class="flex items-center gap-2">
-                    <input id="rechnungsadresse-feld" readonly value="{{ rechnung.adresse }}" onfocus="this.select()"
+                    <input id="rechnungsadresse-feld" readonly value="{{ rechnung.adresse }}" data-auswaehlen
                            class="fw-feld fw-mono flex-1 min-w-0">
                     <button type="button" class="fw-btn fw-knapp" data-kopiert="{% trans 'Kopiert' %}"
                             onclick="var b=this;navigator.clipboard.writeText(document.getElementById('rechnungsadresse-feld').value).then(function(){b.textContent=b.dataset.kopiert;});">{% zeichen 'kopieren' %}{% trans "Kopieren" %}</button>

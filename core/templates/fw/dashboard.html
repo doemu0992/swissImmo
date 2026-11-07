@@ -104,13 +104,13 @@
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <input type="hidden" name="ansicht" value="{{ ansicht }}">
             {% if av_band_aktiv %}<input type="hidden" name="fallart" value="{{ av_band_aktiv }}">{% endif %}
-            <select name="wer" onchange="this.form.submit()" aria-label="{% trans 'Zuständigkeit' %}">
+            <select name="wer" data-absenden aria-label="{% trans 'Zuständigkeit' %}">
                 <option value="">{% trans "Zuständig: alle" %}</option>
             {% for b in f_wer_auswahl %}
                 <option value="{{ b.pk }}" {% if f_wer and f_wer.pk == b.pk %}selected{% endif %}>{{ b.get_full_name|default:b.username }}</option>
             {% endfor %}
             </select>
-            <select name="mandat" onchange="this.form.submit()" aria-label="{% trans 'Mandat' %}">
+            <select name="mandat" data-absenden aria-label="{% trans 'Mandat' %}">
                 {# «Alle 0» las sich wie ein Fehler — ohne Mandate steht schlicht «Mandat: alle». #}
                 <option value="">{% trans "Mandat: alle" %}{% if f_mandat_auswahl %} {{ f_mandat_auswahl|length }}{% endif %}</option>
             {% for m in f_mandat_auswahl %}

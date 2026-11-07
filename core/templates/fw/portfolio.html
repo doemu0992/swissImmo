@@ -16,7 +16,7 @@
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <input type="hidden" name="monate" value="{{ monate }}">
             <label class="sr-only" for="pf-mandat">{% trans "Mandat" %}</label>
-            <select id="pf-mandat" name="mandat" class="fw-feld" onchange="this.form.submit()">
+            <select id="pf-mandat" name="mandat" class="fw-feld" data-absenden>
                 <option value="">{% trans "Alle Mandate" %}</option>
                 {% for m in mandate %}<option value="{{ m.pk }}"{% if mandat and mandat.pk == m.pk %} selected{% endif %}>{{ m.firma_oder_name }}</option>{% endfor %}
             </select>

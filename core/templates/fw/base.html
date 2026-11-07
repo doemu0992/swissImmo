@@ -93,7 +93,7 @@ Detailseiten rufen sie beim Namen.
         {% endcomment %}
         <form method="post" action="/neu/mandant/" class="fw-mandant sb-filter">{% csrf_token %}
             <label for="fwMandantWahl">{% trans "Mandant" %}</label>
-            <select id="fwMandantWahl" name="organisation" onchange="this.form.submit()" aria-label="{% trans 'Mandant wechseln' %}" class="fw-feld">
+            <select id="fwMandantWahl" name="organisation" data-absenden aria-label="{% trans 'Mandant wechseln' %}" class="fw-feld">
                 {% for m in fw_mandanten %}
                 <option value="{{ m.id }}" {% if fw_mandant.id == m.id %}selected{% endif %}>{{ m.firma }}</option>
                 {% endfor %}
@@ -165,7 +165,7 @@ Detailseiten rufen sie beim Namen.
             <form method="get" class="fw-bestand{% if aktive_lg %} aktiv{% endif %}" title="{% trans 'Globaler Filter' %}">
                 <span class="fw-bestand-zeichen" aria-hidden="true">{% zeichen 'liegenschaft' %}</span>
                 <small class="fw-bestand-ueber" aria-hidden="true">{% trans "Bestand" %}</small>
-                <select name="lg" onchange="this.form.submit()" aria-label="{% trans 'Bestand' %}: {% trans 'Globaler Filter' %}">
+                <select name="lg" data-absenden aria-label="{% trans 'Bestand' %}: {% trans 'Globaler Filter' %}">
                     <option value="">{% trans "Ganzer Bestand" %}</option>
                     {% for l in alle_liegenschaften %}
                     <option value="{{ l.id }}" {% if aktive_lg and aktive_lg.id == l.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>
@@ -240,7 +240,7 @@ Detailseiten rufen sie beim Namen.
                Organisationen); die Prüfung der Mitgliedschaft macht weiterhin `fw_mandant_wechseln`. {% endcomment %}
             <form method="post" action="/neu/mandant/" class="fw-profil-abschnitt fw-profil-mandant">{% csrf_token %}
                 <label for="fwMandantWahlProfil" class="fw-profil-titel">{% trans "Mandant" %}</label>
-                <select id="fwMandantWahlProfil" name="organisation" onchange="this.form.submit()" aria-label="{% trans 'Mandant wechseln' %}" class="fw-feld">
+                <select id="fwMandantWahlProfil" name="organisation" data-absenden aria-label="{% trans 'Mandant wechseln' %}" class="fw-feld">
                     {% for m in fw_mandanten %}
                     <option value="{{ m.id }}" {% if fw_mandant.id == m.id %}selected{% endif %}>{{ m.firma }}</option>
                     {% endfor %}
@@ -283,7 +283,7 @@ Detailseiten rufen sie beim Namen.
                 {% if 'error' in m.tags or 'warning' in m.tags %}data-persist="1"{% endif %}>
                 {% if 'error' in m.tags %}{% zeichen 'kritisch' %}{% elif 'warning' in m.tags %}{% zeichen 'warnung' %}{% elif 'info' in m.tags %}{% zeichen 'hinweis' %}{% else %}{% zeichen 'gut' %}{% endif %}
                 <div class="fw-toast-text">{{ m|ohne_emoji }}</div>
-                <button type="button" onclick="this.closest('.fw-toast').remove()" title="{% trans 'Meldung schliessen' %}">{% zeichen 'schliessen' %}</button>
+                <button type="button" data-entfernen=".fw-toast" title="{% trans 'Meldung schliessen' %}">{% zeichen 'schliessen' %}</button>
             </div>
             {% endfor %}
         </div>

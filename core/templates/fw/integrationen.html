@@ -60,7 +60,7 @@
                     <div class="flex items-center gap-2">
                         <input id="feedurl" readonly aria-label="{% trans 'Feed-URL (JSON)' %}" value="{{ request.scheme }}://{{ request.get_host }}{{ portal_feed_pfad }}"
                                class="fw-feld fw-mono flex-1 min-w-0">
-                        <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feedurl').value)"
+                        <button type="button" data-kopieren="feedurl"
                                 class="fw-btn fw-rand-marke fw-knapp">{% zeichen 'kopieren' %}{% trans "Kopieren" %}</button>
                     </div>
                     <div class="flex items-center gap-3 flex-wrap">

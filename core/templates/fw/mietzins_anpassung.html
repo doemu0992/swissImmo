@@ -108,7 +108,7 @@
         <div class="fw-assistent-schritt-kopf"></div>
         <div class="fw-card fw-rumpf space-y-4">
         <label class="fw-haekchen">
-            <input type="checkbox" name="mit_vorbehalt" id="mz_mit_vorbehalt" {% if mit_vorbehalt %}checked{% endif %} onchange="document.getElementById('vb').classList.toggle('hidden', !this.checked)" class="fw-akzent">
+            <input type="checkbox" name="mit_vorbehalt" id="mz_mit_vorbehalt" {% if mit_vorbehalt %}checked{% endif %} data-sichtbar-wenn="vb" class="fw-akzent">
             {% trans "Anpassung mit Vorbehalt (nicht ausgeschöpfte Reserven)" %} {% hilfe 'vorbehalt' %}
         </label>
         <div id="vb" class="{% if not mit_vorbehalt %}hidden {% endif %}fw-formular drei">

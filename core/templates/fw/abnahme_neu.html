@@ -101,7 +101,7 @@
             <input name="m_kosten" inputmode="decimal" placeholder="CHF" class="fw-feld fw-col-span-1 text-right" title="{% trans 'Reparatur-/Ersatzkosten' %}">
             <label class="fw-col-span-1 text-center cursor-pointer fw-faint hover:fw-marke" title="{% trans 'Foto' %}">{% zeichen 'dokument' %}<input type="file" data-foto aria-label="{% trans 'Foto' %}" accept="image/*" capture="environment" class="hidden"></label>
             <input type="hidden" name="m_zeile" value="">
-            <button type="button" onclick="this.closest('.mangel-row').remove()" title="{% trans 'Diesen Mangel entfernen' %}" class="fw-col-span-1 fw-ikon mut gefahr">{% zeichen 'loeschen' %}</button>
+            <button type="button" data-entfernen=".mangel-row" title="{% trans 'Diesen Mangel entfernen' %}" class="fw-col-span-1 fw-ikon mut gefahr">{% zeichen 'loeschen' %}</button>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center">
             <span class="fw-col-span-3 fw-klein">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Raumbuch-Element" %}</span>

@@ -14,7 +14,8 @@ Antwort**. Fremdes Skript, auch wenn es im HTML steht, läuft nicht.
 |---|---|---|
 | 1 | Nonce an allen Inline-Skripten; Richtlinie im Modus **report-only** (der Browser meldet, sperrt nichts); Meldestelle `/csp-bericht/`; Ratsche gegen neue Inline-Handler | **erledigt** |
 | 2 | Rückfragen (`return confirm('…')`, 109 Stellen) → `data-bestaetigen`, gelesen von `fw/_bestaetigen.html` | **erledigt** |
-| 3 … n | Die übrigen 278 Inline-Handler in 64 Vorlagen wandern nach `static/js/` (Datenattribute und ein zentraler Verteiler, je Muster eine PR) | offen |
+| 3 | Einfache Aktionen → `static/js/fw-aktionen.js` (`data-umschalten`, `-verstecken`, `-absenden`, `-gehe-zu`, `-stop`, `-kopieren`, `-auswaehlen`, `-scrollen`, `-entfernen`, `-neues-fenster`, `-sichtbar-wenn`), 93 Stellen | **erledigt** |
+| 4 … n | Die übrigen 185 Inline-Handler in 36 Vorlagen (`live()`-Neuberechnung, Modal `fwModalOpen`, seitenspezifische Funktionen) wandern nach `static/js/`, je Muster eine PR | offen |
 | Ende | `CSP_MODUS=enforce` | offen |
 
 `style-src` erlaubt vorerst `'unsafe-inline'` (die Oberfläche hat noch `style="…"`-Attribute, siehe
@@ -26,6 +27,7 @@ Antwort**. Fremdes Skript, auch wenn es im HTML steht, läuft nicht.
 * Verstösse stehen als Warnung im Logger `csp` (`CSP-Verstoss: <Regel> | blockiert=… | Seite=… | Zeile=…`).
   Solange `report-only` gilt, sind sie die Arbeitsliste für die nächsten Etappen. Die Stelle ist ohne Anmeldung
   offen, gedeckelt (8 kB je Meldung, 60 Meldungen je Minute und Adresse) und schreibt nur ins Log.
+* Der Verteiler `static/js/fw-aktionen.js` kennt die Datenattribute oben im Kopf der Datei; er hört einmal am Dokument zu und gilt auch für später geladene Teile (Schublade). `data-stop` ersetzt `event.stopPropagation()`: Ein Klick darauf löst die Aktion von Elementen darüber (z. B. der Zeile) nicht aus.
 * Neue Inline-Handler lässt `core/tests/test_csp.py` nicht zu. Wer einen entfernt, führt
   `core/tests/csp_handler_stand.json` nach (Befehl im Kopf von `csp_handler_stand.py`).
 * Inline-`<script>` brauchen `nonce="{{ csp_nonce }}"`; auch das prüft der Test.

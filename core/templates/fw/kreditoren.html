@@ -14,11 +14,11 @@
     <a href="/neu/kreditoren/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">
-        <button type="button" onclick="document.getElementById('kredform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Rechnung erfassen" %}</button>
+        <button type="button" data-umschalten="kredform" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Rechnung erfassen" %}</button>
         <div class="relative" data-menu>
             <button type="button" data-menu-btn class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>
             <div data-menu-list class="hidden absolute right-0 mt-1.5 w-72 fw-card fw-nomb py-1.5 z-30">
-                <button type="button" onclick="document.getElementById('scanform').classList.toggle('hidden')" class="fw-menuzeile">{% zeichen 'einstellungen' klasse='w-4 fw-marke' %}{% trans "Beleg scannen (KI)" %}</button>
+                <button type="button" data-umschalten="scanform" class="fw-menuzeile">{% zeichen 'einstellungen' klasse='w-4 fw-marke' %}{% trans "Beleg scannen (KI)" %}</button>
                 {% if darf_bezahlen %}
                 <div class="fw-menutrenner"></div>
                 <a href="/neu/zahllauf/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}" title="{% trans 'Auswählen, pain.001 erzeugen, Lauf sammelverbuchen' %}" class="fw-menuzeile">{% zeichen 'geld' klasse='w-4' %}{% blocktrans with n=anzahl_zahlbar %}Zahllauf öffnen · {{ n }} zahlbar{% endblocktrans %}</a>
@@ -155,7 +155,7 @@
             {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
             <input name="q" value="{{ suche }}" placeholder="{% trans 'Lieferant, Referenz, IBAN, Betrag …' %}" aria-label="{% trans 'Kreditoren durchsuchen (Lieferant, Referenz, IBAN, Betrag)' %}"
                    class="fw-feld w-56">
-            <select name="sort" aria-label="{% trans 'Sortierung' %}" onchange="this.form.submit()" class="fw-feld">
+            <select name="sort" aria-label="{% trans 'Sortierung' %}" data-absenden class="fw-feld">
                 <option value="faellig" {% if sortierung == 'faellig' %}selected{% endif %}>{% trans "Fällig ↑" %}</option>
                 <option value="-faellig" {% if sortierung == '-faellig' %}selected{% endif %}>{% trans "Fällig ↓" %}</option>
                 <option value="-betrag" {% if sortierung == '-betrag' %}selected{% endif %}>{% trans "Betrag ↓" %}</option>
@@ -288,7 +288,7 @@
                         </a>
                         {% endif %}
                         {% if row.k.status == 'neu' %}
-                        <button type="button" onclick="document.getElementById('kedit-{{ row.k.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
+                        <button type="button" data-umschalten="kedit-{{ row.k.id }}" class="fw-ikon mut" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
                         <form method="post" action="/neu/kreditoren/{{ row.k.id }}/loeschen/" class="inline" data-bestaetigen="{% filter escapejs %}{% blocktrans with name=row.lieferant|safe %}Kreditorenrechnung «{{ name }}» löschen? (nur solange nicht verbucht){% endblocktrans %}{% endfilter %}">{% csrf_token %}
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                             <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
@@ -362,7 +362,7 @@
                             <span class="ml-2 fw-hilfe">— {% trans "bei NK-relevantem Konto automatisch aktiv" %}</span>
                         </div>
                         <div class="col-span-2 flex items-center gap-2 justify-end">
-                            <button type="button" onclick="document.getElementById('kedit-{{ row.k.id }}').classList.add('hidden')" class="fw-btn fw-geist">{% trans "Abbrechen" %}</button>
+                            <button type="button" data-verstecken="kedit-{{ row.k.id }}" class="fw-btn fw-geist">{% trans "Abbrechen" %}</button>
                             <button class="fw-btn fw-primary">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}</button>
                         </div>
                     </form>

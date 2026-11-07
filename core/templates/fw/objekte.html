@@ -76,7 +76,7 @@
         <span class="fw-rechts">
             {% if g.leer %}<span class="fw-chip fw-warn fw-dot">{% blocktrans with n=g.leer %}{{ n }} leer{% endblocktrans %}</span>{% endif %}
             <span class="fw-chip fw-mut">{% blocktrans with belegt=g.belegt anzahl=g.anzahl %}{{ belegt }} / {{ anzahl }} vermietet{% endblocktrans %}</span>
-            <a href="/neu/liegenschaften/{{ g.lg.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Liegenschaft" %} →</a>
+            <a href="/neu/liegenschaften/{{ g.lg.id }}/" class="fw-link" data-stop>{% trans "Liegenschaft" %} →</a>
         </span>
     </summary>
 

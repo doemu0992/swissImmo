@@ -97,9 +97,9 @@
             </thead>
             <tbody>
             {% for row in rows %}
-            <tr class="cursor-pointer" data-zeile onclick="window.location='/neu/personen/{{ row.m.id }}/'">
+            <tr class="cursor-pointer" data-zeile data-gehe-zu="/neu/personen/{{ row.m.id }}/">
                 <td>
-                    <a href="/neu/personen/{{ row.m.id }}/" class="flex items-center gap-3" onclick="event.stopPropagation()">
+                    <a href="/neu/personen/{{ row.m.id }}/" class="flex items-center gap-3" data-stop>
                         <span class="fw-ikon">{% zeichen 'person' %}</span>
                         <div>
                             <div class="fw-strong whitespace-nowrap">{{ row.m.display_name }}</div>

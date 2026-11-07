@@ -141,7 +141,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <div class="fw-card">
         <div class="fw-kopf">
             <h2>{% trans "Merkmale" %}</h2>
-            <span class="fw-rechts"><button type="button" onclick="document.getElementById('merkmale-edit').classList.toggle('hidden')" class="fw-btn fw-knapp">{% zeichen 'bearbeiten' klasse='mr-1' %}{% trans "Bearbeiten" %}</button></span>
+            <span class="fw-rechts"><button type="button" data-umschalten="merkmale-edit" class="fw-btn fw-knapp">{% zeichen 'bearbeiten' klasse='mr-1' %}{% trans "Bearbeiten" %}</button></span>
         </div>
         <div class="fw-rumpf">
         {% if merkmale_gewaehlt %}
@@ -165,7 +165,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <label class="fw-label mb-1 mt-4">{% trans "Eigene Merkmale (mit Komma trennen)" %}</label>
             <input name="merkmale_eigene" placeholder="{% trans 'z.B. Weinkeller, Sauna, Cheminée-Ofen' %}" class="fw-feld w-full">
             <div class="flex justify-end gap-2 mt-3">
-                <button type="button" onclick="document.getElementById('merkmale-edit').classList.add('hidden')" class="fw-btn">{% trans "Abbrechen" %}</button>
+                <button type="button" data-verstecken="merkmale-edit" class="fw-btn">{% trans "Abbrechen" %}</button>
                 <button class="fw-btn fw-primary">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}</button>
             </div>
         </form>
@@ -190,7 +190,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 </div>
                 {% if r.pill %}<span class="fw-fs-klein font-semibold rounded-full px-2 py-0.5 {{ r.pill.cls }}">{{ r.pill.label }}</span>{% endif %}
                 <span class="fw-chip fw-mut">{% blocktrans with n=r.dokumente|length %}{{ n }} Dok.{% endblocktrans %}</span>
-                <a href="/neu/vertraege/{{ r.v.id }}/" class="fw-link shrink-0" onclick="event.stopPropagation()">{% trans "Vertrag" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a>
+                <a href="/neu/vertraege/{{ r.v.id }}/" class="fw-link shrink-0" data-stop>{% trans "Vertrag" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a>
             </summary>
             <div class="border-t fw-linie px-5 py-3 flex flex-wrap gap-2 fw-flaeche2">
                 <a href="/neu/mietzins/{{ r.v.id }}/anfangsmietzins/" class="fw-btn">{% zeichen 'rechnung' klasse='mr-1' %}{% trans "Anfangsmietzins" %}</a>
@@ -587,9 +587,9 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
 <div class="fw-subhead">{% trans "Raumbuch" %}</div>
     <div class="flex flex-wrap items-center gap-2 mb-3" aria-label="{% trans 'Springen zu' %}">
         <span class="fw-klein">{% trans "Springen zu" %}:</span>
-        <button type="button" class="fw-btn fw-leise" onclick="document.getElementById('anker-geraete').scrollIntoView({behavior:'smooth'})">{% trans "Geräte" %}</button>
-        <button type="button" class="fw-btn fw-leise" onclick="document.getElementById('anker-zaehler').scrollIntoView({behavior:'smooth'})">{% trans "Zähler" %}</button>
-        <button type="button" class="fw-btn fw-leise" onclick="document.getElementById('schluessel').scrollIntoView({behavior:'smooth'})">{% trans "Schlüssel" %}</button>
+        <button type="button" class="fw-btn fw-leise" data-scrollen="anker-geraete">{% trans "Geräte" %}</button>
+        <button type="button" class="fw-btn fw-leise" data-scrollen="anker-zaehler">{% trans "Zähler" %}</button>
+        <button type="button" class="fw-btn fw-leise" data-scrollen="schluessel">{% trans "Schlüssel" %}</button>
     </div>
     {% trans "Noch keine Ausstattung erfasst. Starte mit dem Raumbuch-Assistenten: Er legt alle Räume der Wohnung auf einmal an." as rb_leer_text %}
     {% include "fw/_raumbuch_liste.html" with rb_basis=rb_basis rb_leer=rb_leer_text %}
@@ -715,7 +715,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <td class="fw-mutet whitespace-nowrap">{% if g.installations_datum %}{{ g.installations_datum|date:"m.Y" }}{% else %}—{% endif %}</td>
                 <td class="fw-mutet whitespace-nowrap">{% if g.garantie_bis %}{{ g.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="whitespace-nowrap fw-right">
-                    <button type="button" onclick="document.getElementById('gedit-{{ g.id }}').classList.toggle('hidden')" class="fw-ikon mut mr-2" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
+                    <button type="button" data-umschalten="gedit-{{ g.id }}" class="fw-ikon mut mr-2" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
                     <form method="post" action="/neu/geraet/{{ g.id }}/loeschen/" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Gerät löschen?" %}{% endfilter %}">{% csrf_token %}
                         <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                     </form>
@@ -743,7 +743,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                         <div class="col-span-2 fw-col-span-3"><label class="fw-label mb-1">{% trans "Notiz" %}</label>
                             <input name="notiz" value="{{ g.notiz }}" class="fw-feld w-full"></div>
                         <div class="col-span-2 fw-col-span-3 flex items-center gap-2 justify-end">
-                            <button type="button" onclick="document.getElementById('gedit-{{ g.id }}').classList.add('hidden')" class="fw-btn">{% trans "Abbrechen" %}</button>
+                            <button type="button" data-verstecken="gedit-{{ g.id }}" class="fw-btn">{% trans "Abbrechen" %}</button>
                             <button class="fw-btn fw-primary">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}</button>
                         </div>
                     </form>
@@ -799,7 +799,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <td class="fw-s">{{ z.standort|default:"—" }}</td>
                 <td class="fw-ink fw-right">{{ z.aktueller_stand|floatformat:2 }}</td>
                 <td class="whitespace-nowrap fw-right">
-                    <button type="button" onclick="document.getElementById('zedit-{{ z.id }}').classList.toggle('hidden')" class="fw-ikon mut mr-2" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
+                    <button type="button" data-umschalten="zedit-{{ z.id }}" class="fw-ikon mut mr-2" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
                     <form method="post" action="/neu/zaehler/{{ z.id }}/loeschen/" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Zähler löschen?" %}{% endfilter %}">{% csrf_token %}
                         <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                     </form>
@@ -817,7 +817,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                         <div><label class="fw-label mb-1">{% trans "Aktueller Stand" %}</label>
                             <input name="aktueller_stand" value="{{ z.aktueller_stand|floatformat:2 }}" inputmode="decimal" class="fw-feld w-full"></div>
                         <div class="col-span-2 fw-col-span-4 flex items-center gap-2 justify-end">
-                            <button type="button" onclick="document.getElementById('zedit-{{ z.id }}').classList.add('hidden')" class="fw-btn">{% trans "Abbrechen" %}</button>
+                            <button type="button" data-verstecken="zedit-{{ z.id }}" class="fw-btn">{% trans "Abbrechen" %}</button>
                             <button class="fw-btn fw-primary">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}</button>
                         </div>
                     </form>

@@ -371,8 +371,8 @@ alten Liegenschaft betreut.
             </tr></thead>
             <tbody>
             {% for row in vertrag_rows %}
-            <tr class="cursor-pointer" onclick="window.location='/neu/vertraege/{{ row.v.id }}/'">
-                <td><a href="/neu/vertraege/{{ row.v.id }}/" class="fw-strong" onclick="event.stopPropagation()">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</a></td>
+            <tr class="cursor-pointer" data-gehe-zu="/neu/vertraege/{{ row.v.id }}/">
+                <td><a href="/neu/vertraege/{{ row.v.id }}/" class="fw-strong" data-stop>{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</a></td>
                 <td class="fw-num">{{ row.v.beginn|date:"d.m.Y" }}</td>
                 <td class="fw-num">{% if row.v.ende %}{{ row.v.ende|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="fw-right"><span class="fw-betrag">CHF {{ row.brutto|chf }}</span></td>
@@ -482,8 +482,8 @@ alten Liegenschaft betreut.
             <span class="fw-t">{{ g.label }}</span>
             <span class="fw-chip fw-mut">{% blocktrans count n=g.dokumente|length %}{{ n }} Dokument{% plural %}{{ n }} Dokumente{% endblocktrans %}</span>
             <span class="fw-rechts">
-            {% if g.vertrag %}<a href="/neu/vertraege/{{ g.vertrag.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Vertrag" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a>
-            {% elif g.einheit %}<a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Objekt" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a>{% endif %}
+            {% if g.vertrag %}<a href="/neu/vertraege/{{ g.vertrag.id }}/" class="fw-link" data-stop>{% trans "Vertrag" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a>
+            {% elif g.einheit %}<a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" data-stop>{% trans "Objekt" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a>{% endif %}
             </span>
         </summary>
         {% for d in g.dokumente %}
