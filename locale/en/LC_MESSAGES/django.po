@@ -38593,3 +38593,58 @@ msgstr "Heating oil quantity (litres)"
 
 msgid "(nur Öl-Rechnung)"
 msgstr "(oil invoices only)"
+
+msgid "Einladung zu immoswiss"
+msgstr "Invitation to immoswiss"
+
+msgid "Passwort für immoswiss setzen"
+msgstr "Set your password for immoswiss"
+
+msgid "%(firma)s hat für Sie ein Konto bei immoswiss angelegt."
+msgstr "%(firma)s has created an immoswiss account for you."
+
+msgid "%(firma)s hat Ihnen einen Link zum Setzen Ihres Passworts gesendet."
+msgstr "%(firma)s has sent you a link to set your password."
+
+msgid "Passwort festlegen:"
+msgstr "Set your password:"
+
+msgid "Ihr Benutzername: %(name)s"
+msgstr "Your username: %(name)s"
+
+msgid ""
+"Der Link gilt nur kurz und nur einmal. Ist er abgelaufen, bitten Sie die "
+"Verwaltung um einen neuen."
+msgstr ""
+"The link is valid only briefly and only once. If it has expired, ask the "
+"property manager for a new one."
+
+msgid ""
+"Die Person erhält per E-Mail einen Link und legt ihr Passwort selbst fest. "
+"Dafür ist die E-Mail-Adresse nötig."
+msgstr ""
+"The person receives a link by e-mail and chooses their own password. An "
+"e-mail address is therefore required."
+
+msgid "Link zum Passwort-Setzen per E-Mail senden"
+msgstr "Send a link to set the password by e-mail"
+
+msgid "Besser als ein Passwort weiterzugeben: Die Person legt es selbst fest."
+msgstr "Better than passing on a password: the person chooses it themselves."
+
+msgid ""
+"Für die Einladung ist eine gültige E-Mail-Adresse nötig: Die Person setzt "
+"ihr Passwort selbst über einen Link, den sie dort erhält."
+msgstr ""
+"A valid e-mail address is required for the invitation: the person sets their"
+" own password through a link sent there."
+
+msgid "Ein Link zum Setzen des Passworts wurde an %(adresse)s gesendet."
+msgstr "A link to set the password was sent to %(adresse)s."
+
+msgid ""
+"Die E-Mail mit dem Link liess sich nicht senden. Link zum Weitergeben an "
+"%(name)s: %(link)s"
+msgstr ""
+"The e-mail with the link could not be sent. Link to pass on to %(name)s: "
+"%(link)s"

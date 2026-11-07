@@ -37467,3 +37467,59 @@ msgstr "Heizöl-Menge (Liter)"
 
 msgid "(nur Öl-Rechnung)"
 msgstr "(nur Öl-Rechnung)"
+
+msgid "Einladung zu immoswiss"
+msgstr "Einladung zu immoswiss"
+
+msgid "Passwort für immoswiss setzen"
+msgstr "Passwort für immoswiss setzen"
+
+msgid "%(firma)s hat für Sie ein Konto bei immoswiss angelegt."
+msgstr "%(firma)s hat für Sie ein Konto bei immoswiss angelegt."
+
+msgid "%(firma)s hat Ihnen einen Link zum Setzen Ihres Passworts gesendet."
+msgstr "%(firma)s hat Ihnen einen Link zum Setzen Ihres Passworts gesendet."
+
+msgid "Passwort festlegen:"
+msgstr "Passwort festlegen:"
+
+msgid "Ihr Benutzername: %(name)s"
+msgstr "Ihr Benutzername: %(name)s"
+
+msgid ""
+"Der Link gilt nur kurz und nur einmal. Ist er abgelaufen, bitten Sie die "
+"Verwaltung um einen neuen."
+msgstr ""
+"Der Link gilt nur kurz und nur einmal. Ist er abgelaufen, bitten Sie die "
+"Verwaltung um einen neuen."
+
+msgid ""
+"Die Person erhält per E-Mail einen Link und legt ihr Passwort selbst fest. "
+"Dafür ist die E-Mail-Adresse nötig."
+msgstr ""
+"Die Person erhält per E-Mail einen Link und legt ihr Passwort selbst fest. "
+"Dafür ist die E-Mail-Adresse nötig."
+
+msgid "Link zum Passwort-Setzen per E-Mail senden"
+msgstr "Link zum Passwort-Setzen per E-Mail senden"
+
+msgid "Besser als ein Passwort weiterzugeben: Die Person legt es selbst fest."
+msgstr ""
+"Besser als ein Passwort weiterzugeben: Die Person legt es selbst fest."
+
+msgid ""
+"Für die Einladung ist eine gültige E-Mail-Adresse nötig: Die Person setzt "
+"ihr Passwort selbst über einen Link, den sie dort erhält."
+msgstr ""
+"Für die Einladung ist eine gültige E-Mail-Adresse nötig: Die Person setzt "
+"ihr Passwort selbst über einen Link, den sie dort erhält."
+
+msgid "Ein Link zum Setzen des Passworts wurde an %(adresse)s gesendet."
+msgstr "Ein Link zum Setzen des Passworts wurde an %(adresse)s gesendet."
+
+msgid ""
+"Die E-Mail mit dem Link liess sich nicht senden. Link zum Weitergeben an "
+"%(name)s: %(link)s"
+msgstr ""
+"Die E-Mail mit dem Link liess sich nicht senden. Link zum Weitergeben an "
+"%(name)s: %(link)s"

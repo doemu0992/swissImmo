@@ -31,9 +31,17 @@
             <div class="fw-feldblock"><label for="bf-last" class="fw-label">{% trans "Nachname" %}</label>
                 <input id="bf-last" name="last_name" value="{{ ziel.last_name }}" {% if nur_mitgliedschaft %}disabled{% endif %} class="fw-feld"></div>
         <div class="fw-feldblock"><label for="bf-email" class="fw-label">{% trans "E-Mail" %}</label>
-            <input id="bf-email" type="email" name="email" value="{{ ziel.email }}" {% if nur_mitgliedschaft %}disabled{% endif %} class="fw-feld"></div>
-        <div class="fw-feldblock"><label for="bf-pw" class="fw-label">{% trans "Passwort" %} {% if not ist_neu %}<span class="fw-faint">{% trans "(leer lassen = unverändert)" %}</span>{% else %}*{% endif %}</label>
-            <input id="bf-pw" type="text" name="passwort" {% if ist_neu %}required{% endif %} {% if nur_mitgliedschaft %}disabled{% endif %} autocomplete="new-password" class="fw-feld"></div>
+            <input id="bf-email" type="email" name="email" value="{{ ziel.email }}" {% if ist_neu %}required{% endif %} {% if nur_mitgliedschaft %}disabled{% endif %} class="fw-feld"></div>
+        {% if ist_neu %}
+        <div class="fw-feldblock breit"><div class="fw-hinweis"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">{% trans "Die Person erhält per E-Mail einen Link und legt ihr Passwort selbst fest. Dafür ist die E-Mail-Adresse nötig." %}</div></div></div>
+        {% else %}
+        <div class="fw-feldblock"><label for="bf-pw" class="fw-label">{% trans "Passwort" %} <span class="fw-faint">{% trans "(leer lassen = unverändert)" %}</span></label>
+            <input id="bf-pw" type="text" name="passwort" {% if nur_mitgliedschaft %}disabled{% endif %} autocomplete="new-password" class="fw-feld"></div>
+        {% if not nur_mitgliedschaft %}
+        <div class="fw-feldblock breit"><label class="fw-haekchen"><input type="checkbox" name="link_senden" class="fw-akzent"> {% trans "Link zum Passwort-Setzen per E-Mail senden" %}</label>
+            <p class="fw-hilfe">{% trans "Besser als ein Passwort weiterzugeben: Die Person legt es selbst fest." %}</p></div>
+        {% endif %}
+        {% endif %}
     </div>
     </div>
 

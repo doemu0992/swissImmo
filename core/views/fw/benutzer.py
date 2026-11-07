@@ -190,8 +190,20 @@ def fw_benutzer_form(request, pk=None):
             if User.objects.filter(username__iexact=username).exists():
                 messages.error(request, gettext("Benutzername '%(username)s' ist bereits vergeben.") % {'username': username})
                 return redirect(request.path)
+            # Neues Konto: kein vom Inhaber vergebenes Passwort. Die Person bekommt einen Einladungslink per Mail
+            # (`core.services.einladung`) und setzt es selbst; dafür braucht es eine E-Mail-Adresse.
+            from django.core.exceptions import ValidationError
+            from django.core.validators import validate_email
+            try:
+                validate_email(P.get('email', '').strip())
+            except ValidationError:
+                messages.error(request, gettext(
+                    'Für die Einladung ist eine gültige E-Mail-Adresse nötig: Die Person setzt ihr Passwort selbst '
+                    'über einen Link, den sie dort erhält.'))
+                return redirect(request.path)
             ziel = User(username=username)
-        pw = P.get('passwort', '').strip()
+            ziel.set_unusable_password()
+        pw = P.get('passwort', '').strip() if pk else ''
         if organisation is not None and not (
                 ziel.pk and Mitgliedschaft.objects.filter(benutzer=ziel, organisation=organisation).exists()):
             # Neue Mitgliedschaft: die Nutzergrenze des Abonnements VOR dem Speichern prüfen, sonst bliebe
@@ -262,6 +274,18 @@ def fw_benutzer_form(request, pk=None):
         log_aktion(request, "Benutzer bearbeitet" if pk else "Benutzer erstellt",
                    ziel.username, _diff or rolle)
         messages.success(request, '✅ ' + gettext('Benutzer %(username)s gespeichert.') % {'username': ziel.username})
+        if not pk or (P.get('link_senden') == 'on' and not nur_mitgliedschaft):
+            from core.services.einladung import einladung_senden
+            gesendet, link = einladung_senden(request, ziel, organisation, neu=not pk)
+            log_aktion(request, "Einladungslink gesendet" if gesendet else "Einladungslink nicht gesendet",
+                       ziel.username, '')
+            if gesendet:
+                messages.info(request, gettext(
+                    'Ein Link zum Setzen des Passworts wurde an %(adresse)s gesendet.') % {'adresse': ziel.email})
+            else:
+                messages.warning(request, gettext(
+                    'Die E-Mail mit dem Link liess sich nicht senden. Link zum Weitergeben an %(name)s: %(link)s'
+                ) % {'name': ziel.username, 'link': link})
         return redirect('/neu/benutzer/')
 
     aktuelle_rolle = alt_rolle if alt_rolle in _ROLLEN_WAHL else ''
