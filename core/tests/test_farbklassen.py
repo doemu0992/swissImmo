@@ -48,7 +48,8 @@ geloescht, alte Reiter-Umschaltung aus `base.html` (1 → 0), Admin-Koepfe auf d
 Ember-Schema (`text-primary-600` statt Blau): 55 in 15.
 Etappe 3 (29.10.2026): Dossier entfallen (7), öffentliche Formulare, Datenschutz und Absageseite auf der
 Hülle `core/aussen_base.html` und den Bausteinen der Schicht, Passwort-Rückweg auf `fw-link`:
-**STAND 42 in 9 Vorlagen**.
+Alte Django-Admin entfernt (07.11.2026): ihre Vorlagen entfallen (30 + 8 Kopfvorlagen):
+**STAND 12 in 8 Vorlagen**.
 
 E2.84: DAS OVERLAY IST AUSGEBAUT — UND DIE WARNUNG VON E2.20 GEPRUEFT
 ---------------------------------------------------------------------
@@ -282,7 +283,6 @@ FARBMUSTER = re.compile(
 #: Obergrenze eine Buchhaltung ueber fremde Schuld.
 
 OBERGRENZE = {
-    'core/templates/admin/finance/abrechnung_vorschau.html': 30,
     'core/templates/core/mieter_kuendigung.html': 1,
     'core/templates/core/mieter_portal.html': 2,
     'core/templates/core/mieter_rechnungen.html': 1,

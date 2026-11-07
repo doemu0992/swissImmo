@@ -39230,3 +39230,9 @@ msgstr ""
 msgid "Liegenschaften ohne hinterlegten Wert (nicht in der Rendite): %(n)s"
 msgstr ""
 "Immeubles sans valeur enregistrée (non inclus dans le rendement) : %(n)s"
+
+msgid "Heizöl-Menge (Liter)"
+msgstr "Quantité de mazout (litres)"
+
+msgid "(nur Öl-Rechnung)"
+msgstr "(facture de mazout uniquement)"

@@ -115,6 +115,7 @@ def fw_kreditor_neu(request):
         datum=c['datum'] or timezone.localdate(),
         faellig_am=c['faellig_am'],
         referenz=c['referenz'].strip(),
+        menge_liter=c['menge_liter'],
         # IBAN wurde bisher nur im Bearbeiten-Formular erfasst — eine manuell
         # angelegte Rechnung konnte damit NIE in einen Zahllauf (Praxis-Audit).
         iban=c['iban'],
@@ -229,6 +230,7 @@ def fw_kreditor_bearbeiten(request, pk):
     k.leistungs_von = c['leistungs_von']
     k.leistungs_bis = c['leistungs_bis']
     k.referenz = c['referenz'].strip()
+    k.menge_liter = c['menge_liter']
     alte_iban = k.iban
     k.iban = c['iban']
     from finance.kreditor_adresse import adresse_setzen, iban_abweichung, iban_meldung

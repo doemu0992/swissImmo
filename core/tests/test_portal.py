@@ -3,7 +3,6 @@ siehe docs/ETAPPE-1-ZERLEGEN.md). 14 Klassen, unveraendert uebernommen."""
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.contrib import admin
 from django.test import TestCase, Client
 from ._helfer import (
     _test_organisation,

@@ -64,11 +64,6 @@ AUSGEZEICHNET = (
     'core/views/postfach.py',
     # Teil D: Admin-Aktionen (die zusammengesetzten Meldungen liegen in
     # Dateien, die schon oben stehen)
-    'crm/admin.py',
-    'finance/admin.py',
-    'portfolio/admin.py',
-    'rentals/admin.py',
-    'tickets/admin.py',
     'core/services/unterschrift.py',
 )
 

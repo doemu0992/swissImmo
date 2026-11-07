@@ -11,7 +11,6 @@ from decimal import Decimal
 
 from django.test import TestCase, Client, RequestFactory
 from django.utils import timezone
-from django.contrib import admin
 from unittest import skipUnless
 
 try:                      # noqa: SIM105 — bewusst als Schalter, nicht als Import

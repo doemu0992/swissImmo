@@ -41,15 +41,18 @@ GEBAUT = pathlib.Path('static/css/tailwind.css')
 WURZEL = pathlib.Path('.')
 #: Die Klasse, an der abgelesen wird, ob die Rampe im Bau angekommen ist.
 #:
-#: Sie muss zwei Bedingungen erfuellen: aus der Indigo-Rampe stammen (nur
+#: Sie muss zwei Bedingungen erfuellen: aus einer umgebauten Rampe stammen (nur
 #: dann unterscheiden sich die zwei Bauten) UND von echtem Code benutzt
-#: werden (sonst baut Tailwind keine Regel dafuer). `text-indigo-600` steht
-#: in `crm/admin.py` und `rentals/admin.py`.
+#: werden (sonst baut Tailwind keine Regel dafuer). `text-slate-400` steht
+#: in mehreren Vorlagen. Bis zum 07.11.2026 war es `text-indigo-600` aus den
+#: Django-Admin-Klassen; mit der Admin entfiel der letzte echte Gebrauch einer
+#: Indigo-Klasse.
 #:
 #: Vorher stand hier `bg-indigo-600` — die gab es im ganzen Bestand nur als
 #: BEISPIEL in einem Waechter. Siehe
 #: `test_die_sonde_wird_von_echtem_code_am_leben_gehalten`.
-SONDE = 'text-indigo-600'
+SONDE = 'text-slate-400'
+SONDE_FAMILIE, SONDE_STUFE = 'slate', 400
 SONDE_HINWEIS = (f'Die Sonde ist `{SONDE}`; sie muss von echtem Code '
                  f'benutzt werden, sonst baut Tailwind sie nicht.')
 #: Jede Huelle der Anwendung. Sie muessen den Stilbaustein mit der
@@ -347,7 +350,7 @@ class HuellenTests(TestCase):
         Bau in Ordnung war. Die Meldung zeigte in die falsche Richtung, was
         schlimmer ist als gar keine.
 
-        Die Sonde ist jetzt `text-indigo-600`, und diese Prüfung hält fest,
+        Die Sonde ist jetzt `text-slate-400`, und diese Prüfung hält fest,
         WARUM sie existiert: weil echter Code sie benutzt. Verschwindet sie
         dort, meldet sich diese Prüfung — mit dem richtigen Grund.
         """
@@ -367,7 +370,7 @@ class HuellenTests(TestCase):
             f'`{SONDE}` steht in keiner Datei ausserhalb der Testsammlung. '
             f'Damit baut Tailwind keine Regel dafür, und die zwei Prüfungen '
             f'darunter melden «nicht gebaut», obwohl der Bau stimmt. Eine '
-            f'andere Klasse aus der Indigo-Rampe als SONDE wählen — eine, '
+            f'andere Klasse aus einer umgebauten Rampe als SONDE wählen — eine, '
             f'die echter Code benutzt.')
 
     def test_der_bau_traegt_die_rampe_auch_wirklich(self):
@@ -380,7 +383,7 @@ class HuellenTests(TestCase):
         und eine falsche Anwendung. Genau diese Luecke schliesst dieser Test.
         """
         css = GEBAUT.read_text(encoding='utf-8')
-        marke = rampen()['indigo'][600].lstrip('#')
+        marke = rampen()[SONDE_FAMILIE][SONDE_STUFE].lstrip('#')
         r, g, b = (int(marke[i:i + 2], 16) for i in (0, 2, 4))
         # `assertIn` mit der ganzen Datei als Heuhaufen wuerde im Fehlerfall
         # 67 KB CSS in den Bericht schreiben. Eine Fehlermeldung, die niemand
