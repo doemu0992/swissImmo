@@ -39319,3 +39319,6 @@ msgstr ""
 "stato letto %(alt)s. Probabilmente è stato scelto il conto bancario "
 "sbagliato. In caso di cambio di banca voluto, ripetere l'importazione con "
 "«Confermare il cambio di IBAN»."
+
+msgid "Zum Inhalt springen"
+msgstr "Vai al contenuto"

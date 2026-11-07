@@ -37611,3 +37611,6 @@ msgstr ""
 "%(alt)s eingelesen. Wahrscheinlich ist das falsche Bankkonto gewählt. Bei "
 "einem bewussten Bankwechsel den Import mit «IBAN-Wechsel bestätigen» "
 "wiederholen."
+
+msgid "Zum Inhalt springen"
+msgstr "Zum Inhalt springen"

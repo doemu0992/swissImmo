@@ -39384,3 +39384,6 @@ msgstr ""
 "avait été lu jusqu'ici. Le mauvais compte bancaire est probablement "
 "sélectionné. En cas de changement de banque voulu, répéter l'importation "
 "avec « Confirmer le changement d'IBAN »."
+
+msgid "Zum Inhalt springen"
+msgstr "Aller au contenu"

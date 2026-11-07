@@ -436,7 +436,7 @@ function fwTab(gruppe, name) {
         // `hier` ist die Klasse der Reiterleiste (`fw-reiter`, Tokens). Die
         // alte Tailwind-Leiste gibt es nicht mehr (Production-Check 26.10.2026).
         b.classList.toggle('hier', aktiv);
-        // Reiter-Muster (WAI-ARIA): ausgewählt + als einziger per Tab erreichbar, Pfeiltasten wechseln.
+        // Reiter-Schema (WAI-ARIA): ausgewählt + als einziger per Tab erreichbar, Pfeiltasten wechseln.
         b.setAttribute('aria-selected', aktiv ? 'true' : 'false');
         b.tabIndex = aktiv ? 0 : -1;
     });
