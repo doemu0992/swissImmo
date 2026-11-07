@@ -569,4 +569,7 @@ def log_aktion(request, aktion, objekt="", details="", ziel=None, kategorie=None
                 logger.warning('Sicherheitsereignis nirgends geschrieben: %s / %s (%s)',
                                aktion, objekt, details, exc_info=True)
         else:
-            logger.debug("Fehler bewusst übergangen", exc_info=True)
+            # Nicht mehr auf `debug`: Ein Protokolleintrag, der still verschwindet,
+            # ist ein Loch im Audit-Trail. Die Aktion läuft weiter, die Lücke steht
+            # im Betreiberlog.
+            logger.error('Audit-Log-Eintrag nicht geschrieben: %s / %s', aktion, objekt, exc_info=True)

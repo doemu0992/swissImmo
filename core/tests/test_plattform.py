@@ -207,7 +207,9 @@ class LogbuchTests(TestCase):
         self._log('Kaution einbezahlt (Sperrkonto)', str(m), 'CHF 4500', user=u)
         # ziel setzen wie im echten Flow
         from core.models import AktivitaetsLog
-        AktivitaetsLog.objects.all().update(ziel_typ='vertrag', ziel_id=v.id)
+        from finance.db_schutz import ausnahme
+        with ausnahme('Testaufbau'):
+            AktivitaetsLog.objects.all().update(ziel_typ='vertrag', ziel_id=v.id)
         r = c.get(f'/neu/vertraege/{v.id}/')
         self.assertEqual(r.status_code, 200)
         # Etappe 4a.5b: Das Panel heisst nicht mehr `vt-verlauf`, sondern

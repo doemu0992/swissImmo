@@ -10,6 +10,7 @@ sie zulässt; sonst werden die betroffenen Schlüssel bzw. Buchungen ausgegeben.
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
 
+from core import log_schutz
 from finance import db_schutz
 
 
@@ -23,6 +24,10 @@ class Command(BaseCommand):
             else:
                 raise CommandError('Der Trigger gegen Änderung/Löschung von Buchungen FEHLT '
                                    '(Migration finance.0054 ausführen).')
+            if log_schutz.trigger_vorhanden():
+                self.stdout.write('Trigger gegen Änderung/Löschung im Audit-Log: aktiv')
+            else:
+                raise CommandError('Der Trigger des Audit-Logs FEHLT (Migration core.0020 ausführen).')
         else:
             self.stdout.write(f'{connection.vendor}: kein Trigger, es gilt der Manager-Schutz.')
         with connection.schema_editor() as editor:
