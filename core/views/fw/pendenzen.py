@@ -64,7 +64,7 @@ def _auto_fristen(aktive_lg, horizont_tage=90):
     # c) Erstmals kündbar im Horizont
     for v in aktive.filter(erstmals_kuendbar_auf__range=[heute, grenze]).order_by('erstmals_kuendbar_auf'):
         fristen.append({
-            'kategorie': 'Erstmals kündbar', 'farbe': 'indigo', 'icon': 'termin',
+            'kategorie': 'Erstmals kündbar', 'farbe': 'marke', 'icon': 'termin',
             'titel': f"{v.mieter.display_name}: erstmals kündbar",
             'sub': f"{v.einheit.bezeichnung} — Mietzins-/Konditionen-Review möglich",
             'faellig': v.erstmals_kuendbar_auf, 'url': f'/neu/vertraege/{v.id}/',

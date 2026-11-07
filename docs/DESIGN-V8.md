@@ -1,5 +1,12 @@
 # Design v8 — Bausteine und Regeln
 
+> **Stand der Farbe und Schrift (07.11.2026):** Seit dem 26.10.2026 gilt die **Ember-Palette**:
+> Marke und Handlung in Orange (#B04416 als Schrift, #E0642F als Fläche), Information in Petrol
+> (#0E6B65), Schrift **DM Sans** (IBM Plex nur als Rückfall). Die Angaben zu Navy und IBM Plex in
+> diesem Dokument beschreiben den Stand vom 30.09. bzw. 23.10.2026; massgebend sind die Tokens
+> in `core/templates/fw/_schicht.html` und `tailwind.palette.js`. Die Regeln selbst (Bedeutung statt
+> Zierde, Zustand in Form, Telefon zuerst) gelten unverändert.
+
 Stand 30.09.2026. Quelle: `mockups/konzept-v8-cockpit.html`. Umgesetzt in
 `core/templates/fw/_schicht.html` (Quelle) → `static/css/schicht.css` (gebaut mit
 `python manage.py schicht_bauen`). Die Palette steht in `docs/KONZEPT-UI.md` §16.1.

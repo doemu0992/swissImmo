@@ -693,10 +693,10 @@ def fw_finanzen(request):
     # ---------- Arbeitskorb (Reihenfolge = Prozess) ----------
     # Volle Tailwind-Klassen (CDN-sicher, keine dynamisch zusammengesetzten Namen).
     P = {
-        'sky':    ('fw-info-flaeche fw-info',       'fw-info-voll hover:fw-info-voll'),
+        'info':    ('fw-info-flaeche fw-info',       'fw-info-voll hover:fw-info-voll'),
         'amber':  ('fw-warn-flaeche fw-warnton',   'fw-warn-voll hover:fw-warn-voll'),
-        'indigo': ('fw-markenflaeche fw-marke', 'fw-btn fw-primary'),
-        'violet': ('fw-info-flaeche fw-info', 'fw-btn fw-primary'),
+        'marke': ('fw-markenflaeche fw-marke', 'fw-btn fw-primary'),
+        'primaer': ('fw-info-flaeche fw-info', 'fw-btn fw-primary'),
         'rose':   ('fw-krit-flaeche fw-kritisch',     'fw-btn fw-gefahr'),
         'teal':   ('fw-markenflaeche fw-marke',     'fw-btn fw-primary'),
     }
@@ -716,7 +716,7 @@ def fw_finanzen(request):
         # sie werden nicht kopiert. Der Korb behält die Handlungen, die keine
         # Läufe sind (freigeben, weiterverrechnen, Kautionen); die Läufe
         # stehen im Periodenabschluss und im Bereich «Läufe».
-        ('weiterverrechnung', 'weiterverrechnen', 'violet', _('Weiterverrechnungen abschliessen'),
+        ('weiterverrechnung', 'weiterverrechnen', 'primaer', _('Weiterverrechnungen abschliessen'),
          _('Angefangene Weiterverrechnungen an Mieter fertigstellen'),
          len(offen_wv), _chf(offen_wv, 'offen_weiterzuverrechnen'), '/neu/kreditoren/', _('Weiterverrechnen'), False),
         # gewandert in den Periodenabschluss (E2.30, Plan: «Handlungen springen in den zugehörigen Lauf»)

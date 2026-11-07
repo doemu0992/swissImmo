@@ -68,9 +68,9 @@ BAUSTEIN = "{% include 'fw/_assets.html' %}"
 #: Wo eine Tailwind-Stufe einen Konzept-Token trifft, muss derselbe Wert
 #: stehen. Das ist die eigentliche Bindung — alles andere ist Zwischenton.
 BINDUNGEN = (
-    ('indigo', 600, '--ds-brand'),
-    ('indigo', 700, '--ds-brand-600'),
-    ('indigo', 100, '--ds-brand-soft'),
+    ('marke', 600, '--ds-brand'),
+    ('marke', 700, '--ds-brand-600'),
+    ('marke', 100, '--ds-brand-soft'),
     ('slate', 200, '--ds-line'),
     ('slate', 500, '--ds-faint'),
     ('slate', 600, '--ds-muted'),
@@ -81,8 +81,8 @@ BINDUNGEN = (
     ('amber', 50, '--ds-warn-soft'),
     ('rose', 600, '--ds-crit'),
     ('rose', 50, '--ds-crit-soft'),
-    ('sky', 600, '--ds-info'),
-    ('sky', 50, '--ds-info-soft'),
+    ('petrol', 600, '--ds-info'),
+    ('petrol', 50, '--ds-info-soft'),
 )
 
 #: Familien, die im Bestand gleichbedeutend benutzt werden und deshalb
@@ -139,7 +139,7 @@ class TailwindPaletteTests(TestCase):
         Kennzahlen-Test von 4b.5: eine Bedingung, die immer erfüllt ist,
         weil sie ins Leere greift.
         """
-        self.assertIn('indigo', self.rampen)
+        self.assertIn('marke', self.rampen)
         self.assertIn('slate', self.rampen)
         self.assertGreaterEqual(len(self.rampen), 10,
                                 f'Nur {len(self.rampen)} Rampen gelesen — '
@@ -188,9 +188,9 @@ class TailwindPaletteTests(TestCase):
     def test_die_gebrauchten_textfarben_sind_lesbar(self):
         """Die Stufen, die im Bestand als Textfarbe auf Weiss stehen."""
         for familie, stufe in (('slate', 500), ('slate', 600), ('slate', 700),
-                               ('slate', 900), ('indigo', 600), ('indigo', 700),
+                               ('slate', 900), ('marke', 600), ('marke', 700),
                                ('emerald', 600), ('amber', 600), ('rose', 600),
-                               ('sky', 600)):
+                               ('petrol', 600)):
             with self.subTest(farbe=f'{familie}-{stufe}'):
                 r = kontrast(self.rampen[familie][stufe], '#ffffff')
                 self.assertGreaterEqual(
@@ -212,8 +212,8 @@ class TailwindPaletteTests(TestCase):
         self.assertGreater(r, g + 40, 'rose-600 ist nicht mehr rot.')
         r, g, b = ton(self.rampen['emerald'][600])
         self.assertGreater(g, r + 40, 'emerald-600 ist nicht mehr grün.')
-        r, g, b = ton(self.rampen['indigo'][600])
-        self.assertGreater(r, b + 40, 'indigo-600 ist nicht orange (Ember).')
+        r, g, b = ton(self.rampen['marke'][600])
+        self.assertGreater(r, b + 40, 'marke-600 ist nicht orange (Ember).')
 
     def test_das_favicon_ist_nicht_mehr_indigo(self):
         """Es trug `#4f46e5` — die alte Markenfarbe, im Browsertab sichtbar.
@@ -251,9 +251,9 @@ class TailwindPaletteTests(TestCase):
         durchzulaufen — `test_es_gibt_ueberhaupt_rampen` deckt das ab. Hier
         die andere Richtung: Der Leser muss echte Werte liefern.
         """
-        self.assertEqual(len(self.rampen['indigo']), 10)
+        self.assertEqual(len(self.rampen['marke']), 10)
         self.assertTrue(all(re.fullmatch(r'#[0-9a-f]{6}', w)
-                            for w in self.rampen['indigo'].values()))
+                            for w in self.rampen['marke'].values()))
 
 
 class HuellenTests(TestCase):

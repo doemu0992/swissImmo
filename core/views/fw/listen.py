@@ -1034,19 +1034,19 @@ def fw_berichte(request):
     lgq = basis['lg_query']
     berichte = [
         {'gruppe': _('Finanzen'), 'items': [
-            {'icon': 'bericht', 'farbe': 'indigo', 'titel': _('Erfolgsrechnung & Bilanz'),
+            {'icon': 'bericht', 'farbe': 'marke', 'titel': _('Erfolgsrechnung & Bilanz'),
              'sub': _('Ertrag/Aufwand, Aktiven/Passiven, Journal'), 'url': '/neu/buchhaltung/' + lgq,
              'kennzahl': None, 'pdf': True},
-            {'icon': 'bericht', 'farbe': 'violet', 'titel': _('MWST-Abrechnung'),
+            {'icon': 'bericht', 'farbe': 'primaer', 'titel': _('MWST-Abrechnung'),
              'sub': _('Umsatz-/Vorsteuer, ESTV-Export'), 'url': '/neu/mwst/', 'kennzahl': None, 'pdf': False},
-            {'icon': 'zaehler', 'farbe': 'sky', 'titel': _('Finanz-Cockpit'),
+            {'icon': 'zaehler', 'farbe': 'info', 'titel': _('Finanz-Cockpit'),
              'sub': _('Offene Posten + Monatsabschluss'), 'url': '/neu/finanzen/' + lgq, 'kennzahl': None, 'pdf': False},
         ]},
         {'gruppe': _('Forderungen & Zahlungen'), 'items': [
             {'icon': 'bericht', 'farbe': 'rose', 'titel': _('Debitoren-Altersstruktur'),
              'sub': _('Offene Forderungen nach Fälligkeitsalter'), 'url': '/neu/mahnwesen/aging/' + lgq,
              'kennzahl': _('CHF %(betrag)s überfällig') % {'betrag': f"{deb_ueberf:,.0f}".replace(',', "'")}, 'pdf': False},
-            {'icon': 'rechnung', 'farbe': 'indigo', 'titel': _('Mieterkonten'),
+            {'icon': 'rechnung', 'farbe': 'marke', 'titel': _('Mieterkonten'),
              'sub': _('Kontoblatt je Mieter (Forderungen/Zahlungen)'), 'url': '/neu/mieterkonten/' + lgq,
              'kennzahl': _('CHF %(betrag)s offen') % {'betrag': f"{deb_offen:,.0f}".replace(',', "'")}, 'pdf': True},
             {'icon': 'rechnung', 'farbe': 'amber', 'titel': _('Lieferantenkonten'),
@@ -1065,7 +1065,7 @@ def fw_berichte(request):
             {'icon': 'geld', 'farbe': 'orange', 'titel': _('Reparaturkosten'),
              'sub': _('Kosten je Liegenschaft (offen/effektiv)'), 'url': '/neu/schaeden/kosten/' + lgq,
              'kennzahl': f"CHF {reparatur_eff:,.0f} {heute.year}".replace(',', "'"), 'pdf': False},
-            {'icon': 'senden', 'farbe': 'sky', 'titel': _('Objekt-Feed (Portale)'),
+            {'icon': 'senden', 'farbe': 'info', 'titel': _('Objekt-Feed (Portale)'),
              'sub': _('Vermarktungs-Feed für Homegate/Flatfox'), 'url': '/neu/integrationen/',
              'kennzahl': None, 'pdf': False},
         ]},

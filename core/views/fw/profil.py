@@ -616,9 +616,9 @@ def fw_mieterwechsel(request):
         elif einzug and kaution_erledigt and offene_forderungen == 0:
             stufe, farbe, aktion = 'Abgeschlossen', 'emerald', '—'
         elif nachmieter_v:
-            stufe, farbe, aktion = 'Nachmieter-Vertrag', 'sky', 'Übergabe / Einzug planen'
+            stufe, farbe, aktion = 'Nachmieter-Vertrag', 'info', 'Übergabe / Einzug planen'
         elif bewerbungen:
-            stufe, farbe, aktion = 'Bewerbungen', 'indigo', 'Bewerbung prüfen & Vertrag erstellen'
+            stufe, farbe, aktion = 'Bewerbungen', 'marke', 'Bewerbung prüfen & Vertrag erstellen'
         elif auszug:
             stufe, farbe, aktion = 'Rücknahme erfolgt', 'amber', 'Nachmieter suchen'
         elif gekuendigt:
@@ -979,7 +979,7 @@ def fw_integrationen(request):
         zweck=Postfach.ZWECK_RECHNUNGEN, aktiv=True).first()
 
     integrationen = [
-        {'key': 'email', 'name': _('E-Mail-Versand'), 'icon': 'senden', 'farbe': 'indigo',
+        {'key': 'email', 'name': _('E-Mail-Versand'), 'icon': 'senden', 'farbe': 'marke',
          'aktiv': email_ok, 'status': _('Verbunden') if email_ok else _('Nicht konfiguriert'),
          'beschreibung': _('Versende Mahnungen, Abrechnungen und Anschreiben direkt aus immoswiss über deinen SMTP-Server.'),
          'detail': (getattr(dj_settings, 'EMAIL_HOST', '') or '') if email_ok else _('E-Mail-Zugangsdaten in den Servereinstellungen hinterlegen.'),
@@ -989,7 +989,7 @@ def fw_integrationen(request):
          'beschreibung': _('Sende Mietverträge zur rechtsgültigen elektronischen Unterschrift. Der Rücklauf wird automatisch als unterzeichnetes PDF abgelegt.'),
          'detail': _('Nutzbar über «An DocuSeal senden» auf der Vertrags-Detailseite.') if gesetzt('DOCUSEAL_API_KEY') else _('DOCUSEAL_API_KEY hinterlegen.'),
          'aktion': None},
-        {'key': 'ki', 'name': _('KI-Rechnungsscanner'), 'icon': 'einstellungen', 'farbe': 'violet',
+        {'key': 'ki', 'name': _('KI-Rechnungsscanner'), 'icon': 'einstellungen', 'farbe': 'primaer',
          'aktiv': gesetzt('GROQ_API_KEY'), 'status': _('Verbunden') if gesetzt('GROQ_API_KEY') else _('Nicht konfiguriert'),
          'beschreibung': _('Kreditoren-Belege beim Hochladen automatisch auslesen (Lieferant, Betrag, IBAN, QR-Referenz) — inkl. Foto-Belegen via Bild-KI und E-Mail-Eingang für Handwerker-Rechnungen.'),
          'detail': ((_('Nutzbar unter Kreditoren → «Beleg scannen (KI)» (Mehrfach-Upload).') + ' '
@@ -1000,7 +1000,7 @@ def fw_integrationen(request):
                     if gesetzt('GROQ_API_KEY')
                     else _('GROQ_API_KEY hinterlegen — ohne Key läuft nur die regelbasierte Erkennung aus Text-PDFs.')),
          'aktion': None},
-        {'key': 'bank', 'name': _('Banken-Abgleich (camt.053 / QR)'), 'icon': 'bank', 'farbe': 'sky',
+        {'key': 'bank', 'name': _('Banken-Abgleich (camt.053 / QR)'), 'icon': 'bank', 'farbe': 'info',
          'aktiv': True, 'status': _('Aktiv'),
          'beschreibung': _('Importiere camt.053-Kontoauszüge und ordne Zahlungseingänge automatisch per QR-Referenz den Debitoren zu.'),
          'detail': _('Nutzbar im Bereich Bankabgleich.'),
