@@ -3,9 +3,9 @@
     python manage.py db_schutz
 
 Zeigt, ob der Trigger gegen Änderung/Löschung von Buchungen aktiv ist (PostgreSQL)
-und ob die Eindeutigkeiten für Storno und Bankreferenz bestehen. Fehlende Indizes
-werden angelegt, sobald der Bestand keine Dubletten mehr enthält; sonst werden die
-doppelten Schlüssel ausgegeben. Siehe `finance/db_schutz.py`.
+und ob die Eindeutigkeiten für Storno und Bankreferenz sowie die Prüfregeln (Betrag > 0,
+Soll ≠ Haben) bestehen. Fehlende Indizes und Regeln werden angelegt, sobald der Bestand
+sie zulässt; sonst werden die betroffenen Schlüssel bzw. Buchungen ausgegeben. Siehe `finance/db_schutz.py`.
 """
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
@@ -32,3 +32,14 @@ class Command(BaseCommand):
         if uebersprungen:
             raise CommandError('Bestand zuerst bereinigen (Dubletten stornieren), dann erneut ausführen.')
         self.stdout.write('Eindeutigkeiten für Storno und Bankreferenz: vorhanden')
+        with connection.schema_editor() as editor:
+            verletzt = db_schutz.pruefregeln_nachziehen(editor)
+        for name, buchungen in verletzt:
+            self.stderr.write(f'{name}: nicht angelegt, {len(buchungen)} Buchung(en) verstossen dagegen, '
+                              f'z. B. {buchungen[:5]}')
+        if verletzt:
+            raise CommandError('Die genannten Buchungen klären (Gegenbuchung), dann erneut ausführen.')
+        if connection.vendor == 'postgresql':
+            self.stdout.write('Prüfregeln (Betrag > 0, Soll ≠ Haben): vorhanden')
+        else:
+            self.stdout.write(f'{connection.vendor}: keine CHECK-Constraints, es gilt die Prüfung im Modell.')

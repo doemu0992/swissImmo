@@ -200,7 +200,7 @@ class LieferantProfil(models.Model):
 #: Konten, wie viel, für welches Objekt, unter welcher Nummer, von wem.
 BUCHUNG_UNVERAENDERLICH = (
     'datum', 'beleg_text', 'soll_konto_id', 'haben_konto_id', 'betrag', 'liegenschaft_id',
-    'ist_storno', 'storno_von_id', 'beleg_nr', 'organisation_id', 'erstellt_von_id',
+    'ist_storno', 'storno_von_id', 'beleg_nr', 'organisation_id', 'erstellt_von_id', 'erstellt_am',
 )
 
 #: Die Verknüpfungen zu den Nebenbüchern (Zahlung, Rechnung) — die «Zuordnung».
@@ -366,6 +366,11 @@ class Buchung(OrganisationAusKette):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='+', verbose_name="Erstellt von"
     )
+    # Erfassungszeitpunkt: wann die Buchung ENTSTANDEN ist, im Gegensatz zu `datum`, dem Buchungsdatum. Ohne ihn
+    # lässt sich nicht belegen, ob eine Buchung zeitnah oder nachträglich auf ein früheres Datum erfasst wurde
+    # (GeBüV Art. 3: Zeitgerechtigkeit). Vom Server gesetzt, nie von aussen; Buchungen vor dem 07.11.2026 tragen
+    # keinen (der Zeitpunkt ist nicht bekannt und wird nicht erfunden).
+    erstellt_am = models.DateTimeField("Erfasst am", null=True, blank=True, editable=False)
 
     def __str__(self):
         return f"{self.datum}: {self.soll_konto.nummer} an {self.haben_konto.nummer} | CHF {self.betrag}"
@@ -388,6 +393,13 @@ class Buchung(OrganisationAusKette):
             self._pruefe_aenderung()
             return super().save(*args, **kwargs)
 
+        # Prüfregeln für eine NEUE Buchung (Revision, Analysebericht 06.11.2026): ein positiver Betrag, und Soll und
+        # Haben auf verschiedenen Konten. Dieselben Regeln stehen als CHECK-Constraint in der Datenbank, sofern der
+        # Bestand sie zulässt (`finance/db_schutz.py`); hier greifen sie auf jeder Datenbank und mit klarer Meldung.
+        self._pruefe_neue_buchung()
+        # Der Erfassungszeitpunkt kommt immer vom Server, auch wenn ein Aufrufer einen mitgibt.
+        self.erstellt_am = timezone.now()
+
         # Periodensperre: neue Buchungen in einer abgeschlossenen Periode blockieren.
         sperre = self._periodensperre()
         datum = models.DateField().to_python(self.datum) if self.datum else None
@@ -399,6 +411,19 @@ class Buchung(OrganisationAusKette):
         if self.beleg_nr is not None:
             return super().save(*args, **kwargs)
         self._mit_belegnummer_speichern(*args, **kwargs)
+
+    def _pruefe_neue_buchung(self):
+        """Betrag > 0 und Soll ≠ Haben. Wirft `ValueError` mit einer Meldung, die sagt, was zu tun ist."""
+        try:
+            betrag = Decimal(str(self.betrag))
+        except (InvalidOperation, ValueError):
+            raise ValueError('Buchung ohne gültigen Betrag.') from None
+        if betrag <= 0:
+            raise ValueError(
+                f'Der Betrag einer Buchung muss grösser als 0 sein (CHF {betrag}). Eine Gutschrift oder Korrektur wird '
+                'als Buchung mit vertauschten Konten erfasst, nicht mit negativem Betrag.')
+        if self.soll_konto_id is not None and self.soll_konto_id == self.haben_konto_id:
+            raise ValueError('Soll- und Haben-Konto müssen verschieden sein.')
 
     def _periodensperre(self):
         """Die Sperre der EIGENEN Verwaltung, nicht `Organisation.objects.first()`.
