@@ -62,7 +62,7 @@
         </div>
     </div>
 
-    <script>
+    <script nonce="{{ csp_nonce }}">
       const DEB_VD = JSON.parse(document.getElementById('vd-data').textContent);
       const DEB_ABS = JSON.parse(document.getElementById('abs-data').textContent);
       const DEB_FAELLIG = "{{ faellig_iso }}";

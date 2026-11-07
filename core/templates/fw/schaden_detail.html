@@ -117,7 +117,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <button class="fw-btn fw-primary fw-knapp">{% trans "Speichern" %}</button>
             </form>
             <p id="kt_warnung" class="fw-s" hidden>⚠ {% trans "Dieses Bauteil ist zwingend gemeinschaftliches Eigentum (Art. 712b ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden." %}</p>
-            <script>
+            <script nonce="{{ csp_nonce }}">
             (function () {
                 var b = document.getElementById('kt_bauteil'), k = document.getElementById('kt_traeger'), w = document.getElementById('kt_warnung');
                 function pruefen() {

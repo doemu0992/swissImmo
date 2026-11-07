@@ -428,7 +428,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
                 </div>
             </form>
 
-            <script>
+            <script nonce="{{ csp_nonce }}">
             function ktSwitch(m){
                 var s=document.getElementById('kt-form-sperr'), v=document.getElementById('kt-form-vers');
                 var ts=document.getElementById('kt-tab-sperr'), tv=document.getElementById('kt-tab-vers');

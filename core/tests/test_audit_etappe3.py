@@ -124,7 +124,7 @@ class Modal(SimpleTestCase):
 
     def test_laedt_nur_neu_wenn_etwas_geschah(self):
         """Vorher lud jedes Schliessen die Seite neu — auch «Abbrechen»."""
-        skript = self._quelle().split('<script>', 1)[1]
+        skript = self._quelle().split('<script nonce="{{ csp_nonce }}">', 1)[1]
         schliessen = skript[skript.index('function fwModalClose'):skript.index("window.addEventListener('message'")]
         self.assertIn('if (neuLaden) { window.location.reload()', schliessen)
         self.assertEqual(schliessen.count('window.location.reload()'), 1)

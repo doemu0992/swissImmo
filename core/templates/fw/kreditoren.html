@@ -69,7 +69,7 @@
             {% zeichen 'einstellungen' klasse='mr-1.5' %}{% trans "Hochladen &amp; scannen" %}
         </button>
     </form>
-    <script>
+    <script nonce="{{ csp_nonce }}">
       function fwScanStart(f){
         var b=document.getElementById('scan-btn');
         b.disabled=true; b.innerHTML='{% zeichen 'laedt' klasse='fw-dreht mr-1.5' %}Wird gescannt …';
@@ -458,7 +458,7 @@
     {% blocktrans trimmed %}«Bezahlen» bucht die Zahlung (Kreditoren 2000 an Bank 1020) und setzt den Status auf bezahlt.
     Der KI-Scanner liest hochgeladene Belege automatisch aus (Lieferant, Betrag, IBAN, QR-Referenz) — Werte vor der Freigabe prüfen.{% endblocktrans %}
 </p>
-<script>
+<script nonce="{{ csp_nonce }}">
 // Zeilen-Klick öffnet das Edit-Panel mit Beleg-Vorschau — Klicks auf
 // Buttons/Formulare/Links in der Zeile werden ignoriert.
 function fwKZeile(ev, id){

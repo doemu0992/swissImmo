@@ -21,7 +21,7 @@
     {% csrf_token %}
     {# Im Cockpit-Modal geladen? Dann nach dem Speichern das Popup schliessen. #}
     <input type="hidden" name="embed" id="k_embed" value="">
-    <script>if (window.self !== window.top) document.getElementById('k_embed').value = '1';</script>
+    <script nonce="{{ csp_nonce }}">if (window.self !== window.top) document.getElementById('k_embed').value = '1';</script>
     {% trans "Prüfen & speichern" as k_pruefen %}
     <div class="fw-assistent" {% include 'fw/_assistent_attribute.html' with pruefen=k_pruefen %}>
     {% include 'fw/_assistent_leiste.html' %}
@@ -191,7 +191,7 @@
     </div>
 </form>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 // Zustellung sinnvoll an Absender koppeln — und was nur für eine Partei gilt
 // (Zugang, Zustimmung Art. 266m, Ersatzmieter Art. 264, Gründe) ein-/ausblenden.
 function syncZustellung(){

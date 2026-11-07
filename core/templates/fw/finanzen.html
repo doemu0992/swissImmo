@@ -146,7 +146,7 @@ Periodenabschluss, Direkt zu) steht unverändert darunter in «Abschluss».
         <span class="fw-rechts fw-fin-links"><a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-link">{% trans "Debitoren-Aging" %}</a> <a href="/neu/mahnwesen/{{ lg_query }}" class="fw-link">{% trans "Zum Mahnwesen" %}</a></span>
     </div>
 </section>
-<script>
+<script nonce="{{ csp_nonce }}">
 document.querySelectorAll('.fw-aging-tabelle tr[data-href]').forEach(function (tr) {
     tr.addEventListener('click', function (e) {
         if (e.target.closest('a,button,input,select')) return;

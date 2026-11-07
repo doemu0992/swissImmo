@@ -27,7 +27,7 @@
             {% trans "Zur Übersicht" %}
         </a>
     </div>
-    <script>(function(){var p=location.pathname,a=document.getElementById('fehlerZiel');
+    <script nonce="{{ csp_nonce }}">(function(){var p=location.pathname,a=document.getElementById('fehlerZiel');
         if(p.indexOf('/mieter/')===0)a.href='/mieter/';else if(p.indexOf('/portal/')===0)a.href='/portal/';})();</script>
 </body>
 </html>

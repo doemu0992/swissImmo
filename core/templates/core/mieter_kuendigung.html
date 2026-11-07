@@ -104,7 +104,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
   function terminAnzeigen(){
     var sel=document.getElementById('objektWahl');
     if(!sel||!sel.options.length)return;

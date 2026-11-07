@@ -139,7 +139,7 @@ Betreuung soll auffallen, nicht still dem Ersten zufallen, der sie öffnet.
             </select>
             {% include 'fw/_feldfehler.html' with f=None fehler=feld_fehler.eigentuemer_id feld_id="id_eigentuemer_id" %}</div>
         <p id="stweg_hinweis" class="fw-hinweis info rounded-lg" hidden>{% trans "Bei Stockwerkeigentum hat jede Einheit ihren eigenen Eigentümer. Wertquoten und Eigentümer teilen Sie nach dem Speichern zu." %}</p>
-        <script>
+        <script nonce="{{ csp_nonce }}">
         (function () {
             var art = document.getElementById('id_typ');
             var block = document.getElementById('eigentuemer_block');

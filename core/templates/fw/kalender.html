@@ -85,7 +85,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
 // Eintragsarten ein-/ausblenden (nur im Browser — die Auswahl ist ein Blick, keine Einstellung).
 (function () {
     document.querySelectorAll('.fw-kal-art').forEach(function (b) {

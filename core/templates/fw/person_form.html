@@ -381,7 +381,7 @@
     {% if ist_neu %}</div></div>{% else %}</div>{% endif %}
 </form>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 function setTyp(t){
     document.getElementById('f_typ').value = t;
     document.querySelectorAll('.typ-btn').forEach(function(b){

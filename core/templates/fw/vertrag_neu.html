@@ -488,7 +488,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
 </form>
 
 <script src="{% statisch 'js/fw-mietzinsmodell.js' %}"></script>
-<script>
+<script nonce="{{ csp_nonce }}">
 // Beträge und Zinssätze stehen als Text wie «1'450.50» in den Feldern (DESIGN-28). Das Skript der Seite läuft
 // vor `fw-bausteine.js` (defer), das `window.fwZahl` erst später bereitstellt: Bis dahin liest dieser Ersatz
 // dieselbe Schreibweise, danach gilt die gemeinsame Funktion.

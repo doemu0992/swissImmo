@@ -158,7 +158,7 @@
 
 {% block scripts %}
 {% include 'fw/_fwmodal.html' %}
-<script>
+<script nonce="{{ csp_nonce }}">
 // «Neues Ticket» vom Board oder von «Heute» öffnet das Formular gleich.
 if (/[?&]neu=1\b/.test(location.search)) { var f = document.getElementById('neuschaden'); if (f) { f.classList.remove('hidden'); f.scrollIntoView({block: 'start'}); } }
 </script>
