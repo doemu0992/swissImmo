@@ -1484,6 +1484,48 @@ class AuszahlungsFreigabe(models.Model):
         return f"{self.get_art_display()} #{self.bezug_id} — CHF {self.betrag}"
 
 
+class SperreAenderung(models.Model):
+    """Antrag, die Periodensperre zu LOCKERN (Roadmap Nr. 11, Vier-Augen-Prinzip).
+
+    Die Sperre selbst bleibt das Datum `Organisation.buchung_gesperrt_bis`. Vorwärts
+    (später sperren) kann eine Person allein. Zurück (früherer Stichtag oder ganz
+    aufheben) öffnet abgeschlossene Zeit für Buchungen und braucht deshalb eine
+    ZWEITE Person aus der Verwaltung (`finance/periodensperre.py`). Diese Zeile ist
+    der Antrag und bleibt als Spur stehen.
+    """
+    STATUS = [('offen', gettext_lazy('Offen')), ('freigegeben', gettext_lazy('Freigegeben')),
+              ('abgelehnt', gettext_lazy('Abgelehnt'))]
+
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
+                                     related_name='%(app_label)s_%(class)s', verbose_name='Organisation')
+    alt_bis = models.DateField("Bisher gesperrt bis", null=True, blank=True)
+    neu_bis = models.DateField("Neu gesperrt bis", null=True, blank=True)
+    grund = models.TextField("Begründung")
+    status = models.CharField("Status", max_length=12, choices=STATUS, default='offen')
+    beantragt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
+                                      blank=True, related_name='+')
+    beantragt_am = models.DateTimeField(default=timezone.now)
+    entschieden_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
+                                        blank=True, related_name='+')
+    entschieden_am = models.DateTimeField(null=True, blank=True)
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            self.organisation_id = organisation_bestimmen().pk
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Änderung der Periodensperre"
+        verbose_name_plural = "Änderungen der Periodensperre"
+        ordering = ['-beantragt_am', '-id']
+
+    def __str__(self):
+        return f"{self.alt_bis or '—'} → {self.neu_bis or '—'} ({self.get_status_display()})"
+
+
 class Hypothek(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
     """Hypothekartranche auf einer Liegenschaft (Fest/SARON/variabel).

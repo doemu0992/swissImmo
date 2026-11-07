@@ -37534,3 +37534,52 @@ msgstr ""
 "Abschlüsse und das Logbuch (z. B. Treuhand oder Revisionsstelle). Sie ändert"
 " nichts, sieht keine Stammdaten, Verträge oder Personen, und ihre Abrufe "
 "stehen im Logbuch."
+
+msgid "Begründung (nur beim Lockern)"
+msgstr "Begründung (nur beim Lockern)"
+
+msgid ""
+"Mehr sperren geht sofort. Zurücknehmen oder aufheben braucht die Freigabe "
+"einer zweiten Person aus der Verwaltung."
+msgstr ""
+"Mehr sperren geht sofort. Zurücknehmen oder aufheben braucht die Freigabe "
+"einer zweiten Person aus der Verwaltung."
+
+msgid "Antrag von %(wer)s: Sperre %(von)s → %(nach)s. Begründung: %(grund)s"
+msgstr "Antrag von %(wer)s: Sperre %(von)s → %(nach)s. Begründung: %(grund)s"
+
+msgid ""
+"Das Lockern der Periodensperre braucht die Freigabe einer zweiten Person aus"
+" der Verwaltung. Der Antrag ist gestellt."
+msgstr ""
+"Das Lockern der Periodensperre braucht die Freigabe einer zweiten Person aus"
+" der Verwaltung. Der Antrag ist gestellt."
+
+msgid "Über die Periodensperre entscheidet die Verwaltung."
+msgstr "Über die Periodensperre entscheidet die Verwaltung."
+
+msgid "Dieser Antrag ist nicht mehr offen."
+msgstr "Dieser Antrag ist nicht mehr offen."
+
+msgid "Entscheid gespeichert."
+msgstr "Entscheid gespeichert."
+
+msgid ""
+"Die Periodensperre bis 31.12.%(j_zr)s muss zuerst eine zweite Person aus der"
+" Verwaltung lösen (Anlagen & Abschluss). Danach die Rücknahme erneut "
+"auslösen."
+msgstr ""
+"Die Periodensperre bis 31.12.%(j_zr)s muss zuerst eine zweite Person aus der"
+" Verwaltung lösen (Anlagen & Abschluss). Danach die Rücknahme erneut "
+"auslösen."
+
+msgid "Für das Lockern der Periodensperre ist eine Begründung nötig."
+msgstr "Für das Lockern der Periodensperre ist eine Begründung nötig."
+
+msgid "Dieser Antrag ist schon entschieden."
+msgstr "Dieser Antrag ist schon entschieden."
+
+msgid ""
+"Die Freigabe muss eine zweite Person erteilen, nicht die antragstellende."
+msgstr ""
+"Die Freigabe muss eine zweite Person erteilen, nicht die antragstellende."

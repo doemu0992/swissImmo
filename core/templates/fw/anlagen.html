@@ -140,9 +140,20 @@
         <input type="hidden" name="aktion" value="sperre_set">
         <div><label class="fw-label mb-1">{% trans "Gesperrt bis" %}</label>
             <input type="date" name="gesperrt_bis" value="{{ gesperrt_bis|date:'Y-m-d' }}" class="fw-feld"></div>
+        <div class="grow"><label class="fw-label mb-1" for="sperre-grund">{% trans "Begründung (nur beim Lockern)" %}</label>
+            <input type="text" id="sperre-grund" name="grund" class="fw-feld" maxlength="300"></div>
         <button class="fw-btn fw-warnknopf">{% trans "Sperre setzen" %}</button>
         <button name="gesperrt_bis" value="" class="fw-btn fw-geist">{% trans "Aufheben" %}</button>
     </form>
+    <p class="fw-hilfe mt-2">{% trans "Mehr sperren geht sofort. Zurücknehmen oder aufheben braucht die Freigabe einer zweiten Person aus der Verwaltung." %}</p>
+    {% for a in sperre_antraege %}
+    <form method="post" class="flex items-end gap-2 flex-wrap mt-3">{% csrf_token %}
+        <input type="hidden" name="antrag_id" value="{{ a.pk }}">
+        <p class="fw-hilfe grow m-0">{% blocktrans with von=a.alt_bis|date:"d.m.Y" nach=a.neu_bis|date:"d.m.Y" grund=a.grund wer=a.beantragt_von %}Antrag von {{ wer }}: Sperre {{ von }} → {{ nach }}. Begründung: {{ grund }}{% endblocktrans %}</p>
+        <button name="aktion" value="sperre_freigeben" class="fw-btn fw-warnknopf">{% trans "Freigeben" %}</button>
+        <button name="aktion" value="sperre_ablehnen" class="fw-btn fw-geist">{% trans "Ablehnen" %}</button>
+    </form>
+    {% endfor %}
     </div>
 </div>
 {% endblock %}
