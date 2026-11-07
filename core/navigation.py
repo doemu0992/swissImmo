@@ -239,7 +239,7 @@ def _ziel_erlaubt_fuer(rolle):
     return erlaubt
 
 
-def _navigation_buchhaltung(user, rolle=None):
+def _navigation_buchhaltung(user, rolle=None, rollen=None):
     """Navigation, Palette, Suche und Kopf der Buchhaltung (nur Finanzen).
 
     Dieselben fünf Bereiche wie beim Team, aber nur mit den Seiten, die ihre
@@ -283,7 +283,7 @@ def _navigation_buchhaltung(user, rolle=None):
         aktiv = aktuelle_organisation()
     except Exception:
         aktiv = None
-    return {**_kopf_reduziert(user), 'fw_nav_gruppen': gruppen, 'fw_palette': palette,
+    return {**_kopf_reduziert(user, rollen), 'fw_nav_gruppen': gruppen, 'fw_palette': palette,
             'fw_einstellungen_keys': EINSTELLUNGEN_KEYS, 'fw_mandanten': mandanten,
             'fw_mandant': aktiv, **suche_kontext}
 
@@ -308,7 +308,7 @@ def _suche_ohne_team(user):
             'fw_suche_gruppen': ','.join(suche.gruppen), 'fw_suche_ziel': suche.suchseite}
 
 
-def _kopf_reduziert(user):
+def _kopf_reduziert(user, rollen=None):
     """Die Kopfzeile ohne Ziele, die diese Person nicht öffnen darf (DESIGN-01).
 
     Wer keine Team-Rolle hat, bekommt «+», Glocke, Zahnrad, die Rubriken des
@@ -318,7 +318,13 @@ def _kopf_reduziert(user):
     die Schadenliste, sonst die Login-Weiche (`/nach-login/`, rollengerecht)."""
     from core.auth import ist_nur_buchhaltung, ist_nur_hauswart, ist_nur_revision
     start = '/nach-login/'
-    if ist_nur_revision(user):
+    from core.auth import BUCHHALTUNG_ROLLEN, ROLLE_REVISION, TEAM_ROLLEN
+    if rollen is not None:      # schon gelesen: keine weitere Abfrage
+        nur_revision = (ROLLE_REVISION in rollen
+                        and not rollen & (set(TEAM_ROLLEN) | set(BUCHHALTUNG_ROLLEN)))
+    else:
+        nur_revision = ist_nur_revision(user)
+    if nur_revision:
         start = '/neu/buchhaltung/'
     elif ist_nur_hauswart(user):
         start = '/neu/schaeden/'
@@ -338,13 +344,15 @@ def fw_navigation(request):
     if not user or not user.is_authenticated:
         return {}
     try:
-        from core.auth import hat_rolle, BUCHHALTUNG_ROLLEN, REVISIONS_ROLLEN, ROLLE_REVISION, TEAM_ROLLEN
+        from core.auth import hat_rolle, BUCHHALTUNG_ROLLEN, ROLLE_REVISION, TEAM_ROLLEN, eigene_rollen
         if not hat_rolle(user, TEAM_ROLLEN):
-            if hat_rolle(user, BUCHHALTUNG_ROLLEN):
-                return _navigation_buchhaltung(user)
-            if hat_rolle(user, REVISIONS_ROLLEN):
-                return _navigation_buchhaltung(user, ROLLE_REVISION)
-            return {**_kopf_reduziert(user), **_suche_ohne_team(user)}
+            # Eine Abfrage für Buchhaltung UND Revision (statt je einer).
+            rollen = eigene_rollen(user)
+            if rollen & set(BUCHHALTUNG_ROLLEN):
+                return _navigation_buchhaltung(user, rollen=rollen)
+            if ROLLE_REVISION in rollen:
+                return _navigation_buchhaltung(user, ROLLE_REVISION, rollen)
+            return {**_kopf_reduziert(user, rollen), **_suche_ohne_team(user)}
     except Exception:
         return {}
 
