@@ -1180,7 +1180,12 @@ class CamtGesperrtePeriodeQSTests(TestCase):
                          'Waisen-Bankbewegung blockiert den Re-Import')
 
         # 2) Periode öffnen, dieselbe Datei erneut importieren → jetzt gebucht.
-        vw = Organisation.objects.first(); vw.buchung_gesperrt_bis = None; vw.save()
+        # Die Sperre zu lockern braucht sonst eine zweite Person (Roadmap Nr. 11): Der Test setzt die
+        # Freigabe ausdrücklich voraus, weil er den Re-Import in der geöffneten Periode prüft.
+        from finance.periodensperre import freigabe_aktiv
+        vw = Organisation.objects.first(); vw.buchung_gesperrt_bis = None
+        with freigabe_aktiv():
+            vw.save()
         f2 = SimpleUploadedFile('camt.xml', self._camt(r.qr_referenz), content_type='application/xml')
         c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f2})
         r.refresh_from_db()
