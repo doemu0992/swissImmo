@@ -5,6 +5,12 @@ class CoreConfig(AppConfig):
     name = 'core'
 
     def ready(self):
+        # Nach jedem `migrate` (Deploy): Altbestand von selbst verschlüsseln, ohne Handgriff im Terminal.
+        from django.db.models.signals import post_migrate
+
+        from core.services.geheimnis_pflege import nach_migration
+        post_migrate.connect(nach_migration, sender=self, dispatch_uid='geheimnis_nach_migration')
+
         # Login-/Sicherheits-Ereignisse ins Logbuch schreiben.
         from core import signals  # noqa: F401
 

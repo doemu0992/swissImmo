@@ -26,3 +26,6 @@ e2e_db.sqlite3*
 # Editor-Swapdateien (eine lag versehentlich im Wurzelverzeichnis)
 *.swp
 *.swo
+
+# Selbst erzeugter Verschluesselungsschluessel (NIEMALS hochladen)
+.geheimnis_schluessel

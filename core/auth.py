@@ -92,6 +92,11 @@ ZAHLUNGSFREIGABE_ROLLEN = VERWALTUNGS_ROLLEN
 #: SICH-11, `docs/KONZEPT-UI.md` §8).
 BETREIBUNGS_ROLLEN = VERWALTUNGS_ROLLEN
 
+#: Der Betreiber der Installation. KEINE Mitgliedschaftsrolle (niemand bekommt sie zugewiesen): `hat_rolle` lässt
+#: Superuser immer durch, alle anderen nie. Für Seiten, die die ganze Installation betreffen und nie eine Verwaltung
+#: (Verschlüsselungsschlüssel, `core/views/fw/sicherheit.py`).
+BETREIBER_ROLLEN = ('Betreiber',)
+
 #: Rollen, für die der zweite Faktor immer Pflicht ist, ob die Verwaltung den
 #: Schalter gesetzt hat oder nicht: Sie lösen Zahlungen aus oder leiten
 #: Betreibungen ein (Etappe 2, SICH-10).
