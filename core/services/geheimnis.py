@@ -26,16 +26,25 @@ unlesbar — man wechselte ihn dann im Zweifel nicht.
 
 DER PREIS: SCHLÜSSEL WEG HEISST ZUGÄNGE WEG
 
-Es gibt keine Hintertür, das ist der Sinn. Wer `IMAP_SCHLUESSEL` verliert,
-richtet jedes Postfach neu ein. Der Schlüssel gehört deshalb an dieselbe Stelle
+Es gibt keine Hintertür, das ist der Sinn. Wer `GEHEIMNIS_SCHLUESSEL` (früher
+`IMAP_SCHLUESSEL`) verliert, richtet jedes Postfach neu ein und verliert die AHV-Nummern. Der Schlüssel gehört deshalb an dieselbe Stelle
 und in dieselbe Sorgfalt wie das Datenbankpasswort — samt einer Kopie
 ausserhalb des Servers.
 """
 import os
+import re
 
 from django.conf import settings
 
-#: Name der Umgebungsvariablen. Auch in `.env.example` und `SICHERUNG.md`.
+#: Name der Einstellung/Umgebungsvariablen (seit 07.11.2026). Es dürfen MEHRERE Schlüssel stehen, durch Komma
+#: oder Zeilenumbruch getrennt: Der erste verschlüsselt, alle entschlüsseln — so lässt sich ein Schlüssel
+#: wechseln, ohne etwas zu verlieren (`manage.py schluessel_wechseln`).
+NEUER_NAME = 'GEHEIMNIS_SCHLUESSEL'
+#: Alternativ eine Datei, die den Schlüssel (bzw. die Schlüssel) enthält — ausserhalb von `.env` und Webroot,
+#: mit Rechten nur für den Betriebsbenutzer (Muster «_FILE» von Docker-Secrets, systemd-Credentials).
+DATEINAME = 'GEHEIMNIS_SCHLUESSEL_DATEI'
+#: Der alte Name: gilt weiter, damit nichts bricht. Der Name stammt aus der Zeit, als nur IMAP-Postfächer
+#: den Schlüssel brauchten; heute schützt er auch AHV-Nummern (und demnächst die 2FA-Geheimnisse).
 UMGEBUNGSNAME = 'IMAP_SCHLUESSEL'
 
 
@@ -62,30 +71,80 @@ def schluessel_vorhanden() -> bool:
 
 
 def _roh_schluessel() -> str:
-    # `settings` zuerst: Tests setzen ihn per `override_settings`, ohne die
-    # Umgebung des laufenden Prozesses anzufassen.
-    aus_settings = getattr(settings, UMGEBUNGSNAME, None)
-    return (aus_settings or os.getenv(UMGEBUNGSNAME, '') or '').strip()
+    """Die Schlüssel als ein Text (mehrere getrennt durch Komma/Zeilenumbruch); leer, wenn keiner gesetzt ist.
+
+    Reihenfolge: `settings` zuerst (Tests setzen ihn per `override_settings`, ohne die Umgebung des laufenden
+    Prozesses anzufassen), dann Umgebungsvariable, dann Schlüsseldatei; der neue Name vor dem alten."""
+    for name in (NEUER_NAME, UMGEBUNGSNAME):
+        wert = getattr(settings, name, None)
+        if wert:
+            return str(wert).strip()
+    wert = os.getenv(NEUER_NAME, '')
+    if wert.strip():
+        return wert.strip()
+    datei = os.getenv(DATEINAME, '').strip()
+    if datei:
+        try:
+            with open(datei, encoding='utf-8') as f:
+                inhalt = f.read().strip()
+        except OSError as fehler:
+            raise SchluesselFehlt(f'{DATEINAME}={datei} lässt sich nicht lesen ({fehler.strerror or fehler}).') from fehler
+        if inhalt:
+            return inhalt
+    return (os.getenv(UMGEBUNGSNAME, '') or '').strip()
+
+
+def _schluesselliste() -> list:
+    return [s for s in re.split(r'[,\s]+', _roh_schluessel()) if s]
 
 
 def _fernet():
-    from cryptography.fernet import Fernet
+    """Ein `MultiFernet` über alle Schlüssel: verschlüsselt mit dem ersten, entschlüsselt mit jedem."""
+    from cryptography.fernet import Fernet, MultiFernet
 
-    roh = _roh_schluessel()
-    if not roh:
+    schluessel = _schluesselliste()
+    if not schluessel:
         raise SchluesselFehlt(
-            f'{UMGEBUNGSNAME} ist nicht gesetzt. Ohne diesen Schlüssel lassen sich '
-            'Postfach-Zugangsdaten weder speichern noch lesen. Erzeugen mit:\n'
+            f'{NEUER_NAME} (früher {UMGEBUNGSNAME}) ist nicht gesetzt. Ohne diesen Schlüssel lassen sich '
+            'Zugangsdaten und AHV-Nummern weder speichern noch lesen. Erzeugen mit:\n'
             '  python -c "from cryptography.fernet import Fernet; '
             'print(Fernet.generate_key().decode())"\n'
-            f'und als {UMGEBUNGSNAME}=… in die .env eintragen, dann Web-App neu laden.')
+            f'und als {NEUER_NAME}=… in die .env eintragen (oder als Datei: {DATEINAME}=/pfad), '
+            'dann Web-App neu laden.')
+    fernets = []
+    for i, roh in enumerate(schluessel, start=1):
+        try:
+            fernets.append(Fernet(roh.encode()))
+        except Exception as fehler:                            # noqa: BLE001
+            raise SchluesselFehlt(
+                f'{NEUER_NAME} (früher {UMGEBUNGSNAME}): Schlüssel {i} ist kein gültiger Fernet-Schlüssel '
+                f'({fehler}). Erwartet werden 44 Zeichen Base64 — beim Kopieren geht '
+                'gern ein Zeilenumbruch mitten hinein.') from fehler
+    return MultiFernet(fernets)
+
+
+def neu_verschluesseln(geheimtext: str) -> str:
+    """Einen Geheimtext, der mit IRGENDEINEM der Schlüssel lesbar ist, mit dem ERSTEN neu verschlüsseln."""
+    from cryptography.fernet import InvalidToken
+    if not geheimtext:
+        return ''
     try:
-        return Fernet(roh.encode())
-    except Exception as fehler:                                # noqa: BLE001
-        raise SchluesselFehlt(
-            f'{UMGEBUNGSNAME} ist gesetzt, aber kein gültiger Fernet-Schlüssel '
-            f'({fehler}). Erwartet werden 44 Zeichen Base64 — beim Kopieren geht '
-            'gern ein Zeilenumbruch mitten hinein.') from fehler
+        return _fernet().rotate(str(geheimtext).encode()).decode()
+    except InvalidToken as fehler:
+        raise GeheimtextKaputt('Mit keinem der gesetzten Schlüssel lesbar.') from fehler
+
+
+def mit_erstem_schluessel_lesbar(geheimtext: str) -> bool:
+    """True, wenn der Geheimtext schon mit dem ersten (aktuellen) Schlüssel entschlüsselt werden kann."""
+    from cryptography.fernet import Fernet, InvalidToken
+    liste = _schluesselliste()
+    if not geheimtext or not liste:
+        return False
+    try:
+        Fernet(liste[0].encode()).decrypt(str(geheimtext).encode())
+        return True
+    except (InvalidToken, ValueError):
+        return False
 
 
 def verschluesseln(klartext: str) -> str:
@@ -111,6 +170,6 @@ def entschluesseln(geheimtext: str) -> str:
     except InvalidToken as fehler:
         raise GeheimtextKaputt(
             'Der gespeicherte Wert lässt sich mit dem aktuellen '
-            f'{UMGEBUNGSNAME} nicht lesen. Häufigster Grund: Der Schlüssel wurde '
+            f'{NEUER_NAME} (früher {UMGEBUNGSNAME}) nicht lesen. Häufigster Grund: Der Schlüssel wurde '
             'gewechselt. Die betroffenen Zugangsdaten müssen neu eingegeben '
             'werden — entschlüsseln lassen sie sich nicht mehr.') from fehler
