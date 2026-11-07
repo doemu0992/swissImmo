@@ -10,6 +10,9 @@ export DEBUG=True
 export SECURE_SSL_REDIRECT=False
 export SQLITE_NAME="${SQLITE_NAME:-$PWD/e2e_db.sqlite3}"
 export EXTRA_ALLOWED_HOSTS="127.0.0.1,localhost"
+# Zähler (Login-Limits) gehören zum Lauf: frischer Cache-Ordner, sonst wirken Versuche des letzten Laufs nach.
+export CACHE_VERZEICHNIS="${CACHE_VERZEICHNIS:-$PWD/e2e_cache}"
+rm -rf "$CACHE_VERZEICHNIS"
 
 rm -f "$SQLITE_NAME"
 python manage.py migrate -v0
