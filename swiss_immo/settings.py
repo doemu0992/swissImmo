@@ -201,6 +201,8 @@ MIDDLEWARE = [
     'abo.middleware.AboMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Nonce je Anfrage und Content-Security-Policy (zunächst nur melden, siehe core/csp.py).
+    'core.csp.CspMiddleware',
     # Nach der Meldungs-Schicht (sie legt Meldungen ab, die der Rücksprung zeigt).
     # Macht aus Eingaben, die nicht in ihr Feld passen (zu lang, zu gross, keine
     # Zahl), eine Meldung statt einer 500-Seite — siehe core/middleware_eingabe.py.
@@ -230,6 +232,7 @@ TEMPLATES = [
                 'core.context_processors.fw_badges',
                 'core.navigation.fw_navigation',
                 'abo.kontext.abo_hinweis',
+                'core.csp.kontext',
             ],
         },
     },
@@ -443,6 +446,9 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 MEDIA_URL = '/media/'
 # Ein Zähler für alle Prozesse (Login-Fehlversuche, Formular-Limits): siehe `core/cache_config.py`.
+# Content-Security-Policy: report-only (Vorgabe) | enforce | aus — siehe core/csp.py
+CSP_MODUS = os.getenv('CSP_MODUS', 'report-only')
+
 from core.cache_config import caches_fuer  # noqa: E402
 CACHES = caches_fuer(TESTING, BASE_DIR, os.getenv('CACHE_VERZEICHNIS') or None)
 

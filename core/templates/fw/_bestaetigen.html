@@ -35,7 +35,7 @@ Enter bestätigt dort nicht aus Versehen.
         </div>
     </form>
 </dialog>
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
     var dlg = document.getElementById('fwBestaetigen');
     if (!dlg || typeof dlg.showModal !== 'function') return;   // alter Browser: native Rückfrage bleibt

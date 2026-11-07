@@ -89,7 +89,7 @@ Nach dem Speichern im Serienmodus: Maske offen halten und Fokus zurück auf den
 Betrag. Ohne das war nach jedem Beleg das Panel zu, der Fokus am Seitenanfang
 und das Datum leer — Stapelerfassung war praktisch unmöglich (Audit).
 {% endcomment %}
-<script>
+<script nonce="{{ csp_nonce }}">
 document.addEventListener('DOMContentLoaded', function () {
     var f = document.getElementById('buchform');
     if (f) { f.classList.remove('hidden'); }

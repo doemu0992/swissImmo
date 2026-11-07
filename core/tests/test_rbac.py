@@ -91,6 +91,7 @@ OFFEN_FUER_ANGEMELDETE = (
     '/report/', '/schaden/melden/',        # öffentliche Schadenmeldung (QR am Aushang)
     '/bewerben/', '/bewerbung/', '/datenschutz/', '/aushang/',
     '/abnahme-sw.js',         # Service Worker der Vor-Ort-Abnahme: feste Skriptdatei ohne Mandantendaten
+    '/csp-bericht/',          # Verstossmeldungen des Browsers (CSP): offen, gedeckelt, schreibt nur ins Log (test_csp)
     '/webhooks/', '/docuseal/webhook/', '/fristen.ics',          # Token-/Secret-geschützt, eigene Tests
     # Modul 3: Handwerker-Link je Auftrag — ohne Konto, Token statt Rolle;
     # unbekannt/abgelaufen/widerrufen → 404. Eigene Tests in test_portale_modul3.py.

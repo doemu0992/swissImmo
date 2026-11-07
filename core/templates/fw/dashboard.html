@@ -398,7 +398,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
 // ─── Arbeitsvorrat: Auswahl, Schublade, Tastatur (konzept-v8) ───
 (function () {
     // Zeilen aus «Hängt» führen direkt zum Fall.

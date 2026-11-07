@@ -125,7 +125,7 @@
     </div>
 </form>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 (function(){
     var form = document.getElementById('sa-form');
     var offen = parseFloat(form.dataset.offen) || 0;

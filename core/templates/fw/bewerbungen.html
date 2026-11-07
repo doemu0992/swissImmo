@@ -148,7 +148,7 @@
 {% block scripts %}
 {% include 'fw/_fwmodal.html' %}
 {% if ansicht == 'board' %}
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
     var board = document.getElementById('fwBoard');
     if (!board) return;

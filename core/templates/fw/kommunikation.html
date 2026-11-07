@@ -135,7 +135,7 @@ Freundliche Grüsse</textarea>
                 <input type="hidden" name="text" id="pdf-text">
                 <div id="pdf-empfaenger"></div>
             </form>
-            <script>
+            <script nonce="{{ csp_nonce }}">
               function _sammleVersand(){
                 var ids=[].slice.call(document.querySelectorAll('.emp-check:checked')).map(function(c){return c.value;});
                 if(!ids.length){alert('{% filter escapejs %}{% trans "Bitte mindestens einen Empfänger wählen." %}{% endfilter %}');return null;}
@@ -206,7 +206,7 @@ Freundliche Grüsse</textarea>
 </aside>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 const EMPF = JSON.parse(document.getElementById('empfaenger-data').textContent);
 document.addEventListener('DOMContentLoaded', function(){ if (document.querySelector('.emp-check:checked')) aktualisiere(); });
 const ABS = JSON.parse(document.getElementById('absender-data').textContent);

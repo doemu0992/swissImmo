@@ -16,7 +16,7 @@
     <p class="fw-fertig-titel">{{ msg|default:"Erledigt" }}</p>
     <p class="fw-fertig-text">{% trans "Fenster wird geschlossen …" %}</p>
 </div>
-<script>
+<script nonce="{{ csp_nonce }}">
     // Elternfenster (Cockpit) informieren: Schritt erledigt → Modal schliessen + neu laden
     try { window.parent.postMessage({ fwModal: 'done' }, '*'); } catch (e) {}
 </script>

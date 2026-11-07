@@ -332,6 +332,7 @@ class KomprimierungTests(TestCase):
     def _ohne_csrf(rohbytes):
         """CSRF-Token herausrechnen — er ist je Antwort absichtlich anders."""
         import re
+        rohbytes = re.sub(rb'nonce="[^"]+"', b'nonce="N"', rohbytes)       # der CSP-Nonce ist es ebenso
         return re.sub(rb'name="csrfmiddlewaretoken" value="[^"]+"',
                       b'name="csrfmiddlewaretoken" value="X"', rohbytes)
 

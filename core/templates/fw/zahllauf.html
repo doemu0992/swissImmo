@@ -258,7 +258,7 @@
     {% endif %}
 </form>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 function fwZlAlle(quelle, gruppe) {
     document.querySelectorAll('tbody[data-gruppe="' + gruppe + '"] input[name="rechnung_ids"]')
         .forEach(function (b) { if (!b.disabled) b.checked = quelle.checked; });

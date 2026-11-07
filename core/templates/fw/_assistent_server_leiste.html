@@ -20,7 +20,7 @@ auf der man steht. Gesperrte Schritte und Schritte ohne Ziel (`link` aus server_
     </ol>
     <div class="fw-assistent-stand">{% blocktrans with i=assistent.i n=assistent.n %}Schritt {{ i }} von {{ n }}{% endblocktrans %}</div>
 </nav>
-<script>
+<script nonce="{{ csp_nonce }}">
 // Am Telefon scrollt die Leiste waagrecht: den aktuellen Schritt ins Bild holen.
 (function (l) {
     var a = l && l.querySelector('li.hier');

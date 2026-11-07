@@ -108,7 +108,7 @@
                 <a href="/neu/account/fensterprobe/" target="_blank" rel="noopener" class="fw-btn fw-knapp">{% zeichen 'drucken' %} {% trans "Fensterprobe drucken (PDF)" %}</a></div>
         </div>
         <p class="fw-hilfe">{% trans "Drucken Sie die Fensterprobe, falten Sie sie an den Falzmarken und legen Sie sie in Ihren Fensterumschlag. Steht die Adresse nicht im Fenster, verschieben Sie sie hier (±10 mm, 0 = Norm); die Briefe folgen dem Versatz." %}</p>
-        <script>
+        <script nonce="{{ csp_nonce }}">
         (function () {
             var wahl = document.getElementById('acc-bk-wahl'), feld = document.getElementById('acc-bk-farbe');
             if (wahl && feld) { wahl.addEventListener('input', function () { feld.value = wahl.value; }); }

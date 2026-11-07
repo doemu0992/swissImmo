@@ -69,6 +69,7 @@ def healthz_view(request):
         return JsonResponse({'status': 'error'}, status=503)
     return JsonResponse({'status': 'ok'})
 from core.views.application import public_application_view, public_datenschutz_view
+from core.csp import csp_bericht
 
 # 2. Das neue Admin-Cockpit (Bereinigt um das alte Dashboard)
 
@@ -227,6 +228,8 @@ urlpatterns = [
     # wenn ein ausstehender zweiter Faktor bestaetigt ist. Ein Faktor, der
     # NACH `login()` abgefragt wird, ist keiner — siehe core/views/zweifaktor.py.
     path('login/', zweifaktor_login, name='login'),
+    # Verstossmeldungen der Content-Security-Policy (offen, gedeckelt): siehe core/csp.py
+    path('csp-bericht/', csp_bericht, name='csp_bericht'),
     # Sprachwahl (Baustein `core/_sprachwahl.html`): Djangos `set_language`,
     # nur POST, setzt das Sprach-Cookie. Offen ohne Anmeldung, damit auch die
     # Anmeldeseite umgestellt werden kann; `next` prüft Django selbst auf

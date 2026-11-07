@@ -75,7 +75,7 @@
 
 {% block scripts %}
 {% include 'fw/_fwmodal.html' %}
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
     var board = document.getElementById('fwBoard');
     if (!board || !board.dataset.verschieben) return;

@@ -263,7 +263,7 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
     {% endif %}
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
     var root = document.getElementById('vo');
     if (!root) return;

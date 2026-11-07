@@ -99,7 +99,7 @@ Erklärung, warum.{% endcomment %}
 <form method="post" id="wv-form">
     {% csrf_token %}
     <input type="hidden" name="embed" id="wv_embed" value="">
-    <script>if (window.self !== window.top) document.getElementById('wv_embed').value = '1';</script>
+    <script nonce="{{ csp_nonce }}">if (window.self !== window.top) document.getElementById('wv_embed').value = '1';</script>
     {% trans "Prüfen & erstellen" as wv_pruefen %}
     <div class="fw-assistent fw-assistent-schmal" {% include 'fw/_assistent_attribute.html' with pruefen=wv_pruefen %}>
     {% include 'fw/_assistent_leiste.html' %}
@@ -181,7 +181,7 @@ Erklärung, warum.{% endcomment %}
 </div>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 document.querySelectorAll('[data-wv-weg]').forEach(function (k) {
     k.addEventListener('click', function () {
         var weg = k.dataset.wvWeg;

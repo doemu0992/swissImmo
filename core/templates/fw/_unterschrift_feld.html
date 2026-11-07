@@ -95,7 +95,7 @@ Das Formular MUSS enctype="multipart/form-data" haben.
     </div>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
     // Mehrfach-Einbindung auf einer Seite ist möglich — jedes Feld eigenständig.
     document.querySelectorAll('[data-us-canvas]').forEach(function (canvas) {

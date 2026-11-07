@@ -141,7 +141,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
 document.querySelectorAll('tr.fw-klickzeile[data-href]').forEach(function (r) {
     r.addEventListener('click', function (e) { if (!e.target.closest('a,button')) location.href = r.dataset.href; });
 });

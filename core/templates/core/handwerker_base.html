@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="referrer" content="same-origin">
     <title>{% block title %}{% trans "Auftrag — immoswiss" %}{% endblock %}</title>
-    <script>/* Theme früh setzen (kein Flash) */(function(){try{var t=localStorage.getItem('fw-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+    <script nonce="{{ csp_nonce }}">/* Theme früh setzen (kein Flash) */(function(){try{var t=localStorage.getItem('fw-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 {% include 'core/_assets_aussen.html' %}
 </head>
 {% comment %}

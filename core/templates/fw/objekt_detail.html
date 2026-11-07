@@ -342,7 +342,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Sollmietzins speichern" %}</button>
             </div>
         </form>
-        <script>
+        <script nonce="{{ csp_nonce }}">
         // Ein voller Erlass darf nicht unbemerkt gesetzt werden können: Beim
         // Ankreuzen wandert der Netto-Betrag sichtbar ins Rabatt-Feld und eine
         // Warnung erscheint. Wer es nicht wollte, sieht sofort, was passiert ist.
@@ -625,7 +625,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 {{ assistent_vorschlaege|json_script:"ra-vorschlaege" }}
                 <div class="flex justify-end"><button class="fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1.5' %}{% trans "Räume anlegen" %}</button></div>
             </form>
-            <script>
+            <script nonce="{{ csp_nonce }}">
             // Die Zahlen je Raumtyp kommen vom Server (core/services/raumbuch_assistent.py); der Browser schlägt nur nach.
             (function () {
                 var wahl = document.getElementById('ra-zimmer'), daten = document.getElementById('ra-vorschlaege');
