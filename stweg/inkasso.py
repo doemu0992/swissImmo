@@ -48,7 +48,7 @@ from stweg.zins import KAPITAL_ARTEN, oldest_first, zinsforderungen
 from stweg.zins import satz as zins_satz
 from stweg.models import (StwegAbrechnung, StwegAbrechnungPosition, StwegAkonto, StwegInkassoFall,
                           StwegInkassoPosition, StwegMahnung, StwegPfandrecht, StwegVorschreibung)
-from core.services.anrede import eigentuemer_gruss_html
+from core.utils.email_service import stweg_mail_html
 
 NULL = Decimal('0.00')
 PFANDRECHT_MONATE = 36
@@ -364,10 +364,9 @@ def mahnung_versenden(mahnung):
         return 'post'
     zeilen = mahntext(mahnung)
     org = e.liegenschaft.organisation
-    html = ("<html><body style='font-family:Arial,sans-serif;line-height:1.5'>"
-            f"<p>{eigentuemer_gruss_html(eig)}</p><p>{zeilen[0]} — Einheit {e.bezeichnung}, Total offen "
-            f"CHF {_chf(mahnung.betrag)}, zahlbar bis {mahnung.frist_bis:%d.%m.%Y}. Einzelheiten in der Beilage.</p>"
-            f"<p>Freundliche Grüsse<br>{org.firma}</p></body></html>")
+    html = stweg_mail_html(eig, [f"{zeilen[0]} — Einheit {e.bezeichnung}, Total offen "
+                                 f"CHF {_chf(mahnung.betrag)}, zahlbar bis {mahnung.frist_bis:%d.%m.%Y}. "
+                                 "Einzelheiten in der Beilage."], org.firma)
     ohne_kuendigung(html)
     cc = [m.email for m in e.miteigentuemer.all() if m.email and m.email != eig.email]
     ok = send_via_hoststar(eig.email, f'{mahnung.stufe}. Mahnung: Einheit {e.bezeichnung}', html,

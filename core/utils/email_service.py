@@ -25,6 +25,22 @@ def mail_html(vorlage, **kontext):
     return render_to_string(f'emails/{vorlage}.html', {'EMBER': EMBER, **kontext})
 
 
+def klartext_html(text, link=''):
+    """Klartext (maskiert, Zeilenumbrüche als <br>); `link`, falls im Text, wird zum Anker."""
+    return mail_html('klartext', text=text or '', link=link)
+
+
+def stweg_mail_html(eigentuemer, absaetze, unterschrift):
+    """Mitteilung an eine Eigentümerin/einen Eigentümer (STWEG): deutscher Gruss, Absätze, Unterschrift.
+
+    `absaetze`: Liste von Text oder `(Text, True)` für Text mit erhaltenen Zeilenumbrüchen. Werte, die ins HTML
+    sollen (Auszeichnung), kommen als `format_html` — alles andere wird escaped."""
+    from core.services.anrede import eigentuemer_gruss_html
+    normiert = [a if isinstance(a, tuple) else (a, False) for a in absaetze]
+    return mail_html('stweg_mitteilung', gruss=eigentuemer_gruss_html(eigentuemer), absaetze=normiert,
+                     unterschrift=unterschrift)
+
+
 # Helper to send mail via Hoststar
 def _einzeilig(text):
     """Betreff ohne Zeilenumbruch: Django verwirft eine Mail mit Umbruch im Betreff (BadHeaderError,
@@ -150,7 +166,7 @@ def send_ticket_email(to_email, betreff, inhalt_text, foto_field=None, reply_to=
     Eigentümer. Als HTML eingesetzt wären sie eine Einschleusung in eine Mail «der Verwaltung»."""
     if not to_email:
         return False
-    html = mail_html('klartext', text=inhalt_text or '')      # maskiert, Zeilenumbrüche als <br>
+    html = klartext_html(inhalt_text)
     att_name = att_content = None
     if foto_field:
         try:

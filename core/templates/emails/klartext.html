@@ -1,2 +1,3 @@
 {% extends "emails/rahmen_schlicht.html" %}
-{% block inhalt %}{{ text|linebreaksbr }}{% endblock %}
+{% load mail_tags %}
+{% block inhalt %}{{ text|klartext_link:link }}{% endblock %}

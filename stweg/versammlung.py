@@ -4,11 +4,12 @@ from django.utils.translation import gettext
 from django.db import transaction
 from django.utils import timezone
 
-from core.utils.email_service import send_via_hoststar
+from django.utils.html import format_html
+
+from core.utils.email_service import send_via_hoststar, stweg_mail_html
 from stweg.models import Anwesenheit, StwegVersand, Versammlung
 from stweg.pdf import einladung_pdf, protokoll_pdf
 from stweg.validierung import WertquotenFehler, pruefe_wertquoten, stimm_einheiten
-from core.services.anrede import eigentuemer_gruss_html
 
 
 class VersammlungsFehler(ValueError):
@@ -109,12 +110,11 @@ def einladung_versenden(versammlung, *, heute=None):
     for e in eig:
         if e.pk in schon:
             continue
-        html = ("<html><body style='font-family:Arial,sans-serif;line-height:1.5'>"
-                f"<p>{eigentuemer_gruss_html(e)}</p>"
-                f"<p>wir laden Sie zur {v.get_art_display()} der Gemeinschaft "
-                f"{v.liegenschaft} ein: <strong>{timezone.localtime(v.datum):%d.%m.%Y, %H:%M} Uhr</strong>"
-                f"{', ' + v.ort if v.ort else ''}. Traktanden und Anträge finden Sie in der Beilage.</p>"
-                f"<p>Freundliche Grüsse<br>{org.firma}</p></body></html>")
+        html = stweg_mail_html(e, [format_html(
+            "wir laden Sie zur {} der Gemeinschaft {} ein: <strong>{} Uhr</strong>{}. "
+            "Traktanden und Anträge finden Sie in der Beilage.",
+            v.get_art_display(), v.liegenschaft, f"{timezone.localtime(v.datum):%d.%m.%Y, %H:%M}",
+            f", {v.ort}" if v.ort else "")], org.firma)
         neu.append(_senden(v, StwegVersand.EINLADUNG, e, f'Einladung: {v.titel}', html,
                            f'Einladung_{v.datum:%Y%m%d}.pdf', einladung_pdf(v, e)))
     with transaction.atomic():
@@ -169,11 +169,8 @@ def protokoll_versenden(versammlung):
     for e in eig:
         if e.pk in schon:
             continue
-        html = ("<html><body style='font-family:Arial,sans-serif;line-height:1.5'>"
-                f"<p>{eigentuemer_gruss_html(e)}</p>"
-                f"<p>in der Beilage das Protokoll der {v.get_art_display()} vom "
-                f"{timezone.localtime(v.datum):%d.%m.%Y}.</p>"
-                f"<p>Freundliche Grüsse<br>{org.firma}</p></body></html>")
+        html = stweg_mail_html(e, [f"in der Beilage das Protokoll der {v.get_art_display()} vom "
+                                   f"{timezone.localtime(v.datum):%d.%m.%Y}."], org.firma)
         neu.append(_senden(v, StwegVersand.PROTOKOLL, e, f'Protokoll: {v.titel}', html,
                            f'Protokoll_{v.datum:%Y%m%d}.pdf', pdf))
     v.status = v.PROTOKOLLIERT
