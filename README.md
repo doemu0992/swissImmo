@@ -151,7 +151,7 @@ Die wichtigsten:
 | `EXTRA_ALLOWED_HOSTS`, `EXTRA_CSRF_ORIGINS` | Eigene Domain freischalten |
 | `DB_ENGINE=postgres` + `DB_*` | PostgreSQL statt SQLite (siehe `docs/UMZUG-POSTGRESQL.md`) |
 | `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | SMTP-Versand |
-| `GEHEIMNIS_SCHLUESSEL` (früher `IMAP_SCHLUESSEL`, gilt weiter) | Fernet-Schlüssel für Postfach-Zugangsdaten UND AHV-Nummern (verschlüsselt gespeichert). Mehrere Schlüssel durch Komma getrennt: der erste verschlüsselt, alle entschlüsseln (Schlüsselwechsel: `python manage.py schluessel_wechseln`). Alternativ `GEHEIMNIS_SCHLUESSEL_DATEI=/pfad` (Datei ausserhalb von `.env`). Nach dem Deploy einmal `python manage.py ahv_verschluesseln` |
+| `GEHEIMNIS_SCHLUESSEL` (früher `IMAP_SCHLUESSEL`, gilt weiter) | Fernet-Schlüssel für Postfach-Zugangsdaten UND AHV-Nummern (verschlüsselt gespeichert). Mehrere Schlüssel durch Komma getrennt: der erste verschlüsselt, alle entschlüsseln (Schlüsselwechsel: `python manage.py schluessel_wechseln`). Alternativ `GEHEIMNIS_SCHLUESSEL_DATEI=/pfad` (Datei ausserhalb von `.env`). **Nichts davon ist nötig:** Ohne Angabe legt die Anwendung den Schlüssel selbst an und verschlüsselt den Altbestand nach jedem Deploy von selbst (Einstellungen → Sicherheit, `docs/SCHLUESSEL.md`) |
 | `GROQ_API_KEY` | Optional: KI-Belegerkennung für Kreditorenrechnungen |
 | `DOCUSEAL_API_KEY` | Optional: digitale Vertragsunterzeichnung |
 

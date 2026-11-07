@@ -87,6 +87,11 @@ TESTING = ('test' in _sys.argv) or ('pytest' in _sys.argv[0] if _sys.argv else F
 if TESTING:
     IMAP_SCHLUESSEL = os.getenv('IMAP_SCHLUESSEL') or 'EV9Cq9O_Bf3KXTtRNITG9iiMDSNs7KZen9YgQQmA29c='
 
+# Verschlüsselungsschlüssel für AHV-Nummern und Postfach-Zugangsdaten: Ohne Angabe legt die Anwendung ihn selbst an
+# (Datei `.geheimnis_schluessel` neben `.secret_key`, siehe core/services/geheimnis.py und docs/SCHLUESSEL.md).
+# In Testläufen aus: Die Tests bringen ihren Schlüssel mit und prüfen auch den Fall «keiner».
+GEHEIMNIS_AUTOSCHLUESSEL = os.getenv('GEHEIMNIS_AUTOSCHLUESSEL', 'True') == 'True' and not TESTING
+
 # Zwei-Faktor-Pflicht nach Rolle (SICH-10, Etappe 2): Inhaber, Verwalter und
 # Buchhaltung brauchen den zweiten Faktor, auch wenn die Verwaltung den Schalter
 # nicht gesetzt hat. Im Betrieb an; in Testläufen und bei DEBUG (lokale

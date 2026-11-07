@@ -76,6 +76,7 @@ from core.csp import csp_bericht
 # 2b. Eigentümer-Portal & Login-Weiche
 from core.views.fw.kreditoren import (fw_kreditor_zahlung_vorlegen, fw_kreditor_zahlung_freigeben,
                                       fw_kreditor_zahlung_zuruecknehmen)
+from core.views.fw.sicherheit import fw_sicherheit
 from core.views.fw.zahlungsfreigabe import (fw_auszahlungsfreigabe_freigeben, fw_auszahlungsfreigabe_zuruecknehmen,
                                             fw_auszahlungsfreigaben, fw_zahlungsfreigabe, fw_zahlungsfreigabe_speichern)
 from core.views.zweifaktor import (zweifaktor_login, zweifaktor_bestaetigen,
@@ -414,6 +415,7 @@ urlpatterns = [
     path('neu/kreditoren/<int:pk>/zahlung-vorlegen/', fw_kreditor_zahlung_vorlegen, name='fw_kreditor_zahlung_vorlegen'),
     path('neu/kreditoren/<int:pk>/zahlung-freigeben/', fw_kreditor_zahlung_freigeben, name='fw_kreditor_zahlung_freigeben'),
     path('neu/kreditoren/<int:pk>/zahlung-zuruecknehmen/', fw_kreditor_zahlung_zuruecknehmen, name='fw_kreditor_zahlung_zuruecknehmen'),
+    path('neu/einstellungen/sicherheit/', fw_sicherheit, name='fw_sicherheit'),
     path('neu/einstellungen/zahlungsfreigabe/', fw_zahlungsfreigabe, name='fw_zahlungsfreigabe'),
     path('neu/einstellungen/zahlungsfreigabe/speichern/', fw_zahlungsfreigabe_speichern, name='fw_zahlungsfreigabe_speichern'),
     path('neu/einstellungen/zahlungsfreigabe/auszahlungen/', fw_auszahlungsfreigaben, name='fw_auszahlungsfreigaben'),

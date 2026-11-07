@@ -38737,3 +38737,160 @@ msgstr ""
 
 msgid "Zum Inhalt springen"
 msgstr "Skip to content"
+
+msgid "Sicherheit"
+msgstr "Security"
+
+msgid ""
+"Verschlüsselung der AHV-Nummern und der Postfach-Zugangsdaten. Das meiste "
+"läuft von selbst."
+msgstr ""
+"Encryption of AHV numbers and mailbox credentials. Most of it runs on its "
+"own."
+
+msgid ""
+"Der Schlüssel gilt für die ganze Installation, nicht für eine einzelne "
+"Verwaltung. Deshalb ist diese Seite nur für den Betreiber da. Der Schlüssel "
+"schützt vor einem abhandengekommenen Datenbankauszug (zum Beispiel einer "
+"kopierten Sicherung); er liegt bewusst nicht in der Datenbank und nicht in "
+"den Sicherungen."
+msgstr ""
+"The key applies to the whole installation, not to a single property "
+"management. This page is therefore for the operator only. The key protects "
+"against a lost database extract (for example a copied backup); it is "
+"deliberately stored neither in the database nor in backups."
+
+msgid "keiner"
+msgstr "none"
+
+msgid "Schlüssel in der Liste"
+msgstr "Keys in the list"
+
+msgid "Verschlüsselt, aktueller Schlüssel"
+msgstr "Encrypted, current key"
+
+msgid "Noch unverschlüsselt (Altbestand)"
+msgstr "Not yet encrypted (legacy data)"
+
+msgid "Mit älterem Schlüssel verschlüsselt"
+msgstr "Encrypted with an older key"
+
+msgid "Nicht lesbar"
+msgstr "Unreadable"
+
+msgid ""
+"Alles verschlüsselt und auf dem aktuellen Schlüssel. Es ist nichts zu tun."
+msgstr "Everything is encrypted with the current key. Nothing to do."
+
+msgid ""
+"Nicht lesbare Werte sind mit einem Schlüssel verschlüsselt, der nicht mehr "
+"gesetzt ist. Der alte Schlüssel muss wieder in die Liste, sonst müssen die "
+"Werte neu eingegeben werden."
+msgstr ""
+"Unreadable values are encrypted with a key that is no longer set. The old "
+"key must go back into the list, otherwise the values must be re-entered."
+
+msgid "Handgriffe"
+msgstr "Actions"
+
+msgid "Jetzt alles verschlüsseln"
+msgstr "Encrypt everything now"
+
+msgid ""
+"Verschlüsselt, was noch im Klartext steht. Geschieht auch nach jedem Deploy "
+"von selbst."
+msgstr ""
+"Encrypts whatever is still in plain text. Also happens automatically after "
+"every deploy."
+
+msgid "Auf den aktuellen Schlüssel umstellen"
+msgstr "Switch to the current key"
+
+msgid ""
+"Nötig, wenn mehrere Schlüssel gesetzt sind und noch Werte mit einem älteren "
+"verschlüsselt sind."
+msgstr ""
+"Needed when several keys are set and some values are still encrypted with an"
+" older one."
+
+msgid ""
+"Neuen Schlüssel erzeugen und alle Werte darauf umstellen? Der alte Schlüssel"
+" wird danach entfernt. Eine Kopie des neuen Schlüssels sollten Sie danach "
+"herunterladen."
+msgstr ""
+"Generate a new key and switch all values to it? The old key is removed "
+"afterwards. Download a copy of the new key afterwards."
+
+msgid "Schlüssel erneuern"
+msgstr "Renew key"
+
+msgid ""
+"Erzeugt einen neuen Schlüssel, stellt alles um und entfernt den alten — in "
+"einem Schritt, ohne Verlust."
+msgstr ""
+"Generates a new key, converts everything and removes the old one — in one "
+"step, without loss."
+
+msgid ""
+"Nur möglich, wenn die Anwendung den Schlüssel selbst angelegt hat. Liegt er "
+"in der .env oder in einer eigenen Datei, wechseln Sie ihn dort "
+"(docs/SCHLUESSEL.md)."
+msgstr ""
+"Only possible if the application created the key itself. If it lives in the "
+".env or in its own file, change it there (docs/SCHLUESSEL.md)."
+
+msgid "Kopie des Schlüssels herunterladen"
+msgstr "Download a copy of the key"
+
+msgid ""
+"Für den Passwortmanager. Ohne Schlüssel sind die verschlüsselten Werte "
+"endgültig unlesbar. Der Abruf wird im Logbuch festgehalten."
+msgstr ""
+"For the password manager. Without the key, the encrypted values are "
+"permanently unreadable. The download is recorded in the activity log."
+
+msgid "Verschlüsselung: Schlüssel, Zustand, Erneuern (Betreiber)"
+msgstr "Encryption: key, status, renewal (operator)"
+
+msgid "Einstellung der Anwendung"
+msgstr "Application setting"
+
+msgid "Umgebungsvariable (.env)"
+msgstr "Environment variable (.env)"
+
+msgid "Schlüsseldatei (GEHEIMNIS_SCHLUESSEL_DATEI)"
+msgstr "Key file (GEHEIMNIS_SCHLUESSEL_DATEI)"
+
+msgid "von der Anwendung selbst angelegt"
+msgstr "created by the application itself"
+
+msgid "%(n)s Werte verschlüsselt."
+msgstr "%(n)s values encrypted."
+
+msgid "%(n)s Werte auf den aktuellen Schlüssel umgestellt."
+msgstr "%(n)s values switched to the current key."
+
+msgid "%(n)s Werte lassen sich mit keinem gesetzten Schlüssel lesen."
+msgstr "%(n)s values cannot be read with any of the keys set."
+
+msgid ""
+"Der neue Schlüssel ist gesetzt, aber %(n)s Werte lassen sich nicht lesen. "
+"Der alte Schlüssel bleibt deshalb in der Datei erhalten."
+msgstr ""
+"The new key is set, but %(n)s values cannot be read. The old key therefore "
+"stays in the file."
+
+msgid ""
+"Neuer Schlüssel gesetzt, %(n)s Werte umgestellt. Der alte Schlüssel ist "
+"entfernt."
+msgstr "New key set, %(n)s values switched. The old key has been removed."
+
+msgid ""
+"Der Schlüssel liegt nicht in der selbst angelegten Datei und lässt sich hier"
+" nicht erneuern."
+msgstr ""
+"The key is not in the file the application created itself and cannot be "
+"renewed here."
+
+msgid "Es ist kein Schlüssel vorhanden."
+msgstr "There is no key."

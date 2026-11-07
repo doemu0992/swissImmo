@@ -1,0 +1,75 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% comment %}
+SICHERHEIT — Zustand der Verschlüsselung (Betreiber). Siehe core/views/fw/sicherheit.py: nur für den Betreiber, weil
+Schlüssel und Zähler die ganze Installation betreffen, nicht eine Verwaltung.
+{% endcomment %}
+{% block title %}{% trans "Sicherheit" %} — immoswiss{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/einstellungen/">{% trans "Einstellungen" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Sicherheit" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Sicherheit" %}</h1>
+        <p>{% trans "Verschlüsselung der AHV-Nummern und der Postfach-Zugangsdaten. Das meiste läuft von selbst." %}</p>
+    </div>
+</div>
+
+{% if fehler %}
+<div class="fw-hinweis warn max-w-3xl"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">{{ fehler }}</div></div>
+{% endif %}
+
+<div class="fw-hinweis info max-w-3xl">
+    <span class="fw-hi">{% zeichen 'gesperrt' %}</span>
+    <div class="fw-ht">{% trans "Der Schlüssel gilt für die ganze Installation, nicht für eine einzelne Verwaltung. Deshalb ist diese Seite nur für den Betreiber da. Der Schlüssel schützt vor einem abhandengekommenen Datenbankauszug (zum Beispiel einer kopierten Sicherung); er liegt bewusst nicht in der Datenbank und nicht in den Sicherungen." %}</div>
+</div>
+
+<div class="fw-card max-w-3xl">
+    <div class="fw-kopf"><h3 class="fw-t">{% trans "Zustand" %}</h3></div>
+    <div class="fw-rumpf">
+        <div>
+            <div class="fw-dz"><div class="fw-dl">{% trans "Schlüssel" %}</div><div class="fw-dv">{% if z.quelle %}{% trans "vorhanden" %} · {{ quelle_text }}{% else %}<b>{% trans "keiner" %}</b>{% endif %}</div></div>
+            {% if z.quelle %}
+            <div class="fw-dz"><div class="fw-dl">{% trans "Schlüssel in der Liste" %}</div><div class="fw-dv">{{ z.schluessel_anzahl }}</div></div>
+            <div class="fw-dz"><div class="fw-dl">{% trans "Verschlüsselt, aktueller Schlüssel" %}</div><div class="fw-dv">{{ z.aktuell }}</div></div>
+            <div class="fw-dz"><div class="fw-dl">{% trans "Noch unverschlüsselt (Altbestand)" %}</div><div class="fw-dv">{{ z.klartext }}</div></div>
+            <div class="fw-dz"><div class="fw-dl">{% trans "Mit älterem Schlüssel verschlüsselt" %}</div><div class="fw-dv">{{ z.alt }}</div></div>
+            <div class="fw-dz"><div class="fw-dl">{% trans "Nicht lesbar" %}</div><div class="fw-dv">{{ z.unlesbar|length }}</div></div>
+            {% endif %}
+        </div>
+        {% if z.alles_gut %}<p class="fw-mutet">{% trans "Alles verschlüsselt und auf dem aktuellen Schlüssel. Es ist nichts zu tun." %}</p>{% endif %}
+        {% if z.unlesbar %}<p class="fw-mutet">{% trans "Nicht lesbare Werte sind mit einem Schlüssel verschlüsselt, der nicht mehr gesetzt ist. Der alte Schlüssel muss wieder in die Liste, sonst müssen die Werte neu eingegeben werden." %}</p>{% endif %}
+    </div>
+</div>
+
+{% if z.quelle %}
+<div class="fw-card max-w-3xl">
+    <div class="fw-kopf"><h3 class="fw-t">{% trans "Handgriffe" %}</h3></div>
+    <div class="fw-rumpf">
+        <form method="post" class="fw-formular">
+            {% csrf_token %}
+            <div class="fw-feldblock">
+                <button type="submit" name="aktion" value="nachholen" class="fw-btn"{% if not z.klartext %} disabled{% endif %}>{% trans "Jetzt alles verschlüsseln" %}</button>
+                <p class="fw-mutet">{% trans "Verschlüsselt, was noch im Klartext steht. Geschieht auch nach jedem Deploy von selbst." %}</p>
+            </div>
+            <div class="fw-feldblock">
+                <button type="submit" name="aktion" value="umstellen" class="fw-btn"{% if not z.alt %} disabled{% endif %}>{% trans "Auf den aktuellen Schlüssel umstellen" %}</button>
+                <p class="fw-mutet">{% trans "Nötig, wenn mehrere Schlüssel gesetzt sind und noch Werte mit einem älteren verschlüsselt sind." %}</p>
+            </div>
+            <div class="fw-feldblock">
+                <button type="submit" name="aktion" value="erneuern" class="fw-btn"{% if not z.erneuerbar %} disabled{% endif %} data-bestaetigen="{% filter escapejs %}{% trans "Neuen Schlüssel erzeugen und alle Werte darauf umstellen? Der alte Schlüssel wird danach entfernt. Eine Kopie des neuen Schlüssels sollten Sie danach herunterladen." %}{% endfilter %}">{% trans "Schlüssel erneuern" %}</button>
+                <p class="fw-mutet">{% if z.erneuerbar %}{% trans "Erzeugt einen neuen Schlüssel, stellt alles um und entfernt den alten — in einem Schritt, ohne Verlust." %}{% else %}{% trans "Nur möglich, wenn die Anwendung den Schlüssel selbst angelegt hat. Liegt er in der .env oder in einer eigenen Datei, wechseln Sie ihn dort (docs/SCHLUESSEL.md)." %}{% endif %}</p>
+            </div>
+            <div class="fw-feldblock">
+                <button type="submit" name="aktion" value="kopie" class="fw-btn">{% trans "Kopie des Schlüssels herunterladen" %}</button>
+                <p class="fw-mutet">{% trans "Für den Passwortmanager. Ohne Schlüssel sind die verschlüsselten Werte endgültig unlesbar. Der Abruf wird im Logbuch festgehalten." %}</p>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

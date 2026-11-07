@@ -16,24 +16,9 @@ ABLAUF EINES SCHLÜSSELWECHSELS (z. B. jährlich, oder bei Verdacht):
 Gerechnet wird mit SQL auf der Spalte, nicht über die Felder: Die Werte werden nur umgeschrieben, nie
 im Klartext gehalten oder protokolliert. Läuft in EINER Transaktion: Bricht etwas ab, bleibt alles wie vorher.
 """
-from django.apps import apps
 from django.core.management.base import BaseCommand, CommandError
-from django.db import connection, transaction
 
-from core.services import geheimnis
-
-#: Alles, was mit dem Schlüssel verschlüsselt in der Datenbank steht: (App, Modell, Feld).
-#: Neue verschlüsselte Spalten gehören HIER hinein — sonst überleben sie keinen Schlüsselwechsel.
-GEHEIME_FELDER = (
-    ('core', 'Postfach', 'passwort_geheim'),
-    ('core', 'Postfach', 'refresh_token_geheim'),
-    ('crm', 'Mieter', 'ahv_nummer'),
-)
-
-
-def _spalte(app, modell, feld):
-    m = apps.get_model(app, modell)
-    return m._meta.db_table, m._meta.get_field(feld).column, m._meta.pk.column
+from core.services import geheimnis, geheimnis_pflege
 
 
 class Command(BaseCommand):
@@ -46,48 +31,24 @@ class Command(BaseCommand):
     def handle(self, *args, **optionen):
         if not geheimnis.schluessel_vorhanden():
             raise CommandError(f'{geheimnis.NEUER_NAME} ist nicht gesetzt.')
-        anzahl = len(geheimnis._schluesselliste())
-        self.stdout.write(f'{anzahl} Schlüssel gesetzt; der erste ist der aktuelle.')
-
-        umschreiben, unlesbar, aktuell = [], [], 0
-        with connection.cursor() as cur:
-            for app, modell, feld in GEHEIME_FELDER:
-                tabelle, spalte, pk = _spalte(app, modell, feld)
-                cur.execute(f'SELECT "{pk}", "{spalte}" FROM "{tabelle}" WHERE "{spalte}" <> %s', [''])
-                for zeile_pk, wert in cur.fetchall():
-                    if not geheimnis_aussehen(wert):
-                        continue                    # Alt-Bestand im Klartext: das macht `ahv_verschluesseln`
-                    if geheimnis.mit_erstem_schluessel_lesbar(wert):
-                        aktuell += 1
-                        continue
-                    try:
-                        neu = geheimnis.neu_verschluesseln(wert)
-                    except geheimnis.GeheimtextKaputt:
-                        unlesbar.append(f'{app}.{modell}.{feld} #{zeile_pk}')
-                        continue
-                    umschreiben.append((tabelle, spalte, pk, zeile_pk, neu))
-
-        self.stdout.write(f'· schon auf dem aktuellen Schlüssel: {aktuell}')
-        self.stdout.write(f'· auf den aktuellen Schlüssel umzuschreiben: {len(umschreiben)}')
-        if unlesbar:
+        z = geheimnis_pflege.zustand()
+        self.stdout.write(f'{z.schluessel_anzahl} Schlüssel gesetzt; der erste ist der aktuelle.')
+        self.stdout.write(f'· schon auf dem aktuellen Schlüssel: {z.aktuell}')
+        self.stdout.write(f'· auf den aktuellen Schlüssel umzuschreiben: {z.alt}')
+        if z.klartext:
+            self.stdout.write(f'· noch unverschlüsselt (Altbestand): {z.klartext} — wird beim Umstellen mit erledigt')
+        if z.unlesbar:
             self.stderr.write(self.style.ERROR(
-                f'· mit KEINEM gesetzten Schlüssel lesbar: {len(unlesbar)} (z. B. {", ".join(unlesbar[:5])}). '
+                f'· mit KEINEM gesetzten Schlüssel lesbar: {len(z.unlesbar)} (z. B. {", ".join(z.unlesbar[:5])}). '
                 'Der alte Schlüssel fehlt in der Liste, oder die Werte sind verloren.'))
-
         if not optionen['ausfuehren']:
             self.stdout.write('Nur geprüft. Zum Umschreiben: --ausfuehren')
             return
-        with transaction.atomic(), connection.cursor() as cur:
-            for tabelle, spalte, pk, zeile_pk, neu in umschreiben:
-                cur.execute(f'UPDATE "{tabelle}" SET "{spalte}" = %s WHERE "{pk}" = %s', [neu, zeile_pk])
+        geheimnis_pflege.nachholen()
+        n, unlesbar = geheimnis_pflege.umstellen()
         if unlesbar:
             raise CommandError('Umgeschrieben, was lesbar war. Unlesbare Werte bleiben unverändert: '
                                'fehlenden alten Schlüssel ergänzen und erneut ausführen.')
         self.stdout.write(self.style.SUCCESS(
-            f'✓ {len(umschreiben)} Werte umgeschrieben; alles liegt auf dem aktuellen Schlüssel. '
+            f'✓ {n} Werte umgeschrieben; alles liegt auf dem aktuellen Schlüssel. '
             'Jetzt darf der alte Schlüssel aus der Liste.'))
-
-
-def geheimnis_aussehen(wert):
-    from core.verschluesselt import sieht_verschluesselt_aus
-    return sieht_verschluesselt_aus(wert)

@@ -37614,3 +37614,167 @@ msgstr ""
 
 msgid "Zum Inhalt springen"
 msgstr "Zum Inhalt springen"
+
+msgid "Sicherheit"
+msgstr "Sicherheit"
+
+msgid ""
+"Verschlüsselung der AHV-Nummern und der Postfach-Zugangsdaten. Das meiste "
+"läuft von selbst."
+msgstr ""
+"Verschlüsselung der AHV-Nummern und der Postfach-Zugangsdaten. Das meiste "
+"läuft von selbst."
+
+msgid ""
+"Der Schlüssel gilt für die ganze Installation, nicht für eine einzelne "
+"Verwaltung. Deshalb ist diese Seite nur für den Betreiber da. Der Schlüssel "
+"schützt vor einem abhandengekommenen Datenbankauszug (zum Beispiel einer "
+"kopierten Sicherung); er liegt bewusst nicht in der Datenbank und nicht in "
+"den Sicherungen."
+msgstr ""
+"Der Schlüssel gilt für die ganze Installation, nicht für eine einzelne "
+"Verwaltung. Deshalb ist diese Seite nur für den Betreiber da. Der Schlüssel "
+"schützt vor einem abhandengekommenen Datenbankauszug (zum Beispiel einer "
+"kopierten Sicherung); er liegt bewusst nicht in der Datenbank und nicht in "
+"den Sicherungen."
+
+msgid "keiner"
+msgstr "keiner"
+
+msgid "Schlüssel in der Liste"
+msgstr "Schlüssel in der Liste"
+
+msgid "Verschlüsselt, aktueller Schlüssel"
+msgstr "Verschlüsselt, aktueller Schlüssel"
+
+msgid "Noch unverschlüsselt (Altbestand)"
+msgstr "Noch unverschlüsselt (Altbestand)"
+
+msgid "Mit älterem Schlüssel verschlüsselt"
+msgstr "Mit älterem Schlüssel verschlüsselt"
+
+msgid "Nicht lesbar"
+msgstr "Nicht lesbar"
+
+msgid ""
+"Alles verschlüsselt und auf dem aktuellen Schlüssel. Es ist nichts zu tun."
+msgstr ""
+"Alles verschlüsselt und auf dem aktuellen Schlüssel. Es ist nichts zu tun."
+
+msgid ""
+"Nicht lesbare Werte sind mit einem Schlüssel verschlüsselt, der nicht mehr "
+"gesetzt ist. Der alte Schlüssel muss wieder in die Liste, sonst müssen die "
+"Werte neu eingegeben werden."
+msgstr ""
+"Nicht lesbare Werte sind mit einem Schlüssel verschlüsselt, der nicht mehr "
+"gesetzt ist. Der alte Schlüssel muss wieder in die Liste, sonst müssen die "
+"Werte neu eingegeben werden."
+
+msgid "Handgriffe"
+msgstr "Handgriffe"
+
+msgid "Jetzt alles verschlüsseln"
+msgstr "Jetzt alles verschlüsseln"
+
+msgid ""
+"Verschlüsselt, was noch im Klartext steht. Geschieht auch nach jedem Deploy "
+"von selbst."
+msgstr ""
+"Verschlüsselt, was noch im Klartext steht. Geschieht auch nach jedem Deploy "
+"von selbst."
+
+msgid "Auf den aktuellen Schlüssel umstellen"
+msgstr "Auf den aktuellen Schlüssel umstellen"
+
+msgid ""
+"Nötig, wenn mehrere Schlüssel gesetzt sind und noch Werte mit einem älteren "
+"verschlüsselt sind."
+msgstr ""
+"Nötig, wenn mehrere Schlüssel gesetzt sind und noch Werte mit einem älteren "
+"verschlüsselt sind."
+
+msgid ""
+"Neuen Schlüssel erzeugen und alle Werte darauf umstellen? Der alte Schlüssel"
+" wird danach entfernt. Eine Kopie des neuen Schlüssels sollten Sie danach "
+"herunterladen."
+msgstr ""
+"Neuen Schlüssel erzeugen und alle Werte darauf umstellen? Der alte Schlüssel"
+" wird danach entfernt. Eine Kopie des neuen Schlüssels sollten Sie danach "
+"herunterladen."
+
+msgid "Schlüssel erneuern"
+msgstr "Schlüssel erneuern"
+
+msgid ""
+"Erzeugt einen neuen Schlüssel, stellt alles um und entfernt den alten — in "
+"einem Schritt, ohne Verlust."
+msgstr ""
+"Erzeugt einen neuen Schlüssel, stellt alles um und entfernt den alten — in "
+"einem Schritt, ohne Verlust."
+
+msgid ""
+"Nur möglich, wenn die Anwendung den Schlüssel selbst angelegt hat. Liegt er "
+"in der .env oder in einer eigenen Datei, wechseln Sie ihn dort "
+"(docs/SCHLUESSEL.md)."
+msgstr ""
+"Nur möglich, wenn die Anwendung den Schlüssel selbst angelegt hat. Liegt er "
+"in der .env oder in einer eigenen Datei, wechseln Sie ihn dort "
+"(docs/SCHLUESSEL.md)."
+
+msgid "Kopie des Schlüssels herunterladen"
+msgstr "Kopie des Schlüssels herunterladen"
+
+msgid ""
+"Für den Passwortmanager. Ohne Schlüssel sind die verschlüsselten Werte "
+"endgültig unlesbar. Der Abruf wird im Logbuch festgehalten."
+msgstr ""
+"Für den Passwortmanager. Ohne Schlüssel sind die verschlüsselten Werte "
+"endgültig unlesbar. Der Abruf wird im Logbuch festgehalten."
+
+msgid "Verschlüsselung: Schlüssel, Zustand, Erneuern (Betreiber)"
+msgstr "Verschlüsselung: Schlüssel, Zustand, Erneuern (Betreiber)"
+
+msgid "Einstellung der Anwendung"
+msgstr "Einstellung der Anwendung"
+
+msgid "Umgebungsvariable (.env)"
+msgstr "Umgebungsvariable (.env)"
+
+msgid "Schlüsseldatei (GEHEIMNIS_SCHLUESSEL_DATEI)"
+msgstr "Schlüsseldatei (GEHEIMNIS_SCHLUESSEL_DATEI)"
+
+msgid "von der Anwendung selbst angelegt"
+msgstr "von der Anwendung selbst angelegt"
+
+msgid "%(n)s Werte verschlüsselt."
+msgstr "%(n)s Werte verschlüsselt."
+
+msgid "%(n)s Werte auf den aktuellen Schlüssel umgestellt."
+msgstr "%(n)s Werte auf den aktuellen Schlüssel umgestellt."
+
+msgid "%(n)s Werte lassen sich mit keinem gesetzten Schlüssel lesen."
+msgstr "%(n)s Werte lassen sich mit keinem gesetzten Schlüssel lesen."
+
+msgid ""
+"Der neue Schlüssel ist gesetzt, aber %(n)s Werte lassen sich nicht lesen. "
+"Der alte Schlüssel bleibt deshalb in der Datei erhalten."
+msgstr ""
+"Der neue Schlüssel ist gesetzt, aber %(n)s Werte lassen sich nicht lesen. "
+"Der alte Schlüssel bleibt deshalb in der Datei erhalten."
+
+msgid ""
+"Neuer Schlüssel gesetzt, %(n)s Werte umgestellt. Der alte Schlüssel ist "
+"entfernt."
+msgstr ""
+"Neuer Schlüssel gesetzt, %(n)s Werte umgestellt. Der alte Schlüssel ist "
+"entfernt."
+
+msgid ""
+"Der Schlüssel liegt nicht in der selbst angelegten Datei und lässt sich hier"
+" nicht erneuern."
+msgstr ""
+"Der Schlüssel liegt nicht in der selbst angelegten Datei und lässt sich hier"
+" nicht erneuern."
+
+msgid "Es ist kein Schlüssel vorhanden."
+msgstr "Es ist kein Schlüssel vorhanden."

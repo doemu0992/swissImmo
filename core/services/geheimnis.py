@@ -43,6 +43,11 @@ NEUER_NAME = 'GEHEIMNIS_SCHLUESSEL'
 #: Alternativ eine Datei, die den Schlüssel (bzw. die Schlüssel) enthält — ausserhalb von `.env` und Webroot,
 #: mit Rechten nur für den Betriebsbenutzer (Muster «_FILE» von Docker-Secrets, systemd-Credentials).
 DATEINAME = 'GEHEIMNIS_SCHLUESSEL_DATEI'
+#: Ohne jede Angabe legt die Anwendung den Schlüssel selbst an (Datei neben der Anwendung, nur für den Betriebsbenutzer
+#: lesbar, nicht in Git und nicht in der Datenbank) — wie sie es mit dem `SECRET_KEY` auch tut. Niemand muss ein Terminal
+#: öffnen. Abschaltbar mit `GEHEIMNIS_AUTOSCHLUESSEL=False` (dann gilt: Schlüssel fehlt = Fehler).
+AUTO_EINSTELLUNG = 'GEHEIMNIS_AUTOSCHLUESSEL'
+AUTO_DATEI_EINSTELLUNG = 'GEHEIMNIS_AUTOSCHLUESSEL_DATEI'
 #: Der alte Name: gilt weiter, damit nichts bricht. Der Name stammt aus der Zeit, als nur IMAP-Postfächer
 #: den Schlüssel brauchten; heute schützt er auch AHV-Nummern (und demnächst die 2FA-Geheimnisse).
 UMGEBUNGSNAME = 'IMAP_SCHLUESSEL'
@@ -91,7 +96,56 @@ def _roh_schluessel() -> str:
             raise SchluesselFehlt(f'{DATEINAME}={datei} lässt sich nicht lesen ({fehler.strerror or fehler}).') from fehler
         if inhalt:
             return inhalt
-    return (os.getenv(UMGEBUNGSNAME, '') or '').strip()
+    alt = (os.getenv(UMGEBUNGSNAME, '') or '').strip()
+    return alt or _autoschluessel()
+
+
+def autoschluessel_pfad():
+    from pathlib import Path
+    return Path(getattr(settings, AUTO_DATEI_EINSTELLUNG, None) or (Path(settings.BASE_DIR) / '.geheimnis_schluessel'))
+
+
+def _autoschluessel() -> str:
+    """Der selbst angelegte Schlüssel: vorhandene Datei lesen, sonst (falls erlaubt) atomar anlegen.
+
+    `O_CREAT|O_EXCL`: Starten zwei Prozesse gleichzeitig, gewinnt genau einer; der andere liest dessen Datei. So
+    entstehen nie zwei verschiedene Schlüssel. Lässt sich die Datei nicht anlegen (schreibgeschütztes Dateisystem),
+    bleibt es beim «Schlüssel fehlt» — mit klarer Meldung, nie mit einem Schlüssel, der den nächsten Start nicht überlebt."""
+    if not getattr(settings, AUTO_EINSTELLUNG, True):
+        return ''                                # abgeschaltet heisst: auch eine vorhandene Datei bleibt aussen vor
+    pfad = autoschluessel_pfad()
+    try:
+        inhalt = pfad.read_text(encoding='utf-8').strip()
+        if inhalt:
+            return inhalt
+    except OSError:
+        pass
+    from cryptography.fernet import Fernet
+    neu = Fernet.generate_key().decode()
+    try:
+        fd = os.open(str(pfad), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError:                      # ein anderer Prozess war schneller: dessen Schlüssel gilt
+        try:
+            return pfad.read_text(encoding='utf-8').strip()
+        except OSError:
+            return ''
+    except OSError:
+        return ''
+    with os.fdopen(fd, 'w', encoding='utf-8') as f:
+        f.write(neu + '\n')
+    return neu
+
+
+def schluessel_quelle() -> str:
+    """Woher der Schlüssel kommt: 'einstellung', 'umgebung', 'datei', 'automatisch' oder '' (keiner)."""
+    for name in (NEUER_NAME, UMGEBUNGSNAME):
+        if getattr(settings, name, None):
+            return 'einstellung'
+    if os.getenv(NEUER_NAME, '').strip() or os.getenv(UMGEBUNGSNAME, '').strip():
+        return 'umgebung'
+    if os.getenv(DATEINAME, '').strip():
+        return 'datei'
+    return 'automatisch' if _autoschluessel() else ''
 
 
 def _schluesselliste() -> list:

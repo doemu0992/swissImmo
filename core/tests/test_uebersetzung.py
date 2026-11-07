@@ -204,6 +204,7 @@ UEBERSETZT = (
     'fw/mahnlauf_trockenlauf.html',
     'fw/mahnstufen.html',
     'fw/zahlungsfreigabe.html',
+    'fw/sicherheit.html',            # Betreiberseite: Verschlüsselung (Nr. 23-Nachlauf, Schlüssel ohne Terminal)
     'fw/auszahlungsfreigaben.html',  # Vier-Augen-Prinzip für Auszahlungen (Etappe 4)
     'fw/mahnwesen.html',
     'fw/mandat_abrechnung.html',

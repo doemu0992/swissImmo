@@ -39322,3 +39322,164 @@ msgstr ""
 
 msgid "Zum Inhalt springen"
 msgstr "Vai al contenuto"
+
+msgid "Sicherheit"
+msgstr "Sicurezza"
+
+msgid ""
+"Verschlüsselung der AHV-Nummern und der Postfach-Zugangsdaten. Das meiste "
+"läuft von selbst."
+msgstr ""
+"Cifratura dei numeri AVS e degli accessi alle caselle di posta. La maggior "
+"parte avviene automaticamente."
+
+msgid ""
+"Der Schlüssel gilt für die ganze Installation, nicht für eine einzelne "
+"Verwaltung. Deshalb ist diese Seite nur für den Betreiber da. Der Schlüssel "
+"schützt vor einem abhandengekommenen Datenbankauszug (zum Beispiel einer "
+"kopierten Sicherung); er liegt bewusst nicht in der Datenbank und nicht in "
+"den Sicherungen."
+msgstr ""
+"La chiave vale per l'intera installazione, non per una singola "
+"amministrazione. Questa pagina è quindi riservata al gestore. La chiave "
+"protegge da un estratto di database smarrito (ad es. un backup copiato); si "
+"trova volutamente né nel database né nei backup."
+
+msgid "keiner"
+msgstr "nessuna"
+
+msgid "Schlüssel in der Liste"
+msgstr "Chiavi nell'elenco"
+
+msgid "Verschlüsselt, aktueller Schlüssel"
+msgstr "Cifrati, chiave attuale"
+
+msgid "Noch unverschlüsselt (Altbestand)"
+msgstr "Non ancora cifrati (dati preesistenti)"
+
+msgid "Mit älterem Schlüssel verschlüsselt"
+msgstr "Cifrati con una chiave precedente"
+
+msgid "Nicht lesbar"
+msgstr "Non leggibili"
+
+msgid ""
+"Alles verschlüsselt und auf dem aktuellen Schlüssel. Es ist nichts zu tun."
+msgstr "Tutto cifrato con la chiave attuale. Non c'è nulla da fare."
+
+msgid ""
+"Nicht lesbare Werte sind mit einem Schlüssel verschlüsselt, der nicht mehr "
+"gesetzt ist. Der alte Schlüssel muss wieder in die Liste, sonst müssen die "
+"Werte neu eingegeben werden."
+msgstr ""
+"I valori non leggibili sono cifrati con una chiave non più impostata. La "
+"vecchia chiave deve tornare nell'elenco, altrimenti i valori vanno "
+"reinseriti."
+
+msgid "Handgriffe"
+msgstr "Interventi"
+
+msgid "Jetzt alles verschlüsseln"
+msgstr "Cifra tutto ora"
+
+msgid ""
+"Verschlüsselt, was noch im Klartext steht. Geschieht auch nach jedem Deploy "
+"von selbst."
+msgstr ""
+"Cifra ciò che è ancora in chiaro. Avviene anche automaticamente dopo ogni "
+"deploy."
+
+msgid "Auf den aktuellen Schlüssel umstellen"
+msgstr "Passa alla chiave attuale"
+
+msgid ""
+"Nötig, wenn mehrere Schlüssel gesetzt sind und noch Werte mit einem älteren "
+"verschlüsselt sind."
+msgstr ""
+"Necessario se sono impostate più chiavi e alcuni valori sono ancora cifrati "
+"con una precedente."
+
+msgid ""
+"Neuen Schlüssel erzeugen und alle Werte darauf umstellen? Der alte Schlüssel"
+" wird danach entfernt. Eine Kopie des neuen Schlüssels sollten Sie danach "
+"herunterladen."
+msgstr ""
+"Generare una nuova chiave e convertire tutti i valori? La vecchia chiave "
+"verrà poi rimossa. Scaricare poi una copia della nuova chiave."
+
+msgid "Schlüssel erneuern"
+msgstr "Rinnova la chiave"
+
+msgid ""
+"Erzeugt einen neuen Schlüssel, stellt alles um und entfernt den alten — in "
+"einem Schritt, ohne Verlust."
+msgstr ""
+"Genera una nuova chiave, converte tutto e rimuove la vecchia — in un unico "
+"passaggio, senza perdite."
+
+msgid ""
+"Nur möglich, wenn die Anwendung den Schlüssel selbst angelegt hat. Liegt er "
+"in der .env oder in einer eigenen Datei, wechseln Sie ihn dort "
+"(docs/SCHLUESSEL.md)."
+msgstr ""
+"Possibile solo se l'applicazione ha creato la chiave da sola. Se si trova "
+"nel .env o in un file proprio, cambiarla lì (docs/SCHLUESSEL.md)."
+
+msgid "Kopie des Schlüssels herunterladen"
+msgstr "Scarica una copia della chiave"
+
+msgid ""
+"Für den Passwortmanager. Ohne Schlüssel sind die verschlüsselten Werte "
+"endgültig unlesbar. Der Abruf wird im Logbuch festgehalten."
+msgstr ""
+"Per il gestore di password. Senza chiave i valori cifrati sono "
+"definitivamente illeggibili. Il prelievo viene registrato nel registro "
+"attività."
+
+msgid "Verschlüsselung: Schlüssel, Zustand, Erneuern (Betreiber)"
+msgstr "Cifratura: chiave, stato, rinnovo (gestore)"
+
+msgid "Einstellung der Anwendung"
+msgstr "Impostazione dell'applicazione"
+
+msgid "Umgebungsvariable (.env)"
+msgstr "Variabile d'ambiente (.env)"
+
+msgid "Schlüsseldatei (GEHEIMNIS_SCHLUESSEL_DATEI)"
+msgstr "File della chiave (GEHEIMNIS_SCHLUESSEL_DATEI)"
+
+msgid "von der Anwendung selbst angelegt"
+msgstr "creata dall'applicazione stessa"
+
+msgid "%(n)s Werte verschlüsselt."
+msgstr "%(n)s valori cifrati."
+
+msgid "%(n)s Werte auf den aktuellen Schlüssel umgestellt."
+msgstr "%(n)s valori convertiti alla chiave attuale."
+
+msgid "%(n)s Werte lassen sich mit keinem gesetzten Schlüssel lesen."
+msgstr "%(n)s valori non sono leggibili con nessuna delle chiavi impostate."
+
+msgid ""
+"Der neue Schlüssel ist gesetzt, aber %(n)s Werte lassen sich nicht lesen. "
+"Der alte Schlüssel bleibt deshalb in der Datei erhalten."
+msgstr ""
+"La nuova chiave è impostata, ma %(n)s valori non sono leggibili. La vecchia "
+"chiave rimane quindi nel file."
+
+msgid ""
+"Neuer Schlüssel gesetzt, %(n)s Werte umgestellt. Der alte Schlüssel ist "
+"entfernt."
+msgstr ""
+"Nuova chiave impostata, %(n)s valori convertiti. La vecchia chiave è stata "
+"rimossa."
+
+msgid ""
+"Der Schlüssel liegt nicht in der selbst angelegten Datei und lässt sich hier"
+" nicht erneuern."
+msgstr ""
+"La chiave non si trova nel file creato dall'applicazione e non può essere "
+"rinnovata qui."
+
+msgid "Es ist kein Schlüssel vorhanden."
+msgstr "Non è presente nessuna chiave."

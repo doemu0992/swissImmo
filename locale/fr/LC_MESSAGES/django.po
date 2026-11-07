@@ -39387,3 +39387,164 @@ msgstr ""
 
 msgid "Zum Inhalt springen"
 msgstr "Aller au contenu"
+
+msgid "Sicherheit"
+msgstr "Sécurité"
+
+msgid ""
+"Verschlüsselung der AHV-Nummern und der Postfach-Zugangsdaten. Das meiste "
+"läuft von selbst."
+msgstr ""
+"Chiffrement des numéros AVS et des accès aux boîtes mail. L'essentiel se "
+"fait automatiquement."
+
+msgid ""
+"Der Schlüssel gilt für die ganze Installation, nicht für eine einzelne "
+"Verwaltung. Deshalb ist diese Seite nur für den Betreiber da. Der Schlüssel "
+"schützt vor einem abhandengekommenen Datenbankauszug (zum Beispiel einer "
+"kopierten Sicherung); er liegt bewusst nicht in der Datenbank und nicht in "
+"den Sicherungen."
+msgstr ""
+"La clé vaut pour toute l'installation, pas pour une seule gérance. Cette "
+"page est donc réservée à l'exploitant. La clé protège contre une extraction "
+"de base de données égarée (par exemple une sauvegarde copiée) ; elle ne se "
+"trouve volontairement ni dans la base de données ni dans les sauvegardes."
+
+msgid "keiner"
+msgstr "aucune"
+
+msgid "Schlüssel in der Liste"
+msgstr "Clés dans la liste"
+
+msgid "Verschlüsselt, aktueller Schlüssel"
+msgstr "Chiffrées, clé actuelle"
+
+msgid "Noch unverschlüsselt (Altbestand)"
+msgstr "Pas encore chiffrées (anciennes données)"
+
+msgid "Mit älterem Schlüssel verschlüsselt"
+msgstr "Chiffrées avec une ancienne clé"
+
+msgid "Nicht lesbar"
+msgstr "Illisibles"
+
+msgid ""
+"Alles verschlüsselt und auf dem aktuellen Schlüssel. Es ist nichts zu tun."
+msgstr "Tout est chiffré avec la clé actuelle. Rien à faire."
+
+msgid ""
+"Nicht lesbare Werte sind mit einem Schlüssel verschlüsselt, der nicht mehr "
+"gesetzt ist. Der alte Schlüssel muss wieder in die Liste, sonst müssen die "
+"Werte neu eingegeben werden."
+msgstr ""
+"Les valeurs illisibles sont chiffrées avec une clé qui n'est plus définie. "
+"L'ancienne clé doit être remise dans la liste, sinon les valeurs doivent "
+"être saisies à nouveau."
+
+msgid "Handgriffe"
+msgstr "Opérations"
+
+msgid "Jetzt alles verschlüsseln"
+msgstr "Tout chiffrer maintenant"
+
+msgid ""
+"Verschlüsselt, was noch im Klartext steht. Geschieht auch nach jedem Deploy "
+"von selbst."
+msgstr ""
+"Chiffre ce qui est encore en clair. Se fait aussi automatiquement après "
+"chaque déploiement."
+
+msgid "Auf den aktuellen Schlüssel umstellen"
+msgstr "Passer à la clé actuelle"
+
+msgid ""
+"Nötig, wenn mehrere Schlüssel gesetzt sind und noch Werte mit einem älteren "
+"verschlüsselt sind."
+msgstr ""
+"Nécessaire si plusieurs clés sont définies et que des valeurs sont encore "
+"chiffrées avec une plus ancienne."
+
+msgid ""
+"Neuen Schlüssel erzeugen und alle Werte darauf umstellen? Der alte Schlüssel"
+" wird danach entfernt. Eine Kopie des neuen Schlüssels sollten Sie danach "
+"herunterladen."
+msgstr ""
+"Générer une nouvelle clé et y convertir toutes les valeurs ? L'ancienne clé "
+"sera ensuite supprimée. Téléchargez ensuite une copie de la nouvelle clé."
+
+msgid "Schlüssel erneuern"
+msgstr "Renouveler la clé"
+
+msgid ""
+"Erzeugt einen neuen Schlüssel, stellt alles um und entfernt den alten — in "
+"einem Schritt, ohne Verlust."
+msgstr ""
+"Génère une nouvelle clé, convertit tout et supprime l'ancienne — en une "
+"étape, sans perte."
+
+msgid ""
+"Nur möglich, wenn die Anwendung den Schlüssel selbst angelegt hat. Liegt er "
+"in der .env oder in einer eigenen Datei, wechseln Sie ihn dort "
+"(docs/SCHLUESSEL.md)."
+msgstr ""
+"Possible uniquement si l'application a créé la clé elle-même. Si elle se "
+"trouve dans le .env ou dans un fichier propre, changez-la là "
+"(docs/SCHLUESSEL.md)."
+
+msgid "Kopie des Schlüssels herunterladen"
+msgstr "Télécharger une copie de la clé"
+
+msgid ""
+"Für den Passwortmanager. Ohne Schlüssel sind die verschlüsselten Werte "
+"endgültig unlesbar. Der Abruf wird im Logbuch festgehalten."
+msgstr ""
+"Pour le gestionnaire de mots de passe. Sans clé, les valeurs chiffrées sont "
+"définitivement illisibles. La consultation est consignée dans le journal."
+
+msgid "Verschlüsselung: Schlüssel, Zustand, Erneuern (Betreiber)"
+msgstr "Chiffrement : clé, état, renouvellement (exploitant)"
+
+msgid "Einstellung der Anwendung"
+msgstr "Réglage de l'application"
+
+msgid "Umgebungsvariable (.env)"
+msgstr "Variable d'environnement (.env)"
+
+msgid "Schlüsseldatei (GEHEIMNIS_SCHLUESSEL_DATEI)"
+msgstr "Fichier de clé (GEHEIMNIS_SCHLUESSEL_DATEI)"
+
+msgid "von der Anwendung selbst angelegt"
+msgstr "créée par l'application elle-même"
+
+msgid "%(n)s Werte verschlüsselt."
+msgstr "%(n)s valeurs chiffrées."
+
+msgid "%(n)s Werte auf den aktuellen Schlüssel umgestellt."
+msgstr "%(n)s valeurs converties à la clé actuelle."
+
+msgid "%(n)s Werte lassen sich mit keinem gesetzten Schlüssel lesen."
+msgstr "%(n)s valeurs sont illisibles avec les clés définies."
+
+msgid ""
+"Der neue Schlüssel ist gesetzt, aber %(n)s Werte lassen sich nicht lesen. "
+"Der alte Schlüssel bleibt deshalb in der Datei erhalten."
+msgstr ""
+"La nouvelle clé est définie, mais %(n)s valeurs sont illisibles. L'ancienne "
+"clé reste donc dans le fichier."
+
+msgid ""
+"Neuer Schlüssel gesetzt, %(n)s Werte umgestellt. Der alte Schlüssel ist "
+"entfernt."
+msgstr ""
+"Nouvelle clé définie, %(n)s valeurs converties. L'ancienne clé est "
+"supprimée."
+
+msgid ""
+"Der Schlüssel liegt nicht in der selbst angelegten Datei und lässt sich hier"
+" nicht erneuern."
+msgstr ""
+"La clé ne se trouve pas dans le fichier créé par l'application et ne peut "
+"pas être renouvelée ici."
+
+msgid "Es ist kein Schlüssel vorhanden."
+msgstr "Il n'y a aucune clé."
