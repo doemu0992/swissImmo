@@ -423,12 +423,12 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     {% else %}{% trans "Noch kein Link. Er entsteht mit der Auftrags-Mail — oder hier." %}{% endif %}
                 </p>
                 {% if kann_schreiben %}<div class="flex flex-wrap gap-2 mt-2">
-                    <form method="post" action="/neu/auftrag/{{ a.id }}/link/"{% if a.link_status == 'aktiv' %} onsubmit="return confirm('{% trans "Neuen Link erzeugen? Der bisherige öffnet danach nichts mehr." %}')"{% endif %}>
+                    <form method="post" action="/neu/auftrag/{{ a.id }}/link/"{% if a.link_status == 'aktiv' %} data-bestaetigen="{% filter escapejs %}{% trans "Neuen Link erzeugen? Der bisherige öffnet danach nichts mehr." %}{% endfilter %}"{% endif %}>
                         {% csrf_token %}<input type="hidden" name="aktion" value="neu">
                         <button class="fw-btn fw-knapp">{% zeichen 'neu' %}{% if a.link_status == 'kein' %}{% trans "Link erzeugen" %}{% else %}{% trans "Neuen Link erzeugen" %}{% endif %}</button>
                     </form>
                     {% if a.link_status == 'aktiv' or a.link_status == 'lesend' %}
-                    <form method="post" action="/neu/auftrag/{{ a.id }}/link/" onsubmit="return confirm('{% trans "Link widerrufen? Der Handwerker kann den Auftrag dann nicht mehr öffnen." %}')">
+                    <form method="post" action="/neu/auftrag/{{ a.id }}/link/" data-bestaetigen="{% filter escapejs %}{% trans "Link widerrufen? Der Handwerker kann den Auftrag dann nicht mehr öffnen." %}{% endfilter %}">
                         {% csrf_token %}<input type="hidden" name="aktion" value="widerrufen">
                         <button class="fw-btn fw-knapp">{% zeichen 'gesperrt' %}{% trans "Link widerrufen" %}</button>
                     </form>
@@ -518,7 +518,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             </form>
             {% endif %}
             {% if not a.kreditoren_rechnung_id and a.status != 'erledigt' %}
-            <form method="post" action="/neu/auftrag/{{ a.id }}/storno/" class="fw-formular items-end fw-rumpf" onsubmit="return confirm('{% trans "Auftrag wirklich stornieren? Der Handwerker wird informiert." %}')">
+            <form method="post" action="/neu/auftrag/{{ a.id }}/storno/" class="fw-formular items-end fw-rumpf" data-bestaetigen="{% filter escapejs %}{% trans "Auftrag wirklich stornieren? Der Handwerker wird informiert." %}{% endfilter %}">
                 {% csrf_token %}
                 <div class="fw-feldblock"><label class="fw-label">{% trans "Grund (optional)" %}</label>
                     <input name="grund" class="fw-feld w-full"></div>
@@ -582,7 +582,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <img src="{{ f.bild.url }}" alt="Foto" class="fw-bild">
             </a>
             {% if kann_schreiben %}<form method="post" action="/neu/schaeden/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1"
-                  onsubmit="return confirm('{% filter escapejs %}{% trans "Foto löschen?" %}{% endfilter %}');">
+                  data-bestaetigen="{% filter escapejs %}{% trans "Foto löschen?" %}{% endfilter %}">
                 {% csrf_token %}
                 <button class="w-7 h-7 rounded-full fw-flaeche hover:fw-krit-flaeche fw-kritisch text-xs shadow" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
             </form>{% endif %}

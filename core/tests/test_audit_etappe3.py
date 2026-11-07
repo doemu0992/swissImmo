@@ -1,11 +1,13 @@
 """Etappe 3 aus docs/AUDIT-SAAS-NIVEAU.md: Komponentenschicht und Typografie."""
 import re
+
 from pathlib import Path
 
 from django.conf import settings
 from django.test import TestCase, Client, SimpleTestCase
 
 from ._helfer import _team_user, _basis_objekte
+from .csp_handler_stand import KOMMENTAR
 
 VORLAGEN = Path(settings.BASE_DIR) / 'core' / 'templates'
 
@@ -144,10 +146,6 @@ class Bestaetigungsdialog(SimpleTestCase):
     Voraussetzungen fest, die sich ohne Browser prüfen lassen.
     """
 
-    #: Dasselbe Muster wie im Skript — was hier nicht passt, fällt still auf die
-    #: Browser-Rückfrage zurück.
-    MUSTER = re.compile(r"""^\s*return\s+confirm\(\s*(['"])([\s\S]*)\1\s*\)\s*;?\s*$""")
-
     def _baustein(self):
         return (VORLAGEN / 'fw' / '_bestaetigen.html').read_text(encoding='utf-8')
 
@@ -156,17 +154,33 @@ class Bestaetigungsdialog(SimpleTestCase):
             self.assertIn("{% include 'fw/_bestaetigen.html' %}",
                           (VORLAGEN / 'fw' / name).read_text(encoding='utf-8'), name)
 
-    def test_muster_im_skript_und_im_test_sind_gleich(self):
-        self.assertIn('/' + self.MUSTER.pattern + '/', self._baustein())
+    def test_das_skript_liest_das_datenattribut(self):
+        """Seit der CSP (Nr. 23) steht die Rückfrage in `data-bestaetigen`, nicht mehr in einem Inline-Handler."""
+        b = self._baustein()
+        self.assertIn("getAttribute('data-bestaetigen')", b)
+        self.assertIn("[data-bestaetigen]:not(form)", b)           # Formulare fragen beim Absenden, nicht beim Klick
+        self.assertIn('window.confirm(text)', b)                    # ohne <dialog> fragt der Browser
 
-    def test_jede_rueckfrage_wird_erkannt(self):
-        nicht_erkannt = []
+    def test_keine_rueckfrage_mehr_als_inline_handler(self):
+        """Ein `onsubmit/onclick="…confirm(…)"` wäre mit CSP blockiert — und liefe ohne Dialog durch."""
+        uebrig = []
         for datei in VORLAGEN.rglob('*.html'):
-            text = datei.read_text(encoding='utf-8')
+            text = KOMMENTAR.sub(' ', datei.read_text(encoding='utf-8'))
             for m in re.finditer(r'\b(?:onsubmit|onclick)="((?:[^"{]|\{[{%][\s\S]*?[}%]\})*)"', text):
-                if 'confirm(' in m.group(1) and not self.MUSTER.match(m.group(1)):
-                    nicht_erkannt.append(f'{datei.relative_to(VORLAGEN)}: {m.group(1)[:80]}')
-        self.assertEqual(nicht_erkannt, [])
+                if 'confirm(' in m.group(1):
+                    uebrig.append(f'{datei.relative_to(VORLAGEN)}: {m.group(1)[:80]}')
+        self.assertEqual(uebrig, [])
+
+    def test_jede_rueckfrage_ist_fuer_ein_attribut_gesichert(self):
+        """Der Text steht in einem HTML-Attribut und wird vom Skript entschlüsselt: `escapejs` ist Pflicht
+        (sonst bricht ein Anführungszeichen im Namen das Attribut oder der Text trägt Markup)."""
+        ohne = []
+        for datei in VORLAGEN.rglob('*.html'):
+            text = KOMMENTAR.sub(' ', datei.read_text(encoding='utf-8'))
+            for m in re.finditer(r'\bdata-bestaetigen="((?:[^"{]|\{[{%#][\s\S]*?[}%#]\})*)"', text):
+                if 'escapejs' not in m.group(1):
+                    ohne.append(f'{datei.relative_to(VORLAGEN)}: {m.group(1)[:80]}')
+        self.assertEqual(ohne, [])
 
     def test_dialogformular_ist_vom_doppelklickschutz_ausgenommen(self):
         """Sonst sperrt der Schutz «Abbrechen» nach dem ersten Mal (gemessen)."""

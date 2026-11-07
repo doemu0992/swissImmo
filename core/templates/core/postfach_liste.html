@@ -103,7 +103,7 @@
             {% endif %}
             <p class="text-sm fw-mutet">{% trans "Eine Adresse in falsche Hände geraten? Erneuern Sie beide Adressen. Die bisherigen gelten noch 30 Tage; Weiterleitungen müssen Sie danach auf die neue Rechnungsadresse umstellen." %}</p>
             <form method="post" action="/neu/postfaecher/antwortadresse/erneuern/"
-                  onsubmit="return confirm('{% filter escapejs %}{% trans "Neue Adresse erzeugen? Die bisherige Adresse gilt noch 30 Tage, danach nicht mehr." %}{% endfilter %}');">
+                  data-bestaetigen="{% filter escapejs %}{% trans "Neue Adresse erzeugen? Die bisherige Adresse gilt noch 30 Tage, danach nicht mehr." %}{% endfilter %}">
                 {% csrf_token %}
                 <button class="fw-btn fw-knapp">{% zeichen 'lauf' %}{% trans "Adresse erneuern" %}</button>
             </form>
@@ -190,7 +190,7 @@
                 </form>
                 {% endif %}
                 <form method="post" action="{% url 'postfach_loeschen' zeile.zweck %}"
-                      onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=zeile.bezeichnung|safe %}Postfach «{{ name }}» wirklich löschen? Der Abruf für diesen Zweck ist danach abgeschaltet.{% endblocktrans %}{% endfilter %}');">
+                      data-bestaetigen="{% filter escapejs %}{% blocktrans with name=zeile.bezeichnung|safe %}Postfach «{{ name }}» wirklich löschen? Der Abruf für diesen Zweck ist danach abgeschaltet.{% endblocktrans %}{% endfilter %}">
                     {% csrf_token %}
                     <button class="fw-btn fw-knapp fw-rand-krit">{% trans "Löschen" %}</button>
                 </form>

@@ -67,7 +67,7 @@ werden gemahnt. Das Schreiben mit Schuldanerkennung kommt aus
                 <button type="submit" class="fw-btn">{% zeichen 'drucken' %}{% trans "Schreiben mit Schuldanerkennung (PDF)" %}</button>
             </form>
             {% if e.v.status == 'aktiv' %}
-            <form method="post" onsubmit="return confirm('{% filter escapejs %}{% trans "Zahlungsvereinbarung abbrechen? Die gedeckten Forderungen laufen danach wieder im Mahnlauf." %}{% endfilter %}');">
+            <form method="post" data-bestaetigen="{% filter escapejs %}{% trans "Zahlungsvereinbarung abbrechen? Die gedeckten Forderungen laufen danach wieder im Mahnlauf." %}{% endfilter %}">
                 {% csrf_token %}
                 <input type="hidden" name="aktion" value="abbrechen">
                 <input type="hidden" name="vereinbarung" value="{{ e.v.id }}">

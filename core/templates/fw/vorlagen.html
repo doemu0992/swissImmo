@@ -84,7 +84,7 @@ entsteht, steht unter «Fest dabei» — die Regel legt ein weiteres Dokument da
         </div>
         {% if kann_schreiben and v.kategorie in 'brief kuendigung mahnung info' %}<a href="/neu/vorlagen/{{ v.id }}/brief/" class="fw-btn fw-knapp">{% zeichen 'dokument' %}{% trans "Brief erstellen" %}</a>{% endif %}
         <a href="/neu/vorlagen/{{ v.id }}/bearbeiten/" class="fw-btn fw-knapp">{% zeichen 'bearbeiten' %}{% trans "Bearbeiten" %}</a>
-        <form method="post" action="/neu/vorlagen/{{ v.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Vorlage löschen?" %}{% endfilter %}');">
+        <form method="post" action="/neu/vorlagen/{{ v.id }}/loeschen/" data-bestaetigen="{% filter escapejs %}{% trans "Vorlage löschen?" %}{% endfilter %}">
             {% csrf_token %}
             <button title="{% trans 'Vorlage löschen' %}" class="fw-btn fw-knapp fw-geist">{% zeichen 'loeschen' %}</button>
         </form>

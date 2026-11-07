@@ -13,7 +13,8 @@ Antwort**. Fremdes Skript, auch wenn es im HTML steht, läuft nicht.
 | Etappe | Inhalt | Stand |
 |---|---|---|
 | 1 | Nonce an allen Inline-Skripten; Richtlinie im Modus **report-only** (der Browser meldet, sperrt nichts); Meldestelle `/csp-bericht/`; Ratsche gegen neue Inline-Handler | **erledigt** |
-| 2 … n | Die 387 Inline-Handler (`onclick=`, `onsubmit=` …) in 90 Vorlagen wandern nach `static/js/` (Datenattribute und ein zentraler Verteiler, je Muster eine PR) | offen |
+| 2 | Rückfragen (`return confirm('…')`, 109 Stellen) → `data-bestaetigen`, gelesen von `fw/_bestaetigen.html` | **erledigt** |
+| 3 … n | Die übrigen 278 Inline-Handler in 64 Vorlagen wandern nach `static/js/` (Datenattribute und ein zentraler Verteiler, je Muster eine PR) | offen |
 | Ende | `CSP_MODUS=enforce` | offen |
 
 `style-src` erlaubt vorerst `'unsafe-inline'` (die Oberfläche hat noch `style="…"`-Attribute, siehe

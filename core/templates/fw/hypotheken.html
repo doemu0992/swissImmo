@@ -112,7 +112,7 @@
                     </td>
                     <td class="text-right fw-right">
                         {% if kann_schreiben %}
-                        <form method="post" action="/neu/hypotheken/" onsubmit="return confirm('{% filter escapejs %}{% trans "Hypothek löschen?" %}{% endfilter %}');">
+                        <form method="post" action="/neu/hypotheken/" data-bestaetigen="{% filter escapejs %}{% trans "Hypothek löschen?" %}{% endfilter %}">
                             {% csrf_token %}
                             <input type="hidden" name="aktion" value="loeschen"><input type="hidden" name="id" value="{{ r.hy.id }}">
                             <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>

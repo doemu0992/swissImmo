@@ -189,7 +189,7 @@
                 </form>
                 {% endif %}
                 {% if row.r.status != 'storniert' and row.r.status != 'bezahlt' and row.r.status != 'teilbezahlt' and row.r.status != 'abgeschrieben' %}
-                <form method="post" action="/neu/debitoren/{{ row.r.id }}/stornieren/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with titel=row.r.titel|safe %}Rechnung «{{ titel }}» stornieren? Sie wird revisionssicher mit Gegenbuchung aufgehoben.{% endblocktrans %}{% endfilter %}');">
+                <form method="post" action="/neu/debitoren/{{ row.r.id }}/stornieren/" class="inline" data-bestaetigen="{% filter escapejs %}{% blocktrans with titel=row.r.titel|safe %}Rechnung «{{ titel }}» stornieren? Sie wird revisionssicher mit Gegenbuchung aufgehoben.{% endblocktrans %}{% endfilter %}">
                     {% csrf_token %}
                     {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                     <button type="submit" class="fw-btn fw-rand-krit fw-knapp">{% zeichen 'loeschen' %} {% trans "Stornieren" %}</button>
@@ -250,7 +250,7 @@
                     </form>
                     {% endif %}
                     {% if row.r.status != 'storniert' and row.r.status != 'bezahlt' and row.r.status != 'teilbezahlt' and row.r.status != 'abgeschrieben' %}
-                    <form method="post" action="/neu/debitoren/{{ row.r.id }}/stornieren/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with titel=row.r.titel|safe %}Rechnung «{{ titel }}» stornieren? Sie wird revisionssicher mit Gegenbuchung aufgehoben.{% endblocktrans %}{% endfilter %}');">
+                    <form method="post" action="/neu/debitoren/{{ row.r.id }}/stornieren/" class="inline" data-bestaetigen="{% filter escapejs %}{% blocktrans with titel=row.r.titel|safe %}Rechnung «{{ titel }}» stornieren? Sie wird revisionssicher mit Gegenbuchung aufgehoben.{% endblocktrans %}{% endfilter %}">
                         {% csrf_token %}
                         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                         <button type="submit" class="fw-ikon mut gefahr" title="{% trans 'Stornieren / löschen' %}">{% zeichen 'loeschen' %}</button>

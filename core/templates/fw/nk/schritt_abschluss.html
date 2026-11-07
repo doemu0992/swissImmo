@@ -12,7 +12,7 @@
         {% if not p.abgeschlossen %}
         {% if request.user|darf:"/neu/nebenkosten/1/verbuchen/" %}
         {% comment %} Der Knopf steht als Aktion des Schritts im Fuss (form="nk-verbuchen"). {% endcomment %}
-        <form method="post" action="/neu/nebenkosten/{{ p.id }}/verbuchen/" id="nk-verbuchen" onsubmit="return confirm('{% filter escapejs %}{% trans "Abrechnung jetzt verbuchen? Nachzahlungen werden als Debitoren gestellt, Guthaben gutgeschrieben. Die Periode wird abgeschlossen." %}{% endfilter %}');">
+        <form method="post" action="/neu/nebenkosten/{{ p.id }}/verbuchen/" id="nk-verbuchen" data-bestaetigen="{% filter escapejs %}{% trans "Abrechnung jetzt verbuchen? Nachzahlungen werden als Debitoren gestellt, Guthaben gutgeschrieben. Die Periode wird abgeschlossen." %}{% endfilter %}">
             {% csrf_token %}</form>
         {% else %}<p class="fw-kachel-text">{% trans "Verbuchen dürfen Inhaber und Verwalter." %}</p>{% endif %}
         {% endif %}
@@ -29,7 +29,7 @@
                 <button class="fw-btn" title="{% trans 'Erzeugt je Mieter eine Abrechnung, legt sie ins Portal und lädt alle als Sammel-PDF' %}">{% zeichen 'herunterladen' %}{% trans "PDF erstellen & ablegen" %}</button></form>
             {% endif %}
             {% if request.user|darf:"/neu/nebenkosten/1/mail/" %}
-            <form method="post" action="/neu/nebenkosten/{{ p.id }}/mail/" onsubmit="return confirm('{% filter escapejs %}{% trans "Abrechnung jetzt per E-Mail an alle Mieter senden? Mieter ohne E-Mail-Adresse erhalten sie per Brief (Sammel-PDF)." %}{% endfilter %}');">
+            <form method="post" action="/neu/nebenkosten/{{ p.id }}/mail/" data-bestaetigen="{% filter escapejs %}{% trans "Abrechnung jetzt per E-Mail an alle Mieter senden? Mieter ohne E-Mail-Adresse erhalten sie per Brief (Sammel-PDF)." %}{% endfilter %}">
                 {% csrf_token %}{% if p.versendet_am and p.versand_kanal == 'email' %}<input type="hidden" name="nochmals" value="1">{% endif %}
                 <button class="fw-btn">{% zeichen 'senden' %}{% if p.versendet_am and p.versand_kanal == 'email' %}{% trans "Erneut per E-Mail senden" %}{% else %}{% trans "Per E-Mail senden" %}{% endif %}</button></form>
             {% endif %}

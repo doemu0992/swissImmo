@@ -86,7 +86,7 @@ Erklärung, warum.{% endcomment %}
         <label class="fw-haekchen pb-2.5"><input type="checkbox" name="hnk_override" class="fw-akzent-krit"><span class="fw-kritisch">{% trans "Trotzdem direkt weiterverrechnen" %}</span></label>
         {% endif %}
         <button class="fw-btn fw-primary"
-                onclick="return confirm('{% filter escapejs %}{% blocktrans with n=verteil_mieter %}Offenen Betrag auf alle {{ n }} Mieter verteilen?{% endblocktrans %}{% endfilter %}');">
+                data-bestaetigen="{% filter escapejs %}{% blocktrans with n=verteil_mieter %}Offenen Betrag auf alle {{ n }} Mieter verteilen?{% endblocktrans %}{% endfilter %}">
             {% zeichen 'extern' %}{% trans "Verteilen" %}
         </button>
     </div>

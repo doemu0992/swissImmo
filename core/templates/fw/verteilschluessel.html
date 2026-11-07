@@ -37,7 +37,7 @@
             <td class="fw-num">{{ s.gueltig_bis|date:"d.m.Y"|default:"—" }}</td>
             <td class="text-right">
                 {% if kann_schreiben %}
-                <form method="post" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Diesen Schlüssel löschen?" %}{% endfilter %}')">
+                <form method="post" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Diesen Schlüssel löschen?" %}{% endfilter %}">
                     {% csrf_token %}<input type="hidden" name="aktion" value="loeschen"><input type="hidden" name="id" value="{{ s.id }}">
                     <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                 </form>

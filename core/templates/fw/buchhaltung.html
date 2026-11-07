@@ -247,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="shrink-0 flex items-center gap-2">
             <span class="fw-chip fw-good">{% zeichen 'gut' klasse='mr-1' %}{% trans "Abgeschlossen" %}</span>
             {% if ist_verwaltung %}
-            <form method="post" class="shrink-0" onsubmit="return confirm('{% filter escapejs %}{% blocktrans %}Jahresabschluss {{ jahr }} zurücknehmen? Alle Abschlussbuchungen werden storniert und das Jahr wieder geöffnet.{% endblocktrans %}{% endfilter %}');">
+            <form method="post" class="shrink-0" data-bestaetigen="{% filter escapejs %}{% blocktrans %}Jahresabschluss {{ jahr }} zurücknehmen? Alle Abschlussbuchungen werden storniert und das Jahr wieder geöffnet.{% endblocktrans %}{% endfilter %}">
                 {% csrf_token %}
                 <input type="hidden" name="aktion" value="abschluss_zuruecknehmen">
                 <input type="hidden" name="jahr" value="{{ jahr }}">
@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function () {
             {% endif %}
         </div>
         {% elif ist_verwaltung %}{# Buchungslauf — nur die Verwaltung, siehe fw_buchhaltung #}
-        <form method="post" class="shrink-0" onsubmit="return confirm('{% filter escapejs %}{% blocktrans %}Jahresabschluss {{ jahr }} buchen? Alle Erfolgskonten werden gegen 2970 saldiert.{% endblocktrans %}{% endfilter %}');">
+        <form method="post" class="shrink-0" data-bestaetigen="{% filter escapejs %}{% blocktrans %}Jahresabschluss {{ jahr }} buchen? Alle Erfolgskonten werden gegen 2970 saldiert.{% endblocktrans %}{% endfilter %}">
             {% csrf_token %}
             <input type="hidden" name="aktion" value="jahresabschluss">
             <input type="hidden" name="jahr" value="{{ jahr }}">
@@ -344,7 +344,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     {% endif %}
                     {% if not b.ist_storno and not b.storniert_am %}
                     <form method="post" action="/neu/buchhaltung/buchung/{{ b.id }}/stornieren/{{ lg_query }}"
-                          onsubmit="return confirm('{% filter escapejs %}{% blocktrans with nr=b.beleg_nr %}Beleg #{{ nr }} stornieren? Es wird eine Gegenbuchung erstellt (die Originalbuchung bleibt erhalten).{% endblocktrans %}{% endfilter %}');">
+                          data-bestaetigen="{% filter escapejs %}{% blocktrans with nr=b.beleg_nr %}Beleg #{{ nr }} stornieren? Es wird eine Gegenbuchung erstellt (die Originalbuchung bleibt erhalten).{% endblocktrans %}{% endfilter %}">
                         {% csrf_token %}
                         <button class="fw-btn fw-rand-krit fw-knapp">{% zeichen 'lauf' klasse='mr-1' %}{% trans "Stornieren" %}</button>
                     </form>
@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         {% endif %}
                         {% if not b.ist_storno and not b.storniert_am %}
                         <form method="post" action="/neu/buchhaltung/buchung/{{ b.id }}/stornieren/{{ lg_query }}"
-                              onsubmit="return confirm('{% filter escapejs %}{% blocktrans with nr=b.beleg_nr %}Beleg #{{ nr }} stornieren? Es wird eine Gegenbuchung erstellt (die Originalbuchung bleibt erhalten).{% endblocktrans %}{% endfilter %}');">
+                              data-bestaetigen="{% filter escapejs %}{% blocktrans with nr=b.beleg_nr %}Beleg #{{ nr }} stornieren? Es wird eine Gegenbuchung erstellt (die Originalbuchung bleibt erhalten).{% endblocktrans %}{% endfilter %}">
                             {% csrf_token %}
                             <button class="fw-btn fw-geist fw-knapp">{% zeichen 'lauf' klasse='mr-1' %}{% trans "Stornieren" %}</button>
                         </form>

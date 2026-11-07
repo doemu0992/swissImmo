@@ -241,12 +241,12 @@
     <div class="fw-fuss">
         <button name="aktion" value="bezahlt"
                 onsubmit="return true;"
-                onclick="return confirm('{% filter escapejs %}{% trans "Ausgewählte Zahlungen verbuchen (2000 an Bank)?" %}{% endfilter %}');"
+                data-bestaetigen="{% filter escapejs %}{% trans "Ausgewählte Zahlungen verbuchen (2000 an Bank)?" %}{% endfilter %}"
                 class="fw-btn fw-primary">
             {% zeichen 'gut' %}{% trans "Als bezahlt verbuchen" %}
         </button>
         <button name="aktion" value="zuruecksetzen"
-                onclick="return confirm('{% filter escapejs %}{% trans "Auswahl wieder auf «freigegeben» setzen? (Lauf wurde nicht ausgeführt)" %}{% endfilter %}');"
+                data-bestaetigen="{% filter escapejs %}{% trans "Auswahl wieder auf «freigegeben» setzen? (Lauf wurde nicht ausgeführt)" %}{% endfilter %}"
                 class="fw-btn fw-geist fw-knapp">
             {% trans "Lauf nicht ausgeführt — zurücksetzen" %}
         </button>

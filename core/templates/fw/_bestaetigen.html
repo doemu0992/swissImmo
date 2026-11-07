@@ -3,19 +3,13 @@ GESTALTETER BESTÄTIGUNGSDIALOG (Audit Etappe 3)
 
 WARUM SO UND NICHT ANDERS
 
-83 Rückfragen stehen als `onsubmit="return confirm('…')"` (Formulare) bzw.
-`onclick="return confirm('…')"` (Knöpfe) in den Vorlagen — mit übersetzten,
-per `escapejs` gesicherten Texten. Sie alle umzuschreiben hiesse, dieselben
-Vorlagen anzufassen, die parallel übersetzt werden (Konflikte), und die Texte
-aus ihren `.po`-Einträgen zu reissen.
+Rückfragen stehen als Datenattribut `data-bestaetigen="…"` an Formular (Absenden) oder Knopf/Link (Klick) —
+mit übersetztem, per `escapejs` gesichertem Text. Seit der CSP (Roadmap Nr. 23, `docs/CSP.md`) gibt es dafür
+keinen Inline-Handler mehr (`onsubmit="return confirm('…')"` wäre mit CSP blockiert); dieses Skript ist der
+einzige Ort, der fragt. Es fängt Absenden und Klick in der CAPTURE-Phase ab und zeigt den Text in einem
+`<dialog>`. Nach «Bestätigen» läuft die Aktion einmal weiter (Merker `data-bestaetigt`), ohne erneut zu fragen.
 
-Stattdessen fängt dieses Skript Absenden und Klick in der CAPTURE-Phase ab —
-also bevor der eingebettete Handler läuft —, liest den Text aus dem
-vorhandenen `confirm('…')` und zeigt ihn in einem `<dialog>`. Nach
-«Bestätigen» läuft die Aktion mit vorübergehend ausgeschaltetem Handler
-weiter, damit der Browser-Dialog nicht ein zweites Mal fragt.
-
-Fällt das Skript aus, bleibt alles wie vorher: Dann fragt der Browser.
+Kann der Browser keinen `<dialog>` (`showModal`), fragt die native Rückfrage — die Aktion läuft nie ungefragt.
 
 Gefährliche Aktionen (Löschen, Stornieren, Zurücksetzen, Rückgängig,
 Abschreiben) bekommen den roten Knopf, und der Fokus steht auf «Abbrechen» —
@@ -38,23 +32,23 @@ Enter bestätigt dort nicht aus Versehen.
 <script nonce="{{ csp_nonce }}">
 (function () {
     var dlg = document.getElementById('fwBestaetigen');
-    if (!dlg || typeof dlg.showModal !== 'function') return;   // alter Browser: native Rückfrage bleibt
+    var hatDialog = !!dlg && typeof dlg.showModal === 'function';
 
-    var MUSTER = /^\s*return\s+confirm\(\s*(['"])([\s\S]*)\1\s*\)\s*;?\s*$/;
     var GEFAHR = /(loeschen|stornieren|zuruecksetzen|rueckgaengig|abschreiben)/;
 
-    // Einen JS-Zeichenkettenliteral-Inhalt entschlüsseln — ohne eval.
+    // Einen `escapejs`-Text entschlüsseln (\uXXXX, \xXX, \n …) — ohne eval.
     function entschluesseln(s) {
         return s.replace(/\\(u[0-9a-fA-F]{4}|x[0-9a-fA-F]{2}|.)/g, function (_, c) {
             if (c[0] === 'u' || c[0] === 'x') return String.fromCharCode(parseInt(c.slice(1), 16));
             return {n: '\n', t: '\t', r: '\r'}[c] || c;
         });
     }
-    function textAus(attr) {
-        var m = MUSTER.exec(attr || '');
-        return m ? entschluesseln(m[2]) : null;
+    function textAus(el) {
+        var a = el.getAttribute('data-bestaetigen');
+        return a === null ? null : entschluesseln(a);
     }
     function fragen(text, gefahr, weiter) {
+        if (!hatDialog) { if (window.confirm(text)) weiter(); return; }
         document.getElementById('fwBestaetigenText').textContent = text;
         var ja = document.getElementById('fwBestaetigenJa');
         var nein = document.getElementById('fwBestaetigenNein');
@@ -69,18 +63,17 @@ Enter bestätigt dort nicht aus Versehen.
         dlg.showModal();
         (gefahr ? nein : ja).focus();
     }
-    // Handler kurz ausschalten, Aktion auslösen, danach wieder herstellen
-    // (für Formulare mit target=_blank, bei denen die Seite stehen bleibt).
-    function ohneHandler(el, name, tun) {
-        var alt = el.getAttribute(name);
-        el.removeAttribute(name);
-        try { tun(); } finally { setTimeout(function () { el.setAttribute(name, alt); }, 0); }
+    // Die bestätigte Aktion einmal durchlassen (für Formulare mit target=_blank bleibt die Seite stehen).
+    function durchlassen(el, tun) {
+        el.setAttribute('data-bestaetigt', '1');
+        try { tun(); } finally { setTimeout(function () { el.removeAttribute('data-bestaetigt'); }, 0); }
     }
 
     document.addEventListener('submit', function (e) {
         var form = e.target;
         if (!(form instanceof HTMLFormElement) || form.method === 'dialog') return;
-        var text = textAus(form.getAttribute('onsubmit'));
+        if (form.hasAttribute('data-bestaetigt')) return;          // schon bestätigt
+        var text = textAus(form);
         if (text === null) return;
         e.preventDefault();
         e.stopImmediatePropagation();          // auch der Doppelklick-Schutz wartet
@@ -88,23 +81,25 @@ Enter bestätigt dort nicht aus Versehen.
         var gefahr = GEFAHR.test(form.getAttribute('action') || '') ||
                      !!(knopf && /crit|kritisch|gefahr/.test(knopf.className));
         fragen(text, gefahr, function () {
-            ohneHandler(form, 'onsubmit', function () {
+            durchlassen(form, function () {
                 if (form.requestSubmit) form.requestSubmit(knopf); else form.submit();
             });
         });
     }, true);
 
     document.addEventListener('click', function (e) {
-        var el = e.target.closest ? e.target.closest('[onclick]') : null;
+        // Formulare fragen beim Absenden (oben), nicht beim Klick auf einen ihrer Knöpfe.
+        var el = e.target.closest ? e.target.closest('[data-bestaetigen]:not(form)') : null;
         if (!el) return;
-        var text = textAus(el.getAttribute('onclick'));
+        if (el.hasAttribute('data-bestaetigt')) return;            // schon bestätigt
+        var text = textAus(el);
         if (text === null) return;
         e.preventDefault();
         e.stopImmediatePropagation();
         var ziel = el.getAttribute('formaction') || (el.form && el.form.getAttribute('action')) || el.getAttribute('href') || '';
         var gefahr = GEFAHR.test(ziel) || /crit|kritisch|gefahr/.test(el.className);
         fragen(text, gefahr, function () {
-            ohneHandler(el, 'onclick', function () { el.click(); });
+            durchlassen(el, function () { el.click(); });
         });
     }, true);
 })();

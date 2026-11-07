@@ -62,7 +62,7 @@ alten Liegenschaft betreut.
                 <div id="pAktionen" data-menu-list role="menu" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
                     {% if not m.anonymisiert %}
                     <form method="post" action="/neu/personen/{{ m.id }}/dsg-loeschen/"
-                          onsubmit="return confirm('DSG-Löschung: Die Personendaten von „{{ m.display_name|escapejs }}“ werden anonymisiert und Bewerber-Dokumente gelöscht. Buchungsbelege bleiben aus Aufbewahrungsgründen (10 Jahre, OR 958f) erhalten. Fortfahren?');">
+                          data-bestaetigen="DSG-Löschung: Die Personendaten von „{{ m.display_name|escapejs }}“ werden anonymisiert und Bewerber-Dokumente gelöscht. Buchungsbelege bleiben aus Aufbewahrungsgründen (10 Jahre, OR 958f) erhalten. Fortfahren?">
                         {% csrf_token %}
                         <button class="fw-menuzeile warn">{% zeichen 'gesperrt' klasse='w-4' %}DSG-Löschung (anonymisieren)</button>
                     </form>
@@ -74,7 +74,7 @@ alten Liegenschaft betreut.
                     </form>
                     {% include 'fw/_archivieren.html' with kuerzel='person' pk=m.id stil='menu' %}
                     <form method="post" action="/neu/personen/{{ m.id }}/loeschen/"
-                          onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=m.display_name %}Person „{{ name }}“ wirklich löschen? Hängen Verträge, Rechnungen oder Dokumente an ihr, wird das Löschen abgelehnt. Journal und Adressen werden mitgelöscht.{% endblocktrans %}{% endfilter %}');">
+                          data-bestaetigen="{% filter escapejs %}{% blocktrans with name=m.display_name %}Person „{{ name }}“ wirklich löschen? Hängen Verträge, Rechnungen oder Dokumente an ihr, wird das Löschen abgelehnt. Journal und Adressen werden mitgelöscht.{% endblocktrans %}{% endfilter %}">
                         {% csrf_token %}
                         <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}{% trans "Person löschen" %}</button>
                     </form>
@@ -130,7 +130,7 @@ alten Liegenschaft betreut.
         <div class="fw-fuss"><span>DSG-konform</span>
             {% if m.anonymisiert %}<span>{% trans "anonymisiert" %}</span>{% else %}
             <form method="post" action="/neu/personen/{{ m.id }}/dsg-loeschen/" class="inline"
-                  onsubmit="return confirm('DSG-Löschung: Die Personendaten von „{{ m.display_name|escapejs }}“ werden anonymisiert und Bewerber-Dokumente gelöscht. Buchungsbelege bleiben aus Aufbewahrungsgründen (10 Jahre, OR 958f) erhalten. Fortfahren?');">
+                  data-bestaetigen="DSG-Löschung: Die Personendaten von „{{ m.display_name|escapejs }}“ werden anonymisiert und Bewerber-Dokumente gelöscht. Buchungsbelege bleiben aus Aufbewahrungsgründen (10 Jahre, OR 958f) erhalten. Fortfahren?">
                 {% csrf_token %}
                 <button type="submit" class="fw-link">{% trans "Löschbegehren" %}</button>
             </form>{% endif %}</div>
@@ -284,7 +284,7 @@ alten Liegenschaft betreut.
                     <td>{{ a.einzeiler }}{% if a.notiz %}<span class="fw-klein"> · {{ a.notiz }}</span>{% endif %}</td>
                     <td class="fw-klein">{{ a.quelle }}</td>
                     <td class="fw-right">
-                        <form method="post" action="/neu/adresse/{{ a.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Adress-Zeile entfernen?" %}{% endfilter %}');">{% csrf_token %}
+                        <form method="post" action="/neu/adresse/{{ a.id }}/loeschen/" data-bestaetigen="{% filter escapejs %}{% trans "Diese Adress-Zeile entfernen?" %}{% endfilter %}">{% csrf_token %}
                             <button title="{% trans 'Adresszeile löschen' %}" class="fw-ikon mut gefahr">{% zeichen 'loeschen' klasse='text-xs' %}</button>
                         </form>
                     </td>
@@ -307,11 +307,11 @@ alten Liegenschaft betreut.
                         Passwort und sendet es an {{ email }}.{% endblocktrans %}{% else %}{% blocktrans trimmed %}Login unter <span class="font-mono">/login/</span>. „Passwort zurücksetzen“ erzeugt ein neues
                         Passwort und sendet es — keine E-Mail hinterlegt, es wird angezeigt.{% endblocktrans %}{% endif %}</small></div></div>
                 <div class="fw-fuss">
-                    <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" onsubmit="return confirm('{% filter escapejs %}{% if m.email %}{% trans "Neues Passwort erzeugen und an den Mieter senden? Das alte wird ungültig." %}{% else %}{% trans "Neues Passwort erzeugen und anzeigen? Das alte wird ungültig." %}{% endif %}{% endfilter %}');">{% csrf_token %}
+                    <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" data-bestaetigen="{% filter escapejs %}{% if m.email %}{% trans "Neues Passwort erzeugen und an den Mieter senden? Das alte wird ungültig." %}{% else %}{% trans "Neues Passwort erzeugen und anzeigen? Das alte wird ungültig." %}{% endif %}{% endfilter %}">{% csrf_token %}
                         <input type="hidden" name="aktion" value="erstellen">
                         <button class="fw-btn">{% trans "Passwort zurücksetzen &amp; senden" %}</button>
                     </form>
-                    <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" onsubmit="return confirm('{% filter escapejs %}{% trans "Portal-Zugang deaktivieren?" %}{% endfilter %}');">{% csrf_token %}
+                    <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" data-bestaetigen="{% filter escapejs %}{% trans "Portal-Zugang deaktivieren?" %}{% endfilter %}">{% csrf_token %}
                         <input type="hidden" name="aktion" value="entfernen">
                         <button class="fw-btn">{% trans "Zugang deaktivieren" %}</button>
                     </form>
@@ -550,7 +550,7 @@ alten Liegenschaft betreut.
                 <div class="fw-t">{% if k.betreff %}{{ k.betreff }} · {% endif %}{{ k.inhalt }}</div>
                 <div class="fw-s">{{ k.get_typ_display }} · {{ k.get_richtung_display }} · {{ k.zeitpunkt|date:"d.m.Y H:i" }}{% if k.erstellt_von %} · {{ k.erstellt_von.username }}{% endif %}</div>
             </div>
-            <form method="post" action="/neu/kommunikation/{{ k.id }}/loeschen/" class="shrink-0" onsubmit="return confirm('{% filter escapejs %}{% trans "Journal-Eintrag löschen?" %}{% endfilter %}');">{% csrf_token %}
+            <form method="post" action="/neu/kommunikation/{{ k.id }}/loeschen/" class="shrink-0" data-bestaetigen="{% filter escapejs %}{% trans "Journal-Eintrag löschen?" %}{% endfilter %}">{% csrf_token %}
                 <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' klasse='text-xs' %}</button>
             </form>
         </div>
