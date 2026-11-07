@@ -45,10 +45,10 @@
         <div class="fw-tablewrap">
             <table class="fw-table">
                 <thead><tr>
-                    <th>{% trans "Kategorie" %}</th>
-                    <th class="w-32">{% trans "Lebensdauer (J)" %}</th>
-                    <th>{% trans "Bemerkung" %}</th>
-                    <th></th>
+                    <th scope="col">{% trans "Kategorie" %}</th>
+                    <th scope="col" class="w-32">{% trans "Lebensdauer (J)" %}</th>
+                    <th scope="col">{% trans "Bemerkung" %}</th>
+                    <th scope="col"></th>
                 </tr></thead>
                 <tbody>
                 {% for r in rows %}

@@ -60,6 +60,7 @@ Die Ids und Funktionsnamen sind unveraendert — Tests, `_fwmodal.html` und die
 Detailseiten rufen sie beim Namen.
 {% endcomment %}
 <body class="fw-body">
+<a href="#fw-inhalt" class="fw-skip">{% trans "Zum Inhalt springen" %}</a>
 <div class="fw-app">
 
     <!-- Vorhang für die Leiste am Telefon -->
@@ -298,7 +299,7 @@ Detailseiten rufen sie beim Namen.
         </script>
         {% endif %}
 
-        <main class="fw-inhalt">
+        <main class="fw-inhalt" id="fw-inhalt" tabindex="-1">
             {% include 'fw/_abo_hinweis.html' %}
             {% block content %}{% endblock %}
         </main>
@@ -435,8 +436,30 @@ function fwTab(gruppe, name) {
         // `hier` ist die Klasse der Reiterleiste (`fw-reiter`, Tokens). Die
         // alte Tailwind-Leiste gibt es nicht mehr (Production-Check 26.10.2026).
         b.classList.toggle('hier', aktiv);
+        // Reiter-Schema (WAI-ARIA): ausgewählt + als einziger per Tab erreichbar, Pfeiltasten wechseln.
+        b.setAttribute('aria-selected', aktiv ? 'true' : 'false');
+        b.tabIndex = aktiv ? 0 : -1;
     });
 }
+// Die Flächen der Reiter bekommen Rolle und Bezug zum Reiter, ohne dass jede Vorlage es einzeln tragen muss.
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-panel]').forEach(function(p) {
+        p.setAttribute('role', 'tabpanel');
+        var t = document.getElementById('tab-' + p.id);
+        if (t) p.setAttribute('aria-labelledby', t.id);
+    });
+});
+document.addEventListener('keydown', function(e) {
+    var b = e.target && e.target.closest ? e.target.closest('[role="tab"][data-tab]') : null;
+    if (!b || ['ArrowRight', 'ArrowLeft', 'Home', 'End'].indexOf(e.key) < 0) return;
+    var alle = Array.prototype.slice.call(b.parentNode.querySelectorAll('[role="tab"][data-tab]'));
+    var i = alle.indexOf(b);
+    var j = e.key === 'Home' ? 0 : e.key === 'End' ? alle.length - 1
+          : (i + (e.key === 'ArrowRight' ? 1 : -1) + alle.length) % alle.length;
+    e.preventDefault();
+    alle[j].focus();
+    alle[j].click();
+});
 
 // Deep-Link: ?tab=<name> aktiviert beim Laden den passenden Tab
 document.addEventListener('DOMContentLoaded', function() {
@@ -573,7 +596,7 @@ function fwTabellenStapeln(wurzel) {
         if (!kopfZeile) return;                       // ohne Überschriften kein sinnvolles Label
         if (tab.closest('.md\\:block')) return;       // Desktop-Variante einer Karten-Lösung
         // textContent klebt über Element-Grenzen hinweg zusammen: Aus
-        //   <th>Netto / NK<br><span>Referenz</span></th>
+        //   die Kopfzelle «Netto / NK» mit einem Zeilenumbruch und «Referenz» in einem Span
         // wurde mobil das Label «NETTO / NKREFERENZ». Deshalb an jeder
         // Element- und <br>-Grenze ein Leerzeichen einfügen und Läufe
         // anschliessend zusammenfassen.

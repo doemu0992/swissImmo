@@ -67,13 +67,13 @@
         <table class="fw-table" data-spaltenfilter>
             <thead>
             <tr>
-                <th>{% trans "Stufe" %}</th>
-                <th>{% trans "Mieter" %}</th>
-                <th>{% trans "Objekt" %}</th>
-                <th>{% trans "Fällig seit" %}</th>
-                <th class="fw-zentriert">{% trans "Tage" %}</th>
-                <th class="fw-right">{% trans "Offen" %}</th>
-                <th class="fw-right">{% trans "Aktion" %}</th>
+                <th scope="col">{% trans "Stufe" %}</th>
+                <th scope="col">{% trans "Mieter" %}</th>
+                <th scope="col">{% trans "Objekt" %}</th>
+                <th scope="col">{% trans "Fällig seit" %}</th>
+                <th scope="col" class="fw-zentriert">{% trans "Tage" %}</th>
+                <th scope="col" class="fw-right">{% trans "Offen" %}</th>
+                <th scope="col" class="fw-right">{% trans "Aktion" %}</th>
             </tr>
             </thead>
             <tbody>
@@ -186,12 +186,12 @@
     <div class="fw-tablewrap">
         <table class="fw-table">
             <thead><tr>
-                <th>{% trans "Datum" %}</th>
-                <th>{% trans "Stufe" %}</th>
-                <th>{% trans "Mieter" %}</th>
-                <th>{% trans "Rechnung" %}</th>
-                <th class="fw-right">{% trans "Offen" %}</th>
-                <th class="fw-right">{% trans "Gebühr" %}</th>
+                <th scope="col">{% trans "Datum" %}</th>
+                <th scope="col">{% trans "Stufe" %}</th>
+                <th scope="col">{% trans "Mieter" %}</th>
+                <th scope="col">{% trans "Rechnung" %}</th>
+                <th scope="col" class="fw-right">{% trans "Offen" %}</th>
+                <th scope="col" class="fw-right">{% trans "Gebühr" %}</th>
             </tr></thead>
             <tbody>
             {% for h in historie %}
@@ -216,8 +216,8 @@
     <div class="fw-tablewrap">
         <table class="fw-table">
             <thead><tr>
-                <th>{% trans "Mieter" %}</th><th>{% trans "Forderung" %}</th><th>{% trans "Fällig am" %}</th>
-                <th class="fw-right">{% trans "Offen" %}</th><th>{% trans "Grund" %}</th>
+                <th scope="col">{% trans "Mieter" %}</th><th scope="col">{% trans "Forderung" %}</th><th scope="col">{% trans "Fällig am" %}</th>
+                <th scope="col" class="fw-right">{% trans "Offen" %}</th><th scope="col">{% trans "Grund" %}</th>
             </tr></thead>
             <tbody>
             {% for z in ohne_mahnfall %}
@@ -243,10 +243,10 @@
     <div class="fw-tablewrap">
         <table class="fw-table">
             <thead><tr>
-                <th>{% trans "Mieter" %}</th><th>{% trans "Objekt" %}</th><th>{% trans "Forderung" %}</th>
-                <th>{% trans "Fällig am" %}</th><th class="fw-zentriert">{% trans "Tage" %}</th>
-                <th class="fw-right">{% trans "Offen" %}</th><th>{% trans "Nächste Stufe" %}</th>
-                <th class="fw-right">{% trans "Aktion" %}</th>
+                <th scope="col">{% trans "Mieter" %}</th><th scope="col">{% trans "Objekt" %}</th><th scope="col">{% trans "Forderung" %}</th>
+                <th scope="col">{% trans "Fällig am" %}</th><th scope="col" class="fw-zentriert">{% trans "Tage" %}</th>
+                <th scope="col" class="fw-right">{% trans "Offen" %}</th><th scope="col">{% trans "Nächste Stufe" %}</th>
+                <th scope="col" class="fw-right">{% trans "Aktion" %}</th>
             </tr></thead>
             <tbody>
             {% for v in vorlauf %}

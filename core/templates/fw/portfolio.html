@@ -110,14 +110,14 @@
     <div class="fw-tablewrap">
         <table class="fw-table">
             <thead><tr>
-                <th>{% trans "Liegenschaft" %}</th>
-                <th class="fw-right">{% trans "Objekte" %}</th>
-                <th class="fw-right">{% trans "Soll p. a." %}</th>
-                <th class="fw-right">{% trans "Aufwand 12 Mt." %}</th>
-                <th class="fw-right">{% trans "Wert" %}</th>
-                <th class="fw-right">{% trans "Brutto" %}</th>
-                <th class="fw-right">{% trans "Netto" %}</th>
-                <th>{% trans "Leerstand" %}</th>
+                <th scope="col">{% trans "Liegenschaft" %}</th>
+                <th scope="col" class="fw-right">{% trans "Objekte" %}</th>
+                <th scope="col" class="fw-right">{% trans "Soll p. a." %}</th>
+                <th scope="col" class="fw-right">{% trans "Aufwand 12 Mt." %}</th>
+                <th scope="col" class="fw-right">{% trans "Wert" %}</th>
+                <th scope="col" class="fw-right">{% trans "Brutto" %}</th>
+                <th scope="col" class="fw-right">{% trans "Netto" %}</th>
+                <th scope="col">{% trans "Leerstand" %}</th>
             </tr></thead>
             <tbody>
                 {% for z in zeilen %}

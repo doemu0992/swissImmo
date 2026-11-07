@@ -129,7 +129,7 @@
     {% for schluessel, label, z, hinweis in ampeln %}
     <a href="{% if ampel_filter == schluessel %}?{% if status_filter %}status={{ status_filter }}&amp;{% endif %}{% if q %}q={{ q|urlencode }}&amp;{% endif %}{% if aktive_lg %}lg={{ aktive_lg.id }}{% endif %}{% else %}?ampel={{ schluessel }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}{% endif %}"
        class="fw-ampel {{ schluessel }}{% if ampel_filter == schluessel %} fw-on{% endif %}"
-       aria-pressed="{% if ampel_filter == schluessel %}true{% else %}false{% endif %}">
+       {% if ampel_filter == schluessel %}aria-current="true"{% endif %}>
         <span class="fw-punkt-ampel" aria-hidden="true"></span>
         <span class="fw-ampel-text"><b>{{ label }}</b><span>{{ hinweis }}</span></span>
         <span class="fw-ampel-zahl"><b class="fw-num">{{ z.n }}</b>{% if schluessel != 'gruen' %}<span class="fw-num">CHF {{ z.summe|chf }}</span>{% endif %}</span>
@@ -209,15 +209,15 @@
         <table class="fw-table min-w-max" data-spaltenfilter>
             <thead>
             <tr>
-                <th class="hidden lg:table-cell">{% trans "Fälligkeit" %}</th>
-                <th>{% trans "Mieter" %}</th>
-                <th class="hidden lg:table-cell">{% trans "Objekt" %}</th>
-                <th class="hidden md:table-cell">{% trans "Titel" %}</th>
-                <th class="text-right hidden lg:table-cell fw-right">{% trans "Betrag" %}</th>
-                <th class="text-right fw-right">{% trans "Offen" %}</th>
-                <th>{% trans "Status" %}</th>
-                <th class="hidden md:table-cell">{% trans "Mahnstufe" %}</th>
-                <th></th>
+                <th scope="col" class="hidden lg:table-cell">{% trans "Fälligkeit" %}</th>
+                <th scope="col">{% trans "Mieter" %}</th>
+                <th scope="col" class="hidden lg:table-cell">{% trans "Objekt" %}</th>
+                <th scope="col" class="hidden md:table-cell">{% trans "Titel" %}</th>
+                <th scope="col" class="text-right hidden lg:table-cell fw-right">{% trans "Betrag" %}</th>
+                <th scope="col" class="text-right fw-right">{% trans "Offen" %}</th>
+                <th scope="col">{% trans "Status" %}</th>
+                <th scope="col" class="hidden md:table-cell">{% trans "Mahnstufe" %}</th>
+                <th scope="col"></th>
             </tr>
             </thead>
             <tbody>

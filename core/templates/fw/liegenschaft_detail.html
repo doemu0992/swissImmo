@@ -98,7 +98,7 @@ Liegenschaft ohne Betreuung soll auffallen.
         <div class="fw-kopf"><span class="fw-t">{% trans "Objekte" %}</span>
             <span class="fw-neben">{% blocktrans count n=total_einheiten %}{{ n }} Einheit{% plural %}{{ n }} Einheiten{% endblocktrans %}</span></div>
         <div class="fw-tablewrap"><table class="fw-table">
-            <thead><tr><th>{% trans "Objekt" %}</th><th>{% trans "Mietpartei" %}</th><th class="fw-right">{% trans "Brutto" %}</th><th>{% trans "Status" %}</th></tr></thead>
+            <thead><tr><th scope="col">{% trans "Objekt" %}</th><th scope="col">{% trans "Mietpartei" %}</th><th scope="col" class="fw-right">{% trans "Brutto" %}</th><th scope="col">{% trans "Status" %}</th></tr></thead>
             <tbody>
             {% for row in einheiten_rows %}
             <tr class="fw-klickzeile" onclick="window.location='{% if row.vertrag %}/neu/vertraege/{{ row.vertrag.id }}/{% else %}/neu/objekte/{{ row.einheit.id }}/{% endif %}{{ lg_query }}'">
@@ -269,8 +269,8 @@ Liegenschaft ohne Betreuung soll auffallen.
             </div>
         </details>
         <div class="fw-tablewrap"><table class="fw-table">
-            <thead><tr><th>{% trans "Art" %}</th><th>{% trans "Gesellschaft" %}</th><th>{% trans "Police" %}</th>
-                <th class="fw-right">{% trans "Summe" %}</th><th class="fw-right">{% trans "Prämie" %}</th><th>{% trans "Ablauf" %}</th><th></th></tr></thead>
+            <thead><tr><th scope="col">{% trans "Art" %}</th><th scope="col">{% trans "Gesellschaft" %}</th><th scope="col">{% trans "Police" %}</th>
+                <th scope="col" class="fw-right">{% trans "Summe" %}</th><th scope="col" class="fw-right">{% trans "Prämie" %}</th><th scope="col">{% trans "Ablauf" %}</th><th scope="col"></th></tr></thead>
             <tbody>
             {% for vs in versicherungen %}
             <tr>
@@ -364,7 +364,7 @@ Liegenschaft ohne Betreuung soll auffallen.
             </div>
         </details>
         <div class="fw-tablewrap"><table class="fw-table">
-            <thead><tr><th>{% trans "Gerät" %}</th><th>{% trans "Marke / Modell" %}</th><th>{% trans "Installation" %}</th><th>{% trans "Garantie bis" %}</th><th></th></tr></thead>
+            <thead><tr><th scope="col">{% trans "Gerät" %}</th><th scope="col">{% trans "Marke / Modell" %}</th><th scope="col">{% trans "Installation" %}</th><th scope="col">{% trans "Garantie bis" %}</th><th scope="col"></th></tr></thead>
             <tbody>
             {% for g in lg_geraete %}
             <tr><td class="fw-strong">{{ g.kategorie }}{% if g.sonstiges_bezeichnung %} <span class="fw-klein">· {{ g.sonstiges_bezeichnung }}</span>{% endif %}
@@ -433,7 +433,7 @@ Liegenschaft ohne Betreuung soll auffallen.
             </div>
         </details>
         <div class="fw-tablewrap"><table class="fw-table">
-            <thead><tr><th>{% trans "Typ" %}</th><th>{% trans "Zähler-Nr." %}</th><th>{% trans "Standort" %}</th><th class="fw-right">{% trans "Stand" %}</th><th></th></tr></thead>
+            <thead><tr><th scope="col">{% trans "Typ" %}</th><th scope="col">{% trans "Zähler-Nr." %}</th><th scope="col">{% trans "Standort" %}</th><th scope="col" class="fw-right">{% trans "Stand" %}</th><th scope="col"></th></tr></thead>
             <tbody>
             {% for z in lg_zaehler %}
             <tr><td class="fw-strong">{{ z.typ }}</td>
@@ -480,7 +480,7 @@ Liegenschaft ohne Betreuung soll auffallen.
             <span class="fw-neben">{{ unterhalt|length }}</span>
             <span class="fw-neben w-full">{% trans "ausgeführte Massnahmen" %}</span></div>
         <div class="fw-tablewrap"><table class="fw-table">
-            <thead><tr><th>{% trans "Datum" %}</th><th>{% trans "Massnahme" %}</th><th class="fw-right">{% trans "Kosten" %}</th></tr></thead>
+            <thead><tr><th scope="col">{% trans "Datum" %}</th><th scope="col">{% trans "Massnahme" %}</th><th scope="col" class="fw-right">{% trans "Kosten" %}</th></tr></thead>
             <tbody>
             {% for u in unterhalt %}
             <tr><td class="fw-num">{{ u.datum|date:"d.m.Y" }}</td>
@@ -693,8 +693,8 @@ Liegenschaft ohne Betreuung soll auffallen.
             </div>
         </details>
         <div class="fw-tablewrap"><table class="fw-table">
-            <thead><tr><th>{% trans "Art" %}</th><th>{% trans "Bezeichnung" %}</th><th>{% trans "Anbieter" %}</th><th>{% trans "Nächste Fälligkeit" %}</th>
-                <th class="fw-right">{% trans "Intervall" %}</th><th></th></tr></thead>
+            <thead><tr><th scope="col">{% trans "Art" %}</th><th scope="col">{% trans "Bezeichnung" %}</th><th scope="col">{% trans "Anbieter" %}</th><th scope="col">{% trans "Nächste Fälligkeit" %}</th>
+                <th scope="col" class="fw-right">{% trans "Intervall" %}</th><th scope="col"></th></tr></thead>
             <tbody>
             {% for f in wartungsfristen %}
             <tr>
@@ -772,7 +772,7 @@ Liegenschaft ohne Betreuung soll auffallen.
         <div class="fw-kopf"><span class="fw-t">{% trans "Objekte" %}</span>
             <span class="fw-neben">{% blocktrans with v=vermietet e=total_einheiten %}{{ v }} von {{ e }} vermietet{% endblocktrans %}</span></div>
         <div class="fw-tablewrap"><table class="fw-table">
-            <thead><tr><th>{% trans "Objekt" %}</th><th>{% trans "Typ" %}</th><th class="fw-right">{% trans "Fläche" %}</th><th>{% trans "Status" %}</th><th>{% trans "Mieter" %}</th><th></th></tr></thead>
+            <thead><tr><th scope="col">{% trans "Objekt" %}</th><th scope="col">{% trans "Typ" %}</th><th scope="col" class="fw-right">{% trans "Fläche" %}</th><th scope="col">{% trans "Status" %}</th><th scope="col">{% trans "Mieter" %}</th><th scope="col"></th></tr></thead>
             <tbody>
             {% for row in einheiten_rows %}
             <tr class="cursor-pointer" onclick="window.location='/neu/objekte/{{ row.einheit.id }}/{{ lg_query }}'">

@@ -40,11 +40,11 @@
     <div class="fw-tablewrap">
 <table class="fw-table">
         <thead><tr>
-            <th>{% trans "Liegenschaft" %}</th>
-            <th class="fw-right">{% blocktrans %}Aufwand {{ jahr }}{% endblocktrans %}</th>
-            <th class="fw-right">{% trans "Fläche" %}</th>
-            <th class="fw-right">{% trans "CHF/m²" %}</th>
-            <th class="fw-right">{% trans "vs. Ø" %}</th>
+            <th scope="col">{% trans "Liegenschaft" %}</th>
+            <th scope="col" class="fw-right">{% blocktrans %}Aufwand {{ jahr }}{% endblocktrans %}</th>
+            <th scope="col" class="fw-right">{% trans "Fläche" %}</th>
+            <th scope="col" class="fw-right">{% trans "CHF/m²" %}</th>
+            <th scope="col" class="fw-right">{% trans "vs. Ø" %}</th>
         </tr></thead>
         <tbody>
         {% for r in rows %}

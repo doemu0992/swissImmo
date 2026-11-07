@@ -40,6 +40,22 @@ var fwModalWasOpen = false;
 var fwModalLadungen = 0;      // wie oft der Rahmen geladen hat — ab 2 wurde abgeschickt
 var fwModalGetippt = false;   // Eingaben im Rahmen seit dem letzten Laden
 var fwModalVorher = null;     // Fokus vor dem Öffnen
+var fwModalGesperrt = [];     // Geschwister, die wir inert gesetzt haben
+// Hinter der Schublade ist die Seite nicht bedienbar (aria-modal verspricht das nur): Alle Geschwister des
+// Modals und seiner Vorfahren werden `inert` — kein Fokus, kein Screenreader-Zugriff, keine Klicks.
+function fwModalSperren(an) {
+    var modal = document.getElementById('fwModal');
+    if (an) {
+        for (var k = modal; k && k !== document.body; k = k.parentNode) {
+            Array.prototype.forEach.call(k.parentNode.children, function (s) {
+                if (s !== k && !s.inert && s.tagName !== 'SCRIPT') { s.inert = true; fwModalGesperrt.push(s); }
+            });
+        }
+    } else {
+        fwModalGesperrt.forEach(function (s) { s.inert = false; });
+        fwModalGesperrt = [];
+    }
+}
 (function () {
     var frame = document.getElementById('fwModalFrame');
     frame.addEventListener('load', function () {
@@ -66,6 +82,7 @@ function fwModalOpenUrl(url, title, wide) {
     fwModalWasOpen = true;
     document.getElementById('fwModalFrame').src = url;
     document.getElementById('fwModal').classList.remove('hidden');
+    fwModalSperren(true);
     document.body.style.overflow = 'hidden';
     document.getElementById('fwModalZu').focus();
     return false;   // native Navigation unterdrücken
@@ -81,6 +98,7 @@ function fwModalClose(fertig) {
     var neuLaden = fertig === true || fwModalLadungen > 1;
     fwModalWasOpen = false;
     document.getElementById('fwModal').classList.add('hidden');
+    fwModalSperren(false);
     document.getElementById('fwModalFrame').src = 'about:blank';
     document.body.style.overflow = '';
     if (neuLaden) { window.location.reload(); return; }   // Liste nach einem Schritt auffrischen
