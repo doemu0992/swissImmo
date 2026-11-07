@@ -154,7 +154,9 @@ class TailwindGebautTest(SimpleTestCase):
 
     def test_die_suche_findet_ueberhaupt_klassen(self):
         """Gegenprobe: Ein Muster, das nie greift, ist immer grün."""
-        self.assertGreater(len(_benutzte_klassen()), 150)
+        # 150 → 100 am 07.11.2026: Mit den Django-Admin-Klassen entfielen gut zwanzig Treffer. Die Grenze belegt nur, dass die
+        # Suche überhaupt Klassen findet (Gegenprobe gegen ein Muster, das nie greift).
+        self.assertGreater(len(_benutzte_klassen()), 100)
 
     def test_die_linke_grenze_haelt(self):
         """`max-h-60` ist nicht `h-60`.

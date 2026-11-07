@@ -264,6 +264,17 @@ AUSNAHMEN = {
      'wird seit MIET-13 nicht mehr erhoben (EDÖB-Merkblatt vom 15.7.2025: in der Auswahlphase unzulässig); '
      'nur Altbewerbungen tragen noch einen Wert, den `platzhalter` und die Übernahme zum Mieter lesen — '
      'die Anrede erhebt der Vertragsassistent',
+    # Alte Django-Admin entfernt (07.11.2026): Ihre Formulare zeigten diese Felder als Eingabe. Nachgesehen, wer sie
+    # tatsächlich füllt:
+    'finance.KreditorenRechnung.fehlermeldung':
+     'gesetzt von `core.services.belegimport` (Herkunft und Erkennungsmethode des Belegs, steht als Hinweis in der '
+     'Kreditorenliste); `fw_kreditor_bearbeiten` leert sie beim Vervollständigen; nie Eingabe',
+    'finance.Zahlungseingang.buchungs_monat':
+     'gesetzt aus dem Eingangsdatum (Bankabgleich, `core.services.zahlungsklaerung`, `detailseiten`) und an die '
+     'Folgebuchungen weitergegeben; nie von Hand',
+    'rentals.Mietvertrag.ausgeschlossene_kosten':
+     'Freitext-Vorgänger von `ausgeschlossene_kostenarten` (Entscheid E2, Art. 257a Abs. 2 OR): Die Abrechnung liest nur '
+     'die strukturierte Liste, gepflegt im NK-Wizard (`core.views.fw.nk_wizard`); Bestandswerte bleiben stehen'
 }
 
 #: OFFENE LUECKEN — angezeigt, aber nirgends erfassbar.
@@ -332,6 +343,9 @@ TOTE_SPALTEN = {
         'nur portfolio/models.py:43',
     'tickets.TicketNachricht.cc_email':
         'nur tickets/models.py:137 — die Nachricht kennt kein CC-Feld',
+    'portfolio.Liegenschaft.verteilschluessel_text':
+        'nur portfolio/models.py — Standardtext «nach Wohnfläche (m2)», den nichts liest (Verteilung läuft über '
+        '`portfolio.Verteilschluessel`); die Django-Admin war die einzige Maske (07.11.2026)',
 }
 
 
@@ -572,9 +586,11 @@ class FelderOhneEingabewegTest(SimpleTestCase):
             f'Zahl hier nach.')
         # 5 → 3 am 26.10.2026: Die Mietzinsreserve wird seither aus dem
         # bezifferten Vorbehalt der Anpassung geschrieben (siehe ALIAS).
+        # 3 → 4 am 07.11.2026: `Liegenschaft.verteilschluessel_text` war nur über die entfernte Django-Admin
+        # sichtbar und gilt seither als tot.
         self.assertEqual(
-            len(TOTE_SPALTEN), 3,
-            f'{len(TOTE_SPALTEN)} statt 3 tote Spalten. Eine neue tote Spalte '
+            len(TOTE_SPALTEN), 4,
+            f'{len(TOTE_SPALTEN)} statt 4 tote Spalten. Eine neue tote Spalte '
             f'gehört nicht angelegt; eine entfernte gehört hier gestrichen.')
 
     def test_jedes_feld_steht_in_hoechstens_einer_liste(self):

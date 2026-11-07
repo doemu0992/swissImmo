@@ -38587,3 +38587,9 @@ msgstr ""
 
 msgid "Liegenschaften ohne hinterlegten Wert (nicht in der Rendite): %(n)s"
 msgstr "Properties without a stored value (not included in the yield): %(n)s"
+
+msgid "Heizöl-Menge (Liter)"
+msgstr "Heating oil quantity (litres)"
+
+msgid "(nur Öl-Rechnung)"
+msgstr "(oil invoices only)"

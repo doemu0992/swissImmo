@@ -58,6 +58,7 @@ def _formularwerte(k):
         'datum': _d(k.datum), 'faellig_am': _d(k.faellig_am),
         'leistungs_von': _d(k.leistungs_von), 'leistungs_bis': _d(k.leistungs_bis),
         'referenz': k.referenz or '', 'iban': k.iban or '',
+        'menge_liter': f'{k.menge_liter:.2f}' if k.menge_liter else '',
         'lieferant_strasse': k.lieferant_strasse or '',
         'lieferant_hausnummer': k.lieferant_hausnummer or '',
         'lieferant_plz': k.lieferant_plz or '', 'lieferant_ort': k.lieferant_ort or '',
@@ -72,7 +73,7 @@ def formular_eingabe(post):
     `_formularwerte` — für die Anzeige nach einem Fehler."""
     werte = {name: post.get(name, '') for name in (
         'lieferant', 'betrag', 'mwst_satz', 'datum', 'faellig_am', 'leistungs_von',
-        'leistungs_bis', 'referenz', 'iban', 'liegenschaft_id', 'konto_id',
+        'leistungs_bis', 'referenz', 'menge_liter', 'iban', 'liegenschaft_id', 'konto_id',
         'lieferant_strasse', 'lieferant_hausnummer', 'lieferant_plz', 'lieferant_ort',
         'lieferant_land')}
     werte['is_hnk_relevant'] = post.get('is_hnk_relevant') == 'on'

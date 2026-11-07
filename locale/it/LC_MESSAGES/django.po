@@ -39168,3 +39168,9 @@ msgstr ""
 
 msgid "Liegenschaften ohne hinterlegten Wert (nicht in der Rendite): %(n)s"
 msgstr "Immobili senza valore registrato (non inclusi nel rendimento): %(n)s"
+
+msgid "Heizöl-Menge (Liter)"
+msgstr "Quantità di olio combustibile (litri)"
+
+msgid "(nur Öl-Rechnung)"
+msgstr "(solo fattura di olio combustibile)"
