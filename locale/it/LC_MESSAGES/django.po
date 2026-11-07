@@ -39240,3 +39240,54 @@ msgstr ""
 "chiusure e il registro attività (p. es. fiduciaria o ufficio di revisione). "
 "Non modifica nulla, non vede anagrafiche, contratti né persone, e le sue "
 "consultazioni compaiono nel registro attività."
+
+msgid "Begründung (nur beim Lockern)"
+msgstr "Motivazione (solo per l'allentamento)"
+
+msgid ""
+"Mehr sperren geht sofort. Zurücknehmen oder aufheben braucht die Freigabe "
+"einer zweiten Person aus der Verwaltung."
+msgstr ""
+"Bloccare di più è immediato. Ridurre o revocare il blocco richiede "
+"l'approvazione di una seconda persona dell'amministrazione."
+
+msgid "Antrag von %(wer)s: Sperre %(von)s → %(nach)s. Begründung: %(grund)s"
+msgstr ""
+"Richiesta di %(wer)s: blocco %(von)s → %(nach)s. Motivazione: %(grund)s"
+
+msgid ""
+"Das Lockern der Periodensperre braucht die Freigabe einer zweiten Person aus"
+" der Verwaltung. Der Antrag ist gestellt."
+msgstr ""
+"L'allentamento del blocco di periodo richiede l'approvazione di una seconda "
+"persona dell'amministrazione. La richiesta è stata inoltrata."
+
+msgid "Über die Periodensperre entscheidet die Verwaltung."
+msgstr "Sul blocco di periodo decide l'amministrazione."
+
+msgid "Dieser Antrag ist nicht mehr offen."
+msgstr "Questa richiesta non è più aperta."
+
+msgid "Entscheid gespeichert."
+msgstr "Decisione salvata."
+
+msgid ""
+"Die Periodensperre bis 31.12.%(j_zr)s muss zuerst eine zweite Person aus der"
+" Verwaltung lösen (Anlagen & Abschluss). Danach die Rücknahme erneut "
+"auslösen."
+msgstr ""
+"Il blocco di periodo fino al 31.12.%(j_zr)s deve prima essere sbloccato da "
+"una seconda persona dell'amministrazione (Immobilizzi & chiusura). Poi "
+"riavviare lo storno."
+
+msgid "Für das Lockern der Periodensperre ist eine Begründung nötig."
+msgstr "Per allentare il blocco di periodo è necessaria una motivazione."
+
+msgid "Dieser Antrag ist schon entschieden."
+msgstr "Questa richiesta è già stata decisa."
+
+msgid ""
+"Die Freigabe muss eine zweite Person erteilen, nicht die antragstellende."
+msgstr ""
+"L'approvazione deve essere data da una seconda persona, non da chi ha fatto "
+"la richiesta."

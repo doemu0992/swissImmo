@@ -156,6 +156,8 @@ AUSNAHMEN = {
      'gesetzt von `finance.freigabe.auszahlung_freigeben`: der freigegebene Betrag; eine Änderung danach sperrt wieder',
     'finance.AuszahlungsFreigabe.freigabe_iban':
      'gesetzt von `finance.freigabe.auszahlung_freigeben`: die freigegebene IBAN; eine Änderung danach sperrt wieder',
+    'finance.SperreAenderung.neu_bis':
+     'gesetzt von `finance.periodensperre.sperre_aendern` aus dem Feld «Gesperrt bis» der Periodensperre-Seite, nie als eigenes Feld',
     'core.Archiveintrag.vorher_status':
      'gesetzt von `core.services.archiv.archivieren`: Status vor dem Archivieren, für das Wiederherstellen',
     'rentals.Dokument.vorgaenger':

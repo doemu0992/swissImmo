@@ -181,6 +181,13 @@ class Organisation(models.Model):
     def save(self, *args, **kwargs):
         _unterschrift_aufbereiten(self, 'sig_vw_')
         neu = self._state.adding
+        if not neu:
+            # Die Periodensperre lässt sich nur über `finance.periodensperre` lockern
+            # (zweite Person). Das gilt für jeden Aufrufer, nicht nur für die Seite.
+            felder = kwargs.get('update_fields')
+            if felder is None or 'buchung_gesperrt_bis' in felder:
+                from finance.periodensperre import pruefe_lockerung
+                pruefe_lockerung(self)
         if not self.antwort_kennung:
             from core.services.antwort_eingang import neue_kennung
             self.antwort_kennung = neue_kennung(self.firma)

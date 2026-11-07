@@ -38659,3 +38659,51 @@ msgstr ""
 "statements and the activity log (e.g. fiduciary or auditors). It changes "
 "nothing, sees no master data, contracts or people, and its lookups are "
 "recorded in the activity log."
+
+msgid "Begründung (nur beim Lockern)"
+msgstr "Reason (only when loosening)"
+
+msgid ""
+"Mehr sperren geht sofort. Zurücknehmen oder aufheben braucht die Freigabe "
+"einer zweiten Person aus der Verwaltung."
+msgstr ""
+"Locking more takes effect immediately. Rolling back or removing the lock "
+"needs approval from a second person in the property management."
+
+msgid "Antrag von %(wer)s: Sperre %(von)s → %(nach)s. Begründung: %(grund)s"
+msgstr "Request by %(wer)s: lock %(von)s → %(nach)s. Reason: %(grund)s"
+
+msgid ""
+"Das Lockern der Periodensperre braucht die Freigabe einer zweiten Person aus"
+" der Verwaltung. Der Antrag ist gestellt."
+msgstr ""
+"Loosening the period lock needs approval from a second person in the "
+"property management. The request has been filed."
+
+msgid "Über die Periodensperre entscheidet die Verwaltung."
+msgstr "The property management decides on the period lock."
+
+msgid "Dieser Antrag ist nicht mehr offen."
+msgstr "This request is no longer open."
+
+msgid "Entscheid gespeichert."
+msgstr "Decision saved."
+
+msgid ""
+"Die Periodensperre bis 31.12.%(j_zr)s muss zuerst eine zweite Person aus der"
+" Verwaltung lösen (Anlagen & Abschluss). Danach die Rücknahme erneut "
+"auslösen."
+msgstr ""
+"The period lock up to 31.12.%(j_zr)s must first be released by a second "
+"person in the property management (Assets & closing). Then trigger the "
+"reversal again."
+
+msgid "Für das Lockern der Periodensperre ist eine Begründung nötig."
+msgstr "A reason is required to loosen the period lock."
+
+msgid "Dieser Antrag ist schon entschieden."
+msgstr "This request has already been decided."
+
+msgid ""
+"Die Freigabe muss eine zweite Person erteilen, nicht die antragstellende."
+msgstr "Approval must come from a second person, not the requester."

@@ -29,7 +29,7 @@ def fw_anlagen(request):
     """Anlagenbuchhaltung (lineare AfA), Erneuerungsfonds und Periodensperre."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from finance.models import Anlage, Erneuerungsfonds
+    from finance.models import Anlage, Erneuerungsfonds, SperreAenderung
     from crm.models import Organisation
     from core.services.automation import run_abschreibungen, run_erneuerungsfonds_einlage
     from core.auth import log_aktion
@@ -107,15 +107,44 @@ def fw_anlagen(request):
                                        % {'jahr': jahr, 'n': n, 'summe': summe}) if n
                              else gettext('Erneuerungsfonds %(jahr)s: nichts zu buchen.') % {'jahr': jahr})
         elif aktion == 'sperre_set':
+            from finance.periodensperre import SperreFehler, sperre_aendern
             vw = aktuelle_organisation()
             if vw:
                 try:
-                    vw.buchung_gesperrt_bis = date.fromisoformat(request.POST.get('gesperrt_bis')) if request.POST.get('gesperrt_bis') else None
-                except Exception:
-                    vw.buchung_gesperrt_bis = None
-                vw.save(update_fields=['buchung_gesperrt_bis'])
-                log_aktion(request, "Periodensperre gesetzt", str(vw.buchung_gesperrt_bis or '—'), '')
-                messages.success(request, '✅ ' + gettext('Periodensperre aktualisiert.'))
+                    neu = date.fromisoformat(request.POST.get('gesperrt_bis')) if request.POST.get('gesperrt_bis') else None
+                except ValueError:
+                    messages.error(request, gettext('Ungültiges Datum.'))
+                    return redirect('/neu/anlagen/')
+                try:
+                    ergebnis, antrag = sperre_aendern(vw, neu, request.user, request.POST.get('grund', ''))
+                except SperreFehler as exc:
+                    messages.error(request, '❌ ' + str(exc))
+                    return redirect('/neu/anlagen/')
+                if ergebnis == 'beantragt':
+                    log_aktion(request, "Lockerung der Periodensperre beantragt",
+                               f"{antrag.alt_bis or '—'} → {antrag.neu_bis or '—'}", antrag.grund)
+                    messages.info(request, gettext('Das Lockern der Periodensperre braucht die Freigabe einer zweiten Person aus der Verwaltung. Der Antrag ist gestellt.'))
+                else:
+                    log_aktion(request, "Periodensperre gesetzt", str(vw.buchung_gesperrt_bis or '—'), '')
+                    messages.success(request, '✅ ' + gettext('Periodensperre aktualisiert.'))
+        elif aktion in ('sperre_freigeben', 'sperre_ablehnen'):
+            from finance.models import SperreAenderung
+            from finance.periodensperre import SperreFehler, entscheiden
+            from core.auth import hat_rolle, VERWALTUNGS_ROLLEN
+            antrag = SperreAenderung.objects.filter(pk=request.POST.get('antrag_id') or None, status='offen').first()
+            if not hat_rolle(request.user, VERWALTUNGS_ROLLEN):
+                messages.error(request, '❌ ' + gettext('Über die Periodensperre entscheidet die Verwaltung.'))
+            elif antrag is None:
+                messages.error(request, '❌ ' + gettext('Dieser Antrag ist nicht mehr offen.'))
+            else:
+                try:
+                    entscheiden(antrag, request.user, aktion == 'sperre_freigeben')
+                except SperreFehler as exc:
+                    messages.error(request, '❌ ' + str(exc))
+                else:
+                    log_aktion(request, "Periodensperre-Antrag " + ("freigegeben" if aktion == 'sperre_freigeben' else "abgelehnt"),
+                               f"{antrag.alt_bis or '—'} → {antrag.neu_bis or '—'}", antrag.grund)
+                    messages.success(request, '✅ ' + gettext('Entscheid gespeichert.'))
         return redirect('/neu/anlagen/')
 
     anlagen = list(Anlage.objects.select_related('liegenschaft').all())
@@ -125,5 +154,6 @@ def fw_anlagen(request):
         **basis, 'nav': 'anlagen', 'anlagen': anlagen, 'fonds': fonds,
         'liegenschaften': Liegenschaft.objects.order_by('strasse'),
         'gesperrt_bis': vw.buchung_gesperrt_bis if vw else None,
+        'sperre_antraege': list(SperreAenderung.objects.filter(status='offen').select_related('beantragt_von')),
         'jahr_default': heute.year - 1,
     })

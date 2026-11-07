@@ -39303,3 +39303,53 @@ msgstr ""
 "les clôtures et le journal d'activité (p. ex. fiduciaire ou organe de "
 "révision). Elle ne modifie rien, ne voit ni données de base, ni contrats, ni"
 " personnes, et ses consultations figurent dans le journal d'activité."
+
+msgid "Begründung (nur beim Lockern)"
+msgstr "Motif (uniquement pour un assouplissement)"
+
+msgid ""
+"Mehr sperren geht sofort. Zurücknehmen oder aufheben braucht die Freigabe "
+"einer zweiten Person aus der Verwaltung."
+msgstr ""
+"Bloquer davantage est immédiat. Reculer ou lever le blocage exige la "
+"validation d'une seconde personne de l'administration."
+
+msgid "Antrag von %(wer)s: Sperre %(von)s → %(nach)s. Begründung: %(grund)s"
+msgstr "Demande de %(wer)s : blocage %(von)s → %(nach)s. Motif : %(grund)s"
+
+msgid ""
+"Das Lockern der Periodensperre braucht die Freigabe einer zweiten Person aus"
+" der Verwaltung. Der Antrag ist gestellt."
+msgstr ""
+"L'assouplissement du blocage de période exige la validation d'une seconde "
+"personne de l'administration. La demande est déposée."
+
+msgid "Über die Periodensperre entscheidet die Verwaltung."
+msgstr "La gérance décide du blocage de période."
+
+msgid "Dieser Antrag ist nicht mehr offen."
+msgstr "Cette demande n'est plus ouverte."
+
+msgid "Entscheid gespeichert."
+msgstr "Décision enregistrée."
+
+msgid ""
+"Die Periodensperre bis 31.12.%(j_zr)s muss zuerst eine zweite Person aus der"
+" Verwaltung lösen (Anlagen & Abschluss). Danach die Rücknahme erneut "
+"auslösen."
+msgstr ""
+"Le blocage de période jusqu'au 31.12.%(j_zr)s doit d'abord être levé par une"
+" seconde personne de l'administration (Immobilisations & clôture). Relancer "
+"ensuite l'annulation."
+
+msgid "Für das Lockern der Periodensperre ist eine Begründung nötig."
+msgstr "Un motif est requis pour assouplir le blocage de période."
+
+msgid "Dieser Antrag ist schon entschieden."
+msgstr "Cette demande a déjà été tranchée."
+
+msgid ""
+"Die Freigabe muss eine zweite Person erteilen, nicht die antragstellende."
+msgstr ""
+"La validation doit être donnée par une seconde personne, pas par le "
+"demandeur."

@@ -64,7 +64,7 @@ class ErweiterterBestand(MandantenFixture):
                                     ErneuerungsfondsBewegung, Hypothek, Jahresabschluss, Kontoauszug,
                                     KreditorenZahlung, KreditorPosition, LieferantProfil, Mahnung,
                                     MietzinsKontrolle, NebenkostenBeleg, NebenkostenLernRegel, ZahlerZuordnung,
-                                    Zahlungsvereinbarung)
+                                    Zahlungsvereinbarung, SperreAenderung)
         from portfolio.models import (EinheitFoto, Lebensdauer, LiegenschaftVerteilschluessel, Unterhalt,
                                       Verteilschluessel, ZaehlerStand)
         from rentals.models import (AbnahmeMangel, AbnahmePosition, AbnahmeSchluessel, AbnahmeText, Leerstand,
@@ -89,6 +89,8 @@ class ErweiterterBestand(MandantenFixture):
             organisation=org, eigentuemer=self.eigentuemer, betrag=Decimal('800')))
         self._neu('auszahlungsfreigabe', lambda: AuszahlungsFreigabe.objects.create(
             organisation=org, art='eigentuemer', bezug_id=self.eigentuemer.pk, betrag=Decimal('8000')))
+        self._neu('sperreaenderung', lambda: SperreAenderung.objects.create(
+            organisation=org, alt_bis=heute, neu_bis=None, grund='Test'))
         self._neu('bankbewegung', lambda: Bankbewegung.objects.create(
             organisation=org, konto=self.konto_soll, datum=heute, betrag=Decimal('100')))
         self._neu('kontoauszug', lambda: Kontoauszug.objects.create(organisation=org, konto=self.konto_soll))

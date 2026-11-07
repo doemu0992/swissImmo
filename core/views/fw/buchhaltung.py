@@ -272,9 +272,19 @@ def fw_buchhaltung(request):
             from crm.models import Organisation
             vw_e = request.organisation
             if vw_e is not None and vw_e.buchung_gesperrt_bis == date(j_zr, 12, 31):
-                vw_e.buchung_gesperrt_bis = date(j_zr - 1, 12, 31) if j_zr > 2000 else None
-                vw_e.save(update_fields=['buchung_gesperrt_bis'])
-                entsperrt = f" Die Periodensperre bis 31.12.{j_zr} wurde aufgehoben."
+                # Die Sperre zu lockern braucht eine zweite Person (Vier-Augen-Prinzip,
+                # `finance/periodensperre.py`). Erst nach deren Freigabe gelingt die Rücknahme.
+                from finance.periodensperre import SperreFehler, sperre_aendern
+                try:
+                    sperre_aendern(vw_e, date(j_zr - 1, 12, 31) if j_zr > 2000 else None, request.user,
+                                   f'Rücknahme des Jahresabschlusses {j_zr}')
+                except SperreFehler as exc:
+                    messages.error(request, '❌ ' + str(exc))
+                    return redirect(f'/neu/buchhaltung/?jahr={j_zr}')
+                log_aktion(request, "Lockerung der Periodensperre beantragt", f"31.12.{j_zr}",
+                           f'Rücknahme des Jahresabschlusses {j_zr}')
+                messages.info(request, gettext('Die Periodensperre bis 31.12.%(j_zr)s muss zuerst eine zweite Person aus der Verwaltung lösen (Anlagen & Abschluss). Danach die Rücknahme erneut auslösen.') % {'j_zr': j_zr})
+                return redirect(f'/neu/buchhaltung/?jahr={j_zr}')
         try:
             n_zr = nimm_zurueck(j_zr, liegenschaft=aktive_lg, user=request.user)
         except Exception as exc:
