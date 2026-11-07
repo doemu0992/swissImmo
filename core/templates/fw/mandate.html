@@ -17,9 +17,9 @@
     <div class="fw-tablewrap">
 <table class="fw-table">
         <thead>
-            <tr><th>{% trans "Eigentümer" %}</th><th>{% trans "Kontakt" %}</th>
-                <th>{% trans "Ort" %}</th><th class="fw-right">{% trans "Liegensch." %}</th>
-                <th class="fw-right">{% trans "Aktionen" %}</th></tr>
+            <tr><th scope="col">{% trans "Eigentümer" %}</th><th scope="col">{% trans "Kontakt" %}</th>
+                <th scope="col">{% trans "Ort" %}</th><th scope="col" class="fw-right">{% trans "Liegensch." %}</th>
+                <th scope="col" class="fw-right">{% trans "Aktionen" %}</th></tr>
         </thead>
         <tbody>
             {% for row in rows %}

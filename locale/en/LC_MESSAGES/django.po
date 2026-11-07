@@ -38734,3 +38734,6 @@ msgstr ""
 "The statement belongs to IBAN %(neu)s; on this bank account %(alt)s was read"
 " so far. The wrong bank account is probably selected. For a deliberate "
 "change of bank, repeat the import with “Confirm IBAN change”."
+
+msgid "Zum Inhalt springen"
+msgstr "Skip to content"

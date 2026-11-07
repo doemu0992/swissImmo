@@ -52,14 +52,14 @@
         <table class="fw-table">
             <thead>
             <tr>
-                <th class="pl-5 pr-1"><input type="checkbox" id="alleWahl" class="fw-akzent" title="{% trans 'Alle auswählen' %}"></th>
-                <th>{% trans "Mieter" %}</th>
-                <th>{% trans "Objekt" %}</th>
-                <th class="fw-right">{% trans "Netto effektiv" %}</th>
-                <th class="fw-zentriert">{% trans "Basis Ref.-Zins (effektiv)" %}</th>
-                <th class="fw-zentriert">{% trans "Letzte Anpassung" %}</th>
-                <th>{% trans "Potenzial" %}</th>
-                <th class="fw-right">{% trans "Aktion" %}</th>
+                <th scope="col" class="pl-5 pr-1"><input type="checkbox" id="alleWahl" class="fw-akzent" title="{% trans 'Alle auswählen' %}"></th>
+                <th scope="col">{% trans "Mieter" %}</th>
+                <th scope="col">{% trans "Objekt" %}</th>
+                <th scope="col" class="fw-right">{% trans "Netto effektiv" %}</th>
+                <th scope="col" class="fw-zentriert">{% trans "Basis Ref.-Zins (effektiv)" %}</th>
+                <th scope="col" class="fw-zentriert">{% trans "Letzte Anpassung" %}</th>
+                <th scope="col">{% trans "Potenzial" %}</th>
+                <th scope="col" class="fw-right">{% trans "Aktion" %}</th>
             </tr>
             </thead>
             <tbody>
@@ -114,7 +114,7 @@
     <form method="post" action="/neu/mietzins/versand/">
     {% csrf_token %}
     <div class="fw-tablewrap"><table class="fw-table">
-        <thead><tr><th class="pl-5 pr-1"></th><th>{% trans "Mieter" %}</th><th class="fw-right">{% trans "Netto bisher" %}</th><th class="fw-right">{% trans "Netto neu" %}</th><th>{% trans "Wirksam ab" %}</th><th class="fw-right">{% trans "Aktion" %}</th></tr></thead>
+        <thead><tr><th scope="col" class="pl-5 pr-1"></th><th scope="col">{% trans "Mieter" %}</th><th scope="col" class="fw-right">{% trans "Netto bisher" %}</th><th scope="col" class="fw-right">{% trans "Netto neu" %}</th><th scope="col">{% trans "Wirksam ab" %}</th><th scope="col" class="fw-right">{% trans "Aktion" %}</th></tr></thead>
         <tbody>
         {% for a in entwuerfe %}
         <tr>

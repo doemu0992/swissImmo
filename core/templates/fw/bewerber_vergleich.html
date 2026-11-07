@@ -36,12 +36,12 @@
     <table class="fw-table">
         <thead>
             <tr>
-                <th>{% trans "Rang" %}</th>
-                <th>{% trans "Bewerber" %}</th>
-                <th class="fw-zentriert">{% trans "Score" %}</th>
-                {% for label in indikator_labels %}<th>{{ label }}</th>{% endfor %}
-                <th>{% trans "Haushalt" %}</th>
-                <th></th>
+                <th scope="col">{% trans "Rang" %}</th>
+                <th scope="col">{% trans "Bewerber" %}</th>
+                <th scope="col" class="fw-zentriert">{% trans "Score" %}</th>
+                {% for label in indikator_labels %}<th scope="col">{{ label }}</th>{% endfor %}
+                <th scope="col">{% trans "Haushalt" %}</th>
+                <th scope="col"></th>
             </tr>
         </thead>
         <tbody>

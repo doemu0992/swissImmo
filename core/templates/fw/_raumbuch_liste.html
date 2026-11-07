@@ -17,13 +17,13 @@
             <div class="border-t fw-linie">
             <table class="fw-table" data-stack>
                 <thead><tr>
-                    <th>{% trans "Kategorie" %}</th>
-                    <th>{% trans "Marke / Modell" %}</th>
-                    <th>{% trans "Einbau" %}</th>
-                    <th class="fw-right">{% trans "Neuwert" %}</th>
-                    <th class="fw-right">{% trans "Zeitwert" %}</th>
-                    <th>{% trans "Zustand" %}</th>
-                    <th></th>
+                    <th scope="col">{% trans "Kategorie" %}</th>
+                    <th scope="col">{% trans "Marke / Modell" %}</th>
+                    <th scope="col">{% trans "Einbau" %}</th>
+                    <th scope="col" class="fw-right">{% trans "Neuwert" %}</th>
+                    <th scope="col" class="fw-right">{% trans "Zeitwert" %}</th>
+                    <th scope="col">{% trans "Zustand" %}</th>
+                    <th scope="col"></th>
                 </tr></thead>
                 <tbody>
                 {% for row in r.elemente %}

@@ -85,12 +85,12 @@
     <div class="fw-tablewrap">
         <table class="fw-table">
             <thead><tr>
-                <th>{% trans "Liegenschaft" %}</th>
-                <th>{% trans "Mandat" %}</th>
-                <th class="fw-right">{% trans "Objekte" %}</th>
-                <th class="fw-right">{% trans "Belegung" %}</th>
-                <th class="fw-right">{% trans "Soll / Monat" %}</th>
-                <th>{% trans "Befund" %}</th>
+                <th scope="col">{% trans "Liegenschaft" %}</th>
+                <th scope="col">{% trans "Mandat" %}</th>
+                <th scope="col" class="fw-right">{% trans "Objekte" %}</th>
+                <th scope="col" class="fw-right">{% trans "Belegung" %}</th>
+                <th scope="col" class="fw-right">{% trans "Soll / Monat" %}</th>
+                <th scope="col">{% trans "Befund" %}</th>
             </tr></thead>
             <tbody>
             {% for row in rows %}

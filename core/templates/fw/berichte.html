@@ -65,12 +65,12 @@ stehen einzeln im Katalog und tragen dort die Kapsel «PDF»).
     <div class="fw-tablewrap">
         <table class="fw-table">
             <thead><tr>
-                <th>{% trans "Mandat" %}</th>
-                <th class="fw-right">{% trans "Liegenschaften" %}</th>
-                <th class="fw-right">{% trans "Objekte" %}</th>
-                <th class="fw-right">{% trans "Belegung" %}</th>
-                <th class="fw-right">{% trans "Soll / Monat CHF" %}</th>
-                <th class="fw-right">{% trans "Ausstände > 30 Tage" %}</th>
+                <th scope="col">{% trans "Mandat" %}</th>
+                <th scope="col" class="fw-right">{% trans "Liegenschaften" %}</th>
+                <th scope="col" class="fw-right">{% trans "Objekte" %}</th>
+                <th scope="col" class="fw-right">{% trans "Belegung" %}</th>
+                <th scope="col" class="fw-right">{% trans "Soll / Monat CHF" %}</th>
+                <th scope="col" class="fw-right">{% trans "Ausstände > 30 Tage" %}</th>
             </tr></thead>
             <tbody>
             {% for m in mandat_zeilen %}

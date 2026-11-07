@@ -119,12 +119,12 @@
         <table class="fw-table">
             <thead>
             <tr>
-                <th><input type="checkbox" onclick="fwZlAlle(this, 'vorschlag')" aria-label="{% trans 'Alle auswählen' %}" checked class="fw-akzent"></th>
-                <th>{% trans "Lieferant" %}</th>
-                <th>{% trans "Objekt" %}</th>
-                <th>IBAN</th>
-                <th>{% trans "Fällig" %}</th>
-                <th class="fw-right">{% trans "Offen" %}</th>
+                <th scope="col"><input type="checkbox" onclick="fwZlAlle(this, 'vorschlag')" aria-label="{% trans 'Alle auswählen' %}" checked class="fw-akzent"></th>
+                <th scope="col">{% trans "Lieferant" %}</th>
+                <th scope="col">{% trans "Objekt" %}</th>
+                <th scope="col">IBAN</th>
+                <th scope="col">{% trans "Fällig" %}</th>
+                <th scope="col" class="fw-right">{% trans "Offen" %}</th>
             </tr>
             </thead>
             <tbody data-gruppe="vorschlag">
@@ -207,11 +207,11 @@
         <table class="fw-table">
             <thead>
             <tr>
-                <th><input type="checkbox" onclick="fwZlAlle(this, 'laufend')" aria-label="{% trans 'Alle auswählen' %}" checked class="fw-akzent"></th>
-                <th>{% trans "Lieferant" %}</th>
-                <th>{% trans "Objekt" %}</th>
-                <th>{% trans "Ausführung" %}</th>
-                <th class="fw-right">{% trans "Offen" %}</th>
+                <th scope="col"><input type="checkbox" onclick="fwZlAlle(this, 'laufend')" aria-label="{% trans 'Alle auswählen' %}" checked class="fw-akzent"></th>
+                <th scope="col">{% trans "Lieferant" %}</th>
+                <th scope="col">{% trans "Objekt" %}</th>
+                <th scope="col">{% trans "Ausführung" %}</th>
+                <th scope="col" class="fw-right">{% trans "Offen" %}</th>
             </tr>
             </thead>
             <tbody data-gruppe="laufend">

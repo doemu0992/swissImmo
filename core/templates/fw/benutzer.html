@@ -18,8 +18,8 @@
 <div class="fw-card"><div class="fw-tablewrap">
     <table class="fw-table">
         <thead>
-            <tr><th>{% trans "Name" %}</th><th>{% trans "Rolle" %}</th>
-                <th>{% trans "E-Mail" %}</th><th class="fw-right">{% trans "Aktionen" %}</th></tr>
+            <tr><th scope="col">{% trans "Name" %}</th><th scope="col">{% trans "Rolle" %}</th>
+                <th scope="col">{% trans "E-Mail" %}</th><th scope="col" class="fw-right">{% trans "Aktionen" %}</th></tr>
         </thead>
         <tbody>
             {% with darf_verwalten=request.user|darf:"/neu/benutzer/neu/" %}

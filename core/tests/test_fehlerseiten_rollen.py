@@ -111,7 +111,7 @@ class HauswartKopfzeileTests(RbacBasis):
     def test_hauswart_bekommt_nur_ziele_angeboten_die_er_oeffnen_darf(self):
         for adresse in ('/neu/schaeden/', '/neu/schaeden/board/'):
             html = self._seite(self.u_hauswart, adresse)
-            kopf = html[html.index('id="fwKopf"'):html.index('<main class="fw-inhalt">')]
+            kopf = html[html.index('id="fwKopf"'):html.index('<main class="fw-inhalt"')]
             for ziel in self.ZIELE_DES_TEAMS:
                 with self.subTest(adresse=adresse, ziel=ziel):
                     self.assertNotIn(ziel, kopf)
@@ -125,7 +125,7 @@ class HauswartKopfzeileTests(RbacBasis):
     def test_gegenprobe_das_team_sieht_alles_und_fragt_die_zaehler_ab(self):
         """Ohne diesen Gegenpol wäre der Test oben auch für eine kaputte Seite grün."""
         html = self._seite(self.u_verwalter, '/neu/schaeden/')
-        kopf = html[html.index('id="fwKopf"'):html.index('<main class="fw-inhalt">')]
+        kopf = html[html.index('id="fwKopf"'):html.index('<main class="fw-inhalt"')]
         for ziel in ('/neu/faelle/neu/', '/neu/zulauf/', '/neu/einstellungen/'):
             self.assertIn(ziel, kopf)
         self.assertIn('/neu/liegenschaften/', html)
@@ -134,7 +134,7 @@ class HauswartKopfzeileTests(RbacBasis):
 
     def test_hauswart_seite_ist_bis_ins_profilmenue_frei_von_403_zielen(self):
         html = self._seite(self.u_hauswart, '/neu/schaeden/')
-        menue = html[html.index('id="fwProfil"'):html.index('<main class="fw-inhalt">')]
+        menue = html[html.index('id="fwProfil"'):html.index('<main class="fw-inhalt"')]
         for ziel in ('/neu/dokumente/', '/neu/kommunikation/', '/neu/einstellungen/', '/neu/faelle/neu/'):
             self.assertNotIn(ziel, menue)
         self.assertIn('/logout/', menue)
@@ -142,7 +142,7 @@ class HauswartKopfzeileTests(RbacBasis):
     def test_zwei_faktor_seite_fuer_mieter_zeigt_die_team_ziele_nicht(self):
         """ROUTE-03(c): Die 2FA-Seite rendert für Portal-Rollen in derselben Hülle."""
         html = self._seite(self.u_mieter, '/konto/zwei-faktor/')
-        kopf = html[html.index('id="fwKopf"'):html.index('<main class="fw-inhalt">')]
+        kopf = html[html.index('id="fwKopf"'):html.index('<main class="fw-inhalt"')]
         for ziel in self.ZIELE_DES_TEAMS:
             self.assertNotIn(ziel, kopf)
         self.assertIn('href="/nach-login/" class="fw-kapsel fw-logo-kapsel"', kopf)
