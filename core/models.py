@@ -2,7 +2,7 @@ from core.utils import get_smart_upload_path, get_current_lik, get_current_ref_z
 from django.conf import settings
 from django.db import models
 
-from core.tenancy import AlleOrganisationenManager, TenantManager
+from core.tenancy import AlleOrganisationenManager, TenantManager, TenantQuerySet
 from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
 from django.utils.translation import gettext_lazy as _
 
@@ -369,6 +369,41 @@ class Wiederherstellungscode(models.Model):
         return f"{self.benutzer} — {'eingelöst' if self.eingeloest_am else 'offen'}"
 
 
+class AktivitaetsLogQuerySet(TenantQuerySet):
+    """Das Audit-Log ist nur anhängbar: Sammel-Änderungen und -Löschungen sind gesperrt.
+
+    Erlaubt bleibt das Leeren des Benutzerbezugs (Konto wird gelöscht, `SET_NULL`)
+    und die benannte Ausnahme `finance.db_schutz.ausnahme(grund)` — etwa die
+    DSG-Anonymisierung, die Namen aus Texten schwärzt.
+    """
+
+    def update(self, **kwargs):
+        from finance.db_schutz import ausnahme_aktiv
+        if not ausnahme_aktiv() and set(kwargs) - {'benutzer', 'benutzer_id'}:
+            raise PermissionError('Das Audit-Log ist nur anhängbar: Einträge lassen sich nicht ändern.')
+        return super().update(**kwargs)
+
+    def bulk_update(self, *args, **kwargs):
+        from finance.db_schutz import ausnahme_aktiv
+        if not ausnahme_aktiv():
+            raise PermissionError('Das Audit-Log ist nur anhängbar: Einträge lassen sich nicht ändern.')
+        return super().bulk_update(*args, **kwargs)
+
+    def delete(self):
+        from finance.db_schutz import ausnahme_aktiv
+        if not ausnahme_aktiv():
+            raise PermissionError('Das Audit-Log ist nur anhängbar: Einträge lassen sich nicht löschen.')
+        return super().delete()
+
+
+class AktivitaetsLogManager(TenantManager.from_queryset(AktivitaetsLogQuerySet)):
+    """`AktivitaetsLog.objects`: Mandantenfilter plus Append-only-Sperren."""
+
+
+class AktivitaetsLogAlleManager(AlleOrganisationenManager.from_queryset(AktivitaetsLogQuerySet)):
+    """`AktivitaetsLog.alle_organisationen`: mit denselben Sperren."""
+
+
 class AktivitaetsLog(models.Model):
     """
     Audit-Trail: Wer hat wann was getan (Buchungsläufe, Löschungen, Versand …).
@@ -387,14 +422,26 @@ class AktivitaetsLog(models.Model):
     # heikelsten Fall: Es waechst laufend, ist rechtlich relevant, und je
     # spaeter man es anfasst, desto mehr Zeilen sind umzuschreiben. 546 sind es
     # heute.
-    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE,
+    # PROTECT statt CASCADE: Eine Organisation mit Protokoll lässt sich nicht
+    # mitsamt ihrem Audit-Trail löschen (Aufbewahrung, OR 958f).
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.PROTECT,
                                      editable=False, related_name='%(app_label)s_%(class)s',
                                      verbose_name='Organisation')
 
     def save(self, *args, **kwargs):
+        if self.pk is not None and not self._state.adding:
+            from finance.db_schutz import ausnahme_aktiv
+            if not ausnahme_aktiv():
+                raise PermissionError('Das Audit-Log ist nur anhängbar: Einträge lassen sich nicht ändern.')
         if self.organisation_id is None:
             self.organisation_id = organisation_bestimmen().pk
         super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        from finance.db_schutz import ausnahme_aktiv
+        if not ausnahme_aktiv():
+            raise PermissionError('Das Audit-Log ist nur anhängbar: Einträge lassen sich nicht löschen.')
+        return super().delete(*args, **kwargs)
 
     zeitpunkt = models.DateTimeField("Zeitpunkt", auto_now_add=True)
     benutzer = models.ForeignKey(
@@ -422,9 +469,11 @@ class AktivitaetsLog(models.Model):
     ip_adresse = models.GenericIPAddressField("IP-Adresse", null=True, blank=True)
 
 
-    objects = TenantManager()
-    alle_organisationen = AlleOrganisationenManager()
+    objects = AktivitaetsLogManager()
+    alle_organisationen = AktivitaetsLogAlleManager()
+
     class Meta:
+        base_manager_name = 'alle_organisationen'
         verbose_name = "Aktivitätslog"
         verbose_name_plural = "Aktivitätslog"
         ordering = ['-zeitpunkt']
