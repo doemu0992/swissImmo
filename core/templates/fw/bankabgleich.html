@@ -75,6 +75,7 @@ hat genau einen Hauptknopf — den nächsten sinnvollen Schritt.
             {% endif %}
             <button type="submit" class="fw-btn fw-primary">{% zeichen 'hochladen' %}{% trans "Import" %}</button>
         </div>
+        <label class="fw-hilfe"><input type="checkbox" name="iban_wechsel" value="1"> {% trans "IBAN-Wechsel bestätigen (nur bei einem bewussten Bankwechsel)" %}</label>
         {% if saldo_abgleich %}
         {# Abstimmungsnachweis: stimmt die Buchhaltung mit dem Kontoauszug überein? #}
         <div class="fw-saldo-zeile">
