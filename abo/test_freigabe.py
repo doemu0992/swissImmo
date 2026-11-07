@@ -379,14 +379,14 @@ class GrenzenTests(Basis):
         Mitgliedschaft.alle_organisationen.create(benutzer=u2, organisation=self.a.organisation, rolle='Verwalter')
         konten = User.objects.count()
         c = self._client()
-        antwort = c.post('/neu/benutzer/neu/', {'username': 'dritter_v', 'passwort': 'Sehr-geheim-123', 'rolle': 'Verwalter'})
+        antwort = c.post('/neu/benutzer/neu/', {'username': 'dritter_v', 'email': 'dritter@example.ch', 'rolle': 'Verwalter'})
         self.assertEqual(antwort.status_code, 402)
         self.assertContains(antwort, 'Grenze der Stufe', status_code=402)
         self.assertEqual(User.objects.count(), konten)
         self.assertFalse(User.objects.filter(username='dritter_v').exists())
         # Gegenprobe: in einer Stufe mit Platz geht dieselbe Anfrage durch.
         plan_wechseln(self.a.organisation, 'team', False)
-        self.assertEqual(c.post('/neu/benutzer/neu/', {'username': 'dritter_v', 'passwort': 'Sehr-geheim-123',
+        self.assertEqual(c.post('/neu/benutzer/neu/', {'username': 'dritter_v', 'email': 'dritter@example.ch',
                                                        'rolle': 'Verwalter'}).status_code, 302)
         self.assertTrue(User.objects.filter(username='dritter_v').exists())
 

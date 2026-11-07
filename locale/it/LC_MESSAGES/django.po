@@ -39174,3 +39174,58 @@ msgstr "Quantità di olio combustibile (litri)"
 
 msgid "(nur Öl-Rechnung)"
 msgstr "(solo fattura di olio combustibile)"
+
+msgid "Einladung zu immoswiss"
+msgstr "Invito a immoswiss"
+
+msgid "Passwort für immoswiss setzen"
+msgstr "Impostare la password per immoswiss"
+
+msgid "%(firma)s hat für Sie ein Konto bei immoswiss angelegt."
+msgstr "%(firma)s ha creato per Lei un account su immoswiss."
+
+msgid "%(firma)s hat Ihnen einen Link zum Setzen Ihres Passworts gesendet."
+msgstr "%(firma)s Le ha inviato un link per impostare la Sua password."
+
+msgid "Passwort festlegen:"
+msgstr "Impostare la password:"
+
+msgid "Ihr Benutzername: %(name)s"
+msgstr "Il Suo nome utente: %(name)s"
+
+msgid ""
+"Der Link gilt nur kurz und nur einmal. Ist er abgelaufen, bitten Sie die "
+"Verwaltung um einen neuen."
+msgstr ""
+"Il link è valido solo per poco tempo e una sola volta. Se è scaduto, ne "
+"richieda uno nuovo all'amministrazione."
+
+msgid ""
+"Die Person erhält per E-Mail einen Link und legt ihr Passwort selbst fest. "
+"Dafür ist die E-Mail-Adresse nötig."
+msgstr ""
+"La persona riceve un link per e-mail e sceglie lei stessa la password. Per "
+"questo serve l'indirizzo e-mail."
+
+msgid "Link zum Passwort-Setzen per E-Mail senden"
+msgstr "Inviare per e-mail un link per impostare la password"
+
+msgid "Besser als ein Passwort weiterzugeben: Die Person legt es selbst fest."
+msgstr "Meglio che trasmettere una password: la persona la sceglie da sé."
+
+msgid ""
+"Für die Einladung ist eine gültige E-Mail-Adresse nötig: Die Person setzt "
+"ihr Passwort selbst über einen Link, den sie dort erhält."
+msgstr ""
+"Per l'invito serve un indirizzo e-mail valido: la persona imposta da sé la "
+"password tramite un link ricevuto a quell'indirizzo."
+
+msgid "Ein Link zum Setzen des Passworts wurde an %(adresse)s gesendet."
+msgstr "Un link per impostare la password è stato inviato a %(adresse)s."
+
+msgid ""
+"Die E-Mail mit dem Link liess sich nicht senden. Link zum Weitergeben an "
+"%(name)s: %(link)s"
+msgstr ""
+"Non è stato possibile inviare l'e-mail con il link. Link da trasmettere a "
+"%(name)s: %(link)s"

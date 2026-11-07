@@ -870,7 +870,7 @@ class BenutzerverwaltungNeuTests(TestCase):
         # Mitglieder verwaltet seit 28.09.2026 nur der Inhaber (KONZEPT-UI §8).
         c = Client(); c.force_login(_team_user('Inhaber'))
         self.assertEqual(c.get('/neu/benutzer/').status_code, 200)
-        c.post('/neu/benutzer/neu/', {'username': 'neuer_e2', 'passwort': 'Geheim!2345',
+        c.post('/neu/benutzer/neu/', {'username': 'neuer_e2', 'email': 'neuer@example.ch',
                                       'rolle': 'Lesend', 'vorname': 'Neu', 'nachname': 'Benutzer'})
         neuer = User.objects.filter(username='neuer_e2').first()
         self.assertIsNotNone(neuer, "Benutzer liess sich über /neu/ nicht anlegen")

@@ -39236,3 +39236,59 @@ msgstr "Quantité de mazout (litres)"
 
 msgid "(nur Öl-Rechnung)"
 msgstr "(facture de mazout uniquement)"
+
+msgid "Einladung zu immoswiss"
+msgstr "Invitation à immoswiss"
+
+msgid "Passwort für immoswiss setzen"
+msgstr "Définir le mot de passe pour immoswiss"
+
+msgid "%(firma)s hat für Sie ein Konto bei immoswiss angelegt."
+msgstr "%(firma)s a créé un compte immoswiss pour vous."
+
+msgid "%(firma)s hat Ihnen einen Link zum Setzen Ihres Passworts gesendet."
+msgstr "%(firma)s vous a envoyé un lien pour définir votre mot de passe."
+
+msgid "Passwort festlegen:"
+msgstr "Définir le mot de passe :"
+
+msgid "Ihr Benutzername: %(name)s"
+msgstr "Votre nom d'utilisateur : %(name)s"
+
+msgid ""
+"Der Link gilt nur kurz und nur einmal. Ist er abgelaufen, bitten Sie die "
+"Verwaltung um einen neuen."
+msgstr ""
+"Le lien n'est valable que peu de temps et une seule fois. S'il a expiré, "
+"demandez-en un nouveau à la gérance."
+
+msgid ""
+"Die Person erhält per E-Mail einen Link und legt ihr Passwort selbst fest. "
+"Dafür ist die E-Mail-Adresse nötig."
+msgstr ""
+"La personne reçoit un lien par e-mail et choisit elle-même son mot de passe."
+" L'adresse e-mail est donc nécessaire."
+
+msgid "Link zum Passwort-Setzen per E-Mail senden"
+msgstr "Envoyer par e-mail un lien pour définir le mot de passe"
+
+msgid "Besser als ein Passwort weiterzugeben: Die Person legt es selbst fest."
+msgstr ""
+"Mieux que de transmettre un mot de passe : la personne le choisit elle-même."
+
+msgid ""
+"Für die Einladung ist eine gültige E-Mail-Adresse nötig: Die Person setzt "
+"ihr Passwort selbst über einen Link, den sie dort erhält."
+msgstr ""
+"Une adresse e-mail valide est nécessaire pour l'invitation : la personne "
+"définit elle-même son mot de passe via un lien reçu à cette adresse."
+
+msgid "Ein Link zum Setzen des Passworts wurde an %(adresse)s gesendet."
+msgstr "Un lien pour définir le mot de passe a été envoyé à %(adresse)s."
+
+msgid ""
+"Die E-Mail mit dem Link liess sich nicht senden. Link zum Weitergeben an "
+"%(name)s: %(link)s"
+msgstr ""
+"L'e-mail contenant le lien n'a pas pu être envoyé. Lien à transmettre à "
+"%(name)s : %(link)s"
