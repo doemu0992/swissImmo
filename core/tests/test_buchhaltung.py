@@ -1261,6 +1261,20 @@ class JahresabschlussH5H6Tests(TestCase):
         c.post('/neu/buchhaltung/', {'aktion': 'jahresabschluss', 'jahr': '2024'})
         self.assertTrue(ist_abgeschlossen(2024))
         self.assertEqual(Organisation.objects.first().buchung_gesperrt_bis, date(2024, 12, 31))
+        # Die Sperre zu lockern braucht eine zweite Person (Roadmap Nr. 11): Die erste Rücknahme
+        # stellt nur den Antrag, das Jahr bleibt abgeschlossen.
+        c.post('/neu/buchhaltung/', {'aktion': 'abschluss_zuruecknehmen', 'jahr': '2024'})
+        self.assertTrue(ist_abgeschlossen(2024))
+        self.assertEqual(Organisation.objects.first().buchung_gesperrt_bis, date(2024, 12, 31))
+        from django.contrib.auth import get_user_model
+        from crm.models import Mitgliedschaft
+        from finance.models import SperreAenderung
+        zweite = get_user_model().objects.create_user(username='zweite_person', password='x', email='z@example.ch')
+        Mitgliedschaft.alle_organisationen.create(
+            benutzer=zweite, organisation=Organisation.objects.first(), rolle='Verwalter')
+        c2 = Client(); c2.force_login(zweite)
+        antrag = SperreAenderung.alle_organisationen.get(status='offen')
+        c2.post('/neu/anlagen/', {'aktion': 'sperre_freigeben', 'antrag_id': antrag.pk})
         c.post('/neu/buchhaltung/', {'aktion': 'abschluss_zuruecknehmen', 'jahr': '2024'})
         self.assertFalse(ist_abgeschlossen(2024))
         # Periodensperre gelöst und Jahr im 31.12.-Blick wieder offen (Ergebnis
