@@ -206,7 +206,7 @@ anderes schachteln.
                         </form>
                         {% if z.kaution_kandidaten %}
                         <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/kaution/" class="fw-mehr-zeile"
-                              onsubmit="return confirm('{% filter escapejs %}{% trans "Als Kaution verbuchen? Gebucht wird 1190 an 2010 Kautionsverbindlichkeit; danach die Überweisung auf das Sperrkonto veranlassen." %}{% endfilter %}');">
+                              data-bestaetigen="{% filter escapejs %}{% trans "Als Kaution verbuchen? Gebucht wird 1190 an 2010 Kautionsverbindlichkeit; danach die Überweisung auf das Sperrkonto veranlassen." %}{% endfilter %}">
                             {% csrf_token %}
                             <input type="hidden" name="next" value="/neu/bankabgleich/?spur=klaerung">
                             <select name="vertrag_id" required class="fw-feld" aria-label="{% trans 'Kaution von' %}">
@@ -217,7 +217,7 @@ anderes schachteln.
                         </form>
                         {% endif %}
                         <form method="post" action="/neu/bankabgleich/guthaben/rueckerstatten/" class="fw-mehr-zeile"
-                              onsubmit="return confirm('{% filter escapejs %}{% trans "Zahlung an den Absender zurücküberweisen? Gebucht wird 1190 an Bank." %}{% endfilter %}');">
+                              data-bestaetigen="{% filter escapejs %}{% trans "Zahlung an den Absender zurücküberweisen? Gebucht wird 1190 an Bank." %}{% endfilter %}">
                             {% csrf_token %}
                             <input type="hidden" name="zahlung_id" value="{{ z.id }}">
                             <input type="hidden" name="next" value="/neu/bankabgleich/?spur=klaerung">
@@ -259,7 +259,7 @@ anderes schachteln.
                 </div>
                 <span class="fw-betrag">CHF {{ z.wieder_betrag|chf }}</span>
                 <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/wiederherstellen/"
-                      onsubmit="return confirm('{% filter escapejs %}{% trans "Zahlung wiederherstellen? Der Geldeingang wird neu gebucht und steht wieder als Klärungsfall (1190) — ohne Mieter. Der gelernte Absender wird vergessen." %}{% endfilter %}');">
+                      data-bestaetigen="{% filter escapejs %}{% trans "Zahlung wiederherstellen? Der Geldeingang wird neu gebucht und steht wieder als Klärungsfall (1190) — ohne Mieter. Der gelernte Absender wird vergessen." %}{% endfilter %}">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="/neu/bankabgleich/?spur=klaerung">
                     <button type="submit" class="fw-btn fw-primary fw-knapp">{% trans "Zahlung wiederherstellen" %}</button>
@@ -284,7 +284,7 @@ anderes schachteln.
                 </div>
                 <span class="fw-betrag">CHF {{ z.total|chf }}</span>
                 <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/zuordnung-aufheben/"
-                      onsubmit="return confirm('{% filter escapejs %}{% trans "Zuordnung aufheben? Die Zahlung steht danach wieder unter «Klärungsfälle», die Rechnungen sind wieder offen (mit Mahnstufe und Frist). Eine aufgeteilte Zahlung wird mit allen Teilen zurückgelegt." %}{% endfilter %}');">
+                      data-bestaetigen="{% filter escapejs %}{% trans "Zuordnung aufheben? Die Zahlung steht danach wieder unter «Klärungsfälle», die Rechnungen sind wieder offen (mit Mahnstufe und Frist). Eine aufgeteilte Zahlung wird mit allen Teilen zurückgelegt." %}{% endfilter %}">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="/neu/bankabgleich/?spur=klaerung">
                     <button type="submit" class="fw-btn fw-knapp">{% trans "Zuordnung aufheben" %}</button>
@@ -342,7 +342,7 @@ anderes schachteln.
                 <span class="fw-betrag good">CHF {{ z.betrag|chf }}</span>
                 <a href="/neu/bankabgleich/zahlung/{{ z.id }}/aufteilen/" class="fw-btn fw-primary fw-knapp">{% trans "Jetzt verrechnen" %}</a>
                 <form method="post" action="/neu/bankabgleich/guthaben/rueckerstatten/"
-                      onsubmit="return confirm('{% filter escapejs %}{% trans "Guthaben an den Mieter zurückzahlen? Gebucht wird 2030 an Bank." %}{% endfilter %}');">
+                      data-bestaetigen="{% filter escapejs %}{% trans "Guthaben an den Mieter zurückzahlen? Gebucht wird 2030 an Bank." %}{% endfilter %}">
                     {% csrf_token %}
                     <input type="hidden" name="zahlung_id" value="{{ z.id }}">
                     <input type="hidden" name="next" value="/neu/bankabgleich/?spur=guthaben">
@@ -375,7 +375,7 @@ anderes schachteln.
                 </div>
                 <span class="fw-betrag">CHF {{ z.wieder_betrag|chf }}</span>
                 <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/wiederherstellen/"
-                      onsubmit="return confirm('{% filter escapejs %}{% trans "Guthaben wiederherstellen? Der Eingang wird neu gebucht (an 2030, «offen lassen»), die damit verrechneten Posten sind wieder offen." %}{% endfilter %}');">
+                      data-bestaetigen="{% filter escapejs %}{% trans "Guthaben wiederherstellen? Der Eingang wird neu gebucht (an 2030, «offen lassen»), die damit verrechneten Posten sind wieder offen." %}{% endfilter %}">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="/neu/bankabgleich/?spur=guthaben">
                     <button type="submit" class="fw-btn fw-primary fw-knapp">{% trans "Guthaben wiederherstellen" %}</button>
@@ -400,7 +400,7 @@ anderes schachteln.
                 </div>
                 <span class="fw-betrag">CHF {{ z.betrag|chf }}</span>
                 <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/verrechnung-rueckgaengig/"
-                      onsubmit="return confirm('{% filter escapejs %}{% trans "Verrechnung rückgängig machen? Der Betrag steht danach wieder als Guthaben, die Rechnung ist wieder offen." %}{% endfilter %}');">
+                      data-bestaetigen="{% filter escapejs %}{% trans "Verrechnung rückgängig machen? Der Betrag steht danach wieder als Guthaben, die Rechnung ist wieder offen." %}{% endfilter %}">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="/neu/bankabgleich/?spur=guthaben">
                     <button type="submit" class="fw-btn fw-knapp">{% trans "Verrechnung rückgängig" %}</button>
@@ -442,7 +442,7 @@ anderes schachteln.
                 <span class="fw-betrag crit">{% trans "Rest" %} CHF {{ t.offen|chf }}</span>
                 {% if t.kleindifferenz %}
                 <form method="post" action="/neu/debitoren/{{ t.r.id }}/abschreiben/"
-                      onsubmit="return confirm('{% filter escapejs %}{% blocktrans with betrag=t.offen|chf %}Kleindifferenz von CHF {{ betrag }} ausbuchen (3805 Debitorenverluste)?{% endblocktrans %}{% endfilter %}');">
+                      data-bestaetigen="{% filter escapejs %}{% blocktrans with betrag=t.offen|chf %}Kleindifferenz von CHF {{ betrag }} ausbuchen (3805 Debitorenverluste)?{% endblocktrans %}{% endfilter %}">
                     {% csrf_token %}
                     <input type="hidden" name="grund" value="{% trans 'Kleindifferenz' %}">
                     <input type="hidden" name="next" value="/neu/bankabgleich/?spur=teil">
@@ -501,7 +501,7 @@ anderes schachteln.
             <div id="bew-{{ b.id }}" class="hidden w-full fw-flaeche2 rounded-lg p-3 space-y-3">
                 {% if b.rueck_kandidaten %}
                 <form method="post" action="/neu/bankabgleich/bewegung/" class="flex items-end gap-2 flex-wrap"
-                      onsubmit="return confirm('{% filter escapejs %}{% trans "Rückbuchung erfassen? Die gewählte Zahlung wird storniert, die Rechnung ist wieder offen und läuft ins Mahnwesen." %}{% endfilter %}');">
+                      data-bestaetigen="{% filter escapejs %}{% trans "Rückbuchung erfassen? Die gewählte Zahlung wird storniert, die Rechnung ist wieder offen und läuft ins Mahnwesen." %}{% endfilter %}">
                     {% csrf_token %}
                     <input type="hidden" name="bewegung_id" value="{{ b.id }}">
                     <input type="hidden" name="art" value="rueckbuchung">
@@ -556,7 +556,7 @@ anderes schachteln.
                     <button class="fw-btn fw-primary">{% trans "Auf Konto buchen" %}</button>
                 </form>
                 <form method="post" action="/neu/bankabgleich/bewegung/"
-                      onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Bewegung als nicht buchungsrelevant markieren?" %}{% endfilter %}');">
+                      data-bestaetigen="{% filter escapejs %}{% trans "Diese Bewegung als nicht buchungsrelevant markieren?" %}{% endfilter %}">
                     {% csrf_token %}
                     <input type="hidden" name="bewegung_id" value="{{ b.id }}">
                     <input type="hidden" name="art" value="ignorieren">
@@ -600,9 +600,9 @@ anderes schachteln.
                 </div>
             </div>
             <form method="post" action="/neu/bankabgleich/auszug/{{ a.id }}/rueckgaengig/"
-                  onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=a.dateiname|default:_('Kontoauszug')|safe %}Import «{{ name }}» wirklich rückgängig machen?{% endblocktrans %}
+                  data-bestaetigen="{% filter escapejs %}{% blocktrans with name=a.dateiname|default:_('Kontoauszug')|safe %}Import «{{ name }}» wirklich rückgängig machen?{% endblocktrans %}
 
-{% trans "Alle aus diesem Auszug gebuchten Zahlungen werden revisionssicher storniert (Gegenbuchung), die betroffenen Rechnungen gelten wieder als offen, und der Auszug wird entfernt." %}{% endfilter %}');">
+{% trans "Alle aus diesem Auszug gebuchten Zahlungen werden revisionssicher storniert (Gegenbuchung), die betroffenen Rechnungen gelten wieder als offen, und der Auszug wird entfernt." %}{% endfilter %}">
                 {% csrf_token %}
                 {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                 <button type="submit" class="fw-btn fw-rand-krit fw-knapp">
@@ -646,7 +646,7 @@ anderes schachteln.
                 <td class="fw-right fw-num fw-strong">{{ row.offen|chf }}{% if row.r.status == 'teilbezahlt' %}<div class="fw-klein">{% blocktrans with betrag=row.r.betrag|chf %}von {{ betrag }}{% endblocktrans %}</div>{% endif %}</td>
                 <td class="fw-right">
                     {% if row.kann_verbuchen %}
-                    <form method="post" action="/neu/bankabgleich/verbuchen/" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with betrag=row.offen|chf mieter=row.mieter|safe %}CHF {{ betrag }} von {{ mieter }} als bezahlt verbuchen?{% endblocktrans %}{% endfilter %}');" class="inline">
+                    <form method="post" action="/neu/bankabgleich/verbuchen/" data-bestaetigen="{% filter escapejs %}{% blocktrans with betrag=row.offen|chf mieter=row.mieter|safe %}CHF {{ betrag }} von {{ mieter }} als bezahlt verbuchen?{% endblocktrans %}{% endfilter %}" class="inline">
                         {% csrf_token %}
                         <input type="hidden" name="rechnung_id" value="{{ row.r.id }}">
                         <input type="hidden" name="erwartet_offen" value="{{ row.offen|stringformat:'.2f' }}">
@@ -693,14 +693,14 @@ anderes schachteln.
             <span class="fw-betrag good">+{{ z.betrag|chf }}</span>
             {% if z.pk in verrechnet_ids %}
             <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/verrechnung-rueckgaengig/"
-                  onsubmit="return confirm('{% filter escapejs %}{% trans "Verrechnung rückgängig machen? Der Betrag steht danach wieder als Guthaben, die Rechnung ist wieder offen." %}{% endfilter %}');">
+                  data-bestaetigen="{% filter escapejs %}{% trans "Verrechnung rückgängig machen? Der Betrag steht danach wieder als Guthaben, die Rechnung ist wieder offen." %}{% endfilter %}">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="/neu/bankabgleich/{{ lg_query }}">
                 <button type="submit" class="fw-btn fw-knapp" title="{% trans 'Nur die Verrechnung aufheben — nicht stornieren, sonst geht auch der Geldeingang verloren' %}">{% trans "Verrechnung rückgängig" %}</button>
             </form>
             {% elif z.pk in zugeordnet_ids or z.vertrag_id and z.bankbewegungen.all %}
             <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/zuordnung-aufheben/"
-                  onsubmit="return confirm('{% filter escapejs %}{% trans "Zuordnung aufheben? Die Zahlung steht danach wieder unter «Klärungsfälle», die Rechnungen sind wieder offen (mit Mahnstufe und Frist). Eine aufgeteilte Zahlung wird mit allen Teilen zurückgelegt." %}{% endfilter %}');">
+                  data-bestaetigen="{% filter escapejs %}{% trans "Zuordnung aufheben? Die Zahlung steht danach wieder unter «Klärungsfälle», die Rechnungen sind wieder offen (mit Mahnstufe und Frist). Eine aufgeteilte Zahlung wird mit allen Teilen zurückgelegt." %}{% endfilter %}">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="/neu/bankabgleich/{{ lg_query }}">
                 <button type="submit" class="fw-btn fw-knapp" title="{% trans 'Falsch zugeordnet? Die Zahlung zurück in die Klärungsfälle legen — der Geldeingang bleibt' %}">{% trans "Zuordnung aufheben" %}</button>
@@ -708,7 +708,7 @@ anderes schachteln.
             {% endif %}
             <div>
                 <form method="post" action="/neu/zahlungen/{{ z.id }}/stornieren/"
-                      onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Zahlung stornieren? Auch der Geldeingang wird per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet. Eine aufgeteilte Zahlung wird mit allen Teilen storniert. Nur falsch zugeordnet? Dann «Zuordnung aufheben» wählen." %}{% endfilter %}');">
+                      data-bestaetigen="{% filter escapejs %}{% trans "Diese Zahlung stornieren? Auch der Geldeingang wird per Gegenbuchung aufgehoben und der offene Posten wieder geöffnet. Eine aufgeteilte Zahlung wird mit allen Teilen storniert. Nur falsch zugeordnet? Dann «Zuordnung aufheben» wählen." %}{% endfilter %}">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="/neu/bankabgleich/{{ lg_query }}">
                     <button type="submit" title="{% trans 'Zahlung stornieren' %}"

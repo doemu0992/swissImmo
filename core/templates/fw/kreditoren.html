@@ -210,7 +210,7 @@
                         <span class="fw-chip fw-warn-flaeche fw-warnton whitespace-nowrap" title="{% if row.va.geaendert %}{% trans 'Betrag oder IBAN wurden nach der Freigabe geändert.' %}{% else %}{% trans 'Rechnungsbetrag ab dem Freigabelimit' %}{% endif %}">
                             {% if row.va.geaendert %}{% trans "Freigabe ungültig" %}{% elif row.va.vorgelegt %}{% blocktrans with name=row.va.vorleger %}Vorgelegt von {{ name }}{% endblocktrans %}{% else %}{% trans "Freigabe nötig" %}{% endif %}</span>
                         {% if row.va.kann_freigeben %}
-                        <form method="post" action="/neu/kreditoren/{{ row.k.id }}/zahlung-freigeben/" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.lieferant|safe betrag=row.betrag|chf %}Zahlung von CHF {{ betrag }} an {{ name }} freigeben? Betrag und IBAN wurden geprüft.{% endblocktrans %}{% endfilter %}');" class="inline-flex items-center gap-2">
+                        <form method="post" action="/neu/kreditoren/{{ row.k.id }}/zahlung-freigeben/" data-bestaetigen="{% filter escapejs %}{% blocktrans with name=row.lieferant|safe betrag=row.betrag|chf %}Zahlung von CHF {{ betrag }} an {{ name }} freigeben? Betrag und IBAN wurden geprüft.{% endblocktrans %}{% endfilter %}" class="inline-flex items-center gap-2">
                             {% csrf_token %}
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                             <button type="submit" class="fw-btn fw-primary fw-knapp">{% zeichen 'gut' %} {% trans "Zahlung freigeben" %}</button>
@@ -233,7 +233,7 @@
                         {% endif %}
                         {% else %}
                         {% if row.va.noetig %}<span class="fw-chip fw-good whitespace-nowrap" title="{% blocktrans with name=row.va.freigeber %}Freigegeben von {{ name }}{% endblocktrans %}">{% zeichen 'gut' %} {% trans "Zahlung freigegeben" %}</span>{% endif %}
-                        <form method="post" action="/neu/kreditoren/bezahlen/" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.lieferant|safe %}Zahlung an {{ name }} verbuchen?{% endblocktrans %}{% endfilter %}');" class="inline-flex items-center gap-1">
+                        <form method="post" action="/neu/kreditoren/bezahlen/" data-bestaetigen="{% filter escapejs %}{% blocktrans with name=row.lieferant|safe %}Zahlung an {{ name }} verbuchen?{% endblocktrans %}{% endfilter %}" class="inline-flex items-center gap-1">
                             {% csrf_token %}
                             <input type="hidden" name="rechnung_id" value="{{ row.k.id }}">
                             <input type="hidden" name="erwartet_offen" value="{{ row.offen_betrag|stringformat:'.2f' }}">
@@ -245,7 +245,7 @@
                             </button>
                         </form>
                         {% if row.in_zahlung %}
-                        <form method="post" action="/neu/kreditoren/{{ row.k.id }}/zahlung-zuruecksetzen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Zahlung zurücksetzen — Rechnung kommt im nächsten Zahllauf wieder mit?" %}{% endfilter %}');" class="inline">
+                        <form method="post" action="/neu/kreditoren/{{ row.k.id }}/zahlung-zuruecksetzen/" data-bestaetigen="{% filter escapejs %}{% trans "Zahlung zurücksetzen — Rechnung kommt im nächsten Zahllauf wieder mit?" %}{% endfilter %}" class="inline">
                             {% csrf_token %}
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                             <button type="submit" class="fw-ikon mut" title="{% trans 'Zahllauf zurücksetzen' %}">{% zeichen 'lauf' %}</button>
@@ -253,7 +253,7 @@
                         {% endif %}
                         {% endif %}
                         {% elif row.k.status == 'neu' and darf_bezahlen %}
-                        <form method="post" action="/neu/kreditoren/{{ row.k.id }}/freigeben/" onsubmit="return confirm('{% filter escapejs %}{% trans "Rechnung freigeben und als Aufwand verbuchen?" %}{% endfilter %}');" class="inline-flex items-center gap-1.5">
+                        <form method="post" action="/neu/kreditoren/{{ row.k.id }}/freigeben/" data-bestaetigen="{% filter escapejs %}{% trans "Rechnung freigeben und als Aufwand verbuchen?" %}{% endfilter %}" class="inline-flex items-center gap-1.5">
                             {% csrf_token %}
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                             {% if not row.k.konto_id %}
@@ -273,7 +273,7 @@
                         <span class="fw-chip fw-good">{% zeichen 'gut' %} {% trans "erledigt" %}</span>
                         {% endif %}
                         {% if row.letzte_zahlung and darf_bezahlen %}
-                        <form method="post" action="/neu/kreditoren/zahlung/{{ row.letzte_zahlung.id }}/stornieren/" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with betrag=row.letzte_zahlung.betrag|chf name=row.lieferant|safe %}Letzte Zahlung (CHF {{ betrag }}) an {{ name }} stornieren? Der offene Posten öffnet sich wieder.{% endblocktrans %}{% endfilter %}');" class="inline">
+                        <form method="post" action="/neu/kreditoren/zahlung/{{ row.letzte_zahlung.id }}/stornieren/" data-bestaetigen="{% filter escapejs %}{% blocktrans with betrag=row.letzte_zahlung.betrag|chf name=row.lieferant|safe %}Letzte Zahlung (CHF {{ betrag }}) an {{ name }} stornieren? Der offene Posten öffnet sich wieder.{% endblocktrans %}{% endfilter %}" class="inline">
                             {% csrf_token %}
                             <input type="hidden" name="next" value="/neu/kreditoren/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}">
                             <button type="submit" class="fw-ikon mut gefahr" title="{% trans 'Letzte Zahlung stornieren' %}">{% zeichen 'lauf' %}</button>
@@ -289,7 +289,7 @@
                         {% endif %}
                         {% if row.k.status == 'neu' %}
                         <button type="button" onclick="document.getElementById('kedit-{{ row.k.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
-                        <form method="post" action="/neu/kreditoren/{{ row.k.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.lieferant|safe %}Kreditorenrechnung «{{ name }}» löschen? (nur solange nicht verbucht){% endblocktrans %}{% endfilter %}');">{% csrf_token %}
+                        <form method="post" action="/neu/kreditoren/{{ row.k.id }}/loeschen/" class="inline" data-bestaetigen="{% filter escapejs %}{% blocktrans with name=row.lieferant|safe %}Kreditorenrechnung «{{ name }}» löschen? (nur solange nicht verbucht){% endblocktrans %}{% endfilter %}">{% csrf_token %}
                             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                             <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                         </form>
@@ -387,7 +387,7 @@
                                 <span class="truncate">{{ p.konto.bezeichnung }}{% if p.bezeichnung %} · {{ p.bezeichnung }}{% endif %}{% if p.einheit %} · {{ p.einheit.bezeichnung }}{% endif %}</span>
                                 {% if p.is_hnk_relevant %}<span class="fw-marke-kapsel">{% trans "HNK" %}</span>{% endif %}
                                 <span class="ml-auto fw-betrag whitespace-nowrap">CHF {{ p.betrag|chf }}</span>
-                                <form method="post" action="/neu/kreditoren/position/{{ p.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Position entfernen?" %}{% endfilter %}');">{% csrf_token %}
+                                <form method="post" action="/neu/kreditoren/position/{{ p.id }}/loeschen/" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Position entfernen?" %}{% endfilter %}">{% csrf_token %}
                                     <button class="fw-ikon mut gefahr" title="{% trans 'Entfernen' %}">{% zeichen 'loeschen' %}</button>
                                 </form>
                             </div>

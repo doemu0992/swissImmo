@@ -38,7 +38,7 @@
                     {% if darf_verwalten %}
                     <a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/" class="fw-btn fw-knapp">{% zeichen 'bearbeiten' %}{% trans "Bearbeiten" %}</a>
                     <form method="post" action="/neu/benutzer/{{ row.u.id }}/loeschen/" class="inline"
-                          onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.u.username|safe %}Benutzer {{ name }} wirklich löschen?{% endblocktrans %}{% endfilter %}');">
+                          data-bestaetigen="{% filter escapejs %}{% blocktrans with name=row.u.username|safe %}Benutzer {{ name }} wirklich löschen?{% endblocktrans %}{% endfilter %}">
                         {% csrf_token %}
                         <button class="fw-btn fw-knapp fw-rand-krit">{% zeichen 'loeschen' %}{% trans "Löschen" %}</button>
                     </form>

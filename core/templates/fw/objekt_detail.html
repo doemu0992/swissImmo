@@ -284,7 +284,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <td class="fw-mutet whitespace-nowrap fw-fs-klein fw-zentriert">{% localize off %}{% if s.basis_referenzzinssatz %}{{ s.basis_referenzzinssatz }}%{% else %}—{% endif %} / {% if s.basis_lik_punkte %}{{ s.basis_lik_punkte }}{% else %}—{% endif %}{% endlocalize %}</td>
                 <td class="fw-mutet truncate max-w-[120px]">{{ s.notiz|default:"—" }}</td>
                 <td class="whitespace-nowrap fw-right">
-                    <form method="post" action="/neu/sollmietzins/{{ s.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Sollmietzins-Zeile löschen?" %}{% endfilter %}');">{% csrf_token %}
+                    <form method="post" action="/neu/sollmietzins/{{ s.id }}/loeschen/" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Diese Sollmietzins-Zeile löschen?" %}{% endfilter %}">{% csrf_token %}
                         <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                     </form>
                 </td></tr>
@@ -394,7 +394,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     <td class="font-semibold fw-strong fw-right">CHF {{ s.netto_mietzins|chf }}</td>
                     <td class="fw-mutet">{{ s.notiz|default:"—" }}</td>
                     <td class="fw-right">
-                        <form method="post" action="/neu/staffelvorlage/{{ s.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Staffel-Vorlage-Zeile löschen?" %}{% endfilter %}');">{% csrf_token %}
+                        <form method="post" action="/neu/staffelvorlage/{{ s.id }}/loeschen/" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Diese Staffel-Vorlage-Zeile löschen?" %}{% endfilter %}">{% csrf_token %}
                             <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                         </form>
                     </td>
@@ -447,7 +447,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     <td class="font-medium fw-strong">{{ s.ab_datum|date:"d.m.Y" }}</td>
                     <td class="font-semibold fw-strong fw-right">CHF {{ s.netto_mietzins|chf }}</td>
                     <td class="fw-right">
-                        <form method="post" action="/neu/staffel/{{ s.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Staffelstufe löschen?" %}{% endfilter %}');">{% csrf_token %}
+                        <form method="post" action="/neu/staffel/{{ s.id }}/loeschen/" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Staffelstufe löschen?" %}{% endfilter %}">{% csrf_token %}
                             <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                         </form>
                     </td>
@@ -495,7 +495,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <img src="{{ f.bild.url }}" alt="Objektfoto" class="fw-bild">
             </a>
             {% if forloop.first %}<span class="absolute bottom-1 left-1 fw-fs-mikro fw-btn fw-primary">{% trans "Titelbild" %}</span>{% endif %}
-            <form method="post" action="/neu/objekte/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1" onsubmit="return confirm('{% filter escapejs %}{% trans "Foto löschen?" %}{% endfilter %}');">
+            <form method="post" action="/neu/objekte/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1" data-bestaetigen="{% filter escapejs %}{% trans "Foto löschen?" %}{% endfilter %}">
                 {% csrf_token %}
                 <button class="w-7 h-7 rounded-full fw-flaeche hover:fw-krit-flaeche fw-kritisch text-xs shadow" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
             </form>
@@ -716,7 +716,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <td class="fw-mutet whitespace-nowrap">{% if g.garantie_bis %}{{ g.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="whitespace-nowrap fw-right">
                     <button type="button" onclick="document.getElementById('gedit-{{ g.id }}').classList.toggle('hidden')" class="fw-ikon mut mr-2" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
-                    <form method="post" action="/neu/geraet/{{ g.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Gerät löschen?" %}{% endfilter %}');">{% csrf_token %}
+                    <form method="post" action="/neu/geraet/{{ g.id }}/loeschen/" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Gerät löschen?" %}{% endfilter %}">{% csrf_token %}
                         <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                     </form>
                 </td></tr>
@@ -800,7 +800,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <td class="fw-ink fw-right">{{ z.aktueller_stand|floatformat:2 }}</td>
                 <td class="whitespace-nowrap fw-right">
                     <button type="button" onclick="document.getElementById('zedit-{{ z.id }}').classList.toggle('hidden')" class="fw-ikon mut mr-2" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
-                    <form method="post" action="/neu/zaehler/{{ z.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Zähler löschen?" %}{% endfilter %}');">{% csrf_token %}
+                    <form method="post" action="/neu/zaehler/{{ z.id }}/loeschen/" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Zähler löschen?" %}{% endfilter %}">{% csrf_token %}
                         <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                     </form>
                 </td></tr>

@@ -118,7 +118,7 @@
                 {% zeichen 'lauf' klasse='mr-1' %}{% trans "Neues Passwort senden" %}
             </button>
         </form>
-        <form method="post" action="/neu/mandate/{{ md.id }}/portal-zugang/" onsubmit="return confirm('{% filter escapejs %}{% trans "Portal-Zugang wirklich entfernen?" %}{% endfilter %}');">{% csrf_token %}
+        <form method="post" action="/neu/mandate/{{ md.id }}/portal-zugang/" data-bestaetigen="{% filter escapejs %}{% trans "Portal-Zugang wirklich entfernen?" %}{% endfilter %}">{% csrf_token %}
             <input type="hidden" name="aktion" value="entfernen">
             <button type="submit" class="fw-btn fw-rand-krit">
                 {% zeichen 'gesperrt' klasse='mr-1' %}{% trans "Zugang entfernen" %}

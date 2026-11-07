@@ -76,7 +76,7 @@
             <div class="flex items-center gap-2 shrink-0">
                 {% if row.offene %}<span class="fw-chip fw-crit whitespace-nowrap">{% blocktrans with n=row.offene %}{{ n }} offen{% endblocktrans %}</span>{% endif %}
                 <button type="button" onclick="document.getElementById('dledit-{{ row.h.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
-                <form method="post" action="/neu/dienstleister/{{ row.h.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.h.firma|safe %}Dienstleister «{{ name }}» löschen?{% endblocktrans %}{% endfilter %}');">{% csrf_token %}
+                <form method="post" action="/neu/dienstleister/{{ row.h.id }}/loeschen/" data-bestaetigen="{% filter escapejs %}{% blocktrans with name=row.h.firma|safe %}Dienstleister «{{ name }}» löschen?{% endblocktrans %}{% endfilter %}">{% csrf_token %}
                     <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                 </form>
             </div>

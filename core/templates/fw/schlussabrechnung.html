@@ -118,7 +118,7 @@
         <button type="submit" name="aktion" value="pdf" formtarget="_blank" class="fw-btn fw-primary">
             {% zeichen 'drucken' %}{% trans "Schlussabrechnung als PDF" %}
         </button>
-        <button type="submit" name="aktion" value="buchen" onclick="return confirm('{% filter escapejs %}{% trans 'Schlussabrechnung verbuchen? Kaution wird abgerechnet und eine allfällige Nachzahlung als Debitor gestellt.' %}{% endfilter %}');" class="fw-btn fw-gutknopf">
+        <button type="submit" name="aktion" value="buchen" data-bestaetigen="{% filter escapejs %}{% trans 'Schlussabrechnung verbuchen? Kaution wird abgerechnet und eine allfällige Nachzahlung als Debitor gestellt.' %}{% endfilter %}" class="fw-btn fw-gutknopf">
             {% zeichen 'gut' %}{% trans "Verbuchen (Kaution + Nachzahlung)" %}
         </button>
         <a href="/neu/vertraege/{{ v.id }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>

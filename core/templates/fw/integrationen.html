@@ -68,11 +68,11 @@
                         <a href="{{ portal_feed_pfad }}&format=csv" class="fw-link">{% zeichen 'herunterladen' klasse='mr-1' %}{% trans "CSV herunterladen" %}</a>
                     </div>
                     <div class="flex items-center gap-2 flex-wrap mt-3">
-                        <form method="post" action="/neu/integrationen/portal-token/" onsubmit="return confirm('{% filter escapejs %}{% trans "Neuen Token erzeugen? Die alte Feed-URL wird ungültig." %}{% endfilter %}');">
+                        <form method="post" action="/neu/integrationen/portal-token/" data-bestaetigen="{% filter escapejs %}{% trans "Neuen Token erzeugen? Die alte Feed-URL wird ungültig." %}{% endfilter %}">
                             {% csrf_token %}
                             <button class="fw-btn fw-knapp">{% zeichen 'lauf' %}{% trans "Token neu erzeugen" %}</button>
                         </form>
-                        <form method="post" action="/neu/integrationen/portal-token/" onsubmit="return confirm('{% filter escapejs %}{% trans "Feed deaktivieren?" %}{% endfilter %}');">
+                        <form method="post" action="/neu/integrationen/portal-token/" data-bestaetigen="{% filter escapejs %}{% trans "Feed deaktivieren?" %}{% endfilter %}">
                             {% csrf_token %}<input type="hidden" name="aktion" value="entfernen">
                             <button class="fw-btn fw-rand-krit fw-knapp">{% trans "Deaktivieren" %}</button>
                         </form>

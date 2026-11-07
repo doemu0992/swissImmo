@@ -70,7 +70,7 @@
                 <form method="post" action="/neu/pendenzen/{{ p.id }}/toggle/">{% csrf_token %}
                     <button class="fw-btn fw-knapp fw-rand-gut" title="{% trans 'Als erledigt markieren' %}">{% zeichen 'gut' %}</button>
                 </form>
-                <form method="post" action="/neu/pendenzen/{{ p.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Pendenz löschen?" %}{% endfilter %}');">{% csrf_token %}
+                <form method="post" action="/neu/pendenzen/{{ p.id }}/loeschen/" data-bestaetigen="{% filter escapejs %}{% trans "Pendenz löschen?" %}{% endfilter %}">{% csrf_token %}
                     <button class="fw-btn fw-knapp fw-geist" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                 </form>
             </div>
@@ -94,7 +94,7 @@
                 <form method="post" action="/neu/pendenzen/{{ p.id }}/toggle/">{% csrf_token %}
                     <button class="fw-btn fw-knapp fw-weich" title="{% trans 'Wieder öffnen' %}">{% zeichen 'gut' %}</button>
                 </form>
-                <form method="post" action="/neu/pendenzen/{{ p.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Pendenz löschen?" %}{% endfilter %}');">{% csrf_token %}
+                <form method="post" action="/neu/pendenzen/{{ p.id }}/loeschen/" data-bestaetigen="{% filter escapejs %}{% trans "Pendenz löschen?" %}{% endfilter %}">{% csrf_token %}
                     <button title="{% trans 'Pendenz löschen' %}" class="fw-btn fw-knapp fw-geist">{% zeichen 'loeschen' %}</button>
                 </form>
             </div>

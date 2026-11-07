@@ -24,7 +24,7 @@
 
 {% if offene_n %}
 <form method="post" action="/neu/vermarktung/{{ e.id }}/bewerber/absage-uebrige/{{ lg_query }}" class="mb-4"
-      onsubmit="return confirm('{% filter escapejs %}{% blocktrans with n=offene_n %}Allen {{ n }} noch offenen Bewerbern eine Absage senden — auch denen, die zur Besichtigung eingeladen sind?{% endblocktrans %}{% endfilter %}');">
+      data-bestaetigen="{% filter escapejs %}{% blocktrans with n=offene_n %}Allen {{ n }} noch offenen Bewerbern eine Absage senden — auch denen, die zur Besichtigung eingeladen sind?{% endblocktrans %}{% endfilter %}">
     {% csrf_token %}
     <button class="fw-btn fw-rand-krit fw-knapp">{% zeichen 'senden' %}{% blocktrans with n=offene_n %}Übrige {{ n }} absagen{% endblocktrans %}</button>
 </form>
@@ -79,12 +79,12 @@
                                 class="fw-btn fw-knapp">
                             {% zeichen 'termin' %}{% trans "Besichtigung" %}</button>
                         <form method="post" action="/neu/bewerbungen/{{ k.b.id }}/entscheid/" class="inline"
-                              onsubmit="return confirm('{% filter escapejs %}{% if k.b.email %}{% blocktrans with name=k.name %}{{ name }} zusagen und E-Mail senden?{% endblocktrans %}{% else %}{% blocktrans with name=k.name %}{{ name }} zusagen?{% endblocktrans %}{% endif %}{% endfilter %}');">
+                              data-bestaetigen="{% filter escapejs %}{% if k.b.email %}{% blocktrans with name=k.name %}{{ name }} zusagen und E-Mail senden?{% endblocktrans %}{% else %}{% blocktrans with name=k.name %}{{ name }} zusagen?{% endblocktrans %}{% endif %}{% endfilter %}">
                             {% csrf_token %}<input type="hidden" name="entscheid" value="zusage">
                             <button class="fw-btn fw-gutknopf fw-knapp">{% trans "Zusagen" %}</button>
                         </form>
                         <form method="post" action="/neu/bewerbungen/{{ k.b.id }}/entscheid/" class="inline"
-                              onsubmit="return confirm('{% filter escapejs %}{% if k.b.email %}{% blocktrans with name=k.name %}{{ name }} absagen und E-Mail senden?{% endblocktrans %}{% else %}{% blocktrans with name=k.name %}{{ name }} absagen?{% endblocktrans %}{% endif %}{% endfilter %}');">
+                              data-bestaetigen="{% filter escapejs %}{% if k.b.email %}{% blocktrans with name=k.name %}{{ name }} absagen und E-Mail senden?{% endblocktrans %}{% else %}{% blocktrans with name=k.name %}{{ name }} absagen?{% endblocktrans %}{% endif %}{% endfilter %}">
                             {% csrf_token %}<input type="hidden" name="entscheid" value="absage">
                             <button class="fw-btn fw-knapp">{% trans "Absagen" %}</button>
                         </form>

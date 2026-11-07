@@ -1110,8 +1110,8 @@ class FinanzUIP5Tests(TestCase):
             datum=date(2024, 5, 1), liegenschaft=lg, status='freigegeben')
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/kreditoren/').content.decode('utf-8')
-        self.assertIn("confirm('Zahlung an O\\u0027Brien", html)
-        self.assertNotIn("confirm('Zahlung an O&#x27;Brien", html)
+        self.assertIn('data-bestaetigen="Zahlung an O\\u0027Brien', html)
+        self.assertNotIn('data-bestaetigen="Zahlung an O&#x27;Brien', html)
 
     # ---------- Buchhaltung auf dem Handy ----------
     # ---------- Erfolgsrechnung & Bilanz als PDF ----------

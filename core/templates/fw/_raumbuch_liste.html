@@ -49,7 +49,7 @@
                     <td class="whitespace-nowrap fw-right" data-label="">
                         <div class="flex items-center justify-end gap-1">
                         <button type="button" onclick="document.getElementById('edit-{{ row.a.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
-                        <form method="post" action="/neu/ausstattung/{{ row.a.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Element löschen?" %}{% endfilter %}');">
+                        <form method="post" action="/neu/ausstattung/{{ row.a.id }}/loeschen/" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Element löschen?" %}{% endfilter %}">
                             {% csrf_token %}
                             <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                         </form>
@@ -146,7 +146,7 @@
                     </form>
                 </details>
                 <div class="flex justify-end">
-                    <form method="post" action="{{ rb_basis }}/ausstattung/raum-loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with raum=r.raum n=r.elemente|length %}Raum «{{ raum }}» mit {{ n }} Elementen löschen?{% endblocktrans %}{% endfilter %}');">
+                    <form method="post" action="{{ rb_basis }}/ausstattung/raum-loeschen/" class="inline" data-bestaetigen="{% filter escapejs %}{% blocktrans with raum=r.raum n=r.elemente|length %}Raum «{{ raum }}» mit {{ n }} Elementen löschen?{% endblocktrans %}{% endfilter %}">
                         {% csrf_token %}
                         <input type="hidden" name="raum" value="{{ r.raum }}">
                         <button class="fw-btn fw-rand-krit">{% zeichen 'loeschen' klasse='mr-1.5' %}{% trans "Raum löschen" %}</button>

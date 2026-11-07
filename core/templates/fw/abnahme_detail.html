@@ -26,7 +26,7 @@
            ordnungsgemäss zurückgegeben — deshalb sichtbar im Kopf, nicht im Menü. {% endcomment %}
         {% if p.typ == 'auszug' and hat_mieter_maengel %}
         <form method="post" action="/neu/abnahme/{{ p.id }}/ruege-267a/" target="_blank"
-              onsubmit="return confirm('{% filter escapejs %}{% trans "Mängelrüge nach Art. 267a OR für alle dem Mieter zugeordneten Mängel erstellen und in der Vertragsakte ablegen?" %}{% endfilter %}');">
+              data-bestaetigen="{% filter escapejs %}{% trans "Mängelrüge nach Art. 267a OR für alle dem Mieter zugeordneten Mängel erstellen und in der Vertragsakte ablegen?" %}{% endfilter %}">
             {% csrf_token %}
             <button type="submit" class="fw-btn" title="{% trans 'Sofort nach der Rückgabe versenden — sonst verwirken die Ersatzansprüche (Art. 267a OR).' %}">{% zeichen 'recht' klasse='fw-warnton' %}{% trans "Mängelrüge 267a" %}</button>
         </form>
@@ -54,7 +54,7 @@
                 {% if not p.abgeschlossen and request.user|darf:"/neu/abnahme/1/loeschen/" %}
                 <div class="fw-menutrenner"></div>
                 <form method="post" action="/neu/abnahme/{{ p.id }}/loeschen/"
-                      onsubmit="return confirm('{% filter escapejs %}{% trans "Abnahmeprotokoll wirklich löschen?" %}{% endfilter %}');">
+                      data-bestaetigen="{% filter escapejs %}{% trans "Abnahmeprotokoll wirklich löschen?" %}{% endfilter %}">
                     {% csrf_token %}
                     <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}{% trans "Protokoll löschen" %}</button>
                 </form>

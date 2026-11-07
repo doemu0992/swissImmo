@@ -58,15 +58,15 @@ sie AUFGELÖST, nicht kopiert. «nicht zugeteilt» steht bewusst da.
                 <a href="/neu/vertraege/{{ v.id }}/untermiete/" class="fw-menuzeile">{% zeichen 'person' klasse='fw-marke w-4' %}{% trans "Untermiete" %}</a>
                 {% endif %}
                 <a href="/vertrag/{{ v.id }}/pdf/" target="_blank" rel="noopener" class="fw-menuzeile">{% zeichen 'drucken' klasse='fw-faint w-4' %}{% trans "Vertrag als PDF" %}</a>
-                <form method="post" action="/neu/vertraege/{{ v.id }}/signieren/" onsubmit="return confirm('{% filter escapejs %}{% if v.sign_status == 'unterzeichnet' %}{% trans "Dieser Vertrag ist bereits unterzeichnet. Wirklich erneut zur Unterschrift senden?" %}{% else %}{% blocktrans with name=v.mieter.display_name %}Vertrag an {{ name }} zur digitalen Unterschrift senden?{% endblocktrans %}{% endif %}{% endfilter %}');"{% if not docuseal_konfiguriert %} title="{% trans 'DocuSeal ist noch nicht konfiguriert (Integrationen)' %}"{% endif %}>
+                <form method="post" action="/neu/vertraege/{{ v.id }}/signieren/" data-bestaetigen="{% filter escapejs %}{% if v.sign_status == 'unterzeichnet' %}{% trans "Dieser Vertrag ist bereits unterzeichnet. Wirklich erneut zur Unterschrift senden?" %}{% else %}{% blocktrans with name=v.mieter.display_name %}Vertrag an {{ name }} zur digitalen Unterschrift senden?{% endblocktrans %}{% endif %}{% endfilter %}"{% if not docuseal_konfiguriert %} title="{% trans 'DocuSeal ist noch nicht konfiguriert (Integrationen)' %}"{% endif %}>
                     {% csrf_token %}
                     <button class="fw-menuzeile">{% zeichen 'vertrag' klasse='fw-marke w-4' %}{% if v.sign_status == 'offen' %}{% trans "Zur Unterschrift senden" %}{% else %}{% trans "Erneut zur Unterschrift" %}{% endif %}</button>
                 </form>
                 <div class="fw-menutrenner"></div>
                 {% include 'fw/_archivieren.html' with kuerzel='vertrag' pk=v.id stil='menu' %}
-                <form method="post" action="/neu/vertraege/{{ v.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% if rechnungs_rows %}{% blocktrans with r=rechnungs_rows|length z=zahlungen|length %}Diesen Vertrag wirklich löschen?
+                <form method="post" action="/neu/vertraege/{{ v.id }}/loeschen/" data-bestaetigen="{% filter escapejs %}{% if rechnungs_rows %}{% blocktrans with r=rechnungs_rows|length z=zahlungen|length %}Diesen Vertrag wirklich löschen?
 
-Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelöscht werden. Setze ihn stattdessen auf «Inaktiv / Archiviert».{% endblocktrans %}{% else %}{% trans "Diesen Vertrag wirklich löschen?" %}{% endif %}{% endfilter %}');">
+Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelöscht werden. Setze ihn stattdessen auf «Inaktiv / Archiviert».{% endblocktrans %}{% else %}{% trans "Diesen Vertrag wirklich löschen?" %}{% endif %}{% endfilter %}">
                     {% csrf_token %}
                     <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}{% trans "Vertrag löschen" %}</button>
                 </form>
@@ -249,7 +249,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
                 {% if v.ist_befristet %}{% blocktrans with d=v.ende|date:"d.m.Y" %}Befristet bis {{ d }}{% endblocktrans %}
                 {% else %}{% trans "Unbefristet" %}{% if v.ende %} · {% blocktrans with d=v.ende|date:"d.m.Y" %}gekündigt per {{ d }}{% endblocktrans %}{% endif %}{% endif %}
                 <div style="margin-top:7px"><form method="post" action="/neu/vertraege/{{ v.id }}/status/" style="display:flex;align-items:center;background:var(--ds-surface-2);border-radius:var(--ds-radius-sm);padding:2px;gap:2px"
-              onsubmit="return confirm('{% filter escapejs %}{% trans "Vertragsstatus wirklich ändern? Der Status steuert Sollstellung, Mieterspiegel und Auswertungen." %}{% endfilter %}');">
+              data-bestaetigen="{% filter escapejs %}{% trans "Vertragsstatus wirklich ändern? Der Status steuert Sollstellung, Mieterspiegel und Auswertungen." %}{% endfilter %}">
             {% csrf_token %}
             <button name="status" value="entwurf" class="fw-statuswahl{% if v.status == 'entwurf' %} an{% endif %}">{% trans "Entwurf" %}</button>
             <button name="status" value="aktiv" class="fw-statuswahl{% if v.status == 'aktiv' %} an gut{% endif %}">{% trans "Aktiv" %}</button>
@@ -276,7 +276,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
                 {% if k.zugang_am %}<div class="fw-klein">{% blocktrans with d=k.zugang_am|date:"d.m.Y" %}Zugang beim Mieter {{ d }}{% endblocktrans %}</div>{% endif %}
                 {% if k.ersatzmieter %}<div class="fw-klein">{% trans "Ersatzmieter (Art. 264 OR)" %}: {{ k.ersatzmieter|truncatechars:80 }}{% if k.ersatzmieter_akzeptiert %} · {% trans "angenommen" %}{% endif %}</div>{% endif %}
                 {% if k.status == 'erfasst' and request.user|darf:"/neu/kuendigung/1/bestaetigen/" %}
-                <form method="post" action="/neu/kuendigung/{{ k.id }}/bestaetigen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Kündigung bestätigen? Der Vertrag wird auf gekündigt gesetzt und Auszugs-Pendenzen werden erstellt." %}{% endfilter %}');" class="mt-2">
+                <form method="post" action="/neu/kuendigung/{{ k.id }}/bestaetigen/" data-bestaetigen="{% filter escapejs %}{% trans "Kündigung bestätigen? Der Vertrag wird auf gekündigt gesetzt und Auszugs-Pendenzen werden erstellt." %}{% endfilter %}" class="mt-2">
                     {% csrf_token %}
                     {% if v.familienwohnung and k.absender == 'mieter' and not k.zustimmung_ehegatte %}
                     {% comment %} Art. 266m OR: ohne Zustimmung keine Bestätigung (der Server sperrt). {% endcomment %}
@@ -300,7 +300,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
                     {% endif %}
                     <a href="/vertrag/{{ v.id }}/dokument/kuendigungsbestaetigung/" target="_blank" rel="noopener" class="fw-link">{% trans "Bestätigung" %}</a>
                     {% if request.user|darf:"/neu/kuendigung/1/zuruecknehmen/" %}
-                    <form method="post" action="/neu/kuendigung/{{ k.id }}/zuruecknehmen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Kündigung zurücknehmen und Vertrag reaktivieren?" %}{% endfilter %}');" class="inline">
+                    <form method="post" action="/neu/kuendigung/{{ k.id }}/zuruecknehmen/" data-bestaetigen="{% filter escapejs %}{% trans "Kündigung zurücknehmen und Vertrag reaktivieren?" %}{% endfilter %}" class="inline">
                         {% csrf_token %}
                         <button class="fw-btn fw-geist fw-knapp">{% trans "zurücknehmen" %}</button>
                     </form>
@@ -586,7 +586,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
                 </td>
                 <td class="truncate max-w-[220px]"><span class="fw-mutet">{{ a.begruendung|default:"—" }}</span></td>
                 <td class="fw-right">
-                    <form method="post" action="/neu/anpassung/{{ a.id }}/loeschen/" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Mietzinsanpassung löschen? Künftige Sollläufe verrechnen dann wieder den vorherigen Mietzins." %}{% endfilter %}');">{% csrf_token %}
+                    <form method="post" action="/neu/anpassung/{{ a.id }}/loeschen/" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Diese Mietzinsanpassung löschen? Künftige Sollläufe verrechnen dann wieder den vorherigen Mietzins." %}{% endfilter %}">{% csrf_token %}
                         <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                     </form>
                 </td></tr>
