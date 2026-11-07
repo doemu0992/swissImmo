@@ -292,6 +292,7 @@ class Mitgliedschaft(models.Model):
     ROLLE_SACHBEARBEITER = 'Sachbearbeiter'
     ROLLE_LESEZUGRIFF = 'Lesezugriff'
     ROLLE_HAUSWART = 'Hauswart'
+    ROLLE_REVISION = 'Revision'
     # Nur Finanzen (Etappe 2): Debitoren, Kreditoren, Buchungen, Berichte.
     # Siehe `core/auth.py::ROLLE_BUCHHALTUNG`.
     ROLLE_BUCHHALTUNG = 'Buchhaltung'
@@ -305,6 +306,7 @@ class Mitgliedschaft(models.Model):
         (ROLLE_BUCHHALTUNG, 'Buchhaltung'),
         (ROLLE_LESEZUGRIFF, 'Lesezugriff'),
         (ROLLE_HAUSWART, 'Hauswart'),
+        (ROLLE_REVISION, 'Revision'),
     ]
 
     benutzer = models.ForeignKey(

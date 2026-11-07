@@ -19,7 +19,7 @@ from django.utils.translation import gettext_lazy
 from django.views.decorators.cache import never_cache
 
 from core.auth import (hat_rolle, ist_eigentuemer, BUCHHALTUNG_ROLLEN, FINANZ_LESE_ROLLEN,
-                       HAUSWART_ROLLEN, TEAM_ROLLEN)
+                       HAUSWART_ROLLEN, REVISIONS_ROLLEN, TEAM_ROLLEN)
 from rentals.models import Mietvertrag
 
 logger = logging.getLogger(__name__)
@@ -37,6 +37,8 @@ def nach_login_view(request):
         return redirect('fw_schaeden')
     if hat_rolle(request.user, BUCHHALTUNG_ROLLEN):
         return redirect('fw_finanzen')
+    if hat_rolle(request.user, REVISIONS_ROLLEN):
+        return redirect('fw_buchhaltung')
     if ist_eigentuemer(request.user):
         return redirect('portal')
     if getattr(request.user, 'mieter_profil', None) is not None:

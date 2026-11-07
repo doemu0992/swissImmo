@@ -45,6 +45,13 @@ ROLLE_LESEZUGRIFF = "Lesezugriff"
 #: «nein»). Frei ist sie nur dort, wo `FINANZ_*_ROLLEN` steht.
 ROLLE_BUCHHALTUNG = "Buchhaltung"
 
+#: Revision (Roadmap Nr. 10): externe Prüfstelle mit reinem Leserecht auf das
+#: Buchungsjournal, den Kontenplan, die Abschlüsse und das Logbuch. Bewusst KEINE
+#: Team-Rolle: Stammdaten, Verträge und Personen bleiben ihr verschlossen, und
+#: sie schreibt nirgends. Frei ist sie nur dort, wo `REVISIONS_ROLLEN` steht.
+#: Ihre Abrufe (Export, PDF, Logbuch) landen im Audit-Log.
+ROLLE_REVISION = "Revision"
+
 #: Betriebsrolle für die Hauswartung. Bewusst KEINE Team-Rolle: Sie steht nicht
 #: in `TEAM_ROLLEN`, und jede View, die nur `TEAM_ROLLEN` verlangt (Finanzen,
 #: Mietzinse, Verträge, Personen, Einstellungen …), antwortet ihr mit 403.
@@ -66,6 +73,11 @@ VERWALTUNGS_ROLLEN = (ROLLE_INHABER, ROLLE_VERWALTER)
 #: Rollen mit Finanzrechten: Sie dürfen Debitoren, Kreditoren und Buchungen sehen.
 BUCHHALTUNG_ROLLEN = (ROLLE_BUCHHALTUNG,)
 FINANZ_LESE_ROLLEN = TEAM_ROLLEN + BUCHHALTUNG_ROLLEN
+REVISIONS_ROLLEN = (ROLLE_REVISION,)
+#: Journal, Kontenplan, Kontoblatt, Abschluss-PDF und -Export: Finanzsicht plus Revision.
+JOURNAL_LESE_ROLLEN = FINANZ_LESE_ROLLEN + REVISIONS_ROLLEN
+#: Logbuch: die Verwaltung und die Revision (rein lesend).
+LOGBUCH_ROLLEN = (ROLLE_VERWALTER,) + REVISIONS_ROLLEN
 FINANZ_SCHREIB_ROLLEN = SCHREIB_ROLLEN + BUCHHALTUNG_ROLLEN
 #: Buchungsläufe, Zahlungen, Stornos: was bisher die Verwaltung allein tat und
 #: zum Tagesgeschäft der Buchhaltung gehört. Der Zahlungslauf ab Freigabelimit
@@ -83,7 +95,7 @@ BETREIBUNGS_ROLLEN = VERWALTUNGS_ROLLEN
 #: Rollen, für die der zweite Faktor immer Pflicht ist, ob die Verwaltung den
 #: Schalter gesetzt hat oder nicht: Sie lösen Zahlungen aus oder leiten
 #: Betreibungen ein (Etappe 2, SICH-10).
-ZWEIFAKTOR_PFLICHT_ROLLEN = (ROLLE_INHABER, ROLLE_VERWALTER, ROLLE_BUCHHALTUNG)
+ZWEIFAKTOR_PFLICHT_ROLLEN = (ROLLE_INHABER, ROLLE_VERWALTER, ROLLE_BUCHHALTUNG, ROLLE_REVISION)
 
 #: Was nur der Inhaber darf: Abo und Rechnung, die Organisation löschen,
 #: Mitglieder einladen. Heute noch nirgends verdrahtet — die Konstante steht
@@ -170,6 +182,13 @@ def ist_nur_buchhaltung(user):
     KEINE Team-Rolle hat. Sie sieht ausschliesslich die Finanzen (Navigation,
     Suche, Startseite richten sich danach)."""
     return hat_rolle(user, BUCHHALTUNG_ROLLEN) and not hat_rolle(user, TEAM_ROLLEN)
+
+
+def ist_nur_revision(user):
+    """True wenn die Person in der aktiven Organisation Revision ist und
+    KEINE Team- oder Buchhaltungsrolle hat."""
+    return (hat_rolle(user, REVISIONS_ROLLEN) and not hat_rolle(user, TEAM_ROLLEN)
+            and not hat_rolle(user, BUCHHALTUNG_ROLLEN))
 
 
 def ist_nur_hauswart(user):

@@ -25,7 +25,7 @@ from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.translation import gettext as _, gettext_lazy
 
-from core.auth import (darf_oeffnen, INHABER_ROLLEN, rolle_erforderlich, ROLLE_VERWALTER,
+from core.auth import (darf_oeffnen, INHABER_ROLLEN, LOGBUCH_ROLLEN, log_aktion, rolle_erforderlich, ROLLE_VERWALTER,
                        SCHREIB_ROLLEN, TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
 from crm.models import Mieter, Organisation
 from finance.models import DebitorenRechnung, Zahlungseingang
@@ -396,7 +396,7 @@ def fw_benutzer(request):
     return render(request, 'fw/benutzer.html', {**basis, 'nav': 'benutzer', 'rows': rows})
 
 
-@rolle_erforderlich(ROLLE_VERWALTER)
+@rolle_erforderlich(*LOGBUCH_ROLLEN)
 def fw_logbuch(request):
     """Logbuch / Audit-Trail: wer hat wann was getan (Verträge, Personen,
     Dokumente, Buchungen, Löschungen …). Nur für die Verwaltung einsehbar,
@@ -456,6 +456,7 @@ def fw_logbuch(request):
     if request.GET.get('export') == 'csv':
         import csv
         from django.http import StreamingHttpResponse
+        log_aktion(request, 'Abruf Logbuch (CSV)', kategorie='sonstiges')
 
         class _Durchreiche:
             """`csv.writer` will ein Dateiobjekt; gebraucht wird die Zeile."""
@@ -481,6 +482,7 @@ def fw_logbuch(request):
     if request.GET.get('export') == 'pdf':
         from django.http import HttpResponse
         from core.services.logbuch_pdf import logbuch_pdf
+        log_aktion(request, 'Abruf Logbuch (PDF)', kategorie='sonstiges')
         # OBERGRENZE MIT ANSAGE
         #
         # Der Bericht nennt sich «revisionssicher». Ein Auditbericht, der
