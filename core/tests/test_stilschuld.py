@@ -59,8 +59,6 @@ OBERGRENZE = {
     'core/login.html': 1,
     'core/mieter_kuendigung.html': 1,
     'core/portal_login.html': 1,
-    'emails/base_email.html': 1,
-    'emails/email_mahnung.html': 2,
     'fw/_listwerkzeug.html': 1,
     'fw/_unterschrift_feld.html': 2,
     'fw/_zeichen.html': 1,
@@ -87,7 +85,6 @@ OBERGRENZE = {
     'core/index.html': 4,
     'core/login.html': 9,
     'core/portal_login.html': 10,
-    'emails/base_email.html': 4,
     'fw/_schicht.html': 12,
     'fw/vertrag_neu.html': 1,
 },
@@ -110,6 +107,11 @@ def _ohne_kommentare(text):
 def _zaehlung(art):
     ergebnis = {}
     for pfad in sorted(VORLAGEN.rglob('*.html')):
+        # E-Mails sind ausgenommen: Mail-Programme kennen weder die Klassen der Schicht (fw-*) noch externe
+        # Stylesheets; Inline-Stile sind dort der einzige verlässliche Weg. Sie stehen gebündelt in den
+        # Rahmen `emails/rahmen_*.html` (Roadmap Nr. 24) statt verstreut in Python-Strings.
+        if pfad.relative_to(VORLAGEN).parts[0] == 'emails':
+            continue
         n = len(MUSTER[art].findall(_ohne_kommentare(pfad.read_text(encoding='utf-8'))))
         if n:
             ergebnis[pfad.relative_to(VORLAGEN).as_posix()] = n

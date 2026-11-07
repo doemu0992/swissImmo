@@ -4,8 +4,10 @@ import os
 from html import escape as html_escape
 from django.core.mail import EmailMessage
 from django.conf import settings
+from django.template.loader import render_to_string
 from django.utils import dateformat, translation
 from django.utils.html import escape
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext
 
 from core.services.dokumentsprache import in_sprache, sprache_von
@@ -13,6 +15,14 @@ from core.utils.absender import anzeigename, kopfzeilen
 from core.services.druckfarben import EMBER
 
 logger = logging.getLogger(__name__)
+
+
+def mail_html(vorlage, **kontext):
+    """Rendert eine Mail aus `templates/emails/<vorlage>.html` (Roadmap Nr. 24).
+
+    Layout und Stil stehen in den Vorlagen, nicht in Python-Strings; die Texte kommen übersetzt aus dem
+    Aufrufer, die Werte werden von Django escaped. `EMBER` (Markenfarbe) ist immer da."""
+    return render_to_string(f'emails/{vorlage}.html', {'EMBER': EMBER, **kontext})
 
 
 # Helper to send mail via Hoststar
@@ -81,16 +91,9 @@ def send_ticket_receipt(ticket):
     _text4 = gettext('Wir melden uns, sobald ein Handwerker beauftragt wurde.')
     _text5 = gettext('Freundliche Grüsse')
     # Es schreibt die Verwaltung des Hauses, nicht die Plattform (FUNK-12): dieselbe Firma wie im Absendernamen.
-    unterschrift = escape(anzeigename(ticket.organisation) or 'immoswiss')
-    html_msg = f"""
-    <html><body>
-    <h2>{_text1}</h2>
-    <p>{escape(_gruss)}</p>
-    <p>{_text2}: #{ticket.id}<br>{_text3}: {escape(ticket.titel)}</p>
-    <p>{_text4}</p>
-    <p>{_text5}<br>{unterschrift}</p>
-    </body></html>
-    """
+    unterschrift = anzeigename(ticket.organisation) or 'immoswiss'
+    html_msg = mail_html('ticket_eingang', titel_text=_text1, gruss=_gruss, nr_text=_text2, thema_text=_text3,
+                         ticket=ticket, hinweis=_text4, schluss=_text5, unterschrift=unterschrift)
     from tickets.workflow import reply_to
     # Die Adresse wird HIER im Anfrage-Thread bestimmt: der Mail-Thread hat keinen Mandantenkontext.
     threading.Thread(target=send_via_hoststar, args=(ticket.email_melder, subject, html_msg),
@@ -108,20 +111,7 @@ def send_neue_meldung_intern(ticket, to_emails, herkunft='aus dem Mieterportal')
     einheit = ticket.betroffene_einheit.bezeichnung if ticket.betroffene_einheit_id else '—'
     melder = (ticket.gemeldet_von.display_name if ticket.gemeldet_von_id
               else f"{ticket.melder_vorname or ''} {ticket.melder_nachname or ''}".strip() or '—')
-    html = f"""
-    <html><body style="font-family:Arial,sans-serif;color:#0f172a;line-height:1.6;">
-      <h2 style="color:{EMBER};">Neue Schadenmeldung {escape(herkunft)}</h2>
-      <table cellpadding="6" style="border-collapse:collapse;">
-        <tr><td style="color:#64748b;">Ticket</td><td><strong>#{ticket.id}</strong></td></tr>
-        <tr><td style="color:#64748b;">Titel</td><td><strong>{escape(ticket.titel)}</strong></td></tr>
-        <tr><td style="color:#64748b;">Objekt</td><td>{escape(objekt)} · {escape(einheit)}</td></tr>
-        <tr><td style="color:#64748b;">Raum</td><td>{escape(ticket.raum or '—')}</td></tr>
-        <tr><td style="color:#64748b;">Melder</td><td>{escape(melder)}<br>{escape(ticket.email_melder or '')} {escape(ticket.tel_melder or '')}</td></tr>
-      </table>
-      <p style="margin-top:12px;white-space:pre-line;">{escape(ticket.beschreibung or '')}</p>
-      <p style="color:#94a3b8;font-size:12px;margin-top:20px;">Diese Meldung erscheint in der Software unter Schadensfälle.</p>
-    </body></html>
-    """
+    html = mail_html('neue_meldung_intern', ticket=ticket, herkunft=herkunft, objekt=objekt, einheit=einheit, melder=melder)
     betreff = f"Neue Schadenmeldung #{ticket.id}: {ticket.titel}"
     ok = False
     for adr in empf:
@@ -160,9 +150,7 @@ def send_ticket_email(to_email, betreff, inhalt_text, foto_field=None, reply_to=
     Eigentümer. Als HTML eingesetzt wären sie eine Einschleusung in eine Mail «der Verwaltung»."""
     if not to_email:
         return False
-    html = "<html><body style='font-family:Arial,sans-serif;color:#333;line-height:1.5;'>"
-    html += _klartext_als_html(inhalt_text)
-    html += "</body></html>"
+    html = mail_html('klartext', text=inhalt_text or '')      # maskiert, Zeilenumbrüche als <br>
     att_name = att_content = None
     if foto_field:
         try:
@@ -195,7 +183,6 @@ def send_mieter_portal_zugang(to_email, anrede_name, username, passwort, login_u
 
 def _mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma, gruss=None):
     betreff = gettext('Ihr Zugang zum Mieterportal')
-    firma_zeile = f"<p style='margin:24px 0 0;color:#94a3b8;font-size:13px;'>{absender_firma}</p>" if absender_firma else ""
     _text1 = gettext('Ihr Mieterportal')
     _text2 = gruss or gettext('Guten Tag %(name)s') % {'name': anrede_name}
     _text3 = gettext('Für Sie wurde ein persönlicher Zugang zum Mieterportal eingerichtet. Dort sehen Sie jederzeit Ihren Mietvertrag, offene Rechnungen (inkl. QR-Einzahlschein), Ihren Kontoauszug und Ihre Dokumente — und Sie können bequem eine Reparatur oder einen Schaden melden.')
@@ -204,28 +191,10 @@ def _mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, 
     _text6 = gettext('Jetzt einloggen')
     _text7 = gettext('Oder öffnen Sie diese Adresse im Browser:')
     _text8 = gettext('Bitte ändern Sie Ihr Passwort nach dem ersten Login und bewahren Sie diese Angaben sicher auf. Diese E-Mail wurde automatisch erstellt.')
-    html = f"""<html><body style="font-family:Arial,Helvetica,sans-serif;color:#0f172a;line-height:1.6;background:#f1f5f9;padding:24px;">
-      <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;">
-        <div style="background:{EMBER};color:#fff;padding:20px 28px;font-size:18px;font-weight:600;">🔑 {_text1}</div>
-        <div style="padding:28px;">
-          <p>{_text2}</p>
-          <p>{_text3}</p>
-          <table style="margin:20px 0;border-collapse:collapse;">
-            <tr><td style="padding:6px 16px 6px 0;color:#64748b;">{_text4}</td>
-                <td style="padding:6px 0;font-weight:700;font-family:monospace;">{username}</td></tr>
-            <tr><td style="padding:6px 16px 6px 0;color:#64748b;">{_text5}</td>
-                <td style="padding:6px 0;font-weight:700;font-family:monospace;">{passwort}</td></tr>
-          </table>
-          <p style="margin:24px 0;">
-            <a href="{login_url}" style="background:{EMBER};color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;display:inline-block;">{_text6}</a>
-          </p>
-          <p style="color:#64748b;font-size:13px;">{_text7}<br>
-            <a href="{login_url}" style="color:{EMBER};">{login_url}</a></p>
-          <p style="color:#94a3b8;font-size:12px;margin-top:20px;">{_text8}</p>
-          {firma_zeile}
-        </div>
-      </div>
-    </body></html>"""
+    html = mail_html('portal_zugang', zeichen='🔑', kopf=_text1, gruss=_text2, einleitung=_text3,
+                     benutzer_text=_text4, passwort_text=_text5, login_text=_text6, adresse_text=_text7,
+                     hinweis=_text8, username=username, passwort=passwort, login_url=login_url,
+                     absender_firma=absender_firma)
     return send_via_hoststar(to_email, betreff, html)
 
 
@@ -271,29 +240,10 @@ def _eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, login_
     _login = gettext('Jetzt einloggen')
     _adresse = gettext('Oder öffnen Sie diese Adresse im Browser:')
     _hinweis = gettext('Bitte ändern Sie Ihr Passwort nach dem ersten Login und bewahren Sie diese Angaben sicher auf. Diese E-Mail wurde automatisch erstellt.')
-    firma_zeile = f"<p style='margin:24px 0 0;color:#94a3b8;font-size:13px;'>{absender_firma}</p>" if absender_firma else ""
-    html = f"""<html><body style="font-family:Arial,Helvetica,sans-serif;color:#0f172a;line-height:1.6;background:#f1f5f9;padding:24px;">
-      <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;">
-        <div style="background:{EMBER};color:#fff;padding:20px 28px;font-size:18px;font-weight:600;">🏠 {_kopf}</div>
-        <div style="padding:28px;">
-          <p>{_gruss}</p>
-          <p>{_einleitung}</p>
-          <table style="margin:20px 0;border-collapse:collapse;">
-            <tr><td style="padding:6px 16px 6px 0;color:#64748b;">{_benutzer}</td>
-                <td style="padding:6px 0;font-weight:700;font-family:monospace;">{username}</td></tr>
-            <tr><td style="padding:6px 16px 6px 0;color:#64748b;">{_passwort}</td>
-                <td style="padding:6px 0;font-weight:700;font-family:monospace;">{passwort}</td></tr>
-          </table>
-          <p style="margin:24px 0;">
-            <a href="{login_url}" style="background:{EMBER};color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;display:inline-block;">{_login}</a>
-          </p>
-          <p style="color:#64748b;font-size:13px;">{_adresse}<br>
-            <a href="{login_url}" style="color:{EMBER};">{login_url}</a></p>
-          <p style="color:#94a3b8;font-size:12px;margin-top:20px;">{_hinweis}</p>
-          {firma_zeile}
-        </div>
-      </div>
-    </body></html>"""
+    html = mail_html('portal_zugang', zeichen='🏠', kopf=_kopf, gruss=_gruss, einleitung=_einleitung,
+                     benutzer_text=_benutzer, passwort_text=_passwort, login_text=_login, adresse_text=_adresse,
+                     hinweis=_hinweis, username=username, passwort=passwort, login_url=login_url,
+                     absender_firma=absender_firma)
     return send_via_hoststar(to_email, betreff, html)
 
 
@@ -317,23 +267,14 @@ def send_payment_reminder(vertrag, monat_datum, offener_betrag):
         _text1 = gettext('Zahlungserinnerung')
         from core.services.anrede import mieter_gruss
         _text2 = mieter_gruss(mieter) + ','
-        _text3 = gettext('Bei der Kontrolle unserer Konten haben wir festgestellt, dass die Miete für den Monat <strong>%(monat)s</strong> für das Objekt <strong>%(objekt)s</strong> noch nicht vollständig beglichen wurde.') % {'monat': monat_str, 'objekt': objekt}
+        # Die Werte werden escaped, die <strong>-Auszeichnung des Textes bleibt (Übersetzungs-Schlüssel unverändert).
+        _text3 = mark_safe(gettext('Bei der Kontrolle unserer Konten haben wir festgestellt, dass die Miete für den Monat <strong>%(monat)s</strong> für das Objekt <strong>%(objekt)s</strong> noch nicht vollständig beglichen wurde.') % {'monat': escape(monat_str), 'objekt': escape(objekt)})
         _text4 = gettext('Ausstehender Betrag: CHF %(betrag)s') % {'betrag': betrag}
         _text5 = gettext('Sollten Sie die Zahlung bereits getätigt haben, betrachten Sie dieses Schreiben bitte als gegenstandslos. Andernfalls bitten wir Sie um eine zeitnahe Überweisung.')
         _text6 = gettext('Freundliche Grüsse,')
         _text7 = gettext('Ihre Liegenschaftsverwaltung')
-        html_msg = f"""
-    <html><body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
-        <h2 style="color: #2c3e50;">{_text1}</h2>
-        <p>{_text2}</p>
-        <p>{_text3}</p>
-        <div style="background: #fdf2f2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0;">
-            <p style="margin: 0; font-weight: bold; color: #991b1b;">{_text4}</p>
-        </div>
-        <p>{_text5}</p>
-        <p>{_text6}<br>{_text7}</p>
-    </body></html>
-    """
+        html_msg = mail_html('zahlungserinnerung', titel_text=_text1, gruss=_text2, einleitung=_text3,
+                             betrag_text=_text4, hinweis=_text5, schluss=_text6, unterschrift=_text7)
     threading.Thread(target=send_via_hoststar, args=(mieter.email, subject, html_msg)).start()
     # Das Journal liest die Verwaltung: deutsch, unabhängig von der Mieter-Sprache.
     with translation.override('de'):
