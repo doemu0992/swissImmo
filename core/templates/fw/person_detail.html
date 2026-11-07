@@ -274,7 +274,7 @@ alten Liegenschaft betreut.
                 </div>
             </details>
             <div class="fw-tablewrap"><table class="fw-table">
-                <thead><tr><th>{% trans "Art" %}</th><th>{% trans "Gültig ab" %}</th><th>{% trans "Adresse" %}</th><th>{% trans "Quelle" %}</th><th></th></tr></thead>
+                <thead><tr><th scope="col">{% trans "Art" %}</th><th scope="col">{% trans "Gültig ab" %}</th><th scope="col">{% trans "Adresse" %}</th><th scope="col">{% trans "Quelle" %}</th><th scope="col"></th></tr></thead>
                 <tbody>
                 {% for a in adress_verlauf %}
                 <tr>
@@ -366,8 +366,8 @@ alten Liegenschaft betreut.
         <div class="fw-kopf"><span class="fw-t">{% trans "Mietverhältnisse im Einzelnen" %}</span></div>
         <div class="fw-tablewrap"><table class="fw-table">
             <thead><tr>
-                <th>{% trans "Objekt" %}</th><th>{% trans "Von" %}</th><th>{% trans "Bis" %}</th>
-                <th class="fw-right">{% trans "Brutto" %}</th><th>{% trans "Status" %}</th><th></th>
+                <th scope="col">{% trans "Objekt" %}</th><th scope="col">{% trans "Von" %}</th><th scope="col">{% trans "Bis" %}</th>
+                <th scope="col" class="fw-right">{% trans "Brutto" %}</th><th scope="col">{% trans "Status" %}</th><th scope="col"></th>
             </tr></thead>
             <tbody>
             {% for row in vertrag_rows %}
@@ -428,7 +428,7 @@ alten Liegenschaft betreut.
                 <a href="/neu/personen/{{ m.id }}/kontoauszug/" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' %} PDF</a>
             </span></div>
         <div class="fw-tablewrap"><table class="fw-table">
-            <thead><tr><th>{% trans "Fällig" %}</th><th>{% trans "Titel" %}</th><th class="fw-right">{% trans "Offen" %}</th></tr></thead>
+            <thead><tr><th scope="col">{% trans "Fällig" %}</th><th scope="col">{% trans "Titel" %}</th><th scope="col" class="fw-right">{% trans "Offen" %}</th></tr></thead>
             <tbody>
             {% for r in offene %}
             <tr><td class="fw-num">{{ r.faellig_am|date:"d.m.Y"|default:"—" }}</td>

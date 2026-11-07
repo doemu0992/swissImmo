@@ -262,13 +262,13 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <div class="fw-card">
         <div class="fw-tablewrap"><table class="fw-table">
             <thead><tr>
-                <th>{% trans "Gültig ab" %}</th>
-                <th class="fw-right">{% trans "Netto" %}{% if not e.ist_einstellplatz %} / NK{% endif %}<br><span class="fw-fs-mikro normal-case fw-faint">{% trans "Referenz" %}</span></th>
-                <th class="fw-right">{% trans "Rabatt" %}</th>
-                <th class="fw-right">{% trans "zu zahlen" %}</th>
-                <th class="fw-zentriert">{% trans "Basis" %}</th>
-                <th>{% trans "Bemerkung" %}</th>
-                <th></th>
+                <th scope="col">{% trans "Gültig ab" %}</th>
+                <th scope="col" class="fw-right">{% trans "Netto" %}{% if not e.ist_einstellplatz %} / NK{% endif %}<br><span class="fw-fs-mikro normal-case fw-faint">{% trans "Referenz" %}</span></th>
+                <th scope="col" class="fw-right">{% trans "Rabatt" %}</th>
+                <th scope="col" class="fw-right">{% trans "zu zahlen" %}</th>
+                <th scope="col" class="fw-zentriert">{% trans "Basis" %}</th>
+                <th scope="col">{% trans "Bemerkung" %}</th>
+                <th scope="col"></th>
             </tr></thead>
             <tbody>
             {% for s in sollmietzinse %}
@@ -382,10 +382,10 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         <div class="border fw-linie rounded-lg overflow-hidden mb-3">
             <div class="fw-tablewrap"><table class="fw-table fw-dicht">
                 <thead><tr>
-                    <th>{% trans "Gültig ab" %}</th>
-                    <th class="fw-right">{% trans "Netto-Mietzins" %}</th>
-                    <th>{% trans "Bemerkung" %}</th>
-                    <th></th>
+                    <th scope="col">{% trans "Gültig ab" %}</th>
+                    <th scope="col" class="fw-right">{% trans "Netto-Mietzins" %}</th>
+                    <th scope="col">{% trans "Bemerkung" %}</th>
+                    <th scope="col"></th>
                 </tr></thead>
                 <tbody>
                 {% for s in staffelvorlagen %}
@@ -432,9 +432,9 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         <div class="border fw-linie rounded-lg overflow-hidden mb-3">
             <div class="fw-tablewrap"><table class="fw-table fw-dicht">
                 <thead><tr>
-                    <th>{% trans "Gültig ab" %}</th>
-                    <th class="fw-right">{% trans "Netto-Mietzins" %}</th>
-                    <th></th>
+                    <th scope="col">{% trans "Gültig ab" %}</th>
+                    <th scope="col" class="fw-right">{% trans "Netto-Mietzins" %}</th>
+                    <th scope="col"></th>
                 </tr></thead>
                 <tbody>
                 <tr class="fw-mutet">
@@ -704,8 +704,8 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <div class="fw-card">
         <div class="fw-tablewrap"><table class="fw-table">
             <thead><tr>
-                <th>{% trans "Gerät" %}</th><th>{% trans "Marke / Modell" %}</th>
-                <th>{% trans "Installation" %}</th><th>{% trans "Garantie bis" %}</th><th></th>
+                <th scope="col">{% trans "Gerät" %}</th><th scope="col">{% trans "Marke / Modell" %}</th>
+                <th scope="col">{% trans "Installation" %}</th><th scope="col">{% trans "Garantie bis" %}</th><th scope="col"></th>
             </tr></thead>
             <tbody>
             {% for g in geraete %}
@@ -789,8 +789,8 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
     <div class="fw-card">
         <div class="fw-tablewrap"><table class="fw-table">
             <thead><tr>
-                <th>{% trans "Typ" %}</th><th>{% trans "Zähler-Nr." %}</th>
-                <th>{% trans "Standort" %}</th><th class="fw-right">{% trans "Stand" %}</th><th></th>
+                <th scope="col">{% trans "Typ" %}</th><th scope="col">{% trans "Zähler-Nr." %}</th>
+                <th scope="col">{% trans "Standort" %}</th><th scope="col" class="fw-right">{% trans "Stand" %}</th><th scope="col"></th>
             </tr></thead>
             <tbody>
             {% for z in zaehler %}

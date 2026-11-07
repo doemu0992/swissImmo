@@ -472,11 +472,11 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
         </div>
         <div class="fw-tablewrap"><table class="fw-table fw-dicht">
             <thead><tr>
-                <th>{% trans "Gültig ab" %}</th>
-                <th class="fw-right">{% trans "Referenz" %}<br><span class="fw-klein">{% trans "Netto / NK" %}</span></th>
-                <th class="fw-right">{% trans "Rabatt" %}<br><span class="fw-klein">{% trans "Netto / NK" %}</span></th>
-                <th class="fw-right">{% trans "zu zahlen" %}</th>
-                <th>{% trans "Notiz" %}</th>
+                <th scope="col">{% trans "Gültig ab" %}</th>
+                <th scope="col" class="fw-right">{% trans "Referenz" %}<br><span class="fw-klein">{% trans "Netto / NK" %}</span></th>
+                <th scope="col" class="fw-right">{% trans "Rabatt" %}<br><span class="fw-klein">{% trans "Netto / NK" %}</span></th>
+                <th scope="col" class="fw-right">{% trans "zu zahlen" %}</th>
+                <th scope="col">{% trans "Notiz" %}</th>
             </tr></thead>
             <tbody>
             {% for k in v.mietzins_zeitplan %}
@@ -562,7 +562,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
         </div>
         <div class="fw-tablewrap"><table class="fw-table">
             <thead><tr>
-                <th>{% trans "Wirksam ab" %}</th><th class="fw-right">{% trans "Alt" %}</th><th class="fw-right">{% trans "Neu" %}</th><th>{% trans "Status" %}</th><th>{% trans "Grund" %}</th><th></th>
+                <th scope="col">{% trans "Wirksam ab" %}</th><th scope="col" class="fw-right">{% trans "Alt" %}</th><th scope="col" class="fw-right">{% trans "Neu" %}</th><th scope="col">{% trans "Status" %}</th><th scope="col">{% trans "Grund" %}</th><th scope="col"></th>
             </tr></thead>
             <tbody>
             {% for a in anpassungen %}
@@ -679,8 +679,8 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
             <span class="fw-neben">{% if konto_saldo > 0 %}{% blocktrans with b=konto_saldo|chf %}Saldo CHF {{ b }} offen{% endblocktrans %}{% else %}{% trans "ausgeglichen" %}{% endif %}</span>
             <span class="fw-rechts"><a href="/neu/mieterkonten/{{ v.mieter_id }}/" class="fw-link">{% trans "Mieterkonto" %}</a></span></div>
         <div class="fw-tablewrap"><table class="fw-table">
-            <thead><tr><th>{% trans "Datum" %}</th><th>{% trans "Buchung" %}</th>
-                <th class="fw-right">{% trans "Soll" %}</th><th class="fw-right">{% trans "Haben" %}</th><th class="fw-right">{% trans "Saldo" %}</th></tr></thead>
+            <thead><tr><th scope="col">{% trans "Datum" %}</th><th scope="col">{% trans "Buchung" %}</th>
+                <th scope="col" class="fw-right">{% trans "Soll" %}</th><th scope="col" class="fw-right">{% trans "Haben" %}</th><th scope="col" class="fw-right">{% trans "Saldo" %}</th></tr></thead>
             <tbody>
             {% for z in konto_zeilen %}
             <tr><td class="fw-num">{{ z.datum|date:"d.m.Y" }}</td>
@@ -725,8 +725,8 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
         <div class="fw-kopf"><h2>{% trans "Offene Posten & Rechnungen" %}</h2></div>
         <div class="fw-tablewrap"><table class="fw-table">
             <thead><tr>
-                <th>{% trans "Datum" %}</th><th>{% trans "Titel" %}</th>
-                <th class="fw-right">{% trans "Betrag" %}</th><th class="fw-right">{% trans "Offen" %}</th><th>{% trans "Status" %}</th>
+                <th scope="col">{% trans "Datum" %}</th><th scope="col">{% trans "Titel" %}</th>
+                <th scope="col" class="fw-right">{% trans "Betrag" %}</th><th scope="col" class="fw-right">{% trans "Offen" %}</th><th scope="col">{% trans "Status" %}</th>
             </tr></thead>
             <tbody>
             {% for row in rechnungs_rows %}
@@ -767,7 +767,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
         <div class="fw-kopf"><h2>{% trans "Zahlungseingänge" %}</h2></div>
         <div class="fw-tablewrap"><table class="fw-table">
             <thead><tr>
-                <th>{% trans "Eingang" %}</th><th>{% trans "Für Monat" %}</th><th class="fw-right">{% trans "Betrag" %}</th>
+                <th scope="col">{% trans "Eingang" %}</th><th scope="col">{% trans "Für Monat" %}</th><th scope="col" class="fw-right">{% trans "Betrag" %}</th>
             </tr></thead>
             <tbody>
             {% for z in zahlungen %}

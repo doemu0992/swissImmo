@@ -4,9 +4,11 @@
    Flaeche, aktiver Reiter mit Unterstrich in der Markenfarbe. Die Klassen, die
    `fwTab` in base.html umschaltet, bleiben unveraendert; nur `hier` kommt dazu,
    damit die Farbe aus den Tokens statt aus Tailwind-Utilities kommt. {% endcomment %}
-<div class="fw-reiter">
+<div class="fw-reiter" role="tablist">
     {% for key, label, badge in tabs %}
-    <button data-tab="{{ gruppe }}" data-target="{{ key }}" onclick="fwTab('{{ gruppe }}', '{{ key }}')"
+    <button type="button" role="tab" id="tab-{{ gruppe }}-{{ key }}" aria-controls="{{ gruppe }}-{{ key }}"
+            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
+            data-tab="{{ gruppe }}" data-target="{{ key }}" onclick="fwTab('{{ gruppe }}', '{{ key }}')"
             class="{% if forloop.first %}hier{% endif %}">
         {{ label }}
         {% if badge %}<span class="fw-z">{{ badge }}</span>{% endif %}

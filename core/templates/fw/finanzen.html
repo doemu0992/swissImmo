@@ -105,13 +105,13 @@ Periodenabschluss, Direkt zu) steht unverändert darunter in «Abschluss».
     <div class="fw-tablewrap">
         <table class="fw-table fw-aging-tabelle">
             <thead><tr>
-                <th>{% trans "Mietpartei" %}</th>
-                <th class="fw-right">1–30</th>
-                <th class="fw-right">31–60</th>
-                <th class="fw-right">61–90</th>
-                <th class="fw-right">&gt; 90</th>
-                <th class="fw-right">{% trans "Total" %}</th>
-                <th>{% trans "Mahnstufe" %}</th>
+                <th scope="col">{% trans "Mietpartei" %}</th>
+                <th scope="col" class="fw-right">1–30</th>
+                <th scope="col" class="fw-right">31–60</th>
+                <th scope="col" class="fw-right">61–90</th>
+                <th scope="col" class="fw-right">&gt; 90</th>
+                <th scope="col" class="fw-right">{% trans "Total" %}</th>
+                <th scope="col">{% trans "Mahnstufe" %}</th>
             </tr></thead>
             <tbody>
             {% for a in ausstaende %}

@@ -29,7 +29,7 @@ Marke), `content`, `scripts`.
         </a>
         <div class="fw-aussen-sprache">{% include 'core/_sprachwahl.html' with rahmen='fw-segment' knopf='' aktiv='an' passiv='' %}</div>
     </header>
-    <main class="fw-aussen-inhalt{% block eng %}{% endblock %}">
+    <main class="fw-aussen-inhalt{% block eng %}{% endblock %}" id="fw-inhalt" tabindex="-1">
         {% block content %}{% endblock %}
     </main>
     <p class="fw-portal-fuss">{% block footer %}immoswiss · {% trans "Alle Angaben ohne Gewähr" %}{% endblock %}</p>

@@ -60,12 +60,12 @@
     <div class="fw-tablewrap">
         <table class="fw-table">
             <thead><tr>
-                <th>{% trans "Objekt" %}</th>
-                <th>{% trans "Zustand" %}</th>
-                <th class="fw-right">{% trans "Netto-Mietzins" %}</th>
-                <th class="fw-right">{% trans "Ausfall bisher" %}</th>
-                <th>{% trans "Vermarktung" %}</th>
-                <th class="fw-right">{% trans "Nächster Schritt" %}</th>
+                <th scope="col">{% trans "Objekt" %}</th>
+                <th scope="col">{% trans "Zustand" %}</th>
+                <th scope="col" class="fw-right">{% trans "Netto-Mietzins" %}</th>
+                <th scope="col" class="fw-right">{% trans "Ausfall bisher" %}</th>
+                <th scope="col">{% trans "Vermarktung" %}</th>
+                <th scope="col" class="fw-right">{% trans "Nächster Schritt" %}</th>
             </tr></thead>
             <tbody>
                 {% for z in zeilen %}

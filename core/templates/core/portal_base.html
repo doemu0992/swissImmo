@@ -61,7 +61,7 @@ Blöcke (`brand_icon`, `brand`, `brand_mobile`, `nav`, `content`, `footer`,
             <b class="fw-portal-titel">{% block brand_mobile %}{% trans "Mieterportal" %}{% endblock %}</b>
         </header>
 
-        <main class="fw-inhalt fw-portal-inhalt">
+        <main class="fw-inhalt fw-portal-inhalt" id="fw-inhalt" tabindex="-1">
             {% if messages %}{% for m in messages %}
             <div class="fw-hinweis fw-meldung {% if 'error' in m.tags %}crit{% else %}good{% endif %}"{% if 'error' in m.tags %} role="alert"{% else %} role="status"{% endif %}>
                 <span class="fw-hi">{% if 'error' in m.tags %}{% zeichen 'kritisch' %}{% else %}{% zeichen 'gut' %}{% endif %}</span>
