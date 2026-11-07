@@ -130,11 +130,19 @@ class DatenbankRegelnTests(UnveraenderlichBasis):
             self._roh(self.b.soll_konto_id, self.b.soll_konto_id, Decimal('1.00'))
 
     def test_ein_gueltiger_roher_insert_geht(self):
+        """Gegenprobe zu den beiden Tests oben: Die Regeln sperren das Falsche, nicht alles."""
         self._roh(self.b.soll_konto_id, self.b.haben_konto_id, Decimal('1.00'))
+        with connection.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM core_buchung WHERE beleg_text = 'roh'")
+            self.assertEqual(cur.fetchone()[0], 1)
 
     def test_ein_bestand_mit_verstoss_blockiert_die_migration_nicht(self):
         """Der Altbestand: Die Regel wird übersprungen und gemeldet, nicht erzwungen."""
         from finance import db_schutz
+        with connection.cursor() as cur:
+            # Aufgeschobene Fremdschlüssel-Prüfungen aus dem Testaufbau abarbeiten: Mit ihnen verweigert PostgreSQL
+            # `ALTER TABLE` («pending trigger events»). Eine echte Migration läuft ohne sie.
+            cur.execute('SET CONSTRAINTS ALL IMMEDIATE')
         with connection.schema_editor() as editor:
             db_schutz.pruefregeln_entfernen(editor)
             with connection.cursor() as cur:
@@ -147,7 +155,11 @@ class DatenbankRegelnTests(UnveraenderlichBasis):
         self.assertIn('chk_buchung_soll_ungleich_haben', db_schutz.pruefregeln_vorhanden())
 
 
+@NUR_POSTGRES
 class BefehlTests(TestCase):
+    """Nur PostgreSQL: SQLite erlaubt den Schema-Editor nicht innerhalb der Test-Transaktion (im Betrieb läuft der
+    Befehl ohne äussere Transaktion)."""
+
     def test_db_schutz_laeuft_durch(self):
         from io import StringIO
 
@@ -156,4 +168,4 @@ class BefehlTests(TestCase):
         call_command('db_schutz', stdout=aus)
         text = aus.getvalue()
         self.assertIn('Eindeutigkeiten', text)
-        self.assertTrue('Prüfregeln' in text or 'keine CHECK-Constraints' in text, text)
+        self.assertIn('Prüfregeln', text)
