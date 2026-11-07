@@ -94,3 +94,44 @@ class MeldungsMailTests(TestCase):
         self.assertIn(f'#{self.ticket.id}', html)
         self.assertIn('Heizung &lt;i&gt;kalt&lt;/i&gt;', html)
         self.assertEqual(mail.outbox[-1].to, ['melder@example.ch'])
+
+
+class KlartextMitLinkTests(TestCase):
+
+    def test_text_wird_maskiert_und_link_zum_anker(self):
+        link = 'https://example.ch/auftrag/abc/?a=1&b=2'
+        html = email_service.klartext_html(f'Hallo <script>x</script>\nZeile 2\n{link}', link)
+        self.assertNotIn('<script>', html)
+        self.assertIn('&lt;script&gt;', html)
+        self.assertIn('<br>', html)
+        self.assertIn('<a href="https://example.ch/auftrag/abc/?a=1&amp;b=2">https://example.ch/auftrag/abc/?a=1&amp;b=2</a>', html)
+
+    def test_ohne_link_bleibt_text_text(self):
+        html = email_service.klartext_html('Nur Text & mehr')
+        self.assertIn('Nur Text &amp; mehr', html)
+        self.assertNotIn('<a ', html)
+
+    def test_gegenprobe_fremdes_html_im_link_wird_nicht_aktiv(self):
+        html = email_service.klartext_html('x', 'javascript:"><script>')
+        self.assertNotIn('<script>', html)
+
+
+class StwegMitteilungTests(TestCase):
+
+    def test_werte_escaped_auszeichnung_bleibt(self):
+        from django.utils.html import format_html
+        from crm.models import Eigentuemer
+        lg, _e, _m, _v = _basis_objekte()          # legt die Verwaltung an; der Eigentümer gehört ihr
+        from core.tenancy import organisation_kontext
+        with organisation_kontext(lg.organisation):
+            eigentuemer = Eigentuemer.objects.create(firma_oder_name='Eigentümer <i>Muster</i>')
+        html = email_service.stweg_mail_html(
+            eigentuemer, [format_html('Abstimmung «{}» bis <strong>{}</strong>', '<b>X</b>', '01.01.2027'),
+                     ('Zeile 1\nZeile 2', True)], 'Muster <AG>')
+        self.assertIn('«&lt;b&gt;X&lt;/b&gt;»', html)
+        self.assertIn('<strong>01.01.2027</strong>', html)
+        self.assertIn('white-space:pre-line', html)
+        self.assertIn('Muster &lt;AG&gt;', html)
+        self.assertIn('Freundliche Grüsse', html)
+        self.assertNotIn('<i>Muster</i>', html)           # auch der Gruss ist maskiert
+        self.assertNotIn('Kündigung', html)               # `ohne_kuendigung` darf auf dem Rahmen nie anschlagen

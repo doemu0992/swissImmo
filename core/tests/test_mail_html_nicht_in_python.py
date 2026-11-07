@@ -1,7 +1,7 @@
 """Roadmap Nr. 24 (Ratsche): Mail-HTML gehört in `templates/emails/`, nicht in Python-Strings.
 
 Zählt `<html`/`<body` in Python-Dateien ausserhalb von Tests. Die Liste unten sind die Stellen, die noch
-nicht umgezogen sind; sie wird nie länger. Wer eine Mail umzieht, trägt die Datei hier aus (oder senkt
+nicht umgezogen sind (heute nur noch die Wartungsseite, die keine Mail ist); sie wird nie länger. Wer eine Mail umzieht, trägt die Datei hier aus (oder senkt
 die Zahl) — der Test verlangt es, damit der Fortschritt nicht verloren geht.
 """
 import pathlib
@@ -11,14 +11,6 @@ from django.test import SimpleTestCase
 #: Datei -> Anzahl `<html`/`<body`-Vorkommen, die noch in Python stehen.
 NOCH_NICHT_UMGEZOGEN = {
     'core/wartung.py': 2,              # Wartungsseite, keine Mail (bewusst eigenständig, wenn die DB fehlt)
-    'stweg/anfragen.py': 2,
-    'stweg/budget.py': 2,
-    'stweg/inkasso.py': 2,
-    'stweg/versammlung.py': 4,
-    'stweg/zirkular.py': 4,
-    'tickets/direktkanal.py': 2,
-    'tickets/termin_abstimmung.py': 2,
-    'tickets/workflow.py': 4,
 }
 
 MUSTER = re.compile(r'<html|<body')

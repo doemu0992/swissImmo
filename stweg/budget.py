@@ -24,7 +24,7 @@ from stweg.models import StwegBudget, StwegBudgetPosition, StwegVorschreibung
 from stweg.schluessel import SchluesselFehler, verteile
 from stweg.validierung import WertquotenFehler, pruefe_wertquoten, stimm_einheiten
 from stweg.verteilung import verteile_nach_quoten
-from core.services.anrede import eigentuemer_gruss_html
+from core.utils.email_service import stweg_mail_html
 
 NULL = Decimal('0.00')
 
@@ -201,11 +201,9 @@ def vorschreibungen_versenden(budget):
         if not eig.email:
             ergebnis['post'].append(eig)
             continue
-        html = ("<html><body style='font-family:Arial,sans-serif;line-height:1.5'>"
-                f"<p>{eigentuemer_gruss_html(eig)}</p>"
-                f"<p>die Versammlung hat das Budget {budget.jahr} der Gemeinschaft {budget.liegenschaft} "
-                "genehmigt. In der Beilage Ihre Akonto-Rechnung mit Zahlteilen.</p>"
-                f"<p>Freundliche Grüsse<br>{org.firma}</p></body></html>")
+        html = stweg_mail_html(eig, [f"die Versammlung hat das Budget {budget.jahr} der Gemeinschaft "
+                                     f"{budget.liegenschaft} genehmigt. In der Beilage Ihre Akonto-Rechnung "
+                                     "mit Zahlteilen."], org.firma)
         ok = send_via_hoststar(eig.email, f'Akonto-Rechnung {budget.jahr}', html,
                                f'Akonto_{budget.jahr}.pdf', vorschreibung_pdf(budget, eig),
                                reply_to=reply_to(budget))

@@ -102,7 +102,7 @@ def vorschlagen(auftrag, von, termin_am, hinweis='', jetzt=None):
 def _vorschlag_mail(auftrag, von, termin_am, hinweis):
     from core.services.anrede import handwerker_gruss
     from core.services.ticket_workflow import melder_gruss, melder_sprache
-    from core.utils.email_service import _klartext_als_html, send_via_hoststar
+    from core.utils.email_service import klartext_html, send_via_hoststar
     from .workflow import reply_to
     ziel = _gegenseite(von)
     adresse = direktkanal.seiten_adresse(auftrag, ziel)
@@ -123,8 +123,7 @@ def _vorschlag_mail(auftrag, von, termin_am, hinweis):
                        "wenn Sie ihn bestätigen.") % {
                 'gruss': gruss, 'wer': wer, 'schaden': ticket.titel, 'zeit': zeit, 'link': link,
                 'hinweis': (_("Hinweis: %(h)s") % {'h': hinweis} + "\n") if hinweis else ''}
-        html = ("<html><body style='font-family:Arial,sans-serif'>"
-                + _klartext_als_html(inhalt).replace(link, f"<a href='{link}'>{link}</a>") + "</body></html>")
+        html = klartext_html(inhalt, link)
         return send_via_hoststar(adresse, betreff, html, reply_to=reply_to(ticket),
                                  organisation=ticket.organisation_id, absender_name=wer,
                                  headers={direktkanal.KOPF_BRUECKE: '1', 'Auto-Submitted': 'auto-generated'})

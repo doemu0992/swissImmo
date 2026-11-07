@@ -241,7 +241,7 @@ def ausstehende_zustellen(jetzt=None):
 def _mail_senden(auftrag, von_seite, ziel, adresse, nachrichten):
     from core.services.ticket_workflow import melder_gruss, melder_sprache
     from core.services.anrede import handwerker_gruss
-    from core.utils.email_service import _klartext_als_html, send_via_hoststar
+    from core.utils.email_service import klartext_html, send_via_hoststar
     from .workflow import reply_to
     ticket = auftrag.ticket
     link = link_url(auftrag, ziel)
@@ -263,9 +263,7 @@ def _mail_senden(auftrag, von_seite, ziel, adresse, nachrichten):
                            "Mieter. Oder öffnen Sie den Chat:\n%(link)s") % {
                     'gruss': gruss, 'wer': wer, 'schaden': ticket.titel, 'text': texte, 'link': link}
             betreff = betreff_fuer(auftrag)
-        html = ("<html><body style='font-family:Arial,sans-serif'>"
-                + _klartext_als_html(inhalt).replace(link, f"<a href='{link}'>{link}</a>")
-                + "</body></html>")
+        html = klartext_html(inhalt, link)
         return send_via_hoststar(
             adresse, betreff, html, reply_to=reply_to(ticket), organisation=ticket.organisation_id,
             absender_name=None if von_seite == 'verwaltung' else wer,

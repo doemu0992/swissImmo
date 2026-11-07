@@ -8,13 +8,14 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext
 
-from core.utils.email_service import send_via_hoststar
+from django.utils.html import format_html
+
+from core.utils.email_service import send_via_hoststar, stweg_mail_html
 from stweg.beschluss import BeschlussFehler, zaehlen
 from stweg.models import Stimme, Traktandum, Zirkularbeschluss, ZirkularStimme, ZirkularVersand
 from stweg.pdf import zirkular_pdf
 from stweg.validierung import WertquotenFehler, pruefe_wertquoten, stimm_einheiten
 from stweg.versammlung import VersammlungsFehler
-from core.services.anrede import eigentuemer_gruss_html
 
 
 def _empfaenger(z):
@@ -80,12 +81,11 @@ def versenden(z, *, heute=None):
     for e in eig:
         if e.pk in schon:
             continue
-        html = ("<html><body style='font-family:Arial,sans-serif;line-height:1.5'>"
-                f"<p>{eigentuemer_gruss_html(e)}</p>"
-                f"<p>die Gemeinschaft {z.liegenschaft} stimmt auf dem Zirkularweg über «{z.titel}» ab. "
-                f"Bitte stimmen Sie bis <strong>{z.frist_bis:%d.%m.%Y}</strong> im Eigentümerportal ab. "
-                "Den Antrag finden Sie in der Beilage.</p>"
-                f"<p>Freundliche Grüsse<br>{org.firma}</p></body></html>")
+        html = stweg_mail_html(e, [format_html(
+            "die Gemeinschaft {} stimmt auf dem Zirkularweg über «{}» ab. "
+            "Bitte stimmen Sie bis <strong>{}</strong> im Eigentümerportal ab. "
+            "Den Antrag finden Sie in der Beilage.",
+            z.liegenschaft, z.titel, f"{z.frist_bis:%d.%m.%Y}")], org.firma)
         neu.append(_senden(z, ZirkularVersand.ANTRAG, e, f'Abstimmung: {z.titel}', html,
                            f'Antrag_{z.pk}.pdf', pdf))
     with transaction.atomic():
@@ -172,11 +172,9 @@ def ergebnis_versenden(z):
     for e in eig:
         if e.pk in schon:
             continue
-        html = ("<html><body style='font-family:Arial,sans-serif;line-height:1.5'>"
-                f"<p>{eigentuemer_gruss_html(e)}</p>"
-                f"<p>die Abstimmung «{z.titel}» ist abgeschlossen: <strong>{z.get_ergebnis_display()}</strong>. "
-                "Einzelheiten in der Beilage.</p>"
-                f"<p>Freundliche Grüsse<br>{org.firma}</p></body></html>")
+        html = stweg_mail_html(e, [format_html(
+            "die Abstimmung «{}» ist abgeschlossen: <strong>{}</strong>. Einzelheiten in der Beilage.",
+            z.titel, z.get_ergebnis_display())], org.firma)
         neu.append(_senden(z, ZirkularVersand.ERGEBNIS, e, f'Ergebnis: {z.titel}', html,
                            f'Ergebnis_{z.pk}.pdf', pdf))
     z.ergebnis_versendet_am = z.ergebnis_versendet_am or timezone.now()

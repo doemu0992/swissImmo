@@ -371,7 +371,7 @@ def arbeitsauftrag_senden(auftrag, text=''):
     """
     from core.services.handwerker_auftrag_pdf import generate_auftrag_pdf
     from core.services.ticket_workflow import vorlage_text
-    from core.utils.email_service import _klartext_als_html, send_via_hoststar
+    from core.utils.email_service import klartext_html, send_via_hoststar
     from .models import TicketNachricht
 
     ticket, hw = auftrag.ticket, auftrag.handwerker
@@ -390,9 +390,7 @@ def arbeitsauftrag_senden(auftrag, text=''):
         inhalt = (f"{inhalt}\n\nAuftrag online ansehen, Termin bestätigen, Offerte oder "
                   f"Rechnung hochladen:\n{url}")
         # Maskiert (Titel und Beschreibung stammen vom Melder), danach erst der Link als Anker.
-        html = ("<html><body style='font-family:Arial,sans-serif'>"
-                + _klartext_als_html(inhalt).replace(url, f"<a href='{url}'>{url}</a>")
-                + "</body></html>")
+        html = klartext_html(inhalt, url)
         versendet = send_via_hoststar(
             hw.email, betreff, html, f"Reparaturauftrag_{auftrag.id}.pdf", pdf,
             weitere_anhaenge=anhaenge, reply_to=reply_to(ticket), organisation=ticket.organisation_id)
@@ -642,7 +640,7 @@ def _termin_mails(auftrag, termin_am, kat_mieter, kat_hw, absagen=False):
     Der Mieter liest in seiner Korrespondenzsprache, der Handwerker deutsch. Der Text wird
     maskiert (Titel und Beschreibung stammen vom Melder)."""
     from core.services.ticket_workflow import melder_sprache, vorlage_text
-    from core.utils.email_service import _klartext_als_html, send_via_hoststar
+    from core.utils.email_service import klartext_html, send_via_hoststar
     ticket, hw = auftrag.ticket, auftrag.handwerker
     methode = 'CANCEL' if absagen else 'PUBLISH'
     ics = [('Termin.ics', _ics(auftrag, termin_am, absagen), f'text/calendar; method={methode}')]
@@ -654,8 +652,7 @@ def _termin_mails(auftrag, termin_am, kat_mieter, kat_hw, absagen=False):
         try:
             betreff, inhalt = vorlage_text(kat, ticket, handwerker=hw, termin=text, sprache=sprache,
                                          empfaenger=empfaenger)
-            html = ("<html><body style='font-family:Arial,sans-serif'>"
-                    + _klartext_als_html(inhalt) + "</body></html>")
+            html = klartext_html(inhalt)
             # Auftragsmarke: Die Antwort auf diese Mail landet im Direktkanal Mieter/Handwerker
             # (tickets/direktkanal.py) statt nur im Verlauf der Verwaltung.
             from .direktkanal import marke
