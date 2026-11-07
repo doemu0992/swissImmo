@@ -10,7 +10,7 @@
     Zahlungs- und Wartungsfristen, Referenzzins, Vertragsenden.{% endblocktrans %} {% blocktrans count n=gesamt %}{{ n }} Frist{% plural %}{{ n }} Fristen{% endblocktrans %}{% if ueberfaellig_n %} · <b class="fw-kritisch">{% blocktrans with n=ueberfaellig_n %}{{ n }} überfällig{% endblocktrans %}</b>{% endif %}.</p>
     </div>
     <div class="fw-phead-knoepfe">
-        <button type="button" onclick="document.getElementById('kalender-box').classList.toggle('hidden')"
+        <button type="button" data-umschalten="kalender-box"
                 class="fw-btn">
             {% zeichen 'termin' %}{% trans "Kalender" %}
         </button>
@@ -37,7 +37,7 @@
             <div class="flex items-center gap-2">
                 <input id="feed-url" readonly aria-label="{% trans 'Kalender abonnieren (aktualisiert sich automatisch)' %}" value="{{ request.scheme }}://{{ request.get_host }}/fristen.ics?token={{ feed_token|urlencode }}"
                        class="fw-feld fw-mono flex-1 min-w-0">
-                <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feed-url').value); this.textContent='Kopiert ✓';"
+                <button type="button" data-kopieren="feed-url" data-kopiert="Kopiert ✓"
                         class="fw-btn">{% trans "Kopieren" %}</button>
             </div>
             <p class="fw-hilfe">{% trans "Im Kalender „Abonnement/Kalender per URL hinzufügen“ wählen und diese Adresse einfügen. Der Token ist geheim — nicht weitergeben." %}</p>

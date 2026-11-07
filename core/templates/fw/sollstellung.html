@@ -20,13 +20,13 @@
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <label>
                 <span class="fw-faint">{% trans "Monat" %}</span>
-                <select name="monat" onchange="this.form.submit()" class="fw-feld">
+                <select name="monat" data-absenden class="fw-feld">
                     {% for m, name in monate %}<option value="{{ m }}" {% if m == monat %}selected{% endif %}>{{ name }}</option>{% endfor %}
                 </select>
             </label>
             <label>
                 <span class="fw-faint">{% trans "Jahr" %}</span>
-                <select name="jahr" onchange="this.form.submit()" class="fw-feld">
+                <select name="jahr" data-absenden class="fw-feld">
                     {% for j in jahre %}<option value="{{ j }}" {% if j == jahr %}selected{% endif %}>{{ j }}</option>{% endfor %}
                 </select>
             </label>

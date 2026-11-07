@@ -37,7 +37,7 @@
         </thead>
         <tbody>
         {% for g in rows %}
-            <tr class="cursor-pointer" onclick="window.location='/neu/lieferantenkonto/?name={{ g.name|urlencode }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}'">
+            <tr class="cursor-pointer" data-gehe-zu="/neu/lieferantenkonto/?name={{ g.name|urlencode }}{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}">
                 <td class="fw-strong">{{ g.name }}</td>
                 <td class="text-center fw-zentriert fw-num">{{ g.anzahl }}</td>
                 <td class="text-right fw-right fw-num">CHF {{ g.volumen|chf }}</td>

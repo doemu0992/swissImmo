@@ -17,7 +17,7 @@
     </div>
     <form method="get" class="fw-phead-knoepfe">
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-        <select name="jahr" aria-label="{% trans 'Jahr' %}" onchange="this.form.submit()" class="fw-feld">
+        <select name="jahr" aria-label="{% trans 'Jahr' %}" data-absenden class="fw-feld">
             {% for j in jahre %}<option value="{{ j }}" {% if j == jahr %}selected{% endif %}>{{ j }}</option>{% endfor %}
         </select>
     </form>
@@ -43,7 +43,7 @@
 
 {% if kann_schreiben %}
 <div class="mb-6">
-    <button onclick="document.getElementById('kontoform').classList.toggle('hidden')"
+    <button data-umschalten="kontoform"
             class="fw-btn fw-primary">
         {% zeichen 'neu' klasse='mr-1.5' %}{% trans "Neues Konto" %}
     </button>
@@ -110,7 +110,7 @@
                 </td>
                 <td class="text-right whitespace-nowrap fw-right">
                     {% if kann_schreiben %}
-                    <button onclick="document.getElementById('edit-{{ z.k.id }}').classList.toggle('hidden')"
+                    <button data-umschalten="edit-{{ z.k.id }}"
                             title="{% trans 'Konto bearbeiten' %}"
                             class="fw-btn fw-geist fw-knapp">
                         {% zeichen 'bearbeiten' %}

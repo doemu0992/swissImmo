@@ -16,7 +16,7 @@
             <a href="/neu/schaeden/board/{{ lg_query }}" class="fw-seg-link">{% zeichen 'bericht' %} {% trans "Board" %}</a>
         </div>
         {% if kann_schreiben %}
-        <button type="button" onclick="document.getElementById('neuschaden').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Schaden erfassen" %}</button>
+        <button type="button" data-umschalten="neuschaden" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Schaden erfassen" %}</button>
         {% endif %}
         {% if request.user|darf:"/neu/schaeden/kosten/" %}<div class="relative" data-menu>
             <button type="button" data-menu-btn class="fw-btn">{% zeichen 'mehr' %}{% trans "Mehr" %}</button>

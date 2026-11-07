@@ -48,7 +48,7 @@
                     <td data-label="{% trans 'Zustand' %}"><span class="px-2 py-0.5 rounded text-xs font-semibold {% if row.a.zustand == 'defekt' %}fw-krit-flaeche fw-kritisch{% elif row.a.zustand == 'gebraucht' %}fw-warn-flaeche fw-warnton{% else %}fw-gut-flaeche fw-gut{% endif %}">{{ row.a.get_zustand_display }}</span></td>
                     <td class="whitespace-nowrap fw-right" data-label="">
                         <div class="flex items-center justify-end gap-1">
-                        <button type="button" onclick="document.getElementById('edit-{{ row.a.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
+                        <button type="button" data-umschalten="edit-{{ row.a.id }}" class="fw-ikon mut" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
                         <form method="post" action="/neu/ausstattung/{{ row.a.id }}/loeschen/" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Element löschen?" %}{% endfilter %}">
                             {% csrf_token %}
                             <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
@@ -92,7 +92,7 @@
                             <div class="fw-col-span-2"><label class="fw-label mb-1">{% trans "Foto" %} {% if row.a.foto %}<span class="fw-mutet">{% trans "(ersetzt bestehendes)" %}</span>{% endif %}</label>
                                 <input type="file" name="foto" accept="image/*" class="fw-datei w-full"></div>
                             <div class="col-span-2 fw-col-span-4 flex items-center gap-2 justify-end">
-                                <button type="button" onclick="document.getElementById('edit-{{ row.a.id }}').classList.add('hidden')" class="fw-btn">{% trans "Abbrechen" %}</button>
+                                <button type="button" data-verstecken="edit-{{ row.a.id }}" class="fw-btn">{% trans "Abbrechen" %}</button>
                                 <button class="fw-btn fw-primary">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}</button>
                             </div>
                         </form>

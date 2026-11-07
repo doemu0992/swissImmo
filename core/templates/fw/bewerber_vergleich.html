@@ -75,7 +75,7 @@
                         <span class="fw-chip fw-mut">{% trans "Abgesagt" %}</span>
                     {% else %}
                     <div class="inline-flex items-center gap-1.5">
-                        <button type="button" onclick="document.getElementById('besi-{{ k.b.id }}').classList.toggle('hidden')"
+                        <button type="button" data-umschalten="besi-{{ k.b.id }}"
                                 class="fw-btn fw-knapp">
                             {% zeichen 'termin' %}{% trans "Besichtigung" %}</button>
                         <form method="post" action="/neu/bewerbungen/{{ k.b.id }}/entscheid/" class="inline"

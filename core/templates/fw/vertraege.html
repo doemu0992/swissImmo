@@ -53,9 +53,9 @@
             </thead>
             <tbody>
             {% for row in rows %}
-            <tr class="fw-klickzeile" onclick="window.location='/neu/vertraege/{{ row.v.id }}/'">
+            <tr class="fw-klickzeile" data-gehe-zu="/neu/vertraege/{{ row.v.id }}/">
                 <td>
-                    <a href="/neu/vertraege/{{ row.v.id }}/" class="fw-zelle-titel" onclick="event.stopPropagation()">{{ row.v.mieter.display_name }}</a>
+                    <a href="/neu/vertraege/{{ row.v.id }}/" class="fw-zelle-titel" data-stop>{{ row.v.mieter.display_name }}</a>
                     <span class="fw-zelle-sub fw-mono">MV-{{ row.v.id }}</span>
                 </td>
                 <td>{{ row.v.einheit.liegenschaft.strasse }}{% if row.v.einheit.liegenschaft.ort %}, {{ row.v.einheit.liegenschaft.ort }}{% endif %}<span class="fw-zelle-sub">{{ row.v.einheit.bezeichnung }}</span></td>

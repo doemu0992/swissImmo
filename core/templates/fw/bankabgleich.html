@@ -496,7 +496,7 @@ anderes schachteln.
                 {% if b.rueck_kandidaten %}<div class="fw-s fw-vorschlag">{% zeichen 'hinweis' %}{% trans "Möglicherweise eine Rückbuchung einer Mieterzahlung" %}</div>{% endif %}
             </div>
             <span class="fw-betrag {% if b.betrag < 0 %}crit{% else %}good{% endif %}">{{ b.betrag|chf }}</span>
-            <button type="button" onclick="document.getElementById('bew-{{ b.id }}').classList.toggle('hidden')"
+            <button type="button" data-umschalten="bew-{{ b.id }}"
                     class="fw-btn fw-knapp">{% trans "Zuordnen" %}</button>
             <div id="bew-{{ b.id }}" class="hidden w-full fw-flaeche2 rounded-lg p-3 space-y-3">
                 {% if b.rueck_kandidaten %}

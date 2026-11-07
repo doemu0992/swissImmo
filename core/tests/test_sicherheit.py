@@ -27,7 +27,7 @@ class ModalFramingTests(TestCase):
         c = Client(); c.force_login(team)
         body = c.get('/neu/vertraege/').content.decode()
         # Klick auf die Zeile navigiert zur vollen Detailseite (kein Modal)
-        self.assertIn(f"window.location='/neu/vertraege/{v.id}/'", body)
+        self.assertIn(f'data-gehe-zu="/neu/vertraege/{v.id}/"', body)
         self.assertNotIn(f"fwModalOpenUrl('/neu/vertraege/{v.id}/'", body)
 
     def test_debitorenliste_ansehen_im_modal(self):

@@ -12,7 +12,7 @@
     </div>
     {% if kann_schreiben %}
     <div class="fw-phead-knoepfe">
-    <button type="button" onclick="document.getElementById('hypoform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %}{% trans "Hypothek erfassen" %}</button>
+    <button type="button" data-umschalten="hypoform" class="fw-btn fw-primary">{% zeichen 'neu' %}{% trans "Hypothek erfassen" %}</button>
     </div>
     {% endif %}
 </div>

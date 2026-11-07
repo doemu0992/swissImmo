@@ -18,19 +18,19 @@
 <form method="get" class="fw-listwerkzeug items-end">
     <div class="fw-feldblock">
         <label class="fw-label">{% trans "Kennzahl" %}</label>
-        <select name="typ" onchange="this.form.submit()" class="fw-feld">
+        <select name="typ" data-absenden class="fw-feld">
             {% for key, label, _k in typen %}<option value="{{ key }}" {% if typ == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
         </select>
     </div>
     <div class="fw-feldblock">
         <label class="fw-label">{% trans "Jahr" %}</label>
-        <select name="jahr" onchange="this.form.submit()" class="fw-feld">
+        <select name="jahr" data-absenden class="fw-feld">
             {% for j in jahre %}<option value="{{ j }}" {% if jahr == j %}selected{% endif %}>{{ j }}</option>{% endfor %}
         </select>
     </div>
     <div class="fw-feldblock">
         <label class="fw-label">{% trans "Liegenschaft" %}</label>
-        <select name="lg" onchange="this.form.submit()" class="fw-feld">
+        <select name="lg" data-absenden class="fw-feld">
             <option value="">{% trans "Alle Liegenschaften" %}</option>
             {% for l in alle_liegenschaften %}<option value="{{ l.id }}" {% if aktive_lg and aktive_lg.id == l.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>{% endfor %}
         </select>

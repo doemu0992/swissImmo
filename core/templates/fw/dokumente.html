@@ -10,7 +10,7 @@
         <p>{% trans "Zentrale Ablage aus Vertrags- und Objektdokumenten" %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/dokumente/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">
-    <button type="button" onclick="document.getElementById('dokform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'hochladen' %} {% trans "Dokument hochladen" %}</button>
+    <button type="button" data-umschalten="dokform" class="fw-btn fw-primary">{% zeichen 'hochladen' %} {% trans "Dokument hochladen" %}</button>
     </div>
 </div>
 
@@ -75,12 +75,12 @@
             </thead>
             <tbody>
             {% for e in eintraege %}
-            <tr class="cursor-pointer" onclick="window.open('{{ e.url }}', '_blank')">
+            <tr class="cursor-pointer" data-neues-fenster="{{ e.url }}">
                 <td>
                     <div class="flex items-center gap-3">
                         <span class="fw-ikon">{% zeichen_wert e.icon %}</span>
                         <b>{{ e.name }}</b>{% include 'fw/_zustellstatus.html' with z=e.zustell d=None %}
-                        {% if e.verlauf_url %}<a href="{{ e.verlauf_url }}" onclick="event.stopPropagation();" class="fw-chip fw-mut">{% blocktrans with n=e.version %}Version {{ n }}{% endblocktrans %}</a>{% endif %}
+                        {% if e.verlauf_url %}<a href="{{ e.verlauf_url }}" data-stop class="fw-chip fw-mut">{% blocktrans with n=e.version %}Version {{ n }}{% endblocktrans %}</a>{% endif %}
                     </div>
                 </td>
                 <td><span class="fw-marke-kapsel capitalize">{{ e.kat }}</span></td>
@@ -88,10 +88,10 @@
                 <td class="fw-faint whitespace-nowrap">{{ e.quelle }}</td>
                 <td class="fw-num whitespace-nowrap">{% if e.datum %}{{ e.datum|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="fw-right">
-                    <a href="{{ e.url }}" target="_blank" rel="noopener" onclick="event.stopPropagation();" class="fw-btn fw-knapp">{% trans "Öffnen" %}</a>
+                    <a href="{{ e.url }}" target="_blank" rel="noopener" data-stop class="fw-btn fw-knapp">{% trans "Öffnen" %}</a>
                     {% if e.loeschbar %}
                     {% if request.user|darf:"/neu/dokumente/1/eigentuemerportal/" %}
-                    <form method="post" action="{% url 'fw_ablage_portal_toggle' e.id %}" class="inline" onclick="event.stopPropagation();">
+                    <form method="post" action="{% url 'fw_ablage_portal_toggle' e.id %}" class="inline" data-stop>
                         {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
                         <button type="submit" class="fw-btn fw-knapp{% if e.portal %} fw-leise{% endif %}" aria-pressed="{% if e.portal %}true{% else %}false{% endif %}"
                                 title="{% trans 'Für den Eigentümer im Portal sichtbar schalten' %}">{% if e.portal %}{% trans "Im Eigentümerportal" %}{% else %}{% trans "Nicht im Portal" %}{% endif %}</button>

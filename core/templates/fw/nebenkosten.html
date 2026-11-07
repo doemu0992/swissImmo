@@ -76,7 +76,7 @@
             </thead>
             <tbody>
             {% for row in rows %}
-            <tr class="cursor-pointer" onclick="window.location='/neu/nebenkosten/{{ row.p.id }}/'">
+            <tr class="cursor-pointer" data-gehe-zu="/neu/nebenkosten/{{ row.p.id }}/">
                 <td>
                     <span class="fw-strong">{{ row.p.bezeichnung }}</span>
                 </td>
@@ -90,7 +90,7 @@
                 </td>
                 <td class="fw-right">
                     {% if not row.p.abgeschlossen %}
-                    <form method="post" action="/neu/nebenkosten/{{ row.p.id }}/loeschen/" class="inline" onclick="event.stopPropagation();" data-bestaetigen="{% filter escapejs %}{% blocktrans with name=row.p.bezeichnung|safe %}Abrechnungsperiode «{{ name }}» löschen?{% endblocktrans %}{% endfilter %}">{% csrf_token %}
+                    <form method="post" action="/neu/nebenkosten/{{ row.p.id }}/loeschen/" class="inline" data-stop data-bestaetigen="{% filter escapejs %}{% blocktrans with name=row.p.bezeichnung|safe %}Abrechnungsperiode «{{ name }}» löschen?{% endblocktrans %}{% endfilter %}">{% csrf_token %}
                         <button class="fw-btn fw-geist fw-knapp" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                     </form>
                     {% endif %}

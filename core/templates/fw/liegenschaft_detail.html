@@ -101,10 +101,10 @@ Liegenschaft ohne Betreuung soll auffallen.
             <thead><tr><th scope="col">{% trans "Objekt" %}</th><th scope="col">{% trans "Mietpartei" %}</th><th scope="col" class="fw-right">{% trans "Brutto" %}</th><th scope="col">{% trans "Status" %}</th></tr></thead>
             <tbody>
             {% for row in einheiten_rows %}
-            <tr class="fw-klickzeile" onclick="window.location='{% if row.vertrag %}/neu/vertraege/{{ row.vertrag.id }}/{% else %}/neu/objekte/{{ row.einheit.id }}/{% endif %}{{ lg_query }}'">
-                <td><a href="/neu/objekte/{{ row.einheit.id }}/{{ lg_query }}" class="fw-zelle-titel" onclick="event.stopPropagation()">{{ row.einheit.bezeichnung }}</a>
+            <tr class="fw-klickzeile" data-gehe-zu="{% if row.vertrag %}/neu/vertraege/{{ row.vertrag.id }}/{% else %}/neu/objekte/{{ row.einheit.id }}/{% endif %}{{ lg_query }}">
+                <td><a href="/neu/objekte/{{ row.einheit.id }}/{{ lg_query }}" class="fw-zelle-titel" data-stop>{{ row.einheit.bezeichnung }}</a>
                     <span class="fw-zelle-sub">{{ row.einheit.get_typ_display }}{% if row.einheit.flaeche_m2 %} · {{ row.einheit.flaeche_m2|floatformat:0 }} m²{% endif %}</span></td>
-                <td>{% if row.vertrag %}<a href="/neu/vertraege/{{ row.vertrag.id }}/" class="fw-link" onclick="event.stopPropagation()">{{ row.vertrag.mieter.display_name }}</a>
+                <td>{% if row.vertrag %}<a href="/neu/vertraege/{{ row.vertrag.id }}/" class="fw-link" data-stop>{{ row.vertrag.mieter.display_name }}</a>
                     <span class="fw-zelle-sub fw-mono">MV-{{ row.vertrag.id }}</span>{% else %}<span class="fw-faint">–</span>{% endif %}</td>
                 <td class="fw-right fw-num">{% if row.vertrag %}{{ row.vertrag.brutto_mietzins|chf }}{% else %}<span class="fw-faint">–</span>{% endif %}</td>
                 <td>{% if not row.vertrag %}<span class="fw-chip fw-warn">{% trans "leer" %}</span>{% elif row.vertrag.id in lg_rueckstand_ids %}<span class="fw-chip fw-crit">{% trans "Rückstand" %}</span>{% endif %}</td>
@@ -373,7 +373,7 @@ Liegenschaft ohne Betreuung soll auffallen.
                 <td class="fw-num">{% if g.installations_datum %}{{ g.installations_datum|date:"m.Y" }}{% else %}—{% endif %}</td>
                 <td class="fw-num">{% if g.garantie_bis %}{{ g.garantie_bis|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="fw-right whitespace-nowrap">
-                    <button type="button" onclick="document.getElementById('lggedit-{{ g.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' klasse='text-xs' %}</button>
+                    <button type="button" data-umschalten="lggedit-{{ g.id }}" class="fw-ikon mut" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' klasse='text-xs' %}</button>
                     <form method="post" action="/neu/geraet/{{ g.id }}/loeschen/" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Gerät löschen?" %}{% endfilter %}">{% csrf_token %}
                         <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' klasse='text-xs' %}</button>
                     </form>
@@ -397,7 +397,7 @@ Liegenschaft ohne Betreuung soll auffallen.
                         <div class="col-span-2 fw-col-span-3"><label class="fw-label mb-1">{% trans "Notiz" %}</label>
                             <input name="notiz" value="{{ g.notiz }}" class="fw-feld w-full"></div>
                         <div class="col-span-2 fw-col-span-3 flex items-center gap-2 justify-end">
-                            <button type="button" onclick="document.getElementById('lggedit-{{ g.id }}').classList.add('hidden')" class="fw-btn">{% trans "Abbrechen" %}</button>
+                            <button type="button" data-verstecken="lggedit-{{ g.id }}" class="fw-btn">{% trans "Abbrechen" %}</button>
                             <button class="fw-btn fw-primary">{% zeichen 'speichern' %}{% trans "Speichern" %}</button>
                         </div>
                     </form>
@@ -441,7 +441,7 @@ Liegenschaft ohne Betreuung soll auffallen.
                 <td>{{ z.standort|default:"—" }}</td>
                 <td class="fw-right"><span class="fw-betrag mut">{{ z.aktueller_stand|floatformat:2 }}</span></td>
                 <td class="fw-right whitespace-nowrap">
-                    <button type="button" onclick="document.getElementById('lgzedit-{{ z.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' klasse='text-xs' %}</button>
+                    <button type="button" data-umschalten="lgzedit-{{ z.id }}" class="fw-ikon mut" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' klasse='text-xs' %}</button>
                     <form method="post" action="/neu/zaehler/{{ z.id }}/loeschen/" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Zähler löschen?" %}{% endfilter %}">{% csrf_token %}
                         <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' klasse='text-xs' %}</button>
                     </form>
@@ -459,7 +459,7 @@ Liegenschaft ohne Betreuung soll auffallen.
                         <div><label class="fw-label mb-1">{% trans "Aktueller Stand" %}</label>
                             <input name="aktueller_stand" value="{{ z.aktueller_stand|floatformat:2 }}" inputmode="decimal" class="fw-feld w-full"></div>
                         <div class="col-span-2 fw-col-span-4 flex items-center gap-2 justify-end">
-                            <button type="button" onclick="document.getElementById('lgzedit-{{ z.id }}').classList.add('hidden')" class="fw-btn">{% trans "Abbrechen" %}</button>
+                            <button type="button" data-verstecken="lgzedit-{{ z.id }}" class="fw-btn">{% trans "Abbrechen" %}</button>
                             <button class="fw-btn fw-primary">{% zeichen 'speichern' %}{% trans "Speichern" %}</button>
                         </div>
                     </form>
@@ -618,7 +618,7 @@ Liegenschaft ohne Betreuung soll auffallen.
             <span class="fw-ikon">{% zeichen 'liegenschaft' %}</span>
             <span class="fw-t">{{ g.label }}</span>
             <span class="fw-chip fw-mut">{% blocktrans count n=g.dokumente|length %}{{ n }} Dokument{% plural %}{{ n }} Dokumente{% endblocktrans %}</span>
-            {% if g.einheit %}<span class="fw-rechts"><a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Objekt" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a></span>{% endif %}
+            {% if g.einheit %}<span class="fw-rechts"><a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" data-stop>{% trans "Objekt" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a></span>{% endif %}
         </summary>
         {% for d in g.dokumente %}
         <div class="fw-zeile">
@@ -706,7 +706,7 @@ Liegenschaft ohne Betreuung soll auffallen.
                     {% elif f.faellig_bald %}<span class="fw-chip fw-warn">in {{ f.tage }} T</span>{% endif %}</td>
                 <td class="fw-right">{% if f.wf.intervall_monate %}{% blocktrans with n=f.wf.intervall_monate %}{{ n }} Mt.{% endblocktrans %}{% else %}{% trans "einmalig" %}{% endif %}</td>
                 <td class="fw-right whitespace-nowrap">
-                    <button type="button" onclick="document.getElementById('wfedit-{{ f.wf.id }}').classList.toggle('hidden')" class="fw-ikon mut" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' klasse='text-xs' %}</button>
+                    <button type="button" data-umschalten="wfedit-{{ f.wf.id }}" class="fw-ikon mut" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' klasse='text-xs' %}</button>
                     <form method="post" action="/neu/frist/{{ f.wf.id }}/loeschen/" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Frist löschen?" %}{% endfilter %}">{% csrf_token %}
                         <button title="{% trans 'Frist löschen' %}" class="fw-ikon mut gefahr">{% zeichen 'loeschen' klasse='text-xs' %}</button>
                     </form>
@@ -735,7 +735,7 @@ Liegenschaft ohne Betreuung soll auffallen.
                         <div><label class="fw-label mb-1">{% trans "Notiz" %}</label>
                             <input name="notiz" value="{{ f.wf.notiz }}" class="fw-feld w-full"></div>
                         <div class="fw-col-span-2 flex items-center gap-2 justify-end">
-                            <button type="button" onclick="document.getElementById('wfedit-{{ f.wf.id }}').classList.add('hidden')" class="fw-btn">{% trans "Abbrechen" %}</button>
+                            <button type="button" data-verstecken="wfedit-{{ f.wf.id }}" class="fw-btn">{% trans "Abbrechen" %}</button>
                             <button class="fw-btn fw-primary">{% zeichen 'speichern' %}{% trans "Speichern" %}</button>
                         </div>
                     </form>
@@ -775,8 +775,8 @@ Liegenschaft ohne Betreuung soll auffallen.
             <thead><tr><th scope="col">{% trans "Objekt" %}</th><th scope="col">{% trans "Typ" %}</th><th scope="col" class="fw-right">{% trans "Fläche" %}</th><th scope="col">{% trans "Status" %}</th><th scope="col">{% trans "Mieter" %}</th><th scope="col"></th></tr></thead>
             <tbody>
             {% for row in einheiten_rows %}
-            <tr class="cursor-pointer" onclick="window.location='/neu/objekte/{{ row.einheit.id }}/{{ lg_query }}'">
-                <td><a href="/neu/objekte/{{ row.einheit.id }}/{{ lg_query }}" class="fw-strong" onclick="event.stopPropagation()">{{ row.einheit.bezeichnung }}</a>{% if row.einheit.etage %}<div class="fw-klein">{{ row.einheit.etage }}</div>{% endif %}</td>
+            <tr class="cursor-pointer" data-gehe-zu="/neu/objekte/{{ row.einheit.id }}/{{ lg_query }}">
+                <td><a href="/neu/objekte/{{ row.einheit.id }}/{{ lg_query }}" class="fw-strong" data-stop>{{ row.einheit.bezeichnung }}</a>{% if row.einheit.etage %}<div class="fw-klein">{{ row.einheit.etage }}</div>{% endif %}</td>
                 <td>{{ row.einheit.get_typ_display }}</td>
                 <td class="fw-right">{% if row.einheit.flaeche_m2 %}{{ row.einheit.flaeche_m2|floatformat:0 }} m²{% else %}—{% endif %}</td>
                 <td>{% if row.vertrag %}<span class="fw-chip fw-good fw-dot">{% trans "Vermietet" %}</span>

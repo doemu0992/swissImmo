@@ -52,6 +52,7 @@ class SchadenModalTests(TestCase):
         self.assertIn(f"fwModalOpenUrl('/neu/schaeden/{t.id}/'", body)
         self.assertIn('id="fwModal"', body)
         self.assertNotIn(f"window.location='/neu/schaeden/{t.id}/'", body)
+        self.assertNotIn(f'data-gehe-zu="/neu/schaeden/{t.id}/"', body)         # öffnet die Schublade, keine Seite
 
     def test_schaden_detail_im_iframe_chromelos(self):
         """Das Schaden-Detail läuft im Popup chrome-frei (iframe-Kontext-Erkennung)."""

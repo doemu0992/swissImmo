@@ -58,7 +58,7 @@
                     {% if kann_verschieben %}
                     <form method="post" action="/neu/schaeden/{{ z.t.id }}/verschieben/" class="fw-karte-form">{% csrf_token %}
                         <label class="sr-only" for="st-{{ z.t.id }}">{% trans "Zustand von Ticket" %} #{{ z.t.id }}</label>
-                        <select id="st-{{ z.t.id }}" name="status" class="fw-karte-wahl" onchange="this.form.requestSubmit()">
+                        <select id="st-{{ z.t.id }}" name="status" class="fw-karte-wahl" data-absenden="request">
                             {% for wert, bez in z.ziele %}<option value="{{ wert }}"{% if wert == z.t.status %} selected{% endif %}>{{ bez }}</option>{% endfor %}
                         </select>
                     </form>

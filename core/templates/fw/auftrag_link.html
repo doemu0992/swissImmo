@@ -24,7 +24,7 @@ speichern, deshalb rendert die Aktion diese Seite direkt.
     <div class="fw-rumpf space-y-4">
         <div class="fw-feldblock">
             <label class="fw-label" for="hw-link">{% trans "Link für den Handwerker" %}</label>
-            <input id="hw-link" class="fw-feld" type="text" readonly value="{{ link }}" onfocus="this.select()">
+            <input id="hw-link" class="fw-feld" type="text" readonly value="{{ link }}" data-auswaehlen>
         </div>
         <div class="flex flex-wrap gap-2">
             <button type="button" class="fw-btn fw-primary" data-kopiert="{% trans 'Kopiert' %}"

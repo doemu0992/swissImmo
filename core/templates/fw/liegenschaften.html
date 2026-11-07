@@ -94,8 +94,8 @@
             </tr></thead>
             <tbody>
             {% for row in rows %}
-            <tr data-zeile class="fw-klickzeile" onclick="window.location='/neu/liegenschaften/{{ row.lg.id }}/'">
-                <td><a href="/neu/liegenschaften/{{ row.lg.id }}/" class="fw-zelle-titel" onclick="event.stopPropagation()">{{ row.lg.strasse }}</a>
+            <tr data-zeile class="fw-klickzeile" data-gehe-zu="/neu/liegenschaften/{{ row.lg.id }}/">
+                <td><a href="/neu/liegenschaften/{{ row.lg.id }}/" class="fw-zelle-titel" data-stop>{{ row.lg.strasse }}</a>
                     <span class="fw-zelle-sub">{{ row.lg.plz }} {{ row.lg.ort }}{% if row.lg.baujahr %} · {% blocktrans with j=row.lg.baujahr %}Baujahr {{ j }}{% endblocktrans %}{% endif %}</span></td>
                 <td>{% if row.lg.eigentuemer %}{{ row.lg.eigentuemer }}{% else %}<span class="fw-faint">—</span>{% endif %}</td>
                 <td class="fw-right fw-num">{{ row.einheiten }}</td>

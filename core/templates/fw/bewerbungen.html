@@ -30,7 +30,7 @@
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         {% if ansicht == 'liste' %}<input type="hidden" name="ansicht" value="liste">{% endif %}
         <label class="sr-only" for="bwObjekt">{% trans "Objekt" %}</label>
-        <select id="bwObjekt" name="einheit" class="fw-feld" onchange="this.form.requestSubmit()">
+        <select id="bwObjekt" name="einheit" class="fw-feld" data-absenden="request">
             <option value="">{% trans "Alle Objekte" %}</option>
             {% for o in objekte %}<option value="{{ o.id }}"{% if aktive_einheit and o.id == aktive_einheit.id %} selected{% endif %}>{{ o.liegenschaft.strasse }} · {{ o.bezeichnung }}</option>{% endfor %}
         </select>

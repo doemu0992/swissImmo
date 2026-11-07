@@ -190,7 +190,7 @@ Betreuung soll auffallen, nicht still dem Ersten zufallen, der sie öffnet.
         <div class="fw-kopf"><h2>{% trans "Nebenkosten / Heizung" %}</h2></div>
         <div class="fw-rumpf space-y-3">
         <label class="fw-haekchen">
-            <input type="checkbox" name="hkvo_aktiv" {% if form.hkvo_aktiv.value %}checked{% endif %} onchange="document.getElementById('hkvo-box').classList.toggle('hidden', !this.checked)" class="fw-akzent">
+            <input type="checkbox" name="hkvo_aktiv" {% if form.hkvo_aktiv.value %}checked{% endif %} data-sichtbar-wenn="hkvo-box" class="fw-akzent">
             {% trans "Verbrauchsabhängige Heizkostenabrechnung (HKVO)" %}
         </label> {% hilfe 'hkvo' %}
         <div id="hkvo-box" class="{% if not form.hkvo_aktiv.value and not form.hkvo_grundkosten_prozent.errors %}hidden{% endif %} pl-6">

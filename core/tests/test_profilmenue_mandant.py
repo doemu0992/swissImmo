@@ -89,7 +89,7 @@ class ProfilmenueMandantTests(TestCase):
         auswahl = eines(form[0], tag='select')
         self.assertEqual(auswahl.attrs['name'], 'organisation')
         self.assertEqual(auswahl.attrs['id'], 'fwMandantWahlProfil')
-        self.assertIn('submit', auswahl.attrs['onchange'])
+        self.assertIn('data-absenden', auswahl.attrs)      # schickt das Formular bei Änderung ab
         self.assertTrue(auswahl.attrs.get('aria-label'))
         self.assertIn('fw-feld', auswahl.klassen)
         # Eine sichtbare Beschriftung gehört zur Auswahl

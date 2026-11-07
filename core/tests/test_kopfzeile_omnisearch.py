@@ -253,7 +253,7 @@ class KopfzeileStrukturTests(TestCase):
         auswahl = [k for k in bestand.alle() if k.tag == 'select']
         self.assertEqual(len(auswahl), 1)
         self.assertEqual(auswahl[0].attrs['name'], 'lg')
-        self.assertIn('submit', auswahl[0].attrs['onchange'])
+        self.assertIn('data-absenden', auswahl[0].attrs)      # schickt das Formular bei Änderung ab
         werte = [k.attrs.get('value') for k in auswahl[0].alle() if k.tag == 'option']
         self.assertEqual(werte[0], '', 'Die erste Wahl ist «Ganzer Bestand»')
         self.assertIn(str(self.lg.id), werte)
