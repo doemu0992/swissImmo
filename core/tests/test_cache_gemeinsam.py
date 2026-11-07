@@ -16,7 +16,7 @@ from django.core.cache.backends.filebased import FileBasedCache
 from django.core.cache.backends.locmem import LocMemCache
 from django.test import SimpleTestCase, override_settings
 
-from swiss_immo.cache_config import caches_fuer
+from core.cache_config import caches_fuer
 
 
 def _worker(conf, name='default'):
