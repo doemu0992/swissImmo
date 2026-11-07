@@ -170,12 +170,48 @@ Die Stände liegen auf **demselben Rechner**. Das schützt gegen »versehentlich
 gelöscht«, gegen einen missratenen Deploy und gegen eine kaputte Migration.
 Es schützt **nicht** gegen den Verlust des Kontos oder der Maschine.
 
-Eine Kopie ausser Haus wäre der nächste Schritt. Sie bedeutet einen externen
-Dienst, laufende Kosten und Kundendaten, die das System verlassen — bei
-Personendaten von Mietern also auch eine Frage des Datenschutzes (Standort,
-Auftragsverarbeitung). Das ist ein Entscheid, kein Implementierungsdetail, und
-deshalb hier bewusst nicht eingebaut. Aufgeführt in `PHASE-2-PLAN.md` unter den
-offenen Entscheiden.
+Die Kopie ausser Haus gibt es seit dem 07.11.2026 (Roadmap Nr. 12), die
+Entscheide dahinter bleiben aber Sache der Verwaltung: Wohin die Kopie geht
+(Standort, Auftragsverarbeitung bei Personendaten von Mieterinnen und Mietern)
+und wer die Passphrase aufbewahrt. Die Kopie ist verschlüsselt, der Ort sieht
+also nur Geheimtext.
+
+## Verschlüsselte Kopie ausser Haus
+
+```bash
+export SICHERUNG_SCHLUESSEL='…lange Passphrase…'     # mindestens 12 Zeichen, nie im Code
+python manage.py sicherung --offsite /mnt/ausser-haus
+```
+
+* Jeder frische Stand wird mit **AES-256-GCM** verschlüsselt (Schlüssel per scrypt aus der
+  Passphrase, frisches Salz je Datei) nach `…/<stempel>-db.<ext>.enc` bzw. `…-medien.tar.gz.enc`.
+  Dazu eine Prüfsummenliste `<stempel>-manifest.json`.
+* Jede Kopie wird **sofort wieder entschlüsselt und gegen die Prüfsumme gelesen**. Was nicht
+  stimmt, wird verworfen und der Befehl bricht ab.
+* Fehlt die Passphrase oder ist sie zu kurz, bricht der Befehl ab, **bevor** etwas entsteht.
+* Der Ordner muss wirklich ausser Haus liegen: ein eingehängtes Laufwerk, ein `rclone mount`
+  auf einen S3-/SFTP-Speicher, `sshfs`. Der Befehl kann das nicht prüfen.
+
+**Aufbewahrung** (OR 958f: zehn Jahre): täglich die jüngsten 14, je Monat der letzte der
+letzten 12 Monate, je Jahr der letzte der letzten 10 Jahre (`--offsite-taeglich`,
+`--offsite-monate`, `--offsite-jahre`). Gemessen wird vom neuesten Stand aus, Lücken
+verlängern die Frist nicht.
+
+**Zurückholen:**
+
+```bash
+python manage.py sicherung --entschluesseln 20261107-010000-db.dump.enc --nach /tmp/db.dump
+```
+
+Prüft die Prüfsumme gegen die Liste daneben und überschreibt nichts Vorhandenes. Weiter wie
+unter «Wiederherstellen».
+
+**Die Passphrase getrennt aufbewahren.** Ohne sie ist die Kopie unlesbar, und ohne Kopie hilft
+die Passphrase nichts: beides an verschiedenen Orten (Passwortmanager der Inhaberin, versiegelter
+Umschlag im Tresor). Ein Wechsel der Passphrase gilt für neue Stände; alte bleiben mit der
+alten lesbar.
+
+Einplanen wie die lokale Sicherung (Scheduled Task), `SICHERUNG_SCHLUESSEL` in der `.env`.
 
 ## Durchgespielt am 18.08.2026
 
