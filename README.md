@@ -5,7 +5,7 @@ Immobilienverwaltungen, die Mandate, Liegenschaften, Mietverhältnisse und die
 dazugehörige Buchhaltung an einem Ort führen wollen.
 
 Gebaut mit **Django 5.2** (Python 3.11), serverseitig gerenderten Vorlagen mit
-Tailwind CSS und Alpine.js, einer kleinen REST-Schnittstelle über
+Tailwind CSS und Vanilla-JS (kein Frontend-Framework), einer kleinen REST-Schnittstelle über
 **django-ninja** und PDF-Erzeugung mit xhtml2pdf/ReportLab. Daten liegen in
 SQLite (Standard) oder PostgreSQL. Die Anwendung ist mandantenfähig: mehrere
 Verwaltungen (Organisationen) arbeiten strikt getrennt in derselben Instanz.
@@ -165,7 +165,7 @@ nicht eingerichtet ist.
 python manage.py check
 python manage.py makemigrations --check --dry-run
 ruff check .
-python manage.py test --parallel 8        # ca. 2'500 Tests, rund 5 Minuten
+python manage.py test --parallel 8        # rund 7'000 Tests (Stand 07.11.2026), auf PostgreSQL mit 4 Prozessen rund 9 Minuten
 ```
 
 Schlägt ein Test unter `--parallel` fehl und die Meldung lautet nur

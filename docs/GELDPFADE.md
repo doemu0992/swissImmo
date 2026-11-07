@@ -65,9 +65,12 @@ Weiterverrechnung, Betreibung, NK-Verbuchen, Zahlungsklärung.
 manuelle Buchung (`fw_buchung_neu`, Serienerfassung ist beabsichtigt), Anlage erfassen —
 ein Doppelklick erzeugt zwei Belege; es gibt keinen natürlichen Schlüssel, an dem man
 sie erkennt. STWEG-Buchungen (`stweg/hauptbuch.py`, `inkasso.py`) wurden nicht geprüft.
-Kein DB-Constraint auf Storno-Gegenbuchungen oder `Zahlungseingang.bank_referenz`: Der
-Bestand kann Dubletten aus den alten Rennen enthalten, eine Migration würde dann auf
-Produktion scheitern. Erst prüfen (SQL im Bericht), dann Constraint nachziehen.
+**Stand 07.11.2026:** Die DB-Constraints sind inzwischen da, aber wie geplant erst, wenn der
+Bestand sie zulässt: `uniq_storno_je_original` und `uniq_bankreferenz_je_organisation`
+(`finance/db_schutz.py`, `EINDEUTIGKEITEN`) sowie `chk_buchung_betrag_positiv` und
+`chk_buchung_soll_ungleich_haben` (`PRUEFREGELN`). Gibt es Dubletten, legt die Migration den
+Constraint nicht an, protokolliert es laut und `python manage.py db_schutz` holt ihn nach,
+sobald der Bestand bereinigt ist.
 
 ## 3. Eigentümerauszahlung: die Liquiditätsbasis
 
