@@ -35,7 +35,6 @@ DEKLARATION = re.compile(r'font-family\s*:\s*([^;}"<]+)', re.I)
 
 #: Dateien, die bei Einführung dieses Wächters (29.10.2026) noch Fremdschrift tragen. Nie ergänzen.
 ALTFAELLE = {
-    'static/css/fairwalter_theme.css',
     'core/templates/fw/kommunikation.html',  # Druckfenster «Brief», Zeile 327: Inter ist nicht geladen
 }
 

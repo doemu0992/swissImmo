@@ -3,7 +3,6 @@ siehe docs/ETAPPE-1-ZERLEGEN.md). 11 Klassen, unveraendert uebernommen."""
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.contrib import admin
 from django.test import TestCase, Client, RequestFactory
 from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _heute, Mieter, Organisation, Liegenschaft,
@@ -862,48 +861,8 @@ class ApiOberflaecheNachE1cTests(TestCase):
                    content_type='application/json').status_code, 403)   # fail-closed ohne Secret
 
 
-class AdminNurLesendTests(TestCase):
-    """E2: Der Unfold-Admin ist Auskunftswerkzeug, kein zweiter Schreibpfad.
-
-    Geprüft wird über die tatsächliche Registrierung, nicht über eine Liste im
-    Test — ein neuer ModelAdmin auf der schreibenden Unfold-Basisklasse fällt
-    hier auf, nicht erst im Betrieb. Das ist der eigentliche Zweck dieser
-    Klasse: Die Regel muss auch für Code gelten, den heute noch niemand
-    geschrieben hat.
-    """
-
-    RECHTE = ('has_add_permission', 'has_change_permission', 'has_delete_permission')
-
-    def _superuser_request(self):
-        # Bewusst mit einem Superuser: Wären die Rechte an Django-Permissions
-        # geknüpft statt hart verneint, würde genau er sie alle bestehen.
-        req = RequestFactory().get('/admin/')
-        req.user = User.objects.create_superuser('admin_e2', 'e2@example.com', 'x')
-        return req
-
-    def test_kein_registrierter_admin_darf_schreiben(self):
-        req = self._superuser_request()
-        self.assertGreaterEqual(len(admin.site._registry), 27)   # Regression: nichts still abgemeldet
-        for modell, adm in admin.site._registry.items():
-            for recht in self.RECHTE:
-                with self.subTest(modell=modell._meta.label, recht=recht):
-                    pruef = getattr(adm, recht)
-                    self.assertFalse(pruef(req), f"{modell._meta.label}.{recht} erlaubt Schreiben")
-
-    def test_auch_kein_inline_darf_schreiben(self):
-        # Inlines haben eigene Rechte. Ein lesender ModelAdmin mit schreibendem
-        # Inline wäre der offene Seiteneingang.
-        req = self._superuser_request()
-        gepruefte = 0
-        for modell, adm in admin.site._registry.items():
-            for inline_klasse in (getattr(adm, 'inlines', []) or []):
-                inline = inline_klasse(modell, admin.site)
-                gepruefte += 1
-                for recht in self.RECHTE:
-                    with self.subTest(inline=inline_klasse.__name__, recht=recht):
-                        self.assertFalse(getattr(inline, recht)(req, None),
-                                         f"{inline_klasse.__name__}.{recht} erlaubt Schreiben")
-        self.assertGreaterEqual(gepruefte, 17)   # sonst prüft der Test nichts mehr
+class BenutzerverwaltungNeuTests(TestCase):
+    """Die alte Admin gibt es nicht mehr: Die Rechteverwaltung läuft allein über /neu/benutzer/."""
 
     def test_benutzerverwaltung_bleibt_in_neu_moeglich(self):
         # Der Admin ist zu; die Rechteverwaltung darf deshalb nicht mit ihm

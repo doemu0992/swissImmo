@@ -2,9 +2,6 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-from django.templatetags.static import static
-# WICHTIG: Lazy Import für Reverse URLs, damit Settings nicht crashen
-from django.urls import reverse_lazy
 
 # ==========================================
 # 1. BASIS & ENVIRONMENT LADEN
@@ -122,12 +119,6 @@ if not DEBUG and not TESTING:
 # ==========================================
 
 INSTALLED_APPS = [
-    # --- MODERNES DESIGN (Für Fallback-Admin) ---
-    "unfold",
-    "unfold.contrib.filters",
-    "unfold.contrib.forms",
-    "unfold.contrib.import_export",
-
     # --- Deine Apps (NEUE SPA-ARCHITEKTUR) ---
     'benutzer',     # Benutzermodell (AUTH_USER_MODEL, siehe Etappe 3)
     'core',         # utils & views (Die Zentrale)
@@ -142,6 +133,9 @@ INSTALLED_APPS = [
     'abo',          # Abonnement, Funktionsfreigabe, Plattform-Rechnung
 
     # --- Standard Django ---
+    # `django.contrib.admin` bleibt installiert, obwohl es keine Admin-Oberfläche mehr gibt: Die Tabelle
+    # `django_admin_log` hat einen Fremdschlüssel auf den Benutzer. Ohne die App löschte der ORM beim Löschen
+    # eines Kontos die Log-Zeilen nicht mit, und die Datenbank wiese das Löschen ab.
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -549,79 +543,6 @@ LOGGING = {
     'root': {'handlers': ['console', 'file'], 'level': 'INFO'},
     'loggers': {
         'django.request': {'handlers': ['console', 'file'], 'level': 'ERROR', 'propagate': False},
-    },
-}
-
-# ==========================================
-# 10. MODERNES DESIGN KONFIGURATION (UNFOLD)
-# ==========================================
-
-UNFOLD = {
-    "SITE_TITLE": "immoswiss Verwaltung",
-    "SITE_HEADER": "immoswiss",
-    "SITE_URL": reverse_lazy("fw_dashboard"), # Logo-Klick fuehrt in die aktive Oberflaeche /neu/
-    # Kein SITE_ICON: Unfold lädt den Wert als Bildadresse. «real_estate_agent» ist ein Name der
-    # Material-Symbole, kein Bild, und ergab ein gebrochenes Logo samt 404 auf jeder Admin-Seite (DESIGN-14).
-
-    # --- GLOBALER CLEAN-LOOK (RAHMENLOS) & INLINE-EDITING ---
-    "STYLES": [
-        # DIE SCHRIFT MUSS MIT (E2.50)
-        #
-        # `fairwalter_theme.css` zog Inter per `@import` von
-        # fonts.googleapis.com — ein Fremdaufruf bei JEDER Admin-Seite, und
-        # die IP-Adresse jedes Benutzers ging an Google. Der Aufruf ist raus
-        # und die Datei sagt jetzt `font-family: 'IBM Plex Sans'`.
-        #
-        # NUR: `schriften.css` stand hier nicht, und ohne die `@font-face`-
-        # Regeln gibt es die Familie auf einer Admin-Seite gar nicht. Im
-        # Browser nachgemessen war die Schrift nach dem Ausbau die
-        # System-Serifenlose, nicht Plex — der Ausbau stimmte, die
-        # Ersatz-Angabe war leer.
-        #
-        # Die Datei enthaelt AUSSCHLIESSLICH `@font-face`; sie kann kein
-        # Layout veraendern, nur die Familie bereitstellen. Sie steht vorn,
-        # damit die Regeln vor ihrer ersten Verwendung geladen sind.
-        lambda request: static("css/schriften.css"),
-        lambda request: static("css/fairwalter_theme.css") + "?v=3",
-        lambda request: static("css/custom_admin.css") + "?v=1000",
-    ],
-    "SCRIPTS": [
-        lambda request: static("js/section_toggle.js") + "?v=999",
-    ],
-
-    # Ember-Schema wie die Oberfläche (Production-Check 26.10.2026): Die
-    # Skala läuft über die Tokens der Stilschicht — 100 = `--ds-brand-soft`,
-    # 300/400 = `--ds-brand-600`/`--ds-akzent-hell` (dunkel), 500 = `--ds-akzent`,
-    # 600 = `--ds-akzent-tief`, 700 = `--ds-brand`, 800 = `--ds-brand-600`.
-    # Vorher stand hier das Unfold-Blau — das einzige Blau der Anwendung.
-    "COLORS": {
-        "primary": {
-            "50": "253 243 237",
-            "100": "251 231 220",
-            "200": "248 205 181",
-            "300": "246 167 124",
-            "400": "240 138 85",
-            "500": "224 100 47",
-            "600": "196 83 31",
-            "700": "176 68 22",
-            "800": "138 52 16",
-            "900": "110 41 13",
-            "950": "70 26 8",
-        },
-    },
-
-    "SIDEBAR": {
-        "show_search": True,
-        "show_all_applications": True, # Erlaubt Zugriff auf alle Daten im Notfall
-        "navigation": [
-            {
-                "title": "Hauptsystem",
-                "separator": True,
-                "items": [
-                    {"title": "Zur Verwaltung 🚀", "icon": "dashboard", "link": reverse_lazy("fw_dashboard")},
-                ],
-            },
-        ],
     },
 }
 

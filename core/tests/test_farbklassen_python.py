@@ -51,7 +51,8 @@ Jetzt liest `_zaehle` den **Syntaxbaum**. Der kennt Verschachtelung und
 Anführungszeichen von sich aus, und er kennt keine Kommentare. Docstrings
 werden ausgenommen — sie sind Prosa, sonst zählte dieser Erklärtext hier mit.
 
-**STAND 452 in 5 Dateien.**
+Die alte Django-Admin ist entfernt (07.11.2026): Damit sind es keine mehr, und die Obergrenze unten ist leer.
+**STAND 0 in 0 Dateien.**
 
 Alles davon steht in `admin.py`: Djangos eigene Oberfläche lädt die
 Komponentenschicht nicht. Views und Dienste sind seit E2.20 auf null.
@@ -118,16 +119,9 @@ FARBMUSTER = re.compile(
     r'white|black)(?:-\d{2,3})?(?:/\d{1,3})?\b')
 
 
-#: Stand vom 24.08.2026, finance 29.09.2026 (Audit Etappe 0: toter
-#: «Senden»-Knopf entfernt; crm/admin.py 29.10.2026: Kontakt-Knöpfe ohne f-String-Klassenketten).
-#: Obergrenze je Datei — nur senken.
-OBERGRENZE = {
-    'crm/admin.py': 90,
-    'finance/admin.py': 59,
-    'portfolio/admin.py': 189,
-    'rentals/admin.py': 63,
-    'tickets/admin.py': 51,
-}
+#: Obergrenze je Datei — nur senken. Leer seit dem Entfernen der Django-Admin (07.11.2026): Jede neue Python-Datei
+#: mit Farbklassen in Zeichenketten fällt hier auf.
+OBERGRENZE = {}
 
 
 def _zeichenketten(baum):

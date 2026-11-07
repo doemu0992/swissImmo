@@ -870,64 +870,6 @@ class AbsenderInDokumentenTests(IsolationsBasis):
                       'Das PDF eines Vertrags von B nennt seine eigene Verwaltung nicht')
 
 
-class AdminUmgehungTests(IsolationsBasis):
-    """Der Admin ist seit E2 lesend — er darf aber auch nichts Fremdes ZEIGEN.
-
-    Django geht im Admin über `_base_manager`, nicht über `objects`. Ein
-    `TenantManager` auf `objects` greift dort also nicht. Das ist zu prüfen,
-    nicht anzunehmen.
-    """
-
-    def test_admin_zeigt_keine_fremden_datensaetze(self):
-        """Die Annahme im Klassennamen stimmt nicht — geprüft statt geglaubt.
-
-        Erwartet war, dass `ModelAdmin.get_queryset` über `_base_manager`
-        geht und den `TenantManager` damit umgeht. Django nimmt dort aber
-        `_default_manager` (`django/contrib/admin/options.py:436`), also
-        genau den gefilterten Manager. Die Umgehung, gegen die dieser Test
-        geschrieben wurde, existiert nicht.
-        """
-        from django.contrib import admin
-
-        from core.tenancy import organisation_kontext
-        from rentals.models import Mietvertrag
-
-        modeladmin = admin.site._registry[Mietvertrag]
-        anfrage = self.client.get('/admin/').wsgi_request
-        anfrage.user = self.a.benutzer
-
-        with organisation_kontext(self.a.organisation):
-            sichtbar = set(modeladmin.get_queryset(anfrage).values_list('pk', flat=True))
-
-        # Der eigene Vertrag MUSS drin sein. Ohne diese Zeile wäre der Test
-        # auch bei einer leeren Liste grün — und eine leere Liste beweist
-        # nichts über Isolation.
-        self.assertIn(self.a.vertrag.pk, sichtbar,
-                      'Der Admin zeigt dem Benutzer nicht einmal den eigenen Vertrag — '
-                      'ein leeres Ergebnis belegt keine Trennung.')
-        self.assertNotIn(self.b.vertrag.pk, sichtbar,
-                         'Der Admin zeigt einem Benutzer von A den Vertrag von B.')
-
-    def test_admin_wirft_ohne_kontext_statt_alles_zu_zeigen(self):
-        """Und ohne Kontext zeigt er gar nichts — er wirft.
-
-        Das ist die schärfere Zusage: Ein Admin, der im Zweifel den ganzen
-        Bestand zeigt, sieht funktionierend aus. Einer, der wirft, zwingt zur
-        Entscheidung, wessen Daten gemeint sind.
-        """
-        from django.contrib import admin
-
-        from core.tenancy import OrganisationsFehler, ohne_organisation
-        from rentals.models import Mietvertrag
-
-        modeladmin = admin.site._registry[Mietvertrag]
-        anfrage = self.client.get('/admin/').wsgi_request
-        anfrage.user = self.a.benutzer
-
-        with ohne_organisation(), self.assertRaises(OrganisationsFehler):
-            list(modeladmin.get_queryset(anfrage))
-
-
 class CacheSchluesselTests(IsolationsBasis):
     """Ein Cache-Key ohne Organisations-ID ist ein Datenleck mit Verzögerung."""
 

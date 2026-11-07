@@ -48,7 +48,6 @@ MUSTER = {
 
 OBERGRENZE = {
     'PIXELGROESSE': {
-    'admin/finance/abrechnung_vorschau.html': 1,
     'core/mieter_dokumente.html': 1,
     'core/mieter_konto.html': 1,
     'core/mieter_portal.html': 4,
@@ -57,15 +56,6 @@ OBERGRENZE = {
     'core/passwort_reset_confirm.html': 2,
 },
     'INLINE_STIL': {
-    'admin/base.html': 26,
-    'admin/crm/eigentuemer_header.html': 22,
-    'admin/crm/handwerker_header.html': 22,
-    'admin/crm/mieter_header.html': 24,
-    'admin/crm/verwaltung_header.html': 22,
-    'admin/finance/abrechnung_vorschau.html': 1,
-    'admin/portfolio/einheit_header.html': 20,
-    'admin/portfolio/liegenschaft_header.html': 19,
-    'admin/rentals/mietvertrag_header.html': 20,
     'core/login.html': 1,
     'core/mieter_kuendigung.html': 1,
     'core/portal_login.html': 1,
@@ -94,14 +84,6 @@ OBERGRENZE = {
     'fw/_unterschrift_feld.html': 1,
 },
     'FREIE_RUNDUNG': {
-    'admin/base.html': 3,
-    'admin/crm/eigentuemer_header.html': 6,
-    'admin/crm/handwerker_header.html': 6,
-    'admin/crm/mieter_header.html': 7,
-    'admin/crm/verwaltung_header.html': 6,
-    'admin/portfolio/einheit_header.html': 6,
-    'admin/portfolio/liegenschaft_header.html': 6,
-    'admin/rentals/mietvertrag_header.html': 6,
     'core/index.html': 4,
     'core/login.html': 9,
     'core/portal_login.html': 10,
