@@ -239,7 +239,7 @@ def _ziel_erlaubt_fuer(rolle):
     return erlaubt
 
 
-def _navigation_buchhaltung(user):
+def _navigation_buchhaltung(user, rolle=None):
     """Navigation, Palette, Suche und Kopf der Buchhaltung (nur Finanzen).
 
     Dieselben fünf Bereiche wie beim Team, aber nur mit den Seiten, die ihre
@@ -251,7 +251,8 @@ def _navigation_buchhaltung(user):
     from core.auth import ROLLE_BUCHHALTUNG
     from core.services.palette_suche import sicht_von
 
-    erlaubt = _ziel_erlaubt_fuer(ROLLE_BUCHHALTUNG)
+    rolle = rolle or ROLLE_BUCHHALTUNG
+    erlaubt = _ziel_erlaubt_fuer(rolle)
     gruppen, palette = [], []
     for g in nav_gruppen():
         items = [dict(it, erlaubt=True) for it in g['items'] if erlaubt(it['ziel'])]
@@ -262,6 +263,8 @@ def _navigation_buchhaltung(user):
                             alle_keys=[g['key']] + [k for it in items for k in it['keys']]))
         palette.append({'label': g['label'], 'url': ziel})
         palette += [{'label': it['label'], 'url': it['ziel'], 'gruppe': g['label']} for it in items]
+    if erlaubt('/neu/logbuch/'):
+        palette.append({'label': _('Logbuch'), 'url': '/neu/logbuch/'})
     try:
         suche = sicht_von(user)
         suche_kontext = {'fw_suche_gruppen': ','.join(suche.gruppen), 'fw_suche_ziel': suche.suchseite}
@@ -313,9 +316,11 @@ def _kopf_reduziert(user):
     endete für die Hauswartung bzw. für Mieter und Eigentümer (2FA-Seiten) auf
     einer 403-Seite. Das Logo führt zur eigenen Startseite: für die Hauswartung
     die Schadenliste, sonst die Login-Weiche (`/nach-login/`, rollengerecht)."""
-    from core.auth import ist_nur_buchhaltung, ist_nur_hauswart
+    from core.auth import ist_nur_buchhaltung, ist_nur_hauswart, ist_nur_revision
     start = '/nach-login/'
-    if ist_nur_hauswart(user):
+    if ist_nur_revision(user):
+        start = '/neu/buchhaltung/'
+    elif ist_nur_hauswart(user):
         start = '/neu/schaeden/'
     elif ist_nur_buchhaltung(user):
         start = '/neu/finanzen/'
@@ -333,10 +338,12 @@ def fw_navigation(request):
     if not user or not user.is_authenticated:
         return {}
     try:
-        from core.auth import hat_rolle, BUCHHALTUNG_ROLLEN, TEAM_ROLLEN
+        from core.auth import hat_rolle, BUCHHALTUNG_ROLLEN, REVISIONS_ROLLEN, ROLLE_REVISION, TEAM_ROLLEN
         if not hat_rolle(user, TEAM_ROLLEN):
             if hat_rolle(user, BUCHHALTUNG_ROLLEN):
                 return _navigation_buchhaltung(user)
+            if hat_rolle(user, REVISIONS_ROLLEN):
+                return _navigation_buchhaltung(user, ROLLE_REVISION)
             return {**_kopf_reduziert(user), **_suche_ohne_team(user)}
     except Exception:
         return {}

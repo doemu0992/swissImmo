@@ -11,8 +11,8 @@ from django.db.models import Q
 from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, render
 
-from core.auth import (INHABER_ROLLEN, ROLLE_BUCHHALTUNG, ROLLE_HAUSWART, ROLLE_INHABER, ROLLE_LESEZUGRIFF, ROLLE_SACHBEARBEITER,
-                       ROLLE_VERWALTER, rolle_erforderlich)
+from core.auth import (INHABER_ROLLEN, ROLLE_BUCHHALTUNG, ROLLE_HAUSWART, ROLLE_INHABER, ROLLE_LESEZUGRIFF, ROLLE_REVISION,
+                       ROLLE_SACHBEARBEITER, ROLLE_VERWALTER, rolle_erforderlich)
 
 from ._basis import _global_filter
 
@@ -25,7 +25,7 @@ from ._basis import _global_filter
 # die Benutzerverwaltung offen hat, ist Verwalter oder Inhaber und muss die
 # Nachfolge regeln koennen. Eigentuemer fehlt — das ist eine Portal-Rolle.
 _ROLLEN_WAHL = (ROLLE_INHABER, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER, ROLLE_BUCHHALTUNG,
-                ROLLE_LESEZUGRIFF, ROLLE_HAUSWART)
+                ROLLE_LESEZUGRIFF, ROLLE_HAUSWART, ROLLE_REVISION)
 
 
 def _team_benutzer_oder_404(request, pk):

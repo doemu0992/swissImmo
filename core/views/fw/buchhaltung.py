@@ -19,7 +19,7 @@ from django.utils.translation import gettext as _
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
-from core.auth import FINANZ_LESE_ROLLEN
+from core.auth import JOURNAL_LESE_ROLLEN, log_aktion
 from portfolio.models import Liegenschaft
 
 logger = logging.getLogger(__name__)
@@ -172,7 +172,7 @@ def _erfolg_bilanz(aktive_lg, jahr):
     }
 
 
-@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
+@rolle_erforderlich(*JOURNAL_LESE_ROLLEN)
 def fw_buchhaltung(request):
     from finance.models import Buchung, Buchungskonto
     basis = _global_filter(request)
@@ -406,7 +406,7 @@ def fw_buchhaltung(request):
     })
 
 
-@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
+@rolle_erforderlich(*JOURNAL_LESE_ROLLEN)
 def fw_kontenplan(request):
     """Kontenplan mit SALDENLISTE und Pflege der Konten.
 
@@ -502,7 +502,7 @@ def fw_kontenplan(request):
     })
 
 
-@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
+@rolle_erforderlich(*JOURNAL_LESE_ROLLEN)
 def fw_kontoblatt(request, nummer):
     """Kontoauszug/Kontoblatt eines Kontos: alle Buchungen mit laufendem Saldo.
     Bilanzkonten kumulativ (mit Eröffnungssaldo aus Vorjahren)."""
@@ -549,7 +549,7 @@ def fw_kontoblatt(request, nummer):
     })
 
 
-@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
+@rolle_erforderlich(*JOURNAL_LESE_ROLLEN)
 def fw_buchhaltung_pdf(request):
     """Erfolgsrechnung und Bilanz als PDF.
 
@@ -581,12 +581,13 @@ def fw_buchhaltung_pdf(request):
                                  verwaltung=(aktive_lg.organisation if aktive_lg
                                              else request.organisation),
                                  erstellt_am=heute)
+    log_aktion(request, 'Abruf Erfolgsrechnung/Bilanz (PDF)', objekt=f'{lg_name} {jahr}', kategorie='sonstiges')
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Erfolgsrechnung_Bilanz_{jahr}.pdf"'
     return resp
 
 
-@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
+@rolle_erforderlich(*JOURNAL_LESE_ROLLEN)
 def fw_buchhaltung_export(request):
     """Exportiert das Buchungsjournal des Jahres als CSV (Treuhänder-Handover)."""
     import csv
