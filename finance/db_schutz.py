@@ -205,6 +205,69 @@ def eindeutigkeiten_nachziehen(schema_editor):
     return uebersprungen
 
 
+# ---------------------------------------------------------------------------
+# Prüfregeln (CHECK) für Buchungen
+# ---------------------------------------------------------------------------
+
+#: (Name, Tabelle, Bedingung, Abfrage auf Verletzungen im Bestand)
+PRUEFREGELN = (
+    ('chk_buchung_betrag_positiv', 'core_buchung', 'betrag > 0',
+     'SELECT id, betrag FROM core_buchung WHERE NOT (betrag > 0) ORDER BY id'),
+    ('chk_buchung_soll_ungleich_haben', 'core_buchung', 'soll_konto_id <> haben_konto_id',
+     'SELECT id, soll_konto_id FROM core_buchung WHERE NOT (soll_konto_id <> haben_konto_id) ORDER BY id'),
+)
+
+
+def pruefregeln_nachziehen(schema_editor):
+    """Legt die CHECK-Constraints an, die der Bestand zulässt (PostgreSQL). Gibt die ÜBERSPRUNGENEN zurück.
+
+    Wie bei den Eindeutigkeiten: Ein Altbestand mit Buchungen, die gegen die Regel verstossen, darf die Migration nicht
+    brechen und lässt sich nicht bereinigen (es sind echte, unveränderliche Buchungen). Dann wird die Regel NICHT
+    angelegt, der Fall mit Beispielen laut protokolliert, und `manage.py db_schutz` holt sie nach der Klärung nach.
+    Neue Buchungen prüft in jedem Fall das Modell (`Buchung._pruefe_neue_buchung`).
+
+    SQLite kennt `ALTER TABLE ... ADD CONSTRAINT` nicht; dort gilt nur die Prüfung im Modell.
+    """
+    verbindung = schema_editor.connection
+    uebersprungen = []
+    if verbindung.vendor != 'postgresql':
+        return uebersprungen
+    with verbindung.cursor() as cur:
+        tabellen = set(verbindung.introspection.table_names(cur))
+        for name, tabelle, bedingung, pruefung in PRUEFREGELN:
+            if tabelle not in tabellen:
+                continue
+            cur.execute('SELECT 1 FROM pg_constraint WHERE conname = %s', [name])
+            if cur.fetchone():
+                continue
+            cur.execute(pruefung)
+            verletzer = cur.fetchall()
+            if verletzer:
+                uebersprungen.append((name, verletzer))
+                logger.error('Prüfregel %s NICHT angelegt: %d Buchung(en) verstossen im Bestand dagegen, zum Beispiel %s. '
+                             'Fall klären (Gegenbuchung), dann "manage.py db_schutz".', name, len(verletzer), verletzer[:5])
+                continue
+            schema_editor.execute(f'ALTER TABLE {tabelle} ADD CONSTRAINT {name} CHECK ({bedingung})')
+    return uebersprungen
+
+
+def pruefregeln_entfernen(schema_editor):
+    if schema_editor.connection.vendor != 'postgresql':
+        return
+    for name, tabelle, *_rest in PRUEFREGELN:
+        schema_editor.execute(f'ALTER TABLE {tabelle} DROP CONSTRAINT IF EXISTS {name}')
+
+
+def pruefregeln_vorhanden(using='default'):
+    """Die Namen der Prüfregeln, die in der Datenbank bestehen (PostgreSQL; sonst leer)."""
+    verbindung = connections[using]
+    if verbindung.vendor != 'postgresql':
+        return set()
+    with verbindung.cursor() as cur:
+        cur.execute('SELECT conname FROM pg_constraint WHERE conname = ANY(%s)', [[n for n, *_ in PRUEFREGELN]])
+        return {zeile[0] for zeile in cur.fetchall()}
+
+
 def eindeutigkeiten_entfernen(schema_editor):
     for name, *_rest in EINDEUTIGKEITEN:
         schema_editor.execute(f'DROP INDEX IF EXISTS {name}')
