@@ -23,7 +23,7 @@ jemanden, der auf dem Server ist: Dort liegt der Schlüssel neben der Anwendung.
   Prozesse gleichzeitig, gewinnt genau einer (`O_EXCL`); ist die Datei nicht anlegbar, bleibt es bei einer klaren Meldung.
 * **Der Altbestand wird nach jedem `migrate` von selbst verschlüsselt** (`post_migrate`): AHV-Nummern im Klartext, ohne
   `ahv_verschluesseln` von Hand. Fehler dabei stören das Deploy nie, sie stehen im Log.
-* **Einstellungen → Sicherheit** (nur Betreiber/Superuser, weil der Schlüssel die ganze Installation betrifft): Zustand,
+* **Betreiber-Portal → Sicherheit** (`/betreiber/sicherheit/`; nur Betreiber/Superuser, weil der Schlüssel die ganze Installation betrifft): Zustand,
   «Jetzt alles verschlüsseln», «Schlüssel erneuern» (neuer Schlüssel, alles umstellen, alter weg, in einem Klick) und
   «Kopie des Schlüssels herunterladen» für den Passwortmanager (protokolliert). Abschaltbar: `GEHEIMNIS_AUTOSCHLUESSEL=False`.
 

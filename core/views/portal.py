@@ -28,9 +28,15 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def nach_login_view(request):
-    """Login-Weiche: Team → /neu/, Buchhaltung → Finanzen, Eigentümer → Portal, Mieter → Mieterportal."""
+    """Login-Weiche: Betreiber → /betreiber/, Team → /neu/, Buchhaltung → Finanzen, Eigentümer → Portal, Mieter → Mieterportal."""
     if getattr(request.user, 'eigentuemer_profil', None) is not None:
         return redirect('portal')
+    if request.user.is_superuser:
+        # Ein Betreiber-Konto (Superuser ohne Mitgliedschaft) gehört ins Betreiber-Portal. Wer zugleich Mitglied einer
+        # Verwaltung ist (Übergang, solange Alltags- und Betreiber-Konto nicht getrennt sind), landet wie bisher dort.
+        from crm.models import Mitgliedschaft
+        if not Mitgliedschaft.alle_organisationen.filter(benutzer=request.user).exists():
+            return redirect('betreiber')
     if hat_rolle(request.user, TEAM_ROLLEN):
         return redirect('fw_dashboard')
     if hat_rolle(request.user, HAUSWART_ROLLEN):

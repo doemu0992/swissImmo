@@ -17,9 +17,8 @@ from django.utils.translation import gettext
 from core.auth import BETREIBER_ROLLEN, log_aktion, rolle_erforderlich
 from core.services import geheimnis, geheimnis_pflege
 
-from ._basis import _global_filter
 
-ZIEL = '/neu/einstellungen/sicherheit/'
+ZIEL = '/betreiber/sicherheit/'
 
 
 @rolle_erforderlich(*BETREIBER_ROLLEN)
@@ -32,7 +31,7 @@ def fw_sicherheit(request):
     except geheimnis.SchluesselFehlt as exc:
         z, fehler = geheimnis_pflege.Zustand(), str(exc)
     return render(request, 'fw/sicherheit.html', {
-        **_global_filter(request), 'nav': 'einstellungen', 'z': z, 'fehler': fehler,
+        'aktiv': 'sicherheit', 'z': z, 'fehler': fehler,
         'quelle_text': {
             'einstellung': gettext('Einstellung der Anwendung'),
             'umgebung': gettext('Umgebungsvariable (.env)'),

@@ -205,6 +205,7 @@ UEBERSETZT = (
     'fw/mahnstufen.html',
     'fw/zahlungsfreigabe.html',
     'fw/sicherheit.html',            # Betreiberseite: Verschlüsselung (Nr. 23-Nachlauf, Schlüssel ohne Terminal)
+    'core/betreiber_base.html',      # Betreiber-Portal: Hülle
     'fw/betreiber.html',             # Betreiber-Konsole Etappe 1: Kundenliste
     'fw/betreiber_neu.html',         # Betreiber-Konsole Etappe 2: Kunde anlegen
     'fw/betreiber_kunde.html',       # Betreiber-Konsole Etappe 3: Abo-Verwaltung

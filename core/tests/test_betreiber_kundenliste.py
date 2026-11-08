@@ -8,7 +8,7 @@ from crm.models import Organisation
 
 from ._helfer import _team_user, _test_organisation
 
-URL = '/neu/betreiber/'
+URL = '/betreiber/'
 
 
 class BetreiberKundenlisteTests(TestCase):
@@ -72,8 +72,8 @@ class BetreiberKundeAnlegenTests(TestCase):
     def test_nur_der_betreiber(self):
         team = Client()
         team.force_login(_team_user())
-        self.assertEqual(team.get('/neu/betreiber/neu/').status_code, 403)
-        self.assertEqual(team.post('/neu/betreiber/neu/', self.daten).status_code, 403)
+        self.assertEqual(team.get('/betreiber/neu/').status_code, 403)
+        self.assertEqual(team.post('/betreiber/neu/', self.daten).status_code, 403)
         self.assertFalse(Organisation.objects.filter(firma='Neue Verwaltung AG').exists())
 
     def test_anlegen_macht_organisation_inhaber_abo_kontenplan_und_mail(self):
@@ -82,7 +82,7 @@ class BetreiberKundeAnlegenTests(TestCase):
         from core.tenancy import organisation_kontext
         from crm.models import Mitgliedschaft
         from finance.models import Buchungskonto
-        antwort = self.c.post('/neu/betreiber/neu/', self.daten)
+        antwort = self.c.post('/betreiber/neu/', self.daten)
         self.assertEqual(antwort.status_code, 302)
         org = Organisation.objects.get(firma='Neue Verwaltung AG')
         self.assertEqual(org.email, 'neu@example.ch')                        # Rechnungen gehen nicht ins Leere
@@ -98,13 +98,13 @@ class BetreiberKundeAnlegenTests(TestCase):
     def test_logbuch_der_neuen_verwaltung(self):
         from core.models import AktivitaetsLog
         from core.tenancy import organisation_kontext
-        self.c.post('/neu/betreiber/neu/', self.daten)
+        self.c.post('/betreiber/neu/', self.daten)
         org = Organisation.objects.get(firma='Neue Verwaltung AG')
         with organisation_kontext(org):
             self.assertTrue(AktivitaetsLog.objects.filter(aktion='Kunde angelegt').exists())
 
     def test_fehlende_angaben_legen_nichts_an(self):
-        antwort = self.c.post('/neu/betreiber/neu/', {**self.daten, 'email': ''})
+        antwort = self.c.post('/betreiber/neu/', {**self.daten, 'email': ''})
         self.assertEqual(antwort.status_code, 200)
         self.assertFalse(Organisation.objects.filter(firma='Neue Verwaltung AG').exists())
         self.assertFalse(get_user_model().objects.filter(username='neuinhaber').exists())
@@ -127,7 +127,7 @@ class BetreiberAboVerwaltungTests(TestCase):
         self.betreiber = get_user_model().objects.create_superuser('betreiber', 'b@example.ch', 'x' * 12)
         self.c = Client()
         self.c.force_login(self.betreiber)
-        self.url = f'/neu/betreiber/{self.org.pk}/'
+        self.url = f'/betreiber/{self.org.pk}/'
 
     def test_nur_der_betreiber(self):
         team = Client()
@@ -139,7 +139,7 @@ class BetreiberAboVerwaltungTests(TestCase):
         self.assertEqual(self.c.get(self.url).status_code, 200)
 
     def test_unbekannte_verwaltung_ist_404(self):
-        self.assertEqual(self.c.get('/neu/betreiber/999999/').status_code, 404)
+        self.assertEqual(self.c.get('/betreiber/999999/').status_code, 404)
 
     def test_zahlung_bestaetigen_und_stornieren(self):
         from datetime import date
@@ -201,3 +201,40 @@ class BetreiberAboVerwaltungTests(TestCase):
         self.c.post(self.url, {'aktion': 'bezahlt', 'rechnung': self.rechnung.pk})
         with organisation_kontext(self.org):
             self.assertTrue(AktivitaetsLog.objects.filter(aktion='Zahlung bestätigt').exists())
+
+
+class BetreiberPortalTests(TestCase):
+    """Das Betreiber-Portal ist ein eigener Bereich wie das Eigentümer- und das Mieterportal."""
+
+    def setUp(self):
+        _test_organisation()
+
+    def test_betreiberkonto_ohne_mitgliedschaft_landet_im_betreiber_portal(self):
+        u = get_user_model().objects.create_superuser('nur_betreiber', 'n@example.ch', 'x' * 12)
+        c = Client()
+        c.force_login(u)
+        self.assertRedirects(c.get('/nach-login/'), '/betreiber/', fetch_redirect_response=False)
+
+    def test_superuser_mit_mitgliedschaft_bleibt_in_der_verwaltung(self):
+        from crm.models import Mitgliedschaft
+        u = get_user_model().objects.create_superuser('beides', 'bb@example.ch', 'x' * 12)
+        Mitgliedschaft.alle_organisationen.create(benutzer=u, organisation=_test_organisation(), rolle='Inhaber')
+        c = Client()
+        c.force_login(u)
+        self.assertEqual(c.get('/nach-login/')['Location'], '/neu/')
+
+    def test_das_portal_zeigt_keine_verwaltungs_navigation_und_keine_adressen(self):
+        from ._helfer import _basis_objekte
+        _basis_objekte()
+        u = get_user_model().objects.create_superuser('nur_betreiber', 'n@example.ch', 'x' * 12)
+        c = Client()
+        c.force_login(u)
+        for url in ('/betreiber/', '/betreiber/sicherheit/', '/betreiber/neu/'):
+            antwort = c.get(url)
+            self.assertEqual(antwort.status_code, 200, url)
+            self.assertContains(antwort, 'pSidebar')              # Hülle der Portale
+            self.assertNotContains(antwort, 'Ganzer Bestand')     # kein Bestandsfilter der Verwaltung
+            self.assertNotContains(antwort, 'Teststrasse')
+
+    def test_login_seite_ist_erreichbar(self):
+        self.assertEqual(Client().get('/betreiber/login/').status_code, 200)

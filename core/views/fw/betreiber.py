@@ -1,5 +1,5 @@
 # core/views/fw/betreiber.py
-"""Betreiber-Konsole, Etappe 1: lesende Kundenliste über alle Verwaltungen.
+"""Betreiber-Portal: Kundenliste, Kunde anlegen, Abo-Verwaltung (ein eigener Bereich unter /betreiber/).
 
 NUR FÜR DEN BETREIBER (Superuser, mit Zwei-Faktor wie alle). Gezeigt werden Zähler, Abostufe und Befunde (was bei einer
 Verwaltung fehlt) — keine Verträge, Personen oder Buchungen, und es gibt kein «Als Kunde einloggen». Ändern kann diese
@@ -10,18 +10,13 @@ from django.shortcuts import render
 from core.auth import BETREIBER_ROLLEN, rolle_erforderlich
 from core.services import betreiber
 
-from ._basis import _global_filter
 
 
 @rolle_erforderlich(*BETREIBER_ROLLEN)
 def fw_betreiber(request):
     zeilen = betreiber.kunden()
     return render(request, 'fw/betreiber.html', {
-        **_global_filter(request),
-        # Der Bestandsfilter der Kopfzeile listet die Liegenschaften EINER Verwaltung: Auf dieser Seite wären das
-        # Kundenadressen. Der Betreiber sieht hier keine, also bleibt das Auswahlmenü leer.
-        'alle_liegenschaften': [], 'aktive_lg': None, 'lg_query': '',
-        'nav': 'einstellungen', 'kunden': zeilen,
+        'aktiv': 'kunden', 'kunden': zeilen,
         'mit_befund': sum(1 for k in zeilen if k.befunde),
     })
 
@@ -66,11 +61,9 @@ def fw_betreiber_neu(request):
                 messages.warning(request, gettext(
                     '%(firma)s ist angelegt, aber die Einladung ging nicht hinaus. Link zum Setzen des Passworts '
                     '(gilt kurz und einmal): %(link)s') % {'firma': organisation.firma, 'link': link})
-            return redirect('/neu/betreiber/')
+            return redirect('/betreiber/')
     return render(request, 'fw/betreiber_neu.html', {
-        **_global_filter(request),
-        'alle_liegenschaften': [], 'aktive_lg': None, 'lg_query': '',
-        'nav': 'einstellungen', 'w': werte,
+        'aktiv': 'kunden', 'w': werte,
     })
 
 
@@ -107,7 +100,7 @@ def fw_betreiber_kunde(request, pk):
 
     org = _kunde_oder_404(pk)
     abo = Abonnement.alle_organisationen.filter(organisation=org).first()
-    ziel = f'/neu/betreiber/{org.pk}/'
+    ziel = f'/betreiber/{org.pk}/'
     vorschau = None
 
     def protokoll(aktion, details=''):
@@ -171,9 +164,7 @@ def fw_betreiber_kunde(request, pk):
     abo = Abonnement.alle_organisationen.filter(organisation=org).first()
     kunde = next(k for k in betreiber.kunden() if k.organisation.pk == org.pk)
     return render(request, 'fw/betreiber_kunde.html', {
-        **_global_filter(request),
-        'alle_liegenschaften': [], 'aktive_lg': None, 'lg_query': '',
-        'nav': 'einstellungen', 'k': kunde, 'org': org, 'abo': abo, 'vorschau': vorschau,
+        'aktiv': 'kunden', 'k': kunde, 'org': org, 'abo': abo, 'vorschau': vorschau,
         'stufen': [(s, f.STUFEN_NAMEN[s]) for s in f.STUFEN_REIHENFOLGE],
         'module': list(f.MODULE.items()), 'zugebucht': set(abo.zusatzmodule or []) if abo else set(),
         'rechnungen': AboRechnung.alle_organisationen.filter(organisation=org).order_by('-rechnungsdatum', '-pk')[:50],

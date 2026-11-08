@@ -1,4 +1,4 @@
-{% extends 'fw/base.html' %}
+{% extends 'core/betreiber_base.html' %}
 {% load zeichen i18n %}
 {% comment %}
 BETREIBER — Kundenliste (nur lesend). Siehe core/views/fw/betreiber.py: nur Zähler und Abo-Daten, keine Mieterdaten.
@@ -6,8 +6,6 @@ BETREIBER — Kundenliste (nur lesend). Siehe core/views/fw/betreiber.py: nur Z�
 {% block title %}{% trans "Kunden" %} — immoswiss{% endblock %}
 {% block content %}
 <nav class="fw-brotkrume mb-2.5">
-    <a href="/neu/einstellungen/">{% trans "Einstellungen" %}</a>
-    {% zeichen 'weiter' %}
     <b>{% trans "Kunden" %}</b>
 </nav>
 
@@ -16,7 +14,7 @@ BETREIBER — Kundenliste (nur lesend). Siehe core/views/fw/betreiber.py: nur Z�
         <h1>{% trans "Kunden" %}</h1>
         <p>{% trans "Alle Verwaltungen dieser Installation mit Stufe, Nutzung und dem, was noch fehlt. Nur für den Betreiber; es werden keine Verträge, Personen oder Buchungen gezeigt." %}</p>
     </div>
-    <div class="fw-phead-knoepfe"><a href="/neu/betreiber/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Kunde anlegen" %}</a></div>
+    <div class="fw-phead-knoepfe"><a href="/betreiber/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Kunde anlegen" %}</a></div>
 </div>
 
 {% if mit_befund %}
@@ -39,7 +37,7 @@ BETREIBER — Kundenliste (nur lesend). Siehe core/views/fw/betreiber.py: nur Z�
         <tbody>
         {% for k in kunden %}
             <tr>
-                <td class="fw-strong"><a href="/neu/betreiber/{{ k.organisation.pk }}/" class="fw-link">{{ k.organisation.firma }}</a></td>
+                <td class="fw-strong"><a href="/betreiber/{{ k.organisation.pk }}/" class="fw-link">{{ k.organisation.firma }}</a></td>
                 <td>{{ k.stufe }}</td>
                 <td>{{ k.abo_text }}</td>
                 <td class="fw-right">{{ k.einheiten }}</td>
