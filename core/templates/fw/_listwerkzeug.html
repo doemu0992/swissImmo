@@ -22,7 +22,7 @@ Filter im Browser nur, was auf der aktuellen Seite steht.
                placeholder="{{ suchtext }}" autocomplete="off" class="fw-feld">
     </div>
     {% if sorten %}<label>{% trans "Sortieren" %}
-        <select name="sort" class="fw-feld" onchange="this.form.requestSubmit ? this.form.requestSubmit() : this.form.submit()">
+        <select name="sort" class="fw-feld" data-absenden="request">
             {% for key, label in sorten %}<option value="{{ key }}"{% if key == sort %} selected{% endif %}>{{ label }}</option>{% endfor %}
         </select>
     </label>{% endif %}

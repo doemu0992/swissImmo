@@ -21,7 +21,7 @@
                 <span class="fw-neben">{{ auto|length }}</span>
             </div>
             {% for f in auto %}
-            <a href="{{ f.url }}" onclick="return fwModalOpen(this,'{{ f.titel|escapejs }}',true)" class="fw-zeile klick">
+            <a href="{{ f.url }}" data-modal="{{ f.titel}}" data-modal-breit class="fw-zeile klick">
                 <span class="fw-marker{% if f.tage < 14 %} crit{% elif f.farbe == 'amber' %} warn{% endif %}"></span>
                 <span class="fw-ikon{% if f.farbe == 'rose' %} crit{% elif f.farbe == 'amber' %} warn{% endif %}">{% zeichen_wert f.icon %}</span>
                 <div class="fw-mitte">
@@ -53,7 +53,7 @@
             <div class="fw-zeile">
                 <span class="fw-marker{% if p.ueberfaellig %} crit{% endif %}"></span>
                 {% if p.ziel_url %}
-                <a href="{{ p.ziel_url }}"{% if p.ziel_modal %} onclick="return fwModalOpen(this,'{{ p.titel|escapejs }}',{% if p.ziel_wide %}true{% else %}false{% endif %})"{% endif %} class="fw-mitte">
+                <a href="{{ p.ziel_url }}"{% if p.ziel_modal %} data-modal="{{ p.titel}}" {% if p.ziel_wide %}data-modal-breit{% endif %}{% endif %} class="fw-mitte">
                     <div class="fw-t">{{ p.titel }}</div>
                     <div class="fw-s"><span>{{ p.get_kategorie_display }}</span></div>
                 </a>
@@ -65,7 +65,7 @@
                 {% endif %}
                 {% if p.faellig_am %}<div class="fw-zeit{% if p.ueberfaellig %} crit{% endif %}">{{ p.faellig_am|date:"d.m.Y" }}{% if p.ueberfaellig %} {% zeichen 'warnung' %}{% endif %}</div>{% endif %}
                 {% if p.ziel_url %}
-                <a href="{{ p.ziel_url }}"{% if p.ziel_modal %} onclick="return fwModalOpen(this,'{{ p.titel|escapejs }}',{% if p.ziel_wide %}true{% else %}false{% endif %})"{% endif %} class="fw-btn fw-knapp">{{ p.ziel_label }}</a>
+                <a href="{{ p.ziel_url }}"{% if p.ziel_modal %} data-modal="{{ p.titel}}" {% if p.ziel_wide %}data-modal-breit{% endif %}{% endif %} class="fw-btn fw-knapp">{{ p.ziel_label }}</a>
                 {% endif %}
                 <form method="post" action="/neu/pendenzen/{{ p.id }}/toggle/">{% csrf_token %}
                     <button class="fw-btn fw-knapp fw-rand-gut" title="{% trans 'Als erledigt markieren' %}">{% zeichen 'gut' %}</button>

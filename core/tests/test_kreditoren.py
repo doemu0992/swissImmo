@@ -428,7 +428,7 @@ class KIRechnungsscannerTests(TestCase):
         with override_settings(GROQ_API_KEY=None):
             c.post('/neu/kreditoren/scan/', {'beleg_scan': f})
         body = c.get('/neu/kreditoren/').content.decode()
-        self.assertIn('fwKZeile', body)                      # Klick-Handler
+        self.assertIn('data-umschalten="kedit-', body)         # Klick-Handler
         self.assertIn('cursor-pointer', body)                # Zeile klickbar
         self.assertIn('Beleg-Vorschau', body)                # Vorschau im Edit-Panel
         self.assertIn('type="application/pdf"', body)        # PDF-Embed
@@ -573,7 +573,7 @@ class HnkAutoAbleitungTests(TestCase):
         body = c.get('/neu/kreditoren/').content.decode()
         self.assertIn('function fwHnkSync', body)
         self.assertIn('data-hnk="1"', body)
-        self.assertIn('onchange="fwHnkSync(this)"', body)
+        self.assertIn('data-bei-aenderung="fwHnkSync"', body)
 
     def _qr_pdf(self):
         """Text-PDF mit QR-Zahlteil: Rechnungsnummer UND echte QR-Referenz/QR-IBAN."""

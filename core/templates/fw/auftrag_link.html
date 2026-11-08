@@ -28,7 +28,7 @@ speichern, deshalb rendert die Aktion diese Seite direkt.
         </div>
         <div class="flex flex-wrap gap-2">
             <button type="button" class="fw-btn fw-primary" data-kopiert="{% trans 'Kopiert' %}"
-                    onclick="var b=this;navigator.clipboard.writeText(document.getElementById('hw-link').value).then(function(){b.textContent=b.dataset.kopiert;});">{% zeichen 'kopieren' %}{% trans "Link kopieren" %}</button>
+                    data-kopieren="hw-link">{% zeichen 'kopieren' %}{% trans "Link kopieren" %}</button>
             <a href="{{ zurueck }}" class="fw-btn">{% zeichen 'zurueck' %}{% trans "Zurück zum Schaden" %}</a>
         </div>
         <div class="fw-hinweis">

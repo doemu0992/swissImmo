@@ -107,8 +107,7 @@ anderes schachteln.
 {% endcomment %}
 {% if sammel_vertraege and geparkt %}
 <form method="post" action="/neu/bankabgleich/sammel-zuordnen/" id="sammelform" class="hidden"
-      onsubmit="return document.querySelectorAll('input[name=zahlung_ids]:checked').length > 0
-                || (alert('{% filter escapejs %}{% trans "Bitte zuerst Zahlungen auswählen." %}{% endfilter %}'), false);">
+      data-pruefe-gewaehlt="input[name=zahlung_ids]:checked" data-pruefe-meldung="{% trans 'Bitte zuerst Zahlungen auswählen.' %}">
     {% csrf_token %}
     {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
 </form>

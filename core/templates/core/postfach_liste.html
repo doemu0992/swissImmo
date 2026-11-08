@@ -27,7 +27,7 @@
                     <input id="antwortadresse-feld" readonly value="{{ antwort.adresse }}" data-auswaehlen
                            class="fw-feld fw-mono flex-1 min-w-0">
                     <button type="button" class="fw-btn fw-knapp" data-kopiert="{% trans 'Kopiert' %}"
-                            onclick="var b=this;navigator.clipboard.writeText(document.getElementById('antwortadresse-feld').value).then(function(){b.textContent=b.dataset.kopiert;});">{% zeichen 'kopieren' %}{% trans "Kopieren" %}</button>
+                            data-kopieren="antwortadresse-feld">{% zeichen 'kopieren' %}{% trans "Kopieren" %}</button>
                 </div>
             </div>
             {% if antwort.postfach_unlesbar %}
@@ -61,7 +61,7 @@
                     <input id="rechnungsadresse-feld" readonly value="{{ rechnung.adresse }}" data-auswaehlen
                            class="fw-feld fw-mono flex-1 min-w-0">
                     <button type="button" class="fw-btn fw-knapp" data-kopiert="{% trans 'Kopiert' %}"
-                            onclick="var b=this;navigator.clipboard.writeText(document.getElementById('rechnungsadresse-feld').value).then(function(){b.textContent=b.dataset.kopiert;});">{% zeichen 'kopieren' %}{% trans "Kopieren" %}</button>
+                            data-kopieren="rechnungsadresse-feld">{% zeichen 'kopieren' %}{% trans "Kopieren" %}</button>
                 </div>
             </div>
             {% if rechnung.eingang_ok and rechnung.anhaenge_ok %}

@@ -42,7 +42,7 @@ HUELLE = {
         'function fwSetTheme(', 'function fwSyncThemeButtons(',
     ],
     'Ereignisse und Mechanik': [
-        "e.key === 'Escape'", "button[onclick=\"fwProfilMenu()\"]",
+        "e.key === 'Escape'", "button[data-bei-klick=\"fwProfilMenu\"]",
         "get('tab')", "addEventListener('submit'", "data-no-guard", "form.target === '_blank'",
         "'#z-laedt'", "'fw-dreht'", "[data-suche]", "[data-zeile]", "[data-menu-btn]",
         "[data-menu-list]", "addEventListener('fw:content'", "nodeName !== 'BR'",
@@ -114,7 +114,7 @@ STARTSEITE = [
     'lg_streifen', 'delta_einheit', 'fw-trend', 'ansichten', 'f_query',
     'av_band', 'av_band_gesamt', 'f_query_ohne_fallart', 'fallart=', 'faelle', 'tage_ohne_bewegung',
     'vorrat', 'e.dringlichkeit', 'e.marke', 'e.nummer', 'e.fortschritt', 'e.schritt', 'e.wer',
-    'e.wofuer', 'e.tage', 'e.ziel', 'e.modal', 'e.knopf', 'fwModalOpen(this',
+    'e.wofuer', 'e.tage', 'e.ziel', 'e.modal', 'e.knopf', 'data-modal',
     "{% include 'fw/_arbeitsvorrat_abschnitte.html'", 'av_eingaenge', 'av_eingaenge_gesamt',
     'z.sicher', 'z.fallart', 'inbox', 'inbox_mehr', 'e.chip_cls', 'e.cta', 'e.wide',
     '/neu/pendenzen/{{ lg_query }}', 'lg_mandate', 'm.belegung', 'lg_abweichungen',

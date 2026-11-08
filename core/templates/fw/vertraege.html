@@ -67,7 +67,7 @@
                     <span class="fw-zelle-sub fw-num">{% blocktrans with ab=row.v.beginn|date:"d.m.Y" %}ab {{ ab }}{% endblocktrans %} · {% if row.v.ende %}<span class="{% if row.v.status == 'gekuendigt' %}fw-strong fw-kritisch{% endif %}">{% blocktrans with bis=row.v.ende|date:"d.m.Y" %}bis {{ bis }}{% endblocktrans %}</span>{% else %}{% trans "unbefristet" %}{% endif %}</span></td>
                 <td class="fw-right">
                     {% if row.v.status == 'aktiv' %}
-                    {% if request.user|darf:"/neu/vertraege/1/kuendigen/" %}<a href="/neu/vertraege/{{ row.v.id }}/kuendigen/" onclick="event.stopPropagation(); return fwModalOpen(this,'{% filter escapejs %}{% trans "Kündigung erfassen" %}{% endfilter %}')" class="fw-btn fw-knapp fw-geist">{% zeichen 'kritisch' %}{% trans "Kündigen" %}</a>{% endif %}
+                    {% if request.user|darf:"/neu/vertraege/1/kuendigen/" %}<a href="/neu/vertraege/{{ row.v.id }}/kuendigen/" data-stop data-modal="{% trans "Kündigung erfassen" %}" class="fw-btn fw-knapp fw-geist">{% zeichen 'kritisch' %}{% trans "Kündigen" %}</a>{% endif %}
                     {% endif %}
                 </td>
             </tr>

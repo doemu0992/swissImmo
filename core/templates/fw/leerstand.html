@@ -76,7 +76,7 @@
                     <td class="fw-right fw-num">{% if z.miete %}{{ z.miete|chf:0 }}{% else %}<span class="fw-chip fw-crit">{% trans "kein Mietzins" %}</span>{% endif %}</td>
                     <td class="fw-right fw-num">{% if z.ausfall_bisher %}{{ z.ausfall_bisher|chf:0 }}{% else %}–{% endif %}</td>
                     <td>{% if z.inseriert %}<span class="fw-chip fw-good fw-dot">{% trans "ausgeschrieben" %}</span>{% else %}<span class="fw-chip fw-dot">{% trans "nicht ausgeschrieben" %}</span>{% endif %}{% if z.bewerbungen %}<span class="fw-zelle-sub">{% blocktrans count n=z.bewerbungen %}{{ n }} offene Bewerbung{% plural %}{{ n }} offene Bewerbungen{% endblocktrans %}{% if z.zusage %} · {% trans "Zusage erteilt" %}{% endif %}</span>{% endif %}</td>
-                    <td class="fw-right"><a href="{{ z.schritt.url }}" class="fw-btn fw-knapp{% if z.schritt.stufe == 'crit' or z.schritt.stufe == 'good' %} fw-primary{% endif %}"{% if z.schritt.modal %} onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Zur Vermarktung ausschreiben" %}{% endfilter %}')"{% endif %}>{{ z.schritt.text }}</a></td>
+                    <td class="fw-right"><a href="{{ z.schritt.url }}" class="fw-btn fw-knapp{% if z.schritt.stufe == 'crit' or z.schritt.stufe == 'good' %} fw-primary{% endif %}"{% if z.schritt.modal %} data-modal="{% trans "Zur Vermarktung ausschreiben" %}"{% endif %}>{{ z.schritt.text }}</a></td>
                 </tr>
                 {% endfor %}
             </tbody>

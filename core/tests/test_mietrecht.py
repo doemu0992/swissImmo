@@ -134,7 +134,7 @@ class KuendigungModalTests(TestCase):
         team = _team_user(); c = Client(); c.force_login(team)
         body = c.get('/neu/vertraege/').content.decode()
         self.assertIn(f'/neu/vertraege/{v.id}/kuendigen/', body)
-        self.assertIn("fwModalOpen(this,'Kündigung erfassen')", body)
+        self.assertIn('data-modal="Kündigung erfassen"', body)
 
     def test_kuendigung_form_live_pruefung(self):
         """Das Kündigungsformular enthält die mietrechtliche Live-Prüfung."""

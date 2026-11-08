@@ -54,7 +54,7 @@
         <a href="/neu/integrationen/" class="underline">Integrationen</a> hinterlegen.{% endblocktrans %}</div>
     </div>
     {% endif %}
-    <form method="post" action="/neu/kreditoren/scan/" enctype="multipart/form-data" class="flex flex-wrap items-end gap-3" onsubmit="fwScanStart(this)">
+    <form method="post" action="/neu/kreditoren/scan/" enctype="multipart/form-data" class="flex flex-wrap items-end gap-3" data-bei-absenden="fwScanStart">
         {% csrf_token %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         <div class="grow min-w-[220px]"><label for="up-beleg" class="fw-label mb-1">{% trans "Belege (PDF, JPG, PNG — Mehrfachauswahl möglich) *" %}</label>
@@ -97,7 +97,7 @@
                 {% for lg in liegenschaften %}<option value="{{ lg.id }}" {% if neu_werte %}{% if neu_werte.liegenschaft_id == lg.id|stringformat:"s" %}selected{% endif %}{% elif aktive_lg and aktive_lg.id == lg.id %}selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
             </select>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.liegenschaft_id feld_id="kr-lg" %}</div>
         <div><label for="kr-konto" class="fw-label mb-1">{% trans "Aufwandskonto" %}</label>
-            <select id="kr-konto" name="konto_id" onchange="fwHnkSync(this)" class="fw-feld w-full"{% if neu_fehler.konto_id %} aria-invalid="true" aria-describedby="kr-konto_fehler"{% endif %}>
+            <select id="kr-konto" name="konto_id" data-bei-aenderung="fwHnkSync" data-args='["$el"]' class="fw-feld w-full"{% if neu_fehler.konto_id %} aria-invalid="true" aria-describedby="kr-konto_fehler"{% endif %}>
                 <option value="">— {% trans "bei Freigabe wählen" %} —</option>
                 {% for k in aufwand_konten %}<option value="{{ k.id }}" {% if neu_werte.konto_id == k.id|stringformat:"s" %}selected{% endif %} {% if k.is_hnk_relevant %}data-hnk="1"{% endif %}>{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
             </select>{% include 'fw/_feldfehler.html' with f=None fehler=neu_fehler.konto_id feld_id="kr-konto" %}</div>
@@ -185,7 +185,7 @@
             <tbody>
             {% for row in rows %}
             <tr class="{% if row.k.status == 'neu' %}cursor-pointer{% endif %}"
-                {% if row.k.status == 'neu' %}onclick="fwKZeile(event, {{ row.k.id }})" title="{% trans 'Klicken zum Bearbeiten (mit Beleg-Vorschau)' %}"{% endif %}>
+                {% if row.k.status == 'neu' %}data-umschalten="kedit-{{ row.k.id }}" data-ausser="form,button,a,select,input,label" title="{% trans 'Klicken zum Bearbeiten (mit Beleg-Vorschau)' %}"{% endif %}>
                 <td class="fw-strong whitespace-nowrap">
                     {{ row.lieferant }}
                     {% if row.k.referenz %}<div class="fw-sub2"><span class="fw-mono">{{ row.k.referenz }}</span></div>{% endif %}
@@ -281,7 +281,7 @@
                         {% endif %}
                         {% if row.kann_weiterverrechnen %}
                         <a href="/neu/kreditoren/{{ row.k.id }}/weiterverrechnen/"
-                           onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Weiterverrechnen" %}{% endfilter %}',false)"
+                           data-modal="{% trans "Weiterverrechnen" %}"
                            class="fw-btn fw-rand-marke fw-knapp"
                            title="{% blocktrans with betrag=row.offen_wv|chf %}Offen: CHF {{ betrag }}{% endblocktrans %}">
                             {% zeichen 'extern' %} {% trans "Weiterverrechnen" %}
@@ -350,7 +350,7 @@
                                 {% for lgx in liegenschaften %}<option value="{{ lgx.id }}" {% if row.werte.liegenschaft_id == lgx.id|stringformat:"s" %}selected{% endif %}>{{ lgx.strasse }}, {{ lgx.ort }}</option>{% endfor %}
                             </select>{% if row.fehler.liegenschaft_id %}<p id="kc-lg-{{ row.k.id }}_fehler" class="fw-feldfehler">{{ row.fehler.liegenschaft_id }}</p>{% endif %}</div>
                         <div><label for="kc-konto-{{ row.k.id }}" class="fw-label mb-1">{% trans "Aufwandskonto" %}</label>
-                            <select id="kc-konto-{{ row.k.id }}" name="konto_id" onchange="fwHnkSync(this)" class="fw-feld w-full"{% if row.fehler.konto_id %} aria-invalid="true" aria-describedby="kc-konto-{{ row.k.id }}_fehler"{% endif %}>
+                            <select id="kc-konto-{{ row.k.id }}" name="konto_id" data-bei-aenderung="fwHnkSync" data-args='["$el"]' class="fw-feld w-full"{% if row.fehler.konto_id %} aria-invalid="true" aria-describedby="kc-konto-{{ row.k.id }}_fehler"{% endif %}>
                                 <option value="">— {% trans "bei Freigabe wählen" %} —</option>
                                 {% for kx in aufwand_konten %}<option value="{{ kx.id }}" {% if row.werte.konto_id == kx.id|stringformat:"s" %}selected{% endif %} {% if kx.is_hnk_relevant %}data-hnk="1"{% endif %}>{{ kx.nummer }} {{ kx.bezeichnung }}</option>{% endfor %}
                             </select>{% if row.fehler.konto_id %}<p id="kc-konto-{{ row.k.id }}_fehler" class="fw-feldfehler">{{ row.fehler.konto_id }}</p>{% endif %}</div>
@@ -461,10 +461,6 @@
 <script nonce="{{ csp_nonce }}">
 // Zeilen-Klick öffnet das Edit-Panel mit Beleg-Vorschau — Klicks auf
 // Buttons/Formulare/Links in der Zeile werden ignoriert.
-function fwKZeile(ev, id){
-    if (ev.target.closest('form,button,a,select,input,label')) return;
-    document.getElementById('kedit-' + id).classList.toggle('hidden');
-}
 // Konto → HNK-Checkbox live synchronisieren: NK-relevantes Konto (Heizung,
 // Wasser, Hauswartung, Allgemeinstrom, Kehricht, Versicherung) hakt die
 // Checkbox sofort sichtbar an (Server erzwingt dieselbe Regel beim Speichern).

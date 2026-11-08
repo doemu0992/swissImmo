@@ -61,8 +61,8 @@ Liegenschaft ohne Betreuung soll auffallen.
                 </form>
             </div>
         </div>
-        <a href="?tab=dokumente" class="fw-btn" onclick="fwTab('lg', 'dokumente'); document.getElementById('lg-dokumente').scrollIntoView({behavior: 'smooth', block: 'start'}); return false;">{% trans "Dokumente" %}</a>
-        <a href="/neu/faelle/neu/?akte=lg-{{ lg.id }}" class="fw-btn fw-primary" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')">{% zeichen 'neu' %}{% trans "Neuer Fall" %}</a>
+        <a href="?tab=dokumente" class="fw-btn" data-bei-klick="fwTabSpringen" data-args='["lg","dokumente"]'>{% trans "Dokumente" %}</a>
+        <a href="/neu/faelle/neu/?akte=lg-{{ lg.id }}" class="fw-btn fw-primary" data-modal="{% trans "Neuer Fall" %}">{% zeichen 'neu' %}{% trans "Neuer Fall" %}</a>
     </div>
 </div>
 

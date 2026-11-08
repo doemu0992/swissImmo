@@ -27,11 +27,11 @@ async function quer(page: Page) {
 }
 
 /** Öffnet den Reiter «Handwerker» der Seed-Meldung. Die Liste öffnet Akten
- *  im Modal (`fwModalOpenUrl`); die Id steht im `onclick` der Zeile. */
+ *  im Modal (`fwModalOpenUrl`); die Id steht im `data-args` der Zeile. */
 async function handwerkerReiter(page: Page) {
   await goto(page, '/neu/schaeden/');
   const zeile = page.locator('.fw-zeile.klick', { hasText: 'E2E Wasserhahn tropft' }).first();
-  const id = /\/neu\/schaeden\/(\d+)\//.exec((await zeile.getAttribute('onclick')) || '')![1];
+  const id = /\/neu\/schaeden\/(\d+)\//.exec((await zeile.getAttribute('data-args')) || '')![1];
   await goto(page, `/neu/schaeden/${id}/?tab=handwerker`);
 }
 

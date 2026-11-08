@@ -194,8 +194,8 @@ class KopfzeileStrukturTests(TestCase):
         schnell = eines(profil, klasse='fw-profil-schnell')
         neu = [k for k in schnell.alle() if k.tag == 'a' and k.attrs.get('href') == '/neu/faelle/neu/']
         self.assertEqual(len(neu), 1)
-        self.assertIn('fwModalOpen', neu[0].attrs['onclick'])
-        menue = [k for k in schnell.alle() if k.tag == 'button' and 'fwOpenMobileNav' in k.attrs.get('onclick', '')]
+        self.assertIn('data-modal', neu[0].attrs)
+        menue = [k for k in schnell.alle() if k.tag == 'button' and 'fwMenueOeffnen' in k.attrs.get('data-bei-klick', '')]
         self.assertEqual(len(menue), 1)
         # Die Schublade, die der Knopf öffnet, gibt es
         self.assertEqual(len(finde(wurzel, id='fwSidebar')), 1)
@@ -206,7 +206,7 @@ class KopfzeileStrukturTests(TestCase):
         ziele = [k.attrs.get('href') for k in werk.alle() if k.tag == 'a']
         self.assertTrue(any(z.startswith('/neu/einstellungen/') for z in ziele), 'Der Einstellungsknopf gehört in Zeile 1')
         self.assertIn('/neu/faelle/neu/', ziele)
-        self.assertEqual([k for k in werk.alle() if 'fwOpenMobileNav' in k.attrs.get('onclick', '')], [],
+        self.assertEqual([k for k in werk.alle() if 'fwMenueOeffnen' in k.attrs.get('data-bei-klick', '')], [],
                          'Der Menüknopf steht nicht mehr in Zeile 1 (er ist im Profilmenü)')
 
     def test_logo_ist_immer_ausgeschrieben_mit_kreuz(self):

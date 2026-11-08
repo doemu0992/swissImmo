@@ -119,7 +119,7 @@
         <table class="fw-table">
             <thead>
             <tr>
-                <th scope="col"><input type="checkbox" onclick="fwZlAlle(this, 'vorschlag')" aria-label="{% trans 'Alle auswählen' %}" checked class="fw-akzent"></th>
+                <th scope="col"><input type="checkbox" data-bei-klick="fwZlAlle" data-args='["$el","vorschlag"]' aria-label="{% trans 'Alle auswählen' %}" checked class="fw-akzent"></th>
                 <th scope="col">{% trans "Lieferant" %}</th>
                 <th scope="col">{% trans "Objekt" %}</th>
                 <th scope="col">IBAN</th>
@@ -207,7 +207,7 @@
         <table class="fw-table">
             <thead>
             <tr>
-                <th scope="col"><input type="checkbox" onclick="fwZlAlle(this, 'laufend')" aria-label="{% trans 'Alle auswählen' %}" checked class="fw-akzent"></th>
+                <th scope="col"><input type="checkbox" data-bei-klick="fwZlAlle" data-args='["$el","laufend"]' aria-label="{% trans 'Alle auswählen' %}" checked class="fw-akzent"></th>
                 <th scope="col">{% trans "Lieferant" %}</th>
                 <th scope="col">{% trans "Objekt" %}</th>
                 <th scope="col">{% trans "Ausführung" %}</th>
@@ -240,7 +240,6 @@
     </div>
     <div class="fw-fuss">
         <button name="aktion" value="bezahlt"
-                onsubmit="return true;"
                 data-bestaetigen="{% filter escapejs %}{% trans "Ausgewählte Zahlungen verbuchen (2000 an Bank)?" %}{% endfilter %}"
                 class="fw-btn fw-primary">
             {% zeichen 'gut' %}{% trans "Als bezahlt verbuchen" %}

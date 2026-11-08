@@ -122,7 +122,7 @@
 
 <div class="fw-card">
     {% for row in rows %}
-    <div class="fw-zeile klick" onclick="fwModalOpenUrl('/neu/schaeden/{{ row.t.id }}/','Schaden #{{ row.t.id }}')">
+    <div class="fw-zeile klick" data-bei-klick="fwModalOpenUrl" data-args='["/neu/schaeden/{{ row.t.id }}/","Schaden #{{ row.t.id }}"]'>
         <span class="fw-marker{% if row.stufe != 'good' %} {{ row.stufe }}{% endif %}"></span>
         <div class="fw-mitte">
             <div class="fw-t">{{ row.t.titel|truncatechars:70 }}</div>

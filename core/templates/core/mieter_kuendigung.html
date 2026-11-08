@@ -32,7 +32,7 @@
                 {% csrf_token %}
                 <div>
                     <label class="block text-xs font-semibold fw-mutet mb-1.5">Mietobjekt</label>
-                    <select name="vertrag_id" id="objektWahl" onchange="terminAnzeigen()"
+                    <select name="vertrag_id" id="objektWahl" data-bei-aenderung="terminAnzeigen"
                             class="w-full fw-flaeche2 border fw-linie rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 fw-fokusring focus:fw-linie-marke">
                         {% for o in objekte %}
                         <option value="{{ o.vertrag.id }}"

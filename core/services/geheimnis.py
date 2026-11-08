@@ -125,10 +125,17 @@ def _autoschluessel() -> str:
     try:
         fd = os.open(str(pfad), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     except FileExistsError:                      # ein anderer Prozess war schneller: dessen Schlüssel gilt
-        try:
-            return pfad.read_text(encoding='utf-8').strip()
-        except OSError:
-            return ''
+        # Die Datei ist da, kann aber noch leer sein (der Gewinner schreibt gerade): kurz warten, bis sie gefüllt ist.
+        import time
+        for _ in range(100):
+            try:
+                inhalt = pfad.read_text(encoding='utf-8').strip()
+            except OSError:
+                return ''
+            if inhalt:
+                return inhalt
+            time.sleep(0.02)
+        return ''
     except OSError:
         return ''
     with os.fdopen(fd, 'w', encoding='utf-8') as f:

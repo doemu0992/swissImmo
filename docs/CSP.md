@@ -15,7 +15,7 @@ Antwort**. Fremdes Skript, auch wenn es im HTML steht, läuft nicht.
 | 1 | Nonce an allen Inline-Skripten; Richtlinie im Modus **report-only** (der Browser meldet, sperrt nichts); Meldestelle `/csp-bericht/`; Ratsche gegen neue Inline-Handler | **erledigt** |
 | 2 | Rückfragen (`return confirm('…')`, 109 Stellen) → `data-bestaetigen`, gelesen von `fw/_bestaetigen.html` | **erledigt** |
 | 3 | Einfache Aktionen → `static/js/fw-aktionen.js` (`data-umschalten`, `-verstecken`, `-absenden`, `-gehe-zu`, `-stop`, `-kopieren`, `-auswaehlen`, `-scrollen`, `-entfernen`, `-neues-fenster`, `-sichtbar-wenn`), 93 Stellen | **erledigt** |
-| 4 … n | Die übrigen 185 Inline-Handler in 36 Vorlagen (`live()`-Neuberechnung, Modal `fwModalOpen`, seitenspezifische Funktionen) wandern nach `static/js/`, je Muster eine PR | offen |
+| 4 | Alle übrigen Inline-Handler (185 in 36 Vorlagen) → Datenattribute `data-bei-klick/-eingabe/-aenderung/-absenden`, `data-modal`, `data-drucken` u. a.; Ratsche steht auf 0 | **erledigt** |
 | Ende | `CSP_MODUS=enforce` | offen |
 
 `style-src` erlaubt vorerst `'unsafe-inline'` (die Oberfläche hat noch `style="…"`-Attribute, siehe

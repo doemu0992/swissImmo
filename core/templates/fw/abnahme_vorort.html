@@ -105,7 +105,7 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
 
     <nav class="vo-leiste" aria-label="{% trans 'Raum wählen' %}">
         {% if vorher is not None %}<a href="?r={{ vorher }}" aria-label="{% trans 'Voriger Raum' %}">{% zeichen 'zurueck' %}</a>{% else %}<span class="vo-aus">{% zeichen 'zurueck' %}</span>{% endif %}
-        <select onchange="location.search='?r='+this.value" aria-label="{% trans 'Raum wählen' %}">
+        <select data-gehe-zu-wert="?r=" aria-label="{% trans 'Raum wählen' %}">
             {% for r in raeume %}<option value="{{ r.nr }}" {% if r.nr == schritt %}selected{% endif %}>{{ r.name }}{% if r.fertig %} ✓{% endif %}</option>{% endfor %}
             <option value="{{ letzter }}" {% if schritt == letzter %}selected{% endif %}>{% trans "Abschluss" %}</option>
         </select>

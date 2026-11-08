@@ -32,7 +32,7 @@ async function quer(page: Page) {
 async function ticketId(page: Page, titel: string) {
   await goto(page, '/neu/schaeden/');
   const zeile = page.locator('.fw-zeile.klick', { hasText: titel }).first();
-  return /\/neu\/schaeden\/(\d+)\//.exec((await zeile.getAttribute('onclick')) || '')![1];
+  return /\/neu\/schaeden\/(\d+)\//.exec((await zeile.getAttribute('data-args')) || '')![1];
 }
 
 async function mieterLogin(page: Page) {

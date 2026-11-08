@@ -291,12 +291,12 @@ test.describe('Telefon: «Neuer Fall» und das Menü stehen im Profilmenü', () 
     await goto(page, '/neu/liegenschaften/');
     // In Zeile 1 gibt es weder «+» noch den Menüknopf
     await expect(page.locator('.fw-werkzeug-kapsel a[href="/neu/faelle/neu/"]')).toBeHidden();
-    await expect(page.locator('.fw-werkzeug-kapsel button[onclick*="fwOpenMobileNav"]')).toHaveCount(0);
+    await expect(page.locator('.fw-werkzeug-kapsel button[data-bei-klick="fwMenueOeffnen"]')).toHaveCount(0);
 
     await page.locator('.fw-avatar-knopf').tap();
     const profil = page.locator('#fwProfil');
     await expect(profil).toBeVisible();
-    const menue = profil.locator('button[onclick*="fwOpenMobileNav"]');
+    const menue = profil.locator('button[data-bei-klick="fwMenueOeffnen"]');
     await expect(menue).toBeVisible();
     // Der Eintrag liegt im Bild
     const r = (await profil.boundingBox())!;

@@ -26,7 +26,7 @@ Art als Kapseln, Betreff, Akte, Frist und Zuständig nebeneinander, Notiz.
             {% for f in fallarten %}
             <label class="fw-fchip{% if werte.fallart == f.pk|stringformat:'s' or not werte.fallart and forloop.first %} fw-on{% endif %}">
                 <input type="radio" name="fallart" value="{{ f.pk }}" {% if werte.fallart == f.pk|stringformat:'s' or not werte.fallart and forloop.first %}checked{% endif %}
-                       onchange="this.closest('.fw-auswahl').querySelectorAll('label').forEach(function(c){c.classList.toggle('fw-on', c.querySelector('input').checked)})">
+                       data-auswahl-sync>
                 {{ f.bezeichnung }}
             </label>
             {% empty %}
@@ -77,7 +77,7 @@ Art als Kapseln, Betreff, Akte, Frist und Zuständig nebeneinander, Notiz.
     </div>
 
     <div class="fw-formular-fuss">
-        <a href="/neu/" class="fw-btn" onclick="if(window.parent!==window){window.parent.fwModalClose&&window.parent.fwModalClose();return false}">{% trans "Abbrechen" %}</a>
+        <a href="/neu/" class="fw-btn" data-schliesse-schublade>{% trans "Abbrechen" %}</a>
         <button type="submit" class="fw-btn fw-primary">{% trans "Fall anlegen" %}</button>
     </div>
 </form>

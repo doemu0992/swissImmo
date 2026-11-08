@@ -90,9 +90,9 @@ test.describe('Die Hauswartung sieht nur, was sie öffnen darf', () => {
     page.on('response', (r) => { if (r.status() === 403) verboten.push(r.url()); });
     await anmelden(page, 'e2e-hauswart');
     await goto(page, '/neu/schaeden/');
-    // Die Zeilen der Liste öffnen die Akte in der Schublade (onclick), sie sind keine Links.
-    const akte = await page.locator('.fw-zeile.klick[onclick*="/neu/schaeden/"]').first().evaluate((z) =>
-      ((z.getAttribute('onclick') || '').match(/\/neu\/schaeden\/\d+\//) || [])[0]);
+    // Die Zeilen der Liste öffnen die Akte in der Schublade (data-args), sie sind keine Links.
+    const akte = await page.locator('.fw-zeile.klick[data-args*="/neu/schaeden/"]').first().evaluate((z) =>
+      ((z.getAttribute('data-args') || '').match(/\/neu\/schaeden\/\d+\//) || [])[0]);
     expect(akte, 'Seed: keine Schadenmeldung für die Hauswartung').toBeTruthy();
     await goto(page, akte!);
     await expect(page.locator('h1')).toBeVisible();

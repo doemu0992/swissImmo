@@ -49,7 +49,7 @@ class SchadenModalTests(TestCase):
         team = _team_user()
         c = Client(); c.force_login(team)
         body = c.get('/neu/schaeden/').content.decode()
-        self.assertIn(f"fwModalOpenUrl('/neu/schaeden/{t.id}/'", body)
+        self.assertIn(f'data-bei-klick="fwModalOpenUrl" data-args=\'["/neu/schaeden/{t.id}/"', body)
         self.assertIn('id="fwModal"', body)
         self.assertNotIn(f"window.location='/neu/schaeden/{t.id}/'", body)
         self.assertNotIn(f'data-gehe-zu="/neu/schaeden/{t.id}/"', body)         # öffnet die Schublade, keine Seite
