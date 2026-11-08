@@ -65,3 +65,39 @@ class VmwgGegenFedlexTests(SimpleTestCase):
         t = self._v('12')[3]
         self.assertNotIn('Verwaltung', t)
         self.assertNotIn('Pauschale', t)
+
+
+class Art269dNeufassung2025Tests(SimpleTestCase):
+    """Art. 269d Abs. 4 und 5 OR (AS 2025 197, in Kraft seit 1.10.2025)."""
+
+    def test_faksimile_nur_fuer_erhoehungen_nicht_fuer_kuendigungen(self):
+        t = _text('269d')
+        self.assertIn('Faksimile', t)
+        self.assertIn('nicht bei Kündigungen', t)
+
+    def test_staffelmiete_schriftform_und_vier_monate(self):
+        t = _text('269d')
+        self.assertIn('Schriftform', t)
+        self.assertIn('vier Monate', t)
+
+
+class FormularpflichtRegisterTests(SimpleTestCase):
+    """Das Register der Kantone stimmt mit dem BWO-Verzeichnis 2026 überein (Abgleich 08.11.2026)."""
+
+    def test_pflicht_und_ziffern(self):
+        from core.services.formularpflicht import formularpflicht_fuer_kanton as f
+        erwartet = {'BS': ('ja', '0.78 %'), 'BE': ('ja', '1.04 %'), 'FR': ('ja', '1.26 %'), 'GE': ('ja', '0.31 %'),
+                    'LU': ('ja', '0.70 %'), 'NE': ('teilweise', '1.64 %'), 'VD': ('teilweise', '0.87 %'),
+                    'VS': ('nein', '1.04 %'), 'ZG': ('ja', '0.20 %'), 'ZH': ('ja', '0.52 %')}
+        for kt, (pflicht, ziffer) in erwartet.items():
+            p, info = f(kt)
+            self.assertEqual((p, info['leerziffer']), (pflicht, ziffer), kt)
+
+    def test_rechtsgrundlagen_sind_nicht_mehr_pauschal(self):
+        from core.services.formularpflicht import formularpflicht_fuer_kanton as f
+        self.assertIn('§ 94 EGZGB', f('LU')[1]['gesetz'])
+        self.assertIn('§ 10e EG OR', f('ZG')[1]['gesetz'])
+        self.assertIn('1,8 %', f('FR')[1]['gesetz'])
+        self.assertIn('Art. 135a EG ZGB (BSG 211.1)', f('BE')[1]['gesetz'])      # nicht Kantonsverfassung (BWO-Tippfehler)
+        for kt in ('BS', 'BE', 'FR', 'GE', 'LU', 'ZG', 'ZH', 'NE', 'VD', 'VS'):
+            self.assertNotIn('Kantonale Verordnung', f(kt)[1]['gesetz'], kt)
