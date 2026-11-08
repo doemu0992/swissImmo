@@ -39632,3 +39632,92 @@ msgid ""
 msgstr ""
 "%(firma)s est créé, mais l'invitation n'a pas pu être envoyée. Lien pour "
 "définir le mot de passe (valable peu de temps, une seule fois) : %(link)s"
+
+msgid ""
+"Diese Verwaltung hat keine Abonnement-Zeile. Sie wird nicht eingeschränkt "
+"und nicht abgerechnet."
+msgstr ""
+"Cette gérance n'a pas d'enregistrement d'abonnement. Elle n'est ni "
+"restreinte ni facturée."
+
+msgid "Abonnement anlegen"
+msgstr "Créer un abonnement"
+
+msgid "Dieser Wechsel hat Folgen:"
+msgstr "Ce changement a des conséquences :"
+
+msgid "Gesperrt wird: %(s)s"
+msgstr "Sera bloqué : %(s)s"
+
+msgid ""
+"Der Bestand (%(n)s Einheiten) liegt über der Grenze der Stufe (%(d)s): Neues"
+" lässt sich dann nicht mehr anlegen."
+msgstr ""
+"Le parc (%(n)s unités) dépasse la limite de la formule (%(d)s) : plus rien "
+"de nouveau ne pourra être créé."
+
+msgid "Daten bleiben erhalten; Funktionen werden gesperrt, nie gelöscht."
+msgstr ""
+"Les données sont conservées ; les fonctions sont bloquées, jamais "
+"supprimées."
+
+msgid "Trotzdem wechseln"
+msgstr "Changer quand même"
+
+msgid "Beendet den Bestandsschutz. Vorher werden die Folgen gezeigt."
+msgstr ""
+"Met fin à la protection de l'existant. Les conséquences sont montrées avant."
+
+msgid "Stufe setzen"
+msgstr "Définir la formule"
+
+msgid "Module und Abrechnung"
+msgstr "Modules et facturation"
+
+msgid "Zugebuchte Module"
+msgstr "Modules réservés"
+
+msgid "Leer = es wird nichts in Rechnung gestellt."
+msgstr "Vide = rien n'est facturé."
+
+msgid "Bestandsschutz"
+msgstr "Protection de l'existant"
+
+msgid "alles offen, keine Grenzen"
+msgstr "tout ouvert, aucune limite"
+
+msgid "über der Grenze"
+msgstr "au-dessus de la limite"
+
+msgid "Zahlungszustand"
+msgstr "État du paiement"
+
+msgid "überfällig seit"
+msgstr "en retard depuis"
+
+msgid "Als bezahlt"
+msgstr "Marquer comme payée"
+
+msgid "Rechnung stornieren?"
+msgstr "Annuler cette facture ?"
+
+msgid "Unbekannte Stufe."
+msgstr "Formule inconnue."
+
+msgid "Stufe gesetzt."
+msgstr "Formule définie."
+
+msgid "Abonnement gespeichert."
+msgstr "Abonnement enregistré."
+
+msgid "Diese Rechnung gehört nicht zu dieser Verwaltung."
+msgstr "Cette facture n'appartient pas à cette gérance."
+
+msgid "Nur offene Rechnungen lassen sich bezahlen oder stornieren."
+msgstr "Seules les factures ouvertes peuvent être payées ou annulées."
+
+msgid "Zahlung bestätigt."
+msgstr "Paiement confirmé."
+
+msgid "Rechnung storniert."
+msgstr "Facture annulée."

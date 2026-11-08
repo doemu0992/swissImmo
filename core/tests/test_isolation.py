@@ -102,6 +102,8 @@ AUSNAHMEN = {
     'fw_vermarktung_feed':    'token-gesichert, kein Login — eigener Test in Bauform C',
     'fw_kontoblatt':          'Kontonummer statt Objekt-ID — Bauform C',
     'portal_report':          'Eigentümer-Report, datensatzbezogen bereits isoliert',
+    'fw_betreiber_kunde':     'Betreiber-Konsole: der Betreiber (Superuser) sieht bewusst jede Verwaltung; Zugang (403 für alle '
+                              'Rollen) und fremde Rechnungen prüft test_betreiber_kundenliste',
 }
 
 # ---------------------------------------------------------------------------

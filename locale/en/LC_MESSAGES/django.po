@@ -38973,3 +38973,89 @@ msgid ""
 msgstr ""
 "%(firma)s has been created, but the invitation could not be sent. Link to "
 "set the password (short-lived, single use): %(link)s"
+
+msgid ""
+"Diese Verwaltung hat keine Abonnement-Zeile. Sie wird nicht eingeschränkt "
+"und nicht abgerechnet."
+msgstr ""
+"This property manager has no subscription record. It is neither restricted "
+"nor billed."
+
+msgid "Abonnement anlegen"
+msgstr "Create subscription"
+
+msgid "Dieser Wechsel hat Folgen:"
+msgstr "This change has consequences:"
+
+msgid "Gesperrt wird: %(s)s"
+msgstr "Will be blocked: %(s)s"
+
+msgid ""
+"Der Bestand (%(n)s Einheiten) liegt über der Grenze der Stufe (%(d)s): Neues"
+" lässt sich dann nicht mehr anlegen."
+msgstr ""
+"The portfolio (%(n)s units) exceeds the plan limit (%(d)s): nothing new can "
+"be created then."
+
+msgid "Daten bleiben erhalten; Funktionen werden gesperrt, nie gelöscht."
+msgstr "Data is kept; functions are blocked, never deleted."
+
+msgid "Trotzdem wechseln"
+msgstr "Switch anyway"
+
+msgid "Beendet den Bestandsschutz. Vorher werden die Folgen gezeigt."
+msgstr "Ends the grandfathering. The consequences are shown first."
+
+msgid "Stufe setzen"
+msgstr "Set plan"
+
+msgid "Module und Abrechnung"
+msgstr "Modules and billing"
+
+msgid "Zugebuchte Module"
+msgstr "Booked modules"
+
+msgid "Leer = es wird nichts in Rechnung gestellt."
+msgstr "Empty = nothing is invoiced."
+
+msgid "Bestandsschutz"
+msgstr "Grandfathering"
+
+msgid "alles offen, keine Grenzen"
+msgstr "everything open, no limits"
+
+msgid "über der Grenze"
+msgstr "over the limit"
+
+msgid "Zahlungszustand"
+msgstr "Payment status"
+
+msgid "überfällig seit"
+msgstr "overdue since"
+
+msgid "Als bezahlt"
+msgstr "Mark as paid"
+
+msgid "Rechnung stornieren?"
+msgstr "Cancel this invoice?"
+
+msgid "Unbekannte Stufe."
+msgstr "Unknown plan."
+
+msgid "Stufe gesetzt."
+msgstr "Plan set."
+
+msgid "Abonnement gespeichert."
+msgstr "Subscription saved."
+
+msgid "Diese Rechnung gehört nicht zu dieser Verwaltung."
+msgstr "This invoice does not belong to this property manager."
+
+msgid "Nur offene Rechnungen lassen sich bezahlen oder stornieren."
+msgstr "Only open invoices can be paid or cancelled."
+
+msgid "Zahlung bestätigt."
+msgstr "Payment confirmed."
+
+msgid "Rechnung storniert."
+msgstr "Invoice cancelled."

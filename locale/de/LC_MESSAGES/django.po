@@ -37859,3 +37859,89 @@ msgid ""
 msgstr ""
 "%(firma)s ist angelegt, aber die Einladung ging nicht hinaus. Link zum "
 "Setzen des Passworts (gilt kurz und einmal): %(link)s"
+
+msgid ""
+"Diese Verwaltung hat keine Abonnement-Zeile. Sie wird nicht eingeschränkt "
+"und nicht abgerechnet."
+msgstr ""
+"Diese Verwaltung hat keine Abonnement-Zeile. Sie wird nicht eingeschränkt "
+"und nicht abgerechnet."
+
+msgid "Abonnement anlegen"
+msgstr "Abonnement anlegen"
+
+msgid "Dieser Wechsel hat Folgen:"
+msgstr "Dieser Wechsel hat Folgen:"
+
+msgid "Gesperrt wird: %(s)s"
+msgstr "Gesperrt wird: %(s)s"
+
+msgid ""
+"Der Bestand (%(n)s Einheiten) liegt über der Grenze der Stufe (%(d)s): Neues"
+" lässt sich dann nicht mehr anlegen."
+msgstr ""
+"Der Bestand (%(n)s Einheiten) liegt über der Grenze der Stufe (%(d)s): Neues"
+" lässt sich dann nicht mehr anlegen."
+
+msgid "Daten bleiben erhalten; Funktionen werden gesperrt, nie gelöscht."
+msgstr "Daten bleiben erhalten; Funktionen werden gesperrt, nie gelöscht."
+
+msgid "Trotzdem wechseln"
+msgstr "Trotzdem wechseln"
+
+msgid "Beendet den Bestandsschutz. Vorher werden die Folgen gezeigt."
+msgstr "Beendet den Bestandsschutz. Vorher werden die Folgen gezeigt."
+
+msgid "Stufe setzen"
+msgstr "Stufe setzen"
+
+msgid "Module und Abrechnung"
+msgstr "Module und Abrechnung"
+
+msgid "Zugebuchte Module"
+msgstr "Zugebuchte Module"
+
+msgid "Leer = es wird nichts in Rechnung gestellt."
+msgstr "Leer = es wird nichts in Rechnung gestellt."
+
+msgid "Bestandsschutz"
+msgstr "Bestandsschutz"
+
+msgid "alles offen, keine Grenzen"
+msgstr "alles offen, keine Grenzen"
+
+msgid "über der Grenze"
+msgstr "über der Grenze"
+
+msgid "Zahlungszustand"
+msgstr "Zahlungszustand"
+
+msgid "überfällig seit"
+msgstr "überfällig seit"
+
+msgid "Als bezahlt"
+msgstr "Als bezahlt"
+
+msgid "Rechnung stornieren?"
+msgstr "Rechnung stornieren?"
+
+msgid "Unbekannte Stufe."
+msgstr "Unbekannte Stufe."
+
+msgid "Stufe gesetzt."
+msgstr "Stufe gesetzt."
+
+msgid "Abonnement gespeichert."
+msgstr "Abonnement gespeichert."
+
+msgid "Diese Rechnung gehört nicht zu dieser Verwaltung."
+msgstr "Diese Rechnung gehört nicht zu dieser Verwaltung."
+
+msgid "Nur offene Rechnungen lassen sich bezahlen oder stornieren."
+msgstr "Nur offene Rechnungen lassen sich bezahlen oder stornieren."
+
+msgid "Zahlung bestätigt."
+msgstr "Zahlung bestätigt."
+
+msgid "Rechnung storniert."
+msgstr "Rechnung storniert."

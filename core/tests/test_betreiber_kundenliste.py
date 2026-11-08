@@ -108,3 +108,96 @@ class BetreiberKundeAnlegenTests(TestCase):
         self.assertEqual(antwort.status_code, 200)
         self.assertFalse(Organisation.objects.filter(firma='Neue Verwaltung AG').exists())
         self.assertFalse(get_user_model().objects.filter(username='neuinhaber').exists())
+
+
+class BetreiberAboVerwaltungTests(TestCase):
+    """Etappe 3: Stufe, Module, Abrechnung, Zahlung und Storno einer Verwaltung."""
+
+    def setUp(self):
+        from datetime import date
+        from decimal import Decimal
+
+        from abo.models import AboRechnung
+        self.org = _test_organisation()
+        self.abo = Abonnement.alle_organisationen.get_or_create(organisation=self.org)[0]
+        self.rechnung = AboRechnung.alle_organisationen.create(
+            organisation=self.org, nummer='AB-2026-000001', periode_von=date(2026, 11, 1), periode_bis=date(2026, 11, 30),
+            stufe='team', intervall='monatlich', einheiten=10, netto=Decimal('119'), brutto=Decimal('119'),
+            rechnungsdatum=date(2026, 11, 1), faellig_am=date(2026, 11, 30))
+        self.betreiber = get_user_model().objects.create_superuser('betreiber', 'b@example.ch', 'x' * 12)
+        self.c = Client()
+        self.c.force_login(self.betreiber)
+        self.url = f'/neu/betreiber/{self.org.pk}/'
+
+    def test_nur_der_betreiber(self):
+        team = Client()
+        team.force_login(_team_user())
+        self.assertEqual(team.get(self.url).status_code, 403)
+        self.assertEqual(team.post(self.url, {'aktion': 'bezahlt', 'rechnung': self.rechnung.pk}).status_code, 403)
+        self.rechnung.refresh_from_db()
+        self.assertEqual(self.rechnung.status, 'offen')
+        self.assertEqual(self.c.get(self.url).status_code, 200)
+
+    def test_unbekannte_verwaltung_ist_404(self):
+        self.assertEqual(self.c.get('/neu/betreiber/999999/').status_code, 404)
+
+    def test_zahlung_bestaetigen_und_stornieren(self):
+        from datetime import date
+
+        from abo.models import AboRechnung
+        self.c.post(self.url, {'aktion': 'bezahlt', 'rechnung': self.rechnung.pk, 'datum': '2026-11-05'})
+        self.rechnung.refresh_from_db()
+        self.assertEqual((self.rechnung.status, str(self.rechnung.bezahlt_am)), ('bezahlt', '2026-11-05'))
+        # eine bezahlte Rechnung lässt sich nicht mehr stornieren
+        self.c.post(self.url, {'aktion': 'storno', 'rechnung': self.rechnung.pk})
+        self.rechnung.refresh_from_db()
+        self.assertEqual(self.rechnung.status, 'bezahlt')
+        zweite = AboRechnung.alle_organisationen.get(pk=self.rechnung.pk)
+        zweite.pk, zweite.nummer, zweite.status, zweite.bezahlt_am = None, 'AB-2026-000002', 'offen', None
+        zweite.periode_von, zweite.periode_bis = date(2026, 12, 1), date(2026, 12, 31)
+        zweite.save()
+        self.c.post(self.url, {'aktion': 'storno', 'rechnung': zweite.pk})
+        zweite.refresh_from_db()
+        self.assertEqual(zweite.status, 'storniert')
+
+    def test_fremde_rechnung_wird_abgelehnt(self):
+        from datetime import date
+        from decimal import Decimal
+
+        from abo.models import AboRechnung
+        andere = Organisation.objects.create(firma='Andere AG', strasse='x', plz='1', ort='y')
+        fremd = AboRechnung.alle_organisationen.create(
+            organisation=andere, nummer='AB-2026-000099', periode_von=date(2026, 11, 1), periode_bis=date(2026, 11, 30),
+            stufe='team', intervall='monatlich', einheiten=1, netto=Decimal('1'), brutto=Decimal('1'),
+            rechnungsdatum=date(2026, 11, 1), faellig_am=date(2026, 11, 30))
+        self.c.post(self.url, {'aktion': 'bezahlt', 'rechnung': fremd.pk})
+        fremd.refresh_from_db()
+        self.assertEqual(fremd.status, 'offen')                      # über die falsche Verwaltung geht nichts
+
+    def test_module_abrechnung_und_bestandsschutz_speichern(self):
+        self.c.post(self.url, {'aktion': 'einstellen', 'module': ['signatur', 'unsinn'], 'abrechnung_ab': '2026-12-01',
+                               'bestandsschutz': 'on'})
+        self.abo.refresh_from_db()
+        self.assertEqual(self.abo.zusatzmodule, ['signatur'])               # Unbekanntes wird verworfen
+        self.assertEqual(str(self.abo.abrechnung_ab), '2026-12-01')
+        self.assertTrue(self.abo.uneingeschraenkt)
+
+    def test_planwechsel_zeigt_folgen_und_verlangt_bestaetigung(self):
+        self.abo.uneingeschraenkt = False
+        self.abo.save()
+        self.org.abo_plan = 'professional'
+        self.org.save(update_fields=['abo_plan'])
+        antwort = self.c.post(self.url, {'aktion': 'plan', 'stufe': 'start', 'intervall': 'monatlich'})
+        self.assertContains(antwort, 'Trotzdem wechseln')
+        self.org.refresh_from_db()
+        self.assertEqual(self.org.abo_plan, 'professional')                 # noch nichts geändert
+        self.c.post(self.url, {'aktion': 'plan', 'stufe': 'start', 'intervall': 'jaehrlich', 'bestaetigt': '1'})
+        self.org.refresh_from_db()
+        self.assertEqual((self.org.abo_plan, self.org.abo_jaehrlich), ('start', True))
+
+    def test_aenderungen_stehen_im_logbuch_der_verwaltung(self):
+        from core.models import AktivitaetsLog
+        from core.tenancy import organisation_kontext
+        self.c.post(self.url, {'aktion': 'bezahlt', 'rechnung': self.rechnung.pk})
+        with organisation_kontext(self.org):
+            self.assertTrue(AktivitaetsLog.objects.filter(aktion='Zahlung bestätigt').exists())
