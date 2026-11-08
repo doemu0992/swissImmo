@@ -120,7 +120,7 @@ class VertragAssistentTests(TestCase):
         html = r.content.decode()
         self.pruefe_standard(html)
         # Die Meldung öffnet ihren Schritt über die Schnittstelle des Assistenten
-        self.assertIn("zeigeFehler('einheit_id')", html)
+        self.assertIn('data-bei-klick="zeigeFehler" data-args=\'["einheit_id"]\'', html)
         self.assertIn('ASSISTENT.fwAssistent.zeigeFeld(el)', html)
 
 
