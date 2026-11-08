@@ -39483,3 +39483,48 @@ msgstr ""
 
 msgid "Es ist kein Schlüssel vorhanden."
 msgstr "Non è presente nessuna chiave."
+
+msgid "Kunden"
+msgstr "Clienti"
+
+msgid ""
+"Alle Verwaltungen dieser Installation mit Stufe, Nutzung und dem, was noch "
+"fehlt. Nur für den Betreiber; es werden keine Verträge, Personen oder "
+"Buchungen gezeigt."
+msgstr ""
+"Tutte le amministrazioni di questa installazione con piano, utilizzo e ciò "
+"che manca ancora. Solo per il gestore; non vengono mostrati contratti, "
+"persone né registrazioni."
+
+msgid "in Ordnung"
+msgstr "in ordine"
+
+msgid "Noch keine Verwaltung angelegt."
+msgstr "Nessuna amministrazione ancora creata."
+
+msgid "verwaltet"
+msgstr "gestito"
+
+msgid ""
+"Keine Abonnement-Zeile: wird nicht abgerechnet und nicht eingeschränkt."
+msgstr "Nessun record di abbonamento: non fatturato e non limitato."
+
+msgid "Kein Inhaber: niemand kann Benutzer und Einstellungen verwalten."
+msgstr "Nessun titolare: nessuno può gestire utenti e impostazioni."
+
+msgid ""
+"Keine E-Mail-Adresse: Rechnungen und Zahlungserinnerungen gehen ins Leere."
+msgstr ""
+"Nessun indirizzo e-mail: fatture e solleciti di pagamento non arrivano a "
+"nessuno."
+
+msgid "Zahlung überfällig seit %(datum)s."
+msgstr "Pagamento scaduto dal %(datum)s."
+
+msgid "Alle Verwaltungen mit Stufe, Nutzung und Befund (Betreiber)"
+msgstr "Tutte le amministrazioni con piano, utilizzo e rilievi (gestore)"
+
+msgid "Bei %(n)s Verwaltung gibt es etwas zu prüfen."
+msgid_plural "Bei %(n)s Verwaltungen gibt es etwas zu prüfen."
+msgstr[0] "%(n)s amministrazione da controllare."
+msgstr[1] "%(n)s amministrazioni da controllare."
