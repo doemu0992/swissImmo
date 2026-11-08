@@ -44,7 +44,7 @@
                 {% endfor %}
             </form>
         </details>
-        {% if kann_schreiben %}<a href="/neu/faelle/neu/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Neuer Fall" %}</a>{% endif %}
+        {% if kann_schreiben %}<a href="/neu/faelle/neu/" data-modal="{% trans "Neuer Fall" %}" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Neuer Fall" %}</a>{% endif %}
     </div>
 </section>
 
@@ -183,7 +183,7 @@
             </div>
             {% if e.chf %}<span class="fw-betrag">CHF {{ e.chf|chf }}</span>{% endif %}
             {% if e.faellig %}<div class="fw-zeit">{{ e.faellig|date:"d.m.Y" }}</div>{% endif %}
-            {% if e.url %}<a href="{{ e.url }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"{% endif %} class="fw-btn fw-knapp">{{ e.cta }}</a>{% endif %}
+            {% if e.url %}<a href="{{ e.url }}"{% if e.modal %} data-modal="{{ e.titel}}" {% if e.wide %}data-modal-breit{% endif %}{% endif %} class="fw-btn fw-knapp">{{ e.cta }}</a>{% endif %}
         </div>
         {% endfor %}
         {% include 'fw/_arbeitsvorrat_abschnitte.html' with teil='ohnefrist' %}
@@ -221,7 +221,7 @@
             {% elif e.tage == 0 %}<b>{% trans "Heute" %}</b><span>{% trans "fällig" %}</span>
             {% else %}<b>{{ e.datum|date:"D d.m." }}</b><span>{% blocktrans count n=e.tage %}in {{ n }} Tag{% plural %}in {{ n }} Tagen{% endblocktrans %}</span>{% endif %}
         </div>
-        <div class="fw-vz-aktion"><a href="{{ e.ziel }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',false)"{% endif %} class="fw-btn fw-knapp">{{ e.knopf }}</a></div>
+        <div class="fw-vz-aktion"><a href="{{ e.ziel }}"{% if e.modal %} data-modal="{{ e.titel}}"{% endif %} class="fw-btn fw-knapp">{{ e.knopf }}</a></div>
 
         <template id="vz-{{ forloop.counter }}">
             <div class="fw-vg-kopf-daten" data-tag="{{ e.marke|default:'' }}" data-nr="{{ e.nummer|default:'' }}" data-titel="{{ e.titel }}" data-obj="{% if e.fortschritt %}{{ e.fortschritt }}{% else %}{{ e.zeile }}{% endif %}"></div>
@@ -252,7 +252,7 @@
                 <form method="post" action="/neu/fallschritte/{{ e.schritt_pk }}/verschieben/">{% csrf_token %}<input type="hidden" name="weiter" value="{{ request.get_full_path }}"><button type="submit" class="fw-btn">{% trans "Auf morgen" %}</button></form>
                 <form method="post" action="/neu/fallschritte/{{ e.schritt_pk }}/erledigen/">{% csrf_token %}<input type="hidden" name="weiter" value="{{ request.get_full_path }}"><button type="submit" class="fw-btn fw-primary" data-hauptaktion title="{{ e.schritt }}">{% zeichen 'gut' %} {% trans "Schritt erledigt" %}</button></form>
                 {% else %}
-                <a href="{{ e.ziel }}"{% if e.modal %} onclick="fwVorgangZu();return fwModalOpen(this,'{{ e.titel|escapejs }}',false)"{% endif %} class="fw-btn fw-primary" data-hauptaktion>{{ e.knopf }}</a>
+                <a href="{{ e.ziel }}"{% if e.modal %} data-bei-klick="fwVorgangZu" data-modal="{{ e.titel}}"{% endif %} class="fw-btn fw-primary" data-hauptaktion>{{ e.knopf }}</a>
                 {% endif %}
             </div>
         </template>
@@ -378,11 +378,11 @@
    nichts wird nachgeladen. Kopf: Art, Nummer, Titel, Stand. Unten die
    Handlungen. Esc oder Klick daneben schliesst. {% endcomment %}
 <div id="fwVorgang" class="fw-vg" aria-hidden="true">
-    <div class="fw-vg-vorhang" onclick="fwVorgangZu()"></div>
+    <div class="fw-vg-vorhang" data-bei-klick="fwVorgangZu"></div>
     <aside class="fw-vg-box" role="dialog" aria-modal="true" aria-labelledby="fwVgTitel">
         <div class="fw-vg-kopf">
             <div class="fw-vg-oben"><span class="fw-marke-kapsel" id="fwVgTag"></span><span class="fw-mono" id="fwVgNr"></span>
-                <button type="button" class="fw-knopf-rund" onclick="fwVorgangZu()" aria-label="{% trans 'Schliessen' %}">{% zeichen 'schliessen' %}</button></div>
+                <button type="button" class="fw-knopf-rund" data-bei-klick="fwVorgangZu" aria-label="{% trans 'Schliessen' %}">{% zeichen 'schliessen' %}</button></div>
             <h3 id="fwVgTitel"></h3>
             <p id="fwVgObj"></p>
         </div>

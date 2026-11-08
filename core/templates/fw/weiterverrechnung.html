@@ -109,7 +109,7 @@ Erklärung, warum.{% endcomment %}
             <div class="fw-card"><div class="fw-formular fw-rumpf">
                 <div class="fw-feldblock breit">
                     <label class="fw-label" for="wv-vertrag">{% trans "Mieter / Vertrag *" %}</label>
-                    <select name="vertrag_id" id="wv-vertrag" required onchange="wvPreview()" class="fw-feld">
+                    <select name="vertrag_id" id="wv-vertrag" required data-bei-aenderung="wvPreview" class="fw-feld">
                         <option value="">— {% trans "wählen" %} —</option>
                         {% for v in vertraege %}
                         <option value="{{ v.id }}">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}{% if v.einheit.liegenschaft %} ({{ v.einheit.liegenschaft.strasse }}){% endif %}</option>
@@ -118,7 +118,7 @@ Erklärung, warum.{% endcomment %}
                 </div>
                 <div class="fw-feldblock breit">
                     <label class="fw-label" for="wv-titel">{% trans "Titel" %}</label>
-                    <input name="titel" id="wv-titel" value="Weiterverrechnung: {{ k.lieferant }}" oninput="wvPreview()" class="fw-feld">
+                    <input name="titel" id="wv-titel" value="Weiterverrechnung: {{ k.lieferant }}" data-bei-eingabe="wvPreview" class="fw-feld">
                 </div>
                 {% if ist_hnk %}
                 <label class="fw-haekchen fw-feldblock breit"><input type="checkbox" name="hnk_override" required class="fw-akzent-krit"><span class="fw-kritisch">{% trans "Trotzdem direkt weiterverrechnen (HNK-Doppelbelastung bewusst in Kauf nehmen)" %}</span></label>
@@ -131,12 +131,12 @@ Erklärung, warum.{% endcomment %}
             <div class="fw-formular fw-rumpf">
                 <div class="fw-feldblock">
                     <label class="fw-label" for="wv_betrag">{% trans "Weiterzuverrechnen (CHF)" %}</label>
-                    <input name="betrag" id="wv_betrag" required inputmode="decimal" oninput="wvCheck(); wvPreview()" value="{% localize off %}{{ offen_wv }}{% endlocalize %}" class="fw-feld fw-strong">
+                    <input name="betrag" id="wv_betrag" required inputmode="decimal" data-bei-eingabe="wvCheck wvPreview" value="{% localize off %}{{ offen_wv }}{% endlocalize %}" class="fw-feld fw-strong">
                     <p class="fw-hilfe">{% trans "Fremdkosten — wird ertragsneutral über Konto 1190 durchgereicht." %}</p>
                 </div>
                 <div class="fw-feldblock">
                     <label class="fw-label" for="wv_zuschlag">{% trans "Zuschlag (CHF, optional)" %}</label>
-                    <input name="zuschlag" id="wv_zuschlag" value="0" inputmode="decimal" oninput="wvPreview()" class="fw-feld">
+                    <input name="zuschlag" id="wv_zuschlag" value="0" inputmode="decimal" data-bei-eingabe="wvPreview" class="fw-feld">
                     <p class="fw-hilfe">{% trans "Eigener Aufwand/Marge — wird als Ertrag (3600) gebucht." %}</p>
                 </div>
             </div>

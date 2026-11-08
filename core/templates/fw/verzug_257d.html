@@ -56,7 +56,7 @@
     <div class="fw-card fw-rumpf space-y-4">
         <div class="fw-feldblock">
             <label class="fw-label">Vorläufiges Fristende</label>
-            <input type="date" name="frist_bis" id="v_frist" value="{{ default_frist }}" onchange="fristCheck()"
+            <input type="date" name="frist_bis" id="v_frist" value="{{ default_frist }}" data-bei-aenderung="fristCheck"
                    class="fw-feld sm:w-64">
             <p class="fw-hilfe">
                 Mindestfrist: <b>{{ min_frist }} Tage ab Zugang</b> ({% if min_frist == 30 %}Wohn-/Geschäftsräume{% else %}übrige Objekte{% endif %}, Art. 257d Abs. 1 OR).

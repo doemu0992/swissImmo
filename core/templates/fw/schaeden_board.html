@@ -49,7 +49,7 @@
                     {% if z.t.prioritaet|lower == 'notfall' %}<span class="fw-chip fw-crit">{% trans "Notfall" %}</span>{% elif z.t.prioritaet|lower == 'hoch' %}<span class="fw-chip fw-crit">{% trans "Hoch" %}</span>{% elif z.t.prioritaet|lower == 'tief' or z.t.prioritaet|lower == 'niedrig' %}<span class="fw-chip fw-mut">{% trans "Tief" %}</span>{% endif %}
                     {% if z.ueberfaellig %}<span class="fw-chip fw-crit" title="{% trans 'Zielzeit überschritten' %}">{% trans "SLA überfällig" %}</span>{% elif z.t.faellig_bis and z.offen %}<span class="fw-chip fw-mut" title="{% trans 'Erledigen bis' %}">{{ z.t.faellig_bis|date:"d.m." }}</span>{% endif %}
                 </div>
-                <a href="/neu/schaeden/{{ z.t.id }}/" class="fw-karte-titel" onclick="return fwModalOpenUrl('/neu/schaeden/{{ z.t.id }}/','{% trans 'Schaden' %} #{{ z.t.id }}')">{{ z.t.titel|truncatechars:80 }}</a>
+                <a href="/neu/schaeden/{{ z.t.id }}/" class="fw-karte-titel" data-modal="{% trans 'Schaden' %} #{{ z.t.id }}">{{ z.t.titel|truncatechars:80 }}</a>
                 <div class="fw-karte-sub">{{ z.objekt }}{% if z.t.betroffene_einheit %} · {{ z.t.betroffene_einheit.bezeichnung }}{% endif %}</div>
                 {% if z.befunde %}<div class="fw-karte-befunde">{% for b in z.befunde|slice:":2" %}<span class="fw-chip fw-{{ b.stufe }} fw-dot">{{ b.text }}</span>{% endfor %}</div>{% endif %}
                 <div class="fw-karte-fuss">

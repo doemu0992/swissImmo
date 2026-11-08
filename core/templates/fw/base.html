@@ -64,7 +64,7 @@ Detailseiten rufen sie beim Namen.
 <div class="fw-app">
 
     <!-- Vorhang für die Leiste am Telefon -->
-    <div id="fwBackdrop" onclick="fwCloseMobileNav()" class="fw-vorhang-mobil hidden"></div>
+    <div id="fwBackdrop" data-bei-klick="fwCloseMobileNav" class="fw-vorhang-mobil hidden"></div>
 
     <!-- ================= LEISTE ================= -->
     <aside id="fwSidebar" class="fw-side fw-flaeche" aria-label="{% trans 'Hauptnavigation' %}">
@@ -74,10 +74,10 @@ Detailseiten rufen sie beim Namen.
                 <a href="{% if fw_kopf_reduziert %}{{ fw_kopf_start }}{% else %}/neu/{% endif %}">immoswiss</a>
                 {% if fw_mandant and fw_mandanten|length <= 1 %}<small class="fw-faint" title="{{ fw_mandant.firma }}">{{ fw_mandant.firma }}</small>{% endif %}
             </div>
-            <button type="button" onclick="fwToggleSidebar()" title="{% trans 'Menü ein-/ausklappen' %}" class="fw-side-knopf fw-nur-breit">
+            <button type="button" data-bei-klick="fwToggleSidebar" title="{% trans 'Menü ein-/ausklappen' %}" class="fw-side-knopf fw-nur-breit">
                 {% zeichen 'zurueck' klasse='sb-collapse-icon' %}
             </button>
-            <button type="button" onclick="fwCloseMobileNav()" aria-label="{% trans 'Menü schliessen' %}" class="fw-side-knopf fw-nur-mobil">
+            <button type="button" data-bei-klick="fwCloseMobileNav" aria-label="{% trans 'Menü schliessen' %}" class="fw-side-knopf fw-nur-mobil">
                 {% zeichen 'schliessen' %}
             </button>
         </div>
@@ -131,7 +131,7 @@ Detailseiten rufen sie beim Namen.
                 {% zeichen 'einstellungen' %} <span class="sb-label">{% trans "Einstellungen" %}</span>
             </a>
             {% endif %}
-            <button type="button" onclick="fwProfilMenu()" class="fw-ich" aria-haspopup="true" aria-controls="fwProfil">
+            <button type="button" data-bei-klick="fwProfilMenu" class="fw-ich" aria-haspopup="true" aria-controls="fwProfil">
                 <span class="fw-avatar">{{ request.user.username|slice:":2"|upper }}</span>
                 <span class="sb-label"><b class="fw-ink truncate">{{ request.user.get_full_name|default:request.user.username }}</b><small class="fw-faint truncate">{{ request.user.email|default:request.user.username }}</small></span>
             </button>
@@ -183,19 +183,19 @@ Detailseiten rufen sie beim Namen.
             </nav>{% endif %}{% comment %} Ohne Bereiche (die Hauswartung) gibt es auch keine leere Kapsel. {% endcomment %}
             {% if fw_palette or fw_suche_gruppen %}{% include 'fw/_omnisearch.html' %}{% endif %}
             <div class="fw-kapsel fw-werkzeug-kapsel">
-                <button type="button" onclick="fwThemeWechseln()" title="{% trans 'Hell- oder Dunkelmodus' %}" aria-label="{% trans 'Hell- oder Dunkelmodus' %}" class="fw-knopf-rund fw-knopf-dunkel">{% zeichen 'darstellung' %}</button>
+                <button type="button" data-bei-klick="fwThemeWechseln" title="{% trans 'Hell- oder Dunkelmodus' %}" aria-label="{% trans 'Hell- oder Dunkelmodus' %}" class="fw-knopf-rund fw-knopf-dunkel">{% zeichen 'darstellung' %}</button>
                 {% comment %} «+», Glocke und Zahnrad führen in Bereiche des Teams: Die Hauswartung und die
                    Portal-Rollen (2FA-Seiten) bekommen sie nicht angeboten (`fw_kopf_reduziert`,
                    `core/navigation.py`). «Neuer Fall» fällt auf die Vollseite zurück, wo `fwModalOpen`
                    (Schublade, `fw/_fwmodal.html`) auf der Seite nicht geladen ist. {% endcomment %}
                 {% if not fw_kopf_reduziert %}
-                {% if fw_neuer_fall %}<a href="/neu/faelle/neu/" onclick="return window.fwModalOpen ? fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}') : true" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neuen Fall erfassen' %}"
+                {% if fw_neuer_fall %}<a href="/neu/faelle/neu/" data-modal="{% trans "Neuer Fall" %}" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neuen Fall erfassen' %}"
                    class="fw-knopf-rund fw-wz-neu">{% zeichen 'neu' %}</a>{% endif %}
                 <a href="/neu/zulauf/{{ lg_query }}" title="{% trans 'Mitteilungen' %}" aria-label="{% trans 'Mitteilungen' %}"
                    class="fw-knopf-rund{% if nav == 'zulauf' %} hier{% endif %}">{% zeichen 'glocke' %}<span class="fw-pip" data-zaehler="zulauf" hidden></span></a>
                 <a href="/neu/einstellungen/{{ lg_query }}" title="{% trans 'Einstellungen' %}" aria-label="{% trans 'Einstellungen' %}" class="fw-knopf-rund fw-wz-einst{% if nav in fw_einstellungen_keys %} hier{% endif %}">{% zeichen 'einstellungen' %}</a>
                 {% endif %}
-                <button type="button" onclick="fwProfilMenu()" aria-label="{% trans 'Profil und Darstellung' %}" aria-haspopup="true" aria-controls="fwProfil" class="fw-avatar-knopf"><span class="fw-avatar fw-avatar-gross">{{ request.user.username|slice:":2"|upper }}</span></button>
+                <button type="button" data-bei-klick="fwProfilMenu" aria-label="{% trans 'Profil und Darstellung' %}" aria-haspopup="true" aria-controls="fwProfil" class="fw-avatar-knopf"><span class="fw-avatar fw-avatar-gross">{{ request.user.username|slice:":2"|upper }}</span></button>
             </div>
           </div>
           {% for g in fw_nav_gruppen %}{% if nav in g.alle_keys and g.items and nav != 'dashboard' %}
@@ -230,8 +230,8 @@ Detailseiten rufen sie beim Namen.
             {% comment %} Was die Kopfzeile bis 1023 px nicht mehr tragen kann: «Neuer Fall» und die
                Schublade. Ab 1024 px stehen beide nicht hier (`fw-profil-schnell`). {% endcomment %}
             <div class="fw-profil-schnell">
-                {% if not fw_kopf_reduziert and fw_neuer_fall %}<a href="/neu/faelle/neu/" onclick="fwProfilMenu();return window.fwModalOpen ? fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}') : true" class="fw-profil-link">{% zeichen 'neu' %} {% trans "Neuer Fall" %}</a>{% endif %}
-                <button type="button" onclick="fwProfilMenu();fwOpenMobileNav()" class="fw-profil-link">{% zeichen 'mehr' %} {% trans "Menü öffnen" %}</button>
+                {% if not fw_kopf_reduziert and fw_neuer_fall %}<a href="/neu/faelle/neu/" data-bei-klick="fwProfilMenu" data-modal="{% trans "Neuer Fall" %}" class="fw-profil-link">{% zeichen 'neu' %} {% trans "Neuer Fall" %}</a>{% endif %}
+                <button type="button" data-bei-klick="fwMenueOeffnen" class="fw-profil-link">{% zeichen 'mehr' %} {% trans "Menü öffnen" %}</button>
                 <div class="fw-profil-trenner"></div>
             </div>
             {% if fw_mandant and fw_mandanten|length > 1 %}
@@ -254,8 +254,8 @@ Detailseiten rufen sie beim Namen.
             <div class="fw-profil-abschnitt">
                 <div class="fw-profil-titel">{% trans "Darstellung" %}</div>
                 <div class="fw-segment">
-                    <button type="button" data-theme-btn="light" onclick="fwSetTheme('light')">{% trans "Hell" %}</button>
-                    <button type="button" data-theme-btn="dark" onclick="fwSetTheme('dark')">{% trans "Dunkel" %}</button>
+                    <button type="button" data-theme-btn="light" data-bei-klick="fwSetTheme" data-args='["light"]'>{% trans "Hell" %}</button>
+                    <button type="button" data-theme-btn="dark" data-bei-klick="fwSetTheme" data-args='["dark"]'>{% trans "Dunkel" %}</button>
                 </div>
             </div>
             <div class="fw-profil-abschnitt">
@@ -416,7 +416,7 @@ document.addEventListener('click', function(e) {
     var m = document.getElementById('fwProfil');
     if (!m || m.classList.contains('hidden')) return;
     // Klick ausserhalb von Menü + Auslöser schliesst
-    if (!m.contains(e.target) && !e.target.closest('button[onclick="fwProfilMenu()"]')) {
+    if (!m.contains(e.target) && !e.target.closest('button[data-bei-klick="fwProfilMenu"]')) {
         m.classList.add('hidden');
     }
 });
@@ -425,6 +425,15 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && m) m.classList.add('hidden');
 });
 
+// Menü öffnen (Telefon): Profilmenü umschalten und Seitenleiste aufklappen
+function fwMenueOeffnen() { fwProfilMenu(); fwOpenMobileNav(); }
+// Reiter wechseln und zu seiner Fläche scrollen (Verweise wie «Zum Konto»); `false` hält den Link an
+function fwTabSpringen(gruppe, name) {
+    fwTab(gruppe, name);
+    var z = document.getElementById(gruppe + '-' + name);
+    if (z) z.scrollIntoView({behavior: 'smooth', block: 'start'});
+    return false;
+}
 // Generische Tab-Umschaltung für Detailseiten:
 // Buttons: data-tab="<gruppe>" data-target="<name>"; Panels: id="<gruppe>-<name>"
 function fwTab(gruppe, name) {

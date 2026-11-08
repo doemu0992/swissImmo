@@ -63,9 +63,9 @@
         <label class="fw-label mb-2">{% trans "Kunden-Typ" %}</label>
         <div class="fw-filters fw-nomb" id="typWahl">
             {% for val, lbl in m.TYP_CHOICES %}{% endfor %}
-            <button type="button" data-typ="person" onclick="setTyp('person')" class="typ-btn fw-fchip">{% trans "Privatperson" %}</button>
-            <button type="button" data-typ="firma" onclick="setTyp('firma')" class="typ-btn fw-fchip">{% trans "Firma / Unternehmen" %}</button>
-            <button type="button" data-typ="verein" onclick="setTyp('verein')" class="typ-btn fw-fchip">{% trans "Verein / Stiftung" %}</button>
+            <button type="button" data-typ="person" data-bei-klick="setTyp" data-args='["person"]' class="typ-btn fw-fchip">{% trans "Privatperson" %}</button>
+            <button type="button" data-typ="firma" data-bei-klick="setTyp" data-args='["firma"]' class="typ-btn fw-fchip">{% trans "Firma / Unternehmen" %}</button>
+            <button type="button" data-typ="verein" data-bei-klick="setTyp" data-args='["verein"]' class="typ-btn fw-fchip">{% trans "Verein / Stiftung" %}</button>
         </div>
         <input type="hidden" name="typ" id="f_typ" value="{{ m.typ|default:'person' }}">
     </div>
@@ -209,7 +209,7 @@
             <p class="fw-hilfe -mt-2">{% trans "Bei Vermietung an ausländische Staatsangehörige Pflichtangabe." %}</p>
             <div class="fw-raster r2">
                 <div><label class="fw-label mb-1">{% trans "Aufenthaltsbewilligung" %}</label>
-                    <select name="aufenthaltsbewilligung" id="f_bewilligung" onchange="bewilligungHinweis()" class="fw-feld w-full">
+                    <select name="aufenthaltsbewilligung" id="f_bewilligung" data-bei-aenderung="bewilligungHinweis" class="fw-feld w-full">
                         {% for val, lbl in m.AUFENTHALT_CHOICES %}
                         <option value="{{ val }}" {% if m.aufenthaltsbewilligung == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
                     </select></div>

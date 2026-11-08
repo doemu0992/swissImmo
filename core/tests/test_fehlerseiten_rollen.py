@@ -158,7 +158,7 @@ class NeuerFallOhneModalTests(RbacBasis):
         self.assertEqual(antwort.status_code, 200)
         html = antwort.content.decode()
         self.assertNotIn('function fwModalOpen', html)       # auf dieser Seite nicht geladen
-        aufrufe = re.findall(r'onclick="[^"]*fwModalOpen\(this', html)
-        self.assertTrue(aufrufe)
-        for a in aufrufe:
-            self.assertIn('window.fwModalOpen ?', a)         # sonst ReferenceError
+        # Der Auslöser ist ein Datenattribut; der Verteiler prüft, ob die Funktion da ist (sonst ReferenceError)
+        self.assertTrue(re.findall(r'data-modal="', html))
+        verteiler = open('static/js/fw-aktionen.js', encoding='utf-8').read()
+        self.assertIn("typeof window.fwModalOpen === 'function'", verteiler)

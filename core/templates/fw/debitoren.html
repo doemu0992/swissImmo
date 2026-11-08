@@ -27,12 +27,12 @@
     <!-- Schnellauswahl wiederkehrender Positionen -->
     <div class="flex flex-wrap gap-2 mb-4">
         <span class="fw-label self-center mr-1">{% trans "Schnellauswahl" %}:</span>
-        <button type="button" onclick="fwPos('Sonnerie-Beschriftung','20')" class="fw-btn fw-leise fw-knapp">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Sonnerie-Beschriftung" %}</button>
-        <button type="button" onclick="fwPos('Namensschild Briefkasten','15')" class="fw-btn fw-leise fw-knapp">{% zeichen 'senden' klasse='mr-1' %}{% trans "Briefkasten-Schild" %}</button>
-        <button type="button" onclick="fwPos('Ersatzschlüssel','80')" class="fw-btn fw-leise fw-knapp">{% zeichen 'schluessel' klasse='mr-1' %}{% trans "Ersatzschlüssel" %}</button>
-        <button type="button" onclick="fwPos('Zylinderwechsel','150')" class="fw-btn fw-leise fw-knapp">{% zeichen 'gesperrt' klasse='mr-1' %}{% trans "Zylinderwechsel" %}</button>
-        <button type="button" onclick="fwPos('Reinigung / Endreinigung','')" class="fw-btn fw-leise fw-knapp">{% zeichen 'arbeit' klasse='mr-1' %}{% trans "Reinigung" %}</button>
-        <button type="button" onclick="fwPos('Schadenersatz','')" class="fw-btn fw-leise fw-knapp">{% zeichen 'arbeit' klasse='mr-1' %}{% trans "Schadenersatz" %}</button>
+        <button type="button" data-bei-klick="fwPos" data-args='["Sonnerie-Beschriftung","20"]' class="fw-btn fw-leise fw-knapp">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Sonnerie-Beschriftung" %}</button>
+        <button type="button" data-bei-klick="fwPos" data-args='["Namensschild Briefkasten","15"]' class="fw-btn fw-leise fw-knapp">{% zeichen 'senden' klasse='mr-1' %}{% trans "Briefkasten-Schild" %}</button>
+        <button type="button" data-bei-klick="fwPos" data-args='["Ersatzschlüssel","80"]' class="fw-btn fw-leise fw-knapp">{% zeichen 'schluessel' klasse='mr-1' %}{% trans "Ersatzschlüssel" %}</button>
+        <button type="button" data-bei-klick="fwPos" data-args='["Zylinderwechsel","150"]' class="fw-btn fw-leise fw-knapp">{% zeichen 'gesperrt' klasse='mr-1' %}{% trans "Zylinderwechsel" %}</button>
+        <button type="button" data-bei-klick="fwPos" data-args='["Reinigung / Endreinigung",""]' class="fw-btn fw-leise fw-knapp">{% zeichen 'arbeit' klasse='mr-1' %}{% trans "Reinigung" %}</button>
+        <button type="button" data-bei-klick="fwPos" data-args='["Schadenersatz",""]' class="fw-btn fw-leise fw-knapp">{% zeichen 'arbeit' klasse='mr-1' %}{% trans "Schadenersatz" %}</button>
     </div>
 
     <div class="fw-raster l2 items-start">
@@ -41,16 +41,16 @@
             {% csrf_token %}
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <div class="fw-feldblock breit"><label for="deb-titel" class="fw-label">{% trans "Titel *" %}</label>
-                <input id="deb-titel" name="titel" required oninput="debPreview()" placeholder="{% trans 'z.B. Sonnerie-Beschriftung' %}" class="fw-feld"></div>
+                <input id="deb-titel" name="titel" required data-bei-eingabe="debPreview" placeholder="{% trans 'z.B. Sonnerie-Beschriftung' %}" class="fw-feld"></div>
             <div class="fw-feldblock"><label for="deb-betrag" class="fw-label">{% trans "Betrag (CHF) *" %}</label>
-                <input id="deb-betrag" name="betrag" required inputmode="decimal" oninput="debPreview()" class="fw-feld fw-num"></div>
+                <input id="deb-betrag" name="betrag" required inputmode="decimal" data-bei-eingabe="debPreview" class="fw-feld fw-num"></div>
             <div class="fw-feldblock"><label for="deb-vertrag" class="fw-label">{% trans "Mieter / Vertrag" %}</label>
-                <select id="deb-vertrag" name="vertrag_id" onchange="debPreview()" class="fw-feld">
+                <select id="deb-vertrag" name="vertrag_id" data-bei-aenderung="debPreview" class="fw-feld">
                     <option value="">— {% trans "ohne Vertrag" %} —</option>
                     {% for v in aktive_vertraege %}<option value="{{ v.id }}">{{ v.mieter.display_name }} · {{ v.einheit.bezeichnung }}</option>{% endfor %}
                 </select></div>
             <div class="fw-feldblock breit"><label for="deb-beschreibung" class="fw-label">{% trans "Beschreibung" %}</label>
-                <input id="deb-beschreibung" name="beschreibung" oninput="debPreview()" class="fw-feld"></div>
+                <input id="deb-beschreibung" name="beschreibung" data-bei-eingabe="debPreview" class="fw-feld"></div>
             <div class="fw-feldblock breit"><button class="w-full fw-btn fw-primary">{% zeichen 'gut' klasse='mr-1' %}{% trans "Rechnung erstellen" %}</button></div>
             <p class="fw-feldblock breit fw-hilfe">{% trans "Bucht Debitor an Ertrag (3000). Die QR-Rechnung erzeugst du danach über den QR-Button in der Liste." %}</p>
         </form>
@@ -182,7 +182,7 @@
                 {% if row.vertrag_id and ist_team %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" class="fw-link">{% trans "Vertrag" %}</a>{% endif %}
                 {% if row.mahn and row.r.status == 'offen' or row.mahn and row.r.status == 'teilbezahlt' %}
                 <form method="post" action="/neu/debitoren/{{ row.r.id }}/abschreiben/" class="inline"
-                      onsubmit="var g = prompt('Forderungsverlust CHF {{ row.offen }} buchen (Konto 3805)?\nGrund (z.B. Verlustschein, Betreibung erfolglos):'); if (g === null) return false; this.grund.value = g; return true;">
+                      data-grund-abfragen="Forderungsverlust CHF {{ row.offen }} buchen (Konto 3805)?|Grund (z.B. Verlustschein, Betreibung erfolglos):">
                     {% csrf_token %}
                     <input type="hidden" name="grund" value="">
                     <button type="submit" class="fw-btn fw-geist fw-knapp">{% zeichen 'kritisch' %} {% trans "Abschreiben" %}</button>
@@ -240,10 +240,10 @@
                 <td class="text-right">
                     <div class="flex flex-wrap items-center justify-end gap-2">
                     {% if request.user|darf_schreiben %}<form method="post" action="/neu/debitoren/{{ row.r.id }}/qr-pdf/" target="_blank" class="inline">{% csrf_token %}<button type="submit" class="fw-link" title="{% trans 'QR-Rechnung als PDF' %}">{% zeichen 'bank' %} QR</button></form>{% else %}<a href="/neu/debitoren/{{ row.r.id }}/qr-pdf/" target="_blank" rel="noopener" class="fw-link" title="{% trans 'QR-Rechnung als PDF' %}">{% zeichen 'bank' %} QR</a>{% endif %}
-                    {% if row.vertrag_id and ist_team %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Vertrag" %}{% endfilter %}',true)" class="fw-link">{% trans "Ansehen" %}</a>{% endif %}
+                    {% if row.vertrag_id and ist_team %}<a href="/neu/vertraege/{{ row.vertrag_id }}/" data-modal="{% trans "Vertrag" %}" data-modal-breit class="fw-link">{% trans "Ansehen" %}</a>{% endif %}
                     {% if row.mahn and row.r.status == 'offen' or row.mahn and row.r.status == 'teilbezahlt' %}
                     <form method="post" action="/neu/debitoren/{{ row.r.id }}/abschreiben/" class="inline"
-                          onsubmit="var g = prompt('Forderungsverlust CHF {{ row.offen }} buchen (Konto 3805)?\nGrund (z.B. Verlustschein, Betreibung erfolglos):'); if (g === null) return false; this.grund.value = g; return true;">
+                          data-grund-abfragen="Forderungsverlust CHF {{ row.offen }} buchen (Konto 3805)?|Grund (z.B. Verlustschein, Betreibung erfolglos):">
                         {% csrf_token %}
                         <input type="hidden" name="grund" value="">
                         <button type="submit" class="fw-btn fw-geist fw-knapp" title="{% trans 'Als Debitorenverlust abschreiben (uneinbringlich)' %}">{% zeichen 'kritisch' %} {% trans "Abschreiben" %}</button>

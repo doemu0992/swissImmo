@@ -40,7 +40,7 @@ Regeln noch einmal (core/views/fw/vertragserstellung.py).
 {% comment %} `novalidate`: Der Assistent prüft jeden Schritt bei «Weiter» und vor dem
    Absenden (fw-bausteine.js), der Server prüft beim Speichern. Ohne das Attribut hielt
    der Browser bei einem ungültigen Feld in einem verborgenen Schritt still an. {% endcomment %}
-<form method="post" action="/neu/vertraege/neu/speichern/" id="vform" onsubmit="return vorSubmit()" novalidate>
+<form method="post" action="/neu/vertraege/neu/speichern/" id="vform" data-bei-absenden="vorSubmit" novalidate>
 {% csrf_token %}
 {% if edit_vertrag %}<input type="hidden" name="edit_id" value="{{ edit_vertrag.id }}">{% endif %}
 <input type="hidden" name="einheit_id" id="f_einheit_id">
@@ -56,7 +56,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
     {% trans "nichts wurde gespeichert. Die Hinweise stehen bei den Feldern." %}
     <ul class="mt-2 space-y-1">
         {% for feld, meldung in feld_fehler.items %}
-        <li><button type="button" class="fw-btn fw-leise fw-knapp" onclick="zeigeFehler('{{ feld|escapejs }}')">{{ meldung }}</button></li>
+        <li><button type="button" class="fw-btn fw-leise fw-knapp" data-bei-klick="zeigeFehler" data-args='["{{ feld }}"]'>{{ meldung }}</button></li>
         {% endfor %}
     </ul>
 </div>
@@ -73,11 +73,11 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
     <div class="fw-assistent-schritt-kopf"></div>
     <div class="fw-card"><div class="fw-rumpf">
         <label class="fw-label mb-1" for="s_lg">{% trans "Liegenschaft *" %}</label>
-        <select id="s_lg" onchange="lgChange()" class="fw-feld w-full mb-4">
+        <select id="s_lg" data-bei-aenderung="lgChange" class="fw-feld w-full mb-4">
             <option value="">{% trans "Liegenschaft auswählen…" %}</option>
         </select>
         <label class="fw-label mb-1" for="s_obj">{% trans "Objekt *" %}</label>
-        <select id="s_obj" onchange="objChange()" class="fw-feld w-full" data-pflicht="{% trans 'Bitte wähle ein Objekt aus, bevor du den Vertrag erstellst.' %}">
+        <select id="s_obj" data-bei-aenderung="objChange" class="fw-feld w-full" data-pflicht="{% trans 'Bitte wähle ein Objekt aus, bevor du den Vertrag erstellst.' %}">
             <option value="">{% trans "Zuerst Liegenschaft wählen…" %}</option>
         </select>
         <div id="obj-info" class="mt-4 text-sm fw-mutet hidden fw-markenflaeche rounded-lg p-3"></div>
@@ -88,74 +88,74 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
     <div class="fw-assistent-schritt-kopf"></div>
     <div class="fw-card"><div class="fw-rumpf">
         <div class="flex gap-2 mb-4">
-            <button type="button" id="tab-best" onclick="mieterTab('best')" class="fw-btn fw-knapp fw-primary">{% trans "Bestehende Person" %}</button>
-            <button type="button" id="tab-neu" onclick="mieterTab('neu')" class="fw-btn fw-knapp fw-leise">{% trans "Neue Person" %}</button>
+            <button type="button" id="tab-best" data-bei-klick="mieterTab" data-args='["best"]' class="fw-btn fw-knapp fw-primary">{% trans "Bestehende Person" %}</button>
+            <button type="button" id="tab-neu" data-bei-klick="mieterTab" data-args='["neu"]' class="fw-btn fw-knapp fw-leise">{% trans "Neue Person" %}</button>
         </div>
         <div id="mieter-best">
             <label class="fw-label mb-1" for="s_mieter">{% trans "Mieter" %}</label>
-            <select id="s_mieter" onchange="live()" class="fw-feld w-full" data-pflicht="{% trans 'Bitte wähle im Schritt 2 eine Person aus oder erfasse eine neue.' %}">
+            <select id="s_mieter" data-bei-aenderung="live" class="fw-feld w-full" data-pflicht="{% trans 'Bitte wähle im Schritt 2 eine Person aus oder erfasse eine neue.' %}">
                 <option value="">{% trans "Person auswählen…" %}</option>
             </select>
         </div>
         <div id="mieter-neu" class="hidden space-y-3">
             <input type="hidden" name="mieter_typ" id="f_mieter_typ" value="person">
             <div class="fw-filters fw-nomb">
-                <button type="button" data-ntyp="person" onclick="setNeuTyp('person')" class="ntyp-btn fw-fchip">{% trans "Privatperson" %}</button>
-                <button type="button" data-ntyp="firma" onclick="setNeuTyp('firma')" class="ntyp-btn fw-fchip">{% trans "Firma" %}</button>
-                <button type="button" data-ntyp="verein" onclick="setNeuTyp('verein')" class="ntyp-btn fw-fchip">{% trans "Verein / Stiftung" %}</button>
+                <button type="button" data-ntyp="person" data-bei-klick="setNeuTyp" data-args='["person"]' class="ntyp-btn fw-fchip">{% trans "Privatperson" %}</button>
+                <button type="button" data-ntyp="firma" data-bei-klick="setNeuTyp" data-args='["firma"]' class="ntyp-btn fw-fchip">{% trans "Firma" %}</button>
+                <button type="button" data-ntyp="verein" data-bei-klick="setNeuTyp" data-args='["verein"]' class="ntyp-btn fw-fchip">{% trans "Verein / Stiftung" %}</button>
             </div>
             <div id="neu-namen" class="fw-raster r3">
-                <select name="anrede" oninput="live()" aria-label="{% trans 'Anrede' %}" class="fw-feld"><option value="">—</option><option value="Herr">{% trans "Herr" %}</option><option value="Frau">{% trans "Frau" %}</option></select>
-                <input name="vorname" oninput="live()" placeholder="{% trans 'Vorname' %}" class="fw-feld">
-                <input name="nachname" oninput="live()" placeholder="{% trans 'Nachname' %}" class="fw-feld" data-pflicht="{% trans 'Bitte den Nachnamen des Mieters erfassen.' %}">
+                <select name="anrede" data-bei-eingabe="live" aria-label="{% trans 'Anrede' %}" class="fw-feld"><option value="">—</option><option value="Herr">{% trans "Herr" %}</option><option value="Frau">{% trans "Frau" %}</option></select>
+                <input name="vorname" data-bei-eingabe="live" placeholder="{% trans 'Vorname' %}" class="fw-feld">
+                <input name="nachname" data-bei-eingabe="live" placeholder="{% trans 'Nachname' %}" class="fw-feld" data-pflicht="{% trans 'Bitte den Nachnamen des Mieters erfassen.' %}">
             </div>
             <div id="neu-firma" class="hidden space-y-3">
-                <input name="firmen_name" oninput="live()" placeholder="{% trans 'Firmen- / Organisationsname' %}" class="fw-feld w-full" data-pflicht="{% trans 'Bitte den Firmen-/Vereinsnamen erfassen.' %}">
+                <input name="firmen_name" data-bei-eingabe="live" placeholder="{% trans 'Firmen- / Organisationsname' %}" class="fw-feld w-full" data-pflicht="{% trans 'Bitte den Firmen-/Vereinsnamen erfassen.' %}">
                 <div class="fw-raster r2">
                     <input name="kontaktperson" placeholder="{% trans 'Kontaktperson' %}" class="fw-feld">
                     <input name="uid_nummer" placeholder="{% trans 'UID / CHE-Nummer' %}" class="fw-feld">
                 </div>
             </div>
-            <input name="m_strasse" oninput="live()" placeholder="{% trans 'Strasse & Nr.' %}" class="fw-feld w-full">
+            <input name="m_strasse" data-bei-eingabe="live" placeholder="{% trans 'Strasse & Nr.' %}" class="fw-feld w-full">
             <div class="fw-raster r3">
-                <input name="m_plz" oninput="live()" placeholder="{% trans 'PLZ' %}" class="fw-feld">
-                <input name="m_ort" oninput="live()" placeholder="{% trans 'Ort' %}" class="fw-feld col-span-2">
+                <input name="m_plz" data-bei-eingabe="live" placeholder="{% trans 'PLZ' %}" class="fw-feld">
+                <input name="m_ort" data-bei-eingabe="live" placeholder="{% trans 'Ort' %}" class="fw-feld col-span-2">
             </div>
-            <input name="m_email" oninput="live()" placeholder="{% trans 'E-Mail' %}" class="fw-feld w-full">
+            <input name="m_email" data-bei-eingabe="live" placeholder="{% trans 'E-Mail' %}" class="fw-feld w-full">
         </div>
     </div></div>
     {% comment %} Zweiter Mieter (Ehepartner / solidarisch) — gleiche Erfassung wie 1. Person {% endcomment %}
     <div class="fw-card"><div class="fw-rumpf">
         <label class="fw-haekchen mb-1">
-            <input type="checkbox" id="zweiter_aktiv" onchange="toggleZweiter()" class="fw-akzent"> {% trans "Zweiten Mieter hinzufügen" %}
+            <input type="checkbox" id="zweiter_aktiv" data-bei-aenderung="toggleZweiter" class="fw-akzent"> {% trans "Zweiten Mieter hinzufügen" %}
         </label>
         <p class="text-xs fw-faint mb-3">{% trans "z. B. Ehepartner — beide haften solidarisch und stehen im Vertrag." %}</p>
         <div id="zweiter-felder" class="hidden">
             <div class="flex gap-2 mb-3">
-                <button type="button" id="tab2-best" onclick="mieter2Tab('best')" class="fw-btn fw-knapp fw-primary">{% trans "Bestehende Person" %}</button>
-                <button type="button" id="tab2-neu" onclick="mieter2Tab('neu')" class="fw-btn fw-knapp fw-leise">{% trans "Neue Person" %}</button>
+                <button type="button" id="tab2-best" data-bei-klick="mieter2Tab" data-args='["best"]' class="fw-btn fw-knapp fw-primary">{% trans "Bestehende Person" %}</button>
+                <button type="button" id="tab2-neu" data-bei-klick="mieter2Tab" data-args='["neu"]' class="fw-btn fw-knapp fw-leise">{% trans "Neue Person" %}</button>
             </div>
             <div id="mieter2-best">
                 <label class="fw-label mb-1" for="s_mieter2">{% trans "Mieter" %}</label>
-                <select id="s_mieter2" onchange="live()" class="fw-feld w-full">
+                <select id="s_mieter2" data-bei-aenderung="live" class="fw-feld w-full">
                     <option value="">{% trans "Person auswählen…" %}</option>
                 </select>
             </div>
             <div id="mieter2-neu" class="hidden space-y-3">
                 <div class="fw-raster r3">
-                    <select name="mit_anrede" oninput="live()" aria-label="{% trans 'Anrede' %}" class="fw-feld"><option value="Frau">{% trans "Frau" %}</option><option value="Herr">{% trans "Herr" %}</option><option value="">—</option></select>
-                    <input name="mit_vorname" oninput="live()" placeholder="{% trans 'Vorname' %}" class="fw-feld">
-                    <input name="mit_nachname" oninput="live()" placeholder="{% trans 'Nachname' %}" class="fw-feld">
+                    <select name="mit_anrede" data-bei-eingabe="live" aria-label="{% trans 'Anrede' %}" class="fw-feld"><option value="Frau">{% trans "Frau" %}</option><option value="Herr">{% trans "Herr" %}</option><option value="">—</option></select>
+                    <input name="mit_vorname" data-bei-eingabe="live" placeholder="{% trans 'Vorname' %}" class="fw-feld">
+                    <input name="mit_nachname" data-bei-eingabe="live" placeholder="{% trans 'Nachname' %}" class="fw-feld">
                 </div>
-                <input name="mit_strasse" oninput="live()" placeholder="{% trans 'Strasse & Nr.' %}" class="fw-feld w-full">
+                <input name="mit_strasse" data-bei-eingabe="live" placeholder="{% trans 'Strasse & Nr.' %}" class="fw-feld w-full">
                 <div class="fw-raster r3">
-                    <input name="mit_plz" oninput="live()" placeholder="{% trans 'PLZ' %}" class="fw-feld">
-                    <input name="mit_ort" oninput="live()" placeholder="{% trans 'Ort' %}" class="fw-feld col-span-2">
+                    <input name="mit_plz" data-bei-eingabe="live" placeholder="{% trans 'PLZ' %}" class="fw-feld">
+                    <input name="mit_ort" data-bei-eingabe="live" placeholder="{% trans 'Ort' %}" class="fw-feld col-span-2">
                 </div>
-                <input name="mit_email" oninput="live()" placeholder="{% trans 'E-Mail' %}" class="fw-feld w-full">
+                <input name="mit_email" data-bei-eingabe="live" placeholder="{% trans 'E-Mail' %}" class="fw-feld w-full">
             </div>
             <label class="fw-haekchen fw-warn-flaeche rounded-lg px-3 py-2.5 mt-3">
-                <input type="checkbox" name="familienwohnung" id="familienwohnung" onchange="live()" class="fw-akzent">
+                <input type="checkbox" name="familienwohnung" id="familienwohnung" data-bei-aenderung="live" class="fw-akzent">
                 <span><b>{% trans "Familienwohnung" %}</b> {% trans "(gemeinsame eheliche/eingetragene Wohnung)" %}</span>
             </label>
             <p class="text-xs fw-faint mt-1">Bei einer Familienwohnung muss eine Kündigung <b>beiden</b> Ehegatten separat mit amtlichem Formular zugestellt werden (Art. 266n OR).</p>
@@ -163,7 +163,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
         <input type="hidden" name="mit_mieter_id" id="f_mit_mieter_id">
         <div class="mt-4">
             <label class="fw-label mb-1" for="s_personen">{% trans "Anzahl Personen im Haushalt" %}</label>
-            <input name="anzahl_personen" id="s_personen" type="number" min="1" value="1" oninput="live()" class="fw-feld w-40">
+            <input name="anzahl_personen" id="s_personen" type="number" min="1" value="1" data-bei-eingabe="live" class="fw-feld w-40">
         </div>
     </div></div>
     </section>
@@ -173,20 +173,20 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
     <div class="fw-card"><div class="fw-rumpf">
         <div class="fw-formular">
             <div class="fw-feldblock"><label class="fw-label" for="s_beginn">{% trans "Mietbeginn *" %}</label>
-                <input name="beginn" id="s_beginn" type="date" oninput="applySollplan(); live()" class="fw-feld w-full"></div>
+                <input name="beginn" id="s_beginn" type="date" data-bei-eingabe="applySollplan live" class="fw-feld w-full"></div>
             <div class="fw-feldblock"><label class="fw-label" for="s_ende">{% trans "Mietende" %}</label>
-                <input name="ende" id="s_ende" type="date" oninput="live()" class="fw-feld w-full">
+                <input name="ende" id="s_ende" type="date" data-bei-eingabe="live" class="fw-feld w-full">
                 <input type="hidden" name="ist_befristet" id="ist_befristet_hidden" value="0">
-                <label class="fw-haekchen mt-1"><input type="checkbox" id="unbefristet" checked onchange="toggleEnde()"> {% trans "unbefristet" %}</label></div>
+                <label class="fw-haekchen mt-1"><input type="checkbox" id="unbefristet" checked data-bei-aenderung="toggleEnde"> {% trans "unbefristet" %}</label></div>
             <div class="fw-feldblock breit" id="verzicht-box"><label class="fw-label" for="s_verzicht">{% trans "Vermieter verzichtet auf Kündigung bis" %} {% hilfe 'kuendigungsverzicht' %}</label>
-                <input name="vermieter_kuendigungsverzicht_bis" id="s_verzicht" type="date" oninput="live()" class="fw-feld w-full">
+                <input name="vermieter_kuendigungsverzicht_bis" id="s_verzicht" type="date" data-bei-eingabe="live" class="fw-feld w-full">
                 <p class="fw-hilfe">{% trans "Nur bei einem unbefristeten Vertrag. Zählt bei Index- und Staffelmiete als feste Dauer." %}</p></div>
         </div>
 
         <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 mt-4 mb-2">
             <span class="fw-label">{% trans "Kündigungsmonate *" %} {% hilfe 'kuendigungsfrist' %}</span>
-            <div class="text-xs"><button type="button" onclick="monateAusserDez()" class="fw-link">{% trans "alle ausser Dezember" %}</button>
-                <span class="fw-faint mx-1">/</span><button type="button" onclick="monateStandard()" class="fw-faint hover:underline">{% trans "Standard" %}</button></div>
+            <div class="text-xs"><button type="button" data-bei-klick="monateAusserDez" class="fw-link">{% trans "alle ausser Dezember" %}</button>
+                <span class="fw-faint mx-1">/</span><button type="button" data-bei-klick="monateStandard" class="fw-faint hover:underline">{% trans "Standard" %}</button></div>
         </div>
         <div id="monate-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5"></div>
         <input type="hidden" name="kuendigungstermine" id="f_kuendigungstermine">
@@ -194,12 +194,12 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
         <div class="fw-formular mt-4">
             <div id="frist-box" class="fw-feldblock"><label id="frist-label" class="fw-label" for="s_frist">{% trans "Kündigungsfrist (Monate) *" %}</label>
                 <div class="flex items-center fw-flaeche2 rounded-lg w-40">
-                    <button type="button" onclick="fristStep(-1)" class="px-3 py-2.5 fw-marke font-bold">−</button>
-                    <input name="kuendigungsfrist" id="s_frist" type="number" value="3" min="1" oninput="live()" class="w-14 bg-transparent text-center text-sm py-2.5 focus:outline-none">
-                    <button type="button" onclick="fristStep(1)" class="px-3 py-2.5 fw-marke font-bold">+</button>
+                    <button type="button" data-bei-klick="fristStep" data-args='[-1]' class="px-3 py-2.5 fw-marke font-bold">−</button>
+                    <input name="kuendigungsfrist" id="s_frist" type="number" value="3" min="1" data-bei-eingabe="live" class="w-14 bg-transparent text-center text-sm py-2.5 focus:outline-none">
+                    <button type="button" data-bei-klick="fristStep" data-args='[1]' class="px-3 py-2.5 fw-marke font-bold">+</button>
                 </div></div>
             <div class="fw-feldblock"><label class="fw-label">{% trans "Erstmögliche Kündigung *" %}</label>
-                <input name="erstmals_kuendbar" type="date" oninput="live()" class="fw-feld w-full"></div>
+                <input name="erstmals_kuendbar" type="date" data-bei-eingabe="live" class="fw-feld w-full"></div>
         </div>
         <p id="frist-ep-note" class="hidden text-xs fw-marke fw-markenflaeche border fw-linie-marke rounded-lg px-3 py-2 mt-2">
             {% zeichen 'hinweis' klasse='mr-1' %}Einstellplatz: gesetzliche Mindestfrist <b>2 Wochen auf Ende einer Monatsperiode</b> (Art. 266e OR) — kein amtliches Formular, keine Erstreckung. <b>0 = 2 Wochen</b>; eine <b>längere</b> Frist auf Monatsende (z.B. 1 oder 3 Monate) kann vereinbart werden.
@@ -207,11 +207,11 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
     </div></div>
     <div class="fw-card"><div class="fw-rumpf">
         <label class="fw-label mb-1">{% trans "Zur Mitbenützung" %}</label>
-        <textarea name="mitbenutzung" rows="2" oninput="live()" placeholder="{% trans 'z. B. Waschküche, Trockenraum, Veloraum' %}" class="fw-feld w-full"></textarea>
+        <textarea name="mitbenutzung" rows="2" data-bei-eingabe="live" placeholder="{% trans 'z. B. Waschküche, Trockenraum, Veloraum' %}" class="fw-feld w-full"></textarea>
         <label class="fw-label mb-1 mt-3">{% trans "Nebenräume" %}</label>
-        <textarea name="nebenraeume" rows="2" oninput="live()" placeholder="{% trans 'z. B. Kellerabteil Nr. 3, Estrich' %}" class="fw-feld w-full"></textarea>
+        <textarea name="nebenraeume" rows="2" data-bei-eingabe="live" placeholder="{% trans 'z. B. Kellerabteil Nr. 3, Estrich' %}" class="fw-feld w-full"></textarea>
         <label class="fw-label mb-1 mt-3">{% trans "Besondere Bestimmungen" %}</label>
-        <textarea name="besondere_vereinbarungen" rows="2" oninput="live()" class="fw-feld w-full"></textarea>
+        <textarea name="besondere_vereinbarungen" rows="2" data-bei-eingabe="live" class="fw-feld w-full"></textarea>
     </div></div>
     </section>
 
@@ -219,15 +219,15 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
     <div class="fw-assistent-schritt-kopf"></div>
     <div class="fw-card"><div class="fw-rumpf">
         <label class="fw-label mb-1">{% trans "Zahlungsmodus *" %}</label>
-        <select name="zahlungsrhythmus" oninput="live()" class="fw-feld w-full mb-3">
+        <select name="zahlungsrhythmus" data-bei-eingabe="live" class="fw-feld w-full mb-3">
             <option value="monatlich">{% trans "Monatlich" %}</option><option value="vierteljahr">{% trans "Vierteljährlich" %}</option>
             <option value="halbjahr">{% trans "Halbjährlich" %}</option><option value="jahr">{% trans "Jährlich" %}</option>
         </select>
         <div class="fw-formular">
             <div class="fw-feldblock"><label class="fw-label" for="s_netto"><span id="netto-label">{% trans "Mietzins netto (CHF) *" %}</span></label>
-                <input name="netto_mietzins" id="s_netto" type="text" inputmode="decimal" data-chf data-fehler="{% trans 'Bitte einen Betrag eingeben, z. B. 1450.50' %}" oninput="live()" class="fw-feld w-full"></div>
+                <input name="netto_mietzins" id="s_netto" type="text" inputmode="decimal" data-chf data-fehler="{% trans 'Bitte einen Betrag eingeben, z. B. 1450.50' %}" data-bei-eingabe="live" class="fw-feld w-full"></div>
             <div id="nk-field-box"><label class="fw-label mb-1" for="s_nk"><span id="nk-label">{% trans "Nebenkosten (CHF) *" %}</span></label>
-                <input name="nebenkosten" id="s_nk" type="text" inputmode="decimal" data-chf data-fehler="{% trans 'Bitte einen Betrag eingeben, z. B. 1450.50' %}" oninput="live()" class="fw-feld w-full"></div>
+                <input name="nebenkosten" id="s_nk" type="text" inputmode="decimal" data-chf data-fehler="{% trans 'Bitte einen Betrag eingeben, z. B. 1450.50' %}" data-bei-eingabe="live" class="fw-feld w-full"></div>
         </div>
         <div id="brutto-box">
             <label class="fw-label mb-1 mt-3">{% trans "Mietzins brutto (CHF)" %}</label>
@@ -235,15 +235,15 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
         </div>
         <div class="flex items-center gap-3 mb-3 flex-wrap">
             <label class="fw-haekchen">
-                <input type="checkbox" name="mwst_pflichtig" id="s_mwst" onchange="document.getElementById('mwst-satz-box').classList.toggle('hidden', !this.checked); live()" class="fw-akzent"> {% trans "MWST-pflichtig" %} <span class="text-xs fw-faint">{% trans "(optiert, v. a. Gewerbe)" %}</span>
+                <input type="checkbox" name="mwst_pflichtig" id="s_mwst" data-sichtbar-wenn="mwst-satz-box" data-bei-aenderung="live" class="fw-akzent"> {% trans "MWST-pflichtig" %} <span class="text-xs fw-faint">{% trans "(optiert, v. a. Gewerbe)" %}</span>
             </label>
             <div id="mwst-satz-box" class="hidden flex items-center gap-1.5">
-                <input type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" name="mwst_satz" aria-label="{% trans 'MWST-Satz in Prozent' %}" value="8.1" oninput="live()" class="fw-feld fw-num w-20 text-right">
+                <input type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" name="mwst_satz" aria-label="{% trans 'MWST-Satz in Prozent' %}" value="8.1" data-bei-eingabe="live" class="fw-feld fw-num w-20 text-right">
                 <span class="text-xs fw-faint">{% trans "% Satz" %}</span>
             </div>
         </div>
         <label class="fw-label mb-1">{% trans "Mietzinsvorbehalte" %}</label>
-        <textarea name="weitere_vorbehalte" rows="2" oninput="live()" placeholder="{% trans 'z. B. Vorbehalt weiterer Referenzzins-/Teuerungsanpassungen' %}" class="fw-feld w-full"></textarea>
+        <textarea name="weitere_vorbehalte" rows="2" data-bei-eingabe="live" placeholder="{% trans 'z. B. Vorbehalt weiterer Referenzzins-/Teuerungsanpassungen' %}" class="fw-feld w-full"></textarea>
 
         {% comment %} MIET-04: Pflicht zum amtlichen Anfangsmietzins-Formular (Art. 270 Abs. 2 OR). Der Text kommt vom Server (core/services/anfangsformular.py) und hängt am gewählten Objekt. {% endcomment %}
         <div id="af-hinweis" class="hidden mt-4" role="status"><div class="fw-hinweis warn">
@@ -256,7 +256,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
             <h4 class="font-bold fw-strong text-sm mb-1">{% zeichen 'dokument' klasse='fw-marke mr-1' %}{% trans "Geschäftsraum" %}</h4>
             <p class="text-xs fw-faint mb-3">{% trans "Zweckbestimmung für Geschäftsräume." %}</p>
             <label class="fw-label mb-1" for="s_zweck">{% trans "Nutzungszweck" %}</label>
-            <input name="zweckbestimmung" id="s_zweck" oninput="live()" placeholder="{% trans 'z. B. Betrieb eines Coiffeursalons' %}" class="fw-feld w-full">
+            <input name="zweckbestimmung" id="s_zweck" data-bei-eingabe="live" placeholder="{% trans 'z. B. Betrieb eines Coiffeursalons' %}" class="fw-feld w-full">
         </div>
     </div></div>
 
@@ -326,20 +326,20 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
             <h4 class="fw-mzm-kopf">{% trans "Index" %}: {% trans "Landesindex der Konsumentenpreise (BFS)" %} {% hilfe 'lik' %}</h4>
             <div class="fw-formular">
                 <div class="fw-feldblock"><label class="fw-label" for="s_lik">{% trans "Basis Konsumentenpreisindex (LIK)" %}</label>
-                    <input name="basis_lik_punkte" id="s_lik" type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" oninput="live()" class="fw-feld fw-num">
+                    <input name="basis_lik_punkte" id="s_lik" type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" data-bei-eingabe="live" class="fw-feld fw-num">
                     <p class="fw-hilfe">{% blocktrans with basis=lik_basis %}Basis {{ basis }} = 100 Punkte{% endblocktrans %}</p></div>
                 <div class="fw-feldblock"><label class="fw-label" for="s_lik_stand">{% trans "LIK Stand-Monat" %}</label>
-                    <input name="basis_lik_stand" id="s_lik_stand" type="month" oninput="live()" class="fw-feld">
+                    <input name="basis_lik_stand" id="s_lik_stand" type="month" data-bei-eingabe="live" class="fw-feld">
                     <p class="fw-hilfe">{% trans "Monat, aus dem der LIK-Wert stammt" %}</p></div>
             </div>
             <p class="fw-mzm-vorschlag"><span id="mzm-vorschlag"></span>
                 <button type="button" id="mzm-vorschlag-knopf" class="fw-btn fw-knapp fw-rand-marke hidden">{% trans "Vorschlag übernehmen" %}</button></p>
             <div class="fw-formular">
                 <div class="fw-feldblock"><label class="fw-label" for="s_weitergabe">{% trans "Weitergabe (%)" %} {% hilfe 'index_weitergabe' %}</label>
-                    <input name="index_weitergabe_prozent" id="s_weitergabe" type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" value="100" oninput="live()" class="fw-feld fw-num">
+                    <input name="index_weitergabe_prozent" id="s_weitergabe" type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" value="100" data-bei-eingabe="live" class="fw-feld fw-num">
                     <p class="fw-hilfe">{% trans "Anteil der Teuerung, der weitergegeben wird: über 0 und höchstens 100 Prozent." %}</p></div>
                 <div class="fw-feldblock"><label class="fw-label" for="s_intervall">{% trans "Mindestintervall (vertraglich, Monate)" %} {% hilfe 'index_intervall' %}</label>
-                    <input name="index_intervall_monate" id="s_intervall" type="number" step="1" inputmode="numeric" value="12" oninput="live()" class="fw-feld fw-num">
+                    <input name="index_intervall_monate" id="s_intervall" type="number" step="1" inputmode="numeric" value="12" data-bei-eingabe="live" class="fw-feld fw-num">
                     <p class="fw-hilfe">{% trans "Frühestens so viele Monate nach der letzten Anpassung." %}</p></div>
             </div>
             <p id="mzm-beispiel" class="fw-mzm-beispiel hidden"></p>
@@ -354,15 +354,15 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
     <div class="fw-card"><div class="fw-rumpf">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-1">
             <h4 class="font-bold fw-strong text-sm">{% trans "Referenzzinssatz" %}</h4>
-            <button type="button" onclick="indexUebernehmen(this)" class="fw-btn fw-knapp fw-rand-marke">{% trans "Aktuellen Referenzzinssatz übernehmen" %}</button>
+            <button type="button" data-bei-klick="indexUebernehmen" data-args='["$el"]' class="fw-btn fw-knapp fw-rand-marke">{% trans "Aktuellen Referenzzinssatz übernehmen" %}</button>
         </div>
         <p class="text-xs fw-faint mb-3">{% trans "Stand bei Vertragsbeginn — Grundlage für spätere Mietzinsanpassungen." %}</p>
         <div class="fw-formular">
             <div class="fw-feldblock"><label class="fw-label" for="s_ref">{% trans "Stand Referenzzinssatz (%)" %} {% hilfe 'referenzzins' %}</label>
-                <input name="basis_referenzzinssatz" id="s_ref" type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" oninput="live()" class="fw-feld w-full"></div>
+                <input name="basis_referenzzinssatz" id="s_ref" type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" data-bei-eingabe="live" class="fw-feld w-full"></div>
         </div>
         <label class="fw-label mb-1 mt-3">{% trans "Kostensteigerung ausgeglichen bis / Letzte Kostenaufrechnung" %}</label>
-        <input name="kostensteigerung_datum" type="date" oninput="live()" class="fw-feld w-full">
+        <input name="kostensteigerung_datum" type="date" data-bei-eingabe="live" class="fw-feld w-full">
     </div></div>
     </section>
 
@@ -370,16 +370,16 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
     <div class="fw-assistent-schritt-kopf"></div>
     <div class="fw-card"><div class="fw-rumpf">
         <label class="fw-label mb-1" for="s_kaution">{% trans "Höhe der Sicherheitsleistung (CHF) *" %} {% hilfe 'kaution' %}</label>
-        <input name="kautions_betrag" id="s_kaution" type="text" inputmode="decimal" data-chf data-fehler="{% trans 'Bitte einen Betrag eingeben, z. B. 1450.50' %}" value="0" oninput="live()" class="fw-feld w-full mb-2">
+        <input name="kautions_betrag" id="s_kaution" type="text" inputmode="decimal" data-chf data-fehler="{% trans 'Bitte einen Betrag eingeben, z. B. 1450.50' %}" value="0" data-bei-eingabe="live" class="fw-feld w-full mb-2">
         <div class="flex flex-wrap gap-2 mb-4">
-            <button type="button" onclick="kautionSet(0)" class="fw-btn fw-knapp">{% trans "Keine" %}</button>
-            <button type="button" onclick="kautionSet(1)" class="fw-btn fw-knapp">{% trans "1 Monat" %}</button>
-            <button type="button" onclick="kautionSet(2)" class="fw-btn fw-knapp">{% trans "2 Monate" %}</button>
-            <button type="button" onclick="kautionSet(3)" class="fw-btn fw-knapp">{% trans "3 Monate" %}</button>
+            <button type="button" data-bei-klick="kautionSet" data-args='[0]' class="fw-btn fw-knapp">{% trans "Keine" %}</button>
+            <button type="button" data-bei-klick="kautionSet" data-args='[1]' class="fw-btn fw-knapp">{% trans "1 Monat" %}</button>
+            <button type="button" data-bei-klick="kautionSet" data-args='[2]' class="fw-btn fw-knapp">{% trans "2 Monate" %}</button>
+            <button type="button" data-bei-klick="kautionSet" data-args='[3]' class="fw-btn fw-knapp">{% trans "3 Monate" %}</button>
         </div>
         <p id="kaution-hint" class="text-xs fw-faint mb-3"></p>
         <label class="fw-label mb-1">{% trans "Kautionskonto (IBAN)" %}</label>
-        <input name="kautions_konto" oninput="live()" placeholder="{% trans 'CH…' %}" class="fw-feld w-full font-mono">
+        <input name="kautions_konto" data-bei-eingabe="live" placeholder="{% trans 'CH…' %}" class="fw-feld w-full font-mono">
     </div></div>
     </section>
 
@@ -391,7 +391,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
             <span class="fw-mutet">{% trans "Nebenkosten / Monat" %}</span><span id="nk-echo" class="font-semibold fw-strong">CHF 0.00</span>
         </div>
         <label class="fw-label mb-1" for="s_nk_art">{% trans "Abrechnungsart" %} {% hilfe 'nebenkosten_vereinbart' %}</label>
-        <select name="nk_abrechnungsart" id="s_nk_art"oninput="live()" class="fw-feld w-full mb-3">
+        <select name="nk_abrechnungsart" id="s_nk_art"data-bei-eingabe="live" class="fw-feld w-full mb-3">
             <option value="akonto">{% trans "Akonto (Vorschuss mit Abrechnung)" %}</option>
             <option value="pauschal">{% trans "Pauschal (fixer Betrag)" %}</option>
             <option value="inbegriffen">{% trans "Inbegriffen im Nettomietzins" %}</option>
@@ -410,7 +410,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
             <p class="text-xs fw-faint mb-2">{% trans "Nur angekreuzte Arten stehen im Vertrag und sind abrechenbar. Nebenkosten müssen klar und bestimmt vereinbart sein (Art. 257a Abs. 2 OR); was fehlt, trägt der Vermieter." %}</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-1">
                 {% for k in nk_katalog %}
-                <label class="fw-haekchen"><input type="checkbox" name="nk_kostenarten" value="{{ k.key }}"{% if k.vorgabe %} checked{% endif %} class="fw-akzent" onchange="live()"> {{ k.name }}</label>
+                <label class="fw-haekchen"><input type="checkbox" name="nk_kostenarten" value="{{ k.key }}"{% if k.vorgabe %} checked{% endif %} class="fw-akzent" data-bei-aenderung="live"> {{ k.name }}</label>
                 {% endfor %}
             </div>
         </fieldset>
@@ -523,7 +523,7 @@ let mieterMode = 'best';
 
 // Kündigungsmonate-Checkboxen rendern (Standard: März, Juni, September)
 document.getElementById('monate-grid').innerHTML = MONATE.map((m,i)=>
-  `<label class="flex items-center gap-2 text-sm fw-ink"><input type="checkbox" class="monat-cb fw-akzent" value="${m}" onchange="live()"> ${monatAnzeige(m)}</label>`).join('');
+  `<label class="flex items-center gap-2 text-sm fw-ink"><input type="checkbox" class="monat-cb fw-akzent" value="${m}" data-bei-aenderung="live"> ${monatAnzeige(m)}</label>`).join('');
 function monateAusserDez(){ document.querySelectorAll('.monat-cb').forEach(c=>c.checked = c.value!=='Dezember'); live(); }
 function monateStandard(){ document.querySelectorAll('.monat-cb').forEach(c=>c.checked = ['März','Juni','September'].includes(c.value)); live(); }
 function setMonateAlle(){ document.querySelectorAll('.monat-cb').forEach(c=>c.checked = true); live(); }

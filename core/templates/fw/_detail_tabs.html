@@ -8,7 +8,7 @@
     {% for key, label, badge in tabs %}
     <button type="button" role="tab" id="tab-{{ gruppe }}-{{ key }}" aria-controls="{{ gruppe }}-{{ key }}"
             aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
-            data-tab="{{ gruppe }}" data-target="{{ key }}" onclick="fwTab('{{ gruppe }}', '{{ key }}')"
+            data-tab="{{ gruppe }}" data-target="{{ key }}" data-bei-klick="fwTab" data-args='["{{ gruppe }}","{{ key }}"]'
             class="{% if forloop.first %}hier{% endif %}">
         {{ label }}
         {% if badge %}<span class="fw-z">{{ badge }}</span>{% endif %}

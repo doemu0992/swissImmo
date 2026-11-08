@@ -45,7 +45,7 @@ die Schrift im Browser zeigt sie nur und begrenzt die Eingabe, sie rechnet nicht
         <div class="fw-formular drei">
             <div class="fw-feldblock">
                 <label for="mz_lik_stand" class="fw-label">{% trans "Neuer LIK-Stand (Monat)" %} {% hilfe 'lik' %}</label>
-                <select name="lik_stand" id="mz_lik_stand" onchange="izRechnen(true)" class="fw-feld w-full">
+                <select name="lik_stand" id="mz_lik_stand" data-bei-aenderung="izRechnen" data-args='[true]' class="fw-feld w-full">
                     {% for monat, punkte in idx_stand_optionen %}
                     <option value="{{ monat|date:'Y-m' }}"{% if monat == idx.stand %} selected{% endif %}>{{ monat|date:'F Y' }} · {% localize off %}{{ punkte }}{% endlocalize %} {% trans "Punkte" %}</option>
                     {% endfor %}
@@ -54,7 +54,7 @@ die Schrift im Browser zeigt sie nur und begrenzt die Eingabe, sie rechnet nicht
             </div>
             <div class="fw-feldblock">
                 <label for="mz_basis_lik" class="fw-label">{% trans "LIK Vertrag (Basis, Punkte)" %}</label>
-                <input id="mz_basis_lik" name="basis_lik" inputmode="decimal" oninput="izRechnen(true)" value="{% localize off %}{{ idx.alt_lik }}{% endlocalize %}" class="fw-feld w-full {% if idx.basis_fehlt %}fw-ring-warn{% endif %}">
+                <input id="mz_basis_lik" name="basis_lik" inputmode="decimal" data-bei-eingabe="izRechnen" data-args='[true]' value="{% localize off %}{{ idx.alt_lik }}{% endlocalize %}" class="fw-feld w-full {% if idx.basis_fehlt %}fw-ring-warn{% endif %}">
             </div>
             <div class="fw-feldblock">
                 <label for="mz_basis_stand" class="fw-label">{% trans "Stand-Monat (Basis-LIK)" %}</label>

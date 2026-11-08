@@ -24,7 +24,7 @@ Blöcke (`brand_icon`, `brand`, `brand_mobile`, `nav`, `content`, `footer`,
 <div class="fw-app">
 
     <!-- Vorhang (mobil) -->
-    <div id="pBackdrop" onclick="pCloseNav()" class="fw-vorhang-mobil hidden"></div>
+    <div id="pBackdrop" data-bei-klick="pCloseNav" class="fw-vorhang-mobil hidden"></div>
 
     <!-- ================= LEISTE ================= -->
     <aside id="pSidebar" class="fw-side fw-flaeche" aria-label="{% trans 'Hauptnavigation' %}">
@@ -34,7 +34,7 @@ Blöcke (`brand_icon`, `brand`, `brand_mobile`, `nav`, `content`, `footer`,
                 <b class="fw-portal-titel">{% block brand %}{% trans "Mieterportal" %}{% endblock %}</b>
                 <small class="fw-faint">immoswiss</small>
             </div>
-            <button type="button" onclick="pCloseNav()" aria-label="{% trans 'Menü schliessen' %}" class="fw-side-knopf fw-nur-mobil">{% zeichen 'schliessen' %}</button>
+            <button type="button" data-bei-klick="pCloseNav" aria-label="{% trans 'Menü schliessen' %}" class="fw-side-knopf fw-nur-mobil">{% zeichen 'schliessen' %}</button>
         </div>
 
         <nav class="fw-nav">
@@ -57,7 +57,7 @@ Blöcke (`brand_icon`, `brand`, `brand_mobile`, `nav`, `content`, `footer`,
     <div class="fw-haupt">
         <!-- Kopfzeile (mobil) -->
         <header class="fw-portal-top">
-            <button type="button" onclick="pOpenNav()" aria-label="{% trans 'Menü öffnen' %}" class="fw-knopf-rund">{% zeichen 'mehr' %}</button>
+            <button type="button" data-bei-klick="pOpenNav" aria-label="{% trans 'Menü öffnen' %}" class="fw-knopf-rund">{% zeichen 'mehr' %}</button>
             <b class="fw-portal-titel">{% block brand_mobile %}{% trans "Mieterportal" %}{% endblock %}</b>
         </header>
 

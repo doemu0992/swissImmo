@@ -67,24 +67,24 @@
         <div class="fw-formular drei">
             <div class="fw-feldblock">
                 <label for="mz_basis_zins" class="fw-label">{% trans "Referenzzins Vertrag (Basis, %)" %}</label>
-                <input name="basis_zins" id="mz_basis_zins" oninput="mzRechnen()" value="{% localize off %}{{ basis_vertrag_zins }}{% endlocalize %}" class="fw-feld w-full {% if basis_fehlt %}fw-ring-warn{% endif %}">
+                <input name="basis_zins" id="mz_basis_zins" data-bei-eingabe="mzRechnen" value="{% localize off %}{{ basis_vertrag_zins }}{% endlocalize %}" class="fw-feld w-full {% if basis_fehlt %}fw-ring-warn{% endif %}">
             </div>
             <div class="fw-feldblock">
                 <label for="mz_neu_zins" class="fw-label">{% trans "Neuer Referenzzins (%)" %} {% hilfe 'referenzzins' %}</label>
-                <input name="neu_zins" id="mz_neu_zins" oninput="mzRechnen()" value="{% localize off %}{{ neu_zins }}{% endlocalize %}" class="fw-feld w-full">
+                <input name="neu_zins" id="mz_neu_zins" data-bei-eingabe="mzRechnen" value="{% localize off %}{{ neu_zins }}{% endlocalize %}" class="fw-feld w-full">
             </div>
             <div class="fw-feldblock">
                 <label for="mz_kosten" class="fw-label">{% trans "Allg. Kostensteigerung (%)" %}</label>
-                <input id="mz_kosten" name="kosten_pct" value="{% localize off %}{{ kosten_vorschlag }}{% endlocalize %}" oninput="mzRechnen()" class="fw-feld w-full">
+                <input id="mz_kosten" name="kosten_pct" value="{% localize off %}{{ kosten_vorschlag }}{% endlocalize %}" data-bei-eingabe="mzRechnen" class="fw-feld w-full">
                 <p class="fw-hilfe">{% if v.kostensteigerung_datum %}{% blocktrans with datum=v.kostensteigerung_datum|date:"d.m.Y" %}ausgeglichen bis {{ datum }}{% endblocktrans %}{% else %}{% trans "seit Vertragsbeginn" %}{% endif %}</p>
             </div>
             <div class="fw-feldblock">
                 <label for="mz_basis_lik" class="fw-label">{% trans "LIK Vertrag (Basis, Punkte)" %}</label>
-                <input id="mz_basis_lik" name="basis_lik" oninput="mzRechnen()" value="{% localize off %}{{ basis_vertrag_lik }}{% endlocalize %}" class="fw-feld w-full {% if basis_fehlt %}fw-ring-warn{% endif %}">
+                <input id="mz_basis_lik" name="basis_lik" data-bei-eingabe="mzRechnen" value="{% localize off %}{{ basis_vertrag_lik }}{% endlocalize %}" class="fw-feld w-full {% if basis_fehlt %}fw-ring-warn{% endif %}">
             </div>
             <div class="fw-feldblock">
                 <label for="mz_neu_lik" class="fw-label">{% trans "Neuer LIK (Punkte)" %} {% hilfe 'lik' %}</label>
-                <input id="mz_neu_lik" name="neu_lik" oninput="mzRechnen()" value="{% localize off %}{{ neu_lik }}{% endlocalize %}" class="fw-feld w-full">
+                <input id="mz_neu_lik" name="neu_lik" data-bei-eingabe="mzRechnen" value="{% localize off %}{{ neu_lik }}{% endlocalize %}" class="fw-feld w-full">
             </div>
             <div class="fw-feldblock">
                 <label for="mz_basis_stand" class="fw-label">{% trans "Stand-Monat (Basis-LIK)" %}</label>
@@ -147,7 +147,7 @@
             </div>
             <div class="fw-feldblock">
                 <label for="mz_neu" class="fw-label">{% trans "Netto neu (CHF)" %}</label>
-                <input name="neu_netto" id="mz_neu" data-pflicht inputmode="decimal" oninput="{% if idx %}izBegrenzen(){% else %}mietzinsCheck(){% endif %}" value="{% localize off %}{{ neu_netto }}{% endlocalize %}" class="fw-feld w-full fw-linie-marke fw-strong">
+                <input name="neu_netto" id="mz_neu" data-pflicht inputmode="decimal" data-bei-eingabe="{% if idx %}izBegrenzen{% else %}mietzinsCheck{% endif %}" value="{% localize off %}{{ neu_netto }}{% endlocalize %}" class="fw-feld w-full fw-linie-marke fw-strong">
                 {% if idx %}
                 <p class="fw-hilfe" id="iz-neu-hilfe">{{ idx.hoechst_text }}</p>
                 {% else %}
@@ -166,23 +166,23 @@
             <div class="fw-feldblock">
                 <label for="mz_wirksam" class="fw-label">{% trans "Wirksam ab" %}{% if idx %} {% hilfe 'index_anpassung_frist' %}{% endif %}</label>
                 {% if idx %}
-                <select name="wirksam_ab" id="mz_wirksam" data-pflicht onchange="izRechnen()" class="fw-feld w-full">
+                <select name="wirksam_ab" id="mz_wirksam" data-pflicht data-bei-aenderung="izRechnen" class="fw-feld w-full">
                     {% for t in idx.termine %}<option value="{{ t|date:'Y-m-d' }}"{% if t == idx.termin %} selected{% endif %}>{{ t|date:"d.m.Y" }}</option>{% endfor %}
                 </select>
                 <p class="fw-hilfe" id="mz-frueh">{{ idx.frueh_text }}</p>
                 {% else %}
-                <input type="date" name="wirksam_ab" id="mz_wirksam" data-pflicht onchange="mzRechnen()" value="{{ termin|date:'Y-m-d' }}" class="fw-feld w-full">
+                <input type="date" name="wirksam_ab" id="mz_wirksam" data-pflicht data-bei-aenderung="mzRechnen" value="{{ termin|date:'Y-m-d' }}" class="fw-feld w-full">
                 <p class="fw-hilfe" id="mz-frueh">{% blocktrans with datum=naechster_termin|date:"d.m.Y" %}Frühestens {{ datum }} bei Versand heute{% endblocktrans %}</p>
                 {% endif %}
             </div>
             <div class="fw-feldblock">
                 <label for="mz_versand" class="fw-label">{% trans "Versand am (Poststempel)" %}</label>
-                <input type="date" name="versand_am" id="mz_versand" value="{{ heute_iso }}" max="{{ heute_iso }}" onchange="{% if idx %}izRechnen(){% else %}mzRechnen(){% endif %}" class="fw-feld w-full">
+                <input type="date" name="versand_am" id="mz_versand" value="{{ heute_iso }}" max="{{ heute_iso }}" data-bei-aenderung="{% if idx %}izRechnen{% else %}mzRechnen{% endif %}" class="fw-feld w-full">
                 <p class="fw-hilfe">{% trans "Nur für «Als versandt erfassen»." %}</p>
             </div>
             <div class="fw-feldblock">
                 <label for="mz_zugang" class="fw-label">{% trans "Zugang beim Mieter" %} {% hilfe 'zugang' %} <span class="fw-faint font-normal">{% trans "(optional)" %}</span></label>
-                <input type="date" name="zugang_am" id="mz_zugang" max="{{ heute_iso }}" onchange="{% if idx %}izRechnen(){% else %}mzRechnen(){% endif %}" class="fw-feld w-full">
+                <input type="date" name="zugang_am" id="mz_zugang" max="{{ heute_iso }}" data-bei-aenderung="{% if idx %}izRechnen{% else %}mzRechnen{% endif %}" class="fw-feld w-full">
                 <p class="fw-hilfe">{% blocktrans with tage=zustell_puffer %}Leer: Versand + {{ tage }} Tage (Postweg und Abholfrist).{% endblocktrans %}</p>
             </div>
         </div>

@@ -73,7 +73,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
             </div>
         </div>
         <a href="/neu/bankabgleich/?lg={{ v.einheit.liegenschaft_id }}" class="fw-btn" title="{% trans 'Offene Posten dieses Mietverhältnisses im Bankabgleich verbuchen' %}">{% trans "Zahlung erfassen" %}</a>
-        <a href="/neu/faelle/neu/?akte=mv-{{ v.id }}" class="fw-btn fw-primary" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')">{% zeichen 'neu' %}{% trans "Neuer Fall" %}</a>
+        <a href="/neu/faelle/neu/?akte=mv-{{ v.id }}" class="fw-btn fw-primary" data-modal="{% trans "Neuer Fall" %}">{% zeichen 'neu' %}{% trans "Neuer Fall" %}</a>
     </div>
 </div>
 
@@ -107,7 +107,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
         <span>{% if kopf_mahnstufe %}{% blocktrans with m=kopf_mahnstufe %}Mahnstufe {{ m }}{% endblocktrans %}{% else %}{% trans "Noch nicht gemahnt" %}{% endif %}{% if kopf_saldo_monat %} · {% blocktrans with m=kopf_saldo_monat %}offen seit {{ m }}{% endblocktrans %}{% endif %}</span></div>
     <div class="fw-ansage-knoepfe">
         {% if request.user|darf:"/neu/vertraege/1/verzug/" %}<a href="/neu/vertraege/{{ v.id }}/verzug/" class="fw-btn fw-knapp">{% zeichen 'recht' %}{% trans "Zahlungsverzug 257d" %}</a>{% endif %}
-        <a href="?tab=finanzen" class="fw-btn fw-knapp" onclick="fwTab('vt', 'finanzen'); document.getElementById('vt-finanzen').scrollIntoView({behavior: 'smooth', block: 'start'}); return false;">{% trans "Zum Konto" %}</a>
+        <a href="?tab=finanzen" class="fw-btn fw-knapp" data-bei-klick="fwTabSpringen" data-args='["vt","finanzen"]'>{% trans "Zum Konto" %}</a>
         <a href="/neu/bankabgleich/?lg={{ v.einheit.liegenschaft_id }}" class="fw-btn fw-knapp fw-primary">{% trans "Zahlung erfassen" %}</a>
     </div>
 </div>
@@ -119,7 +119,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
     {% zeichen 'wartet' %}
     <div class="fw-mitte"><b title="{{ kopf_frist.p.titel }}">{{ kopf_frist.p.titel }}</b>
         <span>{% trans "Nächste Frist" %} · <span class="{% if kopf_frist.ueberfaellig %}fw-strong fw-kritisch{% endif %}">{% blocktrans with d=kopf_frist.p.faellig_am|date:"d.m.Y" %}fällig {{ d }}{% endblocktrans %}</span></span></div>
-    {% if kopf_frist.url %}<div class="fw-ansage-knoepfe"><a href="{{ kopf_frist.url }}"{% if kopf_frist.modal %} onclick="return fwModalOpen(this,'{{ kopf_frist.p.titel|escapejs }}',{% if kopf_frist.wide %}true{% else %}false{% endif %})"{% endif %} class="fw-btn fw-knapp">{{ kopf_frist.label }}</a></div>{% endif %}
+    {% if kopf_frist.url %}<div class="fw-ansage-knoepfe"><a href="{{ kopf_frist.url }}"{% if kopf_frist.modal %} data-modal="{{ kopf_frist.p.titel}}" {% if kopf_frist.wide %}data-modal-breit{% endif %}{% endif %} class="fw-btn fw-knapp">{{ kopf_frist.label }}</a></div>{% endif %}
 </div>
 {% endif %}
 
@@ -396,8 +396,8 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
           <summary>{% trans "Einzahlung oder Zertifikat erfassen" %}</summary>
           <div class="fw-aufklapp-inhalt">
             <div class="inline-flex rounded-lg fw-flaeche2 p-0.5 mb-3 text-xs font-semibold">
-                <button type="button" id="kt-tab-sperr" onclick="ktSwitch('sperr')" class="px-3 py-1.5 rounded-md fw-flaeche shadow-sm fw-strong">{% trans "Sperrkonto" %}</button>
-                <button type="button" id="kt-tab-vers" onclick="ktSwitch('vers')" class="px-3 py-1.5 rounded-md fw-mutet">{% trans "Versicherung" %}</button>
+                <button type="button" id="kt-tab-sperr" data-bei-klick="ktSwitch" data-args='["sperr"]' class="px-3 py-1.5 rounded-md fw-flaeche shadow-sm fw-strong">{% trans "Sperrkonto" %}</button>
+                <button type="button" id="kt-tab-vers" data-bei-klick="ktSwitch" data-args='["vers"]' class="px-3 py-1.5 rounded-md fw-mutet">{% trans "Versicherung" %}</button>
             </div>
 
             <form id="kt-form-sperr" method="post" action="/neu/vertraege/{{ v.id }}/kaution/">
@@ -917,7 +917,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
                         {% if e.p.beschreibung %}<div class="fw-klein leading-relaxed">{{ e.p.beschreibung }}</div>{% endif %}
                     </div>
                     {% if e.p.faellig_am %}<span class="text-xs font-semibold fw-mutet shrink-0 whitespace-nowrap">{{ e.p.faellig_am|date:"d.m.Y" }}{% if e.p.frist_provisorisch %} · <span class="fw-warnton">{% trans "provisorisch" %}</span>{% endif %}</span>{% endif %}
-                    {% if e.url %}<a href="{{ e.url }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.p.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"{% endif %} class="fw-btn fw-rand-marke fw-knapp shrink-0 whitespace-nowrap">{{ e.label }}</a>{% endif %}
+                    {% if e.url %}<a href="{{ e.url }}"{% if e.modal %} data-modal="{{ e.p.titel}}" {% if e.wide %}data-modal-breit{% endif %}{% endif %} class="fw-btn fw-rand-marke fw-knapp shrink-0 whitespace-nowrap">{{ e.label }}</a>{% endif %}
                 </div>
                 {% if e.p.sendungsnummer or e.p.einschreiben %}<div class="ml-5">{% include 'fw/_einschreiben_zugang.html' with p=e.p zugang_heute=heute_iso zugang_next=vt_zugang_next %}</div>{% endif %}
             </div>

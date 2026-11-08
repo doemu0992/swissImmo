@@ -31,7 +31,7 @@
         <div class="fw-card fw-rumpf space-y-4">
         <div class="fw-formular">
             <div class="fw-feldblock"><label for="s_absender" class="fw-label">{% trans "Gekündigt durch *" %}</label>
-                <select name="absender" onchange="syncZustellung(); kuendigungCheck()" id="s_absender" class="fw-feld">
+                <select name="absender" data-bei-aenderung="syncZustellung kuendigungCheck" id="s_absender" class="fw-feld">
                     <option value="mieter">{% trans "Mieter" %}</option>
                     <option value="vermieter" {% if prefill_ao %}selected{% endif %}>{% trans "Vermieter" %}</option>
                 </select></div>
@@ -47,9 +47,9 @@
            solange unbekannt, Versand + Zustellpuffer (wie bei Art. 269d/257d). {% endcomment %}
         <div class="fw-formular">
             <div class="fw-feldblock"><label for="s_eingang" class="fw-label"><span data-nur="mieter">{% trans "Eingang beim Vermieter *" %}</span><span data-nur="vermieter" class="hidden">{% trans "Versand (Poststempel) *" %}</span></label>
-                <input type="date" name="eingang_datum" id="s_eingang" value="{{ heute_iso }}" max="{{ heute_iso }}" onchange="berechne()" class="fw-feld"></div>
+                <input type="date" name="eingang_datum" id="s_eingang" value="{{ heute_iso }}" max="{{ heute_iso }}" data-bei-aenderung="berechne" class="fw-feld"></div>
             <div class="fw-feldblock hidden" data-nur="vermieter"><label for="s_zugang" class="fw-label">{% trans "Zugang beim Mieter" %} {% hilfe 'zugang' %} <span class="fw-faint font-normal">{% trans "(optional)" %}</span></label>
-                <input type="date" name="zugang_am" id="s_zugang" max="{{ heute_iso }}" onchange="berechne()" class="fw-feld">
+                <input type="date" name="zugang_am" id="s_zugang" max="{{ heute_iso }}" data-bei-aenderung="berechne" class="fw-feld">
                 <p class="fw-hilfe">{% blocktrans with tage=zustell_puffer %}Leer: Versand + {{ tage }} Tage (Postweg und Abholfrist).{% endblocktrans %}</p></div>
         </div>
         {% comment %} Art. 271a OR (Audit MIET-06): Kündigung des Vermieters während eines Verfahrens um die Mietsache und
@@ -66,7 +66,7 @@
         {% endif %}
         {% if v.familienwohnung %}
         <label class="fw-haekchen" data-nur="mieter">
-            <input type="checkbox" name="zustimmung_ehegatte" id="s_zustimmung" class="fw-akzent" onchange="kuendigungCheck()"> {% trans "Ausdrückliche Zustimmung des Ehegatten / eingetragenen Partners liegt vor" %} {% hilfe 'familienwohnung' %}
+            <input type="checkbox" name="zustimmung_ehegatte" id="s_zustimmung" class="fw-akzent" data-bei-aenderung="kuendigungCheck"> {% trans "Ausdrückliche Zustimmung des Ehegatten / eingetragenen Partners liegt vor" %} {% hilfe 'familienwohnung' %}
         </label>
         {% else %}
         <p class="fw-hilfe">{% trans "Familienwohnung?" %} {% hilfe 'familienwohnung' %}</p>
@@ -78,7 +78,7 @@
         <div class="fw-card fw-rumpf space-y-4">
         <div class="fw-formular">
             <div class="fw-feldblock"><label for="s_gew_ende" class="fw-label">{% trans "Gewünschtes Ende" %} {% hilfe 'kuendigungsfrist' %} <span class="fw-faint font-normal">{% trans "(optional)" %}</span></label>
-                <input type="date" name="gewuenschtes_ende" id="s_gew_ende" onchange="kuendigungCheck()" {% if ao_termin %}value="{{ ao_termin|date:'Y-m-d' }}"{% endif %} class="fw-feld"></div>
+                <input type="date" name="gewuenschtes_ende" id="s_gew_ende" data-bei-aenderung="kuendigungCheck" {% if ao_termin %}value="{{ ao_termin|date:'Y-m-d' }}"{% endif %} class="fw-feld"></div>
         </div>
         <!-- Mietrechtliche Live-Prüfung -->
         <div id="k-warn" class="hidden"><div class="fw-hinweis warn rounded-lg">
@@ -127,14 +127,14 @@
         {% endif %}
 
         <label class="fw-haekchen">
-            <input type="checkbox" name="ausserordentlich" id="s_ao" {% if prefill_ao %}checked{% endif %} onchange="document.getElementById('ao-box').classList.toggle('hidden', !this.checked); kuendigungCheck()" class="fw-akzent"> {% trans "Ausserordentliche Kündigung" %}
+            <input type="checkbox" name="ausserordentlich" id="s_ao" {% if prefill_ao %}checked{% endif %} data-sichtbar-wenn="ao-box" data-bei-aenderung="kuendigungCheck" class="fw-akzent"> {% trans "Ausserordentliche Kündigung" %}
         </label>
         {% comment %} Befund L: Ausserordentlich nur mit strukturiertem Grund. Der Server
            prüft je Grund die Mindestfrist, soweit der Bestand sie belegt; ein zu
            frühes Wunschdatum wird auf den frühesten Termin geschoben. {% endcomment %}
         <div id="ao-box" class="{% if not prefill_ao %}hidden {% endif %}space-y-3 pl-6">
             <div class="fw-feldblock"><label for="s_ao_art" class="fw-label">{% trans "Grund *" %}</label>
-                <select id="s_ao_art" name="ausserordentlich_art" class="fw-feld" onchange="kuendigungCheck()">
+                <select id="s_ao_art" name="ausserordentlich_art" class="fw-feld" data-bei-aenderung="kuendigungCheck">
                     <option value="">—</option>
                     {% comment %}Gründe bleiben deutsch (Rechtsbegriffe, wie Kuendigung.AO_ART_CHOICES).{% endcomment %}{% for wert, text in ao_choices %}<option value="{{ wert }}" data-partei="{% if wert in ao_vermieter and wert in ao_mieter %}beide{% elif wert in ao_vermieter %}vermieter{% else %}mieter{% endif %}" {% if wert == prefill_art %}selected{% endif %}>{{ text }}</option>{% endfor %}
                 </select></div>

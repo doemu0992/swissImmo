@@ -51,7 +51,7 @@ test('Auto-Absenden: eine Auswahl schickt das Filterformular ab', async ({ page 
 test('Keine Inline-Handler auf den wichtigsten Seiten mehr, die ein Datenattribut nutzen', async ({ page }) => {
   await goto(page, '/neu/kreditoren/');
   const verbleibend = await page.evaluate(() =>
-    Array.from(document.querySelectorAll('[data-umschalten],[data-absenden],[data-stop],[data-gehe-zu]'))
-      .filter((e) => e.hasAttribute('onclick') || e.hasAttribute('onchange')).length);
+    Array.from(document.querySelectorAll('[data-umschalten],[data-absenden],[data-stop],[data-gehe-zu],[data-bei-klick],[data-bei-aenderung],[data-bei-eingabe],[data-modal]'))
+      .filter((e) => e.hasAttribute('onclick') || e.hasAttribute('onchange') || e.hasAttribute('oninput')).length);
   expect(verbleibend).toBe(0);
 });

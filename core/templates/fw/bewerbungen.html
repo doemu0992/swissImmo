@@ -64,7 +64,7 @@
                         {% if b.hat_betreibungen %}<span class="fw-chip fw-crit">{% trans "Betreibungen" %}</span>{% endif %}
                         <span class="fw-mono">#{{ b.id }}</span>
                     </div>
-                    <a href="/neu/bewerbungen/{{ b.id }}/" class="fw-karte-titel" onclick="return fwModalOpenUrl('/neu/bewerbungen/{{ b.id }}/','{% filter escapejs %}{{ b.vorname }} {{ b.nachname }}{% endfilter %}')">{{ b.vorname }} {{ b.nachname }}</a>
+                    <a href="/neu/bewerbungen/{{ b.id }}/" class="fw-karte-titel" data-modal="{{ b.vorname }} {{ b.nachname }}">{{ b.vorname }} {{ b.nachname }}</a>
                     <div class="fw-karte-sub">{{ b.einheit.bezeichnung }} · {{ b.einheit.liegenschaft.strasse }}</div>
                     <div class="fw-karte-befunde" data-befunde>
                         {% if k.spalte == 'eingegangen' %}

@@ -42,7 +42,7 @@ HUELLE = {
         'function fwSetTheme(', 'function fwSyncThemeButtons(',
     ],
     'Ereignisse und Mechanik': [
-        "e.key === 'Escape'", "button[onclick=\"fwProfilMenu()\"]",
+        "e.key === 'Escape'", "button[data-bei-klick=\"fwProfilMenu\"]",
         "get('tab')", "addEventListener('submit'", "data-no-guard", "form.target === '_blank'",
         "'#z-laedt'", "'fw-dreht'", "[data-suche]", "[data-zeile]", "[data-menu-btn]",
         "[data-menu-list]", "addEventListener('fw:content'", "nodeName !== 'BR'",

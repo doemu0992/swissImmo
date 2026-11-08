@@ -23,11 +23,11 @@ Liste dahinter bleibt sichtbar; man verliert beim Arbeiten nicht den Ort.
 Ids, Rollen, Funktionen und das Fertig-Signal sind unveraendert.
 {% endcomment %}
 <div id="fwModal" class="fw-schublade hidden">
-    <div class="fw-schublade-vorhang" onclick="fwModalClose()"></div>
+    <div class="fw-schublade-vorhang" data-bei-klick="fwModalClose"></div>
     <div id="fwModalBox" role="dialog" aria-modal="true" aria-labelledby="fwModalTitle" class="fw-schublade-box">
         <div class="fw-schublade-kopf">
             <h2 id="fwModalTitle">{% trans "Schritt" %}</h2>
-            <button type="button" id="fwModalZu" onclick="fwModalClose()" title="{% trans 'Schliessen' %}" aria-label="{% trans 'Schliessen' %}" class="fw-knopf-rund">{% zeichen 'schliessen' %}</button>
+            <button type="button" id="fwModalZu" data-bei-klick="fwModalClose" title="{% trans 'Schliessen' %}" aria-label="{% trans 'Schliessen' %}" class="fw-knopf-rund">{% zeichen 'schliessen' %}</button>
         </div>
         <div class="fw-schublade-inhalt">
             <div id="fwModalLaedt" class="fw-schublade-laedt" aria-hidden="true">{% zeichen 'laedt' klasse='fw-dreht' %}{% trans "Wird geladen …" %}</div>

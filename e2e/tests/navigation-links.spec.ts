@@ -50,7 +50,7 @@ test.describe('Ladeanzeigen', () => {
   // wenn die Seite dahinter längst da ist. Geprüft wird: Anzeige weg, Rahmen hat Inhalt.
   const MODALE = [
     { liste: '/neu/schaeden/', zeile: '.fw-zeile.klick' },
-    { liste: '/neu/debitoren/', zeile: 'table a[onclick*="fwModalOpen"]' },
+    { liste: '/neu/debitoren/', zeile: 'table a[data-modal]' },
   ];
 
   for (const m of MODALE) {
