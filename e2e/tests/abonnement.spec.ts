@@ -49,7 +49,9 @@ test.describe('Funktionsfreigabe', () => {
     await page.getByRole('link', { name: 'Zum Abonnement' }).click();
     await expect(page).toHaveURL(/\/neu\/abonnement\//);
     await expect(page.getByRole('heading', { name: 'Ihr Abonnement' })).toBeVisible();
-    await expect(page.getByText('vom Betreiber festzulegen').first()).toBeVisible();
+    // Preise sind seit 08.11.2026 freigegeben: kein Platzhalter-Hinweis mehr, dafür der Preisstand.
+    await expect(page.getByText('vom Betreiber festzulegen')).toHaveCount(0);
+    await expect(page.getByText('Alle Preise exkl. MWST').first()).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Nutzung' })).toBeVisible();
     await ohneQuerlauf(page);
 
