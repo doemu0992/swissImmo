@@ -1,4 +1,4 @@
-{% load i18n zeichen %}{% get_current_language as sprache %}<!DOCTYPE html>
+{% load i18n zeichen statisch %}{% get_current_language as sprache %}<!DOCTYPE html>
 <html lang="{{ sprache|slice:':2'|default:'de' }}">
 <head>
     <meta charset="UTF-8">
@@ -27,7 +27,6 @@
             {% trans "Zur Übersicht" %}
         </a>
     </div>
-    <script nonce="{{ csp_nonce }}">(function(){var p=location.pathname,a=document.getElementById('fehlerZiel');
-        if(p.indexOf('/mieter/')===0)a.href='/mieter/';else if(p.indexOf('/portal/')===0)a.href='/portal/';})();</script>
+    <script src="{% statisch 'js/fehler-ziel.js' %}" defer></script>
 </body>
 </html>
