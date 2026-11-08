@@ -23,6 +23,7 @@ GEHEIME_FELDER = (
     ('core', 'Postfach', 'passwort_geheim'),
     ('core', 'Postfach', 'refresh_token_geheim'),
     ('crm', 'Mieter', 'ahv_nummer'),
+    ('core', 'ZweiterFaktor', 'geheimnis'),
 )
 
 
