@@ -83,7 +83,7 @@ OFFEN_FUER_ANGEMELDETE = (
     '/konto/',                # eigenes Konto / Zwei-Faktor
     '/anmeldung/',
     '/passwort/',
-    '/portal/login/', '/login/',
+    '/portal/login/', '/betreiber/login/', '/login/',
     '/i18n/',
     '/api/',                  # Ninja: eigene Auth (auth_lesen), separat getestet
     '/admin/',                # Django-Admin: is_staff, separat getestet

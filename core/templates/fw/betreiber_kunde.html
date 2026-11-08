@@ -1,10 +1,10 @@
-{% extends 'fw/base.html' %}
+{% extends 'core/betreiber_base.html' %}
 {% load zeichen i18n %}
 {% comment %}BETREIBER — Abo-Verwaltung einer Verwaltung (Etappe 3). Siehe core/views/fw/betreiber.py (fw_betreiber_kunde): nur Zähler und Abo-Daten.{% endcomment %}
 {% block title %}{{ org.firma }} — immoswiss{% endblock %}
 {% block content %}
 <nav class="fw-brotkrume mb-2.5">
-    <a href="/neu/betreiber/">{% trans "Kunden" %}</a>
+    <a href="/betreiber/">{% trans "Kunden" %}</a>
     {% zeichen 'weiter' %}
     <b>{{ org.firma }}</b>
 </nav>
@@ -41,7 +41,7 @@
         <input type="hidden" name="intervall" value="{% if vorschau.jaehrlich %}jaehrlich{% else %}monatlich{% endif %}">
         <input type="hidden" name="bestaetigt" value="1">
         <button type="submit" class="fw-btn fw-primary">{% trans "Trotzdem wechseln" %}</button>
-        <a href="/neu/betreiber/{{ org.pk }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+        <a href="/betreiber/{{ org.pk }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
     </form>
 </div></div>
 {% endif %}

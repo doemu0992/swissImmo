@@ -180,23 +180,23 @@ class SeiteTests(TestCase):
     def test_nur_der_betreiber_sieht_die_seite(self):
         team = Client()
         team.force_login(_team_user())
-        self.assertEqual(team.get('/neu/einstellungen/sicherheit/').status_code, 403)
-        self.assertEqual(team.post('/neu/einstellungen/sicherheit/', {'aktion': 'kopie'}).status_code, 403)
-        self.assertEqual(Client().get('/neu/einstellungen/sicherheit/').status_code, 302)
+        self.assertEqual(team.get('/betreiber/sicherheit/').status_code, 403)
+        self.assertEqual(team.post('/betreiber/sicherheit/', {'aktion': 'kopie'}).status_code, 403)
+        self.assertEqual(Client().get('/betreiber/sicherheit/').status_code, 302)
 
     def test_seite_zeigt_den_zustand(self):
-        antwort = self.c.get('/neu/einstellungen/sicherheit/')
+        antwort = self.c.get('/betreiber/sicherheit/')
         self.assertEqual(antwort.status_code, 200)
         self.assertContains(antwort, 'von der Anwendung selbst angelegt')
 
     def test_karte_in_den_einstellungen_nur_fuer_den_betreiber(self):
-        self.assertContains(self.c.get('/neu/einstellungen/'), '/neu/einstellungen/sicherheit/')
+        self.assertContains(self.c.get('/neu/einstellungen/'), 'href="/betreiber/"')
         team = Client()
         team.force_login(_team_user())
-        self.assertNotContains(team.get('/neu/einstellungen/'), '/neu/einstellungen/sicherheit/')
+        self.assertNotContains(team.get('/neu/einstellungen/'), 'href="/betreiber/"')
 
     def test_kopie_herunterladen_ist_nicht_gecacht_und_im_logbuch(self):
-        antwort = self.c.post('/neu/einstellungen/sicherheit/', {'aktion': 'kopie'})
+        antwort = self.c.post('/betreiber/sicherheit/', {'aktion': 'kopie'})
         self.assertEqual(antwort.status_code, 200)
         self.assertIn('attachment', antwort['Content-Disposition'])
         self.assertIn('no-store', antwort['Cache-Control'])
@@ -209,11 +209,11 @@ class SeiteTests(TestCase):
     def test_erneuern_per_knopf(self):
         geheimnis.schluessel_vorhanden()
         vorher = self.pfad.read_text()
-        antwort = self.c.post('/neu/einstellungen/sicherheit/', {'aktion': 'erneuern'}, follow=True)
+        antwort = self.c.post('/betreiber/sicherheit/', {'aktion': 'erneuern'}, follow=True)
         self.assertNotEqual(self.pfad.read_text(), vorher)
         self.assertContains(antwort, 'Neuer Schlüssel gesetzt')
         self.assertTrue(AktivitaetsLog.alle_organisationen.filter(aktion='Schlüssel erneuert').exists())
 
     def test_nachholen_per_knopf(self):
-        antwort = self.c.post('/neu/einstellungen/sicherheit/', {'aktion': 'nachholen'}, follow=True)
+        antwort = self.c.post('/betreiber/sicherheit/', {'aktion': 'nachholen'}, follow=True)
         self.assertContains(antwort, 'Werte verschlüsselt')

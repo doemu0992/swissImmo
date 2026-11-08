@@ -39721,3 +39721,19 @@ msgstr "Paiement confirmé."
 
 msgid "Rechnung storniert."
 msgstr "Facture annulée."
+
+msgid "Betreiber — immoswiss"
+msgstr "Exploitant — immoswiss"
+
+msgid "Betreiber"
+msgstr "Exploitant"
+
+msgid "immoswiss Betreiber-Portal · nur für den Betreiber der Installation"
+msgstr ""
+"Portail exploitant immoswiss · réservé à l'exploitant de l'installation"
+
+msgid "Betreiber-Portal"
+msgstr "Portail exploitant"
+
+msgid "Kunden, Abonnements und Verschlüsselung der Installation (Betreiber)"
+msgstr "Clients, abonnements et chiffrement de l'installation (exploitant)"

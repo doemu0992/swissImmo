@@ -1,0 +1,20 @@
+{% extends 'core/portal_base.html' %}
+{% load zeichen i18n %}
+{% comment %}
+Hülle des Betreiber-Portals: ein eigener Bereich wie das Eigentümer- und das Mieterportal (gleiche Hülle, eigene Leiste),
+nicht Teil der Verwaltungs-Oberfläche. Es zeigt keinen Bestandsfilter und keine Verwaltungs-Navigation, also auch nie die
+Adressen einer Verwaltung. Die Seiten setzen `aktiv` (kunden|sicherheit).
+{% endcomment %}
+{% block title %}{% trans "Betreiber — immoswiss" %}{% endblock %}
+{% block brand_icon %}<svg class="fw-zeichen fw-auf-marke text-sm" aria-hidden="true"><use href="#z-gesperrt"/></svg>{% endblock %}
+{% block brand %}{% trans "Betreiber" %}{% endblock %}
+{% block brand_mobile %}{% trans "Betreiber" %}{% endblock %}
+{% block footer %}{% trans "immoswiss Betreiber-Portal · nur für den Betreiber der Installation" %}{% endblock %}
+{% block nav %}
+<a href="{% url 'betreiber' %}" class="fw-nav-eintrag{% if aktiv == 'kunden' %} hier{% endif %}"{% if aktiv == 'kunden' %} aria-current="page"{% endif %}>
+    {% zeichen 'liegenschaft' %} {% trans "Kunden" %}
+</a>
+<a href="{% url 'fw_sicherheit' %}" class="fw-nav-eintrag{% if aktiv == 'sicherheit' %} hier{% endif %}"{% if aktiv == 'sicherheit' %} aria-current="page"{% endif %}>
+    {% zeichen 'gesperrt' %} {% trans "Sicherheit" %}
+</a>
+{% endblock %}

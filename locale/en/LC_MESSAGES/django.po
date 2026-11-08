@@ -39059,3 +39059,20 @@ msgstr "Payment confirmed."
 
 msgid "Rechnung storniert."
 msgstr "Invoice cancelled."
+
+msgid "Betreiber — immoswiss"
+msgstr "Operator — immoswiss"
+
+msgid "Betreiber"
+msgstr "Operator"
+
+msgid "immoswiss Betreiber-Portal · nur für den Betreiber der Installation"
+msgstr ""
+"immoswiss operator portal · for the operator of this installation only"
+
+msgid "Betreiber-Portal"
+msgstr "Operator portal"
+
+msgid "Kunden, Abonnements und Verschlüsselung der Installation (Betreiber)"
+msgstr ""
+"Customers, subscriptions and encryption of this installation (operator)"

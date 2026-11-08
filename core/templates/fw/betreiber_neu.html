@@ -1,10 +1,10 @@
-{% extends 'fw/base.html' %}
+{% extends 'core/betreiber_base.html' %}
 {% load zeichen i18n %}
 {% comment %}BETREIBER — Kunde anlegen. Siehe core/views/fw/betreiber.py (fw_betreiber_neu).{% endcomment %}
 {% block title %}{% trans "Kunde anlegen" %} — immoswiss{% endblock %}
 {% block content %}
 <nav class="fw-brotkrume mb-2.5">
-    <a href="/neu/betreiber/">{% trans "Kunden" %}</a>
+    <a href="/betreiber/">{% trans "Kunden" %}</a>
     {% zeichen 'weiter' %}
     <b>{% trans "Neu" %}</b>
 </nav>
@@ -36,7 +36,7 @@
     </div>
     <div class="flex gap-2">
         <button type="submit" class="fw-btn fw-primary">{% trans "Kunde anlegen" %}</button>
-        <a href="/neu/betreiber/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+        <a href="/betreiber/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 {% endblock %}

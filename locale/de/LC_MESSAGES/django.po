@@ -37945,3 +37945,18 @@ msgstr "Zahlung bestätigt."
 
 msgid "Rechnung storniert."
 msgstr "Rechnung storniert."
+
+msgid "Betreiber — immoswiss"
+msgstr "Betreiber — immoswiss"
+
+msgid "Betreiber"
+msgstr "Betreiber"
+
+msgid "immoswiss Betreiber-Portal · nur für den Betreiber der Installation"
+msgstr "immoswiss Betreiber-Portal · nur für den Betreiber der Installation"
+
+msgid "Betreiber-Portal"
+msgstr "Betreiber-Portal"
+
+msgid "Kunden, Abonnements und Verschlüsselung der Installation (Betreiber)"
+msgstr "Kunden, Abonnements und Verschlüsselung der Installation (Betreiber)"

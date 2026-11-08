@@ -980,10 +980,8 @@ def fw_einstellungen(request):
         {'titel': _('Archiv'), 'sub': _('Archivierte Akten ansehen und wiederherstellen'),
          'url': '/neu/archiv/', 'icon': 'dokument'},
         # Nur der Betreiber (Superuser): `darf_oeffnen` blendet die Kachel für alle anderen aus.
-        {'titel': _('Sicherheit'), 'sub': _('Verschlüsselung: Schlüssel, Zustand, Erneuern (Betreiber)'),
-         'url': '/neu/einstellungen/sicherheit/', 'icon': 'gesperrt'},
-        {'titel': _('Kunden'), 'sub': _('Alle Verwaltungen mit Stufe, Nutzung und Befund (Betreiber)'),
-         'url': '/neu/betreiber/', 'icon': 'liegenschaft'},
+        {'titel': _('Betreiber-Portal'), 'sub': _('Kunden, Abonnements und Verschlüsselung der Installation (Betreiber)'),
+         'url': '/betreiber/', 'icon': 'gesperrt'},
     ]
     # Kacheln, die die Rolle nicht öffnen darf (Logbuch, Archiv …), führten in die 403
     # (DESIGN-07). Die Rollen werden einmal gelesen, nicht je Kachel.

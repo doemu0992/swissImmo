@@ -39653,3 +39653,18 @@ msgstr "Pagamento confermato."
 
 msgid "Rechnung storniert."
 msgstr "Fattura stornata."
+
+msgid "Betreiber — immoswiss"
+msgstr "Gestore — immoswiss"
+
+msgid "Betreiber"
+msgstr "Gestore"
+
+msgid "immoswiss Betreiber-Portal · nur für den Betreiber der Installation"
+msgstr "Portale gestore immoswiss · solo per il gestore dell'installazione"
+
+msgid "Betreiber-Portal"
+msgstr "Portale gestore"
+
+msgid "Kunden, Abonnements und Verschlüsselung der Installation (Betreiber)"
+msgstr "Clienti, abbonamenti e cifratura dell'installazione (gestore)"

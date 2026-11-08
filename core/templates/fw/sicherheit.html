@@ -1,4 +1,4 @@
-{% extends 'fw/base.html' %}
+{% extends 'core/betreiber_base.html' %}
 {% load zeichen i18n %}
 {% comment %}
 SICHERHEIT — Zustand der Verschlüsselung (Betreiber). Siehe core/views/fw/sicherheit.py: nur für den Betreiber, weil
@@ -7,8 +7,6 @@ Schlüssel und Zähler die ganze Installation betreffen, nicht eine Verwaltung.
 {% block title %}{% trans "Sicherheit" %} — immoswiss{% endblock %}
 {% block content %}
 <nav class="fw-brotkrume mb-2.5">
-    <a href="/neu/einstellungen/">{% trans "Einstellungen" %}</a>
-    {% zeichen 'weiter' %}
     <b>{% trans "Sicherheit" %}</b>
 </nav>
 
