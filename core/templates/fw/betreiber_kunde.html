@@ -1,0 +1,127 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% comment %}BETREIBER — Abo-Verwaltung einer Verwaltung (Etappe 3). Siehe core/views/fw/betreiber.py (fw_betreiber_kunde): nur Zähler und Abo-Daten.{% endcomment %}
+{% block title %}{{ org.firma }} — immoswiss{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/betreiber/">{% trans "Kunden" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{{ org.firma }}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{{ org.firma }}</h1>
+        <p>{{ k.stufe }} · {{ k.abo_text }} · {{ k.einheiten }} {% trans "Einheiten" %} · {{ k.nutzer }} {% trans "Nutzer" %}</p>
+    </div>
+</div>
+
+{% if k.befunde %}
+<div class="fw-hinweis warn max-w-3xl"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht"><ul>{% for b in k.befunde %}<li>{{ b }}</li>{% endfor %}</ul></div></div>
+{% endif %}
+
+{% if not abo %}
+<div class="fw-card max-w-3xl"><div class="fw-rumpf">
+    <p>{% trans "Diese Verwaltung hat keine Abonnement-Zeile. Sie wird nicht eingeschränkt und nicht abgerechnet." %}</p>
+    <form method="post">{% csrf_token %}<input type="hidden" name="aktion" value="abo_anlegen">
+        <button type="submit" class="fw-btn fw-primary">{% trans "Abonnement anlegen" %}</button></form>
+</div></div>
+{% else %}
+
+{% if vorschau %}
+<div class="fw-hinweis warn max-w-3xl"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">
+    <p>{% trans "Dieser Wechsel hat Folgen:" %}</p>
+    <ul>
+        {% for s in vorschau.schliesst %}<li>{% blocktrans %}Gesperrt wird: {{ s }}{% endblocktrans %}</li>{% endfor %}
+        {% if vorschau.folgen.bestand_ueber %}<li>{% blocktrans with n=vorschau.folgen.bestand_ueber d=vorschau.folgen.deckel %}Der Bestand ({{ n }} Einheiten) liegt über der Grenze der Stufe ({{ d }}): Neues lässt sich dann nicht mehr anlegen.{% endblocktrans %}</li>{% endif %}
+    </ul>
+    <p>{% trans "Daten bleiben erhalten; Funktionen werden gesperrt, nie gelöscht." %}</p>
+    <form method="post">{% csrf_token %}
+        <input type="hidden" name="aktion" value="plan"><input type="hidden" name="stufe" value="{{ vorschau.stufe }}">
+        <input type="hidden" name="intervall" value="{% if vorschau.jaehrlich %}jaehrlich{% else %}monatlich{% endif %}">
+        <input type="hidden" name="bestaetigt" value="1">
+        <button type="submit" class="fw-btn fw-primary">{% trans "Trotzdem wechseln" %}</button>
+        <a href="/neu/betreiber/{{ org.pk }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+    </form>
+</div></div>
+{% endif %}
+
+<div class="fw-card max-w-3xl">
+    <div class="fw-kopf"><h2>{% trans "Stufe" %}</h2></div>
+    <form method="post" class="fw-formular p-5">{% csrf_token %}
+        <input type="hidden" name="aktion" value="plan">
+        <div class="fw-feldblock"><label for="bk-stufe" class="fw-label">{% trans "Stufe" %}</label>
+            <select id="bk-stufe" name="stufe" class="fw-feld">
+                {% for s, name in stufen %}<option value="{{ s }}" {% if name == k.stufe %}selected{% endif %}>{{ name }}</option>{% endfor %}
+            </select></div>
+        <div class="fw-feldblock"><label for="bk-intervall" class="fw-label">{% trans "Abrechnung" %}</label>
+            <select id="bk-intervall" name="intervall" class="fw-feld">
+                <option value="monatlich" {% if not jaehrlich %}selected{% endif %}>{% trans "monatlich" %}</option>
+                <option value="jaehrlich" {% if jaehrlich %}selected{% endif %}>{% trans "jährlich" %}</option>
+            </select></div>
+        <div class="fw-feldblock breit"><p class="fw-hilfe">{% trans "Beendet den Bestandsschutz. Vorher werden die Folgen gezeigt." %}</p>
+            <button type="submit" class="fw-btn fw-primary">{% trans "Stufe setzen" %}</button></div>
+    </form>
+</div>
+
+<div class="fw-card max-w-3xl">
+    <div class="fw-kopf"><h2>{% trans "Module und Abrechnung" %}</h2></div>
+    <form method="post" class="fw-formular p-5">{% csrf_token %}
+        <input type="hidden" name="aktion" value="einstellen">
+        <div class="fw-feldblock breit"><span class="fw-label">{% trans "Zugebuchte Module" %}</span>
+            {% for key, name in module %}<label class="fw-haekchen"><input type="checkbox" name="module" value="{{ key }}" {% if key in zugebucht %}checked{% endif %} class="fw-akzent"> {{ name }}</label>{% endfor %}</div>
+        <div class="fw-feldblock"><label for="bk-ab" class="fw-label">{% trans "Abrechnung ab" %}</label>
+            <input id="bk-ab" type="date" name="abrechnung_ab" value="{{ abo.abrechnung_ab|date:'Y-m-d' }}" class="fw-feld">
+            <p class="fw-hilfe">{% trans "Leer = es wird nichts in Rechnung gestellt." %}</p></div>
+        <div class="fw-feldblock"><span class="fw-label">{% trans "Bestandsschutz" %}</span>
+            <label class="fw-haekchen"><input type="checkbox" name="bestandsschutz" {% if abo.uneingeschraenkt %}checked{% endif %} class="fw-akzent"> {% trans "alles offen, keine Grenzen" %}</label></div>
+        <div class="fw-feldblock breit"><button type="submit" class="fw-btn fw-primary">{% trans "Speichern" %}</button></div>
+    </form>
+</div>
+
+<div class="fw-card max-w-3xl">
+    <div class="fw-kopf"><h2>{% trans "Nutzung" %}</h2></div>
+    <div class="fw-rumpf">
+        {% for n in nutzung %}
+        <div class="fw-dz"><div class="fw-dl">{% if n.was == 'einheiten' %}{% trans "Einheiten" %}{% else %}{% trans "Nutzer" %}{% endif %}</div>
+            <div class="fw-dv">{{ n.anzahl }}{% if n.anlegen_bis %} / {{ n.anlegen_bis }}{% endif %}{% if n.darueber %} · {% trans "über der Grenze" %}{% endif %}</div></div>
+        {% endfor %}
+        <div class="fw-dz"><div class="fw-dl">{% trans "Zahlungszustand" %}</div><div class="fw-dv">{{ abo.get_zustand_display }}{% if abo.ueberfaellig_seit %} · {% trans "überfällig seit" %} {{ abo.ueberfaellig_seit|date:"d.m.Y" }}{% endif %}</div></div>
+    </div>
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Rechnungen" %}</h2></div>
+    <div class="overflow-x-auto">
+    <table class="fw-table">
+        <thead><tr>
+            <th scope="col">{% trans "Nummer" %}</th><th scope="col">{% trans "Periode" %}</th>
+            <th scope="col" class="fw-right">{% trans "Brutto (CHF)" %}</th><th scope="col">{% trans "Fällig" %}</th>
+            <th scope="col">{% trans "Status" %}</th><th scope="col" class="fw-right">{% trans "Aktionen" %}</th>
+        </tr></thead>
+        <tbody>
+        {% for r in rechnungen %}
+        <tr>
+            <td class="fw-strong">{{ r.nummer }}</td>
+            <td>{{ r.periode_von|date:"d.m.Y" }} – {{ r.periode_bis|date:"d.m.Y" }}</td>
+            <td class="fw-right">{{ r.brutto }}</td>
+            <td>{{ r.faellig_am|date:"d.m.Y" }}</td>
+            <td>{{ r.get_status_display }}{% if r.bezahlt_am %} · {{ r.bezahlt_am|date:"d.m.Y" }}{% endif %}</td>
+            <td class="fw-right">
+                {% if r.status == 'offen' %}
+                <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="aktion" value="bezahlt"><input type="hidden" name="rechnung" value="{{ r.pk }}">
+                    <button type="submit" class="fw-btn fw-knapp">{% trans "Als bezahlt" %}</button></form>
+                <form method="post" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Rechnung stornieren?" %}{% endfilter %}">{% csrf_token %}<input type="hidden" name="aktion" value="storno"><input type="hidden" name="rechnung" value="{{ r.pk }}">
+                    <button type="submit" class="fw-btn fw-geist fw-knapp">{% trans "Stornieren" %}</button></form>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="fw-faint">{% trans "Noch keine Rechnung gestellt." %}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

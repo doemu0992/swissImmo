@@ -39,7 +39,7 @@ BETREIBER â€” Kundenliste (nur lesend). Siehe core/views/fw/betreiber.py: nur ZÃ
         <tbody>
         {% for k in kunden %}
             <tr>
-                <td class="fw-strong">{{ k.organisation.firma }}</td>
+                <td class="fw-strong"><a href="/neu/betreiber/{{ k.organisation.pk }}/" class="fw-link">{{ k.organisation.firma }}</a></td>
                 <td>{{ k.stufe }}</td>
                 <td>{{ k.abo_text }}</td>
                 <td class="fw-right">{{ k.einheiten }}</td>

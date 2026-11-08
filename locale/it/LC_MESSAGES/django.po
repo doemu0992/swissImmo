@@ -39564,3 +39564,92 @@ msgid ""
 msgstr ""
 "%(firma)s è stato creato, ma l'invito non è partito. Link per impostare la "
 "password (valido poco e una sola volta): %(link)s"
+
+msgid ""
+"Diese Verwaltung hat keine Abonnement-Zeile. Sie wird nicht eingeschränkt "
+"und nicht abgerechnet."
+msgstr ""
+"Questa amministrazione non ha un record di abbonamento. Non è né limitata né"
+" fatturata."
+
+msgid "Abonnement anlegen"
+msgstr "Crea abbonamento"
+
+msgid "Dieser Wechsel hat Folgen:"
+msgstr "Questo cambio ha conseguenze:"
+
+msgid "Gesperrt wird: %(s)s"
+msgstr "Verrà bloccato: %(s)s"
+
+msgid ""
+"Der Bestand (%(n)s Einheiten) liegt über der Grenze der Stufe (%(d)s): Neues"
+" lässt sich dann nicht mehr anlegen."
+msgstr ""
+"Il portafoglio (%(n)s unità) supera il limite del piano (%(d)s): non si "
+"potrà più creare nulla di nuovo."
+
+msgid "Daten bleiben erhalten; Funktionen werden gesperrt, nie gelöscht."
+msgstr ""
+"I dati vengono mantenuti; le funzioni vengono bloccate, mai eliminate."
+
+msgid "Trotzdem wechseln"
+msgstr "Cambia comunque"
+
+msgid "Beendet den Bestandsschutz. Vorher werden die Folgen gezeigt."
+msgstr ""
+"Termina la tutela dello stato esistente. Prima vengono mostrate le "
+"conseguenze."
+
+msgid "Stufe setzen"
+msgstr "Imposta piano"
+
+msgid "Module und Abrechnung"
+msgstr "Moduli e fatturazione"
+
+msgid "Zugebuchte Module"
+msgstr "Moduli prenotati"
+
+msgid "Leer = es wird nichts in Rechnung gestellt."
+msgstr "Vuoto = non viene fatturato nulla."
+
+msgid "Bestandsschutz"
+msgstr "Tutela dello stato esistente"
+
+msgid "alles offen, keine Grenzen"
+msgstr "tutto aperto, nessun limite"
+
+msgid "über der Grenze"
+msgstr "oltre il limite"
+
+msgid "Zahlungszustand"
+msgstr "Stato del pagamento"
+
+msgid "überfällig seit"
+msgstr "scaduto dal"
+
+msgid "Als bezahlt"
+msgstr "Segna come pagata"
+
+msgid "Rechnung stornieren?"
+msgstr "Stornare questa fattura?"
+
+msgid "Unbekannte Stufe."
+msgstr "Piano sconosciuto."
+
+msgid "Stufe gesetzt."
+msgstr "Piano impostato."
+
+msgid "Abonnement gespeichert."
+msgstr "Abbonamento salvato."
+
+msgid "Diese Rechnung gehört nicht zu dieser Verwaltung."
+msgstr "Questa fattura non appartiene a questa amministrazione."
+
+msgid "Nur offene Rechnungen lassen sich bezahlen oder stornieren."
+msgstr "Solo le fatture aperte possono essere pagate o stornate."
+
+msgid "Zahlung bestätigt."
+msgstr "Pagamento confermato."
+
+msgid "Rechnung storniert."
+msgstr "Fattura stornata."
