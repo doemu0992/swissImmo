@@ -39,20 +39,39 @@ def fw_betreiber_neu(request):
     from core.services.onboarding import OnboardingFehler, organisation_anlegen
     from core.tenancy import organisation_kontext
 
-    werte = {k: (request.POST.get(k) or '').strip() for k in ('firma', 'benutzer', 'email', 'vorname', 'nachname')}
+    from datetime import date
+
+    werte = {k: (request.POST.get(k) or '').strip()
+             for k in ('firma', 'benutzer', 'email', 'vorname', 'nachname', 'abrechnung_ab')}
     if request.method == 'POST':
         try:
+            ab = date.fromisoformat(werte['abrechnung_ab']) if werte['abrechnung_ab'] else None
+        except ValueError:
+            messages.error(request, gettext('Das Datum «Abrechnung ab» ist ungültig.'))
+            ab, fehler_datum = None, True
+        else:
+            fehler_datum = False
+        try:
+            if fehler_datum:
+                raise OnboardingFehler('')
             with transaction.atomic():
                 organisation, benutzer, neu = organisation_anlegen(
                     firma=werte['firma'], benutzername=werte['benutzer'], email=werte['email'],
                     passwort=None, vorname=werte['vorname'], nachname=werte['nachname'])
+                if ab:
+                    # Ende der Testphase: bis dahin stellt der Abrechnungslauf nichts in Rechnung.
+                    abo = organisation.abonnement
+                    abo.abrechnung_ab = ab
+                    abo.save(update_fields=['abrechnung_ab'])
         except OnboardingFehler as fehler:
-            messages.error(request, str(fehler))
+            if str(fehler):
+                messages.error(request, str(fehler))
         else:
             gesendet, link = einladung_senden(request, benutzer, organisation, neu=neu)
             with organisation_kontext(organisation):
                 log_aktion(request, 'Kunde angelegt', objekt=organisation.firma,
-                           details=f'Inhaber {benutzer.get_username()}, Einladung {"gesendet" if gesendet else "nicht gesendet"}',
+                           details=f'Inhaber {benutzer.get_username()}, Einladung {"gesendet" if gesendet else "nicht gesendet"}, '
+                                   f'Abrechnung ab {ab or "nicht gesetzt"}',
                            kategorie='sicherheit')
             if gesendet:
                 messages.success(request, gettext('%(firma)s ist angelegt. Die Einladung ging an %(mail)s.')

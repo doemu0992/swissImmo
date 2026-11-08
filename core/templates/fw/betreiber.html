@@ -39,7 +39,7 @@ BETREIBER â€” Kundenliste (nur lesend). Siehe core/views/fw/betreiber.py: nur ZÃ
             <tr>
                 <td class="fw-strong"><a href="/betreiber/{{ k.organisation.pk }}/" class="fw-link">{{ k.organisation.firma }}</a></td>
                 <td>{{ k.stufe }}</td>
-                <td>{{ k.abo_text }}</td>
+                <td>{{ k.abo_text }}{% if k.abo.abrechnung_ab %}<br><small class="fw-faint">{% trans "Abrechnung ab" %} {{ k.abo.abrechnung_ab|date:"d.m.Y" }}</small>{% endif %}</td>
                 <td class="fw-right">{{ k.einheiten }}</td>
                 <td class="fw-right">{{ k.nutzer }}</td>
                 <td>{% if k.befunde %}<ul>{% for b in k.befunde %}<li>{{ b }}</li>{% endfor %}</ul>{% else %}<span class="fw-faint">{% trans "in Ordnung" %}</span>{% endif %}</td>

@@ -1,4 +1,6 @@
 """Betreiber-Konsole, Etappe 1: die Kundenliste ist nur für den Betreiber, sieht alle Verwaltungen und nennt Befunde."""
+from datetime import date
+
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 
@@ -46,7 +48,7 @@ class BetreiberKundenlisteTests(TestCase):
         self.zweite.save()
         u = get_user_model().objects.create_user('inh', 'i@example.ch', 'x' * 12)
         Mitgliedschaft.alle_organisationen.create(benutzer=u, organisation=self.zweite, rolle=Mitgliedschaft.ROLLE_INHABER)
-        Abonnement.alle_organisationen.create(organisation=self.zweite)
+        Abonnement.alle_organisationen.create(organisation=self.zweite, abrechnung_ab=date(2026, 12, 1))
         k = {k.organisation.pk: k for k in betreiber.kunden()}[self.zweite.pk]
         self.assertEqual(k.befunde, [])
 
@@ -238,3 +240,52 @@ class BetreiberPortalTests(TestCase):
 
     def test_login_seite_ist_erreichbar(self):
         self.assertEqual(Client().get('/betreiber/login/').status_code, 200)
+
+
+class BetreiberTestphaseTests(TestCase):
+    """«Abrechnung ab» ist das Ende der Testphase: gesetzt beim Anlegen, sichtbar, und Pflichtbefund, wenn leer."""
+
+    def setUp(self):
+        _test_organisation()
+        self.c = Client()
+        self.c.force_login(get_user_model().objects.create_superuser('betreiber', 'b@example.ch', 'x' * 12))
+        self.daten = {'firma': 'Testphase AG', 'benutzer': 'tp_inhaber', 'email': 'tp@example.ch'}
+
+    def test_beim_anlegen_wird_das_ende_der_testphase_gesetzt(self):
+        self.c.post('/betreiber/neu/', {**self.daten, 'abrechnung_ab': '2026-12-15'})
+        org = Organisation.objects.get(firma='Testphase AG')
+        self.assertEqual(str(Abonnement.alle_organisationen.get(organisation=org).abrechnung_ab), '2026-12-15')
+        self.assertContains(self.c.get('/betreiber/'), '15.12.2026')
+
+    def test_ohne_datum_gibt_es_den_befund(self):
+        self.c.post('/betreiber/neu/', self.daten)
+        org = Organisation.objects.get(firma='Testphase AG')
+        k = {k.organisation.pk: k for k in betreiber.kunden()}[org.pk]
+        self.assertTrue(any('Abrechnung ab' in b for b in k.befunde))
+
+    def test_ungueltiges_datum_legt_nichts_an(self):
+        antwort = self.c.post('/betreiber/neu/', {**self.daten, 'abrechnung_ab': '31.02.xx'})
+        self.assertEqual(antwort.status_code, 200)
+        self.assertFalse(Organisation.objects.filter(firma='Testphase AG').exists())
+
+    def test_preise_freigegeben_und_mwst_8_1(self):
+        from decimal import Decimal
+
+        from django.conf import settings
+        self.assertTrue(settings.ABO_PREISE_FESTGELEGT)
+        self.assertEqual(settings.ABO_MWST_SATZ, Decimal('8.1'))
+
+    def test_keine_rechnung_vor_ende_der_testphase_dann_mit_mwst(self):
+        from datetime import date as d
+        from decimal import Decimal
+
+        from abo import dienst
+        self.c.post('/betreiber/neu/', {**self.daten, 'abrechnung_ab': '2026-12-01'})
+        org = Organisation.objects.get(firma='Testphase AG')
+        abo = Abonnement.alle_organisationen.get(organisation=org)
+        self.assertIsNone(dienst.rechnung_stellen(org, abo, heute=d(2026, 11, 20)))     # noch Testphase
+        rechnung = dienst.rechnung_stellen(org, abo, heute=d(2026, 12, 1))
+        self.assertIsNotNone(rechnung)
+        self.assertEqual(rechnung.mwst_satz, Decimal('8.1'))
+        self.assertEqual(rechnung.netto, Decimal('119'))
+        self.assertEqual(rechnung.mwst_betrag, Decimal('9.64'))
