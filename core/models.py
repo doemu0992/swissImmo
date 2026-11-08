@@ -1,6 +1,7 @@
 from core.utils import get_smart_upload_path, get_current_lik, get_current_ref_zins
 from django.conf import settings
 from django.db import models
+from core.verschluesselt import VerschluesseltesCharField
 
 from core.tenancy import AlleOrganisationenManager, TenantManager, TenantQuerySet
 from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
@@ -301,7 +302,9 @@ class ZweiterFaktor(models.Model):
     benutzer = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                                     related_name='zweiter_faktor',
                                     verbose_name="Benutzer")
-    geheimnis = models.CharField("Geheimnis (Base32)", max_length=64)
+    # Verschlüsselt abgelegt (Fernet, core/verschluesselt.py): Ein Datenbankauszug gibt sonst die Codegeneratoren aller
+    # Konten preis. Nie filtern; Alt-Bestand im Klartext wird nach dem nächsten `migrate` automatisch verschlüsselt.
+    geheimnis = VerschluesseltesCharField("Geheimnis (Base32)", klartext_max_laenge=64)
     bestaetigt_am = models.DateTimeField("Bestätigt am", null=True, blank=True)
     letztes_fenster = models.BigIntegerField("Zuletzt verbrauchtes Fenster", default=0)
     erstellt_am = models.DateTimeField("Erstellt am", auto_now_add=True)
