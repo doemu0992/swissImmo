@@ -171,7 +171,7 @@ def post_routen(a):
         except (LookupError, NoReverseMatch):
             uebersprungen.append((name, params))
             continue
-        if pfad.startswith('/admin/') or name in ('logout', 'login', 'portal_login'):
+        if pfad.startswith('/admin/') or name in ('logout', 'login', 'portal_login', 'betreiber_login'):
             continue
         gefunden.append((name, pfad))
     return gefunden, uebersprungen
