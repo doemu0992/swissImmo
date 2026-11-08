@@ -37823,3 +37823,39 @@ msgid "Bei %(n)s Verwaltung gibt es etwas zu prüfen."
 msgid_plural "Bei %(n)s Verwaltungen gibt es etwas zu prüfen."
 msgstr[0] "Bei %(n)s Verwaltung gibt es etwas zu prüfen."
 msgstr[1] "Bei %(n)s Verwaltungen gibt es etwas zu prüfen."
+
+msgid "Kunde anlegen"
+msgstr "Kunde anlegen"
+
+msgid ""
+"Legt eine Verwaltung mit ihrem ersten Inhaber an. Die Person erhält per "
+"E-Mail einen Link und legt ihr Passwort selbst fest."
+msgstr ""
+"Legt eine Verwaltung mit ihrem ersten Inhaber an. Die Person erhält per "
+"E-Mail einen Link und legt ihr Passwort selbst fest."
+
+msgid "Verwaltung und Inhaber"
+msgstr "Verwaltung und Inhaber"
+
+msgid "Firma *"
+msgstr "Firma *"
+
+msgid "E-Mail des Inhabers *"
+msgstr "E-Mail des Inhabers *"
+
+msgid ""
+"Gilt auch als E-Mail der Verwaltung für Rechnungen, bis diese eine eigene "
+"einträgt."
+msgstr ""
+"Gilt auch als E-Mail der Verwaltung für Rechnungen, bis diese eine eigene "
+"einträgt."
+
+msgid "%(firma)s ist angelegt. Die Einladung ging an %(mail)s."
+msgstr "%(firma)s ist angelegt. Die Einladung ging an %(mail)s."
+
+msgid ""
+"%(firma)s ist angelegt, aber die Einladung ging nicht hinaus. Link zum "
+"Setzen des Passworts (gilt kurz und einmal): %(link)s"
+msgstr ""
+"%(firma)s ist angelegt, aber die Einladung ging nicht hinaus. Link zum "
+"Setzen des Passworts (gilt kurz und einmal): %(link)s"

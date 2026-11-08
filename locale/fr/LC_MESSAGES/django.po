@@ -39596,3 +39596,39 @@ msgid "Bei %(n)s Verwaltung gibt es etwas zu prüfen."
 msgid_plural "Bei %(n)s Verwaltungen gibt es etwas zu prüfen."
 msgstr[0] "%(n)s gérance est à vérifier."
 msgstr[1] "%(n)s gérances sont à vérifier."
+
+msgid "Kunde anlegen"
+msgstr "Créer un client"
+
+msgid ""
+"Legt eine Verwaltung mit ihrem ersten Inhaber an. Die Person erhält per "
+"E-Mail einen Link und legt ihr Passwort selbst fest."
+msgstr ""
+"Crée une gérance avec son premier propriétaire. La personne reçoit un lien "
+"par e-mail et définit elle-même son mot de passe."
+
+msgid "Verwaltung und Inhaber"
+msgstr "Gérance et propriétaire"
+
+msgid "Firma *"
+msgstr "Entreprise *"
+
+msgid "E-Mail des Inhabers *"
+msgstr "E-mail du propriétaire *"
+
+msgid ""
+"Gilt auch als E-Mail der Verwaltung für Rechnungen, bis diese eine eigene "
+"einträgt."
+msgstr ""
+"Sert aussi d'e-mail de la gérance pour les factures, jusqu'à ce qu'elle en "
+"saisisse une."
+
+msgid "%(firma)s ist angelegt. Die Einladung ging an %(mail)s."
+msgstr "%(firma)s est créé. L'invitation a été envoyée à %(mail)s."
+
+msgid ""
+"%(firma)s ist angelegt, aber die Einladung ging nicht hinaus. Link zum "
+"Setzen des Passworts (gilt kurz und einmal): %(link)s"
+msgstr ""
+"%(firma)s est créé, mais l'invitation n'a pas pu être envoyée. Lien pour "
+"définir le mot de passe (valable peu de temps, une seule fois) : %(link)s"

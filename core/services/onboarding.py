@@ -119,7 +119,9 @@ def organisation_anlegen(firma: str, benutzername: str, email: str,
     # monatlich). Die Abonnement-Zeile legt die Funktionsfreigabe an: ohne
     # Bestandsschutz, ohne zugebuchte Module, ohne Abrechnungsbeginn — der
     # Betreiber setzt `abrechnung_ab`, wenn die Rechnungsstellung beginnt.
-    organisation = Organisation.objects.create(firma=firma)
+    # Die E-Mail des Inhabers ist zugleich die der Verwaltung, bis diese eine eigene einträgt: Ohne sie gingen
+    # Rechnungen und Zahlungserinnerungen der Plattform ins Leere.
+    organisation = Organisation.objects.create(firma=firma, email=email)
     from abo.dienst import abonnement_anlegen
     abonnement_anlegen(organisation)
 
@@ -141,6 +143,10 @@ def organisation_anlegen(firma: str, benutzername: str, email: str,
     # Aufrufers (bei einem Command: keinem) und der `TenantManager` würfe.
     from core.tenancy import organisation_kontext
     with organisation_kontext(organisation):
+        # Der Kontenplan gehört zur Anlage: Sonst entstünde er erst beim ersten Buchen, und eine Verwaltung ohne Daten
+        # sähe ihn nicht. `ensure_kontenplan` ist idempotent.
+        from finance.booking import ensure_kontenplan
+        ensure_kontenplan(organisation)
         mitgliedschaft, _ = Mitgliedschaft.objects.update_or_create(
             benutzer=benutzer, organisation=organisation,
             defaults={'rolle': Mitgliedschaft.ROLLE_INHABER})
