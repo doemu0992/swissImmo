@@ -38937,3 +38937,39 @@ msgid "Bei %(n)s Verwaltung gibt es etwas zu prüfen."
 msgid_plural "Bei %(n)s Verwaltungen gibt es etwas zu prüfen."
 msgstr[0] "%(n)s property manager needs a look."
 msgstr[1] "%(n)s property managers need a look."
+
+msgid "Kunde anlegen"
+msgstr "Add customer"
+
+msgid ""
+"Legt eine Verwaltung mit ihrem ersten Inhaber an. Die Person erhält per "
+"E-Mail einen Link und legt ihr Passwort selbst fest."
+msgstr ""
+"Creates a property manager with its first owner. The person receives a link "
+"by email and sets their own password."
+
+msgid "Verwaltung und Inhaber"
+msgstr "Property manager and owner"
+
+msgid "Firma *"
+msgstr "Company *"
+
+msgid "E-Mail des Inhabers *"
+msgstr "Owner's email *"
+
+msgid ""
+"Gilt auch als E-Mail der Verwaltung für Rechnungen, bis diese eine eigene "
+"einträgt."
+msgstr ""
+"Also used as the property manager's email for invoices until they enter "
+"their own."
+
+msgid "%(firma)s ist angelegt. Die Einladung ging an %(mail)s."
+msgstr "%(firma)s has been created. The invitation was sent to %(mail)s."
+
+msgid ""
+"%(firma)s ist angelegt, aber die Einladung ging nicht hinaus. Link zum "
+"Setzen des Passworts (gilt kurz und einmal): %(link)s"
+msgstr ""
+"%(firma)s has been created, but the invitation could not be sent. Link to "
+"set the password (short-lived, single use): %(link)s"

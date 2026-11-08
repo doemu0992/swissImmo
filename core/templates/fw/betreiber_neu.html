@@ -1,0 +1,42 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% comment %}BETREIBER — Kunde anlegen. Siehe core/views/fw/betreiber.py (fw_betreiber_neu).{% endcomment %}
+{% block title %}{% trans "Kunde anlegen" %} — immoswiss{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/betreiber/">{% trans "Kunden" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Neu" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Kunde anlegen" %}</h1>
+        <p>{% trans "Legt eine Verwaltung mit ihrem ersten Inhaber an. Die Person erhält per E-Mail einen Link und legt ihr Passwort selbst fest." %}</p>
+    </div>
+</div>
+
+<form method="post" class="max-w-2xl">
+    {% csrf_token %}
+    <div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Verwaltung und Inhaber" %}</h2></div>
+    <div class="fw-formular p-5">
+        <div class="fw-feldblock breit"><label for="bn-firma" class="fw-label">{% trans "Firma *" %}</label>
+            <input id="bn-firma" name="firma" value="{{ w.firma }}" required class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="bn-vorname" class="fw-label">{% trans "Vorname" %}</label>
+            <input id="bn-vorname" name="vorname" value="{{ w.vorname }}" class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="bn-nachname" class="fw-label">{% trans "Nachname" %}</label>
+            <input id="bn-nachname" name="nachname" value="{{ w.nachname }}" class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="bn-benutzer" class="fw-label">{% trans "Benutzername *" %}</label>
+            <input id="bn-benutzer" name="benutzer" value="{{ w.benutzer }}" required autocomplete="off" class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="bn-email" class="fw-label">{% trans "E-Mail des Inhabers *" %}</label>
+            <input id="bn-email" type="email" name="email" value="{{ w.email }}" required class="fw-feld">
+            <p class="fw-hilfe">{% trans "Gilt auch als E-Mail der Verwaltung für Rechnungen, bis diese eine eigene einträgt." %}</p></div>
+    </div>
+    </div>
+    <div class="flex gap-2">
+        <button type="submit" class="fw-btn fw-primary">{% trans "Kunde anlegen" %}</button>
+        <a href="/neu/betreiber/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+    </div>
+</form>
+{% endblock %}
