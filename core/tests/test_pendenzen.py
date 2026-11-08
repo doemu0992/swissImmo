@@ -140,7 +140,7 @@ class PendenzAktionTests(TestCase):
         # Detailseite navigiert voll (kein Iframe-Popup) — verlinkt aber den Vertrag.
         self.assertIn(f'/neu/vertraege/{v.id}/', body)
         self.assertIn('Vertrag öffnen', body)
-        self.assertNotIn("fwModalOpen(this,'Vertragsende Muster'", body)
+        self.assertNotIn('data-modal="Vertragsende Muster"', body)
 
     def test_freie_pendenz_ohne_link(self):
         """Eine Pendenz ohne Vertrag/Liegenschaft bleibt ein einfacher Eintrag."""
@@ -150,7 +150,7 @@ class PendenzAktionTests(TestCase):
         c = Client(); c.force_login(team)
         body = c.get('/neu/pendenzen/').content.decode()
         self.assertIn('Büro aufräumen', body)
-        self.assertNotIn("fwModalOpen(this,'Büro aufräumen'", body)
+        self.assertNotIn('data-modal="Büro aufräumen"', body)
 
     def test_pendenzen_nach_vertrag_gruppiert(self):
         """Auszugs-Pendenzen mehrerer Kündigungen erscheinen unter getrennten

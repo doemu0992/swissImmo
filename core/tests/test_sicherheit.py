@@ -39,7 +39,7 @@ class ModalFramingTests(TestCase):
         team = _team_user()
         c = Client(); c.force_login(team)
         body = c.get('/neu/debitoren/').content.decode()
-        self.assertIn("fwModalOpen(this,'Vertrag',true)", body)   # breit für Vorschau daneben
+        self.assertRegex(body, r'data-modal="Vertrag"\s+data-modal-breit')   # breit für Vorschau daneben
         self.assertIn('id="fwModal"', body)
 
 
