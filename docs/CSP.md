@@ -34,8 +34,13 @@ Antwort**. Fremdes Skript, auch wenn es im HTML steht, läuft nicht.
 
 ## Vor `enforce`
 
-1. Die Zahl der Inline-Handler ist 0 (`csp_handler_stand.json` leer).
+1. Die Zahl der Inline-Handler ist 0 (`csp_handler_stand.json` leer). **Erledigt (08.11.2026).**
 2. Die Berichte der letzten Wochen im Log `csp` zeigen keine Verstösse mehr.
-3. Die Browser-Tests (e2e) laufen mit `CSP_MODUS=enforce` grün.
-4. `500.html` wird von Django ohne Anfrage gerendert (kein Nonce): Sein Inline-Skript muss bis dahin in eine
-   Datei oder entfallen.
+3. Die Browser-Tests (e2e) laufen mit `CSP_MODUS=enforce` grün. **Erledigt (08.11.2026, lokal):** 269 von 273 grün;
+   die vier Ausreisser (omnisearch ⌘↵ fehlt auch ohne `enforce`; drei weitere unter Last) bestehen einzeln mit `enforce`.
+   Aufruf: `CSP_MODUS=enforce npx playwright test`.
+4. `500.html` wird von Django ohne Anfrage gerendert (kein Nonce): Sein Inline-Skript liegt jetzt in
+   `static/js/fehler-ziel.js`. **Erledigt (08.11.2026).**
+
+Offen bleibt Punkt 2 (Berichte der Produktion) und die Entscheidung des Betreibers. Umschalten: `CSP_MODUS=enforce` in
+der `.env`, Web-App neu laden; zurück mit `report-only`.
