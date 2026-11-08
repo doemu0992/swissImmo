@@ -38894,3 +38894,46 @@ msgstr ""
 
 msgid "Es ist kein Schlüssel vorhanden."
 msgstr "There is no key."
+
+msgid "Kunden"
+msgstr "Customers"
+
+msgid ""
+"Alle Verwaltungen dieser Installation mit Stufe, Nutzung und dem, was noch "
+"fehlt. Nur für den Betreiber; es werden keine Verträge, Personen oder "
+"Buchungen gezeigt."
+msgstr ""
+"All property managers on this installation with plan, usage and what is "
+"still missing. For the operator only; no contracts, people or bookings are "
+"shown."
+
+msgid "in Ordnung"
+msgstr "all good"
+
+msgid "Noch keine Verwaltung angelegt."
+msgstr "No property manager created yet."
+
+msgid "verwaltet"
+msgstr "managed"
+
+msgid ""
+"Keine Abonnement-Zeile: wird nicht abgerechnet und nicht eingeschränkt."
+msgstr "No subscription record: not billed and not restricted."
+
+msgid "Kein Inhaber: niemand kann Benutzer und Einstellungen verwalten."
+msgstr "No owner: nobody can manage users and settings."
+
+msgid ""
+"Keine E-Mail-Adresse: Rechnungen und Zahlungserinnerungen gehen ins Leere."
+msgstr "No email address: invoices and payment reminders go nowhere."
+
+msgid "Zahlung überfällig seit %(datum)s."
+msgstr "Payment overdue since %(datum)s."
+
+msgid "Alle Verwaltungen mit Stufe, Nutzung und Befund (Betreiber)"
+msgstr "All property managers with plan, usage and findings (operator)"
+
+msgid "Bei %(n)s Verwaltung gibt es etwas zu prüfen."
+msgid_plural "Bei %(n)s Verwaltungen gibt es etwas zu prüfen."
+msgstr[0] "%(n)s property manager needs a look."
+msgstr[1] "%(n)s property managers need a look."

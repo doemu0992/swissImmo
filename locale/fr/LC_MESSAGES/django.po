@@ -39548,3 +39548,51 @@ msgstr ""
 
 msgid "Es ist kein Schlüssel vorhanden."
 msgstr "Il n'y a aucune clé."
+
+msgid "Kunden"
+msgstr "Clients"
+
+msgid ""
+"Alle Verwaltungen dieser Installation mit Stufe, Nutzung und dem, was noch "
+"fehlt. Nur für den Betreiber; es werden keine Verträge, Personen oder "
+"Buchungen gezeigt."
+msgstr ""
+"Toutes les gérances de cette installation avec formule, utilisation et ce "
+"qui manque encore. Réservé à l'exploitant ; aucun contrat, personne ni "
+"écriture n'est affiché."
+
+msgid "in Ordnung"
+msgstr "en ordre"
+
+msgid "Noch keine Verwaltung angelegt."
+msgstr "Aucune gérance n'a encore été créée."
+
+msgid "verwaltet"
+msgstr "géré"
+
+msgid ""
+"Keine Abonnement-Zeile: wird nicht abgerechnet und nicht eingeschränkt."
+msgstr "Aucun enregistrement d'abonnement : ni facturé ni restreint."
+
+msgid "Kein Inhaber: niemand kann Benutzer und Einstellungen verwalten."
+msgstr ""
+"Aucun propriétaire : personne ne peut gérer les utilisateurs et les "
+"paramètres."
+
+msgid ""
+"Keine E-Mail-Adresse: Rechnungen und Zahlungserinnerungen gehen ins Leere."
+msgstr ""
+"Aucune adresse e-mail : les factures et rappels de paiement n'arrivent nulle"
+" part."
+
+msgid "Zahlung überfällig seit %(datum)s."
+msgstr "Paiement en retard depuis le %(datum)s."
+
+msgid "Alle Verwaltungen mit Stufe, Nutzung und Befund (Betreiber)"
+msgstr ""
+"Toutes les gérances avec formule, utilisation et constats (exploitant)"
+
+msgid "Bei %(n)s Verwaltung gibt es etwas zu prüfen."
+msgid_plural "Bei %(n)s Verwaltungen gibt es etwas zu prüfen."
+msgstr[0] "%(n)s gérance est à vérifier."
+msgstr[1] "%(n)s gérances sont à vérifier."

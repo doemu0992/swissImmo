@@ -37778,3 +37778,48 @@ msgstr ""
 
 msgid "Es ist kein Schlüssel vorhanden."
 msgstr "Es ist kein Schlüssel vorhanden."
+
+msgid "Kunden"
+msgstr "Kunden"
+
+msgid ""
+"Alle Verwaltungen dieser Installation mit Stufe, Nutzung und dem, was noch "
+"fehlt. Nur für den Betreiber; es werden keine Verträge, Personen oder "
+"Buchungen gezeigt."
+msgstr ""
+"Alle Verwaltungen dieser Installation mit Stufe, Nutzung und dem, was noch "
+"fehlt. Nur für den Betreiber; es werden keine Verträge, Personen oder "
+"Buchungen gezeigt."
+
+msgid "in Ordnung"
+msgstr "in Ordnung"
+
+msgid "Noch keine Verwaltung angelegt."
+msgstr "Noch keine Verwaltung angelegt."
+
+msgid "verwaltet"
+msgstr "verwaltet"
+
+msgid ""
+"Keine Abonnement-Zeile: wird nicht abgerechnet und nicht eingeschränkt."
+msgstr ""
+"Keine Abonnement-Zeile: wird nicht abgerechnet und nicht eingeschränkt."
+
+msgid "Kein Inhaber: niemand kann Benutzer und Einstellungen verwalten."
+msgstr "Kein Inhaber: niemand kann Benutzer und Einstellungen verwalten."
+
+msgid ""
+"Keine E-Mail-Adresse: Rechnungen und Zahlungserinnerungen gehen ins Leere."
+msgstr ""
+"Keine E-Mail-Adresse: Rechnungen und Zahlungserinnerungen gehen ins Leere."
+
+msgid "Zahlung überfällig seit %(datum)s."
+msgstr "Zahlung überfällig seit %(datum)s."
+
+msgid "Alle Verwaltungen mit Stufe, Nutzung und Befund (Betreiber)"
+msgstr "Alle Verwaltungen mit Stufe, Nutzung und Befund (Betreiber)"
+
+msgid "Bei %(n)s Verwaltung gibt es etwas zu prüfen."
+msgid_plural "Bei %(n)s Verwaltungen gibt es etwas zu prüfen."
+msgstr[0] "Bei %(n)s Verwaltung gibt es etwas zu prüfen."
+msgstr[1] "Bei %(n)s Verwaltungen gibt es etwas zu prüfen."
