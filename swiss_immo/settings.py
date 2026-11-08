@@ -1,6 +1,7 @@
 # swiss_immo/settings.py
 from pathlib import Path
 import os
+from decimal import Decimal
 from dotenv import load_dotenv
 
 # ==========================================
@@ -560,15 +561,13 @@ LOGGING = {
 # ==========================================
 # 10b. ABONNEMENT UND PLATTFORM-RECHNUNG
 # ==========================================
-# ALLES IN DIESEM BLOCK IST PLATZHALTER — VOM BETREIBER FESTZULEGEN.
-# Die Preise und Mengengrenzen der Stufen stehen in core/funktionen.py (eine
-# Quelle, D7); sie sind Einführungspreise ohne Kostenrechnung. Solange
-# ABO_PREISE_FESTGELEGT False ist, weist die Abo-Seite das aus und der
-# Abrechnungslauf (`manage.py abo_abrechnung`) stellt keine Rechnung aus.
-ABO_PREISE_FESTGELEGT = False
-# MWST auf Abo-Rechnungen: FACHPUNKT, nicht geraten. None = nicht festgelegt; die
-# Rechnung weist dann keine MWST aus und sagt das. Zahl in Prozent, z. B. Decimal('8.1').
-ABO_MWST_SATZ = None
+# Die Preise und Mengengrenzen der Stufen stehen in core/funktionen.py (eine Quelle, D7); Preisstand 29.09.2026, so auch
+# auf https://immoswiss.app/preise.html. Vom Betreiber am 08.11.2026 freigegeben: Damit stellt der Abrechnungslauf
+# (`manage.py abo_abrechnung`) Rechnungen aus — aber nur für Verwaltungen, deren «Abrechnung ab» gesetzt ist und erreicht
+# wurde (Betreiber-Portal). Das Datum ist zugleich das Ende der Testphase: Bis dahin wird nichts in Rechnung gestellt.
+ABO_PREISE_FESTGELEGT = True
+# MWST auf Abo-Rechnungen in Prozent (Normalsatz 8,1 % seit 1.1.2024), vom Betreiber festgelegt.
+ABO_MWST_SATZ = Decimal('8.1')
 # Zahlungsfrist der Rechnung (Tage ab Rechnungsdatum), Beginn der Mahnung und
 # des Lesemodus (Tage NACH Fälligkeit). Vorschlag aus docs/MARKT.md §7:
 # Hinweis ab Tag 1, Lesemodus ab Tag 15.
@@ -576,14 +575,16 @@ ABO_ZAHLUNGSFRIST_TAGE = 30
 ABO_MAHNUNG_NACH_TAGEN = 1
 ABO_LESEMODUS_NACH_TAGEN = 15
 # Rechnungssteller («Plattform») und Zahlungsempfänger der QR-Rechnung.
+# Die Angaben kommen aus der .env (ABO_STELLER_NAME …), damit sie ohne Codeänderung gesetzt werden können; leer = ohne
+# Name und IBAN lässt sich keine Rechnung mit Einzahlungsschein erzeugen (die Seite weist darauf hin).
 ABO_RECHNUNGSSTELLER = {
-    'name': '',      # vom Betreiber festzulegen
-    'strasse': '',
-    'plz': '',
-    'ort': '',
-    'iban': '',      # QR-IBAN (Institut 30000–31999) für die QR-Referenz, sonst IBAN
-    'uid': '',       # MWST-/UID-Nummer, falls mehrwertsteuerpflichtig
-    'email': '',     # Absender der Zahlungserinnerung
+    'name': os.getenv('ABO_STELLER_NAME', ''),
+    'strasse': os.getenv('ABO_STELLER_STRASSE', ''),
+    'plz': os.getenv('ABO_STELLER_PLZ', ''),
+    'ort': os.getenv('ABO_STELLER_ORT', ''),
+    'iban': os.getenv('ABO_STELLER_IBAN', ''),   # QR-IBAN (Institut 30000–31999) für die QR-Referenz, sonst IBAN
+    'uid': os.getenv('ABO_STELLER_UID', ''),     # MWST-/UID-Nummer (CHE-…), falls mehrwertsteuerpflichtig
+    'email': os.getenv('ABO_STELLER_EMAIL', ''), # Absender der Zahlungserinnerung
 }
 
 # ==========================================

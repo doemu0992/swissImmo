@@ -50,6 +50,8 @@ def kunden():
             k.befunde.append(_('Kein Inhaber: niemand kann Benutzer und Einstellungen verwalten.'))
         if not org.email:
             k.befunde.append(_('Keine E-Mail-Adresse: Rechnungen und Zahlungserinnerungen gehen ins Leere.'))
+        if k.abo is not None and not k.abo.uneingeschraenkt and k.abo.abrechnung_ab is None:
+            k.befunde.append(_('«Abrechnung ab» ist nicht gesetzt: Es wird nichts in Rechnung gestellt.'))
         if k.abo is not None and k.abo.zustand != Abonnement.ZUSTAND_AKTIV:
             k.befunde.append(_('Zahlung überfällig seit %(datum)s.') % {'datum': k.abo.ueberfaellig_seit or '—'})
         zeilen.append(k)

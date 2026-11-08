@@ -39668,3 +39668,19 @@ msgstr "Portale gestore"
 
 msgid "Kunden, Abonnements und Verschlüsselung der Installation (Betreiber)"
 msgstr "Clienti, abbonamenti e cifratura dell'installazione (gestore)"
+
+msgid ""
+"Ende der Testphase: bis zu diesem Tag wird nichts in Rechnung gestellt. Leer"
+" = es wird nichts in Rechnung gestellt, bis du das Datum im Kundenprofil "
+"setzt."
+msgstr ""
+"Fine del periodo di prova: fino a questo giorno non viene fatturato nulla. "
+"Vuoto = non viene fatturato nulla finché non imposti la data nel profilo del"
+" cliente."
+
+msgid "Das Datum «Abrechnung ab» ist ungültig."
+msgstr "La data «Fatturazione dal» non è valida."
+
+msgid ""
+"«Abrechnung ab» ist nicht gesetzt: Es wird nichts in Rechnung gestellt."
+msgstr "«Fatturazione dal» non è impostato: non viene fatturato nulla."

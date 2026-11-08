@@ -39737,3 +39737,19 @@ msgstr "Portail exploitant"
 
 msgid "Kunden, Abonnements und Verschlüsselung der Installation (Betreiber)"
 msgstr "Clients, abonnements et chiffrement de l'installation (exploitant)"
+
+msgid ""
+"Ende der Testphase: bis zu diesem Tag wird nichts in Rechnung gestellt. Leer"
+" = es wird nichts in Rechnung gestellt, bis du das Datum im Kundenprofil "
+"setzt."
+msgstr ""
+"Fin de la période d'essai : rien n'est facturé jusqu'à ce jour. Vide = rien "
+"n'est facturé tant que vous n'avez pas défini la date dans le profil du "
+"client."
+
+msgid "Das Datum «Abrechnung ab» ist ungültig."
+msgstr "La date « Facturation dès » est invalide."
+
+msgid ""
+"«Abrechnung ab» ist nicht gesetzt: Es wird nichts in Rechnung gestellt."
+msgstr "« Facturation dès » n'est pas défini : rien n'est facturé."

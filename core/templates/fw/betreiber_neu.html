@@ -32,6 +32,9 @@
         <div class="fw-feldblock"><label for="bn-email" class="fw-label">{% trans "E-Mail des Inhabers *" %}</label>
             <input id="bn-email" type="email" name="email" value="{{ w.email }}" required class="fw-feld">
             <p class="fw-hilfe">{% trans "Gilt auch als E-Mail der Verwaltung für Rechnungen, bis diese eine eigene einträgt." %}</p></div>
+        <div class="fw-feldblock"><label for="bn-ab" class="fw-label">{% trans "Abrechnung ab" %}</label>
+            <input id="bn-ab" type="date" name="abrechnung_ab" value="{{ w.abrechnung_ab }}" class="fw-feld">
+            <p class="fw-hilfe">{% trans "Ende der Testphase: bis zu diesem Tag wird nichts in Rechnung gestellt. Leer = es wird nichts in Rechnung gestellt, bis du das Datum im Kundenprofil setzt." %}</p></div>
     </div>
     </div>
     <div class="flex gap-2">
