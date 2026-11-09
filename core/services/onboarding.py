@@ -93,7 +93,8 @@ def _pruefe(firma: str, benutzername: str, email: str) -> None:
 @transaction.atomic
 def organisation_anlegen(firma: str, benutzername: str, email: str,
                          passwort: str | None = None,
-                         vorname: str = '', nachname: str = ''):
+                         vorname: str = '', nachname: str = '',
+                         strasse: str = '', plz: str = '', ort: str = '', telefon: str = ''):
     """Legt Organisation, Inhaber und Mitgliedschaft an. Gibt beide zurück.
 
     ALLES ODER NICHTS (`transaction.atomic`): Eine Organisation ohne Inhaber
@@ -121,7 +122,9 @@ def organisation_anlegen(firma: str, benutzername: str, email: str,
     # Betreiber setzt `abrechnung_ab`, wenn die Rechnungsstellung beginnt.
     # Die E-Mail des Inhabers ist zugleich die der Verwaltung, bis diese eine eigene einträgt: Ohne sie gingen
     # Rechnungen und Zahlungserinnerungen der Plattform ins Leere.
-    organisation = Organisation.objects.create(firma=firma, email=email)
+    organisation = Organisation.objects.create(
+        firma=firma, email=email, strasse=(strasse or '').strip(), plz=(plz or '').strip(), ort=(ort or '').strip(),
+        telefon=(telefon or '').strip())
     from abo.dienst import abonnement_anlegen
     abonnement_anlegen(organisation)
 

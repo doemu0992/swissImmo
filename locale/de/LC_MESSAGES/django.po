@@ -38249,3 +38249,24 @@ msgstr "Ungültige E-Mail-Adresse: %(wert)s"
 
 msgid "Firma, Strasse, PLZ und Ort sind Pflicht."
 msgstr "Firma, Strasse, PLZ und Ort sind Pflicht."
+
+msgid "Strasse, PLZ und Ort sind Pflicht: Sie stehen auf der Rechnung."
+msgstr "Strasse, PLZ und Ort sind Pflicht: Sie stehen auf der Rechnung."
+
+msgid "Strasse und Nr. *"
+msgstr "Strasse und Nr. *"
+
+msgid "Die Anschrift steht auf der Rechnung."
+msgstr "Die Anschrift steht auf der Rechnung."
+
+msgid "PLZ *"
+msgstr "PLZ *"
+
+msgid "Ort *"
+msgstr "Ort *"
+
+msgid "Die Anschrift der Verwaltung fehlt (Strasse, PLZ, Ort): in der Kundenkartei ergänzen."
+msgstr "Die Anschrift der Verwaltung fehlt (Strasse, PLZ, Ort): in der Kundenkartei ergänzen."
+
+msgid "Anschrift unvollständig (Strasse, PLZ, Ort): Die Rechnung hat keine Anschrift und geht nicht hinaus. In der Kundenkartei ergänzen."
+msgstr "Anschrift unvollständig (Strasse, PLZ, Ort): Die Rechnung hat keine Anschrift und geht nicht hinaus. In der Kundenkartei ergänzen."

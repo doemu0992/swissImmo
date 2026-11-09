@@ -40027,3 +40027,24 @@ msgstr "Adresse e-mail invalide : %(wert)s"
 
 msgid "Firma, Strasse, PLZ und Ort sind Pflicht."
 msgstr "Entreprise, rue, NPA et localité sont obligatoires."
+
+msgid "Strasse, PLZ und Ort sind Pflicht: Sie stehen auf der Rechnung."
+msgstr "Rue, NPA et localité sont obligatoires : ils figurent sur la facture."
+
+msgid "Strasse und Nr. *"
+msgstr "Rue et n° *"
+
+msgid "Die Anschrift steht auf der Rechnung."
+msgstr "L'adresse figure sur la facture."
+
+msgid "PLZ *"
+msgstr "NPA *"
+
+msgid "Ort *"
+msgstr "Localité *"
+
+msgid "Die Anschrift der Verwaltung fehlt (Strasse, PLZ, Ort): in der Kundenkartei ergänzen."
+msgstr "L'adresse de la gérance est manquante (rue, NPA, localité) : à compléter dans la fiche client."
+
+msgid "Anschrift unvollständig (Strasse, PLZ, Ort): Die Rechnung hat keine Anschrift und geht nicht hinaus. In der Kundenkartei ergänzen."
+msgstr "Adresse incomplète (rue, NPA, localité) : la facture n'a pas d'adresse et n'est pas envoyée. À compléter dans la fiche client."

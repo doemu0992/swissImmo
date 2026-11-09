@@ -319,6 +319,8 @@ def rechnung_senden(rechnung, erinnerung=False, heute=None, stufe=1):
     empfaenger = rechnungs_adresse(organisation)
     if not empfaenger:
         raise RechnungNichtSendbar(_('Diese Verwaltung hat keine E-Mail-Adresse hinterlegt.'))
+    if not anschrift_vollstaendig(organisation):
+        raise RechnungNichtSendbar(_('Die Anschrift der Verwaltung fehlt (Strasse, PLZ, Ort): in der Kundenkartei ergänzen.'))
     pdf = abo_rechnung_pdf(rechnung)
     if pdf is None:
         raise RechnungNichtSendbar(_('Es ist keine Zahlungsverbindung (IBAN) des Rechnungsstellers hinterlegt.'))
@@ -363,6 +365,12 @@ def rechnung_senden(rechnung, erinnerung=False, heute=None, stufe=1):
         felder.append('erinnert_am')
     rechnung.save(update_fields=felder)
     return empfaenger
+
+
+def anschrift_vollstaendig(organisation):
+    """Hat die Verwaltung Strasse, PLZ und Ort? Ohne sie hat die Rechnung keine Anschrift und keinen gültigen Zahlteil."""
+    return bool((organisation.strasse or '').strip() and (organisation.plz or '').strip()
+                and (organisation.ort or '').strip())
 
 
 def rechnungs_adresse(organisation):

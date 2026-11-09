@@ -69,7 +69,8 @@ class BetreiberKundeAnlegenTests(TestCase):
         self.betreiber = get_user_model().objects.create_superuser('betreiber', 'b@example.ch', 'x' * 12)
         self.c = Client()
         self.c.force_login(self.betreiber)
-        self.daten = {'firma': 'Neue Verwaltung AG', 'benutzer': 'neuinhaber', 'email': 'neu@example.ch',
+        self.daten = {'firma': 'Neue Verwaltung AG', 'strasse': 'Bahnhofstrasse 1', 'plz': '4500', 'ort': 'Solothurn',
+                      'benutzer': 'neuinhaber', 'email': 'neu@example.ch',
                       'vorname': 'Nora', 'nachname': 'Neu'}
 
     def test_nur_der_betreiber(self):
@@ -250,7 +251,8 @@ class BetreiberTestphaseTests(TestCase):
         _test_organisation()
         self.c = Client()
         self.c.force_login(get_user_model().objects.create_superuser('betreiber', 'b@example.ch', 'x' * 12))
-        self.daten = {'firma': 'Testphase AG', 'benutzer': 'tp_inhaber', 'email': 'tp@example.ch'}
+        self.daten = {'firma': 'Testphase AG', 'strasse': 'Weg 1', 'plz': '4500', 'ort': 'Solothurn',
+                      'benutzer': 'tp_inhaber', 'email': 'tp@example.ch'}
 
     def test_beim_anlegen_wird_das_ende_der_testphase_gesetzt(self):
         self.c.post('/betreiber/neu/', {**self.daten, 'abrechnung_ab': '2026-12-15'})
@@ -339,7 +341,8 @@ class BetreiberSofortRechnungTests(TestCase):
 
     def test_beim_anlegen_eines_kunden_mit_erreichtem_datum(self):
         from abo.models import AboRechnung
-        self.c.post('/betreiber/neu/', {'firma': 'Sofort AG', 'benutzer': 'sofort', 'email': 's@example.ch',
+        self.c.post('/betreiber/neu/', {'firma': 'Sofort AG', 'strasse': 'Weg 2', 'plz': '4500', 'ort': 'Solothurn',
+                                        'benutzer': 'sofort', 'email': 's@example.ch',
                                         'abrechnung_ab': self.heute.isoformat()})
         neu = Organisation.objects.get(firma='Sofort AG')
         self.assertTrue(AboRechnung.alle_organisationen.filter(organisation=neu).exists())
@@ -607,4 +610,60 @@ class BetreiberKundenkarteiTests(TestCase):
         self.assertFalse({'abo.Kundenstamm', 'abo.KundenKontakt'} & beschriftungen)
         betroffen = {m._meta.label for m in datenreset.betroffene_modelle()}
         self.assertFalse({'abo.Kundenstamm', 'abo.KundenKontakt'} & betroffen)
+
+
+class BetreiberAnschriftTests(TestCase):
+    """Die Rechnung braucht eine Anschrift: Sie wird beim Anlegen verlangt und beim Versand geprüft."""
+
+    STELLER = {'name': 'P AG', 'strasse': 'x', 'plz': '8000', 'ort': 'Zürich', 'iban': 'CH9300762011623852957',
+               'uid': '', 'email': 'abo@example.ch'}
+
+    def setUp(self):
+        self.betreiber = get_user_model().objects.create_superuser('betreiber', 'b@example.ch', 'x' * 12)
+        self.c = Client()
+        self.c.force_login(self.betreiber)
+        self.daten = {'firma': 'AlDo Immobilien', 'strasse': 'Hauptstrasse 5', 'plz': '4512', 'ort': 'Bellach',
+                      'telefon': '032 111 22 33', 'benutzer': 'aldo', 'email': 'aldo@example.ch'}
+
+    def test_anlegen_speichert_die_anschrift(self):
+        self.c.post('/betreiber/neu/', self.daten)
+        org = Organisation.objects.get(firma='AlDo Immobilien')
+        self.assertEqual((org.strasse, org.plz, org.ort, org.telefon), ('Hauptstrasse 5', '4512', 'Bellach', '032 111 22 33'))
+
+    def test_anlegen_ohne_anschrift_legt_nichts_an(self):
+        for fehlt in ('strasse', 'plz', 'ort'):
+            antwort = self.c.post('/betreiber/neu/', {**self.daten, fehlt: ''})
+            self.assertEqual(antwort.status_code, 200, fehlt)
+        self.assertFalse(Organisation.objects.filter(firma='AlDo Immobilien').exists())
+
+    def test_ohne_anschrift_geht_keine_rechnung_hinaus(self):
+        from datetime import date
+        from decimal import Decimal
+
+        from django.core import mail
+        from django.test import override_settings
+
+        from abo import dienst
+        from abo.models import AboRechnung
+        org = Organisation.objects.create(firma='Ohne Adresse AG', email='x@example.ch')
+        rechnung = AboRechnung.alle_organisationen.create(
+            organisation=org, nummer='AB-9', periode_von=date(2026, 11, 1), periode_bis=date(2026, 11, 30), stufe='team',
+            intervall='monatlich', einheiten=1, netto=Decimal('119'), brutto=Decimal('119'),
+            rechnungsdatum=date(2026, 11, 1), faellig_am=date(2026, 11, 11))
+        mail.outbox.clear()
+        with override_settings(ABO_RECHNUNGSSTELLER=self.STELLER):
+            with self.assertRaises(dienst.RechnungNichtSendbar) as fehler:
+                dienst.rechnung_senden(rechnung)
+        self.assertIn('Anschrift', str(fehler.exception))
+        self.assertEqual(len(mail.outbox), 0)
+        org.strasse, org.plz, org.ort = 'Weg 1', '4500', 'Solothurn'
+        org.save()
+        with override_settings(ABO_RECHNUNGSSTELLER=self.STELLER):
+            dienst.rechnung_senden(rechnung)
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_fehlende_anschrift_ist_ein_befund(self):
+        org = Organisation.objects.create(firma='Ohne Adresse AG', email='x@example.ch')
+        befunde = [b for k in betreiber.kunden() if k.organisation.pk == org.pk for b in k.befunde]
+        self.assertTrue(any('Anschrift unvollständig' in b for b in befunde), befunde)
 

@@ -51,7 +51,8 @@ def fw_betreiber_neu(request):
     from datetime import date
 
     werte = {k: (request.POST.get(k) or '').strip()
-             for k in ('firma', 'benutzer', 'email', 'vorname', 'nachname', 'abrechnung_ab')}
+             for k in ('firma', 'strasse', 'plz', 'ort', 'telefon', 'benutzer', 'email', 'vorname', 'nachname',
+                       'abrechnung_ab')}
     if request.method == 'POST':
         try:
             ab = date.fromisoformat(werte['abrechnung_ab']) if werte['abrechnung_ab'] else None
@@ -63,10 +64,14 @@ def fw_betreiber_neu(request):
         try:
             if fehler_datum:
                 raise OnboardingFehler('')
+            if not (werte['strasse'] and werte['plz'] and werte['ort']):
+                # Ohne Anschrift lässt sich keine Rechnung zustellen (Adressfenster, Einzahlungsschein).
+                raise OnboardingFehler(gettext('Strasse, PLZ und Ort sind Pflicht: Sie stehen auf der Rechnung.'))
             with transaction.atomic():
                 organisation, benutzer, neu = organisation_anlegen(
                     firma=werte['firma'], benutzername=werte['benutzer'], email=werte['email'],
-                    passwort=None, vorname=werte['vorname'], nachname=werte['nachname'])
+                    passwort=None, vorname=werte['vorname'], nachname=werte['nachname'],
+                    strasse=werte['strasse'], plz=werte['plz'], ort=werte['ort'], telefon=werte['telefon'])
                 if ab:
                     # Ende der Testphase: bis dahin stellt der Abrechnungslauf nichts in Rechnung.
                     abo = organisation.abonnement

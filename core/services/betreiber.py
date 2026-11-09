@@ -72,6 +72,9 @@ def kunden():
             k.befunde.append(_('Keine Abonnement-Zeile: wird nicht abgerechnet und nicht eingeschränkt.'))
         if k.inhaber == 0:
             k.befunde.append(_('Kein Inhaber: niemand kann Benutzer und Einstellungen verwalten.'))
+        if not dienst.anschrift_vollstaendig(org):
+            k.befunde.append(_('Anschrift unvollständig (Strasse, PLZ, Ort): Die Rechnung hat keine Anschrift und geht nicht '
+                               'hinaus. In der Kundenkartei ergänzen.'))
         if not dienst.rechnungs_adresse(org):
             k.befunde.append(_('Keine E-Mail-Adresse: Rechnungen und Zahlungserinnerungen gehen ins Leere.'))
         if k.abo is not None and not k.abo.uneingeschraenkt and k.abo.abrechnung_ab is None:
