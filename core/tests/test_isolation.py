@@ -104,6 +104,8 @@ AUSNAHMEN = {
     'portal_report':          'Eigentümer-Report, datensatzbezogen bereits isoliert',
     'fw_betreiber_kunde':     'Betreiber-Konsole: der Betreiber (Superuser) sieht bewusst jede Verwaltung; Zugang (403 für alle '
                               'Rollen) und fremde Rechnungen prüft test_betreiber_kundenliste',
+    'fw_betreiber_rechnung_pdf': 'Betreiber-Konsole: Rechnungs-PDF einer Verwaltung, nur für den Betreiber; die Rechnung muss zur '
+                              'Verwaltung gehören (test_betreiber_kundenliste)',
 }
 
 # ---------------------------------------------------------------------------

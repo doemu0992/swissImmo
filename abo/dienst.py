@@ -27,6 +27,10 @@ logger = logging.getLogger(__name__)
 RAPPEN = Decimal('0.01')
 
 
+class RechnungNichtSendbar(ValueError):
+    """Die Rechnung lässt sich nicht verschicken (keine Adresse, keine Zahlungsverbindung). Der Text ist für den Betreiber."""
+
+
 class PreiseNichtFestgelegt(RuntimeError):
     """Der Betreiber hat Preise und MWST noch nicht festgelegt (ABO_PREISE_FESTGELEGT)."""
 
@@ -297,6 +301,47 @@ def stornieren(rechnung):
     return zustand_aktualisieren(rechnung.organisation)
 
 
+def rechnung_senden(rechnung, erinnerung=False, heute=None):
+    """Schickt die Rechnung als PDF (mit QR-Einzahlungsschein) per Mail an die Verwaltung.
+
+    `erinnerung=True`: als Zahlungserinnerung zur offenen Rechnung (setzt `erinnert_am`). Das PDF hängt immer an: Wer
+    die Mail liest, soll bezahlen können, ohne sich anzumelden. Gibt die Empfängeradresse zurück; kann der Betreiber
+    nichts versenden, steht der Grund in `RechnungNichtSendbar`.
+    """
+    from django.core.mail import EmailMessage
+
+    from abo.rechnung_pdf import abo_rechnung_pdf
+
+    organisation = rechnung.organisation
+    if not organisation.email:
+        raise RechnungNichtSendbar(_('Diese Verwaltung hat keine E-Mail-Adresse hinterlegt.'))
+    pdf = abo_rechnung_pdf(rechnung)
+    if pdf is None:
+        raise RechnungNichtSendbar(_('Es ist keine Zahlungsverbindung (IBAN) des Rechnungsstellers hinterlegt.'))
+    absender = settings.ABO_RECHNUNGSSTELLER.get('email') or settings.DEFAULT_FROM_EMAIL
+    angaben = {'nummer': rechnung.nummer, 'betrag': f'{rechnung.brutto:.2f}',
+               'faellig': rechnung.faellig_am.strftime('%d.%m.%Y'),
+               'von': rechnung.periode_von.strftime('%d.%m.%Y'), 'bis': rechnung.periode_bis.strftime('%d.%m.%Y')}
+    if erinnerung:
+        betreff = _('immoswiss: Zahlungserinnerung zur Rechnung %(nummer)s') % angaben
+        text = _('Die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war '
+                 'am %(faellig)s fällig und ist noch offen. Bitte begleichen Sie sie mit dem QR-Einzahlungsschein auf '
+                 'der Rechnung im Anhang. Ist die Zahlung bereits erfolgt, ist diese Mail gegenstandslos.') % angaben
+    else:
+        betreff = _('immoswiss: Rechnung %(nummer)s') % angaben
+        text = _('Im Anhang finden Sie die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement '
+                 '(%(von)s bis %(bis)s). Sie ist bis zum %(faellig)s zu bezahlen, am einfachsten mit dem '
+                 'QR-Einzahlungsschein auf der Rechnung. Dieselbe Rechnung finden Sie unter Einstellungen > Abonnement.'
+                 ) % angaben
+    nachricht = EmailMessage(betreff, text, absender, [organisation.email])
+    nachricht.attach(f'{rechnung.nummer}.pdf', pdf, 'application/pdf')
+    nachricht.send(fail_silently=False)
+    if erinnerung:
+        rechnung.erinnert_am = heute or datum_heute()
+        rechnung.save(update_fields=['erinnert_am'])
+    return organisation.email
+
+
 def erinnerung_senden(organisation, neu_zustand):
     """Zahlungserinnerung per E-Mail an die Verwaltung. Gibt True zurück, wenn versandt."""
     if not organisation.email:
@@ -341,6 +386,15 @@ def abrechnen(organisation, heute=None, trotz_platzhalter=False, mail=True):
         rechnung = None
         bericht['preise_offen'] = True
     bericht['rechnung'] = rechnung.nummer if rechnung else None
+    if rechnung is not None and mail:
+        # Die neue Rechnung geht mit dem PDF hinaus. Scheitert der Versand (keine Adresse, keine IBAN), bleibt die
+        # Rechnung bestehen und der Betreiber kann sie im Portal erneut senden.
+        try:
+            rechnung_senden(rechnung, heute=heute)
+            bericht['versandt'] = True
+        except (RechnungNichtSendbar, OSError) as fehler:
+            logger.warning('%s: Rechnung %s nicht versandt: %s', organisation, rechnung.nummer, fehler)
+            bericht['versandt'] = False
     alt, neu = zustand_aktualisieren(organisation, heute)
     bericht['zustand'] = neu
     if mail and neu != alt and neu != f.ZUSTAND_AKTIV:

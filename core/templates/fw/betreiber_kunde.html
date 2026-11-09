@@ -106,9 +106,16 @@
             <td>{{ r.periode_von|date:"d.m.Y" }} – {{ r.periode_bis|date:"d.m.Y" }}</td>
             <td class="fw-right">{{ r.brutto }}</td>
             <td>{{ r.faellig_am|date:"d.m.Y" }}</td>
-            <td>{{ r.get_status_display }}{% if r.bezahlt_am %} · {{ r.bezahlt_am|date:"d.m.Y" }}{% endif %}</td>
+            <td>{{ r.get_status_display }}{% if r.bezahlt_am %} · {{ r.bezahlt_am|date:"d.m.Y" }}{% endif %}{% if r.erinnert_am %}<br><span class="fw-faint">{% trans "erinnert am" %} {{ r.erinnert_am|date:"d.m.Y" }}</span>{% endif %}</td>
             <td class="fw-right">
+                <a class="fw-btn fw-geist fw-knapp" href="{% url 'fw_betreiber_rechnung_pdf' org.pk r.pk %}" target="_blank" rel="noopener">{% trans "PDF" %}</a>
                 {% if r.status == 'offen' %}
+                <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="aktion" value="senden"><input type="hidden" name="rechnung" value="{{ r.pk }}">
+                    <button type="submit" class="fw-btn fw-geist fw-knapp">{% trans "Erneut senden" %}</button></form>
+                {% if r.faellig_am < heute %}
+                <form method="post" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Zahlungserinnerung an die Verwaltung senden?" %}{% endfilter %}">{% csrf_token %}<input type="hidden" name="aktion" value="erinnern"><input type="hidden" name="rechnung" value="{{ r.pk }}">
+                    <button type="submit" class="fw-btn fw-geist fw-knapp">{% trans "Erinnerung senden" %}</button></form>
+                {% endif %}
                 <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="aktion" value="bezahlt"><input type="hidden" name="rechnung" value="{{ r.pk }}">
                     <button type="submit" class="fw-btn fw-knapp">{% trans "Als bezahlt" %}</button></form>
                 <form method="post" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Rechnung stornieren?" %}{% endfilter %}">{% csrf_token %}<input type="hidden" name="aktion" value="storno"><input type="hidden" name="rechnung" value="{{ r.pk }}">

@@ -2,6 +2,7 @@
 from datetime import date
 
 from django.contrib.auth import get_user_model
+from django.core import mail
 from django.test import Client, TestCase
 
 from abo.models import Abonnement
@@ -342,3 +343,117 @@ class BetreiberSofortRechnungTests(TestCase):
                                         'abrechnung_ab': self.heute.isoformat()})
         neu = Organisation.objects.get(firma='Sofort AG')
         self.assertTrue(AboRechnung.alle_organisationen.filter(organisation=neu).exists())
+
+
+class BetreiberRechnungVersandTests(TestCase):
+    """PDF der Abo-Rechnung, erneut senden und Zahlungserinnerung im Betreiber-Portal."""
+
+    STELLER = {'name': 'Plattform AG', 'strasse': 'Bahnhofstrasse 1', 'plz': '8001', 'ort': 'Zürich',
+               'iban': 'CH9300762011623852957', 'uid': '', 'email': 'abo@example.ch'}
+
+    def setUp(self):
+        from datetime import date
+        from decimal import Decimal
+
+        from abo.models import AboRechnung
+        self.org = _test_organisation()
+        type(self.org).objects.filter(pk=self.org.pk).update(email='verwaltung@example.ch')
+        self.org.refresh_from_db()
+        Abonnement.alle_organisationen.get_or_create(organisation=self.org)
+        self.rechnung = AboRechnung.alle_organisationen.create(
+            organisation=self.org, nummer='AB-2026-000001', periode_von=date(2026, 10, 1), periode_bis=date(2026, 10, 31),
+            stufe='team', intervall='monatlich', einheiten=10, netto=Decimal('119'), brutto=Decimal('119'),
+            rechnungsdatum=date(2026, 10, 1), faellig_am=date(2026, 10, 1))
+        self.betreiber = get_user_model().objects.create_superuser('betreiber', 'b@example.ch', 'x' * 12)
+        self.c = Client()
+        self.c.force_login(self.betreiber)
+        self.url = f'/betreiber/{self.org.pk}/'
+        self.pdf = f'/betreiber/{self.org.pk}/rechnung/{self.rechnung.pk}/pdf/'
+        mail.outbox.clear()
+
+    def test_pdf_nur_fuer_den_betreiber(self):
+        from django.test import override_settings
+        team = Client()
+        team.force_login(_team_user())
+        with override_settings(ABO_RECHNUNGSSTELLER=self.STELLER):
+            self.assertEqual(team.get(self.pdf).status_code, 403)
+            antwort = self.c.get(self.pdf)
+        self.assertEqual(antwort.status_code, 200)
+        self.assertEqual(antwort['Content-Type'], 'application/pdf')
+        self.assertTrue(antwort.content.startswith(b'%PDF'))
+
+    def test_pdf_ohne_iban_leitet_mit_hinweis_zurueck(self):
+        from django.test import override_settings
+        with override_settings(ABO_RECHNUNGSSTELLER={**self.STELLER, 'iban': ''}):
+            antwort = self.c.get(self.pdf)
+        self.assertRedirects(antwort, self.url, fetch_redirect_response=False)
+
+    def test_pdf_einer_fremden_rechnung_ist_404(self):
+        from datetime import date
+        from decimal import Decimal
+
+        from abo.models import AboRechnung
+        from crm.models import Organisation
+        andere = Organisation.objects.create(firma='Andere AG')
+        fremd = AboRechnung.alle_organisationen.create(
+            organisation=andere, nummer='AB-2026-000099', periode_von=date(2026, 10, 1), periode_bis=date(2026, 10, 31),
+            stufe='team', intervall='monatlich', einheiten=1, netto=Decimal('1'), brutto=Decimal('1'),
+            rechnungsdatum=date(2026, 10, 1), faellig_am=date(2026, 10, 1))
+        self.assertEqual(self.c.get(f'/betreiber/{self.org.pk}/rechnung/{fremd.pk}/pdf/').status_code, 404)
+
+    def test_erneut_senden_schickt_das_pdf(self):
+        from django.test import override_settings
+        with override_settings(ABO_RECHNUNGSSTELLER=self.STELLER):
+            self.c.post(self.url, {'aktion': 'senden', 'rechnung': self.rechnung.pk})
+        self.assertEqual(len(mail.outbox), 1)
+        nachricht = mail.outbox[0]
+        self.assertEqual(nachricht.to, ['verwaltung@example.ch'])
+        self.assertIn('AB-2026-000001', nachricht.subject)
+        self.assertEqual(nachricht.attachments[0][0], 'AB-2026-000001.pdf')
+        self.assertTrue(nachricht.attachments[0][1].startswith(b'%PDF'))
+        self.rechnung.refresh_from_db()
+        self.assertIsNone(self.rechnung.erinnert_am, 'Erneut senden ist keine Mahnung')
+
+    def test_erinnerung_setzt_das_datum(self):
+        from django.test import override_settings
+        with override_settings(ABO_RECHNUNGSSTELLER=self.STELLER):
+            self.c.post(self.url, {'aktion': 'erinnern', 'rechnung': self.rechnung.pk})
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('Zahlungserinnerung', mail.outbox[0].subject)
+        self.rechnung.refresh_from_db()
+        self.assertIsNotNone(self.rechnung.erinnert_am)
+
+    def test_ohne_adresse_oder_iban_geht_nichts_hinaus(self):
+        from django.test import override_settings
+        with override_settings(ABO_RECHNUNGSSTELLER={**self.STELLER, 'iban': ''}):
+            self.c.post(self.url, {'aktion': 'senden', 'rechnung': self.rechnung.pk})
+        type(self.org).objects.filter(pk=self.org.pk).update(email='')
+        with override_settings(ABO_RECHNUNGSSTELLER=self.STELLER):
+            self.c.post(self.url, {'aktion': 'senden', 'rechnung': self.rechnung.pk})
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_bezahlte_rechnung_wird_nicht_mehr_gesendet(self):
+        from django.test import override_settings
+        from abo import dienst
+        dienst.als_bezahlt(self.rechnung)
+        with override_settings(ABO_RECHNUNGSSTELLER=self.STELLER):
+            self.c.post(self.url, {'aktion': 'senden', 'rechnung': self.rechnung.pk})
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_neue_rechnung_im_lauf_geht_mit_pdf_hinaus(self):
+        """Der tägliche Lauf schickt die frisch gestellte Rechnung selbst — kein Warten auf einen Klick."""
+        from datetime import date
+
+        from django.test import override_settings
+        from abo import dienst
+        abo = Abonnement.alle_organisationen.get(organisation=self.org)
+        abo.uneingeschraenkt, abo.abrechnung_ab, abo.abgerechnet_bis = False, date(2026, 12, 1), self.rechnung.periode_bis
+        abo.save()
+        with override_settings(ABO_RECHNUNGSSTELLER=self.STELLER, ABO_PREISE_FESTGELEGT=True):
+            bericht = dienst.abrechnen(type(self.org).objects.get(pk=self.org.pk), heute=date(2026, 11, 25))
+        self.assertTrue(bericht.get('versandt'), bericht)
+        # Daneben geht die Mitteilung zum Zahlungszustand hinaus (die Oktoberrechnung ist überfällig): nur eine Mail trägt das PDF.
+        mit_pdf = [m for m in mail.outbox if m.attachments]
+        self.assertEqual(len(mit_pdf), 1)
+        self.assertEqual(mit_pdf[0].attachments[0][0], f'{bericht["rechnung"]}.pdf')
+

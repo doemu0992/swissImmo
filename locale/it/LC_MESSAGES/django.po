@@ -39779,3 +39779,42 @@ msgstr ""
 "Pagabile in anticipo: scadenza all'inizio del periodo, oppure entro %(tage)s"
 " giorni per le fatture emesse più tardi, con la polizza di versamento. Il "
 "pagamento viene confermato manualmente dal gestore."
+
+msgid "Diese Verwaltung hat keine E-Mail-Adresse hinterlegt."
+msgstr "Questa amministrazione non ha un indirizzo e-mail registrato."
+
+msgid "Es ist keine Zahlungsverbindung (IBAN) des Rechnungsstellers hinterlegt."
+msgstr "Non sono registrati i dati di pagamento (IBAN) dell'emittente della fattura."
+
+msgid "immoswiss: Zahlungserinnerung zur Rechnung %(nummer)s"
+msgstr "immoswiss: sollecito di pagamento per la fattura %(nummer)s"
+
+msgid "Die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist noch offen. Bitte begleichen Sie sie mit dem QR-Einzahlungsschein auf der Rechnung im Anhang. Ist die Zahlung bereits erfolgt, ist diese Mail gegenstandslos."
+msgstr "La fattura %(nummer)s di CHF %(betrag)s per il vostro abbonamento immoswiss (dal %(von)s al %(bis)s) era in scadenza il %(faellig)s ed è ancora aperta. Vi preghiamo di saldarla con la polizza di versamento QR della fattura allegata. Se il pagamento è già avvenuto, questo messaggio è privo di oggetto."
+
+msgid "immoswiss: Rechnung %(nummer)s"
+msgstr "immoswiss: fattura %(nummer)s"
+
+msgid "Im Anhang finden Sie die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s). Sie ist bis zum %(faellig)s zu bezahlen, am einfachsten mit dem QR-Einzahlungsschein auf der Rechnung. Dieselbe Rechnung finden Sie unter Einstellungen > Abonnement."
+msgstr "In allegato trovate la fattura %(nummer)s di CHF %(betrag)s per il vostro abbonamento immoswiss (dal %(von)s al %(bis)s). È da pagare entro il %(faellig)s, nel modo più semplice con la polizza di versamento QR della fattura. La stessa fattura è disponibile anche in Impostazioni > Abbonamento."
+
+msgid "Rechnung %(nr)s nicht versandt: %(grund)s"
+msgstr "Fattura %(nr)s non inviata: %(grund)s"
+
+msgid "Zahlungserinnerung zu %(nr)s ging an %(an)s."
+msgstr "Il sollecito di pagamento per %(nr)s è stato inviato a %(an)s."
+
+msgid "Rechnung %(nr)s ging an %(an)s."
+msgstr "La fattura %(nr)s è stata inviata a %(an)s."
+
+msgid "Nur offene Rechnungen lassen sich senden oder anmahnen."
+msgstr "Solo le fatture aperte possono essere inviate o sollecitate."
+
+msgid "erinnert am"
+msgstr "sollecitata il"
+
+msgid "Erneut senden"
+msgstr "Invia di nuovo"
+
+msgid "Zahlungserinnerung an die Verwaltung senden?"
+msgstr "Inviare un sollecito di pagamento all'amministrazione?"
