@@ -106,7 +106,8 @@
             <td>{{ r.periode_von|date:"d.m.Y" }} – {{ r.periode_bis|date:"d.m.Y" }}</td>
             <td class="fw-right">{{ r.brutto }}</td>
             <td>{{ r.faellig_am|date:"d.m.Y" }}</td>
-            <td>{{ r.get_status_display }}{% if r.bezahlt_am %} · {{ r.bezahlt_am|date:"d.m.Y" }}{% endif %}{% if r.erinnert_am %}<br><span class="fw-faint">{% trans "erinnert am" %} {{ r.erinnert_am|date:"d.m.Y" }}</span>{% endif %}</td>
+            <td>{{ r.get_status_display }}{% if r.bezahlt_am %} · {{ r.bezahlt_am|date:"d.m.Y" }}{% endif %}{% if r.mahnstufe %}<br><span class="fw-faint">{% blocktrans with n=r.mahnstufe %}{{ n }}. Mahnung{% endblocktrans %}{% if r.mahngebuehr %} · {% trans "Gebühr" %} CHF {{ r.mahngebuehr }}{% endif %}</span>{% endif %}
+                <br><span class="fw-faint">{% if r.versendet_am %}{% trans "versandt am" %} {{ r.versendet_am|date:"d.m.Y" }}{% else %}{% trans "nicht versandt" %}{% endif %}</span></td>
             <td class="fw-right">
                 <a class="fw-btn fw-geist fw-knapp" href="{% url 'fw_betreiber_rechnung_pdf' org.pk r.pk %}" target="_blank" rel="noopener">{% trans "PDF" %}</a>
                 {% if r.status == 'offen' %}

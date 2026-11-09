@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from django.utils.translation import gettext as _
 
 from abo import dienst
-from abo.models import Abonnement
+from abo.models import AboRechnung, Abonnement
 from core import funktionen as f
 from crm.models import Mitgliedschaft, Organisation
 
@@ -38,6 +38,10 @@ def kunden():
     for org_id in (Mitgliedschaft.alle_organisationen.filter(rolle=Mitgliedschaft.ROLLE_INHABER)
                    .values_list('organisation_id', flat=True)):
         inhaber[org_id] = inhaber.get(org_id, 0) + 1
+    unversandt = {}
+    for org_id in (AboRechnung.alle_organisationen.filter(status=AboRechnung.STATUS_OFFEN, versendet_am__isnull=True)
+                   .values_list('organisation_id', flat=True)):
+        unversandt[org_id] = unversandt.get(org_id, 0) + 1
     zeilen = []
     for org in Organisation.objects.all().order_by('firma', 'pk'):
         k = Kunde(organisation=org, abo=abos.get(org.pk), inhaber=inhaber.get(org.pk, 0))
@@ -54,5 +58,8 @@ def kunden():
             k.befunde.append(_('«Abrechnung ab» ist nicht gesetzt: Es wird nichts in Rechnung gestellt.'))
         if k.abo is not None and k.abo.zustand != Abonnement.ZUSTAND_AKTIV:
             k.befunde.append(_('Zahlung überfällig seit %(datum)s.') % {'datum': k.abo.ueberfaellig_seit or '—'})
+        if unversandt.get(org.pk):
+            k.befunde.append(_('%(n)s offene Rechnung(en) wurden noch nicht per Mail versandt: im Kunden «Erneut senden».')
+                             % {'n': unversandt[org.pk]})
         zeilen.append(k)
     return zeilen

@@ -1254,6 +1254,7 @@ def fw_abonnemente(request):
         'mwst_offen': dj_settings.ABO_MWST_SATZ is None and dj_settings.ABO_MWST_PFLICHTIG,
         'mwst_pflichtig': bool(dj_settings.ABO_MWST_PFLICHTIG),
         'lesemodus_tage': dj_settings.ABO_LESEMODUS_NACH_TAGEN,
+        'sperre_tage': dj_settings.ABO_SPERRE_NACH_TAGEN,
         'zahlungsfrist_tage': dj_settings.ABO_ZAHLUNGSFRIST_TAGE,
     })
 

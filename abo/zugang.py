@@ -23,6 +23,7 @@ Seite (Portale, Import).
 """
 from functools import wraps
 
+from django.conf import settings
 from django.shortcuts import render
 
 from core.funktionen import FUNKTIONEN, MODULE, hat_funktion
@@ -49,6 +50,11 @@ LESEMODUS_OFFEN = (
     '/login/', '/logout/', '/i18n/', '/konto/', '/neu/account/',
     '/neu/abonnement/', '/neu/einstellungen/daten/export/',
 )
+
+
+#: Pfade, die im gesperrten Zugang erreichbar bleiben: Anmeldung und Sprache, das Konto, das Abonnement (Rechnung, PDF,
+#: Einzahlungsschein) und der Export. Alles andere zeigt die Sperrseite.
+GESPERRT_OFFEN = LESEMODUS_OFFEN
 
 
 def modul_fuer_pfad(pfad):
@@ -95,6 +101,17 @@ def sperre_modul(request, schluessel):
 def sperre_lesemodus(request):
     return render(request, 'abo/sperre.html', {
         'art': 'lesemodus', 'darf_upgraden': _darf_upgraden(request),
+    }, status=402)
+
+
+def gesperrt_offen(pfad):
+    return any(pfad.startswith(p) for p in GESPERRT_OFFEN)
+
+
+def sperre_gesperrt(request):
+    return render(request, 'abo/sperre.html', {
+        'art': 'gesperrt', 'darf_upgraden': _darf_upgraden(request),
+        'tage': settings.ABO_SPERRE_NACH_TAGEN,
     }, status=402)
 
 

@@ -39223,3 +39223,42 @@ msgstr "Send again"
 
 msgid "Zahlungserinnerung an die Verwaltung senden?"
 msgstr "Send a payment reminder to the property management?"
+
+msgid "immoswiss: 2. Mahnung zur Rechnung %(nummer)s"
+msgstr "immoswiss: 2nd reminder for invoice %(nummer)s"
+
+msgid "Die Rechnung %(nummer)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist trotz unserer Zahlungserinnerung noch offen. Wir bitten Sie, den Gesamtbetrag von CHF %(betrag)s (inklusive Mahngebühr CHF %(gebuehr)s) umgehend mit dem QR-Einzahlungsschein auf der Rechnung im Anhang zu bezahlen. Bleibt die Zahlung weiter aus, wird Ihr Zugang schreibgeschützt und später gesperrt; Ihre Daten bleiben in jedem Fall erhalten."
+msgstr "Invoice %(nummer)s for your immoswiss subscription (%(von)s to %(bis)s) was due on %(faellig)s and is still open despite our payment reminder. Please pay the total amount of CHF %(betrag)s (including a reminder fee of CHF %(gebuehr)s) immediately using the QR payment slip on the attached invoice. If payment remains outstanding, your access will become read-only and later be blocked; your data will be kept in any case."
+
+msgid "Die Rechnung %(nummer)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist trotz unserer Zahlungserinnerung noch offen. Wir bitten Sie, den Betrag von CHF %(betrag)s umgehend mit dem QR-Einzahlungsschein auf der Rechnung im Anhang zu bezahlen. Bleibt die Zahlung weiter aus, wird Ihr Zugang schreibgeschützt und später gesperrt; Ihre Daten bleiben in jedem Fall erhalten."
+msgstr "Invoice %(nummer)s for your immoswiss subscription (%(von)s to %(bis)s) was due on %(faellig)s and is still open despite our payment reminder. Please pay the amount of CHF %(betrag)s immediately using the QR payment slip on the attached invoice. If payment remains outstanding, your access will become read-only and later be blocked; your data will be kept in any case."
+
+msgid "immoswiss: Ihr Zugang ist gesperrt"
+msgstr "immoswiss: Your access is blocked"
+
+msgid "Die Rechnung für Ihr Abonnement ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist deshalb gesperrt. Anmeldung, Abonnement (Rechnung und Einzahlungsschein) und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+msgstr "The invoice for your subscription has been overdue for more than %(tage)s days. Your access is therefore blocked. Login, subscription (invoice and payment slip) and the data export remain available. Once payment is received, everything is open again. Nothing is deleted."
+
+msgid "Der Zugang ist gesperrt"
+msgstr "Access is blocked"
+
+msgid "Eine Rechnung für das Abonnement ist seit mehr als %(tage)s Tagen überfällig. Anmeldung, Abonnement (mit Rechnung und Einzahlungsschein) und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+msgstr "An invoice for the subscription has been overdue for more than %(tage)s days. Login, subscription (with invoice and payment slip) and the data export remain available. Once payment is received, everything is open again. Nothing is deleted."
+
+msgid "Der Zugang dieser Verwaltung ist zurzeit gesperrt. Bitte wenden Sie sich an die Verwaltung."
+msgstr "Access for this property management is currently blocked. Please contact the property management."
+
+msgid "Eine Rechnung ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist gesperrt; Anmeldung, diese Seite mit Rechnung und Einzahlungsschein und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+msgstr "An invoice has been overdue for more than %(tage)s days. Your access is blocked; login, this page with invoice and payment slip, and the data export remain available. Once payment is received, everything is open again. Nothing is deleted."
+
+msgid "%(n)s. Mahnung"
+msgstr "reminder %(n)s"
+
+msgid "versandt am"
+msgstr "sent on"
+
+msgid "nicht versandt"
+msgstr "not sent"
+
+msgid "%(n)s offene Rechnung(en) wurden noch nicht per Mail versandt: im Kunden «Erneut senden»."
+msgstr "%(n)s open invoice(s) have not yet been sent by email: use «Send again» on the customer."

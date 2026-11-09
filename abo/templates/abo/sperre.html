@@ -22,6 +22,13 @@
             {% else %}
             <p class="text-sm fw-mutet leading-relaxed">{% trans "Diese Funktion ist für diese Verwaltung zurzeit nicht freigeschaltet." %}</p>
             {% endif %}
+        {% elif art == 'gesperrt' %}
+            <h1 class="text-2xl font-semibold tracking-tight mb-3">{% trans "Der Zugang ist gesperrt" %}</h1>
+            {% if darf_upgraden %}
+            <p class="text-sm fw-mutet leading-relaxed">{% blocktrans %}Eine Rechnung für das Abonnement ist seit mehr als {{ tage }} Tagen überfällig. Anmeldung, Abonnement (mit Rechnung und Einzahlungsschein) und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht.{% endblocktrans %}</p>
+            {% else %}
+            <p class="text-sm fw-mutet leading-relaxed">{% trans "Der Zugang dieser Verwaltung ist zurzeit gesperrt. Bitte wenden Sie sich an die Verwaltung." %}</p>
+            {% endif %}
         {% elif art == 'lesemodus' %}
             <h1 class="text-2xl font-semibold tracking-tight mb-3">{% trans "Der Zugang ist schreibgeschützt" %}</h1>
             {% if darf_upgraden %}

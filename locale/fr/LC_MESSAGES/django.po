@@ -39889,3 +39889,42 @@ msgstr "Renvoyer"
 
 msgid "Zahlungserinnerung an die Verwaltung senden?"
 msgstr "Envoyer un rappel de paiement à la gérance ?"
+
+msgid "immoswiss: 2. Mahnung zur Rechnung %(nummer)s"
+msgstr "immoswiss : 2e rappel pour la facture %(nummer)s"
+
+msgid "Die Rechnung %(nummer)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist trotz unserer Zahlungserinnerung noch offen. Wir bitten Sie, den Gesamtbetrag von CHF %(betrag)s (inklusive Mahngebühr CHF %(gebuehr)s) umgehend mit dem QR-Einzahlungsschein auf der Rechnung im Anhang zu bezahlen. Bleibt die Zahlung weiter aus, wird Ihr Zugang schreibgeschützt und später gesperrt; Ihre Daten bleiben in jedem Fall erhalten."
+msgstr "La facture %(nummer)s pour votre abonnement immoswiss (du %(von)s au %(bis)s) était échue le %(faellig)s et reste ouverte malgré notre rappel de paiement. Nous vous prions de régler sans délai le montant total de CHF %(betrag)s (frais de rappel de CHF %(gebuehr)s inclus) avec le bulletin de versement QR de la facture en pièce jointe. Si le paiement reste en suspens, votre accès passera en lecture seule puis sera bloqué ; vos données sont conservées dans tous les cas."
+
+msgid "Die Rechnung %(nummer)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist trotz unserer Zahlungserinnerung noch offen. Wir bitten Sie, den Betrag von CHF %(betrag)s umgehend mit dem QR-Einzahlungsschein auf der Rechnung im Anhang zu bezahlen. Bleibt die Zahlung weiter aus, wird Ihr Zugang schreibgeschützt und später gesperrt; Ihre Daten bleiben in jedem Fall erhalten."
+msgstr "La facture %(nummer)s pour votre abonnement immoswiss (du %(von)s au %(bis)s) était échue le %(faellig)s et reste ouverte malgré notre rappel de paiement. Nous vous prions de régler sans délai le montant de CHF %(betrag)s avec le bulletin de versement QR de la facture en pièce jointe. Si le paiement reste en suspens, votre accès passera en lecture seule puis sera bloqué ; vos données sont conservées dans tous les cas."
+
+msgid "immoswiss: Ihr Zugang ist gesperrt"
+msgstr "immoswiss : votre accès est bloqué"
+
+msgid "Die Rechnung für Ihr Abonnement ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist deshalb gesperrt. Anmeldung, Abonnement (Rechnung und Einzahlungsschein) und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+msgstr "La facture de votre abonnement est en souffrance depuis plus de %(tage)s jours. Votre accès est donc bloqué. La connexion, l'abonnement (facture et bulletin de versement) et l'export des données restent accessibles. Dès réception du paiement, tout est de nouveau ouvert. Rien n'est supprimé."
+
+msgid "Der Zugang ist gesperrt"
+msgstr "L'accès est bloqué"
+
+msgid "Eine Rechnung für das Abonnement ist seit mehr als %(tage)s Tagen überfällig. Anmeldung, Abonnement (mit Rechnung und Einzahlungsschein) und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+msgstr "Une facture de l'abonnement est en souffrance depuis plus de %(tage)s jours. La connexion, l'abonnement (avec facture et bulletin de versement) et l'export des données restent accessibles. Dès réception du paiement, tout est de nouveau ouvert. Rien n'est supprimé."
+
+msgid "Der Zugang dieser Verwaltung ist zurzeit gesperrt. Bitte wenden Sie sich an die Verwaltung."
+msgstr "L'accès de cette gérance est actuellement bloqué. Veuillez vous adresser à la gérance."
+
+msgid "Eine Rechnung ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist gesperrt; Anmeldung, diese Seite mit Rechnung und Einzahlungsschein und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+msgstr "Une facture est en souffrance depuis plus de %(tage)s jours. Votre accès est bloqué ; la connexion, cette page avec facture et bulletin de versement ainsi que l'export des données restent accessibles. Dès réception du paiement, tout est de nouveau ouvert. Rien n'est supprimé."
+
+msgid "%(n)s. Mahnung"
+msgstr "rappel %(n)s"
+
+msgid "versandt am"
+msgstr "envoyée le"
+
+msgid "nicht versandt"
+msgstr "non envoyée"
+
+msgid "%(n)s offene Rechnung(en) wurden noch nicht per Mail versandt: im Kunden «Erneut senden»."
+msgstr "%(n)s facture(s) ouverte(s) n'ont pas encore été envoyées par e-mail : utilisez «Renvoyer» chez le client."

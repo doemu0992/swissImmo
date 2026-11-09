@@ -80,13 +80,17 @@ def abo_rechnung_pdf(rechnung):
     if rechnung.platzhalter:
         c.setFont('Helvetica-Oblique', 9)
         c.drawString(20 * mm, zeile - 6 * mm, 'Platzhalterpreise: vom Betreiber noch nicht festgelegt.')
+    if rechnung.mahngebuehr:
+        c.drawString(20 * mm, zeile - 9 * mm, 'Mahngebühr (2. Mahnung)')
+        c.drawRightString(190 * mm, zeile - 9 * mm, _chf(rechnung.mahngebuehr))
+    total = rechnung.brutto + rechnung.mahngebuehr
     c.setLineWidth(0.5)
     c.line(20 * mm, zeile - 12 * mm, 190 * mm, zeile - 12 * mm)
     c.setFont('Helvetica-Bold', 12)
     c.drawString(20 * mm, zeile - 19 * mm, 'Zu bezahlen')
-    c.drawRightString(190 * mm, zeile - 19 * mm, _chf(rechnung.brutto))
+    c.drawRightString(190 * mm, zeile - 19 * mm, _chf(total))
 
-    draw_qr_bill(c, iban, creditor, debtor, float(rechnung.brutto),
+    draw_qr_bill(c, iban, creditor, debtor, float(total),
                  f'Abonnement {rechnung.nummer}', reference=rechnung.qr_referenz)
     c.showPage()
     c.save()

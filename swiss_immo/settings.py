@@ -580,6 +580,15 @@ ABO_VORLAUF_TAGE = 10
 ABO_ZAHLUNGSFRIST_TAGE = 10
 ABO_MAHNUNG_NACH_TAGEN = 1
 ABO_LESEMODUS_NACH_TAGEN = 15
+# Eskalation bei ausbleibender Zahlung, gemessen ab dem Fälligkeitstag der ältesten offenen Rechnung: 1. Mahnung nach
+# ABO_MAHNUNG_NACH_TAGEN, 2. Mahnung (mit Mahngebühr) nach ABO_MAHNUNG2_NACH_TAGEN, Lesemodus nach ABO_LESEMODUS_NACH_TAGEN,
+# gesperrter Zugang nach ABO_SPERRE_NACH_TAGEN. Auch im gesperrten Zugang bleiben Anmeldung, Abonnement (Rechnungen, PDF) und
+# der Datenexport erreichbar; es wird nichts gelöscht. Mit dem Zahlungseingang ist alles wieder offen.
+ABO_MAHNUNG2_NACH_TAGEN = 10
+ABO_SPERRE_NACH_TAGEN = 45
+# Mahngebühr der 2. Mahnung in CHF. 0 = keine Gebühr. Eine Gebühr ohne Grundlage im Vertrag (AGB) ist anfechtbar: erst
+# festlegen, wenn die AGB sie nennen.
+ABO_MAHNGEBUEHR = Decimal(os.getenv('ABO_MAHNGEBUEHR', '0') or '0')
 # Rechnungssteller («Plattform») und Zahlungsempfänger der QR-Rechnung.
 # Die Angaben kommen aus der .env (ABO_STELLER_NAME …), damit sie ohne Codeänderung gesetzt werden können; leer = ohne
 # Name und IBAN lässt sich keine Rechnung mit Einzahlungsschein erzeugen (die Seite weist darauf hin).

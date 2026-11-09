@@ -18,8 +18,10 @@
 {% endif %}
 
 {% if zustand != 'aktiv' %}
-<div class="fw-card"><div class="fw-hinweis {% if zustand == 'lesemodus' %}crit{% else %}warn{% endif %}"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">
-    {% if zustand == 'lesemodus' %}
+<div class="fw-card"><div class="fw-hinweis {% if zustand == 'lesemodus' or zustand == 'gesperrt' %}crit{% else %}warn{% endif %}"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">
+    {% if zustand == 'gesperrt' %}
+        {% blocktrans with tage=sperre_tage %}Eine Rechnung ist seit mehr als {{ tage }} Tagen überfällig. Ihr Zugang ist gesperrt; Anmeldung, diese Seite mit Rechnung und Einzahlungsschein und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht.{% endblocktrans %}
+    {% elif zustand == 'lesemodus' %}
         {% blocktrans with tage=lesemodus_tage %}Eine Rechnung ist seit mehr als {{ tage }} Tagen überfällig. Ihr Zugang ist schreibgeschützt: Sie können alle Daten lesen und exportieren, aber nichts ändern, und es laufen keine automatischen Läufe. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht.{% endblocktrans %}
     {% else %}
         {% blocktrans with tage=lesemodus_tage %}Eine Rechnung ist überfällig. Bleibt die Zahlung länger als {{ tage }} Tage aus, wird Ihr Zugang schreibgeschützt. Ihre Daten bleiben in jedem Fall erhalten.{% endblocktrans %}
