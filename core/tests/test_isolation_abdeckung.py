@@ -122,7 +122,9 @@ class ErweiterterBestand(MandantenFixture):
         self._neu('abonnement', lambda: Abonnement.alle_organisationen.create(organisation=org))
         from django.utils import timezone
 
-        from abo.models import KundenKontakt, Kundenstamm
+        from abo.models import AboGutschrift, KundenKontakt, Kundenstamm
+        self._neu('abogutschrift', lambda: AboGutschrift.alle_organisationen.create(
+            organisation=org, datum=heute, text=f'Gutschrift {k}', betrag=Decimal('10')))
         self._neu('kundenstamm', lambda: Kundenstamm.alle_organisationen.create(organisation=org))
         self._neu('kundenkontakt', lambda: KundenKontakt.alle_organisationen.create(
             organisation=org, zeitpunkt=timezone.now(), text=f'Notiz {k}'))

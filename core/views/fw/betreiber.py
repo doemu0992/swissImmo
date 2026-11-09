@@ -270,10 +270,10 @@ def fw_betreiber_kunde(request, pk):
             elif aktion == 'einstellen' and abo is not None:
                 module = [k for k in request.POST.getlist('module') if k in f.MODULE]
                 ab = (request.POST.get('abrechnung_ab') or '').strip()
-                abo.zusatzmodule = module
                 abo.abrechnung_ab = date.fromisoformat(ab) if ab else None
                 abo.uneingeschraenkt = bool(request.POST.get('bestandsschutz'))
-                abo.save()
+                abo.save(update_fields=['abrechnung_ab', 'uneingeschraenkt'])
+                dienst.module_setzen(org, abo, module)
                 _sofort_abrechnen(request, org)
                 protokoll('Abonnement eingestellt',
                           f'Module {",".join(module) or "-"}, Abrechnung ab {abo.abrechnung_ab or "-"}, '
