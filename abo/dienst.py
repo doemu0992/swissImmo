@@ -256,6 +256,8 @@ def zustand_fuer(ueberfaellig_seit, heute):
     if ueberfaellig_seit is None:
         return f.ZUSTAND_AKTIV
     tage = (heute - ueberfaellig_seit).days
+    if tage >= settings.ABO_SPERRE_NACH_TAGEN:
+        return f.ZUSTAND_GESPERRT
     if tage >= settings.ABO_LESEMODUS_NACH_TAGEN:
         return f.ZUSTAND_LESEMODUS
     if tage >= settings.ABO_MAHNUNG_NACH_TAGEN:
@@ -301,10 +303,11 @@ def stornieren(rechnung):
     return zustand_aktualisieren(rechnung.organisation)
 
 
-def rechnung_senden(rechnung, erinnerung=False, heute=None):
+def rechnung_senden(rechnung, erinnerung=False, heute=None, stufe=1):
     """Schickt die Rechnung als PDF (mit QR-Einzahlungsschein) per Mail an die Verwaltung.
 
-    `erinnerung=True`: als Zahlungserinnerung zur offenen Rechnung (setzt `erinnert_am`). Das PDF hängt immer an: Wer
+    `erinnerung=True`: als Zahlungserinnerung zur offenen Rechnung (setzt `erinnert_am`); `stufe=2`: als 2. Mahnung mit der
+    Mahngebühr, die auf der Rechnung steht. Das PDF hängt immer an: Wer
     die Mail liest, soll bezahlen können, ohne sich anzumelden. Gibt die Empfängeradresse zurück; kann der Betreiber
     nichts versenden, steht der Grund in `RechnungNichtSendbar`.
     """
@@ -319,10 +322,25 @@ def rechnung_senden(rechnung, erinnerung=False, heute=None):
     if pdf is None:
         raise RechnungNichtSendbar(_('Es ist keine Zahlungsverbindung (IBAN) des Rechnungsstellers hinterlegt.'))
     absender = settings.ABO_RECHNUNGSSTELLER.get('email') or settings.DEFAULT_FROM_EMAIL
-    angaben = {'nummer': rechnung.nummer, 'betrag': f'{rechnung.brutto:.2f}',
+    angaben = {'nummer': rechnung.nummer, 'betrag': f'{rechnung.brutto + rechnung.mahngebuehr:.2f}',
+               'gebuehr': f'{rechnung.mahngebuehr:.2f}',
                'faellig': rechnung.faellig_am.strftime('%d.%m.%Y'),
                'von': rechnung.periode_von.strftime('%d.%m.%Y'), 'bis': rechnung.periode_bis.strftime('%d.%m.%Y')}
-    if erinnerung:
+    if erinnerung and stufe >= 2:
+        betreff = _('immoswiss: 2. Mahnung zur Rechnung %(nummer)s') % angaben
+        if rechnung.mahngebuehr > 0:
+            text = _('Die Rechnung %(nummer)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig '
+                     'und ist trotz unserer Zahlungserinnerung noch offen. Wir bitten Sie, den Gesamtbetrag von CHF '
+                     '%(betrag)s (inklusive Mahngebühr CHF %(gebuehr)s) umgehend mit dem QR-Einzahlungsschein auf der '
+                     'Rechnung im Anhang zu bezahlen. Bleibt die Zahlung weiter aus, wird Ihr Zugang schreibgeschützt und '
+                     'später gesperrt; Ihre Daten bleiben in jedem Fall erhalten.') % angaben
+        else:
+            text = _('Die Rechnung %(nummer)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig '
+                     'und ist trotz unserer Zahlungserinnerung noch offen. Wir bitten Sie, den Betrag von CHF %(betrag)s '
+                     'umgehend mit dem QR-Einzahlungsschein auf der Rechnung im Anhang zu bezahlen. Bleibt die Zahlung '
+                     'weiter aus, wird Ihr Zugang schreibgeschützt und später gesperrt; Ihre Daten bleiben in jedem Fall '
+                     'erhalten.') % angaben
+    elif erinnerung:
         betreff = _('immoswiss: Zahlungserinnerung zur Rechnung %(nummer)s') % angaben
         text = _('Die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war '
                  'am %(faellig)s fällig und ist noch offen. Bitte begleichen Sie sie mit dem QR-Einzahlungsschein auf '
@@ -336,9 +354,13 @@ def rechnung_senden(rechnung, erinnerung=False, heute=None):
     nachricht = EmailMessage(betreff, text, absender, [organisation.email])
     nachricht.attach(f'{rechnung.nummer}.pdf', pdf, 'application/pdf')
     nachricht.send(fail_silently=False)
+    heute = heute or datum_heute()
+    rechnung.versendet_am = heute
+    felder = ['versendet_am']
     if erinnerung:
-        rechnung.erinnert_am = heute or datum_heute()
-        rechnung.save(update_fields=['erinnert_am'])
+        rechnung.erinnert_am = heute
+        felder.append('erinnert_am')
+    rechnung.save(update_fields=felder)
     return organisation.email
 
 
@@ -348,7 +370,13 @@ def erinnerung_senden(organisation, neu_zustand):
         logger.warning('%s: keine E-Mail-Adresse, Erinnerung nicht versandt', organisation)
         return False
     absender = (settings.ABO_RECHNUNGSSTELLER.get('email') or settings.DEFAULT_FROM_EMAIL)
-    if neu_zustand == f.ZUSTAND_LESEMODUS:
+    if neu_zustand == f.ZUSTAND_GESPERRT:
+        betreff = _('immoswiss: Ihr Zugang ist gesperrt')
+        text = _('Die Rechnung für Ihr Abonnement ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist deshalb '
+                 'gesperrt. Anmeldung, Abonnement (Rechnung und Einzahlungsschein) und der Datenexport bleiben '
+                 'erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht.'
+                 ) % {'tage': settings.ABO_SPERRE_NACH_TAGEN}
+    elif neu_zustand == f.ZUSTAND_LESEMODUS:
         betreff = _('immoswiss: Ihr Zugang ist schreibgeschützt')
         text = _('Die Rechnung für Ihr Abonnement ist seit mehr als %(tage)s Tagen überfällig. '
                  'Ihr Zugang ist deshalb schreibgeschützt: Sie können alle Daten weiter lesen und '
@@ -364,6 +392,42 @@ def erinnerung_senden(organisation, neu_zustand):
                  ) % {'tage': settings.ABO_LESEMODUS_NACH_TAGEN}
     send_mail(betreff, text, absender, [organisation.email], fail_silently=False)
     return True
+
+
+def mahnen(organisation, heute=None):
+    """Führt die Mahnstufe der ältesten überfälligen Rechnung nach und mahnt, wenn eine neue Stufe erreicht ist.
+
+    1. Mahnung nach `ABO_MAHNUNG_NACH_TAGEN`, 2. Mahnung nach `ABO_MAHNUNG2_NACH_TAGEN`, mit der Mahngebühr
+    `ABO_MAHNGEBUEHR` (0 = ohne). Jede Stufe geht pro Rechnung genau einmal hinaus. Lesemodus und Sperre haben ihre eigene
+    Mitteilung. Die Mahnung geht mit dem PDF hinaus; fehlt dafür die Zahlungsverbindung, geht der Text allein hinaus
+    (`erinnerung_senden`). Gibt die versandte Stufe zurück, sonst `None`.
+    """
+    from abo.models import AboRechnung
+    heute = heute or datum_heute()
+    rechnung = (AboRechnung.alle_organisationen
+                .filter(organisation=organisation, status=AboRechnung.STATUS_OFFEN, faellig_am__lt=heute)
+                .order_by('faellig_am').first())
+    if rechnung is None:
+        return None
+    tage = (heute - rechnung.faellig_am).days
+    ziel = (2 if tage >= settings.ABO_MAHNUNG2_NACH_TAGEN
+            else 1 if tage >= settings.ABO_MAHNUNG_NACH_TAGEN else 0)
+    if ziel <= rechnung.mahnstufe:
+        return None
+    if ziel == 2:
+        rechnung.mahngebuehr = Decimal(str(settings.ABO_MAHNGEBUEHR or 0)).quantize(RAPPEN)
+        rechnung.save(update_fields=['mahngebuehr'])
+    try:
+        rechnung_senden(rechnung, erinnerung=True, heute=heute, stufe=ziel)
+        versandt = True
+    except (RechnungNichtSendbar, OSError) as fehler:
+        logger.warning('%s: Mahnung %s zu %s ohne PDF: %s', organisation, ziel, rechnung.nummer, fehler)
+        versandt = erinnerung_senden(organisation, f.ZUSTAND_MAHNUNG)
+    if not versandt:
+        return None
+    rechnung.mahnstufe = ziel
+    rechnung.save(update_fields=['mahnstufe'])
+    return ziel
 
 
 def abrechnen(organisation, heute=None, trotz_platzhalter=False, mail=True):
@@ -397,6 +461,9 @@ def abrechnen(organisation, heute=None, trotz_platzhalter=False, mail=True):
             bericht['versandt'] = False
     alt, neu = zustand_aktualisieren(organisation, heute)
     bericht['zustand'] = neu
-    if mail and neu != alt and neu != f.ZUSTAND_AKTIV:
+    if mail and neu == f.ZUSTAND_MAHNUNG:
+        bericht['mahnstufe'] = mahnen(organisation, heute)
+        bericht['mail'] = bericht['mahnstufe'] is not None
+    elif mail and neu != alt and neu != f.ZUSTAND_AKTIV:
         bericht['mail'] = erinnerung_senden(organisation, neu)
     return bericht

@@ -76,4 +76,20 @@ test.describe('Funktionsfreigabe', () => {
     await expect(page.getByRole('link', { name: /PDF mit QR-Rechnung/ }).first()).toBeVisible();
     await ohneQuerlauf(page);
   });
+
+  test('Gesperrter Zugang: Sperrseite, Abo-Seite und Export bleiben erreichbar', async ({ page }) => {
+    await anmelden(page, 'e2e-gesperrt');
+    const sperre = await page.goto('/neu/liegenschaften/');
+    expect(sperre?.status()).toBe(402);
+    await expect(page.getByRole('heading', { name: 'Der Zugang ist gesperrt' })).toBeVisible();
+    await ohneQuerlauf(page);
+
+    await goto(page, '/neu/abonnement/');
+    await expect(page.getByRole('heading', { name: 'Rechnungen' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /PDF mit QR-Rechnung/ }).first()).toBeVisible();
+    await ohneQuerlauf(page);
+
+    await goto(page, '/neu/einstellungen/daten/export/');
+    await expect(page).toHaveURL(/\/export\//);
+  });
 });

@@ -201,6 +201,7 @@ VORGABE_STUFE = 'team'
 ZUSTAND_AKTIV = 'aktiv'
 ZUSTAND_MAHNUNG = 'mahnung'
 ZUSTAND_LESEMODUS = 'lesemodus'
+ZUSTAND_GESPERRT = 'gesperrt'
 
 
 def abonnement_von(organisation):
@@ -281,14 +282,14 @@ def hat_funktion(organisation, schluessel):
 
 
 def zustand_von(organisation):
-    """Zahlungszustand: 'aktiv', 'mahnung' oder 'lesemodus'. Ohne Zeile: aktiv."""
+    """Zahlungszustand: 'aktiv', 'mahnung', 'lesemodus' oder 'gesperrt'. Ohne Zeile: aktiv."""
     abo = abonnement_von(organisation)
     return abo.zustand if abo is not None else ZUSTAND_AKTIV
 
 
 def darf_schreiben(organisation):
-    """False im Lesemodus (Zahlung lange überfällig). Lesen und Export bleiben."""
-    return zustand_von(organisation) != ZUSTAND_LESEMODUS
+    """False im Lesemodus und bei gesperrtem Zugang (Zahlung lange überfällig). Lesen und Export bleiben."""
+    return zustand_von(organisation) not in (ZUSTAND_LESEMODUS, ZUSTAND_GESPERRT)
 
 
 def hintergrund_erlaubt(organisation):

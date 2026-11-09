@@ -33,10 +33,12 @@ class Abonnement(models.Model):
     ZUSTAND_AKTIV = 'aktiv'
     ZUSTAND_MAHNUNG = 'mahnung'
     ZUSTAND_LESEMODUS = 'lesemodus'
+    ZUSTAND_GESPERRT = 'gesperrt'
     ZUSTAENDE = [
         (ZUSTAND_AKTIV, 'Aktiv'),
         (ZUSTAND_MAHNUNG, 'Zahlung überfällig (Mahnung)'),
         (ZUSTAND_LESEMODUS, 'Lesemodus (Zahlung lange überfällig)'),
+        (ZUSTAND_GESPERRT, 'Zugang gesperrt (Zahlung sehr lange überfällig)'),
     ]
 
     organisation = models.OneToOneField(
@@ -108,6 +110,14 @@ class AboRechnung(models.Model):
     status = models.CharField('Status', max_length=10, choices=STATUS, default=STATUS_OFFEN)
     bezahlt_am = models.DateField('Bezahlt am', null=True, blank=True)
     erinnert_am = models.DateField('Zahlungserinnerung versandt am', null=True, blank=True)
+    versendet_am = models.DateField(
+        'Per Mail versandt am', null=True, blank=True,
+        help_text='Letzter erfolgreicher Versand der Rechnung (oder einer Mahnung dazu) an die Verwaltung; leer = nie versandt.')
+    mahnstufe = models.PositiveSmallIntegerField(
+        'Mahnstufe', default=0, help_text='0 = nicht gemahnt, 1 = 1. Mahnung versandt, 2 = 2. Mahnung (mit Mahngebühr) versandt.')
+    mahngebuehr = models.DecimalField(
+        'Mahngebühr (CHF)', max_digits=8, decimal_places=2, default=Decimal('0'),
+        help_text='Mit der 2. Mahnung fällig; kommt zum Rechnungsbetrag und steht auf dem Einzahlungsschein.')
     qr_referenz = models.CharField('QR-Referenz', max_length=27, blank=True, default='')
     platzhalter = models.BooleanField(
         'Mit Platzhalterpreisen erstellt', default=False,
