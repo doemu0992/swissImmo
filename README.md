@@ -30,10 +30,6 @@ Verwaltungen (Organisationen) arbeiten strikt getrennt in derselben Instanz.
 
 - **Python 3.11** (die CI testet gegen 3.11)
 - **git**
-- Für `pycairo` (PDF-Erzeugung) die Cairo-Entwicklungsdateien und ein C-Compiler:
-  - Debian/Ubuntu: `sudo apt install build-essential python3-dev pkg-config libcairo2-dev`
-  - macOS (Homebrew): `brew install cairo pkg-config`
-  - Windows: nichts zusätzlich — pip bringt fertige Pakete mit
 - Optional: **PostgreSQL 14+** für den Produktivbetrieb
 - Optional: **Node.js 22** — nur für die E2E-Tests und um das CSS neu zu bauen
   (das fertige CSS liegt bereits in `static/css/`)
