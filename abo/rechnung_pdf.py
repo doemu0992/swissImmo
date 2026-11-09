@@ -65,7 +65,8 @@ def abo_rechnung_pdf(rechnung):
                  f'Abonnement {rechnung.get_stufe_display()}, {rechnung.get_intervall_display().lower()}, '
                  f'{rechnung.periode_von:%d.%m.%Y}–{rechnung.periode_bis:%d.%m.%Y}')
     c.drawRightString(190 * mm, yt, _chf(rechnung.netto))
-    c.drawString(20 * mm, yt - 5 * mm, f'{rechnung.einheiten} Einheiten bei Rechnungsstellung')
+    if rechnung.einheiten:
+        c.drawString(20 * mm, yt - 5 * mm, f'{rechnung.einheiten} Einheiten bei Rechnungsstellung')
     zeile = yt - 12 * mm
     if rechnung.mwst_satz is not None:
         c.drawString(20 * mm, zeile, f'MWST {rechnung.mwst_satz:.1f} %')

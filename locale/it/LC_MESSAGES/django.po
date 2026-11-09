@@ -39857,3 +39857,102 @@ msgstr "non inviata"
 
 msgid "%(n)s offene Rechnung(en) wurden noch nicht per Mail versandt: im Kunden «Erneut senden»."
 msgstr "%(n)s fattura/e aperta/e non sono ancora state inviate per e-mail: usare «Invia di nuovo» nel cliente."
+
+msgid "Ansprechperson"
+msgstr "Persona di contatto"
+
+msgid "Fakturiert"
+msgstr "Fatturato"
+
+msgid "Zahlungsverhalten"
+msgstr "Comportamento di pagamento"
+
+msgid "im Schnitt %(t)s Tage nach Fälligkeit"
+msgstr "in media %(t)s giorni dopo la scadenza"
+
+msgid "Nächste Rechnung"
+msgstr "Prossima fattura"
+
+msgid "Zahlung am"
+msgstr "Pagamento il"
+
+msgid "Tage nach Fälligkeit"
+msgstr "Giorni dopo la scadenza"
+
+msgid "Stammdaten und Ansprechperson"
+msgstr "Dati anagrafici e persona di contatto"
+
+msgid "Kundenstatus"
+msgstr "Stato del cliente"
+
+msgid "Strasse und Nr."
+msgstr "Via e n."
+
+msgid "Natel"
+msgstr "Cellulare"
+
+msgid "Website"
+msgstr "Sito web"
+
+msgid "UID / MWST-Nummer"
+msgstr "IDI / n. IVA"
+
+msgid "E-Mail für Rechnungen"
+msgstr "E-mail per le fatture"
+
+msgid "Leer = Rechnungen und Mahnungen gehen an die E-Mail der Verwaltung."
+msgstr "Vuoto = fatture e solleciti vanno all'e-mail dell'amministrazione."
+
+msgid "Funktion"
+msgstr "Funzione"
+
+msgid "E-Mail der Ansprechperson"
+msgstr "E-mail della persona di contatto"
+
+msgid "Telefon der Ansprechperson"
+msgstr "Telefono della persona di contatto"
+
+msgid "Natel der Ansprechperson"
+msgstr "Cellulare della persona di contatto"
+
+msgid "Nur für den Betreiber sichtbar, nie für die Verwaltung."
+msgstr "Visibile solo all'operatore, mai all'amministrazione."
+
+msgid "Kundendaten speichern"
+msgstr "Salva i dati del cliente"
+
+msgid "Eintrag"
+msgstr "Voce"
+
+msgid "Eintrag hinzufügen"
+msgstr "Aggiungi voce"
+
+msgid "Eintrag löschen?"
+msgstr "Eliminare la voce?"
+
+msgid "Noch kein Eintrag."
+msgstr "Ancora nessuna voce."
+
+msgid "Kundendaten gespeichert."
+msgstr "Dati del cliente salvati."
+
+msgid "Der Eintrag ist leer."
+msgstr "La voce è vuota."
+
+msgid "Unbekannte Art."
+msgstr "Tipo sconosciuto."
+
+msgid "Eintrag gespeichert."
+msgstr "Voce salvata."
+
+msgid "Dieser Eintrag gehört nicht zu dieser Verwaltung."
+msgstr "Questa voce non appartiene a questa amministrazione."
+
+msgid "Eintrag gelöscht."
+msgstr "Voce eliminata."
+
+msgid "Ungültige E-Mail-Adresse: %(wert)s"
+msgstr "Indirizzo e-mail non valido: %(wert)s"
+
+msgid "Firma, Strasse, PLZ und Ort sind Pflicht."
+msgstr "Ditta, via, NPA e località sono obbligatori."

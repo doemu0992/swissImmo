@@ -39928,3 +39928,102 @@ msgstr "non envoyée"
 
 msgid "%(n)s offene Rechnung(en) wurden noch nicht per Mail versandt: im Kunden «Erneut senden»."
 msgstr "%(n)s facture(s) ouverte(s) n'ont pas encore été envoyées par e-mail : utilisez «Renvoyer» chez le client."
+
+msgid "Ansprechperson"
+msgstr "Interlocuteur"
+
+msgid "Fakturiert"
+msgstr "Facturé"
+
+msgid "Zahlungsverhalten"
+msgstr "Comportement de paiement"
+
+msgid "im Schnitt %(t)s Tage nach Fälligkeit"
+msgstr "en moyenne %(t)s jours après l'échéance"
+
+msgid "Nächste Rechnung"
+msgstr "Prochaine facture"
+
+msgid "Zahlung am"
+msgstr "Paiement le"
+
+msgid "Tage nach Fälligkeit"
+msgstr "Jours après l'échéance"
+
+msgid "Stammdaten und Ansprechperson"
+msgstr "Données de base et interlocuteur"
+
+msgid "Kundenstatus"
+msgstr "Statut du client"
+
+msgid "Strasse und Nr."
+msgstr "Rue et n°"
+
+msgid "Natel"
+msgstr "Natel"
+
+msgid "Website"
+msgstr "Site web"
+
+msgid "UID / MWST-Nummer"
+msgstr "IDE / n° TVA"
+
+msgid "E-Mail für Rechnungen"
+msgstr "E-mail pour les factures"
+
+msgid "Leer = Rechnungen und Mahnungen gehen an die E-Mail der Verwaltung."
+msgstr "Vide = les factures et rappels vont à l'e-mail de la gérance."
+
+msgid "Funktion"
+msgstr "Fonction"
+
+msgid "E-Mail der Ansprechperson"
+msgstr "E-mail de l'interlocuteur"
+
+msgid "Telefon der Ansprechperson"
+msgstr "Téléphone de l'interlocuteur"
+
+msgid "Natel der Ansprechperson"
+msgstr "Natel de l'interlocuteur"
+
+msgid "Nur für den Betreiber sichtbar, nie für die Verwaltung."
+msgstr "Visible uniquement par l'exploitant, jamais par la gérance."
+
+msgid "Kundendaten speichern"
+msgstr "Enregistrer les données du client"
+
+msgid "Eintrag"
+msgstr "Entrée"
+
+msgid "Eintrag hinzufügen"
+msgstr "Ajouter une entrée"
+
+msgid "Eintrag löschen?"
+msgstr "Supprimer l'entrée ?"
+
+msgid "Noch kein Eintrag."
+msgstr "Aucune entrée pour l'instant."
+
+msgid "Kundendaten gespeichert."
+msgstr "Données du client enregistrées."
+
+msgid "Der Eintrag ist leer."
+msgstr "L'entrée est vide."
+
+msgid "Unbekannte Art."
+msgstr "Type inconnu."
+
+msgid "Eintrag gespeichert."
+msgstr "Entrée enregistrée."
+
+msgid "Dieser Eintrag gehört nicht zu dieser Verwaltung."
+msgstr "Cette entrée n'appartient pas à cette gérance."
+
+msgid "Eintrag gelöscht."
+msgstr "Entrée supprimée."
+
+msgid "Ungültige E-Mail-Adresse: %(wert)s"
+msgstr "Adresse e-mail invalide : %(wert)s"
+
+msgid "Firma, Strasse, PLZ und Ort sind Pflicht."
+msgstr "Entreprise, rue, NPA et localité sont obligatoires."

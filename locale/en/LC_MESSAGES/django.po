@@ -39262,3 +39262,102 @@ msgstr "not sent"
 
 msgid "%(n)s offene Rechnung(en) wurden noch nicht per Mail versandt: im Kunden «Erneut senden»."
 msgstr "%(n)s open invoice(s) have not yet been sent by email: use «Send again» on the customer."
+
+msgid "Ansprechperson"
+msgstr "Contact person"
+
+msgid "Fakturiert"
+msgstr "Invoiced"
+
+msgid "Zahlungsverhalten"
+msgstr "Payment behaviour"
+
+msgid "im Schnitt %(t)s Tage nach Fälligkeit"
+msgstr "on average %(t)s days after the due date"
+
+msgid "Nächste Rechnung"
+msgstr "Next invoice"
+
+msgid "Zahlung am"
+msgstr "Payment on"
+
+msgid "Tage nach Fälligkeit"
+msgstr "Days after due date"
+
+msgid "Stammdaten und Ansprechperson"
+msgstr "Master data and contact person"
+
+msgid "Kundenstatus"
+msgstr "Customer status"
+
+msgid "Strasse und Nr."
+msgstr "Street and no."
+
+msgid "Natel"
+msgstr "Mobile"
+
+msgid "Website"
+msgstr "Website"
+
+msgid "UID / MWST-Nummer"
+msgstr "UID / VAT number"
+
+msgid "E-Mail für Rechnungen"
+msgstr "Email for invoices"
+
+msgid "Leer = Rechnungen und Mahnungen gehen an die E-Mail der Verwaltung."
+msgstr "Empty = invoices and reminders go to the property management's email."
+
+msgid "Funktion"
+msgstr "Role"
+
+msgid "E-Mail der Ansprechperson"
+msgstr "Contact person's email"
+
+msgid "Telefon der Ansprechperson"
+msgstr "Contact person's phone"
+
+msgid "Natel der Ansprechperson"
+msgstr "Contact person's mobile"
+
+msgid "Nur für den Betreiber sichtbar, nie für die Verwaltung."
+msgstr "Visible to the operator only, never to the property management."
+
+msgid "Kundendaten speichern"
+msgstr "Save customer data"
+
+msgid "Eintrag"
+msgstr "Entry"
+
+msgid "Eintrag hinzufügen"
+msgstr "Add entry"
+
+msgid "Eintrag löschen?"
+msgstr "Delete entry?"
+
+msgid "Noch kein Eintrag."
+msgstr "No entry yet."
+
+msgid "Kundendaten gespeichert."
+msgstr "Customer data saved."
+
+msgid "Der Eintrag ist leer."
+msgstr "The entry is empty."
+
+msgid "Unbekannte Art."
+msgstr "Unknown type."
+
+msgid "Eintrag gespeichert."
+msgstr "Entry saved."
+
+msgid "Dieser Eintrag gehört nicht zu dieser Verwaltung."
+msgstr "This entry does not belong to this property management."
+
+msgid "Eintrag gelöscht."
+msgstr "Entry deleted."
+
+msgid "Ungültige E-Mail-Adresse: %(wert)s"
+msgstr "Invalid email address: %(wert)s"
+
+msgid "Firma, Strasse, PLZ und Ort sind Pflicht."
+msgstr "Company, street, postcode and city are required."

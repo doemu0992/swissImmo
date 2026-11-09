@@ -146,3 +146,89 @@ class AboRechnung(models.Model):
         if not self.nummer:
             self.nummer = f'AB-{self.rechnungsdatum.year}-{self.pk:06d}'
             type(self).alle_organisationen.filter(pk=self.pk).update(nummer=self.nummer)
+
+
+class Kundenstamm(models.Model):
+    """Die Kundenkartei des Betreibers zu einer Verwaltung: Kontaktdaten, Ansprechperson, Status, interne Notizen.
+
+    GEHÖRT DEM BETREIBER, NICHT DER VERWALTUNG. Die Kartei ist nur im Betreiber-Portal sichtbar und steht deshalb in
+    `abo` (Datenexport und Datenreset der Verwaltung kennen diese App nicht: interne Notizen fliessen nie zum Kunden).
+    Firma, Adresse, Telefon, E-Mail und MWST-Nummer stehen weiter an der `Organisation`; hier steht, was nur der Betreiber
+    braucht. Die Kundennummer ergibt sich aus der Organisation (`K-0001`), sie braucht keinen eigenen Zähler.
+    """
+    STATUS_INTERESSENT = 'interessent'
+    STATUS_TEST = 'test'
+    STATUS_KUNDE = 'kunde'
+    STATUS_GEKUENDIGT = 'gekuendigt'
+    STATUS = [(STATUS_INTERESSENT, 'Interessent'), (STATUS_TEST, 'Testphase'), (STATUS_KUNDE, 'Kunde'),
+              (STATUS_GEKUENDIGT, 'Gekündigt')]
+
+    organisation = models.OneToOneField(
+        'crm.Organisation', on_delete=models.CASCADE, editable=False, related_name='kundenstamm',
+        verbose_name='Organisation')
+    status = models.CharField('Kundenstatus', max_length=12, choices=STATUS, default=STATUS_KUNDE)
+    natel = models.CharField('Natel (Firma)', max_length=30, blank=True, default='')
+    website = models.CharField('Website', max_length=200, blank=True, default='')
+    ansprechperson = models.CharField('Ansprechperson', max_length=120, blank=True, default='')
+    ansprech_funktion = models.CharField('Funktion', max_length=120, blank=True, default='')
+    ansprech_email = models.EmailField('E-Mail der Ansprechperson', blank=True, default='')
+    ansprech_telefon = models.CharField('Telefon der Ansprechperson', max_length=30, blank=True, default='')
+    ansprech_natel = models.CharField('Natel der Ansprechperson', max_length=30, blank=True, default='')
+    rechnung_email = models.EmailField(
+        'E-Mail für Rechnungen', blank=True, default='',
+        help_text='Leer = Rechnungen und Mahnungen gehen an die E-Mail-Adresse der Verwaltung.')
+    notizen = models.TextField('Interne Notizen', blank=True, default='')
+    geaendert_am = models.DateTimeField('Zuletzt geändert', auto_now=True)
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    class Meta:
+        verbose_name = 'Kundenkartei'
+        verbose_name_plural = 'Kundenkarteien'
+
+    def __str__(self):
+        return f'Kundenkartei {self.organisation_id}'
+
+    @property
+    def kundennummer(self):
+        return f'K-{self.organisation_id:04d}'
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            self.organisation_id = organisation_bestimmen().pk
+        super().save(*args, **kwargs)
+
+
+class KundenKontakt(models.Model):
+    """Ein Eintrag im Verlauf einer Kundenkartei: Anruf, Mail, Besuch oder Notiz. Nur im Betreiber-Portal sichtbar."""
+    ART_ANRUF = 'anruf'
+    ART_MAIL = 'mail'
+    ART_BESUCH = 'besuch'
+    ART_NOTIZ = 'notiz'
+    ARTEN = [(ART_ANRUF, 'Anruf'), (ART_MAIL, 'E-Mail'), (ART_BESUCH, 'Besuch'), (ART_NOTIZ, 'Notiz')]
+
+    organisation = models.ForeignKey(
+        'crm.Organisation', on_delete=models.CASCADE, editable=False, related_name='kunden_kontakte',
+        verbose_name='Organisation')
+    zeitpunkt = models.DateTimeField('Zeitpunkt', db_index=True)
+    art = models.CharField('Art', max_length=10, choices=ARTEN, default=ART_NOTIZ)
+    text = models.TextField('Eintrag')
+    erfasst_von = models.CharField('Erfasst von', max_length=150, blank=True, default='')
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    class Meta:
+        verbose_name = 'Kontakteintrag'
+        verbose_name_plural = 'Kontakteinträge'
+        ordering = ['-zeitpunkt', '-pk']
+
+    def __str__(self):
+        return f'{self.get_art_display()} {self.zeitpunkt:%d.%m.%Y}'
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            self.organisation_id = organisation_bestimmen().pk
+        super().save(*args, **kwargs)
+

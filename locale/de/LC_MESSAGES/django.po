@@ -38150,3 +38150,102 @@ msgstr "nicht versandt"
 
 msgid "%(n)s offene Rechnung(en) wurden noch nicht per Mail versandt: im Kunden «Erneut senden»."
 msgstr "%(n)s offene Rechnung(en) wurden noch nicht per Mail versandt: im Kunden «Erneut senden»."
+
+msgid "Ansprechperson"
+msgstr "Ansprechperson"
+
+msgid "Fakturiert"
+msgstr "Fakturiert"
+
+msgid "Zahlungsverhalten"
+msgstr "Zahlungsverhalten"
+
+msgid "im Schnitt %(t)s Tage nach Fälligkeit"
+msgstr "im Schnitt %(t)s Tage nach Fälligkeit"
+
+msgid "Nächste Rechnung"
+msgstr "Nächste Rechnung"
+
+msgid "Zahlung am"
+msgstr "Zahlung am"
+
+msgid "Tage nach Fälligkeit"
+msgstr "Tage nach Fälligkeit"
+
+msgid "Stammdaten und Ansprechperson"
+msgstr "Stammdaten und Ansprechperson"
+
+msgid "Kundenstatus"
+msgstr "Kundenstatus"
+
+msgid "Strasse und Nr."
+msgstr "Strasse und Nr."
+
+msgid "Natel"
+msgstr "Natel"
+
+msgid "Website"
+msgstr "Website"
+
+msgid "UID / MWST-Nummer"
+msgstr "UID / MWST-Nummer"
+
+msgid "E-Mail für Rechnungen"
+msgstr "E-Mail für Rechnungen"
+
+msgid "Leer = Rechnungen und Mahnungen gehen an die E-Mail der Verwaltung."
+msgstr "Leer = Rechnungen und Mahnungen gehen an die E-Mail der Verwaltung."
+
+msgid "Funktion"
+msgstr "Funktion"
+
+msgid "E-Mail der Ansprechperson"
+msgstr "E-Mail der Ansprechperson"
+
+msgid "Telefon der Ansprechperson"
+msgstr "Telefon der Ansprechperson"
+
+msgid "Natel der Ansprechperson"
+msgstr "Natel der Ansprechperson"
+
+msgid "Nur für den Betreiber sichtbar, nie für die Verwaltung."
+msgstr "Nur für den Betreiber sichtbar, nie für die Verwaltung."
+
+msgid "Kundendaten speichern"
+msgstr "Kundendaten speichern"
+
+msgid "Eintrag"
+msgstr "Eintrag"
+
+msgid "Eintrag hinzufügen"
+msgstr "Eintrag hinzufügen"
+
+msgid "Eintrag löschen?"
+msgstr "Eintrag löschen?"
+
+msgid "Noch kein Eintrag."
+msgstr "Noch kein Eintrag."
+
+msgid "Kundendaten gespeichert."
+msgstr "Kundendaten gespeichert."
+
+msgid "Der Eintrag ist leer."
+msgstr "Der Eintrag ist leer."
+
+msgid "Unbekannte Art."
+msgstr "Unbekannte Art."
+
+msgid "Eintrag gespeichert."
+msgstr "Eintrag gespeichert."
+
+msgid "Dieser Eintrag gehört nicht zu dieser Verwaltung."
+msgstr "Dieser Eintrag gehört nicht zu dieser Verwaltung."
+
+msgid "Eintrag gelöscht."
+msgstr "Eintrag gelöscht."
+
+msgid "Ungültige E-Mail-Adresse: %(wert)s"
+msgstr "Ungültige E-Mail-Adresse: %(wert)s"
+
+msgid "Firma, Strasse, PLZ und Ort sind Pflicht."
+msgstr "Firma, Strasse, PLZ und Ort sind Pflicht."

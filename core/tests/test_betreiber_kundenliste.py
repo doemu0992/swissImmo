@@ -457,3 +457,154 @@ class BetreiberRechnungVersandTests(TestCase):
         self.assertEqual(len(mit_pdf), 1)
         self.assertEqual(mit_pdf[0].attachments[0][0], f'{bericht["rechnung"]}.pdf')
 
+
+class BetreiberKundenkarteiTests(TestCase):
+    """Kundenkartei im Betreiber-Portal: Stammdaten, Ansprechperson, Verlauf, Finanzen."""
+
+    def setUp(self):
+        from datetime import date
+        from decimal import Decimal
+
+        from abo.models import AboRechnung
+        self.org = _test_organisation()
+        Abonnement.alle_organisationen.get_or_create(organisation=self.org)
+        self.betreiber = get_user_model().objects.create_superuser('betreiber', 'b@example.ch', 'x' * 12)
+        self.c = Client()
+        self.c.force_login(self.betreiber)
+        self.url = f'/betreiber/{self.org.pk}/'
+        self.heute = date(2026, 11, 9)
+
+        def rechnung(nr, von, bis, faellig, status='offen', bezahlt=None, mahn='0'):
+            return AboRechnung.alle_organisationen.create(
+                organisation=self.org, nummer=nr, periode_von=von, periode_bis=bis, stufe='team', intervall='monatlich',
+                einheiten=1, netto=Decimal('100'), brutto=Decimal('100'), rechnungsdatum=von, faellig_am=faellig,
+                status=status, bezahlt_am=bezahlt, mahngebuehr=Decimal(mahn))
+        self.r_bezahlt = rechnung('AB-1', date(2026, 8, 1), date(2026, 8, 31), date(2026, 8, 1), 'bezahlt', date(2026, 8, 6))
+        self.r_offen = rechnung('AB-2', date(2026, 9, 1), date(2026, 9, 30), date(2026, 9, 1), mahn='20')
+        self.r_zukunft = rechnung('AB-3', date(2026, 12, 1), date(2026, 12, 31), date(2026, 12, 1))
+        self.r_storno = rechnung('AB-4', date(2026, 7, 1), date(2026, 7, 31), date(2026, 7, 1), 'storniert')
+
+    def _stamm(self, **aenderungen):
+        werte = {'aktion': 'stamm', 'firma': 'AlDo Immobilien AG', 'strasse': 'Hauptstrasse 1', 'plz': '4500',
+                 'ort': 'Solothurn', 'telefon': '032 111 22 33', 'natel': '079 111 22 33', 'email': 'info@aldo.ch',
+                 'website': 'aldo.ch', 'mwst_uid': '', 'status': 'kunde', 'rechnung_email': '',
+                 'ansprechperson': 'Anna Muster', 'ansprech_funktion': 'Geschäftsleitung', 'ansprech_email': 'anna@aldo.ch',
+                 'ansprech_telefon': '032 111 22 44', 'ansprech_natel': '079 999 88 77', 'notizen': 'zahlt pünktlich'}
+        werte.update(aenderungen)
+        return self.c.post(self.url, werte)
+
+    def test_die_kartei_entsteht_beim_ersten_oeffnen(self):
+        from abo.models import Kundenstamm
+        self.assertFalse(Kundenstamm.alle_organisationen.filter(organisation=self.org).exists())
+        antwort = self.c.get(self.url)
+        self.assertEqual(antwort.status_code, 200)
+        self.assertContains(antwort, f'K-{self.org.pk:04d}')
+        self.assertTrue(Kundenstamm.alle_organisationen.filter(organisation=self.org).exists())
+
+    def test_stammdaten_speichern(self):
+        from abo.models import Kundenstamm
+        self._stamm()
+        self.org.refresh_from_db()
+        stamm = Kundenstamm.alle_organisationen.get(organisation=self.org)
+        self.assertEqual((self.org.firma, self.org.ort, self.org.telefon, self.org.email),
+                         ('AlDo Immobilien AG', 'Solothurn', '032 111 22 33', 'info@aldo.ch'))
+        self.assertEqual((stamm.ansprechperson, stamm.ansprech_natel, stamm.natel, stamm.notizen),
+                         ('Anna Muster', '079 999 88 77', '079 111 22 33', 'zahlt pünktlich'))
+
+    def test_pflichtfeld_oder_falsche_mail_aendert_nichts(self):
+        vorher = self.org.firma
+        self._stamm(firma='')
+        self._stamm(ansprech_email='keine-mail')
+        self._stamm(status='unbekannt')
+        self.org.refresh_from_db()
+        self.assertEqual(self.org.firma, vorher)
+        from abo.models import Kundenstamm
+        self.assertFalse(Kundenstamm.alle_organisationen.filter(organisation=self.org, ansprechperson='Anna Muster').exists())
+
+    def test_nur_der_betreiber_aendert_etwas(self):
+        team = Client()
+        team.force_login(_team_user())
+        antwort = team.post(self.url, {'aktion': 'stamm', 'firma': 'Gehackt', 'strasse': 'x', 'plz': '1', 'ort': 'x'})
+        self.assertEqual(antwort.status_code, 403)
+        self.org.refresh_from_db()
+        self.assertNotEqual(self.org.firma, 'Gehackt')
+
+    def test_kontakteintrag_hinzufuegen_und_loeschen(self):
+        from abo.models import KundenKontakt
+        self.c.post(self.url, {'aktion': 'kontakt', 'art': 'anruf', 'text': 'Rückruf wegen Rechnung'})
+        eintrag = KundenKontakt.alle_organisationen.get(organisation=self.org)
+        self.assertEqual((eintrag.art, eintrag.erfasst_von), ('anruf', 'betreiber'))
+        self.assertContains(self.c.get(self.url), 'Rückruf wegen Rechnung')
+        self.c.post(self.url, {'aktion': 'kontakt', 'art': 'anruf', 'text': '   '})
+        self.c.post(self.url, {'aktion': 'kontakt', 'art': 'unsinn', 'text': 'x'})
+        self.assertEqual(KundenKontakt.alle_organisationen.filter(organisation=self.org).count(), 1)
+        self.c.post(self.url, {'aktion': 'kontakt_loeschen', 'eintrag': eintrag.pk})
+        self.assertFalse(KundenKontakt.alle_organisationen.filter(organisation=self.org).exists())
+
+    def test_fremder_eintrag_laesst_sich_nicht_loeschen(self):
+        from django.utils import timezone
+
+        from abo.models import KundenKontakt
+        andere = Organisation.objects.create(firma='Andere AG', strasse='x', plz='1', ort='x')
+        fremd = KundenKontakt.alle_organisationen.create(organisation=andere, zeitpunkt=timezone.now(), text='geheim')
+        self.c.post(self.url, {'aktion': 'kontakt_loeschen', 'eintrag': fremd.pk})
+        self.assertTrue(KundenKontakt.alle_organisationen.filter(pk=fremd.pk).exists())
+
+    def test_verlauf_zeigt_notizen_und_systemereignisse(self):
+        from core.auth import log_aktion
+        from core.services import betreiber
+        from core.tenancy import organisation_kontext
+        self.c.post(self.url, {'aktion': 'kontakt', 'art': 'mail', 'text': 'Angebot geschickt'})
+        with organisation_kontext(self.org):
+            from django.test import RequestFactory
+            anfrage = RequestFactory().get('/')
+            anfrage.user = self.betreiber
+            log_aktion(anfrage, 'Rechnung gesendet', objekt=self.org.firma, details='AB-2', kategorie='sicherheit')
+            log_aktion(anfrage, 'Anmeldung fehlgeschlagen', objekt='x', kategorie='sicherheit')
+        texte = [e['text'] for e in betreiber.verlauf(self.org)]
+        self.assertIn('Angebot geschickt', texte)
+        self.assertIn('Rechnung gesendet: AB-2', texte)
+        self.assertFalse([t for t in texte if 'Anmeldung fehlgeschlagen' in t], 'nur Aktionen des Betreibers')
+
+    def test_finanzen(self):
+        from decimal import Decimal
+
+        from core.services import betreiber
+        z = betreiber.finanzen(self.org, heute=self.heute)
+        self.assertEqual(z['anzahl'], 3, 'stornierte Rechnungen zählen nicht')
+        self.assertEqual(z['bezahlt'], Decimal('100'))
+        self.assertEqual(z['offen'], Decimal('220'), 'inklusive Mahngebühr')
+        self.assertEqual(z['ueberfaellig'], Decimal('120'), 'AB-3 ist noch nicht fällig')
+        self.assertEqual(z['zahlungsdauer'], 5.0)
+        self.assertEqual([x['tage'] for x in z['zahlungen']], [5])
+
+    def test_rechnungen_gehen_an_die_abweichende_adresse(self):
+        from django.core import mail
+        from django.test import override_settings
+
+        from abo import dienst
+        type(self.org).objects.filter(pk=self.org.pk).update(email='info@aldo.ch')
+        self.org.refresh_from_db()
+        steller = {'name': 'P AG', 'strasse': 'x', 'plz': '8000', 'ort': 'Zürich', 'iban': 'CH9300762011623852957',
+                   'uid': '', 'email': 'abo@example.ch'}
+        with override_settings(ABO_RECHNUNGSSTELLER=steller):
+            dienst.rechnung_senden(self.r_offen)
+            self._stamm(rechnung_email='buchhaltung@aldo.ch')
+            dienst.rechnung_senden(self.r_offen)
+        self.assertEqual([m.to for m in mail.outbox], [['info@aldo.ch'], ['buchhaltung@aldo.ch']])
+
+    def test_kundenliste_zeigt_ansprechperson_und_nummer(self):
+        self._stamm()
+        seite = self.c.get('/betreiber/')
+        self.assertContains(seite, 'Anna Muster')
+        self.assertContains(seite, '079 999 88 77')
+        self.assertContains(seite, f'K-{self.org.pk:04d}')
+
+    def test_interne_notizen_verlassen_die_installation_nicht_per_export(self):
+        """Datenexport und Datenreset kennen die Kartei nicht: Notizen des Betreibers gehören nie zum Kunden."""
+        from core.services import datenexport, datenreset
+        beschriftungen = {m._meta.label for m in datenexport.exportierbare_modelle()}
+        self.assertFalse({'abo.Kundenstamm', 'abo.KundenKontakt'} & beschriftungen)
+        betroffen = {m._meta.label for m in datenreset.betroffene_modelle()}
+        self.assertFalse({'abo.Kundenstamm', 'abo.KundenKontakt'} & betroffen)
+
