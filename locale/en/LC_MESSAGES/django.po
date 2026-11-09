@@ -39495,3 +39495,33 @@ msgid "%(n)s Rechnung offen"
 msgid_plural "%(n)s Rechnungen offen"
 msgstr[0] "%(n)s invoice open"
 msgstr[1] "%(n)s invoices open"
+
+msgid "Abonnement %(stufe)s, %(intervall)s"
+msgstr "Subscription %(stufe)s, %(intervall)s"
+
+msgid "Jahresrabatt %(p)s %%"
+msgstr "Annual discount %(p)s %%"
+
+msgid "Im Grundpreis Ihrer Stufe enthalten."
+msgstr "Included in the base price of your plan."
+
+msgid "Zugebucht: CHF %(preis)s pro Monat, netto."
+msgstr "Added: CHF %(preis)s per month, net."
+
+msgid "Zubuchbar: CHF %(preis)s pro Monat, netto — beim Betreiber anfragen."
+msgstr "Available: CHF %(preis)s per month, net — ask the operator."
+
+msgid "Ab Stufe %(stufe)s enthalten."
+msgstr "Included from the %(stufe)s plan."
+
+msgid "inklusive"
+msgstr "included"
+
+msgid "im Grundpreis der Stufe enthalten"
+msgstr "included in the plan's base price"
+
+msgid "netto"
+msgstr "net"
+
+msgid "Zugebuchte Module kommen ab der nächsten Rechnung dazu."
+msgstr "Added modules appear on the next invoice."

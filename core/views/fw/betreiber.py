@@ -262,7 +262,7 @@ def fw_betreiber_kunde(request, pk):
                 folgen = dienst.folgen_des_wechsels(org, stufe)
                 if (folgen['schliesst'] or folgen['bestand_ueber']) and not request.POST.get('bestaetigt'):
                     vorschau = {'stufe': stufe, 'jaehrlich': jaehrlich, 'folgen': folgen,
-                                'schliesst': [f.FUNKTIONEN.get(k, k) for k in folgen['schliesst']]}
+                                'schliesst': [f.FUNKTIONEN.get(k) or f.MODULE.get(k, k) for k in folgen['schliesst']]}
                 else:
                     dienst.plan_wechseln(org, stufe, jaehrlich)
                     protokoll('Stufe gewechselt', f'{stufe}, {"jährlich" if jaehrlich else "monatlich"}')
@@ -393,7 +393,8 @@ def _seite_kunde(request, org, tab):
                    ('abo', gettext('Abonnement'), '')], 'finanzen': betreiber.finanzen(org), 'verlauf': verlauf,
         'verlauf_kurz': verlauf[:3], 'rechnungen': rechnungen,
         'offene': sum(1 for r in rechnungen if r.status == AboRechnung.STATUS_OFFEN),
-        'module': [(k, n) for k, n in f.MODULE.items() if abo and k in (abo.zusatzmodule or [])],
+        'module': [(k, n, f.modul_monatspreis(f.stufe_von(org), k)) for k, n in f.MODULE.items()
+                   if abo and k in (abo.zusatzmodule or [])],
         'stati': Kundenstamm.STATUS, 'arten': KundenKontakt.ARTEN,
     })
     return render(request, 'fw/betreiber_kunde.html', kontext)
@@ -422,7 +423,9 @@ def _seite_abo(request, org, vorschau=None):
     from core import funktionen as f
     kontext = _kunden_kontext(org)
     abo = kontext['abo']
-    kontext.update({'vorschau': vorschau, 'module': list(f.MODULE.items()),
+    stufe = f.stufe_von(org)
+    kontext.update({'vorschau': vorschau,
+                    'module': [(k, n, f.MODULPREISE[k]['monat'], f.modul_inklusive(stufe, k)) for k, n in f.MODULE.items()],
                     'zugebucht': set(abo.zusatzmodule or []) if abo else set()})
     return render(request, 'fw/betreiber_kunde_abo.html', kontext)
 

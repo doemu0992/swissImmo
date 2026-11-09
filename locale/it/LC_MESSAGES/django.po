@@ -40090,3 +40090,33 @@ msgid "%(n)s Rechnung offen"
 msgid_plural "%(n)s Rechnungen offen"
 msgstr[0] "%(n)s fattura aperta"
 msgstr[1] "%(n)s fatture aperte"
+
+msgid "Abonnement %(stufe)s, %(intervall)s"
+msgstr "Abbonamento %(stufe)s, %(intervall)s"
+
+msgid "Jahresrabatt %(p)s %%"
+msgstr "Sconto annuale %(p)s %%"
+
+msgid "Im Grundpreis Ihrer Stufe enthalten."
+msgstr "Incluso nel prezzo base del vostro livello."
+
+msgid "Zugebucht: CHF %(preis)s pro Monat, netto."
+msgstr "Aggiunto: CHF %(preis)s al mese, netto."
+
+msgid "Zubuchbar: CHF %(preis)s pro Monat, netto — beim Betreiber anfragen."
+msgstr "Disponibile: CHF %(preis)s al mese, netto — chiedere all'operatore."
+
+msgid "Ab Stufe %(stufe)s enthalten."
+msgstr "Incluso dal livello %(stufe)s."
+
+msgid "inklusive"
+msgstr "incluso"
+
+msgid "im Grundpreis der Stufe enthalten"
+msgstr "incluso nel prezzo base del livello"
+
+msgid "netto"
+msgstr "netto"
+
+msgid "Zugebuchte Module kommen ab der nächsten Rechnung dazu."
+msgstr "I moduli aggiunti compaiono sulla prossima fattura."

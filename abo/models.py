@@ -113,6 +113,9 @@ class AboRechnung(models.Model):
     versendet_am = models.DateField(
         'Per Mail versandt am', null=True, blank=True,
         help_text='Letzter erfolgreicher Versand der Rechnung (oder einer Mahnung dazu) an die Verwaltung; leer = nie versandt.')
+    positionen = models.JSONField(
+        'Rechnungspositionen', default=list, blank=True,
+        help_text='Die Zeilen der Rechnung zum Zeitpunkt der Rechnungsstellung: [{text, betrag}]. Leer bei älteren Rechnungen.')
     mahnstufe = models.PositiveSmallIntegerField(
         'Mahnstufe', default=0, help_text='0 = nicht gemahnt, 1 = 1. Mahnung versandt, 2 = 2. Mahnung (mit Mahngebühr) versandt.')
     mahngebuehr = models.DecimalField(

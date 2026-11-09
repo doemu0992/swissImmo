@@ -146,7 +146,7 @@ def finanzen(org, heute=None):
         periode = dienst.naechste_periode(abo, org)
         if periode:
             netto, _bemerkung = dienst.betrag_fuer(f.stufe_von(org), dienst.zaehle(org.pk, 'einheiten'),
-                                                   bool(org.abo_jaehrlich))
+                                                   bool(org.abo_jaehrlich), tuple(abo.zusatzmodule or ()))
             ergebnis['naechste'] = {'von': periode[0], 'bis': periode[1], 'netto': netto}
     return ergebnis
 

@@ -67,7 +67,9 @@
     <form method="post" action="{% url 'fw_betreiber_kunde' org.pk %}" class="fw-formular p-5">{% csrf_token %}
         <input type="hidden" name="aktion" value="einstellen">
         <div class="fw-feldblock breit"><span class="fw-label">{% trans "Zugebuchte Module" %}</span>
-            {% for key, name in module %}<label class="fw-haekchen"><input type="checkbox" name="module" value="{{ key }}" {% if key in zugebucht %}checked{% endif %} class="fw-akzent"> {{ name }}</label>{% endfor %}</div>
+            {% for key, name, preis, inklusive in module %}<label class="fw-haekchen"><input type="checkbox" name="module" value="{{ key }}" {% if key in zugebucht %}checked{% endif %} class="fw-akzent"> {{ name }}
+                <span class="fw-faint">{% if inklusive %}{% trans "im Grundpreis der Stufe enthalten" %}{% else %}CHF {{ preis }} / {% trans "Monat" %}, {% trans "netto" %}{% endif %}</span></label>{% endfor %}
+            <p class="fw-hilfe">{% trans "Zugebuchte Module kommen ab der nächsten Rechnung dazu." %}</p></div>
         <div class="fw-feldblock"><label for="bk-ab" class="fw-label">{% trans "Abrechnung ab" %}</label>
             <input id="bk-ab" type="date" name="abrechnung_ab" value="{{ abo.abrechnung_ab|date:'Y-m-d' }}" class="fw-feld">
             <p class="fw-hilfe">{% trans "Leer = es wird nichts in Rechnung gestellt." %}</p></div>

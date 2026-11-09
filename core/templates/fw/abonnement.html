@@ -71,10 +71,12 @@
     {% for m in module %}
     <div class="fw-zeile">
         <div class="fw-mitte"><div class="fw-t">{{ m.name }}</div>
-            {% if not m.offen %}<div class="fw-s">
-                {% if m.zubuchbar %}{% trans "Zubuchbares Modul — beim Betreiber anfragen." %}
-                {% else %}{% blocktrans with stufe=m.ab %}Ab Stufe {{ stufe }}.{% endblocktrans %}{% endif %}
-            </div>{% endif %}
+            {% if m.zubuchbar %}<div class="fw-s">
+                {% if m.inklusive %}{% trans "Im Grundpreis Ihrer Stufe enthalten." %}
+                {% elif m.zugebucht %}{% blocktrans with preis=m.preis %}Zugebucht: CHF {{ preis }} pro Monat, netto.{% endblocktrans %}
+                {% else %}{% blocktrans with preis=m.preis %}Zubuchbar: CHF {{ preis }} pro Monat, netto — beim Betreiber anfragen.{% endblocktrans %}{% if m.inklusive_ab %} {% blocktrans with stufe=m.inklusive_ab %}Ab Stufe {{ stufe }} enthalten.{% endblocktrans %}{% endif %}{% endif %}
+            </div>
+            {% elif not m.offen %}<div class="fw-s">{% blocktrans with stufe=m.ab %}Ab Stufe {{ stufe }}.{% endblocktrans %}</div>{% endif %}
         </div>
         <span class="fw-rechts">{% if m.offen %}<span class="fw-chip fw-good fw-dot">{% trans "Freigeschaltet" %}</span>{% else %}<span class="fw-chip fw-warn">{% trans "Gesperrt" %}</span>{% endif %}</span>
     </div>

@@ -61,13 +61,25 @@ def abo_rechnung_pdf(rechnung):
     c.setStrokeColor(colors.lightgrey)
     c.line(20 * mm, yt + 5 * mm, 190 * mm, yt + 5 * mm)
     c.setFont('Helvetica', 10)
-    c.drawString(20 * mm, yt,
-                 f'Abonnement {rechnung.get_stufe_display()}, {rechnung.get_intervall_display().lower()}, '
-                 f'{rechnung.periode_von:%d.%m.%Y}–{rechnung.periode_bis:%d.%m.%Y}')
-    c.drawRightString(190 * mm, yt, _chf(rechnung.netto))
-    if rechnung.einheiten:
-        c.drawString(20 * mm, yt - 5 * mm, f'{rechnung.einheiten} Einheiten bei Rechnungsstellung')
-    zeile = yt - 12 * mm
+    periode = f'{rechnung.periode_von:%d.%m.%Y}–{rechnung.periode_bis:%d.%m.%Y}'
+    if rechnung.positionen:
+        # Grundpreis, zugebuchte Module und Rabatt je eine Zeile, wie bei der Rechnungsstellung festgehalten.
+        letzte = yt
+        for i, position in enumerate(rechnung.positionen):
+            letzte = yt - i * 5 * mm
+            c.drawString(20 * mm, letzte, f"{position['text']}, {periode}" if i == 0 else position['text'])
+            c.drawRightString(190 * mm, letzte, _chf(position['betrag']))
+        if rechnung.einheiten:
+            letzte -= 5 * mm
+            c.drawString(20 * mm, letzte, f'{rechnung.einheiten} Einheiten bei Rechnungsstellung')
+        zeile = letzte - 7 * mm
+    else:
+        c.drawString(20 * mm, yt,
+                     f'Abonnement {rechnung.get_stufe_display()}, {rechnung.get_intervall_display().lower()}, {periode}')
+        c.drawRightString(190 * mm, yt, _chf(rechnung.netto))
+        if rechnung.einheiten:
+            c.drawString(20 * mm, yt - 5 * mm, f'{rechnung.einheiten} Einheiten bei Rechnungsstellung')
+        zeile = yt - 12 * mm
     if rechnung.mwst_satz is not None:
         c.drawString(20 * mm, zeile, f'MWST {rechnung.mwst_satz:.1f} %')
         c.drawRightString(190 * mm, zeile, _chf(rechnung.mwst_betrag))
