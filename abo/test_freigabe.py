@@ -84,13 +84,22 @@ class PruefstelleTests(Basis):
         self.assertFalse(f.hat_funktion(org, 'betreibung'))
 
     def test_module_nur_wenn_zugebucht(self):
-        self._abo('professional')
+        self._abo('team')
         org = self.a.organisation
         for schluessel in f.MODULE:
             self.assertFalse(f.hat_funktion(org, schluessel), schluessel)
-        self._abo('professional', zusatzmodule=['signatur'])
+        self._abo('team', zusatzmodule=['signatur'])
         self.assertTrue(f.hat_funktion(self.a.organisation, 'signatur'))
         self.assertFalse(f.hat_funktion(self.a.organisation, 'belegerkennung'))
+
+    def test_module_im_grundpreis_ab_professional(self):
+        """KI-Erkennung und Auswertungen stecken ab Professional im Grundpreis, die Unterschrift nie."""
+        for stufe, soll in (('start', False), ('team', False), ('professional', True), ('enterprise', True)):
+            self._abo(stufe)
+            org = self.a.organisation
+            self.assertEqual(f.hat_funktion(org, 'belegerkennung'), soll, stufe)
+            self.assertEqual(f.hat_funktion(org, 'reporting_erweitert'), soll, stufe)
+            self.assertFalse(f.hat_funktion(org, 'signatur'), stufe)
 
     def test_bestandsschutz_oeffnet_alles_bis_zur_planwahl(self):
         self._abo('start', uneingeschraenkt=True)
@@ -429,7 +438,7 @@ class ModulBindungTests(Basis):
 
     def test_belegerkennung_ohne_modul_ruft_die_ki_nicht(self):
         from finance import utils
-        self._abo('professional')
+        self._abo('team')
         with organisation_kontext(self.a.organisation), mock.patch.object(utils, '_scan_basis') as scan, \
                 mock.patch.object(utils, '_qr_rechnung_dekodieren', return_value=None):
             scan.return_value = utils._leer('ki', '')
@@ -437,7 +446,12 @@ class ModulBindungTests(Basis):
             self.assertEqual(ergebnis['methode'], 'gesperrt')
             scan.assert_not_called()
             # Gegenprobe: mit Modul läuft der Scan.
-            self._abo('professional', zusatzmodule=['belegerkennung'])
+            self._abo('team', zusatzmodule=['belegerkennung'])
+            utils.scan_beleg('/tmp/gibt-es-nicht.pdf')
+            scan.assert_called_once()
+            # In Professional steckt das Modul im Grundpreis: der Scan läuft auch ohne Zubuchung.
+            scan.reset_mock()
+            self._abo('professional')
             utils.scan_beleg('/tmp/gibt-es-nicht.pdf')
             scan.assert_called_once()
 

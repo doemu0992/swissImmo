@@ -1180,9 +1180,17 @@ def _abo_module(organisation):
     """Zubuchbare Module und Funktionen mit Stand: offen oder gesperrt, ab welcher Stufe."""
     from core import funktionen as f
     zeilen = []
+    stufe = f.stufe_von(organisation)
+    abo = f.abonnement_von(organisation)
+    zugebucht = set(abo.zusatzmodule or []) if abo is not None else set()
     for schluessel, name in list(f.MODULE.items()):
+        inklusive = f.modul_inklusive(stufe, schluessel)
         zeilen.append({'schluessel': schluessel, 'name': gettext(name), 'offen': f.hat_funktion(organisation, schluessel),
-                       'ab': None, 'zubuchbar': True})
+                       'ab': None, 'zubuchbar': True, 'inklusive': inklusive,
+                       'zugebucht': schluessel in zugebucht and not inklusive,
+                       'preis': f.MODULPREISE[schluessel]['monat'],
+                       'inklusive_ab': (f.STUFEN_NAMEN[f.MODULPREISE[schluessel]['inklusive_ab']]
+                                        if f.MODULPREISE[schluessel]['inklusive_ab'] else None)})
     for schluessel, name in f.FUNKTIONEN.items():
         ab = next((f.STUFEN_NAMEN[s] for s in f.STUFEN_REIHENFOLGE if schluessel in f.STUFEN[s]), None)
         zeilen.append({'schluessel': schluessel, 'name': name, 'offen': f.hat_funktion(organisation, schluessel),
@@ -1225,7 +1233,7 @@ def fw_abonnemente(request):
                 return render(request, 'fw/abonnement_bestaetigen.html', {
                     **basis, 'nav': 'abonnement', 'plan': plan, 'plan_name': dict(Organisation.ABO_CHOICES)[plan],
                     'jaehrlich': jaehrlich,
-                    'schliesst': [f.FUNKTIONEN[k] for k in folgen['schliesst']],
+                    'schliesst': [f.FUNKTIONEN.get(k) or f.MODULE[k] for k in folgen['schliesst']],
                     'bestand_ueber': folgen['bestand_ueber'], 'deckel': folgen['deckel']})
             dienst.plan_wechseln(vw, plan, jaehrlich)
             log_aktion(request, "Abo-Plan gewählt", plan, 'jährlich' if jaehrlich else 'monatlich')

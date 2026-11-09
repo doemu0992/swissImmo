@@ -102,6 +102,16 @@ MODULE = {
     'reporting_erweitert':  _('Eigene Auswertungen und Exportvorlagen'),
 }
 
+#: Preise der zubuchbaren Module in CHF je Monat, netto. `inklusive_ab`: die Stufe, ab der das Modul im Grundpreis steckt
+#: (`None` = nie, das Modul kostet in jeder Stufe). VORLÄUFIG wie `PREISE`: Einführungspreise, nicht aus einer Kostenrechnung
+#: (Fremdkosten: Unterschrift ca. CHF 0.16 je Dokument, KI-Erkennung unter 1 Rappen je Beleg, siehe docs/MARKT.md §5).
+#: Die Unterschrift ist pauschal, nicht je Signatur: Es braucht keine Zählung, bei 30 Dokumenten im Monat bleibt die Marge positiv.
+MODULPREISE = {
+    'signatur':             {'monat': Decimal('9'),  'inklusive_ab': None},
+    'belegerkennung':       {'monat': Decimal('15'), 'inklusive_ab': 'professional'},
+    'reporting_erweitert':  {'monat': Decimal('19'), 'inklusive_ab': 'professional'},
+}
+
 # ---------------------------------------------------------------------------
 # Stufen. Jede Stufe enthält alles aus der vorherigen.
 #
@@ -272,8 +282,9 @@ def hat_funktion(organisation, schluessel):
     if abo is not None and abo.uneingeschraenkt:
         return True
     if schluessel in MODULE:
-        # Zubuchbar, hängt nicht an der Stufe. Ohne Abonnement-Zeile offen.
-        return abo is None or schluessel in (abo.zusatzmodule or [])
+        # Zubuchbar; in höheren Stufen im Grundpreis (`MODULPREISE`). Ohne Abonnement-Zeile offen.
+        return (abo is None or schluessel in (abo.zusatzmodule or [])
+                or modul_inklusive(stufe_von(organisation), schluessel))
     stufe = stufe_von(organisation)
     if stufe is None:
         return False
@@ -344,6 +355,19 @@ def anlege_grenze(organisation, was):
     if was == 'einheiten':
         return PREISE[stufe]['deckel']
     return GRENZEN[stufe][was]
+
+
+def modul_inklusive(stufe, schluessel):
+    """Steckt das Modul im Grundpreis dieser Stufe? (`MODULPREISE[...]['inklusive_ab']` und höher.)"""
+    ab = MODULPREISE[schluessel]['inklusive_ab']
+    if ab is None or stufe not in STUFEN_REIHENFOLGE:
+        return False
+    return STUFEN_REIHENFOLGE.index(stufe) >= STUFEN_REIHENFOLGE.index(ab)
+
+
+def modul_monatspreis(stufe, schluessel):
+    """Was das Modul in dieser Stufe je Monat kostet, netto: 0, wenn es im Grundpreis steckt."""
+    return Decimal('0') if modul_inklusive(stufe, schluessel) else MODULPREISE[schluessel]['monat']
 
 
 def monatspreis(stufe, einheiten):

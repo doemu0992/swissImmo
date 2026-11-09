@@ -107,6 +107,11 @@ def folgen_des_wechsels(organisation, neue_stufe):
     schliesst = [k for k in f.FUNKTIONEN
                  if f.hat_funktion(organisation, k)
                  and k not in f.STUFEN[neue_stufe] and k not in zugebucht]
+    # Module, die bisher im Grundpreis steckten und in der neuen Stufe zugebucht werden müssten.
+    alt = f.stufe_von(organisation)
+    schliesst += [k for k in f.MODULE
+                  if k not in zugebucht and f.modul_inklusive(alt, k) and not f.modul_inklusive(neue_stufe, k)
+                  and not (abo is not None and abo.uneingeschraenkt)]
     deckel = f.PREISE[neue_stufe]['deckel']
     einheiten = zaehle(organisation.pk, 'einheiten')
     return {'schliesst': schliesst,
@@ -171,13 +176,18 @@ def naechste_periode(abo, organisation):
     return von, _plus_monate(von, monate) - timedelta(days=1)
 
 
-def betrag_fuer(stufe, einheiten, jaehrlich):
-    """(netto, bemerkung) für eine Periode. Netto ohne MWST.
+def positionen_fuer(stufe, einheiten, jaehrlich, module=()):
+    """(netto, bemerkung, positionen) für eine Periode. Netto ohne MWST.
+
+    `positionen` sind die Zeilen der Rechnung als `[{'text', 'betrag'}]` (Texte deutsch, wie die Rechnung): der Grundpreis der
+    Stufe, je zugebuchtes Modul eine Zeile (ausser es steckt im Grundpreis der Stufe), bei jährlicher Abrechnung der Rabatt.
+    Die Summe der Beträge ist das Netto. Gespeichert wird das mit der Rechnung: Eine spätere Preisänderung ändert sie nicht.
 
     Passt der Bestand nicht in die Stufe (Downgrade mit mehr Einheiten als der
     Deckel fasst), wird zum Preis des Deckels abgerechnet und das vermerkt:
     Weder wird der Bestand beschnitten noch stillschweigend mehr verlangt.
     """
+    from django.utils import translation
     bemerkung = ''
     deckel = f.PREISE[stufe]['deckel']
     monat = f.monatspreis(stufe, einheiten)
@@ -185,11 +195,29 @@ def betrag_fuer(stufe, einheiten, jaehrlich):
         monat = f.monatspreis(stufe, deckel if deckel is not None else einheiten)
         bemerkung = _('Bestand von %(n)s Einheiten übersteigt die Stufe (höchstens %(d)s); '
                       'abgerechnet zum Preis der Stufe.') % {'n': einheiten, 'd': deckel}
-    if jaehrlich:
-        netto = monat * 12 * (1 - f.JAHRESRABATT)
-    else:
-        netto = monat
-    return netto.quantize(RAPPEN, rounding=ROUND_HALF_UP), bemerkung
+    faktor = 12 if jaehrlich else 1
+    with translation.override('de'):
+        zeilen = [(_('Abonnement %(stufe)s, %(intervall)s') % {
+            'stufe': f.STUFEN_NAMEN[stufe], 'intervall': _('jährlich') if jaehrlich else _('monatlich')}, monat * faktor)]
+        for schluessel in f.MODULE:
+            if schluessel in (module or ()) and schluessel in f.MODULPREISE:
+                preis = f.modul_monatspreis(stufe, schluessel)
+                if preis > 0:
+                    zeilen.append((str(f.MODULE[schluessel]), preis * faktor))
+        summe = sum((b for _t, b in zeilen), Decimal('0'))
+        if jaehrlich:
+            netto = (summe * (1 - f.JAHRESRABATT)).quantize(RAPPEN, rounding=ROUND_HALF_UP)
+            zeilen.append((_('Jahresrabatt %(p)s %%') % {'p': int(f.JAHRESRABATT * 100)}, netto - summe))
+        else:
+            netto = summe.quantize(RAPPEN, rounding=ROUND_HALF_UP)
+    positionen = [{'text': text, 'betrag': str(betrag.quantize(RAPPEN, rounding=ROUND_HALF_UP))} for text, betrag in zeilen]
+    return netto, bemerkung[:240], positionen
+
+
+def betrag_fuer(stufe, einheiten, jaehrlich, module=()):
+    """(netto, bemerkung) für eine Periode, mit den zugebuchten Modulen. Netto ohne MWST."""
+    netto, bemerkung, _positionen = positionen_fuer(stufe, einheiten, jaehrlich, module)
+    return netto, bemerkung
 
 
 def faellig_fuer(von, heute):
@@ -225,7 +253,8 @@ def rechnung_stellen(organisation, abo, heute=None, trotz_platzhalter=False):
     stufe = f.stufe_von(organisation)
     einheiten = zaehle(organisation.pk, 'einheiten')
     jaehrlich = bool(organisation.abo_jaehrlich)
-    netto, bemerkung = betrag_fuer(stufe, einheiten, jaehrlich)
+    # Zugebuchte Module kosten mit: ausser bei Bestandsschutz (alles offen, keine Rechnung) und wenn sie im Grundpreis stecken.
+    netto, bemerkung, positionen = positionen_fuer(stufe, einheiten, jaehrlich, tuple(abo.zusatzmodule or ()))
 
     satz = settings.ABO_MWST_SATZ
     satz = Decimal(str(satz)) if satz is not None else None
@@ -238,7 +267,7 @@ def rechnung_stellen(organisation, abo, heute=None, trotz_platzhalter=False):
                 periode_bis=bis, stufe=stufe, intervall=intervall_von(organisation), einheiten=einheiten,
                 netto=netto, mwst_satz=satz, mwst_betrag=mwst, brutto=netto + mwst,
                 rechnungsdatum=heute, faellig_am=faellig_fuer(von, heute),
-                platzhalter=not settings.ABO_PREISE_FESTGELEGT, bemerkung=bemerkung[:240]))
+                platzhalter=not settings.ABO_PREISE_FESTGELEGT, bemerkung=bemerkung[:240], positionen=positionen))
         if neu:
             rechnung.qr_referenz = qrr_referenz(organisation.pk, rechnung.pk)[0]
             rechnung.save(update_fields=['qr_referenz'])
