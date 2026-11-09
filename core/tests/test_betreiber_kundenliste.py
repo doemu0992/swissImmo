@@ -749,3 +749,110 @@ class BetreiberKundenseiteTests(TestCase):
         for pfad in (f'/betreiber/999999/bearbeiten/', f'/betreiber/999999/abo/'):
             self.assertEqual(self.c.get(pfad).status_code, 404, pfad)
 
+
+
+class SupportAnfrageTests(TestCase):
+    """Der Support-Knopf der Verwaltung: Mail an den Betreiber und Eintrag im Verlauf der Kundenkartei."""
+
+    def setUp(self):
+        from django.test import override_settings
+        self.org = _test_organisation()
+        Abonnement.alle_organisationen.get_or_create(organisation=self.org)
+        self.team = _team_user()
+        self.team.email = 'anna@aldo.ch'
+        self.team.save()
+        self.c = Client()
+        self.c.force_login(self.team)
+        self.betreiber = get_user_model().objects.create_superuser('betreiber', 'b@example.ch', 'x' * 12)
+        self.b = Client()
+        self.b.force_login(self.betreiber)
+        self.url = '/neu/abonnement/support/'
+        self.daten = {'betreff': 'Mahnlauf startet nicht', 'nachricht': 'Seit gestern bricht der Mahnlauf mit einem Fehler ab.'}
+        self.einstellung = override_settings(ABO_SUPPORT_EMAIL='support@immoswiss.app')
+        self.einstellung.enable()
+        mail.outbox.clear()
+
+    def tearDown(self):
+        self.einstellung.disable()
+
+    def _eintraege(self):
+        from abo.models import KundenKontakt
+        return KundenKontakt.alle_organisationen.filter(organisation=self.org, art='support')
+
+    def test_anfrage_geht_per_mail_und_steht_im_verlauf(self):
+        antwort = self.c.post(self.url, self.daten)
+        self.assertRedirects(antwort, '/neu/abonnement/', fetch_redirect_response=False)
+        self.assertEqual(len(mail.outbox), 1)
+        m = mail.outbox[0]
+        self.assertEqual(m.to, ['support@immoswiss.app'])
+        self.assertEqual(m.reply_to, ['anna@aldo.ch'])
+        self.assertIn('Mahnlauf startet nicht', m.subject)
+        self.assertIn('K-', m.body)
+        eintrag = self._eintraege().get()
+        self.assertIn('Mahnlauf startet nicht', eintrag.text)
+        self.assertIsNone(eintrag.erledigt_am)
+
+    def test_leere_oder_zu_kurze_anfrage_wird_abgelehnt(self):
+        self.c.post(self.url, {'betreff': '', 'nachricht': 'x' * 30})
+        self.c.post(self.url, {'betreff': 'Hilfe', 'nachricht': 'kurz'})
+        self.assertFalse(self._eintraege().exists())
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_zu_viele_anfragen_in_einer_stunde(self):
+        for _i in range(6):
+            self.c.post(self.url, self.daten)
+        self.assertEqual(self._eintraege().count(), 5)
+        self.assertEqual(len(mail.outbox), 5)
+
+    def test_scheitert_die_mail_bleibt_die_anfrage_erhalten(self):
+        from unittest import mock
+        with mock.patch('abo.support.EmailMessage.send', side_effect=OSError('smtp')):
+            self.c.post(self.url, self.daten)
+        self.assertEqual(self._eintraege().count(), 1)
+
+    def test_get_aendert_nichts_und_nur_team_darf_fragen(self):
+        self.assertRedirects(self.c.get(self.url), '/neu/abonnement/', fetch_redirect_response=False)
+        anonym = Client()
+        self.assertNotEqual(anonym.post(self.url, self.daten).status_code, 200)
+        self.assertFalse(self._eintraege().exists())
+
+    def test_betreiber_sieht_die_offene_anfrage_und_erledigt_sie(self):
+        from core.services import betreiber
+        self.c.post(self.url, self.daten)
+        kunde = next(k for k in betreiber.kunden() if k.organisation.pk == self.org.pk)
+        self.assertEqual(kunde.support_offen, 1)
+        self.assertTrue(any('Support-Anfrage' in b for b in kunde.befunde))
+        seite = self.b.get(f'/betreiber/{self.org.pk}/?tab=verlauf')
+        self.assertContains(seite, 'Mahnlauf startet nicht')
+        self.assertContains(seite, 'support_erledigt')
+        eintrag = self._eintraege().get()
+        self.b.post(f'/betreiber/{self.org.pk}/', {'aktion': 'support_erledigt', 'eintrag': eintrag.pk})
+        eintrag.refresh_from_db()
+        self.assertIsNotNone(eintrag.erledigt_am)
+        kunde = next(k for k in betreiber.kunden() if k.organisation.pk == self.org.pk)
+        self.assertEqual(kunde.support_offen, 0)
+        # nochmals: wieder öffnen
+        self.b.post(f'/betreiber/{self.org.pk}/', {'aktion': 'support_erledigt', 'eintrag': eintrag.pk})
+        eintrag.refresh_from_db()
+        self.assertIsNone(eintrag.erledigt_am)
+
+    def test_support_eintrag_laesst_sich_nicht_von_hand_anlegen_und_fremde_nicht_erledigen(self):
+        from django.utils import timezone
+
+        from abo.models import KundenKontakt
+        self.b.post(f'/betreiber/{self.org.pk}/', {'aktion': 'kontakt', 'art': 'support', 'text': 'x'})
+        self.assertFalse(self._eintraege().exists())
+        andere = Organisation.objects.create(firma='Andere AG', strasse='x', plz='1', ort='x')
+        fremd = KundenKontakt.alle_organisationen.create(
+            organisation=andere, zeitpunkt=timezone.now(), art='support', text='fremd')
+        self.b.post(f'/betreiber/{self.org.pk}/', {'aktion': 'support_erledigt', 'eintrag': fremd.pk})
+        fremd.refresh_from_db()
+        self.assertIsNone(fremd.erledigt_am)
+
+    def test_abo_seite_zeigt_den_knopf_auch_im_gesperrten_zugang(self):
+        self.assertContains(self.c.get('/neu/abonnement/'), 'name="betreff"')
+        abo = Abonnement.alle_organisationen.get(organisation=self.org)
+        abo.zustand = 'gesperrt'
+        abo.save()
+        self.assertEqual(self.c.post(self.url, self.daten).status_code, 302)
+        self.assertEqual(self._eintraege().count(), 1, 'auch gesperrte Kunden erreichen den Support')

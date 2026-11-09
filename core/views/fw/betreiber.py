@@ -297,12 +297,21 @@ def fw_betreiber_kunde(request, pk):
                 art = request.POST.get('art') or KundenKontakt.ART_NOTIZ
                 if not text:
                     raise ValueError(gettext('Der Eintrag ist leer.'))
-                if art not in dict(KundenKontakt.ARTEN):
+                if art not in dict(KundenKontakt.ARTEN) or art == KundenKontakt.ART_SUPPORT:
                     raise ValueError(gettext('Unbekannte Art.'))
                 KundenKontakt.alle_organisationen.create(
                     organisation=org, zeitpunkt=timezone.now(), art=art, text=text[:4000],
                     erfasst_von=request.user.get_username())
                 messages.success(request, gettext('Eintrag gespeichert.'))
+            elif aktion == 'support_erledigt':
+                eintrag = KundenKontakt.alle_organisationen.filter(
+                    organisation=org, art=KundenKontakt.ART_SUPPORT, pk=request.POST.get('eintrag') or 0).first()
+                if eintrag is None:
+                    raise ValueError(gettext('Diese Anfrage gehört nicht zu dieser Verwaltung.'))
+                eintrag.erledigt_am = None if eintrag.erledigt_am else timezone.now()
+                eintrag.save(update_fields=['erledigt_am'])
+                messages.success(request, gettext('Anfrage als erledigt markiert.') if eintrag.erledigt_am
+                                 else gettext('Anfrage wieder geöffnet.'))
             elif aktion == 'kontakt_loeschen':
                 eintrag = KundenKontakt.alle_organisationen.filter(
                     organisation=org, pk=request.POST.get('eintrag') or 0).first()
@@ -356,7 +365,7 @@ def fw_betreiber_kunde(request, pk):
 REITER_KUNDE = ('uebersicht', 'stamm', 'verlauf', 'finanzen', 'abo')
 _REITER_NACH_AKTION = {
     'stamm': 'stamm', 'status': 'uebersicht', 'kontakt': 'verlauf', 'kontakt_loeschen': 'verlauf',
-    'senden': 'finanzen', 'erinnern': 'finanzen', 'bezahlt': 'finanzen', 'storno': 'finanzen',
+    'senden': 'finanzen', 'erinnern': 'finanzen', 'support_erledigt': 'verlauf', 'bezahlt': 'finanzen', 'storno': 'finanzen',
     'plan': 'abo', 'einstellen': 'abo', 'abo_anlegen': 'abo',
 }
 
@@ -395,7 +404,8 @@ def _seite_kunde(request, org, tab):
         'offene': sum(1 for r in rechnungen if r.status == AboRechnung.STATUS_OFFEN),
         'module': [(k, n, f.modul_monatspreis(f.stufe_von(org), k)) for k, n in f.MODULE.items()
                    if abo and k in (abo.zusatzmodule or [])],
-        'stati': Kundenstamm.STATUS, 'arten': KundenKontakt.ARTEN,
+        'stati': Kundenstamm.STATUS, 'arten': [a for a in KundenKontakt.ARTEN if a[0] != KundenKontakt.ART_SUPPORT],
+        'support_offen': kontext['k'].support_offen,
     })
     return render(request, 'fw/betreiber_kunde.html', kontext)
 

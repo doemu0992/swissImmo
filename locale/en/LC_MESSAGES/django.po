@@ -39525,3 +39525,47 @@ msgstr "net"
 
 msgid "Zugebuchte Module kommen ab der nächsten Rechnung dazu."
 msgstr "Added modules appear on the next invoice."
+
+msgid "Bitte einen Betreff angeben (%(min)s bis %(max)s Zeichen)."
+msgstr "Please enter a subject (%(min)s to %(max)s characters)."
+
+msgid "Bitte die Anfrage beschreiben (%(min)s bis %(max)s Zeichen)."
+msgstr "Please describe your request (%(min)s to %(max)s characters)."
+
+msgid "Es sind zu viele Anfragen in kurzer Zeit eingegangen. Bitte später noch einmal versuchen oder direkt anrufen."
+msgstr "Too many requests in a short time. Please try again later or call directly."
+
+msgid "Ihre Anfrage ist beim Betreiber angekommen. Die Antwort kommt per E-Mail."
+msgstr "Your request has reached the operator. The reply will come by email."
+
+msgid "Ihre Anfrage ist gespeichert. Die Benachrichtigung ging nicht hinaus; der Betreiber sieht sie trotzdem."
+msgstr "Your request is saved. The notification was not sent; the operator will still see it."
+
+msgid "Diese Anfrage gehört nicht zu dieser Verwaltung."
+msgstr "This request does not belong to this property management."
+
+msgid "Anfrage als erledigt markiert."
+msgstr "Request marked as done."
+
+msgid "Anfrage wieder geöffnet."
+msgstr "Request reopened."
+
+msgid "%(n)s Support-Anfrage(n) offen: im Reiter «Verlauf» beantworten und erledigen."
+msgstr "%(n)s support request(s) open: answer and close them in the «History» tab."
+
+msgid "Support"
+msgstr "Support"
+
+msgid "Ihre Anfrage geht an den Betreiber; die Antwort kommt per E-Mail an Ihre Adresse."
+msgstr "Your request goes to the operator; the reply comes by email to your address."
+
+msgid "Ihre Anfrage"
+msgstr "Your request"
+
+msgid "Anfrage senden"
+msgstr "Send request"
+
+msgid "%(n)s Support-Anfrage offen"
+msgid_plural "%(n)s Support-Anfragen offen"
+msgstr[0] "%(n)s support request open"
+msgstr[1] "%(n)s support requests open"

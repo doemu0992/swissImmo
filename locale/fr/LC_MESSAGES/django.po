@@ -40191,3 +40191,47 @@ msgstr "net"
 
 msgid "Zugebuchte Module kommen ab der nächsten Rechnung dazu."
 msgstr "Les modules ajoutés figurent sur la prochaine facture."
+
+msgid "Bitte einen Betreff angeben (%(min)s bis %(max)s Zeichen)."
+msgstr "Veuillez indiquer un objet (%(min)s à %(max)s caractères)."
+
+msgid "Bitte die Anfrage beschreiben (%(min)s bis %(max)s Zeichen)."
+msgstr "Veuillez décrire votre demande (%(min)s à %(max)s caractères)."
+
+msgid "Es sind zu viele Anfragen in kurzer Zeit eingegangen. Bitte später noch einmal versuchen oder direkt anrufen."
+msgstr "Trop de demandes en peu de temps. Veuillez réessayer plus tard ou appeler directement."
+
+msgid "Ihre Anfrage ist beim Betreiber angekommen. Die Antwort kommt per E-Mail."
+msgstr "Votre demande est bien arrivée chez l'exploitant. La réponse viendra par e-mail."
+
+msgid "Ihre Anfrage ist gespeichert. Die Benachrichtigung ging nicht hinaus; der Betreiber sieht sie trotzdem."
+msgstr "Votre demande est enregistrée. La notification n'est pas partie ; l'exploitant la verra quand même."
+
+msgid "Diese Anfrage gehört nicht zu dieser Verwaltung."
+msgstr "Cette demande n'appartient pas à cette gérance."
+
+msgid "Anfrage als erledigt markiert."
+msgstr "Demande marquée comme traitée."
+
+msgid "Anfrage wieder geöffnet."
+msgstr "Demande rouverte."
+
+msgid "%(n)s Support-Anfrage(n) offen: im Reiter «Verlauf» beantworten und erledigen."
+msgstr "%(n)s demande(s) de support ouverte(s) : y répondre et les clore dans l'onglet «Historique»."
+
+msgid "Support"
+msgstr "Support"
+
+msgid "Ihre Anfrage geht an den Betreiber; die Antwort kommt per E-Mail an Ihre Adresse."
+msgstr "Votre demande est transmise à l'exploitant ; la réponse arrive par e-mail à votre adresse."
+
+msgid "Ihre Anfrage"
+msgstr "Votre demande"
+
+msgid "Anfrage senden"
+msgstr "Envoyer la demande"
+
+msgid "%(n)s Support-Anfrage offen"
+msgid_plural "%(n)s Support-Anfragen offen"
+msgstr[0] "%(n)s demande de support ouverte"
+msgstr[1] "%(n)s demandes de support ouvertes"

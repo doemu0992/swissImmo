@@ -67,6 +67,18 @@
 </div>
 
 <div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Support" %}</h2></div>
+    <form method="post" action="/neu/abonnement/support/" class="fw-formular p-5">{% csrf_token %}
+        <div class="fw-feldblock breit"><p class="fw-hilfe">{{ support_text }}. {% trans "Ihre Anfrage geht an den Betreiber; die Antwort kommt per E-Mail an Ihre Adresse." %}</p></div>
+        <div class="fw-feldblock breit"><label for="su-betreff" class="fw-label">{% trans "Betreff" %}</label>
+            <input id="su-betreff" name="betreff" maxlength="120" required class="fw-feld"></div>
+        <div class="fw-feldblock breit"><label for="su-text" class="fw-label">{% trans "Ihre Anfrage" %}</label>
+            <textarea id="su-text" name="nachricht" rows="4" maxlength="4000" required class="fw-feld"></textarea></div>
+        <div class="fw-feldblock breit"><button type="submit" class="fw-btn fw-primary">{% trans "Anfrage senden" %}</button></div>
+    </form>
+</div>
+
+<div class="fw-card">
     <div class="fw-kopf"><h2>{% trans "Funktionen und Module" %}</h2></div>
     {% for m in module %}
     <div class="fw-zeile">

@@ -34,6 +34,7 @@ Abo-Daten gezeigt, keine Verträge, Personen oder Buchungen der Verwaltung.
                 {% elif abo.zustand == 'mahnung' %}<span class="fw-chip fw-warn">{% trans "Zahlung überfällig" %}</span>
                 {% elif offene %}<span class="fw-chip fw-warn">{% blocktrans count n=offene %}{{ n }} Rechnung offen{% plural %}{{ n }} Rechnungen offen{% endblocktrans %}</span>
                 {% elif abo %}<span class="fw-chip fw-good">{% trans "alles bezahlt" %}</span>{% endif %}
+                {% if support_offen %}<span class="fw-chip fw-warn">{% blocktrans count n=support_offen %}{{ n }} Support-Anfrage offen{% plural %}{{ n }} Support-Anfragen offen{% endblocktrans %}</span>{% endif %}
             </div>
         </div>
         <div class="fw-akte-rechts">
@@ -161,8 +162,10 @@ Abo-Daten gezeigt, keine Verträge, Personen oder Buchungen der Verwaltung.
                 <button type="button" class="fw-btn fw-geist" data-verstecken="kd-neu">{% trans "Abbrechen" %}</button></div>
         </form>
         {% for e in verlauf %}
-        <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ e.art_text }}</div><div class="fw-s">{{ e.text|linebreaksbr }}</div></div>
+        <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ e.art_text }}{% if e.support %} <span class="fw-chip {% if e.erledigt %}fw-good{% else %}fw-warn{% endif %}">{% if e.erledigt %}{% trans "erledigt" %}{% else %}{% trans "offen" %}{% endif %}</span>{% endif %}</div><div class="fw-s">{{ e.text|linebreaksbr }}</div></div>
             <div class="fw-zeit">{{ e.zeit|date:"d.m.Y H:i" }}<br><span class="fw-klein">{{ e.von|default:"System" }}</span></div>
+            {% if e.support %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="aktion" value="support_erledigt"><input type="hidden" name="eintrag" value="{{ e.pk }}">
+                <button type="submit" class="fw-btn fw-geist fw-knapp">{% if e.erledigt %}{% trans "Wieder öffnen" %}{% else %}{% trans "Erledigt" %}{% endif %}</button></form>{% endif %}
             {% if e.eigen %}<form method="post" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Eintrag löschen?" %}{% endfilter %}">{% csrf_token %}<input type="hidden" name="aktion" value="kontakt_loeschen"><input type="hidden" name="eintrag" value="{{ e.pk }}">
                 <button type="submit" class="fw-btn fw-geist fw-knapp">{% trans "Löschen" %}</button></form>{% endif %}</div>
         {% empty %}

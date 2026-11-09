@@ -209,7 +209,10 @@ class KundenKontakt(models.Model):
     ART_MAIL = 'mail'
     ART_BESUCH = 'besuch'
     ART_NOTIZ = 'notiz'
-    ARTEN = [(ART_ANRUF, 'Anruf'), (ART_MAIL, 'E-Mail'), (ART_BESUCH, 'Besuch'), (ART_NOTIZ, 'Notiz')]
+    #: Eine Anfrage der Verwaltung über den Support-Knopf. Sie ist offen, bis der Betreiber sie als erledigt markiert.
+    ART_SUPPORT = 'support'
+    ARTEN = [(ART_ANRUF, 'Anruf'), (ART_MAIL, 'E-Mail'), (ART_BESUCH, 'Besuch'), (ART_NOTIZ, 'Notiz'),
+             (ART_SUPPORT, 'Support-Anfrage')]
 
     organisation = models.ForeignKey(
         'crm.Organisation', on_delete=models.CASCADE, editable=False, related_name='kunden_kontakte',
@@ -218,6 +221,8 @@ class KundenKontakt(models.Model):
     art = models.CharField('Art', max_length=10, choices=ARTEN, default=ART_NOTIZ)
     text = models.TextField('Eintrag')
     erfasst_von = models.CharField('Erfasst von', max_length=150, blank=True, default='')
+    erledigt_am = models.DateTimeField('Erledigt am', null=True, blank=True,
+                                       help_text='Nur bei Support-Anfragen: leer = noch offen.')
 
     objects = TenantManager()
     alle_organisationen = AlleOrganisationenManager()
