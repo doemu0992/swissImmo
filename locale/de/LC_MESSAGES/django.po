@@ -37977,3 +37977,73 @@ msgid ""
 "«Abrechnung ab» ist nicht gesetzt: Es wird nichts in Rechnung gestellt."
 msgstr ""
 "«Abrechnung ab» ist nicht gesetzt: Es wird nichts in Rechnung gestellt."
+
+msgid "CSP-Meldungen"
+msgstr "CSP-Meldungen"
+
+msgid ""
+"Was der Browser als Verstoss gegen die Sicherheitsrichtlinie meldet, "
+"zusammengefasst aus dem Anwendungs-Log. Ruhig heisst: Die Richtlinie kann "
+"scharf geschaltet werden."
+msgstr ""
+"Was der Browser als Verstoss gegen die Sicherheitsrichtlinie meldet, "
+"zusammengefasst aus dem Anwendungs-Log. Ruhig heisst: Die Richtlinie kann "
+"scharf geschaltet werden."
+
+msgid "Modus"
+msgstr "Modus"
+
+msgid "meldet nur, sperrt nichts"
+msgstr "meldet nur, sperrt nichts"
+
+msgid "sperrt Verstösse"
+msgstr "sperrt Verstösse"
+
+msgid "Gelesene Logdateien"
+msgstr "Gelesene Logdateien"
+
+msgid "keine gefunden"
+msgstr "keine gefunden"
+
+msgid "Meldungen insgesamt"
+msgstr "Meldungen insgesamt"
+
+msgid ""
+"Keine Verstösse im gelesenen Teil des Logs. Das ist der gewünschte Zustand "
+"vor dem Scharfschalten."
+msgstr ""
+"Keine Verstösse im gelesenen Teil des Logs. Das ist der gewünschte Zustand "
+"vor dem Scharfschalten."
+
+msgid ""
+"Das Log ist nicht lesbar oder noch nicht angelegt. Ohne Log lässt sich nicht"
+" beurteilen, ob die Richtlinie scharf geschaltet werden kann."
+msgstr ""
+"Das Log ist nicht lesbar oder noch nicht angelegt. Ohne Log lässt sich nicht"
+" beurteilen, ob die Richtlinie scharf geschaltet werden kann."
+
+msgid "Anzahl"
+msgstr "Anzahl"
+
+msgid "Regel"
+msgstr "Regel"
+
+msgid "Seite"
+msgstr "Seite"
+
+msgid "Zuletzt"
+msgstr "Zuletzt"
+
+msgid ""
+"Adressen sind ohne Abfrageteil gezeigt. Meldungen von Browser-Erweiterungen "
+"(Quelle beginnt mit chrome-extension: oder moz-extension:) kannst du "
+"ignorieren."
+msgstr ""
+"Adressen sind ohne Abfrageteil gezeigt. Meldungen von Browser-Erweiterungen "
+"(Quelle beginnt mit chrome-extension: oder moz-extension:) kannst du "
+"ignorieren."
+
+msgid "%(n)s verschiedene"
+msgid_plural "%(n)s verschiedene"
+msgstr[0] "%(n)s verschiedene"
+msgstr[1] "%(n)s verschiedene"

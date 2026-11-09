@@ -23,6 +23,7 @@ Antwort**. Fremdes Skript, auch wenn es im HTML steht, läuft nicht.
 
 ## Betrieb
 
+* **Betreiber-Portal → CSP-Meldungen** (`/betreiber/csp/`) zeigt die Verstösse aus dem Log, zusammengefasst und ohne Abfrageteil der Adressen; ein Serverzugang ist dafür nicht nötig. Quelle ist `logs/swissimmo.log` (hinterer Teil, plus die jüngste Sicherung).
 * `CSP_MODUS` (Umgebungsvariable): `report-only` (Vorgabe), `enforce`, `aus` (nur als Notausstieg).
 * Verstösse stehen als Warnung im Logger `csp` (`CSP-Verstoss: <Regel> | blockiert=… | Seite=… | Zeile=…`).
   Solange `report-only` gilt, sind sie die Arbeitsliste für die nächsten Etappen. Die Stelle ist ohne Anmeldung

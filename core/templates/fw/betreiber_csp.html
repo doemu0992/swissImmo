@@ -1,0 +1,55 @@
+{% extends 'core/betreiber_base.html' %}
+{% load zeichen i18n %}
+{% comment %}BETREIBER — CSP-Meldungen. Siehe core/services/csp_meldungen.py: liest das Anwendungs-Log, speichert nichts.{% endcomment %}
+{% block title %}{% trans "CSP-Meldungen" %} — immoswiss{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <b>{% trans "CSP-Meldungen" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "CSP-Meldungen" %}</h1>
+        <p>{% trans "Was der Browser als Verstoss gegen die Sicherheitsrichtlinie meldet, zusammengefasst aus dem Anwendungs-Log. Ruhig heisst: Die Richtlinie kann scharf geschaltet werden." %}</p>
+    </div>
+</div>
+
+<div class="fw-card max-w-3xl">
+    <div class="fw-kopf"><h2>{% trans "Zustand" %}</h2></div>
+    <div class="fw-rumpf">
+        <div class="fw-dz"><div class="fw-dl">{% trans "Modus" %}</div><div class="fw-dv"><b>{{ modus }}</b>{% if modus == 'report-only' %} · {% trans "meldet nur, sperrt nichts" %}{% elif modus == 'enforce' %} · {% trans "sperrt Verstösse" %}{% else %} · {% trans "aus" %}{% endif %}</div></div>
+        <div class="fw-dz"><div class="fw-dl">{% trans "Gelesene Logdateien" %}</div><div class="fw-dv">{% if dateien %}{{ dateien|join:", " }}{% else %}<b>{% trans "keine gefunden" %}</b>{% endif %}</div></div>
+        <div class="fw-dz"><div class="fw-dl">{% trans "Meldungen insgesamt" %}</div><div class="fw-dv">{{ gesamt }} · {% blocktrans count n=eintraege|length %}{{ n }} verschiedene{% plural %}{{ n }} verschiedene{% endblocktrans %}</div></div>
+    </div>
+</div>
+
+{% if not eintraege %}
+<div class="fw-hinweis info max-w-3xl"><span class="fw-hi">{% zeichen 'gut' %}</span><div class="fw-ht">{% if dateien %}{% trans "Keine Verstösse im gelesenen Teil des Logs. Das ist der gewünschte Zustand vor dem Scharfschalten." %}{% else %}{% trans "Das Log ist nicht lesbar oder noch nicht angelegt. Ohne Log lässt sich nicht beurteilen, ob die Richtlinie scharf geschaltet werden kann." %}{% endif %}</div></div>
+{% else %}
+<div class="fw-card">
+    <div class="overflow-x-auto">
+    <table class="fw-table">
+        <thead><tr>
+            <th scope="col" class="fw-right">{% trans "Anzahl" %}</th>
+            <th scope="col">{% trans "Regel" %}</th>
+            <th scope="col">{% trans "Blockiert" %}</th>
+            <th scope="col">{% trans "Seite" %}</th>
+            <th scope="col">{% trans "Zuletzt" %}</th>
+        </tr></thead>
+        <tbody>
+        {% for e in eintraege %}
+        <tr>
+            <td class="fw-right fw-strong">{{ e.anzahl }}</td>
+            <td>{{ e.regel }}</td>
+            <td>{{ e.blockiert }}</td>
+            <td>{{ e.seite }}</td>
+            <td>{{ e.zuletzt }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+<p class="fw-hilfe max-w-3xl">{% trans "Adressen sind ohne Abfrageteil gezeigt. Meldungen von Browser-Erweiterungen (Quelle beginnt mit chrome-extension: oder moz-extension:) kannst du ignorieren." %}</p>
+{% endif %}
+{% endblock %}
