@@ -75,6 +75,8 @@ def fw_betreiber_neu(request):
                 messages.error(request, str(fehler))
         else:
             gesendet, link = einladung_senden(request, benutzer, organisation, neu=neu)
+            if ab:
+                _sofort_abrechnen(request, organisation)
             with organisation_kontext(organisation):
                 log_aktion(request, 'Kunde angelegt', objekt=organisation.firma,
                            details=f'Inhaber {benutzer.get_username()}, Einladung {"gesendet" if gesendet else "nicht gesendet"}, '
@@ -91,6 +93,38 @@ def fw_betreiber_neu(request):
     return render(request, 'fw/betreiber_neu.html', {
         'aktiv': 'kunden', 'w': werte,
     })
+
+
+def _sofort_abrechnen(request, org):
+    """Stellt die fällige Rechnung sofort, wenn «Abrechnung ab» gesetzt und die Periode (mit Vorlauf) erreicht ist.
+
+    Abo-Rechnungen sind im Voraus zu bezahlen; der Betreiber wartet nicht auf den täglichen Lauf. Idempotent: Ist die
+    Periode schon verrechnet, geschieht nichts. Meldet die erstellte Rechnung mit Fälligkeit.
+    """
+    from django.contrib import messages
+    from django.utils.translation import gettext
+
+    from abo import dienst
+    from abo.models import Abonnement
+    from core.auth import log_aktion
+    from core.tenancy import organisation_kontext
+
+    abo = Abonnement.alle_organisationen.filter(organisation=org).first()
+    if abo is None or abo.uneingeschraenkt:
+        return None
+    try:
+        rechnung = dienst.rechnung_stellen(org, abo)
+    except dienst.PreiseNichtFestgelegt:
+        return None
+    if rechnung is not None:
+        with organisation_kontext(org):
+            log_aktion(request, 'Rechnung gestellt', objekt=org.firma, kategorie='sicherheit',
+                       details=f'{rechnung.nummer}, {rechnung.periode_von} bis {rechnung.periode_bis}, '
+                               f'CHF {rechnung.brutto}, fällig {rechnung.faellig_am}')
+        messages.success(request, gettext('Rechnung %(nr)s über CHF %(betrag)s erstellt, fällig am %(datum)s.')
+                         % {'nr': rechnung.nummer, 'betrag': rechnung.brutto,
+                            'datum': rechnung.faellig_am.strftime('%d.%m.%Y')})
+    return rechnung
 
 
 def _kunde_oder_404(pk):
@@ -159,6 +193,7 @@ def fw_betreiber_kunde(request, pk):
                 abo.abrechnung_ab = date.fromisoformat(ab) if ab else None
                 abo.uneingeschraenkt = bool(request.POST.get('bestandsschutz'))
                 abo.save()
+                _sofort_abrechnen(request, org)
                 protokoll('Abonnement eingestellt',
                           f'Module {",".join(module) or "-"}, Abrechnung ab {abo.abrechnung_ab or "-"}, '
                           f'Bestandsschutz {"an" if abo.uneingeschraenkt else "aus"}')

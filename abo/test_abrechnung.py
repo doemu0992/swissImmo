@@ -55,7 +55,7 @@ class BetragTests(Basis):
         self.assertEqual(rechnung.mwst_betrag, Decimal('0.00'))
         self.assertEqual(rechnung.brutto, rechnung.netto)
         self.assertEqual((rechnung.periode_von, rechnung.periode_bis), (date(2026, 12, 1), date(2026, 12, 31)))
-        self.assertEqual(rechnung.faellig_am, date(2026, 12, 31))
+        self.assertEqual(rechnung.faellig_am, date(2026, 12, 11))       # Periode läuft schon: Zahlungsfrist ab Rechnung
         self.assertFalse(rechnung.platzhalter)
 
     @override_settings(ABO_MWST_SATZ=Decimal('8.1'))
@@ -98,10 +98,25 @@ class BetragTests(Basis):
         dienst.abrechnen(self.org(), heute=date(2030, 1, 1))
         self.assertFalse(AboRechnung.alle_organisationen.filter(organisation=self.a.organisation).exists())
 
-    def test_vor_dem_beginn_wird_nichts_gestellt(self):
+    def test_vor_dem_vorlauf_wird_nichts_gestellt(self):
         _verwaltet(self.a, ab=date(2027, 1, 1))
-        dienst.abrechnen(self.org(), heute=date(2026, 12, 31))
+        dienst.abrechnen(self.org(), heute=date(2026, 12, 15))
         self.assertFalse(AboRechnung.alle_organisationen.filter(organisation=self.a.organisation).exists())
+
+    def test_im_voraus_rechnung_im_vorlauf_faellig_am_periodenbeginn(self):
+        _verwaltet(self.a, ab=date(2027, 1, 1))
+        dienst.abrechnen(self.org(), heute=date(2026, 12, 22))          # 10 Tage vor Beginn
+        r = AboRechnung.alle_organisationen.get(organisation=self.a.organisation)
+        self.assertEqual((r.periode_von, r.rechnungsdatum, r.faellig_am),
+                         (date(2027, 1, 1), date(2026, 12, 22), date(2027, 1, 1)))
+
+    def test_wird_nicht_vor_dem_vorlauf_und_nicht_doppelt_gestellt(self):
+        _verwaltet(self.a, ab=date(2027, 1, 1))
+        dienst.abrechnen(self.org(), heute=date(2026, 12, 21))          # 11 Tage vorher: zu früh
+        self.assertFalse(AboRechnung.alle_organisationen.filter(organisation=self.a.organisation).exists())
+        dienst.abrechnen(self.org(), heute=date(2026, 12, 22))
+        dienst.abrechnen(self.org(), heute=date(2027, 1, 1))
+        self.assertEqual(AboRechnung.alle_organisationen.filter(organisation=self.a.organisation).count(), 1)
 
     def test_qr_referenz_hat_gueltige_pruefziffer(self):
         from core.services.iban import qrr_pruefziffer_ok

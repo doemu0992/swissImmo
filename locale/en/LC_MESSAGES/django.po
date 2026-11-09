@@ -39159,3 +39159,28 @@ msgid "%(n)s verschiedene"
 msgid_plural "%(n)s verschiedene"
 msgstr[0] "%(n)s distinct"
 msgstr[1] "%(n)s distinct"
+
+msgid "Alle Preise exkl. MWST."
+msgstr "All prices excl. VAT."
+
+msgid "Alle Preise in CHF, ohne MWST (nicht mehrwertsteuerpflichtig)."
+msgstr "All prices in CHF, without VAT (provider is not VAT-liable)."
+
+msgid ""
+"Einführungspreise, Stand %(stand)s. Die Einheiten­zahl wird automatisch aus "
+"deinen erfassten Objekten berechnet."
+msgstr ""
+"Introductory prices, as of %(stand)s. The number of units is calculated "
+"automatically from your recorded properties."
+
+msgid "Rechnung %(nr)s über CHF %(betrag)s erstellt, fällig am %(datum)s."
+msgstr "Invoice %(nr)s for CHF %(betrag)s created, due on %(datum)s."
+
+msgid ""
+"Im Voraus zahlbar: fällig am Beginn der Periode, bei später gestellten "
+"Rechnungen innert %(tage)s Tagen, mit dem Einzahlungsschein. Die Zahlung "
+"bestätigt der Betreiber von Hand."
+msgstr ""
+"Payable in advance: due at the start of the period, or within %(tage)s days "
+"for invoices issued later, with the payment slip. The operator confirms "
+"payment manually."

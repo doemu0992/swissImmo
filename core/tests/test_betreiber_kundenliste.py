@@ -268,14 +268,13 @@ class BetreiberTestphaseTests(TestCase):
         self.assertEqual(antwort.status_code, 200)
         self.assertFalse(Organisation.objects.filter(firma='Testphase AG').exists())
 
-    def test_preise_freigegeben_und_mwst_8_1(self):
-        from decimal import Decimal
-
+    def test_preise_freigegeben_betreiber_nicht_mwst_pflichtig(self):
         from django.conf import settings
         self.assertTrue(settings.ABO_PREISE_FESTGELEGT)
-        self.assertEqual(settings.ABO_MWST_SATZ, Decimal('8.1'))
+        self.assertFalse(settings.ABO_MWST_PFLICHTIG)
+        self.assertIsNone(settings.ABO_MWST_SATZ)
 
-    def test_keine_rechnung_vor_ende_der_testphase_dann_mit_mwst(self):
+    def test_keine_rechnung_vor_ende_der_testphase_dann_ohne_mwst(self):
         from datetime import date as d
         from decimal import Decimal
 
@@ -286,6 +285,60 @@ class BetreiberTestphaseTests(TestCase):
         self.assertIsNone(dienst.rechnung_stellen(org, abo, heute=d(2026, 11, 20)))     # noch Testphase
         rechnung = dienst.rechnung_stellen(org, abo, heute=d(2026, 12, 1))
         self.assertIsNotNone(rechnung)
-        self.assertEqual(rechnung.mwst_satz, Decimal('8.1'))
-        self.assertEqual(rechnung.netto, Decimal('119'))
-        self.assertEqual(rechnung.mwst_betrag, Decimal('9.64'))
+        self.assertIsNone(rechnung.mwst_satz)                      # nicht mehrwertsteuerpflichtig: keine MWST
+        self.assertEqual((rechnung.netto, rechnung.mwst_betrag, rechnung.brutto),
+                         (Decimal('119'), Decimal('0.00'), Decimal('119')))
+
+
+class BetreiberSofortRechnungTests(TestCase):
+    """Abo-Rechnungen sind im Voraus zu bezahlen: Ist «Abrechnung ab» erreicht, entsteht die Rechnung sofort."""
+
+    def setUp(self):
+        from django.utils import timezone
+        self.heute = timezone.localdate()
+        self.org = _test_organisation()
+        self.abo = Abonnement.alle_organisationen.get_or_create(organisation=self.org)[0]
+        self.c = Client()
+        self.c.force_login(get_user_model().objects.create_superuser('betreiber', 'b@example.ch', 'x' * 12))
+        self.url = f'/betreiber/{self.org.pk}/'
+
+    def _einstellen(self, datum):
+        return self.c.post(self.url, {'aktion': 'einstellen', 'abrechnung_ab': datum.isoformat()}, follow=True)
+
+    def test_erreichtes_datum_stellt_die_rechnung_sofort(self):
+        from abo.models import AboRechnung
+        antwort = self._einstellen(self.heute)
+        r = AboRechnung.alle_organisationen.get(organisation=self.org)
+        self.assertEqual(r.periode_von, self.heute)
+        self.assertEqual(r.rechnungsdatum, self.heute)
+        self.assertContains(antwort, r.nummer)
+        self.assertContains(antwort, 'fällig am')
+
+    def test_zweites_speichern_stellt_nichts_doppelt(self):
+        from abo.models import AboRechnung
+        self._einstellen(self.heute)
+        self._einstellen(self.heute)
+        self.assertEqual(AboRechnung.alle_organisationen.filter(organisation=self.org).count(), 1)
+
+    def test_datum_weit_in_der_zukunft_stellt_nichts(self):
+        from datetime import timedelta
+
+        from abo.models import AboRechnung
+        self._einstellen(self.heute + timedelta(days=40))
+        self.assertFalse(AboRechnung.alle_organisationen.filter(organisation=self.org).exists())
+
+    def test_im_vorlauf_wird_im_voraus_gestellt_und_ist_am_beginn_faellig(self):
+        from datetime import timedelta
+
+        from abo.models import AboRechnung
+        beginn = self.heute + timedelta(days=5)
+        self._einstellen(beginn)
+        r = AboRechnung.alle_organisationen.get(organisation=self.org)
+        self.assertEqual((r.rechnungsdatum, r.faellig_am), (self.heute, beginn))
+
+    def test_beim_anlegen_eines_kunden_mit_erreichtem_datum(self):
+        from abo.models import AboRechnung
+        self.c.post('/betreiber/neu/', {'firma': 'Sofort AG', 'benutzer': 'sofort', 'email': 's@example.ch',
+                                        'abrechnung_ab': self.heute.isoformat()})
+        neu = Organisation.objects.get(firma='Sofort AG')
+        self.assertTrue(AboRechnung.alle_organisationen.filter(organisation=neu).exists())

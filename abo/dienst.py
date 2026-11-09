@@ -188,6 +188,16 @@ def betrag_fuer(stufe, einheiten, jaehrlich):
     return netto.quantize(RAPPEN, rounding=ROUND_HALF_UP), bemerkung
 
 
+def faellig_fuer(von, heute):
+    """Fälligkeit einer Abo-Rechnung: im Voraus, also am Periodenbeginn.
+
+    Läuft die Periode schon (Rechnung gestellt am oder nach dem Beginn), gilt die Zahlungsfrist ab Rechnungsdatum.
+    """
+    if von > heute:
+        return von
+    return heute + timedelta(days=settings.ABO_ZAHLUNGSFRIST_TAGE)
+
+
 def rechnung_stellen(organisation, abo, heute=None, trotz_platzhalter=False):
     """Stellt die Rechnung der nächsten Periode aus. Gibt sie zurück oder `None`.
 
@@ -199,7 +209,8 @@ def rechnung_stellen(organisation, abo, heute=None, trotz_platzhalter=False):
 
     heute = heute or datum_heute()
     periode = naechste_periode(abo, organisation)
-    if periode is None or periode[0] > heute:
+    # Im Voraus: Die Rechnung entsteht bis zu ABO_VORLAUF_TAGE vor Periodenbeginn (oder sofort, wenn die Periode läuft).
+    if periode is None or periode[0] > heute + timedelta(days=getattr(settings, 'ABO_VORLAUF_TAGE', 0)):
         return None
     if not settings.ABO_PREISE_FESTGELEGT and not trotz_platzhalter:
         raise PreiseNichtFestgelegt(
@@ -222,7 +233,7 @@ def rechnung_stellen(organisation, abo, heute=None, trotz_platzhalter=False):
             defaults=dict(
                 periode_bis=bis, stufe=stufe, intervall=intervall_von(organisation), einheiten=einheiten,
                 netto=netto, mwst_satz=satz, mwst_betrag=mwst, brutto=netto + mwst,
-                rechnungsdatum=heute, faellig_am=heute + timedelta(days=settings.ABO_ZAHLUNGSFRIST_TAGE),
+                rechnungsdatum=heute, faellig_am=faellig_fuer(von, heute),
                 platzhalter=not settings.ABO_PREISE_FESTGELEGT, bemerkung=bemerkung[:240]))
         if neu:
             rechnung.qr_referenz = qrr_referenz(organisation.pk, rechnung.pk)[0]

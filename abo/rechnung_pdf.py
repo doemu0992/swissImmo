@@ -72,7 +72,10 @@ def abo_rechnung_pdf(rechnung):
         c.drawRightString(190 * mm, zeile, _chf(rechnung.mwst_betrag))
     else:
         c.setFont('Helvetica-Oblique', 9)
-        c.drawString(20 * mm, zeile, 'MWST: Satz vom Betreiber nicht festgelegt, nicht ausgewiesen.')
+        if getattr(settings, 'ABO_MWST_PFLICHTIG', True):
+            c.drawString(20 * mm, zeile, 'MWST: Satz vom Betreiber nicht festgelegt, nicht ausgewiesen.')
+        else:
+            c.drawString(20 * mm, zeile, 'Nicht mehrwertsteuerpflichtig: keine MWST ausgewiesen.')
         c.setFont('Helvetica', 10)
     if rechnung.platzhalter:
         c.setFont('Helvetica-Oblique', 9)
