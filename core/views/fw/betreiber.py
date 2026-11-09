@@ -283,6 +283,15 @@ def fw_betreiber_kunde(request, pk):
                 _stammdaten_speichern(request, org)
                 protokoll('Kundendaten geändert')
                 messages.success(request, gettext('Kundendaten gespeichert.'))
+            elif aktion == 'status':
+                status = request.POST.get('status', '')
+                if status not in dict(Kundenstamm.STATUS):
+                    raise ValueError(gettext('Unbekannter Status.'))
+                stamm = betreiber.kartei(org)
+                stamm.status = status
+                stamm.save(update_fields=['status', 'geaendert_am'])
+                protokoll('Kundendaten geändert', f'Status {stamm.get_status_display()}')
+                messages.success(request, gettext('Status gesetzt.'))
             elif aktion == 'kontakt':
                 text = (request.POST.get('text') or '').strip()
                 art = request.POST.get('art') or KundenKontakt.ART_NOTIZ
@@ -331,21 +340,101 @@ def fw_betreiber_kunde(request, pk):
             messages.error(request, str(fehler))
         else:
             if vorschau is None:
-                return redirect(ziel)
+                return redirect(f'{ziel}?tab={_REITER_NACH_AKTION.get(aktion, "uebersicht")}')
+        # Fehler oder Rückfrage: die Seite zeigen, auf der die Eingabe gemacht wurde (das Formular behält die Werte).
+        if aktion == 'stamm':
+            return _seite_bearbeiten(request, org, werte=request.POST)
+        if aktion in ('plan', 'einstellen'):
+            return _seite_abo(request, org, vorschau)
+        return redirect(f'{ziel}?tab={_REITER_NACH_AKTION.get(aktion, "uebersicht")}')
 
+    tab = request.GET.get('tab', 'uebersicht')
+    return _seite_kunde(request, org, tab if tab in REITER_KUNDE else 'uebersicht')
+
+
+#: Reiter der Kundenseite (Schlüssel, Beschriftung) und der Reiter, auf dem eine Aktion landet.
+REITER_KUNDE = ('uebersicht', 'stamm', 'verlauf', 'finanzen', 'abo')
+_REITER_NACH_AKTION = {
+    'stamm': 'stamm', 'status': 'uebersicht', 'kontakt': 'verlauf', 'kontakt_loeschen': 'verlauf',
+    'senden': 'finanzen', 'erinnern': 'finanzen', 'bezahlt': 'finanzen', 'storno': 'finanzen',
+    'plan': 'abo', 'einstellen': 'abo', 'abo_anlegen': 'abo',
+}
+
+
+def _kunden_kontext(org):
+    from abo import dienst
+    from abo.models import Abonnement
+    from core import funktionen as f
     abo = Abonnement.alle_organisationen.filter(organisation=org).first()
-    kunde = next(k for k in betreiber.kunden() if k.organisation.pk == org.pk)
-    return render(request, 'fw/betreiber_kunde.html', {
-        'aktiv': 'kunden', 'k': kunde, 'org': org, 'abo': abo, 'vorschau': vorschau,
+    return {
+        'aktiv': 'kunden', 'org': org, 'abo': abo,
+        'k': next(k for k in betreiber.kunden() if k.organisation.pk == org.pk),
+        'stamm': betreiber.kartei(org), 'jaehrlich': org.abo_jaehrlich,
         'stufen': [(s, f.STUFEN_NAMEN[s]) for s in f.STUFEN_REIHENFOLGE],
-        'module': list(f.MODULE.items()), 'zugebucht': set(abo.zusatzmodule or []) if abo else set(),
-        'rechnungen': AboRechnung.alle_organisationen.filter(organisation=org).order_by('-rechnungsdatum', '-pk')[:50],
         'nutzung': dienst.nutzung_von(org),
-        'jaehrlich': org.abo_jaehrlich,
-        'heute': datum_heute(),
-        'stamm': betreiber.kartei(org), 'finanzen': betreiber.finanzen(org), 'verlauf': betreiber.verlauf(org),
+    }
+
+
+def _seite_kunde(request, org, tab):
+    """Die Kundenseite: Kopf mit Kennzahlen und fünf Reiter, nur zum Lesen. Geändert wird auf eigenen Seiten."""
+    from django.utils.translation import gettext
+
+    from abo.models import AboRechnung, KundenKontakt, Kundenstamm
+    from core import funktionen as f
+    kontext = _kunden_kontext(org)
+    abo = kontext['abo']
+    verlauf = betreiber.verlauf(org)
+    rechnungen = list(AboRechnung.alle_organisationen.filter(organisation=org).order_by('-rechnungsdatum', '-pk')[:50])
+    kontext.update({
+        'tab': tab, 'heute': datum_heute(),
+        'reiter': [('uebersicht', gettext('Übersicht'), ''), ('stamm', gettext('Stammdaten'), ''),
+                   ('verlauf', gettext('Verlauf'), len(verlauf) or ''),
+                   ('finanzen', gettext('Finanzen'), sum(1 for r in rechnungen if r.status == AboRechnung.STATUS_OFFEN) or ''),
+                   ('abo', gettext('Abonnement'), '')], 'finanzen': betreiber.finanzen(org), 'verlauf': verlauf,
+        'verlauf_kurz': verlauf[:3], 'rechnungen': rechnungen,
+        'offene': sum(1 for r in rechnungen if r.status == AboRechnung.STATUS_OFFEN),
+        'module': [(k, n) for k, n in f.MODULE.items() if abo and k in (abo.zusatzmodule or [])],
         'stati': Kundenstamm.STATUS, 'arten': KundenKontakt.ARTEN,
     })
+    return render(request, 'fw/betreiber_kunde.html', kontext)
+
+
+def _seite_bearbeiten(request, org, werte=None):
+    """Die Seite zum Ändern der Stammdaten und der Ansprechperson. `werte` = eben abgeschickte Eingabe (bei einem Fehler)."""
+    from abo.models import Kundenstamm
+    kontext = _kunden_kontext(org)
+    s = kontext['stamm']
+    if werte is None:
+        werte = {'firma': org.firma, 'strasse': org.strasse, 'plz': org.plz, 'ort': org.ort, 'telefon': org.telefon,
+                 'email': org.email, 'mwst_uid': org.mwst_uid, 'natel': s.natel, 'website': s.website,
+                 'status': s.status, 'ansprechperson': s.ansprechperson, 'ansprech_funktion': s.ansprech_funktion,
+                 'ansprech_email': s.ansprech_email, 'ansprech_telefon': s.ansprech_telefon,
+                 'ansprech_natel': s.ansprech_natel, 'rechnung_email': s.rechnung_email, 'notizen': s.notizen}
+    kontext.update({'w': {k: werte.get(k, '') for k in (
+        'firma', 'strasse', 'plz', 'ort', 'telefon', 'email', 'mwst_uid', 'natel', 'website', 'status', 'ansprechperson',
+        'ansprech_funktion', 'ansprech_email', 'ansprech_telefon', 'ansprech_natel', 'rechnung_email', 'notizen')},
+        'stati': Kundenstamm.STATUS})
+    return render(request, 'fw/betreiber_kunde_bearbeiten.html', kontext)
+
+
+def _seite_abo(request, org, vorschau=None):
+    """Die Seite zum Ändern des Abonnements: Stufe (mit Folgen vorab), Module, «Abrechnung ab», Bestandsschutz."""
+    from core import funktionen as f
+    kontext = _kunden_kontext(org)
+    abo = kontext['abo']
+    kontext.update({'vorschau': vorschau, 'module': list(f.MODULE.items()),
+                    'zugebucht': set(abo.zusatzmodule or []) if abo else set()})
+    return render(request, 'fw/betreiber_kunde_abo.html', kontext)
+
+
+@rolle_erforderlich(*BETREIBER_ROLLEN)
+def fw_betreiber_kunde_bearbeiten(request, pk):
+    return _seite_bearbeiten(request, _kunde_oder_404(pk))
+
+
+@rolle_erforderlich(*BETREIBER_ROLLEN)
+def fw_betreiber_kunde_abo(request, pk):
+    return _seite_abo(request, _kunde_oder_404(pk))
 
 
 @rolle_erforderlich(*BETREIBER_ROLLEN)

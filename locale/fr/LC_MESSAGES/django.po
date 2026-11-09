@@ -40048,3 +40048,116 @@ msgstr "L'adresse de la gérance est manquante (rue, NPA, localité) : à compl�
 
 msgid "Anschrift unvollständig (Strasse, PLZ, Ort): Die Rechnung hat keine Anschrift und geht nicht hinaus. In der Kundenkartei ergänzen."
 msgstr "Adresse incomplète (rue, NPA, localité) : la facture n'a pas d'adresse et n'est pas envoyée. À compléter dans la fiche client."
+
+msgid "etwas spät"
+msgstr "un peu en retard"
+
+msgid "Kunde"
+msgstr "Client"
+
+msgid "Zugang gesperrt"
+msgstr "Accès bloqué"
+
+msgid "Lesemodus"
+msgstr "Mode lecture seule"
+
+msgid "Zahlung überfällig"
+msgstr "Paiement en souffrance"
+
+msgid "alles bezahlt"
+msgstr "tout payé"
+
+msgid "Abonnement ändern"
+msgstr "Modifier l'abonnement"
+
+msgid "Eintrag im Verlauf"
+msgstr "Entrée dans l'historique"
+
+msgid "Wieder als Kunde markieren"
+msgstr "Marquer à nouveau comme client"
+
+msgid "Als gekündigt markieren"
+msgstr "Marquer comme résilié"
+
+msgid "davon CHF %(b)s überfällig"
+msgstr "dont CHF %(b)s en souffrance"
+
+msgid "noch nicht fällig"
+msgstr "pas encore échu"
+
+msgid "Ø %(t)s Tage nach Fälligkeit"
+msgstr "Ø %(t)s jours après l'échéance"
+
+msgid "noch keine Zahlung"
+msgstr "aucun paiement pour l'instant"
+
+msgid "nicht geplant"
+msgstr "non prévue"
+
+msgid "Zu prüfen"
+msgstr "À vérifier"
+
+msgid "Rechnungen gehen an"
+msgstr "Les factures vont à"
+
+msgid "Zum Verlauf"
+msgstr "Vers l'historique"
+
+msgid "nur für den Betreiber"
+msgstr "exploitant uniquement"
+
+msgid "Firma und Anschrift"
+msgstr "Entreprise et adresse"
+
+msgid "nicht hinterlegt"
+msgstr "non enregistré"
+
+msgid "Ansprechperson und Rechnung"
+msgstr "Interlocuteur et facture"
+
+msgid "abweichend von der E-Mail der Firma"
+msgstr "différente de l'e-mail de l'entreprise"
+
+msgid "wie die E-Mail der Firma"
+msgstr "comme l'e-mail de l'entreprise"
+
+msgid "Zuletzt geändert"
+msgstr "Dernière modification"
+
+msgid "Eintrag speichern"
+msgstr "Enregistrer l'entrée"
+
+msgid "%(t)s Tage nach Fälligkeit"
+msgstr "%(t)s jours après l'échéance"
+
+msgid "Noch keine Zahlung."
+msgstr "Aucun paiement pour l'instant."
+
+msgid "Summen"
+msgstr "Totaux"
+
+msgid "jährlich abgerechnet"
+msgstr "facturé annuellement"
+
+msgid "monatlich abgerechnet"
+msgstr "facturé mensuellement"
+
+msgid "nicht gesetzt"
+msgstr "non défini"
+
+msgid "Änderungen zeigen vorher ihre Folgen."
+msgstr "Les modifications montrent d'abord leurs conséquences."
+
+msgid "%(firma)s bearbeiten"
+msgstr "Modifier %(firma)s"
+
+msgid "Änderungen gelten erst nach «Speichern»."
+msgstr "Les modifications ne s'appliquent qu'après «Enregistrer»."
+
+msgid "Status gesetzt."
+msgstr "Statut défini."
+
+msgid "%(n)s Rechnung offen"
+msgid_plural "%(n)s Rechnungen offen"
+msgstr[0] "%(n)s facture ouverte"
+msgstr[1] "%(n)s factures ouvertes"

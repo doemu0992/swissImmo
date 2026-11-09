@@ -1,229 +1,282 @@
 {% extends 'core/betreiber_base.html' %}
 {% load zeichen i18n %}
-{% comment %}BETREIBER — Abo-Verwaltung einer Verwaltung (Etappe 3). Siehe core/views/fw/betreiber.py (fw_betreiber_kunde): nur Zähler und Abo-Daten.{% endcomment %}
+{% comment %}
+BETREIBER — die Kundenseite. Wie die Personen- und Objektseiten: ein Kopf mit Kennzahlen, fünf Reiter, nur zum Lesen.
+Geändert wird auf eigenen Seiten («Bearbeiten», «Abonnement ändern»); hier stehen nur die Aktionen je Zeile (Rechnung senden,
+bezahlt, stornieren, Eintrag im Verlauf). Siehe core/views/fw/betreiber.py (fw_betreiber_kunde). Es werden nur Zähler und
+Abo-Daten gezeigt, keine Verträge, Personen oder Buchungen der Verwaltung.
+{% endcomment %}
 {% block title %}{{ org.firma }} — immoswiss{% endblock %}
 {% block content %}
-<nav class="fw-brotkrume mb-2.5">
+<nav class="fw-brotkrume mb-3">
     <a href="/betreiber/">{% trans "Kunden" %}</a>
     {% zeichen 'weiter' %}
     <b>{{ org.firma }}</b>
 </nav>
 
-<div class="fw-phead">
-    <div>
-        <h1>{{ org.firma }}</h1>
-        <p>{{ stamm.kundennummer }} · {{ stamm.get_status_display }} · {{ k.stufe }} · {{ k.abo_text }} · {{ k.einheiten }} {% trans "Einheiten" %} · {{ k.nutzer }} {% trans "Nutzer" %}</p>
+<div class="fw-aktenkopf">
+    <div class="fw-akte-oben">
+        <div class="fw-akte-bild">{% zeichen 'liegenschaft' %}</div>
+        <div class="min-w-0">
+            <div class="fw-akte-typ">{% trans "Kunde" %} · {{ stamm.kundennummer }}</div>
+            <h1>{{ org.firma }}</h1>
+            <div class="fw-akte-pfad">
+                {% if stamm.ansprechperson %}<div class="fw-pz"><span>{% trans "Ansprechperson" %}</span><b>{{ stamm.ansprechperson }}{% if stamm.ansprech_funktion %} · {{ stamm.ansprech_funktion }}{% endif %}</b></div>{% endif %}
+                <div class="fw-pz"><span>{% trans "Telefon" %}</span><b>{{ k.telefon|default:"—" }}</b></div>
+                <div class="fw-pz"><span>{% trans "E-Mail" %}</span><b>{% if stamm.ansprech_email %}{{ stamm.ansprech_email }}{% elif org.email %}{{ org.email }}{% else %}—{% endif %}</b></div>
+                <div class="fw-pz"><span>{% trans "Anschrift" %}</span><b>{% if org.strasse %}{{ org.strasse }}, {{ org.plz }} {{ org.ort }}{% else %}—{% endif %}</b></div>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 mt-2.5">
+                <span class="fw-chip {% if stamm.status == 'kunde' %}fw-good{% elif stamm.status == 'gekuendigt' %}fw-crit{% else %}fw-mut{% endif %}">{{ stamm.get_status_display }}</span>
+                <span class="fw-chip fw-mut">{{ k.stufe }} · {% if jaehrlich %}{% trans "jährlich" %}{% else %}{% trans "monatlich" %}{% endif %}</span>
+                {% if abo.zustand == 'gesperrt' %}<span class="fw-chip fw-crit">{% trans "Zugang gesperrt" %}</span>
+                {% elif abo.zustand == 'lesemodus' %}<span class="fw-chip fw-crit">{% trans "Lesemodus" %}</span>
+                {% elif abo.zustand == 'mahnung' %}<span class="fw-chip fw-warn">{% trans "Zahlung überfällig" %}</span>
+                {% elif offene %}<span class="fw-chip fw-warn">{% blocktrans count n=offene %}{{ n }} Rechnung offen{% plural %}{{ n }} Rechnungen offen{% endblocktrans %}</span>
+                {% elif abo %}<span class="fw-chip fw-good">{% trans "alles bezahlt" %}</span>{% endif %}
+            </div>
+        </div>
+        <div class="fw-akte-rechts">
+            <a href="{% url 'fw_betreiber_kunde_bearbeiten' org.pk %}" class="fw-btn">{% zeichen 'bearbeiten' klasse='mr-1' %}{% trans "Bearbeiten" %}</a>
+            <div class="relative" data-menu>
+                <button type="button" data-menu-btn aria-haspopup="menu" aria-expanded="false" aria-controls="kdAktionen" class="fw-btn">
+                    {% zeichen 'mehr' klasse='mr-1' %}{% trans "Mehr" %}
+                </button>
+                <div id="kdAktionen" data-menu-list role="menu" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
+                    <a href="{% url 'fw_betreiber_kunde_abo' org.pk %}" class="fw-menuzeile">{% zeichen 'einstellungen' klasse='w-4' %}{% trans "Abonnement ändern" %}</a>
+                    <a href="?tab=verlauf" class="fw-menuzeile">{% zeichen 'senden' klasse='w-4' %}{% trans "Eintrag im Verlauf" %}</a>
+                    <div class="fw-menutrenner"></div>
+                    <form method="post">{% csrf_token %}<input type="hidden" name="aktion" value="status">
+                        {% if stamm.status == 'gekuendigt' %}<input type="hidden" name="status" value="kunde">
+                        <button class="fw-menuzeile">{% zeichen 'gut' klasse='w-4' %}{% trans "Wieder als Kunde markieren" %}</button>
+                        {% else %}<input type="hidden" name="status" value="gekuendigt">
+                        <button class="fw-menuzeile warn">{% zeichen 'gesperrt' klasse='w-4' %}{% trans "Als gekündigt markieren" %}</button>{% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="fw-kzn">
+        <div><div class="fw-l">{% trans "Offen" %}</div>
+            <div class="fw-w{% if finanzen.ueberfaellig %} crit{% elif finanzen.offen %} warn{% endif %}">CHF {{ finanzen.offen }}</div>
+            <div class="fw-f">{% if finanzen.ueberfaellig %}{% blocktrans with b=finanzen.ueberfaellig %}davon CHF {{ b }} überfällig{% endblocktrans %}{% elif finanzen.offen %}{% trans "noch nicht fällig" %}{% else %}{% trans "nichts offen" %}{% endif %}</div></div>
+        <div><div class="fw-l">{% trans "Bezahlt" %}</div>
+            <div class="fw-w">CHF {{ finanzen.bezahlt }}</div>
+            <div class="fw-f">{% blocktrans count n=finanzen.anzahl %}{{ n }} Rechnung{% plural %}{{ n }} Rechnungen{% endblocktrans %}</div></div>
+        <div><div class="fw-l">{% trans "Zahlungsverhalten" %}</div>
+            <div class="fw-w{% if finanzen.verhalten %} {{ finanzen.verhalten.0 }}{% endif %}">{% if finanzen.verhalten %}{{ finanzen.verhalten.1 }}{% else %}—{% endif %}</div>
+            <div class="fw-f">{% if finanzen.zahlungsdauer is not None %}{% blocktrans with t=finanzen.zahlungsdauer %}Ø {{ t }} Tage nach Fälligkeit{% endblocktrans %}{% else %}{% trans "noch keine Zahlung" %}{% endif %}</div></div>
+        <div><div class="fw-l">{% trans "Nächste Rechnung" %}</div>
+            {% if finanzen.naechste %}<div class="fw-w">CHF {{ finanzen.naechste.netto }}</div>
+            <div class="fw-f">{{ finanzen.naechste.von|date:"d.m." }}–{{ finanzen.naechste.bis|date:"d.m.Y" }}</div>
+            {% else %}<div class="fw-w">—</div><div class="fw-f">{% trans "nicht geplant" %}</div>{% endif %}</div>
+    </div>
+
+    <div class="fw-reiter" role="tablist">
+        {% for key, label, badge in reiter %}
+        <button type="button" role="tab" id="tab-kd-{{ key }}" aria-controls="kd-{{ key }}" aria-selected="{% if tab == key %}true{% else %}false{% endif %}"
+                tabindex="{% if tab == key %}0{% else %}-1{% endif %}" data-tab="kd" data-target="{{ key }}" data-bei-klick="kdTab" data-args='["{{ key }}"]'
+                class="{% if tab == key %}hier{% endif %}">{{ label }}{% if badge %}<span class="fw-z">{{ badge }}</span>{% endif %}</button>
+        {% endfor %}
     </div>
 </div>
 
-{% if k.befunde %}
-<div class="fw-hinweis warn max-w-3xl"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht"><ul>{% for b in k.befunde %}<li>{{ b }}</li>{% endfor %}</ul></div></div>
-{% endif %}
-
-
-<div class="fw-card max-w-3xl">
-    <div class="fw-kopf"><h2>{% trans "Finanzen" %}</h2></div>
-    <div class="fw-rumpf">
-        <div class="fw-dz"><div class="fw-dl">{% trans "Fakturiert" %}</div><div class="fw-dv">CHF {{ finanzen.fakturiert }} · {{ finanzen.anzahl }} {% trans "Rechnungen" %}</div></div>
-        <div class="fw-dz"><div class="fw-dl">{% trans "Bezahlt" %}</div><div class="fw-dv">CHF {{ finanzen.bezahlt }}</div></div>
-        <div class="fw-dz"><div class="fw-dl">{% trans "Offen" %}</div><div class="fw-dv">CHF {{ finanzen.offen }}{% if finanzen.ueberfaellig %} · <b>CHF {{ finanzen.ueberfaellig }} {% trans "überfällig" %}</b>{% endif %}</div></div>
-        {% if finanzen.zahlungsdauer is not None %}
-        <div class="fw-dz"><div class="fw-dl">{% trans "Zahlungsverhalten" %}</div><div class="fw-dv">{% blocktrans with t=finanzen.zahlungsdauer %}im Schnitt {{ t }} Tage nach Fälligkeit{% endblocktrans %}</div></div>
-        {% endif %}
-        {% if finanzen.naechste %}
-        <div class="fw-dz"><div class="fw-dl">{% trans "Nächste Rechnung" %}</div><div class="fw-dv">{{ finanzen.naechste.von|date:"d.m.Y" }} – {{ finanzen.naechste.bis|date:"d.m.Y" }} · CHF {{ finanzen.naechste.netto }}</div></div>
-        {% endif %}
+<!-- ÜBERSICHT -->
+<div data-panel="kd" id="kd-uebersicht"{% if tab != 'uebersicht' %} class="hidden"{% endif %}>
+    {% if k.befunde %}
+    <div class="fw-card"><div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht"><b>{% trans "Zu prüfen" %}</b>
+        <ul>{% for b in k.befunde %}<li>{{ b }}</li>{% endfor %}</ul></div></div></div>
+    {% endif %}
+    <div class="fw-grid2">
+        <div>
+            <div class="fw-card"><div class="fw-kopf"><span class="fw-t">{% trans "Ansprechperson" %}</span></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Name" %}</div><div class="fw-dv">{{ stamm.ansprechperson|default:"—" }}{% if stamm.ansprech_funktion %}<small>{{ stamm.ansprech_funktion }}</small>{% endif %}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Natel" %}</div><div class="fw-dv">{{ stamm.ansprech_natel|default:"—" }}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Telefon" %}</div><div class="fw-dv">{{ stamm.ansprech_telefon|default:"—" }}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "E-Mail" %}</div><div class="fw-dv">{{ stamm.ansprech_email|default:"—" }}</div></div>
+                <div class="fw-fuss"><span>{% trans "Rechnungen gehen an" %}</span><b>{% if stamm.rechnung_email %}{{ stamm.rechnung_email }}{% elif org.email %}{{ org.email }}{% else %}—{% endif %}</b></div>
+            </div>
+        </div>
+        <div>
+            <div class="fw-card"><div class="fw-kopf"><span class="fw-t">{% trans "Zuletzt" %}</span></div>
+                {% for e in verlauf_kurz %}
+                <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ e.art_text }}</div><div class="fw-s">{{ e.text|truncatechars:90 }}</div></div>
+                    <div class="fw-zeit">{{ e.zeit|date:"d.m.Y" }}</div></div>
+                {% empty %}<div class="fw-rumpf"><p class="fw-faint">{% trans "Noch kein Eintrag." %}</p></div>{% endfor %}
+                <div class="fw-fuss"><span>{% trans "Verlauf" %}</span><a href="?tab=verlauf" data-bei-klick="kdTab" data-args='["verlauf"]' class="fw-link">{% trans "Zum Verlauf" %}</a></div>
+            </div>
+        </div>
     </div>
-    {% if finanzen.zahlungen %}
-    <div class="overflow-x-auto">
-    <table class="fw-table">
-        <thead><tr><th scope="col">{% trans "Zahlung am" %}</th><th scope="col">{% trans "Rechnung" %}</th><th scope="col" class="fw-right">{% trans "Betrag (CHF)" %}</th><th scope="col" class="fw-right">{% trans "Tage nach Fälligkeit" %}</th></tr></thead>
-        <tbody>
-        {% for z in finanzen.zahlungen %}
-        <tr><td>{{ z.rechnung.bezahlt_am|date:"d.m.Y" }}</td><td>{{ z.rechnung.nummer }}</td><td class="fw-right">{{ z.betrag }}</td><td class="fw-right">{{ z.tage }}</td></tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    </div>
+    {% if stamm.notizen %}
+    <div class="fw-card"><div class="fw-kopf"><span class="fw-t">{% trans "Interne Notizen" %}</span><span class="fw-chip fw-mut">{% trans "nur für den Betreiber" %}</span></div>
+        <div class="fw-rumpf"><p>{{ stamm.notizen|linebreaksbr }}</p></div></div>
     {% endif %}
 </div>
 
-<div class="fw-card max-w-3xl">
-    <div class="fw-kopf"><h2>{% trans "Stammdaten und Ansprechperson" %}</h2></div>
-    <form method="post" class="fw-formular p-5">{% csrf_token %}
-        <input type="hidden" name="aktion" value="stamm">
-        <div class="fw-feldblock"><label for="st-firma" class="fw-label">{% trans "Firma" %}</label>
-            <input id="st-firma" name="firma" value="{{ org.firma }}" maxlength="100" required class="fw-feld"></div>
-        <div class="fw-feldblock"><label for="st-status" class="fw-label">{% trans "Kundenstatus" %}</label>
-            <select id="st-status" name="status" class="fw-feld">{% for wert, name in stati %}<option value="{{ wert }}" {% if wert == stamm.status %}selected{% endif %}>{{ name }}</option>{% endfor %}</select></div>
-        <div class="fw-feldblock"><label for="st-strasse" class="fw-label">{% trans "Strasse und Nr." %}</label>
-            <input id="st-strasse" name="strasse" value="{{ org.strasse }}" maxlength="100" required class="fw-feld"></div>
-        <div class="fw-feldblock"><label for="st-plz" class="fw-label">{% trans "PLZ" %}</label>
-            <input id="st-plz" name="plz" value="{{ org.plz }}" maxlength="10" required class="fw-feld"></div>
-        <div class="fw-feldblock"><label for="st-ort" class="fw-label">{% trans "Ort" %}</label>
-            <input id="st-ort" name="ort" value="{{ org.ort }}" maxlength="100" required class="fw-feld"></div>
-        <div class="fw-feldblock"><label for="st-telefon" class="fw-label">{% trans "Telefon" %}</label>
-            <input id="st-telefon" name="telefon" type="tel" value="{{ org.telefon }}" maxlength="30" class="fw-feld"></div>
-        <div class="fw-feldblock"><label for="st-natel" class="fw-label">{% trans "Natel" %}</label>
-            <input id="st-natel" name="natel" type="tel" value="{{ stamm.natel }}" maxlength="30" class="fw-feld"></div>
-        <div class="fw-feldblock"><label for="st-email" class="fw-label">{% trans "E-Mail" %}</label>
-            <input id="st-email" name="email" type="email" value="{{ org.email }}" maxlength="254" class="fw-feld"></div>
-        <div class="fw-feldblock"><label for="st-web" class="fw-label">{% trans "Website" %}</label>
-            <input id="st-web" name="website" value="{{ stamm.website }}" maxlength="200" class="fw-feld"></div>
-        <div class="fw-feldblock"><label for="st-uid" class="fw-label">{% trans "UID / MWST-Nummer" %}</label>
-            <input id="st-uid" name="mwst_uid" value="{{ org.mwst_uid }}" maxlength="20" class="fw-feld"></div>
-        <div class="fw-feldblock"><label for="st-rmail" class="fw-label">{% trans "E-Mail für Rechnungen" %}</label>
-            <input id="st-rmail" name="rechnung_email" type="email" value="{{ stamm.rechnung_email }}" maxlength="254" class="fw-feld">
-            <p class="fw-hilfe">{% trans "Leer = Rechnungen und Mahnungen gehen an die E-Mail der Verwaltung." %}</p></div>
-        <div class="fw-feldblock"><label for="st-ap" class="fw-label">{% trans "Ansprechperson" %}</label>
-            <input id="st-ap" name="ansprechperson" value="{{ stamm.ansprechperson }}" maxlength="120" class="fw-feld"></div>
-        <div class="fw-feldblock"><label for="st-apf" class="fw-label">{% trans "Funktion" %}</label>
-            <input id="st-apf" name="ansprech_funktion" value="{{ stamm.ansprech_funktion }}" maxlength="120" class="fw-feld"></div>
-        <div class="fw-feldblock"><label for="st-apm" class="fw-label">{% trans "E-Mail der Ansprechperson" %}</label>
-            <input id="st-apm" name="ansprech_email" type="email" value="{{ stamm.ansprech_email }}" maxlength="254" class="fw-feld"></div>
-        <div class="fw-feldblock"><label for="st-apt" class="fw-label">{% trans "Telefon der Ansprechperson" %}</label>
-            <input id="st-apt" name="ansprech_telefon" type="tel" value="{{ stamm.ansprech_telefon }}" maxlength="30" class="fw-feld"></div>
-        <div class="fw-feldblock"><label for="st-apn" class="fw-label">{% trans "Natel der Ansprechperson" %}</label>
-            <input id="st-apn" name="ansprech_natel" type="tel" value="{{ stamm.ansprech_natel }}" maxlength="30" class="fw-feld"></div>
-        <div class="fw-feldblock breit"><label for="st-notizen" class="fw-label">{% trans "Interne Notizen" %}</label>
-            <textarea id="st-notizen" name="notizen" rows="4" maxlength="8000" class="fw-feld">{{ stamm.notizen }}</textarea>
-            <p class="fw-hilfe">{% trans "Nur für den Betreiber sichtbar, nie für die Verwaltung." %}</p></div>
-        <div class="fw-feldblock breit"><button type="submit" class="fw-btn fw-primary">{% trans "Kundendaten speichern" %}</button></div>
-    </form>
+<!-- STAMMDATEN -->
+<div data-panel="kd" id="kd-stamm"{% if tab != 'stamm' %} class="hidden"{% endif %}>
+    <div class="fw-grid2">
+        <div>
+            <div class="fw-card"><div class="fw-kopf"><span class="fw-t">{% trans "Firma und Anschrift" %}</span></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Firma" %}</div><div class="fw-dv">{{ org.firma }}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Anschrift" %}</div><div class="fw-dv">{% if org.strasse %}{{ org.strasse }}<br>{{ org.plz }} {{ org.ort }}{% else %}<span class="fw-faint">{% trans "nicht hinterlegt" %}</span>{% endif %}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Telefon" %}</div><div class="fw-dv">{{ org.telefon|default:"—" }}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Natel" %}</div><div class="fw-dv">{{ stamm.natel|default:"—" }}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "E-Mail" %}</div><div class="fw-dv">{{ org.email|default:"—" }}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Website" %}</div><div class="fw-dv">{{ stamm.website|default:"—" }}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "UID / MWST-Nummer" %}</div><div class="fw-dv">{% if org.mwst_uid %}{{ org.mwst_uid }}{% else %}<span class="fw-faint">{% trans "nicht hinterlegt" %}</span>{% endif %}</div></div>
+            </div>
+        </div>
+        <div>
+            <div class="fw-card"><div class="fw-kopf"><span class="fw-t">{% trans "Ansprechperson und Rechnung" %}</span></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Ansprechperson" %}</div><div class="fw-dv">{{ stamm.ansprechperson|default:"—" }}{% if stamm.ansprech_funktion %}<small>{{ stamm.ansprech_funktion }}</small>{% endif %}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "E-Mail" %}</div><div class="fw-dv">{{ stamm.ansprech_email|default:"—" }}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Telefon" %}</div><div class="fw-dv">{{ stamm.ansprech_telefon|default:"—" }}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Natel" %}</div><div class="fw-dv">{{ stamm.ansprech_natel|default:"—" }}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "E-Mail für Rechnungen" %}</div><div class="fw-dv">{% if stamm.rechnung_email %}{{ stamm.rechnung_email }}<small>{% trans "abweichend von der E-Mail der Firma" %}</small>{% else %}<span class="fw-faint">{% trans "wie die E-Mail der Firma" %}</span>{% endif %}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Kundenstatus" %}</div><div class="fw-dv">{{ stamm.get_status_display }}</div></div>
+                <div class="fw-fuss"><span>{% trans "Zuletzt geändert" %} {{ stamm.geaendert_am|date:"d.m.Y" }}</span><a href="{% url 'fw_betreiber_kunde_bearbeiten' org.pk %}" class="fw-link">{% trans "Bearbeiten" %}</a></div>
+            </div>
+        </div>
+    </div>
+    {% if stamm.notizen %}
+    <div class="fw-card"><div class="fw-kopf"><span class="fw-t">{% trans "Interne Notizen" %}</span><span class="fw-chip fw-mut">{% trans "nur für den Betreiber" %}</span></div>
+        <div class="fw-rumpf"><p>{{ stamm.notizen|linebreaksbr }}</p></div></div>
+    {% endif %}
 </div>
 
-<div class="fw-card max-w-3xl">
-    <div class="fw-kopf"><h2>{% trans "Verlauf" %}</h2></div>
-    <form method="post" class="fw-formular p-5">{% csrf_token %}
-        <input type="hidden" name="aktion" value="kontakt">
-        <div class="fw-feldblock"><label for="kt-art" class="fw-label">{% trans "Art" %}</label>
-            <select id="kt-art" name="art" class="fw-feld">{% for wert, name in arten %}<option value="{{ wert }}">{{ name }}</option>{% endfor %}</select></div>
-        <div class="fw-feldblock breit"><label for="kt-text" class="fw-label">{% trans "Eintrag" %}</label>
-            <textarea id="kt-text" name="text" rows="3" maxlength="4000" required class="fw-feld"></textarea></div>
-        <div class="fw-feldblock breit"><button type="submit" class="fw-btn fw-primary">{% trans "Eintrag hinzufügen" %}</button></div>
-    </form>
-    <div class="fw-rumpf">
+<!-- VERLAUF -->
+<div data-panel="kd" id="kd-verlauf"{% if tab != 'verlauf' %} class="hidden"{% endif %}>
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-t">{% trans "Verlauf" %}</span>
+            <button type="button" class="fw-btn fw-knapp" data-umschalten="kd-neu">{% zeichen 'neu' klasse='mr-1' %}{% trans "Eintrag" %}</button></div>
+        <form method="post" id="kd-neu" class="hidden fw-formular p-5">{% csrf_token %}
+            <input type="hidden" name="aktion" value="kontakt">
+            <div class="fw-feldblock"><label for="kt-art" class="fw-label">{% trans "Art" %}</label>
+                <select id="kt-art" name="art" class="fw-feld">{% for wert, name in arten %}<option value="{{ wert }}">{{ name }}</option>{% endfor %}</select></div>
+            <div class="fw-feldblock breit"><label for="kt-text" class="fw-label">{% trans "Eintrag" %}</label>
+                <textarea id="kt-text" name="text" rows="3" maxlength="4000" required class="fw-feld"></textarea></div>
+            <div class="fw-feldblock breit"><button type="submit" class="fw-btn fw-primary">{% trans "Eintrag speichern" %}</button>
+                <button type="button" class="fw-btn fw-geist" data-verstecken="kd-neu">{% trans "Abbrechen" %}</button></div>
+        </form>
         {% for e in verlauf %}
-        <div class="fw-dz"><div class="fw-dl">{{ e.zeit|date:"d.m.Y H:i" }}<br><span class="fw-faint">{{ e.art_text }}{% if e.von %} · {{ e.von }}{% endif %}</span></div>
-            <div class="fw-dv">{{ e.text|linebreaksbr }}
-                {% if e.eigen %}<form method="post" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Eintrag löschen?" %}{% endfilter %}">{% csrf_token %}<input type="hidden" name="aktion" value="kontakt_loeschen"><input type="hidden" name="eintrag" value="{{ e.pk }}">
-                    <button type="submit" class="fw-btn fw-geist fw-knapp">{% trans "Löschen" %}</button></form>{% endif %}</div></div>
+        <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ e.art_text }}</div><div class="fw-s">{{ e.text|linebreaksbr }}</div></div>
+            <div class="fw-zeit">{{ e.zeit|date:"d.m.Y H:i" }}<br><span class="fw-klein">{{ e.von|default:"System" }}</span></div>
+            {% if e.eigen %}<form method="post" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Eintrag löschen?" %}{% endfilter %}">{% csrf_token %}<input type="hidden" name="aktion" value="kontakt_loeschen"><input type="hidden" name="eintrag" value="{{ e.pk }}">
+                <button type="submit" class="fw-btn fw-geist fw-knapp">{% trans "Löschen" %}</button></form>{% endif %}</div>
         {% empty %}
-        <p class="fw-faint">{% trans "Noch kein Eintrag." %}</p>
+        <div class="fw-rumpf"><p class="fw-faint">{% trans "Noch kein Eintrag." %}</p></div>
         {% endfor %}
     </div>
 </div>
 
-{% if not abo %}
-<div class="fw-card max-w-3xl"><div class="fw-rumpf">
-    <p>{% trans "Diese Verwaltung hat keine Abonnement-Zeile. Sie wird nicht eingeschränkt und nicht abgerechnet." %}</p>
-    <form method="post">{% csrf_token %}<input type="hidden" name="aktion" value="abo_anlegen">
-        <button type="submit" class="fw-btn fw-primary">{% trans "Abonnement anlegen" %}</button></form>
-</div></div>
-{% else %}
-
-{% if vorschau %}
-<div class="fw-hinweis warn max-w-3xl"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">
-    <p>{% trans "Dieser Wechsel hat Folgen:" %}</p>
-    <ul>
-        {% for s in vorschau.schliesst %}<li>{% blocktrans %}Gesperrt wird: {{ s }}{% endblocktrans %}</li>{% endfor %}
-        {% if vorschau.folgen.bestand_ueber %}<li>{% blocktrans with n=vorschau.folgen.bestand_ueber d=vorschau.folgen.deckel %}Der Bestand ({{ n }} Einheiten) liegt über der Grenze der Stufe ({{ d }}): Neues lässt sich dann nicht mehr anlegen.{% endblocktrans %}</li>{% endif %}
-    </ul>
-    <p>{% trans "Daten bleiben erhalten; Funktionen werden gesperrt, nie gelöscht." %}</p>
-    <form method="post">{% csrf_token %}
-        <input type="hidden" name="aktion" value="plan"><input type="hidden" name="stufe" value="{{ vorschau.stufe }}">
-        <input type="hidden" name="intervall" value="{% if vorschau.jaehrlich %}jaehrlich{% else %}monatlich{% endif %}">
-        <input type="hidden" name="bestaetigt" value="1">
-        <button type="submit" class="fw-btn fw-primary">{% trans "Trotzdem wechseln" %}</button>
-        <a href="/betreiber/{{ org.pk }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
-    </form>
-</div></div>
-{% endif %}
-
-<div class="fw-card max-w-3xl">
-    <div class="fw-kopf"><h2>{% trans "Stufe" %}</h2></div>
-    <form method="post" class="fw-formular p-5">{% csrf_token %}
-        <input type="hidden" name="aktion" value="plan">
-        <div class="fw-feldblock"><label for="bk-stufe" class="fw-label">{% trans "Stufe" %}</label>
-            <select id="bk-stufe" name="stufe" class="fw-feld">
-                {% for s, name in stufen %}<option value="{{ s }}" {% if name == k.stufe %}selected{% endif %}>{{ name }}</option>{% endfor %}
-            </select></div>
-        <div class="fw-feldblock"><label for="bk-intervall" class="fw-label">{% trans "Abrechnung" %}</label>
-            <select id="bk-intervall" name="intervall" class="fw-feld">
-                <option value="monatlich" {% if not jaehrlich %}selected{% endif %}>{% trans "monatlich" %}</option>
-                <option value="jaehrlich" {% if jaehrlich %}selected{% endif %}>{% trans "jährlich" %}</option>
-            </select></div>
-        <div class="fw-feldblock breit"><p class="fw-hilfe">{% trans "Beendet den Bestandsschutz. Vorher werden die Folgen gezeigt." %}</p>
-            <button type="submit" class="fw-btn fw-primary">{% trans "Stufe setzen" %}</button></div>
-    </form>
-</div>
-
-<div class="fw-card max-w-3xl">
-    <div class="fw-kopf"><h2>{% trans "Module und Abrechnung" %}</h2></div>
-    <form method="post" class="fw-formular p-5">{% csrf_token %}
-        <input type="hidden" name="aktion" value="einstellen">
-        <div class="fw-feldblock breit"><span class="fw-label">{% trans "Zugebuchte Module" %}</span>
-            {% for key, name in module %}<label class="fw-haekchen"><input type="checkbox" name="module" value="{{ key }}" {% if key in zugebucht %}checked{% endif %} class="fw-akzent"> {{ name }}</label>{% endfor %}</div>
-        <div class="fw-feldblock"><label for="bk-ab" class="fw-label">{% trans "Abrechnung ab" %}</label>
-            <input id="bk-ab" type="date" name="abrechnung_ab" value="{{ abo.abrechnung_ab|date:'Y-m-d' }}" class="fw-feld">
-            <p class="fw-hilfe">{% trans "Leer = es wird nichts in Rechnung gestellt." %}</p></div>
-        <div class="fw-feldblock"><span class="fw-label">{% trans "Bestandsschutz" %}</span>
-            <label class="fw-haekchen"><input type="checkbox" name="bestandsschutz" {% if abo.uneingeschraenkt %}checked{% endif %} class="fw-akzent"> {% trans "alles offen, keine Grenzen" %}</label></div>
-        <div class="fw-feldblock breit"><button type="submit" class="fw-btn fw-primary">{% trans "Speichern" %}</button></div>
-    </form>
-</div>
-
-<div class="fw-card max-w-3xl">
-    <div class="fw-kopf"><h2>{% trans "Nutzung" %}</h2></div>
-    <div class="fw-rumpf">
-        {% for n in nutzung %}
-        <div class="fw-dz"><div class="fw-dl">{% if n.was == 'einheiten' %}{% trans "Einheiten" %}{% else %}{% trans "Nutzer" %}{% endif %}</div>
-            <div class="fw-dv">{{ n.anzahl }}{% if n.anlegen_bis %} / {{ n.anlegen_bis }}{% endif %}{% if n.darueber %} · {% trans "über der Grenze" %}{% endif %}</div></div>
-        {% endfor %}
-        <div class="fw-dz"><div class="fw-dl">{% trans "Zahlungszustand" %}</div><div class="fw-dv">{{ abo.get_zustand_display }}{% if abo.ueberfaellig_seit %} · {% trans "überfällig seit" %} {{ abo.ueberfaellig_seit|date:"d.m.Y" }}{% endif %}</div></div>
+<!-- FINANZEN -->
+<div data-panel="kd" id="kd-finanzen"{% if tab != 'finanzen' %} class="hidden"{% endif %}>
+    <div class="fw-card">
+        <div class="fw-kopf"><span class="fw-t">{% trans "Rechnungen" %}</span></div>
+        <div class="overflow-x-auto">
+        <table class="fw-table">
+            <thead><tr>
+                <th scope="col">{% trans "Nummer" %}</th><th scope="col">{% trans "Periode" %}</th>
+                <th scope="col" class="fw-right">{% trans "Brutto (CHF)" %}</th><th scope="col">{% trans "Fällig" %}</th>
+                <th scope="col">{% trans "Status" %}</th><th scope="col" class="fw-right">{% trans "Aktionen" %}</th>
+            </tr></thead>
+            <tbody>
+            {% for r in rechnungen %}
+            <tr>
+                <td class="fw-strong">{{ r.nummer }}</td>
+                <td>{{ r.periode_von|date:"d.m.Y" }} – {{ r.periode_bis|date:"d.m.Y" }}</td>
+                <td class="fw-right">{{ r.brutto }}</td>
+                <td>{{ r.faellig_am|date:"d.m.Y" }}</td>
+                <td>{{ r.get_status_display }}{% if r.bezahlt_am %} · {{ r.bezahlt_am|date:"d.m.Y" }}{% endif %}{% if r.mahnstufe %}<br><span class="fw-faint">{% blocktrans with n=r.mahnstufe %}{{ n }}. Mahnung{% endblocktrans %}{% if r.mahngebuehr %} · {% trans "Gebühr" %} CHF {{ r.mahngebuehr }}{% endif %}</span>{% endif %}
+                    <br><span class="fw-faint">{% if r.versendet_am %}{% trans "versandt am" %} {{ r.versendet_am|date:"d.m.Y" }}{% else %}{% trans "nicht versandt" %}{% endif %}</span></td>
+                <td class="fw-right">
+                    <a class="fw-btn fw-geist fw-knapp" href="{% url 'fw_betreiber_rechnung_pdf' org.pk r.pk %}" target="_blank" rel="noopener">{% trans "PDF" %}</a>
+                    {% if r.status == 'offen' %}
+                    <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="aktion" value="senden"><input type="hidden" name="rechnung" value="{{ r.pk }}">
+                        <button type="submit" class="fw-btn fw-geist fw-knapp">{% trans "Erneut senden" %}</button></form>
+                    {% if r.faellig_am < heute %}
+                    <form method="post" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Zahlungserinnerung an die Verwaltung senden?" %}{% endfilter %}">{% csrf_token %}<input type="hidden" name="aktion" value="erinnern"><input type="hidden" name="rechnung" value="{{ r.pk }}">
+                        <button type="submit" class="fw-btn fw-geist fw-knapp">{% trans "Erinnerung senden" %}</button></form>
+                    {% endif %}
+                    <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="aktion" value="bezahlt"><input type="hidden" name="rechnung" value="{{ r.pk }}">
+                        <button type="submit" class="fw-btn fw-knapp">{% trans "Als bezahlt" %}</button></form>
+                    <form method="post" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Rechnung stornieren?" %}{% endfilter %}">{% csrf_token %}<input type="hidden" name="aktion" value="storno"><input type="hidden" name="rechnung" value="{{ r.pk }}">
+                        <button type="submit" class="fw-btn fw-geist fw-knapp">{% trans "Stornieren" %}</button></form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="fw-faint">{% trans "Noch keine Rechnung gestellt." %}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+    <div class="fw-grid2">
+        <div>
+            <div class="fw-card"><div class="fw-kopf"><span class="fw-t">{% trans "Zahlungen" %}</span></div>
+                {% for z in finanzen.zahlungen %}
+                <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ z.rechnung.bezahlt_am|date:"d.m.Y" }} · {{ z.rechnung.nummer }}</div>
+                    <div class="fw-s">{% blocktrans with t=z.tage %}{{ t }} Tage nach Fälligkeit{% endblocktrans %}</div></div>
+                    <span class="fw-betrag">CHF {{ z.betrag }}</span></div>
+                {% empty %}<div class="fw-rumpf"><p class="fw-faint">{% trans "Noch keine Zahlung." %}</p></div>{% endfor %}
+            </div>
+        </div>
+        <div>
+            <div class="fw-card"><div class="fw-kopf"><span class="fw-t">{% trans "Summen" %}</span></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Fakturiert" %}</div><div class="fw-dv">CHF {{ finanzen.fakturiert }}<small>{{ finanzen.anzahl }} {% trans "Rechnungen" %}</small></div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Bezahlt" %}</div><div class="fw-dv">CHF {{ finanzen.bezahlt }}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Offen" %}</div><div class="fw-dv">CHF {{ finanzen.offen }}{% if finanzen.ueberfaellig %}<small>{% trans "überfällig" %}: CHF {{ finanzen.ueberfaellig }}</small>{% endif %}</div></div>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="fw-card">
-    <div class="fw-kopf"><h2>{% trans "Rechnungen" %}</h2></div>
-    <div class="overflow-x-auto">
-    <table class="fw-table">
-        <thead><tr>
-            <th scope="col">{% trans "Nummer" %}</th><th scope="col">{% trans "Periode" %}</th>
-            <th scope="col" class="fw-right">{% trans "Brutto (CHF)" %}</th><th scope="col">{% trans "Fällig" %}</th>
-            <th scope="col">{% trans "Status" %}</th><th scope="col" class="fw-right">{% trans "Aktionen" %}</th>
-        </tr></thead>
-        <tbody>
-        {% for r in rechnungen %}
-        <tr>
-            <td class="fw-strong">{{ r.nummer }}</td>
-            <td>{{ r.periode_von|date:"d.m.Y" }} – {{ r.periode_bis|date:"d.m.Y" }}</td>
-            <td class="fw-right">{{ r.brutto }}</td>
-            <td>{{ r.faellig_am|date:"d.m.Y" }}</td>
-            <td>{{ r.get_status_display }}{% if r.bezahlt_am %} · {{ r.bezahlt_am|date:"d.m.Y" }}{% endif %}{% if r.mahnstufe %}<br><span class="fw-faint">{% blocktrans with n=r.mahnstufe %}{{ n }}. Mahnung{% endblocktrans %}{% if r.mahngebuehr %} · {% trans "Gebühr" %} CHF {{ r.mahngebuehr }}{% endif %}</span>{% endif %}
-                <br><span class="fw-faint">{% if r.versendet_am %}{% trans "versandt am" %} {{ r.versendet_am|date:"d.m.Y" }}{% else %}{% trans "nicht versandt" %}{% endif %}</span></td>
-            <td class="fw-right">
-                <a class="fw-btn fw-geist fw-knapp" href="{% url 'fw_betreiber_rechnung_pdf' org.pk r.pk %}" target="_blank" rel="noopener">{% trans "PDF" %}</a>
-                {% if r.status == 'offen' %}
-                <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="aktion" value="senden"><input type="hidden" name="rechnung" value="{{ r.pk }}">
-                    <button type="submit" class="fw-btn fw-geist fw-knapp">{% trans "Erneut senden" %}</button></form>
-                {% if r.faellig_am < heute %}
-                <form method="post" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Zahlungserinnerung an die Verwaltung senden?" %}{% endfilter %}">{% csrf_token %}<input type="hidden" name="aktion" value="erinnern"><input type="hidden" name="rechnung" value="{{ r.pk }}">
-                    <button type="submit" class="fw-btn fw-geist fw-knapp">{% trans "Erinnerung senden" %}</button></form>
-                {% endif %}
-                <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="aktion" value="bezahlt"><input type="hidden" name="rechnung" value="{{ r.pk }}">
-                    <button type="submit" class="fw-btn fw-knapp">{% trans "Als bezahlt" %}</button></form>
-                <form method="post" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Rechnung stornieren?" %}{% endfilter %}">{% csrf_token %}<input type="hidden" name="aktion" value="storno"><input type="hidden" name="rechnung" value="{{ r.pk }}">
-                    <button type="submit" class="fw-btn fw-geist fw-knapp">{% trans "Stornieren" %}</button></form>
-                {% endif %}
-            </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="6" class="fw-faint">{% trans "Noch keine Rechnung gestellt." %}</td></tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<!-- ABONNEMENT -->
+<div data-panel="kd" id="kd-abo"{% if tab != 'abo' %} class="hidden"{% endif %}>
+    {% if not abo %}
+    <div class="fw-card"><div class="fw-rumpf">
+        <p>{% trans "Diese Verwaltung hat keine Abonnement-Zeile. Sie wird nicht eingeschränkt und nicht abgerechnet." %}</p>
+        <form method="post">{% csrf_token %}<input type="hidden" name="aktion" value="abo_anlegen">
+            <button type="submit" class="fw-btn fw-primary">{% trans "Abonnement anlegen" %}</button></form>
+    </div></div>
+    {% else %}
+    <div class="fw-grid2">
+        <div>
+            <div class="fw-card"><div class="fw-kopf"><span class="fw-t">{% trans "Abonnement" %}</span></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Stufe" %}</div><div class="fw-dv">{{ k.stufe }}<small>{% if jaehrlich %}{% trans "jährlich abgerechnet" %}{% else %}{% trans "monatlich abgerechnet" %}{% endif %}</small></div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Abrechnung ab" %}</div><div class="fw-dv">{% if abo.abrechnung_ab %}{{ abo.abrechnung_ab|date:"d.m.Y" }}{% else %}<span class="fw-faint">{% trans "nicht gesetzt" %}</span>{% endif %}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Zugebuchte Module" %}</div><div class="fw-dv">{% for key, name in module %}{{ name }}{% if not forloop.last %}, {% endif %}{% empty %}<span class="fw-faint">{% trans "keine" %}</span>{% endfor %}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Bestandsschutz" %}</div><div class="fw-dv">{% if abo.uneingeschraenkt %}{% trans "ja" %}{% else %}{% trans "nein" %}{% endif %}</div></div>
+                <div class="fw-dz"><div class="fw-dl">{% trans "Zahlungszustand" %}</div><div class="fw-dv">{{ abo.get_zustand_display }}{% if abo.ueberfaellig_seit %}<small>{% trans "überfällig seit" %} {{ abo.ueberfaellig_seit|date:"d.m.Y" }}</small>{% endif %}</div></div>
+                <div class="fw-fuss"><span>{% trans "Änderungen zeigen vorher ihre Folgen." %}</span><a href="{% url 'fw_betreiber_kunde_abo' org.pk %}" class="fw-link">{% trans "Abonnement ändern" %}</a></div>
+            </div>
+        </div>
+        <div>
+            <div class="fw-card"><div class="fw-kopf"><span class="fw-t">{% trans "Nutzung" %}</span></div>
+                {% for n in nutzung %}
+                <div class="fw-dz"><div class="fw-dl">{% if n.was == 'einheiten' %}{% trans "Einheiten" %}{% else %}{% trans "Nutzer" %}{% endif %}</div>
+                    <div class="fw-dv">{{ n.anzahl }}{% if n.anlegen_bis %} / {{ n.anlegen_bis }}{% endif %}{% if n.darueber %}<small>{% trans "über der Grenze" %}</small>{% endif %}</div></div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
+    {% endif %}
 </div>
-{% endif %}
+{% endblock %}
+{% block scripts %}
+<script nonce="{{ csp_nonce }}">
+function kdTab(name) {
+    document.querySelectorAll('[data-panel="kd"]').forEach(function (p) { p.classList.toggle('hidden', p.id !== 'kd-' + name); });
+    document.querySelectorAll('[data-tab="kd"]').forEach(function (b) {
+        var aktiv = b.dataset.target === name;
+        b.classList.toggle('hier', aktiv);
+        b.setAttribute('aria-selected', aktiv ? 'true' : 'false');
+        b.tabIndex = aktiv ? 0 : -1;
+    });
+    return false;
+}
+</script>
 {% endblock %}

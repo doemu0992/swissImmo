@@ -667,3 +667,85 @@ class BetreiberAnschriftTests(TestCase):
         befunde = [b for k in betreiber.kunden() if k.organisation.pk == org.pk for b in k.befunde]
         self.assertTrue(any('Anschrift unvollständig' in b for b in befunde), befunde)
 
+
+class BetreiberKundenseiteTests(TestCase):
+    """Die Kundenseite: Ansicht mit Reitern, «Bearbeiten» und «Abonnement ändern» auf eigenen Seiten."""
+
+    def setUp(self):
+        self.org = _test_organisation()
+        Abonnement.alle_organisationen.get_or_create(organisation=self.org)
+        self.betreiber = get_user_model().objects.create_superuser('betreiber', 'b@example.ch', 'x' * 12)
+        self.c = Client()
+        self.c.force_login(self.betreiber)
+        self.url = f'/betreiber/{self.org.pk}/'
+
+    def test_ansicht_ist_nur_zum_lesen(self):
+        seite = self.c.get(self.url).content.decode()
+        self.assertIn('fw-aktenkopf', seite)
+        self.assertIn(f'/betreiber/{self.org.pk}/bearbeiten/', seite)
+        # Auf der Ansicht stehen keine Eingabefelder für Stammdaten oder Abo, nur die Aktionen je Zeile.
+        self.assertNotIn('name="firma"', seite)
+        self.assertNotIn('name="stufe"', seite)
+
+    def test_reiter_aus_dem_parameter(self):
+        for tab in ('uebersicht', 'stamm', 'verlauf', 'finanzen', 'abo'):
+            seite = self.c.get(self.url + f'?tab={tab}').content.decode()
+            self.assertIn(f'id="kd-{tab}"', seite)
+            for anderer in {'uebersicht', 'stamm', 'verlauf', 'finanzen', 'abo'} - {tab}:
+                self.assertIn(f'id="kd-{anderer}" class="hidden"', seite, f'{tab}: {anderer} bleibt verborgen')
+            self.assertNotIn(f'id="kd-{tab}" class="hidden"', seite)
+        self.assertNotIn('id="kd-stamm"  class="hidden"', self.c.get(self.url + '?tab=unsinn').content.decode())
+        self.assertNotIn('id="kd-uebersicht" class="hidden"', self.c.get(self.url + '?tab=unsinn').content.decode())
+
+    def test_bearbeiten_zeigt_die_werte_und_speichert_ueber_die_kundenseite(self):
+        seite = self.c.get(f'{self.url}bearbeiten/')
+        self.assertContains(seite, 'name="firma"')
+        self.assertContains(seite, f'action="{self.url}"')
+        antwort = self.c.post(self.url, {'aktion': 'stamm', 'firma': 'Neu AG', 'strasse': 'Weg 1', 'plz': '4500',
+                                         'ort': 'Solothurn', 'status': 'kunde'})
+        self.assertRedirects(antwort, self.url + '?tab=stamm', fetch_redirect_response=False)
+
+    def test_fehler_beim_speichern_zeigt_die_bearbeiten_seite_mit_den_eingaben(self):
+        antwort = self.c.post(self.url, {'aktion': 'stamm', 'firma': 'Eingetippt AG', 'strasse': '', 'plz': '4500',
+                                         'ort': 'Solothurn', 'status': 'kunde'})
+        self.assertEqual(antwort.status_code, 200)
+        self.assertContains(antwort, 'name="firma"')
+        self.assertContains(antwort, 'value="Eingetippt AG"')
+        self.org.refresh_from_db()
+        self.assertNotEqual(self.org.firma, 'Eingetippt AG')
+
+    def test_abo_seite_und_rueckfrage_bleiben_auf_der_abo_seite(self):
+        self.assertContains(self.c.get(f'{self.url}abo/'), 'name="stufe"')
+        # Ein Wechsel, der etwas sperrt, zeigt die Folgen auf der Abo-Seite und ändert noch nichts.
+        self.org.abo_plan = 'enterprise'
+        self.org.save(update_fields=['abo_plan'])
+        antwort = self.c.post(self.url, {'aktion': 'plan', 'stufe': 'start', 'intervall': 'monatlich'})
+        self.assertEqual(antwort.status_code, 200)
+        self.assertContains(antwort, 'name="stufe"')
+        self.assertContains(antwort, 'name="bestaetigt"')
+
+    def test_aktionen_landen_auf_dem_passenden_reiter(self):
+        ziele = [
+            ('kontakt', {'text': 'Hallo', 'art': 'notiz'}, 'verlauf'),
+            ('status', {'status': 'gekuendigt'}, 'uebersicht'),
+            ('einstellen', {'abrechnung_ab': ''}, 'abo'),
+        ]
+        for aktion, werte, tab in ziele:
+            antwort = self.c.post(self.url, {'aktion': aktion, **werte})
+            self.assertRedirects(antwort, f'{self.url}?tab={tab}', fetch_redirect_response=False, msg_prefix=aktion)
+
+    def test_status_aendern(self):
+        from abo.models import Kundenstamm
+        self.c.post(self.url, {'aktion': 'status', 'status': 'gekuendigt'})
+        self.assertEqual(Kundenstamm.alle_organisationen.get(organisation=self.org).status, 'gekuendigt')
+        self.c.post(self.url, {'aktion': 'status', 'status': 'unsinn'})
+        self.assertEqual(Kundenstamm.alle_organisationen.get(organisation=self.org).status, 'gekuendigt')
+
+    def test_nur_der_betreiber_sieht_die_neuen_seiten(self):
+        team = Client()
+        team.force_login(_team_user())
+        for pfad in (f'{self.url}bearbeiten/', f'{self.url}abo/', self.url):
+            self.assertEqual(team.get(pfad).status_code, 403, pfad)
+        for pfad in (f'/betreiber/999999/bearbeiten/', f'/betreiber/999999/abo/'):
+            self.assertEqual(self.c.get(pfad).status_code, 404, pfad)
+
