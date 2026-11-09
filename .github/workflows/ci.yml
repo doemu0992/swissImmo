@@ -99,7 +99,9 @@ jobs:
           export DEBUG=False IMAP_SCHLUESSEL="$(python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')"
           python manage.py check --deploy 2>&1 | tee deploy-check.txt | python _tools/deploy_check_pruefen.py deploy-check-ignore.txt
       - name: Tests
-        run: python manage.py test --verbosity=2
+        # Parallel auf den 4 Kernen des Runners: ~7'100 Tests liefen nacheinander rund 40 Minuten, parallel messbar
+        # 6.5 Minuten (lokal, 4 Kerne, alle grün). Wie im Job `test-postgres`.
+        run: python manage.py test --noinput --parallel 4 --verbosity=2
 
   # Dieselbe Suite gegen PostgreSQL — die Zieldatenbank des Umzugs
   # (docs/UMZUG-POSTGRESQL.md). SQLite erzwingt weder Spaltenbreiten noch
