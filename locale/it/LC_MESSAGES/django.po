@@ -39684,3 +39684,73 @@ msgstr "La data «Fatturazione dal» non è valida."
 msgid ""
 "«Abrechnung ab» ist nicht gesetzt: Es wird nichts in Rechnung gestellt."
 msgstr "«Fatturazione dal» non è impostato: non viene fatturato nulla."
+
+msgid "CSP-Meldungen"
+msgstr "Segnalazioni CSP"
+
+msgid ""
+"Was der Browser als Verstoss gegen die Sicherheitsrichtlinie meldet, "
+"zusammengefasst aus dem Anwendungs-Log. Ruhig heisst: Die Richtlinie kann "
+"scharf geschaltet werden."
+msgstr ""
+"Ciò che il browser segnala come violazione della policy di sicurezza, "
+"riassunto dal log dell'applicazione. Tranquillo significa che la policy può "
+"essere resa vincolante."
+
+msgid "Modus"
+msgstr "Modalità"
+
+msgid "meldet nur, sperrt nichts"
+msgstr "solo segnalazione, non blocca nulla"
+
+msgid "sperrt Verstösse"
+msgstr "blocca le violazioni"
+
+msgid "Gelesene Logdateien"
+msgstr "File di log letti"
+
+msgid "keine gefunden"
+msgstr "nessuno trovato"
+
+msgid "Meldungen insgesamt"
+msgstr "Segnalazioni in totale"
+
+msgid ""
+"Keine Verstösse im gelesenen Teil des Logs. Das ist der gewünschte Zustand "
+"vor dem Scharfschalten."
+msgstr ""
+"Nessuna violazione nella parte letta del log. È lo stato desiderato prima di"
+" rendere vincolante la policy."
+
+msgid ""
+"Das Log ist nicht lesbar oder noch nicht angelegt. Ohne Log lässt sich nicht"
+" beurteilen, ob die Richtlinie scharf geschaltet werden kann."
+msgstr ""
+"Il log non è leggibile o non esiste ancora. Senza log non si può valutare se"
+" la policy può essere resa vincolante."
+
+msgid "Anzahl"
+msgstr "Numero"
+
+msgid "Regel"
+msgstr "Regola"
+
+msgid "Seite"
+msgstr "Pagina"
+
+msgid "Zuletzt"
+msgstr "Ultimo"
+
+msgid ""
+"Adressen sind ohne Abfrageteil gezeigt. Meldungen von Browser-Erweiterungen "
+"(Quelle beginnt mit chrome-extension: oder moz-extension:) kannst du "
+"ignorieren."
+msgstr ""
+"Gli indirizzi sono mostrati senza la parte di query. Puoi ignorare le "
+"segnalazioni delle estensioni del browser (origine che inizia con chrome-"
+"extension: o moz-extension:)."
+
+msgid "%(n)s verschiedene"
+msgid_plural "%(n)s verschiedene"
+msgstr[0] "%(n)s distinta"
+msgstr[1] "%(n)s distinte"

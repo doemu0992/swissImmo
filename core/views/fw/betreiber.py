@@ -22,6 +22,13 @@ def fw_betreiber(request):
 
 
 @rolle_erforderlich(*BETREIBER_ROLLEN)
+def fw_betreiber_csp(request):
+    """CSP-Meldungen aus dem Anwendungs-Log, zusammengefasst — damit der Betreiber vor `enforce` nicht auf den Server muss."""
+    from core.services import csp_meldungen
+    return render(request, 'fw/betreiber_csp.html', {'aktiv': 'csp', **csp_meldungen.uebersicht()})
+
+
+@rolle_erforderlich(*BETREIBER_ROLLEN)
 def fw_betreiber_neu(request):
     """Etappe 2: Kunde anlegen. Derselbe Dienst wie der Befehl `organisation_anlegen`, plus Einladung per Mail.
 

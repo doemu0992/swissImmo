@@ -14,6 +14,9 @@ Adressen einer Verwaltung. Die Seiten setzen `aktiv` (kunden|sicherheit).
 <a href="{% url 'betreiber' %}" class="fw-nav-eintrag{% if aktiv == 'kunden' %} hier{% endif %}"{% if aktiv == 'kunden' %} aria-current="page"{% endif %}>
     {% zeichen 'liegenschaft' %} {% trans "Kunden" %}
 </a>
+<a href="{% url 'fw_betreiber_csp' %}" class="fw-nav-eintrag{% if aktiv == 'csp' %} hier{% endif %}"{% if aktiv == 'csp' %} aria-current="page"{% endif %}>
+    {% zeichen 'warnung' %} {% trans "CSP-Meldungen" %}
+</a>
 <a href="{% url 'fw_sicherheit' %}" class="fw-nav-eintrag{% if aktiv == 'sicherheit' %} hier{% endif %}"{% if aktiv == 'sicherheit' %} aria-current="page"{% endif %}>
     {% zeichen 'gesperrt' %} {% trans "Sicherheit" %}
 </a>

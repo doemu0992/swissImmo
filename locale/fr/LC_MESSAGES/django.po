@@ -39753,3 +39753,73 @@ msgstr "La date « Facturation dès » est invalide."
 msgid ""
 "«Abrechnung ab» ist nicht gesetzt: Es wird nichts in Rechnung gestellt."
 msgstr "« Facturation dès » n'est pas défini : rien n'est facturé."
+
+msgid "CSP-Meldungen"
+msgstr "Rapports CSP"
+
+msgid ""
+"Was der Browser als Verstoss gegen die Sicherheitsrichtlinie meldet, "
+"zusammengefasst aus dem Anwendungs-Log. Ruhig heisst: Die Richtlinie kann "
+"scharf geschaltet werden."
+msgstr ""
+"Ce que le navigateur signale comme violation de la politique de sécurité, "
+"résumé à partir du journal de l'application. Calme signifie que la politique"
+" peut être appliquée."
+
+msgid "Modus"
+msgstr "Mode"
+
+msgid "meldet nur, sperrt nichts"
+msgstr "signale seulement, ne bloque rien"
+
+msgid "sperrt Verstösse"
+msgstr "bloque les violations"
+
+msgid "Gelesene Logdateien"
+msgstr "Fichiers journaux lus"
+
+msgid "keine gefunden"
+msgstr "aucun trouvé"
+
+msgid "Meldungen insgesamt"
+msgstr "Rapports au total"
+
+msgid ""
+"Keine Verstösse im gelesenen Teil des Logs. Das ist der gewünschte Zustand "
+"vor dem Scharfschalten."
+msgstr ""
+"Aucune violation dans la partie lue du journal. C'est l'état souhaité avant "
+"l'application."
+
+msgid ""
+"Das Log ist nicht lesbar oder noch nicht angelegt. Ohne Log lässt sich nicht"
+" beurteilen, ob die Richtlinie scharf geschaltet werden kann."
+msgstr ""
+"Le journal est illisible ou n'existe pas encore. Sans journal, on ne peut "
+"pas juger si la politique peut être appliquée."
+
+msgid "Anzahl"
+msgstr "Nombre"
+
+msgid "Regel"
+msgstr "Règle"
+
+msgid "Seite"
+msgstr "Page"
+
+msgid "Zuletzt"
+msgstr "Dernier"
+
+msgid ""
+"Adressen sind ohne Abfrageteil gezeigt. Meldungen von Browser-Erweiterungen "
+"(Quelle beginnt mit chrome-extension: oder moz-extension:) kannst du "
+"ignorieren."
+msgstr ""
+"Les adresses sont affichées sans partie de requête. Vous pouvez ignorer les "
+"rapports des extensions de navigateur (source commençant par chrome-"
+"extension: ou moz-extension:)."
+
+msgid "%(n)s verschiedene"
+msgid_plural "%(n)s verschiedene"
+msgstr[0] "%(n)s distinct"
+msgstr[1] "%(n)s distincts"

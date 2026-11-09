@@ -209,6 +209,7 @@ UEBERSETZT = (
     'fw/betreiber.html',             # Betreiber-Konsole Etappe 1: Kundenliste
     'fw/betreiber_neu.html',         # Betreiber-Konsole Etappe 2: Kunde anlegen
     'fw/betreiber_kunde.html',       # Betreiber-Konsole Etappe 3: Abo-Verwaltung
+    'fw/betreiber_csp.html',         # Betreiber-Portal: CSP-Meldungen aus dem Log
     'fw/auszahlungsfreigaben.html',  # Vier-Augen-Prinzip für Auszahlungen (Etappe 4)
     'fw/mahnwesen.html',
     'fw/mandat_abrechnung.html',

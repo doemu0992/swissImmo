@@ -76,7 +76,7 @@ from core.csp import csp_bericht
 # 2b. Eigentümer-Portal & Login-Weiche
 from core.views.fw.kreditoren import (fw_kreditor_zahlung_vorlegen, fw_kreditor_zahlung_freigeben,
                                       fw_kreditor_zahlung_zuruecknehmen)
-from core.views.fw.betreiber import fw_betreiber, fw_betreiber_kunde, fw_betreiber_neu
+from core.views.fw.betreiber import fw_betreiber, fw_betreiber_csp, fw_betreiber_kunde, fw_betreiber_neu
 from core.views.fw.sicherheit import fw_sicherheit
 from core.views.fw.zahlungsfreigabe import (fw_auszahlungsfreigabe_freigeben, fw_auszahlungsfreigabe_zuruecknehmen,
                                             fw_auszahlungsfreigaben, fw_zahlungsfreigabe, fw_zahlungsfreigabe_speichern)
@@ -421,6 +421,7 @@ urlpatterns = [
     path('betreiber/', fw_betreiber, name='betreiber'),
     path('betreiber/neu/', fw_betreiber_neu, name='fw_betreiber_neu'),
     path('betreiber/sicherheit/', fw_sicherheit, name='fw_sicherheit'),
+    path('betreiber/csp/', fw_betreiber_csp, name='fw_betreiber_csp'),
     path('betreiber/<int:pk>/', fw_betreiber_kunde, name='fw_betreiber_kunde'),
     path('neu/einstellungen/zahlungsfreigabe/', fw_zahlungsfreigabe, name='fw_zahlungsfreigabe'),
     path('neu/einstellungen/zahlungsfreigabe/speichern/', fw_zahlungsfreigabe_speichern, name='fw_zahlungsfreigabe_speichern'),
