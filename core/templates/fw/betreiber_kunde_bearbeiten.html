@@ -1,0 +1,77 @@
+{% extends 'core/betreiber_base.html' %}
+{% load zeichen i18n %}
+{% comment %}BETREIBER — Stammdaten und Ansprechperson eines Kunden ändern. Wie bei den Personen eine eigene Seite: Die Kundenseite zeigt nur. Abgeschickt wird an die Kundenseite (aktion=stamm), siehe core/views/fw/betreiber.py.{% endcomment %}
+{% block title %}{{ org.firma }} — {% trans "Bearbeiten" %} — immoswiss{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-3">
+    <a href="/betreiber/">{% trans "Kunden" %}</a>
+    {% zeichen 'weiter' %}
+    <a href="{% url 'fw_betreiber_kunde' org.pk %}">{{ org.firma }}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "Bearbeiten" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% blocktrans with firma=org.firma %}{{ firma }} bearbeiten{% endblocktrans %}</h1>
+        <p>{{ stamm.kundennummer }} · {% trans "Änderungen gelten erst nach «Speichern»." %}</p>
+    </div>
+</div>
+
+<form method="post" action="{% url 'fw_betreiber_kunde' org.pk %}" class="max-w-3xl">
+    {% csrf_token %}
+    <input type="hidden" name="aktion" value="stamm">
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Firma und Anschrift" %}</h2></div>
+        <div class="fw-formular p-5">
+            <div class="fw-feldblock breit"><label for="st-firma" class="fw-label">{% trans "Firma" %}</label>
+                <input id="st-firma" name="firma" value="{{ w.firma }}" maxlength="100" required class="fw-feld"></div>
+            <div class="fw-feldblock breit"><label for="st-strasse" class="fw-label">{% trans "Strasse und Nr." %}</label>
+                <input id="st-strasse" name="strasse" value="{{ w.strasse }}" maxlength="100" required class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="st-plz" class="fw-label">{% trans "PLZ" %}</label>
+                <input id="st-plz" name="plz" value="{{ w.plz }}" maxlength="10" required class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="st-ort" class="fw-label">{% trans "Ort" %}</label>
+                <input id="st-ort" name="ort" value="{{ w.ort }}" maxlength="100" required class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="st-telefon" class="fw-label">{% trans "Telefon" %}</label>
+                <input id="st-telefon" name="telefon" type="tel" value="{{ w.telefon }}" maxlength="30" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="st-natel" class="fw-label">{% trans "Natel" %}</label>
+                <input id="st-natel" name="natel" type="tel" value="{{ w.natel }}" maxlength="30" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="st-email" class="fw-label">{% trans "E-Mail" %}</label>
+                <input id="st-email" name="email" type="email" value="{{ w.email }}" maxlength="254" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="st-web" class="fw-label">{% trans "Website" %}</label>
+                <input id="st-web" name="website" value="{{ w.website }}" maxlength="200" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="st-uid" class="fw-label">{% trans "UID / MWST-Nummer" %}</label>
+                <input id="st-uid" name="mwst_uid" value="{{ w.mwst_uid }}" maxlength="20" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="st-status" class="fw-label">{% trans "Kundenstatus" %}</label>
+                <select id="st-status" name="status" class="fw-feld">{% for wert, name in stati %}<option value="{{ wert }}" {% if wert == w.status %}selected{% endif %}>{{ name }}</option>{% endfor %}</select></div>
+        </div>
+    </div>
+
+    <div class="fw-card">
+        <div class="fw-kopf"><h2>{% trans "Ansprechperson und Rechnung" %}</h2></div>
+        <div class="fw-formular p-5">
+            <div class="fw-feldblock"><label for="st-ap" class="fw-label">{% trans "Ansprechperson" %}</label>
+                <input id="st-ap" name="ansprechperson" value="{{ w.ansprechperson }}" maxlength="120" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="st-apf" class="fw-label">{% trans "Funktion" %}</label>
+                <input id="st-apf" name="ansprech_funktion" value="{{ w.ansprech_funktion }}" maxlength="120" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="st-apm" class="fw-label">{% trans "E-Mail der Ansprechperson" %}</label>
+                <input id="st-apm" name="ansprech_email" type="email" value="{{ w.ansprech_email }}" maxlength="254" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="st-apt" class="fw-label">{% trans "Telefon der Ansprechperson" %}</label>
+                <input id="st-apt" name="ansprech_telefon" type="tel" value="{{ w.ansprech_telefon }}" maxlength="30" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="st-apn" class="fw-label">{% trans "Natel der Ansprechperson" %}</label>
+                <input id="st-apn" name="ansprech_natel" type="tel" value="{{ w.ansprech_natel }}" maxlength="30" class="fw-feld"></div>
+            <div class="fw-feldblock"><label for="st-rmail" class="fw-label">{% trans "E-Mail für Rechnungen" %}</label>
+                <input id="st-rmail" name="rechnung_email" type="email" value="{{ w.rechnung_email }}" maxlength="254" class="fw-feld">
+                <p class="fw-hilfe">{% trans "Leer = Rechnungen und Mahnungen gehen an die E-Mail der Verwaltung." %}</p></div>
+            <div class="fw-feldblock breit"><label for="st-notizen" class="fw-label">{% trans "Interne Notizen" %}</label>
+                <textarea id="st-notizen" name="notizen" rows="4" maxlength="8000" class="fw-feld">{{ w.notizen }}</textarea>
+                <p class="fw-hilfe">{% trans "Nur für den Betreiber sichtbar, nie für die Verwaltung." %}</p></div>
+        </div>
+    </div>
+
+    <div class="flex gap-2">
+        <button type="submit" class="fw-btn fw-primary">{% trans "Kundendaten speichern" %}</button>
+        <a href="{% url 'fw_betreiber_kunde' org.pk %}?tab=stamm" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+    </div>
+</form>
+{% endblock %}

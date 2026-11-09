@@ -39382,3 +39382,116 @@ msgstr "The property management's address is missing (street, postcode, city): a
 
 msgid "Anschrift unvollständig (Strasse, PLZ, Ort): Die Rechnung hat keine Anschrift und geht nicht hinaus. In der Kundenkartei ergänzen."
 msgstr "Address incomplete (street, postcode, city): the invoice has no address and is not sent. Add it in the customer file."
+
+msgid "etwas spät"
+msgstr "somewhat late"
+
+msgid "Kunde"
+msgstr "Customer"
+
+msgid "Zugang gesperrt"
+msgstr "Access blocked"
+
+msgid "Lesemodus"
+msgstr "Read-only mode"
+
+msgid "Zahlung überfällig"
+msgstr "Payment overdue"
+
+msgid "alles bezahlt"
+msgstr "all paid"
+
+msgid "Abonnement ändern"
+msgstr "Change subscription"
+
+msgid "Eintrag im Verlauf"
+msgstr "Add history entry"
+
+msgid "Wieder als Kunde markieren"
+msgstr "Mark as customer again"
+
+msgid "Als gekündigt markieren"
+msgstr "Mark as cancelled"
+
+msgid "davon CHF %(b)s überfällig"
+msgstr "of which CHF %(b)s overdue"
+
+msgid "noch nicht fällig"
+msgstr "not yet due"
+
+msgid "Ø %(t)s Tage nach Fälligkeit"
+msgstr "avg. %(t)s days after due date"
+
+msgid "noch keine Zahlung"
+msgstr "no payment yet"
+
+msgid "nicht geplant"
+msgstr "not planned"
+
+msgid "Zu prüfen"
+msgstr "To check"
+
+msgid "Rechnungen gehen an"
+msgstr "Invoices go to"
+
+msgid "Zum Verlauf"
+msgstr "To the history"
+
+msgid "nur für den Betreiber"
+msgstr "operator only"
+
+msgid "Firma und Anschrift"
+msgstr "Company and address"
+
+msgid "nicht hinterlegt"
+msgstr "not on file"
+
+msgid "Ansprechperson und Rechnung"
+msgstr "Contact person and invoice"
+
+msgid "abweichend von der E-Mail der Firma"
+msgstr "differs from the company email"
+
+msgid "wie die E-Mail der Firma"
+msgstr "same as the company email"
+
+msgid "Zuletzt geändert"
+msgstr "Last changed"
+
+msgid "Eintrag speichern"
+msgstr "Save entry"
+
+msgid "%(t)s Tage nach Fälligkeit"
+msgstr "%(t)s days after due date"
+
+msgid "Noch keine Zahlung."
+msgstr "No payment yet."
+
+msgid "Summen"
+msgstr "Totals"
+
+msgid "jährlich abgerechnet"
+msgstr "billed yearly"
+
+msgid "monatlich abgerechnet"
+msgstr "billed monthly"
+
+msgid "nicht gesetzt"
+msgstr "not set"
+
+msgid "Änderungen zeigen vorher ihre Folgen."
+msgstr "Changes show their consequences first."
+
+msgid "%(firma)s bearbeiten"
+msgstr "Edit %(firma)s"
+
+msgid "Änderungen gelten erst nach «Speichern»."
+msgstr "Changes only apply after «Save»."
+
+msgid "Status gesetzt."
+msgstr "Status set."
+
+msgid "%(n)s Rechnung offen"
+msgid_plural "%(n)s Rechnungen offen"
+msgstr[0] "%(n)s invoice open"
+msgstr[1] "%(n)s invoices open"

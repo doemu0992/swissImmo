@@ -138,6 +138,9 @@ def finanzen(org, heute=None):
         'zahlungen': [{'rechnung': r, 'tage': (r.bezahlt_am - r.faellig_am).days, 'betrag': betrag(r)} for r in zahlungen],
         'naechste': None,
     }
+    d = ergebnis['zahlungsdauer']
+    ergebnis['verhalten'] = (None if d is None else ('good', _('pünktlich')) if d <= 5
+                             else ('warn', _('etwas spät')) if d <= 20 else ('crit', _('spät')))
     abo = Abonnement.alle_organisationen.filter(organisation=org).first()
     if abo is not None and not abo.uneingeschraenkt and abo.abrechnung_ab:
         periode = dienst.naechste_periode(abo, org)

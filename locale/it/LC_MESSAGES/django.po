@@ -39977,3 +39977,116 @@ msgstr "Manca l'indirizzo dell'amministrazione (via, NPA, località): completarl
 
 msgid "Anschrift unvollständig (Strasse, PLZ, Ort): Die Rechnung hat keine Anschrift und geht nicht hinaus. In der Kundenkartei ergänzen."
 msgstr "Indirizzo incompleto (via, NPA, località): la fattura non ha indirizzo e non viene inviata. Completarlo nella scheda cliente."
+
+msgid "etwas spät"
+msgstr "un po' in ritardo"
+
+msgid "Kunde"
+msgstr "Cliente"
+
+msgid "Zugang gesperrt"
+msgstr "Accesso bloccato"
+
+msgid "Lesemodus"
+msgstr "Modalità sola lettura"
+
+msgid "Zahlung überfällig"
+msgstr "Pagamento scaduto"
+
+msgid "alles bezahlt"
+msgstr "tutto pagato"
+
+msgid "Abonnement ändern"
+msgstr "Modifica abbonamento"
+
+msgid "Eintrag im Verlauf"
+msgstr "Voce nella cronologia"
+
+msgid "Wieder als Kunde markieren"
+msgstr "Segna di nuovo come cliente"
+
+msgid "Als gekündigt markieren"
+msgstr "Segna come disdetto"
+
+msgid "davon CHF %(b)s überfällig"
+msgstr "di cui CHF %(b)s scaduti"
+
+msgid "noch nicht fällig"
+msgstr "non ancora scaduto"
+
+msgid "Ø %(t)s Tage nach Fälligkeit"
+msgstr "Ø %(t)s giorni dopo la scadenza"
+
+msgid "noch keine Zahlung"
+msgstr "ancora nessun pagamento"
+
+msgid "nicht geplant"
+msgstr "non pianificata"
+
+msgid "Zu prüfen"
+msgstr "Da verificare"
+
+msgid "Rechnungen gehen an"
+msgstr "Le fatture vanno a"
+
+msgid "Zum Verlauf"
+msgstr "Alla cronologia"
+
+msgid "nur für den Betreiber"
+msgstr "solo per l'operatore"
+
+msgid "Firma und Anschrift"
+msgstr "Ditta e indirizzo"
+
+msgid "nicht hinterlegt"
+msgstr "non registrato"
+
+msgid "Ansprechperson und Rechnung"
+msgstr "Persona di contatto e fattura"
+
+msgid "abweichend von der E-Mail der Firma"
+msgstr "diverso dall'e-mail della ditta"
+
+msgid "wie die E-Mail der Firma"
+msgstr "come l'e-mail della ditta"
+
+msgid "Zuletzt geändert"
+msgstr "Ultima modifica"
+
+msgid "Eintrag speichern"
+msgstr "Salva voce"
+
+msgid "%(t)s Tage nach Fälligkeit"
+msgstr "%(t)s giorni dopo la scadenza"
+
+msgid "Noch keine Zahlung."
+msgstr "Ancora nessun pagamento."
+
+msgid "Summen"
+msgstr "Totali"
+
+msgid "jährlich abgerechnet"
+msgstr "fatturato annualmente"
+
+msgid "monatlich abgerechnet"
+msgstr "fatturato mensilmente"
+
+msgid "nicht gesetzt"
+msgstr "non impostato"
+
+msgid "Änderungen zeigen vorher ihre Folgen."
+msgstr "Le modifiche mostrano prima le loro conseguenze."
+
+msgid "%(firma)s bearbeiten"
+msgstr "Modifica %(firma)s"
+
+msgid "Änderungen gelten erst nach «Speichern»."
+msgstr "Le modifiche valgono solo dopo «Salva»."
+
+msgid "Status gesetzt."
+msgstr "Stato impostato."
+
+msgid "%(n)s Rechnung offen"
+msgid_plural "%(n)s Rechnungen offen"
+msgstr[0] "%(n)s fattura aperta"
+msgstr[1] "%(n)s fatture aperte"

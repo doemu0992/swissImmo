@@ -38270,3 +38270,119 @@ msgstr "Die Anschrift der Verwaltung fehlt (Strasse, PLZ, Ort): in der Kundenkar
 
 msgid "Anschrift unvollständig (Strasse, PLZ, Ort): Die Rechnung hat keine Anschrift und geht nicht hinaus. In der Kundenkartei ergänzen."
 msgstr "Anschrift unvollständig (Strasse, PLZ, Ort): Die Rechnung hat keine Anschrift und geht nicht hinaus. In der Kundenkartei ergänzen."
+
+msgid "etwas spät"
+msgstr "etwas spät"
+
+msgid "Kunde"
+msgstr "Kunde"
+
+msgid "Anschrift"
+msgstr "Anschrift"
+
+msgid "Zugang gesperrt"
+msgstr "Zugang gesperrt"
+
+msgid "Lesemodus"
+msgstr "Lesemodus"
+
+msgid "Zahlung überfällig"
+msgstr "Zahlung überfällig"
+
+msgid "alles bezahlt"
+msgstr "alles bezahlt"
+
+msgid "Abonnement ändern"
+msgstr "Abonnement ändern"
+
+msgid "Eintrag im Verlauf"
+msgstr "Eintrag im Verlauf"
+
+msgid "Wieder als Kunde markieren"
+msgstr "Wieder als Kunde markieren"
+
+msgid "Als gekündigt markieren"
+msgstr "Als gekündigt markieren"
+
+msgid "davon CHF %(b)s überfällig"
+msgstr "davon CHF %(b)s überfällig"
+
+msgid "noch nicht fällig"
+msgstr "noch nicht fällig"
+
+msgid "Ø %(t)s Tage nach Fälligkeit"
+msgstr "Ø %(t)s Tage nach Fälligkeit"
+
+msgid "noch keine Zahlung"
+msgstr "noch keine Zahlung"
+
+msgid "nicht geplant"
+msgstr "nicht geplant"
+
+msgid "Zu prüfen"
+msgstr "Zu prüfen"
+
+msgid "Rechnungen gehen an"
+msgstr "Rechnungen gehen an"
+
+msgid "Zum Verlauf"
+msgstr "Zum Verlauf"
+
+msgid "nur für den Betreiber"
+msgstr "nur für den Betreiber"
+
+msgid "Firma und Anschrift"
+msgstr "Firma und Anschrift"
+
+msgid "nicht hinterlegt"
+msgstr "nicht hinterlegt"
+
+msgid "Ansprechperson und Rechnung"
+msgstr "Ansprechperson und Rechnung"
+
+msgid "abweichend von der E-Mail der Firma"
+msgstr "abweichend von der E-Mail der Firma"
+
+msgid "wie die E-Mail der Firma"
+msgstr "wie die E-Mail der Firma"
+
+msgid "Zuletzt geändert"
+msgstr "Zuletzt geändert"
+
+msgid "Eintrag speichern"
+msgstr "Eintrag speichern"
+
+msgid "%(t)s Tage nach Fälligkeit"
+msgstr "%(t)s Tage nach Fälligkeit"
+
+msgid "Noch keine Zahlung."
+msgstr "Noch keine Zahlung."
+
+msgid "Summen"
+msgstr "Summen"
+
+msgid "jährlich abgerechnet"
+msgstr "jährlich abgerechnet"
+
+msgid "monatlich abgerechnet"
+msgstr "monatlich abgerechnet"
+
+msgid "nicht gesetzt"
+msgstr "nicht gesetzt"
+
+msgid "Änderungen zeigen vorher ihre Folgen."
+msgstr "Änderungen zeigen vorher ihre Folgen."
+
+msgid "%(firma)s bearbeiten"
+msgstr "%(firma)s bearbeiten"
+
+msgid "Änderungen gelten erst nach «Speichern»."
+msgstr "Änderungen gelten erst nach «Speichern»."
+
+msgid "Status gesetzt."
+msgstr "Status gesetzt."
+
+msgid "%(n)s Rechnung offen"
+msgid_plural "%(n)s Rechnungen offen"
+msgstr[0] "%(n)s Rechnung offen"
+msgstr[1] "%(n)s Rechnungen offen"
