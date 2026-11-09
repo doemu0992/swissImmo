@@ -431,10 +431,10 @@ class FreigabeImTeamTests(PortalWelt):
         self.team.force_login(_team_user('Verwaltung'))
 
     def test_standard_ist_nicht_sichtbar(self):
-        d = Dokument(liegenschaft=self.lg_a, titel='Neu', kategorie='x')
+        d = Dokument(liegenschaft=self.lg_a, titel='Unfreigegebenes Schriftstück', kategorie='x')
         d.datei.save('neu.pdf', ContentFile(b'%PDF'), save=True)
         self.assertFalse(d.im_portal_sichtbar)
-        self.assertNotContains(self.get('/portal/dokumente/'), 'Neu')
+        self.assertNotContains(self.get('/portal/dokumente/'), 'Unfreigegebenes Schriftstück')
 
     def test_team_schaltet_frei_und_aus(self):
         self.assertEqual(self.get(f'/portal/dokument/{self.dok_a_intern.pk}/').status_code, 404)
