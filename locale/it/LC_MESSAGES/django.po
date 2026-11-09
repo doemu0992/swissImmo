@@ -40120,3 +40120,47 @@ msgstr "netto"
 
 msgid "Zugebuchte Module kommen ab der nächsten Rechnung dazu."
 msgstr "I moduli aggiunti compaiono sulla prossima fattura."
+
+msgid "Bitte einen Betreff angeben (%(min)s bis %(max)s Zeichen)."
+msgstr "Indicare un oggetto (da %(min)s a %(max)s caratteri)."
+
+msgid "Bitte die Anfrage beschreiben (%(min)s bis %(max)s Zeichen)."
+msgstr "Descrivere la richiesta (da %(min)s a %(max)s caratteri)."
+
+msgid "Es sind zu viele Anfragen in kurzer Zeit eingegangen. Bitte später noch einmal versuchen oder direkt anrufen."
+msgstr "Troppe richieste in poco tempo. Riprovare più tardi o chiamare direttamente."
+
+msgid "Ihre Anfrage ist beim Betreiber angekommen. Die Antwort kommt per E-Mail."
+msgstr "La vostra richiesta è arrivata all'operatore. La risposta arriverà per e-mail."
+
+msgid "Ihre Anfrage ist gespeichert. Die Benachrichtigung ging nicht hinaus; der Betreiber sieht sie trotzdem."
+msgstr "La vostra richiesta è salvata. La notifica non è partita; l'operatore la vedrà comunque."
+
+msgid "Diese Anfrage gehört nicht zu dieser Verwaltung."
+msgstr "Questa richiesta non appartiene a questa amministrazione."
+
+msgid "Anfrage als erledigt markiert."
+msgstr "Richiesta contrassegnata come evasa."
+
+msgid "Anfrage wieder geöffnet."
+msgstr "Richiesta riaperta."
+
+msgid "%(n)s Support-Anfrage(n) offen: im Reiter «Verlauf» beantworten und erledigen."
+msgstr "%(n)s richiesta/e di supporto aperta/e: rispondere e chiuderle nella scheda «Cronologia»."
+
+msgid "Support"
+msgstr "Supporto"
+
+msgid "Ihre Anfrage geht an den Betreiber; die Antwort kommt per E-Mail an Ihre Adresse."
+msgstr "La vostra richiesta va all'operatore; la risposta arriva per e-mail al vostro indirizzo."
+
+msgid "Ihre Anfrage"
+msgstr "La vostra richiesta"
+
+msgid "Anfrage senden"
+msgstr "Invia richiesta"
+
+msgid "%(n)s Support-Anfrage offen"
+msgid_plural "%(n)s Support-Anfragen offen"
+msgstr[0] "%(n)s richiesta di supporto aperta"
+msgstr[1] "%(n)s richieste di supporto aperte"

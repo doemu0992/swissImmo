@@ -23,6 +23,7 @@ class Kunde:
     nutzer: int = 0
     stufe: str = ''
     stamm: object = None
+    support_offen: int = 0
     befunde: list = field(default_factory=list)
 
     @property
@@ -58,13 +59,18 @@ def kunden():
                    .values_list('organisation_id', flat=True)):
         inhaber[org_id] = inhaber.get(org_id, 0) + 1
     staemme = {k.organisation_id: k for k in Kundenstamm.alle_organisationen.all()}
+    support = {}
+    for org_id in (KundenKontakt.alle_organisationen.filter(art=KundenKontakt.ART_SUPPORT, erledigt_am__isnull=True)
+                   .values_list('organisation_id', flat=True)):
+        support[org_id] = support.get(org_id, 0) + 1
     unversandt = {}
     for org_id in (AboRechnung.alle_organisationen.filter(status=AboRechnung.STATUS_OFFEN, versendet_am__isnull=True)
                    .values_list('organisation_id', flat=True)):
         unversandt[org_id] = unversandt.get(org_id, 0) + 1
     zeilen = []
     for org in Organisation.objects.all().order_by('firma', 'pk'):
-        k = Kunde(organisation=org, abo=abos.get(org.pk), inhaber=inhaber.get(org.pk, 0), stamm=staemme.get(org.pk))
+        k = Kunde(organisation=org, abo=abos.get(org.pk), inhaber=inhaber.get(org.pk, 0), stamm=staemme.get(org.pk),
+                  support_offen=support.get(org.pk, 0))
         k.einheiten = dienst.zaehle(org.pk, 'einheiten')
         k.nutzer = dienst.zaehle(org.pk, 'nutzer')
         k.stufe = f.STUFEN_NAMEN.get(f.stufe_von(org), '')
@@ -81,6 +87,9 @@ def kunden():
             k.befunde.append(_('«Abrechnung ab» ist nicht gesetzt: Es wird nichts in Rechnung gestellt.'))
         if k.abo is not None and k.abo.zustand != Abonnement.ZUSTAND_AKTIV:
             k.befunde.append(_('Zahlung überfällig seit %(datum)s.') % {'datum': k.abo.ueberfaellig_seit or '—'})
+        if k.support_offen:
+            k.befunde.append(_('%(n)s Support-Anfrage(n) offen: im Reiter «Verlauf» beantworten und erledigen.')
+                             % {'n': k.support_offen})
         if unversandt.get(org.pk):
             k.befunde.append(_('%(n)s offene Rechnung(en) wurden noch nicht per Mail versandt: im Kunden «Erneut senden».')
                              % {'n': unversandt[org.pk]})
@@ -145,8 +154,9 @@ def finanzen(org, heute=None):
     if abo is not None and not abo.uneingeschraenkt and abo.abrechnung_ab:
         periode = dienst.naechste_periode(abo, org)
         if periode:
-            netto, _bemerkung = dienst.betrag_fuer(f.stufe_von(org), dienst.zaehle(org.pk, 'einheiten'),
-                                                   bool(org.abo_jaehrlich), tuple(abo.zusatzmodule or ()))
+            netto, _bemerkung, positionen = dienst.positionen_fuer(
+                f.stufe_von(org), dienst.zaehle(org.pk, 'einheiten'), bool(org.abo_jaehrlich), tuple(abo.zusatzmodule or ()))
+            netto, _positionen = dienst._anteilig(netto, positionen, *dienst.anteil_der_periode(*periode, bool(org.abo_jaehrlich)))
             ergebnis['naechste'] = {'von': periode[0], 'bis': periode[1], 'netto': netto}
     return ergebnis
 
@@ -155,13 +165,15 @@ def verlauf(org, limit=60):
     """Verlauf des Kunden, neueste zuerst: Kontakteinträge des Betreibers und seine Aktionen aus dem Logbuch der Verwaltung."""
     from core.models import AktivitaetsLog
     eintraege = [{'zeit': k.zeitpunkt, 'art': k.art, 'art_text': k.get_art_display(), 'text': k.text,
-                  'von': k.erfasst_von, 'pk': k.pk, 'eigen': True}
+                  'von': k.erfasst_von, 'pk': k.pk, 'eigen': True,
+                  'support': k.art == KundenKontakt.ART_SUPPORT, 'erledigt': k.erledigt_am}
                  for k in KundenKontakt.alle_organisationen.filter(organisation=org)[:limit]]
     for e in (AktivitaetsLog.alle_organisationen.filter(organisation=org, aktion__in=EREIGNISSE, kategorie='sicherheit')
               .select_related('benutzer').order_by('-zeitpunkt')[:limit]):
         eintraege.append({'zeit': e.zeitpunkt, 'art': 'system', 'art_text': _('System'),
                           'text': e.aktion + (f': {e.details}' if e.details else ''),
-                          'von': e.benutzer.get_username() if e.benutzer_id else '', 'pk': None, 'eigen': False})
+                          'von': e.benutzer.get_username() if e.benutzer_id else '', 'pk': None, 'eigen': False,
+                          'support': False, 'erledigt': None})
     eintraege.sort(key=lambda x: x['zeit'], reverse=True)
     return eintraege[:limit]
 

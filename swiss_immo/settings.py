@@ -602,6 +602,10 @@ ABO_RECHNUNGSSTELLER = {
     'email': os.getenv('ABO_STELLER_EMAIL', ''), # Absender der Zahlungserinnerung
 }
 
+# Support: Anfragen der Verwaltungen (Knopf auf der Abo-Seite) gehen an diese Adresse und stehen im Verlauf der Kundenkartei.
+# Leer = die Absenderadresse der Rechnungen (ABO_STELLER_EMAIL), sonst DEFAULT_FROM_EMAIL.
+ABO_SUPPORT_EMAIL = os.getenv('ABO_SUPPORT_EMAIL', '')
+
 # ==========================================
 # 11. SYSTEM-CHECKS
 # ==========================================

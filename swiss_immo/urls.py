@@ -105,7 +105,7 @@ from core.views.fw.mietzinsmodell_pruefen import fw_mietzinsmodell_pruefen
 from core.views.fw.archiv import fw_person_auskunft, fw_archiv, fw_archivieren, fw_wiederherstellen, fw_archiv_endgueltig_loeschen
 
 # Abonnement: Rechnung als PDF mit QR-Einzahlungsschein (Funktionsfreigabe, Etappe 4)
-from core.views.fw.profil import fw_abo_rechnung_pdf
+from core.views.fw.profil import fw_abo_rechnung_pdf, fw_support_anfrage
 
 # 2c. Fairwalter-Rebuild: neue Oberfläche (Etappe A: Shell + Dashboard)
 from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_zustaendig, fw_fallschritt_erledigen,
@@ -665,6 +665,7 @@ urlpatterns = [
     path('neu/vermarktung/feed.json', fw_vermarktung_feed, name='fw_vermarktung_feed'),
     path('neu/abonnement/', fw_abonnemente, name='fw_abonnemente'),
     path('neu/abonnement/rechnung/<int:pk>/pdf/', fw_abo_rechnung_pdf, name='fw_abo_rechnung_pdf'),
+    path('neu/abonnement/support/', fw_support_anfrage, name='fw_support_anfrage'),
     path('neu/kommunikation/', fw_kommunikation, name='fw_kommunikation'),
     path('neu/kommunikation/senden/', fw_kommunikation_senden, name='fw_kommunikation_senden'),
     path('neu/kommunikation/serienbrief/', fw_serienbrief_pdf, name='fw_serienbrief_pdf'),

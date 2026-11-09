@@ -1264,7 +1264,32 @@ def fw_abonnemente(request):
         'lesemodus_tage': dj_settings.ABO_LESEMODUS_NACH_TAGEN,
         'sperre_tage': dj_settings.ABO_SPERRE_NACH_TAGEN,
         'zahlungsfrist_tage': dj_settings.ABO_ZAHLUNGSFRIST_TAGE,
+        'support_text': f.SUPPORT.get(f.stufe_von(vw), ''),
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_support_anfrage(request):
+    """Der Support-Knopf der Abo-Seite: Die Anfrage geht an den Betreiber und steht in seiner Kundenkartei. Nur POST."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from abo import support
+    if request.method != 'POST':
+        return redirect('/neu/abonnement/')
+    vw = aktuelle_organisation()
+    try:
+        _eintrag, versandt = support.anfrage_stellen(
+            vw, request.user, request.POST.get('betreff'), request.POST.get('nachricht'))
+    except ValueError as fehler:
+        messages.error(request, str(fehler))
+    else:
+        if versandt:
+            messages.success(request, gettext('Ihre Anfrage ist beim Betreiber angekommen. Die Antwort kommt per E-Mail.'))
+        else:
+            messages.warning(request, gettext('Ihre Anfrage ist gespeichert. Die Benachrichtigung ging nicht hinaus; '
+                                              'der Betreiber sieht sie trotzdem.'))
+    return redirect('/neu/abonnement/')
 
 
 @rolle_erforderlich(*INHABER_ROLLEN)

@@ -119,16 +119,24 @@ def folgen_des_wechsels(organisation, neue_stufe):
             'deckel': deckel}
 
 
-def plan_wechseln(organisation, stufe, jaehrlich):
+def _zustand_des_abos(organisation, abo):
+    """Was die Rechnung bestimmt: Stufe, Intervall, zugebuchte Module (für den Vergleich vor/nach einer Änderung)."""
+    return {'stufe': f.stufe_von(organisation), 'jaehrlich': bool(organisation.abo_jaehrlich),
+            'module': tuple(abo.zusatzmodule or ()) if abo is not None else ()}
+
+
+def plan_wechseln(organisation, stufe, jaehrlich, heute=None):
     """Setzt Stufe und Intervall. Beendet den Bestandsschutz (aktive Planwahl).
 
-    Der Wechsel gilt sofort für die Funktionen; abgerechnet wird ab der nächsten
-    Periode (kein anteiliger Ausgleich — Fachpunkt im Bericht).
+    Der Wechsel gilt sofort für die Funktionen. Mitten in einer bereits gestellten Periode wird der Unterschied anteilig
+    verrechnet (`aenderung_verrechnen`): Aufwertung als Zusatzrechnung, Abwertung als Gutschrift für die nächste Rechnung.
     """
     from abo.models import Abonnement
     if stufe not in f.STUFEN:
         raise ValueError(f'Unbekannte Stufe {stufe!r}.')
     with transaction.atomic():
+        abo_vorher = Abonnement.alle_organisationen.filter(organisation=organisation).first()
+        vorher = _zustand_des_abos(organisation, abo_vorher)
         organisation.abo_plan = stufe
         organisation.abo_jaehrlich = bool(jaehrlich)
         organisation.save(update_fields=['abo_plan', 'abo_jaehrlich'])
@@ -139,7 +147,17 @@ def plan_wechseln(organisation, stufe, jaehrlich):
             abo.save(update_fields=['uneingeschraenkt'])
         # Das geladene Objekt der Anfrage trägt die Zeile im Zwischenspeicher.
         organisation.abonnement = abo
+        aenderung_verrechnen(organisation, abo, vorher, _zustand_des_abos(organisation, abo), heute)
     return abo
+
+
+def module_setzen(organisation, abo, module, heute=None):
+    """Setzt die zugebuchten Module; mitten in der Periode wird der Unterschied anteilig verrechnet."""
+    with transaction.atomic():
+        vorher = _zustand_des_abos(organisation, abo)
+        abo.zusatzmodule = list(module)
+        abo.save(update_fields=['zusatzmodule'])
+        aenderung_verrechnen(organisation, abo, vorher, _zustand_des_abos(organisation, abo), heute)
 
 
 def abonnement_anlegen(organisation, uneingeschraenkt=False):
@@ -167,13 +185,44 @@ def _plus_monate(tag, monate):
     return tag.replace(year=jahr, month=monat, day=min(tag.day, calendar.monthrange(jahr, monat)[1]))
 
 
+def _monatsende(tag):
+    return tag.replace(day=calendar.monthrange(tag.year, tag.month)[1])
+
+
 def naechste_periode(abo, organisation):
-    """(von, bis) der nächsten unverrechneten Periode, oder None ohne Abrechnungsbeginn."""
+    """(von, bis) der nächsten unverrechneten Periode, oder None ohne Abrechnungsbeginn.
+
+    Monatlich: Kalendermonate. Die erste Periode (und eine nach Bestandsdaten angebrochene) reicht vom Beginn bis zum
+    Monatsende und wird anteilig verrechnet; danach gilt jeweils der 1. bis Monatsende. Jährlich: ein Jahr ab Beginn.
+    """
     if abo.abrechnung_ab is None:
         return None
     von = abo.abgerechnet_bis + timedelta(days=1) if abo.abgerechnet_bis else abo.abrechnung_ab
-    monate = 12 if organisation.abo_jaehrlich else 1
-    return von, _plus_monate(von, monate) - timedelta(days=1)
+    if organisation.abo_jaehrlich:
+        return von, _plus_monate(von, 12) - timedelta(days=1)
+    return von, _monatsende(von)
+
+
+def anteil_der_periode(von, bis, jaehrlich):
+    """(tage, gesamt): Tage der Periode und Tage einer vollen Periode (Kalendermonat, bei jährlich die Periode selbst)."""
+    tage = (bis - von).days + 1
+    gesamt = tage if jaehrlich else calendar.monthrange(von.year, von.month)[1]
+    return tage, gesamt
+
+
+def _anteilig(netto, positionen, tage, gesamt):
+    """Skaliert Netto und Positionen auf `tage` von `gesamt`; die Summe der Zeilen bleibt gleich dem Netto."""
+    if tage >= gesamt:
+        return netto, positionen
+    faktor = Decimal(tage) / Decimal(gesamt)
+    zeilen = [{'text': p['text'], 'betrag': (Decimal(p['betrag']) * faktor).quantize(RAPPEN, rounding=ROUND_HALF_UP)}
+              for p in positionen]
+    neues_netto = (netto * faktor).quantize(RAPPEN, rounding=ROUND_HALF_UP)
+    zeilen[0]['betrag'] += neues_netto - sum((z['betrag'] for z in zeilen), Decimal('0'))
+    from django.utils import translation
+    with translation.override('de'):
+        zeilen[0]['text'] += ', ' + _('anteilig %(t)s von %(g)s Tagen') % {'t': tage, 'g': gesamt}
+    return neues_netto, [{'text': z['text'], 'betrag': str(z['betrag'])} for z in zeilen]
 
 
 def positionen_fuer(stufe, einheiten, jaehrlich, module=()):
@@ -220,6 +269,95 @@ def betrag_fuer(stufe, einheiten, jaehrlich, module=()):
     return netto, bemerkung
 
 
+def _gutschriften_abziehen(organisation, netto):
+    """Welche offenen Gutschriften diese Rechnung mindern: `[{'gutschrift', 'betrag', 'text'}]`, ohne etwas zu speichern."""
+    from django.utils import translation
+
+    from abo.models import AboGutschrift
+    rest = netto
+    abzuege = []
+    for gutschrift in AboGutschrift.alle_organisationen.filter(organisation=organisation).order_by('datum', 'pk'):
+        nehmen = min(gutschrift.offen, rest)
+        if nehmen <= 0:
+            continue
+        with translation.override('de'):
+            text = _('Gutschrift vom %(d)s: %(t)s') % {'d': gutschrift.datum.strftime('%d.%m.%Y'), 't': gutschrift.text}
+        abzuege.append({'gutschrift': gutschrift, 'betrag': nehmen, 'text': text[:240]})
+        rest -= nehmen
+    return abzuege
+
+
+def _beschreibung_der_aenderung(vorher, nachher, ab):
+    """Deutscher Text der Änderung für die Rechnungszeile, z. B. «Team → Professional, Modul Unterschrift hinzu»."""
+    from django.utils import translation
+    teile = []
+    with translation.override('de'):
+        if vorher['stufe'] != nachher['stufe']:
+            teile.append(f"{f.STUFEN_NAMEN[vorher['stufe']]} → {f.STUFEN_NAMEN[nachher['stufe']]}")
+        for k in f.MODULE:
+            if k in nachher['module'] and k not in vorher['module']:
+                teile.append(_('Modul %(m)s hinzu') % {'m': f.MODULE[k]})
+            elif k in vorher['module'] and k not in nachher['module']:
+                teile.append(_('Modul %(m)s entfällt') % {'m': f.MODULE[k]})
+        kopf = _('Änderung des Abonnements ab %(d)s') % {'d': ab.strftime('%d.%m.%Y')}
+    return f"{kopf}: {', '.join(teile) or '-'}"
+
+
+def aenderung_verrechnen(organisation, abo, vorher, nachher, heute=None, mail=True):
+    """Verrechnet den Preisunterschied einer Änderung mitten in der laufenden Periode anteilig (ab heute bis Periodenende).
+
+    Mehr als vorher → Zusatzrechnung (sofort, mit Versand). Weniger → Gutschrift, die die nächste Abo-Rechnung mindert.
+    Nichts geschieht, wenn keine Periode läuft (noch nicht abgerechnet, Bestandsschutz), das Intervall wechselt (gilt ab
+    der nächsten Periode) oder der Unterschied null ist. Gibt die Zusatzrechnung, die Gutschrift oder `None` zurück.
+    """
+    from core.utils.qr_code import qrr_referenz
+    from abo.models import AboGutschrift, AboRechnung
+
+    heute = heute or datum_heute()
+    if vorher['jaehrlich'] != nachher['jaehrlich'] or (vorher['stufe'], vorher['module']) == (nachher['stufe'], nachher['module']):
+        return None
+    if not settings.ABO_PREISE_FESTGELEGT:
+        return None
+    laufend = (AboRechnung.alle_organisationen
+               .filter(organisation=organisation, art=AboRechnung.ART_ABO, periode_von__lte=heute, periode_bis__gte=heute)
+               .exclude(status=AboRechnung.STATUS_STORNIERT).order_by('-periode_von').first())
+    if laufend is None:
+        return None
+    einheiten = zaehle(organisation.pk, 'einheiten')
+    jaehrlich = nachher['jaehrlich']
+    alt = positionen_fuer(vorher['stufe'], einheiten, jaehrlich, vorher['module'])[0]
+    neu = positionen_fuer(nachher['stufe'], einheiten, jaehrlich, nachher['module'])[0]
+    _t, gesamt = anteil_der_periode(laufend.periode_von, laufend.periode_bis, jaehrlich)
+    rest = (laufend.periode_bis - heute).days + 1
+    unterschied = ((neu - alt) * Decimal(rest) / Decimal(gesamt)).quantize(RAPPEN, rounding=ROUND_HALF_UP)
+    if unterschied == 0:
+        return None
+    from django.utils import translation
+    with translation.override('de'):
+        text = _beschreibung_der_aenderung(vorher, nachher, heute) + ', ' + _('anteilig %(t)s von %(g)s Tagen') % {'t': rest, 'g': gesamt}
+    if unterschied < 0:
+        return AboGutschrift.alle_organisationen.create(
+            organisation=organisation, datum=heute, text=text[:240], betrag=-unterschied)
+
+    satz = settings.ABO_MWST_SATZ
+    satz = Decimal(str(satz)) if satz is not None else None
+    mwst = (unterschied * satz / 100).quantize(RAPPEN, rounding=ROUND_HALF_UP) if satz else Decimal('0.00')
+    with transaction.atomic():
+        rechnung = AboRechnung.alle_organisationen.create(
+            organisation=organisation, art=AboRechnung.ART_ZUSATZ, periode_von=heute, periode_bis=laufend.periode_bis,
+            stufe=nachher['stufe'], intervall=intervall_von(organisation), einheiten=einheiten, netto=unterschied,
+            mwst_satz=satz, mwst_betrag=mwst, brutto=unterschied + mwst, rechnungsdatum=heute,
+            faellig_am=faellig_fuer(heute, heute), positionen=[{'text': text, 'betrag': str(unterschied)}])
+        rechnung.qr_referenz = qrr_referenz(organisation.pk, rechnung.pk)[0]
+        rechnung.save(update_fields=['qr_referenz'])
+    if mail:
+        try:
+            rechnung_senden(rechnung, heute=heute)
+        except (RechnungNichtSendbar, OSError) as fehler:
+            logger.warning('%s: Zusatzrechnung %s nicht versandt: %s', organisation, rechnung.nummer, fehler)
+    return rechnung
+
+
 def faellig_fuer(von, heute):
     """Fälligkeit einer Abo-Rechnung: im Voraus, also am Periodenbeginn.
 
@@ -255,6 +393,14 @@ def rechnung_stellen(organisation, abo, heute=None, trotz_platzhalter=False):
     jaehrlich = bool(organisation.abo_jaehrlich)
     # Zugebuchte Module kosten mit: ausser bei Bestandsschutz (alles offen, keine Rechnung) und wenn sie im Grundpreis stecken.
     netto, bemerkung, positionen = positionen_fuer(stufe, einheiten, jaehrlich, tuple(abo.zusatzmodule or ()))
+    # Angebrochene Periode (Start mitten im Monat): anteilig nach Tagen.
+    tage, gesamt = anteil_der_periode(von, bis, jaehrlich)
+    netto, positionen = _anteilig(netto, positionen, tage, gesamt)
+    # Offene Gutschriften (Abwertung mitten in einer früheren Periode) mindern diese Rechnung, nie unter null.
+    abzuege = _gutschriften_abziehen(organisation, netto)
+    for abzug in abzuege:
+        positionen.append({'text': abzug['text'], 'betrag': str(-abzug['betrag'])})
+        netto -= abzug['betrag']
 
     satz = settings.ABO_MWST_SATZ
     satz = Decimal(str(satz)) if satz is not None else None
@@ -271,6 +417,10 @@ def rechnung_stellen(organisation, abo, heute=None, trotz_platzhalter=False):
         if neu:
             rechnung.qr_referenz = qrr_referenz(organisation.pk, rechnung.pk)[0]
             rechnung.save(update_fields=['qr_referenz'])
+            for abzug in abzuege:
+                gutschrift = abzug['gutschrift']
+                gutschrift.verrechnet += abzug['betrag']
+                gutschrift.save(update_fields=['verrechnet'])
         abo.abgerechnet_bis = bis
         abo.save(update_fields=['abgerechnet_bis'])
     return rechnung if neu else None

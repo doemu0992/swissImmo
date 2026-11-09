@@ -38416,3 +38416,47 @@ msgstr "netto"
 
 msgid "Zugebuchte Module kommen ab der nächsten Rechnung dazu."
 msgstr "Zugebuchte Module kommen ab der nächsten Rechnung dazu."
+
+msgid "Bitte einen Betreff angeben (%(min)s bis %(max)s Zeichen)."
+msgstr "Bitte einen Betreff angeben (%(min)s bis %(max)s Zeichen)."
+
+msgid "Bitte die Anfrage beschreiben (%(min)s bis %(max)s Zeichen)."
+msgstr "Bitte die Anfrage beschreiben (%(min)s bis %(max)s Zeichen)."
+
+msgid "Es sind zu viele Anfragen in kurzer Zeit eingegangen. Bitte später noch einmal versuchen oder direkt anrufen."
+msgstr "Es sind zu viele Anfragen in kurzer Zeit eingegangen. Bitte später noch einmal versuchen oder direkt anrufen."
+
+msgid "Ihre Anfrage ist beim Betreiber angekommen. Die Antwort kommt per E-Mail."
+msgstr "Ihre Anfrage ist beim Betreiber angekommen. Die Antwort kommt per E-Mail."
+
+msgid "Ihre Anfrage ist gespeichert. Die Benachrichtigung ging nicht hinaus; der Betreiber sieht sie trotzdem."
+msgstr "Ihre Anfrage ist gespeichert. Die Benachrichtigung ging nicht hinaus; der Betreiber sieht sie trotzdem."
+
+msgid "Diese Anfrage gehört nicht zu dieser Verwaltung."
+msgstr "Diese Anfrage gehört nicht zu dieser Verwaltung."
+
+msgid "Anfrage als erledigt markiert."
+msgstr "Anfrage als erledigt markiert."
+
+msgid "Anfrage wieder geöffnet."
+msgstr "Anfrage wieder geöffnet."
+
+msgid "%(n)s Support-Anfrage(n) offen: im Reiter «Verlauf» beantworten und erledigen."
+msgstr "%(n)s Support-Anfrage(n) offen: im Reiter «Verlauf» beantworten und erledigen."
+
+msgid "Support"
+msgstr "Support"
+
+msgid "Ihre Anfrage geht an den Betreiber; die Antwort kommt per E-Mail an Ihre Adresse."
+msgstr "Ihre Anfrage geht an den Betreiber; die Antwort kommt per E-Mail an Ihre Adresse."
+
+msgid "Ihre Anfrage"
+msgstr "Ihre Anfrage"
+
+msgid "Anfrage senden"
+msgstr "Anfrage senden"
+
+msgid "%(n)s Support-Anfrage offen"
+msgid_plural "%(n)s Support-Anfragen offen"
+msgstr[0] "%(n)s Support-Anfrage offen"
+msgstr[1] "%(n)s Support-Anfragen offen"
