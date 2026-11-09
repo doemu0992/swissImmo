@@ -38072,3 +38072,42 @@ msgstr ""
 "Im Voraus zahlbar: fällig am Beginn der Periode, bei später gestellten "
 "Rechnungen innert %(tage)s Tagen, mit dem Einzahlungsschein. Die Zahlung "
 "bestätigt der Betreiber von Hand."
+
+msgid "Diese Verwaltung hat keine E-Mail-Adresse hinterlegt."
+msgstr "Diese Verwaltung hat keine E-Mail-Adresse hinterlegt."
+
+msgid "Es ist keine Zahlungsverbindung (IBAN) des Rechnungsstellers hinterlegt."
+msgstr "Es ist keine Zahlungsverbindung (IBAN) des Rechnungsstellers hinterlegt."
+
+msgid "immoswiss: Zahlungserinnerung zur Rechnung %(nummer)s"
+msgstr "immoswiss: Zahlungserinnerung zur Rechnung %(nummer)s"
+
+msgid "Die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist noch offen. Bitte begleichen Sie sie mit dem QR-Einzahlungsschein auf der Rechnung im Anhang. Ist die Zahlung bereits erfolgt, ist diese Mail gegenstandslos."
+msgstr "Die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist noch offen. Bitte begleichen Sie sie mit dem QR-Einzahlungsschein auf der Rechnung im Anhang. Ist die Zahlung bereits erfolgt, ist diese Mail gegenstandslos."
+
+msgid "immoswiss: Rechnung %(nummer)s"
+msgstr "immoswiss: Rechnung %(nummer)s"
+
+msgid "Im Anhang finden Sie die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s). Sie ist bis zum %(faellig)s zu bezahlen, am einfachsten mit dem QR-Einzahlungsschein auf der Rechnung. Dieselbe Rechnung finden Sie unter Einstellungen > Abonnement."
+msgstr "Im Anhang finden Sie die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s). Sie ist bis zum %(faellig)s zu bezahlen, am einfachsten mit dem QR-Einzahlungsschein auf der Rechnung. Dieselbe Rechnung finden Sie unter Einstellungen > Abonnement."
+
+msgid "Rechnung %(nr)s nicht versandt: %(grund)s"
+msgstr "Rechnung %(nr)s nicht versandt: %(grund)s"
+
+msgid "Zahlungserinnerung zu %(nr)s ging an %(an)s."
+msgstr "Zahlungserinnerung zu %(nr)s ging an %(an)s."
+
+msgid "Rechnung %(nr)s ging an %(an)s."
+msgstr "Rechnung %(nr)s ging an %(an)s."
+
+msgid "Nur offene Rechnungen lassen sich senden oder anmahnen."
+msgstr "Nur offene Rechnungen lassen sich senden oder anmahnen."
+
+msgid "erinnert am"
+msgstr "erinnert am"
+
+msgid "Erneut senden"
+msgstr "Erneut senden"
+
+msgid "Zahlungserinnerung an die Verwaltung senden?"
+msgstr "Zahlungserinnerung an die Verwaltung senden?"

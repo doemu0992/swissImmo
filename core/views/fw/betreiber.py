@@ -7,6 +7,8 @@ Seite noch nichts; Anlegen und Abo-Verwaltung folgen in eigenen Etappen.
 """
 from django.shortcuts import render
 
+from core.zeit import datum_heute
+
 from core.auth import BETREIBER_ROLLEN, rolle_erforderlich
 from core.services import betreiber
 
@@ -124,7 +126,31 @@ def _sofort_abrechnen(request, org):
         messages.success(request, gettext('Rechnung %(nr)s über CHF %(betrag)s erstellt, fällig am %(datum)s.')
                          % {'nr': rechnung.nummer, 'betrag': rechnung.brutto,
                             'datum': rechnung.faellig_am.strftime('%d.%m.%Y')})
+        _versenden(request, org, rechnung)
     return rechnung
+
+
+def _versenden(request, org, rechnung, erinnerung=False):
+    """Schickt die Rechnung mit PDF an die Verwaltung und protokolliert es. Meldet Erfolg oder den Grund des Scheiterns."""
+    from django.contrib import messages
+    from django.utils.translation import gettext
+
+    from abo import dienst
+    from core.auth import log_aktion
+    from core.tenancy import organisation_kontext
+
+    try:
+        an = dienst.rechnung_senden(rechnung, erinnerung=erinnerung)
+    except (dienst.RechnungNichtSendbar, OSError) as fehler:
+        messages.warning(request, gettext('Rechnung %(nr)s nicht versandt: %(grund)s')
+                         % {'nr': rechnung.nummer, 'grund': fehler})
+        return False
+    with organisation_kontext(org):
+        log_aktion(request, 'Zahlungserinnerung gesendet' if erinnerung else 'Rechnung gesendet', objekt=org.firma,
+                   details=f'{rechnung.nummer} an {an}', kategorie='sicherheit')
+    messages.success(request, (gettext('Zahlungserinnerung zu %(nr)s ging an %(an)s.') if erinnerung
+                               else gettext('Rechnung %(nr)s ging an %(an)s.')) % {'nr': rechnung.nummer, 'an': an})
+    return True
 
 
 def _kunde_oder_404(pk):
@@ -198,6 +224,14 @@ def fw_betreiber_kunde(request, pk):
                           f'Module {",".join(module) or "-"}, Abrechnung ab {abo.abrechnung_ab or "-"}, '
                           f'Bestandsschutz {"an" if abo.uneingeschraenkt else "aus"}')
                 messages.success(request, gettext('Abonnement gespeichert.'))
+            elif aktion in ('senden', 'erinnern'):
+                rechnung = AboRechnung.alle_organisationen.filter(
+                    organisation=org, pk=request.POST.get('rechnung') or 0).first()
+                if rechnung is None:
+                    raise ValueError(gettext('Diese Rechnung gehört nicht zu dieser Verwaltung.'))
+                if rechnung.status != AboRechnung.STATUS_OFFEN:
+                    raise ValueError(gettext('Nur offene Rechnungen lassen sich senden oder anmahnen.'))
+                _versenden(request, org, rechnung, erinnerung=(aktion == 'erinnern'))
             elif aktion in ('bezahlt', 'storno'):
                 rechnung = AboRechnung.alle_organisationen.filter(
                     organisation=org, pk=request.POST.get('rechnung') or 0).first()
@@ -231,4 +265,28 @@ def fw_betreiber_kunde(request, pk):
         'rechnungen': AboRechnung.alle_organisationen.filter(organisation=org).order_by('-rechnungsdatum', '-pk')[:50],
         'nutzung': dienst.nutzung_von(org),
         'jaehrlich': org.abo_jaehrlich,
+        'heute': datum_heute(),
     })
+
+
+@rolle_erforderlich(*BETREIBER_ROLLEN)
+def fw_betreiber_rechnung_pdf(request, pk, rechnung):
+    """Die Abo-Rechnung einer Verwaltung als PDF mit QR-Einzahlungsschein. Nur der Betreiber; die Rechnung muss zur Verwaltung gehören."""
+    from django.contrib import messages
+    from django.http import HttpResponse
+    from django.shortcuts import get_object_or_404, redirect
+    from django.utils.translation import gettext
+
+    from abo.models import AboRechnung
+    from abo.rechnung_pdf import abo_rechnung_pdf
+
+    org = _kunde_oder_404(pk)
+    beleg = get_object_or_404(AboRechnung.alle_organisationen.select_related('organisation'),
+                              pk=rechnung, organisation=org)
+    pdf = abo_rechnung_pdf(beleg)
+    if pdf is None:
+        messages.warning(request, gettext('Es ist keine Zahlungsverbindung (IBAN) des Rechnungsstellers hinterlegt.'))
+        return redirect(f'/betreiber/{org.pk}/')
+    antwort = HttpResponse(pdf, content_type='application/pdf')
+    antwort['Content-Disposition'] = f'inline; filename="{beleg.nummer}.pdf"'
+    return antwort

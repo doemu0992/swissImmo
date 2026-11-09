@@ -39850,3 +39850,42 @@ msgstr ""
 "Payable d'avance : échéance au début de la période, ou dans les %(tage)s "
 "jours pour les factures émises plus tard, avec le bulletin de versement. Le "
 "paiement est confirmé manuellement par l'exploitant."
+
+msgid "Diese Verwaltung hat keine E-Mail-Adresse hinterlegt."
+msgstr "Cette gérance n'a pas d'adresse e-mail enregistrée."
+
+msgid "Es ist keine Zahlungsverbindung (IBAN) des Rechnungsstellers hinterlegt."
+msgstr "Aucune coordonnée de paiement (IBAN) de l'émetteur de la facture n'est enregistrée."
+
+msgid "immoswiss: Zahlungserinnerung zur Rechnung %(nummer)s"
+msgstr "immoswiss : rappel de paiement pour la facture %(nummer)s"
+
+msgid "Die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist noch offen. Bitte begleichen Sie sie mit dem QR-Einzahlungsschein auf der Rechnung im Anhang. Ist die Zahlung bereits erfolgt, ist diese Mail gegenstandslos."
+msgstr "La facture %(nummer)s de CHF %(betrag)s pour votre abonnement immoswiss (du %(von)s au %(bis)s) était échue le %(faellig)s et reste ouverte. Veuillez la régler avec le bulletin de versement QR de la facture en pièce jointe. Si le paiement a déjà été effectué, ce message est sans objet."
+
+msgid "immoswiss: Rechnung %(nummer)s"
+msgstr "immoswiss : facture %(nummer)s"
+
+msgid "Im Anhang finden Sie die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s). Sie ist bis zum %(faellig)s zu bezahlen, am einfachsten mit dem QR-Einzahlungsschein auf der Rechnung. Dieselbe Rechnung finden Sie unter Einstellungen > Abonnement."
+msgstr "Vous trouverez en pièce jointe la facture %(nummer)s de CHF %(betrag)s pour votre abonnement immoswiss (du %(von)s au %(bis)s). Elle est payable jusqu'au %(faellig)s, le plus simplement avec le bulletin de versement QR de la facture. Vous retrouvez la même facture sous Paramètres > Abonnement."
+
+msgid "Rechnung %(nr)s nicht versandt: %(grund)s"
+msgstr "Facture %(nr)s non envoyée : %(grund)s"
+
+msgid "Zahlungserinnerung zu %(nr)s ging an %(an)s."
+msgstr "Le rappel de paiement pour %(nr)s a été envoyé à %(an)s."
+
+msgid "Rechnung %(nr)s ging an %(an)s."
+msgstr "La facture %(nr)s a été envoyée à %(an)s."
+
+msgid "Nur offene Rechnungen lassen sich senden oder anmahnen."
+msgstr "Seules les factures ouvertes peuvent être envoyées ou rappelées."
+
+msgid "erinnert am"
+msgstr "rappelée le"
+
+msgid "Erneut senden"
+msgstr "Renvoyer"
+
+msgid "Zahlungserinnerung an die Verwaltung senden?"
+msgstr "Envoyer un rappel de paiement à la gérance ?"

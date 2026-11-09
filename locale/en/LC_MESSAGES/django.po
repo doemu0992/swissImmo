@@ -39184,3 +39184,42 @@ msgstr ""
 "Payable in advance: due at the start of the period, or within %(tage)s days "
 "for invoices issued later, with the payment slip. The operator confirms "
 "payment manually."
+
+msgid "Diese Verwaltung hat keine E-Mail-Adresse hinterlegt."
+msgstr "This property management has no email address on file."
+
+msgid "Es ist keine Zahlungsverbindung (IBAN) des Rechnungsstellers hinterlegt."
+msgstr "No payment details (IBAN) of the invoice issuer are on file."
+
+msgid "immoswiss: Zahlungserinnerung zur Rechnung %(nummer)s"
+msgstr "immoswiss: Payment reminder for invoice %(nummer)s"
+
+msgid "Die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist noch offen. Bitte begleichen Sie sie mit dem QR-Einzahlungsschein auf der Rechnung im Anhang. Ist die Zahlung bereits erfolgt, ist diese Mail gegenstandslos."
+msgstr "Invoice %(nummer)s for CHF %(betrag)s for your immoswiss subscription (%(von)s to %(bis)s) was due on %(faellig)s and is still open. Please pay it using the QR payment slip on the attached invoice. If you have already paid, please disregard this email."
+
+msgid "immoswiss: Rechnung %(nummer)s"
+msgstr "immoswiss: Invoice %(nummer)s"
+
+msgid "Im Anhang finden Sie die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s). Sie ist bis zum %(faellig)s zu bezahlen, am einfachsten mit dem QR-Einzahlungsschein auf der Rechnung. Dieselbe Rechnung finden Sie unter Einstellungen > Abonnement."
+msgstr "Attached is invoice %(nummer)s for CHF %(betrag)s for your immoswiss subscription (%(von)s to %(bis)s). It is payable by %(faellig)s, most easily with the QR payment slip on the invoice. You can also find the same invoice under Settings > Subscription."
+
+msgid "Rechnung %(nr)s nicht versandt: %(grund)s"
+msgstr "Invoice %(nr)s not sent: %(grund)s"
+
+msgid "Zahlungserinnerung zu %(nr)s ging an %(an)s."
+msgstr "The payment reminder for %(nr)s was sent to %(an)s."
+
+msgid "Rechnung %(nr)s ging an %(an)s."
+msgstr "Invoice %(nr)s was sent to %(an)s."
+
+msgid "Nur offene Rechnungen lassen sich senden oder anmahnen."
+msgstr "Only open invoices can be sent or reminded."
+
+msgid "erinnert am"
+msgstr "reminded on"
+
+msgid "Erneut senden"
+msgstr "Send again"
+
+msgid "Zahlungserinnerung an die Verwaltung senden?"
+msgstr "Send a payment reminder to the property management?"
