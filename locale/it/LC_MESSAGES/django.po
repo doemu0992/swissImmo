@@ -39754,3 +39754,28 @@ msgid "%(n)s verschiedene"
 msgid_plural "%(n)s verschiedene"
 msgstr[0] "%(n)s distinta"
 msgstr[1] "%(n)s distinte"
+
+msgid "Alle Preise exkl. MWST."
+msgstr "Tutti i prezzi IVA esclusa."
+
+msgid "Alle Preise in CHF, ohne MWST (nicht mehrwertsteuerpflichtig)."
+msgstr "Tutti i prezzi in CHF, senza IVA (il fornitore non è soggetto IVA)."
+
+msgid ""
+"Einführungspreise, Stand %(stand)s. Die Einheiten­zahl wird automatisch aus "
+"deinen erfassten Objekten berechnet."
+msgstr ""
+"Prezzi di lancio, aggiornati al %(stand)s. Il numero di unità viene "
+"calcolato automaticamente dai tuoi oggetti registrati."
+
+msgid "Rechnung %(nr)s über CHF %(betrag)s erstellt, fällig am %(datum)s."
+msgstr "Fattura %(nr)s di CHF %(betrag)s creata, scadenza il %(datum)s."
+
+msgid ""
+"Im Voraus zahlbar: fällig am Beginn der Periode, bei später gestellten "
+"Rechnungen innert %(tage)s Tagen, mit dem Einzahlungsschein. Die Zahlung "
+"bestätigt der Betreiber von Hand."
+msgstr ""
+"Pagabile in anticipo: scadenza all'inizio del periodo, oppure entro %(tage)s"
+" giorni per le fatture emesse più tardi, con la polizza di versamento. Il "
+"pagamento viene confermato manualmente dal gestore."

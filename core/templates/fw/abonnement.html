@@ -100,7 +100,7 @@
     {% empty %}
     <div class="fw-zeile"><div class="fw-mitte"><div class="fw-s">{% trans "Noch keine Rechnung gestellt." %}</div></div></div>
     {% endfor %}
-    <p class="fw-hilfe p-4">{% blocktrans with tage=zahlungsfrist_tage %}Zahlbar innert {{ tage }} Tagen mit dem QR-Einzahlungsschein. Die Zahlung bestätigt der Betreiber von Hand.{% endblocktrans %}</p>
+    <p class="fw-hilfe p-4">{% blocktrans with tage=zahlungsfrist_tage %}Im Voraus zahlbar: fällig am Beginn der Periode, bei später gestellten Rechnungen innert {{ tage }} Tagen, mit dem Einzahlungsschein. Die Zahlung bestätigt der Betreiber von Hand.{% endblocktrans %}</p>
 </div>
 {% endif %}
 
@@ -181,5 +181,5 @@
     <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{% trans "SMS &amp; Speicher" %}</div><div class="fw-s">{% trans "SMS-Benachrichtigungen und zusätzlicher Dokumentenspeicher." %}</div></div></div>
 </div>
 
-<p class="fw-hilfe">{% blocktrans with stand=preisstand %}Alle Preise exkl. MWST. Einführungspreise, Stand {{ stand }}. Die Einheiten­zahl wird automatisch aus deinen erfassten Objekten berechnet.{% endblocktrans %}</p>
+<p class="fw-hilfe">{% if mwst_pflichtig %}{% trans "Alle Preise exkl. MWST." %}{% else %}{% trans "Alle Preise in CHF, ohne MWST (nicht mehrwertsteuerpflichtig)." %}{% endif %} {% blocktrans with stand=preisstand %}Einführungspreise, Stand {{ stand }}. Die Einheiten­zahl wird automatisch aus deinen erfassten Objekten berechnet.{% endblocktrans %}</p>
 {% endblock %}

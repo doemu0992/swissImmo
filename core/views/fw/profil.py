@@ -1251,7 +1251,8 @@ def fw_abonnemente(request):
         'abo': abo, 'zustand': f.zustand_von(vw), 'nutzung': nutzung,
         'module': _abo_module(vw), 'rechnungen': rechnungen,
         'platzhalter': not dj_settings.ABO_PREISE_FESTGELEGT,
-        'mwst_offen': dj_settings.ABO_MWST_SATZ is None,
+        'mwst_offen': dj_settings.ABO_MWST_SATZ is None and dj_settings.ABO_MWST_PFLICHTIG,
+        'mwst_pflichtig': bool(dj_settings.ABO_MWST_PFLICHTIG),
         'lesemodus_tage': dj_settings.ABO_LESEMODUS_NACH_TAGEN,
         'zahlungsfrist_tage': dj_settings.ABO_ZAHLUNGSFRIST_TAGE,
     })

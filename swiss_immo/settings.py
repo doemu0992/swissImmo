@@ -566,12 +566,18 @@ LOGGING = {
 # (`manage.py abo_abrechnung`) Rechnungen aus — aber nur für Verwaltungen, deren «Abrechnung ab» gesetzt ist und erreicht
 # wurde (Betreiber-Portal). Das Datum ist zugleich das Ende der Testphase: Bis dahin wird nichts in Rechnung gestellt.
 ABO_PREISE_FESTGELEGT = True
-# MWST auf Abo-Rechnungen in Prozent (Normalsatz 8,1 % seit 1.1.2024), vom Betreiber festgelegt.
-ABO_MWST_SATZ = Decimal('8.1')
-# Zahlungsfrist der Rechnung (Tage ab Rechnungsdatum), Beginn der Mahnung und
-# des Lesemodus (Tage NACH Fälligkeit). Vorschlag aus docs/MARKT.md §7:
-# Hinweis ab Tag 1, Lesemodus ab Tag 15.
-ABO_ZAHLUNGSFRIST_TAGE = 30
+# MWST auf Abo-Rechnungen: Der Betreiber ist NICHT mehrwertsteuerpflichtig (festgelegt am 09.11.2026). Rechnungen weisen
+# deshalb keine MWST aus und sagen das. Wird er pflichtig: ABO_MWST_PFLICHTIG = True, ABO_MWST_SATZ = Decimal('8.1') (Normalsatz
+# seit 1.1.2024) und die UID in ABO_STELLER_UID eintragen. Steht ABO_MWST_PFLICHTIG auf True und der Satz auf None, gilt die
+# MWST als noch nicht entschieden (die Abo-Seite und die Rechnung weisen das aus).
+ABO_MWST_PFLICHTIG = False
+ABO_MWST_SATZ = None
+# Abo-Rechnungen sind IM VORAUS zu bezahlen: Die Rechnung für eine Periode wird bis zu ABO_VORLAUF_TAGE Tage vor deren Beginn
+# gestellt und ist am Periodenbeginn fällig (November: Rechnung Ende Oktober, fällig 1. November). Wird sie erst später
+# gestellt (z. B. weil «Abrechnung ab» schon erreicht ist), gilt die Zahlungsfrist ABO_ZAHLUNGSFRIST_TAGE ab Rechnungsdatum.
+# Beginn der Mahnung und des Lesemodus: Tage NACH Fälligkeit (Vorschlag aus docs/MARKT.md §7: Hinweis ab Tag 1, Lesemodus ab Tag 15).
+ABO_VORLAUF_TAGE = 10
+ABO_ZAHLUNGSFRIST_TAGE = 10
 ABO_MAHNUNG_NACH_TAGEN = 1
 ABO_LESEMODUS_NACH_TAGEN = 15
 # Rechnungssteller («Plattform») und Zahlungsempfänger der QR-Rechnung.

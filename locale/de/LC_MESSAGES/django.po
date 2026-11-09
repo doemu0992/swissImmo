@@ -38047,3 +38047,28 @@ msgid "%(n)s verschiedene"
 msgid_plural "%(n)s verschiedene"
 msgstr[0] "%(n)s verschiedene"
 msgstr[1] "%(n)s verschiedene"
+
+msgid "Alle Preise exkl. MWST."
+msgstr "Alle Preise exkl. MWST."
+
+msgid "Alle Preise in CHF, ohne MWST (nicht mehrwertsteuerpflichtig)."
+msgstr "Alle Preise in CHF, ohne MWST (nicht mehrwertsteuerpflichtig)."
+
+msgid ""
+"Einführungspreise, Stand %(stand)s. Die Einheiten­zahl wird automatisch aus "
+"deinen erfassten Objekten berechnet."
+msgstr ""
+"Einführungspreise, Stand %(stand)s. Die Einheiten­zahl wird automatisch aus "
+"deinen erfassten Objekten berechnet."
+
+msgid "Rechnung %(nr)s über CHF %(betrag)s erstellt, fällig am %(datum)s."
+msgstr "Rechnung %(nr)s über CHF %(betrag)s erstellt, fällig am %(datum)s."
+
+msgid ""
+"Im Voraus zahlbar: fällig am Beginn der Periode, bei später gestellten "
+"Rechnungen innert %(tage)s Tagen, mit dem Einzahlungsschein. Die Zahlung "
+"bestätigt der Betreiber von Hand."
+msgstr ""
+"Im Voraus zahlbar: fällig am Beginn der Periode, bei später gestellten "
+"Rechnungen innert %(tage)s Tagen, mit dem Einzahlungsschein. Die Zahlung "
+"bestätigt der Betreiber von Hand."
