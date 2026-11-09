@@ -316,8 +316,11 @@ def rechnung_senden(rechnung, erinnerung=False, heute=None, stufe=1):
     from abo.rechnung_pdf import abo_rechnung_pdf
 
     organisation = rechnung.organisation
-    if not organisation.email:
+    empfaenger = rechnungs_adresse(organisation)
+    if not empfaenger:
         raise RechnungNichtSendbar(_('Diese Verwaltung hat keine E-Mail-Adresse hinterlegt.'))
+    if not anschrift_vollstaendig(organisation):
+        raise RechnungNichtSendbar(_('Die Anschrift der Verwaltung fehlt (Strasse, PLZ, Ort): in der Kundenkartei ergänzen.'))
     pdf = abo_rechnung_pdf(rechnung)
     if pdf is None:
         raise RechnungNichtSendbar(_('Es ist keine Zahlungsverbindung (IBAN) des Rechnungsstellers hinterlegt.'))
@@ -351,7 +354,7 @@ def rechnung_senden(rechnung, erinnerung=False, heute=None, stufe=1):
                  '(%(von)s bis %(bis)s). Sie ist bis zum %(faellig)s zu bezahlen, am einfachsten mit dem '
                  'QR-Einzahlungsschein auf der Rechnung. Dieselbe Rechnung finden Sie unter Einstellungen > Abonnement.'
                  ) % angaben
-    nachricht = EmailMessage(betreff, text, absender, [organisation.email])
+    nachricht = EmailMessage(betreff, text, absender, [empfaenger])
     nachricht.attach(f'{rechnung.nummer}.pdf', pdf, 'application/pdf')
     nachricht.send(fail_silently=False)
     heute = heute or datum_heute()
@@ -361,12 +364,26 @@ def rechnung_senden(rechnung, erinnerung=False, heute=None, stufe=1):
         rechnung.erinnert_am = heute
         felder.append('erinnert_am')
     rechnung.save(update_fields=felder)
-    return organisation.email
+    return empfaenger
+
+
+def anschrift_vollstaendig(organisation):
+    """Hat die Verwaltung Strasse, PLZ und Ort? Ohne sie hat die Rechnung keine Anschrift und keinen gültigen Zahlteil."""
+    return bool((organisation.strasse or '').strip() and (organisation.plz or '').strip()
+                and (organisation.ort or '').strip())
+
+
+def rechnungs_adresse(organisation):
+    """Die Mail-Adresse für Rechnungen und Mahnungen: die abweichende aus der Kundenkartei, sonst die der Verwaltung."""
+    from abo.models import Kundenstamm
+    stamm = Kundenstamm.alle_organisationen.filter(organisation=organisation).first()
+    return (stamm.rechnung_email if stamm is not None and stamm.rechnung_email else organisation.email) or ''
 
 
 def erinnerung_senden(organisation, neu_zustand):
     """Zahlungserinnerung per E-Mail an die Verwaltung. Gibt True zurück, wenn versandt."""
-    if not organisation.email:
+    empfaenger = rechnungs_adresse(organisation)
+    if not empfaenger:
         logger.warning('%s: keine E-Mail-Adresse, Erinnerung nicht versandt', organisation)
         return False
     absender = (settings.ABO_RECHNUNGSSTELLER.get('email') or settings.DEFAULT_FROM_EMAIL)
@@ -390,7 +407,7 @@ def erinnerung_senden(organisation, neu_zustand):
                  'Zahlung länger aus, wird Ihr Zugang nach %(tage)s Tagen schreibgeschützt. '
                  'Ihre Daten bleiben in jedem Fall erhalten.'
                  ) % {'tage': settings.ABO_LESEMODUS_NACH_TAGEN}
-    send_mail(betreff, text, absender, [organisation.email], fail_silently=False)
+    send_mail(betreff, text, absender, [empfaenger], fail_silently=False)
     return True
 
 

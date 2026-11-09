@@ -51,7 +51,8 @@ def fw_betreiber_neu(request):
     from datetime import date
 
     werte = {k: (request.POST.get(k) or '').strip()
-             for k in ('firma', 'benutzer', 'email', 'vorname', 'nachname', 'abrechnung_ab')}
+             for k in ('firma', 'strasse', 'plz', 'ort', 'telefon', 'benutzer', 'email', 'vorname', 'nachname',
+                       'abrechnung_ab')}
     if request.method == 'POST':
         try:
             ab = date.fromisoformat(werte['abrechnung_ab']) if werte['abrechnung_ab'] else None
@@ -63,10 +64,14 @@ def fw_betreiber_neu(request):
         try:
             if fehler_datum:
                 raise OnboardingFehler('')
+            if not (werte['strasse'] and werte['plz'] and werte['ort']):
+                # Ohne Anschrift lässt sich keine Rechnung zustellen (Adressfenster, Einzahlungsschein).
+                raise OnboardingFehler(gettext('Strasse, PLZ und Ort sind Pflicht: Sie stehen auf der Rechnung.'))
             with transaction.atomic():
                 organisation, benutzer, neu = organisation_anlegen(
                     firma=werte['firma'], benutzername=werte['benutzer'], email=werte['email'],
-                    passwort=None, vorname=werte['vorname'], nachname=werte['nachname'])
+                    passwort=None, vorname=werte['vorname'], nachname=werte['nachname'],
+                    strasse=werte['strasse'], plz=werte['plz'], ort=werte['ort'], telefon=werte['telefon'])
                 if ab:
                     # Ende der Testphase: bis dahin stellt der Abrechnungslauf nichts in Rechnung.
                     abo = organisation.abonnement
@@ -153,6 +158,54 @@ def _versenden(request, org, rechnung, erinnerung=False):
     return True
 
 
+def _stammdaten_speichern(request, org):
+    """Speichert Firma, Adresse und Kontaktdaten (an der Organisation) sowie Ansprechperson, Status und Notizen (Kartei).
+
+    Alles wird geprüft, bevor etwas geschrieben wird; bei einem Fehler bleibt der bisherige Stand.
+    """
+    from django.core.exceptions import ValidationError
+    from django.core.validators import validate_email
+    from django.db import transaction
+    from django.utils.translation import gettext
+
+    from abo.models import Kundenstamm
+    from core.services import betreiber
+
+    def feld(name, grenze):
+        return (request.POST.get(name) or '').strip()[:grenze]
+
+    def mail(name):
+        wert = feld(name, 254)
+        if wert:
+            try:
+                validate_email(wert)
+            except ValidationError as fehler:
+                raise ValueError(gettext('Ungültige E-Mail-Adresse: %(wert)s') % {'wert': wert}) from fehler
+        return wert
+
+    firma, strasse, plz, ort = feld('firma', 100), feld('strasse', 100), feld('plz', 10), feld('ort', 100)
+    if not (firma and strasse and plz and ort):
+        raise ValueError(gettext('Firma, Strasse, PLZ und Ort sind Pflicht.'))
+    status = feld('status', 12)
+    if status not in dict(Kundenstamm.STATUS):
+        raise ValueError(gettext('Unbekannter Status.'))
+    organisation_werte = dict(firma=firma, strasse=strasse, plz=plz, ort=ort, telefon=feld('telefon', 30),
+                              email=mail('email'), mwst_uid=feld('mwst_uid', 20))
+    stamm_werte = dict(
+        status=status, natel=feld('natel', 30), website=feld('website', 200), ansprechperson=feld('ansprechperson', 120),
+        ansprech_funktion=feld('ansprech_funktion', 120), ansprech_email=mail('ansprech_email'),
+        ansprech_telefon=feld('ansprech_telefon', 30), ansprech_natel=feld('ansprech_natel', 30),
+        rechnung_email=mail('rechnung_email'), notizen=(request.POST.get('notizen') or '').strip()[:8000])
+    with transaction.atomic():
+        for name, wert in organisation_werte.items():
+            setattr(org, name, wert)
+        org.save(update_fields=list(organisation_werte))
+        stamm = betreiber.kartei(org)
+        for name, wert in stamm_werte.items():
+            setattr(stamm, name, wert)
+        stamm.save()
+
+
 def _kunde_oder_404(pk):
     from django.http import Http404
 
@@ -179,7 +232,9 @@ def fw_betreiber_kunde(request, pk):
     from django.utils.translation import gettext
 
     from abo import dienst
-    from abo.models import AboRechnung, Abonnement
+    from django.utils import timezone
+
+    from abo.models import AboRechnung, Abonnement, KundenKontakt, Kundenstamm
     from core import funktionen as f
     from core.auth import log_aktion
     from core.tenancy import organisation_kontext
@@ -224,6 +279,28 @@ def fw_betreiber_kunde(request, pk):
                           f'Module {",".join(module) or "-"}, Abrechnung ab {abo.abrechnung_ab or "-"}, '
                           f'Bestandsschutz {"an" if abo.uneingeschraenkt else "aus"}')
                 messages.success(request, gettext('Abonnement gespeichert.'))
+            elif aktion == 'stamm':
+                _stammdaten_speichern(request, org)
+                protokoll('Kundendaten geändert')
+                messages.success(request, gettext('Kundendaten gespeichert.'))
+            elif aktion == 'kontakt':
+                text = (request.POST.get('text') or '').strip()
+                art = request.POST.get('art') or KundenKontakt.ART_NOTIZ
+                if not text:
+                    raise ValueError(gettext('Der Eintrag ist leer.'))
+                if art not in dict(KundenKontakt.ARTEN):
+                    raise ValueError(gettext('Unbekannte Art.'))
+                KundenKontakt.alle_organisationen.create(
+                    organisation=org, zeitpunkt=timezone.now(), art=art, text=text[:4000],
+                    erfasst_von=request.user.get_username())
+                messages.success(request, gettext('Eintrag gespeichert.'))
+            elif aktion == 'kontakt_loeschen':
+                eintrag = KundenKontakt.alle_organisationen.filter(
+                    organisation=org, pk=request.POST.get('eintrag') or 0).first()
+                if eintrag is None:
+                    raise ValueError(gettext('Dieser Eintrag gehört nicht zu dieser Verwaltung.'))
+                eintrag.delete()
+                messages.success(request, gettext('Eintrag gelöscht.'))
             elif aktion in ('senden', 'erinnern'):
                 rechnung = AboRechnung.alle_organisationen.filter(
                     organisation=org, pk=request.POST.get('rechnung') or 0).first()
@@ -266,6 +343,8 @@ def fw_betreiber_kunde(request, pk):
         'nutzung': dienst.nutzung_von(org),
         'jaehrlich': org.abo_jaehrlich,
         'heute': datum_heute(),
+        'stamm': betreiber.kartei(org), 'finanzen': betreiber.finanzen(org), 'verlauf': betreiber.verlauf(org),
+        'stati': Kundenstamm.STATUS, 'arten': KundenKontakt.ARTEN,
     })
 
 

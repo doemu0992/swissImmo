@@ -12,13 +12,107 @@
 <div class="fw-phead">
     <div>
         <h1>{{ org.firma }}</h1>
-        <p>{{ k.stufe }} · {{ k.abo_text }} · {{ k.einheiten }} {% trans "Einheiten" %} · {{ k.nutzer }} {% trans "Nutzer" %}</p>
+        <p>{{ stamm.kundennummer }} · {{ stamm.get_status_display }} · {{ k.stufe }} · {{ k.abo_text }} · {{ k.einheiten }} {% trans "Einheiten" %} · {{ k.nutzer }} {% trans "Nutzer" %}</p>
     </div>
 </div>
 
 {% if k.befunde %}
 <div class="fw-hinweis warn max-w-3xl"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht"><ul>{% for b in k.befunde %}<li>{{ b }}</li>{% endfor %}</ul></div></div>
 {% endif %}
+
+
+<div class="fw-card max-w-3xl">
+    <div class="fw-kopf"><h2>{% trans "Finanzen" %}</h2></div>
+    <div class="fw-rumpf">
+        <div class="fw-dz"><div class="fw-dl">{% trans "Fakturiert" %}</div><div class="fw-dv">CHF {{ finanzen.fakturiert }} · {{ finanzen.anzahl }} {% trans "Rechnungen" %}</div></div>
+        <div class="fw-dz"><div class="fw-dl">{% trans "Bezahlt" %}</div><div class="fw-dv">CHF {{ finanzen.bezahlt }}</div></div>
+        <div class="fw-dz"><div class="fw-dl">{% trans "Offen" %}</div><div class="fw-dv">CHF {{ finanzen.offen }}{% if finanzen.ueberfaellig %} · <b>CHF {{ finanzen.ueberfaellig }} {% trans "überfällig" %}</b>{% endif %}</div></div>
+        {% if finanzen.zahlungsdauer is not None %}
+        <div class="fw-dz"><div class="fw-dl">{% trans "Zahlungsverhalten" %}</div><div class="fw-dv">{% blocktrans with t=finanzen.zahlungsdauer %}im Schnitt {{ t }} Tage nach Fälligkeit{% endblocktrans %}</div></div>
+        {% endif %}
+        {% if finanzen.naechste %}
+        <div class="fw-dz"><div class="fw-dl">{% trans "Nächste Rechnung" %}</div><div class="fw-dv">{{ finanzen.naechste.von|date:"d.m.Y" }} – {{ finanzen.naechste.bis|date:"d.m.Y" }} · CHF {{ finanzen.naechste.netto }}</div></div>
+        {% endif %}
+    </div>
+    {% if finanzen.zahlungen %}
+    <div class="overflow-x-auto">
+    <table class="fw-table">
+        <thead><tr><th scope="col">{% trans "Zahlung am" %}</th><th scope="col">{% trans "Rechnung" %}</th><th scope="col" class="fw-right">{% trans "Betrag (CHF)" %}</th><th scope="col" class="fw-right">{% trans "Tage nach Fälligkeit" %}</th></tr></thead>
+        <tbody>
+        {% for z in finanzen.zahlungen %}
+        <tr><td>{{ z.rechnung.bezahlt_am|date:"d.m.Y" }}</td><td>{{ z.rechnung.nummer }}</td><td class="fw-right">{{ z.betrag }}</td><td class="fw-right">{{ z.tage }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% endif %}
+</div>
+
+<div class="fw-card max-w-3xl">
+    <div class="fw-kopf"><h2>{% trans "Stammdaten und Ansprechperson" %}</h2></div>
+    <form method="post" class="fw-formular p-5">{% csrf_token %}
+        <input type="hidden" name="aktion" value="stamm">
+        <div class="fw-feldblock"><label for="st-firma" class="fw-label">{% trans "Firma" %}</label>
+            <input id="st-firma" name="firma" value="{{ org.firma }}" maxlength="100" required class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="st-status" class="fw-label">{% trans "Kundenstatus" %}</label>
+            <select id="st-status" name="status" class="fw-feld">{% for wert, name in stati %}<option value="{{ wert }}" {% if wert == stamm.status %}selected{% endif %}>{{ name }}</option>{% endfor %}</select></div>
+        <div class="fw-feldblock"><label for="st-strasse" class="fw-label">{% trans "Strasse und Nr." %}</label>
+            <input id="st-strasse" name="strasse" value="{{ org.strasse }}" maxlength="100" required class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="st-plz" class="fw-label">{% trans "PLZ" %}</label>
+            <input id="st-plz" name="plz" value="{{ org.plz }}" maxlength="10" required class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="st-ort" class="fw-label">{% trans "Ort" %}</label>
+            <input id="st-ort" name="ort" value="{{ org.ort }}" maxlength="100" required class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="st-telefon" class="fw-label">{% trans "Telefon" %}</label>
+            <input id="st-telefon" name="telefon" type="tel" value="{{ org.telefon }}" maxlength="30" class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="st-natel" class="fw-label">{% trans "Natel" %}</label>
+            <input id="st-natel" name="natel" type="tel" value="{{ stamm.natel }}" maxlength="30" class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="st-email" class="fw-label">{% trans "E-Mail" %}</label>
+            <input id="st-email" name="email" type="email" value="{{ org.email }}" maxlength="254" class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="st-web" class="fw-label">{% trans "Website" %}</label>
+            <input id="st-web" name="website" value="{{ stamm.website }}" maxlength="200" class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="st-uid" class="fw-label">{% trans "UID / MWST-Nummer" %}</label>
+            <input id="st-uid" name="mwst_uid" value="{{ org.mwst_uid }}" maxlength="20" class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="st-rmail" class="fw-label">{% trans "E-Mail für Rechnungen" %}</label>
+            <input id="st-rmail" name="rechnung_email" type="email" value="{{ stamm.rechnung_email }}" maxlength="254" class="fw-feld">
+            <p class="fw-hilfe">{% trans "Leer = Rechnungen und Mahnungen gehen an die E-Mail der Verwaltung." %}</p></div>
+        <div class="fw-feldblock"><label for="st-ap" class="fw-label">{% trans "Ansprechperson" %}</label>
+            <input id="st-ap" name="ansprechperson" value="{{ stamm.ansprechperson }}" maxlength="120" class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="st-apf" class="fw-label">{% trans "Funktion" %}</label>
+            <input id="st-apf" name="ansprech_funktion" value="{{ stamm.ansprech_funktion }}" maxlength="120" class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="st-apm" class="fw-label">{% trans "E-Mail der Ansprechperson" %}</label>
+            <input id="st-apm" name="ansprech_email" type="email" value="{{ stamm.ansprech_email }}" maxlength="254" class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="st-apt" class="fw-label">{% trans "Telefon der Ansprechperson" %}</label>
+            <input id="st-apt" name="ansprech_telefon" type="tel" value="{{ stamm.ansprech_telefon }}" maxlength="30" class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="st-apn" class="fw-label">{% trans "Natel der Ansprechperson" %}</label>
+            <input id="st-apn" name="ansprech_natel" type="tel" value="{{ stamm.ansprech_natel }}" maxlength="30" class="fw-feld"></div>
+        <div class="fw-feldblock breit"><label for="st-notizen" class="fw-label">{% trans "Interne Notizen" %}</label>
+            <textarea id="st-notizen" name="notizen" rows="4" maxlength="8000" class="fw-feld">{{ stamm.notizen }}</textarea>
+            <p class="fw-hilfe">{% trans "Nur für den Betreiber sichtbar, nie für die Verwaltung." %}</p></div>
+        <div class="fw-feldblock breit"><button type="submit" class="fw-btn fw-primary">{% trans "Kundendaten speichern" %}</button></div>
+    </form>
+</div>
+
+<div class="fw-card max-w-3xl">
+    <div class="fw-kopf"><h2>{% trans "Verlauf" %}</h2></div>
+    <form method="post" class="fw-formular p-5">{% csrf_token %}
+        <input type="hidden" name="aktion" value="kontakt">
+        <div class="fw-feldblock"><label for="kt-art" class="fw-label">{% trans "Art" %}</label>
+            <select id="kt-art" name="art" class="fw-feld">{% for wert, name in arten %}<option value="{{ wert }}">{{ name }}</option>{% endfor %}</select></div>
+        <div class="fw-feldblock breit"><label for="kt-text" class="fw-label">{% trans "Eintrag" %}</label>
+            <textarea id="kt-text" name="text" rows="3" maxlength="4000" required class="fw-feld"></textarea></div>
+        <div class="fw-feldblock breit"><button type="submit" class="fw-btn fw-primary">{% trans "Eintrag hinzufügen" %}</button></div>
+    </form>
+    <div class="fw-rumpf">
+        {% for e in verlauf %}
+        <div class="fw-dz"><div class="fw-dl">{{ e.zeit|date:"d.m.Y H:i" }}<br><span class="fw-faint">{{ e.art_text }}{% if e.von %} · {{ e.von }}{% endif %}</span></div>
+            <div class="fw-dv">{{ e.text|linebreaksbr }}
+                {% if e.eigen %}<form method="post" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Eintrag löschen?" %}{% endfilter %}">{% csrf_token %}<input type="hidden" name="aktion" value="kontakt_loeschen"><input type="hidden" name="eintrag" value="{{ e.pk }}">
+                    <button type="submit" class="fw-btn fw-geist fw-knapp">{% trans "Löschen" %}</button></form>{% endif %}</div></div>
+        {% empty %}
+        <p class="fw-faint">{% trans "Noch kein Eintrag." %}</p>
+        {% endfor %}
+    </div>
+</div>
 
 {% if not abo %}
 <div class="fw-card max-w-3xl"><div class="fw-rumpf">
