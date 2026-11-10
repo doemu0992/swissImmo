@@ -5,7 +5,7 @@ from decimal import Decimal
 from django.test import override_settings
 
 from abo import dienst
-from abo.models import AboGutschrift, AboRechnung
+from abo.models import Abonnement, AboGutschrift, AboRechnung
 from abo.test_abrechnung import FESTGELEGT, Basis, _verwaltet
 from core import funktionen as f
 
@@ -155,3 +155,34 @@ class GuthabenAnzeigeTests(Basis):
         body = c.get('/neu/abonnement/').content.decode()
         self.assertIn('Guthaben: CHF', body)
         self.assertIn('Zusatzrechnung', body)
+
+
+@override_settings(**FESTGELEGT)
+class ZusatzrechnungPdfTests(Basis):
+    """Die Zusatzrechnung hat einen langen Text: Er bricht um und überschreibt den Betrag nicht."""
+
+    def test_langer_text_bricht_um_und_ueberlappt_den_betrag_nicht(self):
+        import io
+
+        import pdfplumber
+
+        from abo.rechnung_pdf import abo_rechnung_pdf
+        _verwaltet(self.a, ab=date(2026, 11, 1))
+        dienst.abrechnen(self.org(), heute=date(2026, 11, 1), mail=False)
+        abo = Abonnement.alle_organisationen.get(organisation=self.a.organisation)
+        dienst.module_setzen(self.org(), abo, ['signatur', 'belegerkennung', 'reporting_erweitert'], heute=date(2026, 11, 10),
+                             mail=False)
+        zusatz = AboRechnung.alle_organisationen.get(organisation=self.a.organisation, art='zusatz')
+        pdf = abo_rechnung_pdf(AboRechnung.alle_organisationen.select_related('organisation').get(pk=zusatz.pk))
+        with pdfplumber.open(io.BytesIO(pdf)) as seite:
+            s = seite.pages[0]
+            woerter = [w for w in s.extract_words() if w['top'] < s.height * 0.55]
+        text = ' '.join(w['text'] for w in woerter)
+        self.assertIn('Zusatzrechnung zum Abonnement', text)
+        beschreibung_rechts = max(w['x1'] for w in woerter if w['text'] in ('Änderung', 'Modul', 'hinzu,', 'anteilig'))
+        betrag_links = min(w['x0'] for w in woerter if w['text'].startswith("CHF") and w['top'] > 200 and w['x0'] > 400)
+        self.assertLess(beschreibung_rechts, betrag_links)
+        # Jede Beschreibungszeile endet vor dem Betrag (Textspalte rechts bei 155 mm).
+        for w in woerter:
+            if 190 < w['top'] < 330 and w['x0'] < 400:
+                self.assertLessEqual(w['x1'], 155 / 25.4 * 72 + 1, w['text'])

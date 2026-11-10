@@ -51,7 +51,7 @@ def abo_rechnung_pdf(rechnung):
                   titel=f'Rechnung {rechnung.nummer}', ref=org.firma)
     c.setTitle(f'Rechnung {rechnung.nummer}')
     y = c.brief([debtor['name'], debtor['line1'], debtor['line2']], f'Datum: {rechnung.rechnungsdatum:%d.%m.%Y}',
-                'Rechnung', untertitel=f'{rechnung.nummer} · Abonnement immoswiss')
+                'Rechnung', untertitel=f'{rechnung.nummer} · ' + ('Zusatzrechnung zum Abonnement immoswiss' if rechnung.art == 'zusatz' else 'Abonnement immoswiss'))
     c.setFont('Helvetica', 10)
     c.drawRightString(190 * mm, c.hoehe - 93 * mm, f'Fällig: {rechnung.faellig_am:%d.%m.%Y}')
     if s.get('uid'):
@@ -64,12 +64,19 @@ def abo_rechnung_pdf(rechnung):
     periode = f'{rechnung.periode_von:%d.%m.%Y}–{rechnung.periode_bis:%d.%m.%Y}'
     if rechnung.positionen:
         # Grundpreis, zugebuchte Module und Rabatt je eine Zeile, wie bei der Rechnungsstellung festgehalten.
-        letzte = yt
+        from reportlab.lib.utils import simpleSplit
+        letzte = yt + 5 * mm
         for i, position in enumerate(rechnung.positionen):
-            letzte = yt - i * 5 * mm
-            c.drawString(20 * mm, letzte, f"{position['text']}, {periode}" if i == 0 else position['text'])
+            text = f"{position['text']}, {periode}" if i == 0 and rechnung.art == 'abo' else position['text']
+            # Lange Texte (z. B. Änderungen mit mehreren Modulen) umbrechen; der Betrag steht in der ersten Zeile rechts.
+            zeilen = simpleSplit(text, 'Helvetica', 10, 135 * mm)
+            letzte -= 5 * mm
             c.drawRightString(190 * mm, letzte, _chf(position['betrag']))
-        if rechnung.einheiten:
+            for k, zeile_text in enumerate(zeilen):
+                if k:
+                    letzte -= 4.5 * mm
+                c.drawString(20 * mm, letzte, zeile_text)
+        if rechnung.einheiten and rechnung.art == 'abo':
             letzte -= 5 * mm
             c.drawString(20 * mm, letzte, f'{rechnung.einheiten} Einheiten bei Rechnungsstellung')
         zeile = letzte - 7 * mm
