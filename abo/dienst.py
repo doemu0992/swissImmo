@@ -269,6 +269,12 @@ def betrag_fuer(stufe, einheiten, jaehrlich, module=()):
     return netto, bemerkung
 
 
+def guthaben_von(organisation):
+    """Noch nicht verrechnetes Guthaben (Gutschriften aus Abwertungen) einer Organisation in CHF."""
+    from abo.models import AboGutschrift
+    return sum((g.offen for g in AboGutschrift.alle_organisationen.filter(organisation=organisation)), Decimal('0'))
+
+
 def _gutschriften_abziehen(organisation, netto):
     """Welche offenen Gutschriften diese Rechnung mindern: `[{'gutschrift', 'betrag', 'text'}]`, ohne etwas zu speichern."""
     from django.utils import translation

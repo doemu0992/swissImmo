@@ -99,11 +99,12 @@
 {% if kann_abo_aendern %}
 <div class="fw-card">
     <div class="fw-kopf"><h2>{% trans "Rechnungen" %}</h2></div>
+    {% if guthaben %}<p class="fw-hilfe p-4">{% blocktrans with betrag=guthaben|chf:2 %}Guthaben: CHF {{ betrag }}. Es wird mit Ihrer nächsten Rechnung verrechnet.{% endblocktrans %}</p>{% endif %}
     {% for r in rechnungen %}
     <div class="fw-zeile">
         <div class="fw-mitte">
             <div class="fw-t">{{ r.nummer }} · {{ r.periode_von|date:"d.m.Y" }}–{{ r.periode_bis|date:"d.m.Y" }}</div>
-            <div class="fw-s">{% blocktrans with datum=r.faellig_am|date:"d.m.Y" %}Fällig am {{ datum }}{% endblocktrans %}{% if r.platzhalter %} · {% trans "Platzhalterpreise" %}{% endif %}</div>
+            <div class="fw-s">{% blocktrans with datum=r.faellig_am|date:"d.m.Y" %}Fällig am {{ datum }}{% endblocktrans %}{% if r.platzhalter %} · {% trans "Platzhalterpreise" %}{% endif %}{% if r.art == 'zusatz' %} · {% trans "Zusatzrechnung (Änderung des Abonnements)" %}{% endif %}</div>
         </div>
         <span class="fw-abo-rechts">
             <span class="fw-num">CHF {{ r.brutto|chf:2 }}</span>

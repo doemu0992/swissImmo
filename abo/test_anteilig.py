@@ -124,3 +124,34 @@ class AnteilTests(Basis):
         jahr = Decimal(365)
         netto_modul = (Decimal(9) * 12 * (1 - f.JAHRESRABATT) * rest / jahr).quantize(Decimal('0.01'))
         self.assertEqual(zusatz.netto, netto_modul)
+
+
+@override_settings(**FESTGELEGT)
+class GuthabenAnzeigeTests(Basis):
+    """Das Guthaben ist sichtbar: Dienst, Abo-Seite der Verwaltung, Kundenseite des Betreibers."""
+
+    def _mit_guthaben(self):
+        _verwaltet(self.a, stufe='professional', ab=date(2026, 12, 1))
+        dienst.abrechnen(self.org(), heute=date(2026, 12, 1), mail=False)
+        dienst.plan_wechseln(self.org(), 'team', False, heute=date(2026, 12, 11))
+        return AboGutschrift.alle_organisationen.get(organisation=self.a.organisation)
+
+    def test_guthaben_von_summiert_offene_gutschriften(self):
+        g = self._mit_guthaben()
+        self.assertEqual(dienst.guthaben_von(self.org()), g.betrag)
+        self.assertEqual(dienst.guthaben_von(self.org(self.b)), Decimal('0'))     # fremde Verwaltung: nichts
+
+    def test_betreiber_finanzen_enthalten_guthaben(self):
+        from core.services import betreiber
+        g = self._mit_guthaben()
+        self.assertEqual(betreiber.finanzen(self.org())['guthaben'], g.betrag)
+
+    def test_abo_seite_zeigt_guthaben_und_zusatzrechnung(self):
+        from django.test import Client
+        g = self._mit_guthaben()
+        dienst.plan_wechseln(self.org(), 'professional', False, heute=date(2026, 12, 20))   # Zusatzrechnung
+        c = Client()
+        c.force_login(self.a.benutzer)
+        body = c.get('/neu/abonnement/').content.decode()
+        self.assertIn('Guthaben: CHF', body)
+        self.assertIn('Zusatzrechnung', body)

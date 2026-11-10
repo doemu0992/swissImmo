@@ -39569,3 +39569,30 @@ msgid "%(n)s Support-Anfrage offen"
 msgid_plural "%(n)s Support-Anfragen offen"
 msgstr[0] "%(n)s support request open"
 msgstr[1] "%(n)s support requests open"
+
+msgid "anteilig %(t)s von %(g)s Tagen"
+msgstr "pro rata for %(t)s of %(g)s days"
+
+msgid "Gutschrift vom %(d)s: %(t)s"
+msgstr "Credit of %(d)s: %(t)s"
+
+msgid "Modul %(m)s hinzu"
+msgstr "module %(m)s added"
+
+msgid "Modul %(m)s entfällt"
+msgstr "module %(m)s removed"
+
+msgid "Änderung des Abonnements ab %(d)s"
+msgstr "Subscription change from %(d)s"
+
+msgid "Guthaben: CHF %(betrag)s. Es wird mit Ihrer nächsten Rechnung verrechnet."
+msgstr "Credit: CHF %(betrag)s. It will be applied to your next invoice."
+
+msgid "Zusatzrechnung (Änderung des Abonnements)"
+msgstr "Additional invoice (subscription change)"
+
+msgid "Zusatzrechnung"
+msgstr "Additional invoice"
+
+msgid "wird mit der nächsten Rechnung verrechnet"
+msgstr "will be applied to the next invoice"

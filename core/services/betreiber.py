@@ -146,6 +146,7 @@ def finanzen(org, heute=None):
         'zahlungsdauer': round(sum(dauern) / len(dauern), 1) if dauern else None,
         'zahlungen': [{'rechnung': r, 'tage': (r.bezahlt_am - r.faellig_am).days, 'betrag': betrag(r)} for r in zahlungen],
         'naechste': None,
+        'guthaben': dienst.guthaben_von(org),
     }
     d = ergebnis['zahlungsdauer']
     ergebnis['verhalten'] = (None if d is None else ('good', _('pünktlich')) if d <= 5
