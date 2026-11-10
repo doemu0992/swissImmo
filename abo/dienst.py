@@ -151,13 +151,13 @@ def plan_wechseln(organisation, stufe, jaehrlich, heute=None):
     return abo
 
 
-def module_setzen(organisation, abo, module, heute=None):
+def module_setzen(organisation, abo, module, heute=None, mail=True):
     """Setzt die zugebuchten Module; mitten in der Periode wird der Unterschied anteilig verrechnet."""
     with transaction.atomic():
         vorher = _zustand_des_abos(organisation, abo)
         abo.zusatzmodule = list(module)
         abo.save(update_fields=['zusatzmodule'])
-        aenderung_verrechnen(organisation, abo, vorher, _zustand_des_abos(organisation, abo), heute)
+        aenderung_verrechnen(organisation, abo, vorher, _zustand_des_abos(organisation, abo), heute, mail=mail)
 
 
 def abonnement_anlegen(organisation, uneingeschraenkt=False):
