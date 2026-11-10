@@ -38460,3 +38460,30 @@ msgid "%(n)s Support-Anfrage offen"
 msgid_plural "%(n)s Support-Anfragen offen"
 msgstr[0] "%(n)s Support-Anfrage offen"
 msgstr[1] "%(n)s Support-Anfragen offen"
+
+msgid "anteilig %(t)s von %(g)s Tagen"
+msgstr "anteilig %(t)s von %(g)s Tagen"
+
+msgid "Gutschrift vom %(d)s: %(t)s"
+msgstr "Gutschrift vom %(d)s: %(t)s"
+
+msgid "Modul %(m)s hinzu"
+msgstr "Modul %(m)s hinzu"
+
+msgid "Modul %(m)s entfällt"
+msgstr "Modul %(m)s entfällt"
+
+msgid "Änderung des Abonnements ab %(d)s"
+msgstr "Änderung des Abonnements ab %(d)s"
+
+msgid "Guthaben: CHF %(betrag)s. Es wird mit Ihrer nächsten Rechnung verrechnet."
+msgstr "Guthaben: CHF %(betrag)s. Es wird mit Ihrer nächsten Rechnung verrechnet."
+
+msgid "Zusatzrechnung (Änderung des Abonnements)"
+msgstr "Zusatzrechnung (Änderung des Abonnements)"
+
+msgid "Zusatzrechnung"
+msgstr "Zusatzrechnung"
+
+msgid "wird mit der nächsten Rechnung verrechnet"
+msgstr "wird mit der nächsten Rechnung verrechnet"

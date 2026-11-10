@@ -1258,6 +1258,7 @@ def fw_abonnemente(request):
         'rabatt_prozent': int(JAHRESRABATT * 100), 'preisstand': PREISSTAND,
         'abo': abo, 'zustand': f.zustand_von(vw), 'nutzung': nutzung,
         'module': _abo_module(vw), 'rechnungen': rechnungen,
+        'guthaben': dienst.guthaben_von(vw) if kann_abo_aendern else None,
         'platzhalter': not dj_settings.ABO_PREISE_FESTGELEGT,
         'mwst_offen': dj_settings.ABO_MWST_SATZ is None and dj_settings.ABO_MWST_PFLICHTIG,
         'mwst_pflichtig': bool(dj_settings.ABO_MWST_PFLICHTIG),

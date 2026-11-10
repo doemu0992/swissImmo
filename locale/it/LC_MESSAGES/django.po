@@ -40164,3 +40164,30 @@ msgid "%(n)s Support-Anfrage offen"
 msgid_plural "%(n)s Support-Anfragen offen"
 msgstr[0] "%(n)s richiesta di supporto aperta"
 msgstr[1] "%(n)s richieste di supporto aperte"
+
+msgid "anteilig %(t)s von %(g)s Tagen"
+msgstr "pro rata: %(t)s giorni su %(g)s"
+
+msgid "Gutschrift vom %(d)s: %(t)s"
+msgstr "Nota di credito del %(d)s: %(t)s"
+
+msgid "Modul %(m)s hinzu"
+msgstr "modulo %(m)s aggiunto"
+
+msgid "Modul %(m)s entfällt"
+msgstr "modulo %(m)s rimosso"
+
+msgid "Änderung des Abonnements ab %(d)s"
+msgstr "Modifica dell'abbonamento dal %(d)s"
+
+msgid "Guthaben: CHF %(betrag)s. Es wird mit Ihrer nächsten Rechnung verrechnet."
+msgstr "Credito: CHF %(betrag)s. Verrà compensato con la prossima fattura."
+
+msgid "Zusatzrechnung (Änderung des Abonnements)"
+msgstr "Fattura aggiuntiva (modifica dell'abbonamento)"
+
+msgid "Zusatzrechnung"
+msgstr "Fattura aggiuntiva"
+
+msgid "wird mit der nächsten Rechnung verrechnet"
+msgstr "verrà compensato con la prossima fattura"

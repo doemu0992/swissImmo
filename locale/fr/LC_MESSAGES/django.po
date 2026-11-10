@@ -40235,3 +40235,30 @@ msgid "%(n)s Support-Anfrage offen"
 msgid_plural "%(n)s Support-Anfragen offen"
 msgstr[0] "%(n)s demande de support ouverte"
 msgstr[1] "%(n)s demandes de support ouvertes"
+
+msgid "anteilig %(t)s von %(g)s Tagen"
+msgstr "au prorata de %(t)s jours sur %(g)s"
+
+msgid "Gutschrift vom %(d)s: %(t)s"
+msgstr "Avoir du %(d)s : %(t)s"
+
+msgid "Modul %(m)s hinzu"
+msgstr "module %(m)s ajouté"
+
+msgid "Modul %(m)s entfällt"
+msgstr "module %(m)s supprimé"
+
+msgid "Änderung des Abonnements ab %(d)s"
+msgstr "Modification de l'abonnement dès le %(d)s"
+
+msgid "Guthaben: CHF %(betrag)s. Es wird mit Ihrer nächsten Rechnung verrechnet."
+msgstr "Avoir : CHF %(betrag)s. Il sera imputé sur votre prochaine facture."
+
+msgid "Zusatzrechnung (Änderung des Abonnements)"
+msgstr "Facture complémentaire (modification de l'abonnement)"
+
+msgid "Zusatzrechnung"
+msgstr "Facture complémentaire"
+
+msgid "wird mit der nächsten Rechnung verrechnet"
+msgstr "sera imputé sur la prochaine facture"

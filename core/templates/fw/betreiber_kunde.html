@@ -188,7 +188,7 @@ Abo-Daten gezeigt, keine Verträge, Personen oder Buchungen der Verwaltung.
             <tbody>
             {% for r in rechnungen %}
             <tr>
-                <td class="fw-strong">{{ r.nummer }}</td>
+                <td class="fw-strong">{{ r.nummer }}{% if r.art == 'zusatz' %}<br><span class="fw-faint">{% trans "Zusatzrechnung" %}</span>{% endif %}</td>
                 <td>{{ r.periode_von|date:"d.m.Y" }} – {{ r.periode_bis|date:"d.m.Y" }}</td>
                 <td class="fw-right">{{ r.brutto }}</td>
                 <td>{{ r.faellig_am|date:"d.m.Y" }}</td>
@@ -232,6 +232,7 @@ Abo-Daten gezeigt, keine Verträge, Personen oder Buchungen der Verwaltung.
                 <div class="fw-dz"><div class="fw-dl">{% trans "Fakturiert" %}</div><div class="fw-dv">CHF {{ finanzen.fakturiert }}<small>{{ finanzen.anzahl }} {% trans "Rechnungen" %}</small></div></div>
                 <div class="fw-dz"><div class="fw-dl">{% trans "Bezahlt" %}</div><div class="fw-dv">CHF {{ finanzen.bezahlt }}</div></div>
                 <div class="fw-dz"><div class="fw-dl">{% trans "Offen" %}</div><div class="fw-dv">CHF {{ finanzen.offen }}{% if finanzen.ueberfaellig %}<small>{% trans "überfällig" %}: CHF {{ finanzen.ueberfaellig }}</small>{% endif %}</div></div>
+                {% if finanzen.guthaben %}<div class="fw-dz"><div class="fw-dl">{% trans "Guthaben" %}</div><div class="fw-dv">CHF {{ finanzen.guthaben }}<small>{% trans "wird mit der nächsten Rechnung verrechnet" %}</small></div></div>{% endif %}
             </div>
         </div>
     </div>
