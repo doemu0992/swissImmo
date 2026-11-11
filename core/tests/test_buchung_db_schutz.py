@@ -237,3 +237,74 @@ class SqliteBleibtManagerSchutzTests(TestCase):
     def test_ohne_postgresql_gibt_es_keinen_trigger(self):
         from finance.db_schutz import trigger_vorhanden
         self.assertFalse(trigger_vorhanden())
+
+
+@NUR_POSTGRES
+class PeriodensperreImTriggerTests(UnveraenderlichBasis):
+    """Roadmap 2.2: Die Periodensperre gilt auch für rohes SQL (nicht nur im Modell).
+
+    Gegenprobe: Die zwei Prüfungen im Trigger (`INSERT` und die Verknüpfungen im `UPDATE`) aus `finance/db_schutz.py::FUNKTION_SQL`
+    entfernen und die Migration 0060 neu einspielen -> `test_neue_buchung_in_gesperrter_periode_wird_abgewiesen` und
+    `test_verknuepfung_in_gesperrter_periode_wird_abgewiesen` sind rot.
+    """
+
+    def _sperren(self, bis):
+        from crm.models import Organisation
+        Organisation.objects.filter(pk=self.org.pk).update(buchung_gesperrt_bis=bis)
+
+    def _kopie_einfuegen(self, datum, beleg_nr=987654):
+        """Eine Buchung per rohem SQL: dieselbe Zeile wie `self.b`, mit anderem Datum und anderer Belegnummer."""
+        with connection.cursor() as cur:
+            cur.execute(f"SELECT column_name FROM information_schema.columns WHERE table_name = '{TABELLE}' "
+                        "ORDER BY ordinal_position")
+            spalten = [z[0] for z in cur.fetchall() if z[0] != 'id']
+        auswahl = ', '.join('%s' if s == 'datum' else '%s' if s == 'beleg_nr' else s for s in spalten)
+        werte = [datum if s == 'datum' else beleg_nr for s in spalten if s in ('datum', 'beleg_nr')]
+        # Reihenfolge der Platzhalter folgt der Spaltenreihenfolge:
+        werte = [(datum if s == 'datum' else beleg_nr) for s in spalten if s in ('datum', 'beleg_nr')]
+        return _sql(f'INSERT INTO {TABELLE} ({", ".join(spalten)}) SELECT {auswahl} FROM {TABELLE} WHERE id = %s',
+                    werte + [self.b.pk])
+
+    def test_neue_buchung_in_gesperrter_periode_wird_abgewiesen(self):
+        self._sperren(date(2026, 3, 31))
+        with self.assertRaises(DatabaseError), transaction.atomic():
+            self._kopie_einfuegen(date(2026, 3, 15))
+        with self.assertRaises(DatabaseError), transaction.atomic():
+            self._kopie_einfuegen(date(2026, 3, 31))                    # der Stichtag selbst ist gesperrt
+
+    def test_neue_buchung_nach_dem_stichtag_geht_durch(self):
+        self._sperren(date(2026, 3, 31))
+        self.assertEqual(self._kopie_einfuegen(date(2026, 4, 1)), 1)
+
+    def test_ohne_sperre_geht_jede_neue_buchung_durch(self):
+        self._sperren(None)
+        self.assertEqual(self._kopie_einfuegen(date(2020, 1, 1)), 1)
+
+    def test_die_sperre_einer_anderen_verwaltung_zaehlt_nicht(self):
+        from core.tests._helfer import _test_organisation
+        from crm.models import Organisation
+        fremd = Organisation.objects.exclude(pk=self.org.pk).first() or _test_organisation(firma='Andere AG')
+        Organisation.objects.filter(pk=fremd.pk).update(buchung_gesperrt_bis=date(2030, 12, 31))
+        self._sperren(None)
+        self.assertEqual(self._kopie_einfuegen(date(2026, 5, 1)), 1)
+
+    def test_verknuepfung_in_gesperrter_periode_wird_abgewiesen(self):
+        from finance.models import DebitorenRechnung
+        r = DebitorenRechnung.objects.create(vertrag=self.vertrag, titel='R', betrag=Decimal('10'),
+                                             datum=date(2026, 3, 1), status='offen')
+        self._sperren(date(2026, 3, 31))
+        with self.assertRaises(DatabaseError), transaction.atomic():
+            _sql(f'UPDATE {TABELLE} SET debitoren_rechnung_id = %s WHERE id = %s', [r.pk, self.b.pk])
+        self.assertIsNone(self.neu_lesen().debitoren_rechnung_id)
+
+    def test_storno_marke_bleibt_in_gesperrter_periode_erlaubt(self):
+        self._sperren(date(2026, 3, 31))
+        self.assertEqual(_sql(f'UPDATE {TABELLE} SET storniert_am = now() WHERE id = %s', [self.b.pk]), 1)
+
+    def test_die_benannte_ausnahme_oeffnet_auch_die_periodensperre(self):
+        from finance.db_schutz import ausnahme
+        self._sperren(date(2026, 3, 31))
+        with ausnahme('Reparatur Import'):
+            self.assertEqual(self._kopie_einfuegen(date(2026, 3, 15)), 1)
+        with self.assertRaises(DatabaseError), transaction.atomic():    # danach gilt die Sperre wieder
+            self._kopie_einfuegen(date(2026, 3, 16), beleg_nr=987655)
