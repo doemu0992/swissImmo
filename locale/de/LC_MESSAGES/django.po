@@ -38499,3 +38499,12 @@ msgstr "Zu viele Fehlversuche. Bitte von vorne anmelden."
 
 msgid "Der Code stimmt nicht (%(n)s von %(max)s)."
 msgstr "Der Code stimmt nicht (%(n)s von %(max)s)."
+
+msgid "kein Monat"
+msgstr "kein Monat"
+
+msgid "LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s (core/services/lik.py)."
+msgstr "LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s (core/services/lik.py)."
+
+msgid "Formularpflicht prüfen: Das Register (core/services/formularpflicht.py, Stand %(stand)s) wurde zuletzt am %(datum)s geprüft; das BWO gibt das Verzeichnis jedes Jahr neu heraus."
+msgstr "Formularpflicht prüfen: Das Register (core/services/formularpflicht.py, Stand %(stand)s) wurde zuletzt am %(datum)s geprüft; das BWO gibt das Verzeichnis jedes Jahr neu heraus."

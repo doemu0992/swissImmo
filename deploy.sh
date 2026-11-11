@@ -344,6 +344,17 @@ if ! "$PY" manage.py benutzer_uebernahme; then
     zurueckrollen "Benutzer-Übernahme fehlgeschlagen — KEIN Reload."
 fi
 
+# Sicherung VOR einer Migration (nur wenn eine aussteht): Eine Migration ist der Schritt, der Daten umbauen kann und sich
+# nicht zurücknehmen lässt. Der Stand davor liegt in einem eigenen Ordner mit eigener Aufbewahrung (5), damit er die
+# täglichen Sicherungen nicht verdrängt. Scheitert die Sicherung, läuft KEIN migrate; wer bewusst ohne sichern will
+# (Notfall-Hotfix), setzt DEPLOY_OHNE_SICHERUNG=1.
+if [ "${OFFEN:-0}" -gt 0 ] && [ "${DEPLOY_OHNE_SICHERUNG:-0}" != "1" ]; then
+    echo "→ manage.py sicherung (vor der Migration)"
+    if ! "$PY" manage.py sicherung --ohne-medien --behalten 5 --ziel "${SICHERUNG_VOR_MIGRATION:-$HOME/sicherungen/vor-migration}"; then
+        zurueckrollen "Sicherung vor der Migration fehlgeschlagen — KEIN migrate (Notfall: DEPLOY_OHNE_SICHERUNG=1)."
+    fi
+fi
+
 echo "→ manage.py migrate"
 if ! "$PY" manage.py migrate --noinput; then
     zurueckrollen "migrate fehlgeschlagen — KEIN Reload."

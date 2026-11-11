@@ -17,6 +17,10 @@ BETREIBER — Kundenliste (nur lesend). Siehe core/views/fw/betreiber.py: nur Z�
     <div class="fw-phead-knoepfe"><a href="/betreiber/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Kunde anlegen" %}</a></div>
 </div>
 
+{% for aufgabe in pflege %}
+<div class="fw-hinweis warn max-w-3xl"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">{{ aufgabe }}</div></div>
+{% endfor %}
+
 {% if mit_befund %}
 <div class="fw-hinweis warn max-w-3xl"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">{% blocktrans count n=mit_befund %}Bei {{ n }} Verwaltung gibt es etwas zu prüfen.{% plural %}Bei {{ n }} Verwaltungen gibt es etwas zu prüfen.{% endblocktrans %}</div></div>
 {% endif %}
