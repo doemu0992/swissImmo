@@ -30,7 +30,18 @@ WAS NICHT GESCHÜTZT IST (ehrlich)
   wer Eigentümer der Tabelle oder Superuser ist, kommt vorbei. Der Betrieb
   verwendet für die Anwendung eine Rolle ohne diese Rechte (Betriebsdoku).
 * SQLite: kein Trigger. Dort gilt weiter der Manager-Schutz.
-* Die Periodensperre ist nur im Manager/Modell geprüft, nicht im Trigger.
+* Die Periodensperre gilt seit Roadmap 2.2 auch im Trigger (siehe unten); die Prüfung im Manager/Modell
+  bleibt als erste, klar formulierte Schranke.
+
+PERIODENSPERRE IM TRIGGER (PostgreSQL)
+
+* `INSERT`: eine neue Buchung mit `datum <= Organisation.buchung_gesperrt_bis` wird abgewiesen.
+* `UPDATE`: wer die Verknüpfung zu Zahlung oder Rechnung einer Buchung in gesperrter Periode ändert, wird abgewiesen (die
+  Storno-Marke bleibt erlaubt, wie im Modell). Die Sperre liest der Trigger aus `core_verwaltung` (der Tabelle von
+  `crm.Organisation`) je Organisation der Buchung.
+* Die benannte Ausnahme öffnet auch das. Sie ist die einzige Hintertür, und sie steht im Protokoll.
+* Wiederherstellung: Eine vollständige `pg_restore` legt die Trigger erst NACH dem Laden der Daten an und ist nicht betroffen;
+  wer nur Daten einspielt (`--data-only`), muss die Sperre vorher aufheben oder `--disable-triggers` (Superuser) verwenden.
 """
 import logging
 from contextlib import contextmanager
@@ -52,6 +63,7 @@ CREATE OR REPLACE FUNCTION {FUNKTION}() RETURNS trigger AS $fn$
 DECLARE
     erlaubt text[] := ARRAY['zahlungseingang_id', 'kreditoren_rechnung_id',
                             'debitoren_rechnung_id', 'storniert_am', 'erstellt_von_id'];
+    sperre date;
 BEGIN
     IF coalesce(current_setting('{VARIABLE}', true), '') <> '' THEN
         IF TG_OP = 'DELETE' THEN
@@ -63,6 +75,15 @@ BEGIN
     IF TG_OP = 'DELETE' THEN
         RAISE EXCEPTION 'Buchung % darf nicht geloescht werden (Revisionssicherheit, OR 957a/958f): bitte stornieren.',
             OLD.id;
+    END IF;
+
+    IF TG_OP = 'INSERT' THEN
+        SELECT buchung_gesperrt_bis INTO sperre FROM core_verwaltung WHERE id = NEW.organisation_id;
+        IF sperre IS NOT NULL AND NEW.datum <= sperre THEN
+            RAISE EXCEPTION 'Periode gesperrt: Buchungen bis % sind abgeschlossen (Datum %). Bitte spaetere Periode waehlen.',
+                sperre, NEW.datum;
+        END IF;
+        RETURN NEW;
     END IF;
 
     IF (to_jsonb(NEW) - erlaubt) IS DISTINCT FROM (to_jsonb(OLD) - erlaubt) THEN
@@ -79,6 +100,14 @@ BEGIN
     IF OLD.erstellt_von_id IS NULL AND NEW.erstellt_von_id IS NOT NULL THEN
         RAISE EXCEPTION 'Buchung %: Der Ersteller laesst sich nicht nachtragen.', OLD.id;
     END IF;
+    IF NEW.zahlungseingang_id IS DISTINCT FROM OLD.zahlungseingang_id
+       OR NEW.kreditoren_rechnung_id IS DISTINCT FROM OLD.kreditoren_rechnung_id
+       OR NEW.debitoren_rechnung_id IS DISTINCT FROM OLD.debitoren_rechnung_id THEN
+        SELECT buchung_gesperrt_bis INTO sperre FROM core_verwaltung WHERE id = OLD.organisation_id;
+        IF sperre IS NOT NULL AND OLD.datum <= sperre THEN
+            RAISE EXCEPTION 'Periode gesperrt: Buchungen bis % sind abgeschlossen und lassen sich nicht mehr aendern.', sperre;
+        END IF;
+    END IF;
     RETURN NEW;
 END;
 $fn$ LANGUAGE plpgsql;
@@ -87,7 +116,7 @@ $fn$ LANGUAGE plpgsql;
 TRIGGER_SQL = f"""
 DROP TRIGGER IF EXISTS {TRIGGER} ON core_buchung;
 CREATE TRIGGER {TRIGGER}
-    BEFORE UPDATE OR DELETE ON core_buchung
+    BEFORE INSERT OR UPDATE OR DELETE ON core_buchung
     FOR EACH ROW EXECUTE FUNCTION {FUNKTION}();
 """
 
