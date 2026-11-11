@@ -76,6 +76,7 @@ from core.csp import csp_bericht
 # 2b. Eigentümer-Portal & Login-Weiche
 from core.views.fw.kreditoren import (fw_kreditor_zahlung_vorlegen, fw_kreditor_zahlung_freigeben,
                                       fw_kreditor_zahlung_zuruecknehmen)
+from core.views.passwort_reset import PasswortVergessenView
 from core.views.fw.betreiber import (fw_betreiber, fw_betreiber_csp, fw_betreiber_kunde, fw_betreiber_kunde_abo,
                                      fw_betreiber_kunde_bearbeiten, fw_betreiber_neu, fw_betreiber_rechnung_pdf)
 from core.views.fw.sicherheit import fw_sicherheit
@@ -240,7 +241,7 @@ urlpatterns = [
     path('i18n/', include('django.conf.urls.i18n')),
     # Passwort vergessen (Self-Service für Mieter/Eigentümer-Logins): Djangos
     # eingebaute Reset-Kette mit eigenen, schlanken Templates.
-    path('passwort/vergessen/', auth_views.PasswordResetView.as_view(
+    path('passwort/vergessen/', PasswortVergessenView.as_view(
         template_name='core/passwort_reset.html',
         email_template_name='core/passwort_reset_email.txt',
         subject_template_name='core/passwort_reset_subject.txt'), name='password_reset'),
