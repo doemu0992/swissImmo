@@ -178,7 +178,16 @@ jobs:
       - name: npm install
         run: npm install
       - name: Playwright-Browser (Chromium) installieren
-        run: npx playwright install --with-deps chromium
+        # Chromium selbst kommt vom Playwright-Download. Die Systempakete (`--with-deps`: Bibliotheken, Schriften) kommen aus apt:
+        # Ist der Ubuntu-Spiegel nicht erreichbar (am 11.11.2026 stundenlang: «Temporary failure resolving
+        # azure.archive.ubuntu.com»), scheiterte vorher der ganze Job vor dem ersten Test. Die Bibliotheken bringt das Runner-Image
+        # mit; es fehlen nur Zusatz-Schriften. Darum: Browser zuerst, Systempakete danach mit Zeitlimit, ein Fehlschlag ist eine
+        # Warnung, kein roter Job.
+        run: |
+          npx playwright install chromium
+          if ! timeout 180 npx playwright install-deps chromium; then
+            echo "::warning::Systempakete (apt) nicht installiert, Chromium läuft mit den Bibliotheken des Runner-Images; Zusatz-Schriften können fehlen."
+          fi
       - name: E2E-Tests (Playwright bootet Django selbst)
         run: npx playwright test
       - name: Playwright-Report als Artefakt
