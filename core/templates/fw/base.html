@@ -269,7 +269,10 @@ Detailseiten rufen sie beim Namen.
             <a href="/neu/einstellungen/" class="fw-profil-link">{% zeichen 'einstellungen' %} {% trans "Einstellungen" %}</a>
             <div class="fw-profil-trenner"></div>
             {% endif %}
-            <a href="/logout/" class="fw-profil-link crit">{% zeichen 'extern' %} {% trans "Abmelden" %}</a>
+            {% comment %}Abmelden ist ein POST: Django 5 lässt auf /logout/ nur POST zu. Als Link (GET) gab es eine leere Seite, und die Sitzung blieb bestehen.{% endcomment %}
+            <form method="post" action="/logout/">{% csrf_token %}
+                <button type="submit" class="fw-profil-link crit">{% zeichen 'extern' %} {% trans "Abmelden" %}</button>
+            </form>
         </div>
 
         {% if messages %}

@@ -183,6 +183,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # Angemeldete Seiten nie zwischenspeichern: Nach dem Abmelden zeigt «Zurück» im Browser sonst die alte Seite.
+    'core.middleware_cache.AngemeldetNichtZwischenspeichern',
     # NACH der Authentifizierung, weil die Sprache am Benutzer haengt und den
     # erst diese Schicht kennt.
     #
