@@ -38508,3 +38508,9 @@ msgstr "LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s (core/services/lik.
 
 msgid "Formularpflicht prüfen: Das Register (core/services/formularpflicht.py, Stand %(stand)s) wurde zuletzt am %(datum)s geprüft; das BWO gibt das Verzeichnis jedes Jahr neu heraus."
 msgstr "Formularpflicht prüfen: Das Register (core/services/formularpflicht.py, Stand %(stand)s) wurde zuletzt am %(datum)s geprüft; das BWO gibt das Verzeichnis jedes Jahr neu heraus."
+
+msgid "bexio (über importly.ch)"
+msgstr "bexio (über importly.ch)"
+
+msgid "bexio (über den Dienst importly.ch; bexio selbst importiert keine Buchungen per CSV)"
+msgstr "bexio (über den Dienst importly.ch; bexio selbst importiert keine Buchungen per CSV)"
