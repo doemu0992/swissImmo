@@ -50,7 +50,7 @@ WURZEL = pathlib.Path(settings.BASE_DIR)
 GEPRUEFT = {
     ('core/views/fw/kreditoren.py', 'kreditor'):
         'KreditorenZahlung.kreditor ist null=False — INNER JOIN.',
-    ('core/views/fw/aktionen.py', 'konto'):
+    ('core/views/fw/zahlungen_aktionen.py', 'konto'):
         'Der filter auf konto__nummer erzwingt INNER JOIN; select_related '
         'benutzt denselben Join weiter.',
 }
@@ -145,8 +145,8 @@ class ZeilensperrenTest(SimpleTestCase):
         brechen sie mit «FOR UPDATE cannot be applied to the nullable side of
         an outer join» ab, mit ihr laufen sie.
         """
-        for datei, feld in (('core/views/fw/listen.py', 'vertrag__mieter'),
-                            ('core/views/fw/aktionen.py', 'debitoren_rechnung')):
+        for datei, feld in (('core/views/fw/debitoren_aktionen.py', 'vertrag__mieter'),
+                            ('core/views/fw/zahlungen_aktionen.py', 'debitoren_rechnung')):
             with self.subTest(datei=datei):
                 treffer = [s for s in _stellen()
                            if s[0] == datei and feld in s[3]]

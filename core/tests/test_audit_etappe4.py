@@ -283,7 +283,8 @@ class Vertragsliste(TestCase):
         beliebig ordnen — ein Vertrag stünde dann auf zwei Seiten und ein
         anderer auf keiner. SQLite ordnet sie zufällig gleich, Postgres nicht;
         deshalb wird die Regel geprüft und nicht das Verhalten im Test."""
-        from core.views.fw.listen import PERSON_SORTEN, VERTRAG_SORTEN
+        from core.views.fw.personen_liste import PERSON_SORTEN
+        from core.views.fw.vertraege_liste import VERTRAG_SORTEN
         for name, sorten in (('Verträge', VERTRAG_SORTEN), ('Personen', PERSON_SORTEN)):
             for key, s in sorten.items():
                 self.assertIn(s.felder[-1], ('id', '-id'), f'{name}: Sortierung «{key}»')
