@@ -235,7 +235,7 @@ class StatuspilleTests(TestCase):
         cls.a = MandantenFixture('A', '8000', 'Zürich')
 
     def _pille(self, status, ende):
-        from core.views.fw.detailseiten import _vertrag_status_pill
+        from core.views.fw.objekt_detail import _vertrag_status_pill
         v = self.a.vertrag
         v.status = status
         v.ende = ende

@@ -823,7 +823,7 @@ class Lebensdauer(models.Model):
     # `phase-2-migration` lautet aber: global lassen nur dann, wenn niemand sie
     # je bearbeiten darf. Hier darf jeder:
     #
-    #     core/views/fw/detailseiten.py  'neu' → get_or_create
+    #     core/views/fw/ausstattung.py  'neu' → get_or_create
     #                                    'loeschen' → delete
     #                                    row.save() → „Lebensdauertabelle bearbeitet"
     #

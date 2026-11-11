@@ -82,7 +82,13 @@ from .person import *        # noqa: F401,F403 — Block 2
 from .profil import *        # noqa: F401,F403 — Block 2
 from .listen import *        # noqa: F401,F403 — Block 0
 from .aktionen import *      # noqa: F401,F403 — Block 1
-from .detailseiten import *  # noqa: F401,F403 — Block 0
+from .liegenschaft_detail import *  # noqa: F401,F403 — Detailseiten (ex detailseiten.py)
+from .objekt_detail import *  # noqa: F401,F403 — Detailseiten (ex detailseiten.py)
+from .ausstattung import *  # noqa: F401,F403 — Detailseiten (ex detailseiten.py)
+from .objekt_geraete import *  # noqa: F401,F403 — Detailseiten (ex detailseiten.py)
+from .sollmietzins import *  # noqa: F401,F403 — Detailseiten (ex detailseiten.py)
+from .vertrag_detail import *  # noqa: F401,F403 — Detailseiten (ex detailseiten.py)
+from .schlussabrechnung import *  # noqa: F401,F403 — Detailseiten (ex detailseiten.py)
 # Der Stern-Import überträgt KEINE Namen mit führendem Unterstrich. Diese
 # neun werden aber von aussen gebraucht (core/tests.py,
 # core/services/abschluss_pdf.py) und müssen deshalb einzeln stehen.
@@ -102,6 +108,6 @@ from .bankabgleich import (                            # noqa: F401
     _camt_parse,
 )
 from .buchhaltung import _erfolg_bilanz                   # noqa: F401
-from .detailseiten import _formulare_prozesse             # noqa: F401
+from .vertrag_detail import _formulare_prozesse            # noqa: F401
 from .kuendigung import _auszugscheckliste_anlegen        # noqa: F401
 from .mietprozess import _bewerber_mail                   # noqa: F401
