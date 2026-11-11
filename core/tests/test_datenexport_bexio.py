@@ -92,10 +92,11 @@ class BexioTests(_Basis):
             else:
                 self.assertEqual(z[9], '')
 
-    def test_lange_texte_werden_auf_die_grenzen_gekuerzt(self):
+    def test_laengster_text_bleibt_unversehrt_und_die_grenzen_gelten(self):
+        """Das Buchungsfeld fasst höchstens 255 Zeichen (PostgreSQL lehnt mehr ab): genau so lang darf die Beschreibung sein."""
         from finance.models import Buchung
         with organisation_kontext(self.org):
-            Buchung.objects.create(datum=date(2024, 3, 3), beleg_text='x' * 400, soll_konto=self.bank,
+            Buchung.objects.create(datum=date(2024, 3, 3), beleg_text='x' * 255, soll_konto=self.bank,
                                    haben_konto=self.ertrag, betrag=Decimal('5.00'))
         lang = [z for z in self._zeilen()[1:] if z[2].startswith('xxx')][0]
         self.assertEqual(len(lang[2]), 255)
