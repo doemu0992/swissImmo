@@ -4,7 +4,7 @@ Befund beim Entfernen der Django-Admin (07.11.2026): Der Wächter `test_felder_o
 Die Nebenkostenabrechnung liest es (Öl-Einkäufe in `core/utils/billing.py`, Chip im NK-Wizard), eingeben liess es sich nur
 in der Admin. Jetzt steht es im Erfassen- und im Bearbeiten-Formular.
 
-Gegenprobe: `menge_liter` aus `KreditorForm` oder aus den beiden Ansichten (`aktionen.py`) streichen -> `test_erfassen_*`
+Gegenprobe: `menge_liter` aus `KreditorForm` oder aus den beiden Ansichten (`kreditoren_aktionen.py`) streichen -> `test_erfassen_*`
 bzw. `test_bearbeiten_*` rot; die Eingabe im Template streichen -> `test_die_felder_stehen_in_beiden_formularen` rot.
 """
 from decimal import Decimal

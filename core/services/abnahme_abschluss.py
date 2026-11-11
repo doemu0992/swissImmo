@@ -25,7 +25,7 @@ from django.utils import timezone
 from django.utils.translation import gettext
 
 #: Titel der Fristpendenz. Derselbe Wortlaut wie in der Auszugscheckliste der
-#: Kündigung (core/views/fw/kuendigung.py), damit beide Wege dieselbe Pendenz
+#: Kündigung (core/views/fw/kuendigung_erfassen.py), damit beide Wege dieselbe Pendenz
 #: finden statt eine zweite anzulegen.
 RUEGE_TITEL = "Mängelrüge Art. 267a: sofort nach Abnahme versenden"
 #: Stichwort für `erledige_pendenzen_fuer` und den Fall «Mieterwechsel».

@@ -191,3 +191,22 @@ allein.
 ---
 
 Danach ist `core/tests.py` (16'670 Zeilen, 221 Klassen) an der Reihe — nach Fachgebiet **und Laufzeit**, sonst blockieren die langsamen Tests später die CI. Zur Grössenordnung: Der volle Lauf dauert derzeit rund **8½ Minuten**.
+
+---
+
+## Nachtrag (11.11.2026, Roadmap 6.6): die vier grössten Dateien sind zerlegt
+
+Reiner Umzug ohne Verhaltensänderung (URL-Namen, Funktionskörper und Tests unverändert; belegt durch Vergleich der URL-Auflösung
+vor/nachher und die volle Suite). Ältere Abschnitte und Audit-Berichte nennen die alten Dateinamen weiter; sie sind
+Zeitdokumente. Wo eine Funktion heute liegt:
+
+| Alte Datei | Neue Module in `core/views/fw/` |
+|---|---|
+| `detailseiten.py` | `liegenschaft_detail`, `objekt_detail`, `ausstattung`, `objekt_geraete`, `sollmietzins`, `vertrag_detail`, `schlussabrechnung` |
+| `listen.py` | `debitoren_liste`, `debitoren_aktionen`, `liegenschaften_liste`, `berichte`, `objekte_liste`, `vertraege_liste`, `personen_liste` |
+| `aktionen.py` | `kreditoren_aktionen`, `stammdaten_aktionen`, `buchungen_aktionen`, `kommunikation_aktionen`, `einstellungen_aktionen`, `zahlungen_aktionen` |
+| `kuendigung.py` | `kuendigung_erfassen`, `verzug_257d`, `kuendigung_bestaetigung`, `mietverfahren`, `zahlungsvereinbarung`, `dokument_zustellung` |
+
+Die Fassade `core/views/fw/__init__.py` hängt alle Module ein; wer eine View sucht, findet sie mit
+`grep -rn "def fw_<name>" core/views/fw/`. Namen mit führendem Unterstrich exportiert `import *` nicht: Wird ein solcher Helfer
+über Modulgrenzen benutzt, steht der Import ausdrücklich am Kopf des benutzenden Moduls.

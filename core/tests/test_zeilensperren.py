@@ -8,8 +8,8 @@ Sperre:
 
     FOR UPDATE cannot be applied to the nullable side of an outer join
 
-Betroffen waren «Forderung abschreiben» (`listen.py`) und «Zahlungseingang
-stornieren» (`aktionen.py`). Jeder dieser Klicks hätte in der Produktion einen
+Betroffen waren «Forderung abschreiben» (`debitoren_aktionen.py`) und «Zahlungseingang
+stornieren» (`zahlungen_aktionen.py`). Jeder dieser Klicks hätte in der Produktion einen
 Fehler geworfen. **SQLite ignoriert `FOR UPDATE` stillschweigend** — deshalb
 war es hier nie zu sehen, und deshalb steht dieser Wächter im Quelltext statt
 in einer Datenbankabfrage.
@@ -24,7 +24,7 @@ WAS «OPTIONAL» HIER HEISST — UND WAS NICHT
 
 Die Nullbarkeit des Feldes allein entscheidet nicht. Beim Bau dieses Tests
 stellte sich heraus (auf echtem PostgreSQL nachgemessen), dass
-`aktionen.py` die Sammelzuordnung trotz optionalem `konto` **keinen** LEFT
+`zahlungen_aktionen.py` die Sammelzuordnung trotz optionalem `konto` **keinen** LEFT
 JOIN erzeugt: Ein `filter(konto__nummer__in=…)` kann nur mit vorhandenem Konto
 erfüllt sein, also joint Django INNER, und `select_related('konto')` benutzt
 denselben Join weiter. Eine Prüfung, die bloss «Feld ist null=True» zählt,
