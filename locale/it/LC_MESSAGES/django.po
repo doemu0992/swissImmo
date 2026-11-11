@@ -40191,3 +40191,15 @@ msgstr "Fattura aggiuntiva"
 
 msgid "wird mit der nächsten Rechnung verrechnet"
 msgstr "verrà compensato con la prossima fattura"
+
+msgid "Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen."
+msgstr "Troppi tentativi falliti. Riprovare tra 15 minuti."
+
+msgid "Benutzername oder Passwort stimmt nicht."
+msgstr "Nome utente o password non corretti."
+
+msgid "Zu viele Fehlversuche. Bitte von vorne anmelden."
+msgstr "Troppi tentativi falliti. Effettuare nuovamente l'accesso dall'inizio."
+
+msgid "Der Code stimmt nicht (%(n)s von %(max)s)."
+msgstr "Il codice non è corretto (%(n)s su %(max)s)."

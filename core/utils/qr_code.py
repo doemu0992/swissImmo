@@ -4,7 +4,7 @@ import os
 import re
 import segno
 import reportlab.lib.utils
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 
 from reportlab.lib.units import mm
 from reportlab.pdfbase.pdfmetrics import stringWidth
@@ -102,15 +102,15 @@ def adressblock(daten, pflicht=True):
             plz[:16], ort[:35], (daten.get('land') or 'CH')[:2]]
 
 
-def ist_qr_iban(iban):
-    """QR-IBAN: Institut-ID (Stellen 5–9) im Bereich 30000–31999."""
-    raw = (iban or "").replace(" ", "").upper()
-    if len(raw) < 9 or not raw.startswith("CH"):
-        return False
-    try:
-        return 30000 <= int(raw[4:9]) <= 31999
-    except ValueError:
-        return False
+# Eine einzige Definition: `core.services.iban.ist_qr_iban` (prüft Länge, CH/LI und die Kennung 30000–31999).
+from core.services.iban import ist_qr_iban  # noqa: E402,F401  (hier weiter importierbar)
+
+
+def betrag_payload(amount):
+    """Betrag für den QR-Code: zwei Stellen, kaufmännisch gerundet, ohne Umweg über `float` (0.125 → 0.13, nicht 0.12)."""
+    if amount is None:
+        return ""
+    return str(Decimal(str(amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
 class QrReferenzFehlt(ValueError):
@@ -458,7 +458,7 @@ def draw_qr_bill(c, iban, creditor, debtor, amount, reason, reference=None, spra
         "SPC", "0200", "1", raw_iban,
         *adressblock(creditor),
         "", "", "", "", "", "", "",
-        f"{amount:.2f}" if amount is not None else "", "CHF",
+        betrag_payload(amount), "CHF",
         *adressblock(debtor, pflicht=False),
         ref_typ, ref_val, reason[:140], "EPD", *av
     ])
@@ -513,7 +513,7 @@ def generate_mieter_qr_pdf(mieter, vertrag, verwaltung):
     c.drawString(20*mm, 235*mm, "Bitte verwenden Sie den untenstehenden Einzahlungsschein für Ihre Überweisung.")
 
     # 3. QR-Funktion aufrufen (zeichnet unten den Zahlteil)
-    draw_qr_bill(c, iban, creditor, debtor, float(amount), reason, reference=ref, sprache=sprache_von(mieter))
+    draw_qr_bill(c, iban, creditor, debtor, amount, reason, reference=ref, sprache=sprache_von(mieter))
 
     c.save()
 

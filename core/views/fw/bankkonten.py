@@ -35,15 +35,9 @@ def _iban_format(iban):
 
 
 def _ist_qr_iban(iban):
-    """QR-IBAN: Institut-ID (Stellen 5–9) im Bereich 30000–31999 (Schweizer QR-IID)."""
-    s = _iban_clean(iban)
-    if len(s) < 9 or not s.startswith(('CH', 'LI')):
-        return False
-    try:
-        iid = int(s[4:9])
-    except ValueError:
-        return False
-    return 30000 <= iid <= 31999
+    """Eine Definition für alle: `core.services.iban.ist_qr_iban`."""
+    from core.services.iban import ist_qr_iban
+    return ist_qr_iban(iban)
 
 
 @rolle_erforderlich(*FINANZ_LESE_ROLLEN)

@@ -110,7 +110,7 @@ def abo_rechnung_pdf(rechnung):
     c.drawString(20 * mm, zeile - 19 * mm, 'Zu bezahlen')
     c.drawRightString(190 * mm, zeile - 19 * mm, _chf(total))
 
-    draw_qr_bill(c, iban, creditor, debtor, float(total),
+    draw_qr_bill(c, iban, creditor, debtor, total,
                  f'Abonnement {rechnung.nummer}', reference=rechnung.qr_referenz)
     c.showPage()
     c.save()

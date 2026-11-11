@@ -4,7 +4,7 @@ Linie in der Akzentfarbe der Organisation. Werte aus `briefkopf` (core/services/
 fehlt er, greift der Absender des Dokuments (`vermieter_*`, `verwaltung`).
 {% endcomment %}{% firstof briefkopf.firma vermieter_name verwaltung.firma as name %}
 <table class="bk"><tr>
-    <td class="bk-l">{% if briefkopf.logo_pfad %}<img src="{{ briefkopf.logo_pfad }}"{% if briefkopf.logo_hoehe %} width="{{ briefkopf.logo_breite|stringformat:".1f" }}pt" height="{{ briefkopf.logo_hoehe|stringformat:".1f" }}pt"{% else %} height="40"{% endif %}>{% else %}<span class="bk-name">{{ name }}</span>{% endif %}</td>
+    <td class="bk-l">{% if briefkopf.logo_pfad %}<img src="{{ briefkopf.logo_pfad }}" alt="{{ name }}"{% if briefkopf.logo_hoehe %} width="{{ briefkopf.logo_breite|stringformat:".1f" }}pt" height="{{ briefkopf.logo_hoehe|stringformat:".1f" }}pt"{% else %} height="40"{% endif %}>{% else %}<span class="bk-name">{{ name }}</span>{% endif %}</td>
     <td class="bk-r">{% if briefkopf.logo_pfad %}<b>{{ name }}</b><br>{% endif %}{% if briefkopf.strasse %}{{ briefkopf.strasse }}<br>{{ briefkopf.plz_ort }}{% elif vermieter_strasse %}{{ vermieter_strasse }}<br>{{ vermieter_plz }} {{ vermieter_ort }}{% elif verwaltung.strasse %}{{ verwaltung.strasse }}<br>{{ verwaltung.plz }} {{ verwaltung.ort }}{% endif %}{% if briefkopf.telefon %}<br>{{ briefkopf.telefon }}{% endif %}{% if briefkopf.email %}<br>{{ briefkopf.email }}{% endif %}</td>
 </tr></table>
 
