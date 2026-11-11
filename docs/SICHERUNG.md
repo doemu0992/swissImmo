@@ -436,3 +436,10 @@ Rückstand); `requirements.txt` steht seither auf den kleinsten Fassungen ohne b
   **und** PostgreSQL, danach `deploy.sh`. Hauptversionssprünge (Pillow 13, cryptography 50) nur,
   wenn die behobene Fassung nur dort liegt, und mit den PDF-Tests (`reportlab`, `xhtml2pdf`,
   `pyHanko`) im Lauf.
+
+## Sicherung vor einer Migration (automatisch)
+
+`deploy.sh` legt vor `migrate` eine Sicherung der Datenbank ab, **wenn Migrationen ausstehen**: Ordner
+`~/sicherungen/vor-migration/` (Umgebung `SICHERUNG_VOR_MIGRATION`), die letzten 5 Stände, ohne Medien. Scheitert sie, läuft
+kein `migrate`, und der Deploy rollt zurück. Nur für einen Notfall-Hotfix lässt sich das mit `DEPLOY_OHNE_SICHERUNG=1`
+überspringen. Zurückspielen: wie unter «Wiederherstellung» oben, mit der Datei aus diesem Ordner.
