@@ -67,7 +67,7 @@ HUELLE = {
     ],
     'Verweise': [
         '/neu/einstellungen/{{ lg_query }}', '/neu/dokumente/{{ lg_query }}',
-        '/neu/kommunikation/{{ lg_query }}', 'href="/logout/"', '{{ g.ziel }}{{ lg_query }}',
+        '/neu/kommunikation/{{ lg_query }}', 'action="/logout/"', '{{ g.ziel }}{{ lg_query }}',
         '{{ it.ziel }}{{ lg_query }}',
     ],
     'Kontextwerte': [
