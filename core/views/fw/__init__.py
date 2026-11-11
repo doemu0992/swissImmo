@@ -9,8 +9,12 @@
 # unverändert — jeder Block ist für sich zurückrollbar.
 #
 # Etappe 1 ist abgeschlossen: Es gibt keine Restdatei mehr. Die 232 Views
-# liegen in 33 Fachmodulen, die blockübergreifenden Helfer in `_basis.py`.
-# Was hier steht, ist nur noch die Fassade.
+# liegen in Fachmodulen, die blockübergreifenden Helfer in `_basis.py`.
+# Was hier steht, ist nur noch die Fassade. Nachtrag (Roadmap 6.6, 11.11.2026):
+# Die vier grössten Dateien (`detailseiten.py`, `listen.py`, `aktionen.py`,
+# `kuendigung.py`) sind in 26 Module unter Namen wie `vertrag_detail`,
+# `debitoren_liste`, `zahlungen_aktionen`, `verzug_257d` zerlegt; Zuordnung in
+# docs/ETAPPE-1-ZERLEGEN.md («Nachtrag»).
 
 # Herausgeloeste Bloecke, alphabetisch. Die Blocknummern aus dem
 # Arbeitsauftrag stehen hier bewusst NICHT: Sie zaehlen die Kommentarbanner

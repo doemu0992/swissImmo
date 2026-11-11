@@ -260,6 +260,9 @@ def fw_daten_export_journal(request):
         # Banana liest «Text file with column headers»; Tabulator-getrennt, daher .txt statt .csv.
         antwort = HttpResponse(text, content_type='text/plain; charset=utf-8')
         antwort['Content-Disposition'] = f'attachment; filename="Banana_Buchungen_{von:%Y%m%d}_{bis:%Y%m%d}.txt"'
+    elif preset == datenexport.BEXIO:
+        antwort = HttpResponse(text, content_type='text/csv; charset=utf-8')
+        antwort['Content-Disposition'] = f'attachment; filename="bexio_Buchungen_{von:%Y%m%d}_{bis:%Y%m%d}.csv"'
     else:
         antwort = HttpResponse(text, content_type='text/csv; charset=utf-8')
         antwort['Content-Disposition'] = f'attachment; filename="Buchungsjournal_{von:%Y%m%d}_{bis:%Y%m%d}.csv"'

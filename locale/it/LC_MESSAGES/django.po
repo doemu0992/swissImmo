@@ -40212,3 +40212,9 @@ msgstr "Integrare la tabella dell'IPC: termina nel mese %(stand)s (core/services
 
 msgid "Formularpflicht prüfen: Das Register (core/services/formularpflicht.py, Stand %(stand)s) wurde zuletzt am %(datum)s geprüft; das BWO gibt das Verzeichnis jedes Jahr neu heraus."
 msgstr "Verificare l'obbligo del formulario: il registro (core/services/formularpflicht.py, stato %(stand)s) è stato verificato l'ultima volta il %(datum)s; l'UFAB pubblica l'elenco ogni anno."
+
+msgid "bexio (über importly.ch)"
+msgstr "bexio (tramite importly.ch)"
+
+msgid "bexio (über den Dienst importly.ch; bexio selbst importiert keine Buchungen per CSV)"
+msgstr "bexio (tramite il servizio importly.ch; bexio stesso non importa registrazioni via CSV)"

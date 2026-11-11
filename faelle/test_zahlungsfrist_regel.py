@@ -80,7 +80,7 @@ class ZahlungsfristTest(TestCase):
         Geltungsbereich: Die Frist gilt für Wohn- UND Geschäftsräume.» Beide
         genannten Fälle stimmen — der dritte fehlte.
 
-        `core/views/fw/kuendigung.py` rechnet seit jeher
+        `core/views/fw/verzug_257d.py` rechnet seit jeher
         `min_frist = 30 if v.ist_geschuetzt else 10`, und `ist_geschuetzt`
         ist `mietrecht_kategorie in ('wohnen', 'gewerbe')`. Bei einem
         gesondert vermieteten Parkplatz sind es zehn Tage.

@@ -4,7 +4,7 @@ WARUM ES DIESE APP GIBT
 
 Ein Mieterwechsel läuft vier Monate über Kündigung, Bestätigung, Ausschreibung,
 Bewerbung, Abnahme und Endabrechnung. Diese Schritte gibt es im Bestand
-längst — `core/views/fw/kuendigung.py`, `mietprozess.py`, `abnahme.py`,
+längst — `core/views/fw/kuendigung_erfassen.py`, `verzug_257d.py`, `mietprozess.py`, `abnahme.py`,
 `vertragserstellung.py`. Was fehlte, ist die Klammer: Status, Zuständigkeit und
 Frist des **Gesamtvorgangs**. Bisher lag beides im Kopf der Bewirtschaftung.
 

@@ -1,7 +1,7 @@
 """Forderungsverlust: eine uneinbringliche Debitorenrechnung auf 3805 abschreiben.
 
 Die Buchungslogik stand bis 26.10.2026 nur in der Ansicht
-`fw_debitor_abschreiben` (core/views/fw/listen.py). Die Betreibung braucht sie
+`fw_debitor_abschreiben` (core/views/fw/debitoren_aktionen.py). Die Betreibung braucht sie
 ein zweites Mal — beim Verlustschein werden die offenen Beträge ihrer
 Forderungen automatisch abgeschrieben. Zwei Kopien von Buchungscode driften
 auseinander (die MWST-Korrektur unten ist genau so ein Teil, der in einer

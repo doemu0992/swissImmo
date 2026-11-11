@@ -152,7 +152,7 @@ class VertragsaktenMonatFolgtDerSpracheTests(TestCase):
 class AuswertungMonatskuerzelFolgenDerSpracheTests(TestCase):
     """Die Monatsleiste der Auswertung kürzt in der gewählten Sprache.
 
-    Vorher `strftime('%b')` in core/views/fw/listen.py — Server-Locale, also
+    Vorher `strftime('%b')` in core/views/fw/berichte.py — Server-Locale, also
     «Mar», «May», «Oct» auch in der deutschen Oberfläche.
 
     Gegenprobe: `dateformat.format(..., 'M')` zurück auf `strftime('%b')` —

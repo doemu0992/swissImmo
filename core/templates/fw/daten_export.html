@@ -34,6 +34,7 @@ Die Überschriften und die Kontenzuordnung stehen NICHT im Code: Sie gehören de
                 <legend class="fw-label">{% trans "Format" %}</legend>
                 <label class="fw-haekchen"><input type="radio" name="preset" value="" class="fw-akzent" checked>{% trans "Freie Zuordnung (Überschriften und Format unten einstellbar, für Abacus und andere)" %}</label>
                 <label class="fw-haekchen"><input type="radio" name="preset" value="banana" class="fw-akzent" data-testid="daten-preset-banana">{% trans "Banana Buchhaltung (feste Vorgabe von Banana)" %}</label>
+                <label class="fw-haekchen"><input type="radio" name="preset" value="bexio" class="fw-akzent" data-testid="daten-preset-bexio">{% trans "bexio (über den Dienst importly.ch; bexio selbst importiert keine Buchungen per CSV)" %}</label>
             </fieldset>
             <p class="fw-mutet">{% trans "Freie Zuordnung: Spalten Buchungsdatum, Belegnummer, Soll, Haben, Betrag, Text, MWST-Code (Überschriften unten einstellbar). Stornobuchungen stehen als eigene Zeilen. Es werden nur Buchungen gelesen, nichts wird verändert." %}</p>
             <div class="fw-hinweis info" data-testid="daten-banana-hinweis">

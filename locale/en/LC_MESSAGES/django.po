@@ -39617,3 +39617,9 @@ msgstr "Update the CPI table: it ends in the month %(stand)s (core/services/lik.
 
 msgid "Formularpflicht prüfen: Das Register (core/services/formularpflicht.py, Stand %(stand)s) wurde zuletzt am %(datum)s geprüft; das BWO gibt das Verzeichnis jedes Jahr neu heraus."
 msgstr "Check the form requirement: the register (core/services/formularpflicht.py, as of %(stand)s) was last checked on %(datum)s; the FOH publishes the directory every year."
+
+msgid "bexio (über importly.ch)"
+msgstr "bexio (via importly.ch)"
+
+msgid "bexio (über den Dienst importly.ch; bexio selbst importiert keine Buchungen per CSV)"
+msgstr "bexio (via the importly.ch service; bexio itself does not import bookings from CSV)"
