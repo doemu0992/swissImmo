@@ -388,7 +388,7 @@ class VertragsseiteTests(Basis):
         self.assertTrue(formular == -1 or vorort < formular)
 
     def test_aktionsliste_fuehrt_vor_ort(self):
-        from core.views.fw.detailseiten import _formulare_prozesse
+        from core.views.fw.vertrag_detail import _formulare_prozesse
         urls = [it['url'] for g in _formulare_prozesse(self.v) for it in g['items'] if it['titel'] == 'Wohnungsabnahme']
         self.assertEqual(urls, [f'/neu/vertraege/{self.v.id}/abnahme/vorort/'])
 

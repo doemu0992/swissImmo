@@ -52,7 +52,13 @@ AUSGEZEICHNET = (
     # Teil C
     'core/views/email_views.py',
     'core/views/fw/aktionen.py',
-    'core/views/fw/detailseiten.py',
+    'core/views/fw/ausstattung.py',
+    'core/views/fw/liegenschaft_detail.py',
+    'core/views/fw/objekt_detail.py',
+    'core/views/fw/objekt_geraete.py',
+    'core/views/fw/schlussabrechnung.py',
+    'core/views/fw/sollmietzins.py',
+    'core/views/fw/vertrag_detail.py',
     'core/views/fw/hypotheken.py',
     'core/views/fw/kuendigung.py',
     'core/views/fw/mahnwesen.py',
@@ -138,7 +144,7 @@ class MeldungFolgtDerSpracheTests(TestCase):
     def test_zusammengesetzte_meldung_franzoesisch(self):
         # Teil D: vorher `f"✅ {n} Wert(e) aktualisiert." if n else "Keine Änderung."`
         # — eine Bedingung im Ausdruck, am Konverter vorbei deutsch geblieben.
-        # Gegenprobe: den `else`-Zweig in detailseiten.py zurück auf das
+        # Gegenprobe: den `else`-Zweig in ausstattung.py zurück auf das
         # Literal — der Test wird rot.
         self.c.post('/i18n/setlang/', {'language': 'fr', 'next': '/neu/'})
         seite = self.c.post('/neu/lebensdauer/', {'aktion': 'speichern'}, follow=True)

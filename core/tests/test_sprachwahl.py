@@ -117,7 +117,7 @@ class MonatsnamenFolgenDerSpracheTests(TestCase):
 class VertragsaktenMonatFolgtDerSpracheTests(TestCase):
     """Der Aktenkopf des Vertrags nennt den ältesten offenen Monat in der
     gewählten Sprache — derselbe Fehler wie in der Sollstellung, an zweiter
-    Stelle: `strftime('%B %Y')` in core/views/fw/detailseiten.py lieferte
+    Stelle: `strftime('%B %Y')` in core/views/fw/vertrag_detail.py lieferte
     «May 2024» auch in der deutschen Oberfläche.
 
     Gegenprobe: `dateformat.format(..., 'F Y')` zurück auf
