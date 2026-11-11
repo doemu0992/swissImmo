@@ -40274,3 +40274,12 @@ msgstr "Trop de tentatives échouées. Veuillez vous reconnecter depuis le débu
 
 msgid "Der Code stimmt nicht (%(n)s von %(max)s)."
 msgstr "Le code est incorrect (%(n)s sur %(max)s)."
+
+msgid "kein Monat"
+msgstr "aucun mois"
+
+msgid "LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s (core/services/lik.py)."
+msgstr "Compléter le tableau de l'IPC : il s'arrête au mois %(stand)s (core/services/lik.py)."
+
+msgid "Formularpflicht prüfen: Das Register (core/services/formularpflicht.py, Stand %(stand)s) wurde zuletzt am %(datum)s geprüft; das BWO gibt das Verzeichnis jedes Jahr neu heraus."
+msgstr "Vérifier l'obligation de formule : le registre (core/services/formularpflicht.py, état %(stand)s) a été vérifié pour la dernière fois le %(datum)s ; l'OFL publie le répertoire chaque année."

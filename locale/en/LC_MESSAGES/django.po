@@ -39608,3 +39608,12 @@ msgstr "Too many failed attempts. Please sign in again from the start."
 
 msgid "Der Code stimmt nicht (%(n)s von %(max)s)."
 msgstr "The code is incorrect (%(n)s of %(max)s)."
+
+msgid "kein Monat"
+msgstr "no month"
+
+msgid "LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s (core/services/lik.py)."
+msgstr "Update the CPI table: it ends in the month %(stand)s (core/services/lik.py)."
+
+msgid "Formularpflicht prüfen: Das Register (core/services/formularpflicht.py, Stand %(stand)s) wurde zuletzt am %(datum)s geprüft; das BWO gibt das Verzeichnis jedes Jahr neu heraus."
+msgstr "Check the form requirement: the register (core/services/formularpflicht.py, as of %(stand)s) was last checked on %(datum)s; the FOH publishes the directory every year."

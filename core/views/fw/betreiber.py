@@ -16,9 +16,10 @@ from core.services import betreiber
 
 @rolle_erforderlich(*BETREIBER_ROLLEN)
 def fw_betreiber(request):
+    from core.services import datenpflege
     zeilen = betreiber.kunden()
     return render(request, 'fw/betreiber.html', {
-        'aktiv': 'kunden', 'kunden': zeilen,
+        'aktiv': 'kunden', 'kunden': zeilen, 'pflege': datenpflege.faellig(datum_heute()),
         'mit_befund': sum(1 for k in zeilen if k.befunde),
     })
 

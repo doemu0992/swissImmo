@@ -40203,3 +40203,12 @@ msgstr "Troppi tentativi falliti. Effettuare nuovamente l'accesso dall'inizio."
 
 msgid "Der Code stimmt nicht (%(n)s von %(max)s)."
 msgstr "Il codice non è corretto (%(n)s su %(max)s)."
+
+msgid "kein Monat"
+msgstr "nessun mese"
+
+msgid "LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s (core/services/lik.py)."
+msgstr "Integrare la tabella dell'IPC: termina nel mese %(stand)s (core/services/lik.py)."
+
+msgid "Formularpflicht prüfen: Das Register (core/services/formularpflicht.py, Stand %(stand)s) wurde zuletzt am %(datum)s geprüft; das BWO gibt das Verzeichnis jedes Jahr neu heraus."
+msgstr "Verificare l'obbligo del formulario: il registro (core/services/formularpflicht.py, stato %(stand)s) è stato verificato l'ultima volta il %(datum)s; l'UFAB pubblica l'elenco ogni anno."
