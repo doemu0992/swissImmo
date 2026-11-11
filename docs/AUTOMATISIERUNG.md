@@ -14,6 +14,8 @@ Basis-Kommando (Pfad/venv anpassen):
 | `jahresabschluss_lauf` | jährlich (2. Januar) | Lineare Abschreibungen (AfA) + Erneuerungsfonds-Einlagen fürs Vorjahr. `--jahr` überschreibt |
 | `fetch_plattform_eingang --einmal` | so oft wie möglich, ideal jede Minute (Scheduled Task im kürzesten Takt, den der Tarif erlaubt) | Holt Antworten auf Tickets und Rechnungen aus dem Plattform-Postfach (Hoststar-Sammelpostfach, Catch-all), siehe `docs/ANTWORTADRESSEN.md`, Variante A. Ohne `PLATTFORM_IMAP_*` in der `.env` meldet er das und beendet sich |
 | `fetch_plattform_eingang --dauerlauf` | Always-on-Task (Schleife alle 60 s im Befehl selbst) | Dasselbe als Dauerläufer, beendet sich sauber bei SIGTERM/SIGINT. Nur eine der beiden Formen einrichten. Nach Änderungen der `.env` den Task neu starten |
+| `log_kette_anker --mail ADRESSE` | täglich (z.B. 04:30) | Legt den Kopf der Hash-Kette des Audit-Logs je Verwaltung als Ankerpunkt ab (`~/sicherungen/anker/anker-<Datum>.jsonl`, optional per Mail an eine Adresse ausserhalb der Datenbank). Bricht ab, wenn die Kette nicht stimmt. Siehe unten «Hash-Kette im Audit-Log» |
+| `log_kette_pruefen [--anker DATEI]` | wöchentlich (z.B. So 04:45), vor Revisionen von Hand | Prüft die Kette (Lücken, geänderte Einträge, Einschleusungen); mit `--anker` zusätzlich gegen die abgelegten Ankerpunkte. Fehlercode 1 bei Befund |
 
 Alle Läufe sind **idempotent** — mehrfaches Ausführen erzeugt keine Duplikate.
 Jeder Lauf schreibt einen Eintrag ins Aktivitätslog (`AktivitaetsLog`).
@@ -406,3 +408,18 @@ weiter prüfen, der Personenbezug ist aber weg.
 Bewusst **nicht** im täglichen Lauf: Diese Anonymisierung ist endgültig und
 betrifft Menschen mit einer Vertragsgeschichte. Sie soll jemand auslösen, der
 vorher in die Vorschau geschaut hat.
+
+
+### Hash-Kette im Audit-Log
+
+Jeder Eintrag des Audit-Logs trägt eine laufende Nummer je Verwaltung und einen Hash, der den Hash des Vorgängers einschliesst
+(`core/log_kette.py`). Gelöschte, verschobene, eingeschleuste oder (in den gehashten Feldern) geänderte Einträge brechen die Kette;
+`log_kette_pruefen` meldet die Bruchstelle. Gehasht werden Verwaltung, Nummer, Zeitpunkt, Aktion, Ziel und Kategorie. Benutzer, Objekt,
+Details und IP gehören **nicht** dazu, weil Konto-Löschung und DSG-Anonymisierung sie legitim ändern.
+
+**Die Grenze:** Wer die Datenbank frei beschreiben kann, kann die ganze Kette neu berechnen. Dagegen hilft nur der **Anker ausserhalb**:
+`log_kette_anker` täglich laufen lassen und die Dateien (oder die Mails) ausser Haus aufbewahren; `log_kette_pruefen --anker <Datei>`
+vergleicht sie mit der Kette. Ohne Anker erkennt die Prüfung Brüche, aber keine vollständig neu gerechnete Kette.
+
+Einrichtung auf PythonAnywhere: zwei Scheduled Tasks (Befehle wie in der Tabelle oben, mit dem Python von `env313`). `--mail` mit einer
+Adresse, auf die der Betreiber der Datenbank keinen Schreibzugriff hat (etwa das Postfach eines Treuhänders).

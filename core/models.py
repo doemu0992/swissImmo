@@ -1,6 +1,7 @@
 from core.utils import get_smart_upload_path, get_current_lik, get_current_ref_zins
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from core.verschluesselt import VerschluesseltesCharField
 
 from core.tenancy import AlleOrganisationenManager, TenantManager, TenantQuerySet
@@ -431,6 +432,9 @@ class AktivitaetsLog(models.Model):
                                      editable=False, related_name='%(app_label)s_%(class)s',
                                      verbose_name='Organisation')
 
+    #: So oft wird ein Eintrag neu gesiegelt, wenn ein gleichzeitiger Eintrag derselben Verwaltung die Nummer vor ihm belegt hat.
+    KETTE_VERSUCHE = 40
+
     def save(self, *args, **kwargs):
         if self.pk is not None and not self._state.adding:
             from finance.db_schutz import ausnahme_aktiv
@@ -438,7 +442,40 @@ class AktivitaetsLog(models.Model):
                 raise PermissionError('Das Audit-Log ist nur anhängbar: Einträge lassen sich nicht ändern.')
         if self.organisation_id is None:
             self.organisation_id = organisation_bestimmen().pk
+        if self._state.adding and self.kette_nr is None:
+            return self._siegeln_und_speichern(*args, **kwargs)
         super().save(*args, **kwargs)
+
+    def _siegeln_und_speichern(self, *args, **kwargs):
+        """Hängt den Eintrag an die Hash-Kette seiner Verwaltung (`core/log_kette.py`).
+
+        Die Nummer ist je Verwaltung eindeutig (Constraint). Schreiben zwei Anfragen gleichzeitig, gewinnt eine; die andere
+        bekommt einen Integritätsfehler, liest den neuen Kopf und versucht es erneut — ohne Sperre, die eine längere
+        Geschäfts-Transaktion aufhalten würde. Der Versuch läuft in einem Sicherungspunkt, damit eine umgebende
+        Transaktion nicht als abgebrochen gilt."""
+        import random
+        import time
+
+        from django.db import IntegrityError, transaction
+
+        from core.log_kette import NULLHASH, kettenhash
+        letzter_fehler = None
+        for _versuch in range(self.KETTE_VERSUCHE):
+            kopf = (type(self).alle_organisationen.filter(organisation_id=self.organisation_id, kette_nr__isnull=False)
+                    .order_by('-kette_nr').values_list('kette_nr', 'kette_hash').first())
+            self.kette_nr = kopf[0] + 1 if kopf else 1
+            self.kette_hash = kettenhash(self, kopf[1] if kopf else NULLHASH)
+            try:
+                with transaction.atomic():
+                    super().save(*args, **kwargs)
+                return
+            except IntegrityError as fehler:
+                letzter_fehler = fehler
+                self.pk = None
+                self._state.adding = True
+                # Kleiner zufälliger Abstand, damit gleichzeitige Schreiber sich nicht im Gleichschritt erneut treffen.
+                time.sleep(random.uniform(0, 0.005 * (_versuch + 1)))
+        raise letzter_fehler
 
     def delete(self, *args, **kwargs):
         from finance.db_schutz import ausnahme_aktiv
@@ -446,7 +483,12 @@ class AktivitaetsLog(models.Model):
             raise PermissionError('Das Audit-Log ist nur anhängbar: Einträge lassen sich nicht löschen.')
         return super().delete(*args, **kwargs)
 
-    zeitpunkt = models.DateTimeField("Zeitpunkt", auto_now_add=True)
+    # `default` statt `auto_now_add`: Der Zeitpunkt steht beim Siegeln der Hash-Kette schon fest und geht in den Hash ein.
+    zeitpunkt = models.DateTimeField("Zeitpunkt", default=timezone.now, editable=False)
+    # Hash-Kette (core/log_kette.py): laufende Nummer je Verwaltung und Hash über Nummer, Zeitpunkt, Aktion, Ziel und den
+    # Hash des Vorgängers. Leer nur bei Einträgen aus der Zeit vor der Kette und bei solchen, die am Modell vorbei entstanden.
+    kette_nr = models.PositiveIntegerField("Nr. in der Kette", null=True, blank=True, editable=False)
+    kette_hash = models.CharField("Hash in der Kette", max_length=64, blank=True, default='', editable=False)
     benutzer = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
         null=True, blank=True, verbose_name="Benutzer"
@@ -481,6 +523,10 @@ class AktivitaetsLog(models.Model):
         verbose_name_plural = "Aktivitätslog"
         ordering = ['-zeitpunkt']
         indexes = [models.Index(fields=['ziel_typ', 'ziel_id'])]
+        constraints = [
+            models.UniqueConstraint(fields=['organisation', 'kette_nr'], condition=models.Q(kette_nr__isnull=False),
+                                    name='uniq_auditlog_kette_nr_je_organisation'),
+        ]
 
     # Kategorien, die als "kritisch" gelten (Löschungen, Geldbewegungen, Sicherheit).
     KRITISCH = {'geloescht', 'finanzen', 'sicherheit'}
