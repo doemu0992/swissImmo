@@ -40262,3 +40262,15 @@ msgstr "Facture complémentaire"
 
 msgid "wird mit der nächsten Rechnung verrechnet"
 msgstr "sera imputé sur la prochaine facture"
+
+msgid "Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen."
+msgstr "Trop de tentatives échouées. Veuillez réessayer dans 15 minutes."
+
+msgid "Benutzername oder Passwort stimmt nicht."
+msgstr "Le nom d'utilisateur ou le mot de passe est incorrect."
+
+msgid "Zu viele Fehlversuche. Bitte von vorne anmelden."
+msgstr "Trop de tentatives échouées. Veuillez vous reconnecter depuis le début."
+
+msgid "Der Code stimmt nicht (%(n)s von %(max)s)."
+msgstr "Le code est incorrect (%(n)s sur %(max)s)."

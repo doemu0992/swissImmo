@@ -176,7 +176,7 @@ Form Art. 266l · Rückgabe Art. 267/267a{% if vertrag.ist_geschuetzt %} · Kün
         <td class="platz sig-name">Mieter{% if vertrag.mitmieter or vertrag.mitmieter_name %} 1: {{ mieter.display_name }}{% endif %}</td>
     </tr>
     <tr>
-        <td class="platz sig-feld">{% if unterschrift_path %}<img src="{{ unterschrift_path }}" class="sigimg">{% else %}&nbsp;{% endif %}</td><td class="luecke">&nbsp;</td>
+        <td class="platz sig-feld">{% if unterschrift_path %}<img src="{{ unterschrift_path }}" class="sigimg" alt="Unterschrift">{% else %}&nbsp;{% endif %}</td><td class="luecke">&nbsp;</td>
         <td class="platz sig-feld"><span class="tag-sig">{% verbatim %}{{Unterschrift Mieter;role=Mieter;type=signature;required=true}}{% endverbatim %}</span></td>
     </tr>
     <tr><td class="platz sig-unter">Unterschrift</td><td class="luecke">&nbsp;</td><td class="platz sig-unter">Unterschrift</td></tr>

@@ -38487,3 +38487,15 @@ msgstr "Zusatzrechnung"
 
 msgid "wird mit der nächsten Rechnung verrechnet"
 msgstr "wird mit der nächsten Rechnung verrechnet"
+
+msgid "Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen."
+msgstr "Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen."
+
+msgid "Benutzername oder Passwort stimmt nicht."
+msgstr "Benutzername oder Passwort stimmt nicht."
+
+msgid "Zu viele Fehlversuche. Bitte von vorne anmelden."
+msgstr "Zu viele Fehlversuche. Bitte von vorne anmelden."
+
+msgid "Der Code stimmt nicht (%(n)s von %(max)s)."
+msgstr "Der Code stimmt nicht (%(n)s von %(max)s)."

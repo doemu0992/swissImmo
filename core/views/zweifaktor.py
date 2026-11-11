@@ -117,7 +117,7 @@ def zweifaktor_login(request, template_name='core/login.html'):
                     details='Zu viele Fehlversuche — Anmeldung vorübergehend gesperrt.')
         return render(request, template_name, {
             'next': weiter,
-            'fehler': 'Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen.'},
+            'fehler': gettext('Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen.')},
             status=429)
 
     benutzer = authenticate(request,
@@ -129,7 +129,7 @@ def zweifaktor_login(request, template_name='core/login.html'):
         # Die Meldung nennt bewusst nicht, WELCHER Teil falsch war.
         return render(request, template_name, {
             'next': weiter,
-            'fehler': 'Benutzername oder Passwort stimmt nicht.'}, status=200)
+            'fehler': gettext('Benutzername oder Passwort stimmt nicht.')}, status=200)
 
     zuruecksetzen(schl_name)
     faktor = ZweiterFaktor.objects.filter(benutzer=benutzer).first()
@@ -223,9 +223,9 @@ def zweifaktor_bestaetigen(request):
         _notiz_loeschen(request)
         return render(request, 'core/zweifaktor_bestaetigen.html', {
             'abgebrochen': True,
-            'fehler': 'Zu viele Fehlversuche. Bitte von vorne anmelden.'})
+            'fehler': gettext('Zu viele Fehlversuche. Bitte von vorne anmelden.')})
     return render(request, 'core/zweifaktor_bestaetigen.html', {
-        'fehler': f'Der Code stimmt nicht ({versuche} von {MAX_VERSUCHE}).'})
+        'fehler': gettext('Der Code stimmt nicht (%(n)s von %(max)s).') % {'n': versuche, 'max': MAX_VERSUCHE}})
 
 
 def _notfallcode_einloesen(benutzer, eingabe) -> bool:

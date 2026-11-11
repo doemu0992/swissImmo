@@ -39596,3 +39596,15 @@ msgstr "Additional invoice"
 
 msgid "wird mit der nächsten Rechnung verrechnet"
 msgstr "will be applied to the next invoice"
+
+msgid "Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen."
+msgstr "Too many failed attempts. Please try again in 15 minutes."
+
+msgid "Benutzername oder Passwort stimmt nicht."
+msgstr "Username or password is incorrect."
+
+msgid "Zu viele Fehlversuche. Bitte von vorne anmelden."
+msgstr "Too many failed attempts. Please sign in again from the start."
+
+msgid "Der Code stimmt nicht (%(n)s von %(max)s)."
+msgstr "The code is incorrect (%(n)s of %(max)s)."

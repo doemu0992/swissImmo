@@ -104,7 +104,7 @@ gehört ein Begleitbrief. Dieselbe Vorlage dient dem PDF, der Live-Vorschau und 
         <td class="platz sig-name">Mieter</td>
     </tr>
     <tr>
-        <td class="platz sig-feld">{% if unterschrift_path %}<img src="{{ unterschrift_path }}" class="sigimg">{% else %}&nbsp;{% endif %}</td><td class="luecke">&nbsp;</td>
+        <td class="platz sig-feld">{% if unterschrift_path %}<img src="{{ unterschrift_path }}" class="sigimg" alt="Unterschrift">{% else %}&nbsp;{% endif %}</td><td class="luecke">&nbsp;</td>
         <td class="platz sig-feld"><span class="tag-sig">{% verbatim %}{{Unterschrift Mieter;role=Mieter;type=signature;required=true}}{% endverbatim %}</span></td>
     </tr>
     <tr><td class="platz sig-unter">Unterschrift</td><td class="luecke">&nbsp;</td><td class="platz sig-unter">Unterschrift</td></tr>
