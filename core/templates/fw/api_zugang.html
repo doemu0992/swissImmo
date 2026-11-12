@@ -23,7 +23,7 @@ API-ZUGANG — Schlüssel für die lesende Finanz-API. Nur Inhaber. Der Klartext
     <div class="fw-kopf"><h3 class="fw-t">{% blocktrans with n=neuer_name %}Schlüssel «{{ n }}» angelegt{% endblocktrans %}</h3></div>
     <div class="fw-rumpf">
         <p class="fw-mutet">{% trans "Kopieren Sie den Schlüssel jetzt. Er wird nur dieses eine Mal angezeigt und lässt sich später nicht wieder abrufen." %}</p>
-        <input type="text" readonly value="{{ neuer_schluessel }}" class="fw-feld" data-testid="api-schluessel-text" onfocus="this.select()">
+        <input type="text" name="schluessel_anzeige" readonly value="{{ neuer_schluessel }}" class="fw-feld" data-testid="api-schluessel-text" aria-label="{% trans "Schlüssel" %}">
     </div>
 </div>
 {% endif %}

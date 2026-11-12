@@ -83,6 +83,8 @@ EIGENE_APPS = ('benutzer', 'core', 'crm', 'portfolio', 'rentals', 'finance', 'ti
 # Deshalb steht neben jedem der Grund, nicht nur der Name.
 # ---------------------------------------------------------------------------
 AUSNAHMEN = {
+    'fw_api_zugang_widerrufen': 'API-Schlüssel kommt nicht im MandantenFixture vor; Fremdzugriff = 404, geprüft in '
+                                'test_api_zugang.test_fremder_schluessel_ist_404_und_unberuehrt',
     'geschuetzte_media':      'Pfad statt ID — wird in Bauform C von Hand geprüft',
     'public_bewerbung':       'bewusst öffentlich (Bewerbungsformular für Interessenten)',
     'public_datenschutz':     'bewusst öffentlich (Datenschutzerklärung, P5)',
