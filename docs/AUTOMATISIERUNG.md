@@ -452,3 +452,21 @@ ALTER DEFAULT PRIVILEGES FOR ROLE swissimmo_migrate IN SCHEMA public
 
 Der Deploy braucht dann die Zugangsdaten der Migrationsrolle nur für den `migrate`-Schritt. Bei PythonAnywhere ist das ein
 Betreiber-Schritt (Rollen anlegen, Umgebungsvariablen von Web-App und Tasks umstellen); bis dahin meldet der Befehl den Ist-Zustand.
+
+## Lesende Finanz-API (`/api/v1/`)
+
+Für Treuhand und Buchhaltungssoftware: nur Lesen, nur die eigene Verwaltung. Anmeldung mit einem API-Schlüssel, nicht mit einem Konto.
+
+| Befehl | Zweck |
+|---|---|
+| `api_token_erstellen --organisation ID --name "Treuhand Muster AG"` | Neuer Schlüssel. Der Klartext (`imm_…`) erscheint einmal; gespeichert wird nur sein SHA-256-Hash |
+| `api_token_widerrufen` / `--id N` | Liste (mit «zuletzt benutzt») bzw. sofortiger Widerruf |
+
+Anlegen und Widerruf stehen im Logbuch (Kategorie Sicherheit). Abfragen: `Authorization: Bearer imm_…`.
+
+* `GET /api/v1/konten`: Kontenplan.
+* `GET /api/v1/buchungen?von=JJJJ-MM-TT&bis=JJJJ-MM-TT&offset=0&limit=100`: Journal nach Datum und Belegnummer, `limit` höchstens 500;
+  Stornobuchungen sind eigene Zeilen (`storno`, `storno_von_beleg_nr`).
+
+Grenzen: 120 Abfragen je Minute und Schlüssel (danach 429). Eine Sitzung ersetzt den Schlüssel nicht, und es gibt keine
+schreibenden Endpunkte. Jede Abfrage läuft im Mandantenkontext des Schlüssels.

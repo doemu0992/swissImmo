@@ -17,6 +17,7 @@ from core.auth import auth_lesen
 # mitsamt den Routern portfolio, crm, tickets und finance.
 from rentals.api import router as rentals_router
 from mietprozess.api import router as mietprozess_router
+from core.finanz_api import router as finanz_router
 
 # `auth=auth_lesen` bleibt als Standard stehen — nicht weil noch etwas darauf
 # angewiesen wäre, sondern als Sicherung: Käme je ein Endpunkt dazu, ohne dass
@@ -29,7 +30,7 @@ from mietprozess.api import router as mietprozess_router
 api = NinjaAPI(
     title="immoswiss API",
     version="2.0.0",
-    description="Nur noch öffentliche Endpunkte: Bewerbungsformular und DocuSeal-Webhook.",
+    description="Öffentliche Endpunkte (Bewerbungsformular, DocuSeal-Webhook) und die lesende Finanz-API unter /v1 mit API-Schlüssel.",
     auth=auth_lesen,
     docs_url=None,
     openapi_url=None,
@@ -37,6 +38,7 @@ api = NinjaAPI(
 
 api.add_router("/rentals", rentals_router)
 api.add_router("/mietprozess", mietprozess_router)
+api.add_router("/v1", finanz_router)
 
 
 # ========================================================

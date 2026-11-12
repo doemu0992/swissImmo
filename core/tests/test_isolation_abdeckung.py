@@ -129,6 +129,9 @@ class ErweiterterBestand(MandantenFixture):
         self._neu('kundenkontakt', lambda: KundenKontakt.alle_organisationen.create(
             organisation=org, zeitpunkt=timezone.now(), text=f'Notiz {k}'))
 
+        from core import api_token
+        self._neu('apitoken', lambda: api_token.erzeugen(org, f'Token {k}')[0])
+
         # --- Personen und Verträge ------------------------------------------------------------------------
         self._neu('mieteradresse', lambda: MieterAdresse.objects.create(
             organisation=org, mieter=self.mieter, gueltig_ab=heute))

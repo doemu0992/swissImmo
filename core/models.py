@@ -792,3 +792,37 @@ class DatenExportEinstellung(models.Model):
 
     def __str__(self):
         return f"Export-Einstellung {self.organisation_id}"
+
+
+class ApiToken(models.Model):
+    """Zugangsschlüssel für die lesende Finanz-API (`/api/v1/`), eine Verwaltung je Schlüssel.
+
+    Gespeichert wird nur der SHA-256-Hash; der Klartext erscheint genau einmal beim Anlegen
+    (`manage.py api_token_erstellen`). Der Schlüssel ist 256 Bit zufällig, ein schneller Hash reicht deshalb. Er ist reine
+    Leseberechtigung auf Konten, Journal und offene Debitoren dieser einen Verwaltung und wird mit dem Konto der
+    Verwaltung nicht verknüpft: Wer ihn hat, ist kein Benutzer."""
+    PRAEFIX = 'imm_'
+
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
+                                     related_name='api_token', verbose_name='Organisation')
+    name = models.CharField('Bezeichnung', max_length=100, help_text='Wofür der Schlüssel dient, z. B. «Treuhand Muster AG».')
+    schluessel_hash = models.CharField(max_length=64, unique=True, editable=False)
+    anfang = models.CharField('Anfang', max_length=12, editable=False, help_text='Erste Zeichen, damit man ihn wiedererkennt.')
+    erstellt_am = models.DateTimeField(default=timezone.now, editable=False)
+    zuletzt_benutzt = models.DateTimeField(null=True, blank=True, editable=False)
+    widerrufen_am = models.DateTimeField(null=True, blank=True, editable=False)
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    class Meta:
+        verbose_name = 'API-Schlüssel'
+        verbose_name_plural = 'API-Schlüssel'
+        ordering = ['-erstellt_am']
+
+    def __str__(self):
+        return f'{self.name} ({self.anfang}…)'
+
+    @property
+    def aktiv(self):
+        return self.widerrufen_am is None
