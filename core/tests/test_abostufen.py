@@ -151,7 +151,9 @@ class PreisseiteTests(TestCase):
 
     def test_keine_phantommerkmale(self):
         body = self._seite()
-        for verboten in ('API', ' GB', 'KI-Analysen', 'Premium'):
+        # «API» stand hier, solange es keine gab. Seit dem API-Zugang (Merkmal `api_zugang`, Enterprise) ist sie
+        # real und steht zu Recht in der Merkmalsliste; die Probe der übrigen Phantome bleibt.
+        for verboten in (' GB', 'KI-Analysen', 'Premium'):
             with self.subTest(verboten=verboten):
                 self.assertNotIn(verboten, body)
 
