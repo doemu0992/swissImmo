@@ -1033,9 +1033,11 @@ def mieter_konto_view(request):
     for z in zeilen:
         z['ist_zahlung'] = z['haben'] > 0
         z['betrag'] = z['haben'] if z['ist_zahlung'] else z['soll']
+    _vertraege, objekte = _mieter_objekte(mieter)
+    depots = [o for o in objekte if o['kaution']]
     return render(request, 'core/mieter_konto.html', {
         'mieter': mieter, 'zeilen': zeilen, 'endsaldo': endsaldo,
-        'saldo_abs': abs(endsaldo),
+        'saldo_abs': abs(endsaldo), 'depots': depots,
     })
 
 
@@ -1070,6 +1072,69 @@ def mieter_daten_view(request):
 
     anfragen = list(Aenderungsanfrage.objects.filter(mieter=mieter).order_by('-erstellt_am')[:10])
     return render(request, 'core/mieter_daten.html', {'mieter': mieter, 'anfragen': anfragen})
+
+
+@never_cache
+@login_required
+def mieter_anfragen_view(request):
+    """«Anfragen»: Mietbestätigung und Zahlungsplan-Wunsch. Beides bestätigt erst die Verwaltung.
+
+    Die Mietbestätigung (PDF) lässt sich nach der Bestätigung 30 Tage lang laden (`mieter_mietbestaetigung_pdf`)."""
+    from datetime import timedelta
+
+    from django.contrib import messages
+    from django.utils import timezone
+
+    from core.models import Aenderungsanfrage
+    from core.services import anfragen as dienst
+    from core.services.mietbestaetigung import GUELTIG_TAGE
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        return redirect('mieter_portal')
+    art_mb, art_zp = Aenderungsanfrage.ART_MIETBESTAETIGUNG, Aenderungsanfrage.ART_ZAHLUNGSPLAN
+
+    if request.method == 'POST':
+        typ = request.POST.get('typ')
+        if typ == 'mietbestaetigung':
+            if Aenderungsanfrage.objects.filter(mieter=mieter, art=art_mb, status='offen').exists():
+                messages.info(request, gettext('Ihre Anfrage ist schon bei der Verwaltung.'))
+            else:
+                dienst.stellen(art=art_mb, mieter=mieter)
+                messages.success(request, '✅ ' + gettext('Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie bestätigt ist.'))
+        elif typ == 'zahlungsplan':
+            if dienst.stellen(art=art_zp, mieter=mieter, text=request.POST.get('text') or ''):
+                messages.success(request, '✅ ' + gettext('Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie entschieden ist.'))
+            else:
+                messages.error(request, gettext('Bitte beschreiben Sie Ihren Wunsch kurz.'))
+        return redirect('mieter_anfragen')
+
+    grenze = timezone.now() - timedelta(days=GUELTIG_TAGE)
+    anfragen = list(Aenderungsanfrage.objects.filter(mieter=mieter, art__in=(art_mb, art_zp)).order_by('-erstellt_am')[:20])
+    for a in anfragen:
+        a.pdf_moeglich = (a.art == art_mb and a.status == 'bestaetigt' and a.entschieden_am and a.entschieden_am >= grenze)
+    return render(request, 'core/mieter_anfragen.html', {'mieter': mieter, 'anfragen': anfragen, 'gueltig_tage': GUELTIG_TAGE})
+
+
+@login_required
+def mieter_mietbestaetigung_pdf(request, pk):
+    """Die bestätigte Mietbestätigung als PDF — nur für die eigene, von der Verwaltung bestätigte Anfrage."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from core.models import Aenderungsanfrage
+    from core.services.mietbestaetigung import GUELTIG_TAGE, mietbestaetigung_pdf
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        raise Http404
+    a = get_object_or_404(Aenderungsanfrage.objects.filter(
+        mieter=mieter, art=Aenderungsanfrage.ART_MIETBESTAETIGUNG, status='bestaetigt'), pk=pk)
+    if not a.entschieden_am or a.entschieden_am < timezone.now() - timedelta(days=GUELTIG_TAGE):
+        raise Http404
+    pdf = mietbestaetigung_pdf(mieter, timezone.localtime(a.entschieden_am).date(), verwaltung=mieter.organisation)
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    resp['Content-Disposition'] = 'inline; filename="Mietbestaetigung.pdf"'
+    return resp
 
 
 @never_cache

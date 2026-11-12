@@ -26,12 +26,10 @@ ANFRAGEN — Änderungswünsche aus dem Mieter- und Eigentümerportal. Offene zu
             <div class="fw-s fw-mutet">{{ a.erstellt_am|date:"d.m.Y H:i" }}{% if a.art == 'eig_bank' %} · <b>{% trans "Bankverbindung: bitte vor der Bestätigung beim Eigentümer telefonisch zurückfragen." %}</b>{% endif %}</div>
         </div>
         {% if a.darf_entscheiden %}
-        <form method="post" action="/neu/anfragen/{{ a.pk }}/bestaetigen/">{% csrf_token %}
-            <button type="submit" class="fw-btn fw-primary" data-testid="anfrage-bestaetigen">{% trans "Bestätigen" %}</button>
-        </form>
-        <form method="post" action="/neu/anfragen/{{ a.pk }}/ablehnen/" class="flex gap-2">{% csrf_token %}
-            <input name="antwort" type="text" maxlength="300" class="fw-feld w-[180px]" placeholder="{% trans 'Grund (optional)' %}" aria-label="{% trans 'Grund der Ablehnung' %}">
-            <button type="submit" class="fw-btn fw-leise" data-testid="anfrage-ablehnen">{% trans "Ablehnen" %}</button>
+        <form method="post" class="flex gap-2 flex-wrap items-center">{% csrf_token %}
+            <input name="antwort" type="text" maxlength="300" class="fw-feld w-[200px]" placeholder="{% trans 'Antwort an die Absenderin (optional)' %}" aria-label="{% trans 'Antwort an die Absenderin (optional)' %}">
+            <button type="submit" formaction="/neu/anfragen/{{ a.pk }}/bestaetigen/" class="fw-btn fw-primary" data-testid="anfrage-bestaetigen">{% trans "Bestätigen" %}</button>
+            <button type="submit" formaction="/neu/anfragen/{{ a.pk }}/ablehnen/" class="fw-btn fw-leise" data-testid="anfrage-ablehnen">{% trans "Ablehnen" %}</button>
         </form>
         {% else %}
         <span class="fw-mutet">{% trans "Nur Inhaber und Verwalter bestätigen diese Anfrage." %}</span>

@@ -175,3 +175,99 @@ class AnfragenTests(TestCase):
         body = self._mieter_client().get('/mieter/daten/').content.decode()
         self.assertIn('079 AAA', body)
         self.assertNotIn('079 BBB', body)
+
+
+class MietbestaetigungUndZahlungsplanTests(AnfragenTests):
+    """Teil 2: Mietbestätigung (PDF nach Bestätigung), Zahlungsplan-Wunsch, Depot-Stand im Mieterkonto."""
+
+    def test_mietbestaetigung_erst_nach_bestaetigung(self):
+        c = self._mieter_client()
+        c.post('/mieter/anfragen/', {'typ': 'mietbestaetigung'})
+        c.post('/mieter/anfragen/', {'typ': 'mietbestaetigung'})                         # zweite, solange die erste offen ist: keine
+        anfrage, = Aenderungsanfrage.alle_organisationen.filter(art=ART.ART_MIETBESTAETIGUNG)
+        self.assertEqual(c.get(f'/mieter/mietbestaetigung/{anfrage.pk}/pdf/').status_code, 404)   # noch offen
+        self._verwaltung().post(f'/neu/anfragen/{anfrage.pk}/bestaetigen/', {'antwort': 'Gern geschehen'})
+        r = c.get(f'/mieter/mietbestaetigung/{anfrage.pk}/pdf/')
+        self.assertEqual((r.status_code, r['Content-Type']), (200, 'application/pdf'))
+        self.assertTrue(r.content.startswith(b'%PDF'))
+        self.assertContains(c.get('/mieter/anfragen/'), 'Gern geschehen')
+        self.assertContains(c.get('/mieter/anfragen/'), f'/mieter/mietbestaetigung/{anfrage.pk}/pdf/')
+
+    def test_mietbestaetigung_pdf_enthaelt_nur_vertragsdaten(self):
+        import io
+
+        import pdfplumber
+
+        from core.services.mietbestaetigung import mietbestaetigung_pdf
+        from django.utils import timezone
+        with organisation_kontext(self.a.organisation):
+            pdf = mietbestaetigung_pdf(self.a.mieter, timezone.localdate(), verwaltung=self.a.organisation)
+            beginn = self.a.vertrag.beginn
+        with pdfplumber.open(io.BytesIO(pdf)) as seite:
+            text = ' '.join(p.extract_text() or '' for p in seite.pages)
+        self.assertIn('Mietbestätigung', text)
+        self.assertIn(f'{beginn:%d.%m.%Y}', text)
+        self.assertIn("1'700.00", text)
+        # Das Fixture hat eine Kündigung ohne Termin: Die Bestätigung sagt es, statt ein ungekündigtes Verhältnis zu behaupten.
+        self.assertIn('ist gekündigt', text)
+        self.assertNotIn('ungekündigt', text)
+
+    def test_ohne_kuendigung_steht_ungekuendigt(self):
+        import io
+
+        import pdfplumber
+
+        from core.services.mietbestaetigung import mietbestaetigung_pdf
+        from django.utils import timezone
+        from rentals.models import Kuendigung
+        with organisation_kontext(self.a.organisation):
+            Kuendigung.objects.filter(vertrag=self.a.vertrag).delete()
+            pdf = mietbestaetigung_pdf(self.a.mieter, timezone.localdate(), verwaltung=self.a.organisation)
+        with pdfplumber.open(io.BytesIO(pdf)) as seite:
+            text = ' '.join(p.extract_text() or '' for p in seite.pages)
+        self.assertIn('ist ungekündigt', text)
+
+    def test_pdf_nur_fuer_die_eigene_bestaetigte_anfrage(self):
+        a_anfrage = self._anfrage()                                                        # Art kontakt: nie ein PDF
+        c = self._mieter_client()
+        self.assertEqual(c.get(f'/mieter/mietbestaetigung/{a_anfrage.pk}/pdf/').status_code, 404)
+        with organisation_kontext(self.b.organisation):
+            b_anfrage = dienst.stellen(art=ART.ART_MIETBESTAETIGUNG, mieter=self.b.mieter)
+        self._verwaltung(self.b).post(f'/neu/anfragen/{b_anfrage.pk}/bestaetigen/')
+        self.assertEqual(c.get(f'/mieter/mietbestaetigung/{b_anfrage.pk}/pdf/').status_code, 404)   # fremder Mieter
+        self.assertEqual(self._mieter_client(self.b).get(f'/mieter/mietbestaetigung/{b_anfrage.pk}/pdf/').status_code, 200)
+
+    def test_pdf_laeuft_nach_30_tagen_ab(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+        with organisation_kontext(self.a.organisation):
+            anfrage = dienst.stellen(art=ART.ART_MIETBESTAETIGUNG, mieter=self.a.mieter)
+        self._verwaltung().post(f'/neu/anfragen/{anfrage.pk}/bestaetigen/')
+        Aenderungsanfrage.alle_organisationen.filter(pk=anfrage.pk).update(
+            entschieden_am=timezone.now() - timedelta(days=31))
+        self.assertEqual(self._mieter_client().get(f'/mieter/mietbestaetigung/{anfrage.pk}/pdf/').status_code, 404)
+
+    def test_zahlungsplan_braucht_einen_text_und_wird_zur_anfrage(self):
+        c = self._mieter_client()
+        c.post('/mieter/anfragen/', {'typ': 'zahlungsplan', 'text': '  '})
+        self.assertFalse(Aenderungsanfrage.alle_organisationen.filter(art=ART.ART_ZAHLUNGSPLAN).exists())
+        c.post('/mieter/anfragen/', {'typ': 'zahlungsplan', 'text': 'Drei Raten bitte'})
+        anfrage, = Aenderungsanfrage.alle_organisationen.filter(art=ART.ART_ZAHLUNGSPLAN)
+        self.assertIn('Drei Raten bitte', anfrage.zusammenfassung)
+        mail.outbox.clear()
+        self._verwaltung().post(f'/neu/anfragen/{anfrage.pk}/bestaetigen/', {'antwort': 'Einverstanden: 3 Raten'})
+        self.assertTrue(any('Einverstanden: 3 Raten' in m.body for m in mail.outbox))
+
+    def test_depot_im_mieterkonto(self):
+        from decimal import Decimal
+        with organisation_kontext(self.a.organisation):
+            self.a.vertrag.kautions_betrag = Decimal('3600')
+            self.a.vertrag.save()
+        with organisation_kontext(self.b.organisation):
+            self.b.vertrag.kautions_betrag = Decimal('5000')
+            self.b.vertrag.save()
+        body = self._mieter_client().get('/mieter/konto/').content.decode()
+        self.assertIn('Mietzinsdepot', body)
+        self.assertIn("3'600", body)
+        self.assertNotIn("5'000", body)                                                    # nur das eigene Depot

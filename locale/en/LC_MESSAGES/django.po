@@ -39758,3 +39758,48 @@ msgstr "Change bank details"
 
 msgid "Anfrage"
 msgstr "Request"
+
+msgid "Anfragen — Mieterportal"
+msgstr "Requests — tenant portal"
+
+msgid "Mietbestätigung und Zahlungsplan. Die Verwaltung bestätigt jede Anfrage und meldet sich bei Ihnen."
+msgstr "Tenancy confirmation and payment plan. The management confirms each request and gets back to you."
+
+msgid "Eine Bestätigung Ihres Mietverhältnisses (Objekt, Mietbeginn, Mietzins) als PDF, z. B. für eine Bewerbung oder eine Behörde."
+msgstr "A confirmation of your tenancy (property, start, rent) as a PDF, e.g. for an application or an authority."
+
+msgid "Mietbestätigung anfragen"
+msgstr "Request tenancy confirmation"
+
+msgid "Sie können eine offene Rechnung nicht auf einmal bezahlen? Schildern Sie kurz Ihren Wunsch, z. B. Raten."
+msgstr "Can't pay an open invoice in one go? Briefly describe what you need, e.g. instalments."
+
+msgid "Ihr Wunsch"
+msgstr "Your request"
+
+msgid "Zahlungsplan anfragen"
+msgstr "Request payment plan"
+
+msgid "PDF herunterladen (noch %(n)s Tage nach der Bestätigung)"
+msgstr "Download PDF (still %(n)s days after confirmation)"
+
+msgid "Noch keine Anfragen."
+msgstr "No requests yet."
+
+msgid "einbezahlt am %(datum)s"
+msgstr "paid in on %(datum)s"
+
+msgid "Ihre Anfrage ist schon bei der Verwaltung."
+msgstr "Your request is already with the management."
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie bestätigt ist."
+msgstr "Your request is with the management. You will be notified once it is confirmed."
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie entschieden ist."
+msgstr "Your request is with the management. You will be notified once it is decided."
+
+msgid "Bitte beschreiben Sie Ihren Wunsch kurz."
+msgstr "Please briefly describe your request."
+
+msgid "Antwort an die Absenderin (optional)"
+msgstr "Reply to the sender (optional)"

@@ -38652,3 +38652,48 @@ msgstr "Bankverbindung ändern"
 
 msgid "Anfrage"
 msgstr "Anfrage"
+
+msgid "Anfragen — Mieterportal"
+msgstr "Anfragen — Mieterportal"
+
+msgid "Mietbestätigung und Zahlungsplan. Die Verwaltung bestätigt jede Anfrage und meldet sich bei Ihnen."
+msgstr "Mietbestätigung und Zahlungsplan. Die Verwaltung bestätigt jede Anfrage und meldet sich bei Ihnen."
+
+msgid "Eine Bestätigung Ihres Mietverhältnisses (Objekt, Mietbeginn, Mietzins) als PDF, z. B. für eine Bewerbung oder eine Behörde."
+msgstr "Eine Bestätigung Ihres Mietverhältnisses (Objekt, Mietbeginn, Mietzins) als PDF, z. B. für eine Bewerbung oder eine Behörde."
+
+msgid "Mietbestätigung anfragen"
+msgstr "Mietbestätigung anfragen"
+
+msgid "Sie können eine offene Rechnung nicht auf einmal bezahlen? Schildern Sie kurz Ihren Wunsch, z. B. Raten."
+msgstr "Sie können eine offene Rechnung nicht auf einmal bezahlen? Schildern Sie kurz Ihren Wunsch, z. B. Raten."
+
+msgid "Ihr Wunsch"
+msgstr "Ihr Wunsch"
+
+msgid "Zahlungsplan anfragen"
+msgstr "Zahlungsplan anfragen"
+
+msgid "PDF herunterladen (noch %(n)s Tage nach der Bestätigung)"
+msgstr "PDF herunterladen (noch %(n)s Tage nach der Bestätigung)"
+
+msgid "Noch keine Anfragen."
+msgstr "Noch keine Anfragen."
+
+msgid "einbezahlt am %(datum)s"
+msgstr "einbezahlt am %(datum)s"
+
+msgid "Ihre Anfrage ist schon bei der Verwaltung."
+msgstr "Ihre Anfrage ist schon bei der Verwaltung."
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie bestätigt ist."
+msgstr "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie bestätigt ist."
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie entschieden ist."
+msgstr "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie entschieden ist."
+
+msgid "Bitte beschreiben Sie Ihren Wunsch kurz."
+msgstr "Bitte beschreiben Sie Ihren Wunsch kurz."
+
+msgid "Antwort an die Absenderin (optional)"
+msgstr "Antwort an die Absenderin (optional)"

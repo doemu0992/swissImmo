@@ -104,7 +104,7 @@ def stellen(*, art, daten=None, mieter=None, eigentuemer=None, text=''):
 
 
 @transaction.atomic
-def bestaetigen(anfrage, benutzer):
+def bestaetigen(anfrage, benutzer, antwort=''):
     """Führt die Änderung aus und schliesst die Anfrage."""
     anfrage = Aenderungsanfrage.alle_organisationen.select_for_update().get(pk=anfrage.pk)
     if not anfrage.offen:
@@ -120,7 +120,8 @@ def bestaetigen(anfrage, benutzer):
     anfrage.status = Aenderungsanfrage.STATUS_BESTAETIGT
     anfrage.entschieden_am = timezone.now()
     anfrage.entschieden_von = benutzer
-    anfrage.save(update_fields=['status', 'entschieden_am', 'entschieden_von'])
+    anfrage.antwort = (antwort or '').strip()
+    anfrage.save(update_fields=['status', 'entschieden_am', 'entschieden_von', 'antwort'])
     _logbuch(anfrage, 'Änderungsanfrage bestätigt', benutzer)
     _benachrichtigen(anfrage)
     return anfrage
@@ -147,6 +148,8 @@ def _benachrichtigen(anfrage):
     with translation.override(sprache if sprache in ('de', 'fr', 'it', 'en') else 'de'):
         if anfrage.status == Aenderungsanfrage.STATUS_BESTAETIGT:
             text = _('Ihre Anfrage «%(art)s» wurde von der Verwaltung bestätigt.') % {'art': anfrage.get_art_display()}
+            if anfrage.antwort:
+                text += '\n\n' + anfrage.antwort
         else:
             text = _('Ihre Anfrage «%(art)s» wurde von der Verwaltung abgelehnt.') % {'art': anfrage.get_art_display()}
             if anfrage.antwort:

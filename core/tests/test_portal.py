@@ -916,6 +916,7 @@ class PortalFremdzugriffTests(TestCase):
         'mieter_ticket_direkt':     ('post', lambda d: (d['fremd_ticket'].id, d['fremd_auftrag'].id)),
         'mieter_rechnung_qr':       ('get', lambda d: d['fremd_rechnung'].id),
         'mieter_kuendigung_pdf':    ('get', lambda d: d['fremd_kuendigung'].id),
+        'mieter_mietbestaetigung_pdf': ('get', lambda d: d['fremd_anfrage'].id),
     }
 
     def _portal_adressen(self):
@@ -982,7 +983,13 @@ class PortalFremdzugriffTests(TestCase):
         kuend = Kuendigung.objects.create(vertrag=a['v'], absender='mieter',
                                           eingang_datum=date(2026, 1, 5),
                                           per_datum=date(2026, 3, 31))
-        return {'a': a, 'b': b, 'fremd_dok': dok, 'fremd_lg_dok': lgdok, 'fremd_lg': a['lg'],
+        from django.utils import timezone
+
+        from core.models import Aenderungsanfrage
+        anfrage = Aenderungsanfrage.objects.create(
+            organisation=a['m'].organisation, mieter=a['m'], art='mietbestaetigung', status='bestaetigt',
+            zusammenfassung='Mietbestätigung', entschieden_am=timezone.now())
+        return {'a': a, 'b': b, 'fremd_anfrage': anfrage, 'fremd_dok': dok, 'fremd_lg_dok': lgdok, 'fremd_lg': a['lg'],
                 'fremd_rechnung': rech, 'fremd_ticket': ticket,
                 'fremd_auftrag': auftrag, 'fremd_kuendigung': kuend}
 

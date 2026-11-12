@@ -44,7 +44,7 @@ def fw_anfrage_bestaetigen(request, pk):
     if request.method == 'POST':
         _entscheidbar(request, anfrage)
         try:
-            dienst.bestaetigen(anfrage, request.user)
+            dienst.bestaetigen(anfrage, request.user, request.POST.get('antwort', ''))
             messages.success(request, gettext('Die Anfrage ist bestätigt und die Änderung ausgeführt.'))
         except dienst.AnfrageFehler as fehler:
             messages.error(request, str(fehler))

@@ -40353,3 +40353,48 @@ msgstr "Modificare le coordinate bancarie"
 
 msgid "Anfrage"
 msgstr "Richiesta"
+
+msgid "Anfragen — Mieterportal"
+msgstr "Richieste — portale inquilini"
+
+msgid "Mietbestätigung und Zahlungsplan. Die Verwaltung bestätigt jede Anfrage und meldet sich bei Ihnen."
+msgstr "Conferma di locazione e piano di pagamento. L'amministrazione conferma ogni richiesta e vi risponde."
+
+msgid "Eine Bestätigung Ihres Mietverhältnisses (Objekt, Mietbeginn, Mietzins) als PDF, z. B. für eine Bewerbung oder eine Behörde."
+msgstr "Una conferma del vostro rapporto di locazione (oggetto, inizio, pigione) in PDF, ad es. per una candidatura o un'autorità."
+
+msgid "Mietbestätigung anfragen"
+msgstr "Richiedi la conferma di locazione"
+
+msgid "Sie können eine offene Rechnung nicht auf einmal bezahlen? Schildern Sie kurz Ihren Wunsch, z. B. Raten."
+msgstr "Non potete pagare una fattura aperta in un'unica soluzione? Descrivete brevemente il vostro desiderio, ad es. rate."
+
+msgid "Ihr Wunsch"
+msgstr "Il vostro desiderio"
+
+msgid "Zahlungsplan anfragen"
+msgstr "Richiedi un piano di pagamento"
+
+msgid "PDF herunterladen (noch %(n)s Tage nach der Bestätigung)"
+msgstr "Scarica il PDF (ancora %(n)s giorni dopo la conferma)"
+
+msgid "Noch keine Anfragen."
+msgstr "Ancora nessuna richiesta."
+
+msgid "einbezahlt am %(datum)s"
+msgstr "versato il %(datum)s"
+
+msgid "Ihre Anfrage ist schon bei der Verwaltung."
+msgstr "La vostra richiesta è già presso l'amministrazione."
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie bestätigt ist."
+msgstr "La vostra richiesta è presso l'amministrazione. Riceverete un messaggio non appena sarà confermata."
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie entschieden ist."
+msgstr "La vostra richiesta è presso l'amministrazione. Riceverete un messaggio non appena sarà decisa."
+
+msgid "Bitte beschreiben Sie Ihren Wunsch kurz."
+msgstr "Descrivete brevemente il vostro desiderio."
+
+msgid "Antwort an die Absenderin (optional)"
+msgstr "Risposta al mittente (facoltativo)"

@@ -99,7 +99,8 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
                                 mieter_kontoauszug_pdf, mieter_kuendigung, mieter_kuendigung_pdf,
                                 mieter_tickets_view, mieter_ticket_detail, mieter_ticket_nachricht, mieter_ticket_direkt,
                                 mieter_rechnungen_view, mieter_dokumente_view, mieter_schaden_formular,
-                                mieter_konto_view, mieter_daten_view, mieter_passwort_view)
+                                mieter_konto_view, mieter_daten_view, mieter_passwort_view,
+                                mieter_anfragen_view, mieter_mietbestaetigung_pdf)
 # Modul 3 (27.10.2026): Handwerkerportal (Magic-Link je Auftrag) und Link-Verwaltung im Schaden
 from core.views.direkt_link import direkt_link
 from core.views.handwerker_portal import handwerker_auftrag, handwerker_auftrag_pdf, handwerker_auftrag_foto
@@ -756,6 +757,8 @@ urlpatterns = [
     path('mieter/rechnung/<int:pk>/', mieter_rechnung_qr, name='mieter_rechnung_qr'),
     path('mieter/kontoauszug/', mieter_kontoauszug_pdf, name='mieter_kontoauszug_pdf'),
     path('mieter/konto/', mieter_konto_view, name='mieter_konto'),
+    path('mieter/anfragen/', mieter_anfragen_view, name='mieter_anfragen'),
+    path('mieter/mietbestaetigung/<int:pk>/pdf/', mieter_mietbestaetigung_pdf, name='mieter_mietbestaetigung_pdf'),
     path('mieter/daten/', mieter_daten_view, name='mieter_daten'),
     path('mieter/passwort/', mieter_passwort_view, name='mieter_passwort'),
     path('mieter/kuendigung/', mieter_kuendigung, name='mieter_kuendigung'),

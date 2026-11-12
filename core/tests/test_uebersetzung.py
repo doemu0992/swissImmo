@@ -79,6 +79,7 @@ UEBERSETZT = (
     'core/handwerker_auftrag.html',
     'core/handwerker_base.html',
     'core/login.html',
+    'core/mieter_anfragen.html',
     'core/mieter_daten.html',
     'core/mieter_dokumente.html',
     'core/mieter_konto.html',
