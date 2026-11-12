@@ -68,7 +68,7 @@ API-ZUGANG — Schlüssel für die lesende Finanz-API. Nur Inhaber. Der Klartext
 <div class="fw-card mt-3 max-w-3xl">
     <div class="fw-kopf"><h3 class="fw-t">{% trans "Verwendung" %}</h3></div>
     <div class="fw-rumpf">
-        <p class="fw-mutet">{% trans "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit). Höchstens 120 Abfragen pro Minute und Schlüssel." %}</p>
+        <p class="fw-mutet">{% trans "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit), offene Debitoren unter /api/v1/debitoren/offen. Höchstens 120 Abfragen pro Minute und Schlüssel." %}</p>
     </div>
 </div>
 {% endblock %}

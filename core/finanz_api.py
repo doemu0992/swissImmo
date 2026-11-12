@@ -1,4 +1,4 @@
-"""Lesende Finanz-API (`/api/v1/`): Kontenplan und Buchungsjournal einer Verwaltung, für Treuhand und Buchhaltungssoftware.
+"""Lesende Finanz-API (`/api/v1/`): Kontenplan, Buchungsjournal und offene Debitoren einer Verwaltung, für Treuhand und Buchhaltungssoftware.
 
 Nur GET, nur Lesen, nur die Verwaltung, zu der der Schlüssel gehört (`core/api_token.py`). Jede Abfrage läuft im
 Mandantenkontext des Schlüssels; ein Schlüssel kann also nie fremde Zeilen sehen. Das Journal ist seitenweise
@@ -56,3 +56,22 @@ def buchungen(request, von: str = None, bis: str = None, offset: int = 0, limit:
             'storno': b.ist_storno, 'storno_von_beleg_nr': b.storno_von.beleg_nr if b.storno_von_id else None,
         } for b in qs.select_related('storno_von')[offset:offset + limit]]
     return {'gesamt': gesamt, 'offset': offset, 'limit': limit, 'buchungen': zeilen}
+
+
+@router.get('/debitoren/offen')
+def debitoren_offen(request, offset: int = 0, limit: int = 100):
+    """Offene Posten der Debitoren (offen und teilbezahlt), nach Fälligkeit. Ohne Namen von Personen: nur Rechnungsdaten."""
+    from finance.models import DebitorenRechnung
+    limit = max(1, min(limit, MAX_LIMIT))
+    offset = max(0, offset)
+    with organisation_kontext(request.api_token.organisation):
+        qs = (DebitorenRechnung.objects.filter(status__in=('offen', 'teilbezahlt'))
+              .prefetch_related('zahlungseingaenge').order_by('faellig_am', 'pk'))
+        gesamt = qs.count()
+        zeilen = [{
+            'id': r.pk, 'titel': r.titel, 'datum': r.datum.isoformat(),
+            'faellig_am': r.faellig_am.isoformat() if r.faellig_am else None, 'status': r.status,
+            'betrag': str(r.betrag), 'offener_betrag': str(r.offener_betrag),
+            'mwst_satz': str(r.mwst_satz), 'mwst_betrag': str(r.mwst_betrag),
+        } for r in qs[offset:offset + limit]]
+    return {'gesamt': gesamt, 'offset': offset, 'limit': limit, 'debitoren': zeilen}

@@ -85,6 +85,22 @@ class FinanzApiTests(TestCase):
         self.assertEqual(self._get('/api/v1/buchungen?limit=9999', self.roh_a).json()['limit'], 500)
         self.assertEqual(self._get('/api/v1/buchungen?von=kaputt', self.roh_a).status_code, 422)
 
+    def test_offene_debitoren_nur_eigene_und_ohne_personen(self):
+        from finance.models import DebitorenRechnung
+        with organisation_kontext(self.a.organisation):
+            erwartet = {r.pk for r in DebitorenRechnung.objects.filter(status__in=('offen', 'teilbezahlt'))}
+            erledigt = DebitorenRechnung.objects.exclude(status__in=('offen', 'teilbezahlt')).count()
+        r = self._get('/api/v1/debitoren/offen', self.roh_a)
+        self.assertEqual(r.status_code, 200)
+        daten = r.json()
+        self.assertEqual({d['id'] for d in daten['debitoren']}, erwartet)
+        self.assertEqual(daten['gesamt'], len(erwartet))
+        for d in daten['debitoren']:
+            self.assertEqual(set(d), {'id', 'titel', 'datum', 'faellig_am', 'status', 'betrag', 'offener_betrag',
+                                      'mwst_satz', 'mwst_betrag'})
+        self.assertGreaterEqual(erledigt, 0)
+        self.assertEqual(self._get('/api/v1/debitoren/offen').status_code, 401)
+
     def test_schreiben_ist_nicht_moeglich(self):
         for methode in ('post', 'put', 'patch', 'delete'):
             r = getattr(self.c, methode)('/api/v1/buchungen', HTTP_AUTHORIZATION=f'Bearer {self.roh_a}')
