@@ -124,6 +124,7 @@ def nav_gruppen():
         _g('heute', _('Heute'), 'wartet', '/neu/', [
             _i(_('Zulauf'), '/neu/zulauf/', ['zulauf']),
             _i(_('Anfragen'), '/neu/anfragen/', ['anfragen']),
+            _i(_('Ablesung'), '/neu/ablesung/', ['ablesung']),
             _i(_('Termine'), '/neu/termine/', ['termine']),
             _i(_('Pendenzen'), '/neu/pendenzen/', ['pendenzen']),
             _i(_('Fristen'), '/neu/fristen/', ['fristen']),

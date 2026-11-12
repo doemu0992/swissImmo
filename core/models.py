@@ -842,10 +842,11 @@ class Aenderungsanfrage(models.Model):
     ART_EIG_KONTAKT = 'eig_kontakt'          # Eigentümer: Telefon, E-Mail
     ART_EIG_BANK = 'eig_bank'                # Eigentümer: Bankverbindung für Auszahlungen
     ART_EIG_ANFRAGE = 'eig_anfrage'          # Eigentümer: Freitext an die Verwaltung
+    ART_ZAEHLERSTAND = 'zaehlerstand'        # Mieter: abgelesener Zählerstand (daten: zaehler, datum, wert)
     ARTEN = [(ART_KONTAKT, _('Kontaktdaten ändern')), (ART_MITTEILUNG, _('Mitteilung')),
              (ART_MIETBESTAETIGUNG, _('Mietbestätigung')), (ART_ZAHLUNGSPLAN, _('Zahlungsplan')),
              (ART_EIG_KONTAKT, _('Kontaktdaten ändern')), (ART_EIG_BANK, _('Bankverbindung ändern')),
-             (ART_EIG_ANFRAGE, _('Anfrage'))]
+             (ART_EIG_ANFRAGE, _('Anfrage')), (ART_ZAEHLERSTAND, _('Zählerstand'))]
     #: Arten, die Geld umleiten oder Personendaten Dritter berühren: nur Inhaber und Verwalter bestätigen sie.
     SENSIBEL = (ART_EIG_BANK,)
 

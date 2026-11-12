@@ -673,7 +673,7 @@ class ZaehlerStand(OrganisationAusKette):
     ART_CHOICES = [(ART_ANFANG, _('Anfangsstand')), (ART_ZWISCHEN, _('Zwischenstand (Mieterwechsel)')),
                    (ART_ENDE, _('Endstand'))]
     art = models.CharField("Art", max_length=10, choices=ART_CHOICES, blank=True, default='')
-    HERKUNFT_CHOICES = [('manuell', _('Manuell erfasst')), ('import', _('Import'))]
+    HERKUNFT_CHOICES = [('manuell', _('Manuell erfasst')), ('import', _('Import')), ('portal', _('Mieterportal'))]
     herkunft = models.CharField("Herkunft", max_length=10, choices=HERKUNFT_CHOICES, default='manuell')
 
     class Meta:

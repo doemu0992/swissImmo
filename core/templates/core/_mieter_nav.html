@@ -21,6 +21,9 @@
 <a href="/mieter/konto/" class="fw-nav-eintrag{% if aktiv == 'konto' %} hier{% endif %}"{% if aktiv == 'konto' %} aria-current="page"{% endif %}>
     {% zeichen 'recht' %} {% trans "Mieterkonto" %}
 </a>
+<a href="/mieter/zaehler/" class="fw-nav-eintrag{% if aktiv == 'zaehler' %} hier{% endif %}"{% if aktiv == 'zaehler' %} aria-current="page"{% endif %}>
+    {% zeichen 'zaehler' %} {% trans "Zählerstand melden" %}
+</a>
 <a href="/mieter/anfragen/" class="fw-nav-eintrag{% if aktiv == 'anfragen' %} hier{% endif %}"{% if aktiv == 'anfragen' %} aria-current="page"{% endif %}>
     {% zeichen 'dokument' %} {% trans "Anfragen" %}
 </a>

@@ -100,7 +100,7 @@ from core.views.portal import (portal_view, nach_login_view, portal_dokument_dow
                                 mieter_tickets_view, mieter_ticket_detail, mieter_ticket_nachricht, mieter_ticket_direkt,
                                 mieter_rechnungen_view, mieter_dokumente_view, mieter_schaden_formular,
                                 mieter_konto_view, mieter_daten_view, mieter_passwort_view,
-                                mieter_anfragen_view, mieter_mietbestaetigung_pdf)
+                                mieter_anfragen_view, mieter_mietbestaetigung_pdf, mieter_zaehler_view)
 # Modul 3 (27.10.2026): Handwerkerportal (Magic-Link je Auftrag) und Link-Verwaltung im Schaden
 from core.views.direkt_link import direkt_link
 from core.views.handwerker_portal import handwerker_auftrag, handwerker_auftrag_pdf, handwerker_auftrag_foto
@@ -133,7 +133,7 @@ from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_
                            fw_staffel_mitteilung_erstellen, fw_staffel_mitteilung_versandt,
                            fw_vertrag_anfangsformular_nachweis, fw_vertrag_mahngebuehr,
                            fw_api_zugang, fw_api_zugang_widerrufen,
-                           fw_anfragen, fw_anfrage_bestaetigen, fw_anfrage_ablehnen,
+                           fw_anfragen, fw_anfrage_bestaetigen, fw_anfrage_ablehnen, fw_ablesung, fw_ablesung_aufruf,
                            fw_daten, fw_daten_import, fw_daten_import_vorlage, fw_daten_import_lauf,
                            fw_daten_import_ausfuehren, fw_daten_import_verwerfen, fw_daten_export,
                            fw_daten_export_format, fw_daten_export_journal, fw_daten_export_mandat,
@@ -442,6 +442,8 @@ urlpatterns = [
     path('neu/einstellungen/api/', fw_api_zugang, name='fw_api_zugang'),
     path('neu/einstellungen/api/<int:pk>/widerrufen/', fw_api_zugang_widerrufen, name='fw_api_zugang_widerrufen'),
     # Anfragen aus den Portalen: bestätigen oder ablehnen
+    path('neu/ablesung/', fw_ablesung, name='fw_ablesung'),
+    path('neu/ablesung/<int:pk>/aufruf/', fw_ablesung_aufruf, name='fw_ablesung_aufruf'),
     path('neu/anfragen/', fw_anfragen, name='fw_anfragen'),
     path('neu/anfragen/<int:pk>/bestaetigen/', fw_anfrage_bestaetigen, name='fw_anfrage_bestaetigen'),
     path('neu/anfragen/<int:pk>/ablehnen/', fw_anfrage_ablehnen, name='fw_anfrage_ablehnen'),
@@ -758,6 +760,7 @@ urlpatterns = [
     path('mieter/kontoauszug/', mieter_kontoauszug_pdf, name='mieter_kontoauszug_pdf'),
     path('mieter/konto/', mieter_konto_view, name='mieter_konto'),
     path('mieter/anfragen/', mieter_anfragen_view, name='mieter_anfragen'),
+    path('mieter/zaehler/', mieter_zaehler_view, name='mieter_zaehler'),
     path('mieter/mietbestaetigung/<int:pk>/pdf/', mieter_mietbestaetigung_pdf, name='mieter_mietbestaetigung_pdf'),
     path('mieter/daten/', mieter_daten_view, name='mieter_daten'),
     path('mieter/passwort/', mieter_passwort_view, name='mieter_passwort'),

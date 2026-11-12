@@ -39815,3 +39815,99 @@ msgstr "For security reasons the management will call you back before confirming
 
 msgid "Bankverbindung beantragen"
 msgstr "Request bank details"
+
+msgid "Zählerstand melden — Mieterportal"
+msgstr "Report a meter reading — tenant portal"
+
+msgid "Zählerstand melden"
+msgstr "Report a meter reading"
+
+msgid "Tragen Sie den abgelesenen Stand ein. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+msgstr "Enter the reading. It counts once the management has confirmed it."
+
+msgid "Letzter Stand: %(w)s am %(d)s"
+msgstr "Last reading: %(w)s on %(d)s"
+
+msgid "Stand melden"
+msgstr "Report reading"
+
+msgid "Für Ihre Mietobjekte sind keine Zähler erfasst."
+msgstr "No meters are recorded for your rented properties."
+
+msgid "Ablesung"
+msgstr "Meter reading round"
+
+msgid "Bitten Sie die Mieterschaft einer Liegenschaft, die Zähler abzulesen. Die Meldungen erscheinen unter «Anfragen» und zählen erst nach Ihrer Bestätigung."
+msgstr "Ask the tenants of a property to read their meters. The reports appear under «Requests» and only count after you confirm them."
+
+msgid "%(n)s Zähler"
+msgid_plural "%(n)s Zähler"
+msgstr[0] "%(n)s meter"
+msgstr[1] "%(n)s meters"
+
+msgid "%(n)s Mieter mit Portalzugang"
+msgid_plural "%(n)s Mieter mit Portalzugang"
+msgstr[0] "%(n)s tenant with portal access"
+msgstr[1] "%(n)s tenants with portal access"
+
+msgid "zuletzt aufgerufen am %(d)s"
+msgstr "last requested on %(d)s"
+
+msgid "%(n)s Meldung wartet"
+msgid_plural "%(n)s Meldungen warten"
+msgstr[0] "%(n)s report waiting"
+msgstr[1] "%(n)s reports waiting"
+
+msgid "Aufruf an alle Mieter dieser Liegenschaft senden?"
+msgstr "Send the request to all tenants of this property?"
+
+msgid "Aufruf senden"
+msgstr "Send request"
+
+msgid "Noch keine Liegenschaften."
+msgstr "No properties yet."
+
+msgid "Bitte prüfen:"
+msgstr "Please check:"
+
+msgid "Der Verbrauch seit dem %(d)s ist auffällig hoch: etwa das %(f)s-Fache des Üblichen."
+msgstr "Consumption since %(d)s is unusually high: about %(f)s times the usual."
+
+msgid "Seit dem %(d)s (%(n)s Tage) hat sich der Stand nicht verändert."
+msgstr "Since %(d)s (%(n)s days) the reading has not changed."
+
+msgid "%(z)s: Stand %(w)s am %(d)s"
+msgstr "%(z)s: reading %(w)s on %(d)s"
+
+msgid "Hinweis: %(t)s"
+msgstr "Note: %(t)s"
+
+msgid "Der Zähler gibt es nicht mehr."
+msgstr "This meter no longer exists."
+
+msgid "Der Stand ist nicht mehr plausibel: %(t)s"
+msgstr "The reading is no longer plausible: %(t)s"
+
+msgid "Bitte Zähler, Stand und Ablesedatum angeben."
+msgstr "Please enter meter, reading and date."
+
+msgid "Bitte einen gültigen Stand und ein Ablesedatum bis heute angeben."
+msgstr "Please enter a valid reading and a date up to today."
+
+msgid "Bitte lesen Sie den Zähler nochmals ab."
+msgstr "Please read the meter again."
+
+msgid "Ihr Stand ist bei der Verwaltung. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+msgstr "Your reading is with the management. It counts once they have confirmed it."
+
+msgid "bitte lesen Sie Ihre Zähler ab und melden Sie die Stände im Mieterportal:"
+msgstr "please read your meters and report the readings in the tenant portal:"
+
+msgid "Die Verwaltung bestätigt Ihre Meldung. Vielen Dank."
+msgstr "The management will confirm your report. Thank you."
+
+msgid "Bitte Zählerstände ablesen"
+msgstr "Please read your meters"
+
+msgid "Der Aufruf ging an %(n)s Mieter."
+msgstr "The request was sent to %(n)s tenants."

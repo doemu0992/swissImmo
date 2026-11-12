@@ -38709,3 +38709,99 @@ msgstr "Aus Sicherheitsgründen ruft die Verwaltung Sie vor der Bestätigung ein
 
 msgid "Bankverbindung beantragen"
 msgstr "Bankverbindung beantragen"
+
+msgid "Zählerstand melden — Mieterportal"
+msgstr "Zählerstand melden — Mieterportal"
+
+msgid "Zählerstand melden"
+msgstr "Zählerstand melden"
+
+msgid "Tragen Sie den abgelesenen Stand ein. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+msgstr "Tragen Sie den abgelesenen Stand ein. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+
+msgid "Letzter Stand: %(w)s am %(d)s"
+msgstr "Letzter Stand: %(w)s am %(d)s"
+
+msgid "Stand melden"
+msgstr "Stand melden"
+
+msgid "Für Ihre Mietobjekte sind keine Zähler erfasst."
+msgstr "Für Ihre Mietobjekte sind keine Zähler erfasst."
+
+msgid "Ablesung"
+msgstr "Ablesung"
+
+msgid "Bitten Sie die Mieterschaft einer Liegenschaft, die Zähler abzulesen. Die Meldungen erscheinen unter «Anfragen» und zählen erst nach Ihrer Bestätigung."
+msgstr "Bitten Sie die Mieterschaft einer Liegenschaft, die Zähler abzulesen. Die Meldungen erscheinen unter «Anfragen» und zählen erst nach Ihrer Bestätigung."
+
+msgid "%(n)s Zähler"
+msgid_plural "%(n)s Zähler"
+msgstr[0] "%(n)s Zähler"
+msgstr[1] "%(n)s Zähler"
+
+msgid "%(n)s Mieter mit Portalzugang"
+msgid_plural "%(n)s Mieter mit Portalzugang"
+msgstr[0] "%(n)s Mieter mit Portalzugang"
+msgstr[1] "%(n)s Mieter mit Portalzugang"
+
+msgid "zuletzt aufgerufen am %(d)s"
+msgstr "zuletzt aufgerufen am %(d)s"
+
+msgid "%(n)s Meldung wartet"
+msgid_plural "%(n)s Meldungen warten"
+msgstr[0] "%(n)s Meldung wartet"
+msgstr[1] "%(n)s Meldungen warten"
+
+msgid "Aufruf an alle Mieter dieser Liegenschaft senden?"
+msgstr "Aufruf an alle Mieter dieser Liegenschaft senden?"
+
+msgid "Aufruf senden"
+msgstr "Aufruf senden"
+
+msgid "Noch keine Liegenschaften."
+msgstr "Noch keine Liegenschaften."
+
+msgid "Bitte prüfen:"
+msgstr "Bitte prüfen:"
+
+msgid "Der Verbrauch seit dem %(d)s ist auffällig hoch: etwa das %(f)s-Fache des Üblichen."
+msgstr "Der Verbrauch seit dem %(d)s ist auffällig hoch: etwa das %(f)s-Fache des Üblichen."
+
+msgid "Seit dem %(d)s (%(n)s Tage) hat sich der Stand nicht verändert."
+msgstr "Seit dem %(d)s (%(n)s Tage) hat sich der Stand nicht verändert."
+
+msgid "%(z)s: Stand %(w)s am %(d)s"
+msgstr "%(z)s: Stand %(w)s am %(d)s"
+
+msgid "Hinweis: %(t)s"
+msgstr "Hinweis: %(t)s"
+
+msgid "Der Zähler gibt es nicht mehr."
+msgstr "Der Zähler gibt es nicht mehr."
+
+msgid "Der Stand ist nicht mehr plausibel: %(t)s"
+msgstr "Der Stand ist nicht mehr plausibel: %(t)s"
+
+msgid "Bitte Zähler, Stand und Ablesedatum angeben."
+msgstr "Bitte Zähler, Stand und Ablesedatum angeben."
+
+msgid "Bitte einen gültigen Stand und ein Ablesedatum bis heute angeben."
+msgstr "Bitte einen gültigen Stand und ein Ablesedatum bis heute angeben."
+
+msgid "Bitte lesen Sie den Zähler nochmals ab."
+msgstr "Bitte lesen Sie den Zähler nochmals ab."
+
+msgid "Ihr Stand ist bei der Verwaltung. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+msgstr "Ihr Stand ist bei der Verwaltung. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+
+msgid "bitte lesen Sie Ihre Zähler ab und melden Sie die Stände im Mieterportal:"
+msgstr "bitte lesen Sie Ihre Zähler ab und melden Sie die Stände im Mieterportal:"
+
+msgid "Die Verwaltung bestätigt Ihre Meldung. Vielen Dank."
+msgstr "Die Verwaltung bestätigt Ihre Meldung. Vielen Dank."
+
+msgid "Bitte Zählerstände ablesen"
+msgstr "Bitte Zählerstände ablesen"
+
+msgid "Der Aufruf ging an %(n)s Mieter."
+msgstr "Der Aufruf ging an %(n)s Mieter."

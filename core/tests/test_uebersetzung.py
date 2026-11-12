@@ -63,6 +63,7 @@ UEBERSETZT = (
     'fw/abonnement_bestaetigen.html',
     'fw/_archivieren.html',
     'fw/api_zugang.html',            # Schlüssel der lesenden Finanz-API
+    'fw/ablesung.html',              # Ablese-Aufruf an die Mieterschaft
     'fw/anfragen.html',              # Anfragen aus den Portalen
     'fw/daten.html',                 # Datenimport/-export (FUNK-09/13)
     'fw/daten_export.html',
@@ -80,6 +81,7 @@ UEBERSETZT = (
     'core/handwerker_base.html',
     'core/login.html',
     'core/mieter_anfragen.html',
+    'core/mieter_zaehler.html',
     'core/mieter_daten.html',
     'core/mieter_dokumente.html',
     'core/mieter_konto.html',

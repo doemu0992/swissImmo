@@ -83,6 +83,8 @@ EIGENE_APPS = ('benutzer', 'core', 'crm', 'portfolio', 'rentals', 'finance', 'ti
 # Deshalb steht neben jedem der Grund, nicht nur der Name.
 # ---------------------------------------------------------------------------
 AUSNAHMEN = {
+    'fw_ablesung_aufruf': 'Liegenschafts-ID unter einem eigenen URL-Namen; Fremdzugriff = 404, geprüft in '
+                          'test_zaehlerstaende.AblesungDurchMieterTests.test_fremde_liegenschaft_ist_404',
     'fw_anfrage_bestaetigen': 'Anfrage kommt nicht im MandantenFixture vor; Fremdzugriff = 404, geprüft in '
                               'test_anfragen.test_fremde_verwaltung_sieht_und_entscheidet_nichts',
     'fw_anfrage_ablehnen': 'wie fw_anfrage_bestaetigen (gleiche Prüfung, derselbe Test)',

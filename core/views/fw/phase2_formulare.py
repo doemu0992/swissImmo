@@ -552,21 +552,19 @@ class ZaehlerstandForm(forms.Form):
             raise forms.ValidationError(gettext('Das Ablesedatum liegt in der Zukunft.'))
         return d
 
+    warnungen = ()
+
     def clean(self):
         data = super().clean()
         z, d, w = data.get('zaehler'), data.get('datum'), data.get('wert')
         if z and d and w is not None:
-            # Ein Zählerstand darf zwischen zwei bekannten Ständen nicht sinken —
-            # sonst entsteht ein negativer Verbrauch (billing ignoriert ihn still).
-            from portfolio.models import ZaehlerStand
-            davor = ZaehlerStand.objects.filter(zaehler=z, datum__lte=d).order_by('-datum', '-id').first()
-            danach = ZaehlerStand.objects.filter(zaehler=z, datum__gt=d).order_by('datum', 'id').first()
-            if davor and w < davor.wert:
-                self.add_error('wert', gettext('Der Stand liegt unter dem Stand vom %(d)s (%(w)s).')
-                               % {'d': davor.datum.strftime('%d.%m.%Y'), 'w': davor.wert})
-            elif danach and w > danach.wert:
-                self.add_error('wert', gettext('Der Stand liegt über dem späteren Stand vom %(d)s (%(w)s).')
-                               % {'d': danach.datum.strftime('%d.%m.%Y'), 'w': danach.wert})
+            # Fehler (negativer Verbrauch) verhindern das Speichern; Warnungen (auffälliger Verbrauch) verlangen eine
+            # Bestätigung in der View. Beides prüft `core/services/zaehlerstaende.py`, wie bei der Ablesung der Mieterschaft.
+            from core.services import zaehlerstaende
+            befund = zaehlerstaende.pruefen(z, d, w)
+            for text in befund['fehler']:
+                self.add_error('wert', text)
+            self.warnungen = tuple(befund['warnungen'])
         return data
 
 
@@ -577,6 +575,12 @@ def fw_zaehlerstand_neu(request, pk):
     lg = get_object_or_404(Liegenschaft, pk=pk)
     form = ZaehlerstandForm(request.POST or None, liegenschaft=lg,
                             initial={'datum': timezone.localdate(), 'zaehler': request.GET.get('zaehler')})
+    if request.method == 'POST' and form.is_valid() and form.warnungen and not request.POST.get('trotzdem'):
+        # Auffällig, aber möglich: dieselbe Seite nochmals, mit den Warnungen und einem Knopf «Trotzdem speichern».
+        return _seite(request, form, titel=gettext('Zählerstand erfassen'), hinweis=str(lg),
+                      zurueck=f'/neu/liegenschaften/{lg.id}/', zurueck_text=str(lg),
+                      senden=gettext('Speichern'), nav='liegenschaften',
+                      extra={'weiter_knopf': True, 'trotzdem_knopf': True, 'warnungen': form.warnungen})
     if request.method == 'POST' and form.is_valid():
         z, d, w = form.cleaned_data['zaehler'], form.cleaned_data['datum'], form.cleaned_data['wert']
         ZaehlerStand.objects.create(zaehler=z, datum=d, wert=w)
