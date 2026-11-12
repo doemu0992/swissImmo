@@ -120,9 +120,14 @@ def fw_liegenschaft_detail(request, pk):
     einheiten_rows = []
     soll_monat = Decimal('0.00')
     vermietet = 0
-    for e in lg.einheiten.all().order_by('bezeichnung'):
-        vertrag = (Mietvertrag.objects.filter(einheit=e, status='aktiv')
-                   .select_related('mieter').order_by('-beginn').first())
+    einheiten_liste = list(lg.einheiten.all().order_by('bezeichnung'))
+    # Ein Abruf für alle Einheiten statt einer je Einheit: Pro Einheit gilt der aktive Vertrag mit dem jüngsten Beginn.
+    aktive = {}
+    for v in (Mietvertrag.objects.filter(einheit__in=einheiten_liste, status='aktiv')
+              .select_related('mieter').order_by('-beginn', '-pk')):
+        aktive.setdefault(v.einheit_id, v)
+    for e in einheiten_liste:
+        vertrag = aktive.get(e.pk)
         if vertrag:
             vermietet += 1
             soll_monat += vertrag.brutto_mietzins

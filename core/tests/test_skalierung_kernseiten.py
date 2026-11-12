@@ -117,3 +117,33 @@ class MahnwesenBlaetternTests(TestCase):
         self.assertEqual(antwort.status_code, 200)
         self.assertEqual(antwort.context['rows'], [])
         self.assertContains(antwort, 'Keine offenen Mahnfälle')
+
+
+class DetailseiteUnabhaengigVonDerGroesseTests(TestCase):
+    """Die Liegenschaftsseite fragte je Einheit den aktiven Vertrag einzeln ab (59 Abfragen bei 2, 82 bei 25 Einheiten).
+
+    Gemessen am 12.11.2026 mit einer kleinen (2 Einheiten) und einer grossen Liegenschaft (25 Einheiten): Die Zahl
+    der Abfragen muss GLEICH sein. Gegenprobe: die Schleife je Einheit zurück -> der Test wird rot."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+        grossbestand_anlegen(cls.a.organisation, 1, 2)
+        grossbestand_anlegen(cls.a.organisation, 1, 25, ab=50)
+
+    def _abfragen(self, url):
+        self.client.force_login(self.a.benutzer)
+        self.client.get(url)                                 # Aufwärmen
+        with CaptureQueriesContext(connection) as c:
+            antwort = self.client.get(url)
+        self.assertEqual(antwort.status_code, 200)
+        return len(c)
+
+    def test_liegenschaftsseite_fragt_nicht_je_einheit(self):
+        from core.tenancy import organisation_kontext
+        from portfolio.models import Liegenschaft
+        with organisation_kontext(self.a.organisation):
+            klein = Liegenschaft.objects.get(strasse='Bestandsweg 0')
+            gross = Liegenschaft.objects.get(strasse='Bestandsweg 50')
+        self.assertEqual(self._abfragen(f'/neu/liegenschaften/{klein.pk}/'),
+                         self._abfragen(f'/neu/liegenschaften/{gross.pk}/'))
