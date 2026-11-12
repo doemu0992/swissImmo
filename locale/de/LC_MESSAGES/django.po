@@ -38514,3 +38514,60 @@ msgstr "bexio (über importly.ch)"
 
 msgid "bexio (über den Dienst importly.ch; bexio selbst importiert keine Buchungen per CSV)"
 msgstr "bexio (über den Dienst importly.ch; bexio selbst importiert keine Buchungen per CSV)"
+
+msgid "API-Zugang"
+msgstr "API-Zugang"
+
+msgid "Mit einem Schlüssel lesen Treuhand oder Buchhaltungssoftware Kontenplan und Buchungsjournal Ihrer Verwaltung. Nur lesen, nichts ändern."
+msgstr "Mit einem Schlüssel lesen Treuhand oder Buchhaltungssoftware Kontenplan und Buchungsjournal Ihrer Verwaltung. Nur lesen, nichts ändern."
+
+msgid "Kopieren Sie den Schlüssel jetzt. Er wird nur dieses eine Mal angezeigt und lässt sich später nicht wieder abrufen."
+msgstr "Kopieren Sie den Schlüssel jetzt. Er wird nur dieses eine Mal angezeigt und lässt sich später nicht wieder abrufen."
+
+msgid "Schlüssel «%(n)s» angelegt"
+msgstr "Schlüssel «%(n)s» angelegt"
+
+msgid "Angelegt am %(d)s"
+msgstr "Angelegt am %(d)s"
+
+msgid "zuletzt benutzt %(d)s"
+msgstr "zuletzt benutzt %(d)s"
+
+msgid "noch nie benutzt"
+msgstr "noch nie benutzt"
+
+msgid "widerrufen am %(d)s"
+msgstr "widerrufen am %(d)s"
+
+msgid "Noch kein Schlüssel angelegt."
+msgstr "Noch kein Schlüssel angelegt."
+
+msgid "Neuer Schlüssel"
+msgstr "Neuer Schlüssel"
+
+msgid "Wofür der Schlüssel dient, z. B. der Name der Treuhandfirma. Höchstens %(n)s aktive Schlüssel."
+msgstr "Wofür der Schlüssel dient, z. B. der Name der Treuhandfirma. Höchstens %(n)s aktive Schlüssel."
+
+msgid "Schlüssel anlegen"
+msgstr "Schlüssel anlegen"
+
+msgid "Verwendung"
+msgstr "Verwendung"
+
+msgid "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit). Höchstens 120 Abfragen pro Minute und Schlüssel."
+msgstr "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit). Höchstens 120 Abfragen pro Minute und Schlüssel."
+
+msgid "Schlüssel für Treuhand und Buchhaltungssoftware (nur Lesen)"
+msgstr "Schlüssel für Treuhand und Buchhaltungssoftware (nur Lesen)"
+
+msgid "Bitte eine Bezeichnung angeben, z. B. den Namen der Treuhandfirma."
+msgstr "Bitte eine Bezeichnung angeben, z. B. den Namen der Treuhandfirma."
+
+msgid "Es sind bereits %(n)s Schlüssel aktiv. Bitte zuerst einen widerrufen."
+msgstr "Es sind bereits %(n)s Schlüssel aktiv. Bitte zuerst einen widerrufen."
+
+msgid "Der Schlüssel «%(n)s» ist widerrufen."
+msgstr "Der Schlüssel «%(n)s» ist widerrufen."
+
+msgid "Lesende Finanz-API mit eigenen Schlüsseln"
+msgstr "Lesende Finanz-API mit eigenen Schlüsseln"

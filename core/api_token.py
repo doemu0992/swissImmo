@@ -47,6 +47,10 @@ class TokenAuth(HttpBearer):
         gefunden = finden(token)
         if gefunden is None:
             return None
+        from core.funktionen import hat_funktion
+        if not hat_funktion(gefunden.organisation, 'api_zugang'):
+            from ninja.errors import HttpError
+            raise HttpError(403, 'Der API-Zugang gehört nicht zum Abonnement dieser Verwaltung.')
         if not rate_limit(f'api:token:{gefunden.pk}', LIMIT_JE_MINUTE, 60):
             from ninja.errors import HttpError
             raise HttpError(429, 'Zu viele Abfragen.')

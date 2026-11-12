@@ -131,6 +131,7 @@ from core.views.fw import (fw_arbeit, fw_fall_detail, fw_zeit_erfassen, fw_fall_
                            fw_staffel_add, fw_staffel_del, fw_staffelvorlage_add, fw_staffelvorlage_del,
                            fw_staffel_mitteilung_erstellen, fw_staffel_mitteilung_versandt,
                            fw_vertrag_anfangsformular_nachweis, fw_vertrag_mahngebuehr,
+                           fw_api_zugang, fw_api_zugang_widerrufen,
                            fw_daten, fw_daten_import, fw_daten_import_vorlage, fw_daten_import_lauf,
                            fw_daten_import_ausfuehren, fw_daten_import_verwerfen, fw_daten_export,
                            fw_daten_export_format, fw_daten_export_journal, fw_daten_export_mandat,
@@ -435,6 +436,9 @@ urlpatterns = [
     path('neu/einstellungen/zahlungsfreigabe/auszahlungen/', fw_auszahlungsfreigaben, name='fw_auszahlungsfreigaben'),
     path('neu/einstellungen/zahlungsfreigabe/auszahlungen/<int:pk>/freigeben/', fw_auszahlungsfreigabe_freigeben, name='fw_auszahlungsfreigabe_freigeben'),
     path('neu/einstellungen/zahlungsfreigabe/auszahlungen/<int:pk>/zuruecknehmen/', fw_auszahlungsfreigabe_zuruecknehmen, name='fw_auszahlungsfreigabe_zuruecknehmen'),
+    # Einstellungen «API-Zugang»: Schlüssel für die lesende Finanz-API (nur Inhaber, Stufe mit api_zugang)
+    path('neu/einstellungen/api/', fw_api_zugang, name='fw_api_zugang'),
+    path('neu/einstellungen/api/<int:pk>/widerrufen/', fw_api_zugang_widerrufen, name='fw_api_zugang_widerrufen'),
     # Einstellungen «Daten»: Import für Wechselkunden, Mandatsexport, Buchungsjournal (FUNK-09/13)
     path('neu/einstellungen/daten/', fw_daten, name='fw_daten'),
     path('neu/einstellungen/daten/import/', fw_daten_import, name='fw_daten_import'),

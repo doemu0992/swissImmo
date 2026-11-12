@@ -23,6 +23,13 @@ class FinanzApiTests(TestCase):
 
     def setUp(self):
         cache.clear()
+        from abo.models import Abonnement
+        for fixture in (self.a, self.b):
+            org = fixture.organisation
+            org.abo_plan = 'enterprise'                                  # api_zugang gehört zu Enterprise
+            org.save(update_fields=['abo_plan'])
+            Abonnement.alle_organisationen.update_or_create(
+                organisation=org, defaults={'uneingeschraenkt': False, 'zusatzmodule': []})
         self.token_a, self.roh_a = api_token.erzeugen(self.a.organisation, 'Treuhand A')
         self.c = Client()
 
