@@ -63,6 +63,7 @@ UEBERSETZT = (
     'fw/abonnement_bestaetigen.html',
     'fw/_archivieren.html',
     'fw/api_zugang.html',            # Schlüssel der lesenden Finanz-API
+    'fw/anfragen.html',              # Anfragen aus den Portalen
     'fw/daten.html',                 # Datenimport/-export (FUNK-09/13)
     'fw/daten_export.html',
     'fw/daten_import.html',

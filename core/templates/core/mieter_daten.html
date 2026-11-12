@@ -8,7 +8,7 @@
 {% block content %}
     <div class="mb-6">
         <h1 class="text-2xl font-bold tracking-tight fw-strong">{% trans "Meine Daten" %}</h1>
-        <p class="fw-mutet mt-1">{% trans "Kontaktdaten prüfen und aktualisieren — Änderungen werden der Verwaltung automatisch gemeldet." %}</p>
+        <p class="fw-mutet mt-1">{% trans "Kontaktdaten prüfen und Änderungen beantragen — sie gelten, sobald die Verwaltung sie bestätigt hat." %}</p>
     </div>
 
     <form method="post" class="space-y-5">
@@ -42,7 +42,21 @@
         </div>
 
         <button type="submit" class="fw-btn fw-primary text-sm font-bold px-5 py-3 rounded-xl">
-            {% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern &amp; melden" %}
+            {% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Änderung beantragen" %}
         </button>
     </form>
+
+    {% if anfragen %}
+    <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 mt-5 space-y-3" data-testid="meine-anfragen">
+        <h2 class="font-bold fw-strong">{% trans "Meine Anfragen" %}</h2>
+        {% for a in anfragen %}
+        <div class="text-sm">
+            <div class="font-semibold fw-strong">{{ a.get_art_display }} · {{ a.get_status_display }}
+                <span class="fw-faint font-normal">{{ a.erstellt_am|date:"d.m.Y" }}</span></div>
+            <div class="fw-mutet whitespace-pre-line">{{ a.zusammenfassung }}</div>
+            {% if a.antwort %}<div class="fw-mutet">{% trans "Antwort der Verwaltung:" %} {{ a.antwort }}</div>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 {% endblock %}

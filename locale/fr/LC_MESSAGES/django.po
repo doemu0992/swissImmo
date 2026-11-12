@@ -40349,3 +40349,78 @@ msgstr "API financière en lecture avec clés propres"
 
 msgid "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit), offene Debitoren unter /api/v1/debitoren/offen. Höchstens 120 Abfragen pro Minute und Schlüssel."
 msgstr "La clé se place dans l'en-tête «Authorization: Bearer …». Requêtes: plan comptable sous /api/v1/konten, journal des écritures sous /api/v1/buchungen (von, bis, offset, limit), débiteurs ouverts sous /api/v1/debitoren/offen. Au maximum 120 requêtes par minute et par clé."
+
+msgid "Änderungswünsche aus den Portalen. Erst Ihre Bestätigung ändert die Stammdaten."
+msgstr "Demandes de modification issues des portails. Les données de base ne changent qu'après votre confirmation."
+
+msgid "Nur offene"
+msgstr "Seulement ouvertes"
+
+msgid "Auch entschiedene"
+msgstr "Aussi les traitées"
+
+msgid "Bankverbindung: bitte vor der Bestätigung beim Eigentümer telefonisch zurückfragen."
+msgstr "Coordonnées bancaires: veuillez appeler le propriétaire avant de confirmer."
+
+msgid "Grund der Ablehnung"
+msgstr "Motif du refus"
+
+msgid "Nur Inhaber und Verwalter bestätigen diese Anfrage."
+msgstr "Seuls le titulaire et le gérant confirment cette demande."
+
+msgid "Entschieden"
+msgstr "Traitées"
+
+msgid "Noch nichts entschieden."
+msgstr "Rien n'est encore traité."
+
+msgid "Kontaktdaten prüfen und Änderungen beantragen — sie gelten, sobald die Verwaltung sie bestätigt hat."
+msgstr "Vérifiez vos coordonnées et demandez des modifications — elles s'appliquent dès que la gérance les a confirmées."
+
+msgid "Änderung beantragen"
+msgstr "Demander la modification"
+
+msgid "Antwort der Verwaltung:"
+msgstr "Réponse de la gérance:"
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Die Änderung gilt, sobald die Verwaltung sie bestätigt hat."
+msgstr "Votre demande est chez la gérance. La modification s'applique dès qu'elle l'a confirmée."
+
+msgid "Die Anfrage ist bestätigt und die Änderung ausgeführt."
+msgstr "La demande est confirmée et la modification exécutée."
+
+msgid "Die Anfrage ist abgelehnt."
+msgstr "La demande est refusée."
+
+msgid "Diese Anfrage ist bereits entschieden."
+msgstr "Cette demande est déjà traitée."
+
+msgid "Bestätigung des Mietverhältnisses (PDF) gewünscht."
+msgstr "Attestation de bail (PDF) demandée."
+
+msgid "Ihre Anfrage «%(art)s» wurde von der Verwaltung bestätigt."
+msgstr "Votre demande «%(art)s» a été confirmée par la gérance."
+
+msgid "Ihre Anfrage «%(art)s» wurde von der Verwaltung abgelehnt."
+msgstr "Votre demande «%(art)s» a été refusée par la gérance."
+
+msgid "Ihre Anfrage an die Verwaltung"
+msgstr "Votre demande à la gérance"
+
+msgid "Den Stand sehen Sie im Portal."
+msgstr "Vous voyez l'état dans le portail."
+
+msgid "Kontaktdaten ändern"
+msgstr "Modifier les coordonnées"
+
+msgid "Mietbestätigung"
+msgstr "Attestation de bail"
+
+msgid "Zahlungsplan"
+msgstr "Plan de paiement"
+
+msgid "Bankverbindung ändern"
+msgstr "Modifier les coordonnées bancaires"
+
+msgid "Anfrage"
+msgstr "Demande"

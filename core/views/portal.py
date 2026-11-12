@@ -1042,61 +1042,34 @@ def mieter_konto_view(request):
 @never_cache
 @login_required
 def mieter_daten_view(request):
-    """«Meine Daten»: Kontaktdaten ansehen; Telefon/E-Mail direkt ändern
-    (unkritisch), Änderungswünsche zur Adresse als Meldung an die Verwaltung.
-    Jede Änderung wird im Kommunikations-Journal protokolliert."""
+    """«Meine Daten»: Kontaktdaten ansehen und Änderungen beantragen.
+
+    Das Portal ändert nichts selbst: Jede Änderung (Mobile, Telefon, E-Mail) und jede Mitteilung geht als Anfrage an
+    die Verwaltung und gilt erst, wenn sie sie bestätigt hat (`core/services/anfragen.py`)."""
     from django.contrib import messages
+
+    from core.models import Aenderungsanfrage
+    from core.services import anfragen as dienst
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None:
         return redirect('mieter_portal')
 
     if request.method == 'POST':
-        aenderungen = []
-        neu_mobile = (request.POST.get('mobile') or '').strip()
-        neu_tel = (request.POST.get('telefon_privat') or '').strip()
-        neu_email = (request.POST.get('email') or '').strip()
-        if neu_mobile != (mieter.mobile or ''):
-            aenderungen.append(f"Mobile: «{mieter.mobile or '—'}» → «{neu_mobile or '—'}»")
-            mieter.mobile = neu_mobile
-        if neu_tel != (mieter.telefon_privat or ''):
-            aenderungen.append(f"Telefon: «{mieter.telefon_privat or '—'}» → «{neu_tel or '—'}»")
-            mieter.telefon_privat = neu_tel
-        if neu_email and neu_email != (mieter.email or ''):
-            aenderungen.append(f"E-Mail: «{mieter.email or '—'}» → «{neu_email}»")
-            mieter.email = neu_email
-        adress_wunsch = (request.POST.get('adresse_meldung') or '').strip()
-        if aenderungen:
-            mieter.save()
-        if aenderungen or adress_wunsch:
-            # Journal-Eintrag + Mail an die Verwaltung (wie bei der Portal-Kündigung)
-            try:
-                from crm.models import Kommunikation
-                text = "Selbst gemeldete Änderung über das Mieterportal:\n" + "\n".join(aenderungen)
-                if adress_wunsch:
-                    text += f"\nAdressänderung gewünscht: {adress_wunsch}"
-                Kommunikation.objects.create(mieter=mieter, typ='email', richtung='eingehend',
-                                             betreff='Kontaktdaten-Änderung (Mieterportal)',
-                                             inhalt=text)
-            except Exception:
-                logger.debug("Fehler bewusst übergangen", exc_info=True)
-            try:
-                from core.utils.email_service import send_ticket_email
-                # Die Meldung geht an die Verwaltung DIESES Mieters — sonst
-                # gingen Name, Telefon und Adresswunsch an eine fremde.
-                vw = mieter.organisation
-                if vw and vw.email:
-                    send_ticket_email(vw.email, f"Kontaktdaten-Änderung: {mieter.display_name}",
-                                      ("Der Mieter hat über das Portal Daten geändert/gemeldet:\n\n"
-                                       + "\n".join(aenderungen)
-                                       + (f"\nAdressänderung gewünscht: {adress_wunsch}" if adress_wunsch else "")))
-            except Exception:
-                logger.debug("Fehler bewusst übergangen", exc_info=True)
-            messages.success(request, '✅ ' + gettext('Ihre Angaben wurden aktualisiert und der Verwaltung gemeldet.'))
+        gestellt = [dienst.stellen(
+            art=Aenderungsanfrage.ART_KONTAKT, mieter=mieter,
+            daten={'mobile': request.POST.get('mobile') or '', 'telefon_privat': request.POST.get('telefon_privat') or '',
+                   'email': request.POST.get('email') or mieter.email or ''}),
+            dienst.stellen(art=Aenderungsanfrage.ART_MITTEILUNG, mieter=mieter,
+                           text=request.POST.get('adresse_meldung') or '')]
+        if any(gestellt):
+            messages.success(request, '✅ ' + gettext(
+                'Ihre Anfrage ist bei der Verwaltung. Die Änderung gilt, sobald die Verwaltung sie bestätigt hat.'))
         else:
             messages.info(request, gettext('Keine Änderungen erkannt.'))
         return redirect('mieter_daten')
 
-    return render(request, 'core/mieter_daten.html', {'mieter': mieter})
+    anfragen = list(Aenderungsanfrage.objects.filter(mieter=mieter).order_by('-erstellt_am')[:10])
+    return render(request, 'core/mieter_daten.html', {'mieter': mieter, 'anfragen': anfragen})
 
 
 @never_cache

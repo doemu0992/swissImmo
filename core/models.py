@@ -826,3 +826,66 @@ class ApiToken(models.Model):
     @property
     def aktiv(self):
         return self.widerrufen_am is None
+
+
+class Aenderungsanfrage(models.Model):
+    """Eine Anfrage aus dem Mieter- oder Eigentümerportal, die die Verwaltung bestätigen oder ablehnen muss.
+
+    Alles, was das Portal an Stammdaten verändern will, geht über diese Tabelle: Das Portal schreibt nie selbst in die
+    Stammdaten. Erst die Bestätigung durch eine Person der Verwaltung führt die Änderung aus (`core/services/anfragen.py`)
+    und steht im Logbuch. `daten` hält, was geändert werden soll (je Art andere Schlüssel), `zusammenfassung` den Text,
+    den die Verwaltung liest."""
+    ART_KONTAKT = 'kontakt'                  # Mieter: Mobile, Telefon, E-Mail
+    ART_MITTEILUNG = 'mitteilung'            # Freitext (Adresse, Namensänderung, weitere Anliegen): zur Kenntnis
+    ART_MIETBESTAETIGUNG = 'mietbestaetigung'  # Mieter: Bestätigung des Mietverhältnisses als PDF
+    ART_ZAHLUNGSPLAN = 'zahlungsplan'        # Mieter: Wunsch nach Ratenzahlung
+    ART_EIG_KONTAKT = 'eig_kontakt'          # Eigentümer: Telefon, E-Mail
+    ART_EIG_BANK = 'eig_bank'                # Eigentümer: Bankverbindung für Auszahlungen
+    ART_EIG_ANFRAGE = 'eig_anfrage'          # Eigentümer: Freitext an die Verwaltung
+    ARTEN = [(ART_KONTAKT, _('Kontaktdaten ändern')), (ART_MITTEILUNG, _('Mitteilung')),
+             (ART_MIETBESTAETIGUNG, _('Mietbestätigung')), (ART_ZAHLUNGSPLAN, _('Zahlungsplan')),
+             (ART_EIG_KONTAKT, _('Kontaktdaten ändern')), (ART_EIG_BANK, _('Bankverbindung ändern')),
+             (ART_EIG_ANFRAGE, _('Anfrage'))]
+    #: Arten, die Geld umleiten oder Personendaten Dritter berühren: nur Inhaber und Verwalter bestätigen sie.
+    SENSIBEL = (ART_EIG_BANK,)
+
+    STATUS_OFFEN, STATUS_BESTAETIGT, STATUS_ABGELEHNT = 'offen', 'bestaetigt', 'abgelehnt'
+    STATUS = [(STATUS_OFFEN, _('Offen')), (STATUS_BESTAETIGT, _('Bestätigt')), (STATUS_ABGELEHNT, _('Abgelehnt'))]
+
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
+                                     related_name='aenderungsanfragen', verbose_name='Organisation')
+    mieter = models.ForeignKey('crm.Mieter', on_delete=models.CASCADE, null=True, blank=True, related_name='anfragen')
+    eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.CASCADE, null=True, blank=True,
+                                    related_name='anfragen')
+    art = models.CharField('Art', max_length=20, choices=ARTEN)
+    daten = models.JSONField('Daten', default=dict, blank=True)
+    zusammenfassung = models.TextField('Zusammenfassung')
+    status = models.CharField('Status', max_length=12, choices=STATUS, default=STATUS_OFFEN, db_index=True)
+    erstellt_am = models.DateTimeField(default=timezone.now, editable=False)
+    entschieden_am = models.DateTimeField(null=True, blank=True)
+    entschieden_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                        related_name='+')
+    antwort = models.TextField('Antwort der Verwaltung', blank=True, default='',
+                               help_text='Bei einer Ablehnung der Grund; die Antragsteller lesen ihn im Portal.')
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    class Meta:
+        verbose_name = 'Änderungsanfrage'
+        verbose_name_plural = 'Änderungsanfragen'
+        ordering = ['-erstellt_am', '-pk']
+        constraints = [models.CheckConstraint(
+            condition=models.Q(mieter__isnull=False) | models.Q(eigentuemer__isnull=False),
+            name='core_aenderungsanfrage_hat_absender')]
+
+    def __str__(self):
+        return f'{self.get_art_display()} ({self.get_status_display()})'
+
+    @property
+    def absender(self):
+        return self.mieter or self.eigentuemer
+
+    @property
+    def offen(self):
+        return self.status == self.STATUS_OFFEN

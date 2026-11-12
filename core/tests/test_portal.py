@@ -753,7 +753,6 @@ class NachtN3MieterportalTests(TestCase):
         self.assertIn('Miete Juli', body)
 
     def test_meine_daten_aendern(self):
-        from crm.models import Kommunikation
         _lg, m, _v, u = self._mieter_login()
         c = Client(); c.force_login(u)
         self.assertEqual(c.get('/mieter/daten/').status_code, 200)
@@ -761,9 +760,11 @@ class NachtN3MieterportalTests(TestCase):
                                       'telefon_privat': '', 'email': 'hans@example.ch',
                                       'adresse_meldung': ''})
         self.assertEqual(r.status_code, 302)
+        # Das Portal ändert nichts selbst: Es entsteht eine Anfrage, die die Verwaltung bestätigen muss.
+        from core.models import Aenderungsanfrage
         m.refresh_from_db()
-        self.assertEqual(m.mobile, '079 999 88 77')
-        self.assertTrue(Kommunikation.objects.filter(mieter=m, betreff__icontains='Kontaktdaten').exists())
+        self.assertNotEqual(m.mobile, '079 999 88 77')
+        self.assertTrue(Aenderungsanfrage.objects.filter(mieter=m, art='kontakt', status='offen').exists())
 
     def test_rechnungsarchiv_zeigt_bezahlte(self):
         from finance.models import DebitorenRechnung

@@ -39683,3 +39683,78 @@ msgstr "Read-only finance API with your own keys"
 
 msgid "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit), offene Debitoren unter /api/v1/debitoren/offen. Höchstens 120 Abfragen pro Minute und Schlüssel."
 msgstr "The key goes in the header «Authorization: Bearer …». Requests: chart of accounts at /api/v1/konten, booking journal at /api/v1/buchungen (von, bis, offset, limit), open receivables at /api/v1/debitoren/offen. At most 120 requests per minute per key."
+
+msgid "Änderungswünsche aus den Portalen. Erst Ihre Bestätigung ändert die Stammdaten."
+msgstr "Change requests from the portals. The master data only changes once you confirm."
+
+msgid "Nur offene"
+msgstr "Open only"
+
+msgid "Auch entschiedene"
+msgstr "Include decided"
+
+msgid "Bankverbindung: bitte vor der Bestätigung beim Eigentümer telefonisch zurückfragen."
+msgstr "Bank details: please call the owner back before confirming."
+
+msgid "Grund der Ablehnung"
+msgstr "Reason for rejection"
+
+msgid "Nur Inhaber und Verwalter bestätigen diese Anfrage."
+msgstr "Only the owner and administrator can confirm this request."
+
+msgid "Entschieden"
+msgstr "Decided"
+
+msgid "Noch nichts entschieden."
+msgstr "Nothing decided yet."
+
+msgid "Kontaktdaten prüfen und Änderungen beantragen — sie gelten, sobald die Verwaltung sie bestätigt hat."
+msgstr "Check your contact details and request changes — they apply once the management has confirmed them."
+
+msgid "Änderung beantragen"
+msgstr "Request change"
+
+msgid "Antwort der Verwaltung:"
+msgstr "Reply from the management:"
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Die Änderung gilt, sobald die Verwaltung sie bestätigt hat."
+msgstr "Your request is with the management. The change applies once they have confirmed it."
+
+msgid "Die Anfrage ist bestätigt und die Änderung ausgeführt."
+msgstr "The request is confirmed and the change has been made."
+
+msgid "Die Anfrage ist abgelehnt."
+msgstr "The request has been rejected."
+
+msgid "Diese Anfrage ist bereits entschieden."
+msgstr "This request has already been decided."
+
+msgid "Bestätigung des Mietverhältnisses (PDF) gewünscht."
+msgstr "Confirmation of tenancy (PDF) requested."
+
+msgid "Ihre Anfrage «%(art)s» wurde von der Verwaltung bestätigt."
+msgstr "Your request «%(art)s» has been confirmed by the management."
+
+msgid "Ihre Anfrage «%(art)s» wurde von der Verwaltung abgelehnt."
+msgstr "Your request «%(art)s» has been rejected by the management."
+
+msgid "Ihre Anfrage an die Verwaltung"
+msgstr "Your request to the management"
+
+msgid "Den Stand sehen Sie im Portal."
+msgstr "You can see the status in the portal."
+
+msgid "Kontaktdaten ändern"
+msgstr "Change contact details"
+
+msgid "Mietbestätigung"
+msgstr "Tenancy confirmation"
+
+msgid "Zahlungsplan"
+msgstr "Payment plan"
+
+msgid "Bankverbindung ändern"
+msgstr "Change bank details"
+
+msgid "Anfrage"
+msgstr "Request"
