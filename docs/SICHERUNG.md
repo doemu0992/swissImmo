@@ -20,7 +20,7 @@ toten Verweisen wieder her. Beides gehört zusammen.
 ## Sichern
 
 ```bash
-workon myenv
+workon env313
 cd ~/swiss-manager
 python manage.py sicherung
 ```
@@ -81,13 +81,13 @@ mit begrenztem Speicher spürbar.
 Täglich, nur die Datenbank (dauert Sekunden):
 
 ```
-/home/swissimmo/.virtualenvs/myenv/bin/python /home/swissimmo/swiss-manager/manage.py sicherung --ohne-medien
+/home/swissimmo/.virtualenvs/env313/bin/python /home/swissimmo/swiss-manager/manage.py sicherung --ohne-medien
 ```
 
 Wöchentlich, vollständig (die vier Minuten):
 
 ```
-/home/swissimmo/.virtualenvs/myenv/bin/python /home/swissimmo/swiss-manager/manage.py sicherung --medien-behalten 2
+/home/swissimmo/.virtualenvs/env313/bin/python /home/swissimmo/swiss-manager/manage.py sicherung --medien-behalten 2
 ```
 
 Erlaubt das Konto nur einen Task, den vollständigen Befehl täglich nehmen und
@@ -119,7 +119,7 @@ rm -f db.sqlite3-wal db.sqlite3-shm        # Reste des alten Standes
 cp ~/sicherungen/20260817-030000-db.sqlite3 db.sqlite3
 
 # 4. Vor dem Einschalten nachzählen.
-workon myenv
+workon env313
 python manage.py bestand_zaehlen | head -20
 python manage.py migrate --check           # passt der Code zum Stand?
 

@@ -4,7 +4,7 @@ Die wiederkehrenden Prozesse laufen als Management-Commands und werden über die
 **Scheduled Tasks** von PythonAnywhere zeitgesteuert (kein Celery nötig).
 
 Basis-Kommando (Pfad/venv anpassen):
-`cd ~/swiss-manager && python manage.py <command>`
+`cd /home/swissimmo/swiss-manager && /home/swissimmo/.virtualenvs/env313/bin/python manage.py <command>`
 
 | Command | Empfohlener Rhythmus | Wirkung |
 |---------|---------------------|---------|
@@ -143,7 +143,7 @@ marschierte er weiter und meldete den Schaden zwei Schritte später als rohen
 er den Interpreter unabhängig von der ausgecheckten Skriptfassung erzwingt:
 
 ```
-PA_PY=/home/swissimmo/.virtualenvs/myenv/bin/python bash deploy.sh
+PA_PY=/home/swissimmo/.virtualenvs/env313/bin/python bash deploy.sh
 ```
 
 ### Was der Rollback NICHT leistet
@@ -174,8 +174,8 @@ zurückgeblieben ist. Dort hilft nur, die Migration nachzuziehen:
 
 ```
 cd ~/swiss-manager
-/home/swissimmo/.virtualenvs/myenv/bin/python manage.py benutzer_uebernahme
-/home/swissimmo/.virtualenvs/myenv/bin/python manage.py migrate --noinput
+/home/swissimmo/.virtualenvs/env313/bin/python manage.py benutzer_uebernahme
+/home/swissimmo/.virtualenvs/env313/bin/python manage.py migrate --noinput
 touch /var/www/swissimmo_pythonanywhere_com_wsgi.py
 ```
 
@@ -204,7 +204,7 @@ sieht, sucht sonst an der falschen Stelle.
 Prüfen lässt sich das nur direkt am Schema:
 
 ```
-/home/swissimmo/.virtualenvs/myenv/bin/python manage.py shell -c \
+/home/swissimmo/.virtualenvs/env313/bin/python manage.py shell -c \
   "from django.db import connection; \
    print(sorted(t for t in connection.introspection.table_names() if 'mitglied' in t))"
 ```
@@ -303,7 +303,7 @@ dort schliessen drei Änderungen die Lücke:
    aktiviertes virtualenv; ein blosses `python` ist dann der System-Python, in
    dem Django fehlt. Das wird jetzt gefragt, solange ein Abbruch folgenlos ist.
    Im Task deshalb den venv-Python angeben:
-   `PA_PY=$HOME/.virtualenvs/myenv/bin/python bash deploy.sh`
+   `PA_PY=$HOME/.virtualenvs/env313/bin/python bash deploy.sh`
 2. **Rückrollen des Codes**, wenn Übernahme oder Migration scheitern. Danach
    passen Platte und Datenbank wieder zusammen — auch für den nächsten
    Worker-Neustart.
@@ -322,8 +322,8 @@ Das ist der Zustand, den man will: sichtbar kaputt statt still halb.
 
 ```bash
 cd ~/swiss-manager
-~/.virtualenvs/myenv/bin/python manage.py benutzer_uebernahme
-~/.virtualenvs/myenv/bin/python manage.py migrate
+~/.virtualenvs/env313/bin/python manage.py benutzer_uebernahme
+~/.virtualenvs/env313/bin/python manage.py migrate
 # danach die Web-App im Web-Tab neu laden
 ```
 
@@ -452,3 +452,21 @@ ALTER DEFAULT PRIVILEGES FOR ROLE swissimmo_migrate IN SCHEMA public
 
 Der Deploy braucht dann die Zugangsdaten der Migrationsrolle nur für den `migrate`-Schritt. Bei PythonAnywhere ist das ein
 Betreiber-Schritt (Rollen anlegen, Umgebungsvariablen von Web-App und Tasks umstellen); bis dahin meldet der Befehl den Ist-Zustand.
+
+## Lesende Finanz-API (`/api/v1/`)
+
+Für Treuhand und Buchhaltungssoftware: nur Lesen, nur die eigene Verwaltung. Anmeldung mit einem API-Schlüssel, nicht mit einem Konto.
+
+| Befehl | Zweck |
+|---|---|
+| `api_token_erstellen --organisation ID --name "Treuhand Muster AG"` | Neuer Schlüssel. Der Klartext (`imm_…`) erscheint einmal; gespeichert wird nur sein SHA-256-Hash |
+| `api_token_widerrufen` / `--id N` | Liste (mit «zuletzt benutzt») bzw. sofortiger Widerruf |
+
+Anlegen und Widerruf stehen im Logbuch (Kategorie Sicherheit). Abfragen: `Authorization: Bearer imm_…`.
+
+* `GET /api/v1/konten`: Kontenplan.
+* `GET /api/v1/buchungen?von=JJJJ-MM-TT&bis=JJJJ-MM-TT&offset=0&limit=100`: Journal nach Datum und Belegnummer, `limit` höchstens 500;
+  Stornobuchungen sind eigene Zeilen (`storno`, `storno_von_beleg_nr`).
+
+Grenzen: 120 Abfragen je Minute und Schlüssel (danach 429). Eine Sitzung ersetzt den Schlüssel nicht, und es gibt keine
+schreibenden Endpunkte. Jede Abfrage läuft im Mandantenkontext des Schlüssels.
