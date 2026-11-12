@@ -182,8 +182,27 @@ def portal_profil(request, eigentuemer):
                 update_session_auth_hash(request, benutzer)
                 messages.success(request, gettext('Passwort geändert.'))
                 return redirect('portal_profil')
+        elif request.POST.get('aktion') in ('kontakt', 'bank'):
+            from core.models import Aenderungsanfrage
+            from core.services import anfragen as anfragen_dienst
+            if request.POST['aktion'] == 'kontakt':
+                anfrage = anfragen_dienst.stellen(
+                    art=Aenderungsanfrage.ART_EIG_KONTAKT, eigentuemer=eigentuemer,
+                    daten={'telefon': request.POST.get('telefon') or '', 'email': request.POST.get('email') or ''})
+            else:
+                anfrage = anfragen_dienst.stellen(
+                    art=Aenderungsanfrage.ART_EIG_BANK, eigentuemer=eigentuemer,
+                    daten={'bank_name': request.POST.get('bank_name') or '',
+                           'iban': (request.POST.get('iban') or '').replace(' ', '').upper()})
+            if anfrage is None:
+                messages.info(request, gettext('Keine Änderungen erkannt.'))
+            else:
+                messages.success(request, gettext('Ihre Anfrage ist bei der Verwaltung. Die Änderung gilt, sobald die Verwaltung sie bestätigt hat.'))
+            return redirect('portal_profil')
+    from core.models import Aenderungsanfrage
+    anfragen = list(Aenderungsanfrage.objects.filter(eigentuemer=eigentuemer).order_by('-erstellt_am')[:10])
     return render(request, 'core/eig_profil.html', _kontext(
-        eigentuemer, sprachen=sprachen, passwort=passwort))
+        eigentuemer, sprachen=sprachen, passwort=passwort, anfragen=anfragen))
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

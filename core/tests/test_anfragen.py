@@ -271,3 +271,48 @@ class MietbestaetigungUndZahlungsplanTests(AnfragenTests):
         self.assertIn('Mietzinsdepot', body)
         self.assertIn("3'600", body)
         self.assertNotIn("5'000", body)                                                    # nur das eigene Depot
+
+
+class EigentuemerAnfragenTests(AnfragenTests):
+    """Teil 3: Eigentümerportal: Kontakt und Bankverbindung nur per Anfrage, Bank nur von Inhaber oder Verwalter bestätigt."""
+
+    def _eig_client(self, f=None):
+        c = Client()
+        c.force_login((f or self.a).eigentuemer.benutzer)
+        return c
+
+    def test_kontakt_und_bank_sind_nur_anfragen(self):
+        c = self._eig_client()
+        vorher = (self.a.eigentuemer.telefon, self.a.eigentuemer.iban)
+        r = c.post('/portal/profil/', {'aktion': 'kontakt', 'telefon': '044 111 22 33', 'email': self.a.eigentuemer.email})
+        self.assertEqual(r.status_code, 302)
+        c.post('/portal/profil/', {'aktion': 'bank', 'bank_name': 'Neue Bank', 'iban': 'ch93 0076 2011 6238 5295 7'})
+        with organisation_kontext(self.a.organisation):
+            self.a.eigentuemer.refresh_from_db()
+            kontakt, bank = (Aenderungsanfrage.objects.get(art=ART.ART_EIG_KONTAKT),
+                             Aenderungsanfrage.objects.get(art=ART.ART_EIG_BANK))
+        self.assertEqual((self.a.eigentuemer.telefon, self.a.eigentuemer.iban), vorher)      # nichts geändert
+        self.assertEqual(bank.daten['iban'], 'CH9300762011623852957')                       # normiert
+        self.assertEqual(kontakt.status, ART.STATUS_OFFEN)
+
+    def test_ohne_aenderung_keine_anfrage(self):
+        e = self.a.eigentuemer
+        self._eig_client().post('/portal/profil/', {'aktion': 'kontakt', 'telefon': e.telefon, 'email': e.email})
+        self.assertFalse(Aenderungsanfrage.alle_organisationen.exists())
+
+    def test_bank_wird_in_der_verwaltung_markiert_und_nach_bestaetigung_gesetzt(self):
+        self._eig_client().post('/portal/profil/', {'aktion': 'bank', 'bank_name': 'Neue Bank', 'iban': 'CH9300762011623852957'})
+        body = self._verwaltung().get('/neu/anfragen/').content.decode()
+        self.assertIn('telefonisch zurückfragen', body)
+        anfrage = Aenderungsanfrage.alle_organisationen.get(art=ART.ART_EIG_BANK)
+        self._verwaltung().post(f'/neu/anfragen/{anfrage.pk}/bestaetigen/')
+        with organisation_kontext(self.a.organisation):
+            self.a.eigentuemer.refresh_from_db()
+        self.assertEqual((self.a.eigentuemer.iban, self.a.eigentuemer.bank_name), ('CH9300762011623852957', 'Neue Bank'))
+
+    def test_eigentuemer_sieht_nur_seine_anfragen(self):
+        self._eig_client().post('/portal/profil/', {'aktion': 'kontakt', 'telefon': '044 AAA', 'email': ''})
+        self._eig_client(self.b).post('/portal/profil/', {'aktion': 'kontakt', 'telefon': '044 BBB', 'email': ''})
+        body = self._eig_client().get('/portal/profil/').content.decode()
+        self.assertIn('044 AAA', body)
+        self.assertNotIn('044 BBB', body)

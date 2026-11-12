@@ -40398,3 +40398,15 @@ msgstr "Descrivete brevemente il vostro desiderio."
 
 msgid "Antwort an die Absenderin (optional)"
 msgstr "Risposta al mittente (facoltativo)"
+
+msgid "Änderungen beantragen Sie unten oder über die Mitteilungen. Sie gelten, sobald die Verwaltung sie bestätigt hat."
+msgstr "Richiedete le modifiche qui sotto o tramite le comunicazioni. Valgono non appena l'amministrazione le ha confermate."
+
+msgid "Kontaktdaten beantragen"
+msgstr "Richiedi i dati di contatto"
+
+msgid "Aus Sicherheitsgründen ruft die Verwaltung Sie vor der Bestätigung einer neuen Bankverbindung zurück."
+msgstr "Per motivi di sicurezza l'amministrazione vi richiama prima di confermare nuove coordinate bancarie."
+
+msgid "Bankverbindung beantragen"
+msgstr "Richiedi le coordinate bancarie"

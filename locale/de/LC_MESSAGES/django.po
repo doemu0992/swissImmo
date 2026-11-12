@@ -38697,3 +38697,15 @@ msgstr "Bitte beschreiben Sie Ihren Wunsch kurz."
 
 msgid "Antwort an die Absenderin (optional)"
 msgstr "Antwort an die Absenderin (optional)"
+
+msgid "Änderungen beantragen Sie unten oder über die Mitteilungen. Sie gelten, sobald die Verwaltung sie bestätigt hat."
+msgstr "Änderungen beantragen Sie unten oder über die Mitteilungen. Sie gelten, sobald die Verwaltung sie bestätigt hat."
+
+msgid "Kontaktdaten beantragen"
+msgstr "Kontaktdaten beantragen"
+
+msgid "Aus Sicherheitsgründen ruft die Verwaltung Sie vor der Bestätigung einer neuen Bankverbindung zurück."
+msgstr "Aus Sicherheitsgründen ruft die Verwaltung Sie vor der Bestätigung einer neuen Bankverbindung zurück."
+
+msgid "Bankverbindung beantragen"
+msgstr "Bankverbindung beantragen"

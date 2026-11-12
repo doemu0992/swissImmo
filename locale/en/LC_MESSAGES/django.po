@@ -39803,3 +39803,15 @@ msgstr "Please briefly describe your request."
 
 msgid "Antwort an die Absenderin (optional)"
 msgstr "Reply to the sender (optional)"
+
+msgid "Änderungen beantragen Sie unten oder über die Mitteilungen. Sie gelten, sobald die Verwaltung sie bestätigt hat."
+msgstr "Request changes below or via the messages. They apply once the management has confirmed them."
+
+msgid "Kontaktdaten beantragen"
+msgstr "Request contact details"
+
+msgid "Aus Sicherheitsgründen ruft die Verwaltung Sie vor der Bestätigung einer neuen Bankverbindung zurück."
+msgstr "For security reasons the management will call you back before confirming new bank details."
+
+msgid "Bankverbindung beantragen"
+msgstr "Request bank details"

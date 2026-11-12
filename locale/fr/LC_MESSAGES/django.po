@@ -40469,3 +40469,15 @@ msgstr "Veuillez décrire brièvement votre souhait."
 
 msgid "Antwort an die Absenderin (optional)"
 msgstr "Réponse à l'expéditeur (facultatif)"
+
+msgid "Änderungen beantragen Sie unten oder über die Mitteilungen. Sie gelten, sobald die Verwaltung sie bestätigt hat."
+msgstr "Demandez les modifications ci-dessous ou via les communications. Elles s'appliquent dès que la gérance les a confirmées."
+
+msgid "Kontaktdaten beantragen"
+msgstr "Demander les coordonnées"
+
+msgid "Aus Sicherheitsgründen ruft die Verwaltung Sie vor der Bestätigung einer neuen Bankverbindung zurück."
+msgstr "Pour des raisons de sécurité, la gérance vous rappelle avant de confirmer de nouvelles coordonnées bancaires."
+
+msgid "Bankverbindung beantragen"
+msgstr "Demander les coordonnées bancaires"
