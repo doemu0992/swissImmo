@@ -4,7 +4,7 @@ Die wiederkehrenden Prozesse laufen als Management-Commands und werden über die
 **Scheduled Tasks** von PythonAnywhere zeitgesteuert (kein Celery nötig).
 
 Basis-Kommando (Pfad/venv anpassen):
-`cd ~/swiss-manager && python manage.py <command>`
+`cd /home/swissimmo/swiss-manager && /home/swissimmo/.virtualenvs/env313/bin/python manage.py <command>`
 
 | Command | Empfohlener Rhythmus | Wirkung |
 |---------|---------------------|---------|
@@ -143,7 +143,7 @@ marschierte er weiter und meldete den Schaden zwei Schritte später als rohen
 er den Interpreter unabhängig von der ausgecheckten Skriptfassung erzwingt:
 
 ```
-PA_PY=/home/swissimmo/.virtualenvs/myenv/bin/python bash deploy.sh
+PA_PY=/home/swissimmo/.virtualenvs/env313/bin/python bash deploy.sh
 ```
 
 ### Was der Rollback NICHT leistet
@@ -174,8 +174,8 @@ zurückgeblieben ist. Dort hilft nur, die Migration nachzuziehen:
 
 ```
 cd ~/swiss-manager
-/home/swissimmo/.virtualenvs/myenv/bin/python manage.py benutzer_uebernahme
-/home/swissimmo/.virtualenvs/myenv/bin/python manage.py migrate --noinput
+/home/swissimmo/.virtualenvs/env313/bin/python manage.py benutzer_uebernahme
+/home/swissimmo/.virtualenvs/env313/bin/python manage.py migrate --noinput
 touch /var/www/swissimmo_pythonanywhere_com_wsgi.py
 ```
 
@@ -204,7 +204,7 @@ sieht, sucht sonst an der falschen Stelle.
 Prüfen lässt sich das nur direkt am Schema:
 
 ```
-/home/swissimmo/.virtualenvs/myenv/bin/python manage.py shell -c \
+/home/swissimmo/.virtualenvs/env313/bin/python manage.py shell -c \
   "from django.db import connection; \
    print(sorted(t for t in connection.introspection.table_names() if 'mitglied' in t))"
 ```
@@ -303,7 +303,7 @@ dort schliessen drei Änderungen die Lücke:
    aktiviertes virtualenv; ein blosses `python` ist dann der System-Python, in
    dem Django fehlt. Das wird jetzt gefragt, solange ein Abbruch folgenlos ist.
    Im Task deshalb den venv-Python angeben:
-   `PA_PY=$HOME/.virtualenvs/myenv/bin/python bash deploy.sh`
+   `PA_PY=$HOME/.virtualenvs/env313/bin/python bash deploy.sh`
 2. **Rückrollen des Codes**, wenn Übernahme oder Migration scheitern. Danach
    passen Platte und Datenbank wieder zusammen — auch für den nächsten
    Worker-Neustart.
@@ -322,8 +322,8 @@ Das ist der Zustand, den man will: sichtbar kaputt statt still halb.
 
 ```bash
 cd ~/swiss-manager
-~/.virtualenvs/myenv/bin/python manage.py benutzer_uebernahme
-~/.virtualenvs/myenv/bin/python manage.py migrate
+~/.virtualenvs/env313/bin/python manage.py benutzer_uebernahme
+~/.virtualenvs/env313/bin/python manage.py migrate
 # danach die Web-App im Web-Tab neu laden
 ```
 

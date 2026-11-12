@@ -73,7 +73,7 @@ Seite (Adresse, Port).
 voraus, dass die Datenbank schon da ist. In einer Bash-Konsole:
 
 ```bash
-workon myenv
+workon env313
 cd ~/swiss-manager
 python postgres_anlegen.py \
     --host swissimmo-5420.postgres.pythonanywhere-services.com \
@@ -180,7 +180,7 @@ des Skripts und keine einmalige Aufräumaktion.**
 ## Der Umzug
 
 ```bash
-workon myenv
+workon env313
 cd ~/swiss-manager
 git pull origin main
 bash umzug_postgres.sh

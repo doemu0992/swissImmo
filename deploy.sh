@@ -61,7 +61,7 @@ case "$BRANCH" in
         echo "  Diese Fassung kennt: --dauerlauf"
         echo "  Ein Branchname beginnt nicht mit '--'. Liegt hier eine aeltere"
         echo "  Fassung von deploy.sh? Einmal von Hand nachziehen:"
-        echo "  PA_PY=\$HOME/.virtualenvs/myenv/bin/python bash deploy.sh"
+        echo "  PA_PY=\$HOME/.virtualenvs/env313/bin/python bash deploy.sh"
         exit 1 ;;
 esac
 
@@ -109,7 +109,7 @@ if ! PY="$(finde_python)"; then
     echo "✗ Kein Python gefunden, das Django importieren kann."
     echo "  Gesucht: \$PA_PY, python, python3, \$HOME/.virtualenvs/*/bin/python"
     echo "  Setze PA_PY auf den Python des virtualenv, z.B.:"
-    echo "  PA_PY=\$HOME/.virtualenvs/myenv/bin/python bash deploy.sh"
+    echo "  PA_PY=\$HOME/.virtualenvs/env313/bin/python bash deploy.sh"
     exit 1
 fi
 [ "${PA_PY:-}" = "$PY" ] || echo "· Python: $PY"
