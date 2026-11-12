@@ -39623,3 +39623,60 @@ msgstr "bexio (via importly.ch)"
 
 msgid "bexio (über den Dienst importly.ch; bexio selbst importiert keine Buchungen per CSV)"
 msgstr "bexio (via the importly.ch service; bexio itself does not import bookings from CSV)"
+
+msgid "API-Zugang"
+msgstr "API access"
+
+msgid "Mit einem Schlüssel lesen Treuhand oder Buchhaltungssoftware Kontenplan und Buchungsjournal Ihrer Verwaltung. Nur lesen, nichts ändern."
+msgstr "With a key, your trustee or accounting software can read your management's chart of accounts and booking journal. Read-only, nothing can be changed."
+
+msgid "Kopieren Sie den Schlüssel jetzt. Er wird nur dieses eine Mal angezeigt und lässt sich später nicht wieder abrufen."
+msgstr "Copy the key now. It is shown only this once and cannot be retrieved later."
+
+msgid "Schlüssel «%(n)s» angelegt"
+msgstr "Key «%(n)s» created"
+
+msgid "Angelegt am %(d)s"
+msgstr "Created on %(d)s"
+
+msgid "zuletzt benutzt %(d)s"
+msgstr "last used %(d)s"
+
+msgid "noch nie benutzt"
+msgstr "never used"
+
+msgid "widerrufen am %(d)s"
+msgstr "revoked on %(d)s"
+
+msgid "Noch kein Schlüssel angelegt."
+msgstr "No key created yet."
+
+msgid "Neuer Schlüssel"
+msgstr "New key"
+
+msgid "Wofür der Schlüssel dient, z. B. der Name der Treuhandfirma. Höchstens %(n)s aktive Schlüssel."
+msgstr "What the key is for, e.g. the name of the trustee firm. At most %(n)s active keys."
+
+msgid "Schlüssel anlegen"
+msgstr "Create key"
+
+msgid "Verwendung"
+msgstr "Usage"
+
+msgid "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit). Höchstens 120 Abfragen pro Minute und Schlüssel."
+msgstr "The key goes in the header «Authorization: Bearer …». Requests: chart of accounts at /api/v1/konten, booking journal at /api/v1/buchungen (von, bis, offset, limit). At most 120 requests per minute per key."
+
+msgid "Schlüssel für Treuhand und Buchhaltungssoftware (nur Lesen)"
+msgstr "Keys for your trustee and accounting software (read-only)"
+
+msgid "Bitte eine Bezeichnung angeben, z. B. den Namen der Treuhandfirma."
+msgstr "Please enter a label, e.g. the name of the trustee firm."
+
+msgid "Es sind bereits %(n)s Schlüssel aktiv. Bitte zuerst einen widerrufen."
+msgstr "%(n)s keys are already active. Please revoke one first."
+
+msgid "Der Schlüssel «%(n)s» ist widerrufen."
+msgstr "The key «%(n)s» has been revoked."
+
+msgid "Lesende Finanz-API mit eigenen Schlüsseln"
+msgstr "Read-only finance API with your own keys"

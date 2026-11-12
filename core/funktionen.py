@@ -92,6 +92,9 @@ FUNKTIONEN = {
     # ab Stufe «professional»
     'mandatsrentabilitaet': _('Honorarertrag gegen erfassten Aufwand'),
     'schnittstellen':       _('Buchhaltungsexport, Portale, Kalender'),
+
+    # ab Stufe «enterprise»
+    'api_zugang':           _('Lesende Finanz-API mit eigenen Schlüsseln'),
 }
 
 # Zubuchbare Module. Stehen bewusst getrennt: Sie hängen nicht an der Stufe,
@@ -132,9 +135,9 @@ _AUFBAUEND = (
     ('team',         ('faelle', 'zulauf', 'eigentuemerportal',
                       'betreibung', 'datenimport', 'stweg')),
     ('professional', ('mandatsrentabilitaet', 'schnittstellen')),
-    # Enterprise unterscheidet sich über Grenzen und Betreuung, nicht über
-    # Funktionen.
-    ('enterprise',   ()),
+    # Enterprise unterscheidet sich über Grenzen und Betreuung und trägt als einzige Funktion den API-Zugang
+    # (Zuschnitt vorläufig, wie bei Betreibung und Stockwerkeigentum: eine Entscheidung des Betreibers).
+    ('enterprise',   ('api_zugang',)),
 )
 
 STUFEN = {}

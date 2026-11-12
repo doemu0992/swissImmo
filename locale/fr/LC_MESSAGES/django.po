@@ -40289,3 +40289,60 @@ msgstr "bexio (via importly.ch)"
 
 msgid "bexio (über den Dienst importly.ch; bexio selbst importiert keine Buchungen per CSV)"
 msgstr "bexio (via le service importly.ch ; bexio n'importe pas lui-même les écritures par CSV)"
+
+msgid "API-Zugang"
+msgstr "Accès API"
+
+msgid "Mit einem Schlüssel lesen Treuhand oder Buchhaltungssoftware Kontenplan und Buchungsjournal Ihrer Verwaltung. Nur lesen, nichts ändern."
+msgstr "Avec une clé, la fiduciaire ou le logiciel de comptabilité lit le plan comptable et le journal des écritures de votre gérance. Lecture seule, aucune modification."
+
+msgid "Kopieren Sie den Schlüssel jetzt. Er wird nur dieses eine Mal angezeigt und lässt sich später nicht wieder abrufen."
+msgstr "Copiez la clé maintenant. Elle n'est affichée qu'une seule fois et ne pourra plus être consultée par la suite."
+
+msgid "Schlüssel «%(n)s» angelegt"
+msgstr "Clé «%(n)s» créée"
+
+msgid "Angelegt am %(d)s"
+msgstr "Créée le %(d)s"
+
+msgid "zuletzt benutzt %(d)s"
+msgstr "dernière utilisation %(d)s"
+
+msgid "noch nie benutzt"
+msgstr "jamais utilisée"
+
+msgid "widerrufen am %(d)s"
+msgstr "révoquée le %(d)s"
+
+msgid "Noch kein Schlüssel angelegt."
+msgstr "Aucune clé créée pour l'instant."
+
+msgid "Neuer Schlüssel"
+msgstr "Nouvelle clé"
+
+msgid "Wofür der Schlüssel dient, z. B. der Name der Treuhandfirma. Höchstens %(n)s aktive Schlüssel."
+msgstr "À quoi sert la clé, p. ex. le nom de la fiduciaire. Au maximum %(n)s clés actives."
+
+msgid "Schlüssel anlegen"
+msgstr "Créer la clé"
+
+msgid "Verwendung"
+msgstr "Utilisation"
+
+msgid "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit). Höchstens 120 Abfragen pro Minute und Schlüssel."
+msgstr "La clé se place dans l'en-tête «Authorization: Bearer …». Requêtes: plan comptable sous /api/v1/konten, journal des écritures sous /api/v1/buchungen (von, bis, offset, limit). Au maximum 120 requêtes par minute et par clé."
+
+msgid "Schlüssel für Treuhand und Buchhaltungssoftware (nur Lesen)"
+msgstr "Clés pour la fiduciaire et le logiciel de comptabilité (lecture seule)"
+
+msgid "Bitte eine Bezeichnung angeben, z. B. den Namen der Treuhandfirma."
+msgstr "Veuillez indiquer une désignation, p. ex. le nom de la fiduciaire."
+
+msgid "Es sind bereits %(n)s Schlüssel aktiv. Bitte zuerst einen widerrufen."
+msgstr "%(n)s clés sont déjà actives. Veuillez d'abord en révoquer une."
+
+msgid "Der Schlüssel «%(n)s» ist widerrufen."
+msgstr "La clé «%(n)s» est révoquée."
+
+msgid "Lesende Finanz-API mit eigenen Schlüsseln"
+msgstr "API financière en lecture avec clés propres"

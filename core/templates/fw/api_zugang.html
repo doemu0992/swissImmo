@@ -1,0 +1,74 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% comment %}
+API-ZUGANG — Schlüssel für die lesende Finanz-API. Nur Inhaber. Der Klartext erscheint nur in der Antwort auf das Anlegen.
+{% endcomment %}
+{% block title %}{% trans "API-Zugang" %} — immoswiss{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <a href="/neu/einstellungen/">{% trans "Einstellungen" %}</a>
+    {% zeichen 'weiter' %}
+    <b>{% trans "API-Zugang" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "API-Zugang" %}</h1>
+        <p>{% trans "Mit einem Schlüssel lesen Treuhand oder Buchhaltungssoftware Kontenplan und Buchungsjournal Ihrer Verwaltung. Nur lesen, nichts ändern." %}</p>
+    </div>
+</div>
+
+{% if neuer_schluessel %}
+<div class="fw-card mb-3" data-testid="api-neuer-schluessel">
+    <div class="fw-kopf"><h3 class="fw-t">{% blocktrans with n=neuer_name %}Schlüssel «{{ n }}» angelegt{% endblocktrans %}</h3></div>
+    <div class="fw-rumpf">
+        <p class="fw-mutet">{% trans "Kopieren Sie den Schlüssel jetzt. Er wird nur dieses eine Mal angezeigt und lässt sich später nicht wieder abrufen." %}</p>
+        <input type="text" readonly value="{{ neuer_schluessel }}" class="fw-feld" data-testid="api-schluessel-text" onfocus="this.select()">
+    </div>
+</div>
+{% endif %}
+
+<div class="fw-card mb-3">
+    <div class="fw-kopf"><h3 class="fw-t">{% trans "Schlüssel" %}</h3></div>
+    {% for s in schluessel %}
+    <div class="fw-zeile" data-testid="api-schluessel-zeile">
+        <div class="fw-mitte">
+            <div class="fw-t">{{ s.name }} <span class="fw-mutet">{{ s.anfang }}…</span></div>
+            <div class="fw-s">
+                {% blocktrans with d=s.erstellt_am|date:"d.m.Y" %}Angelegt am {{ d }}{% endblocktrans %} ·
+                {% if s.zuletzt_benutzt %}{% blocktrans with d=s.zuletzt_benutzt|date:"d.m.Y H:i" %}zuletzt benutzt {{ d }}{% endblocktrans %}{% else %}{% trans "noch nie benutzt" %}{% endif %}
+                {% if not s.aktiv %} · <b>{% blocktrans with d=s.widerrufen_am|date:"d.m.Y" %}widerrufen am {{ d }}{% endblocktrans %}</b>{% endif %}
+            </div>
+        </div>
+        {% if s.aktiv %}
+        <form method="post" action="/neu/einstellungen/api/{{ s.pk }}/widerrufen/">
+            {% csrf_token %}
+            <button type="submit" class="fw-btn fw-gefahr" data-testid="api-widerrufen">{% trans "Widerrufen" %}</button>
+        </form>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="fw-rumpf"><p class="fw-mutet">{% trans "Noch kein Schlüssel angelegt." %}</p></div>
+    {% endfor %}
+</div>
+
+<form method="post" action="/neu/einstellungen/api/" class="max-w-3xl">
+    {% csrf_token %}
+    <div class="fw-card">
+        <div class="fw-kopf"><h3 class="fw-t">{% trans "Neuer Schlüssel" %}</h3></div>
+        <div class="fw-formular fw-rumpf">
+            <div class="fw-feldblock"><label for="api-name" class="fw-label">{% trans "Bezeichnung" %}</label>
+                <input id="api-name" name="name" type="text" maxlength="100" autocomplete="off" class="fw-feld" required>
+                <p class="fw-mutet">{% blocktrans with n=max_aktiv %}Wofür der Schlüssel dient, z. B. der Name der Treuhandfirma. Höchstens {{ n }} aktive Schlüssel.{% endblocktrans %}</p></div>
+        </div>
+        <div class="fw-fuss"><button type="submit" class="fw-btn fw-primary" data-testid="api-anlegen">{% trans "Schlüssel anlegen" %}</button></div>
+    </div>
+</form>
+
+<div class="fw-card mt-3 max-w-3xl">
+    <div class="fw-kopf"><h3 class="fw-t">{% trans "Verwendung" %}</h3></div>
+    <div class="fw-rumpf">
+        <p class="fw-mutet">{% trans "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit). Höchstens 120 Abfragen pro Minute und Schlüssel." %}</p>
+    </div>
+</div>
+{% endblock %}

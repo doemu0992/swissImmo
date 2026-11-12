@@ -107,10 +107,10 @@ class FreigabeTests(TestCase):
         self.assertFalse(hat_funktion(self.org, 'mandatsrentabilitaet'))
 
     @override_settings(SWISSIMMO_VORGABE_STUFE='professional')
-    def test_professional_hat_alles(self):
+    def test_professional_hat_alles_ausser_dem_api_zugang(self):
         for schluessel in FUNKTIONEN:
             with self.subTest(schluessel=schluessel):
-                self.assertTrue(hat_funktion(self.org, schluessel))
+                self.assertEqual(hat_funktion(self.org, schluessel), schluessel != 'api_zugang')
 
     @override_settings(SWISSIMMO_VORGABE_STUFE='enterprise')
     def test_enterprise_hat_alles(self):

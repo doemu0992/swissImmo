@@ -82,6 +82,7 @@ from .daten import (  # noqa: F401 — Einstellungen «Daten»: Import für Wech
     fw_daten, fw_daten_import, fw_daten_import_vorlage, fw_daten_import_lauf, fw_daten_import_ausfuehren,
     fw_daten_import_verwerfen, fw_daten_export, fw_daten_export_format, fw_daten_export_journal,
     fw_daten_export_mandat)
+from .api_zugang import *    # noqa: F401,F403 — Einstellungen «API-Zugang»: Schlüssel für die lesende Finanz-API
 from .buchhaltung import *   # noqa: F401,F403 — Block 5
 from .mietzins import *      # noqa: F401,F403 — Block 5
 from .kreditoren import *    # noqa: F401,F403 — Block 4

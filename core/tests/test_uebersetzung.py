@@ -62,6 +62,7 @@ UEBERSETZT = (
     'fw/_abo_hinweis.html',          # Funktionsfreigabe: Hinweis bei Zahlungsverzug / gesperrtem Modul
     'fw/abonnement_bestaetigen.html',
     'fw/_archivieren.html',
+    'fw/api_zugang.html',            # Schlüssel der lesenden Finanz-API
     'fw/daten.html',                 # Datenimport/-export (FUNK-09/13)
     'fw/daten_export.html',
     'fw/daten_import.html',

@@ -88,6 +88,7 @@ EINSTELLUNGEN_ZIELE = [
     '/neu/einstellungen/zahlungsfreigabe/',
     '/neu/archiv/',
     '/neu/einstellungen/daten/',
+    '/neu/einstellungen/api/',
 ]
 
 

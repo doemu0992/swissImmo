@@ -462,6 +462,10 @@ Für Treuhand und Buchhaltungssoftware: nur Lesen, nur die eigene Verwaltung. An
 | `api_token_erstellen --organisation ID --name "Treuhand Muster AG"` | Neuer Schlüssel. Der Klartext (`imm_…`) erscheint einmal; gespeichert wird nur sein SHA-256-Hash |
 | `api_token_widerrufen` / `--id N` | Liste (mit «zuletzt benutzt») bzw. sofortiger Widerruf |
 
+**In der App:** Einstellungen → «API-Zugang» (nur Inhaber, nur in der Stufe mit dem Merkmal `api_zugang`, heute Enterprise): Liste mit
+«zuletzt benutzt», neuer Schlüssel (Klartext einmalig), Widerruf, höchstens 10 aktive. Ein Schlüssel einer Verwaltung ohne das Merkmal
+antwortet mit 403, auch wenn er vor einem Downgrade angelegt wurde. Die Befehle oben sind der Notweg für den Betreiber.
+
 Anlegen und Widerruf stehen im Logbuch (Kategorie Sicherheit). Abfragen: `Authorization: Bearer imm_…`.
 
 * `GET /api/v1/konten`: Kontenplan.
