@@ -54,10 +54,10 @@
     {% endfor %}
     <div class="fw-rumpf">
         {% if z.naechste %}
-        <form method="post" action="/neu/stweg/{{ lg.pk }}/inkasso/mahnen/" style="display:inline">{% csrf_token %}
+        <form method="post" action="/neu/stweg/{{ lg.pk }}/inkasso/mahnen/" class="inline">{% csrf_token %}
             <input type="hidden" name="einheit" value="{{ z.einheit.pk }}">
             <label class="fw-s" for="fr{{ z.einheit.pk }}">{% trans "Frist (Tage)" %}</label>
-            <input id="fr{{ z.einheit.pk }}" name="frist_tage" value="{{ frist }}" inputmode="numeric" class="fw-feld" style="max-width:5rem">
+            <input id="fr{{ z.einheit.pk }}" name="frist_tage" value="{{ frist }}" inputmode="numeric" class="fw-feld max-w-20">
             <button class="fw-btn fw-primary">{% blocktrans with s=z.naechste %}{{ s }}. Mahnung erstellen und versenden{% endblocktrans %}</button></form>
         {% endif %}
         {% if z.fall %}

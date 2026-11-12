@@ -176,4 +176,31 @@
             if (z) z.classList.toggle('hidden', !el.checked);
         }
     });
+    // Datenwerte als Mass (Balken, Kurven): `data-breite="42"` -> width:42%. Die Werte kommen vom Server als Zahl;
+    // gesetzt werden sie über das Stilobjekt des Elements (`el.style`), das die Content-Security-Policy erlaubt —
+    // anders als ein `style="…"`-Attribut im Quelltext. Gilt auch für später geladene Teile (Schublade).
+    var MASSE = {'data-breite': 'width', 'data-hoehe': 'height', 'data-links': 'left', 'data-oben': 'top'};
+    function masse(wurzel) {
+        Object.keys(MASSE).forEach(function (attr) {
+            var liste = wurzel.querySelectorAll('[' + attr + ']');
+            for (var i = 0; i < liste.length; i++) {
+                var wert = parseFloat(String(liste[i].getAttribute(attr)).replace(',', '.'));
+                if (isFinite(wert)) liste[i].style[MASSE[attr]] = wert + '%';
+            }
+        });
+        Object.keys(MASSE).forEach(function (attr) {
+            if (wurzel.nodeType === 1 && wurzel.hasAttribute && wurzel.hasAttribute(attr)) {
+                var w = parseFloat(String(wurzel.getAttribute(attr)).replace(',', '.'));
+                if (isFinite(w)) wurzel.style[MASSE[attr]] = w + '%';
+            }
+        });
+    }
+    masse(document);
+    new MutationObserver(function (eintraege) {
+        eintraege.forEach(function (e) {
+            for (var i = 0; i < e.addedNodes.length; i++) {
+                if (e.addedNodes[i].nodeType === 1) masse(e.addedNodes[i]);
+            }
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
 })();

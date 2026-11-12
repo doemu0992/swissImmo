@@ -49,11 +49,9 @@ Das Formular MUSS enctype="multipart/form-data" haben.
                 <div class="relative rounded-lg border-2 border-dashed fw-linie fw-flaeche">
                     {# iOS Safari wertet einen Zug sonst als Textauswahl oder Scroll #}
                     <canvas data-us-canvas
-                            class="block w-full rounded-lg cursor-crosshair"
-                            style="height: 150px; touch-action: none; user-select: none;
-                                   -webkit-user-select: none; -webkit-touch-callout: none;"></canvas>
+                            class="block w-full rounded-lg cursor-crosshair fw-zeichenflaeche"></canvas>
                     {# Grundlinie als optische Hilfe #}
-                    <div class="pointer-events-none absolute left-6 right-6 border-b fw-linie" style="bottom: 34px;"></div>
+                    <div class="pointer-events-none absolute left-6 right-6 bottom-[34px] border-b fw-linie"></div>
                     <span data-us-platzhalter
                           class="pointer-events-none absolute inset-0 flex items-center justify-center text-sm fw-faint">
                         {% trans "Hier mit Maus oder Finger unterschreiben" %}

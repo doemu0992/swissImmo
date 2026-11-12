@@ -17,7 +17,7 @@
         <p>{% trans "Status der Gemeinschaft:" %} <strong>{{ lg.get_status_display }}</strong>
             {% if ohne_eigentuemer %} · <span class="fw-chip fw-warn">{% blocktrans with n=ohne_eigentuemer %}{{ n }} Einheit(en) ohne Eigentümer{% endblocktrans %}</span>{% endif %}</p>
         {% if lg.status != 'aktiv' %}
-        <form method="post" action="/neu/stweg/{{ lg.pk }}/aktivieren/" style="display:inline">{% csrf_token %}
+        <form method="post" action="/neu/stweg/{{ lg.pk }}/aktivieren/" class="inline">{% csrf_token %}
             <button id="aktivieren" class="fw-btn fw-primary"{% if not passt %} disabled{% endif %}>{% trans "Gemeinschaft aktivieren" %}</button></form>
         {% if not passt %}<span class="fw-s"> {% trans "Erst möglich, wenn die Summe aufgeht." %}</span>{% endif %}
         {% endif %}
@@ -30,7 +30,7 @@
         {% for e in einheiten %}
         <div class="fw-zeile">
             <div class="fw-mitte"><div class="fw-t">{{ e.bezeichnung }}{% if e.etage %} · {{ e.etage }}{% endif %}</div></div>
-            <input name="quote_{{ e.pk }}" value="{{ e.wertquote|floatformat:'-2' }}" inputmode="decimal" class="fw-feld quote" style="max-width:7rem" aria-label="Wertquote {{ e.bezeichnung }}">
+            <input name="quote_{{ e.pk }}" value="{{ e.wertquote|floatformat:'-2' }}" inputmode="decimal" class="fw-feld quote max-w-28" aria-label="Wertquote {{ e.bezeichnung }}">
             <select name="eig_{{ e.pk }}" class="fw-feld" aria-label="Eigentümer {{ e.bezeichnung }}">
                 <option value="">{% trans "— kein Eigentümer —" %}</option>
                 {% for eig in eigentuemer %}<option value="{{ eig.pk }}"{% if e.stockwerkeigentuemer_id == eig.pk %} selected{% endif %}>{{ eig.firma_oder_name }}</option>{% endfor %}
