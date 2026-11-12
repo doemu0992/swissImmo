@@ -753,7 +753,6 @@ class NachtN3MieterportalTests(TestCase):
         self.assertIn('Miete Juli', body)
 
     def test_meine_daten_aendern(self):
-        from crm.models import Kommunikation
         _lg, m, _v, u = self._mieter_login()
         c = Client(); c.force_login(u)
         self.assertEqual(c.get('/mieter/daten/').status_code, 200)
@@ -761,9 +760,11 @@ class NachtN3MieterportalTests(TestCase):
                                       'telefon_privat': '', 'email': 'hans@example.ch',
                                       'adresse_meldung': ''})
         self.assertEqual(r.status_code, 302)
+        # Das Portal ändert nichts selbst: Es entsteht eine Anfrage, die die Verwaltung bestätigen muss.
+        from core.models import Aenderungsanfrage
         m.refresh_from_db()
-        self.assertEqual(m.mobile, '079 999 88 77')
-        self.assertTrue(Kommunikation.objects.filter(mieter=m, betreff__icontains='Kontaktdaten').exists())
+        self.assertNotEqual(m.mobile, '079 999 88 77')
+        self.assertTrue(Aenderungsanfrage.objects.filter(mieter=m, art='kontakt', status='offen').exists())
 
     def test_rechnungsarchiv_zeigt_bezahlte(self):
         from finance.models import DebitorenRechnung
@@ -915,6 +916,7 @@ class PortalFremdzugriffTests(TestCase):
         'mieter_ticket_direkt':     ('post', lambda d: (d['fremd_ticket'].id, d['fremd_auftrag'].id)),
         'mieter_rechnung_qr':       ('get', lambda d: d['fremd_rechnung'].id),
         'mieter_kuendigung_pdf':    ('get', lambda d: d['fremd_kuendigung'].id),
+        'mieter_mietbestaetigung_pdf': ('get', lambda d: d['fremd_anfrage'].id),
     }
 
     def _portal_adressen(self):
@@ -981,7 +983,13 @@ class PortalFremdzugriffTests(TestCase):
         kuend = Kuendigung.objects.create(vertrag=a['v'], absender='mieter',
                                           eingang_datum=date(2026, 1, 5),
                                           per_datum=date(2026, 3, 31))
-        return {'a': a, 'b': b, 'fremd_dok': dok, 'fremd_lg_dok': lgdok, 'fremd_lg': a['lg'],
+        from django.utils import timezone
+
+        from core.models import Aenderungsanfrage
+        anfrage = Aenderungsanfrage.objects.create(
+            organisation=a['m'].organisation, mieter=a['m'], art='mietbestaetigung', status='bestaetigt',
+            zusammenfassung='Mietbestätigung', entschieden_am=timezone.now())
+        return {'a': a, 'b': b, 'fremd_anfrage': anfrage, 'fremd_dok': dok, 'fremd_lg_dok': lgdok, 'fremd_lg': a['lg'],
                 'fremd_rechnung': rech, 'fremd_ticket': ticket,
                 'fremd_auftrag': auftrag, 'fremd_kuendigung': kuend}
 

@@ -21,9 +21,46 @@
                 <div><dt class="text-xs font-semibold fw-mutet">{% trans "Telefon" %}</dt><dd>{{ eigentuemer.telefon|default:"—" }}</dd></div>
                 <div><dt class="text-xs font-semibold fw-mutet">{% trans "Auszahlung auf" %}</dt><dd>{% if eigentuemer.iban %}{{ eigentuemer.iban }}{% if eigentuemer.bank_name %} · {{ eigentuemer.bank_name }}{% endif %}{% else %}—{% endif %}</dd></div>
             </dl>
-            <p class="text-xs fw-mutet">{% trans "Angaben ändert die Verwaltung. Teilen Sie eine Änderung über die Mitteilungen mit." %}</p>
+            <p class="text-xs fw-mutet">{% trans "Änderungen beantragen Sie unten oder über die Mitteilungen. Sie gelten, sobald die Verwaltung sie bestätigt hat." %}</p>
             {% if not mandat_ende %}<a href="{% url 'portal_mitteilungen' %}" class="fw-btn fw-knapp">{% zeichen 'senden' %} {% trans "Änderung mitteilen" %}</a>{% endif %}
         </section>
+
+        {% if not mandat_ende %}
+        <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-4" aria-label="{% trans 'Änderung beantragen' %}" data-block="anfragen">
+            <h2 class="font-bold fw-strong">{% trans "Änderung beantragen" %}</h2>
+            <form method="post" class="space-y-2">
+                {% csrf_token %}<input type="hidden" name="aktion" value="kontakt">
+                <label for="p-tel" class="block text-xs font-semibold fw-mutet">{% trans "Telefon" %}</label>
+                <input id="p-tel" name="telefon" value="{{ eigentuemer.telefon }}" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5">
+                <label for="p-mail" class="block text-xs font-semibold fw-mutet">{% trans "E-Mail" %}</label>
+                <input id="p-mail" name="email" type="email" value="{{ eigentuemer.email }}" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5">
+                <button type="submit" class="fw-btn fw-knapp" data-testid="eig-kontakt-beantragen">{% trans "Kontaktdaten beantragen" %}</button>
+            </form>
+            <form method="post" class="space-y-2 pt-3 border-t fw-linie">
+                {% csrf_token %}<input type="hidden" name="aktion" value="bank">
+                <label for="p-bank" class="block text-xs font-semibold fw-mutet">{% trans "Bank" %}</label>
+                <input id="p-bank" name="bank_name" value="{{ eigentuemer.bank_name }}" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5">
+                <label for="p-iban" class="block text-xs font-semibold fw-mutet">{% trans "IBAN" %}</label>
+                <input id="p-iban" name="iban" value="{{ eigentuemer.iban }}" class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5">
+                <p class="text-xs fw-mutet">{% trans "Aus Sicherheitsgründen ruft die Verwaltung Sie vor der Bestätigung einer neuen Bankverbindung zurück." %}</p>
+                <button type="submit" class="fw-btn fw-knapp" data-testid="eig-bank-beantragen">{% trans "Bankverbindung beantragen" %}</button>
+            </form>
+        </section>
+        {% endif %}
+
+        {% if anfragen %}
+        <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-3" aria-label="{% trans 'Meine Anfragen' %}" data-block="meine-anfragen">
+            <h2 class="font-bold fw-strong">{% trans "Meine Anfragen" %}</h2>
+            {% for a in anfragen %}
+            <div class="text-sm">
+                <div class="font-semibold fw-strong">{{ a.get_art_display }} · {{ a.get_status_display }}
+                    <span class="fw-faint font-normal">{{ a.erstellt_am|date:"d.m.Y" }}</span></div>
+                <div class="fw-mutet whitespace-pre-line">{{ a.zusammenfassung }}</div>
+                {% if a.antwort %}<div class="fw-mutet">{% trans "Antwort der Verwaltung:" %} {{ a.antwort }}</div>{% endif %}
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
 
         <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-4" aria-label="{% trans 'Sprache und Darstellung' %}" data-block="sprache">
             <h2 class="font-bold fw-strong">{% trans "Sprache und Darstellung" %}</h2>

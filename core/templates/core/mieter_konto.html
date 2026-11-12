@@ -34,6 +34,20 @@
         {% endif %}
     </div>
 
+    {% if depots %}
+    <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 mb-6" data-testid="mietzinsdepot">
+        <h2 class="font-bold fw-strong mb-2">{% trans "Mietzinsdepot" %}</h2>
+        {% for d in depots %}
+        <div class="text-sm">
+            <div class="font-semibold fw-strong">CHF {{ d.kaution|chf }}</div>
+            <div class="fw-mutet">{{ d.adresse }}{% if d.einheit %} · {{ d.einheit.bezeichnung }}{% endif %}</div>
+            {% if d.vertrag.kautions_art %}<div class="fw-mutet">{{ d.vertrag.get_kautions_art_display }}{% if d.vertrag.kautions_einbezahlt_am %} · {% blocktrans with datum=d.vertrag.kautions_einbezahlt_am|date:"d.m.Y" %}einbezahlt am {{ datum }}{% endblocktrans %}{% endif %}</div>{% endif %}
+        </div>
+        {% endfor %}
+
+    </div>
+    {% endif %}
+
     {% if zeilen %}
     <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm overflow-hidden">
         <div class="px-5 py-4 border-b fw-linie"><h2 class="font-bold fw-strong">{% trans "Bewegungen" %}</h2></div>

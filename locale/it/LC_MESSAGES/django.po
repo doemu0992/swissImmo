@@ -40278,3 +40278,135 @@ msgstr "API finanziaria in sola lettura con chiavi proprie"
 
 msgid "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit), offene Debitoren unter /api/v1/debitoren/offen. Höchstens 120 Abfragen pro Minute und Schlüssel."
 msgstr "La chiave va nell'intestazione «Authorization: Bearer …». Richieste: piano dei conti su /api/v1/konten, giornale delle registrazioni su /api/v1/buchungen (von, bis, offset, limit), debitori aperti su /api/v1/debitoren/offen. Al massimo 120 richieste al minuto per chiave."
+
+msgid "Änderungswünsche aus den Portalen. Erst Ihre Bestätigung ändert die Stammdaten."
+msgstr "Richieste di modifica dai portali. I dati di base cambiano solo dopo la vostra conferma."
+
+msgid "Nur offene"
+msgstr "Solo aperte"
+
+msgid "Auch entschiedene"
+msgstr "Anche quelle decise"
+
+msgid "Bankverbindung: bitte vor der Bestätigung beim Eigentümer telefonisch zurückfragen."
+msgstr "Coordinate bancarie: prima di confermare, richiamate il proprietario."
+
+msgid "Grund der Ablehnung"
+msgstr "Motivo del rifiuto"
+
+msgid "Nur Inhaber und Verwalter bestätigen diese Anfrage."
+msgstr "Solo titolare e amministratore confermano questa richiesta."
+
+msgid "Entschieden"
+msgstr "Decise"
+
+msgid "Noch nichts entschieden."
+msgstr "Nulla ancora deciso."
+
+msgid "Kontaktdaten prüfen und Änderungen beantragen — sie gelten, sobald die Verwaltung sie bestätigt hat."
+msgstr "Controllate i vostri dati di contatto e richiedete modifiche — valgono non appena l'amministrazione le ha confermate."
+
+msgid "Änderung beantragen"
+msgstr "Richiedi la modifica"
+
+msgid "Antwort der Verwaltung:"
+msgstr "Risposta dell'amministrazione:"
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Die Änderung gilt, sobald die Verwaltung sie bestätigt hat."
+msgstr "La vostra richiesta è presso l'amministrazione. La modifica vale non appena l'avrà confermata."
+
+msgid "Die Anfrage ist bestätigt und die Änderung ausgeführt."
+msgstr "La richiesta è confermata e la modifica eseguita."
+
+msgid "Die Anfrage ist abgelehnt."
+msgstr "La richiesta è rifiutata."
+
+msgid "Diese Anfrage ist bereits entschieden."
+msgstr "Questa richiesta è già stata decisa."
+
+msgid "Bestätigung des Mietverhältnisses (PDF) gewünscht."
+msgstr "Richiesta conferma del rapporto di locazione (PDF)."
+
+msgid "Ihre Anfrage «%(art)s» wurde von der Verwaltung bestätigt."
+msgstr "La vostra richiesta «%(art)s» è stata confermata dall'amministrazione."
+
+msgid "Ihre Anfrage «%(art)s» wurde von der Verwaltung abgelehnt."
+msgstr "La vostra richiesta «%(art)s» è stata rifiutata dall'amministrazione."
+
+msgid "Ihre Anfrage an die Verwaltung"
+msgstr "La vostra richiesta all'amministrazione"
+
+msgid "Den Stand sehen Sie im Portal."
+msgstr "Lo stato è visibile nel portale."
+
+msgid "Kontaktdaten ändern"
+msgstr "Modificare i dati di contatto"
+
+msgid "Mietbestätigung"
+msgstr "Conferma di locazione"
+
+msgid "Zahlungsplan"
+msgstr "Piano di pagamento"
+
+msgid "Bankverbindung ändern"
+msgstr "Modificare le coordinate bancarie"
+
+msgid "Anfrage"
+msgstr "Richiesta"
+
+msgid "Anfragen — Mieterportal"
+msgstr "Richieste — portale inquilini"
+
+msgid "Mietbestätigung und Zahlungsplan. Die Verwaltung bestätigt jede Anfrage und meldet sich bei Ihnen."
+msgstr "Conferma di locazione e piano di pagamento. L'amministrazione conferma ogni richiesta e vi risponde."
+
+msgid "Eine Bestätigung Ihres Mietverhältnisses (Objekt, Mietbeginn, Mietzins) als PDF, z. B. für eine Bewerbung oder eine Behörde."
+msgstr "Una conferma del vostro rapporto di locazione (oggetto, inizio, pigione) in PDF, ad es. per una candidatura o un'autorità."
+
+msgid "Mietbestätigung anfragen"
+msgstr "Richiedi la conferma di locazione"
+
+msgid "Sie können eine offene Rechnung nicht auf einmal bezahlen? Schildern Sie kurz Ihren Wunsch, z. B. Raten."
+msgstr "Non potete pagare una fattura aperta in un'unica soluzione? Descrivete brevemente il vostro desiderio, ad es. rate."
+
+msgid "Ihr Wunsch"
+msgstr "Il vostro desiderio"
+
+msgid "Zahlungsplan anfragen"
+msgstr "Richiedi un piano di pagamento"
+
+msgid "PDF herunterladen (noch %(n)s Tage nach der Bestätigung)"
+msgstr "Scarica il PDF (ancora %(n)s giorni dopo la conferma)"
+
+msgid "Noch keine Anfragen."
+msgstr "Ancora nessuna richiesta."
+
+msgid "einbezahlt am %(datum)s"
+msgstr "versato il %(datum)s"
+
+msgid "Ihre Anfrage ist schon bei der Verwaltung."
+msgstr "La vostra richiesta è già presso l'amministrazione."
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie bestätigt ist."
+msgstr "La vostra richiesta è presso l'amministrazione. Riceverete un messaggio non appena sarà confermata."
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie entschieden ist."
+msgstr "La vostra richiesta è presso l'amministrazione. Riceverete un messaggio non appena sarà decisa."
+
+msgid "Bitte beschreiben Sie Ihren Wunsch kurz."
+msgstr "Descrivete brevemente il vostro desiderio."
+
+msgid "Antwort an die Absenderin (optional)"
+msgstr "Risposta al mittente (facoltativo)"
+
+msgid "Änderungen beantragen Sie unten oder über die Mitteilungen. Sie gelten, sobald die Verwaltung sie bestätigt hat."
+msgstr "Richiedete le modifiche qui sotto o tramite le comunicazioni. Valgono non appena l'amministrazione le ha confermate."
+
+msgid "Kontaktdaten beantragen"
+msgstr "Richiedi i dati di contatto"
+
+msgid "Aus Sicherheitsgründen ruft die Verwaltung Sie vor der Bestätigung einer neuen Bankverbindung zurück."
+msgstr "Per motivi di sicurezza l'amministrazione vi richiama prima di confermare nuove coordinate bancarie."
+
+msgid "Bankverbindung beantragen"
+msgstr "Richiedi le coordinate bancarie"

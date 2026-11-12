@@ -38574,3 +38574,138 @@ msgstr "Lesende Finanz-API mit eigenen Schlüsseln"
 
 msgid "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit), offene Debitoren unter /api/v1/debitoren/offen. Höchstens 120 Abfragen pro Minute und Schlüssel."
 msgstr "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit), offene Debitoren unter /api/v1/debitoren/offen. Höchstens 120 Abfragen pro Minute und Schlüssel."
+
+msgid "Änderungswünsche aus den Portalen. Erst Ihre Bestätigung ändert die Stammdaten."
+msgstr "Änderungswünsche aus den Portalen. Erst Ihre Bestätigung ändert die Stammdaten."
+
+msgid "Nur offene"
+msgstr "Nur offene"
+
+msgid "Auch entschiedene"
+msgstr "Auch entschiedene"
+
+msgid "Bankverbindung: bitte vor der Bestätigung beim Eigentümer telefonisch zurückfragen."
+msgstr "Bankverbindung: bitte vor der Bestätigung beim Eigentümer telefonisch zurückfragen."
+
+msgid "Grund der Ablehnung"
+msgstr "Grund der Ablehnung"
+
+msgid "Ablehnen"
+msgstr "Ablehnen"
+
+msgid "Nur Inhaber und Verwalter bestätigen diese Anfrage."
+msgstr "Nur Inhaber und Verwalter bestätigen diese Anfrage."
+
+msgid "Entschieden"
+msgstr "Entschieden"
+
+msgid "Noch nichts entschieden."
+msgstr "Noch nichts entschieden."
+
+msgid "Kontaktdaten prüfen und Änderungen beantragen — sie gelten, sobald die Verwaltung sie bestätigt hat."
+msgstr "Kontaktdaten prüfen und Änderungen beantragen — sie gelten, sobald die Verwaltung sie bestätigt hat."
+
+msgid "Änderung beantragen"
+msgstr "Änderung beantragen"
+
+msgid "Antwort der Verwaltung:"
+msgstr "Antwort der Verwaltung:"
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Die Änderung gilt, sobald die Verwaltung sie bestätigt hat."
+msgstr "Ihre Anfrage ist bei der Verwaltung. Die Änderung gilt, sobald die Verwaltung sie bestätigt hat."
+
+msgid "Die Anfrage ist bestätigt und die Änderung ausgeführt."
+msgstr "Die Anfrage ist bestätigt und die Änderung ausgeführt."
+
+msgid "Die Anfrage ist abgelehnt."
+msgstr "Die Anfrage ist abgelehnt."
+
+msgid "Diese Anfrage ist bereits entschieden."
+msgstr "Diese Anfrage ist bereits entschieden."
+
+msgid "Bestätigung des Mietverhältnisses (PDF) gewünscht."
+msgstr "Bestätigung des Mietverhältnisses (PDF) gewünscht."
+
+msgid "Ihre Anfrage «%(art)s» wurde von der Verwaltung bestätigt."
+msgstr "Ihre Anfrage «%(art)s» wurde von der Verwaltung bestätigt."
+
+msgid "Ihre Anfrage «%(art)s» wurde von der Verwaltung abgelehnt."
+msgstr "Ihre Anfrage «%(art)s» wurde von der Verwaltung abgelehnt."
+
+msgid "Ihre Anfrage an die Verwaltung"
+msgstr "Ihre Anfrage an die Verwaltung"
+
+msgid "Den Stand sehen Sie im Portal."
+msgstr "Den Stand sehen Sie im Portal."
+
+msgid "Kontaktdaten ändern"
+msgstr "Kontaktdaten ändern"
+
+msgid "Mietbestätigung"
+msgstr "Mietbestätigung"
+
+msgid "Zahlungsplan"
+msgstr "Zahlungsplan"
+
+msgid "Bankverbindung ändern"
+msgstr "Bankverbindung ändern"
+
+msgid "Anfrage"
+msgstr "Anfrage"
+
+msgid "Anfragen — Mieterportal"
+msgstr "Anfragen — Mieterportal"
+
+msgid "Mietbestätigung und Zahlungsplan. Die Verwaltung bestätigt jede Anfrage und meldet sich bei Ihnen."
+msgstr "Mietbestätigung und Zahlungsplan. Die Verwaltung bestätigt jede Anfrage und meldet sich bei Ihnen."
+
+msgid "Eine Bestätigung Ihres Mietverhältnisses (Objekt, Mietbeginn, Mietzins) als PDF, z. B. für eine Bewerbung oder eine Behörde."
+msgstr "Eine Bestätigung Ihres Mietverhältnisses (Objekt, Mietbeginn, Mietzins) als PDF, z. B. für eine Bewerbung oder eine Behörde."
+
+msgid "Mietbestätigung anfragen"
+msgstr "Mietbestätigung anfragen"
+
+msgid "Sie können eine offene Rechnung nicht auf einmal bezahlen? Schildern Sie kurz Ihren Wunsch, z. B. Raten."
+msgstr "Sie können eine offene Rechnung nicht auf einmal bezahlen? Schildern Sie kurz Ihren Wunsch, z. B. Raten."
+
+msgid "Ihr Wunsch"
+msgstr "Ihr Wunsch"
+
+msgid "Zahlungsplan anfragen"
+msgstr "Zahlungsplan anfragen"
+
+msgid "PDF herunterladen (noch %(n)s Tage nach der Bestätigung)"
+msgstr "PDF herunterladen (noch %(n)s Tage nach der Bestätigung)"
+
+msgid "Noch keine Anfragen."
+msgstr "Noch keine Anfragen."
+
+msgid "einbezahlt am %(datum)s"
+msgstr "einbezahlt am %(datum)s"
+
+msgid "Ihre Anfrage ist schon bei der Verwaltung."
+msgstr "Ihre Anfrage ist schon bei der Verwaltung."
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie bestätigt ist."
+msgstr "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie bestätigt ist."
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie entschieden ist."
+msgstr "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie entschieden ist."
+
+msgid "Bitte beschreiben Sie Ihren Wunsch kurz."
+msgstr "Bitte beschreiben Sie Ihren Wunsch kurz."
+
+msgid "Antwort an die Absenderin (optional)"
+msgstr "Antwort an die Absenderin (optional)"
+
+msgid "Änderungen beantragen Sie unten oder über die Mitteilungen. Sie gelten, sobald die Verwaltung sie bestätigt hat."
+msgstr "Änderungen beantragen Sie unten oder über die Mitteilungen. Sie gelten, sobald die Verwaltung sie bestätigt hat."
+
+msgid "Kontaktdaten beantragen"
+msgstr "Kontaktdaten beantragen"
+
+msgid "Aus Sicherheitsgründen ruft die Verwaltung Sie vor der Bestätigung einer neuen Bankverbindung zurück."
+msgstr "Aus Sicherheitsgründen ruft die Verwaltung Sie vor der Bestätigung einer neuen Bankverbindung zurück."
+
+msgid "Bankverbindung beantragen"
+msgstr "Bankverbindung beantragen"
