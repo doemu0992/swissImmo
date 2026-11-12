@@ -471,6 +471,8 @@ Anlegen und Widerruf stehen im Logbuch (Kategorie Sicherheit). Abfragen: `Author
 * `GET /api/v1/konten`: Kontenplan.
 * `GET /api/v1/buchungen?von=JJJJ-MM-TT&bis=JJJJ-MM-TT&offset=0&limit=100`: Journal nach Datum und Belegnummer, `limit` höchstens 500;
   Stornobuchungen sind eigene Zeilen (`storno`, `storno_von_beleg_nr`).
+* `GET /api/v1/debitoren/offen?offset=0&limit=100`: offene Posten (offen und teilbezahlt) nach Fälligkeit, mit Betrag, offenem
+  Betrag und MWST; bewusst ohne Namen von Personen.
 
 Grenzen: 120 Abfragen je Minute und Schlüssel (danach 429). Eine Sitzung ersetzt den Schlüssel nicht, und es gibt keine
 schreibenden Endpunkte. Jede Abfrage läuft im Mandantenkontext des Schlüssels.

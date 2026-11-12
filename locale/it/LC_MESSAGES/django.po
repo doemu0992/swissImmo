@@ -40275,3 +40275,6 @@ msgstr "La chiave «%(n)s» è stata revocata."
 
 msgid "Lesende Finanz-API mit eigenen Schlüsseln"
 msgstr "API finanziaria in sola lettura con chiavi proprie"
+
+msgid "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit), offene Debitoren unter /api/v1/debitoren/offen. Höchstens 120 Abfragen pro Minute und Schlüssel."
+msgstr "La chiave va nell'intestazione «Authorization: Bearer …». Richieste: piano dei conti su /api/v1/konten, giornale delle registrazioni su /api/v1/buchungen (von, bis, offset, limit), debitori aperti su /api/v1/debitoren/offen. Al massimo 120 richieste al minuto per chiave."

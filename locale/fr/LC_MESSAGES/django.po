@@ -40346,3 +40346,6 @@ msgstr "La clé «%(n)s» est révoquée."
 
 msgid "Lesende Finanz-API mit eigenen Schlüsseln"
 msgstr "API financière en lecture avec clés propres"
+
+msgid "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit), offene Debitoren unter /api/v1/debitoren/offen. Höchstens 120 Abfragen pro Minute und Schlüssel."
+msgstr "La clé se place dans l'en-tête «Authorization: Bearer …». Requêtes: plan comptable sous /api/v1/konten, journal des écritures sous /api/v1/buchungen (von, bis, offset, limit), débiteurs ouverts sous /api/v1/debitoren/offen. Au maximum 120 requêtes par minute et par clé."
