@@ -11,7 +11,7 @@ const SEITEN = [
   '/neu/zulauf/', '/neu/ersatzplanung/', '/neu/regelwerk/protokoll/', '/neu/kommunikation/', '/neu/stweg/',
   '/neu/liegenschaften/', '/neu/objekte/', '/neu/vertraege/', '/neu/personen/', '/neu/schaeden/', '/neu/debitoren/',
   '/neu/kreditoren/', '/neu/buchhaltung/', '/neu/mahnwesen/', '/neu/einstellungen/', '/neu/abonnement/',
-  '/neu/vertraege/neu/',
+  '/neu/anfragen/', '/neu/vertraege/neu/',
 ];
 
 async function sammeln(page) {
