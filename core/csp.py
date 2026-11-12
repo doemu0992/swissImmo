@@ -14,8 +14,9 @@ WIE ES EINGEFÜHRT WIRD (Etappen)
     `CSP_MODUS`: `report-only` (Vorgabe), `enforce` oder `aus` (Umgebungsvariable; `aus` nur als Notausstieg).
 
 STIL
-    `style-src 'unsafe-inline'` bleibt vorerst: Die Oberfläche hat noch `style="…"`-Attribute (siehe
-    `core/tests/test_stilschuld.py`). Skripte sind das eigentliche Einfallstor und stehen deshalb zuerst an.
+    Seit 12.11.2026 ohne `'unsafe-inline'`: Die Browser-Vorlagen haben kein `style="…"` mehr (`core/tests/test_stilschuld.py`),
+    `<style>`-Blöcke tragen den Nonce, dynamische Masse (Balken, Kurven) setzt `static/js/fw-aktionen.js` über das Stilobjekt.
+    Ausnahme: Antworten, die ein fertiges Dokument zeigen (Vertragsvorschau), setzen `request.csp_stil_inline = True`.
 """
 import json
 import logging
@@ -40,11 +41,16 @@ def modus():
     return wert if wert in MODI else 'report-only'
 
 
-def richtlinie(nonce):
+def richtlinie(nonce, stil_inline=False):
+    """Die Richtlinie dieser Antwort.
+
+    Stile: nur eigene Dateien und `<style nonce>` — kein `style="…"`-Attribut im Quelltext (Masse setzt `fw-aktionen.js`
+    über das Stilobjekt). `stil_inline=True` erlaubt Inline-Stile für Antworten, die ein fertiges Dokument zeigen (die
+    Vertragsvorschau, gerendert aus der PDF-Vorlage mit eigenen Stilen). Skripte bleiben auch dort auf den Nonce beschränkt."""
     return '; '.join([
         "default-src 'self'",
         f"script-src 'self' 'nonce-{nonce}'",
-        "style-src 'self' 'unsafe-inline'",
+        "style-src 'self' 'unsafe-inline'" if stil_inline else f"style-src 'self' 'nonce-{nonce}'",
         "img-src 'self' data: blob:",
         "font-src 'self' data:",
         "connect-src 'self'",
@@ -68,7 +74,8 @@ class CspMiddleware:
         antwort = self.get_response(request)
         art = modus()
         if art != 'aus' and HEADER_ENFORCE not in antwort and HEADER_REPORT not in antwort:
-            antwort[HEADER_ENFORCE if art == 'enforce' else HEADER_REPORT] = richtlinie(request.csp_nonce)
+            antwort[HEADER_ENFORCE if art == 'enforce' else HEADER_REPORT] = richtlinie(
+                request.csp_nonce, stil_inline=getattr(request, 'csp_stil_inline', False))
         return antwort
 
 

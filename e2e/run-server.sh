@@ -9,6 +9,8 @@ export DJANGO_SETTINGS_MODULE=swiss_immo.settings
 export DEBUG=True
 export SECURE_SSL_REDIRECT=False
 export SQLITE_NAME="${SQLITE_NAME:-$PWD/e2e_db.sqlite3}"
+# Die Browser-Tests laufen mit der scharfen Richtlinie: Was sie blockiert, fällt auf (siehe e2e/tests/csp-stile.spec.ts).
+export CSP_MODUS=enforce
 export EXTRA_ALLOWED_HOSTS="127.0.0.1,localhost"
 # Zähler (Login-Limits) gehören zum Lauf: frischer Cache-Ordner, sonst wirken Versuche des letzten Laufs nach.
 export CACHE_VERZEICHNIS="${CACHE_VERZEICHNIS:-$PWD/e2e_cache}"

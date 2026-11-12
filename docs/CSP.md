@@ -18,8 +18,12 @@ Antwort**. Fremdes Skript, auch wenn es im HTML steht, läuft nicht.
 | 4 | Alle übrigen Inline-Handler (185 in 36 Vorlagen) → Datenattribute `data-bei-klick/-eingabe/-aenderung/-absenden`, `data-modal`, `data-drucken` u. a.; Ratsche steht auf 0 | **erledigt** |
 | Ende | `CSP_MODUS=enforce` | offen |
 
-`style-src` erlaubt vorerst `'unsafe-inline'` (die Oberfläche hat noch `style="…"`-Attribute, siehe
-`core/tests/test_stilschuld.py`). Skripte sind das eigentliche Einfallstor und stehen deshalb zuerst an.
+`style-src` erlaubt seit 12.11.2026 nur eigene Dateien und `<style nonce>`. Die Browser-Vorlagen haben kein `style="…"` mehr
+(`core/tests/test_stilschuld.py`, Test `KeinInlineStilTests`); dynamische Masse (Balken, Kurven) laufen über
+`data-breite`/`-hoehe`/`-links`/`-oben`, die `static/js/fw-aktionen.js` über das Stilobjekt setzt. Einzige Ausnahme ist die
+Vertragsvorschau (`/neu/vertraege/vorschau/`): Sie zeigt das gerenderte Vertragsdokument mit den Stilen der PDF-Vorlage und setzt
+`request.csp_stil_inline = True`; Skripte bleiben auch dort auf den Nonce beschränkt. Die Vorschau lädt als eigene Seite in den
+Rahmen (Formular-POST mit Ziel `pvFrame`), nicht als `srcdoc`, weil ein `srcdoc`-Dokument die Richtlinie der Seite erbt.
 
 ## Betrieb
 

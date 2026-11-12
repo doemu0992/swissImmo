@@ -1021,6 +1021,8 @@ def fw_vertrag_vorschau(request):
     from django.http import HttpResponse
     from crm.models import Mieter
     from core.services.pdf_service import render_vertrag_html
+    # Die Vorschau ist das gerenderte Vertragsdokument mit eigenen Stilen (PDF-Vorlage): Inline-Stile erlaubt, Skripte nicht.
+    request.csp_stil_inline = True
     if request.method != 'POST':
         return HttpResponse('', content_type='text/html')
     P = request.POST
