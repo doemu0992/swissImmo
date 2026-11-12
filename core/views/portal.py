@@ -1145,13 +1145,13 @@ def mieter_zaehler_view(request):
     Nur Zähler der eigenen, aktiven Mietobjekte. Ein sinkender Stand wird sofort abgewiesen, ein auffälliger geht mit einem
     Hinweis an die Verwaltung (`core/services/zaehlerstaende.py`). Zählen tut der Stand erst nach der Bestätigung."""
     from datetime import date
-    from decimal import Decimal, InvalidOperation
 
     from django.contrib import messages
     from django.utils import timezone
 
     from core.models import Aenderungsanfrage
     from core.services import anfragen as dienst
+    from core.utils.betrag import betrag_parsen
     from portfolio.models import Zaehler
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None:
@@ -1164,9 +1164,9 @@ def mieter_zaehler_view(request):
         eigene = {z.pk: z for z in zaehler_liste}
         try:
             z = eigene[int(request.POST.get('zaehler') or 0)]
-            wert = Decimal((request.POST.get('wert') or '').replace("'", '').replace(',', '.').strip())
+            wert = betrag_parsen(request.POST.get('wert') or '')
             datum = date.fromisoformat(request.POST.get('datum') or '')
-        except (KeyError, ValueError, InvalidOperation):
+        except (KeyError, ValueError):
             messages.error(request, gettext('Bitte Zähler, Stand und Ablesedatum angeben.'))
             return redirect('mieter_zaehler')
         if wert < 0 or datum > timezone.localdate():

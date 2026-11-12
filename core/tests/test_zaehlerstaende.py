@@ -3,6 +3,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.test import Client, TestCase
+from django.utils import timezone
 
 from core.services import zaehlerstaende
 from core.tenancy import organisation_kontext
@@ -19,7 +20,7 @@ class ZaehlerstandPruefungTests(TestCase):
     def _zaehler(self, staende):
         """Ein Zähler mit Ständen [(Tage vor heute, Wert)]."""
         from portfolio.models import Zaehler, ZaehlerStand
-        heute = date.today()
+        heute = timezone.localdate()
         with organisation_kontext(self.a.organisation):
             z = Zaehler.objects.create(einheit=self.a.einheit, typ='Wasser', zaehler_nummer=f'W{Zaehler.objects.count()}')
             for tage, wert in staende:
@@ -28,7 +29,7 @@ class ZaehlerstandPruefungTests(TestCase):
 
     def _pruefen(self, z, tage_zurueck, wert):
         with organisation_kontext(self.a.organisation):
-            return zaehlerstaende.pruefen(z, date.today() - timedelta(days=tage_zurueck), Decimal(wert))
+            return zaehlerstaende.pruefen(z, timezone.localdate() - timedelta(days=tage_zurueck), Decimal(wert))
 
     def test_normaler_verbrauch_ist_unauffaellig(self):
         z = self._zaehler([(300, 100), (200, 110), (100, 120)])
@@ -74,7 +75,7 @@ class ZaehlerstandErfassenTests(TestCase):
 
     def setUp(self):
         from portfolio.models import Zaehler, ZaehlerStand
-        heute = date.today()
+        heute = timezone.localdate()
         with organisation_kontext(self.a.organisation):
             self.z = Zaehler.objects.create(einheit=self.a.einheit, typ='Strom', zaehler_nummer='S1')
             for tage, wert in ((300, 100), (200, 110), (100, 120)):
@@ -89,7 +90,7 @@ class ZaehlerstandErfassenTests(TestCase):
             return ZaehlerStand.objects.filter(zaehler=self.z).count()
 
     def _post(self, wert, **extra):
-        return self.c.post(self.url, {'zaehler': self.z.pk, 'datum': date.today().isoformat(), 'wert': wert, **extra})
+        return self.c.post(self.url, {'zaehler': self.z.pk, 'datum': timezone.localdate().isoformat(), 'wert': wert, **extra})
 
     def test_normaler_stand_wird_gespeichert(self):
         self.assertEqual(self._post('130').status_code, 302)
@@ -129,7 +130,7 @@ class AblesungDurchMieterTests(TestCase):
 
     def setUp(self):
         from portfolio.models import Zaehler, ZaehlerStand
-        heute = date.today()
+        heute = timezone.localdate()
         with organisation_kontext(self.a.organisation):
             self.z = Zaehler.objects.create(einheit=self.a.einheit, typ='Wasser', zaehler_nummer='W-A')
             ZaehlerStand.objects.create(zaehler=self.z, datum=heute - timedelta(days=30), wert=Decimal('100'))
@@ -149,7 +150,7 @@ class AblesungDurchMieterTests(TestCase):
     def _melden(self, wert, zaehler=None, c=None, tage_zurueck=0):
         return (c or self._mieter()).post('/mieter/zaehler/', {
             'zaehler': (zaehler or self.z).pk, 'wert': wert,
-            'datum': (date.today() - timedelta(days=tage_zurueck)).isoformat()})
+            'datum': (timezone.localdate() - timedelta(days=tage_zurueck)).isoformat()})
 
     def _staende(self):
         from portfolio.models import ZaehlerStand
@@ -200,7 +201,7 @@ class AblesungDurchMieterTests(TestCase):
         self._melden('110', tage_zurueck=10)
         anfrage = Aenderungsanfrage.alle_organisationen.get(art='zaehlerstand')
         with organisation_kontext(self.a.organisation):
-            ZaehlerStand.objects.create(zaehler=self.z, datum=date.today() - timedelta(days=5), wert=Decimal('108'))
+            ZaehlerStand.objects.create(zaehler=self.z, datum=timezone.localdate() - timedelta(days=5), wert=Decimal('108'))
         self._verwaltung().post(f'/neu/anfragen/{anfrage.pk}/bestaetigen/')
         anfrage.refresh_from_db()
         self.assertEqual(anfrage.status, 'offen')                           # bleibt offen, mit Fehlermeldung
