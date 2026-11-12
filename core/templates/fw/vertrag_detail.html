@@ -248,7 +248,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
    hat. {% endcomment %}
                 {% if v.ist_befristet %}{% blocktrans with d=v.ende|date:"d.m.Y" %}Befristet bis {{ d }}{% endblocktrans %}
                 {% else %}{% trans "Unbefristet" %}{% if v.ende %} · {% blocktrans with d=v.ende|date:"d.m.Y" %}gekündigt per {{ d }}{% endblocktrans %}{% endif %}{% endif %}
-                <div style="margin-top:7px"><form method="post" action="/neu/vertraege/{{ v.id }}/status/" style="display:flex;align-items:center;background:var(--ds-surface-2);border-radius:var(--ds-radius-sm);padding:2px;gap:2px"
+                <div class="mt-[7px]"><form method="post" action="/neu/vertraege/{{ v.id }}/status/" class="flex items-center fw-status-gruppe"
               data-bestaetigen="{% filter escapejs %}{% trans "Vertragsstatus wirklich ändern? Der Status steuert Sollstellung, Mieterspiegel und Auswertungen." %}{% endfilter %}">
             {% csrf_token %}
             <button name="status" value="entwurf" class="fw-statuswahl{% if v.status == 'entwurf' %} an{% endif %}">{% trans "Entwurf" %}</button>
@@ -335,11 +335,11 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
                bzw. `telefon_privat`. Ein fehlendes Attribut loest Django still
                zur leeren Zeichenkette auf, und `default` machte daraus «—»:
                Die Nummer waere nie erschienen, auch wenn sie erfasst ist. {% endcomment %}
-            <div class="fw-dz"><div class="fw-dl" style="flex-basis:105px">{% trans "Telefon" %}</div>
+            <div class="fw-dz"><div class="fw-dl fw-dl-schmal">{% trans "Telefon" %}</div>
                 <div class="fw-dv">{{ v.mieter.mobile|default:v.mieter.telefon_privat|default:"—" }}</div></div>
-            <div class="fw-dz"><div class="fw-dl" style="flex-basis:105px">{% trans "E-Mail" %}</div>
+            <div class="fw-dz"><div class="fw-dl fw-dl-schmal">{% trans "E-Mail" %}</div>
                 <div class="fw-dv">{{ v.mieter.email|default:"—" }}</div></div>
-            <div class="fw-dz"><div class="fw-dl" style="flex-basis:105px">{% trans "Sprache" %}</div>
+            <div class="fw-dz"><div class="fw-dl fw-dl-schmal">{% trans "Sprache" %}</div>
                 <div class="fw-dv">{{ v.mieter.get_sprache_display|default:"Deutsch" }}</div></div>
             <div class="fw-fuss">
                 <a href="/neu/personen/{{ v.mieter.id }}/" class="fw-link">{% trans "Zur Personenakte" %}</a>

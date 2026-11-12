@@ -115,7 +115,7 @@ class OberflaecheTests(TestCase):
         r = self.c.get(f'/neu/stweg/{self.lg.pk}/')
         self.assertContains(r, 'Nicht Compliance-Konform')
         self.assertContains(r, 'Gebäudeversicherungsnachweis')
-        self.assertContains(r, '#c0392b')
+        self.assertContains(r, 'fw-card-compliance')            # rote Umrandung (Farbe in der Stilschicht)
         self.assertContains(self.c.get('/neu/stweg/'), 'Nicht Compliance-Konform')
         for kat in ('begruendungsakt', 'reglement', 'gebaeudeversicherung'):
             dok.hochladen(self.lg, kat, kat, datei())

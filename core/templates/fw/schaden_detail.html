@@ -75,13 +75,13 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         </div>
         <div>
             <div class="fw-l">{% trans "Offen seit" %}</div>
-            <div class="fw-w{% if offen_seit > 30 and t.status != 'erledigt' %} crit{% elif offen_seit > 14 and t.status != 'erledigt' %} warn{% endif %}" style="font-size:15px">
+            <div class="fw-w{% if offen_seit > 30 and t.status != 'erledigt' %} crit{% elif offen_seit > 14 and t.status != 'erledigt' %} warn{% endif %} fw-fs-15">
                 {% if t.status == 'erledigt' %}{% trans "erledigt" %}{% else %}{% blocktrans count n=offen_seit %}{{ n }} Tag{% plural %}{{ n }} Tage{% endblocktrans %}{% endif %}</div>
             <div class="fw-f">{% blocktrans with d=t.erstellt_am|date:"d.m.Y" %}gemeldet {{ d }}{% endblocktrans %}</div>
         </div>
         <div>
             <div class="fw-l">{% trans "Letzte Reaktion" %}</div>
-            <div class="fw-w" style="font-size:15px">{% if letzte_nachricht %}{{ letzte_nachricht.erstellt_am|date:"d.m.Y" }}{% else %}—{% endif %}</div>
+            <div class="fw-w fw-fs-15">{% if letzte_nachricht %}{{ letzte_nachricht.erstellt_am|date:"d.m.Y" }}{% else %}—{% endif %}</div>
             <div class="fw-f">{% if letzte_nachricht %}{% blocktrans count n=nachrichten|length %}{{ n }} Nachricht{% plural %}{{ n }} Nachrichten{% endblocktrans %}{% else %}{% trans "noch keine Antwort" %}{% endif %}</div>
         </div>
     </div>

@@ -10,7 +10,7 @@ also nichts, wohin eine Navigation führen dürfte.
     <title>{% trans "Bestätigung" %} — immoswiss</title>
 {% include 'core/_assets_schrift.html' %}
 {% include 'fw/_schicht_link.html' %}
-    <style>
+    <style nonce="{{ csp_nonce }}">
         /* Redesign v8: eigene Namen zeigen auf die Tokens der Schicht. */
         :root { --bg:var(--ds-bg); --surface:var(--ds-surface); --ink:var(--ds-ink); --muted:var(--ds-muted);
                 --line:var(--ds-line); --brand:var(--ds-brand); --crit:var(--ds-crit); --crit-soft:var(--ds-crit-soft); }

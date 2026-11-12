@@ -38,7 +38,7 @@
         <a class="fw-btn" href="/neu/stweg/abrechnung/{{ abrechnung.pk }}/pdf/" target="_blank" rel="noopener">{% trans "Gesamtübersicht (PDF)" %}</a>
         {% for eig in eigentuemer %}<a class="fw-btn" href="/neu/stweg/abrechnung/{{ abrechnung.pk }}/pdf/?eigentuemer={{ eig.pk }}" target="_blank" rel="noopener">{{ eig.firma_oder_name }}</a>{% endfor %}
         {% if abrechnung.status != 'abgeschlossen' %}
-        <form method="post" action="/neu/stweg/abrechnung/{{ abrechnung.pk }}/abschliessen/" style="display:inline">{% csrf_token %}
+        <form method="post" action="/neu/stweg/abrechnung/{{ abrechnung.pk }}/abschliessen/" class="inline">{% csrf_token %}
             <button class="fw-btn fw-primary">{% trans "Abrechnung abschliessen (Eigentümer sehen sie im Portal)" %}</button></form>
         {% endif %}
     </div>

@@ -34,8 +34,8 @@
         {% for r in reihe %}
         <div class="flex-1 flex flex-col items-center justify-end h-full group">
             <div class="fw-klein mb-1">{% if r.quote %}{{ r.quote }}%{% endif %}</div>
-            <div class="w-full rounded-t {% if r.quote > 5 %}fw-krit-voll{% elif r.quote > 0 %}fw-warn-voll{% else %}fw-gut-voll{% endif %}"
-                 style="height: {% widthratio r.quote 100 100 %}%; min-height: 2px;"
+            <div class="w-full rounded-t min-h-[2px] {% if r.quote > 5 %}fw-krit-voll{% elif r.quote > 0 %}fw-warn-voll{% else %}fw-gut-voll{% endif %}"
+                 data-hoehe="{% widthratio r.quote 100 100 %}"
                  title="{% blocktrans with monat=r.monat|date:'M Y' leer=r.leer total=r.total %}{{ monat }}: {{ leer }}/{{ total }} leer{% endblocktrans %}"></div>
             <div class="fw-klein mt-1">{{ r.monat|date:'M' }}</div>
         </div>

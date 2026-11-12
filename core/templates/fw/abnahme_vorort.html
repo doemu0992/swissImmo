@@ -9,7 +9,7 @@ Jede Eingabe wird sofort gespeichert (fetch auf fw_abnahme_position_speichern) �
 bricht der Empfang ab, ist nichts verloren, was schon angezeigt „gespeichert" hiess.
 Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig ist.
 {% endcomment %}
-<style>
+<style nonce="{{ csp_nonce }}">
 .vo { max-width: 34rem; margin: 0 auto; padding-bottom: 6rem; }   /* Platz für die feste Tab-Leiste unten */
 .vo-leiste { display: flex; align-items: center; gap: .5rem; position: sticky; top: 0; z-index: 5;
     background: var(--ds-surface-2); border: 1px solid var(--ds-line); border-radius:var(--ds-radius-lg);

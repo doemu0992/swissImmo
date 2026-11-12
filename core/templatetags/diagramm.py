@@ -83,7 +83,7 @@ def linien_diagramm(werte, beschriftungen, titel='', einheit=' %'):
         raster.append(format_html(
             '<line x1="0" x2="100" y1="{0}" y2="{0}" class="fw-kurve-raster" '
             'vector-effect="non-scaling-stroke"/>', f'{y(stufe):.2f}'))
-        y_text.append(format_html('<span class="fw-kurve-y" style="top:{}%">{}{}</span>',
+        y_text.append(format_html('<span class="fw-kurve-y" data-oben="{}">{}{}</span>',
                                   f'{y(stufe):.2f}', number_format(stufe, 0) if float(stufe).is_integer() else number_format(stufe, 1), einheit))
         stufe += schritt
 
@@ -113,19 +113,19 @@ def linien_diagramm(werte, beschriftungen, titel='', einheit=' %'):
     letzter = max(i for i, w in enumerate(werte) if w is not None)
     lw = werte[letzter]
     ende = format_html(
-        '<span class="fw-kurve-punkt" style="left:{0}%;top:{1}%"></span>'
-        '<span class="fw-kurve-wert" style="left:{0}%;top:{1}%">{2}{3}</span>',
+        '<span class="fw-kurve-punkt" data-links="{0}" data-oben="{1}"></span>'
+        '<span class="fw-kurve-wert" data-links="{0}" data-oben="{1}">{2}{3}</span>',
         f'{x(letzter):.2f}', f'{y(lw):.2f}', _prozent(lw), einheit)
 
     # Treffer je Monat: Titel als Tooltip (die Zahl steht auch in der Tabelle)
     breite = 100 / (n - 1)
-    treffer = format_html_join('', '<span class="fw-kurve-treffer" style="left:{}%;width:{}%" title="{}"></span>', (
+    treffer = format_html_join('', '<span class="fw-kurve-treffer" data-links="{}" data-breite="{}" title="{}"></span>', (
         (f'{max(x(i) - breite / 2, 0):.2f}', f'{breite:.2f}',
          f'{beschriftungen[i] if i < len(beschriftungen) else ""}: '
          + (f'{_prozent(w)}{einheit}' if w is not None else '–'))
         for i, w in enumerate(werte)))
 
-    x_text = format_html_join('', '<span class="fw-kurve-x{}" style="left:{}%">{}</span>', (
+    x_text = format_html_join('', '<span class="fw-kurve-x{}" data-links="{}">{}</span>', (
         (' fw-kurve-x-neben' if (n - 1 - i) % 2 else '', f'{x(i):.2f}', b)
         for i, b in enumerate(beschriftungen[:n])))
 
@@ -156,7 +156,7 @@ def balken_liste(zeilen):
         w = _zahl(z.get('wert')) or 0
         lab = (format_html('<a href="{}" class="fw-hbar-lab">{}</a>', z['url'], z['lab'])
                if z.get('url') else format_html('<span class="fw-hbar-lab">{}</span>', z['lab']))
-        spur = (format_html('<span class="fw-hbar-spur"><i style="width:{}%"></i></span>',
+        spur = (format_html('<span class="fw-hbar-spur"><i data-breite="{}"></i></span>',
                             f'{w / groesster * 100:.1f}')
                 if w > 0 else mark_safe('<span class="fw-hbar-spur"></span>'))
         wert = (format_html('<span class="fw-hbar-v">{}</span>', chf(z.get('wert'), 0)) if w > 0
@@ -195,7 +195,7 @@ def cashflow_diagramm(ertrag, aufwand, beschriftungen, titel=''):
     while stufe <= oben + 1e-6:
         raster.append(format_html('<line x1="0" x2="100" y1="{0}" y2="{0}" class="fw-kurve-raster" '
                                   'vector-effect="non-scaling-stroke"/>', f'{y(stufe):.2f}'))
-        y_text.append(format_html('<span class="fw-kurve-y" style="top:{}%">{}k</span>',
+        y_text.append(format_html('<span class="fw-kurve-y" data-oben="{}">{}k</span>',
                                   f'{y(stufe):.2f}', number_format(round(stufe / 1000), 0)))
         stufe += schritt
 
@@ -228,13 +228,13 @@ def cashflow_diagramm(ertrag, aufwand, beschriftungen, titel=''):
                                       ' '.join(f'{px:.2f},{py:.2f}' for px, py in st)))
 
     breite = 100 / (n - 1)
-    treffer = format_html_join('', '<span class="fw-kurve-treffer" style="left:{}%;width:{}%" title="{}"></span>', (
+    treffer = format_html_join('', '<span class="fw-kurve-treffer" data-links="{}" data-breite="{}" title="{}"></span>', (
         (f'{max(x(i) - breite / 2, 0):.2f}', f'{breite:.2f}',
          f'{beschriftungen[i] if i < len(beschriftungen) else ""}: '
          + ('CHF ' + chf(e[i], 0) if e[i] is not None else '–')
          + ' / ' + ('CHF ' + chf(a[i], 0) if a[i] is not None else '–'))
         for i in range(n)))
-    x_text = format_html_join('', '<span class="fw-kurve-x{}" style="left:{}%">{}</span>', (
+    x_text = format_html_join('', '<span class="fw-kurve-x{}" data-links="{}">{}</span>', (
         (' fw-kurve-x-neben' if (n - 1 - i) % 2 else '', f'{x(i):.2f}', b)
         for i, b in enumerate(beschriftungen[:n])))
     return format_html(

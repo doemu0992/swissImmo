@@ -809,10 +809,11 @@
             align-items:baseline}
         .fw-dz:last-child{border-bottom:0}
         .fw-dl{flex:0 0 205px;font-size:12px;color:var(--ds-faint)}
+        .fw-dl.fw-dl-schmal{flex-basis:105px}  /* kurze Beschriftung (Kontaktzeilen im Vertrag); mit .fw-dl allein gewänne dessen 205px */
         .fw-dv{flex:1;min-width:0;font-size:13.5px;font-weight:500;color:var(--ds-ink)}
         .fw-dv small{display:block;font-size:11.5px;color:var(--ds-faint);font-weight:400;
             margin-top:2px;line-height:1.45}
-        @media(max-width:640px){.fw-dz{flex-direction:column;gap:2px}.fw-dl{flex-basis:auto}}
+        @media(max-width:640px){.fw-dz{flex-direction:column;gap:2px}.fw-dl,.fw-dl.fw-dl-schmal{flex-basis:auto}}
 
         /* Erfassen gehoert nicht in eine Leseansicht — aber auch nicht weg. */
         .fw-aufklapp{border-bottom:1px solid var(--ds-line)}
@@ -1086,6 +1087,12 @@
         .fw-fs-klein{font-size:11px}   /* Beschriftungen, Nebenzeilen */
         .fw-fs-fein{font-size:13px}    /* dichter Fliesstext in Karten */
         .fw-fs-text{font-size:14px}    /* wie text-sm, aber ohne Zeilenhöhe */
+        .fw-fs-15{font-size:15px}      /* Kennzahl in der Kopfzeile eines Falls oder Schadens */
+        .fw-status-gruppe{background:var(--ds-surface-2);border-radius:var(--ds-radius-sm);padding:2px;gap:2px}  /* Status-Schnellwahl im Vertrag */
+        .fw-marke-link{color:var(--ds-brand)}  /* Textlink in der Markenfarbe */
+        .fw-zeichenflaeche{height:150px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}  /* Unterschriftsfeld: iOS wertet einen Zug sonst als Textauswahl */
+        .fw-card-compliance{border:2px solid #c0392b}  /* STWEG: Gemeinschaft nicht compliance-konform */
+        .fw-chip.fw-chip-compliance{background:#c0392b;color:#fff}
         /* Bestätigungsdialog (fw/_bestaetigen.html) statt der Browser-Rückfrage.
            `<dialog>` mit showModal(): Fokusfalle, Esc und Hintergrund liefert der
            Browser; hier nur das Aussehen. */

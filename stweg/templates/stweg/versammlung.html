@@ -116,10 +116,10 @@
         {% else %}<p><span class="fw-chip fw-brand">{% trans "Versandbereit" %}</span> {% trans "Jeder Eigentümer erhält Einladung und Traktandenliste als PDF per E-Mail; Eigentümer ohne E-Mail-Adresse werden für den Postversand vermerkt." %}</p>{% endif %}
         <p>
             <a class="fw-btn" href="/neu/stweg/versammlung/{{ v.pk }}/pdf/einladung/" target="_blank" rel="noopener">{% trans "Vorschau (PDF)" %}</a>
-            <form method="post" action="/neu/stweg/versammlung/{{ v.pk }}/einladung/" style="display:inline">{% csrf_token %}
+            <form method="post" action="/neu/stweg/versammlung/{{ v.pk }}/einladung/" class="inline">{% csrf_token %}
                 <button class="fw-btn fw-primary"{% if einladung_probleme %} disabled{% endif %}>{% if v.status == 'eingeladen' %}{% trans "Fehlende erneut versenden" %}{% else %}{% trans "Einladung versenden" %}{% endif %}</button></form>
             {% if v.status == 'eingeladen' %}
-            <form method="post" action="/neu/stweg/versammlung/{{ v.pk }}/durchfuehren/" style="display:inline">{% csrf_token %}
+            <form method="post" action="/neu/stweg/versammlung/{{ v.pk }}/durchfuehren/" class="inline">{% csrf_token %}
                 <button class="fw-btn">{% trans "Versammlung durchführen" %}</button></form>{% endif %}
         </p>
     </div>
@@ -228,7 +228,7 @@
         </form>
         <p>
             <a class="fw-btn" href="/neu/stweg/versammlung/{{ v.pk }}/pdf/protokoll/" target="_blank" rel="noopener">{% trans "Protokoll (PDF)" %}</a>
-            <form method="post" action="/neu/stweg/versammlung/{{ v.pk }}/protokoll/versenden/" style="display:inline">{% csrf_token %}
+            <form method="post" action="/neu/stweg/versammlung/{{ v.pk }}/protokoll/versenden/" class="inline">{% csrf_token %}
                 <button class="fw-btn fw-primary"{% if protokoll_probleme %} disabled{% endif %}>{% if v.status == 'protokolliert' %}{% trans "Fehlende erneut versenden" %}{% else %}{% trans "Protokoll an alle Eigentümer versenden" %}{% endif %}</button></form>
         </p>
     </div>

@@ -304,7 +304,7 @@ function aktualisiere() {
         + ' · ' + (document.getElementById('betreff').value || '');
 
     document.getElementById('pv-logo').innerHTML = LOGO_URL
-        ? '<img src="' + LOGO_URL + '" alt="Logo" style="max-height:64px;max-width:220px;object-fit:contain;">' : '';
+        ? '<img src="' + LOGO_URL + '" alt="Logo" class="max-h-16 max-w-[220px] object-contain">' : '';
 
     document.getElementById('pv-absender').textContent =
         ABS.firma + (ABS.strasse ? ' · ' + ABS.strasse : '') + (ABS.ort ? ' · ' + ABS.plz + ' ' + ABS.ort : '');
@@ -324,8 +324,15 @@ document.querySelectorAll('input[name=mk-art]').forEach(function(r){
 function druckeVorschau() {
     const inhalt = document.getElementById('brief').innerHTML;
     const w = window.open('', '_blank');
-    w.document.write('<html><head><title>Brief</title><style>body{font-family:Inter,sans-serif;padding:40px;color:#1e293b;line-height:1.6;font-size:14px;} .whitespace-pre-line{white-space:pre-line;}</style></head><body>'+inhalt+'</body></html>');
-    w.document.close(); w.focus(); w.print();
+    // Kein <style>-Block und kein style-Attribut im geschriebenen Text: Das Fenster erbt die Content-Security-Policy.
+    // Das Aussehen setzt das Stilobjekt der Elemente (CSSOM), das sie erlaubt.
+    w.document.write('<html><head><title>Brief</title></head><body>'+inhalt+'</body></html>');
+    w.document.close();
+    var b = w.document.body;
+    b.style.fontFamily = 'Inter,sans-serif'; b.style.padding = '40px'; b.style.color = '#1e293b';
+    b.style.lineHeight = '1.6'; b.style.fontSize = '14px';
+    w.document.querySelectorAll('.whitespace-pre-line').forEach(function(e){ e.style.whiteSpace = 'pre-line'; });
+    w.focus(); w.print();
 }
 aktualisiere();
 </script>

@@ -364,7 +364,7 @@
         </div>
         {% if m.offen %}<span class="fw-chip fw-crit">{% blocktrans with betrag=m.offen|chf %}CHF {{ betrag }} offen{% endblocktrans %}</span>
         {% else %}<span class="fw-chip fw-warn">{% blocktrans with n=m.leer %}{{ n }} leer{% endblocktrans %}</span>{% endif %}
-        <span class="fw-belegung {{ m.stufe }}"><i style="width:{{ m.belegung }}%"></i></span>
+        <span class="fw-belegung {{ m.stufe }}"><i data-breite="{{ m.belegung }}"></i></span>
     </div>
     {% endfor %}
 </section>

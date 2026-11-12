@@ -22,7 +22,7 @@
         {% for z in x.zeilen %}
         <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{{ z.einheit.bezeichnung }}{% if z.einheit.etage %} · {{ z.einheit.etage }}{% endif %}</div>
             <div class="fw-s">{% if z.prozent != None %}{{ z.prozent }} %{% endif %}</div></div>
-            <input name="anteil_{{ z.einheit.pk }}" value="{{ z.anteil|default_if_none:''|floatformat:'-4' }}" inputmode="decimal" class="fw-feld" style="max-width:8rem" aria-label="{% blocktrans with einheit=z.einheit.bezeichnung %}Anteil {{ einheit }}{% endblocktrans %}">
+            <input name="anteil_{{ z.einheit.pk }}" value="{{ z.anteil|default_if_none:''|floatformat:'-4' }}" inputmode="decimal" class="fw-feld max-w-32" aria-label="{% blocktrans with einheit=z.einheit.bezeichnung %}Anteil {{ einheit }}{% endblocktrans %}">
         </div>
         {% endfor %}
         <div class="fw-formular-fuss"><button class="fw-btn fw-primary">{% trans "Anteile speichern" %}</button>

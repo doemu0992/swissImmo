@@ -13,8 +13,8 @@
 <div class="fw-card">
     <div class="fw-kopf"><span class="fw-t">{% trans "Antrag" %}</span></div>
     <div class="fw-rumpf">
-        <p style="white-space:pre-line">{{ z.antrag }}</p>
-        {% if z.begruendung %}<p class="fw-s" style="white-space:pre-line">{% blocktrans with text=z.begruendung %}Begründung: {{ text }}{% endblocktrans %}</p>{% endif %}
+        <p class="whitespace-pre-line">{{ z.antrag }}</p>
+        {% if z.begruendung %}<p class="fw-s whitespace-pre-line">{% blocktrans with text=z.begruendung %}Begründung: {{ text }}{% endblocktrans %}</p>{% endif %}
         <p class="fw-s">{% blocktrans with art=z.get_mehrheitsart_display %}Erforderliche Mehrheit: {{ art }}{% endblocktrans %}{% if z.rechtsgrundlage %} · {{ z.rechtsgrundlage }}{% endif %}</p>
         {% if z.vollzug_aufgabe %}<p class="fw-s">{% blocktrans with aufgabe=z.vollzug_aufgabe %}Vollzug bei Annahme: {{ aufgabe }}{% endblocktrans %}{% if z.vollzug_faellig_am %} {% blocktrans with d=z.vollzug_faellig_am|date:"d.m.Y" %}(bis {{ d }}){% endblocktrans %}{% endif %}</p>{% endif %}
         <a class="fw-btn" href="/neu/stweg/zirkular/{{ z.pk }}/pdf/" target="_blank" rel="noopener">{% trans "Antrag (PDF)" %}</a>
@@ -79,7 +79,7 @@
 <div class="fw-card">
     <div class="fw-kopf"><span class="fw-t">{% trans "Ergebnis" %}</span><span class="fw-chip fw-brand">{{ z.get_ergebnis_display }}</span></div>
     <div class="fw-rumpf">
-        {% if z.beschlusstext %}<p style="white-space:pre-line">{{ z.beschlusstext }}</p>{% endif %}
+        {% if z.beschlusstext %}<p class="whitespace-pre-line">{{ z.beschlusstext }}</p>{% endif %}
         <p>{% if z.ergebnis_versendet_am %}{% blocktrans with d=z.ergebnis_versendet_am|date:"d.m.Y H:i" %}Ergebnis versendet am {{ d }}.{% endblocktrans %}{% else %}{% trans "Das Ergebnis ist noch nicht an die Eigentümer versendet." %}{% endif %}</p>
         <form method="post" action="/neu/stweg/zirkular/{{ z.pk }}/ergebnis/">{% csrf_token %}
             <button class="fw-btn fw-primary">{% if z.ergebnis_versendet_am %}{% trans "Fehlende erneut versenden" %}{% else %}{% trans "Ergebnis an alle Eigentümer versenden" %}{% endif %}</button></form>

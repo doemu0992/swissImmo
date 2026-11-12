@@ -1192,8 +1192,13 @@ class UnterschriftBriefeTests(TestCase):
         r = c.get('/neu/account/')
         self.assertContains(r, 'data-us-canvas')
         self.assertContains(r, 'name="unterschrift_gezeichnet"')
-        # touch-action: none — sonst scrollt das Handy beim Zeichnen weg
-        self.assertContains(r, 'touch-action: none')
+        # touch-action: none — sonst scrollt das Handy beim Zeichnen weg. Die Regel steht in der Stilschicht
+        # (Klasse `fw-zeichenflaeche`), nicht mehr als style-Attribut an der Fläche.
+        self.assertContains(r, 'fw-zeichenflaeche')
+        import pathlib
+        from django.conf import settings
+        css = (pathlib.Path(settings.BASE_DIR) / 'static/css/schicht.css').read_text(encoding='utf-8')
+        self.assertRegex(css, r'\.fw-zeichenflaeche\{[^}]*touch-action:none')
 
     def test_gezeichnete_unterschrift_wird_gespeichert(self):
         vw = self._verwaltung(False)
