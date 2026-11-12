@@ -83,6 +83,7 @@ from .daten import (  # noqa: F401 — Einstellungen «Daten»: Import für Wech
     fw_daten_import_verwerfen, fw_daten_export, fw_daten_export_format, fw_daten_export_journal,
     fw_daten_export_mandat)
 from .api_zugang import *    # noqa: F401,F403 — Einstellungen «API-Zugang»: Schlüssel für die lesende Finanz-API
+from .ablesung import *      # noqa: F401,F403 — Ablese-Aufruf an die Mieterschaft
 from .anfragen import *      # noqa: F401,F403 — Anfragen aus den Portalen (Mieter, Eigentümer)
 from .buchhaltung import *   # noqa: F401,F403 — Block 5
 from .mietzins import *      # noqa: F401,F403 — Block 5

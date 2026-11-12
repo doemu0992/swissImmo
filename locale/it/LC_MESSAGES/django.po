@@ -40410,3 +40410,99 @@ msgstr "Per motivi di sicurezza l'amministrazione vi richiama prima di confermar
 
 msgid "Bankverbindung beantragen"
 msgstr "Richiedi le coordinate bancarie"
+
+msgid "Zählerstand melden — Mieterportal"
+msgstr "Comunicare una lettura del contatore — portale inquilini"
+
+msgid "Zählerstand melden"
+msgstr "Comunicare una lettura del contatore"
+
+msgid "Tragen Sie den abgelesenen Stand ein. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+msgstr "Inserite la lettura. Vale non appena l'amministrazione l'ha confermata."
+
+msgid "Letzter Stand: %(w)s am %(d)s"
+msgstr "Ultima lettura: %(w)s il %(d)s"
+
+msgid "Stand melden"
+msgstr "Comunica la lettura"
+
+msgid "Für Ihre Mietobjekte sind keine Zähler erfasst."
+msgstr "Per i vostri oggetti in locazione non sono registrati contatori."
+
+msgid "Ablesung"
+msgstr "Lettura"
+
+msgid "Bitten Sie die Mieterschaft einer Liegenschaft, die Zähler abzulesen. Die Meldungen erscheinen unter «Anfragen» und zählen erst nach Ihrer Bestätigung."
+msgstr "Chiedete agli inquilini di un immobile di leggere i contatori. Le comunicazioni appaiono sotto «Richieste» e valgono solo dopo la vostra conferma."
+
+msgid "%(n)s Zähler"
+msgid_plural "%(n)s Zähler"
+msgstr[0] "%(n)s contatore"
+msgstr[1] "%(n)s contatori"
+
+msgid "%(n)s Mieter mit Portalzugang"
+msgid_plural "%(n)s Mieter mit Portalzugang"
+msgstr[0] "%(n)s inquilino con accesso al portale"
+msgstr[1] "%(n)s inquilini con accesso al portale"
+
+msgid "zuletzt aufgerufen am %(d)s"
+msgstr "ultimo invito il %(d)s"
+
+msgid "%(n)s Meldung wartet"
+msgid_plural "%(n)s Meldungen warten"
+msgstr[0] "%(n)s comunicazione in attesa"
+msgstr[1] "%(n)s comunicazioni in attesa"
+
+msgid "Aufruf an alle Mieter dieser Liegenschaft senden?"
+msgstr "Inviare la richiesta a tutti gli inquilini di questo immobile?"
+
+msgid "Aufruf senden"
+msgstr "Invia la richiesta"
+
+msgid "Noch keine Liegenschaften."
+msgstr "Ancora nessun immobile."
+
+msgid "Bitte prüfen:"
+msgstr "Controllate:"
+
+msgid "Der Verbrauch seit dem %(d)s ist auffällig hoch: etwa das %(f)s-Fache des Üblichen."
+msgstr "Il consumo dal %(d)s è insolitamente alto: circa %(f)s volte il normale."
+
+msgid "Seit dem %(d)s (%(n)s Tage) hat sich der Stand nicht verändert."
+msgstr "Dal %(d)s (%(n)s giorni) la lettura non è cambiata."
+
+msgid "%(z)s: Stand %(w)s am %(d)s"
+msgstr "%(z)s: lettura %(w)s il %(d)s"
+
+msgid "Hinweis: %(t)s"
+msgstr "Nota: %(t)s"
+
+msgid "Der Zähler gibt es nicht mehr."
+msgstr "Questo contatore non esiste più."
+
+msgid "Der Stand ist nicht mehr plausibel: %(t)s"
+msgstr "La lettura non è più plausibile: %(t)s"
+
+msgid "Bitte Zähler, Stand und Ablesedatum angeben."
+msgstr "Indicate contatore, lettura e data."
+
+msgid "Bitte einen gültigen Stand und ein Ablesedatum bis heute angeben."
+msgstr "Indicate una lettura valida e una data fino a oggi."
+
+msgid "Bitte lesen Sie den Zähler nochmals ab."
+msgstr "Leggete di nuovo il contatore."
+
+msgid "Ihr Stand ist bei der Verwaltung. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+msgstr "La vostra lettura è presso l'amministrazione. Vale non appena l'avrà confermata."
+
+msgid "bitte lesen Sie Ihre Zähler ab und melden Sie die Stände im Mieterportal:"
+msgstr "leggete i vostri contatori e comunicate le letture nel portale inquilini:"
+
+msgid "Die Verwaltung bestätigt Ihre Meldung. Vielen Dank."
+msgstr "L'amministrazione conferma la vostra comunicazione. Grazie."
+
+msgid "Bitte Zählerstände ablesen"
+msgstr "Leggete i contatori"
+
+msgid "Der Aufruf ging an %(n)s Mieter."
+msgstr "La richiesta è stata inviata a %(n)s inquilini."

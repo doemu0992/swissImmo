@@ -1,0 +1,37 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% comment %}
+ABLESUNG — Aufruf an die Mieterschaft einer Liegenschaft, die Zähler abzulesen und im Portal zu melden.
+{% endcomment %}
+{% block title %}{% trans "Ablesung" %} — immoswiss{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Ablesung" %}</h1>
+        <p>{% trans "Bitten Sie die Mieterschaft einer Liegenschaft, die Zähler abzulesen. Die Meldungen erscheinen unter «Anfragen» und zählen erst nach Ihrer Bestätigung." %}</p>
+    </div>
+</div>
+
+<div class="fw-card">
+    {% for z in zeilen %}
+    <div class="fw-zeile" data-testid="ablesung-zeile">
+        <div class="fw-mitte">
+            <div class="fw-t">{{ z.lg }}</div>
+            <div class="fw-s">
+                {% blocktrans count n=z.zaehler %}{{ n }} Zähler{% plural %}{{ n }} Zähler{% endblocktrans %} ·
+                {% blocktrans count n=z.empfaenger %}{{ n }} Mieter mit Portalzugang{% plural %}{{ n }} Mieter mit Portalzugang{% endblocktrans %}
+                {% if z.letzter %} · {% blocktrans with d=z.letzter|date:"d.m.Y" %}zuletzt aufgerufen am {{ d }}{% endblocktrans %}{% endif %}
+                {% if z.offen %} · <a href="/neu/anfragen/" class="fw-link">{% blocktrans count n=z.offen %}{{ n }} Meldung wartet{% plural %}{{ n }} Meldungen warten{% endblocktrans %}</a>{% endif %}
+            </div>
+        </div>
+        {% if z.zaehler and z.empfaenger %}
+        <form method="post" action="/neu/ablesung/{{ z.lg.pk }}/aufruf/" data-bestaetigen="{% filter escapejs %}{% trans 'Aufruf an alle Mieter dieser Liegenschaft senden?' %}{% endfilter %}">{% csrf_token %}
+            <button type="submit" class="fw-btn fw-primary" data-testid="ablesung-aufruf">{% trans "Aufruf senden" %}</button>
+        </form>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="fw-rumpf"><p class="fw-mutet">{% trans "Noch keine Liegenschaften." %}</p></div>
+    {% endfor %}
+</div>
+{% endblock %}

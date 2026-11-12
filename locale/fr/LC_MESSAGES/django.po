@@ -40481,3 +40481,99 @@ msgstr "Pour des raisons de sécurité, la gérance vous rappelle avant de confi
 
 msgid "Bankverbindung beantragen"
 msgstr "Demander les coordonnées bancaires"
+
+msgid "Zählerstand melden — Mieterportal"
+msgstr "Annoncer un relevé de compteur — portail locataire"
+
+msgid "Zählerstand melden"
+msgstr "Annoncer un relevé de compteur"
+
+msgid "Tragen Sie den abgelesenen Stand ein. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+msgstr "Saisissez le relevé. Il compte dès que la gérance l'a confirmé."
+
+msgid "Letzter Stand: %(w)s am %(d)s"
+msgstr "Dernier relevé: %(w)s le %(d)s"
+
+msgid "Stand melden"
+msgstr "Annoncer le relevé"
+
+msgid "Für Ihre Mietobjekte sind keine Zähler erfasst."
+msgstr "Aucun compteur n'est enregistré pour vos objets loués."
+
+msgid "Ablesung"
+msgstr "Relevé"
+
+msgid "Bitten Sie die Mieterschaft einer Liegenschaft, die Zähler abzulesen. Die Meldungen erscheinen unter «Anfragen» und zählen erst nach Ihrer Bestätigung."
+msgstr "Demandez aux locataires d'un immeuble de relever les compteurs. Les annonces apparaissent sous «Demandes» et ne comptent qu'après votre confirmation."
+
+msgid "%(n)s Zähler"
+msgid_plural "%(n)s Zähler"
+msgstr[0] "%(n)s compteur"
+msgstr[1] "%(n)s compteurs"
+
+msgid "%(n)s Mieter mit Portalzugang"
+msgid_plural "%(n)s Mieter mit Portalzugang"
+msgstr[0] "%(n)s locataire avec accès au portail"
+msgstr[1] "%(n)s locataires avec accès au portail"
+
+msgid "zuletzt aufgerufen am %(d)s"
+msgstr "dernier appel le %(d)s"
+
+msgid "%(n)s Meldung wartet"
+msgid_plural "%(n)s Meldungen warten"
+msgstr[0] "%(n)s annonce en attente"
+msgstr[1] "%(n)s annonces en attente"
+
+msgid "Aufruf an alle Mieter dieser Liegenschaft senden?"
+msgstr "Envoyer l'appel à tous les locataires de cet immeuble?"
+
+msgid "Aufruf senden"
+msgstr "Envoyer l'appel"
+
+msgid "Noch keine Liegenschaften."
+msgstr "Aucun immeuble pour l'instant."
+
+msgid "Bitte prüfen:"
+msgstr "Veuillez vérifier:"
+
+msgid "Der Verbrauch seit dem %(d)s ist auffällig hoch: etwa das %(f)s-Fache des Üblichen."
+msgstr "La consommation depuis le %(d)s est anormalement élevée: environ %(f)s fois la normale."
+
+msgid "Seit dem %(d)s (%(n)s Tage) hat sich der Stand nicht verändert."
+msgstr "Depuis le %(d)s (%(n)s jours), le relevé n'a pas changé."
+
+msgid "%(z)s: Stand %(w)s am %(d)s"
+msgstr "%(z)s: relevé %(w)s le %(d)s"
+
+msgid "Hinweis: %(t)s"
+msgstr "Remarque: %(t)s"
+
+msgid "Der Zähler gibt es nicht mehr."
+msgstr "Ce compteur n'existe plus."
+
+msgid "Der Stand ist nicht mehr plausibel: %(t)s"
+msgstr "Le relevé n'est plus plausible: %(t)s"
+
+msgid "Bitte Zähler, Stand und Ablesedatum angeben."
+msgstr "Veuillez indiquer le compteur, le relevé et la date."
+
+msgid "Bitte einen gültigen Stand und ein Ablesedatum bis heute angeben."
+msgstr "Veuillez indiquer un relevé valable et une date jusqu'à aujourd'hui."
+
+msgid "Bitte lesen Sie den Zähler nochmals ab."
+msgstr "Veuillez relever à nouveau le compteur."
+
+msgid "Ihr Stand ist bei der Verwaltung. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+msgstr "Votre relevé est chez la gérance. Il compte dès qu'elle l'a confirmé."
+
+msgid "bitte lesen Sie Ihre Zähler ab und melden Sie die Stände im Mieterportal:"
+msgstr "veuillez relever vos compteurs et annoncer les relevés dans le portail locataire:"
+
+msgid "Die Verwaltung bestätigt Ihre Meldung. Vielen Dank."
+msgstr "La gérance confirme votre annonce. Merci."
+
+msgid "Bitte Zählerstände ablesen"
+msgstr "Veuillez relever les compteurs"
+
+msgid "Der Aufruf ging an %(n)s Mieter."
+msgstr "L'appel a été envoyé à %(n)s locataires."

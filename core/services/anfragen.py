@@ -73,6 +73,31 @@ def zusammenfassung_aus(art, daten, bisher=None):
     return '\n'.join(zeilen)
 
 
+def stellen_zaehlerstand(*, mieter, zaehler, datum, wert):
+    """Die Ablesung eines Mieters als Anfrage. Gibt `(anfrage, befund)` zurück; bei einem Fehler (z. B. sinkender Stand)
+    entsteht keine Anfrage (`anfrage` ist `None`, `befund['fehler']` nennt den Grund). Warnungen stehen in der
+    Zusammenfassung, damit die Verwaltung beim Bestätigen sieht, was auffiel."""
+    from decimal import Decimal
+
+    from core.services import zaehlerstaende
+    wert = Decimal(str(wert))
+    befund = zaehlerstaende.pruefen(zaehler, datum, wert)
+    if befund['fehler']:
+        return None, befund
+    bezeichnung = f"{zaehler.typ} {zaehler.zaehler_nummer}" + (f" · {zaehler.einheit.bezeichnung}" if zaehler.einheit_id else '')
+    zeilen = [_('%(z)s: Stand %(w)s am %(d)s') % {'z': bezeichnung, 'w': wert, 'd': datum.strftime('%d.%m.%Y')}]
+    zeilen += [_('Hinweis: %(t)s') % {'t': w} for w in befund['warnungen']]
+    anfrage = Aenderungsanfrage.alle_organisationen.create(
+        organisation=mieter.organisation, mieter=mieter, art=Aenderungsanfrage.ART_ZAEHLERSTAND,
+        daten={'zaehler': zaehler.pk, 'datum': datum.isoformat(), 'wert': str(wert)}, zusammenfassung='\n'.join(zeilen))
+    _logbuch(anfrage, 'Änderungsanfrage gestellt', getattr(mieter, 'benutzer', None))
+    org = mieter.organisation
+    _mail(getattr(org, 'email', ''), f'{anfrage.get_art_display()}: {_absender_name(anfrage)}',
+          f'{_absender_name(anfrage)} hat über das Portal einen Zählerstand gemeldet:\n\n{anfrage.zusammenfassung}\n\n'
+          'Bitte in der Anwendung unter «Heute → Anfragen» bestätigen oder ablehnen.', org)
+    return anfrage, befund
+
+
 def stellen(*, art, daten=None, mieter=None, eigentuemer=None, text=''):
     """Legt eine Anfrage an und meldet sie der Verwaltung. Gibt die Anfrage zurück (oder `None`, wenn nichts zu melden ist)."""
     if (mieter is None) == (eigentuemer is None):
@@ -103,12 +128,37 @@ def stellen(*, art, daten=None, mieter=None, eigentuemer=None, text=''):
     return anfrage
 
 
+def _zaehlerstand_uebernehmen(anfrage):
+    """Legt den gemeldeten Stand an (Herkunft «portal») — nach nochmaliger Prüfung: Seit der Meldung kann ein anderer Stand
+    dazugekommen sein, der diesen unmöglich macht."""
+    from datetime import date
+    from decimal import Decimal
+
+    from core.services import zaehlerstaende
+    from portfolio.models import Zaehler, ZaehlerStand
+    d = anfrage.daten
+    zaehler = Zaehler.objects.filter(pk=d.get('zaehler')).first()
+    if zaehler is None:
+        raise AnfrageFehler(_('Der Zähler gibt es nicht mehr.'))
+    datum, wert = date.fromisoformat(d['datum']), Decimal(d['wert'])
+    befund = zaehlerstaende.pruefen(zaehler, datum, wert)
+    if befund['fehler']:
+        raise AnfrageFehler(_('Der Stand ist nicht mehr plausibel: %(t)s') % {'t': ' '.join(befund['fehler'])})
+    ZaehlerStand.objects.create(zaehler=zaehler, datum=datum, wert=wert, herkunft='portal')
+    letzter = zaehler.staende.order_by('-datum', '-id').first()
+    if letzter:
+        zaehler.aktueller_stand = letzter.wert
+        zaehler.save(update_fields=['aktueller_stand'])
+
+
 @transaction.atomic
 def bestaetigen(anfrage, benutzer, antwort=''):
     """Führt die Änderung aus und schliesst die Anfrage."""
     anfrage = Aenderungsanfrage.alle_organisationen.select_for_update().get(pk=anfrage.pk)
     if not anfrage.offen:
         raise AnfrageFehler(_('Diese Anfrage ist bereits entschieden.'))
+    if anfrage.art == Aenderungsanfrage.ART_ZAEHLERSTAND:
+        _zaehlerstand_uebernehmen(anfrage)
     erlaubt = ERLAUBTE_FELDER.get(anfrage.art, ())
     if erlaubt:
         ziel = anfrage.absender

@@ -24,6 +24,11 @@ Betreibung, Zählerstand). Rendert ein Django-Form feldweise; Fehler stehen am F
                 <div class="fw-ht">{% for e in form.non_field_errors %}{{ e }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>
             </div>
             {% endif %}
+            {% if warnungen %}
+            <div class="fw-hinweis warn rounded-lg" role="alert" data-testid="zaehler-warnung"><span class="fw-hi">{% zeichen 'warnung' %}</span>
+                <div class="fw-ht"><b>{% trans "Bitte prüfen:" %}</b>{% for w in warnungen %}<br>{{ w }}{% endfor %}</div>
+            </div>
+            {% endif %}
             {% if fristen %}
             <div class="fw-hinweis info rounded-lg"><span class="fw-hi">{% zeichen 'recht' %}</span>
                 <div class="fw-ht">{% blocktrans with d=fristen.rv|date:"d.m.Y" %}Rechtsvorschlag bis {{ d }} (Art. 74 SchKG).{% endblocktrans %}
@@ -50,6 +55,7 @@ Betreibung, Zählerstand). Rendert ein Django-Form feldweise; Fehler stehen am F
     </div>
     <div class="flex flex-wrap gap-3 mt-4">
         <button class="fw-btn fw-primary">{{ senden }}</button>
+        {% if trotzdem_knopf %}<button name="trotzdem" value="1" class="fw-btn fw-primary" data-testid="zaehler-trotzdem">{% trans "Trotzdem speichern" %}</button>{% endif %}
         {% if weiter_knopf %}<button name="weiter" value="1" class="fw-btn">{% trans "Speichern und nächsten erfassen" %}</button>{% endif %}
         <a href="{{ zurueck }}" class="fw-btn">{% trans "Abbrechen" %}</a>
     </div>

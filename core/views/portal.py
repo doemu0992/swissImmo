@@ -1139,6 +1139,55 @@ def mieter_mietbestaetigung_pdf(request, pk):
 
 @never_cache
 @login_required
+def mieter_zaehler_view(request):
+    """«Zählerstand melden»: Die Mieterin oder der Mieter trägt den abgelesenen Stand ein; die Verwaltung bestätigt ihn.
+
+    Nur Zähler der eigenen, aktiven Mietobjekte. Ein sinkender Stand wird sofort abgewiesen, ein auffälliger geht mit einem
+    Hinweis an die Verwaltung (`core/services/zaehlerstaende.py`). Zählen tut der Stand erst nach der Bestätigung."""
+    from datetime import date
+    from decimal import Decimal, InvalidOperation
+
+    from django.contrib import messages
+    from django.utils import timezone
+
+    from core.models import Aenderungsanfrage
+    from core.services import anfragen as dienst
+    from portfolio.models import Zaehler
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        return redirect('mieter_portal')
+    _vertraege, objekte = _mieter_objekte(mieter)
+    einheit_ids = [o['einheit'].pk for o in objekte if o['einheit']]
+    zaehler_liste = list(Zaehler.objects.filter(einheit_id__in=einheit_ids).select_related('einheit').order_by('einheit__bezeichnung', 'typ'))
+
+    if request.method == 'POST':
+        eigene = {z.pk: z for z in zaehler_liste}
+        try:
+            z = eigene[int(request.POST.get('zaehler') or 0)]
+            wert = Decimal((request.POST.get('wert') or '').replace("'", '').replace(',', '.').strip())
+            datum = date.fromisoformat(request.POST.get('datum') or '')
+        except (KeyError, ValueError, InvalidOperation):
+            messages.error(request, gettext('Bitte Zähler, Stand und Ablesedatum angeben.'))
+            return redirect('mieter_zaehler')
+        if wert < 0 or datum > timezone.localdate():
+            messages.error(request, gettext('Bitte einen gültigen Stand und ein Ablesedatum bis heute angeben.'))
+            return redirect('mieter_zaehler')
+        anfrage, befund = dienst.stellen_zaehlerstand(mieter=mieter, zaehler=z, datum=datum, wert=wert)
+        if anfrage is None:
+            messages.error(request, ' '.join(befund['fehler']) + ' ' + gettext('Bitte lesen Sie den Zähler nochmals ab.'))
+        else:
+            messages.success(request, '✅ ' + gettext('Ihr Stand ist bei der Verwaltung. Er zählt, sobald die Verwaltung ihn bestätigt hat.'))
+        return redirect('mieter_zaehler')
+
+    for z in zaehler_liste:
+        z.letzter = z.staende.order_by('-datum', '-id').first()
+    anfragen = list(Aenderungsanfrage.objects.filter(mieter=mieter, art=Aenderungsanfrage.ART_ZAEHLERSTAND).order_by('-erstellt_am')[:10])
+    return render(request, 'core/mieter_zaehler.html', {
+        'mieter': mieter, 'zaehler': zaehler_liste, 'anfragen': anfragen, 'heute': timezone.localdate()})
+
+
+@never_cache
+@login_required
 def mieter_passwort_view(request):
     """Passwort ändern im Portal-Look (Django PasswordChangeForm)."""
     from django.contrib import messages

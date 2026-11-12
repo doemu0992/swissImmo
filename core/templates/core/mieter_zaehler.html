@@ -1,0 +1,46 @@
+{% extends 'core/portal_base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Zählerstand melden — Mieterportal" %}{% endblock %}
+{% block brand_icon %}<svg class="fw-zeichen fw-auf-marke text-sm" aria-hidden="true"><use href="#z-zaehler"/></svg>{% endblock %}
+{% block brand_mobile %}{% trans "Zählerstand" %}{% endblock %}
+{% block nav %}{% include 'core/_mieter_nav.html' with aktiv='zaehler' %}{% endblock %}
+
+{% block content %}
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold tracking-tight fw-strong">{% trans "Zählerstand melden" %}</h1>
+        <p class="fw-mutet mt-1">{% trans "Tragen Sie den abgelesenen Stand ein. Er zählt, sobald die Verwaltung ihn bestätigt hat." %}</p>
+    </div>
+
+    <div class="space-y-4 mb-6">
+        {% for z in zaehler %}
+        <form method="post" class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-3" data-testid="zaehler-formular">
+            {% csrf_token %}<input type="hidden" name="zaehler" value="{{ z.pk }}">
+            <h2 class="font-bold fw-strong">{{ z.typ }} · {{ z.zaehler_nummer }}</h2>
+            <p class="text-sm fw-mutet">{% if z.einheit %}{{ z.einheit.bezeichnung }}{% endif %}{% if z.standort %} · {{ z.standort }}{% endif %}
+                {% if z.letzter %}<br>{% blocktrans with w=z.letzter.wert d=z.letzter.datum|date:"d.m.Y" %}Letzter Stand: {{ w }} am {{ d }}{% endblocktrans %}{% endif %}</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div><label for="w{{ z.pk }}" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Stand" %}</label>
+                    <input id="w{{ z.pk }}" name="wert" inputmode="decimal" required class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></div>
+                <div><label for="d{{ z.pk }}" class="block text-xs font-semibold fw-mutet mb-1">{% trans "Ablesedatum" %}</label>
+                    <input id="d{{ z.pk }}" name="datum" type="date" max="{{ heute|date:'Y-m-d' }}" value="{{ heute|date:'Y-m-d' }}" required class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5"></div>
+            </div>
+            <button type="submit" class="fw-btn fw-primary" data-testid="zaehler-melden">{% trans "Stand melden" %}</button>
+        </form>
+        {% empty %}
+        <p class="text-sm fw-mutet">{% trans "Für Ihre Mietobjekte sind keine Zähler erfasst." %}</p>
+        {% endfor %}
+    </div>
+
+    {% if anfragen %}
+    <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-3" data-testid="zaehler-anfragen">
+        <h2 class="font-bold fw-strong">{% trans "Meine Meldungen" %}</h2>
+        {% for a in anfragen %}
+        <div class="text-sm">
+            <div class="font-semibold fw-strong">{{ a.get_status_display }} <span class="fw-faint font-normal">{{ a.erstellt_am|date:"d.m.Y" }}</span></div>
+            <div class="fw-mutet whitespace-pre-line">{{ a.zusammenfassung }}</div>
+            {% if a.antwort %}<div class="fw-mutet">{% trans "Antwort der Verwaltung:" %} {{ a.antwort }}</div>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endblock %}
