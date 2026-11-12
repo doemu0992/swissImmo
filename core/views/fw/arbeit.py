@@ -447,7 +447,10 @@ def fw_leistenzahlen(request):
 
     heute = timezone.localdate()
     try:
-        zahl_heute = len([e for e in was_reisst(heute, grenze=0) if e['tage'] <= 0])
+        from core.auth import SCHREIB_ROLLEN, hat_rolle
+        mit_anfragen = hat_rolle(request.user, SCHREIB_ROLLEN)
+        zahl_heute = len([e for e in was_reisst(heute, grenze=0)
+                          if e['tage'] <= 0 and (mit_anfragen or e.get('art') != 'anfrage')])
     except Exception:
         logger.exception('Zähler «Heute» nicht ermittelbar')
         zahl_heute = None

@@ -310,6 +310,10 @@ def fw_dashboard(request):
     # EIN Durchgang fuer alle Fenster. `was_reisst(365)` ist die Obermenge;
     # «Diese Woche» und «Heute» sind daraus gefiltert.
     alle = was_reisst(heute, grenze=365, aktive_lg=aktive_lg)
+    # Anfragen aus den Portalen bestätigen nur Schreibrollen: Wer nur lesen darf, bekommt keine Zeile mit totem Knopf.
+    from core.auth import SCHREIB_ROLLEN
+    if not hat_rolle(request.user, SCHREIB_ROLLEN):
+        alle = [e for e in alle if e.get('art') != 'anfrage']
     woche = [e for e in alle if e['tage'] <= 7]
     heute_faellig = [e for e in woche if e['tage'] <= 0]
 

@@ -208,7 +208,7 @@
     <li class="fw-vz{% if e.dringlichkeit != 'neutral' %} {{ e.dringlichkeit }}{% endif %}" role="option" tabindex="-1" data-vz="{{ forloop.counter }}">
         <div class="fw-vz-haupt">
             <div class="fw-vz-kopf">
-                {% if e.marke %}<span class="fw-marke-kapsel">{{ e.marke }}</span>{% else %}<span class="fw-marke-kapsel">{% zeichen_wert e.ikon %} {% if e.art == 'lauf' %}{% trans "Lauf" %}{% elif e.art == 'frist' %}{% trans "Frist" %}{% else %}{% trans "Pendenz" %}{% endif %}</span>{% endif %}
+                {% if e.marke %}<span class="fw-marke-kapsel">{{ e.marke }}</span>{% else %}<span class="fw-marke-kapsel">{% zeichen_wert e.ikon %} {% if e.art == 'lauf' %}{% trans "Lauf" %}{% elif e.art == 'frist' %}{% trans "Frist" %}{% elif e.art == 'anfrage' %}{% trans "Anfrage" %}{% else %}{% trans "Pendenz" %}{% endif %}</span>{% endif %}
                 {% if e.nummer %}<span class="fw-mono">{{ e.nummer }}</span>{% endif %}
             </div>
             <div class="fw-vz-titel">{{ e.titel }}</div>
