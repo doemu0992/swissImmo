@@ -316,3 +316,58 @@ class EigentuemerAnfragenTests(AnfragenTests):
         body = self._eig_client().get('/portal/profil/').content.decode()
         self.assertIn('044 AAA', body)
         self.assertNotIn('044 BBB', body)
+
+
+class ArbeitsvorratTests(AnfragenTests):
+    """Offene Anfragen stehen im Arbeitsvorrat der Startseite und zählen am Menüpunkt «Heute»."""
+
+    def _alter(self, anfrage, tage):
+        from datetime import timedelta
+
+        from django.utils import timezone
+        Aenderungsanfrage.alle_organisationen.filter(pk=anfrage.pk).update(erstellt_am=timezone.now() - timedelta(days=tage))
+
+    def _heute_zahl(self, client):
+        return client.get('/neu/leistenzahlen/').json()['heute']
+
+    def test_frische_anfrage_steht_in_diese_woche_und_noch_nicht_in_heute(self):
+        self._anfrage()
+        c = self._verwaltung()
+        woche = c.get('/neu/?ansicht=woche').content.decode()
+        self.assertIn('Kontaktdaten ändern: Mieter A', woche)
+        self.assertNotIn('Kontaktdaten ändern: Mieter A', c.get('/neu/?ansicht=heute').content.decode())
+
+    def test_nach_der_frist_steht_sie_unter_heute_und_zaehlt_am_menue(self):
+        anfrage = self._anfrage()
+        c = self._verwaltung()
+        vorher = self._heute_zahl(c)
+        self._alter(anfrage, 3)                                           # Frist: 2 Tage
+        body = c.get('/neu/?ansicht=heute').content.decode()
+        self.assertIn('Kontaktdaten ändern: Mieter A', body)
+        self.assertIn('/neu/anfragen/', body)
+        self.assertEqual(self._heute_zahl(c), vorher + 1)
+
+    def test_entschiedene_anfrage_verschwindet(self):
+        anfrage = self._anfrage()
+        self._alter(anfrage, 3)
+        c = self._verwaltung()
+        c.post(f'/neu/anfragen/{anfrage.pk}/ablehnen/')
+        self.assertNotIn('Kontaktdaten ändern: Mieter A', c.get('/neu/?ansicht=alle').content.decode())
+
+    def test_fremde_verwaltung_sieht_die_zeile_nicht(self):
+        anfrage = self._anfrage()
+        self._alter(anfrage, 3)
+        self.assertNotIn('Kontaktdaten ändern: Mieter A', self._verwaltung(self.b).get('/neu/?ansicht=alle').content.decode())
+
+    def test_nur_lesende_bekommen_keine_zeile_und_keine_zahl(self):
+        anfrage = self._anfrage()
+        self._alter(anfrage, 3)
+        from crm.models import Mitgliedschaft
+        from django.contrib.auth import get_user_model
+        lesend = get_user_model().objects.create_user(username='nurlesen', password='x')
+        Mitgliedschaft.alle_organisationen.create(
+            organisation=self.a.organisation, benutzer=lesend, rolle=Mitgliedschaft.ROLLE_LESEZUGRIFF)
+        c = Client()
+        c.force_login(lesend)
+        self.assertNotIn('Kontaktdaten ändern: Mieter A', c.get('/neu/?ansicht=alle').content.decode())
+        self.assertEqual(self._heute_zahl(c), self._heute_zahl(self._verwaltung()) - 1)

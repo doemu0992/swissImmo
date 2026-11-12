@@ -423,6 +423,40 @@ def _wartungsfristen(heute, bis, aktive_lg=None):
     return zeilen
 
 
+#: So viele Tage hat die Verwaltung, eine Anfrage aus dem Portal zu beantworten, bevor sie als überfällig zählt.
+ANFRAGE_FRIST_TAGE = 2
+
+
+def _anfragen(heute, bis):
+    """Offene Anfragen aus dem Mieter- und Eigentümerportal (`core.models.Aenderungsanfrage`).
+
+    Eine Anfrage hat keine eigene Frist; die Verwaltung beantwortet sie innerhalb von `ANFRAGE_FRIST_TAGE`. Danach steht sie
+    wie jede überfällige Zeile da. Das Ziel ist die Anfragenseite, wo bestätigt oder abgelehnt wird."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from core.models import Aenderungsanfrage
+
+    zeilen = []
+    for a in (Aenderungsanfrage.objects.filter(status=Aenderungsanfrage.STATUS_OFFEN)
+              .select_related('mieter', 'eigentuemer').order_by('erstellt_am')[:20]):
+        faellig = timezone.localtime(a.erstellt_am).date() + timedelta(days=ANFRAGE_FRIST_TAGE)
+        if faellig > bis:
+            continue
+        tage = (faellig - heute).days
+        name = getattr(a.absender, 'display_name', None) or getattr(a.absender, 'firma_oder_name', '') or ''
+        zeilen.append({
+            'art': 'anfrage', 'ikon': 'dokument',
+            'titel': f'{a.get_art_display()}: {name}',
+            'zeile': a.zusammenfassung.split('\n')[0][:120],
+            'datum': faellig, 'tage': tage,
+            'dringlichkeit': _dringlichkeit(tage),
+            'ziel': '/neu/anfragen/', 'knopf': gettext('Öffnen'), 'objekt': a,
+        })
+    return zeilen
+
+
 #: Quelle → Funktion. Als Tabelle, damit ein Ausfall EINE Quelle kostet und
 #: nicht die Startseite, und damit der Name im Log steht.
 QUELLEN = (
@@ -430,6 +464,7 @@ QUELLEN = (
     ('Fälle', _fallschritte, False),
     ('Pendenzen', _pendenzen, True),
     ('Wartungsfristen', _wartungsfristen, True),
+    ('Anfragen', _anfragen, False),
 )
 
 
