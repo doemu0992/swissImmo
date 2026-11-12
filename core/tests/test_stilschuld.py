@@ -71,7 +71,6 @@ OBERGRENZE = {
     'core/login.html': 9,
     'core/portal_login.html': 10,
     'fw/_schicht.html': 12,
-    'fw/vertrag_neu.html': 1,
 },
 }
 

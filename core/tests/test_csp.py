@@ -21,6 +21,14 @@ class RichtlinieTests(SimpleTestCase):
         r = csp.richtlinie('ABC123')
         self.assertIn("script-src 'self' 'nonce-ABC123'", r)
         self.assertNotIn("script-src 'self' 'unsafe-inline'", r)
+        # Stile: nur eigene Dateien und der Nonce — kein 'unsafe-inline' (seit 12.11.2026).
+        self.assertIn("style-src 'self' 'nonce-ABC123'", r)
+        self.assertNotIn('unsafe-inline', r)
+
+    def test_dokumentantworten_duerfen_inline_stile_aber_keine_inline_skripte(self):
+        r = csp.richtlinie('ABC123', stil_inline=True)
+        self.assertIn("style-src 'self' 'unsafe-inline'", r)
+        self.assertIn("script-src 'self' 'nonce-ABC123'", r)
         for erwartet in ("object-src 'none'", "base-uri 'self'", "frame-ancestors 'self'", "form-action 'self'",
                          f'report-uri {csp.BERICHT_PFAD}'):
             self.assertIn(erwartet, r)
@@ -153,3 +161,41 @@ class RatscheTests(SimpleTestCase):
             (pathlib.Path(tmp) / 'a.html').write_text('<button onclick="x()">a</button><a onClick=\'y()\'>b</a>'
                                                        '{# <i onclick="z()"> #}')
             self.assertEqual(zaehlen(tmp), {'a.html': 2})
+
+
+class StilAusnahmeTests(TestCase):
+    """Nur die Vertragsvorschau (gerendertes Dokument) darf Inline-Stile; jede andere Seite nicht."""
+
+    def test_normale_seiten_ohne_unsafe_inline(self):
+        c = Client()
+        c.force_login(_team_user())
+        for url in ('/login/', '/neu/'):
+            kopf = c.get(url)[csp.HEADER_REPORT]
+            self.assertNotIn('unsafe-inline', kopf, url)
+
+    def test_vertragsvorschau_hat_inline_stile_ohne_skriptausnahme(self):
+        c = Client()
+        c.force_login(_team_user())
+        kopf = c.post('/neu/vertraege/vorschau/', {})[csp.HEADER_REPORT]
+        self.assertIn("style-src 'self' 'unsafe-inline'", kopf)
+        self.assertRegex(kopf, r"script-src 'self' 'nonce-[^']+'")
+        self.assertNotIn("script-src 'self' 'unsafe-inline'", kopf)
+
+
+class FehlerseitenOhneInlineStilTests(TestCase):
+    """Auch die Seiten, die nur im Fehlerfall oder ohne Anmeldung erscheinen, brauchen keine Inline-Stile."""
+
+    def _pruefen(self, antwort, url):
+        html = antwort.content.decode()
+        self.assertNotRegex(html, r'\sstyle="', url)
+        for m in re.finditer(r'<style\b([^>]*)>', html):
+            self.assertIn('nonce=', m.group(1), f'{url}: <style> ohne Nonce')
+
+    def test_404_login_und_startseite(self):
+        for url in ('/gibt-es-nicht-xyz/', '/login/', '/'):
+            self._pruefen(Client().get(url), url)
+
+    def test_403_und_400(self):
+        c = Client()
+        c.force_login(_team_user('Buchhaltung'))
+        self._pruefen(c.get('/neu/personen/'), '/neu/personen/ (403)')

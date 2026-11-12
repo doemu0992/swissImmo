@@ -575,6 +575,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-fs-15{font-size:15px}      
         .fw-status-gruppe{background:var(--ds-surface-2);border-radius:var(--ds-radius-sm);padding:2px;gap:2px}  
         .fw-marke-link{color:var(--ds-brand)}  
+        .pvsec{background:var(--ds-surface-2);font-weight:700;font-size:12px;padding:4px 8px;margin-top:14px;border-radius:var(--ds-radius-sm)}  
         .fw-zeichenflaeche{height:150px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}  
         .fw-card-compliance{border:2px solid #c0392b}  
         .fw-chip.fw-chip-compliance{background:#c0392b;color:#fff}

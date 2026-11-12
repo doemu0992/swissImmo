@@ -479,7 +479,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
         </div></div>
         <div class="fw-assistent-vorschau-rumpf" id="v-vorschau-rumpf">
             <div class="fw-card">
-                <iframe id="pvFrame" title="{% trans 'Vertrags-Vorschau' %}" class="fw-flaeche"></iframe>
+                <iframe id="pvFrame" name="pvFrame" title="{% trans 'Vertrags-Vorschau' %}" class="fw-flaeche"></iframe>
             </div>
             <p class="fw-hilfe text-center">{% zeichen 'gut' klasse='fw-gut mr-1' %}{% trans "Ganze Vertragsbreite auf einen Blick · 1:1 wie das generierte PDF." %}</p>
         </div>
@@ -985,12 +985,17 @@ function refreshServerPreview(){
   const form=document.getElementById('vform');
   const frame=document.getElementById('pvFrame');
   if(!form || !frame) return;
-  const seq=++_pvSeq;
-  fetch('/neu/vertraege/vorschau/', {method:'POST', body:new FormData(form),
-        headers:{'X-Requested-With':'XMLHttpRequest'}})
-    .then(r=>r.text())
-    .then(html=>{ if(seq===_pvSeq) frame.srcdoc = html; })
-    .catch(()=>{});
+  // Die Vorschau lädt als eigene Seite in den Rahmen (Formular-POST mit Ziel «pvFrame»), nicht als `srcdoc`: Ein
+  // `srcdoc`-Dokument erbt die Content-Security-Policy der Seite und verlöre die Stile der Vertragsvorlage. Die Antwort
+  // hat ihre eigene Richtlinie (core/csp.py, stil_inline). `HTMLFormElement.prototype.submit` löst weder Prüfung noch
+  // submit-Ereignis aus; Ziel und Adresse des Formulars werden danach zurückgesetzt.
+  const alt={action:form.getAttribute('action'), target:form.getAttribute('target')};
+  form.setAttribute('action','/neu/vertraege/vorschau/'); form.setAttribute('target','pvFrame');
+  try { HTMLFormElement.prototype.submit.call(form); }
+  finally {
+    if(alt.action===null) form.removeAttribute('action'); else form.setAttribute('action',alt.action);
+    if(alt.target===null) form.removeAttribute('target'); else form.setAttribute('target',alt.target);
+  }
 }
 // Vorschau in A4-Breite (794px) layouten und per CSS-Transform exakt auf die
 // verfügbare Spaltenbreite herunterskalieren → ganze Vertragsbreite ohne
@@ -1164,9 +1169,6 @@ function buildSummary(){
   });
 }
 // Init
-const stepStyle=document.createElement('style');
-stepStyle.textContent='.pvsec{background:#f1f5f9;font-weight:700;font-size:12px;padding:4px 8px;margin-top:14px;border-radius:4px;}';
-document.head.appendChild(stepStyle);
 monateStandard();                    // Standard-Kündigungsmonate März/Juni/September
 document.getElementById('s_ref').value = AKT_REF;   // Referenzzinssatz vorbelegen
 fwMzm.init({geaendert: live});       // Mietzinsmodell: Kacheln, Stufen, Prüfung, Sperre
