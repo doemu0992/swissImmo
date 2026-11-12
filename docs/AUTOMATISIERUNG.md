@@ -16,6 +16,7 @@ Basis-Kommando (Pfad/venv anpassen):
 | `fetch_plattform_eingang --dauerlauf` | Always-on-Task (Schleife alle 60 s im Befehl selbst) | Dasselbe als Dauerläufer, beendet sich sauber bei SIGTERM/SIGINT. Nur eine der beiden Formen einrichten. Nach Änderungen der `.env` den Task neu starten |
 | `log_kette_anker --mail ADRESSE` | täglich (z.B. 04:30) | Legt den Kopf der Hash-Kette des Audit-Logs je Verwaltung als Ankerpunkt ab (`~/sicherungen/anker/anker-<Datum>.jsonl`, optional per Mail an eine Adresse ausserhalb der Datenbank). Bricht ab, wenn die Kette nicht stimmt. Siehe unten «Hash-Kette im Audit-Log» |
 | `log_kette_pruefen [--anker DATEI]` | wöchentlich (z.B. So 04:45), vor Revisionen von Hand | Prüft die Kette (Lücken, geänderte Einträge, Einschleusungen); mit `--anker` zusätzlich gegen die abgelegten Ankerpunkte. Fehlercode 1 bei Befund |
+| `datenbank_rolle_pruefen [--streng]` | nach jedem Rollen- oder Hosterwechsel, von Hand | Meldet, ob die Datenbankrolle der Anwendung Superuser oder Tabelleneigentümerin ist (dann umgehen `TRUNCATE`/`DISABLE TRIGGER` die Trigger). Siehe Abschnitt «Datenbankrolle» |
 
 Alle Läufe sind **idempotent** — mehrfaches Ausführen erzeugt keine Duplikate.
 Jeder Lauf schreibt einen Eintrag ins Aktivitätslog (`AktivitaetsLog`).
@@ -423,3 +424,31 @@ vergleicht sie mit der Kette. Ohne Anker erkennt die Prüfung Brüche, aber kein
 
 Einrichtung auf PythonAnywhere: zwei Scheduled Tasks (Befehle wie in der Tabelle oben, mit dem Python von `env313`). `--mail` mit einer
 Adresse, auf die der Betreiber der Datenbank keinen Schreibzugriff hat (etwa das Postfach eines Treuhänders).
+
+
+## Datenbankrolle (PostgreSQL)
+
+Die Trigger auf Buchungen und Audit-Log halten rohes SQL auf, aber nicht `TRUNCATE`, `DROP TABLE` und
+`ALTER TABLE ... DISABLE TRIGGER`. Das darf, wer Superuser oder Eigentümer der Tabelle ist. `manage.py datenbank_rolle_pruefen`
+zeigt, ob die Rolle der Anwendung das kann (`--streng`: Code 1 bei Befund).
+
+Empfohlen: zwei Rollen.
+
+* `swissimmo_migrate` (Eigentümerin der Tabellen) wird nur für `migrate` im Deploy verwendet.
+* `swissimmo_app` (Laufzeit, Web-App und Tasks) ist weder Superuser noch Eigentümerin und hat nur
+  `SELECT, INSERT, UPDATE, DELETE` auf den Tabellen und `USAGE` auf den Sequenzen:
+
+```sql
+CREATE ROLE swissimmo_app LOGIN PASSWORD '...';
+GRANT CONNECT ON DATABASE swissimmo TO swissimmo_app;
+GRANT USAGE ON SCHEMA public TO swissimmo_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO swissimmo_app;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO swissimmo_app;
+ALTER DEFAULT PRIVILEGES FOR ROLE swissimmo_migrate IN SCHEMA public
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO swissimmo_app;
+ALTER DEFAULT PRIVILEGES FOR ROLE swissimmo_migrate IN SCHEMA public
+    GRANT USAGE, SELECT ON SEQUENCES TO swissimmo_app;
+```
+
+Der Deploy braucht dann die Zugangsdaten der Migrationsrolle nur für den `migrate`-Schritt. Bei PythonAnywhere ist das ein
+Betreiber-Schritt (Rollen anlegen, Umgebungsvariablen von Web-App und Tasks umstellen); bis dahin meldet der Befehl den Ist-Zustand.
