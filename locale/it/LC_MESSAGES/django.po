@@ -40506,3 +40506,6 @@ msgstr "Leggete i contatori"
 
 msgid "Der Aufruf ging an %(n)s Mieter."
 msgstr "La richiesta è stata inviata a %(n)s inquilini."
+
+msgid "Der Live-Abruf nennt %(monat)s: %(punkte)s. Vor dem Eintragen gegen die BFS-Publikation prüfen."
+msgstr "La consultazione in diretta indica %(monat)s: %(punkte)s. Da verificare con la pubblicazione dell'UST prima di inserirlo."

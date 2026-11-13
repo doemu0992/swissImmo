@@ -39911,3 +39911,6 @@ msgstr "Please read your meters"
 
 msgid "Der Aufruf ging an %(n)s Mieter."
 msgstr "The request was sent to %(n)s tenants."
+
+msgid "Der Live-Abruf nennt %(monat)s: %(punkte)s. Vor dem Eintragen gegen die BFS-Publikation prüfen."
+msgstr "The live lookup reports %(monat)s: %(punkte)s. Check it against the FSO publication before entering it."
