@@ -1,0 +1,62 @@
+{% extends 'core/betreiber_base.html' %}
+{% load zeichen i18n %}
+{% comment %}BETREIBER — LIK-Werte nachtragen. Siehe core/services/lik.py (`lik_reihen`) und core.LikWert.{% endcomment %}
+{% block title %}{% trans "LIK-Werte" %} — immoswiss{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <b>{% trans "LIK-Werte" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "LIK-Werte" %}</h1>
+        <p>{% blocktrans %}Landesindex der Konsumentenpreise, Basis {{ basis }} = 100. Hier trägst du den Monatswert ein, sobald das BFS ihn veröffentlicht hat; ein Deployment braucht es nicht. Ein Eintrag hier gilt vor der Reihe im Code.{% endblocktrans %}</p>
+    </div>
+</div>
+
+{% if live %}
+<div class="fw-hinweis info max-w-3xl"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">{% blocktrans with monat=live.monat punkte=live.punkte %}Der Live-Abruf nennt {{ monat }}: {{ punkte }}. Das ist nur ein Vorschlag. Vor dem Eintragen gegen die BFS-Publikation prüfen.{% endblocktrans %}</div></div>
+{% endif %}
+{% if fehler %}
+<div class="fw-hinweis warn max-w-3xl" role="alert"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">{{ fehler }}</div></div>
+{% endif %}
+
+<div class="fw-card max-w-3xl">
+    <div class="fw-kopf"><h2>{% trans "Monatswert nachtragen" %}</h2></div>
+    <div class="fw-rumpf">
+        <form method="post">
+            {% csrf_token %}
+            <div class="fw-formgrid">
+                <div class="fw-feldblock"><label for="lik-jahr" class="fw-label">{% trans "Jahr" %}</label>
+                    <input id="lik-jahr" name="jahr" type="number" min="2020" value="{{ w.jahr }}" required class="fw-feld"></div>
+                <div class="fw-feldblock"><label for="lik-monat" class="fw-label">{% trans "Monat (1–12)" %}</label>
+                    <input id="lik-monat" name="monat" type="number" min="1" max="12" value="{{ w.monat }}" required class="fw-feld"></div>
+                <div class="fw-feldblock"><label for="lik-punkte" class="fw-label">{% trans "Punkte" %}</label>
+                    <input id="lik-punkte" name="punkte" inputmode="decimal" value="{{ w.punkte }}" required class="fw-feld"></div>
+                <div class="fw-feldblock breit"><label for="lik-quelle" class="fw-label">{% trans "Quelle" %}</label>
+                    <input id="lik-quelle" name="quelle" value="{{ w.quelle }}" maxlength="200" required class="fw-feld"
+                           placeholder="{% trans 'BFS, Medienmitteilung vom …' %}"></div>
+            </div>
+            <div class="fw-aktionen"><button type="submit" class="fw-btn fw-primary">{% trans "Speichern" %}</button></div>
+        </form>
+    </div>
+</div>
+
+<div class="fw-card max-w-3xl">
+    <div class="fw-kopf"><h2>{% trans "Letzte Monate" %}</h2></div>
+    <div class="overflow-x-auto">
+    <table class="fw-table">
+        <thead><tr>
+            <th scope="col">{% trans "Monat" %}</th>
+            <th scope="col" class="fw-right">{% trans "Punkte" %}</th>
+            <th scope="col">{% trans "Quelle" %}</th>
+        </tr></thead>
+        <tbody>
+        {% for z in zeilen %}
+        <tr><td>{{ z.monat|stringformat:"02d" }}/{{ z.jahr }}</td><td class="fw-right fw-strong">{{ z.punkte }}</td><td>{{ z.quelle }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endblock %}

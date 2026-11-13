@@ -38,10 +38,27 @@ LIK_DEZ2020 = {
 }
 
 
-def lik_punkte_fuer(jahr, monat):
-    """LIK-Punkte (Decimal) eines Monats aus der Tabelle, oder None."""
+def lik_reihen():
+    """`{jahr: [12 Werte, None = nicht veröffentlicht]}`: die Reihe im Code, darüber die nachgetragenen Werte.
+
+    Nachgetragen (`core.LikWert`) gewinnt gegen den Code. Eine Abfrage je Aufruf; wer viele Monate prüft, holt die
+    Reihen einmal und schlägt dann darin nach. Ist die Datenbank nicht lesbar, gilt die Reihe im Code: Eine
+    Indexrechnung darf daran nicht scheitern."""
+    reihen = {jahr: list(reihe) + [None] * (12 - len(reihe)) for jahr, reihe in LIK_DEZ2020.items()}
+    try:
+        from core.models import LikWert
+        for w in LikWert.objects.filter(basis=LIK_BASIS):
+            reihen.setdefault(w.jahr, [None] * 12)[w.monat - 1] = float(w.punkte)
+    except Exception:                                        # noqa: BLE001 — Rückfall auf die Reihe im Code
+        import logging
+        logging.getLogger(__name__).warning('LIK-Werte aus der Datenbank nicht lesbar — es gilt die Reihe im Code.')
+    return reihen
+
+
+def lik_punkte_fuer(jahr, monat, reihen=None):
+    """LIK-Punkte (Decimal) eines Monats, oder None. `reihen`: die Reihen aus `lik_reihen()`, wenn schon geholt."""
     from decimal import Decimal
-    reihe = LIK_DEZ2020.get(jahr)
+    reihe = (reihen if reihen is not None else lik_reihen()).get(jahr)
     if not reihe or monat < 1 or monat > len(reihe):
         return None
     val = reihe[monat - 1]
@@ -54,10 +71,11 @@ TABELLE_MAX_RUECKSTAND_MONATE = 3
 
 
 def letzter_tabellenmonat():
-    """(jahr, monat) des jüngsten Monats mit Wert in `LIK_DEZ2020`, oder None."""
+    """(jahr, monat) des jüngsten Monats mit Wert (Code und Nachträge), oder None."""
     letzter = None
-    for jahr in sorted(LIK_DEZ2020):
-        for i, val in enumerate(LIK_DEZ2020[jahr]):
+    reihen = lik_reihen()
+    for jahr in sorted(reihen):
+        for i, val in enumerate(reihen[jahr]):
             if val is not None:
                 letzter = (jahr, i + 1)
     return letzter
@@ -81,7 +99,7 @@ def tabelle_hinweis(heute):
         return ''
     letzter = letzter_tabellenmonat()
     stand = f"{_MONATE[letzter[1] - 1]} {letzter[0]}" if letzter else "kein Monat"
-    return (f"Die LIK-Tabelle (core/services/lik.py, LIK_DEZ2020) endet im {stand} und liegt mehr als "
+    return (f"Die LIK-Tabelle endet im {stand} und liegt mehr als "
             f"{TABELLE_MAX_RUECKSTAND_MONATE} Monate hinter dem Kalender. Bitte die Monatswerte des BFS "
             "(Landesindex der Konsumentenpreise) nachtragen; bis dahin sind Indexanpassungen für die "
             "fehlenden Monate gesperrt.")
@@ -92,8 +110,9 @@ def _tabelle_wert():
     import datetime
     from decimal import Decimal
     best = None
-    for jahr in sorted(LIK_DEZ2020):
-        reihe = LIK_DEZ2020[jahr]
+    reihen = lik_reihen()
+    for jahr in sorted(reihen):
+        reihe = reihen[jahr]
         for i, val in enumerate(reihe):
             if val is not None:
                 best = (jahr, i + 1, val)

@@ -217,6 +217,7 @@ UEBERSETZT = (
     'fw/betreiber_kunde_abo.html',   # Kundenseite: Abonnement ändern
     'fw/betreiber_kunde_bearbeiten.html',  # Kundenseite: Stammdaten und Ansprechperson ändern
     'fw/betreiber_csp.html',         # Betreiber-Portal: CSP-Meldungen aus dem Log
+    'fw/betreiber_lik.html',         # Betreiber-Portal: LIK-Monatswerte nachtragen
     'fw/auszahlungsfreigaben.html',  # Vier-Augen-Prinzip für Auszahlungen (Etappe 4)
     'fw/mahnwesen.html',
     'fw/mandat_abrechnung.html',

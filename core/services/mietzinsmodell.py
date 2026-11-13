@@ -221,15 +221,16 @@ def basis_lik_vorschlag(beginn, live=None):
     """
     from django.conf import settings
 
-    from core.services.lik import LIK_DEZ2020, aktueller_lik_wert, lik_punkte_fuer
+    from core.services.lik import aktueller_lik_wert, lik_punkte_fuer, lik_reihen
     if beginn is None:
         return None, None
     jahr, monat = (beginn.year, beginn.month - 1) if beginn.month > 1 else (beginn.year - 1, 12)
     grenze = (jahr, monat)
-    erstes = min(LIK_DEZ2020)
+    reihen = lik_reihen()
+    erstes = min(reihen)
     ergebnis = (None, None)
     while jahr >= erstes:
-        punkte = lik_punkte_fuer(jahr, monat)
+        punkte = lik_punkte_fuer(jahr, monat, reihen)
         if punkte is not None:
             ergebnis = (date(jahr, monat, 1), punkte)
             break

@@ -39926,3 +39926,45 @@ msgstr "never"
 
 msgid "Abruf ausgefallen: %(name)s — %(n)s Fehlversuche in Folge, letzter Erfolg %(erfolg)s. Grund: %(grund)s"
 msgstr "Lookup down: %(name)s — %(n)s failed attempts in a row, last success %(erfolg)s. Reason: %(grund)s"
+
+msgid "LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s. Unter «LIK-Werte» nachtragen."
+msgstr "Add to the CPI table: it ends in month %(stand)s. Add it under «CPI values»."
+
+msgid "LIK-Werte"
+msgstr "CPI values"
+
+msgid "Jahr, Monat und Punkte müssen Zahlen sein (Monat 1 bis 12)."
+msgstr "Year, month and points must be numbers (month 1 to 12)."
+
+msgid "Der Monat liegt vor 2020 oder in der Zukunft."
+msgstr "The month is before 2020 or in the future."
+
+msgid "Der Wert liegt ausserhalb von 100 bis 140 Punkten (Basis Dezember 2020 = 100). Tippfehler?"
+msgstr "The value is outside 100 to 140 points (base December 2020 = 100). Typo?"
+
+msgid "Die Quelle ist Pflicht, zum Beispiel «BFS, Medienmitteilung vom 05.11.2026»."
+msgstr "The source is required, for example «FSO, press release of 05.11.2026»."
+
+msgid "LIK %(monat)s/%(jahr)s mit %(punkte)s Punkten gespeichert."
+msgstr "CPI %(monat)s/%(jahr)s saved with %(punkte)s points."
+
+msgid "im Code (BFS-Tabelle)"
+msgstr "in the code (FSO table)"
+
+msgid "Landesindex der Konsumentenpreise, Basis %(basis)s = 100. Hier trägst du den Monatswert ein, sobald das BFS ihn veröffentlicht hat; ein Deployment braucht es nicht. Ein Eintrag hier gilt vor der Reihe im Code."
+msgstr "Swiss consumer price index, base %(basis)s = 100. Enter the monthly value here as soon as the FSO has published it; no deployment needed. An entry here takes precedence over the series in the code."
+
+msgid "Der Live-Abruf nennt %(monat)s: %(punkte)s. Das ist nur ein Vorschlag. Vor dem Eintragen gegen die BFS-Publikation prüfen."
+msgstr "The live lookup reports %(monat)s: %(punkte)s. This is only a suggestion. Check it against the FSO publication before entering it."
+
+msgid "Monatswert nachtragen"
+msgstr "Add a monthly value"
+
+msgid "Monat (1–12)"
+msgstr "Month (1–12)"
+
+msgid "BFS, Medienmitteilung vom …"
+msgstr "FSO, press release of …"
+
+msgid "Letzte Monate"
+msgstr "Latest months"

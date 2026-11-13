@@ -39,7 +39,7 @@ def faellig(heute):
     if rueckstand is None or rueckstand > LIK_RUECKSTAND_FAELLIG:
         letzter = lik.letzter_tabellenmonat()
         stand = f'{letzter[1]:02d}/{letzter[0]}' if letzter else _('kein Monat')
-        text = _('LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s (core/services/lik.py).') % {'stand': stand}
+        text = _('LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s. Unter «LIK-Werte» nachtragen.') % {'stand': stand}
         live = _live_hinweis(letzter)
         aufgaben.append(f'{text} {live}' if live else text)
     # Das BWO gibt das Verzeichnis jährlich neu heraus; ein Register, das vor mehr als einem Jahr geprüft wurde, ist zu prüfen.

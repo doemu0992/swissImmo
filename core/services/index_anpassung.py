@@ -94,11 +94,12 @@ def lik_punkte(stand):
 
 def letzter_stand(bis=None):
     """Der jüngste Monat der Tabelle mit Wert (höchstens `bis`), oder None."""
-    from core.services.lik import LIK_DEZ2020
+    from core.services.lik import lik_reihen
     grenze = monatserster(bis) if bis else None
     beste = None
-    for jahr in sorted(LIK_DEZ2020):
-        for i, wert in enumerate(LIK_DEZ2020[jahr]):
+    reihen = lik_reihen()
+    for jahr in sorted(reihen):
+        for i, wert in enumerate(reihen[jahr]):
             if wert is None:
                 continue
             monat = date(jahr, i + 1, 1)
@@ -109,10 +110,11 @@ def letzter_stand(bis=None):
 
 def verfuegbare_staende(anzahl=12, bis=None):
     """Die jüngsten `anzahl` veröffentlichten Monate, der neueste zuerst."""
-    from core.services.lik import LIK_DEZ2020
+    from core.services.lik import lik_reihen
     grenze = monatserster(bis) if bis else None
+    reihen = lik_reihen()
     monate = [date(j, i + 1, 1)
-              for j in sorted(LIK_DEZ2020) for i, w in enumerate(LIK_DEZ2020[j])
+              for j in sorted(reihen) for i, w in enumerate(reihen[j])
               if w is not None and (grenze is None or date(j, i + 1, 1) <= grenze)]
     return list(reversed(monate))[:anzahl]
 

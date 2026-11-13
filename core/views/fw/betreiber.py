@@ -32,6 +32,83 @@ def fw_betreiber_csp(request):
 
 
 @rolle_erforderlich(*BETREIBER_ROLLEN)
+def fw_betreiber_lik(request):
+    """Monatswerte des Landesindex nachtragen (statt im Code): die Reihe der letzten Monate und ein Formular.
+
+    Der Wert kommt vom Betreiber aus der BFS-Publikation; der Live-Wert der HEV-Seite wird nur als Vorschlag
+    gezeigt, nie selbständig übernommen. Ein bestehender Monat wird überschrieben (Korrektur), die Quelle ist Pflicht.
+    """
+    from decimal import Decimal, InvalidOperation
+
+    from django.conf import settings
+    from django.contrib import messages
+    from django.shortcuts import redirect
+    from django.utils.translation import gettext
+
+    from core.models import LikWert, SicherheitsEreignis
+    from core.auth import client_ip
+    from core.services import lik
+
+    heute = datum_heute()
+    fehler = None
+    werte = {'jahr': heute.year, 'monat': heute.month, 'punkte': '', 'quelle': ''}
+    if request.method == 'POST':
+        werte.update({k: (request.POST.get(k) or '').strip() for k in ('jahr', 'monat', 'punkte', 'quelle')})
+        try:
+            jahr, monat = int(werte['jahr']), int(werte['monat'])
+            punkte = Decimal(werte['punkte'].replace(',', '.')).quantize(Decimal('0.1'))
+        except (ValueError, InvalidOperation):
+            jahr = monat = punkte = None
+        quelle = werte['quelle'][:200]
+        if jahr is None or not (1 <= monat <= 12):
+            fehler = gettext('Jahr, Monat und Punkte müssen Zahlen sein (Monat 1 bis 12).')
+        elif (jahr, monat) > (heute.year, heute.month) or jahr < 2020:
+            fehler = gettext('Der Monat liegt vor 2020 oder in der Zukunft.')
+        elif not (Decimal('100') <= punkte <= Decimal('140')):
+            fehler = gettext('Der Wert liegt ausserhalb von 100 bis 140 Punkten (Basis Dezember 2020 = 100). Tippfehler?')
+        elif not quelle:
+            fehler = gettext('Die Quelle ist Pflicht, zum Beispiel «BFS, Medienmitteilung vom 05.11.2026».')
+        else:
+            alt = lik.lik_punkte_fuer(jahr, monat)
+            LikWert.objects.update_or_create(
+                jahr=jahr, monat=monat, basis=lik.LIK_BASIS,
+                defaults={'punkte': punkte, 'quelle': quelle, 'erfasst_von': request.user})
+            SicherheitsEreignis.objects.create(
+                aktion='LIK-Wert nachgetragen', objekt=f'{monat:02d}/{jahr}', ip_adresse=client_ip(request) or None,
+                details=f'{punkte} Punkte (vorher {alt if alt is not None else "kein Wert"}), Quelle: {quelle}')
+            messages.success(request, gettext('LIK %(monat)s/%(jahr)s mit %(punkte)s Punkten gespeichert.')
+                             % {'monat': f'{monat:02d}', 'jahr': jahr, 'punkte': punkte})
+            return redirect('fw_betreiber_lik')
+
+    reihen = lik.lik_reihen()
+    nachgetragen = {(w.jahr, w.monat): w for w in LikWert.objects.filter(basis=lik.LIK_BASIS)}
+    zeilen = []
+    for jahr in sorted(reihen, reverse=True):
+        for monat in range(12, 0, -1):
+            wert = reihen[jahr][monat - 1]
+            if wert is None:
+                continue
+            eigener = nachgetragen.get((jahr, monat))
+            zeilen.append({'jahr': jahr, 'monat': monat, 'punkte': wert,
+                           'quelle': eigener.quelle if eigener else gettext('im Code (BFS-Tabelle)')})
+        if len(zeilen) >= 18:
+            break
+    letzter = lik.letzter_tabellenmonat()
+    live = None
+    if getattr(settings, 'LIK_LIVE_ABRUF', False):
+        try:
+            stand, punkte_live, _basis = lik.aktueller_lik_wert(live=True)
+            if stand and punkte_live and (not letzter or (stand.year, stand.month) > letzter):
+                live = {'monat': f'{stand.month:02d}/{stand.year}', 'punkte': punkte_live}
+        except Exception:                                    # noqa: BLE001 — ein Vorschlag darf die Seite nie stören
+            live = None
+    return render(request, 'fw/betreiber_lik.html', {
+        'aktiv': 'lik', 'zeilen': zeilen[:18], 'w': werte, 'fehler': fehler, 'live': live,
+        'letzter': f'{letzter[1]:02d}/{letzter[0]}' if letzter else None, 'basis': lik.LIK_BASIS,
+    })
+
+
+@rolle_erforderlich(*BETREIBER_ROLLEN)
 def fw_betreiber_neu(request):
     """Etappe 2: Kunde anlegen. Derselbe Dienst wie der Befehl `organisation_anlegen`, plus Einladung per Mail.
 

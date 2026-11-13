@@ -40592,3 +40592,45 @@ msgstr "jamais"
 
 msgid "Abruf ausgefallen: %(name)s — %(n)s Fehlversuche in Folge, letzter Erfolg %(erfolg)s. Grund: %(grund)s"
 msgstr "Consultation en panne : %(name)s — %(n)s échecs consécutifs, dernier succès %(erfolg)s. Motif : %(grund)s"
+
+msgid "LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s. Unter «LIK-Werte» nachtragen."
+msgstr "Compléter le tableau de l'IPC : il s'arrête au mois %(stand)s. À compléter sous «Valeurs IPC»."
+
+msgid "LIK-Werte"
+msgstr "Valeurs IPC"
+
+msgid "Jahr, Monat und Punkte müssen Zahlen sein (Monat 1 bis 12)."
+msgstr "L'année, le mois et les points doivent être des nombres (mois 1 à 12)."
+
+msgid "Der Monat liegt vor 2020 oder in der Zukunft."
+msgstr "Le mois est antérieur à 2020 ou dans le futur."
+
+msgid "Der Wert liegt ausserhalb von 100 bis 140 Punkten (Basis Dezember 2020 = 100). Tippfehler?"
+msgstr "La valeur est hors de 100 à 140 points (base décembre 2020 = 100). Faute de frappe ?"
+
+msgid "Die Quelle ist Pflicht, zum Beispiel «BFS, Medienmitteilung vom 05.11.2026»."
+msgstr "La source est obligatoire, par exemple «OFS, communiqué du 05.11.2026»."
+
+msgid "LIK %(monat)s/%(jahr)s mit %(punkte)s Punkten gespeichert."
+msgstr "IPC %(monat)s/%(jahr)s enregistré avec %(punkte)s points."
+
+msgid "im Code (BFS-Tabelle)"
+msgstr "dans le code (tableau OFS)"
+
+msgid "Landesindex der Konsumentenpreise, Basis %(basis)s = 100. Hier trägst du den Monatswert ein, sobald das BFS ihn veröffentlicht hat; ein Deployment braucht es nicht. Ein Eintrag hier gilt vor der Reihe im Code."
+msgstr "Indice suisse des prix à la consommation, base %(basis)s = 100. Inscrivez ici la valeur mensuelle dès que l'OFS l'a publiée ; aucun déploiement n'est nécessaire. Une entrée ici prévaut sur la série du code."
+
+msgid "Der Live-Abruf nennt %(monat)s: %(punkte)s. Das ist nur ein Vorschlag. Vor dem Eintragen gegen die BFS-Publikation prüfen."
+msgstr "La consultation en direct indique %(monat)s : %(punkte)s. Ce n'est qu'une suggestion. À vérifier avec la publication de l'OFS avant de l'inscrire."
+
+msgid "Monatswert nachtragen"
+msgstr "Saisir une valeur mensuelle"
+
+msgid "Monat (1–12)"
+msgstr "Mois (1–12)"
+
+msgid "BFS, Medienmitteilung vom …"
+msgstr "OFS, communiqué du …"
+
+msgid "Letzte Monate"
+msgstr "Derniers mois"
