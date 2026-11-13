@@ -36,8 +36,9 @@ class SpurTests(TestCase):
 
     def test_das_protokoll_stoert_den_abruf_nie(self):
         with mock.patch('core.services.abruf_status._holen', side_effect=RuntimeError('db weg')):
-            abruf_status.melde_fehler('lik', 'x')       # wirft nicht
-            abruf_status.melde_erfolg('lik')
+            self.assertIsNone(abruf_status.melde_fehler('lik', 'x'))       # wirft nicht
+            self.assertIsNone(abruf_status.melde_erfolg('lik'))
+        self.assertFalse(AbrufStatus.objects.exists())
 
 
 class LikAbrufTests(TestCase):
