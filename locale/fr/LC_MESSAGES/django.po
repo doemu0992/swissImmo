@@ -40577,3 +40577,6 @@ msgstr "Veuillez relever les compteurs"
 
 msgid "Der Aufruf ging an %(n)s Mieter."
 msgstr "L'appel a été envoyé à %(n)s locataires."
+
+msgid "Der Live-Abruf nennt %(monat)s: %(punkte)s. Vor dem Eintragen gegen die BFS-Publikation prüfen."
+msgstr "La consultation en direct indique %(monat)s : %(punkte)s. À vérifier avec la publication de l'OFS avant de l'inscrire."

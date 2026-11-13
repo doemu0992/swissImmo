@@ -38805,3 +38805,6 @@ msgstr "Bitte Zählerstände ablesen"
 
 msgid "Der Aufruf ging an %(n)s Mieter."
 msgstr "Der Aufruf ging an %(n)s Mieter."
+
+msgid "Der Live-Abruf nennt %(monat)s: %(punkte)s. Vor dem Eintragen gegen die BFS-Publikation prüfen."
+msgstr "Der Live-Abruf nennt %(monat)s: %(punkte)s. Vor dem Eintragen gegen die BFS-Publikation prüfen."
