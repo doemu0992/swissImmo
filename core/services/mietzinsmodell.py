@@ -208,24 +208,40 @@ def stufen_berechnen(start_netto, stufen):
     return ergebnis
 
 
-def basis_lik_vorschlag(beginn):
+def basis_lik_vorschlag(beginn, live=None):
     """`(stand, punkte)`: der neueste veröffentlichte LIK-Stand bis zum Monat VOR dem Mietbeginn.
 
     Nicht der aktuelle: Die Basis darf nicht nach dem Mietbeginn-Monat liegen.
-    Quelle ist ausschliesslich die Tabelle in `core/services/lik.py`; ist für den
-    Zeitraum kein Wert veröffentlicht, `(None, None)`.
+    Quelle ist die Tabelle in `core/services/lik.py`; ist für den Zeitraum kein Wert veröffentlicht, `(None, None)`.
+
+    `live`: Auch der Live-Wert zählt (derselbe, den die Account-Seite zeigt), wenn er neuer ist als die Tabelle und nicht
+    nach dem Monat vor dem Mietbeginn liegt. Ohne ihn schlüge der Assistent für einen Vertrag nach dem letzten
+    Tabellenmonat den veralteten Tabellenwert vor, obwohl der neuere längst veröffentlicht ist. Vorgabe: ein, ausser in
+    den Tests (`settings.LIK_LIVE_ABRUF`), damit sie nicht vom Netz abhängen.
     """
-    from core.services.lik import LIK_DEZ2020, lik_punkte_fuer
+    from django.conf import settings
+
+    from core.services.lik import LIK_DEZ2020, aktueller_lik_wert, lik_punkte_fuer
     if beginn is None:
         return None, None
     jahr, monat = (beginn.year, beginn.month - 1) if beginn.month > 1 else (beginn.year - 1, 12)
+    grenze = (jahr, monat)
     erstes = min(LIK_DEZ2020)
+    ergebnis = (None, None)
     while jahr >= erstes:
         punkte = lik_punkte_fuer(jahr, monat)
         if punkte is not None:
-            return date(jahr, monat, 1), punkte
+            ergebnis = (date(jahr, monat, 1), punkte)
+            break
         jahr, monat = (jahr, monat - 1) if monat > 1 else (jahr - 1, 12)
-    return None, None
+    if live is None:
+        live = getattr(settings, 'LIK_LIVE_ABRUF', not getattr(settings, 'TESTING', False))
+    if live:
+        l_stand, l_punkte, _basis = aktueller_lik_wert(live=True)
+        if (l_stand and l_punkte and (l_stand.year, l_stand.month) <= grenze
+                and (ergebnis[0] is None or l_stand > ergebnis[0])):
+            return l_stand, l_punkte
+    return ergebnis
 
 
 def _b(regel, text, artikel, *, stufe=STUFE_SPERRE, feld=None, fix=None, zeile=None):

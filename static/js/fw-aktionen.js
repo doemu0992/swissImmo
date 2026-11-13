@@ -185,13 +185,13 @@
             var liste = wurzel.querySelectorAll('[' + attr + ']');
             for (var i = 0; i < liste.length; i++) {
                 var wert = parseFloat(String(liste[i].getAttribute(attr)).replace(',', '.'));
-                if (isFinite(wert)) liste[i].style[MASSE[attr]] = wert + '%';
+                if (isFinite(wert)) { var o = {}; o[MASSE[attr]] = wert + '%'; fwStil(liste[i], o); }
             }
         });
         Object.keys(MASSE).forEach(function (attr) {
             if (wurzel.nodeType === 1 && wurzel.hasAttribute && wurzel.hasAttribute(attr)) {
                 var w = parseFloat(String(wurzel.getAttribute(attr)).replace(',', '.'));
-                if (isFinite(w)) wurzel.style[MASSE[attr]] = w + '%';
+                if (isFinite(w)) { var o = {}; o[MASSE[attr]] = w + '%'; fwStil(wurzel, o); }
             }
         });
     }

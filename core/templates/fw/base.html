@@ -716,7 +716,7 @@ function fwSpaltenfilter(wurzel) {
         stand.className = 'fw-filterstand'; stand.hidden = true; stand.setAttribute('aria-live', 'polite');
         var rahmen = tab.closest('.fw-tablewrap') || tab;
         rahmen.parentNode.insertBefore(stand, rahmen);
-        var hoehe = function () { tab.style.setProperty('--fw-kopf', kopf.getBoundingClientRect().height + 'px'); };
+        var hoehe = function () { fwStil(tab, {'--fw-kopf': kopf.getBoundingClientRect().height + 'px'}); };
         hoehe(); window.addEventListener('resize', hoehe);
         function anwenden() {
             var aktiv = 0, sichtbar = 0;
@@ -778,17 +778,15 @@ fwSyncThemeButtons();
         var gleiter = nav.querySelector('.fw-gleiter');
         var setzen = function (a, sofort) {
             if (!a || !gleiter) return;
-            if (sofort) gleiter.style.transition = 'none';
-            gleiter.style.width = a.offsetWidth + 'px';
-            gleiter.style.transform = 'translateX(' + a.offsetLeft + 'px)';
-            if (sofort) requestAnimationFrame(function () { gleiter.style.transition = ''; });
+            fwStil(gleiter, {transition: sofort ? 'none' : null, width: a.offsetWidth + 'px', transform: 'translateX(' + a.offsetLeft + 'px)'});
+            if (sofort) requestAnimationFrame(function () { fwStil(gleiter, {transition: null}); });
         };
         var aktiv = nav.querySelector('a.hier');
         if (aktiv) {
             setzen(aktiv, true);
             // Am Telefon steht der aktive Bereich im Bild
             if (nav.scrollWidth > nav.clientWidth) nav.scrollLeft = Math.max(0, aktiv.offsetLeft - (nav.clientWidth - aktiv.offsetWidth) / 2);
-        } else if (gleiter) { gleiter.style.opacity = '0'; }
+        } else if (gleiter) { fwStil(gleiter, {opacity: '0'}); }
         // Beim Zeigen gleitet die Kapsel mit, beim Verlassen zurück
         nav.querySelectorAll('a').forEach(function (a) {
             a.addEventListener('mouseenter', function () { if (!ruhig && aktiv) { setzen(a); nav.querySelectorAll('a').forEach(function (x) { x.classList.toggle('zeigt', x === a); }); } });
@@ -800,7 +798,7 @@ fwSyncThemeButtons();
     // Lastbalken (Team, Leerstand): Breite aus data-w, im nächsten Bild — dann gleitet sie auf
     var balken = document.querySelectorAll('.fw-lastbalken[data-w] > i');
     requestAnimationFrame(function () { balken.forEach(function (i) {
-        i.style.width = Math.max(0, Math.min(100, parseFloat(i.parentNode.getAttribute('data-w')) || 0)) + '%'; }); });
+        fwStil(i, {width: Math.max(0, Math.min(100, parseFloat(i.parentNode.getAttribute('data-w')) || 0)) + '%'}); }); });
     if (ruhig) return;
     // Zahlen zählen hoch — nur die grossen Kennzahlen, Formatierung bleibt (CHF, Apostroph, %).
     var ziele = document.querySelectorAll('.fw-kpi .fw-v, .fw-lage .fw-w, .fw-kachel-zahl [data-zaehlen], .fw-ampel-zahl b');

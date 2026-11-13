@@ -91,6 +91,9 @@ if TESTING:
 # Verschlüsselungsschlüssel für AHV-Nummern und Postfach-Zugangsdaten: Ohne Angabe legt die Anwendung ihn selbst an
 # (Datei `.geheimnis_schluessel` neben `.secret_key`, siehe core/services/geheimnis.py und docs/SCHLUESSEL.md).
 # In Testläufen aus: Die Tests bringen ihren Schlüssel mit und prüfen auch den Fall «keiner».
+#: Live-Abruf des LIK (HEV/BFS) auch für den Vorschlag der Basis im Vertragsassistenten. Aus in den Tests und per Umgebung abschaltbar.
+LIK_LIVE_ABRUF = os.getenv('LIK_LIVE_ABRUF', 'True') == 'True' and not TESTING
+
 GEHEIMNIS_AUTOSCHLUESSEL = os.getenv('GEHEIMNIS_AUTOSCHLUESSEL', 'True') == 'True' and not TESTING
 
 # Zwei-Faktor-Pflicht nach Rolle (SICH-10, Etappe 2): Inhaber, Verwalter und
