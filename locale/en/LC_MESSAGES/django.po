@@ -39914,3 +39914,15 @@ msgstr "The request was sent to %(n)s tenants."
 
 msgid "Der Live-Abruf nennt %(monat)s: %(punkte)s. Vor dem Eintragen gegen die BFS-Publikation prüfen."
 msgstr "The live lookup reports %(monat)s: %(punkte)s. Check it against the FSO publication before entering it."
+
+msgid "Landesindex der Konsumentenpreise (HEV)"
+msgstr "Swiss consumer price index (HEV)"
+
+msgid "Referenzzinssatz (BWO)"
+msgstr "Reference interest rate (FOH)"
+
+msgid "noch nie"
+msgstr "never"
+
+msgid "Abruf ausgefallen: %(name)s — %(n)s Fehlversuche in Folge, letzter Erfolg %(erfolg)s. Grund: %(grund)s"
+msgstr "Lookup down: %(name)s — %(n)s failed attempts in a row, last success %(erfolg)s. Reason: %(grund)s"

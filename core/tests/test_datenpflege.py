@@ -8,7 +8,7 @@ from core.services import datenpflege, formularpflicht, lik
 from core.tests._isolation import MandantenFixture
 
 
-class FaelligTests(SimpleTestCase):
+class FaelligTests(TestCase):
     def _letzter(self):
         jahr, monat = lik.letzter_tabellenmonat()
         return date(jahr, monat, 15)

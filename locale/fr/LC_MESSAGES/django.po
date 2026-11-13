@@ -40580,3 +40580,15 @@ msgstr "L'appel a été envoyé à %(n)s locataires."
 
 msgid "Der Live-Abruf nennt %(monat)s: %(punkte)s. Vor dem Eintragen gegen die BFS-Publikation prüfen."
 msgstr "La consultation en direct indique %(monat)s : %(punkte)s. À vérifier avec la publication de l'OFS avant de l'inscrire."
+
+msgid "Landesindex der Konsumentenpreise (HEV)"
+msgstr "Indice suisse des prix à la consommation (HEV)"
+
+msgid "Referenzzinssatz (BWO)"
+msgstr "Taux d'intérêt de référence (OFL)"
+
+msgid "noch nie"
+msgstr "jamais"
+
+msgid "Abruf ausgefallen: %(name)s — %(n)s Fehlversuche in Folge, letzter Erfolg %(erfolg)s. Grund: %(grund)s"
+msgstr "Consultation en panne : %(name)s — %(n)s échecs consécutifs, dernier succès %(erfolg)s. Motif : %(grund)s"

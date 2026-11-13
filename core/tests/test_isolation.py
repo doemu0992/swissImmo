@@ -170,6 +170,7 @@ OHNE_MANDANTENFILTER = {
     # kann deshalb keine Organisation tragen; die Zuordnung zur Verwaltung und die Idempotenz je Verwaltung
     # bleiben bei `tickets.EingegangeneMail` (mit Mandantenfilter). Der Status ist eine einzige Zeile fuer die
     # ganze Installation.
+    'core.AbrufStatus': 'Zustand der Abrufe bei externen Diensten (LIK, Referenzzins) — gilt für die Installation, nicht für eine Verwaltung',
     'core.PlattformMail': 'Abrufprotokoll des Plattform-Postfachs — Mails ohne bestimmbare Verwaltung',
     'core.PlattformEingangStatus': 'Abrufstatus des Plattform-Postfachs — eine Zeile fuer die Installation',
 
@@ -965,11 +966,11 @@ class AusnahmenSindBegruendetTests(TestCase):
     entschieden, nur repariert. Diese Klasse macht das Wachsen sichtbar.
     """
 
-    def test_es_sind_genau_diese_sieben(self):
+    def test_es_sind_genau_diese_acht(self):
         # Der Name zählt bewusst mit: Wächst die Liste, ändert sich auch er,
         # und die Änderung steht im Diff statt in einer Zahl im Rumpf.
         self.assertEqual(sorted(OHNE_MANDANTENFILTER),
-                         ['benutzer.Benutzer', 'core.PlattformEingangStatus', 'core.PlattformMail',
+                         ['benutzer.Benutzer', 'core.AbrufStatus', 'core.PlattformEingangStatus', 'core.PlattformMail',
                           'core.SicherheitsEreignis', 'core.Wiederherstellungscode', 'core.ZweiterFaktor',
                           'crm.Organisation'],
                          'Die Ausnahmeliste hat sich geändert. Das ist eine Entscheidung, '

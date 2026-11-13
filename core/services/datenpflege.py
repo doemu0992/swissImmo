@@ -47,4 +47,6 @@ def faellig(heute):
         aufgaben.append(_('Formularpflicht prüfen: Das Register (core/services/formularpflicht.py, Stand %(stand)s) wurde '
                           'zuletzt am %(datum)s geprüft; das BWO gibt das Verzeichnis jedes Jahr neu heraus.')
                         % {'stand': formularpflicht._STAND_VERZEICHNIS, 'datum': formularpflicht.GEPRUEFT_AM.strftime('%d.%m.%Y')})
+    from core.services import abruf_status
+    aufgaben.extend(abruf_status.ausfaelle())
     return aufgaben

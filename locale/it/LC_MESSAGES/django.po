@@ -40509,3 +40509,15 @@ msgstr "La richiesta è stata inviata a %(n)s inquilini."
 
 msgid "Der Live-Abruf nennt %(monat)s: %(punkte)s. Vor dem Eintragen gegen die BFS-Publikation prüfen."
 msgstr "La consultazione in diretta indica %(monat)s: %(punkte)s. Da verificare con la pubblicazione dell'UST prima di inserirlo."
+
+msgid "Landesindex der Konsumentenpreise (HEV)"
+msgstr "Indice nazionale dei prezzi al consumo (HEV)"
+
+msgid "Referenzzinssatz (BWO)"
+msgstr "Tasso d'interesse di riferimento (UFAB)"
+
+msgid "noch nie"
+msgstr "mai"
+
+msgid "Abruf ausgefallen: %(name)s — %(n)s Fehlversuche in Folge, letzter Erfolg %(erfolg)s. Grund: %(grund)s"
+msgstr "Consultazione non funzionante: %(name)s — %(n)s tentativi falliti di seguito, ultimo successo %(erfolg)s. Motivo: %(grund)s"
