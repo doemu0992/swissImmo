@@ -53,6 +53,7 @@ logger = logging.getLogger(__name__)
 ANSICHTEN = (
     ('heute', gettext_lazy('Heute')),
     ('woche', gettext_lazy('Diese Woche')),
+    ('anfragen', gettext_lazy('Anfragen')),
     ('haengt', gettext_lazy('Hängt')),
     ('ohnefrist', gettext_lazy('Ohne Frist')),
     ('alle', gettext_lazy('Alle')),
