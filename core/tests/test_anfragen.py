@@ -330,22 +330,29 @@ class ArbeitsvorratTests(AnfragenTests):
     def _heute_zahl(self, client):
         return client.get('/neu/leistenzahlen/').json()['heute']
 
-    def test_frische_anfrage_steht_in_diese_woche_und_noch_nicht_in_heute(self):
+    def test_frische_anfrage_steht_sofort_unter_heute_und_im_reiter_anfragen(self):
+        vorher = self._heute_zahl(self._verwaltung())
         self._anfrage()
         c = self._verwaltung()
-        woche = c.get('/neu/?ansicht=woche').content.decode()
-        self.assertIn('Kontaktdaten ändern: Mieter A', woche)
-        self.assertNotIn('Kontaktdaten ändern: Mieter A', c.get('/neu/?ansicht=heute').content.decode())
-
-    def test_nach_der_frist_steht_sie_unter_heute_und_zaehlt_am_menue(self):
-        anfrage = self._anfrage()
-        c = self._verwaltung()
-        vorher = self._heute_zahl(c)
-        self._alter(anfrage, 3)                                           # Frist: 2 Tage
-        body = c.get('/neu/?ansicht=heute').content.decode()
-        self.assertIn('Kontaktdaten ändern: Mieter A', body)
-        self.assertIn('/neu/anfragen/', body)
+        for ansicht in ('heute', 'woche', 'anfragen'):
+            body = c.get(f'/neu/?ansicht={ansicht}').content.decode()
+            self.assertIn('Kontaktdaten ändern: Mieter A', body, ansicht)
         self.assertEqual(self._heute_zahl(c), vorher + 1)
+
+    def test_reiter_anfragen_zeigt_nur_anfragen_mit_zahl(self):
+        self._anfrage()
+        c = self._verwaltung()
+        body = c.get('/neu/?ansicht=anfragen').content.decode()
+        self.assertRegex(body, r'Anfragen<span class="fw-z">1</span>')
+        self.assertIn('Kontaktdaten ändern: Mieter A', body)
+        self.assertNotIn('Ungeklärte Zahlung', body)
+
+    def test_am_tag_danach_ist_sie_ueberfaellig(self):
+        anfrage = self._anfrage()
+        self._alter(anfrage, 1)
+        body = self._verwaltung().get('/neu/?ansicht=anfragen').content.decode()
+        self.assertIn('Kontaktdaten ändern: Mieter A', body)
+        self.assertIn('Tag über', body)
 
     def test_entschiedene_anfrage_verschwindet(self):
         anfrage = self._anfrage()
@@ -370,4 +377,6 @@ class ArbeitsvorratTests(AnfragenTests):
         c = Client()
         c.force_login(lesend)
         self.assertNotIn('Kontaktdaten ändern: Mieter A', c.get('/neu/?ansicht=alle').content.decode())
+        body = c.get('/neu/?ansicht=anfragen').content.decode()                 # kein Reiter, fällt auf «Heute» zurück
+        self.assertNotRegex(body, r'Anfragen<span class="fw-z">')
         self.assertEqual(self._heute_zahl(c), self._heute_zahl(self._verwaltung()) - 1)

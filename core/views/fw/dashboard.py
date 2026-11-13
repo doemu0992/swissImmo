@@ -253,6 +253,8 @@ def _vertretung_fuer(request, heute):
 #: Die Reiter über dem Arbeitsvorrat. «Alle» bleibt eine gültige Ansicht,
 #: steht aber als Verweis im Fuss (Dashboard-Reduktion 26.10.2026).
 REITER = ('heute', 'woche', 'haengt', 'ohnefrist')
+#: Der Reiter «Anfragen» steht nur den Rollen, die Anfragen auch bestätigen dürfen.
+REITER_MIT_ANFRAGEN = ('heute', 'woche', 'anfragen', 'haengt', 'ohnefrist')
 
 
 @rolle_erforderlich(*FINANZ_LESE_ROLLEN)
@@ -312,8 +314,13 @@ def fw_dashboard(request):
     alle = was_reisst(heute, grenze=365, aktive_lg=aktive_lg)
     # Anfragen aus den Portalen bestätigen nur Schreibrollen: Wer nur lesen darf, bekommt keine Zeile mit totem Knopf.
     from core.auth import SCHREIB_ROLLEN
-    if not hat_rolle(request.user, SCHREIB_ROLLEN):
+    darf_anfragen = hat_rolle(request.user, SCHREIB_ROLLEN)
+    if not darf_anfragen:
         alle = [e for e in alle if e.get('art') != 'anfrage']
+    reiter = REITER_MIT_ANFRAGEN if darf_anfragen else REITER
+    if ansicht not in reiter and ansicht != 'alle':
+        ansicht = 'heute'
+    anfragen_zeilen = [e for e in alle if e.get('art') == 'anfrage']
     woche = [e for e in alle if e['tage'] <= 7]
     heute_faellig = [e for e in woche if e['tage'] <= 0]
 
@@ -337,6 +344,7 @@ def fw_dashboard(request):
         'heute': len(heute_faellig),
         'woche': len(woche),
         'haengt': len(haengt),
+        'anfragen': len(anfragen_zeilen),
         'ohnefrist': len(inbox) + (inbox_mehr or 0) + (av.get('av_freigaben_gesamt') or 0),
         'alle': len(alle),
     }
@@ -347,6 +355,8 @@ def fw_dashboard(request):
         vorrat = heute_faellig
     elif ansicht == 'woche':
         vorrat = woche
+    elif ansicht == 'anfragen':
+        vorrat = anfragen_zeilen
     elif ansicht == 'haengt':
         faelle = haengt
     elif ansicht == 'alle':
@@ -374,7 +384,7 @@ def fw_dashboard(request):
         'ansicht': ansicht,
         'ansicht_titel': dict(ANSICHTEN).get(ansicht, _('Heute')),
         'ansichten': [(k, b, k == ansicht, zaehler.get(k))
-                      for k, b in ANSICHTEN if k in REITER],
+                      for k, b in ANSICHTEN if k in reiter],
         'anzahl_heute': zaehler['heute'],
         'anzahl_ueberfaellig': sum(1 for e in heute_faellig if e['tage'] < 0),
         'vorrat': vorrat,

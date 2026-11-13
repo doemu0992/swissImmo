@@ -423,8 +423,9 @@ def _wartungsfristen(heute, bis, aktive_lg=None):
     return zeilen
 
 
-#: So viele Tage hat die Verwaltung, eine Anfrage aus dem Portal zu beantworten, bevor sie als überfällig zählt.
-ANFRAGE_FRIST_TAGE = 2
+#: So viele Tage hat die Verwaltung, eine Anfrage aus dem Portal zu beantworten, bevor sie als überfällig zählt. 0 heisst: Sie steht
+#: ab dem Eingang unter «Heute» (und im Reiter «Anfragen»), und am Tag danach ist sie überfällig.
+ANFRAGE_FRIST_TAGE = 0
 
 
 def _anfragen(heute, bis):
