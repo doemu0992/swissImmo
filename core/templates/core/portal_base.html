@@ -77,8 +77,8 @@ Blöcke (`brand_icon`, `brand`, `brand_mobile`, `nav`, `content`, `footer`,
 </div>
 
 <script nonce="{{ csp_nonce }}">
-function pOpenNav(){ document.getElementById('pSidebar').classList.add('offen'); document.getElementById('pBackdrop').classList.remove('hidden'); document.body.style.overflow='hidden'; }
-function pCloseNav(){ document.getElementById('pSidebar').classList.remove('offen'); document.getElementById('pBackdrop').classList.add('hidden'); document.body.style.overflow=''; }
+function pOpenNav(){ document.getElementById('pSidebar').classList.add('offen'); document.getElementById('pBackdrop').classList.remove('hidden'); fwStil(document.body, {overflow: 'hidden'}); }
+function pCloseNav(){ document.getElementById('pSidebar').classList.remove('offen'); document.getElementById('pBackdrop').classList.add('hidden'); fwStil(document.body, {overflow: null}); }
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') pCloseNav(); });
 // Anker-Links im Drawer schliessen das Menü
 document.querySelectorAll('#pSidebar a[href^="#"]').forEach(function(a){ a.addEventListener('click', pCloseNav); });

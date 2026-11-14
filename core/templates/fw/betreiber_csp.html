@@ -34,6 +34,7 @@
             <th scope="col">{% trans "Regel" %}</th>
             <th scope="col">{% trans "Blockiert" %}</th>
             <th scope="col">{% trans "Seite" %}</th>
+            <th scope="col">{% trans "Quelle" %}</th>
             <th scope="col">{% trans "Zuletzt" %}</th>
         </tr></thead>
         <tbody>
@@ -43,6 +44,7 @@
             <td>{{ e.regel }}</td>
             <td>{{ e.blockiert }}</td>
             <td>{{ e.seite }}</td>
+            <td data-testid="csp-quelle">{{ e.quelle|default:"—" }}{% if e.probe %}<br><code class="text-xs">{{ e.probe }}</code>{% endif %}</td>
             <td>{{ e.zuletzt }}</td>
         </tr>
         {% endfor %}

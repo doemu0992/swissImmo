@@ -177,7 +177,7 @@ Das Formular MUSS enctype="multipart/form-data" haben.
         }
         function markiereGezeichnet() {
             etwasGezeichnet = true;
-            if (platzhalter) platzhalter.style.display = 'none';
+            if (platzhalter) fwStil(platzhalter, {display: 'none'});
         }
         function hatTinte() {
             // Ein Zug kann durch ein zwischenzeitliches resize verschwunden sein.
@@ -227,7 +227,7 @@ Das Formular MUSS enctype="multipart/form-data" haben.
             etwasGezeichnet = false;
             letzteDatenUrl = '';
             feld.value = '';
-            if (platzhalter) platzhalter.style.display = '';
+            if (platzhalter) fwStil(platzhalter, {display: null});
         });
 
         // Umschalter zeichnen / Datei

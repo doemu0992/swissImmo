@@ -205,6 +205,32 @@ class KeinInlineStilTests(SimpleTestCase):
                 gefunden.append(f'{rel}: {n}')
         self.assertEqual(gefunden, [], 'style="…" in Browser-Vorlagen: Klasse der Schicht oder data-breite/-hoehe/-links/-oben.')
 
+    #: Stile aus Skripten: `el.style.x = …`, `style.cssText`, `setAttribute('style', …)`. Safari meldet sie in Produktion als
+    #: `style-src-attr` (14.11.2026: Meldungen auf fast allen Seiten). Erlaubt ist allein `fwStil` (`static/js/fw-stil.js`),
+    #: das die Werte in ein konstruiertes Stylesheet schreibt; dort steht auch der Rückfall für alte Browser.
+    SKRIPT_STIL = re.compile(r"""\.style\s*[.\[=]|\.cssText\b|setAttribute\(\s*['"]style['"]""")
+
+    def test_kein_skript_setzt_einen_inline_stil(self):
+        gefunden = []
+        for pfad in sorted((WURZEL / 'static' / 'js').glob('*.js')):
+            if pfad.name == 'fw-stil.js':
+                continue
+            for nr, zeile in enumerate(pfad.read_text(encoding='utf-8').splitlines(), 1):
+                if self.SKRIPT_STIL.search(zeile.split('//')[0]):
+                    gefunden.append(f'static/js/{pfad.name}:{nr}')
+        for rel, pfad in self._vorlagen():
+            for nr, zeile in enumerate(_ohne_kommentare(pfad.read_text(encoding='utf-8')).splitlines(), 1):
+                if self.SKRIPT_STIL.search(zeile.split('//')[0]):
+                    gefunden.append(f'{rel}:{nr}')
+        self.assertEqual(gefunden, [], 'Stil aus einem Skript: fwStil(el, {eigenschaft: wert}) statt el.style.')
+
+    def test_der_waechter_erkennt_die_drei_formen(self):
+        for text in ("el.style.width = '3px'", "x.style['top'] = 1", "a.style = 'x'", "r.style.cssText = ''",
+                     "e.setAttribute('style', 'x')"):
+            self.assertTrue(self.SKRIPT_STIL.search(text), text)
+        for text in ("fwStil(el, {width: '3px'})", "getComputedStyle(el).width", "var stil = 1"):
+            self.assertFalse(self.SKRIPT_STIL.search(text), text)
+
     def test_diagramm_tags_setzen_keine_style_attribute(self):
         quelle = (WURZEL / 'core' / 'templatetags' / 'diagramm.py').read_text(encoding='utf-8')
         self.assertNotIn('style=', quelle)

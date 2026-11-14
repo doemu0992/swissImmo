@@ -27,6 +27,21 @@ class LesenTests(SimpleTestCase):
         lang = ZEILE.format(regel='r', blockiert='b', zeile='1', seite='https://x.ch/handwerker/' + 'A' * 40 + '/')
         self.assertNotIn('A' * 30, str(csp_meldungen.lesen([lang])))
 
+    def test_quelle_und_probe_trennen_meldungen_derselben_seite(self):
+        """Seit 14.11.2026 meldet der Browser Datei, Zeile und den Anfang des gesperrten Stils: Ohne sie sagt eine Meldung
+        nur «irgendwo auf dieser Seite»."""
+        z = ZEILE.format(regel='style-src-attr', blockiert='inline', seite='https://x.ch/neu/', zeile='44')
+        a = z + ' | Quelle=https://x.ch/static/js/fw-a.js?v=3 | Probe=width: 42%'
+        b = z + ' | Quelle=https://x.ch/static/js/fw-b.js | Probe=overflow: hidden'
+        e = csp_meldungen.lesen([a, a, b])
+        self.assertEqual(len(e), 2)
+        self.assertEqual((e[0]['anzahl'], e[0]['quelle'], e[0]['probe']), (2, 'https://x.ch/static/js/fw-a.js:44', 'width: 42%'))
+
+    def test_alte_zeilen_ohne_quelle_bleiben_lesbar(self):
+        z = ZEILE.format(regel='style-src-attr', blockiert='inline', seite='https://x.ch/neu/', zeile='44')
+        e = csp_meldungen.lesen([z])
+        self.assertEqual((e[0]['anzahl'], e[0]['quelle'], e[0]['probe'], e[0]['zeile']), (1, '', '', '44'))
+
     def test_haeufigste_zuerst(self):
         a = ZEILE.format(regel='a', blockiert='x', seite='/s1', zeile='1')
         b = ZEILE.format(regel='b', blockiert='x', seite='/s2', zeile='1')

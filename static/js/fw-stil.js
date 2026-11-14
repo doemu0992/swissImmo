@@ -1,5 +1,6 @@
 // Laufzeit-Masse ohne Inline-Stil. `fwStil(el, {width: '42%'})` legt für das Element eine Regel in einem
-// konstruierten Stylesheet an (`[data-fws="n"]{…}`). Ein Stylesheet-Objekt unterliegt der Content-Security-Policy
+// konstruierten Stylesheet an (`:is(#fws-gewicht,[data-fws="n"]){…}` — das `:is` mit einer ID gibt der Regel das
+// Gewicht einer ID, damit sie wie ein Inline-Stil gegen Klassen gewinnt). Ein Stylesheet-Objekt unterliegt der Content-Security-Policy
 // nicht als Attribut: `style-src-attr` meldet nichts, anders als bei `el.style.width = …`, das Safari meldet.
 // Fehlt die Unterstützung (ältere Browser), fällt es auf `el.style` zurück.
 (function () {
@@ -20,7 +21,7 @@
             if (blatt && !regel) {
                 var id = String(++zaehler);
                 el.setAttribute('data-fws', id);
-                regel = blatt.cssRules[blatt.insertRule('[data-fws="' + id + '"]{}', blatt.cssRules.length)];
+                regel = blatt.cssRules[blatt.insertRule(':is(#fws-gewicht,[data-fws="' + id + '"]){}', blatt.cssRules.length)];
                 regeln.set(el, regel);
             }
             if (regel) {

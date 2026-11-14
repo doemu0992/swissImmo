@@ -32,8 +32,31 @@ test('Hauptseiten: keine Verletzung der Stil-Richtlinie', async ({ page }) => {
     await page.waitForTimeout(300);
     const v: string[] = await page.evaluate(() => (window as any).__verstoesse || []);
     for (const eintrag of v) funde.push(`${url}: ${eintrag}`);
+    // Auch ein per Skript gesetzter Stil (`el.style.x = …`) erscheint als style-Attribut. Chromium meldet ihn nicht,
+    // Safari in Produktion schon (14.11.2026) — darum zählt hier jedes Element mit style-Attribut als Fund.
+    const mitStil: string[] = await page.evaluate(() => Array.from(document.querySelectorAll('[style]'))
+      .map((e) => `<${e.tagName.toLowerCase()} id="${e.id}" class="${String(e.getAttribute('class') || '').slice(0, 40)}"> ${e.getAttribute('style')}`));
+    for (const eintrag of mitStil) funde.push(`${url}: style-Attribut ${eintrag}`);
   }
   expect(funde, funde.join('\n')).toEqual([]);
+});
+
+test('Bedienung setzt kein style-Attribut: Schublade am Telefon, Aktionsmenü, Suche', async ({ page }) => {
+  await login(page);
+  await page.setViewportSize({ width: 390, height: 800 });
+  await goto(page, '/neu/');
+  await page.evaluate(() => (window as any).fwOpenMobileNav());
+  expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).toBe('hidden');
+  expect(await page.evaluate(() => document.querySelectorAll('[style]').length)).toBe(0);
+  await page.evaluate(() => (window as any).fwCloseMobileNav());
+  expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).not.toBe('hidden');
+
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await goto(page, '/neu/liegenschaften/');
+  const menue = page.locator('.fw-menu > button, [data-fw-menu] > button').first();
+  if (await menue.count()) { await menue.click(); }
+  await page.waitForTimeout(300);
+  expect(await page.evaluate(() => Array.from(document.querySelectorAll('[style]')).map((e) => e.outerHTML.slice(0, 120)))).toEqual([]);
 });
 
 test('Anmeldeseite und öffentliche Seiten: keine Verletzung', async ({ page }) => {
