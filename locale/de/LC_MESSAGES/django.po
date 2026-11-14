@@ -38808,3 +38808,15 @@ msgstr "Der Aufruf ging an %(n)s Mieter."
 
 msgid "Der Live-Abruf nennt %(monat)s: %(punkte)s. Vor dem Eintragen gegen die BFS-Publikation prüfen."
 msgstr "Der Live-Abruf nennt %(monat)s: %(punkte)s. Vor dem Eintragen gegen die BFS-Publikation prüfen."
+
+msgid "Landesindex der Konsumentenpreise (HEV)"
+msgstr "Landesindex der Konsumentenpreise (HEV)"
+
+msgid "Referenzzinssatz (BWO)"
+msgstr "Referenzzinssatz (BWO)"
+
+msgid "noch nie"
+msgstr "noch nie"
+
+msgid "Abruf ausgefallen: %(name)s — %(n)s Fehlversuche in Folge, letzter Erfolg %(erfolg)s. Grund: %(grund)s"
+msgstr "Abruf ausgefallen: %(name)s — %(n)s Fehlversuche in Folge, letzter Erfolg %(erfolg)s. Grund: %(grund)s"

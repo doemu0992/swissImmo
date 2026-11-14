@@ -106,25 +106,37 @@ def _tabelle_wert():
 def _fetch_live_lik(timeout=8):
     """Best-effort Live-Abruf des neuesten LIK (Basis Dez. 2020) inkl. Monat
     von der HEV-Tabelle. Gibt (date, Decimal) oder None. Fängt JEDEN Fehler ab
-    (kein Internet, Layout-Änderung …) → dann greift die Tabelle."""
+    (kein Internet, Layout-Änderung …) → dann greift die Tabelle.
+
+    Jeder Versuch hinterlässt eine Spur (`core.services.abruf_status`): Ein stiller Ausfall bliebe sonst Wochen
+    unbemerkt. Der Grund ist knapp und ohne Zugangsdaten formuliert."""
     import re
     import datetime
     from decimal import Decimal, InvalidOperation
+    from core.services import abruf_status
+
+    def fehler(grund):
+        abruf_status.melde_fehler('lik', grund)
+        return None
+
     try:
         import requests
     except Exception:
-        return None
+        return fehler('requests nicht verfügbar')
     url = "https://www.hev-schweiz.ch/vermieten/statistiken/landesindex-der-konsumentenpreise"
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
     try:
-        html = requests.get(url, headers=headers, timeout=timeout).text
-    except Exception:
-        return None
+        antwort = requests.get(url, headers=headers, timeout=timeout)
+    except Exception as e:                                   # noqa: BLE001
+        return fehler(f'Verbindung fehlgeschlagen ({type(e).__name__})')
+    if getattr(antwort, 'status_code', 200) != 200:
+        return fehler(f'Quelle antwortet mit Status {antwort.status_code}')
+    html = antwort.text
     try:
         pos = html.find("2020 = 100")
         if pos < 0:
-            return None
+            return fehler('Marke «2020 = 100» fehlt in der Quelle (Seite umgebaut oder auf neue Basis umgestellt?)')
         snip = html[pos:pos + 8000]
         heute = datetime.date.today()
         for yr in (heute.year, heute.year - 1):
@@ -147,10 +159,11 @@ def _fetch_live_lik(timeout=8):
             except (InvalidOperation, ValueError):
                 continue
             if Decimal('100') <= wert <= Decimal('140'):
+                abruf_status.melde_erfolg('lik')
                 return datetime.date(yr, monat, 1), wert
-    except Exception:
-        return None
-    return None
+    except Exception as e:                                   # noqa: BLE001
+        return fehler(f'Auswertung fehlgeschlagen ({type(e).__name__})')
+    return fehler('Keine Monatswerte in der erwarteten Form gefunden (Tabelle der Quelle verändert?)')
 
 
 def _live_lik_cached():

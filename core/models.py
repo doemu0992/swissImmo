@@ -110,6 +110,30 @@ class PlattformEingangStatus(models.Model):
         return f"Plattform-Postfach, Abruf {self.letzter_abruf or 'noch nie'}"
 
 
+class AbrufStatus(models.Model):
+    """Wann ein Abruf bei einem externen Dienst zuletzt gelang und woran er zuletzt scheiterte.
+
+    WARUM ES DAS GIBT: Die Abrufe (LIK, Referenzzinssatz, ...) fangen jeden Fehler ab und fallen auf eine Tabelle
+    im Code zurück. Das ist richtig, hat aber dazu geführt, dass ein ausgefallener Abruf Wochen unbemerkt blieb
+    (Architekturnotizen R7). Jetzt hinterlässt jeder Versuch eine Spur, und die Betreiber-Startseite zeigt sie.
+
+    Plattformweit, ohne Organisationsbezug (siehe `OHNE_MANDANTENFILTER`): Der Dienst fällt für die Installation
+    aus, nicht für eine Verwaltung. Der Fehlertext enthält keine Zugangsdaten und keine Daten einer Verwaltung.
+    """
+    name = models.CharField("Abruf", max_length=60, unique=True)
+    letzter_versuch = models.DateTimeField("Letzter Versuch", null=True, blank=True, editable=False)
+    letzter_erfolg = models.DateTimeField("Letzter Erfolg", null=True, blank=True, editable=False)
+    letzter_fehler = models.CharField("Letzter Fehler", max_length=300, blank=True, default='', editable=False)
+    fehler_in_folge = models.PositiveIntegerField("Fehlversuche in Folge", default=0, editable=False)
+
+    class Meta:
+        verbose_name = "Abrufstatus"
+        verbose_name_plural = "Abrufstatus"
+
+    def __str__(self):
+        return f"{self.name}: {self.fehler_in_folge} Fehlversuche in Folge"
+
+
 class Postfach(models.Model):
     """Das E-Mail-Postfach EINER Verwaltung — Antworten oder Rechnungen.
 
