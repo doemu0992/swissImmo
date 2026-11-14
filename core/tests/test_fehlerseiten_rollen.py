@@ -148,7 +148,7 @@ class HauswartKopfzeileTests(RbacBasis):
         self.assertNotIn('id="fwKopf"', html)
         for ziel in self.ZIELE_DES_TEAMS:
             self.assertNotIn(ziel, html)
-        self.assertIn('href="/mieter/"', html)
+        self.assertIn('href="/mieter/daten/"', html)
         self.assertIn('/logout/', html)
 
 

@@ -1071,7 +1071,10 @@ def mieter_daten_view(request):
         return redirect('mieter_daten')
 
     anfragen = list(Aenderungsanfrage.objects.filter(mieter=mieter).order_by('-erstellt_am')[:10])
-    return render(request, 'core/mieter_daten.html', {'mieter': mieter, 'anfragen': anfragen})
+    from core.models import ZweiterFaktor
+    faktor = ZweiterFaktor.objects.filter(benutzer=request.user).first()
+    return render(request, 'core/mieter_daten.html', {
+        'mieter': mieter, 'anfragen': anfragen, 'zweifaktor_aktiv': bool(faktor and faktor.ist_aktiv)})
 
 
 @never_cache
