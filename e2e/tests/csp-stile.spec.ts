@@ -77,3 +77,32 @@ test('Vertragsvorschau lädt mit ihren Stilen im Rahmen', async ({ page }) => {
   await page.evaluate(() => (window as any).refreshServerPreview && (window as any).refreshServerPreview());
   await expect(rahmen.locator('body')).toContainText(/Objekt auswählen|Vertrag/i, { timeout: 15000 });
 });
+
+test('Gesperrter Inline-Stil: die eigene Meldung nennt Element und Stil', async ({ page }) => {
+  await login(page);
+  await goto(page, '/neu/');
+  const meldung = page.waitForRequest((r) => r.url().endsWith('/csp-bericht/') && (r.postData() || '').includes('"element"'));
+  await page.evaluate(() => {
+    const el = document.createElement('div');
+    el.id = 'cspProbe';
+    el.className = 'eins zwei';
+    document.body.appendChild(el);
+    el.setAttribute('style', 'color: red');
+  });
+  const koerper = JSON.parse((await meldung).postData() || '{}')['csp-report'];
+  expect(koerper['element']).toBe('div#cspProbe.eins.zwei');
+  expect(koerper['script-sample']).toContain('color: red');
+  expect(String(koerper['violated-directive'])).toContain('style-src');
+});
+
+test('Ohne adoptedStyleSheets (Safari vor 16.4): Stile über <style nonce>, kein style-Attribut', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(Document.prototype, 'adoptedStyleSheets', { get() { return undefined; }, set() {}, configurable: true });
+  });
+  await login(page);
+  await page.setViewportSize({ width: 390, height: 800 });
+  await goto(page, '/neu/');
+  await page.evaluate(() => (window as any).fwOpenMobileNav());
+  expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).toBe('hidden');
+  expect(await page.evaluate(() => document.querySelectorAll('[style]').length)).toBe(0);
+});

@@ -129,5 +129,6 @@ def csp_bericht(request):
             _kurz(b.get('document-uri') or b.get('documentURL')),
             _kurz(b.get('line-number') or b.get('lineNumber')),
             _kurz(b.get('source-file') or b.get('sourceFile')),
-            _kurz(b.get('script-sample') or b.get('sample'), 80).replace('|', '/'))
+            _kurz(' @ '.join(t for t in (str(b.get('script-sample') or b.get('sample') or ''),
+                                         str(b.get('element') or '')) if t), 140).replace('|', '/'))
     return HttpResponse(status=204)
