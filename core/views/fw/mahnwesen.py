@@ -692,16 +692,18 @@ def fw_mahnlauf(request):
                 'Der Mahnlauf dieses Monats ist bereits abgeschlossen — nichts doppelt gemahnt. '
                 'Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst erzwingen.'))
             return redirect('fw_mahnwesen')
-    res = run_mahnlauf(aktive_lg=basis['aktive_lg'], send_email=send_email,
-                       mit_zins=mit_zins, user=request.user, erzwingen=erzwingen)
-    # Ein erzwungener Lauf ist ein Zusatzlauf — er schliesst den regulären Monatslauf nicht ab.
-    if not basis['aktive_lg'] and not erzwingen:
-        from faelle.lauf_dienst import lauf_erledigt, periode_von
-        lauf_erledigt('mahnlauf', periode_von(timezone.localdate()),
-                      benutzer=request.user, auch_aeltere=True,
-                      gemahnt=res['gemahnt'])
-    log_aktion(request, "Mahnlauf erzwungen" if erzwingen else "Mahnlauf ausgeführt", "Sammellauf",
-               f"{res['gemahnt']} gemahnt, {res['emails']} E-Mails, Gebühren CHF {res['gebuehren']}, Zins CHF {res['zins']}")
+    from core.services import auftraege, mahnlauf_lauf
+    # Viele offene Rechnungen UND ein laufender Auftragsläufer: in den Hintergrund (jede Mahnung verschickt eine
+    # E-Mail; das Zeitlimit des Hosters reicht dafür nicht). Sonst sofort wie bisher.
+    if mahnlauf_lauf.im_hintergrund(basis['aktive_lg']):
+        auftraege.anlegen('mahnlauf', {
+            'liegenschaft': basis['aktive_lg'].pk if basis['aktive_lg'] else None, 'send_email': send_email,
+            'mit_zins': mit_zins, 'erzwingen': erzwingen}, benutzer=request.user)
+        messages.success(request, gettext(
+            'Der Mahnlauf läuft im Hintergrund. Stand und Ergebnis stehen unter «Aufträge».'))
+        return redirect('/neu/auftraege/')
+    res = mahnlauf_lauf.ausfuehren(liegenschaft=basis['aktive_lg'], send_email=send_email, mit_zins=mit_zins,
+                                   erzwingen=erzwingen, benutzer=request.user, request=request)
     if res['gemahnt']:
         teile = [gettext('%(n)s Mahnung(en) erstellt') % {'n': res['gemahnt']}]
         if send_email:

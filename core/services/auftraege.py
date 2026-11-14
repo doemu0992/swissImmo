@@ -170,3 +170,23 @@ def _sollstellung(auftrag, fortschritt):
     erstellt = sollstellung_lauf.ausfuehren(jahr, monat, benutzer=auftrag.erstellt_von, liegenschaft=liegenschaft,
                                             herkunft='Auftrag')
     return f'{erstellt} Rechnung(en) neu gestellt.'
+
+
+@auftragsart('mahnlauf', _('Mahnlauf (Sammellauf)'))
+def _mahnlauf(auftrag, fortschritt):
+    """Parameter: `liegenschaft` (ID oder None), `send_email`, `mit_zins`, `erzwingen`. Idempotent je Mahnstufe.
+
+    Derselbe Ablauf wie der Knopf (`core.services.mahnlauf_lauf.ausfuehren`)."""
+    from core.services import mahnlauf_lauf
+    from portfolio.models import Liegenschaft
+    p = auftrag.parameter
+    lg_id = p.get('liegenschaft')
+    liegenschaft = Liegenschaft.objects.filter(pk=lg_id).first() if lg_id else None
+    if lg_id and liegenschaft is None:
+        raise ValueError('Die Liegenschaft dieses Auftrags gibt es nicht mehr.')
+    fortschritt(10, 'Mahnlauf')
+    res = mahnlauf_lauf.ausfuehren(
+        liegenschaft=liegenschaft, send_email=bool(p.get('send_email', True)), mit_zins=bool(p.get('mit_zins')),
+        erzwingen=bool(p.get('erzwingen')), benutzer=auftrag.erstellt_von, herkunft='Auftrag')
+    return (f"{res['gemahnt']} Mahnung(en), {res['emails']} E-Mail(s), Gebühren CHF {res['gebuehren']}, "
+            f"Zins CHF {res['zins']}.")

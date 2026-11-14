@@ -38919,3 +38919,9 @@ msgstr "Sollstellung %(titel)s läuft im Hintergrund. Stand und Ergebnis stehen 
 
 msgid "Es warten Aufträge, aber der Auftragsläufer meldet sich nicht. Bitte den Betreiber informieren: Ohne Läufer werden sie nicht abgearbeitet."
 msgstr "Es warten Aufträge, aber der Auftragsläufer meldet sich nicht. Bitte den Betreiber informieren: Ohne Läufer werden sie nicht abgearbeitet."
+
+msgid "Der Mahnlauf läuft im Hintergrund. Stand und Ergebnis stehen unter «Aufträge»."
+msgstr "Der Mahnlauf läuft im Hintergrund. Stand und Ergebnis stehen unter «Aufträge»."
+
+msgid "Mahnlauf (Sammellauf)"
+msgstr "Mahnlauf (Sammellauf)"
