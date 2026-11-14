@@ -40040,3 +40040,9 @@ msgstr "no fetch recorded (is fetch_plattform_eingang running?)"
 
 msgid "Abruf ausgefallen: Plattform-Postfach — letzter Abruf ohne Fehler %(erfolg)s. Grund: %(grund)s"
 msgstr "Lookup down: platform mailbox — last error-free fetch %(erfolg)s. Reason: %(grund)s"
+
+msgid "Das Rundschreiben an %(n)s Empfänger wird im Hintergrund versandt. Stand und Ergebnis stehen unter «Aufträge»."
+msgstr "The circular to %(n)s recipients is being sent in the background. Status and result are under «Jobs»."
+
+msgid "Rundschreiben per E-Mail"
+msgstr "Circular by e-mail"
