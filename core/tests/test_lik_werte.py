@@ -35,6 +35,14 @@ class ReiheTests(TestCase):
         LikWert.objects.create(jahr=2026, monat=11, punkte=Decimal('108.7'), quelle='HEV')
         self.assertEqual(lik.letzter_tabellenmonat(), (2026, 9))
 
+    def test_ein_wert_hinter_einer_luecke_fliesst_in_keine_rechnung(self):
+        LikWert.objects.create(jahr=2026, monat=11, punkte=Decimal('108.7'), quelle='HEV')
+        self.assertIsNone(lik.lik_punkte_fuer(2026, 11))
+        self.assertEqual(lik.aktueller_lik_wert(live=False)[:2], (date(2026, 9, 1), Decimal('108.5')))
+        self.assertEqual(mietzinsmodell.basis_lik_vorschlag(date(2026, 12, 1), live=False),
+                         (date(2026, 9, 1), Decimal('108.5')))
+        self.assertEqual(lik.lik_reihen(roh=True)[2026][10], 108.7)       # die Pflegeseite sieht ihn weiter
+
     def test_eine_andere_basis_wird_nicht_gemischt(self):
         LikWert.objects.create(jahr=2026, monat=10, punkte=Decimal('101.0'), basis='Dezember 2025', quelle='BFS')
         self.assertIsNone(lik.lik_punkte_fuer(2026, 10))
@@ -158,6 +166,15 @@ class SeiteTests(TestCase):
         with mock.patch.object(lik, 'automatisch_nachfuehren') as m:
             self.assertEqual(self.client.post(reverse('fw_betreiber_lik'), {'aktion': 'abrufen'}).status_code, 403)
         m.assert_not_called()
+
+    def test_die_seite_zeigt_einen_wert_hinter_der_luecke_als_ungueltig_und_loeschbar(self):
+        LikWert.objects.create(jahr=2026, monat=11, punkte=Decimal('108.7'), quelle='HEV')
+        lik.cache_leeren()
+        self.client.force_login(self.betreiber)
+        with mock.patch('core.views.fw.betreiber.datum_heute', return_value=date(2026, 11, 14)):
+            inhalt = self.client.get(reverse('fw_betreiber_lik')).content.decode()
+        self.assertIn('zählt nicht', inhalt)
+        self.assertEqual(inhalt.count('data-testid="lik-loeschen"'), 1)
 
     def test_unsinn_wird_abgewiesen_ohne_etwas_zu_speichern(self):
         for kw in ({'punkte': '10.8'}, {'punkte': 'abc'}, {'monat': '13'}, {'jahr': '2019'}, {'jahr': '2027'},

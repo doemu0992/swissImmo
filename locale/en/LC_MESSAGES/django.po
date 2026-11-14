@@ -40016,3 +40016,6 @@ msgstr "The lookup ran; HEV has no new monthly value."
 
 msgid "Jetzt beim HEV abrufen"
 msgstr "Fetch from HEV now"
+
+msgid "zählt nicht: davor fehlt ein Monat"
+msgstr "not counted: a month before it is missing"

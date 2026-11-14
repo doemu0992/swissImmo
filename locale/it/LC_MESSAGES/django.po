@@ -40611,3 +40611,6 @@ msgstr "La consultazione è riuscita, l'HEV non ha un nuovo valore mensile."
 
 msgid "Jetzt beim HEV abrufen"
 msgstr "Recupera ora dall'HEV"
+
+msgid "zählt nicht: davor fehlt ein Monat"
+msgstr "non conta: manca un mese prima"
