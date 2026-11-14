@@ -41,6 +41,20 @@ def modus():
     return wert if wert in MODI else 'report-only'
 
 
+#: Inline-Stile, die der BROWSER selbst setzt und die deshalb erlaubt sind — genau diese Zeichenfolgen, nichts sonst.
+#: iOS-Safari hängt an jedes `<select>` das Stil-Attribut «text-overflow:inherit» (Meldungen vom 14.11.2026: «text-overflow:
+#: inherit @ select» auf jeder Seite mit Auswahlfeld, neustes iOS, keine Erweiterung). Die Anwendung kann das nicht
+#: abstellen; ohne Erlaubnis meldet jede Seite mehrfach, und echte Verstösse gehen im Rauschen unter. Die Schreibweisen
+#: mit Leerzeichen und Strichpunkt stehen dabei, weil der gemeldete Anfang die genaue Fassung nicht belegt.
+BROWSER_STILE = ('text-overflow:inherit', 'text-overflow: inherit', 'text-overflow:inherit;', 'text-overflow: inherit;')
+
+
+def _stil_hashes():
+    import base64
+    import hashlib
+    return ' '.join("'sha256-%s'" % base64.b64encode(hashlib.sha256(t.encode()).digest()).decode() for t in BROWSER_STILE)
+
+
 def richtlinie(nonce, stil_inline=False):
     """Die Richtlinie dieser Antwort.
 
@@ -52,6 +66,7 @@ def richtlinie(nonce, stil_inline=False):
         "default-src 'self'",
         f"script-src 'self' 'nonce-{nonce}' 'report-sample'",
         "style-src 'self' 'unsafe-inline'" if stil_inline else f"style-src 'self' 'nonce-{nonce}' 'report-sample'",
+        *([] if stil_inline else [f"style-src-attr 'unsafe-hashes' {_stil_hashes()} 'report-sample'"]),
         "img-src 'self' data: blob:",
         "font-src 'self' data:",
         "connect-src 'self'",

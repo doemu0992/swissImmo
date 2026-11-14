@@ -106,3 +106,23 @@ test('Ohne adoptedStyleSheets (Safari vor 16.4): Stile über <style nonce>, kein
   expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).toBe('hidden');
   expect(await page.evaluate(() => document.querySelectorAll('[style]').length)).toBe(0);
 });
+
+test('Stil-Attribut des Browsers (iOS: text-overflow:inherit am select) ist erlaubt, jedes andere nicht', async ({ page }) => {
+  await sammeln(page);
+  await login(page);
+  await goto(page, '/neu/');
+  await page.evaluate(() => {
+    const a = document.createElement('select');
+    document.body.appendChild(a);
+    a.setAttribute('style', 'text-overflow:inherit');
+  });
+  await page.waitForTimeout(200);
+  expect(await page.evaluate(() => (window as any).__verstoesse)).toEqual([]);
+  await page.evaluate(() => {
+    const b = document.createElement('select');
+    document.body.appendChild(b);
+    b.setAttribute('style', 'text-overflow:ellipsis');
+  });
+  await page.waitForTimeout(200);
+  expect((await page.evaluate(() => (window as any).__verstoesse)).length).toBe(1);
+});
