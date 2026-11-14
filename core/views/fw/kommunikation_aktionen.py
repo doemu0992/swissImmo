@@ -20,7 +20,6 @@ def fw_kommunikation_senden(request):
     """Verschickt die verfasste Mitteilung per E-Mail an die gewählten Mieter."""
     from django.shortcuts import redirect
     from django.contrib import messages
-    from core.utils.email_service import send_ticket_email
     from core.auth import log_aktion
     if request.method != 'POST':
         return redirect('fw_kommunikation')
@@ -30,14 +29,17 @@ def fw_kommunikation_senden(request):
     if not text or not ids:
         messages.error(request, gettext('Text und mindestens ein Empfänger erforderlich.'))
         return redirect('fw_kommunikation')
-    from core.utils.email_service import journal_email
-    gesendet = 0
-    for mid in ids:
-        m = Mieter.objects.filter(id=mid).first()
-        if m and m.email:
-            if send_ticket_email(m.email, betreff, text):
-                gesendet += 1
-                journal_email(betreff, text, mieter=m, user=request.user, empfaenger=m.email)
+    from core.services import auftraege, rundschreiben
+    # Viele Empfänger UND ein laufender Auftragsläufer: in den Hintergrund (jede Mail geht einzeln über SMTP hinaus).
+    # Sonst sofort wie bisher.
+    if rundschreiben.im_hintergrund(len(ids)):
+        auftraege.anlegen('rundschreiben', {'betreff': betreff, 'text': text, 'empfaenger': ids, 'erledigt': []},
+                          benutzer=request.user)
+        messages.success(request, gettext(
+            'Das Rundschreiben an %(n)s Empfänger wird im Hintergrund versandt. Stand und Ergebnis stehen unter '
+            '«Aufträge».') % {'n': len(ids)})
+        return redirect('/neu/auftraege/')
+    gesendet = rundschreiben.versenden(betreff, text, ids, benutzer=request.user)
     log_aktion(request, "Rundschreiben per E-Mail", betreff, f"{gesendet} Empfänger")
     messages.success(request, ('✅ ' + gettext('%(gesendet)s E-Mail(s) versendet.') % {'gesendet': gesendet}) if gesendet
                      else gettext('Keine E-Mail versendet (fehlende Adressen).'))

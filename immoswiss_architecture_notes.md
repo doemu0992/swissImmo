@@ -388,7 +388,9 @@ Stand 14.11.2026. In dieser Reihenfolge, weil jeder Punkt den nächsten billiger
    `manage.py auftraege_abarbeiten` und die Seite «Aufträge» (`/neu/auftraege/`). Die Sollstellung (ab 150 Verträgen) und der
    Mahnlauf (ab 100 offenen Rechnungen) gehen in den Hintergrund, aber nur, wenn der Läufer sich meldet
    (`auftraege.laeufer_aktiv`); sonst laufen sie sofort wie bisher. Dasselbe Muster gilt für jede weitere Umstellung: nie in die Warteschlange, wenn niemand sie
-   abholt. Serienbrief und Belegerkennung laufen noch wie bisher. Der Läufer muss einmal als Always-on-Task eingerichtet werden.
+   abholt. Das Rundschreiben per E-Mail geht ab 30 Empfängern in den
+   Hintergrund und merkt sich je Mail, an wen schon gesendet wurde (kein Doppelversand nach einem Absturz). Das
+   Serienbrief-PDF bleibt sofort, weil es als Download zurückkommt; die Belegerkennung läuft noch wie bisher. Der Läufer muss einmal als Always-on-Task eingerichtet werden.
 4. **URL-Module je Bereich — erledigt (PR 260).** `swiss_immo/urls.py` ist in sechs Module aufgeteilt; Routen und
    Reihenfolge sind nachweislich unverändert (geflachter Routenbaum vorher und nachher gleich, 594 Einträge).
 5. **Auswahl der Organisation bei mehreren Mitgliedschaften — gab es bereits.** Die Mandantenwahl im Kopf und im

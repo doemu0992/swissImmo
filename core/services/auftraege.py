@@ -190,3 +190,28 @@ def _mahnlauf(auftrag, fortschritt):
         erzwingen=bool(p.get('erzwingen')), benutzer=auftrag.erstellt_von, herkunft='Auftrag')
     return (f"{res['gemahnt']} Mahnung(en), {res['emails']} E-Mail(s), Gebühren CHF {res['gebuehren']}, "
             f"Zins CHF {res['zins']}.")
+
+
+@auftragsart('rundschreiben', _('Rundschreiben per E-Mail'))
+def _rundschreiben(auftrag, fortschritt):
+    """Parameter: `betreff`, `text`, `empfaenger` (Mieter-IDs), `erledigt` (IDs, an die schon gesendet wurde).
+
+    KEINE MAIL DOPPELT: Nach jeder gelungenen Mail wird die ID in `erledigt` geschrieben. Stürzt der Läufer ab, sendet
+    der Neustart nur an die Übrigen."""
+    from core.auth import log_aktion
+    from core.services import rundschreiben
+    p = dict(auftrag.parameter)
+    empfaenger = list(p.get('empfaenger') or [])
+    erledigt = [int(i) for i in (p.get('erledigt') or [])]
+
+    def nach_jedem(mieter_id):
+        erledigt.append(mieter_id)
+        p['erledigt'] = erledigt
+        Auftrag.alle_organisationen.filter(pk=auftrag.pk).update(parameter=p)
+        fortschritt(100 * len(erledigt) // max(1, len(empfaenger)), f'{len(erledigt)} von {len(empfaenger)} versandt')
+
+    rundschreiben.versenden(p.get('betreff') or 'Mitteilung', p.get('text') or '', empfaenger,
+                            benutzer=auftrag.erstellt_von, erledigt=erledigt, nach_jedem=nach_jedem)
+    log_aktion(None, 'Rundschreiben per E-Mail', p.get('betreff') or 'Mitteilung',
+               f'{len(erledigt)} Empfänger · Auftrag', user=auftrag.erstellt_von)
+    return f'{len(erledigt)} von {len(empfaenger)} E-Mail(s) versandt (ohne Adresse: übergangen).'

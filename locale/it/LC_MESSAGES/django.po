@@ -40635,3 +40635,9 @@ msgstr "nessuna consultazione registrata (fetch_plattform_eingang è in esecuzio
 
 msgid "Abruf ausgefallen: Plattform-Postfach — letzter Abruf ohne Fehler %(erfolg)s. Grund: %(grund)s"
 msgstr "Consultazione non funzionante: casella della piattaforma — ultima consultazione senza errori %(erfolg)s. Motivo: %(grund)s"
+
+msgid "Das Rundschreiben an %(n)s Empfänger wird im Hintergrund versandt. Stand und Ergebnis stehen unter «Aufträge»."
+msgstr "La circolare a %(n)s destinatari viene inviata in background. Stato e risultato si trovano sotto «Incarichi in background»."
+
+msgid "Rundschreiben per E-Mail"
+msgstr "Circolare via e-mail"
