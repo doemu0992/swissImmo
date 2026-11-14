@@ -17,6 +17,7 @@ from rentals.models import Mietvertrag
 
 from ._basis import _global_filter
 from core.services.unterschrift import UNTERSCHRIFT_HINWEIS_257D
+from core.services.fristen import kanton_von
 from core.services.zahlungsverzug import ABHOLFRIST_TAGE, FRIST_TAGE, POSTWEG_TAGE
 
 logger = logging.getLogger(__name__)
@@ -55,6 +56,7 @@ def fw_verzug_257d(request, vertrag_id):
     # gehören nicht in die Androhung; die Seite sagt, was ausgenommen ist.
     from core.services.zahlungsverzug import provisorisches_fristende, verzugsforderungen
     from core.services.fristen import fristende as _fristende, naechster_werktag
+    kt = kanton_von(v)        # Feiertage am Ort der Liegenschaft (Art. 78 OR)
     faellige = [r for r in verzugsforderungen(v, heute) if r.status in ('offen', 'teilbezahlt')]
     offen_total = sum((r.offener_betrag for r in faellige), Decimal('0.00'))
     ids_gedeckt = {r.pk for r in faellige}
@@ -72,7 +74,7 @@ def fw_verzug_257d(request, vertrag_id):
     zustell_tage = POSTWEG_TAGE + ABHOLFRIST_TAGE
     # Standard-Frist: mindestens 30 Tage ab Zugang (30 Tage sind für alle Objektarten sicher, da ≥ der
     # gesetzlichen Mindestfrist), zuzüglich Postweg und Abholfrist.
-    default_frist = _fristende(heute, max(FRIST_TAGE, min_frist) + zustell_tage).isoformat()
+    default_frist = _fristende(heute, max(FRIST_TAGE, min_frist) + zustell_tage, kt).isoformat()
 
     if request.method == 'POST':
         # Ohne fälligen Rückstand an Mietzins oder Nebenkosten gibt es nichts anzudrohen (Art. 257d Abs. 1 OR).
@@ -83,7 +85,7 @@ def fw_verzug_257d(request, vertrag_id):
                 'Kündigungsandrohung nach Art. 257d OR setzt einen solchen voraus; andere Forderungen '
                 '(Weiterverrechnung, Selbstbehalt, Mahngebühr) zählen nicht.'))
             return redirect(f'/neu/vertraege/{v.id}/verzug/')
-        _min_frist_bis = _fristende(heute, min_frist + zustell_tage)
+        _min_frist_bis = _fristende(heute, min_frist + zustell_tage, kt)
         try:
             frist = date.fromisoformat(request.POST.get('frist_bis') or default_frist)
         except ValueError:
@@ -110,9 +112,9 @@ def fw_verzug_257d(request, vertrag_id):
         except ValueError:
             versand_am = None
         if versand_am:
-            frist = provisorisches_fristende(versand_am, FRIST_TAGE)
+            frist = provisorisches_fristende(versand_am, FRIST_TAGE, kt)
         # Art. 78 OR: Das letzte Tag der Frist ist ein Werktag.
-        frist = naechster_werktag(frist)
+        frist = naechster_werktag(frist, kt)
         vw = v.organisation      # Briefkopf des Vertrags, nicht der aeltesten Verwaltung
         m = v.mieter
         # Dasselbe 257d-PDF wie /vertrag/<id>/mahnung/ (sauberer Brief mit
@@ -229,6 +231,7 @@ def fw_verzug_257d(request, vertrag_id):
         'offen_total': offen_total, 'anzahl_faellig': len(faellige),
         'faellige': faellige, 'ausgenommen_total': ausgenommen_total, 'ausgenommen_anzahl': len(ausgenommen),
         'zustell_tage': zustell_tage, 'abholfrist_tage': ABHOLFRIST_TAGE,
+        'feiertage_kanton': kt,
         'min_frist': min_frist, 'default_frist': default_frist,
         'heute_iso': heute.isoformat(),
     })
@@ -246,7 +249,7 @@ def _zugang_setzen(p, zugang, fingiert=False):
     if ist_brief_pendenz(p):
         return _brief_zugang_setzen(p, zugang, fingiert)
     tage = p.frist_tage or 30
-    neu_frist = definitives_fristende(zugang, tage)
+    neu_frist = definitives_fristende(zugang, tage, kanton_von(p))
     p.zugang_am = zugang
     p.zugang_fingiert = bool(fingiert)
     p.faellig_am = neu_frist
@@ -280,7 +283,7 @@ def _brief_zugang_setzen(p, zugang, fingiert=False):
            else f"Zugang bestätigt am {zugang:%d.%m.%Y} (Abholung/Zustellung)")
     neu_frist = None
     if p.frist_tage:
-        neu_frist = definitives_fristende(zugang, p.frist_tage)
+        neu_frist = definitives_fristende(zugang, p.frist_tage, kanton_von(p))
         p.faellig_am = neu_frist
         felder.append('faellig_am')
         art += f". Frist von {p.frist_tage} Tagen läuft bis {neu_frist:%d.%m.%Y}"
@@ -289,7 +292,7 @@ def _brief_zugang_setzen(p, zugang, fingiert=False):
     return neu_frist or p.faellig_am
 
 
-def _zugang_aus_formular(post, versand_am, heute):
+def _zugang_aus_formular(post, versand_am, heute, kanton=''):
     """(Zugangsdatum, fingiert, Fehlertext) aus den Feldern `zugang_am` und `zugang_art`.
 
     `zugang_art`:
@@ -307,7 +310,7 @@ def _zugang_aus_formular(post, versand_am, heute):
     if post.get('zugang_art') == 'nicht_abgeholt':
         if tag > heute:
             tag = heute
-        fiktiv = fiktiver_zugang(tag)
+        fiktiv = fiktiver_zugang(tag, kanton)
         if versand_am and tag < versand_am:
             return None, False, gettext('Die Abholeinladung kann nicht vor dem Versand liegen.')
         if fiktiv > heute:
@@ -347,7 +350,7 @@ def fw_verzug_zugang(request, pk):
     heute = timezone.localdate()
     nxt = request.POST.get('next') or ''
     ziel = nxt if nxt.startswith('/neu/') and '//' not in nxt[1:] else None
-    zugang, fingiert, fehler = _zugang_aus_formular(request.POST, p.versand_am, heute)
+    zugang, fingiert, fehler = _zugang_aus_formular(request.POST, p.versand_am, heute, kanton_von(p))
     if fehler:
         messages.error(request, '⛔ ' + fehler)
         return redirect(ziel or 'fw_fristen')
@@ -410,7 +413,7 @@ def fw_verzug_sendung(request, pk):
             felder.append('versand_am')
             # Brief mit festem Fristdatum (oder ohne Frist): das Datum steht im Brief, es wird nicht neu gerechnet.
             if not ist_brief_pendenz(p) or p.frist_tage:
-                p.faellig_am = provisorisches_fristende(vs, p.frist_tage)
+                p.faellig_am = provisorisches_fristende(vs, p.frist_tage, kanton_von(p))
                 felder.append('faellig_am')
     p.save(update_fields=felder)
     from core.services.brief_aus_vorlage import ist_brief_pendenz as _brief

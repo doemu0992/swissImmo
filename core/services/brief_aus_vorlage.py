@@ -173,7 +173,8 @@ def _brief_erzeugen(vorlage, mieter_ids, organisation, benutzer=None, *, einschr
 
 def _pendenz_anlegen(Pendenz, dok, mieter, vertrag, betreff, einschreiben, frist_art, frist_datum, frist_tage, heute,
                      benutzer):
-    from core.services.fristen import naechster_werktag
+    from core.services.fristen import kanton_von, naechster_werktag
+    kt = kanton_von(vertrag)
     name = mieter.display_name
     teile = []
     if frist_art == 'datum':
@@ -181,12 +182,12 @@ def _pendenz_anlegen(Pendenz, dok, mieter, vertrag, betreff, einschreiben, frist
         teile.append(gettext('Frist bis %(datum)s.') % {'datum': f'{frist_datum:%d.%m.%Y}'})
     elif frist_art == 'zugang':
         # Provisorisch: der späteste Zugang, mit dem zu rechnen ist; nach «Zugang bestätigen» gilt Zugang + Tage.
-        faellig = provisorisches_fristende(heute, frist_tage)
+        faellig = provisorisches_fristende(heute, frist_tage, kt)
         teile.append(gettext('Frist: %(tage)s Tage ab Zugang des Schreibens. Provisorisch bis %(datum)s; mit der '
                              'Bestätigung des Zugangs steht das Fristende fest.') % {'tage': frist_tage,
                                                                                     'datum': f'{faellig:%d.%m.%Y}'})
     else:
-        faellig = naechster_werktag(heute + datetime.timedelta(days=KONTROLLE_TAGE))
+        faellig = naechster_werktag(heute + datetime.timedelta(days=KONTROLLE_TAGE), kt)
     if einschreiben:
         teile.append(gettext('Einschreiben: nach dem Versand die Sendungsnummer erfassen, danach den Zugang bestätigen.'))
         titel = (gettext('Einschreiben an %(name)s: %(betreff)s') if not frist_art
