@@ -134,6 +134,36 @@ class AbrufStatus(models.Model):
         return f"{self.name}: {self.fehler_in_folge} Fehlversuche in Folge"
 
 
+class LikWert(models.Model):
+    """Ein vom Betreiber nachgetragener Monatswert des Landesindex der Konsumentenpreise.
+
+    WARUM EINE TABELLE: Die Reihe im Code (`core/services/lik.py`) endete jeden Monat neu, und ein Nachtrag
+    brauchte ein Deployment. Hier trägt der Betreiber den Wert ein, sobald das BFS ihn veröffentlicht; die Reihe im
+    Code bleibt der Grundstock. Ein Eintrag hier gewinnt gegen den Code (so lässt sich auch ein Tippfehler im
+    Code korrigieren, ohne zu deployen).
+
+    Plattformweit, ohne Organisationsbezug (siehe `OHNE_MANDANTENFILTER`): Der Index ist für alle derselbe.
+    Nie geraten: `quelle` hält fest, woher der Wert stammt.
+    """
+    jahr = models.PositiveSmallIntegerField("Jahr")
+    monat = models.PositiveSmallIntegerField("Monat")
+    punkte = models.DecimalField("Punkte", max_digits=6, decimal_places=1)
+    basis = models.CharField("Basis", max_length=30, default="Dezember 2020", editable=False)
+    quelle = models.CharField("Quelle", max_length=200)
+    erfasst_von = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+                                    related_name='+', editable=False)
+    erfasst_am = models.DateTimeField("Erfasst am", auto_now=True, editable=False)
+
+    class Meta:
+        verbose_name = "LIK-Wert"
+        verbose_name_plural = "LIK-Werte"
+        ordering = ['jahr', 'monat']
+        constraints = [models.UniqueConstraint(fields=['jahr', 'monat', 'basis'], name='lik_wert_je_monat_und_basis')]
+
+    def __str__(self):
+        return f"LIK {self.monat:02d}/{self.jahr}: {self.punkte} ({self.basis})"
+
+
 class Postfach(models.Model):
     """Das E-Mail-Postfach EINER Verwaltung — Antworten oder Rechnungen.
 

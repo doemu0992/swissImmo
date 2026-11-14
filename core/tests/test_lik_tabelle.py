@@ -67,7 +67,7 @@ class RueckstandTests(SimpleTestCase):
         self.assertEqual(lik.tabelle_rueckstand_monate(date(2027, 1, 1)), 4)
         hinweis = lik.tabelle_hinweis(date(2027, 1, 1))
         self.assertIn('September 2026', hinweis)
-        self.assertIn('LIK_DEZ2020', hinweis)
+        self.assertIn('nachtragen', hinweis)
 
     def test_tabelle_mit_luecke_im_aktuellen_monat_ist_ein_hinweis_kein_absturz(self):
         gekuerzt = {j: list(r) for j, r in lik.LIK_DEZ2020.items()}

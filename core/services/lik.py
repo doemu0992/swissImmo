@@ -38,10 +38,46 @@ LIK_DEZ2020 = {
 }
 
 
-def lik_punkte_fuer(jahr, monat):
-    """LIK-Punkte (Decimal) eines Monats aus der Tabelle, oder None."""
+#: So lange gilt die gelesene Reihe im Prozess. Kurz, damit ein Nachtrag auch in einem anderen Worker bald gilt; im
+#: eigenen Prozess räumt `cache_leeren` (beim Speichern und Löschen eines Wertes) sofort auf.
+CACHE_SEKUNDEN = 60
+_cache = {'bis': 0.0, 'reihen': None, 'code': None}
+
+
+def cache_leeren(*_args, **_kwargs):
+    """Verwirft die gemerkte Reihe (Signal-Empfänger und Tests)."""
+    _cache['bis'], _cache['reihen'], _cache['code'] = 0.0, None, None
+
+
+def lik_reihen():
+    """`{jahr: [12 Werte, None = nicht veröffentlicht]}`: die Reihe im Code, darüber die nachgetragenen Werte.
+
+    Nachgetragen (`core.LikWert`) gewinnt gegen den Code. Die Reihe wird kurz im Prozess gemerkt
+    (`CACHE_SEKUNDEN`): Der LIK-Wert wird auch bei jedem neuen Mietvertrag gelesen, und das soll keine
+    Datenbankabfrage je Aufruf kosten. Der Rückgabewert ist eine Kopie. Ist die Datenbank nicht lesbar, gilt die
+    Reihe im Code: Eine Indexrechnung darf daran nicht scheitern."""
+    import time
+    if (_cache['reihen'] is not None and time.monotonic() < _cache['bis']
+            and _cache['code'] == LIK_DEZ2020):                # die Reihe im Code wurde (in Tests) ersetzt: neu lesen
+        return {jahr: list(reihe) for jahr, reihe in _cache['reihen'].items()}
+    reihen = {jahr: list(reihe) + [None] * (12 - len(reihe)) for jahr, reihe in LIK_DEZ2020.items()}
+    try:
+        from core.models import LikWert
+        for w in LikWert.objects.filter(basis=LIK_BASIS):
+            reihen.setdefault(w.jahr, [None] * 12)[w.monat - 1] = float(w.punkte)
+    except Exception:                                        # noqa: BLE001 — Rückfall auf die Reihe im Code
+        import logging
+        logging.getLogger(__name__).warning('LIK-Werte aus der Datenbank nicht lesbar — es gilt die Reihe im Code.')
+        return reihen                                        # nicht merken: beim nächsten Aufruf neu versuchen
+    _cache['reihen'], _cache['bis'] = reihen, time.monotonic() + CACHE_SEKUNDEN
+    _cache['code'] = {jahr: list(reihe) for jahr, reihe in LIK_DEZ2020.items()}
+    return {jahr: list(reihe) for jahr, reihe in reihen.items()}
+
+
+def lik_punkte_fuer(jahr, monat, reihen=None):
+    """LIK-Punkte (Decimal) eines Monats, oder None. `reihen`: die Reihen aus `lik_reihen()`, wenn schon geholt."""
     from decimal import Decimal
-    reihe = LIK_DEZ2020.get(jahr)
+    reihe = (reihen if reihen is not None else lik_reihen()).get(jahr)
     if not reihe or monat < 1 or monat > len(reihe):
         return None
     val = reihe[monat - 1]
@@ -54,10 +90,11 @@ TABELLE_MAX_RUECKSTAND_MONATE = 3
 
 
 def letzter_tabellenmonat():
-    """(jahr, monat) des jüngsten Monats mit Wert in `LIK_DEZ2020`, oder None."""
+    """(jahr, monat) des jüngsten Monats mit Wert (Code und Nachträge), oder None."""
     letzter = None
-    for jahr in sorted(LIK_DEZ2020):
-        for i, val in enumerate(LIK_DEZ2020[jahr]):
+    reihen = lik_reihen()
+    for jahr in sorted(reihen):
+        for i, val in enumerate(reihen[jahr]):
             if val is not None:
                 letzter = (jahr, i + 1)
     return letzter
@@ -81,7 +118,7 @@ def tabelle_hinweis(heute):
         return ''
     letzter = letzter_tabellenmonat()
     stand = f"{_MONATE[letzter[1] - 1]} {letzter[0]}" if letzter else "kein Monat"
-    return (f"Die LIK-Tabelle (core/services/lik.py, LIK_DEZ2020) endet im {stand} und liegt mehr als "
+    return (f"Die LIK-Tabelle endet im {stand} und liegt mehr als "
             f"{TABELLE_MAX_RUECKSTAND_MONATE} Monate hinter dem Kalender. Bitte die Monatswerte des BFS "
             "(Landesindex der Konsumentenpreise) nachtragen; bis dahin sind Indexanpassungen für die "
             "fehlenden Monate gesperrt.")
@@ -92,8 +129,9 @@ def _tabelle_wert():
     import datetime
     from decimal import Decimal
     best = None
-    for jahr in sorted(LIK_DEZ2020):
-        reihe = LIK_DEZ2020[jahr]
+    reihen = lik_reihen()
+    for jahr in sorted(reihen):
+        reihe = reihen[jahr]
         for i, val in enumerate(reihe):
             if val is not None:
                 best = (jahr, i + 1, val)
@@ -245,3 +283,12 @@ def vertrag_lik_context(vertrag, verwaltung=None):
         'lik_pkt': pkt,
         'lik_voll': lik_bezeichnung(punkte, basis=basis, stand=stand),
     }
+
+
+def _empfaenger_verbinden():
+    from django.db.models.signals import post_delete, post_save
+    post_save.connect(cache_leeren, sender='core.LikWert', dispatch_uid='lik_cache_save')
+    post_delete.connect(cache_leeren, sender='core.LikWert', dispatch_uid='lik_cache_delete')
+
+
+_empfaenger_verbinden()
