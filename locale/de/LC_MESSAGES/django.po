@@ -38925,3 +38925,12 @@ msgstr "Der Mahnlauf läuft im Hintergrund. Stand und Ergebnis stehen unter «Au
 
 msgid "Mahnlauf (Sammellauf)"
 msgstr "Mahnlauf (Sammellauf)"
+
+msgid "Belegerkennung (Groq)"
+msgstr "Belegerkennung (Groq)"
+
+msgid "kein Abruf verzeichnet (läuft fetch_plattform_eingang?)"
+msgstr "kein Abruf verzeichnet (läuft fetch_plattform_eingang?)"
+
+msgid "Abruf ausgefallen: Plattform-Postfach — letzter Abruf ohne Fehler %(erfolg)s. Grund: %(grund)s"
+msgstr "Abruf ausgefallen: Plattform-Postfach — letzter Abruf ohne Fehler %(erfolg)s. Grund: %(grund)s"

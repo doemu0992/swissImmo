@@ -76,3 +76,55 @@ class BetreiberHinweisTests(TestCase):
         for _i in range(3):
             abruf_status.melde_fehler('lik', 'Marke fehlt')
         self.assertTrue(any('Abruf ausgefallen' in a for a in datenpflege.faellig(timezone.localdate())))
+
+
+class GroqTests(TestCase):
+    def test_ein_fehler_bei_groq_wird_protokolliert_und_weitergereicht(self):
+        from finance import utils
+        antwort = mock.Mock(status_code=404)
+        fehler = __import__('requests').HTTPError('nicht gefunden', response=antwort)
+        with mock.patch('finance.utils.requests.post', side_effect=fehler):
+            with self.assertRaises(__import__('requests').HTTPError):
+                utils._groq_call([], 'modell-x', 'geheimer-schluessel')
+        e = AbrufStatus.objects.get(name='groq')
+        self.assertIn('Status 404', e.letzter_fehler)
+        self.assertIn('modell-x', e.letzter_fehler)
+        self.assertNotIn('geheimer-schluessel', e.letzter_fehler)
+
+    def test_ein_gelungener_aufruf_setzt_den_zaehler_zurueck(self):
+        from finance import utils
+        abruf_status.melde_fehler('groq', 'x')
+        antwort = mock.Mock()
+        antwort.json.return_value = {'choices': [{'message': {'content': '{"betrag": 1}'}}]}
+        with mock.patch('finance.utils.requests.post', return_value=antwort):
+            self.assertEqual(utils._groq_call([], 'm', 'k'), {'betrag': 1})
+        self.assertEqual(AbrufStatus.objects.get(name='groq').fehler_in_folge, 0)
+
+
+class PostfachTests(TestCase):
+    EIN = {'PLATTFORM_IMAP_HOST': 'mail.example.ch', 'PLATTFORM_IMAP_BENUTZER': 'b', 'PLATTFORM_IMAP_PASSWORT': 'p'}
+
+    def test_nicht_eingerichtet_meldet_nichts(self):
+        from django.test import override_settings
+        with override_settings(PLATTFORM_IMAP_HOST='', PLATTFORM_IMAP_BENUTZER='', PLATTFORM_IMAP_PASSWORT=''):
+            self.assertEqual(abruf_status.postfach_ausfall(), '')
+
+    def test_eingerichtet_ohne_jeden_abruf_ist_ein_ausfall(self):
+        from django.test import override_settings
+        with override_settings(**self.EIN):
+            self.assertIn('Plattform-Postfach', abruf_status.postfach_ausfall())
+
+    def test_ein_frischer_abruf_ist_kein_ausfall_ein_alter_schon(self):
+        from django.test import override_settings
+        from core.models import PlattformEingangStatus
+        s = PlattformEingangStatus.holen()
+        s.letzter_erfolg = timezone.now()
+        s.save()
+        with override_settings(**self.EIN):
+            self.assertEqual(abruf_status.postfach_ausfall(), '')
+            s.letzter_erfolg = timezone.now() - timedelta(hours=8)
+            s.letzter_fehler = 'Anmeldung abgelehnt'
+            s.save()
+            text = abruf_status.postfach_ausfall()
+            self.assertIn('Anmeldung abgelehnt', text)
+            self.assertTrue(any('Plattform-Postfach' in a for a in datenpflege.faellig(timezone.localdate())))
