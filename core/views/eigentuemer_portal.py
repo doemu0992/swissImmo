@@ -201,8 +201,11 @@ def portal_profil(request, eigentuemer):
             return redirect('portal_profil')
     from core.models import Aenderungsanfrage
     anfragen = list(Aenderungsanfrage.objects.filter(eigentuemer=eigentuemer).order_by('-erstellt_am')[:10])
+    from core.models import ZweiterFaktor
+    faktor = ZweiterFaktor.objects.filter(benutzer=request.user).first()
     return render(request, 'core/eig_profil.html', _kontext(
-        eigentuemer, sprachen=sprachen, passwort=passwort, anfragen=anfragen))
+        eigentuemer, sprachen=sprachen, passwort=passwort, anfragen=anfragen,
+        zweifaktor_aktiv=bool(faktor and faktor.ist_aktiv)))
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)

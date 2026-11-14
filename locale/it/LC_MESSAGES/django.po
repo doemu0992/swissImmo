@@ -40641,3 +40641,15 @@ msgstr "La circolare a %(n)s destinatari viene inviata in background. Stato e ri
 
 msgid "Rundschreiben per E-Mail"
 msgstr "Circolare via e-mail"
+
+msgid "Zurück zum Portal"
+msgstr "Torna al portale"
+
+msgid "Aktiv: Nach dem Passwort fragt das Portal einen Code aus Ihrer Authenticator-App."
+msgstr "Attivo: dopo la password, il portale chiede un codice dalla sua app di autenticazione."
+
+msgid "Verwalten"
+msgstr "Gestisci"
+
+msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon. Empfohlen, weil hier Abrechnungen und Ihre Bankverbindung stehen."
+msgstr "Protezione aggiuntiva per il suo conto, facoltativa: dopo la password, il portale chiede un codice da un'app di autenticazione sul suo telefono. Consigliata, perché qui si trovano i conteggi e le sue coordinate bancarie."
