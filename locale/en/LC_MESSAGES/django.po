@@ -39968,3 +39968,30 @@ msgstr "FSO, press release of …"
 
 msgid "Letzte Monate"
 msgstr "Latest months"
+
+msgid "Arbeiten, die im Hintergrund laufen. Eine lange Arbeit steht hier mit Stand und Ergebnis, bis sie fertig ist; scheitert sie, steht der Grund da."
+msgstr "Work running in the background. A long job appears here with its status and result until it is done; if it fails, the reason is shown."
+
+msgid "Aktualisieren"
+msgstr "Refresh"
+
+msgid "In Arbeit"
+msgstr "In progress"
+
+msgid "Nichts in Arbeit."
+msgstr "Nothing in progress."
+
+msgid "Noch keine erledigten Aufträge."
+msgstr "No completed jobs yet."
+
+msgid "Wartet"
+msgstr "Waiting"
+
+msgid "Fertig"
+msgstr "Done"
+
+msgid "Fehlgeschlagen"
+msgstr "Failed"
+
+msgid "Sollstellung (Mietenlauf)"
+msgstr "Rent charging (rent run)"

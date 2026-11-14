@@ -79,6 +79,7 @@ from core.csp import csp_bericht
 from core.views.fw.kreditoren import (fw_kreditor_zahlung_vorlegen, fw_kreditor_zahlung_freigeben,
                                       fw_kreditor_zahlung_zuruecknehmen)
 from core.views.passwort_reset import PasswortVergessenView
+from core.views.fw.auftraege import fw_auftraege
 from core.views.fw.betreiber import (fw_betreiber, fw_betreiber_csp, fw_betreiber_kunde, fw_betreiber_kunde_abo,
                                      fw_betreiber_kunde_bearbeiten, fw_betreiber_lik, fw_betreiber_neu,
                                      fw_betreiber_rechnung_pdf)
@@ -447,6 +448,7 @@ urlpatterns = [
     path('neu/ablesung/', fw_ablesung, name='fw_ablesung'),
     path('neu/ablesung/<int:pk>/aufruf/', fw_ablesung_aufruf, name='fw_ablesung_aufruf'),
     path('neu/anfragen/', fw_anfragen, name='fw_anfragen'),
+    path('neu/auftraege/', fw_auftraege, name='fw_auftraege'),
     path('neu/anfragen/<int:pk>/bestaetigen/', fw_anfrage_bestaetigen, name='fw_anfrage_bestaetigen'),
     path('neu/anfragen/<int:pk>/ablehnen/', fw_anfrage_ablehnen, name='fw_anfrage_ablehnen'),
     # Einstellungen «Daten»: Import für Wechselkunden, Mandatsexport, Buchungsjournal (FUNK-09/13)

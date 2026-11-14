@@ -40563,3 +40563,30 @@ msgstr "UST, comunicato del …"
 
 msgid "Letzte Monate"
 msgstr "Ultimi mesi"
+
+msgid "Arbeiten, die im Hintergrund laufen. Eine lange Arbeit steht hier mit Stand und Ergebnis, bis sie fertig ist; scheitert sie, steht der Grund da."
+msgstr "Lavori eseguiti in background. Un lavoro lungo compare qui con stato e risultato fino al termine; se fallisce, ne è indicato il motivo."
+
+msgid "Aktualisieren"
+msgstr "Aggiorna"
+
+msgid "In Arbeit"
+msgstr "In corso"
+
+msgid "Nichts in Arbeit."
+msgstr "Niente in corso."
+
+msgid "Noch keine erledigten Aufträge."
+msgstr "Nessun incarico ancora completato."
+
+msgid "Wartet"
+msgstr "In attesa"
+
+msgid "Fertig"
+msgstr "Completato"
+
+msgid "Fehlgeschlagen"
+msgstr "Non riuscito"
+
+msgid "Sollstellung (Mietenlauf)"
+msgstr "Addebito degli affitti (ciclo affitti)"
