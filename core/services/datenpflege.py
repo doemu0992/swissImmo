@@ -49,4 +49,7 @@ def faellig(heute):
                         % {'stand': formularpflicht._STAND_VERZEICHNIS, 'datum': formularpflicht.GEPRUEFT_AM.strftime('%d.%m.%Y')})
     from core.services import abruf_status
     aufgaben.extend(abruf_status.ausfaelle())
+    postfach = abruf_status.postfach_ausfall()
+    if postfach:
+        aufgaben.append(postfach)
     return aufgaben

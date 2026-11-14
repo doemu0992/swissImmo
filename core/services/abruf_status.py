@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 ABRUFE = {
     'lik': _('Landesindex der Konsumentenpreise (HEV)'),
     'referenzzins': _('Referenzzinssatz (BWO)'),
+    'groq': _('Belegerkennung (Groq)'),
 }
 #: Ab so vielen Fehlversuchen in Folge gilt ein Abruf als ausgefallen.
 AUSFALL_AB = 3
@@ -72,3 +73,28 @@ def ausfaelle(jetzt=None):
         texte.append(_('Abruf ausgefallen: %(name)s — %(n)s Fehlversuche in Folge, letzter Erfolg %(erfolg)s. Grund: %(grund)s')
                      % {'name': name, 'n': eintrag.fehler_in_folge, 'erfolg': letzter, 'grund': eintrag.letzter_fehler})
     return texte
+
+
+#: So lange darf der letzte fehlerfreie Abruf des Plattform-Postfachs zurückliegen (der Lauf kommt im Minutentakt).
+POSTFACH_STILLE_STUNDEN = 6
+
+
+def postfach_ausfall(jetzt=None):
+    """Hinweistext, wenn das eingerichtete Plattform-Postfach nicht mehr abgerufen wird — sonst ''.
+
+    Der Abruf führt seinen eigenen Status (`core.PlattformEingangStatus`, sichtbar für den Inhaber unter «E-Mail-
+    Eingang»). Hier liest ihn die Betreiber-Startseite mit: Bleibt der Dauerläufer stehen oder lehnt der Mailserver
+    die Anmeldung ab, kommen Antworten auf Tickets und Rechnungen nicht mehr an, und das soll der Betreiber sehen."""
+    from core.models import PlattformEingangStatus
+    from core.services import plattform_postfach
+    if plattform_postfach.konfiguration() is None:
+        return ''                                             # nicht eingerichtet: nichts zu melden
+    jetzt = jetzt or timezone.now()
+    eintrag = PlattformEingangStatus.objects.filter(pk=1).first()
+    erfolg = eintrag.letzter_erfolg if eintrag else None
+    if erfolg is not None and (jetzt - erfolg).total_seconds() < POSTFACH_STILLE_STUNDEN * 3600:
+        return ''
+    letzter = erfolg.strftime('%d.%m.%Y %H:%M') if erfolg else _('noch nie')
+    grund = (eintrag.letzter_fehler if eintrag else '') or _('kein Abruf verzeichnet (läuft fetch_plattform_eingang?)')
+    return _('Abruf ausgefallen: Plattform-Postfach — letzter Abruf ohne Fehler %(erfolg)s. Grund: %(grund)s') % {
+        'erfolg': letzter, 'grund': grund}

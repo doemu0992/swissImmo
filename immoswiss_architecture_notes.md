@@ -375,7 +375,8 @@ Stand 14.11.2026. In dieser Reihenfolge, weil jeder Punkt den nächsten billiger
 
 1. **Ausfälle externer Dienste sichtbar machen — erledigt (PR 257).** `core.AbrufStatus` hält je Abruf (LIK,
    Referenzzins) letzten Erfolg, Grund und Fehlversuche in Folge; ab 3 Fehlversuchen oder 7 Tagen ohne Erfolg steht
-   ein Hinweis auf der Betreiber-Startseite. Offen: IMAP, Brevo und Groq melden noch nicht in diese Tabelle.
+   ein Hinweis auf der Betreiber-Startseite. Seit dem 14.11.2026 melden auch die Belegerkennung (Groq) und das Plattform-Postfach (IMAP, über seinen
+   eigenen Status) dorthin. Brevo liefert eingehende Post per Webhook; dort gibt es keinen Abruf, der ausfallen könnte.
 2. **Fachtabellen aus dem Code in die Datenbank — für den LIK erledigt (PR 258), sonst bewusst nicht.** Der
    tägliche Lauf holt fehlende Monatswerte beim HEV und speichert sie selbst (Entscheid des Betreibers vom
    14.11.2026, mit Abgleich und Schranken); die Seite «LIK-Werte» (`/betreiber/lik/`) bleibt als Notbehelf. Ein

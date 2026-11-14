@@ -40626,3 +40626,12 @@ msgstr "Il ciclo di solleciti è in esecuzione in background. Stato e risultato 
 
 msgid "Mahnlauf (Sammellauf)"
 msgstr "Ciclo di solleciti (elaborazione collettiva)"
+
+msgid "Belegerkennung (Groq)"
+msgstr "Riconoscimento dei giustificativi (Groq)"
+
+msgid "kein Abruf verzeichnet (läuft fetch_plattform_eingang?)"
+msgstr "nessuna consultazione registrata (fetch_plattform_eingang è in esecuzione?)"
+
+msgid "Abruf ausgefallen: Plattform-Postfach — letzter Abruf ohne Fehler %(erfolg)s. Grund: %(grund)s"
+msgstr "Consultazione non funzionante: casella della piattaforma — ultima consultazione senza errori %(erfolg)s. Motivo: %(grund)s"
