@@ -94,6 +94,10 @@ if TESTING:
 #: Live-Abruf des LIK (HEV/BFS) auch für den Vorschlag der Basis im Vertragsassistenten. Aus in den Tests und per Umgebung abschaltbar.
 LIK_LIVE_ABRUF = os.getenv('LIK_LIVE_ABRUF', 'True') == 'True' and not TESTING
 
+# Row-Level-Security in PostgreSQL (core/rls.py, docs/RLS.md): aus | probe | scharf. In Tests immer aus; die
+# Tests der RLS schalten sie gezielt selbst ein.
+RLS_MODUS = 'aus' if TESTING else os.getenv('RLS_MODUS', 'aus').lower()
+
 GEHEIMNIS_AUTOSCHLUESSEL = os.getenv('GEHEIMNIS_AUTOSCHLUESSEL', 'True') == 'True' and not TESTING
 
 # Zwei-Faktor-Pflicht nach Rolle (SICH-10, Etappe 2): Inhaber, Verwalter und

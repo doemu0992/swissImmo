@@ -40727,3 +40727,6 @@ msgstr "Protection supplémentaire pour votre compte, facultative : après le mo
 
 msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon."
 msgstr "Protection supplémentaire pour votre compte, facultative : après le mot de passe, le portail demande un code d'une application d'authentification sur votre téléphone."
+
+msgid "RLS-Probe: %(n)s Befund(e) in den letzten 14 Tagen (manage.py sicherheitslog). Bei 0 über zwei Wochen kann scharf geschaltet werden (docs/RLS.md)."
+msgstr "Essai RLS : %(n)s constat(s) au cours des 14 derniers jours (manage.py sicherheitslog). À 0 pendant deux semaines, le mode strict peut être activé (docs/RLS.md)."
