@@ -21,6 +21,8 @@ _ZEILE = re.compile(
     r'^(?P<zeit>\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)[,.]?\d* \S+ csp: CSP-Verstoss: '
     r'(?P<regel>.*?) \| blockiert=(?P<blockiert>.*?) \| Seite=(?P<seite>.*?) \| Zeile=(?P<zeile>.*?)'
     r'(?: \| Quelle=(?P<quelle>.*?) \| Probe=(?P<probe>.*))?$')
+#: Anzeige, wenn eine Zeile im neuen Format weder Datei noch Probe trägt.
+OHNE_ANGABE = '(Browser nennt keine Quelle)'
 _LANG = re.compile(r'[A-Za-z0-9_\-]{24,}')
 
 
@@ -59,7 +61,9 @@ def lesen(zeilen):
         quelle = bereinigen(m['quelle'])
         if quelle and m['zeile'].strip():
             quelle = f"{quelle}:{m['zeile'].strip()}"
-        probe = (m['probe'] or '').strip()[:80]
+        probe = (m['probe'] or '').strip()[:140]
+        if m['quelle'] is not None and not quelle and not probe:
+            quelle = OHNE_ANGABE         # neue Zeile, der Browser nennt nichts: von alten Zeilen («—») unterscheidbar
         schluessel = (m['regel'].strip(), bereinigen(m['blockiert']), bereinigen(m['seite']), quelle, probe)
         g = gruppen.get(schluessel)
         if g is None:

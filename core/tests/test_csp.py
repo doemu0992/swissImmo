@@ -107,6 +107,15 @@ class BerichtsstelleTests(TestCase):
             self._melden(bericht)
         self.assertIn('Zeile=7 | Quelle=https://x.ch/static/js/fw-a.js | Probe=width: 4/2%', log.output[0])
 
+    def test_eigene_meldung_nennt_das_element(self):
+        """`fw-stil.js` schickt zu einem gesperrten Inline-Stil das Element mit: daran ist die Ursache zu erkennen."""
+        bericht = {'csp-report': {'violated-directive': 'style-src-attr', 'blocked-uri': 'inline',
+                                  'document-uri': 'https://x.ch/neu/', 'script-sample': 'display: none',
+                                  'element': 'input#fwOsFeld.fw-feld'}}
+        with self.assertLogs('csp', level='WARNING') as log:
+            self._melden(bericht)
+        self.assertIn('Probe=display: none @ input#fwOsFeld.fw-feld', log.output[0])
+
     def test_richtlinie_verlangt_proben(self):
         r = csp.richtlinie('ABC123')
         self.assertIn("style-src 'self' 'nonce-ABC123' 'report-sample'", r)

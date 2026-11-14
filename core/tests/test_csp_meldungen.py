@@ -42,6 +42,11 @@ class LesenTests(SimpleTestCase):
         e = csp_meldungen.lesen([z])
         self.assertEqual((e[0]['anzahl'], e[0]['quelle'], e[0]['probe'], e[0]['zeile']), (1, '', '', '44'))
 
+    def test_neue_zeile_ohne_angabe_ist_von_alten_unterscheidbar(self):
+        z = ZEILE.format(regel='style-src-attr', blockiert='inline', seite='https://x.ch/neu/', zeile='')
+        e = csp_meldungen.lesen([z, z + ' | Quelle= | Probe='])
+        self.assertEqual(sorted(x['quelle'] for x in e), ['', csp_meldungen.OHNE_ANGABE])
+
     def test_haeufigste_zuerst(self):
         a = ZEILE.format(regel='a', blockiert='x', seite='/s1', zeile='1')
         b = ZEILE.format(regel='b', blockiert='x', seite='/s2', zeile='1')
