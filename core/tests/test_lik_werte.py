@@ -141,7 +141,7 @@ class SeiteTests(TestCase):
         from core.services import abruf_status
         self.client.force_login(self.betreiber)
 
-        def attrappe(_heute):
+        def attrappe(_heute, **_kw):                         # die Seite nennt seit den Basisreihen die Reihe (`basis=`)
             if fehler:
                 abruf_status.melde_fehler('lik', fehler)
             return rueckgabe

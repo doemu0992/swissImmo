@@ -87,10 +87,15 @@ class Command(BaseCommand):
 
             from core.services import lik
             # In Tests kein Netz (`LIK_LIVE_ABRUF` ist dort aus); der Dienst selbst ist mit Attrappen getestet.
-            neue = lik.automatisch_nachfuehren(timezone.localdate()) if getattr(settings, 'LIK_LIVE_ABRUF', False) else []
-            if neue:
+            # JEDE Reihe, die Werte hat (Standardreihe immer; andere, sobald eingelesen): `alle_reihen_nachfuehren`
+            # holt die Seite einmal und führt jede in sich nach — nie eine Reihe aus einer anderen.
+            neue = (lik.alle_reihen_nachfuehren(timezone.localdate())
+                    if getattr(settings, 'LIK_LIVE_ABRUF', False) else {})
+            for reihe, werte in neue.items():
                 from core.models import SicherheitsEreignis
-                text = ', '.join(f'{m:02d}/{j}: {w}' for j, m, w in neue)
+                text = ', '.join(f'{m:02d}/{j}: {w}' for j, m, w in werte)
+                if reihe != lik.LIK_BASIS:
+                    text += f' · Reihe {reihe}'
                 SicherheitsEreignis.objects.create(aktion='LIK-Wert automatisch nachgetragen', objekt='HEV',
                                                    details=text)
                 gemeinsam.append(f"LIK nachgetragen ({text})")

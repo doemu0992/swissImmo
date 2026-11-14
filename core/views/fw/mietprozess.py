@@ -608,6 +608,9 @@ def _vertrag_aus_bewerbung(request, b):
     nk = einheit.nebenkosten_aktuell or _D('0')
     kaution = (netto + nk) * kautionsmonate if kautionsmonate else None
 
+    from core.services.lik import basis_vorgabe
+    from .vertragserstellung import _stand_lik
+    _lik_basis_neu = basis_vorgabe(einheit)
     vertrag = Mietvertrag.objects.create(
         mieter=mieter, einheit=einheit, status='entwurf', beginn=beginn,
         netto_mietzins=netto, nebenkosten=nk,
@@ -620,7 +623,10 @@ def _vertrag_aus_bewerbung(request, b):
         # Art. 269a OR rechnet von dieser Basis aus). `Einheit.ref_zinssatz` ist nur
         # der Wert vom Tag der Erfassung der Einheit.
         basis_referenzzinssatz=_aktuelle_basis(einheit)[0],
-        basis_lik_punkte=_aktuelle_basis(einheit)[1],
+        # Basisreihe nach der Vorgabe-Kette (Liegenschaft → Eigentümer → Organisation); die Punkte in DERSELBEN
+        # Reihe (`_stand_lik`): für eine andere als die Standardreihe ihr letzter Wert, sonst 0 = «Basis fehlt».
+        lik_basis=_lik_basis_neu,
+        basis_lik_punkte=_stand_lik(einheit, _lik_basis_neu),
         besondere_vereinbarungen=(f"Haustiere: {b.haustiere_details}" if b.haustiere and b.haustiere_details else ''),
     )
 

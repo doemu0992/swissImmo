@@ -9,6 +9,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator, RegexVa
 from django.db import models
 
 from core.funktionen import STUFEN_NAMEN, STUFEN_REIHENFOLGE
+from core.services.lik import LIK_BASIS, LIK_BASIS_CHOICES
 from core.tenancy import AlleOrganisationenManager, TenantManager
 from core.verschluesselt import VerschluesseltesCharField
 from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
@@ -111,7 +112,9 @@ class Organisation(models.Model):
     aktueller_lik_punkte = models.DecimalField("Aktueller LIK", max_digits=6, decimal_places=1, default=107.1)
     # LIK-Basis (Landesindex): aktuell «Dezember 2020 = 100». Muss auf dem
     # amtlichen Formular ausgewiesen werden; alt/neu-Werte müssen dieselbe Basis haben.
-    lik_basis = models.CharField("LIK-Basis", max_length=40, default="Dezember 2020")
+    # Seit den Basisreihen: die VORGABE für neue Verträge, wenn weder Liegenschaft noch Eigentümer eine eigene
+    # festlegen (`core.services.lik.basis_vorgabe`). Massgeblich für die Rechnung ist `Mietvertrag.lik_basis`.
+    lik_basis = models.CharField("LIK-Basis", max_length=40, default=LIK_BASIS, choices=LIK_BASIS_CHOICES)
     aktueller_lik_stand = models.DateField("LIK Stand-Monat", null=True, blank=True)
     letztes_update_marktdaten = models.DateTimeField("Letztes Update Marktdaten", null=True, blank=True)
     # Periodensperre / Revisionssicherheit: Buchungen mit Datum ≤ diesem Stichtag
@@ -389,6 +392,10 @@ class Eigentuemer(models.Model):
     # kuendigung). Leer (None) = Standard 14/30/60, Gebuehr 0/20/40,
     # Kuendigungsandrohung ab Stufe 3 — siehe core.services.mahnstufen.
     mahn_konfig = models.JSONField("Mahnstufen-Konfiguration", null=True, blank=True, default=None)
+    # Standard-Basisreihe des Landesindex für die Verträge dieses Mandats. Leer = Vorgabe der Organisation.
+    # Nur die Vorgabe für NEUE Verträge (`core.services.lik.basis_vorgabe`); bestehende behalten ihre Reihe.
+    lik_basis = models.CharField("LIK-Basisreihe (Standard)", max_length=40, blank=True, default='',
+                                 choices=LIK_BASIS_CHOICES)
     unterschrift_bild = models.ImageField("Digitale Unterschrift", upload_to="unterschriften/", blank=True, null=True)
 
 

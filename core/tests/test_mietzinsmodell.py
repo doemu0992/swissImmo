@@ -755,7 +755,10 @@ class EndpunktTests(MandantenBasis):
                       ist_befristet='1', netto='1000',
                       staffel_ab=['2027-01-01', '2028-01-01'], staffel_erhoehung=['50', '30.5']).json()
         self.assertEqual(set(j), {'befunde', 'sperre', 'abgeleitet', 'unlesbar'})
-        self.assertEqual(set(j['abgeleitet']), {'fest_bis', 'mindest_ende', 'stufen', 'basis_lik'})
+        # `lik_basis`, `basis_lik_fehlt`: seit den Basisreihen nennt die Antwort die Reihe des Vorschlags und, wenn
+        # sie den Monat nicht führt, was fehlt (`core/tests/test_lik_basen.py`).
+        self.assertEqual(set(j['abgeleitet']), {'fest_bis', 'mindest_ende', 'stufen', 'basis_lik',
+                                                'lik_basis', 'basis_lik_fehlt'})
         self.assertEqual(j['abgeleitet']['fest_bis'], '2028-12-31')
         self.assertEqual(j['abgeleitet']['mindest_ende'], '2028-12-31')
         self.assertEqual(j['abgeleitet']['stufen'], [

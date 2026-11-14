@@ -44,7 +44,7 @@ def fw_vertrag_neu(request):
                   _assistent_kontext(request, request.GET.get('edit')))
 
 
-def _mzm_config(aktueller_lik):
+def _mzm_config(aktueller_lik, lik_je_basis=None):
     """Konfiguration und Texte für static/js/fw-mietzinsmodell.js (Block «Mietzinsmodell»).
 
     Alle Texte laufen hier durch `gettext`; das Skript setzt nur ein (`{name}`) und kennt keine Regel.
@@ -55,6 +55,9 @@ def _mzm_config(aktueller_lik):
         'jahre': regeln.MINDESTJAHRE,
         'stufen_max': STUFEN_MAX,
         'aktueller_lik': str(aktueller_lik),
+        # Der aktuelle Stand JE BASISREIHE ('' = die Reihe hat keinen Wert): Die Beispielrechnung nimmt den Wert
+        # der gewählten Reihe und entfällt, wenn sie keinen hat — nie den einer anderen Reihe.
+        'lik_je_basis': lik_je_basis or {},
         'texte': {
             'stufe': gettext('Stufe {n}'),
             'stufe_weg': gettext('Stufe {n} entfernen'),
@@ -149,6 +152,7 @@ def _assistent_kontext(request, edit_id=None, immer_zeigen=None):
     elif aktive_lg and not edit_vertrag:
         lg_qs = lg_qs.filter(id=aktive_lg.id)
 
+    from core.services import lik
     liegenschaften = []
     for lg in lg_qs:
         objekte = []
@@ -194,6 +198,9 @@ def _assistent_kontext(request, edit_id=None, immer_zeigen=None):
             vermieter = {'name': verwaltung['firma'], 'strasse': verwaltung['strasse'],
                          'plz': verwaltung['plz'], 'ort': verwaltung['ort']}
         liegenschaften.append({
+            # Vorgabe der LIK-Basisreihe für einen neuen Vertrag an dieser Liegenschaft
+            # (Liegenschaft → Eigentümer → Organisation → Dezember 2020).
+            'lik_basis': lik.basis_vorgabe(lg, organisation=vw),
             'id': lg.id, 'strasse': lg.strasse, 'plz': lg.plz, 'ort': lg.ort,
             'egid': lg.egid or '', 'vermieter': vermieter, 'objekte': objekte,
         })
@@ -233,6 +240,7 @@ def _assistent_kontext(request, edit_id=None, immer_zeigen=None):
             'index_intervall_monate': ev.index_intervall_monate,
             'basis_referenzzinssatz': float(ev.basis_referenzzinssatz) if ev.basis_referenzzinssatz is not None else None,
             'basis_lik_punkte': float(ev.basis_lik_punkte) if ev.basis_lik_punkte is not None else None,
+            'lik_basis': lik.basis_von(ev),
             'kautions_betrag': float(ev.kautions_betrag) if ev.kautions_betrag else '',
             'kautions_konto': ev.kautions_konto or '',
             'nk_kostenarten': list(ev.nk_kostenarten or []),
@@ -242,10 +250,22 @@ def _assistent_kontext(request, edit_id=None, immer_zeigen=None):
         }
 
     from core.services.docuseal_service import docuseal_konfiguriert
-    lik_vorgaben = _lik_assistent_defaults(vw)
+    # Die vorgewählte Basisreihe: beim Entwurf die gespeicherte, sonst die Vorgabe der (vor)gewählten Liegenschaft.
+    # Wechselt die Liegenschaft im Assistenten, setzt das Skript die Vorgabe aus `liegenschaften[].lik_basis`.
+    if edit_vertrag:
+        lik_basis = lik.basis_von(edit_vertrag)
+    else:
+        lik_basis = lik.basis_vorgabe(vorwahl_e.liegenschaft if vorwahl_e else aktive_lg, organisation=vw)
+    lik_vorgaben = _lik_assistent_defaults(vw, lik_basis)
+    lik_je_basis = {}
+    for b in lik.LIK_BASEN:
+        punkte = (lik_vorgaben['aktueller_lik'] if b == lik_basis
+                  else lik.aktueller_lik_wert(live=False, basis=b)[1])
+        lik_je_basis[b] = '' if punkte is None else str(punkte)
     return {
-        **basis, 'nav': 'vertraege',
-        'mzm_config': _mzm_config(lik_vorgaben['aktueller_lik']),
+        **basis, 'nav': 'vertraege', 'lik_basen': lik.LIK_BASEN,
+        'mzm_config': _mzm_config(lik_vorgaben['aktueller_lik'] if lik_vorgaben['aktueller_lik'] is not None else '',
+                                  lik_je_basis),
         'liegenschaften': liegenschaften, 'mieter': mieter,
         'verwaltung': verwaltung,
         'aktueller_ref_zins': float(vw.aktueller_referenzzinssatz) if vw else 1.25,
@@ -296,12 +316,18 @@ def _assistent_mit_fehlern(request, P, feld_fehler, einheit):
     return render(request, 'fw/vertrag_neu.html', kontext, status=400)
 
 
-def _lik_assistent_defaults(vw):
+def _lik_assistent_defaults(vw, basis=None):
     """Auto-Vorbelegung LIK für den Vertragsassistenten: Basis + neuester
     Stand-Monat + Punkte aus der offiziellen BFS-Tabelle (mit Fallback auf die
-    Account-Einstellungen, falls die Tabelle mal leer ist)."""
-    from core.services.lik import aktueller_lik_wert
-    stand, pkt, basis = aktueller_lik_wert()
+    Account-Einstellungen, falls die Tabelle mal leer ist).
+
+    `basis`: die vorgewählte Basisreihe. Der Rückfall auf die Account-Einstellungen gilt NUR für die
+    Standardreihe (sie werden in Dezember 2020 geführt); eine andere Reihe ohne Wert bleibt ohne Wert (`None`)."""
+    from core.services.lik import LIK_BASIS, aktueller_lik_wert
+    stand, pkt, basis = aktueller_lik_wert(basis=basis)
+    if basis != LIK_BASIS:
+        return {'aktueller_lik': float(pkt) if pkt is not None else None, 'lik_basis': basis,
+                'aktueller_lik_stand_iso': stand.strftime('%Y-%m') if stand else ''}
     lik = float(pkt) if pkt is not None else (float(vw.aktueller_lik_punkte) if vw else 107.1)
     stand_iso = (stand.strftime('%Y-%m') if stand
                  else (vw.aktueller_lik_stand.strftime('%Y-%m') if vw and vw.aktueller_lik_stand else ''))
@@ -393,6 +419,7 @@ class ModellEingabe:
     stufen_behalten: bool = False        # keine Staffelzeilen geschickt: die gespeicherten bleiben
     basis_punkte: Decimal | None = None
     basis_stand: date | None = None
+    lik_basis: str = 'Dezember 2020'     # die Basisreihe, in der `basis_punkte` steht (geprüft gegen `lik.LIK_BASEN`)
     weitergabe: Decimal = Decimal('100')
     intervall: int = 12
     sperren: list = field(default_factory=list)
@@ -414,14 +441,15 @@ def _befund_schluessel(b):
     return f'{feld}[{b.zeile}]' if b.zeile is not None else feld
 
 
-def _signatur(modell, beginn, ende, ist_befristet, verzicht, stufen, punkte, stand, weitergabe, intervall):
+def _signatur(modell, beginn, ende, ist_befristet, verzicht, stufen, punkte, stand, weitergabe, intervall,
+              lik_basis=None):
     """Was am Mietzinsmodell hängt — zum Vergleich mit dem gespeicherten Entwurf."""
     sig = [modell, beginn, ende if ist_befristet else None, bool(ist_befristet), verzicht]
     if modell == 'staffel':
         sig.append(tuple(sorted(((s.ab, s.erhoehung_chf) for s in stufen),
                                 key=lambda z: (z[0] or date.min, z[1] if z[1] is not None else Decimal('-1e9')))))
     if modell == 'index':
-        sig += [punkte, (stand.year, stand.month) if stand else None, weitergabe, intervall]
+        sig += [punkte, (stand.year, stand.month) if stand else None, weitergabe, intervall, lik_basis]
     return tuple(sig)
 
 
@@ -430,7 +458,7 @@ def _stufen_aus_vertrag(vertrag):
             for z in _stufen_fuer_assistent(vertrag)]
 
 
-def _modell_aus_eingabe(P, *, beginn, netto, vorhandener=None):
+def _modell_aus_eingabe(P, *, beginn, netto, vorhandener=None, einheit=None):
     """Liest das Mietzinsmodell aus den Eingaben und hält es gegen `core/services/mietzinsmodell.pruefe`.
 
     EINE Regelquelle: Der Live-Endpunkt des Assistenten und diese Stelle rufen dieselbe Prüfung. Der
@@ -483,6 +511,15 @@ def _modell_aus_eingabe(P, *, beginn, netto, vorhandener=None):
     iv = _zahl(P.get('index_intervall_monate'))
     punkte = _zahl(P.get('basis_lik_punkte'))
     stand = _monat(P.get('basis_lik_stand'))
+    # Die Basisreihe des Vertrags: die abgeschickte (nur aus der Liste), sonst die des Entwurfs, sonst die Vorgabe
+    # der Liegenschaft (Liegenschaft → Eigentümer → Organisation → Dezember 2020).
+    from core.services import lik as _lik
+    roh_basis = (P.get('lik_basis') or '').strip()
+    if roh_basis and not _lik.basis_gueltig(roh_basis):
+        e.fehler['lik_basis'] = gettext('Unbekannte LIK-Basisreihe.')
+    e.lik_basis = (_lik.basis_gueltig(roh_basis)
+                   or (_lik.basis_von(vorhandener) if vorhandener is not None else None)
+                   or _lik.basis_vorgabe(einheit))
     if modell == 'index':
         if w is not None and _nachkommastellen(w) > 1:
             e.fehler['index_weitergabe_prozent'] = gettext('Die Weitergabe hat höchstens eine Nachkommastelle.')
@@ -496,7 +533,7 @@ def _modell_aus_eingabe(P, *, beginn, netto, vorhandener=None):
     befunde = regeln.pruefe(
         modell=modell, beginn=beginn, ende=e.ende, ist_befristet=roh_befristet, verzicht_bis=e.verzicht_bis,
         netto=netto, stufen=e.stufen, basis_lik_punkte=punkte, basis_lik_stand=stand,
-        weitergabe_prozent=w, intervall_monate=iv)
+        weitergabe_prozent=w, intervall_monate=iv, lik_basis=e.lik_basis)
     e.sperren = regeln.sperren(befunde)
     if modell in regeln.MINDESTJAHRE and beginn is None:
         e.fehler['beginn'] = gettext('Der Mietbeginn fehlt: Ohne ihn lässt sich die feste Dauer nicht beurteilen.')
@@ -510,9 +547,10 @@ def _modell_aus_eingabe(P, *, beginn, netto, vorhandener=None):
         alt = _signatur(vorhandener.mietzins_modell, vorhandener.beginn, vorhandener.ende, vorhandener.ist_befristet,
                         vorhandener.vermieter_kuendigungsverzicht_bis, _stufen_aus_vertrag(vorhandener),
                         vorhandener.basis_lik_punkte, vorhandener.basis_lik_stand,
-                        vorhandener.index_weitergabe_prozent, vorhandener.index_intervall_monate)
+                        vorhandener.index_weitergabe_prozent, vorhandener.index_intervall_monate,
+                        _lik.basis_von(vorhandener))
         neu = _signatur(modell, beginn, e.ende, e.ist_befristet, e.verzicht_bis, e.stufen, punkte, stand,
-                        e.weitergabe, e.intervall)
+                        e.weitergabe, e.intervall, e.lik_basis)
         e.altlast = alt == neu
     if not e.altlast:
         for b in e.sperren:
@@ -680,9 +718,18 @@ def fw_vertrag_neu_speichern(request):
     # MIETZINSMODELL (Art. 269b/269c OR): hart, nicht als Warnung. Dieselbe Regelquelle wie die
     # Live-Prüfung im Assistenten; der Browser lässt sich umgehen, diese Stelle nicht.
     modell = _modell_aus_eingabe(P, beginn=_datum_val('beginn'), netto=_dec_val('netto_mietzins'),
-                                 vorhandener=editing)
+                                 vorhandener=editing, einheit=einheit)
     for feld, meldung in modell.fehler.items():
         _fehler(feld, meldung)
+    # LIK-BASIS OHNE WERT: Bei festem Mietzins und Staffel setzt der Server die Basis-Punkte selbst (Stand vor
+    # dem Mietbeginn). Hat die gewählte Reihe dafür keinen Wert, wird NICHT der Wert der Standardreihe
+    # eingesetzt: Die Meldung nennt Reihe und Monat, und nichts wird gespeichert.
+    from core.services import lik as _lik
+    if einheit and modell.modell != 'index' and modell.lik_basis != _lik.LIK_BASIS and not modell.basis_punkte:
+        _b_beginn = _datum_val('beginn') or timezone.localdate()
+        if regeln.basis_lik_vorschlag(_b_beginn, basis=modell.lik_basis)[1] is None:
+            _vm = _lik._davor(_b_beginn.year, _b_beginn.month)
+            _fehler('lik_basis', _lik.fehlt_text(modell.lik_basis, *_vm))
     # MIET-04: Anfangsmietzins-Formular (Art. 270 Abs. 2 OR) — Nachweis, wo es kein Original gibt.
     _af_art, _af_datum, _af_notiz = _anfangsformular_aus_eingabe(
         P, einheit, editing, P.get('aktiv_setzen') == 'on', _fehler)
@@ -783,13 +830,18 @@ def fw_vertrag_neu_speichern(request):
     # Basis des Landesindexes: bei der Indexmiete die abgeschickte (geprüft), sonst der Stand des Monats
     # VOR dem Mietbeginn; erst wenn die Tabelle dafür nichts hat, der Stand der Verwaltung von heute.
     # Der aktuelle Stand wäre als Basis eines Vertrags, der früher begann, falsch.
-    _vor_stand, _vor_punkte = regeln.basis_lik_vorschlag(beginn)
+    # ALLES in der Basisreihe des Vertrags (`modell.lik_basis`): Der Rückfall auf den Stand der Verwaltung gilt nur
+    # für die Standardreihe, in der dieser Stand geführt wird (für andere Reihen hat die Prüfung oben abgelehnt).
+    _reihe = modell.lik_basis
+    _standard = _reihe == _lik.LIK_BASIS
+    _vor_stand, _vor_punkte = regeln.basis_lik_vorschlag(beginn, basis=_reihe)
     if _mietzins_modell == 'index':
         basis_lik_stand = modell.basis_stand
     else:
         from core.services.lik import aktueller_lik_wert
-        _auto_stand, _auto_pkt, _ = aktueller_lik_wert()
-        basis_lik_stand = modell.basis_stand or _vor_stand or _auto_stand or (_vw.aktueller_lik_stand if _vw else None)
+        _auto_stand, _auto_pkt, _ = aktueller_lik_wert(basis=_reihe)
+        basis_lik_stand = (modell.basis_stand or _vor_stand or _auto_stand
+                           or (_vw.aktueller_lik_stand if (_vw and _standard) else None))
     _basis_punkte = modell.basis_punkte or (None if _mietzins_modell == 'index' else _vor_punkte)
 
     # Einstellplätze (Parkplatz/Garage, Art. 266e) haben keine separaten
@@ -833,8 +885,9 @@ def fw_vertrag_neu_speichern(request):
         zweckbestimmung=P.get('zweckbestimmung', '').strip(),
         weitere_vorbehalte=P.get('weitere_vorbehalte', '').strip(),
         basis_referenzzinssatz=dec('basis_referenzzinssatz') or _stand_zins(einheit),
-        basis_lik_punkte=_basis_punkte or _stand_lik(einheit),
+        basis_lik_punkte=_basis_punkte or _stand_lik(einheit, _reihe),
         basis_lik_stand=basis_lik_stand,
+        lik_basis=_reihe,
         kostensteigerung_datum=datum('kostensteigerung_datum'),
         kautions_betrag=dec('kautions_betrag') or None,
         kautions_konto=P.get('kautions_konto', '').strip(),
@@ -997,9 +1050,15 @@ def _stand_zins(einheit):
     return _aktuelle_basis(einheit)[0]
 
 
-def _stand_lik(einheit):
+def _stand_lik(einheit, basis=None):
+    """Der LIK-Stand von heute in der Reihe `basis`. Der Stand der Verwaltung/Einheit wird in der Standardreihe
+    geführt und gilt nur für sie; für jede andere Reihe der letzte Wert DIESER Reihe, sonst 0 («Basis fehlt»,
+    so lesen es Mietzins-Seite und Pendenzlauf) — nie der Wert einer anderen Reihe."""
+    from core.services import lik
     from .mietprozess import _aktuelle_basis
-    return _aktuelle_basis(einheit)[1]
+    if (basis or lik.LIK_BASIS) == lik.LIK_BASIS:
+        return _aktuelle_basis(einheit)[1]
+    return lik.aktueller_lik_wert(live=False, basis=basis)[1] or Decimal('0')
 
 
 def _vorschau_sperre_html(meldungen):
@@ -1069,11 +1128,12 @@ def fw_vertrag_vorschau(request):
     # Mietzinsmodell (Art. 269b/269c OR): Die Vorschau zeigt den Vertrag, wie er gedruckt wird. Ein Vertrag,
     # den der Server nicht speichern würde, wird nicht als fertiger Vertrag gezeigt: statt seiner stehen
     # die Befunde da. Dieselbe Prüfung wie beim Speichern.
-    modell = _modell_aus_eingabe(P, beginn=datum('beginn'), netto=dec('netto_mietzins'))
+    modell = _modell_aus_eingabe(P, beginn=datum('beginn'), netto=dec('netto_mietzins'), einheit=einheit)
     if modell.fehler:
         return HttpResponse(_vorschau_sperre_html(modell.meldungen), content_type='text/html')
     _modell = modell.modell
-    _vor_stand, _vor_punkte = regeln.basis_lik_vorschlag(datum('beginn') or timezone.localdate())
+    _vor_stand, _vor_punkte = regeln.basis_lik_vorschlag(datum('beginn') or timezone.localdate(),
+                                                         basis=modell.lik_basis)
     # Transienter (nicht gespeicherter) Vertrag — nur zum Rendern.
     vertrag = Mietvertrag(
         mieter=mieter, einheit=einheit,
@@ -1097,8 +1157,8 @@ def fw_vertrag_vorschau(request):
         zweckbestimmung=P.get('zweckbestimmung', '').strip(),
         weitere_vorbehalte=P.get('weitere_vorbehalte', '').strip(),
         basis_referenzzinssatz=dec('basis_referenzzinssatz') or _stand_zins(einheit),
-        basis_lik_punkte=modell.basis_punkte or _vor_punkte or _stand_lik(einheit),
-        basis_lik_stand=modell.basis_stand or _vor_stand,
+        basis_lik_punkte=modell.basis_punkte or _vor_punkte or _stand_lik(einheit, modell.lik_basis),
+        basis_lik_stand=modell.basis_stand or _vor_stand, lik_basis=modell.lik_basis,
         index_weitergabe_prozent=modell.weitergabe, index_intervall_monate=modell.intervall,
         kautions_betrag=dec('kautions_betrag') or None,
         kautions_konto=P.get('kautions_konto', '').strip())

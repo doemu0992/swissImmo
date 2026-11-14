@@ -63,7 +63,8 @@ class LikAbrufTests(TestCase):
 
     def test_ein_gelesener_wert_ist_ein_erfolg(self):
         heute = timezone.localdate()
-        html = (f'<table>Dezember 2020 = 100<tr><td>>{heute.year}<</td>' + ''.join(f'<td>1{9 if False else 0}8.{m % 10}</td>' for m in range(heute.month))
+        # In der Form der HEV-Seite: die Marke VOR der Tabelle, das Jahr als Zelle (der Leser liest zellenweise).
+        html = (f'Dezember 2020 = 100<table><tr><td>{heute.year}</td>' + ''.join(f'<td>108.{m % 10}</td>' for m in range(heute.month))
                 + '</tr></table>')
         with mock.patch('requests.get', return_value=self._antwort(html)):
             got = lik._fetch_live_lik()

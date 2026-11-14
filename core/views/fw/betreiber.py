@@ -37,6 +37,10 @@ def fw_betreiber_lik(request):
 
     Der Wert kommt vom Betreiber aus der BFS-Publikation; der Live-Wert der HEV-Seite wird nur als Vorschlag
     gezeigt, nie selbständig übernommen. Ein bestehender Monat wird überschrieben (Korrektur), die Quelle ist Pflicht.
+
+    JE BASISREIHE: `?basis=Dezember 2010` wählt die Reihe (ohne Angabe die Standardreihe, eine unbekannte Angabe
+    ebenso). ALLE Aktionen (abrufen, einlesen, löschen, Nachtrag) wirken auf die gewählte Reihe und nur auf sie;
+    die Formulare schicken sie als verstecktes Feld `basis` mit, und nach jeder Aktion bleibt die Seite in der Reihe.
     """
     from datetime import timedelta
     from decimal import Decimal, InvalidOperation
@@ -51,18 +55,35 @@ def fw_betreiber_lik(request):
     from core.utils.betrag import betrag_parsen
     from core.services import lik
 
+    from urllib.parse import urlencode
+
+    from django.urls import reverse
+
     heute = datum_heute()
     fehler = None
+    # Die gewählte Reihe: beim Absenden aus dem versteckten Feld, sonst aus der Adresse. Nur eine geführte Reihe.
+    basis = lik.basis_gueltig(request.POST.get('basis') if request.method == 'POST' else request.GET.get('basis')) \
+        or lik.LIK_BASIS
+    standard = basis == lik.LIK_BASIS
+    basis_jahr = lik.basis_monat(basis)[0]
+    # Im Protokoll steht die Reihe dabei, sobald es nicht die Standardreihe ist (deren Einträge bleiben wie bisher).
+    reihe_zusatz = '' if standard else f' · Reihe {basis}'
+
+    def zurueck():
+        ziel = reverse('fw_betreiber_lik')
+        return redirect(ziel if standard else f'{ziel}?{urlencode({"basis": basis})}')
+
     vor = heute.replace(day=1) - timedelta(days=1)                # der Vormonat: der jüngste, der veröffentlicht sein kann
     werte = {'jahr': vor.year, 'monat': vor.month, 'punkte': '', 'quelle': ''}
     if request.method == 'POST' and request.POST.get('aktion') == 'abrufen':
         # Derselbe Nachtrag wie im täglichen Lauf, sofort: mit Abgleich und Schranken (`lik.automatisch_nachfuehren`).
         from core.models import AbrufStatus
-        neue = lik.automatisch_nachfuehren(heute)
+        neue = lik.automatisch_nachfuehren(heute, basis=basis)
         if neue:
             text = ', '.join(f'{m:02d}/{j}: {w}' for j, m, w in neue)
             SicherheitsEreignis.objects.create(aktion='LIK-Wert automatisch nachgetragen', objekt='HEV',
-                                               ip_adresse=client_ip(request) or None, details=f'{text} (Knopf)')
+                                               ip_adresse=client_ip(request) or None,
+                                               details=f'{text} (Knopf){reihe_zusatz}')
             messages.success(request, gettext('Vom HEV abgerufen und gespeichert: %(werte)s.') % {'werte': text})
         else:
             status = AbrufStatus.objects.filter(name='lik').first()
@@ -71,22 +92,48 @@ def fw_betreiber_lik(request):
                                % {'grund': status.letzter_fehler})
             else:
                 messages.info(request, gettext('Der Abruf lief, es gibt beim HEV keinen neuen Monatswert.'))
-        return redirect('fw_betreiber_lik')
+        return zurueck()
+    if request.method == 'POST' and request.POST.get('aktion') == 'einlesen':
+        # Die ganze HEV-Tabelle dieser Reihe (für eine Reihe, die noch keinen Abgleich hat): lückenlos ab dem
+        # Basismonat, ohne den laufenden Monat, ohne etwas zu überschreiben (`lik.reihe_einlesen`).
+        ergebnis = lik.reihe_einlesen(basis, heute)
+        if ergebnis['fehler']:
+            messages.error(request, gettext('Die Reihe wurde nicht eingelesen. Grund: %(grund)s')
+                           % {'grund': ergebnis['fehler']})
+            return zurueck()
+        neu = ergebnis['gespeichert']
+        if neu:
+            SicherheitsEreignis.objects.create(
+                aktion='LIK-Reihe eingelesen', objekt=basis, ip_adresse=client_ip(request) or None,
+                details=(f'{len(neu)} Monate von {neu[0][1]:02d}/{neu[0][0]} bis {neu[-1][1]:02d}/{neu[-1][0]}, '
+                         f'Quelle HEV'))
+            messages.success(request, gettext('Reihe «%(basis)s = 100» eingelesen: %(n)s Monate von %(von)s bis %(bis)s.') % {
+                'basis': basis, 'n': len(neu), 'von': f'{neu[0][1]:02d}/{neu[0][0]}',
+                'bis': f'{neu[-1][1]:02d}/{neu[-1][0]}'})
+        else:
+            messages.info(request, gettext('Die Reihe ist vollständig: Beim HEV steht kein Monat, der hier fehlt.'))
+        if ergebnis['abweichungen']:
+            text = ', '.join(f'{m:02d}/{j}: hier {hier}, HEV {quelle}' for j, m, hier, quelle in ergebnis['abweichungen'][:12])
+            messages.warning(request, gettext(
+                'Nicht überschrieben, weil hier schon ein anderer Wert steht (%(n)s): %(werte)s. Bitte prüfen und '
+                'den falschen löschen.') % {'n': len(ergebnis['abweichungen']), 'werte': text})
+        return zurueck()
     if request.method == 'POST' and request.POST.get('aktion') == 'loeschen':
         # Nur nachgetragene Werte lassen sich löschen; die Reihe im Code bleibt (sie ändert ein Deployment).
+        # Gesucht wird in der GEWÄHLTEN Reihe: Die Nummer eines Wertes einer anderen Reihe findet nichts.
         try:
-            eintrag = LikWert.objects.filter(pk=int(request.POST.get('pk') or 0), basis=lik.LIK_BASIS).first()
+            eintrag = LikWert.objects.filter(pk=int(request.POST.get('pk') or 0), basis=basis).first()
         except (TypeError, ValueError):
             eintrag = None
         if eintrag is not None:
             SicherheitsEreignis.objects.create(
                 aktion='LIK-Wert gelöscht', objekt=f'{eintrag.monat:02d}/{eintrag.jahr}',
                 ip_adresse=client_ip(request) or None,
-                details=f'{eintrag.punkte} Punkte, Quelle: {eintrag.quelle}')
+                details=f'{eintrag.punkte} Punkte, Quelle: {eintrag.quelle}{reihe_zusatz}')
             messages.success(request, gettext('LIK %(monat)s/%(jahr)s gelöscht.')
                              % {'monat': f'{eintrag.monat:02d}', 'jahr': eintrag.jahr})
             eintrag.delete()
-        return redirect('fw_betreiber_lik')
+        return zurueck()
     if request.method == 'POST':
         werte.update({k: (request.POST.get(k) or '').strip() for k in ('jahr', 'monat', 'punkte', 'quelle')})
         try:
@@ -95,33 +142,53 @@ def fw_betreiber_lik(request):
         except (ValueError, InvalidOperation):
             jahr = monat = punkte = None
         quelle = werte['quelle'][:200]
+        start = lik.basis_monat(basis)
+
+        def vorwert(j, m):
+            """Der Wert des Vormonats in der gewählten Reihe (None = fehlt)."""
+            return lik.lik_punkte_fuer(*((j, m - 1) if m > 1 else (j - 1, 12)), basis=basis)
         if jahr is None or not (1 <= monat <= 12):
             fehler = gettext('Jahr, Monat und Punkte müssen Zahlen sein (Monat 1 bis 12).')
-        elif (jahr, monat) >= (heute.year, heute.month) or jahr < 2020:
-            fehler = gettext('Der Monat liegt vor 2020 oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines '
-                             'Monats erst Anfang des Folgemonats bekannt.')
-        elif lik.lik_punkte_fuer(*((jahr, monat - 1) if monat > 1 else (jahr - 1, 12))) is None:
+        elif (jahr, monat) >= (heute.year, heute.month) or (jahr < 2020 if standard else (jahr, monat) < start):
+            if standard:
+                fehler = gettext('Der Monat liegt vor 2020 oder ist noch nicht veröffentlicht: Das BFS gibt den Wert '
+                                 'eines Monats erst Anfang des Folgemonats bekannt.')
+            else:
+                fehler = gettext('Der Monat liegt vor dem Basismonat der Reihe (Dezember %(jahr)s) oder ist noch nicht '
+                                 'veröffentlicht: Das BFS gibt den Wert eines Monats erst Anfang des Folgemonats '
+                                 'bekannt.') % {'jahr': basis_jahr}
+        elif (jahr, monat) != start and vorwert(jahr, monat) is None:
+            # Der Basismonat selbst hat keinen Vormonat in seiner Reihe: Mit ihm beginnt eine Reihe von Hand.
             fehler = gettext('Der Vormonat fehlt noch. Bitte die Monate der Reihe nach eintragen, sonst entsteht eine '
                              'Lücke.')
-        elif not (Decimal('100') <= punkte <= Decimal('140')):
+        elif (jahr, monat) == start and punkte != Decimal('100.0'):
+            fehler = gettext('Im Basismonat steht die Reihe bei 100.0 Punkten.')
+        elif standard and not (Decimal('100') <= punkte <= Decimal('140')):
             fehler = gettext('Der Wert liegt ausserhalb von 100 bis 140 Punkten (Basis Dezember 2020 = 100). Tippfehler?')
+        elif not standard and (jahr, monat) != start and abs(punkte - vorwert(jahr, monat)) > Decimal(str(lik.AUTO_MAX_SPRUNG)):
+            # Für die anderen Reihen gibt es keine festen Grenzen (die Reihe 2025 liegt um 100, die Reihe 2005 über
+            # 110): geprüft wird relativ zum Vormonat DERSELBEN Reihe, wie beim automatischen Nachtrag. So fällt
+            # auch ein Wert auf, der aus einer anderen Reihe abgeschrieben wurde.
+            fehler = gettext('Der Wert weicht um mehr als %(sprung)s Punkte vom Vormonat dieser Reihe ab. Tippfehler, '
+                             'oder ein Wert aus einer anderen Basisreihe?') % {'sprung': lik.AUTO_MAX_SPRUNG}
         elif not quelle:
             fehler = gettext('Die Quelle ist Pflicht, zum Beispiel «BFS, Medienmitteilung vom 05.11.2026».')
         else:
-            alt = lik.lik_punkte_fuer(jahr, monat)
+            alt = lik.lik_punkte_fuer(jahr, monat, basis=basis)
             LikWert.objects.update_or_create(
-                jahr=jahr, monat=monat, basis=lik.LIK_BASIS,
+                jahr=jahr, monat=monat, basis=basis,
                 defaults={'punkte': punkte, 'quelle': quelle, 'erfasst_von': request.user})
             SicherheitsEreignis.objects.create(
                 aktion='LIK-Wert nachgetragen', objekt=f'{monat:02d}/{jahr}', ip_adresse=client_ip(request) or None,
-                details=f'{punkte} Punkte (vorher {alt if alt is not None else "kein Wert"}), Quelle: {quelle}')
+                details=(f'{punkte} Punkte (vorher {alt if alt is not None else "kein Wert"}), Quelle: {quelle}'
+                         f'{reihe_zusatz}'))
             messages.success(request, gettext('LIK %(monat)s/%(jahr)s mit %(punkte)s Punkten gespeichert.')
                              % {'monat': f'{monat:02d}', 'jahr': jahr, 'punkte': punkte})
-            return redirect('fw_betreiber_lik')
+            return zurueck()
 
-    reihen = lik.lik_reihen(roh=True)                         # auch Werte hinter einer Lücke zeigen (löschbar)
-    nachgetragen = {(w.jahr, w.monat): w for w in LikWert.objects.filter(basis=lik.LIK_BASIS)}
-    letzter_gueltig = lik.letzter_tabellenmonat()
+    reihen = lik.lik_reihen(roh=True, basis=basis)            # auch Werte hinter einer Lücke zeigen (löschbar)
+    nachgetragen = {(w.jahr, w.monat): w for w in LikWert.objects.filter(basis=basis)}
+    letzter_gueltig = lik.letzter_tabellenmonat(basis=basis)
     zeilen = []
     for jahr in sorted(reihen, reverse=True):
         for monat in range(12, 0, -1):
@@ -134,18 +201,20 @@ def fw_betreiber_lik(request):
                            'quelle': eigener.quelle if eigener else gettext('im Code (BFS-Tabelle)')})
         if len(zeilen) >= 18:
             break
-    letzter = lik.letzter_tabellenmonat()
+    letzter = lik.letzter_tabellenmonat(basis=basis)
     live = None
     if getattr(settings, 'LIK_LIVE_ABRUF', False):
         try:
-            stand, punkte_live, _basis = lik.aktueller_lik_wert(live=True)
+            stand, punkte_live, _basis = lik.aktueller_lik_wert(live=True, basis=basis)
             if stand and punkte_live and (not letzter or (stand.year, stand.month) > letzter):
                 live = {'monat': f'{stand.month:02d}/{stand.year}', 'punkte': punkte_live}
         except Exception:                                    # noqa: BLE001 — ein Vorschlag darf die Seite nie stören
             live = None
     return render(request, 'fw/betreiber_lik.html', {
         'aktiv': 'lik', 'zeilen': zeilen[:18], 'w': werte, 'fehler': fehler, 'live': live,
-        'letzter': f'{letzter[1]:02d}/{letzter[0]}' if letzter else None, 'basis': lik.LIK_BASIS,
+        'letzter': f'{letzter[1]:02d}/{letzter[0]}' if letzter else None, 'basis': basis,
+        'basen': [{'name': b, 'gewaehlt': b == basis, 'url': f'?{urlencode({"basis": b})}'} for b in lik.LIK_BASEN],
+        'standard': standard, 'basis_jahr': basis_jahr, 'reihe_leer': not reihen,
     })
 
 

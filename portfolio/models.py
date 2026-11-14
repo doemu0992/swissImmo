@@ -7,11 +7,17 @@ from django.utils import timezone
 from core.zeit import datum_heute
 from datetime import date
 from decimal import Decimal
+from core.services.lik import LIK_BASIS_CHOICES
 from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_path
 from core.organisation_kette import OrganisationAusKette, organisation_aus_kontext
 
 class Liegenschaft(models.Model):
     eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.PROTECT, related_name='liegenschaften', null=True, blank=True)
+    # Standard-Basisreihe des Landesindex für die Verträge DIESER Liegenschaft. Leer = Standard des Mandats
+    # (Eigentümer), dann der Organisation (`core.services.lik.basis_vorgabe`). Nur die Vorgabe für NEUE Verträge;
+    # bestehende behalten ihre Reihe (`Mietvertrag.lik_basis`).
+    lik_basis = models.CharField("LIK-Basisreihe (Standard)", max_length=40, blank=True, default='',
+                                 choices=LIK_BASIS_CHOICES)
     #: WER DIESE LIEGENSCHAFT BETREUT (E2.70).
     #
     # In einer Verwaltung wird liegenschaftsweise aufgeteilt, nicht Fall für

@@ -40730,3 +40730,78 @@ msgstr "Protection supplémentaire pour votre compte, facultative : après le mo
 
 msgid "RLS-Probe: %(n)s Befund(e) in den letzten 14 Tagen (manage.py sicherheitslog). Bei 0 über zwei Wochen kann scharf geschaltet werden (docs/RLS.md)."
 msgstr "Essai RLS : %(n)s constat(s) au cours des 14 derniers jours (manage.py sicherheitslog). À 0 pendant deux semaines, le mode strict peut être activé (docs/RLS.md)."
+
+msgid "In der LIK-Reihe «%(basis)s = 100» fehlt der Wert für %(monat)s. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder den Monat nachtragen."
+msgstr "Dans la série IPC «%(basis)s = 100», la valeur de %(monat)s manque. Aucune valeur d'une autre série n'est reprise: importer la série sous «Valeurs IPC» ou saisir le mois."
+
+msgid "Die LIK-Reihe «%(basis)s = 100» hat noch keine Werte. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder die Monate nachtragen."
+msgstr "La série IPC «%(basis)s = 100» n'a pas encore de valeurs. Aucune valeur d'une autre série n'est reprise: importer la série sous «Valeurs IPC» ou saisir les mois."
+
+msgid "LIK-Basisreihe"
+msgstr "Série de base IPC"
+
+msgid "Die Reihe, in der die Punkte dieses Vertrags stehen. Beim Wechsel Punkte und Stand-Monat in der neuen Reihe eintragen; umgerechnet wird nicht."
+msgstr "La série dans laquelle sont exprimés les points de ce contrat. En cas de changement, saisir les points et le mois de référence dans la nouvelle série; aucune conversion n'est effectuée."
+
+msgid "Vorgabe für neue Verträge, wenn weder Liegenschaft noch Mandat eine eigene Reihe festlegen. «Landesindex LIK (Punkte)» und Stand-Monat daneben stehen in der Reihe Dezember 2020."
+msgstr "Valeur par défaut pour les nouveaux contrats lorsque ni l'immeuble ni le mandat ne fixent leur propre série. «Indice IPC (points)» et le mois de référence ci-contre sont exprimés dans la série décembre 2020."
+
+msgid "Ganze Reihe beim HEV einlesen"
+msgstr "Importer toute la série depuis le HEV"
+
+msgid "Basisreihe"
+msgstr "Série de base"
+
+msgid "Die Reihe «%(basis)s = 100» hat noch keine Werte. Verträge dieser Reihe rechnen erst, wenn sie Werte hat: «Ganze Reihe beim HEV einlesen» holt die Tabelle dieser Basis, lückenlos ab dem Basismonat. Werte anderer Reihen werden nie eingesetzt."
+msgstr "La série «%(basis)s = 100» n'a pas encore de valeurs. Les contrats de cette série ne sont calculés que lorsqu'elle en a: «Importer toute la série depuis le HEV» reprend le tableau de cette base, sans lacune à partir du mois de base. Les valeurs d'autres séries ne sont jamais reprises."
+
+msgid "In dieser Reihe steht noch kein Wert."
+msgstr "Cette série ne contient encore aucune valeur."
+
+msgid "LIK-Basisreihe (Standard für neue Verträge)"
+msgstr "Série de base IPC (par défaut pour les nouveaux contrats)"
+
+msgid "Standard des Mandats"
+msgstr "Valeur par défaut du mandat"
+
+msgid "Vorgabe für neue Verträge; bestehende Verträge behalten ihre Reihe. Leer: Es gilt der Standard der nächsthöheren Stufe."
+msgstr "Valeur par défaut pour les nouveaux contrats; les contrats existants conservent leur série. Vide: la valeur par défaut du niveau supérieur s'applique."
+
+msgid "Standard der Verwaltung"
+msgstr "Valeur par défaut de la gérance"
+
+msgid "Die Reihe des Landesindex, in der dieser Vertrag rechnet. Vorgabe: Standard der Liegenschaft, sonst des Mandats, sonst der Verwaltung."
+msgstr "La série de l'indice national dans laquelle ce contrat est calculé. Par défaut: celle de l'immeuble, sinon du mandat, sinon de la gérance."
+
+msgid "Die Reihe wurde nicht eingelesen. Grund: %(grund)s"
+msgstr "La série n'a pas été importée. Motif: %(grund)s"
+
+msgid "Reihe «%(basis)s = 100» eingelesen: %(n)s Monate von %(von)s bis %(bis)s."
+msgstr "Série «%(basis)s = 100» importée: %(n)s mois de %(von)s à %(bis)s."
+
+msgid "Die Reihe ist vollständig: Beim HEV steht kein Monat, der hier fehlt."
+msgstr "La série est complète: le HEV ne publie aucun mois qui manque ici."
+
+msgid "Nicht überschrieben, weil hier schon ein anderer Wert steht (%(n)s): %(werte)s. Bitte prüfen und den falschen löschen."
+msgstr "Non écrasé, car une autre valeur figure déjà ici (%(n)s): %(werte)s. Veuillez vérifier et supprimer la valeur erronée."
+
+msgid "Der Monat liegt vor dem Basismonat der Reihe (Dezember %(jahr)s) oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines Monats erst Anfang des Folgemonats bekannt."
+msgstr "Le mois est antérieur au mois de base de la série (décembre %(jahr)s) ou n'est pas encore publié: l'OFS ne communique la valeur d'un mois qu'au début du mois suivant."
+
+msgid "Im Basismonat steht die Reihe bei 100.0 Punkten."
+msgstr "Au mois de base, la série est à 100.0 points."
+
+msgid "Der Wert weicht um mehr als %(sprung)s Punkte vom Vormonat dieser Reihe ab. Tippfehler, oder ein Wert aus einer anderen Basisreihe?"
+msgstr "La valeur s'écarte de plus de %(sprung)s points du mois précédent de cette série. Faute de frappe, ou valeur d'une autre série de base?"
+
+msgid "Unbekannte LIK-Basisreihe."
+msgstr "Série de base IPC inconnue."
+
+msgid "Die LIK-Basisreihe dieses Vertrags lässt sich nicht mehr ändern: Es bestehen Mietzinsanpassungen in der Reihe «%(basis)s = 100»."
+msgstr "La série de base IPC de ce contrat ne peut plus être modifiée: il existe des adaptations de loyer dans la série «%(basis)s = 100»."
+
+msgid "Beim Wechsel der LIK-Basisreihe sind die Basis-Punkte und ihr Stand-Monat in der neuen Reihe «%(basis)s = 100» anzugeben."
+msgstr "Lors du changement de la série de base IPC, les points de base et leur mois de référence doivent être indiqués dans la nouvelle série «%(basis)s = 100»."
+
+msgid "Für %(stand)s weist die Reihe «%(basis)s = 100» %(tabelle)s Punkte aus, erfasst sind %(punkte)s. Beim Wechsel der Basisreihe müssen die Punkte in der neuen Reihe stehen; umgerechnet wird nicht."
+msgstr "Pour %(stand)s, la série «%(basis)s = 100» indique %(tabelle)s points; %(punkte)s sont saisis. Lors du changement de série de base, les points doivent être exprimés dans la nouvelle série; aucune conversion n'est effectuée."
