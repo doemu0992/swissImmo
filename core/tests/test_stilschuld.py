@@ -231,6 +231,16 @@ class KeinInlineStilTests(SimpleTestCase):
         for text in ("fwStil(el, {width: '3px'})", "getComputedStyle(el).width", "var stil = 1"):
             self.assertFalse(self.SKRIPT_STIL.search(text), text)
 
+    def test_jede_seite_schaltet_die_erkennung_von_ios_ab(self):
+        """iOS-Safari erkennt Telefonnummern, Daten und Adressen im Text und macht daraus Links mit eigenem
+        `style`-Attribut. Unter der scharfen Richtlinie ist das ein gemeldeter Inline-Stil auf jeder Seite mit solchem
+        Text (Verdacht vom 14.11.2026: neustes iOS, keine Erweiterung, Meldungen ohne Quelle). `format-detection`
+        schaltet die Erkennung ab; Telefonnummern verlinkt die Anwendung selbst (`href="tel:…"`)."""
+        ohne = [rel for rel, pfad in self._vorlagen()
+                if 'name="viewport"' in (text := pfad.read_text(encoding='utf-8'))
+                and 'name="format-detection" content="telephone=no, date=no, address=no, email=no"' not in text]
+        self.assertEqual(ohne, [])
+
     def test_diagramm_tags_setzen_keine_style_attribute(self):
         quelle = (WURZEL / 'core' / 'templatetags' / 'diagramm.py').read_text(encoding='utf-8')
         self.assertNotIn('style=', quelle)
