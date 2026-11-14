@@ -1,7 +1,7 @@
 """CSP-Meldungen für den Betreiber: die Verstösse aus dem Anwendungs-Log, zusammengefasst.
 
 Der Browser meldet jeden Verstoss gegen die Content-Security-Policy an `/csp-bericht/` (`core/csp.py`); die Anwendung
-schreibt ihn als Zeile «CSP-Verstoss: <Regel> | blockiert=… | Seite=… | Zeile=…» ins Log (`logs/swissimmo.log`, rotierend).
+schreibt ihn als Zeile «CSP-Verstoss: <Regel> | blockiert=… | Seite=… | Zeile=… | Quelle=… | Probe=…» ins Log (`logs/swissimmo.log`, rotierend).
 Diese Seite liest das Log (nur den hinteren Teil), fasst gleiche Meldungen zusammen und zeigt sie dem Betreiber, der dazu
 keinen Serverzugang braucht. Es wird nichts zusätzlich gespeichert.
 
@@ -19,7 +19,8 @@ MAX_BYTES = 3 * 1024 * 1024
 
 _ZEILE = re.compile(
     r'^(?P<zeit>\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)[,.]?\d* \S+ csp: CSP-Verstoss: '
-    r'(?P<regel>.*?) \| blockiert=(?P<blockiert>.*?) \| Seite=(?P<seite>.*?) \| Zeile=(?P<zeile>.*)$')
+    r'(?P<regel>.*?) \| blockiert=(?P<blockiert>.*?) \| Seite=(?P<seite>.*?) \| Zeile=(?P<zeile>.*?)'
+    r'(?: \| Quelle=(?P<quelle>.*?) \| Probe=(?P<probe>.*))?$')
 _LANG = re.compile(r'[A-Za-z0-9_\-]{24,}')
 
 
@@ -55,11 +56,16 @@ def lesen(zeilen):
         m = _ZEILE.match(z)
         if not m:
             continue
-        schluessel = (m['regel'].strip(), bereinigen(m['blockiert']), bereinigen(m['seite']))
+        quelle = bereinigen(m['quelle'])
+        if quelle and m['zeile'].strip():
+            quelle = f"{quelle}:{m['zeile'].strip()}"
+        probe = (m['probe'] or '').strip()[:80]
+        schluessel = (m['regel'].strip(), bereinigen(m['blockiert']), bereinigen(m['seite']), quelle, probe)
         g = gruppen.get(schluessel)
         if g is None:
             gruppen[schluessel] = g = {
                 'regel': schluessel[0], 'blockiert': schluessel[1], 'seite': schluessel[2],
+                'quelle': quelle, 'probe': probe,
                 'anzahl': 0, 'zuerst': m['zeit'], 'zuletzt': m['zeit'], 'zeile': m['zeile'].strip()}
         g['anzahl'] += 1
         g['zuletzt'] = m['zeit']

@@ -177,8 +177,7 @@
         }
     });
     // Datenwerte als Mass (Balken, Kurven): `data-breite="42"` -> width:42%. Die Werte kommen vom Server als Zahl;
-    // gesetzt werden sie über das Stilobjekt des Elements (`el.style`), das die Content-Security-Policy erlaubt —
-    // anders als ein `style="…"`-Attribut im Quelltext. Gilt auch für später geladene Teile (Schublade).
+    // gesetzt werden sie über `fwStil` (konstruiertes Stylesheet, `static/js/fw-stil.js`), nie als Inline-Stil. Gilt auch für später geladene Teile (Schublade).
     var MASSE = {'data-breite': 'width', 'data-hoehe': 'height', 'data-links': 'left', 'data-oben': 'top'};
     function masse(wurzel) {
         Object.keys(MASSE).forEach(function (attr) {

@@ -441,9 +441,9 @@
     var BEREICHE = document.getElementById('fwHauptnav');
     var telefon = window.matchMedia('(max-width:900px)');
     function extraMessen() {
-        if (telefon.matches || !BEREICHE) { wurzel.style.removeProperty('--fw-os-extra'); return; }
+        if (telefon.matches || !BEREICHE) { fwStil(wurzel, {'--fw-os-extra': null}); return; }
         var frei = Math.floor(wurzel.getBoundingClientRect().left - BEREICHE.getBoundingClientRect().right - 14);
-        wurzel.style.setProperty('--fw-os-extra', Math.max(0, Math.min(128, frei)) + 'px');
+        fwStil(wurzel, {'--fw-os-extra': Math.max(0, Math.min(128, frei)) + 'px'});
     }
     extraMessen();
     window.addEventListener('resize', extraMessen);

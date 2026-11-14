@@ -325,13 +325,15 @@ function druckeVorschau() {
     const inhalt = document.getElementById('brief').innerHTML;
     const w = window.open('', '_blank');
     // Kein <style>-Block und kein style-Attribut im geschriebenen Text: Das Fenster erbt die Content-Security-Policy.
-    // Das Aussehen setzt das Stilobjekt der Elemente (CSSOM), das sie erlaubt.
+    // Das Aussehen kommt aus einem konstruierten Stylesheet des neuen Fensters (kein Inline-Stil, auch nicht per Skript).
     w.document.write('<html><head><title>Brief</title></head><body>'+inhalt+'</body></html>');
     w.document.close();
-    var b = w.document.body;
-    b.style.fontFamily = 'Inter,sans-serif'; b.style.padding = '40px'; b.style.color = '#1e293b';
-    b.style.lineHeight = '1.6'; b.style.fontSize = '14px';
-    w.document.querySelectorAll('.whitespace-pre-line').forEach(function(e){ e.style.whiteSpace = 'pre-line'; });
+    try {
+        var blatt = new w.CSSStyleSheet();
+        blatt.replaceSync('body{font-family:Inter,sans-serif;padding:40px;color:#1e293b;line-height:1.6;font-size:14px}'
+            + '.whitespace-pre-line{white-space:pre-line}');
+        w.document.adoptedStyleSheets = [blatt];
+    } catch (e) { /* ältere Browser: Druck ohne eigene Schrift, der Text bleibt lesbar */ }
     w.focus(); w.print();
 }
 aktualisiere();

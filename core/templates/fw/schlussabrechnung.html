@@ -151,8 +151,8 @@
         document.getElementById('s-zulasten').textContent = fr(zul);
         document.getElementById('s-zugunsten').textContent = '− ' + fr(zug);
         var krow = document.getElementById('s-kaution-row');
-        if (kautionCredit > 0){ krow.style.display=''; document.getElementById('s-kaution').textContent = '− ' + fr(kautionCredit); }
-        else { krow.style.display = 'none'; }
+        if (kautionCredit > 0){ fwStil(krow, {display: null}); document.getElementById('s-kaution').textContent = '− ' + fr(kautionCredit); }
+        else { fwStil(krow, {display: 'none'}); }
 
         var saldo = offen + zul - zug - kautionCredit;
         var lbl = document.getElementById('s-label');

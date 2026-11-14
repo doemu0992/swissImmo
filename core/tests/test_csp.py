@@ -98,6 +98,21 @@ class BerichtsstelleTests(TestCase):
         self.assertIn('script-src-attr', erfasst.output[0])
         self.assertIn('inline', erfasst.output[0])
 
+    def test_quelle_und_probe_stehen_im_log(self):
+        """Datei und Anfang des gesperrten Stils gehören in die Zeile: Sonst ist die Ursache nicht auffindbar."""
+        bericht = {'csp-report': {'violated-directive': 'style-src-attr', 'blocked-uri': 'inline',
+                                  'document-uri': 'https://x.ch/neu/', 'line-number': 7,
+                                  'source-file': 'https://x.ch/static/js/fw-a.js', 'script-sample': 'width: 4|2%'}}
+        with self.assertLogs('csp', level='WARNING') as log:
+            self._melden(bericht)
+        self.assertIn('Zeile=7 | Quelle=https://x.ch/static/js/fw-a.js | Probe=width: 4/2%', log.output[0])
+
+    def test_richtlinie_verlangt_proben(self):
+        r = csp.richtlinie('ABC123')
+        self.assertIn("style-src 'self' 'nonce-ABC123' 'report-sample'", r)
+        self.assertIn("script-src 'self' 'nonce-ABC123' 'report-sample'", r)
+        self.assertNotIn('unsafe-inline', r)
+
     def test_neues_berichtsformat_wird_gelesen(self):
         bericht = [{'type': 'csp-violation', 'body': {'effectiveDirective': 'script-src-elem',
                                                        'blockedURL': 'https://fremd.example/x.js'}}]

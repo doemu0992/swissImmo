@@ -295,7 +295,7 @@ Detailseiten rufen sie beim Namen.
             // (der Nutzer muss sie lesen) und werden nur per × geschlossen.
             setTimeout(function(){
                 document.querySelectorAll('#fw-toasts .fw-toast:not([data-persist])').forEach(function(t){
-                    t.style.transition='opacity .4s'; t.style.opacity='0';
+                    fwStil(t, {transition: 'opacity .4s', opacity: '0'});
                     setTimeout(function(){ t.remove(); }, 400);
                 });
             }, 6000);
@@ -327,12 +327,12 @@ function fwToggleSidebar() {
 function fwOpenMobileNav() {
     document.getElementById('fwSidebar').classList.add('offen');
     document.getElementById('fwBackdrop').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+    fwStil(document.body, {overflow: 'hidden'});
 }
 function fwCloseMobileNav() {
     document.getElementById('fwSidebar').classList.remove('offen');
     document.getElementById('fwBackdrop').classList.add('hidden');
-    document.body.style.overflow = '';
+    fwStil(document.body, {overflow: null});
 }
 // ESC schliesst die Schublade
 document.addEventListener('keydown', function(e){ if (e.key === 'Escape') fwCloseMobileNav(); });
@@ -534,12 +534,11 @@ document.addEventListener('input', function(e) {
 // erreichbar. Jetzt passt `fwMenuEinpassen` das offene Menü in den Bildschirm ein,
 // Escape und ein Klick daneben schliessen, Pfeiltasten führen durch die Einträge.
 function fwMenuEinpassen(list) {
-    list.style.transform = '';
-    list.style.maxWidth = 'calc(100vw - 24px)';
+    fwStil(list, {transform: null, maxWidth: 'calc(100vw - 24px)'});
     var r = list.getBoundingClientRect(), rand = 12, dx = 0;
     if (r.right > innerWidth - rand) dx = innerWidth - rand - r.right;
     if (r.left + dx < rand) dx = rand - r.left;
-    if (dx) list.style.transform = 'translateX(' + Math.round(dx) + 'px)';
+    if (dx) fwStil(list, {transform: 'translateX(' + Math.round(dx) + 'px)'});
     // Unten kein Platz, oben schon → nach oben aufklappen
     list.classList.remove('fw-menu-oben');
     if (r.bottom > innerHeight - rand && r.top - r.height - 48 > rand) list.classList.add('fw-menu-oben');

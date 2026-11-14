@@ -595,5 +595,5 @@ class MenuebandSkriptTests(SimpleTestCase):
         self.assertEqual(self._js().count('sicht[aktiv] = true'), 1)
 
     def test_die_suche_misst_den_freien_platz_und_die_schicht_liest_ihn(self):
-        self.assertIn("setProperty('--fw-os-extra'", SKRIPT.read_text(encoding='utf-8'))
+        self.assertIn("fwStil(wurzel, {'--fw-os-extra'", SKRIPT.read_text(encoding='utf-8'))
         self.assertIn('var(--fw-os-extra', SCHICHT.read_text(encoding='utf-8'))

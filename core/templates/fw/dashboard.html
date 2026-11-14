@@ -434,13 +434,13 @@
         if (fuss) while (fuss.firstChild) f.appendChild(fuss.firstChild);
         vorher = document.activeElement; offen = nr;
         vg.classList.add('offen'); vg.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
+        fwStil(document.body, {overflow: 'hidden'});
         setTimeout(function () { var h = f.querySelector('[data-hauptaktion]'); (h || vg.querySelector('.fw-knopf-rund')).focus(); }, 60);
     };
     window.fwVorgangZu = function () {
         if (!offen) return;
         offen = null; vg.classList.remove('offen'); vg.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        fwStil(document.body, {overflow: null});
         if (vorher && vorher.focus) vorher.focus();
     };
     liste.addEventListener('click', function (e) {

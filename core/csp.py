@@ -45,12 +45,13 @@ def richtlinie(nonce, stil_inline=False):
     """Die Richtlinie dieser Antwort.
 
     Stile: nur eigene Dateien und `<style nonce>` — kein `style="…"`-Attribut im Quelltext (Masse setzt `fw-aktionen.js`
-    über das Stilobjekt). `stil_inline=True` erlaubt Inline-Stile für Antworten, die ein fertiges Dokument zeigen (die
+    über ein konstruiertes Stylesheet, `fw-stil.js`). `'report-sample'` erlaubt nichts: Es lässt den Browser den Anfang
+    des gesperrten Stils oder Skripts mitmelden, damit die Quelle einer Meldung auffindbar ist. `stil_inline=True` erlaubt Inline-Stile für Antworten, die ein fertiges Dokument zeigen (die
     Vertragsvorschau, gerendert aus der PDF-Vorlage mit eigenen Stilen). Skripte bleiben auch dort auf den Nonce beschränkt."""
     return '; '.join([
         "default-src 'self'",
-        f"script-src 'self' 'nonce-{nonce}'",
-        "style-src 'self' 'unsafe-inline'" if stil_inline else f"style-src 'self' 'nonce-{nonce}'",
+        f"script-src 'self' 'nonce-{nonce}' 'report-sample'",
+        "style-src 'self' 'unsafe-inline'" if stil_inline else f"style-src 'self' 'nonce-{nonce}' 'report-sample'",
         "img-src 'self' data: blob:",
         "font-src 'self' data:",
         "connect-src 'self'",
@@ -120,10 +121,13 @@ def csp_bericht(request):
         b = e.get('csp-report', e.get('body', e)) if isinstance(e, dict) else {}
         if not isinstance(b, dict):
             continue
+        # Quelle und Probe stehen HINTEN: `csp_meldungen` liest auch ältere Zeilen, die nach «Zeile=» enden.
         logger.warning(
-            'CSP-Verstoss: %s | blockiert=%s | Seite=%s | Zeile=%s',
+            'CSP-Verstoss: %s | blockiert=%s | Seite=%s | Zeile=%s | Quelle=%s | Probe=%s',
             _kurz(b.get('violated-directive') or b.get('effectiveDirective')),
             _kurz(b.get('blocked-uri') or b.get('blockedURL') or b.get('blocked-url')),
             _kurz(b.get('document-uri') or b.get('documentURL')),
-            _kurz(b.get('line-number') or b.get('lineNumber')))
+            _kurz(b.get('line-number') or b.get('lineNumber')),
+            _kurz(b.get('source-file') or b.get('sourceFile')),
+            _kurz(b.get('script-sample') or b.get('sample'), 80).replace('|', '/'))
     return HttpResponse(status=204)
