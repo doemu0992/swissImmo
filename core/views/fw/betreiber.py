@@ -119,8 +119,9 @@ def fw_betreiber_lik(request):
                              % {'monat': f'{monat:02d}', 'jahr': jahr, 'punkte': punkte})
             return redirect('fw_betreiber_lik')
 
-    reihen = lik.lik_reihen()
+    reihen = lik.lik_reihen(roh=True)                         # auch Werte hinter einer Lücke zeigen (löschbar)
     nachgetragen = {(w.jahr, w.monat): w for w in LikWert.objects.filter(basis=lik.LIK_BASIS)}
+    letzter_gueltig = lik.letzter_tabellenmonat()
     zeilen = []
     for jahr in sorted(reihen, reverse=True):
         for monat in range(12, 0, -1):
@@ -129,6 +130,7 @@ def fw_betreiber_lik(request):
                 continue
             eigener = nachgetragen.get((jahr, monat))
             zeilen.append({'jahr': jahr, 'monat': monat, 'punkte': wert, 'pk': eigener.pk if eigener else None,
+                           'ungueltig': bool(letzter_gueltig and (jahr, monat) > letzter_gueltig),
                            'quelle': eigener.quelle if eigener else gettext('im Code (BFS-Tabelle)')})
         if len(zeilen) >= 18:
             break

@@ -40682,3 +40682,6 @@ msgstr "La consultation a abouti, la HEV n'a pas de nouvelle valeur mensuelle."
 
 msgid "Jetzt beim HEV abrufen"
 msgstr "Récupérer maintenant auprès de la HEV"
+
+msgid "zählt nicht: davor fehlt ein Monat"
+msgstr "ne compte pas : un mois manque avant"

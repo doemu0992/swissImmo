@@ -38910,3 +38910,6 @@ msgstr "Der Abruf lief, es gibt beim HEV keinen neuen Monatswert."
 
 msgid "Jetzt beim HEV abrufen"
 msgstr "Jetzt beim HEV abrufen"
+
+msgid "zählt nicht: davor fehlt ein Monat"
+msgstr "zählt nicht: davor fehlt ein Monat"

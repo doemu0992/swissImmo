@@ -49,17 +49,22 @@ def cache_leeren(*_args, **_kwargs):
     _cache['bis'], _cache['reihen'], _cache['code'] = 0.0, None, None
 
 
-def lik_reihen():
+def lik_reihen(roh=False):
     """`{jahr: [12 Werte, None = nicht veröffentlicht]}`: die Reihe im Code, darüber die nachgetragenen Werte.
 
     Nachgetragen (`core.LikWert`) gewinnt gegen den Code. Die Reihe wird kurz im Prozess gemerkt
     (`CACHE_SEKUNDEN`): Der LIK-Wert wird auch bei jedem neuen Mietvertrag gelesen, und das soll keine
     Datenbankabfrage je Aufruf kosten. Der Rückgabewert ist eine Kopie. Ist die Datenbank nicht lesbar, gilt die
-    Reihe im Code: Eine Indexrechnung darf daran nicht scheitern."""
+    Reihe im Code: Eine Indexrechnung darf daran nicht scheitern.
+
+    WERTE HINTER EINER LÜCKE ZÄHLEN NICHT (ausser `roh=True`): Steht der November da und der Oktober fehlt, endet die
+    Reihe für jede Rechnung im September. Ein Wert hinter einer Lücke ist fast immer ein Irrtum (14.11.2026: November
+    von Hand eingetragen, bevor er veröffentlicht war) und flösse sonst als «aktueller LIK» in Verträge und
+    Anpassungen. `roh=True` brauchen nur die Pflegeseite (zeigen, löschen) und der automatische Nachtrag."""
     import time
     if (_cache['reihen'] is not None and time.monotonic() < _cache['bis']
             and _cache['code'] == LIK_DEZ2020):                # die Reihe im Code wurde (in Tests) ersetzt: neu lesen
-        return {jahr: list(reihe) for jahr, reihe in _cache['reihen'].items()}
+        return _kopie(_cache['reihen'], roh)
     reihen = {jahr: list(reihe) + [None] * (12 - len(reihe)) for jahr, reihe in LIK_DEZ2020.items()}
     try:
         from core.models import LikWert
@@ -68,10 +73,27 @@ def lik_reihen():
     except Exception:                                        # noqa: BLE001 — Rückfall auf die Reihe im Code
         import logging
         logging.getLogger(__name__).warning('LIK-Werte aus der Datenbank nicht lesbar — es gilt die Reihe im Code.')
-        return reihen                                        # nicht merken: beim nächsten Aufruf neu versuchen
+        return _kopie(reihen, roh)                           # nicht merken: beim nächsten Aufruf neu versuchen
     _cache['reihen'], _cache['bis'] = reihen, time.monotonic() + CACHE_SEKUNDEN
     _cache['code'] = {jahr: list(reihe) for jahr, reihe in LIK_DEZ2020.items()}
-    return {jahr: list(reihe) for jahr, reihe in reihen.items()}
+    return _kopie(reihen, roh)
+
+
+def _kopie(reihen, roh):
+    """Kopie der Reihen; ohne `roh` sind alle Werte hinter der ersten Lücke entfernt."""
+    kopie = {jahr: list(reihe) for jahr, reihe in reihen.items()}
+    if roh:
+        return kopie
+    begonnen = luecke = False
+    for jahr in sorted(kopie):
+        for i, val in enumerate(kopie[jahr]):
+            if luecke:
+                kopie[jahr][i] = None
+            elif val is not None:
+                begonnen = True
+            elif begonnen:
+                luecke = True
+    return kopie
 
 
 def lik_punkte_fuer(jahr, monat, reihen=None):
@@ -260,7 +282,7 @@ def automatisch_nachfuehren(heute=None, timeout=8):
         return []
 
     cache_leeren()
-    reihen = lik_reihen()
+    reihen = lik_reihen(roh=True)                             # auch Werte hinter einer Lücke sehen (nicht überschreiben)
     letzter = letzter_tabellenmonat()
     if letzter is None:
         abruf_status.melde_fehler('lik', 'Keine eigene Reihe zum Abgleich vorhanden.')

@@ -55,7 +55,7 @@
         </tr></thead>
         <tbody>
         {% for z in zeilen %}
-        <tr><td>{{ z.monat|stringformat:"02d" }}/{{ z.jahr }}</td><td class="fw-right fw-strong">{{ z.punkte }}</td><td>{{ z.quelle }}</td>
+        <tr><td>{{ z.monat|stringformat:"02d" }}/{{ z.jahr }}</td><td class="fw-right fw-strong">{{ z.punkte }}</td><td>{{ z.quelle }}{% if z.ungueltig %} · <b>{% trans "zählt nicht: davor fehlt ein Monat" %}</b>{% endif %}</td>
             <td class="fw-right">{% if z.pk %}<form method="post">{% csrf_token %}<input type="hidden" name="aktion" value="loeschen"><input type="hidden" name="pk" value="{{ z.pk }}"><button type="submit" class="fw-btn fw-leise" data-testid="lik-loeschen">{% trans "Löschen" %}</button></form>{% endif %}</td></tr>
         {% endfor %}
         </tbody>
