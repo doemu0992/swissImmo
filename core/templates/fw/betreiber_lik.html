@@ -23,10 +23,10 @@
 
 <div class="fw-card max-w-3xl">
     <div class="fw-kopf"><h2>{% trans "Monatswert nachtragen" %}</h2></div>
-    <div class="fw-rumpf">
+    <div>
         <form method="post">
             {% csrf_token %}
-            <div class="fw-formgrid">
+            <div class="fw-formular p-5">
                 <div class="fw-feldblock"><label for="lik-jahr" class="fw-label">{% trans "Jahr" %}</label>
                     <input id="lik-jahr" name="jahr" type="number" min="2020" value="{{ w.jahr }}" required class="fw-feld"></div>
                 <div class="fw-feldblock"><label for="lik-monat" class="fw-label">{% trans "Monat (1–12)" %}</label>
@@ -37,7 +37,7 @@
                     <input id="lik-quelle" name="quelle" value="{{ w.quelle }}" maxlength="200" required class="fw-feld"
                            placeholder="{% trans 'BFS, Medienmitteilung vom …' %}"></div>
             </div>
-            <div class="fw-aktionen"><button type="submit" class="fw-btn fw-primary">{% trans "Speichern" %}</button></div>
+            <div class="px-5 pb-5"><button type="submit" class="fw-btn fw-primary">{% trans "Speichern" %}</button></div>
         </form>
     </div>
 </div>

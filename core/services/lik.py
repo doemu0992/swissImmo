@@ -38,12 +38,28 @@ LIK_DEZ2020 = {
 }
 
 
+#: So lange gilt die gelesene Reihe im Prozess. Kurz, damit ein Nachtrag auch in einem anderen Worker bald gilt; im
+#: eigenen Prozess räumt `cache_leeren` (beim Speichern und Löschen eines Wertes) sofort auf.
+CACHE_SEKUNDEN = 60
+_cache = {'bis': 0.0, 'reihen': None, 'code': None}
+
+
+def cache_leeren(*_args, **_kwargs):
+    """Verwirft die gemerkte Reihe (Signal-Empfänger und Tests)."""
+    _cache['bis'], _cache['reihen'], _cache['code'] = 0.0, None, None
+
+
 def lik_reihen():
     """`{jahr: [12 Werte, None = nicht veröffentlicht]}`: die Reihe im Code, darüber die nachgetragenen Werte.
 
-    Nachgetragen (`core.LikWert`) gewinnt gegen den Code. Eine Abfrage je Aufruf; wer viele Monate prüft, holt die
-    Reihen einmal und schlägt dann darin nach. Ist die Datenbank nicht lesbar, gilt die Reihe im Code: Eine
-    Indexrechnung darf daran nicht scheitern."""
+    Nachgetragen (`core.LikWert`) gewinnt gegen den Code. Die Reihe wird kurz im Prozess gemerkt
+    (`CACHE_SEKUNDEN`): Der LIK-Wert wird auch bei jedem neuen Mietvertrag gelesen, und das soll keine
+    Datenbankabfrage je Aufruf kosten. Der Rückgabewert ist eine Kopie. Ist die Datenbank nicht lesbar, gilt die
+    Reihe im Code: Eine Indexrechnung darf daran nicht scheitern."""
+    import time
+    if (_cache['reihen'] is not None and time.monotonic() < _cache['bis']
+            and _cache['code'] == LIK_DEZ2020):                # die Reihe im Code wurde (in Tests) ersetzt: neu lesen
+        return {jahr: list(reihe) for jahr, reihe in _cache['reihen'].items()}
     reihen = {jahr: list(reihe) + [None] * (12 - len(reihe)) for jahr, reihe in LIK_DEZ2020.items()}
     try:
         from core.models import LikWert
@@ -52,7 +68,10 @@ def lik_reihen():
     except Exception:                                        # noqa: BLE001 — Rückfall auf die Reihe im Code
         import logging
         logging.getLogger(__name__).warning('LIK-Werte aus der Datenbank nicht lesbar — es gilt die Reihe im Code.')
-    return reihen
+        return reihen                                        # nicht merken: beim nächsten Aufruf neu versuchen
+    _cache['reihen'], _cache['bis'] = reihen, time.monotonic() + CACHE_SEKUNDEN
+    _cache['code'] = {jahr: list(reihe) for jahr, reihe in LIK_DEZ2020.items()}
+    return {jahr: list(reihe) for jahr, reihe in reihen.items()}
 
 
 def lik_punkte_fuer(jahr, monat, reihen=None):
@@ -264,3 +283,12 @@ def vertrag_lik_context(vertrag, verwaltung=None):
         'lik_pkt': pkt,
         'lik_voll': lik_bezeichnung(punkte, basis=basis, stand=stand),
     }
+
+
+def _empfaenger_verbinden():
+    from django.db.models.signals import post_delete, post_save
+    post_save.connect(cache_leeren, sender='core.LikWert', dispatch_uid='lik_cache_save')
+    post_delete.connect(cache_leeren, sender='core.LikWert', dispatch_uid='lik_cache_delete')
+
+
+_empfaenger_verbinden()

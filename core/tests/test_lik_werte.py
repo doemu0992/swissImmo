@@ -12,6 +12,10 @@ from core.services import datenpflege, lik, mietzinsmodell
 
 
 class ReiheTests(TestCase):
+    def setUp(self):
+        lik.cache_leeren()
+        self.addCleanup(lik.cache_leeren)
+
     def test_ohne_nachtrag_gilt_die_reihe_im_code(self):
         self.assertEqual(lik.lik_punkte_fuer(2026, 9), Decimal('108.5'))
         self.assertIsNone(lik.lik_punkte_fuer(2026, 10))
@@ -48,6 +52,10 @@ class ReiheTests(TestCase):
 
 
 class SeiteTests(TestCase):
+    def setUp(self):
+        lik.cache_leeren()
+        self.addCleanup(lik.cache_leeren)
+
     @classmethod
     def setUpTestData(cls):
         U = get_user_model()
@@ -86,3 +94,26 @@ class SeiteTests(TestCase):
             antwort = self._post(**kw)
             self.assertEqual(antwort.status_code, 200, kw)
         self.assertEqual(LikWert.objects.count(), 0)
+
+
+class CacheTests(TestCase):
+    def setUp(self):
+        lik.cache_leeren()
+        self.addCleanup(lik.cache_leeren)
+
+    def test_zweiter_aufruf_kostet_keine_abfrage(self):
+        lik.lik_reihen()
+        with self.assertNumQueries(0):
+            lik.lik_reihen()
+
+    def test_speichern_raeumt_den_cache_auf(self):
+        lik.lik_reihen()
+        LikWert.objects.create(jahr=2026, monat=10, punkte=Decimal('108.7'), quelle='BFS, Test')
+        self.assertEqual(lik.lik_punkte_fuer(2026, 10), Decimal('108.7'))
+        LikWert.objects.all().delete()
+        self.assertIsNone(lik.lik_punkte_fuer(2026, 10))
+
+    def test_die_rueckgabe_ist_eine_kopie(self):
+        reihen = lik.lik_reihen()
+        reihen[2026][0] = 999.0
+        self.assertEqual(lik.lik_punkte_fuer(2026, 1), Decimal('106.9'))

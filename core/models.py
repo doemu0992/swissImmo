@@ -148,7 +148,7 @@ class LikWert(models.Model):
     jahr = models.PositiveSmallIntegerField("Jahr")
     monat = models.PositiveSmallIntegerField("Monat")
     punkte = models.DecimalField("Punkte", max_digits=6, decimal_places=1)
-    basis = models.CharField("Basis", max_length=30, default="Dezember 2020")
+    basis = models.CharField("Basis", max_length=30, default="Dezember 2020", editable=False)
     quelle = models.CharField("Quelle", max_length=200)
     erfasst_von = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
                                     related_name='+', editable=False)

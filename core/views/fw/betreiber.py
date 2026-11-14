@@ -47,6 +47,7 @@ def fw_betreiber_lik(request):
 
     from core.models import LikWert, SicherheitsEreignis
     from core.auth import client_ip
+    from core.utils.betrag import betrag_parsen
     from core.services import lik
 
     heute = datum_heute()
@@ -56,7 +57,7 @@ def fw_betreiber_lik(request):
         werte.update({k: (request.POST.get(k) or '').strip() for k in ('jahr', 'monat', 'punkte', 'quelle')})
         try:
             jahr, monat = int(werte['jahr']), int(werte['monat'])
-            punkte = Decimal(werte['punkte'].replace(',', '.')).quantize(Decimal('0.1'))
+            punkte = betrag_parsen(werte['punkte']).quantize(Decimal('0.1'))
         except (ValueError, InvalidOperation):
             jahr = monat = punkte = None
         quelle = werte['quelle'][:200]
