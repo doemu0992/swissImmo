@@ -302,7 +302,7 @@ und Listen über viele Fälle laden die Ziele einzeln nach, wenn man nicht vorso
 ### 3.4 Offene fachliche Entscheide
 
 Diese Punkte blockieren Funktionen und lassen sich nicht technisch entscheiden: Kautionszins, zweiter Faktor für
-Eigentümer, kantonale Feiertage, Abacus-Export (braucht eine Beispieldatei), Typfeld im Jahresabschluss,
+Eigentümer als PFLICHT (freiwillig gibt es ihn seit dem 14.11.2026 im Portal-Profil), kantonale Feiertage, Abacus-Export (braucht eine Beispieldatei), Typfeld im Jahresabschluss,
 Row-Level-Security in PostgreSQL als zweite Isolationsschicht, VMWG Art. 13, Umgang mit der LIK-Umbasierung.
 
 ---
@@ -390,7 +390,8 @@ Stand 14.11.2026. In dieser Reihenfolge, weil jeder Punkt den nächsten billiger
    (`auftraege.laeufer_aktiv`); sonst laufen sie sofort wie bisher. Dasselbe Muster gilt für jede weitere Umstellung: nie in die Warteschlange, wenn niemand sie
    abholt. Das Rundschreiben per E-Mail geht ab 30 Empfängern in den
    Hintergrund und merkt sich je Mail, an wen schon gesendet wurde (kein Doppelversand nach einem Absturz). Das
-   Serienbrief-PDF bleibt sofort, weil es als Download zurückkommt; die Belegerkennung läuft noch wie bisher. Der Läufer muss einmal als Always-on-Task eingerichtet werden.
+   Serienbrief-PDF bleibt sofort, weil es als Download zurückkommt; die Belegerkennung wird bewusst nicht umgestellt (beim
+   Hochladen wartet man auf das Ergebnis im Formular, der Import aus dem Postfach läuft schon im Hintergrund). Der Läufer muss einmal als Always-on-Task eingerichtet werden.
 4. **URL-Module je Bereich — erledigt (PR 260).** `swiss_immo/urls.py` ist in sechs Module aufgeteilt; Routen und
    Reihenfolge sind nachweislich unverändert (geflachter Routenbaum vorher und nachher gleich, 594 Einträge).
 5. **Auswahl der Organisation bei mehreren Mitgliedschaften — gab es bereits.** Die Mandantenwahl im Kopf und im
