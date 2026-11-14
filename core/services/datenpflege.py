@@ -49,6 +49,11 @@ def faellig(heute):
                         % {'stand': formularpflicht._STAND_VERZEICHNIS, 'datum': formularpflicht.GEPRUEFT_AM.strftime('%d.%m.%Y')})
     from core.services import abruf_status
     aufgaben.extend(abruf_status.ausfaelle())
+    from core import rls
+    if rls.modus() == 'probe':
+        n = rls.befunde_seit()
+        aufgaben.append(_('RLS-Probe: %(n)s Befund(e) in den letzten 14 Tagen (manage.py sicherheitslog). Bei 0 über zwei '
+                          'Wochen kann scharf geschaltet werden (docs/RLS.md).') % {'n': n})
     postfach = abruf_status.postfach_ausfall()
     if postfach:
         aufgaben.append(postfach)

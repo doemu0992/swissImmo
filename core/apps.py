@@ -27,3 +27,8 @@ class CoreConfig(AppConfig):
         # Startprüfungen registrieren (siehe core/checks.py). Nur der Import
         # zählt — die Funktionen tragen sich über `@register()` selbst ein.
         from core import checks  # noqa: F401
+
+        # Row-Level-Security: je nach `RLS_MODUS` die Probe oder den Abgleich der Sitzungsvariable einhängen
+        # (siehe core/rls.py). In der Vorgabe `aus` geschieht nichts.
+        from core import rls
+        rls.verbinden()

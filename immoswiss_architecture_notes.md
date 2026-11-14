@@ -399,9 +399,11 @@ Stand 14.11.2026. In dieser Reihenfolge, weil jeder Punkt den nächsten billiger
    `test_mandant_wechsel` und `test_profilmenue_mandant`); die Middleware ehrt den Wert nur bei echter Mitgliedschaft.
    Die frühere Aussage in R11 war falsch. Ein Portal-Konto hat genau ein Profil (`OneToOne`) und damit genau eine
    Organisation.
-6. **Row-Level-Security in PostgreSQL** als zweite Schicht unter dem `TenantManager`, sobald die Systemläufe ihren
-   Kontext sauber setzen (der Auftragsläufer tut es seit PR 259 je Auftrag). Das ist ein eigener, bewusst zu
-   entscheidender Schritt und noch offen.
+6. **Row-Level-Security in PostgreSQL — gebaut, standardmässig aus (14.11.2026).** `core/rls.py`, Befehl
+   `rls_einrichten`, Anleitung `docs/RLS.md`. Zuerst nur Lesen, zuerst die 27 Finanztabellen, mit einer Probestufe,
+   die nichts sperrt und fremde Zugriffe protokolliert. Eingeschaltet wird bewusst in zwei Schritten (`RLS_MODUS` in
+   der `.env`, Regeln per Befehl), nichts geschieht beim Deploy. Offen: Probe in der Produktion laufen lassen, dann
+   scharf schalten; danach weitere Apps.
 
 ### 4.6 Was man nicht tun sollte
 
