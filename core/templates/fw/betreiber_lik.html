@@ -12,8 +12,21 @@
         <h1>{% trans "LIK-Werte" %}</h1>
         <p>{% blocktrans %}Landesindex der Konsumentenpreise, Basis {{ basis }} = 100. Hier trägst du den Monatswert ein, sobald das BFS ihn veröffentlicht hat; ein Deployment braucht es nicht. Ein Eintrag hier gilt vor der Reihe im Code.{% endblocktrans %}</p>
     </div>
-    <div class="fw-phead-knoepfe"><form method="post">{% csrf_token %}<input type="hidden" name="aktion" value="abrufen"><button type="submit" class="fw-btn fw-primary" data-testid="lik-abrufen">{% trans "Jetzt beim HEV abrufen" %}</button></form></div>
+    <div class="fw-phead-knoepfe">
+        <form method="post">{% csrf_token %}<input type="hidden" name="basis" value="{{ basis }}"><input type="hidden" name="aktion" value="abrufen"><button type="submit" class="fw-btn fw-primary" data-testid="lik-abrufen">{% trans "Jetzt beim HEV abrufen" %}</button></form>
+        <form method="post">{% csrf_token %}<input type="hidden" name="basis" value="{{ basis }}"><input type="hidden" name="aktion" value="einlesen"><button type="submit" class="fw-btn" data-testid="lik-einlesen">{% trans "Ganze Reihe beim HEV einlesen" %}</button></form>
+    </div>
 </div>
+
+{% comment %}Umschalter der Basisreihe: Alles auf dieser Seite (Tabelle, Abruf, Einlesen, Nachtrag, Löschen) gilt
+der gewählten Reihe. Die Formulare tragen sie als verstecktes Feld `basis`.{% endcomment %}
+<nav class="fw-reiter" aria-label="{% trans 'Basisreihe' %}" data-testid="lik-basen">
+    {% for b in basen %}<a href="{{ b.url }}"{% if b.gewaehlt %} class="hier" aria-current="page"{% endif %}>{{ b.name }} = 100</a>{% endfor %}
+</nav>
+
+{% if reihe_leer %}
+<div class="fw-hinweis info max-w-3xl" data-testid="lik-reihe-leer"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">{% blocktrans %}Die Reihe «{{ basis }} = 100» hat noch keine Werte. Verträge dieser Reihe rechnen erst, wenn sie Werte hat: «Ganze Reihe beim HEV einlesen» holt die Tabelle dieser Basis, lückenlos ab dem Basismonat. Werte anderer Reihen werden nie eingesetzt.{% endblocktrans %}</div></div>
+{% endif %}
 
 {% if live %}
 <div class="fw-hinweis info max-w-3xl"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">{% blocktrans with monat=live.monat punkte=live.punkte %}Der Live-Abruf nennt {{ monat }}: {{ punkte }}. Das ist nur ein Vorschlag. Vor dem Eintragen gegen die BFS-Publikation prüfen.{% endblocktrans %}</div></div>
@@ -27,9 +40,10 @@
     <div>
         <form method="post">
             {% csrf_token %}
+            <input type="hidden" name="basis" value="{{ basis }}">
             <div class="fw-formular p-5">
                 <div class="fw-feldblock"><label for="lik-jahr" class="fw-label">{% trans "Jahr" %}</label>
-                    <input id="lik-jahr" name="jahr" type="number" min="2020" value="{{ w.jahr }}" required class="fw-feld"></div>
+                    <input id="lik-jahr" name="jahr" type="number" min="{{ basis_jahr }}" value="{{ w.jahr }}" required class="fw-feld"></div>
                 <div class="fw-feldblock"><label for="lik-monat" class="fw-label">{% trans "Monat (1–12)" %}</label>
                     <input id="lik-monat" name="monat" type="number" min="1" max="12" value="{{ w.monat }}" required class="fw-feld"></div>
                 <div class="fw-feldblock"><label for="lik-punkte" class="fw-label">{% trans "Punkte" %}</label>
@@ -56,7 +70,9 @@
         <tbody>
         {% for z in zeilen %}
         <tr><td>{{ z.monat|stringformat:"02d" }}/{{ z.jahr }}</td><td class="fw-right fw-strong">{{ z.punkte }}</td><td>{{ z.quelle }}{% if z.ungueltig %} · <b>{% trans "zählt nicht: davor fehlt ein Monat" %}</b>{% endif %}</td>
-            <td class="fw-right">{% if z.pk %}<form method="post">{% csrf_token %}<input type="hidden" name="aktion" value="loeschen"><input type="hidden" name="pk" value="{{ z.pk }}"><button type="submit" class="fw-btn fw-leise" data-testid="lik-loeschen">{% trans "Löschen" %}</button></form>{% endif %}</td></tr>
+            <td class="fw-right">{% if z.pk %}<form method="post">{% csrf_token %}<input type="hidden" name="basis" value="{{ basis }}"><input type="hidden" name="aktion" value="loeschen"><input type="hidden" name="pk" value="{{ z.pk }}"><button type="submit" class="fw-btn fw-leise" data-testid="lik-loeschen">{% trans "Löschen" %}</button></form>{% endif %}</td></tr>
+        {% empty %}
+        <tr><td colspan="4" class="fw-leerzeile">{% trans "In dieser Reihe steht noch kein Wert." %}</td></tr>
         {% endfor %}
         </tbody>
     </table>

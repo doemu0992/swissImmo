@@ -129,6 +129,7 @@ UEBERSETZT = (
     'fw/_bezahlt_leer.html',
     'fw/_fwmodal.html',
     'fw/_listwerkzeug.html',     # Audit Etappe 4: Suche und Sortierung',
+    'fw/_lik_basis_feld.html',   # Auswahl der LIK-Basisreihe (Vertrag, Mandat, Liegenschaft, Verwaltung)
     'fw/_modal_done.html',
     'fw/_omnisearch.html',       # 27.10.2026: Omnisearch der Kopfzeile (Texte fürs Skript im <template>)
     'fw/_posten_gruppen.html',   # V12: Zahlungs-Cockpit, Trefferliste

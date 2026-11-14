@@ -84,20 +84,23 @@ def monat_text(d):
     return date_format(d, 'F Y') if d else ''
 
 
-def lik_punkte(stand):
-    """LIK-Punkte des Monats `stand` aus `core/services/lik.py`, oder None."""
+def lik_punkte(stand, basis=None):
+    """LIK-Punkte des Monats `stand` in der Reihe `basis` (`core/services/lik.py`), oder None.
+
+    `basis` ist die Reihe des Vertrags (`lik.basis_von(vertrag)`); ohne Angabe die Standardreihe. Ein fehlender
+    Monat bleibt None: Der Wert einer anderen Reihe wird nie eingesetzt."""
     from core.services.lik import lik_punkte_fuer
     if not stand:
         return None
-    return lik_punkte_fuer(stand.year, stand.month)
+    return lik_punkte_fuer(stand.year, stand.month, basis=basis)
 
 
-def letzter_stand(bis=None):
-    """Der jüngste Monat der Tabelle mit Wert (höchstens `bis`), oder None."""
+def letzter_stand(bis=None, basis=None):
+    """Der jüngste Monat der Reihe `basis` mit Wert (höchstens `bis`), oder None."""
     from core.services.lik import lik_reihen
     grenze = monatserster(bis) if bis else None
     beste = None
-    reihen = lik_reihen()
+    reihen = lik_reihen(basis=basis)
     for jahr in sorted(reihen):
         for i, wert in enumerate(reihen[jahr]):
             if wert is None:
@@ -108,11 +111,11 @@ def letzter_stand(bis=None):
     return beste
 
 
-def verfuegbare_staende(anzahl=12, bis=None):
-    """Die jüngsten `anzahl` veröffentlichten Monate, der neueste zuerst."""
+def verfuegbare_staende(anzahl=12, bis=None, basis=None):
+    """Die jüngsten `anzahl` veröffentlichten Monate der Reihe `basis`, der neueste zuerst."""
     from core.services.lik import lik_reihen
     grenze = monatserster(bis) if bis else None
-    reihen = lik_reihen()
+    reihen = lik_reihen(basis=basis)
     monate = [date(j, i + 1, 1)
               for j in sorted(reihen) for i, w in enumerate(reihen[j])
               if w is not None and (grenze is None or date(j, i + 1, 1) <= grenze)]
@@ -128,12 +131,20 @@ def stand_aus_text(text):
         return None
 
 
-def stand_fehler(stand, heute, alt_stand=None):
-    """Meldung, wenn dieser LIK-Stand nicht Grundlage einer Anpassung sein kann."""
-    letzter = letzter_stand(bis=heute)
+def stand_fehler(stand, heute, alt_stand=None, basis=None):
+    """Meldung, wenn dieser LIK-Stand nicht Grundlage einer Anpassung sein kann.
+
+    `basis`: die Reihe des Vertrags. Fehlt der Monat in einer anderen als der Standardreihe, nennt die Meldung
+    Reihe und Monat (`lik.fehlt_text`) — in der Standardreihe mag er stehen, eingesetzt wird er nicht."""
+    from core.services import lik as _lik
+    letzter = letzter_stand(bis=heute, basis=basis)
     if stand is None:
+        if letzter is None and basis and basis != _lik.LIK_BASIS:
+            return _lik.fehlt_text(basis)
         return gettext('Bitte den Monat des neuen LIK-Standes wählen.')
-    if stand > monatserster(heute) or lik_punkte(stand) is None:
+    if stand > monatserster(heute) or lik_punkte(stand, basis) is None:
+        if basis and basis != _lik.LIK_BASIS and stand <= monatserster(heute):
+            return _lik.fehlt_text(basis, stand.year, stand.month)
         # Ein Monat, der noch nicht begonnen hat, kann nicht bekannt gegeben sein.
         return gettext(
             'Der LIK-Stand %(monat)s ist nicht veröffentlicht. Eine Indexanpassung ist erst nach der '
@@ -369,18 +380,19 @@ def formular_luecke(formular):
 
 
 # ── Begründung für das Formular ──────────────────────────────────────────────
-def begruendung(rechnung, stand, neu_netto, alt_stand=None):
+def begruendung(rechnung, stand, neu_netto, alt_stand=None, basis=None):
     """Der Begründungssatz für das amtliche Formular (Rechtstext: deutsch, wie das Formular).
 
     Nennt Rechtsgrundlage, beide LIK-Stände, die Zunahme, die Weitergabe und die
-    Beträge — der «genaue Berechnungsgrund»."""
+    Beträge — der «genaue Berechnungsgrund». `basis`: die Reihe des Vertrags, in der beide Stände stehen."""
     from core.services.lik import LIK_BASIS, stand_label
+    basis = basis or LIK_BASIS
     bisher = f" ({stand_label(alt_stand)})" if alt_stand else ''
     w = _ohne_nullen(rechnung.weitergabe_prozent)
     wort = 'Senkung' if rechnung.richtung == 'senkung' else 'Anpassung'
     return (f"Indexmiete (Art. 269b OR, Art. 17 VMWG): {wort} an den Landesindex der Konsumentenpreise. "
             f"LIK {rechnung.basis_lik} Punkte{bisher} auf {rechnung.neu_lik} Punkte ({stand_label(stand)}; "
-            f"Basis {LIK_BASIS} = 100), Veränderung {rechnung.zunahme_prozent} %, Weitergabe {w} %. "
+            f"Basis {basis} = 100), Veränderung {rechnung.zunahme_prozent} %, Weitergabe {w} %. "
             f"Netto CHF {rechnung.alt_netto} auf CHF {Decimal(str(neu_netto)):.2f}.")
 
 
@@ -415,10 +427,13 @@ def lage(vertrag, *, heute, stand=None, wirksam_ab=None, versand_am=None, zugang
     if basis_lik and vertrag._wirksame_anpassung(vortag) is None:
         alt_lik = basis_lik
     alt_stand = vertrag.effektiver_lik_stand(vortag)
-    staende = verfuegbare_staende(12, bis=heute)
+    # ALLES in der Reihe des Vertrags: verfügbare Monate, neuer Stand, Fehlermeldung.
+    from core.services.lik import basis_von
+    reihe = basis_von(vertrag)
+    staende = verfuegbare_staende(12, bis=heute, basis=reihe)
     stand = stand or (staende[0] if staende else None)
-    fehler = stand_fehler(stand, heute, alt_stand)
-    neu_lik = None if fehler else lik_punkte(stand)
+    fehler = stand_fehler(stand, heute, alt_stand, basis=reihe)
+    neu_lik = None if fehler else lik_punkte(stand, reihe)
     alt_lik = Decimal(str(alt_lik or 0))
     rechnung = None
     if neu_lik and alt_lik > 0:
@@ -433,7 +448,7 @@ def lage(vertrag, *, heute, stand=None, wirksam_ab=None, versand_am=None, zugang
         'hoechst_text': (gettext('Höchstens CHF %(grenze)s (Art. 17 VMWG). Ein höherer Betrag wird abgelehnt.') % {
             'grenze': f'{rechnung.hoechst_netto:.2f}'} if rechnung else
             gettext('Erst nach einem veröffentlichten LIK-Stand möglich.')),
-        'letzter_stand': letzter_stand(bis=heute), 'alt_stand': alt_stand,
+        'letzter_stand': letzter_stand(bis=heute, basis=reihe), 'alt_stand': alt_stand, 'lik_basis': reihe,
         'alt_lik': alt_lik, 'neu_lik': neu_lik, 'basis_fehlt': alt_lik <= 0,
         'alt_netto': Decimal(str(alt_netto or 0)).quantize(Decimal('0.01')),
         'rechnung': rechnung, 'termin': termin, 'frueh': frueh,
@@ -455,7 +470,7 @@ def pruefe(vertrag, *, heute, stand, wirksam_ab, neu_netto, versand_am=None, zug
               zugang_am=zugang_am, basis_lik=basis_lik)
     meldungen = []
     if stand is None:
-        meldungen.append(gettext('Bitte den Monat des neuen LIK-Standes wählen.'))
+        meldungen.append(lg['stand_fehler'] or gettext('Bitte den Monat des neuen LIK-Standes wählen.'))
     elif lg['stand_fehler']:
         meldungen.append(lg['stand_fehler'])
     if lg['basis_fehlt']:

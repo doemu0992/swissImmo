@@ -432,3 +432,9 @@ def team_der_organisation(organisation):
     return (get_user_model().objects
             .filter(is_active=True, mitgliedschaften__organisation=organisation)
             .distinct().order_by('first_name', 'username'))
+
+
+def _lik_basen():
+    """Die geführten LIK-Basisreihen für die Auswahl `fw/_lik_basis_feld.html` (eine Liste: `core.services.lik`)."""
+    from core.services.lik import LIK_BASEN
+    return LIK_BASEN

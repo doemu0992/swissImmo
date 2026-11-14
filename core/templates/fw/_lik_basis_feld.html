@@ -1,0 +1,8 @@
+{% load i18n %}{% comment %}Auswahl der LIK-Basisreihe (core/services/lik.py, LIK_BASEN). Parameter: feld_id, gewaehlt, lik_basen;
+optional leer (Text der leeren Option: «Standard der höheren Stufe») und live (Aktion bei Änderung).
+Das sichtbare Label steht in der einbindenden Vorlage (`for="feld_id"`); `aria-label` nennt das Feld auch dort,
+wo dieser Baustein allein gelesen wird.{% endcomment %}
+<select id="{{ feld_id }}" name="lik_basis" aria-label="{% trans 'LIK-Basisreihe' %}" class="fw-feld w-full"{% if live %} data-bei-aenderung="{{ live }}"{% endif %}>
+    {% if leer %}<option value="">{{ leer }}</option>{% endif %}
+    {% for b in lik_basen %}<option value="{{ b }}"{% if b == gewaehlt %} selected{% endif %}>{{ b }} = 100</option>{% endfor %}
+</select>

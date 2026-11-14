@@ -34,7 +34,7 @@ from rentals.models import Mietvertrag
 
 logger = logging.getLogger(__name__)
 
-from ._basis import _global_filter, _num, _vermietung_pipeline
+from ._basis import _global_filter, _lik_basen, _num, _vermietung_pipeline
 from core.tenancy import aktuelle_organisation, organisation_der_anfrage
 
 
@@ -107,7 +107,11 @@ def fw_account(request):
         vw.aktueller_lik_punkte = dec('aktueller_lik_punkte', vw.aktueller_lik_punkte)
         vw.nk_honorar_prozent = dec('nk_honorar_prozent', vw.nk_honorar_prozent)
         # LIK-Basis + Stand-Monat
-        vw.lik_basis = (P.get('lik_basis') or vw.lik_basis or 'Dezember 2020').strip()
+        # Nur eine geführte Reihe (Auswahlliste). Die Vorgabe der Verwaltung für neue Verträge, wenn weder
+        # Liegenschaft noch Eigentümer eine eigene festlegen; bestehende Verträge behalten ihre Reihe.
+        from core.services import lik as _lik
+        vw.lik_basis = (_lik.basis_gueltig(P.get('lik_basis')) or _lik.basis_gueltig(vw.lik_basis)
+                        or _lik.LIK_BASIS)
         stand_raw = (P.get('aktueller_lik_stand') or '').strip()  # 'YYYY-MM' aus <input type=month>
         if stand_raw:
             try:
@@ -175,7 +179,7 @@ def fw_account(request):
     from core.services.unterschrift import unterschrift_url as _sig_url
     sig_url = _sig_url(vw)
     return render(request, 'fw/account.html', {
-        **basis, 'nav': 'account', 'vw': vw,
+        **basis, 'nav': 'account', 'vw': vw, 'lik_basen': _lik_basen(),
         'logo_url': _url('logo'), 'unterschrift_url': sig_url,
         'unterschrift_verwaist': bool(getattr(vw, 'unterschrift_bild', None)) and not sig_url,
         # Liest die Rolle am Dekorator von fw_datenreset ab — Anzeige und

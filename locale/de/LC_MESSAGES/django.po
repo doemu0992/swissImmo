@@ -38958,3 +38958,78 @@ msgstr "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt
 
 msgid "RLS-Probe: %(n)s Befund(e) in den letzten 14 Tagen (manage.py sicherheitslog). Bei 0 über zwei Wochen kann scharf geschaltet werden (docs/RLS.md)."
 msgstr "RLS-Probe: %(n)s Befund(e) in den letzten 14 Tagen (manage.py sicherheitslog). Bei 0 über zwei Wochen kann scharf geschaltet werden (docs/RLS.md)."
+
+msgid "In der LIK-Reihe «%(basis)s = 100» fehlt der Wert für %(monat)s. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder den Monat nachtragen."
+msgstr "In der LIK-Reihe «%(basis)s = 100» fehlt der Wert für %(monat)s. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder den Monat nachtragen."
+
+msgid "Die LIK-Reihe «%(basis)s = 100» hat noch keine Werte. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder die Monate nachtragen."
+msgstr "Die LIK-Reihe «%(basis)s = 100» hat noch keine Werte. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder die Monate nachtragen."
+
+msgid "LIK-Basisreihe"
+msgstr "LIK-Basisreihe"
+
+msgid "Die Reihe, in der die Punkte dieses Vertrags stehen. Beim Wechsel Punkte und Stand-Monat in der neuen Reihe eintragen; umgerechnet wird nicht."
+msgstr "Die Reihe, in der die Punkte dieses Vertrags stehen. Beim Wechsel Punkte und Stand-Monat in der neuen Reihe eintragen; umgerechnet wird nicht."
+
+msgid "Vorgabe für neue Verträge, wenn weder Liegenschaft noch Mandat eine eigene Reihe festlegen. «Landesindex LIK (Punkte)» und Stand-Monat daneben stehen in der Reihe Dezember 2020."
+msgstr "Vorgabe für neue Verträge, wenn weder Liegenschaft noch Mandat eine eigene Reihe festlegen. «Landesindex LIK (Punkte)» und Stand-Monat daneben stehen in der Reihe Dezember 2020."
+
+msgid "Ganze Reihe beim HEV einlesen"
+msgstr "Ganze Reihe beim HEV einlesen"
+
+msgid "Basisreihe"
+msgstr "Basisreihe"
+
+msgid "Die Reihe «%(basis)s = 100» hat noch keine Werte. Verträge dieser Reihe rechnen erst, wenn sie Werte hat: «Ganze Reihe beim HEV einlesen» holt die Tabelle dieser Basis, lückenlos ab dem Basismonat. Werte anderer Reihen werden nie eingesetzt."
+msgstr "Die Reihe «%(basis)s = 100» hat noch keine Werte. Verträge dieser Reihe rechnen erst, wenn sie Werte hat: «Ganze Reihe beim HEV einlesen» holt die Tabelle dieser Basis, lückenlos ab dem Basismonat. Werte anderer Reihen werden nie eingesetzt."
+
+msgid "In dieser Reihe steht noch kein Wert."
+msgstr "In dieser Reihe steht noch kein Wert."
+
+msgid "LIK-Basisreihe (Standard für neue Verträge)"
+msgstr "LIK-Basisreihe (Standard für neue Verträge)"
+
+msgid "Standard des Mandats"
+msgstr "Standard des Mandats"
+
+msgid "Vorgabe für neue Verträge; bestehende Verträge behalten ihre Reihe. Leer: Es gilt der Standard der nächsthöheren Stufe."
+msgstr "Vorgabe für neue Verträge; bestehende Verträge behalten ihre Reihe. Leer: Es gilt der Standard der nächsthöheren Stufe."
+
+msgid "Standard der Verwaltung"
+msgstr "Standard der Verwaltung"
+
+msgid "Die Reihe des Landesindex, in der dieser Vertrag rechnet. Vorgabe: Standard der Liegenschaft, sonst des Mandats, sonst der Verwaltung."
+msgstr "Die Reihe des Landesindex, in der dieser Vertrag rechnet. Vorgabe: Standard der Liegenschaft, sonst des Mandats, sonst der Verwaltung."
+
+msgid "Die Reihe wurde nicht eingelesen. Grund: %(grund)s"
+msgstr "Die Reihe wurde nicht eingelesen. Grund: %(grund)s"
+
+msgid "Reihe «%(basis)s = 100» eingelesen: %(n)s Monate von %(von)s bis %(bis)s."
+msgstr "Reihe «%(basis)s = 100» eingelesen: %(n)s Monate von %(von)s bis %(bis)s."
+
+msgid "Die Reihe ist vollständig: Beim HEV steht kein Monat, der hier fehlt."
+msgstr "Die Reihe ist vollständig: Beim HEV steht kein Monat, der hier fehlt."
+
+msgid "Nicht überschrieben, weil hier schon ein anderer Wert steht (%(n)s): %(werte)s. Bitte prüfen und den falschen löschen."
+msgstr "Nicht überschrieben, weil hier schon ein anderer Wert steht (%(n)s): %(werte)s. Bitte prüfen und den falschen löschen."
+
+msgid "Der Monat liegt vor dem Basismonat der Reihe (Dezember %(jahr)s) oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines Monats erst Anfang des Folgemonats bekannt."
+msgstr "Der Monat liegt vor dem Basismonat der Reihe (Dezember %(jahr)s) oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines Monats erst Anfang des Folgemonats bekannt."
+
+msgid "Im Basismonat steht die Reihe bei 100.0 Punkten."
+msgstr "Im Basismonat steht die Reihe bei 100.0 Punkten."
+
+msgid "Der Wert weicht um mehr als %(sprung)s Punkte vom Vormonat dieser Reihe ab. Tippfehler, oder ein Wert aus einer anderen Basisreihe?"
+msgstr "Der Wert weicht um mehr als %(sprung)s Punkte vom Vormonat dieser Reihe ab. Tippfehler, oder ein Wert aus einer anderen Basisreihe?"
+
+msgid "Unbekannte LIK-Basisreihe."
+msgstr "Unbekannte LIK-Basisreihe."
+
+msgid "Die LIK-Basisreihe dieses Vertrags lässt sich nicht mehr ändern: Es bestehen Mietzinsanpassungen in der Reihe «%(basis)s = 100»."
+msgstr "Die LIK-Basisreihe dieses Vertrags lässt sich nicht mehr ändern: Es bestehen Mietzinsanpassungen in der Reihe «%(basis)s = 100»."
+
+msgid "Beim Wechsel der LIK-Basisreihe sind die Basis-Punkte und ihr Stand-Monat in der neuen Reihe «%(basis)s = 100» anzugeben."
+msgstr "Beim Wechsel der LIK-Basisreihe sind die Basis-Punkte und ihr Stand-Monat in der neuen Reihe «%(basis)s = 100» anzugeben."
+
+msgid "Für %(stand)s weist die Reihe «%(basis)s = 100» %(tabelle)s Punkte aus, erfasst sind %(punkte)s. Beim Wechsel der Basisreihe müssen die Punkte in der neuen Reihe stehen; umgerechnet wird nicht."
+msgstr "Für %(stand)s weist die Reihe «%(basis)s = 100» %(tabelle)s Punkte aus, erfasst sind %(punkte)s. Beim Wechsel der Basisreihe müssen die Punkte in der neuen Reihe stehen; umgerechnet wird nicht."

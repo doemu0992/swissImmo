@@ -18,7 +18,7 @@ from django.utils.translation import gettext
 from core.auth import rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN
 from portfolio.models import Liegenschaft
 
-from ._basis import _global_filter, _num
+from ._basis import _global_filter, _lik_basen, _num
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +59,15 @@ def fw_eigentuemer_form(request, pk=None):
             obj.honorar_prozent = Decimal((_num(P.get('honorar_prozent')) or '0'))
         except Exception:
             obj.honorar_prozent = Decimal('0.00')
+        # Standard-Basisreihe des Landesindex für dieses Mandat: nur aus der Liste, leer = Vorgabe der Verwaltung.
+        # `'x' in P`: Ein Formular, das das Feld nicht mitschickt, löscht die Festlegung nicht.
+        if 'lik_basis' in P:
+            from core.services import lik
+            roh = (P.get('lik_basis') or '').strip()
+            if roh and not lik.basis_gueltig(roh):
+                messages.error(request, gettext('Unbekannte LIK-Basisreihe.'))
+                return redirect(request.path)
+            obj.lik_basis = roh
         if not obj.firma_oder_name:
             messages.error(request, gettext('Name / Firma ist erforderlich.'))
             return redirect(request.path)
@@ -93,7 +102,7 @@ def fw_eigentuemer_form(request, pk=None):
     sig_url = _sig_url(md) if md else ''
     return render(request, 'fw/mandat_form.html', {
         **basis, 'nav': 'mandate', 'md': md, 'ist_neu': md is None,
-        'alle_liegenschaften': alle_lg, 'zugeordnet': zugeordnet,
+        'alle_liegenschaften': alle_lg, 'zugeordnet': zugeordnet, 'lik_basen': _lik_basen(),
         'unterschrift_url': sig_url,
         'unterschrift_verwaist': bool(md and getattr(md, 'unterschrift_bild', None)) and not sig_url,
         'portal_user': getattr(md, 'benutzer', None) if md else None,

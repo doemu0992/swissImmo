@@ -208,7 +208,7 @@ def stufen_berechnen(start_netto, stufen):
     return ergebnis
 
 
-def basis_lik_vorschlag(beginn, live=None):
+def basis_lik_vorschlag(beginn, live=None, basis=None):
     """`(stand, punkte)`: der neueste veröffentlichte LIK-Stand bis zum Monat VOR dem Mietbeginn.
 
     Nicht der aktuelle: Die Basis darf nicht nach dem Mietbeginn-Monat liegen.
@@ -218,6 +218,9 @@ def basis_lik_vorschlag(beginn, live=None):
     nach dem Monat vor dem Mietbeginn liegt. Ohne ihn schlüge der Assistent für einen Vertrag nach dem letzten
     Tabellenmonat den veralteten Tabellenwert vor, obwohl der neuere längst veröffentlicht ist. Vorgabe: ein, ausser in
     den Tests (`settings.LIK_LIVE_ABRUF`), damit sie nicht vom Netz abhängen.
+
+    `basis`: die Reihe des Vertrags (ohne Angabe die Standardreihe). Der Vorschlag kommt NUR aus dieser Reihe; hat
+    sie für den Zeitraum keinen Wert, `(None, None)` — nie der Wert einer anderen Reihe.
     """
     from django.conf import settings
 
@@ -226,8 +229,8 @@ def basis_lik_vorschlag(beginn, live=None):
         return None, None
     jahr, monat = (beginn.year, beginn.month - 1) if beginn.month > 1 else (beginn.year - 1, 12)
     grenze = (jahr, monat)
-    reihen = lik_reihen()
-    erstes = min(reihen)
+    reihen = lik_reihen(basis=basis)
+    erstes = min(reihen) if reihen else jahr + 1              # leere Reihe: kein Vorschlag
     ergebnis = (None, None)
     while jahr >= erstes:
         punkte = lik_punkte_fuer(jahr, monat, reihen)
@@ -238,7 +241,7 @@ def basis_lik_vorschlag(beginn, live=None):
     if live is None:
         live = getattr(settings, 'LIK_LIVE_ABRUF', not getattr(settings, 'TESTING', False))
     if live:
-        l_stand, l_punkte, _basis = aktueller_lik_wert(live=True)
+        l_stand, l_punkte, _basis = aktueller_lik_wert(live=True, basis=basis)
         if (l_stand and l_punkte and (l_stand.year, l_stand.month) <= grenze
                 and (ergebnis[0] is None or l_stand > ergebnis[0])):
             return l_stand, l_punkte
@@ -294,7 +297,7 @@ def dauer_befund(modell, beginn, ende=None, ist_befristet=None, verzicht_bis=Non
 
 
 def _index_befunde(beginn, ende, ist_befristet, verzicht_bis, stufen, basis_lik_punkte, basis_lik_stand,
-                   weitergabe_prozent, intervall_monate, index_art):
+                   weitergabe_prozent, intervall_monate, index_art, lik_basis=None):
     befunde = []
     jahre = MINDESTJAHRE['index']
     if beginn is not None:
@@ -302,12 +305,14 @@ def _index_befunde(beginn, ende, ist_befristet, verzicht_bis, stufen, basis_lik_
         if b:
             befunde.append(b)
 
-    vorschlag_stand, vorschlag_punkte = basis_lik_vorschlag(beginn)
+    # Vorschlag und Abgleich in der Reihe des Vertrags (`lik_basis`; ohne Angabe die Standardreihe).
+    vorschlag_stand, vorschlag_punkte = basis_lik_vorschlag(beginn, basis=lik_basis)
     punkte = _dec(basis_lik_punkte)
     if punkte is None or punkte <= 0:
         from core.services.lik import lik_punkte_fuer
         if basis_lik_stand is not None:
-            fix_stand, fix_punkte = basis_lik_stand, lik_punkte_fuer(basis_lik_stand.year, basis_lik_stand.month)
+            fix_stand, fix_punkte = basis_lik_stand, lik_punkte_fuer(basis_lik_stand.year, basis_lik_stand.month,
+                                                                      basis=lik_basis)
         else:
             fix_stand, fix_punkte = vorschlag_stand, vorschlag_punkte
         fix = (_fix('basis_lik_punkte', str(fix_punkte),
@@ -333,7 +338,7 @@ def _index_befunde(beginn, ende, ist_befristet, verzicht_bis, stufen, basis_lik_
             ART_INDEX, feld='basis_lik_stand', fix=fix))
     if basis_lik_stand is not None and punkte is not None and punkte > 0:
         from core.services.lik import lik_punkte_fuer
-        tabelle = lik_punkte_fuer(basis_lik_stand.year, basis_lik_stand.month)
+        tabelle = lik_punkte_fuer(basis_lik_stand.year, basis_lik_stand.month, basis=lik_basis)
         if tabelle is not None and tabelle != punkte:
             befunde.append(_b(
                 'index_basis_abweichung',
@@ -491,8 +496,10 @@ def _staffel_befunde(beginn, ende, ist_befristet, verzicht_bis, stufen, weiterga
 
 def pruefe(*, modell, beginn, ende=None, ist_befristet=None, verzicht_bis=None, netto=None, stufen=None,
            basis_lik_punkte=None, basis_lik_stand=None, weitergabe_prozent=None, intervall_monate=None,
-           index_art=None, hat_zeitplan=False):
+           index_art=None, hat_zeitplan=False, lik_basis=None):
     """Alle Befunde zu einem Mietzinsmodell, Sperren zuerst.
+
+    `lik_basis`: die Basisreihe des Vertrags; Vorschlag und Tabellenabgleich der Index-Basis lesen nur sie.
 
     `stufen`: None = unbekannt (Regeln über Stufen entfallen, etwa bei einem Vertrag, der noch
     keine Primärschlüssel-Beziehung hat), `[]` = bekannt und leer. Elemente siehe `stufen_normieren`.
@@ -507,7 +514,8 @@ def pruefe(*, modell, beginn, ende=None, ist_befristet=None, verzicht_bis=None, 
     norm = None if stufen is None else stufen_normieren(stufen)
     if modell == 'index':
         befunde = _index_befunde(beginn, ende, ist_befristet, verzicht_bis, norm, basis_lik_punkte,
-                                 basis_lik_stand, weitergabe_prozent, intervall_monate, index_art)
+                                 basis_lik_stand, weitergabe_prozent, intervall_monate, index_art,
+                                 lik_basis=lik_basis)
     elif modell == 'staffel':
         befunde = _staffel_befunde(beginn, ende, ist_befristet, verzicht_bis, norm, weitergabe_prozent,
                                    intervall_monate, hat_zeitplan)
@@ -552,7 +560,8 @@ def pruefe_vertrag(vertrag, stufen='db', hat_zeitplan=False):
         ist_befristet=vertrag.ist_befristet, verzicht_bis=vertrag.vermieter_kuendigungsverzicht_bis,
         netto=vertrag.netto_mietzins, stufen=stufen, basis_lik_punkte=vertrag.basis_lik_punkte,
         basis_lik_stand=vertrag.basis_lik_stand, weitergabe_prozent=vertrag.index_weitergabe_prozent,
-        intervall_monate=vertrag.index_intervall_monate, hat_zeitplan=hat_zeitplan)
+        intervall_monate=vertrag.index_intervall_monate, hat_zeitplan=hat_zeitplan,
+        lik_basis=getattr(vertrag, 'lik_basis', None) or None)
 
 
 # ── Vertragstext ──────────────────────────────────────────────────────────────
@@ -563,7 +572,7 @@ def klausel_kontext(vertrag):
     Stelle (PDF, DocuSeal, Vorschau) wird nicht gebraucht. Eine Vorschau mit noch nicht
     gespeicherten Stufen setzt `vertrag.vorschau_stufen` (Liste für `stufen_normieren`).
     """
-    from core.services.lik import LIK_BASIS, stand_label
+    from core.services.lik import basis_von, stand_label
     modell = getattr(vertrag, 'mietzins_modell', 'fest')
     if modell not in MINDESTJAHRE:
         return {'modell': modell}
@@ -575,10 +584,9 @@ def klausel_kontext(vertrag):
         'dauer_art': None if bis is None else ('befristet' if (vertrag.ist_befristet and vertrag.ende) else 'verzicht'),
     }
     if modell == 'index':
-        verwaltung = getattr(getattr(getattr(vertrag, 'einheit', None), 'liegenschaft', None), 'organisation', None)
         punkte = _dec(vertrag.basis_lik_punkte)
         kontext.update(
-            lik_basis=getattr(verwaltung, 'lik_basis', None) or LIK_BASIS,
+            lik_basis=basis_von(vertrag),                     # die Reihe des Vertrags, nicht die Vorgabe der Verwaltung
             lik_stand=stand_label(vertrag.basis_lik_stand),
             lik_punkte=f'{punkte:.1f}'.replace('.', ',') if punkte is not None else '',
             weitergabe=_zahl(_dec(vertrag.index_weitergabe_prozent) or VORGABE_WEITERGABE),

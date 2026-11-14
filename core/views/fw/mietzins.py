@@ -83,6 +83,7 @@ def fw_mietzins(request):
     # Verwaltung genau EINMAL laden (statt pro Vertrag via v.mietzinspotenzial).
     curr_zins_vw = vw.aktueller_referenzzinssatz if vw else None
     curr_lik_vw = vw.aktueller_lik_punkte if vw else None
+    from core.services import lik as _lik
 
     def _potenzial(v):
         if v.mietzins_modell in MODELLE_OHNE_MASSENLAUF:
@@ -94,7 +95,9 @@ def fw_mietzins(request):
             return 'decrease'
         if curr_zins_vw > basis_zins:
             return 'increase'
-        if curr_lik_vw is not None and curr_lik_vw > (basis_lik + Decimal('1.5')):
+        # Der aktuelle LIK in der Reihe des Vertrags (für die Standardreihe der Wert der Verwaltung wie bisher).
+        lik_reihe = _lik.aktuell_in_reihe(_lik.basis_von(v), curr_lik_vw)
+        if lik_reihe is not None and lik_reihe > (basis_lik + Decimal('1.5')):
             return 'increase'
         return 'neutral'
 
@@ -175,17 +178,56 @@ def _datum(x):
         return None
 
 
-def _marktstand(vw):
-    """(Referenzzins, LIK, LIK-Stand, LIK-Basis) der Verwaltung — an ihm wird die
-    Anpassung nach OR 269a begründet."""
+def _marktstand(vw, basis=None):
+    """(Referenzzins, LIK, LIK-Stand, LIK-Basis) — an ihm wird die Anpassung nach OR 269a begründet.
+
+    `basis`: die Reihe des Vertrags (`lik.basis_von`). LIK und Stand stammen aus DIESER Reihe. Für eine andere als
+    die Standardreihe gibt es keinen Ersatzwert: Hat sie keinen Wert, ist der LIK `None`, und der Aufrufer sagt,
+    was fehlt (`_lik_fehlt_meldung`). Die Standardreihe liest wie bisher (Live-Abruf, Tabelle, Wert der Verwaltung)."""
     from core.utils import get_current_ref_zins, get_current_lik
-    from core.services.lik import aktueller_lik_wert
+    from core.services.lik import LIK_BASIS, aktueller_lik_wert
+    basis = basis or LIK_BASIS
     aktuell_ref = _dec(get_current_ref_zins(vw))
+    if basis != LIK_BASIS:
+        stand, punkte, _b = aktueller_lik_wert(basis=basis)
+        return aktuell_ref, punkte, stand, basis
     aktuell_lik = _dec(get_current_lik(vw))
     _auto_stand, _auto_lik, _auto_basis = aktueller_lik_wert()
     stand = _auto_stand or (vw.aktueller_lik_stand if vw else None)
-    lik_basis = _auto_basis or (vw.lik_basis if vw else 'Dezember 2020')
-    return aktuell_ref, aktuell_lik, stand, lik_basis
+    return aktuell_ref, aktuell_lik, stand, basis
+
+
+def _lik_fehlt_meldung(basis, heute):
+    """Welcher Monat in welcher Reihe fehlt: der Vormonat (der jüngste, der veröffentlicht sein kann)."""
+    from core.services import lik
+    letzter = lik.letzter_tabellenmonat(basis=basis)
+    if letzter is None:
+        return lik.fehlt_text(basis)
+    return lik.fehlt_text(basis, *lik._danach(*letzter))
+
+
+def _basis_wechsel_fehler(v, neue_basis, punkte, stand):
+    """Meldung, wenn die Basisreihe dieses Vertrags nicht (so) gewechselt werden kann — sonst ''.
+
+    Der Wechsel ist kein Umrechnen: Punkte und Stand-Monat werden in der NEUEN Reihe erfasst. Zwei Sperren halten
+    die Reihen auseinander: (1) Gebuchte Anpassungen tragen ihren LIK in der alten Reihe; mit ihnen ist ein Wechsel
+    nicht mehr möglich. (2) Führt die neue Reihe den Stand-Monat, müssen die Punkte dazu passen — sonst stünde der
+    Wert der alten Reihe unter dem Namen der neuen."""
+    from core.services import lik
+    from rentals.models import MietzinsAnpassung
+    if v.anpassungen.filter(status__in=MietzinsAnpassung.GEBUCHT, neuer_lik_index__isnull=False).exists():
+        return gettext('Die LIK-Basisreihe dieses Vertrags lässt sich nicht mehr ändern: Es bestehen '
+                       'Mietzinsanpassungen in der Reihe «%(basis)s = 100».') % {'basis': lik.basis_von(v)}
+    if stand is None or not punkte or punkte <= 0:
+        return gettext('Beim Wechsel der LIK-Basisreihe sind die Basis-Punkte und ihr Stand-Monat in der neuen '
+                       'Reihe «%(basis)s = 100» anzugeben.') % {'basis': neue_basis}
+    tabelle = lik.lik_punkte_fuer(stand.year, stand.month, basis=neue_basis)
+    if tabelle is not None and tabelle != punkte:
+        return gettext('Für %(stand)s weist die Reihe «%(basis)s = 100» %(tabelle)s Punkte aus, erfasst sind '
+                       '%(punkte)s. Beim Wechsel der Basisreihe müssen die Punkte in der neuen Reihe stehen; '
+                       'umgerechnet wird nicht.') % {
+                           'stand': stand.strftime('%m.%Y'), 'basis': neue_basis, 'tabelle': tabelle, 'punkte': punkte}
+    return ''
 
 
 def _vorbehalt_satz(anp):
@@ -287,7 +329,8 @@ def fw_mietzins_anpassung(request, vertrag_id):
     vw = v.organisation
     lg = v.einheit.liegenschaft
     heute = timezone.localdate()
-    aktuell_ref, aktuell_lik, aktuell_lik_stand, lik_basis = _marktstand(vw)
+    from core.services import lik as _lik
+    aktuell_ref, aktuell_lik, aktuell_lik_stand, lik_basis = _marktstand(vw, _lik.basis_von(v))
     formular = formular_status(lg, 'mietzins')
     zurueck = f'/neu/mietzins/{v.id}/anpassung/'
 
@@ -315,7 +358,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
         if P.get('basis_zins') not in (None, ''):
             v.basis_referenzzinssatz = _dec(P.get('basis_zins'), str(v.basis_referenzzinssatz or aktuell_ref))
         if P.get('basis_lik') not in (None, ''):
-            v.basis_lik_punkte = _dec(P.get('basis_lik'), str(v.basis_lik_punkte or aktuell_lik))
+            v.basis_lik_punkte = _dec(P.get('basis_lik'), str(v.basis_lik_punkte or aktuell_lik or 0))
         stand_raw = (P.get('basis_lik_stand') or '').strip()  # 'YYYY-MM'
         if stand_raw:
             try:
@@ -323,7 +366,21 @@ def fw_mietzins_anpassung(request, vertrag_id):
                 v.basis_lik_stand = date(int(_jy), int(_jm), 1)
             except Exception:
                 logger.debug("Fehler bewusst übergangen", exc_info=True)
-        v.save(update_fields=['basis_referenzzinssatz', 'basis_lik_punkte', 'basis_lik_stand'])
+        # Basisreihe des Vertrags: nur aus der Liste, und nur zusammen mit Punkten und Stand der neuen Reihe.
+        neue_basis = (P.get('lik_basis') or '').strip()
+        if neue_basis and neue_basis != lik_basis:
+            if not _lik.basis_gueltig(neue_basis):
+                messages.error(request, gettext('Unbekannte LIK-Basisreihe.'))
+                return redirect(zurueck)
+            wechsel_fehler = _basis_wechsel_fehler(v, neue_basis, v.basis_lik_punkte, v.basis_lik_stand)
+            if wechsel_fehler:
+                messages.error(request, '❌ ' + wechsel_fehler)
+                return redirect(zurueck)
+            v.lik_basis = neue_basis
+            aktuell_ref, aktuell_lik, aktuell_lik_stand, lik_basis = _marktstand(vw, neue_basis)
+            log_aktion(request, "LIK-Basisreihe des Vertrags geändert", str(v),
+                       f"neu «{neue_basis} = 100», Basis {v.basis_lik_punkte} Punkte", ziel=v)
+        v.save(update_fields=['basis_referenzzinssatz', 'basis_lik_punkte', 'basis_lik_stand', 'lik_basis'])
 
         index_modus = v.mietzins_modell == 'index'
         if index_modus:
@@ -340,7 +397,11 @@ def fw_mietzins_anpassung(request, vertrag_id):
             return redirect(zurueck)
         alt_nk = v.effektive_nebenkosten(wirksam_ab - _timedelta(days=1)) if neu_nk is not None else None
         neu_zins = _dec(P.get('neu_zins'), str(aktuell_ref))
-        neu_lik = _dec(P.get('neu_lik'), str(aktuell_lik))
+        if aktuell_lik is None and not index_modus and P.get('neu_lik') in (None, ''):
+            # Die Reihe des Vertrags hat keinen aktuellen Wert, und es wurde keiner eingegeben: nichts einsetzen.
+            messages.error(request, '❌ ' + _lik_fehlt_meldung(lik_basis, heute))
+            return redirect(zurueck)
+        neu_lik = _dec(P.get('neu_lik'), str(aktuell_lik if aktuell_lik is not None else alt_lik or 0))
         kosten_pct = _dec(P.get('kosten_pct'), '0')
 
         # Server-seitige Fristenkontrolle (Art. 269d OR): eine Mietzinserhöhung darf
@@ -423,7 +484,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
                 'alter_referenzzinssatz': alt_zins, 'neuer_referenzzinssatz': alt_zins,
                 'erhoehung_prozent_total': delta, 'lik_prozent': delta,
                 'zins_prozent': None, 'kosten_prozent': None, 'kosten_ausgeglichen_bis': None,
-                'begruendung': (idx.begruendung(rechnung, stand, neu_netto, lage['alt_stand'])
+                'begruendung': (idx.begruendung(rechnung, stand, neu_netto, lage['alt_stand'], basis=lik_basis)
                                 + (' ' + zusatz if zusatz else '')),
             })
         neu_angelegt = entwurf is None and ablauf.offener_entwurf(v) is None
@@ -509,8 +570,15 @@ def fw_mietzins_anpassung(request, vertrag_id):
     # Allgemeine Kostensteigerung: Pauschale (0.5 %/Jahr) seit «ausgeglichen bis», sonst seit
     # Vertragsbeginn — als editierbarer Vorschlag, nicht automatisch weitergegeben.
     kosten_vorschlag = kostensteigerung_pauschal_pct(v.kostensteigerung_datum or v.beginn, heute)
+    lik_fehlt = aktuell_lik is None
+    if lik_fehlt:
+        # Die Reihe des Vertrags hat keinen aktuellen Wert. Gesagt wird, was fehlt; gerechnet wird ohne Teuerung
+        # (neuer LIK = bisheriger), nie mit dem Wert einer anderen Reihe.
+        messages.error(request, _lik_fehlt_meldung(lik_basis, heute))
+        aktuell_lik = alt_lik if (alt_lik or 0) > 0 else None
     if index_lage is None:
-        pot = berechne_mietpotenzial(v, aktuell_ref, aktuell_lik, kosten_vorschlag, wirksam_ab=termin) or {}
+        pot = berechne_mietpotenzial(v, aktuell_ref, aktuell_lik if aktuell_lik is not None else Decimal('0'),
+                                     kosten_vorschlag, wirksam_ab=termin) or {}
         for hinweis in pot.get('hinweise', []):
             messages.warning(request, hinweis)
     else:
@@ -544,19 +612,23 @@ def fw_mietzins_anpassung(request, vertrag_id):
         nk_vorschlag = entwurf.neue_nebenkosten
     hat_vorbehalt = bool(entwurf and (entwurf.vorbehalt_betrag is not None
                                       or entwurf.vorbehalt_prozent is not None))
+
+    def leer(wert):
+        """Ein fehlender LIK steht als leeres Feld da, nicht als «None»."""
+        return '' if wert is None else wert
     return render(request, 'fw/mietzins_anpassung.html', {
         **basis, 'nav': 'mietzins', 'v': v, 'lg': lg,
         'alt_netto': alt_netto,
         'alt_zins': alt_zins if (alt_zins or 0) > 0 else aktuell_ref,
-        'alt_lik': alt_lik if (alt_lik or 0) > 0 else aktuell_lik,
+        'alt_lik': alt_lik if (alt_lik or 0) > 0 else leer(aktuell_lik),
         'basis_vertrag_zins': v.basis_referenzzinssatz if (v.basis_referenzzinssatz or 0) > 0 else aktuell_ref,
-        'basis_vertrag_lik': v.basis_lik_punkte if (v.basis_lik_punkte or 0) > 0 else aktuell_lik,
+        'basis_vertrag_lik': v.basis_lik_punkte if (v.basis_lik_punkte or 0) > 0 else leer(aktuell_lik),
         'basis_fehlt': basis_fehlt,
         'hat_anpassung': v._wirksame_anpassung(vortag) is not None,
         'neu_zins': entwurf.neuer_referenzzinssatz if entwurf else aktuell_ref,
-        'neu_lik': entwurf.neuer_lik_index if entwurf else aktuell_lik,
-        'aktuell_ref': aktuell_ref, 'aktuell_lik': aktuell_lik,
-        'lik_basis': lik_basis,
+        'neu_lik': entwurf.neuer_lik_index if entwurf else leer(aktuell_lik),
+        'aktuell_ref': aktuell_ref, 'aktuell_lik': leer(aktuell_lik),
+        'lik_basis': lik_basis, 'lik_basen': _lik.LIK_BASEN, 'lik_fehlt': lik_fehlt,
         'alt_lik_stand': v.effektiver_lik_stand(vortag),
         'aktuell_lik_stand': aktuell_lik_stand,
         'vorschlag_netto': vorschlag_netto,
@@ -572,7 +644,7 @@ def fw_mietzins_anpassung(request, vertrag_id):
                         if entwurf else ''),
         'idx': index_lage,
         'idx_luecke': idx.formular_luecke(formular) if index_lage is not None else None,
-        'idx_stand_optionen': ([(d, idx.lik_punkte(d)) for d in index_lage['staende']]
+        'idx_stand_optionen': ([(d, idx.lik_punkte(d, lik_basis)) for d in index_lage['staende']]
                                if index_lage is not None else []),
         'schlichtungsbehoerde': entwurf.schlichtungsbehoerde if entwurf else '',
         'mit_vorbehalt': hat_vorbehalt,
@@ -752,18 +824,30 @@ def fw_mietzins_massenanpassung(request):
         return redirect('fw_mietzins')
 
     heute = timezone.localdate()
+    from core.services import lik as _lik
+    # Je Vertrag der Marktstand SEINER Reihe (je Reihe einmal gelesen). Ein Vertrag, dessen Reihe keinen
+    # aktuellen Wert hat, wird nicht angepasst und beim Namen genannt.
+    staende = {_lik.LIK_BASIS: (aktuell_lik, aktuell_lik_stand)}
     rows = []
     for v in vertraege:
+        reihe = _lik.basis_von(v)
+        if reihe not in staende:
+            staende[reihe] = _marktstand(vw, reihe)[1:3]
+        lik_v, lik_stand_v = staende[reihe]
         termin = naechster_anpassungstermin(v, heute)
         alt_netto, alt_zins, alt_lik = bisheriger_stand(v, termin)
-        pot = berechne_mietpotenzial(v, aktuell_ref, aktuell_lik, wirksam_ab=termin) or {}
+        if lik_v is None:
+            messages.warning(request, f'{v}: ' + _lik_fehlt_meldung(reihe, heute))
+            pot = {}
+        else:
+            pot = berechne_mietpotenzial(v, aktuell_ref, lik_v, wirksam_ab=termin) or {}
         neu_netto = pot.get('neu_chf')
         delta = (neu_netto - (alt_netto or Decimal('0'))) if neu_netto is not None else None
         formular = formular_status(v.einheit.liegenschaft, 'mietzins')
         rows.append({
             'v': v, 'pot': pot, 'neu_netto': neu_netto, 'termin': termin,
             'alt_netto': alt_netto, 'alt_zins': alt_zins, 'alt_lik': alt_lik,
-            'delta': delta, 'formular': formular,
+            'delta': delta, 'formular': formular, 'lik_basis': reihe, 'neu_lik': lik_v, 'neu_lik_stand': lik_stand_v,
             'basis_fehlt': not ((v.basis_referenzzinssatz or 0) > 0 and (v.basis_lik_punkte or 0) > 0),
             'kanton_fehlt': formular['kanton_fehlt'],
             'unveraendert': (delta is not None and delta == 0),
@@ -802,8 +886,8 @@ def fw_mietzins_massenanpassung(request):
             'wirksam_ab': r['termin'], 'neuer_netto_mietzins': r['neu_netto'],
             'alter_netto_mietzins': r['alt_netto'],
             'alter_referenzzinssatz': r['alt_zins'], 'neuer_referenzzinssatz': aktuell_ref,
-            'alter_lik_index': r['alt_lik'], 'neuer_lik_index': aktuell_lik,
-            'neuer_lik_stand': aktuell_lik_stand,
+            'alter_lik_index': r['alt_lik'], 'neuer_lik_index': r['neu_lik'],
+            'neuer_lik_stand': r['neu_lik_stand'],
             'erhoehung_prozent_total': pot.get('delta_prozent'),
             'zins_prozent': pot.get('zins_pct'), 'lik_prozent': pot.get('lik_pct'),
             'kosten_prozent': pot.get('kosten_pct'),
@@ -811,7 +895,7 @@ def fw_mietzins_massenanpassung(request):
         })
         log_aktion(request, "Mietzinsanpassung: Entwurf (Massenlauf)", str(v),
                    f"neu CHF {anp.neuer_netto_mietzins}, wirksam {anp.wirksam_ab}", ziel=v)
-        pdf = _formular_pdf(v, anp, vw, lik_basis, r['formular'])
+        pdf = _formular_pdf(v, anp, vw, r['lik_basis'], r['formular'])
         try:
             for page in PdfReader(_io.BytesIO(pdf)).pages:
                 writer.add_page(page)
@@ -875,7 +959,7 @@ def anfangsmietzins_auto_ablegen(vertrag, verwaltung=None):
     # Anpassung), nicht der Wert zu Beginn der Vormiete; Referenzzins und LIK aus der damals wirksamen Basis.
     from core.services.anfangsformular import vormiete_werte
     vor = vormiete_werte(vertrag)
-    from core.services.lik import LIK_BASIS
+    from core.services.lik import basis_von
     daten = {
         'anfang_netto': anf_netto,
         'anfang_nk': anf_nk,
@@ -886,7 +970,8 @@ def anfangsmietzins_auto_ablegen(vertrag, verwaltung=None):
         'begruendung': '',
         'basis_ref': vor['ref'] if vor else vertrag.basis_referenzzinssatz,
         'basis_lik': vor['lik'] if vor else vertrag.basis_lik_punkte,
-        'basis_lik_basis': LIK_BASIS,
+        # Die Reihe, in der `basis_lik` steht: die des Vormietvertrags, wenn der Wert von dort kommt.
+        'basis_lik_basis': basis_von(vor['vertrag'] if vor else vertrag),
         'pflicht_info': info,
     }
     vw = verwaltung or (einheit.liegenschaft.organisation if einheit.liegenschaft else None)
@@ -937,10 +1022,11 @@ def fw_anfangsmietzins(request, vertrag_id):
 
     # Berechnungsgrundlagen: Referenzzinssatz + LIK-Punkte + LIK-Basis. Quelle = die Basis, auf der der
     # bisherige Mietzins am Stichtag beruhte (Art. 19 Abs. 3 VMWG), sonst der aktuelle Vertrag.
-    from core.services.lik import LIK_BASIS
+    from core.services.lik import basis_von
     basis_ref = vor_werte['ref'] if vor_werte else v.basis_referenzzinssatz
     basis_lik = vor_werte['lik'] if vor_werte else v.basis_lik_punkte
-    basis_lik_basis = LIK_BASIS
+    # Die Reihe, in der `basis_lik` steht: die des Vormietvertrags, wenn der Wert von dort kommt.
+    basis_lik_basis = basis_von(vor_werte['vertrag'] if vor_werte else v)
 
     from core.services.formular_fill import mit_wasserzeichen
     from core.services.formular_status import formular_status, kanton_fehlt_meldung

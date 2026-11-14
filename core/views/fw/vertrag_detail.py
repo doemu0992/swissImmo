@@ -156,20 +156,22 @@ def _wg_kandidaten(vertrag):
 def _mietzins_grundlage(v):
     """Referenzzins und LIK, auf denen der verrechnete Mietzins beruht (Basis), samt
     «ausgeglichen bis» und dem aktuellen Stand der Verwaltung zum Vergleich."""
-    from core.services.lik import lik_bezeichnung, stand_label
+    from core.services.lik import aktuell_in_reihe, basis_von, lik_bezeichnung, stand_label
     zins, lik = v.effektive_basis()
+    reihe = basis_von(v)
     # Nur GEBUCHTE Anpassungen (nicht Entwürfe) — dieselbe Auswahl wie die Basis.
     letzte = v._wirksame_anpassung(date.today())
     org = v.organisation
     stand = None if letzte else v.basis_lik_stand
     return {
         'zins': zins, 'lik': lik,
-        'lik_text': lik_bezeichnung(lik, basis=getattr(org, 'lik_basis', None) or 'Dezember 2020', stand=stand),
+        'lik_text': lik_bezeichnung(lik, basis=reihe, stand=stand),
         'teuerung_bis': stand_label(stand),
         'angepasst_per': letzte.wirksam_ab if letzte else None,
         'kosten_bis': v.kostensteigerung_datum,
         'aktuell_zins': getattr(org, 'aktueller_referenzzinssatz', None),
-        'aktuell_lik': getattr(org, 'aktueller_lik_punkte', None),
+        # Zum Vergleich: der aktuelle Stand in der Reihe des Vertrags (None, wenn die Reihe keinen Wert hat).
+        'aktuell_lik': aktuell_in_reihe(reihe, getattr(org, 'aktueller_lik_punkte', None)),
     }
 
 

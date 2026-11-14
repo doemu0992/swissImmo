@@ -40064,3 +40064,78 @@ msgstr "Extra protection for your account, optional: after the password, the por
 
 msgid "RLS-Probe: %(n)s Befund(e) in den letzten 14 Tagen (manage.py sicherheitslog). Bei 0 über zwei Wochen kann scharf geschaltet werden (docs/RLS.md)."
 msgstr "RLS trial: %(n)s finding(s) in the last 14 days (manage.py sicherheitslog). At 0 over two weeks, strict mode can be enabled (docs/RLS.md)."
+
+msgid "In der LIK-Reihe «%(basis)s = 100» fehlt der Wert für %(monat)s. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder den Monat nachtragen."
+msgstr "The CPI series “%(basis)s = 100” has no value for %(monat)s. No value from another series is substituted: import the series under “CPI values” or enter the month."
+
+msgid "Die LIK-Reihe «%(basis)s = 100» hat noch keine Werte. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder die Monate nachtragen."
+msgstr "The CPI series “%(basis)s = 100” has no values yet. No value from another series is substituted: import the series under “CPI values” or enter the months."
+
+msgid "LIK-Basisreihe"
+msgstr "CPI base series"
+
+msgid "Die Reihe, in der die Punkte dieses Vertrags stehen. Beim Wechsel Punkte und Stand-Monat in der neuen Reihe eintragen; umgerechnet wird nicht."
+msgstr "The series in which this contract's points are expressed. When changing it, enter points and reference month in the new series; nothing is converted."
+
+msgid "Vorgabe für neue Verträge, wenn weder Liegenschaft noch Mandat eine eigene Reihe festlegen. «Landesindex LIK (Punkte)» und Stand-Monat daneben stehen in der Reihe Dezember 2020."
+msgstr "Default for new contracts when neither the property nor the mandate sets its own series. “CPI index (points)” and the reference month next to it are in the December 2020 series."
+
+msgid "Ganze Reihe beim HEV einlesen"
+msgstr "Import the whole series from HEV"
+
+msgid "Basisreihe"
+msgstr "Base series"
+
+msgid "Die Reihe «%(basis)s = 100» hat noch keine Werte. Verträge dieser Reihe rechnen erst, wenn sie Werte hat: «Ganze Reihe beim HEV einlesen» holt die Tabelle dieser Basis, lückenlos ab dem Basismonat. Werte anderer Reihen werden nie eingesetzt."
+msgstr "The series “%(basis)s = 100” has no values yet. Contracts in this series are only calculated once it has: “Import the whole series from HEV” fetches this base's table, without gaps from the base month. Values from other series are never substituted."
+
+msgid "In dieser Reihe steht noch kein Wert."
+msgstr "This series has no value yet."
+
+msgid "LIK-Basisreihe (Standard für neue Verträge)"
+msgstr "CPI base series (default for new contracts)"
+
+msgid "Standard des Mandats"
+msgstr "Default of the mandate"
+
+msgid "Vorgabe für neue Verträge; bestehende Verträge behalten ihre Reihe. Leer: Es gilt der Standard der nächsthöheren Stufe."
+msgstr "Default for new contracts; existing contracts keep their series. Empty: the default of the next level up applies."
+
+msgid "Standard der Verwaltung"
+msgstr "Default of the management company"
+
+msgid "Die Reihe des Landesindex, in der dieser Vertrag rechnet. Vorgabe: Standard der Liegenschaft, sonst des Mandats, sonst der Verwaltung."
+msgstr "The national index series in which this contract is calculated. Default: the property's, otherwise the mandate's, otherwise the management company's."
+
+msgid "Die Reihe wurde nicht eingelesen. Grund: %(grund)s"
+msgstr "The series was not imported. Reason: %(grund)s"
+
+msgid "Reihe «%(basis)s = 100» eingelesen: %(n)s Monate von %(von)s bis %(bis)s."
+msgstr "Series “%(basis)s = 100” imported: %(n)s months from %(von)s to %(bis)s."
+
+msgid "Die Reihe ist vollständig: Beim HEV steht kein Monat, der hier fehlt."
+msgstr "The series is complete: HEV lists no month that is missing here."
+
+msgid "Nicht überschrieben, weil hier schon ein anderer Wert steht (%(n)s): %(werte)s. Bitte prüfen und den falschen löschen."
+msgstr "Not overwritten because a different value is already stored here (%(n)s): %(werte)s. Please check and delete the wrong one."
+
+msgid "Der Monat liegt vor dem Basismonat der Reihe (Dezember %(jahr)s) oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines Monats erst Anfang des Folgemonats bekannt."
+msgstr "The month is before the base month of the series (December %(jahr)s) or not yet published: the FSO announces a month's value only at the start of the following month."
+
+msgid "Im Basismonat steht die Reihe bei 100.0 Punkten."
+msgstr "In the base month the series stands at 100.0 points."
+
+msgid "Der Wert weicht um mehr als %(sprung)s Punkte vom Vormonat dieser Reihe ab. Tippfehler, oder ein Wert aus einer anderen Basisreihe?"
+msgstr "The value differs by more than %(sprung)s points from the previous month of this series. A typo, or a value from another base series?"
+
+msgid "Unbekannte LIK-Basisreihe."
+msgstr "Unknown CPI base series."
+
+msgid "Die LIK-Basisreihe dieses Vertrags lässt sich nicht mehr ändern: Es bestehen Mietzinsanpassungen in der Reihe «%(basis)s = 100»."
+msgstr "The CPI base series of this contract can no longer be changed: there are rent adjustments in the series “%(basis)s = 100”."
+
+msgid "Beim Wechsel der LIK-Basisreihe sind die Basis-Punkte und ihr Stand-Monat in der neuen Reihe «%(basis)s = 100» anzugeben."
+msgstr "When changing the CPI base series, the base points and their reference month must be given in the new series “%(basis)s = 100”."
+
+msgid "Für %(stand)s weist die Reihe «%(basis)s = 100» %(tabelle)s Punkte aus, erfasst sind %(punkte)s. Beim Wechsel der Basisreihe müssen die Punkte in der neuen Reihe stehen; umgerechnet wird nicht."
+msgstr "For %(stand)s the series “%(basis)s = 100” shows %(tabelle)s points; %(punkte)s are entered. When changing the base series the points must be in the new series; nothing is converted."

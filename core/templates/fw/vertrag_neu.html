@@ -327,7 +327,7 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
             <div class="fw-formular">
                 <div class="fw-feldblock"><label class="fw-label" for="s_lik">{% trans "Basis Konsumentenpreisindex (LIK)" %}</label>
                     <input name="basis_lik_punkte" id="s_lik" type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" data-bei-eingabe="live" class="fw-feld fw-num">
-                    <p class="fw-hilfe">{% blocktrans with basis=lik_basis %}Basis {{ basis }} = 100 Punkte{% endblocktrans %}</p></div>
+                    <p class="fw-hilfe" id="s_lik_basis_hinweis" data-vorlage="{% blocktrans with basis='§' %}Basis {{ basis }} = 100 Punkte{% endblocktrans %}">{% blocktrans with basis=lik_basis %}Basis {{ basis }} = 100 Punkte{% endblocktrans %}</p></div>
                 <div class="fw-feldblock"><label class="fw-label" for="s_lik_stand">{% trans "LIK Stand-Monat" %}</label>
                     <input name="basis_lik_stand" id="s_lik_stand" type="month" data-bei-eingabe="live" class="fw-feld">
                     <p class="fw-hilfe">{% trans "Monat, aus dem der LIK-Wert stammt" %}</p></div>
@@ -360,6 +360,9 @@ beim Schritt des ersten Fehlers; ein Klick auf eine Meldung öffnet ihren Schrit
         <div class="fw-formular">
             <div class="fw-feldblock"><label class="fw-label" for="s_ref">{% trans "Stand Referenzzinssatz (%)" %} {% hilfe 'referenzzins' %}</label>
                 <input name="basis_referenzzinssatz" id="s_ref" type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" data-bei-eingabe="live" class="fw-feld w-full"></div>
+            <div class="fw-feldblock"><label class="fw-label" for="s_lik_basis">{% trans "LIK-Basisreihe" %} {% hilfe 'lik' %}</label>
+                {% include 'fw/_lik_basis_feld.html' with feld_id='s_lik_basis' gewaehlt=lik_basis live='likBasisGewechselt' %}
+                <p class="fw-hilfe">{% trans "Die Reihe des Landesindex, in der dieser Vertrag rechnet. Vorgabe: Standard der Liegenschaft, sonst des Mandats, sonst der Verwaltung." %}</p></div>
         </div>
         <label class="fw-label mb-1 mt-3">{% trans "Kostensteigerung ausgeglichen bis / Letzte Kostenaufrechnung" %}</label>
         <input name="kostensteigerung_datum" type="date" data-bei-eingabe="live" class="fw-feld w-full">
@@ -508,9 +511,30 @@ const LG = JSON.parse(document.getElementById('lg-data').textContent);
 const MIETER = JSON.parse(document.getElementById('mieter-data').textContent);
 // Schritte, Leiste und Fuss steuert der gemeinsame Assistent (static/js/fw-bausteine.js).
 const ASSISTENT = document.getElementById('v-assistent');
-const AKT_REF = {% localize off %}{{ aktueller_ref_zins }}{% endlocalize %}, AKT_LIK = {% localize off %}{{ aktueller_lik }}{% endlocalize %}, AKT_LIK_STAND = "{{ aktueller_lik_stand_iso }}", HEUTE = "{{ heute_iso }}";
+const AKT_REF = {% localize off %}{{ aktueller_ref_zins }}{% endlocalize %}, AKT_LIK = {% localize off %}{{ aktueller_lik|default_if_none:'null' }}{% endlocalize %}, AKT_LIK_STAND = "{{ aktueller_lik_stand_iso }}", HEUTE = "{{ heute_iso }}";
 const MONATE = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 const LIK_BASIS_NAME = "{{ lik_basis }}";
+// Die Basisreihe des Vertrags steht im Auswahlfeld; Vorschau und Hinweis lesen sie von dort.
+function likBasisName(){ var s=document.getElementById('s_lik_basis'); return (s && s.value) || LIK_BASIS_NAME; }
+function likBasisAnzeigen(){
+    var h=document.getElementById('s_lik_basis_hinweis');
+    if(h) h.textContent = h.dataset.vorlage.replace('§', likBasisName());
+}
+// Die Reihe wurde von Hand gewechselt: Punkte und Stand der alten Reihe gelten nicht mehr (nie umrechnen,
+// nie stehen lassen). Der Vorschlag der neuen Reihe kommt von der Prüfung am Server.
+function likBasisGewechselt(){
+    var s=document.getElementById('s_lik_basis'); if(s) s.dataset.manuell='1';
+    likBasisAnzeigen();
+    if (window.fwMzm && fwMzm.basisGewechselt) fwMzm.basisGewechselt();
+    live();
+}
+// Vorgabe der Liegenschaft übernehmen (Liegenschaft → Mandat → Verwaltung), solange niemand selbst gewählt hat.
+function likBasisVorgabe(l){
+    var s=document.getElementById('s_lik_basis');
+    if(!s || !l || !l.lik_basis || s.dataset.manuell || s.value===l.lik_basis) return;
+    s.value=l.lik_basis; likBasisAnzeigen();
+    if (window.fwMzm && fwMzm.basisGewechselt) fwMzm.basisGewechselt();
+}
 // 'YYYY-MM' aus dem Stand-Monat-Feld -> 'Juni 2026'
 function likStandLabel(){
     var el=document.getElementById('s_lik_stand'); var v=el?el.value:'';
@@ -626,6 +650,8 @@ function prefillEditFromDraft(){
   // 6. Modell / MWST / Familienwohnung
   fwMzm.setzeModell(ED.mietzins_modell || 'fest', true);
   if (ED.mietzins_modell === 'staffel') fwMzm.stufenSetzen((ED.stufen || []).map(z => ({ab: z.ab, erhoehung: z.erhoehung})));
+  // Die gespeicherte Basisreihe des Entwurfs gilt als eigene Wahl: Die Vorgabe der Liegenschaft ersetzt sie nicht.
+  if (ED.lik_basis) { const lb = document.getElementById('s_lik_basis'); if (lb) { lb.value = ED.lik_basis; lb.dataset.manuell = '1'; likBasisAnzeigen(); } }
   if (ED.mietzins_modell === 'index') {
     // Gespeicherte Basis und Vereinbarungen gelten als eigene Eingabe: Der Vorschlag überschreibt sie nicht.
     const lik = document.getElementById('s_lik'), st = document.getElementById('s_lik_stand');
@@ -679,7 +705,7 @@ function eingabenZurueck(){
     fwMzm.stufenSetzen(zeilen);
   }
   // Basis und Vereinbarungen des Indexes stammen aus der Eingabe, nicht aus dem Vorschlag
-  ['s_lik', 's_lik_stand'].forEach(id => { const e = document.getElementById(id); if (e && RG[e.name] && RG[e.name][0]) e.dataset.manuell = '1'; });
+  ['s_lik', 's_lik_stand', 's_lik_basis'].forEach(id => { const e = document.getElementById(id); if (e && RG[e.name] && RG[e.name][0]) e.dataset.manuell = '1'; });
   const t = w('kuendigungstermine');
   if (t) document.querySelectorAll('.monat-cb').forEach(cb => {
     cb.checked = /ausser\s+Dezember/i.test(t) ? (cb.value !== 'Dezember') : t.indexOf(cb.value) !== -1; });
@@ -751,6 +777,7 @@ function curMieter(){
 }
 function lgChange(){
   const l=curLg();
+  likBasisVorgabe(l);
   document.getElementById('s_obj').innerHTML = l
     ? '<option value="">' + UI.objekt_waehlen + '</option>'+l.objekte.map(o=>`<option value="${o.id}">${o.bezeichnung} (${o.typ})</option>`).join('')
     : '<option value="">' + UI.zuerst_lg + '</option>';
@@ -1104,7 +1131,7 @@ function live(){
       <tr><td class="fw-mutet py-0.5 font-semibold">Bruttomietzins</td><td class="font-semibold">CHF ${fmt(brutto)}${mwstIncl}</td></tr>`}
     </tbody></table>
     <p class="text-xs fw-faint mb-2">Der Mietzins ist jeweils am 1. Tag des Monats (Verfalldatum) fällig. Zahlungsmodus: ${({monatlich:'monatlich',vierteljahr:'vierteljährlich',halbjahr:'halbjährlich',jahr:'jährlich'})[val('zahlungsrhythmus')]||'monatlich'}.</p>
-    <p class="text-xs fw-faint mb-1">Landesindex der Konsumentenpreise: Basis ${LIK_BASIS_NAME}${likStandLabel()?', Stand '+likStandLabel():''}: ${val('basis_lik_punkte')||'—'} Pkt. · Referenzzinssatz ${val('basis_referenzzinssatz')||'—'}%.</p>
+    <p class="text-xs fw-faint mb-1">Landesindex der Konsumentenpreise: Basis ${likBasisName()}${likStandLabel()?', Stand '+likStandLabel():''}: ${val('basis_lik_punkte')||'—'} Pkt. · Referenzzinssatz ${val('basis_referenzzinssatz')||'—'}%.</p>
     ${val('weitere_vorbehalte')?`<p class="text-xs fw-mutet mb-2"><b>Vorbehalte:</b> ${val('weitere_vorbehalte')}</p>`:''}
 
     ${secN('Mietzinsdepot')}
