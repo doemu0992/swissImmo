@@ -1,6 +1,6 @@
 # immoswiss – Architekturnotizen
 
-**Stand:** 13.11.2026, gemessen an `main` nach PR #256.
+**Stand:** 14.11.2026, gemessen an `main` nach PR #260.
 **Zweck:** Orientierung für alle, die neue Funktionen in diese Codebasis einbauen.
 **Methode:** Lektüre der Kernmodule (Mandantenschicht, Rechte, Abo, Buchhaltung, Fallmaschine, Oberflächenschicht),
 der Projektdokumente unter `docs/` und Zählungen über das Repository. Zahlen sind gezählt, nicht geschätzt; wo etwas
@@ -269,10 +269,12 @@ Befehlslisten des Abos). Sie verhindern Rückschritte zuverlässig, schlagen abe
 an und müssen bewusst nachgeführt werden. Wer die Zahl nur anhebt, ohne zu verstehen warum, entwertet den Wächter.
 
 **R11 – Portal-Konten haben keine Mitgliedschaft.**
-Die Organisation eines Mieters oder Eigentümers ergibt sich aus seinem Datensatz (Vertrag → Liegenschaft). Ein Konto
-ohne Vertrag oder mit Verträgen bei zwei Verwaltungen ist ein Grenzfall, den die Middleware mit einer Rückfallregel
-löst. Ebenso offen: Ein Teammitglied mit mehreren Mitgliedschaften bekommt heute stillschweigend die älteste; eine
-Auswahl in der Oberfläche fehlt.
+Die Organisation eines Mieters oder Eigentümers ergibt sich aus seinem Datensatz (Vertrag → Liegenschaft, sonst die
+Organisation des Profils). Ein Portal-Konto hat genau ein Profil (`OneToOne`) und damit genau eine Organisation; ein
+Konto bei zwei Verwaltungen ist nicht vorgesehen. Für Teammitglieder mit mehreren Mitgliedschaften gibt es die
+Mandantenwahl in der Oberfläche (siehe 4.5, Punkt 5). Bleibt als Grenzfall: ein Portal-Konto ohne Vertrag, das die
+Middleware über die Organisation des Profils auflöst. (Eine frühere Fassung dieses Absatzes behauptete fälschlich, die
+Auswahl fehle.)
 
 **R12 – Cache als Datei ohne atomares Zählen.**
 `incr` ist nicht atomar und der Cache gilt nur auf einem Rechner (im Code selbst so vermerkt). Für die Drosselung
@@ -369,24 +371,31 @@ Diese Tests schlagen an, wenn eine Regel verletzt wird. Sie sind keine Hindernis
 
 ### 4.5 Was vor grösseren Ausbauten zuerst kommen sollte
 
-In dieser Reihenfolge, weil jeder Punkt den nächsten billiger macht:
+Stand 14.11.2026. In dieser Reihenfolge, weil jeder Punkt den nächsten billiger macht:
 
-1. **Ausfälle externer Dienste sichtbar machen.** Den letzten Erfolg und den letzten Fehlergrund je Abruf (LIK,
-   Referenzzins, IMAP, Brevo, Groq) speichern und auf der Betreiber-Startseite zeigen. Kleiner Eingriff, behebt R7
-   und die Ursache der unbemerkt ausgefallenen LIK-Nachführung.
-2. **Fachtabellen aus dem Code in die Datenbank.** LIK-Stände, Referenzzinssatz, Feiertage und das
-   Formularpflicht-Register als gepflegte Daten mit Quelle und Stichtag, vom Betreiber über die Konsole nachführbar.
-   Dann braucht ein Monatswert kein Deployment mehr (R4).
-3. **Eine Auftragstabelle für lange Arbeiten.** Kein Celery nötig: eine Tabelle `Auftrag` (Art, Organisation,
-   Zustand, Fortschritt, Fehler) und ein Dauerläufer nach dem Muster von `fetch_plattform_eingang --dauerlauf`. Damit
-   bekommen Serienbrief, Belegerkennung und Exporte einen sichtbaren Stand und einen Wiederanlauf (R5). Der Läufer
-   setzt den Mandantenkontext je Auftrag; das ist zugleich die Übung für R1.
-4. **URL-Module je Bereich.** `swiss_immo/urls.py` nach dem Vorbild von `stweg` aufteilen (Finanzen, Verträge,
-   Portal). Reine Umzüge ohne Verhaltensänderung; die Wächter für Isolation und Rechte belegen die Gleichheit (R6).
-5. **Auswahl der Organisation bei mehreren Mitgliedschaften** und eine eindeutige Regel für Portal-Konten bei zwei
-   Verwaltungen (R11), bevor Treuhänder oder Konzernstrukturen als Kunden dazukommen.
+1. **Ausfälle externer Dienste sichtbar machen — erledigt (PR 257).** `core.AbrufStatus` hält je Abruf (LIK,
+   Referenzzins) letzten Erfolg, Grund und Fehlversuche in Folge; ab 3 Fehlversuchen oder 7 Tagen ohne Erfolg steht
+   ein Hinweis auf der Betreiber-Startseite. Offen: IMAP, Brevo und Groq melden noch nicht in diese Tabelle.
+2. **Fachtabellen aus dem Code in die Datenbank — für den LIK erledigt (PR 258), sonst bewusst nicht.** Der
+   Betreiber trägt Monatswerte unter «LIK-Werte» (`/betreiber/lik/`) selbst nach; ein Nachtrag gewinnt gegen den
+   Code. Der Referenzzinssatz steht ohnehin je Organisation in der Datenbank. Das Formularpflicht-Register bleibt im
+   Code: Es ist ein kleiner, rechtlich geprüfter Text mit einem jährlichen Update und einer Pflege-Erinnerung; eine
+   Datenbankpflege brächte dort mehr Risiko als Nutzen. Die kantonalen Feiertage warten auf den fachlichen Entscheid
+   (siehe 3.4).
+3. **Auftragstabelle für lange Arbeiten — Grundlage erledigt (PR 259).** `core.Auftrag`, `core/services/auftraege.py`,
+   `manage.py auftraege_abarbeiten` und die Seite «Aufträge» (`/neu/auftraege/`). Erste Art: `sollstellung`. Die
+   bestehenden Knöpfe (Sollstellung, Mahnlauf, Serienbrief, Belegerkennung) laufen noch wie bisher und lassen sich
+   einzeln auf Aufträge umstellen. Der Läufer muss einmal als Always-on-Task eingerichtet werden.
+4. **URL-Module je Bereich — erledigt (PR 260).** `swiss_immo/urls.py` ist in sechs Module aufgeteilt; Routen und
+   Reihenfolge sind nachweislich unverändert (geflachter Routenbaum vorher und nachher gleich, 594 Einträge).
+5. **Auswahl der Organisation bei mehreren Mitgliedschaften — gab es bereits.** Die Mandantenwahl im Kopf und im
+   Profilmenü schreibt `aktive_organisation_id` in die Sitzung (`einstellungen_aktionen.py`, Tests
+   `test_mandant_wechsel` und `test_profilmenue_mandant`); die Middleware ehrt den Wert nur bei echter Mitgliedschaft.
+   Die frühere Aussage in R11 war falsch. Ein Portal-Konto hat genau ein Profil (`OneToOne`) und damit genau eine
+   Organisation.
 6. **Row-Level-Security in PostgreSQL** als zweite Schicht unter dem `TenantManager`, sobald die Systemläufe ihren
-   Kontext sauber setzen (setzt Punkt 3 voraus). Das ist ein eigener, bewusst zu entscheidender Schritt.
+   Kontext sauber setzen (der Auftragsläufer tut es seit PR 259 je Auftrag). Das ist ein eigener, bewusst zu
+   entscheidender Schritt und noch offen.
 
 ### 4.6 Was man nicht tun sollte
 
