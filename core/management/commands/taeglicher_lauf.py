@@ -81,6 +81,23 @@ class Command(BaseCommand):
             logger.warning('Tageslauf: Marktdaten übersprungen', exc_info=True)
             gemeinsam.append(f"Marktdaten übersprungen ({e})")
 
+        # LIK-Monatswerte: fehlende Monate beim HEV holen und selbst speichern (plattformweit, einmal je Lauf).
+        try:
+            from django.conf import settings
+
+            from core.services import lik
+            # In Tests kein Netz (`LIK_LIVE_ABRUF` ist dort aus); der Dienst selbst ist mit Attrappen getestet.
+            neue = lik.automatisch_nachfuehren(timezone.localdate()) if getattr(settings, 'LIK_LIVE_ABRUF', False) else []
+            if neue:
+                from core.models import SicherheitsEreignis
+                text = ', '.join(f'{m:02d}/{j}: {w}' for j, m, w in neue)
+                SicherheitsEreignis.objects.create(aktion='LIK-Wert automatisch nachgetragen', objekt='HEV',
+                                                   details=text)
+                gemeinsam.append(f"LIK nachgetragen ({text})")
+        except Exception as e:
+            logger.warning('Tageslauf: LIK-Nachführung übersprungen', exc_info=True)
+            gemeinsam.append(f"LIK-Nachführung übersprungen ({e})")
+
         # Wöchentliches Fristen-Mail am gewählten Wochentag (Standard Montag)
         wd = opts['digest_weekday']
         if wd is not None and wd >= 0 and timezone.localdate().weekday() == wd:

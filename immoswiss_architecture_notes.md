@@ -377,8 +377,9 @@ Stand 14.11.2026. In dieser Reihenfolge, weil jeder Punkt den nächsten billiger
    Referenzzins) letzten Erfolg, Grund und Fehlversuche in Folge; ab 3 Fehlversuchen oder 7 Tagen ohne Erfolg steht
    ein Hinweis auf der Betreiber-Startseite. Offen: IMAP, Brevo und Groq melden noch nicht in diese Tabelle.
 2. **Fachtabellen aus dem Code in die Datenbank — für den LIK erledigt (PR 258), sonst bewusst nicht.** Der
-   Betreiber trägt Monatswerte unter «LIK-Werte» (`/betreiber/lik/`) selbst nach; ein Nachtrag gewinnt gegen den
-   Code. Der Referenzzinssatz steht ohnehin je Organisation in der Datenbank. Das Formularpflicht-Register bleibt im
+   tägliche Lauf holt fehlende Monatswerte beim HEV und speichert sie selbst (Entscheid des Betreibers vom
+   14.11.2026, mit Abgleich und Schranken); die Seite «LIK-Werte» (`/betreiber/lik/`) bleibt als Notbehelf. Ein
+   Nachtrag gewinnt gegen den Code. Der Referenzzinssatz steht ohnehin je Organisation in der Datenbank. Das Formularpflicht-Register bleibt im
    Code: Es ist ein kleiner, rechtlich geprüfter Text mit einem jährlichen Update und einer Pflege-Erinnerung; eine
    Datenbankpflege brächte dort mehr Risiko als Nutzen. Die kantonalen Feiertage warten auf den fachlichen Entscheid
    (siehe 3.4).
