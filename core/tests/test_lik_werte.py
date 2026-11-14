@@ -30,6 +30,11 @@ class ReiheTests(TestCase):
         LikWert.objects.create(jahr=2026, monat=9, punkte=Decimal('108.4'), quelle='BFS, Korrektur')
         self.assertEqual(lik.lik_punkte_fuer(2026, 9), Decimal('108.4'))
 
+    def test_die_reihe_endet_vor_einer_luecke(self):
+        """Der Fall vom 14.11.2026: November von Hand eingetragen, Oktober fehlt."""
+        LikWert.objects.create(jahr=2026, monat=11, punkte=Decimal('108.7'), quelle='HEV')
+        self.assertEqual(lik.letzter_tabellenmonat(), (2026, 9))
+
     def test_eine_andere_basis_wird_nicht_gemischt(self):
         LikWert.objects.create(jahr=2026, monat=10, punkte=Decimal('101.0'), basis='Dezember 2025', quelle='BFS')
         self.assertIsNone(lik.lik_punkte_fuer(2026, 10))
@@ -88,9 +93,75 @@ class SeiteTests(TestCase):
         self.assertEqual(LikWert.objects.filter(jahr=2026, monat=10).count(), 1)
         self.assertEqual(LikWert.objects.get(jahr=2026, monat=10).punkte, Decimal('108.6'))
 
+    def test_der_laufende_monat_ist_noch_nicht_veroeffentlicht(self):
+        antwort = self._post(monat='11')
+        self.assertEqual(antwort.status_code, 200)
+        self.assertContains(antwort, 'noch nicht veröffentlicht')
+        self.assertEqual(LikWert.objects.count(), 0)
+
+    def test_ein_monat_hinter_einer_luecke_wird_abgewiesen(self):
+        self.client.force_login(self.betreiber)
+        with mock.patch('core.views.fw.betreiber.datum_heute', return_value=date(2026, 12, 13)):
+            antwort = self.client.post(reverse('fw_betreiber_lik'), {
+                'jahr': '2026', 'monat': '11', 'punkte': '108.7', 'quelle': 'BFS'})
+        self.assertContains(antwort, 'Vormonat fehlt')
+        self.assertEqual(LikWert.objects.count(), 0)
+
+    def test_ein_nachgetragener_wert_laesst_sich_loeschen_und_das_steht_im_protokoll(self):
+        self._post()
+        w = LikWert.objects.get(jahr=2026, monat=10)
+        antwort = self.client.post(reverse('fw_betreiber_lik'), {'aktion': 'loeschen', 'pk': w.pk})
+        self.assertEqual(antwort.status_code, 302)
+        self.assertEqual(LikWert.objects.count(), 0)
+        self.assertTrue(SicherheitsEreignis.objects.filter(aktion='LIK-Wert gelöscht', objekt='10/2026').exists())
+        self.assertIsNone(lik.lik_punkte_fuer(2026, 10))
+
+    def test_loeschen_darf_nur_der_betreiber(self):
+        self._post()
+        w = LikWert.objects.get(jahr=2026, monat=10)
+        self.client.force_login(self.normal)
+        self.assertEqual(self.client.post(reverse('fw_betreiber_lik'), {'aktion': 'loeschen', 'pk': w.pk}).status_code, 403)
+        self.assertEqual(LikWert.objects.count(), 1)
+
+    def test_die_seite_bietet_loeschen_nur_bei_nachgetragenen_werten(self):
+        self._post()
+        with mock.patch('core.views.fw.betreiber.datum_heute', return_value=date(2026, 11, 13)):
+            inhalt = self.client.get(reverse('fw_betreiber_lik')).content.decode()
+        self.assertEqual(inhalt.count('data-testid="lik-loeschen"'), 1)
+
+    def _abrufen(self, rueckgabe, fehler=None):
+        from core.services import abruf_status
+        self.client.force_login(self.betreiber)
+
+        def attrappe(_heute):
+            if fehler:
+                abruf_status.melde_fehler('lik', fehler)
+            return rueckgabe
+        with mock.patch('core.views.fw.betreiber.datum_heute', return_value=date(2026, 11, 13)), \
+                mock.patch.object(lik, 'automatisch_nachfuehren', side_effect=attrappe):
+            return self.client.post(reverse('fw_betreiber_lik'), {'aktion': 'abrufen'}, follow=True)
+
+    def test_der_knopf_ruft_ab_und_meldet_die_gespeicherten_werte(self):
+        antwort = self._abrufen([(2026, 10, Decimal('108.7'))])
+        self.assertContains(antwort, '10/2026: 108.7')
+        self.assertTrue(SicherheitsEreignis.objects.filter(aktion='LIK-Wert automatisch nachgetragen').exists())
+
+    def test_der_knopf_nennt_den_grund_wenn_nichts_gespeichert_wurde(self):
+        antwort = self._abrufen([], fehler='Marke «2020 = 100» fehlt in der Quelle')
+        self.assertContains(antwort, 'Marke «2020 = 100» fehlt')
+
+    def test_der_knopf_sagt_wenn_es_nichts_neues_gibt(self):
+        self.assertContains(self._abrufen([]), 'keinen neuen Monatswert')
+
+    def test_abrufen_darf_nur_der_betreiber(self):
+        self.client.force_login(self.normal)
+        with mock.patch.object(lik, 'automatisch_nachfuehren') as m:
+            self.assertEqual(self.client.post(reverse('fw_betreiber_lik'), {'aktion': 'abrufen'}).status_code, 403)
+        m.assert_not_called()
+
     def test_unsinn_wird_abgewiesen_ohne_etwas_zu_speichern(self):
         for kw in ({'punkte': '10.8'}, {'punkte': 'abc'}, {'monat': '13'}, {'jahr': '2019'}, {'jahr': '2027'},
-                   {'monat': '12'}, {'quelle': ''}):
+                   {'monat': '12'}, {'monat': '11'}, {'quelle': ''}):
             antwort = self._post(**kw)
             self.assertEqual(antwort.status_code, 200, kw)
         self.assertEqual(LikWert.objects.count(), 0)

@@ -89,14 +89,21 @@ def lik_punkte_fuer(jahr, monat, reihen=None):
 TABELLE_MAX_RUECKSTAND_MONATE = 3
 
 
-def letzter_tabellenmonat():
-    """(jahr, monat) des jüngsten Monats mit Wert (Code und Nachträge), oder None."""
+def letzter_tabellenmonat(reihen=None):
+    """(jahr, monat) des letzten Monats der LÜCKENLOSEN Reihe (Code und Nachträge), oder None.
+
+    Lückenlos, nicht «jüngster Wert»: Steht der November da und der Oktober fehlt, endet die Reihe im September.
+    Sonst gälte die Tabelle als aktuell, obwohl ein Monat fehlt, und der automatische Nachtrag fände keinen
+    Anschluss (so geschehen am 14.11.2026 mit einem von Hand eingetragenen November)."""
+    reihen = reihen if reihen is not None else lik_reihen()
     letzter = None
-    reihen = lik_reihen()
+    begonnen = False
     for jahr in sorted(reihen):
         for i, val in enumerate(reihen[jahr]):
             if val is not None:
-                letzter = (jahr, i + 1)
+                letzter, begonnen = (jahr, i + 1), True
+            elif begonnen:
+                return letzter
     return letzter
 
 
@@ -288,6 +295,16 @@ def automatisch_nachfuehren(heute=None, timeout=8):
                 'lik', f'{naechster[1]:02d}/{naechster[0]}: {wert} weicht um mehr als {AUTO_MAX_SPRUNG} Punkte vom '
                        f'Vormonat ({vorwert}) ab. Nicht gespeichert; bitte prüfen und von Hand nachtragen.')
             return gespeichert
+        vorhanden = lik_punkte_fuer(naechster[0], naechster[1], reihen)
+        if vorhanden is not None:
+            # Ein späterer Monat steht schon da (von Hand, hinter einer Lücke): nicht überschreiben, aber prüfen.
+            if vorhanden != wert:
+                abruf_status.melde_fehler(
+                    'lik', f'{naechster[1]:02d}/{naechster[0]}: hier {vorhanden}, Quelle {wert}. Der vorhandene Wert '
+                           'bleibt; bitte unter «LIK-Werte» prüfen und den falschen löschen.')
+                return gespeichert
+            vorwert, naechster = vorhanden, danach(*naechster)
+            continue
         _obj, neu = LikWert.objects.get_or_create(
             jahr=naechster[0], monat=naechster[1], basis=LIK_BASIS,
             defaults={'punkte': wert, 'quelle': f'HEV, automatischer Abruf vom {heute:%d.%m.%Y}'})
