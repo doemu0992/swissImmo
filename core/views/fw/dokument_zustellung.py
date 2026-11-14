@@ -12,6 +12,7 @@ from django.utils import timezone
 
 from core.auth import (rolle_erforderlich, SCHREIB_ROLLEN)
 
+from core.services.fristen import kanton_von
 from core.services.zahlungsverzug import ABHOLFRIST_TAGE, FRIST_TAGE, POSTWEG_TAGE
 from .verzug_257d import _zugang_aus_formular, _zugang_setzen
 
@@ -74,7 +75,7 @@ def fw_dokument_zustellung(request, pk):
     zugang_fingiert = False
     if zugang_am:
         zugang_am, zugang_fingiert, fehler = _zugang_aus_formular(
-            request.POST, versand_am or (p.versand_am if p else None), heute)
+            request.POST, versand_am or (p.versand_am if p else None), heute, kanton_von(v))
         if fehler:
             messages.error(request, '⛔ ' + fehler)
             return redirect(ziel)
@@ -86,8 +87,8 @@ def fw_dokument_zustellung(request, pk):
     neu = p is None
     if neu:
         lg = v.einheit.liegenschaft if v.einheit_id else None
-        frist = (definitives_fristende(zugang_am, FRIST_TAGE) if zugang_am
-                 else provisorisches_fristende(versand_am or heute, FRIST_TAGE))
+        frist = (definitives_fristende(zugang_am, FRIST_TAGE, kanton_von(v)) if zugang_am
+                 else provisorisches_fristende(versand_am or heute, FRIST_TAGE, kanton_von(v)))
         p = Pendenz.objects.create(
             titel=f"Art. 257d: Zahlungsfrist läuft ab – {v.mieter.display_name}",
             beschreibung="Mahnung mit Kündigungsandrohung (Art. 257d OR) per Einschreiben.",
@@ -100,7 +101,7 @@ def fw_dokument_zustellung(request, pk):
     if not p.zugang_am:
         # Frist bleibt PROVISORISCH, bis der Zugang bestätigt ist.
         vs = p.versand_am or heute
-        p.faellig_am = provisorisches_fristende(vs, p.frist_tage)
+        p.faellig_am = provisorisches_fristende(vs, p.frist_tage, kanton_von(v))
         p.beschreibung = (
             f"Einschreiben {p.sendungsnummer or '—'}"
             + (f", versandt {p.versand_am:%d.%m.%Y}" if p.versand_am else "")

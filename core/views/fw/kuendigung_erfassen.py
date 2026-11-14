@@ -389,8 +389,8 @@ def fw_kuendigung_erfassen(request, vertrag_id):
             from core.models import Pendenz
             # Art. 273 Abs. 1 OR: 30 Tage ab Empfang; der letzte Tag ist ein Werktag (Art. 78 OR) — fällt er auf
             # einen Samstag, Sonntag oder Feiertag, kann der Mieter noch am nächsten Werktag anfechten.
-            from core.services.fristen import fristende as _fristende
-            frist = _fristende(zugang, 30)
+            from core.services.fristen import fristende as _fristende, kanton_von
+            frist = _fristende(zugang, 30, kanton_von(v))
             Pendenz.objects.create(
                 titel=f"Anfechtungsfrist Kündigung läuft ab – {v.mieter.display_name}",
                 beschreibung=("Der Mieter kann die Vermieterkündigung innert 30 Tagen ab Empfang bei der "

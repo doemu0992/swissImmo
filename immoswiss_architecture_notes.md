@@ -302,7 +302,7 @@ und Listen über viele Fälle laden die Ziele einzeln nach, wenn man nicht vorso
 ### 3.4 Offene fachliche Entscheide
 
 Diese Punkte blockieren Funktionen und lassen sich nicht technisch entscheiden: Kautionszins, zweiter Faktor für
-Eigentümer als PFLICHT (freiwillig gibt es ihn seit dem 14.11.2026 im Portal-Profil), kantonale Feiertage, Abacus-Export (braucht eine Beispieldatei), Typfeld im Jahresabschluss,
+Eigentümer als PFLICHT (freiwillig gibt es ihn seit dem 14.11.2026 im Portal-Profil), Abacus-Export (braucht eine Beispieldatei), Typfeld im Jahresabschluss,
 Row-Level-Security in PostgreSQL als zweite Isolationsschicht, VMWG Art. 13, Umgang mit der LIK-Umbasierung.
 
 ---
@@ -382,8 +382,9 @@ Stand 14.11.2026. In dieser Reihenfolge, weil jeder Punkt den nächsten billiger
    14.11.2026, mit Abgleich und Schranken); die Seite «LIK-Werte» (`/betreiber/lik/`) bleibt als Notbehelf. Ein
    Nachtrag gewinnt gegen den Code. Der Referenzzinssatz steht ohnehin je Organisation in der Datenbank. Das Formularpflicht-Register bleibt im
    Code: Es ist ein kleiner, rechtlich geprüfter Text mit einem jährlichen Update und einer Pflege-Erinnerung; eine
-   Datenbankpflege brächte dort mehr Risiko als Nutzen. Die kantonalen Feiertage warten auf den fachlichen Entscheid
-   (siehe 3.4).
+   Datenbankpflege brächte dort mehr Risiko als Nutzen. Die kantonalen Feiertage sind seit dem 14.11.2026 in der Fristenrechnung
+   (`core/services/fristen.py`, Kanton der Liegenschaft; Quelle: Verzeichnis des Bundesamts für Justiz, Stand 1.1.2011 —
+   eine neuere Fassung gibt es nicht; Gemeindefeiertage und das Glarner Fahrtsfest fehlen).
 3. **Auftragstabelle für lange Arbeiten — Grundlage erledigt (PR 259).** `core.Auftrag`, `core/services/auftraege.py`,
    `manage.py auftraege_abarbeiten` und die Seite «Aufträge» (`/neu/auftraege/`). Die Sollstellung (ab 150 Verträgen) und der
    Mahnlauf (ab 100 offenen Rechnungen) gehen in den Hintergrund, aber nur, wenn der Läufer sich meldet
