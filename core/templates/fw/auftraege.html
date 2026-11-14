@@ -13,6 +13,9 @@ AUFTRÄGE — Arbeiten im Hintergrund: wartend, laufend, fertig, fehlgeschlagen.
     <div><a href="/neu/auftraege/" class="fw-btn fw-leise">{% trans "Aktualisieren" %}</a></div>
 </div>
 
+{% if ohne_laeufer %}
+<div class="fw-hinweis warn max-w-3xl" role="alert"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">{% trans "Es warten Aufträge, aber der Auftragsläufer meldet sich nicht. Bitte den Betreiber informieren: Ohne Läufer werden sie nicht abgearbeitet." %}</div></div>
+{% endif %}
 <div class="fw-card mb-3">
     <div class="fw-kopf"><h3 class="fw-t">{% trans "In Arbeit" %} <span class="fw-mutet">({{ offene|length }})</span></h3></div>
     {% for a in offene %}

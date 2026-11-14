@@ -31,6 +31,10 @@ LAEUFT_HOECHSTENS_MINUTEN = 30
 #: So oft wird ein Auftrag höchstens gestartet (inklusive Wiederanläufe nach einem Absturz).
 MAX_VERSUCHE = 3
 
+#: Der Läufer meldet sich bei jedem Durchlauf im gemeinsamen Cache; so lange gilt die Meldung.
+PULS_SCHLUESSEL = 'auftragslaeufer_puls'
+PULS_SEKUNDEN = 180
+
 #: Schlüssel → (Bezeichnung, Funktion). Gefüllt durch `@auftragsart`.
 ARTEN = {}
 
@@ -57,6 +61,25 @@ def anlegen(art, parameter=None, benutzer=None, organisation=None):
         raise ValueError('Ein Auftrag braucht eine Organisation (Kontext oder Angabe).')
     return Auftrag.alle_organisationen.create(
         organisation=organisation, art=art, parameter=parameter or {}, erstellt_von=benutzer)
+
+
+def puls_melden():
+    """Der Läufer lebt (aufgerufen von `auftraege_abarbeiten` bei jedem Durchlauf)."""
+    from django.core.cache import cache
+    cache.set(PULS_SCHLUESSEL, timezone.now().isoformat(), PULS_SEKUNDEN)
+
+
+def laeufer_aktiv():
+    """Hat sich der Läufer in den letzten `PULS_SEKUNDEN` gemeldet?
+
+    WOFÜR: Eine Arbeit darf nur dann in den Hintergrund, wenn sie dort auch jemand abholt. Ohne eingerichteten Läufer
+    bliebe sie in der Warteschlange liegen, und die Verwaltung wartete auf eine Sollstellung, die nie kommt. Wer eine
+    Arbeit wahlweise sofort oder im Hintergrund ausführt, fragt deshalb hier und läuft im Zweifel sofort."""
+    from django.core.cache import cache
+    try:
+        return cache.get(PULS_SCHLUESSEL) is not None
+    except Exception:                                        # noqa: BLE001 — im Zweifel: kein Läufer, also sofort
+        return False
 
 
 def bezeichnung(art):
@@ -132,9 +155,18 @@ def abarbeiten(grenze=20):
 # ── Arten ─────────────────────────────────────────────────────────────────────────────────────────────────────────
 @auftragsart('sollstellung', _('Sollstellung (Mietenlauf)'))
 def _sollstellung(auftrag, fortschritt):
-    """Parameter: `jahr`, `monat`. Idempotent (die Sollstellung legt nichts doppelt an)."""
-    from core.services.automation import run_sollstellung
+    """Parameter: `jahr`, `monat`, optional `liegenschaft` (ID). Idempotent (die Sollstellung legt nichts doppelt an).
+
+    Derselbe Ablauf wie der Knopf (`core.services.sollstellung_lauf.ausfuehren`): stellen, die Periode abschliessen
+    (nur beim Lauf über das ganze Portfolio) und ins Logbuch schreiben."""
+    from core.services import sollstellung_lauf
+    from portfolio.models import Liegenschaft
     jahr, monat = int(auftrag.parameter['jahr']), int(auftrag.parameter['monat'])
+    lg_id = auftrag.parameter.get('liegenschaft')
+    liegenschaft = Liegenschaft.objects.filter(pk=lg_id).first() if lg_id else None
+    if lg_id and liegenschaft is None:
+        raise ValueError('Die Liegenschaft dieses Auftrags gibt es nicht mehr.')
     fortschritt(10, f'Sollstellung {monat:02d}/{jahr}')
-    ergebnis = run_sollstellung(jahr, monat, user=auftrag.erstellt_von)
-    return f'{ergebnis} Rechnung(en) neu gestellt.'
+    erstellt = sollstellung_lauf.ausfuehren(jahr, monat, benutzer=auftrag.erstellt_von, liegenschaft=liegenschaft,
+                                            herkunft='Auftrag')
+    return f'{erstellt} Rechnung(en) neu gestellt.'

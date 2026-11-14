@@ -197,23 +197,21 @@ def fw_sollstellung_run(request):
                 'Die Sollstellung %(titel)s ist bereits abgeschlossen — es wurde nichts doppelt gestellt. '
                 'Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen.') % {'titel': titel})
             return redirect(f'/neu/sollstellung/?jahr={jahr}&monat={monat}')
-    from core.services.automation import run_sollstellung
+    from core.services import auftraege, sollstellung_lauf
+    # Viele Verträge UND ein laufender Auftragsläufer: in den Hintergrund (kein Zeitlimit des Hosters, Stand unter
+    # «Aufträge»). Sonst sofort wie bisher — ohne Läufer bliebe der Auftrag liegen.
+    if sollstellung_lauf.im_hintergrund(lauf_lg):
+        auftraege.anlegen('sollstellung', {'jahr': jahr, 'monat': monat, 'liegenschaft': lauf_lg.pk if lauf_lg else None},
+                          benutzer=request.user)
+        messages.success(request, gettext(
+            'Sollstellung %(titel)s läuft im Hintergrund. Stand und Ergebnis stehen unter «Aufträge».')
+            % {'titel': titel})
+        return redirect('/neu/auftraege/')
     try:
-        erstellt = run_sollstellung(jahr, monat, user=request.user, liegenschaft=lauf_lg)
+        erstellt = sollstellung_lauf.ausfuehren(jahr, monat, benutzer=request.user, liegenschaft=lauf_lg, request=request)
     except RuntimeError as e:
         messages.error(request, f"{e}")
         return redirect(f'/neu/sollstellung/?jahr={jahr}&monat={monat}')
-
-    if lauf_lg is None:
-        # Nur ein Lauf über das ganze Portfolio schliesst die Periode; ein
-        # Teillauf für eine Liegenschaft lässt sie offen.
-        from faelle.lauf_dienst import lauf_erledigt
-        lauf_erledigt('sollstellung', f'{jahr}-{monat:02d}',
-                      benutzer=request.user, rechnungen=erstellt)
-
-    log_aktion(request, "Sollstellung ausgeführt", titel,
-               f"{erstellt} Rechnungen erstellt"
-               + (f" · nur {lauf_lg.strasse}" if lauf_lg else " · ganzes Portfolio"))
     umfang = f" ({lauf_lg.strasse})" if lauf_lg else ""
     if erstellt:
         messages.success(request, '✅ ' + gettext('Sollstellung %(titel)s%(umfang)s: %(erstellt)s Rechnung(en) erstellt.') % {'titel': titel, 'umfang': umfang, 'erstellt': erstellt})
