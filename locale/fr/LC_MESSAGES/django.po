@@ -40691,3 +40691,9 @@ msgstr "La facturation %(titel)s s'exécute en arrière-plan. L'état et le rés
 
 msgid "Es warten Aufträge, aber der Auftragsläufer meldet sich nicht. Bitte den Betreiber informieren: Ohne Läufer werden sie nicht abgearbeitet."
 msgstr "Des mandats attendent, mais le service de traitement ne répond pas. Veuillez informer l'exploitant : sans lui, ils ne sont pas traités."
+
+msgid "Der Mahnlauf läuft im Hintergrund. Stand und Ergebnis stehen unter «Aufträge»."
+msgstr "La campagne de rappels s'exécute en arrière-plan. L'état et le résultat figurent sous «Mandats en arrière-plan»."
+
+msgid "Mahnlauf (Sammellauf)"
+msgstr "Campagne de rappels (traitement groupé)"
