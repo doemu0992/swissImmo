@@ -38889,3 +38889,12 @@ msgstr "Fehlgeschlagen"
 
 msgid "Sollstellung (Mietenlauf)"
 msgstr "Sollstellung (Mietenlauf)"
+
+msgid "LIK %(monat)s/%(jahr)s gelöscht."
+msgstr "LIK %(monat)s/%(jahr)s gelöscht."
+
+msgid "Der Monat liegt vor 2020 oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines Monats erst Anfang des Folgemonats bekannt."
+msgstr "Der Monat liegt vor 2020 oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines Monats erst Anfang des Folgemonats bekannt."
+
+msgid "Der Vormonat fehlt noch. Bitte die Monate der Reihe nach eintragen, sonst entsteht eine Lücke."
+msgstr "Der Vormonat fehlt noch. Bitte die Monate der Reihe nach eintragen, sonst entsteht eine Lücke."

@@ -38,6 +38,7 @@ def fw_betreiber_lik(request):
     Der Wert kommt vom Betreiber aus der BFS-Publikation; der Live-Wert der HEV-Seite wird nur als Vorschlag
     gezeigt, nie selbständig übernommen. Ein bestehender Monat wird überschrieben (Korrektur), die Quelle ist Pflicht.
     """
+    from datetime import timedelta
     from decimal import Decimal, InvalidOperation
 
     from django.conf import settings
@@ -52,7 +53,23 @@ def fw_betreiber_lik(request):
 
     heute = datum_heute()
     fehler = None
-    werte = {'jahr': heute.year, 'monat': heute.month, 'punkte': '', 'quelle': ''}
+    vor = heute.replace(day=1) - timedelta(days=1)                # der Vormonat: der jüngste, der veröffentlicht sein kann
+    werte = {'jahr': vor.year, 'monat': vor.month, 'punkte': '', 'quelle': ''}
+    if request.method == 'POST' and request.POST.get('aktion') == 'loeschen':
+        # Nur nachgetragene Werte lassen sich löschen; die Reihe im Code bleibt (sie ändert ein Deployment).
+        try:
+            eintrag = LikWert.objects.filter(pk=int(request.POST.get('pk') or 0), basis=lik.LIK_BASIS).first()
+        except (TypeError, ValueError):
+            eintrag = None
+        if eintrag is not None:
+            SicherheitsEreignis.objects.create(
+                aktion='LIK-Wert gelöscht', objekt=f'{eintrag.monat:02d}/{eintrag.jahr}',
+                ip_adresse=client_ip(request) or None,
+                details=f'{eintrag.punkte} Punkte, Quelle: {eintrag.quelle}')
+            messages.success(request, gettext('LIK %(monat)s/%(jahr)s gelöscht.')
+                             % {'monat': f'{eintrag.monat:02d}', 'jahr': eintrag.jahr})
+            eintrag.delete()
+        return redirect('fw_betreiber_lik')
     if request.method == 'POST':
         werte.update({k: (request.POST.get(k) or '').strip() for k in ('jahr', 'monat', 'punkte', 'quelle')})
         try:
@@ -63,8 +80,12 @@ def fw_betreiber_lik(request):
         quelle = werte['quelle'][:200]
         if jahr is None or not (1 <= monat <= 12):
             fehler = gettext('Jahr, Monat und Punkte müssen Zahlen sein (Monat 1 bis 12).')
-        elif (jahr, monat) > (heute.year, heute.month) or jahr < 2020:
-            fehler = gettext('Der Monat liegt vor 2020 oder in der Zukunft.')
+        elif (jahr, monat) >= (heute.year, heute.month) or jahr < 2020:
+            fehler = gettext('Der Monat liegt vor 2020 oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines '
+                             'Monats erst Anfang des Folgemonats bekannt.')
+        elif lik.lik_punkte_fuer(*((jahr, monat - 1) if monat > 1 else (jahr - 1, 12))) is None:
+            fehler = gettext('Der Vormonat fehlt noch. Bitte die Monate der Reihe nach eintragen, sonst entsteht eine '
+                             'Lücke.')
         elif not (Decimal('100') <= punkte <= Decimal('140')):
             fehler = gettext('Der Wert liegt ausserhalb von 100 bis 140 Punkten (Basis Dezember 2020 = 100). Tippfehler?')
         elif not quelle:
@@ -90,7 +111,7 @@ def fw_betreiber_lik(request):
             if wert is None:
                 continue
             eigener = nachgetragen.get((jahr, monat))
-            zeilen.append({'jahr': jahr, 'monat': monat, 'punkte': wert,
+            zeilen.append({'jahr': jahr, 'monat': monat, 'punkte': wert, 'pk': eigener.pk if eigener else None,
                            'quelle': eigener.quelle if eigener else gettext('im Code (BFS-Tabelle)')})
         if len(zeilen) >= 18:
             break

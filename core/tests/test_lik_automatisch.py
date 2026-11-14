@@ -84,6 +84,19 @@ class NachfuehrenTests(TestCase):
                          [(2026, 11, Decimal('108.6'))])
         self.assertEqual(LikWert.objects.get(jahr=2026, monat=10).quelle, 'BFS, von Hand')
 
+    def test_ein_wert_hinter_einer_luecke_blockiert_den_nachtrag_nicht(self):
+        """Der Fall vom 14.11.2026: November steht (von Hand), Oktober fehlt. Der Oktober wird trotzdem gespeichert."""
+        LikWert.objects.create(jahr=2026, monat=11, punkte=Decimal('108.6'), quelle='von Hand')
+        self.assertEqual(self._lauf(seite(BEKANNT + [108.7, 108.6]), heute=date(2026, 12, 5)),
+                         [(2026, 10, Decimal('108.7'))])
+
+    def test_ein_falscher_wert_hinter_der_luecke_wird_gemeldet_und_nicht_ueberschrieben(self):
+        LikWert.objects.create(jahr=2026, monat=11, punkte=Decimal('108.7'), quelle='von Hand, falsch')
+        self.assertEqual(self._lauf(seite(BEKANNT + [108.4, 108.6]), heute=date(2026, 12, 5)),
+                         [(2026, 10, Decimal('108.4'))])
+        self.assertEqual(LikWert.objects.get(jahr=2026, monat=11).punkte, Decimal('108.7'))
+        self.assertIn('löschen', AbrufStatus.objects.get(name='lik').letzter_fehler)
+
     def test_verbindungsfehler_speichert_nichts(self):
         with mock.patch.object(lik, '_hev_html', side_effect=lik._AbrufFehler('Verbindung fehlgeschlagen (Timeout)')):
             self.assertEqual(lik.automatisch_nachfuehren(HEUTE), [])

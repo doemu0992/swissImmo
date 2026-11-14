@@ -40590,3 +40590,12 @@ msgstr "Non riuscito"
 
 msgid "Sollstellung (Mietenlauf)"
 msgstr "Addebito degli affitti (ciclo affitti)"
+
+msgid "LIK %(monat)s/%(jahr)s gelöscht."
+msgstr "IPC %(monat)s/%(jahr)s eliminato."
+
+msgid "Der Monat liegt vor 2020 oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines Monats erst Anfang des Folgemonats bekannt."
+msgstr "Il mese è anteriore al 2020 o non è ancora pubblicato: l'UST comunica il valore di un mese solo all'inizio del mese successivo."
+
+msgid "Der Vormonat fehlt noch. Bitte die Monate der Reihe nach eintragen, sonst entsteht eine Lücke."
+msgstr "Manca ancora il mese precedente. Inserire i mesi in ordine, altrimenti si crea una lacuna."

@@ -39995,3 +39995,12 @@ msgstr "Failed"
 
 msgid "Sollstellung (Mietenlauf)"
 msgstr "Rent charging (rent run)"
+
+msgid "LIK %(monat)s/%(jahr)s gelöscht."
+msgstr "CPI %(monat)s/%(jahr)s deleted."
+
+msgid "Der Monat liegt vor 2020 oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines Monats erst Anfang des Folgemonats bekannt."
+msgstr "The month is before 2020 or not yet published: the FSO releases a month's value only at the start of the following month."
+
+msgid "Der Vormonat fehlt noch. Bitte die Monate der Reihe nach eintragen, sonst entsteht eine Lücke."
+msgstr "The previous month is still missing. Please enter the months in order, otherwise a gap arises."
