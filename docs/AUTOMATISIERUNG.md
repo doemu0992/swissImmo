@@ -8,7 +8,7 @@ Basis-Kommando (Pfad/venv anpassen):
 
 | Command | Empfohlener Rhythmus | Wirkung |
 |---------|---------------------|---------|
-| `taeglicher_lauf` | täglich (z.B. 06:00) | Auto-Pendenzen aus Fristen (Vertragsende, Auszug, Geräte-Garantien) + Referenzzins/LIK-Update + Bereinigung der Bewerbungsdossiers (siehe unten) |
+| `taeglicher_lauf` | täglich (z.B. 06:00) | Auto-Pendenzen aus Fristen (Vertragsende, Auszug, Geräte-Garantien) + Referenzzins/LIK-Update + automatischer Nachtrag fehlender LIK-Monatswerte vom HEV (gespeichert nur nach Abgleich der letzten drei bekannten Monate und innerhalb der Schranken, siehe `core/services/lik.py::automatisch_nachfuehren`; ein Ausfall steht auf der Betreiber-Startseite) + Bereinigung der Bewerbungsdossiers (siehe unten) |
 | `mahnlauf` | wöchentlich (z.B. Mo 07:00) | Sammel-Mahnlauf über alle fälligen Debitoren + Zahlungserinnerung per E-Mail. Optional `--zins` (5% Verzugszins), `--kein-versand` |
 | `monatslauf` | monatlich (1. um 05:00) | Sollstellung (Mietenlauf) für den aktuellen Monat. `--jahr/--monat` überschreiben |
 | `jahresabschluss_lauf` | jährlich (2. Januar) | Lineare Abschreibungen (AfA) + Erneuerungsfonds-Einlagen fürs Vorjahr. `--jahr` überschreibt |

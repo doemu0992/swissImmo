@@ -141,6 +141,63 @@ def _tabelle_wert():
     return datetime.date(j, mo, 1), Decimal(str(val))
 
 
+HEV_URL = "https://www.hev-schweiz.ch/vermieten/statistiken/landesindex-der-konsumentenpreise"
+
+
+class _AbrufFehler(Exception):
+    """Der Abruf ist gescheitert; der Text ist der Grund für den Abrufstatus (ohne Zugangsdaten)."""
+
+
+def _hev_html(timeout=8):
+    """Der Quelltext der HEV-Seite. Wirft `_AbrufFehler` mit knappem Grund."""
+    try:
+        import requests
+    except Exception as e:                                   # noqa: BLE001
+        raise _AbrufFehler('requests nicht verfügbar') from e
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+               'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
+    try:
+        antwort = requests.get(HEV_URL, headers=headers, timeout=timeout)
+    except Exception as e:                                   # noqa: BLE001
+        raise _AbrufFehler(f'Verbindung fehlgeschlagen ({type(e).__name__})') from e
+    if getattr(antwort, 'status_code', 200) != 200:
+        raise _AbrufFehler(f'Quelle antwortet mit Status {antwort.status_code}')
+    return antwort.text
+
+
+def _monatswerte_aus_html(html, heute):
+    """Alle Monatswerte des laufenden und des Vorjahres aus der HEV-Tabelle «Dezember 2020 = 100».
+
+    Gibt `[(jahr, monat, Decimal), …]` aufsteigend zurück. Wirft `_AbrufFehler`, wenn die Tabelle nicht in der
+    erwarteten Form da ist. Monate nach dem heutigen werden verworfen (ein Jahresdurchschnitt in der Zeile könnte
+    sonst als Monat gelesen werden)."""
+    import re
+    from decimal import Decimal, InvalidOperation
+    pos = html.find("2020 = 100")
+    if pos < 0:
+        raise _AbrufFehler('Marke «2020 = 100» fehlt in der Quelle (Seite umgebaut oder auf neue Basis umgestellt?)')
+    snip = html[pos:pos + 8000]
+    werte = []
+    for yr in (heute.year - 1, heute.year):
+        row = re.search(rf">\s*{yr}\s*<.*?(?=>\s*{yr - 1}\s*<|</table>)", snip, re.S)
+        if not row:
+            continue
+        vals = re.findall(r"1\d{2}[.,]\d", row.group(0))[:12]   # 12 Monate; ein Jahres-Ø dahinter fällt weg
+        if yr == heute.year:
+            vals = vals[:heute.month]
+        for monat, roh in enumerate(vals, start=1):
+            try:
+                wert = Decimal(roh.replace(',', '.'))
+            except (InvalidOperation, ValueError):
+                break
+            if not (Decimal('100') <= wert <= Decimal('140')):
+                break
+            werte.append((yr, monat, wert))
+    if not werte:
+        raise _AbrufFehler('Keine Monatswerte in der erwarteten Form gefunden (Tabelle der Quelle verändert?)')
+    return werte
+
+
 def _fetch_live_lik(timeout=8):
     """Best-effort Live-Abruf des neuesten LIK (Basis Dez. 2020) inkl. Monat
     von der HEV-Tabelle. Gibt (date, Decimal) oder None. Fängt JEDEN Fehler ab
@@ -148,60 +205,97 @@ def _fetch_live_lik(timeout=8):
 
     Jeder Versuch hinterlässt eine Spur (`core.services.abruf_status`): Ein stiller Ausfall bliebe sonst Wochen
     unbemerkt. Der Grund ist knapp und ohne Zugangsdaten formuliert."""
-    import re
     import datetime
-    from decimal import Decimal, InvalidOperation
     from core.services import abruf_status
-
-    def fehler(grund):
-        abruf_status.melde_fehler('lik', grund)
+    try:
+        werte = _monatswerte_aus_html(_hev_html(timeout), datetime.date.today())
+    except _AbrufFehler as e:
+        abruf_status.melde_fehler('lik', str(e))
         return None
+    except Exception as e:                                   # noqa: BLE001
+        abruf_status.melde_fehler('lik', f'Auswertung fehlgeschlagen ({type(e).__name__})')
+        return None
+    abruf_status.melde_erfolg('lik')
+    jahr, monat, wert = werte[-1]
+    return datetime.date(jahr, monat, 1), wert
 
+
+#: Grösster Sprung zum Vormonat, den der automatische Nachtrag annimmt (Punkte). Der grösste Monatssprung der Reihe
+#: seit 2021 war 0.8 Punkte; 1.5 lässt Luft und fängt einen verrutschten Wert ab.
+AUTO_MAX_SPRUNG = 1.5
+#: So viele bekannte Monate müssen mit der Quelle übereinstimmen, bevor ihr ein neuer Wert geglaubt wird.
+AUTO_ABGLEICH_MONATE = 3
+
+
+def automatisch_nachfuehren(heute=None, timeout=8):
+    """Holt die Monatswerte beim HEV und speichert fehlende Monate selbst (`core.LikWert`) — ohne Nachtrag von Hand.
+
+    Entscheid des Betreibers (14.11.2026): Der abgerufene Wert gilt ohne menschliche Prüfung. Deshalb die Schranken:
+    * ABGLEICH: Die letzten `AUTO_ABGLEICH_MONATE` bekannten Monate müssen in der Quelle genau so stehen wie hier.
+      Liest der Abruf die Tabelle falsch (Spalte verrutscht, andere Basis), stimmen sie nicht, und es wird NICHTS
+      gespeichert.
+    * Nur der jeweils NÄCHSTE fehlende Monat, lückenlos; nie ein Monat nach dem heutigen.
+    * Wert zwischen 100 und 140 und höchstens `AUTO_MAX_SPRUNG` Punkte vom Vormonat entfernt.
+    Ein bestehender Wert (Code oder Nachtrag) wird nie überschrieben.
+
+    Gibt die Liste der gespeicherten `(jahr, monat, punkte)` zurück. Jeder Ausgang steht im Abrufstatus."""
+    import datetime
+    from decimal import Decimal
+    from core.services import abruf_status
+    heute = heute or datetime.date.today()
     try:
-        import requests
-    except Exception:
-        return fehler('requests nicht verfügbar')
-    url = "https://www.hev-schweiz.ch/vermieten/statistiken/landesindex-der-konsumentenpreise"
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-               'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
-    try:
-        antwort = requests.get(url, headers=headers, timeout=timeout)
+        quelle = {(j, m): w for j, m, w in _monatswerte_aus_html(_hev_html(timeout), heute)}
+    except _AbrufFehler as e:
+        abruf_status.melde_fehler('lik', str(e))
+        return []
     except Exception as e:                                   # noqa: BLE001
-        return fehler(f'Verbindung fehlgeschlagen ({type(e).__name__})')
-    if getattr(antwort, 'status_code', 200) != 200:
-        return fehler(f'Quelle antwortet mit Status {antwort.status_code}')
-    html = antwort.text
-    try:
-        pos = html.find("2020 = 100")
-        if pos < 0:
-            return fehler('Marke «2020 = 100» fehlt in der Quelle (Seite umgebaut oder auf neue Basis umgestellt?)')
-        snip = html[pos:pos + 8000]
-        heute = datetime.date.today()
-        for yr in (heute.year, heute.year - 1):
-            row = re.search(rf">\s*{yr}\s*<.*?(?=>\s*{yr - 1}\s*<|</table>)", snip, re.S)
-            if not row:
-                continue
-            vals = re.findall(r"1\d{2}[.,]\d", row.group(0))
-            if len(vals) >= 13:      # 12 Monate + Jahres-Ø → Ø abschneiden
-                vals = vals[:12]
-            monat = len(vals)
-            if not (1 <= monat <= 12):
-                continue
-            if yr == heute.year and monat > heute.month:
-                monat = heute.month
-                vals = vals[:monat]
-            if not vals:
-                continue
-            try:
-                wert = Decimal(vals[monat - 1].replace(',', '.'))
-            except (InvalidOperation, ValueError):
-                continue
-            if Decimal('100') <= wert <= Decimal('140'):
-                abruf_status.melde_erfolg('lik')
-                return datetime.date(yr, monat, 1), wert
-    except Exception as e:                                   # noqa: BLE001
-        return fehler(f'Auswertung fehlgeschlagen ({type(e).__name__})')
-    return fehler('Keine Monatswerte in der erwarteten Form gefunden (Tabelle der Quelle verändert?)')
+        abruf_status.melde_fehler('lik', f'Auswertung fehlgeschlagen ({type(e).__name__})')
+        return []
+
+    cache_leeren()
+    reihen = lik_reihen()
+    letzter = letzter_tabellenmonat()
+    if letzter is None:
+        abruf_status.melde_fehler('lik', 'Keine eigene Reihe zum Abgleich vorhanden.')
+        return []
+
+    def davor(jahr, monat):
+        return (jahr, monat - 1) if monat > 1 else (jahr - 1, 12)
+
+    def danach(jahr, monat):
+        return (jahr, monat + 1) if monat < 12 else (jahr + 1, 1)
+
+    # Abgleich der letzten bekannten Monate
+    pruef = letzter
+    for _i in range(AUTO_ABGLEICH_MONATE):
+        eigen = lik_punkte_fuer(pruef[0], pruef[1], reihen)
+        fremd = quelle.get(pruef)
+        if fremd is None or eigen is None or fremd != eigen:
+            abruf_status.melde_fehler(
+                'lik', f'Abgleich gescheitert: {pruef[1]:02d}/{pruef[0]} hier {eigen}, Quelle {fremd}. '
+                       'Nichts gespeichert (Tabelle der Quelle verändert oder falsch gelesen?).')
+            return []
+        pruef = davor(*pruef)
+
+    from core.models import LikWert
+    gespeichert = []
+    vorwert = lik_punkte_fuer(letzter[0], letzter[1], reihen)
+    naechster = danach(*letzter)
+    while naechster in quelle and naechster <= (heute.year, heute.month):
+        wert = quelle[naechster]
+        if abs(wert - vorwert) > Decimal(str(AUTO_MAX_SPRUNG)):
+            abruf_status.melde_fehler(
+                'lik', f'{naechster[1]:02d}/{naechster[0]}: {wert} weicht um mehr als {AUTO_MAX_SPRUNG} Punkte vom '
+                       f'Vormonat ({vorwert}) ab. Nicht gespeichert; bitte prüfen und von Hand nachtragen.')
+            return gespeichert
+        _obj, neu = LikWert.objects.get_or_create(
+            jahr=naechster[0], monat=naechster[1], basis=LIK_BASIS,
+            defaults={'punkte': wert, 'quelle': f'HEV, automatischer Abruf vom {heute:%d.%m.%Y}'})
+        if neu:
+            gespeichert.append((naechster[0], naechster[1], wert))
+        vorwert, naechster = wert, danach(*naechster)
+    abruf_status.melde_erfolg('lik')
+    return gespeichert
 
 
 def _live_lik_cached():
