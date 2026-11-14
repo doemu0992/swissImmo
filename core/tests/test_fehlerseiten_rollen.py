@@ -140,12 +140,16 @@ class HauswartKopfzeileTests(RbacBasis):
         self.assertIn('/logout/', menue)
 
     def test_zwei_faktor_seite_fuer_mieter_zeigt_die_team_ziele_nicht(self):
-        """ROUTE-03(c): Die 2FA-Seite rendert für Portal-Rollen in derselben Hülle."""
+        """ROUTE-03(c): Die 2FA-Seite zeigt Portal-Rollen keine Ziele der Verwaltung.
+
+        Seit dem 14.11.2026 erscheint sie für Portal-Konten im Portal-Rahmen (`zweifaktor._rahmen`) statt in der
+        Hülle der Verwaltung: gar keine Team-Ziele mehr, dafür ein Weg zurück ins eigene Portal."""
         html = self._seite(self.u_mieter, '/konto/zwei-faktor/')
-        kopf = html[html.index('id="fwKopf"'):html.index('<main class="fw-inhalt"')]
+        self.assertNotIn('id="fwKopf"', html)
         for ziel in self.ZIELE_DES_TEAMS:
-            self.assertNotIn(ziel, kopf)
-        self.assertIn('href="/nach-login/" class="fw-kapsel fw-logo-kapsel"', kopf)
+            self.assertNotIn(ziel, html)
+        self.assertIn('href="/mieter/"', html)
+        self.assertIn('/logout/', html)
 
 
 class NeuerFallOhneModalTests(RbacBasis):
