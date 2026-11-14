@@ -52,6 +52,7 @@ class Command(BaseCommand):
         self.stdout.write('Auftragslauf beendet.')
 
     def durchlauf(self):
+        auftraege.puls_melden()                               # «der Läufer lebt» für `auftraege.laeufer_aktiv`
         n = auftraege.abarbeiten()
         if n:
             self.stdout.write(self.style.SUCCESS(f'{n} Auftrag/Aufträge bearbeitet.'))

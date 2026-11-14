@@ -23,4 +23,6 @@ def fw_auftraege(request):
     for a in zeilen:
         a.art_text = dienst.bezeichnung(a.art)
     return render(request, 'fw/auftraege.html', {
-        **_global_filter(request), 'nav': 'heute', 'offene': offene, 'erledigte': erledigte})
+        **_global_filter(request), 'nav': 'heute', 'offene': offene, 'erledigte': erledigte,
+        # Warten Aufträge und meldet sich kein Läufer, holt sie niemand ab: das soll man sehen.
+        'ohne_laeufer': any(a.zustand == Auftrag.ZUSTAND_WARTET for a in offene) and not dienst.laeufer_aktiv()})

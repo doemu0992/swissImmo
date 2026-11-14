@@ -40019,3 +40019,9 @@ msgstr "Fetch from HEV now"
 
 msgid "zählt nicht: davor fehlt ein Monat"
 msgstr "not counted: a month before it is missing"
+
+msgid "Sollstellung %(titel)s läuft im Hintergrund. Stand und Ergebnis stehen unter «Aufträge»."
+msgstr "Rent charging %(titel)s is running in the background. Status and result are under «Jobs»."
+
+msgid "Es warten Aufträge, aber der Auftragsläufer meldet sich nicht. Bitte den Betreiber informieren: Ohne Läufer werden sie nicht abgearbeitet."
+msgstr "Jobs are waiting, but the job runner is not responding. Please inform the operator: without it they are not processed."

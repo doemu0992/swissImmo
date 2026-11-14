@@ -384,9 +384,10 @@ Stand 14.11.2026. In dieser Reihenfolge, weil jeder Punkt den nächsten billiger
    Datenbankpflege brächte dort mehr Risiko als Nutzen. Die kantonalen Feiertage warten auf den fachlichen Entscheid
    (siehe 3.4).
 3. **Auftragstabelle für lange Arbeiten — Grundlage erledigt (PR 259).** `core.Auftrag`, `core/services/auftraege.py`,
-   `manage.py auftraege_abarbeiten` und die Seite «Aufträge» (`/neu/auftraege/`). Erste Art: `sollstellung`. Die
-   bestehenden Knöpfe (Sollstellung, Mahnlauf, Serienbrief, Belegerkennung) laufen noch wie bisher und lassen sich
-   einzeln auf Aufträge umstellen. Der Läufer muss einmal als Always-on-Task eingerichtet werden.
+   `manage.py auftraege_abarbeiten` und die Seite «Aufträge» (`/neu/auftraege/`). Die Sollstellung geht ab 150
+   Verträgen in den Hintergrund, aber nur, wenn der Läufer sich meldet (`auftraege.laeufer_aktiv`); sonst läuft sie
+   sofort wie bisher. Dasselbe Muster gilt für jede weitere Umstellung: nie in die Warteschlange, wenn niemand sie
+   abholt. Mahnlauf, Serienbrief und Belegerkennung laufen noch wie bisher. Der Läufer muss einmal als Always-on-Task eingerichtet werden.
 4. **URL-Module je Bereich — erledigt (PR 260).** `swiss_immo/urls.py` ist in sechs Module aufgeteilt; Routen und
    Reihenfolge sind nachweislich unverändert (geflachter Routenbaum vorher und nachher gleich, 594 Einträge).
 5. **Auswahl der Organisation bei mehreren Mitgliedschaften — gab es bereits.** Die Mandantenwahl im Kopf und im
