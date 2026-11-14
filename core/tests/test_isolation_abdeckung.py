@@ -132,7 +132,8 @@ class ErweiterterBestand(MandantenFixture):
         from core import api_token
         self._neu('apitoken', lambda: api_token.erzeugen(org, f'Token {k}')[0])
 
-        from core.models import Aenderungsanfrage
+        from core.models import Aenderungsanfrage, Auftrag
+        self._neu('auftrag', lambda: Auftrag.alle_organisationen.create(organisation=org, art='sollstellung'))
         self._neu('aenderungsanfrage', lambda: Aenderungsanfrage.alle_organisationen.create(
             organisation=org, mieter=self.mieter, art='mitteilung', zusammenfassung=f'Anfrage {k}'))
 

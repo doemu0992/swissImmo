@@ -40634,3 +40634,30 @@ msgstr "OFS, communiqué du …"
 
 msgid "Letzte Monate"
 msgstr "Derniers mois"
+
+msgid "Arbeiten, die im Hintergrund laufen. Eine lange Arbeit steht hier mit Stand und Ergebnis, bis sie fertig ist; scheitert sie, steht der Grund da."
+msgstr "Travaux exécutés en arrière-plan. Un long travail apparaît ici avec son état et son résultat jusqu'à son achèvement ; s'il échoue, le motif est indiqué."
+
+msgid "Aktualisieren"
+msgstr "Actualiser"
+
+msgid "In Arbeit"
+msgstr "En cours"
+
+msgid "Nichts in Arbeit."
+msgstr "Rien en cours."
+
+msgid "Noch keine erledigten Aufträge."
+msgstr "Aucun mandat terminé pour l'instant."
+
+msgid "Wartet"
+msgstr "En attente"
+
+msgid "Fertig"
+msgstr "Terminé"
+
+msgid "Fehlgeschlagen"
+msgstr "Échoué"
+
+msgid "Sollstellung (Mietenlauf)"
+msgstr "Facturation des loyers (cycle de loyers)"

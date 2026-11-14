@@ -1,0 +1,45 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% comment %}
+AUFTRÄGE — Arbeiten im Hintergrund: wartend, laufend, fertig, fehlgeschlagen. Nur lesend; siehe core/services/auftraege.py.
+{% endcomment %}
+{% block title %}{% trans "Aufträge" %} — immoswiss{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Aufträge" %}</h1>
+        <p>{% trans "Arbeiten, die im Hintergrund laufen. Eine lange Arbeit steht hier mit Stand und Ergebnis, bis sie fertig ist; scheitert sie, steht der Grund da." %}</p>
+    </div>
+    <div><a href="/neu/auftraege/" class="fw-btn fw-leise">{% trans "Aktualisieren" %}</a></div>
+</div>
+
+<div class="fw-card mb-3">
+    <div class="fw-kopf"><h3 class="fw-t">{% trans "In Arbeit" %} <span class="fw-mutet">({{ offene|length }})</span></h3></div>
+    {% for a in offene %}
+    <div class="fw-zeile" data-testid="auftrag-offen">
+        <div class="fw-mitte">
+            <div class="fw-t">{{ a.art_text }}</div>
+            <div class="fw-s">{{ a.get_zustand_display }}{% if a.zustand == 'laeuft' %} · {{ a.fortschritt }} %{% if a.fortschritt_text %} · {{ a.fortschritt_text }}{% endif %}{% endif %}</div>
+            <div class="fw-s fw-mutet">{{ a.erstellt_am|date:"d.m.Y H:i" }}{% if a.erstellt_von %} · {{ a.erstellt_von.get_username }}{% endif %}</div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="fw-rumpf"><p class="fw-mutet">{% trans "Nichts in Arbeit." %}</p></div>
+    {% endfor %}
+</div>
+
+<div class="fw-card">
+    <div class="fw-kopf"><h3 class="fw-t">{% trans "Zuletzt erledigt" %}</h3></div>
+    {% for a in erledigte %}
+    <div class="fw-zeile" data-testid="auftrag-erledigt">
+        <div class="fw-mitte">
+            <div class="fw-t">{{ a.art_text }} · {{ a.get_zustand_display }}</div>
+            {% if a.zustand == 'fehler' %}<div class="fw-s"><b>{{ a.fehler }}</b></div>{% elif a.ergebnis %}<div class="fw-s whitespace-pre-line">{{ a.ergebnis }}</div>{% endif %}
+            <div class="fw-s fw-mutet">{{ a.beendet_am|date:"d.m.Y H:i" }}</div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="fw-rumpf"><p class="fw-mutet">{% trans "Noch keine erledigten Aufträge." %}</p></div>
+    {% endfor %}
+</div>
+{% endblock %}

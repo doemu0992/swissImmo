@@ -164,6 +164,50 @@ class LikWert(models.Model):
         return f"LIK {self.monat:02d}/{self.jahr}: {self.punkte} ({self.basis})"
 
 
+class Auftrag(models.Model):
+    """Eine Arbeit, die im Hintergrund läuft: wartet, läuft, ist fertig oder gescheitert.
+
+    WARUM ES DAS GIBT (Architekturnotizen R5): Lange Arbeiten liefen im Request oder im nächsten geplanten Lauf. Im
+    Request droht das Zeitlimit des Hosters, ein abgebrochener Lauf hatte keinen Wiederanlauf, und niemand sah einen
+    Stand. Ein Auftrag hält fest, WAS (Art, Parameter), FÜR WEN (Organisation), WIE WEIT (Fortschritt) und WIE ES
+    ENDETE (Ergebnis oder Fehler). Abgearbeitet wird er von `manage.py auftraege_abarbeiten` (Dauerläufer oder
+    Scheduled Task), im Mandantenkontext seiner Organisation. Siehe `core/services/auftraege.py`.
+
+    Nichts hier ist ein Ersatz für die Fachlogik: Die Art verweist auf eine Funktion, die die Arbeit tut.
+    """
+    ZUSTAND_WARTET, ZUSTAND_LAEUFT, ZUSTAND_FERTIG, ZUSTAND_FEHLER = 'wartet', 'laeuft', 'fertig', 'fehler'
+    ZUSTAENDE = [(ZUSTAND_WARTET, _('Wartet')), (ZUSTAND_LAEUFT, _('Läuft')), (ZUSTAND_FERTIG, _('Fertig')),
+                 (ZUSTAND_FEHLER, _('Fehlgeschlagen'))]
+
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
+                                     related_name='auftraege', verbose_name='Organisation')
+    art = models.CharField('Art', max_length=40, db_index=True, editable=False)
+    parameter = models.JSONField('Parameter', default=dict, blank=True, editable=False)
+    zustand = models.CharField('Zustand', max_length=10, choices=ZUSTAENDE, default=ZUSTAND_WARTET, db_index=True, editable=False)
+    fortschritt = models.PositiveSmallIntegerField('Fortschritt in Prozent', default=0, editable=False)
+    fortschritt_text = models.CharField('Fortschritt', max_length=200, blank=True, default='', editable=False)
+    ergebnis = models.TextField('Ergebnis', blank=True, default='', editable=False)
+    fehler = models.CharField('Fehler', max_length=300, blank=True, default='', editable=False)
+    versuche = models.PositiveSmallIntegerField('Versuche', default=0, editable=False)
+    erstellt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                     related_name='+', editable=False)
+    erstellt_am = models.DateTimeField(default=timezone.now, editable=False)
+    gestartet_am = models.DateTimeField(null=True, blank=True, editable=False)
+    beendet_am = models.DateTimeField(null=True, blank=True, editable=False)
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    class Meta:
+        verbose_name = 'Auftrag'
+        verbose_name_plural = 'Aufträge'
+        ordering = ['-erstellt_am', '-pk']
+        indexes = [models.Index(fields=['zustand', 'erstellt_am'], name='auftrag_zustand_alter')]
+
+    def __str__(self):
+        return f'{self.art} ({self.get_zustand_display()})'
+
+
 class Postfach(models.Model):
     """Das E-Mail-Postfach EINER Verwaltung — Antworten oder Rechnungen.
 

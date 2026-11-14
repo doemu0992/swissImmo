@@ -38862,3 +38862,30 @@ msgstr "BFS, Medienmitteilung vom …"
 
 msgid "Letzte Monate"
 msgstr "Letzte Monate"
+
+msgid "Arbeiten, die im Hintergrund laufen. Eine lange Arbeit steht hier mit Stand und Ergebnis, bis sie fertig ist; scheitert sie, steht der Grund da."
+msgstr "Arbeiten, die im Hintergrund laufen. Eine lange Arbeit steht hier mit Stand und Ergebnis, bis sie fertig ist; scheitert sie, steht der Grund da."
+
+msgid "Aktualisieren"
+msgstr "Aktualisieren"
+
+msgid "In Arbeit"
+msgstr "In Arbeit"
+
+msgid "Nichts in Arbeit."
+msgstr "Nichts in Arbeit."
+
+msgid "Noch keine erledigten Aufträge."
+msgstr "Noch keine erledigten Aufträge."
+
+msgid "Wartet"
+msgstr "Wartet"
+
+msgid "Fertig"
+msgstr "Fertig"
+
+msgid "Fehlgeschlagen"
+msgstr "Fehlgeschlagen"
+
+msgid "Sollstellung (Mietenlauf)"
+msgstr "Sollstellung (Mietenlauf)"
