@@ -116,6 +116,20 @@ class BerichtsstelleTests(TestCase):
             self._melden(bericht)
         self.assertIn('Probe=display: none @ input#fwOsFeld.fw-feld', log.output[0])
 
+    def test_stil_attribute_nur_die_des_browsers(self):
+        """`style-src-attr` erlaubt genau die Zeichenfolgen, die iOS-Safari selbst an `<select>` setzt — per Hash, nicht
+        per 'unsafe-inline'. In der Vorschau (alles inline erlaubt) steht die Regel nicht, sie würde dort einschränken."""
+        import base64
+        import hashlib
+        r = csp.richtlinie('ABC123')
+        teil = next(t for t in r.split('; ') if t.startswith('style-src-attr '))
+        self.assertIn("'unsafe-hashes'", teil)
+        self.assertNotIn('unsafe-inline', teil)
+        self.assertIn(base64.b64encode(hashlib.sha256(b'text-overflow:inherit').digest()).decode(), teil)
+        self.assertEqual(teil.count("'sha256-"), len(csp.BROWSER_STILE))
+        self.assertTrue(all(t.startswith('text-overflow') for t in csp.BROWSER_STILE))
+        self.assertNotIn('style-src-attr', csp.richtlinie('ABC123', stil_inline=True))
+
     def test_richtlinie_verlangt_proben(self):
         r = csp.richtlinie('ABC123')
         self.assertIn("style-src 'self' 'nonce-ABC123' 'report-sample'", r)
