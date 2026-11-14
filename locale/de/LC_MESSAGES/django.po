@@ -38898,3 +38898,15 @@ msgstr "Der Monat liegt vor 2020 oder ist noch nicht veröffentlicht: Das BFS gi
 
 msgid "Der Vormonat fehlt noch. Bitte die Monate der Reihe nach eintragen, sonst entsteht eine Lücke."
 msgstr "Der Vormonat fehlt noch. Bitte die Monate der Reihe nach eintragen, sonst entsteht eine Lücke."
+
+msgid "Vom HEV abgerufen und gespeichert: %(werte)s."
+msgstr "Vom HEV abgerufen und gespeichert: %(werte)s."
+
+msgid "Der Abruf hat nichts gespeichert. Grund: %(grund)s"
+msgstr "Der Abruf hat nichts gespeichert. Grund: %(grund)s"
+
+msgid "Der Abruf lief, es gibt beim HEV keinen neuen Monatswert."
+msgstr "Der Abruf lief, es gibt beim HEV keinen neuen Monatswert."
+
+msgid "Jetzt beim HEV abrufen"
+msgstr "Jetzt beim HEV abrufen"

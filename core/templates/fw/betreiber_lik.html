@@ -12,6 +12,7 @@
         <h1>{% trans "LIK-Werte" %}</h1>
         <p>{% blocktrans %}Landesindex der Konsumentenpreise, Basis {{ basis }} = 100. Hier trägst du den Monatswert ein, sobald das BFS ihn veröffentlicht hat; ein Deployment braucht es nicht. Ein Eintrag hier gilt vor der Reihe im Code.{% endblocktrans %}</p>
     </div>
+    <div class="fw-phead-knoepfe"><form method="post">{% csrf_token %}<input type="hidden" name="aktion" value="abrufen"><button type="submit" class="fw-btn fw-primary" data-testid="lik-abrufen">{% trans "Jetzt beim HEV abrufen" %}</button></form></div>
 </div>
 
 {% if live %}

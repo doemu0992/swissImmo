@@ -55,6 +55,23 @@ def fw_betreiber_lik(request):
     fehler = None
     vor = heute.replace(day=1) - timedelta(days=1)                # der Vormonat: der jüngste, der veröffentlicht sein kann
     werte = {'jahr': vor.year, 'monat': vor.month, 'punkte': '', 'quelle': ''}
+    if request.method == 'POST' and request.POST.get('aktion') == 'abrufen':
+        # Derselbe Nachtrag wie im täglichen Lauf, sofort: mit Abgleich und Schranken (`lik.automatisch_nachfuehren`).
+        from core.models import AbrufStatus
+        neue = lik.automatisch_nachfuehren(heute)
+        if neue:
+            text = ', '.join(f'{m:02d}/{j}: {w}' for j, m, w in neue)
+            SicherheitsEreignis.objects.create(aktion='LIK-Wert automatisch nachgetragen', objekt='HEV',
+                                               ip_adresse=client_ip(request) or None, details=f'{text} (Knopf)')
+            messages.success(request, gettext('Vom HEV abgerufen und gespeichert: %(werte)s.') % {'werte': text})
+        else:
+            status = AbrufStatus.objects.filter(name='lik').first()
+            if status is not None and status.fehler_in_folge:
+                messages.error(request, gettext('Der Abruf hat nichts gespeichert. Grund: %(grund)s')
+                               % {'grund': status.letzter_fehler})
+            else:
+                messages.info(request, gettext('Der Abruf lief, es gibt beim HEV keinen neuen Monatswert.'))
+        return redirect('fw_betreiber_lik')
     if request.method == 'POST' and request.POST.get('aktion') == 'loeschen':
         # Nur nachgetragene Werte lassen sich löschen; die Reihe im Code bleibt (sie ändert ein Deployment).
         try:

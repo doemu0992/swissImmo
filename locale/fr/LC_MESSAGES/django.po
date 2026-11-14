@@ -40670,3 +40670,15 @@ msgstr "Le mois est antérieur à 2020 ou n'est pas encore publié : l'OFS ne co
 
 msgid "Der Vormonat fehlt noch. Bitte die Monate der Reihe nach eintragen, sonst entsteht eine Lücke."
 msgstr "Le mois précédent manque encore. Veuillez saisir les mois dans l'ordre, sinon une lacune apparaît."
+
+msgid "Vom HEV abgerufen und gespeichert: %(werte)s."
+msgstr "Récupéré auprès de la HEV et enregistré : %(werte)s."
+
+msgid "Der Abruf hat nichts gespeichert. Grund: %(grund)s"
+msgstr "La consultation n'a rien enregistré. Motif : %(grund)s"
+
+msgid "Der Abruf lief, es gibt beim HEV keinen neuen Monatswert."
+msgstr "La consultation a abouti, la HEV n'a pas de nouvelle valeur mensuelle."
+
+msgid "Jetzt beim HEV abrufen"
+msgstr "Récupérer maintenant auprès de la HEV"

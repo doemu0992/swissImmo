@@ -40004,3 +40004,15 @@ msgstr "The month is before 2020 or not yet published: the FSO releases a month'
 
 msgid "Der Vormonat fehlt noch. Bitte die Monate der Reihe nach eintragen, sonst entsteht eine Lücke."
 msgstr "The previous month is still missing. Please enter the months in order, otherwise a gap arises."
+
+msgid "Vom HEV abgerufen und gespeichert: %(werte)s."
+msgstr "Fetched from HEV and saved: %(werte)s."
+
+msgid "Der Abruf hat nichts gespeichert. Grund: %(grund)s"
+msgstr "The lookup saved nothing. Reason: %(grund)s"
+
+msgid "Der Abruf lief, es gibt beim HEV keinen neuen Monatswert."
+msgstr "The lookup ran; HEV has no new monthly value."
+
+msgid "Jetzt beim HEV abrufen"
+msgstr "Fetch from HEV now"

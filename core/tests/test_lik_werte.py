@@ -129,6 +129,36 @@ class SeiteTests(TestCase):
             inhalt = self.client.get(reverse('fw_betreiber_lik')).content.decode()
         self.assertEqual(inhalt.count('data-testid="lik-loeschen"'), 1)
 
+    def _abrufen(self, rueckgabe, fehler=None):
+        from core.services import abruf_status
+        self.client.force_login(self.betreiber)
+
+        def attrappe(_heute):
+            if fehler:
+                abruf_status.melde_fehler('lik', fehler)
+            return rueckgabe
+        with mock.patch('core.views.fw.betreiber.datum_heute', return_value=date(2026, 11, 13)), \
+                mock.patch.object(lik, 'automatisch_nachfuehren', side_effect=attrappe):
+            return self.client.post(reverse('fw_betreiber_lik'), {'aktion': 'abrufen'}, follow=True)
+
+    def test_der_knopf_ruft_ab_und_meldet_die_gespeicherten_werte(self):
+        antwort = self._abrufen([(2026, 10, Decimal('108.7'))])
+        self.assertContains(antwort, '10/2026: 108.7')
+        self.assertTrue(SicherheitsEreignis.objects.filter(aktion='LIK-Wert automatisch nachgetragen').exists())
+
+    def test_der_knopf_nennt_den_grund_wenn_nichts_gespeichert_wurde(self):
+        antwort = self._abrufen([], fehler='Marke «2020 = 100» fehlt in der Quelle')
+        self.assertContains(antwort, 'Marke «2020 = 100» fehlt')
+
+    def test_der_knopf_sagt_wenn_es_nichts_neues_gibt(self):
+        self.assertContains(self._abrufen([]), 'keinen neuen Monatswert')
+
+    def test_abrufen_darf_nur_der_betreiber(self):
+        self.client.force_login(self.normal)
+        with mock.patch.object(lik, 'automatisch_nachfuehren') as m:
+            self.assertEqual(self.client.post(reverse('fw_betreiber_lik'), {'aktion': 'abrufen'}).status_code, 403)
+        m.assert_not_called()
+
     def test_unsinn_wird_abgewiesen_ohne_etwas_zu_speichern(self):
         for kw in ({'punkte': '10.8'}, {'punkte': 'abc'}, {'monat': '13'}, {'jahr': '2019'}, {'jahr': '2027'},
                    {'monat': '12'}, {'monat': '11'}, {'quelle': ''}):
