@@ -87,6 +87,17 @@
             </div>
         </section>
 
+        <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-3" aria-label="{% trans 'Zwei-Faktor-Anmeldung' %}" data-block="zweifaktor">
+            <h2 class="font-bold fw-strong">{% trans "Zwei-Faktor-Anmeldung" %}</h2>
+            {% if zweifaktor_aktiv %}
+            <p class="text-sm fw-mutet">{% trans "Aktiv: Nach dem Passwort fragt das Portal einen Code aus Ihrer Authenticator-App." %}</p>
+            <a href="{% url 'zweifaktor_uebersicht' %}" class="fw-btn fw-leise">{% trans "Verwalten" %}</a>
+            {% else %}
+            <p class="text-sm fw-mutet">{% trans "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon. Empfohlen, weil hier Abrechnungen und Ihre Bankverbindung stehen." %}</p>
+            <a href="{% url 'zweifaktor_einrichten' %}" class="fw-btn fw-primary" data-testid="zf-einrichten">{% trans "Einrichten" %}</a>
+            {% endif %}
+        </section>
+
         <section class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-4" aria-label="{% trans 'Passwort ändern' %}" data-block="passwort">
             <h2 class="font-bold fw-strong">{% trans "Passwort ändern" %}</h2>
             <form method="post" class="space-y-3">

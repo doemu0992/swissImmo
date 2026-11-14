@@ -38940,3 +38940,15 @@ msgstr "Das Rundschreiben an %(n)s Empfänger wird im Hintergrund versandt. Stan
 
 msgid "Rundschreiben per E-Mail"
 msgstr "Rundschreiben per E-Mail"
+
+msgid "Zurück zum Portal"
+msgstr "Zurück zum Portal"
+
+msgid "Aktiv: Nach dem Passwort fragt das Portal einen Code aus Ihrer Authenticator-App."
+msgstr "Aktiv: Nach dem Passwort fragt das Portal einen Code aus Ihrer Authenticator-App."
+
+msgid "Verwalten"
+msgstr "Verwalten"
+
+msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon. Empfohlen, weil hier Abrechnungen und Ihre Bankverbindung stehen."
+msgstr "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon. Empfohlen, weil hier Abrechnungen und Ihre Bankverbindung stehen."

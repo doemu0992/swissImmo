@@ -40046,3 +40046,15 @@ msgstr "The circular to %(n)s recipients is being sent in the background. Status
 
 msgid "Rundschreiben per E-Mail"
 msgstr "Circular by e-mail"
+
+msgid "Zurück zum Portal"
+msgstr "Back to the portal"
+
+msgid "Aktiv: Nach dem Passwort fragt das Portal einen Code aus Ihrer Authenticator-App."
+msgstr "Active: after the password, the portal asks for a code from your authenticator app."
+
+msgid "Verwalten"
+msgstr "Manage"
+
+msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon. Empfohlen, weil hier Abrechnungen und Ihre Bankverbindung stehen."
+msgstr "Extra protection for your account, optional: after the password, the portal asks for a code from an authenticator app on your phone. Recommended, because your statements and bank details are here."

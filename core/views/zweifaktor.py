@@ -318,7 +318,7 @@ def zweifaktor_einrichten(request):
                         request=request)
             return render(request, 'core/zweifaktor_codes.html',
                           {'codes': codes, 'assistent': _einrichtungs_assistent(3),
-                           'nav': 'account'})
+                           'nav': 'account', **_rahmen(request)})
         fehler = gettext('Der Code stimmt nicht. Uhrzeit des Telefons prüfen und neu versuchen.')
         schritt = 2
     else:
@@ -327,7 +327,7 @@ def zweifaktor_einrichten(request):
 
     kontext = {'nav': 'account', 'fehler': fehler, 'schritt': schritt,
                'assistent': _einrichtungs_assistent(schritt),
-               'pflicht_hinweis': _pflicht_fuer(request.user)}
+               'pflicht_hinweis': _pflicht_fuer(request.user), **_rahmen(request)}
     if schritt == 1:
         # Schlüssel und QR nur dort, wo man sie braucht — Schritt 2 fragt nur den Code ab.
         konto = request.user.email or request.user.get_username()
@@ -361,6 +361,7 @@ def zweifaktor_uebersicht(request):
         'organisation': organisation,
         'darf_verwalten': darf_verwalten,
         'ohne_faktor': _team_ohne_faktor(organisation) if darf_verwalten else [],
+        **_rahmen(request),
     })
 
 
@@ -428,7 +429,7 @@ def zweifaktor_codes_neu(request):
         return redirect('zweifaktor_einrichten')
     codes = _neue_codes(request.user)
     _sicherheit('Notfallcodes neu erzeugt', request.user.get_username(), request=request)
-    return render(request, 'core/zweifaktor_codes_neu.html', {'codes': codes, 'nav': 'account'})
+    return render(request, 'core/zweifaktor_codes_neu.html', {'codes': codes, 'nav': 'account', **_rahmen(request)})
 
 
 @never_cache
@@ -459,6 +460,23 @@ def zweifaktor_aus(request):
 # ---------------------------------------------------------------------------
 # Pflicht
 # ---------------------------------------------------------------------------
+
+def _rahmen(request):
+    """In welchem Rahmen die Konto-Seiten erscheinen: Verwaltung (`fw/base.html`) oder Portal.
+
+    Die Zwei-Faktor-Anmeldung hängt am Konto, nicht an der Rolle. Ein Eigentümer oder Mieter, der sie einrichtet,
+    sah bisher die Navigation der Verwaltung, deren Seiten ihm alle verwehrt sind. Portal-Konten (ohne Mitgliedschaft
+    in einer Verwaltung) bekommen deshalb den Portal-Rahmen und einen Weg zurück in ihr Portal."""
+    from crm.models import Mitgliedschaft
+    benutzer = request.user
+    if Mitgliedschaft.alle_organisationen.filter(benutzer=benutzer).exists() or benutzer.is_superuser:
+        return {}
+    if getattr(benutzer, 'eigentuemer_profil', None) is not None:
+        return {'seiten_basis': 'core/portal_base.html', 'portal_zurueck': '/portal/profil/'}
+    if getattr(benutzer, 'mieter_profil', None) is not None:
+        return {'seiten_basis': 'core/portal_base.html', 'portal_zurueck': '/mieter/'}
+    return {}
+
 
 def _pflicht_fuer(benutzer) -> bool:
     """Ist der zweite Faktor für dieses Konto Pflicht?
