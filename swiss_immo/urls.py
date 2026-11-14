@@ -108,7 +108,7 @@ from core.views.billing import abrechnung_pdf_view, qr_rechnung_pdf
 from core.views.email_views import send_abrechnung_email_view, send_mahnung_email_view, generate_mahnung_pdf_view
 
 # 6b. Nebenkosten-Wizard (Modul 1, 27.10.2026) — sechs Schritte unter /neu/nebenkosten/<pk>/
-from swiss_immo import (urls_neu_bestand, urls_betreiber, urls_neu_betrieb, urls_neu_mietprozess, urls_neu_verwaltung, urls_portale)
+from . import (urls_neu_bestand, urls_betreiber, urls_neu_betrieb, urls_neu_mietprozess, urls_neu_verwaltung, urls_portale)
 
 urlpatterns = [
     # --- STARTSEITE ---
