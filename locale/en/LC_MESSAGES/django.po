@@ -40058,3 +40058,6 @@ msgstr "Manage"
 
 msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon. Empfohlen, weil hier Abrechnungen und Ihre Bankverbindung stehen."
 msgstr "Extra protection for your account, optional: after the password, the portal asks for a code from an authenticator app on your phone. Recommended, because your statements and bank details are here."
+
+msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon."
+msgstr "Extra protection for your account, optional: after the password, the portal asks for a code from an authenticator app on your phone."

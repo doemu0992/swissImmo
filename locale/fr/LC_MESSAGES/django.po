@@ -40724,3 +40724,6 @@ msgstr "Gérer"
 
 msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon. Empfohlen, weil hier Abrechnungen und Ihre Bankverbindung stehen."
 msgstr "Protection supplémentaire pour votre compte, facultative : après le mot de passe, le portail demande un code d'une application d'authentification sur votre téléphone. Recommandé, car vos décomptes et vos coordonnées bancaires se trouvent ici."
+
+msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon."
+msgstr "Protection supplémentaire pour votre compte, facultative : après le mot de passe, le portail demande un code d'une application d'authentification sur votre téléphone."

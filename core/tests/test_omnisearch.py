@@ -726,6 +726,19 @@ class AbfragezahlTests(Basis):
         with self.assertNumQueries(self.GRUNDZAHL):
             c.get('/neu/palette/', {'q': 'Sanitaer'})
 
+    def test_die_zahl_haengt_nicht_vom_lik_zwischenspeicher_ab(self):
+        """Ein Vertragstreffer las über die Vorgabe `get_current_lik` den Indexstand: Mit abgelaufenem Zwischenspeicher
+        war es eine Abfrage mehr, und dieser Wächter schwankte um eins (14.11.2026)."""
+        from core.services import lik
+        c = Client()
+        c.force_login(self.a.benutzer)
+        c.get('/neu/palette/', {'q': 'Mi'})
+        warm, daten = self._messen(c, 'Weg 7')
+        self.assertTrue(any(t['gruppe'] == 'vertraege' for t in daten['treffer']), 'kein Vertragstreffer: Test prüft nichts')
+        lik.cache_leeren()
+        kalt, _daten = self._messen(c, 'Weg 7')
+        self.assertEqual(kalt, warm)
+
     def test_die_zahl_haengt_nicht_von_der_trefferzahl_der_stapel_ab(self):
         """Ein Vertrag oder fünf: dieselbe Zahl. Der Stapel ist das Gegenmittel
         zu vier Abfragen JE Vertrag, und diese Zahl ist sein Beleg."""

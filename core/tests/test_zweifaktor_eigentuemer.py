@@ -76,3 +76,33 @@ class EigentuemerZweiFaktorTests(TestCase):
         neu = Client()
         neu.post(reverse('portal_login'), {'username': 'erika', 'password': PASSWORT})
         self.assertIn('_auth_user_id', neu.session)
+
+
+class MieterZweiFaktorTests(TestCase):
+    def setUp(self):
+        from crm.models import Mieter
+        self.org = _test_organisation(firma='V AG')
+        self.benutzer = get_user_model().objects.create_user('mia', password=PASSWORT)
+        with organisation_kontext(self.org):
+            self.mieter = Mieter.objects.create(typ='person', vorname='Mia', nachname='Muster', benutzer=self.benutzer)
+        self.c = Client()
+        self.c.force_login(self.benutzer)
+
+    def test_meine_daten_bietet_die_einrichtung_an(self):
+        antwort = self.c.get('/mieter/daten/')
+        self.assertEqual(antwort.status_code, 200)
+        self.assertContains(antwort, 'data-testid="zf-einrichten"')
+
+    def test_die_konto_seite_fuehrt_zurueck_zu_meine_daten(self):
+        inhalt = self.c.get(reverse('zweifaktor_uebersicht')).content.decode()
+        self.assertIn('href="/mieter/daten/"', inhalt)
+        self.assertNotIn('id="fwHauptnav"', inhalt)
+
+    def test_einrichten_aktiviert_und_die_seite_zeigt_es(self):
+        self.c.get(reverse('zweifaktor_einrichten'))
+        geheimnis = self.c.session['zweifaktor_neues_geheimnis']
+        self.c.post(reverse('zweifaktor_einrichten'), {'code': totp.code(geheimnis)})
+        self.assertTrue(ZweiterFaktor.objects.get(benutzer=self.benutzer).ist_aktiv)
+        antwort = self.c.get('/mieter/daten/')
+        self.assertContains(antwort, 'Aktiv:')
+        self.assertNotContains(antwort, 'data-testid="zf-einrichten"')

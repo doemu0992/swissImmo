@@ -40653,3 +40653,6 @@ msgstr "Gestisci"
 
 msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon. Empfohlen, weil hier Abrechnungen und Ihre Bankverbindung stehen."
 msgstr "Protezione aggiuntiva per il suo conto, facoltativa: dopo la password, il portale chiede un codice da un'app di autenticazione sul suo telefono. Consigliata, perché qui si trovano i conteggi e le sue coordinate bancarie."
+
+msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon."
+msgstr "Protezione aggiuntiva per il suo conto, facoltativa: dopo la password, il portale chiede un codice da un'app di autenticazione sul suo telefono."

@@ -474,7 +474,7 @@ def _rahmen(request):
     if getattr(benutzer, 'eigentuemer_profil', None) is not None:
         return {'seiten_basis': 'core/portal_base.html', 'portal_zurueck': '/portal/profil/'}
     if getattr(benutzer, 'mieter_profil', None) is not None:
-        return {'seiten_basis': 'core/portal_base.html', 'portal_zurueck': '/mieter/'}
+        return {'seiten_basis': 'core/portal_base.html', 'portal_zurueck': '/mieter/daten/'}
     return {}
 
 

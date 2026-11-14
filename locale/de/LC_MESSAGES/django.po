@@ -38952,3 +38952,6 @@ msgstr "Verwalten"
 
 msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon. Empfohlen, weil hier Abrechnungen und Ihre Bankverbindung stehen."
 msgstr "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon. Empfohlen, weil hier Abrechnungen und Ihre Bankverbindung stehen."
+
+msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon."
+msgstr "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon."
