@@ -1,6 +1,6 @@
 # core/views/fw/sollstellung.py
 #
-# Block 12 der 33 (Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md): der monatliche
+# Block 12 der 33 (Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)): der monatliche
 # Mietenlauf — aus den aktiven Vertraegen die Debitorenrechnungen des Monats
 # stellen.
 #

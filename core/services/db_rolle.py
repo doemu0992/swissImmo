@@ -3,7 +3,7 @@
 Die Trigger auf `core_buchung` und `core_aktivitaetslog` halten rohes SQL auf, nicht aber `TRUNCATE`,
 `DROP TABLE` und `ALTER TABLE ... DISABLE TRIGGER`. Das darf, wer Superuser oder Eigentümer der Tabelle ist.
 Läuft die Anwendung mit der Rolle, die die Tabellen angelegt hat (der Normalfall), ist der Schutz nur so stark wie
-ihr Passwort. Diese Prüfung macht das sichtbar; die Abhilfe steht in `docs/AUTOMATISIERUNG.md` (Abschnitt «Datenbankrolle»).
+ihr Passwort. Diese Prüfung macht das sichtbar; die Abhilfe steht in `ARCHITECTURE.md` (Abschnitt «Datenbankrolle»).
 """
 from django.db import connection
 

@@ -3,7 +3,7 @@
 # Die Helfer, die MEHR ALS EIN Block braucht. Sie stehen hier, weil sie sonst
 # beim Umzug ihres Heimatblocks mitwandern und den anderen Bloecken fehlen —
 # das ist der wahrscheinlichste Weg, Etappe 1 zu brechen
-# (siehe docs/ETAPPE-1-ZERLEGEN.md).
+# (siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)).
 #
 # Sechs der acht lagen bis hierher MITTEN in einem Block:
 #   _kaution_bilanziert   Block 1    ·  _mwst_beleg/_bereits_verbucht/_periode  Block 27
@@ -360,7 +360,7 @@ def _parse_adresse(text):
     return strasse, '', rest
 
 
-# Der Sonderfall, den docs/ETAPPE-1-ZERLEGEN.md ausdruecklich benennt:
+# Der Sonderfall, den «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf) ausdruecklich benennt:
 # _park_konto stand im Profil-Menue-Block und wurde AUSSCHLIESSLICH vom
 # Bankabgleich benutzt — rund 10'000 Zeilen entfernt. Beim Umzug des
 # Bankabgleichs faellt genau das auf. Statt den Helfer dem einen oder dem

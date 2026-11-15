@@ -1,4 +1,4 @@
-/* Aktionen per Datenattribut statt Inline-Handler (Roadmap Nr. 23, Etappe 3; docs/CSP.md).
+/* Aktionen per Datenattribut statt Inline-Handler (Roadmap Nr. 23, Etappe 3; ARCHITECTURE.md).
  *
  * Mit CSP sind `onclick="…"` & Co. gesperrt. Dieser Verteiler hört einmal am Dokument zu und liest, was am
  * Element steht. Er gilt auch für Inhalte, die später in die Seite kommen (Schublade, nachgeladene Teile).

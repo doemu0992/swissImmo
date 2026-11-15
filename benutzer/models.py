@@ -2,7 +2,7 @@
 
 Django erlaubt den Wechsel des Benutzermodells nach Produktivgang praktisch
 nicht mehr. Deshalb steht dieser Schritt am Anfang der Mandantenfähigkeit und
-nicht in ihrer Mitte — siehe `docs/ETAPPE-3-USER-MODEL.md`.
+nicht in ihrer Mitte — siehe `«ETAPPE-3-USER-MODEL» (früheres Dokument, Git-Verlauf)`.
 
 WARUM ``db_table = 'auth_user'``
 --------------------------------

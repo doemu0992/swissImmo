@@ -8,7 +8,7 @@ WARUM EIN BAUSTEIN UND NICHT EIN ROHES `<use>`
 
 Damit ein falscher Name AUFFAELLT. `<use href="#z-tippfehler">` erzeugt ein
 leeres Bild — die Seite sieht aus, als fehle nichts, und niemand merkt es.
-Dieser Baustein prueft den Namen gegen `docs/ZEICHEN.md` und wirft im
+Dieser Baustein prueft den Namen gegen `core/templatetags/zeichen_tabelle.md` und wirft im
 Entwicklungsbetrieb; im Betrieb gibt er ein leeres Zeichen zurueck, damit eine
 Seite nicht wegen eines Symbols abstuerzt.
 
@@ -37,17 +37,17 @@ from django.utils.safestring import mark_safe
 
 register = template.Library()
 
-_TABELLE = pathlib.Path(settings.BASE_DIR) / 'docs' / 'ZEICHEN.md'
+_TABELLE = pathlib.Path(settings.BASE_DIR) / 'core' / 'templatetags' / 'zeichen_tabelle.md'
 _erlaubt = None
 
 
-#: Ab hier stehen in `docs/ZEICHEN.md` die Zeichen, deren Bedeutung noch
+#: Ab hier stehen in `core/templatetags/zeichen_tabelle.md` die Zeichen, deren Bedeutung noch
 #: NICHT entschieden ist. Sie haben dieselbe Zeilenform wie die Tabelle.
 MARKE_OFFEN = '## Noch ohne Bedeutung'
 
 
 def erlaubte_zeichen():
-    """Die entschiedenen Namen aus `docs/ZEICHEN.md` — die Tabelle ist die Quelle.
+    """Die entschiedenen Namen aus `core/templatetags/zeichen_tabelle.md` — die Tabelle ist die Quelle.
 
     NUR BIS ZUR OFFENEN LISTE LESEN
 
@@ -76,7 +76,7 @@ def zeichen(name, klasse='', titel=''):
         if settings.DEBUG:
             raise template.TemplateSyntaxError(
                 f'Unbekanntes Zeichen «{name}». Die erlaubten stehen in '
-                f'docs/ZEICHEN.md; wer ein neues braucht, traegt es dort ein.')
+                f'core/templatetags/zeichen_tabelle.md; wer ein neues braucht, traegt es dort ein.')
         return mark_safe('')
 
     if titel:
@@ -137,7 +137,7 @@ def _melde_alt(name):
     _gemeldet.add(name)
     logging.getLogger(__name__).warning(
         'Unbekannter Zeichenname «%s» — Rueckfall auf «hinweis». '
-        'Erlaubte stehen in docs/ZEICHEN.md.', name)
+        'Erlaubte stehen in core/templatetags/zeichen_tabelle.md.', name)
 
 
 #: Führendes Emoji einer Meldung samt folgendem Leerzeichen: ✅ ❌ ⚠️ 📍 🗑️ …

@@ -36,7 +36,7 @@ Finanzen  Register und Konten. Bewusst OHNE eigenen Arbeitskorb — was zu tun
           auf derselben Datenbank «alles erledigt» sagte.
 Berichte  Auswertungen und was der Eigentümer zu sehen bekommt.
 
-Entscheide D1 und D8 (docs/ENTSCHEIDE-V7.md): fünf Bereiche statt der vier aus
+Entscheide D1 und D8 («ENTSCHEIDE-V7» (früheres Dokument, Git-Verlauf)): fünf Bereiche statt der vier aus
 G1, weil die Buchhalterin einen anderen Tagesrhythmus hat als die
 Bewirtschafterin und 16 gebaute Finanzseiten sonst keinen Ort haben.
 

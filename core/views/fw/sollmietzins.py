@@ -1,7 +1,7 @@
 # core/views/fw/sollmietzins.py
 #
 # Sollmietzins, Staffelvorlagen, Staffeln und Mietzinsanpassung.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md. Herausgeloest aus detailseiten.py.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf). Herausgeloest aus detailseiten.py.
 
 from datetime import date
 from decimal import Decimal

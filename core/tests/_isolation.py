@@ -1,4 +1,4 @@
-"""Grundlage der Isolationstests (Etappe 2, siehe docs/ETAPPE-2-ISOLATIONSTESTS.md).
+"""Grundlage der Isolationstests (Etappe 2, siehe «ETAPPE-2-ISOLATIONSTESTS» (früheres Dokument, Git-Verlauf)).
 
 Zwei VOLLSTÄNDIGE Mandanten, A und B. Das ist die eigentliche Arbeit dieser
 Etappe — ohne beide Bestände laufen die Registryläufe ins Leere, weil zu

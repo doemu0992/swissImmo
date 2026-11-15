@@ -1,4 +1,4 @@
-"""Etappe 2 aus docs/AUDIT-SAAS-NIVEAU.md: Formulare, die Fehler zeigen.
+"""Etappe 2 aus «AUDIT-SAAS-NIVEAU» (früheres Dokument, Git-Verlauf): Formulare, die Fehler zeigen.
 
 Pilot ist die Liegenschaft. Vorher galt: Eine unlesbare Zahl wurde still als
 leer gespeichert, eine fremde Betreuungsperson warf per Umleitung alle übrigen

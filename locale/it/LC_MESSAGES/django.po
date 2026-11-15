@@ -39420,10 +39420,10 @@ msgstr ""
 msgid ""
 "Nur möglich, wenn die Anwendung den Schlüssel selbst angelegt hat. Liegt er "
 "in der .env oder in einer eigenen Datei, wechseln Sie ihn dort "
-"(docs/SCHLUESSEL.md)."
+"(ARCHITECTURE.md)."
 msgstr ""
 "Possibile solo se l'applicazione ha creato la chiave da sola. Se si trova "
-"nel .env o in un file proprio, cambiarla lì (docs/SCHLUESSEL.md)."
+"nel .env o in un file proprio, cambiarla lì (ARCHITECTURE.md)."
 
 msgid "Kopie des Schlüssels herunterladen"
 msgstr "Scarica una copia della chiave"
@@ -40657,8 +40657,8 @@ msgstr "Protezione aggiuntiva per il suo conto, facoltativa: dopo la password, i
 msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon."
 msgstr "Protezione aggiuntiva per il suo conto, facoltativa: dopo la password, il portale chiede un codice da un'app di autenticazione sul suo telefono."
 
-msgid "RLS-Probe: %(n)s Befund(e) in den letzten 14 Tagen (manage.py sicherheitslog). Bei 0 über zwei Wochen kann scharf geschaltet werden (docs/RLS.md)."
-msgstr "Prova RLS: %(n)s riscontro/i negli ultimi 14 giorni (manage.py sicherheitslog). Con 0 per due settimane si può attivare la modalità rigorosa (docs/RLS.md)."
+msgid "RLS-Probe: %(n)s Befund(e) in den letzten 14 Tagen (manage.py sicherheitslog). Bei 0 über zwei Wochen kann scharf geschaltet werden (ARCHITECTURE.md)."
+msgstr "Prova RLS: %(n)s riscontro/i negli ultimi 14 giorni (manage.py sicherheitslog). Con 0 per due settimane si può attivare la modalità rigorosa (ARCHITECTURE.md)."
 
 msgid "In der LIK-Reihe «%(basis)s = 100» fehlt der Wert für %(monat)s. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder den Monat nachtragen."
 msgstr "Nella serie IPC «%(basis)s = 100» manca il valore di %(monat)s. Non viene inserito alcun valore di un'altra serie: importare la serie in «Valori IPC» o registrare il mese."

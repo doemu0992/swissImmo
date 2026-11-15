@@ -2,7 +2,7 @@
 #
 # Der 7-Schritte-Assistent fuer neue Mietvertraege, Live-Vorschau,
 # Bearbeiten und der Versand zur Signatur.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Braucht anfangsmietzins_auto_ablegen aus mietzins.py -- bis zu diesem
 # Umzug lief das ueber _rest.py, jetzt direkt.

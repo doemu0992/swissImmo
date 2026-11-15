@@ -283,7 +283,7 @@ class Mitgliedschaft(models.Model):
       Fremdschlüssel bedeutet das einen Kontowechsel für jeden betroffenen
       Mieter und Eigentümer; mit Mitgliedschaften ist es eine Zeile.
 
-    Entschieden am 15.08.2026, siehe `docs/ETAPPE-4-ORGANISATION.md`.
+    Entschieden am 15.08.2026, siehe `«ETAPPE-4-ORGANISATION» (früheres Dokument, Git-Verlauf)`.
 
     NUR TEAM-ROLLEN
     ---------------

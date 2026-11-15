@@ -154,7 +154,7 @@ class DatenwerteTest(SimpleTestCase):
                    if n not in erlaubt and n not in egal]
         self.assertEqual(
             fehlend, [],
-            f'Diese Datenwerte sind keine Zeichen aus docs/ZEICHEN.md und '
+            f'Diese Datenwerte sind keine Zeichen aus core/templatetags/zeichen_tabelle.md und '
             f'fallen still auf «hinweis» zurück: {fehlend}')
 
     def test_kein_datenwert_traegt_noch_font_awesome(self):

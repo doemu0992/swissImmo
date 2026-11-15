@@ -1,4 +1,4 @@
-"""Etappe 0 aus docs/AUDIT-SAAS-NIVEAU.md: Korrektheit vor Gestaltung.
+"""Etappe 0 aus «AUDIT-SAAS-NIVEAU» (früheres Dokument, Git-Verlauf): Korrektheit vor Gestaltung.
 
 Hält fest, dass Seitenaufrufe (GET) nichts mehr auslösen, was eine Erklärung,
 einen Versand oder einen Import bedeutet, und dass die korrigierten Einstiege

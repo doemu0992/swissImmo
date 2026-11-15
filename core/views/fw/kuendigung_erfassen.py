@@ -81,7 +81,7 @@ def _auszugscheckliste_anlegen(vertrag, kuendigung, per, user, mit_leerstand=Fal
 
 
 # Erfassen, Bestätigen und Zurücknehmen einer Kündigung sind nach
-# docs/KONZEPT-UI.md §8 Inhaber und Verwaltern vorbehalten (bis 28.09.2026 auch
+# CONTRIBUTING.md §8 Inhaber und Verwaltern vorbehalten (bis 28.09.2026 auch
 # der Sachbearbeitung). Alle drei gehören zusammen: Schon das Erfassen setzt den
 # Vertrag auf «gekündigt» und kann die Kündigung direkt als bestätigt anlegen —
 # nur die Bestätigung zu sperren, wäre wirkungslos.

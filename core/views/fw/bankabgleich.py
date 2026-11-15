@@ -2,7 +2,7 @@
 #
 # Offene Posten mit Zahlungseingaengen abgleichen: camt.053- und CSV-Import,
 # Zuordnung, Verbuchung, und das Rueckgaengigmachen eines Imports.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Der groesste bisher verschobene Block (1'087 Zeilen) und zugleich einer der
 # heikelsten: camt.053, QR-Referenz (QRR, 27 Stellen) und die

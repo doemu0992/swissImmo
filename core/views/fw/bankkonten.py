@@ -1,7 +1,7 @@
 # core/views/fw/bankkonten.py
 #
 # Bankkonten mit QR-IBAN-Erkennung und Mietertrag je Konto. Etappe 1, siehe
-# docs/ETAPPE-1-ZERLEGEN.md.
+# «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # QR-IBAN heisst hier: der Bereich 30000-31999 in Stellen 5-9. Das steht im
 # Skill schweizer-fachlogik und wird von diesem Umzug nicht beruehrt.

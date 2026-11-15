@@ -2,7 +2,7 @@
 #
 # Mietzins-Anpassungspotenzial aus Referenzzins und LIK, Einzel- und
 # Massenanpassung, Anfangsmietzins mit amtlichem Formular.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Fachlich einer der heikelsten Bereiche ueberhaupt: Referenzzins-Schritte,
 # LIK-Basis und die kantonale Formularpflicht beim Anfangsmietzins stehen im

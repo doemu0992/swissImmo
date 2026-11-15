@@ -1,5 +1,5 @@
 """Testmodul mietzins — aus core/tests.py herausgeloest (Etappe 1,
-siehe docs/ETAPPE-1-ZERLEGEN.md). 15 Klassen, unveraendert uebernommen."""
+siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)). 15 Klassen, unveraendert uebernommen."""
 from datetime import date
 from decimal import Decimal
 

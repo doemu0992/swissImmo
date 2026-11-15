@@ -1,7 +1,7 @@
 # core/views/fw/mahnwesen.py
 #
 # Erster aus core/views/fw/_rest.py herausgeloester Block (Etappe 1,
-# siehe docs/ETAPPE-1-ZERLEGEN.md). Block 3 der 33: Mahnstufen aus
+# siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)). Block 3 der 33: Mahnstufen aus
 # ueberfaelligen Debitoren, dazu die Altersstruktur (Aging).
 #
 # Unveraendert uebernommen -- der Blockinhalt ab dem Kommentarbanner ist

@@ -6,7 +6,7 @@
 # Buchungen gefuehrt wie alles andere (Bilanzbuchung 1015 an 2010), nicht in
 # einem getrennten Ledger. Getrennt ist das Vermoegen, nicht das Journal.
 # Dazu Maengelruege, WG-Vertraege, Untermiete.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Art. 257e und die Trennung vom Hauptbuch stehen im Skill
 # schweizer-fachlogik. Der Umzug aendert daran nichts: Blockinhalt gegen

@@ -3,7 +3,7 @@
 # Die Einstiegsseiten der Oberflaeche: das Dashboard mit der Inbox und die
 # Finanzuebersicht. Sie standen im KOPFBEREICH der urspruenglichen fw.py,
 # vor dem ersten Blockkommentar — deshalb kommen sie zuletzt, als 34. und
-# letzter Umzug der Etappe 1 (siehe docs/ETAPPE-1-ZERLEGEN.md).
+# letzter Umzug der Etappe 1 (siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)).
 #
 # Damit ist _rest.py leer und faellt weg: Es gibt keine "noch nicht
 # aufgeteilte" Restdatei mehr.

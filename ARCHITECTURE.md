@@ -1,0 +1,234 @@
+# Architektur
+
+Ist-Zustand der Anwendung. Diese Datei beschreibt, was im Code steht — keine Pläne, keine Geschichte.
+Regeln für die Mitarbeit stehen in [CONTRIBUTING.md](CONTRIBUTING.md), Einstieg und Befehle in [README.md](README.md).
+
+## 1. Überblick
+
+immoswiss ist eine mandantenfähige Web-Anwendung für Schweizer Immobilienverwaltungen. Eine Installation bedient
+viele Verwaltungen («Organisationen»); der Betreiber schaltet neue Kunden im Betreiber-Portal frei. Die Seiten werden
+serverseitig gerendert (Django-Vorlagen), es gibt keine Einzelseiten-Anwendung.
+
+| Baustein | Stand |
+|---|---|
+| Sprache, Rahmenwerk | Python 3.11 (CI), Django 5.2, django-ninja für die API |
+| Datenbank | PostgreSQL in Produktion (`DB_ENGINE=postgres`), SQLite für Entwicklung und Tests |
+| Oberfläche | Django-Vorlagen, Tailwind (nur zur Bauzeit), eigene Skripte unter `static/js/`, keine Fremdbibliothek im Browser |
+| PDF, QR | xhtml2pdf, reportlab, pypdf, pdfplumber, segno, zxing-cpp |
+| Hintergrundarbeit | eigene Auftragstabelle mit Läufer (`core/services/auftraege.py`); kein Celery, kein Redis |
+| Cache | Datei-Cache (`core/cache_config.py`, `CACHE_VERZEICHNIS`) |
+| Sprachen | Deutsch, Französisch, Italienisch, Englisch (`locale/`) |
+| Betrieb | PythonAnywhere, `deploy.sh` |
+| Prüfung | Django-Tests, Playwright (E2E), Ruff, pip-audit (`.github/workflows/ci.yml`) |
+
+## 2. Aufbau
+
+### Apps
+
+| App | Zuständigkeit |
+|---|---|
+| `benutzer` | Benutzermodell (`AUTH_USER_MODEL = 'benutzer.Benutzer'`) |
+| `core` | Ansichten (`core/views/fw/`), Dienste (`core/services/`), Middleware, Rechte, Management-Befehle, Vorlagen |
+| `crm` | Organisation, Mitgliedschaft (Rolle je Verwaltung), Mieter, Eigentümer (Mandate), Handwerker |
+| `portfolio` | Liegenschaften, Einheiten, Zähler, Ausstattung, Geräte, Dokumente der Objekte |
+| `rentals` | Mietverträge, Mietzinsanpassungen, Abnahmen, Dokumente der Verträge |
+| `finance` | Buchhaltung, Debitoren, Kreditoren, Zahlungen, Nebenkosten, Periodensperre |
+| `tickets` | Schadenmeldungen, Handwerker-Aufträge, Direktkanal Mieter–Handwerker |
+| `mietprozess` | Bewerbungen und Vermietung |
+| `faelle` | Fälle, Läufe (Sollstellung, Mahnlauf, …), Termine, Zulauf |
+| `stweg` | Stockwerkeigentum: Beschlüsse, Budget, Fonds, Abstimmung, Inkasso |
+| `abo` | Abonnement, Abrechnung der Plattform, Sperren nach Stufe und Zahlungsstand |
+
+### Adressen
+
+- `swiss_immo/urls.py` bindet `urls_neu_bestand.py`, `urls_neu_betrieb.py`, `urls_neu_mietprozess.py`,
+  `urls_neu_verwaltung.py`, `urls_portale.py` und `urls_betreiber.py` ein.
+- Verwaltung: `/neu/…`. Mieterportal: `/mieter/…`. Eigentümerportal: `/portal/…`. Betreiber: `/betreiber/…`.
+- Öffentlich ohne Anmeldung: `/schaden/melden/`, `/aushang/<token>/`, `/bewerben/<id>/`, `/auftrag/<token>/`,
+  `/direkt/<signiert>/`, `/fristen.ics?token=…`, `/healthz/`, `/version/`.
+- API (django-ninja): `/api/rentals`, `/api/mietprozess`, `/api/v1` (lesende Finanz-API mit Schlüssel,
+  `core/finanz_api.py`). Webhooks: `/docuseal/webhook/`, `/webhooks/brevo/inbound/`.
+
+### Middleware (Reihenfolge aus `settings.py`)
+
+Security → `WartungsMiddleware` → `NulBytesMiddleware` → GZip → Session → Common → CSRF → Auth →
+`AngemeldetNichtZwischenspeichern` → Locale → `OrganisationMiddleware` → `ZweiFaktorPflichtMiddleware` →
+`AboMiddleware` → Messages → XFrame → `CspMiddleware` → `EingabeFehlerMiddleware` → `FeldnamenMiddleware`.
+
+## 3. Mandantentrennung
+
+Jede fachliche Zeile gehört genau einer Organisation. Die Trennung hat drei Schichten.
+
+1. **Kontext und Manager** (`core/tenancy.py`). Die aktive Organisation steht in einer `ContextVar`. `Model.objects`
+   ist ein `TenantManager`: Er filtert auf die aktive Organisation und wirft ohne Kontext einen `OrganisationsFehler`.
+   Der benannte Umweg über alle Verwaltungen heisst `Model.alle_organisationen`. Helfer: `organisation_kontext`,
+   `kontext_des_objekts` (für Einstiege ohne Anmeldung), `je_organisation` (für geplante Läufe, mit Fehlerisolation).
+2. **Middleware** (`core/middleware_tenancy.py`). Die Organisation kommt aus der Mitgliedschaft des Benutzers, nie
+   aus der Anfrage. Bei mehreren Mitgliedschaften gilt die in der Sitzung gewählte, sonst die älteste.
+3. **Datenbank** (`core/rls.py`, Befehl `rls_einrichten`). Row Level Security für die Tabellen von `finance`, Stufen
+   `aus`, `probe`, `scharf` über `RLS_MODUS`. In Tests immer `aus`.
+
+Die Spalte `organisation` wird bei abhängigen Modellen aus dem Elternobjekt abgeleitet (`core/organisation_kette.py`).
+
+## 4. Rollen und Rechte
+
+Rollen hängen an der Mitgliedschaft je Organisation (`crm.Mitgliedschaft`), nicht an Django-Gruppen (`core/auth.py`).
+
+| Rolle | Darf |
+|---|---|
+| Inhaber | alles, was das Team darf, dazu Benutzer und Abonnement |
+| Verwalter | Verwaltung der Organisation, Läufe, Freigaben |
+| Sachbearbeiter | Tagesgeschäft, schreibend |
+| Lesezugriff | nur lesen |
+| Buchhaltung | Finanzen (Debitoren, Kreditoren, Buchungen, Läufe) |
+| Revision | Finanzen lesen |
+| Hauswart | Schadenfälle seiner Liegenschaften |
+| Eigentümer, Mieter | das jeweilige Portal |
+| Betreiber | Betreiber-Portal (Superuser) |
+
+- Ansichten tragen `@rolle_erforderlich(…)`. Vorlagen blenden Knöpfe über den Filter `darf` aus (`core/templatetags/rechte.py`).
+- Die Rollen werden je Anfrage einmal gelesen (`rollen_der_anfrage`); eine Änderung an Mitgliedschaften verwirft den Merker.
+- Zwei-Faktor-Anmeldung ist Pflicht für Inhaber, Verwalter, Buchhaltung und Revision (`ZWEIFAKTOR_ROLLENPFLICHT`).
+
+## 5. Datenfluss der wichtigsten Abläufe
+
+### Sollstellung und Mahnlauf
+`monatslauf` bzw. der Knopf in der Oberfläche → `core/services/sollstellung_lauf.py` → `automation.run_sollstellung`.
+`mahnlauf` bzw. Knopf → `core/services/mahnlauf_lauf.py` → `automation.run_mahnlauf`.
+Ab der Schwelle (150 Verträge, 100 offene Rechnungen; Rundschreiben ab 30 Empfängern) entsteht **immer** ein
+Hintergrundauftrag, nie eine Berechnung im Seitenaufruf.
+
+### Hintergrundaufträge
+`auftraege.anlegen` schreibt eine Zeile, `manage.py auftraege_abarbeiten` holt sie ab (im Mandantenkontext, mit
+Sperre gegen doppelte Abholung). Ein Auftrag, der 30 Minuten «läuft», gilt als abgestürzt und wird bis zu dreimal
+neu gestartet; die Funktionen müssen deshalb wiederholbar sein. Der Läufer meldet einen Puls im Cache; fehlt er,
+warnt die Seite «Aufträge» und das Betreiber-Protokoll.
+
+### Zahlungseingang
+Bankauszug (camt.053/054 oder CSV) → `core/views/fw/bankabgleich.py`: Gutschriften werden über die QR-Referenz den
+offenen Rechnungen zugeordnet und verbucht; Unzuordenbares wird geparkt (`core/services/zahlungszuordnung.py`).
+Zahlungsausgang: `core/services/pain001.py` (Zahllauf, ab Freigabelimit mit zweiter Person).
+
+### Nebenkosten
+Rechenkern `core/utils/billing.py` (`berechne_abrechnung`), Assistent `core/views/fw/nk_wizard.py`, PDF und Versand
+in `core/services/nk_*.py`.
+
+### Schadenmeldungen und Mail
+- Eingang: Mieterportal, internes Erfassen, Webformular `/schaden/melden/` (ordnet über die hinterlegte E-Mail-Adresse
+  zu, antwortet immer gleich) und QR-Aushang `/aushang/<token>/` (Token je Liegenschaft, erneuerbar).
+- Antwortadressen: Jede Verwaltung hat `<antwort_kennung>@ANTWORT_DOMAIN` für Antworten und eine eigene
+  `<rechnungs_kennung>@ANTWORT_DOMAIN` für Kreditorenrechnungen (`core/services/antwort_eingang.py`).
+- Eingehende Mail kommt über das Sammelpostfach (`fetch_plattform_eingang`), den Brevo-Webhook oder ein eigenes
+  Postfach der Verwaltung (`fetch_replies`, `fetch_rechnungen`). Nur Absender, die zum Ticket gehören, werden als
+  Antwort geführt; alles andere wird als interne Notiz abgelegt (`tickets/workflow.py`).
+- Direktkanal Mieter–Handwerker (`tickets/direktkanal.py`): Die Marke im Betreff trägt eine Kennung der
+  Empfängerseite; sie bestimmt, wer antwortet. Ein Widerruf entwertet Links und Marken beider Seiten.
+
+### Täglicher Lauf
+`manage.py taeglicher_lauf`: Auto-Pendenzen, Referenzzins und LIK, alte Logdateien löschen, montags Fristen-Mail;
+je Verwaltung Adresswechsel, Bereinigung der Bewerbungen, Laufplanung, Erinnerungen.
+
+## 6. Abonnement
+
+Einzige Quelle für Stufen, Grenzen, Preise und Module ist `core/funktionen.py`.
+
+- Vier aufbauende Stufen (`start`, `team`, `professional`, `enterprise`) mit Grenzen für Einheiten und Benutzer;
+  zubuchbare Module (`signatur`, `belegerkennung`, `reporting_erweitert`).
+- Durchsetzung: `hat_funktion()`, die Pfadtabelle und der Dekorator in `abo/zugang.py`, `AboMiddleware`. Eine
+  gesperrte Funktion antwortet mit der Sperrseite (HTTP 402). Mengengrenzen prüft `abo/signale.py` beim Anlegen.
+- Abrechnung: `manage.py abo_abrechnung` (täglich, eigener Task). Rechnung im Voraus als QR-Rechnung; der
+  Zahlungseingang wird von Hand bestätigt.
+- Eskalation ab Fälligkeit: Mahnung, zweite Mahnung, Lesemodus, Sperre (Tage in `settings.py`, `ABO_*`). Im
+  Lesemodus bleiben Anmeldung, Abonnement und Export offen; es wird nichts gelöscht.
+- Neuer Kunde: Betreiber-Portal `/betreiber/neu/` → `core/services/onboarding.py`; der Inhaber bekommt einen
+  Einladungslink. Eine öffentliche Registrierung gibt es nicht.
+
+## 7. Sicherheit
+
+| Thema | Umsetzung |
+|---|---|
+| Content Security Policy | `core/csp.py`: Nonce je Anfrage, Modus über `CSP_MODUS`, Meldestelle `/csp-bericht/` |
+| Zwei-Faktor | eigene TOTP-Umsetzung (`core/services/totp.py`, `core/views/zweifaktor.py`) |
+| Bremsen | `core/utils/throttle.py`: festes Zeitfenster, IP aus dem rechten Eintrag von `X-Forwarded-For` |
+| Geheimnisse | Fernet-Verschlüsselung (`core/services/geheimnis.py`) für Postfach-Zugänge, AHV-Nummern, 2FA-Geheimnisse |
+| Zugänge ohne Anmeldung | Zufallstoken je Objekt oder Person: Aushang, Handwerker-Link, Kalender-Link, Portal-Einladung |
+| Protokoll | `core/logschutz.GeheimnisFilter` kürzt Zugangslinks vor dem Schreiben; Löschfrist `LOG_AUFBEWAHRUNG_TAGE` |
+| Revisionsspur | verkettetes Logbuch (`core/log_kette.py`), Buchungen sind nicht löschbar (`finance/db_schutz.py`) |
+| Geldpfade | «sperren, prüfen, buchen» (`core/sperren.py`), Periodensperre nur mit zweiter Person lockerbar |
+| Datenschutz | Auskunft und Export (`core/services/auskunft.py`, `datenexport.py`), Anonymisierung statt Löschung (`core/services/dsg.py`) |
+
+## 8. Externe Dienste
+
+| Dienst | Wofür | Schalter |
+|---|---|---|
+| SMTP und IMAP (Hoststar) | Mailversand, Sammelpostfach | `EMAIL_HOST_*`, `PLATTFORM_IMAP_*` |
+| Brevo | eingehende Mail per Webhook | `BREVO_API_KEY`, `BREVO_WEBHOOK_SECRET` |
+| DocuSeal | elektronische Signatur (Modul) | `DOCUSEAL_API_KEY`, `DOCUSEAL_WEBHOOK_SECRET` |
+| Groq | Belegerkennung (Modul); ohne Schlüssel nur Mustererkennung | `GROQ_API_KEY` |
+| HEV, BWO | Landesindex und Referenzzinssatz | `LIK_LIVE_ABRUF` |
+
+## 9. Betrieb
+
+### Einspielen
+`bash deploy.sh` holt `main`, installiert Abhängigkeiten, prüft die Datenbank, sichert bei offenen Migrationen,
+migriert, sammelt statische Dateien, lädt die Web-App neu und führt die Betriebsprüfungen aus. Bei einem Fehler
+wird zurückgerollt.
+
+### Dauerläufer und geplante Aufgaben
+
+| Art | Befehl |
+|---|---|
+| Dauerläufer | `bash deploy.sh --dauerlauf`, `manage.py auftraege_abarbeiten --dauerlauf`, `manage.py fetch_plattform_eingang --dauerlauf` |
+| täglich | `taeglicher_lauf`, `abo_abrechnung`, `sicherung --ohne-medien`, `log_kette_anker` |
+| wöchentlich | `sicherung` (voll), `log_kette_pruefen` |
+| monatlich | `monatslauf`, `mahnlauf` (oder über die Oberfläche) |
+| bei Bedarf | `fetch_replies`, `fetch_rechnungen`, `send_eigentuemer_reports`, `jahresabschluss_lauf`, `dsg_anonymisieren --apply` |
+
+Der Auftragsläufer ist Pflicht, sobald ein Kunde über einer der Schwellen aus Abschnitt 5 liegt.
+
+### Umgebungsvariablen (Auswahl, vollständig in `swiss_immo/settings.py`)
+
+`SECRET_KEY`, `DEBUG`, `EXTRA_ALLOWED_HOSTS`, `EXTRA_CSRF_ORIGINS`, `PORTAL_BASE_URL`, `DB_ENGINE` und `DB_*`,
+`RLS_MODUS`, `CSP_MODUS`, `CACHE_VERZEICHNIS`, `GEHEIMNIS_SCHLUESSEL`, `SICHERUNG_SCHLUESSEL`, `ANTWORT_DOMAIN`,
+`LOG_AUFBEWAHRUNG_TAGE`, `AUSHANG_ID_ROUTE_BIS`, `RECHNUNGSADRESSE_ALT_BIS`, `ABO_STELLER_*`, `ABO_MAHNGEBUEHR`.
+
+### Sicherung
+`manage.py sicherung` (`--ziel`, `--behalten`, `--ohne-medien`, `--medien-behalten`). PostgreSQL über `pg_dump -Fc`,
+jeder Stand wird gegengelesen. Ausser Haus: `SICHERUNG_SCHLUESSEL` setzen und `--offsite ORDNER`; zurück mit
+`--entschluesseln DATEI --nach ZIEL`. Die Passphrase getrennt von der Sicherung aufbewahren.
+
+### Wiederherstellung (PostgreSQL)
+1. Web-App anhalten.
+2. Neue Datenbank anlegen und `pg_restore -d <neu> <sicherung>` ausführen.
+3. Mit `DB_NAME=<neu> manage.py bestand_zaehlen` und `medien_pruefen --sicherung <tar>` prüfen.
+4. `DB_NAME` in der `.env` und `.datenbank-erwartet` umstellen, Web-App neu laden.
+5. `manage.py rls_einrichten --status` prüfen.
+
+### Schlüsselwechsel (`GEHEIMNIS_SCHLUESSEL`)
+1. Neuen Fernet-Schlüssel erzeugen und in der `.env` als `<NEU>,<ALT>` eintragen; neu laden.
+2. `manage.py schluessel_wechseln` (Prüfung), dann `schluessel_wechseln --ausfuehren`.
+3. In der `.env` nur `<NEU>` stehen lassen; neu laden.
+
+Ohne den Schlüssel sind AHV-Nummern, Postfach-Zugänge und 2FA-Geheimnisse unlesbar. Alte Sicherungen brauchen den
+alten Schlüssel.
+
+### RLS scharf schalten
+1. `RLS_MODUS=probe`, neu laden, rund zwei Wochen alle üblichen Läufe ausführen.
+2. Befunde lesen: `manage.py sicherheitslog` (Aktion «RLS-Probe: fremde Zeile gelesen») und Betreiber-Protokoll.
+3. `manage.py rls_einrichten --status`, dann `rls_einrichten` als Eigentümerin der Tabellen.
+4. `RLS_MODUS=scharf`, Web-App und alle Dauerläufer neu starten.
+
+Zurück: `RLS_MODUS=aus` oder `rls_einrichten --entfernen`. Nach neuen Tabellen in `finance` erneut einrichten.
+
+### Neue Instanz auf PostgreSQL
+`postgres_anlegen.py` legt Rolle und Datenbank an; `bash umzug_postgres.sh` prüft, sichert, überträgt die Daten,
+richtet die Sequenzen und vergleicht den Bestand. Erst danach `DB_*` in die `.env` und `.datenbank-erwartet` anpassen.
+
+### Wartungsseite
+Sind Migrationen nicht angewendet, antwortet die Anwendung mit einer Wartungsseite (HTTP 503) statt mit Fehlern
+(`core/wartung.py`). Behebung: `manage.py migrate`, Web-App neu laden. `/version/` und `/healthz/` zeigen den Stand.
+Die Prüfung läuft einmal beim Start, nie je Anfrage.
+
+### Betreiber-Portal
+`/betreiber/`: Kunden und Abonnemente, Protokoll (Fehler der Anwendung, Abrufe, Aufträge, RLS-Probe, CSP, Pflege,
+Sicherheit; mit CSV-Export), LIK-Werte, Sicherheit.

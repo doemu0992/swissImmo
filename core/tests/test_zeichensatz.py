@@ -10,7 +10,7 @@ stehen für dasselbe, ebenso `fa-list`/`fa-list-ol` und `fa-gauge`/
 `fa-gauge-high`. Wer eine neue Seite baut, wählt aus zweitausend Zeichen und
 trifft nie dieselbe Wahl wie der Vorgänger.
 
-`docs/ZEICHEN.md` legt neunundvierzig Zeichen mit fester Bedeutung fest —
+`core/templatetags/zeichen_tabelle.md` legt neunundvierzig Zeichen mit fester Bedeutung fest —
 seit E2.44 ohne offene Frage.
 
 AN DREI ORTEN, NICHT AN EINEM
@@ -53,7 +53,7 @@ from django.conf import settings
 from django.test import SimpleTestCase
 
 WURZEL = pathlib.Path(settings.BASE_DIR)
-TABELLE = WURZEL / 'docs' / 'ZEICHEN.md'
+TABELLE = WURZEL / 'core' / 'templatetags' / 'zeichen_tabelle.md'
 
 #: Gemessen bei Anlage der Tabelle (E2.35). Die Zahl darf sinken, nicht steigen.
 #: E2.39: 207 -> 78. Die Vorlagen sind umgestellt; was bleibt, steht in
@@ -61,7 +61,7 @@ TABELLE = WURZEL / 'docs' / 'ZEICHEN.md'
 #: Admin-Vorlagen. Das ist Schritt 4 und braucht einen anderen Weg: Dort
 #: ist das Zeichen ein Datenwert, kein Markup.
 #: 79 statt 78: Vier Zeichen sind in E2.39 ZURUECKGENOMMEN worden.
-#: `stamp`, `bell`, `code` und `trend` stehen in `docs/ZEICHEN.md` unter
+#: `stamp`, `bell`, `code` und `trend` stehen in `core/templatetags/zeichen_tabelle.md` unter
 #: «Noch ohne Bedeutung» — bewusst nicht zugeordnet. Die Umstellung hat
 #: sie beim Sortieren erfunden; genau davor warnt die Tabelle. Sie
 #: bleiben bei Font Awesome, bis jemand die Bedeutung ENTSCHEIDET.
@@ -105,7 +105,7 @@ TABELLE = WURZEL / 'docs' / 'ZEICHEN.md'
 STAND_ZEICHEN = 0
 STAND_VORKOMMEN = 0
 
-#: Anzahl Zeichen mit fester Bedeutung, aus `docs/ZEICHEN.md`.
+#: Anzahl Zeichen mit fester Bedeutung, aus `core/templatetags/zeichen_tabelle.md`.
 #:
 #: D5 sagt «~40». Es sind 42 geworden: `einstellungen` fehlte als Bedeutung
 #: (`gear`), und die Trendpfeile zeigen die Richtung einer Zahl, nicht eine
@@ -138,7 +138,7 @@ STAND_VORKOMMEN = 0
 #: passt — und pruefen, ob das noch ein Satz ist oder schon ein Katalog.
 #:
 #: 62 seit dem Redesign (30.09.2026): `darstellung` fuer den Hell/Dunkel-
-#: Knopf in der Kopfzeile. Begruendung in docs/ZEICHEN.md unter «Bedienung».
+#: Knopf in der Kopfzeile. Begruendung in core/templatetags/zeichen_tabelle.md unter «Bedienung».
 ZIEL_ZEICHEN = 63
 
 #: Klassen, die in Gebrauch sind und bewusst noch keiner Bedeutung zugeordnet
@@ -195,7 +195,7 @@ def _zeichen_im_bestand(wurzel=WURZEL):
 
 
 def _in_tabelle_genannt():
-    """Die Namen, die in `docs/ZEICHEN.md` in Rückstrichen stehen.
+    """Die Namen, die in `core/templatetags/zeichen_tabelle.md` in Rückstrichen stehen.
 
     Genau diese gelten als abgedeckt — nicht jeder Namensteil im Fliesstext.
     """
@@ -210,7 +210,7 @@ class ZeichensatzTest(SimpleTestCase):
             len(zeichen), STAND_ZEICHEN,
             f'Es sind {len(zeichen)} verschiedene Zeichen geworden (Stand: '
             f'{STAND_ZEICHEN}). Wer ein neues braucht, trägt es in '
-            f'docs/ZEICHEN.md ein — mit Begründung, warum keines der '
+            f'core/templatetags/zeichen_tabelle.md ein — mit Begründung, warum keines der '
             f'zweiundvierzig passt.')
 
     def test_die_vorkommen_wachsen_nicht(self):
@@ -234,7 +234,7 @@ class ZeichensatzTest(SimpleTestCase):
     def test_die_tabelle_deckt_jedes_benutzte_zeichen_ab(self):
         """Sonst beschreibt sie einen Wunsch statt einen Weg.
 
-        Jede heute benutzte Klasse muss in `docs/ZEICHEN.md` als Name in
+        Jede heute benutzte Klasse muss in `core/templatetags/zeichen_tabelle.md` als Name in
         Rückstrichen vorkommen — in der Spalte »ersetzt heute« oder in der
         Liste »Noch ohne Bedeutung«. Wer eine neue einführt, ohne sie
         einzutragen, hinterlässt eine Lücke, die bei der Umstellung auffällt
@@ -244,7 +244,7 @@ class ZeichensatzTest(SimpleTestCase):
         fehlend = sorted(k for k in _zeichen_im_bestand() if k[3:] not in genannt)
         self.assertEqual(
             fehlend, [],
-            f'Diese Zeichen stehen nicht in docs/ZEICHEN.md: {fehlend[:12]}'
+            f'Diese Zeichen stehen nicht in core/templatetags/zeichen_tabelle.md: {fehlend[:12]}'
             + (f' (und {len(fehlend) - 12} weitere)' if len(fehlend) > 12 else '')
             + '\nBitte einer Bedeutung zuordnen oder unter »Noch ohne '
               'Bedeutung« aufnehmen.')
@@ -283,7 +283,7 @@ class ZeichensatzTest(SimpleTestCase):
         genannt = _in_tabelle_genannt()
         for name in OFFEN:
             self.assertIn(name, genannt,
-                          f'`{name}` steht nicht mehr in docs/ZEICHEN.md — '
+                          f'`{name}` steht nicht mehr in core/templatetags/zeichen_tabelle.md — '
                           f'wenn es zugeordnet wurde, hier austragen.')
 
     def test_die_messung_findet_ueberhaupt_etwas(self):

@@ -16,7 +16,7 @@ WAS DIESE DATEI HÄLT
 
 Die STRUKTUR (wo was steht) und die Bindungen zwischen den Teilen, die kein
 Browsertest einzeln sieht: Jede Klasse, die das Skript erzeugt, hat eine Regel
-in der Schicht; jedes Zeichen, das es zeichnet, steht in `docs/ZEICHEN.md`;
+in der Schicht; jedes Zeichen, das es zeichnet, steht in `core/templatetags/zeichen_tabelle.md`;
 jeder Text, den es holt, steht im `<template>`. Wie es aussieht und sich
 anfühlt (Breiten, Tastatur, Telefon), misst `e2e/tests/omnisearch.spec.ts` —
 ein Test, der die Zeichenkette liest, merkt, wenn eine Regel verschwindet,
@@ -362,7 +362,7 @@ class SkriptBindungenTests(SimpleTestCase):
         self.assertIn('fw-os-chip', regeln)
 
     def test_jedes_gezeichnete_zeichen_steht_in_der_zeichentabelle(self):
-        tabelle = (WURZEL / 'docs' / 'ZEICHEN.md').read_text(encoding='utf-8')
+        tabelle = (WURZEL / 'core' / 'templatetags' / 'zeichen_tabelle.md').read_text(encoding='utf-8')
         tabelle = tabelle[:tabelle.index('## Noch ohne Bedeutung')]
         erlaubt = set(re.findall(r'^\| `([a-z]+)` \|', tabelle, re.M))
         block = re.search(r'var ZEICHEN = \{(.*?)\};', self._skript(), re.S).group(1)

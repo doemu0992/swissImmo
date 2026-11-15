@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 # Die Fristansetzung nach Art. 257d OR ist Inhabern und Verwaltern vorbehalten
 # (seit 28.09.2026, vorher auch der Sachbearbeitung): Sie setzt die Frist in
 # Gang, nach deren Ablauf ausserordentlich gekündigt werden kann — dieselbe
-# Stufe wie «Mahnlauf und Betreibung» und «Kündigung» in docs/KONZEPT-UI.md §8.
+# Stufe wie «Mahnlauf und Betreibung» und «Kündigung» in CONTRIBUTING.md §8.
 # `fw_verzug_zugang` und `fw_verzug_sendung` bleiben bei SCHREIB_ROLLEN: Sie
 # tragen Tatsachen aus der Post nach (Zugang, Sendungsnummer), damit die
 # bereits angesetzte Frist richtig berechnet ist — keine Entscheidung.

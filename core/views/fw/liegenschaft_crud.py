@@ -2,7 +2,7 @@
 #
 # Liegenschaften und Objekte anlegen und bearbeiten, GWR-Abgleich,
 # Versicherungspolicen, globale Suche. Etappe 1, siehe
-# docs/ETAPPE-1-ZERLEGEN.md.
+# «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 
 from datetime import date
 from decimal import Decimal
