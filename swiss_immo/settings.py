@@ -557,10 +557,12 @@ LOGGING = {
     'formatters': {
         'standard': {'format': '{asctime} {levelname} {name}: {message}', 'style': '{'},
     },
+    # Zugangslinks (Handwerker, Direktkanal, Aushang, Kalender, Passwort) werden vor dem Schreiben gekürzt.
+    'filters': {'geheimnisse': {'()': 'core.logschutz.GeheimnisFilter'}},
     'handlers': {
-        'console': {'class': 'logging.StreamHandler', 'formatter': 'standard'},
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'standard', 'filters': ['geheimnisse']},
         'file': {
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'logging.handlers.RotatingFileHandler', 'filters': ['geheimnisse'],
             'filename': str(_LOG_DIR / 'swissimmo.log'),
             'maxBytes': 5 * 1024 * 1024, 'backupCount': 5,
             'formatter': 'standard', 'encoding': 'utf-8',
@@ -571,6 +573,9 @@ LOGGING = {
         'django.request': {'handlers': ['console', 'file'], 'level': 'ERROR', 'propagate': False},
     },
 }
+# Rotierte Logdateien, die so viele Tage nicht mehr beschrieben wurden, löscht der tägliche Lauf
+# (`core.logschutz.alte_logdateien_loeschen`). Im Protokoll stehen Namen und Mailadressen.
+LOG_AUFBEWAHRUNG_TAGE = int(os.getenv('LOG_AUFBEWAHRUNG_TAGE', '90'))
 
 # ==========================================
 # 10b. ABONNEMENT UND PLATTFORM-RECHNUNG

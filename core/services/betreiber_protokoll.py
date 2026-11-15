@@ -34,6 +34,7 @@ from django.core.cache import cache
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from core import logschutz
 from core.services import csp_meldungen
 
 #: So weit zurück reicht die Liste.
@@ -89,7 +90,7 @@ def aus_log(zeilen):
         stufe = _STUFE.get(m['stufe'])
         if stufe is None or m['logger'] == 'csp':
             continue
-        text = m['text'].strip()[:400]
+        text = logschutz.bereinigen(m['text'].strip())[:400]      # ältere Zeilen tragen noch Zugangslinks
         erklaerung = ''
         for muster, bekannt_stufe, bekannt_text in BEKANNT:
             if muster.search(text):
@@ -108,7 +109,7 @@ def aus_log(zeilen):
         aktuell = g
     for g in gruppen.values():
         folge = g.pop('_folge')
-        g['detail'] = g.pop('_erklaerung') or '\n'.join(folge[-6:])[:1200]
+        g['detail'] = g.pop('_erklaerung') or logschutz.bereinigen('\n'.join(folge[-6:]))[:1200]
     return list(gruppen.values())
 
 
