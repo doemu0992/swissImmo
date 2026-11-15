@@ -24,12 +24,13 @@ class SofortOderHintergrundTests(_Basis):
         self.assertEqual(Auftrag.objects.count(), 0)
 
     @override_settings(SOLLSTELLUNG_SCHWELLE_HINTERGRUND=1)
-    def test_ein_grosser_lauf_ohne_laeufer_laeuft_sofort(self):
-        """Ohne Läufer bliebe der Auftrag liegen: dann lieber sofort, wie bisher."""
-        self.sollstellung()
-        self.assertTrue(DebitorenRechnung.objects.filter(titel=TITEL).exists())
-        self.assertEqual(Auftrag.objects.count(), 0)
-        self.assertEqual(self.lauf('sollstellung').status, Lauf.ABGESCHLOSSEN)
+    def test_ein_grosser_lauf_ohne_laeufer_wird_trotzdem_zum_auftrag(self):
+        """Nie im Seitenaufruf, auch ohne Läufer: Der Auftrag wartet, und der Betreiber erfährt es."""
+        with self.assertLogs('core.services.auftraege', level='ERROR'):
+            self.sollstellung()
+        self.assertFalse(DebitorenRechnung.objects.filter(titel=TITEL).exists())
+        self.assertEqual(Auftrag.objects.count(), 1)
+        self.assertNotEqual(self.lauf('sollstellung').status, Lauf.ABGESCHLOSSEN)
 
     @override_settings(SOLLSTELLUNG_SCHWELLE_HINTERGRUND=1)
     def test_ein_grosser_lauf_mit_laeufer_wird_zum_auftrag_und_stellt_erst_beim_abarbeiten(self):

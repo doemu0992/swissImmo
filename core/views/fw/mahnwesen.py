@@ -693,8 +693,8 @@ def fw_mahnlauf(request):
                 'Zum Wiederholen den Lauf unter «Läufe» zurücksetzen oder bewusst erzwingen.'))
             return redirect('fw_mahnwesen')
     from core.services import auftraege, mahnlauf_lauf
-    # Viele offene Rechnungen UND ein laufender Auftragsläufer: in den Hintergrund (jede Mahnung verschickt eine
-    # E-Mail; das Zeitlimit des Hosters reicht dafür nicht). Sonst sofort wie bisher.
+    # Viele offene Rechnungen: immer in den Hintergrund (jede Mahnung verschickt eine E-Mail; das Zeitlimit des
+    # Hosters reicht dafür nicht). Steht der Läufer, warnt die Seite «Aufträge».
     if mahnlauf_lauf.im_hintergrund(basis['aktive_lg']):
         auftraege.anlegen('mahnlauf', {
             'liegenschaft': basis['aktive_lg'].pk if basis['aktive_lg'] else None, 'send_email': send_email,

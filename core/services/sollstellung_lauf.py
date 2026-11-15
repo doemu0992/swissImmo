@@ -5,7 +5,7 @@ aber die Periode offen gelassen und nichts protokolliert. Hier steht beides an e
 """
 from django.conf import settings
 
-#: Ab so vielen Verträgen geht der Lauf in den Hintergrund — falls ein Läufer aktiv ist (`auftraege.laeufer_aktiv`).
+#: Ab so vielen Verträgen geht der Lauf IMMER in den Hintergrund (siehe `mahnlauf_lauf.SCHWELLE_HINTERGRUND`).
 SCHWELLE_HINTERGRUND = 150
 
 
@@ -14,13 +14,12 @@ def schwelle():
 
 
 def im_hintergrund(liegenschaft=None):
-    """Soll dieser Lauf als Auftrag laufen? Nur bei vielen Verträgen UND aktivem Läufer; sonst sofort wie bisher."""
-    from core.services import auftraege
+    """Soll dieser Lauf als Auftrag laufen? Ab der Schwelle immer — auch wenn der Läufer gerade nicht meldet."""
     from rentals.models import Mietvertrag
     vertraege = Mietvertrag.objects.all()
     if liegenschaft is not None:
         vertraege = vertraege.filter(einheit__liegenschaft=liegenschaft)
-    return vertraege.count() >= schwelle() and auftraege.laeufer_aktiv()
+    return vertraege.count() >= schwelle()
 
 
 def ausfuehren(jahr, monat, benutzer=None, liegenschaft=None, herkunft='', request=None):

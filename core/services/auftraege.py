@@ -59,8 +59,14 @@ def anlegen(art, parameter=None, benutzer=None, organisation=None):
     organisation = organisation or aktuelle_organisation()
     if organisation is None:
         raise ValueError('Ein Auftrag braucht eine Organisation (Kontext oder Angabe).')
-    return Auftrag.alle_organisationen.create(
+    auftrag = Auftrag.alle_organisationen.create(
         organisation=organisation, art=art, parameter=parameter or {}, erstellt_von=benutzer)
+    if not laeufer_aktiv():
+        # Grosse Läufe werden auch ohne Puls eingereiht (nie im Seitenaufruf). Damit der Auftrag nicht unbemerkt
+        # liegen bleibt: die Seite «Aufträge» warnt die Verwaltung, dieser Eintrag den Betreiber.
+        logger.error('Auftrag %s (%s) eingereiht, aber der Auftragsläufer meldet sich nicht — '
+                     '`auftraege_abarbeiten` läuft nicht.', auftrag.pk, art)
+    return auftrag
 
 
 def puls_melden():
@@ -72,9 +78,9 @@ def puls_melden():
 def laeufer_aktiv():
     """Hat sich der Läufer in den letzten `PULS_SEKUNDEN` gemeldet?
 
-    WOFÜR: Eine Arbeit darf nur dann in den Hintergrund, wenn sie dort auch jemand abholt. Ohne eingerichteten Läufer
-    bliebe sie in der Warteschlange liegen, und die Verwaltung wartete auf eine Sollstellung, die nie kommt. Wer eine
-    Arbeit wahlweise sofort oder im Hintergrund ausführt, fragt deshalb hier und läuft im Zweifel sofort."""
+    WOFÜR: Ohne Läufer bleibt ein Auftrag in der Warteschlange liegen. Das muss man sehen: Die Seite «Aufträge»
+    warnt die Verwaltung, `anlegen` schreibt es dem Betreiber ins Protokoll. Grosse Läufe werden trotzdem eingereiht —
+    im Seitenaufruf überleben sie das Zeitlimit des Hosters nicht."""
     from django.core.cache import cache
     try:
         return cache.get(PULS_SCHLUESSEL) is not None

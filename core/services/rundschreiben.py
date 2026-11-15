@@ -9,7 +9,7 @@ Parameter. Der Neustart überspringt die Erledigten.
 """
 from django.conf import settings
 
-#: Ab so vielen Empfängern geht der Versand in den Hintergrund — falls ein Läufer aktiv ist.
+#: Ab so vielen Empfängern geht der Versand IMMER in den Hintergrund (siehe `mahnlauf_lauf.SCHWELLE_HINTERGRUND`).
 SCHWELLE_HINTERGRUND = 30
 
 
@@ -18,8 +18,7 @@ def schwelle():
 
 
 def im_hintergrund(anzahl):
-    from core.services import auftraege
-    return anzahl >= schwelle() and auftraege.laeufer_aktiv()
+    return anzahl >= schwelle()
 
 
 def versenden(betreff, text, mieter_ids, benutzer=None, erledigt=(), nach_jedem=None):

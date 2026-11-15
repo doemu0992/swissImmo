@@ -36,11 +36,12 @@ class RundschreibenTests(_Basis):
         self.assertEqual(Auftrag.objects.count(), 0)
 
     @override_settings(RUNDSCHREIBEN_SCHWELLE_HINTERGRUND=1)
-    def test_viele_empfaenger_ohne_laeufer_gehen_sofort_hinaus(self):
-        with mock.patch(SENDEN, return_value=True) as senden:
+    def test_viele_empfaenger_ohne_laeufer_werden_trotzdem_zum_auftrag(self):
+        with mock.patch(SENDEN, return_value=True) as senden, \
+                self.assertLogs('core.services.auftraege', level='ERROR'):
             self._post()
-        self.assertEqual(senden.call_count, 2)
-        self.assertEqual(Auftrag.objects.count(), 0)
+        self.assertEqual(senden.call_count, 0)
+        self.assertEqual(Auftrag.objects.count(), 1)
 
     @override_settings(RUNDSCHREIBEN_SCHWELLE_HINTERGRUND=1)
     def test_viele_empfaenger_mit_laeufer_werden_zum_auftrag(self):
