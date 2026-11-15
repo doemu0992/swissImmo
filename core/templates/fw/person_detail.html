@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n rechte %}
 {% load betreuung %}
 {% load chf %}
 {% load rechte %}
@@ -143,6 +143,10 @@ alten Liegenschaft betreut.
             <div class="fw-kopf"><span class="fw-t">{% trans "Kontakt" %}</span></div>
             <div>
                 {% if m.email %}<div class="fw-dz"><div class="fw-dl">{% trans "E-Mail" %}</div><div class="fw-dv">{{ m.email }}</div></div>{% endif %}
+                {% for adresse in m.weitere_absender %}
+                <div class="fw-dz" data-testid="weitere-absender"><div class="fw-dl">{% trans "Weitere Absenderadresse" %}</div><div class="fw-dv">{{ adresse }}
+                    {% if request.user|darf:absender_entfernen_url %}<form method="post" action="{{ absender_entfernen_url }}" class="inline">{% csrf_token %}<input type="hidden" name="adresse" value="{{ adresse }}"><button type="submit" class="fw-link ml-2">{% trans "entfernen" %}</button></form>{% endif %}</div></div>
+                {% endfor %}
                 {% if telefon %}<div class="fw-dz"><div class="fw-dl">{% trans "Telefon" %}</div><div class="fw-dv">{{ telefon }}</div></div>{% endif %}
                 {% if m.strasse %}<div class="fw-dz"><div class="fw-dl">{% trans "Adresse" %}</div><div class="fw-dv">{{ m.strasse }}, {{ m.plz }} {{ m.ort }}</div></div>{% endif %}
                 {% if m.mobile %}<div class="fw-dz"><div class="fw-dl">{% trans "Mobile" %}</div><div class="fw-dv">{{ m.mobile }}</div></div>{% endif %}

@@ -40212,3 +40212,21 @@ msgstr "%(adresse)s now counts as the reporter's sender for this ticket."
 
 msgid "Diese Nachricht ist keine Mail von unbekanntem Absender (mehr)."
 msgstr "This message is not (or no longer) an email from an unknown sender."
+
+msgid "Die Adresse ist bei %(person)s gespeichert und gilt für alle Tickets dieser Person."
+msgstr "The address is saved for %(person)s and applies to all tickets of this person."
+
+msgid "Bestätigen und bei %(person)s speichern"
+msgstr "Confirm and save for %(person)s"
+
+msgid "«Speichern» hinterlegt die Adresse bei der Person: Sie gilt dann für alle ihre Tickets und lässt sich in der Personenakte wieder entfernen."
+msgstr "“Save” stores the address with the person: it then applies to all their tickets and can be removed in the person's record."
+
+msgid "Weitere Absenderadresse"
+msgstr "Additional sender address"
+
+msgid "entfernen"
+msgstr "remove"
+
+msgid "%(adresse)s ist als weitere Absenderadresse entfernt."
+msgstr "%(adresse)s has been removed as an additional sender address."

@@ -39106,3 +39106,21 @@ msgstr "%(adresse)s gilt für dieses Ticket jetzt als Absender des Melders."
 
 msgid "Diese Nachricht ist keine Mail von unbekanntem Absender (mehr)."
 msgstr "Diese Nachricht ist keine Mail von unbekanntem Absender (mehr)."
+
+msgid "Die Adresse ist bei %(person)s gespeichert und gilt für alle Tickets dieser Person."
+msgstr "Die Adresse ist bei %(person)s gespeichert und gilt für alle Tickets dieser Person."
+
+msgid "Bestätigen und bei %(person)s speichern"
+msgstr "Bestätigen und bei %(person)s speichern"
+
+msgid "«Speichern» hinterlegt die Adresse bei der Person: Sie gilt dann für alle ihre Tickets und lässt sich in der Personenakte wieder entfernen."
+msgstr "«Speichern» hinterlegt die Adresse bei der Person: Sie gilt dann für alle ihre Tickets und lässt sich in der Personenakte wieder entfernen."
+
+msgid "Weitere Absenderadresse"
+msgstr "Weitere Absenderadresse"
+
+msgid "entfernen"
+msgstr "entfernen"
+
+msgid "%(adresse)s ist als weitere Absenderadresse entfernt."
+msgstr "%(adresse)s ist als weitere Absenderadresse entfernt."

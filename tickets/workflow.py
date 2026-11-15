@@ -279,17 +279,48 @@ def melder_adressen(ticket):
     des meldenden Mieters und die der Mieter mit aktivem Vertrag an der betroffenen Einheit. Der From-Wert einer Mail
     ist fälschbar; diese Liste hält aber Dritte fern, die nur Antwortadresse und Ticketnummer kennen."""
     adressen = {ticket.email_melder or ''}
-    if ticket.gemeldet_von_id:
-        adressen.add(ticket.gemeldet_von.email or '')
-    if ticket.betroffene_einheit_id:
-        from rentals.models import Mietvertrag
-        for vertrag in Mietvertrag.objects.filter(einheit_id=ticket.betroffene_einheit_id, aktiv=True).select_related('mieter'):
-            adressen.add(vertrag.mieter.email or '')
+    for person in personen_des_tickets(ticket):
+        adressen.add(person.email or '')
+        adressen.update(a for a in (person.weitere_absender or []) if isinstance(a, str))
     adressen.update(a for a in (ticket.bestaetigte_absender or []) if isinstance(a, str))
     return {a.strip().lower() for a in adressen if a and a.strip()}
 
 
 PRAEFIX_UNBEKANNT = 'Unbekannter Absender: '
+
+
+def personen_des_tickets(ticket):
+    """Die Mieter, die zu diesem Ticket gehören: der meldende Mieter zuerst, dann die Mieter mit aktivem Vertrag an der
+    betroffenen Einheit (ohne Doppelte)."""
+    personen = []
+    if ticket.gemeldet_von_id:
+        personen.append(ticket.gemeldet_von)
+    if ticket.betroffene_einheit_id:
+        from rentals.models import Mietvertrag
+        for vertrag in Mietvertrag.objects.filter(einheit_id=ticket.betroffene_einheit_id, aktiv=True).select_related('mieter'):
+            if all(vertrag.mieter_id != p.pk for p in personen):
+                personen.append(vertrag.mieter)
+    return personen
+
+
+def person_fuer_absender(ticket):
+    """Bei wem eine bestätigte Adresse dauerhaft gespeichert würde: der meldende Mieter, sonst der Mieter der Einheit —
+    aber nur, wenn es genau EINEN gibt. Bei mehreren Mietern an der Einheit ohne Melder wäre die Zuordnung geraten."""
+    if ticket.gemeldet_von_id:
+        return ticket.gemeldet_von
+    personen = personen_des_tickets(ticket)
+    return personen[0] if len(personen) == 1 else None
+
+
+def absender_bei_person_speichern(person, adresse):
+    """Hängt `adresse` an die weiteren Absenderadressen der Person (ohne Doppelte). Gibt True zurück, wenn sie neu ist."""
+    adresse = (adresse or '').strip().lower()
+    liste = [a for a in (person.weitere_absender or []) if isinstance(a, str)]
+    if not adresse or adresse in liste or adresse == (person.email or '').strip().lower():
+        return False
+    person.weitere_absender = liste + [adresse]
+    person.save(update_fields=['weitere_absender'])
+    return True
 
 
 def absender_bestaetigen(nachricht):

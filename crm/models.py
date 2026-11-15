@@ -508,6 +508,10 @@ class Mieter(models.Model):
 
     # --- KONTAKT ---
     email = models.EmailField("E-Mail", blank=True, default='')
+    # Weitere Adressen, von denen eine Mail als Antwort DIESER Person gilt (zweite Adresse, Arbeitsadresse). Liste
+    # kleingeschriebener Adressen. Entsteht, wenn die Verwaltung an einem Ticket einen unbekannten Absender bestätigt
+    # und «bei der Person speichern» wählt (`tickets.workflow.absender_bestaetigen`); entfernen in der Personenakte.
+    weitere_absender = models.JSONField("Weitere Absenderadressen", default=list, blank=True, editable=False)
     telefon_privat = models.CharField("Telefon Privat", max_length=50, blank=True, default='')
     telefon_geschaeft = models.CharField("Telefon Geschäft", max_length=50, blank=True, default='')
     mobile = models.CharField("Mobile", max_length=50, blank=True, default='')

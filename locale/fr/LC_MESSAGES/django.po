@@ -40878,3 +40878,21 @@ msgstr "%(adresse)s compte désormais, pour ce ticket, comme expéditeur de l'au
 
 msgid "Diese Nachricht ist keine Mail von unbekanntem Absender (mehr)."
 msgstr "Ce message n'est pas (ou plus) un e-mail d'un expéditeur inconnu."
+
+msgid "Die Adresse ist bei %(person)s gespeichert und gilt für alle Tickets dieser Person."
+msgstr "L'adresse est enregistrée chez %(person)s et vaut pour tous les tickets de cette personne."
+
+msgid "Bestätigen und bei %(person)s speichern"
+msgstr "Confirmer et enregistrer chez %(person)s"
+
+msgid "«Speichern» hinterlegt die Adresse bei der Person: Sie gilt dann für alle ihre Tickets und lässt sich in der Personenakte wieder entfernen."
+msgstr "« Enregistrer » dépose l'adresse chez la personne : elle vaut alors pour tous ses tickets et peut être retirée dans le dossier de la personne."
+
+msgid "Weitere Absenderadresse"
+msgstr "Autre adresse d'expéditeur"
+
+msgid "entfernen"
+msgstr "retirer"
+
+msgid "%(adresse)s ist als weitere Absenderadresse entfernt."
+msgstr "%(adresse)s n'est plus une autre adresse d'expéditeur."

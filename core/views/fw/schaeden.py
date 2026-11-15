@@ -429,8 +429,11 @@ def fw_schaden_detail(request, pk):
         from stweg import bauteile
         kt = {'stweg_bauteile': bauteile.auswahl(), 'kt_probleme': bauteile.probleme(t),
               'kt_traeger': bauteile.KOSTENTRAEGER_CHOICES}
+    from tickets.workflow import person_fuer_absender
     return render(request, 'fw/schaden_detail.html', {
         **basis, **kt, 'nav': 'schadensfaelle', 't': t,
+        # Bei wem eine bestätigte Absenderadresse dauerhaft gespeichert würde (nur wenn eindeutig).
+        'absender_person': person_fuer_absender(t),
         's_label': s_label, 's_cls': s_cls, 'p_label': p_label, 'p_cls': p_cls,
         'nachrichten': nachrichten, 'auftraege': auftraege, 'melder': melder,
         'kosten_geschaetzt': kosten_geschaetzt, 'kosten_effektiv': kosten_effektiv,
@@ -768,11 +771,11 @@ def fw_schaden_absender_bestaetigen(request, pk, nachricht_id):
 
     from core.auth import log_aktion
     from tickets.models import SchadenMeldung, TicketNachricht
-    from tickets.workflow import absender_bestaetigen
+    from tickets.workflow import absender_bei_person_speichern, absender_bestaetigen, person_fuer_absender
 
     if request.method != 'POST':
         return redirect(f'/neu/schaeden/{pk}/')
-    t = get_object_or_404(SchadenMeldung, id=pk)
+    t = get_object_or_404(SchadenMeldung.objects.select_related('gemeldet_von'), id=pk)
     n = get_object_or_404(TicketNachricht, id=nachricht_id, ticket=t)
     adresse = n.absender_adresse
     anzahl = absender_bestaetigen(n)
@@ -780,6 +783,11 @@ def fw_schaden_absender_bestaetigen(request, pk, nachricht_id):
         log_aktion(request, "Absender am Ticket bestätigt", f"Ticket #{t.id}", adresse)
         messages.success(request, gettext('%(adresse)s gilt für dieses Ticket jetzt als Absender des Melders.')
                          % {'adresse': adresse})
+        person = person_fuer_absender(t) if request.POST.get('dauerhaft') == '1' else None
+        if person is not None and absender_bei_person_speichern(person, adresse):
+            log_aktion(request, "Weitere Absenderadresse gespeichert", person.display_name, adresse)
+            messages.success(request, gettext('Die Adresse ist bei %(person)s gespeichert und gilt für alle Tickets dieser Person.')
+                             % {'person': person.display_name})
     else:
         messages.info(request, gettext('Diese Nachricht ist keine Mail von unbekanntem Absender (mehr).'))
     return redirect(f'/neu/schaeden/{t.id}/')

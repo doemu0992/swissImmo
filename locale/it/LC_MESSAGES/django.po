@@ -40807,3 +40807,21 @@ msgstr "%(adresse)s vale ora, per questo ticket, come mittente di chi ha segnala
 
 msgid "Diese Nachricht ist keine Mail von unbekanntem Absender (mehr)."
 msgstr "Questo messaggio non è (più) un'e-mail da mittente sconosciuto."
+
+msgid "Die Adresse ist bei %(person)s gespeichert und gilt für alle Tickets dieser Person."
+msgstr "L'indirizzo è salvato presso %(person)s e vale per tutti i ticket di questa persona."
+
+msgid "Bestätigen und bei %(person)s speichern"
+msgstr "Conferma e salva presso %(person)s"
+
+msgid "«Speichern» hinterlegt die Adresse bei der Person: Sie gilt dann für alle ihre Tickets und lässt sich in der Personenakte wieder entfernen."
+msgstr "«Salva» registra l'indirizzo presso la persona: vale poi per tutti i suoi ticket e si può rimuovere nella scheda della persona."
+
+msgid "Weitere Absenderadresse"
+msgstr "Altro indirizzo mittente"
+
+msgid "entfernen"
+msgstr "rimuovi"
+
+msgid "%(adresse)s ist als weitere Absenderadresse entfernt."
+msgstr "%(adresse)s non è più un altro indirizzo mittente."
