@@ -735,7 +735,7 @@ def _termin_mails(auftrag, termin_am, kat_mieter, kat_hw, absagen=False):
             # Auftragsmarke: Die Antwort auf diese Mail landet im Direktkanal Mieter/Handwerker
             # (tickets/direktkanal.py) statt nur im Verlauf der Verwaltung.
             from .direktkanal import marke
-            betreff = f"{betreff} {marke(auftrag)}"
+            betreff = f"{betreff} {marke(auftrag, 'mieter' if empfaenger == 'melder' else 'handwerker')}"
             return send_via_hoststar(adresse, betreff, html, weitere_anhaenge=ics,
                                      reply_to=reply_to(ticket), organisation=ticket.organisation_id)
         except Exception:
@@ -789,7 +789,7 @@ def termin_absagen(auftrag):
     return m_ok, h_ok
 
 
-def antwort_zuordnen(ticket, absender, inhalt, auftrag_id=None, kopf=None):
+def antwort_zuordnen(ticket, absender, inhalt, auftrag_id=None, kopf=None, betreff=''):
     """Eingehende Mail einem Ticket zuordnen und den Fluss nachführen.
 
     Trägt der Betreff eine Auftragsmarke (``auftrag_id``) und kommt die Mail vom Mieter oder vom Handwerker
@@ -808,7 +808,7 @@ def antwort_zuordnen(ticket, absender, inhalt, auftrag_id=None, kopf=None):
     from email.utils import parseaddr
     from . import direktkanal
     from .models import TicketNachricht
-    direkt = direktkanal.aus_mail(ticket, auftrag_id, absender, inhalt, kopf)
+    direkt = direktkanal.aus_mail(ticket, auftrag_id, absender, inhalt, kopf, betreff=betreff)
     if direkt:
         return f'direkt_{direkt}'
     adresse = parseaddr(absender)[1].strip().lower()

@@ -320,4 +320,4 @@ def eingehende_antwort_verarbeiten(organisation, absender, betreff, text, kopf=N
     if ticket is None:
         return 'ohne_ticket'
     return antwort_zuordnen(ticket, absender, text[:TEXT_MAX],
-                            auftrag_id=direktkanal.auftrag_id_aus_betreff(betreff), kopf=kopf)
+                            auftrag_id=direktkanal.auftrag_id_aus_betreff(betreff), kopf=kopf, betreff=betreff)
