@@ -1,5 +1,6 @@
 # swiss_immo/settings.py
 from pathlib import Path
+import datetime
 import os
 from decimal import Decimal
 from dotenv import load_dotenv
@@ -537,6 +538,10 @@ DEFAULT_FROM_EMAIL = f'immoswiss <{os.getenv("EMAIL_HOST_USER", "info@immoswiss.
 # Basis-URL für Links in E-Mails (Portal-Login etc.) — unabhängig vom Request-Host,
 # damit der Link auch aus Cron/Hintergrund-Jobs korrekt auf die Produktion zeigt.
 PORTAL_BASE_URL = os.getenv('PORTAL_BASE_URL', 'https://swissimmo.pythonanywhere.com')
+
+# Bis zu diesem Tag gilt die alte Adresse des QR-Aushangs (`/report/<Nummer>/`) noch, damit hängende Plakate
+# weiter funktionieren. Neue Aushänge tragen ein Token (`/aushang/<token>/`). Danach antwortet die alte mit 404.
+AUSHANG_ID_ROUTE_BIS = datetime.date.fromisoformat(os.getenv('AUSHANG_ID_ROUTE_BIS', '2027-03-31'))
 
 # ==========================================
 # 9b. LOGGING (Fehler landen in Datei statt lautlos zu verschwinden)

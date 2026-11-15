@@ -14,6 +14,11 @@ from core.services.lik import LIK_BASIS_CHOICES
 from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_path
 from core.organisation_kette import OrganisationAusKette, organisation_aus_kontext
 
+def neuer_aushang_token():
+    import secrets
+    return secrets.token_urlsafe(16)
+
+
 class Liegenschaft(models.Model):
     eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.PROTECT, related_name='liegenschaften', null=True, blank=True)
     # Standard-Basisreihe des Landesindex für die Verträge DIESER Liegenschaft. Leer = Standard des Mandats
@@ -21,6 +26,10 @@ class Liegenschaft(models.Model):
     # bestehende behalten ihre Reihe (`Mietvertrag.lik_basis`).
     lik_basis = models.CharField("LIK-Basisreihe (Standard)", max_length=40, blank=True, default='',
                                  choices=LIK_BASIS_CHOICES)
+    # Geheimnis in der Adresse des QR-Aushangs (`/aushang/<token>/`). Die fortlaufende ID in der Adresse liess
+    # sich abzählen: jede Nummer lieferte Adresse und Einheitenliste einer Liegenschaft. Erneuerbar — danach
+    # braucht das Treppenhaus einen neuen Aushang.
+    aushang_token = models.CharField("Aushang-Token", max_length=32, blank=True, default='', db_index=True)
     #: WER DIESE LIEGENSCHAFT BETREUT (E2.70).
     #
     # In einer Verwaltung wird liegenschaftsweise aufgeteilt, nicht Fall für
@@ -160,6 +169,10 @@ class Liegenschaft(models.Model):
         # (`obj = lg or Liegenschaft()`, danach nur Formularfelder).
         if self.organisation_id is None:
             self.organisation_id = organisation_aus_kontext()
+        if not self.aushang_token:
+            self.aushang_token = neuer_aushang_token()
+            if kwargs.get('update_fields') is not None:
+                kwargs['update_fields'] = [*kwargs['update_fields'], 'aushang_token']
         # STWEG wird nie «aktiv», wenn die Wertquoten nicht aufgehen. Vor dem
         # Speichern, damit nichts Halbes in der Datenbank landet. Bei einem
         # neuen Datensatz gibt es noch keine Einheiten — eine neue STWEG

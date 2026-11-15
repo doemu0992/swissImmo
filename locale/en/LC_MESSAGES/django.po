@@ -40251,3 +40251,15 @@ msgstr "Calendar link removed. Subscribed calendars no longer receive anything."
 
 msgid "Neuer Kalender-Link erzeugt. Ein früherer Link gilt nicht mehr."
 msgstr "New calendar link created. Any earlier link is no longer valid."
+
+msgid "Wenn wir Ihre Angaben einer Liegenschaft zuordnen konnten, erhalten Sie in den nächsten Minuten eine Bestätigung per E-Mail. Ohne Bestätigung wenden Sie sich bitte direkt an Ihre Verwaltung."
+msgstr "If we were able to match your details to a property, you will receive a confirmation by e-mail within the next few minutes. If no confirmation arrives, please contact your property management directly."
+
+msgid "Adresse des Aushangs erneuern? Der bisherige QR-Code funktioniert danach nicht mehr; der Aushang muss neu gedruckt werden."
+msgstr "Renew the notice address? The current QR code will stop working; the notice must be reprinted."
+
+msgid "Aushang-Adresse erneuern"
+msgstr "Renew notice address"
+
+msgid "Die Adresse des Aushangs ist erneuert. Bitte den Hausaushang neu drucken und aufhängen — der bisherige QR-Code funktioniert nicht mehr."
+msgstr "The notice address has been renewed. Please reprint and post the notice — the previous QR code no longer works."
