@@ -7,8 +7,9 @@ from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
 
-#: Ab so vielen offenen Rechnungen geht der Lauf in den Hintergrund — falls ein Läufer aktiv ist. Der Lauf verschickt
-#: je Mahnung eine E-Mail; das ist der langsame Teil.
+#: Ab so vielen offenen Rechnungen geht der Lauf IMMER in den Hintergrund. Der Lauf verschickt je Mahnung eine E-Mail;
+#: gemessen 31 s bei 761 Mahnfällen — das überlebt das Zeitlimit des Hosters nicht, und ein mitten im Versand
+#: abgebrochener Lauf ist schlimmer als einer, der wartet (`auftraege.anlegen` meldet einen stehenden Läufer).
 SCHWELLE_HINTERGRUND = 100
 
 
@@ -17,13 +18,12 @@ def schwelle():
 
 
 def im_hintergrund(liegenschaft=None):
-    """Soll dieser Lauf als Auftrag laufen? Nur bei vielen offenen Rechnungen UND aktivem Läufer; sonst sofort."""
-    from core.services import auftraege
+    """Soll dieser Lauf als Auftrag laufen? Ab der Schwelle immer — auch wenn der Läufer gerade nicht meldet."""
     from finance.models import DebitorenRechnung
     offene = DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'], stammrechnung__isnull=True)
     if liegenschaft is not None:
         offene = offene.filter(Q(liegenschaft=liegenschaft) | Q(vertrag__einheit__liegenschaft=liegenschaft))
-    return offene.count() >= schwelle() and auftraege.laeufer_aktiv()
+    return offene.count() >= schwelle()
 
 
 def ausfuehren(liegenschaft=None, send_email=True, mit_zins=False, erzwingen=False, benutzer=None, herkunft='',

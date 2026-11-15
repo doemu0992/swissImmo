@@ -30,8 +30,8 @@ def fw_kommunikation_senden(request):
         messages.error(request, gettext('Text und mindestens ein Empfänger erforderlich.'))
         return redirect('fw_kommunikation')
     from core.services import auftraege, rundschreiben
-    # Viele Empfänger UND ein laufender Auftragsläufer: in den Hintergrund (jede Mail geht einzeln über SMTP hinaus).
-    # Sonst sofort wie bisher.
+    # Viele Empfänger: immer in den Hintergrund (jede Mail geht einzeln über SMTP hinaus). Steht der Läufer, warnt
+    # die Seite «Aufträge».
     if rundschreiben.im_hintergrund(len(ids)):
         auftraege.anlegen('rundschreiben', {'betreff': betreff, 'text': text, 'empfaenger': ids, 'erledigt': []},
                           benutzer=request.user)

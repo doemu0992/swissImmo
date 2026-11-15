@@ -198,8 +198,8 @@ def fw_sollstellung_run(request):
                 'Zum Wiederholen den Lauf unter «Läufe» zuerst zurücksetzen.') % {'titel': titel})
             return redirect(f'/neu/sollstellung/?jahr={jahr}&monat={monat}')
     from core.services import auftraege, sollstellung_lauf
-    # Viele Verträge UND ein laufender Auftragsläufer: in den Hintergrund (kein Zeitlimit des Hosters, Stand unter
-    # «Aufträge»). Sonst sofort wie bisher — ohne Läufer bliebe der Auftrag liegen.
+    # Viele Verträge: immer in den Hintergrund (kein Zeitlimit des Hosters, Stand unter «Aufträge»). Steht der
+    # Läufer, warnt die Seite «Aufträge».
     if sollstellung_lauf.im_hintergrund(lauf_lg):
         auftraege.anlegen('sollstellung', {'jahr': jahr, 'monat': monat, 'liegenschaft': lauf_lg.pk if lauf_lg else None},
                           benutzer=request.user)

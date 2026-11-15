@@ -25,10 +25,13 @@ class SofortOderHintergrundTests(_Basis):
         self.assertEqual(self.lauf('mahnlauf').status, Lauf.ABGESCHLOSSEN)
 
     @override_settings(MAHNLAUF_SCHWELLE_HINTERGRUND=1)
-    def test_ein_grosser_lauf_ohne_laeufer_laeuft_sofort(self):
-        self._lauf()
-        self.assertEqual(Auftrag.objects.count(), 0)
-        self.assertEqual(self.lauf('mahnlauf').status, Lauf.ABGESCHLOSSEN)
+    def test_ein_grosser_lauf_ohne_laeufer_wird_trotzdem_zum_auftrag_und_die_seite_warnt(self):
+        """Nie im Seitenaufruf: 761 Mahnfälle brauchten 31 s. Der Auftrag wartet, die Seite sagt es."""
+        with self.assertLogs('core.services.auftraege', level='ERROR'):
+            antwort = self._lauf()
+        self.assertEqual(Auftrag.objects.count(), 1)
+        self.assertNotEqual(self.lauf('mahnlauf').status, Lauf.ABGESCHLOSSEN)
+        self.assertContains(antwort, 'Es warten Aufträge, aber der Auftragsläufer meldet sich nicht')
 
     @override_settings(MAHNLAUF_SCHWELLE_HINTERGRUND=1)
     def test_ein_grosser_lauf_mit_laeufer_wird_zum_auftrag_mit_demselben_nachspiel(self):
