@@ -65,6 +65,48 @@ def _ip(request):
 LOGIN_MAX_FEHLVERSUCHE = 10
 LOGIN_FENSTER = 15 * 60
 
+# Falsche Codes des ZWEITEN Schritts, je Konto und über Sitzungen hinweg (Audit 15.11.2026). `zf_versuche` in der
+# Sitzung begrenzt nur eine Runde: Wer das Passwort kennt, begann mit jeder neuen Passwort-Eingabe wieder bei null und
+# konnte den sechsstelligen Code durchprobieren — genau der Fall, gegen den der zweite Faktor schützen soll. Dieser
+# Zähler liegt im Cache, hängt am Konto und wird NUR durch einen richtigen Code zurückgesetzt. Ist er voll, lehnt schon
+# der erste Schritt ab (auch mit richtigem Passwort) und nimmt der zweite keinen Code mehr an.
+ZF_MAX_FEHLVERSUCHE = 10
+ZF_FENSTER = 15 * 60
+
+
+def _zf_schluessel(benutzer_pk):
+    return f'zf:konto:{benutzer_pk}'
+
+
+def _zf_gesperrt(benutzer_pk):
+    from core.utils.throttle import ist_gesperrt
+    return ist_gesperrt(_zf_schluessel(benutzer_pk), ZF_MAX_FEHLVERSUCHE)
+
+
+def _zf_fehlversuch(request, benutzer):
+    """Zählt einen falschen Code auf das Konto und auf die IP. Wird die Grenze erreicht, steht das einmal als Fehler im
+    Log (und damit im Betreiber-Protokoll): Eine Serie falscher Codes NACH richtigem Passwort heisst, dass das Passwort
+    eines Kontos bekannt ist."""
+    import logging
+
+    from core.utils.throttle import client_ip, fehlversuch
+    from django.core.cache import cache
+    fehlversuch(_zf_schluessel(benutzer.pk), ZF_FENSTER)
+    fehlversuch(f'login:ip:{client_ip(request)}', LOGIN_FENSTER)
+    if (cache.get(_zf_schluessel(benutzer.pk)) or 0) == ZF_MAX_FEHLVERSUCHE:
+        _sicherheit('Zweiter Faktor gesperrt', benutzer.get_username(),
+                    f'{ZF_MAX_FEHLVERSUCHE} falsche Codes nach richtigem Passwort — das Passwort ist vermutlich bekannt.',
+                    request=request)
+        logging.getLogger(__name__).error(
+            'Zweiter Faktor gesperrt: %s falsche Codes nach richtigem Passwort (Konto %s). Passwort vermutlich bekannt.',
+            ZF_MAX_FEHLVERSUCHE, benutzer.pk)
+
+
+def _zf_gesperrt_antwort(request, template_name, weiter=''):
+    return render(request, template_name, {
+        'next': weiter, 'abgebrochen': True,
+        'fehler': gettext('Zu viele falsche Codes. Bitte in 15 Minuten erneut versuchen.')}, status=429)
+
 
 def _sicheres_ziel(request, ziel):
     """`next` nur, wenn es auf DIESE Anwendung zeigt (kein offener Redirect).
@@ -136,6 +178,9 @@ def zweifaktor_login(request, template_name='core/login.html'):
     if faktor is None or not faktor.ist_aktiv:
         django_login(request, benutzer)
         return redirect(weiter or 'nach_login')
+    if _zf_gesperrt(benutzer.pk):
+        # Richtiges Passwort, aber der zweite Schritt ist für dieses Konto gesperrt: keine neue Runde.
+        return _zf_gesperrt_antwort(request, template_name, weiter)
 
     # Passwort stimmt, Faktor steht aus: NICHT anmelden, nur merken.
     request.session.cycle_key()       # gegen Session Fixation vor dem zweiten Schritt
@@ -199,14 +244,23 @@ def zweifaktor_bestaetigen(request):
     if request.method != 'POST':
         return render(request, 'core/zweifaktor_bestaetigen.html', {})
 
+    if _zf_gesperrt(benutzer.pk):
+        # Vor der Prüfung: Ein gesperrtes Konto nimmt auch den richtigen Code nicht an, sonst wäre die Sperre keine.
+        _notiz_loeschen(request)
+        return _zf_gesperrt_antwort(request, 'core/zweifaktor_bestaetigen.html')
+
     eingabe = (request.POST.get('code') or '').strip()
     faktor = ZweiterFaktor.objects.filter(benutzer=benutzer).first()
 
     if faktor is not None and faktor.pruefen(eingabe):
+        from core.utils.throttle import zuruecksetzen
+        zuruecksetzen(_zf_schluessel(benutzer.pk))
         weiter = _anmelden(request, benutzer)
         return redirect(weiter or 'nach_login')
 
     if _notfallcode_einloesen(benutzer, eingabe):
+        from core.utils.throttle import zuruecksetzen
+        zuruecksetzen(_zf_schluessel(benutzer.pk))
         weiter = _anmelden(request, benutzer)
         _sicherheit('Notfallcode eingelöst', benutzer.get_username(), request=request)
         offen = Wiederherstellungscode.objects.filter(
@@ -215,6 +269,7 @@ def zweifaktor_bestaetigen(request):
                          gettext('Mit Notfallcode angemeldet. Noch %(offen)s Code(s) übrig — bei wenigen übrigen neue erzeugen.') % {'offen': offen})
         return redirect(weiter or 'nach_login')
 
+    _zf_fehlversuch(request, benutzer)
     versuche = int(request.session.get('zf_versuche', 0)) + 1
     request.session['zf_versuche'] = versuche
     _sicherheit('Zweiter Faktor falsch', benutzer.get_username(),

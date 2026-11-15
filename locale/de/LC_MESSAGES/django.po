@@ -39085,3 +39085,6 @@ msgstr "Abruf gescheitert"
 
 msgid "Auftrag gescheitert"
 msgstr "Auftrag gescheitert"
+
+msgid "Zu viele falsche Codes. Bitte in 15 Minuten erneut versuchen."
+msgstr "Zu viele falsche Codes. Bitte in 15 Minuten erneut versuchen."

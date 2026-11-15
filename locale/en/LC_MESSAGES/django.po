@@ -40191,3 +40191,6 @@ msgstr "Fetch failed"
 
 msgid "Auftrag gescheitert"
 msgstr "Job failed"
+
+msgid "Zu viele falsche Codes. Bitte in 15 Minuten erneut versuchen."
+msgstr "Too many wrong codes. Please try again in 15 minutes."
