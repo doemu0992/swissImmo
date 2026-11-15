@@ -405,7 +405,8 @@ def fw_lieferantenkonten(request):
     aktive_lg = basis['aktive_lg']
     filter_op = request.GET.get('filter') == 'offen'
 
-    kred = KreditorenRechnung.objects.exclude(status='storniert')
+    # `offener_betrag` liest die Zahlungen: vorgeladen, sonst eine Abfrage je Rechnung über den ganzen Bestand.
+    kred = KreditorenRechnung.objects.exclude(status='storniert').prefetch_related('zahlungen')
     if aktive_lg:
         kred = kred.filter(liegenschaft=aktive_lg)
 

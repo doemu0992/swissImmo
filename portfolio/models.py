@@ -1,4 +1,7 @@
 # portfolio/models.py
+import contextlib
+import contextvars
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -874,8 +877,51 @@ class Lebensdauer(models.Model):
 
     @classmethod
     def fuer_kategorie(cls, kategorie):
-        row = cls.objects.filter(kategorie__iexact=(kategorie or '').strip()).first()
+        schluessel = (kategorie or '').strip()
+        tabelle = _lebensdauer_tabelle()
+        if tabelle is not None:
+            return tabelle.get(schluessel.casefold())
+        row = cls.objects.filter(kategorie__iexact=schluessel).first()
         return row.jahre if row else None
+
+    @staticmethod
+    def gemerkt():
+        """Lädt die Tabelle innerhalb des Blocks EINMAL statt je Nachschlag.
+
+        Die Ersatzplanung schlägt je Gerät und Ausstattung mehrfach nach (Status, Rest, Ersatzjahr, Anzeige):
+        gemessen sechs Abfragen je Zeile, 3383 für das PDF. Als Kontextmanager oder Dekorator:
+        `with Lebensdauer.gemerkt(): …`. Gilt je Organisation; ausserhalb des Blocks bleibt alles wie zuvor."""
+        return _LebensdauerMerker()
+
+
+_LD_MERKER = contextvars.ContextVar('lebensdauer_tabelle', default=None)
+
+
+def _lebensdauer_tabelle():
+    """Die gemerkte Tabelle der aktiven Organisation — `None` ausserhalb von `Lebensdauer.gemerkt()`."""
+    merker = _LD_MERKER.get()
+    if merker is None:
+        return None
+    from core.tenancy import aktuelle_organisation
+    org = getattr(aktuelle_organisation(), 'pk', None)
+    if org not in merker:
+        tabelle = {}
+        # Bei Namen, die sich nur in Gross-/Kleinschreibung unterscheiden, gewinnt wie bisher die erste Zeile.
+        for kat, jahre in Lebensdauer.objects.order_by('kategorie', 'pk').values_list('kategorie', 'jahre'):
+            tabelle.setdefault((kat or '').strip().casefold(), jahre)
+        merker[org] = tabelle
+    return merker[org]
+
+
+class _LebensdauerMerker(contextlib.ContextDecorator):
+    def __enter__(self):
+        self._token = _LD_MERKER.set({}) if _LD_MERKER.get() is None else None
+        return self
+
+    def __exit__(self, *_):
+        if self._token is not None:
+            _LD_MERKER.reset(self._token)
+        return False
 
 
 class Schliessanlage(OrganisationAusKette):

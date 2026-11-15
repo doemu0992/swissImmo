@@ -280,13 +280,15 @@ def fw_bankabgleich(request):
     # überhaupt etwas zu tilgen gibt. `rows` enthält je offene Rechnung eine Zeile.
     sammel_vertraege = []
     _gesehen = set()
+    # Einmal zählen statt je Vertrag über alle Zeilen (quadratisch: 1,1 s bei 1500 offenen Rechnungen).
+    from collections import Counter
+    _offene_je_vertrag = Counter(getattr(x.get('r'), 'vertrag_id', None) for x in rows if isinstance(x, dict))
     for _r in rows:
         _v = getattr(_r.get('r'), 'vertrag', None) if isinstance(_r, dict) else None
         if _v is None or _v.id in _gesehen:
             continue
         _gesehen.add(_v.id)
-        _offene = sum(1 for x in rows
-                      if isinstance(x, dict) and getattr(x.get('r'), 'vertrag_id', None) == _v.id)
+        _offene = _offene_je_vertrag[_v.id]
         sammel_vertraege.append({
             'id': _v.id,
             'label': f"{_r.get('mieter')} · {_r.get('objekt')} ({_offene} offen)",
