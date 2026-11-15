@@ -40139,3 +40139,55 @@ msgstr "When changing the CPI base series, the base points and their reference m
 
 msgid "Für %(stand)s weist die Reihe «%(basis)s = 100» %(tabelle)s Punkte aus, erfasst sind %(punkte)s. Beim Wechsel der Basisreihe müssen die Punkte in der neuen Reihe stehen; umgerechnet wird nicht."
 msgstr "For %(stand)s the series “%(basis)s = 100” shows %(tabelle)s points; %(punkte)s are entered. When changing the base series the points must be in the new series; nothing is converted."
+
+msgid "Alles an einem Ort: Fehler der Anwendung, gescheiterte Abrufe und Aufträge, RLS-Befunde, CSP-Meldungen, fällige Pflege und Sicherheitsereignisse der letzten %(fenster_tage)s Tage. Die rote Zahl in der Leiste zählt Fehler, die du noch nicht gesehen hast."
+msgstr "Everything in one place: application errors, failed fetches and jobs, RLS findings, CSP reports, due maintenance and security events of the last %(fenster_tage)s days. The red number in the sidebar counts errors you have not seen yet."
+
+msgid "%(n)s neuer Fehler seit deinem letzten Besuch."
+msgid_plural "%(n)s neue Fehler seit deinem letzten Besuch."
+msgstr[0] "%(n)s new error since your last visit."
+msgstr[1] "%(n)s new errors since your last visit."
+
+msgid "%(n)s neuer Fehler"
+msgid_plural "%(n)s neue Fehler"
+msgstr[0] "%(n)s new error"
+msgstr[1] "%(n)s new errors"
+
+msgid "Alle Quellen"
+msgstr "All sources"
+
+msgid "Keine Einträge in dieser Auswahl."
+msgstr "No entries in this selection."
+
+msgid "Gleiche Meldungen sind zusammengefasst. Abrufausfälle bleiben stehen, bis der Abruf wieder gelingt."
+msgstr "Identical messages are grouped. Failed fetches stay listed until the fetch succeeds again."
+
+msgid "CSP-Meldungen im Einzelnen"
+msgstr "CSP reports in detail"
+
+msgid "Anwendung"
+msgstr "Application"
+
+msgid "Abrufe"
+msgstr "Fetches"
+
+msgid "RLS-Probe"
+msgstr "RLS probe"
+
+msgid "CSP"
+msgstr "CSP"
+
+msgid "Pflege"
+msgstr "Maintenance"
+
+msgid "Warnungen"
+msgstr "Warnings"
+
+msgid "Hinweise"
+msgstr "Notes"
+
+msgid "Abruf gescheitert"
+msgstr "Fetch failed"
+
+msgid "Auftrag gescheitert"
+msgstr "Job failed"

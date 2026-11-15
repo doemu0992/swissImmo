@@ -40734,3 +40734,55 @@ msgstr "Al cambio della serie di base IPC, i punti di base e il loro mese di rif
 
 msgid "Für %(stand)s weist die Reihe «%(basis)s = 100» %(tabelle)s Punkte aus, erfasst sind %(punkte)s. Beim Wechsel der Basisreihe müssen die Punkte in der neuen Reihe stehen; umgerechnet wird nicht."
 msgstr "Per %(stand)s la serie «%(basis)s = 100» indica %(tabelle)s punti; ne sono registrati %(punkte)s. Al cambio della serie di base i punti devono essere espressi nella nuova serie; non viene effettuata alcuna conversione."
+
+msgid "Alles an einem Ort: Fehler der Anwendung, gescheiterte Abrufe und Aufträge, RLS-Befunde, CSP-Meldungen, fällige Pflege und Sicherheitsereignisse der letzten %(fenster_tage)s Tage. Die rote Zahl in der Leiste zählt Fehler, die du noch nicht gesehen hast."
+msgstr "Tutto in un posto: errori dell'applicazione, richiami e incarichi falliti, rilievi RLS, segnalazioni CSP, manutenzione dovuta ed eventi di sicurezza degli ultimi %(fenster_tage)s giorni. Il numero rosso nella barra conta gli errori che non hai ancora visto."
+
+msgid "%(n)s neuer Fehler seit deinem letzten Besuch."
+msgid_plural "%(n)s neue Fehler seit deinem letzten Besuch."
+msgstr[0] "%(n)s nuovo errore dalla tua ultima visita."
+msgstr[1] "%(n)s nuovi errori dalla tua ultima visita."
+
+msgid "%(n)s neuer Fehler"
+msgid_plural "%(n)s neue Fehler"
+msgstr[0] "%(n)s nuovo errore"
+msgstr[1] "%(n)s nuovi errori"
+
+msgid "Alle Quellen"
+msgstr "Tutte le fonti"
+
+msgid "Keine Einträge in dieser Auswahl."
+msgstr "Nessuna voce in questa selezione."
+
+msgid "Gleiche Meldungen sind zusammengefasst. Abrufausfälle bleiben stehen, bis der Abruf wieder gelingt."
+msgstr "I messaggi uguali sono raggruppati. I richiami falliti restano finché il richiamo riesce di nuovo."
+
+msgid "CSP-Meldungen im Einzelnen"
+msgstr "Segnalazioni CSP in dettaglio"
+
+msgid "Anwendung"
+msgstr "Applicazione"
+
+msgid "Abrufe"
+msgstr "Richiami"
+
+msgid "RLS-Probe"
+msgstr "Prova RLS"
+
+msgid "CSP"
+msgstr "CSP"
+
+msgid "Pflege"
+msgstr "Manutenzione"
+
+msgid "Warnungen"
+msgstr "Avvisi"
+
+msgid "Hinweise"
+msgstr "Note"
+
+msgid "Abruf gescheitert"
+msgstr "Richiamo fallito"
+
+msgid "Auftrag gescheitert"
+msgstr "Incarico fallito"
