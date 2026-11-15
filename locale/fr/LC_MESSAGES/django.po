@@ -40929,3 +40929,18 @@ msgstr "Renouveler l'adresse de l'affiche"
 
 msgid "Die Adresse des Aushangs ist erneuert. Bitte den Hausaushang neu drucken und aufhängen — der bisherige QR-Code funktioniert nicht mehr."
 msgstr "L'adresse de l'affiche est renouvelée. Veuillez réimprimer et afficher l'affiche — le code QR précédent ne fonctionne plus."
+
+msgid "Der Link gilt nur wenige Tage und nur einmal. Ist er abgelaufen, bitten Sie Ihre Verwaltung um einen neuen. Diese E-Mail wurde automatisch erstellt."
+msgstr "Le lien n'est valable que quelques jours et une seule fois. S'il a expiré, demandez-en un nouveau à votre gérance. Cet e-mail a été généré automatiquement."
+
+msgid "Passwort festlegen"
+msgstr "Définir le mot de passe"
+
+msgid "Danach melden Sie sich mit Ihrem Benutzernamen hier an:"
+msgstr "Ensuite, connectez-vous ici avec votre nom d'utilisateur :"
+
+msgid "Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s — bitte manuell mitteilen."
+msgstr "Accès au portail actif, mais l'envoi de l'e-mail a échoué. Nom d'utilisateur : %(username)s · Lien pour définir le mot de passe : %(link)s — à communiquer manuellement."
+
+msgid "Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s (bitte sicher mitteilen; gilt nur wenige Tage und nur einmal)."
+msgstr "Accès au portail actif. Aucune adresse e-mail enregistrée — nom d'utilisateur : %(username)s · Lien pour définir le mot de passe : %(link)s (à communiquer de manière sûre ; valable quelques jours et une seule fois)."

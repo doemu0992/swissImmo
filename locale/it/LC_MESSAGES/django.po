@@ -40858,3 +40858,18 @@ msgstr "Rinnova l'indirizzo dell'avviso"
 
 msgid "Die Adresse des Aushangs ist erneuert. Bitte den Hausaushang neu drucken und aufhängen — der bisherige QR-Code funktioniert nicht mehr."
 msgstr "L'indirizzo dell'avviso è stato rinnovato. Ristampare e affiggere l'avviso — il codice QR precedente non funziona più."
+
+msgid "Der Link gilt nur wenige Tage und nur einmal. Ist er abgelaufen, bitten Sie Ihre Verwaltung um einen neuen. Diese E-Mail wurde automatisch erstellt."
+msgstr "Il link è valido solo per pochi giorni e una sola volta. Se è scaduto, chiedetene uno nuovo alla vostra amministrazione. Questa e-mail è stata generata automaticamente."
+
+msgid "Passwort festlegen"
+msgstr "Imposta la password"
+
+msgid "Danach melden Sie sich mit Ihrem Benutzernamen hier an:"
+msgstr "Successivamente accedete qui con il vostro nome utente:"
+
+msgid "Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s — bitte manuell mitteilen."
+msgstr "Accesso al portale attivo, ma l'invio dell'e-mail non è riuscito. Nome utente: %(username)s · Link per impostare la password: %(link)s — da comunicare manualmente."
+
+msgid "Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s (bitte sicher mitteilen; gilt nur wenige Tage und nur einmal)."
+msgstr "Accesso al portale attivo. Nessuna e-mail registrata — nome utente: %(username)s · Link per impostare la password: %(link)s (da comunicare in modo sicuro; valido solo pochi giorni e una sola volta)."

@@ -117,7 +117,6 @@ def fw_eigentuemer_portal_zugang(request, pk):
     from django.contrib.auth import get_user_model
     from crm.models import Eigentuemer
     from core.auth import log_aktion
-    import secrets
 
     User = get_user_model()
     md = get_object_or_404(Eigentuemer, id=pk)
@@ -137,21 +136,24 @@ def fw_eigentuemer_portal_zugang(request, pk):
         return redirect(ziel)
 
     basis_name = (md.email or f"eigentuemer{md.id}").strip().lower()
-    passwort = secrets.token_urlsafe(9)
+    # KEIN PASSWORT PER MAIL (15.11.2026): Die Person legt es über einen einmaligen Link selbst fest
+    # (`core.services.einladung.portal_link`), wie bei den Team-Konten. Ein bestehendes Passwort bleibt gültig,
+    # bis sie ein neues setzt.
     if md.benutzer_id:
         u = md.benutzer
-        u.set_password(passwort)
         u.is_active = True
-        u.save()
+        u.save(update_fields=['is_active'])
     else:
         username = basis_name
         i = 1
         while User.objects.filter(username=username).exists():
             username = f"{basis_name}.{i}"
             i += 1
-        u = User.objects.create_user(username=username, email=md.email or '', password=passwort)
+        u = User.objects.create_user(username=username, email=md.email or '')        # ohne Passwort: unbrauchbar bis zum Festlegen
         md.benutzer = u
         md.save(update_fields=['benutzer'])
+    from core.services.einladung import portal_link
+    link = portal_link(u)
     log_aktion(request, "Eigentümer-Portal-Zugang erstellt", md.firma_oder_name, u.username)
 
     mail_ok = False
@@ -164,16 +166,16 @@ def fw_eigentuemer_portal_zugang(request, pk):
         vw = md.organisation
         login_url = _settings.PORTAL_BASE_URL.rstrip('/') + '/portal/login/'
         mail_ok = send_eigentuemer_portal_zugang(
-            md.email, md.firma_oder_name, u.username, passwort, login_url,
+            md.email, md.firma_oder_name, u.username, link, login_url,
             absender_firma=(vw.firma if vw else ''), sprache=md.sprache,
             gruss=eigentuemer_gruss(md, md.sprache))
 
     if mail_ok:
         messages.success(request, '✅ ' + gettext('Portal-Zugang aktiv. Zugangsdaten wurden an %(email)s gesendet. (Benutzername: %(username)s)') % {'email': md.email, 'username': u.username})
     elif md.email:
-        messages.warning(request, '⚠️ ' + gettext('Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: %(username)s · Passwort: %(passwort)s — bitte manuell mitteilen.') % {'username': u.username, 'passwort': passwort})
+        messages.warning(request, '⚠️ ' + gettext('Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s — bitte manuell mitteilen.') % {'username': u.username, 'link': link})
     else:
-        messages.success(request, '✅ ' + gettext('Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · Passwort: %(passwort)s (bitte dem Eigentümer sicher mitteilen, wird nur einmal angezeigt).') % {'username': u.username, 'passwort': passwort})
+        messages.success(request, '✅ ' + gettext('Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s (bitte sicher mitteilen; gilt nur wenige Tage und nur einmal).') % {'username': u.username, 'link': link})
     return redirect(ziel)
 
 
