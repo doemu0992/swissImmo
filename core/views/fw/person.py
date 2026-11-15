@@ -207,7 +207,6 @@ def fw_mieter_portal_zugang(request, pk):
     from django.contrib import messages
     from django.contrib.auth import get_user_model
     from core.auth import log_aktion
-    import secrets
 
     User = get_user_model()
     m = get_object_or_404(Mieter, id=pk)
@@ -227,21 +226,24 @@ def fw_mieter_portal_zugang(request, pk):
 
     # Benutzername: E-Mail bevorzugt, sonst mieter<id>
     basis_name = (m.email or f"mieter{m.id}").strip().lower()
-    passwort = secrets.token_urlsafe(9)
+    # KEIN PASSWORT PER MAIL (15.11.2026): Die Person legt es über einen einmaligen Link selbst fest
+    # (`core.services.einladung.portal_link`), wie bei den Team-Konten. Ein bestehendes Passwort bleibt gültig,
+    # bis sie ein neues setzt.
     if m.benutzer_id:
         u = m.benutzer
-        u.set_password(passwort)
         u.is_active = True
-        u.save()
+        u.save(update_fields=['is_active'])
     else:
         username = basis_name
         i = 1
         while User.objects.filter(username=username).exists():
             username = f"{basis_name}.{i}"
             i += 1
-        u = User.objects.create_user(username=username, email=m.email or '', password=passwort)
+        u = User.objects.create_user(username=username, email=m.email or '')        # ohne Passwort: unbrauchbar bis zum Festlegen
         m.benutzer = u
         m.save(update_fields=['benutzer'])
+    from core.services.einladung import portal_link
+    link = portal_link(u)
     log_aktion(request, "Mieterportal-Zugang erstellt", m.display_name, u.username)
 
     # Zugangsdaten per E-Mail an den Mieter senden (Benutzername, Passwort, Login-Link)
@@ -262,16 +264,16 @@ def fw_mieter_portal_zugang(request, pk):
         with in_sprache(sprache_von(m)):
             anrede = (f"{gettext(m.anrede)} " if m.anrede else "") + (m.nachname or m.display_name)
         mail_ok = send_mieter_portal_zugang(
-            m.email, anrede.strip(), u.username, passwort, login_url,
+            m.email, anrede.strip(), u.username, link, login_url,
             absender_firma=(vw.firma if vw else ''), sprache=sprache_von(m),
             gruss=mieter_gruss(m, sprache_von(m)))
 
     if mail_ok:
         messages.success(request, '✅ ' + gettext('Portal-Zugang aktiv. Zugangsdaten wurden an %(email)s gesendet. (Benutzername: %(username)s)') % {'email': m.email, 'username': u.username})
     elif m.email:
-        messages.warning(request, '⚠️ ' + gettext('Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: %(username)s · Passwort: %(passwort)s — bitte manuell mitteilen.') % {'username': u.username, 'passwort': passwort})
+        messages.warning(request, '⚠️ ' + gettext('Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s — bitte manuell mitteilen.') % {'username': u.username, 'link': link})
     else:
-        messages.success(request, '✅ ' + gettext('Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · Passwort: %(passwort)s (bitte dem Mieter sicher mitteilen, wird nur einmal angezeigt).') % {'username': u.username, 'passwort': passwort})
+        messages.success(request, '✅ ' + gettext('Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s (bitte sicher mitteilen; gilt nur wenige Tage und nur einmal).') % {'username': u.username, 'link': link})
     return redirect(f'/neu/personen/{m.id}/')
 
 

@@ -40263,3 +40263,18 @@ msgstr "Renew notice address"
 
 msgid "Die Adresse des Aushangs ist erneuert. Bitte den Hausaushang neu drucken und aufhängen — der bisherige QR-Code funktioniert nicht mehr."
 msgstr "The notice address has been renewed. Please reprint and post the notice — the previous QR code no longer works."
+
+msgid "Der Link gilt nur wenige Tage und nur einmal. Ist er abgelaufen, bitten Sie Ihre Verwaltung um einen neuen. Diese E-Mail wurde automatisch erstellt."
+msgstr "The link is valid for only a few days and only once. If it has expired, ask your property management for a new one. This e-mail was generated automatically."
+
+msgid "Passwort festlegen"
+msgstr "Set password"
+
+msgid "Danach melden Sie sich mit Ihrem Benutzernamen hier an:"
+msgstr "Afterwards, sign in here with your user name:"
+
+msgid "Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s — bitte manuell mitteilen."
+msgstr "Portal access active, but sending the e-mail failed. User name: %(username)s · Link to set the password: %(link)s — please pass it on manually."
+
+msgid "Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s (bitte sicher mitteilen; gilt nur wenige Tage und nur einmal)."
+msgstr "Portal access active. No e-mail on file — user name: %(username)s · Link to set the password: %(link)s (please pass it on securely; valid for only a few days and only once)."
