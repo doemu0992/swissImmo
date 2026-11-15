@@ -42,6 +42,8 @@ Wie die Tabelle gelesen wird:
 * Bewegliche Tage nennt das Verzeichnis ohne Datum. Fronleichnam: 60 Tage nach Ostersonntag. Montag nach dem
   Eidgenössischen Bettag (VD): Montag nach dem dritten Sonntag im September. Genfer Bettag: Donnerstag nach dem ersten
   Sonntag im September. Das Glarner Fahrtsfest fehlt, weil seine Datumsregel nicht belegt ist.
+  Die drei Regeln stehen nicht im Verzeichnis; der Betreiber hat sie am 15.11.2026 dem Entwickler überlassen und
+  sie gelten bis auf Widerruf (allgemein bekannte Festlegungen der jeweiligen Tage).
 
 Ohne Kanton (Liegenschaft ohne Angabe) gelten nur die allgemeinen Tage, wie bisher.
 """
