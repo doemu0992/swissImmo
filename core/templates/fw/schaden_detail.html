@@ -266,10 +266,16 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div class="fw-mitte">
                 <div class="flex items-center gap-2 flex-wrap">
                     <span class="fw-t">{{ n.absender_name }}</span>
-                    {% if n.typ == 'direkt' %}<span class="fw-chip fw-info">{% trans "Direkt Mieter ↔ Handwerker" %}</span>{% elif n.is_intern %}<span class="fw-chip fw-mut">{% trans "intern" %}</span>{% endif %}
+                    {% if n.typ == 'direkt' %}<span class="fw-chip fw-info">{% trans "Direkt Mieter ↔ Handwerker" %}</span>{% elif n.typ == 'mail_unbekannt' %}<span class="fw-chip fw-warn">{% trans "unbekannter Absender" %}</span>{% elif n.is_intern %}<span class="fw-chip fw-mut">{% trans "intern" %}</span>{% endif %}
                     <span class="fw-klein">{{ n.erstellt_am|date:"d.m.Y H:i" }}</span>
                 </div>
                 <p class="mt-1 whitespace-pre-line">{{ n.nachricht }}</p>
+                {% if n.typ == 'mail_unbekannt' and n.absender_adresse %}
+                <form method="post" action="{% url 'fw_schaden_absender_bestaetigen' t.id n.id %}" class="mt-2" data-testid="absender-bestaetigen">{% csrf_token %}
+                    <p class="fw-hilfe mb-1">{% blocktrans with adresse=n.absender_adresse %}Diese Mail kam von {{ adresse }}. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennst du den Absender (etwa die zweite Adresse des Mieters), bestätige ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders.{% endblocktrans %}</p>
+                    <button type="submit" class="fw-btn">{% trans "Absender für dieses Ticket bestätigen" %}</button>
+                </form>
+                {% endif %}
                 {% if n.datei %}<a href="{{ n.datei.url }}" target="_blank" rel="noopener" class="fw-link mt-1 inline-block">{% zeichen 'hochladen' klasse='mr-1' %}{% trans "Anhang" %}</a>{% endif %}
             </div>
         </div>

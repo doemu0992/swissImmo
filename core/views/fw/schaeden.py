@@ -760,6 +760,32 @@ def fw_schaden_ohne_rechnung(request, pk):
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_schaden_absender_bestaetigen(request, pk, nachricht_id):
+    """Eine Mail von unbekanntem Absender dem Ticket zurechnen: Die Adresse gilt danach für dieses Ticket als Melder,
+    die Mail wird für den Mieter sichtbar (`tickets.workflow.absender_bestaetigen`)."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from tickets.models import SchadenMeldung, TicketNachricht
+    from tickets.workflow import absender_bestaetigen
+
+    if request.method != 'POST':
+        return redirect(f'/neu/schaeden/{pk}/')
+    t = get_object_or_404(SchadenMeldung, id=pk)
+    n = get_object_or_404(TicketNachricht, id=nachricht_id, ticket=t)
+    adresse = n.absender_adresse
+    anzahl = absender_bestaetigen(n)
+    if anzahl:
+        log_aktion(request, "Absender am Ticket bestätigt", f"Ticket #{t.id}", adresse)
+        messages.success(request, gettext('%(adresse)s gilt für dieses Ticket jetzt als Absender des Melders.')
+                         % {'adresse': adresse})
+    else:
+        messages.info(request, gettext('Diese Nachricht ist keine Mail von unbekanntem Absender (mehr).'))
+    return redirect(f'/neu/schaeden/{t.id}/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_schaden_antwort(request, pk):
     """Antwort/Nachricht an den Melder — als Verlaufseintrag + E-Mail."""
     from django.shortcuts import redirect

@@ -40194,3 +40194,21 @@ msgstr "Job failed"
 
 msgid "Zu viele falsche Codes. Bitte in 15 Minuten erneut versuchen."
 msgstr "Too many wrong codes. Please try again in 15 minutes."
+
+msgid "Mail von unbekanntem Absender"
+msgstr "Email from unknown sender"
+
+msgid "unbekannter Absender"
+msgstr "unknown sender"
+
+msgid "Diese Mail kam von %(adresse)s. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennst du den Absender (etwa die zweite Adresse des Mieters), bestätige ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders."
+msgstr "This email came from %(adresse)s. The address is not on the ticket, so the tenant does not see the message. If you know the sender (for example the tenant's second address), confirm it: their emails will then count as replies from the reporter for this ticket."
+
+msgid "Absender für dieses Ticket bestätigen"
+msgstr "Confirm sender for this ticket"
+
+msgid "%(adresse)s gilt für dieses Ticket jetzt als Absender des Melders."
+msgstr "%(adresse)s now counts as the reporter's sender for this ticket."
+
+msgid "Diese Nachricht ist keine Mail von unbekanntem Absender (mehr)."
+msgstr "This message is not (or no longer) an email from an unknown sender."

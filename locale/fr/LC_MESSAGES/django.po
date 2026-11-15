@@ -40860,3 +40860,21 @@ msgstr "Tâche échouée"
 
 msgid "Zu viele falsche Codes. Bitte in 15 Minuten erneut versuchen."
 msgstr "Trop de codes erronés. Veuillez réessayer dans 15 minutes."
+
+msgid "Mail von unbekanntem Absender"
+msgstr "E-mail d'un expéditeur inconnu"
+
+msgid "unbekannter Absender"
+msgstr "expéditeur inconnu"
+
+msgid "Diese Mail kam von %(adresse)s. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennst du den Absender (etwa die zweite Adresse des Mieters), bestätige ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders."
+msgstr "Cet e-mail provient de %(adresse)s. L'adresse ne figure pas sur le ticket, le locataire ne voit donc pas le message. Si tu connais l'expéditeur (par exemple la seconde adresse du locataire), confirme-le : ses e-mails compteront alors, pour ce ticket, comme réponse de l'auteur du signalement."
+
+msgid "Absender für dieses Ticket bestätigen"
+msgstr "Confirmer l'expéditeur pour ce ticket"
+
+msgid "%(adresse)s gilt für dieses Ticket jetzt als Absender des Melders."
+msgstr "%(adresse)s compte désormais, pour ce ticket, comme expéditeur de l'auteur du signalement."
+
+msgid "Diese Nachricht ist keine Mail von unbekanntem Absender (mehr)."
+msgstr "Ce message n'est pas (ou plus) un e-mail d'un expéditeur inconnu."
