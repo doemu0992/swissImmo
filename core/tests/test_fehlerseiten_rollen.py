@@ -119,8 +119,9 @@ class HauswartKopfzeileTests(RbacBasis):
             # Die Brotkrume «Akten /» (Ziel /neu/liegenschaften/) steht nicht mehr da,
             # und die Zähler-Abfrage wird nicht gesendet.
             self.assertNotIn('/neu/liegenschaften/', html)
-        # Das Skript bricht vor dem Abruf ab (kein Netzaufruf, kein 403 im Hintergrund).
-        self.assertRegex(html, r"classList\.contains\('_embed'\)\) return;\s*return;")
+        # Das Skript bricht vor dem Abruf ab (kein Netzaufruf, kein 403 im Hintergrund): Die Seite meldet es im
+        # Datenblock, das Skript (`static/js/fw-rahmen.js`) prüft ihn vor dem `fetch`.
+        self.assertIn('"kopfReduziert": true', html)
 
     def test_gegenprobe_das_team_sieht_alles_und_fragt_die_zaehler_ab(self):
         """Ohne diesen Gegenpol wäre der Test oben auch für eine kaputte Seite grün."""
@@ -129,8 +130,10 @@ class HauswartKopfzeileTests(RbacBasis):
         for ziel in ('/neu/faelle/neu/', '/neu/zulauf/', '/neu/einstellungen/'):
             self.assertIn(ziel, kopf)
         self.assertIn('/neu/liegenschaften/', html)
-        self.assertIn("fetch('/neu/leistenzahlen/'", html)
-        self.assertNotRegex(html, r"classList\.contains\('_embed'\)\) return;\s*return;")
+        from ._rahmen import rahmen_skripte
+        skript = rahmen_skripte()
+        self.assertIn('"kopfReduziert": false', html)
+        self.assertRegex(skript, r"if \(FW_RAHMEN\.kopfReduziert\) return;[^\n]*\n\s*fetch\('/neu/leistenzahlen/'")
 
     def test_hauswart_seite_ist_bis_ins_profilmenue_frei_von_403_zielen(self):
         html = self._seite(self.u_hauswart, '/neu/schaeden/')

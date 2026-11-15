@@ -458,7 +458,9 @@ class MieterkontoblattTests(TestCase):
         die Überschrift. Ohne das verschwimmen die Einträge ineinander."""
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/mieterkonten/').content.decode('utf-8')
-        self.assertIn('data-stack-titel', html)         # Skript setzt das Attribut
+        from ._rahmen import rahmen_skripte
+        self.assertIn('js/fw-rahmen.js', html)
+        self.assertIn('data-stack-titel', rahmen_skripte())         # Skript setzt das Attribut
         self.assertIn("td[data-stack-titel]::before { content: none; }", ausgelieferter_stil(html))
 
     def test_trennband_auch_in_den_handgebauten_kartenlisten(self):
@@ -1299,7 +1301,9 @@ class FinanzUIP5Tests(TestCase):
         Kopfzeile unter 768 px zu «Spaltenname — Wert» pro Zeile."""
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/kreditoren/').content.decode('utf-8')
-        self.assertIn('fwTabellenStapeln', html)                 # Skript ausgeliefert
+        from ._rahmen import rahmen_skripte
+        self.assertIn('js/fw-rahmen.js', html)                   # Skript eingebunden …
+        self.assertIn('fwTabellenStapeln', rahmen_skripte())     # … und es enthält die Funktion
         self.assertIn("table[data-stack]", ausgelieferter_stil(html))                 # CSS vorhanden
         self.assertIn('@media (max-width: 767px)', ausgelieferter_stil(html))         # nur mobil
         # display:block auf der Tabelle selbst — sonst misst der Browser die
