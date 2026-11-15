@@ -90,10 +90,9 @@ def _zf_fehlversuch(request, benutzer):
     import logging
 
     from core.utils.throttle import client_ip, fehlversuch
-    from django.core.cache import cache
-    fehlversuch(_zf_schluessel(benutzer.pk), ZF_FENSTER)
+    anzahl = fehlversuch(_zf_schluessel(benutzer.pk), ZF_FENSTER)
     fehlversuch(f'login:ip:{client_ip(request)}', LOGIN_FENSTER)
-    if (cache.get(_zf_schluessel(benutzer.pk)) or 0) == ZF_MAX_FEHLVERSUCHE:
+    if anzahl == ZF_MAX_FEHLVERSUCHE:
         _sicherheit('Zweiter Faktor gesperrt', benutzer.get_username(),
                     f'{ZF_MAX_FEHLVERSUCHE} falsche Codes nach richtigem Passwort — das Passwort ist vermutlich bekannt.',
                     request=request)
