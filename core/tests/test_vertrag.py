@@ -176,8 +176,10 @@ class GewerbeWizardTests(TestCase):
         self.assertIn('<section id="schritt-nk" data-schritt=', body)
         self.assertIn("getElementById('schritt-nk').classList.toggle('hidden', isEP())", body)
         self.assertGreaterEqual(body.count('nkSchrittSetzen()'), 3)   # Definition + lgChange + objChange
-        # Vorschau nutzt dynamische Abschnittsnummern statt hartem "6. Nebenkosten"
-        self.assertIn('secN(', body)
+        # Die Vorschau rendert der Server (dieselbe Vorlage wie das PDF). Die frühere Vorschau im Skript war seit
+        # der Umstellung unerreichbarer Code und ist am 15.11.2026 entfernt worden — mit ihr `secN(`; ein fest
+        # nummerierter Abschnitt «6. Nebenkosten» darf weiterhin nirgends stehen.
+        self.assertNotIn('secN(', body)
         self.assertNotIn('<div class="pvsec">6. Nebenkosten</div>', body)
 
     def test_speichern_parkplatz_nk_wird_auf_null_gezwungen(self):

@@ -305,7 +305,7 @@ function kuendigungCheck(){
                    'Erstreckung verlangen (Art. 272).');
     }
     var box = document.getElementById('k-warn'), list = document.getElementById('k-warn-list');
-    if (warns.length) { list.innerHTML = warns.map(function(w){ return '<li>'+w+'</li>'; }).join(''); box.classList.remove('hidden'); }
+    if (warns.length) { list.innerHTML = warns.map(function(w){ return '<li>'+fwEsc(w)+'</li>'; }).join(''); box.classList.remove('hidden'); }
     else { box.classList.add('hidden'); }
     regelPruefen();
 }

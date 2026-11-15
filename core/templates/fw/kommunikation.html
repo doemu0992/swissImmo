@@ -304,7 +304,7 @@ function aktualisiere() {
         + ' · ' + (document.getElementById('betreff').value || '');
 
     document.getElementById('pv-logo').innerHTML = LOGO_URL
-        ? '<img src="' + LOGO_URL + '" alt="Logo" class="max-h-16 max-w-[220px] object-contain">' : '';
+        ? '<img src="' + fwEsc(LOGO_URL) + '" alt="Logo" class="max-h-16 max-w-[220px] object-contain">' : '';
 
     document.getElementById('pv-absender').textContent =
         ABS.firma + (ABS.strasse ? ' · ' + ABS.strasse : '') + (ABS.ort ? ' · ' + ABS.plz + ' ' + ABS.ort : '');
