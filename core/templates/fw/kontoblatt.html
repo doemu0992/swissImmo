@@ -29,7 +29,7 @@
     Buchungstext ODER den Saldo sehen — man musste quer scrollen.
     {% endcomment %}
     <div class="md:hidden">
-        {% if ist_bilanz %}
+        {% if ist_bilanz and not seite.has_previous %}
         <div class="fw-dz">
             <span class="fw-dl">{% trans "Eröffnungssaldo" %}{% if jahr != 'alle' %} 01.01.{{ jahr }}{% endif %}</span>
             <span class="fw-betrag whitespace-nowrap">{{ eroeffnung|chf }}</span>
@@ -70,7 +70,7 @@
             </tr>
         </thead>
         <tbody>
-            {% if ist_bilanz %}
+            {% if ist_bilanz and not seite.has_previous %}
             <tr><td colspan="6"><span class="fw-mutet">{% trans "Eröffnungssaldo" %}{% if jahr != 'alle' %} 01.01.{{ jahr }}{% endif %}</span></td>
                 <td class="text-right fw-right fw-num fw-strong">{{ eroeffnung|chf }}</td></tr>
             {% endif %}
@@ -96,5 +96,6 @@
         </tfoot>
     </table>
     </div>
+    {% include 'fw/_seiten.html' %}
 </div>
 {% endblock %}

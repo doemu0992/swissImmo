@@ -77,6 +77,10 @@ def _auto_fristen(aktive_lg, horizont_tage=90):
 
 
 
+#: Gruppen (Vertrag, Liegenschaft, Allgemein) je Seite; eine Gruppe trägt meist mehrere Pendenzen.
+PENDENZ_GRUPPEN_JE_SEITE = 30
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_pendenzen(request):
     from core.models import Pendenz
@@ -144,9 +148,13 @@ def fw_pendenzen(request):
 
     liegenschaften = Liegenschaft.objects.order_by('strasse')
     from django.contrib import messages
+    # Geblättert wird nach Gruppen: Die Pendenzen eines Vertrags bleiben zusammen.
+    from ._liste import blaettern
+    seite, query_ohne_seite = blaettern(request, gruppen_liste, pro_seite=PENDENZ_GRUPPEN_JE_SEITE)
     return render(request, 'fw/pendenzen.html', {
         **basis, 'nav': 'pendenzen', 'auto': auto,
-        'offene': offene, 'gruppen': gruppen_liste, 'erledigte': erledigte,
+        'offene': offene, 'gruppen': seite, 'seite': seite, 'query_ohne_seite': query_ohne_seite,
+        'erledigte': erledigte,
         'liegenschaften': liegenschaften, 'heute': heute,
         'kategorien': Pendenz.KATEGORIE_CHOICES,
         'meldung': list(messages.get_messages(request)),

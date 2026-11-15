@@ -92,9 +92,13 @@ def fw_dokumente(request):
         eintraege = [e for e in eintraege if ql in e['name'].lower() or ql in (e['kontext'] or '').lower()]
 
     # Icon + Sortierung
-    for e in eintraege:
-        e['icon'], e['icon_cls'] = _dok_icon(e['kat'])
     eintraege.sort(key=lambda e: e['datum'] or date.min, reverse=True)
+    # Gefiltert und sortiert wird über alles, gezeigt wird eine Seite (2 MB HTML bei 1500 Dokumenten).
+    from ._liste import blaettern
+    anzahl = len(eintraege)
+    seite, query_ohne_seite = blaettern(request, eintraege)
+    for e in seite:
+        e['icon'], e['icon_cls'] = _dok_icon(e['kat'])
 
     kat_labels = {'vertrag': gettext('Verträge'), 'protokoll': gettext('Protokolle'),
                   'korrespondenz': gettext('Korrespondenz'), 'sonstiges': gettext('Sonstiges'),
@@ -102,9 +106,10 @@ def fw_dokumente(request):
     kat_chips = [('', gettext('Alle'))] + [(k, kat_labels.get(k, k.capitalize())) for k in vorhanden]
 
     return render(request, 'fw/dokumente.html', {
-        **basis, 'nav': 'dokumente', 'eintraege': eintraege,
+        **basis, 'nav': 'dokumente', 'eintraege': seite, 'seite': seite,
+        'query_ohne_seite': query_ohne_seite,
         'kat_filter': kat_filter, 'kat_chips': kat_chips, 'q': q,
-        'anzahl': len(eintraege),
+        'anzahl': anzahl,
         'liegenschaften': Liegenschaft.objects.order_by('strasse'),
         'einheiten': Einheit.objects.select_related('liegenschaft').order_by('liegenschaft__strasse', 'bezeichnung'),
     })
