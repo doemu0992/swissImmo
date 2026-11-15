@@ -655,6 +655,16 @@ class BetreiberSeiteTests(_Basis):
         self.assertEqual(r.context['zeilen'], [])
         self.assertNotContains(self.client.get(self.url), 'data-testid="lik-reihe-leer"')     # Gegenprobe
 
+    def test_eine_leere_reihe_bietet_nur_das_einlesen_an(self):
+        """«Jetzt abrufen» gleicht den neuen Monat mit der eigenen Reihe ab; ohne Reihe kann er nur scheitern
+        (15.11.2026: Der Betreiber drückte den Hauptknopf und bekam «Keine eigene Reihe zum Abgleich vorhanden»)."""
+        leer = self.client.get(self.url, {'basis': B2025})
+        self.assertNotContains(leer, 'data-testid="lik-abrufen"')
+        self.assertContains(leer, 'class="fw-btn fw-primary" data-testid="lik-einlesen"')
+        voll = self.client.get(self.url)
+        self.assertContains(voll, 'data-testid="lik-abrufen"')
+        self.assertContains(voll, 'class="fw-btn" data-testid="lik-einlesen"')
+
     def test_einlesen_wirkt_auf_die_gewaehlte_reihe(self):
         with mock.patch.object(lik, '_hev_html', return_value=seite()):
             r = self.client.post(self.url, {'aktion': 'einlesen', 'basis': B2025})
