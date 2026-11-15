@@ -384,6 +384,74 @@ class AntwortZuordnungTests(TestCase):
         self.assertEqual(n.typ, 'mail_antwort')
         self.assertNotContains(c.get(f'/neu/schaeden/{t.id}/'), 'data-testid="absender-bestaetigen"')
 
+    def test_bei_der_person_gespeicherte_adresse_gilt_fuer_alle_ihre_tickets(self):
+        from django.test import Client
+        from django.urls import reverse
+
+        from tickets.workflow import antwort_zuordnen
+        t, a = _mit_auftrag()
+        antwort_zuordnen(t, 'Hans privat <zweit@example.org>', 'ERSTE')
+        n = t.nachrichten.get(nachricht='ERSTE')
+        c = Client(); c.force_login(_team_user())
+        self.assertContains(c.get(f'/neu/schaeden/{t.id}/'), 'data-testid="absender-dauerhaft"')
+        c.post(reverse('fw_schaden_absender_bestaetigen', args=[t.id, n.id]), {'dauerhaft': '1'})
+        t.gemeldet_von.refresh_from_db()
+        self.assertEqual(t.gemeldet_von.weitere_absender, ['zweit@example.org'])
+        from tickets.models import SchadenMeldung
+        t2 = SchadenMeldung.objects.create(liegenschaft=t.liegenschaft, gemeldet_von=t.gemeldet_von,
+                                           titel='Zweites Ticket', beschreibung='x')   # ein ANDERES Ticket derselben Person
+        self.assertEqual(antwort_zuordnen(t2, 'zweit@example.org', 'ZWEITE'), 'melder')
+        self.assertFalse(t2.nachrichten.get(nachricht='ZWEITE').is_intern)
+
+    def test_ohne_haken_bleibt_die_person_unveraendert(self):
+        from django.test import Client
+        from django.urls import reverse
+
+        from tickets.workflow import antwort_zuordnen
+        t, a = _mit_auftrag()
+        antwort_zuordnen(t, 'zweit@example.org', 'x')
+        c = Client(); c.force_login(_team_user())
+        c.post(reverse('fw_schaden_absender_bestaetigen', args=[t.id, t.nachrichten.get(nachricht='x').id]))
+        t.gemeldet_von.refresh_from_db()
+        self.assertEqual(t.gemeldet_von.weitere_absender, [])                # Gegenprobe: nur für das Ticket
+        self.assertEqual(antwort_zuordnen(_ticket(), 'zweit@example.org', 'y'), 'unbekannt')
+
+    def test_gespeicherte_adresse_laesst_sich_in_der_personenakte_entfernen(self):
+        from django.test import Client
+
+        from tickets.workflow import absender_bei_person_speichern, antwort_zuordnen
+        t, a = _mit_auftrag()
+        m = t.gemeldet_von
+        self.assertTrue(absender_bei_person_speichern(m, 'Zweit@Example.org'))
+        self.assertFalse(absender_bei_person_speichern(m, 'zweit@example.org'))           # nicht doppelt
+        self.assertFalse(absender_bei_person_speichern(m, m.email))                      # die Hauptadresse nicht
+        c = Client(); c.force_login(_team_user())
+        self.assertContains(c.get(f'/neu/personen/{m.pk}/'), 'data-testid="weitere-absender"')
+        c.post(f'/neu/personen/{m.pk}/absender-entfernen/', {'adresse': 'zweit@example.org'})
+        m.refresh_from_db()
+        self.assertEqual(m.weitere_absender, [])
+        self.assertNotContains(c.get(f'/neu/personen/{m.pk}/'), 'data-testid="weitere-absender"')
+        self.assertEqual(antwort_zuordnen(_ticket(), 'zweit@example.org', 'z'), 'unbekannt')
+
+    def test_ohne_eindeutige_person_gibt_es_kein_dauerhaftes_speichern(self):
+        from tickets.workflow import person_fuer_absender
+        t, a = _mit_auftrag()
+        self.assertEqual(person_fuer_absender(t), t.gemeldet_von)
+        t.gemeldet_von = None; t.betroffene_einheit = None; t.save()
+        self.assertIsNone(person_fuer_absender(t))
+
+    def test_anonymisierung_leert_die_weiteren_absender(self):
+        """Eine zweite Adresse ist ein Personendatum wie die erste: Die DSG-Anonymisierung muss sie mitnehmen."""
+        from core.services.dsg import anonymisiere_person, kann_anonymisieren
+        from crm.models import Mieter
+        m = Mieter.objects.create(organisation=_test_organisation(), vorname='Ada', nachname='Alt',
+                                  email='ada@example.ch', weitere_absender=['ada.privat@example.org'])
+        self.assertTrue(kann_anonymisieren(m)[0])
+        anonymisiere_person(m, grund='Test')
+        m.refresh_from_db()
+        self.assertEqual(m.weitere_absender, [])
+        self.assertEqual(m.email, '')
+
     def test_leere_adresse_ist_nie_ein_melder(self):
         from tickets.workflow import antwort_zuordnen, melder_adressen
         t, a = _mit_auftrag()

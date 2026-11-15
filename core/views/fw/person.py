@@ -41,6 +41,24 @@ from core.services.schluessel import akte as _schluessel_akte
 # PERSON-DETAIL (Mieter) — in der neuen Shell
 # ============================================================
 
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_person_absender_entfernen(request, pk):
+    """Eine gespeicherte weitere Absenderadresse der Person wieder entfernen. Mails von dort gelten danach wieder als
+    «unbekannter Absender» (bestehende Tickets, an denen die Adresse einzeln bestätigt wurde, behalten sie)."""
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    m = get_object_or_404(Mieter, pk=pk)
+    adresse = (request.POST.get('adresse') or '').strip().lower()
+    liste = [a for a in (m.weitere_absender or []) if isinstance(a, str)]
+    if request.method == 'POST' and adresse in liste:
+        m.weitere_absender = [a for a in liste if a != adresse]
+        m.save(update_fields=['weitere_absender'])
+        log_aktion(request, "Weitere Absenderadresse entfernt", m.display_name, adresse)
+        messages.success(request, gettext('%(adresse)s ist als weitere Absenderadresse entfernt.') % {'adresse': adresse})
+    return redirect(f'/neu/personen/{m.pk}/')
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_person_detail(request, pk):
     from rentals.models import Dokument as RentalsDokument
@@ -158,6 +176,7 @@ def fw_person_detail(request, pk):
         _Q(vertrag__mieter=m) | _Q(debitoren_rechnung__vertrag__mieter=m))
         .distinct().order_by('-begehren_am', '-id')[:10])
     return render(request, 'fw/person_detail.html', {
+        'absender_entfernen_url': f'/neu/personen/{m.pk}/absender-entfernen/',
         'person_betreibungen': person_betreibungen,
         **basis, 'nav': 'personen', 'm': m, 'verlauf': verlauf,
         'vertrag_rows': vertrag_rows,

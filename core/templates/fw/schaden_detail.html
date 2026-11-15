@@ -273,7 +273,11 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 {% if n.typ == 'mail_unbekannt' and n.absender_adresse %}
                 <form method="post" action="{% url 'fw_schaden_absender_bestaetigen' t.id n.id %}" class="mt-2" data-testid="absender-bestaetigen">{% csrf_token %}
                     <p class="fw-hilfe mb-1">{% blocktrans with adresse=n.absender_adresse %}Diese Mail kam von {{ adresse }}. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennst du den Absender (etwa die zweite Adresse des Mieters), bestätige ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders.{% endblocktrans %}</p>
-                    <button type="submit" class="fw-btn">{% trans "Absender für dieses Ticket bestätigen" %}</button>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="submit" class="fw-btn">{% trans "Absender für dieses Ticket bestätigen" %}</button>
+                        {% if absender_person %}<button type="submit" name="dauerhaft" value="1" class="fw-btn" data-testid="absender-dauerhaft">{% blocktrans with person=absender_person.display_name %}Bestätigen und bei {{ person }} speichern{% endblocktrans %}</button>{% endif %}
+                    </div>
+                    {% if absender_person %}<p class="fw-hilfe mt-1">{% trans "«Speichern» hinterlegt die Adresse bei der Person: Sie gilt dann für alle ihre Tickets und lässt sich in der Personenakte wieder entfernen." %}</p>{% endif %}
                 </form>
                 {% endif %}
                 {% if n.datei %}<a href="{{ n.datei.url }}" target="_blank" rel="noopener" class="fw-link mt-1 inline-block">{% zeichen 'hochladen' klasse='mr-1' %}{% trans "Anhang" %}</a>{% endif %}
