@@ -40789,3 +40789,21 @@ msgstr "Incarico fallito"
 
 msgid "Zu viele falsche Codes. Bitte in 15 Minuten erneut versuchen."
 msgstr "Troppi codici errati. Riprovare tra 15 minuti."
+
+msgid "Mail von unbekanntem Absender"
+msgstr "E-mail da mittente sconosciuto"
+
+msgid "unbekannter Absender"
+msgstr "mittente sconosciuto"
+
+msgid "Diese Mail kam von %(adresse)s. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennst du den Absender (etwa die zweite Adresse des Mieters), bestätige ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders."
+msgstr "Questa e-mail proviene da %(adresse)s. L'indirizzo non figura nel ticket, quindi l'inquilino non vede il messaggio. Se conosci il mittente (ad esempio il secondo indirizzo dell'inquilino), confermalo: le sue e-mail varranno per questo ticket come risposta di chi ha segnalato."
+
+msgid "Absender für dieses Ticket bestätigen"
+msgstr "Conferma il mittente per questo ticket"
+
+msgid "%(adresse)s gilt für dieses Ticket jetzt als Absender des Melders."
+msgstr "%(adresse)s vale ora, per questo ticket, come mittente di chi ha segnalato."
+
+msgid "Diese Nachricht ist keine Mail von unbekanntem Absender (mehr)."
+msgstr "Questo messaggio non è (più) un'e-mail da mittente sconosciuto."

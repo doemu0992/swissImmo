@@ -46,6 +46,10 @@ class SchadenMeldung(OrganisationAusKette):
     foto = models.ImageField(upload_to=get_smart_upload_path, blank=True, null=True)
 
     email_melder = models.EmailField("E-Mail Melder", blank=True, null=True)
+    # Weitere Adressen, von denen eine Mail als Antwort des Melders gilt — von der Verwaltung am Ticket bestätigt
+    # (zweite Adresse des Mieters, Partnerin, Arbeitsadresse). Liste kleingeschriebener Adressen; gepflegt nur über
+    # `tickets.workflow.absender_bestaetigen` (Knopf im Verlauf des Tickets).
+    bestaetigte_absender = models.JSONField("Bestätigte Absender", default=list, blank=True, editable=False)
     tel_melder = models.CharField("Telefon Melder", max_length=50, blank=True, null=True)
 
     zutritt = models.CharField("Zutritt / Termin", max_length=20, choices=ZUTRITT_CHOICES, default='telefon')
@@ -250,6 +254,9 @@ class TicketNachricht(OrganisationAusKette):
         ('handwerker_mail', _('Handwerker Mail')),
         ('email', _('Ausgehende E-Mail')),
         ('direkt', _('Direktnachricht Mieter/Handwerker')),
+        # Eingehende Mail, deren Absender nicht zum Ticket gehört: intern, bis die Verwaltung die Adresse bestätigt
+        # (`tickets.workflow.absender_bestaetigen`); dann wird sie zu `mail_antwort`.
+        ('mail_unbekannt', _('Mail von unbekanntem Absender')),
     ]
     SEITE_CHOICES = [
         ('mieter', _('Mieter')),
@@ -257,6 +264,8 @@ class TicketNachricht(OrganisationAusKette):
         ('verwaltung', _('Verwaltung')),
     ]
     typ = models.CharField(max_length=20, choices=TYP_CHOICES, default='chat')
+    # Nur bei `mail_unbekannt`: die Adresse des Absenders (kleingeschrieben), damit sie sich bestätigen lässt.
+    absender_adresse = models.CharField(max_length=254, blank=True, default='', editable=False)
     nachricht = models.TextField()
     # Neue Anhänge unter `organisation/<id>/ticket_anhang/…` (UPLOAD_ORDNER).
     # Alte Dateien bleiben unter `ticket_anhang/` liegen; `media_protected`

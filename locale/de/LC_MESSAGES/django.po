@@ -39088,3 +39088,21 @@ msgstr "Auftrag gescheitert"
 
 msgid "Zu viele falsche Codes. Bitte in 15 Minuten erneut versuchen."
 msgstr "Zu viele falsche Codes. Bitte in 15 Minuten erneut versuchen."
+
+msgid "Mail von unbekanntem Absender"
+msgstr "Mail von unbekanntem Absender"
+
+msgid "unbekannter Absender"
+msgstr "unbekannter Absender"
+
+msgid "Diese Mail kam von %(adresse)s. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennst du den Absender (etwa die zweite Adresse des Mieters), bestätige ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders."
+msgstr "Diese Mail kam von %(adresse)s. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennst du den Absender (etwa die zweite Adresse des Mieters), bestätige ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders."
+
+msgid "Absender für dieses Ticket bestätigen"
+msgstr "Absender für dieses Ticket bestätigen"
+
+msgid "%(adresse)s gilt für dieses Ticket jetzt als Absender des Melders."
+msgstr "%(adresse)s gilt für dieses Ticket jetzt als Absender des Melders."
+
+msgid "Diese Nachricht ist keine Mail von unbekanntem Absender (mehr)."
+msgstr "Diese Nachricht ist keine Mail von unbekanntem Absender (mehr)."

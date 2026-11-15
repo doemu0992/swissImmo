@@ -294,15 +294,107 @@ class AntwortZuordnungTests(TestCase):
     def test_fremder_absender_ist_kein_handwerker(self):
         from tickets.workflow import antwort_zuordnen
         t, a = _mit_auftrag(status='warte_auf_handwerker')
-        self.assertEqual(antwort_zuordnen(t, 'x@fremd.ch', 'hallo'), 'melder')
+        self.assertEqual(antwort_zuordnen(t, 'x@fremd.ch', 'hallo'), 'unbekannt')
         t.refresh_from_db()
         self.assertEqual(t.status, 'warte_auf_handwerker')   # Fremder bewegt den Fluss nicht
+
+    def test_fremder_absender_ist_auch_kein_melder(self):
+        """Audit 15.11.2026: Antwortadresse und Ticketnummer genügten, um als «Melder» in ein fremdes Ticket zu schreiben —
+        sichtbar im Mieterportal, mit frei gewähltem Anzeigenamen, und mit Rückwechsel des Status."""
+        from tickets.workflow import antwort_zuordnen
+        t, a = _mit_auftrag()
+        t.status = 'warte_auf_mieter'; t.save()
+        seite = antwort_zuordnen(t, '"Verwaltung (Direktion)" <angreifer@evil.example>', 'Bitte Schlüssel unter die Matte.')
+        t.refresh_from_db()
+        self.assertEqual(seite, 'unbekannt')
+        self.assertEqual(t.status, 'warte_auf_mieter')                         # kein Rückwechsel
+        n = t.nachrichten.get(nachricht='Bitte Schlüssel unter die Matte.')
+        self.assertEqual((n.typ, n.absender_adresse), ('mail_unbekannt', 'angreifer@evil.example'))
+        self.assertTrue(n.is_intern)                                           # der Mieter sieht es nicht
+        self.assertTrue(n.absender_name.startswith('Unbekannter Absender: '))  # die Verwaltung sieht, was es ist
+        self.assertFalse(t.gelesen)                                            # und wird darauf aufmerksam
+
+    def test_die_notiz_eines_fremden_erscheint_nicht_im_mieterportal(self):
+        from tickets.workflow import antwort_zuordnen
+        t, a = _mit_auftrag()
+        antwort_zuordnen(t, 'angreifer@evil.example', 'GEFAELSCHT')
+        antwort_zuordnen(t, 'hans@example.ch', 'ECHT')
+        sichtbar = list(t.nachrichten.exclude(is_intern=True).values_list('nachricht', flat=True))
+        self.assertIn('ECHT', sichtbar)                                        # Gegenprobe: die echte Antwort ist da
+        self.assertNotIn('GEFAELSCHT', sichtbar)
+
+    def test_mieter_der_einheit_gilt_als_melder_auch_ohne_adresse_am_ticket(self):
+        """Meldet die Verwaltung den Schaden selbst (keine Melder-Adresse am Ticket), darf der Mieter der Einheit antworten."""
+        from tickets.workflow import antwort_zuordnen, melder_adressen
+        t, a = _mit_auftrag()
+        t.email_melder = ''; t.gemeldet_von = None; t.save()
+        self.assertIn('hans@example.ch', melder_adressen(t))
+        self.assertEqual(antwort_zuordnen(t, 'Hans <HANS@example.ch>', 'Ja'), 'melder')
+
+    def test_bestaetigter_absender_gilt_danach_als_melder(self):
+        """Der Mieter schreibt von einer zweiten Adresse: Die Verwaltung bestätigt sie am Ticket. Die schon eingegangene
+        Mail wird sichtbar, der Status folgt, und die nächste Mail derselben Adresse ist ohne Zutun eine Antwort."""
+        from tickets.workflow import absender_bestaetigen, antwort_zuordnen
+        t, a = _mit_auftrag()
+        t.status = 'warte_auf_mieter'; t.save()
+        self.assertEqual(antwort_zuordnen(t, 'Hans privat <Hans.Privat@example.org>', 'ERSTE'), 'unbekannt')
+        n = t.nachrichten.get(nachricht='ERSTE')
+        self.assertEqual((n.typ, n.is_intern, n.absender_adresse), ('mail_unbekannt', True, 'hans.privat@example.org'))
+        self.assertEqual(absender_bestaetigen(n), 1)
+        n.refresh_from_db(); t.refresh_from_db()
+        self.assertEqual((n.typ, n.is_intern, n.absender_name), ('mail_antwort', False, 'Hans privat <Hans.Privat@example.org>'))
+        self.assertEqual(t.bestaetigte_absender, ['hans.privat@example.org'])
+        self.assertEqual(t.status, 'in_bearbeitung')
+        self.assertEqual(antwort_zuordnen(t, 'hans.privat@example.org', 'ZWEITE'), 'melder')
+        self.assertFalse(t.nachrichten.get(nachricht='ZWEITE').is_intern)
+
+    def test_die_bestaetigung_gilt_nur_fuer_dieses_ticket(self):
+        from tickets.workflow import absender_bestaetigen, antwort_zuordnen
+        t, a = _mit_auftrag()
+        antwort_zuordnen(t, 'zweit@example.org', 'x')
+        absender_bestaetigen(t.nachrichten.get(nachricht='x'))
+        t2 = _ticket()
+        self.assertEqual(antwort_zuordnen(t2, 'zweit@example.org', 'y'), 'unbekannt')
+
+    def test_bestaetigen_einer_gewoehnlichen_nachricht_tut_nichts(self):
+        from tickets.workflow import absender_bestaetigen, antwort_zuordnen
+        t, a = _mit_auftrag()
+        antwort_zuordnen(t, 'hans@example.ch', 'echt')
+        self.assertEqual(absender_bestaetigen(t.nachrichten.get(nachricht='echt')), 0)
+        t.refresh_from_db()
+        self.assertEqual(t.bestaetigte_absender, [])
+
+    def test_knopf_im_ticket_nur_bei_unbekanntem_absender_und_nur_mit_schreibrolle(self):
+        from django.test import Client
+        from django.urls import reverse
+
+        from tickets.workflow import antwort_zuordnen
+        t, a = _mit_auftrag()
+        c = Client(); c.force_login(_team_user())
+        self.assertNotContains(c.get(f'/neu/schaeden/{t.id}/'), 'data-testid="absender-bestaetigen"')
+        antwort_zuordnen(t, 'zweit@example.org', 'von der zweiten Adresse')
+        n = t.nachrichten.get(nachricht='von der zweiten Adresse')
+        self.assertContains(c.get(f'/neu/schaeden/{t.id}/'), 'data-testid="absender-bestaetigen"')
+        url = reverse('fw_schaden_absender_bestaetigen', args=[t.id, n.id])
+        self.assertEqual(Client().post(url).status_code, 302)              # ohne Anmeldung: zur Anmeldung, nichts passiert
+        n.refresh_from_db()
+        self.assertEqual(n.typ, 'mail_unbekannt')
+        self.assertEqual(c.post(url).status_code, 302)
+        n.refresh_from_db()
+        self.assertEqual(n.typ, 'mail_antwort')
+        self.assertNotContains(c.get(f'/neu/schaeden/{t.id}/'), 'data-testid="absender-bestaetigen"')
+
+    def test_leere_adresse_ist_nie_ein_melder(self):
+        from tickets.workflow import antwort_zuordnen, melder_adressen
+        t, a = _mit_auftrag()
+        self.assertNotIn('', melder_adressen(t))
+        self.assertEqual(antwort_zuordnen(t, '', 'ohne Absender'), 'unbekannt')
 
     def test_antwort_auf_anderes_ticket_gleicher_adresse_zaehlt_nicht(self):
         from tickets.workflow import antwort_zuordnen
         t1, a1 = _mit_auftrag()
         t2 = _ticket()                         # kein Auftrag am zweiten Ticket
-        self.assertEqual(antwort_zuordnen(t2, 'hw@example.ch', 'x'), 'melder')
+        self.assertEqual(antwort_zuordnen(t2, 'hw@example.ch', 'x'), 'unbekannt')   # weder Handwerker noch Melder von t2
 
     def test_abruf_befehl_ordnet_handwerkermail_zu(self):
         from email.message import EmailMessage

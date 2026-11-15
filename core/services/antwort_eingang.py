@@ -298,6 +298,8 @@ def eingehende_antwort_verarbeiten(organisation, absender, betreff, text, kopf=N
 
     * ``'direkt_mieter'`` / ``'direkt_handwerker'``: Chat am Auftrag, Gegenseite per Mail bedient
     * ``'handwerker'`` / ``'melder'``: im Ticket-Verlauf abgelegt (``tickets.workflow.antwort_zuordnen``)
+    * ``'unbekannt'``: Absender gehört nicht zum Ticket; als interne Notiz abgelegt, ohne Statuswechsel und ohne
+      Sichtbarkeit im Mieterportal
     * ``'ohne_ticket'``: keine Nummer im Betreff, leerer Text oder das Ticket gibt es in DIESER Verwaltung
       nicht. Der Grund wird bewusst nicht unterschieden: kein Hinweis, ob es anderswo existiert.
     """

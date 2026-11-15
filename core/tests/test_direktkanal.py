@@ -254,8 +254,8 @@ class MailNachChatTests(TestCase):
         from tickets.workflow import antwort_zuordnen
         t, a = _auftrag_einfach()
         seite = antwort_zuordnen(t, 'Fremder <fremder@example.org>', 'Hallo?', auftrag_id=a.pk)
-        self.assertEqual(seite, 'melder')                      # wie bisher
-        self.assertTrue(TicketNachricht.objects.filter(typ='mail_antwort', nachricht='Hallo?').exists())
+        self.assertEqual(seite, 'unbekannt')                   # seit 15.11.2026: interne Notiz statt «Antwort des Melders»
+        self.assertTrue(TicketNachricht.objects.filter(typ='mail_unbekannt', nachricht='Hallo?', is_intern=True).exists())
         self.assertEqual(a.direktnachrichten.count(), 0)
         self.assertEqual(mail.outbox, [])
 
