@@ -34,15 +34,32 @@ def _empfaenger(liegenschaft):
 @rolle_erforderlich(*SCHREIB_ROLLEN)
 def fw_ablesung(request):
     from portfolio.models import Liegenschaft, Zaehler
-    zeilen = []
-    offen = Aenderungsanfrage.objects.filter(art=Aenderungsanfrage.ART_ZAEHLERSTAND, status=Aenderungsanfrage.STATUS_OFFEN)
-    for lg in Liegenschaft.objects.order_by('strasse'):
-        n_zaehler = Zaehler.objects.filter(einheit__liegenschaft=lg).count() + Zaehler.objects.filter(liegenschaft=lg).count()
-        letzter = (AktivitaetsLog.objects.filter(aktion=AKTION, ziel_typ='liegenschaft', ziel_id=lg.pk)
-                   .order_by('-zeitpunkt').first())
-        zeilen.append({'lg': lg, 'zaehler': n_zaehler, 'empfaenger': len(_empfaenger(lg)),
-                       'letzter': letzter.zeitpunkt if letzter else None,
-                       'offen': offen.filter(mieter__vertraege__einheit__liegenschaft=lg).distinct().count()})
+    from collections import Counter, defaultdict
+
+    from django.db.models import Count, Max
+
+    from rentals.models import Mietvertrag
+    # Je Kennzahl EINE Abfrage über alle Liegenschaften (vorher fünf je Liegenschaft: 69 -> 169 bei 25 Häusern).
+    zaehler = Counter()
+    for feld in ('einheit__liegenschaft', 'liegenschaft'):
+        for lg_id, n in (Zaehler.objects.exclude(**{f'{feld}__isnull': True}).order_by()
+                         .values_list(feld).annotate(n=Count('pk'))):
+            zaehler[lg_id] += n
+    letzter = dict(AktivitaetsLog.objects.filter(aktion=AKTION, ziel_typ='liegenschaft').order_by()
+                   .values_list('ziel_id').annotate(z=Max('zeitpunkt')))
+    empfaenger = defaultdict(set)                       # wie `_empfaenger`: aktive Mieter mit Adresse und Zugang
+    for lg_id, mieter_id in (Mietvertrag.objects.filter(status='aktiv', mieter__benutzer__isnull=False)
+                             .exclude(mieter__email='').exclude(mieter__email__isnull=True).order_by()
+                             .values_list('einheit__liegenschaft_id', 'mieter_id')):
+        empfaenger[lg_id].add(mieter_id)
+    offen = defaultdict(set)
+    for lg_id, anfrage_id in (Aenderungsanfrage.objects
+                              .filter(art=Aenderungsanfrage.ART_ZAEHLERSTAND, status=Aenderungsanfrage.STATUS_OFFEN)
+                              .order_by().values_list('mieter__vertraege__einheit__liegenschaft_id', 'pk')):
+        offen[lg_id].add(anfrage_id)
+    zeilen = [{'lg': lg, 'zaehler': zaehler[lg.pk], 'empfaenger': len(empfaenger[lg.pk]),
+               'letzter': letzter.get(lg.pk), 'offen': len(offen[lg.pk])}
+              for lg in Liegenschaft.objects.order_by('strasse')]
     return render(request, 'fw/ablesung.html', {**_global_filter(request), 'nav': 'heute', 'zeilen': zeilen})
 
 

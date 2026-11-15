@@ -565,11 +565,11 @@ def fw_eigentuemer_liste(request):
     from crm.models import Eigentuemer
     basis = _global_filter(request)
     from core.services.archiv import ausblenden
-    eigentuemer = ausblenden(Eigentuemer.objects.all()).order_by('firma_oder_name')
-    rows = []
-    for md in eigentuemer:
-        anzahl_lg = Liegenschaft.objects.filter(eigentuemer=md).count()
-        rows.append({'md': md, 'anzahl_lg': anzahl_lg})
+    from django.db.models import Count
+    # Die Zahl der Liegenschaften kommt mit der Liste (vorher eine Zählabfrage je Mandat).
+    eigentuemer = (ausblenden(Eigentuemer.objects.all()).annotate(anzahl_lg=Count('liegenschaften'))
+                   .order_by('firma_oder_name'))
+    rows = [{'md': md, 'anzahl_lg': md.anzahl_lg} for md in eigentuemer]
     return render(request, 'fw/mandate.html', {**basis, 'nav': 'mandate', 'rows': rows})
 
 
