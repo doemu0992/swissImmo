@@ -748,6 +748,8 @@ class Zahlungseingang(OrganisationAusKette):
 
     class Meta:
         db_table = 'core_zahlungseingang'
+        # «Verbuchte Zahlungen dieser Rechnung» ist die häufigste Frage an diese Tabelle (offener Betrag, Listen).
+        indexes = [models.Index(fields=['debitoren_rechnung', 'status'], name='zahlung_rechnung_status_idx')]
         constraints = [
             # Dieselbe Bank-Transaktion wird nur einmal verbucht (camt-Duplikatschutz
             # beim Import war nur eine Abfrage vor dem Anlegen). Stornierte Zeilen
