@@ -302,6 +302,10 @@ class WebhookIsolationTests(TestCase):
     def setUpTestData(cls):
         cls.a = MandantenFixture('A', '8000', 'Zürich')
         cls.b = MandantenFixture('B', '3000', 'Bern')
+        # Die Testmails kommen von MIETER: Als Antwort des Melders gilt eine Mail nur, wenn die Adresse am Ticket steht
+        # (`tickets.workflow.melder_adressen`). Diese Tests prüfen die Zustellung, nicht die Einordnung des Absenders.
+        from tickets.models import SchadenMeldung
+        SchadenMeldung.alle_organisationen.filter(pk__in=[cls.a.schaden.pk, cls.b.schaden.pk]).update(email_melder=MIETER)
 
     def test_ticket_einer_anderen_verwaltung_legt_nichts_an_und_verraet_nichts(self):
         from tickets.models import TicketNachricht
@@ -406,7 +410,9 @@ class WebhookDirektkanalTests(TestCase):
         _senden(_brevo(_adresse(t.organisation), f'Re: Ticket #{t.pk} [A{a.pk}]', von='fremd@example.org'))
         self.assertEqual(a.direktnachrichten.count(), 0)
         self.assertEqual(mail.outbox, [])
-        self.assertTrue(TicketNachricht.alle_organisationen.filter(ticket=t, typ='mail_antwort').exists())
+        # Seit 15.11.2026 als interne Nachricht «unbekannter Absender», nicht mehr als Antwort des Melders.
+        self.assertTrue(TicketNachricht.alle_organisationen.filter(ticket=t, typ='mail_unbekannt', is_intern=True).exists())
+        self.assertFalse(TicketNachricht.alle_organisationen.filter(ticket=t, typ='mail_antwort').exists())
 
 
 class ImapUndWebhookTeilenDieZuordnungTests(TestCase):
