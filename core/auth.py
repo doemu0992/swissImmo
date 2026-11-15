@@ -160,13 +160,10 @@ def hat_rolle(user, rollen):
     rollen = _mit_inhaber(rollen)
 
     from core.tenancy import aktuelle_organisation
-    from crm.models import Mitgliedschaft
 
-    organisation = aktuelle_organisation()
-    if organisation is None:
+    if aktuelle_organisation() is None:
         return False
-    return Mitgliedschaft.objects.filter(
-        benutzer=user, organisation=organisation, rolle__in=rollen).exists()
+    return bool(rollen_der_anfrage(user) & set(rollen))
 
 
 def darf_mit(eigene, user, rollen):
@@ -317,7 +314,13 @@ def darf_oeffnen(user, pfad, eigene_rollen=None):
 
 
 def eigene_rollen(user):
-    """Die Rollen des Benutzers in der aktiven Organisation — eine Abfrage."""
+    """Die Rollen des Benutzers in der aktiven Organisation — je Anfrage
+    höchstens eine Abfrage (`rollen_der_anfrage`). Eine Kopie, damit ein
+    Aufrufer die gemerkte Menge nicht verändert."""
+    return set(rollen_der_anfrage(user))
+
+
+def _rollen_lesen(user):
     from core.tenancy import aktuelle_organisation
     from crm.models import Mitgliedschaft
     if not user or not user.is_authenticated:
@@ -327,6 +330,44 @@ def eigene_rollen(user):
         return set()
     return set(Mitgliedschaft.objects.filter(benutzer=user, organisation=organisation)
                .values_list('rolle', flat=True))
+
+
+# Zählt jede Änderung an Mitgliedschaften in diesem Prozess (Signal in
+# `core/signals.py`). Der Merker unten gilt nur, solange der Stand gleich
+# bleibt: Wer in derselben Anfrage eine Rolle vergibt oder entzieht, sieht
+# die Wirkung sofort.
+_rollen_stand = 0
+
+
+def rollen_geaendert(**_):
+    global _rollen_stand
+    _rollen_stand += 1
+
+
+def rollen_der_anfrage(user):
+    """Die Rollen des Benutzers in der aktiven Organisation, je Anfrage einmal.
+
+    `request.user` lebt eine Anfrage lang. Jede Seite fragt die Rolle mehrfach
+    ab (Dekorator, Navigation, Kontextprozessoren, Vorlagenfilter `darf` in
+    jeder Listenzeile) — ohne Merker ist das je Frage eine Abfrage (gemessen
+    acht auf einer leeren Seite, 24 auf 12 Zeilen der Mahnübersicht).
+
+    Der Merker hängt am Benutzerobjekt und gilt nur für die gerade aktive
+    Organisation und den aktuellen Stand der Mitgliedschaften. Über Anfragen
+    hinweg wird nichts gemerkt: Ein Rollenentzug wirkt mit der nächsten Anfrage.
+    """
+    from core.tenancy import aktuelle_organisation
+    if not user or not getattr(user, 'is_authenticated', False):
+        return set()
+    schluessel = (getattr(aktuelle_organisation(), 'pk', None), _rollen_stand)
+    gemerkt = getattr(user, '_rollen_je_organisation', None)
+    if gemerkt is None or gemerkt[0] != schluessel:
+        gemerkt = (schluessel, _rollen_lesen(user))
+        try:
+            user._rollen_je_organisation = gemerkt
+        except AttributeError:
+            pass
+    return gemerkt[1]
 
 
 # ==========================================

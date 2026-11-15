@@ -140,7 +140,7 @@ class BewerberBoardSpaltenTests(TestCase):
             _bewerbung(self.e, f'B{i}', status=st)
         _bewerbung(self.e, 'V1', status='zugesagt', vertrag=self.v)
         self.assertEqual(messen(), wenige)
-        with self.assertNumQueries(20):
+        with self.assertNumQueries(14):
             self.c.get('/neu/bewerbungen/')
 
     def test_lesende_rolle_sieht_kein_auswahlfeld(self):

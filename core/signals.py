@@ -59,3 +59,20 @@ def _on_login_failed(sender, credentials, request=None, **kwargs):
                'Falsches Passwort oder unbekannter Benutzer',
                kategorie='sicherheit', ip=client_ip(request) if request else None,
                user=benutzer)
+
+
+# Rollen werden je Anfrage einmal gelesen (`core.auth.rollen_der_anfrage`).
+# Jede Änderung an einer Mitgliedschaft macht den Merker ungültig, damit eine
+# in derselben Anfrage vergebene oder entzogene Rolle sofort gilt.
+def _rollen_merker_verwerfen():
+    from django.db.models.signals import post_delete, post_save
+
+    from core.auth import rollen_geaendert
+    from crm.models import Mitgliedschaft
+    post_save.connect(rollen_geaendert, sender=Mitgliedschaft,
+                      dispatch_uid='rollen_merker_save')
+    post_delete.connect(rollen_geaendert, sender=Mitgliedschaft,
+                        dispatch_uid='rollen_merker_delete')
+
+
+_rollen_merker_verwerfen()

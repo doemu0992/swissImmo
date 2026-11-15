@@ -338,7 +338,25 @@ def _kopf_reduziert(user, rollen=None):
 
 
 def fw_navigation(request):
-    """Context-Processor: Navigationsstruktur für base.html.
+    """Context-Processor: Navigationsstruktur — fällt bei einem Datenbankfehler weg.
+
+    Eine Fehlerseite (400/500) wird auch dann gerendert, wenn die Datenbank
+    gerade nicht antwortet oder die laufende Transaktion abgebrochen ist. Die
+    Leiste darf die Fehlerseite nicht ihrerseits zu Fall bringen: Dann fehlt
+    sie, und der Fehler steht im Protokoll.
+    """
+    from django.db import Error as DatenbankFehler
+    try:
+        return _fw_navigation(request)
+    except DatenbankFehler:
+        import logging
+        logging.getLogger(__name__).warning(
+            'Navigation ohne Datenbank gerendert (%s)', request.path, exc_info=True)
+        return {}
+
+
+def _fw_navigation(request):
+    """Navigationsstruktur für base.html.
 
     Nur für angemeldete Team-Mitglieder — Portal-Nutzer sehen keine Leiste.
     Eine Ausnahme: die Hauswartung bekommt die Suche (siehe `_suche_ohne_team`),
