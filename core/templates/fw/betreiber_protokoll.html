@@ -1,0 +1,56 @@
+{% extends 'core/betreiber_base.html' %}
+{% load zeichen i18n %}
+{% comment %}BETREIBER — Protokoll. Siehe core/services/betreiber_protokoll.py: liest alle Quellen, speichert nur «zuletzt gesehen».{% endcomment %}
+{% block title %}{% trans "Protokoll" %} — immoswiss{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <b>{% trans "Protokoll" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Protokoll" %}</h1>
+        <p>{% blocktrans %}Alles an einem Ort: Fehler der Anwendung, gescheiterte Abrufe und Aufträge, RLS-Befunde, CSP-Meldungen, fällige Pflege und Sicherheitsereignisse der letzten {{ fenster_tage }} Tage. Die rote Zahl in der Leiste zählt Fehler, die du noch nicht gesehen hast.{% endblocktrans %}</p>
+    </div>
+</div>
+
+{% if neue_fehler %}
+<div class="fw-hinweis crit max-w-3xl" data-testid="protokoll-neu"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">{% blocktrans count n=neue_fehler %}{{ n }} neuer Fehler seit deinem letzten Besuch.{% plural %}{{ n }} neue Fehler seit deinem letzten Besuch.{% endblocktrans %}</div></div>
+{% endif %}
+
+<div class="fw-filters" data-testid="protokoll-filter">
+    <a href="{% url 'fw_betreiber_protokoll' %}{% if stufe %}?stufe={{ stufe }}{% endif %}" class="fw-fchip{% if not quelle %} fw-on{% endif %}">{% trans "Alle Quellen" %} · {{ gesamt }}</a>
+    {% for q in quellen %}{% if q.anzahl %}
+    <a href="{% url 'fw_betreiber_protokoll' %}?quelle={{ q.key }}{% if stufe %}&amp;stufe={{ stufe }}{% endif %}" class="fw-fchip{% if quelle == q.key %} fw-on{% endif %}">{{ q.name }} · {{ q.anzahl }}{% if q.fehler %} <span class="fw-chip fw-crit">{{ q.fehler }}</span>{% endif %}</a>
+    {% endif %}{% endfor %}
+</div>
+<div class="fw-filters">
+    <a href="{% url 'fw_betreiber_protokoll' %}{% if quelle %}?quelle={{ quelle }}{% endif %}" class="fw-fchip{% if not stufe %} fw-on{% endif %}">{% trans "Alle Stufen" %}</a>
+    {% for s in stufen %}
+    <a href="{% url 'fw_betreiber_protokoll' %}?stufe={{ s.key }}{% if quelle %}&amp;quelle={{ quelle }}{% endif %}" class="fw-fchip{% if stufe == s.key %} fw-on{% endif %}">{{ s.name }} · {{ s.anzahl }}</a>
+    {% endfor %}
+</div>
+
+{% if not eintraege %}
+<div class="fw-hinweis info max-w-3xl" data-testid="protokoll-leer"><span class="fw-hi">{% zeichen 'gut' %}</span><div class="fw-ht">{% trans "Keine Einträge in dieser Auswahl." %}</div></div>
+{% else %}
+{# Eine Liste statt einer Tabelle: Am Telefon stünde die Meldung sonst ausserhalb des Bildschirms (15.11.2026). #}
+<div class="fw-card" data-testid="protokoll-tabelle">
+    {% for e in eintraege %}
+    <div class="px-4 py-3 border-b fw-linie min-w-0"{% if e.neu %} data-neu="1"{% endif %}>
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+            {% if e.stufe == 'fehler' %}<span class="fw-chip fw-crit fw-dot">{% trans "Fehler" %}</span>{% elif e.stufe == 'warnung' %}<span class="fw-chip fw-warn fw-dot">{% trans "Warnung" %}</span>{% else %}<span class="fw-chip fw-mut">{% trans "Hinweis" %}</span>{% endif %}
+            {% if e.neu %}<span class="fw-chip fw-brand">{% trans "neu" %}</span>{% endif %}
+            <span class="fw-chip fw-mut">{{ e.quelle_name }}</span>
+            {% if e.anzahl > 1 %}<span class="fw-chip fw-mut">{{ e.anzahl }}×</span>{% endif %}
+            <span class="fw-faint ml-auto">{% if e.zeit %}{{ e.zeit|date:"d.m.Y H:i" }}{% endif %}</span>
+        </div>
+        <div class="fw-strong text-sm mt-1 break-words">{{ e.titel }}</div>
+        {% if e.ort %}<div class="text-xs fw-faint break-words">{{ e.ort }}</div>{% endif %}
+        {% if e.detail %}<div class="text-xs fw-mutet whitespace-pre-line break-words mt-1">{{ e.detail }}</div>{% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+<p class="fw-hilfe max-w-3xl">{% trans "Gleiche Meldungen sind zusammengefasst. Abrufausfälle bleiben stehen, bis der Abruf wieder gelingt." %} <a href="{% url 'fw_betreiber_csp' %}" class="fw-link">{% trans "CSP-Meldungen im Einzelnen" %}</a></p>
+{% endblock %}

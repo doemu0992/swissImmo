@@ -218,6 +218,7 @@ UEBERSETZT = (
     'fw/betreiber_kunde_abo.html',   # Kundenseite: Abonnement ändern
     'fw/betreiber_kunde_bearbeiten.html',  # Kundenseite: Stammdaten und Ansprechperson ändern
     'fw/betreiber_csp.html',         # Betreiber-Portal: CSP-Meldungen aus dem Log
+    'fw/betreiber_protokoll.html',   # Betreiber-Portal: Protokoll, alle Quellen auf einer Seite
     'fw/betreiber_lik.html',         # Betreiber-Portal: LIK-Monatswerte nachtragen
     'fw/auftraege.html',             # Hintergrund-Aufträge: Stand und Ergebnis
     'fw/auszahlungsfreigaben.html',  # Vier-Augen-Prinzip für Auszahlungen (Etappe 4)

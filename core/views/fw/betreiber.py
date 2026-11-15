@@ -32,6 +32,38 @@ def fw_betreiber_csp(request):
 
 
 @rolle_erforderlich(*BETREIBER_ROLLEN)
+def fw_betreiber_protokoll(request):
+    """Alles an einem Ort: Fehler der Anwendung, Abrufausfälle, gescheiterte Aufträge, RLS-Befunde, CSP-Meldungen,
+    fällige Pflege und Sicherheitsereignisse (`core/services/betreiber_protokoll.py`). Filter über `?quelle=` und
+    `?stufe=`. Das Öffnen der Seite merkt «gesehen»: Die rote Zahl in der Leiste zählt danach nur noch neue Fehler."""
+    from django.utils.translation import gettext
+
+    from core.services import betreiber_protokoll as protokoll
+    namen = {'anwendung': gettext('Anwendung'), 'abruf': gettext('Abrufe'), 'auftrag': gettext('Aufträge'),
+             'rls': gettext('RLS-Probe'), 'csp': gettext('CSP'), 'pflege': gettext('Pflege'),
+             'sicherheit': gettext('Sicherheit')}
+    stufen = {'fehler': gettext('Fehler'), 'warnung': gettext('Warnungen'), 'info': gettext('Hinweise')}
+    gesehen = protokoll.gesehen_am(request.user)
+    alle = protokoll.eintraege()
+    for e in alle:
+        e['neu'] = protokoll.ist_neu(e, gesehen)
+        e['quelle_name'] = namen[e['quelle']]
+    quelle = request.GET.get('quelle') if request.GET.get('quelle') in namen else ''
+    stufe = request.GET.get('stufe') if request.GET.get('stufe') in stufen else ''
+    gezeigt = [e for e in alle if (not quelle or e['quelle'] == quelle) and (not stufe or e['stufe'] == stufe)]
+    antwort = render(request, 'fw/betreiber_protokoll.html', {
+        'aktiv': 'protokoll', 'eintraege': gezeigt, 'quelle': quelle, 'stufe': stufe,
+        'quellen': [{'key': k, 'name': n, 'anzahl': sum(1 for e in alle if e['quelle'] == k),
+                     'fehler': sum(1 for e in alle if e['quelle'] == k and e['stufe'] == 'fehler')}
+                    for k, n in namen.items()],
+        'stufen': [{'key': k, 'name': n, 'anzahl': sum(1 for e in alle if e['stufe'] == k)} for k, n in stufen.items()],
+        'gesamt': len(alle), 'neue_fehler': sum(1 for e in alle if e['neu']), 'fenster_tage': protokoll.FENSTER_TAGE,
+    })
+    protokoll.als_gesehen_merken(request.user)
+    return antwort
+
+
+@rolle_erforderlich(*BETREIBER_ROLLEN)
 def fw_betreiber_lik(request):
     """Monatswerte des Landesindex nachtragen (statt im Code): die Reihe der letzten Monate und ein Formular.
 

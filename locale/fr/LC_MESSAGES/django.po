@@ -40805,3 +40805,55 @@ msgstr "Lors du changement de la série de base IPC, les points de base et leur 
 
 msgid "Für %(stand)s weist die Reihe «%(basis)s = 100» %(tabelle)s Punkte aus, erfasst sind %(punkte)s. Beim Wechsel der Basisreihe müssen die Punkte in der neuen Reihe stehen; umgerechnet wird nicht."
 msgstr "Pour %(stand)s, la série «%(basis)s = 100» indique %(tabelle)s points; %(punkte)s sont saisis. Lors du changement de série de base, les points doivent être exprimés dans la nouvelle série; aucune conversion n'est effectuée."
+
+msgid "Alles an einem Ort: Fehler der Anwendung, gescheiterte Abrufe und Aufträge, RLS-Befunde, CSP-Meldungen, fällige Pflege und Sicherheitsereignisse der letzten %(fenster_tage)s Tage. Die rote Zahl in der Leiste zählt Fehler, die du noch nicht gesehen hast."
+msgstr "Tout au même endroit : erreurs de l'application, appels et tâches échoués, constats RLS, signalements CSP, entretien dû et événements de sécurité des %(fenster_tage)s derniers jours. Le chiffre rouge dans la barre compte les erreurs que tu n'as pas encore vues."
+
+msgid "%(n)s neuer Fehler seit deinem letzten Besuch."
+msgid_plural "%(n)s neue Fehler seit deinem letzten Besuch."
+msgstr[0] "%(n)s nouvelle erreur depuis ta dernière visite."
+msgstr[1] "%(n)s nouvelles erreurs depuis ta dernière visite."
+
+msgid "%(n)s neuer Fehler"
+msgid_plural "%(n)s neue Fehler"
+msgstr[0] "%(n)s nouvelle erreur"
+msgstr[1] "%(n)s nouvelles erreurs"
+
+msgid "Alle Quellen"
+msgstr "Toutes les sources"
+
+msgid "Keine Einträge in dieser Auswahl."
+msgstr "Aucune entrée dans cette sélection."
+
+msgid "Gleiche Meldungen sind zusammengefasst. Abrufausfälle bleiben stehen, bis der Abruf wieder gelingt."
+msgstr "Les messages identiques sont regroupés. Les échecs d'appel restent affichés jusqu'à ce que l'appel réussisse de nouveau."
+
+msgid "CSP-Meldungen im Einzelnen"
+msgstr "Signalements CSP en détail"
+
+msgid "Anwendung"
+msgstr "Application"
+
+msgid "Abrufe"
+msgstr "Appels"
+
+msgid "RLS-Probe"
+msgstr "Essai RLS"
+
+msgid "CSP"
+msgstr "CSP"
+
+msgid "Pflege"
+msgstr "Entretien"
+
+msgid "Warnungen"
+msgstr "Avertissements"
+
+msgid "Hinweise"
+msgstr "Remarques"
+
+msgid "Abruf gescheitert"
+msgstr "Appel échoué"
+
+msgid "Auftrag gescheitert"
+msgstr "Tâche échouée"

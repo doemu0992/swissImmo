@@ -111,6 +111,8 @@ AUSNAHMEN = {
     'portal_report':          'Eigentümer-Report, datensatzbezogen bereits isoliert',
     'fw_betreiber_kunde':     'Betreiber-Konsole: der Betreiber (Superuser) sieht bewusst jede Verwaltung; Zugang (403 für alle '
                               'Rollen) und fremde Rechnungen prüft test_betreiber_kundenliste',
+    'fw_betreiber_protokoll': 'Betreiber-Konsole: Protokoll über alle Verwaltungen (Log, Abrufe, Aufträge), nur für den Betreiber '
+                              '(test_betreiber_protokoll)',
     'fw_betreiber_lik':      'Betreiber-Konsole: nachgetragene LIK-Werte, plattformweit, nur für den Betreiber (test_lik_werte)',
     'fw_betreiber_kunde_bearbeiten': 'Betreiber-Konsole: Formularseite zum Kunden, nur für den Betreiber (test_betreiber_kundenliste)',
     'fw_betreiber_kunde_abo': 'Betreiber-Konsole: Formularseite zum Abonnement, nur für den Betreiber (test_betreiber_kundenliste)',

@@ -39033,3 +39033,55 @@ msgstr "Beim Wechsel der LIK-Basisreihe sind die Basis-Punkte und ihr Stand-Mona
 
 msgid "Für %(stand)s weist die Reihe «%(basis)s = 100» %(tabelle)s Punkte aus, erfasst sind %(punkte)s. Beim Wechsel der Basisreihe müssen die Punkte in der neuen Reihe stehen; umgerechnet wird nicht."
 msgstr "Für %(stand)s weist die Reihe «%(basis)s = 100» %(tabelle)s Punkte aus, erfasst sind %(punkte)s. Beim Wechsel der Basisreihe müssen die Punkte in der neuen Reihe stehen; umgerechnet wird nicht."
+
+msgid "Alles an einem Ort: Fehler der Anwendung, gescheiterte Abrufe und Aufträge, RLS-Befunde, CSP-Meldungen, fällige Pflege und Sicherheitsereignisse der letzten %(fenster_tage)s Tage. Die rote Zahl in der Leiste zählt Fehler, die du noch nicht gesehen hast."
+msgstr "Alles an einem Ort: Fehler der Anwendung, gescheiterte Abrufe und Aufträge, RLS-Befunde, CSP-Meldungen, fällige Pflege und Sicherheitsereignisse der letzten %(fenster_tage)s Tage. Die rote Zahl in der Leiste zählt Fehler, die du noch nicht gesehen hast."
+
+msgid "%(n)s neuer Fehler seit deinem letzten Besuch."
+msgid_plural "%(n)s neue Fehler seit deinem letzten Besuch."
+msgstr[0] "%(n)s neuer Fehler seit deinem letzten Besuch."
+msgstr[1] "%(n)s neue Fehler seit deinem letzten Besuch."
+
+msgid "%(n)s neuer Fehler"
+msgid_plural "%(n)s neue Fehler"
+msgstr[0] "%(n)s neuer Fehler"
+msgstr[1] "%(n)s neue Fehler"
+
+msgid "Alle Quellen"
+msgstr "Alle Quellen"
+
+msgid "Keine Einträge in dieser Auswahl."
+msgstr "Keine Einträge in dieser Auswahl."
+
+msgid "Gleiche Meldungen sind zusammengefasst. Abrufausfälle bleiben stehen, bis der Abruf wieder gelingt."
+msgstr "Gleiche Meldungen sind zusammengefasst. Abrufausfälle bleiben stehen, bis der Abruf wieder gelingt."
+
+msgid "CSP-Meldungen im Einzelnen"
+msgstr "CSP-Meldungen im Einzelnen"
+
+msgid "Anwendung"
+msgstr "Anwendung"
+
+msgid "Abrufe"
+msgstr "Abrufe"
+
+msgid "RLS-Probe"
+msgstr "RLS-Probe"
+
+msgid "CSP"
+msgstr "CSP"
+
+msgid "Pflege"
+msgstr "Pflege"
+
+msgid "Warnungen"
+msgstr "Warnungen"
+
+msgid "Hinweise"
+msgstr "Hinweise"
+
+msgid "Abruf gescheitert"
+msgstr "Abruf gescheitert"
+
+msgid "Auftrag gescheitert"
+msgstr "Auftrag gescheitert"
