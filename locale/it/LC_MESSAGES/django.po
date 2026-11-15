@@ -40786,3 +40786,6 @@ msgstr "Richiamo fallito"
 
 msgid "Auftrag gescheitert"
 msgstr "Incarico fallito"
+
+msgid "Zu viele falsche Codes. Bitte in 15 Minuten erneut versuchen."
+msgstr "Troppi codici errati. Riprovare tra 15 minuti."

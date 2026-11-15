@@ -40857,3 +40857,6 @@ msgstr "Appel échoué"
 
 msgid "Auftrag gescheitert"
 msgstr "Tâche échouée"
+
+msgid "Zu viele falsche Codes. Bitte in 15 Minuten erneut versuchen."
+msgstr "Trop de codes erronés. Veuillez réessayer dans 15 minutes."
