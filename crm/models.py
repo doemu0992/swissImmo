@@ -328,6 +328,9 @@ class Mitgliedschaft(models.Model):
     rolle = models.CharField("Rolle", max_length=20, choices=ROLLEN,
                              default=ROLLE_SACHBEARBEITER)
     erstellt_am = models.DateTimeField("Angelegt am", auto_now_add=True)
+    #: Geheimnis in der Adresse des abonnierbaren Fristenkalenders dieser Person in dieser Verwaltung. Leer = kein
+    #: Abonnement. Je Person, damit ein Austritt oder ein verlorenes Gerät nicht den Kalender aller trifft.
+    fristen_feed_token = models.CharField("Kalender-Token", max_length=64, blank=True, default='', db_index=True)
     # Was die Startseite zuerst zeigt (Dashboard-Reduktion 26.10.2026): die
     # To-dos der Bewirtschaftung, die offenen Posten der Buchhaltung oder die
     # Kennzahlen der Übersicht. Leer heisst «nach Rolle» — siehe

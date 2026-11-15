@@ -445,6 +445,7 @@ SENSIBLE_FELDER = frozenset({
     'ahv_nummer',           # AHV-Nummer (verschlüsselt gespeichert; beim Lesen Klartext)
     'iban', 'zahler_iban',  # Kontoverbindungen von Personen und Liegenschaften
     'portal_feed_token',    # Geheimnis in der Adresse des Portal-Feeds
+    'fristen_feed_token',   # Geheimnis in der Adresse des Fristenkalenders
     'password', 'geheimnis',
 })
 

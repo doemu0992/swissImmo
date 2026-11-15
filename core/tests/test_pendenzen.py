@@ -293,13 +293,11 @@ class FristenKalenderTests(TestCase):
         self.assertIn('Kündigungstermin Muster', body)
 
     def test_feed_token(self):
-        from core.services.ical import feed_token
+        from core.services.ical import token_setzen
         self._frist('Frist X', 3)
         c = Client()  # ohne Login
-        # gültiger Token
-        # Der Token traegt seit dem Audit die Verwaltung — ein Token ohne
-        # sie galt fuer jede, und in den Fristen stehen Mieternamen.
-        r = c.get(f'/fristen.ics?token={feed_token(_test_organisation())}')
+        # gültiger Token: Er gehört einer Person in einer Verwaltung (`core/tests/test_kalender_link.py`).
+        r = c.get(f'/fristen.ics?token={token_setzen(_team_user(), _test_organisation())}')
         self.assertEqual(r.status_code, 200)
         self.assertIn('BEGIN:VCALENDAR', r.content.decode('utf-8'))
         # ungültiger Token

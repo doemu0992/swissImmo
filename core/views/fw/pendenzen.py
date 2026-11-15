@@ -16,6 +16,7 @@ from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
 from core.auth import rolle_erforderlich, SCHREIB_ROLLEN, TEAM_ROLLEN
+from core.tenancy import aktuelle_organisation
 from core.utils.formularid import eigenes_objekt
 from portfolio.models import Liegenschaft
 from rentals.models import Mietvertrag
@@ -241,14 +242,35 @@ def fw_fristen(request):
         {'key': 'spaeter', 'titel': 'Später', 'icon': 'termin',
          'cls': 'fw-mutet', 'items': [e for e in eintraege if e['faellig'] > grenze_monat]},
     ]
-    from core.services.ical import feed_token
+    from core.services.ical import darf_abonnieren as _darf, feed_token
+    # Den Kalender-Link sieht nur, wer in dieser Verwaltung schreiben darf — und jede Person nur ihren eigenen.
+    darf_abonnieren = _darf(request.user, aktuelle_organisation())
     return render(request, 'fw/fristen.html', {
         **basis, 'nav': 'fristen', 'buckets': buckets, 'heute': heute,
         'heute_iso': heute.isoformat(),
         'gesamt': len(eintraege), 'nur_frist': nur_frist,
         'ueberfaellig_n': len(buckets[0]['items']),
-        'feed_token': feed_token(getattr(request, 'organisation', None)),
+        'darf_abonnieren': darf_abonnieren,
+        'feed_token': feed_token(request.user, aktuelle_organisation()) if darf_abonnieren else '',
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_fristen_kalender_token(request):
+    """Den eigenen Kalender-Link erzeugen, erneuern (der alte gilt sofort nicht mehr) oder entfernen."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from core.services.ical import token_setzen
+    if request.method == 'POST':
+        entfernen = request.POST.get('aktion') == 'entfernen'
+        token_setzen(request.user, aktuelle_organisation(), entfernen=entfernen)
+        log_aktion(request, 'Kalender-Link entfernt' if entfernen else 'Kalender-Link erzeugt', 'Fristen', '')
+        messages.success(request, gettext('Kalender-Link entfernt. Abonnierte Kalender erhalten nichts mehr.')
+                         if entfernen else
+                         gettext('Neuer Kalender-Link erzeugt. Ein früherer Link gilt nicht mehr.'))
+    return redirect('/neu/fristen/?kalender=1')
 
 
 def _offene_fristen_pendenzen(aktive_lg=None):
@@ -283,10 +305,8 @@ def fristen_ical_feed(request):
 
     from core.tenancy import kontext_des_objekts
 
-    # Der Token sagt, WESSEN Fristen — vorher signierte er eine Konstante und
-    # galt fuer jede Verwaltung. Ohne Anmeldung gibt es hier keinen anderen
-    # Weg zur Organisation, und ohne sie warf `Pendenz.objects` seit Etappe
-    # 6.2: Der Feed lieferte einen Serverfehler statt eines Kalenders.
+    # Der Token gehört einer Person in einer Verwaltung (`core/services/ical.py`) und sagt damit, WESSEN Fristen.
+    # Ohne Anmeldung gibt es hier keinen anderen Weg zur Organisation.
     organisation = organisation_aus_token(request.GET.get('token'))
     if organisation is None:
         return HttpResponseForbidden("Ungültiger oder fehlender Token.")

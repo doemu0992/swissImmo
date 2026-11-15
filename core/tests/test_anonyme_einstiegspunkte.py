@@ -194,8 +194,9 @@ class IcalFeedTests(OhneKontext):
                     faellig_am=date.today() + timedelta(days=3))
 
     def _feed(self, organisation):
-        from core.services.ical import feed_token
-        return self.client.get('/fristen.ics', {'token': feed_token(organisation)})
+        from core.services.ical import token_setzen
+        fixture = self.a if organisation == self.a.organisation else self.b
+        return self.client.get('/fristen.ics', {'token': token_setzen(fixture.benutzer, organisation)})
 
     def test_feed_zeigt_die_eigenen_fristen(self):
         antwort = self._feed(self.b.organisation)
