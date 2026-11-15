@@ -90,7 +90,10 @@ def fw_nebenkosten(request):
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
-    qs = AbrechnungsPeriode.objects.select_related('liegenschaft').order_by('-start_datum')
+    from django.db.models import Count
+    # Die Zahl der Belege kommt mit der Liste (eine Abfrage statt einer je Periode).
+    qs = (AbrechnungsPeriode.objects.select_related('liegenschaft').annotate(anzahl_belege=Count('belege'))
+          .order_by('-start_datum'))
     if aktive_lg:
         qs = qs.filter(liegenschaft=aktive_lg)
 
@@ -112,7 +115,7 @@ def fw_nebenkosten(request):
         rows.append({
             'p': p, 'kosten': kosten,
             'lg': p.liegenschaft.strasse if p.liegenschaft_id else '—',
-            'belege': p.belege.count(),
+            'belege': p.anzahl_belege,
         })
 
     chips = [('', 'Alle'), ('offen', 'Offen'), ('abgeschlossen', 'Abgeschlossen')]
