@@ -52,9 +52,10 @@ class AusLogTests(SimpleTestCase):
         e = protokoll.aus_log([_zeile('ERROR', 'core.wartung', 'WARTUNGSMODUS: 1 Migration(en) nicht angewendet: core.0028_auftrag. '
                                       'Beheben mit: python manage.py migrate'),
                                _zeile('ERROR', 'core.wartung', 'WARTUNGSMODUS: Datenbank nicht erreichbar')])
-        stufen = {x['titel'][:40]: x['stufe'] for x in e}
-        self.assertEqual(stufen['WARTUNGSMODUS: 1 Migration(en) nicht ang'], 'warnung')
-        self.assertEqual(stufen['WARTUNGSMODUS: Datenbank nicht erreichbar'], 'fehler')          # Gegenprobe: anderes bleibt Fehler
+        stufen = {('Migration' in x['titel']): x['stufe'] for x in e}
+        self.assertEqual(stufen[True], 'warnung')
+        self.assertEqual(stufen[False], 'fehler')                         # Gegenprobe: anderes aus dem Wartungsmodus bleibt Fehler
+        self.assertIn('migrate', next(x['detail'] for x in e if x['stufe'] == 'warnung'))
 
     def test_csp_meldungen_derselben_ursache_sind_eine_zeile(self):
         def z(seite, zusatz=''):
