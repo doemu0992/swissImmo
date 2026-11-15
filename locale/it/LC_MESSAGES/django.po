@@ -40825,3 +40825,24 @@ msgstr "rimuovi"
 
 msgid "%(adresse)s ist als weitere Absenderadresse entfernt."
 msgstr "%(adresse)s non è più un altro indirizzo mittente."
+
+msgid "Im Kalender „Abonnement/Kalender per URL hinzufügen“ wählen und diese Adresse einfügen. Der Link gehört nur Ihnen und ist geheim — nicht weitergeben."
+msgstr "Nel calendario scegliere «Abbonamento / Aggiungi calendario da URL» e incollare questo indirizzo. Il link è personale e segreto — non divulgarlo."
+
+msgid "Link neu erzeugen"
+msgstr "Genera un nuovo link"
+
+msgid "Link entfernen"
+msgstr "Rimuovi il link"
+
+msgid "Mit einem persönlichen Link zeigt Ihr Kalender (Outlook, Apple, Google) die Fristen laufend an. Der Link lässt sich jederzeit erneuern oder entfernen."
+msgstr "Con un link personale il vostro calendario (Outlook, Apple, Google) mostra le scadenze in modo continuo. Il link può essere rinnovato o rimosso in qualsiasi momento."
+
+msgid "Kalender-Link erzeugen"
+msgstr "Genera il link del calendario"
+
+msgid "Kalender-Link entfernt. Abonnierte Kalender erhalten nichts mehr."
+msgstr "Link del calendario rimosso. I calendari abbonati non ricevono più nulla."
+
+msgid "Neuer Kalender-Link erzeugt. Ein früherer Link gilt nicht mehr."
+msgstr "Nuovo link del calendario generato. Un link precedente non è più valido."

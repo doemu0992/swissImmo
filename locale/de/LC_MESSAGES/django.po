@@ -39124,3 +39124,24 @@ msgstr "entfernen"
 
 msgid "%(adresse)s ist als weitere Absenderadresse entfernt."
 msgstr "%(adresse)s ist als weitere Absenderadresse entfernt."
+
+msgid "Im Kalender „Abonnement/Kalender per URL hinzufügen“ wählen und diese Adresse einfügen. Der Link gehört nur Ihnen und ist geheim — nicht weitergeben."
+msgstr "Im Kalender „Abonnement/Kalender per URL hinzufügen“ wählen und diese Adresse einfügen. Der Link gehört nur Ihnen und ist geheim — nicht weitergeben."
+
+msgid "Link neu erzeugen"
+msgstr "Link neu erzeugen"
+
+msgid "Link entfernen"
+msgstr "Link entfernen"
+
+msgid "Mit einem persönlichen Link zeigt Ihr Kalender (Outlook, Apple, Google) die Fristen laufend an. Der Link lässt sich jederzeit erneuern oder entfernen."
+msgstr "Mit einem persönlichen Link zeigt Ihr Kalender (Outlook, Apple, Google) die Fristen laufend an. Der Link lässt sich jederzeit erneuern oder entfernen."
+
+msgid "Kalender-Link erzeugen"
+msgstr "Kalender-Link erzeugen"
+
+msgid "Kalender-Link entfernt. Abonnierte Kalender erhalten nichts mehr."
+msgstr "Kalender-Link entfernt. Abonnierte Kalender erhalten nichts mehr."
+
+msgid "Neuer Kalender-Link erzeugt. Ein früherer Link gilt nicht mehr."
+msgstr "Neuer Kalender-Link erzeugt. Ein früherer Link gilt nicht mehr."

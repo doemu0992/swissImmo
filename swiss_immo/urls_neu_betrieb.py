@@ -58,6 +58,7 @@ from core.views.fw import (
     fw_finanzen,
     fw_fristen,
     fw_fristen_ical,
+    fw_fristen_kalender_token,
     fw_kalender,
     fw_kontenplan,
     fw_kontoblatt,
@@ -297,4 +298,5 @@ urlpatterns = [
     path('neu/fristen/', fw_fristen, name='fw_fristen'),
     path('neu/fristen/export.ics', fw_fristen_ical, name='fw_fristen_ical'),
     path('fristen.ics', fristen_ical_feed, name='fristen_ical_feed'),
+    path('neu/fristen/kalender-link/', fw_fristen_kalender_token, name='fw_fristen_kalender_token'),
 ]
