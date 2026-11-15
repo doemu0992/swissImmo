@@ -150,7 +150,17 @@ class PostfachOberflaecheTests(TestCase):
         antwort = self.client.post(reverse('postfach_form', args=['antworten']), {
             'verfahren': 'passwort', 'benutzer': 'a@example.ch',
             'server': 'imap.example.ch', 'port': '99999', 'passwort': GEHEIM})
-        self.assertContains(antwort, 'zwischen 1 und 65535')
+        self.assertContains(antwort, 'Als Port sind 993')
+        self.assertEqual(Postfach.alle_organisationen.count(), 0)
+
+    def test_fremder_port_und_interner_server_werden_abgewiesen(self):
+        """Server und Port waren frei wählbar: «Verbindung prüfen» liess sich als Portscanner benutzen."""
+        for server, port, meldung in (('imap.example.ch', '8080', 'Als Port sind 993'),
+                                      ('127.0.0.1', '993', 'nicht zulässig')):
+            antwort = self.client.post(reverse('postfach_form', args=['antworten']), {
+                'verfahren': 'passwort', 'benutzer': 'a@example.ch',
+                'server': server, 'port': port, 'passwort': GEHEIM})
+            self.assertContains(antwort, meldung)
         self.assertEqual(Postfach.alle_organisationen.count(), 0)
 
     def test_eingabe_bleibt_nach_einem_fehler_stehen(self):

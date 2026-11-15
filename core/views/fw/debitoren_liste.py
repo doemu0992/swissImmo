@@ -126,12 +126,16 @@ def fw_debitoren(request):
     anzahl_ueberfaellig = (offene_qs.annotate(_f=_faellig_expr)
                            .filter(_f__lt=heute).count())
 
-    def _ampel_zahl(teil):
+    def _ampel_zahl(teil, mit_summe=True):
+        if not mit_summe:
+            # Bezahlte: nur zählen. Die Summe wird dort nicht gezeigt, kostete aber eine Unterabfrage je Rechnung
+            # über die ganze Historie (gemessen 2,7 s bei acht Jahren).
+            return {'n': teil.count(), 'summe': Decimal('0.00')}
         a = teil.annotate(_o=_offen_expr).aggregate(n=Count('id'), s=Sum('_o'))
         return {'n': a['n'] or 0, 'summe': a['s'] or Decimal('0.00')}
     _offen_basis = ampel_basis.filter(status__in=_OFFEN_STATUS)
     ampeln = [
-        ('gruen', _('Bezahlt'), _ampel_zahl(ampel_basis.filter(status='bezahlt')),
+        ('gruen', _('Bezahlt'), _ampel_zahl(ampel_basis.filter(status='bezahlt'), mit_summe=False),
          _('Eingang verbucht')),
         ('gelb', _('Offen, nicht fällig'), _ampel_zahl(_offen_basis.exclude(ueberfaellig_q)),
          _('Fälligkeit liegt vor uns')),

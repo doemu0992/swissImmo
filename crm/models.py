@@ -166,6 +166,13 @@ class Organisation(models.Model):
     antwort_kennung = models.CharField("Antwort-Kennung", max_length=40, unique=True, editable=False, blank=True)
     # Die Kennung vor der letzten Erneuerung bleibt bis `antwort_kennung_alt_bis` gueltig (30 Tage), damit
     # Antworten auf bereits versandte Mails nicht verloren gehen.
+    # Eigene Kennung der Rechnungsadresse (`<rechnungs_kennung>@<ANTWORT_DOMAIN>`). Bis 15.11.2026 war sie die
+    # Antwort-Kennung mit dem Zusatz `-rechnungen` — und damit für jeden Empfänger einer Ticket-Mail ableitbar.
+    rechnungs_kennung = models.CharField("Rechnungs-Kennung", max_length=40, unique=True, null=True, blank=True,
+                                         editable=False)
+    # Die Rechnungs-Kennung vor der letzten Erneuerung; gültig bis `antwort_kennung_alt_bis` (dasselbe Fenster).
+    rechnungs_kennung_alt = models.CharField("Vorherige Rechnungs-Kennung", max_length=40, blank=True, default='',
+                                             editable=False, db_index=True)
     antwort_kennung_alt = models.CharField("Vorherige Antwort-Kennung", max_length=40, blank=True, default='',
                                            editable=False, db_index=True)
     antwort_kennung_alt_bis = models.DateTimeField("Vorherige Kennung gueltig bis", null=True, blank=True,
@@ -194,6 +201,11 @@ class Organisation(models.Model):
         if not self.antwort_kennung:
             from core.services.antwort_eingang import neue_kennung
             self.antwort_kennung = neue_kennung(self.firma)
+        if not self.rechnungs_kennung:
+            from core.services.antwort_eingang import neue_kennung
+            self.rechnungs_kennung = neue_kennung(self.firma)
+            if kwargs.get('update_fields') is not None:
+                kwargs['update_fields'] = [*kwargs['update_fields'], 'rechnungs_kennung']
         super().save(*args, **kwargs)
         if neu:
             # Jede neue Verwaltung startet mit den Standard-Mahnstufen. Danach

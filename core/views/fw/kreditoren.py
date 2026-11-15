@@ -162,7 +162,8 @@ def fw_kreditoren(request, *, formular=None):
     # SUM-Abfrage aus, ohne 'positionen' je Zeile zwei weitere (N+1 → Timeout).
     qs = (KreditorenRechnung.objects.exclude(status='storniert')
           .select_related('liegenschaft', 'konto', 'zahlung_beantragt_von', 'zahlung_freigegeben_von')
-          .prefetch_related('zahlungen', 'positionen__konto', 'positionen__einheit'))
+          # 'weiterverrechnungen': `offen_weiterzuverrechnen` summierte sonst je Zeile zweimal einzeln.
+          .prefetch_related('zahlungen', 'positionen__konto', 'positionen__einheit', 'weiterverrechnungen'))
     if aktive_lg:
         qs = qs.filter(liegenschaft=aktive_lg)
 
