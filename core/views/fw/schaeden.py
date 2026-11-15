@@ -129,7 +129,11 @@ def fw_schaeden(request):
         sicht = ''
         rows = alle
 
-    for zeile in rows:
+    # Sicht und Kopf rechnen über alles, gezeigt wird eine Seite.
+    from ._liste import blaettern
+    gefiltert = len(rows) != len(alle)
+    seite, query_ohne_seite = blaettern(request, rows)
+    for zeile in seite:
         t = zeile['t']
         zeile['s_label'], zeile['s_cls'] = TICKET_PILL.get(
             t.status, (t.status, 'fw-flaeche2 fw-mutet'))
@@ -146,9 +150,10 @@ def fw_schaeden(request):
 
     from django.contrib import messages
     return render(request, 'fw/schaeden.html', {
-        **basis, 'nav': 'schadensfaelle', 'rows': rows, 'kopf': kopf,
+        **basis, 'nav': 'schadensfaelle', 'rows': seite, 'seite': seite, 'query_ohne_seite': query_ohne_seite,
+        'kopf': kopf,
         'sicht': sicht, 'status_filter': status_filter, 'q': q, 'nur_meine': nur_meine,
-        'gefiltert': len(rows) != len(alle),
+        'gefiltert': gefiltert,
         'sicht_chips': [('offen', gettext('Offen (%(n)s)') % {'n': kopf["offen"]}),
                         ('befund', gettext('Mit Befund (%(n)s)') % {'n': kopf["mit_befund"]}),
                         ('wartet', gettext('Wartet auf Dritte (%(n)s)') % {'n': kopf["wartet"]}),

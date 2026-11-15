@@ -512,6 +512,9 @@ def fw_kontenplan(request):
     })
 
 
+KONTOBLATT_ZEILEN_JE_SEITE = 100
+
+
 @rolle_erforderlich(*JOURNAL_LESE_ROLLEN)
 def fw_kontoblatt(request, nummer):
     """Kontoauszug/Kontoblatt eines Kontos: alle Buchungen mit laufendem Saldo.
@@ -552,8 +555,13 @@ def fw_kontoblatt(request, nummer):
         zeilen.append({'b': b, 'soll': b.betrag if ist_soll else None,
                        'haben': b.betrag if not ist_soll else None,
                        'gegenkonto': gegen, 'saldo': saldo})
+    # Der Saldo läuft über alle Zeilen, gezeigt wird eine Seite (die Vorlage rendert jede Zeile zweimal:
+    # Telefon und Tabelle — 1,8 MB bei 3000 Buchungen).
+    from ._liste import blaettern
+    seite, query_ohne_seite = blaettern(request, zeilen, pro_seite=KONTOBLATT_ZEILEN_JE_SEITE)
     return render(request, 'fw/kontoblatt.html', {
-        **basis, 'nav': 'buchhaltung', 'konto': konto, 'zeilen': zeilen,
+        **basis, 'nav': 'buchhaltung', 'konto': konto, 'zeilen': seite, 'seite': seite,
+        'query_ohne_seite': query_ohne_seite,
         'eroeffnung': eroeffnung, 'endsaldo': saldo, 'ist_bilanz': ist_bilanz,
         'jahr': jahr or 'alle', 'jahre': list(range(heute.year, heute.year - 5, -1)),
     })

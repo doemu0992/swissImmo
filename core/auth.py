@@ -24,6 +24,7 @@ Verwendung klassische Views:
     @rolle_erforderlich(ROLLE_VERWALTUNG)
     def send_mahnung_email_view(request, ...):
 """
+import functools
 import logging
 from django.contrib.auth.decorators import user_passes_test
 from ninja.security import SessionAuth
@@ -286,6 +287,20 @@ def rolle_erforderlich(*rollen):
     return deko
 
 
+@functools.lru_cache(maxsize=4096)
+def _rollen_des_pfads(pfad):
+    """Die Rollen, die die View hinter `pfad` verlangt — `None`, wenn keine oder unbekannt.
+
+    Gemerkt je Pfad: Der Filter `darf` steht in Listen in jeder Zeile, und `resolve()` geht jedes Mal durch
+    alle Routen. Die Zuordnung Pfad → View ändert sich im laufenden Prozess nicht."""
+    from django.urls import resolve
+    try:
+        rollen = getattr(resolve(pfad).func, 'benoetigte_rollen', None)
+    except Exception:
+        return None
+    return tuple(rollen) if rollen is not None else None
+
+
 def darf_oeffnen(user, pfad, eigene_rollen=None):
     """Darf dieser Benutzer die View hinter `pfad` aufrufen?
 
@@ -299,11 +314,7 @@ def darf_oeffnen(user, pfad, eigene_rollen=None):
     Navigation prüft jeden Reiter und jeden Palette-Eintrag —, liest die Rollen
     EINMAL statt je Pfad eine Abfrage (UI-Audit 26.10.2026: sonst ~60 Abfragen
     mehr auf jeder Seite)."""
-    from django.urls import resolve
-    try:
-        rollen = getattr(resolve(pfad.split('?')[0]).func, 'benoetigte_rollen', None)
-    except Exception:
-        return True
+    rollen = _rollen_des_pfads(pfad.split('?')[0])
     if rollen is None:
         return True
     if eigene_rollen is None:
