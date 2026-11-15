@@ -39,6 +39,24 @@ class AusLogTests(SimpleTestCase):
         self.assertIn('ValueError: kaputt', e[0]['detail'])
         self.assertNotIn('gehört nicht dazu', e[0]['detail'])
 
+    def test_abgebrochene_verbindung_ist_eine_warnung_mit_erklaerung(self):
+        """«OSError: write error» schreibt der Webserver, wenn der Browser die Verbindung schliesst: kein Fehler der Anwendung."""
+        e = protokoll.aus_log([_zeile('ERROR', 'root', 'OSError: write error'), _zeile('ERROR', 'root', 'OSError: write error'),
+                               _zeile('ERROR', 'root', 'OSError: etwas anderes')])
+        nach_titel = {x['titel']: x for x in e}
+        self.assertEqual((nach_titel['OSError: write error']['stufe'], nach_titel['OSError: write error']['anzahl']), ('warnung', 2))
+        self.assertIn('Verbindung geschlossen', nach_titel['OSError: write error']['detail'])
+        self.assertEqual(nach_titel['OSError: etwas anderes']['stufe'], 'fehler')            # Gegenprobe
+
+    def test_csp_meldungen_derselben_ursache_sind_eine_zeile(self):
+        def z(seite, zusatz=''):
+            return _zeile('WARNING', 'csp', f'CSP-Verstoss: style-src-attr | blockiert=inline | Seite={seite} | Zeile=1{zusatz}')
+        probe = ' | Quelle= | Probe=text-overflow:inherit @ select'
+        e = protokoll._csp([z('https://x.ch/neu/', probe), z('https://x.ch/neu/', probe), z('https://x.ch/neu/laeufe/', probe),
+                            z('https://x.ch/neu/', ' | Quelle= | Probe=color:red @ div')])
+        self.assertEqual(sorted((x['detail'], x['anzahl'], x['ort']) for x in e), [
+            ('color:red @ div', 1, 'https://x.ch/neu/'), ('text-overflow:inherit @ select', 3, '2 Seiten')])
+
     def test_csp_zeilen_stehen_nicht_unter_anwendung(self):
         z = _zeile('WARNING', 'csp', 'CSP-Verstoss: style-src-attr | blockiert=inline | Seite=https://x.ch/neu/ | Zeile=1')
         self.assertEqual(protokoll.aus_log([z]), [])
@@ -92,6 +110,29 @@ class SeiteTests(TestCase):
         self.assertContains(nur_sicherheit, 'Anmeldung')
         self.assertNotContains(nur_sicherheit, 'Fehler eins')
         self.assertContains(self.c.get(self.url, {'quelle': 'gibtsnicht'}), 'Fehler eins')      # unbekannter Filter = keiner
+
+    def test_export_folgt_dem_filter_und_wird_vermerkt(self):
+        self._schreiben(_zeile('ERROR', 'a', '=SUMME(A1) Fehler eins'), _zeile('WARNING', 'b', 'Warnung zwei'))
+        self.assertContains(self.c.get(self.url, {'stufe': 'fehler'}), '?export=csv&amp;stufe=fehler')
+        r = self.c.get(self.url, {'export': 'csv', 'stufe': 'fehler'})
+        self.assertEqual(r['Content-Type'], 'text/csv; charset=utf-8')
+        self.assertIn('attachment; filename="protokoll-', r['Content-Disposition'])
+        text = r.content.decode('utf-8-sig')
+        self.assertTrue(text.startswith('Zuletzt;Stufe;Quelle;Meldung;Ort;Detail;Anzahl'))
+        self.assertIn('Fehler eins', text)
+        self.assertNotIn('Warnung zwei', text)                                   # der Filter gilt auch für die Datei
+        self.assertNotIn(';=SUMME', text)                                        # keine Formel in der Zelle
+        e = SicherheitsEreignis.objects.get(aktion='Betreiber-Protokoll exportiert')
+        self.assertIn('1 Einträge', e.details)
+        self.assertIn('Stufe: fehler', e.details)
+
+    def test_export_nur_fuer_den_betreiber_und_ohne_gesehen(self):
+        self._schreiben(_zeile('ERROR', 'a', 'Fehler eins'))
+        normal = Client()
+        normal.force_login(get_user_model().objects.create_user('nm3', 'nm3@example.ch', 'x' * 12))
+        self.assertEqual(normal.get(self.url, {'export': 'csv'}).status_code, 403)
+        self.assertEqual(self.c.get(self.url, {'export': 'csv'}).status_code, 200)
+        self.assertEqual(protokoll.fehlerzahl(self.betreiber), 1)                # ein Export ist kein Ansehen
 
     def test_ohne_eintraege_ein_ruhiger_hinweis(self):
         r = self.c.get(self.url, {'stufe': 'fehler'})

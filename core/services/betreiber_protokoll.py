@@ -21,6 +21,8 @@ WAS «NEU» IST
     Ein Fehler zählt, bis der Betreiber die Seite geöffnet hat (`als_gesehen_merken`, je Benutzer im Cache). Abrufausfälle
     sind ein Zustand, kein Ereignis: Sie zählen, solange sie bestehen.
 
+Die gezeigte Auswahl lässt sich als CSV herunterladen (`als_csv`); der Export wird als Sicherheitsereignis vermerkt.
+
 Es wird nichts zusätzlich gespeichert ausser dem Zeitpunkt «zuletzt gesehen». Die Seite sieht nur der Betreiber; in
 Logzeilen können Namen aus allen Verwaltungen stehen.
 """
@@ -48,6 +50,14 @@ STUFEN = ('fehler', 'warnung', 'info')
 _KOPF = re.compile(r'^(?P<zeit>\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)[,.]?\d* (?P<stufe>[A-Z]+) (?P<logger>\S+): (?P<text>.*)$')
 _STUFE = {'ERROR': 'fehler', 'CRITICAL': 'fehler', 'WARNING': 'warnung'}
 _ZAHL = re.compile(r'\d+')
+
+#: Bekannte Meldungen, die keine Fehler der Anwendung sind: (Muster im Text, Stufe, Erklärung). Ohne diese Liste stünde
+#: die rote Zahl dauernd an und sagte nichts mehr (15.11.2026: «OSError: write error» 203-mal in zwei Wochen).
+BEKANNT = (
+    (re.compile(r'^OSError: write error'), 'warnung',
+     ('Meldung des Webservers: Der Browser hat die Verbindung geschlossen, bevor die Antwort fertig war (Seite verlassen, '
+      'Abruf abgebrochen). In der Regel harmlos; auffällig wäre nur eine Häufung zusammen mit Klagen über Ladefehler.')),
+)
 
 
 def _zeit(text):
@@ -77,12 +87,17 @@ def aus_log(zeilen):
         if stufe is None or m['logger'] == 'csp':
             continue
         text = m['text'].strip()[:400]
+        erklaerung = ''
+        for muster, bekannt_stufe, bekannt_text in BEKANNT:
+            if muster.search(text):
+                stufe, erklaerung = bekannt_stufe, bekannt_text
+                break
         schluessel = (stufe, m['logger'], _ZAHL.sub('#', text)[:200])
         zeit = _zeit(m['zeit'])
         g = gruppen.get(schluessel)
         if g is None:
             gruppen[schluessel] = g = {'quelle': 'anwendung', 'stufe': stufe, 'titel': text, 'ort': m['logger'],
-                                       'anzahl': 0, 'zeit': zeit, '_folge': []}
+                                       'anzahl': 0, 'zeit': zeit, '_folge': [], '_erklaerung': erklaerung}
         g['anzahl'] += 1
         g['titel'], g['_folge'] = text, []
         if zeit is not None:
@@ -90,7 +105,7 @@ def aus_log(zeilen):
         aktuell = g
     for g in gruppen.values():
         folge = g.pop('_folge')
-        g['detail'] = '\n'.join(folge[-6:])[:1200]
+        g['detail'] = g.pop('_erklaerung') or '\n'.join(folge[-6:])[:1200]
     return list(gruppen.values())
 
 
@@ -109,12 +124,25 @@ def _anwendung(zeilen):
 
 
 def _csp(zeilen):
-    aus = []
+    """CSP-Meldungen, je Regel und Ursache EINE Zeile: Dieselbe Ursache meldet sich auf jeder Seite, und fünfzig Zeilen
+    «style-src-attr» verdrängten sonst alles andere. Die Seiten einzeln zeigt die CSP-Seite."""
+    gruppen = OrderedDict()
     for e in csp_meldungen.lesen(zeilen):
-        detail = ' · '.join(t for t in (e.get('quelle'), e.get('probe')) if t)
-        aus.append({'quelle': 'csp', 'stufe': 'warnung', 'titel': f"{e['regel']} ({e['blockiert']})", 'ort': e['seite'],
-                    'detail': detail, 'anzahl': e['anzahl'], 'zeit': _zeit(e['zuletzt'])})
-    return aus
+        ursache = ' · '.join(t for t in (e.get('quelle'), e.get('probe')) if t)
+        if e.get('quelle', '').startswith(e['seite']):             # Quelle ist die Seite selbst (mit Zeile): keine Ursache
+            ursache = e.get('probe') or ''
+        zeit = _zeit(e['zuletzt'])
+        g = gruppen.setdefault((e['regel'], e['blockiert'], ursache), {
+            'quelle': 'csp', 'stufe': 'warnung', 'titel': f"{e['regel']} ({e['blockiert']})", 'detail': ursache,
+            'anzahl': 0, 'zeit': zeit, '_seiten': []})
+        g['anzahl'] += e['anzahl']
+        g['_seiten'].append(e['seite'])
+        if zeit is not None and (g['zeit'] is None or zeit > g['zeit']):
+            g['zeit'] = zeit
+    for g in gruppen.values():
+        seiten = sorted(set(g.pop('_seiten')))
+        g['ort'] = seiten[0] if len(seiten) == 1 else f'{len(seiten)} Seiten'
+    return list(gruppen.values())
 
 
 def _abrufe():
@@ -161,6 +189,22 @@ def eintraege(jetzt=None):
     alle = [e for e in alle if e['zeit'] is None or e['zeit'] >= seit or e.get('zustand')]
     alle.sort(key=lambda e: (e['zeit'] is None, e['zeit'] or jetzt), reverse=True)
     return alle
+
+
+def als_csv(liste, quellen_namen):
+    """Die Einträge als CSV für Excel: Strichpunkt, UTF-8 mit BOM, Zellen gegen Formelinjektion geschützt."""
+    import csv
+    import io
+
+    from core.services.datenexport import _csv_zelle
+    puffer = io.StringIO()
+    w = csv.writer(puffer, delimiter=';', lineterminator='\r\n')
+    w.writerow(['Zuletzt', 'Stufe', 'Quelle', 'Meldung', 'Ort', 'Detail', 'Anzahl'])
+    for e in liste:
+        zeit = timezone.localtime(e['zeit']).strftime('%d.%m.%Y %H:%M') if e['zeit'] else ''
+        w.writerow([_csv_zelle(x) for x in (zeit, e['stufe'], quellen_namen.get(e['quelle'], e['quelle']), e['titel'],
+                                            e.get('ort', ''), e.get('detail', ''), e['anzahl'])])
+    return '\ufeff' + puffer.getvalue()
 
 
 # ── «zuletzt gesehen» und die Zahl in der Leiste ────────────────────────────────────────────────────────────────
