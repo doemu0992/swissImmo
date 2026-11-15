@@ -118,14 +118,11 @@ def csp_bericht(request):
         return HttpResponse(status=400)
     if len(koerper) > 8192:
         return HttpResponse(status=413)
-    absender = request.META.get('REMOTE_ADDR', '?')
-    schluessel = f'csp-bericht:{absender}'
-    try:
-        n = cache.incr(schluessel)
-    except ValueError:
-        cache.set(schluessel, 1, 60)
-        n = 1
-    if n > 60:
+    # Absender wie bei allen Bremsen (rechter Eintrag von X-Forwarded-For): `REMOTE_ADDR` ist hinter dem Proxy dessen
+    # Adresse, alle Besucher teilten sich dann einen Topf.
+    from core.utils.throttle import client_ip, rate_limit
+    schluessel = f'csp-bericht:{client_ip(request)}'
+    if not rate_limit(schluessel, 60, 60):          # festes Fenster von 60 s (nicht `cache.incr`, siehe throttle.py)
         return HttpResponse(status=429)
     try:
         roh = json.loads(koerper.decode('utf-8') or '{}')

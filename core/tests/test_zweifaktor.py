@@ -214,15 +214,14 @@ class DurchprobierenTests(ZweiFaktorBasis):
         self.assertEqual(antwort.status_code, 302)
 
     def test_ein_richtiger_code_setzt_den_zaehler_zurueck(self):
-        from django.core.cache import cache
-
+        from core.utils.throttle import stand
         from core.views.zweifaktor import _zf_schluessel
         faktor = self.faktor_aktivieren()
         self._runde_mit_falschen_codes(4)
-        self.assertEqual(cache.get(_zf_schluessel(self.benutzer.pk)), 4)
+        self.assertEqual(stand(_zf_schluessel(self.benutzer.pk)), 4)
         self.passwort_schritt()
         self.client.post(reverse('zweifaktor_bestaetigen'), {'code': totp.code(faktor.geheimnis)})
-        self.assertIsNone(cache.get(_zf_schluessel(self.benutzer.pk)))
+        self.assertEqual(stand(_zf_schluessel(self.benutzer.pk)), 0)
 
     def test_die_sperre_trifft_das_konto_nicht_andere(self):
         from django.utils import timezone
@@ -240,11 +239,10 @@ class DurchprobierenTests(ZweiFaktorBasis):
         self.assertIn('_auth_user_id', c.session)
 
     def test_falsche_codes_zaehlen_auch_auf_die_adresse(self):
-        from django.core.cache import cache
+        from core.utils.throttle import stand
         self.faktor_aktivieren()
         self._runde_mit_falschen_codes(3)
-        zaehler = [cache.get(k) for k in ('login:ip:127.0.0.1',)]
-        self.assertEqual(zaehler, [3])
+        self.assertEqual(stand('login:ip:127.0.0.1'), 3)
 
     def test_die_sperre_steht_als_fehler_im_log_und_im_sicherheitsprotokoll(self):
         self.faktor_aktivieren()
