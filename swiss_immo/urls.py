@@ -43,7 +43,8 @@ api.add_router("/v1", finanz_router)
 # VIEWS IMPORTE (Klassisches Django / Legacy)
 # ========================================================
 # 1. Landing Page & Public Tickets
-from core.views.ticket_public import public_ticket_view, generate_hallway_poster, index_view, public_schaden_melden_view
+from core.views.ticket_public import (public_ticket_view, public_ticket_token_view, aushang_token_erneuern,
+                                      generate_hallway_poster, index_view, public_schaden_melden_view)
 from django.http import JsonResponse
 
 
@@ -232,6 +233,9 @@ urlpatterns = [
 
     # --- QR CODE SYSTEM (Aushang) ---
     path('report/<int:liegenschaft_id>/', public_ticket_view, name='public_report'),
+    path('aushang/<str:token>/', public_ticket_token_view, name='public_report_token'),
+    path('neu/liegenschaften/<int:liegenschaft_id>/aushang-erneuern/', aushang_token_erneuern,
+         name='aushang_token_erneuern'),
     path('liegenschaft/<int:liegenschaft_id>/poster/', generate_hallway_poster, name='hallway_poster'),
 
     # --- ÖFFENTLICHES SCHADENSFORMULAR (NEU) ---

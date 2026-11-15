@@ -40846,3 +40846,15 @@ msgstr "Link del calendario rimosso. I calendari abbonati non ricevono più null
 
 msgid "Neuer Kalender-Link erzeugt. Ein früherer Link gilt nicht mehr."
 msgstr "Nuovo link del calendario generato. Un link precedente non è più valido."
+
+msgid "Wenn wir Ihre Angaben einer Liegenschaft zuordnen konnten, erhalten Sie in den nächsten Minuten eine Bestätigung per E-Mail. Ohne Bestätigung wenden Sie sich bitte direkt an Ihre Verwaltung."
+msgstr "Se siamo riusciti ad attribuire i vostri dati a un immobile, riceverete una conferma via e-mail nei prossimi minuti. Senza conferma, rivolgetevi direttamente alla vostra amministrazione."
+
+msgid "Adresse des Aushangs erneuern? Der bisherige QR-Code funktioniert danach nicht mehr; der Aushang muss neu gedruckt werden."
+msgstr "Rinnovare l'indirizzo dell'avviso? Il codice QR attuale non funzionerà più; l'avviso deve essere ristampato."
+
+msgid "Aushang-Adresse erneuern"
+msgstr "Rinnova l'indirizzo dell'avviso"
+
+msgid "Die Adresse des Aushangs ist erneuert. Bitte den Hausaushang neu drucken und aufhängen — der bisherige QR-Code funktioniert nicht mehr."
+msgstr "L'indirizzo dell'avviso è stato rinnovato. Ristampare e affiggere l'avviso — il codice QR precedente non funziona più."

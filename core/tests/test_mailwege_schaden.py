@@ -288,9 +288,11 @@ class OeffentlicheMeldungTests(_Basis):
             return Client().post(f'/report/{self.lg.id}/', daten)
 
     def _web(self, **extra):
+        # Das Webformular ordnet über die hinterlegte E-Mail-Adresse zu (eine Liegenschaftsnummer gilt nicht).
+        self.m.email = 'eva@example.ch'
+        self.m.save()
         daten = {'kategorie': 'schaden', 'raum': 'Küche', 'objekt': 'Herd', 'beschreibung': 'Defekt',
-                 'vorname': 'Eva', 'nachname': 'Test', 'email': 'eva@example.ch', 'telefon': '079 1',
-                 'liegenschaft_id': self.lg.id, **extra}
+                 'vorname': 'Eva', 'nachname': 'Test', 'email': 'eva@example.ch', 'telefon': '079 1', **extra}
         with sofort():
             return Client().post('/schaden/melden/', daten)
 
@@ -337,9 +339,10 @@ class OeffentlicheMeldungTests(_Basis):
 
 
 class FremderMieterImWebformularTests(TestCase):
-    """Das Webformular fand den Mieter über ALLE Verwaltungen (`alle_organisationen`). Wählt der
-    Melder die Liegenschaft von Verwaltung B und gibt die E-Mail eines Mieters von A an, hing
-    der Mieter von A am Ticket von B (Name und Adresse in deren Mails und Ansicht)."""
+    """Das Webformular fand den Mieter über ALLE Verwaltungen (`alle_organisationen`). Wählte der
+    Melder die Liegenschaft von Verwaltung B und gab die E-Mail eines Mieters von A an, hing
+    der Mieter von A am Ticket von B. Seit 15.11.2026 gilt eine Liegenschaftsnummer aus dem Formular
+    gar nicht mehr, und die Meldung wird nie mit der Person verknüpft."""
 
     @classmethod
     def setUpTestData(cls):
@@ -356,7 +359,10 @@ class FremderMieterImWebformularTests(TestCase):
                 'kategorie': 'schaden', 'raum': 'Bad', 'objekt': 'Hahn', 'beschreibung': 'x',
                 'vorname': 'V', 'nachname': 'N', 'email': self.a.mieter.email, 'telefon': '1',
                 'liegenschaft_id': self.b.liegenschaft.id})
-        t = SchadenMeldung.alle_organisationen.get(liegenschaft=self.b.liegenschaft, titel__contains='Hahn')
+        self.assertFalse(SchadenMeldung.alle_organisationen.filter(
+            liegenschaft=self.b.liegenschaft, titel__contains='Hahn').exists())
+        t = SchadenMeldung.alle_organisationen.get(titel__contains='Hahn')
+        self.assertEqual(t.liegenschaft_id, self.a.liegenschaft.pk)      # dort, wo die Adresse hinterlegt ist
         self.assertIsNone(t.gemeldet_von_id)
 
 
