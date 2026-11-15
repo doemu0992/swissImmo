@@ -57,6 +57,9 @@ BEKANNT = (
     (re.compile(r'^OSError: write error'), 'warnung',
      ('Meldung des Webservers: Der Browser hat die Verbindung geschlossen, bevor die Antwort fertig war (Seite verlassen, '
       'Abruf abgebrochen). In der Regel harmlos; auffällig wäre nur eine Häufung zusammen mit Klagen über Ladefehler.')),
+    (re.compile(r'^WARTUNGSMODUS: \d+ Migration\(en\) nicht angewendet'), 'warnung',
+     ('Entsteht bei jedem Einspielen zwischen «Code holen» und «migrate»: In dieser Zeit zeigt die Anwendung die '
+      'Wartungsseite. Erledigt, sobald die Migration gelaufen ist; ein Problem nur, wenn die Meldung sich weiter wiederholt.')),
 )
 
 
