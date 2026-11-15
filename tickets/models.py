@@ -219,6 +219,9 @@ class HandwerkerAuftrag(OrganisationAusKette):
                                   editable=False, db_index=True)
     token_gueltig_bis = models.DateTimeField("Link gültig bis", null=True, blank=True, editable=False)
     token_widerrufen_am = models.DateTimeField("Link widerrufen am", null=True, blank=True, editable=False)
+    #: Stand der Direktkanal-Zugänge (Link ohne Anmeldung und Marke im Mail-Betreff, beide Seiten). Jeder Widerruf
+    #: zählt eins hoch: Was mit einem älteren Stand signiert ist, öffnet nichts mehr (`tickets/direktkanal.py`).
+    direkt_version = models.PositiveIntegerField("Direktkanal-Stand", default=0, editable=False)
 
     class Meta:
         verbose_name = "Handwerker-Auftrag"

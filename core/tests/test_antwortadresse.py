@@ -383,7 +383,8 @@ class WebhookDirektkanalTests(TestCase):
 
     def test_mieter_antwort_landet_im_chat_und_der_handwerker_bekommt_eine_mail(self):
         t, a = _auftrag_einfach()
-        nutzlast = _brevo(_adresse(t.organisation), f'Re: Termin (Ticket #{t.pk}) [A{a.pk}]',
+        from tickets import direktkanal
+        nutzlast = _brevo(_adresse(t.organisation), f'Re: Termin (Ticket #{t.pk}) ' + direktkanal.marke(a, 'mieter'),
                           text='Gern am Donnerstag.', mid='chat-1')
         r = _senden(nutzlast)
         self.assertEqual(r.json()['status'], 'ok, chat')
@@ -393,14 +394,18 @@ class WebhookDirektkanalTests(TestCase):
 
     def test_handwerker_antwort_geht_an_den_mieter(self):
         t, a = _auftrag_einfach()
-        _senden(_brevo(_adresse(t.organisation), f'Re: Ticket #{t.pk} [A{a.pk}]', von=HANDWERKER, text='Ich komme.'))
+        from tickets import direktkanal
+        _senden(_brevo(_adresse(t.organisation), f'Re: Ticket #{t.pk} ' + direktkanal.marke(a, 'handwerker'),
+                       von=HANDWERKER, text='Ich komme.'))
         self.assertEqual([m.to for m in mail.outbox], [[MIETER]])
 
     def test_autoreply_wird_nicht_weitergeleitet(self):
+        from tickets import direktkanal
         t, a = _auftrag_einfach()
         for kopf in ({'Auto-Submitted': 'auto-replied'}, {'X-Immoswiss-Bridge': '1'}, ['Precedence: bulk'],
                      'Auto-Submitted: auto-generated\nMessage-ID: <x@y>'):
-            _senden(_brevo(_adresse(t.organisation), f'Re: Ticket #{t.pk} [A{a.pk}]', text='Urlaub.', kopf=kopf))
+            _senden(_brevo(_adresse(t.organisation), f'Re: Ticket #{t.pk} ' + direktkanal.marke(a, 'mieter'), text='Urlaub.',
+                           kopf=kopf))
         self.assertEqual(a.direktnachrichten.count(), 0)
         self.assertEqual(mail.outbox, [])
 
