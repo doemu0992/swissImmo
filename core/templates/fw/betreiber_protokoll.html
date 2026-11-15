@@ -12,6 +12,9 @@
         <h1>{% trans "Protokoll" %}</h1>
         <p>{% blocktrans %}Alles an einem Ort: Fehler der Anwendung, gescheiterte Abrufe und Aufträge, RLS-Befunde, CSP-Meldungen, fällige Pflege und Sicherheitsereignisse der letzten {{ fenster_tage }} Tage. Die rote Zahl in der Leiste zählt Fehler, die du noch nicht gesehen hast.{% endblocktrans %}</p>
     </div>
+    <div class="fw-phead-knoepfe">
+        <a href="{% url 'fw_betreiber_protokoll' %}?export=csv{% if quelle %}&amp;quelle={{ quelle }}{% endif %}{% if stufe %}&amp;stufe={{ stufe }}{% endif %}" class="fw-btn" data-testid="protokoll-export">{% zeichen 'herunterladen' %} {% trans "CSV-Export" %}</a>
+    </div>
 </div>
 
 {% if neue_fehler %}

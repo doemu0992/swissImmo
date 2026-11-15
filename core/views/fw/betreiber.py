@@ -51,6 +51,18 @@ def fw_betreiber_protokoll(request):
     quelle = request.GET.get('quelle') if request.GET.get('quelle') in namen else ''
     stufe = request.GET.get('stufe') if request.GET.get('stufe') in stufen else ''
     gezeigt = [e for e in alle if (not quelle or e['quelle'] == quelle) and (not stufe or e['stufe'] == stufe)]
+    if request.GET.get('export') == 'csv':
+        # Die gezeigte Auswahl als Datei. Vermerkt, weil das Protokoll Zeilen aus allen Verwaltungen enthält.
+        from django.http import HttpResponse
+
+        from core.models import SicherheitsEreignis
+        from core.auth import client_ip
+        SicherheitsEreignis.objects.create(
+            aktion='Betreiber-Protokoll exportiert', objekt=str(request.user), ip_adresse=client_ip(request) or None,
+            details=f'{len(gezeigt)} Einträge; Quelle: {quelle or "alle"}; Stufe: {stufe or "alle"}')
+        datei = HttpResponse(protokoll.als_csv(gezeigt, namen), content_type='text/csv; charset=utf-8')
+        datei['Content-Disposition'] = f'attachment; filename="protokoll-{datum_heute():%Y-%m-%d}.csv"'
+        return datei
     antwort = render(request, 'fw/betreiber_protokoll.html', {
         'aktiv': 'protokoll', 'eintraege': gezeigt, 'quelle': quelle, 'stufe': stufe,
         'quellen': [{'key': k, 'name': n, 'anzahl': sum(1 for e in alle if e['quelle'] == k),

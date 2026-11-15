@@ -21,6 +21,8 @@ WAS «NEU» IST
     Ein Fehler zählt, bis der Betreiber die Seite geöffnet hat (`als_gesehen_merken`, je Benutzer im Cache). Abrufausfälle
     sind ein Zustand, kein Ereignis: Sie zählen, solange sie bestehen.
 
+Die gezeigte Auswahl lässt sich als CSV herunterladen (`als_csv`); der Export wird als Sicherheitsereignis vermerkt.
+
 Es wird nichts zusätzlich gespeichert ausser dem Zeitpunkt «zuletzt gesehen». Die Seite sieht nur der Betreiber; in
 Logzeilen können Namen aus allen Verwaltungen stehen.
 """
@@ -161,6 +163,22 @@ def eintraege(jetzt=None):
     alle = [e for e in alle if e['zeit'] is None or e['zeit'] >= seit or e.get('zustand')]
     alle.sort(key=lambda e: (e['zeit'] is None, e['zeit'] or jetzt), reverse=True)
     return alle
+
+
+def als_csv(liste, quellen_namen):
+    """Die Einträge als CSV für Excel: Strichpunkt, UTF-8 mit BOM, Zellen gegen Formelinjektion geschützt."""
+    import csv
+    import io
+
+    from core.services.datenexport import _csv_zelle
+    puffer = io.StringIO()
+    w = csv.writer(puffer, delimiter=';', lineterminator='\r\n')
+    w.writerow(['Zuletzt', 'Stufe', 'Quelle', 'Meldung', 'Ort', 'Detail', 'Anzahl'])
+    for e in liste:
+        zeit = timezone.localtime(e['zeit']).strftime('%d.%m.%Y %H:%M') if e['zeit'] else ''
+        w.writerow([_csv_zelle(x) for x in (zeit, e['stufe'], quellen_namen.get(e['quelle'], e['quelle']), e['titel'],
+                                            e.get('ort', ''), e.get('detail', ''), e['anzahl'])])
+    return '\ufeff' + puffer.getvalue()
 
 
 # ── «zuletzt gesehen» und die Zahl in der Leiste ────────────────────────────────────────────────────────────────

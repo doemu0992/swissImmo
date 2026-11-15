@@ -93,6 +93,29 @@ class SeiteTests(TestCase):
         self.assertNotContains(nur_sicherheit, 'Fehler eins')
         self.assertContains(self.c.get(self.url, {'quelle': 'gibtsnicht'}), 'Fehler eins')      # unbekannter Filter = keiner
 
+    def test_export_folgt_dem_filter_und_wird_vermerkt(self):
+        self._schreiben(_zeile('ERROR', 'a', '=SUMME(A1) Fehler eins'), _zeile('WARNING', 'b', 'Warnung zwei'))
+        self.assertContains(self.c.get(self.url, {'stufe': 'fehler'}), '?export=csv&amp;stufe=fehler')
+        r = self.c.get(self.url, {'export': 'csv', 'stufe': 'fehler'})
+        self.assertEqual(r['Content-Type'], 'text/csv; charset=utf-8')
+        self.assertIn('attachment; filename="protokoll-', r['Content-Disposition'])
+        text = r.content.decode('utf-8-sig')
+        self.assertTrue(text.startswith('Zuletzt;Stufe;Quelle;Meldung;Ort;Detail;Anzahl'))
+        self.assertIn('Fehler eins', text)
+        self.assertNotIn('Warnung zwei', text)                                   # der Filter gilt auch für die Datei
+        self.assertNotIn(';=SUMME', text)                                        # keine Formel in der Zelle
+        e = SicherheitsEreignis.objects.get(aktion='Betreiber-Protokoll exportiert')
+        self.assertIn('1 Einträge', e.details)
+        self.assertIn('Stufe: fehler', e.details)
+
+    def test_export_nur_fuer_den_betreiber_und_ohne_gesehen(self):
+        self._schreiben(_zeile('ERROR', 'a', 'Fehler eins'))
+        normal = Client()
+        normal.force_login(get_user_model().objects.create_user('nm3', 'nm3@example.ch', 'x' * 12))
+        self.assertEqual(normal.get(self.url, {'export': 'csv'}).status_code, 403)
+        self.assertEqual(self.c.get(self.url, {'export': 'csv'}).status_code, 200)
+        self.assertEqual(protokoll.fehlerzahl(self.betreiber), 1)                # ein Export ist kein Ansehen
+
     def test_ohne_eintraege_ein_ruhiger_hinweis(self):
         r = self.c.get(self.url, {'stufe': 'fehler'})
         self.assertContains(r, 'data-testid="protokoll-leer"')
