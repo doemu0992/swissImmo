@@ -68,6 +68,17 @@ class Command(BaseCommand):
         for organisation, ausnahme in pendenz_fehler:
             self.stderr.write(f'FEHLER {organisation}: Auto-Pendenzen: {ausnahme}')
 
+        # Alte Logdateien: im Protokoll stehen Namen und Mailadressen (Löschfrist `LOG_AUFBEWAHRUNG_TAGE`).
+        if nur_eine is None:
+            try:
+                from django.conf import settings
+                from core.logschutz import alte_logdateien_loeschen
+                weg = alte_logdateien_loeschen(settings.LOG_AUFBEWAHRUNG_TAGE)
+                if weg:
+                    gemeinsam.append(f"{weg} alte Logdatei(en) gelöscht")
+            except Exception as e:                           # noqa: BLE001 — darf den Lauf nicht anhalten
+                self.stderr.write(f'FEHLER Logdateien: {e}')
+
         # Marktdaten (Referenzzins/LIK) best-effort aktualisieren
         try:
             from core.utils.market_data import update_verwaltung_rates
