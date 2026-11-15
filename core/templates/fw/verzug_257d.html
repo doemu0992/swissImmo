@@ -146,7 +146,7 @@ function fristCheck(){
         }
     }
     var box = document.getElementById('v-warn'), list = document.getElementById('v-warn-list');
-    if (warns.length) { list.innerHTML = warns.map(function(w){ return '<li>'+w+'</li>'; }).join(''); box.classList.remove('hidden'); }
+    if (warns.length) { list.innerHTML = warns.map(function(w){ return '<li>'+fwEsc(w)+'</li>'; }).join(''); box.classList.remove('hidden'); }
     else { box.classList.add('hidden'); }
 }
 fristCheck();
