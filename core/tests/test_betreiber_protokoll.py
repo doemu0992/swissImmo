@@ -39,6 +39,24 @@ class AusLogTests(SimpleTestCase):
         self.assertIn('ValueError: kaputt', e[0]['detail'])
         self.assertNotIn('gehört nicht dazu', e[0]['detail'])
 
+    def test_abgebrochene_verbindung_ist_eine_warnung_mit_erklaerung(self):
+        """«OSError: write error» schreibt der Webserver, wenn der Browser die Verbindung schliesst: kein Fehler der Anwendung."""
+        e = protokoll.aus_log([_zeile('ERROR', 'root', 'OSError: write error'), _zeile('ERROR', 'root', 'OSError: write error'),
+                               _zeile('ERROR', 'root', 'OSError: etwas anderes')])
+        nach_titel = {x['titel']: x for x in e}
+        self.assertEqual((nach_titel['OSError: write error']['stufe'], nach_titel['OSError: write error']['anzahl']), ('warnung', 2))
+        self.assertIn('Verbindung geschlossen', nach_titel['OSError: write error']['detail'])
+        self.assertEqual(nach_titel['OSError: etwas anderes']['stufe'], 'fehler')            # Gegenprobe
+
+    def test_csp_meldungen_derselben_ursache_sind_eine_zeile(self):
+        def z(seite, zusatz=''):
+            return _zeile('WARNING', 'csp', f'CSP-Verstoss: style-src-attr | blockiert=inline | Seite={seite} | Zeile=1{zusatz}')
+        probe = ' | Quelle= | Probe=text-overflow:inherit @ select'
+        e = protokoll._csp([z('https://x.ch/neu/', probe), z('https://x.ch/neu/', probe), z('https://x.ch/neu/laeufe/', probe),
+                            z('https://x.ch/neu/', ' | Quelle= | Probe=color:red @ div')])
+        self.assertEqual(sorted((x['detail'], x['anzahl'], x['ort']) for x in e), [
+            ('color:red @ div', 1, 'https://x.ch/neu/'), ('text-overflow:inherit @ select', 3, '2 Seiten')])
+
     def test_csp_zeilen_stehen_nicht_unter_anwendung(self):
         z = _zeile('WARNING', 'csp', 'CSP-Verstoss: style-src-attr | blockiert=inline | Seite=https://x.ch/neu/ | Zeile=1')
         self.assertEqual(protokoll.aus_log([z]), [])
