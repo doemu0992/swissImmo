@@ -554,4 +554,4 @@ class AbfragenTests(PortalWelt):
         self._zaehle('/portal/liegenschaften/')
         self.assertEqual(self._zaehle('/portal/liegenschaften/'), self.ERWARTET_LISTE)
 
-    ERWARTET_LISTE = 24
+    ERWARTET_LISTE = 19

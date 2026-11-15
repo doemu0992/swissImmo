@@ -672,7 +672,7 @@ class AbfragezahlTests(Basis):
     #: 4 Abfragen des Requests (Sitzung, Benutzer, Mitgliedschaft samt Organisation,
     #: Rollenprüfung) + 1 Rollenlesung im Dienst (`sicht_von`: Er prüft die Rolle
     #: selbst, nicht nur der Dekorator) + 6 Gruppen × 2.
-    GRUNDZAHL = 17
+    GRUNDZAHL = 16
     #: Vertrag samt Objekt + Anpassungen, Staffelstufen, Komponenten und
     #: Objekt-Sollmietzinse (`_nachladen_vertraege`): nur mit Vertragstreffern.
     STAPEL_VERTRAEGE = 5
@@ -1454,7 +1454,7 @@ class RollenTests(Basis):
         c.force_login(self.hauswart)
         c.get('/neu/palette/', {'q': 'Mi'})
         for q in ('Wasserschaden', 'zzzqqq', 'Wasserschaden Bad Heizung'):
-            with self.subTest(q=q), self.assertNumQueries(7):
+            with self.subTest(q=q), self.assertNumQueries(6):
                 c.get('/neu/palette/', {'q': q})
 
     # ---- alle anderen: 403 ---------------------------------------------------

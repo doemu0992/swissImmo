@@ -11,31 +11,9 @@ Ersetzt die Prüfung in der View nicht; blendet nur aus, was dort ohnehin mit
 """
 from django import template
 
-from core.auth import darf_oeffnen, eigene_rollen
+from core.auth import darf_oeffnen, rollen_der_anfrage as _rollen_der_anfrage
 
 register = template.Library()
-
-
-def _rollen_der_anfrage(user):
-    """Die Rollen des Benutzers in der aktiven Organisation, je Anfrage einmal.
-
-    `request.user` lebt eine Anfrage lang. Der Filter `darf` steht in Listen
-    in jeder Zeile (Ratenplan, Betreibung, Mail): ohne Merker ist das eine
-    Mitgliedschafts-Abfrage je Zeile und Knopf — gemessen 24 auf 12 Zeilen der
-    Mahnübersicht (SICH-09). Der Merker hängt am Benutzerobjekt und gilt nur
-    für die gerade aktive Organisation.
-    """
-    from core.tenancy import aktuelle_organisation
-    organisation = aktuelle_organisation()
-    schluessel = getattr(organisation, 'pk', None)
-    gemerkt = getattr(user, '_rollen_je_organisation', None)
-    if gemerkt is None or gemerkt[0] != schluessel:
-        gemerkt = (schluessel, eigene_rollen(user))
-        try:
-            user._rollen_je_organisation = gemerkt
-        except AttributeError:
-            pass
-    return gemerkt[1]
 
 
 @register.filter
