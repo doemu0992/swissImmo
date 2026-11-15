@@ -44,7 +44,35 @@ class AbrufFehler(Exception):
     """
 
 
-def verbinden(postfach):
+#: Ports, die das Formular annimmt (IMAP über TLS und IMAP).
+ERLAUBTE_PORTS = (993, 143)
+
+
+def server_erlaubt(server):
+    """Darf sich die Anwendung mit diesem Server verbinden? Nein bei Adressen im eigenen Netz.
+
+    Server und Port sind frei wählbar; ohne diese Prüfung liess sich über «Verbindung prüfen» das Netz des Hosters
+    abtasten (`127.0.0.1`, private Bereiche). Ein Name, der sich nicht auflösen lässt, gilt hier als erlaubt — die
+    Verbindung scheitert dann von selbst."""
+    import ipaddress
+    import socket
+    server = (server or '').strip().strip('[]')
+    if not server:
+        return False
+    try:
+        adressen = [ipaddress.ip_address(server)]
+    except ValueError:
+        if server.lower() in ('localhost', 'localhost.localdomain'):
+            return False
+        try:
+            adressen = [ipaddress.ip_address(a[4][0].split('%')[0])
+                        for a in socket.getaddrinfo(server, None, proto=socket.IPPROTO_TCP)]
+        except (OSError, ValueError):
+            return True
+    return all(a.is_global for a in adressen)
+
+
+def verbinden(postfach, zeitlimit=None):
     """Angemeldete IMAP-Verbindung für dieses Postfach.
 
     Wirft `AbrufFehler` mit einer Meldung, die im Fehlerprotokoll des
@@ -71,12 +99,19 @@ def verbinden(postfach):
     except (SchluesselFehlt, GeheimtextKaputt) as fehler:
         raise AbrufFehler(str(fehler)) from fehler
 
+    if not server_erlaubt(postfach.server):
+        raise AbrufFehler(f'Der Server {postfach.server} ist nicht zulässig (interne Adresse).')
+
     try:
         verbindung = imaplib.IMAP4_SSL(postfach.server, postfach.port,
-                                       timeout=ZEITLIMIT_SEKUNDEN)
+                                       timeout=zeitlimit or ZEITLIMIT_SEKUNDEN)
     except Exception as fehler:                                # noqa: BLE001
-        raise AbrufFehler(f'Keine Verbindung zu {postfach.server}:{postfach.port} '
-                          f'— {fehler}') from fehler
+        # Der genaue Grund (abgelehnt, Zeitüberschreitung, TLS) steht im Protokoll, nicht an der Oberfläche:
+        # Aus dem Unterschied liess sich ablesen, welche Ports eines Servers offen sind.
+        logger.warning('Postfach %s: keine Verbindung zu %s:%s (%s)', postfach.pk, postfach.server,
+                       postfach.port, fehler)
+        raise AbrufFehler(f'Keine Verbindung zu {postfach.server}:{postfach.port}. '
+                          'Bitte Server, Port und Erreichbarkeit prüfen.') from fehler
 
     try:
         verbindung.login(postfach.benutzer, passwort)

@@ -418,11 +418,14 @@ def kategorie_fuer(aktion):
 
 def client_ip(request):
     """Ermittelt die Client-IP (berücksichtigt Reverse-Proxy X-Forwarded-For)."""
+    # EINE Quelle für Bremse und Protokoll (`core.utils.throttle.client_ip`): der RECHTE Eintrag von
+    # X-Forwarded-For, den der eigene Proxy anhängt. Hier stand der linke — den setzt der Client frei, und damit
+    # trug das Sicherheitsprotokoll eine Adresse nach Wahl des Angreifers.
     try:
-        xff = request.META.get('HTTP_X_FORWARDED_FOR', '')
-        if xff:
-            return xff.split(',')[0].strip()[:45]
-        return (request.META.get('REMOTE_ADDR') or '').strip()[:45] or None
+        from core.utils.throttle import client_ip as _client_ip
+        if not (request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')):
+            return None
+        return _client_ip(request)[:45] or None
     except Exception:
         return None
 

@@ -72,7 +72,10 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['www.immoswiss.app', 'swissimmo.pythonanywhere.com', '127.0.0.1', 'localhost']
 # Weitere Hosts optional per Env (kommagetrennt), z.B. eigene Domain.
 ALLOWED_HOSTS += [h.strip() for h in os.getenv('EXTRA_ALLOWED_HOSTS', '').split(',') if h.strip()]
-CSRF_TRUSTED_ORIGINS = ['https://*.pythonanywhere.com', 'https://www.immoswiss.app']
+# Nur der EIGENE Host: `https://*.pythonanywhere.com` erklärte jede fremde Seite bei diesem Hoster zur vertrauten
+# Herkunft. Der Host kommt aus PORTAL_BASE_URL (dieselbe Angabe wie für Links in Mails).
+CSRF_TRUSTED_ORIGINS = sorted({
+    os.getenv('PORTAL_BASE_URL', 'https://swissimmo.pythonanywhere.com').rstrip('/'), 'https://www.immoswiss.app'})
 CSRF_TRUSTED_ORIGINS += [o.strip() for o in os.getenv('EXTRA_CSRF_ORIGINS', '').split(',') if o.strip()]
 
 # Sagt Django, dass es HTTPS ist, wenn der Proxy (PythonAnywhere) das sagt.
@@ -80,7 +83,9 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Test-Modus erkennen (damit die HTTPS-Umleitung den Test-Client nicht bricht)
 import sys as _sys
-TESTING = ('test' in _sys.argv) or ('pytest' in _sys.argv[0] if _sys.argv else False)
+# Nur der UNTERBEFEHL zählt: `'test' in argv` traf auch `manage.py irgendwas test` oder ein Argument namens «test»
+# und schaltete dann im Betrieb HTTPS-Umleitung, Zwei-Faktor-Pflicht und RLS ab.
+TESTING = (len(_sys.argv) > 1 and _sys.argv[1] == 'test') or ('pytest' in _sys.argv[0] if _sys.argv else False)
 
 # Nur für Testläufe: fester Schlüssel für verschlüsselte Felder (AHV-Nummer),
 # damit Tests ohne .env laufen. In Betrieb kommt er ausschliesslich aus der
@@ -158,7 +163,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # --- Tools ---
-    'ckeditor',
 ]
 
 MIDDLEWARE = [
@@ -628,4 +632,4 @@ ABO_SUPPORT_EMAIL = os.getenv('ABO_SUPPORT_EMAIL', '')
 # ==========================================
 # 11. SYSTEM-CHECKS
 # ==========================================
-SILENCED_SYSTEM_CHECKS = ['ckeditor.W001']
+SILENCED_SYSTEM_CHECKS = []
