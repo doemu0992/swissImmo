@@ -93,6 +93,7 @@ from .vertragserstellung import * # noqa: F401,F403 — Block 3
 from .person import *        # noqa: F401,F403 — Block 2
 from .profil import *        # noqa: F401,F403 — Block 2
 from .berichte import *  # noqa: F401,F403
+from .eigene_auswertung import *  # noqa: F401,F403
 from .debitoren_aktionen import *  # noqa: F401,F403
 from .debitoren_liste import *  # noqa: F401,F403
 from .liegenschaften_liste import *  # noqa: F401,F403

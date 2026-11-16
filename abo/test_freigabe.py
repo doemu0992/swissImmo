@@ -485,3 +485,74 @@ class MigrationTests(Basis):
         abo = Abonnement.alle_organisationen.get(organisation=neu)
         self.assertFalse(abo.uneingeschraenkt)
         self.assertEqual(abo.zusatzmodule, [])
+
+
+class KatalogHaeltWasErVersprichtTests(Basis):
+    """Was im Katalog über «start» steht oder zubuchbar ist, wird irgendwo geprüft — sonst verkauft die Preisseite
+    einen Unterschied, den es nicht gibt (16.11.2026: «Zulauf» war in Start offen, «Schnittstellen» und
+    «Mandatsrentabilität» nie gesperrt, das Modul «Eigene Auswertungen» gar nicht gebaut).
+
+    Gegenprobe (16.11.2026): Zeile `/neu/zulauf/` aus `PFAD_MODULE` entfernt -> der Zulauf-Test wird rot.
+    """
+
+    def test_zulauf_ist_in_start_nur_lesbar_und_ab_team_offen(self):
+        c = Client()
+        c.force_login(self.a.benutzer)
+        self._abo('start')
+        self.assertEqual(c.get('/neu/zulauf/').status_code, 200)
+        self.assertEqual(c.post('/neu/zulauf/999999/uebernehmen/', {}).status_code, 402)
+        self._abo('team')
+        self.assertNotEqual(c.post('/neu/zulauf/999999/uebernehmen/', {}).status_code, 402)
+
+    def test_jede_verkaufte_funktion_hat_eine_pruefstelle(self):
+        """Wächter: Ein neuer Schlüssel ohne Sperre fällt auf, bevor er auf der Preisseite steht."""
+        wurzel = pathlib.Path(settings.BASE_DIR)
+        quelle = ''
+        for datei in wurzel.rglob('*.py'):
+            teile = datei.relative_to(wurzel).parts
+            if ({'node_modules', 'migrations', 'tests', 'staticfiles', '.git'} & set(teile)
+                    or datei.name.startswith('test_') or datei.name == 'funktionen.py'):
+                continue
+            quelle += datei.read_text(encoding='utf-8', errors='ignore')
+        verkauft = (set(f.FUNKTIONEN) - f.STUFEN['start']) | set(f.MODULE)
+        self.assertGreater(len(verkauft), 5)
+        ohne = sorted(k for k in verkauft if f"'{k}'" not in quelle and f'"{k}"' not in quelle)
+        self.assertEqual(ohne, [], 'Diese Funktionen stehen im Katalog, werden aber nirgends geprüft.')
+
+    def test_schnittstellen_erst_ab_professional(self):
+        """Journal-Formate Banana und bexio, Vermarktungs-Feed und Kalender-Abo waren für jede Stufe offen."""
+        from core.services.ical import token_setzen
+        org = self.a.organisation
+        type(org).objects.filter(pk=org.pk).update(portal_feed_token='feedgeheimnis-abcdefghijkl')
+        c = Client()
+        c.force_login(self.a.benutzer)
+        zeitraum = {'von': '2024-01-01', 'bis': '2024-12-31'}
+        self._abo('team')
+        self.assertEqual(c.post('/neu/einstellungen/daten/export/journal/', {**zeitraum, 'preset': 'banana'}).status_code, 402)
+        self.assertEqual(c.post('/neu/einstellungen/daten/export/journal/', zeitraum).status_code, 200)   # freie Zuordnung
+        self.assertEqual(c.post('/neu/fristen/kalender-link/', {'aktion': 'neu'}).status_code, 402)
+        self.assertEqual(c.post('/neu/integrationen/portal-token/', {}).status_code, 402)
+        self.assertEqual(Client().get('/neu/vermarktung/feed.json?token=feedgeheimnis-abcdefghijkl').status_code, 403)
+        self.assertContains(c.get('/neu/fristen/'), 'Teil der Stufe Professional')
+        token = token_setzen(self.a.benutzer, org)                    # ein früher erzeugter Link liefert nichts mehr
+        self.assertEqual(Client().get('/fristen.ics', {'token': token}).status_code, 403)
+        self._abo('professional')
+        self.assertEqual(c.post('/neu/einstellungen/daten/export/journal/', {**zeitraum, 'preset': 'banana'}).status_code, 200)
+        self.assertEqual(Client().get('/neu/vermarktung/feed.json?token=feedgeheimnis-abcdefghijkl').status_code, 200)
+        self.assertEqual(Client().get('/fristen.ics', {'token': token}).status_code, 200)
+        self.assertNotContains(c.get('/neu/fristen/'), 'Teil der Stufe Professional')
+
+    def test_mandatsrentabilitaet_erst_ab_professional(self):
+        """Die Karte in der Mandatsakte war für jede Stufe sichtbar, obwohl sie als Professional verkauft wird."""
+        c = Client()
+        c.force_login(self.a.benutzer)
+        pfad = f'/neu/mandate/{self.a.eigentuemer.pk}/'
+        self._abo('team')
+        seite = c.get(pfad)
+        self.assertEqual(seite.status_code, 200)
+        self.assertIsNone(seite.context['rentabilitaet'])
+        self.assertContains(seite, 'Teil der Stufe Professional')
+        self._abo('professional')
+        seite = c.get(pfad)
+        self.assertIsNotNone(seite.context['rentabilitaet'])
+        self.assertNotContains(seite, 'Teil der Stufe Professional')

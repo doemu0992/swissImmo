@@ -45,6 +45,7 @@ OHNE_WEG = {
     # Endpunkte, die nur eine andere Seite bedient (Bruchstücke, Downloads,
     # POST-Ziele ohne eigene Darstellung).
     '/neu/regelwerk/protokoll/': 'Aus /neu/regelwerk/ verlinkt (Kopfzeile).',
+    '/neu/auswertung/eigene/neu/': 'POST-Ziel des Formulars «Neue Vorlage» auf /neu/auswertung/eigene/.',
     '/neu/palette/': 'JSON für die ⌘K-Palette, keine Seite. Wird aus '
                      'base.html per fetch() gelesen.',
 

@@ -9,7 +9,7 @@ Rückstufung und gesperrtem Konto rot; `darf_abonnieren` in der Ansicht auf True
 from datetime import timedelta
 
 from django.core import signing
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from core.models import Pendenz
@@ -20,6 +20,8 @@ from crm.models import Mitgliedschaft
 from ._isolation import MandantenFixture
 
 
+# Schnittstellen (Formate, Feed, Kalender-Abo) gehören zur Stufe «professional».
+@override_settings(SWISSIMMO_VORGABE_STUFE='professional')
 class KalenderLinkTests(TestCase):
 
     @classmethod

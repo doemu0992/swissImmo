@@ -3,7 +3,7 @@ siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)). 15 Klassen, unve
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from ._helfer import (_test_organisation,
     _team_user, _basis_objekte, _heute, Mieter, Organisation, Liegenschaft,
     Einheit, Wartungsfrist)
@@ -62,6 +62,8 @@ class ExposeTests(TestCase):
         self.assertContains(r, f'/neu/vermarktung/{e.id}/expose/')
 
 
+# Schnittstellen (Formate, Feed, Kalender-Abo) gehören zur Stufe «professional».
+@override_settings(SWISSIMMO_VORGABE_STUFE='professional')
 class ObjektFotoTests(TestCase):
     """Objekt-Fotos: Upload, Exposé-Titelbild, Portal-Feed-Bilder, Listen-Thumbnail."""
 
@@ -120,6 +122,8 @@ class ObjektFotoTests(TestCase):
         self.assertTrue(r.content.startswith(b'%PDF'))
 
 
+# Schnittstellen (Formate, Feed, Kalender-Abo) gehören zur Stufe «professional».
+@override_settings(SWISSIMMO_VORGABE_STUFE='professional')
 class PortalFeedTests(TestCase):
     """Token-gesicherter Vermarktungs-Objekt-Feed für Immobilien-Portale."""
 

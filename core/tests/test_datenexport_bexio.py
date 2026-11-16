@@ -1,3 +1,4 @@
+from django.test import override_settings
 """Preset «bexio (über importly.ch)» im Buchungsjournal (Roadmap 4.2).
 
 Die Spezifikation (belegt am 11.11.2026 nach https://importly.ch/blog/buchungen-importieren-manuelle-buchung): bexio importiert
@@ -19,6 +20,8 @@ from .test_daten_export import EINSTELLUNG, JOURNAL, ZEITRAUM, _Basis
 KOPF = ['Belegnummer', 'Datum', 'Beschreibung', 'Betrag', 'Währung', 'Wechselkurs', 'Soll', 'Haben', 'MWST Code', 'MWST Konto']
 
 
+# Schnittstellen (Formate, Feed, Kalender-Abo) gehören zur Stufe «professional».
+@override_settings(SWISSIMMO_VORGABE_STUFE='professional')
 class BexioTests(_Basis):
 
     def _export(self, rolle='verwalter', **zeitraum):

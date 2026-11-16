@@ -1,3 +1,4 @@
+from django.test import override_settings
 """Preset «Banana Buchhaltung» im Buchungsjournal (Etappe 4).
 
 Die Spezifikation (belegt am 29.10.2026 nach https://www.banana.ch/doc/en/node/9947): Datei «Text file with
@@ -23,6 +24,8 @@ from .test_daten_export import EINSTELLUNG, JOURNAL, ZEITRAUM, _Basis
 KOPF = ['Date', 'Doc', 'Description', 'AccountDebit', 'AccountCredit', 'Amount', 'VatCode', 'ExternalReference']
 
 
+# Schnittstellen (Formate, Feed, Kalender-Abo) gehören zur Stufe «professional».
+@override_settings(SWISSIMMO_VORGABE_STUFE='professional')
 class BananaTests(_Basis):
 
     def _export(self, rolle='verwalter', preset='banana', **zeitraum):

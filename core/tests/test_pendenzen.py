@@ -3,7 +3,7 @@ siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)). 9 Klassen, unver
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 
 from crm.models import Mitgliedschaft
 from ._helfer import (_test_organisation,
@@ -270,6 +270,8 @@ class FristenCenterTests(TestCase):
         self.assertNotContains(r, 'Manuelle Aufgabe')
 
 
+# Schnittstellen (Formate, Feed, Kalender-Abo) gehören zur Stufe «professional».
+@override_settings(SWISSIMMO_VORGABE_STUFE='professional')
 class FristenKalenderTests(TestCase):
     """iCal-Export (Download + Feed) und wöchentliches Fristen-Mail."""
     def setUp(self):

@@ -54,6 +54,7 @@
         <div class="p-5">
                 <p class="text-sm fw-mutet">{% blocktrans trimmed with n=portal_ausgeschrieben_n %}Stellt alle zur Ausschreibung markierten Objekte ({{ n }}) als standardisierten, token-gesicherten Feed (JSON/CSV) bereit — abrufbar von Portalen wie <span class="font-medium">Homegate, ImmoScout24 (SMG), Flatfox</span> bzw. deren Import/Middleware.{% endblocktrans %}</p>
 
+                {% if not schnittstellen_frei %}<div class="fw-hinweis"><span class="fw-hi">{% zeichen 'gesperrt' %}</span><div class="fw-ht">{% trans "Schnittstellen (Buchhaltungsformate, Portal-Feed, Kalender-Abonnement) sind Teil der Stufe Professional." %} <a href="/neu/abonnement/">{% trans "Zum Abonnement" %}</a></div></div>{% endif %}
                 {% if portal_token %}
                 <div class="fw-feldblock mt-3">
                     <label class="fw-label">{% trans "Feed-URL (JSON)" %}</label>

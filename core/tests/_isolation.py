@@ -221,7 +221,7 @@ class MandantenFixture:
         `get_object_or_404` abgelesen.
         """
         from crm.models import Handwerker, Kommunikation, Vorlage
-        from core.models import Pendenz, Postfach
+        from core.models import Auswertungsvorlage, Pendenz, Postfach
         from faelle.models import Fall, Fallart, Fallschritt, SchrittVorlage, Zeiteintrag
         from faelle.regelwerk_models import Regel, Regelanwendung, Regelsatz
         from faelle.lauf_models import Blockade, Lauf, Laufart
@@ -268,6 +268,9 @@ class MandantenFixture:
         self.kuendigung = Kuendigung.objects.create(vertrag=self.vertrag)
         self.pendenz = Pendenz.objects.create(
             titel=f'Frist {k}', liegenschaft=self.liegenschaft)
+        # Eigene Auswertung (Modul «Erweitertes Reporting»): eine gespeicherte Vorlage je Verwaltung.
+        self.auswertungsvorlage = Auswertungsvorlage.objects.create(
+            name=f'Objektliste {k}', quelle='objekte', spalten=['bezeichnung'])
         # STWEG-Modul: Versammlung, Traktandum, Anfrage und Aufgabe — damit der
         # Registrylauf FREMDE IDs der stweg-URLs tatsächlich anfasst, statt sie
         # zu überspringen.
@@ -526,6 +529,8 @@ class MandantenFixture:
         # Mahnstufen je Organisation: `fw_mahnstufe_loeschen` nimmt die `pk` einer
         # Stufe. Ein POST auf eine FREMDE Stufe darf nichts löschen (404).
         ('mahnstufe',       'mahnstufe'),
+        # Eigene Auswertungen: ausführen, bearbeiten, löschen nehmen die `pk` einer Vorlage.
+        ('eigene_auswertung', 'auswertungsvorlage'),
         # Phase 2: `fw_betreibung_neu` nimmt die RECHNUNG, `fw_betreibung_bearbeiten` die BETREIBUNG.
         ('betreibung_neu',  'debitor'),
         ('betreibung_bearbeiten', 'betreibung'),

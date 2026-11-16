@@ -57,6 +57,8 @@ BUCHHALTUNG_DARF = {
     'fw_mahnung_erfassen',
     # Berichte
     'fw_berichte', 'fw_auswertung', 'fw_betriebsrechnung_pdf',
+    # Eigene Auswertungen (Modul «Erweitertes Reporting»): ausführen und Vorlagen pflegen.
+    'fw_eigene_auswertungen', 'fw_eigene_auswertung', 'fw_eigene_auswertung_speichern', 'fw_eigene_auswertung_loeschen',
     # Einstellungen «Daten» (FUNK-13): Buchungsjournal für Banana/Abacus. Der Mandatsexport (alle Personendaten) und der
     # Import bleiben bei Inhaber und Verwalter und stehen deshalb NICHT hier.
     'fw_daten', 'fw_daten_export', 'fw_daten_export_format', 'fw_daten_export_journal',
