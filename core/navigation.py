@@ -194,6 +194,7 @@ def nav_gruppen():
             _i(_('Übersicht'), '/neu/berichte/', ['berichte']),
             _i(_('Portfolio'), '/neu/portfolio/', ['portfolio']),
             _i(_('Auswertung'), '/neu/auswertung/', ['auswertung']),
+            _i(_('Eigene Auswertungen'), '/neu/auswertung/eigene/', ['eigene_auswertung']),
             _i(_('Team & Auslastung'), '/neu/team/', ['team']),
         ]),
     ]

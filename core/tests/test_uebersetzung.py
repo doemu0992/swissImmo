@@ -169,6 +169,8 @@ UEBERSETZT = (
     'fw/dienstleister.html',
     'fw/dienstleister_detail.html',
     'fw/dokumente.html',
+    'fw/eigene_auswertung.html',
+    'fw/eigene_auswertungen.html',
     'fw/eigentuemer_kontokorrent.html',
     'fw/eigentuemer_mahnstufen.html',
     'fw/einstellungen.html',

@@ -133,7 +133,15 @@ je Verwaltung Adresswechsel, Bereinigung der Bewerbungen, Laufplanung, Erinnerun
 Einzige Quelle für Stufen, Grenzen, Preise und Module ist `core/funktionen.py`.
 
 - Vier aufbauende Stufen (`start`, `team`, `professional`, `enterprise`) mit Grenzen für Einheiten und Benutzer;
-  zubuchbare Module (`signatur`, `belegerkennung`, `reporting_erweitert`).
+  zubuchbare Module (`signatur`, `belegerkennung`, `reporting_erweitert`; die beiden letzten sind ab `professional`
+  inklusive).
+- Eigene Auswertungen (`reporting_erweitert`): gespeicherte Vorlagen aus festen Datenquellen und Spalten mit
+  CSV-Export (`core/services/eigene_auswertung.py`, Modell `core.Auswertungsvorlage`, Seiten unter
+  `/neu/auswertung/eigene/`).
+- Schnittstellen (`schnittstellen`, ab `professional`): Journal-Formate Banana und bexio, Vermarktungs-Feed,
+  Kalender-Abonnement — alle fragen `abo.zugang.schnittstelle_frei`.
+- Im Katalog steht nur, was gebaut ist und geprüft wird: Jeder Schlüssel über `start` und jedes Modul braucht eine
+  Prüfstelle (`abo/test_freigabe.py`, `KatalogHaeltWasErVersprichtTests`).
 - Durchsetzung: `hat_funktion()`, die Pfadtabelle und der Dekorator in `abo/zugang.py`, `AboMiddleware`. Eine
   gesperrte Funktion antwortet mit der Sperrseite (HTTP 402). Mengengrenzen prüft `abo/signale.py` beim Anlegen.
 - Abrechnung: `manage.py abo_abrechnung` (täglich, eigener Task). Rechnung im Voraus als QR-Rechnung; der

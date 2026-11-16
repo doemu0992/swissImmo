@@ -40,6 +40,8 @@ PFAD_MODULE = (
     ('/mieter/', 'mieterportal', False),
     ('/neu/stweg/', 'stweg', True),
     ('/neu/betreibungen/', 'betreibung', True),
+    # Zulauf gehört zur Stufe «team»; bis 16.11.2026 war die Seite in «start» offen. Lesen bleibt möglich.
+    ('/neu/zulauf/', 'zulauf', True),
     ('/neu/einstellungen/daten/import/', 'datenimport', False),
     ('/neu/einstellungen/daten/export/', 'datenexport', True),
 )
@@ -88,6 +90,14 @@ def merkmal_name(schluessel):
 def _darf_upgraden(request):
     from core.auth import TEAM_ROLLEN, hat_rolle
     return hat_rolle(getattr(request, 'user', None), TEAM_ROLLEN)
+
+
+def schnittstelle_frei(organisation=None, user=None):
+    """Hat diese Verwaltung die Schnittstellen (Stufe «professional»)? Journal-Formate Banana und bexio,
+    Vermarktungs-Feed und Kalender-Abonnement fragen alle hier — eine Stelle, damit die drei nicht auseinanderlaufen."""
+    if user is not None and getattr(user, 'is_superuser', False):
+        return True
+    return hat_funktion(organisation if organisation is not None else aktuelle_organisation(), 'schnittstellen')
 
 
 def sperre_modul(request, schluessel):

@@ -1,0 +1,98 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Eigene Auswertungen" %} — immoswiss{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/berichte/">{% trans "Berichte" %}</a><span aria-hidden="true">/</span>{% if bearbeiten %}<a href="/neu/auswertung/eigene/">{% trans "Eigene Auswertungen" %}</a><span aria-hidden="true">/</span><span>{{ vorlage.name }}</span>{% else %}<span>{% trans "Eigene Auswertungen" %}</span>{% endif %}</nav>
+        <h1>{% if bearbeiten %}{% trans "Vorlage bearbeiten" %}{% else %}{% trans "Eigene Auswertungen" %}{% endif %}</h1>
+        <p>{% trans "Datenquelle, Spalten und Zeitraum einmal festlegen, als Vorlage speichern und jederzeit neu ausführen oder als CSV herausgeben." %}</p>
+    </div>
+</div>
+
+{% if not bearbeiten %}
+<div class="fw-card mb-3">
+    <div class="fw-kopf"><h2 class="fw-t">{% trans "Gespeicherte Vorlagen" %} <span class="fw-mutet">({{ vorlagen|length }})</span></h2></div>
+    {% for v in vorlagen %}
+    <div class="fw-zeile" data-testid="auswertung-vorlage">
+        <div class="fw-mitte">
+            <div class="fw-t"><a href="/neu/auswertung/eigene/{{ v.id }}/" class="fw-strong">{{ v.name }}</a></div>
+            <div class="fw-s">{{ v.quelle_name }} · {{ v.zeitraum_name }}{% if v.liegenschaft %} · {{ v.liegenschaft.strasse }}{% endif %} · {% blocktrans count n=v.spalten|length %}{{ n }} Spalte{% plural %}{{ n }} Spalten{% endblocktrans %}</div>
+        </div>
+        <div class="fw-rechts">
+            <a href="/neu/auswertung/eigene/{{ v.id }}/" class="fw-btn fw-knapp">{% trans "Ausführen" %}</a>
+            <a href="/neu/auswertung/eigene/{{ v.id }}/?export=csv" class="fw-btn fw-knapp">{% zeichen 'herunterladen' %} {% trans "CSV" %}</a>
+        </div>
+    </div>
+    {% empty %}
+    {% include 'fw/_empty.html' with icon='bericht' titel=_('Noch keine Vorlage gespeichert.') %}
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if darf_schreiben %}
+<div class="fw-card">
+    <div class="fw-kopf"><h2 class="fw-t">{% if bearbeiten %}{{ vorlage.name }}{% else %}{% trans "Neue Vorlage" %}{% endif %}</h2></div>
+    <form method="post" action="{% if bearbeiten %}/neu/auswertung/eigene/{{ vorlage.id }}/bearbeiten/{% else %}/neu/auswertung/eigene/neu/{% endif %}" class="p-5" data-auswertung-formular>
+        {% csrf_token %}
+        {% if fehler %}
+        <div class="fw-hinweis crit mb-4" role="alert"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">{% for f in fehler %}<div>{{ f }}</div>{% endfor %}</div></div>
+        {% endif %}
+        <div class="grid gap-4 sm:grid-cols-2">
+            <div class="fw-feldblock sm:col-span-2">
+                <label for="aw-name" class="fw-label">{% trans "Name der Vorlage" %} <span class="fw-pflicht" aria-hidden="true">*</span></label>
+                <input id="aw-name" name="name" type="text" maxlength="120" required aria-required="true" value="{{ werte.name }}" class="fw-feld">
+            </div>
+            <div class="fw-feldblock">
+                <label for="aw-quelle" class="fw-label">{% trans "Datenquelle" %}</label>
+                <select id="aw-quelle" name="quelle" class="fw-feld" data-auswertung-quelle>
+                    {% for k, name in quellen %}<option value="{{ k }}"{% if k == werte.quelle %} selected{% endif %}>{{ name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="fw-feldblock">
+                <label for="aw-zeitraum" class="fw-label">{% trans "Zeitraum" %}</label>
+                <select id="aw-zeitraum" name="zeitraum" class="fw-feld">
+                    {% for k, name in zeitraeume %}<option value="{{ k }}"{% if k == werte.zeitraum %} selected{% endif %}>{{ name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="fw-feldblock sm:col-span-2">
+                <label for="aw-lg" class="fw-label">{% trans "Liegenschaft (optional)" %}</label>
+                <select id="aw-lg" name="liegenschaft" class="fw-feld">
+                    <option value="">{% trans "Alle Liegenschaften" %}</option>
+                    {% for lg in liegenschaften %}<option value="{{ lg.id }}"{% if lg.id == werte.liegenschaft %} selected{% endif %}>{{ lg.strasse }}, {{ lg.ort }}</option>{% endfor %}
+                </select>
+            </div>
+        </div>
+        {% for g in gruppen %}
+        <fieldset class="fw-feldblock mt-4{% if g.schluessel != werte.quelle %} hidden{% endif %}" data-auswertung-spalten="{{ g.schluessel }}">
+            <legend class="fw-label">{% blocktrans with q=g.name %}Spalten aus «{{ q }}»{% endblocktrans %}</legend>
+            <div class="grid gap-2 sm:grid-cols-3">
+                {% for s in g.spalten %}<label class="fw-haekchen"><input type="checkbox" name="spalten" value="{{ g.schluessel }}:{{ s.schluessel }}" class="fw-akzent"{% if s.an %} checked{% endif %}>{{ s.name }}</label>{% endfor %}
+            </div>
+        </fieldset>
+        {% endfor %}
+        <p class="fw-hilfe mt-3">{% trans "Die Spalten erscheinen in der Reihenfolge, in der sie hier stehen. Die Vorlage gehört der Verwaltung: Das ganze Team kann sie ausführen." %}</p>
+        <div class="flex flex-wrap gap-2 mt-4">
+            <button type="submit" class="fw-btn fw-primary">{% trans "Vorlage speichern" %}</button>
+            {% if bearbeiten %}<a href="/neu/auswertung/eigene/{{ vorlage.id }}/" class="fw-btn">{% trans "Abbrechen" %}</a>{% endif %}
+        </div>
+    </form>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script nonce="{{ csp_nonce }}">
+// Nur die Spalten der gewählten Datenquelle zeigen. Ohne Skript stehen alle Gruppen da; der Server liest ohnehin nur die der gewählten Quelle.
+(function () {
+    var wahl = document.querySelector('[data-auswertung-quelle]');
+    if (!wahl) return;
+    function zeigen() {
+        document.querySelectorAll('[data-auswertung-spalten]').forEach(function (g) {
+            g.classList.toggle('hidden', g.getAttribute('data-auswertung-spalten') !== wahl.value);
+        });
+    }
+    wahl.addEventListener('change', zeigen);
+    zeigen();
+})();
+</script>
+{% endblock %}

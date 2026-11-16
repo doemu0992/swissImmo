@@ -16,6 +16,7 @@ from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
 from core.auth import rolle_erforderlich, SCHREIB_ROLLEN, TEAM_ROLLEN
+from abo.zugang import funktion_erforderlich
 from core.tenancy import aktuelle_organisation
 from core.utils.formularid import eigenes_objekt
 from portfolio.models import Liegenschaft
@@ -244,18 +245,22 @@ def fw_fristen(request):
     ]
     from core.services.ical import darf_abonnieren as _darf, feed_token
     # Den Kalender-Link sieht nur, wer in dieser Verwaltung schreiben darf — und jede Person nur ihren eigenen.
-    darf_abonnieren = _darf(request.user, aktuelle_organisation())
+    from abo.zugang import schnittstelle_frei
+    kalender_frei = schnittstelle_frei(user=request.user)      # das Abonnement ist eine Schnittstelle (Professional)
+    darf_abonnieren = _darf(request.user, aktuelle_organisation()) and kalender_frei
     return render(request, 'fw/fristen.html', {
         **basis, 'nav': 'fristen', 'buckets': buckets, 'heute': heute,
         'heute_iso': heute.isoformat(),
         'gesamt': len(eintraege), 'nur_frist': nur_frist,
         'ueberfaellig_n': len(buckets[0]['items']),
         'darf_abonnieren': darf_abonnieren,
+        'kalender_gesperrt': not kalender_frei,
         'feed_token': feed_token(request.user, aktuelle_organisation()) if darf_abonnieren else '',
     })
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
+@funktion_erforderlich('schnittstellen')
 def fw_fristen_kalender_token(request):
     """Den eigenen Kalender-Link erzeugen, erneuern (der alte gilt sofort nicht mehr) oder entfernen."""
     from django.contrib import messages
@@ -309,6 +314,9 @@ def fristen_ical_feed(request):
     # Ohne Anmeldung gibt es hier keinen anderen Weg zur Organisation.
     organisation = organisation_aus_token(request.GET.get('token'))
     if organisation is None:
+        return HttpResponseForbidden("Ungültiger oder fehlender Token.")
+    from abo.zugang import schnittstelle_frei
+    if not schnittstelle_frei(organisation):
         return HttpResponseForbidden("Ungültiger oder fehlender Token.")
     with kontext_des_objekts(organisation):
         ics = build_ics(fristen_events(_offene_fristen_pendenzen()))

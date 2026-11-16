@@ -32,6 +32,9 @@
         </a></span>
     </div>
     <div class="p-5">
+        {% if kalender_gesperrt %}
+        <div class="fw-hinweis"><span class="fw-hi">{% zeichen 'gesperrt' %}</span><div class="fw-ht">{% trans "Schnittstellen (Buchhaltungsformate, Portal-Feed, Kalender-Abonnement) sind Teil der Stufe Professional." %} <a href="/neu/abonnement/">{% trans "Zum Abonnement" %}</a></div></div>
+        {% endif %}
         {% if darf_abonnieren %}
         <div class="fw-feldblock">
             <label class="fw-label">{% trans "Kalender abonnieren (aktualisiert sich automatisch)" %}</label>

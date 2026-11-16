@@ -89,8 +89,12 @@ FUNKTIONEN = {
     'datenimport':          _('Datenimport (Stammdaten und Salden aus anderen Programmen)'),
     'stweg':                _('Stockwerkeigentum: Versammlung, Beschlüsse, Fonds, Abrechnung'),
 
-    # ab Stufe «professional»
+    # ab Stufe «professional». Die Karte «Rentabilität» in der Mandatsakte (`core/views/fw/akten_neu.py`); bis
+    # 16.11.2026 für jede Stufe sichtbar, obwohl sie hier als Professional geführt war.
     'mandatsrentabilitaet': _('Honorarertrag gegen erfassten Aufwand'),
+    # Journal-Export in den Formaten Banana und bexio, Vermarktungs-Feed für Portale, abonnierbarer Fristenkalender.
+    # Bis 16.11.2026 für jede Stufe offen, obwohl hier und auf der Preisseite als Professional geführt
+    # (`abo/zugang.py`, `schnittstelle_frei`).
     'schnittstellen':       _('Buchhaltungsexport, Portale, Kalender'),
 
     # ab Stufe «enterprise»

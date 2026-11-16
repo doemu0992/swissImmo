@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 from ._basis import _global_filter, _lik_basen, _num, _vermietung_pipeline
 from core.tenancy import aktuelle_organisation, organisation_der_anfrage
+from abo.zugang import funktion_erforderlich, schnittstelle_frei as _schnittstelle_frei
 
 
 # ============================================================
@@ -1021,6 +1022,7 @@ def fw_integrationen(request):
         **basis, 'nav': 'integrationen', 'integrationen': integrationen,
         'portal_token': token, 'portal_feed_pfad': feed_pfad,
         'portal_ausgeschrieben_n': ausgeschrieben_n,
+        'schnittstellen_frei': _schnittstelle_frei(user=request.user),
     })
 
 
@@ -1059,6 +1061,11 @@ def fw_vermarktung_feed(request):
                 break
     if vw is None:
         return HttpResponseForbidden("Ungültiger oder fehlender Feed-Token.")
+    # Der Feed ist eine Schnittstelle (Stufe «professional»). Dieselbe Antwort wie bei einem falschen Token:
+    # Ein Portal erfährt nicht, welche Stufe die Verwaltung hat.
+    from abo.zugang import schnittstelle_frei
+    if not schnittstelle_frei(vw):
+        return HttpResponseForbidden("Ungültiger oder fehlender Feed-Token.")
 
     base = f"{request.scheme}://{request.get_host()}"
     objekte = feed_objekte(base_url=base, organisation=vw)
@@ -1080,6 +1087,7 @@ def fw_vermarktung_feed(request):
 
 
 @rolle_erforderlich(ROLLE_VERWALTER)
+@funktion_erforderlich('schnittstellen')
 def fw_integration_portal_token(request):
     """Erzeugt/rotiert oder entfernt den Portal-Feed-Token."""
     from django.shortcuts import redirect

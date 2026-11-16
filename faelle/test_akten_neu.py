@@ -21,7 +21,7 @@ Kosten still vermischt, sieht genauer aus, als sie ist — dafür steht
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from django.test import Client, SimpleTestCase, TestCase
+from django.test import Client, SimpleTestCase, TestCase, override_settings
 from django.utils import timezone
 
 from core.tenancy import organisation_kontext as mandant
@@ -97,6 +97,7 @@ class MandatsakteTests(_Basis):
         self.assertEqual(
             [h for h in antwort.context['mandat_hinweise'] if 'IBAN' in h['titel']], [])
 
+    @override_settings(SWISSIMMO_VORGABE_STUFE='professional')      # die Karte gehört zur Stufe «professional»
     def test_rentabilitaet_nur_aus_gemessenen_stunden(self):
         """Die Karte gibt es seit E2.56 — die Sorge dahinter gilt weiter.
 

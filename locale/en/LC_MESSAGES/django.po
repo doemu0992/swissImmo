@@ -40278,3 +40278,130 @@ msgstr "Portal access active, but sending the e-mail failed. User name: %(userna
 
 msgid "Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s (bitte sicher mitteilen; gilt nur wenige Tage und nur einmal)."
 msgstr "Portal access active. No e-mail on file — user name: %(username)s · Link to set the password: %(link)s (please pass it on securely; valid for only a few days and only once)."
+
+msgid "Honorarertrag gegen erfassten Aufwand ist Teil der Stufe Professional."
+msgstr "Fee income against recorded effort is part of the Professional plan."
+
+msgid "Schnittstellen (Buchhaltungsformate, Portal-Feed, Kalender-Abonnement) sind Teil der Stufe Professional."
+msgstr "Interfaces (accounting formats, portal feed, calendar subscription) are part of the Professional plan."
+
+msgid "Datenquelle"
+msgstr "Data source"
+
+msgid "Spalten"
+msgstr "Columns"
+
+msgid "Eigene Auswertungen"
+msgstr "Custom reports"
+
+msgid "Laufender Monat"
+msgstr "Current month"
+
+msgid "Vorjahr"
+msgstr "Previous year"
+
+msgid "Letzte 12 Monate"
+msgstr "Last 12 months"
+
+msgid "Debitoren (Rechnungen an Mieter)"
+msgstr "Receivables (invoices to tenants)"
+
+msgid "Forderungsart"
+msgstr "Type of claim"
+
+msgid "Mieter Nachname"
+msgstr "Tenant last name"
+
+msgid "Mieter Vorname"
+msgstr "Tenant first name"
+
+msgid "Mieter Firma"
+msgstr "Tenant company"
+
+msgid "Kreditoren (Lieferantenrechnungen)"
+msgstr "Payables (supplier invoices)"
+
+msgid "MWST-Betrag"
+msgstr "VAT amount"
+
+msgid "Nebenkostenrelevant"
+msgstr "Relevant for ancillary costs"
+
+msgid "Eingang am"
+msgstr "Received on"
+
+msgid "Bankreferenz"
+msgstr "Bank reference"
+
+msgid "Nettomiete aktuell"
+msgstr "Current net rent"
+
+msgid "Nebenkosten aktuell"
+msgstr "Current ancillary costs"
+
+msgid "%(n)s Zeile"
+msgid_plural "%(n)s Zeilen"
+msgstr[0] "%(n)s row"
+msgstr[1] "%(n)s rows"
+
+msgid "Diese Vorlage löschen? Die Daten selbst bleiben unberührt."
+msgstr "Delete this template? The data itself remains untouched."
+
+msgid "Die Auswertung ist auf %(n)s Zeilen begrenzt. Bitte den Zeitraum oder die Liegenschaft einschränken."
+msgstr "The report is limited to %(n)s rows. Please narrow the period or the property."
+
+msgid "Keine Zeilen für diese Auswahl."
+msgstr "No rows for this selection."
+
+msgid "Vorlage bearbeiten"
+msgstr "Edit template"
+
+msgid "Datenquelle, Spalten und Zeitraum einmal festlegen, als Vorlage speichern und jederzeit neu ausführen oder als CSV herausgeben."
+msgstr "Define the data source, columns and period once, save as a template, and rerun it or export it as CSV at any time."
+
+msgid "Gespeicherte Vorlagen"
+msgstr "Saved templates"
+
+msgid "%(n)s Spalte"
+msgid_plural "%(n)s Spalten"
+msgstr[0] "%(n)s column"
+msgstr[1] "%(n)s columns"
+
+msgid "Ausführen"
+msgstr "Run"
+
+msgid "Noch keine Vorlage gespeichert."
+msgstr "No template saved yet."
+
+msgid "Name der Vorlage"
+msgstr "Template name"
+
+msgid "Spalten aus «%(q)s»"
+msgstr "Columns from “%(q)s”"
+
+msgid "Die Spalten erscheinen in der Reihenfolge, in der sie hier stehen. Die Vorlage gehört der Verwaltung: Das ganze Team kann sie ausführen."
+msgstr "Columns appear in the order shown here. The template belongs to the management company: the whole team can run it."
+
+msgid "Vorlage speichern"
+msgstr "Save template"
+
+msgid "Bitte einen Namen angeben."
+msgstr "Please enter a name."
+
+msgid "Der Name ist zu lang (höchstens 120 Zeichen)."
+msgstr "The name is too long (120 characters at most)."
+
+msgid "Diese Datenquelle gibt es nicht."
+msgstr "This data source does not exist."
+
+msgid "Bitte mindestens eine Spalte wählen."
+msgstr "Please choose at least one column."
+
+msgid "Eine Vorlage mit diesem Namen gibt es schon."
+msgstr "A template with this name already exists."
+
+msgid "Vorlage «%(name)s» gespeichert."
+msgstr "Template “%(name)s” saved."
+
+msgid "Vorlage «%(name)s» gelöscht."
+msgstr "Template “%(name)s” deleted."

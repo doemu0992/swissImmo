@@ -30,6 +30,7 @@ Die Überschriften und die Kontenzuordnung stehen NICHT im Code: Sie gehören de
                 <input id="exp-von" name="von" type="date" value="{{ von }}" class="fw-feld" required></div>
             <div class="fw-feldblock"><label for="exp-bis" class="fw-label">{% trans "Bis (eingeschlossen)" %}</label>
                 <input id="exp-bis" name="bis" type="date" value="{{ bis }}" class="fw-feld" required></div>
+            {% if not schnittstellen_frei %}<div class="fw-hinweis"><span class="fw-hi">{% zeichen 'gesperrt' %}</span><div class="fw-ht">{% trans "Schnittstellen (Buchhaltungsformate, Portal-Feed, Kalender-Abonnement) sind Teil der Stufe Professional." %} <a href="/neu/abonnement/">{% trans "Zum Abonnement" %}</a></div></div>{% endif %}
             <fieldset class="fw-feldblock" data-testid="daten-preset">
                 <legend class="fw-label">{% trans "Format" %}</legend>
                 <label class="fw-haekchen"><input type="radio" name="preset" value="" class="fw-akzent" checked>{% trans "Freie Zuordnung (Überschriften und Format unten einstellbar, für Abacus und andere)" %}</label>

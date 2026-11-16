@@ -988,3 +988,41 @@ class Aenderungsanfrage(models.Model):
     @property
     def offen(self):
         return self.status == self.STATUS_OFFEN
+
+
+class Auswertungsvorlage(models.Model):
+    """Eine gespeicherte eigene Auswertung (Modul «Erweitertes Reporting», `core/services/eigene_auswertung.py`).
+
+    Hält Quelle, Spalten, Zeitraum und optional eine Liegenschaft fest. Die Vorlage gehört der Verwaltung, nicht der
+    Person: Wer sie anlegt, stellt sie dem Team zur Verfügung (die Liste fürs Treuhandbüro soll nicht an einem Konto
+    hängen)."""
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
+                                     related_name='auswertungsvorlagen', verbose_name='Organisation')
+    name = models.CharField(_('Name'), max_length=120)
+    quelle = models.CharField(_('Datenquelle'), max_length=20)
+    spalten = models.JSONField(_('Spalten'), default=list)
+    zeitraum = models.CharField(_('Zeitraum'), max_length=10, default='alle')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True,
+                                     related_name='+', verbose_name=_('Liegenschaft'))
+    erstellt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                     editable=False, related_name='+')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    class Meta:
+        verbose_name = 'Auswertungsvorlage'
+        verbose_name_plural = 'Auswertungsvorlagen'
+        ordering = ['name', 'pk']
+        constraints = [models.UniqueConstraint(fields=['organisation', 'name'],
+                                               name='uniq_auswertungsvorlage_je_organisation')]
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            from core.organisation_kette import organisation_aus_kontext
+            self.organisation_id = organisation_aus_kontext()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
