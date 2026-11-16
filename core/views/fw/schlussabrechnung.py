@@ -1,7 +1,7 @@
 # core/views/fw/schlussabrechnung.py
 #
 # Schlussabrechnung beim Auszug: Kaution, Guthaben, Restforderungen.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md. Herausgeloest aus detailseiten.py.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf). Herausgeloest aus detailseiten.py.
 
 from datetime import date, timedelta as _timedelta
 from decimal import Decimal

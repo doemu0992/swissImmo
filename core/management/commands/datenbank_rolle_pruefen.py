@@ -26,6 +26,6 @@ class Command(BaseCommand):
             return
         for b in befunde:
             self.stdout.write(self.style.WARNING('• ' + b))
-        self.stdout.write('Abhilfe: docs/AUTOMATISIERUNG.md, Abschnitt «Datenbankrolle».')
+        self.stdout.write('Abhilfe: ARCHITECTURE.md, Abschnitt «Datenbankrolle».')
         if streng:
             raise CommandError(f'{len(befunde)} Befund(e).')

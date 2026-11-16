@@ -1,4 +1,4 @@
-"""Etappe 4 aus docs/AUDIT-SAAS-NIVEAU.md: Listen-Werkzeugkasten.
+"""Etappe 4 aus «AUDIT-SAAS-NIVEAU» (früheres Dokument, Git-Verlauf): Listen-Werkzeugkasten.
 
 Liegenschaften, Objekte, Mietverhältnisse, Personen. Vorher: alle Zeilen auf
 einer Seite, Suche teils nur im Browser, eine feste Reihenfolge, kein Export.

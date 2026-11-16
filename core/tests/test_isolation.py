@@ -1,4 +1,4 @@
-"""Isolationstests — Etappe 2, siehe docs/ETAPPE-2-ISOLATIONSTESTS.md.
+"""Isolationstests — Etappe 2, siehe «ETAPPE-2-ISOLATIONSTESTS» (früheres Dokument, Git-Verlauf).
 
 Diese Tests beschreiben, was ab Phase 2 gelten MUSS: Kein Benutzer einer
 Organisation kommt je an Daten einer anderen. Sie sind absichtlich VOR dem

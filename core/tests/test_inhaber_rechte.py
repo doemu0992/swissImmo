@@ -1,6 +1,6 @@
 """Der Inhaber darf, was das Team darf.
 
-Nach der Rollentabelle (`docs/KONZEPT-UI.md`, Abschnitt 8) hat der Inhaber
+Nach der Rollentabelle (`CONTRIBUTING.md`, Abschnitt 8) hat der Inhaber
 jede Befugnis der übrigen Team-Rollen. Rund zwanzig Views verlangten aber nur
 `ROLLE_VERWALTER`: Der Inhaber einer mit `organisation_anlegen` frisch
 angelegten Verwaltung bekam auf Logbuch, Zahllauf, Anlagen und — ausgerechnet

@@ -1,4 +1,4 @@
-"""Legt die RLS-Regeln der Finanztabellen an oder nimmt sie zurück (nur PostgreSQL). Siehe `core/rls.py`, `docs/RLS.md`.
+"""Legt die RLS-Regeln der Finanztabellen an oder nimmt sie zurück (nur PostgreSQL). Siehe `core/rls.py`, `ARCHITECTURE.md`.
 
     python manage.py rls_einrichten              # anlegen (wiederholbar)
     python manage.py rls_einrichten --trocken    # nur zeigen, was geschähe
@@ -47,7 +47,7 @@ class Command(BaseCommand):
         if s['umgeht']:
             self.stdout.write(self.style.WARNING(
                 'Diese Rolle ist Superuser oder hat BYPASSRLS: Für sie gilt keine Regel. Die Anwendung braucht eine '
-                'Rolle ohne diese Rechte (docs/RLS.md).'))
+                'Rolle ohne diese Rechte (ARCHITECTURE.md).'))
         fertig = sum(1 for t in s['tabellen'] if t['ein'] and t['erzwungen'] and t['regeln'] >= 4)
         self.stdout.write(f"{fertig} von {len(s['tabellen'])} Tabellen geschützt.")
         for t in s['tabellen']:

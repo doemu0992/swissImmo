@@ -12,7 +12,7 @@ DER ABLAUF
 
 NEUE ART: Funktion mit `@auftragsart('schluessel', 'Bezeichnung')` in diesem Modul oder in einem Dienst eintragen, der
 von `registrieren()` geladen wird. Die Funktion muss IDEMPOTENT sein: Ein Wiederanlauf nach einem Absturz darf nichts
-doppelt buchen (Regeln in `docs/GELDPFADE.md`).
+doppelt buchen (Regeln in `ARCHITECTURE.md`).
 """
 import logging
 from datetime import timedelta

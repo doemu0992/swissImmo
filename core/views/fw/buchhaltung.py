@@ -1,7 +1,7 @@
 # core/views/fw/buchhaltung.py
 #
 # Erfolgsrechnung, Kontenplan, Kontoblatt, Journal-Export und PDF.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # `_erfolg_bilanz` bleibt hier und wird von core/services/abschluss_pdf.py
 # ueber core.views.fw bezogen -- das __init__.py reicht den Namen weiter,

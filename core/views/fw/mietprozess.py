@@ -2,7 +2,7 @@
 #
 # Von der Bewerbung ueber die Auswahl zum Vertrag: Bewerbungsliste,
 # Vergleich, Besichtigung, Entscheid, Absagen, Unterlagen.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Beruehrt die DSG-Seite (P5): Bewerberunterlagen sind besonders
 # schuetzenswerte Personendaten. Reiner Umzug, Blockinhalt gegen HEAD

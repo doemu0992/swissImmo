@@ -24,8 +24,10 @@ from core.middleware_tenancy import SESSION_SCHLUESSEL
 from ._isolation import MandantenFixture
 from .test_kopfzeile_omnisearch import baum, eines, finde
 
+from ._rahmen import basis_mit_skripten
+
 WURZEL = pathlib.Path(settings.BASE_DIR)
-BASIS = (WURZEL / 'core' / 'templates' / 'fw' / 'base.html').read_text(encoding='utf-8')
+BASIS = basis_mit_skripten()        # Vorlage und ausgelagerte Rahmen-Skripte
 SCHICHT = (WURZEL / 'core' / 'templates' / 'fw' / '_schicht.html').read_text(encoding='utf-8')
 
 

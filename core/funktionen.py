@@ -50,7 +50,7 @@ class GrenzeErreicht(Exception):
     """Eine Mengengrenze verhindert das Anlegen eines NEUEN Datensatzes.
 
     Bestehende Datensätze bleiben davon unberührt: Die Grenze begrenzt das
-    Anlegen, nie das Lesen (docs/PHASE-3-ENTITLEMENTS.md §2 B).
+    Anlegen, nie das Lesen («PHASE-3-ENTITLEMENTS» (früheres Dokument, Git-Verlauf) §2 B).
     """
 
     def __init__(self, was, grenze):
@@ -65,7 +65,7 @@ class GrenzeErreicht(Exception):
 # ---------------------------------------------------------------------------
 FUNKTIONEN = {
     # ab Stufe «start», also in jeder Stufe. Was eine Verwaltung gesetzlich
-    # oder betrieblich zwingend braucht, steht hier (docs/MARKT.md §5).
+    # oder betrieblich zwingend braucht, steht hier («MARKT» (früheres Dokument, Git-Verlauf) §5).
     'akten':                _('Akten lesen und bearbeiten'),
     'dokumente':            _('Dokumentenablage je Akte'),
     'monatslauf':           _('Sollstellung, Bankabgleich, Mahnlauf'),
@@ -107,7 +107,7 @@ MODULE = {
 
 #: Preise der zubuchbaren Module in CHF je Monat, netto. `inklusive_ab`: die Stufe, ab der das Modul im Grundpreis steckt
 #: (`None` = nie, das Modul kostet in jeder Stufe). VORLÄUFIG wie `PREISE`: Einführungspreise, nicht aus einer Kostenrechnung
-#: (Fremdkosten: Unterschrift ca. CHF 0.16 je Dokument, KI-Erkennung unter 1 Rappen je Beleg, siehe docs/MARKT.md §5).
+#: (Fremdkosten: Unterschrift ca. CHF 0.16 je Dokument, KI-Erkennung unter 1 Rappen je Beleg, siehe «MARKT» (früheres Dokument, Git-Verlauf) §5).
 #: Die Unterschrift ist pauschal, nicht je Signatur: Es braucht keine Zählung, bei 30 Dokumenten im Monat bleibt die Marge positiv.
 MODULPREISE = {
     'signatur':             {'monat': Decimal('9'),  'inklusive_ab': None},
@@ -118,11 +118,11 @@ MODULPREISE = {
 # ---------------------------------------------------------------------------
 # Stufen. Jede Stufe enthält alles aus der vorherigen.
 #
-# Die Codes sind die Marktnamen aus docs/MARKT.md (Entscheid D7 in
-# docs/PLAN-V7.md). Bis 29.09.2026 hiessen sie basis/aufbau/verwaltung/
+# Die Codes sind die Marktnamen aus «MARKT» (früheres Dokument, Git-Verlauf) (Entscheid D7 in
+# «PLAN-V7» (früheres Dokument, Git-Verlauf)). Bis 29.09.2026 hiessen sie basis/aufbau/verwaltung/
 # portfolio. Die Umstellung war verhaltensneutral: «team» enthält genau die
 # zehn Schlüssel der früheren «verwaltung», «professional» genau die der
-# früheren «portfolio» (docs/AUFTRAG-ABOSTUFEN.md).
+# früheren «portfolio» («AUFTRAG-ABOSTUFEN» (früheres Dokument, Git-Verlauf)).
 #
 # `monatslauf` steht bewusst in «start», nicht in «team»: Der Schlüssel trägt
 # die Pflichtläufe Sollstellung, Bankabgleich, Mahnlauf, Zahllauf und MWST
@@ -173,7 +173,7 @@ GRENZ_ARTEN = frozenset().union(*(werte.keys() for werte in GRENZEN.values()))
 
 # ---------------------------------------------------------------------------
 # Preise. VORLÄUFIG: aus den Wettbewerbspreisen abgeleitet, NICHT aus einer
-# Kostenrechnung je Mandant (docs/MARKT.md §4, docs/PHASE-3-ENTITLEMENTS.md
+# Kostenrechnung je Mandant («MARKT» (früheres Dokument, Git-Verlauf) §4, «PHASE-3-ENTITLEMENTS» (früheres Dokument, Git-Verlauf)
 # §7.1 «Struktur ja, Preise später»). Die Abo-Seite weist sie deshalb als
 # Einführungspreise mit `PREISSTAND` aus.
 #
@@ -182,7 +182,7 @@ GRENZ_ARTEN = frozenset().union(*(werte.keys() for werte in GRENZEN.values()))
 # `deckel`: höchste Einheitenzahl, die die Stufe mit Zusatzpaketen fasst,
 # `None` heisst unbegrenzt. Der Deckel hält Professional davon ab, mit
 # Zusatzpaketen billiger als Enterprise zu werden
-# (MARKET_RESEARCH_COMPETITORS.md §4).
+# («Marktrecherche» (früheres Dokument, Git-Verlauf) §4).
 # ---------------------------------------------------------------------------
 PREISE = {
     'start':        {'monat': Decimal('39'),  'zusatz_100': None,           'deckel': 25},

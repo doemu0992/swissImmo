@@ -1,6 +1,6 @@
 # core/views/fw/eigentuemer.py
 #
-# Block 20 der 33 (Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md): Eigentuemer
+# Block 20 der 33 (Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)): Eigentuemer
 # anlegen und bearbeiten, Portal-Zugang vergeben, Liegenschaften zuordnen.
 #
 # Der Blockkommentar sagt noch "MANDATE CRUD" — das Modell hiess bis E3

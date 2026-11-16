@@ -1,6 +1,6 @@
 """Betreibung und Zwei-Faktor-Pflicht: nur Verwalter und Inhaber (Etappe 2).
 
-SICH-11: Das Rollenkonzept (`docs/KONZEPT-UI.md` §8) sagt «Mahnlauf und
+SICH-11: Das Rollenkonzept (`CONTRIBUTING.md` §8) sagt «Mahnlauf und
 Betreibung: Inhaber, Verwalter». Im Bestand durfte jede Schreibrolle ein
 Betreibungsbegehren einleiten, nachführen und Kosten belasten.
 

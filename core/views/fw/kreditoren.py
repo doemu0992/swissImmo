@@ -1,7 +1,7 @@
 # core/views/fw/kreditoren.py
 #
 # Rechnungseingang, Freigabe, Zahlung, Zahllauf und pain.001-Datei.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # pain.001 ist im Skill schweizer-fachlogik als Zahlungsstandard gefuehrt.
 # Reiner Umzug, Blockinhalt gegen HEAD geprueft.

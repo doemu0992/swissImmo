@@ -1,4 +1,4 @@
-"""Wartungsseite bei Schemaabweichung — siehe docs/WARTUNGSSEITE.md.
+"""Wartungsseite bei Schemaabweichung — siehe ARCHITECTURE.md.
 
 Am 15.08.2026 lief die Produktion mit neuem Code auf altem Schema und
 antwortete auf jeder Seite mit

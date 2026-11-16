@@ -26,6 +26,9 @@ VORLAGEN = pathlib.Path(settings.BASE_DIR) / 'core' / 'templates'
 
 
 def _quelle(name):
+    if name == 'fw/base.html':                      # die Hülle samt ihrer ausgelagerten Skripte
+        from ._rahmen import basis_mit_skripten
+        return basis_mit_skripten()
     return (VORLAGEN / name).read_text(encoding='utf-8')
 
 

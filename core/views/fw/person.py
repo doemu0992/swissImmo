@@ -3,7 +3,7 @@
 # Personen (Mieter und Kontakte): Detailseite, Stammdaten, Adresshistorie,
 # Mieterkonto, Lieferantenkonten, Kommunikation, Dokumentfreigabe,
 # Portal-Zugang, Loeschen samt DSG-Loeschung.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # fw_person_loeschen und fw_person_dsg_loeschen sind seit E2 die einzigen
 # Schreibpfade fuer diese Daten (der Admin ist lesend) -- und der

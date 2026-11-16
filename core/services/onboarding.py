@@ -16,7 +16,7 @@ einem Marktdaten-Update.
 
 DIE HEIKLE STELLE IST NICHT DIE, DIE ICH ERWARTET HATTE
 -------------------------------------------------------
-`docs/PHASE-3-ONBOARDING.md` entwarf hier einen benannten Ausstieg aus dem
+`«PHASE-3-ONBOARDING» (früheres Dokument, Git-Verlauf)` entwarf hier einen benannten Ausstieg aus dem
 Mandantenkontext (`alle_organisationen`), weil eine Organisation ohne Kontext
 entsteht. Beim Bauen stellte sich heraus: **den braucht es nicht.**
 
@@ -43,7 +43,7 @@ Eine frühere Fassung dieses Dienstes setzte `abo_start`/`abo_bis` auf der
 Organisation. Beide Felder sind am 21.09.2026 wieder entfernt worden, und
 dieser Dienst deshalb mit ihnen. Der Grund ist einer, nicht zwei:
 
-`docs/PLAN-V7.md` §4.1 gibt beiden Angaben eine andere Heimat —
+`«PLAN-V7» (früheres Dokument, Git-Verlauf)` §4.1 gibt beiden Angaben eine andere Heimat —
 `abo.Abonnement` mit den Feldern für Stufe, Status und «Testphase bis». Zwei
 Datumsfelder hier vorweg wären in Phase 3 die zweite Quelle für dieselbe
 Auskunft, und zwar die stille: Nichts im Bestand las sie (gemessen vor dem

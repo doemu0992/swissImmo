@@ -1,7 +1,7 @@
 # core/views/fw/objekt_detail.py
 #
 # Die Objekt-Akte (Einheit): Kopf, Detailseite, Merkmale, Nebenkostenart und Fotos.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md. Herausgeloest aus detailseiten.py.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf). Herausgeloest aus detailseiten.py.
 
 from decimal import Decimal
 

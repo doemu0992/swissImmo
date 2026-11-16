@@ -1,7 +1,7 @@
 # core/views/fw/nebenkosten.py
 #
 # Heiz- und Nebenkostenabrechnung: Perioden, Verteilschluessel, Verbuchung,
-# Versand, Akonto-Anpassung. Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Versand, Akonto-Anpassung. Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Nebenkosten sind im Skill schweizer-fachlogik ausdruecklich als Bereich
 # genannt, in dem nichts umgerechnet oder geraten werden darf. Deshalb hier
@@ -268,7 +268,7 @@ def fw_nebenkosten_verbuchen(request, pk):
 # Inhaber und Verwalter (seit 28.09.2026, vorher auch die Sachbearbeitung).
 # Der Versand legt die Abrechnung jedes Mieters in dessen Akte und damit sofort
 # ins Mieterportal — das ist die Freigabe an die Mieter, und «Nebenkosten-
-# abrechnung freigeben» ist nach docs/KONZEPT-UI.md §8 Inhaber und Verwaltern
+# abrechnung freigeben» ist nach CONTRIBUTING.md §8 Inhaber und Verwaltern
 # vorbehalten. Er ging auch für eine NICHT abgeschlossene Periode (dann live
 # gerechnet): Die Sachbearbeitung konnte so eine Abrechnung, die niemand
 # verbucht hatte, allen Mietern der Liegenschaft zustellen.

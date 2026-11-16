@@ -95,12 +95,12 @@ if TESTING:
     IMAP_SCHLUESSEL = os.getenv('IMAP_SCHLUESSEL') or 'EV9Cq9O_Bf3KXTtRNITG9iiMDSNs7KZen9YgQQmA29c='
 
 # Verschlüsselungsschlüssel für AHV-Nummern und Postfach-Zugangsdaten: Ohne Angabe legt die Anwendung ihn selbst an
-# (Datei `.geheimnis_schluessel` neben `.secret_key`, siehe core/services/geheimnis.py und docs/SCHLUESSEL.md).
+# (Datei `.geheimnis_schluessel` neben `.secret_key`, siehe core/services/geheimnis.py und ARCHITECTURE.md).
 # In Testläufen aus: Die Tests bringen ihren Schlüssel mit und prüfen auch den Fall «keiner».
 #: Live-Abruf des LIK (HEV/BFS) auch für den Vorschlag der Basis im Vertragsassistenten. Aus in den Tests und per Umgebung abschaltbar.
 LIK_LIVE_ABRUF = os.getenv('LIK_LIVE_ABRUF', 'True') == 'True' and not TESTING
 
-# Row-Level-Security in PostgreSQL (core/rls.py, docs/RLS.md): aus | probe | scharf. In Tests immer aus; die
+# Row-Level-Security in PostgreSQL (core/rls.py, ARCHITECTURE.md): aus | probe | scharf. In Tests immer aus; die
 # Tests der RLS schalten sie gezielt selbst ein.
 RLS_MODUS = 'aus' if TESTING else os.getenv('RLS_MODUS', 'aus').lower()
 
@@ -171,7 +171,7 @@ MIDDLEWARE = [
     # nicht zum Code, darf keine der folgenden Schichten mehr laufen —
     # Session und Authentifizierung lesen selbst aus der Datenbank und
     # scheiterten an genau derselben fehlenden Tabelle. Die Wartungsseite
-    # braucht davon nichts (siehe docs/WARTUNGSSEITE.md).
+    # braucht davon nichts (siehe ARCHITECTURE.md).
     'core.wartung.WartungsMiddleware',
     # Vor allem, was Eingaben liest: PostgreSQL verträgt kein NUL-Byte.
     'core.middleware_nul.NulBytesMiddleware',
@@ -382,7 +382,7 @@ USE_TZ = True
 # WARUM DAS FUNDAMENT VOR DEM VORLAGENDURCHGANG KOMMT
 # E2 stellt 135 Vorlagen auf die Komponentenschicht um. Wer dabei nicht
 # gleichzeitig die Texte auszeichnet, fasst jede Datei zweimal an — und
-# `docs/KONZEPT-UI.md` (13.1) hat genau deshalb entschieden, beides in EINEM
+# `CONTRIBUTING.md` (13.1) hat genau deshalb entschieden, beides in EINEM
 # Durchgang zu machen.
 #
 # NACHGEMESSEN AM 21.09.2026 — DER PLAN IST NICHT AUFGEGANGEN
@@ -435,7 +435,7 @@ LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]
 # --- BENUTZERMODELL ---
 # Eigenes Benutzermodell statt `auth.User`. Der Wechsel ist nach Produktivgang
 # praktisch nicht mehr möglich, deshalb steht er am Anfang der
-# Mandantenfähigkeit — siehe docs/ETAPPE-3-USER-MODEL.md.
+# Mandantenfähigkeit — siehe «ETAPPE-3-USER-MODEL» (früheres Dokument, Git-Verlauf).
 #
 # Das Modell übernimmt die bestehende Tabelle `auth_user`; es wurde keine Zeile
 # kopiert. Auf einer Bestandsdatenbank muss `manage.py benutzer_uebernahme`
@@ -505,7 +505,7 @@ DOCUSEAL_DOWNLOAD_HOSTS = {
 # oder Header "X-Webhook-Secret"). Wenn gesetzt, werden nur signierte Requests akzeptiert.
 BREVO_WEBHOOK_SECRET = os.getenv('BREVO_WEBHOOK_SECRET')
 # Domain der Antwortadressen (`<kennung>@<ANTWORT_DOMAIN>`, je Verwaltung). Die MX-Einträge dieser Domain
-# zeigen auf Brevo Inbound Parsing; siehe docs/ANTWORTADRESSEN.md. Ohne BREVO_WEBHOOK_SECRET bleibt es beim
+# zeigen auf Brevo Inbound Parsing; siehe ARCHITECTURE.md. Ohne BREVO_WEBHOOK_SECRET bleibt es beim
 # bisherigen Reply-To (kein Versand an eine Adresse, die nichts empfängt).
 ANTWORT_DOMAIN = (os.getenv('ANTWORT_DOMAIN') or 'immoswiss.app').strip().lower()
 # API-Schluessel von Brevo, nur um die Anhaenge eingehender Rechnungsmails zu laden (Brevo liefert sie nicht
@@ -516,7 +516,7 @@ BREVO_API_KEY = os.getenv('BREVO_API_KEY')
 # das Catch-all der ANTWORT_DOMAIN legt. `manage.py fetch_plattform_eingang` ruft es per IMAP ab und ordnet
 # jede Mail ueber die Empfaengeradresse einer Verwaltung zu. Die Zugangsdaten stehen NUR hier (.env), nicht je
 # Verwaltung in der Datenbank. Eingerichtet ist der Kanal erst, wenn Host, Benutzer und Passwort gesetzt sind.
-# Siehe docs/ANTWORTADRESSEN.md.
+# Siehe ARCHITECTURE.md.
 PLATTFORM_IMAP_HOST = (os.getenv('PLATTFORM_IMAP_HOST') or '').strip()
 PLATTFORM_IMAP_PORT = int(os.getenv('PLATTFORM_IMAP_PORT') or 993)
 PLATTFORM_IMAP_BENUTZER = (os.getenv('PLATTFORM_IMAP_BENUTZER') or '').strip()
@@ -602,7 +602,7 @@ ABO_MWST_SATZ = None
 # Abo-Rechnungen sind IM VORAUS zu bezahlen: Die Rechnung für eine Periode wird bis zu ABO_VORLAUF_TAGE Tage vor deren Beginn
 # gestellt und ist am Periodenbeginn fällig (November: Rechnung Ende Oktober, fällig 1. November). Wird sie erst später
 # gestellt (z. B. weil «Abrechnung ab» schon erreicht ist), gilt die Zahlungsfrist ABO_ZAHLUNGSFRIST_TAGE ab Rechnungsdatum.
-# Beginn der Mahnung und des Lesemodus: Tage NACH Fälligkeit (Vorschlag aus docs/MARKT.md §7: Hinweis ab Tag 1, Lesemodus ab Tag 15).
+# Beginn der Mahnung und des Lesemodus: Tage NACH Fälligkeit (Vorschlag aus «MARKT» (früheres Dokument, Git-Verlauf) §7: Hinweis ab Tag 1, Lesemodus ab Tag 15).
 ABO_VORLAUF_TAGE = 10
 ABO_ZAHLUNGSFRIST_TAGE = 10
 ABO_MAHNUNG_NACH_TAGEN = 1

@@ -2,7 +2,7 @@
 #
 # Schadensfaelle und Handwerkerauftraege: Meldung, Kosten, Fotos, Auftrag,
 # Status, Antwort an den Mieter, Ersatzplanung.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Offener Posten, hier NICHT mitkorrigiert (Fund aus E1c): fw_schaden_detail
 # setzt `gelesen = True` auch fuer die reine Leserolle, obwohl der Test

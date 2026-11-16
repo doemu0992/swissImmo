@@ -90,7 +90,7 @@ FINANZ_VERWALTUNGS_ROLLEN = VERWALTUNGS_ROLLEN + BUCHHALTUNG_ROLLEN
 ZAHLUNGSFREIGABE_ROLLEN = VERWALTUNGS_ROLLEN
 
 #: Betreibung leitet nur die Verwaltung ein (Rechtsfolgen, Kosten; Etappe 2,
-#: SICH-11, `docs/KONZEPT-UI.md` §8).
+#: SICH-11, `CONTRIBUTING.md` §8).
 BETREIBUNGS_ROLLEN = VERWALTUNGS_ROLLEN
 
 #: Der Betreiber der Installation. KEINE Mitgliedschaftsrolle (niemand bekommt sie zugewiesen): `hat_rolle` lässt
@@ -145,7 +145,7 @@ def hat_rolle(user, rollen):
 
     DER INHABER DARF, WAS DAS TEAM DARF
     -----------------------------------
-    Nach der Rollentabelle (`docs/KONZEPT-UI.md`, Abschnitt 8) hat der Inhaber
+    Nach der Rollentabelle (`CONTRIBUTING.md`, Abschnitt 8) hat der Inhaber
     jede Befugnis der anderen Team-Rollen. Rund zwanzig Views verlangten aber
     nur `ROLLE_VERWALTER` — der Inhaber einer frisch angelegten Organisation
     stand dort vor einem 403, ausgerechnet auch bei «Benutzer & Rollen», die

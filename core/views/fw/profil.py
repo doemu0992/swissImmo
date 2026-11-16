@@ -2,7 +2,7 @@
 #
 # Profil-Menue: Account, Benutzerliste, Logbuch, Rechtsgrundlagen,
 # Eigentuemerliste, Mieterwechsel, Vermarktung samt Portal-Feed, Vorlagen,
-# Integrationen, Abonnemente. Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Integrationen, Abonnemente. Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # OFFENER POSTEN, hier bewusst NICHT geloest: fw_benutzer (die Liste) steht
 # in diesem Block, waehrend fw_benutzer_form und fw_benutzer_loeschen aus
@@ -210,7 +210,7 @@ def _hat_aktiven_zweiten_faktor(benutzer):
 
 # Nur der Inhaber (seit 28.09.2026, vorher jeder Verwalter). Der Reset leert
 # den gesamten Bestand der Verwaltung unwiderruflich; «Organisation löschen»
-# ist nach docs/PHASE-2-PLAN.md (Etappe 4.3) Inhaber-Sache.
+# ist nach «PHASE-2-PLAN» (früheres Dokument, Git-Verlauf) (Etappe 4.3) Inhaber-Sache.
 @rolle_erforderlich(*INHABER_ROLLEN)
 def fw_datenreset(request):
     """GEFAHRENZONE: löscht ALLE Betriebsdaten dieser Verwaltung (Liegenschaften,
@@ -1130,7 +1130,7 @@ def fw_integration_test_email(request):
     return redirect('/neu/integrationen/')
 
 # Zielgruppe je Stufe — reiner Anzeigetext. Stufen, Grenzen, Preise und
-# Funktionen kommen aus core/funktionen.py (D7, docs/AUFTRAG-ABOSTUFEN.md);
+# Funktionen kommen aus core/funktionen.py (D7, «AUFTRAG-ABOSTUFEN» (früheres Dokument, Git-Verlauf));
 # bis 29.09.2026 stand hier eine eigene Preisliste pro Einheit.
 ABO_ZIELGRUPPE = {
     'start':        gettext_lazy('Private und Kleinstverwaltungen'),
@@ -1215,7 +1215,7 @@ def fw_abonnemente(request):
     vw = aktuelle_organisation()
     basis = _global_filter(request)
 
-    # Den Plan wählt der Inhaber (docs/KONZEPT-UI.md §8) — er bestimmt die
+    # Den Plan wählt der Inhaber (CONTRIBUTING.md §8) — er bestimmt die
     # Rechnung. Ansehen dürfen weiterhin alle Team-Rollen.
     kann_abo_aendern = hat_rolle(request.user, INHABER_ROLLEN)
     if request.method == 'POST' and not kann_abo_aendern:

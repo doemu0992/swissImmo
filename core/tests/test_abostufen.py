@@ -1,4 +1,4 @@
-"""Vier Abostufen aus einer Quelle (docs/AUFTRAG-ABOSTUFEN.md, D7).
+"""Vier Abostufen aus einer Quelle («AUFTRAG-ABOSTUFEN» (früheres Dokument, Git-Verlauf), D7).
 
 Geprüft wird, was beim Umbau von basis/aufbau/verwaltung/portfolio auf
 start/team/professional/enterprise nicht passieren darf:

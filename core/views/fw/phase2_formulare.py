@@ -1,6 +1,6 @@
 # core/views/fw/phase2_formulare.py
 #
-# Oberflächen für die Basis-Strukturen aus dem Phase-1-Audit (docs/AUDIT-FEATURES.md):
+# Oberflächen für die Basis-Strukturen aus dem Phase-1-Audit («AUDIT-FEATURES» (früheres Dokument, Git-Verlauf)):
 # interne Ticket-Zuweisung mit SLA-Frist, Zustellung der Nebenkostenabrechnung
 # (Einsprachefrist), Betreibung des Mietzinses und Zählerstände für die HKVO.
 #

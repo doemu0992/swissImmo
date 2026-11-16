@@ -2,7 +2,7 @@
 
 WAS E2 VERLANGT UND WO ES STAND
 
-`docs/PLAN-V7.md` nennt fuer E2 zwei Haelften: den Vorlagendurchgang auf die
+`«PLAN-V7» (früheres Dokument, Git-Verlauf)` nennt fuer E2 zwei Haelften: den Vorlagendurchgang auf die
 Komponentenschicht UND `{% trans %}` im selben Griff, mit dem Gate «.po fuer
 DE vollstaendig, FR/IT/EN voruebersetzt». Die erste Haelfte war am 21.09.2026
 praktisch fertig, die zweite hatte **nie begonnen**: Gemessen trugen genau

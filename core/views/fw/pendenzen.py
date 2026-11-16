@@ -2,7 +2,7 @@
 #
 # Pendenzen und Fristen — persistent erfasste und automatisch aus dem
 # Bestand berechnete, dazu der iCal-Feed. Etappe 1, siehe
-# docs/ETAPPE-1-ZERLEGEN.md.
+# «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # _pendenz_ziel liegt seit Schnitt 0b in _basis.py: Der Helfer wird auch
 # ausserhalb dieses Blocks gebraucht und waere sonst mit ihm ausgezogen.

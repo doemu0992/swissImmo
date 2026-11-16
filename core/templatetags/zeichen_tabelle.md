@@ -1,7 +1,7 @@
 # Zeichensatz — 61 Zeichen mit fester Bedeutung
 
-> Grundlage: Entscheid **D5** in `docs/ENTSCHEIDE-V7.md`, Befund **B8** in
-> `docs/UX-ANALYSE-V7.md`.
+> Grundlage: Entscheid **D5** in `«ENTSCHEIDE-V7» (früheres Dokument, Git-Verlauf)`, Befund **B8** in
+> `«UX-ANALYSE-V7» (früheres Dokument, Git-Verlauf)`.
 
 ## Warum überhaupt
 

@@ -3,7 +3,7 @@
 # Zentrale Dokumentenablage aus beiden Quellen (rentals.Dokument und
 # portfolio-seitige Ablage — die Zusammenfuehrung der zwei Modelle ist
 # TS-6/P2.1 und ausdruecklich NICHT Teil dieses Umzugs).
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 
 from datetime import date
 

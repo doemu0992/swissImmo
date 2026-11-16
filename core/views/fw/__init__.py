@@ -2,7 +2,7 @@
 #
 # Bis Etappe 1 war das EINE Datei mit 14'983 Zeilen und 232 Views. Sie wird
 # entlang der Blockkommentare, die schon drinstehen, in 33 Module zerlegt
-# (Auftrag: docs/ETAPPE-1-ZERLEGEN.md). Dieses `__init__.py` hält die
+# (Auftrag: «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)). Dieses `__init__.py` hält die
 # Fassade stabil: `swiss_immo/urls.py` und die Tests importieren weiter aus
 # `core.views.fw`, ganz gleich, in welchem Modul eine View gerade liegt.
 # Deshalb bleiben alle 293 benannten URLs während der gesamten Zerlegung
@@ -14,7 +14,7 @@
 # Die vier grössten Dateien (`detailseiten.py`, `listen.py`, `aktionen.py`,
 # `kuendigung.py`) sind in 26 Module unter Namen wie `vertrag_detail`,
 # `debitoren_liste`, `zahlungen_aktionen`, `verzug_257d` zerlegt; Zuordnung in
-# docs/ETAPPE-1-ZERLEGEN.md («Nachtrag»).
+# «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf) («Nachtrag»).
 
 # Herausgeloeste Bloecke, alphabetisch. Die Blocknummern aus dem
 # Arbeitsauftrag stehen hier bewusst NICHT: Sie zaehlen die Kommentarbanner

@@ -1,7 +1,7 @@
 # core/views/fw/liegenschaft_detail.py
 #
 # Die Liegenschaft-Akte: Kopf, Detailseite, Wartungsfristen und Budget.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md. Herausgeloest aus detailseiten.py.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf). Herausgeloest aus detailseiten.py.
 
 from datetime import date
 from decimal import Decimal

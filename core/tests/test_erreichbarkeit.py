@@ -187,6 +187,9 @@ class ErreichbarkeitTests(SimpleTestCase):
             if _erwaehnt_in_dateien(adresse, [PROGRAMM / 'core' / 'views'], ['.py'],
                                     ohne_quelle=eigene_quelle):
                 continue
+            # Skripte unter static/js rufen Adressen ab (z. B. die Zähler der Leiste) — auch das ist ein Weg.
+            if _erwaehnt_in_dateien(adresse, [PROGRAMM / 'static' / 'js'], ['.js']):
+                continue
             verwaist.append(adresse)
         self.assertEqual(
             verwaist, [],

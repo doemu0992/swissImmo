@@ -16,7 +16,7 @@ class CoreConfig(AppConfig):
 
         # Einmal beim Start: Passt das Schema zum Code? Wenn nicht, geht die
         # Anwendung in den Wartungsmodus, statt auf jeder Seite einen
-        # Traceback zu zeigen (siehe docs/WARTUNGSSEITE.md).
+        # Traceback zu zeigen (siehe ARCHITECTURE.md).
         #
         # Hier und nicht in der Middleware, weil das sonst eine zusaetzliche
         # Datenbankabfrage bei JEDEM Seitenaufruf waere — fuer einen Zustand,

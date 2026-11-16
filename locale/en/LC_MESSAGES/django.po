@@ -38834,10 +38834,10 @@ msgstr ""
 msgid ""
 "Nur möglich, wenn die Anwendung den Schlüssel selbst angelegt hat. Liegt er "
 "in der .env oder in einer eigenen Datei, wechseln Sie ihn dort "
-"(docs/SCHLUESSEL.md)."
+"(ARCHITECTURE.md)."
 msgstr ""
 "Only possible if the application created the key itself. If it lives in the "
-".env or in its own file, change it there (docs/SCHLUESSEL.md)."
+".env or in its own file, change it there (ARCHITECTURE.md)."
 
 msgid "Kopie des Schlüssels herunterladen"
 msgstr "Download a copy of the key"
@@ -40062,8 +40062,8 @@ msgstr "Extra protection for your account, optional: after the password, the por
 msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon."
 msgstr "Extra protection for your account, optional: after the password, the portal asks for a code from an authenticator app on your phone."
 
-msgid "RLS-Probe: %(n)s Befund(e) in den letzten 14 Tagen (manage.py sicherheitslog). Bei 0 über zwei Wochen kann scharf geschaltet werden (docs/RLS.md)."
-msgstr "RLS trial: %(n)s finding(s) in the last 14 days (manage.py sicherheitslog). At 0 over two weeks, strict mode can be enabled (docs/RLS.md)."
+msgid "RLS-Probe: %(n)s Befund(e) in den letzten 14 Tagen (manage.py sicherheitslog). Bei 0 über zwei Wochen kann scharf geschaltet werden (ARCHITECTURE.md)."
+msgstr "RLS trial: %(n)s finding(s) in the last 14 days (manage.py sicherheitslog). At 0 over two weeks, strict mode can be enabled (ARCHITECTURE.md)."
 
 msgid "In der LIK-Reihe «%(basis)s = 100» fehlt der Wert für %(monat)s. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder den Monat nachtragen."
 msgstr "The CPI series “%(basis)s = 100” has no value for %(monat)s. No value from another series is substituted: import the series under “CPI values” or enter the month."

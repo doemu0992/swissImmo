@@ -4,7 +4,7 @@ GESTALTETER BESTÄTIGUNGSDIALOG (Audit Etappe 3)
 WARUM SO UND NICHT ANDERS
 
 Rückfragen stehen als Datenattribut `data-bestaetigen="…"` an Formular (Absenden) oder Knopf/Link (Klick) —
-mit übersetztem, per `escapejs` gesichertem Text. Seit der CSP (Roadmap Nr. 23, `docs/CSP.md`) gibt es dafür
+mit übersetztem, per `escapejs` gesichertem Text. Seit der CSP (Roadmap Nr. 23, `ARCHITECTURE.md`) gibt es dafür
 keinen Inline-Handler mehr (`onsubmit="return confirm('…')"` wäre mit CSP blockiert); dieses Skript ist der
 einzige Ort, der fragt. Es fängt Absenden und Klick in der CAPTURE-Phase ab und zeigt den Text in einem
 `<dialog>`. Nach «Bestätigen» läuft die Aktion einmal weiter (Merker `data-bestaetigt`), ohne erneut zu fragen.

@@ -1,5 +1,5 @@
 """Testmodul pendenzen — aus core/tests.py herausgeloest (Etappe 1,
-siehe docs/ETAPPE-1-ZERLEGEN.md). 9 Klassen, unveraendert uebernommen."""
+siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)). 9 Klassen, unveraendert uebernommen."""
 from datetime import date, timedelta
 from decimal import Decimal
 
@@ -487,7 +487,7 @@ class HotfixDashboardPerformanceTests(TestCase):
 # Statusfilter «gekündigt» klickt, sieht den abgelaufenen Vertrag wieder mit.
 #
 # Das ist ein OFFENER PUNKT und keine erledigte Sache. Er steht in
-# docs/KONZEPT-UI.md unter «Offene Punkte aus 4b.13»; ob die Unterscheidung
+# CONTRIBUTING.md unter «Offene Punkte aus 4b.13»; ob die Unterscheidung
 # in der Vertragsliste auftauchen soll, ist eine fachliche Entscheidung und
 # nicht Teil des Startseiten-Umbaus.
 #
