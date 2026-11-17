@@ -40405,3 +40405,8 @@ msgstr "Template “%(name)s” saved."
 
 msgid "Vorlage «%(name)s» gelöscht."
 msgstr "Template “%(name)s” deleted."
+
+msgid "%(n)s weitere in der Liste"
+msgid_plural "%(n)s weitere in der Liste"
+msgstr[0] "%(n)s more in the list"
+msgstr[1] "%(n)s more in the list"

@@ -41000,3 +41000,8 @@ msgstr "Modello «%(name)s» salvato."
 
 msgid "Vorlage «%(name)s» gelöscht."
 msgstr "Modello «%(name)s» eliminato."
+
+msgid "%(n)s weitere in der Liste"
+msgid_plural "%(n)s weitere in der Liste"
+msgstr[0] "%(n)s altra nell'elenco"
+msgstr[1] "%(n)s altre nell'elenco"

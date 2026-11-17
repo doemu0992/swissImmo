@@ -43,6 +43,8 @@ BEWERBUNG_SPALTEN = [
 
 #: Die Liste zeigt alles, auch ältere Absagen — bis zu dieser Zahl.
 BEWERBUNG_LISTE_MAX = 300
+#: «Vertrag generiert» sammelt sich bis zur Anonymisierung an — das Board zeigt die neuesten.
+BEWERBUNG_VERTRAG_MAX = 20
 
 _STATUS_LABEL = {k: l for k, l, _c in BEWERBUNG_SPALTEN}
 #: Chipfarbe je Status in der Liste (fw-chip-Modifikatoren aus der Schicht).
@@ -148,7 +150,12 @@ def fw_bewerbungen(request):
             eigene = [k for k in karten if k['spalte'] == key]
             if key in reihenfolge:
                 eigene.sort(key=reihenfolge[key])
-            spalten.append({'key': key, 'label': label, 'karten': eigene, 'anzahl': len(eigene)})
+            anzahl = len(eigene)
+            mehr = 0
+            if key == 'vertrag' and anzahl > BEWERBUNG_VERTRAG_MAX:
+                mehr = anzahl - BEWERBUNG_VERTRAG_MAX
+                eigene = eigene[:BEWERBUNG_VERTRAG_MAX]
+            spalten.append({'key': key, 'label': label, 'karten': eigene, 'anzahl': anzahl, 'mehr': mehr})
 
     from urllib.parse import urlencode
     filter_query = urlencode([(k, v) for k, v in (

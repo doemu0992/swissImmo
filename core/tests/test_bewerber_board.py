@@ -583,3 +583,33 @@ class VertragZuordnungMigrationTests(TestCase):
         b.refresh_from_db()
         self.assertIsNotNone(b.vertrag_id)
         self.assertEqual(b.aktualisiert_am, vorher)
+
+
+class BewerberBoardVertragSpalteTests(TestCase):
+    """«Vertrag generiert» zeigt nur die neuesten Karten; der Zähler bleibt die Gesamtzahl."""
+
+    def setUp(self):
+        self.lg, self.e, self.m, self.v = _basis_objekte()
+        self.c = Client()
+        self.c.force_login(_team_user())
+
+    def _vertrag(self, r):
+        return {sp['key']: sp for sp in r.context['spalten']}['vertrag']
+
+    def test_obergrenze_und_hinweis(self):
+        from core.views.fw.mietprozess import BEWERBUNG_VERTRAG_MAX as MAX
+        for i in range(MAX + 3):
+            _bewerbung(self.e, f'V{i}', status='zugesagt', vertrag=self.v)
+        r = self.c.get('/neu/bewerbungen/')
+        sp = self._vertrag(r)
+        self.assertEqual(len(sp['karten']), MAX)
+        self.assertEqual(sp['anzahl'], MAX + 3)
+        self.assertEqual(sp['mehr'], 3)
+        self.assertContains(r, '3 weitere in der Liste')
+
+    def test_gegenprobe_unter_der_grenze_kein_hinweis(self):
+        _bewerbung(self.e, 'V0', status='zugesagt', vertrag=self.v)
+        r = self.c.get('/neu/bewerbungen/')
+        sp = self._vertrag(r)
+        self.assertEqual((len(sp['karten']), sp['mehr']), (1, 0))
+        self.assertNotContains(r, 'weitere in der Liste')
