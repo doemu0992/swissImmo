@@ -39299,3 +39299,8 @@ msgstr "Vorlage «%(name)s» gespeichert."
 
 msgid "Vorlage «%(name)s» gelöscht."
 msgstr "Vorlage «%(name)s» gelöscht."
+
+msgid "%(n)s weitere in der Liste"
+msgid_plural "%(n)s weitere in der Liste"
+msgstr[0] "%(n)s weitere in der Liste"
+msgstr[1] "%(n)s weitere in der Liste"

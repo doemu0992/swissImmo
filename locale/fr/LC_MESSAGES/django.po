@@ -41071,3 +41071,8 @@ msgstr "Modèle « %(name)s » enregistré."
 
 msgid "Vorlage «%(name)s» gelöscht."
 msgstr "Modèle « %(name)s » supprimé."
+
+msgid "%(n)s weitere in der Liste"
+msgid_plural "%(n)s weitere in der Liste"
+msgstr[0] "%(n)s autre dans la liste"
+msgstr[1] "%(n)s autres dans la liste"

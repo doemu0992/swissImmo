@@ -163,6 +163,9 @@ Rundung: 24 px für Karten, 14 px für kleine Flächen.
   `date.today()` in Tests (`test_zeit_waechter`).
 - **Abfragezahl:** Eine Liste darf nicht mit ihren Zeilen wachsen. Geprüft wird die Eigenschaft (gleiche Zahl bei
   mehr Zeilen), nicht eine feste Zahl (`test_skalierung_kernseiten`).
+- **Obergrenzen:** Offene Spalten der Boards bleiben unbegrenzt (Arbeitsvorrat). Was sich nur ansammelt, ist begrenzt
+  und verweist auf die Liste: Erledigtes im Schadenboard (30 Tage, 20 Karten), «Vertrag generiert» im Bewerbungsboard
+  (20 Karten), ältere Absagen (30 Tage). Der Zähler der Spalte nennt immer die Gesamtzahl.
 - **Ratschen:** Zahlen, die nur sinken dürfen (Farbklassen, Stilschuld, Inline-Handler, Uhr-Zugriffe,
   `innerHTML`-Stellen). Sinkt die Zahl, die Erlaubnis nachführen.
 - Zwei Verwaltungen im Test: `MandantenFixture` aus `core/tests/_isolation.py`.
