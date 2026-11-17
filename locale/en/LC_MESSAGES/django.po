@@ -40434,3 +40434,12 @@ msgstr "Integrations"
 
 msgid "Daten & Protokoll"
 msgstr "Data & log"
+
+msgid "Diese Buchung gehört zu einer Zahlung. Bitte die Zahlung im Bankabgleich stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+msgstr "This entry belongs to a payment. Please reverse the payment in bank reconciliation, otherwise open items and the account no longer match."
+
+msgid "Diese Buchung gehört zu einer Rechnung. Bitte die Rechnung selbst stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+msgstr "This entry belongs to an invoice. Please cancel the invoice itself, otherwise open items and the account no longer match."
+
+msgid "Rückgängig nicht möglich: Der Import enthält %(n)s verbuchte Belastung(en) (Gebühren, Lieferantenzahlungen). Bitte zuerst deren Buchungen stornieren, sonst werden sie nach einem erneuten Import doppelt gebucht."
+msgstr "Cannot undo: the import contains %(n)s posted debit(s) (fees, supplier payments). Please reverse these entries first, otherwise they will be posted twice on a new import."

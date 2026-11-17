@@ -112,7 +112,10 @@ class SchadenMeldung(OrganisationAusKette):
             # 30 Tage später ab (E6) — vor dem `update`, das an `save()`
             # vorbeigeht.
             from .handwerker_zugang import abschluss_vermerken
-            offen = self.handwerker_auftraege.exclude(status='erledigt')
+            # Stornierte Aufträge bleiben storniert (Audit B1): Sonst wurde ein einst stornierter Auftrag «erledigt»
+            # und sperrte nach dem Wiederöffnen den nächsten Abschluss (keine Rechnung).
+            from .workflow import AUFTRAG_STORNIERT
+            offen = self.handwerker_auftraege.exclude(status__in=('erledigt', AUFTRAG_STORNIERT))
             abschluss_vermerken(offen)
             offen.update(status='erledigt')
 

@@ -567,7 +567,7 @@ def _vertrag_aus_bewerbung(request, b):
     `mietprozess.0010_vertrag_aus_bestand_zuordnen` zugeordnet, wo das
     eindeutig ging.
 
-    Den Mieter sucht die Stelle weiterhin über E-Mail und Nachname: Das ist der
+    Den Mieter sucht die Stelle weiterhin über E-Mail, Nachname und Vorname: Das ist der
     Duplikatschutz im Personenstamm (eine Person, die schon Mieter ist, wird
     nicht ein zweites Mal angelegt), nicht die Zuordnung zum Vertrag.
 
@@ -581,7 +581,10 @@ def _vertrag_aus_bewerbung(request, b):
     # 1. Mieter finden oder anlegen (Duplikat-Schutz über E-Mail + Name)
     mieter = None
     if b.email:
-        mieter = Mieter.objects.filter(email__iexact=b.email, nachname__iexact=b.nachname).first()
+        # E-Mail, Nachname UND Vorname: Familien teilen oft Adresse und Nachname. Ohne den Vornamen entstand der
+        # Vertragsentwurf auf dem Namen des bestehenden Mieters (Audit B2).
+        mieter = Mieter.objects.filter(email__iexact=b.email, nachname__iexact=b.nachname,
+                                       vorname__iexact=b.vorname).first()
     if not mieter:
         mieter = Mieter.objects.create(
             typ='person',

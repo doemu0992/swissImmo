@@ -41100,3 +41100,12 @@ msgstr "Interfaces"
 
 msgid "Daten & Protokoll"
 msgstr "Données et journal"
+
+msgid "Diese Buchung gehört zu einer Zahlung. Bitte die Zahlung im Bankabgleich stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+msgstr "Cette écriture appartient à un paiement. Veuillez annuler le paiement dans le rapprochement bancaire, sinon les postes ouverts et le compte ne concordent plus."
+
+msgid "Diese Buchung gehört zu einer Rechnung. Bitte die Rechnung selbst stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+msgstr "Cette écriture appartient à une facture. Veuillez annuler la facture elle-même, sinon les postes ouverts et le compte ne concordent plus."
+
+msgid "Rückgängig nicht möglich: Der Import enthält %(n)s verbuchte Belastung(en) (Gebühren, Lieferantenzahlungen). Bitte zuerst deren Buchungen stornieren, sonst werden sie nach einem erneuten Import doppelt gebucht."
+msgstr "Annulation impossible : l'import contient %(n)s débit(s) comptabilisé(s) (frais, paiements de fournisseurs). Veuillez d'abord annuler ces écritures, sinon elles seront comptabilisées deux fois lors d'un nouvel import."

@@ -192,8 +192,11 @@ def _mwst_bereits_verbucht(jahr, quartal, liegenschaft=None):
     # nach einem Storno dauerhaft gesperrt und liess sich nie neu verbuchen (Audit).
     qs = Buchung.objects.filter(beleg_text__startswith=f"MWST-Abrechnung {jahr}",
                                 ist_storno=False, storniert_am__isnull=True)
+    # Eine Abrechnung für den GANZEN Bestand überlappt jede einzelne Liegenschaft, und umgekehrt: Wer zuerst gesamt
+    # verbuchte und danach mit Liegenschaftsfilter, buchte die Zahllast zweimal (Audit F3). Für eine Liegenschaft
+    # blockiert deshalb ihre eigene UND die Gesamtabrechnung; die Gesamtabrechnung blockiert jede vorhandene.
     if liegenschaft:
-        qs = qs.filter(liegenschaft=liegenschaft)
+        qs = qs.filter(_Q(liegenschaft=liegenschaft) | _Q(liegenschaft__isnull=True))
     if quartal not in ('1', '2', '3', '4'):
         return qs.exists()                      # Jahr: jede Quartalsabrechnung zählt
     # Quartal: nur das EIGENE Quartal oder eine Jahresabrechnung blockiert.

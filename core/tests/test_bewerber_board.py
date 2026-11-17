@@ -315,6 +315,24 @@ class BewerbungStatusUndVertragTests(TestCase):
         self.assertNotEqual(b.vertrag_id, fremd.id)
         self.assertRedirects(r, f'/neu/vertraege/{b.vertrag_id}/', fetch_redirect_response=False)
 
+    def test_familienmitglied_mit_gleicher_adresse_wird_nicht_dem_bestehenden_mieter_zugeordnet(self):
+        """Audit B2: Gleiche E-Mail und gleicher Nachname, anderer Vorname — das ist eine andere Person."""
+        hans = Mieter.objects.create(typ='person', vorname='Hans', nachname='Muster', email='familie@example.ch')
+        b = _bewerbung(self.e, 'Anna', status='geprueft', email='familie@example.ch')
+        self.c.post(f'/neu/bewerbungen/{b.id}/vertrag/')
+        b.refresh_from_db()
+        self.assertIsNotNone(b.vertrag_id)
+        self.assertNotEqual(b.vertrag.mieter_id, hans.id, 'Der Entwurf läuft auf dem bestehenden Mieter')
+        self.assertEqual(b.vertrag.mieter.vorname, 'Anna')
+
+    def test_gegenprobe_dieselbe_person_wird_nicht_doppelt_angelegt(self):
+        anna = Mieter.objects.create(typ='person', vorname='Anna', nachname='Muster', email='anna@example.ch')
+        b = _bewerbung(self.e, 'Anna', status='geprueft')
+        self.c.post(f'/neu/bewerbungen/{b.id}/vertrag/')
+        b.refresh_from_db()
+        self.assertEqual(b.vertrag.mieter_id, anna.id)
+        self.assertEqual(Mieter.objects.filter(email='anna@example.ch').count(), 1)
+
     def test_umwandlung_ist_idempotent_am_verweis(self):
         b = _bewerbung(self.e, status='zugesagt', vertrag=self.v)
         r = self.c.post(f'/neu/bewerbungen/{b.id}/vertrag/')
