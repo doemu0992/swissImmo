@@ -180,3 +180,39 @@ class StwegBehaeltDenBestandsfilterTests(TestCase):
                 # Hauptnavigation und Menüband führen den Filter weiter.
                 self.assertIn(f'href="/neu/vertraege/?lg={lg}"', inhalt)
                 self.assertIn(f'href="/neu/liegenschaften/?lg={lg}"', inhalt)
+
+
+class JederMenuepunktLeuchtetSeinenEigenenTests(TestCase):
+    """Wer einen Menüpunkt öffnet, sieht GENAU diesen Punkt hervorgehoben.
+
+    Sicht 2 oben prüft nur, dass irgendein Bereich leuchtet. Anfragen, Aufträge und
+    Ablesung meldeten bis November 2026 den Bereichsschlüssel `heute`: Der Bereich
+    leuchtete, der Punkt nicht (Audit 17.11.2026)."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def setUp(self):
+        self.client = Client(raise_request_exception=False)
+        self.client.force_login(self.a.benutzer)
+
+    def test_jede_menueseite_meldet_einen_schluessel_ihres_eintrags(self):
+        geprueft, falsch = 0, []
+        for g in nav_gruppen():
+            for it in g['items']:
+                antwort = self.client.get(it['ziel'].split('?')[0])
+                if antwort.status_code != 200 or antwort.context is None:
+                    continue
+                geprueft += 1
+                nav = antwort.context.get('nav')
+                if nav not in it['keys']:
+                    falsch.append(f"{it['ziel']} meldet nav={nav!r}, erwartet {it['keys']}")
+        self.assertGreater(geprueft, 40, 'auffällig wenige Menüseiten geprüft')
+        self.assertEqual(falsch, [])
+
+    def test_gegenprobe_ein_falscher_schluessel_wird_erkannt(self):
+        """Der Prüfer schlägt an, wenn der Schlüssel nicht zum Eintrag gehört."""
+        it = next(i for g in nav_gruppen() for i in g['items'] if i['ziel'] == '/neu/anfragen/')
+        self.assertNotIn('heute', it['keys'])
+        self.assertIn('anfragen', it['keys'])

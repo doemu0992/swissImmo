@@ -30,7 +30,7 @@ def fw_anfragen(request):
     for a in offene:
         a.darf_entscheiden = darf_sensibel or a.art not in Aenderungsanfrage.SENSIBEL
     return render(request, 'fw/anfragen.html', {
-        **_global_filter(request), 'nav': 'heute', 'offene': offene, 'entschieden': entschieden, 'alle': alle})
+        **_global_filter(request), 'nav': 'anfragen', 'offene': offene, 'entschieden': entschieden, 'alle': alle})
 
 
 def _entscheidbar(request, anfrage):

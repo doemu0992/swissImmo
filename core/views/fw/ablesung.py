@@ -60,7 +60,7 @@ def fw_ablesung(request):
     zeilen = [{'lg': lg, 'zaehler': zaehler[lg.pk], 'empfaenger': len(empfaenger[lg.pk]),
                'letzter': letzter.get(lg.pk), 'offen': len(offen[lg.pk])}
               for lg in Liegenschaft.objects.order_by('strasse')]
-    return render(request, 'fw/ablesung.html', {**_global_filter(request), 'nav': 'heute', 'zeilen': zeilen})
+    return render(request, 'fw/ablesung.html', {**_global_filter(request), 'nav': 'ablesung', 'zeilen': zeilen})
 
 
 @rolle_erforderlich(*SCHREIB_ROLLEN)
