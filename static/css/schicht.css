@@ -1317,6 +1317,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
                 background:color-mix(in srgb,var(--ds-surface) 82%,transparent)}
             .fw-tabbar a{border-radius:var(--ds-radius);transition:background .12s,color .12s}
             .fw-tabbar a[aria-current="page"]{background:var(--ds-brand-soft);color:var(--ds-brand-600)}
+            body:has(.fw-assistent-fuss) .fw-tabbar{display:none}
             .fw-inhalt{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
             .fw-toasts{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
             .fw-lage{gap:12px}.fw-kpis{gap:12px}
