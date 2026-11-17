@@ -213,7 +213,9 @@ class SperrseiteTests(Basis):
         self._abo('start')
         c = self._client()
         self.assertContains(c.get('/neu/liegenschaften/'), 'fw-abo-schloss')
-        plan_wechseln(self.a.organisation, 'team', False)
+        # Die Schiene führt die Seiten ALLER Bereiche (nicht nur des aktiven): Solange eine Seite der Stufe fehlt,
+        # steht das Zeichen auf jeder Seite. Erst die höchste Stufe sperrt nichts.
+        plan_wechseln(self.a.organisation, 'enterprise', False)
         self.assertNotContains(c.get('/neu/liegenschaften/'), 'fw-abo-schloss')
 
     def test_superuser_ist_nicht_gesperrt(self):

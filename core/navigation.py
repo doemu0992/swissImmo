@@ -1,7 +1,24 @@
 """Zentrale Navigationsstruktur der /neu/-Oberfläche.
 
-FÜNF BEREICHE: Heute · Akten · Läufe · Finanzen · Berichte
+SECHS BEREICHE: Heute · Betrieb · Akten · Läufe · Finanzen · Berichte
 (Einstellungen steht im Fuss der Leiste — es ist kein Arbeitsbereich.)
+
+NOVEMBER 2026: SECHS BEREICHE UND DIE SCHIENE
+============================================
+
+Gemessen am 17.11.2026 (152 Seiten, Desktop und Telefon): «Akten» hatte 13
+Punkte, davon drei hinter «Mehr» (bei 1100 px sechs); Schäden, Mieterwechsel,
+Leerstand, Vermarktung und Bewerbungen sind Tagesarbeit, keine Register. Neu:
+
+  Betrieb   Was im Haus passiert (Schäden, Aufträge, Anfragen, Vermietung,
+            Ablesung, Ersatz). Die Adressen sind unverändert.
+  Akten     Nur noch die Register.
+  Heute · Läufe · Finanzen · Berichte    mit je einem Eintrag «Übersicht».
+
+Die Navigation steht ab 1024 px in einer Schiene am linken Rand (`fw/base.html`,
+`static/js/fw-schiene.js`): sechs Symbole, ein Klick klappt die Seiten des
+Bereichs auf. Diese Liste bleibt die EINE Quelle: Schiene, Telefon-Kopfzeile,
+Palette und Rollenfilter lesen sie.
 
 WAS SICH MIT E1.1 GEÄNDERT HAT UND WARUM
 ========================================
@@ -104,13 +121,16 @@ def _g(key, label, icon, ziel, items=None, badge=None, extra_keys=None):
             'items': items, 'alle_keys': alle_keys, 'badge': badge}
 
 
-def _i(label, ziel, keys, section=None):
-    """Untereintrag; `section` rendert davor eine kleine Zwischenüberschrift."""
-    return {'label': label, 'ziel': ziel, 'keys': keys, 'section': section}
+def _i(label, ziel, keys, section=None, selten=False):
+    """Untereintrag; `section` rendert davor eine kleine Zwischenüberschrift.
+
+    `selten`: wird selten aufgeschlagen und steht in der Schiene unter der
+    Überschrift «Selten gebraucht» (am Ende des Bereichs)."""
+    return {'label': label, 'ziel': ziel, 'keys': keys, 'section': section, 'selten': selten}
 
 
 def nav_gruppen():
-    """Die fünf Bereiche der Anwendung.
+    """Die sechs Bereiche der Anwendung.
 
     Ohne Argument: Es gibt genau eine Navigation. Bis E1.1 nahm diese Funktion
     einen `modus` entgegen und lieferte zwei verschiedene Strukturen.
@@ -118,15 +138,12 @@ def nav_gruppen():
     return [
         # ── HEUTE ────────────────────────────────────────────────────────────
         # Der Bereichskopf zeigt auf `/neu/` — die Startseite IST der
-        # Arbeitsvorrat (seit 4b.13). Ein zusätzlicher Eintrag «Arbeit» wäre ein
-        # zweiter Weg auf dieselbe Seite: keine Auswahl, sondern eine Frage, die
-        # der Benutzer nicht beantworten kann.
+        # Arbeitsvorrat (seit 4b.13). Der Eintrag «Übersicht» ist dieselbe Seite:
+        # In der Schiene braucht jeder Bereich einen ersten Punkt, der ihn selbst
+        # meint.
         _g('heute', _('Heute'), 'wartet', '/neu/', [
             _i(_('Übersicht'), '/neu/', ['dashboard', 'arbeit', 'faelle']),
             _i(_('Zulauf'), '/neu/zulauf/', ['zulauf']),
-            _i(_('Anfragen'), '/neu/anfragen/', ['anfragen']),
-            _i(_('Aufträge'), '/neu/auftraege/', ['auftraege']),
-            _i(_('Ablesung'), '/neu/ablesung/', ['ablesung']),
             _i(_('Termine'), '/neu/termine/', ['termine']),
             _i(_('Pendenzen'), '/neu/pendenzen/', ['pendenzen']),
             _i(_('Fristen'), '/neu/fristen/', ['fristen']),
@@ -134,33 +151,42 @@ def nav_gruppen():
             # wenn jemand wissen will, wer für wen einspringt — nicht, wenn
             # jemand Ferien einträgt.
             _i(_('Vertretung'), '/neu/abwesenheiten/', ['abwesenheiten']),
-        # `kommunikation` (Serienbrief-Assistent) und `suche` (Trefferliste) haben keinen eigenen Menüpunkt,
-        # leuchten aber unter «Heute» statt nirgends (DESIGN-04). Ob sie einen Punkt bekommen, ist offen
-        # (DESIGN-05: Entscheidungsfrage).
-        ], extra_keys=['suche', 'kommunikation']),
+            _i(_('Kommunikation'), '/neu/kommunikation/', ['kommunikation']),
+        # `suche` (Trefferliste) hat keinen eigenen Menüpunkt, leuchtet aber unter «Heute».
+        ], extra_keys=['suche']),
+
+        # ── BETRIEB ──────────────────────────────────────────────────────────
+        # Was im Haus passiert: Vorgänge, die an Akten hängen, aber Tagesarbeit
+        # sind. Bis 17.11.2026 standen sie unter «Akten» (13 Punkte, drei davon
+        # hinter «Mehr»); Schaden und Mieterwechsel sind fachlich Fälle, keine
+        # Aktentypen. Die Adressen sind unverändert.
+        #
+        # «Vermietung» ist EIN Punkt: Mieterwechsel, Leerstand, Vermarktung und
+        # Bewerbungen sind Schritte eines Ablaufs (`fw/_pipeline.html` führt
+        # zwischen ihnen) und leuchten alle diesen Punkt.
+        _g('betrieb', _('Betrieb'), 'arbeit', '/neu/schaeden/', [
+            _i(_('Schäden'), '/neu/schaeden/', ['schadensfaelle']),
+            _i(_('Aufträge'), '/neu/auftraege/', ['auftraege']),
+            _i(_('Anfragen'), '/neu/anfragen/', ['anfragen']),
+            _i(_('Vermietung'), '/neu/mieterwechsel/',
+               ['mieterwechsel', 'leerstand', 'vermarktung', 'bewerbungen']),
+            _i(_('Ablesung'), '/neu/ablesung/', ['ablesung']),
+            _i(_('Ersatz & Ausstattung'), '/neu/ersatzplanung/', ['assets']),
+        ], badge='schaeden'),
 
         # ── AKTEN ────────────────────────────────────────────────────────────
-        # Die Register in der Reihenfolge, in der man sie aufschlägt: vom
-        # Auftraggeber über das Haus zur einzelnen Person. Darunter die
-        # laufenden Vorgänge, die an diesen Akten hängen.
-        _g('akten', _('Akten'), 'dokument', '/neu/liegenschaften/', [
+        # Nur noch die Register, in der Reihenfolge, in der man sie aufschlägt:
+        # vom Auftraggeber über das Haus zur einzelnen Person.
+        _g('akten', _('Akten'), 'liegenschaft', '/neu/liegenschaften/', [
             _i(_('Mandate'), '/neu/mandate/', ['mandate']),
             _i(_('Liegenschaften'), '/neu/liegenschaften/', ['liegenschaften']),
             _i(_('Objekte'), '/neu/objekte/', ['objekte']),
-            _i(_('Stockwerkeigentum'), '/neu/stweg/', ['stweg']),
             _i(_('Mietverhältnisse'), '/neu/vertraege/', ['vertraege']),
             _i(_('Personen'), '/neu/personen/', ['personen']),
             _i(_('Dienstleister'), '/neu/dienstleister/', ['dienstleister']),
-            # Schaden und Mieterwechsel sind fachlich Fälle, keine Aktentypen.
-            # Ihre Listen bleiben, bis die Fallansicht sie ersetzt.
-            _i(_('Schäden'), '/neu/schaeden/', ['schadensfaelle'], section=_('Vorgänge')),
-            _i(_('Mieterwechsel'), '/neu/mieterwechsel/', ['mieterwechsel']),
-            _i(_('Leerstand'), '/neu/leerstand/', ['leerstand']),
-            _i(_('Vermarktung'), '/neu/vermarktung/', ['vermarktung']),
-            _i(_('Bewerbungen'), '/neu/bewerbungen/', ['bewerbungen']),
-            _i(_('Ersatz & Ausstattung'), '/neu/ersatzplanung/', ['assets']),
-        # `dokumente` (Ablage und Dokumentverlauf) leuchtet unter «Akten», ohne eigenen Menüpunkt (DESIGN-04/-05).
-        ], badge='schaeden', extra_keys=['dokumente']),
+            _i(_('Stockwerkeigentum'), '/neu/stweg/', ['stweg']),
+            _i(_('Dokumente'), '/neu/dokumente/', ['dokumente']),
+        ]),
 
         # ── LÄUFE ────────────────────────────────────────────────────────────
         # Alles, was einen Zustand hat und blockieren kann. Der Bereich fehlte
@@ -184,12 +210,12 @@ def nav_gruppen():
             _i(_('Debitoren'), '/neu/debitoren/', ['debitoren']),
             _i(_('Kautionen'), '/neu/kautionen/', ['kautionen']),
             _i(_('Kreditoren'), '/neu/kreditoren/', ['kreditoren'], section=_('Verbindlichkeiten')),
-            _i(_('Lieferantenkonten'), '/neu/lieferantenkonten/', ['lieferantenkonten']),
+            _i(_('Lieferantenkonten'), '/neu/lieferantenkonten/', ['lieferantenkonten'], selten=True),
             _i(_('Bankkonten'), '/neu/bankkonten/', ['bankkonten'], section=_('Konten')),
             _i(_('Buchhaltung'), '/neu/buchhaltung/', ['buchhaltung']),
-            _i(_('Kontenplan & Salden'), '/neu/kontenplan/', ['kontenplan']),
-            _i(_('Anlagen & Abschluss'), '/neu/anlagen/', ['anlagen']),
-            _i(_('Hypotheken'), '/neu/hypotheken/', ['hypotheken']),
+            _i(_('Kontenplan & Salden'), '/neu/kontenplan/', ['kontenplan'], selten=True),
+            _i(_('Anlagen & Abschluss'), '/neu/anlagen/', ['anlagen'], selten=True),
+            _i(_('Hypotheken'), '/neu/hypotheken/', ['hypotheken'], selten=True),
         ]),
 
         # ── BERICHTE ─────────────────────────────────────────────────────────
@@ -250,7 +276,7 @@ def _ziel_erlaubt_fuer(rolle):
 def _navigation_buchhaltung(user, rolle=None, rollen=None):
     """Navigation, Palette, Suche und Kopf der Buchhaltung (nur Finanzen).
 
-    Dieselben fünf Bereiche wie beim Team, aber nur mit den Seiten, die ihre
+    Dieselben Bereiche wie beim Team, aber nur mit den Seiten, die ihre
     Rolle öffnen darf. Ein Bereich ohne öffnbare Seite entfällt; zeigt sein Kopf
     auf eine gesperrte Seite (die Läufe-Übersicht), führt er auf die erste
     öffnbare. So gibt es weder Reiter noch Palette-Einträge, die in die 403 führen."""

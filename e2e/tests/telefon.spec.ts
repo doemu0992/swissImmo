@@ -482,8 +482,9 @@ test('Zeile 1 bricht bei keiner Breite um, nichts schiebt quer, nichts überlapp
       const sichtbar = (s: string) => { const e = document.querySelector(s); return !!e && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().width > 0; };
       return {
         quer: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-        boxen, hnavScroll: hn.scrollWidth - hn.clientWidth, vw: document.documentElement.clientWidth,
-        z1: r(z1), band: r(document.querySelector('.fw-bereichsreiter')!),
+        boxen, hnavScroll: hn.scrollWidth - hn.clientWidth, vw: document.documentElement.clientWidth, vh: window.innerHeight,
+        z1: r(z1), band: r(document.querySelector('.fw-bereichsreiter')!), telband: r(document.querySelector('.fw-telband')!), tab: r(document.querySelector('.fw-tabbar')!),
+        bandSicht: sichtbar('.fw-bereichsreiter'), telbandSicht: sichtbar('.fw-telband'), tabSicht: sichtbar('.fw-tabbar'), schieneSicht: sichtbar('#fwSchiene'),
         einst: sichtbar('.fw-wz-einst'), neu: sichtbar('.fw-wz-neu'), dunkel: sichtbar('.fw-knopf-dunkel'),
         schnell: getComputedStyle(document.querySelector('.fw-profil-schnell')!).display !== 'none',
       };
@@ -504,15 +505,21 @@ test('Zeile 1 bricht bei keiner Breite um, nichts schiebt quer, nichts überlapp
       expect(b.r, `${wo}: ${b.n} ragt rechts aus dem Bild`).toBeLessThanOrEqual(m.vw - 15);
     }
     expect(m.hnavScroll, `${wo}: die Bereiche scrollen in sich, ein Bereich ist abgeschnitten`).toBeLessThanOrEqual(1);
-    if (w >= 901) {
-      expect(m.z1.h, `${wo}: Zeile 1 ist ${Math.round(m.z1.h)} px hoch — umgebrochen?`).toBeLessThan(60);
+    // Wo stehen die Bereiche? bis 900 px: Tab-Leiste unten + Telband; 901–1023: Kapsel + Menüband; ab 1024: Schiene links
+    expect(m.tabSicht, `${wo}: Tab-Leiste`).toBe(w <= 900);
+    expect(m.telbandSicht, `${wo}: Telband`).toBe(w <= 900);
+    expect(m.bandSicht, `${wo}: Menüband`).toBe(w >= 901 && w <= 1023);
+    expect(m.schieneSicht, `${wo}: Schiene`).toBe(w >= 1024);
+    expect(m.z1.h, `${wo}: Zeile 1 ist ${Math.round(m.z1.h)} px hoch — umgebrochen?`).toBeLessThan(60);
+    if (w <= 900) {
+      expect(m.telband.t, `${wo}: das Telband steht nicht unter Zeile 1`).toBeGreaterThanOrEqual(m.z1.b - 1);
+      expect(m.telband.h, `${wo}: das Telband ist eine Reihe`).toBeLessThan(70);
+      // sechs Bereiche in der Tab-Leiste, alle im Bild, unten
+      expect(m.tab.l, `${wo}: Tab-Leiste links`).toBeGreaterThanOrEqual(0);
+      expect(m.tab.r, `${wo}: Tab-Leiste rechts`).toBeLessThanOrEqual(m.vw);
+      expect(m.tab.b, `${wo}: Tab-Leiste steht nicht unten`).toBeGreaterThan(m.vh - 30);
+    } else if (w <= 1023) {
       expect(m.band.t, `${wo}: das Menüband steht nicht unter Zeile 1`).toBeGreaterThanOrEqual(m.z1.b);
-    } else {
-      const nav = m.boxen.find((b) => b.n === 'fw-hauptnav')!;
-      expect(nav.t, `${wo}: die Bereiche stehen nicht unter Zeile 1`).toBeGreaterThanOrEqual(reihe1[0].b - 1);
-      expect(m.z1.h, `${wo}: Zeile 1 mit den Bereichen ist ${Math.round(m.z1.h)} px hoch (zwei Reihen erwartet)`).toBeLessThan(110);
-      expect(m.band.t, `${wo}: das Menüband steht nicht unter den Bereichen`).toBeGreaterThanOrEqual(nav.b);
-      expect(m.band.h, `${wo}: das Menüband ist am Telefon eine Reihe`).toBeLessThan(60);
     }
     // was bei welcher Breite in Zeile 1 steht (und sonst im Profilmenü)
     expect(m.einst, `${wo}: Einstellungsknopf`).toBe(w >= 440);
@@ -538,6 +545,13 @@ test('Die Marke steht bei jeder Breite ausgeschrieben mit Kreuz und wird nicht a
   for (const [w, haus, schrift, kreuz] of SOLL) {
     await page.setViewportSize({ width: w, height: 900 });
     await page.waitForTimeout(100);
+    if (w >= 1024) {
+      // Ab 1024 px trägt die Schiene die Marke (nur das Haus, 30 px); die Wortmarke der Kopfzeile entfällt
+      const marke = await page.evaluate(() => { const h = document.querySelector('.fw-schiene-marke .fw-logo-haus') as SVGElement; const q = h.getBoundingClientRect(); return { b: q.width, sichtbar: q.width > 0 }; });
+      expect(marke.sichtbar, `${w} px: die Marke fehlt in der Schiene`).toBe(true);
+      expect(Math.round(marke.b), `${w} px: Haus in der Schiene`).toBe(haus);
+      continue;
+    }
     const m = await page.evaluate(() => {
       const k = document.querySelector('.fw-logo-kapsel') as HTMLElement;
       const b = k.querySelector('b') as HTMLElement;

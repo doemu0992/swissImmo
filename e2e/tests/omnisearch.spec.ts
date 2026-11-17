@@ -79,36 +79,33 @@ async function tippe(page: Page, text: string) {
 test.describe('Omnisearch am Desktop', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
-  test('Zeile 1: Marke, Bestand, Bereiche, Suche, Werkzeuge; Zeile 2: das Menüband', async ({ page }) => {
+  test('Schiene links; Zeile 1: Bestand, Suche, Werkzeuge; das Menüband gibt es am PC nicht mehr', async ({ page }) => {
     await login(page);
     await goto(page, '/neu/liegenschaften/');
 
-    const logo = await box(page, '.fw-kopf-z1 .fw-logo-kapsel');
+    // Die Bereiche stehen in der Schiene (88 px), nicht mehr in der Kopfzeile
+    const schiene = await box(page, '#fwSchiene');
+    expect(schiene.x).toBe(0);
+    expect(Math.round(schiene.width)).toBe(88);
+    await expect(page.locator('#fwHauptnav')).toBeHidden();
+    await expect(page.locator('.fw-kopf-z1 .fw-logo-kapsel')).toBeHidden();
     const bestand = await box(page, '.fw-kopf-z1 .fw-bestand');
-    const nav = await box(page, '.fw-kopf-z1 #fwHauptnav');
     const os = await box(page, '.fw-kopf-z1 #fwOs');
     const werkzeug = await box(page, '.fw-kopf-z1 .fw-werkzeug-kapsel');
-    expect(logo.x + logo.width, 'Der Bestand steht nicht neben der Marke').toBeLessThanOrEqual(bestand.x + 1);
-    expect(bestand.x + bestand.width, 'Die Bereiche stehen nicht neben dem Bestand').toBeLessThanOrEqual(nav.x + 1);
-    expect(nav.x - (bestand.x + bestand.width), 'Die Bereiche schliessen nicht direkt an den Bestand an').toBeLessThan(20);
-    expect(nav.x + nav.width, 'Die Suche steht nicht rechts von den Bereichen').toBeLessThanOrEqual(os.x + 1);
+    expect(bestand.x, 'Der Bestand steht nicht rechts der Schiene').toBeGreaterThanOrEqual(schiene.x + schiene.width);
+    expect(bestand.x + bestand.width, 'Die Suche steht nicht rechts vom Bestand').toBeLessThanOrEqual(os.x + 1);
     expect(os.x + os.width, 'Die Werkzeuge stehen nicht rechts von der Suche').toBeLessThanOrEqual(werkzeug.x + 1);
     // Die Suche steht rechtsbündig: zwischen ihr und den Werkzeugen bleibt nur der Zeilenabstand
     expect(werkzeug.x - (os.x + os.width), 'Die Suche steht nicht rechtsbündig vor den Werkzeugen').toBeLessThan(20);
     expect(Math.abs(os.width - 168), 'Bei 1280 px ist das Feld ruhend 10,5 rem breit').toBeLessThan(3);
     // alles in einer Reihe
-    for (const b of [logo, bestand, nav, werkzeug]) expect(Math.abs(b.y + b.height / 2 - (os.y + os.height / 2))).toBeLessThan(10);
+    for (const b of [bestand, werkzeug]) expect(Math.abs(b.y + b.height / 2 - (os.y + os.height / 2))).toBeLessThan(10);
 
-    // Menüband direkt unter den Bereichen, in der Kopfzeile (nicht im Inhalt)
+    // Das Menüband steht weiter in der Kopfzeile (nicht im Inhalt), ist aber ab 1024 px ausgeblendet
     await expect(page.locator('#fwKopf #navsub-akten')).toHaveCount(1);
     await expect(page.locator('main #navsub-akten')).toHaveCount(0);
-    const band = await box(page, '#navsub-akten');
-    expect(band.y).toBeGreaterThanOrEqual(nav.y + nav.height);
-    expect(band.y - (nav.y + nav.height), 'Das Menüband steht nicht direkt unter den Bereichen').toBeLessThan(24);
-    await expect(page.locator('#navsub-akten .fw-bereichsreiter-name')).toHaveText(/Akten/i);
-    await expect(page.locator('#navsub-akten a.hier')).toHaveText('Liegenschaften');
-    // Der Bestandsfilter steht in Zeile 1 (Überzeile «Bestand», darunter der Name), nicht im Band
-    expect(bestand.y + bestand.height, 'Der Bestand steht unter den Bereichen').toBeLessThanOrEqual(band.y);
+    await expect(page.locator('#navsub-akten')).toBeHidden();
+    // Der Bestandsfilter steht in Zeile 1 (Überzeile «Bestand», darunter der Name)
     await expect(page.locator('.fw-bestand .fw-bestand-ueber')).toHaveText(/Bestand/i);
     await expect(page.locator('.fw-kopf-z2 .fw-bestand')).toHaveCount(0);
     await expect(page.locator('.fw-bestand select[name="lg"]')).toHaveCount(1);
@@ -127,11 +124,11 @@ test.describe('Omnisearch am Desktop', () => {
     await expect(feld(page)).toBeFocused();
     await page.waitForTimeout(400);                       // Übergang
     const offen = await box(page, '#fwOs .fw-os-feld');
-    // Das Feld wächst in den freien Platz zwischen Bereichen und Suche (gemessen, höchstens 8 rem): bei 1280 px rund 20 px
+    // Das Feld wächst in den freien Platz links der Suche (gemessen, höchstens 8 rem)
     expect(offen.width, 'Das Feld wächst bei Fokus nicht').toBeGreaterThan(ruhend.width + 8);
     expect(offen.width, 'Das Feld wächst über 8 rem hinaus').toBeLessThanOrEqual(ruhend.width + 128 + 1);
-    const nav = await box(page, '#fwHauptnav');
-    expect(offen.x, 'Das offene Feld verdeckt die Bereiche').toBeGreaterThanOrEqual(nav.x + nav.width - 1);
+    const bestandBox = await box(page, '.fw-kopf-z1 .fw-bestand');
+    expect(offen.x, 'Das offene Feld verdeckt den Bestand').toBeGreaterThanOrEqual(bestandBox.x + bestandBox.width - 1);
     // Mit einem Zeichen noch kein Popover, mit zwei schon
     await attrappe(page, () => ({ body: BEH }));
     await page.keyboard.type('b');
@@ -198,7 +195,7 @@ test.describe('Omnisearch am Desktop', () => {
     }
 
     // Fokus liegt vor ⌘K auf einem Bereich; Esc bringt ihn dorthin zurück
-    await page.locator('#fwHauptnav a').first().focus();
+    await page.locator('#fwSchiene a[data-fach]').first().focus();
     await page.keyboard.press('Control+k');
     await page.keyboard.type('beh', { delay: 20 });
     const optionen = page.locator('#fwOsListe [role="option"]');
@@ -214,8 +211,8 @@ test.describe('Omnisearch am Desktop', () => {
     await page.keyboard.press('Escape');
     await expect(pop(page)).toBeHidden();
     await expect(feld(page)).toHaveAttribute('aria-expanded', 'false');
-    const fokus = await page.evaluate(() => document.activeElement && (document.activeElement as HTMLElement).textContent!.trim());
-    expect(fokus, 'Esc gibt den Fokus nicht an den Bereich zurück').toBe('Heute');
+    const fokus = await page.evaluate(() => document.activeElement && (document.activeElement as HTMLElement).getAttribute('data-fach'));
+    expect(fokus, 'Esc gibt den Fokus nicht an den Bereich zurück').toBe('heute');
 
     // ⌘/Strg+↵ öffnet den gewählten Treffer in einem neuen Tab
     // Das erneute Fokussieren fragt noch einmal an; deren Antwort setzt die Auswahl auf den ersten Treffer zurück.
@@ -228,6 +225,7 @@ test.describe('Omnisearch am Desktop', () => {
     await expect(optionen.first()).toBeVisible();
     await page.keyboard.press('ArrowDown');
     const [neuerTab] = await Promise.all([context.waitForEvent('page'), page.keyboard.press('Control+Enter')]);
+    await neuerTab.waitForURL('**/neu/personen/2/');
     expect(neuerTab.url()).toContain('/neu/personen/2/');
     expect(page.url(), 'Die Seite selbst bleibt stehen').toContain('/neu/liegenschaften/');
     await neuerTab.close();
@@ -353,7 +351,7 @@ test.describe('Omnisearch am Desktop', () => {
 test.describe('Omnisearch am Telefon', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
-  test('Zeile 1 bleibt eine Reihe, das Feld ist ein Symbol, Menüband und Bestandsfilter erreichbar', async ({ page }) => {
+  test('Zeile 1 bleibt eine Reihe, das Feld ist ein Symbol, Telband, Tab-Leiste und Bestandsfilter erreichbar', async ({ page }) => {
     await login(page);
     await goto(page, '/neu/liegenschaften/');
     const logo = await box(page, '.fw-kopf-z1 .fw-logo-kapsel');
@@ -362,18 +360,24 @@ test.describe('Omnisearch am Telefon', () => {
     expect(Math.abs(os.width - 44), 'Das Feld ist am Telefon ein Symbol').toBeLessThan(2);
     expect(Math.abs((logo.y + logo.height / 2) - (werkzeug.y + werkzeug.height / 2)), 'Marke und Werkzeuge stehen nicht in einer Reihe').toBeLessThan(4);
     expect(Math.abs(logo.y + logo.height / 2 - (os.y + os.height / 2))).toBeLessThan(8);
-    // Die Bereiche darunter, das Band darunter
-    const nav = await box(page, '#fwHauptnav');
-    const band = await box(page, '#navsub-akten');
-    expect(nav.y).toBeGreaterThanOrEqual(logo.y + logo.height);
-    expect(band.y).toBeGreaterThanOrEqual(nav.y + nav.height);
-    expect(band.height, 'Das Menüband ist am Telefon eine Reihe').toBeLessThan(70);
-    const rollbar = await page.locator('#navsub-akten').evaluate((el) => el.scrollWidth > el.clientWidth && getComputedStyle(el).overflowX === 'auto');
-    expect(rollbar, 'Das Menüband rollt nicht waagrecht').toBeTruthy();
+    // Darunter das Telband («Bereich / Seite»); die Bereiche stehen unten in der Tab-Leiste, das Blatt öffnet die Seiten
+    const telband = await box(page, '.fw-telband');
+    expect(telband.y).toBeGreaterThanOrEqual(logo.y + logo.height);
+    expect(telband.height, 'Das Telband ist eine Reihe').toBeLessThan(70);
+    await expect(page.locator('.fw-telband small')).toHaveText(/Akten/i);
+    await expect(page.locator('.fw-telband b')).toHaveText('Liegenschaften');
+    await expect(page.locator('.fw-tabbar a')).toHaveCount(6);
+    await expect(page.locator('#fwHauptnav')).toBeHidden();
+    await expect(page.locator('#navsub-akten')).toBeHidden();
+    await page.locator('.fw-telband').tap();
+    await expect(page.locator('#fwTelBlatt')).toBeVisible();
+    await expect(page.locator('#fwTelBlatt a[aria-current="page"]')).toHaveText('Liegenschaften');
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#fwTelBlatt')).toBeHidden();
     // Bestandsfilter: ein Symbol in Zeile 1, die Auswahl liegt unsichtbar darüber und trifft den Finger
     const chip = await box(page, '.fw-bestand');
     expect(chip.width).toBeLessThan(60);
-    expect(chip.y + chip.height, 'Der Bestand steht nicht in der ersten Reihe').toBeLessThanOrEqual(nav.y);
+    expect(chip.y + chip.height, 'Der Bestand steht nicht in der ersten Reihe').toBeLessThanOrEqual(telband.y);
     expect(chip.x, 'Der Bestand steht nicht hinter der Marke').toBeGreaterThanOrEqual(logo.x + logo.width);
     const trifft = await page.evaluate(() => {
       const c = document.querySelector('.fw-bestand')!.getBoundingClientRect();

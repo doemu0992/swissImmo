@@ -2086,6 +2086,8 @@
                 background:color-mix(in srgb,var(--ds-surface) 82%,transparent)}
             .fw-tabbar a{border-radius:var(--ds-radius);transition:background .12s,color .12s}
             .fw-tabbar a[aria-current="page"]{background:var(--ds-brand-soft);color:var(--ds-brand-600)}
+            /* Seiten mit festem Fuss (Assistenten) tragen ihre eigene Leiste unten: dort fehlt die Tab-Leiste, sonst deckt sie die Knöpfe zu */
+            body:has(.fw-assistent-fuss) .fw-tabbar{display:none}
             .fw-inhalt{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
             .fw-toasts{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
             .fw-lage{gap:12px}.fw-kpis{gap:12px}
@@ -2285,7 +2287,6 @@
         .fw-inhalt{max-width:1440px;padding:28px 32px 64px}
         @media (min-width:1760px){.fw-kopfleiste,.fw-inhalt{max-width:1680px}}
         @media (min-width:2200px){.fw-kopfleiste,.fw-inhalt{max-width:2000px}}
-        .fw-tabbar{display:none!important}
         @media (max-width:1023px){
             .fw-inhalt{padding:20px 16px calc(40px + env(safe-area-inset-bottom,0px))}
             .fw-freigabe{bottom:calc(16px + env(safe-area-inset-bottom))}
@@ -3194,6 +3195,78 @@
         .fw-abo-schloss{margin-left:6px;font-size:11px;font-weight:600;color:var(--ds-warn)}
         /* ===== Ende MODUL Abo ===== */
 
+        /* ===== MODUL Schiene (17.11.2026, Konzept «C · Schiene») =====
+           Ab 1024 px stehen die Bereiche in einer Schiene am linken Rand (88 px). Die Kapsel mit den Bereichen
+           und das Menüband entfallen dort — beides bleibt unter 1024 px, wo die Schiene fehlt. Das aufgeklappte
+           Feld (`#fwFach`) liegt über dem Inhalt und schliesst bei Klick, Esc oder Wahl einer Seite. */
+        .fw-schiene,.fw-fach{display:none}
+        @media (min-width:1024px){
+            .fw-schiene{position:fixed;left:0;top:0;bottom:0;width:88px;z-index:60;display:flex;flex-direction:column;
+                align-items:stretch;gap:4px;padding:14px 8px;background:var(--ds-surface);border-right:1px solid var(--ds-line)}
+            .fw-schiene-marke{display:grid;place-items:center;padding:6px 0 14px;color:var(--ds-ink);text-decoration:none}
+            .fw-schiene-b{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 2px;
+                border-radius:var(--ds-radius);font-size:11.5px;font-weight:600;color:var(--ds-muted);text-decoration:none;
+                background:transparent;border:0;cursor:pointer;transition:background .12s,color .12s}
+            .fw-schiene-b:hover{background:var(--ds-hover);color:var(--ds-ink)}
+            .fw-schiene-b .fw-zeichen{width:22px!important;height:22px!important}
+            .fw-schiene-b.hier{background:var(--ds-brand-soft);color:var(--ds-brand-600)}
+            .fw-schiene-b[aria-expanded="true"]{background:var(--ds-hover);color:var(--ds-ink)}
+            .fw-schiene-zahl{position:absolute;top:4px;right:14px;min-width:16px;height:16px;padding:0 5px;border-radius:var(--ds-pill);
+                background:var(--ds-akzent);color:var(--ds-auf-satt);font-size:10px;font-weight:700;line-height:16px;text-align:center}
+            .fw-schiene-zahl[hidden]{display:none}
+            .fw-schiene-fuss{margin-top:auto;display:flex;flex-direction:column;gap:4px}
+            .fw-fach{position:fixed;left:88px;top:0;bottom:0;width:276px;z-index:55;display:block;padding:22px 12px 20px;overflow:auto;
+                background:var(--ds-surface);border-right:1px solid var(--ds-line);box-shadow:var(--ds-shadow-lg)}
+            .fw-fach[hidden],.fw-fach [hidden]{display:none}
+            .fw-fach h2{margin:0 0 10px;padding:0 10px;font-size:19px;letter-spacing:-.01em}
+            .fw-fach h3{margin:16px 10px 4px;font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ds-faint)}
+            .fw-fach ul{list-style:none;margin:0;padding:0}
+            .fw-fach li a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;border-radius:var(--ds-radius);
+                color:var(--ds-muted);text-decoration:none}
+            .fw-fach li a:hover{background:var(--ds-hover);color:var(--ds-ink)}
+            .fw-fach li a.hier{background:var(--ds-brand-soft);color:var(--ds-brand-600);font-weight:600}
+            .fw-fach kbd{font:inherit;font-size:11px;font-variant-numeric:tabular-nums;color:var(--ds-faint)}
+            .fw-fach .fw-fach-selten{margin-top:18px}
+            .fw-fach .fw-fach-selten-liste li a{font-size:13.5px}
+            .fw-fach-zuletzt{margin-top:8px;border-top:1px solid var(--ds-line)}
+            .fw-fach-zuletzt a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--ds-radius);color:var(--ds-muted);text-decoration:none}
+            .fw-fach-zuletzt a:hover{background:var(--ds-hover);color:var(--ds-ink)}
+            .fw-mit-schiene .fw-haupt{margin-left:88px}
+            .fw-mit-schiene .fw-kopfleiste .fw-hauptnav,.fw-mit-schiene .fw-kopfleiste .fw-kopf-z2,.fw-mit-schiene .fw-kopfleiste .fw-logo-kapsel{display:none}
+            .fw-werkzeug-kapsel .fw-wz-neu{display:inline-flex;flex-direction:row;align-items:center;justify-content:center;width:auto;padding:0 14px 0 10px;gap:6px;white-space:nowrap;background:var(--ds-ink);color:var(--ds-surface)}
+            .fw-wz-neu-text{font-size:13.5px;font-weight:600}
+            html._embed .fw-schiene,html._embed .fw-fach{display:none!important}
+            html._embed .fw-mit-schiene .fw-haupt{margin-left:0}
+        }
+        /* ---- Telefon (bis 900 px): Tab-Leiste mit den sechs Bereichen, Telband statt Kapsel und Menüband ---- */
+        .fw-telband,.fw-telblatt{display:none}
+        .fw-tabbar{display:none}
+        @media (max-width:900px){
+            .fw-mit-schiene .fw-kopfleiste .fw-hauptnav,.fw-mit-schiene .fw-kopfleiste .fw-kopf-z2{display:none}
+            .fw-telband{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin-top:8px;padding:10px 16px;
+                text-align:left;background:var(--ds-surface);border:0;border-radius:var(--ds-radius-lg);box-shadow:var(--ds-shadow-sm);color:var(--ds-ink);cursor:pointer}
+            .fw-telband small{display:block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ds-faint)}
+            .fw-telband b{font-weight:600}
+            .fw-tabbar{display:grid;grid-template-columns:repeat(6,minmax(0,1fr))}
+            .fw-inhalt{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
+            .fw-toasts{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+            .fw-tabbar a{position:relative;font-size:10.5px;min-height:52px}
+            .fw-tab-zahl{position:absolute;top:3px;right:calc(50% - 20px);min-width:16px;height:16px;padding:0 4px;border-radius:var(--ds-pill);
+                background:var(--ds-akzent);color:var(--ds-auf-satt);font-size:10px;font-weight:700;line-height:16px;text-align:center}
+            .fw-telblatt{position:fixed;inset:0;z-index:70;display:flex;align-items:flex-end;background:var(--ds-scrim)}
+            .fw-telblatt[hidden]{display:none}
+            .fw-telblatt-kasten{width:100%;max-height:80dvh;overflow:auto;padding:16px 12px calc(20px + env(safe-area-inset-bottom,0px));
+                background:var(--ds-surface);border-radius:var(--ds-radius-lg) var(--ds-radius-lg) 0 0;box-shadow:var(--ds-shadow-lg)}
+            .fw-telblatt h2{margin:0 0 6px;padding:0 10px;font-size:18px}
+            .fw-telblatt ul{list-style:none;margin:0;padding:0}
+            .fw-telblatt li a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 12px;border-radius:var(--ds-radius);color:var(--ds-ink);text-decoration:none}
+            .fw-telblatt li a.hier{background:var(--ds-brand-soft);color:var(--ds-brand-600);font-weight:600}
+        }
+        @media (min-width:901px){.fw-tabbar{display:none}}
+        @media (max-width:1023px){.fw-wz-neu-text{display:none}}
+        @media print{.fw-schiene,.fw-fach{display:none!important}.fw-mit-schiene .fw-haupt{margin-left:0}}
+        /* ===== Ende MODUL Schiene ===== */
+
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
         /* Vorlage: navmock/v2/vorschau (freigegeben, Stand «Kopfzeile v2»). Zeile 1 von links: Marke,
            Bestandsfilter `lg` (Kontext-Chip «BESTAND / Name»), die fünf Bereiche (schliessen bei jeder
@@ -3269,7 +3342,7 @@
         .fw-hauptnav a{flex:none;padding:0 12px}
         @media (min-width:1360px){.fw-hauptnav a{padding:0 14px}}
         @media (min-width:1440px){.fw-hauptnav a{padding:0 17px}}
-        @media (min-width:901px) and (max-width:1023px){.fw-hauptnav a{padding:0 10px;font-size:13.5px;gap:5px}}
+        @media (min-width:901px) and (max-width:1023px){.fw-hauptnav a{padding:0 7px;font-size:13.5px;gap:4px}}
         /* Werkzeuge: Hell/Dunkel erst ab 1440 px, «+» ab 1024 px, Einstellungen ab 440 px */
         .fw-werkzeug-kapsel .fw-knopf-dunkel{display:none}
         @media (min-width:1440px){.fw-werkzeug-kapsel .fw-knopf-dunkel{display:grid}}
@@ -3455,5 +3528,6 @@
             .fw-hauptnav a{padding:0 6px;gap:4px}
         }
         /* ===== Ende MODUL Kopfzeile und Omnisearch ===== */
+
 
 
