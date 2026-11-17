@@ -122,6 +122,7 @@ def nav_gruppen():
         # zweiter Weg auf dieselbe Seite: keine Auswahl, sondern eine Frage, die
         # der Benutzer nicht beantworten kann.
         _g('heute', _('Heute'), 'wartet', '/neu/', [
+            _i(_('Übersicht'), '/neu/', ['dashboard', 'arbeit', 'faelle']),
             _i(_('Zulauf'), '/neu/zulauf/', ['zulauf']),
             _i(_('Anfragen'), '/neu/anfragen/', ['anfragen']),
             _i(_('Aufträge'), '/neu/auftraege/', ['auftraege']),
@@ -136,7 +137,7 @@ def nav_gruppen():
         # `kommunikation` (Serienbrief-Assistent) und `suche` (Trefferliste) haben keinen eigenen Menüpunkt,
         # leuchten aber unter «Heute» statt nirgends (DESIGN-04). Ob sie einen Punkt bekommen, ist offen
         # (DESIGN-05: Entscheidungsfrage).
-        ], extra_keys=['dashboard', 'faelle', 'arbeit', 'suche', 'kommunikation']),
+        ], extra_keys=['suche', 'kommunikation']),
 
         # ── AKTEN ────────────────────────────────────────────────────────────
         # Die Register in der Reihenfolge, in der man sie aufschlägt: vom
@@ -165,6 +166,7 @@ def nav_gruppen():
         # Alles, was einen Zustand hat und blockieren kann. Der Bereich fehlte
         # im Einfachmodus vollständig, obwohl die Seiten seit 4b.5 stehen.
         _g('laeufe', _('Läufe'), 'lauf', '/neu/laeufe/', [
+            _i(_('Übersicht'), '/neu/laeufe/', ['laeufe']),
             _i(_('Sollstellung'), '/neu/sollstellung/', ['sollstellung'], section=_('Monat')),
             _i(_('Bankabgleich'), '/neu/bankabgleich/', ['bankabgleich']),
             _i(_('Mahnwesen'), '/neu/mahnwesen/', ['mahnwesen']),
@@ -177,6 +179,7 @@ def nav_gruppen():
         # ── FINANZEN ─────────────────────────────────────────────────────────
         # Register und Konten. Handlungen führen in den zugehörigen Lauf.
         _g('finanzen', _('Finanzen'), 'geld', '/neu/finanzen/', [
+            _i(_('Übersicht'), '/neu/finanzen/', ['finanzen']),
             _i(_('Mieterkonten'), '/neu/mieterkonten/', ['mieterkonten'], section=_('Forderungen')),
             _i(_('Debitoren'), '/neu/debitoren/', ['debitoren']),
             _i(_('Kautionen'), '/neu/kautionen/', ['kautionen']),
@@ -261,8 +264,8 @@ def _navigation_buchhaltung(user, rolle=None, rollen=None):
     gruppen, palette = [], []
     for g in nav_gruppen():
         items = [dict(it, erlaubt=True) for it in g['items'] if erlaubt(it['ziel'])]
-        if not items:
-            continue        # ein Bereich ohne öffnbare Seite (Heute, Akten) entfällt
+        if not items or all(it['ziel'] == g['ziel'] for it in items):
+            continue        # ein Bereich ohne öffnbare Seite (Heute, Akten) entfällt — auch wenn nur seine Übersicht offen ist
         ziel = g['ziel'] if erlaubt(g['ziel']) else items[0]['ziel']
         gruppen.append(dict(g, items=items, ziel=ziel,
                             alle_keys=[g['key']] + [k for it in items for k in it['keys']]))

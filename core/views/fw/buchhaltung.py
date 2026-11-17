@@ -502,7 +502,7 @@ def fw_kontenplan(request):
         t_haben += h
 
     return render(request, 'fw/kontenplan.html', {
-        **basis, 'nav': 'buchhaltung', 'zeilen': zeilen,
+        **basis, 'nav': 'kontenplan', 'zeilen': zeilen,
         'total_soll': t_soll, 'total_haben': t_haben,
         'differenz': t_soll - t_haben,
         'jahr': jahr, 'jahre': list(range(heute.year, heute.year - 5, -1)),
