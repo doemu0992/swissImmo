@@ -192,7 +192,7 @@ Detailseiten rufen sie beim Namen.
             <h3>{{ g.label }}</h3>
             <ul>
                 {% for k in g.eintraege %}
-                <li><a href="{{ k.url }}"><span>{{ k.titel }}{% if k.gesperrt %}<span class="fw-abo-schloss">{% trans 'gesperrt' %}</span>{% endif %}</span><kbd aria-hidden="true"></kbd></a></li>
+                <li><a href="{{ k.url }}{{ lg_query }}"><span>{{ k.titel }}{% if k.gesperrt %}<span class="fw-abo-schloss">{% trans 'gesperrt' %}</span>{% endif %}</span><kbd aria-hidden="true"></kbd></a></li>
                 {% endfor %}
             </ul>
             {% endfor %}
