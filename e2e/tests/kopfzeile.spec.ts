@@ -306,9 +306,9 @@ test.describe('Ohne JavaScript (PC)', () => {
     await ohneSkriptAnmelden(page);
     await page.goto('/neu/liegenschaften/', { waitUntil: 'domcontentloaded' });
 
-    // Sechs Bereiche, alle sichtbar und anklickbar; das Aufklappfeld bleibt zu
+    // Sechs Bereiche und die Einstellungen, alle sichtbar und anklickbar; das Aufklappfeld bleibt zu
     const links = page.locator('#fwSchiene a[data-fach]');
-    await expect(links).toHaveCount(6);
+    await expect(links).toHaveCount(7);
     await expect(page.locator('#fwFach')).toBeHidden();
     // Die hinteren Bereiche erreicht man trotzdem: der Link führt zum Bereichskopf
     await page.locator('#fwSchiene a[data-fach="finanzen"]').click();

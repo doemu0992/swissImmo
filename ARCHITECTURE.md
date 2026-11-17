@@ -69,6 +69,9 @@ Security → `WartungsMiddleware` → `NulBytesMiddleware` → GZip → Session 
   Menüband in der Kopfzeile (Überlauf in «Mehr», `fw-menueband.js`); bis 900 px Tab-Leiste unten mit den sechs
   Bereichen und das Telband («Bereich / Seite»), das die Seiten als Blatt öffnet. Hauswartung und Portal-Rollen
   bekommen keine Schiene (`fw_kopf_reduziert`).
+- Einstellungen: `einstellungen_gruppen()` in `core/navigation.py` ist die eine Liste (fünf Gruppen: Verwaltung, Team & Zugriff,
+  Vorlagen & Regeln, Schnittstellen, Daten & Protokoll). Aus ihr kommen die Hub-Seite `/neu/einstellungen/`, das Feld der
+  Schiene (Symbol «Einstellungen», Taste G dann E) und der Pfad «Einstellungen / Gruppe» auf jeder Einstellungsseite.
 - «Zuletzt geöffnet» liegt im Browser, je Person und Verwaltung (`zuletztSchluessel` im Datenblock der Vorlage).
 
 ## 3. Mandantentrennung

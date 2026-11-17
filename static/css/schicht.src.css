@@ -3195,6 +3195,8 @@
         .fw-abo-schloss{margin-left:6px;font-size:11px;font-weight:600;color:var(--ds-warn)}
         /* ===== Ende MODUL Abo ===== */
 
+        .fw-einst-krumen{margin-bottom:12px}
+        .fw-gruppe-titel{margin:24px 4px 8px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ds-faint)}
         /* ===== MODUL Schiene (17.11.2026, Konzept «C · Schiene») =====
            Ab 1024 px stehen die Bereiche in einer Schiene am linken Rand (88 px). Die Kapsel mit den Bereichen
            und das Menüband entfallen dort — beides bleibt unter 1024 px, wo die Schiene fehlt. Das aufgeklappte

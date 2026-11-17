@@ -35,7 +35,7 @@ test.describe('Funktionsfreigabe', () => {
     // Lesen geht, mit Hinweis und Weg zum Upgrade.
     await goto(page, '/neu/stweg/');
     await expect(page.getByText('nicht im Abonnement').first()).toBeVisible();
-    await expect(page.locator('a[href="/neu/abonnement/"]').first()).toBeVisible();
+    await expect(page.locator('#fw-inhalt a[href="/neu/abonnement/"]').first()).toBeVisible();
 
     // Schreiben im Modul: klare Seite, kein 403-Rätsel.
     const schreiben = await postMitCsrf(page, '/neu/stweg/1/aufgabe/neu/');

@@ -43,7 +43,7 @@ async function hochladen(page: Page, art: string, inhalt: string) {
 test('Die Datenseite führt zu Import und Export', async ({ page }) => {
   await login(page);
   await goto(page, '/neu/einstellungen/');
-  await page.click('a[href="/neu/einstellungen/daten/"]');
+  await page.click('#fw-inhalt a[href="/neu/einstellungen/daten/"]');
   await expect(page.locator('h1')).toHaveText('Daten');
   await expect(page.locator('[data-testid="daten-import-link"]')).toBeVisible();
   await expect(page.locator('[data-testid="daten-export-link"]')).toBeVisible();

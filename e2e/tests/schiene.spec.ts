@@ -77,4 +77,31 @@ test.describe('Schiene am PC', () => {
       expect(r.status(), z).toBeLessThan(400);
     }
   });
+
+  test('Einstellungen: das Feld führt die Gruppen, die Seiten tragen einen Pfad zurück zum Hub', async ({ page }) => {
+    await login(page);
+    await goto(page, '/neu/liegenschaften/');
+    await page.locator('#fwSchiene a[data-fach="einst"]').click();
+    const fach = page.locator('#fwFach section:visible');
+    await expect(fach.locator('h2')).toHaveText('Einstellungen');
+    await expect(fach.locator('h3')).toHaveText(['Verwaltung', 'Team & Zugriff', 'Vorlagen & Regeln', 'Schnittstellen', 'Daten & Protokoll']);
+    await fach.locator('a[href^="/neu/benutzer/"]').click();
+    await page.waitForURL('**/neu/benutzer/**');
+    // Pfad «Einstellungen / Team & Zugriff»; der erste Teil führt zurück
+    const krume = page.locator('.fw-einst-krumen');
+    await expect(krume).toContainText('Team & Zugriff');
+    await krume.locator('a').click();
+    await page.waitForURL('**/neu/einstellungen/**');
+    await expect(page.locator('.fw-einst-krumen')).toHaveCount(0);
+    await expect(page.locator('.fw-gruppe-titel')).toHaveCount(5);
+  });
+
+  test('Tastatur: G dann E öffnet die Einstellungen', async ({ page }) => {
+    await login(page);
+    await goto(page, '/neu/liegenschaften/');
+    await page.locator('body').click({ position: { x: 700, y: 400 } });
+    await page.keyboard.press('g');
+    await page.keyboard.press('e');
+    await expect(page.locator('#fwFach section:visible h2')).toHaveText('Einstellungen');
+  });
 });

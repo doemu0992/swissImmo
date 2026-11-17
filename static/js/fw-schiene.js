@@ -1,5 +1,5 @@
 /* Die Schiene (ab 1024 px): ein Klick auf einen Bereich klappt seine Seiten auf, ein Klick auf eine Seite schliesst
-   das Feld wieder. Tastatur: «G» dann H/B/A/L/F/R öffnet den Bereich, 1–9 wählt die Seite im offenen Feld, Esc schliesst.
+   das Feld wieder. Tastatur: «G» dann H/B/A/L/F/R (E = Einstellungen) öffnet den Bereich, 1–9 wählt die Seite im offenen Feld, Esc schliesst.
    Ohne dieses Skript sind die Symbole gewöhnliche Links auf den Bereichskopf (`core/navigation.py`). */
 (function () {
     var schiene = document.getElementById('fwSchiene');
@@ -8,7 +8,7 @@
     var breit = window.matchMedia ? matchMedia('(min-width: 1024px)') : {matches: true};
     var knoepfe = [].slice.call(schiene.querySelectorAll('[data-fach]'));
     var bereiche = [].slice.call(fach.querySelectorAll('[data-fach-bereich]'));
-    var TASTEN = {h: 'heute', b: 'betrieb', a: 'akten', l: 'laeufe', f: 'finanzen', r: 'berichte'};
+    var TASTEN = {h: 'heute', b: 'betrieb', a: 'akten', l: 'laeufe', f: 'finanzen', r: 'berichte', e: 'einst'};
     var offen = null;
 
     // «Selten gebraucht» nur mit Einträgen; die Zahlen 1–9 stehen an den ersten neun Seiten des Bereichs.
@@ -71,7 +71,9 @@
         g = false;
         if (k === 'g') { g = true; gZeit = Date.now(); return; }
         if (offen && /^[1-9]$/.test(k)) {
-            var a = fach.querySelector('[data-fach-bereich="' + offen + '"] ul:not(.fw-fach-selten-liste) li:nth-child(' + k + ') a');
+            var links = [].slice.call(fach.querySelectorAll('[data-fach-bereich="' + offen + '"] li a'))
+                .filter(function (x) { return !x.closest('.fw-fach-selten-liste'); });
+            var a = links[+k - 1];
             if (a) { e.preventDefault(); a.click(); if (a.href) location.href = a.href; }
         }
     });

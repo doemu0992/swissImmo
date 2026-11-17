@@ -92,21 +92,71 @@ EINSTELLUNGEN_KEYS = ['einstellungen', 'account', 'abonnement', 'benutzer',
 #: durchgerutscht: Es hing vorher unter «Erweitert», hat jetzt keinen
 #: Gruppeneintrag mehr — und genau diese Seite war schon einmal vier Etappen
 #: lang unauffindbar (Phase 4a).
-EINSTELLUNGEN_ZIELE = [
-    '/neu/einstellungen/',
-    '/neu/account/',
-    '/neu/benutzer/',
-    '/neu/abonnement/',
-    '/neu/vorlagen/',
-    '/neu/integrationen/',
-    '/neu/logbuch/',
-    '/neu/rechtsgrundlagen/',
-    '/neu/regelwerk/',
-    '/neu/einstellungen/zahlungsfreigabe/',
-    '/neu/archiv/',
-    '/neu/einstellungen/daten/',
-    '/neu/einstellungen/api/',
-]
+# Gebildet aus `einstellungen_gruppen()` (weiter unten): die Hub-Seite, das Feld der Schiene und diese Liste teilen eine Quelle.
+EINSTELLUNGEN_ZIELE = []
+
+
+def einstellungen_gruppen():
+    """Die Einstellungen in sechs Gruppen — EINE Quelle für die Hub-Seite, das Feld der Schiene und die Brotkrumen.
+
+    Bis 17.11.2026 standen 17 Kacheln in einer Reihe auf der Hub-Seite, und die Seiten dahinter hatten weder
+    Menüband noch einen Weg zurück. Jetzt sind sie nach Frage geordnet («wer darf was?», «wie sehen
+    unsere Texte aus?», «womit ist das Programm verbunden?»). Jeder Eintrag hat eine Adresse; Rollen und Abo-Stufe
+    filtert der Context-Processor (`fw_einstellungen_gruppen`), die Hub-Seite nach denselben Regeln."""
+    def e(titel, sub, url, icon):
+        return {'titel': titel, 'sub': sub, 'url': url, 'icon': icon}
+    return [
+        {'key': 'verwaltung', 'label': _('Verwaltung'), 'eintraege': [
+            e(_('Account'), _('Verwaltungs-Stammdaten, Logo, Absender'), '/neu/account/', 'person'),
+            e(_('Abonnement'), _('Plan und Rechnungsstellung'), '/neu/abonnement/', 'einstellungen'),
+            e(_('Anmeldung & Sicherheit'), _('Zwei-Faktor-Anmeldung für Sie und Ihr Team'), '/konto/zwei-faktor/', 'gesperrt'),
+            # Nur der Betreiber (Superuser): `darf_oeffnen` blendet den Eintrag für alle anderen aus.
+            e(_('Betreiber-Portal'), _('Kunden, Abonnements und Verschlüsselung der Installation (Betreiber)'), '/betreiber/', 'gesperrt'),
+        ]},
+        {'key': 'team', 'label': _('Team & Zugriff'), 'eintraege': [
+            e(_('Benutzer & Rollen'), _('Team-Mitglieder und Berechtigungen'), '/neu/benutzer/', 'person'),
+            e(_('Zahlungsfreigabe'), _('Freigabelimite für Lieferantenzahlungen (Vier-Augen-Prinzip)'),
+              '/neu/einstellungen/zahlungsfreigabe/', 'gesperrt'),
+            e(_('API-Zugang'), _('Schlüssel für Treuhand und Buchhaltungssoftware (nur Lesen)'), '/neu/einstellungen/api/', 'einstellungen'),
+        ]},
+        {'key': 'vorlagen', 'label': _('Vorlagen & Regeln'), 'eintraege': [
+            e(_('Vorlagen'), _('Textvorlagen mit Platzhaltern'), '/neu/vorlagen/', 'dokument'),
+            # Das Regelwerk hing bis E1.1 unter «Erweitert»: Fristenregeln sind eine Einstellung, keine Tagesarbeit.
+            e(_('Regelwerk (Fristen)'), _('Kündigungstermine und Fristen je Kanton'), '/neu/regelwerk/', 'recht'),
+            e(_('Rechtsgrundlagen'), _('OR/VMWG-Artikel mit Anwendung im Programm'), '/neu/rechtsgrundlagen/', 'recht'),
+            # Audit F3: Die Tabelle speist Abnahme und Ersatzplanung — Werte, die man einmal festlegt.
+            e(_('Lebensdauertabelle'), _('Nutzungsdauern für Zeitwert bei Abnahme und Ersatzplanung'), '/neu/lebensdauer/', 'verlauf'),
+            # Der Wortlaut der Schlussbestimmungen gehört der Verwaltung, nicht dem Code.
+            e(_('Abnahmeprotokoll (Texte)'), _('Wortlaut der Schlussbestimmungen: Haftung, Mietzinsdepot, Mängelrüge'),
+              '/neu/abnahme-texte/', 'recht'),
+        ]},
+        {'key': 'schnittstellen', 'label': _('Schnittstellen'), 'eintraege': [
+            e(_('Integrationen'), _('E-Mail, DocuSeal, KI, Banken, Portal-Feed'), '/neu/integrationen/', 'einstellungen'),
+            e(_('E-Mail-Eingang'), _('Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei Bedarf'),
+              '/neu/postfaecher/', 'wartet'),
+        ]},
+        {'key': 'daten', 'label': _('Daten & Protokoll'), 'eintraege': [
+            e(_('Daten'), _('Import für Wechselkunden, Mandatsexport, Buchungsjournal für Banana und Abacus'),
+              '/neu/einstellungen/daten/', 'dokument'),
+            # Das Archiv hatte keinen Link: Wer eine Akte archivierte, fand es danach nicht wieder.
+            e(_('Archiv'), _('Archivierte Akten ansehen und wiederherstellen'), '/neu/archiv/', 'dokument'),
+            e(_('Logbuch'), _('Wer hat wann was geändert'), '/neu/logbuch/', 'verlauf'),
+        ]},
+    ]
+
+
+#: Die Seiten des Einstellungs-Bereichs — Hub und alle Einträge der Gruppen.
+EINSTELLUNGEN_ZIELE[:] = ['/neu/einstellungen/'] + [e['url'] for g in einstellungen_gruppen() for e in g['eintraege']]
+
+
+def einstellungen_krume(pfad):
+    """Name der Gruppe, zu der die Einstellungsseite unter `pfad` gehört — oder None (Hub, fremde Seite)."""
+    pfad = pfad if pfad.endswith('/') else pfad + '/'
+    for g in einstellungen_gruppen():
+        for eintrag in g['eintraege']:
+            if pfad.startswith(eintrag['url']) and eintrag['url'] != '/betreiber/':
+                return g['label']
+    return None
 
 
 def _g(key, label, icon, ziel, items=None, badge=None, extra_keys=None):
@@ -485,7 +535,20 @@ def _fw_navigation(request):
         suche_kontext = {}
     # «Neuer Fall» im Kopf nur, wo die Rolle ihn anlegen darf (ROUTE-02): aus den schon gelesenen Rollen, ohne
     # zusätzliche Abfrage je Seite.
+    # Einstellungen: dieselbe Filterung wie die Bereiche (Rolle, Abo-Stufe); leere Gruppen entfallen.
+    einst = []
+    for g in einstellungen_gruppen():
+        eintraege = []
+        for eintrag in g['eintraege']:
+            if not darf_oeffnen(user, eintrag['url'], meine):
+                continue
+            merkmal = merkmal_der_view(eintrag['url'])
+            eintraege.append(dict(eintrag, gesperrt=bool(merkmal and not user.is_superuser and not hat_funktion(organisation, merkmal))))
+        if eintraege:
+            einst.append(dict(g, eintraege=eintraege))
     return {'fw_nav_gruppen': gruppen, 'fw_palette': palette,
             'fw_einstellungen_keys': EINSTELLUNGEN_KEYS,
+            'fw_einstellungen_gruppen': einst,
+            'fw_einstellungen_krume': einstellungen_krume(request.path),
             'fw_neuer_fall': darf_oeffnen(user, '/neu/faelle/neu/', meine),
             'fw_mandanten': mandanten, 'fw_mandant': aktiv, **suche_kontext}
