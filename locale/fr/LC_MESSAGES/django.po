@@ -41085,3 +41085,18 @@ msgstr "Rarement utilisé"
 
 msgid "Betrieb"
 msgstr "Exploitation"
+
+msgid "Alle Einstellungen"
+msgstr "Tous les paramètres"
+
+msgid "Team & Zugriff"
+msgstr "Équipe et accès"
+
+msgid "Vorlagen & Regeln"
+msgstr "Modèles et règles"
+
+msgid "Schnittstellen"
+msgstr "Interfaces"
+
+msgid "Daten & Protokoll"
+msgstr "Données et journal"

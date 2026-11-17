@@ -22,54 +22,18 @@ def fw_einstellungen(request):
     Punkte (Account, Abonnement, Benutzer, Logbuch, Vorlagen, Integrationen,
     Rechtsgrundlagen) als eine Hub-Seite mit Sektionen."""
     basis = _global_filter(request)
-    karten = [
-        {'titel': _('Account'), 'sub': _('Verwaltungs-Stammdaten, Logo, Absender'), 'url': '/neu/account/', 'icon': 'person'},
-        {'titel': _('Benutzer & Rollen'), 'sub': _('Team-Mitglieder und Berechtigungen'), 'url': '/neu/benutzer/', 'icon': 'person'},
-        {'titel': _('Vorlagen'), 'sub': _('Textvorlagen mit Platzhaltern'), 'url': '/neu/vorlagen/', 'icon': 'dokument'},
-        {'titel': _('Integrationen'), 'sub': _('E-Mail, DocuSeal, KI, Banken, Portal-Feed'), 'url': '/neu/integrationen/', 'icon': 'einstellungen'},
-        {'titel': _('Abonnement'), 'sub': _('Plan und Rechnungsstellung'), 'url': '/neu/abonnement/', 'icon': 'einstellungen'},
-        {'titel': _('Anmeldung & Sicherheit'), 'sub': _('Zwei-Faktor-Anmeldung für Sie und Ihr Team'),
-         'url': '/konto/zwei-faktor/', 'icon': 'gesperrt'},
-        {'titel': _('Zahlungsfreigabe'), 'sub': _('Freigabelimite für Lieferantenzahlungen (Vier-Augen-Prinzip)'),
-         'url': '/neu/einstellungen/zahlungsfreigabe/', 'icon': 'gesperrt'},
-        {'titel': _('Daten'), 'sub': _('Import für Wechselkunden, Mandatsexport, Buchungsjournal für Banana und Abacus'),
-         'url': '/neu/einstellungen/daten/', 'icon': 'dokument'},
-        {'titel': _('API-Zugang'), 'sub': _('Schlüssel für Treuhand und Buchhaltungssoftware (nur Lesen)'),
-         'url': '/neu/einstellungen/api/', 'icon': 'einstellungen'},
-        {'titel': _('E-Mail-Eingang'), 'sub': _('Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei Bedarf'),
-         'url': '/neu/postfaecher/', 'icon': 'wartet'},
-        {'titel': _('Logbuch'), 'sub': _('Wer hat wann was geändert'), 'url': '/neu/logbuch/', 'icon': 'verlauf'},
-        {'titel': _('Rechtsgrundlagen'), 'sub': _('OR/VMWG-Artikel mit Anwendung im Programm'), 'url': '/neu/rechtsgrundlagen/', 'icon': 'recht'},
-        # E1.1: Das Regelwerk hing bis hierher unter «Erweitert» im
-        # Einfachmodus. Mit den fuenf Bereichen hat es dort keinen Platz mehr —
-        # Fristenregeln sind eine Einstellung, keine Tagesarbeit. Ohne diese
-        # Kachel waere die Seite beim Umbau unauffindbar geworden, wie schon
-        # einmal in Phase 4a (vier Etappen lang).
-        {'titel': _('Regelwerk (Fristen)'), 'sub': _('Kündigungstermine und Fristen je Kanton'),
-         'url': '/neu/regelwerk/', 'icon': 'recht'},
-        # Audit F3: Die Tabelle war gebaut und speist Abnahme und Ersatzplanung,
-        # hatte aber keinen einzigen Link. Sie ist eine Einstellung — Werte,
-        # die man einmal festlegt und selten ändert.
-        {'titel': _('Lebensdauertabelle'), 'sub': _('Nutzungsdauern für Zeitwert bei Abnahme und Ersatzplanung'),
-         'url': '/neu/lebensdauer/', 'icon': 'verlauf'},
-        # Der Wortlaut der Schlussbestimmungen gehört der Verwaltung, nicht dem Code.
-        {'titel': _('Abnahmeprotokoll (Texte)'), 'sub': _('Wortlaut der Schlussbestimmungen: Haftung, Mietzinsdepot, Mängelrüge'),
-         'url': '/neu/abnahme-texte/', 'icon': 'recht'},
-        # Das Archiv (Etappe 2) hatte keinen Link: Wer eine Akte archivierte, sah es
-        # nur einmal als Weiterleitung und fand es danach nicht wieder.
-        {'titel': _('Archiv'), 'sub': _('Archivierte Akten ansehen und wiederherstellen'),
-         'url': '/neu/archiv/', 'icon': 'dokument'},
-        # Nur der Betreiber (Superuser): `darf_oeffnen` blendet die Kachel für alle anderen aus.
-        {'titel': _('Betreiber-Portal'), 'sub': _('Kunden, Abonnements und Verschlüsselung der Installation (Betreiber)'),
-         'url': '/betreiber/', 'icon': 'gesperrt'},
-    ]
-    # Kacheln, die die Rolle nicht öffnen darf (Logbuch, Archiv …), führten in die 403
-    # (DESIGN-07). Die Rollen werden einmal gelesen, nicht je Kachel.
+    # Dieselbe Quelle wie das Feld der Schiene (`core/navigation.py`). Was die Rolle nicht öffnen darf (Logbuch, Archiv …),
+    # führte in die 403 (DESIGN-07): Die Rollen werden einmal gelesen, nicht je Eintrag.
     from core.auth import darf_oeffnen, eigene_rollen
+    from core.navigation import einstellungen_gruppen
     meine = eigene_rollen(request.user)
-    karten = [k for k in karten if darf_oeffnen(request.user, k['url'], meine)]
+    gruppen = []
+    for g in einstellungen_gruppen():
+        eintraege = [k for k in g['eintraege'] if darf_oeffnen(request.user, k['url'], meine)]
+        if eintraege:
+            gruppen.append(dict(g, eintraege=eintraege))
     return render(request, 'fw/einstellungen.html', {
-        **basis, 'nav': 'einstellungen', 'karten': karten,
+        **basis, 'nav': 'einstellungen', 'gruppen': gruppen,
     })
 
 

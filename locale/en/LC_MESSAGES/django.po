@@ -40419,3 +40419,18 @@ msgstr "Rarely used"
 
 msgid "Betrieb"
 msgstr "Operations"
+
+msgid "Alle Einstellungen"
+msgstr "All settings"
+
+msgid "Team & Zugriff"
+msgstr "Team & access"
+
+msgid "Vorlagen & Regeln"
+msgstr "Templates & rules"
+
+msgid "Schnittstellen"
+msgstr "Integrations"
+
+msgid "Daten & Protokoll"
+msgstr "Data & log"

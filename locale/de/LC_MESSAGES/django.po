@@ -39313,3 +39313,18 @@ msgstr "Selten gebraucht"
 
 msgid "Betrieb"
 msgstr "Betrieb"
+
+msgid "Alle Einstellungen"
+msgstr "Alle Einstellungen"
+
+msgid "Team & Zugriff"
+msgstr "Team & Zugriff"
+
+msgid "Vorlagen & Regeln"
+msgstr "Vorlagen & Regeln"
+
+msgid "Schnittstellen"
+msgstr "Schnittstellen"
+
+msgid "Daten & Protokoll"
+msgstr "Daten & Protokoll"

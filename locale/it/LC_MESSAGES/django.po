@@ -41014,3 +41014,18 @@ msgstr "Usato di rado"
 
 msgid "Betrieb"
 msgstr "Esercizio"
+
+msgid "Alle Einstellungen"
+msgstr "Tutte le impostazioni"
+
+msgid "Team & Zugriff"
+msgstr "Team e accessi"
+
+msgid "Vorlagen & Regeln"
+msgstr "Modelli e regole"
+
+msgid "Schnittstellen"
+msgstr "Interfacce"
+
+msgid "Daten & Protokoll"
+msgstr "Dati e registro"
