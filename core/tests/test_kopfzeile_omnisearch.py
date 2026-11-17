@@ -176,16 +176,18 @@ class KopfzeileStrukturTests(TestCase):
         self.assertNotIn(pop, band.kinder, 'Der Überlauf liegt im Band und würde mit ihm abgeschnitten')
 
     def test_gruppen_beginn_traegt_den_abschnittsnamen_fuer_den_ueberlauf(self):
-        """Die Überschrift «Vorgänge» im Überlauf kommt aus `data-abschnitt` am ersten Punkt der Gruppe."""
-        wurzel = baum(self._seite())
+        """Die Überschrift im Überlauf («Monat», «Periodisch») kommt aus `data-abschnitt` am ersten Punkt der Gruppe.
+
+        Bis 17.11.2026 war das «Vorgänge» unter Akten; die Vorgänge stehen jetzt in «Betrieb» (ohne Gruppen)."""
+        wurzel = baum(self._seite('/neu/laeufe/'))
         band = eines(wurzel, klasse='fw-bereichsreiter')
         mit = [k for k in band.kinder if k.tag == 'a' and 'data-abschnitt' in k.attrs]
-        self.assertEqual(len(mit), 1, 'Akten hat genau eine benannte Gruppe')
-        self.assertEqual(mit[0].attrs['data-abschnitt'], 'Vorgänge')
-        self.assertEqual(mit[0].attrs['href'].split('?')[0], '/neu/schaeden/')
+        self.assertEqual([k.attrs['data-abschnitt'] for k in mit], ['Monat', 'Periodisch'])
+        self.assertEqual([k.attrs['href'].split('?')[0] for k in mit], ['/neu/sollstellung/', '/neu/nebenkosten/'])
         # Davor steht der Trenner, der im Überlauf wegfällt
-        i = band.kinder.index(mit[0])
-        self.assertIn('fw-bereichsreiter-trenner', band.kinder[i - 1].klassen)
+        for k in mit:
+            i = band.kinder.index(k)
+            self.assertIn('fw-bereichsreiter-trenner', band.kinder[i - 1].klassen)
 
     def test_profilmenue_traegt_neuer_fall_und_den_menueknopf(self):
         """Bis 1023 px hat Zeile 1 dafür keinen Platz: Beide dürfen nicht unerreichbar werden."""

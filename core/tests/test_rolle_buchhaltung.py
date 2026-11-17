@@ -252,7 +252,7 @@ class BuchhaltungNavigationTests(RollenBasis):
     def test_gegenprobe_team_sieht_alle_bereiche(self):
         antwort = self.client_von('verwalter').get('/neu/finanzen/')
         schluessel = [g['key'] for g in antwort.context['fw_nav_gruppen']]
-        self.assertEqual(schluessel, ['heute', 'akten', 'laeufe', 'finanzen', 'berichte'])
+        self.assertEqual(schluessel, ['heute', 'betrieb', 'akten', 'laeufe', 'finanzen', 'berichte'])
         self.assertFalse(antwort.context.get('fw_kopf_reduziert', False))
 
     def test_finanzseiten_haben_keine_toten_links(self):

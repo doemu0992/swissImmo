@@ -105,6 +105,9 @@ Hauswart: Schadenfälle seiner Liegenschaften.
 - Schrift: DM Sans, für Zahlen und Kennungen IBM Plex Mono; lokal ausgeliefert, keine fremden Hosts
   (`test_fremdschrift`, `test_keine_fremdquellen`).
 - Geprüft wird bei Telefonbreite 390 × 844, nicht nur am Desktop.
+- Neue Seite im Menü: Eintrag in `core/navigation.py` (Bereich, `keys`), die View meldet einen dieser Schlüssel als
+  `nav`. `test_menueband_zuordnung` prüft, dass jede Menüseite ihren eigenen Punkt hervorhebt; `test_erreichbarkeit`,
+  dass jede Seite einen Weg hat. Der Aufbau der Schiene steht in ARCHITECTURE.md, «Navigation».
 - Beträge: Feld `type="text" inputmode="decimal" data-chf`, ein Parser (`core/utils/betrag.py`), intern `Decimal`.
 - Jedes Modellfeld, das ein Mensch setzt, braucht einen Eingabeweg (`test_felder_ohne_eingabe`); jedes Formularfeld
   einen zugänglichen Namen (`test_feldnamen`).

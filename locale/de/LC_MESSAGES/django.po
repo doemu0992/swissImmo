@@ -39304,3 +39304,12 @@ msgid "%(n)s weitere in der Liste"
 msgid_plural "%(n)s weitere in der Liste"
 msgstr[0] "%(n)s weitere in der Liste"
 msgstr[1] "%(n)s weitere in der Liste"
+
+msgid "Seiten des Bereichs"
+msgstr "Seiten des Bereichs"
+
+msgid "Selten gebraucht"
+msgstr "Selten gebraucht"
+
+msgid "Betrieb"
+msgstr "Betrieb"

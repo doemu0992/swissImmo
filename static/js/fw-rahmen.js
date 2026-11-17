@@ -56,14 +56,16 @@ function fwNavToggle(key) {
 (function () {
     var MUSTER = /^\/neu\/(liegenschaften|objekte|vertraege|personen|mandate|faelle|schaeden|dienstleister)\/\d+\/$/;
     var liste = [];
-    try { liste = JSON.parse(localStorage.getItem('fw-zuletzt') || '[]') || []; } catch (e) {}
+    // Je Person UND Verwaltung: am geteilten PC oder nach dem Mandantenwechsel stehen keine fremden Akten darin (Audit K3).
+    var SCHLUESSEL = (typeof FW_RAHMEN !== 'undefined' && FW_RAHMEN.zuletztSchluessel) || 'fw-zuletzt';
+    try { liste = JSON.parse(localStorage.getItem(SCHLUESSEL) || '[]') || []; } catch (e) {}
     if (MUSTER.test(location.pathname) && !document.documentElement.classList.contains('_embed')) {
         var h = document.querySelector('.fw-aktenkopf h1, .fw-phead h1, main h1');
         var titel = h ? h.textContent.replace(/\s+/g, ' ').trim() : '';
         if (titel) {
             liste = [{h: location.pathname, l: titel}].concat(
                 liste.filter(function (x) { return x.h !== location.pathname; })).slice(0, 3);
-            try { localStorage.setItem('fw-zuletzt', JSON.stringify(liste)); } catch (e) {}
+            try { localStorage.setItem(SCHLUESSEL, JSON.stringify(liste)); } catch (e) {}
         }
     }
     if (!liste.length) return;
@@ -71,7 +73,7 @@ function fwNavToggle(key) {
                                .slice(0, 2).map(function (w) { return w[0]; }).join('').toUpperCase(); }
     // Dieselbe Liste an zwei Orten: in der Schublade und im Profilmenü (am PC ist die Schublade aus).
     // [Liste, Titel bzw. Abschnitt, der erst mit Einträgen erscheint]
-    [['fwZuletzt', 'fwZuletztTitel'], ['fwZuletztProfil', 'fwZuletztProfilAbschnitt']].forEach(function (p) {
+    [['fwZuletzt', 'fwZuletztTitel'], ['fwZuletztProfil', 'fwZuletztProfilAbschnitt'], ['fwZuletztFach', 'fwZuletztFachAbschnitt']].forEach(function (p) {
         var ziel = document.getElementById(p[0]);
         if (!ziel) return;
         liste.forEach(function (x) {

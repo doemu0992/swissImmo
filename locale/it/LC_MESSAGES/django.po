@@ -41005,3 +41005,12 @@ msgid "%(n)s weitere in der Liste"
 msgid_plural "%(n)s weitere in der Liste"
 msgstr[0] "%(n)s altra nell'elenco"
 msgstr[1] "%(n)s altre nell'elenco"
+
+msgid "Seiten des Bereichs"
+msgstr "Pagine della sezione"
+
+msgid "Selten gebraucht"
+msgstr "Usato di rado"
+
+msgid "Betrieb"
+msgstr "Esercizio"

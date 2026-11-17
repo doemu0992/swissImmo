@@ -60,7 +60,7 @@ WAS AUS DER ALTEN HUELLE WOHIN GING — nichts ist weggefallen:
 Die Ids und Funktionsnamen sind unveraendert — Tests, `_fwmodal.html` und die
 Detailseiten rufen sie beim Namen.
 {% endcomment %}
-<body class="fw-body">
+<body class="fw-body{% if fw_nav_gruppen %} fw-mit-schiene{% endif %}">
 <a href="#fw-inhalt" class="fw-skip">{% trans "Zum Inhalt springen" %}</a>
 <div class="fw-app">
 
@@ -139,6 +139,64 @@ Detailseiten rufen sie beim Namen.
         </div>
     </aside>
 
+    {% comment %} ===== DIE SCHIENE (17.11.2026, Konzept «C · Schiene») =====
+       Ab 1024 px stehen die Bereiche in einer schmalen Schiene am linken Rand: ein Symbol je Bereich, ein Klick
+       klappt die Seiten des Bereichs auf (`#fwFach`), ein Klick auf eine Seite schliesst es wieder. Die Kapsel mit den
+       Bereichen und das Menüband der Kopfzeile entfallen dort (CSS, Abschnitt «Schiene»); unter 1024 px bleiben sie.
+       Die Liste kommt aus `core/navigation.py`, wie bei der Kapsel — eine Quelle. Tastatur: «G» dann H/B/A/L/F/R öffnet
+       den Bereich, 1–9 wählt die Seite (`static/js/fw-schiene.js`). Ohne Skript sind die Symbole Links auf den
+       Bereichskopf. {% endcomment %}
+    {% if fw_nav_gruppen %}
+    <nav class="fw-schiene" id="fwSchiene" aria-label="{% trans 'Bereiche' %}">
+        <a href="{% if fw_kopf_reduziert %}{{ fw_kopf_start }}{% else %}/neu/{{ lg_query }}{% endif %}" class="fw-schiene-marke" title="{% trans 'Zur Übersicht' %}" aria-label="immoswiss — {% trans 'Zur Übersicht' %}">
+            <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true" class="fw-logo-haus"><path d="M3 15L16 4l13 11M7 13v14h18V13" class="a"/><path d="M12 27v-7h3v7M18 27v-9h3v9" class="b"/></svg>
+        </a>
+        {% for g in fw_nav_gruppen %}
+        <a href="{{ g.ziel }}{{ lg_query }}" class="fw-schiene-b{% if nav in g.alle_keys %} hier{% endif %}" data-fach="{{ g.key }}" data-taste="{{ g.key }}"{% if nav in g.alle_keys %} aria-current="page"{% endif %}>
+            {% zeichen_wert g.icon %}<span>{{ g.label }}</span>
+            {% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="fw-schiene-zahl crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% else %}<span class="fw-schiene-zahl{% if g.key == 'heute' %} crit{% endif %}" data-zaehler="{{ g.key }}" hidden></span>{% endif %}
+        </a>
+        {% endfor %}
+        {% if not fw_kopf_reduziert %}
+        <div class="fw-schiene-fuss">
+            <a href="/neu/einstellungen/{{ lg_query }}" class="fw-schiene-b{% if nav in fw_einstellungen_keys %} hier{% endif %}"{% if nav in fw_einstellungen_keys %} aria-current="page"{% endif %}>
+                {% zeichen 'einstellungen' %}<span>{% trans "Einstellungen" %}</span>
+            </a>
+        </div>
+        {% endif %}
+    </nav>
+    <div class="fw-fach" id="fwFach" role="region" aria-label="{% trans 'Seiten des Bereichs' %}" hidden>
+        {% for g in fw_nav_gruppen %}
+        <section data-fach-bereich="{{ g.key }}" aria-labelledby="fwFachTitel-{{ g.key }}" hidden>
+            <h2 id="fwFachTitel-{{ g.key }}">{{ g.label }}</h2>
+            <ul>
+                {% for it in g.items %}{% if it.erlaubt and not it.selten %}
+                <li><a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}><span>{{ it.label }}{% if it.gesperrt %}<span class="fw-abo-schloss">{% trans 'gesperrt' %}</span>{% endif %}</span>{% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-z crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% else %}<kbd aria-hidden="true"></kbd>{% endif %}</a></li>
+                {% endif %}{% endfor %}
+            </ul>
+            <h3 class="fw-fach-selten" hidden>{% trans "Selten gebraucht" %}</h3>
+            <ul class="fw-fach-selten-liste">
+                {% for it in g.items %}{% if it.erlaubt and it.selten %}
+                <li><a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}><span>{{ it.label }}{% if it.gesperrt %}<span class="fw-abo-schloss">{% trans 'gesperrt' %}</span>{% endif %}</span></a></li>
+                {% endif %}{% endfor %}
+            </ul>
+        </section>
+        {% endfor %}
+        <div class="fw-fach-zuletzt" id="fwZuletztFachAbschnitt" hidden>
+            <h3>{% trans "Zuletzt geöffnet" %}</h3>
+            <div id="fwZuletztFach"></div>
+        </div>
+    </div>
+    <nav class="fw-tabbar" aria-label="{% trans 'Bereiche' %}">
+        {% for g in fw_nav_gruppen %}
+        <a href="{{ g.ziel }}{{ lg_query }}"{% if nav in g.alle_keys %} aria-current="page"{% endif %}>
+            {% zeichen_wert g.icon %}<span>{{ g.label }}</span>
+            {% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="fw-tab-zahl">{{ schaeden_ungelesen }}</span>{% endif %}
+        </a>
+        {% endfor %}
+    </nav>
+    {% endif %}
+
     <!-- ================= INHALT ================= -->
     <div class="fw-haupt">
 
@@ -191,7 +249,7 @@ Detailseiten rufen sie beim Namen.
                    (Schublade, `fw/_fwmodal.html`) auf der Seite nicht geladen ist. {% endcomment %}
                 {% if not fw_kopf_reduziert %}
                 {% if fw_neuer_fall %}<a href="/neu/faelle/neu/" data-modal="{% trans "Neuer Fall" %}" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neuen Fall erfassen' %}"
-                   class="fw-knopf-rund fw-wz-neu">{% zeichen 'neu' %}</a>{% endif %}
+                   class="fw-knopf-rund fw-wz-neu">{% zeichen 'neu' %}<span class="fw-wz-neu-text">{% trans "Neu" %}</span></a>{% endif %}
                 <a href="/neu/zulauf/{{ lg_query }}" title="{% trans 'Mitteilungen' %}" aria-label="{% trans 'Mitteilungen' %}"
                    class="fw-knopf-rund{% if nav == 'zulauf' %} hier{% endif %}">{% zeichen 'glocke' %}<span class="fw-pip" data-zaehler="zulauf" hidden></span></a>
                 <a href="/neu/einstellungen/{{ lg_query }}" title="{% trans 'Einstellungen' %}" aria-label="{% trans 'Einstellungen' %}" class="fw-knopf-rund fw-wz-einst{% if nav in fw_einstellungen_keys %} hier{% endif %}">{% zeichen 'einstellungen' %}</a>
@@ -217,7 +275,27 @@ Detailseiten rufen sie beim Namen.
             <nav class="fw-mehr-pop" id="fwMehrPop" aria-label="{% trans 'Weitere Unterbereiche' %}" hidden></nav>
           </div>
           {% endif %}{% endfor %}
+          {% comment %} Am Telefon (bis 900 px) ersetzt ein Knopf die Bereichskapsel und das Menüband: Er nennt Bereich und Seite
+             und öffnet die Seiten des Bereichs als Blatt (`#fwTelBlatt`, unten); die Bereiche selbst stehen in der Tab-Leiste. {% endcomment %}
+          {% for g in fw_nav_gruppen %}{% if nav in g.alle_keys and g.items %}
+          <button type="button" class="fw-telband" data-bei-klick="fwTelBlattUmschalten" aria-haspopup="dialog" aria-controls="fwTelBlatt" aria-expanded="false">
+              <span><small>{{ g.label }}</small><b>{% for it in g.items %}{% if nav in it.keys %}{{ it.label }}{% endif %}{% endfor %}</b></span>{% zeichen 'aufklappen' %}
+          </button>
+          {% endif %}{% endfor %}
         </header>
+
+        {% for g in fw_nav_gruppen %}{% if nav in g.alle_keys and g.items %}
+        <div class="fw-telblatt" id="fwTelBlatt" hidden>
+            <div class="fw-telblatt-kasten" role="dialog" aria-modal="true" aria-label="{{ g.label }}">
+                <h2>{{ g.label }}</h2>
+                <ul>
+                    {% for it in g.items %}{% if it.erlaubt %}
+                    <li><a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}><span>{{ it.label }}{% if it.gesperrt %}<span class="fw-abo-schloss">{% trans 'gesperrt' %}</span>{% endif %}</span>{% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-z crit">{{ schaeden_ungelesen }}</span>{% endif %}</a></li>
+                    {% endif %}{% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}{% endfor %}
 
         <!-- Profilmenü -->
         <div id="fwProfil" class="fw-profil hidden">
@@ -320,10 +398,11 @@ Detailseiten rufen sie beim Namen.
 {% comment %} Rahmen-Skripte als Dateien (zwischengespeichert). OHNE `defer`: Sie laufen an derselben Stelle und in
    derselben Reihenfolge wie zuvor die Inline-Skripte; Seiten-Skripte im Block `scripts` verlassen sich darauf.
    Texte und Schalter stehen im Datenblock davor (kein ausführbares Skript, braucht keine Nonce). {% endcomment %}
-<script type="application/json" id="fw-rahmen-daten">{"kopfReduziert": {% if fw_kopf_reduziert %}true{% else %}false{% endif %}, "filter": {"ph": "{% filter escapejs %}{% trans "Filtern …" %}{% endfilter %}", "alle": "{% filter escapejs %}{% trans "Alle" %}{% endfilter %}", "stand": "{% filter escapejs %}{% trans "%(n)s von %(m)s Zeilen" %}{% endfilter %}", "reset": "{% filter escapejs %}{% trans "Filter zurücksetzen" %}{% endfilter %}", "spalte": "{% filter escapejs %}{% trans "Spalte filtern" %}{% endfilter %}"}}</script>
+<script type="application/json" id="fw-rahmen-daten">{"kopfReduziert": {% if fw_kopf_reduziert %}true{% else %}false{% endif %}, "zuletztSchluessel": "fw-zuletzt-{{ request.user.pk }}-{{ fw_mandant.pk|default:0 }}", "filter": {"ph": "{% filter escapejs %}{% trans "Filtern …" %}{% endfilter %}", "alle": "{% filter escapejs %}{% trans "Alle" %}{% endfilter %}", "stand": "{% filter escapejs %}{% trans "%(n)s von %(m)s Zeilen" %}{% endfilter %}", "reset": "{% filter escapejs %}{% trans "Filter zurücksetzen" %}{% endfilter %}", "spalte": "{% filter escapejs %}{% trans "Spalte filtern" %}{% endfilter %}"}}</script>
 <script src="{% statisch 'js/fw-rahmen.js' %}"></script>
 <script src="{% statisch 'js/fw-thema.js' %}"></script>
 <script src="{% statisch 'js/fw-kapsel.js' %}"></script>
+<script src="{% statisch 'js/fw-schiene.js' %}"></script>
 {% block scripts %}{% endblock %}
 
 {% comment %} Die Tab-Leiste unten ist mit dem Ember-Redesign entfallen: Die Bereiche stehen

@@ -40410,3 +40410,12 @@ msgid "%(n)s weitere in der Liste"
 msgid_plural "%(n)s weitere in der Liste"
 msgstr[0] "%(n)s more in the list"
 msgstr[1] "%(n)s more in the list"
+
+msgid "Seiten des Bereichs"
+msgstr "Pages in this section"
+
+msgid "Selten gebraucht"
+msgstr "Rarely used"
+
+msgid "Betrieb"
+msgstr "Operations"

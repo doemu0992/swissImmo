@@ -55,6 +55,22 @@ Security → `WartungsMiddleware` → `NulBytesMiddleware` → GZip → Session 
 `AngemeldetNichtZwischenspeichern` → Locale → `OrganisationMiddleware` → `ZweiFaktorPflichtMiddleware` →
 `AboMiddleware` → Messages → XFrame → `CspMiddleware` → `EingabeFehlerMiddleware` → `FeldnamenMiddleware`.
 
+### Navigation
+
+- Eine Liste ist die Quelle: `core/navigation.py` (`nav_gruppen()`), sechs Bereiche — Heute, Betrieb, Akten, Läufe,
+  Finanzen, Berichte. Heute, Läufe, Finanzen und Berichte beginnen mit «Übersicht», Betrieb und Akten mit ihrer
+  ersten Seite. Einstellungen stehen im Fuss der Schiene, nicht in den Bereichen
+  (`EINSTELLUNGEN_ZIELE`).
+- Der Context-Processor `fw_navigation` liefert die Liste an `fw/base.html`, gefiltert nach Rolle (`erlaubt`) und
+  Abo-Stufe (`gesperrt`). Jede Seite meldet ihren `nav`-Schlüssel; `keys` je Eintrag verbindet ihn mit dem Punkt.
+  «Vermietung» ist ein Punkt für vier Seiten (Mieterwechsel, Leerstand, Vermarktung, Bewerbungen).
+- Darstellung nach Breite: ab 1024 px die Schiene links (`#fwSchiene`, 88 px) mit aufklappbarem Feld (`#fwFach`,
+  `static/js/fw-schiene.js`; Tastatur G dann H/B/A/L/F/R, Ziffern 1–9, Esc); 901–1023 px Bereichskapsel und
+  Menüband in der Kopfzeile (Überlauf in «Mehr», `fw-menueband.js`); bis 900 px Tab-Leiste unten mit den sechs
+  Bereichen und das Telband («Bereich / Seite»), das die Seiten als Blatt öffnet. Hauswartung und Portal-Rollen
+  bekommen keine Schiene (`fw_kopf_reduziert`).
+- «Zuletzt geöffnet» liegt im Browser, je Person und Verwaltung (`zuletztSchluessel` im Datenblock der Vorlage).
+
 ## 3. Mandantentrennung
 
 Jede fachliche Zeile gehört genau einer Organisation. Die Trennung hat drei Schichten.
