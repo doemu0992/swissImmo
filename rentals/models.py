@@ -836,9 +836,15 @@ class Mietvertrag(OrganisationAusKette):
         if self.sign_status == 'unterzeichnet' and self.pdf_datei:
             try:
                 from core.services.ablage import ablage_signierter_vertrag
-                ablage_signierter_vertrag(self)
+                from core.tenancy import kontext_des_objekts
+                # Der DocuSeal-Webhook speichert ohne Anmeldung, also ohne Verwaltung im Kontext: Ohne diese Zeile
+                # warf `Dokument.objects` einen OrganisationsFehler, und die Akte blieb leer (Audit K1).
+                with kontext_des_objekts(self):
+                    ablage_signierter_vertrag(self)
             except Exception:
-                logger.debug("Fehler bewusst übergangen", exc_info=True)
+                # Das Speichern des Vertrags soll daran nicht scheitern — aber ein fehlender Eintrag in der Akte
+                # gehört ins Protokoll, nicht in `debug` (sonst bleibt er unbemerkt).
+                logger.exception("Ablage des signierten Vertrags %s fehlgeschlagen", self.pk)
 
     def delete(self, *args, **kwargs):
         # Automatisch erzeugte Vertragspaket-Dokumente (Mietvertrag + Standard-

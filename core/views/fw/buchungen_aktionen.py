@@ -108,6 +108,17 @@ def fw_buchung_stornieren(request, pk):
     if b.beleg_text.startswith(_ABSCHLUSS_PREFIX):
         messages.error(request, gettext('Abschlussbuchungen lassen sich nicht einzeln stornieren. Bitte den Jahresabschluss gesamthaft über «Abschluss zurücknehmen» aufheben.'))
         return redirect('fw_buchhaltung')
+    # Eine Buchung, die zu einer Zahlung oder einer Rechnung gehört, wird dort storniert — nicht im Journal. Die
+    # Journal-Gegenbuchung führte das Nebenbuch nicht nach: Die Rechnung blieb «bezahlt» (offen 0) und die Zahlung
+    # «verbucht», während das Konto wieder den alten Stand zeigte; sie wurde nie gemahnt (Audit F1).
+    if b.zahlungseingang_id:
+        messages.error(request, gettext('Diese Buchung gehört zu einer Zahlung. Bitte die Zahlung im Bankabgleich stornieren, '
+                                        'sonst stimmen offene Posten und Konto nicht mehr überein.'))
+        return redirect('fw_buchhaltung')
+    if b.debitoren_rechnung_id or b.kreditoren_rechnung_id:
+        messages.error(request, gettext('Diese Buchung gehört zu einer Rechnung. Bitte die Rechnung selbst stornieren, '
+                                        'sonst stimmen offene Posten und Konto nicht mehr überein.'))
+        return redirect('fw_buchhaltung')
     try:
         gegen = storniere_buchung(b, user=request.user)
     except ValueError as e:

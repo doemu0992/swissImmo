@@ -127,6 +127,11 @@ warnt die Seite «Aufträge» und das Betreiber-Protokoll.
 Bankauszug (camt.053/054 oder CSV) → `core/views/fw/bankabgleich.py`: Gutschriften werden über die QR-Referenz den
 offenen Rechnungen zugeordnet und verbucht; Unzuordenbares wird geparkt (`core/services/zahlungszuordnung.py`).
 Zahlungsausgang: `core/services/pain001.py` (Zahllauf, ab Freigabelimit mit zweiter Person).
+Storno gehört an die Quelle: Eine Buchung, die zu einer Zahlung oder Rechnung gehört, wird im Journal nicht storniert
+(`fw_buchung_stornieren` verweist auf Bankabgleich bzw. Rechnung), und «Import rückgängig» ist gesperrt, solange
+verbuchte Belastungen am Auszug hängen — sonst stimmt das Nebenbuch nicht mehr, oder die Belastung wird beim erneuten
+Import doppelt gebucht. Eine MWST-Periode für den ganzen Bestand und eine je Liegenschaft schliessen sich aus
+(`_mwst_bereits_verbucht`).
 
 ### Nebenkosten
 Rechenkern `core/utils/billing.py` (`berechne_abrechnung`), Assistent `core/views/fw/nk_wizard.py`, PDF und Versand

@@ -41029,3 +41029,12 @@ msgstr "Interfacce"
 
 msgid "Daten & Protokoll"
 msgstr "Dati e registro"
+
+msgid "Diese Buchung gehört zu einer Zahlung. Bitte die Zahlung im Bankabgleich stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+msgstr "Questa registrazione appartiene a un pagamento. Stornare il pagamento nella riconciliazione bancaria, altrimenti le partite aperte e il conto non coincidono più."
+
+msgid "Diese Buchung gehört zu einer Rechnung. Bitte die Rechnung selbst stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+msgstr "Questa registrazione appartiene a una fattura. Stornare la fattura stessa, altrimenti le partite aperte e il conto non coincidono più."
+
+msgid "Rückgängig nicht möglich: Der Import enthält %(n)s verbuchte Belastung(en) (Gebühren, Lieferantenzahlungen). Bitte zuerst deren Buchungen stornieren, sonst werden sie nach einem erneuten Import doppelt gebucht."
+msgstr "Annullamento impossibile: l'importazione contiene %(n)s addebito/i registrato/i (spese, pagamenti ai fornitori). Stornare prima queste registrazioni, altrimenti verranno registrate due volte con una nuova importazione."

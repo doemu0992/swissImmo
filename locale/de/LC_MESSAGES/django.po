@@ -39328,3 +39328,12 @@ msgstr "Schnittstellen"
 
 msgid "Daten & Protokoll"
 msgstr "Daten & Protokoll"
+
+msgid "Diese Buchung gehört zu einer Zahlung. Bitte die Zahlung im Bankabgleich stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+msgstr "Diese Buchung gehört zu einer Zahlung. Bitte die Zahlung im Bankabgleich stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+
+msgid "Diese Buchung gehört zu einer Rechnung. Bitte die Rechnung selbst stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+msgstr "Diese Buchung gehört zu einer Rechnung. Bitte die Rechnung selbst stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+
+msgid "Rückgängig nicht möglich: Der Import enthält %(n)s verbuchte Belastung(en) (Gebühren, Lieferantenzahlungen). Bitte zuerst deren Buchungen stornieren, sonst werden sie nach einem erneuten Import doppelt gebucht."
+msgstr "Rückgängig nicht möglich: Der Import enthält %(n)s verbuchte Belastung(en) (Gebühren, Lieferantenzahlungen). Bitte zuerst deren Buchungen stornieren, sonst werden sie nach einem erneuten Import doppelt gebucht."

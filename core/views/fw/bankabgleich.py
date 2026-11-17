@@ -1432,6 +1432,16 @@ def fw_kontoauszug_rueckgaengig(request, pk):
             _Q(bank_referenz__in=arefs) | _geschwister))
 
     dateiname = auszug.dateiname or f"Auszug #{auszug.id}"
+    # Belastungen (Gebühren, Lieferantenzahlungen) haben ihre Buchung an der Auszugszeile. Das Rückgängig löscht die
+    # Zeilen, nicht diese Buchungen: Nach einem erneuten Import stünde die Belastung wieder «offen» da und würde ein
+    # zweites Mal gebucht (Audit F2). Solange eine solche Buchung steht, bleibt der Import — sie wird zuerst storniert.
+    n_belastungen = Buchung.objects.filter(bankbewegungen__auszug=auszug, ist_storno=False,
+                                           storniert_am__isnull=True).distinct().count()
+    if n_belastungen:
+        messages.error(request, '❌ ' + gettext(
+            'Rückgängig nicht möglich: Der Import enthält %(n)s verbuchte Belastung(en) (Gebühren, Lieferantenzahlungen). '
+            'Bitte zuerst deren Buchungen stornieren, sonst werden sie nach einem erneuten Import doppelt gebucht.') % {'n': n_belastungen})
+        return redirect('fw_bankabgleich')
     storniert = 0
     uebersprungen = 0
     try:
