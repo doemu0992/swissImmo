@@ -41038,3 +41038,6 @@ msgstr "Questa registrazione appartiene a una fattura. Stornare la fattura stess
 
 msgid "Rückgängig nicht möglich: Der Import enthält %(n)s verbuchte Belastung(en) (Gebühren, Lieferantenzahlungen). Bitte zuerst deren Buchungen stornieren, sonst werden sie nach einem erneuten Import doppelt gebucht."
 msgstr "Annullamento impossibile: l'importazione contiene %(n)s addebito/i registrato/i (spese, pagamenti ai fornitori). Stornare prima queste registrazioni, altrimenti verranno registrate due volte con una nuova importazione."
+
+msgid "Die Belastung (CHF %(belastung)s) ist grösser als der offene Betrag der Rechnung (CHF %(offen)s). Bitte die Rechnung prüfen oder die Bewegung auf ein Konto verbuchen."
+msgstr "L'addebito (CHF %(belastung)s) è superiore all'importo aperto della fattura (CHF %(offen)s). Controllare la fattura o registrare il movimento su un conto."

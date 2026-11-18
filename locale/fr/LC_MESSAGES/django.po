@@ -41109,3 +41109,6 @@ msgstr "Cette écriture appartient à une facture. Veuillez annuler la facture e
 
 msgid "Rückgängig nicht möglich: Der Import enthält %(n)s verbuchte Belastung(en) (Gebühren, Lieferantenzahlungen). Bitte zuerst deren Buchungen stornieren, sonst werden sie nach einem erneuten Import doppelt gebucht."
 msgstr "Annulation impossible : l'import contient %(n)s débit(s) comptabilisé(s) (frais, paiements de fournisseurs). Veuillez d'abord annuler ces écritures, sinon elles seront comptabilisées deux fois lors d'un nouvel import."
+
+msgid "Die Belastung (CHF %(belastung)s) ist grösser als der offene Betrag der Rechnung (CHF %(offen)s). Bitte die Rechnung prüfen oder die Bewegung auf ein Konto verbuchen."
+msgstr "Le débit (CHF %(belastung)s) est supérieur au montant ouvert de la facture (CHF %(offen)s). Veuillez vérifier la facture ou comptabiliser le mouvement sur un compte."
