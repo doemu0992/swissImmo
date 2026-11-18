@@ -120,6 +120,22 @@ class ErweiterterBestand(MandantenFixture):
         # --- Abonnement (Funktionsfreigabe) --------------------------------------------------------------
         from abo.models import Abonnement
         self._neu('abonnement', lambda: Abonnement.alle_organisationen.create(organisation=org))
+        from django.utils import timezone
+
+        from abo.models import AboGutschrift, KundenKontakt, Kundenstamm
+        self._neu('abogutschrift', lambda: AboGutschrift.alle_organisationen.create(
+            organisation=org, datum=heute, text=f'Gutschrift {k}', betrag=Decimal('10')))
+        self._neu('kundenstamm', lambda: Kundenstamm.alle_organisationen.create(organisation=org))
+        self._neu('kundenkontakt', lambda: KundenKontakt.alle_organisationen.create(
+            organisation=org, zeitpunkt=timezone.now(), text=f'Notiz {k}'))
+
+        from core import api_token
+        self._neu('apitoken', lambda: api_token.erzeugen(org, f'Token {k}')[0])
+
+        from core.models import Aenderungsanfrage, Auftrag
+        self._neu('auftrag', lambda: Auftrag.alle_organisationen.create(organisation=org, art='sollstellung'))
+        self._neu('aenderungsanfrage', lambda: Aenderungsanfrage.alle_organisationen.create(
+            organisation=org, mieter=self.mieter, art='mitteilung', zusammenfassung=f'Anfrage {k}'))
 
         # --- Personen und Verträge ------------------------------------------------------------------------
         self._neu('mieteradresse', lambda: MieterAdresse.objects.create(

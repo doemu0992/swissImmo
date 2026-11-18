@@ -68,7 +68,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from core.services.fristen import fristende as _fristende
-from core.services.fristen import naechster_werktag
+from core.services.fristen import kanton_von, naechster_werktag
 
 logger = logging.getLogger(__name__)
 
@@ -101,24 +101,24 @@ def quelle_fuer(vertrag):
     return f'{QUELLE_PRAEFIX}{vertrag.pk}'
 
 
-def provisorisches_fristende(versand_am, frist_tage=FRIST_TAGE):
+def provisorisches_fristende(versand_am, frist_tage=FRIST_TAGE, kanton=''):
     """Vorläufiges Fristende eines versandten Einschreibens, solange der Zugang nicht bestätigt ist:
     Versand + Postweg + Abholfrist + Zahlungsfrist — der späteste Zugang, mit dem zu rechnen ist.
     Nie zu kurz (Audit MIET-01)."""
-    return _fristende(versand_am, POSTWEG_TAGE + ABHOLFRIST_TAGE + (frist_tage or FRIST_TAGE))
+    return _fristende(versand_am, POSTWEG_TAGE + ABHOLFRIST_TAGE + (frist_tage or FRIST_TAGE), kanton)
 
 
-def fiktiver_zugang(abholeinladung_am):
+def fiktiver_zugang(abholeinladung_am, kanton=''):
     """Zugang eines NICHT abgeholten Einschreibens: der letzte Tag der siebentägigen Abholfrist
     (Tag der Abholeinladung + 7). Fällt er auf einen Nicht-Werktag, gilt der nächste Werktag
     (konservativ: der Zugang liegt dann später, die Frist endet später)."""
-    return naechster_werktag(abholeinladung_am + timedelta(days=ABHOLFRIST_TAGE))
+    return naechster_werktag(abholeinladung_am + timedelta(days=ABHOLFRIST_TAGE), kanton)
 
 
-def definitives_fristende(zugang, frist_tage=FRIST_TAGE):
+def definitives_fristende(zugang, frist_tage=FRIST_TAGE, kanton=''):
     """Fristende ab bestätigtem Zugang: Zugang + Frist, ein Samstag, Sonntag oder Feiertag rückt auf den
     nächsten Werktag (Art. 78 OR)."""
-    return _fristende(zugang, frist_tage or FRIST_TAGE)
+    return _fristende(zugang, frist_tage or FRIST_TAGE, kanton)
 
 
 def zugang_unbestaetigt(pendenz):
@@ -137,8 +137,8 @@ def fristende_von(pendenz):
     if ende is None:
         return None
     if pendenz.zugang_am is None and pendenz.versand_am:
-        ende = max(ende, provisorisches_fristende(pendenz.versand_am, pendenz.frist_tage))
-    return naechster_werktag(ende)
+        ende = max(ende, provisorisches_fristende(pendenz.versand_am, pendenz.frist_tage, kanton_von(pendenz)))
+    return naechster_werktag(ende, kanton_von(pendenz))
 
 
 def ist_257d_frist(pendenz):

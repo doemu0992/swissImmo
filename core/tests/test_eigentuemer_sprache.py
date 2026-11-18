@@ -44,7 +44,7 @@ class PortalmailTests(SimpleTestCase):
     def test_portalmail_standard_deutsch(self):
         betreff, html = self._senden('de')
         self.assertEqual(betreff, 'Ihr Zugang zum Eigentümer-Portal')
-        self.assertIn('Jetzt einloggen', html)
+        self.assertIn('Passwort festlegen', html)
 
 
 class AbrechnungTests(SimpleTestCase):

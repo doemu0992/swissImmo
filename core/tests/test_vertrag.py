@@ -1,5 +1,5 @@
 """Testmodul vertrag — aus core/tests.py herausgeloest (Etappe 1,
-siehe docs/ETAPPE-1-ZERLEGEN.md). 13 Klassen, unveraendert uebernommen."""
+siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)). 13 Klassen, unveraendert uebernommen."""
 import re
 from datetime import date, timedelta
 from decimal import Decimal
@@ -176,8 +176,10 @@ class GewerbeWizardTests(TestCase):
         self.assertIn('<section id="schritt-nk" data-schritt=', body)
         self.assertIn("getElementById('schritt-nk').classList.toggle('hidden', isEP())", body)
         self.assertGreaterEqual(body.count('nkSchrittSetzen()'), 3)   # Definition + lgChange + objChange
-        # Vorschau nutzt dynamische Abschnittsnummern statt hartem "6. Nebenkosten"
-        self.assertIn('secN(', body)
+        # Die Vorschau rendert der Server (dieselbe Vorlage wie das PDF). Die frühere Vorschau im Skript war seit
+        # der Umstellung unerreichbarer Code und ist am 15.11.2026 entfernt worden — mit ihr `secN(`; ein fest
+        # nummerierter Abschnitt «6. Nebenkosten» darf weiterhin nirgends stehen.
+        self.assertNotIn('secN(', body)
         self.assertNotIn('<div class="pvsec">6. Nebenkosten</div>', body)
 
     def test_speichern_parkplatz_nk_wird_auf_null_gezwungen(self):
@@ -1192,8 +1194,13 @@ class UnterschriftBriefeTests(TestCase):
         r = c.get('/neu/account/')
         self.assertContains(r, 'data-us-canvas')
         self.assertContains(r, 'name="unterschrift_gezeichnet"')
-        # touch-action: none — sonst scrollt das Handy beim Zeichnen weg
-        self.assertContains(r, 'touch-action: none')
+        # touch-action: none — sonst scrollt das Handy beim Zeichnen weg. Die Regel steht in der Stilschicht
+        # (Klasse `fw-zeichenflaeche`), nicht mehr als style-Attribut an der Fläche.
+        self.assertContains(r, 'fw-zeichenflaeche')
+        import pathlib
+        from django.conf import settings
+        css = (pathlib.Path(settings.BASE_DIR) / 'static/css/schicht.css').read_text(encoding='utf-8')
+        self.assertRegex(css, r'\.fw-zeichenflaeche\{[^}]*touch-action:none')
 
     def test_gezeichnete_unterschrift_wird_gespeichert(self):
         vw = self._verwaltung(False)

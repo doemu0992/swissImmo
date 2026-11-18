@@ -11,6 +11,8 @@ Anfangsmietzins-Formular anzeigen kann, ob die Verwendung im Kanton der
 Liegenschaft obligatorisch ist. Es ersetzt keine Rechtsberatung — der Verwalter
 prüft die aktuelle kantonale Bekanntmachung.
 """
+from datetime import date
+
 from core.services.kantone import kanton_fuer_liegenschaft, KANTON_NAMEN
 
 # pflicht: 'ja' | 'teilweise' | 'nein' | 'unbekannt'
@@ -46,6 +48,9 @@ _REGISTER = {
 }
 
 _STAND_VERZEICHNIS = "September 2026"
+#: Tag, an dem das Register zuletzt gegen das Verzeichnis geprüft wurde (Kopfkommentar oben) — für die Pflege-Erinnerung
+#: (`core/services/datenpflege.py`). Nach jeder Prüfung ändern.
+GEPRUEFT_AM = date(2026, 11, 8)
 
 
 def formularpflicht_fuer_kanton(kanton):

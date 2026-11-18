@@ -50,7 +50,9 @@ BUENDELUNG = timedelta(minutes=1)
 #: So lange gilt der signierte Link (Chat/Termin ohne Anmeldung).
 LINK_GUELTIG_SEKUNDEN = 30 * 24 * 3600
 _SALT = 'direktkanal-link'
-_MARKE = re.compile(r'\[A(\d+)\]')
+#: `[A12]` (alt, ohne Seite) oder `[A12-m0123456789]`: Auftrag, Seite (m/h) und deren Kennung.
+_MARKE = re.compile(r'\[A(\d+)(?:-([mh])([0-9a-f]{10}))?\]')
+_SEITE_KURZ = {'mieter': 'm', 'handwerker': 'h'}
 KOPF_BRUECKE = 'X-Immoswiss-Bridge'
 
 _AUTOMATISCHE_ABSENDER = ('mailer-daemon', 'postmaster', 'noreply', 'no-reply', 'donotreply', 'do-not-reply')
@@ -58,8 +60,41 @@ _AUTOMATISCHE_ABSENDER = ('mailer-daemon', 'postmaster', 'noreply', 'no-reply', 
 
 # --- Kennungen ---------------------------------------------------------------------------------------
 
-def marke(auftrag):
-    return f'[A{auftrag.pk}]'
+def _kennung(auftrag, seite):
+    """Zehn Zeichen, die nur kennt, wer die Mail an DIESE Seite bekommen hat (HMAC über Auftrag, Seite, Stand)."""
+    from django.utils.crypto import salted_hmac
+    return salted_hmac(_SALT + '-marke', f'{auftrag.pk}:{seite}:{auftrag.direkt_version}').hexdigest()[:10]
+
+
+def marke(auftrag, seite=None):
+    """Die Auftragsmarke für den Betreff. Mit ``seite`` trägt sie die Kennung des EMPFÄNGERS.
+
+    WARUM DIE SEITE IN DER MARKE STEHT (15.11.2026): Bisher bestimmte allein die Absenderadresse, ob eine Antwort
+    als Mieter oder als Handwerker gilt — und die lässt sich fälschen («Ich komme morgen 07:00, Schlüssel bitte unter
+    die Matte»). Jetzt weist sich aus, wer die Mail erhalten hat: Nur sie trägt die Kennung dieser Seite."""
+    if seite is None:
+        return f'[A{auftrag.pk}]'
+    return f'[A{auftrag.pk}-{_SEITE_KURZ[seite]}{_kennung(auftrag, seite)}]'
+
+
+def seite_aus_betreff(betreff, auftrag):
+    """Die Seite, die sich mit der Marke im Betreff ausweist — oder ``None`` (keine, alte oder falsche Kennung)."""
+    from django.utils.crypto import constant_time_compare
+    for m in _MARKE.finditer(betreff or ''):
+        if int(m.group(1)) != auftrag.pk or not m.group(2):
+            continue
+        seite = 'mieter' if m.group(2) == 'm' else 'handwerker'
+        if constant_time_compare(m.group(3), _kennung(auftrag, seite)):
+            return seite
+    return None
+
+
+def zugaenge_widerrufen(auftrag):
+    """Alle Direktkanal-Zugänge dieses Auftrags entwerten: die Links ohne Anmeldung (Mieter und Handwerker) und
+    die Marken in bereits verschickten Mails. Die nächste Nachricht verschickt neue."""
+    from django.db.models import F
+    type(auftrag).alle_organisationen.filter(pk=auftrag.pk).update(direkt_version=F('direkt_version') + 1)
+    auftrag.refresh_from_db(fields=['direkt_version'])
 
 
 def auftrag_id_aus_betreff(betreff):
@@ -68,9 +103,10 @@ def auftrag_id_aus_betreff(betreff):
     return int(m.group(1)) if m else None
 
 
-def betreff_fuer(auftrag, titel=None):
+def betreff_fuer(auftrag, titel=None, seite=None):
+    """Betreff einer Mail an ``seite`` (die Empfängerin): Ihre Antwort weist sich über die Marke aus."""
     t = auftrag.ticket
-    return f"{titel or t.titel} (Ticket #{t.pk}) {marke(auftrag)}"
+    return f"{titel or t.titel} (Ticket #{t.pk}) {marke(auftrag, seite)}"
 
 
 # --- Signierter Link (ohne Anmeldung) ------------------------------------------------------------------
@@ -79,7 +115,7 @@ def link_token(auftrag, seite):
     """Signierter Zugang für ``seite`` ('mieter' oder 'handwerker') zum Chat dieses Auftrags."""
     if seite not in ('mieter', 'handwerker'):
         raise ValueError(seite)
-    return signing.dumps({'a': auftrag.pk, 'w': seite}, salt=_SALT, compress=False)
+    return signing.dumps({'a': auftrag.pk, 'w': seite, 'v': auftrag.direkt_version}, salt=_SALT, compress=False)
 
 
 def link_url(auftrag, seite):
@@ -96,7 +132,7 @@ def auftrag_aus_link(signiert):
     from .models import HandwerkerAuftrag
     try:
         daten = signing.loads(signiert or '', salt=_SALT, max_age=LINK_GUELTIG_SEKUNDEN)
-        pk, seite = int(daten['a']), daten['w']
+        pk, seite, stand = int(daten['a']), daten['w'], int(daten.get('v', 0))
     except (signing.BadSignature, KeyError, ValueError, TypeError):
         return None
     if seite not in ('mieter', 'handwerker'):
@@ -108,6 +144,9 @@ def auftrag_aus_link(signiert):
     if auftrag is None:
         return None
     if seite == 'handwerker' and auftrag.token_widerrufen_am:
+        return None
+    # Widerruf gilt für BEIDE Seiten: Ein Link mit älterem Stand öffnet nichts mehr (`zugaenge_widerrufen`).
+    if stand != auftrag.direkt_version:
         return None
     return auftrag, seite
 
@@ -262,7 +301,7 @@ def _mail_senden(auftrag, von_seite, ziel, adresse, nachrichten):
                            "Sie können direkt auf diese Mail antworten — Ihre Antwort geht an den "
                            "Mieter. Oder öffnen Sie den Chat:\n%(link)s") % {
                     'gruss': gruss, 'wer': wer, 'schaden': ticket.titel, 'text': texte, 'link': link}
-            betreff = betreff_fuer(auftrag)
+            betreff = betreff_fuer(auftrag, seite=ziel)
         html = klartext_html(inhalt, link)
         return send_via_hoststar(
             adresse, betreff, html, reply_to=reply_to(ticket), organisation=ticket.organisation_id,
@@ -302,12 +341,16 @@ def _eigene_adresse(adresse, ticket):
     return adresse in eigene
 
 
-def aus_mail(ticket, auftrag_id, absender, inhalt, kopf=None, jetzt=None):
+def aus_mail(ticket, auftrag_id, absender, inhalt, kopf=None, jetzt=None, betreff=''):
     """Eine Mail-Antwort mit Auftragsmarke in den Chat legen und der Gegenseite zustellen.
 
     Gibt ``'mieter'`` / ``'handwerker'`` (Seite des Absenders) zurück — oder ``None``, wenn die Mail
     NICHT weitergeleitet wird (keine Marke, kein Auftrag am Ticket, Auftrag geschlossen, automatische
-    Mail, eigener Absender, unbekannter Absender). Dann gilt der bisherige Weg (Ticket-Verlauf)."""
+    Mail, eigener Absender, keine gültige Kennung im Betreff). Dann gilt der bisherige Weg (Ticket-Verlauf).
+
+    DIE SEITE KOMMT AUS DER MARKE, NICHT AUS DEM ABSENDER (``seite_aus_betreff``). Eine Marke ohne Kennung
+    (Mails von vor dem 15.11.2026) oder mit einer widerrufenen wird nicht weitergeleitet; die Verwaltung sieht die
+    Antwort im Ticket-Verlauf."""
     if not auftrag_id or automatisch(absender, kopf):
         return None
     auftrag = (ticket.handwerker_auftraege.select_related('handwerker', 'ticket__gemeldet_von')
@@ -317,11 +360,8 @@ def aus_mail(ticket, auftrag_id, absender, inhalt, kopf=None, jetzt=None):
     adresse = parseaddr(absender or '')[1].strip().lower()
     if not adresse or _eigene_adresse(adresse, ticket):
         return None
-    if seiten_adresse(auftrag, 'handwerker').lower() == adresse:
-        seite = 'handwerker'
-    elif seiten_adresse(auftrag, 'mieter').lower() == adresse:
-        seite = 'mieter'
-    else:
+    seite = seite_aus_betreff(betreff, auftrag)
+    if seite is None:
         return None
     try:
         schreiben(auftrag, seite, (inhalt or '').strip()[:MAX_LAENGE], jetzt=jetzt)

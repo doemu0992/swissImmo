@@ -1,7 +1,7 @@
 # core/views/fw/debitor_qr.py
 #
 # QR-Beleg fuer eine Ad-hoc-Debitorenrechnung (Sonnerie, Ersatzschluessel
-# und aehnliches). Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# und aehnliches). Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Die QR-Rechnung ist im Skill schweizer-fachlogik geschuetzt: An QR-IBAN
 # und Referenz darf nichts geraten werden. Der Blockinhalt ist gegen HEAD

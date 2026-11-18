@@ -1,0 +1,59 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% comment %}
+ANFRAGEN — Änderungswünsche aus dem Mieter- und Eigentümerportal. Offene zuerst; Bestätigen führt die Änderung aus.
+{% endcomment %}
+{% block title %}{% trans "Anfragen" %} — immoswiss{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Anfragen" %}</h1>
+        <p>{% trans "Änderungswünsche aus den Portalen. Erst Ihre Bestätigung ändert die Stammdaten." %}</p>
+    </div>
+    <div>
+        {% if alle %}<a href="/neu/anfragen/" class="fw-btn fw-leise">{% trans "Nur offene" %}</a>
+        {% else %}<a href="/neu/anfragen/?alle=1" class="fw-btn fw-leise">{% trans "Auch entschiedene" %}</a>{% endif %}
+    </div>
+</div>
+
+<div class="fw-card mb-3">
+    <div class="fw-kopf"><h3 class="fw-t">{% trans "Offen" %} <span class="fw-mutet">({{ offene|length }})</span></h3></div>
+    {% for a in offene %}
+    <div class="fw-zeile" data-testid="anfrage-offen">
+        <div class="fw-mitte">
+            <div class="fw-t">{{ a.get_art_display }} · {% if a.mieter %}{{ a.mieter.display_name }}{% else %}{{ a.eigentuemer.firma_oder_name }}{% endif %}</div>
+            <div class="fw-s whitespace-pre-line">{{ a.zusammenfassung }}</div>
+            <div class="fw-s fw-mutet">{{ a.erstellt_am|date:"d.m.Y H:i" }}{% if a.art == 'eig_bank' %} · <b>{% trans "Bankverbindung: bitte vor der Bestätigung beim Eigentümer telefonisch zurückfragen." %}</b>{% endif %}</div>
+        </div>
+        {% if a.darf_entscheiden %}
+        <form method="post" class="flex gap-2 flex-wrap items-center">{% csrf_token %}
+            <input name="antwort" type="text" maxlength="300" class="fw-feld w-[200px]" placeholder="{% trans 'Antwort an die Absenderin (optional)' %}" aria-label="{% trans 'Antwort an die Absenderin (optional)' %}">
+            <button type="submit" formaction="/neu/anfragen/{{ a.pk }}/bestaetigen/" class="fw-btn fw-primary" data-testid="anfrage-bestaetigen">{% trans "Bestätigen" %}</button>
+            <button type="submit" formaction="/neu/anfragen/{{ a.pk }}/ablehnen/" class="fw-btn fw-leise" data-testid="anfrage-ablehnen">{% trans "Ablehnen" %}</button>
+        </form>
+        {% else %}
+        <span class="fw-mutet">{% trans "Nur Inhaber und Verwalter bestätigen diese Anfrage." %}</span>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="fw-rumpf"><p class="fw-mutet">{% trans "Keine offenen Anfragen." %}</p></div>
+    {% endfor %}
+</div>
+
+{% if alle %}
+<div class="fw-card">
+    <div class="fw-kopf"><h3 class="fw-t">{% trans "Entschieden" %}</h3></div>
+    {% for a in entschieden %}
+    <div class="fw-zeile">
+        <div class="fw-mitte">
+            <div class="fw-t">{{ a.get_art_display }} · {% if a.mieter %}{{ a.mieter.display_name }}{% else %}{{ a.eigentuemer.firma_oder_name }}{% endif %}</div>
+            <div class="fw-s whitespace-pre-line">{{ a.zusammenfassung }}</div>
+            <div class="fw-s fw-mutet">{{ a.get_status_display }} · {{ a.entschieden_am|date:"d.m.Y H:i" }}{% if a.entschieden_von %} · {{ a.entschieden_von.get_username }}{% endif %}{% if a.antwort %} · {{ a.antwort }}{% endif %}</div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="fw-rumpf"><p class="fw-mutet">{% trans "Noch nichts entschieden." %}</p></div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

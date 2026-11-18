@@ -18,6 +18,8 @@ from .test_rolle_buchhaltung import _alle_views
 REVISION_DARF = {
     'fw_buchhaltung', 'fw_buchhaltung_export', 'fw_buchhaltung_pdf', 'fw_kontoblatt',
     'fw_kontenplan', 'fw_logbuch',
+    # Eigene Auswertungen: nur ausführen, keine Vorlagen ändern.
+    'fw_eigene_auswertungen', 'fw_eigene_auswertung',
 }
 
 GESPERRT = [

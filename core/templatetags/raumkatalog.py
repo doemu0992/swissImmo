@@ -164,7 +164,7 @@ def raum_katalog():
 register.simple_tag(raum_katalog, name='raum_katalog')
 
 
-#: Zeichen je Anliegen (docs/ZEICHEN.md: eines je Anliegen, kein Raumsymbol).
+#: Zeichen je Anliegen (core/templatetags/zeichen_tabelle.md: eines je Anliegen, kein Raumsymbol).
 ANLIEGEN_ZEICHEN = ('kritisch', 'senden', 'person', 'schluessel', 'dokument')
 
 

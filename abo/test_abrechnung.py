@@ -260,3 +260,83 @@ class SeiteUndPdfTests(Basis):
         self.assertContains(seite, 'Nutzung')
         self.assertContains(seite, 'Funktionen und Module')
         self.assertContains(seite, 'Gesperrt')       # die zubuchbaren Module sind nicht gebucht
+
+
+class ModulpreisTests(Basis):
+    """Zugebuchte Module stehen mit ihrem Preis auf der Rechnung; was im Grundpreis steckt, kostet nichts."""
+
+    def test_preise_und_katalog_passen_zusammen(self):
+        self.assertEqual(set(f.MODULPREISE), set(f.MODULE))
+        self.assertEqual({k: v['monat'] for k, v in f.MODULPREISE.items()},
+                         {'signatur': Decimal('9'), 'belegerkennung': Decimal('15'), 'reporting_erweitert': Decimal('19')})
+
+    def test_modul_inklusive_nach_stufe(self):
+        self.assertFalse(f.modul_inklusive('team', 'belegerkennung'))
+        self.assertTrue(f.modul_inklusive('professional', 'belegerkennung'))
+        self.assertFalse(f.modul_inklusive('enterprise', 'signatur'))
+        self.assertEqual(f.modul_monatspreis('team', 'reporting_erweitert'), Decimal('19'))
+        self.assertEqual(f.modul_monatspreis('professional', 'reporting_erweitert'), Decimal('0'))
+
+    def test_betrag_mit_modulen(self):
+        grund = f.monatspreis('team', 10)
+        netto, _b = dienst.betrag_fuer('team', 10, False, ('signatur', 'belegerkennung', 'reporting_erweitert'))
+        self.assertEqual(netto, grund + Decimal('9') + Decimal('15') + Decimal('19'))
+        # Im Grundpreis enthaltene Module kosten nichts, die Unterschrift schon.
+        netto, _b = dienst.betrag_fuer('professional', 10, False, ('signatur', 'belegerkennung'))
+        self.assertEqual(netto, f.monatspreis('professional', 10) + Decimal('9'))
+
+    def test_jaehrlich_rabatt_auch_auf_module(self):
+        netto, _b, positionen = dienst.positionen_fuer('team', 10, True, ('signatur',))
+        brutto_summe = (f.monatspreis('team', 10) + Decimal('9')) * 12
+        self.assertEqual(netto, (brutto_summe * (1 - f.JAHRESRABATT)).quantize(Decimal('0.01')))
+        self.assertEqual(sum(Decimal(p['betrag']) for p in positionen), netto, 'die Zeilen ergeben das Netto')
+        self.assertIn('Jahresrabatt', positionen[-1]['text'])
+
+    def test_rechnung_traegt_die_positionen(self):
+        from django.test import override_settings
+        abo = _verwaltet(self.a, 'team')
+        abo.zusatzmodule = ['signatur']
+        abo.save()
+        with override_settings(**FESTGELEGT):
+            rechnung = dienst.rechnung_stellen(self.org(self.a), abo, heute=date(2026, 12, 1))
+        texte = [p['text'] for p in rechnung.positionen]
+        self.assertEqual(texte[0], 'Abonnement Team, monatlich')
+        self.assertEqual(texte[1], 'Digitale Unterschrift')
+        self.assertEqual(rechnung.netto, f.monatspreis('team', rechnung.einheiten) + Decimal('9'))
+        # Später geänderte Preise ändern die gestellte Rechnung nicht.
+        with mock.patch.dict(f.MODULPREISE, {'signatur': {'monat': Decimal('99'), 'inklusive_ab': None}}):
+            rechnung.refresh_from_db()
+            self.assertEqual(rechnung.netto, f.monatspreis('team', rechnung.einheiten) + Decimal('9'))
+
+    def test_pdf_zeigt_die_modulzeile(self):
+        from django.test import override_settings
+
+        from abo.rechnung_pdf import abo_rechnung_pdf
+        abo = _verwaltet(self.a, 'team')
+        abo.zusatzmodule = ['signatur']
+        abo.save()
+        with override_settings(**FESTGELEGT):
+            rechnung = dienst.rechnung_stellen(self.org(self.a), abo, heute=date(2026, 12, 1))
+            pdf = abo_rechnung_pdf(rechnung)
+        self.assertTrue(pdf.startswith(b'%PDF'))
+        import io
+
+        import pdfplumber
+        with pdfplumber.open(io.BytesIO(pdf)) as seite:
+            text = seite.pages[0].extract_text()
+        self.assertIn('Digitale Unterschrift', text)
+        self.assertIn('Abonnement Team, monatlich', text)
+
+    def test_wechsel_auf_team_meldet_den_verlust_der_inklusiven_module(self):
+        abo = _verwaltet(self.a, 'professional')
+        org = self.org(self.a)
+        folgen = dienst.folgen_des_wechsels(org, 'team')
+        self.assertIn('belegerkennung', folgen['schliesst'])
+        self.assertIn('reporting_erweitert', folgen['schliesst'])
+        # Zugebucht bleibt offen: dann schliesst der Wechsel nichts.
+        abo.zusatzmodule = ['belegerkennung']
+        abo.save()
+        folgen = dienst.folgen_des_wechsels(self.org(self.a), 'team')
+        self.assertNotIn('belegerkennung', folgen['schliesst'])
+        self.assertIn('reporting_erweitert', folgen['schliesst'])
+

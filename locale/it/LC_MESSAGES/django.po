@@ -39420,10 +39420,10 @@ msgstr ""
 msgid ""
 "Nur möglich, wenn die Anwendung den Schlüssel selbst angelegt hat. Liegt er "
 "in der .env oder in einer eigenen Datei, wechseln Sie ihn dort "
-"(docs/SCHLUESSEL.md)."
+"(ARCHITECTURE.md)."
 msgstr ""
 "Possibile solo se l'applicazione ha creato la chiave da sola. Se si trova "
-"nel .env o in un file proprio, cambiarla lì (docs/SCHLUESSEL.md)."
+"nel .env o in un file proprio, cambiarla lì (ARCHITECTURE.md)."
 
 msgid "Kopie des Schlüssels herunterladen"
 msgstr "Scarica una copia della chiave"
@@ -39779,3 +39779,1265 @@ msgstr ""
 "Pagabile in anticipo: scadenza all'inizio del periodo, oppure entro %(tage)s"
 " giorni per le fatture emesse più tardi, con la polizza di versamento. Il "
 "pagamento viene confermato manualmente dal gestore."
+
+msgid "Diese Verwaltung hat keine E-Mail-Adresse hinterlegt."
+msgstr "Questa amministrazione non ha un indirizzo e-mail registrato."
+
+msgid "Es ist keine Zahlungsverbindung (IBAN) des Rechnungsstellers hinterlegt."
+msgstr "Non sono registrati i dati di pagamento (IBAN) dell'emittente della fattura."
+
+msgid "immoswiss: Zahlungserinnerung zur Rechnung %(nummer)s"
+msgstr "immoswiss: sollecito di pagamento per la fattura %(nummer)s"
+
+msgid "Die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist noch offen. Bitte begleichen Sie sie mit dem QR-Einzahlungsschein auf der Rechnung im Anhang. Ist die Zahlung bereits erfolgt, ist diese Mail gegenstandslos."
+msgstr "La fattura %(nummer)s di CHF %(betrag)s per il vostro abbonamento immoswiss (dal %(von)s al %(bis)s) era in scadenza il %(faellig)s ed è ancora aperta. Vi preghiamo di saldarla con la polizza di versamento QR della fattura allegata. Se il pagamento è già avvenuto, questo messaggio è privo di oggetto."
+
+msgid "immoswiss: Rechnung %(nummer)s"
+msgstr "immoswiss: fattura %(nummer)s"
+
+msgid "Im Anhang finden Sie die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s). Sie ist bis zum %(faellig)s zu bezahlen, am einfachsten mit dem QR-Einzahlungsschein auf der Rechnung. Dieselbe Rechnung finden Sie unter Einstellungen > Abonnement."
+msgstr "In allegato trovate la fattura %(nummer)s di CHF %(betrag)s per il vostro abbonamento immoswiss (dal %(von)s al %(bis)s). È da pagare entro il %(faellig)s, nel modo più semplice con la polizza di versamento QR della fattura. La stessa fattura è disponibile anche in Impostazioni > Abbonamento."
+
+msgid "Rechnung %(nr)s nicht versandt: %(grund)s"
+msgstr "Fattura %(nr)s non inviata: %(grund)s"
+
+msgid "Zahlungserinnerung zu %(nr)s ging an %(an)s."
+msgstr "Il sollecito di pagamento per %(nr)s è stato inviato a %(an)s."
+
+msgid "Rechnung %(nr)s ging an %(an)s."
+msgstr "La fattura %(nr)s è stata inviata a %(an)s."
+
+msgid "Nur offene Rechnungen lassen sich senden oder anmahnen."
+msgstr "Solo le fatture aperte possono essere inviate o sollecitate."
+
+msgid "erinnert am"
+msgstr "sollecitata il"
+
+msgid "Erneut senden"
+msgstr "Invia di nuovo"
+
+msgid "Zahlungserinnerung an die Verwaltung senden?"
+msgstr "Inviare un sollecito di pagamento all'amministrazione?"
+
+msgid "immoswiss: 2. Mahnung zur Rechnung %(nummer)s"
+msgstr "immoswiss: 2° sollecito per la fattura %(nummer)s"
+
+msgid "Die Rechnung %(nummer)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist trotz unserer Zahlungserinnerung noch offen. Wir bitten Sie, den Gesamtbetrag von CHF %(betrag)s (inklusive Mahngebühr CHF %(gebuehr)s) umgehend mit dem QR-Einzahlungsschein auf der Rechnung im Anhang zu bezahlen. Bleibt die Zahlung weiter aus, wird Ihr Zugang schreibgeschützt und später gesperrt; Ihre Daten bleiben in jedem Fall erhalten."
+msgstr "La fattura %(nummer)s per il vostro abbonamento immoswiss (dal %(von)s al %(bis)s) era in scadenza il %(faellig)s ed è ancora aperta nonostante il nostro sollecito. Vi preghiamo di pagare subito l'importo totale di CHF %(betrag)s (spese di sollecito di CHF %(gebuehr)s incluse) con la polizza di versamento QR della fattura allegata. Se il pagamento resta in sospeso, il vostro accesso passerà in sola lettura e poi sarà bloccato; i vostri dati vengono comunque conservati."
+
+msgid "Die Rechnung %(nummer)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist trotz unserer Zahlungserinnerung noch offen. Wir bitten Sie, den Betrag von CHF %(betrag)s umgehend mit dem QR-Einzahlungsschein auf der Rechnung im Anhang zu bezahlen. Bleibt die Zahlung weiter aus, wird Ihr Zugang schreibgeschützt und später gesperrt; Ihre Daten bleiben in jedem Fall erhalten."
+msgstr "La fattura %(nummer)s per il vostro abbonamento immoswiss (dal %(von)s al %(bis)s) era in scadenza il %(faellig)s ed è ancora aperta nonostante il nostro sollecito. Vi preghiamo di pagare subito l'importo di CHF %(betrag)s con la polizza di versamento QR della fattura allegata. Se il pagamento resta in sospeso, il vostro accesso passerà in sola lettura e poi sarà bloccato; i vostri dati vengono comunque conservati."
+
+msgid "immoswiss: Ihr Zugang ist gesperrt"
+msgstr "immoswiss: il vostro accesso è bloccato"
+
+msgid "Die Rechnung für Ihr Abonnement ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist deshalb gesperrt. Anmeldung, Abonnement (Rechnung und Einzahlungsschein) und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+msgstr "La fattura del vostro abbonamento è scaduta da più di %(tage)s giorni. Il vostro accesso è quindi bloccato. Accesso, abbonamento (fattura e polizza di versamento) ed esportazione dei dati restano disponibili. Con il pagamento tutto torna aperto. Non viene cancellato nulla."
+
+msgid "Der Zugang ist gesperrt"
+msgstr "L'accesso è bloccato"
+
+msgid "Eine Rechnung für das Abonnement ist seit mehr als %(tage)s Tagen überfällig. Anmeldung, Abonnement (mit Rechnung und Einzahlungsschein) und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+msgstr "Una fattura dell'abbonamento è scaduta da più di %(tage)s giorni. Accesso, abbonamento (con fattura e polizza di versamento) ed esportazione dei dati restano disponibili. Con il pagamento tutto torna aperto. Non viene cancellato nulla."
+
+msgid "Der Zugang dieser Verwaltung ist zurzeit gesperrt. Bitte wenden Sie sich an die Verwaltung."
+msgstr "L'accesso di questa amministrazione è attualmente bloccato. Rivolgetevi all'amministrazione."
+
+msgid "Eine Rechnung ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist gesperrt; Anmeldung, diese Seite mit Rechnung und Einzahlungsschein und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+msgstr "Una fattura è scaduta da più di %(tage)s giorni. Il vostro accesso è bloccato; accesso, questa pagina con fattura e polizza di versamento ed esportazione dei dati restano disponibili. Con il pagamento tutto torna aperto. Non viene cancellato nulla."
+
+msgid "%(n)s. Mahnung"
+msgstr "sollecito %(n)s"
+
+msgid "versandt am"
+msgstr "inviata il"
+
+msgid "nicht versandt"
+msgstr "non inviata"
+
+msgid "%(n)s offene Rechnung(en) wurden noch nicht per Mail versandt: im Kunden «Erneut senden»."
+msgstr "%(n)s fattura/e aperta/e non sono ancora state inviate per e-mail: usare «Invia di nuovo» nel cliente."
+
+msgid "Ansprechperson"
+msgstr "Persona di contatto"
+
+msgid "Fakturiert"
+msgstr "Fatturato"
+
+msgid "Zahlungsverhalten"
+msgstr "Comportamento di pagamento"
+
+msgid "im Schnitt %(t)s Tage nach Fälligkeit"
+msgstr "in media %(t)s giorni dopo la scadenza"
+
+msgid "Nächste Rechnung"
+msgstr "Prossima fattura"
+
+msgid "Zahlung am"
+msgstr "Pagamento il"
+
+msgid "Tage nach Fälligkeit"
+msgstr "Giorni dopo la scadenza"
+
+msgid "Stammdaten und Ansprechperson"
+msgstr "Dati anagrafici e persona di contatto"
+
+msgid "Kundenstatus"
+msgstr "Stato del cliente"
+
+msgid "Strasse und Nr."
+msgstr "Via e n."
+
+msgid "Natel"
+msgstr "Cellulare"
+
+msgid "Website"
+msgstr "Sito web"
+
+msgid "UID / MWST-Nummer"
+msgstr "IDI / n. IVA"
+
+msgid "E-Mail für Rechnungen"
+msgstr "E-mail per le fatture"
+
+msgid "Leer = Rechnungen und Mahnungen gehen an die E-Mail der Verwaltung."
+msgstr "Vuoto = fatture e solleciti vanno all'e-mail dell'amministrazione."
+
+msgid "Funktion"
+msgstr "Funzione"
+
+msgid "E-Mail der Ansprechperson"
+msgstr "E-mail della persona di contatto"
+
+msgid "Telefon der Ansprechperson"
+msgstr "Telefono della persona di contatto"
+
+msgid "Natel der Ansprechperson"
+msgstr "Cellulare della persona di contatto"
+
+msgid "Nur für den Betreiber sichtbar, nie für die Verwaltung."
+msgstr "Visibile solo all'operatore, mai all'amministrazione."
+
+msgid "Kundendaten speichern"
+msgstr "Salva i dati del cliente"
+
+msgid "Eintrag"
+msgstr "Voce"
+
+msgid "Eintrag hinzufügen"
+msgstr "Aggiungi voce"
+
+msgid "Eintrag löschen?"
+msgstr "Eliminare la voce?"
+
+msgid "Noch kein Eintrag."
+msgstr "Ancora nessuna voce."
+
+msgid "Kundendaten gespeichert."
+msgstr "Dati del cliente salvati."
+
+msgid "Der Eintrag ist leer."
+msgstr "La voce è vuota."
+
+msgid "Unbekannte Art."
+msgstr "Tipo sconosciuto."
+
+msgid "Eintrag gespeichert."
+msgstr "Voce salvata."
+
+msgid "Dieser Eintrag gehört nicht zu dieser Verwaltung."
+msgstr "Questa voce non appartiene a questa amministrazione."
+
+msgid "Eintrag gelöscht."
+msgstr "Voce eliminata."
+
+msgid "Ungültige E-Mail-Adresse: %(wert)s"
+msgstr "Indirizzo e-mail non valido: %(wert)s"
+
+msgid "Firma, Strasse, PLZ und Ort sind Pflicht."
+msgstr "Ditta, via, NPA e località sono obbligatori."
+
+msgid "Strasse, PLZ und Ort sind Pflicht: Sie stehen auf der Rechnung."
+msgstr "Via, NPA e località sono obbligatori: compaiono sulla fattura."
+
+msgid "Strasse und Nr. *"
+msgstr "Via e n. *"
+
+msgid "Die Anschrift steht auf der Rechnung."
+msgstr "L'indirizzo compare sulla fattura."
+
+msgid "PLZ *"
+msgstr "NPA *"
+
+msgid "Ort *"
+msgstr "Località *"
+
+msgid "Die Anschrift der Verwaltung fehlt (Strasse, PLZ, Ort): in der Kundenkartei ergänzen."
+msgstr "Manca l'indirizzo dell'amministrazione (via, NPA, località): completarlo nella scheda cliente."
+
+msgid "Anschrift unvollständig (Strasse, PLZ, Ort): Die Rechnung hat keine Anschrift und geht nicht hinaus. In der Kundenkartei ergänzen."
+msgstr "Indirizzo incompleto (via, NPA, località): la fattura non ha indirizzo e non viene inviata. Completarlo nella scheda cliente."
+
+msgid "etwas spät"
+msgstr "un po' in ritardo"
+
+msgid "Kunde"
+msgstr "Cliente"
+
+msgid "Zugang gesperrt"
+msgstr "Accesso bloccato"
+
+msgid "Lesemodus"
+msgstr "Modalità sola lettura"
+
+msgid "Zahlung überfällig"
+msgstr "Pagamento scaduto"
+
+msgid "alles bezahlt"
+msgstr "tutto pagato"
+
+msgid "Abonnement ändern"
+msgstr "Modifica abbonamento"
+
+msgid "Eintrag im Verlauf"
+msgstr "Voce nella cronologia"
+
+msgid "Wieder als Kunde markieren"
+msgstr "Segna di nuovo come cliente"
+
+msgid "Als gekündigt markieren"
+msgstr "Segna come disdetto"
+
+msgid "davon CHF %(b)s überfällig"
+msgstr "di cui CHF %(b)s scaduti"
+
+msgid "noch nicht fällig"
+msgstr "non ancora scaduto"
+
+msgid "Ø %(t)s Tage nach Fälligkeit"
+msgstr "Ø %(t)s giorni dopo la scadenza"
+
+msgid "noch keine Zahlung"
+msgstr "ancora nessun pagamento"
+
+msgid "nicht geplant"
+msgstr "non pianificata"
+
+msgid "Zu prüfen"
+msgstr "Da verificare"
+
+msgid "Rechnungen gehen an"
+msgstr "Le fatture vanno a"
+
+msgid "Zum Verlauf"
+msgstr "Alla cronologia"
+
+msgid "nur für den Betreiber"
+msgstr "solo per l'operatore"
+
+msgid "Firma und Anschrift"
+msgstr "Ditta e indirizzo"
+
+msgid "nicht hinterlegt"
+msgstr "non registrato"
+
+msgid "Ansprechperson und Rechnung"
+msgstr "Persona di contatto e fattura"
+
+msgid "abweichend von der E-Mail der Firma"
+msgstr "diverso dall'e-mail della ditta"
+
+msgid "wie die E-Mail der Firma"
+msgstr "come l'e-mail della ditta"
+
+msgid "Zuletzt geändert"
+msgstr "Ultima modifica"
+
+msgid "Eintrag speichern"
+msgstr "Salva voce"
+
+msgid "%(t)s Tage nach Fälligkeit"
+msgstr "%(t)s giorni dopo la scadenza"
+
+msgid "Noch keine Zahlung."
+msgstr "Ancora nessun pagamento."
+
+msgid "Summen"
+msgstr "Totali"
+
+msgid "jährlich abgerechnet"
+msgstr "fatturato annualmente"
+
+msgid "monatlich abgerechnet"
+msgstr "fatturato mensilmente"
+
+msgid "nicht gesetzt"
+msgstr "non impostato"
+
+msgid "Änderungen zeigen vorher ihre Folgen."
+msgstr "Le modifiche mostrano prima le loro conseguenze."
+
+msgid "%(firma)s bearbeiten"
+msgstr "Modifica %(firma)s"
+
+msgid "Änderungen gelten erst nach «Speichern»."
+msgstr "Le modifiche valgono solo dopo «Salva»."
+
+msgid "Status gesetzt."
+msgstr "Stato impostato."
+
+msgid "%(n)s Rechnung offen"
+msgid_plural "%(n)s Rechnungen offen"
+msgstr[0] "%(n)s fattura aperta"
+msgstr[1] "%(n)s fatture aperte"
+
+msgid "Abonnement %(stufe)s, %(intervall)s"
+msgstr "Abbonamento %(stufe)s, %(intervall)s"
+
+msgid "Jahresrabatt %(p)s %%"
+msgstr "Sconto annuale %(p)s %%"
+
+msgid "Im Grundpreis Ihrer Stufe enthalten."
+msgstr "Incluso nel prezzo base del vostro livello."
+
+msgid "Zugebucht: CHF %(preis)s pro Monat, netto."
+msgstr "Aggiunto: CHF %(preis)s al mese, netto."
+
+msgid "Zubuchbar: CHF %(preis)s pro Monat, netto — beim Betreiber anfragen."
+msgstr "Disponibile: CHF %(preis)s al mese, netto — chiedere all'operatore."
+
+msgid "Ab Stufe %(stufe)s enthalten."
+msgstr "Incluso dal livello %(stufe)s."
+
+msgid "inklusive"
+msgstr "incluso"
+
+msgid "im Grundpreis der Stufe enthalten"
+msgstr "incluso nel prezzo base del livello"
+
+msgid "netto"
+msgstr "netto"
+
+msgid "Zugebuchte Module kommen ab der nächsten Rechnung dazu."
+msgstr "I moduli aggiunti compaiono sulla prossima fattura."
+
+msgid "Bitte einen Betreff angeben (%(min)s bis %(max)s Zeichen)."
+msgstr "Indicare un oggetto (da %(min)s a %(max)s caratteri)."
+
+msgid "Bitte die Anfrage beschreiben (%(min)s bis %(max)s Zeichen)."
+msgstr "Descrivere la richiesta (da %(min)s a %(max)s caratteri)."
+
+msgid "Es sind zu viele Anfragen in kurzer Zeit eingegangen. Bitte später noch einmal versuchen oder direkt anrufen."
+msgstr "Troppe richieste in poco tempo. Riprovare più tardi o chiamare direttamente."
+
+msgid "Ihre Anfrage ist beim Betreiber angekommen. Die Antwort kommt per E-Mail."
+msgstr "La vostra richiesta è arrivata all'operatore. La risposta arriverà per e-mail."
+
+msgid "Ihre Anfrage ist gespeichert. Die Benachrichtigung ging nicht hinaus; der Betreiber sieht sie trotzdem."
+msgstr "La vostra richiesta è salvata. La notifica non è partita; l'operatore la vedrà comunque."
+
+msgid "Diese Anfrage gehört nicht zu dieser Verwaltung."
+msgstr "Questa richiesta non appartiene a questa amministrazione."
+
+msgid "Anfrage als erledigt markiert."
+msgstr "Richiesta contrassegnata come evasa."
+
+msgid "Anfrage wieder geöffnet."
+msgstr "Richiesta riaperta."
+
+msgid "%(n)s Support-Anfrage(n) offen: im Reiter «Verlauf» beantworten und erledigen."
+msgstr "%(n)s richiesta/e di supporto aperta/e: rispondere e chiuderle nella scheda «Cronologia»."
+
+msgid "Support"
+msgstr "Supporto"
+
+msgid "Ihre Anfrage geht an den Betreiber; die Antwort kommt per E-Mail an Ihre Adresse."
+msgstr "La vostra richiesta va all'operatore; la risposta arriva per e-mail al vostro indirizzo."
+
+msgid "Ihre Anfrage"
+msgstr "La vostra richiesta"
+
+msgid "Anfrage senden"
+msgstr "Invia richiesta"
+
+msgid "%(n)s Support-Anfrage offen"
+msgid_plural "%(n)s Support-Anfragen offen"
+msgstr[0] "%(n)s richiesta di supporto aperta"
+msgstr[1] "%(n)s richieste di supporto aperte"
+
+msgid "anteilig %(t)s von %(g)s Tagen"
+msgstr "pro rata: %(t)s giorni su %(g)s"
+
+msgid "Gutschrift vom %(d)s: %(t)s"
+msgstr "Nota di credito del %(d)s: %(t)s"
+
+msgid "Modul %(m)s hinzu"
+msgstr "modulo %(m)s aggiunto"
+
+msgid "Modul %(m)s entfällt"
+msgstr "modulo %(m)s rimosso"
+
+msgid "Änderung des Abonnements ab %(d)s"
+msgstr "Modifica dell'abbonamento dal %(d)s"
+
+msgid "Guthaben: CHF %(betrag)s. Es wird mit Ihrer nächsten Rechnung verrechnet."
+msgstr "Credito: CHF %(betrag)s. Verrà compensato con la prossima fattura."
+
+msgid "Zusatzrechnung (Änderung des Abonnements)"
+msgstr "Fattura aggiuntiva (modifica dell'abbonamento)"
+
+msgid "Zusatzrechnung"
+msgstr "Fattura aggiuntiva"
+
+msgid "wird mit der nächsten Rechnung verrechnet"
+msgstr "verrà compensato con la prossima fattura"
+
+msgid "Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen."
+msgstr "Troppi tentativi falliti. Riprovare tra 15 minuti."
+
+msgid "Benutzername oder Passwort stimmt nicht."
+msgstr "Nome utente o password non corretti."
+
+msgid "Zu viele Fehlversuche. Bitte von vorne anmelden."
+msgstr "Troppi tentativi falliti. Effettuare nuovamente l'accesso dall'inizio."
+
+msgid "Der Code stimmt nicht (%(n)s von %(max)s)."
+msgstr "Il codice non è corretto (%(n)s su %(max)s)."
+
+msgid "kein Monat"
+msgstr "nessun mese"
+
+msgid "LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s (core/services/lik.py)."
+msgstr "Integrare la tabella dell'IPC: termina nel mese %(stand)s (core/services/lik.py)."
+
+msgid "Formularpflicht prüfen: Das Register (core/services/formularpflicht.py, Stand %(stand)s) wurde zuletzt am %(datum)s geprüft; das BWO gibt das Verzeichnis jedes Jahr neu heraus."
+msgstr "Verificare l'obbligo del formulario: il registro (core/services/formularpflicht.py, stato %(stand)s) è stato verificato l'ultima volta il %(datum)s; l'UFAB pubblica l'elenco ogni anno."
+
+msgid "bexio (über importly.ch)"
+msgstr "bexio (tramite importly.ch)"
+
+msgid "bexio (über den Dienst importly.ch; bexio selbst importiert keine Buchungen per CSV)"
+msgstr "bexio (tramite il servizio importly.ch; bexio stesso non importa registrazioni via CSV)"
+
+msgid "API-Zugang"
+msgstr "Accesso API"
+
+msgid "Mit einem Schlüssel lesen Treuhand oder Buchhaltungssoftware Kontenplan und Buchungsjournal Ihrer Verwaltung. Nur lesen, nichts ändern."
+msgstr "Con una chiave, la fiduciaria o il software di contabilità legge il piano dei conti e il giornale delle registrazioni della vostra amministrazione. Solo lettura, nessuna modifica."
+
+msgid "Kopieren Sie den Schlüssel jetzt. Er wird nur dieses eine Mal angezeigt und lässt sich später nicht wieder abrufen."
+msgstr "Copiate subito la chiave. Viene mostrata solo questa volta e non sarà più possibile consultarla in seguito."
+
+msgid "Schlüssel «%(n)s» angelegt"
+msgstr "Chiave «%(n)s» creata"
+
+msgid "Angelegt am %(d)s"
+msgstr "Creata il %(d)s"
+
+msgid "zuletzt benutzt %(d)s"
+msgstr "ultimo utilizzo %(d)s"
+
+msgid "noch nie benutzt"
+msgstr "mai utilizzata"
+
+msgid "widerrufen am %(d)s"
+msgstr "revocata il %(d)s"
+
+msgid "Noch kein Schlüssel angelegt."
+msgstr "Nessuna chiave ancora creata."
+
+msgid "Neuer Schlüssel"
+msgstr "Nuova chiave"
+
+msgid "Wofür der Schlüssel dient, z. B. der Name der Treuhandfirma. Höchstens %(n)s aktive Schlüssel."
+msgstr "A cosa serve la chiave, ad es. il nome della fiduciaria. Al massimo %(n)s chiavi attive."
+
+msgid "Schlüssel anlegen"
+msgstr "Crea chiave"
+
+msgid "Verwendung"
+msgstr "Utilizzo"
+
+msgid "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit). Höchstens 120 Abfragen pro Minute und Schlüssel."
+msgstr "La chiave va nell'intestazione «Authorization: Bearer …». Richieste: piano dei conti su /api/v1/konten, giornale delle registrazioni su /api/v1/buchungen (von, bis, offset, limit). Al massimo 120 richieste al minuto per chiave."
+
+msgid "Schlüssel für Treuhand und Buchhaltungssoftware (nur Lesen)"
+msgstr "Chiavi per la fiduciaria e il software di contabilità (solo lettura)"
+
+msgid "Bitte eine Bezeichnung angeben, z. B. den Namen der Treuhandfirma."
+msgstr "Indicate una designazione, ad es. il nome della fiduciaria."
+
+msgid "Es sind bereits %(n)s Schlüssel aktiv. Bitte zuerst einen widerrufen."
+msgstr "Sono già attive %(n)s chiavi. Revocatene prima una."
+
+msgid "Der Schlüssel «%(n)s» ist widerrufen."
+msgstr "La chiave «%(n)s» è stata revocata."
+
+msgid "Lesende Finanz-API mit eigenen Schlüsseln"
+msgstr "API finanziaria in sola lettura con chiavi proprie"
+
+msgid "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit), offene Debitoren unter /api/v1/debitoren/offen. Höchstens 120 Abfragen pro Minute und Schlüssel."
+msgstr "La chiave va nell'intestazione «Authorization: Bearer …». Richieste: piano dei conti su /api/v1/konten, giornale delle registrazioni su /api/v1/buchungen (von, bis, offset, limit), debitori aperti su /api/v1/debitoren/offen. Al massimo 120 richieste al minuto per chiave."
+
+msgid "Änderungswünsche aus den Portalen. Erst Ihre Bestätigung ändert die Stammdaten."
+msgstr "Richieste di modifica dai portali. I dati di base cambiano solo dopo la vostra conferma."
+
+msgid "Nur offene"
+msgstr "Solo aperte"
+
+msgid "Auch entschiedene"
+msgstr "Anche quelle decise"
+
+msgid "Bankverbindung: bitte vor der Bestätigung beim Eigentümer telefonisch zurückfragen."
+msgstr "Coordinate bancarie: prima di confermare, richiamate il proprietario."
+
+msgid "Grund der Ablehnung"
+msgstr "Motivo del rifiuto"
+
+msgid "Nur Inhaber und Verwalter bestätigen diese Anfrage."
+msgstr "Solo titolare e amministratore confermano questa richiesta."
+
+msgid "Entschieden"
+msgstr "Decise"
+
+msgid "Noch nichts entschieden."
+msgstr "Nulla ancora deciso."
+
+msgid "Kontaktdaten prüfen und Änderungen beantragen — sie gelten, sobald die Verwaltung sie bestätigt hat."
+msgstr "Controllate i vostri dati di contatto e richiedete modifiche — valgono non appena l'amministrazione le ha confermate."
+
+msgid "Änderung beantragen"
+msgstr "Richiedi la modifica"
+
+msgid "Antwort der Verwaltung:"
+msgstr "Risposta dell'amministrazione:"
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Die Änderung gilt, sobald die Verwaltung sie bestätigt hat."
+msgstr "La vostra richiesta è presso l'amministrazione. La modifica vale non appena l'avrà confermata."
+
+msgid "Die Anfrage ist bestätigt und die Änderung ausgeführt."
+msgstr "La richiesta è confermata e la modifica eseguita."
+
+msgid "Die Anfrage ist abgelehnt."
+msgstr "La richiesta è rifiutata."
+
+msgid "Diese Anfrage ist bereits entschieden."
+msgstr "Questa richiesta è già stata decisa."
+
+msgid "Bestätigung des Mietverhältnisses (PDF) gewünscht."
+msgstr "Richiesta conferma del rapporto di locazione (PDF)."
+
+msgid "Ihre Anfrage «%(art)s» wurde von der Verwaltung bestätigt."
+msgstr "La vostra richiesta «%(art)s» è stata confermata dall'amministrazione."
+
+msgid "Ihre Anfrage «%(art)s» wurde von der Verwaltung abgelehnt."
+msgstr "La vostra richiesta «%(art)s» è stata rifiutata dall'amministrazione."
+
+msgid "Ihre Anfrage an die Verwaltung"
+msgstr "La vostra richiesta all'amministrazione"
+
+msgid "Den Stand sehen Sie im Portal."
+msgstr "Lo stato è visibile nel portale."
+
+msgid "Kontaktdaten ändern"
+msgstr "Modificare i dati di contatto"
+
+msgid "Mietbestätigung"
+msgstr "Conferma di locazione"
+
+msgid "Zahlungsplan"
+msgstr "Piano di pagamento"
+
+msgid "Bankverbindung ändern"
+msgstr "Modificare le coordinate bancarie"
+
+msgid "Anfrage"
+msgstr "Richiesta"
+
+msgid "Anfragen — Mieterportal"
+msgstr "Richieste — portale inquilini"
+
+msgid "Mietbestätigung und Zahlungsplan. Die Verwaltung bestätigt jede Anfrage und meldet sich bei Ihnen."
+msgstr "Conferma di locazione e piano di pagamento. L'amministrazione conferma ogni richiesta e vi risponde."
+
+msgid "Eine Bestätigung Ihres Mietverhältnisses (Objekt, Mietbeginn, Mietzins) als PDF, z. B. für eine Bewerbung oder eine Behörde."
+msgstr "Una conferma del vostro rapporto di locazione (oggetto, inizio, pigione) in PDF, ad es. per una candidatura o un'autorità."
+
+msgid "Mietbestätigung anfragen"
+msgstr "Richiedi la conferma di locazione"
+
+msgid "Sie können eine offene Rechnung nicht auf einmal bezahlen? Schildern Sie kurz Ihren Wunsch, z. B. Raten."
+msgstr "Non potete pagare una fattura aperta in un'unica soluzione? Descrivete brevemente il vostro desiderio, ad es. rate."
+
+msgid "Ihr Wunsch"
+msgstr "Il vostro desiderio"
+
+msgid "Zahlungsplan anfragen"
+msgstr "Richiedi un piano di pagamento"
+
+msgid "PDF herunterladen (noch %(n)s Tage nach der Bestätigung)"
+msgstr "Scarica il PDF (ancora %(n)s giorni dopo la conferma)"
+
+msgid "Noch keine Anfragen."
+msgstr "Ancora nessuna richiesta."
+
+msgid "einbezahlt am %(datum)s"
+msgstr "versato il %(datum)s"
+
+msgid "Ihre Anfrage ist schon bei der Verwaltung."
+msgstr "La vostra richiesta è già presso l'amministrazione."
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie bestätigt ist."
+msgstr "La vostra richiesta è presso l'amministrazione. Riceverete un messaggio non appena sarà confermata."
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie entschieden ist."
+msgstr "La vostra richiesta è presso l'amministrazione. Riceverete un messaggio non appena sarà decisa."
+
+msgid "Bitte beschreiben Sie Ihren Wunsch kurz."
+msgstr "Descrivete brevemente il vostro desiderio."
+
+msgid "Antwort an die Absenderin (optional)"
+msgstr "Risposta al mittente (facoltativo)"
+
+msgid "Änderungen beantragen Sie unten oder über die Mitteilungen. Sie gelten, sobald die Verwaltung sie bestätigt hat."
+msgstr "Richiedete le modifiche qui sotto o tramite le comunicazioni. Valgono non appena l'amministrazione le ha confermate."
+
+msgid "Kontaktdaten beantragen"
+msgstr "Richiedi i dati di contatto"
+
+msgid "Aus Sicherheitsgründen ruft die Verwaltung Sie vor der Bestätigung einer neuen Bankverbindung zurück."
+msgstr "Per motivi di sicurezza l'amministrazione vi richiama prima di confermare nuove coordinate bancarie."
+
+msgid "Bankverbindung beantragen"
+msgstr "Richiedi le coordinate bancarie"
+
+msgid "Zählerstand melden — Mieterportal"
+msgstr "Comunicare una lettura del contatore — portale inquilini"
+
+msgid "Zählerstand melden"
+msgstr "Comunicare una lettura del contatore"
+
+msgid "Tragen Sie den abgelesenen Stand ein. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+msgstr "Inserite la lettura. Vale non appena l'amministrazione l'ha confermata."
+
+msgid "Letzter Stand: %(w)s am %(d)s"
+msgstr "Ultima lettura: %(w)s il %(d)s"
+
+msgid "Stand melden"
+msgstr "Comunica la lettura"
+
+msgid "Für Ihre Mietobjekte sind keine Zähler erfasst."
+msgstr "Per i vostri oggetti in locazione non sono registrati contatori."
+
+msgid "Ablesung"
+msgstr "Lettura"
+
+msgid "Bitten Sie die Mieterschaft einer Liegenschaft, die Zähler abzulesen. Die Meldungen erscheinen unter «Anfragen» und zählen erst nach Ihrer Bestätigung."
+msgstr "Chiedete agli inquilini di un immobile di leggere i contatori. Le comunicazioni appaiono sotto «Richieste» e valgono solo dopo la vostra conferma."
+
+msgid "%(n)s Zähler"
+msgid_plural "%(n)s Zähler"
+msgstr[0] "%(n)s contatore"
+msgstr[1] "%(n)s contatori"
+
+msgid "%(n)s Mieter mit Portalzugang"
+msgid_plural "%(n)s Mieter mit Portalzugang"
+msgstr[0] "%(n)s inquilino con accesso al portale"
+msgstr[1] "%(n)s inquilini con accesso al portale"
+
+msgid "zuletzt aufgerufen am %(d)s"
+msgstr "ultimo invito il %(d)s"
+
+msgid "%(n)s Meldung wartet"
+msgid_plural "%(n)s Meldungen warten"
+msgstr[0] "%(n)s comunicazione in attesa"
+msgstr[1] "%(n)s comunicazioni in attesa"
+
+msgid "Aufruf an alle Mieter dieser Liegenschaft senden?"
+msgstr "Inviare la richiesta a tutti gli inquilini di questo immobile?"
+
+msgid "Aufruf senden"
+msgstr "Invia la richiesta"
+
+msgid "Noch keine Liegenschaften."
+msgstr "Ancora nessun immobile."
+
+msgid "Bitte prüfen:"
+msgstr "Controllate:"
+
+msgid "Der Verbrauch seit dem %(d)s ist auffällig hoch: etwa das %(f)s-Fache des Üblichen."
+msgstr "Il consumo dal %(d)s è insolitamente alto: circa %(f)s volte il normale."
+
+msgid "Seit dem %(d)s (%(n)s Tage) hat sich der Stand nicht verändert."
+msgstr "Dal %(d)s (%(n)s giorni) la lettura non è cambiata."
+
+msgid "%(z)s: Stand %(w)s am %(d)s"
+msgstr "%(z)s: lettura %(w)s il %(d)s"
+
+msgid "Hinweis: %(t)s"
+msgstr "Nota: %(t)s"
+
+msgid "Der Zähler gibt es nicht mehr."
+msgstr "Questo contatore non esiste più."
+
+msgid "Der Stand ist nicht mehr plausibel: %(t)s"
+msgstr "La lettura non è più plausibile: %(t)s"
+
+msgid "Bitte Zähler, Stand und Ablesedatum angeben."
+msgstr "Indicate contatore, lettura e data."
+
+msgid "Bitte einen gültigen Stand und ein Ablesedatum bis heute angeben."
+msgstr "Indicate una lettura valida e una data fino a oggi."
+
+msgid "Bitte lesen Sie den Zähler nochmals ab."
+msgstr "Leggete di nuovo il contatore."
+
+msgid "Ihr Stand ist bei der Verwaltung. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+msgstr "La vostra lettura è presso l'amministrazione. Vale non appena l'avrà confermata."
+
+msgid "bitte lesen Sie Ihre Zähler ab und melden Sie die Stände im Mieterportal:"
+msgstr "leggete i vostri contatori e comunicate le letture nel portale inquilini:"
+
+msgid "Die Verwaltung bestätigt Ihre Meldung. Vielen Dank."
+msgstr "L'amministrazione conferma la vostra comunicazione. Grazie."
+
+msgid "Bitte Zählerstände ablesen"
+msgstr "Leggete i contatori"
+
+msgid "Der Aufruf ging an %(n)s Mieter."
+msgstr "La richiesta è stata inviata a %(n)s inquilini."
+
+msgid "Der Live-Abruf nennt %(monat)s: %(punkte)s. Vor dem Eintragen gegen die BFS-Publikation prüfen."
+msgstr "La consultazione in diretta indica %(monat)s: %(punkte)s. Da verificare con la pubblicazione dell'UST prima di inserirlo."
+
+msgid "Landesindex der Konsumentenpreise (HEV)"
+msgstr "Indice nazionale dei prezzi al consumo (HEV)"
+
+msgid "Referenzzinssatz (BWO)"
+msgstr "Tasso d'interesse di riferimento (UFAB)"
+
+msgid "noch nie"
+msgstr "mai"
+
+msgid "Abruf ausgefallen: %(name)s — %(n)s Fehlversuche in Folge, letzter Erfolg %(erfolg)s. Grund: %(grund)s"
+msgstr "Consultazione non funzionante: %(name)s — %(n)s tentativi falliti di seguito, ultimo successo %(erfolg)s. Motivo: %(grund)s"
+
+msgid "LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s. Unter «LIK-Werte» nachtragen."
+msgstr "Completare la tabella dell'IPC: termina nel mese %(stand)s. Da completare sotto «Valori IPC»."
+
+msgid "LIK-Werte"
+msgstr "Valori IPC"
+
+msgid "Jahr, Monat und Punkte müssen Zahlen sein (Monat 1 bis 12)."
+msgstr "Anno, mese e punti devono essere numeri (mese da 1 a 12)."
+
+msgid "Der Monat liegt vor 2020 oder in der Zukunft."
+msgstr "Il mese è anteriore al 2020 o nel futuro."
+
+msgid "Der Wert liegt ausserhalb von 100 bis 140 Punkten (Basis Dezember 2020 = 100). Tippfehler?"
+msgstr "Il valore è fuori da 100–140 punti (base dicembre 2020 = 100). Errore di battitura?"
+
+msgid "Die Quelle ist Pflicht, zum Beispiel «BFS, Medienmitteilung vom 05.11.2026»."
+msgstr "La fonte è obbligatoria, ad esempio «UST, comunicato del 05.11.2026»."
+
+msgid "LIK %(monat)s/%(jahr)s mit %(punkte)s Punkten gespeichert."
+msgstr "IPC %(monat)s/%(jahr)s salvato con %(punkte)s punti."
+
+msgid "im Code (BFS-Tabelle)"
+msgstr "nel codice (tabella UST)"
+
+msgid "Landesindex der Konsumentenpreise, Basis %(basis)s = 100. Hier trägst du den Monatswert ein, sobald das BFS ihn veröffentlicht hat; ein Deployment braucht es nicht. Ein Eintrag hier gilt vor der Reihe im Code."
+msgstr "Indice nazionale dei prezzi al consumo, base %(basis)s = 100. Inserisci qui il valore mensile non appena l'UST lo pubblica; non serve alcun deployment. Una voce qui vale prima della serie nel codice."
+
+msgid "Der Live-Abruf nennt %(monat)s: %(punkte)s. Das ist nur ein Vorschlag. Vor dem Eintragen gegen die BFS-Publikation prüfen."
+msgstr "La consultazione in diretta indica %(monat)s: %(punkte)s. È solo un suggerimento. Da verificare con la pubblicazione dell'UST prima di inserirlo."
+
+msgid "Monatswert nachtragen"
+msgstr "Inserire un valore mensile"
+
+msgid "Monat (1–12)"
+msgstr "Mese (1–12)"
+
+msgid "BFS, Medienmitteilung vom …"
+msgstr "UST, comunicato del …"
+
+msgid "Letzte Monate"
+msgstr "Ultimi mesi"
+
+msgid "Arbeiten, die im Hintergrund laufen. Eine lange Arbeit steht hier mit Stand und Ergebnis, bis sie fertig ist; scheitert sie, steht der Grund da."
+msgstr "Lavori eseguiti in background. Un lavoro lungo compare qui con stato e risultato fino al termine; se fallisce, ne è indicato il motivo."
+
+msgid "Aktualisieren"
+msgstr "Aggiorna"
+
+msgid "In Arbeit"
+msgstr "In corso"
+
+msgid "Nichts in Arbeit."
+msgstr "Niente in corso."
+
+msgid "Noch keine erledigten Aufträge."
+msgstr "Nessun incarico ancora completato."
+
+msgid "Wartet"
+msgstr "In attesa"
+
+msgid "Fertig"
+msgstr "Completato"
+
+msgid "Fehlgeschlagen"
+msgstr "Non riuscito"
+
+msgid "Sollstellung (Mietenlauf)"
+msgstr "Addebito degli affitti (ciclo affitti)"
+
+msgid "LIK %(monat)s/%(jahr)s gelöscht."
+msgstr "IPC %(monat)s/%(jahr)s eliminato."
+
+msgid "Der Monat liegt vor 2020 oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines Monats erst Anfang des Folgemonats bekannt."
+msgstr "Il mese è anteriore al 2020 o non è ancora pubblicato: l'UST comunica il valore di un mese solo all'inizio del mese successivo."
+
+msgid "Der Vormonat fehlt noch. Bitte die Monate der Reihe nach eintragen, sonst entsteht eine Lücke."
+msgstr "Manca ancora il mese precedente. Inserire i mesi in ordine, altrimenti si crea una lacuna."
+
+msgid "Vom HEV abgerufen und gespeichert: %(werte)s."
+msgstr "Recuperato dall'HEV e salvato: %(werte)s."
+
+msgid "Der Abruf hat nichts gespeichert. Grund: %(grund)s"
+msgstr "La consultazione non ha salvato nulla. Motivo: %(grund)s"
+
+msgid "Der Abruf lief, es gibt beim HEV keinen neuen Monatswert."
+msgstr "La consultazione è riuscita, l'HEV non ha un nuovo valore mensile."
+
+msgid "Jetzt beim HEV abrufen"
+msgstr "Recupera ora dall'HEV"
+
+msgid "zählt nicht: davor fehlt ein Monat"
+msgstr "non conta: manca un mese prima"
+
+msgid "Sollstellung %(titel)s läuft im Hintergrund. Stand und Ergebnis stehen unter «Aufträge»."
+msgstr "L'addebito %(titel)s è in esecuzione in background. Stato e risultato si trovano sotto «Incarichi in background»."
+
+msgid "Es warten Aufträge, aber der Auftragsläufer meldet sich nicht. Bitte den Betreiber informieren: Ohne Läufer werden sie nicht abgearbeitet."
+msgstr "Ci sono incarichi in attesa, ma il servizio di elaborazione non risponde. Informare il gestore: senza di esso non vengono elaborati."
+
+msgid "Der Mahnlauf läuft im Hintergrund. Stand und Ergebnis stehen unter «Aufträge»."
+msgstr "Il ciclo di solleciti è in esecuzione in background. Stato e risultato si trovano sotto «Incarichi in background»."
+
+msgid "Mahnlauf (Sammellauf)"
+msgstr "Ciclo di solleciti (elaborazione collettiva)"
+
+msgid "Belegerkennung (Groq)"
+msgstr "Riconoscimento dei giustificativi (Groq)"
+
+msgid "kein Abruf verzeichnet (läuft fetch_plattform_eingang?)"
+msgstr "nessuna consultazione registrata (fetch_plattform_eingang è in esecuzione?)"
+
+msgid "Abruf ausgefallen: Plattform-Postfach — letzter Abruf ohne Fehler %(erfolg)s. Grund: %(grund)s"
+msgstr "Consultazione non funzionante: casella della piattaforma — ultima consultazione senza errori %(erfolg)s. Motivo: %(grund)s"
+
+msgid "Das Rundschreiben an %(n)s Empfänger wird im Hintergrund versandt. Stand und Ergebnis stehen unter «Aufträge»."
+msgstr "La circolare a %(n)s destinatari viene inviata in background. Stato e risultato si trovano sotto «Incarichi in background»."
+
+msgid "Rundschreiben per E-Mail"
+msgstr "Circolare via e-mail"
+
+msgid "Zurück zum Portal"
+msgstr "Torna al portale"
+
+msgid "Aktiv: Nach dem Passwort fragt das Portal einen Code aus Ihrer Authenticator-App."
+msgstr "Attivo: dopo la password, il portale chiede un codice dalla sua app di autenticazione."
+
+msgid "Verwalten"
+msgstr "Gestisci"
+
+msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon. Empfohlen, weil hier Abrechnungen und Ihre Bankverbindung stehen."
+msgstr "Protezione aggiuntiva per il suo conto, facoltativa: dopo la password, il portale chiede un codice da un'app di autenticazione sul suo telefono. Consigliata, perché qui si trovano i conteggi e le sue coordinate bancarie."
+
+msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon."
+msgstr "Protezione aggiuntiva per il suo conto, facoltativa: dopo la password, il portale chiede un codice da un'app di autenticazione sul suo telefono."
+
+msgid "RLS-Probe: %(n)s Befund(e) in den letzten 14 Tagen (manage.py sicherheitslog). Bei 0 über zwei Wochen kann scharf geschaltet werden (ARCHITECTURE.md)."
+msgstr "Prova RLS: %(n)s riscontro/i negli ultimi 14 giorni (manage.py sicherheitslog). Con 0 per due settimane si può attivare la modalità rigorosa (ARCHITECTURE.md)."
+
+msgid "In der LIK-Reihe «%(basis)s = 100» fehlt der Wert für %(monat)s. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder den Monat nachtragen."
+msgstr "Nella serie IPC «%(basis)s = 100» manca il valore di %(monat)s. Non viene inserito alcun valore di un'altra serie: importare la serie in «Valori IPC» o registrare il mese."
+
+msgid "Die LIK-Reihe «%(basis)s = 100» hat noch keine Werte. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder die Monate nachtragen."
+msgstr "La serie IPC «%(basis)s = 100» non ha ancora valori. Non viene inserito alcun valore di un'altra serie: importare la serie in «Valori IPC» o registrare i mesi."
+
+msgid "LIK-Basisreihe"
+msgstr "Serie di base IPC"
+
+msgid "Die Reihe, in der die Punkte dieses Vertrags stehen. Beim Wechsel Punkte und Stand-Monat in der neuen Reihe eintragen; umgerechnet wird nicht."
+msgstr "La serie in cui sono espressi i punti di questo contratto. In caso di cambio, inserire punti e mese di riferimento nella nuova serie; non viene effettuata alcuna conversione."
+
+msgid "Vorgabe für neue Verträge, wenn weder Liegenschaft noch Mandat eine eigene Reihe festlegen. «Landesindex LIK (Punkte)» und Stand-Monat daneben stehen in der Reihe Dezember 2020."
+msgstr "Valore predefinito per i nuovi contratti quando né l'immobile né il mandato fissano una propria serie. «Indice IPC (punti)» e il mese di riferimento accanto sono espressi nella serie dicembre 2020."
+
+msgid "Ganze Reihe beim HEV einlesen"
+msgstr "Importare l'intera serie dall'HEV"
+
+msgid "Basisreihe"
+msgstr "Serie di base"
+
+msgid "Die Reihe «%(basis)s = 100» hat noch keine Werte. Verträge dieser Reihe rechnen erst, wenn sie Werte hat: «Ganze Reihe beim HEV einlesen» holt die Tabelle dieser Basis, lückenlos ab dem Basismonat. Werte anderer Reihen werden nie eingesetzt."
+msgstr "La serie «%(basis)s = 100» non ha ancora valori. I contratti di questa serie vengono calcolati solo quando ne ha: «Importare l'intera serie dall'HEV» riprende la tabella di questa base, senza lacune dal mese di base. I valori di altre serie non vengono mai inseriti."
+
+msgid "In dieser Reihe steht noch kein Wert."
+msgstr "In questa serie non c'è ancora alcun valore."
+
+msgid "LIK-Basisreihe (Standard für neue Verträge)"
+msgstr "Serie di base IPC (predefinita per i nuovi contratti)"
+
+msgid "Standard des Mandats"
+msgstr "Predefinito del mandato"
+
+msgid "Vorgabe für neue Verträge; bestehende Verträge behalten ihre Reihe. Leer: Es gilt der Standard der nächsthöheren Stufe."
+msgstr "Valore predefinito per i nuovi contratti; i contratti esistenti mantengono la loro serie. Vuoto: vale il predefinito del livello superiore."
+
+msgid "Standard der Verwaltung"
+msgstr "Predefinito dell'amministrazione"
+
+msgid "Die Reihe des Landesindex, in der dieser Vertrag rechnet. Vorgabe: Standard der Liegenschaft, sonst des Mandats, sonst der Verwaltung."
+msgstr "La serie dell'indice nazionale in cui questo contratto viene calcolato. Predefinito: quello dell'immobile, altrimenti del mandato, altrimenti dell'amministrazione."
+
+msgid "Die Reihe wurde nicht eingelesen. Grund: %(grund)s"
+msgstr "La serie non è stata importata. Motivo: %(grund)s"
+
+msgid "Reihe «%(basis)s = 100» eingelesen: %(n)s Monate von %(von)s bis %(bis)s."
+msgstr "Serie «%(basis)s = 100» importata: %(n)s mesi da %(von)s a %(bis)s."
+
+msgid "Die Reihe ist vollständig: Beim HEV steht kein Monat, der hier fehlt."
+msgstr "La serie è completa: l'HEV non pubblica alcun mese che manchi qui."
+
+msgid "Nicht überschrieben, weil hier schon ein anderer Wert steht (%(n)s): %(werte)s. Bitte prüfen und den falschen löschen."
+msgstr "Non sovrascritto, perché qui c'è già un altro valore (%(n)s): %(werte)s. Verificare ed eliminare quello errato."
+
+msgid "Der Monat liegt vor dem Basismonat der Reihe (Dezember %(jahr)s) oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines Monats erst Anfang des Folgemonats bekannt."
+msgstr "Il mese è anteriore al mese di base della serie (dicembre %(jahr)s) o non è ancora pubblicato: l'UST comunica il valore di un mese solo all'inizio del mese successivo."
+
+msgid "Im Basismonat steht die Reihe bei 100.0 Punkten."
+msgstr "Nel mese di base la serie è a 100.0 punti."
+
+msgid "Der Wert weicht um mehr als %(sprung)s Punkte vom Vormonat dieser Reihe ab. Tippfehler, oder ein Wert aus einer anderen Basisreihe?"
+msgstr "Il valore si scosta di oltre %(sprung)s punti dal mese precedente di questa serie. Errore di battitura, o valore di un'altra serie di base?"
+
+msgid "Unbekannte LIK-Basisreihe."
+msgstr "Serie di base IPC sconosciuta."
+
+msgid "Die LIK-Basisreihe dieses Vertrags lässt sich nicht mehr ändern: Es bestehen Mietzinsanpassungen in der Reihe «%(basis)s = 100»."
+msgstr "La serie di base IPC di questo contratto non può più essere modificata: esistono adeguamenti della pigione nella serie «%(basis)s = 100»."
+
+msgid "Beim Wechsel der LIK-Basisreihe sind die Basis-Punkte und ihr Stand-Monat in der neuen Reihe «%(basis)s = 100» anzugeben."
+msgstr "Al cambio della serie di base IPC, i punti di base e il loro mese di riferimento vanno indicati nella nuova serie «%(basis)s = 100»."
+
+msgid "Für %(stand)s weist die Reihe «%(basis)s = 100» %(tabelle)s Punkte aus, erfasst sind %(punkte)s. Beim Wechsel der Basisreihe müssen die Punkte in der neuen Reihe stehen; umgerechnet wird nicht."
+msgstr "Per %(stand)s la serie «%(basis)s = 100» indica %(tabelle)s punti; ne sono registrati %(punkte)s. Al cambio della serie di base i punti devono essere espressi nella nuova serie; non viene effettuata alcuna conversione."
+
+msgid "Alles an einem Ort: Fehler der Anwendung, gescheiterte Abrufe und Aufträge, RLS-Befunde, CSP-Meldungen, fällige Pflege und Sicherheitsereignisse der letzten %(fenster_tage)s Tage. Die rote Zahl in der Leiste zählt Fehler, die du noch nicht gesehen hast."
+msgstr "Tutto in un posto: errori dell'applicazione, richiami e incarichi falliti, rilievi RLS, segnalazioni CSP, manutenzione dovuta ed eventi di sicurezza degli ultimi %(fenster_tage)s giorni. Il numero rosso nella barra conta gli errori che non hai ancora visto."
+
+msgid "%(n)s neuer Fehler seit deinem letzten Besuch."
+msgid_plural "%(n)s neue Fehler seit deinem letzten Besuch."
+msgstr[0] "%(n)s nuovo errore dalla tua ultima visita."
+msgstr[1] "%(n)s nuovi errori dalla tua ultima visita."
+
+msgid "%(n)s neuer Fehler"
+msgid_plural "%(n)s neue Fehler"
+msgstr[0] "%(n)s nuovo errore"
+msgstr[1] "%(n)s nuovi errori"
+
+msgid "Alle Quellen"
+msgstr "Tutte le fonti"
+
+msgid "Keine Einträge in dieser Auswahl."
+msgstr "Nessuna voce in questa selezione."
+
+msgid "Gleiche Meldungen sind zusammengefasst. Abrufausfälle bleiben stehen, bis der Abruf wieder gelingt."
+msgstr "I messaggi uguali sono raggruppati. I richiami falliti restano finché il richiamo riesce di nuovo."
+
+msgid "CSP-Meldungen im Einzelnen"
+msgstr "Segnalazioni CSP in dettaglio"
+
+msgid "Anwendung"
+msgstr "Applicazione"
+
+msgid "Abrufe"
+msgstr "Richiami"
+
+msgid "RLS-Probe"
+msgstr "Prova RLS"
+
+msgid "CSP"
+msgstr "CSP"
+
+msgid "Pflege"
+msgstr "Manutenzione"
+
+msgid "Warnungen"
+msgstr "Avvisi"
+
+msgid "Hinweise"
+msgstr "Note"
+
+msgid "Abruf gescheitert"
+msgstr "Richiamo fallito"
+
+msgid "Auftrag gescheitert"
+msgstr "Incarico fallito"
+
+msgid "Zu viele falsche Codes. Bitte in 15 Minuten erneut versuchen."
+msgstr "Troppi codici errati. Riprovare tra 15 minuti."
+
+msgid "Mail von unbekanntem Absender"
+msgstr "E-mail da mittente sconosciuto"
+
+msgid "unbekannter Absender"
+msgstr "mittente sconosciuto"
+
+msgid "Diese Mail kam von %(adresse)s. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennst du den Absender (etwa die zweite Adresse des Mieters), bestätige ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders."
+msgstr "Questa e-mail proviene da %(adresse)s. L'indirizzo non figura nel ticket, quindi l'inquilino non vede il messaggio. Se conosci il mittente (ad esempio il secondo indirizzo dell'inquilino), confermalo: le sue e-mail varranno per questo ticket come risposta di chi ha segnalato."
+
+msgid "Absender für dieses Ticket bestätigen"
+msgstr "Conferma il mittente per questo ticket"
+
+msgid "%(adresse)s gilt für dieses Ticket jetzt als Absender des Melders."
+msgstr "%(adresse)s vale ora, per questo ticket, come mittente di chi ha segnalato."
+
+msgid "Diese Nachricht ist keine Mail von unbekanntem Absender (mehr)."
+msgstr "Questo messaggio non è (più) un'e-mail da mittente sconosciuto."
+
+msgid "Die Adresse ist bei %(person)s gespeichert und gilt für alle Tickets dieser Person."
+msgstr "L'indirizzo è salvato presso %(person)s e vale per tutti i ticket di questa persona."
+
+msgid "Bestätigen und bei %(person)s speichern"
+msgstr "Conferma e salva presso %(person)s"
+
+msgid "«Speichern» hinterlegt die Adresse bei der Person: Sie gilt dann für alle ihre Tickets und lässt sich in der Personenakte wieder entfernen."
+msgstr "«Salva» registra l'indirizzo presso la persona: vale poi per tutti i suoi ticket e si può rimuovere nella scheda della persona."
+
+msgid "Weitere Absenderadresse"
+msgstr "Altro indirizzo mittente"
+
+msgid "entfernen"
+msgstr "rimuovi"
+
+msgid "%(adresse)s ist als weitere Absenderadresse entfernt."
+msgstr "%(adresse)s non è più un altro indirizzo mittente."
+
+msgid "Im Kalender „Abonnement/Kalender per URL hinzufügen“ wählen und diese Adresse einfügen. Der Link gehört nur Ihnen und ist geheim — nicht weitergeben."
+msgstr "Nel calendario scegliere «Abbonamento / Aggiungi calendario da URL» e incollare questo indirizzo. Il link è personale e segreto — non divulgarlo."
+
+msgid "Link neu erzeugen"
+msgstr "Genera un nuovo link"
+
+msgid "Link entfernen"
+msgstr "Rimuovi il link"
+
+msgid "Mit einem persönlichen Link zeigt Ihr Kalender (Outlook, Apple, Google) die Fristen laufend an. Der Link lässt sich jederzeit erneuern oder entfernen."
+msgstr "Con un link personale il vostro calendario (Outlook, Apple, Google) mostra le scadenze in modo continuo. Il link può essere rinnovato o rimosso in qualsiasi momento."
+
+msgid "Kalender-Link erzeugen"
+msgstr "Genera il link del calendario"
+
+msgid "Kalender-Link entfernt. Abonnierte Kalender erhalten nichts mehr."
+msgstr "Link del calendario rimosso. I calendari abbonati non ricevono più nulla."
+
+msgid "Neuer Kalender-Link erzeugt. Ein früherer Link gilt nicht mehr."
+msgstr "Nuovo link del calendario generato. Un link precedente non è più valido."
+
+msgid "Wenn wir Ihre Angaben einer Liegenschaft zuordnen konnten, erhalten Sie in den nächsten Minuten eine Bestätigung per E-Mail. Ohne Bestätigung wenden Sie sich bitte direkt an Ihre Verwaltung."
+msgstr "Se siamo riusciti ad attribuire i vostri dati a un immobile, riceverete una conferma via e-mail nei prossimi minuti. Senza conferma, rivolgetevi direttamente alla vostra amministrazione."
+
+msgid "Adresse des Aushangs erneuern? Der bisherige QR-Code funktioniert danach nicht mehr; der Aushang muss neu gedruckt werden."
+msgstr "Rinnovare l'indirizzo dell'avviso? Il codice QR attuale non funzionerà più; l'avviso deve essere ristampato."
+
+msgid "Aushang-Adresse erneuern"
+msgstr "Rinnova l'indirizzo dell'avviso"
+
+msgid "Die Adresse des Aushangs ist erneuert. Bitte den Hausaushang neu drucken und aufhängen — der bisherige QR-Code funktioniert nicht mehr."
+msgstr "L'indirizzo dell'avviso è stato rinnovato. Ristampare e affiggere l'avviso — il codice QR precedente non funziona più."
+
+msgid "Der Link gilt nur wenige Tage und nur einmal. Ist er abgelaufen, bitten Sie Ihre Verwaltung um einen neuen. Diese E-Mail wurde automatisch erstellt."
+msgstr "Il link è valido solo per pochi giorni e una sola volta. Se è scaduto, chiedetene uno nuovo alla vostra amministrazione. Questa e-mail è stata generata automaticamente."
+
+msgid "Passwort festlegen"
+msgstr "Imposta la password"
+
+msgid "Danach melden Sie sich mit Ihrem Benutzernamen hier an:"
+msgstr "Successivamente accedete qui con il vostro nome utente:"
+
+msgid "Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s — bitte manuell mitteilen."
+msgstr "Accesso al portale attivo, ma l'invio dell'e-mail non è riuscito. Nome utente: %(username)s · Link per impostare la password: %(link)s — da comunicare manualmente."
+
+msgid "Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s (bitte sicher mitteilen; gilt nur wenige Tage und nur einmal)."
+msgstr "Accesso al portale attivo. Nessuna e-mail registrata — nome utente: %(username)s · Link per impostare la password: %(link)s (da comunicare in modo sicuro; valido solo pochi giorni e una sola volta)."
+
+msgid "Honorarertrag gegen erfassten Aufwand ist Teil der Stufe Professional."
+msgstr "Il rendimento degli onorari rispetto al tempo registrato fa parte del livello Professional."
+
+msgid "Schnittstellen (Buchhaltungsformate, Portal-Feed, Kalender-Abonnement) sind Teil der Stufe Professional."
+msgstr "Le interfacce (formati contabili, feed per portali, abbonamento al calendario) fanno parte del livello Professional."
+
+msgid "Datenquelle"
+msgstr "Fonte dei dati"
+
+msgid "Spalten"
+msgstr "Colonne"
+
+msgid "Eigene Auswertungen"
+msgstr "Analisi personalizzate"
+
+msgid "Laufender Monat"
+msgstr "Mese corrente"
+
+msgid "Vorjahr"
+msgstr "Anno precedente"
+
+msgid "Letzte 12 Monate"
+msgstr "Ultimi 12 mesi"
+
+msgid "Debitoren (Rechnungen an Mieter)"
+msgstr "Debitori (fatture agli inquilini)"
+
+msgid "Forderungsart"
+msgstr "Tipo di credito"
+
+msgid "Mieter Nachname"
+msgstr "Inquilino – cognome"
+
+msgid "Mieter Vorname"
+msgstr "Inquilino – nome"
+
+msgid "Mieter Firma"
+msgstr "Inquilino – ditta"
+
+msgid "Kreditoren (Lieferantenrechnungen)"
+msgstr "Creditori (fatture dei fornitori)"
+
+msgid "MWST-Betrag"
+msgstr "Importo IVA"
+
+msgid "Nebenkostenrelevant"
+msgstr "Rilevante per le spese accessorie"
+
+msgid "Eingang am"
+msgstr "Ricevuto il"
+
+msgid "Bankreferenz"
+msgstr "Riferimento bancario"
+
+msgid "Nettomiete aktuell"
+msgstr "Pigione netta attuale"
+
+msgid "Nebenkosten aktuell"
+msgstr "Spese accessorie attuali"
+
+msgid "%(n)s Zeile"
+msgid_plural "%(n)s Zeilen"
+msgstr[0] "%(n)s riga"
+msgstr[1] "%(n)s righe"
+
+msgid "Diese Vorlage löschen? Die Daten selbst bleiben unberührt."
+msgstr "Eliminare questo modello? I dati stessi restano invariati."
+
+msgid "Die Auswertung ist auf %(n)s Zeilen begrenzt. Bitte den Zeitraum oder die Liegenschaft einschränken."
+msgstr "L'analisi è limitata a %(n)s righe. Limitare il periodo o l'immobile."
+
+msgid "Keine Zeilen für diese Auswahl."
+msgstr "Nessuna riga per questa selezione."
+
+msgid "Vorlage bearbeiten"
+msgstr "Modifica modello"
+
+msgid "Datenquelle, Spalten und Zeitraum einmal festlegen, als Vorlage speichern und jederzeit neu ausführen oder als CSV herausgeben."
+msgstr "Definire una volta fonte dei dati, colonne e periodo, salvare come modello e rieseguire in qualsiasi momento o esportare in CSV."
+
+msgid "Gespeicherte Vorlagen"
+msgstr "Modelli salvati"
+
+msgid "%(n)s Spalte"
+msgid_plural "%(n)s Spalten"
+msgstr[0] "%(n)s colonna"
+msgstr[1] "%(n)s colonne"
+
+msgid "Ausführen"
+msgstr "Esegui"
+
+msgid "Noch keine Vorlage gespeichert."
+msgstr "Nessun modello ancora salvato."
+
+msgid "Name der Vorlage"
+msgstr "Nome del modello"
+
+msgid "Spalten aus «%(q)s»"
+msgstr "Colonne da «%(q)s»"
+
+msgid "Die Spalten erscheinen in der Reihenfolge, in der sie hier stehen. Die Vorlage gehört der Verwaltung: Das ganze Team kann sie ausführen."
+msgstr "Le colonne appaiono nell'ordine indicato qui. Il modello appartiene all'amministrazione: tutto il team può eseguirlo."
+
+msgid "Vorlage speichern"
+msgstr "Salva modello"
+
+msgid "Bitte einen Namen angeben."
+msgstr "Indicare un nome."
+
+msgid "Der Name ist zu lang (höchstens 120 Zeichen)."
+msgstr "Il nome è troppo lungo (al massimo 120 caratteri)."
+
+msgid "Diese Datenquelle gibt es nicht."
+msgstr "Questa fonte dei dati non esiste."
+
+msgid "Bitte mindestens eine Spalte wählen."
+msgstr "Selezionare almeno una colonna."
+
+msgid "Eine Vorlage mit diesem Namen gibt es schon."
+msgstr "Esiste già un modello con questo nome."
+
+msgid "Vorlage «%(name)s» gespeichert."
+msgstr "Modello «%(name)s» salvato."
+
+msgid "Vorlage «%(name)s» gelöscht."
+msgstr "Modello «%(name)s» eliminato."
+
+msgid "%(n)s weitere in der Liste"
+msgid_plural "%(n)s weitere in der Liste"
+msgstr[0] "%(n)s altra nell'elenco"
+msgstr[1] "%(n)s altre nell'elenco"
+
+msgid "Seiten des Bereichs"
+msgstr "Pagine della sezione"
+
+msgid "Selten gebraucht"
+msgstr "Usato di rado"
+
+msgid "Betrieb"
+msgstr "Esercizio"
+
+msgid "Alle Einstellungen"
+msgstr "Tutte le impostazioni"
+
+msgid "Team & Zugriff"
+msgstr "Team e accessi"
+
+msgid "Vorlagen & Regeln"
+msgstr "Modelli e regole"
+
+msgid "Schnittstellen"
+msgstr "Interfacce"
+
+msgid "Daten & Protokoll"
+msgstr "Dati e registro"
+
+msgid "Diese Buchung gehört zu einer Zahlung. Bitte die Zahlung im Bankabgleich stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+msgstr "Questa registrazione appartiene a un pagamento. Stornare il pagamento nella riconciliazione bancaria, altrimenti le partite aperte e il conto non coincidono più."
+
+msgid "Diese Buchung gehört zu einer Rechnung. Bitte die Rechnung selbst stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+msgstr "Questa registrazione appartiene a una fattura. Stornare la fattura stessa, altrimenti le partite aperte e il conto non coincidono più."
+
+msgid "Rückgängig nicht möglich: Der Import enthält %(n)s verbuchte Belastung(en) (Gebühren, Lieferantenzahlungen). Bitte zuerst deren Buchungen stornieren, sonst werden sie nach einem erneuten Import doppelt gebucht."
+msgstr "Annullamento impossibile: l'importazione contiene %(n)s addebito/i registrato/i (spese, pagamenti ai fornitori). Stornare prima queste registrazioni, altrimenti verranno registrate due volte con una nuova importazione."
+
+msgid "Die Belastung (CHF %(belastung)s) ist grösser als der offene Betrag der Rechnung (CHF %(offen)s). Bitte die Rechnung prüfen oder die Bewegung auf ein Konto verbuchen."
+msgstr "L'addebito (CHF %(belastung)s) è superiore all'importo aperto della fattura (CHF %(offen)s). Controllare la fattura o registrare il movimento su un conto."

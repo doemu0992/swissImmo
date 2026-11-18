@@ -198,12 +198,16 @@ def index_anpassung_vorschlag(vertrag, aktuell_lik=None, wirksam_ab=None, stand=
     basis_lik = Decimal(str(basis_lik or 0))
     if basis_lik <= 0:
         return None
+    # In der Reihe des Vertrags (`Mietvertrag.lik_basis`): Fehlt dort der Wert, gibt es keinen Vorschlag —
+    # der Wert einer anderen Reihe wird nicht eingesetzt.
+    from core.services.lik import basis_von
+    reihe = basis_von(vertrag)
     if stand is not None:
-        aktuell_lik = ia.lik_punkte(stand)
+        aktuell_lik = ia.lik_punkte(stand, reihe)
     elif aktuell_lik is None:
         try:
             from core.services.lik import aktueller_lik_wert
-            _stand, aktuell_lik, _b = aktueller_lik_wert(live=False)
+            _stand, aktuell_lik, _b = aktueller_lik_wert(live=False, basis=reihe)
         except Exception:
             aktuell_lik = None
     if not aktuell_lik:

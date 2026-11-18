@@ -14,8 +14,9 @@ WIE ES EINGEFÜHRT WIRD (Etappen)
     `CSP_MODUS`: `report-only` (Vorgabe), `enforce` oder `aus` (Umgebungsvariable; `aus` nur als Notausstieg).
 
 STIL
-    `style-src 'unsafe-inline'` bleibt vorerst: Die Oberfläche hat noch `style="…"`-Attribute (siehe
-    `core/tests/test_stilschuld.py`). Skripte sind das eigentliche Einfallstor und stehen deshalb zuerst an.
+    Seit 12.11.2026 ohne `'unsafe-inline'`: Die Browser-Vorlagen haben kein `style="…"` mehr (`core/tests/test_stilschuld.py`),
+    `<style>`-Blöcke tragen den Nonce, dynamische Masse (Balken, Kurven) setzt `static/js/fw-aktionen.js` über das Stilobjekt.
+    Ausnahme: Antworten, die ein fertiges Dokument zeigen (Vertragsvorschau), setzen `request.csp_stil_inline = True`.
 """
 import json
 import logging
@@ -40,11 +41,32 @@ def modus():
     return wert if wert in MODI else 'report-only'
 
 
-def richtlinie(nonce):
+#: Inline-Stile, die der BROWSER selbst setzt und die deshalb erlaubt sind — genau diese Zeichenfolgen, nichts sonst.
+#: iOS-Safari hängt an jedes `<select>` das Stil-Attribut «text-overflow:inherit» (Meldungen vom 14.11.2026: «text-overflow:
+#: inherit @ select» auf jeder Seite mit Auswahlfeld, neustes iOS, keine Erweiterung). Die Anwendung kann das nicht
+#: abstellen; ohne Erlaubnis meldet jede Seite mehrfach, und echte Verstösse gehen im Rauschen unter. Die Schreibweisen
+#: mit Leerzeichen und Strichpunkt stehen dabei, weil der gemeldete Anfang die genaue Fassung nicht belegt.
+BROWSER_STILE = ('text-overflow:inherit', 'text-overflow: inherit', 'text-overflow:inherit;', 'text-overflow: inherit;')
+
+
+def _stil_hashes():
+    import base64
+    import hashlib
+    return ' '.join("'sha256-%s'" % base64.b64encode(hashlib.sha256(t.encode()).digest()).decode() for t in BROWSER_STILE)
+
+
+def richtlinie(nonce, stil_inline=False):
+    """Die Richtlinie dieser Antwort.
+
+    Stile: nur eigene Dateien und `<style nonce>` — kein `style="…"`-Attribut im Quelltext (Masse setzt `fw-aktionen.js`
+    über ein konstruiertes Stylesheet, `fw-stil.js`). `'report-sample'` erlaubt nichts: Es lässt den Browser den Anfang
+    des gesperrten Stils oder Skripts mitmelden, damit die Quelle einer Meldung auffindbar ist. `stil_inline=True` erlaubt Inline-Stile für Antworten, die ein fertiges Dokument zeigen (die
+    Vertragsvorschau, gerendert aus der PDF-Vorlage mit eigenen Stilen). Skripte bleiben auch dort auf den Nonce beschränkt."""
     return '; '.join([
         "default-src 'self'",
-        f"script-src 'self' 'nonce-{nonce}'",
-        "style-src 'self' 'unsafe-inline'",
+        f"script-src 'self' 'nonce-{nonce}' 'report-sample'",
+        "style-src 'self' 'unsafe-inline'" if stil_inline else f"style-src 'self' 'nonce-{nonce}' 'report-sample'",
+        *([] if stil_inline else [f"style-src-attr 'unsafe-hashes' {_stil_hashes()} 'report-sample'"]),
         "img-src 'self' data: blob:",
         "font-src 'self' data:",
         "connect-src 'self'",
@@ -68,7 +90,8 @@ class CspMiddleware:
         antwort = self.get_response(request)
         art = modus()
         if art != 'aus' and HEADER_ENFORCE not in antwort and HEADER_REPORT not in antwort:
-            antwort[HEADER_ENFORCE if art == 'enforce' else HEADER_REPORT] = richtlinie(request.csp_nonce)
+            antwort[HEADER_ENFORCE if art == 'enforce' else HEADER_REPORT] = richtlinie(
+                request.csp_nonce, stil_inline=getattr(request, 'csp_stil_inline', False))
         return antwort
 
 
@@ -95,14 +118,11 @@ def csp_bericht(request):
         return HttpResponse(status=400)
     if len(koerper) > 8192:
         return HttpResponse(status=413)
-    absender = request.META.get('REMOTE_ADDR', '?')
-    schluessel = f'csp-bericht:{absender}'
-    try:
-        n = cache.incr(schluessel)
-    except ValueError:
-        cache.set(schluessel, 1, 60)
-        n = 1
-    if n > 60:
+    # Absender wie bei allen Bremsen (rechter Eintrag von X-Forwarded-For): `REMOTE_ADDR` ist hinter dem Proxy dessen
+    # Adresse, alle Besucher teilten sich dann einen Topf.
+    from core.utils.throttle import client_ip, rate_limit
+    schluessel = f'csp-bericht:{client_ip(request)}'
+    if not rate_limit(schluessel, 60, 60):          # festes Fenster von 60 s (nicht `cache.incr`, siehe throttle.py)
         return HttpResponse(status=429)
     try:
         roh = json.loads(koerper.decode('utf-8') or '{}')
@@ -113,10 +133,14 @@ def csp_bericht(request):
         b = e.get('csp-report', e.get('body', e)) if isinstance(e, dict) else {}
         if not isinstance(b, dict):
             continue
+        # Quelle und Probe stehen HINTEN: `csp_meldungen` liest auch ältere Zeilen, die nach «Zeile=» enden.
         logger.warning(
-            'CSP-Verstoss: %s | blockiert=%s | Seite=%s | Zeile=%s',
+            'CSP-Verstoss: %s | blockiert=%s | Seite=%s | Zeile=%s | Quelle=%s | Probe=%s',
             _kurz(b.get('violated-directive') or b.get('effectiveDirective')),
             _kurz(b.get('blocked-uri') or b.get('blockedURL') or b.get('blocked-url')),
             _kurz(b.get('document-uri') or b.get('documentURL')),
-            _kurz(b.get('line-number') or b.get('lineNumber')))
+            _kurz(b.get('line-number') or b.get('lineNumber')),
+            _kurz(b.get('source-file') or b.get('sourceFile')),
+            _kurz(' @ '.join(t for t in (str(b.get('script-sample') or b.get('sample') or ''),
+                                         str(b.get('element') or '')) if t), 140).replace('|', '/'))
     return HttpResponse(status=204)

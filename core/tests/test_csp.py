@@ -21,6 +21,14 @@ class RichtlinieTests(SimpleTestCase):
         r = csp.richtlinie('ABC123')
         self.assertIn("script-src 'self' 'nonce-ABC123'", r)
         self.assertNotIn("script-src 'self' 'unsafe-inline'", r)
+        # Stile: nur eigene Dateien und der Nonce — kein 'unsafe-inline' (seit 12.11.2026).
+        self.assertIn("style-src 'self' 'nonce-ABC123'", r)
+        self.assertNotIn('unsafe-inline', r)
+
+    def test_dokumentantworten_duerfen_inline_stile_aber_keine_inline_skripte(self):
+        r = csp.richtlinie('ABC123', stil_inline=True)
+        self.assertIn("style-src 'self' 'unsafe-inline'", r)
+        self.assertIn("script-src 'self' 'nonce-ABC123'", r)
         for erwartet in ("object-src 'none'", "base-uri 'self'", "frame-ancestors 'self'", "form-action 'self'",
                          f'report-uri {csp.BERICHT_PFAD}'):
             self.assertIn(erwartet, r)
@@ -90,6 +98,44 @@ class BerichtsstelleTests(TestCase):
         self.assertIn('script-src-attr', erfasst.output[0])
         self.assertIn('inline', erfasst.output[0])
 
+    def test_quelle_und_probe_stehen_im_log(self):
+        """Datei und Anfang des gesperrten Stils gehören in die Zeile: Sonst ist die Ursache nicht auffindbar."""
+        bericht = {'csp-report': {'violated-directive': 'style-src-attr', 'blocked-uri': 'inline',
+                                  'document-uri': 'https://x.ch/neu/', 'line-number': 7,
+                                  'source-file': 'https://x.ch/static/js/fw-a.js', 'script-sample': 'width: 4|2%'}}
+        with self.assertLogs('csp', level='WARNING') as log:
+            self._melden(bericht)
+        self.assertIn('Zeile=7 | Quelle=https://x.ch/static/js/fw-a.js | Probe=width: 4/2%', log.output[0])
+
+    def test_eigene_meldung_nennt_das_element(self):
+        """`fw-stil.js` schickt zu einem gesperrten Inline-Stil das Element mit: daran ist die Ursache zu erkennen."""
+        bericht = {'csp-report': {'violated-directive': 'style-src-attr', 'blocked-uri': 'inline',
+                                  'document-uri': 'https://x.ch/neu/', 'script-sample': 'display: none',
+                                  'element': 'input#fwOsFeld.fw-feld'}}
+        with self.assertLogs('csp', level='WARNING') as log:
+            self._melden(bericht)
+        self.assertIn('Probe=display: none @ input#fwOsFeld.fw-feld', log.output[0])
+
+    def test_stil_attribute_nur_die_des_browsers(self):
+        """`style-src-attr` erlaubt genau die Zeichenfolgen, die iOS-Safari selbst an `<select>` setzt — per Hash, nicht
+        per 'unsafe-inline'. In der Vorschau (alles inline erlaubt) steht die Regel nicht, sie würde dort einschränken."""
+        import base64
+        import hashlib
+        r = csp.richtlinie('ABC123')
+        teil = next(t for t in r.split('; ') if t.startswith('style-src-attr '))
+        self.assertIn("'unsafe-hashes'", teil)
+        self.assertNotIn('unsafe-inline', teil)
+        self.assertIn(base64.b64encode(hashlib.sha256(b'text-overflow:inherit').digest()).decode(), teil)
+        self.assertEqual(teil.count("'sha256-"), len(csp.BROWSER_STILE))
+        self.assertTrue(all(t.startswith('text-overflow') for t in csp.BROWSER_STILE))
+        self.assertNotIn('style-src-attr', csp.richtlinie('ABC123', stil_inline=True))
+
+    def test_richtlinie_verlangt_proben(self):
+        r = csp.richtlinie('ABC123')
+        self.assertIn("style-src 'self' 'nonce-ABC123' 'report-sample'", r)
+        self.assertIn("script-src 'self' 'nonce-ABC123' 'report-sample'", r)
+        self.assertNotIn('unsafe-inline', r)
+
     def test_neues_berichtsformat_wird_gelesen(self):
         bericht = [{'type': 'csp-violation', 'body': {'effectiveDirective': 'script-src-elem',
                                                        'blockedURL': 'https://fremd.example/x.js'}}]
@@ -153,3 +199,41 @@ class RatscheTests(SimpleTestCase):
             (pathlib.Path(tmp) / 'a.html').write_text('<button onclick="x()">a</button><a onClick=\'y()\'>b</a>'
                                                        '{# <i onclick="z()"> #}')
             self.assertEqual(zaehlen(tmp), {'a.html': 2})
+
+
+class StilAusnahmeTests(TestCase):
+    """Nur die Vertragsvorschau (gerendertes Dokument) darf Inline-Stile; jede andere Seite nicht."""
+
+    def test_normale_seiten_ohne_unsafe_inline(self):
+        c = Client()
+        c.force_login(_team_user())
+        for url in ('/login/', '/neu/'):
+            kopf = c.get(url)[csp.HEADER_REPORT]
+            self.assertNotIn('unsafe-inline', kopf, url)
+
+    def test_vertragsvorschau_hat_inline_stile_ohne_skriptausnahme(self):
+        c = Client()
+        c.force_login(_team_user())
+        kopf = c.post('/neu/vertraege/vorschau/', {})[csp.HEADER_REPORT]
+        self.assertIn("style-src 'self' 'unsafe-inline'", kopf)
+        self.assertRegex(kopf, r"script-src 'self' 'nonce-[^']+'")
+        self.assertNotIn("script-src 'self' 'unsafe-inline'", kopf)
+
+
+class FehlerseitenOhneInlineStilTests(TestCase):
+    """Auch die Seiten, die nur im Fehlerfall oder ohne Anmeldung erscheinen, brauchen keine Inline-Stile."""
+
+    def _pruefen(self, antwort, url):
+        html = antwort.content.decode()
+        self.assertNotRegex(html, r'\sstyle="', url)
+        for m in re.finditer(r'<style\b([^>]*)>', html):
+            self.assertIn('nonce=', m.group(1), f'{url}: <style> ohne Nonce')
+
+    def test_404_login_und_startseite(self):
+        for url in ('/gibt-es-nicht-xyz/', '/login/', '/'):
+            self._pruefen(Client().get(url), url)
+
+    def test_403_und_400(self):
+        c = Client()
+        c.force_login(_team_user('Buchhaltung'))
+        self._pruefen(c.get('/neu/personen/'), '/neu/personen/ (403)')

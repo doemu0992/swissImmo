@@ -16,7 +16,7 @@ WAS DIESE DATEI HÄLT
 
 Die STRUKTUR (wo was steht) und die Bindungen zwischen den Teilen, die kein
 Browsertest einzeln sieht: Jede Klasse, die das Skript erzeugt, hat eine Regel
-in der Schicht; jedes Zeichen, das es zeichnet, steht in `docs/ZEICHEN.md`;
+in der Schicht; jedes Zeichen, das es zeichnet, steht in `core/templatetags/zeichen_tabelle.md`;
 jeder Text, den es holt, steht im `<template>`. Wie es aussieht und sich
 anfühlt (Breiten, Tastatur, Telefon), misst `e2e/tests/omnisearch.spec.ts` —
 ein Test, der die Zeichenkette liest, merkt, wenn eine Regel verschwindet,
@@ -176,16 +176,18 @@ class KopfzeileStrukturTests(TestCase):
         self.assertNotIn(pop, band.kinder, 'Der Überlauf liegt im Band und würde mit ihm abgeschnitten')
 
     def test_gruppen_beginn_traegt_den_abschnittsnamen_fuer_den_ueberlauf(self):
-        """Die Überschrift «Vorgänge» im Überlauf kommt aus `data-abschnitt` am ersten Punkt der Gruppe."""
-        wurzel = baum(self._seite())
+        """Die Überschrift im Überlauf («Monat», «Periodisch») kommt aus `data-abschnitt` am ersten Punkt der Gruppe.
+
+        Bis 17.11.2026 war das «Vorgänge» unter Akten; die Vorgänge stehen jetzt in «Betrieb» (ohne Gruppen)."""
+        wurzel = baum(self._seite('/neu/laeufe/'))
         band = eines(wurzel, klasse='fw-bereichsreiter')
         mit = [k for k in band.kinder if k.tag == 'a' and 'data-abschnitt' in k.attrs]
-        self.assertEqual(len(mit), 1, 'Akten hat genau eine benannte Gruppe')
-        self.assertEqual(mit[0].attrs['data-abschnitt'], 'Vorgänge')
-        self.assertEqual(mit[0].attrs['href'].split('?')[0], '/neu/schaeden/')
+        self.assertEqual([k.attrs['data-abschnitt'] for k in mit], ['Monat', 'Periodisch'])
+        self.assertEqual([k.attrs['href'].split('?')[0] for k in mit], ['/neu/sollstellung/', '/neu/nebenkosten/'])
         # Davor steht der Trenner, der im Überlauf wegfällt
-        i = band.kinder.index(mit[0])
-        self.assertIn('fw-bereichsreiter-trenner', band.kinder[i - 1].klassen)
+        for k in mit:
+            i = band.kinder.index(k)
+            self.assertIn('fw-bereichsreiter-trenner', band.kinder[i - 1].klassen)
 
     def test_profilmenue_traegt_neuer_fall_und_den_menueknopf(self):
         """Bis 1023 px hat Zeile 1 dafür keinen Platz: Beide dürfen nicht unerreichbar werden."""
@@ -362,7 +364,7 @@ class SkriptBindungenTests(SimpleTestCase):
         self.assertIn('fw-os-chip', regeln)
 
     def test_jedes_gezeichnete_zeichen_steht_in_der_zeichentabelle(self):
-        tabelle = (WURZEL / 'docs' / 'ZEICHEN.md').read_text(encoding='utf-8')
+        tabelle = (WURZEL / 'core' / 'templatetags' / 'zeichen_tabelle.md').read_text(encoding='utf-8')
         tabelle = tabelle[:tabelle.index('## Noch ohne Bedeutung')]
         erlaubt = set(re.findall(r'^\| `([a-z]+)` \|', tabelle, re.M))
         block = re.search(r'var ZEICHEN = \{(.*?)\};', self._skript(), re.S).group(1)
@@ -595,5 +597,5 @@ class MenuebandSkriptTests(SimpleTestCase):
         self.assertEqual(self._js().count('sicht[aktiv] = true'), 1)
 
     def test_die_suche_misst_den_freien_platz_und_die_schicht_liest_ihn(self):
-        self.assertIn("setProperty('--fw-os-extra'", SKRIPT.read_text(encoding='utf-8'))
+        self.assertIn("fwStil(wurzel, {'--fw-os-extra'", SKRIPT.read_text(encoding='utf-8'))
         self.assertIn('var(--fw-os-extra', SCHICHT.read_text(encoding='utf-8'))

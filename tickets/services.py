@@ -221,7 +221,8 @@ def generate_qr_poster(liegenschaft, domain):
     Generiert das PDF für den Treppenhaus-Aushang mit QR-Code.
     Rückgabe ist ein BytesIO Buffer.
     """
-    report_url = f"https://{domain}/report/{liegenschaft.id}/"
+    # Die Adresse trägt das Token der Liegenschaft, nicht ihre Nummer (`Liegenschaft.aushang_token`).
+    report_url = f"https://{domain}/aushang/{liegenschaft.aushang_token}/"
 
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)

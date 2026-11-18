@@ -376,7 +376,7 @@ class AbfragenTests(SchadenWelt):
         gross = {p: self._zaehle(p) for p in seiten}
         self.assertEqual(gross, klein)
 
-    ERWARTET = {'liste': 20, 'detail': 15}
+    ERWARTET = {'liste': 15, 'detail': 10}
 
     def test_tatsaechliche_zahl(self):
         self._zaehle('/portal/schaeden/')

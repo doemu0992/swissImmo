@@ -2,7 +2,7 @@
 #
 # Profil-Menue: Account, Benutzerliste, Logbuch, Rechtsgrundlagen,
 # Eigentuemerliste, Mieterwechsel, Vermarktung samt Portal-Feed, Vorlagen,
-# Integrationen, Abonnemente. Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Integrationen, Abonnemente. Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # OFFENER POSTEN, hier bewusst NICHT geloest: fw_benutzer (die Liste) steht
 # in diesem Block, waehrend fw_benutzer_form und fw_benutzer_loeschen aus
@@ -34,8 +34,9 @@ from rentals.models import Mietvertrag
 
 logger = logging.getLogger(__name__)
 
-from ._basis import _global_filter, _num, _vermietung_pipeline
+from ._basis import _global_filter, _lik_basen, _num, _vermietung_pipeline
 from core.tenancy import aktuelle_organisation, organisation_der_anfrage
+from abo.zugang import funktion_erforderlich, schnittstelle_frei as _schnittstelle_frei
 
 
 # ============================================================
@@ -107,7 +108,11 @@ def fw_account(request):
         vw.aktueller_lik_punkte = dec('aktueller_lik_punkte', vw.aktueller_lik_punkte)
         vw.nk_honorar_prozent = dec('nk_honorar_prozent', vw.nk_honorar_prozent)
         # LIK-Basis + Stand-Monat
-        vw.lik_basis = (P.get('lik_basis') or vw.lik_basis or 'Dezember 2020').strip()
+        # Nur eine geführte Reihe (Auswahlliste). Die Vorgabe der Verwaltung für neue Verträge, wenn weder
+        # Liegenschaft noch Eigentümer eine eigene festlegen; bestehende Verträge behalten ihre Reihe.
+        from core.services import lik as _lik
+        vw.lik_basis = (_lik.basis_gueltig(P.get('lik_basis')) or _lik.basis_gueltig(vw.lik_basis)
+                        or _lik.LIK_BASIS)
         stand_raw = (P.get('aktueller_lik_stand') or '').strip()  # 'YYYY-MM' aus <input type=month>
         if stand_raw:
             try:
@@ -175,7 +180,7 @@ def fw_account(request):
     from core.services.unterschrift import unterschrift_url as _sig_url
     sig_url = _sig_url(vw)
     return render(request, 'fw/account.html', {
-        **basis, 'nav': 'account', 'vw': vw,
+        **basis, 'nav': 'account', 'vw': vw, 'lik_basen': _lik_basen(),
         'logo_url': _url('logo'), 'unterschrift_url': sig_url,
         'unterschrift_verwaist': bool(getattr(vw, 'unterschrift_bild', None)) and not sig_url,
         # Liest die Rolle am Dekorator von fw_datenreset ab — Anzeige und
@@ -206,7 +211,7 @@ def _hat_aktiven_zweiten_faktor(benutzer):
 
 # Nur der Inhaber (seit 28.09.2026, vorher jeder Verwalter). Der Reset leert
 # den gesamten Bestand der Verwaltung unwiderruflich; «Organisation löschen»
-# ist nach docs/PHASE-2-PLAN.md (Etappe 4.3) Inhaber-Sache.
+# ist nach «PHASE-2-PLAN» (früheres Dokument, Git-Verlauf) (Etappe 4.3) Inhaber-Sache.
 @rolle_erforderlich(*INHABER_ROLLEN)
 def fw_datenreset(request):
     """GEFAHRENZONE: löscht ALLE Betriebsdaten dieser Verwaltung (Liegenschaften,
@@ -561,11 +566,11 @@ def fw_eigentuemer_liste(request):
     from crm.models import Eigentuemer
     basis = _global_filter(request)
     from core.services.archiv import ausblenden
-    eigentuemer = ausblenden(Eigentuemer.objects.all()).order_by('firma_oder_name')
-    rows = []
-    for md in eigentuemer:
-        anzahl_lg = Liegenschaft.objects.filter(eigentuemer=md).count()
-        rows.append({'md': md, 'anzahl_lg': anzahl_lg})
+    from django.db.models import Count
+    # Die Zahl der Liegenschaften kommt mit der Liste (vorher eine Zählabfrage je Mandat).
+    eigentuemer = (ausblenden(Eigentuemer.objects.all()).annotate(anzahl_lg=Count('liegenschaften'))
+                   .order_by('firma_oder_name'))
+    rows = [{'md': md, 'anzahl_lg': md.anzahl_lg} for md in eigentuemer]
     return render(request, 'fw/mandate.html', {**basis, 'nav': 'mandate', 'rows': rows})
 
 
@@ -1017,6 +1022,7 @@ def fw_integrationen(request):
         **basis, 'nav': 'integrationen', 'integrationen': integrationen,
         'portal_token': token, 'portal_feed_pfad': feed_pfad,
         'portal_ausgeschrieben_n': ausgeschrieben_n,
+        'schnittstellen_frei': _schnittstelle_frei(user=request.user),
     })
 
 
@@ -1055,6 +1061,11 @@ def fw_vermarktung_feed(request):
                 break
     if vw is None:
         return HttpResponseForbidden("Ungültiger oder fehlender Feed-Token.")
+    # Der Feed ist eine Schnittstelle (Stufe «professional»). Dieselbe Antwort wie bei einem falschen Token:
+    # Ein Portal erfährt nicht, welche Stufe die Verwaltung hat.
+    from abo.zugang import schnittstelle_frei
+    if not schnittstelle_frei(vw):
+        return HttpResponseForbidden("Ungültiger oder fehlender Feed-Token.")
 
     base = f"{request.scheme}://{request.get_host()}"
     objekte = feed_objekte(base_url=base, organisation=vw)
@@ -1076,6 +1087,7 @@ def fw_vermarktung_feed(request):
 
 
 @rolle_erforderlich(ROLLE_VERWALTER)
+@funktion_erforderlich('schnittstellen')
 def fw_integration_portal_token(request):
     """Erzeugt/rotiert oder entfernt den Portal-Feed-Token."""
     from django.shortcuts import redirect
@@ -1126,7 +1138,7 @@ def fw_integration_test_email(request):
     return redirect('/neu/integrationen/')
 
 # Zielgruppe je Stufe — reiner Anzeigetext. Stufen, Grenzen, Preise und
-# Funktionen kommen aus core/funktionen.py (D7, docs/AUFTRAG-ABOSTUFEN.md);
+# Funktionen kommen aus core/funktionen.py (D7, «AUFTRAG-ABOSTUFEN» (früheres Dokument, Git-Verlauf));
 # bis 29.09.2026 stand hier eine eigene Preisliste pro Einheit.
 ABO_ZIELGRUPPE = {
     'start':        gettext_lazy('Private und Kleinstverwaltungen'),
@@ -1180,9 +1192,17 @@ def _abo_module(organisation):
     """Zubuchbare Module und Funktionen mit Stand: offen oder gesperrt, ab welcher Stufe."""
     from core import funktionen as f
     zeilen = []
+    stufe = f.stufe_von(organisation)
+    abo = f.abonnement_von(organisation)
+    zugebucht = set(abo.zusatzmodule or []) if abo is not None else set()
     for schluessel, name in list(f.MODULE.items()):
+        inklusive = f.modul_inklusive(stufe, schluessel)
         zeilen.append({'schluessel': schluessel, 'name': gettext(name), 'offen': f.hat_funktion(organisation, schluessel),
-                       'ab': None, 'zubuchbar': True})
+                       'ab': None, 'zubuchbar': True, 'inklusive': inklusive,
+                       'zugebucht': schluessel in zugebucht and not inklusive,
+                       'preis': f.MODULPREISE[schluessel]['monat'],
+                       'inklusive_ab': (f.STUFEN_NAMEN[f.MODULPREISE[schluessel]['inklusive_ab']]
+                                        if f.MODULPREISE[schluessel]['inklusive_ab'] else None)})
     for schluessel, name in f.FUNKTIONEN.items():
         ab = next((f.STUFEN_NAMEN[s] for s in f.STUFEN_REIHENFOLGE if schluessel in f.STUFEN[s]), None)
         zeilen.append({'schluessel': schluessel, 'name': name, 'offen': f.hat_funktion(organisation, schluessel),
@@ -1203,7 +1223,7 @@ def fw_abonnemente(request):
     vw = aktuelle_organisation()
     basis = _global_filter(request)
 
-    # Den Plan wählt der Inhaber (docs/KONZEPT-UI.md §8) — er bestimmt die
+    # Den Plan wählt der Inhaber (CONTRIBUTING.md §8) — er bestimmt die
     # Rechnung. Ansehen dürfen weiterhin alle Team-Rollen.
     kann_abo_aendern = hat_rolle(request.user, INHABER_ROLLEN)
     if request.method == 'POST' and not kann_abo_aendern:
@@ -1225,7 +1245,7 @@ def fw_abonnemente(request):
                 return render(request, 'fw/abonnement_bestaetigen.html', {
                     **basis, 'nav': 'abonnement', 'plan': plan, 'plan_name': dict(Organisation.ABO_CHOICES)[plan],
                     'jaehrlich': jaehrlich,
-                    'schliesst': [f.FUNKTIONEN[k] for k in folgen['schliesst']],
+                    'schliesst': [f.FUNKTIONEN.get(k) or f.MODULE[k] for k in folgen['schliesst']],
                     'bestand_ueber': folgen['bestand_ueber'], 'deckel': folgen['deckel']})
             dienst.plan_wechseln(vw, plan, jaehrlich)
             log_aktion(request, "Abo-Plan gewählt", plan, 'jährlich' if jaehrlich else 'monatlich')
@@ -1250,12 +1270,39 @@ def fw_abonnemente(request):
         'rabatt_prozent': int(JAHRESRABATT * 100), 'preisstand': PREISSTAND,
         'abo': abo, 'zustand': f.zustand_von(vw), 'nutzung': nutzung,
         'module': _abo_module(vw), 'rechnungen': rechnungen,
+        'guthaben': dienst.guthaben_von(vw) if kann_abo_aendern else None,
         'platzhalter': not dj_settings.ABO_PREISE_FESTGELEGT,
         'mwst_offen': dj_settings.ABO_MWST_SATZ is None and dj_settings.ABO_MWST_PFLICHTIG,
         'mwst_pflichtig': bool(dj_settings.ABO_MWST_PFLICHTIG),
         'lesemodus_tage': dj_settings.ABO_LESEMODUS_NACH_TAGEN,
+        'sperre_tage': dj_settings.ABO_SPERRE_NACH_TAGEN,
         'zahlungsfrist_tage': dj_settings.ABO_ZAHLUNGSFRIST_TAGE,
+        'support_text': f.SUPPORT.get(f.stufe_von(vw), ''),
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_support_anfrage(request):
+    """Der Support-Knopf der Abo-Seite: Die Anfrage geht an den Betreiber und steht in seiner Kundenkartei. Nur POST."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from abo import support
+    if request.method != 'POST':
+        return redirect('/neu/abonnement/')
+    vw = aktuelle_organisation()
+    try:
+        _eintrag, versandt = support.anfrage_stellen(
+            vw, request.user, request.POST.get('betreff'), request.POST.get('nachricht'))
+    except ValueError as fehler:
+        messages.error(request, str(fehler))
+    else:
+        if versandt:
+            messages.success(request, gettext('Ihre Anfrage ist beim Betreiber angekommen. Die Antwort kommt per E-Mail.'))
+        else:
+            messages.warning(request, gettext('Ihre Anfrage ist gespeichert. Die Benachrichtigung ging nicht hinaus; '
+                                              'der Betreiber sieht sie trotzdem.'))
+    return redirect('/neu/abonnement/')
 
 
 @rolle_erforderlich(*INHABER_ROLLEN)

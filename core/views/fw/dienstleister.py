@@ -1,6 +1,6 @@
 # core/views/fw/dienstleister.py
 #
-# Handwerkerstamm. Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Handwerkerstamm. Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 
 from django.db.models import Q
 from django.shortcuts import render

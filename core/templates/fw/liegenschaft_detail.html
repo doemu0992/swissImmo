@@ -47,6 +47,12 @@ Liegenschaft ohne Betreuung soll auffallen.
                 <a href="/neu/hypotheken/" class="fw-menuzeile">{% zeichen 'liegenschaft' klasse='w-4' %}{% trans "Hypotheken" %}</a>
                 {% comment %} Aushang mit QR-Code zur Schadenmeldung — war nur im Django-Admin verlinkt. {% endcomment %}
                 <a href="/liegenschaft/{{ lg.id }}/poster/" target="_blank" rel="noopener" class="fw-menuzeile">{% zeichen 'drucken' klasse='w-4' %}{% trans "Hausaushang (QR Schadenmeldung)" %}</a>
+                {% if kann_schreiben %}
+                <form method="post" action="/neu/liegenschaften/{{ lg.id }}/aushang-erneuern/" data-bestaetigen="{% filter escapejs %}{% trans 'Adresse des Aushangs erneuern? Der bisherige QR-Code funktioniert danach nicht mehr; der Aushang muss neu gedruckt werden.' %}{% endfilter %}">
+                    {% csrf_token %}
+                    <button class="fw-menuzeile">{% zeichen 'schluessel' klasse='w-4' %}{% trans "Aushang-Adresse erneuern" %}</button>
+                </form>
+                {% endif %}
                 <div class="fw-menutrenner"></div>
                 <form method="post" action="/neu/liegenschaften/{{ lg.id }}/gwr-import/">
                     {% csrf_token %}

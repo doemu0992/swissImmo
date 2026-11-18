@@ -2,7 +2,7 @@
 
 G2 — EIN ARBEITSVORRAT, NICHT ZWEI LISTEN
 
-Das Konzept (`docs/KONZEPT-UI.md`, Abschnitt 2) legt fest: »Heute« und
+Das Konzept (`CONTRIBUTING.md`, Abschnitt 2) legt fest: »Heute« und
 »Fälle« sind dasselbe — eine Vorgangsliste mit vorgefilterten Ansichten. Die
 Arbeitsteilung dazu steht ebenda: **Einzelne datierte Vorgänge** in den
 Arbeitsvorrat, **Sammelposten** (»12 Rechnungen prüfen«) in die Inbox.

@@ -6,7 +6,7 @@
 # Buchungen gefuehrt wie alles andere (Bilanzbuchung 1015 an 2010), nicht in
 # einem getrennten Ledger. Getrennt ist das Vermoegen, nicht das Journal.
 # Dazu Maengelruege, WG-Vertraege, Untermiete.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Art. 257e und die Trennung vom Hauptbuch stehen im Skill
 # schweizer-fachlogik. Der Umzug aendert daran nichts: Blockinhalt gegen
@@ -254,7 +254,9 @@ def fw_kaution_aktion(request, vertrag_id):
                         from finance.freigabe import auszahlung_pruefen
                         auszahlung_pruefen('kaution', v.pk, rueck, v.mieter.iban,
                                            organisation=v.organisation, bezug_text=str(v.mieter))
-                    _buche("1020", "1015", v.kautions_betrag, f"{beleg} — Sperrkonto freigegeben",
+                    # `total` ist der bilanzierte Betrag (höchstens der Vertragswert): Wurde das Feld im Vertrag nach der
+                    # Einzahlung geändert, buchte die Freigabe den Vertragswert und das Sperrkonto ging ins Minus (Audit F6).
+                    _buche("1020", "1015", total, f"{beleg} — Sperrkonto freigegeben",
                            datum=dat_k, liegenschaft=lg_k, user=request.user)
                     if rueck > 0:
                         _buche("2010", "1020", rueck, f"{beleg} — Rückzahlung an Mieter",

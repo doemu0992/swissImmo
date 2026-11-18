@@ -26,6 +26,9 @@ VORLAGEN = pathlib.Path(settings.BASE_DIR) / 'core' / 'templates'
 
 
 def _quelle(name):
+    if name == 'fw/base.html':                      # die Hülle samt ihrer ausgelagerten Skripte
+        from ._rahmen import basis_mit_skripten
+        return basis_mit_skripten()
     return (VORLAGEN / name).read_text(encoding='utf-8')
 
 
@@ -67,7 +70,7 @@ HUELLE = {
     ],
     'Verweise': [
         '/neu/einstellungen/{{ lg_query }}', '/neu/dokumente/{{ lg_query }}',
-        '/neu/kommunikation/{{ lg_query }}', 'href="/logout/"', '{{ g.ziel }}{{ lg_query }}',
+        '/neu/kommunikation/{{ lg_query }}', 'action="/logout/"', '{{ g.ziel }}{{ lg_query }}',
         '{{ it.ziel }}{{ lg_query }}',
     ],
     'Kontextwerte': [

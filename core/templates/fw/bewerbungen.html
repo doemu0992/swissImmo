@@ -104,6 +104,7 @@
                 {% endwith %}{% endfor %}
             </ul>
             <div class="fw-spalte-leer{% if sp.karten %} hidden{% endif %}" data-leer>{% if sp.key == 'eingegangen' %}{% trans "Keine neuen Bewerbungen." %}{% elif sp.key == 'vertrag' %}{% trans "Noch kein Vertrag aus einer Bewerbung." %}{% else %}{% trans "Nichts in dieser Spalte." %}{% endif %}</div>
+            {% if sp.mehr %}<p class="fw-bw-fuss"><a href="/neu/bewerbungen/?ansicht=liste{{ filter_amp }}">{% blocktrans trimmed count n=sp.mehr %}{{ n }} weitere in der Liste{% plural %}{{ n }} weitere in der Liste{% endblocktrans %}</a></p>{% endif %}
             {% if sp.key == 'abgelehnt' %}<p class="fw-bw-fuss">{% blocktrans with n=abgelehnt_tage %}Abgelehnte bleiben {{ n }} Tage sichtbar.{% endblocktrans %}</p>{% endif %}
         </details>
     </section>

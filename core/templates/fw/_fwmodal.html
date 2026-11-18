@@ -83,7 +83,7 @@ function fwModalOpenUrl(url, title, wide) {
     document.getElementById('fwModalFrame').src = url;
     document.getElementById('fwModal').classList.remove('hidden');
     fwModalSperren(true);
-    document.body.style.overflow = 'hidden';
+    fwStil(document.body, {overflow: 'hidden'});
     document.getElementById('fwModalZu').focus();
     return false;   // native Navigation unterdrücken
 }
@@ -100,7 +100,7 @@ function fwModalClose(fertig) {
     document.getElementById('fwModal').classList.add('hidden');
     fwModalSperren(false);
     document.getElementById('fwModalFrame').src = 'about:blank';
-    document.body.style.overflow = '';
+    fwStil(document.body, {overflow: null});
     if (neuLaden) { window.location.reload(); return; }   // Liste nach einem Schritt auffrischen
     if (fwModalVorher && fwModalVorher.focus) fwModalVorher.focus();
 }

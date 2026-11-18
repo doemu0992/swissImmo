@@ -31,6 +31,9 @@ class ZweiFaktorBasis(TestCase):
         cls.a = MandantenFixture('A', '8000', 'Zürich')
 
     def setUp(self):
+        from django.core.cache import cache
+        cache.clear()                    # Zähler der Anmeldung (Name, IP, zweiter Faktor) gelten sonst über Tests hinweg
+        self.addCleanup(cache.clear)
         self.client = Client()
         self.benutzer = self.a.benutzer
         self.benutzer.set_password('geheim-123')
@@ -177,6 +180,78 @@ class VersucheTests(ZweiFaktorBasis):
         self.passwort_schritt()
         self.client.post(reverse('zweifaktor_bestaetigen'), {'code': '000000'})
         self.assertGreater(SicherheitsEreignis.objects.count(), vorher)
+
+
+class DurchprobierenTests(ZweiFaktorBasis):
+    """Audit 15.11.2026: Der Zähler der Sitzung begrenzt nur eine Runde. Wer das Passwort kennt, begann mit jeder neuen
+    Passwort-Eingabe bei null und konnte den Code durchprobieren. Der Zähler je Konto schliesst das."""
+
+    def _runde_mit_falschen_codes(self, n):
+        self.passwort_schritt()
+        for _ in range(n):
+            self.client.post(reverse('zweifaktor_bestaetigen'), {'code': '000000'})
+
+    def test_neue_passwort_eingabe_setzt_den_kontozaehler_nicht_zurueck(self):
+        from core.views.zweifaktor import ZF_MAX_FEHLVERSUCHE
+        faktor = self.faktor_aktivieren()
+        self._runde_mit_falschen_codes(5)
+        self._runde_mit_falschen_codes(5)                      # zweite Runde: zusammen ZF_MAX_FEHLVERSUCHE
+        self.assertEqual(ZF_MAX_FEHLVERSUCHE, 10)
+        # Dritte Runde: Schon das richtige Passwort führt nicht mehr zum Code.
+        antwort = self.passwort_schritt()
+        self.assertEqual(antwort.status_code, 429)
+        self.assertNotIn('zf_wartend', self.client.session)
+        # Und ein richtiger Code hilft nicht, auch nicht mit einer frischen Sitzung.
+        self.client.post(reverse('zweifaktor_bestaetigen'), {'code': totp.code(faktor.geheimnis)})
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_gegenprobe_unter_der_grenze_geht_der_richtige_code_durch(self):
+        faktor = self.faktor_aktivieren()
+        self._runde_mit_falschen_codes(4)
+        self.passwort_schritt()
+        antwort = self.client.post(reverse('zweifaktor_bestaetigen'), {'code': totp.code(faktor.geheimnis)})
+        self.assertIn('_auth_user_id', self.client.session)
+        self.assertEqual(antwort.status_code, 302)
+
+    def test_ein_richtiger_code_setzt_den_zaehler_zurueck(self):
+        from core.utils.throttle import stand
+        from core.views.zweifaktor import _zf_schluessel
+        faktor = self.faktor_aktivieren()
+        self._runde_mit_falschen_codes(4)
+        self.assertEqual(stand(_zf_schluessel(self.benutzer.pk)), 4)
+        self.passwort_schritt()
+        self.client.post(reverse('zweifaktor_bestaetigen'), {'code': totp.code(faktor.geheimnis)})
+        self.assertEqual(stand(_zf_schluessel(self.benutzer.pk)), 0)
+
+    def test_die_sperre_trifft_das_konto_nicht_andere(self):
+        from django.utils import timezone
+        self.faktor_aktivieren()
+        self._runde_mit_falschen_codes(5)
+        self._runde_mit_falschen_codes(5)
+        anderer = MandantenFixture('B', '3000', 'Bern').benutzer
+        anderer.set_password('geheim-456')
+        anderer.save()
+        faktor_b = ZweiterFaktor.objects.create(benutzer=anderer, geheimnis=totp.geheimnis_erzeugen(),
+                                                bestaetigt_am=timezone.now())
+        c = Client()
+        c.post(reverse('login'), {'username': anderer.get_username(), 'password': 'geheim-456'})
+        c.post(reverse('zweifaktor_bestaetigen'), {'code': totp.code(faktor_b.geheimnis)})
+        self.assertIn('_auth_user_id', c.session)
+
+    def test_falsche_codes_zaehlen_auch_auf_die_adresse(self):
+        from core.utils.throttle import stand
+        self.faktor_aktivieren()
+        self._runde_mit_falschen_codes(3)
+        self.assertEqual(stand('login:ip:127.0.0.1'), 3)
+
+    def test_die_sperre_steht_als_fehler_im_log_und_im_sicherheitsprotokoll(self):
+        self.faktor_aktivieren()
+        with self.assertLogs('core.views.zweifaktor', level='ERROR') as log:
+            self._runde_mit_falschen_codes(5)
+            self._runde_mit_falschen_codes(5)
+        self.assertEqual(len(log.output), 1)                   # einmal beim Erreichen der Grenze, nicht je Versuch
+        self.assertNotIn(self.benutzer.get_username(), log.output[0])   # im Log die Kontonummer, nicht der Name
+        self.assertTrue(SicherheitsEreignis.objects.filter(aktion='Zweiter Faktor gesperrt').exists())
 
 
 class NotfallcodeTests(ZweiFaktorBasis):

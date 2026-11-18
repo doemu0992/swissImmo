@@ -10,7 +10,8 @@ Der Lesemodus sperrt nur Mitglieder der Verwaltung. Mieter und Eigentümer sind
 nicht die Zahlenden: Wer eine Schadenmeldung absetzt, soll nicht für einen
 Zahlungsverzug der Verwaltung büssen.
 """
-from core.funktionen import FunktionGesperrt, GrenzeErreicht, darf_schreiben, hat_funktion
+from core.funktionen import (ZUSTAND_GESPERRT, FunktionGesperrt, GrenzeErreicht, darf_schreiben, hat_funktion,
+                             zustand_von)
 from core.tenancy import aktuelle_organisation
 
 from abo import zugang
@@ -31,6 +32,11 @@ class AboMiddleware:
         organisation = aktuelle_organisation()
         if organisation is None:
             return None
+
+        if (zustand_von(organisation) == ZUSTAND_GESPERRT
+                and not zugang.gesperrt_offen(request.path_info)
+                and self._ist_mitglied(user, organisation)):
+            return zugang.sperre_gesperrt(request)
 
         schluessel, lesen = zugang.modul_fuer_pfad(request.path_info)
         if schluessel and not hat_funktion(organisation, schluessel):

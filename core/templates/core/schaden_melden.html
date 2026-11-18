@@ -27,7 +27,7 @@ core/templatetags/raumkatalog.py (Wert deutsch, Anzeige in der Sprache der Seite
     <h1>{% trans "Vielen Dank!" %}</h1>
     {% if modus == 'aushang' %}<p>{% trans "Wir haben Ihre Meldung erhalten und eine Bestätigung per E-Mail gesendet." %}</p>
     <a href="" class="fw-btn fw-primary">{% trans "Zurück zum Start" %}</a>
-    {% else %}<p>{% trans "Ihre Meldung wurde erfolgreich an die Verwaltung übermittelt. Wir werden uns in Kürze darum kümmern." %}</p>
+    {% else %}<p>{% trans "Wenn wir Ihre Angaben einer Liegenschaft zuordnen konnten, erhalten Sie in den nächsten Minuten eine Bestätigung per E-Mail. Ohne Bestätigung wenden Sie sich bitte direkt an Ihre Verwaltung." %}</p>
     <a href="{% url 'index' %}" class="fw-btn fw-primary">{% trans "Zurück zur Startseite" %}</a>{% endif %}
 </div>
 {% else %}

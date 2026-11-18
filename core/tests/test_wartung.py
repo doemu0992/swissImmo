@@ -1,4 +1,4 @@
-"""Wartungsseite bei Schemaabweichung — siehe docs/WARTUNGSSEITE.md.
+"""Wartungsseite bei Schemaabweichung — siehe ARCHITECTURE.md.
 
 Der Auftrag nennt zwei dieser Tests ausdrücklich als Abnahmekriterium und
 begründet das auch: Eine Absicherung, die `migrate` blockiert, wäre schlimmer

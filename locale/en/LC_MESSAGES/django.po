@@ -38834,10 +38834,10 @@ msgstr ""
 msgid ""
 "Nur möglich, wenn die Anwendung den Schlüssel selbst angelegt hat. Liegt er "
 "in der .env oder in einer eigenen Datei, wechseln Sie ihn dort "
-"(docs/SCHLUESSEL.md)."
+"(ARCHITECTURE.md)."
 msgstr ""
 "Only possible if the application created the key itself. If it lives in the "
-".env or in its own file, change it there (docs/SCHLUESSEL.md)."
+".env or in its own file, change it there (ARCHITECTURE.md)."
 
 msgid "Kopie des Schlüssels herunterladen"
 msgstr "Download a copy of the key"
@@ -39184,3 +39184,1265 @@ msgstr ""
 "Payable in advance: due at the start of the period, or within %(tage)s days "
 "for invoices issued later, with the payment slip. The operator confirms "
 "payment manually."
+
+msgid "Diese Verwaltung hat keine E-Mail-Adresse hinterlegt."
+msgstr "This property management has no email address on file."
+
+msgid "Es ist keine Zahlungsverbindung (IBAN) des Rechnungsstellers hinterlegt."
+msgstr "No payment details (IBAN) of the invoice issuer are on file."
+
+msgid "immoswiss: Zahlungserinnerung zur Rechnung %(nummer)s"
+msgstr "immoswiss: Payment reminder for invoice %(nummer)s"
+
+msgid "Die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist noch offen. Bitte begleichen Sie sie mit dem QR-Einzahlungsschein auf der Rechnung im Anhang. Ist die Zahlung bereits erfolgt, ist diese Mail gegenstandslos."
+msgstr "Invoice %(nummer)s for CHF %(betrag)s for your immoswiss subscription (%(von)s to %(bis)s) was due on %(faellig)s and is still open. Please pay it using the QR payment slip on the attached invoice. If you have already paid, please disregard this email."
+
+msgid "immoswiss: Rechnung %(nummer)s"
+msgstr "immoswiss: Invoice %(nummer)s"
+
+msgid "Im Anhang finden Sie die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s). Sie ist bis zum %(faellig)s zu bezahlen, am einfachsten mit dem QR-Einzahlungsschein auf der Rechnung. Dieselbe Rechnung finden Sie unter Einstellungen > Abonnement."
+msgstr "Attached is invoice %(nummer)s for CHF %(betrag)s for your immoswiss subscription (%(von)s to %(bis)s). It is payable by %(faellig)s, most easily with the QR payment slip on the invoice. You can also find the same invoice under Settings > Subscription."
+
+msgid "Rechnung %(nr)s nicht versandt: %(grund)s"
+msgstr "Invoice %(nr)s not sent: %(grund)s"
+
+msgid "Zahlungserinnerung zu %(nr)s ging an %(an)s."
+msgstr "The payment reminder for %(nr)s was sent to %(an)s."
+
+msgid "Rechnung %(nr)s ging an %(an)s."
+msgstr "Invoice %(nr)s was sent to %(an)s."
+
+msgid "Nur offene Rechnungen lassen sich senden oder anmahnen."
+msgstr "Only open invoices can be sent or reminded."
+
+msgid "erinnert am"
+msgstr "reminded on"
+
+msgid "Erneut senden"
+msgstr "Send again"
+
+msgid "Zahlungserinnerung an die Verwaltung senden?"
+msgstr "Send a payment reminder to the property management?"
+
+msgid "immoswiss: 2. Mahnung zur Rechnung %(nummer)s"
+msgstr "immoswiss: 2nd reminder for invoice %(nummer)s"
+
+msgid "Die Rechnung %(nummer)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist trotz unserer Zahlungserinnerung noch offen. Wir bitten Sie, den Gesamtbetrag von CHF %(betrag)s (inklusive Mahngebühr CHF %(gebuehr)s) umgehend mit dem QR-Einzahlungsschein auf der Rechnung im Anhang zu bezahlen. Bleibt die Zahlung weiter aus, wird Ihr Zugang schreibgeschützt und später gesperrt; Ihre Daten bleiben in jedem Fall erhalten."
+msgstr "Invoice %(nummer)s for your immoswiss subscription (%(von)s to %(bis)s) was due on %(faellig)s and is still open despite our payment reminder. Please pay the total amount of CHF %(betrag)s (including a reminder fee of CHF %(gebuehr)s) immediately using the QR payment slip on the attached invoice. If payment remains outstanding, your access will become read-only and later be blocked; your data will be kept in any case."
+
+msgid "Die Rechnung %(nummer)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist trotz unserer Zahlungserinnerung noch offen. Wir bitten Sie, den Betrag von CHF %(betrag)s umgehend mit dem QR-Einzahlungsschein auf der Rechnung im Anhang zu bezahlen. Bleibt die Zahlung weiter aus, wird Ihr Zugang schreibgeschützt und später gesperrt; Ihre Daten bleiben in jedem Fall erhalten."
+msgstr "Invoice %(nummer)s for your immoswiss subscription (%(von)s to %(bis)s) was due on %(faellig)s and is still open despite our payment reminder. Please pay the amount of CHF %(betrag)s immediately using the QR payment slip on the attached invoice. If payment remains outstanding, your access will become read-only and later be blocked; your data will be kept in any case."
+
+msgid "immoswiss: Ihr Zugang ist gesperrt"
+msgstr "immoswiss: Your access is blocked"
+
+msgid "Die Rechnung für Ihr Abonnement ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist deshalb gesperrt. Anmeldung, Abonnement (Rechnung und Einzahlungsschein) und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+msgstr "The invoice for your subscription has been overdue for more than %(tage)s days. Your access is therefore blocked. Login, subscription (invoice and payment slip) and the data export remain available. Once payment is received, everything is open again. Nothing is deleted."
+
+msgid "Der Zugang ist gesperrt"
+msgstr "Access is blocked"
+
+msgid "Eine Rechnung für das Abonnement ist seit mehr als %(tage)s Tagen überfällig. Anmeldung, Abonnement (mit Rechnung und Einzahlungsschein) und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+msgstr "An invoice for the subscription has been overdue for more than %(tage)s days. Login, subscription (with invoice and payment slip) and the data export remain available. Once payment is received, everything is open again. Nothing is deleted."
+
+msgid "Der Zugang dieser Verwaltung ist zurzeit gesperrt. Bitte wenden Sie sich an die Verwaltung."
+msgstr "Access for this property management is currently blocked. Please contact the property management."
+
+msgid "Eine Rechnung ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist gesperrt; Anmeldung, diese Seite mit Rechnung und Einzahlungsschein und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+msgstr "An invoice has been overdue for more than %(tage)s days. Your access is blocked; login, this page with invoice and payment slip, and the data export remain available. Once payment is received, everything is open again. Nothing is deleted."
+
+msgid "%(n)s. Mahnung"
+msgstr "reminder %(n)s"
+
+msgid "versandt am"
+msgstr "sent on"
+
+msgid "nicht versandt"
+msgstr "not sent"
+
+msgid "%(n)s offene Rechnung(en) wurden noch nicht per Mail versandt: im Kunden «Erneut senden»."
+msgstr "%(n)s open invoice(s) have not yet been sent by email: use «Send again» on the customer."
+
+msgid "Ansprechperson"
+msgstr "Contact person"
+
+msgid "Fakturiert"
+msgstr "Invoiced"
+
+msgid "Zahlungsverhalten"
+msgstr "Payment behaviour"
+
+msgid "im Schnitt %(t)s Tage nach Fälligkeit"
+msgstr "on average %(t)s days after the due date"
+
+msgid "Nächste Rechnung"
+msgstr "Next invoice"
+
+msgid "Zahlung am"
+msgstr "Payment on"
+
+msgid "Tage nach Fälligkeit"
+msgstr "Days after due date"
+
+msgid "Stammdaten und Ansprechperson"
+msgstr "Master data and contact person"
+
+msgid "Kundenstatus"
+msgstr "Customer status"
+
+msgid "Strasse und Nr."
+msgstr "Street and no."
+
+msgid "Natel"
+msgstr "Mobile"
+
+msgid "Website"
+msgstr "Website"
+
+msgid "UID / MWST-Nummer"
+msgstr "UID / VAT number"
+
+msgid "E-Mail für Rechnungen"
+msgstr "Email for invoices"
+
+msgid "Leer = Rechnungen und Mahnungen gehen an die E-Mail der Verwaltung."
+msgstr "Empty = invoices and reminders go to the property management's email."
+
+msgid "Funktion"
+msgstr "Role"
+
+msgid "E-Mail der Ansprechperson"
+msgstr "Contact person's email"
+
+msgid "Telefon der Ansprechperson"
+msgstr "Contact person's phone"
+
+msgid "Natel der Ansprechperson"
+msgstr "Contact person's mobile"
+
+msgid "Nur für den Betreiber sichtbar, nie für die Verwaltung."
+msgstr "Visible to the operator only, never to the property management."
+
+msgid "Kundendaten speichern"
+msgstr "Save customer data"
+
+msgid "Eintrag"
+msgstr "Entry"
+
+msgid "Eintrag hinzufügen"
+msgstr "Add entry"
+
+msgid "Eintrag löschen?"
+msgstr "Delete entry?"
+
+msgid "Noch kein Eintrag."
+msgstr "No entry yet."
+
+msgid "Kundendaten gespeichert."
+msgstr "Customer data saved."
+
+msgid "Der Eintrag ist leer."
+msgstr "The entry is empty."
+
+msgid "Unbekannte Art."
+msgstr "Unknown type."
+
+msgid "Eintrag gespeichert."
+msgstr "Entry saved."
+
+msgid "Dieser Eintrag gehört nicht zu dieser Verwaltung."
+msgstr "This entry does not belong to this property management."
+
+msgid "Eintrag gelöscht."
+msgstr "Entry deleted."
+
+msgid "Ungültige E-Mail-Adresse: %(wert)s"
+msgstr "Invalid email address: %(wert)s"
+
+msgid "Firma, Strasse, PLZ und Ort sind Pflicht."
+msgstr "Company, street, postcode and city are required."
+
+msgid "Strasse, PLZ und Ort sind Pflicht: Sie stehen auf der Rechnung."
+msgstr "Street, postcode and city are required: they appear on the invoice."
+
+msgid "Strasse und Nr. *"
+msgstr "Street and no. *"
+
+msgid "Die Anschrift steht auf der Rechnung."
+msgstr "The address appears on the invoice."
+
+msgid "PLZ *"
+msgstr "Postcode *"
+
+msgid "Ort *"
+msgstr "City *"
+
+msgid "Die Anschrift der Verwaltung fehlt (Strasse, PLZ, Ort): in der Kundenkartei ergänzen."
+msgstr "The property management's address is missing (street, postcode, city): add it in the customer file."
+
+msgid "Anschrift unvollständig (Strasse, PLZ, Ort): Die Rechnung hat keine Anschrift und geht nicht hinaus. In der Kundenkartei ergänzen."
+msgstr "Address incomplete (street, postcode, city): the invoice has no address and is not sent. Add it in the customer file."
+
+msgid "etwas spät"
+msgstr "somewhat late"
+
+msgid "Kunde"
+msgstr "Customer"
+
+msgid "Zugang gesperrt"
+msgstr "Access blocked"
+
+msgid "Lesemodus"
+msgstr "Read-only mode"
+
+msgid "Zahlung überfällig"
+msgstr "Payment overdue"
+
+msgid "alles bezahlt"
+msgstr "all paid"
+
+msgid "Abonnement ändern"
+msgstr "Change subscription"
+
+msgid "Eintrag im Verlauf"
+msgstr "Add history entry"
+
+msgid "Wieder als Kunde markieren"
+msgstr "Mark as customer again"
+
+msgid "Als gekündigt markieren"
+msgstr "Mark as cancelled"
+
+msgid "davon CHF %(b)s überfällig"
+msgstr "of which CHF %(b)s overdue"
+
+msgid "noch nicht fällig"
+msgstr "not yet due"
+
+msgid "Ø %(t)s Tage nach Fälligkeit"
+msgstr "avg. %(t)s days after due date"
+
+msgid "noch keine Zahlung"
+msgstr "no payment yet"
+
+msgid "nicht geplant"
+msgstr "not planned"
+
+msgid "Zu prüfen"
+msgstr "To check"
+
+msgid "Rechnungen gehen an"
+msgstr "Invoices go to"
+
+msgid "Zum Verlauf"
+msgstr "To the history"
+
+msgid "nur für den Betreiber"
+msgstr "operator only"
+
+msgid "Firma und Anschrift"
+msgstr "Company and address"
+
+msgid "nicht hinterlegt"
+msgstr "not on file"
+
+msgid "Ansprechperson und Rechnung"
+msgstr "Contact person and invoice"
+
+msgid "abweichend von der E-Mail der Firma"
+msgstr "differs from the company email"
+
+msgid "wie die E-Mail der Firma"
+msgstr "same as the company email"
+
+msgid "Zuletzt geändert"
+msgstr "Last changed"
+
+msgid "Eintrag speichern"
+msgstr "Save entry"
+
+msgid "%(t)s Tage nach Fälligkeit"
+msgstr "%(t)s days after due date"
+
+msgid "Noch keine Zahlung."
+msgstr "No payment yet."
+
+msgid "Summen"
+msgstr "Totals"
+
+msgid "jährlich abgerechnet"
+msgstr "billed yearly"
+
+msgid "monatlich abgerechnet"
+msgstr "billed monthly"
+
+msgid "nicht gesetzt"
+msgstr "not set"
+
+msgid "Änderungen zeigen vorher ihre Folgen."
+msgstr "Changes show their consequences first."
+
+msgid "%(firma)s bearbeiten"
+msgstr "Edit %(firma)s"
+
+msgid "Änderungen gelten erst nach «Speichern»."
+msgstr "Changes only apply after «Save»."
+
+msgid "Status gesetzt."
+msgstr "Status set."
+
+msgid "%(n)s Rechnung offen"
+msgid_plural "%(n)s Rechnungen offen"
+msgstr[0] "%(n)s invoice open"
+msgstr[1] "%(n)s invoices open"
+
+msgid "Abonnement %(stufe)s, %(intervall)s"
+msgstr "Subscription %(stufe)s, %(intervall)s"
+
+msgid "Jahresrabatt %(p)s %%"
+msgstr "Annual discount %(p)s %%"
+
+msgid "Im Grundpreis Ihrer Stufe enthalten."
+msgstr "Included in the base price of your plan."
+
+msgid "Zugebucht: CHF %(preis)s pro Monat, netto."
+msgstr "Added: CHF %(preis)s per month, net."
+
+msgid "Zubuchbar: CHF %(preis)s pro Monat, netto — beim Betreiber anfragen."
+msgstr "Available: CHF %(preis)s per month, net — ask the operator."
+
+msgid "Ab Stufe %(stufe)s enthalten."
+msgstr "Included from the %(stufe)s plan."
+
+msgid "inklusive"
+msgstr "included"
+
+msgid "im Grundpreis der Stufe enthalten"
+msgstr "included in the plan's base price"
+
+msgid "netto"
+msgstr "net"
+
+msgid "Zugebuchte Module kommen ab der nächsten Rechnung dazu."
+msgstr "Added modules appear on the next invoice."
+
+msgid "Bitte einen Betreff angeben (%(min)s bis %(max)s Zeichen)."
+msgstr "Please enter a subject (%(min)s to %(max)s characters)."
+
+msgid "Bitte die Anfrage beschreiben (%(min)s bis %(max)s Zeichen)."
+msgstr "Please describe your request (%(min)s to %(max)s characters)."
+
+msgid "Es sind zu viele Anfragen in kurzer Zeit eingegangen. Bitte später noch einmal versuchen oder direkt anrufen."
+msgstr "Too many requests in a short time. Please try again later or call directly."
+
+msgid "Ihre Anfrage ist beim Betreiber angekommen. Die Antwort kommt per E-Mail."
+msgstr "Your request has reached the operator. The reply will come by email."
+
+msgid "Ihre Anfrage ist gespeichert. Die Benachrichtigung ging nicht hinaus; der Betreiber sieht sie trotzdem."
+msgstr "Your request is saved. The notification was not sent; the operator will still see it."
+
+msgid "Diese Anfrage gehört nicht zu dieser Verwaltung."
+msgstr "This request does not belong to this property management."
+
+msgid "Anfrage als erledigt markiert."
+msgstr "Request marked as done."
+
+msgid "Anfrage wieder geöffnet."
+msgstr "Request reopened."
+
+msgid "%(n)s Support-Anfrage(n) offen: im Reiter «Verlauf» beantworten und erledigen."
+msgstr "%(n)s support request(s) open: answer and close them in the «History» tab."
+
+msgid "Support"
+msgstr "Support"
+
+msgid "Ihre Anfrage geht an den Betreiber; die Antwort kommt per E-Mail an Ihre Adresse."
+msgstr "Your request goes to the operator; the reply comes by email to your address."
+
+msgid "Ihre Anfrage"
+msgstr "Your request"
+
+msgid "Anfrage senden"
+msgstr "Send request"
+
+msgid "%(n)s Support-Anfrage offen"
+msgid_plural "%(n)s Support-Anfragen offen"
+msgstr[0] "%(n)s support request open"
+msgstr[1] "%(n)s support requests open"
+
+msgid "anteilig %(t)s von %(g)s Tagen"
+msgstr "pro rata for %(t)s of %(g)s days"
+
+msgid "Gutschrift vom %(d)s: %(t)s"
+msgstr "Credit of %(d)s: %(t)s"
+
+msgid "Modul %(m)s hinzu"
+msgstr "module %(m)s added"
+
+msgid "Modul %(m)s entfällt"
+msgstr "module %(m)s removed"
+
+msgid "Änderung des Abonnements ab %(d)s"
+msgstr "Subscription change from %(d)s"
+
+msgid "Guthaben: CHF %(betrag)s. Es wird mit Ihrer nächsten Rechnung verrechnet."
+msgstr "Credit: CHF %(betrag)s. It will be applied to your next invoice."
+
+msgid "Zusatzrechnung (Änderung des Abonnements)"
+msgstr "Additional invoice (subscription change)"
+
+msgid "Zusatzrechnung"
+msgstr "Additional invoice"
+
+msgid "wird mit der nächsten Rechnung verrechnet"
+msgstr "will be applied to the next invoice"
+
+msgid "Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen."
+msgstr "Too many failed attempts. Please try again in 15 minutes."
+
+msgid "Benutzername oder Passwort stimmt nicht."
+msgstr "Username or password is incorrect."
+
+msgid "Zu viele Fehlversuche. Bitte von vorne anmelden."
+msgstr "Too many failed attempts. Please sign in again from the start."
+
+msgid "Der Code stimmt nicht (%(n)s von %(max)s)."
+msgstr "The code is incorrect (%(n)s of %(max)s)."
+
+msgid "kein Monat"
+msgstr "no month"
+
+msgid "LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s (core/services/lik.py)."
+msgstr "Update the CPI table: it ends in the month %(stand)s (core/services/lik.py)."
+
+msgid "Formularpflicht prüfen: Das Register (core/services/formularpflicht.py, Stand %(stand)s) wurde zuletzt am %(datum)s geprüft; das BWO gibt das Verzeichnis jedes Jahr neu heraus."
+msgstr "Check the form requirement: the register (core/services/formularpflicht.py, as of %(stand)s) was last checked on %(datum)s; the FOH publishes the directory every year."
+
+msgid "bexio (über importly.ch)"
+msgstr "bexio (via importly.ch)"
+
+msgid "bexio (über den Dienst importly.ch; bexio selbst importiert keine Buchungen per CSV)"
+msgstr "bexio (via the importly.ch service; bexio itself does not import bookings from CSV)"
+
+msgid "API-Zugang"
+msgstr "API access"
+
+msgid "Mit einem Schlüssel lesen Treuhand oder Buchhaltungssoftware Kontenplan und Buchungsjournal Ihrer Verwaltung. Nur lesen, nichts ändern."
+msgstr "With a key, your trustee or accounting software can read your management's chart of accounts and booking journal. Read-only, nothing can be changed."
+
+msgid "Kopieren Sie den Schlüssel jetzt. Er wird nur dieses eine Mal angezeigt und lässt sich später nicht wieder abrufen."
+msgstr "Copy the key now. It is shown only this once and cannot be retrieved later."
+
+msgid "Schlüssel «%(n)s» angelegt"
+msgstr "Key «%(n)s» created"
+
+msgid "Angelegt am %(d)s"
+msgstr "Created on %(d)s"
+
+msgid "zuletzt benutzt %(d)s"
+msgstr "last used %(d)s"
+
+msgid "noch nie benutzt"
+msgstr "never used"
+
+msgid "widerrufen am %(d)s"
+msgstr "revoked on %(d)s"
+
+msgid "Noch kein Schlüssel angelegt."
+msgstr "No key created yet."
+
+msgid "Neuer Schlüssel"
+msgstr "New key"
+
+msgid "Wofür der Schlüssel dient, z. B. der Name der Treuhandfirma. Höchstens %(n)s aktive Schlüssel."
+msgstr "What the key is for, e.g. the name of the trustee firm. At most %(n)s active keys."
+
+msgid "Schlüssel anlegen"
+msgstr "Create key"
+
+msgid "Verwendung"
+msgstr "Usage"
+
+msgid "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit). Höchstens 120 Abfragen pro Minute und Schlüssel."
+msgstr "The key goes in the header «Authorization: Bearer …». Requests: chart of accounts at /api/v1/konten, booking journal at /api/v1/buchungen (von, bis, offset, limit). At most 120 requests per minute per key."
+
+msgid "Schlüssel für Treuhand und Buchhaltungssoftware (nur Lesen)"
+msgstr "Keys for your trustee and accounting software (read-only)"
+
+msgid "Bitte eine Bezeichnung angeben, z. B. den Namen der Treuhandfirma."
+msgstr "Please enter a label, e.g. the name of the trustee firm."
+
+msgid "Es sind bereits %(n)s Schlüssel aktiv. Bitte zuerst einen widerrufen."
+msgstr "%(n)s keys are already active. Please revoke one first."
+
+msgid "Der Schlüssel «%(n)s» ist widerrufen."
+msgstr "The key «%(n)s» has been revoked."
+
+msgid "Lesende Finanz-API mit eigenen Schlüsseln"
+msgstr "Read-only finance API with your own keys"
+
+msgid "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit), offene Debitoren unter /api/v1/debitoren/offen. Höchstens 120 Abfragen pro Minute und Schlüssel."
+msgstr "The key goes in the header «Authorization: Bearer …». Requests: chart of accounts at /api/v1/konten, booking journal at /api/v1/buchungen (von, bis, offset, limit), open receivables at /api/v1/debitoren/offen. At most 120 requests per minute per key."
+
+msgid "Änderungswünsche aus den Portalen. Erst Ihre Bestätigung ändert die Stammdaten."
+msgstr "Change requests from the portals. The master data only changes once you confirm."
+
+msgid "Nur offene"
+msgstr "Open only"
+
+msgid "Auch entschiedene"
+msgstr "Include decided"
+
+msgid "Bankverbindung: bitte vor der Bestätigung beim Eigentümer telefonisch zurückfragen."
+msgstr "Bank details: please call the owner back before confirming."
+
+msgid "Grund der Ablehnung"
+msgstr "Reason for rejection"
+
+msgid "Nur Inhaber und Verwalter bestätigen diese Anfrage."
+msgstr "Only the owner and administrator can confirm this request."
+
+msgid "Entschieden"
+msgstr "Decided"
+
+msgid "Noch nichts entschieden."
+msgstr "Nothing decided yet."
+
+msgid "Kontaktdaten prüfen und Änderungen beantragen — sie gelten, sobald die Verwaltung sie bestätigt hat."
+msgstr "Check your contact details and request changes — they apply once the management has confirmed them."
+
+msgid "Änderung beantragen"
+msgstr "Request change"
+
+msgid "Antwort der Verwaltung:"
+msgstr "Reply from the management:"
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Die Änderung gilt, sobald die Verwaltung sie bestätigt hat."
+msgstr "Your request is with the management. The change applies once they have confirmed it."
+
+msgid "Die Anfrage ist bestätigt und die Änderung ausgeführt."
+msgstr "The request is confirmed and the change has been made."
+
+msgid "Die Anfrage ist abgelehnt."
+msgstr "The request has been rejected."
+
+msgid "Diese Anfrage ist bereits entschieden."
+msgstr "This request has already been decided."
+
+msgid "Bestätigung des Mietverhältnisses (PDF) gewünscht."
+msgstr "Confirmation of tenancy (PDF) requested."
+
+msgid "Ihre Anfrage «%(art)s» wurde von der Verwaltung bestätigt."
+msgstr "Your request «%(art)s» has been confirmed by the management."
+
+msgid "Ihre Anfrage «%(art)s» wurde von der Verwaltung abgelehnt."
+msgstr "Your request «%(art)s» has been rejected by the management."
+
+msgid "Ihre Anfrage an die Verwaltung"
+msgstr "Your request to the management"
+
+msgid "Den Stand sehen Sie im Portal."
+msgstr "You can see the status in the portal."
+
+msgid "Kontaktdaten ändern"
+msgstr "Change contact details"
+
+msgid "Mietbestätigung"
+msgstr "Tenancy confirmation"
+
+msgid "Zahlungsplan"
+msgstr "Payment plan"
+
+msgid "Bankverbindung ändern"
+msgstr "Change bank details"
+
+msgid "Anfrage"
+msgstr "Request"
+
+msgid "Anfragen — Mieterportal"
+msgstr "Requests — tenant portal"
+
+msgid "Mietbestätigung und Zahlungsplan. Die Verwaltung bestätigt jede Anfrage und meldet sich bei Ihnen."
+msgstr "Tenancy confirmation and payment plan. The management confirms each request and gets back to you."
+
+msgid "Eine Bestätigung Ihres Mietverhältnisses (Objekt, Mietbeginn, Mietzins) als PDF, z. B. für eine Bewerbung oder eine Behörde."
+msgstr "A confirmation of your tenancy (property, start, rent) as a PDF, e.g. for an application or an authority."
+
+msgid "Mietbestätigung anfragen"
+msgstr "Request tenancy confirmation"
+
+msgid "Sie können eine offene Rechnung nicht auf einmal bezahlen? Schildern Sie kurz Ihren Wunsch, z. B. Raten."
+msgstr "Can't pay an open invoice in one go? Briefly describe what you need, e.g. instalments."
+
+msgid "Ihr Wunsch"
+msgstr "Your request"
+
+msgid "Zahlungsplan anfragen"
+msgstr "Request payment plan"
+
+msgid "PDF herunterladen (noch %(n)s Tage nach der Bestätigung)"
+msgstr "Download PDF (still %(n)s days after confirmation)"
+
+msgid "Noch keine Anfragen."
+msgstr "No requests yet."
+
+msgid "einbezahlt am %(datum)s"
+msgstr "paid in on %(datum)s"
+
+msgid "Ihre Anfrage ist schon bei der Verwaltung."
+msgstr "Your request is already with the management."
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie bestätigt ist."
+msgstr "Your request is with the management. You will be notified once it is confirmed."
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie entschieden ist."
+msgstr "Your request is with the management. You will be notified once it is decided."
+
+msgid "Bitte beschreiben Sie Ihren Wunsch kurz."
+msgstr "Please briefly describe your request."
+
+msgid "Antwort an die Absenderin (optional)"
+msgstr "Reply to the sender (optional)"
+
+msgid "Änderungen beantragen Sie unten oder über die Mitteilungen. Sie gelten, sobald die Verwaltung sie bestätigt hat."
+msgstr "Request changes below or via the messages. They apply once the management has confirmed them."
+
+msgid "Kontaktdaten beantragen"
+msgstr "Request contact details"
+
+msgid "Aus Sicherheitsgründen ruft die Verwaltung Sie vor der Bestätigung einer neuen Bankverbindung zurück."
+msgstr "For security reasons the management will call you back before confirming new bank details."
+
+msgid "Bankverbindung beantragen"
+msgstr "Request bank details"
+
+msgid "Zählerstand melden — Mieterportal"
+msgstr "Report a meter reading — tenant portal"
+
+msgid "Zählerstand melden"
+msgstr "Report a meter reading"
+
+msgid "Tragen Sie den abgelesenen Stand ein. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+msgstr "Enter the reading. It counts once the management has confirmed it."
+
+msgid "Letzter Stand: %(w)s am %(d)s"
+msgstr "Last reading: %(w)s on %(d)s"
+
+msgid "Stand melden"
+msgstr "Report reading"
+
+msgid "Für Ihre Mietobjekte sind keine Zähler erfasst."
+msgstr "No meters are recorded for your rented properties."
+
+msgid "Ablesung"
+msgstr "Meter reading round"
+
+msgid "Bitten Sie die Mieterschaft einer Liegenschaft, die Zähler abzulesen. Die Meldungen erscheinen unter «Anfragen» und zählen erst nach Ihrer Bestätigung."
+msgstr "Ask the tenants of a property to read their meters. The reports appear under «Requests» and only count after you confirm them."
+
+msgid "%(n)s Zähler"
+msgid_plural "%(n)s Zähler"
+msgstr[0] "%(n)s meter"
+msgstr[1] "%(n)s meters"
+
+msgid "%(n)s Mieter mit Portalzugang"
+msgid_plural "%(n)s Mieter mit Portalzugang"
+msgstr[0] "%(n)s tenant with portal access"
+msgstr[1] "%(n)s tenants with portal access"
+
+msgid "zuletzt aufgerufen am %(d)s"
+msgstr "last requested on %(d)s"
+
+msgid "%(n)s Meldung wartet"
+msgid_plural "%(n)s Meldungen warten"
+msgstr[0] "%(n)s report waiting"
+msgstr[1] "%(n)s reports waiting"
+
+msgid "Aufruf an alle Mieter dieser Liegenschaft senden?"
+msgstr "Send the request to all tenants of this property?"
+
+msgid "Aufruf senden"
+msgstr "Send request"
+
+msgid "Noch keine Liegenschaften."
+msgstr "No properties yet."
+
+msgid "Bitte prüfen:"
+msgstr "Please check:"
+
+msgid "Der Verbrauch seit dem %(d)s ist auffällig hoch: etwa das %(f)s-Fache des Üblichen."
+msgstr "Consumption since %(d)s is unusually high: about %(f)s times the usual."
+
+msgid "Seit dem %(d)s (%(n)s Tage) hat sich der Stand nicht verändert."
+msgstr "Since %(d)s (%(n)s days) the reading has not changed."
+
+msgid "%(z)s: Stand %(w)s am %(d)s"
+msgstr "%(z)s: reading %(w)s on %(d)s"
+
+msgid "Hinweis: %(t)s"
+msgstr "Note: %(t)s"
+
+msgid "Der Zähler gibt es nicht mehr."
+msgstr "This meter no longer exists."
+
+msgid "Der Stand ist nicht mehr plausibel: %(t)s"
+msgstr "The reading is no longer plausible: %(t)s"
+
+msgid "Bitte Zähler, Stand und Ablesedatum angeben."
+msgstr "Please enter meter, reading and date."
+
+msgid "Bitte einen gültigen Stand und ein Ablesedatum bis heute angeben."
+msgstr "Please enter a valid reading and a date up to today."
+
+msgid "Bitte lesen Sie den Zähler nochmals ab."
+msgstr "Please read the meter again."
+
+msgid "Ihr Stand ist bei der Verwaltung. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+msgstr "Your reading is with the management. It counts once they have confirmed it."
+
+msgid "bitte lesen Sie Ihre Zähler ab und melden Sie die Stände im Mieterportal:"
+msgstr "please read your meters and report the readings in the tenant portal:"
+
+msgid "Die Verwaltung bestätigt Ihre Meldung. Vielen Dank."
+msgstr "The management will confirm your report. Thank you."
+
+msgid "Bitte Zählerstände ablesen"
+msgstr "Please read your meters"
+
+msgid "Der Aufruf ging an %(n)s Mieter."
+msgstr "The request was sent to %(n)s tenants."
+
+msgid "Der Live-Abruf nennt %(monat)s: %(punkte)s. Vor dem Eintragen gegen die BFS-Publikation prüfen."
+msgstr "The live lookup reports %(monat)s: %(punkte)s. Check it against the FSO publication before entering it."
+
+msgid "Landesindex der Konsumentenpreise (HEV)"
+msgstr "Swiss consumer price index (HEV)"
+
+msgid "Referenzzinssatz (BWO)"
+msgstr "Reference interest rate (FOH)"
+
+msgid "noch nie"
+msgstr "never"
+
+msgid "Abruf ausgefallen: %(name)s — %(n)s Fehlversuche in Folge, letzter Erfolg %(erfolg)s. Grund: %(grund)s"
+msgstr "Lookup down: %(name)s — %(n)s failed attempts in a row, last success %(erfolg)s. Reason: %(grund)s"
+
+msgid "LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s. Unter «LIK-Werte» nachtragen."
+msgstr "Add to the CPI table: it ends in month %(stand)s. Add it under «CPI values»."
+
+msgid "LIK-Werte"
+msgstr "CPI values"
+
+msgid "Jahr, Monat und Punkte müssen Zahlen sein (Monat 1 bis 12)."
+msgstr "Year, month and points must be numbers (month 1 to 12)."
+
+msgid "Der Monat liegt vor 2020 oder in der Zukunft."
+msgstr "The month is before 2020 or in the future."
+
+msgid "Der Wert liegt ausserhalb von 100 bis 140 Punkten (Basis Dezember 2020 = 100). Tippfehler?"
+msgstr "The value is outside 100 to 140 points (base December 2020 = 100). Typo?"
+
+msgid "Die Quelle ist Pflicht, zum Beispiel «BFS, Medienmitteilung vom 05.11.2026»."
+msgstr "The source is required, for example «FSO, press release of 05.11.2026»."
+
+msgid "LIK %(monat)s/%(jahr)s mit %(punkte)s Punkten gespeichert."
+msgstr "CPI %(monat)s/%(jahr)s saved with %(punkte)s points."
+
+msgid "im Code (BFS-Tabelle)"
+msgstr "in the code (FSO table)"
+
+msgid "Landesindex der Konsumentenpreise, Basis %(basis)s = 100. Hier trägst du den Monatswert ein, sobald das BFS ihn veröffentlicht hat; ein Deployment braucht es nicht. Ein Eintrag hier gilt vor der Reihe im Code."
+msgstr "Swiss consumer price index, base %(basis)s = 100. Enter the monthly value here as soon as the FSO has published it; no deployment needed. An entry here takes precedence over the series in the code."
+
+msgid "Der Live-Abruf nennt %(monat)s: %(punkte)s. Das ist nur ein Vorschlag. Vor dem Eintragen gegen die BFS-Publikation prüfen."
+msgstr "The live lookup reports %(monat)s: %(punkte)s. This is only a suggestion. Check it against the FSO publication before entering it."
+
+msgid "Monatswert nachtragen"
+msgstr "Add a monthly value"
+
+msgid "Monat (1–12)"
+msgstr "Month (1–12)"
+
+msgid "BFS, Medienmitteilung vom …"
+msgstr "FSO, press release of …"
+
+msgid "Letzte Monate"
+msgstr "Latest months"
+
+msgid "Arbeiten, die im Hintergrund laufen. Eine lange Arbeit steht hier mit Stand und Ergebnis, bis sie fertig ist; scheitert sie, steht der Grund da."
+msgstr "Work running in the background. A long job appears here with its status and result until it is done; if it fails, the reason is shown."
+
+msgid "Aktualisieren"
+msgstr "Refresh"
+
+msgid "In Arbeit"
+msgstr "In progress"
+
+msgid "Nichts in Arbeit."
+msgstr "Nothing in progress."
+
+msgid "Noch keine erledigten Aufträge."
+msgstr "No completed jobs yet."
+
+msgid "Wartet"
+msgstr "Waiting"
+
+msgid "Fertig"
+msgstr "Done"
+
+msgid "Fehlgeschlagen"
+msgstr "Failed"
+
+msgid "Sollstellung (Mietenlauf)"
+msgstr "Rent charging (rent run)"
+
+msgid "LIK %(monat)s/%(jahr)s gelöscht."
+msgstr "CPI %(monat)s/%(jahr)s deleted."
+
+msgid "Der Monat liegt vor 2020 oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines Monats erst Anfang des Folgemonats bekannt."
+msgstr "The month is before 2020 or not yet published: the FSO releases a month's value only at the start of the following month."
+
+msgid "Der Vormonat fehlt noch. Bitte die Monate der Reihe nach eintragen, sonst entsteht eine Lücke."
+msgstr "The previous month is still missing. Please enter the months in order, otherwise a gap arises."
+
+msgid "Vom HEV abgerufen und gespeichert: %(werte)s."
+msgstr "Fetched from HEV and saved: %(werte)s."
+
+msgid "Der Abruf hat nichts gespeichert. Grund: %(grund)s"
+msgstr "The lookup saved nothing. Reason: %(grund)s"
+
+msgid "Der Abruf lief, es gibt beim HEV keinen neuen Monatswert."
+msgstr "The lookup ran; HEV has no new monthly value."
+
+msgid "Jetzt beim HEV abrufen"
+msgstr "Fetch from HEV now"
+
+msgid "zählt nicht: davor fehlt ein Monat"
+msgstr "not counted: a month before it is missing"
+
+msgid "Sollstellung %(titel)s läuft im Hintergrund. Stand und Ergebnis stehen unter «Aufträge»."
+msgstr "Rent charging %(titel)s is running in the background. Status and result are under «Jobs»."
+
+msgid "Es warten Aufträge, aber der Auftragsläufer meldet sich nicht. Bitte den Betreiber informieren: Ohne Läufer werden sie nicht abgearbeitet."
+msgstr "Jobs are waiting, but the job runner is not responding. Please inform the operator: without it they are not processed."
+
+msgid "Der Mahnlauf läuft im Hintergrund. Stand und Ergebnis stehen unter «Aufträge»."
+msgstr "The dunning run is running in the background. Status and result are under «Jobs»."
+
+msgid "Mahnlauf (Sammellauf)"
+msgstr "Dunning run (batch)"
+
+msgid "Belegerkennung (Groq)"
+msgstr "Receipt recognition (Groq)"
+
+msgid "kein Abruf verzeichnet (läuft fetch_plattform_eingang?)"
+msgstr "no fetch recorded (is fetch_plattform_eingang running?)"
+
+msgid "Abruf ausgefallen: Plattform-Postfach — letzter Abruf ohne Fehler %(erfolg)s. Grund: %(grund)s"
+msgstr "Lookup down: platform mailbox — last error-free fetch %(erfolg)s. Reason: %(grund)s"
+
+msgid "Das Rundschreiben an %(n)s Empfänger wird im Hintergrund versandt. Stand und Ergebnis stehen unter «Aufträge»."
+msgstr "The circular to %(n)s recipients is being sent in the background. Status and result are under «Jobs»."
+
+msgid "Rundschreiben per E-Mail"
+msgstr "Circular by e-mail"
+
+msgid "Zurück zum Portal"
+msgstr "Back to the portal"
+
+msgid "Aktiv: Nach dem Passwort fragt das Portal einen Code aus Ihrer Authenticator-App."
+msgstr "Active: after the password, the portal asks for a code from your authenticator app."
+
+msgid "Verwalten"
+msgstr "Manage"
+
+msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon. Empfohlen, weil hier Abrechnungen und Ihre Bankverbindung stehen."
+msgstr "Extra protection for your account, optional: after the password, the portal asks for a code from an authenticator app on your phone. Recommended, because your statements and bank details are here."
+
+msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon."
+msgstr "Extra protection for your account, optional: after the password, the portal asks for a code from an authenticator app on your phone."
+
+msgid "RLS-Probe: %(n)s Befund(e) in den letzten 14 Tagen (manage.py sicherheitslog). Bei 0 über zwei Wochen kann scharf geschaltet werden (ARCHITECTURE.md)."
+msgstr "RLS trial: %(n)s finding(s) in the last 14 days (manage.py sicherheitslog). At 0 over two weeks, strict mode can be enabled (ARCHITECTURE.md)."
+
+msgid "In der LIK-Reihe «%(basis)s = 100» fehlt der Wert für %(monat)s. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder den Monat nachtragen."
+msgstr "The CPI series “%(basis)s = 100” has no value for %(monat)s. No value from another series is substituted: import the series under “CPI values” or enter the month."
+
+msgid "Die LIK-Reihe «%(basis)s = 100» hat noch keine Werte. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder die Monate nachtragen."
+msgstr "The CPI series “%(basis)s = 100” has no values yet. No value from another series is substituted: import the series under “CPI values” or enter the months."
+
+msgid "LIK-Basisreihe"
+msgstr "CPI base series"
+
+msgid "Die Reihe, in der die Punkte dieses Vertrags stehen. Beim Wechsel Punkte und Stand-Monat in der neuen Reihe eintragen; umgerechnet wird nicht."
+msgstr "The series in which this contract's points are expressed. When changing it, enter points and reference month in the new series; nothing is converted."
+
+msgid "Vorgabe für neue Verträge, wenn weder Liegenschaft noch Mandat eine eigene Reihe festlegen. «Landesindex LIK (Punkte)» und Stand-Monat daneben stehen in der Reihe Dezember 2020."
+msgstr "Default for new contracts when neither the property nor the mandate sets its own series. “CPI index (points)” and the reference month next to it are in the December 2020 series."
+
+msgid "Ganze Reihe beim HEV einlesen"
+msgstr "Import the whole series from HEV"
+
+msgid "Basisreihe"
+msgstr "Base series"
+
+msgid "Die Reihe «%(basis)s = 100» hat noch keine Werte. Verträge dieser Reihe rechnen erst, wenn sie Werte hat: «Ganze Reihe beim HEV einlesen» holt die Tabelle dieser Basis, lückenlos ab dem Basismonat. Werte anderer Reihen werden nie eingesetzt."
+msgstr "The series “%(basis)s = 100” has no values yet. Contracts in this series are only calculated once it has: “Import the whole series from HEV” fetches this base's table, without gaps from the base month. Values from other series are never substituted."
+
+msgid "In dieser Reihe steht noch kein Wert."
+msgstr "This series has no value yet."
+
+msgid "LIK-Basisreihe (Standard für neue Verträge)"
+msgstr "CPI base series (default for new contracts)"
+
+msgid "Standard des Mandats"
+msgstr "Default of the mandate"
+
+msgid "Vorgabe für neue Verträge; bestehende Verträge behalten ihre Reihe. Leer: Es gilt der Standard der nächsthöheren Stufe."
+msgstr "Default for new contracts; existing contracts keep their series. Empty: the default of the next level up applies."
+
+msgid "Standard der Verwaltung"
+msgstr "Default of the management company"
+
+msgid "Die Reihe des Landesindex, in der dieser Vertrag rechnet. Vorgabe: Standard der Liegenschaft, sonst des Mandats, sonst der Verwaltung."
+msgstr "The national index series in which this contract is calculated. Default: the property's, otherwise the mandate's, otherwise the management company's."
+
+msgid "Die Reihe wurde nicht eingelesen. Grund: %(grund)s"
+msgstr "The series was not imported. Reason: %(grund)s"
+
+msgid "Reihe «%(basis)s = 100» eingelesen: %(n)s Monate von %(von)s bis %(bis)s."
+msgstr "Series “%(basis)s = 100” imported: %(n)s months from %(von)s to %(bis)s."
+
+msgid "Die Reihe ist vollständig: Beim HEV steht kein Monat, der hier fehlt."
+msgstr "The series is complete: HEV lists no month that is missing here."
+
+msgid "Nicht überschrieben, weil hier schon ein anderer Wert steht (%(n)s): %(werte)s. Bitte prüfen und den falschen löschen."
+msgstr "Not overwritten because a different value is already stored here (%(n)s): %(werte)s. Please check and delete the wrong one."
+
+msgid "Der Monat liegt vor dem Basismonat der Reihe (Dezember %(jahr)s) oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines Monats erst Anfang des Folgemonats bekannt."
+msgstr "The month is before the base month of the series (December %(jahr)s) or not yet published: the FSO announces a month's value only at the start of the following month."
+
+msgid "Im Basismonat steht die Reihe bei 100.0 Punkten."
+msgstr "In the base month the series stands at 100.0 points."
+
+msgid "Der Wert weicht um mehr als %(sprung)s Punkte vom Vormonat dieser Reihe ab. Tippfehler, oder ein Wert aus einer anderen Basisreihe?"
+msgstr "The value differs by more than %(sprung)s points from the previous month of this series. A typo, or a value from another base series?"
+
+msgid "Unbekannte LIK-Basisreihe."
+msgstr "Unknown CPI base series."
+
+msgid "Die LIK-Basisreihe dieses Vertrags lässt sich nicht mehr ändern: Es bestehen Mietzinsanpassungen in der Reihe «%(basis)s = 100»."
+msgstr "The CPI base series of this contract can no longer be changed: there are rent adjustments in the series “%(basis)s = 100”."
+
+msgid "Beim Wechsel der LIK-Basisreihe sind die Basis-Punkte und ihr Stand-Monat in der neuen Reihe «%(basis)s = 100» anzugeben."
+msgstr "When changing the CPI base series, the base points and their reference month must be given in the new series “%(basis)s = 100”."
+
+msgid "Für %(stand)s weist die Reihe «%(basis)s = 100» %(tabelle)s Punkte aus, erfasst sind %(punkte)s. Beim Wechsel der Basisreihe müssen die Punkte in der neuen Reihe stehen; umgerechnet wird nicht."
+msgstr "For %(stand)s the series “%(basis)s = 100” shows %(tabelle)s points; %(punkte)s are entered. When changing the base series the points must be in the new series; nothing is converted."
+
+msgid "Alles an einem Ort: Fehler der Anwendung, gescheiterte Abrufe und Aufträge, RLS-Befunde, CSP-Meldungen, fällige Pflege und Sicherheitsereignisse der letzten %(fenster_tage)s Tage. Die rote Zahl in der Leiste zählt Fehler, die du noch nicht gesehen hast."
+msgstr "Everything in one place: application errors, failed fetches and jobs, RLS findings, CSP reports, due maintenance and security events of the last %(fenster_tage)s days. The red number in the sidebar counts errors you have not seen yet."
+
+msgid "%(n)s neuer Fehler seit deinem letzten Besuch."
+msgid_plural "%(n)s neue Fehler seit deinem letzten Besuch."
+msgstr[0] "%(n)s new error since your last visit."
+msgstr[1] "%(n)s new errors since your last visit."
+
+msgid "%(n)s neuer Fehler"
+msgid_plural "%(n)s neue Fehler"
+msgstr[0] "%(n)s new error"
+msgstr[1] "%(n)s new errors"
+
+msgid "Alle Quellen"
+msgstr "All sources"
+
+msgid "Keine Einträge in dieser Auswahl."
+msgstr "No entries in this selection."
+
+msgid "Gleiche Meldungen sind zusammengefasst. Abrufausfälle bleiben stehen, bis der Abruf wieder gelingt."
+msgstr "Identical messages are grouped. Failed fetches stay listed until the fetch succeeds again."
+
+msgid "CSP-Meldungen im Einzelnen"
+msgstr "CSP reports in detail"
+
+msgid "Anwendung"
+msgstr "Application"
+
+msgid "Abrufe"
+msgstr "Fetches"
+
+msgid "RLS-Probe"
+msgstr "RLS probe"
+
+msgid "CSP"
+msgstr "CSP"
+
+msgid "Pflege"
+msgstr "Maintenance"
+
+msgid "Warnungen"
+msgstr "Warnings"
+
+msgid "Hinweise"
+msgstr "Notes"
+
+msgid "Abruf gescheitert"
+msgstr "Fetch failed"
+
+msgid "Auftrag gescheitert"
+msgstr "Job failed"
+
+msgid "Zu viele falsche Codes. Bitte in 15 Minuten erneut versuchen."
+msgstr "Too many wrong codes. Please try again in 15 minutes."
+
+msgid "Mail von unbekanntem Absender"
+msgstr "Email from unknown sender"
+
+msgid "unbekannter Absender"
+msgstr "unknown sender"
+
+msgid "Diese Mail kam von %(adresse)s. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennst du den Absender (etwa die zweite Adresse des Mieters), bestätige ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders."
+msgstr "This email came from %(adresse)s. The address is not on the ticket, so the tenant does not see the message. If you know the sender (for example the tenant's second address), confirm it: their emails will then count as replies from the reporter for this ticket."
+
+msgid "Absender für dieses Ticket bestätigen"
+msgstr "Confirm sender for this ticket"
+
+msgid "%(adresse)s gilt für dieses Ticket jetzt als Absender des Melders."
+msgstr "%(adresse)s now counts as the reporter's sender for this ticket."
+
+msgid "Diese Nachricht ist keine Mail von unbekanntem Absender (mehr)."
+msgstr "This message is not (or no longer) an email from an unknown sender."
+
+msgid "Die Adresse ist bei %(person)s gespeichert und gilt für alle Tickets dieser Person."
+msgstr "The address is saved for %(person)s and applies to all tickets of this person."
+
+msgid "Bestätigen und bei %(person)s speichern"
+msgstr "Confirm and save for %(person)s"
+
+msgid "«Speichern» hinterlegt die Adresse bei der Person: Sie gilt dann für alle ihre Tickets und lässt sich in der Personenakte wieder entfernen."
+msgstr "“Save” stores the address with the person: it then applies to all their tickets and can be removed in the person's record."
+
+msgid "Weitere Absenderadresse"
+msgstr "Additional sender address"
+
+msgid "entfernen"
+msgstr "remove"
+
+msgid "%(adresse)s ist als weitere Absenderadresse entfernt."
+msgstr "%(adresse)s has been removed as an additional sender address."
+
+msgid "Im Kalender „Abonnement/Kalender per URL hinzufügen“ wählen und diese Adresse einfügen. Der Link gehört nur Ihnen und ist geheim — nicht weitergeben."
+msgstr "In your calendar choose “Subscribe / Add calendar by URL” and paste this address. The link is yours alone and secret — do not share it."
+
+msgid "Link neu erzeugen"
+msgstr "Regenerate link"
+
+msgid "Link entfernen"
+msgstr "Remove link"
+
+msgid "Mit einem persönlichen Link zeigt Ihr Kalender (Outlook, Apple, Google) die Fristen laufend an. Der Link lässt sich jederzeit erneuern oder entfernen."
+msgstr "With a personal link your calendar (Outlook, Apple, Google) shows the deadlines continuously. The link can be renewed or removed at any time."
+
+msgid "Kalender-Link erzeugen"
+msgstr "Create calendar link"
+
+msgid "Kalender-Link entfernt. Abonnierte Kalender erhalten nichts mehr."
+msgstr "Calendar link removed. Subscribed calendars no longer receive anything."
+
+msgid "Neuer Kalender-Link erzeugt. Ein früherer Link gilt nicht mehr."
+msgstr "New calendar link created. Any earlier link is no longer valid."
+
+msgid "Wenn wir Ihre Angaben einer Liegenschaft zuordnen konnten, erhalten Sie in den nächsten Minuten eine Bestätigung per E-Mail. Ohne Bestätigung wenden Sie sich bitte direkt an Ihre Verwaltung."
+msgstr "If we were able to match your details to a property, you will receive a confirmation by e-mail within the next few minutes. If no confirmation arrives, please contact your property management directly."
+
+msgid "Adresse des Aushangs erneuern? Der bisherige QR-Code funktioniert danach nicht mehr; der Aushang muss neu gedruckt werden."
+msgstr "Renew the notice address? The current QR code will stop working; the notice must be reprinted."
+
+msgid "Aushang-Adresse erneuern"
+msgstr "Renew notice address"
+
+msgid "Die Adresse des Aushangs ist erneuert. Bitte den Hausaushang neu drucken und aufhängen — der bisherige QR-Code funktioniert nicht mehr."
+msgstr "The notice address has been renewed. Please reprint and post the notice — the previous QR code no longer works."
+
+msgid "Der Link gilt nur wenige Tage und nur einmal. Ist er abgelaufen, bitten Sie Ihre Verwaltung um einen neuen. Diese E-Mail wurde automatisch erstellt."
+msgstr "The link is valid for only a few days and only once. If it has expired, ask your property management for a new one. This e-mail was generated automatically."
+
+msgid "Passwort festlegen"
+msgstr "Set password"
+
+msgid "Danach melden Sie sich mit Ihrem Benutzernamen hier an:"
+msgstr "Afterwards, sign in here with your user name:"
+
+msgid "Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s — bitte manuell mitteilen."
+msgstr "Portal access active, but sending the e-mail failed. User name: %(username)s · Link to set the password: %(link)s — please pass it on manually."
+
+msgid "Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s (bitte sicher mitteilen; gilt nur wenige Tage und nur einmal)."
+msgstr "Portal access active. No e-mail on file — user name: %(username)s · Link to set the password: %(link)s (please pass it on securely; valid for only a few days and only once)."
+
+msgid "Honorarertrag gegen erfassten Aufwand ist Teil der Stufe Professional."
+msgstr "Fee income against recorded effort is part of the Professional plan."
+
+msgid "Schnittstellen (Buchhaltungsformate, Portal-Feed, Kalender-Abonnement) sind Teil der Stufe Professional."
+msgstr "Interfaces (accounting formats, portal feed, calendar subscription) are part of the Professional plan."
+
+msgid "Datenquelle"
+msgstr "Data source"
+
+msgid "Spalten"
+msgstr "Columns"
+
+msgid "Eigene Auswertungen"
+msgstr "Custom reports"
+
+msgid "Laufender Monat"
+msgstr "Current month"
+
+msgid "Vorjahr"
+msgstr "Previous year"
+
+msgid "Letzte 12 Monate"
+msgstr "Last 12 months"
+
+msgid "Debitoren (Rechnungen an Mieter)"
+msgstr "Receivables (invoices to tenants)"
+
+msgid "Forderungsart"
+msgstr "Type of claim"
+
+msgid "Mieter Nachname"
+msgstr "Tenant last name"
+
+msgid "Mieter Vorname"
+msgstr "Tenant first name"
+
+msgid "Mieter Firma"
+msgstr "Tenant company"
+
+msgid "Kreditoren (Lieferantenrechnungen)"
+msgstr "Payables (supplier invoices)"
+
+msgid "MWST-Betrag"
+msgstr "VAT amount"
+
+msgid "Nebenkostenrelevant"
+msgstr "Relevant for ancillary costs"
+
+msgid "Eingang am"
+msgstr "Received on"
+
+msgid "Bankreferenz"
+msgstr "Bank reference"
+
+msgid "Nettomiete aktuell"
+msgstr "Current net rent"
+
+msgid "Nebenkosten aktuell"
+msgstr "Current ancillary costs"
+
+msgid "%(n)s Zeile"
+msgid_plural "%(n)s Zeilen"
+msgstr[0] "%(n)s row"
+msgstr[1] "%(n)s rows"
+
+msgid "Diese Vorlage löschen? Die Daten selbst bleiben unberührt."
+msgstr "Delete this template? The data itself remains untouched."
+
+msgid "Die Auswertung ist auf %(n)s Zeilen begrenzt. Bitte den Zeitraum oder die Liegenschaft einschränken."
+msgstr "The report is limited to %(n)s rows. Please narrow the period or the property."
+
+msgid "Keine Zeilen für diese Auswahl."
+msgstr "No rows for this selection."
+
+msgid "Vorlage bearbeiten"
+msgstr "Edit template"
+
+msgid "Datenquelle, Spalten und Zeitraum einmal festlegen, als Vorlage speichern und jederzeit neu ausführen oder als CSV herausgeben."
+msgstr "Define the data source, columns and period once, save as a template, and rerun it or export it as CSV at any time."
+
+msgid "Gespeicherte Vorlagen"
+msgstr "Saved templates"
+
+msgid "%(n)s Spalte"
+msgid_plural "%(n)s Spalten"
+msgstr[0] "%(n)s column"
+msgstr[1] "%(n)s columns"
+
+msgid "Ausführen"
+msgstr "Run"
+
+msgid "Noch keine Vorlage gespeichert."
+msgstr "No template saved yet."
+
+msgid "Name der Vorlage"
+msgstr "Template name"
+
+msgid "Spalten aus «%(q)s»"
+msgstr "Columns from “%(q)s”"
+
+msgid "Die Spalten erscheinen in der Reihenfolge, in der sie hier stehen. Die Vorlage gehört der Verwaltung: Das ganze Team kann sie ausführen."
+msgstr "Columns appear in the order shown here. The template belongs to the management company: the whole team can run it."
+
+msgid "Vorlage speichern"
+msgstr "Save template"
+
+msgid "Bitte einen Namen angeben."
+msgstr "Please enter a name."
+
+msgid "Der Name ist zu lang (höchstens 120 Zeichen)."
+msgstr "The name is too long (120 characters at most)."
+
+msgid "Diese Datenquelle gibt es nicht."
+msgstr "This data source does not exist."
+
+msgid "Bitte mindestens eine Spalte wählen."
+msgstr "Please choose at least one column."
+
+msgid "Eine Vorlage mit diesem Namen gibt es schon."
+msgstr "A template with this name already exists."
+
+msgid "Vorlage «%(name)s» gespeichert."
+msgstr "Template “%(name)s” saved."
+
+msgid "Vorlage «%(name)s» gelöscht."
+msgstr "Template “%(name)s” deleted."
+
+msgid "%(n)s weitere in der Liste"
+msgid_plural "%(n)s weitere in der Liste"
+msgstr[0] "%(n)s more in the list"
+msgstr[1] "%(n)s more in the list"
+
+msgid "Seiten des Bereichs"
+msgstr "Pages in this section"
+
+msgid "Selten gebraucht"
+msgstr "Rarely used"
+
+msgid "Betrieb"
+msgstr "Operations"
+
+msgid "Alle Einstellungen"
+msgstr "All settings"
+
+msgid "Team & Zugriff"
+msgstr "Team & access"
+
+msgid "Vorlagen & Regeln"
+msgstr "Templates & rules"
+
+msgid "Schnittstellen"
+msgstr "Integrations"
+
+msgid "Daten & Protokoll"
+msgstr "Data & log"
+
+msgid "Diese Buchung gehört zu einer Zahlung. Bitte die Zahlung im Bankabgleich stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+msgstr "This entry belongs to a payment. Please reverse the payment in bank reconciliation, otherwise open items and the account no longer match."
+
+msgid "Diese Buchung gehört zu einer Rechnung. Bitte die Rechnung selbst stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+msgstr "This entry belongs to an invoice. Please cancel the invoice itself, otherwise open items and the account no longer match."
+
+msgid "Rückgängig nicht möglich: Der Import enthält %(n)s verbuchte Belastung(en) (Gebühren, Lieferantenzahlungen). Bitte zuerst deren Buchungen stornieren, sonst werden sie nach einem erneuten Import doppelt gebucht."
+msgstr "Cannot undo: the import contains %(n)s posted debit(s) (fees, supplier payments). Please reverse these entries first, otherwise they will be posted twice on a new import."
+
+msgid "Die Belastung (CHF %(belastung)s) ist grösser als der offene Betrag der Rechnung (CHF %(offen)s). Bitte die Rechnung prüfen oder die Bewegung auf ein Konto verbuchen."
+msgstr "The debit (CHF %(belastung)s) exceeds the open amount of the invoice (CHF %(offen)s). Please check the invoice or post the movement to an account."

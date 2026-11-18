@@ -252,7 +252,7 @@
 
 {% if p.bemerkungen %}<div class="fw-card"><div class="fw-kopf"><h2>{% trans "Bemerkungen" %}</h2></div><div class="fw-rumpf">{{ p.bemerkungen|linebreaksbr }}</div></div>{% endif %}
 {% if p.abgeschlossen or p.unterschrift_mieter_bild or p.unterschrift_verwalter_bild %}
-<style>.ab-unterschrift { display: block; max-width: 18rem; width: 100%; height: auto; margin-bottom: 1rem; border: 1px solid var(--ds-line); border-radius:var(--ds-radius); }</style>
+<style nonce="{{ csp_nonce }}">.ab-unterschrift { display: block; max-width: 18rem; width: 100%; height: auto; margin-bottom: 1rem; border: 1px solid var(--ds-line); border-radius:var(--ds-radius); }</style>
 <div class="fw-card">
     <div class="fw-kopf"><h2>{% trans "Unterschriften" %}</h2></div>
     <div class="fw-rumpf">

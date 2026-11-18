@@ -1,4 +1,4 @@
-"""Etappe 4 aus docs/AUDIT-SAAS-NIVEAU.md: Listen-Werkzeugkasten.
+"""Etappe 4 aus «AUDIT-SAAS-NIVEAU» (früheres Dokument, Git-Verlauf): Listen-Werkzeugkasten.
 
 Liegenschaften, Objekte, Mietverhältnisse, Personen. Vorher: alle Zeilen auf
 einer Seite, Suche teils nur im Browser, eine feste Reihenfolge, kein Export.
@@ -283,7 +283,8 @@ class Vertragsliste(TestCase):
         beliebig ordnen — ein Vertrag stünde dann auf zwei Seiten und ein
         anderer auf keiner. SQLite ordnet sie zufällig gleich, Postgres nicht;
         deshalb wird die Regel geprüft und nicht das Verhalten im Test."""
-        from core.views.fw.listen import PERSON_SORTEN, VERTRAG_SORTEN
+        from core.views.fw.personen_liste import PERSON_SORTEN
+        from core.views.fw.vertraege_liste import VERTRAG_SORTEN
         for name, sorten in (('Verträge', VERTRAG_SORTEN), ('Personen', PERSON_SORTEN)):
             for key, s in sorten.items():
                 self.assertIn(s.felder[-1], ('id', '-id'), f'{name}: Sortierung «{key}»')

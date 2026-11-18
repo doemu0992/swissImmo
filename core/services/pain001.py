@@ -184,13 +184,19 @@ def auftraggeber_adresse(organisation):
     }
 
 
+def _zahlbetrag(r):
+    """Der zu überweisende Betrag: der OFFENE Rest einer Rechnung (nach Teilzahlungen), sonst der Betrag (Audit F5)."""
+    offen = getattr(r, 'offener_betrag', None)
+    return r.betrag if offen is None else offen
+
+
 def pruefe_zahlung(r):
     """Alles, was gegen die Aufnahme einer Rechnung in die Zahlungsdatei
     spricht, als Liste von (code, text). Leer = zahlbar."""
     probleme = []
     if not _text(r.lieferant, 70):
         probleme.append(('name', _('Lieferantenname fehlt')))
-    betrag = r.betrag
+    betrag = _zahlbetrag(r)
     if not betrag or betrag <= 0:
         probleme.append(('betrag', _('Betrag fehlt oder ist nicht positiv')))
     elif betrag > BETRAG_MAX:
@@ -272,7 +278,7 @@ def generate_pain001(rechnungen, debtor_name, debtor_iban, msg_id, exec_date, no
     debtor_iban = _iban_clean(debtor_iban)
     name_dbtr = _text(debtor_name, 70)
 
-    summe = sum((Decimal(str(r.betrag)).quantize(Decimal('0.01')) for r in rechnungen),
+    summe = sum((Decimal(str(_zahlbetrag(r))).quantize(Decimal('0.01')) for r in rechnungen),
                 Decimal('0.00'))
 
     root = ET.Element("Document", xmlns=NS)
@@ -309,7 +315,8 @@ def generate_pain001(rechnungen, debtor_name, debtor_iban, msg_id, exec_date, no
     _el(othr, "Id", "NOTPROVIDED")
 
     for i, r in enumerate(rechnungen, start=1):
-        betrag = Decimal(str(r.betrag)).quantize(Decimal('0.01'))
+        # Der OFFENE Betrag, nicht der Rechnungsbetrag: Nach einer Teilzahlung überwiese die Bank sonst den vollen Betrag (Audit F5).
+        betrag = Decimal(str(_zahlbetrag(r))).quantize(Decimal('0.01'))
         iban = _iban_clean(r.iban)
         qrr = ist_qr_iban(iban)
         tx = _el(pmt, "CdtTrfTxInf")

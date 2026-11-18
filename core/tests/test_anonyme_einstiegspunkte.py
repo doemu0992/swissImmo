@@ -23,7 +23,7 @@ Welt.
 import json
 from unittest.mock import patch
 
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from ._isolation import MandantenFixture
@@ -177,6 +177,8 @@ class BrevoWebhookTests(OhneKontext):
             self._senden('Re: Schaden #1', secret=None, mitgeben='egal').status_code, 403)
 
 
+# Schnittstellen (Formate, Feed, Kalender-Abo) gehören zur Stufe «professional».
+@override_settings(SWISSIMMO_VORGABE_STUFE='professional')
 class IcalFeedTests(OhneKontext):
     """Der Fristen-Feed liefert die Fristen SEINER Verwaltung — und nur die."""
 
@@ -194,8 +196,9 @@ class IcalFeedTests(OhneKontext):
                     faellig_am=date.today() + timedelta(days=3))
 
     def _feed(self, organisation):
-        from core.services.ical import feed_token
-        return self.client.get('/fristen.ics', {'token': feed_token(organisation)})
+        from core.services.ical import token_setzen
+        fixture = self.a if organisation == self.a.organisation else self.b
+        return self.client.get('/fristen.ics', {'token': token_setzen(fixture.benutzer, organisation)})
 
     def test_feed_zeigt_die_eigenen_fristen(self):
         antwort = self._feed(self.b.organisation)

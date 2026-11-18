@@ -18,8 +18,10 @@
 {% endif %}
 
 {% if zustand != 'aktiv' %}
-<div class="fw-card"><div class="fw-hinweis {% if zustand == 'lesemodus' %}crit{% else %}warn{% endif %}"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">
-    {% if zustand == 'lesemodus' %}
+<div class="fw-card"><div class="fw-hinweis {% if zustand == 'lesemodus' or zustand == 'gesperrt' %}crit{% else %}warn{% endif %}"><span class="fw-hi">{% zeichen 'hinweis' %}</span><div class="fw-ht">
+    {% if zustand == 'gesperrt' %}
+        {% blocktrans with tage=sperre_tage %}Eine Rechnung ist seit mehr als {{ tage }} Tagen überfällig. Ihr Zugang ist gesperrt; Anmeldung, diese Seite mit Rechnung und Einzahlungsschein und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht.{% endblocktrans %}
+    {% elif zustand == 'lesemodus' %}
         {% blocktrans with tage=lesemodus_tage %}Eine Rechnung ist seit mehr als {{ tage }} Tagen überfällig. Ihr Zugang ist schreibgeschützt: Sie können alle Daten lesen und exportieren, aber nichts ändern, und es laufen keine automatischen Läufe. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht.{% endblocktrans %}
     {% else %}
         {% blocktrans with tage=lesemodus_tage %}Eine Rechnung ist überfällig. Bleibt die Zahlung länger als {{ tage }} Tage aus, wird Ihr Zugang schreibgeschützt. Ihre Daten bleiben in jedem Fall erhalten.{% endblocktrans %}
@@ -64,15 +66,29 @@
     {% endfor %}
 </div>
 
+{% if kann_schreiben %}<div class="fw-card">
+    <div class="fw-kopf"><h2>{% trans "Support" %}</h2></div>
+    <form method="post" action="/neu/abonnement/support/" class="fw-formular p-5">{% csrf_token %}
+        <div class="fw-feldblock breit"><p class="fw-hilfe">{{ support_text }}. {% trans "Ihre Anfrage geht an den Betreiber; die Antwort kommt per E-Mail an Ihre Adresse." %}</p></div>
+        <div class="fw-feldblock breit"><label for="su-betreff" class="fw-label">{% trans "Betreff" %}</label>
+            <input id="su-betreff" name="betreff" maxlength="120" required class="fw-feld"></div>
+        <div class="fw-feldblock breit"><label for="su-text" class="fw-label">{% trans "Ihre Anfrage" %}</label>
+            <textarea id="su-text" name="nachricht" rows="4" maxlength="4000" required class="fw-feld"></textarea></div>
+        <div class="fw-feldblock breit"><button type="submit" class="fw-btn fw-primary">{% trans "Anfrage senden" %}</button></div>
+    </form>
+</div>{% endif %}
+
 <div class="fw-card">
     <div class="fw-kopf"><h2>{% trans "Funktionen und Module" %}</h2></div>
     {% for m in module %}
     <div class="fw-zeile">
         <div class="fw-mitte"><div class="fw-t">{{ m.name }}</div>
-            {% if not m.offen %}<div class="fw-s">
-                {% if m.zubuchbar %}{% trans "Zubuchbares Modul — beim Betreiber anfragen." %}
-                {% else %}{% blocktrans with stufe=m.ab %}Ab Stufe {{ stufe }}.{% endblocktrans %}{% endif %}
-            </div>{% endif %}
+            {% if m.zubuchbar %}<div class="fw-s">
+                {% if m.inklusive %}{% trans "Im Grundpreis Ihrer Stufe enthalten." %}
+                {% elif m.zugebucht %}{% blocktrans with preis=m.preis %}Zugebucht: CHF {{ preis }} pro Monat, netto.{% endblocktrans %}
+                {% else %}{% blocktrans with preis=m.preis %}Zubuchbar: CHF {{ preis }} pro Monat, netto — beim Betreiber anfragen.{% endblocktrans %}{% if m.inklusive_ab %} {% blocktrans with stufe=m.inklusive_ab %}Ab Stufe {{ stufe }} enthalten.{% endblocktrans %}{% endif %}{% endif %}
+            </div>
+            {% elif not m.offen %}<div class="fw-s">{% blocktrans with stufe=m.ab %}Ab Stufe {{ stufe }}.{% endblocktrans %}</div>{% endif %}
         </div>
         <span class="fw-rechts">{% if m.offen %}<span class="fw-chip fw-good fw-dot">{% trans "Freigeschaltet" %}</span>{% else %}<span class="fw-chip fw-warn">{% trans "Gesperrt" %}</span>{% endif %}</span>
     </div>
@@ -83,11 +99,12 @@
 {% if kann_abo_aendern %}
 <div class="fw-card">
     <div class="fw-kopf"><h2>{% trans "Rechnungen" %}</h2></div>
+    {% if guthaben %}<p class="fw-hilfe p-4">{% blocktrans with betrag=guthaben|chf:2 %}Guthaben: CHF {{ betrag }}. Es wird mit Ihrer nächsten Rechnung verrechnet.{% endblocktrans %}</p>{% endif %}
     {% for r in rechnungen %}
     <div class="fw-zeile">
         <div class="fw-mitte">
             <div class="fw-t">{{ r.nummer }} · {{ r.periode_von|date:"d.m.Y" }}–{{ r.periode_bis|date:"d.m.Y" }}</div>
-            <div class="fw-s">{% blocktrans with datum=r.faellig_am|date:"d.m.Y" %}Fällig am {{ datum }}{% endblocktrans %}{% if r.platzhalter %} · {% trans "Platzhalterpreise" %}{% endif %}</div>
+            <div class="fw-s">{% blocktrans with datum=r.faellig_am|date:"d.m.Y" %}Fällig am {{ datum }}{% endblocktrans %}{% if r.platzhalter %} · {% trans "Platzhalterpreise" %}{% endif %}{% if r.art == 'zusatz' %} · {% trans "Zusatzrechnung (Änderung des Abonnements)" %}{% endif %}</div>
         </div>
         <span class="fw-abo-rechts">
             <span class="fw-num">CHF {{ r.brutto|chf:2 }}</span>
@@ -177,7 +194,6 @@
 <div class="fw-card">
     <div class="fw-kopf"><h2>{% trans "Add-ons" %}</h2></div>
     <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{% trans "Datenmigration" %}</div><div class="fw-s">{% trans "Einmalig CHF 200–800, schmerzloser Umzug bestehender Mandate." %}</div></div></div>
-    <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{% trans "E-Signaturen" %}</div><div class="fw-s">{% trans "CHF 1.50 pro Signatur, in jeder Stufe gleich." %}</div></div></div>
     <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{% trans "SMS &amp; Speicher" %}</div><div class="fw-s">{% trans "SMS-Benachrichtigungen und zusätzlicher Dokumentenspeicher." %}</div></div></div>
 </div>
 
