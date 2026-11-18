@@ -476,15 +476,14 @@ test('Zeile 1 bricht bei keiner Breite um, nichts schiebt quer, nichts überlapp
       const r = (el: Element) => { const q = el.getBoundingClientRect(); return { l: q.left, r: q.right, t: q.top, b: q.bottom, w: q.width, h: q.height }; };
       const z1 = document.querySelector('.fw-kopf-z1')!;
       const kinder = Array.from(z1.children).filter((k) => getComputedStyle(k).display !== 'none');
-      const teil = (k: Element) => (['fw-logo-kapsel', 'fw-bestand', 'fw-hauptnav', 'fw-os', 'fw-werkzeug-kapsel'].find((c) => k.classList.contains(c))) || k.tagName;
+      const teil = (k: Element) => (['fw-logo-kapsel', 'fw-bestand', 'fw-os', 'fw-werkzeug-kapsel'].find((c) => k.classList.contains(c))) || k.tagName;
       const boxen = kinder.map((k) => ({ n: teil(k), ...r(k) }));
-      const hn = document.getElementById('fwHauptnav')!;
       const sichtbar = (s: string) => { const e = document.querySelector(s); return !!e && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().width > 0; };
       return {
         quer: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-        boxen, hnavScroll: hn.scrollWidth - hn.clientWidth, vw: document.documentElement.clientWidth, vh: window.innerHeight,
+        boxen, vw: document.documentElement.clientWidth, vh: window.innerHeight,
         z1: r(z1), schiene: r(document.querySelector('#fwSchiene')!),
-        bandSicht: sichtbar('.fw-bereichsreiter'), schieneSicht: sichtbar('#fwSchiene'),
+        schieneSicht: sichtbar('#fwSchiene'),
         einst: sichtbar('.fw-wz-einst'), neu: sichtbar('.fw-wz-neu'), dunkel: sichtbar('.fw-knopf-dunkel'),
         schnell: getComputedStyle(document.querySelector('.fw-profil-schnell')!).display !== 'none',
       };
@@ -492,7 +491,7 @@ test('Zeile 1 bricht bei keiner Breite um, nichts schiebt quer, nichts überlapp
     const wo = `${w} px`;
     expect(m.quer, `${wo}: die Seite scrollt ${m.quer} px quer`).toBeLessThanOrEqual(0);
     const mitte = (b: { t: number; b: number }) => (b.t + b.b) / 2;
-    const reihe1 = m.boxen.filter((b) => b.n !== 'fw-hauptnav' || w >= 901);
+    const reihe1 = m.boxen;
     for (const b of reihe1) expect(Math.abs(mitte(b) - mitte(reihe1[0])), `${wo}: ${b.n} steht nicht in der ersten Reihe`).toBeLessThan(4);
     // nichts überlappt, nichts ragt über den Rand
     const sortiert = [...m.boxen].sort((a, b) => a.l - b.l);
@@ -504,10 +503,8 @@ test('Zeile 1 bricht bei keiner Breite um, nichts schiebt quer, nichts überlapp
       expect(b.l, `${wo}: ${b.n} ragt links aus dem Bild`).toBeGreaterThanOrEqual(0);
       expect(b.r, `${wo}: ${b.n} ragt rechts aus dem Bild`).toBeLessThanOrEqual(m.vw - 15);
     }
-    expect(m.hnavScroll, `${wo}: die Bereiche scrollen in sich, ein Bereich ist abgeschnitten`).toBeLessThanOrEqual(1);
     // Die Bereiche stehen bei jeder Breite in der Schiene links (56 px, ab 1024 px 88 px); Kapsel und Menüband gibt es nicht mehr
     expect(m.schieneSicht, `${wo}: Schiene`).toBe(true);
-    expect(m.bandSicht, `${wo}: Menüband`).toBe(false);
     expect(m.schiene.l, `${wo}: Schiene links`).toBe(0);
     expect(Math.round(m.schiene.w), `${wo}: Breite der Schiene`).toBe(w >= 1024 ? 88 : 56);
     expect(m.z1.h, `${wo}: Zeile 1 ist ${Math.round(m.z1.h)} px hoch — umgebrochen?`).toBeLessThan(60);

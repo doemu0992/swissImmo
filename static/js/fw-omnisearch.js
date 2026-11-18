@@ -435,10 +435,10 @@
     });
     window.fwSucheOeffnen = fokussieren;
 
-    // Wie weit das Feld bei Fokus nach links wachsen darf: der freie Platz zwischen den Bereichen und
-    // dem Feld (höchstens 8 rem), gemessen statt gerechnet, weil die Breite des Bestand-Chips vom Namen
+    // Wie weit das Feld bei Fokus nach links wachsen darf: der freie Platz zwischen dem Bestand-Chip und
+    // dem Feld (höchstens 8 rem), gemessen statt gerechnet, weil die Breite des Chips vom Namen
     // abhängt. Die Schicht liest ihn als `--fw-os-extra`; am Telefon öffnet sich das Feld über die ganze Zeile.
-    var BEREICHE = document.getElementById('fwHauptnav');
+    var BEREICHE = document.querySelector('.fw-kopf-z1 .fw-bestand');
     var telefon = window.matchMedia('(max-width:900px)');
     function extraMessen() {
         if (telefon.matches || !BEREICHE) { fwStil(wurzel, {'--fw-os-extra': null}); return; }

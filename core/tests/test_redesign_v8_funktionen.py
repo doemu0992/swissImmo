@@ -15,7 +15,7 @@ test_audit_etappe3, test_sprachwahl, test_mandant_wechsel, faelle.test_lage …)
 Was hier steht, ist die Abhakliste, gegen die «kein Funktionsverlust» belegt
 wurde; fällt ein Eintrag weg, wird es rot, bevor ein Fachtest es merkt.
 
-GEGENPROBE: In `fw/base.html` `function fwNavToggle(` umbenennen → rot.
+GEGENPROBE: In `fw/base.html` `function fwToggleSidebar(` umbenennen → rot.
 """
 import pathlib
 
@@ -35,12 +35,11 @@ def _quelle(name):
 #: Hülle der Anwendung — erhoben aus der alten `fw/base.html` (692 Zeilen).
 HUELLE = {
     'Ids': [
-        'id="fwBackdrop"', 'id="fwSidebar"', 'id="navgrp-', 'id="navsub-',
+        'id="fwBackdrop"', 'id="fwSidebar"', 'id="navgrp-', 'id="fwSchiene"',
         'id="fwProfil"', 'id="fw-toasts"', 'fw-palette-data',
     ],
     'Funktionen': [
         'function fwToggleSidebar(', 'function fwOpenMobileNav(', 'function fwCloseMobileNav(',
-        'function fwNavToggle(',
         'function fwProfilMenu(', 'function fwTab(', 'function fwTabellenStapeln(',
         'function fwSetTheme(', 'function fwSyncThemeButtons(',
     ],
@@ -56,7 +55,7 @@ HUELLE = {
     # `static/js/fw-omnisearch.js` und wird unten (`OMNISEARCH_*`) geprüft; in
     # der Hülle bleiben nur die Daten (`fw-palette-data`, oben) und das Skript.
     'Omnisearch': [
-        "{% include 'fw/_omnisearch.html' %}", "js/fw-omnisearch.js", 'fw-kopf-z1', 'fw-kopf-z2',
+        "{% include 'fw/_omnisearch.html' %}", "js/fw-omnisearch.js", 'fw-kopf-z1',
     ],
     'Speicher und frühe Skripte': [
         "localStorage.getItem('fw-theme')", "localStorage.setItem('fw-theme'",
@@ -76,7 +75,7 @@ HUELLE = {
     'Kontextwerte': [
         'fw_mandant', 'fw_mandanten', 'fw_nav_gruppen', 'alle_liegenschaften', 'aktive_lg',
         'schaeden_ungelesen', 'fw_palette', 'fw_einstellungen_keys', 'nav in g.alle_keys',
-        'nav in it.keys', 'g.badge', 'it.section', 'messages', 'ohne_emoji',
+        'nav in it.keys', 'g.badge', 'messages', 'ohne_emoji',
     ],
     'Bausteine': [
         "{% include 'fw/_assets.html' %}", "{% include 'fw/_schicht_link.html' %}",

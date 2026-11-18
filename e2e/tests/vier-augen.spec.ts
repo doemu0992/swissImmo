@@ -31,7 +31,7 @@ test.describe('Die Buchhaltung am Telefon (390 px)', () => {
     await expect(page).toHaveURL(/\/neu\/finanzen\//);
     await keinQuerscrollen(page);
     // Keine Akten-Bereiche in der Navigation, keine Einstellungen
-    await expect(page.locator('#fwHauptnav a', { hasText: 'Akten' })).toHaveCount(0);
+    await expect(page.locator('#fwSchiene a[data-fach="akten"]')).toHaveCount(0);
     const antwort = await page.goto('/neu/personen/', { waitUntil: 'domcontentloaded' });
     expect(antwort?.status()).toBe(403);
   });

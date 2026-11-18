@@ -87,7 +87,6 @@ test.describe('Omnisearch am Desktop', () => {
     const schiene = await box(page, '#fwSchiene');
     expect(schiene.x).toBe(0);
     expect(Math.round(schiene.width)).toBe(88);
-    await expect(page.locator('#fwHauptnav')).toBeHidden();
     await expect(page.locator('.fw-kopf-z1 .fw-logo-kapsel')).toBeHidden();
     const bestand = await box(page, '.fw-kopf-z1 .fw-bestand');
     const os = await box(page, '.fw-kopf-z1 #fwOs');
@@ -101,10 +100,8 @@ test.describe('Omnisearch am Desktop', () => {
     // alles in einer Reihe
     for (const b of [bestand, werkzeug]) expect(Math.abs(b.y + b.height / 2 - (os.y + os.height / 2))).toBeLessThan(10);
 
-    // Das Menüband steht weiter in der Kopfzeile (nicht im Inhalt), ist aber ab 1024 px ausgeblendet
-    await expect(page.locator('#fwKopf #navsub-akten')).toHaveCount(1);
-    await expect(page.locator('main #navsub-akten')).toHaveCount(0);
-    await expect(page.locator('#navsub-akten')).toBeHidden();
+    // Menüband und Bereichskapsel gibt es nicht mehr
+    await expect(page.locator('#navsub-akten, #fwHauptnav, .fw-bereichsreiter')).toHaveCount(0);
     // Der Bestandsfilter steht in Zeile 1 (Überzeile «Bestand», darunter der Name)
     await expect(page.locator('.fw-bestand .fw-bestand-ueber')).toHaveText(/Bestand/i);
     await expect(page.locator('.fw-kopf-z2 .fw-bestand')).toHaveCount(0);
@@ -365,8 +362,7 @@ test.describe('Omnisearch am Telefon', () => {
     expect(schiene.x).toBe(0);
     expect(Math.round(schiene.width)).toBe(56);
     await expect(page.locator('#fwSchiene a[data-fach]')).toHaveCount(7);
-    await expect(page.locator('#fwHauptnav')).toBeHidden();
-    await expect(page.locator('#navsub-akten')).toBeHidden();
+    await expect(page.locator('#fwHauptnav, #navsub-akten')).toHaveCount(0);
     await page.locator('#fwSchiene a[data-fach="akten"]').tap();
     await expect(page.locator('#fwFach section:visible h2')).toHaveText('Akten');
     await expect(page.locator('#fwFach section:visible a[aria-current="page"]')).toContainText('Liegenschaften');

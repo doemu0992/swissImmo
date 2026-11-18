@@ -103,12 +103,10 @@ Detailseiten rufen sie beim Namen.
         {% endif %}
 
         {% comment %}
-        DIE LEISTE NACH KONZEPT-V8: fünf Bereiche, flach, mit Zahl — und
-        «Zuletzt geöffnet» darunter. Die Unterseiten eines Bereichs stehen
-        seit dem zweiten Durchgang (30.09.2026) nicht mehr ausgeklappt in der
-        Leiste, sondern als Reiterzeile oben auf jeder Seite des Bereichs
-        (`navsub-…`, siehe `fw-inhalt`). Kein Ziel fällt weg: Jeder Eintrag
-        aus `core/navigation.py` ist dort verlinkt.
+        DIE LEISTE NACH KONZEPT-V8 (Schublade am Telefon, bis 17.11.2026 auch am PC): sechs Bereiche, flach, mit Zahl — und
+        «Zuletzt geöffnet» darunter. Am PC und am Telefon führt die Schiene (`#fwSchiene`, unten) dieselben Bereiche; die
+        Reiterzeile («Menüband») und die Bereichskapsel der Kopfzeile sind seit 18.11.2026 entfallen. Jeder Eintrag aus
+        `core/navigation.py` ist dort verlinkt.
         {% endcomment %}
         <nav class="fw-nav" aria-label="{% trans 'Bereiche' %}">
             {% for g in fw_nav_gruppen %}
@@ -209,13 +207,9 @@ Detailseiten rufen sie beim Namen.
     <div class="fw-haupt">
 
         {% comment %} ===== KOPFZEILE v2 (27.10.2026, Vorlage: navmock/v2/vorschau) =====
-           Zeile 1 von links: Marke, Bestandsfilter `lg` (Kontext-Chip), die fünf Bereiche
-           (die schwarze Kapsel gleitet zum aktiven Bereich; sie schliessen direkt an den
-           Bestand an), rechtsbündig die Omnisearch, dann die Werkzeuge.
-           Zeile 2: das Menüband des aktiven Bereichs über die ganze Breite. Was nicht passt,
-           wandert in «Mehr» (`static/js/fw-menueband.js`); ohne Skript scrollt das Band.
-           Am Telefon (bis 900 px) stehen drei Reihen: Zeile 1 mit Marke, Bestand-Symbol,
-           Suche-Symbol, Glocke, Profil; die Bereiche; das Menüband (scrollt in sich).
+           Eine Zeile von links: Marke (nur ohne Schiene: Hauswartung, Portal-Rollen), Bestandsfilter `lg` (Kontext-Chip),
+           rechtsbündig die Omnisearch, dann die Werkzeuge. Die Bereiche stehen in der Schiene links (`#fwSchiene`).
+           Am Telefon: Bestand-Symbol, Suche-Symbol, Glocke, Profil.
            «Neuer Fall» und der Menüknopf (Schublade `#fwSidebar` mit Einstellungen) stehen dort im
            Profilmenü; Mandant und «Zuletzt geöffnet» stehen bei jeder Breite im Profilmenü. Ids und Funktionen sind
            unverändert. {% endcomment %}
@@ -242,12 +236,6 @@ Detailseiten rufen sie beim Namen.
                 <button type="submit" class="fw-bestand-ok">{% trans "Übernehmen" %}</button>
                 <span class="fw-bestand-pfeil" aria-hidden="true">{% zeichen 'aufklappen' %}</span>
             </form>
-            {% if fw_nav_gruppen %}<nav class="fw-kapsel fw-hauptnav" id="fwHauptnav" aria-label="{% trans 'Bereiche' %}">
-                <span class="fw-gleiter" aria-hidden="true"></span>
-                {% for g in fw_nav_gruppen %}
-                <a href="{{ g.ziel }}{{ lg_query }}" class="{% if nav in g.alle_keys %}hier{% endif %}"{% if nav in g.alle_keys %} aria-current="page"{% endif %}>{{ g.label }}{% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="fw-hauptnav-zahl" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}</a>
-                {% endfor %}
-            </nav>{% endif %}{% comment %} Ohne Bereiche (die Hauswartung) gibt es auch keine leere Kapsel. {% endcomment %}
             {% if fw_palette or fw_suche_gruppen %}{% include 'fw/_omnisearch.html' %}{% endif %}
             <div class="fw-kapsel fw-werkzeug-kapsel">
                 <button type="button" data-bei-klick="fwThemeWechseln" title="{% trans 'Hell- oder Dunkelmodus' %}" aria-label="{% trans 'Hell- oder Dunkelmodus' %}" class="fw-knopf-rund fw-knopf-dunkel">{% zeichen 'darstellung' %}</button>
@@ -265,24 +253,6 @@ Detailseiten rufen sie beim Namen.
                 <button type="button" data-bei-klick="fwProfilMenu" aria-label="{% trans 'Profil und Darstellung' %}" aria-haspopup="true" aria-controls="fwProfil" class="fw-avatar-knopf"><span class="fw-avatar fw-avatar-gross">{{ request.user.username|slice:":2"|upper }}</span></button>
             </div>
           </div>
-          {% for g in fw_nav_gruppen %}{% if nav in g.alle_keys and g.items and nav != 'dashboard' %}
-          <div class="fw-kopf-z2">
-            <nav id="navsub-{{ g.key }}" class="fw-bereichsreiter" aria-label="{{ g.label }}">
-                <span class="fw-bereichsreiter-name" aria-hidden="true">{{ g.label }}<i>/</i></span>
-                {% for it in g.items %}{% if it.erlaubt %}
-                {% if it.section and not forloop.first %}<span class="fw-bereichsreiter-trenner" aria-hidden="true"></span>{% endif %}
-                <a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}{% if it.section %} data-abschnitt="{{ it.section }}"{% endif %}>{{ it.label }}{% if it.gesperrt %}<span class="fw-abo-schloss">{% trans 'gesperrt' %}</span>{% endif %}{% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-z crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% endif %}</a>
-                {% endif %}{% endfor %}
-                {% comment %} «Mehr»: bleibt unsichtbar, bis das Skript Punkte aus dem Band nimmt. {% endcomment %}
-                <button type="button" class="fw-mehr" id="fwMehr" aria-expanded="false" aria-controls="fwMehrPop" hidden>
-                    <span>{% trans "Mehr" %}</span><span class="fw-mehr-n" aria-hidden="true"></span><span class="sr-only">{% trans "weitere Unterbereiche" %}</span>
-                    <span class="fw-mehr-pf" aria-hidden="true">{% zeichen 'aufklappen' %}</span>
-                    <span class="fw-punkt crit fw-mehr-punkt" role="img" aria-label="{% trans 'Neue Schadenmeldungen' %}" hidden></span>
-                </button>
-            </nav>
-            <nav class="fw-mehr-pop" id="fwMehrPop" aria-label="{% trans 'Weitere Unterbereiche' %}" hidden></nav>
-          </div>
-          {% endif %}{% endfor %}
         </header>
 
         <!-- Profilmenü -->
@@ -383,8 +353,6 @@ Detailseiten rufen sie beim Namen.
 {{ fw_palette|json_script:"fw-palette-data" }}
 <script defer src="{% statisch 'js/fw-omnisearch.js' %}"></script>
 {% endif %}
-{% comment %} Menüband der Kopfzeile: Überlauf in «Mehr». Ohne dieses Skript scrollt das Band. {% endcomment %}
-<script defer src="{% statisch 'js/fw-menueband.js' %}"></script>
 {% comment %} Rahmen-Skripte als Dateien (zwischengespeichert). OHNE `defer`: Sie laufen an derselben Stelle und in
    derselben Reihenfolge wie zuvor die Inline-Skripte; Seiten-Skripte im Block `scripts` verlassen sich darauf.
    Texte und Schalter stehen im Datenblock davor (kein ausführbares Skript, braucht keine Nonce). {% endcomment %}

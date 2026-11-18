@@ -24,20 +24,20 @@ async function keinQuerscrollen(page: Page, wo: string) {
   expect(quer, `${wo}: die Seite scrollt ${quer} px quer`).toBeLessThanOrEqual(0);
 }
 
-/** Bereich (Hauptnavigation) und Menüpunkt (Menüband), die auf der Seite als «aktuell» gesetzt sind. */
+/** Bereich (Schiene) und Menüpunkt (Feld der Schiene), die auf der Seite als «aktuell» gesetzt sind. */
 async function leuchtet(page: Page) {
   return page.evaluate(() => {
     // Ohne die Zahl der ungelesenen Meldungen, die an «Akten» bzw. «Schäden» hängt.
     const text = (el: Element | null) => (el ? (el.textContent || '').replace(/\s+/g, ' ').trim().replace(/\s*\d+$/, '') : null);
     return {
-      bereich: text(document.querySelector('#fwHauptnav a[aria-current="page"]')),
-      punkt: text(document.querySelector('.fw-bereichsreiter a[aria-current="page"]')),
+      bereich: text(document.querySelector('#fwSchiene a[data-fach][aria-current="page"]')),
+      punkt: text(document.querySelector('#fwFach section[data-fach-bereich] a[aria-current="page"]')),
       einstellungen: !!document.querySelector('a.fw-wz-einst.hier'),
     };
   });
 }
 
-test.describe('Menüband: jede Seite markiert einen Bereich', () => {
+test.describe('Schiene: jede Seite markiert einen Bereich', () => {
   test('Betreibungen, Dokumente, Kommunikation, Zählerstand und Suche liegen in einem Bereich', async ({ page }) => {
     await login(page);
     await goto(page, '/neu/liegenschaften/');
@@ -75,7 +75,7 @@ test.describe('Menüband: jede Seite markiert einen Bereich', () => {
     const lgId = await page.locator('a[href^="/neu/liegenschaften/"]').evaluateAll((a) =>
       (a as HTMLAnchorElement[]).map((x) => (x.getAttribute('href') || '').match(/liegenschaften\/(\d+)\//)).find(Boolean)?.[1]);
     await goto(page, `/neu/stweg/?lg=${lgId}`);
-    const hrefs = await page.locator('#fwHauptnav a, .fw-bereichsreiter a').evaluateAll((a) =>
+    const hrefs = await page.locator('#fwSchiene a[data-fach], #fwFach a').evaluateAll((a) =>
       (a as HTMLAnchorElement[]).map((x) => x.getAttribute('href') || ''));
     expect(hrefs.length).toBeGreaterThan(5);
     const ohne = hrefs.filter((h) => h.startsWith('/neu/') && !h.includes(`lg=${lgId}`));
