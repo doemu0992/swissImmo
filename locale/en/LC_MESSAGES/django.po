@@ -40455,3 +40455,9 @@ msgstr "This application is closed. No further invitation will be sent."
 
 msgid "Der Besichtigungstermin muss in der Zukunft liegen."
 msgstr "The viewing appointment must be in the future."
+
+msgid "Bitte gültige Beträge eingeben (keine negativen Werte)."
+msgstr "Please enter valid amounts (no negative values)."
+
+msgid "%(n)s Datei(en) wurden nicht gespeichert (kein gültiges Bild oder zu gross)."
+msgstr "%(n)s file(s) were not saved (not a valid image or too large)."

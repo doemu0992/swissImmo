@@ -26,7 +26,7 @@ from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _, gettext_lazy
-from django.utils.dateparse import parse_date, parse_datetime
+from core.utils.eingabe import datum_oder_none, zeit_oder_none
 
 from core.utils.betrag import betrag_normalisieren
 from django.views.decorators.http import require_POST
@@ -400,7 +400,7 @@ def fw_fall_neu(request):
             akte = next((v for v in vertraege if str(v.pk) == nr), None)
         if akte is None:
             fehler['akte'] = gettext('Bitte eine Akte wählen.')
-        frist = parse_date(werte['frist']) if werte['frist'] else None
+        frist = datum_oder_none(werte['frist'])
         # Über `team_der_organisation`, nie über `Benutzer.objects`: der
         # Benutzer trägt keinen Mandantenfilter (bekannte-fallen, Nr. 4).
         zustaendig = next((b for b in team if str(b.pk) == werte['zustaendig']), None)
@@ -873,7 +873,7 @@ def fw_termine(request):
 def fw_termin_neu(request):
     from faelle.termin_models import Termin
 
-    beginn = parse_datetime(request.POST.get('beginn') or '')
+    beginn = zeit_oder_none(request.POST.get('beginn') or '')
     titel = (request.POST.get('titel') or '').strip()
     if not beginn or not titel:
         # Kein stiller Abbruch: Wer ein Formular abschickt und nichts
@@ -958,8 +958,8 @@ def fw_abwesenheit_neu(request):
         return redirect('/neu/abwesenheiten/')
     a = Abwesenheit(
         benutzer=benutzer,
-        von=parse_date(request.POST.get('von') or ''),
-        bis=parse_date(request.POST.get('bis') or ''),
+        von=datum_oder_none(request.POST.get('von') or ''),
+        bis=datum_oder_none(request.POST.get('bis') or ''),
         grund=request.POST.get('grund') or Abwesenheit.FERIEN,
         vertreten_durch=vertretung,
         notiz=(request.POST.get('notiz') or '').strip())

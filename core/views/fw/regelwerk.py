@@ -38,7 +38,7 @@ from django.contrib import messages
 from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.utils.dateparse import parse_date
+from core.utils.eingabe import datum_oder_none
 from django.views.decorators.http import require_POST
 
 from core.auth import (log_aktion, rolle_erforderlich, SCHREIB_ROLLEN,
@@ -155,7 +155,7 @@ def folgekosten(befund, vertrag):
     naechster = rechnung.get('naechster_moeglicher')
     if befund.ok or not gewuenscht or not naechster:
         return None
-    g, n = parse_date(gewuenscht), parse_date(naechster)
+    g, n = datum_oder_none(gewuenscht), datum_oder_none(naechster)
     if not g or not n or n <= g:
         return None
     monate = _monate_zwischen(g, n)
@@ -373,7 +373,7 @@ def fw_regelwerk_protokoll(request):
     befund = request.GET.get('befund', '')
     if befund in (Regelanwendung.OK, Regelanwendung.BEANSTANDET):
         zeilen = zeilen.filter(befund=befund)
-    stand = parse_date(request.GET.get('stand', '') or '')
+    stand = datum_oder_none(request.GET.get('stand', '') or '')
     if stand:
         zeilen = zeilen.filter(regel_stand=stand)
     if request.GET.get('nur_ungeprueft') == '1':
@@ -422,8 +422,8 @@ def fw_kuendigung_pruefen(request, vertrag_id):
     """
     from rentals.models import Mietvertrag
     v = get_object_or_404(Mietvertrag.objects, id=vertrag_id)
-    zugang = parse_date(request.GET.get('zugang', '') or '') or timezone.localdate()
-    gewuenscht = parse_date(request.GET.get('termin', '') or '')
+    zugang = datum_oder_none(request.GET.get('zugang', '') or '') or timezone.localdate()
+    gewuenscht = datum_oder_none(request.GET.get('termin', '') or '')
 
     befund, _anwendung, regel = pruefung_zum_vertrag(
         v, zugang, gewuenscht, protokollieren=False)

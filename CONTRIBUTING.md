@@ -159,6 +159,10 @@ Rundung: 24 px für Karten, 14 px für kleine Flächen.
 - Geld ist `Decimal`. Buchungen werden storniert, nie gelöscht.
 - Geldpfade: sperren, prüfen, buchen — in dieser Reihenfolge und in einer Transaktion.
 - Was länger dauert (viele Mails, viele Buchungen), läuft als Hintergrundauftrag und muss wiederholbar sein.
+- Eingaben aus Formularen stürzen nie ab: Daten über `core.utils.eingabe` (`datum_oder_none`, `zeit_oder_none`;
+  `parse_date` wirft bei «2026-02-30» einen Fehler 500, ein Wächtertest verbietet den direkten Import in Ansichten),
+  Beträge über `core.utils.betrag` und `endlicher_betrag` (`NaN`/`Infinity` sind für `Decimal` gültig und knallen erst
+  beim Vergleichen). Ungültiges ergibt eine Meldung, nie ein stilles Leeren und keine Fehlerseite.
 - Alles, was eine Mail oder einen Datensatz auslöst, wirkt bei Doppelklick, Zurück-Taste oder zweitem Tab nur einmal:
   Zustand prüfen, bevor etwas entsteht (Kündigung im Portal, Besichtigungseinladung), und den auslösenden Zustand unter
   der Sperre verbrauchen, nicht erst danach (Terminbestätigung, `tickets/termin_abstimmung.py`). Test: zweimal
