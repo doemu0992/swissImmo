@@ -68,6 +68,17 @@ class Command(BaseCommand):
         for organisation, ausnahme in pendenz_fehler:
             self.stderr.write(f'FEHLER {organisation}: Auto-Pendenzen: {ausnahme}')
 
+        # Alte Logdateien: im Protokoll stehen Namen und Mailadressen (Löschfrist `LOG_AUFBEWAHRUNG_TAGE`).
+        if nur_eine is None:
+            try:
+                from django.conf import settings
+                from core.logschutz import alte_logdateien_loeschen
+                weg = alte_logdateien_loeschen(settings.LOG_AUFBEWAHRUNG_TAGE)
+                if weg:
+                    gemeinsam.append(f"{weg} alte Logdatei(en) gelöscht")
+            except Exception as e:                           # noqa: BLE001 — darf den Lauf nicht anhalten
+                self.stderr.write(f'FEHLER Logdateien: {e}')
+
         # Marktdaten (Referenzzins/LIK) best-effort aktualisieren
         try:
             from core.utils.market_data import update_verwaltung_rates
@@ -80,6 +91,28 @@ class Command(BaseCommand):
         except Exception as e:
             logger.warning('Tageslauf: Marktdaten übersprungen', exc_info=True)
             gemeinsam.append(f"Marktdaten übersprungen ({e})")
+
+        # LIK-Monatswerte: fehlende Monate beim HEV holen und selbst speichern (plattformweit, einmal je Lauf).
+        try:
+            from django.conf import settings
+
+            from core.services import lik
+            # In Tests kein Netz (`LIK_LIVE_ABRUF` ist dort aus); der Dienst selbst ist mit Attrappen getestet.
+            # JEDE Reihe, die Werte hat (Standardreihe immer; andere, sobald eingelesen): `alle_reihen_nachfuehren`
+            # holt die Seite einmal und führt jede in sich nach — nie eine Reihe aus einer anderen.
+            neue = (lik.alle_reihen_nachfuehren(timezone.localdate())
+                    if getattr(settings, 'LIK_LIVE_ABRUF', False) else {})
+            for reihe, werte in neue.items():
+                from core.models import SicherheitsEreignis
+                text = ', '.join(f'{m:02d}/{j}: {w}' for j, m, w in werte)
+                if reihe != lik.LIK_BASIS:
+                    text += f' · Reihe {reihe}'
+                SicherheitsEreignis.objects.create(aktion='LIK-Wert automatisch nachgetragen', objekt='HEV',
+                                                   details=text)
+                gemeinsam.append(f"LIK nachgetragen ({text})")
+        except Exception as e:
+            logger.warning('Tageslauf: LIK-Nachführung übersprungen', exc_info=True)
+            gemeinsam.append(f"LIK-Nachführung übersprungen ({e})")
 
         # Wöchentliches Fristen-Mail am gewählten Wochentag (Standard Montag)
         wd = opts['digest_weekday']

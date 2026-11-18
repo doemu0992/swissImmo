@@ -4,8 +4,7 @@ import logging
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.utils.translation import gettext
-from core.auth import rolle_erforderlich, TEAM_ROLLEN
-from core.utils.formularid import ganzzahl
+from core.auth import rolle_erforderlich, SCHREIB_ROLLEN, TEAM_ROLLEN
 
 from portfolio.models import Liegenschaft, Einheit
 from rentals.models import Mietvertrag
@@ -62,7 +61,6 @@ def public_schaden_melden_view(request):
         erreichbarkeit = request.POST.get('erreichbarkeit', 'telefon')
 
         # Liegenschafts-Infos aus Dropdown/Auto-Suggest
-        liegenschaft_id = request.POST.get('liegenschaft_id', '')
         adresse_text = request.POST.get('adresse', '').strip()
         # Laengen auf die Spalten von `SchadenMeldung` (SICH-14): SQLite schweigt
         # bei zu langem Text, PostgreSQL antwortet mit 500 — und das auf einer
@@ -99,17 +97,17 @@ def public_schaden_melden_view(request):
         # Zuordnung IST hier die Aufgabe: Aus E-Mail bzw. gewaehlter
         # Liegenschaft ergibt sich, wem die Meldung gehoert — und ab dem Fund
         # laeuft alles Weitere in deren Kontext.
-        gefundener_mieter = Mieter.alle_organisationen.filter(email__iexact=email).first()
+        # Eine leere Adresse wird nie abgeglichen: Sie träfe den ersten Mieter ohne E-Mail.
+        gefundener_mieter = (Mieter.alle_organisationen.filter(email__iexact=email).first()
+                             if email else None)
         zugewiesene_liegenschaft = None
         zugewiesene_einheit = None
 
-        # A) Wurde sauber via Dropdown ausgewählt (Sicherstellen, dass es eine Zahl ist)
-        if ganzzahl(liegenschaft_id):
-            zugewiesene_liegenschaft = Liegenschaft.alle_organisationen.filter(
-                pk=ganzzahl(liegenschaft_id)).first()
-
-        # B) Auto-Abgleich via E-Mail
-        if gefundener_mieter and not zugewiesene_liegenschaft:
+        # Eine Liegenschaftsnummer aus dem Formular gilt nicht (mehr): Das öffentliche Formular bietet keine
+        # Auswahl an, und eine frei gesetzte Nummer legte eine Meldung in jede beliebige Liegenschaft. Der
+        # gebäudespezifische Weg ist der Aushang mit Token.
+        # Abgleich über die E-Mail-Adresse
+        if gefundener_mieter:
             vertrag = Mietvertrag.alle_organisationen.filter(
                 mieter=gefundener_mieter, aktiv=True).first()
             if vertrag:
@@ -128,18 +126,13 @@ def public_schaden_melden_view(request):
         # angelegt. Der Aufrufer erfaehrt es ueber den Rueckgabewert und kann
         # die Adresse erneut erfragen; erfundene Zuordnungen sind schlechter
         # als eine ehrliche Rueckfrage.
+        #
+        # NACH AUSSEN IMMER DIESELBE ANTWORT (15.11.2026): Eine eigene Fehlermeldung verriet, ob eine
+        # E-Mail-Adresse einem Mieter gehört — über alle Verwaltungen hinweg. Die Seite sagt deshalb in beiden
+        # Fällen dasselbe und verweist auf die Bestätigung per E-Mail.
         if not zugewiesene_liegenschaft:
-            return _web_formular(request, fehler=[gettext(
-                'Wir konnten Ihre Meldung keiner Liegenschaft zuordnen. '
-                'Bitte verwenden Sie die E-Mail-Adresse, die bei Ihrer Verwaltung '
-                'hinterlegt ist, oder melden Sie sich direkt bei Ihrer Verwaltung.')])
-
-        # Ein Mieter einer ANDEREN Verwaltung gehört nicht ans Ticket: Wählt der Melder die Liegenschaft
-        # von B und nennt die Adresse eines Mieters von A, stünden dessen Name und Anschrift im Ticket
-        # (und in den Mails) von B. Die Verknüpfung gilt nur innerhalb derselben Verwaltung.
-        if gefundener_mieter and gefundener_mieter.organisation_id != zugewiesene_liegenschaft.organisation_id:
-            gefundener_mieter = None
-            zugewiesene_einheit = None
+            logger.info("Web-Meldung ohne zuordenbare Liegenschaft verworfen")
+            return _web_formular(request, success=True)
 
         # 5. Ticket erstellen (Mit den neuen getrennten Namensfeldern)
         from core.tenancy import kontext_des_objekts
@@ -147,7 +140,9 @@ def public_schaden_melden_view(request):
             ticket = SchadenMeldung.objects.create(
                 liegenschaft=zugewiesene_liegenschaft,
                 betroffene_einheit=zugewiesene_einheit,
-                gemeldet_von=gefundener_mieter,
+                # Die Adresse allein beweist nicht, wer schreibt: Das anonyme Formular verknüpft die Meldung nicht
+                # mit der Person (sie erschiene sonst in deren Akte und Portal). Die Verwaltung ordnet zu.
+                gemeldet_von=None,
                 melder_anrede=anrede,
                 melder_vorname=vorname,   # 🔥 NEU: Sicher gespeichert
                 melder_nachname=nachname, # 🔥 NEU: Sicher gespeichert
@@ -196,11 +191,59 @@ def public_ticket_view(request, liegenschaft_id):
     alles Weitere in IHREM Kontext, damit das Ticket, die Einheitenliste und
     die Foto-Ablage nicht kontextlos weitermachen.
     """
-    from core.tenancy import kontext_des_objekts
+    from django.conf import settings
+    from django.http import Http404
 
+    from core.tenancy import kontext_des_objekts
+    from core.zeit import datum_heute
+
+    # DIE ADRESSE MIT DER NUMMER LÄUFT AUS (15.11.2026). Sie liess sich abzählen: jede Nummer lieferte Adresse und
+    # Einheitenliste. Neue Aushänge tragen ein Token (`public_ticket_token_view`). Die alte Adresse gilt noch bis
+    # `AUSHANG_ID_ROUTE_BIS`, damit hängende Plakate weiter funktionieren, bis sie ersetzt sind — sie leitet NICHT
+    # auf die neue weiter (das verriete das Token).
+    if datum_heute() > settings.AUSHANG_ID_ROUTE_BIS:
+        raise Http404
+    from core.utils.throttle import client_ip, rate_limit
+    if request.method == 'GET' and not rate_limit(f"report-get:{client_ip(request)}", limit=30, window_seconds=3600):
+        raise Http404
     liegenschaft = get_object_or_404(Liegenschaft.alle_organisationen, pk=liegenschaft_id)
     with kontext_des_objekts(liegenschaft):
         return _qr_formular(request, liegenschaft)
+
+
+def public_ticket_token_view(request, token):
+    """QR-Aushang über das Token der Liegenschaft — die Adresse auf jedem neu gedruckten Aushang."""
+    import hmac
+
+    from django.http import Http404
+
+    from core.tenancy import kontext_des_objekts
+    token = (token or '').strip()
+    liegenschaft = (Liegenschaft.alle_organisationen.filter(aushang_token=token).first()
+                    if len(token) >= 16 else None)
+    if liegenschaft is None or not hmac.compare_digest(liegenschaft.aushang_token, token):
+        raise Http404
+    with kontext_des_objekts(liegenschaft):
+        return _qr_formular(request, liegenschaft)
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def aushang_token_erneuern(request, liegenschaft_id):
+    """Neues Token für den Aushang: Der bisherige QR-Code führt danach ins Leere."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from portfolio.models import neuer_aushang_token
+    liegenschaft = get_object_or_404(Liegenschaft, pk=liegenschaft_id)
+    if request.method == 'POST':
+        liegenschaft.aushang_token = neuer_aushang_token()
+        liegenschaft.save(update_fields=['aushang_token'])
+        log_aktion(request, 'Aushang-Adresse erneuert', liegenschaft.strasse, '')
+        messages.success(request, gettext(
+            'Die Adresse des Aushangs ist erneuert. Bitte den Hausaushang neu drucken und aufhängen — '
+            'der bisherige QR-Code funktioniert nicht mehr.'))
+    return redirect(f'/neu/liegenschaften/{liegenschaft.pk}/')
 
 
 def titel_aus_wahl(kategorie, raum='', objekt=''):

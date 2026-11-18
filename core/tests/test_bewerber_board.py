@@ -140,7 +140,7 @@ class BewerberBoardSpaltenTests(TestCase):
             _bewerbung(self.e, f'B{i}', status=st)
         _bewerbung(self.e, 'V1', status='zugesagt', vertrag=self.v)
         self.assertEqual(messen(), wenige)
-        with self.assertNumQueries(20):
+        with self.assertNumQueries(14):
             self.c.get('/neu/bewerbungen/')
 
     def test_lesende_rolle_sieht_kein_auswahlfeld(self):
@@ -314,6 +314,24 @@ class BewerbungStatusUndVertragTests(TestCase):
         self.assertIsNotNone(b.vertrag_id)
         self.assertNotEqual(b.vertrag_id, fremd.id)
         self.assertRedirects(r, f'/neu/vertraege/{b.vertrag_id}/', fetch_redirect_response=False)
+
+    def test_familienmitglied_mit_gleicher_adresse_wird_nicht_dem_bestehenden_mieter_zugeordnet(self):
+        """Audit B2: Gleiche E-Mail und gleicher Nachname, anderer Vorname — das ist eine andere Person."""
+        hans = Mieter.objects.create(typ='person', vorname='Hans', nachname='Muster', email='familie@example.ch')
+        b = _bewerbung(self.e, 'Anna', status='geprueft', email='familie@example.ch')
+        self.c.post(f'/neu/bewerbungen/{b.id}/vertrag/')
+        b.refresh_from_db()
+        self.assertIsNotNone(b.vertrag_id)
+        self.assertNotEqual(b.vertrag.mieter_id, hans.id, 'Der Entwurf läuft auf dem bestehenden Mieter')
+        self.assertEqual(b.vertrag.mieter.vorname, 'Anna')
+
+    def test_gegenprobe_dieselbe_person_wird_nicht_doppelt_angelegt(self):
+        anna = Mieter.objects.create(typ='person', vorname='Anna', nachname='Muster', email='anna@example.ch')
+        b = _bewerbung(self.e, 'Anna', status='geprueft')
+        self.c.post(f'/neu/bewerbungen/{b.id}/vertrag/')
+        b.refresh_from_db()
+        self.assertEqual(b.vertrag.mieter_id, anna.id)
+        self.assertEqual(Mieter.objects.filter(email='anna@example.ch').count(), 1)
 
     def test_umwandlung_ist_idempotent_am_verweis(self):
         b = _bewerbung(self.e, status='zugesagt', vertrag=self.v)
@@ -583,3 +601,33 @@ class VertragZuordnungMigrationTests(TestCase):
         b.refresh_from_db()
         self.assertIsNotNone(b.vertrag_id)
         self.assertEqual(b.aktualisiert_am, vorher)
+
+
+class BewerberBoardVertragSpalteTests(TestCase):
+    """«Vertrag generiert» zeigt nur die neuesten Karten; der Zähler bleibt die Gesamtzahl."""
+
+    def setUp(self):
+        self.lg, self.e, self.m, self.v = _basis_objekte()
+        self.c = Client()
+        self.c.force_login(_team_user())
+
+    def _vertrag(self, r):
+        return {sp['key']: sp for sp in r.context['spalten']}['vertrag']
+
+    def test_obergrenze_und_hinweis(self):
+        from core.views.fw.mietprozess import BEWERBUNG_VERTRAG_MAX as MAX
+        for i in range(MAX + 3):
+            _bewerbung(self.e, f'V{i}', status='zugesagt', vertrag=self.v)
+        r = self.c.get('/neu/bewerbungen/')
+        sp = self._vertrag(r)
+        self.assertEqual(len(sp['karten']), MAX)
+        self.assertEqual(sp['anzahl'], MAX + 3)
+        self.assertEqual(sp['mehr'], 3)
+        self.assertContains(r, '3 weitere in der Liste')
+
+    def test_gegenprobe_unter_der_grenze_kein_hinweis(self):
+        _bewerbung(self.e, 'V0', status='zugesagt', vertrag=self.v)
+        r = self.c.get('/neu/bewerbungen/')
+        sp = self._vertrag(r)
+        self.assertEqual((len(sp['karten']), sp['mehr']), (1, 0))
+        self.assertNotContains(r, 'weitere in der Liste')

@@ -76,7 +76,7 @@ class EinParserTests(SimpleTestCase):
         self.assertIsNone(_betrag('-5'))
 
     def test_kuendigung(self):
-        from core.views.fw.kuendigung import _num_oder_leer
+        from core.views.fw.mietverfahren import _num_oder_leer
         self.assertEqual(_num_oder_leer("1'450.50"), '1450.50')
         self.assertEqual(_num_oder_leer('1 450,5'), '1450.5')
         self.assertEqual(_num_oder_leer(None), '')

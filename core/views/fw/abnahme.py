@@ -2,7 +2,7 @@
 #
 # Wohnungsabnahme-Protokoll (Einzug/Auszug, fuer das Handy gebaut), dazu
 # Vertragsstatus und Vertrag loeschen. Etappe 1, siehe
-# docs/ETAPPE-1-ZERLEGEN.md.
+# «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Enthaelt die Maengelruege nach Art. 267a OR — eine Frist, an der nichts
 # geraten werden darf (Skill schweizer-fachlogik). Der Umzug aendert daran

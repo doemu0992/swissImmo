@@ -23,6 +23,7 @@ Seite (Portale, Import).
 """
 from functools import wraps
 
+from django.conf import settings
 from django.shortcuts import render
 
 from core.funktionen import FUNKTIONEN, MODULE, hat_funktion
@@ -39,6 +40,8 @@ PFAD_MODULE = (
     ('/mieter/', 'mieterportal', False),
     ('/neu/stweg/', 'stweg', True),
     ('/neu/betreibungen/', 'betreibung', True),
+    # Zulauf gehört zur Stufe «team»; bis 16.11.2026 war die Seite in «start» offen. Lesen bleibt möglich.
+    ('/neu/zulauf/', 'zulauf', True),
     ('/neu/einstellungen/daten/import/', 'datenimport', False),
     ('/neu/einstellungen/daten/export/', 'datenexport', True),
 )
@@ -49,6 +52,11 @@ LESEMODUS_OFFEN = (
     '/login/', '/logout/', '/i18n/', '/konto/', '/neu/account/',
     '/neu/abonnement/', '/neu/einstellungen/daten/export/',
 )
+
+
+#: Pfade, die im gesperrten Zugang erreichbar bleiben: Anmeldung und Sprache, das Konto, das Abonnement (Rechnung, PDF,
+#: Einzahlungsschein) und der Export. Alles andere zeigt die Sperrseite.
+GESPERRT_OFFEN = LESEMODUS_OFFEN
 
 
 def modul_fuer_pfad(pfad):
@@ -84,6 +92,14 @@ def _darf_upgraden(request):
     return hat_rolle(getattr(request, 'user', None), TEAM_ROLLEN)
 
 
+def schnittstelle_frei(organisation=None, user=None):
+    """Hat diese Verwaltung die Schnittstellen (Stufe «professional»)? Journal-Formate Banana und bexio,
+    Vermarktungs-Feed und Kalender-Abonnement fragen alle hier — eine Stelle, damit die drei nicht auseinanderlaufen."""
+    if user is not None and getattr(user, 'is_superuser', False):
+        return True
+    return hat_funktion(organisation if organisation is not None else aktuelle_organisation(), 'schnittstellen')
+
+
 def sperre_modul(request, schluessel):
     """Die Seite statt einer 403: sagt, was fehlt, und wo man es freischaltet."""
     return render(request, 'abo/sperre.html', {
@@ -95,6 +111,17 @@ def sperre_modul(request, schluessel):
 def sperre_lesemodus(request):
     return render(request, 'abo/sperre.html', {
         'art': 'lesemodus', 'darf_upgraden': _darf_upgraden(request),
+    }, status=402)
+
+
+def gesperrt_offen(pfad):
+    return any(pfad.startswith(p) for p in GESPERRT_OFFEN)
+
+
+def sperre_gesperrt(request):
+    return render(request, 'abo/sperre.html', {
+        'art': 'gesperrt', 'darf_upgraden': _darf_upgraden(request),
+        'tage': settings.ABO_SPERRE_NACH_TAGEN,
     }, status=402)
 
 

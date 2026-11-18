@@ -2,15 +2,19 @@
 #
 # Bis Etappe 1 war das EINE Datei mit 14'983 Zeilen und 232 Views. Sie wird
 # entlang der Blockkommentare, die schon drinstehen, in 33 Module zerlegt
-# (Auftrag: docs/ETAPPE-1-ZERLEGEN.md). Dieses `__init__.py` hält die
+# (Auftrag: «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)). Dieses `__init__.py` hält die
 # Fassade stabil: `swiss_immo/urls.py` und die Tests importieren weiter aus
 # `core.views.fw`, ganz gleich, in welchem Modul eine View gerade liegt.
 # Deshalb bleiben alle 293 benannten URLs während der gesamten Zerlegung
 # unverändert — jeder Block ist für sich zurückrollbar.
 #
 # Etappe 1 ist abgeschlossen: Es gibt keine Restdatei mehr. Die 232 Views
-# liegen in 33 Fachmodulen, die blockübergreifenden Helfer in `_basis.py`.
-# Was hier steht, ist nur noch die Fassade.
+# liegen in Fachmodulen, die blockübergreifenden Helfer in `_basis.py`.
+# Was hier steht, ist nur noch die Fassade. Nachtrag (Roadmap 6.6, 11.11.2026):
+# Die vier grössten Dateien (`detailseiten.py`, `listen.py`, `aktionen.py`,
+# `kuendigung.py`) sind in 26 Module unter Namen wie `vertrag_detail`,
+# `debitoren_liste`, `zahlungen_aktionen`, `verzug_257d` zerlegt; Zuordnung in
+# «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf) («Nachtrag»).
 
 # Herausgeloeste Bloecke, alphabetisch. Die Blocknummern aus dem
 # Arbeitsauftrag stehen hier bewusst NICHT: Sie zaehlen die Kommentarbanner
@@ -53,7 +57,12 @@ from .sollstellung import *            # noqa: F401,F403
 
 from .liegenschaft_crud import * # noqa: F401,F403 — Block 10
 from .kautionen import *     # noqa: F401,F403 — Block 11
-from .kuendigung import *    # noqa: F401,F403 — Block 10
+from .dokument_zustellung import *  # noqa: F401,F403
+from .kuendigung_bestaetigung import *  # noqa: F401,F403
+from .kuendigung_erfassen import *  # noqa: F401,F403
+from .mietverfahren import *  # noqa: F401,F403
+from .verzug_257d import *  # noqa: F401,F403
+from .zahlungsvereinbarung import *  # noqa: F401,F403
 from .mietprozess import *   # noqa: F401,F403 — Block 10
 from .schaeden import *      # noqa: F401,F403 — Block 5
 from .tickets_board import *  # noqa: F401,F403 — Ticket-Board (Kanban)
@@ -73,6 +82,9 @@ from .daten import (  # noqa: F401 — Einstellungen «Daten»: Import für Wech
     fw_daten, fw_daten_import, fw_daten_import_vorlage, fw_daten_import_lauf, fw_daten_import_ausfuehren,
     fw_daten_import_verwerfen, fw_daten_export, fw_daten_export_format, fw_daten_export_journal,
     fw_daten_export_mandat)
+from .api_zugang import *    # noqa: F401,F403 — Einstellungen «API-Zugang»: Schlüssel für die lesende Finanz-API
+from .ablesung import *      # noqa: F401,F403 — Ablese-Aufruf an die Mieterschaft
+from .anfragen import *      # noqa: F401,F403 — Anfragen aus den Portalen (Mieter, Eigentümer)
 from .buchhaltung import *   # noqa: F401,F403 — Block 5
 from .mietzins import *      # noqa: F401,F403 — Block 5
 from .kreditoren import *    # noqa: F401,F403 — Block 4
@@ -80,9 +92,27 @@ from .bankabgleich import *  # noqa: F401,F403 — Block 2
 from .vertragserstellung import * # noqa: F401,F403 — Block 3
 from .person import *        # noqa: F401,F403 — Block 2
 from .profil import *        # noqa: F401,F403 — Block 2
-from .listen import *        # noqa: F401,F403 — Block 0
-from .aktionen import *      # noqa: F401,F403 — Block 1
-from .detailseiten import *  # noqa: F401,F403 — Block 0
+from .berichte import *  # noqa: F401,F403
+from .eigene_auswertung import *  # noqa: F401,F403
+from .debitoren_aktionen import *  # noqa: F401,F403
+from .debitoren_liste import *  # noqa: F401,F403
+from .liegenschaften_liste import *  # noqa: F401,F403
+from .objekte_liste import *  # noqa: F401,F403
+from .personen_liste import *  # noqa: F401,F403
+from .vertraege_liste import *  # noqa: F401,F403
+from .buchungen_aktionen import *  # noqa: F401,F403
+from .einstellungen_aktionen import *  # noqa: F401,F403
+from .kommunikation_aktionen import *  # noqa: F401,F403
+from .kreditoren_aktionen import *  # noqa: F401,F403
+from .stammdaten_aktionen import *  # noqa: F401,F403
+from .zahlungen_aktionen import *  # noqa: F401,F403
+from .liegenschaft_detail import *  # noqa: F401,F403 — Detailseiten (ex detailseiten.py)
+from .objekt_detail import *  # noqa: F401,F403 — Detailseiten (ex detailseiten.py)
+from .ausstattung import *  # noqa: F401,F403 — Detailseiten (ex detailseiten.py)
+from .objekt_geraete import *  # noqa: F401,F403 — Detailseiten (ex detailseiten.py)
+from .sollmietzins import *  # noqa: F401,F403 — Detailseiten (ex detailseiten.py)
+from .vertrag_detail import *  # noqa: F401,F403 — Detailseiten (ex detailseiten.py)
+from .schlussabrechnung import *  # noqa: F401,F403 — Detailseiten (ex detailseiten.py)
 # Der Stern-Import überträgt KEINE Namen mit führendem Unterstrich. Diese
 # neun werden aber von aussen gebraucht (core/tests.py,
 # core/services/abschluss_pdf.py) und müssen deshalb einzeln stehen.
@@ -102,6 +132,6 @@ from .bankabgleich import (                            # noqa: F401
     _camt_parse,
 )
 from .buchhaltung import _erfolg_bilanz                   # noqa: F401
-from .detailseiten import _formulare_prozesse             # noqa: F401
-from .kuendigung import _auszugscheckliste_anlegen        # noqa: F401
+from .vertrag_detail import _formulare_prozesse            # noqa: F401
+from .kuendigung_erfassen import _auszugscheckliste_anlegen  # noqa: F401
 from .mietprozess import _bewerber_mail                   # noqa: F401

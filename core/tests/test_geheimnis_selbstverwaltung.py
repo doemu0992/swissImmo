@@ -114,7 +114,7 @@ class PflegeTests(TestCase):
         z = geheimnis_pflege.zustand()
         self.assertEqual((z.klartext, z.aktuell), (1, 0))
         self.assertEqual(geheimnis_pflege.nachholen(), 1)
-        self.assertNotIn('756', self._roh())
+        self.assertNotIn('756.', self._roh())      # mit Punkt: «756» allein kann zufällig im Geheimtext (Base64) stehen
         self.assertEqual(geheimnis_pflege.zustand().aktuell, 1)
         self.assertEqual(geheimnis_pflege.nachholen(), 0)                  # wiederholbar
         self.mieter.refresh_from_db()
@@ -123,7 +123,7 @@ class PflegeTests(TestCase):
     def test_nach_migration_holt_nach_ohne_dass_jemand_etwas_tut(self):
         self._klartext_setzen()
         geheimnis_pflege.nach_migration()
-        self.assertNotIn('756', self._roh())
+        self.assertNotIn('756.', self._roh())      # mit Punkt: «756» allein kann zufällig im Geheimtext (Base64) stehen
 
     def test_nach_migration_stoert_das_deploy_nie(self):
         with mock.patch.object(geheimnis_pflege, 'nachholen', side_effect=RuntimeError('kaputt')) as m, \

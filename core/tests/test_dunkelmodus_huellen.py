@@ -87,10 +87,6 @@ AUSNAHMEN = {
     'core/templates/emails/base_email.html':
         'E-Mail. Mailprogramme kennen keine CSS-Variablen — ein Token käme '
         'dort als leerer Wert an, und der Brief hätte gar keine Farbe.',
-    'core/templates/fw/kommunikation.html':
-        'Druckfenster. Der Block steht in einer JavaScript-Zeichenkette und '
-        'wird in ein `window.open` für den Briefdruck geschrieben. Papier '
-        'hat keinen Dunkelmodus.',
 }
 
 

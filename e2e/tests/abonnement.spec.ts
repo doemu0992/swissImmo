@@ -35,7 +35,7 @@ test.describe('Funktionsfreigabe', () => {
     // Lesen geht, mit Hinweis und Weg zum Upgrade.
     await goto(page, '/neu/stweg/');
     await expect(page.getByText('nicht im Abonnement').first()).toBeVisible();
-    await expect(page.locator('a[href="/neu/abonnement/"]').first()).toBeVisible();
+    await expect(page.locator('#fw-inhalt a[href="/neu/abonnement/"]').first()).toBeVisible();
 
     // Schreiben im Modul: klare Seite, kein 403-Rätsel.
     const schreiben = await postMitCsrf(page, '/neu/stweg/1/aufgabe/neu/');
@@ -51,7 +51,7 @@ test.describe('Funktionsfreigabe', () => {
     await expect(page.getByRole('heading', { name: 'Ihr Abonnement' })).toBeVisible();
     // Preise sind seit 08.11.2026 freigegeben: kein Platzhalter-Hinweis mehr, dafür der Preisstand.
     await expect(page.getByText('vom Betreiber festzulegen')).toHaveCount(0);
-    await expect(page.getByText('Alle Preise exkl. MWST').first()).toBeVisible();
+    await expect(page.getByText('Einführungspreise, Stand').first()).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Nutzung' })).toBeVisible();
     await ohneQuerlauf(page);
 
@@ -75,5 +75,21 @@ test.describe('Funktionsfreigabe', () => {
     await expect(page.getByRole('heading', { name: 'Rechnungen' })).toBeVisible();
     await expect(page.getByRole('link', { name: /PDF mit QR-Rechnung/ }).first()).toBeVisible();
     await ohneQuerlauf(page);
+  });
+
+  test('Gesperrter Zugang: Sperrseite, Abo-Seite und Export bleiben erreichbar', async ({ page }) => {
+    await anmelden(page, 'e2e-gesperrt');
+    const sperre = await page.goto('/neu/liegenschaften/');
+    expect(sperre?.status()).toBe(402);
+    await expect(page.getByRole('heading', { name: 'Der Zugang ist gesperrt' })).toBeVisible();
+    await ohneQuerlauf(page);
+
+    await goto(page, '/neu/abonnement/');
+    await expect(page.getByRole('heading', { name: 'Rechnungen' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /PDF mit QR-Rechnung/ }).first()).toBeVisible();
+    await ohneQuerlauf(page);
+
+    await goto(page, '/neu/einstellungen/daten/export/');
+    await expect(page).toHaveURL(/\/export\//);
   });
 });

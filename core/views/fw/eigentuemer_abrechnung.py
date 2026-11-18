@@ -2,7 +2,7 @@
 #
 # Abrechnung gegenueber dem Eigentuemer: Ergebnis je Liegenschaft,
 # Kontokorrent, Verwaltungshonorar, Mahnstufen-Konfiguration, Auszahlung.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Bewusst NICHT mit eigentuemer.py (Stammdaten-CRUD) zusammengelegt: Das eine
 # pflegt Adressen, das andere bewegt Geld. Gleicher Gegenstand, verschiedene

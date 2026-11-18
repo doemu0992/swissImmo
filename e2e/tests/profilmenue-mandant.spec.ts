@@ -153,7 +153,7 @@ for (const [name, breite, hoehe, touch] of [['PC', 1280, 800, false], ['Telefon'
       await login(page);
       await goto(page, '/neu/');
       const lang = 'Sehr lange Bezeichnung einer Liegenschaft an der Hauptstrasse mit Nebengebäude und Einstellhalle';
-      await page.evaluate((l) => localStorage.setItem('fw-zuletzt', JSON.stringify([
+      await page.evaluate((l) => localStorage.setItem((window as any).FW_RAHMEN.zuletztSchluessel, JSON.stringify([
         { h: '/neu/vertraege/9001/', l: `${l} 1` }, { h: '/neu/vertraege/9002/', l: `${l} 2` }, { h: '/neu/vertraege/9003/', l: `${l} 3` }])), lang);
       const akte = await ersteAkteOeffnen(page); // der vierte Eintrag verdrängt den ältesten
       await goto(page, '/neu/');
@@ -177,7 +177,9 @@ for (const [name, breite, hoehe, touch] of [['PC', 1280, 800, false], ['Telefon'
 
     test('Dunkelmodus: Auswahl und Liste bleiben lesbar', async ({ page }) => {
       await loginAls(page, 'e2e-zwei');
-      await page.evaluate(() => localStorage.setItem('fw-zuletzt', JSON.stringify([{ h: '/neu/vertraege/9001/', l: 'Dunkeltest Vertrag' }])));
+      await goto(page, '/neu/');
+      // Der Schlüssel gilt je Person und Verwaltung: erst auf einer Seite mit Verwaltung setzen, dann neu laden
+      await page.evaluate(() => localStorage.setItem((window as any).FW_RAHMEN.zuletztSchluessel, JSON.stringify([{ h: '/neu/vertraege/9001/', l: 'Dunkeltest Vertrag' }])));
       await goto(page, '/neu/');
       await page.evaluate(() => (window as any).fwSetTheme('dark'));
       await profilOeffnen(page);

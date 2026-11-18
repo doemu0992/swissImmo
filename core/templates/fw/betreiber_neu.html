@@ -23,6 +23,15 @@
     <div class="fw-formular p-5">
         <div class="fw-feldblock breit"><label for="bn-firma" class="fw-label">{% trans "Firma *" %}</label>
             <input id="bn-firma" name="firma" value="{{ w.firma }}" required class="fw-feld"></div>
+        <div class="fw-feldblock breit"><label for="bn-strasse" class="fw-label">{% trans "Strasse und Nr. *" %}</label>
+            <input id="bn-strasse" name="strasse" value="{{ w.strasse }}" maxlength="100" required class="fw-feld">
+            <p class="fw-hilfe">{% trans "Die Anschrift steht auf der Rechnung." %}</p></div>
+        <div class="fw-feldblock"><label for="bn-plz" class="fw-label">{% trans "PLZ *" %}</label>
+            <input id="bn-plz" name="plz" value="{{ w.plz }}" maxlength="10" required class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="bn-ort" class="fw-label">{% trans "Ort *" %}</label>
+            <input id="bn-ort" name="ort" value="{{ w.ort }}" maxlength="100" required class="fw-feld"></div>
+        <div class="fw-feldblock"><label for="bn-telefon" class="fw-label">{% trans "Telefon" %}</label>
+            <input id="bn-telefon" name="telefon" type="tel" value="{{ w.telefon }}" maxlength="30" class="fw-feld"></div>
         <div class="fw-feldblock"><label for="bn-vorname" class="fw-label">{% trans "Vorname" %}</label>
             <input id="bn-vorname" name="vorname" value="{{ w.vorname }}" class="fw-feld"></div>
         <div class="fw-feldblock"><label for="bn-nachname" class="fw-label">{% trans "Nachname" %}</label>

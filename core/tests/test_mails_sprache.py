@@ -61,7 +61,7 @@ class PortalZugangSpracheTests(SimpleTestCase):
                                                     'https://x/portal/login/', sprache='it')
         _an, betreff, html = senden.call_args.args
         self.assertEqual(betreff, 'Il suo accesso al portale degli inquilini')
-        self.assertIn('Accedi ora', html)
+        self.assertIn('Imposta la password', html)
         self.assertNotIn('Jetzt einloggen', html)
 
 

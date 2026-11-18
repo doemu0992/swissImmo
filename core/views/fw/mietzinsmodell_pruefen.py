@@ -16,6 +16,7 @@
 #   staffel_prozent[]      Prozent je Stufe (nur um den Verstoss zu melden)
 #   basis_lik_punkte       Punkte der Index-Basis
 #   basis_lik_stand        JJJJ-MM oder JJJJ-MM-TT
+#   lik_basis              Basisreihe des Landesindex («Dezember 2010»); fehlt oder unbekannt: Standardreihe
 #   index_weitergabe_prozent, index_intervall_monate, index_art
 #   hat_zeitplan           1, wenn zusätzlich Komponenten/Zeitplan bestehen
 from datetime import date
@@ -129,13 +130,24 @@ def fw_mietzinsmodell_pruefen(request):
     gemeinsam = dict(
         modell=modell, beginn=beginn, ende=ende, ist_befristet=ist_befristet, verzicht_bis=verzicht_bis,
         netto=netto, stufen=stufen)
+    # Die Basisreihe: nur eine geführte. Vorschlag und Tabellenabgleich lesen ausschliesslich sie.
+    from core.services import lik
+    lik_basis = lik.basis_gueltig(q.get('lik_basis'))
+    if lik_basis is None:
+        if _roh(q.get('lik_basis')):
+            unlesbar.append('lik_basis')
+        lik_basis = lik.LIK_BASIS
     befunde = regeln.pruefe(
-        **gemeinsam, basis_lik_punkte=zahl('basis_lik_punkte'), basis_lik_stand=stand,
+        **gemeinsam, lik_basis=lik_basis, basis_lik_punkte=zahl('basis_lik_punkte'), basis_lik_stand=stand,
         weitergabe_prozent=zahl('index_weitergabe_prozent'), intervall_monate=zahl('index_intervall_monate'),
         index_art=_roh(q.get('index_art')).lower() or None,
         hat_zeitplan=_roh(q.get('hat_zeitplan')).lower() in _WAHR)
     abg = regeln.abgeleitet(**gemeinsam)
-    vorschlag_stand, vorschlag_punkte = regeln.basis_lik_vorschlag(beginn)
+    vorschlag_stand, vorschlag_punkte = regeln.basis_lik_vorschlag(beginn, basis=lik_basis)
+    # Kein Vorschlag in einer anderen als der Standardreihe: sagen, welcher Monat in welcher Reihe fehlt.
+    fehlt = ''
+    if beginn is not None and vorschlag_punkte is None and lik_basis != lik.LIK_BASIS:
+        fehlt = lik.fehlt_text(lik_basis, *lik._davor(beginn.year, beginn.month))
 
     return JsonResponse({
         'befunde': [b.als_dict() for b in befunde],
@@ -146,6 +158,8 @@ def fw_mietzinsmodell_pruefen(request):
             'stufen': [{'ab': _iso(a), 'erhoehung': _betrag(e), 'neu': _betrag(n)} for a, e, n in abg['stufen']],
             'basis_lik': {'punkte': _betrag(vorschlag_punkte),
                           'stand': vorschlag_stand.strftime('%Y-%m') if vorschlag_stand else None},
+            # Die Reihe, aus der der Vorschlag stammt, und — wenn sie den Monat nicht führt — was fehlt.
+            'lik_basis': lik_basis, 'basis_lik_fehlt': fehlt,
         },
         'unlesbar': unlesbar,
     })

@@ -55,24 +55,9 @@ OBERGRENZE = {
     'core/passwort_reset.html': 1,
     'core/passwort_reset_confirm.html': 2,
 },
-    'INLINE_STIL': {
-    'core/login.html': 1,
-    'core/mieter_kuendigung.html': 1,
-    'core/portal_login.html': 1,
-    'fw/_listwerkzeug.html': 1,
-    'fw/_unterschrift_feld.html': 2,
-    'fw/_zeichen.html': 1,
-    'fw/auswertung.html': 2,
-    'fw/dashboard.html': 1,
-    'fw/ersatzplanung.html': 1,
-    'fw/fall_detail.html': 5,
-    'fw/kommunikation.html': 1,
-    'fw/leerstand_verlauf.html': 1,
-    'fw/regelwerk_protokoll.html': 1,
-    'fw/schaden_detail.html': 2,
-    'fw/vertrag_detail.html': 5,
-    'fw/zulauf.html': 1,
-},
+    # Auf null (Roadmap, 12.11.2026): kein `style="…"` mehr in den Browser-Vorlagen. Dynamische Masse laufen über
+    # `data-breite`/`-hoehe`/`-links`/`-oben` (`static/js/fw-aktionen.js`). E-Mail-Vorlagen sind ausgenommen (siehe Test unten).
+    'INLINE_STIL': {},
     'SELBSTGEBAUTER_KNOPF': {
     'core/mieter_konto.html': 1,
     'core/mieter_kuendigung.html': 2,
@@ -86,7 +71,6 @@ OBERGRENZE = {
     'core/login.html': 9,
     'core/portal_login.html': 10,
     'fw/_schicht.html': 12,
-    'fw/vertrag_neu.html': 1,
 },
 }
 
@@ -196,3 +180,67 @@ class KursiveLeereZustaende(SimpleTestCase):
             '{% for x in y %}\n{% empty %}\n<p class="fw-faint italic">Keine</p>\n{% endfor %}'), [2])
         self.assertEqual(_kursive_leere_zustaende(
             "{% empty %}{% include 'fw/_empty.html' with knapp=True titel='x' %}"), [])
+
+
+class KeinInlineStilTests(SimpleTestCase):
+    """Kein `style="…"` im Quelltext der Browser-Seiten: weder in den Vorlagen aller Apps noch in HTML aus Python.
+
+    Dynamische Masse (Balken, Kurven) laufen über `data-breite`/`-hoehe`/`-links`/`-oben`, die `static/js/fw-aktionen.js`
+    über das Stilobjekt setzt. Ausgenommen sind E-Mail-Vorlagen (Mailprogramme kennen keine Stilschicht) und die
+    Dokumentvorlagen für PDF und Vorschau (`dok_base`, `_dok_stil`)."""
+
+    def _vorlagen(self):
+        for app in ('core', 'stweg', 'abo', 'faelle', 'finance', 'crm', 'portfolio', 'rentals', 'tickets', 'mietprozess'):
+            for pfad in (WURZEL / app / 'templates').rglob('*.html') if (WURZEL / app / 'templates').exists() else ():
+                rel = pfad.relative_to(WURZEL).as_posix()
+                if '/emails/' in rel or '/pdf/' in rel or rel.endswith(('dok_base.html', '_dok_stil.html')):
+                    continue
+                yield rel, pfad
+
+    def test_keine_vorlage_hat_ein_style_attribut(self):
+        gefunden = []
+        for rel, pfad in self._vorlagen():
+            n = len(MUSTER['INLINE_STIL'].findall(_ohne_kommentare(pfad.read_text(encoding='utf-8'))))
+            if n:
+                gefunden.append(f'{rel}: {n}')
+        self.assertEqual(gefunden, [], 'style="…" in Browser-Vorlagen: Klasse der Schicht oder data-breite/-hoehe/-links/-oben.')
+
+    #: Stile aus Skripten: `el.style.x = …`, `style.cssText`, `setAttribute('style', …)`. Safari meldet sie in Produktion als
+    #: `style-src-attr` (14.11.2026: Meldungen auf fast allen Seiten). Erlaubt ist allein `fwStil` (`static/js/fw-stil.js`),
+    #: das die Werte in ein konstruiertes Stylesheet schreibt; dort steht auch der Rückfall für alte Browser.
+    SKRIPT_STIL = re.compile(r"""\.style\s*[.\[=]|\.cssText\b|setAttribute\(\s*['"]style['"]""")
+
+    def test_kein_skript_setzt_einen_inline_stil(self):
+        gefunden = []
+        for pfad in sorted((WURZEL / 'static' / 'js').glob('*.js')):
+            if pfad.name == 'fw-stil.js':
+                continue
+            for nr, zeile in enumerate(pfad.read_text(encoding='utf-8').splitlines(), 1):
+                if self.SKRIPT_STIL.search(zeile.split('//')[0]):
+                    gefunden.append(f'static/js/{pfad.name}:{nr}')
+        for rel, pfad in self._vorlagen():
+            for nr, zeile in enumerate(_ohne_kommentare(pfad.read_text(encoding='utf-8')).splitlines(), 1):
+                if self.SKRIPT_STIL.search(zeile.split('//')[0]):
+                    gefunden.append(f'{rel}:{nr}')
+        self.assertEqual(gefunden, [], 'Stil aus einem Skript: fwStil(el, {eigenschaft: wert}) statt el.style.')
+
+    def test_der_waechter_erkennt_die_drei_formen(self):
+        for text in ("el.style.width = '3px'", "x.style['top'] = 1", "a.style = 'x'", "r.style.cssText = ''",
+                     "e.setAttribute('style', 'x')"):
+            self.assertTrue(self.SKRIPT_STIL.search(text), text)
+        for text in ("fwStil(el, {width: '3px'})", "getComputedStyle(el).width", "var stil = 1"):
+            self.assertFalse(self.SKRIPT_STIL.search(text), text)
+
+    def test_jede_seite_schaltet_die_erkennung_von_ios_ab(self):
+        """iOS-Safari erkennt Telefonnummern, Daten und Adressen im Text und macht daraus Links mit eigenem
+        `style`-Attribut. Unter der scharfen Richtlinie ist das ein gemeldeter Inline-Stil auf jeder Seite mit solchem
+        Text (Verdacht vom 14.11.2026: neustes iOS, keine Erweiterung, Meldungen ohne Quelle). `format-detection`
+        schaltet die Erkennung ab; Telefonnummern verlinkt die Anwendung selbst (`href="tel:…"`)."""
+        ohne = [rel for rel, pfad in self._vorlagen()
+                if 'name="viewport"' in (text := pfad.read_text(encoding='utf-8'))
+                and 'name="format-detection" content="telephone=no, date=no, address=no, email=no"' not in text]
+        self.assertEqual(ohne, [])
+
+    def test_diagramm_tags_setzen_keine_style_attribute(self):
+        quelle = (WURZEL / 'core' / 'templatetags' / 'diagramm.py').read_text(encoding='utf-8')
+        self.assertNotIn('style=', quelle)

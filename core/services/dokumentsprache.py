@@ -1,4 +1,4 @@
-"""Dokumente entstehen in der Sprache des Empfängers (Entscheid D11, docs/PLAN-V7.md §8).
+"""Dokumente entstehen in der Sprache des Empfängers (Entscheid D11, «PLAN-V7» (früheres Dokument, Git-Verlauf) §8).
 
 Nicht die Sprache der angemeldeten Person: Wer mit französischer Oberfläche
 arbeitet, erzeugt für eine deutschsprachige Mieterin trotzdem ein deutsches

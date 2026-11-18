@@ -296,8 +296,7 @@
             var links = Math.min(Math.max(rand, r.left + r.width / 2 - w / 2), innerWidth - w - rand);
             var oben = r.bottom + 8;
             if (oben + h > innerHeight - rand && r.top - h - 8 > rand) oben = r.top - h - 8;
-            blase.style.left = Math.round(links) + 'px';
-            blase.style.top = Math.round(oben) + 'px';
+            window.fwStil(blase, {left: Math.round(links) + 'px', top: Math.round(oben) + 'px'});
         }
         document.addEventListener('click', function (e) {
             var b = e.target.closest ? e.target.closest('.fw-hilfe-knopf') : null;

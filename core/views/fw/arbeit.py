@@ -53,6 +53,7 @@ logger = logging.getLogger(__name__)
 ANSICHTEN = (
     ('heute', gettext_lazy('Heute')),
     ('woche', gettext_lazy('Diese Woche')),
+    ('anfragen', gettext_lazy('Anfragen')),
     ('haengt', gettext_lazy('Hängt')),
     ('ohnefrist', gettext_lazy('Ohne Frist')),
     ('alle', gettext_lazy('Alle')),
@@ -447,7 +448,10 @@ def fw_leistenzahlen(request):
 
     heute = timezone.localdate()
     try:
-        zahl_heute = len([e for e in was_reisst(heute, grenze=0) if e['tage'] <= 0])
+        from core.auth import SCHREIB_ROLLEN, hat_rolle
+        mit_anfragen = hat_rolle(request.user, SCHREIB_ROLLEN)
+        zahl_heute = len([e for e in was_reisst(heute, grenze=0)
+                          if e['tage'] <= 0 and (mit_anfragen or e.get('art') != 'anfrage')])
     except Exception:
         logger.exception('Zähler «Heute» nicht ermittelbar')
         zahl_heute = None
@@ -461,7 +465,76 @@ def fw_leistenzahlen(request):
     except Exception:
         logger.exception('Zähler «Zulauf» nicht ermittelbar')
         zulauf = None
-    return JsonResponse({'heute': zahl_heute, 'laeufe': laeufe, 'zulauf': zulauf})
+    return JsonResponse({'heute': zahl_heute, 'laeufe': laeufe, 'zulauf': zulauf,
+                         'punkte': _punktzahlen(request, heute, zahl_heute)})
+
+
+def _punktzahlen(request, heute, zahl_heute=None):
+    """Die roten Zahlen an den einzelnen Seiten im Feld der Schiene: wo etwas zu tun ist.
+
+    Schlüssel = erster `keys`-Eintrag des Menüpunkts (`core/navigation.py`). Nur Zahlen über null kommen zurück. Jede Zahl
+    zählt dasselbe wie die Seite, an der sie steht (Zulauf: offene Eingänge; Pendenzen: heute oder überfällig; Fristen:
+    überfällig; Termine: heute; Anfragen: offene Änderungsanfragen; Läufe: fällige oder blockierte Läufe der Art).
+    Eine Quelle, die ausfällt, fehlt in der Antwort und steht im Protokoll — sie bricht die Leiste nicht."""
+    from django.db.models import Count, Q
+
+    punkte = {}
+
+    def zaehlen(name, funktion):
+        try:
+            n = funktion()
+            if n:
+                punkte[name] = int(n)
+        except Exception:
+            logger.exception('Zähler «%s» nicht ermittelbar', name)
+
+    def pendenzen_heute():
+        from core.models import Pendenz
+        return Pendenz.objects.filter(erledigt=False, faellig_am__lte=heute).count()
+
+    def fristen_ueberfaellig():
+        from core.models import Pendenz
+        from portfolio.models import SchluesselAusgabe
+        return (Pendenz.objects.filter(erledigt=False, faellig_am__lt=heute).count()
+                + SchluesselAusgabe.objects.filter(status='ausgegeben', rueckgabe_bis__lt=heute).count())
+
+    def termine_heute():
+        from faelle.termin_models import Termin
+        return Termin.objects.filter(status=Termin.GEPLANT, beginn__date=heute).count()
+
+    def anfragen_offen():
+        from core.auth import SCHREIB_ROLLEN, hat_rolle
+        from core.models import Aenderungsanfrage
+        if not hat_rolle(request.user, SCHREIB_ROLLEN):
+            return 0
+        return Aenderungsanfrage.objects.filter(status=Aenderungsanfrage.STATUS_OFFEN).count()
+
+    # «Übersicht» ist die Seite, die ALLES zeigt, was heute reisst (Läufe, Fälle, Pendenzen, Wartung, Anfragen): dieselbe Zahl
+    # wie neben «Heute».
+    if zahl_heute:
+        punkte['dashboard'] = int(zahl_heute)
+    zaehlen('pendenzen', pendenzen_heute)
+    zaehlen('fristen', fristen_ueberfaellig)
+    zaehlen('termine', termine_heute)
+    zaehlen('anfragen', anfragen_offen)
+
+    # Läufe: je Art die fälligen oder blockierten, offenen Läufe — der Menüpunkt trägt den Namen der Seite.
+    seite_der_art = {'sollstellung': 'sollstellung', 'bankabgleich': 'bankabgleich', 'mahnlauf': 'mahnwesen',
+                     'zahllauf': 'zahllauf', 'nebenkosten': 'nebenkosten', 'mwst': 'mwst'}
+
+    def laeufe_je_art():
+        from faelle.lauf_models import Lauf
+        zeilen = (Lauf.objects.offen()
+                  .filter(Q(faellig_am__lte=heute) | Q(blockaden__isnull=False, blockaden__behoben_am__isnull=True))
+                  .values('laufart__schluessel').annotate(n=Count('pk', distinct=True)))
+        for z in zeilen:
+            seite = seite_der_art.get(z['laufart__schluessel'])
+            if seite and z['n']:
+                punkte[seite] = int(z['n'])
+        return 0
+
+    zaehlen('laeufe_je_art', laeufe_je_art)
+    return punkte
 
 
 #: Beschriftung der Stufen je Laufart — REINE ANZEIGE, nichts davon steht in

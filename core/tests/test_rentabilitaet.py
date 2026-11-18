@@ -20,13 +20,15 @@ was die Karte über ihre eigene Grundlage sagt:
 """
 from decimal import Decimal
 
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 
 from core.tenancy import organisation_kontext as mandant
 
 from ._isolation import MandantenFixture
 
 
+# Die Karte gehört zur Stufe «professional» (seit 16.11.2026 durchgesetzt, `abo/test_freigabe.py`).
+@override_settings(SWISSIMMO_VORGABE_STUFE='professional')
 class RentabilitaetTests(TestCase):
 
     @classmethod
@@ -141,6 +143,8 @@ class RentabilitaetTests(TestCase):
         self.assertIsNone(rent['chf_pro_stunde'])
 
 
+# Die Karte gehört zur Stufe «professional» (seit 16.11.2026 durchgesetzt, `abo/test_freigabe.py`).
+@override_settings(SWISSIMMO_VORGABE_STUFE='professional')
 class RentabilitaetMandantengrenzeTest(TestCase):
     """Die erfassten Stunden bleiben beim eigenen Mandat.
 

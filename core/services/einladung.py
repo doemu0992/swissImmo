@@ -30,6 +30,18 @@ def einladungs_link(request, benutzer):
     return request.build_absolute_uri(reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token}))
 
 
+def portal_link(benutzer):
+    """Adresse zum Setzen des Passworts für Portal-Konten (Mieter, Eigentümer).
+
+    Mit `PORTAL_BASE_URL` statt dem Host der Anfrage: Der Link steht in einer Mail und muss auf die öffentliche
+    Adresse zeigen, auch wenn die Verwaltung über eine interne arbeitet."""
+    from django.conf import settings
+    uid = urlsafe_base64_encode(force_bytes(benutzer.pk))
+    token = default_token_generator.make_token(benutzer)
+    return settings.PORTAL_BASE_URL.rstrip('/') + reverse('password_reset_confirm',
+                                                          kwargs={'uidb64': uid, 'token': token})
+
+
 def einladung_senden(request, benutzer, organisation=None, neu=True):
     """Sendet den Link per Mail. Gibt `(gesendet, link)` zurück; ohne E-Mail-Adresse wird nichts gesendet."""
     from core.utils.email_service import send_via_hoststar

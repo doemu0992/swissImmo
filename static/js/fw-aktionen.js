@@ -1,4 +1,4 @@
-/* Aktionen per Datenattribut statt Inline-Handler (Roadmap Nr. 23, Etappe 3; docs/CSP.md).
+/* Aktionen per Datenattribut statt Inline-Handler (Roadmap Nr. 23, Etappe 3; ARCHITECTURE.md).
  *
  * Mit CSP sind `onclick="…"` & Co. gesperrt. Dieser Verteiler hört einmal am Dokument zu und liest, was am
  * Element steht. Er gilt auch für Inhalte, die später in die Seite kommen (Schublade, nachgeladene Teile).
@@ -176,4 +176,30 @@
             if (z) z.classList.toggle('hidden', !el.checked);
         }
     });
+    // Datenwerte als Mass (Balken, Kurven): `data-breite="42"` -> width:42%. Die Werte kommen vom Server als Zahl;
+    // gesetzt werden sie über `fwStil` (konstruiertes Stylesheet, `static/js/fw-stil.js`), nie als Inline-Stil. Gilt auch für später geladene Teile (Schublade).
+    var MASSE = {'data-breite': 'width', 'data-hoehe': 'height', 'data-links': 'left', 'data-oben': 'top'};
+    function masse(wurzel) {
+        Object.keys(MASSE).forEach(function (attr) {
+            var liste = wurzel.querySelectorAll('[' + attr + ']');
+            for (var i = 0; i < liste.length; i++) {
+                var wert = parseFloat(String(liste[i].getAttribute(attr)).replace(',', '.'));
+                if (isFinite(wert)) { var o = {}; o[MASSE[attr]] = wert + '%'; fwStil(liste[i], o); }
+            }
+        });
+        Object.keys(MASSE).forEach(function (attr) {
+            if (wurzel.nodeType === 1 && wurzel.hasAttribute && wurzel.hasAttribute(attr)) {
+                var w = parseFloat(String(wurzel.getAttribute(attr)).replace(',', '.'));
+                if (isFinite(w)) { var o = {}; o[MASSE[attr]] = w + '%'; fwStil(wurzel, o); }
+            }
+        });
+    }
+    masse(document);
+    new MutationObserver(function (eintraege) {
+        eintraege.forEach(function (e) {
+            for (var i = 0; i < e.addedNodes.length; i++) {
+                if (e.addedNodes[i].nodeType === 1) masse(e.addedNodes[i]);
+            }
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
 })();

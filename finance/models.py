@@ -688,7 +688,7 @@ class DebitorenRechnung(OrganisationAusKette):
 class Zahlungseingang(OrganisationAusKette):
     # VIER WEGE, UND WARUM ES KEIN EIGENES FELD GEWORDEN IST
     #
-    # Der Auftrag (docs/ETAPPE-5-ABSCHLUSS.md) sah hier einen eigenen
+    # Der Auftrag («ETAPPE-5-ABSCHLUSS» (früheres Dokument, Git-Verlauf)) sah hier einen eigenen
     # Fremdschluessel vor, gesetzt beim Import, und nannte dafuer fuenf Dateien
     # mit neun Erzeugungsstellen. Die Begruendung stimmt — „der Bezug ueber
     # Vertrag oder Liegenschaft entsteht spaeter oder nie" —, aber die
@@ -748,6 +748,8 @@ class Zahlungseingang(OrganisationAusKette):
 
     class Meta:
         db_table = 'core_zahlungseingang'
+        # «Verbuchte Zahlungen dieser Rechnung» ist die häufigste Frage an diese Tabelle (offener Betrag, Listen).
+        indexes = [models.Index(fields=['debitoren_rechnung', 'status'], name='zahlung_rechnung_status_idx')]
         constraints = [
             # Dieselbe Bank-Transaktion wird nur einmal verbucht (camt-Duplikatschutz
             # beim Import war nur eine Abfrage vor dem Anlegen). Stornierte Zeilen

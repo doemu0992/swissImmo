@@ -65,7 +65,7 @@ def generate_debitor_qr_pdf(rechnung):
     else:
         debtor = {'name': '—', 'line1': '', 'line2': ''}
 
-    betrag = float(r.offener_betrag if r.status in ('offen', 'teilbezahlt') and r.offener_betrag > 0 else r.betrag)
+    betrag = (r.offener_betrag if r.status in ('offen', 'teilbezahlt') and r.offener_betrag > 0 else r.betrag)
     ref = r.qr_referenz or None
 
     buf = io.BytesIO()

@@ -51,7 +51,7 @@ eine eigene Etappe.
 from django.test import Client, TestCase
 
 from core.views.fw.liegenschaft_crud import telefon_kern
-from core.views.fw.listen import telefon_treffer_ids
+from core.views.fw.personen_liste import telefon_treffer_ids
 
 from ._isolation import MandantenFixture
 

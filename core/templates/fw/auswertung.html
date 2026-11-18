@@ -55,7 +55,7 @@
             {% for m in monate %}
             <div class="flex-1 flex flex-col items-center justify-end h-full group">
                 <div class="fw-klein mb-1 opacity-0 group-hover:opacity-100 whitespace-nowrap">{{ m.wert|chf }}</div>
-                <div class="w-full rounded-t {% if m.neg %}fw-krit-voll{% else %}fw-balken-voll{% endif %}" style="height: {{ m.pct }}%; min-height: 2px;"></div>
+                <div class="w-full rounded-t min-h-[2px] {% if m.neg %}fw-krit-voll{% else %}fw-balken-voll{% endif %}" data-hoehe="{{ m.pct }}"></div>
                 <div class="fw-klein mt-1.5">{{ m.name }}</div>
             </div>
             {% endfor %}
@@ -72,7 +72,7 @@
         <div class="flex items-center gap-3">
             <div class="w-48 shrink-0 fw-ink truncate">{{ r.lg.strasse }}, {{ r.lg.ort }}</div>
             <div class="flex-1 fw-flaeche2 rounded-full h-4 overflow-hidden">
-                <div class="h-full rounded-full {% if r.neg %}fw-krit-voll{% else %}fw-balken-voll{% endif %}" style="width: {{ r.pct }}%"></div>
+                <div class="h-full rounded-full {% if r.neg %}fw-krit-voll{% else %}fw-balken-voll{% endif %}" data-breite="{{ r.pct }}"></div>
             </div>
             <div class="w-28 shrink-0 text-right fw-num fw-strong {% if r.neg %}fw-kritisch{% endif %}">CHF {{ r.wert|chf }}</div>
         </div>

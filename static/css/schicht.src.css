@@ -542,7 +542,6 @@
         html._embed #fwSidebar,
         html._embed header,
         html._embed #fwBackdrop,
-        html._embed .fw-tabbar { display: none !important; }
         html._embed main { padding: 1.25rem !important; max-width: none !important; }
     
         /* ---- Aktenrahmen nach mockups/konzept-v3 (Phase 4b) --------------
@@ -809,10 +808,11 @@
             align-items:baseline}
         .fw-dz:last-child{border-bottom:0}
         .fw-dl{flex:0 0 205px;font-size:12px;color:var(--ds-faint)}
+        .fw-dl.fw-dl-schmal{flex-basis:105px}  /* kurze Beschriftung (Kontaktzeilen im Vertrag); mit .fw-dl allein gewänne dessen 205px */
         .fw-dv{flex:1;min-width:0;font-size:13.5px;font-weight:500;color:var(--ds-ink)}
         .fw-dv small{display:block;font-size:11.5px;color:var(--ds-faint);font-weight:400;
             margin-top:2px;line-height:1.45}
-        @media(max-width:640px){.fw-dz{flex-direction:column;gap:2px}.fw-dl{flex-basis:auto}}
+        @media(max-width:640px){.fw-dz{flex-direction:column;gap:2px}.fw-dl,.fw-dl.fw-dl-schmal{flex-basis:auto}}
 
         /* Erfassen gehoert nicht in eine Leseansicht — aber auch nicht weg. */
         .fw-aufklapp{border-bottom:1px solid var(--ds-line)}
@@ -1086,6 +1086,13 @@
         .fw-fs-klein{font-size:11px}   /* Beschriftungen, Nebenzeilen */
         .fw-fs-fein{font-size:13px}    /* dichter Fliesstext in Karten */
         .fw-fs-text{font-size:14px}    /* wie text-sm, aber ohne Zeilenhöhe */
+        .fw-fs-15{font-size:15px}      /* Kennzahl in der Kopfzeile eines Falls oder Schadens */
+        .fw-status-gruppe{background:var(--ds-surface-2);border-radius:var(--ds-radius-sm);padding:2px;gap:2px}  /* Status-Schnellwahl im Vertrag */
+        .fw-marke-link{color:var(--ds-brand)}  /* Textlink in der Markenfarbe */
+        .pvsec{background:var(--ds-surface-2);font-weight:700;font-size:12px;padding:4px 8px;margin-top:14px;border-radius:var(--ds-radius-sm)}  /* Abschnittskopf der Live-Vorschau im Vertragsassistenten (stand als <style> im Skript) */
+        .fw-zeichenflaeche{height:150px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}  /* Unterschriftsfeld: iOS wertet einen Zug sonst als Textauswahl */
+        .fw-card-compliance{border:2px solid #c0392b}  /* STWEG: Gemeinschaft nicht compliance-konform */
+        .fw-chip.fw-chip-compliance{background:#c0392b;color:#fff}
         /* Bestätigungsdialog (fw/_bestaetigen.html) statt der Browser-Rückfrage.
            `<dialog>` mit showModal(): Fokusfalle, Esc und Hintergrund liefert der
            Browser; hier nur das Aussehen. */
@@ -1421,8 +1428,6 @@
         .fw-toast button:hover{opacity:1;background:color-mix(in srgb,var(--ds-surface) 14%,transparent)}
         @keyframes fw-toast-ein{from{opacity:0;transform:translateY(8px)}}
 
-        /* Tab-Leiste unten, nur unter 1024 px */
-        .fw-tabbar{display:none}
         .fw-vorhang-mobil{position:fixed;inset:0;background:var(--ds-scrim);z-index:45}
 
         @media (max-width:1023px){
@@ -1430,19 +1435,7 @@
             .fw-side.offen{transform:none}
             .fw-nur-mobil{display:grid!important}
             .fw-nur-breit{display:none!important}
-            .fw-inhalt{padding:20px 16px calc(88px + env(safe-area-inset-bottom,0px))}
             .fw-profil{left:auto;right:12px;bottom:auto;top:60px}
-            .fw-toasts{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
-            .fw-tabbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;left:0;right:0;bottom:0;
-                width:100vw;max-width:100%;z-index:40;
-                background:color-mix(in srgb,var(--ds-surface) 90%,transparent);
-                -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--ds-line);
-                padding:6px 4px max(6px,env(safe-area-inset-bottom))}
-            .fw-tabbar a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-                min-height:48px;min-width:0;font-size:11px;font-weight:500;color:var(--ds-faint);text-decoration:none}
-            .fw-tabbar a .fw-zeichen{width:20px!important;height:20px!important}
-            .fw-tabbar a span{max-width:100%;padding:0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-            .fw-tabbar a[aria-current="page"]{color:var(--ds-brand);font-weight:600}
         }
         @media (min-width:1024px){ .fw-vorhang-mobil{display:none} }
         @media (max-width:720px){
@@ -1698,7 +1691,7 @@
             .fw-mandat{padding:12px 16px}
         }
         /* ============================================================
-           FORMULARE NACH KONZEPT-V8 (docs/DESIGN-V8.md)
+           FORMULARE NACH KONZEPT-V8 (CONTRIBUTING.md)
            ============================================================ */
         .fw-formular{display:grid;grid-template-columns:minmax(0,1fr);gap:16px 20px}
         @media (min-width:640px){.fw-formular{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -2071,15 +2064,7 @@
         .fw-sym.warn{background:var(--ds-warn-soft);color:var(--ds-warn)}
         .fw-sym.crit{background:var(--ds-crit-soft);color:var(--ds-crit)}
         .fw-sym.info{background:var(--ds-info-soft);color:var(--ds-info)}
-        /* Tab-Leiste am Telefon: schwebende Glaskapsel statt Vollbreite */
         @media (max-width:1023px){
-            .fw-tabbar{left:12px;right:12px;bottom:max(10px,env(safe-area-inset-bottom));width:auto;max-width:none;
-                border:1px solid var(--ds-line);border-radius:var(--ds-radius-lg);padding:6px;box-shadow:var(--ds-shadow-lg);
-                background:color-mix(in srgb,var(--ds-surface) 82%,transparent)}
-            .fw-tabbar a{border-radius:var(--ds-radius);transition:background .12s,color .12s}
-            .fw-tabbar a[aria-current="page"]{background:var(--ds-brand-soft);color:var(--ds-brand-600)}
-            .fw-inhalt{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
-            .fw-toasts{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
             .fw-lage{gap:12px}.fw-kpis{gap:12px}
         }
         @media (prefers-reduced-motion:reduce){.fw-lage-kachel,.fw-card{transition:none}.fw-lage-kachel:hover{transform:none}}
@@ -2277,7 +2262,6 @@
         .fw-inhalt{max-width:1440px;padding:28px 32px 64px}
         @media (min-width:1760px){.fw-kopfleiste,.fw-inhalt{max-width:1680px}}
         @media (min-width:2200px){.fw-kopfleiste,.fw-inhalt{max-width:2000px}}
-        .fw-tabbar{display:none!important}
         @media (max-width:1023px){
             .fw-inhalt{padding:20px 16px calc(40px + env(safe-area-inset-bottom,0px))}
             .fw-freigabe{bottom:calc(16px + env(safe-area-inset-bottom))}
@@ -2413,7 +2397,7 @@
         /* ============================================================
            BAUSTEINE V11 (26.10.2026): Bento, Raster, Assistent, Prozess, Hilfe
            Ein Baukasten für alle Module — keine Seite baut sich ihr eigenes
-           Raster mehr (docs/DESIGN-V8.md, Abschnitt V11).
+           Raster mehr (CONTRIBUTING.md, Abschnitt V11).
            ============================================================ */
         /* Bento: 12 Spalten, Kacheln S (3), M (4), L (6), XL (8), breit (12). Am Tablet 6, am Telefon 1. */
         .fw-bento{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;margin-bottom:24px}
@@ -3186,6 +3170,72 @@
         .fw-abo-schloss{margin-left:6px;font-size:11px;font-weight:600;color:var(--ds-warn)}
         /* ===== Ende MODUL Abo ===== */
 
+        .fw-einst-krumen{margin-bottom:12px}
+        .fw-gruppe-titel{margin:24px 4px 8px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ds-faint)}
+        /* ===== MODUL Schiene (17.11.2026, Konzept «C · Schiene»; Telefon 18.11.2026) =====
+           Die Bereiche stehen bei JEDER Breite in einer Schiene am linken Rand: ab 1024 px 88 px breit mit Beschriftung,
+           darunter 56 px schmal nur mit Symbolen (Beschriftung im Tooltip und für Screenreader). Die Kapsel der
+           Bereiche und das Menüband der Kopfzeile entfallen damit ganz. Das aufgeklappte Feld (`#fwFach`) liegt über
+           dem Inhalt und schliesst bei Klick daneben, Esc oder Wahl einer Seite. */
+        .fw-schiene{position:fixed;left:0;top:0;bottom:0;width:56px;z-index:60;display:flex;flex-direction:column;
+            align-items:stretch;gap:4px;padding:10px 6px;background:var(--ds-surface);border-right:1px solid var(--ds-line);
+            overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+        .fw-schiene::-webkit-scrollbar{display:none}
+        .fw-schiene-marke{display:grid;place-items:center;padding:4px 0 10px;color:var(--ds-ink);text-decoration:none}
+        .fw-schiene-marke .fw-logo-haus{width:26px;height:26px}
+        .fw-schiene-b{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+            min-height:44px;padding:10px 2px;border-radius:var(--ds-radius);font-size:11.5px;font-weight:600;color:var(--ds-muted);
+            text-decoration:none;background:transparent;border:0;cursor:pointer;transition:background .12s,color .12s}
+        .fw-schiene-b:hover{background:var(--ds-hover);color:var(--ds-ink)}
+        .fw-schiene-b .fw-zeichen{width:22px!important;height:22px!important}
+        .fw-schiene-b>span:not(.fw-schiene-zahl){position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+        .fw-schiene-b.hier{background:var(--ds-brand-soft);color:var(--ds-brand-600)}
+        .fw-schiene-b[aria-expanded="true"]{background:var(--ds-hover);color:var(--ds-ink)}
+        .fw-schiene-zahl{position:absolute;top:2px;right:2px;min-width:16px;height:16px;padding:0 5px;border-radius:var(--ds-pill);
+            background:var(--ds-akzent);color:var(--ds-auf-satt);font-size:10px;font-weight:700;line-height:16px;text-align:center}
+        .fw-schiene-zahl[hidden]{display:none}
+        .fw-schiene-fuss{margin-top:auto;display:flex;flex-direction:column;gap:4px}
+        .fw-fach{position:fixed;left:56px;top:0;bottom:0;width:min(300px,calc(100vw - 56px));z-index:55;display:block;
+            padding:22px 12px calc(20px + env(safe-area-inset-bottom,0px));overflow:auto;
+            background:var(--ds-surface);border-right:1px solid var(--ds-line);box-shadow:var(--ds-shadow-lg)}
+        .fw-fach[hidden],.fw-fach [hidden]{display:none}
+        .fw-fach h2{margin:0 0 10px;padding:0 10px;font-size:19px;letter-spacing:-.01em}
+        .fw-fach h3{margin:16px 10px 4px;font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ds-faint)}
+        .fw-fach ul{list-style:none;margin:0;padding:0}
+        .fw-fach li a{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;padding:9px 10px;
+            border-radius:var(--ds-radius);color:var(--ds-muted);text-decoration:none}
+        .fw-fach li a:hover{background:var(--ds-hover);color:var(--ds-ink)}
+        .fw-fach li a.hier{background:var(--ds-brand-soft);color:var(--ds-brand-600);font-weight:600}
+        .fw-fach kbd{display:none;font:inherit;font-size:11px;font-variant-numeric:tabular-nums;color:var(--ds-faint)}
+        .fw-fach-rechts{display:inline-flex;align-items:center;gap:8px}
+        .fw-fach .fw-z{min-width:20px;padding:0 7px;border-radius:var(--ds-pill);background:var(--ds-akzent);color:var(--ds-auf-satt);
+            font-size:11.5px;font-weight:700;line-height:20px;text-align:center}
+        .fw-fach-rechts .fw-z[hidden]{display:none}
+        .fw-fach .fw-fach-selten{margin-top:18px}
+        .fw-fach .fw-fach-selten-liste li a{font-size:13.5px}
+        .fw-fach-zuletzt{margin-top:8px;border-top:1px solid var(--ds-line)}
+        .fw-fach-zuletzt a{display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 10px;border-radius:var(--ds-radius);color:var(--ds-muted);text-decoration:none}
+        .fw-fach-zuletzt a:hover{background:var(--ds-hover);color:var(--ds-ink)}
+        .fw-mit-schiene .fw-haupt{margin-left:56px}
+        /* Kapsel der Bereiche, Menüband und Wortmarke der Kopfzeile: ersetzt durch die Schiene (bei jeder Breite) */
+        .fw-mit-schiene .fw-kopfleiste .fw-hauptnav,.fw-mit-schiene .fw-kopfleiste .fw-kopf-z2,.fw-mit-schiene .fw-kopfleiste .fw-logo-kapsel{display:none}
+        .fw-wz-neu-text{display:none}
+        html._embed .fw-schiene,html._embed .fw-fach{display:none!important}
+        html._embed .fw-mit-schiene .fw-haupt{margin-left:0}
+        @media (min-width:1024px){
+            .fw-schiene{width:88px;padding:14px 8px}
+            .fw-schiene-marke{padding:6px 0 14px}
+            .fw-schiene-b>span:not(.fw-schiene-zahl){position:static;width:auto;height:auto;overflow:visible;clip:auto}
+            .fw-schiene-zahl{top:4px;right:14px}
+            .fw-fach{left:88px;width:276px}
+            .fw-fach kbd{display:inline}
+            .fw-mit-schiene .fw-haupt{margin-left:88px}
+            .fw-werkzeug-kapsel .fw-wz-neu{display:inline-flex;flex-direction:row;align-items:center;justify-content:center;width:auto;padding:0 14px 0 10px;gap:6px;white-space:nowrap;background:var(--ds-ink);color:var(--ds-surface)}
+            .fw-wz-neu-text{display:inline;font-size:13.5px;font-weight:600}
+        }
+        @media print{.fw-schiene,.fw-fach{display:none!important}.fw-mit-schiene .fw-haupt{margin-left:0}}
+        /* ===== Ende MODUL Schiene ===== */
+
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
         /* Vorlage: navmock/v2/vorschau (freigegeben, Stand «Kopfzeile v2»). Zeile 1 von links: Marke,
            Bestandsfilter `lg` (Kontext-Chip «BESTAND / Name»), die fünf Bereiche (schliessen bei jeder
@@ -3261,7 +3311,7 @@
         .fw-hauptnav a{flex:none;padding:0 12px}
         @media (min-width:1360px){.fw-hauptnav a{padding:0 14px}}
         @media (min-width:1440px){.fw-hauptnav a{padding:0 17px}}
-        @media (min-width:901px) and (max-width:1023px){.fw-hauptnav a{padding:0 10px;font-size:13.5px;gap:5px}}
+        @media (min-width:901px) and (max-width:1023px){.fw-hauptnav a{padding:0 7px;font-size:13.5px;gap:4px}}
         /* Werkzeuge: Hell/Dunkel erst ab 1440 px, «+» ab 1024 px, Einstellungen ab 440 px */
         .fw-werkzeug-kapsel .fw-knopf-dunkel{display:none}
         @media (min-width:1440px){.fw-werkzeug-kapsel .fw-knopf-dunkel{display:grid}}
@@ -3447,5 +3497,6 @@
             .fw-hauptnav a{padding:0 6px;gap:4px}
         }
         /* ===== Ende MODUL Kopfzeile und Omnisearch ===== */
+
 
 

@@ -1,4 +1,7 @@
 # portfolio/models.py
+import contextlib
+import contextvars
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -7,11 +10,26 @@ from django.utils import timezone
 from core.zeit import datum_heute
 from datetime import date
 from decimal import Decimal
+from core.services.lik import LIK_BASIS_CHOICES
 from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_path
 from core.organisation_kette import OrganisationAusKette, organisation_aus_kontext
 
+def neuer_aushang_token():
+    import secrets
+    return secrets.token_urlsafe(16)
+
+
 class Liegenschaft(models.Model):
     eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.PROTECT, related_name='liegenschaften', null=True, blank=True)
+    # Standard-Basisreihe des Landesindex für die Verträge DIESER Liegenschaft. Leer = Standard des Mandats
+    # (Eigentümer), dann der Organisation (`core.services.lik.basis_vorgabe`). Nur die Vorgabe für NEUE Verträge;
+    # bestehende behalten ihre Reihe (`Mietvertrag.lik_basis`).
+    lik_basis = models.CharField("LIK-Basisreihe (Standard)", max_length=40, blank=True, default='',
+                                 choices=LIK_BASIS_CHOICES)
+    # Geheimnis in der Adresse des QR-Aushangs (`/aushang/<token>/`). Die fortlaufende ID in der Adresse liess
+    # sich abzählen: jede Nummer lieferte Adresse und Einheitenliste einer Liegenschaft. Erneuerbar — danach
+    # braucht das Treppenhaus einen neuen Aushang.
+    aushang_token = models.CharField("Aushang-Token", max_length=32, blank=True, default='', db_index=True)
     #: WER DIESE LIEGENSCHAFT BETREUT (E2.70).
     #
     # In einer Verwaltung wird liegenschaftsweise aufgeteilt, nicht Fall für
@@ -151,6 +169,10 @@ class Liegenschaft(models.Model):
         # (`obj = lg or Liegenschaft()`, danach nur Formularfelder).
         if self.organisation_id is None:
             self.organisation_id = organisation_aus_kontext()
+        if not self.aushang_token:
+            self.aushang_token = neuer_aushang_token()
+            if kwargs.get('update_fields') is not None:
+                kwargs['update_fields'] = [*kwargs['update_fields'], 'aushang_token']
         # STWEG wird nie «aktiv», wenn die Wertquoten nicht aufgehen. Vor dem
         # Speichern, damit nichts Halbes in der Datenbank landet. Bei einem
         # neuen Datensatz gibt es noch keine Einheiten — eine neue STWEG
@@ -673,7 +695,7 @@ class ZaehlerStand(OrganisationAusKette):
     ART_CHOICES = [(ART_ANFANG, _('Anfangsstand')), (ART_ZWISCHEN, _('Zwischenstand (Mieterwechsel)')),
                    (ART_ENDE, _('Endstand'))]
     art = models.CharField("Art", max_length=10, choices=ART_CHOICES, blank=True, default='')
-    HERKUNFT_CHOICES = [('manuell', _('Manuell erfasst')), ('import', _('Import'))]
+    HERKUNFT_CHOICES = [('manuell', _('Manuell erfasst')), ('import', _('Import')), ('portal', _('Mieterportal'))]
     herkunft = models.CharField("Herkunft", max_length=10, choices=HERKUNFT_CHOICES, default='manuell')
 
     class Meta:
@@ -823,7 +845,7 @@ class Lebensdauer(models.Model):
     # `phase-2-migration` lautet aber: global lassen nur dann, wenn niemand sie
     # je bearbeiten darf. Hier darf jeder:
     #
-    #     core/views/fw/detailseiten.py  'neu' → get_or_create
+    #     core/views/fw/ausstattung.py  'neu' → get_or_create
     #                                    'loeschen' → delete
     #                                    row.save() → „Lebensdauertabelle bearbeitet"
     #
@@ -868,8 +890,51 @@ class Lebensdauer(models.Model):
 
     @classmethod
     def fuer_kategorie(cls, kategorie):
-        row = cls.objects.filter(kategorie__iexact=(kategorie or '').strip()).first()
+        schluessel = (kategorie or '').strip()
+        tabelle = _lebensdauer_tabelle()
+        if tabelle is not None:
+            return tabelle.get(schluessel.casefold())
+        row = cls.objects.filter(kategorie__iexact=schluessel).first()
         return row.jahre if row else None
+
+    @staticmethod
+    def gemerkt():
+        """Lädt die Tabelle innerhalb des Blocks EINMAL statt je Nachschlag.
+
+        Die Ersatzplanung schlägt je Gerät und Ausstattung mehrfach nach (Status, Rest, Ersatzjahr, Anzeige):
+        gemessen sechs Abfragen je Zeile, 3383 für das PDF. Als Kontextmanager oder Dekorator:
+        `with Lebensdauer.gemerkt(): …`. Gilt je Organisation; ausserhalb des Blocks bleibt alles wie zuvor."""
+        return _LebensdauerMerker()
+
+
+_LD_MERKER = contextvars.ContextVar('lebensdauer_tabelle', default=None)
+
+
+def _lebensdauer_tabelle():
+    """Die gemerkte Tabelle der aktiven Organisation — `None` ausserhalb von `Lebensdauer.gemerkt()`."""
+    merker = _LD_MERKER.get()
+    if merker is None:
+        return None
+    from core.tenancy import aktuelle_organisation
+    org = getattr(aktuelle_organisation(), 'pk', None)
+    if org not in merker:
+        tabelle = {}
+        # Bei Namen, die sich nur in Gross-/Kleinschreibung unterscheiden, gewinnt wie bisher die erste Zeile.
+        for kat, jahre in Lebensdauer.objects.order_by('kategorie', 'pk').values_list('kategorie', 'jahre'):
+            tabelle.setdefault((kat or '').strip().casefold(), jahre)
+        merker[org] = tabelle
+    return merker[org]
+
+
+class _LebensdauerMerker(contextlib.ContextDecorator):
+    def __enter__(self):
+        self._token = _LD_MERKER.set({}) if _LD_MERKER.get() is None else None
+        return self
+
+    def __exit__(self, *_):
+        if self._token is not None:
+            _LD_MERKER.reset(self._token)
+        return False
 
 
 class Schliessanlage(OrganisationAusKette):

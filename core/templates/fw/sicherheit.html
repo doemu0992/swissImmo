@@ -60,7 +60,7 @@ Schlüssel und Zähler die ganze Installation betreffen, nicht eine Verwaltung.
             </div>
             <div class="fw-feldblock">
                 <button type="submit" name="aktion" value="erneuern" class="fw-btn"{% if not z.erneuerbar %} disabled{% endif %} data-bestaetigen="{% filter escapejs %}{% trans "Neuen Schlüssel erzeugen und alle Werte darauf umstellen? Der alte Schlüssel wird danach entfernt. Eine Kopie des neuen Schlüssels sollten Sie danach herunterladen." %}{% endfilter %}">{% trans "Schlüssel erneuern" %}</button>
-                <p class="fw-mutet">{% if z.erneuerbar %}{% trans "Erzeugt einen neuen Schlüssel, stellt alles um und entfernt den alten — in einem Schritt, ohne Verlust." %}{% else %}{% trans "Nur möglich, wenn die Anwendung den Schlüssel selbst angelegt hat. Liegt er in der .env oder in einer eigenen Datei, wechseln Sie ihn dort (docs/SCHLUESSEL.md)." %}{% endif %}</p>
+                <p class="fw-mutet">{% if z.erneuerbar %}{% trans "Erzeugt einen neuen Schlüssel, stellt alles um und entfernt den alten — in einem Schritt, ohne Verlust." %}{% else %}{% trans "Nur möglich, wenn die Anwendung den Schlüssel selbst angelegt hat. Liegt er in der .env oder in einer eigenen Datei, wechseln Sie ihn dort (ARCHITECTURE.md)." %}{% endif %}</p>
             </div>
             <div class="fw-feldblock">
                 <button type="submit" name="aktion" value="kopie" class="fw-btn">{% trans "Kopie des Schlüssels herunterladen" %}</button>

@@ -672,7 +672,7 @@ class AbfragezahlTests(Basis):
     #: 4 Abfragen des Requests (Sitzung, Benutzer, Mitgliedschaft samt Organisation,
     #: Rollenprüfung) + 1 Rollenlesung im Dienst (`sicht_von`: Er prüft die Rolle
     #: selbst, nicht nur der Dekorator) + 6 Gruppen × 2.
-    GRUNDZAHL = 17
+    GRUNDZAHL = 16
     #: Vertrag samt Objekt + Anpassungen, Staffelstufen, Komponenten und
     #: Objekt-Sollmietzinse (`_nachladen_vertraege`): nur mit Vertragstreffern.
     STAPEL_VERTRAEGE = 5
@@ -725,6 +725,19 @@ class AbfragezahlTests(Basis):
         # «Sanitaer» trifft nur einen Dienstleister: Grundzahl.
         with self.assertNumQueries(self.GRUNDZAHL):
             c.get('/neu/palette/', {'q': 'Sanitaer'})
+
+    def test_die_zahl_haengt_nicht_vom_lik_zwischenspeicher_ab(self):
+        """Ein Vertragstreffer las über die Vorgabe `get_current_lik` den Indexstand: Mit abgelaufenem Zwischenspeicher
+        war es eine Abfrage mehr, und dieser Wächter schwankte um eins (14.11.2026)."""
+        from core.services import lik
+        c = Client()
+        c.force_login(self.a.benutzer)
+        c.get('/neu/palette/', {'q': 'Mi'})
+        warm, daten = self._messen(c, 'Weg 7')
+        self.assertTrue(any(t['gruppe'] == 'vertraege' for t in daten['treffer']), 'kein Vertragstreffer: Test prüft nichts')
+        lik.cache_leeren()
+        kalt, _daten = self._messen(c, 'Weg 7')
+        self.assertEqual(kalt, warm)
 
     def test_die_zahl_haengt_nicht_von_der_trefferzahl_der_stapel_ab(self):
         """Ein Vertrag oder fünf: dieselbe Zahl. Der Stapel ist das Gegenmittel
@@ -1441,7 +1454,7 @@ class RollenTests(Basis):
         c.force_login(self.hauswart)
         c.get('/neu/palette/', {'q': 'Mi'})
         for q in ('Wasserschaden', 'zzzqqq', 'Wasserschaden Bad Heizung'):
-            with self.subTest(q=q), self.assertNumQueries(7):
+            with self.subTest(q=q), self.assertNumQueries(6):
                 c.get('/neu/palette/', {'q': q})
 
     # ---- alle anderen: 403 ---------------------------------------------------

@@ -1,6 +1,6 @@
 # Mannschaft und Arbeitsteilung
 
-Diese Datei beschreibt, welche Skills und Agenten es gibt, wofür sie zuständig sind und in welcher Reihenfolge sie zum Einsatz kommen. Grundlage ist `docs/ANALYSE.md` und die Projektanweisung.
+Diese Datei beschreibt, welche Skills und Agenten es gibt, wofür sie zuständig sind und in welcher Reihenfolge sie zum Einsatz kommen. Grundlage ist `«ANALYSE» (früheres Dokument, Git-Verlauf)` und die Projektanweisung.
 
 ## Zwei Schichten
 

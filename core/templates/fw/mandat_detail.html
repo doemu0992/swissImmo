@@ -130,6 +130,10 @@ hier dasselbe Muster.
 {% comment %} Der Streifen auf «Heute» braucht keine Überschrift — dort ist klar, worum
    es geht. Hier steht er zwischen Befunden und Stammdaten und muss sagen,
    was er zeigt. {% endcomment %}
+{% if rentabilitaet_gesperrt %}
+<div class="fw-subhead">{% trans "Rentabilität" %}</div>
+<div class="fw-hinweis mb-4"><span class="fw-hi">{% zeichen 'gesperrt' %}</span><div class="fw-ht">{% trans "Honorarertrag gegen erfassten Aufwand ist Teil der Stufe Professional." %} <a href="/neu/abonnement/">{% trans "Zum Abonnement" %}</a></div></div>
+{% else %}
 <div class="fw-subhead">{% trans "Rentabilität" %}</div>
 <div class="fw-kpis">
     <div class="fw-kpi"><div class="fw-l">{% trans "Honorar pro Jahr" %}</div>
@@ -152,6 +156,7 @@ hier dasselbe Muster.
 {% widthratio rentabilitaet.faelle_mit_zeit rentabilitaet.faelle_gesamt 100 as abdeckung %}
 {% if abdeckung|add:0 < 50 %}
 <p class="fw-hilfe fw-warnton mb-4">{% blocktrans %}Nur {{ abdeckung }} % der Fälle haben Zeit erfasst — die Zahl trägt noch nicht weit.{% endblocktrans %}</p>
+{% endif %}
 {% endif %}
 {% endif %}
 

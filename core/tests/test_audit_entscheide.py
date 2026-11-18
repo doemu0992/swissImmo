@@ -1,4 +1,4 @@
-"""Offene Entscheide aus dem Audit (docs/AUDIT-SAAS-NIVEAU.md).
+"""Offene Entscheide aus dem Audit («AUDIT-SAAS-NIVEAU» (früheres Dokument, Git-Verlauf)).
 
 - Kaution beim Objekt: Wohnräume höchstens drei Monatsmieten (Art. 257e OR),
   Gewerbe und Nebenobjekte frei.

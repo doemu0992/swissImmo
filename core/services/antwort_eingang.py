@@ -115,7 +115,9 @@ def neue_kennung(firma=''):
         if zufall == RECHNUNGS_ZUSATZ[1:]:
             continue
         if not (Organisation.objects.filter(antwort_kennung=kennung).exists()
-                or Organisation.objects.filter(antwort_kennung_alt=kennung).exists()):
+                or Organisation.objects.filter(antwort_kennung_alt=kennung).exists()
+                or Organisation.objects.filter(rechnungs_kennung=kennung).exists()
+                or Organisation.objects.filter(rechnungs_kennung_alt=kennung).exists()):
             return kennung
 
 
@@ -124,7 +126,15 @@ def antwort_adresse(organisation):
 
 
 def rechnungs_adresse(organisation):
-    return f'{organisation.antwort_kennung}{RECHNUNGS_ZUSATZ}@{antwort_domain()}'
+    """Die Adresse für Kreditorenrechnungen: eine EIGENE Zufallskennung, nicht aus der Antwortadresse ableitbar."""
+    return f'{organisation.rechnungs_kennung}@{antwort_domain()}'
+
+
+def alte_rechnungsadresse_gilt():
+    """Gilt die frühere Form `<antwort-kennung>-rechnungen@…` noch? Bis `RECHNUNGSADRESSE_ALT_BIS`, damit
+    Weiterleitungen und Lieferanten, die sie kennen, Zeit zur Umstellung haben."""
+    from core.zeit import datum_heute
+    return datum_heute() <= settings.RECHNUNGSADRESSE_ALT_BIS
 
 
 def kennung_erneuern(organisation, jetzt=None):
@@ -134,7 +144,11 @@ def kennung_erneuern(organisation, jetzt=None):
     organisation.antwort_kennung_alt = organisation.antwort_kennung
     organisation.antwort_kennung_alt_bis = jetzt + ALT_GUELTIG
     organisation.antwort_kennung = neue_kennung(organisation.firma)
-    organisation.save(update_fields=['antwort_kennung', 'antwort_kennung_alt', 'antwort_kennung_alt_bis'])
+    # Beide Adressen wechseln zusammen und haben dasselbe 30-Tage-Fenster für die vorherige.
+    organisation.rechnungs_kennung_alt = organisation.rechnungs_kennung or ''
+    organisation.rechnungs_kennung = neue_kennung(organisation.firma)
+    organisation.save(update_fields=['antwort_kennung', 'antwort_kennung_alt', 'antwort_kennung_alt_bis',
+                                     'rechnungs_kennung', 'rechnungs_kennung_alt'])
     return antwort_adresse(organisation)
 
 
@@ -170,7 +184,14 @@ def zuordnung_zu_adresse(adresse, jetzt=None):
     org = _organisation_zu_kennung(lokal, jetzt)
     if org is not None:
         return org, ZWECK_ANTWORTEN
-    if lokal.endswith(RECHNUNGS_ZUSATZ):
+    from crm.models import Organisation
+    org = Organisation.objects.filter(rechnungs_kennung=lokal).first()
+    if org is not None:
+        return org, ZWECK_RECHNUNGEN
+    org = Organisation.objects.filter(rechnungs_kennung_alt=lokal).first()
+    if org is not None and alte_kennung_gilt(org, jetzt):
+        return org, ZWECK_RECHNUNGEN
+    if lokal.endswith(RECHNUNGS_ZUSATZ) and alte_rechnungsadresse_gilt():
         org = _organisation_zu_kennung(lokal[:-len(RECHNUNGS_ZUSATZ)], jetzt)
         if org is not None:
             return org, ZWECK_RECHNUNGEN
@@ -298,6 +319,8 @@ def eingehende_antwort_verarbeiten(organisation, absender, betreff, text, kopf=N
 
     * ``'direkt_mieter'`` / ``'direkt_handwerker'``: Chat am Auftrag, Gegenseite per Mail bedient
     * ``'handwerker'`` / ``'melder'``: im Ticket-Verlauf abgelegt (``tickets.workflow.antwort_zuordnen``)
+    * ``'unbekannt'``: Absender gehört nicht zum Ticket; als interne Notiz abgelegt, ohne Statuswechsel und ohne
+      Sichtbarkeit im Mieterportal
     * ``'ohne_ticket'``: keine Nummer im Betreff, leerer Text oder das Ticket gibt es in DIESER Verwaltung
       nicht. Der Grund wird bewusst nicht unterschieden: kein Hinweis, ob es anderswo existiert.
     """
@@ -318,4 +341,4 @@ def eingehende_antwort_verarbeiten(organisation, absender, betreff, text, kopf=N
     if ticket is None:
         return 'ohne_ticket'
     return antwort_zuordnen(ticket, absender, text[:TEXT_MAX],
-                            auftrag_id=direktkanal.auftrag_id_aus_betreff(betreff), kopf=kopf)
+                            auftrag_id=direktkanal.auftrag_id_aus_betreff(betreff), kopf=kopf, betreff=betreff)

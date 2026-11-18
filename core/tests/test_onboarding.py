@@ -48,7 +48,7 @@ class AnlegenTests(TestCase):
     def test_keine_abo_datumsfelder_an_der_organisation(self):
         """Keine eigenen Abo-Datumsfelder — und das ist kein Versehen.
 
-        `docs/PLAN-V7.md` §4.1 gibt Beginn und Testphasenende eine eigene
+        `«PLAN-V7» (früheres Dokument, Git-Verlauf)` §4.1 gibt Beginn und Testphasenende eine eigene
         Heimat in `abo.Abonnement` (Phase 3). Zwei Felder hier vorweg wären
         dort die zweite Quelle für dieselbe Auskunft.
 
