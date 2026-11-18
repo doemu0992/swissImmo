@@ -117,6 +117,9 @@ def _lebenszeichen_geben(auftrag):
         cache.set(LEBENSZEICHEN_SCHLUESSEL.format(pk=auftrag.pk), _lauf_kennung(auftrag), LAEUFT_HOECHSTENS_MINUTEN * 60)
     except Exception:                                        # noqa: BLE001
         logger.debug('Lebenszeichen nicht gespeichert', exc_info=True)
+    # Wer arbeitet, lebt: Der Puls des Läufers kommt sonst nur zwischen zwei Aufträgen. Ein Auftrag über drei Minuten
+    # (`PULS_SEKUNDEN`) liess die Seite «Aufträge» fälschlich «Läufer läuft nicht» melden (Audit K6).
+    puls_melden()
 
 
 def _abgestuerzte_wieder_einreihen(jetzt):
@@ -163,6 +166,7 @@ def _ausfuehren(auftrag):
             zustand=zustand, ergebnis=ergebnis, fehler=fehler[:300], beendet_am=timezone.now(),
             fortschritt=100 if zustand == Auftrag.ZUSTAND_FERTIG else auftrag.fortschritt)
 
+    _lebenszeichen_geben(auftrag)                             # ab dem Start: lebt, auch ohne ersten Fortschritt
     eintrag = ARTEN.get(auftrag.art)
     if eintrag is None:
         return beenden(Auftrag.ZUSTAND_FEHLER, fehler=f'Unbekannte Art «{auftrag.art}».')
