@@ -331,8 +331,15 @@ def fw_bankbewegung_zuordnen(request):
                 if offen_kr <= 0:
                     messages.error(request, gettext('Diese Lieferantenrechnung ist bereits bezahlt.'))
                     return redirect(ziel)
-                # Nie mehr tilgen als offen ist — der Rest bleibt im Eingang.
-                betrag = min(betrag, offen_kr)
+                # Nie mehr tilgen als offen ist. Bis 11/2026 wurde auf den offenen Betrag gekürzt und die ganze Zeile
+                # als «verbucht» markiert — die Differenz fehlte dauerhaft auf dem Bankkonto, entgegen dem Kommentar
+                # «der Rest bleibt im Eingang» (Audit F4). Jetzt: ablehnen, die Zeile bleibt offen.
+                if betrag > offen_kr:
+                    messages.error(request, gettext(
+                        'Die Belastung (CHF %(belastung)s) ist grösser als der offene Betrag der Rechnung (CHF %(offen)s). '
+                        'Bitte die Rechnung prüfen oder die Bewegung auf ein Konto verbuchen.') % {
+                            'belastung': betrag, 'offen': offen_kr})
+                    return redirect(ziel)
                 # Gleicher Weg wie die manuelle Zahlung (KreditorenZahlung +
                 # 2000 an Bank), damit es nur EINEN Zahlungspfad gibt.
                 KreditorenZahlung.objects.create(

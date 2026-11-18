@@ -40443,3 +40443,6 @@ msgstr "This entry belongs to an invoice. Please cancel the invoice itself, othe
 
 msgid "Rückgängig nicht möglich: Der Import enthält %(n)s verbuchte Belastung(en) (Gebühren, Lieferantenzahlungen). Bitte zuerst deren Buchungen stornieren, sonst werden sie nach einem erneuten Import doppelt gebucht."
 msgstr "Cannot undo: the import contains %(n)s posted debit(s) (fees, supplier payments). Please reverse these entries first, otherwise they will be posted twice on a new import."
+
+msgid "Die Belastung (CHF %(belastung)s) ist grösser als der offene Betrag der Rechnung (CHF %(offen)s). Bitte die Rechnung prüfen oder die Bewegung auf ein Konto verbuchen."
+msgstr "The debit (CHF %(belastung)s) exceeds the open amount of the invoice (CHF %(offen)s). Please check the invoice or post the movement to an account."

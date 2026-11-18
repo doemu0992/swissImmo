@@ -549,7 +549,9 @@ def fw_zahllauf(request):
                 # E-Banking geladen, zahlt die Bank doppelt. Jetzt sperrt der
                 # erste die Zeilen und setzt sie auf «in Zahlung»; der zweite
                 # wartet und findet sie nicht mehr «freigegeben».
-                rechnungen = _auswahl(['freigegeben'], sperren=True)
+                # «teilbezahlt» gehört dazu: Der Vorschlag zeigt und summiert den offenen Rest (Live-Test H9); die Datei liess
+                # ihn bisher still aus, und der Rest war über den Zahllauf nie zahlbar (Audit F5).
+                rechnungen = _auswahl(['freigegeben', 'teilbezahlt'], sperren=True)
                 if not rechnungen:
                     messages.error(request, gettext('Keine Rechnung ausgewählt — oder die Rechnungen sind bereits in einer Zahlungsdatei.'))
                     return redirect(_ziel())

@@ -116,6 +116,8 @@ Rollen hängen an der Mitgliedschaft je Organisation (`crm.Mitgliedschaft`), nic
 `mahnlauf` bzw. Knopf → `core/services/mahnlauf_lauf.py` → `automation.run_mahnlauf`.
 Ab der Schwelle (150 Verträge, 100 offene Rechnungen; Rundschreiben ab 30 Empfängern) entsteht **immer** ein
 Hintergrundauftrag, nie eine Berechnung im Seitenaufruf.
+Ein laufender Auftrag meldet bei jedem Fortschritt ein Lebenszeichen (Cache); nur ohne Lebenszeichen gilt er nach 30 Minuten als
+abgestürzt und wird neu eingereiht. Beenden darf einen Auftrag nur der Lauf, der ihn gestartet hat.
 
 ### Hintergrundaufträge
 `auftraege.anlegen` schreibt eine Zeile, `manage.py auftraege_abarbeiten` holt sie ab (im Mandantenkontext, mit
@@ -130,7 +132,9 @@ Zahlungsausgang: `core/services/pain001.py` (Zahllauf, ab Freigabelimit mit zwei
 Storno gehört an die Quelle: Eine Buchung, die zu einer Zahlung oder Rechnung gehört, wird im Journal nicht storniert
 (`fw_buchung_stornieren` verweist auf Bankabgleich bzw. Rechnung), und «Import rückgängig» ist gesperrt, solange
 verbuchte Belastungen am Auszug hängen — sonst stimmt das Nebenbuch nicht mehr, oder die Belastung wird beim erneuten
-Import doppelt gebucht. Eine MWST-Periode für den ganzen Bestand und eine je Liegenschaft schliessen sich aus
+Import doppelt gebucht. Eine Belastung, die grösser ist als die offene Kreditorenrechnung, wird abgelehnt (nicht auf den
+Rest gekürzt). Der Zahllauf nimmt auch teilbezahlte Rechnungen auf und überweist den offenen Rest. Die Kautionsauflösung gibt
+das Sperrkonto in Höhe des bilanzierten Betrags frei. Eine MWST-Periode für den ganzen Bestand und eine je Liegenschaft schliessen sich aus
 (`_mwst_bereits_verbucht`).
 
 ### Nebenkosten

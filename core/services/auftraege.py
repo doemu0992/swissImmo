@@ -35,6 +35,11 @@ MAX_VERSUCHE = 3
 PULS_SCHLUESSEL = 'auftragslaeufer_puls'
 PULS_SEKUNDEN = 180
 
+#: Ein laufender Auftrag meldet bei jedem Fortschritt ein Lebenszeichen (Cache). Wer sich so meldet, gilt nicht als
+#: abgestürzt, auch wenn er länger als `LAEUFT_HOECHSTENS_MINUTEN` läuft (Audit K2: ein Rundschreiben mit über 1000
+#: Empfängern wurde nach 30 Minuten neu eingereiht und lief doppelt).
+LEBENSZEICHEN_SCHLUESSEL = 'auftrag_lebenszeichen_{pk}'
+
 #: Schlüssel → (Bezeichnung, Funktion). Gefüllt durch `@auftragsart`.
 ARTEN = {}
 
@@ -93,10 +98,33 @@ def bezeichnung(art):
     return eintrag[0] if eintrag else art
 
 
+def _lauf_kennung(auftrag):
+    """Welcher Lauf lebt: Versuch UND Startzeit (die Nummer allein wiederholt sich zwischen Aufträgen und Läufen)."""
+    return (auftrag.versuche, auftrag.gestartet_am.isoformat() if auftrag.gestartet_am else '')
+
+
+def _hat_lebenszeichen(auftrag):
+    from django.core.cache import cache
+    try:
+        return cache.get(LEBENSZEICHEN_SCHLUESSEL.format(pk=auftrag.pk)) == _lauf_kennung(auftrag)
+    except Exception:                                        # noqa: BLE001 — ohne Cache gilt die alte Regel (Zeitgrenze)
+        return False
+
+
+def _lebenszeichen_geben(auftrag):
+    from django.core.cache import cache
+    try:
+        cache.set(LEBENSZEICHEN_SCHLUESSEL.format(pk=auftrag.pk), _lauf_kennung(auftrag), LAEUFT_HOECHSTENS_MINUTEN * 60)
+    except Exception:                                        # noqa: BLE001
+        logger.debug('Lebenszeichen nicht gespeichert', exc_info=True)
+
+
 def _abgestuerzte_wieder_einreihen(jetzt):
     """Aufträge, die zu lange «laufen», warten erneut — oder sind nach `MAX_VERSUCHE` fehlgeschlagen."""
     grenze = jetzt - timedelta(minutes=LAEUFT_HOECHSTENS_MINUTEN)
     for a in Auftrag.alle_organisationen.filter(zustand=Auftrag.ZUSTAND_LAEUFT, gestartet_am__lt=grenze):
+        if _hat_lebenszeichen(a):
+            continue
         if a.versuche >= MAX_VERSUCHE:
             a.zustand, a.beendet_am = Auftrag.ZUSTAND_FEHLER, jetzt
             a.fehler = 'Abgestürzt: lief zu lange, keine Versuche mehr übrig.'
@@ -123,11 +151,15 @@ def _ausfuehren(auftrag):
     from core.funktionen import hintergrund_erlaubt
 
     def fortschritt(prozent, text=''):
+        _lebenszeichen_geben(auftrag)
         Auftrag.alle_organisationen.filter(pk=auftrag.pk).update(
             fortschritt=max(0, min(100, int(prozent))), fortschritt_text=str(text)[:200])
 
     def beenden(zustand, ergebnis='', fehler=''):
-        Auftrag.alle_organisationen.filter(pk=auftrag.pk).update(
+        # Nur der Lauf, der den Auftrag gestartet hat, darf ihn beenden: Wurde er inzwischen neu eingereiht und ein
+        # zweites Mal gestartet (`versuche` ist höher), überschriebe der erste Lauf sonst das Ergebnis des zweiten.
+        Auftrag.alle_organisationen.filter(pk=auftrag.pk, zustand=Auftrag.ZUSTAND_LAEUFT,
+                                           versuche=auftrag.versuche).update(
             zustand=zustand, ergebnis=ergebnis, fehler=fehler[:300], beendet_am=timezone.now(),
             fortschritt=100 if zustand == Auftrag.ZUSTAND_FERTIG else auftrag.fortschritt)
 
