@@ -1,32 +1,10 @@
-/* Ember: gleitende Kapsel, hochzählende Kennzahlen — bis 15.11.2026 als Inline-Skript in `core/templates/fw/base.html`.
+/* Ember: hochzählende Kennzahlen, Lastbalken — bis 15.11.2026 als Inline-Skript in `core/templates/fw/base.html`.
    Als Datei, damit der Browser es zwischenspeichert statt es mit jeder Seite neu zu laden (Audit P15).
    Texte und Schalter der Seite kommen aus dem Datenblock `#fw-rahmen-daten` (siehe base.html). */
-// ─── Ember: gleitende Kapsel der Bereiche, hochzählende Kennzahlen ───
+// ─── Ember: hochzählende Kennzahlen, Lastbalken ───
 (function () {
     var ruhig = document.documentElement.classList.contains('fw-ruhig')
         || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-    var nav = document.getElementById('fwHauptnav');
-    if (nav) {
-        var gleiter = nav.querySelector('.fw-gleiter');
-        var setzen = function (a, sofort) {
-            if (!a || !gleiter) return;
-            fwStil(gleiter, {transition: sofort ? 'none' : null, width: a.offsetWidth + 'px', transform: 'translateX(' + a.offsetLeft + 'px)'});
-            if (sofort) requestAnimationFrame(function () { fwStil(gleiter, {transition: null}); });
-        };
-        var aktiv = nav.querySelector('a.hier');
-        if (aktiv) {
-            setzen(aktiv, true);
-            // Am Telefon steht der aktive Bereich im Bild
-            if (nav.scrollWidth > nav.clientWidth) nav.scrollLeft = Math.max(0, aktiv.offsetLeft - (nav.clientWidth - aktiv.offsetWidth) / 2);
-        } else if (gleiter) { fwStil(gleiter, {opacity: '0'}); }
-        // Beim Zeigen gleitet die Kapsel mit, beim Verlassen zurück
-        nav.querySelectorAll('a').forEach(function (a) {
-            a.addEventListener('mouseenter', function () { if (!ruhig && aktiv) { setzen(a); nav.querySelectorAll('a').forEach(function (x) { x.classList.toggle('zeigt', x === a); }); } });
-        });
-        nav.addEventListener('mouseleave', function () { setzen(aktiv); nav.querySelectorAll('a.zeigt').forEach(function (x) { x.classList.remove('zeigt'); }); });
-        window.addEventListener('resize', function () { setzen(nav.querySelector('a.hier'), true); });
-        if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { setzen(nav.querySelector('a.hier'), true); });
-    }
     // Lastbalken (Team, Leerstand): Breite aus data-w, im nächsten Bild — dann gleitet sie auf
     var balken = document.querySelectorAll('.fw-lastbalken[data-w] > i');
     requestAnimationFrame(function () { balken.forEach(function (i) {

@@ -68,8 +68,8 @@ Security → `WartungsMiddleware` → `NulBytesMiddleware` → GZip → Session 
   darunter 56 px schmal nur mit Symbolen (Beschriftung im Tooltip). Ein Tipp bzw. Klick klappt das Feld mit den Seiten des
   Bereichs auf (`#fwFach`, `static/js/fw-schiene.js`), ein Klick daneben, Esc oder die Wahl einer Seite schliesst es.
   Tastatur: G dann H/B/A/L/F/R/E öffnet den Bereich, 1–9 wählt die Seite. Hauswartung und Portal-Rollen bekommen keine
-  Schiene (`fw_kopf_reduziert`). Kapsel der Bereiche und Menüband der Kopfzeile (`#fwHauptnav`, `.fw-bereichsreiter`,
-  `fw-menueband.js`) sind bei jeder Breite ausgeblendet und werden entfernt, sobald nichts mehr an ihnen hängt.
+  Schiene (`fw_kopf_reduziert`); sie behalten die Marke in der Kopfzeile. Eine Bereichskapsel oder ein Menüband in der
+  Kopfzeile gibt es nicht mehr (entfernt 18.11.2026).
 - Rote Zahlen zeigen, wo etwas zu tun ist: an den Bereichen (`/neu/leistenzahlen/`: Heute, Läufe, Zulauf) und an den
   einzelnen Seiten im Feld (`punkte` derselben Antwort, `_punktzahlen` in `core/views/fw/arbeit.py`; Schlüssel = erster
   `keys`-Eintrag des Menüpunkts). Jede Zahl zählt dasselbe wie ihre Seite; eine Quelle, die ausfällt, fehlt und steht im

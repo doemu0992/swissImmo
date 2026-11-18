@@ -25,15 +25,6 @@ function fwCloseMobileNav() {
 // ESC schliesst die Schublade
 document.addEventListener('keydown', function(e){ if (e.key === 'Escape') fwCloseMobileNav(); });
 
-// Navigationsgruppe auf-/zuklappen
-function fwNavToggle(key) {
-    var grp = document.getElementById('navgrp-' + key);
-    var sub = document.getElementById('navsub-' + key);
-    if (!grp || !sub) return;
-    sub.classList.toggle('hidden');
-    grp.classList.toggle('nav-open', !sub.classList.contains('hidden'));
-}
-
 // ─── Zahlen in der Leiste (konzept-v8) ───
 // Nach dem Seitenaufbau geholt, damit keine Seite auf den Arbeitsvorrat wartet.
 (function () {
@@ -92,18 +83,6 @@ function fwNavToggle(key) {
         var titel = document.getElementById(p[1]);
         if (titel) titel.hidden = false;
     });
-})();
-
-// Die Bereichs-Kapsel oben: Ränder zeigen, wenn sie weiterläuft (Telefon, ab 901 px
-// bei sehr schmalem Fenster). Das Menüband darunter macht `static/js/fw-menueband.js`.
-(function () {
-    var kapsel = document.getElementById('fwHauptnav');
-    if (!kapsel) return;
-    var kr = function () { var m = kapsel.scrollWidth - kapsel.clientWidth;
-        kapsel.classList.toggle('rand-l', m > 1 && kapsel.scrollLeft > 2);
-        kapsel.classList.toggle('rand-r', m > 1 && kapsel.scrollLeft < m - 2); };
-    kr(); kapsel.addEventListener('scroll', kr, { passive: true }); window.addEventListener('resize', kr);
-    setTimeout(kr, 400);
 })();
 
 // Profilmenü öffnen/schliessen

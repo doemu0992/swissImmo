@@ -2236,18 +2236,15 @@
         .fw-logo-haus{width:30px;height:30px;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
         .fw-logo-haus .a{stroke:var(--ds-ink)}.fw-logo-haus .b{stroke:var(--ds-akzent)}
         .fw-logo-kreuz{position:absolute;right:0;top:-2px;width:12px;height:12px}
-        .fw-hauptnav{position:relative;gap:2px;padding:6px;max-width:100%;overflow-x:auto;scrollbar-width:none}
-        .fw-hauptnav::-webkit-scrollbar{display:none}
-        .fw-hauptnav a{position:relative;z-index:1;display:inline-flex;align-items:center;gap:7px;height:40px;border-radius:var(--ds-pill);
-            font-size:14px;font-weight:500;color:var(--ds-muted);text-decoration:none;white-space:nowrap;transition:color .25s}
-        .fw-hauptnav a:hover{color:var(--ds-ink)}
-        .fw-hauptnav a.hier{color:var(--ds-surface)}
-        .fw-hauptnav:hover a.hier:not(.zeigt){color:var(--ds-muted)}
-        .fw-hauptnav a.zeigt,.fw-hauptnav a.zeigt:hover{color:var(--ds-surface)}
-        .fw-hauptnav .fw-gleiter{position:absolute;z-index:0;top:6px;bottom:6px;left:0;width:0;border-radius:var(--ds-pill);background:var(--ds-ink);
-            transition:transform .45s var(--ds-ease),width .45s var(--ds-ease)}
-        .fw-hauptnav-zahl{min-width:18px;height:18px;padding:0 6px;border-radius:var(--ds-pill);background:var(--ds-akzent);color:#fff;
-            font-size:11px;font-weight:700;display:inline-grid;place-items:center}
+        
+        
+        
+        
+        
+        
+        
+        
+        
         .fw-werkzeug-kapsel{gap:6px;padding:0 6px;flex:0 0 auto}
         .fw-werkzeug-kapsel .fw-knopf-rund{width:40px;height:40px;border-radius:var(--ds-pill)}
         .fw-knopf-rund.fw-knopf-dunkel{background:var(--ds-ink);color:var(--ds-surface)}
@@ -2275,9 +2272,9 @@
         .fw-aktenkopf h1{letter-spacing:-.03em}
         @media (max-width:640px){ .fw-phead h1,.fw-hallo h1{font-size:30px} }
         /* Fünf Bereiche passen am Telefon in die Kapsel (390 px: «Berichte» war abgeschnitten): Block «Kopfzeile» */
-        .fw-hauptnav.rand-l{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 28px);mask-image:linear-gradient(90deg,transparent 0,#000 28px)}
-        .fw-hauptnav.rand-r{-webkit-mask-image:linear-gradient(270deg,transparent 0,#000 28px);mask-image:linear-gradient(270deg,transparent 0,#000 28px)}
-        .fw-hauptnav.rand-l.rand-r{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%)}
+        
+        
+        
 
         /* ---- Karten: ohne Rahmen, grosse Rundung, weicher Schatten ---- */
         .fw-card,.fw-aktenkopf,.fw-freigabe,.fw-kpis:not(.fw-stats)>.fw-kpi,.fw-lage-kachel,.fw-ampel,.fw-lauf{border-color:transparent;border-radius:var(--ds-radius-lg)}
@@ -2364,7 +2361,7 @@
         html.fw-ruhig *{transition-duration:0s!important}
         @media (prefers-reduced-motion:reduce){
             .fw-inhalt>*,.fw-kpis>*,.fw-lage>*,.fw-heute-kacheln>*,.fw-ampeln>*{animation:none}
-            .fw-hauptnav .fw-gleiter{transition:none}
+            
         }
 
         /* ---- UI-Audit 26.10.2026: Leerstand, Team & Auslastung ----
@@ -3218,7 +3215,7 @@
         .fw-fach-zuletzt a:hover{background:var(--ds-hover);color:var(--ds-ink)}
         .fw-mit-schiene .fw-haupt{margin-left:56px}
         /* Kapsel der Bereiche, Menüband und Wortmarke der Kopfzeile: ersetzt durch die Schiene (bei jeder Breite) */
-        .fw-mit-schiene .fw-kopfleiste .fw-hauptnav,.fw-mit-schiene .fw-kopfleiste .fw-kopf-z2,.fw-mit-schiene .fw-kopfleiste .fw-logo-kapsel{display:none}
+        .fw-mit-schiene .fw-kopfleiste .fw-logo-kapsel{display:none}
         .fw-wz-neu-text{display:none}
         html._embed .fw-schiene,html._embed .fw-fach{display:none!important}
         html._embed .fw-mit-schiene .fw-haupt{margin-left:0}
@@ -3240,8 +3237,7 @@
         /* Vorlage: navmock/v2/vorschau (freigegeben, Stand «Kopfzeile v2»). Zeile 1 von links: Marke,
            Bestandsfilter `lg` (Kontext-Chip «BESTAND / Name»), die fünf Bereiche (schliessen bei jeder
            Breite direkt an den Bestand an, nicht mittig), rechtsbündig die Omnisearch, Werkzeuge.
-           Zeile 2: das Menüband des aktiven Bereichs über die ganze Breite (`fw-bereichsreiter`); was
-           nicht passt, wandert in «Mehr» (`static/js/fw-menueband.js`), ohne Skript scrollt das Band.
+           (Menüband und Bereichskapsel der Kopfzeile sind seit 18.11.2026 entfallen: die Schiene links trägt die Bereiche.)
            Die Zeile `fw-top` und das ⌘K-Fenster (`fw-palette`) gibt es nicht mehr.
            Masse: Kapseln 52 px, Suchfeld 44 px, Popover 36 rem.
 
@@ -3256,7 +3252,7 @@
              bis 439     zusätzlich ohne Einstellungsknopf (steht im Profilmenü)
            Die Marke steht bei jeder Breite ausgeschrieben, mit Schweizerkreuz; sie wird nur kleiner. */
         .fw-kopf-z1{display:flex;align-items:center;gap:12px}
-        .fw-kopf-z2{position:relative;margin-top:10px;min-width:0}
+        
 
         /* Marke: Tablet und Telefon kleiner, nie nur das Zeichen */
         @media (max-width:1023px){
@@ -3307,11 +3303,11 @@
         }
 
         /* Bereiche: schliessen an den Bestand an; zu wenig Platz → sie scrollen in sich statt die Zeile zu sprengen */
-        .fw-hauptnav{flex:0 1 auto;min-width:0;margin:0}
-        .fw-hauptnav a{flex:none;padding:0 12px}
-        @media (min-width:1360px){.fw-hauptnav a{padding:0 14px}}
-        @media (min-width:1440px){.fw-hauptnav a{padding:0 17px}}
-        @media (min-width:901px) and (max-width:1023px){.fw-hauptnav a{padding:0 7px;font-size:13.5px;gap:4px}}
+        
+        
+        
+        
+        
         /* Werkzeuge: Hell/Dunkel erst ab 1440 px, «+» ab 1024 px, Einstellungen ab 440 px */
         .fw-werkzeug-kapsel .fw-knopf-dunkel{display:none}
         @media (min-width:1440px){.fw-werkzeug-kapsel .fw-knopf-dunkel{display:grid}}
@@ -3324,47 +3320,40 @@
         .fw-profil{max-height:calc(100dvh - 96px);overflow-y:auto}
 
         /* Menüband: Bereichsname als kleine Überzeile, aktive Unterseite im Ember-Ton */
-        .fw-bereichsreiter{display:flex;align-items:center;gap:2px;height:52px;padding:6px;min-width:0;
-            background:var(--ds-surface);border-radius:var(--ds-pill);box-shadow:var(--ds-shadow-sm);overflow-x:auto;scrollbar-width:none}
-        .fw-bereichsreiter::-webkit-scrollbar{display:none}
-        .fw-bereichsreiter.fw-band-js{overflow:hidden}
-        .fw-bereichsreiter [hidden]{display:none!important}
-        .fw-bereichsreiter-name{flex:none;display:flex;gap:6px;padding:0 8px 0 14px;font-size:11.5px;font-weight:600;
-            letter-spacing:.08em;text-transform:uppercase;color:var(--ds-faint)}
-        .fw-bereichsreiter-name i{font-style:normal}
-        .fw-bereichsreiter a{flex:none;display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 14px;border-radius:var(--ds-pill);
-            font-size:13.5px;font-weight:500;color:var(--ds-muted);white-space:nowrap;text-decoration:none;transition:background .2s,color .2s}
-        .fw-bereichsreiter a:hover{background:var(--ds-surface-2);color:var(--ds-ink)}
-        .fw-bereichsreiter a.hier{background:var(--ds-brand-soft);color:var(--ds-brand);font-weight:600}
-        .fw-bereichsreiter .fw-z{font-size:11px;font-weight:600;padding:0 6px;border-radius:var(--ds-pill);line-height:17px}
-        .fw-bereichsreiter .fw-z.crit,.fw-mehr-pop .fw-z.crit{background:var(--ds-crit-soft);color:var(--ds-crit)}
-        .fw-bereichsreiter-trenner{flex:0 0 1px;width:1px;height:20px;margin:0 6px;background:var(--ds-line)}
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         /* Telefon: das Band scrollt in sich; weich auslaufende Ränder zeigen, dass es weiterläuft */
-        .fw-bereichsreiter.rand-l{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 40px);mask-image:linear-gradient(90deg,transparent 0,#000 40px)}
-        .fw-bereichsreiter.rand-r{-webkit-mask-image:linear-gradient(270deg,transparent 0,#000 40px);mask-image:linear-gradient(270deg,transparent 0,#000 40px)}
-        .fw-bereichsreiter.rand-l.rand-r{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 40px,#000 calc(100% - 40px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 40px,#000 calc(100% - 40px),transparent 100%)}
+        
+        
+        
 
         /* «Mehr»: der Überlauf des Bandes (nur mit Skript, ab 901 px) */
-        .fw-mehr{flex:none;margin-left:auto;height:40px;display:inline-flex;align-items:center;gap:7px;padding:0 12px 0 16px;border:0;background:none;
-            border-radius:var(--ds-pill);font:inherit;font-size:13.5px;font-weight:500;color:var(--ds-ink);position:relative;white-space:nowrap;cursor:pointer}
-        .fw-mehr[hidden]{display:none}
-        .fw-mehr::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:1px;background:var(--ds-line)}
-        .fw-mehr:hover,.fw-mehr[aria-expanded=true]{background:var(--ds-surface-2)}
-        .fw-mehr-n{font-family:var(--ds-mono);font-size:11px;color:var(--ds-faint)}
-        .fw-mehr-pf{display:flex;color:var(--ds-muted);transition:transform .2s var(--ds-ease)}
-        .fw-mehr[aria-expanded=true] .fw-mehr-pf{transform:rotate(180deg)}
-        .fw-mehr-punkt{position:absolute;top:7px;right:8px;box-shadow:0 0 0 2px var(--ds-surface)}
-        .fw-mehr-punkt[hidden]{display:none}
-        .fw-mehr-pop{position:absolute;right:0;top:calc(100% + 8px);z-index:50;min-width:17rem;max-width:calc(100vw - 32px);max-height:min(30rem,calc(100dvh - 12rem));
-            overflow-y:auto;overscroll-behavior:contain;padding:6px 8px 8px;background:var(--ds-surface);border-radius:var(--ds-radius);
-            box-shadow:var(--ds-shadow-lg),0 0 0 1px var(--ds-line);animation:fw-os-auf .16s var(--ds-ease)}
-        .fw-mehr-pop[hidden]{display:none}
-        .fw-mehr-kopf{display:block;padding:10px 10px 4px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ds-faint)}
-        .fw-mehr-pop a{display:flex;align-items:center;justify-content:space-between;gap:12px;height:40px;padding:0 10px;border-radius:var(--ds-radius-knopf);
-            font-size:13.5px;font-weight:500;color:var(--ds-muted);text-decoration:none}
-        .fw-mehr-pop a:hover,.fw-mehr-pop a:focus-visible{background:var(--ds-hover);color:var(--ds-ink);outline:none}
-        .fw-mehr-pop .fw-z{font-size:11px;font-weight:600;padding:0 6px;border-radius:var(--ds-pill);line-height:17px}
-        html.fw-ruhig .fw-mehr-pop{animation:none}
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
         /* Omnisearch: das Feld wächst bei Fokus nach links in den freien Platz (`--fw-os-extra`, höchstens 8 rem, misst
            `fw-omnisearch.js`; ohne Skript wächst es nicht). Der Platz in der Zeile bleibt unverändert, nichts rutscht. */
@@ -3446,7 +3435,7 @@
         .fw-os-alle{margin-left:auto;font-weight:500;color:var(--ds-brand);text-decoration:none}
         .fw-os-alle:hover{text-decoration:underline}
         html.fw-ruhig .fw-os-pop,html.fw-ruhig .fw-os-balken{animation:none}
-        @media (prefers-reduced-motion:reduce){.fw-os-pop,.fw-os-balken,.fw-mehr-pop{animation:none}.fw-os-feld{transition:none}}
+        @media (prefers-reduced-motion:reduce){.fw-os-pop,.fw-os-balken{animation:none}.fw-os-feld{transition:none}}
 
         /* Telefon (bis 900 px): drei Reihen. Zeile 1: Marke, Bestand-Symbol, Suche-Symbol, Werkzeuge; darunter die
            Bereiche; darunter das Menüband (scrollt in sich, kein «Mehr»). */
@@ -3457,8 +3446,8 @@
             .fw-werkzeug-kapsel{gap:2px;padding:0 4px}
             .fw-werkzeug-kapsel .fw-knopf-rund,.fw-avatar.fw-avatar-gross{width:36px;height:36px;flex-basis:36px}
             .fw-werkzeug-kapsel .fw-pip{top:7px;right:8px}
-            .fw-hauptnav{order:3;flex:1 1 100%;width:100%;max-width:none}
-            .fw-hauptnav a{flex:1 1 auto;justify-content:center;height:36px;padding:0 10px;font-size:13px;gap:5px}
+            
+            
             .fw-bestand{flex:0 0 44px;width:44px;height:44px}
             .fw-bestand-zeichen{left:5px;top:5px}
             .fw-bestand.aktiv::after{top:5px;right:5px}
@@ -3472,18 +3461,18 @@
             .fw-os.offen .fw-os-feld input,.fw-os:focus-within .fw-os-feld input{flex:1;width:auto;opacity:1;font-size:16px}
             .fw-os.offen .fw-os-zu,.fw-os:focus-within .fw-os-zu{display:grid}
             .fw-kopf-z1:has(.fw-os.offen)>:not(.fw-os),.fw-kopf-z1:has(.fw-os:focus-within)>:not(.fw-os){display:none}
-            .fw-kopfleiste:has(.fw-os.offen) .fw-kopf-z2,.fw-kopfleiste:has(.fw-os:focus-within) .fw-kopf-z2{display:none}
+            
             .fw-os-pop{top:66px;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));width:auto;max-width:none}
             .fw-os-liste{max-height:calc(100dvh - 15rem)}
             .fw-os-tasten{display:none}
             .fw-os-alle{margin-left:0}
             .fw-os-rechts{flex-direction:column;align-items:flex-end;gap:3px}
             .fw-os-enter{display:none}
-            .fw-kopf-z2{margin-top:8px}
-            .fw-bereichsreiter{height:48px}
-            .fw-bereichsreiter a{height:36px}
+            
+            
+            
         }
-        @media (max-width:420px){.fw-hauptnav a{padding:0 8px}}
+        
         @media (max-width:380px){
             .fw-kopf-z1{gap:6px}
             .fw-logo-kapsel{padding:0 6px 0 8px}
@@ -3494,7 +3483,7 @@
             .fw-os-feld,.fw-os-lupe{height:40px}
             .fw-os-feld{width:40px}
             .fw-os-lupe{width:40px}
-            .fw-hauptnav a{padding:0 6px;gap:4px}
+            
         }
         /* ===== Ende MODUL Kopfzeile und Omnisearch ===== */
 

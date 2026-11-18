@@ -39,7 +39,7 @@ class EigentuemerZweiFaktorTests(TestCase):
     def test_die_konto_seiten_erscheinen_im_portal_rahmen_ohne_navigation_der_verwaltung(self):
         for url in (reverse('zweifaktor_uebersicht'), reverse('zweifaktor_einrichten')):
             inhalt = self.c.get(url).content.decode()
-            self.assertNotIn('id="fwHauptnav"', inhalt, url)
+            self.assertNotIn('id="fwSchiene"', inhalt, url)
             self.assertNotIn('href="/neu/einstellungen/', inhalt, url)
         self.assertContains(self.c.get(reverse('zweifaktor_uebersicht')), 'href="/portal/profil/"')
 
@@ -53,7 +53,7 @@ class EigentuemerZweiFaktorTests(TestCase):
     def test_einrichten_aktiviert_den_faktor_und_das_profil_zeigt_ihn(self):
         _geheimnis, antwort = self._einrichten()
         self.assertContains(antwort, 'Notfallcodes')
-        self.assertNotIn('id="fwHauptnav"', antwort.content.decode())
+        self.assertNotIn('id="fwSchiene"', antwort.content.decode())
         self.assertTrue(ZweiterFaktor.objects.get(benutzer=self.benutzer).ist_aktiv)
         profil = self.c.get('/portal/profil/')
         self.assertContains(profil, 'Aktiv:')
@@ -96,7 +96,7 @@ class MieterZweiFaktorTests(TestCase):
     def test_die_konto_seite_fuehrt_zurueck_zu_meine_daten(self):
         inhalt = self.c.get(reverse('zweifaktor_uebersicht')).content.decode()
         self.assertIn('href="/mieter/daten/"', inhalt)
-        self.assertNotIn('id="fwHauptnav"', inhalt)
+        self.assertNotIn('id="fwSchiene"', inhalt)
 
     def test_einrichten_aktiviert_und_die_seite_zeigt_es(self):
         self.c.get(reverse('zweifaktor_einrichten'))

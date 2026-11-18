@@ -27,7 +27,7 @@ test.describe('Bestandsfilter `lg` in Zeile 1', () => {
     await expect(page.locator('.fw-bestand')).toHaveClass(/aktiv/);
     await expect(page.locator('.fw-bestand select')).toHaveValue(id);
     // Der Filter gilt überall: Bereichs- und Bandlinks tragen ihn weiter
-    const ohne = await page.locator('#fwHauptnav a, .fw-bereichsreiter > a, #fwSchiene a[data-fach], #fwFach a').evaluateAll((l) =>
+    const ohne = await page.locator('#fwSchiene a[data-fach], #fwFach a').evaluateAll((l) =>
       l.filter((a) => !(a as HTMLAnchorElement).getAttribute('href')!.includes('lg=')).length);
     expect(ohne, 'Ein Link der Kopfzeile verliert den Bestandsfilter').toBe(0);
     // Der Name steht sichtbar im Chip (nicht nur das Symbol) und ist nicht die Überzeile

@@ -36,7 +36,6 @@ from ._helfer import _basis_objekte, _team_user
 WURZEL = pathlib.Path(settings.BASE_DIR)
 SCHICHT = WURZEL / 'core' / 'templates' / 'fw' / '_schicht.html'
 SKRIPT = WURZEL / 'static' / 'js' / 'fw-omnisearch.js'
-BAND_SKRIPT = WURZEL / 'static' / 'js' / 'fw-menueband.js'
 PARTIAL = WURZEL / 'core' / 'templates' / 'fw' / '_omnisearch.html'
 BASIS = WURZEL / 'core' / 'templates' / 'fw' / 'base.html'
 
@@ -130,64 +129,25 @@ class KopfzeileStrukturTests(TestCase):
         self.assertEqual(r.status_code, 200, pfad)
         return r.content.decode('utf-8')
 
-    def test_zeile_1_hat_marke_bestand_bereiche_suche_werkzeuge_zeile_2_das_menueband(self):
+    def test_die_kopfzeile_ist_eine_zeile_ohne_bereichskapsel_und_menueband(self):
+        """Seit 18.11.2026 tragen Schiene und Aufklappfeld die Bereiche; die Kopfzeile ist EINE Zeile."""
         wurzel = baum(self._seite())
         kopf = eines(wurzel, id='fwKopf')
         z1 = eines(kopf, klasse='fw-kopf-z1')
-        z2 = eines(kopf, klasse='fw-kopf-z2')
+        self.assertEqual([k for k in kopf.kinder if k.tag == 'div'], [z1], 'Die Kopfzeile hat mehr als eine Zeile')
 
-        # Beide Zeilen sind die zwei Kinder der Kopfzeile, in dieser Reihenfolge
-        self.assertEqual([k for k in kopf.kinder if k.tag == 'div'], [z1, z2])
-
-        # Zeile 1: Marke, Bestand, Bereiche, Omnisearch, Werkzeuge — in genau dieser Reihenfolge
-        teile = {'fw-logo-kapsel', 'fw-bestand', 'fw-hauptnav', 'fw-os', 'fw-werkzeug-kapsel'}
+        # Marke (nur ohne Schiene sichtbar), Bestand, Omnisearch, Werkzeuge — in genau dieser Reihenfolge
+        teile = {'fw-logo-kapsel', 'fw-bestand', 'fw-os', 'fw-werkzeug-kapsel'}
         reihenfolge = [next(iter(k.klassen & teile)) for k in z1.kinder if k.klassen & teile]
-        self.assertEqual(reihenfolge, ['fw-logo-kapsel', 'fw-bestand', 'fw-hauptnav', 'fw-os', 'fw-werkzeug-kapsel'])
-
-        # Der Bestand steht in Zeile 1 und NICHT in Zeile 2
+        self.assertEqual(reihenfolge, ['fw-logo-kapsel', 'fw-bestand', 'fw-os', 'fw-werkzeug-kapsel'])
         bestand = eines(wurzel, klasse='fw-bestand')
         self.assertIn(bestand, z1.kinder)
-        self.assertEqual(finde(z2, klasse='fw-bestand'), [], 'Der Bestandsfilter steht noch in Zeile 2')
-        self.assertEqual(finde(z2, tag='select'), [], 'Eine Auswahl steht noch in Zeile 2')
 
-        # Zeile 2: das Menüband des aktiven Bereichs, sonst nichts als sein Überlauf
-        band = eines(wurzel, klasse='fw-bereichsreiter')
-        self.assertIn(band, z2.kinder)
-        self.assertEqual(band.attrs['id'], 'navsub-akten')
-        self.assertTrue(band.hat_vorfahr(tag='header'), 'Das Menüband steht nicht in der Kopfzeile')
-        self.assertFalse(band.hat_vorfahr(tag='main'), 'Das Menüband steht noch im Inhalt')
-        self.assertEqual([k.attrs.get('id') for k in z2.kinder], ['navsub-akten', 'fwMehrPop'])
-
-    def test_mehr_ist_ein_unsichtbarer_knopf_mit_aria_im_band(self):
-        """Ohne Skript bleibt «Mehr» unsichtbar (das Band scrollt); mit Skript meldet es seinen Zustand."""
-        wurzel = baum(self._seite())
-        band = eines(wurzel, klasse='fw-bereichsreiter')
-        mehr = eines(wurzel, id='fwMehr')
-        pop = eines(wurzel, id='fwMehrPop')
-        self.assertTrue(mehr.hat_vorfahr(klasse='fw-bereichsreiter'))
-        self.assertEqual(mehr.tag, 'button')
-        self.assertEqual(mehr.attrs['type'], 'button')
-        self.assertIn('hidden', mehr.attrs, '«Mehr» ist ohne Skript sichtbar, aber leer')
-        self.assertEqual(mehr.attrs['aria-expanded'], 'false')
-        self.assertEqual(mehr.attrs['aria-controls'], 'fwMehrPop')
-        self.assertIn('hidden', pop.attrs)
-        self.assertEqual(pop.tag, 'nav')
-        self.assertTrue(pop.attrs.get('aria-label'))
-        self.assertNotIn(pop, band.kinder, 'Der Überlauf liegt im Band und würde mit ihm abgeschnitten')
-
-    def test_gruppen_beginn_traegt_den_abschnittsnamen_fuer_den_ueberlauf(self):
-        """Die Überschrift im Überlauf («Monat», «Periodisch») kommt aus `data-abschnitt` am ersten Punkt der Gruppe.
-
-        Bis 17.11.2026 war das «Vorgänge» unter Akten; die Vorgänge stehen jetzt in «Betrieb» (ohne Gruppen)."""
-        wurzel = baum(self._seite('/neu/laeufe/'))
-        band = eines(wurzel, klasse='fw-bereichsreiter')
-        mit = [k for k in band.kinder if k.tag == 'a' and 'data-abschnitt' in k.attrs]
-        self.assertEqual([k.attrs['data-abschnitt'] for k in mit], ['Monat', 'Periodisch'])
-        self.assertEqual([k.attrs['href'].split('?')[0] for k in mit], ['/neu/sollstellung/', '/neu/nebenkosten/'])
-        # Davor steht der Trenner, der im Überlauf wegfällt
-        for k in mit:
-            i = band.kinder.index(k)
-            self.assertIn('fw-bereichsreiter-trenner', band.kinder[i - 1].klassen)
+        # Gegenprobe: Die alten Teile sind weg, die Schiene steht da
+        for weg in ('fwHauptnav', 'fwMehr', 'fwMehrPop'):
+            self.assertEqual(finde(wurzel, id=weg), [], f'{weg} steht noch in der Seite')
+        self.assertEqual(finde(wurzel, klasse='fw-bereichsreiter'), [])
+        eines(wurzel, id='fwSchiene')
 
     def test_profilmenue_traegt_neuer_fall_und_den_menueknopf(self):
         """Bis 1023 px hat Zeile 1 dafür keinen Platz: Beide dürfen nicht unerreichbar werden."""
@@ -319,10 +279,6 @@ class SchichtOhneAltesTests(SimpleTestCase):
         self.assertTrue(regeln, 'Die Regel für den Bestand-Chip fehlt')
         for regel in regeln:
             self.assertNotIn('margin-left:auto', regel)
-        regeln = re.findall(r'\.fw-hauptnav\{([^}]*)\}', css)      # mehrere: Ember-Block und Kopfzeilen-Block
-        self.assertGreaterEqual(len(regeln), 2)
-        for regel in regeln:
-            self.assertNotIn('margin-inline:auto', regel)
         self.assertNotIn('margin-inline:0 auto', css)
         self.assertNotIn('1fr auto 1fr', css, 'Die Bereiche werden nicht mathematisch zentriert')
         # Die frühen Regeln für die kleinen Logos (Wortmarke weg unter 370 px) und «nur weit» sind entfernt
@@ -470,9 +426,9 @@ class OmnisearchJeRolleTests(TestCase):
         self.assertIn('js/fw-omnisearch.js', html)
         # Keine Bereiche, also auch keine leere Kapsel dafür (am Telefon eine volle
         # leere Zeile unter der Kopfzeile). Gegenprobe: Das Team hat sie.
-        self.assertEqual(finde(wurzel, id='fwHauptnav'), [])
+        self.assertEqual(finde(wurzel, id='fwSchiene'), [])
         self.assertEqual(len(finde(baum(self._seite(self.team, '/neu/liegenschaften/')),
-                                   id='fwHauptnav')), 1)
+                                   id='fwSchiene')), 1)
         c = Client()
         c.force_login(self.hauswart)
         self.assertEqual(c.get('/neu/suche/').status_code, 403)
@@ -553,48 +509,8 @@ class SkriptGruppenTests(SimpleTestCase):
         self.assertIn('!proGruppe[g]', skript)
 
 
-class MenuebandSkriptTests(SimpleTestCase):
-    """`static/js/fw-menueband.js` ↔ Vorlage ↔ Schicht: still, wenn sie auseinanderlaufen."""
-
-    def _js(self):
-        return BAND_SKRIPT.read_text(encoding='utf-8')
-
-    def test_die_vorlage_laedt_das_skript_als_eigene_datei(self):
-        basis = BASIS.read_text(encoding='utf-8')
-        self.assertIn("{% statisch 'js/fw-menueband.js' %}", basis)
-        # nicht inline: die Messung steht nicht in der Vorlage
-        self.assertNotIn('getBoundingClientRect().width', basis)
-
-    def test_jede_id_des_skripts_steht_in_der_vorlage(self):
-        basis = BASIS.read_text(encoding='utf-8')
-        ids = set(re.findall(r"getElementById\('([\w-]+)'\)", self._js()))
-        self.assertEqual(ids, {'fwMehr', 'fwMehrPop'})
-        for i in ids:
-            self.assertIn(f'id="{i}"', basis)
-
-    def test_jede_klasse_des_skripts_hat_eine_regel_und_kommt_in_der_vorlage_vor(self):
-        regeln = set(re.findall(r'\.((?:[\w-]|\\.)+)', SCHICHT.read_text(encoding='utf-8')))
-        js = self._js()
-        klassen = set(re.findall(r"'(fw-[\w-]+)'", js)) | set(re.findall(r"querySelector(?:All)?\('[^']*?\.(fw-[\w-]+)", js))
-        self.assertGreaterEqual(len(klassen), 5, 'Das Ablesen der Klassen aus dem Skript greift ins Leere.')
-        self.assertEqual(sorted(k for k in klassen if k not in regeln), [], 'Das Skript benutzt Klassen ohne Regel in der Schicht.')
-        basis = BASIS.read_text(encoding='utf-8')
-        # `fw-band-js` setzt das Skript selbst; alles andere muss die Vorlage liefern
-        self.assertEqual(sorted(k for k in klassen if k not in basis and k not in ('fw-band-js', 'fw-mehr-kopf')), [])
-
-    def test_das_skript_baut_den_ueberlauf_nicht_als_html(self):
-        js = self._js()
-        for verboten in ('innerHTML', 'insertAdjacentHTML', 'document.write', 'outerHTML'):
-            self.assertNotIn(verboten, js)
-
-    def test_tastatur_und_aria_des_ueberlaufs(self):
-        js = self._js()
-        for muss in ("'aria-expanded'", "'Escape'", "'ArrowDown'", "'ArrowUp'", "'Home'", "'End'", 'mehr.focus()'):
-            self.assertIn(muss, js)
-
-    def test_der_aktive_punkt_wird_nie_versteckt(self):
-        """Die Zeile, die ihn aufnimmt, steht an genau einer Stelle: `sicht[aktiv] = true`."""
-        self.assertEqual(self._js().count('sicht[aktiv] = true'), 1)
+class SuchfeldMessungTests(SimpleTestCase):
+    """Das Suchfeld misst den freien Platz neben dem Bestand; die Schicht liest ihn (`--fw-os-extra`)."""
 
     def test_die_suche_misst_den_freien_platz_und_die_schicht_liest_ihn(self):
         self.assertIn("fwStil(wurzel, {'--fw-os-extra'", SKRIPT.read_text(encoding='utf-8'))
