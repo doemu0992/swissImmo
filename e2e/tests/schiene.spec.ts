@@ -106,37 +106,60 @@ test.describe('Schiene am PC', () => {
   });
 });
 
-// Am Telefon steht dieselbe Schiene schmal (56 px, nur Symbole); das Aufklappfeld liegt über dem Inhalt.
-test.describe('Schiene am Telefon', () => {
+// Am Telefon (bis 640 px) ist die Schiene eine Schublade: Der Menüknopf in der Kopfzeile öffnet sie, mit Beschriftung;
+// ein Bereich öffnet sein Feld über der Schublade, «Bereiche» führt zurück. Der Inhalt hat die volle Breite.
+test.describe('Schublade am Telefon', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
-  test('Ein Tipp öffnet das Feld, die Wahl einer Seite führt dorthin; nichts scrollt quer', async ({ page }) => {
+  test('Der Inhalt hat die volle Breite, die Schublade ist erst nach dem Tipp auf das Menü da', async ({ page }) => {
     await login(page);
     await goto(page, '/neu/liegenschaften/');
-    const schiene = (await page.locator('#fwSchiene').boundingBox())!;
-    expect(Math.round(schiene.width)).toBe(56);
-    // Die Beschriftung steht nur im Tooltip und für Screenreader, nicht im Bild
-    await expect(page.locator('#fwSchiene a[data-fach="betrieb"]')).toHaveAttribute('title', 'Betrieb');
+    const haupt = (await page.locator('.fw-haupt').boundingBox())!;
+    expect(Math.round(haupt.x), 'Der Inhalt beginnt nicht am linken Rand').toBe(0);
+    await expect(page.locator('#fwSchiene')).toBeHidden();
+    const knopf = page.locator('#fwMenueKnopf');
+    await expect(knopf).toBeVisible();
+    await expect(knopf).toHaveAttribute('aria-expanded', 'false');
+    await knopf.tap();
+    await expect(knopf).toHaveAttribute('aria-expanded', 'true');
+    const schublade = page.locator('#fwSchiene');
+    await expect(schublade).toBeVisible();
+    const kasten = (await schublade.boundingBox())!;
+    expect(kasten.x).toBeGreaterThanOrEqual(0);
+    expect(kasten.x + kasten.width, 'Die Schublade ragt aus dem Bild').toBeLessThanOrEqual(390);
+    // Mit Beschriftung: der Name steht im Bild, nicht nur im Tooltip
+    await expect(page.locator('#fwSchiene a[data-fach="betrieb"] > span:not(.fw-schiene-zahl)')).toBeVisible();
+  });
+
+  test('Ein Bereich öffnet sein Feld, «Bereiche» führt zurück, die Wahl einer Seite schliesst alles', async ({ page }) => {
+    await login(page);
+    await goto(page, '/neu/liegenschaften/');
+    await page.locator('#fwMenueKnopf').tap();
     await page.locator('#fwSchiene a[data-fach="betrieb"]').tap();
     const fach = page.locator('#fwFach');
     await expect(fach).toBeVisible();
     const kasten = (await fach.boundingBox())!;
-    expect(kasten.x).toBeGreaterThanOrEqual(schiene.width - 1);
     expect(kasten.x + kasten.width, 'Das Feld ragt aus dem Bild').toBeLessThanOrEqual(390);
+    await page.locator('#fwFachZurueck').tap();
+    await expect(fach).toBeHidden();
+    await expect(page.locator('#fwSchiene')).toBeVisible();
+    await page.locator('#fwSchiene a[data-fach="betrieb"]').tap();
     await fach.locator('a[href^="/neu/schaeden/"]').tap();
     await page.waitForURL('**/neu/schaeden/**');
     await expect(page.locator('#fwFach')).toBeHidden();
+    await expect(page.locator('#fwSchiene')).toBeHidden();
     const quer = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(quer, `die Seite scrollt ${quer} px quer`).toBeLessThanOrEqual(0);
   });
 
-  test('Ein Tipp neben das Feld schliesst es; die Einstellungen öffnen ihr Feld', async ({ page }) => {
+  test('Ein Tipp neben die Schublade schliesst sie; die Einstellungen öffnen ihr Feld', async ({ page }) => {
     await login(page);
     await goto(page, '/neu/liegenschaften/');
+    await page.locator('#fwMenueKnopf').tap();
+    await page.mouse.click(380, 700);
+    await expect(page.locator('#fwSchiene')).toBeHidden();
+    await page.locator('#fwMenueKnopf').tap();
     await page.locator('#fwSchiene a[data-fach="einst"]').tap();
     await expect(page.locator('#fwFach section:visible h2')).toHaveText('Einstellungen');
-    await page.mouse.click(380, 700);
-    await expect(page.locator('#fwFach')).toBeHidden();
   });
 });
-

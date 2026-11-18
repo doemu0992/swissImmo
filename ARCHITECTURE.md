@@ -64,8 +64,11 @@ Security → `WartungsMiddleware` → `NulBytesMiddleware` → GZip → Session 
 - Der Context-Processor `fw_navigation` liefert die Liste an `fw/base.html`, gefiltert nach Rolle (`erlaubt`) und
   Abo-Stufe (`gesperrt`). Jede Seite meldet ihren `nav`-Schlüssel; `keys` je Eintrag verbindet ihn mit dem Punkt.
   «Vermietung» ist ein Punkt für vier Seiten (Mieterwechsel, Leerstand, Vermarktung, Bewerbungen).
-- Darstellung: Die Bereiche stehen bei jeder Breite in der Schiene links (`#fwSchiene`): ab 1024 px 88 px mit Beschriftung,
-  darunter 56 px schmal nur mit Symbolen (Beschriftung im Tooltip). Ein Tipp bzw. Klick klappt das Feld mit den Seiten des
+- Darstellung: Die Bereiche stehen in der Schiene links (`#fwSchiene`): ab 1024 px 88 px mit Beschriftung, von 641 bis
+  1023 px 56 px schmal nur mit Symbolen (Beschriftung im Tooltip). Am Telefon (bis 640 px) ist dieselbe Schiene eine
+  Schublade von links mit Beschriftung und roten Zahlen; der Menüknopf in der Kopfzeile (`#fwMenueKnopf`, Zahl = Summe der
+  roten Zahlen) öffnet sie, der Inhalt hat die volle Breite. Dort öffnet ein Bereich sein Feld über der Schublade
+  («Bereiche» führt zurück). Ein Tipp bzw. Klick klappt das Feld mit den Seiten des
   Bereichs auf (`#fwFach`, `static/js/fw-schiene.js`), ein Klick daneben, Esc oder die Wahl einer Seite schliesst es.
   Tastatur: G dann H/B/A/L/F/R/E öffnet den Bereich, 1–9 wählt die Seite. Hauswartung und Portal-Rollen bekommen keine
   Schiene (`fw_kopf_reduziert`); sie behalten die Marke in der Kopfzeile. Eine Bereichskapsel oder ein Menüband in der

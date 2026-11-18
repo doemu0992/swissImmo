@@ -40461,3 +40461,6 @@ msgstr "Please enter valid amounts (no negative values)."
 
 msgid "%(n)s Datei(en) wurden nicht gespeichert (kein gültiges Bild oder zu gross)."
 msgstr "%(n)s file(s) were not saved (not a valid image or too large)."
+
+msgid "Menü"
+msgstr "Menu"

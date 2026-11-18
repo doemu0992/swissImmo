@@ -9,6 +9,31 @@
     var bereiche = [].slice.call(fach.querySelectorAll('[data-fach-bereich]'));
     var TASTEN = {h: 'heute', b: 'betrieb', a: 'akten', l: 'laeufe', f: 'finanzen', r: 'berichte', e: 'einst'};
     var offen = null;
+    // Telefon (bis 640 px): Die Schiene ist eine Schublade, die der Menüknopf der Kopfzeile öffnet.
+    var telefon = window.matchMedia ? window.matchMedia('(max-width:640px)') : {matches: false};
+    var menue = document.getElementById('fwMenueKnopf');
+    var vorhang = document.getElementById('fwSchieneVorhang');
+    var zurueck = document.getElementById('fwFachZurueck');
+    var schubladeOffen = false;
+    function schublade(an, fokus) {
+        schubladeOffen = !!an;
+        schiene.classList.toggle('offen', schubladeOffen);
+        if (vorhang) vorhang.hidden = !schubladeOffen;
+        if (menue) menue.setAttribute('aria-expanded', schubladeOffen ? 'true' : 'false');
+        if (schubladeOffen) { var e1 = schiene.querySelector('a.hier, [data-fach]'); if (e1) e1.focus({preventScroll: true}); }
+        else if (fokus && menue) menue.focus();
+    }
+    // Summe der roten Zahlen der Bereiche am Menüknopf (die Zahlen holt `fw-rahmen.js` nach dem Laden).
+    window.fwMenueSumme = function () {
+        var sum = 0, el = document.getElementById('fwMenueSumme');
+        if (!el) return;
+        [].slice.call(schiene.querySelectorAll('.fw-schiene-zahl:not([hidden])')).forEach(function (z) { sum += parseInt(z.textContent, 10) || 0; });
+        el.textContent = sum > 99 ? '99+' : String(sum);
+        el.hidden = !sum;
+    };
+    if (menue) menue.addEventListener('click', function () { schublade(!schubladeOffen, false); });
+    if (vorhang) vorhang.addEventListener('click', function () { zu(false); schublade(false, true); });
+    if (zurueck) zurueck.addEventListener('click', function () { zu(false); schublade(true); });
 
     // «Selten gebraucht» nur mit Einträgen; die Zahlen 1–9 stehen an den ersten neun Seiten des Bereichs.
     bereiche.forEach(function (b) {
@@ -48,13 +73,15 @@
             if (offen === key) zu(true); else auf(key);
         });
     });
-    fach.addEventListener('click', function (e) { if (e.target.closest('a')) zu(false); });
+    fach.addEventListener('click', function (e) { if (e.target.closest('a')) { zu(false); schublade(false); } });
     document.addEventListener('click', function (e) {
-        if (offen && !fach.contains(e.target) && !schiene.contains(e.target)) zu(false);
+        if (offen && !fach.contains(e.target) && !schiene.contains(e.target) && !(menue && menue.contains(e.target))) zu(false);
     });
+    if (telefon.addEventListener) telefon.addEventListener('change', function () { zu(false); schublade(false); });
     var g = false, gZeit = 0;
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && offen) { zu(true); return; }
+        if (e.key === 'Escape' && offen) { zu(!telefon.matches); if (telefon.matches) schublade(true); return; }
+        if (e.key === 'Escape' && schubladeOffen) { schublade(false, true); return; }
         var t = e.target, tag = t && t.tagName;
         if (e.ctrlKey || e.metaKey || e.altKey) return;
         if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
