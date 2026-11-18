@@ -244,13 +244,13 @@ Detailseiten rufen sie beim Namen.
                    `core/navigation.py`). «Neuer Fall» fällt auf die Vollseite zurück, wo `fwModalOpen`
                    (Schublade, `fw/_fwmodal.html`) auf der Seite nicht geladen ist. {% endcomment %}
                 {% if not fw_kopf_reduziert %}
-                {% if fw_neuer_fall %}<a href="/neu/faelle/neu/" data-modal="{% trans "Neuer Fall" %}" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neuen Fall erfassen' %}"
+                {% if fw_neuer_fall %}<a href="/neu/faelle/neu/" data-modal="{% trans "Neuer Fall" %}" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neu' %}"
                    class="fw-knopf-rund fw-wz-neu">{% zeichen 'neu' %}<span class="fw-wz-neu-text">{% trans "Neu" %}</span></a>{% endif %}
                 <a href="/neu/zulauf/{{ lg_query }}" title="{% trans 'Mitteilungen' %}" aria-label="{% trans 'Mitteilungen' %}"
                    class="fw-knopf-rund{% if nav == 'zulauf' %} hier{% endif %}">{% zeichen 'glocke' %}<span class="fw-pip" data-zaehler="zulauf" hidden></span></a>
                 <a href="/neu/einstellungen/{{ lg_query }}" title="{% trans 'Einstellungen' %}" aria-label="{% trans 'Einstellungen' %}" class="fw-knopf-rund fw-wz-einst{% if nav in fw_einstellungen_keys %} hier{% endif %}">{% zeichen 'einstellungen' %}</a>
                 {% endif %}
-                <button type="button" data-bei-klick="fwProfilMenu" aria-label="{% trans 'Profil und Darstellung' %}" aria-haspopup="true" aria-controls="fwProfil" class="fw-avatar-knopf"><span class="fw-avatar fw-avatar-gross">{{ request.user.username|slice:":2"|upper }}</span></button>
+                <button type="button" data-bei-klick="fwProfilMenu" aria-label="{{ request.user.username|slice:":2"|upper }}: {% trans 'Profil und Darstellung' %}" aria-haspopup="true" aria-controls="fwProfil" class="fw-avatar-knopf"><span class="fw-avatar fw-avatar-gross">{{ request.user.username|slice:":2"|upper }}</span></button>
             </div>
           </div>
         </header>
