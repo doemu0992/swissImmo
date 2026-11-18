@@ -70,6 +70,10 @@ Security → `WartungsMiddleware` → `NulBytesMiddleware` → GZip → Session 
   Tastatur: G dann H/B/A/L/F/R/E öffnet den Bereich, 1–9 wählt die Seite. Hauswartung und Portal-Rollen bekommen keine
   Schiene (`fw_kopf_reduziert`). Kapsel der Bereiche und Menüband der Kopfzeile (`#fwHauptnav`, `.fw-bereichsreiter`,
   `fw-menueband.js`) sind bei jeder Breite ausgeblendet und werden entfernt, sobald nichts mehr an ihnen hängt.
+- Rote Zahlen zeigen, wo etwas zu tun ist: an den Bereichen (`/neu/leistenzahlen/`: Heute, Läufe, Zulauf) und an den
+  einzelnen Seiten im Feld (`punkte` derselben Antwort, `_punktzahlen` in `core/views/fw/arbeit.py`; Schlüssel = erster
+  `keys`-Eintrag des Menüpunkts). Jede Zahl zählt dasselbe wie ihre Seite; eine Quelle, die ausfällt, fehlt und steht im
+  Protokoll.
 - Einstellungen: `einstellungen_gruppen()` in `core/navigation.py` ist die eine Liste (fünf Gruppen: Verwaltung, Team & Zugriff,
   Vorlagen & Regeln, Schnittstellen, Daten & Protokoll). Aus ihr kommen die Hub-Seite `/neu/einstellungen/`, das Feld der
   Schiene (Symbol «Einstellungen», Taste G dann E) und der Pfad «Einstellungen / Gruppe» auf jeder Einstellungsseite.

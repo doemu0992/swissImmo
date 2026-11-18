@@ -48,6 +48,12 @@ function fwNavToggle(key) {
                 if (n) { if (el.classList.contains('fw-pip')) { el.hidden = false; }
                          else { el.textContent = n; el.hidden = false; } }
             });
+            // Rote Zahlen an den einzelnen Seiten im Feld der Schiene: dort ist etwas zu tun
+            var punkte = z.punkte || {};
+            document.querySelectorAll('[data-punkt]').forEach(function (el) {
+                var n = punkte[el.getAttribute('data-punkt')];
+                if (n) { el.textContent = n; el.hidden = false; }
+            });
         }).catch(function () {});
 })();
 

@@ -171,7 +171,7 @@ Detailseiten rufen sie beim Namen.
             <h2 id="fwFachTitel-{{ g.key }}">{{ g.label }}</h2>
             <ul>
                 {% for it in g.items %}{% if it.erlaubt and not it.selten %}
-                <li><a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}><span>{{ it.label }}{% if it.gesperrt %}<span class="fw-abo-schloss">{% trans 'gesperrt' %}</span>{% endif %}</span>{% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-z crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% else %}<kbd aria-hidden="true"></kbd>{% endif %}</a></li>
+                <li><a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}><span>{{ it.label }}{% if it.gesperrt %}<span class="fw-abo-schloss">{% trans 'gesperrt' %}</span>{% endif %}</span><span class="fw-fach-rechts">{% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-z crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% else %}<span class="fw-z crit" data-punkt="{{ it.keys.0 }}" hidden></span>{% endif %}<kbd aria-hidden="true"></kbd></span></a></li>
                 {% endif %}{% endfor %}
             </ul>
             <h3 class="fw-fach-selten" hidden>{% trans "Selten gebraucht" %}</h3>
