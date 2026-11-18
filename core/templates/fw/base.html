@@ -145,6 +145,7 @@ Detailseiten rufen sie beim Namen.
        den Bereich, 1–9 wählt die Seite (`static/js/fw-schiene.js`). Ohne Skript sind die Symbole Links auf den
        Bereichskopf. {% endcomment %}
     {% if fw_nav_gruppen %}
+    <div class="fw-schiene-vorhang" id="fwSchieneVorhang" hidden></div>
     <nav class="fw-schiene" id="fwSchiene" aria-label="{% trans 'Bereiche' %}">
         <a href="{% if fw_kopf_reduziert %}{{ fw_kopf_start }}{% else %}/neu/{{ lg_query }}{% endif %}" class="fw-schiene-marke" title="{% trans 'Zur Übersicht' %}" aria-label="immoswiss — {% trans 'Zur Übersicht' %}">
             <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true" class="fw-logo-haus"><path d="M3 15L16 4l13 11M7 13v14h18V13" class="a"/><path d="M12 27v-7h3v7M18 27v-9h3v9" class="b"/></svg>
@@ -164,6 +165,7 @@ Detailseiten rufen sie beim Namen.
         {% endif %}
     </nav>
     <div class="fw-fach" id="fwFach" role="region" aria-label="{% trans 'Seiten des Bereichs' %}" hidden>
+        <button type="button" class="fw-fach-zurueck" id="fwFachZurueck">{% zeichen 'zurueck' %}<span>{% trans "Bereiche" %}</span></button>
         {% for g in fw_nav_gruppen %}
         <section data-fach-bereich="{{ g.key }}" aria-labelledby="fwFachTitel-{{ g.key }}" hidden>
             <h2 id="fwFachTitel-{{ g.key }}">{{ g.label }}</h2>
@@ -215,6 +217,9 @@ Detailseiten rufen sie beim Namen.
            unverändert. {% endcomment %}
         <header class="fw-kopfleiste" id="fwKopf">
           <div class="fw-kopf-z1">
+            {% comment %} Telefon (bis 640 px): Die Schiene wird zur Schublade; dieser Knopf öffnet sie (`static/js/fw-schiene.js`).
+               Die Zahl daran ist die Summe der roten Zahlen der Bereiche. {% endcomment %}
+            {% if fw_nav_gruppen %}<button type="button" id="fwMenueKnopf" class="fw-kapsel fw-menue-knopf" aria-label="{% trans 'Menü' %}" aria-controls="fwSchiene" aria-expanded="false"><span class="fw-menue-streifen" aria-hidden="true"></span><span class="fw-schiene-zahl crit" id="fwMenueSumme" hidden></span></button>{% endif %}
             <a href="{% if fw_kopf_reduziert %}{{ fw_kopf_start }}{% else %}/neu/{{ lg_query }}{% endif %}" class="fw-kapsel fw-logo-kapsel" title="{% trans 'Zur Übersicht' %}" aria-label="immoswiss — {% trans 'Zur Übersicht' %}">
                 <svg class="fw-logo-haus" width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 15L16 4l13 11M7 13v14h18V13" class="a"/><path d="M12 27v-7h3v7M18 27v-9h3v9" class="b"/></svg>
                 <b>immoswiss<svg class="fw-logo-kreuz" width="12" height="12" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="3" fill="#e5342d"/><path d="M8.5 4h3v4.5H16v3h-4.5V16h-3v-4.5H4v-3h4.5z" fill="#fff"/></svg></b>

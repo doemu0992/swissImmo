@@ -41056,3 +41056,6 @@ msgstr "Inserire importi validi (nessun valore negativo)."
 
 msgid "%(n)s Datei(en) wurden nicht gespeichert (kein gültiges Bild oder zu gross)."
 msgstr "%(n)s file non sono stati salvati (immagine non valida o troppo grande)."
+
+msgid "Menü"
+msgstr "Menu"

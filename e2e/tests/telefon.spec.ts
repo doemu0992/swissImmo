@@ -483,7 +483,7 @@ test('Zeile 1 bricht bei keiner Breite um, nichts schiebt quer, nichts überlapp
         quer: document.documentElement.scrollWidth - document.documentElement.clientWidth,
         boxen, vw: document.documentElement.clientWidth, vh: window.innerHeight,
         z1: r(z1), schiene: r(document.querySelector('#fwSchiene')!),
-        schieneSicht: sichtbar('#fwSchiene'),
+        schieneSicht: sichtbar('#fwSchiene'), menue: sichtbar('#fwMenueKnopf'),
         einst: sichtbar('.fw-wz-einst'), neu: sichtbar('.fw-wz-neu'), dunkel: sichtbar('.fw-knopf-dunkel'),
         schnell: getComputedStyle(document.querySelector('.fw-profil-schnell')!).display !== 'none',
       };
@@ -504,11 +504,17 @@ test('Zeile 1 bricht bei keiner Breite um, nichts schiebt quer, nichts überlapp
       expect(b.r, `${wo}: ${b.n} ragt rechts aus dem Bild`).toBeLessThanOrEqual(m.vw - 15);
     }
     // Die Bereiche stehen bei jeder Breite in der Schiene links (56 px, ab 1024 px 88 px); Kapsel und Menüband gibt es nicht mehr
-    expect(m.schieneSicht, `${wo}: Schiene`).toBe(true);
-    expect(m.schiene.l, `${wo}: Schiene links`).toBe(0);
-    expect(Math.round(m.schiene.w), `${wo}: Breite der Schiene`).toBe(w >= 1024 ? 88 : 56);
+    // Bis 640 px ist sie eine Schublade (Menüknopf in Zeile 1), darüber die Schiene
+    if (w <= 640) {
+      expect(m.menue, `${wo}: Menüknopf`).toBe(true);
+    } else {
+      expect(m.menue, `${wo}: Menüknopf nur am Telefon`).toBe(false);
+      expect(m.schieneSicht, `${wo}: Schiene`).toBe(true);
+      expect(m.schiene.l, `${wo}: Schiene links`).toBe(0);
+      expect(Math.round(m.schiene.w), `${wo}: Breite der Schiene`).toBe(w >= 1024 ? 88 : 56);
+      expect(m.z1.l, `${wo}: Zeile 1 beginnt unter der Schiene`).toBeGreaterThanOrEqual(m.schiene.r - 1);
+    }
     expect(m.z1.h, `${wo}: Zeile 1 ist ${Math.round(m.z1.h)} px hoch — umgebrochen?`).toBeLessThan(60);
-    expect(m.z1.l, `${wo}: Zeile 1 beginnt unter der Schiene`).toBeGreaterThanOrEqual(m.schiene.r - 1);
     // was bei welcher Breite in Zeile 1 steht (und sonst im Profilmenü)
     expect(m.einst, `${wo}: Einstellungsknopf`).toBe(w >= 440);
     expect(m.neu, `${wo}: «+»`).toBe(w >= 1024);
@@ -531,6 +537,8 @@ test('Die Marke steht bei jeder Breite in der Schiene und wird nicht abgeschnitt
   for (const w of [1920, 1280, 1024, 1023, 820, 601, 600, 390, 360]) {
     await page.setViewportSize({ width: w, height: 900 });
     await page.waitForTimeout(100);
+    // Am Telefon (bis 640 px) ist die Schiene eine Schublade und erst nach dem Tipp auf den Menüknopf im Bild.
+    if (w <= 640) await page.locator('#fwMenueKnopf').click();
     const m = await page.evaluate(() => {
       const s = (document.querySelector('#fwSchiene') as HTMLElement).getBoundingClientRect();
       const h = (document.querySelector('.fw-schiene-marke .fw-logo-haus') as SVGElement).getBoundingClientRect();
@@ -541,5 +549,6 @@ test('Die Marke steht bei jeder Breite in der Schiene und wird nicht abgeschnitt
     expect(m.haus.left, `${wo}: Haus ragt links aus der Schiene`).toBeGreaterThanOrEqual(m.schiene.left);
     expect(m.haus.right, `${wo}: Haus ragt rechts aus der Schiene`).toBeLessThanOrEqual(m.schiene.right);
     expect(m.haus.top, `${wo}: Haus ragt oben aus dem Bild`).toBeGreaterThanOrEqual(0);
+    if (w <= 640) await page.keyboard.press('Escape');
   }
 });

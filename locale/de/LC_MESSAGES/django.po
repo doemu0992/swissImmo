@@ -39355,3 +39355,6 @@ msgstr "Bitte gültige Beträge eingeben (keine negativen Werte)."
 
 msgid "%(n)s Datei(en) wurden nicht gespeichert (kein gültiges Bild oder zu gross)."
 msgstr "%(n)s Datei(en) wurden nicht gespeichert (kein gültiges Bild oder zu gross)."
+
+msgid "Menü"
+msgstr "Menü"

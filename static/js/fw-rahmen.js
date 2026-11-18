@@ -45,6 +45,7 @@ document.addEventListener('keydown', function(e){ if (e.key === 'Escape') fwClos
                 var n = punkte[el.getAttribute('data-punkt')];
                 if (n) { el.textContent = n; el.hidden = false; }
             });
+            if (window.fwMenueSumme) window.fwMenueSumme();   // Summe am Menüknopf (Telefon, `fw-schiene.js`)
         }).catch(function () {});
 })();
 

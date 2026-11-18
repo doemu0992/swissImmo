@@ -41127,3 +41127,6 @@ msgstr "Veuillez saisir des montants valides (pas de valeurs négatives)."
 
 msgid "%(n)s Datei(en) wurden nicht gespeichert (kein gültiges Bild oder zu gross)."
 msgstr "%(n)s fichier(s) n'ont pas été enregistrés (image non valide ou trop volumineuse)."
+
+msgid "Menü"
+msgstr "Menu"

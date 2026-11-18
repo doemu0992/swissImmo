@@ -357,10 +357,12 @@ test.describe('Omnisearch am Telefon', () => {
     expect(Math.abs(os.width - 44), 'Das Feld ist am Telefon ein Symbol').toBeLessThan(2);
     expect(Math.abs((chip.y + chip.height / 2) - (werkzeug.y + werkzeug.height / 2)), 'Bestand und Werkzeuge stehen nicht in einer Reihe').toBeLessThan(4);
     expect(Math.abs(chip.y + chip.height / 2 - (os.y + os.height / 2))).toBeLessThan(8);
-    // Die Bereiche stehen in der schmalen Schiene links (nur Symbole); ein Tipp öffnet die Seiten des Bereichs
+    // Die Bereiche stehen in der Schublade; der Menüknopf in Zeile 1 öffnet sie, ein Tipp auf einen Bereich öffnet seine Seiten
+    await expect(page.locator('#fwSchiene')).toBeHidden();
+    await page.locator('#fwMenueKnopf').tap();
     const schiene = await box(page, '#fwSchiene');
     expect(schiene.x).toBe(0);
-    expect(Math.round(schiene.width)).toBe(56);
+    expect(schiene.width).toBeLessThanOrEqual(390 * 0.84 + 1);
     await expect(page.locator('#fwSchiene a[data-fach]')).toHaveCount(7);
     await expect(page.locator('#fwHauptnav, #navsub-akten')).toHaveCount(0);
     await page.locator('#fwSchiene a[data-fach="akten"]').tap();
@@ -368,9 +370,11 @@ test.describe('Omnisearch am Telefon', () => {
     await expect(page.locator('#fwFach section:visible a[aria-current="page"]')).toContainText('Liegenschaften');
     await page.keyboard.press('Escape');
     await expect(page.locator('#fwFach')).toBeHidden();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#fwSchiene')).toBeHidden();
     // Bestandsfilter: ein Symbol in Zeile 1, die Auswahl liegt unsichtbar darüber und trifft den Finger
     expect(chip.width).toBeLessThan(60);
-    expect(chip.x, 'Der Bestand steht nicht rechts der Schiene').toBeGreaterThanOrEqual(schiene.x + schiene.width);
+    expect(chip.x, 'Der Bestand steht nicht rechts vom Menüknopf').toBeGreaterThan(40);
     const trifft = await page.evaluate(() => {
       const c = document.querySelector('.fw-bestand')!.getBoundingClientRect();
       const e = document.elementFromPoint(c.x + c.width / 2, c.y + c.height / 2);
@@ -389,7 +393,7 @@ test.describe('Omnisearch am Telefon', () => {
     await expect(feld(page)).toBeFocused();
     await page.waitForTimeout(400);
     const offen = await box(page, '#fwOs .fw-os-feld');
-    expect(Math.abs(offen.width - 302), `Offen misst das Feld ${Math.round(offen.width)} px, erwartet die volle Zeile neben der Schiene (302 px)`).toBeLessThan(3);
+    expect(Math.abs(offen.width - 358), `Offen misst das Feld ${Math.round(offen.width)} px, erwartet die volle Zeile (358 px): Menüknopf, Bestand und Werkzeuge weichen`).toBeLessThan(3);
     await expect(page.locator('.fw-kopf-z1 .fw-logo-kapsel')).toBeHidden();
     await expect(page.locator('.fw-kopf-z1 .fw-werkzeug-kapsel')).toBeHidden();
 
@@ -397,7 +401,7 @@ test.describe('Omnisearch am Telefon', () => {
     await expect(pop(page)).toBeVisible();
     await expect(page.locator('#fwOsListe [role="option"]').first()).toBeVisible();
     const p = await box(page, '#fwOsPop');
-    expect(Math.abs(p.width - 302), 'Das Popover hat nicht die ganze Breite neben der Schiene').toBeLessThan(3);
+    expect(Math.abs(p.width - 358), 'Das Popover hat nicht die ganze Breite').toBeLessThan(3);
     expect(p.y, 'Das Popover liegt nicht unter dem Feld').toBeGreaterThanOrEqual(offen.y + offen.height);
     expect(p.x).toBeGreaterThanOrEqual(15);
     expect(p.x + p.width).toBeLessThanOrEqual(391);
