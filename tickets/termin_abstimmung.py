@@ -157,6 +157,12 @@ def bestaetigen(auftrag, durch, kennung=None, jetzt=None):
                      'termin_vorschlag_hinweis'):
             setattr(auftrag, feld, getattr(frisch, feld))
         zeit, vorgeschlagen_von = auftrag.termin_vorschlag_am, auftrag.termin_vorschlag_von
+        # Den Vorschlag noch UNTER der Sperre verbrauchen: Sonst sieht eine zweite, gleichzeitige Bestätigung
+        # nach dem Ende der Transaktion noch «vorgeschlagen» und verschickt Mails und Kalendereintrag doppelt.
+        frisch.termin_status, frisch.termin_am = 'vereinbart', zeit
+        frisch.termin_vorschlag_am, frisch.termin_vorschlag_von, frisch.termin_vorschlag_hinweis = None, '', ''
+        frisch.save(update_fields=['termin_status', 'termin_am', 'termin_vorschlag_am',
+                                   'termin_vorschlag_von', 'termin_vorschlag_hinweis'])
         _chat(auftrag, durch, f"Termin bestätigt: {_termin_text(zeit)}")
     m_ok, h_ok = termin_festlegen(auftrag, zeit)       # setzt vereinbart, löscht den Vorschlag, ICS an beide
     _termin_steht_melden(auftrag, zeit, vorgeschlagen_von, durch)

@@ -41041,3 +41041,12 @@ msgstr "Annullamento impossibile: l'importazione contiene %(n)s addebito/i regis
 
 msgid "Die Belastung (CHF %(belastung)s) ist grösser als der offene Betrag der Rechnung (CHF %(offen)s). Bitte die Rechnung prüfen oder die Bewegung auf ein Konto verbuchen."
 msgstr "L'addebito (CHF %(belastung)s) è superiore all'importo aperto della fattura (CHF %(offen)s). Controllare la fattura o registrare il movimento su un conto."
+
+msgid "Für dieses Mietobjekt liegt bereits eine Kündigung vor. Die Verwaltung bearbeitet sie."
+msgstr "Per questo oggetto è già presente una disdetta. L'amministrazione la sta elaborando."
+
+msgid "Diese Bewerbung ist abgeschlossen. Es wird keine Einladung mehr verschickt."
+msgstr "Questa candidatura è conclusa. Non viene più inviato alcun invito."
+
+msgid "Der Besichtigungstermin muss in der Zukunft liegen."
+msgstr "La data del sopralluogo deve essere nel futuro."

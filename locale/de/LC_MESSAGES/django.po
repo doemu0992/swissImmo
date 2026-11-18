@@ -39340,3 +39340,12 @@ msgstr "Rückgängig nicht möglich: Der Import enthält %(n)s verbuchte Belastu
 
 msgid "Die Belastung (CHF %(belastung)s) ist grösser als der offene Betrag der Rechnung (CHF %(offen)s). Bitte die Rechnung prüfen oder die Bewegung auf ein Konto verbuchen."
 msgstr "Die Belastung (CHF %(belastung)s) ist grösser als der offene Betrag der Rechnung (CHF %(offen)s). Bitte die Rechnung prüfen oder die Bewegung auf ein Konto verbuchen."
+
+msgid "Für dieses Mietobjekt liegt bereits eine Kündigung vor. Die Verwaltung bearbeitet sie."
+msgstr "Für dieses Mietobjekt liegt bereits eine Kündigung vor. Die Verwaltung bearbeitet sie."
+
+msgid "Diese Bewerbung ist abgeschlossen. Es wird keine Einladung mehr verschickt."
+msgstr "Diese Bewerbung ist abgeschlossen. Es wird keine Einladung mehr verschickt."
+
+msgid "Der Besichtigungstermin muss in der Zukunft liegen."
+msgstr "Der Besichtigungstermin muss in der Zukunft liegen."
