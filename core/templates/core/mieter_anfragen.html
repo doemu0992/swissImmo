@@ -1,0 +1,44 @@
+{% extends 'core/portal_base.html' %}
+{% load zeichen i18n %}
+{% block title %}{% trans "Anfragen — Mieterportal" %}{% endblock %}
+{% block brand_icon %}<svg class="fw-zeichen fw-auf-marke text-sm" aria-hidden="true"><use href="#z-dokument"/></svg>{% endblock %}
+{% block brand_mobile %}{% trans "Anfragen" %}{% endblock %}
+{% block nav %}{% include 'core/_mieter_nav.html' with aktiv='anfragen' %}{% endblock %}
+
+{% block content %}
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold tracking-tight fw-strong">{% trans "Anfragen" %}</h1>
+        <p class="fw-mutet mt-1">{% trans "Mietbestätigung und Zahlungsplan. Die Verwaltung bestätigt jede Anfrage und meldet sich bei Ihnen." %}</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+        <form method="post" class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-3">
+            {% csrf_token %}<input type="hidden" name="typ" value="mietbestaetigung">
+            <h2 class="font-bold fw-strong">{% trans "Mietbestätigung" %}</h2>
+            <p class="text-sm fw-mutet">{% trans "Eine Bestätigung Ihres Mietverhältnisses (Objekt, Mietbeginn, Mietzins) als PDF, z. B. für eine Bewerbung oder eine Behörde." %}</p>
+            <button type="submit" class="fw-btn fw-primary" data-testid="mietbestaetigung-anfragen">{% trans "Mietbestätigung anfragen" %}</button>
+        </form>
+        <form method="post" class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-3">
+            {% csrf_token %}<input type="hidden" name="typ" value="zahlungsplan">
+            <h2 class="font-bold fw-strong">{% trans "Zahlungsplan" %}</h2>
+            <p class="text-sm fw-mutet">{% trans "Sie können eine offene Rechnung nicht auf einmal bezahlen? Schildern Sie kurz Ihren Wunsch, z. B. Raten."%}</p>
+            <textarea name="text" rows="3" required class="w-full fw-flaeche2 rounded-xl text-sm px-3.5 py-2.5" aria-label="{% trans 'Ihr Wunsch' %}"></textarea>
+            <button type="submit" class="fw-btn fw-primary" data-testid="zahlungsplan-anfragen">{% trans "Zahlungsplan anfragen" %}</button>
+        </form>
+    </div>
+
+    <div class="fw-flaeche rounded-2xl border fw-linie shadow-sm p-5 space-y-3" data-testid="anfragen-liste">
+        <h2 class="font-bold fw-strong">{% trans "Meine Anfragen" %}</h2>
+        {% for a in anfragen %}
+        <div class="text-sm">
+            <div class="font-semibold fw-strong">{{ a.get_art_display }} · {{ a.get_status_display }}
+                <span class="fw-faint font-normal">{{ a.erstellt_am|date:"d.m.Y" }}</span></div>
+            {% if a.art == 'zahlungsplan' %}<div class="fw-mutet whitespace-pre-line">{{ a.zusammenfassung }}</div>{% endif %}
+            {% if a.antwort %}<div class="fw-mutet">{% trans "Antwort der Verwaltung:" %} {{ a.antwort }}</div>{% endif %}
+            {% if a.pdf_moeglich %}<a class="fw-link" href="/mieter/mietbestaetigung/{{ a.pk }}/pdf/" target="_blank" rel="noopener">{% blocktrans with n=gueltig_tage %}PDF herunterladen (noch {{ n }} Tage nach der Bestätigung){% endblocktrans %}</a>{% endif %}
+        </div>
+        {% empty %}
+        <p class="text-sm fw-mutet">{% trans "Noch keine Anfragen." %}</p>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -1,4 +1,4 @@
-{% extends 'fw/base.html' %}
+{% extends seiten_basis|default:'fw/base.html' %}
 {% load i18n zeichen %}
 {% block title %}{% trans "Zwei-Faktor-Anmeldung" %} — immoswiss{% endblock %}
 {% block content %}
@@ -10,6 +10,7 @@
 </div>
 
 <div class="max-w-2xl">
+    {% if portal_zurueck %}<p class="mb-3"><a href="{{ portal_zurueck }}" class="fw-btn fw-leise">{% zeichen 'zurueck' %} {% trans "Zurück zum Portal" %}</a></p>{% endif %}
     {% if messages %}{% for m in messages %}
     <div class="fw-card"><div class="fw-hinweis {% if m.tags == 'error' %}crit{% elif m.tags == 'warning' %}warn{% else %}good{% endif %}">
         <span class="fw-hi">{% if m.tags == 'error' or m.tags == 'warning' %}{% zeichen 'warnung' %}{% else %}{% zeichen 'gut' %}{% endif %}</span>

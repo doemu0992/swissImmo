@@ -46,6 +46,10 @@ class SchadenMeldung(OrganisationAusKette):
     foto = models.ImageField(upload_to=get_smart_upload_path, blank=True, null=True)
 
     email_melder = models.EmailField("E-Mail Melder", blank=True, null=True)
+    # Weitere Adressen, von denen eine Mail als Antwort des Melders gilt — von der Verwaltung am Ticket bestätigt
+    # (zweite Adresse des Mieters, Partnerin, Arbeitsadresse). Liste kleingeschriebener Adressen; gepflegt nur über
+    # `tickets.workflow.absender_bestaetigen` (Knopf im Verlauf des Tickets).
+    bestaetigte_absender = models.JSONField("Bestätigte Absender", default=list, blank=True, editable=False)
     tel_melder = models.CharField("Telefon Melder", max_length=50, blank=True, null=True)
 
     zutritt = models.CharField("Zutritt / Termin", max_length=20, choices=ZUTRITT_CHOICES, default='telefon')
@@ -108,7 +112,10 @@ class SchadenMeldung(OrganisationAusKette):
             # 30 Tage später ab (E6) — vor dem `update`, das an `save()`
             # vorbeigeht.
             from .handwerker_zugang import abschluss_vermerken
-            offen = self.handwerker_auftraege.exclude(status='erledigt')
+            # Stornierte Aufträge bleiben storniert (Audit B1): Sonst wurde ein einst stornierter Auftrag «erledigt»
+            # und sperrte nach dem Wiederöffnen den nächsten Abschluss (keine Rechnung).
+            from .workflow import AUFTRAG_STORNIERT
+            offen = self.handwerker_auftraege.exclude(status__in=('erledigt', AUFTRAG_STORNIERT))
             abschluss_vermerken(offen)
             offen.update(status='erledigt')
 
@@ -215,6 +222,9 @@ class HandwerkerAuftrag(OrganisationAusKette):
                                   editable=False, db_index=True)
     token_gueltig_bis = models.DateTimeField("Link gültig bis", null=True, blank=True, editable=False)
     token_widerrufen_am = models.DateTimeField("Link widerrufen am", null=True, blank=True, editable=False)
+    #: Stand der Direktkanal-Zugänge (Link ohne Anmeldung und Marke im Mail-Betreff, beide Seiten). Jeder Widerruf
+    #: zählt eins hoch: Was mit einem älteren Stand signiert ist, öffnet nichts mehr (`tickets/direktkanal.py`).
+    direkt_version = models.PositiveIntegerField("Direktkanal-Stand", default=0, editable=False)
 
     class Meta:
         verbose_name = "Handwerker-Auftrag"
@@ -250,6 +260,9 @@ class TicketNachricht(OrganisationAusKette):
         ('handwerker_mail', _('Handwerker Mail')),
         ('email', _('Ausgehende E-Mail')),
         ('direkt', _('Direktnachricht Mieter/Handwerker')),
+        # Eingehende Mail, deren Absender nicht zum Ticket gehört: intern, bis die Verwaltung die Adresse bestätigt
+        # (`tickets.workflow.absender_bestaetigen`); dann wird sie zu `mail_antwort`.
+        ('mail_unbekannt', _('Mail von unbekanntem Absender')),
     ]
     SEITE_CHOICES = [
         ('mieter', _('Mieter')),
@@ -257,6 +270,8 @@ class TicketNachricht(OrganisationAusKette):
         ('verwaltung', _('Verwaltung')),
     ]
     typ = models.CharField(max_length=20, choices=TYP_CHOICES, default='chat')
+    # Nur bei `mail_unbekannt`: die Adresse des Absenders (kleingeschrieben), damit sie sich bestätigen lässt.
+    absender_adresse = models.CharField(max_length=254, blank=True, default='', editable=False)
     nachricht = models.TextField()
     # Neue Anhänge unter `organisation/<id>/ticket_anhang/…` (UPLOAD_ORDNER).
     # Alte Dateien bleiben unter `ticket_anhang/` liegen; `media_protected`

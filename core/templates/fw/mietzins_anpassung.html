@@ -91,6 +91,11 @@
                 <input id="mz_basis_stand" type="month" name="basis_lik_stand" value="{{ alt_lik_stand|date:'Y-m' }}" class="fw-feld w-full">
                 <p class="fw-hilfe">{% blocktrans with basis=lik_basis|default:"Dezember 2020" %}LIK-Basis {{ basis }} = 100{% endblocktrans %}{% if aktuell_lik_stand %} · {% blocktrans with stand=aktuell_lik_stand|date:'m.Y' %}neuer Stand {{ stand }}{% endblocktrans %}{% endif %}</p>
             </div>
+            <div class="fw-feldblock">
+                <label for="mz_lik_basis" class="fw-label">{% trans "LIK-Basisreihe" %}</label>
+                {% include 'fw/_lik_basis_feld.html' with feld_id='mz_lik_basis' gewaehlt=lik_basis %}
+                <p class="fw-hilfe">{% trans "Die Reihe, in der die Punkte dieses Vertrags stehen. Beim Wechsel Punkte und Stand-Monat in der neuen Reihe eintragen; umgerechnet wird nicht." %}</p>
+            </div>
         </div>
         <!-- Live-Neuberechnung (Server rechnet, siehe fw_mietzins_anpassung_rechnen) -->
         <div class="fw-kpis fw-nomb" id="mz-rechnung">
@@ -427,7 +432,7 @@ function mietzinsCheck(begrenzt){
     }
 
     var box = document.getElementById('mz-warn'), list = document.getElementById('mz-warn-list');
-    if (warns.length) { list.innerHTML = warns.map(function(w){ return '<li>'+w+'</li>'; }).join(''); box.classList.remove('hidden'); }
+    if (warns.length) { list.innerHTML = warns.map(function(w){ return '<li>'+fwEsc(w)+'</li>'; }).join(''); box.classList.remove('hidden'); }
     else { box.classList.add('hidden'); }
 }
 ['mz_vb_betrag', 'mz_vb_prozent', 'mz_mit_vorbehalt'].forEach(function(id){

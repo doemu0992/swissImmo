@@ -2,7 +2,7 @@
 
 DREI ORTE, EINE WAHRHEIT
 
-    `docs/ZEICHEN.md`                  welche Zeichen es gibt, was sie bedeuten
+    `core/templatetags/zeichen_tabelle.md`                  welche Zeichen es gibt, was sie bedeuten
     `core/templates/fw/_zeichen.html`  wie sie aussehen
     `core/templatetags/zeichen.py`     wie man sie einsetzt
 
@@ -22,7 +22,7 @@ from django.conf import settings
 from django.test import SimpleTestCase
 
 WURZEL = pathlib.Path(settings.BASE_DIR)
-TABELLE = WURZEL / 'docs' / 'ZEICHEN.md'
+TABELLE = WURZEL / 'core' / 'templatetags' / 'zeichen_tabelle.md'
 SPRITE = WURZEL / 'core' / 'templates' / 'fw' / '_zeichen.html'
 
 
@@ -143,7 +143,7 @@ class TabelleUndSpriteTest(SimpleTestCase):
     def test_die_unentschiedenen_sind_nicht_gezeichnet(self):
         """Ein Pfad macht aus einer offenen Frage eine Tatsache.
 
-        `docs/ZEICHEN.md` führt sechs Zeichen unter »Noch ohne Bedeutung« —
+        `core/templatetags/zeichen_tabelle.md` führt sechs Zeichen unter »Noch ohne Bedeutung« —
         sie stehen dort, weil ihre Zuordnung eine Entscheidung braucht.
         `bell` etwa steht heute schon für zwei Dinge: eine Meldung und ein
         Klingelschild.
@@ -188,7 +188,7 @@ class TabelleUndSpriteTest(SimpleTestCase):
             self.assertGreaterEqual(len(offen), 1)
         else:
             self.skipTest('Keine offenen Zeichen mehr — dieser Test und die '
-                          'Liste in docs/ZEICHEN.md duerfen entfallen.')
+                          'Liste in core/templatetags/zeichen_tabelle.md duerfen entfallen.')
 
     def test_kein_zeichen_steht_in_beiden_listen(self):
         """Entschieden UND offen zugleich geht nicht.
@@ -215,7 +215,7 @@ class TabelleUndSpriteTest(SimpleTestCase):
         self.assertEqual(
             sorted(doppelt), [],
             f'Diese Zeichen stehen als entschieden UND als offen in '
-            f'docs/ZEICHEN.md: {sorted(doppelt)}. Wer entscheidet, streicht '
+            f'core/templatetags/zeichen_tabelle.md: {sorted(doppelt)}. Wer entscheidet, streicht '
             f'den alten Eintrag.')
 
 
@@ -232,7 +232,7 @@ class SchliessenKnoepfeTest(SimpleTestCase):
     gar kein Text daneben.
 
     `mehr` hätte damit an zwei Orten Verschiedenes geheissen — genau der
-    Fehler, gegen den `docs/ZEICHEN.md` geschrieben ist.
+    Fehler, gegen den `core/templatetags/zeichen_tabelle.md` geschrieben ist.
 
     WARUM AM MARKUP UND NICHT AM QUELLTEXT
 
@@ -364,7 +364,7 @@ class KeinFontAwesomeMehrTest(SimpleTestCase):
             'Font Awesome wird wieder geladen:\n  ' + '\n  '.join(funde)
             + '\n\nDas sind 87 KB CSS und 144 KB Schriften bei jedem '
               'Erstaufruf. Wer ein Zeichen braucht, trägt es in '
-              'docs/ZEICHEN.md ein und zeichnet es ins Sprite.')
+              'core/templatetags/zeichen_tabelle.md ein und zeichnet es ins Sprite.')
 
     def test_keine_vorlage_ausser_dem_admin_benutzt_es(self):
         """Sonst wäre die Anwendung kaputt statt leicht.
@@ -565,7 +565,7 @@ class AnzahlenInDenUeberschriftenTest(SimpleTestCase):
 
     WARUM DAS EIN EIGENER WÄCHTER IST
 
-    `docs/ZEICHEN.md` gliedert die Zeichen in Abschnitte, und jede Überschrift
+    `core/templatetags/zeichen_tabelle.md` gliedert die Zeichen in Abschnitte, und jede Überschrift
     trägt ihre Anzahl: «### Fachbegriffe (12)». Diese Zahl liest man beim
     Überfliegen und glaubt sie — sie ist die einzige Stelle, an der steht, wie
     gross eine Gruppe ist.

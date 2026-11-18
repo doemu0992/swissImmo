@@ -479,7 +479,11 @@ def _dar_vertrag(z, pills):
     zusatz = f'{strasse}, {bezeichnung}' if strasse else ''
     # Der Anzeige-Status, nicht der gespeicherte: ein Vertrag, dessen Ende
     # vorbei ist, gilt als «beendet» (`Mietvertrag.anzeige_status`).
-    code = Mietvertrag(status=z.status, ende=z.datum).anzeige_status
+    # Die beiden Basiswerte ausdrücklich leer: Ihre Vorgaben (`get_current_lik`, `get_current_ref_zins`) lesen sonst
+    # je Treffer den Indexstand, und bei abgelaufenem LIK-Zwischenspeicher kostete das eine Datenbankabfrage mehr
+    # (Abfragezahl-Wächter der Suche schwankte um eins).
+    code = Mietvertrag(status=z.status, ende=z.datum, basis_lik_punkte=None,
+                       basis_referenzzinssatz=None).anzeige_status
     pill = pills['vertrag']
     status = {'text': str(dict(Mietvertrag._meta.get_field('status').flatchoices).get(code)
                           or pill[code][0]),

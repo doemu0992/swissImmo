@@ -156,8 +156,12 @@ class TilgungsbestimmungTests(TestCase):
             'einheit': self.b.pk, 'betrag': '200', 'datum': '2026-11-01', 'vorschreibung': self.rate(2026, 4).pk})
         self.assertEqual(r.status_code, 302)
         self.assertEqual(StwegAkonto.objects.get().vorschreibung_id, self.rate(2026, 4).pk)
+        # Eine ECHTE Vorschreibung einer anderen Einheit. Vorher stand hier die Nummer einer Einheit (`self.e[2].pk`): Ob dieselbe
+        # Nummer eine Vorschreibung traf, hing von den Datenbank-Sequenzen ab — auf PostgreSQL war der Test deshalb gelegentlich rot.
+        from stweg.models import StwegVorschreibung
+        fremd = StwegVorschreibung.objects.filter(einheit=self.e[2]).first()
         r = self.client.post(f'/neu/stweg/{self.lg.pk}/akonto/neu/', {
-            'einheit': self.b.pk, 'betrag': '100', 'datum': '2026-11-02', 'vorschreibung': self.e[2].pk}, follow=True)
+            'einheit': self.b.pk, 'betrag': '100', 'datum': '2026-11-02', 'vorschreibung': fremd.pk}, follow=True)
         self.assertContains(r, 'gehört nicht zu dieser Einheit')
         self.assertEqual(StwegAkonto.objects.count(), 1)
         self.assertContains(self.client.get(f'/neu/stweg/{self.lg.pk}/abrechnung/'), 'Bezahlte Rate')

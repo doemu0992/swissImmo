@@ -60,6 +60,10 @@
                 <input id="md-honorar" name="honorar_prozent" type="text" inputmode="decimal" value="{{ md.honorar_prozent|default:'0' }}"
                        placeholder="z. B. 4.5" class="fw-feld w-full">
                 <p class="fw-hilfe mt-1">{% trans "Wird im Kontokorrent je Geschäftsjahr gebucht (Soll 4500 / Haben Bank)." %}</p></div>
+            <div><label for="md-lik-basis" class="fw-label mb-1">{% trans "LIK-Basisreihe (Standard für neue Verträge)" %}</label>
+                {% trans "Standard der Verwaltung" as lik_leer %}
+                {% include 'fw/_lik_basis_feld.html' with feld_id='md-lik-basis' gewaehlt=md.lik_basis leer=lik_leer %}
+                <p class="fw-hilfe mt-1">{% trans "Vorgabe für neue Verträge; bestehende Verträge behalten ihre Reihe. Leer: Es gilt der Standard der nächsthöheren Stufe." %}</p></div>
         </div>
 
         <div class="border-t fw-linie pt-4">

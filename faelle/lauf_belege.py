@@ -104,7 +104,7 @@ def sollstellung_stornieren(periode, benutzer=None):
     """
     from finance.models import Buchung, DebitorenRechnung, Zahlungseingang
     from finance.services import erstelle_storno_buchung
-    from core.views.fw.listen import _mahngebuehr_historie_ausgleichen
+    from core.views.fw.debitoren_aktionen import _mahngebuehr_historie_ausgleichen
 
     titel = sollstellung_titel(periode)
     if titel is None:

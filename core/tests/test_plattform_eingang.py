@@ -165,6 +165,10 @@ class Basis(TestCase):
     def setUpTestData(cls):
         cls.a = MandantenFixture('A', '8000', 'Zürich')
         cls.b = MandantenFixture('B', '3000', 'Bern')
+        # Die Testmails kommen von hans@example.ch: Als Antwort des Melders gilt eine Mail nur, wenn die Adresse am Ticket steht
+        # (`tickets.workflow.melder_adressen`). Diese Tests prüfen die Zustellung, nicht die Einordnung des Absenders.
+        from tickets.models import SchadenMeldung
+        SchadenMeldung.alle_organisationen.filter(pk__in=[cls.a.schaden.pk, cls.b.schaden.pk]).update(email_melder='hans@example.ch')
 
     def lauf(self, z, jetzt=JETZT):
         with override_settings(**IMAP), _fake(z):

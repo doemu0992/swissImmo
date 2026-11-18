@@ -1,4 +1,4 @@
-"""Die Rollentabelle (docs/KONZEPT-UI.md §8) gilt auch im Code.
+"""Die Rollentabelle (CONTRIBUTING.md §8) gilt auch im Code.
 
 Angeglichen am 28.09.2026 — vorher wich der Bestand an drei Stellen ab:
 

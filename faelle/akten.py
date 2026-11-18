@@ -13,7 +13,7 @@ Heute definiert jede Detailseite ihre eigenen Reiter, direkt in der View:
 Sieben, acht, acht, sechs und vier Reiter — kein Satz deckungsgleich mit einem
 anderen. Wer die Vertragsakte bedienen kann, muss die Objektakte neu lernen.
 
-Das Konzept (`docs/KONZEPT-UI.md`, Abschnitt 4) legt dagegen fest: **fünf feste
+Das Konzept (`CONTRIBUTING.md`, Abschnitt 4) legt dagegen fest: **fünf feste
 Reiter überall, dazu höchstens einer je Typ.** Dieses Modul ist die einzige
 Stelle, an der das steht.
 

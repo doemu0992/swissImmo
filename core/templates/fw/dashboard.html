@@ -208,7 +208,7 @@
     <li class="fw-vz{% if e.dringlichkeit != 'neutral' %} {{ e.dringlichkeit }}{% endif %}" role="option" tabindex="-1" data-vz="{{ forloop.counter }}">
         <div class="fw-vz-haupt">
             <div class="fw-vz-kopf">
-                {% if e.marke %}<span class="fw-marke-kapsel">{{ e.marke }}</span>{% else %}<span class="fw-marke-kapsel">{% zeichen_wert e.ikon %} {% if e.art == 'lauf' %}{% trans "Lauf" %}{% elif e.art == 'frist' %}{% trans "Frist" %}{% else %}{% trans "Pendenz" %}{% endif %}</span>{% endif %}
+                {% if e.marke %}<span class="fw-marke-kapsel">{{ e.marke }}</span>{% else %}<span class="fw-marke-kapsel">{% zeichen_wert e.ikon %} {% if e.art == 'lauf' %}{% trans "Lauf" %}{% elif e.art == 'frist' %}{% trans "Frist" %}{% elif e.art == 'anfrage' %}{% trans "Anfrage" %}{% else %}{% trans "Pendenz" %}{% endif %}</span>{% endif %}
                 {% if e.nummer %}<span class="fw-mono">{{ e.nummer }}</span>{% endif %}
             </div>
             <div class="fw-vz-titel">{{ e.titel }}</div>
@@ -364,7 +364,7 @@
         </div>
         {% if m.offen %}<span class="fw-chip fw-crit">{% blocktrans with betrag=m.offen|chf %}CHF {{ betrag }} offen{% endblocktrans %}</span>
         {% else %}<span class="fw-chip fw-warn">{% blocktrans with n=m.leer %}{{ n }} leer{% endblocktrans %}</span>{% endif %}
-        <span class="fw-belegung {{ m.stufe }}"><i style="width:{{ m.belegung }}%"></i></span>
+        <span class="fw-belegung {{ m.stufe }}"><i data-breite="{{ m.belegung }}"></i></span>
     </div>
     {% endfor %}
 </section>
@@ -434,13 +434,13 @@
         if (fuss) while (fuss.firstChild) f.appendChild(fuss.firstChild);
         vorher = document.activeElement; offen = nr;
         vg.classList.add('offen'); vg.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
+        fwStil(document.body, {overflow: 'hidden'});
         setTimeout(function () { var h = f.querySelector('[data-hauptaktion]'); (h || vg.querySelector('.fw-knopf-rund')).focus(); }, 60);
     };
     window.fwVorgangZu = function () {
         if (!offen) return;
         offen = null; vg.classList.remove('offen'); vg.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        fwStil(document.body, {overflow: null});
         if (vorher && vorher.focus) vorher.focus();
     };
     liste.addEventListener('click', function (e) {

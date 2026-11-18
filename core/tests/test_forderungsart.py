@@ -79,8 +79,8 @@ class ForderungsartWaechterTests(SimpleTestCase):
             'core/services/nutzungsentschaedigung.py': {'sonstige'},   # nach Vertragsende
             'core/views/fw/mahnwesen.py': {'sonstige'},                # Mahngebühr
             'core/views/fw/kautionen.py': {'sonstige'},                # Schadenersatz (Kautionsversicherung)
-            'core/views/fw/detailseiten.py': {'sonstige'},             # Schlussabrechnung
-            'core/views/fw/listen.py': {'sonstige'},                   # freie Rechnung, Weiterverrechnung
+            'core/views/fw/schlussabrechnung.py': {'sonstige'},        # Schlussabrechnung
+            'core/views/fw/debitoren_aktionen.py': {'sonstige'},       # freie Rechnung, Weiterverrechnung
         }
         gesehen = {}
         for pfad, _zeile, text in _stellen():

@@ -1,4 +1,4 @@
-"""Isolationstests — Etappe 2, siehe docs/ETAPPE-2-ISOLATIONSTESTS.md.
+"""Isolationstests — Etappe 2, siehe «ETAPPE-2-ISOLATIONSTESTS» (früheres Dokument, Git-Verlauf).
 
 Diese Tests beschreiben, was ab Phase 2 gelten MUSS: Kein Benutzer einer
 Organisation kommt je an Daten einer anderen. Sie sind absichtlich VOR dem
@@ -83,6 +83,13 @@ EIGENE_APPS = ('benutzer', 'core', 'crm', 'portfolio', 'rentals', 'finance', 'ti
 # Deshalb steht neben jedem der Grund, nicht nur der Name.
 # ---------------------------------------------------------------------------
 AUSNAHMEN = {
+    'fw_ablesung_aufruf': 'Liegenschafts-ID unter einem eigenen URL-Namen; Fremdzugriff = 404, geprüft in '
+                          'test_zaehlerstaende.AblesungDurchMieterTests.test_fremde_liegenschaft_ist_404',
+    'fw_anfrage_bestaetigen': 'Anfrage kommt nicht im MandantenFixture vor; Fremdzugriff = 404, geprüft in '
+                              'test_anfragen.test_fremde_verwaltung_sieht_und_entscheidet_nichts',
+    'fw_anfrage_ablehnen': 'wie fw_anfrage_bestaetigen (gleiche Prüfung, derselbe Test)',
+    'fw_api_zugang_widerrufen': 'API-Schlüssel kommt nicht im MandantenFixture vor; Fremdzugriff = 404, geprüft in '
+                                'test_api_zugang.test_fremder_schluessel_ist_404_und_unberuehrt',
     'geschuetzte_media':      'Pfad statt ID — wird in Bauform C von Hand geprüft',
     'public_bewerbung':       'bewusst öffentlich (Bewerbungsformular für Interessenten)',
     'public_datenschutz':     'bewusst öffentlich (Datenschutzerklärung, P5)',
@@ -104,6 +111,13 @@ AUSNAHMEN = {
     'portal_report':          'Eigentümer-Report, datensatzbezogen bereits isoliert',
     'fw_betreiber_kunde':     'Betreiber-Konsole: der Betreiber (Superuser) sieht bewusst jede Verwaltung; Zugang (403 für alle '
                               'Rollen) und fremde Rechnungen prüft test_betreiber_kundenliste',
+    'fw_betreiber_protokoll': 'Betreiber-Konsole: Protokoll über alle Verwaltungen (Log, Abrufe, Aufträge), nur für den Betreiber '
+                              '(test_betreiber_protokoll)',
+    'fw_betreiber_lik':      'Betreiber-Konsole: nachgetragene LIK-Werte, plattformweit, nur für den Betreiber (test_lik_werte)',
+    'fw_betreiber_kunde_bearbeiten': 'Betreiber-Konsole: Formularseite zum Kunden, nur für den Betreiber (test_betreiber_kundenliste)',
+    'fw_betreiber_kunde_abo': 'Betreiber-Konsole: Formularseite zum Abonnement, nur für den Betreiber (test_betreiber_kundenliste)',
+    'fw_betreiber_rechnung_pdf': 'Betreiber-Konsole: Rechnungs-PDF einer Verwaltung, nur für den Betreiber; die Rechnung muss zur '
+                              'Verwaltung gehören (test_betreiber_kundenliste)',
 }
 
 # ---------------------------------------------------------------------------
@@ -159,6 +173,8 @@ OHNE_MANDANTENFILTER = {
     # kann deshalb keine Organisation tragen; die Zuordnung zur Verwaltung und die Idempotenz je Verwaltung
     # bleiben bei `tickets.EingegangeneMail` (mit Mandantenfilter). Der Status ist eine einzige Zeile fuer die
     # ganze Installation.
+    'core.LikWert': 'Nachgetragene Monatswerte des Landesindex — der Index ist für alle Verwaltungen derselbe',
+    'core.AbrufStatus': 'Zustand der Abrufe bei externen Diensten (LIK, Referenzzins) — gilt für die Installation, nicht für eine Verwaltung',
     'core.PlattformMail': 'Abrufprotokoll des Plattform-Postfachs — Mails ohne bestimmbare Verwaltung',
     'core.PlattformEingangStatus': 'Abrufstatus des Plattform-Postfachs — eine Zeile fuer die Installation',
 
@@ -954,11 +970,11 @@ class AusnahmenSindBegruendetTests(TestCase):
     entschieden, nur repariert. Diese Klasse macht das Wachsen sichtbar.
     """
 
-    def test_es_sind_genau_diese_sieben(self):
+    def test_es_sind_genau_diese_neun(self):
         # Der Name zählt bewusst mit: Wächst die Liste, ändert sich auch er,
         # und die Änderung steht im Diff statt in einer Zahl im Rumpf.
         self.assertEqual(sorted(OHNE_MANDANTENFILTER),
-                         ['benutzer.Benutzer', 'core.PlattformEingangStatus', 'core.PlattformMail',
+                         ['benutzer.Benutzer', 'core.AbrufStatus', 'core.LikWert', 'core.PlattformEingangStatus', 'core.PlattformMail',
                           'core.SicherheitsEreignis', 'core.Wiederherstellungscode', 'core.ZweiterFaktor',
                           'crm.Organisation'],
                          'Die Ausnahmeliste hat sich geändert. Das ist eine Entscheidung, '

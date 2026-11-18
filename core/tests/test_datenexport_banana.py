@@ -1,3 +1,4 @@
+from django.test import override_settings
 """Preset «Banana Buchhaltung» im Buchungsjournal (Etappe 4).
 
 Die Spezifikation (belegt am 29.10.2026 nach https://www.banana.ch/doc/en/node/9947): Datei «Text file with
@@ -23,6 +24,8 @@ from .test_daten_export import EINSTELLUNG, JOURNAL, ZEITRAUM, _Basis
 KOPF = ['Date', 'Doc', 'Description', 'AccountDebit', 'AccountCredit', 'Amount', 'VatCode', 'ExternalReference']
 
 
+# Schnittstellen (Formate, Feed, Kalender-Abo) gehören zur Stufe «professional».
+@override_settings(SWISSIMMO_VORGABE_STUFE='professional')
 class BananaTests(_Basis):
 
     def _export(self, rolle='verwalter', preset='banana', **zeitraum):
@@ -167,8 +170,9 @@ class BananaTests(_Basis):
         for rolle in ('sachbearbeiter', 'lesezugriff', 'hauswart'):
             self.assertEqual(self._export(rolle).status_code, 403, rolle)
 
-    def test_dienst_kennt_genau_ein_preset(self):
-        self.assertEqual(list(datenexport.PRESETS), ['banana'])
+    def test_dienst_kennt_die_vorgegebenen_formate(self):
+        # Seit Roadmap 4.2 gibt es neben Banana das Format für den bexio-Import über importly.ch (test_datenexport_bexio).
+        self.assertEqual(list(datenexport.PRESETS), ['banana', 'bexio'])
         self.assertEqual(list(datenexport.BANANA_SPALTEN), KOPF)
 
     def test_seite_bietet_das_preset_an_und_erklaert_den_importweg(self):

@@ -2,7 +2,7 @@
 #
 # Von der Bewerbung ueber die Auswahl zum Vertrag: Bewerbungsliste,
 # Vergleich, Besichtigung, Entscheid, Absagen, Unterlagen.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Beruehrt die DSG-Seite (P5): Bewerberunterlagen sind besonders
 # schuetzenswerte Personendaten. Reiner Umzug, Blockinhalt gegen HEAD
@@ -43,6 +43,8 @@ BEWERBUNG_SPALTEN = [
 
 #: Die Liste zeigt alles, auch ältere Absagen — bis zu dieser Zahl.
 BEWERBUNG_LISTE_MAX = 300
+#: «Vertrag generiert» sammelt sich bis zur Anonymisierung an — das Board zeigt die neuesten.
+BEWERBUNG_VERTRAG_MAX = 20
 
 _STATUS_LABEL = {k: l for k, l, _c in BEWERBUNG_SPALTEN}
 #: Chipfarbe je Status in der Liste (fw-chip-Modifikatoren aus der Schicht).
@@ -148,7 +150,12 @@ def fw_bewerbungen(request):
             eigene = [k for k in karten if k['spalte'] == key]
             if key in reihenfolge:
                 eigene.sort(key=reihenfolge[key])
-            spalten.append({'key': key, 'label': label, 'karten': eigene, 'anzahl': len(eigene)})
+            anzahl = len(eigene)
+            mehr = 0
+            if key == 'vertrag' and anzahl > BEWERBUNG_VERTRAG_MAX:
+                mehr = anzahl - BEWERBUNG_VERTRAG_MAX
+                eigene = eigene[:BEWERBUNG_VERTRAG_MAX]
+            spalten.append({'key': key, 'label': label, 'karten': eigene, 'anzahl': anzahl, 'mehr': mehr})
 
     from urllib.parse import urlencode
     filter_query = urlencode([(k, v) for k, v in (
@@ -560,7 +567,7 @@ def _vertrag_aus_bewerbung(request, b):
     `mietprozess.0010_vertrag_aus_bestand_zuordnen` zugeordnet, wo das
     eindeutig ging.
 
-    Den Mieter sucht die Stelle weiterhin über E-Mail und Nachname: Das ist der
+    Den Mieter sucht die Stelle weiterhin über E-Mail, Nachname und Vorname: Das ist der
     Duplikatschutz im Personenstamm (eine Person, die schon Mieter ist, wird
     nicht ein zweites Mal angelegt), nicht die Zuordnung zum Vertrag.
 
@@ -574,7 +581,10 @@ def _vertrag_aus_bewerbung(request, b):
     # 1. Mieter finden oder anlegen (Duplikat-Schutz über E-Mail + Name)
     mieter = None
     if b.email:
-        mieter = Mieter.objects.filter(email__iexact=b.email, nachname__iexact=b.nachname).first()
+        # E-Mail, Nachname UND Vorname: Familien teilen oft Adresse und Nachname. Ohne den Vornamen entstand der
+        # Vertragsentwurf auf dem Namen des bestehenden Mieters (Audit B2).
+        mieter = Mieter.objects.filter(email__iexact=b.email, nachname__iexact=b.nachname,
+                                       vorname__iexact=b.vorname).first()
     if not mieter:
         mieter = Mieter.objects.create(
             typ='person',
@@ -608,6 +618,9 @@ def _vertrag_aus_bewerbung(request, b):
     nk = einheit.nebenkosten_aktuell or _D('0')
     kaution = (netto + nk) * kautionsmonate if kautionsmonate else None
 
+    from core.services.lik import basis_vorgabe
+    from .vertragserstellung import _stand_lik
+    _lik_basis_neu = basis_vorgabe(einheit)
     vertrag = Mietvertrag.objects.create(
         mieter=mieter, einheit=einheit, status='entwurf', beginn=beginn,
         netto_mietzins=netto, nebenkosten=nk,
@@ -620,7 +633,10 @@ def _vertrag_aus_bewerbung(request, b):
         # Art. 269a OR rechnet von dieser Basis aus). `Einheit.ref_zinssatz` ist nur
         # der Wert vom Tag der Erfassung der Einheit.
         basis_referenzzinssatz=_aktuelle_basis(einheit)[0],
-        basis_lik_punkte=_aktuelle_basis(einheit)[1],
+        # Basisreihe nach der Vorgabe-Kette (Liegenschaft → Eigentümer → Organisation); die Punkte in DERSELBEN
+        # Reihe (`_stand_lik`): für eine andere als die Standardreihe ihr letzter Wert, sonst 0 = «Basis fehlt».
+        lik_basis=_lik_basis_neu,
+        basis_lik_punkte=_stand_lik(einheit, _lik_basis_neu),
         besondere_vereinbarungen=(f"Haustiere: {b.haustiere_details}" if b.haustiere and b.haustiere_details else ''),
     )
 

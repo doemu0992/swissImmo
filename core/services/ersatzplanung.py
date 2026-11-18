@@ -86,6 +86,12 @@ def _ersatz_jahr(a, aktuelles_jahr):
 
 def berechne_ersatzplanung(aktive_lg=None, heute=None, horizont_jahre=10):
     """Baut Zeilen + Jahres-Budget. Gibt dict mit rows, jahres_budget, Kennzahlen."""
+    from portfolio.models import Lebensdauer
+    with Lebensdauer.gemerkt():                       # die Tabelle einmal laden, nicht je Zeile sechsmal
+        return _berechne_ersatzplanung(aktive_lg, heute, horizont_jahre)
+
+
+def _berechne_ersatzplanung(aktive_lg, heute, horizont_jahre):
     from datetime import date
     from portfolio.models import Ausstattung
     heute = heute or date.today()
@@ -114,7 +120,7 @@ def berechne_ersatzplanung(aktive_lg=None, heute=None, horizont_jahre=10):
             'neuwert': neuwert,
             'lebenszyklus': a.lebenszyklus_kosten(),
             'reparaturkosten': a.reparatur_kosten_total(),
-            'schaden_anzahl': a.schaeden.count(),
+            'schaden_anzahl': len(a.schaeden.all()),            # vorgeladen; `.count()` fragte je Zeile
             'standort': (f"{a.einheit.liegenschaft.strasse} · {a.einheit.bezeichnung}" if a.einheit_id
                          else f"{a.liegenschaft.strasse} · Gemeinschaftsräume"),
             # Einheitliche Anzeigefelder, damit die Vorlage nicht zwischen

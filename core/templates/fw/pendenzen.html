@@ -79,6 +79,7 @@
         {% empty %}
         <div class="fw-card">{% include 'fw/_empty.html' with icon='gut' titel=_('Keine offenen Pendenzen.') %}</div>
         {% endfor %}
+        {% include 'fw/_seiten.html' %}
 
         {% if erledigte %}
         <div class="fw-card">

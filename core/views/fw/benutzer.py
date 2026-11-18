@@ -1,7 +1,7 @@
 # core/views/fw/benutzer.py
 #
 # Benutzerverwaltung: Django-User plus Rollen ueber Gruppen. Etappe 1, siehe
-# docs/ETAPPE-1-ZERLEGEN.md.
+# «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Seit E2 ist das der EINZIGE Schreibpfad fuer Benutzer und Rollen — der
 # Unfold-Admin ist lesend, auch fuer auth.User und auth.Group. Entsprechend
@@ -147,7 +147,7 @@ def _aus_team_entfernen(request, ziel, organisation):
     return True
 
 
-# Mitglieder und Rollen verwalten ist Inhaber-Sache (docs/KONZEPT-UI.md §8).
+# Mitglieder und Rollen verwalten ist Inhaber-Sache (CONTRIBUTING.md §8).
 # Bis 28.09.2026 stand hier ROLLE_VERWALTER — ein Verwalter konnte sich damit
 # selbst zum Inhaber machen (`_ROLLEN_WAHL` enthält die Rolle, das eigene Konto
 # ist nicht ausgenommen) und das Passwort jedes Kontos setzen, auch des Inhabers.

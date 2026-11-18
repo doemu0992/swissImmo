@@ -29,7 +29,7 @@ from core.tests._isolation import MandantenFixture
 
 
 def _kopf(vertrag, offen=Decimal('0'), posten=(), pendenzen=()):
-    from core.views.fw.detailseiten import _akte_kopfzahlen
+    from core.views.fw.vertrag_detail import _akte_kopfzahlen
     return _akte_kopfzahlen(vertrag, offen, list(posten), list(pendenzen))
 
 
@@ -148,7 +148,7 @@ class LiegenschaftsKopfTests(TestCase):
         cls.a = MandantenFixture('L', '8000', 'Zürich')
 
     def _kopf(self):
-        from core.views.fw.detailseiten import _liegenschaft_kopf
+        from core.views.fw.liegenschaft_detail import _liegenschaft_kopf
         lg = self.a.liegenschaft
         # Ein Zustand, der sicher einen Hinweis erzeugt: kein Verkehrswert
         # erfasst → Rendite nicht berechenbar.
@@ -190,7 +190,7 @@ class LiegenschaftsKopfTests(TestCase):
 
 
 def _liegenschaft_kopf_leerstand(lg):
-    from core.views.fw.detailseiten import _liegenschaft_kopf
+    from core.views.fw.liegenschaft_detail import _liegenschaft_kopf
     return _liegenschaft_kopf(lg, gesamt=5, vermietet=3, soll_monat=Decimal('5100'),
                               wartungsfristen=[], tickets=[],
                               rendite={'bruttorendite': 3.2, 'wert': 1000000,

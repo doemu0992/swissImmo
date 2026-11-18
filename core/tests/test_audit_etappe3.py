@@ -1,4 +1,4 @@
-"""Etappe 3 aus docs/AUDIT-SAAS-NIVEAU.md: Komponentenschicht und Typografie."""
+"""Etappe 3 aus «AUDIT-SAAS-NIVEAU» (früheres Dokument, Git-Verlauf): Komponentenschicht und Typografie."""
 import re
 
 from pathlib import Path

@@ -1,5 +1,5 @@
 """Testmodul plattform — aus core/tests.py herausgeloest (Etappe 1,
-siehe docs/ETAPPE-1-ZERLEGEN.md). 5 Klassen, unveraendert uebernommen."""
+siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)). 5 Klassen, unveraendert uebernommen."""
 from decimal import Decimal
 
 from django.test import TestCase, Client
