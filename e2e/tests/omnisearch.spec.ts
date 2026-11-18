@@ -351,34 +351,30 @@ test.describe('Omnisearch am Desktop', () => {
 test.describe('Omnisearch am Telefon', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
-  test('Zeile 1 bleibt eine Reihe, das Feld ist ein Symbol, Telband, Tab-Leiste und Bestandsfilter erreichbar', async ({ page }) => {
+  test('Zeile 1 bleibt eine Reihe, das Feld ist ein Symbol, die Schiene trägt die Bereiche, der Bestandsfilter ist erreichbar', async ({ page }) => {
     await login(page);
     await goto(page, '/neu/liegenschaften/');
-    const logo = await box(page, '.fw-kopf-z1 .fw-logo-kapsel');
+    const chip = await box(page, '.fw-bestand');
     const os = await box(page, '#fwOs .fw-os-feld');
     const werkzeug = await box(page, '.fw-kopf-z1 .fw-werkzeug-kapsel');
     expect(Math.abs(os.width - 44), 'Das Feld ist am Telefon ein Symbol').toBeLessThan(2);
-    expect(Math.abs((logo.y + logo.height / 2) - (werkzeug.y + werkzeug.height / 2)), 'Marke und Werkzeuge stehen nicht in einer Reihe').toBeLessThan(4);
-    expect(Math.abs(logo.y + logo.height / 2 - (os.y + os.height / 2))).toBeLessThan(8);
-    // Darunter das Telband («Bereich / Seite»); die Bereiche stehen unten in der Tab-Leiste, das Blatt öffnet die Seiten
-    const telband = await box(page, '.fw-telband');
-    expect(telband.y).toBeGreaterThanOrEqual(logo.y + logo.height);
-    expect(telband.height, 'Das Telband ist eine Reihe').toBeLessThan(70);
-    await expect(page.locator('.fw-telband small')).toHaveText(/Akten/i);
-    await expect(page.locator('.fw-telband b')).toHaveText('Liegenschaften');
-    await expect(page.locator('.fw-tabbar a')).toHaveCount(6);
+    expect(Math.abs((chip.y + chip.height / 2) - (werkzeug.y + werkzeug.height / 2)), 'Bestand und Werkzeuge stehen nicht in einer Reihe').toBeLessThan(4);
+    expect(Math.abs(chip.y + chip.height / 2 - (os.y + os.height / 2))).toBeLessThan(8);
+    // Die Bereiche stehen in der schmalen Schiene links (nur Symbole); ein Tipp öffnet die Seiten des Bereichs
+    const schiene = await box(page, '#fwSchiene');
+    expect(schiene.x).toBe(0);
+    expect(Math.round(schiene.width)).toBe(56);
+    await expect(page.locator('#fwSchiene a[data-fach]')).toHaveCount(7);
     await expect(page.locator('#fwHauptnav')).toBeHidden();
     await expect(page.locator('#navsub-akten')).toBeHidden();
-    await page.locator('.fw-telband').tap();
-    await expect(page.locator('#fwTelBlatt')).toBeVisible();
-    await expect(page.locator('#fwTelBlatt a[aria-current="page"]')).toHaveText('Liegenschaften');
+    await page.locator('#fwSchiene a[data-fach="akten"]').tap();
+    await expect(page.locator('#fwFach section:visible h2')).toHaveText('Akten');
+    await expect(page.locator('#fwFach section:visible a[aria-current="page"]')).toContainText('Liegenschaften');
     await page.keyboard.press('Escape');
-    await expect(page.locator('#fwTelBlatt')).toBeHidden();
+    await expect(page.locator('#fwFach')).toBeHidden();
     // Bestandsfilter: ein Symbol in Zeile 1, die Auswahl liegt unsichtbar darüber und trifft den Finger
-    const chip = await box(page, '.fw-bestand');
     expect(chip.width).toBeLessThan(60);
-    expect(chip.y + chip.height, 'Der Bestand steht nicht in der ersten Reihe').toBeLessThanOrEqual(telband.y);
-    expect(chip.x, 'Der Bestand steht nicht hinter der Marke').toBeGreaterThanOrEqual(logo.x + logo.width);
+    expect(chip.x, 'Der Bestand steht nicht rechts der Schiene').toBeGreaterThanOrEqual(schiene.x + schiene.width);
     const trifft = await page.evaluate(() => {
       const c = document.querySelector('.fw-bestand')!.getBoundingClientRect();
       const e = document.elementFromPoint(c.x + c.width / 2, c.y + c.height / 2);
@@ -397,7 +393,7 @@ test.describe('Omnisearch am Telefon', () => {
     await expect(feld(page)).toBeFocused();
     await page.waitForTimeout(400);
     const offen = await box(page, '#fwOs .fw-os-feld');
-    expect(Math.abs(offen.width - 358), `Offen misst das Feld ${Math.round(offen.width)} px, erwartet die volle Zeile (358 px)`).toBeLessThan(3);
+    expect(Math.abs(offen.width - 302), `Offen misst das Feld ${Math.round(offen.width)} px, erwartet die volle Zeile neben der Schiene (302 px)`).toBeLessThan(3);
     await expect(page.locator('.fw-kopf-z1 .fw-logo-kapsel')).toBeHidden();
     await expect(page.locator('.fw-kopf-z1 .fw-werkzeug-kapsel')).toBeHidden();
 
@@ -405,7 +401,7 @@ test.describe('Omnisearch am Telefon', () => {
     await expect(pop(page)).toBeVisible();
     await expect(page.locator('#fwOsListe [role="option"]').first()).toBeVisible();
     const p = await box(page, '#fwOsPop');
-    expect(Math.abs(p.width - 358), 'Das Popover hat nicht die ganze Breite').toBeLessThan(3);
+    expect(Math.abs(p.width - 302), 'Das Popover hat nicht die ganze Breite neben der Schiene').toBeLessThan(3);
     expect(p.y, 'Das Popover liegt nicht unter dem Feld').toBeGreaterThanOrEqual(offen.y + offen.height);
     expect(p.x).toBeGreaterThanOrEqual(15);
     expect(p.x + p.width).toBeLessThanOrEqual(391);
@@ -422,7 +418,7 @@ test.describe('Omnisearch am Telefon', () => {
     // Schliessen: das Feld wird wieder ein Symbol, Marke und Werkzeuge kommen zurück
     await page.locator('#fwOsZu').tap();
     await expect(pop(page)).toBeHidden();
-    await expect(page.locator('.fw-kopf-z1 .fw-logo-kapsel')).toBeVisible();
+    await expect(page.locator('.fw-kopf-z1 .fw-bestand')).toBeVisible();
     const zu = await box(page, '#fwOs .fw-os-feld');
     expect(zu.width).toBeLessThan(46);
   });

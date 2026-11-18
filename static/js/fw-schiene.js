@@ -1,11 +1,10 @@
-/* Die Schiene (ab 1024 px): ein Klick auf einen Bereich klappt seine Seiten auf, ein Klick auf eine Seite schliesst
+/* Die Schiene (bei jeder Breite; am Telefon nur mit Symbolen): ein Klick auf einen Bereich klappt seine Seiten auf, ein Klick auf eine Seite schliesst
    das Feld wieder. Tastatur: «G» dann H/B/A/L/F/R (E = Einstellungen) öffnet den Bereich, 1–9 wählt die Seite im offenen Feld, Esc schliesst.
    Ohne dieses Skript sind die Symbole gewöhnliche Links auf den Bereichskopf (`core/navigation.py`). */
 (function () {
     var schiene = document.getElementById('fwSchiene');
     var fach = document.getElementById('fwFach');
     if (!schiene || !fach) return;
-    var breit = window.matchMedia ? matchMedia('(min-width: 1024px)') : {matches: true};
     var knoepfe = [].slice.call(schiene.querySelectorAll('[data-fach]'));
     var bereiche = [].slice.call(fach.querySelectorAll('[data-fach-bereich]'));
     var TASTEN = {h: 'heute', b: 'betrieb', a: 'akten', l: 'laeufe', f: 'finanzen', r: 'berichte', e: 'einst'};
@@ -29,7 +28,6 @@
         if (zurueck && knopf) knopf.focus();
     }
     function auf(key) {
-        if (!breit.matches) return false;
         var ziel = fach.querySelector('[data-fach-bereich="' + key + '"]');
         if (!ziel) return false;
         bereiche.forEach(function (b) { b.hidden = b !== ziel; });
@@ -46,7 +44,6 @@
         k.setAttribute('aria-controls', 'fwFach');
         k.addEventListener('click', function (e) {
             var key = k.getAttribute('data-fach');
-            if (!breit.matches) return;                  // schmal: der Link führt zum Bereichskopf
             e.preventDefault();
             if (offen === key) zu(true); else auf(key);
         });
@@ -77,23 +74,5 @@
             if (a) { e.preventDefault(); a.click(); if (a.href) location.href = a.href; }
         }
     });
-    window.addEventListener('resize', function () { if (!breit.matches) zu(false); });
 })();
 
-// Telefon (bis 900 px): das Blatt mit den Seiten des Bereichs — Knopf «Bereich / Seite», Esc und Tipp daneben schliessen.
-function fwTelBlattUmschalten() {
-    var blatt = document.getElementById('fwTelBlatt');
-    if (!blatt) return;
-    var knopf = document.querySelector('.fw-telband');
-    var auf = blatt.hidden;
-    blatt.hidden = !auf;
-    if (knopf) knopf.setAttribute('aria-expanded', auf ? 'true' : 'false');
-    if (auf) { var a = blatt.querySelector('a.hier') || blatt.querySelector('a'); if (a) a.focus({preventScroll: true}); }
-    else if (knopf) knopf.focus();
-}
-(function () {
-    var blatt = document.getElementById('fwTelBlatt');
-    if (!blatt) return;
-    blatt.addEventListener('click', function (e) { if (e.target === blatt) fwTelBlattUmschalten(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !blatt.hidden) fwTelBlattUmschalten(); });
-})();

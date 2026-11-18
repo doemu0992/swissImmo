@@ -48,6 +48,12 @@ function fwNavToggle(key) {
                 if (n) { if (el.classList.contains('fw-pip')) { el.hidden = false; }
                          else { el.textContent = n; el.hidden = false; } }
             });
+            // Rote Zahlen an den einzelnen Seiten im Feld der Schiene: dort ist etwas zu tun
+            var punkte = z.punkte || {};
+            document.querySelectorAll('[data-punkt]').forEach(function (el) {
+                var n = punkte[el.getAttribute('data-punkt')];
+                if (n) { el.textContent = n; el.hidden = false; }
+            });
         }).catch(function () {});
 })();
 
@@ -224,10 +230,13 @@ document.addEventListener('input', function(e) {
 // erreichbar. Jetzt passt `fwMenuEinpassen` das offene Menü in den Bildschirm ein,
 // Escape und ein Klick daneben schliessen, Pfeiltasten führen durch die Einträge.
 function fwMenuEinpassen(list) {
-    fwStil(list, {transform: null, maxWidth: 'calc(100vw - 24px)'});
+    // Links endet der freie Bereich an der Schiene (sie liegt über dem Inhalt): Einträge darunter wären nicht klickbar.
+    var schiene = document.getElementById('fwSchiene');
+    var links = schiene && schiene.offsetWidth ? schiene.getBoundingClientRect().right : 0;
+    fwStil(list, {transform: null, maxWidth: (innerWidth - links - 24) + 'px'});
     var r = list.getBoundingClientRect(), rand = 12, dx = 0;
     if (r.right > innerWidth - rand) dx = innerWidth - rand - r.right;
-    if (r.left + dx < rand) dx = rand - r.left;
+    if (r.left + dx < links + rand) dx = links + rand - r.left;
     if (dx) fwStil(list, {transform: 'translateX(' + Math.round(dx) + 'px)'});
     // Unten kein Platz, oben schon → nach oben aufklappen
     list.classList.remove('fw-menu-oben');
