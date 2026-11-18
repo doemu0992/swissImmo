@@ -152,14 +152,14 @@ Detailseiten rufen sie beim Namen.
             <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true" class="fw-logo-haus"><path d="M3 15L16 4l13 11M7 13v14h18V13" class="a"/><path d="M12 27v-7h3v7M18 27v-9h3v9" class="b"/></svg>
         </a>
         {% for g in fw_nav_gruppen %}
-        <a href="{{ g.ziel }}{{ lg_query }}" class="fw-schiene-b{% if nav in g.alle_keys %} hier{% endif %}" data-fach="{{ g.key }}" data-taste="{{ g.key }}"{% if nav in g.alle_keys %} aria-current="page"{% endif %}>
+        <a href="{{ g.ziel }}{{ lg_query }}" class="fw-schiene-b{% if nav in g.alle_keys %} hier{% endif %}" data-fach="{{ g.key }}" data-taste="{{ g.key }}" title="{{ g.label }}"{% if nav in g.alle_keys %} aria-current="page"{% endif %}>
             {% zeichen_wert g.icon %}<span>{{ g.label }}</span>
             {% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="fw-schiene-zahl crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% else %}<span class="fw-schiene-zahl{% if g.key == 'heute' %} crit{% endif %}" data-zaehler="{{ g.key }}" hidden></span>{% endif %}
         </a>
         {% endfor %}
         {% if not fw_kopf_reduziert %}
         <div class="fw-schiene-fuss">
-            <a href="/neu/einstellungen/{{ lg_query }}" class="fw-schiene-b{% if nav in fw_einstellungen_keys %} hier{% endif %}" data-fach="einst"{% if nav in fw_einstellungen_keys %} aria-current="page"{% endif %}>
+            <a href="/neu/einstellungen/{{ lg_query }}" class="fw-schiene-b{% if nav in fw_einstellungen_keys %} hier{% endif %}" data-fach="einst" title="{% trans "Einstellungen" %}"{% if nav in fw_einstellungen_keys %} aria-current="page"{% endif %}>
                 {% zeichen 'einstellungen' %}<span>{% trans "Einstellungen" %}</span>
             </a>
         </div>
@@ -203,14 +203,6 @@ Detailseiten rufen sie beim Namen.
             <div id="fwZuletztFach"></div>
         </div>
     </div>
-    <nav class="fw-tabbar" aria-label="{% trans 'Bereiche' %}">
-        {% for g in fw_nav_gruppen %}
-        <a href="{{ g.ziel }}{{ lg_query }}"{% if nav in g.alle_keys %} aria-current="page"{% endif %}>
-            {% zeichen_wert g.icon %}<span>{{ g.label }}</span>
-            {% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="fw-tab-zahl">{{ schaeden_ungelesen }}</span>{% endif %}
-        </a>
-        {% endfor %}
-    </nav>
     {% endif %}
 
     <!-- ================= INHALT ================= -->
@@ -291,27 +283,7 @@ Detailseiten rufen sie beim Namen.
             <nav class="fw-mehr-pop" id="fwMehrPop" aria-label="{% trans 'Weitere Unterbereiche' %}" hidden></nav>
           </div>
           {% endif %}{% endfor %}
-          {% comment %} Am Telefon (bis 900 px) ersetzt ein Knopf die Bereichskapsel und das Menüband: Er nennt Bereich und Seite
-             und öffnet die Seiten des Bereichs als Blatt (`#fwTelBlatt`, unten); die Bereiche selbst stehen in der Tab-Leiste. {% endcomment %}
-          {% for g in fw_nav_gruppen %}{% if nav in g.alle_keys and g.items %}
-          <button type="button" class="fw-telband" data-bei-klick="fwTelBlattUmschalten" aria-haspopup="dialog" aria-controls="fwTelBlatt" aria-expanded="false">
-              <span><small>{{ g.label }}</small><b>{% for it in g.items %}{% if nav in it.keys %}{{ it.label }}{% endif %}{% endfor %}</b></span>{% zeichen 'aufklappen' %}
-          </button>
-          {% endif %}{% endfor %}
         </header>
-
-        {% for g in fw_nav_gruppen %}{% if nav in g.alle_keys and g.items %}
-        <div class="fw-telblatt" id="fwTelBlatt" hidden>
-            <div class="fw-telblatt-kasten" role="dialog" aria-modal="true" aria-label="{{ g.label }}">
-                <h2>{{ g.label }}</h2>
-                <ul>
-                    {% for it in g.items %}{% if it.erlaubt %}
-                    <li><a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}><span>{{ it.label }}{% if it.gesperrt %}<span class="fw-abo-schloss">{% trans 'gesperrt' %}</span>{% endif %}</span>{% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-z crit">{{ schaeden_ungelesen }}</span>{% endif %}</a></li>
-                    {% endif %}{% endfor %}
-                </ul>
-            </div>
-        </div>
-        {% endif %}{% endfor %}
 
         <!-- Profilmenü -->
         <div id="fwProfil" class="fw-profil hidden">
