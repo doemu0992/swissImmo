@@ -377,7 +377,7 @@
    rechts ein; ihr Inhalt kommt aus der `<template>` der angeklickten Zeile —
    nichts wird nachgeladen. Kopf: Art, Nummer, Titel, Stand. Unten die
    Handlungen. Esc oder Klick daneben schliesst. {% endcomment %}
-<div id="fwVorgang" class="fw-vg" aria-hidden="true">
+<div id="fwVorgang" class="fw-vg" aria-hidden="true" inert>
     <div class="fw-vg-vorhang" data-bei-klick="fwVorgangZu"></div>
     <aside class="fw-vg-box" role="dialog" aria-modal="true" aria-labelledby="fwVgTitel">
         <div class="fw-vg-kopf">
@@ -433,13 +433,13 @@
         var f = document.getElementById('fwVgFuss'); f.innerHTML = '';
         if (fuss) while (fuss.firstChild) f.appendChild(fuss.firstChild);
         vorher = document.activeElement; offen = nr;
-        vg.classList.add('offen'); vg.setAttribute('aria-hidden', 'false');
+        vg.classList.add('offen'); vg.setAttribute('aria-hidden', 'false'); vg.removeAttribute('inert');
         fwStil(document.body, {overflow: 'hidden'});
         setTimeout(function () { var h = f.querySelector('[data-hauptaktion]'); (h || vg.querySelector('.fw-knopf-rund')).focus(); }, 60);
     };
     window.fwVorgangZu = function () {
         if (!offen) return;
-        offen = null; vg.classList.remove('offen'); vg.setAttribute('aria-hidden', 'true');
+        offen = null; vg.classList.remove('offen'); vg.setAttribute('aria-hidden', 'true'); vg.setAttribute('inert', '');
         fwStil(document.body, {overflow: null});
         if (vorher && vorher.focus) vorher.focus();
     };
