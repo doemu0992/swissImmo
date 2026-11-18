@@ -53,6 +53,13 @@ def _organisation_fuer(benutzer, session=None):
             for m in mitgliedschaften:
                 if m.organisation_id == gewaehlt:
                     return m.organisation
+            if gewaehlt is not None and len(mitgliedschaften) == 5:
+                # Die Mandantenwahl zeigt bis zu 20 Verwaltungen; die Abfrage oben liest nur die ältesten fünf. Wer die
+                # sechste oder spätere gewählt hat, würde sonst stillschweigend in der ältesten arbeiten (Audit K7).
+                weitere = (Mitgliedschaft.alle_organisationen.filter(benutzer=benutzer, organisation_id=gewaehlt)
+                           .select_related('organisation', 'organisation__abonnement').first())
+                if weitere is not None:
+                    return weitere.organisation
             logger.info(
                 'Benutzer %s ist in %d Organisationen, keine gewählt — nimmt die älteste (%s). '
                 'Gewählt wird über die Mandantenwahl im Kopf der Oberfläche.',

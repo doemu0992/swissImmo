@@ -124,7 +124,8 @@ Rollen hängen an der Mitgliedschaft je Organisation (`crm.Mitgliedschaft`), nic
 `mahnlauf` bzw. Knopf → `core/services/mahnlauf_lauf.py` → `automation.run_mahnlauf`.
 Ab der Schwelle (150 Verträge, 100 offene Rechnungen; Rundschreiben ab 30 Empfängern) entsteht **immer** ein
 Hintergrundauftrag, nie eine Berechnung im Seitenaufruf.
-Ein laufender Auftrag meldet bei jedem Fortschritt ein Lebenszeichen (Cache); nur ohne Lebenszeichen gilt er nach 30 Minuten als
+Ein laufender Auftrag meldet ab dem Start und bei jedem Fortschritt ein Lebenszeichen (Cache) und erneuert damit auch den Puls des
+Läufers («Läufer läuft nicht» erscheint nicht bei langen Aufträgen); nur ohne Lebenszeichen gilt er nach 30 Minuten als
 abgestürzt und wird neu eingereiht. Beenden darf einen Auftrag nur der Lauf, der ihn gestartet hat.
 
 ### Hintergrundaufträge
@@ -184,7 +185,9 @@ Einzige Quelle für Stufen, Grenzen, Preise und Module ist `core/funktionen.py`.
 - Durchsetzung: `hat_funktion()`, die Pfadtabelle und der Dekorator in `abo/zugang.py`, `AboMiddleware`. Eine
   gesperrte Funktion antwortet mit der Sperrseite (HTTP 402). Mengengrenzen prüft `abo/signale.py` beim Anlegen.
 - Abrechnung: `manage.py abo_abrechnung` (täglich, eigener Task). Rechnung im Voraus als QR-Rechnung; der
-  Zahlungseingang wird von Hand bestätigt.
+  Zahlungseingang wird von Hand bestätigt. Bei Bestandsschutz (`Abonnement.uneingeschraenkt`) stellt `rechnung_stellen`
+  nie eine Rechnung, auch mit gesetztem Abrechnungsbeginn. Der Zahlungszustand gilt immer für heute, nie für das
+  (rückdatierte) Zahlungsdatum (`als_bezahlt`).
 - Eskalation ab Fälligkeit: Mahnung, zweite Mahnung, Lesemodus, Sperre (Tage in `settings.py`, `ABO_*`). Im
   Lesemodus bleiben Anmeldung, Abonnement und Export offen; es wird nichts gelöscht.
 - Neuer Kunde: Betreiber-Portal `/betreiber/neu/` → `core/services/onboarding.py`; der Inhaber bekommt einen

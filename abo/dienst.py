@@ -384,6 +384,10 @@ def rechnung_stellen(organisation, abo, heute=None, trotz_platzhalter=False):
     from abo.models import AboRechnung
 
     heute = heute or datum_heute()
+    if abo.uneingeschraenkt:
+        # Bestandsschutz: alles offen, keine Rechnung. Das gilt im Tageslauf wie in der Kundenliste des Betreibers; ein
+        # gesetzter Abrechnungsbeginn bei eingeschaltetem Bestandsschutz stellt keine Rechnung (Audit K5).
+        return None
     periode = naechste_periode(abo, organisation)
     # Im Voraus: Die Rechnung entsteht bis zu ABO_VORLAUF_TAGE vor Periodenbeginn (oder sofort, wenn die Periode läuft).
     if periode is None or periode[0] > heute + timedelta(days=getattr(settings, 'ABO_VORLAUF_TAGE', 0)):
@@ -478,7 +482,9 @@ def als_bezahlt(rechnung, datum=None):
     rechnung.status = AboRechnung.STATUS_BEZAHLT
     rechnung.bezahlt_am = datum or datum_heute()
     rechnung.save(update_fields=['status', 'bezahlt_am'])
-    return zustand_aktualisieren(rechnung.organisation, rechnung.bezahlt_am)
+    # Der Zustand gilt für HEUTE, nie für das Zahlungsdatum: Eine rückdatierte Zahlung machte sonst eine andere,
+    # längst überfällige Rechnung «noch nicht fällig» und öffnete eine gesperrte Verwaltung bis zum nächsten Tageslauf.
+    return zustand_aktualisieren(rechnung.organisation)
 
 
 def stornieren(rechnung):
