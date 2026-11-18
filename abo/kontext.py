@@ -7,7 +7,7 @@ from datetime import timedelta
 
 from django.conf import settings
 
-from core.funktionen import ZUSTAND_AKTIV, ZUSTAND_LESEMODUS, abonnement_von
+from core.funktionen import ZUSTAND_AKTIV, ZUSTAND_GESPERRT, ZUSTAND_LESEMODUS, abonnement_von
 
 
 def abo_hinweis(request):
@@ -34,7 +34,7 @@ def _hinweis(request):
     abo = abonnement_von(organisation)
     if abo is not None and abo.zustand != ZUSTAND_AKTIV:
         hinweis['zustand'] = abo.zustand
-        hinweis['lesemodus'] = abo.zustand == ZUSTAND_LESEMODUS
+        hinweis['lesemodus'] = abo.zustand in (ZUSTAND_LESEMODUS, ZUSTAND_GESPERRT)
         if abo.ueberfaellig_seit:
             hinweis['lesemodus_ab'] = abo.ueberfaellig_seit + timedelta(days=settings.ABO_LESEMODUS_NACH_TAGEN)
     return {'abo_hinweis': hinweis} if hinweis else {}

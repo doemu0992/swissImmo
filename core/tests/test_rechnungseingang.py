@@ -88,10 +88,31 @@ class AdressenTests(TestCase):
     def test_adresse_und_zuordnung_ordnet_rechnungen_zu(self):
         from core.services import antwort_eingang as ae
         org = self.a.organisation
-        self.assertEqual(ae.rechnungs_adresse(org), f'{org.antwort_kennung}-rechnungen@{DOMAIN}')
+        # Seit 15.11.2026 eine eigene Kennung — nicht mehr die Antwort-Kennung mit Zusatz.
+        self.assertEqual(ae.rechnungs_adresse(org), f'{org.rechnungs_kennung}@{DOMAIN}')
+        self.assertNotIn(org.antwort_kennung, ae.rechnungs_adresse(org))
         self.assertEqual(ae.zuordnung_zu_adresse(ae.rechnungs_adresse(org)), (org, 'rechnungen'))
         self.assertEqual(ae.zuordnung_zu_adresse(ae.antwort_adresse(org)), (org, 'antworten'))
         self.assertEqual(ae.zuordnung_zu_adresse(ae.rechnungs_adresse(self.b.organisation))[0].pk, self.b.organisation.pk)
+
+    def test_die_fruehere_form_laeuft_aus(self):
+        """`<antwort-kennung>-rechnungen@…` liess sich aus jeder Ticket-Mail ableiten; sie gilt nur noch bis zum
+        Stichtag."""
+        from datetime import date
+        from core.services import antwort_eingang as ae
+        org = self.a.organisation
+        alt = f'{org.antwort_kennung}-rechnungen@{DOMAIN}'
+        with override_settings(RECHNUNGSADRESSE_ALT_BIS=date(2999, 1, 1)):
+            self.assertEqual(ae.zuordnung_zu_adresse(alt), (org, 'rechnungen'))
+        with override_settings(RECHNUNGSADRESSE_ALT_BIS=date(2000, 1, 1)):
+            self.assertIsNone(ae.zuordnung_zu_adresse(alt))
+            self.assertEqual(ae.zuordnung_zu_adresse(ae.rechnungs_adresse(org)), (org, 'rechnungen'))
+
+    def test_jede_verwaltung_hat_ihre_eigene_rechnungs_kennung(self):
+        a, b = self.a.organisation, self.b.organisation
+        self.assertTrue(a.rechnungs_kennung and b.rechnungs_kennung)
+        self.assertNotEqual(a.rechnungs_kennung, b.rechnungs_kennung)
+        self.assertNotEqual(a.rechnungs_kennung, a.antwort_kennung)
 
     def test_die_antwortzuordnung_nimmt_keine_rechnungsadresse(self):
         from core.services import antwort_eingang as ae
@@ -421,8 +442,9 @@ class EinstellungenRechnungTests(TestCase):
         with override_settings(BREVO_WEBHOOK_SECRET=SECRET, BREVO_API_KEY='bk'):
             seite = self._client(self.a).get(reverse('postfach_liste')).content.decode()
         self.assertIn(f'{a.antwort_kennung}@{DOMAIN}', seite)
-        self.assertIn(f'{a.antwort_kennung}-rechnungen@{DOMAIN}', seite)
+        self.assertIn(f'{a.rechnungs_kennung}@{DOMAIN}', seite)
         self.assertNotIn(b.antwort_kennung, seite)
+        self.assertNotIn(b.rechnungs_kennung, seite)
         self.assertIn('Empfang eingerichtet. Rechnungen an diese Adresse landen in den Kreditoren.', seite)
         for text in ('Gmail', 'Outlook / Microsoft 365', 'Hoststar / Webmail', 'Erweitert: eigenes Postfach'):
             self.assertIn(text, seite)
@@ -452,15 +474,16 @@ class EinstellungenRechnungTests(TestCase):
         self.assertNotIn('Noch nichts eingegangen.', b)
 
     def test_erneuern_erneuert_beide_adressen(self):
-        alt = self.a.organisation.antwort_kennung
+        alt, alt_r = self.a.organisation.antwort_kennung, self.a.organisation.rechnungs_kennung
         r = self._client(self.a).post(reverse('antwortadresse_erneuern'))
         self.assertEqual(r.status_code, 302)
         self.a.organisation.refresh_from_db()
-        neu = self.a.organisation.antwort_kennung
+        neu, neu_r = self.a.organisation.antwort_kennung, self.a.organisation.rechnungs_kennung
         self.assertNotEqual(alt, neu)
+        self.assertNotEqual(alt_r, neu_r)
         seite = self._client(self.a).get(reverse('postfach_liste')).content.decode()
-        self.assertIn(f'{neu}-rechnungen@{DOMAIN}', seite)
-        self.assertNotIn(f'{alt}-rechnungen@{DOMAIN}', seite)
+        self.assertIn(f'{neu_r}@{DOMAIN}', seite)
+        self.assertNotIn(f'{alt_r}@{DOMAIN}', seite)
 
     def test_unlesbares_postfach_zeigt_hinweis_neu_eingeben_und_loeschen(self):
         from core.models import Postfach

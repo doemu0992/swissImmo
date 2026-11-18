@@ -1,6 +1,6 @@
 # core/views/fw/mwst.py
 #
-# Block 24 der 33 (Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md): Umsatzsteuer
+# Block 24 der 33 (Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)): Umsatzsteuer
 # gegen Vorsteuer, effektive Methode und Saldosteuersatz, ESTV-Export.
 #
 # Der Block ist deutlich kuerzer als im Auftrag angegeben (90 statt 191

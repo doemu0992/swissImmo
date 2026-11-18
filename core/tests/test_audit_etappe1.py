@@ -1,4 +1,4 @@
-"""Etappe 1 aus docs/AUDIT-SAAS-NIVEAU.md: fertige Funktionen ohne Einstieg.
+"""Etappe 1 aus «AUDIT-SAAS-NIVEAU» (früheres Dokument, Git-Verlauf): fertige Funktionen ohne Einstieg.
 
 Jede dieser Funktionen war gebaut und getestet — aber für einen Menschen nicht
 auffindbar. Die Tests halten den EINSTIEG fest, nicht die Funktion selbst; die

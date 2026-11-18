@@ -115,7 +115,7 @@ def _vorschlag_mail(auftrag, von, termin_am, hinweis):
     try:
         with in_sprache(melder_sprache(ticket) if ziel == 'mieter' else STANDARD):
             gruss = melder_gruss(ticket) if ziel == 'mieter' else handwerker_gruss(auftrag.handwerker)
-            betreff = direktkanal.betreff_fuer(auftrag, _("Terminvorschlag: %(zeit)s") % {'zeit': zeit})
+            betreff = direktkanal.betreff_fuer(auftrag, _("Terminvorschlag: %(zeit)s") % {'zeit': zeit}, seite=ziel)
             inhalt = _("%(gruss)s\n\n%(wer)s schlägt für «%(schaden)s» folgenden Termin vor:\n\n"
                        "Wann: %(zeit)s\n%(hinweis)s\n"
                        "Bestätigen oder einen anderen Termin vorschlagen (ohne Anmeldung):\n%(link)s\n\n"

@@ -301,7 +301,7 @@ def kaution_hoechstbetrag(kaution, nettomiete, nebenkosten=None,
 #: gilt fuer Wohn- UND Geschaeftsraeume.» Beide genannten Faelle stimmen —
 #: der dritte fehlte.
 #:
-#: `core/views/fw/kuendigung.py` rechnet seit jeher:
+#: `core/views/fw/verzug_257d.py` rechnet seit jeher:
 #:
 #:     min_frist = 30 if v.ist_geschuetzt else 10   # Art. 257d Abs. 1
 #:

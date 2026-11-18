@@ -1033,70 +1033,160 @@ def mieter_konto_view(request):
     for z in zeilen:
         z['ist_zahlung'] = z['haben'] > 0
         z['betrag'] = z['haben'] if z['ist_zahlung'] else z['soll']
+    _vertraege, objekte = _mieter_objekte(mieter)
+    depots = [o for o in objekte if o['kaution']]
     return render(request, 'core/mieter_konto.html', {
         'mieter': mieter, 'zeilen': zeilen, 'endsaldo': endsaldo,
-        'saldo_abs': abs(endsaldo),
+        'saldo_abs': abs(endsaldo), 'depots': depots,
     })
 
 
 @never_cache
 @login_required
 def mieter_daten_view(request):
-    """«Meine Daten»: Kontaktdaten ansehen; Telefon/E-Mail direkt ändern
-    (unkritisch), Änderungswünsche zur Adresse als Meldung an die Verwaltung.
-    Jede Änderung wird im Kommunikations-Journal protokolliert."""
+    """«Meine Daten»: Kontaktdaten ansehen und Änderungen beantragen.
+
+    Das Portal ändert nichts selbst: Jede Änderung (Mobile, Telefon, E-Mail) und jede Mitteilung geht als Anfrage an
+    die Verwaltung und gilt erst, wenn sie sie bestätigt hat (`core/services/anfragen.py`)."""
     from django.contrib import messages
+
+    from core.models import Aenderungsanfrage
+    from core.services import anfragen as dienst
     mieter = getattr(request.user, 'mieter_profil', None)
     if mieter is None:
         return redirect('mieter_portal')
 
     if request.method == 'POST':
-        aenderungen = []
-        neu_mobile = (request.POST.get('mobile') or '').strip()
-        neu_tel = (request.POST.get('telefon_privat') or '').strip()
-        neu_email = (request.POST.get('email') or '').strip()
-        if neu_mobile != (mieter.mobile or ''):
-            aenderungen.append(f"Mobile: «{mieter.mobile or '—'}» → «{neu_mobile or '—'}»")
-            mieter.mobile = neu_mobile
-        if neu_tel != (mieter.telefon_privat or ''):
-            aenderungen.append(f"Telefon: «{mieter.telefon_privat or '—'}» → «{neu_tel or '—'}»")
-            mieter.telefon_privat = neu_tel
-        if neu_email and neu_email != (mieter.email or ''):
-            aenderungen.append(f"E-Mail: «{mieter.email or '—'}» → «{neu_email}»")
-            mieter.email = neu_email
-        adress_wunsch = (request.POST.get('adresse_meldung') or '').strip()
-        if aenderungen:
-            mieter.save()
-        if aenderungen or adress_wunsch:
-            # Journal-Eintrag + Mail an die Verwaltung (wie bei der Portal-Kündigung)
-            try:
-                from crm.models import Kommunikation
-                text = "Selbst gemeldete Änderung über das Mieterportal:\n" + "\n".join(aenderungen)
-                if adress_wunsch:
-                    text += f"\nAdressänderung gewünscht: {adress_wunsch}"
-                Kommunikation.objects.create(mieter=mieter, typ='email', richtung='eingehend',
-                                             betreff='Kontaktdaten-Änderung (Mieterportal)',
-                                             inhalt=text)
-            except Exception:
-                logger.debug("Fehler bewusst übergangen", exc_info=True)
-            try:
-                from core.utils.email_service import send_ticket_email
-                # Die Meldung geht an die Verwaltung DIESES Mieters — sonst
-                # gingen Name, Telefon und Adresswunsch an eine fremde.
-                vw = mieter.organisation
-                if vw and vw.email:
-                    send_ticket_email(vw.email, f"Kontaktdaten-Änderung: {mieter.display_name}",
-                                      ("Der Mieter hat über das Portal Daten geändert/gemeldet:\n\n"
-                                       + "\n".join(aenderungen)
-                                       + (f"\nAdressänderung gewünscht: {adress_wunsch}" if adress_wunsch else "")))
-            except Exception:
-                logger.debug("Fehler bewusst übergangen", exc_info=True)
-            messages.success(request, '✅ ' + gettext('Ihre Angaben wurden aktualisiert und der Verwaltung gemeldet.'))
+        gestellt = [dienst.stellen(
+            art=Aenderungsanfrage.ART_KONTAKT, mieter=mieter,
+            daten={'mobile': request.POST.get('mobile') or '', 'telefon_privat': request.POST.get('telefon_privat') or '',
+                   'email': request.POST.get('email') or mieter.email or ''}),
+            dienst.stellen(art=Aenderungsanfrage.ART_MITTEILUNG, mieter=mieter,
+                           text=request.POST.get('adresse_meldung') or '')]
+        if any(gestellt):
+            messages.success(request, '✅ ' + gettext(
+                'Ihre Anfrage ist bei der Verwaltung. Die Änderung gilt, sobald die Verwaltung sie bestätigt hat.'))
         else:
             messages.info(request, gettext('Keine Änderungen erkannt.'))
         return redirect('mieter_daten')
 
-    return render(request, 'core/mieter_daten.html', {'mieter': mieter})
+    anfragen = list(Aenderungsanfrage.objects.filter(mieter=mieter).order_by('-erstellt_am')[:10])
+    from core.models import ZweiterFaktor
+    faktor = ZweiterFaktor.objects.filter(benutzer=request.user).first()
+    return render(request, 'core/mieter_daten.html', {
+        'mieter': mieter, 'anfragen': anfragen, 'zweifaktor_aktiv': bool(faktor and faktor.ist_aktiv)})
+
+
+@never_cache
+@login_required
+def mieter_anfragen_view(request):
+    """«Anfragen»: Mietbestätigung und Zahlungsplan-Wunsch. Beides bestätigt erst die Verwaltung.
+
+    Die Mietbestätigung (PDF) lässt sich nach der Bestätigung 30 Tage lang laden (`mieter_mietbestaetigung_pdf`)."""
+    from datetime import timedelta
+
+    from django.contrib import messages
+    from django.utils import timezone
+
+    from core.models import Aenderungsanfrage
+    from core.services import anfragen as dienst
+    from core.services.mietbestaetigung import GUELTIG_TAGE
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        return redirect('mieter_portal')
+    art_mb, art_zp = Aenderungsanfrage.ART_MIETBESTAETIGUNG, Aenderungsanfrage.ART_ZAHLUNGSPLAN
+
+    if request.method == 'POST':
+        typ = request.POST.get('typ')
+        if typ == 'mietbestaetigung':
+            if Aenderungsanfrage.objects.filter(mieter=mieter, art=art_mb, status='offen').exists():
+                messages.info(request, gettext('Ihre Anfrage ist schon bei der Verwaltung.'))
+            else:
+                dienst.stellen(art=art_mb, mieter=mieter)
+                messages.success(request, '✅ ' + gettext('Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie bestätigt ist.'))
+        elif typ == 'zahlungsplan':
+            if dienst.stellen(art=art_zp, mieter=mieter, text=request.POST.get('text') or ''):
+                messages.success(request, '✅ ' + gettext('Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie entschieden ist.'))
+            else:
+                messages.error(request, gettext('Bitte beschreiben Sie Ihren Wunsch kurz.'))
+        return redirect('mieter_anfragen')
+
+    grenze = timezone.now() - timedelta(days=GUELTIG_TAGE)
+    anfragen = list(Aenderungsanfrage.objects.filter(mieter=mieter, art__in=(art_mb, art_zp)).order_by('-erstellt_am')[:20])
+    for a in anfragen:
+        a.pdf_moeglich = (a.art == art_mb and a.status == 'bestaetigt' and a.entschieden_am and a.entschieden_am >= grenze)
+    return render(request, 'core/mieter_anfragen.html', {'mieter': mieter, 'anfragen': anfragen, 'gueltig_tage': GUELTIG_TAGE})
+
+
+@login_required
+def mieter_mietbestaetigung_pdf(request, pk):
+    """Die bestätigte Mietbestätigung als PDF — nur für die eigene, von der Verwaltung bestätigte Anfrage."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from core.models import Aenderungsanfrage
+    from core.services.mietbestaetigung import GUELTIG_TAGE, mietbestaetigung_pdf
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        raise Http404
+    a = get_object_or_404(Aenderungsanfrage.objects.filter(
+        mieter=mieter, art=Aenderungsanfrage.ART_MIETBESTAETIGUNG, status='bestaetigt'), pk=pk)
+    if not a.entschieden_am or a.entschieden_am < timezone.now() - timedelta(days=GUELTIG_TAGE):
+        raise Http404
+    pdf = mietbestaetigung_pdf(mieter, timezone.localtime(a.entschieden_am).date(), verwaltung=mieter.organisation)
+    resp = HttpResponse(pdf, content_type='application/pdf')
+    resp['Content-Disposition'] = 'inline; filename="Mietbestaetigung.pdf"'
+    return resp
+
+
+@never_cache
+@login_required
+def mieter_zaehler_view(request):
+    """«Zählerstand melden»: Die Mieterin oder der Mieter trägt den abgelesenen Stand ein; die Verwaltung bestätigt ihn.
+
+    Nur Zähler der eigenen, aktiven Mietobjekte. Ein sinkender Stand wird sofort abgewiesen, ein auffälliger geht mit einem
+    Hinweis an die Verwaltung (`core/services/zaehlerstaende.py`). Zählen tut der Stand erst nach der Bestätigung."""
+    from datetime import date
+
+    from django.contrib import messages
+    from django.utils import timezone
+
+    from core.models import Aenderungsanfrage
+    from core.services import anfragen as dienst
+    from core.utils.betrag import betrag_parsen
+    from portfolio.models import Zaehler
+    mieter = getattr(request.user, 'mieter_profil', None)
+    if mieter is None:
+        return redirect('mieter_portal')
+    _vertraege, objekte = _mieter_objekte(mieter)
+    einheit_ids = [o['einheit'].pk for o in objekte if o['einheit']]
+    zaehler_liste = list(Zaehler.objects.filter(einheit_id__in=einheit_ids).select_related('einheit').order_by('einheit__bezeichnung', 'typ'))
+
+    if request.method == 'POST':
+        eigene = {z.pk: z for z in zaehler_liste}
+        try:
+            z = eigene[int(request.POST.get('zaehler') or 0)]
+            wert = betrag_parsen(request.POST.get('wert') or '')
+            datum = date.fromisoformat(request.POST.get('datum') or '')
+        except (KeyError, ValueError):
+            messages.error(request, gettext('Bitte Zähler, Stand und Ablesedatum angeben.'))
+            return redirect('mieter_zaehler')
+        if wert < 0 or datum > timezone.localdate():
+            messages.error(request, gettext('Bitte einen gültigen Stand und ein Ablesedatum bis heute angeben.'))
+            return redirect('mieter_zaehler')
+        anfrage, befund = dienst.stellen_zaehlerstand(mieter=mieter, zaehler=z, datum=datum, wert=wert)
+        if anfrage is None:
+            messages.error(request, ' '.join(befund['fehler']) + ' ' + gettext('Bitte lesen Sie den Zähler nochmals ab.'))
+        else:
+            messages.success(request, '✅ ' + gettext('Ihr Stand ist bei der Verwaltung. Er zählt, sobald die Verwaltung ihn bestätigt hat.'))
+        return redirect('mieter_zaehler')
+
+    for z in zaehler_liste:
+        z.letzter = z.staende.order_by('-datum', '-id').first()
+    anfragen = list(Aenderungsanfrage.objects.filter(mieter=mieter, art=Aenderungsanfrage.ART_ZAEHLERSTAND).order_by('-erstellt_am')[:10])
+    return render(request, 'core/mieter_zaehler.html', {
+        'mieter': mieter, 'zaehler': zaehler_liste, 'anfragen': anfragen, 'heute': timezone.localdate()})
 
 
 @never_cache

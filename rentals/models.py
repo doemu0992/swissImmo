@@ -8,6 +8,7 @@ from django.utils import timezone
 from core.zeit import datum_heute
 from datetime import timedelta
 from decimal import Decimal
+from core.services.lik import LIK_BASIS, LIK_BASIS_CHOICES
 from core.utils import get_current_ref_zins, get_current_lik, get_smart_upload_path
 from django.utils.translation import gettext_lazy as _, pgettext_lazy
 
@@ -177,6 +178,10 @@ class Mietvertrag(OrganisationAusKette):
     basis_lik_punkte = models.DecimalField(max_digits=6, decimal_places=1, default=get_current_lik)
     # Stand-Monat, aus dem basis_lik_punkte abgelesen wurde (für amtliches Formular)
     basis_lik_stand = models.DateField("LIK Basis Stand-Monat", null=True, blank=True)
+    # Die Basisreihe, in der `basis_lik_punkte` (und jede spätere Indexrechnung dieses Vertrags) steht. Die Vorgabe
+    # eines neuen Vertrags kommt aus `lik.basis_vorgabe` (Liegenschaft → Eigentümer → Organisation); hier steht eine
+    # Konstante als Default, keine Abfrage (die Suche baut `Mietvertrag(...)` ohne Datenbankzugriff).
+    lik_basis = models.CharField("LIK-Basisreihe", max_length=40, choices=LIK_BASIS_CHOICES, default=LIK_BASIS)
     kostensteigerung_datum = models.DateField("Kostensteigerung ausgeglichen bis", null=True, blank=True)
     mietzinsreserve_betrag = models.DecimalField("Reserve Betrag (CHF)", max_digits=8, decimal_places=2, null=True, blank=True)
     mietzinsreserve_prozent = models.DecimalField("Reserve Prozent (%)", max_digits=5, decimal_places=2, null=True, blank=True)
@@ -707,14 +712,18 @@ class Mietvertrag(OrganisationAusKette):
             vw = self.organisation
             if not vw: return 'neutral'
             curr_zins = vw.aktueller_referenzzinssatz
-            curr_lik = vw.aktueller_lik_punkte
+            # Der aktuelle LIK in der REIHE DES VERTRAGS: `aktueller_lik_punkte` der Verwaltung wird in der Reihe
+            # Dezember 2020 geführt und gilt nur für sie. Hat die Reihe des Vertrags keinen Wert, gibt es keinen
+            # LIK-Befund (kein Vergleich über Reihen hinweg).
+            from core.services import lik as _lik
+            curr_lik = _lik.aktuell_in_reihe(_lik.basis_von(self), vw.aktueller_lik_punkte)
             # Auf der EFFEKTIVEN Basis rechnen (jüngste wirksame Anpassung) —
             # sonst zeigt der Mietzins-View nach einer Anpassung weiterhin
             # "Erhöhung möglich" auf der veralteten Ursprungsbasis.
             basis_zins, basis_lik = self.effektive_basis()
             if curr_zins < basis_zins: return 'decrease'
             if curr_zins > basis_zins: return 'increase'
-            if curr_lik > (basis_lik + Decimal('1.5')): return 'increase'
+            if curr_lik is not None and curr_lik > (basis_lik + Decimal('1.5')): return 'increase'
             return 'neutral'
         except Exception:
             return 'neutral'
@@ -730,7 +739,8 @@ class Mietvertrag(OrganisationAusKette):
     #: Felder, die über das Mietzinsmodell entscheiden. Ändert eine Bearbeitung keines davon,
     #: blockiert `clean()` einen Altvertrag nicht wegen eines früheren Verstosses.
     MODELL_FELDER = ('mietzins_modell', 'beginn', 'ende', 'ist_befristet', 'vermieter_kuendigungsverzicht_bis',
-                     'basis_lik_punkte', 'basis_lik_stand', 'index_weitergabe_prozent', 'index_intervall_monate')
+                     'basis_lik_punkte', 'basis_lik_stand', 'lik_basis', 'index_weitergabe_prozent',
+                     'index_intervall_monate')
 
     def clean(self):
         """Mietzinsmodell prüfen (Art. 269b/269c OR, `core/services/mietzinsmodell.py`).
@@ -826,9 +836,15 @@ class Mietvertrag(OrganisationAusKette):
         if self.sign_status == 'unterzeichnet' and self.pdf_datei:
             try:
                 from core.services.ablage import ablage_signierter_vertrag
-                ablage_signierter_vertrag(self)
+                from core.tenancy import kontext_des_objekts
+                # Der DocuSeal-Webhook speichert ohne Anmeldung, also ohne Verwaltung im Kontext: Ohne diese Zeile
+                # warf `Dokument.objects` einen OrganisationsFehler, und die Akte blieb leer (Audit K1).
+                with kontext_des_objekts(self):
+                    ablage_signierter_vertrag(self)
             except Exception:
-                logger.debug("Fehler bewusst übergangen", exc_info=True)
+                # Das Speichern des Vertrags soll daran nicht scheitern — aber ein fehlender Eintrag in der Akte
+                # gehört ins Protokoll, nicht in `debug` (sonst bleibt er unbemerkt).
+                logger.exception("Ablage des signierten Vertrags %s fehlgeschlagen", self.pk)
 
     def delete(self, *args, **kwargs):
         # Automatisch erzeugte Vertragspaket-Dokumente (Mietvertrag + Standard-

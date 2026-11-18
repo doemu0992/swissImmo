@@ -26,6 +26,7 @@ from core.auth import (FINANZ_VERWALTUNGS_ROLLEN, VERWALTUNGS_ROLLEN, client_ip,
 from core.tenancy import OrganisationsFehler, organisation_der_anfrage
 
 from ._basis import _global_filter
+from abo.zugang import schnittstelle_frei as _schnittstelle_frei
 
 def _organisation(request):
     """Die Organisation der Anfrage. Ohne Mitgliedschaft (auch ein Superuser) gibt es keine: 403, kein Raten."""
@@ -188,6 +189,7 @@ def fw_daten_export(request):
     einst = datenexport.einstellung_holen()
     return render(request, 'fw/daten_export.html', {
         **_global_filter(request), 'nav': 'einstellungen',
+        'schnittstellen_frei': _schnittstelle_frei(user=request.user),
         'darf_mandat': hat_rolle(request.user, VERWALTUNGS_ROLLEN),
         'von': request.GET.get('von') or date(heute.year, 1, 1).isoformat(),
         'bis': request.GET.get('bis') or heute.isoformat(),
@@ -250,6 +252,12 @@ def fw_daten_export_journal(request):
     if preset is not None and preset not in datenexport.PRESETS:
         messages.error(request, gettext('Das Format «%(p)s» gibt es nicht.') % {'p': preset[:40]})
         return redirect(EXPORT)
+    if preset is not None:
+        # Die festen Formate für Banana und bexio sind Schnittstellen (Stufe «professional»); die freie Zuordnung
+        # bleibt in jeder Stufe (Datenexport).
+        from abo.zugang import schnittstelle_frei, sperre_modul
+        if not schnittstelle_frei(user=request.user):
+            return sperre_modul(request, 'schnittstellen')
     text, stat = datenexport.journal_csv(von, bis, preset=preset)
     _protokollieren(
         request, 'Buchungsjournal exportiert', _organisation(request).firma,
@@ -260,6 +268,9 @@ def fw_daten_export_journal(request):
         # Banana liest «Text file with column headers»; Tabulator-getrennt, daher .txt statt .csv.
         antwort = HttpResponse(text, content_type='text/plain; charset=utf-8')
         antwort['Content-Disposition'] = f'attachment; filename="Banana_Buchungen_{von:%Y%m%d}_{bis:%Y%m%d}.txt"'
+    elif preset == datenexport.BEXIO:
+        antwort = HttpResponse(text, content_type='text/csv; charset=utf-8')
+        antwort['Content-Disposition'] = f'attachment; filename="bexio_Buchungen_{von:%Y%m%d}_{bis:%Y%m%d}.csv"'
     else:
         antwort = HttpResponse(text, content_type='text/csv; charset=utf-8')
         antwort['Content-Disposition'] = f'attachment; filename="Buchungsjournal_{von:%Y%m%d}_{bis:%Y%m%d}.csv"'

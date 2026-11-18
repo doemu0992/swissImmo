@@ -184,32 +184,32 @@ def _klartext_als_html(text):
     return html_escape(text or '', quote=False).replace('\n', '<br>')
 
 
-def send_mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma='',
+def send_mieter_portal_zugang(to_email, anrede_name, username, link, login_url, absender_firma='',
                               sprache='de', gruss=None):
-    """Sendet dem Mieter seine Portal-Zugangsdaten (Benutzername, Passwort,
-    Erklärung, Login-Link). Gibt True/False zurück.
+    """Sendet dem Mieter seinen Portal-Zugang: Benutzername und einen Link, über den er sein Passwort selbst
+    festlegt (`core.services.einladung.portal_link`). Ein Passwort steht nie in der Mail. Gibt True/False zurück.
 
     `sprache`: Korrespondenzsprache des Mieters (D11), nicht die der
     Sachbearbeitung, die den Zugang anlegt."""
     if not to_email:
         return False
     with in_sprache(sprache):
-        return _mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma, gruss)
+        return _mieter_portal_zugang(to_email, anrede_name, username, link, login_url, absender_firma, gruss)
 
 
-def _mieter_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma, gruss=None):
+def _mieter_portal_zugang(to_email, anrede_name, username, link, login_url, absender_firma, gruss=None):
     betreff = gettext('Ihr Zugang zum Mieterportal')
     _text1 = gettext('Ihr Mieterportal')
     _text2 = gruss or gettext('Guten Tag %(name)s') % {'name': anrede_name}
     _text3 = gettext('Für Sie wurde ein persönlicher Zugang zum Mieterportal eingerichtet. Dort sehen Sie jederzeit Ihren Mietvertrag, offene Rechnungen (inkl. QR-Einzahlschein), Ihren Kontoauszug und Ihre Dokumente — und Sie können bequem eine Reparatur oder einen Schaden melden.')
     _text4 = gettext('Benutzername')
-    _text5 = gettext('Passwort')
-    _text6 = gettext('Jetzt einloggen')
+    _text5 = gettext('Danach melden Sie sich mit Ihrem Benutzernamen hier an:')
+    _text6 = gettext('Passwort festlegen')
     _text7 = gettext('Oder öffnen Sie diese Adresse im Browser:')
-    _text8 = gettext('Bitte ändern Sie Ihr Passwort nach dem ersten Login und bewahren Sie diese Angaben sicher auf. Diese E-Mail wurde automatisch erstellt.')
+    _text8 = gettext('Der Link gilt nur wenige Tage und nur einmal. Ist er abgelaufen, bitten Sie Ihre Verwaltung um einen neuen. Diese E-Mail wurde automatisch erstellt.')
     html = mail_html('portal_zugang', zeichen='🔑', kopf=_text1, gruss=_text2, einleitung=_text3,
-                     benutzer_text=_text4, passwort_text=_text5, login_text=_text6, adresse_text=_text7,
-                     hinweis=_text8, username=username, passwort=passwort, login_url=login_url,
+                     benutzer_text=_text4, danach_text=_text5, login_text=_text6, adresse_text=_text7,
+                     hinweis=_text8, username=username, link=link, login_url=login_url,
                      absender_firma=absender_firma)
     return send_via_hoststar(to_email, betreff, html)
 
@@ -235,7 +235,7 @@ def send_report_mail(to_email, betreff, html_inhalt, anhaenge=None, organisation
         return False
 
 
-def send_eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma='',
+def send_eigentuemer_portal_zugang(to_email, anrede_name, username, link, login_url, absender_firma='',
                                    sprache='de', gruss=None):
     """Sendet dem Eigentümer seine Portal-Zugangsdaten. True/False.
 
@@ -243,22 +243,22 @@ def send_eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, lo
     if not to_email:
         return False
     with in_sprache(sprache):
-        return _eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma, gruss)
+        return _eigentuemer_portal_zugang(to_email, anrede_name, username, link, login_url, absender_firma, gruss)
 
 
-def _eigentuemer_portal_zugang(to_email, anrede_name, username, passwort, login_url, absender_firma, gruss=None):
+def _eigentuemer_portal_zugang(to_email, anrede_name, username, link, login_url, absender_firma, gruss=None):
     betreff = gettext('Ihr Zugang zum Eigentümer-Portal')
     _kopf = gettext('Ihr Eigentümer-Portal')
     _gruss = gruss or gettext('Guten Tag %(name)s') % {'name': anrede_name}
     _einleitung = gettext('Für Sie wurde ein persönlicher Zugang zum Eigentümer-Portal eingerichtet. Dort sehen Sie jederzeit den Stand Ihrer Liegenschaften: Rendite-Cockpit, offene Reparatur-Freigaben, Portfolio-Report und Steuerauszug.')
     _benutzer = gettext('Benutzername')
-    _passwort = gettext('Passwort')
-    _login = gettext('Jetzt einloggen')
+    _danach = gettext('Danach melden Sie sich mit Ihrem Benutzernamen hier an:')
+    _login = gettext('Passwort festlegen')
     _adresse = gettext('Oder öffnen Sie diese Adresse im Browser:')
-    _hinweis = gettext('Bitte ändern Sie Ihr Passwort nach dem ersten Login und bewahren Sie diese Angaben sicher auf. Diese E-Mail wurde automatisch erstellt.')
+    _hinweis = gettext('Der Link gilt nur wenige Tage und nur einmal. Ist er abgelaufen, bitten Sie Ihre Verwaltung um einen neuen. Diese E-Mail wurde automatisch erstellt.')
     html = mail_html('portal_zugang', zeichen='🏠', kopf=_kopf, gruss=_gruss, einleitung=_einleitung,
-                     benutzer_text=_benutzer, passwort_text=_passwort, login_text=_login, adresse_text=_adresse,
-                     hinweis=_hinweis, username=username, passwort=passwort, login_url=login_url,
+                     benutzer_text=_benutzer, danach_text=_danach, login_text=_login, adresse_text=_adresse,
+                     hinweis=_hinweis, username=username, link=link, login_url=login_url,
                      absender_firma=absender_firma)
     return send_via_hoststar(to_email, betreff, html)
 

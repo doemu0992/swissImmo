@@ -81,7 +81,7 @@
         <div class="flex items-center gap-3">
             <div class="w-14 shrink-0 fw-strong">{{ b.jahr }}</div>
             <div class="flex-1 fw-flaeche2 rounded-full h-4 overflow-hidden">
-                <div class="h-full rounded-full fw-balken-voll" style="width: {% widthratio b.summe budget_total 100 %}%"></div>
+                <div class="h-full rounded-full fw-balken-voll" data-breite="{% widthratio b.summe budget_total 100 %}"></div>
             </div>
             <div class="w-16 shrink-0 text-right fw-hilfe">{{ b.anzahl }}×</div>
             <div class="w-28 shrink-0 text-right fw-strong fw-num">CHF {{ b.summe|chf }}</div>

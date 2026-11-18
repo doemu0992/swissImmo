@@ -17,6 +17,10 @@ BETREIBER â€” Kundenliste (nur lesend). Siehe core/views/fw/betreiber.py: nur ZÃ
     <div class="fw-phead-knoepfe"><a href="/betreiber/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Kunde anlegen" %}</a></div>
 </div>
 
+{% for aufgabe in pflege %}
+<div class="fw-hinweis warn max-w-3xl"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">{{ aufgabe }}</div></div>
+{% endfor %}
+
 {% if mit_befund %}
 <div class="fw-hinweis warn max-w-3xl"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">{% blocktrans count n=mit_befund %}Bei {{ n }} Verwaltung gibt es etwas zu prÃ¼fen.{% plural %}Bei {{ n }} Verwaltungen gibt es etwas zu prÃ¼fen.{% endblocktrans %}</div></div>
 {% endif %}
@@ -27,6 +31,7 @@ BETREIBER â€” Kundenliste (nur lesend). Siehe core/views/fw/betreiber.py: nur ZÃ
         <thead>
             <tr>
                 <th scope="col">{% trans "Verwaltung" %}</th>
+                <th scope="col">{% trans "Ansprechperson" %}</th>
                 <th scope="col">{% trans "Stufe" %}</th>
                 <th scope="col">{% trans "Abonnement" %}</th>
                 <th scope="col" class="fw-right">{% trans "Einheiten" %}</th>
@@ -37,7 +42,8 @@ BETREIBER â€” Kundenliste (nur lesend). Siehe core/views/fw/betreiber.py: nur ZÃ
         <tbody>
         {% for k in kunden %}
             <tr>
-                <td class="fw-strong"><a href="/betreiber/{{ k.organisation.pk }}/" class="fw-link">{{ k.organisation.firma }}</a></td>
+                <td class="fw-strong"><a href="/betreiber/{{ k.organisation.pk }}/" class="fw-link">{{ k.organisation.firma }}</a><br><small class="fw-faint">{{ k.kundennummer }}{% if k.status_text %} Â· {{ k.status_text }}{% endif %}</small></td>
+                <td>{{ k.ansprechperson }}{% if k.telefon %}<br><small class="fw-faint">{{ k.telefon }}</small>{% endif %}</td>
                 <td>{{ k.stufe }}</td>
                 <td>{{ k.abo_text }}{% if k.abo.abrechnung_ab %}<br><small class="fw-faint">{% trans "Abrechnung ab" %} {{ k.abo.abrechnung_ab|date:"d.m.Y" }}</small>{% endif %}</td>
                 <td class="fw-right">{{ k.einheiten }}</td>
@@ -45,7 +51,7 @@ BETREIBER â€” Kundenliste (nur lesend). Siehe core/views/fw/betreiber.py: nur ZÃ
                 <td>{% if k.befunde %}<ul>{% for b in k.befunde %}<li>{{ b }}</li>{% endfor %}</ul>{% else %}<span class="fw-faint">{% trans "in Ordnung" %}</span>{% endif %}</td>
             </tr>
         {% empty %}
-            <tr><td colspan="6" class="fw-faint">{% trans "Noch keine Verwaltung angelegt." %}</td></tr>
+            <tr><td colspan="7" class="fw-faint">{% trans "Noch keine Verwaltung angelegt." %}</td></tr>
         {% endfor %}
         </tbody>
     </table>

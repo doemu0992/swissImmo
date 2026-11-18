@@ -49,7 +49,7 @@
     <div class="fw-rumpf">
         {% for p in probleme %}<p class="fw-chip fw-warn">{{ p }}</p>{% endfor %}
         {% for t in angehaengt %}<p>{% blocktrans with nr=t.nr titel=t.titel %}Wird beschlossen unter Traktandum {{ nr }} «{{ titel }}» der Versammlung{% endblocktrans %} <a href="/neu/stweg/versammlung/{{ t.versammlung.pk }}/">{{ t.versammlung }}</a>.</p>{% endfor %}
-        <form method="post" action="/neu/stweg/budget/{{ b.pk }}/vorlegen/" style="display:inline">{% csrf_token %}<button class="fw-btn"{% if probleme %} disabled{% endif %}>{% trans "Der Versammlung vorlegen" %}</button></form>
+        <form method="post" action="/neu/stweg/budget/{{ b.pk }}/vorlegen/" class="inline">{% csrf_token %}<button class="fw-btn"{% if probleme %} disabled{% endif %}>{% trans "Der Versammlung vorlegen" %}</button></form>
         {% if b.status == 'vorgelegt' and traktanden %}
         <form method="post" action="/neu/stweg/budget/{{ b.pk }}/traktandum/" class="fw-formular drei">{% csrf_token %}
             <div class="fw-feldblock"><label class="fw-label" for="bt_t">{% trans "Unter welchem Traktandum beschliessen? *" %}</label>
@@ -64,7 +64,7 @@
     <div class="fw-kopf"><span class="fw-t">{% trans "Akonto-Rechnungen" %}</span><span class="fw-neben">{{ vorschreibungen|length }}</span></div>
     <div class="fw-rumpf">
         <p>{% if offen_versand %}{% blocktrans with n=offen_versand %}{{ n }} Rate(n) noch nicht versendet.{% endblocktrans %}{% else %}{% trans "Alle versendet." %}{% endif %}</p>
-        <form method="post" action="/neu/stweg/budget/{{ b.pk }}/versenden/" style="display:inline">{% csrf_token %}<button class="fw-btn fw-primary"{% if not offen_versand %} disabled{% endif %}>{% trans "Akonto-Rechnungen per E-Mail senden" %}</button></form>
+        <form method="post" action="/neu/stweg/budget/{{ b.pk }}/versenden/" class="inline">{% csrf_token %}<button class="fw-btn fw-primary"{% if not offen_versand %} disabled{% endif %}>{% trans "Akonto-Rechnungen per E-Mail senden" %}</button></form>
         {% for eig in eigentuemer %}<a class="fw-btn" href="/neu/stweg/budget/{{ b.pk }}/pdf/?eigentuemer={{ eig.pk }}" target="_blank" rel="noopener">{{ eig.firma_oder_name }}</a>{% endfor %}
     </div>
     {% for v in vorschreibungen %}

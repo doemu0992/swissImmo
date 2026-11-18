@@ -45,6 +45,7 @@ OHNE_WEG = {
     # Endpunkte, die nur eine andere Seite bedient (Bruchstücke, Downloads,
     # POST-Ziele ohne eigene Darstellung).
     '/neu/regelwerk/protokoll/': 'Aus /neu/regelwerk/ verlinkt (Kopfzeile).',
+    '/neu/auswertung/eigene/neu/': 'POST-Ziel des Formulars «Neue Vorlage» auf /neu/auswertung/eigene/.',
     '/neu/palette/': 'JSON für die ⌘K-Palette, keine Seite. Wird aus '
                      'base.html per fetch() gelesen.',
 
@@ -186,6 +187,9 @@ class ErreichbarkeitTests(SimpleTestCase):
                 continue
             if _erwaehnt_in_dateien(adresse, [PROGRAMM / 'core' / 'views'], ['.py'],
                                     ohne_quelle=eigene_quelle):
+                continue
+            # Skripte unter static/js rufen Adressen ab (z. B. die Zähler der Leiste) — auch das ist ein Weg.
+            if _erwaehnt_in_dateien(adresse, [PROGRAMM / 'static' / 'js'], ['.js']):
                 continue
             verwaist.append(adresse)
         self.assertEqual(

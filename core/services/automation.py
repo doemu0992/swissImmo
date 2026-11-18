@@ -843,7 +843,14 @@ def _pendenzen_fuer_organisation(horizont_tage, user):
             # eine eigene Rechnung auf `basis_lik_punkte` und `netto_mietzins`
             # des Vertragsbeginns: Nach der ersten Indexanpassung schlug sie den
             # bereits weitergegebenen Anstieg ein zweites Mal vor.
-            vorschlag = index_anpassung_vorschlag(v, Decimal(aktuell_pkt), wirksam_ab=termin)
+            # Der aktuelle Stand in der REIHE DES VERTRAGS. `aktuell_pkt` ist die Standardreihe (Dezember 2020); ein
+            # Vertrag einer anderen Reihe bekommt den letzten Wert SEINER Reihe, und ohne solchen keine Pendenz
+            # (die Mietzins-Seite sagt dann, welcher Monat in welcher Reihe fehlt).
+            from core.services import lik as _lik
+            pkt_reihe = _lik.aktuell_in_reihe(_lik.basis_von(v), aktuell_pkt)
+            if pkt_reihe is None:
+                continue
+            vorschlag = index_anpassung_vorschlag(v, Decimal(pkt_reihe), wirksam_ab=termin)
             if vorschlag is None:
                 continue
             basis_lik = vorschlag['basis_lik']

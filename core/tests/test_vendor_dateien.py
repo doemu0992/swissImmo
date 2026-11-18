@@ -42,7 +42,7 @@ WAS ER NICHT PRÜFT
 Ob die Datei das ist, was sie zu sein behauptet. Ein `alpine.min.js`, das in
 Wahrheit etwas anderes enthält, findet dieser Test nicht — das ist eine Frage
 der Herkunft, und die wurde beim Übernehmen byteweise gegen die npm-Pakete
-gemessen und in `docs/FREMDBIBLIOTHEKEN.md` festgehalten. Hier nachgestellt
+gemessen und in `CONTRIBUTING.md` festgehalten. Hier nachgestellt
 werden könnte sie nur mit Netz, also gar nicht.
 """
 import json
@@ -59,7 +59,7 @@ WURZEL = pathlib.Path(settings.BASE_DIR)
 #: Ohne Caret — die Dateien sind eingecheckt, also muss `npm install` genau
 #: die holen, die ausgeliefert wird. `^1.11.0` ergäbe heute bootstrap-icons
 #: 1.13.1: andere Schriftdatei, 28 Icons mehr, und der byteweise Nachweis in
-#: `docs/FREMDBIBLIOTHEKEN.md` wäre still hinfällig.
+#: `CONTRIBUTING.md` wäre still hinfällig.
 VENDOR = {}
 # LEER SEIT ETAPPE 3 (29.10.2026): Alpine und Vue trugen nur noch die öffentliche Schadenmeldung und die
 # Bewerbung — beide laufen jetzt auf dem Assistenten der Anwendung (static/js/fw-bausteine.js). signature_pad
@@ -130,7 +130,7 @@ class VendorDateienTest(SimpleTestCase):
                 )['devDependencies'],
                 f'`{paket}` steht wieder in package.json. Wenn es wirklich '
                 'gebraucht wird: aus NICHT_GEHOLT nach VENDOR verschieben und '
-                'docs/FREMDBIBLIOTHEKEN.md nachfuehren.')
+                'CONTRIBUTING.md nachfuehren.')
 
         treffer = []
         for ordner in ('core/templates', 'templates'):
@@ -165,7 +165,7 @@ class VendorDateienTest(SimpleTestCase):
                 f'`{paket}` steht als «{dev[paket]}». Erwartet ist genau '
                 f'«{fassung}» — ohne Caret, weil die Datei eingecheckt ist. '
                 'Wer die Fassung wechselt, tauscht auch die Datei unter '
-                'static/ und führt docs/FREMDBIBLIOTHEKEN.md nach.')
+                'static/ und führt CONTRIBUTING.md nach.')
 
     def test_der_waechter_liest_ueberhaupt_vorlagen(self):
         """Ohne diese Zeile wäre der Test oben auch bei leerem Suchpfad grün.

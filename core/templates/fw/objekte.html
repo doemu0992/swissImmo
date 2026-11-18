@@ -116,7 +116,7 @@
 {% endfor %}
 {% if seite.paginator.num_pages > 1 %}<div class="fw-card">{% include 'fw/_seiten.html' %}</div>{% endif %}
 
-<style>
+<style nonce="{{ csp_nonce }}">
     /* Der Pfeil dreht sich beim Aufklappen. `details[open]` statt einer
        JS-Klasse — die Gruppe kennt ihren Zustand selbst. */
     details[open] > summary > svg:first-child { transform: rotate(90deg); }

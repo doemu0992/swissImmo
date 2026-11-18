@@ -2,7 +2,7 @@
 #
 # Schadensfaelle und Handwerkerauftraege: Meldung, Kosten, Fotos, Auftrag,
 # Status, Antwort an den Mieter, Ersatzplanung.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Offener Posten, hier NICHT mitkorrigiert (Fund aus E1c): fw_schaden_detail
 # setzt `gelesen = True` auch fuer die reine Leserolle, obwohl der Test
@@ -129,7 +129,11 @@ def fw_schaeden(request):
         sicht = ''
         rows = alle
 
-    for zeile in rows:
+    # Sicht und Kopf rechnen über alles, gezeigt wird eine Seite.
+    from ._liste import blaettern
+    gefiltert = len(rows) != len(alle)
+    seite, query_ohne_seite = blaettern(request, rows)
+    for zeile in seite:
         t = zeile['t']
         zeile['s_label'], zeile['s_cls'] = TICKET_PILL.get(
             t.status, (t.status, 'fw-flaeche2 fw-mutet'))
@@ -146,9 +150,10 @@ def fw_schaeden(request):
 
     from django.contrib import messages
     return render(request, 'fw/schaeden.html', {
-        **basis, 'nav': 'schadensfaelle', 'rows': rows, 'kopf': kopf,
+        **basis, 'nav': 'schadensfaelle', 'rows': seite, 'seite': seite, 'query_ohne_seite': query_ohne_seite,
+        'kopf': kopf,
         'sicht': sicht, 'status_filter': status_filter, 'q': q, 'nur_meine': nur_meine,
-        'gefiltert': len(rows) != len(alle),
+        'gefiltert': gefiltert,
         'sicht_chips': [('offen', gettext('Offen (%(n)s)') % {'n': kopf["offen"]}),
                         ('befund', gettext('Mit Befund (%(n)s)') % {'n': kopf["mit_befund"]}),
                         ('wartet', gettext('Wartet auf Dritte (%(n)s)') % {'n': kopf["wartet"]}),
@@ -429,8 +434,11 @@ def fw_schaden_detail(request, pk):
         from stweg import bauteile
         kt = {'stweg_bauteile': bauteile.auswahl(), 'kt_probleme': bauteile.probleme(t),
               'kt_traeger': bauteile.KOSTENTRAEGER_CHOICES}
+    from tickets.workflow import person_fuer_absender
     return render(request, 'fw/schaden_detail.html', {
         **basis, **kt, 'nav': 'schadensfaelle', 't': t,
+        # Bei wem eine bestätigte Absenderadresse dauerhaft gespeichert würde (nur wenn eindeutig).
+        'absender_person': person_fuer_absender(t),
         's_label': s_label, 's_cls': s_cls, 'p_label': p_label, 'p_cls': p_cls,
         'nachrichten': nachrichten, 'auftraege': auftraege, 'melder': melder,
         'kosten_geschaetzt': kosten_geschaetzt, 'kosten_effektiv': kosten_effektiv,
@@ -756,6 +764,37 @@ def fw_schaden_ohne_rechnung(request, pk):
         freigegeben and grund in OHNE_RECHNUNG_ERWARTET) else ''
     messages.success(request, '✅ ' + gettext('Ticket ohne Rechnung abgeschlossen (Begründung festgehalten).') + extra)
     _versicherung_hinweis(request, t)
+    return redirect(f'/neu/schaeden/{t.id}/')
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_schaden_absender_bestaetigen(request, pk, nachricht_id):
+    """Eine Mail von unbekanntem Absender dem Ticket zurechnen: Die Adresse gilt danach für dieses Ticket als Melder,
+    die Mail wird für den Mieter sichtbar (`tickets.workflow.absender_bestaetigen`)."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from tickets.models import SchadenMeldung, TicketNachricht
+    from tickets.workflow import absender_bei_person_speichern, absender_bestaetigen, person_fuer_absender
+
+    if request.method != 'POST':
+        return redirect(f'/neu/schaeden/{pk}/')
+    t = get_object_or_404(SchadenMeldung.objects.select_related('gemeldet_von'), id=pk)
+    n = get_object_or_404(TicketNachricht, id=nachricht_id, ticket=t)
+    adresse = n.absender_adresse
+    anzahl = absender_bestaetigen(n)
+    if anzahl:
+        log_aktion(request, "Absender am Ticket bestätigt", f"Ticket #{t.id}", adresse)
+        messages.success(request, gettext('%(adresse)s gilt für dieses Ticket jetzt als Absender des Melders.')
+                         % {'adresse': adresse})
+        person = person_fuer_absender(t) if request.POST.get('dauerhaft') == '1' else None
+        if person is not None and absender_bei_person_speichern(person, adresse):
+            log_aktion(request, "Weitere Absenderadresse gespeichert", person.display_name, adresse)
+            messages.success(request, gettext('Die Adresse ist bei %(person)s gespeichert und gilt für alle Tickets dieser Person.')
+                             % {'person': person.display_name})
+    else:
+        messages.info(request, gettext('Diese Nachricht ist keine Mail von unbekanntem Absender (mehr).'))
     return redirect(f'/neu/schaeden/{t.id}/')
 
 

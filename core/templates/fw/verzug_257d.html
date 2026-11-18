@@ -63,6 +63,7 @@
                 Der Zugang liegt frühestens nach Postweg und {{ abholfrist_tage }} Tagen Abholfrist des Einschreibens; das vorläufige Fristende
                 rechnet deshalb mit <b>{{ zustell_tage }} Tagen mehr</b> ({{ min_frist|add:zustell_tage }} Tage ab heute). Fällt es auf einen Samstag, Sonntag oder Feiertag,
                 gilt der nächste Werktag (Art. 78 OR). Bei Einschreiben mit erfasstem Versanddatum <b>provisorisch</b> — definitiv ab bestätigtem Zugang.
+                <span data-testid="feiertage-kanton">{% if feiertage_kanton %}Berücksichtigt sind die Feiertage des Kantons {{ feiertage_kanton }} (Verzeichnis des Bundesamts für Justiz); Feiertage einzelner Gemeinden nicht.{% else %}An der Liegenschaft ist kein Kanton hinterlegt: Es zählen nur die allgemeinen Feiertage, kantonale nicht.{% endif %}</span>
             </p>
         </div>
 
@@ -145,7 +146,7 @@ function fristCheck(){
         }
     }
     var box = document.getElementById('v-warn'), list = document.getElementById('v-warn-list');
-    if (warns.length) { list.innerHTML = warns.map(function(w){ return '<li>'+w+'</li>'; }).join(''); box.classList.remove('hidden'); }
+    if (warns.length) { list.innerHTML = warns.map(function(w){ return '<li>'+fwEsc(w)+'</li>'; }).join(''); box.classList.remove('hidden'); }
     else { box.classList.add('hidden'); }
 }
 fristCheck();

@@ -1,6 +1,6 @@
 """Ein Lauf hat eine Quelle — und steht nicht zweimal auf einem Bildschirm.
 
-DER BEFUND (B3 aus `docs/UX-ANALYSE-V7.md`)
+DER BEFUND (B3 aus `«UX-ANALYSE-V7» (früheres Dokument, Git-Verlauf)`)
 
 »Drei Bildschirmaussagen zu denselben drei Läufen«, gemessen an einer echten
 Installation am selben Tag:

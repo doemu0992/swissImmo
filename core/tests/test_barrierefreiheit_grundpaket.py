@@ -54,7 +54,8 @@ class GrundpaketTests(SimpleTestCase):
         text = (VORLAGEN / 'fw/_detail_tabs.html').read_text(encoding='utf-8')
         for erwartet in ('role="tablist"', 'role="tab"', 'aria-selected=', 'aria-controls='):
             self.assertIn(erwartet, text)
-        base = (VORLAGEN / 'fw/base.html').read_text(encoding='utf-8')
+        from ._rahmen import basis_mit_skripten
+        base = basis_mit_skripten()
         self.assertIn("setAttribute('aria-selected'", base)          # fwTab führt den Zustand nach
         self.assertIn("'ArrowRight'", base)                          # Pfeiltasten wechseln den Reiter
 

@@ -1,9 +1,9 @@
 """Testmodul pendenzen — aus core/tests.py herausgeloest (Etappe 1,
-siehe docs/ETAPPE-1-ZERLEGEN.md). 9 Klassen, unveraendert uebernommen."""
+siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)). 9 Klassen, unveraendert uebernommen."""
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 
 from crm.models import Mitgliedschaft
 from ._helfer import (_test_organisation,
@@ -270,6 +270,8 @@ class FristenCenterTests(TestCase):
         self.assertNotContains(r, 'Manuelle Aufgabe')
 
 
+# Schnittstellen (Formate, Feed, Kalender-Abo) gehören zur Stufe «professional».
+@override_settings(SWISSIMMO_VORGABE_STUFE='professional')
 class FristenKalenderTests(TestCase):
     """iCal-Export (Download + Feed) und wöchentliches Fristen-Mail."""
     def setUp(self):
@@ -293,13 +295,11 @@ class FristenKalenderTests(TestCase):
         self.assertIn('Kündigungstermin Muster', body)
 
     def test_feed_token(self):
-        from core.services.ical import feed_token
+        from core.services.ical import token_setzen
         self._frist('Frist X', 3)
         c = Client()  # ohne Login
-        # gültiger Token
-        # Der Token traegt seit dem Audit die Verwaltung — ein Token ohne
-        # sie galt fuer jede, und in den Fristen stehen Mieternamen.
-        r = c.get(f'/fristen.ics?token={feed_token(_test_organisation())}')
+        # gültiger Token: Er gehört einer Person in einer Verwaltung (`core/tests/test_kalender_link.py`).
+        r = c.get(f'/fristen.ics?token={token_setzen(_team_user(), _test_organisation())}')
         self.assertEqual(r.status_code, 200)
         self.assertIn('BEGIN:VCALENDAR', r.content.decode('utf-8'))
         # ungültiger Token
@@ -489,7 +489,7 @@ class HotfixDashboardPerformanceTests(TestCase):
 # Statusfilter «gekündigt» klickt, sieht den abgelaufenen Vertrag wieder mit.
 #
 # Das ist ein OFFENER PUNKT und keine erledigte Sache. Er steht in
-# docs/KONZEPT-UI.md unter «Offene Punkte aus 4b.13»; ob die Unterscheidung
+# CONTRIBUTING.md unter «Offene Punkte aus 4b.13»; ob die Unterscheidung
 # in der Vertragsliste auftauchen soll, ist eine fachliche Entscheidung und
 # nicht Teil des Startseiten-Umbaus.
 #

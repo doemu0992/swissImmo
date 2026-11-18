@@ -1,7 +1,7 @@
 # core/views/fw/kommunikation.py
 #
 # Mitteilungs-Assistent mit Live-Vorschau. Etappe 1, siehe
-# docs/ETAPPE-1-ZERLEGEN.md.
+# «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 
 from django.shortcuts import render
 

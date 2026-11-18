@@ -1,48 +1,66 @@
 """iCalendar-Export der Fristen (RFC 5545). Erzeugt ganztägige VEVENTs, die in
 Outlook/Google/Apple Calendar importiert oder als Feed abonniert werden können."""
 from django.utils import timezone
-from django.core import signing
 
-FEED_SALT = 'fristen-feed'
+def feed_token(benutzer, organisation):
+    """Der Kalender-Token dieser Person in dieser Verwaltung — oder '' ohne Abonnement.
 
-
-def feed_token(organisation):
-    """Signierter, nicht-ablaufender Token für die abonnierbare Feed-URL.
-
-    DER TOKEN TRÄGT DIE VERWALTUNG (18.08.2026). Vorher signierte er die
-    Konstante `'fristen'` — derselbe Token galt damit für JEDE Verwaltung.
-    Mit einer war das folgenlos; ab der zweiten hätte ein Abonnent von A den
-    Kalender von B abrufen können, und in den Fristen stehen Mieternamen.
-
-    Der Token ist kein Geheimnis pro Nutzer, sondern pro Verwaltung: Wer ihn
-    hat, sieht deren Fristen. Das ist die bewusste Zusage einer abonnierbaren
-    URL ohne Anmeldung — sie darf nur nicht über die Mandantengrenze reichen.
-
-    Alte Tokens werden ungültig; bestehende Kalender-Abonnements müssen einmal
-    neu eingerichtet werden. Das ist der Preis dafür, dass der Token vorher
-    nicht sagte, wessen Kalender er öffnet.
+    JE PERSON, ZUFÄLLIG, WIDERRUFBAR (15.11.2026). Vorher war der Token eine Signatur über die Organisations-ID:
+    derselbe für alle, nie ablaufend, nicht erneuerbar. Wer ihn einmal hatte — auch nach dem Austritt —, las
+    dauerhaft alle Fristen samt Mieternamen. Jetzt liegt er an der Mitgliedschaft; `token_setzen` erneuert oder
+    entfernt ihn. Die alten, signierten Tokens gelten nicht mehr.
     """
-    pk = getattr(organisation, 'pk', organisation)
-    return signing.Signer(salt=FEED_SALT).sign(f'fristen:{pk}')
+    zeile = _mitgliedschaft(benutzer, organisation)
+    return (zeile.fristen_feed_token if zeile else '') or ''
+
+
+def _mitgliedschaft(benutzer, organisation):
+    """Die Mitgliedschaft, an der der Token hängt: die erste mit einer Schreibrolle."""
+    from core.auth import SCHREIB_ROLLEN
+    from crm.models import Mitgliedschaft
+    if benutzer is None or organisation is None:
+        return None
+    return (Mitgliedschaft.alle_organisationen
+            .filter(benutzer=benutzer, organisation=organisation, rolle__in=SCHREIB_ROLLEN)
+            .order_by('pk').first())
+
+
+def darf_abonnieren(benutzer, organisation):
+    """Hat diese Person in dieser Verwaltung eine Schreibrolle (und damit einen eigenen Kalender-Link)?"""
+    return _mitgliedschaft(benutzer, organisation) is not None
+
+
+def token_setzen(benutzer, organisation, entfernen=False):
+    """Erzeugt einen neuen Token (der alte gilt sofort nicht mehr) oder entfernt ihn. Gibt den neuen Wert zurück."""
+    import secrets
+    zeile = _mitgliedschaft(benutzer, organisation)
+    if zeile is None:
+        return ''
+    zeile.fristen_feed_token = '' if entfernen else secrets.token_urlsafe(32)
+    zeile.save(update_fields=['fristen_feed_token'])
+    return zeile.fristen_feed_token
 
 
 def organisation_aus_token(token):
-    """Die Verwaltung zu einem Feed-Token — oder None.
+    """Die Verwaltung zu einem Kalender-Token — oder None.
 
-    Gibt die Organisation zurück statt eines Wahrheitswerts: Der Aufrufer
-    braucht sie, um den Mandantenkontext zu setzen, und ein `True` hätte ihn
-    genau darüber im Unklaren gelassen, wessen Fristen er gleich ausliefert.
+    Gilt nur, solange die Person aktiv ist und in dieser Verwaltung noch eine Schreibrolle hat: Wer austritt oder
+    auf Lesezugriff zurückgestuft wird, verliert den Kalender, ohne dass jemand an den Token denken muss.
     """
-    from crm.models import Organisation
-    try:
-        roh = signing.Signer(salt=FEED_SALT).unsign(token or '')
-    except signing.BadSignature:
+    import hmac
+
+    from core.auth import SCHREIB_ROLLEN
+    from crm.models import Mitgliedschaft
+    token = (token or '').strip()
+    if len(token) < 20:
         return None
-    if not roh.startswith('fristen:'):
+    zeile = (Mitgliedschaft.alle_organisationen.select_related('benutzer', 'organisation')
+             .filter(fristen_feed_token=token).first())
+    if zeile is None or not hmac.compare_digest(zeile.fristen_feed_token, token):
         return None
-    # `alle_organisationen` gibt es an `Organisation` nicht — sie IST der
-    # Mandant und wird nie gefiltert (siehe `OHNE_MANDANTENFILTER`).
-    return Organisation.objects.filter(pk=roh.split(':', 1)[1]).first()
+    if not zeile.benutzer.is_active or zeile.rolle not in SCHREIB_ROLLEN:
+        return None
+    return zeile.organisation
 
 
 def _esc(text):

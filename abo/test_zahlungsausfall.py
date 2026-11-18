@@ -238,6 +238,9 @@ class HintergrundTests(Basis):
             'daten_importieren', 'kreditor_adressen_nachtragen', 'mietzinsmodell_bestand',
             'staffel_mitteilung_bestand', 'fallarten_anlegen', 'regelwerk_grundsatz', 'abo_abrechnung',
             'abo_einstellen',
+            # Schlüsselverwaltung des Betreibers von Hand (Anlegen, Widerrufen), kein Lauf im Namen einer Verwaltung;
+            # ein Widerruf muss auch im Lesemodus möglich sein.
+            'api_token_erstellen', 'api_token_widerrufen',
             # Nur lesend (Prüfbericht, schreibt nichts, versendet nichts): Lesen bleibt im Lesemodus erlaubt.
             'stweg_audit',
             'seed_e2e_abo', 'seed_e2e_eigentuemer', 'seed_e2e_direkt', 'seed_e2e_abnahme',

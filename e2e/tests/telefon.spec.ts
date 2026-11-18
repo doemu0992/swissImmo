@@ -482,8 +482,9 @@ test('Zeile 1 bricht bei keiner Breite um, nichts schiebt quer, nichts überlapp
       const sichtbar = (s: string) => { const e = document.querySelector(s); return !!e && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().width > 0; };
       return {
         quer: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-        boxen, hnavScroll: hn.scrollWidth - hn.clientWidth, vw: document.documentElement.clientWidth,
-        z1: r(z1), band: r(document.querySelector('.fw-bereichsreiter')!),
+        boxen, hnavScroll: hn.scrollWidth - hn.clientWidth, vw: document.documentElement.clientWidth, vh: window.innerHeight,
+        z1: r(z1), schiene: r(document.querySelector('#fwSchiene')!),
+        bandSicht: sichtbar('.fw-bereichsreiter'), schieneSicht: sichtbar('#fwSchiene'),
         einst: sichtbar('.fw-wz-einst'), neu: sichtbar('.fw-wz-neu'), dunkel: sichtbar('.fw-knopf-dunkel'),
         schnell: getComputedStyle(document.querySelector('.fw-profil-schnell')!).display !== 'none',
       };
@@ -504,16 +505,13 @@ test('Zeile 1 bricht bei keiner Breite um, nichts schiebt quer, nichts überlapp
       expect(b.r, `${wo}: ${b.n} ragt rechts aus dem Bild`).toBeLessThanOrEqual(m.vw - 15);
     }
     expect(m.hnavScroll, `${wo}: die Bereiche scrollen in sich, ein Bereich ist abgeschnitten`).toBeLessThanOrEqual(1);
-    if (w >= 901) {
-      expect(m.z1.h, `${wo}: Zeile 1 ist ${Math.round(m.z1.h)} px hoch — umgebrochen?`).toBeLessThan(60);
-      expect(m.band.t, `${wo}: das Menüband steht nicht unter Zeile 1`).toBeGreaterThanOrEqual(m.z1.b);
-    } else {
-      const nav = m.boxen.find((b) => b.n === 'fw-hauptnav')!;
-      expect(nav.t, `${wo}: die Bereiche stehen nicht unter Zeile 1`).toBeGreaterThanOrEqual(reihe1[0].b - 1);
-      expect(m.z1.h, `${wo}: Zeile 1 mit den Bereichen ist ${Math.round(m.z1.h)} px hoch (zwei Reihen erwartet)`).toBeLessThan(110);
-      expect(m.band.t, `${wo}: das Menüband steht nicht unter den Bereichen`).toBeGreaterThanOrEqual(nav.b);
-      expect(m.band.h, `${wo}: das Menüband ist am Telefon eine Reihe`).toBeLessThan(60);
-    }
+    // Die Bereiche stehen bei jeder Breite in der Schiene links (56 px, ab 1024 px 88 px); Kapsel und Menüband gibt es nicht mehr
+    expect(m.schieneSicht, `${wo}: Schiene`).toBe(true);
+    expect(m.bandSicht, `${wo}: Menüband`).toBe(false);
+    expect(m.schiene.l, `${wo}: Schiene links`).toBe(0);
+    expect(Math.round(m.schiene.w), `${wo}: Breite der Schiene`).toBe(w >= 1024 ? 88 : 56);
+    expect(m.z1.h, `${wo}: Zeile 1 ist ${Math.round(m.z1.h)} px hoch — umgebrochen?`).toBeLessThan(60);
+    expect(m.z1.l, `${wo}: Zeile 1 beginnt unter der Schiene`).toBeGreaterThanOrEqual(m.schiene.r - 1);
     // was bei welcher Breite in Zeile 1 steht (und sonst im Profilmenü)
     expect(m.einst, `${wo}: Einstellungsknopf`).toBe(w >= 440);
     expect(m.neu, `${wo}: «+»`).toBe(w >= 1024);
@@ -529,41 +527,22 @@ test('Zeile 1 bricht bei keiner Breite um, nichts schiebt quer, nichts überlapp
   }
 });
 
-// DIE MARKE: ausgeschrieben, mit Schweizerkreuz, bei jeder Breite — nur kleiner (Haus / Schrift / Kreuz)
-test('Die Marke steht bei jeder Breite ausgeschrieben mit Kreuz und wird nicht abgeschnitten', async ({ page }) => {
+// DIE MARKE: Das Haus steht bei jeder Breite oben in der Schiene, ganz im Bild (die Wortmarke der Kopfzeile entfällt)
+test('Die Marke steht bei jeder Breite in der Schiene und wird nicht abgeschnitten', async ({ page }) => {
   await login(page);
   await goto(page, '/neu/liegenschaften/');
-  const SOLL: [number, number, number, number][] = [[1920, 30, 19, 12], [1280, 30, 19, 12], [1024, 30, 19, 12],
-    [1023, 26, 16, 11], [820, 26, 16, 11], [601, 26, 16, 11], [600, 24, 15, 10], [390, 24, 15, 10], [360, 24, 15, 10]];
-  for (const [w, haus, schrift, kreuz] of SOLL) {
+  for (const w of [1920, 1280, 1024, 1023, 820, 601, 600, 390, 360]) {
     await page.setViewportSize({ width: w, height: 900 });
     await page.waitForTimeout(100);
     const m = await page.evaluate(() => {
-      const k = document.querySelector('.fw-logo-kapsel') as HTMLElement;
-      const b = k.querySelector('b') as HTMLElement;
-      const kr = k.querySelector('.fw-logo-kreuz') as SVGElement;
-      const h = k.querySelector('.fw-logo-haus') as SVGElement;
-      const text = document.createRange();
-      text.selectNodeContents(b.firstChild!);
-      const rect = (e: Element | Range) => e.getBoundingClientRect();
-      return {
-        kapsel: rect(k), wort: rect(text), kreuz: rect(kr), haus: rect(h),
-        schrift: parseFloat(getComputedStyle(b).fontSize), anzeige: getComputedStyle(b).display,
-        text: b.firstChild!.textContent, abgeschnitten: b.scrollWidth > b.clientWidth + 1 || k.scrollWidth > k.clientWidth + 1,
-      };
+      const s = (document.querySelector('#fwSchiene') as HTMLElement).getBoundingClientRect();
+      const h = (document.querySelector('.fw-schiene-marke .fw-logo-haus') as SVGElement).getBoundingClientRect();
+      return { haus: h, schiene: s };
     });
     const wo = `${w} px`;
-    expect(m.text, `${wo}: Wortmarke`).toBe('immoswiss');
-    expect(m.anzeige, `${wo}: die Wortmarke ist ausgeblendet`).not.toBe('none');
-    expect(m.wort.width, `${wo}: die Wortmarke hat keine Breite`).toBeGreaterThan(55);
-    expect(m.schrift, `${wo}: Schriftgrad der Wortmarke`).toBe(schrift);
-    expect(Math.round(m.haus.width), `${wo}: Haus`).toBe(haus);
-    expect(Math.round(m.kreuz.width), `${wo}: Schweizerkreuz`).toBe(kreuz);
-    // alles liegt in der Kapsel, nichts ragt heraus; das Kreuz sitzt am Ende der Wortmarke
-    expect(m.haus.left, `${wo}: das Haus ragt links heraus`).toBeGreaterThanOrEqual(m.kapsel.left);
-    expect(m.kreuz.right, `${wo}: das Kreuz ragt rechts heraus`).toBeLessThanOrEqual(m.kapsel.right - 0.5);
-    expect(m.kreuz.top, `${wo}: das Kreuz ragt oben heraus`).toBeGreaterThanOrEqual(m.kapsel.top);
-    expect(m.wort.right, `${wo}: die Wortmarke wird vom Kreuz überdeckt`).toBeLessThanOrEqual(m.kreuz.left + 1);
-    expect(m.abgeschnitten, `${wo}: die Marke wird abgeschnitten`).toBe(false);
+    expect(Math.round(m.haus.width), `${wo}: Haus`).toBe(26);
+    expect(m.haus.left, `${wo}: Haus ragt links aus der Schiene`).toBeGreaterThanOrEqual(m.schiene.left);
+    expect(m.haus.right, `${wo}: Haus ragt rechts aus der Schiene`).toBeLessThanOrEqual(m.schiene.right);
+    expect(m.haus.top, `${wo}: Haus ragt oben aus dem Bild`).toBeGreaterThanOrEqual(0);
   }
 });

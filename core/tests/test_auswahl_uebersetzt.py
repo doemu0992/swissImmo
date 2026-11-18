@@ -39,6 +39,13 @@ BEWUSST_DEUTSCH = {
     ('faelle', 'Regel', 'art'),
     ('portfolio', 'Liegenschaft', 'geak_klasse'),
     ('portfolio', 'Liegenschaft', 'geak_klasse_gesamt'),
+    # Die Basisreihen des Landesindex («Dezember 2020 = 100») sind Namen amtlicher Reihen: So stehen sie im
+    # Vertrag, auf dem amtlichen Formular und in `core.LikWert.basis`; gespeichert und angezeigt wird derselbe
+    # Name (eine Liste: `core.services.lik.LIK_BASEN`). Deutsch wie die übrigen Rechtsbegriffe (Entscheid D11).
+    ('rentals', 'Mietvertrag', 'lik_basis'),
+    ('crm', 'Organisation', 'lik_basis'),
+    ('crm', 'Eigentuemer', 'lik_basis'),
+    ('portfolio', 'Liegenschaft', 'lik_basis'),
     # Datumsmuster («TT.MM.JJJJ») sind eine technische Angabe, kein Satz (Export, FUNK-13).
     ('core', 'DatenExportEinstellung', 'datumsformat'),
 }

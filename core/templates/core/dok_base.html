@@ -48,7 +48,7 @@ unterschreibt niemand.
 
 {% if mit_unterschrift %}
 <div class="unterschrift">
-    {% if briefkopf.unterschrift_pfad %}<img src="{{ briefkopf.unterschrift_pfad }}" height="45"><br>{% endif %}
+    {% if briefkopf.unterschrift_pfad %}<img src="{{ briefkopf.unterschrift_pfad }}" height="45" alt="Unterschrift"><br>{% endif %}
     <span class="unterschrift-name">{{ briefkopf.firma|default:vermieter_name }}</span>
 </div>
 {% endif %}

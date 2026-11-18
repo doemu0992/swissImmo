@@ -345,18 +345,16 @@ class GemeinsamesFormularTests(MeldeformularBasis):
         self.assertContains(antwort, ' data-fehler', status_code=400)
         self.assertContains(antwort, 'value="Vera"', status_code=400)
 
-    def test_die_website_behaelt_die_eingaben_nach_einem_fehler(self):
+    def test_die_website_verraet_nicht_ob_die_adresse_bekannt_ist(self):
         antwort = self.anonym.post('/schaden/melden/', {
             'kategorie': 'Schadensmeldung', 'raum': 'Küche', 'objekt': 'Herd', 'beschreibung': 'Defekt',
             'vorname': 'Vera', 'nachname': 'Muster', 'email': 'unbekannt@example.org', 'telefon': '079',
             'adresse': 'Testweg 1'})
-        # Die Adresse lässt sich keiner Liegenschaft zuordnen: Fehler, aber nichts muss neu getippt werden.
+        # Die Adresse lässt sich keiner Liegenschaft zuordnen. Bis 15.11.2026 sagte die Seite das — und verriet
+        # damit, welche Adressen Mietern gehören. Jetzt dieselbe Antwort wie bei einem Treffer.
         self.assertEqual(antwort.status_code, 200)
-        self.assertContains(antwort, 'Wir konnten Ihre Meldung keiner Liegenschaft zuordnen.')
-        self.assertContains(antwort, 'value="Vera"')
-        self.assertContains(antwort, 'value="unbekannt@example.org"')
-        self.assertContains(antwort, 'value="Testweg 1"')
-        self.assertContains(antwort, ' data-fehler')
+        self.assertNotContains(antwort, 'keiner Liegenschaft zuordnen')
+        self.assertContains(antwort, 'erhalten Sie in den nächsten Minuten eine Bestätigung per E-Mail')
 
     def test_titel_aus_wahl(self):
         from core.views.ticket_public import titel_aus_wahl

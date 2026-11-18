@@ -37715,11 +37715,11 @@ msgstr ""
 msgid ""
 "Nur möglich, wenn die Anwendung den Schlüssel selbst angelegt hat. Liegt er "
 "in der .env oder in einer eigenen Datei, wechseln Sie ihn dort "
-"(docs/SCHLUESSEL.md)."
+"(ARCHITECTURE.md)."
 msgstr ""
 "Nur möglich, wenn die Anwendung den Schlüssel selbst angelegt hat. Liegt er "
 "in der .env oder in einer eigenen Datei, wechseln Sie ihn dort "
-"(docs/SCHLUESSEL.md)."
+"(ARCHITECTURE.md)."
 
 msgid "Kopie des Schlüssels herunterladen"
 msgstr "Kopie des Schlüssels herunterladen"
@@ -37977,3 +37977,1366 @@ msgid ""
 "«Abrechnung ab» ist nicht gesetzt: Es wird nichts in Rechnung gestellt."
 msgstr ""
 "«Abrechnung ab» ist nicht gesetzt: Es wird nichts in Rechnung gestellt."
+
+msgid "CSP-Meldungen"
+msgstr "CSP-Meldungen"
+
+msgid ""
+"Was der Browser als Verstoss gegen die Sicherheitsrichtlinie meldet, "
+"zusammengefasst aus dem Anwendungs-Log. Ruhig heisst: Die Richtlinie kann "
+"scharf geschaltet werden."
+msgstr ""
+"Was der Browser als Verstoss gegen die Sicherheitsrichtlinie meldet, "
+"zusammengefasst aus dem Anwendungs-Log. Ruhig heisst: Die Richtlinie kann "
+"scharf geschaltet werden."
+
+msgid "Modus"
+msgstr "Modus"
+
+msgid "meldet nur, sperrt nichts"
+msgstr "meldet nur, sperrt nichts"
+
+msgid "sperrt Verstösse"
+msgstr "sperrt Verstösse"
+
+msgid "Gelesene Logdateien"
+msgstr "Gelesene Logdateien"
+
+msgid "keine gefunden"
+msgstr "keine gefunden"
+
+msgid "Meldungen insgesamt"
+msgstr "Meldungen insgesamt"
+
+msgid ""
+"Keine Verstösse im gelesenen Teil des Logs. Das ist der gewünschte Zustand "
+"vor dem Scharfschalten."
+msgstr ""
+"Keine Verstösse im gelesenen Teil des Logs. Das ist der gewünschte Zustand "
+"vor dem Scharfschalten."
+
+msgid ""
+"Das Log ist nicht lesbar oder noch nicht angelegt. Ohne Log lässt sich nicht"
+" beurteilen, ob die Richtlinie scharf geschaltet werden kann."
+msgstr ""
+"Das Log ist nicht lesbar oder noch nicht angelegt. Ohne Log lässt sich nicht"
+" beurteilen, ob die Richtlinie scharf geschaltet werden kann."
+
+msgid "Anzahl"
+msgstr "Anzahl"
+
+msgid "Regel"
+msgstr "Regel"
+
+msgid "Seite"
+msgstr "Seite"
+
+msgid "Zuletzt"
+msgstr "Zuletzt"
+
+msgid ""
+"Adressen sind ohne Abfrageteil gezeigt. Meldungen von Browser-Erweiterungen "
+"(Quelle beginnt mit chrome-extension: oder moz-extension:) kannst du "
+"ignorieren."
+msgstr ""
+"Adressen sind ohne Abfrageteil gezeigt. Meldungen von Browser-Erweiterungen "
+"(Quelle beginnt mit chrome-extension: oder moz-extension:) kannst du "
+"ignorieren."
+
+msgid "%(n)s verschiedene"
+msgid_plural "%(n)s verschiedene"
+msgstr[0] "%(n)s verschiedene"
+msgstr[1] "%(n)s verschiedene"
+
+msgid "Alle Preise exkl. MWST."
+msgstr "Alle Preise exkl. MWST."
+
+msgid "Alle Preise in CHF, ohne MWST (nicht mehrwertsteuerpflichtig)."
+msgstr "Alle Preise in CHF, ohne MWST (nicht mehrwertsteuerpflichtig)."
+
+msgid ""
+"Einführungspreise, Stand %(stand)s. Die Einheiten­zahl wird automatisch aus "
+"deinen erfassten Objekten berechnet."
+msgstr ""
+"Einführungspreise, Stand %(stand)s. Die Einheiten­zahl wird automatisch aus "
+"deinen erfassten Objekten berechnet."
+
+msgid "Rechnung %(nr)s über CHF %(betrag)s erstellt, fällig am %(datum)s."
+msgstr "Rechnung %(nr)s über CHF %(betrag)s erstellt, fällig am %(datum)s."
+
+msgid ""
+"Im Voraus zahlbar: fällig am Beginn der Periode, bei später gestellten "
+"Rechnungen innert %(tage)s Tagen, mit dem Einzahlungsschein. Die Zahlung "
+"bestätigt der Betreiber von Hand."
+msgstr ""
+"Im Voraus zahlbar: fällig am Beginn der Periode, bei später gestellten "
+"Rechnungen innert %(tage)s Tagen, mit dem Einzahlungsschein. Die Zahlung "
+"bestätigt der Betreiber von Hand."
+
+msgid "Diese Verwaltung hat keine E-Mail-Adresse hinterlegt."
+msgstr "Diese Verwaltung hat keine E-Mail-Adresse hinterlegt."
+
+msgid "Es ist keine Zahlungsverbindung (IBAN) des Rechnungsstellers hinterlegt."
+msgstr "Es ist keine Zahlungsverbindung (IBAN) des Rechnungsstellers hinterlegt."
+
+msgid "immoswiss: Zahlungserinnerung zur Rechnung %(nummer)s"
+msgstr "immoswiss: Zahlungserinnerung zur Rechnung %(nummer)s"
+
+msgid "Die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist noch offen. Bitte begleichen Sie sie mit dem QR-Einzahlungsschein auf der Rechnung im Anhang. Ist die Zahlung bereits erfolgt, ist diese Mail gegenstandslos."
+msgstr "Die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist noch offen. Bitte begleichen Sie sie mit dem QR-Einzahlungsschein auf der Rechnung im Anhang. Ist die Zahlung bereits erfolgt, ist diese Mail gegenstandslos."
+
+msgid "immoswiss: Rechnung %(nummer)s"
+msgstr "immoswiss: Rechnung %(nummer)s"
+
+msgid "Im Anhang finden Sie die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s). Sie ist bis zum %(faellig)s zu bezahlen, am einfachsten mit dem QR-Einzahlungsschein auf der Rechnung. Dieselbe Rechnung finden Sie unter Einstellungen > Abonnement."
+msgstr "Im Anhang finden Sie die Rechnung %(nummer)s über CHF %(betrag)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s). Sie ist bis zum %(faellig)s zu bezahlen, am einfachsten mit dem QR-Einzahlungsschein auf der Rechnung. Dieselbe Rechnung finden Sie unter Einstellungen > Abonnement."
+
+msgid "Rechnung %(nr)s nicht versandt: %(grund)s"
+msgstr "Rechnung %(nr)s nicht versandt: %(grund)s"
+
+msgid "Zahlungserinnerung zu %(nr)s ging an %(an)s."
+msgstr "Zahlungserinnerung zu %(nr)s ging an %(an)s."
+
+msgid "Rechnung %(nr)s ging an %(an)s."
+msgstr "Rechnung %(nr)s ging an %(an)s."
+
+msgid "Nur offene Rechnungen lassen sich senden oder anmahnen."
+msgstr "Nur offene Rechnungen lassen sich senden oder anmahnen."
+
+msgid "erinnert am"
+msgstr "erinnert am"
+
+msgid "Erneut senden"
+msgstr "Erneut senden"
+
+msgid "Zahlungserinnerung an die Verwaltung senden?"
+msgstr "Zahlungserinnerung an die Verwaltung senden?"
+
+msgid "immoswiss: 2. Mahnung zur Rechnung %(nummer)s"
+msgstr "immoswiss: 2. Mahnung zur Rechnung %(nummer)s"
+
+msgid "Die Rechnung %(nummer)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist trotz unserer Zahlungserinnerung noch offen. Wir bitten Sie, den Gesamtbetrag von CHF %(betrag)s (inklusive Mahngebühr CHF %(gebuehr)s) umgehend mit dem QR-Einzahlungsschein auf der Rechnung im Anhang zu bezahlen. Bleibt die Zahlung weiter aus, wird Ihr Zugang schreibgeschützt und später gesperrt; Ihre Daten bleiben in jedem Fall erhalten."
+msgstr "Die Rechnung %(nummer)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist trotz unserer Zahlungserinnerung noch offen. Wir bitten Sie, den Gesamtbetrag von CHF %(betrag)s (inklusive Mahngebühr CHF %(gebuehr)s) umgehend mit dem QR-Einzahlungsschein auf der Rechnung im Anhang zu bezahlen. Bleibt die Zahlung weiter aus, wird Ihr Zugang schreibgeschützt und später gesperrt; Ihre Daten bleiben in jedem Fall erhalten."
+
+msgid "Die Rechnung %(nummer)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist trotz unserer Zahlungserinnerung noch offen. Wir bitten Sie, den Betrag von CHF %(betrag)s umgehend mit dem QR-Einzahlungsschein auf der Rechnung im Anhang zu bezahlen. Bleibt die Zahlung weiter aus, wird Ihr Zugang schreibgeschützt und später gesperrt; Ihre Daten bleiben in jedem Fall erhalten."
+msgstr "Die Rechnung %(nummer)s für Ihr immoswiss-Abonnement (%(von)s bis %(bis)s) war am %(faellig)s fällig und ist trotz unserer Zahlungserinnerung noch offen. Wir bitten Sie, den Betrag von CHF %(betrag)s umgehend mit dem QR-Einzahlungsschein auf der Rechnung im Anhang zu bezahlen. Bleibt die Zahlung weiter aus, wird Ihr Zugang schreibgeschützt und später gesperrt; Ihre Daten bleiben in jedem Fall erhalten."
+
+msgid "immoswiss: Ihr Zugang ist gesperrt"
+msgstr "immoswiss: Ihr Zugang ist gesperrt"
+
+msgid "Die Rechnung für Ihr Abonnement ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist deshalb gesperrt. Anmeldung, Abonnement (Rechnung und Einzahlungsschein) und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+msgstr "Die Rechnung für Ihr Abonnement ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist deshalb gesperrt. Anmeldung, Abonnement (Rechnung und Einzahlungsschein) und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+
+msgid "Der Zugang ist gesperrt"
+msgstr "Der Zugang ist gesperrt"
+
+msgid "Eine Rechnung für das Abonnement ist seit mehr als %(tage)s Tagen überfällig. Anmeldung, Abonnement (mit Rechnung und Einzahlungsschein) und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+msgstr "Eine Rechnung für das Abonnement ist seit mehr als %(tage)s Tagen überfällig. Anmeldung, Abonnement (mit Rechnung und Einzahlungsschein) und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+
+msgid "Der Zugang dieser Verwaltung ist zurzeit gesperrt. Bitte wenden Sie sich an die Verwaltung."
+msgstr "Der Zugang dieser Verwaltung ist zurzeit gesperrt. Bitte wenden Sie sich an die Verwaltung."
+
+msgid "Eine Rechnung ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist gesperrt; Anmeldung, diese Seite mit Rechnung und Einzahlungsschein und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+msgstr "Eine Rechnung ist seit mehr als %(tage)s Tagen überfällig. Ihr Zugang ist gesperrt; Anmeldung, diese Seite mit Rechnung und Einzahlungsschein und der Datenexport bleiben erreichbar. Mit dem Zahlungseingang ist alles wieder offen. Es wird nichts gelöscht."
+
+msgid "%(n)s. Mahnung"
+msgstr "%(n)s. Mahnung"
+
+msgid "versandt am"
+msgstr "versandt am"
+
+msgid "nicht versandt"
+msgstr "nicht versandt"
+
+msgid "%(n)s offene Rechnung(en) wurden noch nicht per Mail versandt: im Kunden «Erneut senden»."
+msgstr "%(n)s offene Rechnung(en) wurden noch nicht per Mail versandt: im Kunden «Erneut senden»."
+
+msgid "Ansprechperson"
+msgstr "Ansprechperson"
+
+msgid "Fakturiert"
+msgstr "Fakturiert"
+
+msgid "Zahlungsverhalten"
+msgstr "Zahlungsverhalten"
+
+msgid "im Schnitt %(t)s Tage nach Fälligkeit"
+msgstr "im Schnitt %(t)s Tage nach Fälligkeit"
+
+msgid "Nächste Rechnung"
+msgstr "Nächste Rechnung"
+
+msgid "Zahlung am"
+msgstr "Zahlung am"
+
+msgid "Tage nach Fälligkeit"
+msgstr "Tage nach Fälligkeit"
+
+msgid "Stammdaten und Ansprechperson"
+msgstr "Stammdaten und Ansprechperson"
+
+msgid "Kundenstatus"
+msgstr "Kundenstatus"
+
+msgid "Strasse und Nr."
+msgstr "Strasse und Nr."
+
+msgid "Natel"
+msgstr "Natel"
+
+msgid "Website"
+msgstr "Website"
+
+msgid "UID / MWST-Nummer"
+msgstr "UID / MWST-Nummer"
+
+msgid "E-Mail für Rechnungen"
+msgstr "E-Mail für Rechnungen"
+
+msgid "Leer = Rechnungen und Mahnungen gehen an die E-Mail der Verwaltung."
+msgstr "Leer = Rechnungen und Mahnungen gehen an die E-Mail der Verwaltung."
+
+msgid "Funktion"
+msgstr "Funktion"
+
+msgid "E-Mail der Ansprechperson"
+msgstr "E-Mail der Ansprechperson"
+
+msgid "Telefon der Ansprechperson"
+msgstr "Telefon der Ansprechperson"
+
+msgid "Natel der Ansprechperson"
+msgstr "Natel der Ansprechperson"
+
+msgid "Nur für den Betreiber sichtbar, nie für die Verwaltung."
+msgstr "Nur für den Betreiber sichtbar, nie für die Verwaltung."
+
+msgid "Kundendaten speichern"
+msgstr "Kundendaten speichern"
+
+msgid "Eintrag"
+msgstr "Eintrag"
+
+msgid "Eintrag hinzufügen"
+msgstr "Eintrag hinzufügen"
+
+msgid "Eintrag löschen?"
+msgstr "Eintrag löschen?"
+
+msgid "Noch kein Eintrag."
+msgstr "Noch kein Eintrag."
+
+msgid "Kundendaten gespeichert."
+msgstr "Kundendaten gespeichert."
+
+msgid "Der Eintrag ist leer."
+msgstr "Der Eintrag ist leer."
+
+msgid "Unbekannte Art."
+msgstr "Unbekannte Art."
+
+msgid "Eintrag gespeichert."
+msgstr "Eintrag gespeichert."
+
+msgid "Dieser Eintrag gehört nicht zu dieser Verwaltung."
+msgstr "Dieser Eintrag gehört nicht zu dieser Verwaltung."
+
+msgid "Eintrag gelöscht."
+msgstr "Eintrag gelöscht."
+
+msgid "Ungültige E-Mail-Adresse: %(wert)s"
+msgstr "Ungültige E-Mail-Adresse: %(wert)s"
+
+msgid "Firma, Strasse, PLZ und Ort sind Pflicht."
+msgstr "Firma, Strasse, PLZ und Ort sind Pflicht."
+
+msgid "Strasse, PLZ und Ort sind Pflicht: Sie stehen auf der Rechnung."
+msgstr "Strasse, PLZ und Ort sind Pflicht: Sie stehen auf der Rechnung."
+
+msgid "Strasse und Nr. *"
+msgstr "Strasse und Nr. *"
+
+msgid "Die Anschrift steht auf der Rechnung."
+msgstr "Die Anschrift steht auf der Rechnung."
+
+msgid "PLZ *"
+msgstr "PLZ *"
+
+msgid "Ort *"
+msgstr "Ort *"
+
+msgid "Die Anschrift der Verwaltung fehlt (Strasse, PLZ, Ort): in der Kundenkartei ergänzen."
+msgstr "Die Anschrift der Verwaltung fehlt (Strasse, PLZ, Ort): in der Kundenkartei ergänzen."
+
+msgid "Anschrift unvollständig (Strasse, PLZ, Ort): Die Rechnung hat keine Anschrift und geht nicht hinaus. In der Kundenkartei ergänzen."
+msgstr "Anschrift unvollständig (Strasse, PLZ, Ort): Die Rechnung hat keine Anschrift und geht nicht hinaus. In der Kundenkartei ergänzen."
+
+msgid "etwas spät"
+msgstr "etwas spät"
+
+msgid "Kunde"
+msgstr "Kunde"
+
+msgid "Anschrift"
+msgstr "Anschrift"
+
+msgid "Zugang gesperrt"
+msgstr "Zugang gesperrt"
+
+msgid "Lesemodus"
+msgstr "Lesemodus"
+
+msgid "Zahlung überfällig"
+msgstr "Zahlung überfällig"
+
+msgid "alles bezahlt"
+msgstr "alles bezahlt"
+
+msgid "Abonnement ändern"
+msgstr "Abonnement ändern"
+
+msgid "Eintrag im Verlauf"
+msgstr "Eintrag im Verlauf"
+
+msgid "Wieder als Kunde markieren"
+msgstr "Wieder als Kunde markieren"
+
+msgid "Als gekündigt markieren"
+msgstr "Als gekündigt markieren"
+
+msgid "davon CHF %(b)s überfällig"
+msgstr "davon CHF %(b)s überfällig"
+
+msgid "noch nicht fällig"
+msgstr "noch nicht fällig"
+
+msgid "Ø %(t)s Tage nach Fälligkeit"
+msgstr "Ø %(t)s Tage nach Fälligkeit"
+
+msgid "noch keine Zahlung"
+msgstr "noch keine Zahlung"
+
+msgid "nicht geplant"
+msgstr "nicht geplant"
+
+msgid "Zu prüfen"
+msgstr "Zu prüfen"
+
+msgid "Rechnungen gehen an"
+msgstr "Rechnungen gehen an"
+
+msgid "Zum Verlauf"
+msgstr "Zum Verlauf"
+
+msgid "nur für den Betreiber"
+msgstr "nur für den Betreiber"
+
+msgid "Firma und Anschrift"
+msgstr "Firma und Anschrift"
+
+msgid "nicht hinterlegt"
+msgstr "nicht hinterlegt"
+
+msgid "Ansprechperson und Rechnung"
+msgstr "Ansprechperson und Rechnung"
+
+msgid "abweichend von der E-Mail der Firma"
+msgstr "abweichend von der E-Mail der Firma"
+
+msgid "wie die E-Mail der Firma"
+msgstr "wie die E-Mail der Firma"
+
+msgid "Zuletzt geändert"
+msgstr "Zuletzt geändert"
+
+msgid "Eintrag speichern"
+msgstr "Eintrag speichern"
+
+msgid "%(t)s Tage nach Fälligkeit"
+msgstr "%(t)s Tage nach Fälligkeit"
+
+msgid "Noch keine Zahlung."
+msgstr "Noch keine Zahlung."
+
+msgid "Summen"
+msgstr "Summen"
+
+msgid "jährlich abgerechnet"
+msgstr "jährlich abgerechnet"
+
+msgid "monatlich abgerechnet"
+msgstr "monatlich abgerechnet"
+
+msgid "nicht gesetzt"
+msgstr "nicht gesetzt"
+
+msgid "Änderungen zeigen vorher ihre Folgen."
+msgstr "Änderungen zeigen vorher ihre Folgen."
+
+msgid "%(firma)s bearbeiten"
+msgstr "%(firma)s bearbeiten"
+
+msgid "Änderungen gelten erst nach «Speichern»."
+msgstr "Änderungen gelten erst nach «Speichern»."
+
+msgid "Status gesetzt."
+msgstr "Status gesetzt."
+
+msgid "%(n)s Rechnung offen"
+msgid_plural "%(n)s Rechnungen offen"
+msgstr[0] "%(n)s Rechnung offen"
+msgstr[1] "%(n)s Rechnungen offen"
+
+msgid "Abonnement %(stufe)s, %(intervall)s"
+msgstr "Abonnement %(stufe)s, %(intervall)s"
+
+msgid "Jahresrabatt %(p)s %%"
+msgstr "Jahresrabatt %(p)s %%"
+
+msgid "Im Grundpreis Ihrer Stufe enthalten."
+msgstr "Im Grundpreis Ihrer Stufe enthalten."
+
+msgid "Zugebucht: CHF %(preis)s pro Monat, netto."
+msgstr "Zugebucht: CHF %(preis)s pro Monat, netto."
+
+msgid "Zubuchbar: CHF %(preis)s pro Monat, netto — beim Betreiber anfragen."
+msgstr "Zubuchbar: CHF %(preis)s pro Monat, netto — beim Betreiber anfragen."
+
+msgid "Ab Stufe %(stufe)s enthalten."
+msgstr "Ab Stufe %(stufe)s enthalten."
+
+msgid "inklusive"
+msgstr "inklusive"
+
+msgid "im Grundpreis der Stufe enthalten"
+msgstr "im Grundpreis der Stufe enthalten"
+
+msgid "netto"
+msgstr "netto"
+
+msgid "Zugebuchte Module kommen ab der nächsten Rechnung dazu."
+msgstr "Zugebuchte Module kommen ab der nächsten Rechnung dazu."
+
+msgid "Bitte einen Betreff angeben (%(min)s bis %(max)s Zeichen)."
+msgstr "Bitte einen Betreff angeben (%(min)s bis %(max)s Zeichen)."
+
+msgid "Bitte die Anfrage beschreiben (%(min)s bis %(max)s Zeichen)."
+msgstr "Bitte die Anfrage beschreiben (%(min)s bis %(max)s Zeichen)."
+
+msgid "Es sind zu viele Anfragen in kurzer Zeit eingegangen. Bitte später noch einmal versuchen oder direkt anrufen."
+msgstr "Es sind zu viele Anfragen in kurzer Zeit eingegangen. Bitte später noch einmal versuchen oder direkt anrufen."
+
+msgid "Ihre Anfrage ist beim Betreiber angekommen. Die Antwort kommt per E-Mail."
+msgstr "Ihre Anfrage ist beim Betreiber angekommen. Die Antwort kommt per E-Mail."
+
+msgid "Ihre Anfrage ist gespeichert. Die Benachrichtigung ging nicht hinaus; der Betreiber sieht sie trotzdem."
+msgstr "Ihre Anfrage ist gespeichert. Die Benachrichtigung ging nicht hinaus; der Betreiber sieht sie trotzdem."
+
+msgid "Diese Anfrage gehört nicht zu dieser Verwaltung."
+msgstr "Diese Anfrage gehört nicht zu dieser Verwaltung."
+
+msgid "Anfrage als erledigt markiert."
+msgstr "Anfrage als erledigt markiert."
+
+msgid "Anfrage wieder geöffnet."
+msgstr "Anfrage wieder geöffnet."
+
+msgid "%(n)s Support-Anfrage(n) offen: im Reiter «Verlauf» beantworten und erledigen."
+msgstr "%(n)s Support-Anfrage(n) offen: im Reiter «Verlauf» beantworten und erledigen."
+
+msgid "Support"
+msgstr "Support"
+
+msgid "Ihre Anfrage geht an den Betreiber; die Antwort kommt per E-Mail an Ihre Adresse."
+msgstr "Ihre Anfrage geht an den Betreiber; die Antwort kommt per E-Mail an Ihre Adresse."
+
+msgid "Ihre Anfrage"
+msgstr "Ihre Anfrage"
+
+msgid "Anfrage senden"
+msgstr "Anfrage senden"
+
+msgid "%(n)s Support-Anfrage offen"
+msgid_plural "%(n)s Support-Anfragen offen"
+msgstr[0] "%(n)s Support-Anfrage offen"
+msgstr[1] "%(n)s Support-Anfragen offen"
+
+msgid "anteilig %(t)s von %(g)s Tagen"
+msgstr "anteilig %(t)s von %(g)s Tagen"
+
+msgid "Gutschrift vom %(d)s: %(t)s"
+msgstr "Gutschrift vom %(d)s: %(t)s"
+
+msgid "Modul %(m)s hinzu"
+msgstr "Modul %(m)s hinzu"
+
+msgid "Modul %(m)s entfällt"
+msgstr "Modul %(m)s entfällt"
+
+msgid "Änderung des Abonnements ab %(d)s"
+msgstr "Änderung des Abonnements ab %(d)s"
+
+msgid "Guthaben: CHF %(betrag)s. Es wird mit Ihrer nächsten Rechnung verrechnet."
+msgstr "Guthaben: CHF %(betrag)s. Es wird mit Ihrer nächsten Rechnung verrechnet."
+
+msgid "Zusatzrechnung (Änderung des Abonnements)"
+msgstr "Zusatzrechnung (Änderung des Abonnements)"
+
+msgid "Zusatzrechnung"
+msgstr "Zusatzrechnung"
+
+msgid "wird mit der nächsten Rechnung verrechnet"
+msgstr "wird mit der nächsten Rechnung verrechnet"
+
+msgid "Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen."
+msgstr "Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen."
+
+msgid "Benutzername oder Passwort stimmt nicht."
+msgstr "Benutzername oder Passwort stimmt nicht."
+
+msgid "Zu viele Fehlversuche. Bitte von vorne anmelden."
+msgstr "Zu viele Fehlversuche. Bitte von vorne anmelden."
+
+msgid "Der Code stimmt nicht (%(n)s von %(max)s)."
+msgstr "Der Code stimmt nicht (%(n)s von %(max)s)."
+
+msgid "kein Monat"
+msgstr "kein Monat"
+
+msgid "LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s (core/services/lik.py)."
+msgstr "LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s (core/services/lik.py)."
+
+msgid "Formularpflicht prüfen: Das Register (core/services/formularpflicht.py, Stand %(stand)s) wurde zuletzt am %(datum)s geprüft; das BWO gibt das Verzeichnis jedes Jahr neu heraus."
+msgstr "Formularpflicht prüfen: Das Register (core/services/formularpflicht.py, Stand %(stand)s) wurde zuletzt am %(datum)s geprüft; das BWO gibt das Verzeichnis jedes Jahr neu heraus."
+
+msgid "bexio (über importly.ch)"
+msgstr "bexio (über importly.ch)"
+
+msgid "bexio (über den Dienst importly.ch; bexio selbst importiert keine Buchungen per CSV)"
+msgstr "bexio (über den Dienst importly.ch; bexio selbst importiert keine Buchungen per CSV)"
+
+msgid "API-Zugang"
+msgstr "API-Zugang"
+
+msgid "Mit einem Schlüssel lesen Treuhand oder Buchhaltungssoftware Kontenplan und Buchungsjournal Ihrer Verwaltung. Nur lesen, nichts ändern."
+msgstr "Mit einem Schlüssel lesen Treuhand oder Buchhaltungssoftware Kontenplan und Buchungsjournal Ihrer Verwaltung. Nur lesen, nichts ändern."
+
+msgid "Kopieren Sie den Schlüssel jetzt. Er wird nur dieses eine Mal angezeigt und lässt sich später nicht wieder abrufen."
+msgstr "Kopieren Sie den Schlüssel jetzt. Er wird nur dieses eine Mal angezeigt und lässt sich später nicht wieder abrufen."
+
+msgid "Schlüssel «%(n)s» angelegt"
+msgstr "Schlüssel «%(n)s» angelegt"
+
+msgid "Angelegt am %(d)s"
+msgstr "Angelegt am %(d)s"
+
+msgid "zuletzt benutzt %(d)s"
+msgstr "zuletzt benutzt %(d)s"
+
+msgid "noch nie benutzt"
+msgstr "noch nie benutzt"
+
+msgid "widerrufen am %(d)s"
+msgstr "widerrufen am %(d)s"
+
+msgid "Noch kein Schlüssel angelegt."
+msgstr "Noch kein Schlüssel angelegt."
+
+msgid "Neuer Schlüssel"
+msgstr "Neuer Schlüssel"
+
+msgid "Wofür der Schlüssel dient, z. B. der Name der Treuhandfirma. Höchstens %(n)s aktive Schlüssel."
+msgstr "Wofür der Schlüssel dient, z. B. der Name der Treuhandfirma. Höchstens %(n)s aktive Schlüssel."
+
+msgid "Schlüssel anlegen"
+msgstr "Schlüssel anlegen"
+
+msgid "Verwendung"
+msgstr "Verwendung"
+
+msgid "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit). Höchstens 120 Abfragen pro Minute und Schlüssel."
+msgstr "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit). Höchstens 120 Abfragen pro Minute und Schlüssel."
+
+msgid "Schlüssel für Treuhand und Buchhaltungssoftware (nur Lesen)"
+msgstr "Schlüssel für Treuhand und Buchhaltungssoftware (nur Lesen)"
+
+msgid "Bitte eine Bezeichnung angeben, z. B. den Namen der Treuhandfirma."
+msgstr "Bitte eine Bezeichnung angeben, z. B. den Namen der Treuhandfirma."
+
+msgid "Es sind bereits %(n)s Schlüssel aktiv. Bitte zuerst einen widerrufen."
+msgstr "Es sind bereits %(n)s Schlüssel aktiv. Bitte zuerst einen widerrufen."
+
+msgid "Der Schlüssel «%(n)s» ist widerrufen."
+msgstr "Der Schlüssel «%(n)s» ist widerrufen."
+
+msgid "Lesende Finanz-API mit eigenen Schlüsseln"
+msgstr "Lesende Finanz-API mit eigenen Schlüsseln"
+
+msgid "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit), offene Debitoren unter /api/v1/debitoren/offen. Höchstens 120 Abfragen pro Minute und Schlüssel."
+msgstr "Der Schlüssel gehört in den Kopf «Authorization: Bearer …». Abfragen: Kontenplan unter /api/v1/konten, Buchungsjournal unter /api/v1/buchungen (von, bis, offset, limit), offene Debitoren unter /api/v1/debitoren/offen. Höchstens 120 Abfragen pro Minute und Schlüssel."
+
+msgid "Änderungswünsche aus den Portalen. Erst Ihre Bestätigung ändert die Stammdaten."
+msgstr "Änderungswünsche aus den Portalen. Erst Ihre Bestätigung ändert die Stammdaten."
+
+msgid "Nur offene"
+msgstr "Nur offene"
+
+msgid "Auch entschiedene"
+msgstr "Auch entschiedene"
+
+msgid "Bankverbindung: bitte vor der Bestätigung beim Eigentümer telefonisch zurückfragen."
+msgstr "Bankverbindung: bitte vor der Bestätigung beim Eigentümer telefonisch zurückfragen."
+
+msgid "Grund der Ablehnung"
+msgstr "Grund der Ablehnung"
+
+msgid "Ablehnen"
+msgstr "Ablehnen"
+
+msgid "Nur Inhaber und Verwalter bestätigen diese Anfrage."
+msgstr "Nur Inhaber und Verwalter bestätigen diese Anfrage."
+
+msgid "Entschieden"
+msgstr "Entschieden"
+
+msgid "Noch nichts entschieden."
+msgstr "Noch nichts entschieden."
+
+msgid "Kontaktdaten prüfen und Änderungen beantragen — sie gelten, sobald die Verwaltung sie bestätigt hat."
+msgstr "Kontaktdaten prüfen und Änderungen beantragen — sie gelten, sobald die Verwaltung sie bestätigt hat."
+
+msgid "Änderung beantragen"
+msgstr "Änderung beantragen"
+
+msgid "Antwort der Verwaltung:"
+msgstr "Antwort der Verwaltung:"
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Die Änderung gilt, sobald die Verwaltung sie bestätigt hat."
+msgstr "Ihre Anfrage ist bei der Verwaltung. Die Änderung gilt, sobald die Verwaltung sie bestätigt hat."
+
+msgid "Die Anfrage ist bestätigt und die Änderung ausgeführt."
+msgstr "Die Anfrage ist bestätigt und die Änderung ausgeführt."
+
+msgid "Die Anfrage ist abgelehnt."
+msgstr "Die Anfrage ist abgelehnt."
+
+msgid "Diese Anfrage ist bereits entschieden."
+msgstr "Diese Anfrage ist bereits entschieden."
+
+msgid "Bestätigung des Mietverhältnisses (PDF) gewünscht."
+msgstr "Bestätigung des Mietverhältnisses (PDF) gewünscht."
+
+msgid "Ihre Anfrage «%(art)s» wurde von der Verwaltung bestätigt."
+msgstr "Ihre Anfrage «%(art)s» wurde von der Verwaltung bestätigt."
+
+msgid "Ihre Anfrage «%(art)s» wurde von der Verwaltung abgelehnt."
+msgstr "Ihre Anfrage «%(art)s» wurde von der Verwaltung abgelehnt."
+
+msgid "Ihre Anfrage an die Verwaltung"
+msgstr "Ihre Anfrage an die Verwaltung"
+
+msgid "Den Stand sehen Sie im Portal."
+msgstr "Den Stand sehen Sie im Portal."
+
+msgid "Kontaktdaten ändern"
+msgstr "Kontaktdaten ändern"
+
+msgid "Mietbestätigung"
+msgstr "Mietbestätigung"
+
+msgid "Zahlungsplan"
+msgstr "Zahlungsplan"
+
+msgid "Bankverbindung ändern"
+msgstr "Bankverbindung ändern"
+
+msgid "Anfrage"
+msgstr "Anfrage"
+
+msgid "Anfragen — Mieterportal"
+msgstr "Anfragen — Mieterportal"
+
+msgid "Mietbestätigung und Zahlungsplan. Die Verwaltung bestätigt jede Anfrage und meldet sich bei Ihnen."
+msgstr "Mietbestätigung und Zahlungsplan. Die Verwaltung bestätigt jede Anfrage und meldet sich bei Ihnen."
+
+msgid "Eine Bestätigung Ihres Mietverhältnisses (Objekt, Mietbeginn, Mietzins) als PDF, z. B. für eine Bewerbung oder eine Behörde."
+msgstr "Eine Bestätigung Ihres Mietverhältnisses (Objekt, Mietbeginn, Mietzins) als PDF, z. B. für eine Bewerbung oder eine Behörde."
+
+msgid "Mietbestätigung anfragen"
+msgstr "Mietbestätigung anfragen"
+
+msgid "Sie können eine offene Rechnung nicht auf einmal bezahlen? Schildern Sie kurz Ihren Wunsch, z. B. Raten."
+msgstr "Sie können eine offene Rechnung nicht auf einmal bezahlen? Schildern Sie kurz Ihren Wunsch, z. B. Raten."
+
+msgid "Ihr Wunsch"
+msgstr "Ihr Wunsch"
+
+msgid "Zahlungsplan anfragen"
+msgstr "Zahlungsplan anfragen"
+
+msgid "PDF herunterladen (noch %(n)s Tage nach der Bestätigung)"
+msgstr "PDF herunterladen (noch %(n)s Tage nach der Bestätigung)"
+
+msgid "Noch keine Anfragen."
+msgstr "Noch keine Anfragen."
+
+msgid "einbezahlt am %(datum)s"
+msgstr "einbezahlt am %(datum)s"
+
+msgid "Ihre Anfrage ist schon bei der Verwaltung."
+msgstr "Ihre Anfrage ist schon bei der Verwaltung."
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie bestätigt ist."
+msgstr "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie bestätigt ist."
+
+msgid "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie entschieden ist."
+msgstr "Ihre Anfrage ist bei der Verwaltung. Sie erhalten eine Mitteilung, sobald sie entschieden ist."
+
+msgid "Bitte beschreiben Sie Ihren Wunsch kurz."
+msgstr "Bitte beschreiben Sie Ihren Wunsch kurz."
+
+msgid "Antwort an die Absenderin (optional)"
+msgstr "Antwort an die Absenderin (optional)"
+
+msgid "Änderungen beantragen Sie unten oder über die Mitteilungen. Sie gelten, sobald die Verwaltung sie bestätigt hat."
+msgstr "Änderungen beantragen Sie unten oder über die Mitteilungen. Sie gelten, sobald die Verwaltung sie bestätigt hat."
+
+msgid "Kontaktdaten beantragen"
+msgstr "Kontaktdaten beantragen"
+
+msgid "Aus Sicherheitsgründen ruft die Verwaltung Sie vor der Bestätigung einer neuen Bankverbindung zurück."
+msgstr "Aus Sicherheitsgründen ruft die Verwaltung Sie vor der Bestätigung einer neuen Bankverbindung zurück."
+
+msgid "Bankverbindung beantragen"
+msgstr "Bankverbindung beantragen"
+
+msgid "Zählerstand melden — Mieterportal"
+msgstr "Zählerstand melden — Mieterportal"
+
+msgid "Zählerstand melden"
+msgstr "Zählerstand melden"
+
+msgid "Tragen Sie den abgelesenen Stand ein. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+msgstr "Tragen Sie den abgelesenen Stand ein. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+
+msgid "Letzter Stand: %(w)s am %(d)s"
+msgstr "Letzter Stand: %(w)s am %(d)s"
+
+msgid "Stand melden"
+msgstr "Stand melden"
+
+msgid "Für Ihre Mietobjekte sind keine Zähler erfasst."
+msgstr "Für Ihre Mietobjekte sind keine Zähler erfasst."
+
+msgid "Ablesung"
+msgstr "Ablesung"
+
+msgid "Bitten Sie die Mieterschaft einer Liegenschaft, die Zähler abzulesen. Die Meldungen erscheinen unter «Anfragen» und zählen erst nach Ihrer Bestätigung."
+msgstr "Bitten Sie die Mieterschaft einer Liegenschaft, die Zähler abzulesen. Die Meldungen erscheinen unter «Anfragen» und zählen erst nach Ihrer Bestätigung."
+
+msgid "%(n)s Zähler"
+msgid_plural "%(n)s Zähler"
+msgstr[0] "%(n)s Zähler"
+msgstr[1] "%(n)s Zähler"
+
+msgid "%(n)s Mieter mit Portalzugang"
+msgid_plural "%(n)s Mieter mit Portalzugang"
+msgstr[0] "%(n)s Mieter mit Portalzugang"
+msgstr[1] "%(n)s Mieter mit Portalzugang"
+
+msgid "zuletzt aufgerufen am %(d)s"
+msgstr "zuletzt aufgerufen am %(d)s"
+
+msgid "%(n)s Meldung wartet"
+msgid_plural "%(n)s Meldungen warten"
+msgstr[0] "%(n)s Meldung wartet"
+msgstr[1] "%(n)s Meldungen warten"
+
+msgid "Aufruf an alle Mieter dieser Liegenschaft senden?"
+msgstr "Aufruf an alle Mieter dieser Liegenschaft senden?"
+
+msgid "Aufruf senden"
+msgstr "Aufruf senden"
+
+msgid "Noch keine Liegenschaften."
+msgstr "Noch keine Liegenschaften."
+
+msgid "Bitte prüfen:"
+msgstr "Bitte prüfen:"
+
+msgid "Der Verbrauch seit dem %(d)s ist auffällig hoch: etwa das %(f)s-Fache des Üblichen."
+msgstr "Der Verbrauch seit dem %(d)s ist auffällig hoch: etwa das %(f)s-Fache des Üblichen."
+
+msgid "Seit dem %(d)s (%(n)s Tage) hat sich der Stand nicht verändert."
+msgstr "Seit dem %(d)s (%(n)s Tage) hat sich der Stand nicht verändert."
+
+msgid "%(z)s: Stand %(w)s am %(d)s"
+msgstr "%(z)s: Stand %(w)s am %(d)s"
+
+msgid "Hinweis: %(t)s"
+msgstr "Hinweis: %(t)s"
+
+msgid "Der Zähler gibt es nicht mehr."
+msgstr "Der Zähler gibt es nicht mehr."
+
+msgid "Der Stand ist nicht mehr plausibel: %(t)s"
+msgstr "Der Stand ist nicht mehr plausibel: %(t)s"
+
+msgid "Bitte Zähler, Stand und Ablesedatum angeben."
+msgstr "Bitte Zähler, Stand und Ablesedatum angeben."
+
+msgid "Bitte einen gültigen Stand und ein Ablesedatum bis heute angeben."
+msgstr "Bitte einen gültigen Stand und ein Ablesedatum bis heute angeben."
+
+msgid "Bitte lesen Sie den Zähler nochmals ab."
+msgstr "Bitte lesen Sie den Zähler nochmals ab."
+
+msgid "Ihr Stand ist bei der Verwaltung. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+msgstr "Ihr Stand ist bei der Verwaltung. Er zählt, sobald die Verwaltung ihn bestätigt hat."
+
+msgid "bitte lesen Sie Ihre Zähler ab und melden Sie die Stände im Mieterportal:"
+msgstr "bitte lesen Sie Ihre Zähler ab und melden Sie die Stände im Mieterportal:"
+
+msgid "Die Verwaltung bestätigt Ihre Meldung. Vielen Dank."
+msgstr "Die Verwaltung bestätigt Ihre Meldung. Vielen Dank."
+
+msgid "Bitte Zählerstände ablesen"
+msgstr "Bitte Zählerstände ablesen"
+
+msgid "Der Aufruf ging an %(n)s Mieter."
+msgstr "Der Aufruf ging an %(n)s Mieter."
+
+msgid "Der Live-Abruf nennt %(monat)s: %(punkte)s. Vor dem Eintragen gegen die BFS-Publikation prüfen."
+msgstr "Der Live-Abruf nennt %(monat)s: %(punkte)s. Vor dem Eintragen gegen die BFS-Publikation prüfen."
+
+msgid "Landesindex der Konsumentenpreise (HEV)"
+msgstr "Landesindex der Konsumentenpreise (HEV)"
+
+msgid "Referenzzinssatz (BWO)"
+msgstr "Referenzzinssatz (BWO)"
+
+msgid "noch nie"
+msgstr "noch nie"
+
+msgid "Abruf ausgefallen: %(name)s — %(n)s Fehlversuche in Folge, letzter Erfolg %(erfolg)s. Grund: %(grund)s"
+msgstr "Abruf ausgefallen: %(name)s — %(n)s Fehlversuche in Folge, letzter Erfolg %(erfolg)s. Grund: %(grund)s"
+
+msgid "LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s. Unter «LIK-Werte» nachtragen."
+msgstr "LIK-Tabelle nachtragen: Sie endet im Monat %(stand)s. Unter «LIK-Werte» nachtragen."
+
+msgid "LIK-Werte"
+msgstr "LIK-Werte"
+
+msgid "Jahr, Monat und Punkte müssen Zahlen sein (Monat 1 bis 12)."
+msgstr "Jahr, Monat und Punkte müssen Zahlen sein (Monat 1 bis 12)."
+
+msgid "Der Monat liegt vor 2020 oder in der Zukunft."
+msgstr "Der Monat liegt vor 2020 oder in der Zukunft."
+
+msgid "Der Wert liegt ausserhalb von 100 bis 140 Punkten (Basis Dezember 2020 = 100). Tippfehler?"
+msgstr "Der Wert liegt ausserhalb von 100 bis 140 Punkten (Basis Dezember 2020 = 100). Tippfehler?"
+
+msgid "Die Quelle ist Pflicht, zum Beispiel «BFS, Medienmitteilung vom 05.11.2026»."
+msgstr "Die Quelle ist Pflicht, zum Beispiel «BFS, Medienmitteilung vom 05.11.2026»."
+
+msgid "LIK %(monat)s/%(jahr)s mit %(punkte)s Punkten gespeichert."
+msgstr "LIK %(monat)s/%(jahr)s mit %(punkte)s Punkten gespeichert."
+
+msgid "im Code (BFS-Tabelle)"
+msgstr "im Code (BFS-Tabelle)"
+
+msgid "Landesindex der Konsumentenpreise, Basis %(basis)s = 100. Hier trägst du den Monatswert ein, sobald das BFS ihn veröffentlicht hat; ein Deployment braucht es nicht. Ein Eintrag hier gilt vor der Reihe im Code."
+msgstr "Landesindex der Konsumentenpreise, Basis %(basis)s = 100. Hier trägst du den Monatswert ein, sobald das BFS ihn veröffentlicht hat; ein Deployment braucht es nicht. Ein Eintrag hier gilt vor der Reihe im Code."
+
+msgid "Der Live-Abruf nennt %(monat)s: %(punkte)s. Das ist nur ein Vorschlag. Vor dem Eintragen gegen die BFS-Publikation prüfen."
+msgstr "Der Live-Abruf nennt %(monat)s: %(punkte)s. Das ist nur ein Vorschlag. Vor dem Eintragen gegen die BFS-Publikation prüfen."
+
+msgid "Monatswert nachtragen"
+msgstr "Monatswert nachtragen"
+
+msgid "Monat (1–12)"
+msgstr "Monat (1–12)"
+
+msgid "BFS, Medienmitteilung vom …"
+msgstr "BFS, Medienmitteilung vom …"
+
+msgid "Letzte Monate"
+msgstr "Letzte Monate"
+
+msgid "Arbeiten, die im Hintergrund laufen. Eine lange Arbeit steht hier mit Stand und Ergebnis, bis sie fertig ist; scheitert sie, steht der Grund da."
+msgstr "Arbeiten, die im Hintergrund laufen. Eine lange Arbeit steht hier mit Stand und Ergebnis, bis sie fertig ist; scheitert sie, steht der Grund da."
+
+msgid "Aktualisieren"
+msgstr "Aktualisieren"
+
+msgid "In Arbeit"
+msgstr "In Arbeit"
+
+msgid "Nichts in Arbeit."
+msgstr "Nichts in Arbeit."
+
+msgid "Noch keine erledigten Aufträge."
+msgstr "Noch keine erledigten Aufträge."
+
+msgid "Wartet"
+msgstr "Wartet"
+
+msgid "Fertig"
+msgstr "Fertig"
+
+msgid "Fehlgeschlagen"
+msgstr "Fehlgeschlagen"
+
+msgid "Sollstellung (Mietenlauf)"
+msgstr "Sollstellung (Mietenlauf)"
+
+msgid "LIK %(monat)s/%(jahr)s gelöscht."
+msgstr "LIK %(monat)s/%(jahr)s gelöscht."
+
+msgid "Der Monat liegt vor 2020 oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines Monats erst Anfang des Folgemonats bekannt."
+msgstr "Der Monat liegt vor 2020 oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines Monats erst Anfang des Folgemonats bekannt."
+
+msgid "Der Vormonat fehlt noch. Bitte die Monate der Reihe nach eintragen, sonst entsteht eine Lücke."
+msgstr "Der Vormonat fehlt noch. Bitte die Monate der Reihe nach eintragen, sonst entsteht eine Lücke."
+
+msgid "Vom HEV abgerufen und gespeichert: %(werte)s."
+msgstr "Vom HEV abgerufen und gespeichert: %(werte)s."
+
+msgid "Der Abruf hat nichts gespeichert. Grund: %(grund)s"
+msgstr "Der Abruf hat nichts gespeichert. Grund: %(grund)s"
+
+msgid "Der Abruf lief, es gibt beim HEV keinen neuen Monatswert."
+msgstr "Der Abruf lief, es gibt beim HEV keinen neuen Monatswert."
+
+msgid "Jetzt beim HEV abrufen"
+msgstr "Jetzt beim HEV abrufen"
+
+msgid "zählt nicht: davor fehlt ein Monat"
+msgstr "zählt nicht: davor fehlt ein Monat"
+
+msgid "Sollstellung %(titel)s läuft im Hintergrund. Stand und Ergebnis stehen unter «Aufträge»."
+msgstr "Sollstellung %(titel)s läuft im Hintergrund. Stand und Ergebnis stehen unter «Aufträge»."
+
+msgid "Es warten Aufträge, aber der Auftragsläufer meldet sich nicht. Bitte den Betreiber informieren: Ohne Läufer werden sie nicht abgearbeitet."
+msgstr "Es warten Aufträge, aber der Auftragsläufer meldet sich nicht. Bitte den Betreiber informieren: Ohne Läufer werden sie nicht abgearbeitet."
+
+msgid "Der Mahnlauf läuft im Hintergrund. Stand und Ergebnis stehen unter «Aufträge»."
+msgstr "Der Mahnlauf läuft im Hintergrund. Stand und Ergebnis stehen unter «Aufträge»."
+
+msgid "Mahnlauf (Sammellauf)"
+msgstr "Mahnlauf (Sammellauf)"
+
+msgid "Belegerkennung (Groq)"
+msgstr "Belegerkennung (Groq)"
+
+msgid "kein Abruf verzeichnet (läuft fetch_plattform_eingang?)"
+msgstr "kein Abruf verzeichnet (läuft fetch_plattform_eingang?)"
+
+msgid "Abruf ausgefallen: Plattform-Postfach — letzter Abruf ohne Fehler %(erfolg)s. Grund: %(grund)s"
+msgstr "Abruf ausgefallen: Plattform-Postfach — letzter Abruf ohne Fehler %(erfolg)s. Grund: %(grund)s"
+
+msgid "Das Rundschreiben an %(n)s Empfänger wird im Hintergrund versandt. Stand und Ergebnis stehen unter «Aufträge»."
+msgstr "Das Rundschreiben an %(n)s Empfänger wird im Hintergrund versandt. Stand und Ergebnis stehen unter «Aufträge»."
+
+msgid "Rundschreiben per E-Mail"
+msgstr "Rundschreiben per E-Mail"
+
+msgid "Zurück zum Portal"
+msgstr "Zurück zum Portal"
+
+msgid "Aktiv: Nach dem Passwort fragt das Portal einen Code aus Ihrer Authenticator-App."
+msgstr "Aktiv: Nach dem Passwort fragt das Portal einen Code aus Ihrer Authenticator-App."
+
+msgid "Verwalten"
+msgstr "Verwalten"
+
+msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon. Empfohlen, weil hier Abrechnungen und Ihre Bankverbindung stehen."
+msgstr "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon. Empfohlen, weil hier Abrechnungen und Ihre Bankverbindung stehen."
+
+msgid "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon."
+msgstr "Zusätzlicher Schutz für Ihr Konto, freiwillig: Nach dem Passwort fragt das Portal einen Code aus einer Authenticator-App auf Ihrem Telefon."
+
+msgid "RLS-Probe: %(n)s Befund(e) in den letzten 14 Tagen (manage.py sicherheitslog). Bei 0 über zwei Wochen kann scharf geschaltet werden (ARCHITECTURE.md)."
+msgstr "RLS-Probe: %(n)s Befund(e) in den letzten 14 Tagen (manage.py sicherheitslog). Bei 0 über zwei Wochen kann scharf geschaltet werden (ARCHITECTURE.md)."
+
+msgid "In der LIK-Reihe «%(basis)s = 100» fehlt der Wert für %(monat)s. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder den Monat nachtragen."
+msgstr "In der LIK-Reihe «%(basis)s = 100» fehlt der Wert für %(monat)s. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder den Monat nachtragen."
+
+msgid "Die LIK-Reihe «%(basis)s = 100» hat noch keine Werte. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder die Monate nachtragen."
+msgstr "Die LIK-Reihe «%(basis)s = 100» hat noch keine Werte. Es wird kein Wert einer anderen Reihe eingesetzt: Die Reihe unter «LIK-Werte» einlesen oder die Monate nachtragen."
+
+msgid "LIK-Basisreihe"
+msgstr "LIK-Basisreihe"
+
+msgid "Die Reihe, in der die Punkte dieses Vertrags stehen. Beim Wechsel Punkte und Stand-Monat in der neuen Reihe eintragen; umgerechnet wird nicht."
+msgstr "Die Reihe, in der die Punkte dieses Vertrags stehen. Beim Wechsel Punkte und Stand-Monat in der neuen Reihe eintragen; umgerechnet wird nicht."
+
+msgid "Vorgabe für neue Verträge, wenn weder Liegenschaft noch Mandat eine eigene Reihe festlegen. «Landesindex LIK (Punkte)» und Stand-Monat daneben stehen in der Reihe Dezember 2020."
+msgstr "Vorgabe für neue Verträge, wenn weder Liegenschaft noch Mandat eine eigene Reihe festlegen. «Landesindex LIK (Punkte)» und Stand-Monat daneben stehen in der Reihe Dezember 2020."
+
+msgid "Ganze Reihe beim HEV einlesen"
+msgstr "Ganze Reihe beim HEV einlesen"
+
+msgid "Basisreihe"
+msgstr "Basisreihe"
+
+msgid "Die Reihe «%(basis)s = 100» hat noch keine Werte. Verträge dieser Reihe rechnen erst, wenn sie Werte hat: «Ganze Reihe beim HEV einlesen» holt die Tabelle dieser Basis, lückenlos ab dem Basismonat. Werte anderer Reihen werden nie eingesetzt."
+msgstr "Die Reihe «%(basis)s = 100» hat noch keine Werte. Verträge dieser Reihe rechnen erst, wenn sie Werte hat: «Ganze Reihe beim HEV einlesen» holt die Tabelle dieser Basis, lückenlos ab dem Basismonat. Werte anderer Reihen werden nie eingesetzt."
+
+msgid "In dieser Reihe steht noch kein Wert."
+msgstr "In dieser Reihe steht noch kein Wert."
+
+msgid "LIK-Basisreihe (Standard für neue Verträge)"
+msgstr "LIK-Basisreihe (Standard für neue Verträge)"
+
+msgid "Standard des Mandats"
+msgstr "Standard des Mandats"
+
+msgid "Vorgabe für neue Verträge; bestehende Verträge behalten ihre Reihe. Leer: Es gilt der Standard der nächsthöheren Stufe."
+msgstr "Vorgabe für neue Verträge; bestehende Verträge behalten ihre Reihe. Leer: Es gilt der Standard der nächsthöheren Stufe."
+
+msgid "Standard der Verwaltung"
+msgstr "Standard der Verwaltung"
+
+msgid "Die Reihe des Landesindex, in der dieser Vertrag rechnet. Vorgabe: Standard der Liegenschaft, sonst des Mandats, sonst der Verwaltung."
+msgstr "Die Reihe des Landesindex, in der dieser Vertrag rechnet. Vorgabe: Standard der Liegenschaft, sonst des Mandats, sonst der Verwaltung."
+
+msgid "Die Reihe wurde nicht eingelesen. Grund: %(grund)s"
+msgstr "Die Reihe wurde nicht eingelesen. Grund: %(grund)s"
+
+msgid "Reihe «%(basis)s = 100» eingelesen: %(n)s Monate von %(von)s bis %(bis)s."
+msgstr "Reihe «%(basis)s = 100» eingelesen: %(n)s Monate von %(von)s bis %(bis)s."
+
+msgid "Die Reihe ist vollständig: Beim HEV steht kein Monat, der hier fehlt."
+msgstr "Die Reihe ist vollständig: Beim HEV steht kein Monat, der hier fehlt."
+
+msgid "Nicht überschrieben, weil hier schon ein anderer Wert steht (%(n)s): %(werte)s. Bitte prüfen und den falschen löschen."
+msgstr "Nicht überschrieben, weil hier schon ein anderer Wert steht (%(n)s): %(werte)s. Bitte prüfen und den falschen löschen."
+
+msgid "Der Monat liegt vor dem Basismonat der Reihe (Dezember %(jahr)s) oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines Monats erst Anfang des Folgemonats bekannt."
+msgstr "Der Monat liegt vor dem Basismonat der Reihe (Dezember %(jahr)s) oder ist noch nicht veröffentlicht: Das BFS gibt den Wert eines Monats erst Anfang des Folgemonats bekannt."
+
+msgid "Im Basismonat steht die Reihe bei 100.0 Punkten."
+msgstr "Im Basismonat steht die Reihe bei 100.0 Punkten."
+
+msgid "Der Wert weicht um mehr als %(sprung)s Punkte vom Vormonat dieser Reihe ab. Tippfehler, oder ein Wert aus einer anderen Basisreihe?"
+msgstr "Der Wert weicht um mehr als %(sprung)s Punkte vom Vormonat dieser Reihe ab. Tippfehler, oder ein Wert aus einer anderen Basisreihe?"
+
+msgid "Unbekannte LIK-Basisreihe."
+msgstr "Unbekannte LIK-Basisreihe."
+
+msgid "Die LIK-Basisreihe dieses Vertrags lässt sich nicht mehr ändern: Es bestehen Mietzinsanpassungen in der Reihe «%(basis)s = 100»."
+msgstr "Die LIK-Basisreihe dieses Vertrags lässt sich nicht mehr ändern: Es bestehen Mietzinsanpassungen in der Reihe «%(basis)s = 100»."
+
+msgid "Beim Wechsel der LIK-Basisreihe sind die Basis-Punkte und ihr Stand-Monat in der neuen Reihe «%(basis)s = 100» anzugeben."
+msgstr "Beim Wechsel der LIK-Basisreihe sind die Basis-Punkte und ihr Stand-Monat in der neuen Reihe «%(basis)s = 100» anzugeben."
+
+msgid "Für %(stand)s weist die Reihe «%(basis)s = 100» %(tabelle)s Punkte aus, erfasst sind %(punkte)s. Beim Wechsel der Basisreihe müssen die Punkte in der neuen Reihe stehen; umgerechnet wird nicht."
+msgstr "Für %(stand)s weist die Reihe «%(basis)s = 100» %(tabelle)s Punkte aus, erfasst sind %(punkte)s. Beim Wechsel der Basisreihe müssen die Punkte in der neuen Reihe stehen; umgerechnet wird nicht."
+
+msgid "Alles an einem Ort: Fehler der Anwendung, gescheiterte Abrufe und Aufträge, RLS-Befunde, CSP-Meldungen, fällige Pflege und Sicherheitsereignisse der letzten %(fenster_tage)s Tage. Die rote Zahl in der Leiste zählt Fehler, die du noch nicht gesehen hast."
+msgstr "Alles an einem Ort: Fehler der Anwendung, gescheiterte Abrufe und Aufträge, RLS-Befunde, CSP-Meldungen, fällige Pflege und Sicherheitsereignisse der letzten %(fenster_tage)s Tage. Die rote Zahl in der Leiste zählt Fehler, die du noch nicht gesehen hast."
+
+msgid "%(n)s neuer Fehler seit deinem letzten Besuch."
+msgid_plural "%(n)s neue Fehler seit deinem letzten Besuch."
+msgstr[0] "%(n)s neuer Fehler seit deinem letzten Besuch."
+msgstr[1] "%(n)s neue Fehler seit deinem letzten Besuch."
+
+msgid "%(n)s neuer Fehler"
+msgid_plural "%(n)s neue Fehler"
+msgstr[0] "%(n)s neuer Fehler"
+msgstr[1] "%(n)s neue Fehler"
+
+msgid "Alle Quellen"
+msgstr "Alle Quellen"
+
+msgid "Keine Einträge in dieser Auswahl."
+msgstr "Keine Einträge in dieser Auswahl."
+
+msgid "Gleiche Meldungen sind zusammengefasst. Abrufausfälle bleiben stehen, bis der Abruf wieder gelingt."
+msgstr "Gleiche Meldungen sind zusammengefasst. Abrufausfälle bleiben stehen, bis der Abruf wieder gelingt."
+
+msgid "CSP-Meldungen im Einzelnen"
+msgstr "CSP-Meldungen im Einzelnen"
+
+msgid "Anwendung"
+msgstr "Anwendung"
+
+msgid "Abrufe"
+msgstr "Abrufe"
+
+msgid "RLS-Probe"
+msgstr "RLS-Probe"
+
+msgid "CSP"
+msgstr "CSP"
+
+msgid "Pflege"
+msgstr "Pflege"
+
+msgid "Warnungen"
+msgstr "Warnungen"
+
+msgid "Hinweise"
+msgstr "Hinweise"
+
+msgid "Abruf gescheitert"
+msgstr "Abruf gescheitert"
+
+msgid "Auftrag gescheitert"
+msgstr "Auftrag gescheitert"
+
+msgid "Zu viele falsche Codes. Bitte in 15 Minuten erneut versuchen."
+msgstr "Zu viele falsche Codes. Bitte in 15 Minuten erneut versuchen."
+
+msgid "Mail von unbekanntem Absender"
+msgstr "Mail von unbekanntem Absender"
+
+msgid "unbekannter Absender"
+msgstr "unbekannter Absender"
+
+msgid "Diese Mail kam von %(adresse)s. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennst du den Absender (etwa die zweite Adresse des Mieters), bestätige ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders."
+msgstr "Diese Mail kam von %(adresse)s. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennst du den Absender (etwa die zweite Adresse des Mieters), bestätige ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders."
+
+msgid "Absender für dieses Ticket bestätigen"
+msgstr "Absender für dieses Ticket bestätigen"
+
+msgid "%(adresse)s gilt für dieses Ticket jetzt als Absender des Melders."
+msgstr "%(adresse)s gilt für dieses Ticket jetzt als Absender des Melders."
+
+msgid "Diese Nachricht ist keine Mail von unbekanntem Absender (mehr)."
+msgstr "Diese Nachricht ist keine Mail von unbekanntem Absender (mehr)."
+
+msgid "Die Adresse ist bei %(person)s gespeichert und gilt für alle Tickets dieser Person."
+msgstr "Die Adresse ist bei %(person)s gespeichert und gilt für alle Tickets dieser Person."
+
+msgid "Bestätigen und bei %(person)s speichern"
+msgstr "Bestätigen und bei %(person)s speichern"
+
+msgid "«Speichern» hinterlegt die Adresse bei der Person: Sie gilt dann für alle ihre Tickets und lässt sich in der Personenakte wieder entfernen."
+msgstr "«Speichern» hinterlegt die Adresse bei der Person: Sie gilt dann für alle ihre Tickets und lässt sich in der Personenakte wieder entfernen."
+
+msgid "Weitere Absenderadresse"
+msgstr "Weitere Absenderadresse"
+
+msgid "entfernen"
+msgstr "entfernen"
+
+msgid "%(adresse)s ist als weitere Absenderadresse entfernt."
+msgstr "%(adresse)s ist als weitere Absenderadresse entfernt."
+
+msgid "Im Kalender „Abonnement/Kalender per URL hinzufügen“ wählen und diese Adresse einfügen. Der Link gehört nur Ihnen und ist geheim — nicht weitergeben."
+msgstr "Im Kalender „Abonnement/Kalender per URL hinzufügen“ wählen und diese Adresse einfügen. Der Link gehört nur Ihnen und ist geheim — nicht weitergeben."
+
+msgid "Link neu erzeugen"
+msgstr "Link neu erzeugen"
+
+msgid "Link entfernen"
+msgstr "Link entfernen"
+
+msgid "Mit einem persönlichen Link zeigt Ihr Kalender (Outlook, Apple, Google) die Fristen laufend an. Der Link lässt sich jederzeit erneuern oder entfernen."
+msgstr "Mit einem persönlichen Link zeigt Ihr Kalender (Outlook, Apple, Google) die Fristen laufend an. Der Link lässt sich jederzeit erneuern oder entfernen."
+
+msgid "Kalender-Link erzeugen"
+msgstr "Kalender-Link erzeugen"
+
+msgid "Kalender-Link entfernt. Abonnierte Kalender erhalten nichts mehr."
+msgstr "Kalender-Link entfernt. Abonnierte Kalender erhalten nichts mehr."
+
+msgid "Neuer Kalender-Link erzeugt. Ein früherer Link gilt nicht mehr."
+msgstr "Neuer Kalender-Link erzeugt. Ein früherer Link gilt nicht mehr."
+
+msgid "Wenn wir Ihre Angaben einer Liegenschaft zuordnen konnten, erhalten Sie in den nächsten Minuten eine Bestätigung per E-Mail. Ohne Bestätigung wenden Sie sich bitte direkt an Ihre Verwaltung."
+msgstr "Wenn wir Ihre Angaben einer Liegenschaft zuordnen konnten, erhalten Sie in den nächsten Minuten eine Bestätigung per E-Mail. Ohne Bestätigung wenden Sie sich bitte direkt an Ihre Verwaltung."
+
+msgid "Adresse des Aushangs erneuern? Der bisherige QR-Code funktioniert danach nicht mehr; der Aushang muss neu gedruckt werden."
+msgstr "Adresse des Aushangs erneuern? Der bisherige QR-Code funktioniert danach nicht mehr; der Aushang muss neu gedruckt werden."
+
+msgid "Aushang-Adresse erneuern"
+msgstr "Aushang-Adresse erneuern"
+
+msgid "Die Adresse des Aushangs ist erneuert. Bitte den Hausaushang neu drucken und aufhängen — der bisherige QR-Code funktioniert nicht mehr."
+msgstr "Die Adresse des Aushangs ist erneuert. Bitte den Hausaushang neu drucken und aufhängen — der bisherige QR-Code funktioniert nicht mehr."
+
+msgid "Der Link gilt nur wenige Tage und nur einmal. Ist er abgelaufen, bitten Sie Ihre Verwaltung um einen neuen. Diese E-Mail wurde automatisch erstellt."
+msgstr "Der Link gilt nur wenige Tage und nur einmal. Ist er abgelaufen, bitten Sie Ihre Verwaltung um einen neuen. Diese E-Mail wurde automatisch erstellt."
+
+msgid "Passwort festlegen"
+msgstr "Passwort festlegen"
+
+msgid "Danach melden Sie sich mit Ihrem Benutzernamen hier an:"
+msgstr "Danach melden Sie sich mit Ihrem Benutzernamen hier an:"
+
+msgid "Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s — bitte manuell mitteilen."
+msgstr "Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s — bitte manuell mitteilen."
+
+msgid "Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s (bitte sicher mitteilen; gilt nur wenige Tage und nur einmal)."
+msgstr "Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s (bitte sicher mitteilen; gilt nur wenige Tage und nur einmal)."
+
+msgid "Honorarertrag gegen erfassten Aufwand ist Teil der Stufe Professional."
+msgstr "Honorarertrag gegen erfassten Aufwand ist Teil der Stufe Professional."
+
+msgid "Schnittstellen (Buchhaltungsformate, Portal-Feed, Kalender-Abonnement) sind Teil der Stufe Professional."
+msgstr "Schnittstellen (Buchhaltungsformate, Portal-Feed, Kalender-Abonnement) sind Teil der Stufe Professional."
+
+msgid "Datenquelle"
+msgstr "Datenquelle"
+
+msgid "Spalten"
+msgstr "Spalten"
+
+msgid "Eigene Auswertungen"
+msgstr "Eigene Auswertungen"
+
+msgid "Laufender Monat"
+msgstr "Laufender Monat"
+
+msgid "Vorjahr"
+msgstr "Vorjahr"
+
+msgid "Letzte 12 Monate"
+msgstr "Letzte 12 Monate"
+
+msgid "Debitoren (Rechnungen an Mieter)"
+msgstr "Debitoren (Rechnungen an Mieter)"
+
+msgid "Forderungsart"
+msgstr "Forderungsart"
+
+msgid "Mieter Nachname"
+msgstr "Mieter Nachname"
+
+msgid "Mieter Vorname"
+msgstr "Mieter Vorname"
+
+msgid "Mieter Firma"
+msgstr "Mieter Firma"
+
+msgid "Kreditoren (Lieferantenrechnungen)"
+msgstr "Kreditoren (Lieferantenrechnungen)"
+
+msgid "MWST-Betrag"
+msgstr "MWST-Betrag"
+
+msgid "Nebenkostenrelevant"
+msgstr "Nebenkostenrelevant"
+
+msgid "Eingang am"
+msgstr "Eingang am"
+
+msgid "Bankreferenz"
+msgstr "Bankreferenz"
+
+msgid "Nettomiete aktuell"
+msgstr "Nettomiete aktuell"
+
+msgid "Nebenkosten aktuell"
+msgstr "Nebenkosten aktuell"
+
+msgid "%(n)s Zeile"
+msgid_plural "%(n)s Zeilen"
+msgstr[0] "%(n)s Zeile"
+msgstr[1] "%(n)s Zeilen"
+
+msgid "Diese Vorlage löschen? Die Daten selbst bleiben unberührt."
+msgstr "Diese Vorlage löschen? Die Daten selbst bleiben unberührt."
+
+msgid "Die Auswertung ist auf %(n)s Zeilen begrenzt. Bitte den Zeitraum oder die Liegenschaft einschränken."
+msgstr "Die Auswertung ist auf %(n)s Zeilen begrenzt. Bitte den Zeitraum oder die Liegenschaft einschränken."
+
+msgid "Keine Zeilen für diese Auswahl."
+msgstr "Keine Zeilen für diese Auswahl."
+
+msgid "Vorlage bearbeiten"
+msgstr "Vorlage bearbeiten"
+
+msgid "Datenquelle, Spalten und Zeitraum einmal festlegen, als Vorlage speichern und jederzeit neu ausführen oder als CSV herausgeben."
+msgstr "Datenquelle, Spalten und Zeitraum einmal festlegen, als Vorlage speichern und jederzeit neu ausführen oder als CSV herausgeben."
+
+msgid "Gespeicherte Vorlagen"
+msgstr "Gespeicherte Vorlagen"
+
+msgid "%(n)s Spalte"
+msgid_plural "%(n)s Spalten"
+msgstr[0] "%(n)s Spalte"
+msgstr[1] "%(n)s Spalten"
+
+msgid "Ausführen"
+msgstr "Ausführen"
+
+msgid "Noch keine Vorlage gespeichert."
+msgstr "Noch keine Vorlage gespeichert."
+
+msgid "Name der Vorlage"
+msgstr "Name der Vorlage"
+
+msgid "Spalten aus «%(q)s»"
+msgstr "Spalten aus «%(q)s»"
+
+msgid "Die Spalten erscheinen in der Reihenfolge, in der sie hier stehen. Die Vorlage gehört der Verwaltung: Das ganze Team kann sie ausführen."
+msgstr "Die Spalten erscheinen in der Reihenfolge, in der sie hier stehen. Die Vorlage gehört der Verwaltung: Das ganze Team kann sie ausführen."
+
+msgid "Vorlage speichern"
+msgstr "Vorlage speichern"
+
+msgid "Bitte einen Namen angeben."
+msgstr "Bitte einen Namen angeben."
+
+msgid "Der Name ist zu lang (höchstens 120 Zeichen)."
+msgstr "Der Name ist zu lang (höchstens 120 Zeichen)."
+
+msgid "Diese Datenquelle gibt es nicht."
+msgstr "Diese Datenquelle gibt es nicht."
+
+msgid "Bitte mindestens eine Spalte wählen."
+msgstr "Bitte mindestens eine Spalte wählen."
+
+msgid "Eine Vorlage mit diesem Namen gibt es schon."
+msgstr "Eine Vorlage mit diesem Namen gibt es schon."
+
+msgid "Vorlage «%(name)s» gespeichert."
+msgstr "Vorlage «%(name)s» gespeichert."
+
+msgid "Vorlage «%(name)s» gelöscht."
+msgstr "Vorlage «%(name)s» gelöscht."
+
+msgid "%(n)s weitere in der Liste"
+msgid_plural "%(n)s weitere in der Liste"
+msgstr[0] "%(n)s weitere in der Liste"
+msgstr[1] "%(n)s weitere in der Liste"
+
+msgid "Seiten des Bereichs"
+msgstr "Seiten des Bereichs"
+
+msgid "Selten gebraucht"
+msgstr "Selten gebraucht"
+
+msgid "Betrieb"
+msgstr "Betrieb"
+
+msgid "Alle Einstellungen"
+msgstr "Alle Einstellungen"
+
+msgid "Team & Zugriff"
+msgstr "Team & Zugriff"
+
+msgid "Vorlagen & Regeln"
+msgstr "Vorlagen & Regeln"
+
+msgid "Schnittstellen"
+msgstr "Schnittstellen"
+
+msgid "Daten & Protokoll"
+msgstr "Daten & Protokoll"
+
+msgid "Diese Buchung gehört zu einer Zahlung. Bitte die Zahlung im Bankabgleich stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+msgstr "Diese Buchung gehört zu einer Zahlung. Bitte die Zahlung im Bankabgleich stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+
+msgid "Diese Buchung gehört zu einer Rechnung. Bitte die Rechnung selbst stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+msgstr "Diese Buchung gehört zu einer Rechnung. Bitte die Rechnung selbst stornieren, sonst stimmen offene Posten und Konto nicht mehr überein."
+
+msgid "Rückgängig nicht möglich: Der Import enthält %(n)s verbuchte Belastung(en) (Gebühren, Lieferantenzahlungen). Bitte zuerst deren Buchungen stornieren, sonst werden sie nach einem erneuten Import doppelt gebucht."
+msgstr "Rückgängig nicht möglich: Der Import enthält %(n)s verbuchte Belastung(en) (Gebühren, Lieferantenzahlungen). Bitte zuerst deren Buchungen stornieren, sonst werden sie nach einem erneuten Import doppelt gebucht."
+
+msgid "Die Belastung (CHF %(belastung)s) ist grösser als der offene Betrag der Rechnung (CHF %(offen)s). Bitte die Rechnung prüfen oder die Bewegung auf ein Konto verbuchen."
+msgstr "Die Belastung (CHF %(belastung)s) ist grösser als der offene Betrag der Rechnung (CHF %(offen)s). Bitte die Rechnung prüfen oder die Bewegung auf ein Konto verbuchen."

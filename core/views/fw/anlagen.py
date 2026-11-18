@@ -1,6 +1,6 @@
 # core/views/fw/anlagen.py
 #
-# Block 10 der 33 (Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md): Anlagen und
+# Block 10 der 33 (Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)): Anlagen und
 # Abschluss — Abschreibungen, Erneuerungsfonds, Periodensperre.
 #
 # Unveraendert uebernommen. Neu sind nur die Importe hier oben.

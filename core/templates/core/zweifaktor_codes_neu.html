@@ -1,4 +1,4 @@
-{% extends 'fw/base.html' %}
+{% extends seiten_basis|default:'fw/base.html' %}
 {% load i18n zeichen %}
 {% block title %}{% trans "Notfallcodes" %} — immoswiss{% endblock %}
 {% block content %}

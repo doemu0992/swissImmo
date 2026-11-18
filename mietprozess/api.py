@@ -27,6 +27,19 @@ logger = logging.getLogger(__name__)
 router = Router(tags=["Mietprozess"])
 
 
+def _text_fehler(wert, laenge):
+    """Fehlertext für ein Freitextfeld des öffentlichen Formulars, oder ''. Verboten: spitze Klammern (Markup),
+    Steuerzeichen ausser Zeilenumbruch und Tabulator, und mehr als `laenge` Zeichen."""
+    text = wert or ''
+    if len(text) > laenge:
+        return f"Höchstens {laenge} Zeichen."
+    if '<' in text or '>' in text:
+        return "Die Zeichen < und > sind nicht erlaubt."
+    if any(ord(z) < 32 and z not in '\n\r\t' for z in text):
+        return "Enthält unzulässige Zeichen."
+    return ''
+
+
 # auth=None: Bewusst öffentlich — das ist das Bewerbungsformular für Interessenten
 # (alle anderen Endpoints erben die Session-Pflicht aus NinjaAPI(auth=django_auth)).
 @router.post("/public/bewerben", response={201: dict, 400: dict, 429: dict}, auth=None)
@@ -95,6 +108,20 @@ def public_submit_bewerbung(
     if not rate_limit(f"bewerbung:{client_ip(request)}", limit=5, window_seconds=3600):
         return 429, {"success": False,
                      "error": "Zu viele Bewerbungen in kurzer Zeit. Bitte versuchen Sie es später erneut."}
+    # Anonyme Texte: kein Markup, keine Steuerzeichen, begrenzte Länge. Die Werte landen bei der Annahme in den
+    # Stammdaten des Mieters und damit auf Seiten der Verwaltung; maskiert wird dort (Vorlagen, `fwEsc`), diese Prüfung
+    # ist die zweite Schranke und hält Müll aus der Kartei (Audit 15.11.2026).
+    for feld, wert, laenge in (
+            ('Vorname', vorname, 80), ('Nachname', nachname, 80), ('Adresse', adresse, 120), ('PLZ', plz, 12),
+            ('Ort', ort, 80), ('Mobilnummer', mobilnummer, 40), ('Beruf', beruf, 120), ('Arbeitgeber', arbeitgeber, 120),
+            ('Aktueller Vermieter', aktueller_vermieter, 120), ('Kontaktperson Vermieter', kontaktperson_vermieter, 120),
+            ('Telefon Vermieter', telefon_vermieter, 40), ('Kontaktperson Arbeitgeber', kontaktperson_arbeitgeber, 120),
+            ('Telefon Arbeitgeber', telefon_arbeitgeber, 40), ('Schild Briefkasten', schild_briefkasten, 80),
+            ('Schild Sonnerie', schild_sonnerie, 80), ('Haustiere', haustiere_details, 300),
+            ('Grund für den Wechsel', grund_fuer_wechsel, 1000), ('Bemerkungen', bemerkungen, 2000)):
+        fehler = _text_fehler(wert, laenge)
+        if fehler:
+            return 400, {"success": False, "error": f"{feld}: {fehler}"}
     # Anonyme Uploads: nur PDF/Bild, echter Inhalt, begrenzte Grösse. Ohne das
     # landet jede beliebige Datei (HTML, SVG, ausführbar) in der Ablage der
     # Verwaltung — und wird dort von Mitarbeitenden geöffnet.

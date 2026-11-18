@@ -3,7 +3,7 @@
 # Die Helfer, die MEHR ALS EIN Block braucht. Sie stehen hier, weil sie sonst
 # beim Umzug ihres Heimatblocks mitwandern und den anderen Bloecken fehlen —
 # das ist der wahrscheinlichste Weg, Etappe 1 zu brechen
-# (siehe docs/ETAPPE-1-ZERLEGEN.md).
+# (siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)).
 #
 # Sechs der acht lagen bis hierher MITTEN in einem Block:
 #   _kaution_bilanziert   Block 1    ·  _mwst_beleg/_bereits_verbucht/_periode  Block 27
@@ -192,8 +192,11 @@ def _mwst_bereits_verbucht(jahr, quartal, liegenschaft=None):
     # nach einem Storno dauerhaft gesperrt und liess sich nie neu verbuchen (Audit).
     qs = Buchung.objects.filter(beleg_text__startswith=f"MWST-Abrechnung {jahr}",
                                 ist_storno=False, storniert_am__isnull=True)
+    # Eine Abrechnung für den GANZEN Bestand überlappt jede einzelne Liegenschaft, und umgekehrt: Wer zuerst gesamt
+    # verbuchte und danach mit Liegenschaftsfilter, buchte die Zahllast zweimal (Audit F3). Für eine Liegenschaft
+    # blockiert deshalb ihre eigene UND die Gesamtabrechnung; die Gesamtabrechnung blockiert jede vorhandene.
     if liegenschaft:
-        qs = qs.filter(liegenschaft=liegenschaft)
+        qs = qs.filter(_Q(liegenschaft=liegenschaft) | _Q(liegenschaft__isnull=True))
     if quartal not in ('1', '2', '3', '4'):
         return qs.exists()                      # Jahr: jede Quartalsabrechnung zählt
     # Quartal: nur das EIGENE Quartal oder eine Jahresabrechnung blockiert.
@@ -360,7 +363,7 @@ def _parse_adresse(text):
     return strasse, '', rest
 
 
-# Der Sonderfall, den docs/ETAPPE-1-ZERLEGEN.md ausdruecklich benennt:
+# Der Sonderfall, den «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf) ausdruecklich benennt:
 # _park_konto stand im Profil-Menue-Block und wurde AUSSCHLIESSLICH vom
 # Bankabgleich benutzt — rund 10'000 Zeilen entfernt. Beim Umzug des
 # Bankabgleichs faellt genau das auf. Statt den Helfer dem einen oder dem
@@ -432,3 +435,9 @@ def team_der_organisation(organisation):
     return (get_user_model().objects
             .filter(is_active=True, mitgliedschaften__organisation=organisation)
             .distinct().order_by('first_name', 'username'))
+
+
+def _lik_basen():
+    """Die geführten LIK-Basisreihen für die Auswahl `fw/_lik_basis_feld.html` (eine Liste: `core.services.lik`)."""
+    from core.services.lik import LIK_BASEN
+    return LIK_BASEN

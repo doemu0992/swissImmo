@@ -83,7 +83,7 @@
             <form method="post" action="/neu/regelwerk/anwendung/{{ a.id }}/uebersteuern/"
                   class="flex gap-2 flex-wrap items-end">{% csrf_token %}
                 <input type="hidden" name="zurueck" value="{{ request.get_full_path }}">
-                <div class="fw-feldblock flex-1" style="min-width:260px">
+                <div class="fw-feldblock flex-1 min-w-[260px]">
                     <label class="fw-label">{% trans "Begründung *" %}</label>
                     <input name="begruendung" required class="fw-feld"
                            placeholder="{% trans 'Warum der Befund hier nicht zutrifft.' %}"></div>

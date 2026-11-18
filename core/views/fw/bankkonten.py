@@ -1,7 +1,7 @@
 # core/views/fw/bankkonten.py
 #
 # Bankkonten mit QR-IBAN-Erkennung und Mietertrag je Konto. Etappe 1, siehe
-# docs/ETAPPE-1-ZERLEGEN.md.
+# «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # QR-IBAN heisst hier: der Bereich 30000-31999 in Stellen 5-9. Das steht im
 # Skill schweizer-fachlogik und wird von diesem Umzug nicht beruehrt.
@@ -35,15 +35,9 @@ def _iban_format(iban):
 
 
 def _ist_qr_iban(iban):
-    """QR-IBAN: Institut-ID (Stellen 5–9) im Bereich 30000–31999 (Schweizer QR-IID)."""
-    s = _iban_clean(iban)
-    if len(s) < 9 or not s.startswith(('CH', 'LI')):
-        return False
-    try:
-        iid = int(s[4:9])
-    except ValueError:
-        return False
-    return 30000 <= iid <= 31999
+    """Eine Definition für alle: `core.services.iban.ist_qr_iban`."""
+    from core.services.iban import ist_qr_iban
+    return ist_qr_iban(iban)
 
 
 @rolle_erforderlich(*FINANZ_LESE_ROLLEN)

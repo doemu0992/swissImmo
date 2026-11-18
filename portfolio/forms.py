@@ -41,6 +41,8 @@ class LiegenschaftForm(forms.ModelForm):
             'hauswart_name', 'hauswart_telefon', 'sanitaer_name', 'sanitaer_telefon',
             'elektriker_name', 'elektriker_telefon', 'bank_name', 'iban',
             'hkvo_aktiv', 'hkvo_grundkosten_prozent', 'verteilschluessel_aktiv', 'wertquote_total', 'typ', 'status',
+            # Standard-Basisreihe des Landesindex für neue Verträge dieser Liegenschaft (leer = Standard des Mandats).
+            'lik_basis',
         )
         field_classes = {name: SchweizerZahl for name in (
             'versicherungswert', 'grundstuecksflaeche_m2', 'gebaeudevolumen_m3',

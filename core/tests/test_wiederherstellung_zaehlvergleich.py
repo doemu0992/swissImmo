@@ -4,7 +4,7 @@ WARUM
 `test_sicherung.PostgresWegTests` liest den Stand mit `pg_restore --list` gegen: Die Datei ist lesbar und
 nennt die Tabellen. Ob die Daten beim Zurückspielen auch ankommen (Reihenfolge der Fremdschlüssel, Sequenzen,
 Typen), sagt das nicht. «Eine Sicherung, die niemand je zurückgespielt hat, ist eine Hoffnung»
-(`docs/SICHERUNG.md`).
+(`ARCHITECTURE.md`).
 
 WAS DIESER TEST TUT (nur PostgreSQL, im CI-Job `test-postgres`)
 1. Zwei Verwaltungen mit vollem Bestand anlegen und **festschreiben** (`TransactionTestCase`; `pg_dump` sieht

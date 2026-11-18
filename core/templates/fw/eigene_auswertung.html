@@ -1,0 +1,41 @@
+{% extends 'fw/base.html' %}
+{% load zeichen i18n %}
+{% block title %}{{ vorlage.name }} — immoswiss{% endblock %}
+{% block content %}
+<div class="fw-phead">
+    <div>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/berichte/">{% trans "Berichte" %}</a><span aria-hidden="true">/</span><a href="/neu/auswertung/eigene/">{% trans "Eigene Auswertungen" %}</a><span aria-hidden="true">/</span><span>{{ vorlage.name }}</span></nav>
+        <h1>{{ vorlage.name }}</h1>
+        <p>{{ quelle_name }} · {{ zeitraum_name }}{% if vorlage.liegenschaft %} · {{ vorlage.liegenschaft.strasse }}{% endif %} · {% blocktrans count n=anzahl %}{{ n }} Zeile{% plural %}{{ n }} Zeilen{% endblocktrans %}</p>
+    </div>
+    <div class="fw-phead-knoepfe">
+        <a href="?export=csv" class="fw-btn fw-primary">{% zeichen 'herunterladen' %} {% trans "CSV herunterladen" %}</a>
+        {% if darf_schreiben %}
+        <a href="/neu/auswertung/eigene/{{ vorlage.id }}/bearbeiten/" class="fw-btn">{% trans "Bearbeiten" %}</a>
+        <form method="post" action="/neu/auswertung/eigene/{{ vorlage.id }}/loeschen/" data-bestaetigen="{% filter escapejs %}{% trans 'Diese Vorlage löschen? Die Daten selbst bleiben unberührt.' %}{% endfilter %}">
+            {% csrf_token %}<button type="submit" class="fw-btn">{% trans "Löschen" %}</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+{% if gekappt %}
+<div class="fw-hinweis warn mb-3" role="status"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">{% blocktrans with n=max_zeilen %}Die Auswertung ist auf {{ n }} Zeilen begrenzt. Bitte den Zeitraum oder die Liegenschaft einschränken.{% endblocktrans %}</div></div>
+{% endif %}
+
+<div class="fw-card">
+    {% if zeilen %}
+    <div class="fw-tablewrap">
+        <table class="fw-table fw-dicht" data-testid="auswertung-tabelle">
+            <thead><tr>{% for k in kopf %}<th scope="col">{{ k }}</th>{% endfor %}</tr></thead>
+            <tbody>
+                {% for z in zeilen %}<tr>{% for w in z %}<td>{{ w }}</td>{% endfor %}</tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% include 'fw/_seiten.html' %}
+    {% else %}
+    {% include 'fw/_empty.html' with icon='bericht' titel=_('Keine Zeilen für diese Auswahl.') %}
+    {% endif %}
+</div>
+{% endblock %}

@@ -13,7 +13,8 @@ Trigger rohes SQL und fremde Skripte auf:
   zu (DSG-Anonymisierung).
 
 Nicht geschützt (ehrlich): `TRUNCATE`, `DROP TABLE`, `DISABLE TRIGGER` für
-Tabelleneigentümer/Superuser; SQLite hat keinen Trigger.
+Tabelleneigentümer/Superuser; SQLite hat keinen Trigger. Wer so an der Tabelle vorbeikommt, bricht die Hash-Kette
+(`core/log_kette.py`, `manage.py log_kette_pruefen`) — und, mit Ankerpunkt ausser Haus, auch eine neu berechnete.
 """
 from finance.db_schutz import VARIABLE
 

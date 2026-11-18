@@ -58,6 +58,12 @@ def _zeit(tage=2, stunde=9):
 
 
 @MAIL
+
+def _marke(auftrag, seite):
+    """Die Marke, die eine Mail an `seite` im Betreff trug — damit weist sich deren Antwort aus."""
+    from tickets import direktkanal
+    return direktkanal.marke(auftrag, seite)
+
 class ChatNachMailTests(TestCase):
     """Chat -> Mail: Wer im Chat schreibt, dessen Gegenseite bekommt dieselbe Nachricht per Mail.
 
@@ -73,7 +79,7 @@ class ChatNachMailTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         m = mail.outbox[0]
         self.assertEqual(m.to, [HANDWERKER])
-        self.assertIn(f'[A{a.pk}]', m.subject)
+        self.assertIn(f'[A{a.pk}-', m.subject)
         self.assertIn(f'Ticket #{t.pk}', m.subject)
         self.assertIn('Termin passt nicht', _text(m))
         self.assertIn('/direkt/', _text(m))                  # Link zum Chat
@@ -89,7 +95,7 @@ class ChatNachMailTests(TestCase):
         direktkanal.schreiben(a, 'handwerker', 'Dienstag 5.11., 17:00 ginge bei mir.')
         self.assertEqual([m.to for m in mail.outbox], [[MIETER]])
         self.assertIn('Dienstag 5.11.', _text(mail.outbox[0]))
-        self.assertIn(f'[A{a.pk}]', mail.outbox[0].subject)
+        self.assertIn(f'[A{a.pk}-', mail.outbox[0].subject)
 
     def test_verwaltung_schreibt_beide_seiten_bekommen_die_mail(self):
         from tickets import direktkanal
@@ -231,7 +237,7 @@ class MailNachChatTests(TestCase):
         from tickets.workflow import antwort_zuordnen
         t, a = _auftrag_einfach()
         seite = antwort_zuordnen(t, 'Hans Muster <Hans@Example.ch>',
-                                 'Termin passt nicht, können Sie am 05.11. um 17:00?', auftrag_id=a.pk)
+                                 'Termin passt nicht, können Sie am 05.11. um 17:00?', auftrag_id=a.pk, betreff=_marke(a, 'mieter'))
         self.assertEqual(seite, 'direkt_mieter')
         n = a.direktnachrichten.get()
         self.assertEqual((n.seite, n.typ), ('mieter', 'direkt'))
@@ -244,7 +250,7 @@ class MailNachChatTests(TestCase):
     def test_handwerker_antwort_geht_an_den_mieter(self):
         from tickets.workflow import antwort_zuordnen
         t, a = _auftrag_einfach()
-        seite = antwort_zuordnen(t, 'Sanitär AG <hw@example.ch>', 'Ja, 17:00 passt.', auftrag_id=a.pk)
+        seite = antwort_zuordnen(t, 'Sanitär AG <hw@example.ch>', 'Ja, 17:00 passt.', auftrag_id=a.pk, betreff=_marke(a, 'handwerker'))
         self.assertEqual(seite, 'direkt_handwerker')
         self.assertEqual([m.to for m in mail.outbox], [[MIETER]])
         self.assertEqual(a.direktnachrichten.get().seite, 'handwerker')
@@ -253,11 +259,48 @@ class MailNachChatTests(TestCase):
         from tickets.models import TicketNachricht
         from tickets.workflow import antwort_zuordnen
         t, a = _auftrag_einfach()
-        seite = antwort_zuordnen(t, 'Fremder <fremder@example.org>', 'Hallo?', auftrag_id=a.pk)
-        self.assertEqual(seite, 'melder')                      # wie bisher
-        self.assertTrue(TicketNachricht.objects.filter(typ='mail_antwort', nachricht='Hallo?').exists())
+        seite = antwort_zuordnen(t, 'Fremder <fremder@example.org>', 'Hallo?', auftrag_id=a.pk, betreff=f'[A{a.pk}]')
+        self.assertEqual(seite, 'unbekannt')                   # seit 15.11.2026: interne Notiz statt «Antwort des Melders»
+        self.assertTrue(TicketNachricht.objects.filter(typ='mail_unbekannt', nachricht='Hallo?', is_intern=True).exists())
         self.assertEqual(a.direktnachrichten.count(), 0)
         self.assertEqual(mail.outbox, [])
+
+    def test_gefaelschter_absender_ohne_kennung_wird_nicht_weitergeleitet(self):
+        """Bis 15.11.2026 bestimmte allein der Absender die Seite: Eine Mail mit gefälschtem From und `[A12]` im
+        Betreff ging als Nachricht des Handwerkers an den Mieter («Schlüssel bitte unter die Matte»)."""
+        from tickets.workflow import antwort_zuordnen
+        t, a = _auftrag_einfach()
+        for betreff in (f'Re: Termin (Ticket #{t.pk}) [A{a.pk}]', f'[A{a.pk}-h0000000000]',
+                        _marke(a, 'handwerker').replace('-h', '-m')):          # Kennung der anderen Seite
+            antwort_zuordnen(t, 'Sanitär AG <hw@example.ch>', 'Schlüssel bitte unter die Matte.',
+                             auftrag_id=a.pk, betreff=betreff)
+        self.assertEqual(a.direktnachrichten.count(), 0)
+        self.assertEqual(_an(MIETER), [])
+
+    def test_die_seite_kommt_aus_der_kennung_nicht_aus_dem_absender(self):
+        """Wer die Mail an den Mieter beantwortet, schreibt als Mieter — auch von einer zweiten Adresse."""
+        from tickets.workflow import antwort_zuordnen
+        t, a = _auftrag_einfach()
+        seite = antwort_zuordnen(t, 'Hans privat <hans.privat@example.org>', 'Ich bin ab 17 Uhr da.',
+                                 auftrag_id=a.pk, betreff='Re: x ' + _marke(a, 'mieter'))
+        self.assertEqual(seite, 'direkt_mieter')
+        self.assertEqual(a.direktnachrichten.get().seite, 'mieter')
+        self.assertEqual([m.to for m in mail.outbox], [[HANDWERKER]])
+
+    def test_widerruf_entwertet_marken_und_links_beider_seiten(self):
+        from tickets import direktkanal
+        from tickets.workflow import antwort_zuordnen
+        t, a = _auftrag_einfach()
+        alt_m, alt_h = _marke(a, 'mieter'), _marke(a, 'handwerker')
+        link_m = direktkanal.link_token(a, 'mieter')
+        direktkanal.zugaenge_widerrufen(a)
+        self.assertIsNone(direktkanal.auftrag_aus_link(link_m))
+        for absender, betreff in (('hans@example.ch', alt_m), ('hw@example.ch', alt_h)):
+            antwort_zuordnen(t, absender, 'Nach dem Widerruf', auftrag_id=a.pk, betreff=betreff)
+        self.assertEqual(a.direktnachrichten.count(), 0)
+        a.refresh_from_db()
+        self.assertIsNotNone(direktkanal.auftrag_aus_link(direktkanal.link_token(a, 'mieter')))   # neue gelten
+        self.assertEqual(direktkanal.seite_aus_betreff(_marke(a, 'mieter'), a), 'mieter')
 
     def test_ohne_auftragsmarke_gilt_der_bisherige_weg(self):
         from tickets.models import TicketNachricht
@@ -281,7 +324,7 @@ class MailNachChatTests(TestCase):
         ]
         for absender, kopf in faelle:
             with self.subTest(absender=absender, kopf=kopf):
-                antwort_zuordnen(t, absender, 'Ich bin bis Montag abwesend.', auftrag_id=a.pk, kopf=kopf)
+                antwort_zuordnen(t, absender, 'Ich bin bis Montag abwesend.', auftrag_id=a.pk, betreff=_marke(a, 'mieter'), kopf=kopf)
         self.assertEqual(a.direktnachrichten.count(), 0)
         self.assertEqual(mail.outbox, [])
 
@@ -294,7 +337,7 @@ class MailNachChatTests(TestCase):
         # eine Mail von ihr ist unser eigenes Echo und wird nicht noch einmal weitergeleitet.
         a.handwerker.email = parseaddr(settings.DEFAULT_FROM_EMAIL)[1]
         a.handwerker.save()
-        antwort_zuordnen(t, settings.DEFAULT_FROM_EMAIL, 'Echo', auftrag_id=a.pk)
+        antwort_zuordnen(t, settings.DEFAULT_FROM_EMAIL, 'Echo', auftrag_id=a.pk, betreff=_marke(a, 'mieter'))
         self.assertEqual(a.direktnachrichten.count(), 0)
         self.assertEqual(mail.outbox, [])
 
@@ -304,7 +347,7 @@ class MailNachChatTests(TestCase):
         t2 = _ticket()
         a2 = handwerker_zuweisen(t2, _handwerker())
         mail.outbox.clear()
-        antwort_zuordnen(t, 'hans@example.ch', 'Frage', auftrag_id=a2.pk)     # Marke gehört zu t2
+        antwort_zuordnen(t, 'hans@example.ch', 'Frage', auftrag_id=a2.pk, betreff=_marke(a2, 'mieter'))     # Marke gehört zu t2
         self.assertEqual(a2.direktnachrichten.count(), 0)
         self.assertEqual(mail.outbox, [])
 
@@ -316,7 +359,7 @@ class MailNachChatTests(TestCase):
         direktkanal.schreiben(a, 'mieter', 'Hallo')
         gesendet = mail.outbox[0]
         mail.outbox.clear()
-        antwort_zuordnen(t, 'hw@example.ch', _text(gesendet), auftrag_id=a.pk, kopf=_kopf(gesendet))
+        antwort_zuordnen(t, 'hw@example.ch', _text(gesendet), auftrag_id=a.pk, betreff=_marke(a, 'handwerker'), kopf=_kopf(gesendet))
         self.assertEqual(a.direktnachrichten.count(), 1)
         self.assertEqual(mail.outbox, [])
 
@@ -326,7 +369,7 @@ class MailNachChatTests(TestCase):
         t, a = _auftrag_einfach()
         a.status = 'storniert'
         a.save()
-        antwort_zuordnen(t, 'hans@example.ch', 'Zu spät', auftrag_id=a.pk)
+        antwort_zuordnen(t, 'hans@example.ch', 'Zu spät', auftrag_id=a.pk, betreff=_marke(a, 'mieter'))
         self.assertEqual(a.direktnachrichten.count(), 0)
         self.assertTrue(TicketNachricht.objects.filter(typ='mail_antwort').exists())
 
@@ -334,7 +377,7 @@ class MailNachChatTests(TestCase):
         from core.management.commands.fetch_replies import Command
         t, a = _auftrag_einfach()
         m = EmailMessage()
-        m['Subject'] = f'Re: Termin für Ihre Reparatur (Ticket #{t.pk}) [A{a.pk}]'
+        m['Subject'] = f'Re: Termin für Ihre Reparatur (Ticket #{t.pk}) ' + _marke(a, 'mieter')
         m['From'] = 'Hans Muster <hans@example.ch>'
         m.set_content('Geht auch der 05.11. um 17:00?\n\nAm 01.11.2026 schrieb Verwaltung via immoswiss schrieb am: alt')
         Command().verarbeite_mail(m.as_bytes())
@@ -346,7 +389,7 @@ class MailNachChatTests(TestCase):
         from core.management.commands.fetch_replies import Command
         t, a = _auftrag_einfach()
         m = EmailMessage()
-        m['Subject'] = f'Automatische Antwort: Termin (Ticket #{t.pk}) [A{a.pk}]'
+        m['Subject'] = f'Automatische Antwort: Termin (Ticket #{t.pk}) ' + _marke(a, 'mieter')
         m['From'] = 'hans@example.ch'
         m['Auto-Submitted'] = 'auto-replied'
         m.set_content('Ich bin im Urlaub.')
@@ -360,7 +403,7 @@ class MailNachChatTests(TestCase):
         with override_settings(BREVO_WEBHOOK_SECRET='geheim'):
             r = Client().post(
                 reverse('brevo_inbound_webhook'), data=json.dumps({
-                    'Subject': f'Re: Termin (Ticket #{t.pk}) [A{a.pk}]', 'From': 'hans@example.ch',
+                    'Subject': f'Re: Termin (Ticket #{t.pk}) ' + _marke(a, 'mieter'), 'From': 'hans@example.ch',
                     'RawTextBody': 'Gern am Donnerstag.'}),
                 content_type='application/json', HTTP_X_WEBHOOK_SECRET='geheim')
         self.assertEqual(r.status_code, 200)
@@ -393,7 +436,7 @@ class TerminabstimmungTests(TestCase):
         m = mail.outbox[0]
         self.assertEqual(self._ics(m), [])                          # noch kein Kalendereintrag
         self.assertIn('/direkt/', _text(m))                         # signierter Link
-        self.assertIn(f'[A{a.pk}]', m.subject)
+        self.assertIn(f'[A{a.pk}-', m.subject)
         self.assertEqual(_an(VERWALTUNG), [])
         self.assertTrue(a.direktnachrichten.filter(nachricht__startswith='Terminvorschlag').exists())
 
@@ -520,7 +563,7 @@ class TerminabstimmungTests(TestCase):
         from tickets.workflow import antwort_zuordnen
         t, a = _auftrag_einfach()
         antwort_zuordnen(t, 'hans@example.ch', 'Termin passt nicht, können Sie am 05.11. um 17:00?',
-                         auftrag_id=a.pk)
+                         auftrag_id=a.pk, betreff=_marke(a, 'mieter'))
         a.refresh_from_db()
         self.assertEqual((a.termin_status, a.termin_am, a.termin_vorschlag_am), ('offen', None, None))
 
@@ -537,7 +580,7 @@ class TerminabstimmungTests(TestCase):
         self.assertIn('Mieterportal', _text(mieter_mail))
         self.assertIn('direkt auf diese Mail', _text(mieter_mail))
         self.assertIn('antworten Sie direkt auf diese Mail', _text(hw_mail))
-        self.assertIn(f'[A{a.pk}]', mieter_mail.subject)            # die Antwort darauf wird Chat
+        self.assertIn(f'[A{a.pk}-m', mieter_mail.subject)            # die Antwort darauf wird Chat
         self.assertEqual(_an(VERWALTUNG), [])                       # die Verwaltung hat ihn selbst gesetzt
 
     def test_festlegen_durch_die_verwaltung_raeumt_einen_offenen_vorschlag_ab(self):
@@ -972,7 +1015,8 @@ class SignierterLinkTests(_PortalBasis):
             link_erzeugen(self.a.dk_auftrag)
             link_widerrufen(type(self.a.dk_auftrag).objects.get(pk=self.a.dk_auftrag.pk))
         self.assertEqual(Client().get(self._link('handwerker')).status_code, 404)
-        self.assertEqual(Client().get(self._link('mieter')).status_code, 200)    # der Mieter bleibt
+        # Seit 15.11.2026 fällt mit dem Widerruf auch der Link des Mieters (vorher blieb er 30 Tage gültig).
+        self.assertEqual(Client().get(self._link('mieter')).status_code, 404)
 
     def test_token_kann_nicht_in_andere_signatur_umgebaut_werden(self):
         """Ein Token mit anderem Salt (z. B. aus einer anderen Funktion der App) öffnet nichts."""

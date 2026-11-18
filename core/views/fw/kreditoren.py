@@ -1,7 +1,7 @@
 # core/views/fw/kreditoren.py
 #
 # Rechnungseingang, Freigabe, Zahlung, Zahllauf und pain.001-Datei.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # pain.001 ist im Skill schweizer-fachlogik als Zahlungsstandard gefuehrt.
 # Reiner Umzug, Blockinhalt gegen HEAD geprueft.
@@ -162,7 +162,8 @@ def fw_kreditoren(request, *, formular=None):
     # SUM-Abfrage aus, ohne 'positionen' je Zeile zwei weitere (N+1 → Timeout).
     qs = (KreditorenRechnung.objects.exclude(status='storniert')
           .select_related('liegenschaft', 'konto', 'zahlung_beantragt_von', 'zahlung_freigegeben_von')
-          .prefetch_related('zahlungen', 'positionen__konto', 'positionen__einheit'))
+          # 'weiterverrechnungen': `offen_weiterzuverrechnen` summierte sonst je Zeile zweimal einzeln.
+          .prefetch_related('zahlungen', 'positionen__konto', 'positionen__einheit', 'weiterverrechnungen'))
     if aktive_lg:
         qs = qs.filter(liegenschaft=aktive_lg)
 
@@ -548,7 +549,9 @@ def fw_zahllauf(request):
                 # E-Banking geladen, zahlt die Bank doppelt. Jetzt sperrt der
                 # erste die Zeilen und setzt sie auf «in Zahlung»; der zweite
                 # wartet und findet sie nicht mehr «freigegeben».
-                rechnungen = _auswahl(['freigegeben'], sperren=True)
+                # «teilbezahlt» gehört dazu: Der Vorschlag zeigt und summiert den offenen Rest (Live-Test H9); die Datei liess
+                # ihn bisher still aus, und der Rest war über den Zahllauf nie zahlbar (Audit F5).
+                rechnungen = _auswahl(['freigegeben', 'teilbezahlt'], sperren=True)
                 if not rechnungen:
                     messages.error(request, gettext('Keine Rechnung ausgewählt — oder die Rechnungen sind bereits in einer Zahlungsdatei.'))
                     return redirect(_ziel())
