@@ -156,7 +156,9 @@ Rundung: 24 px für Karten, 14 px für kleine Flächen.
 - **Schweizer Fachwerte nie aus dem Gedächtnis.** Referenzzinssatz, Landesindex, Fristen, Feiertage, Mahnstufen,
   MWST-Sätze und Formularpflichten kommen aus dem Bestand (`core/services/mietrecht.py`, `lik.py`, `fristen.py`,
   `mahnstufen.py`, `formularpflicht.py`, `mwst_estv.py`) oder aus einer genannten amtlichen Quelle.
-- Geld ist `Decimal`. Buchungen werden storniert, nie gelöscht.
+- Geld ist `Decimal`. Auf Rappen wird mit `core.utils.betrag.runde_rappen` gerundet (kaufmännisch: 0.125 → 0.13); das eingebaute
+  `round(Decimal, 2)` rundet zur geraden Zahl (0.125 → 0.12) und gehört nicht in Abrechnung und Sollstellung.
+  Buchungen werden storniert, nie gelöscht.
 - Geldpfade: sperren, prüfen, buchen — in dieser Reihenfolge und in einer Transaktion.
 - Was länger dauert (viele Mails, viele Buchungen), läuft als Hintergrundauftrag und muss wiederholbar sein.
 - Eingaben aus Formularen stürzen nie ab: Daten über `core.utils.eingabe` (`datum_oder_none`, `zeit_oder_none`;

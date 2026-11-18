@@ -12,6 +12,7 @@ from decimal import Decimal
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 from core.services.dokumentsprache import auf_deutsch
+from core.utils.betrag import runde_rappen
 from core.services.abnahme_vorgaenger import durchgefuehrt as _durchgefuehrt
 
 logger = logging.getLogger(__name__)
@@ -67,10 +68,10 @@ def _sollstellung_vertrag(v, start_date, end_date, last_day, titel, user):
     # verrechnet = was der Mieter effektiv zahlt (Referenz − Rabatt/Erlass).
     # Datierte Komponenten (Gratismonate/gestaffelter Start) haben Vorrang;
     # sonst Staffel/Anpassung/Basiswert.
-    ref_netto = round((v.effektiver_netto_mietzins(start_date) or Decimal('0')) * faktor, 2)
-    ref_nk = round((v.effektive_nebenkosten(start_date) or Decimal('0')) * faktor, 2)
-    verr_netto = round((v.verrechneter_netto_mietzins(start_date) or Decimal('0')) * faktor, 2)
-    verr_nk = round((v.verrechnete_nebenkosten(start_date) or Decimal('0')) * faktor, 2)
+    ref_netto = runde_rappen((v.effektiver_netto_mietzins(start_date) or Decimal('0')) * faktor)
+    ref_nk = runde_rappen((v.effektive_nebenkosten(start_date) or Decimal('0')) * faktor)
+    verr_netto = runde_rappen((v.verrechneter_netto_mietzins(start_date) or Decimal('0')) * faktor)
+    verr_nk = runde_rappen((v.verrechnete_nebenkosten(start_date) or Decimal('0')) * faktor)
     # Rabatt = Referenz − verrechnet (nie negativ), aus den gerundeten Werten
     # abgeleitet, damit Debitor exakt auf den verrechneten Betrag nettoiert.
     rabatt_netto = max(Decimal('0.00'), ref_netto - verr_netto)
@@ -84,7 +85,7 @@ def _sollstellung_vertrag(v, start_date, end_date, last_day, titel, user):
     satz = v.mwst_satz_wirksam
     mwst = Decimal('0.00')
     if satz > 0:
-        mwst = round((verr_netto + verr_nk) * (satz / Decimal('100')), 2)
+        mwst = runde_rappen((verr_netto + verr_nk) * (satz / Decimal('100')))
     # Der Debitor schuldet nur den verrechneten Betrag (Gratismonat = 0).
     # Schuldet der Mieter diesen Monat NICHTS (Gratismonat / voller Erlass),
     # entsteht keine offene Forderung: Die Rechnung wird sofort als 'bezahlt'

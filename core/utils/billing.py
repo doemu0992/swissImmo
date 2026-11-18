@@ -8,6 +8,7 @@ from portfolio.models import Liegenschaft, Einheit
 from rentals.models import Mietvertrag
 from finance.models import AbrechnungsPeriode
 from core.services.dokumentsprache import nur_deutsch
+from core.utils.betrag import runde_rappen
 
 def get_heizgradtage_fuer_zeitraum(start_datum, ende_datum):
     """
@@ -429,7 +430,7 @@ def _runde(betrag):
 def _aufschluesselung(teile, kosten_anteil):
     """Je Kostenart gerundet, Restrappen auf die grösste Position — die Aufschlüsselung einer
     Zeile summiert sich genau auf ihren Kostenanteil."""
-    zeilen = [{'kostenart': ka, 'betrag': round(b, 2)} for ka, b in sorted(teile.items()) if abs(b) >= Decimal('0.005')]
+    zeilen = [{'kostenart': ka, 'betrag': runde_rappen(b)} for ka, b in sorted(teile.items()) if abs(b) >= Decimal('0.005')]
     if zeilen:
         rest = kosten_anteil - sum((z['betrag'] for z in zeilen), Decimal('0.00'))
         if rest:
@@ -591,7 +592,7 @@ def berechne_abrechnung(periode_id):
             _dazu('heizung', 'heiz', effektive_oel_kosten)
             kategorien_liste.append({
                 'datum': ende_p, 'text': "Effektiver Heizöl-Verbrauch (Anfang + Zukauf - Endbestand)",
-                'kategorie': 'Heizmaterial', 'betrag': round(effektive_oel_kosten, 2), 'schluessel': 'm3',
+                'kategorie': 'Heizmaterial', 'betrag': runde_rappen(effektive_oel_kosten), 'schluessel': 'm3',
                 'quelle': 'Bestand', 'kostenart': 'heizung',
             })
 
@@ -619,14 +620,14 @@ def berechne_abrechnung(periode_id):
         _dazu('verwaltung', 'heiz', honorar_heiz)
         kategorien_liste.append({
             'datum': ende_p, 'text': f"Verwaltungshonorar auf Heizkosten ({_satz_pct}%)",
-            'kategorie': 'Verwaltung', 'betrag': round(honorar_heiz, 2), 'schluessel': 'm3',
+            'kategorie': 'Verwaltung', 'betrag': runde_rappen(honorar_heiz), 'schluessel': 'm3',
             'quelle': 'System', 'kostenart': 'verwaltung',
         })
     if honorar_rest > 0:
         _dazu('verwaltung', 'm2', honorar_rest)
         kategorien_liste.append({
             'datum': ende_p, 'text': f"Verwaltungshonorar ({_satz_pct}%)",
-            'kategorie': 'Verwaltung', 'betrag': round(honorar_rest, 2), 'schluessel': 'm2',
+            'kategorie': 'Verwaltung', 'betrag': runde_rappen(honorar_rest), 'schluessel': 'm2',
             'quelle': 'System', 'kostenart': 'verwaltung',
         })
 
@@ -864,9 +865,9 @@ def berechne_abrechnung(periode_id):
                 saldo = mieter_total_kosten - bezahltes_akonto # Positiv = Nachzahlung
                 _zeile_dazu({
                     'typ': 'mieter_akonto', 'vertrag_id': vertrag.id, 'name': name, **basis,
-                    'kosten_anteil': round(mieter_total_kosten, 2),
-                    'akonto': round(bezahltes_akonto, 2),
-                    'saldo': round(saldo, 2),
+                    'kosten_anteil': runde_rappen(mieter_total_kosten),
+                    'akonto': runde_rappen(bezahltes_akonto),
+                    'saldo': runde_rappen(saldo),
                     'nachzahlung': saldo > 0,
                     'info': 'Akonto-Abrechnung', 'heiz_basis': heiz_basis,
                     'ausgeschlossen': sorted(ausgeschlossen),
@@ -876,8 +877,8 @@ def berechne_abrechnung(periode_id):
                 # Pauschal: Kosten fallen an, aber Differenz geht zulasten Eigentümer
                 _zeile_dazu({
                     'typ': 'mieter_pauschal', 'vertrag_id': vertrag.id, 'name': name, **basis,
-                    'kosten_anteil': round(mieter_total_kosten, 2),
-                    'akonto': round(mieter_total_kosten, 2), # Pauschale deckt Kosten
+                    'kosten_anteil': runde_rappen(mieter_total_kosten),
+                    'akonto': runde_rappen(mieter_total_kosten), # Pauschale deckt Kosten
                     'saldo': Decimal('0.00'),
                     'nachzahlung': False,
                     'info': f'Als {nk_typ.capitalize()} verrechnet', 'heiz_basis': heiz_basis,
@@ -894,8 +895,8 @@ def berechne_abrechnung(periode_id):
                     grund = 'ausgeschlossen'
                 _zeile_dazu({
                     'typ': 'eigentuemer', 'name': 'Eigentümer', **basis,
-                    'kosten_anteil': round(eig_total, 2), 'akonto': Decimal('0.00'),
-                    'saldo': round(eig_total, 2), 'nachzahlung': True,
+                    'kosten_anteil': runde_rappen(eig_total), 'akonto': Decimal('0.00'),
+                    'saldo': runde_rappen(eig_total), 'nachzahlung': True,
                     'info': info, 'grund': grund, 'bezug_vertrag_id': vertrag.id, 'bezug_name': name,
                 }, teile_eig, eig_total)
 
@@ -930,9 +931,9 @@ def berechne_abrechnung(periode_id):
                 'von': '-',
                 'bis': '-',
                 'tage': max(tage_leer, 0),
-                'kosten_anteil': round(leer_total, 2),
+                'kosten_anteil': runde_rappen(leer_total),
                 'akonto': Decimal('0.00'),
-                'saldo': round(leer_total, 2),
+                'saldo': runde_rappen(leer_total),
                 'nachzahlung': True,
                 'info': 'Leerstandskosten',
             }, leer_teile, leer_total)
@@ -955,7 +956,7 @@ def berechne_abrechnung(periode_id):
                                  " — ihr Anteil an flächenabhängigen Kosten ist 0. Bitte ergänzen.")
 
     abrechnungen.sort(key=lambda x: x['einheit'])
-    _verteile_rundungsrest(abrechnungen, round(total_kosten_gesamt, 2))
+    _verteile_rundungsrest(abrechnungen, runde_rappen(total_kosten_gesamt))
     for z in abrechnungen:
         z['aufschluesselung'] = _aufschluesselung(z.pop('_teile', {}), z['kosten_anteil'])
     # Kontrollzahl auf den ANGEZEIGTEN (gerundeten) Werten: vorher summierte sie
@@ -972,25 +973,25 @@ def berechne_abrechnung(periode_id):
         if art not in eintrag['arten']:
             eintrag['arten'].append(art)
     for eintrag in kostenarten.values():
-        eintrag['betrag'] = round(eintrag['betrag'], 2)
+        eintrag['betrag'] = runde_rappen(eintrag['betrag'])
         s = std_schluessel.get(eintrag['kostenart'])
         eintrag['tabelle'] = s.typ if s is not None and eintrag['kostenart'] != 'heizung' else None
 
     return {
-        'total_kosten': round(total_kosten_gesamt, 2),
-        'total_flaeche': round(total_m2, 2),
+        'total_kosten': runde_rappen(total_kosten_gesamt),
+        'total_flaeche': runde_rappen(total_m2),
         'belege_details': kategorien_liste,
         'abrechnungen': abrechnungen,
         'kontroll_summe': kontroll_summe,
-        'differenz': round(total_kosten_gesamt, 2) - kontroll_summe,
+        'differenz': runde_rappen(total_kosten_gesamt) - kontroll_summe,
         'hkvo_angewendet': hkvo_angewendet,
         'warnungen': warnungen,
         'warnung_arten': warnung_arten,
         'hinweise': hinweise,
         'kostenarten': sorted(kostenarten.values(), key=lambda x: x['kostenart']),
         'volumen_basis': m3_basis,
-        'heizkosten': round(pool_heiz, 2),
-        'personen_kosten': round(personen_pool, 2),
+        'heizkosten': runde_rappen(pool_heiz),
+        'personen_kosten': runde_rappen(personen_pool),
         'personen_leer_tage': personen_leer_tage,
         'leerstand_personen': modus_leer,
         'grundkosten_prozent': int(getattr(liegenschaft, 'hkvo_grundkosten_prozent', 40)),

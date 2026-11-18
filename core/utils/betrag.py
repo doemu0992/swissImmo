@@ -88,3 +88,15 @@ def betrag_text_zahlteil(wert, stellen=2):
     Nur für den gedruckten Zahlteil. Der Datenteil des QR-Codes schreibt den Betrag ohne
     Trenner («1590.00»), alle übrigen Dokumente behalten den Apostroph (`betrag_text`)."""
     return betrag_text(wert, stellen).replace("'", ' ')
+
+
+def runde_rappen(wert):
+    """Auf Rappen runden, kaufmännisch (0.125 → 0.13), nie «Banker-Rundung».
+
+    Pythons `round(Decimal, 2)` rundet halbe Rappen zur geraden Zahl (0.125 → 0.12, 0.135 → 0.14). Eine Rechnung in
+    der Schweiz rundet aber auf (Audit F7). Gerundet wird nur `Decimal`; andere Zahlen gehen unverändert durch das
+    eingebaute `round` (Altbestand mit `float`, dort gibt es keine exakten Halbwerte)."""
+    from decimal import ROUND_HALF_UP
+    if isinstance(wert, Decimal):
+        return wert.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+    return round(wert, 2)
