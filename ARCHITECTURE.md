@@ -154,6 +154,9 @@ in `core/services/nk_*.py`.
 - Eingehende Mail kommt über das Sammelpostfach (`fetch_plattform_eingang`), den Brevo-Webhook oder ein eigenes
   Postfach der Verwaltung (`fetch_replies`, `fetch_rechnungen`). Nur Absender, die zum Ticket gehören, werden als
   Antwort geführt; alles andere wird als interne Notiz abgelegt (`tickets/workflow.py`).
+- Reparaturfreigabe: Sie gilt für die Schätzung, die die Eigentümerschaft gesehen hat. Liegen die effektiven Kosten
+  mehr als 20 % darüber (`ABWEICHUNG_NACHFREIGABE`) oder ab der Schwelle, braucht es eine Nachfreigabe; verglichen wird
+  mit der bisher gespeicherten Schätzung, nicht mit der soeben eingegebenen (`fw_auftrag_kosten`).
 - Direktkanal Mieter–Handwerker (`tickets/direktkanal.py`): Die Marke im Betreff trägt eine Kennung der
   Empfängerseite; sie bestimmt, wer antwortet. Ein Widerruf entwertet Links und Marken beider Seiten.
 

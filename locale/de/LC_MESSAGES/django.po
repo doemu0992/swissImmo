@@ -39349,3 +39349,9 @@ msgstr "Diese Bewerbung ist abgeschlossen. Es wird keine Einladung mehr verschic
 
 msgid "Der Besichtigungstermin muss in der Zukunft liegen."
 msgstr "Der Besichtigungstermin muss in der Zukunft liegen."
+
+msgid "Bitte gültige Beträge eingeben (keine negativen Werte)."
+msgstr "Bitte gültige Beträge eingeben (keine negativen Werte)."
+
+msgid "%(n)s Datei(en) wurden nicht gespeichert (kein gültiges Bild oder zu gross)."
+msgstr "%(n)s Datei(en) wurden nicht gespeichert (kein gültiges Bild oder zu gross)."

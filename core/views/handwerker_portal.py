@@ -106,7 +106,8 @@ def _betrag(roh):
         wert = Decimal(roh).quantize(Decimal('0.01'))
     except (InvalidOperation, ValueError):
         return None
-    return wert if wert > 0 else None
+    # «NaN» und «Infinity» sind für Decimal gültige Werte; erst der Vergleich unten wirft darauf einen Fehler 500.
+    return wert if wert.is_finite() and wert > 0 else None
 
 
 def _datei(request, feld):

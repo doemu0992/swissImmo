@@ -41121,3 +41121,9 @@ msgstr "Cette candidature est clôturée. Aucune invitation n'est plus envoyée.
 
 msgid "Der Besichtigungstermin muss in der Zukunft liegen."
 msgstr "La date de visite doit se situer dans le futur."
+
+msgid "Bitte gültige Beträge eingeben (keine negativen Werte)."
+msgstr "Veuillez saisir des montants valides (pas de valeurs négatives)."
+
+msgid "%(n)s Datei(en) wurden nicht gespeichert (kein gültiges Bild oder zu gross)."
+msgstr "%(n)s fichier(s) n'ont pas été enregistrés (image non valide ou trop volumineuse)."

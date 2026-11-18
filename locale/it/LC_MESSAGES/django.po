@@ -41050,3 +41050,9 @@ msgstr "Questa candidatura è conclusa. Non viene più inviato alcun invito."
 
 msgid "Der Besichtigungstermin muss in der Zukunft liegen."
 msgstr "La data del sopralluogo deve essere nel futuro."
+
+msgid "Bitte gültige Beträge eingeben (keine negativen Werte)."
+msgstr "Inserire importi validi (nessun valore negativo)."
+
+msgid "%(n)s Datei(en) wurden nicht gespeichert (kein gültiges Bild oder zu gross)."
+msgstr "%(n)s file non sono stati salvati (immagine non valida o troppo grande)."

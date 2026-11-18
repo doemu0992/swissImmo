@@ -291,8 +291,15 @@ def fw_schaden_neu(request):
     )
     # Fotos (Mehrfach-Upload) anhängen
     from tickets.models import SchadenFoto
+    from core.utils.uploads import validiere_bild
+    fotos_abgelehnt = 0
     for f in request.FILES.getlist('fotos'):
+        if not validiere_bild(f)[0]:        # wie beim nachträglichen Anhängen: Bild am Inhalt erkennen, Grösse begrenzen
+            fotos_abgelehnt += 1
+            continue
         SchadenFoto.objects.create(schaden=t, bild=f, hochgeladen_von=request.user)
+    if fotos_abgelehnt:
+        messages.warning(request, '⚠️ ' + gettext('%(n)s Datei(en) wurden nicht gespeichert (kein gültiges Bild oder zu gross).') % {'n': fotos_abgelehnt})
     ok = False
     if t.email_melder:
         from crm.models import Vorlage
@@ -1067,16 +1074,25 @@ def fw_auftrag_kosten(request, pk):
     a = get_object_or_404(HandwerkerAuftrag.objects.select_related('ticket__liegenschaft', 'handwerker'), id=pk)
 
     def _dec(name):
+        """Betrag oder `None` (leer); Unsinn, `NaN` und negative Beträge sind ein Fehler, kein stilles Leeren."""
         raw = _num(request.POST.get(name))
         if not raw:
             return None
-        try:
-            return Decimal(raw)
-        except Exception:
-            return None
+        from core.utils.eingabe import endlicher_betrag
+        wert = endlicher_betrag(raw)
+        if wert < 0:
+            raise ValueError(raw)
+        return wert
 
-    a.kosten_geschaetzt = _dec('kosten_geschaetzt')
-    a.kosten_effektiv = _dec('kosten_effektiv')
+    # Die Freigabe gilt für die Schätzung, die der Eigentümer GESEHEN hat — also die bisher gespeicherte, nicht die
+    # soeben eingegebene. Sonst liesse sich die Nachfreigabe umgehen, indem man Schätzung und Kosten zugleich anhebt.
+    freigegebene_schaetzung = a.kosten_geschaetzt or Decimal('0')
+    try:
+        neu_geschaetzt, neu_effektiv = _dec('kosten_geschaetzt'), _dec('kosten_effektiv')
+    except ValueError:
+        messages.error(request, '⛔ ' + gettext('Bitte gültige Beträge eingeben (keine negativen Werte).'))
+        return redirect(f'/neu/schaeden/{a.ticket_id}/')
+    a.kosten_geschaetzt, a.kosten_effektiv = neu_geschaetzt, neu_effektiv
 
     # Reparaturfreigabe anfordern: manuell oder ab Schwellenwert (CHF 1'000).
     # Schwelle und Abweichung stehen seit Modul 3 in tickets/workflow.py — die
@@ -1093,13 +1109,14 @@ def fw_auftrag_kosten(request, pk):
     schaetz = a.kosten_geschaetzt or Decimal('0')
     if eff >= REPARATUR_FREIGABE_SCHWELLE:
         ueber_schwelle = True
-    nachfreigabe = (a.freigabe_status == 'freigegeben' and schaetz > 0
-                    and eff > schaetz * ABWEICHUNG_NACHFREIGABE)
+    basis = freigegebene_schaetzung if freigegebene_schaetzung > 0 else schaetz
+    nachfreigabe = (a.freigabe_status == 'freigegeben' and basis > 0
+                    and eff > basis * ABWEICHUNG_NACHFREIGABE)
     if nachfreigabe:
         a.freigabe_status = 'ausstehend'
         a.freigabe_datum = None
         messages.warning(request, '⚠️ ' + gettext(
-            'Die effektiven Kosten (CHF %(eff)s) liegen mehr als 20 %% über der freigegebenen Schätzung (CHF %(schaetz)s) — Nachfreigabe der Eigentümerschaft nötig.') % {'eff': eff, 'schaetz': schaetz})
+            'Die effektiven Kosten (CHF %(eff)s) liegen mehr als 20 %% über der freigegebenen Schätzung (CHF %(schaetz)s) — Nachfreigabe der Eigentümerschaft nötig.') % {'eff': eff, 'schaetz': basis})
     if nachfreigabe or (a.freigabe_status in ('nicht_noetig', 'abgelehnt') and (freigabe_anfordern or ueber_schwelle)):
         a.freigabe_status = 'ausstehend'
         a.freigabe_datum = None

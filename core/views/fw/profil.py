@@ -20,7 +20,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.utils.translation import gettext
 from django.db import transaction
-from django.db.models import Q, Sum
+from django.db.models import Count, Q, Sum
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.translation import gettext as _, gettext_lazy
@@ -777,10 +777,14 @@ def fw_vermarktung(request):
     from core.services.totp import qr_svg
     heute = timezone.localdate()
     rows = []
-    for e in qs:
+    einheiten = list(qs)
+    # Eine Abfrage für alle Bewerbungszahlen statt eine je Objekt.
+    bewerbungen_je_einheit = dict(
+        Mietbewerbung.objects.filter(einheit__in=[e.pk for e in einheiten]).exclude(status='abgelehnt')
+        .values_list('einheit').annotate(n=Count('pk')))
+    for e in einheiten:
         lg = e.liegenschaft
         link = bewerbungslink(e)
-        bew = list(Mietbewerbung.objects.filter(einheit=e).exclude(status='abgelehnt'))
         _fotos = list(e.fotos.all())
         rows.append({
             'e': e, 'liegenschaft': lg,
@@ -793,7 +797,7 @@ def fw_vermarktung(request):
             'netto': e.nettomiete_aktuell, 'nk': e.nebenkosten_aktuell,
             'verfuegbar_ab': e.verfuegbar_ab,
             'frei': (e.verfuegbar_ab is None or e.verfuegbar_ab <= heute),
-            'bewerbungen': len(bew),
+            'bewerbungen': bewerbungen_je_einheit.get(e.pk, 0),
             'notiz': e.ausschreibung_notiz,
             'bewerbungslink': link,
             'bewerbungs_qr': qr_svg(link, groesse=4, hell='#fff'),
