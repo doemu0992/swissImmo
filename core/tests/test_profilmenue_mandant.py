@@ -24,8 +24,10 @@ from core.middleware_tenancy import SESSION_SCHLUESSEL
 from ._isolation import MandantenFixture
 from .test_kopfzeile_omnisearch import baum, eines, finde
 
+from ._rahmen import basis_mit_skripten
+
 WURZEL = pathlib.Path(settings.BASE_DIR)
-BASIS = (WURZEL / 'core' / 'templates' / 'fw' / 'base.html').read_text(encoding='utf-8')
+BASIS = basis_mit_skripten()        # Vorlage und ausgelagerte Rahmen-Skripte
 SCHICHT = (WURZEL / 'core' / 'templates' / 'fw' / '_schicht.html').read_text(encoding='utf-8')
 
 
@@ -89,7 +91,7 @@ class ProfilmenueMandantTests(TestCase):
         auswahl = eines(form[0], tag='select')
         self.assertEqual(auswahl.attrs['name'], 'organisation')
         self.assertEqual(auswahl.attrs['id'], 'fwMandantWahlProfil')
-        self.assertIn('submit', auswahl.attrs['onchange'])
+        self.assertIn('data-absenden', auswahl.attrs)      # schickt das Formular bei Änderung ab
         self.assertTrue(auswahl.attrs.get('aria-label'))
         self.assertIn('fw-feld', auswahl.klassen)
         # Eine sichtbare Beschriftung gehört zur Auswahl
@@ -167,14 +169,14 @@ class ProfilmenueMandantTests(TestCase):
     def test_jede_id_die_das_skript_fuellt_gibt_es_genau_einmal(self):
         """Das Skript füllt beide Listen aus einer Tabelle; eine Id, die es nicht gibt, überspringt es still."""
         paare = re.findall(r"\['(fwZuletzt\w*)', '(fwZuletzt\w*)'\]", BASIS)
-        self.assertEqual(len(paare), 2, 'Das Skript füllt nicht genau zwei Listen')
+        self.assertEqual(len(paare), 3, 'Das Skript füllt nicht genau drei Listen (Schublade, Profilmenü, Schiene)')
         wurzel = self._seite()
         for liste, titel in paare:
             with self.subTest(liste=liste):
                 eines(wurzel, id=liste)
                 eines(wurzel, id=titel)
         # Und es füllt aus EINER Datenquelle, nicht aus zwei Kopien
-        self.assertEqual(BASIS.count("localStorage.getItem('fw-zuletzt')"), 1)
+        self.assertEqual(BASIS.count("localStorage.getItem(SCHLUESSEL)"), 1)
         self.assertEqual(BASIS.count('document.createElement(\'a\')'), 1, 'Der Code zum Füllen steht doppelt')
 
     def test_das_skript_kuerzt_die_liste_auf_drei_eintraege(self):

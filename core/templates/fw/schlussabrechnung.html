@@ -118,14 +118,14 @@
         <button type="submit" name="aktion" value="pdf" formtarget="_blank" class="fw-btn fw-primary">
             {% zeichen 'drucken' %}{% trans "Schlussabrechnung als PDF" %}
         </button>
-        <button type="submit" name="aktion" value="buchen" onclick="return confirm('{% filter escapejs %}{% trans 'Schlussabrechnung verbuchen? Kaution wird abgerechnet und eine allfällige Nachzahlung als Debitor gestellt.' %}{% endfilter %}');" class="fw-btn fw-gutknopf">
+        <button type="submit" name="aktion" value="buchen" data-bestaetigen="{% filter escapejs %}{% trans 'Schlussabrechnung verbuchen? Kaution wird abgerechnet und eine allfällige Nachzahlung als Debitor gestellt.' %}{% endfilter %}" class="fw-btn fw-gutknopf">
             {% zeichen 'gut' %}{% trans "Verbuchen (Kaution + Nachzahlung)" %}
         </button>
         <a href="/neu/vertraege/{{ v.id }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 (function(){
     var form = document.getElementById('sa-form');
     var offen = parseFloat(form.dataset.offen) || 0;
@@ -151,8 +151,8 @@
         document.getElementById('s-zulasten').textContent = fr(zul);
         document.getElementById('s-zugunsten').textContent = '− ' + fr(zug);
         var krow = document.getElementById('s-kaution-row');
-        if (kautionCredit > 0){ krow.style.display=''; document.getElementById('s-kaution').textContent = '− ' + fr(kautionCredit); }
-        else { krow.style.display = 'none'; }
+        if (kautionCredit > 0){ fwStil(krow, {display: null}); document.getElementById('s-kaution').textContent = '− ' + fr(kautionCredit); }
+        else { fwStil(krow, {display: 'none'}); }
 
         var saldo = offen + zul - zug - kautionCredit;
         var lbl = document.getElementById('s-label');

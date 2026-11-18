@@ -69,7 +69,7 @@ Du bist die Instanz, die „fertig" in „belegt" übersetzt. Für jedes Paket:
 | Mandantentrennung geprüft | mindestens ein Test, der die Grenze aktiv verletzt und ohne Filter rot wird |
 | Keine neuen Linter-Fehler | `ruff check .` |
 | Migrationen konsistent | `makemigrations --check --dry-run` meldet nichts |
-| Dokumentation nachgeführt | bei Architekturänderungen `docs/ANALYSE.md`, bei Funktionen das Handbuch |
+| Dokumentation nachgeführt | bei Architekturänderungen `«ANALYSE» (früheres Dokument, Git-Verlauf)`, bei Funktionen das Handbuch |
 | Was **nicht** getan wurde | steht im Bericht |
 
 Fehlt ein Beleg, ist das Paket nicht fertig. Das meldest du, auch wenn der Rest stimmt — und du schreibst den fehlenden Test nicht stillschweigend selbst, sondern gibst das Paket zurück.

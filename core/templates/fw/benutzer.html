@@ -18,8 +18,8 @@
 <div class="fw-card"><div class="fw-tablewrap">
     <table class="fw-table">
         <thead>
-            <tr><th>{% trans "Name" %}</th><th>{% trans "Rolle" %}</th>
-                <th>{% trans "E-Mail" %}</th><th class="fw-right">{% trans "Aktionen" %}</th></tr>
+            <tr><th scope="col">{% trans "Name" %}</th><th scope="col">{% trans "Rolle" %}</th>
+                <th scope="col">{% trans "E-Mail" %}</th><th scope="col" class="fw-right">{% trans "Aktionen" %}</th></tr>
         </thead>
         <tbody>
             {% with darf_verwalten=request.user|darf:"/neu/benutzer/neu/" %}
@@ -38,7 +38,7 @@
                     {% if darf_verwalten %}
                     <a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/" class="fw-btn fw-knapp">{% zeichen 'bearbeiten' %}{% trans "Bearbeiten" %}</a>
                     <form method="post" action="/neu/benutzer/{{ row.u.id }}/loeschen/" class="inline"
-                          onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.u.username|safe %}Benutzer {{ name }} wirklich löschen?{% endblocktrans %}{% endfilter %}');">
+                          data-bestaetigen="{% filter escapejs %}{% blocktrans with name=row.u.username|safe %}Benutzer {{ name }} wirklich löschen?{% endblocktrans %}{% endfilter %}">
                         {% csrf_token %}
                         <button class="fw-btn fw-knapp fw-rand-krit">{% zeichen 'loeschen' %}{% trans "Löschen" %}</button>
                     </form>
@@ -54,4 +54,5 @@
 </div></div>
 <p class="fw-hilfe">{% blocktrans trimmed %}Rollen: <b>Inhaber</b> (Vollzugriff inkl. Abo und Organisation), <b>Verwalter</b> (Vollzugriff im Tagesgeschäft), <b>Sachbearbeiter</b> (schreibend), <b>Lesezugriff</b> (nur ansehen). Reine Eigentümer-Portal-Zugänge werden hier nicht angezeigt.{% endblocktrans %}</p>
 <p class="fw-hilfe">{% blocktrans trimmed %}<b>Buchhaltung</b> sieht und bucht nur Finanzen (Debitoren, Kreditoren, Buchungen, Berichte), keine Stammdaten, Verträge oder Personen. Zahlungen ab dem Freigabelimit gibt eine zweite Person aus der Verwaltung frei.{% endblocktrans %}</p>
+<p class="fw-hilfe">{% blocktrans trimmed %}<b>Revision</b> liest nur das Buchungsjournal, den Kontenplan, die Abschlüsse und das Logbuch (z. B. Treuhand oder Revisionsstelle). Sie ändert nichts, sieht keine Stammdaten, Verträge oder Personen, und ihre Abrufe stehen im Logbuch.{% endblocktrans %}</p>
 {% endblock %}

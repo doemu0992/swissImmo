@@ -53,34 +53,61 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
     deb_qs = DebitorenRechnung.objects.filter(status__in=['offen', 'teilbezahlt'])
     if aktive_lg:
         deb_qs = deb_qs.filter(Q(liegenschaft=aktive_lg) | Q(vertrag__einheit__liegenschaft=aktive_lg))
-    deb = [r for r in deb_qs.select_related('liegenschaft__eigentuemer',
-                                            'vertrag__einheit__liegenschaft__eigentuemer')
-                             .prefetch_related('zahlungseingaenge') if r.offener_betrag > 0]
+    # SCHLANKE ZEILEN STATT OBJEKTE (Audit 15.11.2026). Bis dahin lud diese Stelle JEDE offene Rechnung als Objekt, samt
+    # Eigentümerkette und allen Zahlungseingängen als Objekte, und filterte in Python: bei 510 Einheiten rund 8000
+    # Objekte und drei Viertel der Rechenzeit der Startseite. Gebraucht werden zwei Zahlenpaare (Anzahl und Summe der
+    # offenen und der zu mahnenden Forderungen). Dafür reichen je Rechnung sechs Werte und je Rechnung eine Summe der
+    # verbuchten Zahlungen: zwei Abfragen ohne Unterabfrage je Zeile (die Fassung mit korrelierter Unterabfrage war auf
+    # SQLite langsamer als das Laden der Objekte). Der offene Betrag spiegelt `DebitorenRechnung.offener_betrag`:
+    # max(0, Betrag − verbuchte Zahlungen).
+    from django.db.models import Sum
+    from finance.models import Zahlungseingang
+    _zeilen = list(deb_qs.order_by().values(
+        'id', 'betrag', 'faellig_am', 'datum', 'liegenschaft_id', 'liegenschaft__eigentuemer_id',
+        'vertrag__einheit__liegenschaft__eigentuemer_id'))
+    _bezahlt = dict(Zahlungseingang.objects.filter(status='verbucht', debitoren_rechnung__in=deb_qs.order_by().values('id'))
+                    .order_by().values_list('debitoren_rechnung').annotate(s=Sum('betrag'))) if _zeilen else {}
+    _null = Decimal('0.00')
+    offene = []
+    for r in _zeilen:
+        r['_o'] = max(_null, (r['betrag'] or _null) - (_bezahlt.get(r['id']) or _null))
+        r['_f'] = r['faellig_am'] or r['datum']
+        if r['_o'] > 0:
+            offene.append(r)
+    deb_anzahl, deb_chf = len(offene), sum((r['_o'] for r in offene), _null)
     # `<=`: Der Fälligkeitstag ist Tag 0; ob schon Verzug ist, entscheidet `_zu_mahnen`.
-    deb_ueberf = [r for r in deb if (r.faellig_am or r.datum) and (r.faellig_am or r.datum) <= heute]
+    deb_ueberf = [r for r in offene if r['_f'] and r['_f'] <= heute]
     # «Mahnen» nur für Forderungen, deren für die Überfälligkeit fällige Mahnstufe
     # noch NICHT in der Historie erfasst ist. Sonst bleibt die Aufgabe stehen,
     # obwohl der Nutzer die Mahnung bereits erfasst hat (Nutzer-Bug).
     if deb_ueberf:
         from django.db.models import Max
+        from crm.models import Eigentuemer
         from finance.models import Mahnung
-        from core.services.mahnstufen import Mahnstufen, eigentuemer_von_rechnung
-        _ids = [r.id for r in deb_ueberf]
+        from core.services.mahnstufen import Mahnstufen
+        _ids = [r['id'] for r in deb_ueberf]
         _hoechste = {row['debitoren_rechnung_id']: row['mx'] for row in
                      Mahnung.objects.filter(debitoren_rechnung_id__in=_ids)
                      .values('debitoren_rechnung_id').annotate(mx=Max('stufe'))}
 
+        def _eigentuemer_id(r):
+            # Wie `mahnstufen.eigentuemer_von_rechnung`: die Liegenschaft der Rechnung, sonst die des Vertrags.
+            return (r['liegenschaft__eigentuemer_id'] if r['liegenschaft_id'] is not None
+                    else r['vertrag__einheit__liegenschaft__eigentuemer_id'])
+        _eigentuemer = Eigentuemer.objects.in_bulk({_eigentuemer_id(r) for r in deb_ueberf} - {None})
+
         stufen_laden = Mahnstufen()
 
         def _zu_mahnen(r):
-            tage = stufen_laden.tage_im_verzug(r.faellig_am or r.datum, heute, eigentuemer_von_rechnung(r))
+            eig = _eigentuemer.get(_eigentuemer_id(r))
+            tage = stufen_laden.tage_im_verzug(r['_f'], heute, eig)
             if tage is None:
                 return False
-            s = stufen_laden.stufe_fuer_tage(tage, eigentuemer_von_rechnung(r))
-            return bool(s) and s['stufe'] > (_hoechste.get(r.id) or 0)
+            s = stufen_laden.stufe_fuer_tage(tage, eig)
+            return bool(s) and s['stufe'] > (_hoechste.get(r['id']) or 0)
         deb_ueberf = [r for r in deb_ueberf if _zu_mahnen(r)]
     if deb_ueberf:
-        chf = sum((r.offener_betrag for r in deb_ueberf), Decimal('0.00'))
+        chf = sum((r['_o'] for r in deb_ueberf), Decimal('0.00'))
         n_ueberf = len(deb_ueberf)
         titel = (ngettext('%(n)s Mieter hat noch nicht bezahlt', '%(n)s Mieter haben noch nicht bezahlt', n_ueberf)
                  if einfach else
@@ -92,23 +119,23 @@ def sammle_inbox(aktive_lg=None, lg_query='', modus='profi', pendenz_ziel=None,
                                   '/neu/mahnwesen/' + lg_query,
                                   gettext('Erinnerung senden') if einfach else gettext('Mahnen'),
                                   dringend=True, chf=chf, ordnung=10))
-    if deb:
-        chf = sum((r.offener_betrag for r in deb), Decimal('0.00'))
-        titel = (ngettext('%(n)s offene Zahlung abgleichen', '%(n)s offene Zahlungen abgleichen', len(deb))
+    if deb_anzahl:
+        chf = deb_chf
+        titel = (ngettext('%(n)s offene Zahlung abgleichen', '%(n)s offene Zahlungen abgleichen', deb_anzahl)
                  if einfach else
                  ngettext('%(n)s offene Forderung mit der Bank abgleichen',
-                          '%(n)s offene Forderungen mit der Bank abgleichen', len(deb))
-                 ) % {'n': len(deb)}
+                          '%(n)s offene Forderungen mit der Bank abgleichen', deb_anzahl)
+                 ) % {'n': deb_anzahl}
         eintraege.append(_eintrag('geld', titel,
                                   gettext('Bankgutschriften den Mietern zuordnen'),
                                   '/neu/bankabgleich/' + lg_query, gettext('Abgleichen'),
                                   chf=chf, ordnung=20))
 
-    kred_qs = KreditorenRechnung.objects.exclude(status='storniert')
+    # Nur die Rechnungen im Zahlstatus laden — nicht den ganzen Kreditorenbestand aller Jahre, um ihn danach zu filtern.
+    kred_qs = KreditorenRechnung.objects.filter(status__in=('freigegeben', 'teilbezahlt'))
     if aktive_lg:
         kred_qs = kred_qs.filter(liegenschaft=aktive_lg)
-    kred = list(kred_qs.prefetch_related('zahlungen'))
-    zur_zahlung = [k for k in kred if k.status in ('freigegeben', 'teilbezahlt') and k.offener_betrag > 0]
+    zur_zahlung = [k for k in kred_qs.prefetch_related('zahlungen') if k.offener_betrag > 0]
     # Die Sammelzeile «X Rechnungen prüfen & freigeben» stand hier bis zum
     # 20.08.2026. Sie ist nach «Wartet auf Freigabe» gewandert (Prototyp
     # `konzept-struktur.html`, Screen «Heute») und zeigt dort die EINZELNEN

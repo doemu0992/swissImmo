@@ -30,7 +30,7 @@
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
         {% if ansicht == 'liste' %}<input type="hidden" name="ansicht" value="liste">{% endif %}
         <label class="sr-only" for="bwObjekt">{% trans "Objekt" %}</label>
-        <select id="bwObjekt" name="einheit" class="fw-feld" onchange="this.form.requestSubmit()">
+        <select id="bwObjekt" name="einheit" class="fw-feld" data-absenden="request">
             <option value="">{% trans "Alle Objekte" %}</option>
             {% for o in objekte %}<option value="{{ o.id }}"{% if aktive_einheit and o.id == aktive_einheit.id %} selected{% endif %}>{{ o.liegenschaft.strasse }} · {{ o.bezeichnung }}</option>{% endfor %}
         </select>
@@ -64,7 +64,7 @@
                         {% if b.hat_betreibungen %}<span class="fw-chip fw-crit">{% trans "Betreibungen" %}</span>{% endif %}
                         <span class="fw-mono">#{{ b.id }}</span>
                     </div>
-                    <a href="/neu/bewerbungen/{{ b.id }}/" class="fw-karte-titel" onclick="return fwModalOpenUrl('/neu/bewerbungen/{{ b.id }}/','{% filter escapejs %}{{ b.vorname }} {{ b.nachname }}{% endfilter %}')">{{ b.vorname }} {{ b.nachname }}</a>
+                    <a href="/neu/bewerbungen/{{ b.id }}/" class="fw-karte-titel" data-modal="{{ b.vorname }} {{ b.nachname }}">{{ b.vorname }} {{ b.nachname }}</a>
                     <div class="fw-karte-sub">{{ b.einheit.bezeichnung }} · {{ b.einheit.liegenschaft.strasse }}</div>
                     <div class="fw-karte-befunde" data-befunde>
                         {% if k.spalte == 'eingegangen' %}
@@ -104,6 +104,7 @@
                 {% endwith %}{% endfor %}
             </ul>
             <div class="fw-spalte-leer{% if sp.karten %} hidden{% endif %}" data-leer>{% if sp.key == 'eingegangen' %}{% trans "Keine neuen Bewerbungen." %}{% elif sp.key == 'vertrag' %}{% trans "Noch kein Vertrag aus einer Bewerbung." %}{% else %}{% trans "Nichts in dieser Spalte." %}{% endif %}</div>
+            {% if sp.mehr %}<p class="fw-bw-fuss"><a href="/neu/bewerbungen/?ansicht=liste{{ filter_amp }}">{% blocktrans trimmed count n=sp.mehr %}{{ n }} weitere in der Liste{% plural %}{{ n }} weitere in der Liste{% endblocktrans %}</a></p>{% endif %}
             {% if sp.key == 'abgelehnt' %}<p class="fw-bw-fuss">{% blocktrans with n=abgelehnt_tage %}Abgelehnte bleiben {{ n }} Tage sichtbar.{% endblocktrans %}</p>{% endif %}
         </details>
     </section>
@@ -148,7 +149,7 @@
 {% block scripts %}
 {% include 'fw/_fwmodal.html' %}
 {% if ansicht == 'board' %}
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
     var board = document.getElementById('fwBoard');
     if (!board) return;

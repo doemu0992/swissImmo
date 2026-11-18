@@ -15,7 +15,7 @@ Gegenproben:
   `with in_sprache('de'):` ersetzen — `test_versand_franzoesisch` wird rot;
 - in core/services/portal_feed.py `_typ_de(e)` durch `e.get_typ_display()`
   ersetzen — `test_feed_bleibt_deutsch` wird rot;
-- in core/views/fw/listen.py den Block `with in_sprache(STANDARD):` im
+- in core/views/fw/berichte.py den Block `with in_sprache(STANDARD):` im
   Mieterspiegel entfernen (Inhalt ausrücken) — `test_mieterspiegel_pdf_bleibt_deutsch`
   wird rot.
 """

@@ -1,7 +1,7 @@
 # core/views/fw/nebenkosten.py
 #
 # Heiz- und Nebenkostenabrechnung: Perioden, Verteilschluessel, Verbuchung,
-# Versand, Akonto-Anpassung. Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Versand, Akonto-Anpassung. Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Nebenkosten sind im Skill schweizer-fachlogik ausdruecklich als Bereich
 # genannt, in dem nichts umgerechnet oder geraten werden darf. Deshalb hier
@@ -90,7 +90,10 @@ def fw_nebenkosten(request):
     basis = _global_filter(request)
     aktive_lg = basis['aktive_lg']
 
-    qs = AbrechnungsPeriode.objects.select_related('liegenschaft').order_by('-start_datum')
+    from django.db.models import Count
+    # Die Zahl der Belege kommt mit der Liste (eine Abfrage statt einer je Periode).
+    qs = (AbrechnungsPeriode.objects.select_related('liegenschaft').annotate(anzahl_belege=Count('belege'))
+          .order_by('-start_datum'))
     if aktive_lg:
         qs = qs.filter(liegenschaft=aktive_lg)
 
@@ -112,7 +115,7 @@ def fw_nebenkosten(request):
         rows.append({
             'p': p, 'kosten': kosten,
             'lg': p.liegenschaft.strasse if p.liegenschaft_id else '—',
-            'belege': p.belege.count(),
+            'belege': p.anzahl_belege,
         })
 
     chips = [('', 'Alle'), ('offen', 'Offen'), ('abgeschlossen', 'Abgeschlossen')]
@@ -265,7 +268,7 @@ def fw_nebenkosten_verbuchen(request, pk):
 # Inhaber und Verwalter (seit 28.09.2026, vorher auch die Sachbearbeitung).
 # Der Versand legt die Abrechnung jedes Mieters in dessen Akte und damit sofort
 # ins Mieterportal — das ist die Freigabe an die Mieter, und «Nebenkosten-
-# abrechnung freigeben» ist nach docs/KONZEPT-UI.md §8 Inhaber und Verwaltern
+# abrechnung freigeben» ist nach CONTRIBUTING.md §8 Inhaber und Verwaltern
 # vorbehalten. Er ging auch für eine NICHT abgeschlossene Periode (dann live
 # gerechnet): Die Sachbearbeitung konnte so eine Abrechnung, die niemand
 # verbucht hatte, allen Mietern der Liegenschaft zustellen.

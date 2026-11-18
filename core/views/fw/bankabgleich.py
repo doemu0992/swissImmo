@@ -2,7 +2,7 @@
 #
 # Offene Posten mit Zahlungseingaengen abgleichen: camt.053- und CSV-Import,
 # Zuordnung, Verbuchung, und das Rueckgaengigmachen eines Imports.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Der groesste bisher verschobene Block (1'087 Zeilen) und zugleich einer der
 # heikelsten: camt.053, QR-Referenz (QRR, 27 Stellen) und die
@@ -280,13 +280,15 @@ def fw_bankabgleich(request):
     # überhaupt etwas zu tilgen gibt. `rows` enthält je offene Rechnung eine Zeile.
     sammel_vertraege = []
     _gesehen = set()
+    # Einmal zählen statt je Vertrag über alle Zeilen (quadratisch: 1,1 s bei 1500 offenen Rechnungen).
+    from collections import Counter
+    _offene_je_vertrag = Counter(getattr(x.get('r'), 'vertrag_id', None) for x in rows if isinstance(x, dict))
     for _r in rows:
         _v = getattr(_r.get('r'), 'vertrag', None) if isinstance(_r, dict) else None
         if _v is None or _v.id in _gesehen:
             continue
         _gesehen.add(_v.id)
-        _offene = sum(1 for x in rows
-                      if isinstance(x, dict) and getattr(x.get('r'), 'vertrag_id', None) == _v.id)
+        _offene = _offene_je_vertrag[_v.id]
         sammel_vertraege.append({
             'id': _v.id,
             'label': f"{_r.get('mieter')} · {_r.get('objekt')} ({_offene} offen)",
@@ -1001,8 +1003,17 @@ def _camt_import_ausfuehren(request):
     if konto_bank_obj is None:
         bank_nr, konto_bank_obj = '1020', _park_konto('1020')
 
-    # Kontoauszug mit Schlusssaldo festhalten — die Grundlage des Abstimmungsnachweises.
+    # Plausibilität VOR dem ersten Schreiben: Währung und IBAN (Roadmap Nr. 13).
     from finance.models import Kontoauszug, Bankbewegung
+    bisherige_iban = (Kontoauszug.objects.filter(konto=konto_bank_obj).exclude(iban='')
+                      .order_by('-id').values_list('iban', flat=True).first())
+    fehler = auszug_pruefen(auszug_kopf, _camt_waehrungen(roh) if ist_xml else set(), bisherige_iban,
+                            iban_wechsel=request.POST.get('iban_wechsel') == '1')
+    if fehler:
+        messages.error(request, '❌ ' + fehler)
+        return redirect('fw_bankabgleich')
+
+    # Kontoauszug mit Schlusssaldo festhalten — die Grundlage des Abstimmungsnachweises.
     auszug = Kontoauszug.objects.create(
         konto=konto_bank_obj, iban=(auszug_kopf.get('iban') or '')[:34],
         von=auszug_kopf.get('von'), bis=auszug_kopf.get('bis'),
@@ -1421,6 +1432,16 @@ def fw_kontoauszug_rueckgaengig(request, pk):
             _Q(bank_referenz__in=arefs) | _geschwister))
 
     dateiname = auszug.dateiname or f"Auszug #{auszug.id}"
+    # Belastungen (Gebühren, Lieferantenzahlungen) haben ihre Buchung an der Auszugszeile. Das Rückgängig löscht die
+    # Zeilen, nicht diese Buchungen: Nach einem erneuten Import stünde die Belastung wieder «offen» da und würde ein
+    # zweites Mal gebucht (Audit F2). Solange eine solche Buchung steht, bleibt der Import — sie wird zuerst storniert.
+    n_belastungen = Buchung.objects.filter(bankbewegungen__auszug=auszug, ist_storno=False,
+                                           storniert_am__isnull=True).distinct().count()
+    if n_belastungen:
+        messages.error(request, '❌ ' + gettext(
+            'Rückgängig nicht möglich: Der Import enthält %(n)s verbuchte Belastung(en) (Gebühren, Lieferantenzahlungen). '
+            'Bitte zuerst deren Buchungen stornieren, sonst werden sie nach einem erneuten Import doppelt gebucht.') % {'n': n_belastungen})
+        return redirect('fw_bankabgleich')
     storniert = 0
     uebersprungen = 0
     try:
@@ -1467,3 +1488,47 @@ def fw_kontoauszug_rueckgaengig(request, pk):
     if aktive := request.POST.get('lg'):
         ziel += f'?lg={aktive}'
     return redirect(ziel)
+
+
+# ---------------------------------------------------------------------------
+# Plausibilitätsprüfung des Kontoauszugs (Roadmap Nr. 13)
+# ---------------------------------------------------------------------------
+
+def _camt_waehrungen(xml_bytes):
+    """Alle Währungscodes (`Ccy`) der Beträge im camt-Auszug, gross geschrieben."""
+    import xml.etree.ElementTree as ET
+    try:
+        root = ET.fromstring(xml_bytes)
+    except Exception:
+        return set()
+    return {(el.get('Ccy') or '').strip().upper() for el in root.iter()
+            if _camt_localname(el.tag) in ('Amt', 'Bal') or el.get('Ccy')} - {''}
+
+
+def auszug_pruefen(kopf, waehrungen, bisherige_iban, iban_wechsel=False):
+    """Prüft einen Kontoauszug, bevor irgendetwas gebucht wird. Liefert eine Fehlermeldung oder None.
+
+    * Fremdwährung: Die Buchhaltung führt CHF. Ein Betrag in EUR als CHF zu buchen, wäre
+      ein stiller Fehler in jeder Zahl; deshalb wird der ganze Auszug abgewiesen.
+    * IBAN: Eine angegebene IBAN muss gültig sein (Länge, Prüfziffer). Und sie muss zum
+      gewählten Bankkonto passen: War dort bisher eine andere IBAN eingelesen, ist wahrscheinlich
+      das falsche Konto gewählt. Ein bewusster Bankwechsel geht mit `iban_wechsel`.
+    """
+    from core.services.iban import ist_gueltige_iban
+    fremd = sorted(w for w in (waehrungen or ()) if w != 'CHF')
+    if fremd:
+        return gettext(
+            'Der Auszug enthält Beträge in %(w)s. Die Buchhaltung führt CHF; '
+            'Fremdwährungen werden nicht umgerechnet. Der Import wurde nicht ausgeführt.'
+        ) % {'w': ', '.join(fremd)}
+    iban = ((kopf or {}).get('iban') or '').replace(' ', '').upper()
+    if iban and not ist_gueltige_iban(iban):
+        return gettext('Die IBAN im Auszug (%(iban)s) ist ungültig. Der Import wurde nicht ausgeführt.') % {'iban': iban}
+    bisher = (bisherige_iban or '').replace(' ', '').upper()
+    if iban and bisher and iban != bisher and not iban_wechsel:
+        return gettext(
+            'Der Auszug gehört zur IBAN %(neu)s, auf diesem Bankkonto wurde bisher %(alt)s eingelesen. '
+            'Wahrscheinlich ist das falsche Bankkonto gewählt. Bei einem bewussten Bankwechsel den Import mit '
+            '«IBAN-Wechsel bestätigen» wiederholen.'
+        ) % {'neu': iban, 'alt': bisher}
+    return None

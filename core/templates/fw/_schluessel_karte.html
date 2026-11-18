@@ -42,7 +42,7 @@ das Formular zum Ändern (braucht `sl_punkte`, `sl_anlagen`, `sl_einheiten`).
         {% else %}
         {% if k.verfuegbar %}<a href="/neu/liegenschaften/{{ k.s.liegenschaft_id }}/schluessel/ausgabe/?schluessel={{ k.s.id }}" class="fw-btn fw-knapp fw-primary">{% zeichen 'senden' %}{% trans "Ausgeben" %}</a>{% endif %}
         {% if not k.offene %}
-        <form method="post" action="/neu/schluessel/{{ k.s.id }}/loeschen/" onsubmit="return confirm('{% if k.hat_ausgaben %}{% filter escapejs %}{% trans "Schlüssel archivieren? Der Verlauf bleibt erhalten." %}{% endfilter %}{% else %}{% filter escapejs %}{% trans "Schlüssel aus dem Register entfernen?" %}{% endfilter %}{% endif %}');">{% csrf_token %}
+        <form method="post" action="/neu/schluessel/{{ k.s.id }}/loeschen/" data-bestaetigen="{% if k.hat_ausgaben %}{% filter escapejs %}{% trans "Schlüssel archivieren? Der Verlauf bleibt erhalten." %}{% endfilter %}{% else %}{% filter escapejs %}{% trans "Schlüssel aus dem Register entfernen?" %}{% endfilter %}{% endif %}">{% csrf_token %}
             <input type="hidden" name="next" value="{{ weiter }}">
             <button class="fw-btn fw-knapp fw-leise">{% zeichen 'loeschen' %}{% if k.hat_ausgaben %}{% trans "Archivieren" %}{% else %}{% trans "Entfernen" %}{% endif %}</button>
         </form>

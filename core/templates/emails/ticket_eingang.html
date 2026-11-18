@@ -1,0 +1,8 @@
+{% extends "emails/rahmen_schlicht.html" %}
+{% block inhalt %}
+<h2>{{ titel_text }}</h2>
+<p>{{ gruss }}</p>
+<p>{{ nr_text }}: #{{ ticket.id }}<br>{{ thema_text }}: {{ ticket.titel }}</p>
+<p>{{ hinweis }}</p>
+<p>{{ schluss }}<br>{{ unterschrift }}</p>
+{% endblock %}

@@ -14,7 +14,7 @@
     <a href="/neu/buchhaltung/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">
-    <button type="button" onclick="document.getElementById('buchform').classList.toggle('hidden')" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Buchung erfassen" %}</button>
+    <button type="button" data-umschalten="buchform" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Buchung erfassen" %}</button>
     </div>
 </div>
 
@@ -89,7 +89,7 @@ Nach dem Speichern im Serienmodus: Maske offen halten und Fokus zurück auf den
 Betrag. Ohne das war nach jedem Beleg das Panel zu, der Fokus am Seitenanfang
 und das Datum leer — Stapelerfassung war praktisch unmöglich (Audit).
 {% endcomment %}
-<script>
+<script nonce="{{ csp_nonce }}">
 document.addEventListener('DOMContentLoaded', function () {
     var f = document.getElementById('buchform');
     if (f) { f.classList.remove('hidden'); }
@@ -247,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="shrink-0 flex items-center gap-2">
             <span class="fw-chip fw-good">{% zeichen 'gut' klasse='mr-1' %}{% trans "Abgeschlossen" %}</span>
             {% if ist_verwaltung %}
-            <form method="post" class="shrink-0" onsubmit="return confirm('{% filter escapejs %}{% blocktrans %}Jahresabschluss {{ jahr }} zurücknehmen? Alle Abschlussbuchungen werden storniert und das Jahr wieder geöffnet.{% endblocktrans %}{% endfilter %}');">
+            <form method="post" class="shrink-0" data-bestaetigen="{% filter escapejs %}{% blocktrans %}Jahresabschluss {{ jahr }} zurücknehmen? Alle Abschlussbuchungen werden storniert und das Jahr wieder geöffnet.{% endblocktrans %}{% endfilter %}">
                 {% csrf_token %}
                 <input type="hidden" name="aktion" value="abschluss_zuruecknehmen">
                 <input type="hidden" name="jahr" value="{{ jahr }}">
@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function () {
             {% endif %}
         </div>
         {% elif ist_verwaltung %}{# Buchungslauf — nur die Verwaltung, siehe fw_buchhaltung #}
-        <form method="post" class="shrink-0" onsubmit="return confirm('{% filter escapejs %}{% blocktrans %}Jahresabschluss {{ jahr }} buchen? Alle Erfolgskonten werden gegen 2970 saldiert.{% endblocktrans %}{% endfilter %}');">
+        <form method="post" class="shrink-0" data-bestaetigen="{% filter escapejs %}{% blocktrans %}Jahresabschluss {{ jahr }} buchen? Alle Erfolgskonten werden gegen 2970 saldiert.{% endblocktrans %}{% endfilter %}">
             {% csrf_token %}
             <input type="hidden" name="aktion" value="jahresabschluss">
             <input type="hidden" name="jahr" value="{{ jahr }}">
@@ -344,7 +344,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     {% endif %}
                     {% if not b.ist_storno and not b.storniert_am %}
                     <form method="post" action="/neu/buchhaltung/buchung/{{ b.id }}/stornieren/{{ lg_query }}"
-                          onsubmit="return confirm('{% filter escapejs %}{% blocktrans with nr=b.beleg_nr %}Beleg #{{ nr }} stornieren? Es wird eine Gegenbuchung erstellt (die Originalbuchung bleibt erhalten).{% endblocktrans %}{% endfilter %}');">
+                          data-bestaetigen="{% filter escapejs %}{% blocktrans with nr=b.beleg_nr %}Beleg #{{ nr }} stornieren? Es wird eine Gegenbuchung erstellt (die Originalbuchung bleibt erhalten).{% endblocktrans %}{% endfilter %}">
                         {% csrf_token %}
                         <button class="fw-btn fw-rand-krit fw-knapp">{% zeichen 'lauf' klasse='mr-1' %}{% trans "Stornieren" %}</button>
                     </form>
@@ -365,13 +365,13 @@ document.addEventListener('DOMContentLoaded', function () {
             <table class="fw-table min-w-max">
                 <thead>
                 <tr>
-                    <th>{% trans "Datum" %}</th>
-                    <th>{% trans "Beleg" %}</th>
-                    <th>{% trans "Soll" %}</th>
-                    <th>{% trans "Haben" %}</th>
-                    <th class="text-right fw-right">{% trans "Betrag" %}</th>
-                    <th class="text-right fw-right">{% trans "Beleg-Nr" %}</th>
-                    <th></th>
+                    <th scope="col">{% trans "Datum" %}</th>
+                    <th scope="col">{% trans "Beleg" %}</th>
+                    <th scope="col">{% trans "Soll" %}</th>
+                    <th scope="col">{% trans "Haben" %}</th>
+                    <th scope="col" class="text-right fw-right">{% trans "Betrag" %}</th>
+                    <th scope="col" class="text-right fw-right">{% trans "Beleg-Nr" %}</th>
+                    <th scope="col"></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         {% endif %}
                         {% if not b.ist_storno and not b.storniert_am %}
                         <form method="post" action="/neu/buchhaltung/buchung/{{ b.id }}/stornieren/{{ lg_query }}"
-                              onsubmit="return confirm('{% filter escapejs %}{% blocktrans with nr=b.beleg_nr %}Beleg #{{ nr }} stornieren? Es wird eine Gegenbuchung erstellt (die Originalbuchung bleibt erhalten).{% endblocktrans %}{% endfilter %}');">
+                              data-bestaetigen="{% filter escapejs %}{% blocktrans with nr=b.beleg_nr %}Beleg #{{ nr }} stornieren? Es wird eine Gegenbuchung erstellt (die Originalbuchung bleibt erhalten).{% endblocktrans %}{% endfilter %}">
                             {% csrf_token %}
                             <button class="fw-btn fw-geist fw-knapp">{% zeichen 'lauf' klasse='mr-1' %}{% trans "Stornieren" %}</button>
                         </form>

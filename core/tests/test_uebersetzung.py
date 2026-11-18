@@ -2,7 +2,7 @@
 
 WAS E2 VERLANGT UND WO ES STAND
 
-`docs/PLAN-V7.md` nennt fuer E2 zwei Haelften: den Vorlagendurchgang auf die
+`«PLAN-V7» (früheres Dokument, Git-Verlauf)` nennt fuer E2 zwei Haelften: den Vorlagendurchgang auf die
 Komponentenschicht UND `{% trans %}` im selben Griff, mit dem Gate «.po fuer
 DE vollstaendig, FR/IT/EN voruebersetzt». Die erste Haelfte war am 21.09.2026
 praktisch fertig, die zweite hatte **nie begonnen**: Gemessen trugen genau
@@ -62,6 +62,9 @@ UEBERSETZT = (
     'fw/_abo_hinweis.html',          # Funktionsfreigabe: Hinweis bei Zahlungsverzug / gesperrtem Modul
     'fw/abonnement_bestaetigen.html',
     'fw/_archivieren.html',
+    'fw/api_zugang.html',            # Schlüssel der lesenden Finanz-API
+    'fw/ablesung.html',              # Ablese-Aufruf an die Mieterschaft
+    'fw/anfragen.html',              # Anfragen aus den Portalen
     'fw/daten.html',                 # Datenimport/-export (FUNK-09/13)
     'fw/daten_export.html',
     'fw/daten_import.html',
@@ -77,6 +80,8 @@ UEBERSETZT = (
     'core/handwerker_auftrag.html',
     'core/handwerker_base.html',
     'core/login.html',
+    'core/mieter_anfragen.html',
+    'core/mieter_zaehler.html',
     'core/mieter_daten.html',
     'core/mieter_dokumente.html',
     'core/mieter_konto.html',
@@ -124,6 +129,7 @@ UEBERSETZT = (
     'fw/_bezahlt_leer.html',
     'fw/_fwmodal.html',
     'fw/_listwerkzeug.html',     # Audit Etappe 4: Suche und Sortierung',
+    'fw/_lik_basis_feld.html',   # Auswahl der LIK-Basisreihe (Vertrag, Mandat, Liegenschaft, Verwaltung)
     'fw/_modal_done.html',
     'fw/_omnisearch.html',       # 27.10.2026: Omnisearch der Kopfzeile (Texte fürs Skript im <template>)
     'fw/_posten_gruppen.html',   # V12: Zahlungs-Cockpit, Trefferliste
@@ -163,6 +169,8 @@ UEBERSETZT = (
     'fw/dienstleister.html',
     'fw/dienstleister_detail.html',
     'fw/dokumente.html',
+    'fw/eigene_auswertung.html',
+    'fw/eigene_auswertungen.html',
     'fw/eigentuemer_kontokorrent.html',
     'fw/eigentuemer_mahnstufen.html',
     'fw/einstellungen.html',
@@ -204,6 +212,17 @@ UEBERSETZT = (
     'fw/mahnlauf_trockenlauf.html',
     'fw/mahnstufen.html',
     'fw/zahlungsfreigabe.html',
+    'fw/sicherheit.html',            # Betreiberseite: Verschlüsselung (Nr. 23-Nachlauf, Schlüssel ohne Terminal)
+    'core/betreiber_base.html',      # Betreiber-Portal: Hülle
+    'fw/betreiber.html',             # Betreiber-Konsole Etappe 1: Kundenliste
+    'fw/betreiber_neu.html',         # Betreiber-Konsole Etappe 2: Kunde anlegen
+    'fw/betreiber_kunde.html',       # Betreiber-Konsole Etappe 3: Abo-Verwaltung, jetzt die Kundenseite mit Reitern
+    'fw/betreiber_kunde_abo.html',   # Kundenseite: Abonnement ändern
+    'fw/betreiber_kunde_bearbeiten.html',  # Kundenseite: Stammdaten und Ansprechperson ändern
+    'fw/betreiber_csp.html',         # Betreiber-Portal: CSP-Meldungen aus dem Log
+    'fw/betreiber_protokoll.html',   # Betreiber-Portal: Protokoll, alle Quellen auf einer Seite
+    'fw/betreiber_lik.html',         # Betreiber-Portal: LIK-Monatswerte nachtragen
+    'fw/auftraege.html',             # Hintergrund-Aufträge: Stand und Ergebnis
     'fw/auszahlungsfreigaben.html',  # Vier-Augen-Prinzip für Auszahlungen (Etappe 4)
     'fw/mahnwesen.html',
     'fw/mandat_abrechnung.html',

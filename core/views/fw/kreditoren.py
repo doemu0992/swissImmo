@@ -1,7 +1,7 @@
 # core/views/fw/kreditoren.py
 #
 # Rechnungseingang, Freigabe, Zahlung, Zahllauf und pain.001-Datei.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # pain.001 ist im Skill schweizer-fachlogik als Zahlungsstandard gefuehrt.
 # Reiner Umzug, Blockinhalt gegen HEAD geprueft.
@@ -58,6 +58,7 @@ def _formularwerte(k):
         'datum': _d(k.datum), 'faellig_am': _d(k.faellig_am),
         'leistungs_von': _d(k.leistungs_von), 'leistungs_bis': _d(k.leistungs_bis),
         'referenz': k.referenz or '', 'iban': k.iban or '',
+        'menge_liter': f'{k.menge_liter:.2f}' if k.menge_liter else '',
         'lieferant_strasse': k.lieferant_strasse or '',
         'lieferant_hausnummer': k.lieferant_hausnummer or '',
         'lieferant_plz': k.lieferant_plz or '', 'lieferant_ort': k.lieferant_ort or '',
@@ -72,7 +73,7 @@ def formular_eingabe(post):
     `_formularwerte` — für die Anzeige nach einem Fehler."""
     werte = {name: post.get(name, '') for name in (
         'lieferant', 'betrag', 'mwst_satz', 'datum', 'faellig_am', 'leistungs_von',
-        'leistungs_bis', 'referenz', 'iban', 'liegenschaft_id', 'konto_id',
+        'leistungs_bis', 'referenz', 'menge_liter', 'iban', 'liegenschaft_id', 'konto_id',
         'lieferant_strasse', 'lieferant_hausnummer', 'lieferant_plz', 'lieferant_ort',
         'lieferant_land')}
     werte['is_hnk_relevant'] = post.get('is_hnk_relevant') == 'on'
@@ -161,7 +162,8 @@ def fw_kreditoren(request, *, formular=None):
     # SUM-Abfrage aus, ohne 'positionen' je Zeile zwei weitere (N+1 → Timeout).
     qs = (KreditorenRechnung.objects.exclude(status='storniert')
           .select_related('liegenschaft', 'konto', 'zahlung_beantragt_von', 'zahlung_freigegeben_von')
-          .prefetch_related('zahlungen', 'positionen__konto', 'positionen__einheit'))
+          # 'weiterverrechnungen': `offen_weiterzuverrechnen` summierte sonst je Zeile zweimal einzeln.
+          .prefetch_related('zahlungen', 'positionen__konto', 'positionen__einheit', 'weiterverrechnungen'))
     if aktive_lg:
         qs = qs.filter(liegenschaft=aktive_lg)
 
@@ -547,7 +549,9 @@ def fw_zahllauf(request):
                 # E-Banking geladen, zahlt die Bank doppelt. Jetzt sperrt der
                 # erste die Zeilen und setzt sie auf «in Zahlung»; der zweite
                 # wartet und findet sie nicht mehr «freigegeben».
-                rechnungen = _auswahl(['freigegeben'], sperren=True)
+                # «teilbezahlt» gehört dazu: Der Vorschlag zeigt und summiert den offenen Rest (Live-Test H9); die Datei liess
+                # ihn bisher still aus, und der Rest war über den Zahllauf nie zahlbar (Audit F5).
+                rechnungen = _auswahl(['freigegeben', 'teilbezahlt'], sperren=True)
                 if not rechnungen:
                     messages.error(request, gettext('Keine Rechnung ausgewählt — oder die Rechnungen sind bereits in einer Zahlungsdatei.'))
                     return redirect(_ziel())

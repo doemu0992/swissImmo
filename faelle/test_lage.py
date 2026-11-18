@@ -1895,7 +1895,7 @@ class ArbeitsvorratAbfragezahlTests(TestCase):
         from faelle.arbeitsvorrat import was_reisst
 
         with mandant(self.a.organisation):
-            # VIER — EINE JE QUELLE, und das ist die ganze Aussage.
+            # FÜNF — EINE JE QUELLE, und das ist die ganze Aussage (die fünfte: offene Anfragen aus den Portalen, 12.11.2026).
             #
             # `assertNumQueries` prueft auf GLEICHHEIT, nicht auf eine
             # Obergrenze: Ein zu hoher Wert schlaegt genauso fehl wie ein zu
@@ -1910,7 +1910,7 @@ class ArbeitsvorratAbfragezahlTests(TestCase):
             # nicht aufzurunden.
             #
             # Der N+1 aus E2.62 lag bei 28.
-            with self.assertNumQueries(4):
+            with self.assertNumQueries(5):
                 zeilen = was_reisst(timezone.localdate())
             self.assertGreaterEqual(
                 len(zeilen), 12,

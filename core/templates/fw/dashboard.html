@@ -44,7 +44,7 @@
                 {% endfor %}
             </form>
         </details>
-        {% if kann_schreiben %}<a href="/neu/faelle/neu/" onclick="return fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}')" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Neuer Fall" %}</a>{% endif %}
+        {% if kann_schreiben %}<a href="/neu/faelle/neu/" data-modal="{% trans "Neuer Fall" %}" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Neuer Fall" %}</a>{% endif %}
     </div>
 </section>
 
@@ -104,13 +104,13 @@
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <input type="hidden" name="ansicht" value="{{ ansicht }}">
             {% if av_band_aktiv %}<input type="hidden" name="fallart" value="{{ av_band_aktiv }}">{% endif %}
-            <select name="wer" onchange="this.form.submit()" aria-label="{% trans 'Zuständigkeit' %}">
+            <select name="wer" data-absenden aria-label="{% trans 'Zuständigkeit' %}">
                 <option value="">{% trans "Zuständig: alle" %}</option>
             {% for b in f_wer_auswahl %}
                 <option value="{{ b.pk }}" {% if f_wer and f_wer.pk == b.pk %}selected{% endif %}>{{ b.get_full_name|default:b.username }}</option>
             {% endfor %}
             </select>
-            <select name="mandat" onchange="this.form.submit()" aria-label="{% trans 'Mandat' %}">
+            <select name="mandat" data-absenden aria-label="{% trans 'Mandat' %}">
                 {# «Alle 0» las sich wie ein Fehler — ohne Mandate steht schlicht «Mandat: alle». #}
                 <option value="">{% trans "Mandat: alle" %}{% if f_mandat_auswahl %} {{ f_mandat_auswahl|length }}{% endif %}</option>
             {% for m in f_mandat_auswahl %}
@@ -183,7 +183,7 @@
             </div>
             {% if e.chf %}<span class="fw-betrag">CHF {{ e.chf|chf }}</span>{% endif %}
             {% if e.faellig %}<div class="fw-zeit">{{ e.faellig|date:"d.m.Y" }}</div>{% endif %}
-            {% if e.url %}<a href="{{ e.url }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"{% endif %} class="fw-btn fw-knapp">{{ e.cta }}</a>{% endif %}
+            {% if e.url %}<a href="{{ e.url }}"{% if e.modal %} data-modal="{{ e.titel}}" {% if e.wide %}data-modal-breit{% endif %}{% endif %} class="fw-btn fw-knapp">{{ e.cta }}</a>{% endif %}
         </div>
         {% endfor %}
         {% include 'fw/_arbeitsvorrat_abschnitte.html' with teil='ohnefrist' %}
@@ -208,7 +208,7 @@
     <li class="fw-vz{% if e.dringlichkeit != 'neutral' %} {{ e.dringlichkeit }}{% endif %}" role="option" tabindex="-1" data-vz="{{ forloop.counter }}">
         <div class="fw-vz-haupt">
             <div class="fw-vz-kopf">
-                {% if e.marke %}<span class="fw-marke-kapsel">{{ e.marke }}</span>{% else %}<span class="fw-marke-kapsel">{% zeichen_wert e.ikon %} {% if e.art == 'lauf' %}{% trans "Lauf" %}{% elif e.art == 'frist' %}{% trans "Frist" %}{% else %}{% trans "Pendenz" %}{% endif %}</span>{% endif %}
+                {% if e.marke %}<span class="fw-marke-kapsel">{{ e.marke }}</span>{% else %}<span class="fw-marke-kapsel">{% zeichen_wert e.ikon %} {% if e.art == 'lauf' %}{% trans "Lauf" %}{% elif e.art == 'frist' %}{% trans "Frist" %}{% elif e.art == 'anfrage' %}{% trans "Anfrage" %}{% else %}{% trans "Pendenz" %}{% endif %}</span>{% endif %}
                 {% if e.nummer %}<span class="fw-mono">{{ e.nummer }}</span>{% endif %}
             </div>
             <div class="fw-vz-titel">{{ e.titel }}</div>
@@ -221,7 +221,7 @@
             {% elif e.tage == 0 %}<b>{% trans "Heute" %}</b><span>{% trans "fällig" %}</span>
             {% else %}<b>{{ e.datum|date:"D d.m." }}</b><span>{% blocktrans count n=e.tage %}in {{ n }} Tag{% plural %}in {{ n }} Tagen{% endblocktrans %}</span>{% endif %}
         </div>
-        <div class="fw-vz-aktion"><a href="{{ e.ziel }}"{% if e.modal %} onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',false)"{% endif %} class="fw-btn fw-knapp">{{ e.knopf }}</a></div>
+        <div class="fw-vz-aktion"><a href="{{ e.ziel }}"{% if e.modal %} data-modal="{{ e.titel}}"{% endif %} class="fw-btn fw-knapp">{{ e.knopf }}</a></div>
 
         <template id="vz-{{ forloop.counter }}">
             <div class="fw-vg-kopf-daten" data-tag="{{ e.marke|default:'' }}" data-nr="{{ e.nummer|default:'' }}" data-titel="{{ e.titel }}" data-obj="{% if e.fortschritt %}{{ e.fortschritt }}{% else %}{{ e.zeile }}{% endif %}"></div>
@@ -252,7 +252,7 @@
                 <form method="post" action="/neu/fallschritte/{{ e.schritt_pk }}/verschieben/">{% csrf_token %}<input type="hidden" name="weiter" value="{{ request.get_full_path }}"><button type="submit" class="fw-btn">{% trans "Auf morgen" %}</button></form>
                 <form method="post" action="/neu/fallschritte/{{ e.schritt_pk }}/erledigen/">{% csrf_token %}<input type="hidden" name="weiter" value="{{ request.get_full_path }}"><button type="submit" class="fw-btn fw-primary" data-hauptaktion title="{{ e.schritt }}">{% zeichen 'gut' %} {% trans "Schritt erledigt" %}</button></form>
                 {% else %}
-                <a href="{{ e.ziel }}"{% if e.modal %} onclick="fwVorgangZu();return fwModalOpen(this,'{{ e.titel|escapejs }}',false)"{% endif %} class="fw-btn fw-primary" data-hauptaktion>{{ e.knopf }}</a>
+                <a href="{{ e.ziel }}"{% if e.modal %} data-bei-klick="fwVorgangZu" data-modal="{{ e.titel}}"{% endif %} class="fw-btn fw-primary" data-hauptaktion>{{ e.knopf }}</a>
                 {% endif %}
             </div>
         </template>
@@ -364,7 +364,7 @@
         </div>
         {% if m.offen %}<span class="fw-chip fw-crit">{% blocktrans with betrag=m.offen|chf %}CHF {{ betrag }} offen{% endblocktrans %}</span>
         {% else %}<span class="fw-chip fw-warn">{% blocktrans with n=m.leer %}{{ n }} leer{% endblocktrans %}</span>{% endif %}
-        <span class="fw-belegung {{ m.stufe }}"><i style="width:{{ m.belegung }}%"></i></span>
+        <span class="fw-belegung {{ m.stufe }}"><i data-breite="{{ m.belegung }}"></i></span>
     </div>
     {% endfor %}
 </section>
@@ -378,11 +378,11 @@
    nichts wird nachgeladen. Kopf: Art, Nummer, Titel, Stand. Unten die
    Handlungen. Esc oder Klick daneben schliesst. {% endcomment %}
 <div id="fwVorgang" class="fw-vg" aria-hidden="true">
-    <div class="fw-vg-vorhang" onclick="fwVorgangZu()"></div>
+    <div class="fw-vg-vorhang" data-bei-klick="fwVorgangZu"></div>
     <aside class="fw-vg-box" role="dialog" aria-modal="true" aria-labelledby="fwVgTitel">
         <div class="fw-vg-kopf">
             <div class="fw-vg-oben"><span class="fw-marke-kapsel" id="fwVgTag"></span><span class="fw-mono" id="fwVgNr"></span>
-                <button type="button" class="fw-knopf-rund" onclick="fwVorgangZu()" aria-label="{% trans 'Schliessen' %}">{% zeichen 'schliessen' %}</button></div>
+                <button type="button" class="fw-knopf-rund" data-bei-klick="fwVorgangZu" aria-label="{% trans 'Schliessen' %}">{% zeichen 'schliessen' %}</button></div>
             <h3 id="fwVgTitel"></h3>
             <p id="fwVgObj"></p>
         </div>
@@ -398,7 +398,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
 // ─── Arbeitsvorrat: Auswahl, Schublade, Tastatur (konzept-v8) ───
 (function () {
     // Zeilen aus «Hängt» führen direkt zum Fall.
@@ -434,13 +434,13 @@
         if (fuss) while (fuss.firstChild) f.appendChild(fuss.firstChild);
         vorher = document.activeElement; offen = nr;
         vg.classList.add('offen'); vg.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
+        fwStil(document.body, {overflow: 'hidden'});
         setTimeout(function () { var h = f.querySelector('[data-hauptaktion]'); (h || vg.querySelector('.fw-knopf-rund')).focus(); }, 60);
     };
     window.fwVorgangZu = function () {
         if (!offen) return;
         offen = null; vg.classList.remove('offen'); vg.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        fwStil(document.body, {overflow: null});
         if (vorher && vorher.focus) vorher.focus();
     };
     liste.addEventListener('click', function (e) {

@@ -27,7 +27,7 @@
     <div class="fw-kopf"><h2>{% trans "Schlüssel je Kostenart" %}</h2></div>
     {% if standards %}
     <div class="fw-tablewrap"><table class="fw-table">
-        <thead><tr><th>{% trans "Kostenart" %}</th><th>{% trans "Verteilung" %}</th><th>{% trans "Gültig ab" %}</th><th>{% trans "Gültig bis" %}</th><th></th></tr></thead>
+        <thead><tr><th scope="col">{% trans "Kostenart" %}</th><th scope="col">{% trans "Verteilung" %}</th><th scope="col">{% trans "Gültig ab" %}</th><th scope="col">{% trans "Gültig bis" %}</th><th scope="col"></th></tr></thead>
         <tbody>
         {% for s in standards %}
         <tr>
@@ -37,7 +37,7 @@
             <td class="fw-num">{{ s.gueltig_bis|date:"d.m.Y"|default:"—" }}</td>
             <td class="text-right">
                 {% if kann_schreiben %}
-                <form method="post" class="inline" onsubmit="return confirm('{% filter escapejs %}{% trans "Diesen Schlüssel löschen?" %}{% endfilter %}')">
+                <form method="post" class="inline" data-bestaetigen="{% filter escapejs %}{% trans "Diesen Schlüssel löschen?" %}{% endfilter %}">
                     {% csrf_token %}<input type="hidden" name="aktion" value="loeschen"><input type="hidden" name="id" value="{{ s.id }}">
                     <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
                 </form>

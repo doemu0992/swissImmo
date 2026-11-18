@@ -65,7 +65,7 @@
                         </button>
                     </form>
                     <form method="post" action="/neu/bankabgleich/zahler/speichern/"
-                          onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=z.name_anzeige|default:z.name_norm %}«{{ name }}» vergessen? Künftige Zahlungen dieses Absenders landen wieder zur Prüfung im Bankabgleich.{% endblocktrans %}{% endfilter %}');">
+                          data-bestaetigen="{% filter escapejs %}{% blocktrans with name=z.name_anzeige|default:z.name_norm %}«{{ name }}» vergessen? Künftige Zahlungen dieses Absenders landen wieder zur Prüfung im Bankabgleich.{% endblocktrans %}{% endfilter %}">
                         {% csrf_token %}
                         <input type="hidden" name="id" value="{{ z.id }}">
                         <input type="hidden" name="aktion" value="loeschen">

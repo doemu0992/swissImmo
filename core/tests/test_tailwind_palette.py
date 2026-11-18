@@ -41,15 +41,18 @@ GEBAUT = pathlib.Path('static/css/tailwind.css')
 WURZEL = pathlib.Path('.')
 #: Die Klasse, an der abgelesen wird, ob die Rampe im Bau angekommen ist.
 #:
-#: Sie muss zwei Bedingungen erfuellen: aus der Indigo-Rampe stammen (nur
+#: Sie muss zwei Bedingungen erfuellen: aus einer umgebauten Rampe stammen (nur
 #: dann unterscheiden sich die zwei Bauten) UND von echtem Code benutzt
-#: werden (sonst baut Tailwind keine Regel dafuer). `text-indigo-600` steht
-#: in `crm/admin.py` und `rentals/admin.py`.
+#: werden (sonst baut Tailwind keine Regel dafuer). `text-slate-400` steht
+#: in mehreren Vorlagen. Bis zum 07.11.2026 war es `text-indigo-600` aus den
+#: Django-Admin-Klassen; mit der Admin entfiel der letzte echte Gebrauch einer
+#: Indigo-Klasse.
 #:
 #: Vorher stand hier `bg-indigo-600` — die gab es im ganzen Bestand nur als
 #: BEISPIEL in einem Waechter. Siehe
 #: `test_die_sonde_wird_von_echtem_code_am_leben_gehalten`.
-SONDE = 'text-indigo-600'
+SONDE = 'text-slate-400'
+SONDE_FAMILIE, SONDE_STUFE = 'slate', 400
 SONDE_HINWEIS = (f'Die Sonde ist `{SONDE}`; sie muss von echtem Code '
                  f'benutzt werden, sonst baut Tailwind sie nicht.')
 #: Jede Huelle der Anwendung. Sie muessen den Stilbaustein mit der
@@ -65,9 +68,9 @@ BAUSTEIN = "{% include 'fw/_assets.html' %}"
 #: Wo eine Tailwind-Stufe einen Konzept-Token trifft, muss derselbe Wert
 #: stehen. Das ist die eigentliche Bindung — alles andere ist Zwischenton.
 BINDUNGEN = (
-    ('indigo', 600, '--ds-brand'),
-    ('indigo', 700, '--ds-brand-600'),
-    ('indigo', 100, '--ds-brand-soft'),
+    ('marke', 600, '--ds-brand'),
+    ('marke', 700, '--ds-brand-600'),
+    ('marke', 100, '--ds-brand-soft'),
     ('slate', 200, '--ds-line'),
     ('slate', 500, '--ds-faint'),
     ('slate', 600, '--ds-muted'),
@@ -78,8 +81,8 @@ BINDUNGEN = (
     ('amber', 50, '--ds-warn-soft'),
     ('rose', 600, '--ds-crit'),
     ('rose', 50, '--ds-crit-soft'),
-    ('sky', 600, '--ds-info'),
-    ('sky', 50, '--ds-info-soft'),
+    ('petrol', 600, '--ds-info'),
+    ('petrol', 50, '--ds-info-soft'),
 )
 
 #: Familien, die im Bestand gleichbedeutend benutzt werden und deshalb
@@ -136,7 +139,7 @@ class TailwindPaletteTests(TestCase):
         Kennzahlen-Test von 4b.5: eine Bedingung, die immer erfüllt ist,
         weil sie ins Leere greift.
         """
-        self.assertIn('indigo', self.rampen)
+        self.assertIn('marke', self.rampen)
         self.assertIn('slate', self.rampen)
         self.assertGreaterEqual(len(self.rampen), 10,
                                 f'Nur {len(self.rampen)} Rampen gelesen — '
@@ -185,9 +188,9 @@ class TailwindPaletteTests(TestCase):
     def test_die_gebrauchten_textfarben_sind_lesbar(self):
         """Die Stufen, die im Bestand als Textfarbe auf Weiss stehen."""
         for familie, stufe in (('slate', 500), ('slate', 600), ('slate', 700),
-                               ('slate', 900), ('indigo', 600), ('indigo', 700),
+                               ('slate', 900), ('marke', 600), ('marke', 700),
                                ('emerald', 600), ('amber', 600), ('rose', 600),
-                               ('sky', 600)):
+                               ('petrol', 600)):
             with self.subTest(farbe=f'{familie}-{stufe}'):
                 r = kontrast(self.rampen[familie][stufe], '#ffffff')
                 self.assertGreaterEqual(
@@ -209,8 +212,8 @@ class TailwindPaletteTests(TestCase):
         self.assertGreater(r, g + 40, 'rose-600 ist nicht mehr rot.')
         r, g, b = ton(self.rampen['emerald'][600])
         self.assertGreater(g, r + 40, 'emerald-600 ist nicht mehr grün.')
-        r, g, b = ton(self.rampen['indigo'][600])
-        self.assertGreater(r, b + 40, 'indigo-600 ist nicht orange (Ember).')
+        r, g, b = ton(self.rampen['marke'][600])
+        self.assertGreater(r, b + 40, 'marke-600 ist nicht orange (Ember).')
 
     def test_das_favicon_ist_nicht_mehr_indigo(self):
         """Es trug `#4f46e5` — die alte Markenfarbe, im Browsertab sichtbar.
@@ -248,9 +251,9 @@ class TailwindPaletteTests(TestCase):
         durchzulaufen — `test_es_gibt_ueberhaupt_rampen` deckt das ab. Hier
         die andere Richtung: Der Leser muss echte Werte liefern.
         """
-        self.assertEqual(len(self.rampen['indigo']), 10)
+        self.assertEqual(len(self.rampen['marke']), 10)
         self.assertTrue(all(re.fullmatch(r'#[0-9a-f]{6}', w)
-                            for w in self.rampen['indigo'].values()))
+                            for w in self.rampen['marke'].values()))
 
 
 class HuellenTests(TestCase):
@@ -347,7 +350,7 @@ class HuellenTests(TestCase):
         Bau in Ordnung war. Die Meldung zeigte in die falsche Richtung, was
         schlimmer ist als gar keine.
 
-        Die Sonde ist jetzt `text-indigo-600`, und diese Prüfung hält fest,
+        Die Sonde ist jetzt `text-slate-400`, und diese Prüfung hält fest,
         WARUM sie existiert: weil echter Code sie benutzt. Verschwindet sie
         dort, meldet sich diese Prüfung — mit dem richtigen Grund.
         """
@@ -367,7 +370,7 @@ class HuellenTests(TestCase):
             f'`{SONDE}` steht in keiner Datei ausserhalb der Testsammlung. '
             f'Damit baut Tailwind keine Regel dafür, und die zwei Prüfungen '
             f'darunter melden «nicht gebaut», obwohl der Bau stimmt. Eine '
-            f'andere Klasse aus der Indigo-Rampe als SONDE wählen — eine, '
+            f'andere Klasse aus einer umgebauten Rampe als SONDE wählen — eine, '
             f'die echter Code benutzt.')
 
     def test_der_bau_traegt_die_rampe_auch_wirklich(self):
@@ -380,7 +383,7 @@ class HuellenTests(TestCase):
         und eine falsche Anwendung. Genau diese Luecke schliesst dieser Test.
         """
         css = GEBAUT.read_text(encoding='utf-8')
-        marke = rampen()['indigo'][600].lstrip('#')
+        marke = rampen()[SONDE_FAMILIE][SONDE_STUFE].lstrip('#')
         r, g, b = (int(marke[i:i + 2], 16) for i in (0, 2, 4))
         # `assertIn` mit der ganzen Datei als Heuhaufen wuerde im Fehlerfall
         # 67 KB CSS in den Bericht schreiben. Eine Fehlermeldung, die niemand

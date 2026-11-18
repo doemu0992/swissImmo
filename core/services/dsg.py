@@ -145,7 +145,11 @@ def _freitexte_anonymisieren(mieter, kennzeichen, pid):
                 q |= Q(**{f'{f}__icontains': k})
         return q
 
-    _felder_schwaerzen(AktivitaetsLog.objects.filter(_enthaelt('objekt', 'details')), ('objekt', 'details'), kennzeichen)
+    # Das Audit-Log ist nur anhängbar; das Schwärzen ist die benannte Ausnahme (DSG).
+    from finance.db_schutz import ausnahme
+    with ausnahme('DSG-Anonymisierung (Audit-Log schwärzen)'):
+        _felder_schwaerzen(AktivitaetsLog.objects.filter(_enthaelt('objekt', 'details')), ('objekt', 'details'),
+                           kennzeichen)
     _felder_schwaerzen(Archiveintrag.objects.filter(_enthaelt('bezeichnung', 'grund')), ('bezeichnung', 'grund'),
                        kennzeichen)
 
@@ -225,6 +229,7 @@ def anonymisiere_person(mieter, *, grund='', user=None):
     mieter.iban = ''; mieter.bank_name = ''; mieter.bonitaet_datum = None
     mieter.betreibung_ergebnis = ''
     mieter.zahlungsart = ''; mieter.ebill_email = ''; mieter.mahnsperre = False
+    mieter.weitere_absender = []
     mieter.zahler_name = ''; mieter.zahler_adresse = ''; mieter.zahler_iban = ''
     mieter.ref_vermieter_name = ''; mieter.ref_vermieter_telefon = ''; mieter.ref_vermieter_email = ''
     mieter.vertretung_art = ''; mieter.vertretung_name = ''; mieter.vertretung_kontakt = ''

@@ -24,12 +24,22 @@ Sicherungsdatei, die niemand je geöffnet hat, ist eine Hoffnung. SQLite-Stände
 werden mit `PRAGMA integrity_check` und einer Zeilenzählung geprüft,
 PostgreSQL-Stände mit `pg_restore --list`.
 
-Was dieser Befehl NICHT leistet: Die Stände liegen auf demselben Rechner. Das
-schützt gegen »versehentlich gelöscht« und gegen einen missratenen Deploy, aber
-nicht gegen den Verlust des Kontos oder der Maschine. Eine Kopie ausser Haus
-ist ein eigener Entscheid (externer Dienst, laufende Kosten) und bewusst nicht
-Teil dieses Befehls.
+**4. Eine verschlüsselte Kopie ausser Haus (Roadmap Nr. 12).** Mit `--offsite ORDNER`
+und der Passphrase in der Umgebung (`SICHERUNG_SCHLUESSEL`) wird jeder frische Stand
+AES-256-GCM-verschlüsselt in den Ordner gelegt (ein eingehängtes Laufwerk, ein
+rclone-/sshfs-Mount …), mit einer Prüfsummenliste. Die Kopie wird sofort wieder
+entschlüsselt und gegen die Prüfsumme gelesen. Aufbewahrung gestaffelt:
+täglich 14, monatlich 12, jährlich 10 (OR 958f: zehn Jahre).
+
+    python manage.py sicherung --offsite /mnt/ausser-haus
+    python manage.py sicherung --entschluesseln DATEI.enc --nach DATEI
+
+Was dieser Befehl NICHT leistet: Der Ordner hinter `--offsite` muss wirklich
+ausser Haus liegen — das kann der Befehl nicht prüfen. Die Passphrase gehört
+getrennt von den Sicherungen aufbewahrt (ohne sie ist die Kopie unlesbar).
 """
+import hashlib
+import json
 import os
 import shutil
 import sqlite3
@@ -42,6 +52,19 @@ from pathlib import Path
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
+
+from core.sicherung_krypto import (SicherungsFehler, entschluesseln, gfs_behalten, stempel_von,
+                                   verschluesseln)
+
+SCHLUESSEL_VARIABLE = 'SICHERUNG_SCHLUESSEL'
+
+
+def _sha256(pfad: Path) -> str:
+    h = hashlib.sha256()
+    with open(pfad, 'rb') as f:
+        for block in iter(lambda: f.read(1024 * 1024), b''):
+            h.update(block)
+    return h.hexdigest()
 
 
 def _lesbar(pfad: Path) -> str:
@@ -65,8 +88,28 @@ class Command(BaseCommand):
                             help='So viele Medien-Archive aufbewahren (Standard: 4). 0 = alle.')
         parser.add_argument('--ohne-medien', action='store_true',
                             help='Nur die Datenbank sichern.')
+        parser.add_argument('--offsite', metavar='ORDNER',
+                            help='Verschlüsselte Kopie ausser Haus (braucht %s).' % SCHLUESSEL_VARIABLE)
+        parser.add_argument('--offsite-taeglich', type=int, default=14, metavar='N')
+        parser.add_argument('--offsite-monate', type=int, default=12, metavar='N')
+        parser.add_argument('--offsite-jahre', type=int, default=10, metavar='N')
+        parser.add_argument('--entschluesseln', metavar='DATEI',
+                            help='Eine verschlüsselte Sicherung (.enc) entschlüsseln und prüfen.')
+        parser.add_argument('--nach', metavar='DATEI', help='Ausgabedatei für --entschluesseln.')
+
+    def _passphrase(self) -> str:
+        phrase = os.environ.get(SCHLUESSEL_VARIABLE, '')
+        if len(phrase) < 12:
+            raise CommandError(
+                f'{SCHLUESSEL_VARIABLE} fehlt oder ist zu kurz (mindestens 12 Zeichen). '
+                f'Ohne Passphrase wird nichts ausser Haus gelegt.')
+        return phrase
 
     def handle(self, *args, **optionen):
+        if optionen.get('entschluesseln'):
+            return self._entschluesseln(optionen['entschluesseln'], optionen.get('nach'))
+        if optionen.get('offsite'):
+            self._passphrase()      # früh scheitern, bevor irgendetwas erzeugt wird
         ziel = Path(optionen['ziel'] or (Path.home() / 'sicherungen'))
         ziel.mkdir(parents=True, exist_ok=True)
         stempel = datetime.now().strftime('%Y%m%d-%H%M%S')
@@ -96,7 +139,83 @@ class Command(BaseCommand):
         self._abraeumen(ziel, '-db.', optionen['behalten'], 'Datenbank')
         self._abraeumen(ziel, '-medien.', optionen['medien_behalten'], 'Medien')
 
+        if optionen.get('offsite'):
+            self._offsite(Path(optionen['offsite']), erzeugt, stempel, optionen)
+
         self.stdout.write(self.style.SUCCESS('✓ Sicherung erstellt und gelesen.'))
+
+    # --- Ausser Haus ---------------------------------------------------------
+
+    def _offsite(self, ort: Path, erzeugt, stempel, optionen):
+        """Verschlüsselt die frischen Stände nach `ort`, liest sie zurück und räumt gestaffelt ab."""
+        import tempfile
+        phrase = self._passphrase()
+        ort.mkdir(parents=True, exist_ok=True)
+        manifest = {'stempel': stempel, 'dateien': []}
+        for pfad in erzeugt:
+            ziel = ort / (pfad.name + '.enc')
+            klar_hash = _sha256(pfad)
+            groesse = verschluesseln(pfad, ziel, phrase)
+            # Zurückgelesen: Die Kopie gilt erst, wenn sie sich entschlüsseln lässt und der Prüfsumme entspricht.
+            with tempfile.TemporaryDirectory() as tmp:
+                probe = Path(tmp) / 'probe'
+                try:
+                    entschluesseln(ziel, probe, phrase)
+                except SicherungsFehler as exc:
+                    ziel.unlink(missing_ok=True)
+                    raise CommandError(f'Ausser-Haus-Kopie von {pfad.name} nicht lesbar: {exc}') from exc
+                if _sha256(probe) != klar_hash:
+                    ziel.unlink(missing_ok=True)
+                    raise CommandError(f'Ausser-Haus-Kopie von {pfad.name} weicht von der Sicherung ab — verworfen.')
+            manifest['dateien'].append({'name': pfad.name, 'bytes': groesse, 'sha256': klar_hash,
+                                        'verschluesselt': ziel.name, 'sha256_verschluesselt': _sha256(ziel)})
+            self.stdout.write(f'  → ausser Haus: {ziel.name}')
+        (ort / f'{stempel}-manifest.json').write_text(
+            json.dumps(manifest, indent=1, ensure_ascii=False), encoding='utf-8')
+        for kennung in ('-db.', '-medien.'):
+            self._abraeumen_gestaffelt(ort, kennung, optionen)
+        self._manifeste_abraeumen(ort)
+
+    def _abraeumen_gestaffelt(self, ort: Path, kennung: str, optionen):
+        dateien = [p for p in ort.iterdir() if p.is_file() and kennung in p.name and p.name.endswith('.enc')
+                   and stempel_von(p.name)]
+        behalten = gfs_behalten([stempel_von(p.name) for p in dateien], optionen['offsite_taeglich'],
+                                optionen['offsite_monate'], optionen['offsite_jahre'])
+        weg = [p for p in dateien if stempel_von(p.name) not in behalten]
+        for p in weg:
+            p.unlink()
+        if weg:
+            self.stdout.write(f'· Ausser Haus {kennung.strip("-.")}: {len(weg)} alte(r) Stand/Stände entfernt.')
+
+    def _manifeste_abraeumen(self, ort: Path):
+        """Prüfsummenlisten ohne zugehörige Dateien entfernen."""
+        stempel_da = {p.name[:15] for p in ort.iterdir() if p.name.endswith('.enc')}
+        for p in ort.glob('*-manifest.json'):
+            if p.name[:15] not in stempel_da:
+                p.unlink()
+
+    def _entschluesseln(self, quelle, nach):
+        quelle = Path(quelle)
+        if not quelle.is_file():
+            raise CommandError(f'Datei nicht gefunden: {quelle}')
+        if not nach:
+            raise CommandError('--nach DATEI fehlt (wohin soll entschlüsselt werden?).')
+        ausgabe = Path(nach)
+        if ausgabe.exists():
+            raise CommandError(f'{ausgabe} existiert schon — nichts überschrieben.')
+        try:
+            n = entschluesseln(quelle, ausgabe, self._passphrase())
+        except SicherungsFehler as exc:
+            raise CommandError(str(exc)) from exc
+        manifest = quelle.parent / f'{quelle.name[:15]}-manifest.json'
+        if manifest.is_file():
+            erwartet = {d['verschluesselt']: d['sha256']
+                        for d in json.loads(manifest.read_text(encoding='utf-8'))['dateien']}.get(quelle.name)
+            if erwartet and _sha256(ausgabe) != erwartet:
+                ausgabe.unlink(missing_ok=True)
+                raise CommandError('Prüfsumme stimmt nicht mit der Prüfsummenliste überein — verworfen.')
+            self.stdout.write('· Prüfsumme gegen die Liste geprüft.')
+        self.stdout.write(self.style.SUCCESS(f'✓ Entschlüsselt: {ausgabe} ({n} Byte).'))
 
     # --- SQLite ------------------------------------------------------------
 

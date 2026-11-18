@@ -118,7 +118,7 @@ JavaScript ergänzt nur die Knöpfe. Leiste, Schrittkopf und Fuss kommen aus fw-
 {{ vorlagen|json_script:"vnVorlagen" }}
 {{ katalog|json_script:"vnKatalogDaten" }}
 
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
     var wurzel = document.getElementById('vn');
     var liste = document.getElementById('vnListe');

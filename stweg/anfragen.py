@@ -10,7 +10,6 @@ from core.models import Pendenz
 from core.services.dokumentsprache import in_sprache
 from stweg.aufgaben import PREFIX, erledigen
 from stweg.models import StwegAnfrage
-from core.services.anrede import eigentuemer_gruss_html
 
 
 
@@ -65,13 +64,10 @@ def beantworten(anfrage, antwort, *, per_mail=True):
     gesendet = False
     eig = anfrage.eigentuemer
     if per_mail and eig is not None and eig.email:
-        from core.utils.email_service import send_via_hoststar
+        from core.utils.email_service import send_via_hoststar, stweg_mail_html
         from tickets.workflow import reply_to
-        html = ("<html><body style='font-family:Arial,sans-serif;line-height:1.5'>"
-                f"<p>{eigentuemer_gruss_html(eig)}</p>"
-                f"<p>zu Ihrer Anfrage «{anfrage.betreff}»:</p>"
-                f"<p style='white-space:pre-line'>{antwort}</p>"
-                f"<p>Freundliche Grüsse<br>{anfrage.liegenschaft.organisation.firma}</p></body></html>")
+        html = stweg_mail_html(eig, [f"zu Ihrer Anfrage «{anfrage.betreff}»:", (antwort, True)],
+                               anfrage.liegenschaft.organisation.firma)
         with in_sprache('de'):          # Auskunft der Verwaltung bleibt deutsch (D11, ungeprüft)
             gesendet = send_via_hoststar(eig.email, f'Ihre Anfrage: {anfrage.betreff}', html,
                                          reply_to=reply_to(anfrage))

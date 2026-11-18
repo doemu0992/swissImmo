@@ -60,6 +60,11 @@ class Command(BaseCommand):
             firma="E2E Verwaltung AG",
             defaults=dict(strasse="Teststrasse 1", plz="8000", ort="Zürich",
                           iban="CH9300762011623852957"))
+        # Die Hauptverwaltung der Browser-Tests steht auf «professional»: Dort sind Schnittstellen (Banana-Export,
+        # Feed, Kalender-Abo), Mandatsrentabilität und eigene Auswertungen offen, die die Tests bedienen. Die
+        # Sperren unterhalb prüft `seed_e2e_abo` mit eigenen Verwaltungen auf «start».
+        org.abo_plan = 'professional'
+        org.save(update_fields=['abo_plan'])
 
         # --- ab hier: alles gehört diesem Mandanten ---
         with organisation_kontext(org):

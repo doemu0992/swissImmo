@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n rechte %}
 {% load betreuung %}
 {% load chf %}
 {% load rechte %}
@@ -62,7 +62,7 @@ alten Liegenschaft betreut.
                 <div id="pAktionen" data-menu-list role="menu" class="hidden absolute right-0 mt-1.5 w-64 fw-card fw-nomb py-1.5 z-30">
                     {% if not m.anonymisiert %}
                     <form method="post" action="/neu/personen/{{ m.id }}/dsg-loeschen/"
-                          onsubmit="return confirm('DSG-Löschung: Die Personendaten von „{{ m.display_name|escapejs }}“ werden anonymisiert und Bewerber-Dokumente gelöscht. Buchungsbelege bleiben aus Aufbewahrungsgründen (10 Jahre, OR 958f) erhalten. Fortfahren?');">
+                          data-bestaetigen="DSG-Löschung: Die Personendaten von „{{ m.display_name|escapejs }}“ werden anonymisiert und Bewerber-Dokumente gelöscht. Buchungsbelege bleiben aus Aufbewahrungsgründen (10 Jahre, OR 958f) erhalten. Fortfahren?">
                         {% csrf_token %}
                         <button class="fw-menuzeile warn">{% zeichen 'gesperrt' klasse='w-4' %}DSG-Löschung (anonymisieren)</button>
                     </form>
@@ -74,7 +74,7 @@ alten Liegenschaft betreut.
                     </form>
                     {% include 'fw/_archivieren.html' with kuerzel='person' pk=m.id stil='menu' %}
                     <form method="post" action="/neu/personen/{{ m.id }}/loeschen/"
-                          onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=m.display_name %}Person „{{ name }}“ wirklich löschen? Hängen Verträge, Rechnungen oder Dokumente an ihr, wird das Löschen abgelehnt. Journal und Adressen werden mitgelöscht.{% endblocktrans %}{% endfilter %}');">
+                          data-bestaetigen="{% filter escapejs %}{% blocktrans with name=m.display_name %}Person „{{ name }}“ wirklich löschen? Hängen Verträge, Rechnungen oder Dokumente an ihr, wird das Löschen abgelehnt. Journal und Adressen werden mitgelöscht.{% endblocktrans %}{% endfilter %}">
                         {% csrf_token %}
                         <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}{% trans "Person löschen" %}</button>
                     </form>
@@ -130,7 +130,7 @@ alten Liegenschaft betreut.
         <div class="fw-fuss"><span>DSG-konform</span>
             {% if m.anonymisiert %}<span>{% trans "anonymisiert" %}</span>{% else %}
             <form method="post" action="/neu/personen/{{ m.id }}/dsg-loeschen/" class="inline"
-                  onsubmit="return confirm('DSG-Löschung: Die Personendaten von „{{ m.display_name|escapejs }}“ werden anonymisiert und Bewerber-Dokumente gelöscht. Buchungsbelege bleiben aus Aufbewahrungsgründen (10 Jahre, OR 958f) erhalten. Fortfahren?');">
+                  data-bestaetigen="DSG-Löschung: Die Personendaten von „{{ m.display_name|escapejs }}“ werden anonymisiert und Bewerber-Dokumente gelöscht. Buchungsbelege bleiben aus Aufbewahrungsgründen (10 Jahre, OR 958f) erhalten. Fortfahren?">
                 {% csrf_token %}
                 <button type="submit" class="fw-link">{% trans "Löschbegehren" %}</button>
             </form>{% endif %}</div>
@@ -143,6 +143,10 @@ alten Liegenschaft betreut.
             <div class="fw-kopf"><span class="fw-t">{% trans "Kontakt" %}</span></div>
             <div>
                 {% if m.email %}<div class="fw-dz"><div class="fw-dl">{% trans "E-Mail" %}</div><div class="fw-dv">{{ m.email }}</div></div>{% endif %}
+                {% for adresse in m.weitere_absender %}
+                <div class="fw-dz" data-testid="weitere-absender"><div class="fw-dl">{% trans "Weitere Absenderadresse" %}</div><div class="fw-dv">{{ adresse }}
+                    {% if request.user|darf:absender_entfernen_url %}<form method="post" action="{{ absender_entfernen_url }}" class="inline">{% csrf_token %}<input type="hidden" name="adresse" value="{{ adresse }}"><button type="submit" class="fw-link ml-2">{% trans "entfernen" %}</button></form>{% endif %}</div></div>
+                {% endfor %}
                 {% if telefon %}<div class="fw-dz"><div class="fw-dl">{% trans "Telefon" %}</div><div class="fw-dv">{{ telefon }}</div></div>{% endif %}
                 {% if m.strasse %}<div class="fw-dz"><div class="fw-dl">{% trans "Adresse" %}</div><div class="fw-dv">{{ m.strasse }}, {{ m.plz }} {{ m.ort }}</div></div>{% endif %}
                 {% if m.mobile %}<div class="fw-dz"><div class="fw-dl">{% trans "Mobile" %}</div><div class="fw-dv">{{ m.mobile }}</div></div>{% endif %}
@@ -274,7 +278,7 @@ alten Liegenschaft betreut.
                 </div>
             </details>
             <div class="fw-tablewrap"><table class="fw-table">
-                <thead><tr><th>{% trans "Art" %}</th><th>{% trans "Gültig ab" %}</th><th>{% trans "Adresse" %}</th><th>{% trans "Quelle" %}</th><th></th></tr></thead>
+                <thead><tr><th scope="col">{% trans "Art" %}</th><th scope="col">{% trans "Gültig ab" %}</th><th scope="col">{% trans "Adresse" %}</th><th scope="col">{% trans "Quelle" %}</th><th scope="col"></th></tr></thead>
                 <tbody>
                 {% for a in adress_verlauf %}
                 <tr>
@@ -284,7 +288,7 @@ alten Liegenschaft betreut.
                     <td>{{ a.einzeiler }}{% if a.notiz %}<span class="fw-klein"> · {{ a.notiz }}</span>{% endif %}</td>
                     <td class="fw-klein">{{ a.quelle }}</td>
                     <td class="fw-right">
-                        <form method="post" action="/neu/adresse/{{ a.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Adress-Zeile entfernen?" %}{% endfilter %}');">{% csrf_token %}
+                        <form method="post" action="/neu/adresse/{{ a.id }}/loeschen/" data-bestaetigen="{% filter escapejs %}{% trans "Diese Adress-Zeile entfernen?" %}{% endfilter %}">{% csrf_token %}
                             <button title="{% trans 'Adresszeile löschen' %}" class="fw-ikon mut gefahr">{% zeichen 'loeschen' klasse='text-xs' %}</button>
                         </form>
                     </td>
@@ -307,11 +311,11 @@ alten Liegenschaft betreut.
                         Passwort und sendet es an {{ email }}.{% endblocktrans %}{% else %}{% blocktrans trimmed %}Login unter <span class="font-mono">/login/</span>. „Passwort zurücksetzen“ erzeugt ein neues
                         Passwort und sendet es — keine E-Mail hinterlegt, es wird angezeigt.{% endblocktrans %}{% endif %}</small></div></div>
                 <div class="fw-fuss">
-                    <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" onsubmit="return confirm('{% filter escapejs %}{% if m.email %}{% trans "Neues Passwort erzeugen und an den Mieter senden? Das alte wird ungültig." %}{% else %}{% trans "Neues Passwort erzeugen und anzeigen? Das alte wird ungültig." %}{% endif %}{% endfilter %}');">{% csrf_token %}
+                    <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" data-bestaetigen="{% filter escapejs %}{% if m.email %}{% trans "Neues Passwort erzeugen und an den Mieter senden? Das alte wird ungültig." %}{% else %}{% trans "Neues Passwort erzeugen und anzeigen? Das alte wird ungültig." %}{% endif %}{% endfilter %}">{% csrf_token %}
                         <input type="hidden" name="aktion" value="erstellen">
                         <button class="fw-btn">{% trans "Passwort zurücksetzen &amp; senden" %}</button>
                     </form>
-                    <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" onsubmit="return confirm('{% filter escapejs %}{% trans "Portal-Zugang deaktivieren?" %}{% endfilter %}');">{% csrf_token %}
+                    <form method="post" action="/neu/personen/{{ m.id }}/portal-zugang/" data-bestaetigen="{% filter escapejs %}{% trans "Portal-Zugang deaktivieren?" %}{% endfilter %}">{% csrf_token %}
                         <input type="hidden" name="aktion" value="entfernen">
                         <button class="fw-btn">{% trans "Zugang deaktivieren" %}</button>
                     </form>
@@ -366,13 +370,13 @@ alten Liegenschaft betreut.
         <div class="fw-kopf"><span class="fw-t">{% trans "Mietverhältnisse im Einzelnen" %}</span></div>
         <div class="fw-tablewrap"><table class="fw-table">
             <thead><tr>
-                <th>{% trans "Objekt" %}</th><th>{% trans "Von" %}</th><th>{% trans "Bis" %}</th>
-                <th class="fw-right">{% trans "Brutto" %}</th><th>{% trans "Status" %}</th><th></th>
+                <th scope="col">{% trans "Objekt" %}</th><th scope="col">{% trans "Von" %}</th><th scope="col">{% trans "Bis" %}</th>
+                <th scope="col" class="fw-right">{% trans "Brutto" %}</th><th scope="col">{% trans "Status" %}</th><th scope="col"></th>
             </tr></thead>
             <tbody>
             {% for row in vertrag_rows %}
-            <tr class="cursor-pointer" onclick="window.location='/neu/vertraege/{{ row.v.id }}/'">
-                <td><a href="/neu/vertraege/{{ row.v.id }}/" class="fw-strong" onclick="event.stopPropagation()">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</a></td>
+            <tr class="cursor-pointer" data-gehe-zu="/neu/vertraege/{{ row.v.id }}/">
+                <td><a href="/neu/vertraege/{{ row.v.id }}/" class="fw-strong" data-stop>{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</a></td>
                 <td class="fw-num">{{ row.v.beginn|date:"d.m.Y" }}</td>
                 <td class="fw-num">{% if row.v.ende %}{{ row.v.ende|date:"d.m.Y" }}{% else %}—{% endif %}</td>
                 <td class="fw-right"><span class="fw-betrag">CHF {{ row.brutto|chf }}</span></td>
@@ -428,7 +432,7 @@ alten Liegenschaft betreut.
                 <a href="/neu/personen/{{ m.id }}/kontoauszug/" target="_blank" rel="noopener" class="fw-btn">{% zeichen 'drucken' %} PDF</a>
             </span></div>
         <div class="fw-tablewrap"><table class="fw-table">
-            <thead><tr><th>{% trans "Fällig" %}</th><th>{% trans "Titel" %}</th><th class="fw-right">{% trans "Offen" %}</th></tr></thead>
+            <thead><tr><th scope="col">{% trans "Fällig" %}</th><th scope="col">{% trans "Titel" %}</th><th scope="col" class="fw-right">{% trans "Offen" %}</th></tr></thead>
             <tbody>
             {% for r in offene %}
             <tr><td class="fw-num">{{ r.faellig_am|date:"d.m.Y"|default:"—" }}</td>
@@ -482,8 +486,8 @@ alten Liegenschaft betreut.
             <span class="fw-t">{{ g.label }}</span>
             <span class="fw-chip fw-mut">{% blocktrans count n=g.dokumente|length %}{{ n }} Dokument{% plural %}{{ n }} Dokumente{% endblocktrans %}</span>
             <span class="fw-rechts">
-            {% if g.vertrag %}<a href="/neu/vertraege/{{ g.vertrag.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Vertrag" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a>
-            {% elif g.einheit %}<a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" onclick="event.stopPropagation()">{% trans "Objekt" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a>{% endif %}
+            {% if g.vertrag %}<a href="/neu/vertraege/{{ g.vertrag.id }}/" class="fw-link" data-stop>{% trans "Vertrag" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a>
+            {% elif g.einheit %}<a href="/neu/objekte/{{ g.einheit.id }}/" class="fw-link" data-stop>{% trans "Objekt" %} {% zeichen 'weiter' klasse='fw-fs-mikro' %}</a>{% endif %}
             </span>
         </summary>
         {% for d in g.dokumente %}
@@ -550,7 +554,7 @@ alten Liegenschaft betreut.
                 <div class="fw-t">{% if k.betreff %}{{ k.betreff }} · {% endif %}{{ k.inhalt }}</div>
                 <div class="fw-s">{{ k.get_typ_display }} · {{ k.get_richtung_display }} · {{ k.zeitpunkt|date:"d.m.Y H:i" }}{% if k.erstellt_von %} · {{ k.erstellt_von.username }}{% endif %}</div>
             </div>
-            <form method="post" action="/neu/kommunikation/{{ k.id }}/loeschen/" class="shrink-0" onsubmit="return confirm('{% filter escapejs %}{% trans "Journal-Eintrag löschen?" %}{% endfilter %}');">{% csrf_token %}
+            <form method="post" action="/neu/kommunikation/{{ k.id }}/loeschen/" class="shrink-0" data-bestaetigen="{% filter escapejs %}{% trans "Journal-Eintrag löschen?" %}{% endfilter %}">{% csrf_token %}
                 <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' klasse='text-xs' %}</button>
             </form>
         </div>

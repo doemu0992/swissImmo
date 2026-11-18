@@ -1,0 +1,60 @@
+{% extends 'core/betreiber_base.html' %}
+{% load zeichen i18n %}
+{% comment %}
+BETREIBER — Kundenliste (nur lesend). Siehe core/views/fw/betreiber.py: nur Zähler und Abo-Daten, keine Mieterdaten.
+{% endcomment %}
+{% block title %}{% trans "Kunden" %} — immoswiss{% endblock %}
+{% block content %}
+<nav class="fw-brotkrume mb-2.5">
+    <b>{% trans "Kunden" %}</b>
+</nav>
+
+<div class="fw-phead">
+    <div>
+        <h1>{% trans "Kunden" %}</h1>
+        <p>{% trans "Alle Verwaltungen dieser Installation mit Stufe, Nutzung und dem, was noch fehlt. Nur für den Betreiber; es werden keine Verträge, Personen oder Buchungen gezeigt." %}</p>
+    </div>
+    <div class="fw-phead-knoepfe"><a href="/betreiber/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Kunde anlegen" %}</a></div>
+</div>
+
+{% for aufgabe in pflege %}
+<div class="fw-hinweis warn max-w-3xl"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">{{ aufgabe }}</div></div>
+{% endfor %}
+
+{% if mit_befund %}
+<div class="fw-hinweis warn max-w-3xl"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">{% blocktrans count n=mit_befund %}Bei {{ n }} Verwaltung gibt es etwas zu prüfen.{% plural %}Bei {{ n }} Verwaltungen gibt es etwas zu prüfen.{% endblocktrans %}</div></div>
+{% endif %}
+
+<div class="fw-card">
+    <div class="overflow-x-auto">
+    <table class="fw-table">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Verwaltung" %}</th>
+                <th scope="col">{% trans "Ansprechperson" %}</th>
+                <th scope="col">{% trans "Stufe" %}</th>
+                <th scope="col">{% trans "Abonnement" %}</th>
+                <th scope="col" class="fw-right">{% trans "Einheiten" %}</th>
+                <th scope="col" class="fw-right">{% trans "Nutzer" %}</th>
+                <th scope="col">{% trans "Befund" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for k in kunden %}
+            <tr>
+                <td class="fw-strong"><a href="/betreiber/{{ k.organisation.pk }}/" class="fw-link">{{ k.organisation.firma }}</a><br><small class="fw-faint">{{ k.kundennummer }}{% if k.status_text %} · {{ k.status_text }}{% endif %}</small></td>
+                <td>{{ k.ansprechperson }}{% if k.telefon %}<br><small class="fw-faint">{{ k.telefon }}</small>{% endif %}</td>
+                <td>{{ k.stufe }}</td>
+                <td>{{ k.abo_text }}{% if k.abo.abrechnung_ab %}<br><small class="fw-faint">{% trans "Abrechnung ab" %} {{ k.abo.abrechnung_ab|date:"d.m.Y" }}</small>{% endif %}</td>
+                <td class="fw-right">{{ k.einheiten }}</td>
+                <td class="fw-right">{{ k.nutzer }}</td>
+                <td>{% if k.befunde %}<ul>{% for b in k.befunde %}<li>{{ b }}</li>{% endfor %}</ul>{% else %}<span class="fw-faint">{% trans "in Ordnung" %}</span>{% endif %}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="7" class="fw-faint">{% trans "Noch keine Verwaltung angelegt." %}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endblock %}

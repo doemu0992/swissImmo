@@ -26,6 +26,9 @@ VORLAGEN = pathlib.Path(settings.BASE_DIR) / 'core' / 'templates'
 
 
 def _quelle(name):
+    if name == 'fw/base.html':                      # die Hülle samt ihrer ausgelagerten Skripte
+        from ._rahmen import basis_mit_skripten
+        return basis_mit_skripten()
     return (VORLAGEN / name).read_text(encoding='utf-8')
 
 
@@ -42,7 +45,7 @@ HUELLE = {
         'function fwSetTheme(', 'function fwSyncThemeButtons(',
     ],
     'Ereignisse und Mechanik': [
-        "e.key === 'Escape'", "button[onclick=\"fwProfilMenu()\"]",
+        "e.key === 'Escape'", "button[data-bei-klick=\"fwProfilMenu\"]",
         "get('tab')", "addEventListener('submit'", "data-no-guard", "form.target === '_blank'",
         "'#z-laedt'", "'fw-dreht'", "[data-suche]", "[data-zeile]", "[data-menu-btn]",
         "[data-menu-list]", "addEventListener('fw:content'", "nodeName !== 'BR'",
@@ -67,7 +70,7 @@ HUELLE = {
     ],
     'Verweise': [
         '/neu/einstellungen/{{ lg_query }}', '/neu/dokumente/{{ lg_query }}',
-        '/neu/kommunikation/{{ lg_query }}', 'href="/logout/"', '{{ g.ziel }}{{ lg_query }}',
+        '/neu/kommunikation/{{ lg_query }}', 'action="/logout/"', '{{ g.ziel }}{{ lg_query }}',
         '{{ it.ziel }}{{ lg_query }}',
     ],
     'Kontextwerte': [
@@ -114,7 +117,7 @@ STARTSEITE = [
     'lg_streifen', 'delta_einheit', 'fw-trend', 'ansichten', 'f_query',
     'av_band', 'av_band_gesamt', 'f_query_ohne_fallart', 'fallart=', 'faelle', 'tage_ohne_bewegung',
     'vorrat', 'e.dringlichkeit', 'e.marke', 'e.nummer', 'e.fortschritt', 'e.schritt', 'e.wer',
-    'e.wofuer', 'e.tage', 'e.ziel', 'e.modal', 'e.knopf', 'fwModalOpen(this',
+    'e.wofuer', 'e.tage', 'e.ziel', 'e.modal', 'e.knopf', 'data-modal',
     "{% include 'fw/_arbeitsvorrat_abschnitte.html'", 'av_eingaenge', 'av_eingaenge_gesamt',
     'z.sicher', 'z.fallart', 'inbox', 'inbox_mehr', 'e.chip_cls', 'e.cta', 'e.wide',
     '/neu/pendenzen/{{ lg_query }}', 'lg_mandate', 'm.belegung', 'lg_abweichungen',

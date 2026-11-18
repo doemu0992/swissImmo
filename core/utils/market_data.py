@@ -147,6 +147,16 @@ def fetch_market_rates():
     except Exception as e:
         errors.append(f"HEV Verbindungsfehler: {e}")
 
+    # Spur je Dienst: Ein Ausfall soll auf der Betreiber-Startseite stehen, nicht nur im Rückgabetext.
+    from core.services import abruf_status
+    for schluessel, name in (('ref_zins', 'referenzzins'), ('lik', 'lik')):
+        if name == 'lik':
+            continue        # der LIK wird in `core.services.lik` protokolliert (eigener Abruf mit Cache)
+        if schluessel in results:
+            abruf_status.melde_erfolg(name)
+        else:
+            abruf_status.melde_fehler(name, next((e for e in errors if 'BWO' in e), 'Referenzzinssatz nicht gelesen')[:250])
+
     return results, errors
 
 def update_verwaltung_rates(organisation=None, *, alle=False):

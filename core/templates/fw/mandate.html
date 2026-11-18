@@ -17,9 +17,9 @@
     <div class="fw-tablewrap">
 <table class="fw-table">
         <thead>
-            <tr><th>{% trans "Eigentümer" %}</th><th>{% trans "Kontakt" %}</th>
-                <th>{% trans "Ort" %}</th><th class="fw-right">{% trans "Liegensch." %}</th>
-                <th class="fw-right">{% trans "Aktionen" %}</th></tr>
+            <tr><th scope="col">{% trans "Eigentümer" %}</th><th scope="col">{% trans "Kontakt" %}</th>
+                <th scope="col">{% trans "Ort" %}</th><th scope="col" class="fw-right">{% trans "Liegensch." %}</th>
+                <th scope="col" class="fw-right">{% trans "Aktionen" %}</th></tr>
         </thead>
         <tbody>
             {% for row in rows %}
@@ -39,9 +39,9 @@
                     {% if kann_schreiben %}<a href="/neu/mandate/{{ row.md.id }}/bearbeiten/" class="fw-link whitespace-nowrap">{% trans "Bearbeiten" %}</a>{% endif %}
                     {% include 'fw/_archivieren.html' with kuerzel='mandat' pk=row.md.id %}
                     {% if ist_verwaltung %}<form method="post" action="/neu/mandate/{{ row.md.id }}/loeschen/" class="inline"
-                          onsubmit="return confirm('{% filter escapejs %}{% blocktrans with name=row.md.firma_oder_name|safe %}Eigentümer «{{ name }}» löschen?{% endblocktrans %}{% if row.anzahl_lg %}
+                          data-bestaetigen="{% filter escapejs %}{% blocktrans with name=row.md.firma_oder_name|safe %}Eigentümer «{{ name }}» löschen?{% endblocktrans %}{% if row.anzahl_lg %}
 
-{% blocktrans count n=row.anzahl_lg %}Achtung: {{ n }} Liegenschaft zugeordnet — Löschen wird blockiert, bitte zuerst Zuordnung entfernen.{% plural %}Achtung: {{ n }} Liegenschaften zugeordnet — Löschen wird blockiert, bitte zuerst Zuordnung entfernen.{% endblocktrans %}{% endif %}{% endfilter %}');">
+{% blocktrans count n=row.anzahl_lg %}Achtung: {{ n }} Liegenschaft zugeordnet — Löschen wird blockiert, bitte zuerst Zuordnung entfernen.{% plural %}Achtung: {{ n }} Liegenschaften zugeordnet — Löschen wird blockiert, bitte zuerst Zuordnung entfernen.{% endblocktrans %}{% endif %}{% endfilter %}">
                         {% csrf_token %}
                         <button class="fw-btn fw-knapp fw-rand-krit">{% zeichen 'loeschen' klasse='fw-fs-mikro' %}{% trans "Löschen" %}</button>
                     </form>{% endif %}</span>

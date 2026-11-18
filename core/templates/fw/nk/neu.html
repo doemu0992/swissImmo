@@ -52,7 +52,7 @@ Assistenten: dieselbe Leiste mit sechs Schritten wie in der Periode, Schritt 1 a
 {% block fuss_haupt %}<button form="nk-neu" class="fw-btn fw-primary">{% zeichen 'gut' %}{% trans "Periode anlegen" %}</button>{% endblock %}
 
 {% block nach_assistent %}
-<script>
+<script nonce="{{ csp_nonce }}">
 // Schnellwahl der üblichen Zeiträume + Bezeichnung aus dem Zeitraum
 (function () {
     var von = document.getElementById('nk-von'), bis = document.getElementById('nk-bis'), bez = document.getElementById('nk-bez');

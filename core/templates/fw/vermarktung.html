@@ -62,11 +62,11 @@
         <div class="mt-3">
             <label for="bwlink{{ r.e.id }}" class="fw-label mb-1">{% trans "Bewerbungslink" %}</label>
             <div class="flex items-center gap-2">
-                <input id="bwlink{{ r.e.id }}" readonly value="{{ r.bewerbungslink }}" onclick="this.select()"
+                <input id="bwlink{{ r.e.id }}" readonly value="{{ r.bewerbungslink }}" data-auswaehlen
                        class="fw-feld flex-1 min-w-0 font-mono">
                 <button type="button" class="fw-btn fw-knapp shrink-0"
                         data-kopiert="{% trans 'Kopiert' %}"
-                        onclick="var b=this;navigator.clipboard.writeText(document.getElementById('bwlink{{ r.e.id }}').value).then(function(){var t=b.innerHTML;b.textContent=b.dataset.kopiert;setTimeout(function(){b.innerHTML=t;},1500);});">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Kopieren" %}</button>
+                        data-kopieren="bwlink{{ r.e.id }}">{% zeichen 'dokument' klasse='mr-1' %}{% trans "Kopieren" %}</button>
             </div>
             <details class="mt-2">
                 <summary class="fw-link cursor-pointer">{% trans "QR-Code anzeigen" %}</summary>

@@ -67,13 +67,13 @@
         <table class="fw-table" data-spaltenfilter>
             <thead>
             <tr>
-                <th>{% trans "Stufe" %}</th>
-                <th>{% trans "Mieter" %}</th>
-                <th>{% trans "Objekt" %}</th>
-                <th>{% trans "Fällig seit" %}</th>
-                <th class="fw-zentriert">{% trans "Tage" %}</th>
-                <th class="fw-right">{% trans "Offen" %}</th>
-                <th class="fw-right">{% trans "Aktion" %}</th>
+                <th scope="col">{% trans "Stufe" %}</th>
+                <th scope="col">{% trans "Mieter" %}</th>
+                <th scope="col">{% trans "Objekt" %}</th>
+                <th scope="col">{% trans "Fällig seit" %}</th>
+                <th scope="col" class="fw-zentriert">{% trans "Tage" %}</th>
+                <th scope="col" class="fw-right">{% trans "Offen" %}</th>
+                <th scope="col" class="fw-right">{% trans "Aktion" %}</th>
             </tr>
             </thead>
             <tbody>
@@ -130,7 +130,7 @@
                        Die Rückfrage sagt das, bevor etwas versandt wird. {% endcomment %}
                     {% if row.hat_email and request.user|darf:"/vertrag/1/mahnung/mail/" %}
                     <form method="post" action="/vertrag/{{ row.vertrag_id }}/mahnung/mail/" class="inline"
-                          onsubmit="return confirm('{% filter escapejs %}{% trans "Eine Kopie dieser Mahnung per E-Mail an den Mieter senden? Rechtsgültig ist nur die schriftliche Zustellung per Post (Art. 257d OR) — die E-Mail ersetzt den Brief nicht." %}{% endfilter %}')">
+                          data-bestaetigen="{% filter escapejs %}{% trans "Eine Kopie dieser Mahnung per E-Mail an den Mieter senden? Rechtsgültig ist nur die schriftliche Zustellung per Post (Art. 257d OR) — die E-Mail ersetzt den Brief nicht." %}{% endfilter %}">
                         {% csrf_token %}
                         <input type="hidden" name="rechnung" value="{{ row.r.id }}">
                         <input type="hidden" name="stufe" value="{{ row.stufe.stufe }}">
@@ -186,12 +186,12 @@
     <div class="fw-tablewrap">
         <table class="fw-table">
             <thead><tr>
-                <th>{% trans "Datum" %}</th>
-                <th>{% trans "Stufe" %}</th>
-                <th>{% trans "Mieter" %}</th>
-                <th>{% trans "Rechnung" %}</th>
-                <th class="fw-right">{% trans "Offen" %}</th>
-                <th class="fw-right">{% trans "Gebühr" %}</th>
+                <th scope="col">{% trans "Datum" %}</th>
+                <th scope="col">{% trans "Stufe" %}</th>
+                <th scope="col">{% trans "Mieter" %}</th>
+                <th scope="col">{% trans "Rechnung" %}</th>
+                <th scope="col" class="fw-right">{% trans "Offen" %}</th>
+                <th scope="col" class="fw-right">{% trans "Gebühr" %}</th>
             </tr></thead>
             <tbody>
             {% for h in historie %}
@@ -216,8 +216,8 @@
     <div class="fw-tablewrap">
         <table class="fw-table">
             <thead><tr>
-                <th>{% trans "Mieter" %}</th><th>{% trans "Forderung" %}</th><th>{% trans "Fällig am" %}</th>
-                <th class="fw-right">{% trans "Offen" %}</th><th>{% trans "Grund" %}</th>
+                <th scope="col">{% trans "Mieter" %}</th><th scope="col">{% trans "Forderung" %}</th><th scope="col">{% trans "Fällig am" %}</th>
+                <th scope="col" class="fw-right">{% trans "Offen" %}</th><th scope="col">{% trans "Grund" %}</th>
             </tr></thead>
             <tbody>
             {% for z in ohne_mahnfall %}
@@ -243,10 +243,10 @@
     <div class="fw-tablewrap">
         <table class="fw-table">
             <thead><tr>
-                <th>{% trans "Mieter" %}</th><th>{% trans "Objekt" %}</th><th>{% trans "Forderung" %}</th>
-                <th>{% trans "Fällig am" %}</th><th class="fw-zentriert">{% trans "Tage" %}</th>
-                <th class="fw-right">{% trans "Offen" %}</th><th>{% trans "Nächste Stufe" %}</th>
-                <th class="fw-right">{% trans "Aktion" %}</th>
+                <th scope="col">{% trans "Mieter" %}</th><th scope="col">{% trans "Objekt" %}</th><th scope="col">{% trans "Forderung" %}</th>
+                <th scope="col">{% trans "Fällig am" %}</th><th scope="col" class="fw-zentriert">{% trans "Tage" %}</th>
+                <th scope="col" class="fw-right">{% trans "Offen" %}</th><th scope="col">{% trans "Nächste Stufe" %}</th>
+                <th scope="col" class="fw-right">{% trans "Aktion" %}</th>
             </tr></thead>
             <tbody>
             {% for v in vorlauf %}
@@ -260,7 +260,7 @@
                 <td>{{ v.naechste.label }} <span class="fw-klein">({% blocktrans with n=v.naechste.ab_tage %}ab {{ n }} Tagen{% endblocktrans %})</span></td>
                 <td class="fw-right">
                     <form method="post" action="/neu/mahnwesen/erfassen/" class="inline"
-                          onsubmit="return confirm('{% filter escapejs %}{% trans "Diese Forderung jetzt mahnen? Die Mahnung wird erfasst, die Mahngebühr der Stufe wird gestellt." %}{% endfilter %}');">
+                          data-bestaetigen="{% filter escapejs %}{% trans "Diese Forderung jetzt mahnen? Die Mahnung wird erfasst, die Mahngebühr der Stufe wird gestellt." %}{% endfilter %}">
                         {% csrf_token %}
                         <input type="hidden" name="rechnung_id" value="{{ v.r.id }}">
                         <input type="hidden" name="stufe" value="{{ v.naechste.stufe }}">
@@ -290,8 +290,8 @@
     <a href="/neu/mahnwesen/trockenlauf/{% if aktive_lg %}?lg={{ aktive_lg.id }}{% endif %}" class="fw-btn">{% zeichen 'suchen' %}{% trans "Trockenlauf ansehen" %}</a>
     <a href="/neu/mahnwesen/trockenlauf/?erzwingen=1{% if aktive_lg %}&lg={{ aktive_lg.id }}{% endif %}" class="fw-btn">{% zeichen 'suchen' %}{% trans "Erzwungenen Lauf ansehen" %}</a>
     <button type="submit" name="erzwingen" value="1" class="fw-btn"
-            onclick="return confirm('{% filter escapejs %}{% trans "Mahnlauf ERZWINGEN? Jede Forderung im Verzug bekommt jetzt die nächste Mahnstufe — auch wenn deren Frist noch nicht erreicht ist. Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt." %}{% endfilter %}');">{% zeichen 'kritisch' %}{% trans "Mahnlauf erzwingen" %}</button>
+            data-bestaetigen="{% filter escapejs %}{% trans "Mahnlauf ERZWINGEN? Jede Forderung im Verzug bekommt jetzt die nächste Mahnstufe — auch wenn deren Frist noch nicht erreicht ist. Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt." %}{% endfilter %}">{% zeichen 'kritisch' %}{% trans "Mahnlauf erzwingen" %}</button>
     <button type="submit" class="fw-btn fw-primary"
-            onclick="return confirm('{% filter escapejs %}{% trans "Mahnlauf über alle fälligen Forderungen ausführen? Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt." %}{% endfilter %}');">{% zeichen 'kritisch' %}{% trans "Mahnlauf ausführen" %}</button>
+            data-bestaetigen="{% filter escapejs %}{% trans "Mahnlauf über alle fälligen Forderungen ausführen? Es werden Mahnungen erstellt und Zahlungserinnerungen per E-Mail versandt." %}{% endfilter %}">{% zeichen 'kritisch' %}{% trans "Mahnlauf ausführen" %}</button>
 </form>{% endif %}
 {% endblock %}

@@ -1,5 +1,5 @@
 """Testmodul oberflaeche — aus core/tests.py herausgeloest (Etappe 1,
-siehe docs/ETAPPE-1-ZERLEGEN.md). 13 Klassen, unveraendert uebernommen."""
+siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)). 13 Klassen, unveraendert uebernommen."""
 from datetime import date, timedelta
 from decimal import Decimal
 
@@ -289,8 +289,8 @@ class MobilBeschriftungTests(TestCase):
     """
 
     def test_label_skript_klebt_nicht_mehr_zusammen(self):
-        import pathlib
-        s = pathlib.Path('core/templates/fw/base.html').read_text(encoding='utf-8')
+        from ._rahmen import basis_mit_skripten
+        s = basis_mit_skripten()
         self.assertNotIn("return (th.textContent || '').trim().replace(/\\s+/g, ' ');", s,
                          'Beschriftungen werden wieder aus reinem textContent gebaut')
         self.assertIn('nodeName !== \'BR\'', s)
@@ -332,6 +332,7 @@ class KomprimierungTests(TestCase):
     def _ohne_csrf(rohbytes):
         """CSRF-Token herausrechnen — er ist je Antwort absichtlich anders."""
         import re
+        rohbytes = re.sub(rb'nonce="[^"]+"', b'nonce="N"', rohbytes)       # der CSP-Nonce ist es ebenso
         return re.sub(rb'name="csrfmiddlewaretoken" value="[^"]+"',
                       b'name="csrfmiddlewaretoken" value="X"', rohbytes)
 

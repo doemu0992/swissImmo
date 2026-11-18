@@ -29,10 +29,10 @@
     <div class="fw-tablewrap">
         <table class="fw-table">
             <thead><tr>
-                <th>{% trans "Stufe" %}</th><th>{% trans "Mieter" %}</th><th>{% trans "Forderung" %}</th>
-                <th class="fw-zentriert">{% trans "Tage" %}</th>
-                <th class="fw-right">{% trans "Offen" %}</th><th class="fw-right">{% trans "Gebühr" %}</th>
-                <th class="fw-right">{% trans "Zins" %}</th><th>{% trans "Versand" %}</th>
+                <th scope="col">{% trans "Stufe" %}</th><th scope="col">{% trans "Mieter" %}</th><th scope="col">{% trans "Forderung" %}</th>
+                <th scope="col" class="fw-zentriert">{% trans "Tage" %}</th>
+                <th scope="col" class="fw-right">{% trans "Offen" %}</th><th scope="col" class="fw-right">{% trans "Gebühr" %}</th>
+                <th scope="col" class="fw-right">{% trans "Zins" %}</th><th scope="col">{% trans "Versand" %}</th>
             </tr></thead>
             <tbody>
             {% for z in plan %}

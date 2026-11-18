@@ -92,7 +92,7 @@ test.describe('Betragsfeld', () => {
     await netto.fill("1'500.00");
     await netto.blur();
     const kaution = await imAssistent(page, '#s_kaution');
-    await page.locator('button[onclick="kautionSet(3)"]').click();
+    await page.locator('button[data-bei-klick="kautionSet"][data-args="[3]"]').click();
     await expect(kaution).toHaveValue("4'500.00");
     await keinQuerscrollen(page, 'Vertragsassistent');
   });

@@ -149,7 +149,7 @@ Das PDF «Betreibungsbegehren (Daten)» entsteht nach dem Speichern auf der Betr
     </div>
 </form>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 // Forderung = Summe der angekreuzten offenen Beträge, solange niemand den Betrag
 // von Hand geändert hat. Gerechnet in Rappen, damit 0.1 + 0.2 nicht 0.30000000004 ergibt.
 (function () {

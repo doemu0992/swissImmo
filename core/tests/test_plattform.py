@@ -1,5 +1,5 @@
 """Testmodul plattform — aus core/tests.py herausgeloest (Etappe 1,
-siehe docs/ETAPPE-1-ZERLEGEN.md). 5 Klassen, unveraendert uebernommen."""
+siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)). 5 Klassen, unveraendert uebernommen."""
 from decimal import Decimal
 
 from django.test import TestCase, Client
@@ -207,7 +207,9 @@ class LogbuchTests(TestCase):
         self._log('Kaution einbezahlt (Sperrkonto)', str(m), 'CHF 4500', user=u)
         # ziel setzen wie im echten Flow
         from core.models import AktivitaetsLog
-        AktivitaetsLog.objects.all().update(ziel_typ='vertrag', ziel_id=v.id)
+        from finance.db_schutz import ausnahme
+        with ausnahme('Testaufbau'):
+            AktivitaetsLog.objects.all().update(ziel_typ='vertrag', ziel_id=v.id)
         r = c.get(f'/neu/vertraege/{v.id}/')
         self.assertEqual(r.status_code, 200)
         # Etappe 4a.5b: Das Panel heisst nicht mehr `vt-verlauf`, sondern
@@ -306,7 +308,10 @@ class DatenResetTests(TestCase):
 
     def _reset(self, client, passwort='x', bestaetigung='LÖSCHEN', **extra):
         from unittest.mock import patch
-        with patch('core.services.datenreset.sicherung_erstellen', return_value=''):
+        # Ohne die Aufbewahrungssperre (Art. 958f OR): Hier geht es um den Reset selbst, die Sperre prüft
+        # `test_datenreset.AufbewahrungSperreTests`.
+        with patch('core.services.datenreset.sicherung_erstellen', return_value=''), \
+                patch('core.services.datenreset.aufbewahrung_sperre', return_value=None):
             return client.post('/neu/datenreset/', {'bestaetigung': bestaetigung,
                                                     'passwort': passwort, **extra}, secure=True)
 

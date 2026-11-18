@@ -2,7 +2,7 @@
 
 WARUM EIN COMMAND UND KEIN ÖFFENTLICHES FORMULAR
 ------------------------------------------------
-Entschieden am 20.09.2026, Begründung in `docs/PHASE-3-ONBOARDING.md`
+Entschieden am 20.09.2026, Begründung in `«PHASE-3-ONBOARDING» (früheres Dokument, Git-Verlauf)`
 Abschnitt 6.
 
 Ein öffentliches `/registrieren/` müsste drosseln, per E-Mail bestätigen und
@@ -16,7 +16,7 @@ Dienst `core/services/onboarding.py` bleibt derselbe.
 
 DIE HARTE GRENZE AUS PHASE 2 GILT WEITER
 ----------------------------------------
-`docs/PHASE-2-ABSCHLUSS.md`: **keine zweite Organisation, bevor PostgreSQL,
+`«PHASE-2-ABSCHLUSS» (früheres Dokument, Git-Verlauf)`: **keine zweite Organisation, bevor PostgreSQL,
 der Wiederherstellungs-Probelauf und 2FA erledigt sind.** 2FA ist es
 inzwischen; der PostgreSQL-Umzug nicht.
 
@@ -67,7 +67,7 @@ class Command(BaseCommand):
             raise CommandError(
                 f'Es gibt bereits {vorhanden} Organisation(en). '
                 'Eine weitere anzulegen heisst, den Mehrmandantenbetrieb '
-                'aufzunehmen — und dafür verlangt docs/PHASE-2-ABSCHLUSS.md '
+                'aufzunehmen — und dafür verlangt «PHASE-2-ABSCHLUSS» (früheres Dokument, Git-Verlauf) '
                 'PostgreSQL, einen Wiederherstellungs-Probelauf und 2FA. '
                 'Wenn das erledigt ist: noch einmal mit --zweite.')
 

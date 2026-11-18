@@ -16,7 +16,7 @@
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <input type="hidden" name="monate" value="{{ monate }}">
             <label class="sr-only" for="pf-mandat">{% trans "Mandat" %}</label>
-            <select id="pf-mandat" name="mandat" class="fw-feld" onchange="this.form.submit()">
+            <select id="pf-mandat" name="mandat" class="fw-feld" data-absenden>
                 <option value="">{% trans "Alle Mandate" %}</option>
                 {% for m in mandate %}<option value="{{ m.pk }}"{% if mandat and mandat.pk == m.pk %} selected{% endif %}>{{ m.firma_oder_name }}</option>{% endfor %}
             </select>
@@ -110,14 +110,14 @@
     <div class="fw-tablewrap">
         <table class="fw-table">
             <thead><tr>
-                <th>{% trans "Liegenschaft" %}</th>
-                <th class="fw-right">{% trans "Objekte" %}</th>
-                <th class="fw-right">{% trans "Soll p. a." %}</th>
-                <th class="fw-right">{% trans "Aufwand 12 Mt." %}</th>
-                <th class="fw-right">{% trans "Wert" %}</th>
-                <th class="fw-right">{% trans "Brutto" %}</th>
-                <th class="fw-right">{% trans "Netto" %}</th>
-                <th>{% trans "Leerstand" %}</th>
+                <th scope="col">{% trans "Liegenschaft" %}</th>
+                <th scope="col" class="fw-right">{% trans "Objekte" %}</th>
+                <th scope="col" class="fw-right">{% trans "Soll p. a." %}</th>
+                <th scope="col" class="fw-right">{% trans "Aufwand 12 Mt." %}</th>
+                <th scope="col" class="fw-right">{% trans "Wert" %}</th>
+                <th scope="col" class="fw-right">{% trans "Brutto" %}</th>
+                <th scope="col" class="fw-right">{% trans "Netto" %}</th>
+                <th scope="col">{% trans "Leerstand" %}</th>
             </tr></thead>
             <tbody>
                 {% for z in zeilen %}
@@ -141,7 +141,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
 document.querySelectorAll('tr.fw-klickzeile[data-href]').forEach(function (r) {
     r.addEventListener('click', function (e) { if (!e.target.closest('a,button')) location.href = r.dataset.href; });
 });

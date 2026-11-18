@@ -1,5 +1,5 @@
 """Testmodul mietprozess — aus core/tests.py herausgeloest (Etappe 1,
-siehe docs/ETAPPE-1-ZERLEGEN.md). 11 Klassen, unveraendert uebernommen."""
+siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)). 11 Klassen, unveraendert uebernommen."""
 from datetime import date, timedelta
 from decimal import Decimal
 
@@ -184,7 +184,7 @@ class MieterwechselCockpitTests(TestCase):
         team = _team_user()
         c = Client(); c.force_login(team)
         body = c.get('/neu/mieterwechsel/').content.decode()
-        self.assertIn('fwModalOpen(this', body)
+        self.assertIn('data-modal=', body)
         self.assertIn('id="fwModal"', body)
         self.assertIn("e.data.fwModal === 'done'", body)
 
@@ -219,7 +219,7 @@ class MieterwechselCockpitTests(TestCase):
         c = Client(); c.force_login(team)
         # Cockpit verlinkt per Modal
         body = c.get('/neu/mieterwechsel/').content.decode()
-        self.assertIn(f"fwModalOpen(this,'Objekt ausschreiben')", body)
+        self.assertIn('data-modal="Objekt ausschreiben"', body)
         # GET embed rendert das Formular ohne Sidebar, Verfügbarkeit vorbelegt aus Kündigung
         form = c.get(f'/neu/objekte/{e.id}/ausschreiben/?embed=1').content.decode()
         self.assertNotIn('fwSidebar', form)
@@ -247,8 +247,8 @@ class MieterwechselCockpitTests(TestCase):
         team = _team_user()
         c = Client(); c.force_login(team)
         body = c.get('/neu/mieterwechsel/').content.decode()
-        self.assertIn("fwModalOpen(this,'Bewerbungen')", body)
-        self.assertIn("fwModalOpen(this,'Vertrag erstellen',true)", body)   # breit
+        self.assertIn('data-modal="Bewerbungen"', body)
+        self.assertRegex(body, r'data-modal="Vertrag erstellen"\s+data-modal-breit')   # breit
 
     def test_cockpit_vertrag_erstellen_mit_einheit_vorwahl(self):
         """'Vertrag erstellen' übergibt die konkrete Einheit an den Wizard."""

@@ -1,7 +1,7 @@
 # core/views/fw/benutzer.py
 #
 # Benutzerverwaltung: Django-User plus Rollen ueber Gruppen. Etappe 1, siehe
-# docs/ETAPPE-1-ZERLEGEN.md.
+# «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Seit E2 ist das der EINZIGE Schreibpfad fuer Benutzer und Rollen — der
 # Unfold-Admin ist lesend, auch fuer auth.User und auth.Group. Entsprechend
@@ -11,8 +11,8 @@ from django.db.models import Q
 from django.utils.translation import gettext
 from django.shortcuts import get_object_or_404, render
 
-from core.auth import (INHABER_ROLLEN, ROLLE_BUCHHALTUNG, ROLLE_HAUSWART, ROLLE_INHABER, ROLLE_LESEZUGRIFF, ROLLE_SACHBEARBEITER,
-                       ROLLE_VERWALTER, rolle_erforderlich)
+from core.auth import (INHABER_ROLLEN, ROLLE_BUCHHALTUNG, ROLLE_HAUSWART, ROLLE_INHABER, ROLLE_LESEZUGRIFF, ROLLE_REVISION,
+                       ROLLE_SACHBEARBEITER, ROLLE_VERWALTER, rolle_erforderlich)
 
 from ._basis import _global_filter
 
@@ -25,7 +25,7 @@ from ._basis import _global_filter
 # die Benutzerverwaltung offen hat, ist Verwalter oder Inhaber und muss die
 # Nachfolge regeln koennen. Eigentuemer fehlt — das ist eine Portal-Rolle.
 _ROLLEN_WAHL = (ROLLE_INHABER, ROLLE_VERWALTER, ROLLE_SACHBEARBEITER, ROLLE_BUCHHALTUNG,
-                ROLLE_LESEZUGRIFF, ROLLE_HAUSWART)
+                ROLLE_LESEZUGRIFF, ROLLE_HAUSWART, ROLLE_REVISION)
 
 
 def _team_benutzer_oder_404(request, pk):
@@ -147,7 +147,7 @@ def _aus_team_entfernen(request, ziel, organisation):
     return True
 
 
-# Mitglieder und Rollen verwalten ist Inhaber-Sache (docs/KONZEPT-UI.md §8).
+# Mitglieder und Rollen verwalten ist Inhaber-Sache (CONTRIBUTING.md §8).
 # Bis 28.09.2026 stand hier ROLLE_VERWALTER — ein Verwalter konnte sich damit
 # selbst zum Inhaber machen (`_ROLLEN_WAHL` enthält die Rolle, das eigene Konto
 # ist nicht ausgenommen) und das Passwort jedes Kontos setzen, auch des Inhabers.
@@ -190,8 +190,20 @@ def fw_benutzer_form(request, pk=None):
             if User.objects.filter(username__iexact=username).exists():
                 messages.error(request, gettext("Benutzername '%(username)s' ist bereits vergeben.") % {'username': username})
                 return redirect(request.path)
+            # Neues Konto: kein vom Inhaber vergebenes Passwort. Die Person bekommt einen Einladungslink per Mail
+            # (`core.services.einladung`) und setzt es selbst; dafür braucht es eine E-Mail-Adresse.
+            from django.core.exceptions import ValidationError
+            from django.core.validators import validate_email
+            try:
+                validate_email(P.get('email', '').strip())
+            except ValidationError:
+                messages.error(request, gettext(
+                    'Für die Einladung ist eine gültige E-Mail-Adresse nötig: Die Person setzt ihr Passwort selbst '
+                    'über einen Link, den sie dort erhält.'))
+                return redirect(request.path)
             ziel = User(username=username)
-        pw = P.get('passwort', '').strip()
+            ziel.set_unusable_password()
+        pw = P.get('passwort', '').strip() if pk else ''
         if organisation is not None and not (
                 ziel.pk and Mitgliedschaft.objects.filter(benutzer=ziel, organisation=organisation).exists()):
             # Neue Mitgliedschaft: die Nutzergrenze des Abonnements VOR dem Speichern prüfen, sonst bliebe
@@ -262,6 +274,18 @@ def fw_benutzer_form(request, pk=None):
         log_aktion(request, "Benutzer bearbeitet" if pk else "Benutzer erstellt",
                    ziel.username, _diff or rolle)
         messages.success(request, '✅ ' + gettext('Benutzer %(username)s gespeichert.') % {'username': ziel.username})
+        if not pk or (P.get('link_senden') == 'on' and not nur_mitgliedschaft):
+            from core.services.einladung import einladung_senden
+            gesendet, link = einladung_senden(request, ziel, organisation, neu=not pk)
+            log_aktion(request, "Einladungslink gesendet" if gesendet else "Einladungslink nicht gesendet",
+                       ziel.username, '')
+            if gesendet:
+                messages.info(request, gettext(
+                    'Ein Link zum Setzen des Passworts wurde an %(adresse)s gesendet.') % {'adresse': ziel.email})
+            else:
+                messages.warning(request, gettext(
+                    'Die E-Mail mit dem Link liess sich nicht senden. Link zum Weitergeben an %(name)s: %(link)s'
+                ) % {'name': ziel.username, 'link': link})
         return redirect('/neu/benutzer/')
 
     aktuelle_rolle = alt_rolle if alt_rolle in _ROLLEN_WAHL else ''

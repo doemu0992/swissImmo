@@ -61,7 +61,7 @@
             <span>{% trans "Konto 2200 ist für diese Periode ausgebucht. Die Schuld steht auf 2201 (ESTV) bis zur Zahlung." %}</span>
             {% else %}
             <span>{% if mwst_methode == 'saldo' %}{% trans "Bucht 2200 aus: Vorsteuer verrechnen und Zahllast als Schuld auf 2201 (ESTV), Saldosatz-Vorteil als Ertrag. Die Zahlung selbst wird später über den Bankabgleich gebucht." %}{% else %}{% trans "Bucht 2200 aus: Vorsteuer verrechnen und Zahllast als Schuld auf 2201 (ESTV). Die Zahlung selbst wird später über den Bankabgleich gebucht." %}{% endif %}</span>
-            <form method="post" action="/neu/mwst/verbuchen/" onsubmit="return confirm('{% filter escapejs %}{% trans "MWST-Abrechnung dieser Periode verbuchen?" %}{% endfilter %}');">
+            <form method="post" action="/neu/mwst/verbuchen/" data-bestaetigen="{% filter escapejs %}{% trans "MWST-Abrechnung dieser Periode verbuchen?" %}{% endfilter %}">
                 {% csrf_token %}
                 <input type="hidden" name="jahr" value="{{ jahr }}">
                 <input type="hidden" name="quartal" value="{{ quartal }}">

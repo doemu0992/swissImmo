@@ -24,6 +24,7 @@ Verwendung klassische Views:
     @rolle_erforderlich(ROLLE_VERWALTUNG)
     def send_mahnung_email_view(request, ...):
 """
+import functools
 import logging
 from django.contrib.auth.decorators import user_passes_test
 from ninja.security import SessionAuth
@@ -44,6 +45,13 @@ ROLLE_LESEZUGRIFF = "Lesezugriff"
 #: View, die nur `TEAM_ROLLEN` verlangt, antwortet ihr mit 403 (Standard ist
 #: «nein»). Frei ist sie nur dort, wo `FINANZ_*_ROLLEN` steht.
 ROLLE_BUCHHALTUNG = "Buchhaltung"
+
+#: Revision (Roadmap Nr. 10): externe Prüfstelle mit reinem Leserecht auf das
+#: Buchungsjournal, den Kontenplan, die Abschlüsse und das Logbuch. Bewusst KEINE
+#: Team-Rolle: Stammdaten, Verträge und Personen bleiben ihr verschlossen, und
+#: sie schreibt nirgends. Frei ist sie nur dort, wo `REVISIONS_ROLLEN` steht.
+#: Ihre Abrufe (Export, PDF, Logbuch) landen im Audit-Log.
+ROLLE_REVISION = "Revision"
 
 #: Betriebsrolle für die Hauswartung. Bewusst KEINE Team-Rolle: Sie steht nicht
 #: in `TEAM_ROLLEN`, und jede View, die nur `TEAM_ROLLEN` verlangt (Finanzen,
@@ -66,6 +74,11 @@ VERWALTUNGS_ROLLEN = (ROLLE_INHABER, ROLLE_VERWALTER)
 #: Rollen mit Finanzrechten: Sie dürfen Debitoren, Kreditoren und Buchungen sehen.
 BUCHHALTUNG_ROLLEN = (ROLLE_BUCHHALTUNG,)
 FINANZ_LESE_ROLLEN = TEAM_ROLLEN + BUCHHALTUNG_ROLLEN
+REVISIONS_ROLLEN = (ROLLE_REVISION,)
+#: Journal, Kontenplan, Kontoblatt, Abschluss-PDF und -Export: Finanzsicht plus Revision.
+JOURNAL_LESE_ROLLEN = FINANZ_LESE_ROLLEN + REVISIONS_ROLLEN
+#: Logbuch: die Verwaltung und die Revision (rein lesend).
+LOGBUCH_ROLLEN = (ROLLE_VERWALTER,) + REVISIONS_ROLLEN
 FINANZ_SCHREIB_ROLLEN = SCHREIB_ROLLEN + BUCHHALTUNG_ROLLEN
 #: Buchungsläufe, Zahlungen, Stornos: was bisher die Verwaltung allein tat und
 #: zum Tagesgeschäft der Buchhaltung gehört. Der Zahlungslauf ab Freigabelimit
@@ -77,13 +90,18 @@ FINANZ_VERWALTUNGS_ROLLEN = VERWALTUNGS_ROLLEN + BUCHHALTUNG_ROLLEN
 ZAHLUNGSFREIGABE_ROLLEN = VERWALTUNGS_ROLLEN
 
 #: Betreibung leitet nur die Verwaltung ein (Rechtsfolgen, Kosten; Etappe 2,
-#: SICH-11, `docs/KONZEPT-UI.md` §8).
+#: SICH-11, `CONTRIBUTING.md` §8).
 BETREIBUNGS_ROLLEN = VERWALTUNGS_ROLLEN
+
+#: Der Betreiber der Installation. KEINE Mitgliedschaftsrolle (niemand bekommt sie zugewiesen): `hat_rolle` lässt
+#: Superuser immer durch, alle anderen nie. Für Seiten, die die ganze Installation betreffen und nie eine Verwaltung
+#: (Verschlüsselungsschlüssel, `core/views/fw/sicherheit.py`).
+BETREIBER_ROLLEN = ('Betreiber',)
 
 #: Rollen, für die der zweite Faktor immer Pflicht ist, ob die Verwaltung den
 #: Schalter gesetzt hat oder nicht: Sie lösen Zahlungen aus oder leiten
 #: Betreibungen ein (Etappe 2, SICH-10).
-ZWEIFAKTOR_PFLICHT_ROLLEN = (ROLLE_INHABER, ROLLE_VERWALTER, ROLLE_BUCHHALTUNG)
+ZWEIFAKTOR_PFLICHT_ROLLEN = (ROLLE_INHABER, ROLLE_VERWALTER, ROLLE_BUCHHALTUNG, ROLLE_REVISION)
 
 #: Was nur der Inhaber darf: Abo und Rechnung, die Organisation löschen,
 #: Mitglieder einladen. Heute noch nirgends verdrahtet — die Konstante steht
@@ -127,7 +145,7 @@ def hat_rolle(user, rollen):
 
     DER INHABER DARF, WAS DAS TEAM DARF
     -----------------------------------
-    Nach der Rollentabelle (`docs/KONZEPT-UI.md`, Abschnitt 8) hat der Inhaber
+    Nach der Rollentabelle (`CONTRIBUTING.md`, Abschnitt 8) hat der Inhaber
     jede Befugnis der anderen Team-Rollen. Rund zwanzig Views verlangten aber
     nur `ROLLE_VERWALTER` — der Inhaber einer frisch angelegten Organisation
     stand dort vor einem 403, ausgerechnet auch bei «Benutzer & Rollen», die
@@ -143,13 +161,10 @@ def hat_rolle(user, rollen):
     rollen = _mit_inhaber(rollen)
 
     from core.tenancy import aktuelle_organisation
-    from crm.models import Mitgliedschaft
 
-    organisation = aktuelle_organisation()
-    if organisation is None:
+    if aktuelle_organisation() is None:
         return False
-    return Mitgliedschaft.objects.filter(
-        benutzer=user, organisation=organisation, rolle__in=rollen).exists()
+    return bool(rollen_der_anfrage(user) & set(rollen))
 
 
 def darf_mit(eigene, user, rollen):
@@ -170,6 +185,13 @@ def ist_nur_buchhaltung(user):
     KEINE Team-Rolle hat. Sie sieht ausschliesslich die Finanzen (Navigation,
     Suche, Startseite richten sich danach)."""
     return hat_rolle(user, BUCHHALTUNG_ROLLEN) and not hat_rolle(user, TEAM_ROLLEN)
+
+
+def ist_nur_revision(user):
+    """True wenn die Person in der aktiven Organisation Revision ist und
+    KEINE Team- oder Buchhaltungsrolle hat."""
+    return (hat_rolle(user, REVISIONS_ROLLEN) and not hat_rolle(user, TEAM_ROLLEN)
+            and not hat_rolle(user, BUCHHALTUNG_ROLLEN))
 
 
 def ist_nur_hauswart(user):
@@ -265,6 +287,20 @@ def rolle_erforderlich(*rollen):
     return deko
 
 
+@functools.lru_cache(maxsize=4096)
+def _rollen_des_pfads(pfad):
+    """Die Rollen, die die View hinter `pfad` verlangt — `None`, wenn keine oder unbekannt.
+
+    Gemerkt je Pfad: Der Filter `darf` steht in Listen in jeder Zeile, und `resolve()` geht jedes Mal durch
+    alle Routen. Die Zuordnung Pfad → View ändert sich im laufenden Prozess nicht."""
+    from django.urls import resolve
+    try:
+        rollen = getattr(resolve(pfad).func, 'benoetigte_rollen', None)
+    except Exception:
+        return None
+    return tuple(rollen) if rollen is not None else None
+
+
 def darf_oeffnen(user, pfad, eigene_rollen=None):
     """Darf dieser Benutzer die View hinter `pfad` aufrufen?
 
@@ -278,11 +314,7 @@ def darf_oeffnen(user, pfad, eigene_rollen=None):
     Navigation prüft jeden Reiter und jeden Palette-Eintrag —, liest die Rollen
     EINMAL statt je Pfad eine Abfrage (UI-Audit 26.10.2026: sonst ~60 Abfragen
     mehr auf jeder Seite)."""
-    from django.urls import resolve
-    try:
-        rollen = getattr(resolve(pfad.split('?')[0]).func, 'benoetigte_rollen', None)
-    except Exception:
-        return True
+    rollen = _rollen_des_pfads(pfad.split('?')[0])
     if rollen is None:
         return True
     if eigene_rollen is None:
@@ -293,7 +325,13 @@ def darf_oeffnen(user, pfad, eigene_rollen=None):
 
 
 def eigene_rollen(user):
-    """Die Rollen des Benutzers in der aktiven Organisation — eine Abfrage."""
+    """Die Rollen des Benutzers in der aktiven Organisation — je Anfrage
+    höchstens eine Abfrage (`rollen_der_anfrage`). Eine Kopie, damit ein
+    Aufrufer die gemerkte Menge nicht verändert."""
+    return set(rollen_der_anfrage(user))
+
+
+def _rollen_lesen(user):
     from core.tenancy import aktuelle_organisation
     from crm.models import Mitgliedschaft
     if not user or not user.is_authenticated:
@@ -303,6 +341,44 @@ def eigene_rollen(user):
         return set()
     return set(Mitgliedschaft.objects.filter(benutzer=user, organisation=organisation)
                .values_list('rolle', flat=True))
+
+
+# Zählt jede Änderung an Mitgliedschaften in diesem Prozess (Signal in
+# `core/signals.py`). Der Merker unten gilt nur, solange der Stand gleich
+# bleibt: Wer in derselben Anfrage eine Rolle vergibt oder entzieht, sieht
+# die Wirkung sofort.
+_rollen_stand = 0
+
+
+def rollen_geaendert(**_):
+    global _rollen_stand
+    _rollen_stand += 1
+
+
+def rollen_der_anfrage(user):
+    """Die Rollen des Benutzers in der aktiven Organisation, je Anfrage einmal.
+
+    `request.user` lebt eine Anfrage lang. Jede Seite fragt die Rolle mehrfach
+    ab (Dekorator, Navigation, Kontextprozessoren, Vorlagenfilter `darf` in
+    jeder Listenzeile) — ohne Merker ist das je Frage eine Abfrage (gemessen
+    acht auf einer leeren Seite, 24 auf 12 Zeilen der Mahnübersicht).
+
+    Der Merker hängt am Benutzerobjekt und gilt nur für die gerade aktive
+    Organisation und den aktuellen Stand der Mitgliedschaften. Über Anfragen
+    hinweg wird nichts gemerkt: Ein Rollenentzug wirkt mit der nächsten Anfrage.
+    """
+    from core.tenancy import aktuelle_organisation
+    if not user or not getattr(user, 'is_authenticated', False):
+        return set()
+    schluessel = (getattr(aktuelle_organisation(), 'pk', None), _rollen_stand)
+    gemerkt = getattr(user, '_rollen_je_organisation', None)
+    if gemerkt is None or gemerkt[0] != schluessel:
+        gemerkt = (schluessel, _rollen_lesen(user))
+        try:
+            user._rollen_je_organisation = gemerkt
+        except AttributeError:
+            pass
+    return gemerkt[1]
 
 
 # ==========================================
@@ -342,11 +418,14 @@ def kategorie_fuer(aktion):
 
 def client_ip(request):
     """Ermittelt die Client-IP (berücksichtigt Reverse-Proxy X-Forwarded-For)."""
+    # EINE Quelle für Bremse und Protokoll (`core.utils.throttle.client_ip`): der RECHTE Eintrag von
+    # X-Forwarded-For, den der eigene Proxy anhängt. Hier stand der linke — den setzt der Client frei, und damit
+    # trug das Sicherheitsprotokoll eine Adresse nach Wahl des Angreifers.
     try:
-        xff = request.META.get('HTTP_X_FORWARDED_FOR', '')
-        if xff:
-            return xff.split(',')[0].strip()[:45]
-        return (request.META.get('REMOTE_ADDR') or '').strip()[:45] or None
+        from core.utils.throttle import client_ip as _client_ip
+        if not (request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')):
+            return None
+        return _client_ip(request)[:45] or None
     except Exception:
         return None
 
@@ -362,15 +441,32 @@ def snapshot(obj, felder):
     return snap
 
 
-def diff_text(alt, neu, labels=None):
-    """Baut 'Feld: alt → neu'-Zeilen aus zwei Snapshots. Leer, wenn nichts änderte."""
+#: Felder, deren WERT nie im Audit-Log steht. Das Log ist die Revisionsspur und wird breit gelesen und lange aufbewahrt;
+#: ein Klartext-Wert hätte dort mehr Leser als am Datensatz. Der Log sagt nur «geändert». Verschlüsselt gespeicherte
+#: Felder (`VerschluesseltesCharField`) kommen automatisch dazu, siehe `diff_model`.
+SENSIBLE_FELDER = frozenset({
+    'ahv_nummer',           # AHV-Nummer (verschlüsselt gespeichert; beim Lesen Klartext)
+    'iban', 'zahler_iban',  # Kontoverbindungen von Personen und Liegenschaften
+    'portal_feed_token',    # Geheimnis in der Adresse des Portal-Feeds
+    'fristen_feed_token',   # Geheimnis in der Adresse des Fristenkalenders
+    'password', 'geheimnis',
+})
+
+
+def diff_text(alt, neu, labels=None, verbergen=SENSIBLE_FELDER):
+    """Baut 'Feld: alt → neu'-Zeilen aus zwei Snapshots. Leer, wenn nichts änderte.
+
+    Felder in `verbergen` erscheinen nur als «geändert»: Die Änderung wird weiter erkannt, der Wert bleibt draussen."""
     labels = labels or {}
     zeilen = []
     for f, altwert in (alt or {}).items():
         neuwert = (neu or {}).get(f)
         if str(altwert or '') != str(neuwert or ''):
             name = labels.get(f, f)
-            zeilen.append(f"{name}: {altwert or '—'} → {neuwert or '—'}")
+            if f in verbergen:
+                zeilen.append(f"{name}: geändert")
+            else:
+                zeilen.append(f"{name}: {altwert or '—'} → {neuwert or '—'}")
     return ' · '.join(zeilen)
 
 
@@ -407,8 +503,11 @@ def snapshot_model(obj):
 
 def diff_model(alt, neu, obj):
     """Vorher→Nachher-Text mit den verbose_name des Modells als Feldbeschriftung."""
-    labels = {f.name: str(getattr(f, 'verbose_name', f.name)) for f in _diffbare_felder(obj)}
-    return diff_text(alt, neu, labels)
+    from core.verschluesselt import VerschluesseltesCharField
+    felder = _diffbare_felder(obj)
+    labels = {f.name: str(getattr(f, 'verbose_name', f.name)) for f in felder}
+    verbergen = SENSIBLE_FELDER | {f.name for f in felder if isinstance(f, VerschluesseltesCharField)}
+    return diff_text(alt, neu, labels, verbergen)
 
 
 def konto_freigeben(benutzer, organisation=None):
@@ -550,4 +649,7 @@ def log_aktion(request, aktion, objekt="", details="", ziel=None, kategorie=None
                 logger.warning('Sicherheitsereignis nirgends geschrieben: %s / %s (%s)',
                                aktion, objekt, details, exc_info=True)
         else:
-            logger.debug("Fehler bewusst übergangen", exc_info=True)
+            # Nicht mehr auf `debug`: Ein Protokolleintrag, der still verschwindet,
+            # ist ein Loch im Audit-Trail. Die Aktion läuft weiter, die Lücke steht
+            # im Betreiberlog.
+            logger.error('Audit-Log-Eintrag nicht geschrieben: %s / %s', aktion, objekt, exc_info=True)

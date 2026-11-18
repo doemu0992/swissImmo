@@ -14,8 +14,8 @@
   {% if rows %}
   <div class="fw-tablewrap overflow-x-auto fw-sticky"><table class="fw-table min-w-max" data-spaltenfilter>
     <thead><tr>
-      <th>{% trans "Mieter / Rechnung" %}</th><th>{% trans "Stand" %}</th><th>{% trans "Amt / Nr." %}</th>
-      <th class="text-right">{% trans "Forderung" %}</th><th>{% trans "Begehren" %}</th><th>{% trans "Nächste Frist" %}</th><th></th>
+      <th scope="col">{% trans "Mieter / Rechnung" %}</th><th scope="col">{% trans "Stand" %}</th><th scope="col">{% trans "Amt / Nr." %}</th>
+      <th scope="col" class="text-right">{% trans "Forderung" %}</th><th scope="col">{% trans "Begehren" %}</th><th scope="col">{% trans "Nächste Frist" %}</th><th scope="col"></th>
     </tr></thead>
     <tbody>
     {% for b in rows %}

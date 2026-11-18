@@ -38,6 +38,9 @@ class KreditorForm(forms.Form):
     leistungs_von = forms.DateField(required=False)
     leistungs_bis = forms.DateField(required=False)
     referenz = forms.CharField(max_length=100, required=False)
+    # Heizöl-Menge der Rechnung. Die Nebenkostenabrechnung liest sie (Öl-Einkäufe, `core/utils/billing.py`,
+    # `nk_wizard`); eine Eingabemaske gab es bis 07.11.2026 nur in der Django-Admin. Leer = keine Öl-Rechnung.
+    menge_liter = SchweizerZahl(max_digits=10, decimal_places=2, min_value=0, required=False)
     iban = forms.CharField(max_length=50, required=False)
     # Anschrift des Lieferanten für die Zahlungsdatei (pain.001). Die Längen
     # sind die des ISO-Schemas. Beim Erfassen darf sie fehlen — der Zahllauf

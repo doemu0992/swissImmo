@@ -2,7 +2,7 @@
 #
 # Pendenzen und Fristen — persistent erfasste und automatisch aus dem
 # Bestand berechnete, dazu der iCal-Feed. Etappe 1, siehe
-# docs/ETAPPE-1-ZERLEGEN.md.
+# «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # _pendenz_ziel liegt seit Schnitt 0b in _basis.py: Der Helfer wird auch
 # ausserhalb dieses Blocks gebraucht und waere sonst mit ihm ausgezogen.
@@ -16,6 +16,8 @@ from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
 from core.auth import rolle_erforderlich, SCHREIB_ROLLEN, TEAM_ROLLEN
+from abo.zugang import funktion_erforderlich
+from core.tenancy import aktuelle_organisation
 from core.utils.formularid import eigenes_objekt
 from portfolio.models import Liegenschaft
 from rentals.models import Mietvertrag
@@ -64,7 +66,7 @@ def _auto_fristen(aktive_lg, horizont_tage=90):
     # c) Erstmals kündbar im Horizont
     for v in aktive.filter(erstmals_kuendbar_auf__range=[heute, grenze]).order_by('erstmals_kuendbar_auf'):
         fristen.append({
-            'kategorie': 'Erstmals kündbar', 'farbe': 'indigo', 'icon': 'termin',
+            'kategorie': 'Erstmals kündbar', 'farbe': 'marke', 'icon': 'termin',
             'titel': f"{v.mieter.display_name}: erstmals kündbar",
             'sub': f"{v.einheit.bezeichnung} — Mietzins-/Konditionen-Review möglich",
             'faellig': v.erstmals_kuendbar_auf, 'url': f'/neu/vertraege/{v.id}/',
@@ -75,6 +77,10 @@ def _auto_fristen(aktive_lg, horizont_tage=90):
     return fristen
 
 
+
+
+#: Gruppen (Vertrag, Liegenschaft, Allgemein) je Seite; eine Gruppe trägt meist mehrere Pendenzen.
+PENDENZ_GRUPPEN_JE_SEITE = 30
 
 
 @rolle_erforderlich(*TEAM_ROLLEN)
@@ -144,9 +150,13 @@ def fw_pendenzen(request):
 
     liegenschaften = Liegenschaft.objects.order_by('strasse')
     from django.contrib import messages
+    # Geblättert wird nach Gruppen: Die Pendenzen eines Vertrags bleiben zusammen.
+    from ._liste import blaettern
+    seite, query_ohne_seite = blaettern(request, gruppen_liste, pro_seite=PENDENZ_GRUPPEN_JE_SEITE)
     return render(request, 'fw/pendenzen.html', {
         **basis, 'nav': 'pendenzen', 'auto': auto,
-        'offene': offene, 'gruppen': gruppen_liste, 'erledigte': erledigte,
+        'offene': offene, 'gruppen': seite, 'seite': seite, 'query_ohne_seite': query_ohne_seite,
+        'erledigte': erledigte,
         'liegenschaften': liegenschaften, 'heute': heute,
         'kategorien': Pendenz.KATEGORIE_CHOICES,
         'meldung': list(messages.get_messages(request)),
@@ -233,14 +243,39 @@ def fw_fristen(request):
         {'key': 'spaeter', 'titel': 'Später', 'icon': 'termin',
          'cls': 'fw-mutet', 'items': [e for e in eintraege if e['faellig'] > grenze_monat]},
     ]
-    from core.services.ical import feed_token
+    from core.services.ical import darf_abonnieren as _darf, feed_token
+    # Den Kalender-Link sieht nur, wer in dieser Verwaltung schreiben darf — und jede Person nur ihren eigenen.
+    from abo.zugang import schnittstelle_frei
+    kalender_frei = schnittstelle_frei(user=request.user)      # das Abonnement ist eine Schnittstelle (Professional)
+    darf_abonnieren = _darf(request.user, aktuelle_organisation()) and kalender_frei
     return render(request, 'fw/fristen.html', {
         **basis, 'nav': 'fristen', 'buckets': buckets, 'heute': heute,
         'heute_iso': heute.isoformat(),
         'gesamt': len(eintraege), 'nur_frist': nur_frist,
         'ueberfaellig_n': len(buckets[0]['items']),
-        'feed_token': feed_token(getattr(request, 'organisation', None)),
+        'darf_abonnieren': darf_abonnieren,
+        'kalender_gesperrt': not kalender_frei,
+        'feed_token': feed_token(request.user, aktuelle_organisation()) if darf_abonnieren else '',
     })
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@funktion_erforderlich('schnittstellen')
+def fw_fristen_kalender_token(request):
+    """Den eigenen Kalender-Link erzeugen, erneuern (der alte gilt sofort nicht mehr) oder entfernen."""
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    from core.services.ical import token_setzen
+    if request.method == 'POST':
+        entfernen = request.POST.get('aktion') == 'entfernen'
+        token_setzen(request.user, aktuelle_organisation(), entfernen=entfernen)
+        log_aktion(request, 'Kalender-Link entfernt' if entfernen else 'Kalender-Link erzeugt', 'Fristen', '')
+        messages.success(request, gettext('Kalender-Link entfernt. Abonnierte Kalender erhalten nichts mehr.')
+                         if entfernen else
+                         gettext('Neuer Kalender-Link erzeugt. Ein früherer Link gilt nicht mehr.'))
+    return redirect('/neu/fristen/?kalender=1')
 
 
 def _offene_fristen_pendenzen(aktive_lg=None):
@@ -275,12 +310,13 @@ def fristen_ical_feed(request):
 
     from core.tenancy import kontext_des_objekts
 
-    # Der Token sagt, WESSEN Fristen — vorher signierte er eine Konstante und
-    # galt fuer jede Verwaltung. Ohne Anmeldung gibt es hier keinen anderen
-    # Weg zur Organisation, und ohne sie warf `Pendenz.objects` seit Etappe
-    # 6.2: Der Feed lieferte einen Serverfehler statt eines Kalenders.
+    # Der Token gehört einer Person in einer Verwaltung (`core/services/ical.py`) und sagt damit, WESSEN Fristen.
+    # Ohne Anmeldung gibt es hier keinen anderen Weg zur Organisation.
     organisation = organisation_aus_token(request.GET.get('token'))
     if organisation is None:
+        return HttpResponseForbidden("Ungültiger oder fehlender Token.")
+    from abo.zugang import schnittstelle_frei
+    if not schnittstelle_frei(organisation):
         return HttpResponseForbidden("Ungültiger oder fehlender Token.")
     with kontext_des_objekts(organisation):
         ics = build_ics(fristen_events(_offene_fristen_pendenzen()))

@@ -3,7 +3,7 @@
 # Die Einstiegsseiten der Oberflaeche: das Dashboard mit der Inbox und die
 # Finanzuebersicht. Sie standen im KOPFBEREICH der urspruenglichen fw.py,
 # vor dem ersten Blockkommentar — deshalb kommen sie zuletzt, als 34. und
-# letzter Umzug der Etappe 1 (siehe docs/ETAPPE-1-ZERLEGEN.md).
+# letzter Umzug der Etappe 1 (siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)).
 #
 # Damit ist _rest.py leer und faellt weg: Es gibt keine "noch nicht
 # aufgeteilte" Restdatei mehr.
@@ -253,6 +253,8 @@ def _vertretung_fuer(request, heute):
 #: Die Reiter über dem Arbeitsvorrat. «Alle» bleibt eine gültige Ansicht,
 #: steht aber als Verweis im Fuss (Dashboard-Reduktion 26.10.2026).
 REITER = ('heute', 'woche', 'haengt', 'ohnefrist')
+#: Der Reiter «Anfragen» steht nur den Rollen, die Anfragen auch bestätigen dürfen.
+REITER_MIT_ANFRAGEN = ('heute', 'woche', 'anfragen', 'haengt', 'ohnefrist')
 
 
 @rolle_erforderlich(*FINANZ_LESE_ROLLEN)
@@ -310,6 +312,15 @@ def fw_dashboard(request):
     # EIN Durchgang fuer alle Fenster. `was_reisst(365)` ist die Obermenge;
     # «Diese Woche» und «Heute» sind daraus gefiltert.
     alle = was_reisst(heute, grenze=365, aktive_lg=aktive_lg)
+    # Anfragen aus den Portalen bestätigen nur Schreibrollen: Wer nur lesen darf, bekommt keine Zeile mit totem Knopf.
+    from core.auth import SCHREIB_ROLLEN
+    darf_anfragen = hat_rolle(request.user, SCHREIB_ROLLEN)
+    if not darf_anfragen:
+        alle = [e for e in alle if e.get('art') != 'anfrage']
+    reiter = REITER_MIT_ANFRAGEN if darf_anfragen else REITER
+    if ansicht not in reiter and ansicht != 'alle':
+        ansicht = 'heute'
+    anfragen_zeilen = [e for e in alle if e.get('art') == 'anfrage']
     woche = [e for e in alle if e['tage'] <= 7]
     heute_faellig = [e for e in woche if e['tage'] <= 0]
 
@@ -333,6 +344,7 @@ def fw_dashboard(request):
         'heute': len(heute_faellig),
         'woche': len(woche),
         'haengt': len(haengt),
+        'anfragen': len(anfragen_zeilen),
         'ohnefrist': len(inbox) + (inbox_mehr or 0) + (av.get('av_freigaben_gesamt') or 0),
         'alle': len(alle),
     }
@@ -343,6 +355,8 @@ def fw_dashboard(request):
         vorrat = heute_faellig
     elif ansicht == 'woche':
         vorrat = woche
+    elif ansicht == 'anfragen':
+        vorrat = anfragen_zeilen
     elif ansicht == 'haengt':
         faelle = haengt
     elif ansicht == 'alle':
@@ -370,7 +384,7 @@ def fw_dashboard(request):
         'ansicht': ansicht,
         'ansicht_titel': dict(ANSICHTEN).get(ansicht, _('Heute')),
         'ansichten': [(k, b, k == ansicht, zaehler.get(k))
-                      for k, b in ANSICHTEN if k in REITER],
+                      for k, b in ANSICHTEN if k in reiter],
         'anzahl_heute': zaehler['heute'],
         'anzahl_ueberfaellig': sum(1 for e in heute_faellig if e['tage'] < 0),
         'vorrat': vorrat,
@@ -693,10 +707,10 @@ def fw_finanzen(request):
     # ---------- Arbeitskorb (Reihenfolge = Prozess) ----------
     # Volle Tailwind-Klassen (CDN-sicher, keine dynamisch zusammengesetzten Namen).
     P = {
-        'sky':    ('fw-info-flaeche fw-info',       'fw-info-voll hover:fw-info-voll'),
+        'info':    ('fw-info-flaeche fw-info',       'fw-info-voll hover:fw-info-voll'),
         'amber':  ('fw-warn-flaeche fw-warnton',   'fw-warn-voll hover:fw-warn-voll'),
-        'indigo': ('fw-markenflaeche fw-marke', 'fw-btn fw-primary'),
-        'violet': ('fw-info-flaeche fw-info', 'fw-btn fw-primary'),
+        'marke': ('fw-markenflaeche fw-marke', 'fw-btn fw-primary'),
+        'primaer': ('fw-info-flaeche fw-info', 'fw-btn fw-primary'),
         'rose':   ('fw-krit-flaeche fw-kritisch',     'fw-btn fw-gefahr'),
         'teal':   ('fw-markenflaeche fw-marke',     'fw-btn fw-primary'),
     }
@@ -716,7 +730,7 @@ def fw_finanzen(request):
         # sie werden nicht kopiert. Der Korb behält die Handlungen, die keine
         # Läufe sind (freigeben, weiterverrechnen, Kautionen); die Läufe
         # stehen im Periodenabschluss und im Bereich «Läufe».
-        ('weiterverrechnung', 'weiterverrechnen', 'violet', _('Weiterverrechnungen abschliessen'),
+        ('weiterverrechnung', 'weiterverrechnen', 'primaer', _('Weiterverrechnungen abschliessen'),
          _('Angefangene Weiterverrechnungen an Mieter fertigstellen'),
          len(offen_wv), _chf(offen_wv, 'offen_weiterzuverrechnen'), '/neu/kreditoren/', _('Weiterverrechnen'), False),
         # gewandert in den Periodenabschluss (E2.30, Plan: «Handlungen springen in den zugehörigen Lauf»)

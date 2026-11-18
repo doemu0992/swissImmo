@@ -1,7 +1,24 @@
 """Zentrale Navigationsstruktur der /neu/-Oberfläche.
 
-FÜNF BEREICHE: Heute · Akten · Läufe · Finanzen · Berichte
+SECHS BEREICHE: Heute · Betrieb · Akten · Läufe · Finanzen · Berichte
 (Einstellungen steht im Fuss der Leiste — es ist kein Arbeitsbereich.)
+
+NOVEMBER 2026: SECHS BEREICHE UND DIE SCHIENE
+============================================
+
+Gemessen am 17.11.2026 (152 Seiten, Desktop und Telefon): «Akten» hatte 13
+Punkte, davon drei hinter «Mehr» (bei 1100 px sechs); Schäden, Mieterwechsel,
+Leerstand, Vermarktung und Bewerbungen sind Tagesarbeit, keine Register. Neu:
+
+  Betrieb   Was im Haus passiert (Schäden, Aufträge, Anfragen, Vermietung,
+            Ablesung, Ersatz). Die Adressen sind unverändert.
+  Akten     Nur noch die Register.
+  Heute · Läufe · Finanzen · Berichte    mit je einem Eintrag «Übersicht».
+
+Die Navigation steht ab 1024 px in einer Schiene am linken Rand (`fw/base.html`,
+`static/js/fw-schiene.js`): sechs Symbole, ein Klick klappt die Seiten des
+Bereichs auf. Diese Liste bleibt die EINE Quelle: Schiene, Telefon-Kopfzeile,
+Palette und Rollenfilter lesen sie.
 
 WAS SICH MIT E1.1 GEÄNDERT HAT UND WARUM
 ========================================
@@ -36,7 +53,7 @@ Finanzen  Register und Konten. Bewusst OHNE eigenen Arbeitskorb — was zu tun
           auf derselben Datenbank «alles erledigt» sagte.
 Berichte  Auswertungen und was der Eigentümer zu sehen bekommt.
 
-Entscheide D1 und D8 (docs/ENTSCHEIDE-V7.md): fünf Bereiche statt der vier aus
+Entscheide D1 und D8 («ENTSCHEIDE-V7» (früheres Dokument, Git-Verlauf)): fünf Bereiche statt der vier aus
 G1, weil die Buchhalterin einen anderen Tagesrhythmus hat als die
 Bewirtschafterin und 16 gebaute Finanzseiten sonst keinen Ort haben.
 
@@ -75,20 +92,71 @@ EINSTELLUNGEN_KEYS = ['einstellungen', 'account', 'abonnement', 'benutzer',
 #: durchgerutscht: Es hing vorher unter «Erweitert», hat jetzt keinen
 #: Gruppeneintrag mehr — und genau diese Seite war schon einmal vier Etappen
 #: lang unauffindbar (Phase 4a).
-EINSTELLUNGEN_ZIELE = [
-    '/neu/einstellungen/',
-    '/neu/account/',
-    '/neu/benutzer/',
-    '/neu/abonnement/',
-    '/neu/vorlagen/',
-    '/neu/integrationen/',
-    '/neu/logbuch/',
-    '/neu/rechtsgrundlagen/',
-    '/neu/regelwerk/',
-    '/neu/einstellungen/zahlungsfreigabe/',
-    '/neu/archiv/',
-    '/neu/einstellungen/daten/',
-]
+# Gebildet aus `einstellungen_gruppen()` (weiter unten): die Hub-Seite, das Feld der Schiene und diese Liste teilen eine Quelle.
+EINSTELLUNGEN_ZIELE = []
+
+
+def einstellungen_gruppen():
+    """Die Einstellungen in sechs Gruppen — EINE Quelle für die Hub-Seite, das Feld der Schiene und die Brotkrumen.
+
+    Bis 17.11.2026 standen 17 Kacheln in einer Reihe auf der Hub-Seite, und die Seiten dahinter hatten weder
+    Menüband noch einen Weg zurück. Jetzt sind sie nach Frage geordnet («wer darf was?», «wie sehen
+    unsere Texte aus?», «womit ist das Programm verbunden?»). Jeder Eintrag hat eine Adresse; Rollen und Abo-Stufe
+    filtert der Context-Processor (`fw_einstellungen_gruppen`), die Hub-Seite nach denselben Regeln."""
+    def e(titel, sub, url, icon):
+        return {'titel': titel, 'sub': sub, 'url': url, 'icon': icon}
+    return [
+        {'key': 'verwaltung', 'label': _('Verwaltung'), 'eintraege': [
+            e(_('Account'), _('Verwaltungs-Stammdaten, Logo, Absender'), '/neu/account/', 'person'),
+            e(_('Abonnement'), _('Plan und Rechnungsstellung'), '/neu/abonnement/', 'einstellungen'),
+            e(_('Anmeldung & Sicherheit'), _('Zwei-Faktor-Anmeldung für Sie und Ihr Team'), '/konto/zwei-faktor/', 'gesperrt'),
+            # Nur der Betreiber (Superuser): `darf_oeffnen` blendet den Eintrag für alle anderen aus.
+            e(_('Betreiber-Portal'), _('Kunden, Abonnements und Verschlüsselung der Installation (Betreiber)'), '/betreiber/', 'gesperrt'),
+        ]},
+        {'key': 'team', 'label': _('Team & Zugriff'), 'eintraege': [
+            e(_('Benutzer & Rollen'), _('Team-Mitglieder und Berechtigungen'), '/neu/benutzer/', 'person'),
+            e(_('Zahlungsfreigabe'), _('Freigabelimite für Lieferantenzahlungen (Vier-Augen-Prinzip)'),
+              '/neu/einstellungen/zahlungsfreigabe/', 'gesperrt'),
+            e(_('API-Zugang'), _('Schlüssel für Treuhand und Buchhaltungssoftware (nur Lesen)'), '/neu/einstellungen/api/', 'einstellungen'),
+        ]},
+        {'key': 'vorlagen', 'label': _('Vorlagen & Regeln'), 'eintraege': [
+            e(_('Vorlagen'), _('Textvorlagen mit Platzhaltern'), '/neu/vorlagen/', 'dokument'),
+            # Das Regelwerk hing bis E1.1 unter «Erweitert»: Fristenregeln sind eine Einstellung, keine Tagesarbeit.
+            e(_('Regelwerk (Fristen)'), _('Kündigungstermine und Fristen je Kanton'), '/neu/regelwerk/', 'recht'),
+            e(_('Rechtsgrundlagen'), _('OR/VMWG-Artikel mit Anwendung im Programm'), '/neu/rechtsgrundlagen/', 'recht'),
+            # Audit F3: Die Tabelle speist Abnahme und Ersatzplanung — Werte, die man einmal festlegt.
+            e(_('Lebensdauertabelle'), _('Nutzungsdauern für Zeitwert bei Abnahme und Ersatzplanung'), '/neu/lebensdauer/', 'verlauf'),
+            # Der Wortlaut der Schlussbestimmungen gehört der Verwaltung, nicht dem Code.
+            e(_('Abnahmeprotokoll (Texte)'), _('Wortlaut der Schlussbestimmungen: Haftung, Mietzinsdepot, Mängelrüge'),
+              '/neu/abnahme-texte/', 'recht'),
+        ]},
+        {'key': 'schnittstellen', 'label': _('Schnittstellen'), 'eintraege': [
+            e(_('Integrationen'), _('E-Mail, DocuSeal, KI, Banken, Portal-Feed'), '/neu/integrationen/', 'einstellungen'),
+            e(_('E-Mail-Eingang'), _('Adressen für Ticket-Antworten und Rechnungen, eigenes Postfach nur bei Bedarf'),
+              '/neu/postfaecher/', 'wartet'),
+        ]},
+        {'key': 'daten', 'label': _('Daten & Protokoll'), 'eintraege': [
+            e(_('Daten'), _('Import für Wechselkunden, Mandatsexport, Buchungsjournal für Banana und Abacus'),
+              '/neu/einstellungen/daten/', 'dokument'),
+            # Das Archiv hatte keinen Link: Wer eine Akte archivierte, fand es danach nicht wieder.
+            e(_('Archiv'), _('Archivierte Akten ansehen und wiederherstellen'), '/neu/archiv/', 'dokument'),
+            e(_('Logbuch'), _('Wer hat wann was geändert'), '/neu/logbuch/', 'verlauf'),
+        ]},
+    ]
+
+
+#: Die Seiten des Einstellungs-Bereichs — Hub und alle Einträge der Gruppen.
+EINSTELLUNGEN_ZIELE[:] = ['/neu/einstellungen/'] + [e['url'] for g in einstellungen_gruppen() for e in g['eintraege']]
+
+
+def einstellungen_krume(pfad):
+    """Name der Gruppe, zu der die Einstellungsseite unter `pfad` gehört — oder None (Hub, fremde Seite)."""
+    pfad = pfad if pfad.endswith('/') else pfad + '/'
+    for g in einstellungen_gruppen():
+        for eintrag in g['eintraege']:
+            if pfad.startswith(eintrag['url']) and eintrag['url'] != '/betreiber/':
+                return g['label']
+    return None
 
 
 def _g(key, label, icon, ziel, items=None, badge=None, extra_keys=None):
@@ -103,13 +171,16 @@ def _g(key, label, icon, ziel, items=None, badge=None, extra_keys=None):
             'items': items, 'alle_keys': alle_keys, 'badge': badge}
 
 
-def _i(label, ziel, keys, section=None):
-    """Untereintrag; `section` rendert davor eine kleine Zwischenüberschrift."""
-    return {'label': label, 'ziel': ziel, 'keys': keys, 'section': section}
+def _i(label, ziel, keys, section=None, selten=False):
+    """Untereintrag; `section` rendert davor eine kleine Zwischenüberschrift.
+
+    `selten`: wird selten aufgeschlagen und steht in der Schiene unter der
+    Überschrift «Selten gebraucht» (am Ende des Bereichs)."""
+    return {'label': label, 'ziel': ziel, 'keys': keys, 'section': section, 'selten': selten}
 
 
 def nav_gruppen():
-    """Die fünf Bereiche der Anwendung.
+    """Die sechs Bereiche der Anwendung.
 
     Ohne Argument: Es gibt genau eine Navigation. Bis E1.1 nahm diese Funktion
     einen `modus` entgegen und lieferte zwei verschiedene Strukturen.
@@ -117,10 +188,11 @@ def nav_gruppen():
     return [
         # ── HEUTE ────────────────────────────────────────────────────────────
         # Der Bereichskopf zeigt auf `/neu/` — die Startseite IST der
-        # Arbeitsvorrat (seit 4b.13). Ein zusätzlicher Eintrag «Arbeit» wäre ein
-        # zweiter Weg auf dieselbe Seite: keine Auswahl, sondern eine Frage, die
-        # der Benutzer nicht beantworten kann.
+        # Arbeitsvorrat (seit 4b.13). Der Eintrag «Übersicht» ist dieselbe Seite:
+        # In der Schiene braucht jeder Bereich einen ersten Punkt, der ihn selbst
+        # meint.
         _g('heute', _('Heute'), 'wartet', '/neu/', [
+            _i(_('Übersicht'), '/neu/', ['dashboard', 'arbeit', 'faelle']),
             _i(_('Zulauf'), '/neu/zulauf/', ['zulauf']),
             _i(_('Termine'), '/neu/termine/', ['termine']),
             _i(_('Pendenzen'), '/neu/pendenzen/', ['pendenzen']),
@@ -129,38 +201,48 @@ def nav_gruppen():
             # wenn jemand wissen will, wer für wen einspringt — nicht, wenn
             # jemand Ferien einträgt.
             _i(_('Vertretung'), '/neu/abwesenheiten/', ['abwesenheiten']),
-        # `kommunikation` (Serienbrief-Assistent) und `suche` (Trefferliste) haben keinen eigenen Menüpunkt,
-        # leuchten aber unter «Heute» statt nirgends (DESIGN-04). Ob sie einen Punkt bekommen, ist offen
-        # (DESIGN-05: Entscheidungsfrage).
-        ], extra_keys=['dashboard', 'faelle', 'arbeit', 'suche', 'kommunikation']),
+            _i(_('Kommunikation'), '/neu/kommunikation/', ['kommunikation']),
+        # `suche` (Trefferliste) hat keinen eigenen Menüpunkt, leuchtet aber unter «Heute».
+        ], extra_keys=['suche']),
+
+        # ── BETRIEB ──────────────────────────────────────────────────────────
+        # Was im Haus passiert: Vorgänge, die an Akten hängen, aber Tagesarbeit
+        # sind. Bis 17.11.2026 standen sie unter «Akten» (13 Punkte, drei davon
+        # hinter «Mehr»); Schaden und Mieterwechsel sind fachlich Fälle, keine
+        # Aktentypen. Die Adressen sind unverändert.
+        #
+        # «Vermietung» ist EIN Punkt: Mieterwechsel, Leerstand, Vermarktung und
+        # Bewerbungen sind Schritte eines Ablaufs (`fw/_pipeline.html` führt
+        # zwischen ihnen) und leuchten alle diesen Punkt.
+        _g('betrieb', _('Betrieb'), 'arbeit', '/neu/schaeden/', [
+            _i(_('Schäden'), '/neu/schaeden/', ['schadensfaelle']),
+            _i(_('Aufträge'), '/neu/auftraege/', ['auftraege']),
+            _i(_('Anfragen'), '/neu/anfragen/', ['anfragen']),
+            _i(_('Vermietung'), '/neu/mieterwechsel/',
+               ['mieterwechsel', 'leerstand', 'vermarktung', 'bewerbungen']),
+            _i(_('Ablesung'), '/neu/ablesung/', ['ablesung']),
+            _i(_('Ersatz & Ausstattung'), '/neu/ersatzplanung/', ['assets']),
+        ], badge='schaeden'),
 
         # ── AKTEN ────────────────────────────────────────────────────────────
-        # Die Register in der Reihenfolge, in der man sie aufschlägt: vom
-        # Auftraggeber über das Haus zur einzelnen Person. Darunter die
-        # laufenden Vorgänge, die an diesen Akten hängen.
-        _g('akten', _('Akten'), 'dokument', '/neu/liegenschaften/', [
+        # Nur noch die Register, in der Reihenfolge, in der man sie aufschlägt:
+        # vom Auftraggeber über das Haus zur einzelnen Person.
+        _g('akten', _('Akten'), 'liegenschaft', '/neu/liegenschaften/', [
             _i(_('Mandate'), '/neu/mandate/', ['mandate']),
             _i(_('Liegenschaften'), '/neu/liegenschaften/', ['liegenschaften']),
             _i(_('Objekte'), '/neu/objekte/', ['objekte']),
-            _i(_('Stockwerkeigentum'), '/neu/stweg/', ['stweg']),
             _i(_('Mietverhältnisse'), '/neu/vertraege/', ['vertraege']),
             _i(_('Personen'), '/neu/personen/', ['personen']),
             _i(_('Dienstleister'), '/neu/dienstleister/', ['dienstleister']),
-            # Schaden und Mieterwechsel sind fachlich Fälle, keine Aktentypen.
-            # Ihre Listen bleiben, bis die Fallansicht sie ersetzt.
-            _i(_('Schäden'), '/neu/schaeden/', ['schadensfaelle'], section=_('Vorgänge')),
-            _i(_('Mieterwechsel'), '/neu/mieterwechsel/', ['mieterwechsel']),
-            _i(_('Leerstand'), '/neu/leerstand/', ['leerstand']),
-            _i(_('Vermarktung'), '/neu/vermarktung/', ['vermarktung']),
-            _i(_('Bewerbungen'), '/neu/bewerbungen/', ['bewerbungen']),
-            _i(_('Ersatz & Ausstattung'), '/neu/ersatzplanung/', ['assets']),
-        # `dokumente` (Ablage und Dokumentverlauf) leuchtet unter «Akten», ohne eigenen Menüpunkt (DESIGN-04/-05).
-        ], badge='schaeden', extra_keys=['dokumente']),
+            _i(_('Stockwerkeigentum'), '/neu/stweg/', ['stweg']),
+            _i(_('Dokumente'), '/neu/dokumente/', ['dokumente']),
+        ]),
 
         # ── LÄUFE ────────────────────────────────────────────────────────────
         # Alles, was einen Zustand hat und blockieren kann. Der Bereich fehlte
         # im Einfachmodus vollständig, obwohl die Seiten seit 4b.5 stehen.
         _g('laeufe', _('Läufe'), 'lauf', '/neu/laeufe/', [
+            _i(_('Übersicht'), '/neu/laeufe/', ['laeufe']),
             _i(_('Sollstellung'), '/neu/sollstellung/', ['sollstellung'], section=_('Monat')),
             _i(_('Bankabgleich'), '/neu/bankabgleich/', ['bankabgleich']),
             _i(_('Mahnwesen'), '/neu/mahnwesen/', ['mahnwesen']),
@@ -173,16 +255,17 @@ def nav_gruppen():
         # ── FINANZEN ─────────────────────────────────────────────────────────
         # Register und Konten. Handlungen führen in den zugehörigen Lauf.
         _g('finanzen', _('Finanzen'), 'geld', '/neu/finanzen/', [
+            _i(_('Übersicht'), '/neu/finanzen/', ['finanzen']),
             _i(_('Mieterkonten'), '/neu/mieterkonten/', ['mieterkonten'], section=_('Forderungen')),
             _i(_('Debitoren'), '/neu/debitoren/', ['debitoren']),
             _i(_('Kautionen'), '/neu/kautionen/', ['kautionen']),
             _i(_('Kreditoren'), '/neu/kreditoren/', ['kreditoren'], section=_('Verbindlichkeiten')),
-            _i(_('Lieferantenkonten'), '/neu/lieferantenkonten/', ['lieferantenkonten']),
+            _i(_('Lieferantenkonten'), '/neu/lieferantenkonten/', ['lieferantenkonten'], selten=True),
             _i(_('Bankkonten'), '/neu/bankkonten/', ['bankkonten'], section=_('Konten')),
             _i(_('Buchhaltung'), '/neu/buchhaltung/', ['buchhaltung']),
-            _i(_('Kontenplan & Salden'), '/neu/kontenplan/', ['kontenplan']),
-            _i(_('Anlagen & Abschluss'), '/neu/anlagen/', ['anlagen']),
-            _i(_('Hypotheken'), '/neu/hypotheken/', ['hypotheken']),
+            _i(_('Kontenplan & Salden'), '/neu/kontenplan/', ['kontenplan'], selten=True),
+            _i(_('Anlagen & Abschluss'), '/neu/anlagen/', ['anlagen'], selten=True),
+            _i(_('Hypotheken'), '/neu/hypotheken/', ['hypotheken'], selten=True),
         ]),
 
         # ── BERICHTE ─────────────────────────────────────────────────────────
@@ -190,6 +273,7 @@ def nav_gruppen():
             _i(_('Übersicht'), '/neu/berichte/', ['berichte']),
             _i(_('Portfolio'), '/neu/portfolio/', ['portfolio']),
             _i(_('Auswertung'), '/neu/auswertung/', ['auswertung']),
+            _i(_('Eigene Auswertungen'), '/neu/auswertung/eigene/', ['eigene_auswertung']),
             _i(_('Team & Auslastung'), '/neu/team/', ['team']),
         ]),
     ]
@@ -239,10 +323,10 @@ def _ziel_erlaubt_fuer(rolle):
     return erlaubt
 
 
-def _navigation_buchhaltung(user):
+def _navigation_buchhaltung(user, rolle=None, rollen=None):
     """Navigation, Palette, Suche und Kopf der Buchhaltung (nur Finanzen).
 
-    Dieselben fünf Bereiche wie beim Team, aber nur mit den Seiten, die ihre
+    Dieselben Bereiche wie beim Team, aber nur mit den Seiten, die ihre
     Rolle öffnen darf. Ein Bereich ohne öffnbare Seite entfällt; zeigt sein Kopf
     auf eine gesperrte Seite (die Läufe-Übersicht), führt er auf die erste
     öffnbare. So gibt es weder Reiter noch Palette-Einträge, die in die 403 führen."""
@@ -251,17 +335,20 @@ def _navigation_buchhaltung(user):
     from core.auth import ROLLE_BUCHHALTUNG
     from core.services.palette_suche import sicht_von
 
-    erlaubt = _ziel_erlaubt_fuer(ROLLE_BUCHHALTUNG)
+    rolle = rolle or ROLLE_BUCHHALTUNG
+    erlaubt = _ziel_erlaubt_fuer(rolle)
     gruppen, palette = [], []
     for g in nav_gruppen():
         items = [dict(it, erlaubt=True) for it in g['items'] if erlaubt(it['ziel'])]
-        if not items:
-            continue        # ein Bereich ohne öffnbare Seite (Heute, Akten) entfällt
+        if not items or all(it['ziel'] == g['ziel'] for it in items):
+            continue        # ein Bereich ohne öffnbare Seite (Heute, Akten) entfällt — auch wenn nur seine Übersicht offen ist
         ziel = g['ziel'] if erlaubt(g['ziel']) else items[0]['ziel']
         gruppen.append(dict(g, items=items, ziel=ziel,
                             alle_keys=[g['key']] + [k for it in items for k in it['keys']]))
         palette.append({'label': g['label'], 'url': ziel})
         palette += [{'label': it['label'], 'url': it['ziel'], 'gruppe': g['label']} for it in items]
+    if erlaubt('/neu/logbuch/'):
+        palette.append({'label': _('Logbuch'), 'url': '/neu/logbuch/'})
     try:
         suche = sicht_von(user)
         suche_kontext = {'fw_suche_gruppen': ','.join(suche.gruppen), 'fw_suche_ziel': suche.suchseite}
@@ -280,7 +367,7 @@ def _navigation_buchhaltung(user):
         aktiv = aktuelle_organisation()
     except Exception:
         aktiv = None
-    return {**_kopf_reduziert(user), 'fw_nav_gruppen': gruppen, 'fw_palette': palette,
+    return {**_kopf_reduziert(user, rollen), 'fw_nav_gruppen': gruppen, 'fw_palette': palette,
             'fw_einstellungen_keys': EINSTELLUNGEN_KEYS, 'fw_mandanten': mandanten,
             'fw_mandant': aktiv, **suche_kontext}
 
@@ -305,7 +392,7 @@ def _suche_ohne_team(user):
             'fw_suche_gruppen': ','.join(suche.gruppen), 'fw_suche_ziel': suche.suchseite}
 
 
-def _kopf_reduziert(user):
+def _kopf_reduziert(user, rollen=None):
     """Die Kopfzeile ohne Ziele, die diese Person nicht öffnen darf (DESIGN-01).
 
     Wer keine Team-Rolle hat, bekommt «+», Glocke, Zahnrad, die Rubriken des
@@ -313,9 +400,17 @@ def _kopf_reduziert(user):
     endete für die Hauswartung bzw. für Mieter und Eigentümer (2FA-Seiten) auf
     einer 403-Seite. Das Logo führt zur eigenen Startseite: für die Hauswartung
     die Schadenliste, sonst die Login-Weiche (`/nach-login/`, rollengerecht)."""
-    from core.auth import ist_nur_buchhaltung, ist_nur_hauswart
+    from core.auth import ist_nur_buchhaltung, ist_nur_hauswart, ist_nur_revision
     start = '/nach-login/'
-    if ist_nur_hauswart(user):
+    from core.auth import BUCHHALTUNG_ROLLEN, ROLLE_REVISION, TEAM_ROLLEN
+    if rollen is not None:      # schon gelesen: keine weitere Abfrage
+        nur_revision = (ROLLE_REVISION in rollen
+                        and not rollen & (set(TEAM_ROLLEN) | set(BUCHHALTUNG_ROLLEN)))
+    else:
+        nur_revision = ist_nur_revision(user)
+    if nur_revision:
+        start = '/neu/buchhaltung/'
+    elif ist_nur_hauswart(user):
         start = '/neu/schaeden/'
     elif ist_nur_buchhaltung(user):
         start = '/neu/finanzen/'
@@ -323,7 +418,25 @@ def _kopf_reduziert(user):
 
 
 def fw_navigation(request):
-    """Context-Processor: Navigationsstruktur für base.html.
+    """Context-Processor: Navigationsstruktur — fällt bei einem Datenbankfehler weg.
+
+    Eine Fehlerseite (400/500) wird auch dann gerendert, wenn die Datenbank
+    gerade nicht antwortet oder die laufende Transaktion abgebrochen ist. Die
+    Leiste darf die Fehlerseite nicht ihrerseits zu Fall bringen: Dann fehlt
+    sie, und der Fehler steht im Protokoll.
+    """
+    from django.db import Error as DatenbankFehler
+    try:
+        return _fw_navigation(request)
+    except DatenbankFehler:
+        import logging
+        logging.getLogger(__name__).warning(
+            'Navigation ohne Datenbank gerendert (%s)', request.path, exc_info=True)
+        return {}
+
+
+def _fw_navigation(request):
+    """Navigationsstruktur für base.html.
 
     Nur für angemeldete Team-Mitglieder — Portal-Nutzer sehen keine Leiste.
     Eine Ausnahme: die Hauswartung bekommt die Suche (siehe `_suche_ohne_team`),
@@ -333,11 +446,15 @@ def fw_navigation(request):
     if not user or not user.is_authenticated:
         return {}
     try:
-        from core.auth import hat_rolle, BUCHHALTUNG_ROLLEN, TEAM_ROLLEN
+        from core.auth import hat_rolle, BUCHHALTUNG_ROLLEN, ROLLE_REVISION, TEAM_ROLLEN, eigene_rollen
         if not hat_rolle(user, TEAM_ROLLEN):
-            if hat_rolle(user, BUCHHALTUNG_ROLLEN):
-                return _navigation_buchhaltung(user)
-            return {**_kopf_reduziert(user), **_suche_ohne_team(user)}
+            # Eine Abfrage für Buchhaltung UND Revision (statt je einer).
+            rollen = eigene_rollen(user)
+            if rollen & set(BUCHHALTUNG_ROLLEN):
+                return _navigation_buchhaltung(user, rollen=rollen)
+            if ROLLE_REVISION in rollen:
+                return _navigation_buchhaltung(user, ROLLE_REVISION, rollen)
+            return {**_kopf_reduziert(user, rollen), **_suche_ohne_team(user)}
     except Exception:
         return {}
 
@@ -418,7 +535,20 @@ def fw_navigation(request):
         suche_kontext = {}
     # «Neuer Fall» im Kopf nur, wo die Rolle ihn anlegen darf (ROUTE-02): aus den schon gelesenen Rollen, ohne
     # zusätzliche Abfrage je Seite.
+    # Einstellungen: dieselbe Filterung wie die Bereiche (Rolle, Abo-Stufe); leere Gruppen entfallen.
+    einst = []
+    for g in einstellungen_gruppen():
+        eintraege = []
+        for eintrag in g['eintraege']:
+            if not darf_oeffnen(user, eintrag['url'], meine):
+                continue
+            merkmal = merkmal_der_view(eintrag['url'])
+            eintraege.append(dict(eintrag, gesperrt=bool(merkmal and not user.is_superuser and not hat_funktion(organisation, merkmal))))
+        if eintraege:
+            einst.append(dict(g, eintraege=eintraege))
     return {'fw_nav_gruppen': gruppen, 'fw_palette': palette,
             'fw_einstellungen_keys': EINSTELLUNGEN_KEYS,
+            'fw_einstellungen_gruppen': einst,
+            'fw_einstellungen_krume': einstellungen_krume(request.path),
             'fw_neuer_fall': darf_oeffnen(user, '/neu/faelle/neu/', meine),
             'fw_mandanten': mandanten, 'fw_mandant': aktiv, **suche_kontext}

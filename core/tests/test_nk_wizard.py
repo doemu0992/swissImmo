@@ -108,6 +108,67 @@ class SeitenTests(_Basis):
         self.assertContains(self.c.get(self.basis), 'Strom Werke AG')
 
 
+class RechenaufwandTests(_Basis):
+    """Audit 15.11.2026: Der Einstieg rechnete die Abrechnung zweimal (einmal, um den offenen Schritt zu finden, einmal in
+    dessen View), und die Liste zählte die Belege je Periode einzeln."""
+
+    def _aufrufe(self, url, methode='get'):
+        from unittest import mock
+
+        from core.utils import billing
+        with mock.patch.object(billing, 'berechne_abrechnung', wraps=billing.berechne_abrechnung) as engine:
+            antwort = getattr(self.c, methode)(url)
+        return antwort, engine.call_count
+
+    def test_der_einstieg_rechnet_genau_einmal(self):
+        antwort, n = self._aufrufe(self.basis)
+        self.assertEqual(antwort.status_code, 200)
+        self.assertEqual(n, 1, 'Der Einstieg rechnet die Abrechnung mehrfach.')
+
+    def test_jeder_schritt_rechnet_genau_einmal(self):
+        for teil in ('periode/', 'kosten/', 'verteilung/', 'pruefen/'):
+            with self.subTest(teil=teil):
+                antwort, n = self._aufrufe(self.basis + teil)
+                self.assertEqual(antwort.status_code, 200)
+                self.assertEqual(n, 1)
+
+    def test_das_gemerkte_ergebnis_gilt_nur_fuer_dieselbe_periode_und_nur_bei_get(self):
+        """Gegenprobe zur Abkürzung: Ein Ergebnis einer anderen Periode oder bei POST darf nie wiederverwendet werden."""
+        from unittest import mock
+
+        from django.contrib.auth import get_user
+        from django.test import RequestFactory
+
+        from core.utils import billing
+        from core.views.fw import nk_wizard
+        anfrage = RequestFactory().get(self.basis)
+        anfrage.user = get_user(self.c)
+        anfrage._nk_ergebnis = (self.p.pk + 999, {'total_kosten': 0, 'error': 'falsche Periode'})
+        with mock.patch.object(billing, 'berechne_abrechnung', wraps=billing.berechne_abrechnung) as engine:
+            ctx = nk_wizard._kontext(anfrage, self.p, 1)
+        self.assertEqual(engine.call_count, 1)
+        self.assertNotEqual(ctx['result'].get('error'), 'falsche Periode')
+        post = RequestFactory().post(self.basis)
+        post.user = anfrage.user
+        post._nk_ergebnis = (self.p.pk, {'total_kosten': 0, 'error': 'veraltet'})
+        with mock.patch.object(billing, 'berechne_abrechnung', wraps=billing.berechne_abrechnung) as engine:
+            ctx = nk_wizard._kontext(post, self.p, 1)
+        self.assertEqual(engine.call_count, 1)
+        self.assertNotEqual(ctx['result'].get('error'), 'veraltet')
+
+    def test_die_liste_zaehlt_belege_nicht_je_periode(self):
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+        self.c.get('/neu/nebenkosten/')
+        with CaptureQueriesContext(connection) as abfragen:
+            antwort = self.c.get('/neu/nebenkosten/')
+        self.assertEqual(antwort.status_code, 200)
+        einzeln = [q['sql'] for q in abfragen if 'COUNT' in q['sql'].upper() and 'nebenkostenbeleg' in q['sql'].lower()
+                   and 'GROUP BY' not in q['sql'].upper()]
+        self.assertEqual(einzeln, [])
+        self.assertEqual(antwort.context['rows'][0]['belege'], self.p.belege.count())
+
+
 class PeriodeTests(_Basis):
     def test_neue_periode_ueber_zwoelf_monate_wird_abgewiesen(self):
         from finance.models import AbrechnungsPeriode

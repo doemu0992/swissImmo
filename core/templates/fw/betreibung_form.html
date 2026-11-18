@@ -131,7 +131,7 @@ der Frist), steht nach dem Speichern als Warnung da, nicht als Fehler am Feld.
         {% if b.kosten_rechnung and b.kosten_rechnung.status != 'storniert' %}
         <p class="fw-klein">{% blocktrans with b=b.kosten_rechnung.betrag|chf %}Bereits belastet: CHF {{ b }}.{% endblocktrans %}</p>
         {% elif b.kosten > 0 %}
-        <form method="post" action="/neu/betreibungen/{{ b.id }}/kosten/" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with b=b.kosten|chf %}Betreibungskosten von CHF {{ b }} dem Mieter als Forderung belasten?{% endblocktrans %}{% endfilter %}');">
+        <form method="post" action="/neu/betreibungen/{{ b.id }}/kosten/" data-bestaetigen="{% filter escapejs %}{% blocktrans with b=b.kosten|chf %}Betreibungskosten von CHF {{ b }} dem Mieter als Forderung belasten?{% endblocktrans %}{% endfilter %}">
             {% csrf_token %}
             <p class="fw-klein">{% blocktrans with b=b.kosten|chf %}Stellt CHF {{ b }} als Forderung «Betreibungskosten (Art. 68 SchKG)» in Rechnung. Sie hängt an der Hauptforderung und zählt nicht zum Rückstand nach Art. 257d OR.{% endblocktrans %}</p>
             <button type="submit" class="fw-btn">{% zeichen 'rechnung' %}{% trans "Kosten dem Mieter belasten" %}</button>

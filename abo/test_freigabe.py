@@ -84,13 +84,22 @@ class PruefstelleTests(Basis):
         self.assertFalse(f.hat_funktion(org, 'betreibung'))
 
     def test_module_nur_wenn_zugebucht(self):
-        self._abo('professional')
+        self._abo('team')
         org = self.a.organisation
         for schluessel in f.MODULE:
             self.assertFalse(f.hat_funktion(org, schluessel), schluessel)
-        self._abo('professional', zusatzmodule=['signatur'])
+        self._abo('team', zusatzmodule=['signatur'])
         self.assertTrue(f.hat_funktion(self.a.organisation, 'signatur'))
         self.assertFalse(f.hat_funktion(self.a.organisation, 'belegerkennung'))
+
+    def test_module_im_grundpreis_ab_professional(self):
+        """KI-Erkennung und Auswertungen stecken ab Professional im Grundpreis, die Unterschrift nie."""
+        for stufe, soll in (('start', False), ('team', False), ('professional', True), ('enterprise', True)):
+            self._abo(stufe)
+            org = self.a.organisation
+            self.assertEqual(f.hat_funktion(org, 'belegerkennung'), soll, stufe)
+            self.assertEqual(f.hat_funktion(org, 'reporting_erweitert'), soll, stufe)
+            self.assertFalse(f.hat_funktion(org, 'signatur'), stufe)
 
     def test_bestandsschutz_oeffnet_alles_bis_zur_planwahl(self):
         self._abo('start', uneingeschraenkt=True)
@@ -204,7 +213,9 @@ class SperrseiteTests(Basis):
         self._abo('start')
         c = self._client()
         self.assertContains(c.get('/neu/liegenschaften/'), 'fw-abo-schloss')
-        plan_wechseln(self.a.organisation, 'team', False)
+        # Die Schiene führt die Seiten ALLER Bereiche (nicht nur des aktiven): Solange eine Seite der Stufe fehlt,
+        # steht das Zeichen auf jeder Seite. Erst die höchste Stufe sperrt nichts.
+        plan_wechseln(self.a.organisation, 'enterprise', False)
         self.assertNotContains(c.get('/neu/liegenschaften/'), 'fw-abo-schloss')
 
     def test_superuser_ist_nicht_gesperrt(self):
@@ -379,14 +390,14 @@ class GrenzenTests(Basis):
         Mitgliedschaft.alle_organisationen.create(benutzer=u2, organisation=self.a.organisation, rolle='Verwalter')
         konten = User.objects.count()
         c = self._client()
-        antwort = c.post('/neu/benutzer/neu/', {'username': 'dritter_v', 'passwort': 'Sehr-geheim-123', 'rolle': 'Verwalter'})
+        antwort = c.post('/neu/benutzer/neu/', {'username': 'dritter_v', 'email': 'dritter@example.ch', 'rolle': 'Verwalter'})
         self.assertEqual(antwort.status_code, 402)
         self.assertContains(antwort, 'Grenze der Stufe', status_code=402)
         self.assertEqual(User.objects.count(), konten)
         self.assertFalse(User.objects.filter(username='dritter_v').exists())
         # Gegenprobe: in einer Stufe mit Platz geht dieselbe Anfrage durch.
         plan_wechseln(self.a.organisation, 'team', False)
-        self.assertEqual(c.post('/neu/benutzer/neu/', {'username': 'dritter_v', 'passwort': 'Sehr-geheim-123',
+        self.assertEqual(c.post('/neu/benutzer/neu/', {'username': 'dritter_v', 'email': 'dritter@example.ch',
                                                        'rolle': 'Verwalter'}).status_code, 302)
         self.assertTrue(User.objects.filter(username='dritter_v').exists())
 
@@ -429,7 +440,7 @@ class ModulBindungTests(Basis):
 
     def test_belegerkennung_ohne_modul_ruft_die_ki_nicht(self):
         from finance import utils
-        self._abo('professional')
+        self._abo('team')
         with organisation_kontext(self.a.organisation), mock.patch.object(utils, '_scan_basis') as scan, \
                 mock.patch.object(utils, '_qr_rechnung_dekodieren', return_value=None):
             scan.return_value = utils._leer('ki', '')
@@ -437,7 +448,12 @@ class ModulBindungTests(Basis):
             self.assertEqual(ergebnis['methode'], 'gesperrt')
             scan.assert_not_called()
             # Gegenprobe: mit Modul läuft der Scan.
-            self._abo('professional', zusatzmodule=['belegerkennung'])
+            self._abo('team', zusatzmodule=['belegerkennung'])
+            utils.scan_beleg('/tmp/gibt-es-nicht.pdf')
+            scan.assert_called_once()
+            # In Professional steckt das Modul im Grundpreis: der Scan läuft auch ohne Zubuchung.
+            scan.reset_mock()
+            self._abo('professional')
             utils.scan_beleg('/tmp/gibt-es-nicht.pdf')
             scan.assert_called_once()
 
@@ -471,3 +487,74 @@ class MigrationTests(Basis):
         abo = Abonnement.alle_organisationen.get(organisation=neu)
         self.assertFalse(abo.uneingeschraenkt)
         self.assertEqual(abo.zusatzmodule, [])
+
+
+class KatalogHaeltWasErVersprichtTests(Basis):
+    """Was im Katalog über «start» steht oder zubuchbar ist, wird irgendwo geprüft — sonst verkauft die Preisseite
+    einen Unterschied, den es nicht gibt (16.11.2026: «Zulauf» war in Start offen, «Schnittstellen» und
+    «Mandatsrentabilität» nie gesperrt, das Modul «Eigene Auswertungen» gar nicht gebaut).
+
+    Gegenprobe (16.11.2026): Zeile `/neu/zulauf/` aus `PFAD_MODULE` entfernt -> der Zulauf-Test wird rot.
+    """
+
+    def test_zulauf_ist_in_start_nur_lesbar_und_ab_team_offen(self):
+        c = Client()
+        c.force_login(self.a.benutzer)
+        self._abo('start')
+        self.assertEqual(c.get('/neu/zulauf/').status_code, 200)
+        self.assertEqual(c.post('/neu/zulauf/999999/uebernehmen/', {}).status_code, 402)
+        self._abo('team')
+        self.assertNotEqual(c.post('/neu/zulauf/999999/uebernehmen/', {}).status_code, 402)
+
+    def test_jede_verkaufte_funktion_hat_eine_pruefstelle(self):
+        """Wächter: Ein neuer Schlüssel ohne Sperre fällt auf, bevor er auf der Preisseite steht."""
+        wurzel = pathlib.Path(settings.BASE_DIR)
+        quelle = ''
+        for datei in wurzel.rglob('*.py'):
+            teile = datei.relative_to(wurzel).parts
+            if ({'node_modules', 'migrations', 'tests', 'staticfiles', '.git'} & set(teile)
+                    or datei.name.startswith('test_') or datei.name == 'funktionen.py'):
+                continue
+            quelle += datei.read_text(encoding='utf-8', errors='ignore')
+        verkauft = (set(f.FUNKTIONEN) - f.STUFEN['start']) | set(f.MODULE)
+        self.assertGreater(len(verkauft), 5)
+        ohne = sorted(k for k in verkauft if f"'{k}'" not in quelle and f'"{k}"' not in quelle)
+        self.assertEqual(ohne, [], 'Diese Funktionen stehen im Katalog, werden aber nirgends geprüft.')
+
+    def test_schnittstellen_erst_ab_professional(self):
+        """Journal-Formate Banana und bexio, Vermarktungs-Feed und Kalender-Abo waren für jede Stufe offen."""
+        from core.services.ical import token_setzen
+        org = self.a.organisation
+        type(org).objects.filter(pk=org.pk).update(portal_feed_token='feedgeheimnis-abcdefghijkl')
+        c = Client()
+        c.force_login(self.a.benutzer)
+        zeitraum = {'von': '2024-01-01', 'bis': '2024-12-31'}
+        self._abo('team')
+        self.assertEqual(c.post('/neu/einstellungen/daten/export/journal/', {**zeitraum, 'preset': 'banana'}).status_code, 402)
+        self.assertEqual(c.post('/neu/einstellungen/daten/export/journal/', zeitraum).status_code, 200)   # freie Zuordnung
+        self.assertEqual(c.post('/neu/fristen/kalender-link/', {'aktion': 'neu'}).status_code, 402)
+        self.assertEqual(c.post('/neu/integrationen/portal-token/', {}).status_code, 402)
+        self.assertEqual(Client().get('/neu/vermarktung/feed.json?token=feedgeheimnis-abcdefghijkl').status_code, 403)
+        self.assertContains(c.get('/neu/fristen/'), 'Teil der Stufe Professional')
+        token = token_setzen(self.a.benutzer, org)                    # ein früher erzeugter Link liefert nichts mehr
+        self.assertEqual(Client().get('/fristen.ics', {'token': token}).status_code, 403)
+        self._abo('professional')
+        self.assertEqual(c.post('/neu/einstellungen/daten/export/journal/', {**zeitraum, 'preset': 'banana'}).status_code, 200)
+        self.assertEqual(Client().get('/neu/vermarktung/feed.json?token=feedgeheimnis-abcdefghijkl').status_code, 200)
+        self.assertEqual(Client().get('/fristen.ics', {'token': token}).status_code, 200)
+        self.assertNotContains(c.get('/neu/fristen/'), 'Teil der Stufe Professional')
+
+    def test_mandatsrentabilitaet_erst_ab_professional(self):
+        """Die Karte in der Mandatsakte war für jede Stufe sichtbar, obwohl sie als Professional verkauft wird."""
+        c = Client()
+        c.force_login(self.a.benutzer)
+        pfad = f'/neu/mandate/{self.a.eigentuemer.pk}/'
+        self._abo('team')
+        seite = c.get(pfad)
+        self.assertEqual(seite.status_code, 200)
+        self.assertIsNone(seite.context['rentabilitaet'])
+        self.assertContains(seite, 'Teil der Stufe Professional')
+        self._abo('professional')
+        seite = c.get(pfad)
+        self.assertIsNotNone(seite.context['rentabilitaet'])
+        self.assertNotContains(seite, 'Teil der Stufe Professional')

@@ -111,7 +111,7 @@ class HauswartKopfzeileTests(RbacBasis):
     def test_hauswart_bekommt_nur_ziele_angeboten_die_er_oeffnen_darf(self):
         for adresse in ('/neu/schaeden/', '/neu/schaeden/board/'):
             html = self._seite(self.u_hauswart, adresse)
-            kopf = html[html.index('id="fwKopf"'):html.index('<main class="fw-inhalt">')]
+            kopf = html[html.index('id="fwKopf"'):html.index('<main class="fw-inhalt"')]
             for ziel in self.ZIELE_DES_TEAMS:
                 with self.subTest(adresse=adresse, ziel=ziel):
                     self.assertNotIn(ziel, kopf)
@@ -119,33 +119,40 @@ class HauswartKopfzeileTests(RbacBasis):
             # Die Brotkrume «Akten /» (Ziel /neu/liegenschaften/) steht nicht mehr da,
             # und die Zähler-Abfrage wird nicht gesendet.
             self.assertNotIn('/neu/liegenschaften/', html)
-        # Das Skript bricht vor dem Abruf ab (kein Netzaufruf, kein 403 im Hintergrund).
-        self.assertRegex(html, r"classList\.contains\('_embed'\)\) return;\s*return;")
+        # Das Skript bricht vor dem Abruf ab (kein Netzaufruf, kein 403 im Hintergrund): Die Seite meldet es im
+        # Datenblock, das Skript (`static/js/fw-rahmen.js`) prüft ihn vor dem `fetch`.
+        self.assertIn('"kopfReduziert": true', html)
 
     def test_gegenprobe_das_team_sieht_alles_und_fragt_die_zaehler_ab(self):
         """Ohne diesen Gegenpol wäre der Test oben auch für eine kaputte Seite grün."""
         html = self._seite(self.u_verwalter, '/neu/schaeden/')
-        kopf = html[html.index('id="fwKopf"'):html.index('<main class="fw-inhalt">')]
+        kopf = html[html.index('id="fwKopf"'):html.index('<main class="fw-inhalt"')]
         for ziel in ('/neu/faelle/neu/', '/neu/zulauf/', '/neu/einstellungen/'):
             self.assertIn(ziel, kopf)
         self.assertIn('/neu/liegenschaften/', html)
-        self.assertIn("fetch('/neu/leistenzahlen/'", html)
-        self.assertNotRegex(html, r"classList\.contains\('_embed'\)\) return;\s*return;")
+        from ._rahmen import rahmen_skripte
+        skript = rahmen_skripte()
+        self.assertIn('"kopfReduziert": false', html)
+        self.assertRegex(skript, r"if \(FW_RAHMEN\.kopfReduziert\) return;[^\n]*\n\s*fetch\('/neu/leistenzahlen/'")
 
     def test_hauswart_seite_ist_bis_ins_profilmenue_frei_von_403_zielen(self):
         html = self._seite(self.u_hauswart, '/neu/schaeden/')
-        menue = html[html.index('id="fwProfil"'):html.index('<main class="fw-inhalt">')]
+        menue = html[html.index('id="fwProfil"'):html.index('<main class="fw-inhalt"')]
         for ziel in ('/neu/dokumente/', '/neu/kommunikation/', '/neu/einstellungen/', '/neu/faelle/neu/'):
             self.assertNotIn(ziel, menue)
         self.assertIn('/logout/', menue)
 
     def test_zwei_faktor_seite_fuer_mieter_zeigt_die_team_ziele_nicht(self):
-        """ROUTE-03(c): Die 2FA-Seite rendert für Portal-Rollen in derselben Hülle."""
+        """ROUTE-03(c): Die 2FA-Seite zeigt Portal-Rollen keine Ziele der Verwaltung.
+
+        Seit dem 14.11.2026 erscheint sie für Portal-Konten im Portal-Rahmen (`zweifaktor._rahmen`) statt in der
+        Hülle der Verwaltung: gar keine Team-Ziele mehr, dafür ein Weg zurück ins eigene Portal."""
         html = self._seite(self.u_mieter, '/konto/zwei-faktor/')
-        kopf = html[html.index('id="fwKopf"'):html.index('<main class="fw-inhalt">')]
+        self.assertNotIn('id="fwKopf"', html)
         for ziel in self.ZIELE_DES_TEAMS:
-            self.assertNotIn(ziel, kopf)
-        self.assertIn('href="/nach-login/" class="fw-kapsel fw-logo-kapsel"', kopf)
+            self.assertNotIn(ziel, html)
+        self.assertIn('href="/mieter/daten/"', html)
+        self.assertIn('/logout/', html)
 
 
 class NeuerFallOhneModalTests(RbacBasis):
@@ -158,7 +165,7 @@ class NeuerFallOhneModalTests(RbacBasis):
         self.assertEqual(antwort.status_code, 200)
         html = antwort.content.decode()
         self.assertNotIn('function fwModalOpen', html)       # auf dieser Seite nicht geladen
-        aufrufe = re.findall(r'onclick="[^"]*fwModalOpen\(this', html)
-        self.assertTrue(aufrufe)
-        for a in aufrufe:
-            self.assertIn('window.fwModalOpen ?', a)         # sonst ReferenceError
+        # Der Auslöser ist ein Datenattribut; der Verteiler prüft, ob die Funktion da ist (sonst ReferenceError)
+        self.assertTrue(re.findall(r'data-modal="', html))
+        verteiler = open('static/js/fw-aktionen.js', encoding='utf-8').read()
+        self.assertIn("typeof window.fwModalOpen === 'function'", verteiler)

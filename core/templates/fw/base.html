@@ -4,13 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
     <title>{% block title %}immoswiss{% endblock %}</title>
-    <script>/* Theme früh setzen (kein Flash) */(function(){try{var t=localStorage.getItem('fw-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+    <script nonce="{{ csp_nonce }}">/* Theme früh setzen (kein Flash) */(function(){try{var t=localStorage.getItem('fw-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2230%22 fill=%22%23b04416%22/><path d=%22M24 50 L50 27 L76 50 M32 45 V75 H68 V45%22 fill=%22none%22 stroke=%22white%22 stroke-width=%227%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
 {% include 'fw/_assets.html' %}
     {% include 'fw/_schicht_link.html' %}
 {% include 'fw/_zeichen.html' %}
-    <script>
+    <script nonce="{{ csp_nonce }}">
         // Zustand vor dem ersten Paint anwenden (kein Flackern)
         // `fw-js`: nur mit Skript gesetzt; ohne es zeigt die Kopfzeile den «Übernehmen»-Knopf des Bestands
         document.documentElement.classList.add('fw-js');
@@ -59,11 +60,12 @@ WAS AUS DER ALTEN HUELLE WOHIN GING — nichts ist weggefallen:
 Die Ids und Funktionsnamen sind unveraendert — Tests, `_fwmodal.html` und die
 Detailseiten rufen sie beim Namen.
 {% endcomment %}
-<body class="fw-body">
+<body class="fw-body{% if fw_nav_gruppen %} fw-mit-schiene{% endif %}">
+<a href="#fw-inhalt" class="fw-skip">{% trans "Zum Inhalt springen" %}</a>
 <div class="fw-app">
 
     <!-- Vorhang für die Leiste am Telefon -->
-    <div id="fwBackdrop" onclick="fwCloseMobileNav()" class="fw-vorhang-mobil hidden"></div>
+    <div id="fwBackdrop" data-bei-klick="fwCloseMobileNav" class="fw-vorhang-mobil hidden"></div>
 
     <!-- ================= LEISTE ================= -->
     <aside id="fwSidebar" class="fw-side fw-flaeche" aria-label="{% trans 'Hauptnavigation' %}">
@@ -73,10 +75,10 @@ Detailseiten rufen sie beim Namen.
                 <a href="{% if fw_kopf_reduziert %}{{ fw_kopf_start }}{% else %}/neu/{% endif %}">immoswiss</a>
                 {% if fw_mandant and fw_mandanten|length <= 1 %}<small class="fw-faint" title="{{ fw_mandant.firma }}">{{ fw_mandant.firma }}</small>{% endif %}
             </div>
-            <button type="button" onclick="fwToggleSidebar()" title="{% trans 'Menü ein-/ausklappen' %}" class="fw-side-knopf fw-nur-breit">
+            <button type="button" data-bei-klick="fwToggleSidebar" title="{% trans 'Menü ein-/ausklappen' %}" class="fw-side-knopf fw-nur-breit">
                 {% zeichen 'zurueck' klasse='sb-collapse-icon' %}
             </button>
-            <button type="button" onclick="fwCloseMobileNav()" aria-label="{% trans 'Menü schliessen' %}" class="fw-side-knopf fw-nur-mobil">
+            <button type="button" data-bei-klick="fwCloseMobileNav" aria-label="{% trans 'Menü schliessen' %}" class="fw-side-knopf fw-nur-mobil">
                 {% zeichen 'schliessen' %}
             </button>
         </div>
@@ -92,7 +94,7 @@ Detailseiten rufen sie beim Namen.
         {% endcomment %}
         <form method="post" action="/neu/mandant/" class="fw-mandant sb-filter">{% csrf_token %}
             <label for="fwMandantWahl">{% trans "Mandant" %}</label>
-            <select id="fwMandantWahl" name="organisation" onchange="this.form.submit()" aria-label="{% trans 'Mandant wechseln' %}" class="fw-feld">
+            <select id="fwMandantWahl" name="organisation" data-absenden aria-label="{% trans 'Mandant wechseln' %}" class="fw-feld">
                 {% for m in fw_mandanten %}
                 <option value="{{ m.id }}" {% if fw_mandant.id == m.id %}selected{% endif %}>{{ m.firma }}</option>
                 {% endfor %}
@@ -130,12 +132,78 @@ Detailseiten rufen sie beim Namen.
                 {% zeichen 'einstellungen' %} <span class="sb-label">{% trans "Einstellungen" %}</span>
             </a>
             {% endif %}
-            <button type="button" onclick="fwProfilMenu()" class="fw-ich" aria-haspopup="true" aria-controls="fwProfil">
+            <button type="button" data-bei-klick="fwProfilMenu" class="fw-ich" aria-haspopup="true" aria-controls="fwProfil">
                 <span class="fw-avatar">{{ request.user.username|slice:":2"|upper }}</span>
                 <span class="sb-label"><b class="fw-ink truncate">{{ request.user.get_full_name|default:request.user.username }}</b><small class="fw-faint truncate">{{ request.user.email|default:request.user.username }}</small></span>
             </button>
         </div>
     </aside>
+
+    {% comment %} ===== DIE SCHIENE (17.11.2026, Konzept «C · Schiene») =====
+       Ab 1024 px stehen die Bereiche in einer schmalen Schiene am linken Rand: ein Symbol je Bereich, ein Klick
+       klappt die Seiten des Bereichs auf (`#fwFach`), ein Klick auf eine Seite schliesst es wieder. Die Kapsel mit den
+       Bereichen und das Menüband der Kopfzeile entfallen dort (CSS, Abschnitt «Schiene»); unter 1024 px bleiben sie.
+       Die Liste kommt aus `core/navigation.py`, wie bei der Kapsel — eine Quelle. Tastatur: «G» dann H/B/A/L/F/R öffnet
+       den Bereich, 1–9 wählt die Seite (`static/js/fw-schiene.js`). Ohne Skript sind die Symbole Links auf den
+       Bereichskopf. {% endcomment %}
+    {% if fw_nav_gruppen %}
+    <nav class="fw-schiene" id="fwSchiene" aria-label="{% trans 'Bereiche' %}">
+        <a href="{% if fw_kopf_reduziert %}{{ fw_kopf_start }}{% else %}/neu/{{ lg_query }}{% endif %}" class="fw-schiene-marke" title="{% trans 'Zur Übersicht' %}" aria-label="immoswiss — {% trans 'Zur Übersicht' %}">
+            <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true" class="fw-logo-haus"><path d="M3 15L16 4l13 11M7 13v14h18V13" class="a"/><path d="M12 27v-7h3v7M18 27v-9h3v9" class="b"/></svg>
+        </a>
+        {% for g in fw_nav_gruppen %}
+        <a href="{{ g.ziel }}{{ lg_query }}" class="fw-schiene-b{% if nav in g.alle_keys %} hier{% endif %}" data-fach="{{ g.key }}" data-taste="{{ g.key }}" title="{{ g.label }}"{% if nav in g.alle_keys %} aria-current="page"{% endif %}>
+            {% zeichen_wert g.icon %}<span>{{ g.label }}</span>
+            {% if g.badge == 'schaeden' and schaeden_ungelesen %}<span class="fw-schiene-zahl crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% else %}<span class="fw-schiene-zahl{% if g.key == 'heute' %} crit{% endif %}" data-zaehler="{{ g.key }}" hidden></span>{% endif %}
+        </a>
+        {% endfor %}
+        {% if not fw_kopf_reduziert %}
+        <div class="fw-schiene-fuss">
+            <a href="/neu/einstellungen/{{ lg_query }}" class="fw-schiene-b{% if nav in fw_einstellungen_keys %} hier{% endif %}" data-fach="einst" title="{% trans "Einstellungen" %}"{% if nav in fw_einstellungen_keys %} aria-current="page"{% endif %}>
+                {% zeichen 'einstellungen' %}<span>{% trans "Einstellungen" %}</span>
+            </a>
+        </div>
+        {% endif %}
+    </nav>
+    <div class="fw-fach" id="fwFach" role="region" aria-label="{% trans 'Seiten des Bereichs' %}" hidden>
+        {% for g in fw_nav_gruppen %}
+        <section data-fach-bereich="{{ g.key }}" aria-labelledby="fwFachTitel-{{ g.key }}" hidden>
+            <h2 id="fwFachTitel-{{ g.key }}">{{ g.label }}</h2>
+            <ul>
+                {% for it in g.items %}{% if it.erlaubt and not it.selten %}
+                <li><a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}><span>{{ it.label }}{% if it.gesperrt %}<span class="fw-abo-schloss">{% trans 'gesperrt' %}</span>{% endif %}</span><span class="fw-fach-rechts">{% if 'schadensfaelle' in it.keys and schaeden_ungelesen %}<span class="fw-z crit" title="{{ schaeden_ungelesen }} neue Schadenmeldung(en)">{{ schaeden_ungelesen }}</span>{% else %}<span class="fw-z crit" data-punkt="{{ it.keys.0 }}" hidden></span>{% endif %}<kbd aria-hidden="true"></kbd></span></a></li>
+                {% endif %}{% endfor %}
+            </ul>
+            <h3 class="fw-fach-selten" hidden>{% trans "Selten gebraucht" %}</h3>
+            <ul class="fw-fach-selten-liste">
+                {% for it in g.items %}{% if it.erlaubt and it.selten %}
+                <li><a href="{{ it.ziel }}{{ lg_query }}" class="{% if nav in it.keys %}hier{% endif %}"{% if nav in it.keys %} aria-current="page"{% endif %}><span>{{ it.label }}{% if it.gesperrt %}<span class="fw-abo-schloss">{% trans 'gesperrt' %}</span>{% endif %}</span></a></li>
+                {% endif %}{% endfor %}
+            </ul>
+        </section>
+        {% endfor %}
+        {% if fw_einstellungen_gruppen %}
+        <section data-fach-bereich="einst" aria-labelledby="fwFachTitel-einst" hidden>
+            <h2 id="fwFachTitel-einst">{% trans "Einstellungen" %}</h2>
+            <ul>
+                <li><a href="/neu/einstellungen/{{ lg_query }}"{% if nav == 'einstellungen' %} class="hier" aria-current="page"{% endif %}><span>{% trans "Alle Einstellungen" %}</span><kbd aria-hidden="true"></kbd></a></li>
+            </ul>
+            {% for g in fw_einstellungen_gruppen %}
+            <h3>{{ g.label }}</h3>
+            <ul>
+                {% for k in g.eintraege %}
+                <li><a href="{{ k.url }}{{ lg_query }}"><span>{{ k.titel }}{% if k.gesperrt %}<span class="fw-abo-schloss">{% trans 'gesperrt' %}</span>{% endif %}</span><kbd aria-hidden="true"></kbd></a></li>
+                {% endfor %}
+            </ul>
+            {% endfor %}
+        </section>
+        {% endif %}
+        <div class="fw-fach-zuletzt" id="fwZuletztFachAbschnitt" hidden>
+            <h3>{% trans "Zuletzt geöffnet" %}</h3>
+            <div id="fwZuletztFach"></div>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- ================= INHALT ================= -->
     <div class="fw-haupt">
@@ -164,7 +232,7 @@ Detailseiten rufen sie beim Namen.
             <form method="get" class="fw-bestand{% if aktive_lg %} aktiv{% endif %}" title="{% trans 'Globaler Filter' %}">
                 <span class="fw-bestand-zeichen" aria-hidden="true">{% zeichen 'liegenschaft' %}</span>
                 <small class="fw-bestand-ueber" aria-hidden="true">{% trans "Bestand" %}</small>
-                <select name="lg" onchange="this.form.submit()" aria-label="{% trans 'Bestand' %}: {% trans 'Globaler Filter' %}">
+                <select name="lg" data-absenden aria-label="{% trans 'Bestand' %}: {% trans 'Globaler Filter' %}">
                     <option value="">{% trans "Ganzer Bestand" %}</option>
                     {% for l in alle_liegenschaften %}
                     <option value="{{ l.id }}" {% if aktive_lg and aktive_lg.id == l.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>
@@ -182,19 +250,19 @@ Detailseiten rufen sie beim Namen.
             </nav>{% endif %}{% comment %} Ohne Bereiche (die Hauswartung) gibt es auch keine leere Kapsel. {% endcomment %}
             {% if fw_palette or fw_suche_gruppen %}{% include 'fw/_omnisearch.html' %}{% endif %}
             <div class="fw-kapsel fw-werkzeug-kapsel">
-                <button type="button" onclick="fwThemeWechseln()" title="{% trans 'Hell- oder Dunkelmodus' %}" aria-label="{% trans 'Hell- oder Dunkelmodus' %}" class="fw-knopf-rund fw-knopf-dunkel">{% zeichen 'darstellung' %}</button>
+                <button type="button" data-bei-klick="fwThemeWechseln" title="{% trans 'Hell- oder Dunkelmodus' %}" aria-label="{% trans 'Hell- oder Dunkelmodus' %}" class="fw-knopf-rund fw-knopf-dunkel">{% zeichen 'darstellung' %}</button>
                 {% comment %} «+», Glocke und Zahnrad führen in Bereiche des Teams: Die Hauswartung und die
                    Portal-Rollen (2FA-Seiten) bekommen sie nicht angeboten (`fw_kopf_reduziert`,
                    `core/navigation.py`). «Neuer Fall» fällt auf die Vollseite zurück, wo `fwModalOpen`
                    (Schublade, `fw/_fwmodal.html`) auf der Seite nicht geladen ist. {% endcomment %}
                 {% if not fw_kopf_reduziert %}
-                {% if fw_neuer_fall %}<a href="/neu/faelle/neu/" onclick="return window.fwModalOpen ? fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}') : true" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neuen Fall erfassen' %}"
-                   class="fw-knopf-rund fw-wz-neu">{% zeichen 'neu' %}</a>{% endif %}
+                {% if fw_neuer_fall %}<a href="/neu/faelle/neu/" data-modal="{% trans "Neuer Fall" %}" title="{% trans 'Neuen Fall erfassen' %}" aria-label="{% trans 'Neuen Fall erfassen' %}"
+                   class="fw-knopf-rund fw-wz-neu">{% zeichen 'neu' %}<span class="fw-wz-neu-text">{% trans "Neu" %}</span></a>{% endif %}
                 <a href="/neu/zulauf/{{ lg_query }}" title="{% trans 'Mitteilungen' %}" aria-label="{% trans 'Mitteilungen' %}"
                    class="fw-knopf-rund{% if nav == 'zulauf' %} hier{% endif %}">{% zeichen 'glocke' %}<span class="fw-pip" data-zaehler="zulauf" hidden></span></a>
                 <a href="/neu/einstellungen/{{ lg_query }}" title="{% trans 'Einstellungen' %}" aria-label="{% trans 'Einstellungen' %}" class="fw-knopf-rund fw-wz-einst{% if nav in fw_einstellungen_keys %} hier{% endif %}">{% zeichen 'einstellungen' %}</a>
                 {% endif %}
-                <button type="button" onclick="fwProfilMenu()" aria-label="{% trans 'Profil und Darstellung' %}" aria-haspopup="true" aria-controls="fwProfil" class="fw-avatar-knopf"><span class="fw-avatar fw-avatar-gross">{{ request.user.username|slice:":2"|upper }}</span></button>
+                <button type="button" data-bei-klick="fwProfilMenu" aria-label="{% trans 'Profil und Darstellung' %}" aria-haspopup="true" aria-controls="fwProfil" class="fw-avatar-knopf"><span class="fw-avatar fw-avatar-gross">{{ request.user.username|slice:":2"|upper }}</span></button>
             </div>
           </div>
           {% for g in fw_nav_gruppen %}{% if nav in g.alle_keys and g.items and nav != 'dashboard' %}
@@ -229,8 +297,8 @@ Detailseiten rufen sie beim Namen.
             {% comment %} Was die Kopfzeile bis 1023 px nicht mehr tragen kann: «Neuer Fall» und die
                Schublade. Ab 1024 px stehen beide nicht hier (`fw-profil-schnell`). {% endcomment %}
             <div class="fw-profil-schnell">
-                {% if not fw_kopf_reduziert and fw_neuer_fall %}<a href="/neu/faelle/neu/" onclick="fwProfilMenu();return window.fwModalOpen ? fwModalOpen(this,'{% filter escapejs %}{% trans "Neuer Fall" %}{% endfilter %}') : true" class="fw-profil-link">{% zeichen 'neu' %} {% trans "Neuer Fall" %}</a>{% endif %}
-                <button type="button" onclick="fwProfilMenu();fwOpenMobileNav()" class="fw-profil-link">{% zeichen 'mehr' %} {% trans "Menü öffnen" %}</button>
+                {% if not fw_kopf_reduziert and fw_neuer_fall %}<a href="/neu/faelle/neu/" data-bei-klick="fwProfilMenu" data-modal="{% trans "Neuer Fall" %}" class="fw-profil-link">{% zeichen 'neu' %} {% trans "Neuer Fall" %}</a>{% endif %}
+                <button type="button" data-bei-klick="fwMenueOeffnen" class="fw-profil-link">{% zeichen 'mehr' %} {% trans "Menü öffnen" %}</button>
                 <div class="fw-profil-trenner"></div>
             </div>
             {% if fw_mandant and fw_mandanten|length > 1 %}
@@ -239,7 +307,7 @@ Detailseiten rufen sie beim Namen.
                Organisationen); die Prüfung der Mitgliedschaft macht weiterhin `fw_mandant_wechseln`. {% endcomment %}
             <form method="post" action="/neu/mandant/" class="fw-profil-abschnitt fw-profil-mandant">{% csrf_token %}
                 <label for="fwMandantWahlProfil" class="fw-profil-titel">{% trans "Mandant" %}</label>
-                <select id="fwMandantWahlProfil" name="organisation" onchange="this.form.submit()" aria-label="{% trans 'Mandant wechseln' %}" class="fw-feld">
+                <select id="fwMandantWahlProfil" name="organisation" data-absenden aria-label="{% trans 'Mandant wechseln' %}" class="fw-feld">
                     {% for m in fw_mandanten %}
                     <option value="{{ m.id }}" {% if fw_mandant.id == m.id %}selected{% endif %}>{{ m.firma }}</option>
                     {% endfor %}
@@ -253,8 +321,8 @@ Detailseiten rufen sie beim Namen.
             <div class="fw-profil-abschnitt">
                 <div class="fw-profil-titel">{% trans "Darstellung" %}</div>
                 <div class="fw-segment">
-                    <button type="button" data-theme-btn="light" onclick="fwSetTheme('light')">{% trans "Hell" %}</button>
-                    <button type="button" data-theme-btn="dark" onclick="fwSetTheme('dark')">{% trans "Dunkel" %}</button>
+                    <button type="button" data-theme-btn="light" data-bei-klick="fwSetTheme" data-args='["light"]'>{% trans "Hell" %}</button>
+                    <button type="button" data-theme-btn="dark" data-bei-klick="fwSetTheme" data-args='["dark"]'>{% trans "Dunkel" %}</button>
                 </div>
             </div>
             <div class="fw-profil-abschnitt">
@@ -268,7 +336,10 @@ Detailseiten rufen sie beim Namen.
             <a href="/neu/einstellungen/" class="fw-profil-link">{% zeichen 'einstellungen' %} {% trans "Einstellungen" %}</a>
             <div class="fw-profil-trenner"></div>
             {% endif %}
-            <a href="/logout/" class="fw-profil-link crit">{% zeichen 'extern' %} {% trans "Abmelden" %}</a>
+            {% comment %}Abmelden ist ein POST: Django 5 lässt auf /logout/ nur POST zu. Als Link (GET) gab es eine leere Seite, und die Sitzung blieb bestehen.{% endcomment %}
+            <form method="post" action="/logout/">{% csrf_token %}
+                <button type="submit" class="fw-profil-link crit">{% zeichen 'extern' %} {% trans "Abmelden" %}</button>
+            </form>
         </div>
 
         {% if messages %}
@@ -282,23 +353,25 @@ Detailseiten rufen sie beim Namen.
                 {% if 'error' in m.tags or 'warning' in m.tags %}data-persist="1"{% endif %}>
                 {% if 'error' in m.tags %}{% zeichen 'kritisch' %}{% elif 'warning' in m.tags %}{% zeichen 'warnung' %}{% elif 'info' in m.tags %}{% zeichen 'hinweis' %}{% else %}{% zeichen 'gut' %}{% endif %}
                 <div class="fw-toast-text">{{ m|ohne_emoji }}</div>
-                <button type="button" onclick="this.closest('.fw-toast').remove()" title="{% trans 'Meldung schliessen' %}">{% zeichen 'schliessen' %}</button>
+                <button type="button" data-entfernen=".fw-toast" title="{% trans 'Meldung schliessen' %}">{% zeichen 'schliessen' %}</button>
             </div>
             {% endfor %}
         </div>
-        <script>
+        <script nonce="{{ csp_nonce }}">
             // Erfolg/Info blenden nach 6 s aus; Fehler/Warnungen bleiben stehen
             // (der Nutzer muss sie lesen) und werden nur per × geschlossen.
             setTimeout(function(){
                 document.querySelectorAll('#fw-toasts .fw-toast:not([data-persist])').forEach(function(t){
-                    t.style.transition='opacity .4s'; t.style.opacity='0';
+                    fwStil(t, {transition: 'opacity .4s', opacity: '0'});
                     setTimeout(function(){ t.remove(); }, 400);
                 });
             }, 6000);
         </script>
         {% endif %}
 
-        <main class="fw-inhalt">
+        <main class="fw-inhalt" id="fw-inhalt" tabindex="-1">
+            {% comment %} Einstellungsseiten haben kein Menüband: Der Pfad «Einstellungen / Gruppe» ist der Weg zurück (`core/navigation.py`). {% endcomment %}
+            {% if fw_einstellungen_krume %}<nav class="fw-krumen fw-einst-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/einstellungen/{{ lg_query }}">{% trans "Einstellungen" %}</a><span aria-hidden="true">/</span><span>{{ fw_einstellungen_krume }}</span></nav>{% endif %}
             {% include 'fw/_abo_hinweis.html' %}
             {% block content %}{% endblock %}
         </main>
@@ -312,489 +385,14 @@ Detailseiten rufen sie beim Namen.
 {% endif %}
 {% comment %} Menüband der Kopfzeile: Überlauf in «Mehr». Ohne dieses Skript scrollt das Band. {% endcomment %}
 <script defer src="{% statisch 'js/fw-menueband.js' %}"></script>
-<script>
-// Leiste ein-/ausklappen (Zustand in localStorage)
-function fwToggleSidebar() {
-    var collapsed = document.documentElement.classList.toggle('_sbc');
-    localStorage.setItem('sbCollapsed', collapsed ? '1' : '0');
-}
-
-// Leiste am Telefon als Schublade öffnen/schliessen
-function fwOpenMobileNav() {
-    document.getElementById('fwSidebar').classList.add('offen');
-    document.getElementById('fwBackdrop').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-}
-function fwCloseMobileNav() {
-    document.getElementById('fwSidebar').classList.remove('offen');
-    document.getElementById('fwBackdrop').classList.add('hidden');
-    document.body.style.overflow = '';
-}
-// ESC schliesst die Schublade
-document.addEventListener('keydown', function(e){ if (e.key === 'Escape') fwCloseMobileNav(); });
-
-// Navigationsgruppe auf-/zuklappen
-function fwNavToggle(key) {
-    var grp = document.getElementById('navgrp-' + key);
-    var sub = document.getElementById('navsub-' + key);
-    if (!grp || !sub) return;
-    sub.classList.toggle('hidden');
-    grp.classList.toggle('nav-open', !sub.classList.contains('hidden'));
-}
-
-// ─── Zahlen in der Leiste (konzept-v8) ───
-// Nach dem Seitenaufbau geholt, damit keine Seite auf den Arbeitsvorrat wartet.
-(function () {
-    if (document.documentElement.classList.contains('_embed')) return;
-    {% if fw_kopf_reduziert %}return;   // Hauswartung und Portal-Rollen dürfen die Zahlen nicht abfragen (403 im Hintergrund){% endif %}
-    fetch('/neu/leistenzahlen/', {headers: {'X-Requested-With': 'fetch'}, credentials: 'same-origin'})
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (z) {
-            if (!z) return;
-            document.querySelectorAll('[data-zaehler]').forEach(function (el) {
-                var n = z[el.getAttribute('data-zaehler')];
-                if (n) { if (el.classList.contains('fw-pip')) { el.hidden = false; }
-                         else { el.textContent = n; el.hidden = false; } }
-            });
-        }).catch(function () {});
-})();
-
-// ─── Zuletzt geöffnet (konzept-v8) ───
-// Nur im Browser dieser Person, nur Akten. Drei Einträge, der neueste oben.
-(function () {
-    var MUSTER = /^\/neu\/(liegenschaften|objekte|vertraege|personen|mandate|faelle|schaeden|dienstleister)\/\d+\/$/;
-    var liste = [];
-    try { liste = JSON.parse(localStorage.getItem('fw-zuletzt') || '[]') || []; } catch (e) {}
-    if (MUSTER.test(location.pathname) && !document.documentElement.classList.contains('_embed')) {
-        var h = document.querySelector('.fw-aktenkopf h1, .fw-phead h1, main h1');
-        var titel = h ? h.textContent.replace(/\s+/g, ' ').trim() : '';
-        if (titel) {
-            liste = [{h: location.pathname, l: titel}].concat(
-                liste.filter(function (x) { return x.h !== location.pathname; })).slice(0, 3);
-            try { localStorage.setItem('fw-zuletzt', JSON.stringify(liste)); } catch (e) {}
-        }
-    }
-    if (!liste.length) return;
-    function kurz(s) { return s.split(/[\s·,-]+/).filter(function (w) { return /^[A-Za-zÀ-ÿ]/.test(w); })
-                               .slice(0, 2).map(function (w) { return w[0]; }).join('').toUpperCase(); }
-    // Dieselbe Liste an zwei Orten: in der Schublade und im Profilmenü (am PC ist die Schublade aus).
-    // [Liste, Titel bzw. Abschnitt, der erst mit Einträgen erscheint]
-    [['fwZuletzt', 'fwZuletztTitel'], ['fwZuletztProfil', 'fwZuletztProfilAbschnitt']].forEach(function (p) {
-        var ziel = document.getElementById(p[0]);
-        if (!ziel) return;
-        liste.forEach(function (x) {
-            var a = document.createElement('a');
-            a.href = x.h; a.className = 'fw-nav-eintrag fw-zuletzt-eintrag' + (x.h === location.pathname ? ' hier' : '');
-            var k = document.createElement('span'); k.className = 'fw-avatar fw-avatar-klein'; k.textContent = kurz(x.l);
-            var t = document.createElement('span'); t.className = 'truncate'; t.textContent = x.l;
-            a.appendChild(k); a.appendChild(t); ziel.appendChild(a);
-        });
-        var titel = document.getElementById(p[1]);
-        if (titel) titel.hidden = false;
-    });
-})();
-
-// Die Bereichs-Kapsel oben: Ränder zeigen, wenn sie weiterläuft (Telefon, ab 901 px
-// bei sehr schmalem Fenster). Das Menüband darunter macht `static/js/fw-menueband.js`.
-(function () {
-    var kapsel = document.getElementById('fwHauptnav');
-    if (!kapsel) return;
-    var kr = function () { var m = kapsel.scrollWidth - kapsel.clientWidth;
-        kapsel.classList.toggle('rand-l', m > 1 && kapsel.scrollLeft > 2);
-        kapsel.classList.toggle('rand-r', m > 1 && kapsel.scrollLeft < m - 2); };
-    kr(); kapsel.addEventListener('scroll', kr, { passive: true }); window.addEventListener('resize', kr);
-    setTimeout(kr, 400);
-})();
-
-// Profilmenü öffnen/schliessen
-function fwProfilMenu() {
-    var m = document.getElementById('fwProfil');
-    if (m) m.classList.toggle('hidden');
-}
-document.addEventListener('click', function(e) {
-    var m = document.getElementById('fwProfil');
-    if (!m || m.classList.contains('hidden')) return;
-    // Klick ausserhalb von Menü + Auslöser schliesst
-    if (!m.contains(e.target) && !e.target.closest('button[onclick="fwProfilMenu()"]')) {
-        m.classList.add('hidden');
-    }
-});
-document.addEventListener('keydown', function(e) {
-    var m = document.getElementById('fwProfil');
-    if (e.key === 'Escape' && m) m.classList.add('hidden');
-});
-
-// Generische Tab-Umschaltung für Detailseiten:
-// Buttons: data-tab="<gruppe>" data-target="<name>"; Panels: id="<gruppe>-<name>"
-function fwTab(gruppe, name) {
-    document.querySelectorAll('[data-panel="' + gruppe + '"]').forEach(function(p) {
-        p.classList.toggle('hidden', p.id !== gruppe + '-' + name);
-    });
-    document.querySelectorAll('[data-tab="' + gruppe + '"]').forEach(function(b) {
-        var aktiv = b.dataset.target === name;
-        // `hier` ist die Klasse der Reiterleiste (`fw-reiter`, Tokens). Die
-        // alte Tailwind-Leiste gibt es nicht mehr (Production-Check 26.10.2026).
-        b.classList.toggle('hier', aktiv);
-    });
-}
-
-// Deep-Link: ?tab=<name> aktiviert beim Laden den passenden Tab
-document.addEventListener('DOMContentLoaded', function() {
-    try {
-        var t = new URLSearchParams(window.location.search).get('tab');
-        if (!t) return;
-        var btn = document.querySelector('[data-tab][data-target="' + t + '"]');
-        if (btn) fwTab(btn.dataset.tab, t);
-    } catch (e) {}
-});
-
-// Globaler Submit-Guard: verhindert Doppel-Submits (z.B. GWR-Import, Buchungen).
-// Beim Absenden wird der Submit-Button deaktiviert und zeigt einen Spinner;
-// Formulare mit data-no-guard sind ausgenommen (z.B. target=_blank-PDFs).
-document.addEventListener('submit', function(e) {
-    var form = e.target;
-    if (!(form instanceof HTMLFormElement) || form.hasAttribute('data-no-guard')
-        || form.target === '_blank') return;
-    var btn = form.querySelector('button[type="submit"], button:not([type])');
-    if (!btn || btn.disabled) return;
-    setTimeout(function() {                       // erst NACH dem Submit deaktivieren
-        btn.disabled = true;
-        btn.classList.add('opacity-60', 'cursor-wait');
-        // SEIT E2.39 GIBT ES KEIN `<i class="fa-…">` MEHR.
-        //
-        // Die Knoepfe tragen `<svg class="fw-zeichen">`; das Zeichen wird
-        // gegen den drehenden Kreis getauscht.
-        var ic = btn.querySelector('svg.fw-zeichen use');
-        if (ic) { ic.setAttribute('href', '#z-laedt');
-                  ic.parentNode.classList.add('fw-dreht'); }
-    }, 0);
-    // Sicherheitsnetz: nach 15 s wieder aktivieren (z.B. Validierungsfehler ohne Reload)
-    setTimeout(function() {
-        btn.disabled = false;
-        btn.classList.remove('opacity-60', 'cursor-wait');
-    }, 15000);
-});
-
-// Generischer Live-Filter für Listen: <input data-suche="#tbodyId"> filtert
-// Zeilen der Ziel-Tabelle beim Tippen (Suchtext gegen Zeilentext).
-document.addEventListener('input', function(e) {
-    var inp = e.target;
-    if (!inp.matches || !inp.matches('[data-suche]')) return;
-    var ziel = document.querySelector(inp.dataset.suche);
-    if (!ziel) return;
-    var q = (inp.value || '').toLowerCase();
-    ziel.querySelectorAll('[data-zeile]').forEach(function(tr) {
-        tr.classList.toggle('hidden', q && tr.textContent.toLowerCase().indexOf(q) === -1);
-    });
-});
-
-// Globales "⋯ Mehr"-Dropdown: Markup ohne eigenes Script.
-//   <div class="relative" data-menu>
-//     <button data-menu-btn aria-haspopup="menu" aria-expanded="false">… Mehr</button>
-//     <div data-menu-list role="menu" class="hidden absolute …">…Aktionen…</div>
-//   </div>
-// Seit dem UI-Audit (26.10.2026) laufen ALLE Aktionsmenüs hierüber — vorher hatten
-// acht Akten ein eigenes onclick + Schliess-Skript und waren am Telefon und Tablet
-// rechtsbündig verankert: Das Menü ragte links aus dem Bild, kein Eintrag war
-// erreichbar. Jetzt passt `fwMenuEinpassen` das offene Menü in den Bildschirm ein,
-// Escape und ein Klick daneben schliessen, Pfeiltasten führen durch die Einträge.
-function fwMenuEinpassen(list) {
-    list.style.transform = '';
-    list.style.maxWidth = 'calc(100vw - 24px)';
-    var r = list.getBoundingClientRect(), rand = 12, dx = 0;
-    if (r.right > innerWidth - rand) dx = innerWidth - rand - r.right;
-    if (r.left + dx < rand) dx = rand - r.left;
-    if (dx) list.style.transform = 'translateX(' + Math.round(dx) + 'px)';
-    // Unten kein Platz, oben schon → nach oben aufklappen
-    list.classList.remove('fw-menu-oben');
-    if (r.bottom > innerHeight - rand && r.top - r.height - 48 > rand) list.classList.add('fw-menu-oben');
-}
-function fwMenuZu(list) {
-    if (!list || list.classList.contains('hidden')) return;
-    list.classList.add('hidden');
-    var wrap = list.closest('[data-menu]'), btn = wrap && wrap.querySelector('[data-menu-btn]');
-    if (btn) btn.setAttribute('aria-expanded', 'false');
-}
-document.addEventListener('click', function(ev) {
-    var btn = ev.target.closest ? ev.target.closest('[data-menu-btn]') : null;
-    if (btn) {
-        ev.preventDefault();
-        var wrap = btn.closest('[data-menu]');
-        var list = wrap && wrap.querySelector('[data-menu-list]');
-        if (!list) return;
-        var willOpen = list.classList.contains('hidden');
-        document.querySelectorAll('[data-menu-list]').forEach(fwMenuZu);
-        if (willOpen) {
-            list.classList.remove('hidden');
-            btn.setAttribute('aria-expanded', 'true');
-            fwMenuEinpassen(list);
-        }
-        return;
-    }
-    document.querySelectorAll('[data-menu-list]:not(.hidden)').forEach(function(l) {
-        var wrap = l.closest('[data-menu]');
-        if (wrap && !wrap.contains(ev.target)) fwMenuZu(l);
-    });
-});
-document.addEventListener('keydown', function(ev) {
-    var offen = document.querySelector('[data-menu-list]:not(.hidden)');
-    if (!offen) return;
-    if (ev.key === 'Escape') {
-        fwMenuZu(offen);
-        var b = offen.closest('[data-menu]').querySelector('[data-menu-btn]');
-        if (b) b.focus();
-        return;
-    }
-    if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
-        var eintraege = Array.prototype.filter.call(offen.querySelectorAll('a,button'), function(e) { return e.offsetParent !== null; });
-        if (!eintraege.length) return;
-        ev.preventDefault();
-        var i = eintraege.indexOf(document.activeElement);
-        i = ev.key === 'ArrowDown' ? (i + 1) % eintraege.length : (i <= 0 ? eintraege.length - 1 : i - 1);
-        eintraege[i].focus();
-    }
-});
-window.addEventListener('resize', function() {
-    document.querySelectorAll('[data-menu-list]:not(.hidden)').forEach(fwMenuEinpassen);
-});
-
-// ---- Tabellen mobil stapelbar machen ----
-// Jede Zelle bekommt die Überschrift ihrer Spalte als data-label; die Schicht
-// blendet unter 768 px den Kopf aus und zeigt stattdessen «Label — Wert» pro
-// Zeile. Zentral statt in ~40 Templates: quer scrollen hiess bisher, entweder
-// die Bezeichnung ODER den Betrag zu sehen.
-// Tabellen, die bereits eine eigene Kartenansicht haben (Journal, Kontoblatt,
-// Debitoren …), stehen in einem `hidden md:block` und werden übersprungen.
-function fwTabellenStapeln(wurzel) {
-    (wurzel || document).querySelectorAll('table').forEach(function (tab) {
-        if (tab.dataset.stackGeprueft) return;
-        tab.dataset.stackGeprueft = '1';
-        var kopfZeile = tab.querySelector('thead tr');
-        if (!kopfZeile) return;                       // ohne Überschriften kein sinnvolles Label
-        if (tab.closest('.md\\:block')) return;       // Desktop-Variante einer Karten-Lösung
-        // textContent klebt über Element-Grenzen hinweg zusammen: Aus
-        //   <th>Netto / NK<br><span>Referenz</span></th>
-        // wurde mobil das Label «NETTO / NKREFERENZ». Deshalb an jeder
-        // Element- und <br>-Grenze ein Leerzeichen einfügen und Läufe
-        // anschliessend zusammenfassen.
-        var titel = Array.prototype.map.call(kopfZeile.cells, function (th) {
-            var teile = [];
-            (function sammeln(knoten) {
-                Array.prototype.forEach.call(knoten.childNodes, function (k) {
-                    if (k.nodeType === 3) { teile.push(k.nodeValue); return; }
-                    teile.push(' ');
-                    if (k.nodeName !== 'BR') sammeln(k);
-                    teile.push(' ');
-                });
-            })(th);
-            return teile.join('').replace(/\s+/g, ' ').trim();
-        });
-        if (!titel.length) return;
-        tab.setAttribute('data-stack', '');
-        tab.querySelectorAll('tbody tr, tfoot tr').forEach(function (tr) {
-            var i = 0, titelGesetzt = false;
-            Array.prototype.forEach.call(tr.cells, function (td) {
-                if (!td.hasAttribute('colspan')) td.setAttribute('data-label', titel[i] || '');
-                // Leere Zellen (unbenutzte Aktionsspalte) mobil ausblenden statt
-                // eine Zeile mit nichts darin zu zeigen.
-                var hatText = !!(td.textContent || '').trim();
-                if (!hatText && !td.querySelector('img,svg,input,button,a'))
-                    td.setAttribute('data-leer', '');
-                // Die erste Zelle mit Inhalt benennt den Eintrag — sie wird zur
-                // Überschrift der Karte (Auswahlkästchen o.ä. überspringen).
-                if (!titelGesetzt && hatText && !td.hasAttribute('colspan')) {
-                    td.setAttribute('data-stack-titel', '');
-                    titelGesetzt = true;
-                }
-                // Inhalt in einen eigenen Kasten hängen, der schrumpfen darf.
-                // display:contents lässt ihn auf dem Desktop wirkungslos.
-                if (!td.querySelector(':scope > .fw-wert')) {
-                    var huelle = document.createElement('span');
-                    huelle.className = 'fw-wert';
-                    while (td.firstChild) huelle.appendChild(td.firstChild);
-                    td.appendChild(huelle);
-                }
-                i += td.colSpan || 1;
-            });
-        });
-    });
-}
-/* Spaltenfilter für dichte Datentabellen (Phase 3).
-   `<table data-spaltenfilter>` bekommt unter dem Kopf eine Filterzeile: Spalten mit wenigen
-   verschiedenen Werten (Status, Stufe, Objekt) eine Auswahl, alle anderen ein Textfeld.
-   Gefiltert werden die GELADENEN Zeilen — bei Listen mit Seiten also die aktuelle Seite;
-   `th[data-nofilter]` nimmt eine Spalte aus. Mit Tastatur bedienbar, Stand per aria-live. */
-var FW_FILTER_TXT = {
-    ph: '{% filter escapejs %}{% trans "Filtern …" %}{% endfilter %}',
-    alle: '{% filter escapejs %}{% trans "Alle" %}{% endfilter %}',
-    stand: '{% filter escapejs %}{% trans "%(n)s von %(m)s Zeilen" %}{% endfilter %}',
-    reset: '{% filter escapejs %}{% trans "Filter zurücksetzen" %}{% endfilter %}',
-    spalte: '{% filter escapejs %}{% trans "Spalte filtern" %}{% endfilter %}'
-};
-function fwSpaltenfilter(wurzel) {
-    (wurzel || document).querySelectorAll('table[data-spaltenfilter]').forEach(function (tab) {
-        if (tab.dataset.filterBereit) return;
-        var kopf = tab.querySelector('thead tr'), tbody = tab.tBodies[0];
-        if (!kopf || !tbody) return;
-        // Zeilen mit colspan (Detail-, Leer- und Summenzeilen) gehören zur Zeile davor.
-        var zeilen = [], folge = {};
-        Array.prototype.forEach.call(tbody.rows, function (r) {
-            if (r.querySelector('td[colspan]')) { if (zeilen.length) (folge[zeilen.length - 1] = folge[zeilen.length - 1] || []).push(r); return; }
-            zeilen.push(r);
-        });
-        if (zeilen.length < 3) return;                 // bei zwei Zeilen hilft kein Filter
-        tab.dataset.filterBereit = '1';
-        var norm = function (t) { return (t || '').replace(/[\u2019\u0027\s]+/g, ' ').trim().toLowerCase(); };
-        var zellText = function (r, i) { var c = r.cells[i]; return c ? norm(c.textContent) : ''; };
-        var fz = document.createElement('tr'), felder = [];
-        fz.className = 'fw-filterzeile';
-        Array.prototype.forEach.call(kopf.cells, function (th, i) {
-            var z = document.createElement('th'), ueberschrift = (th.textContent || '').replace(/\s+/g, ' ').trim();
-            // Auf kleinen Schirmen ausgeblendete Spalten (`hidden lg:table-cell`) auch hier ausblenden.
-            z.className = (th.className || '').split(/\s+/).filter(function (c) { return c === 'hidden' || /:table-cell$/.test(c); }).join(' ');
-            fz.appendChild(z);
-            if (th.hasAttribute('data-nofilter') || !ueberschrift) { felder.push(null); return; }
-            var werte = {}, n = 0;
-            zeilen.forEach(function (r) { var t = zellText(r, i); if (t && !werte[t]) { werte[t] = 1; n++; } });
-            var feld;
-            if (n >= 2 && n <= 8 && Object.keys(werte).every(function (w) { return w.length <= 32; })) {
-                feld = document.createElement('select');
-                var o = document.createElement('option'); o.value = ''; o.textContent = FW_FILTER_TXT.alle; feld.appendChild(o);
-                zeilen.forEach(function (r) {      // Originalschreibweise, nach erster Fundstelle
-                    var c = r.cells[i], t = c ? norm(c.textContent) : '';
-                    if (t && !Array.prototype.some.call(feld.options, function (x) { return x.value === t; })) {
-                        var op = document.createElement('option'); op.value = t;
-                        op.textContent = (c.textContent || '').replace(/\s+/g, ' ').trim(); feld.appendChild(op);
-                    }
-                });
-                feld.dataset.exakt = '1';
-            } else {
-                feld = document.createElement('input'); feld.type = 'search'; feld.placeholder = FW_FILTER_TXT.ph;
-                feld.autocomplete = 'off';
-            }
-            feld.className = 'fw-filterfeld';
-            feld.setAttribute('aria-label', FW_FILTER_TXT.spalte + ': ' + ueberschrift);
-            z.appendChild(feld); felder.push(feld);
-        });
-        kopf.parentNode.appendChild(fz);
-        var stand = document.createElement('div');
-        stand.className = 'fw-filterstand'; stand.hidden = true; stand.setAttribute('aria-live', 'polite');
-        var rahmen = tab.closest('.fw-tablewrap') || tab;
-        rahmen.parentNode.insertBefore(stand, rahmen);
-        var hoehe = function () { tab.style.setProperty('--fw-kopf', kopf.getBoundingClientRect().height + 'px'); };
-        hoehe(); window.addEventListener('resize', hoehe);
-        function anwenden() {
-            var aktiv = 0, sichtbar = 0;
-            felder.forEach(function (f) { if (f) { var an = !!f.value; f.classList.toggle('fw-aktiv', an); if (an) aktiv++; } });
-            zeilen.forEach(function (r, ri) {
-                var ok = felder.every(function (f, i) {
-                    if (!f || !f.value) return true;
-                    var t = zellText(r, i), q = norm(f.value);
-                    return f.dataset.exakt ? t === q : t.indexOf(q) !== -1;
-                });
-                r.classList.toggle('fw-gefiltert', !ok);
-                (folge[ri] || []).forEach(function (x) { x.classList.toggle('fw-gefiltert', !ok); });
-                if (ok) sichtbar++;
-            });
-            stand.hidden = !aktiv;
-            if (aktiv) {
-                stand.textContent = FW_FILTER_TXT.stand.replace('%(n)s', sichtbar).replace('%(m)s', zeilen.length) + ' · ';
-                var b = document.createElement('button'); b.type = 'button'; b.textContent = FW_FILTER_TXT.reset;
-                b.onclick = function () { felder.forEach(function (f) { if (f) f.value = ''; }); anwenden(); };
-                stand.appendChild(b);
-            }
-        }
-        felder.forEach(function (f) { if (f) f.addEventListener(f.tagName === 'SELECT' ? 'change' : 'input', anwenden); });
-    });
-}
-document.addEventListener('DOMContentLoaded', function () { fwTabellenStapeln(); fwSpaltenfilter(); });
-// Nachgeladene Inhalte (Tab-Wechsel, Modal) ebenfalls erfassen
-document.addEventListener('fw:content', function (e) { fwTabellenStapeln(e.target); fwSpaltenfilter(e.target); });
-</script>
-<script>
-// Hell/Dunkel-Umschalter (persistiert pro Browser via localStorage)
-function fwSetTheme(t){
-    document.documentElement.setAttribute('data-theme', t);
-    try { localStorage.setItem('fw-theme', t); } catch(e){}
-    fwSyncThemeButtons();
-}
-// Der runde Knopf in der Kopfzeile: wechselt vom gerade sichtbaren Modus in
-// den anderen — auch wenn der sichtbare aus der Systemeinstellung kommt.
-function fwThemeWechseln(){
-    var r = document.documentElement.getAttribute('data-theme');
-    var jetzt = r || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    fwSetTheme(jetzt === 'dark' ? 'light' : 'dark');
-}
-function fwSyncThemeButtons(){
-    var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-    document.querySelectorAll('[data-theme-btn]').forEach(function(b){
-        b.classList.toggle('an', b.getAttribute('data-theme-btn') === cur);
-    });
-}
-fwSyncThemeButtons();
-</script>
-<script>
-// ─── Ember: gleitende Kapsel der Bereiche, hochzählende Kennzahlen ───
-(function () {
-    var ruhig = document.documentElement.classList.contains('fw-ruhig')
-        || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-    var nav = document.getElementById('fwHauptnav');
-    if (nav) {
-        var gleiter = nav.querySelector('.fw-gleiter');
-        var setzen = function (a, sofort) {
-            if (!a || !gleiter) return;
-            if (sofort) gleiter.style.transition = 'none';
-            gleiter.style.width = a.offsetWidth + 'px';
-            gleiter.style.transform = 'translateX(' + a.offsetLeft + 'px)';
-            if (sofort) requestAnimationFrame(function () { gleiter.style.transition = ''; });
-        };
-        var aktiv = nav.querySelector('a.hier');
-        if (aktiv) {
-            setzen(aktiv, true);
-            // Am Telefon steht der aktive Bereich im Bild
-            if (nav.scrollWidth > nav.clientWidth) nav.scrollLeft = Math.max(0, aktiv.offsetLeft - (nav.clientWidth - aktiv.offsetWidth) / 2);
-        } else if (gleiter) { gleiter.style.opacity = '0'; }
-        // Beim Zeigen gleitet die Kapsel mit, beim Verlassen zurück
-        nav.querySelectorAll('a').forEach(function (a) {
-            a.addEventListener('mouseenter', function () { if (!ruhig && aktiv) { setzen(a); nav.querySelectorAll('a').forEach(function (x) { x.classList.toggle('zeigt', x === a); }); } });
-        });
-        nav.addEventListener('mouseleave', function () { setzen(aktiv); nav.querySelectorAll('a.zeigt').forEach(function (x) { x.classList.remove('zeigt'); }); });
-        window.addEventListener('resize', function () { setzen(nav.querySelector('a.hier'), true); });
-        if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { setzen(nav.querySelector('a.hier'), true); });
-    }
-    // Lastbalken (Team, Leerstand): Breite aus data-w, im nächsten Bild — dann gleitet sie auf
-    var balken = document.querySelectorAll('.fw-lastbalken[data-w] > i');
-    requestAnimationFrame(function () { balken.forEach(function (i) {
-        i.style.width = Math.max(0, Math.min(100, parseFloat(i.parentNode.getAttribute('data-w')) || 0)) + '%'; }); });
-    if (ruhig) return;
-    // Zahlen zählen hoch — nur die grossen Kennzahlen, Formatierung bleibt (CHF, Apostroph, %).
-    var ziele = document.querySelectorAll('.fw-kpi .fw-v, .fw-lage .fw-w, .fw-kachel-zahl [data-zaehlen], .fw-ampel-zahl b');
-    ziele.forEach(function (el) {
-        if (el.children.length) return;
-        var text = el.textContent, m = text.match(/-?\d[\d']*(?:[.,]\d+)?/);
-        if (!m) return;
-        var roh = m[0], dez = (roh.split(/[.,]/)[1] || '').length, trenner = roh.indexOf("'") > -1;
-        var ziel = parseFloat(roh.replace(/'/g, '').replace(',', '.'));
-        if (!isFinite(ziel) || ziel === 0) return;
-        var vor = text.slice(0, m.index), nach = text.slice(m.index + roh.length), komma = roh.indexOf(',') > -1;
-        var fmt = function (v) {
-            var t = v.toFixed(dez);
-            if (komma) t = t.replace('.', ',');
-            if (trenner) { var teile = t.split(/[.,]/); teile[0] = teile[0].replace(/\B(?=(\d{3})+(?!\d))/g, "'"); t = teile.join(komma ? ',' : '.'); }
-            return vor + t + nach;
-        };
-        var t0 = null, dauer = 1100;
-        el.textContent = fmt(0);
-        var schritt = function (t) {
-            if (t0 === null) t0 = t;
-            var p = Math.min(1, (t - t0) / dauer), e = 1 - Math.pow(1 - p, 3);
-            el.textContent = p < 1 ? fmt(ziel * e) : text;
-            if (p < 1) requestAnimationFrame(schritt);
-        };
-        requestAnimationFrame(schritt);
-    });
-})();
-</script>
+{% comment %} Rahmen-Skripte als Dateien (zwischengespeichert). OHNE `defer`: Sie laufen an derselben Stelle und in
+   derselben Reihenfolge wie zuvor die Inline-Skripte; Seiten-Skripte im Block `scripts` verlassen sich darauf.
+   Texte und Schalter stehen im Datenblock davor (kein ausführbares Skript, braucht keine Nonce). {% endcomment %}
+<script type="application/json" id="fw-rahmen-daten">{"kopfReduziert": {% if fw_kopf_reduziert %}true{% else %}false{% endif %}, "zuletztSchluessel": "fw-zuletzt-{{ request.user.pk }}-{{ fw_mandant.pk|default:0 }}", "filter": {"ph": "{% filter escapejs %}{% trans "Filtern …" %}{% endfilter %}", "alle": "{% filter escapejs %}{% trans "Alle" %}{% endfilter %}", "stand": "{% filter escapejs %}{% trans "%(n)s von %(m)s Zeilen" %}{% endfilter %}", "reset": "{% filter escapejs %}{% trans "Filter zurücksetzen" %}{% endfilter %}", "spalte": "{% filter escapejs %}{% trans "Spalte filtern" %}{% endfilter %}"}}</script>
+<script src="{% statisch 'js/fw-rahmen.js' %}"></script>
+<script src="{% statisch 'js/fw-thema.js' %}"></script>
+<script src="{% statisch 'js/fw-kapsel.js' %}"></script>
+<script src="{% statisch 'js/fw-schiene.js' %}"></script>
 {% block scripts %}{% endblock %}
 
 {% comment %} Die Tab-Leiste unten ist mit dem Ember-Redesign entfallen: Die Bereiche stehen

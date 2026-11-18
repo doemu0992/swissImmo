@@ -105,13 +105,13 @@ Periodenabschluss, Direkt zu) steht unverändert darunter in «Abschluss».
     <div class="fw-tablewrap">
         <table class="fw-table fw-aging-tabelle">
             <thead><tr>
-                <th>{% trans "Mietpartei" %}</th>
-                <th class="fw-right">1–30</th>
-                <th class="fw-right">31–60</th>
-                <th class="fw-right">61–90</th>
-                <th class="fw-right">&gt; 90</th>
-                <th class="fw-right">{% trans "Total" %}</th>
-                <th>{% trans "Mahnstufe" %}</th>
+                <th scope="col">{% trans "Mietpartei" %}</th>
+                <th scope="col" class="fw-right">1–30</th>
+                <th scope="col" class="fw-right">31–60</th>
+                <th scope="col" class="fw-right">61–90</th>
+                <th scope="col" class="fw-right">&gt; 90</th>
+                <th scope="col" class="fw-right">{% trans "Total" %}</th>
+                <th scope="col">{% trans "Mahnstufe" %}</th>
             </tr></thead>
             <tbody>
             {% for a in ausstaende %}
@@ -146,7 +146,7 @@ Periodenabschluss, Direkt zu) steht unverändert darunter in «Abschluss».
         <span class="fw-rechts fw-fin-links"><a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-link">{% trans "Debitoren-Aging" %}</a> <a href="/neu/mahnwesen/{{ lg_query }}" class="fw-link">{% trans "Zum Mahnwesen" %}</a></span>
     </div>
 </section>
-<script>
+<script nonce="{{ csp_nonce }}">
 document.querySelectorAll('.fw-aging-tabelle tr[data-href]').forEach(function (tr) {
     tr.addEventListener('click', function (e) {
         if (e.target.closest('a,button,input,select')) return;

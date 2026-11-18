@@ -24,13 +24,13 @@
     <div class="fw-tablewrap fw-sticky">
     <table class="fw-table min-w-max" data-spaltenfilter>
         <thead>
-            <tr><th class="text-left">{% trans "Mieter / Objekt" %}</th><th class="text-right fw-right">{% trans "Betrag" %}</th>
-                <th class="text-left">{% trans "Art" %}</th><th class="text-left">{% trans "Sperrkonto / Police" %}</th><th class="text-left">{% trans "Seit" %}</th>
-                <th class="text-left">{% trans "Status" %}</th></tr>
+            <tr><th scope="col" class="text-left">{% trans "Mieter / Objekt" %}</th><th scope="col" class="text-right fw-right">{% trans "Betrag" %}</th>
+                <th scope="col" class="text-left">{% trans "Art" %}</th><th scope="col" class="text-left">{% trans "Sperrkonto / Police" %}</th><th scope="col" class="text-left">{% trans "Seit" %}</th>
+                <th scope="col" class="text-left">{% trans "Status" %}</th></tr>
         </thead>
         <tbody>
             {% for row in rows %}
-            <tr class="cursor-pointer" onclick="window.location='/neu/vertraege/{{ row.v.id }}/'">
+            <tr class="cursor-pointer" data-gehe-zu="/neu/vertraege/{{ row.v.id }}/">
                 <td><div class="fw-strong">{{ row.v.mieter.display_name }}</div>
                     <div class="fw-sub2">{{ row.v.einheit.liegenschaft.strasse }} · {{ row.v.einheit.bezeichnung }}</div></td>
                 <td class="text-right fw-right fw-num fw-strong">CHF {{ row.v.kautions_betrag|chf }}</td>

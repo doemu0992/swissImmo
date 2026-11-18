@@ -75,13 +75,13 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         </div>
         <div>
             <div class="fw-l">{% trans "Offen seit" %}</div>
-            <div class="fw-w{% if offen_seit > 30 and t.status != 'erledigt' %} crit{% elif offen_seit > 14 and t.status != 'erledigt' %} warn{% endif %}" style="font-size:15px">
+            <div class="fw-w{% if offen_seit > 30 and t.status != 'erledigt' %} crit{% elif offen_seit > 14 and t.status != 'erledigt' %} warn{% endif %} fw-fs-15">
                 {% if t.status == 'erledigt' %}{% trans "erledigt" %}{% else %}{% blocktrans count n=offen_seit %}{{ n }} Tag{% plural %}{{ n }} Tage{% endblocktrans %}{% endif %}</div>
             <div class="fw-f">{% blocktrans with d=t.erstellt_am|date:"d.m.Y" %}gemeldet {{ d }}{% endblocktrans %}</div>
         </div>
         <div>
             <div class="fw-l">{% trans "Letzte Reaktion" %}</div>
-            <div class="fw-w" style="font-size:15px">{% if letzte_nachricht %}{{ letzte_nachricht.erstellt_am|date:"d.m.Y" }}{% else %}—{% endif %}</div>
+            <div class="fw-w fw-fs-15">{% if letzte_nachricht %}{{ letzte_nachricht.erstellt_am|date:"d.m.Y" }}{% else %}—{% endif %}</div>
             <div class="fw-f">{% if letzte_nachricht %}{% blocktrans count n=nachrichten|length %}{{ n }} Nachricht{% plural %}{{ n }} Nachrichten{% endblocktrans %}{% else %}{% trans "noch keine Antwort" %}{% endif %}</div>
         </div>
     </div>
@@ -117,7 +117,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <button class="fw-btn fw-primary fw-knapp">{% trans "Speichern" %}</button>
             </form>
             <p id="kt_warnung" class="fw-s" hidden>⚠ {% trans "Dieses Bauteil ist zwingend gemeinschaftliches Eigentum (Art. 712b ZGB): Die Kosten können nicht einem einzelnen Eigentümer als Sonderrecht belastet werden." %}</p>
-            <script>
+            <script nonce="{{ csp_nonce }}">
             (function () {
                 var b = document.getElementById('kt_bauteil'), k = document.getElementById('kt_traeger'), w = document.getElementById('kt_warnung');
                 function pruefen() {
@@ -266,10 +266,20 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div class="fw-mitte">
                 <div class="flex items-center gap-2 flex-wrap">
                     <span class="fw-t">{{ n.absender_name }}</span>
-                    {% if n.typ == 'direkt' %}<span class="fw-chip fw-info">{% trans "Direkt Mieter ↔ Handwerker" %}</span>{% elif n.is_intern %}<span class="fw-chip fw-mut">{% trans "intern" %}</span>{% endif %}
+                    {% if n.typ == 'direkt' %}<span class="fw-chip fw-info">{% trans "Direkt Mieter ↔ Handwerker" %}</span>{% elif n.typ == 'mail_unbekannt' %}<span class="fw-chip fw-warn">{% trans "unbekannter Absender" %}</span>{% elif n.is_intern %}<span class="fw-chip fw-mut">{% trans "intern" %}</span>{% endif %}
                     <span class="fw-klein">{{ n.erstellt_am|date:"d.m.Y H:i" }}</span>
                 </div>
                 <p class="mt-1 whitespace-pre-line">{{ n.nachricht }}</p>
+                {% if n.typ == 'mail_unbekannt' and n.absender_adresse %}
+                <form method="post" action="{% url 'fw_schaden_absender_bestaetigen' t.id n.id %}" class="mt-2" data-testid="absender-bestaetigen">{% csrf_token %}
+                    <p class="fw-hilfe mb-1">{% blocktrans with adresse=n.absender_adresse %}Diese Mail kam von {{ adresse }}. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennst du den Absender (etwa die zweite Adresse des Mieters), bestätige ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders.{% endblocktrans %}</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="submit" class="fw-btn">{% trans "Absender für dieses Ticket bestätigen" %}</button>
+                        {% if absender_person %}<button type="submit" name="dauerhaft" value="1" class="fw-btn" data-testid="absender-dauerhaft">{% blocktrans with person=absender_person.display_name %}Bestätigen und bei {{ person }} speichern{% endblocktrans %}</button>{% endif %}
+                    </div>
+                    {% if absender_person %}<p class="fw-hilfe mt-1">{% trans "«Speichern» hinterlegt die Adresse bei der Person: Sie gilt dann für alle ihre Tickets und lässt sich in der Personenakte wieder entfernen." %}</p>{% endif %}
+                </form>
+                {% endif %}
                 {% if n.datei %}<a href="{{ n.datei.url }}" target="_blank" rel="noopener" class="fw-link mt-1 inline-block">{% zeichen 'hochladen' klasse='mr-1' %}{% trans "Anhang" %}</a>{% endif %}
             </div>
         </div>
@@ -423,12 +433,12 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                     {% else %}{% trans "Noch kein Link. Er entsteht mit der Auftrags-Mail — oder hier." %}{% endif %}
                 </p>
                 {% if kann_schreiben %}<div class="flex flex-wrap gap-2 mt-2">
-                    <form method="post" action="/neu/auftrag/{{ a.id }}/link/"{% if a.link_status == 'aktiv' %} onsubmit="return confirm('{% trans "Neuen Link erzeugen? Der bisherige öffnet danach nichts mehr." %}')"{% endif %}>
+                    <form method="post" action="/neu/auftrag/{{ a.id }}/link/"{% if a.link_status == 'aktiv' %} data-bestaetigen="{% filter escapejs %}{% trans "Neuen Link erzeugen? Der bisherige öffnet danach nichts mehr." %}{% endfilter %}"{% endif %}>
                         {% csrf_token %}<input type="hidden" name="aktion" value="neu">
                         <button class="fw-btn fw-knapp">{% zeichen 'neu' %}{% if a.link_status == 'kein' %}{% trans "Link erzeugen" %}{% else %}{% trans "Neuen Link erzeugen" %}{% endif %}</button>
                     </form>
                     {% if a.link_status == 'aktiv' or a.link_status == 'lesend' %}
-                    <form method="post" action="/neu/auftrag/{{ a.id }}/link/" onsubmit="return confirm('{% trans "Link widerrufen? Der Handwerker kann den Auftrag dann nicht mehr öffnen." %}')">
+                    <form method="post" action="/neu/auftrag/{{ a.id }}/link/" data-bestaetigen="{% filter escapejs %}{% trans "Link widerrufen? Der Handwerker kann den Auftrag dann nicht mehr öffnen." %}{% endfilter %}">
                         {% csrf_token %}<input type="hidden" name="aktion" value="widerrufen">
                         <button class="fw-btn fw-knapp">{% zeichen 'gesperrt' %}{% trans "Link widerrufen" %}</button>
                     </form>
@@ -518,7 +528,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             </form>
             {% endif %}
             {% if not a.kreditoren_rechnung_id and a.status != 'erledigt' %}
-            <form method="post" action="/neu/auftrag/{{ a.id }}/storno/" class="fw-formular items-end fw-rumpf" onsubmit="return confirm('{% trans "Auftrag wirklich stornieren? Der Handwerker wird informiert." %}')">
+            <form method="post" action="/neu/auftrag/{{ a.id }}/storno/" class="fw-formular items-end fw-rumpf" data-bestaetigen="{% filter escapejs %}{% trans "Auftrag wirklich stornieren? Der Handwerker wird informiert." %}{% endfilter %}">
                 {% csrf_token %}
                 <div class="fw-feldblock"><label class="fw-label">{% trans "Grund (optional)" %}</label>
                     <input name="grund" class="fw-feld w-full"></div>
@@ -582,7 +592,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <img src="{{ f.bild.url }}" alt="Foto" class="fw-bild">
             </a>
             {% if kann_schreiben %}<form method="post" action="/neu/schaeden/foto/{{ f.id }}/loeschen/" class="absolute top-1 right-1"
-                  onsubmit="return confirm('{% filter escapejs %}{% trans "Foto löschen?" %}{% endfilter %}');">
+                  data-bestaetigen="{% filter escapejs %}{% trans "Foto löschen?" %}{% endfilter %}">
                 {% csrf_token %}
                 <button class="w-7 h-7 rounded-full fw-flaeche hover:fw-krit-flaeche fw-kritisch text-xs shadow" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
             </form>{% endif %}

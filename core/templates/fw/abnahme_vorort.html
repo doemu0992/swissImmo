@@ -9,7 +9,7 @@ Jede Eingabe wird sofort gespeichert (fetch auf fw_abnahme_position_speichern) �
 bricht der Empfang ab, ist nichts verloren, was schon angezeigt „gespeichert" hiess.
 Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig ist.
 {% endcomment %}
-<style>
+<style nonce="{{ csp_nonce }}">
 .vo { max-width: 34rem; margin: 0 auto; padding-bottom: 6rem; }   /* Platz für die feste Tab-Leiste unten */
 .vo-leiste { display: flex; align-items: center; gap: .5rem; position: sticky; top: 0; z-index: 5;
     background: var(--ds-surface-2); border: 1px solid var(--ds-line); border-radius:var(--ds-radius-lg);
@@ -105,7 +105,7 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
 
     <nav class="vo-leiste" aria-label="{% trans 'Raum wählen' %}">
         {% if vorher is not None %}<a href="?r={{ vorher }}" aria-label="{% trans 'Voriger Raum' %}">{% zeichen 'zurueck' %}</a>{% else %}<span class="vo-aus">{% zeichen 'zurueck' %}</span>{% endif %}
-        <select onchange="location.search='?r='+this.value" aria-label="{% trans 'Raum wählen' %}">
+        <select data-gehe-zu-wert="?r=" aria-label="{% trans 'Raum wählen' %}">
             {% for r in raeume %}<option value="{{ r.nr }}" {% if r.nr == schritt %}selected{% endif %}>{{ r.name }}{% if r.fertig %} ✓{% endif %}</option>{% endfor %}
             <option value="{{ letzter }}" {% if schritt == letzter %}selected{% endif %}>{% trans "Abschluss" %}</option>
         </select>
@@ -263,7 +263,7 @@ Eigene Klassen `vo-*` mit den Design-Tokens, damit kein Tailwind-Neubau nötig i
     {% endif %}
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
     var root = document.getElementById('vo');
     if (!root) return;

@@ -221,8 +221,11 @@ def _speichern(request, postfach, zweck):
         port = int(daten.get('port') or 993)
     except (TypeError, ValueError):
         return ['Der Port muss eine Zahl sein.']
-    if not 1 <= port <= 65535:
-        return ['Der Port muss zwischen 1 und 65535 liegen.']
+    from core.services.postfach_abruf import ERLAUBTE_PORTS, server_erlaubt
+    if port not in ERLAUBTE_PORTS:
+        return ['Als Port sind 993 (IMAP über TLS) und 143 zulässig.']
+    if postfach.server and not server_erlaubt(postfach.server):
+        return ['Dieser Server ist nicht zulässig (interne Adresse).']
     postfach.port = port
 
     fehler = []
@@ -275,7 +278,7 @@ def postfach_test(request, zweck):
 
     postfach = get_object_or_404(Postfach.objects.filter(zweck=zweck))
     try:
-        verbindung = verbinden(postfach)
+        verbindung = verbinden(postfach, zeitlimit=10)        # der Knopf bindet einen Worker: kurz halten
     except AbrufFehler as fehler:
         postfach.fehler_vermerken(str(fehler))
         messages.error(request, str(fehler))

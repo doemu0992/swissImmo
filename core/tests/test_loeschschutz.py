@@ -498,18 +498,3 @@ class ObjektUndDirektesLoeschenTests(LoeschBasis):
                 antwort = self.loeschen(name, objekt)
                 self.assertEqual(antwort.status_code, 200)
                 self.assertTrue(self.gibt_es(objekt), f'/neu/{name}/<pk>/loeschen/ hat gelöscht')
-
-    def test_der_admin_loescht_nichts(self):
-        """Admin-Aktionen: Löschen ist in der Verwaltungsoberfläche des Betreibers abgeschaltet."""
-        from django.contrib import admin
-        from django.test import RequestFactory
-        anfrage = RequestFactory().get('/admin/')
-        anfrage.user = type('U', (), {'is_active': True, 'is_staff': True, 'is_superuser': True,
-                                      'has_perm': lambda self, p: True})()
-        for label in ('crm.Mieter', 'crm.Eigentuemer', 'portfolio.Liegenschaft', 'portfolio.Einheit',
-                      'rentals.Mietvertrag'):
-            with self.subTest(modell=label):
-                modell_admin = admin.site._registry[apps.get_model(label)]
-                self.assertFalse(modell_admin.has_delete_permission(anfrage),
-                                 f'Der Admin erlaubt das Löschen von {label}')
-                self.assertNotIn('delete_selected', modell_admin.get_actions(anfrage))

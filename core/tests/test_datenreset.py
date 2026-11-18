@@ -35,6 +35,11 @@ class DatenresetBasis(TestCase):
         cache.clear()               # der Reset zählt Versuche je Benutzer
         self.c = Client()
         self.c.force_login(self.a.benutzer)
+        # Die Fixture-Buchungen liegen in der Aufbewahrungsfrist; hier geht es um die Mechanik des Resets.
+        # Die Sperre selbst prüft `AufbewahrungSperreTests` unten ohne diesen Stub.
+        gegen_sperre = patch('core.services.datenreset.aufbewahrung_sperre', return_value=None)
+        gegen_sperre.start()
+        self.addCleanup(gegen_sperre.stop)
 
     def reset(self, passwort='geheim-egal', sicherung='ok', **extra):
         """POST an den Reset. `sicherung`: 'ok' | 'fehler' | 'echt' (ruft den Dienst)."""
@@ -336,3 +341,94 @@ class AuditLogBleibtTests(DatenresetBasis):
         aktionen = set(AktivitaetsLog.alle_organisationen.filter(
             organisation=self.a.organisation).values_list('aktion', flat=True))
         self.assertIn('Datenreset abgelehnt', aktionen)
+
+
+class AufbewahrungSperreTests(TestCase):
+    """Art. 958f OR: Buchungen dürfen nicht gelöscht werden, solange die Aufbewahrungsfrist läuft.
+
+    Befund (Analysebericht 06.11.2026): Der Reset löschte Buchungen über `ausnahme_loeschen`, ohne Frist und
+    Jahresabschluss zu prüfen. Hier ohne den Stub aus `DatenresetBasis`.
+
+    Gegenproben: `aufbewahrung_sperre` am Anfang von `setze_zurueck` entfernen -> `test_der_dienst_selbst_sperrt` rot;
+    den Aufruf in `fw_datenreset` entfernen -> `test_der_reset_wird_abgelehnt_und_nichts_gesichert` rot; das
+    `datum__gte` durch `datum__gt` mit dem laufenden Jahr ersetzen -> `test_die_frist_endet_mit_dem_zehnten_jahr` rot.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+        cls.b = MandantenFixture('B', '3000', 'Bern')
+
+    def setUp(self):
+        cache.clear()
+        self.c = Client()
+        self.c.force_login(self.a.benutzer)
+
+    def _buchungen(self, fx):
+        from finance.models import Buchung
+        return Buchung._base_manager.filter(organisation=fx.organisation)
+
+    def _ohne_buchungen(self, fx):
+        self._buchungen(fx).ausnahme_loeschen('Test: Verwaltung ohne Buchungen')
+
+    def _post(self):
+        with patch('core.services.datenreset.sicherung_erstellen', return_value='') as stub:
+            antwort = self.c.post('/neu/datenreset/', {'bestaetigung': 'LÖSCHEN', 'passwort': 'geheim-egal'})
+        return antwort, stub
+
+    def test_der_reset_wird_abgelehnt_und_nichts_gesichert(self):
+        from core.services.datenreset import betroffene_modelle
+        self.assertTrue(self._buchungen(self.a).exists(), 'die Fixture hat keine Buchungen: Test prüft nichts')
+        vorher = {m._meta.label: m._base_manager.filter(organisation=self.a.organisation).count()
+                  for m in betroffene_modelle()}
+        antwort, stub = self._post()
+        self.assertEqual(antwort.status_code, 302)
+        stub.assert_not_called()                         # keine Sicherung für einen Reset, der nicht läuft
+        nachher = {m._meta.label: m._base_manager.filter(organisation=self.a.organisation).count()
+                   for m in betroffene_modelle()}
+        self.assertEqual(nachher, vorher, 'Der Reset hat trotz Aufbewahrungspflicht gelöscht.')
+        from django.contrib.messages import get_messages
+        text = ' '.join(str(m) for m in get_messages(antwort.wsgi_request))
+        self.assertIn('Aufbewahrungsfrist', text)
+        self.assertIn('nichts gelöscht', text)
+
+    def test_der_dienst_selbst_sperrt(self):
+        """Auch wer die Ansicht umgeht (Skript, Konsole), kommt nicht an den Bestand."""
+        from core.services.datenreset import ResetFehler, setze_zurueck
+        with self.assertRaises(ResetFehler) as fehler:
+            setze_zurueck(self.a.organisation)
+        self.assertIn('958f', str(fehler.exception))
+        self.assertTrue(self._buchungen(self.a).exists())
+
+    def test_ohne_buchungen_laeuft_der_reset(self):
+        """Gegenprobe: Die Sperre trifft nur Buchungen. Eine Verwaltung ohne sie lässt sich zurücksetzen."""
+        self._ohne_buchungen(self.a)
+        self.assertTrue(self._buchungen(self.b).exists())      # Buchungen von B sperren A nicht
+        antwort, stub = self._post()
+        stub.assert_called_once()
+        from rentals.models import Mietvertrag
+        self.assertFalse(Mietvertrag._base_manager.filter(organisation=self.a.organisation).exists())
+        self.assertTrue(self._buchungen(self.b).exists())
+
+    def test_die_periodensperre_sperrt_auch_ohne_buchungen(self):
+        from datetime import date
+        self._ohne_buchungen(self.a)
+        self.a.organisation.buchung_gesperrt_bis = date(2020, 12, 31)
+        self.a.organisation.save(update_fields=['buchung_gesperrt_bis'])
+        antwort, stub = self._post()
+        stub.assert_not_called()
+        from django.contrib.messages import get_messages
+        text = ' '.join(str(m) for m in get_messages(antwort.wsgi_request))
+        self.assertIn('31.12.2020', text)
+        from rentals.models import Mietvertrag
+        self.assertTrue(Mietvertrag._base_manager.filter(organisation=self.a.organisation).exists())
+
+    def test_die_frist_endet_mit_dem_zehnten_jahr(self):
+        """Eine Buchung des Jahres J ist bis 31.12. von J+10 aufzubewahren und danach löschbar."""
+        from datetime import date
+
+        from core.services.datenreset import aufbewahrung_sperre
+        letzte = max(self._buchungen(self.a).values_list('datum', flat=True))
+        org = self.a.organisation
+        self.assertIsNotNone(aufbewahrung_sperre(org, heute=date(letzte.year + 10, 12, 31)))
+        self.assertIsNone(aufbewahrung_sperre(org, heute=date(letzte.year + 11, 1, 1)))

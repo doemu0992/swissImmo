@@ -62,6 +62,8 @@ def _report(eigentuemer, daten):
     ]
     if daten.get('bruttorendite') is not None:
         kpis.append((gettext("Bruttorendite") + "*", f"{daten['bruttorendite']:.2f}%"))
+    else:
+        kpis.append((gettext("Bruttorendite") + "*", gettext("nicht berechenbar")))
     col_w = (w - 40 * mm) / 3
     for i, (label, wert) in enumerate(kpis):
         cx = 20 * mm + (i % 3) * col_w
@@ -83,7 +85,8 @@ def _report(eigentuemer, daten):
         c.setFont("Helvetica-Bold", 11)
         c.drawString(20 * mm, y, lg['adresse'])
         c.setFont("Helvetica", 9); c.setFillColorRGB(0.3, 0.5, 0.3)
-        rendite = (' · ' + gettext('Rendite %(prozent)s%%') % {'prozent': f"{lg['rendite']:.2f}"}) if lg.get('rendite') is not None else ""
+        rendite = (' · ' + (gettext('Rendite %(prozent)s%%') % {'prozent': f"{lg['rendite']:.2f}"}
+                            if lg.get('rendite') is not None else gettext('Rendite nicht berechenbar')))
         c.drawRightString(w - 20 * mm, y, gettext('CHF %(betrag)s/Mt.') % {'betrag': _chf(lg['soll_monat'])} + rendite)
         c.setFillColorRGB(0, 0, 0)
         y -= 6 * mm
@@ -106,12 +109,14 @@ def _report(eigentuemer, daten):
         y -= 4 * mm
 
     # Fussnote
-    if daten.get('bruttorendite') is not None:
-        if y < 32 * mm:
-            c.showPage(); y = c.Y_FOLGE
-        c.setFont("Helvetica-Oblique", 7); c.setFillColorRGB(0.3, 0.3, 0.3)
-        c.drawString(20 * mm, y,
-                     "* " + gettext("Bruttorendite = aktueller Jahres-Mietertrag (Ist, ohne Leerstand) / Gebäudeversicherungswert (Näherung, ersetzt keine Verkehrswertschätzung)."))
+    if y < 32 * mm:
+        c.showPage(); y = c.Y_FOLGE
+    c.setFont("Helvetica-Oblique", 7); c.setFillColorRGB(0.3, 0.3, 0.3)
+    c.drawString(20 * mm, y,
+                 "* " + gettext("Bruttorendite = Netto-Sollmietzins (ohne Nebenkosten) / Verkehrswert, ersatzweise Anlagekosten. Ohne hinterlegten Wert keine Rendite."))
+    if daten.get('rendite_ohne_wert'):
+        y -= 4 * mm
+        c.drawString(20 * mm, y, gettext("Liegenschaften ohne hinterlegten Wert (nicht in der Rendite): %(n)s") % {'n': daten['rendite_ohne_wert']})
 
     c.save(); buf.seek(0)
     return buf.read()

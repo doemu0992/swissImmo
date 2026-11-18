@@ -5,27 +5,18 @@ class CoreConfig(AppConfig):
     name = 'core'
 
     def ready(self):
-        # ADMIN = NOTFALL-MODUS: Der Unfold-Admin ist nur noch für Superuser
-        # zugänglich. Alle Alltags-Workflows laufen über das SPA (/app/) mit
-        # dem Rollenkonzept aus core/auth.py. Sachbearbeiter/Lesende brauchen
-        # den Admin nicht — und sollen dort auch nichts kaputt machen können.
-        from django.contrib import admin
+        # Nach jedem `migrate` (Deploy): Altbestand von selbst verschlüsseln, ohne Handgriff im Terminal.
+        from django.db.models.signals import post_migrate
 
-        def superuser_only(request):
-            return bool(
-                request.user
-                and request.user.is_active
-                and request.user.is_superuser
-            )
-
-        admin.site.has_permission = superuser_only
+        from core.services.geheimnis_pflege import nach_migration
+        post_migrate.connect(nach_migration, sender=self, dispatch_uid='geheimnis_nach_migration')
 
         # Login-/Sicherheits-Ereignisse ins Logbuch schreiben.
         from core import signals  # noqa: F401
 
         # Einmal beim Start: Passt das Schema zum Code? Wenn nicht, geht die
         # Anwendung in den Wartungsmodus, statt auf jeder Seite einen
-        # Traceback zu zeigen (siehe docs/WARTUNGSSEITE.md).
+        # Traceback zu zeigen (siehe ARCHITECTURE.md).
         #
         # Hier und nicht in der Middleware, weil das sonst eine zusaetzliche
         # Datenbankabfrage bei JEDEM Seitenaufruf waere — fuer einen Zustand,
@@ -36,3 +27,8 @@ class CoreConfig(AppConfig):
         # Startprüfungen registrieren (siehe core/checks.py). Nur der Import
         # zählt — die Funktionen tragen sich über `@register()` selbst ein.
         from core import checks  # noqa: F401
+
+        # Row-Level-Security: je nach `RLS_MODUS` die Probe oder den Abgleich der Sitzungsvariable einhängen
+        # (siehe core/rls.py). In der Vorgabe `aus` geschieht nichts.
+        from core import rls
+        rls.verbinden()

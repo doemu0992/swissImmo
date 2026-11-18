@@ -1,5 +1,5 @@
 """Testmodul bankabgleich — aus core/tests.py herausgeloest (Etappe 1,
-siehe docs/ETAPPE-1-ZERLEGEN.md). 11 Klassen, unveraendert uebernommen."""
+siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)). 11 Klassen, unveraendert uebernommen."""
 from datetime import date
 from decimal import Decimal
 from unittest import skipUnless
@@ -460,6 +460,27 @@ class BankAbgleichP3Tests(TestCase):
         self.assertEqual(kr.status, 'bezahlt')
         self.assertEqual(self._saldo('2000'), Decimal('0.00'))
         self.assertEqual(self._saldo('1020'), Decimal('450.00'))
+
+    def test_belastung_groesser_als_offene_rechnung_wird_nicht_gekuerzt_verbucht(self):
+        """Audit F4: Belastung 350, offene Rechnung 300 — früher wurden 300 gebucht und die Zeile galt als verbucht."""
+        from finance.models import Bankbewegung, KreditorenRechnung
+        from finance.booking import ensure_kontenplan, buche
+        ensure_kontenplan()
+        lg, e, m, v = _basis_objekte()
+        kr = KreditorenRechnung.objects.create(
+            lieferant='Hauswartung AG', referenz='RE-79', betrag=Decimal('300.00'),
+            datum=date(2024, 3, 1), faellig_am=date(2024, 3, 31),
+            liegenschaft=lg, status='freigegeben')
+        buche('6800', '2000', Decimal('300.00'), 'Hauswartung', datum=date(2024, 3, 1), liegenschaft=lg, kreditor=kr)
+        c = Client(); c.force_login(_team_user())
+        self._import(c)
+        b = Bankbewegung.objects.get(betrag__lt=0)
+        c.post('/neu/bankabgleich/bewegung/', {
+            'bewegung_id': b.id, 'art': 'kreditor', 'kreditor_id': kr.id})
+        b.refresh_from_db(); kr.refresh_from_db()
+        self.assertEqual(b.status, 'offen', 'Die Zeile gilt als verbucht, obwohl 50 fehlen')
+        self.assertEqual(kr.status, 'freigegeben')
+        self.assertEqual(self._saldo('2000'), Decimal('-300.00'), 'Es wurde trotzdem gebucht')
 
     def test_gutschrift_kann_keine_kreditorenrechnung_tilgen(self):
         from finance.models import Bankbewegung, KreditorenRechnung
@@ -1180,7 +1201,12 @@ class CamtGesperrtePeriodeQSTests(TestCase):
                          'Waisen-Bankbewegung blockiert den Re-Import')
 
         # 2) Periode öffnen, dieselbe Datei erneut importieren → jetzt gebucht.
-        vw = Organisation.objects.first(); vw.buchung_gesperrt_bis = None; vw.save()
+        # Die Sperre zu lockern braucht sonst eine zweite Person (Roadmap Nr. 11): Der Test setzt die
+        # Freigabe ausdrücklich voraus, weil er den Re-Import in der geöffneten Periode prüft.
+        from finance.periodensperre import freigabe_aktiv
+        vw = Organisation.objects.first(); vw.buchung_gesperrt_bis = None
+        with freigabe_aktiv():
+            vw.save()
         f2 = SimpleUploadedFile('camt.xml', self._camt(r.qr_referenz), content_type='application/xml')
         c.post('/neu/bankabgleich/camt-import/', {'camt_datei': f2})
         r.refresh_from_db()

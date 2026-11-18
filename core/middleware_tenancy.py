@@ -19,9 +19,9 @@ nachgerüstet hat, wird der Kontext hier über die Liegenschaft aufgelöst.
 Fehlt sie (Eigentümer ohne Liegenschaft, Mieter ohne Vertrag), gilt die
 Organisation, die der Datensatz selbst trägt.
 
-**Mehrere Mitgliedschaften.** Heute hat niemand mehr als eine; sobald es
-vorkommt, braucht es eine Auswahl in der Oberfläche und einen Wert in der
-Session. Bis dahin nimmt die Middleware die älteste und protokolliert es —
+**Mehrere Mitgliedschaften.** Die Auswahl steht in der Oberfläche (Mandantenwahl
+im Kopf, Wert `SESSION_SCHLUESSEL` in der Session). Solange nichts gewählt ist,
+nimmt die Middleware die älteste und protokolliert es —
 stillschweigend die erstbeste zu nehmen wäre der Fall, in dem jemand
 irgendwann in der falschen Organisation arbeitet, ohne es zu merken.
 """
@@ -55,7 +55,7 @@ def _organisation_fuer(benutzer, session=None):
                     return m.organisation
             logger.info(
                 'Benutzer %s ist in %d Organisationen, keine gewählt — nimmt die älteste (%s). '
-                'Eine Auswahl in der Oberfläche fehlt noch.',
+                'Gewählt wird über die Mandantenwahl im Kopf der Oberfläche.',
                 benutzer.pk, len(mitgliedschaften), mitgliedschaften[0].organisation_id)
         return mitgliedschaften[0].organisation
 

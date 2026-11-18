@@ -56,7 +56,7 @@
             </div>
             <button type="submit" class="fw-btn fw-primary">Versicherungsleistung verbuchen</button>
         </form>
-        <form method="post" onsubmit="return confirm('Als abgelehnt vermerken?');">
+        <form method="post" data-bestaetigen="{% filter escapejs %}Als abgelehnt vermerken?{% endfilter %}">
             {% csrf_token %}
             <input type="hidden" name="aktion" value="ablehnen"><input type="hidden" name="fall" value="{{ f.id }}">
             <button type="submit" class="fw-btn">Von der Versicherung abgelehnt</button>

@@ -52,7 +52,7 @@
         </div>
         <b class="fw-num">CHF {{ b.betrag|chf }}</b>
         {% if kann_schreiben %}
-        <form method="post" onsubmit="return confirm('{% filter escapejs %}{% trans "Diesen Beleg löschen?" %}{% endfilter %}');">
+        <form method="post" data-bestaetigen="{% filter escapejs %}{% trans "Diesen Beleg löschen?" %}{% endfilter %}">
             {% csrf_token %}<input type="hidden" name="aktion" value="beleg_loeschen"><input type="hidden" name="beleg_id" value="{{ b.id }}">
             <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}" aria-label="{% trans 'Beleg löschen' %}">{% zeichen 'loeschen' %}</button>
         </form>

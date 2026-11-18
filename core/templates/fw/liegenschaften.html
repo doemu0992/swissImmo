@@ -30,7 +30,7 @@
 {% comment %} Der Streifen zaehlt immer das GANZE Portfolio, auch bei gesetztem
    Filter. Wuerde er mitfiltern, zeigte der Filter «Leerstand» eine
    Leerstandsquote von 100 % — richtig gerechnet und trotzdem irrefuehrend.
-   Begruendung steht auch in core/views/fw/listen.py::fw_liegenschaften. {% endcomment %}
+   Begruendung steht auch in core/views/fw/liegenschaften_liste.py::fw_liegenschaften. {% endcomment %}
 <div class="fw-kpis">
     <div class="fw-kpi">
         <div class="fw-l">{% trans "Liegenschaften" %}</div>
@@ -85,17 +85,17 @@
     <div class="fw-tablewrap">
         <table class="fw-table">
             <thead><tr>
-                <th>{% trans "Liegenschaft" %}</th>
-                <th>{% trans "Mandat" %}</th>
-                <th class="fw-right">{% trans "Objekte" %}</th>
-                <th class="fw-right">{% trans "Belegung" %}</th>
-                <th class="fw-right">{% trans "Soll / Monat" %}</th>
-                <th>{% trans "Befund" %}</th>
+                <th scope="col">{% trans "Liegenschaft" %}</th>
+                <th scope="col">{% trans "Mandat" %}</th>
+                <th scope="col" class="fw-right">{% trans "Objekte" %}</th>
+                <th scope="col" class="fw-right">{% trans "Belegung" %}</th>
+                <th scope="col" class="fw-right">{% trans "Soll / Monat" %}</th>
+                <th scope="col">{% trans "Befund" %}</th>
             </tr></thead>
             <tbody>
             {% for row in rows %}
-            <tr data-zeile class="fw-klickzeile" onclick="window.location='/neu/liegenschaften/{{ row.lg.id }}/'">
-                <td><a href="/neu/liegenschaften/{{ row.lg.id }}/" class="fw-zelle-titel" onclick="event.stopPropagation()">{{ row.lg.strasse }}</a>
+            <tr data-zeile class="fw-klickzeile" data-gehe-zu="/neu/liegenschaften/{{ row.lg.id }}/">
+                <td><a href="/neu/liegenschaften/{{ row.lg.id }}/" class="fw-zelle-titel" data-stop>{{ row.lg.strasse }}</a>
                     <span class="fw-zelle-sub">{{ row.lg.plz }} {{ row.lg.ort }}{% if row.lg.baujahr %} · {% blocktrans with j=row.lg.baujahr %}Baujahr {{ j }}{% endblocktrans %}{% endif %}</span></td>
                 <td>{% if row.lg.eigentuemer %}{{ row.lg.eigentuemer }}{% else %}<span class="fw-faint">—</span>{% endif %}</td>
                 <td class="fw-right fw-num">{{ row.einheiten }}</td>

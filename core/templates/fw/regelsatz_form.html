@@ -106,7 +106,7 @@
 
 {% if satz %}
 <form method="post" action="/neu/regelwerk/{{ satz.id }}/loeschen/"
-      onsubmit="return confirm('{% filter escapejs %}{% trans "Regelsatz löschen? Das Protokoll der bisherigen Anwendungen bleibt erhalten." %}{% endfilter %}')">
+      data-bestaetigen="{% filter escapejs %}{% trans "Regelsatz löschen? Das Protokoll der bisherigen Anwendungen bleibt erhalten." %}{% endfilter %}">
     {% csrf_token %}
     <button class="fw-btn fw-rand-krit">{% zeichen 'loeschen' %}{% trans "Regelsatz löschen" %}</button>
 </form>

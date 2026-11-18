@@ -54,13 +54,14 @@
         <div class="p-5">
                 <p class="text-sm fw-mutet">{% blocktrans trimmed with n=portal_ausgeschrieben_n %}Stellt alle zur Ausschreibung markierten Objekte ({{ n }}) als standardisierten, token-gesicherten Feed (JSON/CSV) bereit — abrufbar von Portalen wie <span class="font-medium">Homegate, ImmoScout24 (SMG), Flatfox</span> bzw. deren Import/Middleware.{% endblocktrans %}</p>
 
+                {% if not schnittstellen_frei %}<div class="fw-hinweis"><span class="fw-hi">{% zeichen 'gesperrt' %}</span><div class="fw-ht">{% trans "Schnittstellen (Buchhaltungsformate, Portal-Feed, Kalender-Abonnement) sind Teil der Stufe Professional." %} <a href="/neu/abonnement/">{% trans "Zum Abonnement" %}</a></div></div>{% endif %}
                 {% if portal_token %}
                 <div class="fw-feldblock mt-3">
                     <label class="fw-label">{% trans "Feed-URL (JSON)" %}</label>
                     <div class="flex items-center gap-2">
                         <input id="feedurl" readonly aria-label="{% trans 'Feed-URL (JSON)' %}" value="{{ request.scheme }}://{{ request.get_host }}{{ portal_feed_pfad }}"
                                class="fw-feld fw-mono flex-1 min-w-0">
-                        <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feedurl').value)"
+                        <button type="button" data-kopieren="feedurl"
                                 class="fw-btn fw-rand-marke fw-knapp">{% zeichen 'kopieren' %}{% trans "Kopieren" %}</button>
                     </div>
                     <div class="flex items-center gap-3 flex-wrap">
@@ -68,11 +69,11 @@
                         <a href="{{ portal_feed_pfad }}&format=csv" class="fw-link">{% zeichen 'herunterladen' klasse='mr-1' %}{% trans "CSV herunterladen" %}</a>
                     </div>
                     <div class="flex items-center gap-2 flex-wrap mt-3">
-                        <form method="post" action="/neu/integrationen/portal-token/" onsubmit="return confirm('{% filter escapejs %}{% trans "Neuen Token erzeugen? Die alte Feed-URL wird ungültig." %}{% endfilter %}');">
+                        <form method="post" action="/neu/integrationen/portal-token/" data-bestaetigen="{% filter escapejs %}{% trans "Neuen Token erzeugen? Die alte Feed-URL wird ungültig." %}{% endfilter %}">
                             {% csrf_token %}
                             <button class="fw-btn fw-knapp">{% zeichen 'lauf' %}{% trans "Token neu erzeugen" %}</button>
                         </form>
-                        <form method="post" action="/neu/integrationen/portal-token/" onsubmit="return confirm('{% filter escapejs %}{% trans "Feed deaktivieren?" %}{% endfilter %}');">
+                        <form method="post" action="/neu/integrationen/portal-token/" data-bestaetigen="{% filter escapejs %}{% trans "Feed deaktivieren?" %}{% endfilter %}">
                             {% csrf_token %}<input type="hidden" name="aktion" value="entfernen">
                             <button class="fw-btn fw-rand-krit fw-knapp">{% trans "Deaktivieren" %}</button>
                         </form>

@@ -29,7 +29,7 @@
     <ul class="list-disc pl-5">
         {% for z in vorschau %}<li>{{ z.monat|stringformat:"02d" }}/{{ z.jahr }}</li>{% endfor %}
     </ul>
-    <form method="post" onsubmit="return confirm('Nutzungsentschädigung jetzt stellen? Bitte bestätigen Sie, dass der Mieter die Wohnung noch nutzt.');">
+    <form method="post" data-bestaetigen="{% filter escapejs %}Nutzungsentschädigung jetzt stellen? Bitte bestätigen Sie, dass der Mieter die Wohnung noch nutzt.{% endfilter %}">
         {% csrf_token %}
         <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %} Forderungen stellen</button>
     </form>

@@ -16,7 +16,7 @@
     </div>
     <form method="get" class="fw-phead-knoepfe">
         {% if request.GET.lg %}<input type="hidden" name="lg" value="{{ request.GET.lg }}">{% endif %}
-        <select name="jahr" aria-label="{% trans 'Jahr' %}" onchange="this.form.submit()" class="fw-feld">
+        <select name="jahr" aria-label="{% trans 'Jahr' %}" data-absenden class="fw-feld">
             <option value="0" {% if not jahr %}selected{% endif %}>{% trans "Alle Jahre" %}</option>
             {% for j in jahre %}<option value="{{ j }}" {% if jahr == j %}selected{% endif %}>{{ j }}</option>{% endfor %}
         </select>
@@ -48,12 +48,12 @@
     <table class="fw-table">
         <thead>
             <tr>
-                <th>{% trans "Liegenschaft" %}</th>
-                <th class="fw-zentriert">{% trans "Schäden" %}</th>
-                <th class="fw-zentriert">{% trans "Aufträge" %}</th>
-                <th class="fw-right">{% trans "Offene Schätzung" %}</th>
-                <th class="fw-right">{% trans "Effektiv" %}</th>
-                <th class="fw-right">{% trans "Total" %}</th>
+                <th scope="col">{% trans "Liegenschaft" %}</th>
+                <th scope="col" class="fw-zentriert">{% trans "Schäden" %}</th>
+                <th scope="col" class="fw-zentriert">{% trans "Aufträge" %}</th>
+                <th scope="col" class="fw-right">{% trans "Offene Schätzung" %}</th>
+                <th scope="col" class="fw-right">{% trans "Effektiv" %}</th>
+                <th scope="col" class="fw-right">{% trans "Total" %}</th>
             </tr>
         </thead>
         <tbody>

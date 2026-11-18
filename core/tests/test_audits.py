@@ -1,5 +1,5 @@
 """Testmodul audits — aus core/tests.py herausgeloest (Etappe 1,
-siehe docs/ETAPPE-1-ZERLEGEN.md). 15 Klassen, unveraendert uebernommen."""
+siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)). 15 Klassen, unveraendert uebernommen."""
 from datetime import date, timedelta
 from decimal import Decimal
 
@@ -748,7 +748,7 @@ class NachtN6BewirtschafterTests(TestCase):
         lg, e, m, v = _basis_objekte()
         u = _team_user(); c = Client(); c.force_login(u)
         body = c.get(f'/neu/kommunikation/?mieter={m.id}').content.decode()
-        self.assertIn(f'value="{m.id}" onchange="aktualisiere()" checked', body)
+        self.assertIn(f'value="{m.id}" data-bei-aenderung="aktualisiere" checked', body)
 
     def test_person_detail_email_button(self):
         lg, e, m, v = _basis_objekte()

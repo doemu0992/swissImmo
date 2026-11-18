@@ -42,20 +42,20 @@
         <table class="fw-table" data-spaltenfilter>
             <thead>
             <tr>
-                <th>{% trans "Mietverhältnis" %}</th>
-                <th>{% trans "Objekt" %}</th>
-                <th class="fw-right">{% trans "Mietzins brutto" %}</th>
-                <th class="fw-right">{% trans "Saldo" %}</th>
-                <th>{% trans "Mahnstufe" %}</th>
-                <th>{% trans "Status" %}</th>
-                <th></th>
+                <th scope="col">{% trans "Mietverhältnis" %}</th>
+                <th scope="col">{% trans "Objekt" %}</th>
+                <th scope="col" class="fw-right">{% trans "Mietzins brutto" %}</th>
+                <th scope="col" class="fw-right">{% trans "Saldo" %}</th>
+                <th scope="col">{% trans "Mahnstufe" %}</th>
+                <th scope="col">{% trans "Status" %}</th>
+                <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
             {% for row in rows %}
-            <tr class="fw-klickzeile" onclick="window.location='/neu/vertraege/{{ row.v.id }}/'">
+            <tr class="fw-klickzeile" data-gehe-zu="/neu/vertraege/{{ row.v.id }}/">
                 <td>
-                    <a href="/neu/vertraege/{{ row.v.id }}/" class="fw-zelle-titel" onclick="event.stopPropagation()">{{ row.v.mieter.display_name }}</a>
+                    <a href="/neu/vertraege/{{ row.v.id }}/" class="fw-zelle-titel" data-stop>{{ row.v.mieter.display_name }}</a>
                     <span class="fw-zelle-sub fw-mono">MV-{{ row.v.id }}</span>
                 </td>
                 <td>{{ row.v.einheit.liegenschaft.strasse }}{% if row.v.einheit.liegenschaft.ort %}, {{ row.v.einheit.liegenschaft.ort }}{% endif %}<span class="fw-zelle-sub">{{ row.v.einheit.bezeichnung }}</span></td>
@@ -67,7 +67,7 @@
                     <span class="fw-zelle-sub fw-num">{% blocktrans with ab=row.v.beginn|date:"d.m.Y" %}ab {{ ab }}{% endblocktrans %} · {% if row.v.ende %}<span class="{% if row.v.status == 'gekuendigt' %}fw-strong fw-kritisch{% endif %}">{% blocktrans with bis=row.v.ende|date:"d.m.Y" %}bis {{ bis }}{% endblocktrans %}</span>{% else %}{% trans "unbefristet" %}{% endif %}</span></td>
                 <td class="fw-right">
                     {% if row.v.status == 'aktiv' %}
-                    {% if request.user|darf:"/neu/vertraege/1/kuendigen/" %}<a href="/neu/vertraege/{{ row.v.id }}/kuendigen/" onclick="event.stopPropagation(); return fwModalOpen(this,'{% filter escapejs %}{% trans "Kündigung erfassen" %}{% endfilter %}')" class="fw-btn fw-knapp fw-geist">{% zeichen 'kritisch' %}{% trans "Kündigen" %}</a>{% endif %}
+                    {% if request.user|darf:"/neu/vertraege/1/kuendigen/" %}<a href="/neu/vertraege/{{ row.v.id }}/kuendigen/" data-stop data-modal="{% trans "Kündigung erfassen" %}" class="fw-btn fw-knapp fw-geist">{% zeichen 'kritisch' %}{% trans "Kündigen" %}</a>{% endif %}
                     {% endif %}
                 </td>
             </tr>

@@ -17,7 +17,7 @@ Ersetzt wurde in zwei Richtungen:
 Der Portal-Feed ist der Sonderfall und bekommt hier das meiste Gewicht: Dort
 war die Richtung selbst verkehrt.
 """
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from crm.models import Organisation
@@ -33,6 +33,8 @@ class ZweiBestaende(TestCase):
         assert Organisation.objects.order_by('pk').first().pk == cls.a.organisation.pk
 
 
+# Schnittstellen (Formate, Feed, Kalender-Abo) gehören zur Stufe «professional».
+@override_settings(SWISSIMMO_VORGABE_STUFE='professional')
 class PortalFeedTokenTests(ZweiBestaende):
     """Der Token bestimmt die Verwaltung — nicht umgekehrt.
 

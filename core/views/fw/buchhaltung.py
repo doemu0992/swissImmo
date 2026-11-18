@@ -1,7 +1,7 @@
 # core/views/fw/buchhaltung.py
 #
 # Erfolgsrechnung, Kontenplan, Kontoblatt, Journal-Export und PDF.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # `_erfolg_bilanz` bleibt hier und wird von core/services/abschluss_pdf.py
 # ueber core.views.fw bezogen -- das __init__.py reicht den Namen weiter,
@@ -19,7 +19,7 @@ from django.utils.translation import gettext as _
 
 from core.auth import (rolle_erforderlich, ROLLE_VERWALTER, SCHREIB_ROLLEN,
                        TEAM_ROLLEN, VERWALTUNGS_ROLLEN)
-from core.auth import FINANZ_LESE_ROLLEN
+from core.auth import JOURNAL_LESE_ROLLEN, log_aktion
 from portfolio.models import Liegenschaft
 
 logger = logging.getLogger(__name__)
@@ -172,7 +172,7 @@ def _erfolg_bilanz(aktive_lg, jahr):
     }
 
 
-@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
+@rolle_erforderlich(*JOURNAL_LESE_ROLLEN)
 def fw_buchhaltung(request):
     from finance.models import Buchung, Buchungskonto
     basis = _global_filter(request)
@@ -272,9 +272,19 @@ def fw_buchhaltung(request):
             from crm.models import Organisation
             vw_e = request.organisation
             if vw_e is not None and vw_e.buchung_gesperrt_bis == date(j_zr, 12, 31):
-                vw_e.buchung_gesperrt_bis = date(j_zr - 1, 12, 31) if j_zr > 2000 else None
-                vw_e.save(update_fields=['buchung_gesperrt_bis'])
-                entsperrt = f" Die Periodensperre bis 31.12.{j_zr} wurde aufgehoben."
+                # Die Sperre zu lockern braucht eine zweite Person (Vier-Augen-Prinzip,
+                # `finance/periodensperre.py`). Erst nach deren Freigabe gelingt die Rücknahme.
+                from finance.periodensperre import SperreFehler, sperre_aendern
+                try:
+                    sperre_aendern(vw_e, date(j_zr - 1, 12, 31) if j_zr > 2000 else None, request.user,
+                                   f'Rücknahme des Jahresabschlusses {j_zr}')
+                except SperreFehler as exc:
+                    messages.error(request, '❌ ' + str(exc))
+                    return redirect(f'/neu/buchhaltung/?jahr={j_zr}')
+                log_aktion(request, "Lockerung der Periodensperre beantragt", f"31.12.{j_zr}",
+                           f'Rücknahme des Jahresabschlusses {j_zr}')
+                messages.info(request, gettext('Die Periodensperre bis 31.12.%(j_zr)s muss zuerst eine zweite Person aus der Verwaltung lösen (Anlagen & Abschluss). Danach die Rücknahme erneut auslösen.') % {'j_zr': j_zr})
+                return redirect(f'/neu/buchhaltung/?jahr={j_zr}')
         try:
             n_zr = nimm_zurueck(j_zr, liegenschaft=aktive_lg, user=request.user)
         except Exception as exc:
@@ -406,7 +416,7 @@ def fw_buchhaltung(request):
     })
 
 
-@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
+@rolle_erforderlich(*JOURNAL_LESE_ROLLEN)
 def fw_kontenplan(request):
     """Kontenplan mit SALDENLISTE und Pflege der Konten.
 
@@ -492,7 +502,7 @@ def fw_kontenplan(request):
         t_haben += h
 
     return render(request, 'fw/kontenplan.html', {
-        **basis, 'nav': 'buchhaltung', 'zeilen': zeilen,
+        **basis, 'nav': 'kontenplan', 'zeilen': zeilen,
         'total_soll': t_soll, 'total_haben': t_haben,
         'differenz': t_soll - t_haben,
         'jahr': jahr, 'jahre': list(range(heute.year, heute.year - 5, -1)),
@@ -502,7 +512,10 @@ def fw_kontenplan(request):
     })
 
 
-@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
+KONTOBLATT_ZEILEN_JE_SEITE = 100
+
+
+@rolle_erforderlich(*JOURNAL_LESE_ROLLEN)
 def fw_kontoblatt(request, nummer):
     """Kontoauszug/Kontoblatt eines Kontos: alle Buchungen mit laufendem Saldo.
     Bilanzkonten kumulativ (mit Eröffnungssaldo aus Vorjahren)."""
@@ -542,14 +555,19 @@ def fw_kontoblatt(request, nummer):
         zeilen.append({'b': b, 'soll': b.betrag if ist_soll else None,
                        'haben': b.betrag if not ist_soll else None,
                        'gegenkonto': gegen, 'saldo': saldo})
+    # Der Saldo läuft über alle Zeilen, gezeigt wird eine Seite (die Vorlage rendert jede Zeile zweimal:
+    # Telefon und Tabelle — 1,8 MB bei 3000 Buchungen).
+    from ._liste import blaettern
+    seite, query_ohne_seite = blaettern(request, zeilen, pro_seite=KONTOBLATT_ZEILEN_JE_SEITE)
     return render(request, 'fw/kontoblatt.html', {
-        **basis, 'nav': 'buchhaltung', 'konto': konto, 'zeilen': zeilen,
+        **basis, 'nav': 'buchhaltung', 'konto': konto, 'zeilen': seite, 'seite': seite,
+        'query_ohne_seite': query_ohne_seite,
         'eroeffnung': eroeffnung, 'endsaldo': saldo, 'ist_bilanz': ist_bilanz,
         'jahr': jahr or 'alle', 'jahre': list(range(heute.year, heute.year - 5, -1)),
     })
 
 
-@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
+@rolle_erforderlich(*JOURNAL_LESE_ROLLEN)
 def fw_buchhaltung_pdf(request):
     """Erfolgsrechnung und Bilanz als PDF.
 
@@ -581,12 +599,13 @@ def fw_buchhaltung_pdf(request):
                                  verwaltung=(aktive_lg.organisation if aktive_lg
                                              else request.organisation),
                                  erstellt_am=heute)
+    log_aktion(request, 'Abruf Erfolgsrechnung/Bilanz (PDF)', objekt=f'{lg_name} {jahr}', kategorie='sonstiges')
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'inline; filename="Erfolgsrechnung_Bilanz_{jahr}.pdf"'
     return resp
 
 
-@rolle_erforderlich(*FINANZ_LESE_ROLLEN)
+@rolle_erforderlich(*JOURNAL_LESE_ROLLEN)
 def fw_buchhaltung_export(request):
     """Exportiert das Buchungsjournal des Jahres als CSV (Treuhänder-Handover)."""
     import csv

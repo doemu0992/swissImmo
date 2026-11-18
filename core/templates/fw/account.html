@@ -41,9 +41,9 @@
                 <input name="aktueller_referenzzinssatz" type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" value="{% localize off %}{{ vw.aktueller_referenzzinssatz }}{% endlocalize %}" class="fw-feld"></div>
             <div class="fw-feldblock"><label class="fw-label">{% trans "Landesindex LIK (Punkte)" %}</label>
                 <input name="aktueller_lik_punkte" type="text" inputmode="decimal" data-dezimal data-fehler="{% trans 'Bitte eine Zahl eingeben.' %}" value="{% localize off %}{{ vw.aktueller_lik_punkte }}{% endlocalize %}" class="fw-feld"></div>
-            <div class="fw-feldblock"><label class="fw-label">{% trans "LIK-Basis" %}</label>
-                <input name="lik_basis" type="text" value="{{ vw.lik_basis|default:'Dezember 2020' }}" placeholder="{% trans 'Dezember 2020' %}" class="fw-feld">
-                <p class="fw-hilfe">{% trans "Aktuelle Basis des BFS: «Dezember 2020 = 100»." %}</p></div>
+            <div class="fw-feldblock"><label class="fw-label" for="acc-lik-basis">{% trans "LIK-Basis" %}</label>
+                {% include 'fw/_lik_basis_feld.html' with feld_id='acc-lik-basis' gewaehlt=vw.lik_basis %}
+                <p class="fw-hilfe">{% trans "Vorgabe für neue Verträge, wenn weder Liegenschaft noch Mandat eine eigene Reihe festlegen. «Landesindex LIK (Punkte)» und Stand-Monat daneben stehen in der Reihe Dezember 2020." %}</p></div>
             <div class="fw-feldblock"><label class="fw-label">{% trans "LIK Stand-Monat (abgelesen)" %}</label>
                 <input name="aktueller_lik_stand" type="month" value="{{ vw.aktueller_lik_stand|date:'Y-m' }}" class="fw-feld">
                 <p class="fw-hilfe">{% trans "Monat, aus dem die Punkte stammen — erscheint auf dem amtlichen Formular." %}</p></div>
@@ -108,7 +108,7 @@
                 <a href="/neu/account/fensterprobe/" target="_blank" rel="noopener" class="fw-btn fw-knapp">{% zeichen 'drucken' %} {% trans "Fensterprobe drucken (PDF)" %}</a></div>
         </div>
         <p class="fw-hilfe">{% trans "Drucken Sie die Fensterprobe, falten Sie sie an den Falzmarken und legen Sie sie in Ihren Fensterumschlag. Steht die Adresse nicht im Fenster, verschieben Sie sie hier (±10 mm, 0 = Norm); die Briefe folgen dem Versatz." %}</p>
-        <script>
+        <script nonce="{{ csp_nonce }}">
         (function () {
             var wahl = document.getElementById('acc-bk-wahl'), feld = document.getElementById('acc-bk-farbe');
             if (wahl && feld) { wahl.addEventListener('input', function () { feld.value = wahl.value; }); }
@@ -166,7 +166,8 @@
     <div class="fw-kopf"><span class="fw-ikon crit">{% zeichen 'warnung' %}</span><h2 class="fw-kritisch">{% trans "Gefahrenzone" %}</h2></div>
     <div class="p-5">
     <p class="text-sm fw-mutet mb-4">{% blocktrans trimmed %}Löscht <span class="font-semibold">alle</span> Daten (Liegenschaften, Objekte, Verträge, Personen, Buchungen, Rechnungen, Schäden, Vorlagen, Mandate und Verwaltungs-Stammdaten) und startet mit einer leeren Datenbank. Benutzerkonten und Rollen bleiben erhalten.{% endblocktrans %} <span class="font-semibold fw-kritisch">{% trans "Dieser Schritt kann nicht rückgängig gemacht werden." %}</span> {% trans "Vorher wird automatisch eine Sicherung der Datenbank erstellt; schlägt sie fehl, wird nichts gelöscht. Das Audit-Log bleibt erhalten." %}</p>
-    <form method="post" action="/neu/datenreset/" onsubmit="return confirm('{% filter escapejs %}{% trans "Wirklich ALLE Daten unwiderruflich löschen und von vorne beginnen?" %}{% endfilter %}');" class="flex flex-wrap items-end gap-3">
+    <p class="text-sm fw-mutet mb-4">{% trans "Nicht möglich, solange Buchungen der gesetzlichen Aufbewahrungsfrist unterliegen (10 Jahre, Art. 958f OR) oder die Buchhaltung abgeschlossen ist." %}</p>
+    <form method="post" action="/neu/datenreset/" data-bestaetigen="{% filter escapejs %}{% trans "Wirklich ALLE Daten unwiderruflich löschen und von vorne beginnen?" %}{% endfilter %}" class="flex flex-wrap items-end gap-3">
         {% csrf_token %}
         <div class="fw-feldblock">
             <label class="fw-label">{% trans "Zum Bestätigen «LÖSCHEN» eingeben" %}</label>

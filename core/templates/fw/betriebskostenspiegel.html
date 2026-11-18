@@ -14,7 +14,7 @@
         <p>{% trans "Aufwand je Liegenschaft, umgelegt auf CHF/m² — quervergleichbar." %}</p>
     </div>
     <form method="get" class="fw-phead-knoepfe">
-        <select name="jahr" aria-label="{% trans 'Jahr' %}" onchange="this.form.submit()" class="fw-feld">
+        <select name="jahr" aria-label="{% trans 'Jahr' %}" data-absenden class="fw-feld">
             {% for j in jahre %}<option value="{{ j }}" {% if j == jahr %}selected{% endif %}>{{ j }}</option>{% endfor %}
         </select>
         {% if lg_query %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
@@ -40,11 +40,11 @@
     <div class="fw-tablewrap">
 <table class="fw-table">
         <thead><tr>
-            <th>{% trans "Liegenschaft" %}</th>
-            <th class="fw-right">{% blocktrans %}Aufwand {{ jahr }}{% endblocktrans %}</th>
-            <th class="fw-right">{% trans "Fläche" %}</th>
-            <th class="fw-right">{% trans "CHF/m²" %}</th>
-            <th class="fw-right">{% trans "vs. Ø" %}</th>
+            <th scope="col">{% trans "Liegenschaft" %}</th>
+            <th scope="col" class="fw-right">{% blocktrans %}Aufwand {{ jahr }}{% endblocktrans %}</th>
+            <th scope="col" class="fw-right">{% trans "Fläche" %}</th>
+            <th scope="col" class="fw-right">{% trans "CHF/m²" %}</th>
+            <th scope="col" class="fw-right">{% trans "vs. Ø" %}</th>
         </tr></thead>
         <tbody>
         {% for r in rows %}

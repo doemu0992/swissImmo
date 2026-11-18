@@ -1,8 +1,10 @@
 from core.utils import get_smart_upload_path, get_current_lik, get_current_ref_zins
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
+from core.verschluesselt import VerschluesseltesCharField
 
-from core.tenancy import AlleOrganisationenManager, TenantManager
+from core.tenancy import AlleOrganisationenManager, TenantManager, TenantQuerySet
 from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
 from django.utils.translation import gettext_lazy as _
 
@@ -106,6 +108,104 @@ class PlattformEingangStatus(models.Model):
 
     def __str__(self):
         return f"Plattform-Postfach, Abruf {self.letzter_abruf or 'noch nie'}"
+
+
+class AbrufStatus(models.Model):
+    """Wann ein Abruf bei einem externen Dienst zuletzt gelang und woran er zuletzt scheiterte.
+
+    WARUM ES DAS GIBT: Die Abrufe (LIK, Referenzzinssatz, ...) fangen jeden Fehler ab und fallen auf eine Tabelle
+    im Code zurück. Das ist richtig, hat aber dazu geführt, dass ein ausgefallener Abruf Wochen unbemerkt blieb
+    (Architekturnotizen R7). Jetzt hinterlässt jeder Versuch eine Spur, und die Betreiber-Startseite zeigt sie.
+
+    Plattformweit, ohne Organisationsbezug (siehe `OHNE_MANDANTENFILTER`): Der Dienst fällt für die Installation
+    aus, nicht für eine Verwaltung. Der Fehlertext enthält keine Zugangsdaten und keine Daten einer Verwaltung.
+    """
+    name = models.CharField("Abruf", max_length=60, unique=True)
+    letzter_versuch = models.DateTimeField("Letzter Versuch", null=True, blank=True, editable=False)
+    letzter_erfolg = models.DateTimeField("Letzter Erfolg", null=True, blank=True, editable=False)
+    letzter_fehler = models.CharField("Letzter Fehler", max_length=300, blank=True, default='', editable=False)
+    fehler_in_folge = models.PositiveIntegerField("Fehlversuche in Folge", default=0, editable=False)
+
+    class Meta:
+        verbose_name = "Abrufstatus"
+        verbose_name_plural = "Abrufstatus"
+
+    def __str__(self):
+        return f"{self.name}: {self.fehler_in_folge} Fehlversuche in Folge"
+
+
+class LikWert(models.Model):
+    """Ein vom Betreiber nachgetragener Monatswert des Landesindex der Konsumentenpreise.
+
+    WARUM EINE TABELLE: Die Reihe im Code (`core/services/lik.py`) endete jeden Monat neu, und ein Nachtrag
+    brauchte ein Deployment. Hier trägt der Betreiber den Wert ein, sobald das BFS ihn veröffentlicht; die Reihe im
+    Code bleibt der Grundstock. Ein Eintrag hier gewinnt gegen den Code (so lässt sich auch ein Tippfehler im
+    Code korrigieren, ohne zu deployen).
+
+    Plattformweit, ohne Organisationsbezug (siehe `OHNE_MANDANTENFILTER`): Der Index ist für alle derselbe.
+    Nie geraten: `quelle` hält fest, woher der Wert stammt.
+    """
+    jahr = models.PositiveSmallIntegerField("Jahr")
+    monat = models.PositiveSmallIntegerField("Monat")
+    punkte = models.DecimalField("Punkte", max_digits=6, decimal_places=1)
+    basis = models.CharField("Basis", max_length=30, default="Dezember 2020", editable=False)
+    quelle = models.CharField("Quelle", max_length=200)
+    erfasst_von = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+                                    related_name='+', editable=False)
+    erfasst_am = models.DateTimeField("Erfasst am", auto_now=True, editable=False)
+
+    class Meta:
+        verbose_name = "LIK-Wert"
+        verbose_name_plural = "LIK-Werte"
+        ordering = ['jahr', 'monat']
+        constraints = [models.UniqueConstraint(fields=['jahr', 'monat', 'basis'], name='lik_wert_je_monat_und_basis')]
+
+    def __str__(self):
+        return f"LIK {self.monat:02d}/{self.jahr}: {self.punkte} ({self.basis})"
+
+
+class Auftrag(models.Model):
+    """Eine Arbeit, die im Hintergrund läuft: wartet, läuft, ist fertig oder gescheitert.
+
+    WARUM ES DAS GIBT (Architekturnotizen R5): Lange Arbeiten liefen im Request oder im nächsten geplanten Lauf. Im
+    Request droht das Zeitlimit des Hosters, ein abgebrochener Lauf hatte keinen Wiederanlauf, und niemand sah einen
+    Stand. Ein Auftrag hält fest, WAS (Art, Parameter), FÜR WEN (Organisation), WIE WEIT (Fortschritt) und WIE ES
+    ENDETE (Ergebnis oder Fehler). Abgearbeitet wird er von `manage.py auftraege_abarbeiten` (Dauerläufer oder
+    Scheduled Task), im Mandantenkontext seiner Organisation. Siehe `core/services/auftraege.py`.
+
+    Nichts hier ist ein Ersatz für die Fachlogik: Die Art verweist auf eine Funktion, die die Arbeit tut.
+    """
+    ZUSTAND_WARTET, ZUSTAND_LAEUFT, ZUSTAND_FERTIG, ZUSTAND_FEHLER = 'wartet', 'laeuft', 'fertig', 'fehler'
+    ZUSTAENDE = [(ZUSTAND_WARTET, _('Wartet')), (ZUSTAND_LAEUFT, _('Läuft')), (ZUSTAND_FERTIG, _('Fertig')),
+                 (ZUSTAND_FEHLER, _('Fehlgeschlagen'))]
+
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
+                                     related_name='auftraege', verbose_name='Organisation')
+    art = models.CharField('Art', max_length=40, db_index=True, editable=False)
+    parameter = models.JSONField('Parameter', default=dict, blank=True, editable=False)
+    zustand = models.CharField('Zustand', max_length=10, choices=ZUSTAENDE, default=ZUSTAND_WARTET, db_index=True, editable=False)
+    fortschritt = models.PositiveSmallIntegerField('Fortschritt in Prozent', default=0, editable=False)
+    fortschritt_text = models.CharField('Fortschritt', max_length=200, blank=True, default='', editable=False)
+    ergebnis = models.TextField('Ergebnis', blank=True, default='', editable=False)
+    fehler = models.CharField('Fehler', max_length=300, blank=True, default='', editable=False)
+    versuche = models.PositiveSmallIntegerField('Versuche', default=0, editable=False)
+    erstellt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                     related_name='+', editable=False)
+    erstellt_am = models.DateTimeField(default=timezone.now, editable=False)
+    gestartet_am = models.DateTimeField(null=True, blank=True, editable=False)
+    beendet_am = models.DateTimeField(null=True, blank=True, editable=False)
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    class Meta:
+        verbose_name = 'Auftrag'
+        verbose_name_plural = 'Aufträge'
+        ordering = ['-erstellt_am', '-pk']
+        indexes = [models.Index(fields=['zustand', 'erstellt_am'], name='auftrag_zustand_alter')]
+
+    def __str__(self):
+        return f'{self.art} ({self.get_zustand_display()})'
 
 
 class Postfach(models.Model):
@@ -301,7 +401,9 @@ class ZweiterFaktor(models.Model):
     benutzer = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                                     related_name='zweiter_faktor',
                                     verbose_name="Benutzer")
-    geheimnis = models.CharField("Geheimnis (Base32)", max_length=64)
+    # Verschlüsselt abgelegt (Fernet, core/verschluesselt.py): Ein Datenbankauszug gibt sonst die Codegeneratoren aller
+    # Konten preis. Nie filtern; Alt-Bestand im Klartext wird nach dem nächsten `migrate` automatisch verschlüsselt.
+    geheimnis = VerschluesseltesCharField("Geheimnis (Base32)", klartext_max_laenge=64)
     bestaetigt_am = models.DateTimeField("Bestätigt am", null=True, blank=True)
     letztes_fenster = models.BigIntegerField("Zuletzt verbrauchtes Fenster", default=0)
     erstellt_am = models.DateTimeField("Erstellt am", auto_now_add=True)
@@ -369,6 +471,41 @@ class Wiederherstellungscode(models.Model):
         return f"{self.benutzer} — {'eingelöst' if self.eingeloest_am else 'offen'}"
 
 
+class AktivitaetsLogQuerySet(TenantQuerySet):
+    """Das Audit-Log ist nur anhängbar: Sammel-Änderungen und -Löschungen sind gesperrt.
+
+    Erlaubt bleibt das Leeren des Benutzerbezugs (Konto wird gelöscht, `SET_NULL`)
+    und die benannte Ausnahme `finance.db_schutz.ausnahme(grund)` — etwa die
+    DSG-Anonymisierung, die Namen aus Texten schwärzt.
+    """
+
+    def update(self, **kwargs):
+        from finance.db_schutz import ausnahme_aktiv
+        if not ausnahme_aktiv() and set(kwargs) - {'benutzer', 'benutzer_id'}:
+            raise PermissionError('Das Audit-Log ist nur anhängbar: Einträge lassen sich nicht ändern.')
+        return super().update(**kwargs)
+
+    def bulk_update(self, *args, **kwargs):
+        from finance.db_schutz import ausnahme_aktiv
+        if not ausnahme_aktiv():
+            raise PermissionError('Das Audit-Log ist nur anhängbar: Einträge lassen sich nicht ändern.')
+        return super().bulk_update(*args, **kwargs)
+
+    def delete(self):
+        from finance.db_schutz import ausnahme_aktiv
+        if not ausnahme_aktiv():
+            raise PermissionError('Das Audit-Log ist nur anhängbar: Einträge lassen sich nicht löschen.')
+        return super().delete()
+
+
+class AktivitaetsLogManager(TenantManager.from_queryset(AktivitaetsLogQuerySet)):
+    """`AktivitaetsLog.objects`: Mandantenfilter plus Append-only-Sperren."""
+
+
+class AktivitaetsLogAlleManager(AlleOrganisationenManager.from_queryset(AktivitaetsLogQuerySet)):
+    """`AktivitaetsLog.alle_organisationen`: mit denselben Sperren."""
+
+
 class AktivitaetsLog(models.Model):
     """
     Audit-Trail: Wer hat wann was getan (Buchungsläufe, Löschungen, Versand …).
@@ -387,16 +524,69 @@ class AktivitaetsLog(models.Model):
     # heikelsten Fall: Es waechst laufend, ist rechtlich relevant, und je
     # spaeter man es anfasst, desto mehr Zeilen sind umzuschreiben. 546 sind es
     # heute.
-    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE,
+    # PROTECT statt CASCADE: Eine Organisation mit Protokoll lässt sich nicht
+    # mitsamt ihrem Audit-Trail löschen (Aufbewahrung, OR 958f).
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.PROTECT,
                                      editable=False, related_name='%(app_label)s_%(class)s',
                                      verbose_name='Organisation')
 
+    #: So oft wird ein Eintrag neu gesiegelt, wenn ein gleichzeitiger Eintrag derselben Verwaltung die Nummer vor ihm belegt hat.
+    KETTE_VERSUCHE = 40
+
     def save(self, *args, **kwargs):
+        if self.pk is not None and not self._state.adding:
+            from finance.db_schutz import ausnahme_aktiv
+            if not ausnahme_aktiv():
+                raise PermissionError('Das Audit-Log ist nur anhängbar: Einträge lassen sich nicht ändern.')
         if self.organisation_id is None:
             self.organisation_id = organisation_bestimmen().pk
+        if self._state.adding and self.kette_nr is None:
+            return self._siegeln_und_speichern(*args, **kwargs)
         super().save(*args, **kwargs)
 
-    zeitpunkt = models.DateTimeField("Zeitpunkt", auto_now_add=True)
+    def _siegeln_und_speichern(self, *args, **kwargs):
+        """Hängt den Eintrag an die Hash-Kette seiner Verwaltung (`core/log_kette.py`).
+
+        Die Nummer ist je Verwaltung eindeutig (Constraint). Schreiben zwei Anfragen gleichzeitig, gewinnt eine; die andere
+        bekommt einen Integritätsfehler, liest den neuen Kopf und versucht es erneut — ohne Sperre, die eine längere
+        Geschäfts-Transaktion aufhalten würde. Der Versuch läuft in einem Sicherungspunkt, damit eine umgebende
+        Transaktion nicht als abgebrochen gilt."""
+        import random
+        import time
+
+        from django.db import IntegrityError, transaction
+
+        from core.log_kette import NULLHASH, kettenhash
+        letzter_fehler = None
+        for _versuch in range(self.KETTE_VERSUCHE):
+            kopf = (type(self).alle_organisationen.filter(organisation_id=self.organisation_id, kette_nr__isnull=False)
+                    .order_by('-kette_nr').values_list('kette_nr', 'kette_hash').first())
+            self.kette_nr = kopf[0] + 1 if kopf else 1
+            self.kette_hash = kettenhash(self, kopf[1] if kopf else NULLHASH)
+            try:
+                with transaction.atomic():
+                    super().save(*args, **kwargs)
+                return
+            except IntegrityError as fehler:
+                letzter_fehler = fehler
+                self.pk = None
+                self._state.adding = True
+                # Kleiner zufälliger Abstand, damit gleichzeitige Schreiber sich nicht im Gleichschritt erneut treffen.
+                time.sleep(random.uniform(0, 0.005 * (_versuch + 1)))
+        raise letzter_fehler
+
+    def delete(self, *args, **kwargs):
+        from finance.db_schutz import ausnahme_aktiv
+        if not ausnahme_aktiv():
+            raise PermissionError('Das Audit-Log ist nur anhängbar: Einträge lassen sich nicht löschen.')
+        return super().delete(*args, **kwargs)
+
+    # `default` statt `auto_now_add`: Der Zeitpunkt steht beim Siegeln der Hash-Kette schon fest und geht in den Hash ein.
+    zeitpunkt = models.DateTimeField("Zeitpunkt", default=timezone.now, editable=False)
+    # Hash-Kette (core/log_kette.py): laufende Nummer je Verwaltung und Hash über Nummer, Zeitpunkt, Aktion, Ziel und den
+    # Hash des Vorgängers. Leer nur bei Einträgen aus der Zeit vor der Kette und bei solchen, die am Modell vorbei entstanden.
+    kette_nr = models.PositiveIntegerField("Nr. in der Kette", null=True, blank=True, editable=False)
+    kette_hash = models.CharField("Hash in der Kette", max_length=64, blank=True, default='', editable=False)
     benutzer = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
         null=True, blank=True, verbose_name="Benutzer"
@@ -422,13 +612,19 @@ class AktivitaetsLog(models.Model):
     ip_adresse = models.GenericIPAddressField("IP-Adresse", null=True, blank=True)
 
 
-    objects = TenantManager()
-    alle_organisationen = AlleOrganisationenManager()
+    objects = AktivitaetsLogManager()
+    alle_organisationen = AktivitaetsLogAlleManager()
+
     class Meta:
+        base_manager_name = 'alle_organisationen'
         verbose_name = "Aktivitätslog"
         verbose_name_plural = "Aktivitätslog"
         ordering = ['-zeitpunkt']
         indexes = [models.Index(fields=['ziel_typ', 'ziel_id'])]
+        constraints = [
+            models.UniqueConstraint(fields=['organisation', 'kette_nr'], condition=models.Q(kette_nr__isnull=False),
+                                    name='uniq_auditlog_kette_nr_je_organisation'),
+        ]
 
     # Kategorien, die als "kritisch" gelten (Löschungen, Geldbewegungen, Sicherheit).
     KRITISCH = {'geloescht', 'finanzen', 'sicherheit'}
@@ -694,3 +890,139 @@ class DatenExportEinstellung(models.Model):
 
     def __str__(self):
         return f"Export-Einstellung {self.organisation_id}"
+
+
+class ApiToken(models.Model):
+    """Zugangsschlüssel für die lesende Finanz-API (`/api/v1/`), eine Verwaltung je Schlüssel.
+
+    Gespeichert wird nur der SHA-256-Hash; der Klartext erscheint genau einmal beim Anlegen
+    (`manage.py api_token_erstellen`). Der Schlüssel ist 256 Bit zufällig, ein schneller Hash reicht deshalb. Er ist reine
+    Leseberechtigung auf Konten, Journal und offene Debitoren dieser einen Verwaltung und wird mit dem Konto der
+    Verwaltung nicht verknüpft: Wer ihn hat, ist kein Benutzer."""
+    PRAEFIX = 'imm_'
+
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
+                                     related_name='api_token', verbose_name='Organisation')
+    name = models.CharField('Bezeichnung', max_length=100, help_text='Wofür der Schlüssel dient, z. B. «Treuhand Muster AG».')
+    schluessel_hash = models.CharField(max_length=64, unique=True, editable=False)
+    anfang = models.CharField('Anfang', max_length=12, editable=False, help_text='Erste Zeichen, damit man ihn wiedererkennt.')
+    erstellt_am = models.DateTimeField(default=timezone.now, editable=False)
+    zuletzt_benutzt = models.DateTimeField(null=True, blank=True, editable=False)
+    widerrufen_am = models.DateTimeField(null=True, blank=True, editable=False)
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    class Meta:
+        verbose_name = 'API-Schlüssel'
+        verbose_name_plural = 'API-Schlüssel'
+        ordering = ['-erstellt_am']
+
+    def __str__(self):
+        return f'{self.name} ({self.anfang}…)'
+
+    @property
+    def aktiv(self):
+        return self.widerrufen_am is None
+
+
+class Aenderungsanfrage(models.Model):
+    """Eine Anfrage aus dem Mieter- oder Eigentümerportal, die die Verwaltung bestätigen oder ablehnen muss.
+
+    Alles, was das Portal an Stammdaten verändern will, geht über diese Tabelle: Das Portal schreibt nie selbst in die
+    Stammdaten. Erst die Bestätigung durch eine Person der Verwaltung führt die Änderung aus (`core/services/anfragen.py`)
+    und steht im Logbuch. `daten` hält, was geändert werden soll (je Art andere Schlüssel), `zusammenfassung` den Text,
+    den die Verwaltung liest."""
+    ART_KONTAKT = 'kontakt'                  # Mieter: Mobile, Telefon, E-Mail
+    ART_MITTEILUNG = 'mitteilung'            # Freitext (Adresse, Namensänderung, weitere Anliegen): zur Kenntnis
+    ART_MIETBESTAETIGUNG = 'mietbestaetigung'  # Mieter: Bestätigung des Mietverhältnisses als PDF
+    ART_ZAHLUNGSPLAN = 'zahlungsplan'        # Mieter: Wunsch nach Ratenzahlung
+    ART_EIG_KONTAKT = 'eig_kontakt'          # Eigentümer: Telefon, E-Mail
+    ART_EIG_BANK = 'eig_bank'                # Eigentümer: Bankverbindung für Auszahlungen
+    ART_EIG_ANFRAGE = 'eig_anfrage'          # Eigentümer: Freitext an die Verwaltung
+    ART_ZAEHLERSTAND = 'zaehlerstand'        # Mieter: abgelesener Zählerstand (daten: zaehler, datum, wert)
+    ARTEN = [(ART_KONTAKT, _('Kontaktdaten ändern')), (ART_MITTEILUNG, _('Mitteilung')),
+             (ART_MIETBESTAETIGUNG, _('Mietbestätigung')), (ART_ZAHLUNGSPLAN, _('Zahlungsplan')),
+             (ART_EIG_KONTAKT, _('Kontaktdaten ändern')), (ART_EIG_BANK, _('Bankverbindung ändern')),
+             (ART_EIG_ANFRAGE, _('Anfrage')), (ART_ZAEHLERSTAND, _('Zählerstand'))]
+    #: Arten, die Geld umleiten oder Personendaten Dritter berühren: nur Inhaber und Verwalter bestätigen sie.
+    SENSIBEL = (ART_EIG_BANK,)
+
+    STATUS_OFFEN, STATUS_BESTAETIGT, STATUS_ABGELEHNT = 'offen', 'bestaetigt', 'abgelehnt'
+    STATUS = [(STATUS_OFFEN, _('Offen')), (STATUS_BESTAETIGT, _('Bestätigt')), (STATUS_ABGELEHNT, _('Abgelehnt'))]
+
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
+                                     related_name='aenderungsanfragen', verbose_name='Organisation')
+    mieter = models.ForeignKey('crm.Mieter', on_delete=models.CASCADE, null=True, blank=True, related_name='anfragen')
+    eigentuemer = models.ForeignKey('crm.Eigentuemer', on_delete=models.CASCADE, null=True, blank=True,
+                                    related_name='anfragen')
+    art = models.CharField('Art', max_length=20, choices=ARTEN)
+    daten = models.JSONField('Daten', default=dict, blank=True)
+    zusammenfassung = models.TextField('Zusammenfassung')
+    status = models.CharField('Status', max_length=12, choices=STATUS, default=STATUS_OFFEN, db_index=True)
+    erstellt_am = models.DateTimeField(default=timezone.now, editable=False)
+    entschieden_am = models.DateTimeField(null=True, blank=True)
+    entschieden_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                        related_name='+')
+    antwort = models.TextField('Antwort der Verwaltung', blank=True, default='',
+                               help_text='Bei einer Ablehnung der Grund; die Antragsteller lesen ihn im Portal.')
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    class Meta:
+        verbose_name = 'Änderungsanfrage'
+        verbose_name_plural = 'Änderungsanfragen'
+        ordering = ['-erstellt_am', '-pk']
+        constraints = [models.CheckConstraint(
+            condition=models.Q(mieter__isnull=False) | models.Q(eigentuemer__isnull=False),
+            name='core_aenderungsanfrage_hat_absender')]
+
+    def __str__(self):
+        return f'{self.get_art_display()} ({self.get_status_display()})'
+
+    @property
+    def absender(self):
+        return self.mieter or self.eigentuemer
+
+    @property
+    def offen(self):
+        return self.status == self.STATUS_OFFEN
+
+
+class Auswertungsvorlage(models.Model):
+    """Eine gespeicherte eigene Auswertung (Modul «Erweitertes Reporting», `core/services/eigene_auswertung.py`).
+
+    Hält Quelle, Spalten, Zeitraum und optional eine Liegenschaft fest. Die Vorlage gehört der Verwaltung, nicht der
+    Person: Wer sie anlegt, stellt sie dem Team zur Verfügung (die Liste fürs Treuhandbüro soll nicht an einem Konto
+    hängen)."""
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
+                                     related_name='auswertungsvorlagen', verbose_name='Organisation')
+    name = models.CharField(_('Name'), max_length=120)
+    quelle = models.CharField(_('Datenquelle'), max_length=20)
+    spalten = models.JSONField(_('Spalten'), default=list)
+    zeitraum = models.CharField(_('Zeitraum'), max_length=10, default='alle')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.SET_NULL, null=True, blank=True,
+                                     related_name='+', verbose_name=_('Liegenschaft'))
+    erstellt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                     editable=False, related_name='+')
+    erstellt_am = models.DateTimeField(auto_now_add=True)
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    class Meta:
+        verbose_name = 'Auswertungsvorlage'
+        verbose_name_plural = 'Auswertungsvorlagen'
+        ordering = ['name', 'pk']
+        constraints = [models.UniqueConstraint(fields=['organisation', 'name'],
+                                               name='uniq_auswertungsvorlage_je_organisation')]
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            from core.organisation_kette import organisation_aus_kontext
+            self.organisation_id = organisation_aus_kontext()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name

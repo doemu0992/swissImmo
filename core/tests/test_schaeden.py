@@ -1,5 +1,5 @@
 """Testmodul schaeden — aus core/tests.py herausgeloest (Etappe 1,
-siehe docs/ETAPPE-1-ZERLEGEN.md). 5 Klassen, unveraendert uebernommen."""
+siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)). 5 Klassen, unveraendert uebernommen."""
 from decimal import Decimal
 
 from django.test import TestCase, Client
@@ -49,9 +49,10 @@ class SchadenModalTests(TestCase):
         team = _team_user()
         c = Client(); c.force_login(team)
         body = c.get('/neu/schaeden/').content.decode()
-        self.assertIn(f"fwModalOpenUrl('/neu/schaeden/{t.id}/'", body)
+        self.assertIn(f'data-bei-klick="fwModalOpenUrl" data-args=\'["/neu/schaeden/{t.id}/"', body)
         self.assertIn('id="fwModal"', body)
         self.assertNotIn(f"window.location='/neu/schaeden/{t.id}/'", body)
+        self.assertNotIn(f'data-gehe-zu="/neu/schaeden/{t.id}/"', body)         # öffnet die Schublade, keine Seite
 
     def test_schaden_detail_im_iframe_chromelos(self):
         """Das Schaden-Detail läuft im Popup chrome-frei (iframe-Kontext-Erkennung)."""

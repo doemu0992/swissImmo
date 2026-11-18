@@ -16,7 +16,7 @@ bliebe er nach einer Absage hier 15 Sekunden gesperrt.
     <input type="hidden" name="unterschrift" data-sk-pad-wert>
     <p class="fw-kritisch" data-sk-pad-fehlt role="alert" hidden></p>
 </div>
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
     var feld = document.querySelector('[data-sk-unterschrift]');
     if (!feld) return;

@@ -274,6 +274,85 @@ def melder_adresse(ticket):
         ticket.gemeldet_von.email if ticket.gemeldet_von_id and ticket.gemeldet_von.email else '')
 
 
+def melder_adressen(ticket):
+    """Die Adressen (kleingeschrieben), von denen eine Mail als Antwort des MELDERS gilt: die im Formular angegebene, die
+    des meldenden Mieters und die der Mieter mit aktivem Vertrag an der betroffenen Einheit. Der From-Wert einer Mail
+    ist fälschbar; diese Liste hält aber Dritte fern, die nur Antwortadresse und Ticketnummer kennen."""
+    adressen = {ticket.email_melder or ''}
+    for person in personen_des_tickets(ticket):
+        adressen.add(person.email or '')
+        adressen.update(a for a in (person.weitere_absender or []) if isinstance(a, str))
+    adressen.update(a for a in (ticket.bestaetigte_absender or []) if isinstance(a, str))
+    return {a.strip().lower() for a in adressen if a and a.strip()}
+
+
+PRAEFIX_UNBEKANNT = 'Unbekannter Absender: '
+
+
+def personen_des_tickets(ticket):
+    """Die Mieter, die zu diesem Ticket gehören: der meldende Mieter zuerst, dann die Mieter mit aktivem Vertrag an der
+    betroffenen Einheit (ohne Doppelte)."""
+    personen = []
+    if ticket.gemeldet_von_id:
+        personen.append(ticket.gemeldet_von)
+    if ticket.betroffene_einheit_id:
+        from rentals.models import Mietvertrag
+        for vertrag in Mietvertrag.objects.filter(einheit_id=ticket.betroffene_einheit_id, aktiv=True).select_related('mieter'):
+            if all(vertrag.mieter_id != p.pk for p in personen):
+                personen.append(vertrag.mieter)
+    return personen
+
+
+def person_fuer_absender(ticket):
+    """Bei wem eine bestätigte Adresse dauerhaft gespeichert würde: der meldende Mieter, sonst der Mieter der Einheit —
+    aber nur, wenn es genau EINEN gibt. Bei mehreren Mietern an der Einheit ohne Melder wäre die Zuordnung geraten."""
+    if ticket.gemeldet_von_id:
+        return ticket.gemeldet_von
+    personen = personen_des_tickets(ticket)
+    return personen[0] if len(personen) == 1 else None
+
+
+def absender_bei_person_speichern(person, adresse):
+    """Hängt `adresse` an die weiteren Absenderadressen der Person (ohne Doppelte). Gibt True zurück, wenn sie neu ist."""
+    adresse = (adresse or '').strip().lower()
+    liste = [a for a in (person.weitere_absender or []) if isinstance(a, str)]
+    if not adresse or adresse in liste or adresse == (person.email or '').strip().lower():
+        return False
+    person.weitere_absender = liste + [adresse]
+    person.save(update_fields=['weitere_absender'])
+    return True
+
+
+def absender_bestaetigen(nachricht):
+    """Die Verwaltung bestätigt: Der Absender dieser Mail gehört zum Ticket (zweite Adresse des Mieters o. ä.).
+
+    Die Adresse gilt danach FÜR DIESES TICKET als Melder. Alle bisher intern abgelegten Mails derselben Adresse am
+    Ticket werden zu gewöhnlichen Antworten (für den Mieter sichtbar), und wartete das Ticket auf den Mieter, ist die
+    Verwaltung wieder am Zug — wie bei einer Antwort, die von Anfang an erkannt worden wäre. Gibt die Zahl der
+    umgestellten Mails zurück; 0, wenn die Nachricht keine Mail von unbekanntem Absender (mehr) ist."""
+    from .models import TicketNachricht
+    adresse = (nachricht.absender_adresse or '').strip().lower()
+    if nachricht.typ != 'mail_unbekannt' or not adresse:
+        return 0
+    ticket = nachricht.ticket
+    bestaetigt = [a for a in (ticket.bestaetigte_absender or []) if isinstance(a, str)]
+    if adresse not in bestaetigt:
+        ticket.bestaetigte_absender = bestaetigt + [adresse]
+        ticket.save(update_fields=['bestaetigte_absender'])
+    anzahl = 0
+    for n in TicketNachricht.objects.filter(ticket=ticket, typ='mail_unbekannt', absender_adresse=adresse):
+        name = n.absender_name[len(PRAEFIX_UNBEKANNT):] if n.absender_name.startswith(PRAEFIX_UNBEKANNT) else n.absender_name
+        n.typ, n.is_intern, n.absender_name = 'mail_antwort', False, (name or adresse)[:100]
+        n.save(update_fields=['typ', 'is_intern', 'absender_name'])
+        anzahl += 1
+    if anzahl and ticket.status == 'warte_auf_mieter':
+        try:
+            wechsle_status(ticket, 'in_bearbeitung')
+        except ValidationError:
+            logger.exception("Ticket #%s: Rückwechsel nach bestätigtem Absender nicht möglich", ticket.pk)
+    return anzahl
+
+
 def melder_benachrichtigen(ticket, kategorie, handwerker=None, text=None, betreff=None):
     """Mail an den Melder aus der Vorlage ``kategorie``; Verlaufseintrag bei Erfolg.
 
@@ -371,7 +450,7 @@ def arbeitsauftrag_senden(auftrag, text=''):
     """
     from core.services.handwerker_auftrag_pdf import generate_auftrag_pdf
     from core.services.ticket_workflow import vorlage_text
-    from core.utils.email_service import _klartext_als_html, send_via_hoststar
+    from core.utils.email_service import klartext_html, send_via_hoststar
     from .models import TicketNachricht
 
     ticket, hw = auftrag.ticket, auftrag.handwerker
@@ -390,9 +469,7 @@ def arbeitsauftrag_senden(auftrag, text=''):
         inhalt = (f"{inhalt}\n\nAuftrag online ansehen, Termin bestätigen, Offerte oder "
                   f"Rechnung hochladen:\n{url}")
         # Maskiert (Titel und Beschreibung stammen vom Melder), danach erst der Link als Anker.
-        html = ("<html><body style='font-family:Arial,sans-serif'>"
-                + _klartext_als_html(inhalt).replace(url, f"<a href='{url}'>{url}</a>")
-                + "</body></html>")
+        html = klartext_html(inhalt, url)
         versendet = send_via_hoststar(
             hw.email, betreff, html, f"Reparaturauftrag_{auftrag.id}.pdf", pdf,
             weitere_anhaenge=anhaenge, reply_to=reply_to(ticket), organisation=ticket.organisation_id)
@@ -642,7 +719,7 @@ def _termin_mails(auftrag, termin_am, kat_mieter, kat_hw, absagen=False):
     Der Mieter liest in seiner Korrespondenzsprache, der Handwerker deutsch. Der Text wird
     maskiert (Titel und Beschreibung stammen vom Melder)."""
     from core.services.ticket_workflow import melder_sprache, vorlage_text
-    from core.utils.email_service import _klartext_als_html, send_via_hoststar
+    from core.utils.email_service import klartext_html, send_via_hoststar
     ticket, hw = auftrag.ticket, auftrag.handwerker
     methode = 'CANCEL' if absagen else 'PUBLISH'
     ics = [('Termin.ics', _ics(auftrag, termin_am, absagen), f'text/calendar; method={methode}')]
@@ -654,12 +731,11 @@ def _termin_mails(auftrag, termin_am, kat_mieter, kat_hw, absagen=False):
         try:
             betreff, inhalt = vorlage_text(kat, ticket, handwerker=hw, termin=text, sprache=sprache,
                                          empfaenger=empfaenger)
-            html = ("<html><body style='font-family:Arial,sans-serif'>"
-                    + _klartext_als_html(inhalt) + "</body></html>")
+            html = klartext_html(inhalt)
             # Auftragsmarke: Die Antwort auf diese Mail landet im Direktkanal Mieter/Handwerker
             # (tickets/direktkanal.py) statt nur im Verlauf der Verwaltung.
             from .direktkanal import marke
-            betreff = f"{betreff} {marke(auftrag)}"
+            betreff = f"{betreff} {marke(auftrag, 'mieter' if empfaenger == 'melder' else 'handwerker')}"
             return send_via_hoststar(adresse, betreff, html, weitere_anhaenge=ics,
                                      reply_to=reply_to(ticket), organisation=ticket.organisation_id)
         except Exception:
@@ -713,7 +789,7 @@ def termin_absagen(auftrag):
     return m_ok, h_ok
 
 
-def antwort_zuordnen(ticket, absender, inhalt, auftrag_id=None, kopf=None):
+def antwort_zuordnen(ticket, absender, inhalt, auftrag_id=None, kopf=None, betreff=''):
     """Eingehende Mail einem Ticket zuordnen und den Fluss nachführen.
 
     Trägt der Betreff eine Auftragsmarke (``auftrag_id``) und kommt die Mail vom Mieter oder vom Handwerker
@@ -723,14 +799,16 @@ def antwort_zuordnen(ticket, absender, inhalt, auftrag_id=None, kopf=None):
 
     ``absender`` ist der rohe From-Header. Kommt er von der Adresse eines
     Handwerkers, der einen Auftrag am Ticket hat, wird die Nachricht als
-    Handwerker-Antwort geführt; sonst als Antwort des Melders. Wartete das
-    Ticket auf genau diese Seite, geht es zurück auf «In Bearbeitung» — die
-    Verwaltung ist wieder am Zug. Gibt ``'handwerker'`` oder ``'melder'`` zurück.
+    Handwerker-Antwort geführt; von einer Adresse des Melders (`melder_adressen`) als
+    Antwort des Melders. Wartete das Ticket auf genau diese Seite, geht es zurück auf
+    «In Bearbeitung» — die Verwaltung ist wieder am Zug. Jeder ANDERE Absender wird als
+    interne Notiz abgelegt und bewegt nichts. Gibt ``'handwerker'``, ``'melder'`` oder
+    ``'unbekannt'`` zurück.
     """
     from email.utils import parseaddr
     from . import direktkanal
     from .models import TicketNachricht
-    direkt = direktkanal.aus_mail(ticket, auftrag_id, absender, inhalt, kopf)
+    direkt = direktkanal.aus_mail(ticket, auftrag_id, absender, inhalt, kopf, betreff=betreff)
     if direkt:
         return f'direkt_{direkt}'
     adresse = parseaddr(absender)[1].strip().lower()
@@ -747,12 +825,26 @@ def antwort_zuordnen(ticket, absender, inhalt, auftrag_id=None, kopf=None):
             is_von_verwaltung=False, gelesen=False)
         wartet_auf = 'warte_auf_handwerker'
         seite = 'handwerker'
-    else:
+    elif adresse and adresse in melder_adressen(ticket):
         TicketNachricht.objects.create(
             ticket=ticket, absender_name=(absender or '')[:100], typ='mail_antwort',
             nachricht=inhalt, gelesen=False)
         wartet_auf = 'warte_auf_mieter'
         seite = 'melder'
+    else:
+        # UNBEKANNTER ABSENDER (Audit 15.11.2026). Die Antwortadresse der Verwaltung steht in jeder Eingangsbestätigung,
+        # auch in der an einen anonymen Melder; die Ticketnummer im Betreff ist fortlaufend. Bis hierher galt JEDE Mail
+        # mit passender Nummer als Antwort des Melders: Sie erschien im Mieterportal unter frei gewähltem Anzeigenamen
+        # und schob das Ticket von «wartet auf Mieter» zurück. Wer nicht Melder, Mieter der Einheit oder Handwerker des
+        # Tickets ist, landet jetzt als INTERNE Notiz bei der Verwaltung: nichts geht verloren (ein Mieter schreibt
+        # vielleicht von einer zweiten Adresse), aber der Mieter sieht es nicht und der Status bleibt. Kennt die
+        # Verwaltung den Absender, bestätigt sie die Adresse am Ticket (`absender_bestaetigen`).
+        TicketNachricht.objects.create(
+            ticket=ticket, absender_name=(PRAEFIX_UNBEKANNT + (absender or ''))[:100],
+            typ='mail_unbekannt', absender_adresse=adresse[:254], nachricht=inhalt, gelesen=False, is_intern=True)
+        ticket.gelesen = False
+        ticket.save(update_fields=['gelesen'])
+        return 'unbekannt'
     ticket.gelesen = False
     ticket.save(update_fields=['gelesen'])
     if ticket.status == wartet_auf:

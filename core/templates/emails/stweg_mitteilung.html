@@ -1,0 +1,8 @@
+{% extends "emails/rahmen_schlicht.html" %}
+{% comment %}Mitteilung der Verwaltung an Eigentümerinnen und Eigentümer einer Gemeinschaft (STWEG).
+Kontext: gruss (bereits maskiert), absaetze (Liste von Text oder (Text, vorformatiert)), unterschrift.{% endcomment %}
+{% block inhalt %}
+<p>{{ gruss }}</p>
+{% for a in absaetze %}<p{% if a.1 %} style="white-space:pre-line"{% endif %}>{{ a.0 }}</p>
+{% endfor %}<p>Freundliche Grüsse<br>{{ unterschrift }}</p>
+{% endblock %}

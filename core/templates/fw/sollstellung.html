@@ -20,13 +20,13 @@
             {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
             <label>
                 <span class="fw-faint">{% trans "Monat" %}</span>
-                <select name="monat" onchange="this.form.submit()" class="fw-feld">
+                <select name="monat" data-absenden class="fw-feld">
                     {% for m, name in monate %}<option value="{{ m }}" {% if m == monat %}selected{% endif %}>{{ name }}</option>{% endfor %}
                 </select>
             </label>
             <label>
                 <span class="fw-faint">{% trans "Jahr" %}</span>
-                <select name="jahr" onchange="this.form.submit()" class="fw-feld">
+                <select name="jahr" data-absenden class="fw-feld">
                     {% for j in jahre %}<option value="{{ j }}" {% if j == jahr %}selected{% endif %}>{{ j }}</option>{% endfor %}
                 </select>
             </label>
@@ -83,12 +83,12 @@
         <table class="fw-table">
             <thead>
             <tr>
-                <th>{% trans "Mietverhältnis" %}</th>
-                <th>{% trans "Objekt" %}</th>
-                <th class="fw-right">{% trans "Netto" %}</th>
-                <th class="fw-right">NK</th>
-                <th class="fw-right">{% trans "Total" %}</th>
-                <th>{% trans "Status" %} · {% trans "Zahlungsart" %}</th>
+                <th scope="col">{% trans "Mietverhältnis" %}</th>
+                <th scope="col">{% trans "Objekt" %}</th>
+                <th scope="col" class="fw-right">{% trans "Netto" %}</th>
+                <th scope="col" class="fw-right">NK</th>
+                <th scope="col" class="fw-right">{% trans "Total" %}</th>
+                <th scope="col">{% trans "Status" %} · {% trans "Zahlungsart" %}</th>
             </tr>
             </thead>
             <tbody>
@@ -134,7 +134,7 @@
         <div class="fw-ht" id="soll-gesperrt">{% blocktrans count n=n_offen with monat=monat_name jahr=jahr %}Der Lauf {{ monat }} {{ jahr }} ist abgeschlossen — {{ n }} Position wartet noch (Nachzügler).{% plural %}Der Lauf {{ monat }} {{ jahr }} ist abgeschlossen — {{ n }} Positionen warten noch (Nachzügler).{% endblocktrans %}</div>
         <a href="/neu/laeufe/{{ lauf.pk }}/#lauf-zuruecksetzen" class="fw-btn fw-primary">{% zeichen 'lauf' %} {% trans "Lauf zurücksetzen" %}</a>
         {% elif n_offen %}
-        <form method="post" action="/neu/sollstellung/starten/" onsubmit="return confirm('{% filter escapejs %}{% if aktive_lg %}{% blocktrans count n=n_offen with monat=monat_name jahr=jahr strasse=aktive_lg.strasse|safe %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Vertrag starten — nur {{ strasse }}?{% plural %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Verträge starten — nur {{ strasse }}?{% endblocktrans %}{% else %}{% blocktrans count n=n_offen with monat=monat_name jahr=jahr %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Vertrag starten — ganzes Portfolio?{% plural %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Verträge starten — ganzes Portfolio?{% endblocktrans %}{% endif %}{% endfilter %}');">
+        <form method="post" action="/neu/sollstellung/starten/" data-bestaetigen="{% filter escapejs %}{% if aktive_lg %}{% blocktrans count n=n_offen with monat=monat_name jahr=jahr strasse=aktive_lg.strasse|safe %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Vertrag starten — nur {{ strasse }}?{% plural %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Verträge starten — nur {{ strasse }}?{% endblocktrans %}{% else %}{% blocktrans count n=n_offen with monat=monat_name jahr=jahr %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Vertrag starten — ganzes Portfolio?{% plural %}Sollstellung {{ monat }} {{ jahr }} für {{ n }} Verträge starten — ganzes Portfolio?{% endblocktrans %}{% endif %}{% endfilter %}">
             {% csrf_token %}
             <input type="hidden" name="jahr" value="{{ jahr }}">
             <input type="hidden" name="monat" value="{{ monat }}">

@@ -1,7 +1,7 @@
 """Bestandsfehler im Reiter «Handwerker» der Schadenakte (27.10.2026).
 
 Beim vereinbarten Termin stand `{% zeichen 'kalender' %}` — ein Zeichen, das
-es nicht gibt (docs/ZEICHEN.md: `termin`). Mit `DEBUG=True` — Entwicklung und
+es nicht gibt (core/templatetags/zeichen_tabelle.md: `termin`). Mit `DEBUG=True` — Entwicklung und
 der e2e-Server aus `e2e/run-server.sh` — wirft der Baustein, und die ganze
 Schadenakte antwortete mit 500, sobald ein Termin stand. In Produktion
 (`DEBUG=False`) blieb das Zeichen still leer. Gefunden beim Bildschirmtest von

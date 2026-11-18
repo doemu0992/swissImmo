@@ -73,7 +73,7 @@ steht keine Frist. Feldnamen: `bezeichnung_<id>`, `ab_tage_<id>`, `gebuehr_<id>`
         <div class="fw-kopf">
             <h3 class="fw-t">{% blocktrans with stufe=s.stufe %}Stufe {{ stufe }}{% endblocktrans %}</h3>
             <button type="submit" form="loeschen-{{ s.pk }}" class="fw-rechts fw-btn fw-geist"
-                    onclick="return confirm('{% trans "Diese Mahnstufe löschen?" %}')">{% trans "Löschen" %}</button>
+                    data-bestaetigen="{% filter escapejs %}{% trans "Diese Mahnstufe löschen?" %}{% endfilter %}">{% trans "Löschen" %}</button>
         </div>
         <div class="fw-formular fw-rumpf">
             <div class="fw-feldblock breit"><label for="name-{{ s.pk }}" class="fw-label">{% trans "Bezeichnung" %}</label>

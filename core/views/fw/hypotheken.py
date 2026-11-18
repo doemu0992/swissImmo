@@ -1,6 +1,6 @@
 # core/views/fw/hypotheken.py
 #
-# Finanzierung je Liegenschaft. Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Finanzierung je Liegenschaft. Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 
 from datetime import date, timedelta as _timedelta
 from decimal import Decimal

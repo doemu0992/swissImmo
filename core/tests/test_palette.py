@@ -30,7 +30,7 @@ HUELLE = pathlib.Path('core/templates/fw/base.html')
 
 #: Werte aus mockups/immoswiss-ember.html (Ember, 26.10.2026; vorher Navy
 #: Mirage aus konzept-v9, davor Petrol aus konzept-v8). Wer sie ändert, ändert das Konzept — und muss
-#: `docs/KONZEPT-UI.md` mitziehen.
+#: `CONTRIBUTING.md` mitziehen.
 KONZEPT = {
     '--ds-brand': '#b04416',
     '--ds-brand-600': '#8a3410',
@@ -85,7 +85,7 @@ class PaletteTests(TestCase):
                 self.assertEqual(
                     hell.get(token, '').strip().lower(), erwartet,
                     f'{token} weicht vom Konzept ab. Wenn das Absicht ist, '
-                    f'gehoert die Aenderung auch in mockups/ und docs/KONZEPT-UI.md.')
+                    f'gehoert die Aenderung auch in mockups/ und CONTRIBUTING.md.')
 
     def test_der_prototyp_braucht_keine_abweichung_mehr(self):
         """Das v8-Grau ist lesbar — deshalb steht es unveraendert in der Schicht.
@@ -150,7 +150,7 @@ class KonzeptTests(TestCase):
 
     `KONZEPT` oben ist abgeschrieben aus `mockups/konzept-v3.html`, und der
     Docstring dieser Datei sagt, wer die Werte aendert, muesse
-    `docs/KONZEPT-UI.md` mitziehen. Bis zum 20.08.2026 fuehrte das Dokument
+    `CONTRIBUTING.md` mitziehen. Bis zum 20.08.2026 fuehrte das Dokument
     aber ueberhaupt keine Palette: Der Test verwies auf eine Quelle, die
     nichts sagte, und niemand haette es gemerkt.
 
@@ -159,7 +159,7 @@ class KonzeptTests(TestCase):
     aendert, aendert das Konzept» geprueft ist statt nur behauptet.
     """
 
-    DOKUMENT = pathlib.Path('docs/KONZEPT-UI.md')
+    DOKUMENT = pathlib.Path('CONTRIBUTING.md')
     ZEILE = re.compile(r'\| `(--ds-[a-z0-9-]+)` \| `(#[0-9a-f]{6})` \| `(#[0-9a-f]{6})` \|')
 
     def _tabelle(self):

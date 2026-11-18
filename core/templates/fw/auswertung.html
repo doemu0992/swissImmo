@@ -18,19 +18,19 @@
 <form method="get" class="fw-listwerkzeug items-end">
     <div class="fw-feldblock">
         <label class="fw-label">{% trans "Kennzahl" %}</label>
-        <select name="typ" onchange="this.form.submit()" class="fw-feld">
+        <select name="typ" data-absenden class="fw-feld">
             {% for key, label, _k in typen %}<option value="{{ key }}" {% if typ == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
         </select>
     </div>
     <div class="fw-feldblock">
         <label class="fw-label">{% trans "Jahr" %}</label>
-        <select name="jahr" onchange="this.form.submit()" class="fw-feld">
+        <select name="jahr" data-absenden class="fw-feld">
             {% for j in jahre %}<option value="{{ j }}" {% if jahr == j %}selected{% endif %}>{{ j }}</option>{% endfor %}
         </select>
     </div>
     <div class="fw-feldblock">
         <label class="fw-label">{% trans "Liegenschaft" %}</label>
-        <select name="lg" onchange="this.form.submit()" class="fw-feld">
+        <select name="lg" data-absenden class="fw-feld">
             <option value="">{% trans "Alle Liegenschaften" %}</option>
             {% for l in alle_liegenschaften %}<option value="{{ l.id }}" {% if aktive_lg and aktive_lg.id == l.id %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>{% endfor %}
         </select>
@@ -55,7 +55,7 @@
             {% for m in monate %}
             <div class="flex-1 flex flex-col items-center justify-end h-full group">
                 <div class="fw-klein mb-1 opacity-0 group-hover:opacity-100 whitespace-nowrap">{{ m.wert|chf }}</div>
-                <div class="w-full rounded-t {% if m.neg %}fw-krit-voll{% else %}fw-balken-voll{% endif %}" style="height: {{ m.pct }}%; min-height: 2px;"></div>
+                <div class="w-full rounded-t min-h-[2px] {% if m.neg %}fw-krit-voll{% else %}fw-balken-voll{% endif %}" data-hoehe="{{ m.pct }}"></div>
                 <div class="fw-klein mt-1.5">{{ m.name }}</div>
             </div>
             {% endfor %}
@@ -72,7 +72,7 @@
         <div class="flex items-center gap-3">
             <div class="w-48 shrink-0 fw-ink truncate">{{ r.lg.strasse }}, {{ r.lg.ort }}</div>
             <div class="flex-1 fw-flaeche2 rounded-full h-4 overflow-hidden">
-                <div class="h-full rounded-full {% if r.neg %}fw-krit-voll{% else %}fw-balken-voll{% endif %}" style="width: {{ r.pct }}%"></div>
+                <div class="h-full rounded-full {% if r.neg %}fw-krit-voll{% else %}fw-balken-voll{% endif %}" data-breite="{{ r.pct }}"></div>
             </div>
             <div class="w-28 shrink-0 text-right fw-num fw-strong {% if r.neg %}fw-kritisch{% endif %}">CHF {{ r.wert|chf }}</div>
         </div>

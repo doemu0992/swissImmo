@@ -1,0 +1,11 @@
+{% extends "emails/rahmen_schlicht.html" %}
+{% block inhalt %}
+<h2 style="color: #2c3e50;">{{ titel_text }}</h2>
+<p>{{ gruss }}</p>
+<p>{{ einleitung }}</p>
+<div style="background: #fdf2f2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0;">
+  <p style="margin: 0; font-weight: bold; color: #991b1b;">{{ betrag_text }}</p>
+</div>
+<p>{{ hinweis }}</p>
+<p>{{ schluss }}<br>{{ unterschrift }}</p>
+{% endblock %}

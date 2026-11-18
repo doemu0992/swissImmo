@@ -2,7 +2,7 @@
 #
 # Liegenschaften und Objekte anlegen und bearbeiten, GWR-Abgleich,
 # Versicherungspolicen, globale Suche. Etappe 1, siehe
-# docs/ETAPPE-1-ZERLEGEN.md.
+# «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 
 from datetime import date
 from decimal import Decimal
@@ -18,7 +18,7 @@ from crm.models import Mieter
 from portfolio.models import Einheit, Liegenschaft
 from rentals.models import Mietvertrag
 
-from ._basis import _global_filter, _num, team_der_organisation
+from ._basis import _global_filter, _lik_basen, _num, team_der_organisation
 
 
 # ============================================================
@@ -145,7 +145,7 @@ def fw_liegenschaft_form(request, pk=None):
             getattr(request, 'organisation', None))[:100]),
         **basis, 'nav': 'liegenschaften', 'lg': lg, 'ist_neu': lg is None,
         'eigentuemer': Eigentuemer.objects.all().order_by('firma_oder_name'),
-        'heiz_choices': Liegenschaft.HEIZ_CHOICES,
+        'heiz_choices': Liegenschaft.HEIZ_CHOICES, 'lik_basen': _lik_basen(),
         'warmwasser_choices': Liegenschaft.WARMWASSER_CHOICES,
         'geak_klassen': [k for k, _ in Liegenschaft.GEAK_KLASSEN],
     }, status=400 if anzahl_fehler else 200)

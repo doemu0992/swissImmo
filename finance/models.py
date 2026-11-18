@@ -200,7 +200,7 @@ class LieferantProfil(models.Model):
 #: Konten, wie viel, für welches Objekt, unter welcher Nummer, von wem.
 BUCHUNG_UNVERAENDERLICH = (
     'datum', 'beleg_text', 'soll_konto_id', 'haben_konto_id', 'betrag', 'liegenschaft_id',
-    'ist_storno', 'storno_von_id', 'beleg_nr', 'organisation_id', 'erstellt_von_id',
+    'ist_storno', 'storno_von_id', 'beleg_nr', 'organisation_id', 'erstellt_von_id', 'erstellt_am',
 )
 
 #: Die Verknüpfungen zu den Nebenbüchern (Zahlung, Rechnung) — die «Zuordnung».
@@ -366,6 +366,11 @@ class Buchung(OrganisationAusKette):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='+', verbose_name="Erstellt von"
     )
+    # Erfassungszeitpunkt: wann die Buchung ENTSTANDEN ist, im Gegensatz zu `datum`, dem Buchungsdatum. Ohne ihn
+    # lässt sich nicht belegen, ob eine Buchung zeitnah oder nachträglich auf ein früheres Datum erfasst wurde
+    # (GeBüV Art. 3: Zeitgerechtigkeit). Vom Server gesetzt, nie von aussen; Buchungen vor dem 07.11.2026 tragen
+    # keinen (der Zeitpunkt ist nicht bekannt und wird nicht erfunden).
+    erstellt_am = models.DateTimeField("Erfasst am", null=True, blank=True, editable=False)
 
     def __str__(self):
         return f"{self.datum}: {self.soll_konto.nummer} an {self.haben_konto.nummer} | CHF {self.betrag}"
@@ -388,6 +393,13 @@ class Buchung(OrganisationAusKette):
             self._pruefe_aenderung()
             return super().save(*args, **kwargs)
 
+        # Prüfregeln für eine NEUE Buchung (Revision, Analysebericht 06.11.2026): ein positiver Betrag, und Soll und
+        # Haben auf verschiedenen Konten. Dieselben Regeln stehen als CHECK-Constraint in der Datenbank, sofern der
+        # Bestand sie zulässt (`finance/db_schutz.py`); hier greifen sie auf jeder Datenbank und mit klarer Meldung.
+        self._pruefe_neue_buchung()
+        # Der Erfassungszeitpunkt kommt immer vom Server, auch wenn ein Aufrufer einen mitgibt.
+        self.erstellt_am = timezone.now()
+
         # Periodensperre: neue Buchungen in einer abgeschlossenen Periode blockieren.
         sperre = self._periodensperre()
         datum = models.DateField().to_python(self.datum) if self.datum else None
@@ -399,6 +411,19 @@ class Buchung(OrganisationAusKette):
         if self.beleg_nr is not None:
             return super().save(*args, **kwargs)
         self._mit_belegnummer_speichern(*args, **kwargs)
+
+    def _pruefe_neue_buchung(self):
+        """Betrag > 0 und Soll ≠ Haben. Wirft `ValueError` mit einer Meldung, die sagt, was zu tun ist."""
+        try:
+            betrag = Decimal(str(self.betrag))
+        except (InvalidOperation, ValueError):
+            raise ValueError('Buchung ohne gültigen Betrag.') from None
+        if betrag <= 0:
+            raise ValueError(
+                f'Der Betrag einer Buchung muss grösser als 0 sein (CHF {betrag}). Eine Gutschrift oder Korrektur wird '
+                'als Buchung mit vertauschten Konten erfasst, nicht mit negativem Betrag.')
+        if self.soll_konto_id is not None and self.soll_konto_id == self.haben_konto_id:
+            raise ValueError('Soll- und Haben-Konto müssen verschieden sein.')
 
     def _periodensperre(self):
         """Die Sperre der EIGENEN Verwaltung, nicht `Organisation.objects.first()`.
@@ -663,7 +688,7 @@ class DebitorenRechnung(OrganisationAusKette):
 class Zahlungseingang(OrganisationAusKette):
     # VIER WEGE, UND WARUM ES KEIN EIGENES FELD GEWORDEN IST
     #
-    # Der Auftrag (docs/ETAPPE-5-ABSCHLUSS.md) sah hier einen eigenen
+    # Der Auftrag («ETAPPE-5-ABSCHLUSS» (früheres Dokument, Git-Verlauf)) sah hier einen eigenen
     # Fremdschluessel vor, gesetzt beim Import, und nannte dafuer fuenf Dateien
     # mit neun Erzeugungsstellen. Die Begruendung stimmt — „der Bezug ueber
     # Vertrag oder Liegenschaft entsteht spaeter oder nie" —, aber die
@@ -723,6 +748,8 @@ class Zahlungseingang(OrganisationAusKette):
 
     class Meta:
         db_table = 'core_zahlungseingang'
+        # «Verbuchte Zahlungen dieser Rechnung» ist die häufigste Frage an diese Tabelle (offener Betrag, Listen).
+        indexes = [models.Index(fields=['debitoren_rechnung', 'status'], name='zahlung_rechnung_status_idx')]
         constraints = [
             # Dieselbe Bank-Transaktion wird nur einmal verbucht (camt-Duplikatschutz
             # beim Import war nur eine Abfrage vor dem Anlegen). Stornierte Zeilen
@@ -1457,6 +1484,48 @@ class AuszahlungsFreigabe(models.Model):
 
     def __str__(self):
         return f"{self.get_art_display()} #{self.bezug_id} — CHF {self.betrag}"
+
+
+class SperreAenderung(models.Model):
+    """Antrag, die Periodensperre zu LOCKERN (Roadmap Nr. 11, Vier-Augen-Prinzip).
+
+    Die Sperre selbst bleibt das Datum `Organisation.buchung_gesperrt_bis`. Vorwärts
+    (später sperren) kann eine Person allein. Zurück (früherer Stichtag oder ganz
+    aufheben) öffnet abgeschlossene Zeit für Buchungen und braucht deshalb eine
+    ZWEITE Person aus der Verwaltung (`finance/periodensperre.py`). Diese Zeile ist
+    der Antrag und bleibt als Spur stehen.
+    """
+    STATUS = [('offen', gettext_lazy('Offen')), ('freigegeben', gettext_lazy('Freigegeben')),
+              ('abgelehnt', gettext_lazy('Abgelehnt'))]
+
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
+                                     related_name='%(app_label)s_%(class)s', verbose_name='Organisation')
+    alt_bis = models.DateField("Bisher gesperrt bis", null=True, blank=True)
+    neu_bis = models.DateField("Neu gesperrt bis", null=True, blank=True)
+    grund = models.TextField("Begründung")
+    status = models.CharField("Status", max_length=12, choices=STATUS, default='offen')
+    beantragt_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
+                                      blank=True, related_name='+')
+    beantragt_am = models.DateTimeField(default=timezone.now)
+    entschieden_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
+                                        blank=True, related_name='+')
+    entschieden_am = models.DateTimeField(null=True, blank=True)
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            self.organisation_id = organisation_bestimmen().pk
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Änderung der Periodensperre"
+        verbose_name_plural = "Änderungen der Periodensperre"
+        ordering = ['-beantragt_am', '-id']
+
+    def __str__(self):
+        return f"{self.alt_bis or '—'} → {self.neu_bis or '—'} ({self.get_status_display()})"
 
 
 class Hypothek(OrganisationAusKette):

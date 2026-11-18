@@ -98,7 +98,7 @@ Kontext aus core/views/fw/schluessel.schliessanlage_kontext (`sl_*`).
                 <ul class="fw-sk-inhaber">
                     {% for t in sl_punkte %}
                     <li><span><b>{{ t.bezeichnung }}</b>{% if t.einheit %} · {{ t.einheit.bezeichnung }}{% endif %}{% if t.anlage %} · {{ t.anlage }}{% endif %}</span>
-                        <form method="post" action="/neu/schliesspunkt/{{ t.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% blocktrans with t=t.bezeichnung %}Tür «{{ t }}» entfernen?{% endblocktrans %}{% endfilter %}');">{% csrf_token %}
+                        <form method="post" action="/neu/schliesspunkt/{{ t.id }}/loeschen/" data-bestaetigen="{% filter escapejs %}{% blocktrans with t=t.bezeichnung %}Tür «{{ t }}» entfernen?{% endblocktrans %}{% endfilter %}">{% csrf_token %}
                             <button class="fw-ikon mut gefahr" aria-label="{% trans 'Tür entfernen' %}">{% zeichen 'loeschen' %}</button></form></li>
                     {% empty %}<li><span class="fw-mutet">{% trans "Noch keine Türen erfasst." %}</span></li>{% endfor %}
                 </ul>
@@ -122,7 +122,7 @@ Kontext aus core/views/fw/schluessel.schliessanlage_kontext (`sl_*`).
                 <details class="fw-sk-formular">
                     <summary>{{ an }}</summary>
                     {% include 'fw/_schliessanlage_formular.html' with an=an %}
-                    <form method="post" action="/neu/schliessanlage/{{ an.id }}/loeschen/" onsubmit="return confirm('{% filter escapejs %}{% trans "Schliessanlage entfernen? Schlüssel und Türen bleiben erhalten." %}{% endfilter %}');">{% csrf_token %}
+                    <form method="post" action="/neu/schliessanlage/{{ an.id }}/loeschen/" data-bestaetigen="{% filter escapejs %}{% trans "Schliessanlage entfernen? Schlüssel und Türen bleiben erhalten." %}{% endfilter %}">{% csrf_token %}
                         <button class="fw-btn fw-knapp fw-leise">{% zeichen 'loeschen' %}{% trans "Anlage entfernen" %}</button></form>
                 </details>
                 {% endfor %}

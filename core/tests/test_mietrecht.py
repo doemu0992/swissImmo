@@ -1,5 +1,5 @@
 """Testmodul mietrecht — aus core/tests.py herausgeloest (Etappe 1,
-siehe docs/ETAPPE-1-ZERLEGEN.md). 19 Klassen, unveraendert uebernommen."""
+siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf)). 19 Klassen, unveraendert uebernommen."""
 from datetime import date, timedelta
 from decimal import Decimal
 
@@ -134,7 +134,7 @@ class KuendigungModalTests(TestCase):
         team = _team_user(); c = Client(); c.force_login(team)
         body = c.get('/neu/vertraege/').content.decode()
         self.assertIn(f'/neu/vertraege/{v.id}/kuendigen/', body)
-        self.assertIn("fwModalOpen(this,'Kündigung erfassen')", body)
+        self.assertIn('data-modal="Kündigung erfassen"', body)
 
     def test_kuendigung_form_live_pruefung(self):
         """Das Kündigungsformular enthält die mietrechtliche Live-Prüfung."""

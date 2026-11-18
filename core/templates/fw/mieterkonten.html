@@ -47,16 +47,16 @@
 <table class="fw-table">
         <thead>
             <tr>
-                <th>{% trans "Mieter" %}</th>
-                <th>{% trans "Objekt" %}</th>
-                <th class="fw-zentriert">{% trans "Status" %}</th>
-                <th class="fw-right">{% trans "Saldo" %}</th>
-                <th></th>
+                <th scope="col">{% trans "Mieter" %}</th>
+                <th scope="col">{% trans "Objekt" %}</th>
+                <th scope="col" class="fw-zentriert">{% trans "Status" %}</th>
+                <th scope="col" class="fw-right">{% trans "Saldo" %}</th>
+                <th scope="col"></th>
             </tr>
         </thead>
         <tbody>
         {% for r in rows %}
-            <tr class="cursor-pointer" onclick="window.location='/neu/mieterkonten/{{ r.m.id }}/{{ lg_query }}'">
+            <tr class="cursor-pointer" data-gehe-zu="/neu/mieterkonten/{{ r.m.id }}/{{ lg_query }}">
                 <td class="fw-strong">{{ r.m.display_name }}</td>
                 <td>{{ r.objekt }}{% if r.objekte_n > 1 %} <span class="fw-faint">+{{ r.objekte_n|add:"-1" }}</span>{% endif %}</td>
                 <td class="fw-zentriert">

@@ -87,6 +87,9 @@ def link_widerrufen(auftrag):
         return False
     auftrag.token_widerrufen_am = timezone.now()
     auftrag.save(update_fields=['token_widerrufen_am'])
+    # Mit dem Handwerker-Link fallen auch die Direktkanal-Zugänge beider Seiten (Link des Mieters, Marken in Mails).
+    from .direktkanal import zugaenge_widerrufen
+    zugaenge_widerrufen(auftrag)
     return True
 
 

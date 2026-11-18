@@ -1,0 +1,239 @@
+"""Roadmap Nr. 23, Etappe 1: Content-Security-Policy mit Nonce (zunächst nur melden) und eine Ratsche für Inline-Code."""
+import json
+import logging
+import pathlib
+import re
+from unittest import mock
+
+from django.test import Client, SimpleTestCase, TestCase, override_settings
+
+from core import csp
+
+from ._helfer import _team_user
+from .csp_handler_stand import KOMMENTAR, zaehlen
+
+STAND = pathlib.Path(__file__).with_name('csp_handler_stand.json')
+
+
+class RichtlinieTests(SimpleTestCase):
+
+    def test_richtlinie_enthaelt_nonce_und_sperrt_fremdes(self):
+        r = csp.richtlinie('ABC123')
+        self.assertIn("script-src 'self' 'nonce-ABC123'", r)
+        self.assertNotIn("script-src 'self' 'unsafe-inline'", r)
+        # Stile: nur eigene Dateien und der Nonce — kein 'unsafe-inline' (seit 12.11.2026).
+        self.assertIn("style-src 'self' 'nonce-ABC123'", r)
+        self.assertNotIn('unsafe-inline', r)
+
+    def test_dokumentantworten_duerfen_inline_stile_aber_keine_inline_skripte(self):
+        r = csp.richtlinie('ABC123', stil_inline=True)
+        self.assertIn("style-src 'self' 'unsafe-inline'", r)
+        self.assertIn("script-src 'self' 'nonce-ABC123'", r)
+        for erwartet in ("object-src 'none'", "base-uri 'self'", "frame-ancestors 'self'", "form-action 'self'",
+                         f'report-uri {csp.BERICHT_PFAD}'):
+            self.assertIn(erwartet, r)
+
+    def test_modus_faellt_bei_unsinn_auf_report_only_zurueck(self):
+        for wert, soll in (('enforce', 'enforce'), ('AUS', 'aus'), ('quatsch', 'report-only'), ('', 'report-only')):
+            with override_settings(CSP_MODUS=wert):
+                self.assertEqual(csp.modus(), soll, wert)
+
+
+class MiddlewareTests(TestCase):
+
+    def _seite(self, url='/login/'):
+        return Client().get(url)
+
+    def test_vorgabe_ist_report_only_und_blockiert_nichts(self):
+        antwort = self._seite()
+        self.assertIn(csp.HEADER_REPORT, antwort)
+        self.assertNotIn(csp.HEADER_ENFORCE, antwort)
+
+    def test_nonce_im_kopf_passt_zu_den_skripten_der_seite(self):
+        c = Client()
+        c.force_login(_team_user())
+        antwort = c.get('/neu/')
+        nonce = re.search(r"'nonce-([^']+)'", antwort[csp.HEADER_REPORT]).group(1)
+        html = antwort.content.decode()
+        inline = [m for m in re.finditer(r'<script\b([^>]*)>', html) if 'src=' not in m.group(1)
+                  and 'application/json' not in m.group(1)]
+        self.assertGreater(len(inline), 0)
+        for m in inline:
+            self.assertIn(f'nonce="{nonce}"', m.group(1), 'Inline-Skript ohne den Nonce dieser Antwort')
+
+    def test_nonce_wechselt_je_anfrage(self):
+        a = re.search(r"'nonce-([^']+)'", self._seite()[csp.HEADER_REPORT]).group(1)
+        b = re.search(r"'nonce-([^']+)'", self._seite()[csp.HEADER_REPORT]).group(1)
+        self.assertNotEqual(a, b)
+
+    @override_settings(CSP_MODUS='enforce')
+    def test_enforce_setzt_den_sperrenden_kopf(self):
+        antwort = self._seite()
+        self.assertIn(csp.HEADER_ENFORCE, antwort)
+        self.assertNotIn(csp.HEADER_REPORT, antwort)
+
+    @override_settings(CSP_MODUS='aus')
+    def test_aus_setzt_keinen_kopf(self):
+        antwort = self._seite()
+        self.assertNotIn(csp.HEADER_ENFORCE, antwort)
+        self.assertNotIn(csp.HEADER_REPORT, antwort)
+
+
+class BerichtsstelleTests(TestCase):
+
+    def _melden(self, daten, **extra):
+        return Client().post(csp.BERICHT_PFAD, data=daten if isinstance(daten, str) else json.dumps(daten),
+                             content_type='application/csp-report', **extra)
+
+    def setUp(self):
+        from django.core.cache import cache
+        cache.clear()
+
+    def test_bericht_wird_geloggt_und_mit_204_beantwortet(self):
+        bericht = {'csp-report': {'violated-directive': "script-src-attr", 'blocked-uri': 'inline',
+                                  'document-uri': 'https://x.ch/neu/', 'line-number': 12}}
+        with self.assertLogs('csp', level=logging.WARNING) as erfasst:
+            antwort = self._melden(bericht)
+        self.assertEqual(antwort.status_code, 204)
+        self.assertIn('script-src-attr', erfasst.output[0])
+        self.assertIn('inline', erfasst.output[0])
+
+    def test_quelle_und_probe_stehen_im_log(self):
+        """Datei und Anfang des gesperrten Stils gehören in die Zeile: Sonst ist die Ursache nicht auffindbar."""
+        bericht = {'csp-report': {'violated-directive': 'style-src-attr', 'blocked-uri': 'inline',
+                                  'document-uri': 'https://x.ch/neu/', 'line-number': 7,
+                                  'source-file': 'https://x.ch/static/js/fw-a.js', 'script-sample': 'width: 4|2%'}}
+        with self.assertLogs('csp', level='WARNING') as log:
+            self._melden(bericht)
+        self.assertIn('Zeile=7 | Quelle=https://x.ch/static/js/fw-a.js | Probe=width: 4/2%', log.output[0])
+
+    def test_eigene_meldung_nennt_das_element(self):
+        """`fw-stil.js` schickt zu einem gesperrten Inline-Stil das Element mit: daran ist die Ursache zu erkennen."""
+        bericht = {'csp-report': {'violated-directive': 'style-src-attr', 'blocked-uri': 'inline',
+                                  'document-uri': 'https://x.ch/neu/', 'script-sample': 'display: none',
+                                  'element': 'input#fwOsFeld.fw-feld'}}
+        with self.assertLogs('csp', level='WARNING') as log:
+            self._melden(bericht)
+        self.assertIn('Probe=display: none @ input#fwOsFeld.fw-feld', log.output[0])
+
+    def test_stil_attribute_nur_die_des_browsers(self):
+        """`style-src-attr` erlaubt genau die Zeichenfolgen, die iOS-Safari selbst an `<select>` setzt — per Hash, nicht
+        per 'unsafe-inline'. In der Vorschau (alles inline erlaubt) steht die Regel nicht, sie würde dort einschränken."""
+        import base64
+        import hashlib
+        r = csp.richtlinie('ABC123')
+        teil = next(t for t in r.split('; ') if t.startswith('style-src-attr '))
+        self.assertIn("'unsafe-hashes'", teil)
+        self.assertNotIn('unsafe-inline', teil)
+        self.assertIn(base64.b64encode(hashlib.sha256(b'text-overflow:inherit').digest()).decode(), teil)
+        self.assertEqual(teil.count("'sha256-"), len(csp.BROWSER_STILE))
+        self.assertTrue(all(t.startswith('text-overflow') for t in csp.BROWSER_STILE))
+        self.assertNotIn('style-src-attr', csp.richtlinie('ABC123', stil_inline=True))
+
+    def test_richtlinie_verlangt_proben(self):
+        r = csp.richtlinie('ABC123')
+        self.assertIn("style-src 'self' 'nonce-ABC123' 'report-sample'", r)
+        self.assertIn("script-src 'self' 'nonce-ABC123' 'report-sample'", r)
+        self.assertNotIn('unsafe-inline', r)
+
+    def test_neues_berichtsformat_wird_gelesen(self):
+        bericht = [{'type': 'csp-violation', 'body': {'effectiveDirective': 'script-src-elem',
+                                                       'blockedURL': 'https://fremd.example/x.js'}}]
+        with self.assertLogs('csp', level=logging.WARNING) as erfasst:
+            self.assertEqual(self._melden(bericht).status_code, 204)
+        self.assertIn('fremd.example', erfasst.output[0])
+
+    def test_unsinn_und_zu_grosses_wird_abgewiesen(self):
+        self.assertEqual(self._melden('kein json').status_code, 400)
+        self.assertEqual(self._melden('x' * 9000).status_code, 413)
+
+    def test_nur_post(self):
+        self.assertEqual(Client().get(csp.BERICHT_PFAD).status_code, 405)
+
+    def test_flut_wird_gedeckelt(self):
+        codes = []
+        with mock.patch.object(csp.logger, 'warning'):
+            for _ in range(65):
+                codes.append(self._melden({'csp-report': {'violated-directive': 'x'}}).status_code)
+        self.assertEqual(codes[:60], [204] * 60)
+        self.assertIn(429, codes[60:])
+
+    def test_text_in_meldung_kann_das_log_nicht_zerlegen(self):
+        with self.assertLogs('csp', level=logging.WARNING) as erfasst:
+            self._melden({'csp-report': {'blocked-uri': 'a\nGEFAELSCHTE ZEILE'}})
+        self.assertEqual(len(erfasst.output), 1)
+        self.assertNotIn('\nGEFAELSCHTE', erfasst.output[0])
+
+
+class RatscheTests(SimpleTestCase):
+    """Inline-Code darf nicht zunehmen — der Weg zu `CSP_MODUS=enforce` ist, dass die Zahl auf null sinkt."""
+
+    def test_jedes_inline_skript_traegt_einen_nonce(self):
+        ohne = []
+        for pfad in sorted(pathlib.Path('core/templates').rglob('*.html')):
+            text = KOMMENTAR.sub(' ', pfad.read_text(encoding='utf-8'))
+            for m in re.finditer(r'<script\b([^>]*)>', text):
+                a = m.group(1)
+                if 'src=' not in a and 'nonce=' not in a and 'application/json' not in a:
+                    ohne.append(str(pfad))
+        self.assertEqual(ohne, [], 'Inline-<script> ohne nonce="{{ csp_nonce }}" würde mit CSP blockiert.')
+
+    def test_inline_handler_nehmen_nicht_zu(self):
+        soll = json.loads(STAND.read_text(encoding='utf-8'))
+        ist = zaehlen()
+        mehr = {d: (soll.get(d, 0), n) for d, n in ist.items() if n > soll.get(d, 0)}
+        self.assertEqual(mehr, {}, 'Neue Inline-Handler (onclick= …): bitte per addEventListener/Datenattribut '
+                                   'in static/js lösen, nicht in die Vorlage schreiben.')
+
+    def test_gesunkene_zahlen_werden_nachgefuehrt(self):
+        soll = json.loads(STAND.read_text(encoding='utf-8'))
+        ist = zaehlen()
+        weniger = {d: (n, ist.get(d, 0)) for d, n in soll.items() if ist.get(d, 0) < n}
+        self.assertEqual(weniger, {}, 'Handler wurden entfernt: core/tests/csp_handler_stand.json nachführen '
+                                      '(Befehl im Kopf von csp_handler_stand.py).')
+
+    def test_zaehler_erkennt_handler(self):
+        """Gegenprobe: Der Zähler sieht einen Handler (sonst wäre die Ratsche blind)."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            (pathlib.Path(tmp) / 'a.html').write_text('<button onclick="x()">a</button><a onClick=\'y()\'>b</a>'
+                                                       '{# <i onclick="z()"> #}')
+            self.assertEqual(zaehlen(tmp), {'a.html': 2})
+
+
+class StilAusnahmeTests(TestCase):
+    """Nur die Vertragsvorschau (gerendertes Dokument) darf Inline-Stile; jede andere Seite nicht."""
+
+    def test_normale_seiten_ohne_unsafe_inline(self):
+        c = Client()
+        c.force_login(_team_user())
+        for url in ('/login/', '/neu/'):
+            kopf = c.get(url)[csp.HEADER_REPORT]
+            self.assertNotIn('unsafe-inline', kopf, url)
+
+    def test_vertragsvorschau_hat_inline_stile_ohne_skriptausnahme(self):
+        c = Client()
+        c.force_login(_team_user())
+        kopf = c.post('/neu/vertraege/vorschau/', {})[csp.HEADER_REPORT]
+        self.assertIn("style-src 'self' 'unsafe-inline'", kopf)
+        self.assertRegex(kopf, r"script-src 'self' 'nonce-[^']+'")
+        self.assertNotIn("script-src 'self' 'unsafe-inline'", kopf)
+
+
+class FehlerseitenOhneInlineStilTests(TestCase):
+    """Auch die Seiten, die nur im Fehlerfall oder ohne Anmeldung erscheinen, brauchen keine Inline-Stile."""
+
+    def _pruefen(self, antwort, url):
+        html = antwort.content.decode()
+        self.assertNotRegex(html, r'\sstyle="', url)
+        for m in re.finditer(r'<style\b([^>]*)>', html):
+            self.assertIn('nonce=', m.group(1), f'{url}: <style> ohne Nonce')
+
+    def test_404_login_und_startseite(self):
+        for url in ('/gibt-es-nicht-xyz/', '/login/', '/'):
+            self._pruefen(Client().get(url), url)
+
+    def test_403_und_400(self):
+        c = Client()
+        c.force_login(_team_user('Buchhaltung'))
+        self._pruefen(c.get('/neu/personen/'), '/neu/personen/ (403)')

@@ -24,7 +24,7 @@
 
 {% if offene_n %}
 <form method="post" action="/neu/vermarktung/{{ e.id }}/bewerber/absage-uebrige/{{ lg_query }}" class="mb-4"
-      onsubmit="return confirm('{% filter escapejs %}{% blocktrans with n=offene_n %}Allen {{ n }} noch offenen Bewerbern eine Absage senden — auch denen, die zur Besichtigung eingeladen sind?{% endblocktrans %}{% endfilter %}');">
+      data-bestaetigen="{% filter escapejs %}{% blocktrans with n=offene_n %}Allen {{ n }} noch offenen Bewerbern eine Absage senden — auch denen, die zur Besichtigung eingeladen sind?{% endblocktrans %}{% endfilter %}">
     {% csrf_token %}
     <button class="fw-btn fw-rand-krit fw-knapp">{% zeichen 'senden' %}{% blocktrans with n=offene_n %}Übrige {{ n }} absagen{% endblocktrans %}</button>
 </form>
@@ -36,12 +36,12 @@
     <table class="fw-table">
         <thead>
             <tr>
-                <th>{% trans "Rang" %}</th>
-                <th>{% trans "Bewerber" %}</th>
-                <th class="fw-zentriert">{% trans "Score" %}</th>
-                {% for label in indikator_labels %}<th>{{ label }}</th>{% endfor %}
-                <th>{% trans "Haushalt" %}</th>
-                <th></th>
+                <th scope="col">{% trans "Rang" %}</th>
+                <th scope="col">{% trans "Bewerber" %}</th>
+                <th scope="col" class="fw-zentriert">{% trans "Score" %}</th>
+                {% for label in indikator_labels %}<th scope="col">{{ label }}</th>{% endfor %}
+                <th scope="col">{% trans "Haushalt" %}</th>
+                <th scope="col"></th>
             </tr>
         </thead>
         <tbody>
@@ -75,16 +75,16 @@
                         <span class="fw-chip fw-mut">{% trans "Abgesagt" %}</span>
                     {% else %}
                     <div class="inline-flex items-center gap-1.5">
-                        <button type="button" onclick="document.getElementById('besi-{{ k.b.id }}').classList.toggle('hidden')"
+                        <button type="button" data-umschalten="besi-{{ k.b.id }}"
                                 class="fw-btn fw-knapp">
                             {% zeichen 'termin' %}{% trans "Besichtigung" %}</button>
                         <form method="post" action="/neu/bewerbungen/{{ k.b.id }}/entscheid/" class="inline"
-                              onsubmit="return confirm('{% filter escapejs %}{% if k.b.email %}{% blocktrans with name=k.name %}{{ name }} zusagen und E-Mail senden?{% endblocktrans %}{% else %}{% blocktrans with name=k.name %}{{ name }} zusagen?{% endblocktrans %}{% endif %}{% endfilter %}');">
+                              data-bestaetigen="{% filter escapejs %}{% if k.b.email %}{% blocktrans with name=k.name %}{{ name }} zusagen und E-Mail senden?{% endblocktrans %}{% else %}{% blocktrans with name=k.name %}{{ name }} zusagen?{% endblocktrans %}{% endif %}{% endfilter %}">
                             {% csrf_token %}<input type="hidden" name="entscheid" value="zusage">
                             <button class="fw-btn fw-gutknopf fw-knapp">{% trans "Zusagen" %}</button>
                         </form>
                         <form method="post" action="/neu/bewerbungen/{{ k.b.id }}/entscheid/" class="inline"
-                              onsubmit="return confirm('{% filter escapejs %}{% if k.b.email %}{% blocktrans with name=k.name %}{{ name }} absagen und E-Mail senden?{% endblocktrans %}{% else %}{% blocktrans with name=k.name %}{{ name }} absagen?{% endblocktrans %}{% endif %}{% endfilter %}');">
+                              data-bestaetigen="{% filter escapejs %}{% if k.b.email %}{% blocktrans with name=k.name %}{{ name }} absagen und E-Mail senden?{% endblocktrans %}{% else %}{% blocktrans with name=k.name %}{{ name }} absagen?{% endblocktrans %}{% endif %}{% endfilter %}">
                             {% csrf_token %}<input type="hidden" name="entscheid" value="absage">
                             <button class="fw-btn fw-knapp">{% trans "Absagen" %}</button>
                         </form>

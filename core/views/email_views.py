@@ -317,7 +317,7 @@ def send_mahnung_email_view(request, vertrag_id):
     betrag_str = request.POST.get('betrag', '0.00')
 
     if not vertrag.mieter.email:
-        messages.error(request, gettext('Mieter hat keine E-Mail.')); return redirect(request.META.get('HTTP_REFERER', '/admin/'))
+        messages.error(request, gettext('Mieter hat keine E-Mail.')); return redirect(request.META.get('HTTP_REFERER', '/neu/'))
 
     heute = datetime.date.today()
     from core.services.ablage import ablage_mahnung
@@ -333,7 +333,7 @@ def send_mahnung_email_view(request, vertrag_id):
         rechnung = get_object_or_404(DebitorenRechnung, pk=rid, vertrag=vertrag)
         if rechnung.offener_betrag <= 0:
             messages.error(request, gettext('Diese Forderung ist nicht mehr offen.'))
-            return redirect(request.META.get('HTTP_REFERER', '/admin/'))
+            return redirect(request.META.get('HTTP_REFERER', '/neu/'))
         # Nur Stufen, die die Verwaltung eingerichtet hat (crm.MahnStufe); sonst die erste.
         stufen = sorted(mahnstufen_config(eigentuemer_von_rechnung(rechnung),
                                           rechnung.organisation), key=lambda x: x['stufe'])
@@ -365,7 +365,7 @@ def send_mahnung_email_view(request, vertrag_id):
         log_aktion(request, f"{stufe}. Mahnung als Kopie versendet", str(vertrag),
                    f"an {vertrag.mieter.email}, {monat_str}, CHF {betrag_str}")
         messages.success(request, '✅ ' + gettext('Mahnung inkl. QR-Rechnung an %(email)s gesendet.') % {'email': vertrag.mieter.email})
-        return redirect(request.META.get('HTTP_REFERER', '/admin/'))
+        return redirect(request.META.get('HTTP_REFERER', '/neu/'))
 
     # 257d-Kündigungsandrohung: Betrag muss ein positiver Betrag sein — die Vorgabe
     # '0.00' liess eine Kündigungsandrohung über CHF 0.00 zu.
@@ -375,7 +375,7 @@ def send_mahnung_email_view(request, vertrag_id):
         _betrag_ok = False
     if not _betrag_ok:
         messages.error(request, gettext('Ungültiger oder fehlender Betrag — Mahnung nicht versendet.'))
-        return redirect(request.META.get('HTTP_REFERER', '/admin/'))
+        return redirect(request.META.get('HTTP_REFERER', '/neu/'))
 
     pdf_bytes = generate_mahnung_combined_pdf_bytes(vertrag, verwaltung, monat_str, betrag_str, heute)
     # Dasselbe PDF, das der Mieter erhält, gehört in die Akte — sonst lässt sich
@@ -424,7 +424,7 @@ def send_mahnung_email_view(request, vertrag_id):
                f"an {vertrag.mieter.email}, Monat {monat_str}, CHF {betrag_str} — Original per Einschreiben ausstehend")
     messages.success(request, '✅ ' + gettext('Mahnung inkl. QR-Rechnung an %(email)s gesendet.') % {'email': vertrag.mieter.email})
     messages.warning(request, gettext('Das war nur die Kopie. Rechtsgültig ist der eingeschriebene Brief — die Fristansetzung jetzt erfassen, sonst läuft keine Frist.'))
-    return redirect(request.META.get('HTTP_REFERER', '/admin/'))
+    return redirect(request.META.get('HTTP_REFERER', '/neu/'))
 
 
 @rolle_erforderlich(ROLLE_VERWALTER, ROLLE_SACHBEARBEITER)

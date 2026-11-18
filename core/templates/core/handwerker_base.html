@@ -3,10 +3,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
     <meta name="robots" content="noindex, nofollow">
     <meta name="referrer" content="same-origin">
     <title>{% block title %}{% trans "Auftrag — immoswiss" %}{% endblock %}</title>
-    <script>/* Theme früh setzen (kein Flash) */(function(){try{var t=localStorage.getItem('fw-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+    <script nonce="{{ csp_nonce }}">/* Theme früh setzen (kein Flash) */(function(){try{var t=localStorage.getItem('fw-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 {% include 'core/_assets_aussen.html' %}
 </head>
 {% comment %}
@@ -18,7 +19,7 @@ zeigt genau einen Auftrag. Eine Navigation hätte nichts, wohin sie führen
 dürfte.
 {% endcomment %}
 <body class="fw-body">
-    <main class="fw-inhalt fw-hw-seite">
+    <main class="fw-inhalt fw-hw-seite" id="fw-inhalt" tabindex="-1">
         <header class="fw-hw-kopf">
             <span class="fw-marke-zeichen"><svg class="fw-zeichen fw-auf-marke" aria-hidden="true"><use href="#z-arbeit"/></svg></span>
             <b class="fw-portal-titel">{% block kopf %}{% trans "Auftrag" %}{% endblock %}</b>

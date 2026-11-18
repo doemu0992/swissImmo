@@ -40,6 +40,12 @@ DARF_AENDERN = {
     'fw_schaden_detail': {'tickets.SchadenMeldung'},   # markiert die Meldung beim Öffnen als gelesen (Zähler im Menü)
 }
 
+#: Abrufe, die selbst ins Audit-Log schreiben (Roadmap Nr. 10: Wer hat einen Abschluss abgerufen?). Erlaubt sind NEUE
+#: Zeilen im Audit-Log und sonst nichts; geändert oder gelöscht wird dort nie (das Log ist nur anhängbar).
+PROTOKOLLIERT = {
+    'fw_buchhaltung_pdf': {'core.AktivitaetsLog'},   # Abschluss-PDF: der Abruf steht im Logbuch
+}
+
 
 class LesezugriffSchreibtNieTests(TestCase):
 
@@ -103,6 +109,8 @@ class LesezugriffSchreibtNieTests(TestCase):
             status, aenderungen = self._geschrieben(pfad, als_json)
             erlaubt = DARF_AENDERN.get(name, set())
             aenderungen = [a for a in aenderungen if not (a[0] in erlaubt and a[1] == 0 and a[3] == 0)]
+            protokoll = PROTOKOLLIERT.get(name, set())
+            aenderungen = [a for a in aenderungen if not (a[0] in protokoll and a[2] == 0 and a[3] == 0)]
             if aenderungen:
                 schreibt.append((name, pfad, status, aenderungen[:3]))
             elif status in (302, 403):

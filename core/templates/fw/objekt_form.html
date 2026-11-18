@@ -108,10 +108,10 @@
             <div class="fw-tablewrap">
 <table class="fw-table fw-dicht">
                 <thead><tr>
-                    <th>{% trans "Gültig ab" %}</th>
-                    <th class="fw-right">{% trans "Netto" %}</th>
-                    {% if not e.ist_einstellplatz %}<th class="fw-right">NK</th>
-                    <th class="fw-right">{% trans "Brutto" %}</th>{% endif %}
+                    <th scope="col">{% trans "Gültig ab" %}</th>
+                    <th scope="col" class="fw-right">{% trans "Netto" %}</th>
+                    {% if not e.ist_einstellplatz %}<th scope="col" class="fw-right">NK</th>
+                    <th scope="col" class="fw-right">{% trans "Brutto" %}</th>{% endif %}
                 </tr></thead>
                 <tbody>
                 {% for s in sollmietzinse %}

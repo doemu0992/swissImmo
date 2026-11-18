@@ -26,7 +26,7 @@
            ordnungsgemäss zurückgegeben — deshalb sichtbar im Kopf, nicht im Menü. {% endcomment %}
         {% if p.typ == 'auszug' and hat_mieter_maengel %}
         <form method="post" action="/neu/abnahme/{{ p.id }}/ruege-267a/" target="_blank"
-              onsubmit="return confirm('{% filter escapejs %}{% trans "Mängelrüge nach Art. 267a OR für alle dem Mieter zugeordneten Mängel erstellen und in der Vertragsakte ablegen?" %}{% endfilter %}');">
+              data-bestaetigen="{% filter escapejs %}{% trans "Mängelrüge nach Art. 267a OR für alle dem Mieter zugeordneten Mängel erstellen und in der Vertragsakte ablegen?" %}{% endfilter %}">
             {% csrf_token %}
             <button type="submit" class="fw-btn" title="{% trans 'Sofort nach der Rückgabe versenden — sonst verwirken die Ersatzansprüche (Art. 267a OR).' %}">{% zeichen 'recht' klasse='fw-warnton' %}{% trans "Mängelrüge 267a" %}</button>
         </form>
@@ -54,7 +54,7 @@
                 {% if not p.abgeschlossen and request.user|darf:"/neu/abnahme/1/loeschen/" %}
                 <div class="fw-menutrenner"></div>
                 <form method="post" action="/neu/abnahme/{{ p.id }}/loeschen/"
-                      onsubmit="return confirm('{% filter escapejs %}{% trans "Abnahmeprotokoll wirklich löschen?" %}{% endfilter %}');">
+                      data-bestaetigen="{% filter escapejs %}{% trans "Abnahmeprotokoll wirklich löschen?" %}{% endfilter %}">
                     {% csrf_token %}
                     <button class="fw-menuzeile crit">{% zeichen 'loeschen' klasse='w-4' %}{% trans "Protokoll löschen" %}</button>
                 </form>
@@ -115,12 +115,12 @@
     <div class="fw-tablewrap">
 <table class="fw-table">
         <thead>
-            <tr><th>{% trans "Raum" %}</th><th>{% trans "Mangel" %}</th>
-                <th>{% trans "Verursacher" %}</th>
-                <th class="fw-right">{% trans "Kosten" %}</th>
-                <th class="fw-right">{% trans "Mieteranteil" %}</th>
-                <th>{% trans "Foto" %}</th>
-                <th>{% trans "Handwerker" %}</th></tr>
+            <tr><th scope="col">{% trans "Raum" %}</th><th scope="col">{% trans "Mangel" %}</th>
+                <th scope="col">{% trans "Verursacher" %}</th>
+                <th scope="col" class="fw-right">{% trans "Kosten" %}</th>
+                <th scope="col" class="fw-right">{% trans "Mieteranteil" %}</th>
+                <th scope="col">{% trans "Foto" %}</th>
+                <th scope="col">{% trans "Handwerker" %}</th></tr>
         </thead>
         <tbody>
             {% for m in maengel %}
@@ -152,8 +152,8 @@
     {% if nachmaengel %}
     <div class="fw-tablewrap">
     <table class="fw-table">
-        <thead><tr><th>{% trans "Entdeckt am" %}</th><th>{% trans "Raum" %}</th><th>{% trans "Mangel" %}</th>
-            <th class="fw-right">{% trans "Mieteranteil" %}</th><th>{% trans "Rüge" %}</th><th>{% trans "Handwerker" %}</th></tr></thead>
+        <thead><tr><th scope="col">{% trans "Entdeckt am" %}</th><th scope="col">{% trans "Raum" %}</th><th scope="col">{% trans "Mangel" %}</th>
+            <th scope="col" class="fw-right">{% trans "Mieteranteil" %}</th><th scope="col">{% trans "Rüge" %}</th><th scope="col">{% trans "Handwerker" %}</th></tr></thead>
         <tbody>
             {% for m in nachmaengel %}
             <tr>
@@ -216,7 +216,7 @@
     <div class="fw-kopf"><h2>{% trans "Bewertete Bauteile" %}</h2><span class="fw-neben">{{ positionen|length }}</span></div>
     <div class="fw-tablewrap">
 <table class="fw-table">
-        <thead><tr><th>{% trans "Raum" %}</th><th>{% trans "Bauteil" %}</th><th>{% trans "Vorzustand" %}</th><th>{% trans "Zustand" %}</th><th>{% trans "Veränderung" %}</th><th>{% trans "Kommentar" %}</th></tr></thead>
+        <thead><tr><th scope="col">{% trans "Raum" %}</th><th scope="col">{% trans "Bauteil" %}</th><th scope="col">{% trans "Vorzustand" %}</th><th scope="col">{% trans "Zustand" %}</th><th scope="col">{% trans "Veränderung" %}</th><th scope="col">{% trans "Kommentar" %}</th></tr></thead>
         <tbody>
             {% for pos in positionen %}
             <tr><td>{{ pos.raum }}</td><td class="fw-strong">{{ pos.bezeichnung }}</td>
@@ -236,7 +236,7 @@
     <div class="fw-kopf"><h2>{% trans "Schlüsselverzeichnis" %}</h2></div>
     <div class="fw-tablewrap">
 <table class="fw-table">
-        <thead><tr><th>{% trans "Schlüssel" %}</th><th>{% trans "Schliessanlage / Schlüsselnummer" %}</th><th class="fw-right">{% trans "Soll" context "Schlüssel" %}</th><th class="fw-right">{% trans "Ist" %}</th><th class="fw-right">{% trans "Fehlend" %}</th><th class="fw-right">{% trans "Zulasten Mieter" %}</th></tr></thead>
+        <thead><tr><th scope="col">{% trans "Schlüssel" %}</th><th scope="col">{% trans "Schliessanlage / Schlüsselnummer" %}</th><th scope="col" class="fw-right">{% trans "Soll" context "Schlüssel" %}</th><th scope="col" class="fw-right">{% trans "Ist" %}</th><th scope="col" class="fw-right">{% trans "Fehlend" %}</th><th scope="col" class="fw-right">{% trans "Zulasten Mieter" %}</th></tr></thead>
         <tbody>
             {% for z in schluessel %}
             <tr><td class="fw-strong">{{ z.bezeichnung }}</td><td>{{ z.anlage|default:"—" }}</td>
@@ -252,7 +252,7 @@
 
 {% if p.bemerkungen %}<div class="fw-card"><div class="fw-kopf"><h2>{% trans "Bemerkungen" %}</h2></div><div class="fw-rumpf">{{ p.bemerkungen|linebreaksbr }}</div></div>{% endif %}
 {% if p.abgeschlossen or p.unterschrift_mieter_bild or p.unterschrift_verwalter_bild %}
-<style>.ab-unterschrift { display: block; max-width: 18rem; width: 100%; height: auto; margin-bottom: 1rem; border: 1px solid var(--ds-line); border-radius:var(--ds-radius); }</style>
+<style nonce="{{ csp_nonce }}">.ab-unterschrift { display: block; max-width: 18rem; width: 100%; height: auto; margin-bottom: 1rem; border: 1px solid var(--ds-line); border-radius:var(--ds-radius); }</style>
 <div class="fw-card">
     <div class="fw-kopf"><h2>{% trans "Unterschriften" %}</h2></div>
     <div class="fw-rumpf">

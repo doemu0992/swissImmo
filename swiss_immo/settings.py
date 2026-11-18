@@ -1,10 +1,9 @@
 # swiss_immo/settings.py
 from pathlib import Path
+import datetime
 import os
+from decimal import Decimal
 from dotenv import load_dotenv
-from django.templatetags.static import static
-# WICHTIG: Lazy Import für Reverse URLs, damit Settings nicht crashen
-from django.urls import reverse_lazy
 
 # ==========================================
 # 1. BASIS & ENVIRONMENT LADEN
@@ -73,7 +72,10 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['www.immoswiss.app', 'swissimmo.pythonanywhere.com', '127.0.0.1', 'localhost']
 # Weitere Hosts optional per Env (kommagetrennt), z.B. eigene Domain.
 ALLOWED_HOSTS += [h.strip() for h in os.getenv('EXTRA_ALLOWED_HOSTS', '').split(',') if h.strip()]
-CSRF_TRUSTED_ORIGINS = ['https://*.pythonanywhere.com', 'https://www.immoswiss.app']
+# Nur der EIGENE Host: `https://*.pythonanywhere.com` erklärte jede fremde Seite bei diesem Hoster zur vertrauten
+# Herkunft. Der Host kommt aus PORTAL_BASE_URL (dieselbe Angabe wie für Links in Mails).
+CSRF_TRUSTED_ORIGINS = sorted({
+    os.getenv('PORTAL_BASE_URL', 'https://swissimmo.pythonanywhere.com').rstrip('/'), 'https://www.immoswiss.app'})
 CSRF_TRUSTED_ORIGINS += [o.strip() for o in os.getenv('EXTRA_CSRF_ORIGINS', '').split(',') if o.strip()]
 
 # Sagt Django, dass es HTTPS ist, wenn der Proxy (PythonAnywhere) das sagt.
@@ -81,7 +83,9 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Test-Modus erkennen (damit die HTTPS-Umleitung den Test-Client nicht bricht)
 import sys as _sys
-TESTING = ('test' in _sys.argv) or ('pytest' in _sys.argv[0] if _sys.argv else False)
+# Nur der UNTERBEFEHL zählt: `'test' in argv` traf auch `manage.py irgendwas test` oder ein Argument namens «test»
+# und schaltete dann im Betrieb HTTPS-Umleitung, Zwei-Faktor-Pflicht und RLS ab.
+TESTING = (len(_sys.argv) > 1 and _sys.argv[1] == 'test') or ('pytest' in _sys.argv[0] if _sys.argv else False)
 
 # Nur für Testläufe: fester Schlüssel für verschlüsselte Felder (AHV-Nummer),
 # damit Tests ohne .env laufen. In Betrieb kommt er ausschliesslich aus der
@@ -89,6 +93,18 @@ TESTING = ('test' in _sys.argv) or ('pytest' in _sys.argv[0] if _sys.argv else F
 # solange `manage.py test` läuft.
 if TESTING:
     IMAP_SCHLUESSEL = os.getenv('IMAP_SCHLUESSEL') or 'EV9Cq9O_Bf3KXTtRNITG9iiMDSNs7KZen9YgQQmA29c='
+
+# Verschlüsselungsschlüssel für AHV-Nummern und Postfach-Zugangsdaten: Ohne Angabe legt die Anwendung ihn selbst an
+# (Datei `.geheimnis_schluessel` neben `.secret_key`, siehe core/services/geheimnis.py und ARCHITECTURE.md).
+# In Testläufen aus: Die Tests bringen ihren Schlüssel mit und prüfen auch den Fall «keiner».
+#: Live-Abruf des LIK (HEV/BFS) auch für den Vorschlag der Basis im Vertragsassistenten. Aus in den Tests und per Umgebung abschaltbar.
+LIK_LIVE_ABRUF = os.getenv('LIK_LIVE_ABRUF', 'True') == 'True' and not TESTING
+
+# Row-Level-Security in PostgreSQL (core/rls.py, ARCHITECTURE.md): aus | probe | scharf. In Tests immer aus; die
+# Tests der RLS schalten sie gezielt selbst ein.
+RLS_MODUS = 'aus' if TESTING else os.getenv('RLS_MODUS', 'aus').lower()
+
+GEHEIMNIS_AUTOSCHLUESSEL = os.getenv('GEHEIMNIS_AUTOSCHLUESSEL', 'True') == 'True' and not TESTING
 
 # Zwei-Faktor-Pflicht nach Rolle (SICH-10, Etappe 2): Inhaber, Verwalter und
 # Buchhaltung brauchen den zweiten Faktor, auch wenn die Verwaltung den Schalter
@@ -122,12 +138,6 @@ if not DEBUG and not TESTING:
 # ==========================================
 
 INSTALLED_APPS = [
-    # --- MODERNES DESIGN (Für Fallback-Admin) ---
-    "unfold",
-    "unfold.contrib.filters",
-    "unfold.contrib.forms",
-    "unfold.contrib.import_export",
-
     # --- Deine Apps (NEUE SPA-ARCHITEKTUR) ---
     'benutzer',     # Benutzermodell (AUTH_USER_MODEL, siehe Etappe 3)
     'core',         # utils & views (Die Zentrale)
@@ -142,6 +152,9 @@ INSTALLED_APPS = [
     'abo',          # Abonnement, Funktionsfreigabe, Plattform-Rechnung
 
     # --- Standard Django ---
+    # `django.contrib.admin` bleibt installiert, obwohl es keine Admin-Oberfläche mehr gibt: Die Tabelle
+    # `django_admin_log` hat einen Fremdschlüssel auf den Benutzer. Ohne die App löschte der ORM beim Löschen
+    # eines Kontos die Log-Zeilen nicht mit, und die Datenbank wiese das Löschen ab.
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -150,7 +163,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # --- Tools ---
-    'ckeditor',
 ]
 
 MIDDLEWARE = [
@@ -159,7 +171,7 @@ MIDDLEWARE = [
     # nicht zum Code, darf keine der folgenden Schichten mehr laufen —
     # Session und Authentifizierung lesen selbst aus der Datenbank und
     # scheiterten an genau derselben fehlenden Tabelle. Die Wartungsseite
-    # braucht davon nichts (siehe docs/WARTUNGSSEITE.md).
+    # braucht davon nichts (siehe ARCHITECTURE.md).
     'core.wartung.WartungsMiddleware',
     # Vor allem, was Eingaben liest: PostgreSQL verträgt kein NUL-Byte.
     'core.middleware_nul.NulBytesMiddleware',
@@ -183,6 +195,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # Angemeldete Seiten nie zwischenspeichern: Nach dem Abmelden zeigt «Zurück» im Browser sonst die alte Seite.
+    'core.middleware_cache.AngemeldetNichtZwischenspeichern',
     # NACH der Authentifizierung, weil die Sprache am Benutzer haengt und den
     # erst diese Schicht kennt.
     #
@@ -207,6 +221,8 @@ MIDDLEWARE = [
     'abo.middleware.AboMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Nonce je Anfrage und Content-Security-Policy (zunächst nur melden, siehe core/csp.py).
+    'core.csp.CspMiddleware',
     # Nach der Meldungs-Schicht (sie legt Meldungen ab, die der Rücksprung zeigt).
     # Macht aus Eingaben, die nicht in ihr Feld passen (zu lang, zu gross, keine
     # Zahl), eine Meldung statt einer 500-Seite — siehe core/middleware_eingabe.py.
@@ -236,6 +252,7 @@ TEMPLATES = [
                 'core.context_processors.fw_badges',
                 'core.navigation.fw_navigation',
                 'abo.kontext.abo_hinweis',
+                'core.csp.kontext',
             ],
         },
     },
@@ -343,7 +360,7 @@ else:
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-     'OPTIONS': {'min_length': 8}},
+     'OPTIONS': {'min_length': 12}},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
@@ -365,7 +382,7 @@ USE_TZ = True
 # WARUM DAS FUNDAMENT VOR DEM VORLAGENDURCHGANG KOMMT
 # E2 stellt 135 Vorlagen auf die Komponentenschicht um. Wer dabei nicht
 # gleichzeitig die Texte auszeichnet, fasst jede Datei zweimal an — und
-# `docs/KONZEPT-UI.md` (13.1) hat genau deshalb entschieden, beides in EINEM
+# `CONTRIBUTING.md` (13.1) hat genau deshalb entschieden, beides in EINEM
 # Durchgang zu machen.
 #
 # NACHGEMESSEN AM 21.09.2026 — DER PLAN IST NICHT AUFGEGANGEN
@@ -418,7 +435,7 @@ LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]
 # --- BENUTZERMODELL ---
 # Eigenes Benutzermodell statt `auth.User`. Der Wechsel ist nach Produktivgang
 # praktisch nicht mehr möglich, deshalb steht er am Anfang der
-# Mandantenfähigkeit — siehe docs/ETAPPE-3-USER-MODEL.md.
+# Mandantenfähigkeit — siehe «ETAPPE-3-USER-MODEL» (früheres Dokument, Git-Verlauf).
 #
 # Das Modell übernimmt die bestehende Tabelle `auth_user`; es wurde keine Zeile
 # kopiert. Auf einer Bestandsdatenbank muss `manage.py benutzer_uebernahme`
@@ -448,6 +465,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 MEDIA_URL = '/media/'
+# Ein Zähler für alle Prozesse (Login-Fehlversuche, Formular-Limits): siehe `core/cache_config.py`.
+# Content-Security-Policy: report-only (Vorgabe) | enforce | aus — siehe core/csp.py
+CSP_MODUS = os.getenv('CSP_MODUS', 'report-only')
+
+from core.cache_config import caches_fuer  # noqa: E402
+CACHES = caches_fuer(TESTING, BASE_DIR, os.getenv('CACHE_VERZEICHNIS') or None)
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -481,7 +505,7 @@ DOCUSEAL_DOWNLOAD_HOSTS = {
 # oder Header "X-Webhook-Secret"). Wenn gesetzt, werden nur signierte Requests akzeptiert.
 BREVO_WEBHOOK_SECRET = os.getenv('BREVO_WEBHOOK_SECRET')
 # Domain der Antwortadressen (`<kennung>@<ANTWORT_DOMAIN>`, je Verwaltung). Die MX-Einträge dieser Domain
-# zeigen auf Brevo Inbound Parsing; siehe docs/ANTWORTADRESSEN.md. Ohne BREVO_WEBHOOK_SECRET bleibt es beim
+# zeigen auf Brevo Inbound Parsing; siehe ARCHITECTURE.md. Ohne BREVO_WEBHOOK_SECRET bleibt es beim
 # bisherigen Reply-To (kein Versand an eine Adresse, die nichts empfängt).
 ANTWORT_DOMAIN = (os.getenv('ANTWORT_DOMAIN') or 'immoswiss.app').strip().lower()
 # API-Schluessel von Brevo, nur um die Anhaenge eingehender Rechnungsmails zu laden (Brevo liefert sie nicht
@@ -492,7 +516,7 @@ BREVO_API_KEY = os.getenv('BREVO_API_KEY')
 # das Catch-all der ANTWORT_DOMAIN legt. `manage.py fetch_plattform_eingang` ruft es per IMAP ab und ordnet
 # jede Mail ueber die Empfaengeradresse einer Verwaltung zu. Die Zugangsdaten stehen NUR hier (.env), nicht je
 # Verwaltung in der Datenbank. Eingerichtet ist der Kanal erst, wenn Host, Benutzer und Passwort gesetzt sind.
-# Siehe docs/ANTWORTADRESSEN.md.
+# Siehe ARCHITECTURE.md.
 PLATTFORM_IMAP_HOST = (os.getenv('PLATTFORM_IMAP_HOST') or '').strip()
 PLATTFORM_IMAP_PORT = int(os.getenv('PLATTFORM_IMAP_PORT') or 993)
 PLATTFORM_IMAP_BENUTZER = (os.getenv('PLATTFORM_IMAP_BENUTZER') or '').strip()
@@ -519,6 +543,14 @@ DEFAULT_FROM_EMAIL = f'immoswiss <{os.getenv("EMAIL_HOST_USER", "info@immoswiss.
 # damit der Link auch aus Cron/Hintergrund-Jobs korrekt auf die Produktion zeigt.
 PORTAL_BASE_URL = os.getenv('PORTAL_BASE_URL', 'https://swissimmo.pythonanywhere.com')
 
+# Bis zu diesem Tag nimmt der Rechnungseingang auch die frühere Adresse `<antwort-kennung>-rechnungen@…` an. Neu hat
+# jede Verwaltung eine eigene, nicht ableitbare Rechnungsadresse (Einstellungen › Postfächer).
+RECHNUNGSADRESSE_ALT_BIS = __import__('datetime').date.fromisoformat(os.getenv('RECHNUNGSADRESSE_ALT_BIS', '2027-03-31'))
+
+# Bis zu diesem Tag gilt die alte Adresse des QR-Aushangs (`/report/<Nummer>/`) noch, damit hängende Plakate
+# weiter funktionieren. Neue Aushänge tragen ein Token (`/aushang/<token>/`). Danach antwortet die alte mit 404.
+AUSHANG_ID_ROUTE_BIS = datetime.date.fromisoformat(os.getenv('AUSHANG_ID_ROUTE_BIS', '2027-03-31'))
+
 # ==========================================
 # 9b. LOGGING (Fehler landen in Datei statt lautlos zu verschwinden)
 # ==========================================
@@ -533,10 +565,12 @@ LOGGING = {
     'formatters': {
         'standard': {'format': '{asctime} {levelname} {name}: {message}', 'style': '{'},
     },
+    # Zugangslinks (Handwerker, Direktkanal, Aushang, Kalender, Passwort) werden vor dem Schreiben gekürzt.
+    'filters': {'geheimnisse': {'()': 'core.logschutz.GeheimnisFilter'}},
     'handlers': {
-        'console': {'class': 'logging.StreamHandler', 'formatter': 'standard'},
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'standard', 'filters': ['geheimnisse']},
         'file': {
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'logging.handlers.RotatingFileHandler', 'filters': ['geheimnisse'],
             'filename': str(_LOG_DIR / 'swissimmo.log'),
             'maxBytes': 5 * 1024 * 1024, 'backupCount': 5,
             'formatter': 'standard', 'encoding': 'utf-8',
@@ -547,110 +581,59 @@ LOGGING = {
         'django.request': {'handlers': ['console', 'file'], 'level': 'ERROR', 'propagate': False},
     },
 }
-
-# ==========================================
-# 10. MODERNES DESIGN KONFIGURATION (UNFOLD)
-# ==========================================
-
-UNFOLD = {
-    "SITE_TITLE": "immoswiss Verwaltung",
-    "SITE_HEADER": "immoswiss",
-    "SITE_URL": reverse_lazy("fw_dashboard"), # Logo-Klick fuehrt in die aktive Oberflaeche /neu/
-    # Kein SITE_ICON: Unfold lädt den Wert als Bildadresse. «real_estate_agent» ist ein Name der
-    # Material-Symbole, kein Bild, und ergab ein gebrochenes Logo samt 404 auf jeder Admin-Seite (DESIGN-14).
-
-    # --- GLOBALER CLEAN-LOOK (RAHMENLOS) & INLINE-EDITING ---
-    "STYLES": [
-        # DIE SCHRIFT MUSS MIT (E2.50)
-        #
-        # `fairwalter_theme.css` zog Inter per `@import` von
-        # fonts.googleapis.com — ein Fremdaufruf bei JEDER Admin-Seite, und
-        # die IP-Adresse jedes Benutzers ging an Google. Der Aufruf ist raus
-        # und die Datei sagt jetzt `font-family: 'IBM Plex Sans'`.
-        #
-        # NUR: `schriften.css` stand hier nicht, und ohne die `@font-face`-
-        # Regeln gibt es die Familie auf einer Admin-Seite gar nicht. Im
-        # Browser nachgemessen war die Schrift nach dem Ausbau die
-        # System-Serifenlose, nicht Plex — der Ausbau stimmte, die
-        # Ersatz-Angabe war leer.
-        #
-        # Die Datei enthaelt AUSSCHLIESSLICH `@font-face`; sie kann kein
-        # Layout veraendern, nur die Familie bereitstellen. Sie steht vorn,
-        # damit die Regeln vor ihrer ersten Verwendung geladen sind.
-        lambda request: static("css/schriften.css"),
-        lambda request: static("css/fairwalter_theme.css") + "?v=3",
-        lambda request: static("css/custom_admin.css") + "?v=1000",
-    ],
-    "SCRIPTS": [
-        lambda request: static("js/section_toggle.js") + "?v=999",
-    ],
-
-    # Ember-Schema wie die Oberfläche (Production-Check 26.10.2026): Die
-    # Skala läuft über die Tokens der Stilschicht — 100 = `--ds-brand-soft`,
-    # 300/400 = `--ds-brand-600`/`--ds-akzent-hell` (dunkel), 500 = `--ds-akzent`,
-    # 600 = `--ds-akzent-tief`, 700 = `--ds-brand`, 800 = `--ds-brand-600`.
-    # Vorher stand hier das Unfold-Blau — das einzige Blau der Anwendung.
-    "COLORS": {
-        "primary": {
-            "50": "253 243 237",
-            "100": "251 231 220",
-            "200": "248 205 181",
-            "300": "246 167 124",
-            "400": "240 138 85",
-            "500": "224 100 47",
-            "600": "196 83 31",
-            "700": "176 68 22",
-            "800": "138 52 16",
-            "900": "110 41 13",
-            "950": "70 26 8",
-        },
-    },
-
-    "SIDEBAR": {
-        "show_search": True,
-        "show_all_applications": True, # Erlaubt Zugriff auf alle Daten im Notfall
-        "navigation": [
-            {
-                "title": "Hauptsystem",
-                "separator": True,
-                "items": [
-                    {"title": "Zur Verwaltung 🚀", "icon": "dashboard", "link": reverse_lazy("fw_dashboard")},
-                ],
-            },
-        ],
-    },
-}
+# Rotierte Logdateien, die so viele Tage nicht mehr beschrieben wurden, löscht der tägliche Lauf
+# (`core.logschutz.alte_logdateien_loeschen`). Im Protokoll stehen Namen und Mailadressen.
+LOG_AUFBEWAHRUNG_TAGE = int(os.getenv('LOG_AUFBEWAHRUNG_TAGE', '90'))
 
 # ==========================================
 # 10b. ABONNEMENT UND PLATTFORM-RECHNUNG
 # ==========================================
-# ALLES IN DIESEM BLOCK IST PLATZHALTER — VOM BETREIBER FESTZULEGEN.
-# Die Preise und Mengengrenzen der Stufen stehen in core/funktionen.py (eine
-# Quelle, D7); sie sind Einführungspreise ohne Kostenrechnung. Solange
-# ABO_PREISE_FESTGELEGT False ist, weist die Abo-Seite das aus und der
-# Abrechnungslauf (`manage.py abo_abrechnung`) stellt keine Rechnung aus.
-ABO_PREISE_FESTGELEGT = False
-# MWST auf Abo-Rechnungen: FACHPUNKT, nicht geraten. None = nicht festgelegt; die
-# Rechnung weist dann keine MWST aus und sagt das. Zahl in Prozent, z. B. Decimal('8.1').
+# Die Preise und Mengengrenzen der Stufen stehen in core/funktionen.py (eine Quelle, D7); Preisstand 29.09.2026, so auch
+# auf https://immoswiss.app/preise.html. Vom Betreiber am 08.11.2026 freigegeben: Damit stellt der Abrechnungslauf
+# (`manage.py abo_abrechnung`) Rechnungen aus — aber nur für Verwaltungen, deren «Abrechnung ab» gesetzt ist und erreicht
+# wurde (Betreiber-Portal). Das Datum ist zugleich das Ende der Testphase: Bis dahin wird nichts in Rechnung gestellt.
+ABO_PREISE_FESTGELEGT = True
+# MWST auf Abo-Rechnungen: Der Betreiber ist NICHT mehrwertsteuerpflichtig (festgelegt am 09.11.2026). Rechnungen weisen
+# deshalb keine MWST aus und sagen das. Wird er pflichtig: ABO_MWST_PFLICHTIG = True, ABO_MWST_SATZ = Decimal('8.1') (Normalsatz
+# seit 1.1.2024) und die UID in ABO_STELLER_UID eintragen. Steht ABO_MWST_PFLICHTIG auf True und der Satz auf None, gilt die
+# MWST als noch nicht entschieden (die Abo-Seite und die Rechnung weisen das aus).
+ABO_MWST_PFLICHTIG = False
 ABO_MWST_SATZ = None
-# Zahlungsfrist der Rechnung (Tage ab Rechnungsdatum), Beginn der Mahnung und
-# des Lesemodus (Tage NACH Fälligkeit). Vorschlag aus docs/MARKT.md §7:
-# Hinweis ab Tag 1, Lesemodus ab Tag 15.
-ABO_ZAHLUNGSFRIST_TAGE = 30
+# Abo-Rechnungen sind IM VORAUS zu bezahlen: Die Rechnung für eine Periode wird bis zu ABO_VORLAUF_TAGE Tage vor deren Beginn
+# gestellt und ist am Periodenbeginn fällig (November: Rechnung Ende Oktober, fällig 1. November). Wird sie erst später
+# gestellt (z. B. weil «Abrechnung ab» schon erreicht ist), gilt die Zahlungsfrist ABO_ZAHLUNGSFRIST_TAGE ab Rechnungsdatum.
+# Beginn der Mahnung und des Lesemodus: Tage NACH Fälligkeit (Vorschlag aus «MARKT» (früheres Dokument, Git-Verlauf) §7: Hinweis ab Tag 1, Lesemodus ab Tag 15).
+ABO_VORLAUF_TAGE = 10
+ABO_ZAHLUNGSFRIST_TAGE = 10
 ABO_MAHNUNG_NACH_TAGEN = 1
 ABO_LESEMODUS_NACH_TAGEN = 15
+# Eskalation bei ausbleibender Zahlung, gemessen ab dem Fälligkeitstag der ältesten offenen Rechnung: 1. Mahnung nach
+# ABO_MAHNUNG_NACH_TAGEN, 2. Mahnung (mit Mahngebühr) nach ABO_MAHNUNG2_NACH_TAGEN, Lesemodus nach ABO_LESEMODUS_NACH_TAGEN,
+# gesperrter Zugang nach ABO_SPERRE_NACH_TAGEN. Auch im gesperrten Zugang bleiben Anmeldung, Abonnement (Rechnungen, PDF) und
+# der Datenexport erreichbar; es wird nichts gelöscht. Mit dem Zahlungseingang ist alles wieder offen.
+ABO_MAHNUNG2_NACH_TAGEN = 10
+ABO_SPERRE_NACH_TAGEN = 45
+# Mahngebühr der 2. Mahnung in CHF. 0 = keine Gebühr. Eine Gebühr ohne Grundlage im Vertrag (AGB) ist anfechtbar: erst
+# festlegen, wenn die AGB sie nennen.
+ABO_MAHNGEBUEHR = Decimal(os.getenv('ABO_MAHNGEBUEHR', '0') or '0')
 # Rechnungssteller («Plattform») und Zahlungsempfänger der QR-Rechnung.
+# Die Angaben kommen aus der .env (ABO_STELLER_NAME …), damit sie ohne Codeänderung gesetzt werden können; leer = ohne
+# Name und IBAN lässt sich keine Rechnung mit Einzahlungsschein erzeugen (die Seite weist darauf hin).
 ABO_RECHNUNGSSTELLER = {
-    'name': '',      # vom Betreiber festzulegen
-    'strasse': '',
-    'plz': '',
-    'ort': '',
-    'iban': '',      # QR-IBAN (Institut 30000–31999) für die QR-Referenz, sonst IBAN
-    'uid': '',       # MWST-/UID-Nummer, falls mehrwertsteuerpflichtig
-    'email': '',     # Absender der Zahlungserinnerung
+    'name': os.getenv('ABO_STELLER_NAME', ''),
+    'strasse': os.getenv('ABO_STELLER_STRASSE', ''),
+    'plz': os.getenv('ABO_STELLER_PLZ', ''),
+    'ort': os.getenv('ABO_STELLER_ORT', ''),
+    'iban': os.getenv('ABO_STELLER_IBAN', ''),   # QR-IBAN (Institut 30000–31999) für die QR-Referenz, sonst IBAN
+    'uid': os.getenv('ABO_STELLER_UID', ''),     # MWST-/UID-Nummer (CHE-…), falls mehrwertsteuerpflichtig
+    'email': os.getenv('ABO_STELLER_EMAIL', ''), # Absender der Zahlungserinnerung
 }
+
+# Support: Anfragen der Verwaltungen (Knopf auf der Abo-Seite) gehen an diese Adresse und stehen im Verlauf der Kundenkartei.
+# Leer = die Absenderadresse der Rechnungen (ABO_STELLER_EMAIL), sonst DEFAULT_FROM_EMAIL.
+ABO_SUPPORT_EMAIL = os.getenv('ABO_SUPPORT_EMAIL', '')
 
 # ==========================================
 # 11. SYSTEM-CHECKS
 # ==========================================
-SILENCED_SYSTEM_CHECKS = ['ckeditor.W001']
+SILENCED_SYSTEM_CHECKS = []

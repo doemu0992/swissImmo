@@ -64,7 +64,7 @@ class ErweiterterBestand(MandantenFixture):
                                     ErneuerungsfondsBewegung, Hypothek, Jahresabschluss, Kontoauszug,
                                     KreditorenZahlung, KreditorPosition, LieferantProfil, Mahnung,
                                     MietzinsKontrolle, NebenkostenBeleg, NebenkostenLernRegel, ZahlerZuordnung,
-                                    Zahlungsvereinbarung)
+                                    Zahlungsvereinbarung, SperreAenderung)
         from portfolio.models import (EinheitFoto, Lebensdauer, LiegenschaftVerteilschluessel, Unterhalt,
                                       Verteilschluessel, ZaehlerStand)
         from rentals.models import (AbnahmeMangel, AbnahmePosition, AbnahmeSchluessel, AbnahmeText, Leerstand,
@@ -89,6 +89,8 @@ class ErweiterterBestand(MandantenFixture):
             organisation=org, eigentuemer=self.eigentuemer, betrag=Decimal('800')))
         self._neu('auszahlungsfreigabe', lambda: AuszahlungsFreigabe.objects.create(
             organisation=org, art='eigentuemer', bezug_id=self.eigentuemer.pk, betrag=Decimal('8000')))
+        self._neu('sperreaenderung', lambda: SperreAenderung.objects.create(
+            organisation=org, alt_bis=heute, neu_bis=None, grund='Test'))
         self._neu('bankbewegung', lambda: Bankbewegung.objects.create(
             organisation=org, konto=self.konto_soll, datum=heute, betrag=Decimal('100')))
         self._neu('kontoauszug', lambda: Kontoauszug.objects.create(organisation=org, konto=self.konto_soll))
@@ -118,6 +120,22 @@ class ErweiterterBestand(MandantenFixture):
         # --- Abonnement (Funktionsfreigabe) --------------------------------------------------------------
         from abo.models import Abonnement
         self._neu('abonnement', lambda: Abonnement.alle_organisationen.create(organisation=org))
+        from django.utils import timezone
+
+        from abo.models import AboGutschrift, KundenKontakt, Kundenstamm
+        self._neu('abogutschrift', lambda: AboGutschrift.alle_organisationen.create(
+            organisation=org, datum=heute, text=f'Gutschrift {k}', betrag=Decimal('10')))
+        self._neu('kundenstamm', lambda: Kundenstamm.alle_organisationen.create(organisation=org))
+        self._neu('kundenkontakt', lambda: KundenKontakt.alle_organisationen.create(
+            organisation=org, zeitpunkt=timezone.now(), text=f'Notiz {k}'))
+
+        from core import api_token
+        self._neu('apitoken', lambda: api_token.erzeugen(org, f'Token {k}')[0])
+
+        from core.models import Aenderungsanfrage, Auftrag
+        self._neu('auftrag', lambda: Auftrag.alle_organisationen.create(organisation=org, art='sollstellung'))
+        self._neu('aenderungsanfrage', lambda: Aenderungsanfrage.alle_organisationen.create(
+            organisation=org, mieter=self.mieter, art='mitteilung', zusammenfassung=f'Anfrage {k}'))
 
         # --- Personen und Verträge ------------------------------------------------------------------------
         self._neu('mieteradresse', lambda: MieterAdresse.objects.create(

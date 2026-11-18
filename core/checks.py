@@ -19,7 +19,7 @@ from django.core.checks import Warning, register
 @register()
 def postfaecher_brauchen_einen_schluessel(app_configs, **kwargs):
     """Zugangsdaten hinterlegt, aber kein Schlüssel gesetzt?"""
-    from core.services.geheimnis import UMGEBUNGSNAME, schluessel_vorhanden
+    from core.services.geheimnis import NEUER_NAME as UMGEBUNGSNAME, schluessel_vorhanden
 
     if schluessel_vorhanden():
         return []
@@ -56,7 +56,7 @@ def postfaecher_brauchen_einen_schluessel(app_configs, **kwargs):
 def ahv_braucht_einen_schluessel(app_configs, **kwargs):
     """AHV-Nummern liegen verschlüsselt — ohne Schlüssel lassen sie sich weder
     speichern noch lesen."""
-    from core.services.geheimnis import UMGEBUNGSNAME, schluessel_vorhanden
+    from core.services.geheimnis import NEUER_NAME as UMGEBUNGSNAME, schluessel_vorhanden
 
     if schluessel_vorhanden():
         return []

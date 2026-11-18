@@ -77,11 +77,11 @@ def send_via_docuseal(request, vertrag_id):
     api_key = getattr(settings, 'DOCUSEAL_API_KEY', None)
     if not api_key:
         messages.error(request, '❌ ' + gettext('API-Key fehlt in settings.py'))
-        return redirect(request.META.get('HTTP_REFERER', 'admin:index'))
+        return redirect(request.META.get('HTTP_REFERER', 'fw_dashboard'))
 
     if not vertrag.mieter.email:
         messages.error(request, '❌ ' + gettext('Abbruch: Mieter hat keine E-Mail.'))
-        return redirect(request.META.get('HTTP_REFERER', 'admin:index'))
+        return redirect(request.META.get('HTTP_REFERER', 'fw_dashboard'))
 
     # 2. PDF Generieren
     try:
@@ -137,7 +137,7 @@ def send_via_docuseal(request, vertrag_id):
     except Exception as e:
         logger.error(f"PDF Gen Error: {e}")
         messages.error(request, '❌ ' + gettext('PDF Fehler: %(str)s') % {'str': str(e)})
-        return redirect(request.META.get('HTTP_REFERER', 'admin:index'))
+        return redirect(request.META.get('HTTP_REFERER', 'fw_dashboard'))
 
     # 3. API Request an DocuSeal
     try:
@@ -169,7 +169,7 @@ def send_via_docuseal(request, vertrag_id):
         headers = {"X-Auth-Token": api_key, "Content-Type": "application/json"}
         # Ohne Zeitlimit hängt der Arbeitsprozess unbegrenzt, wenn DocuSeal
         # nicht antwortet — bei einem einzigen Prozess steht dann die ganze App.
-        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        response = requests.post(url, headers=headers, json=payload, timeout=30, allow_redirects=False)
 
         if response.status_code in [200, 201]:
             vertrag.sign_status = 'gesendet'
@@ -183,7 +183,7 @@ def send_via_docuseal(request, vertrag_id):
         logger.error(f"DocuSeal Exception: {e}")
         messages.error(request, '❌ ' + gettext('Fehler beim Senden: %(str)s') % {'str': str(e)})
 
-    return redirect(request.META.get('HTTP_REFERER', 'admin:index'))
+    return redirect(request.META.get('HTTP_REFERER', 'fw_dashboard'))
 
 
 # 🔥 HIER IST DER REPARIERTE WEBHOOK 🔥
@@ -245,7 +245,8 @@ def docuseal_webhook(request):
                         logger.warning("DocuSeal-Webhook: Download-URL abgewiesen (%s)", doc_url)
                         return HttpResponse("OK", status=200)
                     # 3. PDF herunterladen
-                    r = requests.get(doc_url, timeout=30)
+                    # Keine Weiterleitung folgen: Die Adresse ist geprüft, das Ziel einer Umleitung wäre es nicht.
+                    r = requests.get(doc_url, timeout=30, allow_redirects=False)
                     if r.status_code == 200:
                         filename = f"Unterschrieben_Mietvertrag_{vertrag.id}.pdf"
 

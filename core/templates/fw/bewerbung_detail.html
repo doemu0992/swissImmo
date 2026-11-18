@@ -149,7 +149,7 @@
             <a href="/neu/vertraege/{{ b.vertrag.id }}/" target="_top" class="fw-btn fw-primary w-full">{% trans "Vertrag öffnen" %}</a>
             {% else %}
             <p class="fw-hilfe mb-3">{% blocktrans with e=b.einheit.bezeichnung %}Legt einen Mieter aus dieser Bewerbung an und erstellt einen Vertragsentwurf auf {{ e }}.{% endblocktrans %}</p>
-            <form method="post" action="/neu/bewerbungen/{{ b.id }}/vertrag/" onsubmit="return confirm('{% filter escapejs %}{% trans "Mieter anlegen und Vertragsentwurf erstellen?" %}{% endfilter %}');">
+            <form method="post" action="/neu/bewerbungen/{{ b.id }}/vertrag/" data-bestaetigen="{% filter escapejs %}{% trans "Mieter anlegen und Vertragsentwurf erstellen?" %}{% endfilter %}">
                 {% csrf_token %}
                 <button class="fw-btn fw-primary w-full">
                     {% trans "Mieter + Vertragsentwurf erstellen" %}

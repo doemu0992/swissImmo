@@ -90,7 +90,14 @@ def _kontext(request, p, nr, result=None):
     from core.utils.billing import hole_abrechnung
     lg = p.liegenschaft
     if result is None:
-        result = hole_abrechnung(p)
+        # Der Einstieg `/neu/nebenkosten/<pk>/` rechnet einmal, um den offenen Schritt zu finden, und ruft dann dessen
+        # View auf: Das Ergebnis reist auf der Anfrage mit, statt die Abrechnung ein zweites Mal zu rechnen. Nur bei GET
+        # und nur für dieselbe Periode — nach einer Änderung (POST) wird immer neu gerechnet.
+        merk = getattr(request, '_nk_ergebnis', None)
+        if request.method == 'GET' and merk is not None and merk[0] == p.pk:
+            result = merk[1]
+        else:
+            result = hole_abrechnung(p)
     vorschlaege = _akonto_vorschlaege(p, result) if not result.get('error') else {}
     prozess = schritte(p, total_kosten=Decimal(str(result.get('total_kosten', 0) or 0)),
                        warnungen=result.get('warnungen', []), akonto_vorschlaege=list(vorschlaege),
@@ -164,6 +171,7 @@ def wizard_aktueller_schritt(request, p):
     """Für /neu/nebenkosten/<pk>/ einer offenen Periode: der erste Schritt, der nicht erledigt ist."""
     ctx = _kontext(request, p, 1)
     hier = next((s for s in ctx['leiste'] if s['hier']), ctx['leiste'][-1])
+    request._nk_ergebnis = (p.pk, ctx['result']) if 'result' in ctx else None
     return SCHRITT_VIEWS[hier['teil']](request, p.id)
 
 

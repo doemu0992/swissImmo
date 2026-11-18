@@ -3,7 +3,7 @@
 # Personen (Mieter und Kontakte): Detailseite, Stammdaten, Adresshistorie,
 # Mieterkonto, Lieferantenkonten, Kommunikation, Dokumentfreigabe,
 # Portal-Zugang, Loeschen samt DSG-Loeschung.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # fw_person_loeschen und fw_person_dsg_loeschen sind seit E2 die einzigen
 # Schreibpfade fuer diese Daten (der Admin ist lesend) -- und der
@@ -40,6 +40,24 @@ from core.services.schluessel import akte as _schluessel_akte
 # ============================================================
 # PERSON-DETAIL (Mieter) — in der neuen Shell
 # ============================================================
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_person_absender_entfernen(request, pk):
+    """Eine gespeicherte weitere Absenderadresse der Person wieder entfernen. Mails von dort gelten danach wieder als
+    «unbekannter Absender» (bestehende Tickets, an denen die Adresse einzeln bestätigt wurde, behalten sie)."""
+    from django.shortcuts import redirect
+
+    from core.auth import log_aktion
+    m = get_object_or_404(Mieter, pk=pk)
+    adresse = (request.POST.get('adresse') or '').strip().lower()
+    liste = [a for a in (m.weitere_absender or []) if isinstance(a, str)]
+    if request.method == 'POST' and adresse in liste:
+        m.weitere_absender = [a for a in liste if a != adresse]
+        m.save(update_fields=['weitere_absender'])
+        log_aktion(request, "Weitere Absenderadresse entfernt", m.display_name, adresse)
+        messages.success(request, gettext('%(adresse)s ist als weitere Absenderadresse entfernt.') % {'adresse': adresse})
+    return redirect(f'/neu/personen/{m.pk}/')
+
 
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_person_detail(request, pk):
@@ -158,6 +176,7 @@ def fw_person_detail(request, pk):
         _Q(vertrag__mieter=m) | _Q(debitoren_rechnung__vertrag__mieter=m))
         .distinct().order_by('-begehren_am', '-id')[:10])
     return render(request, 'fw/person_detail.html', {
+        'absender_entfernen_url': f'/neu/personen/{m.pk}/absender-entfernen/',
         'person_betreibungen': person_betreibungen,
         **basis, 'nav': 'personen', 'm': m, 'verlauf': verlauf,
         'vertrag_rows': vertrag_rows,
@@ -188,7 +207,6 @@ def fw_mieter_portal_zugang(request, pk):
     from django.contrib import messages
     from django.contrib.auth import get_user_model
     from core.auth import log_aktion
-    import secrets
 
     User = get_user_model()
     m = get_object_or_404(Mieter, id=pk)
@@ -208,21 +226,24 @@ def fw_mieter_portal_zugang(request, pk):
 
     # Benutzername: E-Mail bevorzugt, sonst mieter<id>
     basis_name = (m.email or f"mieter{m.id}").strip().lower()
-    passwort = secrets.token_urlsafe(9)
+    # KEIN PASSWORT PER MAIL (15.11.2026): Die Person legt es über einen einmaligen Link selbst fest
+    # (`core.services.einladung.portal_link`), wie bei den Team-Konten. Ein bestehendes Passwort bleibt gültig,
+    # bis sie ein neues setzt.
     if m.benutzer_id:
         u = m.benutzer
-        u.set_password(passwort)
         u.is_active = True
-        u.save()
+        u.save(update_fields=['is_active'])
     else:
         username = basis_name
         i = 1
         while User.objects.filter(username=username).exists():
             username = f"{basis_name}.{i}"
             i += 1
-        u = User.objects.create_user(username=username, email=m.email or '', password=passwort)
+        u = User.objects.create_user(username=username, email=m.email or '')        # ohne Passwort: unbrauchbar bis zum Festlegen
         m.benutzer = u
         m.save(update_fields=['benutzer'])
+    from core.services.einladung import portal_link
+    link = portal_link(u)
     log_aktion(request, "Mieterportal-Zugang erstellt", m.display_name, u.username)
 
     # Zugangsdaten per E-Mail an den Mieter senden (Benutzername, Passwort, Login-Link)
@@ -243,16 +264,16 @@ def fw_mieter_portal_zugang(request, pk):
         with in_sprache(sprache_von(m)):
             anrede = (f"{gettext(m.anrede)} " if m.anrede else "") + (m.nachname or m.display_name)
         mail_ok = send_mieter_portal_zugang(
-            m.email, anrede.strip(), u.username, passwort, login_url,
+            m.email, anrede.strip(), u.username, link, login_url,
             absender_firma=(vw.firma if vw else ''), sprache=sprache_von(m),
             gruss=mieter_gruss(m, sprache_von(m)))
 
     if mail_ok:
         messages.success(request, '✅ ' + gettext('Portal-Zugang aktiv. Zugangsdaten wurden an %(email)s gesendet. (Benutzername: %(username)s)') % {'email': m.email, 'username': u.username})
     elif m.email:
-        messages.warning(request, '⚠️ ' + gettext('Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: %(username)s · Passwort: %(passwort)s — bitte manuell mitteilen.') % {'username': u.username, 'passwort': passwort})
+        messages.warning(request, '⚠️ ' + gettext('Portal-Zugang aktiv, aber E-Mail-Versand fehlgeschlagen. Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s — bitte manuell mitteilen.') % {'username': u.username, 'link': link})
     else:
-        messages.success(request, '✅ ' + gettext('Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · Passwort: %(passwort)s (bitte dem Mieter sicher mitteilen, wird nur einmal angezeigt).') % {'username': u.username, 'passwort': passwort})
+        messages.success(request, '✅ ' + gettext('Portal-Zugang aktiv. Keine E-Mail hinterlegt — Benutzername: %(username)s · Link zum Festlegen des Passworts: %(link)s (bitte sicher mitteilen; gilt nur wenige Tage und nur einmal).') % {'username': u.username, 'link': link})
     return redirect(f'/neu/personen/{m.id}/')
 
 
@@ -386,7 +407,8 @@ def fw_lieferantenkonten(request):
     aktive_lg = basis['aktive_lg']
     filter_op = request.GET.get('filter') == 'offen'
 
-    kred = KreditorenRechnung.objects.exclude(status='storniert')
+    # `offener_betrag` liest die Zahlungen: vorgeladen, sonst eine Abfrage je Rechnung über den ganzen Bestand.
+    kred = KreditorenRechnung.objects.exclude(status='storniert').prefetch_related('zahlungen')
     if aktive_lg:
         kred = kred.filter(liegenschaft=aktive_lg)
 

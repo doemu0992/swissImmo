@@ -388,6 +388,27 @@ class LikVorschlagTests(SimpleTestCase):
         stand, punkte = mm.basis_lik_vorschlag(d(2027, 5, 1))
         self.assertEqual((stand, punkte), (d(2026, 9, 1), Decimal('108.5')))   # seit MIET-14: Tabelle bis September 2026
 
+    def test_live_wert_ergaenzt_die_tabelle_wenn_er_neuer_ist_und_nicht_nach_dem_vormonat_liegt(self):
+        """Die Account-Seite zeigt den Live-Wert, der Vertragsassistent schlug bisher den Tabellenwert vor (Tabelle bis 09/2026)."""
+        from unittest import mock
+        live = (d(2026, 10, 1), Decimal('108.7'), 'Dezember 2020')
+        with mock.patch('core.services.lik.aktueller_lik_wert', return_value=live):
+            # Mietbeginn Dezember 2026: der Vormonat November ist unveröffentlicht, der neueste davor der Live-Wert (Oktober).
+            self.assertEqual(mm.basis_lik_vorschlag(d(2026, 12, 1), live=True), (d(2026, 10, 1), Decimal('108.7')))
+            # Mietbeginn Oktober 2026: Der Live-Wert (Oktober) liegt nicht vor dem Mietbeginn-Monat: Tabelle (September).
+            self.assertEqual(mm.basis_lik_vorschlag(d(2026, 10, 15), live=True), (d(2026, 9, 1), Decimal('108.5')))
+            # Ein Wert, der nicht neuer ist als die Tabelle, ändert nichts.
+            self.assertEqual(mm.basis_lik_vorschlag(d(2026, 3, 15), live=True), (d(2026, 2, 1), Decimal('107.6')))
+            # Ohne `live` (und in den Tests: Vorgabe aus) zählt nur die Tabelle.
+            self.assertEqual(mm.basis_lik_vorschlag(d(2026, 12, 1), live=False), (d(2026, 9, 1), Decimal('108.5')))
+            self.assertEqual(mm.basis_lik_vorschlag(d(2026, 12, 1)), (d(2026, 9, 1), Decimal('108.5')))
+
+    def test_ausgefallener_live_abruf_faellt_auf_die_tabelle_zurueck(self):
+        from unittest import mock
+        tabelle = (d(2026, 9, 1), Decimal('108.5'), 'Dezember 2020')
+        with mock.patch('core.services.lik.aktueller_lik_wert', return_value=tabelle):
+            self.assertEqual(mm.basis_lik_vorschlag(d(2026, 12, 1), live=True), (d(2026, 9, 1), Decimal('108.5')))
+
     def test_vor_der_tabelle_kein_vorschlag(self):
         self.assertEqual(mm.basis_lik_vorschlag(d(2020, 12, 1)), (None, None))
         self.assertEqual(mm.basis_lik_vorschlag(d(2020, 1, 1)), (None, None))
@@ -734,7 +755,10 @@ class EndpunktTests(MandantenBasis):
                       ist_befristet='1', netto='1000',
                       staffel_ab=['2027-01-01', '2028-01-01'], staffel_erhoehung=['50', '30.5']).json()
         self.assertEqual(set(j), {'befunde', 'sperre', 'abgeleitet', 'unlesbar'})
-        self.assertEqual(set(j['abgeleitet']), {'fest_bis', 'mindest_ende', 'stufen', 'basis_lik'})
+        # `lik_basis`, `basis_lik_fehlt`: seit den Basisreihen nennt die Antwort die Reihe des Vorschlags und, wenn
+        # sie den Monat nicht führt, was fehlt (`core/tests/test_lik_basen.py`).
+        self.assertEqual(set(j['abgeleitet']), {'fest_bis', 'mindest_ende', 'stufen', 'basis_lik',
+                                                'lik_basis', 'basis_lik_fehlt'})
         self.assertEqual(j['abgeleitet']['fest_bis'], '2028-12-31')
         self.assertEqual(j['abgeleitet']['mindest_ende'], '2028-12-31')
         self.assertEqual(j['abgeleitet']['stufen'], [

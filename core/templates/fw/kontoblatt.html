@@ -15,7 +15,7 @@
     </div>
     <div class="fw-phead-knoepfe">
         <form method="get" class="flex items-center gap-1">
-            <select name="jahr" aria-label="{% trans 'Jahr' %}" onchange="this.form.submit()" class="fw-feld">
+            <select name="jahr" aria-label="{% trans 'Jahr' %}" data-absenden class="fw-feld">
                 {% for j in jahre %}<option value="{{ j }}" {% if jahr == j %}selected{% endif %}>{{ j }}</option>{% endfor %}
                 <option value="alle" {% if jahr == 'alle' %}selected{% endif %}>{% trans "Alle" %}</option>
             </select>
@@ -29,7 +29,7 @@
     Buchungstext ODER den Saldo sehen — man musste quer scrollen.
     {% endcomment %}
     <div class="md:hidden">
-        {% if ist_bilanz %}
+        {% if ist_bilanz and not seite.has_previous %}
         <div class="fw-dz">
             <span class="fw-dl">{% trans "Eröffnungssaldo" %}{% if jahr != 'alle' %} 01.01.{{ jahr }}{% endif %}</span>
             <span class="fw-betrag whitespace-nowrap">{{ eroeffnung|chf }}</span>
@@ -63,14 +63,14 @@
     <table class="fw-table fw-dicht min-w-max">
         <thead>
             <tr>
-                <th class="text-left">{% trans "Beleg" %}</th><th class="text-left">{% trans "Datum" %}</th>
-                <th class="text-left">{% trans "Text" %}</th><th class="text-left">{% trans "Gegenkonto" %}</th>
-                <th class="text-right fw-right">{% trans "Soll" %}</th><th class="text-right fw-right">{% trans "Haben" %}</th>
-                <th class="text-right fw-right">{% trans "Saldo" %}</th>
+                <th scope="col" class="text-left">{% trans "Beleg" %}</th><th scope="col" class="text-left">{% trans "Datum" %}</th>
+                <th scope="col" class="text-left">{% trans "Text" %}</th><th scope="col" class="text-left">{% trans "Gegenkonto" %}</th>
+                <th scope="col" class="text-right fw-right">{% trans "Soll" %}</th><th scope="col" class="text-right fw-right">{% trans "Haben" %}</th>
+                <th scope="col" class="text-right fw-right">{% trans "Saldo" %}</th>
             </tr>
         </thead>
         <tbody>
-            {% if ist_bilanz %}
+            {% if ist_bilanz and not seite.has_previous %}
             <tr><td colspan="6"><span class="fw-mutet">{% trans "Eröffnungssaldo" %}{% if jahr != 'alle' %} 01.01.{{ jahr }}{% endif %}</span></td>
                 <td class="text-right fw-right fw-num fw-strong">{{ eroeffnung|chf }}</td></tr>
             {% endif %}
@@ -96,5 +96,6 @@
         </tfoot>
     </table>
     </div>
+    {% include 'fw/_seiten.html' %}
 </div>
 {% endblock %}

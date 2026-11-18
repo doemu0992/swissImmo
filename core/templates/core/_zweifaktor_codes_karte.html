@@ -9,7 +9,7 @@ der Einrichtung (zweifaktor_codes.html) und «Notfallcodes neu erzeugen» (zweif
 
 <div class="fw-card">
     <div class="fw-kopf"><h2>{% trans "Notfallcodes" %}</h2>
-        <div class="fw-rechts"><button type="button" onclick="window.print()" class="fw-btn fw-knapp">{% zeichen 'drucken' %}{% trans "Drucken" %}</button></div></div>
+        <div class="fw-rechts"><button type="button" data-drucken class="fw-btn fw-knapp">{% zeichen 'drucken' %}{% trans "Drucken" %}</button></div></div>
     <div class="fw-rumpf">
         <div class="fw-zf-codes">
             {% for code in codes %}

@@ -10,7 +10,7 @@
     Zahlungs- und Wartungsfristen, Referenzzins, Vertragsenden.{% endblocktrans %} {% blocktrans count n=gesamt %}{{ n }} Frist{% plural %}{{ n }} Fristen{% endblocktrans %}{% if ueberfaellig_n %} · <b class="fw-kritisch">{% blocktrans with n=ueberfaellig_n %}{{ n }} überfällig{% endblocktrans %}</b>{% endif %}.</p>
     </div>
     <div class="fw-phead-knoepfe">
-        <button type="button" onclick="document.getElementById('kalender-box').classList.toggle('hidden')"
+        <button type="button" data-umschalten="kalender-box"
                 class="fw-btn">
             {% zeichen 'termin' %}{% trans "Kalender" %}
         </button>
@@ -23,7 +23,7 @@
 </div>
 
 <!-- Kalender-Export / Abo -->
-<div id="kalender-box" class="hidden fw-card">
+<div id="kalender-box" class="{% if not request.GET.kalender %}hidden {% endif %}fw-card">
     <div class="fw-kopf">
         <span class="fw-t">{% trans "Kalender" %}</span>
         <span class="fw-neben">{% trans "einmaliger Import in Outlook / Apple / Google Calendar" %}</span>
@@ -32,16 +32,34 @@
         </a></span>
     </div>
     <div class="p-5">
+        {% if kalender_gesperrt %}
+        <div class="fw-hinweis"><span class="fw-hi">{% zeichen 'gesperrt' %}</span><div class="fw-ht">{% trans "Schnittstellen (Buchhaltungsformate, Portal-Feed, Kalender-Abonnement) sind Teil der Stufe Professional." %} <a href="/neu/abonnement/">{% trans "Zum Abonnement" %}</a></div></div>
+        {% endif %}
+        {% if darf_abonnieren %}
         <div class="fw-feldblock">
             <label class="fw-label">{% trans "Kalender abonnieren (aktualisiert sich automatisch)" %}</label>
+            {% if feed_token %}
             <div class="flex items-center gap-2">
                 <input id="feed-url" readonly aria-label="{% trans 'Kalender abonnieren (aktualisiert sich automatisch)' %}" value="{{ request.scheme }}://{{ request.get_host }}/fristen.ics?token={{ feed_token|urlencode }}"
                        class="fw-feld fw-mono flex-1 min-w-0">
-                <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feed-url').value); this.textContent='Kopiert ✓';"
+                <button type="button" data-kopieren="feed-url" data-kopiert="Kopiert ✓"
                         class="fw-btn">{% trans "Kopieren" %}</button>
             </div>
-            <p class="fw-hilfe">{% trans "Im Kalender „Abonnement/Kalender per URL hinzufügen“ wählen und diese Adresse einfügen. Der Token ist geheim — nicht weitergeben." %}</p>
+            <p class="fw-hilfe">{% trans "Im Kalender „Abonnement/Kalender per URL hinzufügen“ wählen und diese Adresse einfügen. Der Link gehört nur Ihnen und ist geheim — nicht weitergeben." %}</p>
+            <form method="post" action="/neu/fristen/kalender-link/" class="flex flex-wrap gap-2 mt-3">
+                {% csrf_token %}
+                <button type="submit" name="aktion" value="neu" class="fw-btn fw-knapp">{% trans "Link neu erzeugen" %}</button>
+                <button type="submit" name="aktion" value="entfernen" class="fw-btn fw-knapp">{% trans "Link entfernen" %}</button>
+            </form>
+            {% else %}
+            <p class="fw-hilfe">{% trans "Mit einem persönlichen Link zeigt Ihr Kalender (Outlook, Apple, Google) die Fristen laufend an. Der Link lässt sich jederzeit erneuern oder entfernen." %}</p>
+            <form method="post" action="/neu/fristen/kalender-link/" class="mt-3">
+                {% csrf_token %}
+                <button type="submit" name="aktion" value="neu" class="fw-btn fw-knapp fw-primary">{% trans "Kalender-Link erzeugen" %}</button>
+            </form>
+            {% endif %}
         </div>
+        {% endif %}
     </div>
 </div>
 
@@ -66,7 +84,7 @@
         <div class="fw-zeit{% if e.tage < 0 %} crit{% elif e.tage == 0 %} warn{% endif %}">{{ e.faellig|date:"d.m." }}<br>
             <span class="fw-klein">{% if e.tage < 0 %}{{ e.tage }} T{% elif e.tage == 0 %}{% trans "heute" %}{% else %}in {{ e.tage }} T{% endif %}</span></div>
         {% if e.url %}
-        <a href="{{ e.url }}" onclick="return fwModalOpen(this,'{{ e.titel|escapejs }}',{% if e.wide %}true{% else %}false{% endif %})"
+        <a href="{{ e.url }}" data-modal="{{ e.titel}}" {% if e.wide %}data-modal-breit{% endif %}
            class="fw-btn fw-knapp">{{ e.label }}</a>
         {% endif %}
     </div>
