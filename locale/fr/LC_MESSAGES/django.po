@@ -41112,3 +41112,12 @@ msgstr "Annulation impossible : l'import contient %(n)s débit(s) comptabilisé(
 
 msgid "Die Belastung (CHF %(belastung)s) ist grösser als der offene Betrag der Rechnung (CHF %(offen)s). Bitte die Rechnung prüfen oder die Bewegung auf ein Konto verbuchen."
 msgstr "Le débit (CHF %(belastung)s) est supérieur au montant ouvert de la facture (CHF %(offen)s). Veuillez vérifier la facture ou comptabiliser le mouvement sur un compte."
+
+msgid "Für dieses Mietobjekt liegt bereits eine Kündigung vor. Die Verwaltung bearbeitet sie."
+msgstr "Une résiliation est déjà en cours pour cet objet. La gérance la traite."
+
+msgid "Diese Bewerbung ist abgeschlossen. Es wird keine Einladung mehr verschickt."
+msgstr "Cette candidature est clôturée. Aucune invitation n'est plus envoyée."
+
+msgid "Der Besichtigungstermin muss in der Zukunft liegen."
+msgstr "La date de visite doit se situer dans le futur."

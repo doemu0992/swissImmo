@@ -335,6 +335,12 @@ def fw_bewerber_besichtigung(request, pk):
     if termin is None:
         messages.error(request, gettext('Bitte einen gültigen Besichtigungstermin wählen.'))
         return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
+    if b.status == 'abgelehnt' or b.vertrag_id:
+        messages.error(request, gettext('Diese Bewerbung ist abgeschlossen. Es wird keine Einladung mehr verschickt.'))
+        return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
+    if termin <= timezone.now():
+        messages.error(request, gettext('Der Besichtigungstermin muss in der Zukunft liegen.'))
+        return redirect(f'/neu/vermarktung/{b.einheit_id}/bewerber/')
     b.besichtigung_am = termin
     if b.status in ('neu', 'geprueft'):
         b.status = 'besichtigung'

@@ -587,6 +587,12 @@ def mieter_kuendigung(request):
         if not v:
             messages.error(request, gettext('Kein gültiges Mietobjekt gewählt.'))
             return redirect('mieter_kuendigung')
+        # Doppelklick, Zurück-Taste, zweiter Tab: Ist für diesen Vertrag schon eine Mieter-Kündigung offen
+        # (erfasst oder bestätigt), entsteht keine zweite und die Verwaltung bekommt keine zweite Mail.
+        if Kuendigung.objects.filter(vertrag=v, absender='mieter', status__in=('erfasst', 'bestaetigt')).exists():
+            messages.info(request, gettext('Für dieses Mietobjekt liegt bereits eine Kündigung vor. '
+                                           'Die Verwaltung bearbeitet sie.'))
+            return redirect('mieter_kuendigung')
         heute = timezone.localdate()
         wunsch = (request.POST.get('gewuenschtes_ende') or '').strip()
         try:

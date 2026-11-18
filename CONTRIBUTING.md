@@ -30,6 +30,11 @@ Wie die Anwendung gebaut ist, steht in [ARCHITECTURE.md](ARCHITECTURE.md); Einst
 | `wartung` | wöchentlich: Aktualität der LIK-Tabelle |
 | `zeitlauf` | monatlich: Szenarien mit verschobener Uhr |
 
+Dependabot-PRs werden einzeln geprüft: Patch- und Minor-Updates mit grüner CI auf aktuellem `main` kommen sofort
+hinein. Hauptversionen, die eine Migration verlangen (Tailwind 4: neue CLI, neue Konfiguration) oder in der CI nicht
+installierbar sind (reportlab 5), werden mit `@dependabot ignore this major version` zurückgestellt und als eigenes
+Arbeitspaket geplant.
+
 ### Was eine Freigabe braucht
 
 Neue Python- oder JavaScript-Pakete, neue externe Dienste, alles mit Kosten oder Datenabfluss ins Ausland, Änderungen
@@ -154,6 +159,10 @@ Rundung: 24 px für Karten, 14 px für kleine Flächen.
 - Geld ist `Decimal`. Buchungen werden storniert, nie gelöscht.
 - Geldpfade: sperren, prüfen, buchen — in dieser Reihenfolge und in einer Transaktion.
 - Was länger dauert (viele Mails, viele Buchungen), läuft als Hintergrundauftrag und muss wiederholbar sein.
+- Alles, was eine Mail oder einen Datensatz auslöst, wirkt bei Doppelklick, Zurück-Taste oder zweitem Tab nur einmal:
+  Zustand prüfen, bevor etwas entsteht (Kündigung im Portal, Besichtigungseinladung), und den auslösenden Zustand unter
+  der Sperre verbrauchen, nicht erst danach (Terminbestätigung, `tickets/termin_abstimmung.py`). Test: zweimal
+  abschicken, es gibt genau einen Datensatz und eine Mail (`core/tests/test_doppelausloesung.py`).
 - Migrationen: `makemigrations --check --dry-run` bleibt leer; ein neues Pflichtfeld am Bestand in drei Schritten
   (Spalte, Daten füllen, Pflicht).
 

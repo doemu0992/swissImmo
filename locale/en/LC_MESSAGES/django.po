@@ -40446,3 +40446,12 @@ msgstr "Cannot undo: the import contains %(n)s posted debit(s) (fees, supplier p
 
 msgid "Die Belastung (CHF %(belastung)s) ist grösser als der offene Betrag der Rechnung (CHF %(offen)s). Bitte die Rechnung prüfen oder die Bewegung auf ein Konto verbuchen."
 msgstr "The debit (CHF %(belastung)s) exceeds the open amount of the invoice (CHF %(offen)s). Please check the invoice or post the movement to an account."
+
+msgid "Für dieses Mietobjekt liegt bereits eine Kündigung vor. Die Verwaltung bearbeitet sie."
+msgstr "A notice of termination is already on file for this rental unit. The property management is processing it."
+
+msgid "Diese Bewerbung ist abgeschlossen. Es wird keine Einladung mehr verschickt."
+msgstr "This application is closed. No further invitation will be sent."
+
+msgid "Der Besichtigungstermin muss in der Zukunft liegen."
+msgstr "The viewing appointment must be in the future."
