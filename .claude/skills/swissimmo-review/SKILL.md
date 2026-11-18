@@ -13,7 +13,7 @@ Ein PR ist fertig, wenn alle sechs Punkte belegt sind — nicht behauptet, beleg
 2. **Mandantentrennung geprüft** — mindestens ein Test, der die Grenze aktiv verletzt und fehlschlägt
 3. **Keine neuen Linter-Fehler**
 4. **Migrationen konsistent** — `makemigrations --check` meldet nichts
-5. **Dokumentation nachgeführt** — bei Architekturänderungen `docs/ANALYSE.md`, bei Funktionen das Handbuch
+5. **Dokumentation nachgeführt** — bei Architekturänderungen `«ANALYSE» (früheres Dokument, Git-Verlauf)`, bei Funktionen das Handbuch
 6. **PR beschreibt, was *nicht* getan wurde** — bewusst offen Gelassenes gehört in die Beschreibung, nicht in den nächsten Überraschungsmoment
 
 ## Prüfbefehle
@@ -64,7 +64,7 @@ git stash && git checkout <basis> && <Testlauf> && git checkout - && git stash p
 
 **Widerspricht der Bestand der Analyse, gilt der Bestand. Die Analyse wird im selben PR korrigiert.**
 
-`docs/ANALYSE.md` und die übrigen Dokumente sind ein Abbild eines Zeitpunkts, kein Auftrag. Sie können falsch sein — durch einen Irrtum bei der Erhebung, oder weil der Code sich seither bewegt hat. Ein Befund, der sich am Code nicht bestätigen lässt, wird nicht ausgeführt, sondern richtiggestellt.
+`«ANALYSE» (früheres Dokument, Git-Verlauf)` und die übrigen Dokumente sind ein Abbild eines Zeitpunkts, kein Auftrag. Sie können falsch sein — durch einen Irrtum bei der Erhebung, oder weil der Code sich seither bewegt hat. Ein Befund, der sich am Code nicht bestätigen lässt, wird nicht ausgeführt, sondern richtiggestellt.
 
 Das ist kein Nebensatz, sondern die wichtigste Regel dieses Skills. Der teuerste Fehler in einem dokumentgetriebenen Vorgehen ist, ein Dokument gegen die Wirklichkeit durchzusetzen.
 

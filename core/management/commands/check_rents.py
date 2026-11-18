@@ -64,7 +64,10 @@ class Command(BaseCommand):
         risiko_total = 0.0
 
         for v in vertraege:
-            ergebnis = berechne_mietpotenzial(v, curr_ref, curr_lik)
+            # Der aktuelle LIK in der Reihe des Vertrags; ohne Wert in seiner Reihe wird der Vertrag nicht gerechnet.
+            from core.services import lik
+            lik_v = lik.aktuell_in_reihe(lik.basis_von(v), curr_lik)
+            ergebnis = berechne_mietpotenzial(v, curr_ref, lik_v) if lik_v is not None else None
 
             if not ergebnis:
                 # Daten fehlen im Vertrag

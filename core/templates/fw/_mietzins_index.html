@@ -60,6 +60,11 @@ die Schrift im Browser zeigt sie nur und begrenzt die Eingabe, sie rechnet nicht
                 <label for="mz_basis_stand" class="fw-label">{% trans "Stand-Monat (Basis-LIK)" %}</label>
                 <input id="mz_basis_stand" type="month" name="basis_lik_stand" value="{{ alt_lik_stand|date:'Y-m' }}" class="fw-feld w-full">
             </div>
+            <div class="fw-feldblock">
+                <label for="mz_lik_basis" class="fw-label">{% trans "LIK-Basisreihe" %}</label>
+                {% include 'fw/_lik_basis_feld.html' with feld_id='mz_lik_basis' gewaehlt=lik_basis %}
+                <p class="fw-hilfe">{% trans "Die Reihe, in der die Punkte dieses Vertrags stehen. Beim Wechsel Punkte und Stand-Monat in der neuen Reihe eintragen; umgerechnet wird nicht." %}</p>
+            </div>
         </div>
 
         <div class="fw-kpis fw-nomb" id="iz-kpis">

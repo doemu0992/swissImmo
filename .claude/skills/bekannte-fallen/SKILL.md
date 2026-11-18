@@ -144,9 +144,9 @@ sogar eine eigene Testdatei, `core/tests/test_funktionen.py` — das Neue war
 also nicht einmal besser abgesichert.
 
 Der Grep hätte es gefunden. Er lief nicht, weil die Frage gar nicht mehr
-gestellt wurde: Gelesen worden waren `docs/ANALYSE.md` (was fehlt) und
-`docs/MARKT.md` (was verkauft wird) — beide beschreiben eine Lücke.
-`docs/PLAN-V7.md` blieb ungelesen, und dort stand beides schon: **D7**
+gestellt wurde: Gelesen worden waren `«ANALYSE» (früheres Dokument, Git-Verlauf)` (was fehlt) und
+`«MARKT» (früheres Dokument, Git-Verlauf)` (was verkauft wird) — beide beschreiben eine Lücke.
+`«PLAN-V7» (früheres Dokument, Git-Verlauf)` blieb ungelesen, und dort stand beides schon: **D7**
 entschied die Stufennamen (eine Quelle, `funktionen.py` bekommt die
 Marktnamen), **M8** und **E3** führen die Arbeit als eigenes, später
 eingeplantes Paket. Die Frage, die dem Benutzer gestellt wurde, war dort
@@ -158,16 +158,16 @@ ist:**
 
 | Dokument | Beantwortet |
 |---|---|
-| `docs/ANALYSE.md` | Was im Bestand fehlt oder klemmt |
-| `docs/MARKT.md` | Was verkauft wird, zu welchem Preis |
-| `docs/UX-ANALYSE-V7.md` | Wie sich der Bestand bedient |
-| **`docs/PLAN-V7.md`** | **Was gebaut wird, in welcher Etappe, und welche Entscheide schon gefallen sind (D-Nummern)** |
+| `«ANALYSE» (früheres Dokument, Git-Verlauf)` | Was im Bestand fehlt oder klemmt |
+| `«MARKT» (früheres Dokument, Git-Verlauf)` | Was verkauft wird, zu welchem Preis |
+| `«UX-ANALYSE-V7» (früheres Dokument, Git-Verlauf)` | Wie sich der Bestand bedient |
+| **`«PLAN-V7» (früheres Dokument, Git-Verlauf)`** | **Was gebaut wird, in welcher Etappe, und welche Entscheide schon gefallen sind (D-Nummern)** |
 
 Vor jedem Vorschlag für neue Bausteine — ein Modul, ein Modell, eine
 Prüfstelle — zwei Handgriffe:
 
 ```bash
-grep -n "^| D[0-9]\|^## \|^| M[0-9]\|^| E[0-9]" docs/PLAN-V7.md   # Entscheide, Pakete, Etappen
+grep -n "^| D[0-9]\|^## \|^| M[0-9]\|^| E[0-9]" «PLAN-V7» (früheres Dokument, Git-Verlauf)   # Entscheide, Pakete, Etappen
 grep -rn "STUFEN\|GRENZEN\|hat_funktion" --include=*.py core/      # gibt es die Tabelle schon?
 ```
 

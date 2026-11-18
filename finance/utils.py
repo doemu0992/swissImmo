@@ -238,12 +238,24 @@ def _groq_modell(art, standard):
 
 
 def _groq_call(messages, model, api_key):
-    resp = requests.post(GROQ_URL, timeout=45, json={
-        "model": model, "messages": messages, "temperature": 0,
-        "response_format": {"type": "json_object"},
-    }, headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"})
-    resp.raise_for_status()
-    return json.loads(resp.json()["choices"][0]["message"]["content"])
+    """Ein Aufruf bei Groq. Jeder Ausgang steht im Abrufstatus (`core.services.abruf_status`): Fällt die
+    Belegerkennung aus (Modell abgeschaltet, Schlüssel ungültig, Kontingent leer), greift still die Regex-Erkennung —
+    und ohne Spur merkte das niemand. Der Grund nennt nur Fehlerart und Statuscode, nie Schlüssel oder Beleginhalt."""
+    from core.services import abruf_status
+    try:
+        resp = requests.post(GROQ_URL, timeout=45, json={
+            "model": model, "messages": messages, "temperature": 0,
+            "response_format": {"type": "json_object"},
+        }, headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"})
+        resp.raise_for_status()
+        daten = json.loads(resp.json()["choices"][0]["message"]["content"])
+    except Exception as e:
+        status = getattr(getattr(e, 'response', None), 'status_code', None)
+        abruf_status.melde_fehler('groq', f"{type(e).__name__}" + (f" (Status {status})" if status else "")
+                                  + f", Modell {model}")
+        raise
+    abruf_status.melde_erfolg('groq')
+    return daten
 
 
 def _scan_text_ki(full_text, api_key):

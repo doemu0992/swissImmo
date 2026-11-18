@@ -24,6 +24,7 @@ Verwendung klassische Views:
     @rolle_erforderlich(ROLLE_VERWALTUNG)
     def send_mahnung_email_view(request, ...):
 """
+import functools
 import logging
 from django.contrib.auth.decorators import user_passes_test
 from ninja.security import SessionAuth
@@ -89,7 +90,7 @@ FINANZ_VERWALTUNGS_ROLLEN = VERWALTUNGS_ROLLEN + BUCHHALTUNG_ROLLEN
 ZAHLUNGSFREIGABE_ROLLEN = VERWALTUNGS_ROLLEN
 
 #: Betreibung leitet nur die Verwaltung ein (Rechtsfolgen, Kosten; Etappe 2,
-#: SICH-11, `docs/KONZEPT-UI.md` §8).
+#: SICH-11, `CONTRIBUTING.md` §8).
 BETREIBUNGS_ROLLEN = VERWALTUNGS_ROLLEN
 
 #: Der Betreiber der Installation. KEINE Mitgliedschaftsrolle (niemand bekommt sie zugewiesen): `hat_rolle` lässt
@@ -144,7 +145,7 @@ def hat_rolle(user, rollen):
 
     DER INHABER DARF, WAS DAS TEAM DARF
     -----------------------------------
-    Nach der Rollentabelle (`docs/KONZEPT-UI.md`, Abschnitt 8) hat der Inhaber
+    Nach der Rollentabelle (`CONTRIBUTING.md`, Abschnitt 8) hat der Inhaber
     jede Befugnis der anderen Team-Rollen. Rund zwanzig Views verlangten aber
     nur `ROLLE_VERWALTER` — der Inhaber einer frisch angelegten Organisation
     stand dort vor einem 403, ausgerechnet auch bei «Benutzer & Rollen», die
@@ -160,13 +161,10 @@ def hat_rolle(user, rollen):
     rollen = _mit_inhaber(rollen)
 
     from core.tenancy import aktuelle_organisation
-    from crm.models import Mitgliedschaft
 
-    organisation = aktuelle_organisation()
-    if organisation is None:
+    if aktuelle_organisation() is None:
         return False
-    return Mitgliedschaft.objects.filter(
-        benutzer=user, organisation=organisation, rolle__in=rollen).exists()
+    return bool(rollen_der_anfrage(user) & set(rollen))
 
 
 def darf_mit(eigene, user, rollen):
@@ -289,6 +287,20 @@ def rolle_erforderlich(*rollen):
     return deko
 
 
+@functools.lru_cache(maxsize=4096)
+def _rollen_des_pfads(pfad):
+    """Die Rollen, die die View hinter `pfad` verlangt — `None`, wenn keine oder unbekannt.
+
+    Gemerkt je Pfad: Der Filter `darf` steht in Listen in jeder Zeile, und `resolve()` geht jedes Mal durch
+    alle Routen. Die Zuordnung Pfad → View ändert sich im laufenden Prozess nicht."""
+    from django.urls import resolve
+    try:
+        rollen = getattr(resolve(pfad).func, 'benoetigte_rollen', None)
+    except Exception:
+        return None
+    return tuple(rollen) if rollen is not None else None
+
+
 def darf_oeffnen(user, pfad, eigene_rollen=None):
     """Darf dieser Benutzer die View hinter `pfad` aufrufen?
 
@@ -302,11 +314,7 @@ def darf_oeffnen(user, pfad, eigene_rollen=None):
     Navigation prüft jeden Reiter und jeden Palette-Eintrag —, liest die Rollen
     EINMAL statt je Pfad eine Abfrage (UI-Audit 26.10.2026: sonst ~60 Abfragen
     mehr auf jeder Seite)."""
-    from django.urls import resolve
-    try:
-        rollen = getattr(resolve(pfad.split('?')[0]).func, 'benoetigte_rollen', None)
-    except Exception:
-        return True
+    rollen = _rollen_des_pfads(pfad.split('?')[0])
     if rollen is None:
         return True
     if eigene_rollen is None:
@@ -317,7 +325,13 @@ def darf_oeffnen(user, pfad, eigene_rollen=None):
 
 
 def eigene_rollen(user):
-    """Die Rollen des Benutzers in der aktiven Organisation — eine Abfrage."""
+    """Die Rollen des Benutzers in der aktiven Organisation — je Anfrage
+    höchstens eine Abfrage (`rollen_der_anfrage`). Eine Kopie, damit ein
+    Aufrufer die gemerkte Menge nicht verändert."""
+    return set(rollen_der_anfrage(user))
+
+
+def _rollen_lesen(user):
     from core.tenancy import aktuelle_organisation
     from crm.models import Mitgliedschaft
     if not user or not user.is_authenticated:
@@ -327,6 +341,44 @@ def eigene_rollen(user):
         return set()
     return set(Mitgliedschaft.objects.filter(benutzer=user, organisation=organisation)
                .values_list('rolle', flat=True))
+
+
+# Zählt jede Änderung an Mitgliedschaften in diesem Prozess (Signal in
+# `core/signals.py`). Der Merker unten gilt nur, solange der Stand gleich
+# bleibt: Wer in derselben Anfrage eine Rolle vergibt oder entzieht, sieht
+# die Wirkung sofort.
+_rollen_stand = 0
+
+
+def rollen_geaendert(**_):
+    global _rollen_stand
+    _rollen_stand += 1
+
+
+def rollen_der_anfrage(user):
+    """Die Rollen des Benutzers in der aktiven Organisation, je Anfrage einmal.
+
+    `request.user` lebt eine Anfrage lang. Jede Seite fragt die Rolle mehrfach
+    ab (Dekorator, Navigation, Kontextprozessoren, Vorlagenfilter `darf` in
+    jeder Listenzeile) — ohne Merker ist das je Frage eine Abfrage (gemessen
+    acht auf einer leeren Seite, 24 auf 12 Zeilen der Mahnübersicht).
+
+    Der Merker hängt am Benutzerobjekt und gilt nur für die gerade aktive
+    Organisation und den aktuellen Stand der Mitgliedschaften. Über Anfragen
+    hinweg wird nichts gemerkt: Ein Rollenentzug wirkt mit der nächsten Anfrage.
+    """
+    from core.tenancy import aktuelle_organisation
+    if not user or not getattr(user, 'is_authenticated', False):
+        return set()
+    schluessel = (getattr(aktuelle_organisation(), 'pk', None), _rollen_stand)
+    gemerkt = getattr(user, '_rollen_je_organisation', None)
+    if gemerkt is None or gemerkt[0] != schluessel:
+        gemerkt = (schluessel, _rollen_lesen(user))
+        try:
+            user._rollen_je_organisation = gemerkt
+        except AttributeError:
+            pass
+    return gemerkt[1]
 
 
 # ==========================================
@@ -366,11 +418,14 @@ def kategorie_fuer(aktion):
 
 def client_ip(request):
     """Ermittelt die Client-IP (berücksichtigt Reverse-Proxy X-Forwarded-For)."""
+    # EINE Quelle für Bremse und Protokoll (`core.utils.throttle.client_ip`): der RECHTE Eintrag von
+    # X-Forwarded-For, den der eigene Proxy anhängt. Hier stand der linke — den setzt der Client frei, und damit
+    # trug das Sicherheitsprotokoll eine Adresse nach Wahl des Angreifers.
     try:
-        xff = request.META.get('HTTP_X_FORWARDED_FOR', '')
-        if xff:
-            return xff.split(',')[0].strip()[:45]
-        return (request.META.get('REMOTE_ADDR') or '').strip()[:45] or None
+        from core.utils.throttle import client_ip as _client_ip
+        if not (request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')):
+            return None
+        return _client_ip(request)[:45] or None
     except Exception:
         return None
 
@@ -393,6 +448,7 @@ SENSIBLE_FELDER = frozenset({
     'ahv_nummer',           # AHV-Nummer (verschlüsselt gespeichert; beim Lesen Klartext)
     'iban', 'zahler_iban',  # Kontoverbindungen von Personen und Liegenschaften
     'portal_feed_token',    # Geheimnis in der Adresse des Portal-Feeds
+    'fristen_feed_token',   # Geheimnis in der Adresse des Fristenkalenders
     'password', 'geheimnis',
 })
 

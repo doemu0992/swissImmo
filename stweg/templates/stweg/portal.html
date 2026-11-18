@@ -56,7 +56,7 @@
         <form method="post" action="/portal/stweg/evoting/{{ v.pk }}/" class="fw-formular">{% csrf_token %}
             {% for x in v.evoting_traktanden %}
             <div class="fw-t">{{ x.t.nr }}. {{ x.t.titel }}</div>
-            {% if x.t.antrag %}<div class="fw-s" style="white-space:pre-line">{{ x.t.antrag }}</div>{% endif %}
+            {% if x.t.antrag %}<div class="fw-s" class="whitespace-pre-line">{{ x.t.antrag }}</div>{% endif %}
             {% for z in x.zeilen %}
             <div class="fw-feldblock"><label class="fw-label" for="ev{{ x.t.pk }}_{{ z.einheit.pk }}">{% blocktrans with einheit=z.einheit.bezeichnung %}Ihre Stimme für {{ einheit }}{% endblocktrans %}</label>
                 <select id="ev{{ x.t.pk }}_{{ z.einheit.pk }}" name="stimme_{{ x.t.pk }}_{{ z.einheit.pk }}" class="fw-feld">
@@ -119,7 +119,7 @@
     <div class="fw-zeile"><div class="fw-mitte">
         <div class="fw-t">{{ a.z.titel }}</div>
         <div class="fw-s">{% if a.z.status == 'abgeschlossen' %}{% blocktrans with ergebnis=a.z.get_ergebnis_display ja=a.z.ja_koepfe nein=a.z.nein_koepfe enth=a.z.enthaltung_koepfe %}{{ ergebnis }} (Ja {{ ja }} · Nein {{ nein }} · Enthaltung {{ enth }}){% endblocktrans %}{% elif a.offen %}{% blocktrans with datum=a.z.frist_bis|date:"d.m.Y" %}Abstimmung bis {{ datum }}{% endblocktrans %}{% else %}{% trans "Abstimmung beendet, Ergebnis folgt" %}{% endif %}</div>
-        <div class="fw-s" style="white-space:pre-line">{{ a.z.antrag }}</div>
+        <div class="fw-s" class="whitespace-pre-line">{{ a.z.antrag }}</div>
         {% if a.offen and not a.meine %}<div class="fw-s">{% trans "Die Stimme für Ihre Einheit gibt die Hauptansprechperson ab." %}</div>{% endif %}
         {% if a.offen and a.meine %}
         <form method="post" action="/portal/stweg/abstimmen/{{ a.z.pk }}/" class="fw-formular">{% csrf_token %}

@@ -329,7 +329,7 @@ class RegelTests(EigeneMedien, TestCase):
             'vertrag_erstellt': ('vertragserstellung.py', 1),
             'vertrag_haustier': ('vertragserstellung.py', 1),
             'bewerber_zugesagt': ('mietprozess.py', 1),
-            'kuendigung_erfasst': ('kuendigung.py', 1),
+            'kuendigung_erfasst': ('kuendigung_erfassen.py', 1),
             'mza_versandt': ('mietzins.py', 1),
             'nk_versandt': ('nebenkosten.py', 2),        # Ausdruck und E-Mail
             'abnahme_abgeschlossen': ('abnahme.py', 1),

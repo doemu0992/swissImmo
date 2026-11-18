@@ -2,7 +2,7 @@
 #
 # Offene Posten mit Zahlungseingaengen abgleichen: camt.053- und CSV-Import,
 # Zuordnung, Verbuchung, und das Rueckgaengigmachen eines Imports.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # Der groesste bisher verschobene Block (1'087 Zeilen) und zugleich einer der
 # heikelsten: camt.053, QR-Referenz (QRR, 27 Stellen) und die
@@ -280,13 +280,15 @@ def fw_bankabgleich(request):
     # überhaupt etwas zu tilgen gibt. `rows` enthält je offene Rechnung eine Zeile.
     sammel_vertraege = []
     _gesehen = set()
+    # Einmal zählen statt je Vertrag über alle Zeilen (quadratisch: 1,1 s bei 1500 offenen Rechnungen).
+    from collections import Counter
+    _offene_je_vertrag = Counter(getattr(x.get('r'), 'vertrag_id', None) for x in rows if isinstance(x, dict))
     for _r in rows:
         _v = getattr(_r.get('r'), 'vertrag', None) if isinstance(_r, dict) else None
         if _v is None or _v.id in _gesehen:
             continue
         _gesehen.add(_v.id)
-        _offene = sum(1 for x in rows
-                      if isinstance(x, dict) and getattr(x.get('r'), 'vertrag_id', None) == _v.id)
+        _offene = _offene_je_vertrag[_v.id]
         sammel_vertraege.append({
             'id': _v.id,
             'label': f"{_r.get('mieter')} · {_r.get('objekt')} ({_offene} offen)",
@@ -1430,6 +1432,16 @@ def fw_kontoauszug_rueckgaengig(request, pk):
             _Q(bank_referenz__in=arefs) | _geschwister))
 
     dateiname = auszug.dateiname or f"Auszug #{auszug.id}"
+    # Belastungen (Gebühren, Lieferantenzahlungen) haben ihre Buchung an der Auszugszeile. Das Rückgängig löscht die
+    # Zeilen, nicht diese Buchungen: Nach einem erneuten Import stünde die Belastung wieder «offen» da und würde ein
+    # zweites Mal gebucht (Audit F2). Solange eine solche Buchung steht, bleibt der Import — sie wird zuerst storniert.
+    n_belastungen = Buchung.objects.filter(bankbewegungen__auszug=auszug, ist_storno=False,
+                                           storniert_am__isnull=True).distinct().count()
+    if n_belastungen:
+        messages.error(request, '❌ ' + gettext(
+            'Rückgängig nicht möglich: Der Import enthält %(n)s verbuchte Belastung(en) (Gebühren, Lieferantenzahlungen). '
+            'Bitte zuerst deren Buchungen stornieren, sonst werden sie nach einem erneuten Import doppelt gebucht.') % {'n': n_belastungen})
+        return redirect('fw_bankabgleich')
     storniert = 0
     uebersprungen = 0
     try:

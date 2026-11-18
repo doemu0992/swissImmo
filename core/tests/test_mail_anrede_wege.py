@@ -42,11 +42,13 @@ class FormularUndMahnungTests(_Basis):
 
     def test_webformular_speichert_die_anrede(self):
         lg, e, m, v = _basis_objekte()
+        m.email = 'max@example.ch'           # das Webformular ordnet über die hinterlegte Adresse zu
+        m.save()
         with sofort():
             Client().post('/schaden/melden/', {
                 'kategorie': 'schaden', 'raum': 'Küche', 'objekt': 'Herd', 'beschreibung': 'Defekt',
                 'anrede': 'Herr', 'vorname': 'Max', 'nachname': 'Beispiel', 'email': 'max@example.ch',
-                'telefon': '079 1', 'liegenschaft_id': lg.id})
+                'telefon': '079 1'})
         from tickets.models import SchadenMeldung
         t = SchadenMeldung.objects.get(email_melder='max@example.ch')
         self.assertEqual(t.melder_anrede, 'Herr')

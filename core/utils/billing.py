@@ -115,6 +115,52 @@ def hole_abrechnung(periode):
     return berechne_abrechnung(periode.id)
 
 
+def _gestellte_nk_je_monat(vertrag, v_start, v_ende):
+    """`{(jahr, monat): gestellter NK-Betrag}` für die Monate des Zeitraums, in denen es eine Sollstellungs-Forderung
+    «Miete & NK MM/JJJJ» (nicht storniert) MIT einer Buchung auf 3020 gibt. Fehlt der Monat im Ergebnis, gilt für ihn
+    der Vertragswert (siehe `akonto_gestellt`).
+
+    ZWEI Abfragen je Vertrag statt bis zu drei je Kalendermonat (Audit 15.11.2026: 24 Abfragen je Vertrag und Jahr; die
+    Nebenkostenliste und jeder Schritt des Assistenten rechnen die Abrechnung, bei 17 Verträgen waren das 408 Abfragen
+    allein hier). Das Ergebnis ist dasselbe wie zuvor Monat für Monat:
+      · Gibt es zu einem Titel mehrere nicht stornierte Forderungen, zählt wie bisher die erste in der
+        Standardreihenfolge des Modells (das frühere `.first()`).
+      · Summen ohne passende Buchung bleiben `None` — «keine 3020-Buchung» heisst weiterhin «nicht gestellt».
+    """
+    from django.db.models import Q
+
+    from finance.models import Buchung, DebitorenRechnung
+
+    titel_zu_monat = {}
+    j, m = v_start.year, v_start.month
+    while (j, m) <= (v_ende.year, v_ende.month):
+        titel_zu_monat[f"Miete & NK {m:02d}/{j}"] = (j, m)
+        m += 1
+        if m == 13:
+            j, m = j + 1, 1
+    rechnung_zu_monat = {}
+    gesehen = set()
+    for pk, titel in (DebitorenRechnung.alle_organisationen
+                      .filter(vertrag=vertrag, titel__in=list(titel_zu_monat))
+                      .exclude(status='storniert').values_list('pk', 'titel')):
+        if titel not in gesehen:                       # die erste je Titel, wie `.first()`
+            gesehen.add(titel)
+            rechnung_zu_monat[pk] = titel_zu_monat[titel]
+    if not rechnung_zu_monat:
+        return {}
+    ergebnis = {}
+    summen = (Buchung.alle_organisationen
+              .filter(debitoren_rechnung__in=list(rechnung_zu_monat), ist_storno=False, storniert_am__isnull=True)
+              .order_by().values('debitoren_rechnung')
+              .annotate(haben=Sum('betrag', filter=Q(haben_konto__nummer='3020')),
+                        erlass=Sum('betrag', filter=Q(soll_konto__nummer='3091'))))
+    for zeile in summen:
+        if zeile['haben'] is not None:
+            ergebnis[rechnung_zu_monat[zeile['debitoren_rechnung']]] = (
+                Decimal(zeile['haben']) - Decimal(zeile['erlass'] or Decimal('0')))
+    return ergebnis
+
+
 # Fest deutsch: Das Ergebnis landet eingefroren im Snapshot der Periode und
 # im deutsch formulierten Abrechnungs-PDF. Mit der Sprache der Sachbearbeitung
 # stünden dort übersetzte Kategorien (`get_kategorie_display`).
@@ -144,7 +190,7 @@ def akonto_gestellt(vertrag, v_start, v_ende):
     als offene Forderung im Mieterkonto und würde sonst zweimal verlangt.
     Gibt (betrag, anzahl_monate_aus_buchungen) zurück.
     """
-    from finance.models import Buchung, DebitorenRechnung
+    gestellt_je_monat = _gestellte_nk_je_monat(vertrag, v_start, v_ende)
 
     nk_monat = vertrag.nebenkosten or Decimal('0.00')
     gesamt = Decimal('0.00')
@@ -156,17 +202,7 @@ def akonto_gestellt(vertrag, v_start, v_ende):
         von, bis = max(v_start, m_start), min(v_ende, m_ende)
         tage = (bis - von).days + 1
         if tage > 0:
-            rechnung = (DebitorenRechnung.alle_organisationen
-                        .filter(vertrag=vertrag, titel=f"Miete & NK {m:02d}/{j}")
-                        .exclude(status='storniert').first())
-            gestellt = None
-            if rechnung is not None:
-                basis = Buchung.alle_organisationen.filter(
-                    debitoren_rechnung=rechnung, ist_storno=False, storniert_am__isnull=True)
-                haben = basis.filter(haben_konto__nummer='3020').aggregate(s=Sum('betrag'))['s']
-                if haben is not None:
-                    erlass = basis.filter(soll_konto__nummer='3091').aggregate(s=Sum('betrag'))['s'] or Decimal('0')
-                    gestellt = Decimal(haben) - Decimal(erlass)
+            gestellt = gestellt_je_monat.get((j, m))
             if gestellt is not None:
                 # Vertragstage des Monats (Einzug/Auszug mitten im Monat): darauf bezog
                 # sich die Forderung. Die Periode deckt davon `tage`.

@@ -12,9 +12,11 @@
 </div>
 
 
-<!-- Sektionen -->
+<!-- Gruppen -->
+{% for g in gruppen %}
+<h2 class="fw-gruppe-titel">{{ g.label }}</h2>
 <div class="fw-card">
-    {% for k in karten %}
+    {% for k in g.eintraege %}
     <a href="{{ k.url }}" class="fw-zeile klick">
         <span class="fw-ikon">{% zeichen_wert k.icon %}</span>
         <div class="fw-mitte">
@@ -25,5 +27,6 @@
     </a>
     {% endfor %}
 </div>
+{% endfor %}
 
 {% endblock %}

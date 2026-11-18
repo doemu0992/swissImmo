@@ -235,9 +235,15 @@ def fw_mandat_detail(request, pk):
                   _('Noch keine Stunde erfasst')),
     }
 
+    # Die Karte gehört zur Stufe «professional» (`core/funktionen.py`). Ohne Freigabe zeigt die Akte einen Hinweis
+    # statt der Zahlen; Verwaltungen mit Bestandsschutz behalten sie.
+    from core.funktionen import hat_funktion
+    from core.tenancy import aktuelle_organisation
+    rentabilitaet_frei = request.user.is_superuser or hat_funktion(aktuelle_organisation(), 'mandatsrentabilitaet')
     return render(request, 'fw/mandat_detail.html', {
         **basis, 'nav': 'mandate', 'md': md,
-        'rentabilitaet': rentabilitaet,
+        'rentabilitaet': rentabilitaet if rentabilitaet_frei else None,
+        'rentabilitaet_gesperrt': not rentabilitaet_frei,
         **_mandat_kopf(md, liegenschaften, soll_monat, offene_auszahlungen, faelle),
         'liegenschaften': liegenschaften,
         'soll_monat': soll_monat,

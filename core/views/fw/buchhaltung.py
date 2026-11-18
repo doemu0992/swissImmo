@@ -1,7 +1,7 @@
 # core/views/fw/buchhaltung.py
 #
 # Erfolgsrechnung, Kontenplan, Kontoblatt, Journal-Export und PDF.
-# Etappe 1, siehe docs/ETAPPE-1-ZERLEGEN.md.
+# Etappe 1, siehe «ETAPPE-1-ZERLEGEN» (früheres Dokument, Git-Verlauf).
 #
 # `_erfolg_bilanz` bleibt hier und wird von core/services/abschluss_pdf.py
 # ueber core.views.fw bezogen -- das __init__.py reicht den Namen weiter,
@@ -502,7 +502,7 @@ def fw_kontenplan(request):
         t_haben += h
 
     return render(request, 'fw/kontenplan.html', {
-        **basis, 'nav': 'buchhaltung', 'zeilen': zeilen,
+        **basis, 'nav': 'kontenplan', 'zeilen': zeilen,
         'total_soll': t_soll, 'total_haben': t_haben,
         'differenz': t_soll - t_haben,
         'jahr': jahr, 'jahre': list(range(heute.year, heute.year - 5, -1)),
@@ -510,6 +510,9 @@ def fw_kontenplan(request):
         'typen': [('bilanz', _('Bilanz')), ('aktiv', _('Aktivum')), ('passiv', _('Passivum / Eigenkapital')),
                   ('aufwand', _('Aufwand')), ('ertrag', _('Ertrag'))],
     })
+
+
+KONTOBLATT_ZEILEN_JE_SEITE = 100
 
 
 @rolle_erforderlich(*JOURNAL_LESE_ROLLEN)
@@ -552,8 +555,13 @@ def fw_kontoblatt(request, nummer):
         zeilen.append({'b': b, 'soll': b.betrag if ist_soll else None,
                        'haben': b.betrag if not ist_soll else None,
                        'gegenkonto': gegen, 'saldo': saldo})
+    # Der Saldo läuft über alle Zeilen, gezeigt wird eine Seite (die Vorlage rendert jede Zeile zweimal:
+    # Telefon und Tabelle — 1,8 MB bei 3000 Buchungen).
+    from ._liste import blaettern
+    seite, query_ohne_seite = blaettern(request, zeilen, pro_seite=KONTOBLATT_ZEILEN_JE_SEITE)
     return render(request, 'fw/kontoblatt.html', {
-        **basis, 'nav': 'buchhaltung', 'konto': konto, 'zeilen': zeilen,
+        **basis, 'nav': 'buchhaltung', 'konto': konto, 'zeilen': seite, 'seite': seite,
+        'query_ohne_seite': query_ohne_seite,
         'eroeffnung': eroeffnung, 'endsaldo': saldo, 'ist_bilanz': ist_bilanz,
         'jahr': jahr or 'alle', 'jahre': list(range(heute.year, heute.year - 5, -1)),
     })

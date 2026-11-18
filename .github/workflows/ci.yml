@@ -86,11 +86,6 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - name: Systembibliotheken für pycairo
-        # pycairo hat keine fertigen Linux-Pakete und wird beim Installieren
-        # gebaut — ohne Cairo-Entwicklungsdateien bricht `pip install` mit
-        # «Dependency "cairo" not found» ab (seit dem Runner-Wechsel rot).
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libcairo2-dev pkg-config
       - name: Abhängigkeiten installieren
         run: pip install -r requirements.txt
       - name: Django system check
@@ -104,10 +99,12 @@ jobs:
           export DEBUG=False IMAP_SCHLUESSEL="$(python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')"
           python manage.py check --deploy 2>&1 | tee deploy-check.txt | python _tools/deploy_check_pruefen.py deploy-check-ignore.txt
       - name: Tests
-        run: python manage.py test --verbosity=2
+        # Parallel auf den 4 Kernen des Runners: ~7'100 Tests liefen nacheinander rund 40 Minuten, parallel messbar
+        # 6.5 Minuten (lokal, 4 Kerne, alle grün). Wie im Job `test-postgres`.
+        run: python manage.py test --noinput --parallel 4 --verbosity=2
 
   # Dieselbe Suite gegen PostgreSQL — die Zieldatenbank des Umzugs
-  # (docs/UMZUG-POSTGRESQL.md). SQLite erzwingt weder Spaltenbreiten noch
+  # (ARCHITECTURE.md). SQLite erzwingt weder Spaltenbreiten noch
   # strenge Typen; was hier rot wird, bliebe im Job `test` grün und fiele erst
   # in der Produktion auf. Probelauf vom 29.09.2026: 219 Migrationen und die
   # ganze Suite liefen durch.
@@ -149,8 +146,6 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - name: Systembibliotheken für pycairo
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libcairo2-dev pkg-config
       - name: Abhängigkeiten installieren
         run: pip install -r requirements.txt
       - name: PostgreSQL-Werkzeuge vorhanden?
@@ -173,11 +168,6 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - name: Systembibliotheken für pycairo
-        # pycairo hat keine fertigen Linux-Pakete und wird beim Installieren
-        # gebaut — ohne Cairo-Entwicklungsdateien bricht `pip install` mit
-        # «Dependency "cairo" not found» ab (seit dem Runner-Wechsel rot).
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libcairo2-dev pkg-config
       - name: Python-Abhängigkeiten
         run: pip install -r requirements.txt
       - name: Node einrichten
@@ -188,7 +178,16 @@ jobs:
       - name: npm install
         run: npm install
       - name: Playwright-Browser (Chromium) installieren
-        run: npx playwright install --with-deps chromium
+        # Chromium selbst kommt vom Playwright-Download. Die Systempakete (`--with-deps`: Bibliotheken, Schriften) kommen aus apt:
+        # Ist der Ubuntu-Spiegel nicht erreichbar (am 11.11.2026 stundenlang: «Temporary failure resolving
+        # azure.archive.ubuntu.com»), scheiterte vorher der ganze Job vor dem ersten Test. Die Bibliotheken bringt das Runner-Image
+        # mit; es fehlen nur Zusatz-Schriften. Darum: Browser zuerst, Systempakete danach mit Zeitlimit, ein Fehlschlag ist eine
+        # Warnung, kein roter Job.
+        run: |
+          npx playwright install chromium
+          if ! timeout 180 npx playwright install-deps chromium; then
+            echo "::warning::Systempakete (apt) nicht installiert, Chromium läuft mit den Bibliotheken des Runner-Images; Zusatz-Schriften können fehlen."
+          fi
       - name: E2E-Tests (Playwright bootet Django selbst)
         run: npx playwright test
       - name: Playwright-Report als Artefakt
@@ -214,8 +213,6 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - name: Systembibliotheken für pycairo
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libcairo2-dev pkg-config
       - name: Abhängigkeiten installieren
         run: pip install -r requirements.txt
       - name: LIK-Tabelle aktuell?
@@ -243,8 +240,6 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - name: Systembibliotheken für pycairo
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libcairo2-dev pkg-config
       - name: Abhängigkeiten installieren
         run: pip install -r requirements.txt
       - name: Uhr-Schieber bauen

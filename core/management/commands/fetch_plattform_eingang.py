@@ -42,7 +42,7 @@ class Command(BaseCommand):
         if pp.konfiguration() is None:
             self.stdout.write(self.style.WARNING(
                 'Plattform-Postfach nicht eingerichtet: PLATTFORM_IMAP_HOST, PLATTFORM_IMAP_BENUTZER und '
-                'PLATTFORM_IMAP_PASSWORT fehlen in der .env. Nichts zu tun. Anleitung: docs/ANTWORTADRESSEN.md '
+                'PLATTFORM_IMAP_PASSWORT fehlen in der .env. Nichts zu tun. Anleitung: ARCHITECTURE.md '
                 '(Variante A).'))
             return
         if not options['dauerlauf']:

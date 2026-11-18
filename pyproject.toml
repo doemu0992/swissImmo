@@ -1,6 +1,6 @@
 # Projektkonfiguration swissImmo.
 #
-# Bislang gab es keine (TS-12 in docs/ANALYSE.md): Damit war die Definition of
+# Bislang gab es keine (TS-12 in «ANALYSE» (früheres Dokument, Git-Verlauf)): Damit war die Definition of
 # Done „keine neuen Linter-Fehler" nicht überprüfbar. Diese Datei schliesst das.
 
 [tool.ruff]

@@ -17,8 +17,8 @@
 {% endif %}
 
 {% if not compliance.konform %}
-<div class="fw-card" role="alert" style="border:2px solid #c0392b">
-    <div class="fw-kopf"><span class="fw-chip fw-warn" style="background:#c0392b;color:#fff">{% trans "Nicht Compliance-Konform" %}</span>
+<div class="fw-card fw-card-compliance" role="alert">
+    <div class="fw-kopf"><span class="fw-chip fw-warn fw-chip-compliance">{% trans "Nicht Compliance-Konform" %}</span>
         <span class="fw-t">{% trans "Legal Health Check" %}</span></div>
     <div class="fw-rumpf">
         <p><strong>{% trans "Ohne Begründungsakt, Reglement und aktuellen Gebäudeversicherungsnachweis ist die Verwaltung rechtlich nicht handlungsfähig." %}</strong></p>

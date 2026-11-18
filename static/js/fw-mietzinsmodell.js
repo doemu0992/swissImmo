@@ -18,6 +18,7 @@
  *   vorlage([{ab, netto}])   Objekt-Staffelvorlage (absolute Beträge) in Erhöhungen umrechnen
  *   modell()                 'fest' | 'staffel' | 'index'
  *   zusammenfassung()        [[Beschriftung, Wert], …] für den Abschluss
+ *   basisGewechselt()        die LIK-Basisreihe (#s_lik_basis) wurde gewechselt: Basis-Punkte und Stand räumen
  */
 (function () {
     'use strict';
@@ -259,6 +260,8 @@
         if (unbefristet && wert('s_verzicht')) q.set('verzicht_bis', wert('s_verzicht'));
         if (wert('s_netto')) q.set('netto', wert('s_netto'));
         if (W.dataset.zeitplan === '1') q.set('hat_zeitplan', '1');
+        // Die Basisreihe des Vertrags: Vorschlag und Tabellenabgleich lesen am Server nur sie.
+        if ($('s_lik_basis') && wert('s_lik_basis')) q.set('lik_basis', wert('s_lik_basis'));
         if (m === 'staffel') {
             zeilen().forEach(function (z) {
                 var f = zeilenFelder(z);
@@ -433,7 +436,8 @@
         hin.textContent = ''; knopf.classList.add('hidden');
         if (modell() !== 'index' || !a || !wert('s_beginn')) return;
         var v = a.abgeleitet.basis_lik;
-        if (!v || !v.punkte || !v.stand) { hin.textContent = T.vorschlag_keiner; return; }
+        // `basis_lik_fehlt`: In der gewählten Reihe gibt es den Monat nicht — der Server nennt Reihe und Monat.
+        if (!v || !v.punkte || !v.stand) { hin.textContent = a.abgeleitet.basis_lik_fehlt || T.vorschlag_keiner; return; }
         hin.textContent = ersetze(T.vorschlag, { punkte: v.punkte, stand: mstr(v.stand) });
         // Vorbelegen nur, solange niemand die Felder selbst angefasst hat
         var gefuellt = false;
@@ -455,7 +459,10 @@
     function beispiel() {
         var p = $('mzm-beispiel'); p.textContent = '';
         if (modell() !== 'index') { p.classList.add('hidden'); return; }
-        var netto = bruch(wert('s_netto')), basis = bruch(wert('s_lik')), w = bruch(wert('s_weitergabe')), akt = bruch(String(K.aktueller_lik || ''));
+        // Der aktuelle Stand der GEWÄHLTEN Reihe; hat sie keinen, entfällt das Beispiel (kein Wert einer anderen Reihe).
+        var reihe = $('s_lik_basis') ? wert('s_lik_basis') : '';
+        var aktLik = (reihe && K.lik_je_basis && (reihe in K.lik_je_basis)) ? K.lik_je_basis[reihe] : K.aktueller_lik;
+        var netto = bruch(wert('s_netto')), basis = bruch(wert('s_lik')), w = bruch(wert('s_weitergabe')), akt = bruch(String(aktLik || ''));
         if (!netto || !basis || !w || !akt || basis.n <= 0n || netto.n < 0n) { p.classList.add('hidden'); return; }
         // faktor = (ad·bn·wd·100 + (an·bd − bn·ad)·wn) / (ad·bn·wd·100)
         var diff = akt.n * basis.d - basis.n * akt.d;
@@ -466,7 +473,7 @@
         var neuCents = einheiten * 5n;
         var altCents = rundeHalbHoch(netto.n * 100n, netto.d);
         p.textContent = ersetze(neuCents === altCents ? T.beispiel_gleich : T.beispiel,
-            { lik: String(K.aktueller_lik), neu: chfCents(neuCents), alt: chfCents(altCents) });
+            { lik: String(aktLik), neu: chfCents(neuCents), alt: chfCents(altCents) });
         p.classList.remove('hidden');
     }
 
@@ -575,9 +582,16 @@
         planen();
     }
 
+    // Die Basisreihe des Landesindex wurde gewechselt: Punkte und Stand standen in der alten Reihe und werden
+    // geräumt (nie umrechnen, nie stehen lassen); die Prüfung liefert den Vorschlag der neuen Reihe.
+    function basisGewechselt() {
+        ['s_lik', 's_lik_stand'].forEach(function (id) { var e = $(id); if (e) { e.value = ''; delete e.dataset.manuell; } });
+        planen();
+    }
+
     window.fwMzm = {
         init: init, planen: planen, setzeModell: setzeModell, stufenSetzen: stufenSetzen, vorlage: vorlage,
-        modell: modell, zusammenfassung: zusammenfassung,
+        modell: modell, zusammenfassung: zusammenfassung, basisGewechselt: basisGewechselt,
         // für die Tests im Browser
         _zustand: zustand, _beispiel: beispiel
     };

@@ -61,7 +61,7 @@ case "$BRANCH" in
         echo "  Diese Fassung kennt: --dauerlauf"
         echo "  Ein Branchname beginnt nicht mit '--'. Liegt hier eine aeltere"
         echo "  Fassung von deploy.sh? Einmal von Hand nachziehen:"
-        echo "  PA_PY=\$HOME/.virtualenvs/myenv/bin/python bash deploy.sh"
+        echo "  PA_PY=\$HOME/.virtualenvs/env313/bin/python bash deploy.sh"
         exit 1 ;;
 esac
 
@@ -109,7 +109,7 @@ if ! PY="$(finde_python)"; then
     echo "✗ Kein Python gefunden, das Django importieren kann."
     echo "  Gesucht: \$PA_PY, python, python3, \$HOME/.virtualenvs/*/bin/python"
     echo "  Setze PA_PY auf den Python des virtualenv, z.B.:"
-    echo "  PA_PY=\$HOME/.virtualenvs/myenv/bin/python bash deploy.sh"
+    echo "  PA_PY=\$HOME/.virtualenvs/env313/bin/python bash deploy.sh"
     exit 1
 fi
 [ "${PA_PY:-}" = "$PY" ] || echo "· Python: $PY"
@@ -342,6 +342,17 @@ fi
 echo "→ manage.py benutzer_uebernahme"
 if ! "$PY" manage.py benutzer_uebernahme; then
     zurueckrollen "Benutzer-Übernahme fehlgeschlagen — KEIN Reload."
+fi
+
+# Sicherung VOR einer Migration (nur wenn eine aussteht): Eine Migration ist der Schritt, der Daten umbauen kann und sich
+# nicht zurücknehmen lässt. Der Stand davor liegt in einem eigenen Ordner mit eigener Aufbewahrung (5), damit er die
+# täglichen Sicherungen nicht verdrängt. Scheitert die Sicherung, läuft KEIN migrate; wer bewusst ohne sichern will
+# (Notfall-Hotfix), setzt DEPLOY_OHNE_SICHERUNG=1.
+if [ "${OFFEN:-0}" -gt 0 ] && [ "${DEPLOY_OHNE_SICHERUNG:-0}" != "1" ]; then
+    echo "→ manage.py sicherung (vor der Migration)"
+    if ! "$PY" manage.py sicherung --ohne-medien --behalten 5 --ziel "${SICHERUNG_VOR_MIGRATION:-$HOME/sicherungen/vor-migration}"; then
+        zurueckrollen "Sicherung vor der Migration fehlgeschlagen — KEIN migrate (Notfall: DEPLOY_OHNE_SICHERUNG=1)."
+    fi
 fi
 
 echo "→ manage.py migrate"

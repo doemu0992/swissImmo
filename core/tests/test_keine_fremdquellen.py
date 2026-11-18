@@ -57,7 +57,7 @@ ANDERE_FREMDQUELLEN = set()
 # Die Dateien liegen jetzt unter `static/`, geholt ueber npm — dieselbe Quelle
 # wie das CDN, nur ohne Laufzeitabhaengigkeit. Ihre Herkunft ist nachgemessen
 # (byteweise gegen das npm-Paket), nicht angenommen; welche Fassung wo liegt,
-# steht in `docs/FREMDBIBLIOTHEKEN.md`. `cdn.jsdelivr.net` und `unpkg.com`
+# steht in `CONTRIBUTING.md`. `cdn.jsdelivr.net` und `unpkg.com`
 # stehen darum oben in GESPERRT.
 #
 # Eine leere Liste ist kein Freibrief: Wer eine neue Fremdquelle einbaut, muss

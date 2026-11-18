@@ -9,6 +9,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator, RegexVa
 from django.db import models
 
 from core.funktionen import STUFEN_NAMEN, STUFEN_REIHENFOLGE
+from core.services.lik import LIK_BASIS, LIK_BASIS_CHOICES
 from core.tenancy import AlleOrganisationenManager, TenantManager
 from core.verschluesselt import VerschluesseltesCharField
 from core.organisation_kette import OrganisationAusKette, organisation_bestimmen
@@ -111,7 +112,9 @@ class Organisation(models.Model):
     aktueller_lik_punkte = models.DecimalField("Aktueller LIK", max_digits=6, decimal_places=1, default=107.1)
     # LIK-Basis (Landesindex): aktuell «Dezember 2020 = 100». Muss auf dem
     # amtlichen Formular ausgewiesen werden; alt/neu-Werte müssen dieselbe Basis haben.
-    lik_basis = models.CharField("LIK-Basis", max_length=40, default="Dezember 2020")
+    # Seit den Basisreihen: die VORGABE für neue Verträge, wenn weder Liegenschaft noch Eigentümer eine eigene
+    # festlegen (`core.services.lik.basis_vorgabe`). Massgeblich für die Rechnung ist `Mietvertrag.lik_basis`.
+    lik_basis = models.CharField("LIK-Basis", max_length=40, default=LIK_BASIS, choices=LIK_BASIS_CHOICES)
     aktueller_lik_stand = models.DateField("LIK Stand-Monat", null=True, blank=True)
     letztes_update_marktdaten = models.DateTimeField("Letztes Update Marktdaten", null=True, blank=True)
     # Periodensperre / Revisionssicherheit: Buchungen mit Datum ≤ diesem Stichtag
@@ -163,6 +166,13 @@ class Organisation(models.Model):
     antwort_kennung = models.CharField("Antwort-Kennung", max_length=40, unique=True, editable=False, blank=True)
     # Die Kennung vor der letzten Erneuerung bleibt bis `antwort_kennung_alt_bis` gueltig (30 Tage), damit
     # Antworten auf bereits versandte Mails nicht verloren gehen.
+    # Eigene Kennung der Rechnungsadresse (`<rechnungs_kennung>@<ANTWORT_DOMAIN>`). Bis 15.11.2026 war sie die
+    # Antwort-Kennung mit dem Zusatz `-rechnungen` — und damit für jeden Empfänger einer Ticket-Mail ableitbar.
+    rechnungs_kennung = models.CharField("Rechnungs-Kennung", max_length=40, unique=True, null=True, blank=True,
+                                         editable=False)
+    # Die Rechnungs-Kennung vor der letzten Erneuerung; gültig bis `antwort_kennung_alt_bis` (dasselbe Fenster).
+    rechnungs_kennung_alt = models.CharField("Vorherige Rechnungs-Kennung", max_length=40, blank=True, default='',
+                                             editable=False, db_index=True)
     antwort_kennung_alt = models.CharField("Vorherige Antwort-Kennung", max_length=40, blank=True, default='',
                                            editable=False, db_index=True)
     antwort_kennung_alt_bis = models.DateTimeField("Vorherige Kennung gueltig bis", null=True, blank=True,
@@ -191,6 +201,11 @@ class Organisation(models.Model):
         if not self.antwort_kennung:
             from core.services.antwort_eingang import neue_kennung
             self.antwort_kennung = neue_kennung(self.firma)
+        if not self.rechnungs_kennung:
+            from core.services.antwort_eingang import neue_kennung
+            self.rechnungs_kennung = neue_kennung(self.firma)
+            if kwargs.get('update_fields') is not None:
+                kwargs['update_fields'] = [*kwargs['update_fields'], 'rechnungs_kennung']
         super().save(*args, **kwargs)
         if neu:
             # Jede neue Verwaltung startet mit den Standard-Mahnstufen. Danach
@@ -268,7 +283,7 @@ class Mitgliedschaft(models.Model):
       Fremdschlüssel bedeutet das einen Kontowechsel für jeden betroffenen
       Mieter und Eigentümer; mit Mitgliedschaften ist es eine Zeile.
 
-    Entschieden am 15.08.2026, siehe `docs/ETAPPE-4-ORGANISATION.md`.
+    Entschieden am 15.08.2026, siehe `«ETAPPE-4-ORGANISATION» (früheres Dokument, Git-Verlauf)`.
 
     NUR TEAM-ROLLEN
     ---------------
@@ -325,6 +340,9 @@ class Mitgliedschaft(models.Model):
     rolle = models.CharField("Rolle", max_length=20, choices=ROLLEN,
                              default=ROLLE_SACHBEARBEITER)
     erstellt_am = models.DateTimeField("Angelegt am", auto_now_add=True)
+    #: Geheimnis in der Adresse des abonnierbaren Fristenkalenders dieser Person in dieser Verwaltung. Leer = kein
+    #: Abonnement. Je Person, damit ein Austritt oder ein verlorenes Gerät nicht den Kalender aller trifft.
+    fristen_feed_token = models.CharField("Kalender-Token", max_length=64, blank=True, default='', db_index=True)
     # Was die Startseite zuerst zeigt (Dashboard-Reduktion 26.10.2026): die
     # To-dos der Bewirtschaftung, die offenen Posten der Buchhaltung oder die
     # Kennzahlen der Übersicht. Leer heisst «nach Rolle» — siehe
@@ -389,6 +407,10 @@ class Eigentuemer(models.Model):
     # kuendigung). Leer (None) = Standard 14/30/60, Gebuehr 0/20/40,
     # Kuendigungsandrohung ab Stufe 3 — siehe core.services.mahnstufen.
     mahn_konfig = models.JSONField("Mahnstufen-Konfiguration", null=True, blank=True, default=None)
+    # Standard-Basisreihe des Landesindex für die Verträge dieses Mandats. Leer = Vorgabe der Organisation.
+    # Nur die Vorgabe für NEUE Verträge (`core.services.lik.basis_vorgabe`); bestehende behalten ihre Reihe.
+    lik_basis = models.CharField("LIK-Basisreihe (Standard)", max_length=40, blank=True, default='',
+                                 choices=LIK_BASIS_CHOICES)
     unterschrift_bild = models.ImageField("Digitale Unterschrift", upload_to="unterschriften/", blank=True, null=True)
 
 
@@ -501,6 +523,10 @@ class Mieter(models.Model):
 
     # --- KONTAKT ---
     email = models.EmailField("E-Mail", blank=True, default='')
+    # Weitere Adressen, von denen eine Mail als Antwort DIESER Person gilt (zweite Adresse, Arbeitsadresse). Liste
+    # kleingeschriebener Adressen. Entsteht, wenn die Verwaltung an einem Ticket einen unbekannten Absender bestätigt
+    # und «bei der Person speichern» wählt (`tickets.workflow.absender_bestaetigen`); entfernen in der Personenakte.
+    weitere_absender = models.JSONField("Weitere Absenderadressen", default=list, blank=True, editable=False)
     telefon_privat = models.CharField("Telefon Privat", max_length=50, blank=True, default='')
     telefon_geschaeft = models.CharField("Telefon Geschäft", max_length=50, blank=True, default='')
     mobile = models.CharField("Mobile", max_length=50, blank=True, default='')

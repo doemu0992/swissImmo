@@ -16,7 +16,7 @@ class CoreConfig(AppConfig):
 
         # Einmal beim Start: Passt das Schema zum Code? Wenn nicht, geht die
         # Anwendung in den Wartungsmodus, statt auf jeder Seite einen
-        # Traceback zu zeigen (siehe docs/WARTUNGSSEITE.md).
+        # Traceback zu zeigen (siehe ARCHITECTURE.md).
         #
         # Hier und nicht in der Middleware, weil das sonst eine zusaetzliche
         # Datenbankabfrage bei JEDEM Seitenaufruf waere — fuer einen Zustand,
@@ -27,3 +27,8 @@ class CoreConfig(AppConfig):
         # Startprüfungen registrieren (siehe core/checks.py). Nur der Import
         # zählt — die Funktionen tragen sich über `@register()` selbst ein.
         from core import checks  # noqa: F401
+
+        # Row-Level-Security: je nach `RLS_MODUS` die Probe oder den Abgleich der Sitzungsvariable einhängen
+        # (siehe core/rls.py). In der Vorgabe `aus` geschieht nichts.
+        from core import rls
+        rls.verbinden()

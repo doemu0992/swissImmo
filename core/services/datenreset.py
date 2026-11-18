@@ -63,6 +63,8 @@ BEHALTEN = {
     'core.SicherheitsEreignis': 'Betreiberlog der Installation',
     'core.PlattformMail': 'Abrufprotokoll des Plattform-Postfachs (plattformweit)',
     'core.PlattformEingangStatus': 'Abrufstatus des Plattform-Postfachs (plattformweit)',
+    'core.LikWert': 'Nachgetragene LIK-Monatswerte (plattformweit)',
+    'core.AbrufStatus': 'Zustand der Abrufe bei externen Diensten (plattformweit)',
     'core.ZweiterFaktor': 'hängt am Konto, nicht an der Verwaltung',
     'core.Wiederherstellungscode': 'Notfallcodes eines Kontos',
     # Konfiguration der Fallmaschine (wird vom Betrieb angelegt, nicht erfasst).

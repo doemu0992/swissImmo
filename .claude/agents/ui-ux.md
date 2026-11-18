@@ -53,7 +53,7 @@ Jedes `var(--ds-…)` muss definiert sein. Eine undefinierte CSS-Variable macht 
 
 `--ds-mute` statt `--ds-muted` hat genau so ausgesehen. Gefangen hat es `core/tests/test_ds_tokens.py`; ohne ihn wäre es erst im Dunkelmodus aufgefallen.
 
-Ebenso gebunden: der Zeichensatz. Das eigene SVG-Sprite steht in `core/templates/fw/_zeichen.html`, die Bedeutungen in `docs/ZEICHEN.md`, der Baustein ist `{% zeichen %}` / `{% zeichen_wert %}` aus `core/templatetags/zeichen.py`. **Ein Name, der in `ZEICHEN.md` unter „Noch ohne Bedeutung" steht, wird nicht verwendet** — ihn hier zuzuordnen hiesse, eine Bedeutung festzuschreiben, die niemand geprüft hat. Genau das ist einmal passiert.
+Ebenso gebunden: der Zeichensatz. Das eigene SVG-Sprite steht in `core/templates/fw/_zeichen.html`, die Bedeutungen in `core/templatetags/zeichen_tabelle.md`, der Baustein ist `{% zeichen %}` / `{% zeichen_wert %}` aus `core/templatetags/zeichen.py`. **Ein Name, der in `ZEICHEN.md` unter „Noch ohne Bedeutung" steht, wird nicht verwendet** — ihn hier zuzuordnen hiesse, eine Bedeutung festzuschreiben, die niemand geprüft hat. Genau das ist einmal passiert.
 
 ## Server oder Browser
 
@@ -69,7 +69,7 @@ Django rendert auf dem Server, Alpine im Browser. `{% zeichen_wert r.z %}` ergab
 
 ## Konzept v7
 
-`mockups/konzept-v8-cockpit.html` ist die Vorgabe (seit dem Redesign vom 30.09.2026), `docs/DESIGN-V8.md` der Bausteinkatalog. `docs/PLAN-V7.md` und `docs/UX-ANALYSE-V7.md` bleiben die Begründung für Aufbau und Bereiche, `docs/ENTSCHEIDE-V7.md` die getroffenen Entscheide. Die früheren Konzepte v2–v7 sind entfernt (in der Git-Geschichte nachlesbar).
+`mockups/konzept-v8-cockpit.html` ist die Vorgabe (seit dem Redesign vom 30.09.2026), `CONTRIBUTING.md` der Bausteinkatalog. `«PLAN-V7» (früheres Dokument, Git-Verlauf)` und `«UX-ANALYSE-V7» (früheres Dokument, Git-Verlauf)` bleiben die Begründung für Aufbau und Bereiche, `«ENTSCHEIDE-V7» (früheres Dokument, Git-Verlauf)` die getroffenen Entscheide. Die früheren Konzepte v2–v7 sind entfernt (in der Git-Geschichte nachlesbar).
 
 Beim Abgleich zählt nicht die Ähnlichkeit, sondern die Reihenfolge der Information. Belegtes Beispiel: In der Vorratszeile stand bei uns der **Schrittname** oben und der Fall darunter. Wer zwanzig Zeilen überfliegt, sucht den Fall; bei „Prüfen", „Nachfassen", „Freigeben" als Überschrift findet man nichts wieder. Der Schrittname ist nicht verschwunden, sondern in die Zeile darunter gewandert.
 
