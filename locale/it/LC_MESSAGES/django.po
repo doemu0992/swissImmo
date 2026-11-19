@@ -41086,3 +41086,12 @@ msgstr "Cerca un'impostazione …"
 
 msgid "Keine Einstellung gefunden."
 msgstr "Nessuna impostazione trovata."
+
+msgid "Berichte durchsuchen"
+msgstr "Cerca nei rapporti"
+
+msgid "Bericht suchen …"
+msgstr "Cerca un rapporto …"
+
+msgid "Kein Bericht gefunden."
+msgstr "Nessun rapporto trovato."
