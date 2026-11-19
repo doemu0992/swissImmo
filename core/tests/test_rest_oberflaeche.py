@@ -42,7 +42,7 @@ class RestOberflaecheTests(TestCase):
 
     def test_schaeden_filter_franzoesisch(self):
         seite = self.c.get('/neu/schaeden/').content.decode()
-        self.assertIn('Attend un tiers (', seite)
+        self.assertIn('Attend un tiers', seite)     # Reiter mit Zahl (UI-Zielbild), nicht mehr «… (n)»
         self.assertNotIn('Wartet auf Dritte', seite)
 
     def test_kuendigung_franzoesisch(self):

@@ -40621,3 +40621,12 @@ msgstr "Open for over 30 days"
 
 msgid "vermutlich festgefahren"
 msgstr "probably stuck"
+
+msgid "Handeln"
+msgstr "Act"
+
+msgid "Nachfassen"
+msgstr "Follow up"
+
+msgid "gemeldet von %(melder)s"
+msgstr "reported by %(melder)s"

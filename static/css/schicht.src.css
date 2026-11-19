@@ -1845,6 +1845,13 @@
         .fw-haken:hover{border-color:var(--ds-good);color:var(--ds-good)}
         .fw-haken svg{width:16px;height:16px}
         @media (max-width:640px){.fw-haken{width:40px;height:40px}}
+        /* Schäden (UI-Zielbild): Statuschip über dem Titel, «seit N Tagen» und Aktionsknopf rechts */
+        .fw-schadenzeile{align-items:center}
+        .fw-schaden-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+        .fw-seit{flex:none;font-size:13px;font-weight:700;color:var(--ds-muted);white-space:nowrap}
+        .fw-seit.fw-crit{color:var(--ds-crit)}
+        .fw-filter-zeile{padding:10px 20px 0}
+        @media (max-width:640px){.fw-schadenzeile{flex-wrap:wrap}.fw-schadenzeile .fw-mitte{flex-basis:calc(100% - 28px)}}
         /* Statuszeile statt Kennzahl-Kacheln (UI-Zielbild): schmale Kapseln mit Farbpunkt, Zahl und Wort in einem */
         .fw-statuszeile{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
         .fw-sz{display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:0 14px;border-radius:var(--ds-pill);

@@ -215,9 +215,11 @@ leer (`'' == ''` wählte still den letzten Eintrag vor) – Test: `core/tests/te
   Absender vergessen). Nie bei Läufen, Monatsabschluss, Zahllauf, Kaution oder versandten Mails.
 
 ### Schadenmeldungen und Mail
-- Schadensliste (`fw/schaeden.html`): Bei offenen Meldungen (neu, in Bearbeitung) ohne laufenden Auftrag steht «Auftrag erteilen»
-  in der Zeile. Der Knopf versendet nichts, er öffnet den Reiter «Handwerker & Kosten» in der Schublade (`?tab=handwerker`);
-  Handwerker, Text und Versand bleiben dort (`ohne_auftrag` in `fw_schaeden`, Aufträge sind vorgeladen, keine Zusatzabfragen).
+- Schadensliste (`fw/schaeden.html`, UI-Zielbild): Titel «Schäden», Sichten als Reiter mit Zahl in der Karte (`sicht_chips` = Wert, Text, Zahl), je Zeile
+  Statuschip (plus Notfall/Hoch/SLA) über dem Titel, «seit N Tagen» und die **nächste Aktion** als Knopf (`aktion` in `fw_schaeden`: «Auftrag erteilen» bei
+  offener Meldung ohne laufenden Auftrag, «Handeln» bei Befund, «Nachfassen» beim Warten auf Dritte, «Ansehen» bei erledigt, sonst «Öffnen»).
+  Jeder Knopf öffnet den Schaden in der Schublade (bei «Auftrag erteilen» auf dem Reiter «Handwerker & Kosten», `?tab=handwerker`) und versendet nichts;
+  Handwerker, Text und Versand bleiben dort. Die Aufträge sind vorgeladen, keine Zusatzabfragen. Test: `e2e/tests/schaeden-zielbild.spec.ts`.
 - Eingang: Mieterportal, internes Erfassen, Webformular `/schaden/melden/` (ordnet über die hinterlegte E-Mail-Adresse
   zu, antwortet immer gleich) und QR-Aushang `/aushang/<token>/` (Token je Liegenschaft, erneuerbar).
 - Antwortadressen: Jede Verwaltung hat `<antwort_kennung>@ANTWORT_DOMAIN` für Antworten und eine eigene

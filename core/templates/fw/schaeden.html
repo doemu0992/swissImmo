@@ -1,13 +1,13 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n rechte %}
-{% block title %}{% trans "Schadensfälle" %} — immoswiss{% endblock %}
+{% block title %}{% trans "Schäden" %} — immoswiss{% endblock %}
 
 {% block content %}
 
 <div class="fw-phead">
     <div>
-        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}">{% if not fw_kopf_reduziert %}<a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Akten" %}</a><span aria-hidden="true">/</span>{% endif %}<span>{% trans "Schäden" %}</span></nav>
-        <h1>{% trans "Schadensfälle" %}</h1>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}">{% if not fw_kopf_reduziert %}<a href="/neu/{{ lg_query }}">{% trans "Heute" %}</a><span aria-hidden="true">/</span>{% endif %}<span>{% trans "Schäden" %}</span></nav>
+        <h1>{% trans "Schäden" %}</h1>
         <p>{% trans "Schadensmeldungen und Reparaturaufträge — Meldung → Auftrag → automatische Info an Melder" %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/schaeden/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>
     <div class="fw-phead-knoepfe">
@@ -96,29 +96,36 @@
 
 {% comment %} Sichten bilden die ARBEIT ab, nicht die Statustabelle. Der
    Feinfilter der Vorfassung bleibt ueber `?status=` erreichbar. {% endcomment %}
-<div class="fw-filters">
-    {% for wert, label in sicht_chips %}
-    <a href="?sicht={{ wert }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"
-       class="fw-fchip{% if sicht == wert %} fw-on{% endif %}">{{ label }}</a>
-    {% endfor %}
-    <a href="?{% if nur_meine %}{% if sicht %}sicht={{ sicht }}{% endif %}{% else %}zustaendig=ich{% if sicht %}&amp;sicht={{ sicht }}{% endif %}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"
-       class="fw-fchip{% if nur_meine %} fw-on{% endif %}">{% trans "Meine Tickets" %}{% if nur_meine %} ×{% endif %}</a>
-    {% if status_filter %}
-    <a href="?{% if aktive_lg %}lg={{ aktive_lg.id }}{% endif %}" class="fw-fchip fw-on">{% trans "Status" %} «{{ status_filter }}» ×</a>
-    {% endif %}
-    {% if q %}
-    <a href="?{% if sicht %}sicht={{ sicht }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"
-       class="fw-fchip fw-on">{% trans "Suche" %} «{{ q }}» ×</a>
-    {% endif %}
-</div>
-
 <div class="fw-card">
+    {% comment %} UI-Zielbild: Die Sichten stehen als Reiter mit Zahl in der Karte; Meine Tickets, Status- und Suchfilter darunter. {% endcomment %}
+    <div class="fw-reiter" role="tablist">
+        {% for wert, label, n in sicht_chips %}
+        <a href="?sicht={{ wert }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" role="tab" aria-selected="{% if sicht == wert %}true{% else %}false{% endif %}"{% if sicht == wert %} class="hier"{% endif %}>{{ label }}{% if n is not None %} <span class="fw-z">{{ n }}</span>{% endif %}</a>
+        {% endfor %}
+    </div>
+    <div class="fw-filters fw-filter-zeile">
+        <a href="?{% if nur_meine %}{% if sicht %}sicht={{ sicht }}{% endif %}{% else %}zustaendig=ich{% if sicht %}&amp;sicht={{ sicht }}{% endif %}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"
+           class="fw-fchip{% if nur_meine %} fw-on{% endif %}">{% trans "Meine Tickets" %}{% if nur_meine %} ×{% endif %}</a>
+        {% if status_filter %}
+        <a href="?{% if aktive_lg %}lg={{ aktive_lg.id }}{% endif %}" class="fw-fchip fw-on">{% trans "Status" %} «{{ status_filter }}» ×</a>
+        {% endif %}
+        {% if q %}
+        <a href="?{% if sicht %}sicht={{ sicht }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"
+           class="fw-fchip fw-on">{% trans "Suche" %} «{{ q }}» ×</a>
+        {% endif %}
+    </div>
     {% for row in rows %}
-    <div class="fw-zeile klick" data-bei-klick="fwModalOpenUrl" data-args='["/neu/schaeden/{{ row.t.id }}/","Schaden #{{ row.t.id }}"]'>
+    {% comment %} UI-Zielbild: Statuschip über dem Titel, Objekt und Melder darunter, rechts «seit N Tagen» und die nächste Aktion als Knopf. {% endcomment %}
+    <div class="fw-zeile klick fw-schadenzeile" data-bei-klick="fwModalOpenUrl" data-args='["/neu/schaeden/{{ row.t.id }}/","Schaden #{{ row.t.id }}"]'>
         <span class="fw-marker{% if row.stufe != 'good' %} {{ row.stufe }}{% endif %}"></span>
         <div class="fw-mitte">
+            <div class="fw-s fw-schaden-tags">
+                <span class="fw-chip {{ row.s_cls }}">{{ row.s_label }}</span>
+                {% if row.t.prioritaet|lower == 'notfall' %}<span class="fw-chip fw-crit">{% trans "Notfall" %}</span>{% elif row.t.prioritaet|lower == 'hoch' %}<span class="fw-chip fw-crit">{% trans "Hoch" %}</span>{% endif %}
+                {% if row.ueberfaellig %}<span class="fw-chip fw-crit" title="{% trans 'Zielzeit überschritten' %}">{% trans "SLA überfällig" %}</span>{% endif %}
+            </div>
             <div class="fw-t">{{ row.t.titel|truncatechars:70 }}</div>
-            <div class="fw-s">{{ row.objekt }}{% if row.t.kategorie %} · {{ row.t.kategorie }}{% endif %} · {{ row.melder }} · {% blocktrans count n=row.alter %}vor {{ n }} Tag{% plural %}vor {{ n }} Tagen{% endblocktrans %}</div>
+            <div class="fw-s">{{ row.objekt }}{% if row.t.kategorie %} · {{ row.t.kategorie }}{% endif %} · {% blocktrans with melder=row.melder %}gemeldet von {{ melder }}{% endblocktrans %}{% if row.t.zugewiesen_an %} · {% trans "Zuständig" %}: {{ row.t.zugewiesen_an.get_full_name|default:row.t.zugewiesen_an.username }}{% endif %}</div>
             {% if row.befunde %}
             <div class="fw-s flex-wrap">
                 {% for b in row.befunde %}
@@ -127,13 +134,9 @@
             </div>
             {% endif %}
         </div>
-        {% if kann_schreiben and row.ohne_auftrag %}<button type="button" data-stop class="fw-btn fw-knapp" data-bei-klick="fwModalOpenUrl"
-                data-args='["/neu/schaeden/{{ row.t.id }}/?tab=handwerker","Schaden #{{ row.t.id }}"]'>{% trans "Auftrag erteilen" %}</button>{% endif %}
-        {% if row.t.zugewiesen_an %}<span class="fw-chip fw-mut" title="{% trans 'Zuständig' %}">{{ row.t.zugewiesen_an.get_full_name|default:row.t.zugewiesen_an.username }}</span>{% endif %}
-        {% if row.ueberfaellig %}<span class="fw-chip fw-crit" title="{% trans 'Zielzeit überschritten' %}">{% trans "SLA überfällig" %}</span>{% endif %}
-        {% if row.t.prioritaet|lower == 'notfall' %}<span class="fw-chip fw-crit">{% trans "Notfall" %}</span>{% elif row.t.prioritaet|lower == 'hoch' %}<span class="fw-chip fw-crit">{% trans "Hoch" %}</span>{% endif %}
-        <span class="fw-chip fw-mut">{{ row.s_label }}</span>
-        {% zeichen 'weiter' klasse='fw-klein' %}
+        <b class="fw-seit{% if row.stufe == 'crit' %} fw-crit{% endif %}">{% blocktrans count n=row.alter %}seit {{ n }} Tag{% plural %}seit {{ n }} Tagen{% endblocktrans %}</b>
+        <button type="button" data-stop class="fw-btn fw-knapp{% if row.ohne_auftrag and kann_schreiben %} fw-primary{% endif %}" data-bei-klick="fwModalOpenUrl"
+                data-args='["/neu/schaeden/{{ row.t.id }}/{% if row.aktion_tab %}?tab={{ row.aktion_tab }}{% endif %}","Schaden #{{ row.t.id }}"]'>{{ row.aktion }}</button>
     </div>
     {% empty %}
     <div>
