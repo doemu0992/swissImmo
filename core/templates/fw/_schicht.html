@@ -99,7 +99,7 @@ und einen Stilblock enthaelt.
                sind die hellste und die dunkelste Stelle der Karte: Weiss darauf 5.2:1 / 6.1:1 / 7.7:1, auch
                mit 92 % Deckung noch >= 4.5:1. Heller darf kein Pixel einer Karte mit weisser Kleinschrift sein. */
             --ds-karte-hell:#b84a1a;--ds-karte-mitte:#a8421a;--ds-karte-tief:#8f3714;
-            --ds-radius:24px;--ds-radius-sm:14px;--ds-pill:999px;
+            --ds-radius:24px;--ds-radius-sm:14px;--ds-pill:999px;--ds-kreis:50%;
             /* Knoepfe und Felder (9), Kapsel-Etiketten (5), Dialoge (14). */
             --ds-radius-knopf:12px;--ds-radius-xs:8px;--ds-radius-lg:28px;
             --ds-font:'DM Sans','IBM Plex Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
@@ -161,7 +161,7 @@ und einen Stilblock enthaelt.
            innerhalb der Ansicht, es wechselt sie nicht. */
         .fw-band{display:flex;flex-wrap:wrap;align-items:center;gap:6px;
             padding:12px 20px;border-bottom:1px solid var(--ds-line);font-size:12.5px}
-        .fw-band>a{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:999px;
+        .fw-band>a{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:var(--ds-pill);
             border:1px solid var(--ds-line);color:var(--ds-muted);background:var(--ds-surface);font-weight:500;
             text-decoration:none;white-space:nowrap;transition:border-color .12s,color .12s,background .12s}
         .fw-band>a b{font-weight:600;opacity:.7}
@@ -180,7 +180,7 @@ und einen Stilblock enthaelt.
            Rahmen am `label` und dem Feld ohne eigenen bleiben es zwei
            Kapseln, die nebeneinander passen. */
         .fw-kopffilter label{display:inline-flex;align-items:center;gap:5px;
-            height:30px;padding:0 11px;border:1px solid var(--ds-line);border-radius:999px;
+            height:30px;padding:0 11px;border:1px solid var(--ds-line);border-radius:var(--ds-pill);
             background:var(--ds-surface);white-space:nowrap;max-width:100%;transition:border-color .12s}
         .fw-kopffilter label:focus-within{border-color:var(--ds-brand);box-shadow:0 0 0 3px var(--ds-brand-soft)}
         /* DAS AUSWAHLFELD BEMISST SICH AM LAENGSTEN EINTRAG, nicht an der
@@ -299,7 +299,7 @@ und einen Stilblock enthaelt.
         .fw-chip.fw-good{background:var(--ds-good-soft);color:var(--ds-good)}.fw-chip.fw-warn{background:var(--ds-warn-soft);color:var(--ds-warn)}
         .fw-chip.fw-crit{background:var(--ds-crit-soft);color:var(--ds-crit)}.fw-chip.fw-info{background:var(--ds-info-soft);color:var(--ds-info)}
         .fw-chip.fw-brand{background:var(--ds-brand-soft);color:var(--ds-brand-600)}.fw-chip.fw-mut{background:var(--ds-surface-2);color:var(--ds-muted)}
-        .fw-chip.fw-dot::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+        .fw-chip.fw-dot::before{content:"";width:6px;height:6px;border-radius:var(--ds-kreis);background:currentColor}
         /* Filter-Chips */
         .fw-filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
         .fw-fchip{display:inline-flex;align-items:center;gap:6px;height:28px;font-size:12.5px;font-weight:500;padding:0 11px;border-radius:var(--ds-pill);border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-muted);cursor:pointer;text-decoration:none;transition:border-color .12s,color .12s,background .12s}
@@ -317,14 +317,14 @@ und einen Stilblock enthaelt.
            auskommentierten Leiche. */
         /* Chart + Donut */
         svg.fw-chart{width:100%;height:150px;display:block}
-        .fw-donut{width:120px;height:120px;border-radius:50%;position:relative;flex:none}
-        .fw-donut::after{content:"";position:absolute;inset:14px;border-radius:50%;background:var(--ds-surface)}
+        .fw-donut{width:120px;height:120px;border-radius:var(--ds-kreis);position:relative;flex:none}
+        .fw-donut::after{content:"";position:absolute;inset:14px;border-radius:var(--ds-kreis);background:var(--ds-surface)}
         .fw-donut .fw-c{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
         .fw-donut .fw-c .fw-b{font-size:22px;font-weight:780;color:var(--ds-ink)}
         .fw-donut .fw-c .fw-s{font-size:10px;color:var(--ds-faint);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
         .fw-dleg{display:flex;flex-direction:column;gap:8px;font-size:13px;flex:1;min-width:120px;color:var(--ds-ink)}
         .fw-dleg .fw-r{display:flex;align-items:center;gap:9px}.fw-dleg .fw-r i{width:10px;height:10px;border-radius:3px;flex:none}.fw-dleg .fw-r .fw-n{margin-left:auto;font-weight:700}
-        .fw-avci{width:30px;height:30px;border-radius:50%;background:var(--ds-brand-soft);color:var(--ds-brand-600);display:grid;place-items:center;font-weight:700;font-size:12px;flex:none}
+        .fw-avci{width:30px;height:30px;border-radius:var(--ds-kreis);background:var(--ds-brand-soft);color:var(--ds-brand-600);display:grid;place-items:center;font-weight:700;font-size:12px;flex:none}
         /* Info-Karten für Detailseiten: Icon-Kopf + Key/Value-Zeilen (Mockup-Look) */
         .fw-nomb{margin-bottom:0}
         .fw-ic{width:30px;height:30px;border-radius:var(--ds-radius-knopf);display:grid;place-items:center;flex:none;font-size:13px}
@@ -1083,7 +1083,7 @@ und einen Stilblock enthaelt.
         .fw-hinweis.crit{background:var(--ds-crit-soft)}
         .fw-hinweis.info{background:var(--ds-info-soft)}
         .fw-hinweis.good{background:var(--ds-good-soft)}
-        .fw-hinweis .fw-hi{width:26px;height:26px;border-radius:999px;display:flex;
+        .fw-hinweis .fw-hi{width:26px;height:26px;border-radius:var(--ds-pill);display:flex;
             align-items:center;justify-content:center;flex:0 0 26px;color:var(--ds-auf-satt);font-size:12px}
         .fw-hinweis.warn .fw-hi{background:var(--ds-warn)}
         .fw-hinweis.crit .fw-hi{background:var(--ds-crit)}
@@ -1157,7 +1157,7 @@ und einen Stilblock enthaelt.
            `accent-indigo-600` — die Utility trug die Farbe fest, statt sie aus
            dem Token zu nehmen, und lief damit an der Palette vorbei. */
         .fw-haken{accent-color:var(--ds-brand)}
-        .fw-punkt{width:8px;height:8px;border-radius:999px;flex-shrink:0;
+        .fw-punkt{width:8px;height:8px;border-radius:var(--ds-pill);flex-shrink:0;
             background:var(--ds-faint)}
         .fw-punkt.crit{background:var(--ds-crit)}
         .fw-punkt.warn{background:var(--ds-warn)}
