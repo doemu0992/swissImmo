@@ -96,6 +96,8 @@ Hauswart: Schadenfälle seiner Liegenschaften.
 ## 5. Oberfläche
 
 ### Design-System
+- Listen: Die Sortierung wirkt sofort, «Anwenden» (`fw/_listwerkzeug.html`) ist nur ohne Skript sichtbar; Gesucht wird auf dem Server
+  (Enter), weil mit Seiten ein Filter im Browser nur die aktuelle Seite träfe (`e2e/tests/liste-sortierung.spec.ts`).
 - Kennzahlen stehen sofort im Endwert, nie als Hochzähl-Animation (`test_kennzahlen_sofort`).
 - Quelle der Stilschicht ist `core/templates/fw/_schicht.html`; ausgeliefert wird `static/css/schicht.css`. Nach jeder
   Änderung `python manage.py schicht_bauen` (`test_schicht_gebaut`).
