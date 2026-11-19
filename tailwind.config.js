@@ -5,7 +5,6 @@
    tragen, gleich aus wie die, die schon auf fw-Bausteinen stehen:
    `rounded-2xl` ist dieselbe Karte wie `fw-card`. */
 module.exports = {
-  content: require('./tailwind.inhalt.js'),
   theme: { extend: {
     colors: require('./tailwind.palette.js'),
     borderRadius: { md: '8px', lg: '9px', xl: '12px', '2xl': '12px', '3xl': '16px' },

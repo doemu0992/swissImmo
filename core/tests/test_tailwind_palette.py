@@ -388,15 +388,20 @@ class HuellenTests(TestCase):
         # `assertIn` mit der ganzen Datei als Heuhaufen wuerde im Fehlerfall
         # 67 KB CSS in den Bericht schreiben. Eine Fehlermeldung, die niemand
         # liest, ist so gut wie keine — deshalb erst suchen, dann urteilen.
-        gefunden = re.search(rf'\.{SONDE}\{{[^}}]*?(\d+ \d+ \d+)', css)
+        # Tailwind 3 schrieb `rgb(r g b / …)`, Tailwind 4 schreibt die Farbe als Hex (`color:#9e9b94`).
+        gefunden = re.search(rf'\.{SONDE}\{{[^}}]*?(?:#([0-9a-fA-F]{{6}})|(\d+ \d+ \d+))', css)
         self.assertIsNotNone(
             gefunden,
             f'In {GEBAUT} gibt es keine Regel `.{SONDE}` — wurde die '
             f'Datei ueberhaupt gebaut? `npm run css` ausfuehren. '
             f'{SONDE_HINWEIS}')
+        if gefunden.group(1):
+            rgb = tuple(int(gefunden.group(1)[i:i + 2], 16) for i in (0, 2, 4))
+        else:
+            rgb = tuple(int(x) for x in gefunden.group(2).split())
         self.assertEqual(
-            gefunden.group(1), f'{r} {g} {b}',
-            f'`{SONDE}` steht in {GEBAUT} auf rgb({gefunden.group(1)}), '
+            rgb, (r, g, b),
+            f'`{SONDE}` steht in {GEBAUT} auf rgb{rgb}, '
             f'die Palette sagt #{marke} = rgb({r} {g} {b}). Die Palette wurde '
             f'geaendert, aber nicht neu gebaut — `npm run css` ausfuehren.')
 

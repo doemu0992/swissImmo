@@ -118,6 +118,18 @@ Hauswart: Schadenfälle seiner Liegenschaften.
   einen zugänglichen Namen (`test_feldnamen`).
 - Mehrzeilige Kommentare in Vorlagen mit `{% comment %}`, nie `{# #}` über mehrere Zeilen.
 
+### Tailwind (Version 4)
+- Gebaut wird mit `npm run css` (`tailwind.bauen.js`): Das Skript löst die Muster aus `tailwind.inhalt.js` (mit `!` für die
+  Testdateien) zu einzelnen Dateien auf, schreibt daraus eine Eingabedatei mit einem `@source` je Datei und ruft
+  `@tailwindcss/cli` auf. Ergebnis ist die eingecheckte `static/css/tailwind.css`; nach jeder neuen Utility-Klasse neu bauen
+  (`test_tailwind_gebaut`). Palette und Tokens stehen weiter in `tailwind.config.js` / `tailwind.palette.js` (Weiterleitung per
+  `@config`).
+- `tailwind.eingang.css` hält fest, was von Tailwind 3 unverändert bleibt, damit die Seiten gleich aussehen (Vergleich am
+  19.11.2026: 124 Seiten bei 1280 und 390 px, Bild für Bild): Utilities stehen **nicht** in einer `@layer` (sonst schlüge jede
+  ungeschichtete `fw-*`-Regel auch eine stärkere Utility, z. B. `space-y-4` gegen `.fw-hilfe`), `space-y-*` setzt den Abstand wie
+  früher vor jedes sichtbare Kind, Rand-, Platzhalter- und Knopf-Vorgaben, die Höhe der Datumsfelder und der Knopf der Dateiwahl.
+- Tailwind 4 setzt moderne Browser voraus (Safari 16.4, Chrome 111, Firefox 128).
+
 ### Palette
 
 `test_palette` vergleicht diese Tabelle mit `core/templates/fw/_schicht.html`. Vorbild: `mockups/konzept-v8-cockpit.html`;

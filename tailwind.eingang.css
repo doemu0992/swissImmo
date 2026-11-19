@@ -1,6 +1,35 @@
-/* Eingang für den Tailwind-Bau. Erzeugt static/css/tailwind.css (`npm run css`).
-   Eigene Regeln gehören NICHT hierher, sondern in die Komponentenschicht
+/* Eingang für den Tailwind-Bau (v4). `npm run css` ergänzt die Quellen aus `tailwind.inhalt.js` (`tailwind.bauen.js`)
+   und erzeugt static/css/tailwind.css. Eigene Regeln gehören NICHT hierher, sondern in die Komponentenschicht
    (fw-*) in fw/base.html — sonst stehen Stile an zwei Orten. */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Die Utilities stehen NICHT in einer `@layer` (anders als in der Voreinstellung von Tailwind 4): Die Seiten haben
+   eigene, ungeschichtete Regeln (`fw-*`), und Tailwind 3 entschied zwischen beiden nach Gewichtung und Reihenfolge.
+   Eine Schicht schlüge jede ungeschichtete Regel, auch eine schwächere (gemessen an `space-y-4` gegen `.fw-hilfe`). */
+@layer theme, base;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css" source(none);
+@config "./tailwind.config.js";
+
+/* Tailwind 3 → 4: Was die Grundschicht (Preflight) früher von sich aus tat, bleibt so, damit die Seiten gleich aussehen
+   (Vergleich Bild für Bild am 19.11.2026, siehe CONTRIBUTING «Tailwind»). Farben aus der Palette (`tailwind.palette.js`). */
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button { border-color: --theme(--color-gray-200, currentColor); }
+  input::placeholder, textarea::placeholder { color: --theme(--color-gray-400, currentColor); }
+  button, [role="button"] { cursor: pointer; }
+  :disabled { cursor: default; }
+  /* Datumsfelder: Tailwind 4 nimmt den Innenabstand des Feldes weg (für iOS); die Seiten sind auf die Chrome-Höhe gebaut */
+  ::-webkit-datetime-edit-fields-wrapper { padding: 1px 0; }
+  /* Dateiwahl: Tailwind 4 nimmt dem Knopf «Datei auswählen» Rand, Hintergrund und Abstand; früher blieb er wie im Browser */
+  ::file-selector-button { all: revert-layer; appearance: button; font: inherit; }
+}
+
+/* `space-y-*` wie in Tailwind 3: Abstand vor jedem sichtbaren Kind ausser dem ersten. Tailwind 4 setzt ihn unter jedes Kind
+   ausser dem letzten; steht ein verstecktes Kind (`<input type="hidden">`, `<script>`) dazwischen oder am Ende, fehlt dann
+   der Abstand (am 19.11.2026 gemessen: 32 px auf der Seite «Konto»). */
+@utility space-y-* {
+  /* Tailwinds eigene Regel setzt den Abstand unter jedes Kind; sie hat keine Gewichtung (`:where`), diese hier übertrumpft sie */
+  & > :not([hidden]) { margin-bottom: 0; }
+  & > :not([hidden]) ~ :not([hidden]) {
+    margin-top: calc(var(--spacing) * --value(number));
+  }
+}

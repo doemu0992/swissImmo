@@ -29,3 +29,6 @@ e2e_db.sqlite3*
 
 # Selbst erzeugter Verschluesselungsschluessel (NIEMALS hochladen)
 .geheimnis_schluessel
+
+# Zwischendatei des Tailwind-Baus (tailwind.bauen.js löscht sie wieder)
+.tailwind-eingabe.css
