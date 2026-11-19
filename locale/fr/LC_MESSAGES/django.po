@@ -41175,3 +41175,6 @@ msgstr "Dans 1 semaine"
 
 msgid "In 1 Monat"
 msgstr "Dans 1 mois"
+
+msgid "Auftrag erteilen"
+msgstr "Donner un mandat"

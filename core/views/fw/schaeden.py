@@ -142,6 +142,9 @@ def fw_schaeden(request):
             (t.prioritaet or 'Mittel', 'fw-flaeche2 fw-mutet'))
         from tickets.sla import ist_ueberfaellig
         zeile['ueberfaellig'] = ist_ueberfaellig(t)
+        # «Auftrag erteilen» nur, wo noch keiner läuft (stornierte zählen nicht). Die Aufträge sind vorgeladen.
+        zeile['ohne_auftrag'] = (t.status in ('neu', 'in_bearbeitung') and
+                                 not any(x.status != 'storniert' for x in t.handwerker_auftraege.all()))
         zeile['objekt'] = (f"{t.liegenschaft.strasse}, {t.liegenschaft.ort}"
                            if t.liegenschaft_id else '—')
         zeile['melder'] = (t.gemeldet_von.display_name if t.gemeldet_von_id

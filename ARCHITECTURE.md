@@ -176,6 +176,9 @@ leer (`'' == ''` wählte still den letzten Eintrag vor) – Test: `core/tests/te
   Absender vergessen). Nie bei Läufen, Monatsabschluss, Zahllauf, Kaution oder versandten Mails.
 
 ### Schadenmeldungen und Mail
+- Schadensliste (`fw/schaeden.html`): Bei offenen Meldungen (neu, in Bearbeitung) ohne laufenden Auftrag steht «Auftrag erteilen»
+  in der Zeile. Der Knopf versendet nichts, er öffnet den Reiter «Handwerker & Kosten» in der Schublade (`?tab=handwerker`);
+  Handwerker, Text und Versand bleiben dort (`ohne_auftrag` in `fw_schaeden`, Aufträge sind vorgeladen, keine Zusatzabfragen).
 - Eingang: Mieterportal, internes Erfassen, Webformular `/schaden/melden/` (ordnet über die hinterlegte E-Mail-Adresse
   zu, antwortet immer gleich) und QR-Aushang `/aushang/<token>/` (Token je Liegenschaft, erneuerbar).
 - Antwortadressen: Jede Verwaltung hat `<antwort_kennung>@ANTWORT_DOMAIN` für Antworten und eine eigene

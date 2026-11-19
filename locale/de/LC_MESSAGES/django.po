@@ -39403,3 +39403,6 @@ msgstr "In 1 Woche"
 
 msgid "In 1 Monat"
 msgstr "In 1 Monat"
+
+msgid "Auftrag erteilen"
+msgstr "Auftrag erteilen"
