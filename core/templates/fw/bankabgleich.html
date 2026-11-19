@@ -162,9 +162,10 @@ anderes schachteln.
                     <div class="fw-t break-words">{% if z.zahler %}{{ z.zahler }}{% else %}<span class="fw-mutet">{% trans "Auftraggeber von der Bank nicht geliefert" %}</span>{% endif %}
                         {% if z.zahler_geraten %}<span class="fw-marke-kapsel" title="{% trans 'Die Bank liefert keine eigene Auftraggeber-Spalte — aus dem Buchungstext gelesen' %}">{% trans "aus Buchungstext" %}</span>{% endif %}</div>
                     <div class="fw-s">{% blocktrans with datum=z.datum_eingang|date:"d.m.Y" %}Valuta {{ datum }}{% endblocktrans %}{% if z.ref %} · {% trans "Ref." %} <span class="fw-mono">{{ z.ref }}</span>{% endif %}</div>
+                    {% if z.mitteilung %}<div class="fw-s break-words">{{ z.mitteilung }}</div>{% endif %}
                     <div class="fw-bhinweis">
                         <span class="fw-chip {% if z.alt %}fw-crit{% else %}fw-warn{% endif %}">{% blocktrans count n=z.tage %}seit {{ n }} Tag{% plural %}seit {{ n }} Tagen{% endblocktrans %}</span>
-                        {% if z.vorschlag.stark %}<span class="fw-chip fw-warn">{% blocktrans with mieter=z.vorschlag.mieter %}Vorschlag: {{ mieter }}{% endblocktrans %}</span>{% endif %}
+                        {% if z.vorschlag.stark %}<span class="fw-chip fw-warn">{% blocktrans with mieter=z.vorschlag.mieter %}Vorschlag: {{ mieter }}{% endblocktrans %}</span>{% elif z.vorschlag %}<span class="fw-chip fw-info" title="{% trans 'Zahler prüfen, bevor Sie zuordnen.' %}">{% trans "Nur der Betrag passt" %}: {{ z.vorschlag.mieter }}</span>{% endif %}
                     </div>
                     {% if z.klaerung_notiz %}<div class="fw-s fw-notiz">✎ {{ z.klaerung_notiz }}</div>{% endif %}
                 </div>
