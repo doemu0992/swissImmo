@@ -56,15 +56,15 @@ test.describe('Bestandsfilter `lg` in Zeile 1', () => {
   test.describe('am Telefon', () => {
     test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
-    test('Das Symbol trägt einen Punkt bei aktivem Filter, die Auswahl filtert', async ({ page }) => {
+    test('Ohne Filter nur das Symbol, bei aktivem Filter steht die Strasse im Knopf', async ({ page }) => {
       await login(page);
       await goto(page, '/neu/liegenschaften/');
-      const punkt = () => page.locator('.fw-bestand').evaluate((el) => getComputedStyle(el, '::after').content);
-      expect(await punkt(), 'Ohne Filter steht kein Punkt').toBe('none');
+      const breite = async () => (await page.locator('.fw-bestand').boundingBox())!.width;
+      expect(await breite(), 'Ohne Filter bleibt der Knopf ein Symbol').toBeLessThan(60);
+      await expect(page.locator('.fw-bestand-name')).toHaveCount(0);
       await waehle(page, 1);
-      expect(await punkt(), 'Bei aktivem Filter fehlt der Punkt am Symbol').not.toBe('none');
-      const b = (await page.locator('.fw-bestand').boundingBox())!;
-      expect(b.width).toBeLessThan(60);
+      await expect(page.locator('.fw-bestand-name'), 'Bei aktivem Filter fehlt der Name im Knopf').toBeVisible();
+      expect(await breite()).toBeLessThanOrEqual(160);
     });
   });
 });
