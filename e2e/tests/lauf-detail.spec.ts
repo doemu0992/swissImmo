@@ -15,7 +15,7 @@ test('Lauf-Detail: kein seitliches Rollen, Knöpfe erreichbar', async ({ page })
   await goto(page, '/neu/laeufe/');
 
   // Der Titel eines Schritts führt ins Lauf-Detail (Monatsabschluss als Schrittliste).
-  const detail = page.locator('.fw-schritt .fw-t a[href^="/neu/laeufe/"]').first();
+  const detail = page.locator('.fw-schritt.jetzt .fw-t a[href^="/neu/laeufe/"]').first();
   await expect(detail, 'Auf «Monatsabschluss» steht kein Lauf — der E2E-Bestand sät keine offenen Läufe.').toBeVisible();
   await detail.click();
   await expect(page).toHaveURL(/\/neu\/laeufe\/\d+\/$/);
