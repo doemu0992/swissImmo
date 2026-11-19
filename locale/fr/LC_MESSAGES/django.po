@@ -41166,3 +41166,12 @@ msgstr "Rechercher un rapport …"
 
 msgid "Kein Bericht gefunden."
 msgstr "Aucun rapport trouvé."
+
+msgid "Morgen"
+msgstr "Demain"
+
+msgid "In 1 Woche"
+msgstr "Dans 1 semaine"
+
+msgid "In 1 Monat"
+msgstr "Dans 1 mois"

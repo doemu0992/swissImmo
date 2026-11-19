@@ -41095,3 +41095,12 @@ msgstr "Cerca un rapporto …"
 
 msgid "Kein Bericht gefunden."
 msgstr "Nessun rapporto trovato."
+
+msgid "Morgen"
+msgstr "Domani"
+
+msgid "In 1 Woche"
+msgstr "Tra 1 settimana"
+
+msgid "In 1 Monat"
+msgstr "Tra 1 mese"

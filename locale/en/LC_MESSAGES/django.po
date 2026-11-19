@@ -40500,3 +40500,12 @@ msgstr "Search a report …"
 
 msgid "Kein Bericht gefunden."
 msgstr "No report found."
+
+msgid "Morgen"
+msgstr "Tomorrow"
+
+msgid "In 1 Woche"
+msgstr "In 1 week"
+
+msgid "In 1 Monat"
+msgstr "In 1 month"

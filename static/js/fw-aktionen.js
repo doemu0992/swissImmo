@@ -29,6 +29,8 @@
  *   data-zurueck                Klick: eine Seite zurück, wenn es eine vorherige gibt, sonst normal weiter
  *   data-auswahl-sync           Änderung: Klasse `fw-on` an den Beschriftungen der Auswahl (.fw-auswahl) nachführen
  *   data-grund-abfragen="Text"  Absenden: Grund erfragen (`|` = Zeilenumbruch) und ins Feld `grund` schreiben
+ *   data-knopf-erst-gueltig     Formular: der Absende-Knopf bleibt gesperrt, bis alle Pflichtfelder gültig sind
+ *   data-frist-tage="N"         Klick: Datumsfeld #<data-frist-ziel> auf heute + N Tage setzen
  *   data-pruefe-gewaehlt=".sel" Absenden nur, wenn `.sel` mindestens einmal passt (data-pruefe-meldung = Hinweis)
  */
 (function () {
@@ -118,6 +120,15 @@
             window.open(el.getAttribute('data-neues-fenster'), '_blank');
         }
         if ((el = t.closest('[data-auswaehlen]')) && !gestoppt(el, t) && el.select) el.select();
+        if ((el = t.closest('[data-frist-tage]')) && !gestoppt(el, t)) {
+            var feld = byId(el.getAttribute('data-frist-ziel'));
+            if (feld) {
+                var d = new Date();
+                d.setDate(d.getDate() + parseInt(el.getAttribute('data-frist-tage'), 10));
+                feld.value = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+                feld.dispatchEvent(new Event('input', {bubbles: true}));
+            }
+        }
         // Zuletzt: Zeilen-Verweis. Er gilt nicht, wenn auf ein `data-stop`-Element in der Zeile geklickt wurde.
         if ((el = t.closest('[data-gehe-zu]')) && !gestoppt(el, t)) {
             window.location = el.getAttribute('data-gehe-zu');
@@ -176,6 +187,22 @@
             if (z) z.classList.toggle('hidden', !el.checked);
         }
     });
+    // Absende-Knopf erst bei gültigen Eingaben (ohne JS bleibt er bedienbar; der Server prüft immer).
+    function knopfNachfuehren(f) {
+        var k = f.querySelector('button[type="submit"]');
+        if (k) k.disabled = !f.checkValidity();
+    }
+    function knoepfeNachfuehren(wurzel) {
+        wurzel.querySelectorAll('form[data-knopf-erst-gueltig]').forEach(knopfNachfuehren);
+    }
+    ['input', 'change'].forEach(function (ev) {
+        document.addEventListener(ev, function (e) {
+            var f = e.target && e.target.closest ? e.target.closest('form[data-knopf-erst-gueltig]') : null;
+            if (f) knopfNachfuehren(f);
+        });
+    });
+    knoepfeNachfuehren(document);
+
     // Datenwerte als Mass (Balken, Kurven): `data-breite="42"` -> width:42%. Die Werte kommen vom Server als Zahl;
     // gesetzt werden sie über `fwStil` (konstruiertes Stylesheet, `static/js/fw-stil.js`), nie als Inline-Stil. Gilt auch für später geladene Teile (Schublade).
     var MASSE = {'data-breite': 'width', 'data-hoehe': 'height', 'data-links': 'left', 'data-oben': 'top'};
@@ -198,7 +225,7 @@
     new MutationObserver(function (eintraege) {
         eintraege.forEach(function (e) {
             for (var i = 0; i < e.addedNodes.length; i++) {
-                if (e.addedNodes[i].nodeType === 1) masse(e.addedNodes[i]);
+                if (e.addedNodes[i].nodeType === 1) { masse(e.addedNodes[i]); knoepfeNachfuehren(e.addedNodes[i]); }
             }
         });
     }).observe(document.documentElement, {childList: true, subtree: true});

@@ -19,6 +19,7 @@ rm -rf "$CACHE_VERZEICHNIS"
 rm -f "$SQLITE_NAME"
 python manage.py migrate -v0
 python manage.py seed_e2e
+python manage.py fallarten_anlegen
 python manage.py seed_e2e_mietzins
 python manage.py seed_e2e_mandanten
 python manage.py seed_e2e_eigentuemer
