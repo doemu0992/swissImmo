@@ -61,7 +61,7 @@ Art als Kapseln, Betreff, Akte, Frist und Zuständig nebeneinander, Notiz.
         <div class="fw-feldblock">
             <label class="fw-label" for="nfD">{% trans "Frist" %}</label>
             <input class="fw-feld" type="date" id="nfD" name="frist" value="{{ werte.frist }}" min="{{ heute|date:'Y-m-d' }}">
-            <div class="fw-filters fw-frist-chips">
+            <div class="fw-filters">
                 <button type="button" class="fw-fchip" data-frist-tage="0" data-frist-ziel="nfD">{% trans "Heute" %}</button>
                 <button type="button" class="fw-fchip" data-frist-tage="1" data-frist-ziel="nfD">{% trans "Morgen" %}</button>
                 <button type="button" class="fw-fchip" data-frist-tage="7" data-frist-ziel="nfD">{% trans "In 1 Woche" %}</button>
