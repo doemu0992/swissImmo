@@ -368,6 +368,7 @@ def fw_dashboard(request):
     vorrat = _nach_fallart(vorrat, kf['f_fallart'])
     faelle = _nach_fallart(faelle, kf['f_fallart'])
     _schublade_vorbereiten(vorrat, heute)
+    vorrat = _dringlichkeitsgruppen(vorrat, ansicht)
 
     # Heute & morgen: dieselbe Quelle wie die Termine des Sammlers, nur enger.
     morgen = heute + timedelta(days=1)
@@ -417,6 +418,28 @@ def fw_schwerpunkt(request):
     if request.method == 'POST':
         schwerpunkt_setzen(request, request.POST.get('schwerpunkt', ''))
     return redirect('/neu/' + (_global_filter(request).get('lg_query') or ''))
+
+
+#: Ab so vielen Tagen über der Frist gilt ein Vorgang als «vermutlich festgefahren» (UI-Zielbild).
+FESTGEFAHREN_TAGE = 30
+
+
+def _dringlichkeitsgruppen(vorrat, ansicht):
+    """Gruppiert «Heute» und «Diese Woche» nach Dringlichkeit (UI-Zielbild): «Überfällig · bis 30 Tage» zuerst, dann
+    «Seit über 30 Tagen offen», danach was heute oder später fällig ist. Die Reihenfolge innerhalb einer Gruppe bleibt.
+    Nur Darstellung: `gruppe` ist 'ueber', 'lang' oder '' (andere Ansichten bleiben ungruppiert)."""
+    if ansicht not in ('heute', 'woche'):
+        return vorrat
+    rang = {'ueber': 0, 'lang': 1, '': 2}
+    for e in vorrat:
+        tage = e.get('tage')
+        if tage is None or tage >= 0:
+            e['gruppe'] = ''
+        elif -tage > FESTGEFAHREN_TAGE:
+            e['gruppe'] = 'lang'
+        else:
+            e['gruppe'] = 'ueber'
+    return sorted(vorrat, key=lambda e: rang[e['gruppe']])
 
 
 def _schublade_vorbereiten(vorrat, heute):

@@ -40612,3 +40612,12 @@ msgid "%(n)s offene Auszugszeile"
 msgid_plural "%(n)s offene Auszugszeilen"
 msgstr[0] "%(n)s open statement line"
 msgstr[1] "%(n)s open statement lines"
+
+msgid "bis 30 Tage"
+msgstr "up to 30 days"
+
+msgid "Seit über 30 Tagen offen"
+msgstr "Open for over 30 days"
+
+msgid "vermutlich festgefahren"
+msgstr "probably stuck"

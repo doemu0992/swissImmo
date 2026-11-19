@@ -611,11 +611,7 @@ def _lauf_stufen(lauf, blockiert):
     return stufen, min(jetzt + 1, len(namen)), len(namen)
 
 
-# Knopf je Lauf nennt die Aufgabe (UI-Zielbild «Schritte in dieser Reihenfolge»); unbekannte Läufe: «Öffnen».
-LAUF_AKTION = {
-    'sollstellung': gettext_lazy('Auslösen'), 'mahnlauf': gettext_lazy('Auslösen'), 'mwst': gettext_lazy('Auslösen'),
-    'bankabgleich': gettext_lazy('Importieren'), 'zahllauf': gettext_lazy('Freigeben'),
-}
+from faelle.arbeitsvorrat import LAUF_AKTION  # noqa: E402  (eine Quelle für «Heute» und die Schrittliste)
 
 
 def _monatsschritte(offen, erledigt, heute, lg_query):

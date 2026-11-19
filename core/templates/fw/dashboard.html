@@ -33,18 +33,14 @@
     </div>
     <div class="fw-phead-knoepfe">
         {% if aktive_lg %}<a href="/neu/" class="fw-btn fw-geist">{% zeichen 'schliessen' %} {% trans "Filter aufheben" %}</a>{% endif %}
-        {% comment %} Der Schwerpunkt wählt nur die Kacheln, keine Rechte. Ein Formular
-           mit drei Knöpfen statt einer Auswahlliste: ein Tipp am Telefon. {% endcomment %}
-        <details class="fw-schwerpunkt">
-            <summary class="fw-btn" aria-label="{% trans 'Schwerpunkt der Startseite' %}">{% zeichen 'einstellungen' %} {{ schwerpunkt_text }}</summary>
-            <form method="post" action="/neu/schwerpunkt/{{ lg_query }}" class="fw-schwerpunkt-wahl">
-                {% csrf_token %}
-                {% for wert, text in schwerpunkte %}
-                <button type="submit" name="schwerpunkt" value="{{ wert }}" class="{% if wert == schwerpunkt %}hier{% endif %}"{% if wert == schwerpunkt %} aria-current="true"{% endif %}>{{ text }}</button>
-                {% endfor %}
-            </form>
-        </details>
-        {% if kann_schreiben %}<a href="/neu/faelle/neu/" data-modal="{% trans "Neuer Fall" %}" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Neuer Fall" %}</a>{% endif %}
+        {% comment %} Der Schwerpunkt wählt nur die Statuszeile, keine Rechte (UI-Zielbild): ein sichtbares Segment mit drei Knöpfen,
+           ein Tipp am Telefon. «Neuer Fall» steht in «+ Neu» der Kopfzeile. {% endcomment %}
+        <form method="post" action="/neu/schwerpunkt/{{ lg_query }}" class="fw-segment fw-schwerpunkt-segment" role="group" aria-label="{% trans 'Schwerpunkt der Startseite' %}">
+            {% csrf_token %}
+            {% for wert, text in schwerpunkte %}
+            <button type="submit" name="schwerpunkt" value="{{ wert }}" class="fw-seg-link{% if wert == schwerpunkt %} an{% endif %}"{% if wert == schwerpunkt %} aria-current="true"{% endif %}>{{ text }}</button>
+            {% endfor %}
+        </form>
     </div>
 </section>
 
@@ -76,14 +72,9 @@
 {% comment %} Aufgabenkacheln: Zahl, Bedeutung, Verb. Die erste ist die dringendste und
    trägt den Ember-Akzent; `n-…` legt die Breiten fest (eine Kachel über die
    ganze Breite, zwei halb-halb, drei 6/3/3, vier je ein Viertel). {% endcomment %}
-<section class="fw-bento fw-heute-kacheln n-{{ kacheln|length }}" aria-label="{% trans 'Heute zu tun' %}">
+<section class="fw-statuszeile" aria-label="{% trans 'Heute zu tun' %}">
     {% for k in kacheln %}
-    <a href="{{ k.ziel }}" class="fw-kachel{% if forloop.first %} akzent{% endif %}" data-kachel="{{ k.schluessel }}">
-        <div class="fw-kachel-kopf"><h2>{{ k.titel }}</h2>{% if not forloop.first and k.ton %}<span class="fw-punkt {{ k.ton }}" aria-hidden="true"></span>{% endif %}</div>
-        <div class="fw-kachel-zahl fw-num"><span>{{ k.zahl }}</span>{% if k.betrag %}<small>CHF {{ k.betrag|chf:0 }}</small>{% endif %}</div>
-        <p class="fw-kachel-text">{{ k.text }}</p>
-        <span class="fw-btn fw-knapp">{{ k.knopf }} {% zeichen 'weiter' %}</span>
-    </a>
+    <a href="{{ k.ziel }}" class="fw-sz {% if k.ton == 'crit' %}fw-sz-crit{% elif k.ton == 'warn' %}fw-sz-warn{% else %}fw-sz-good{% endif %}" data-kachel="{{ k.schluessel }}">{{ k.zahl }} {{ k.titel }} · {{ k.text }}{% if k.betrag %} · CHF {{ k.betrag|chf:0 }}{% endif %}</a>
     {% endfor %}
 </section>
 {% endif %}
@@ -199,6 +190,7 @@
     {% else %}
     <ul class="fw-vorrat-liste" role="listbox" aria-label="{% trans 'Vorgänge' %}" id="fwVorratListe">
     {% for e in vorrat %}
+    {% ifchanged e.gruppe %}{% if e.gruppe == 'ueber' %}<li class="fw-vz-gruppe fw-crit" role="presentation"><b>{% trans "Überfällig" %}</b> <span>{% trans "bis 30 Tage" %}</span></li>{% elif e.gruppe == 'lang' %}<li class="fw-vz-gruppe" role="presentation"><b>{% trans "Seit über 30 Tagen offen" %}</b> <span>{% trans "vermutlich festgefahren" %}</span></li>{% endif %}{% endifchanged %}
     {% comment %} DIE ZEILE NACH KONZEPT-V8: Art und Nummer, der FALL als Titel, darunter
        die Schrittsegmente und der Stand; rechts die zuständige Person, die
        Frist in Worten, die Handlung. Ein Klick auf die Zeile öffnet die
@@ -221,7 +213,9 @@
             {% elif e.tage == 0 %}<b>{% trans "Heute" %}</b><span>{% trans "fällig" %}</span>
             {% else %}<b>{{ e.datum|date:"D d.m." }}</b><span>{% blocktrans count n=e.tage %}in {{ n }} Tag{% plural %}in {{ n }} Tagen{% endblocktrans %}</span>{% endif %}
         </div>
-        <div class="fw-vz-aktion"><a href="{{ e.ziel }}"{% if e.modal %} data-modal="{{ e.titel}}"{% endif %} class="fw-btn fw-knapp">{{ e.knopf }}</a></div>
+        <div class="fw-vz-aktion"><a href="{{ e.ziel }}"{% if e.modal %} data-modal="{{ e.titel}}"{% endif %} class="fw-btn fw-knapp{% if forloop.first %} fw-primary{% endif %}">{{ e.knopf }}</a>
+            {% comment %} ✓ «Erledigt» (UI-Zielbild): nur, wo ein Fallschritt dahintersteht; der Toast bietet «Rückgängig». {% endcomment %}
+            {% if e.schritt_pk and kann_schreiben %}<form method="post" action="/neu/fallschritte/{{ e.schritt_pk }}/erledigen/" class="fw-haken-form">{% csrf_token %}<input type="hidden" name="weiter" value="{{ request.get_full_path }}"><button type="submit" class="fw-haken" title="{% trans 'Erledigt' %}" aria-label="{% trans 'Erledigt' %}">{% zeichen 'gut' %}</button></form>{% endif %}</div>
 
         <template id="vz-{{ forloop.counter }}">
             <div class="fw-vg-kopf-daten" data-tag="{{ e.marke|default:'' }}" data-nr="{{ e.nummer|default:'' }}" data-titel="{{ e.titel }}" data-obj="{% if e.fortschritt %}{{ e.fortschritt }}{% else %}{{ e.zeile }}{% endif %}"></div>
