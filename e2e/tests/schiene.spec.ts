@@ -45,13 +45,13 @@ test.describe('Schiene am PC', () => {
     await expect(page.locator('#fwFach')).toBeHidden();
   });
 
-  test('Tastatur: G dann B öffnet «Betrieb», die Ziffer 3 wählt die dritte Seite', async ({ page }) => {
+  test('Tastatur: G dann B öffnet «Schäden», die Ziffer 3 wählt die dritte Seite', async ({ page }) => {
     await login(page);
     await goto(page, '/neu/liegenschaften/');
     await page.locator('body').click({ position: { x: 700, y: 400 } });
     await page.keyboard.press('g');
     await page.keyboard.press('b');
-    await expect(page.locator('#fwFach section:visible h2')).toHaveText('Betrieb');
+    await expect(page.locator('#fwFach section:visible h2')).toHaveText('Schäden');
     const ziele = await page.locator('#fwFach section:visible ul:not(.fw-fach-selten-liste) a').evaluateAll((l) => l.map((a) => (a as HTMLAnchorElement).getAttribute('href')));
     await page.keyboard.press('3');
     await page.waitForURL(`**${ziele[2]!.split('?')[0]}**`);
