@@ -163,6 +163,10 @@ Info-Farbe `#7f959c`.
 | `--ds-line` | `#e7e5e1` | `#2c2d32` |
 | `--ds-hover` | `#f3f1ee` | `#28292e` |
 
+Primärknöpfe: Zeilenaktionen (`fw-knapp fw-primary`, z. B. «Zuordnen», «Auslösen»), der Dialog `fw-zdlg` und «Neu» in der Kopfzeile
+sind Akzent (`--ds-brand`, Schrift `--ds-auf-satt`); die grossen Seitenknöpfe (`fw-btn fw-primary` ohne `fw-knapp`) bleiben
+schwarz. Test: `core/tests/test_primaerknopf_akzent.py`.
+
 Rundung: 24 px für Karten, 14 px für kleine Flächen. Kapseln `var(--ds-pill)`, Kreise `var(--ds-kreis)` (50 %), nie `999px`
 oder `50%` von Hand. Frei bleiben in `_schicht.html` nur vier Werte (6/3/2 px an Fokusring, Legendenpunkt, Marker); der Zähler
 steht in `core/tests/test_stilschuld.py` und darf nur sinken. Hex-Farben stehen ausserhalb der Token-Definitionen nur als
