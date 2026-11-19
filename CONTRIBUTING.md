@@ -163,7 +163,10 @@ Info-Farbe `#7f959c`.
 | `--ds-line` | `#e7e5e1` | `#2c2d32` |
 | `--ds-hover` | `#f3f1ee` | `#28292e` |
 
-Rundung: 24 px für Karten, 14 px für kleine Flächen.
+Rundung: 24 px für Karten, 14 px für kleine Flächen. Kapseln `var(--ds-pill)`, Kreise `var(--ds-kreis)` (50 %), nie `999px`
+oder `50%` von Hand. Frei bleiben in `_schicht.html` nur vier Werte (6/3/2 px an Fokusring, Legendenpunkt, Marker); der Zähler
+steht in `core/tests/test_stilschuld.py` und darf nur sinken. Hex-Farben stehen ausserhalb der Token-Definitionen nur als
+Weiss auf Akzent oder mit Begründung (STWEG-Warnrot).
 
 ### Formulare
 - Pflichtentscheidungen nicht vorbelegen (Radio/Select ohne Vorauswahl, `required`); `data-knopf-erst-gueltig` am `<form>`
