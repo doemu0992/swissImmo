@@ -154,17 +154,5 @@ async function kontrastHinterText(page: Page, selektor: string) {
   return minK;
 }
 
-for (const theme of ['light', 'dark'] as const) {
-  test.describe(`Kontrast der orangen Hauptkarte (${theme})`, () => {
-    test.use({ colorScheme: theme });
-
-    test('Weisse Schrift erreicht 4.5:1 auf jedem Pixel der Karte', async ({ page }) => {
-      await page.addInitScript((t) => { try { localStorage.setItem('fw-theme', t); } catch (e) { /* ohne Speicher */ } }, theme);
-      await login(page);
-      await goto(page, '/neu/');
-      const k = await kontrastHinterText(page, '.fw-kachel.akzent');
-      expect(k, `kleinster Kontrast Weiss/Karte: ${k.toFixed(2)}`).toBeGreaterThanOrEqual(4.5);
-      // Die Kennzahlkarte `fw-kpi.fw-accent` gibt es nicht mehr: Kennzahlen sind seit dem UI-Zielbild Kapseln (Tinte auf Fläche).
-    });
-  });
-}
+// Der Kontrast der orangen Hauptkarte auf «Heute» entfällt: Die Karte ist seit dem UI-Zielbild eine Statuszeile (Tinte auf Fläche,
+// gedeckt durch `test_kontrast_leiste` und die Token-Wächter). Weitere Hauptkarten (Portale) deckt `zz-eigentuemerportal.spec.ts`.
