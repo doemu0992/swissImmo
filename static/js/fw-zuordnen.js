@@ -52,7 +52,7 @@
         document.getElementById('fwZuordnenSub').textContent =
             [d.zahler, 'CHF ' + d.betrag, 'Valuta ' + d.valuta].filter(Boolean).join(' · ');
         rechnung.value = d.rechnung ? String(d.rechnung) : '';
-        vertrag.innerHTML = '';
+        while (vertrag.firstChild) vertrag.removeChild(vertrag.firstChild);
         (d.kaution || []).forEach(function (k) {
             var o = document.createElement('option');
             o.value = k.id; o.textContent = k.label; vertrag.appendChild(o);
