@@ -39358,3 +39358,12 @@ msgstr "%(n)s Datei(en) wurden nicht gespeichert (kein gültiges Bild oder zu gr
 
 msgid "Menü"
 msgstr "Menü"
+
+msgid "Rückgängig"
+msgstr "Rückgängig"
+
+msgid "«%(bezeichnung)s» ist wieder offen."
+msgstr "«%(bezeichnung)s» ist wieder offen."
+
+msgid "«%(bezeichnung)s» ist schon offen."
+msgstr "«%(bezeichnung)s» ist schon offen."

@@ -441,3 +441,15 @@ def _lik_basen():
     """Die geführten LIK-Basisreihen für die Auswahl `fw/_lik_basis_feld.html` (eine Liste: `core.services.lik`)."""
     from core.services.lik import LIK_BASEN
     return LIK_BASEN
+
+
+def meldung_mit_rueckgaengig(request, text, url):
+    """Erfolgsmeldung mit Knopf «Rückgängig» (UI-Zielbild: Toast mit Rückgängig, Entscheid 19.11.2026).
+
+    Die Handlung läuft sofort; der Knopf ruft `url` per POST und nimmt sie mit der vorhandenen, geprüften Rücknahme zurück.
+    Nur dort einsetzen, wo es eine solche Rücknahme gibt (Schritt wieder öffnen, Zuordnung aufheben) — nicht bei Läufen,
+    Abschlüssen, Zahlläufen, Kaution oder versandten Mails. Der Toast bleibt zehn Sekunden stehen."""
+    from django.contrib import messages
+    if not url.startswith('/neu/') or '//' in url or ' ' in url:
+        raise ValueError('Rückgängig-Adresse muss ein interner Pfad unter /neu/ sein')
+    messages.success(request, text, extra_tags='rueckgaengig:' + url)

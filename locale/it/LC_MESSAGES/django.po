@@ -41059,3 +41059,12 @@ msgstr "%(n)s file non sono stati salvati (immagine non valida o troppo grande).
 
 msgid "Menü"
 msgstr "Menu"
+
+msgid "Rückgängig"
+msgstr "Annulla"
+
+msgid "«%(bezeichnung)s» ist wieder offen."
+msgstr "«%(bezeichnung)s» è di nuovo aperto."
+
+msgid "«%(bezeichnung)s» ist schon offen."
+msgstr "«%(bezeichnung)s» è già aperto."

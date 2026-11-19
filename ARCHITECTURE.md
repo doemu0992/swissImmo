@@ -150,6 +150,14 @@ das Sperrkonto in Höhe des bilanzierten Betrags frei. Eine MWST-Periode für de
 Rechenkern `core/utils/billing.py` (`berechne_abrechnung`), Assistent `core/views/fw/nk_wizard.py`, PDF und Versand
 in `core/services/nk_*.py`.
 
+### Rückgängig (Toast)
+- Eine Handlung kann nach dem Speichern einen Toast mit «Rückgängig» zeigen (`core.views.fw._basis.meldung_mit_rueckgaengig`,
+  Filter `rueckgaengig_url`, Vorlage `fw/base.html`, zehn Sekunden). Die Handlung läuft sofort; der Knopf ruft per POST eine
+  vorhandene, geprüfte Rücknahme (nicht: verzögert ausführen, denn wer die Seite schliesst, verlöre die Handlung ohne Meldung).
+- Eingebaut: Schritt erledigt → `Fallschritt.wieder_oeffnen` (`/neu/fallschritte/<pk>/wiederoeffnen/`). Geplant: Zahlung zugeordnet →
+  `zahlungsklaerung.zuordnung_aufheben` (Gegenbuchungen im Journal). Nie bei Läufen, Monatsabschluss, Zahllauf, Kaution oder
+  versandten Mails.
+
 ### Schadenmeldungen und Mail
 - Eingang: Mieterportal, internes Erfassen, Webformular `/schaden/melden/` (ordnet über die hinterlegte E-Mail-Adresse
   zu, antwortet immer gleich) und QR-Aushang `/aushang/<token>/` (Token je Liegenschaft, erneuerbar).

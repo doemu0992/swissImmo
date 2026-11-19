@@ -41130,3 +41130,12 @@ msgstr "%(n)s fichier(s) n'ont pas été enregistrés (image non valide ou trop 
 
 msgid "Menü"
 msgstr "Menu"
+
+msgid "Rückgängig"
+msgstr "Annuler"
+
+msgid "«%(bezeichnung)s» ist wieder offen."
+msgstr "«%(bezeichnung)s» est de nouveau ouvert."
+
+msgid "«%(bezeichnung)s» ist schon offen."
+msgstr "«%(bezeichnung)s» est déjà ouvert."

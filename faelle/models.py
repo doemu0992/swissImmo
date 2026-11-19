@@ -339,6 +339,14 @@ class Fallschritt(OrganisationAusKette):
         self.fall.bewegt()
         return self
 
+    def wieder_oeffnen(self):
+        """Nimmt «erledigt» zurück («Rückgängig» im Toast). Der Fall gilt dabei als bewegt (er wurde angefasst)."""
+        self.erledigt_am = None
+        self.erledigt_durch = None
+        self.save(update_fields=['erledigt_am', 'erledigt_durch'])
+        self.fall.bewegt()
+        return self
+
 
 class Zeiteintrag(OrganisationAusKette):
     """Aufwand auf einem Fall.
