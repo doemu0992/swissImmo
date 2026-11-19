@@ -119,7 +119,7 @@ class BewirtschaftungTests(_Basis):
         self.assertGreaterEqual(kacheln[0]['zahl'], 1)
         self.assertIsNotNone(_kachel(antwort, 'tickets'))
         html = antwort.content.decode()
-        self.assertIn('class="fw-kachel akzent" data-kachel="vorgaenge"', html)
+        self.assertIn('class="fw-sz fw-sz-crit" data-kachel="vorgaenge"', html)   # Statuszeile (UI-Zielbild): die dringendste Kapsel ist rot
         self.assertIn('href="/neu/schaeden/?zustaendig=niemand"', html)
         self.assertIn('davon überfällig', html)
 
