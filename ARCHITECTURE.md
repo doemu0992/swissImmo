@@ -167,6 +167,15 @@ das Sperrkonto in Höhe des bilanzierten Betrags frei. Eine MWST-Periode für de
 Rechenkern `core/utils/billing.py` (`berechne_abrechnung`), Assistent `core/views/fw/nk_wizard.py`, PDF und Versand
 in `core/services/nk_*.py`.
 
+### Monatsabschluss als Schrittliste (`/neu/laeufe/`)
+Die Seite zeigt die Läufe als eine Liste «Schritte in dieser Reihenfolge» (UI-Zielbild): offene Läufe plus die in diesem Monat
+abgeschlossenen, geordnet nach `Laufart.reihenfolge`, zuletzt der **Periodenabschluss**. Zustand je Schritt: `fertig` (Haken),
+`jetzt` (der erste offene Lauf, Knopf in Hauptfarbe), `offen` (weitere offene, eigener Knopf), `gesperrt` (Periodenabschluss, solange
+ein Lauf offen ist; Text «Möglich, sobald … erledigt ist»). Der Knopf nennt die Aufgabe (`LAUF_AKTION`: Auslösen, Importieren,
+Freigeben, sonst Öffnen). Nur Darstellung (`_monatsschritte` in `core/views/fw/arbeit.py`): Zustand und Blockaden bleiben die der Läufe,
+«Überspringen» (mit Begründung) und das Lauf-Detail bleiben erreichbar; frühere Monate stehen unter «Zuletzt abgeschlossen».
+Test: `faelle/test_schrittliste.py`, `e2e/tests/monatsabschluss-schritte.spec.ts`.
+
 ### Formulare ohne riskante Vorbelegung («Neuer Fall»)
 
 Pflichtentscheidungen (Art, Akte) stehen im Formular **leer**; vorgewählt wird nur, was aus der Adresse kommt (`?akte=`).

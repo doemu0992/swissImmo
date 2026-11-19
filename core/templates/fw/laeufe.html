@@ -1,6 +1,6 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
-{% block title %}{% trans "Läufe" %} — immoswiss{% endblock %}
+{% block title %}{% trans "Monatsabschluss" %} — immoswiss{% endblock %}
 
 {% block content %}
 {% comment %} Aufbau nach konzept-v8 (#laeufe, `pageLaeufe`): Pfad, Titel, Unterzeile
@@ -8,61 +8,61 @@
    Raster (3 Spalten, am Telefon 1), dann «Zuletzt abgeschlossen». {% endcomment %}
 <div class="fw-phead">
     <div>
-        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><span>{% trans "Läufe" %}</span></nav>
-        <h1>{% trans "Läufe" %}</h1>
-        <p>{% trans "Alles, was einen Zustand hat und blockieren kann" %}{% if brauchen_dich %} · {% blocktrans count n=brauchen_dich %}{{ n }} braucht dich{% plural %}{{ n }} brauchen dich{% endblocktrans %}{% endif %}</p>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/">{% trans "Heute" %}</a><span aria-hidden="true">/</span><span>{% trans "Monatsabschluss" %}</span></nav>
+        <h1>{% trans "Monatsabschluss" %}</h1>
+        <p>{{ heute|date:"F Y" }} · {% blocktrans with n=schritte_erledigt gesamt=schritte_gesamt %}{{ n }} von {{ gesamt }} Schritten erledigt{% endblocktrans %}</p>
     </div>
 </div>
 
-{% comment %} Konzept 3.3: «Jeder Lauf kennt fällig / läuft / abgeschlossen und
-   **was ihn blockiert**.» Der Grund steht als Text da, nicht das Wort
-   «blockiert»: Der Grund führt zu einer Handlung, das Wort zu einer
-   Rückfrage. Das Stufenband (`fw-stufen`) leitet die View aus dem Zustand
-   ab (`_lauf_stufen` in core/views/fw/arbeit.py) — gespeichert ist nichts. {% endcomment %}
-<div class="fw-subhead">{% trans "Offen" %} · {{ offen|length }}</div>
-<div class="fw-laeufe">
-    {% for z in offen %}
-    <section class="fw-card fw-lauf">
-        <div class="fw-lauf-kopf">
-            <div class="fw-lauf-titel">
-                <b>{{ z.lauf.laufart.bezeichnung }} {{ z.lauf.periode }}</b>
-                <span>{% if z.blockaden %}{% for b in z.blockaden %}{{ b.grund }}{% if not forloop.last %} · {% endif %}{% endfor %}
-                    {% else %}{{ z.lauf.get_status_display }}{% for schluessel, wert in z.lauf.kennzahlen.items %} · {{ schluessel }} {{ wert }}{% endfor %}{% endif %}</span>
+{% comment %} UI-Zielbild «Schritte in dieser Reihenfolge»: eine Liste statt Laufkarten. Zustand je Schritt:
+   fertig (Haken), jetzt (der erste offene Lauf, Ring mit Punkt, Knopf in Akzent), offen (weitere offene Läufe, leerer Ring,
+   eigener Knopf), gesperrt (Periodenabschluss, solange ein Lauf offen ist). Die Daten kommen unverändert aus den Läufen;
+   «Überspringen» (mit Begründung) und «Details» bleiben je offenem Lauf erreichbar. {% endcomment %}
+<div class="fw-card fw-schrittliste">
+    <div class="fw-kopf"><span class="fw-t">{% trans "Schritte in dieser Reihenfolge" %}</span></div>
+    {% for z in schritte %}
+    {% if z.abschluss %}
+    <div class="fw-schritt {{ z.zustand }}">
+        <span class="fw-schritt-zeichen" aria-hidden="true"></span>
+        <div class="fw-mitte">
+            <div class="fw-t">{% trans "Periodenabschluss" %}</div>
+            <div class="fw-s">{% if z.zustand == 'gesperrt' %}{% blocktrans with name=z.wartet_auf %}Möglich, sobald {{ name }} erledigt ist{% endblocktrans %}{% else %}{% trans "Alle Läufe sind erledigt, der Monat kann abgeschlossen werden." %}{% endif %}</div>
+        </div>
+        {% if z.zustand == 'jetzt' %}<a href="{{ z.url }}" class="fw-btn fw-primary fw-knapp">{% trans "Abschliessen" %}</a>{% endif %}
+    </div>
+    {% else %}
+    <div class="fw-schritt {{ z.zustand }}">
+        <span class="fw-schritt-zeichen" aria-hidden="true">{% if z.fertig %}{% zeichen 'gut' %}{% endif %}</span>
+        <div class="fw-mitte">
+            <div class="fw-t"><a href="{% url 'fw_lauf_detail' z.lauf.pk %}">{{ z.lauf.laufart.bezeichnung }} {{ z.lauf.periode }}</a></div>
+            <div class="fw-s">
+                {% if z.fertig %}{% blocktrans with datum=z.lauf.abgeschlossen_am|date:"d.m.Y" %}Abgeschlossen am {{ datum }}{% endblocktrans %}{% for schluessel, wert in z.lauf.kennzahlen.items %} · {{ schluessel }} {{ wert }}{% endfor %}
+                {% else %}{% blocktrans with datum=z.lauf.faellig_am|date:"d.m.Y" %}Stichtag {{ datum }}{% endblocktrans %}
+                    {% if z.blockaden %}{% for b in z.blockaden %} <span class="fw-chip fw-warn">{{ b.grund }}</span>{% endfor %}
+                    {% elif z.tage < 0 %} <span class="fw-chip fw-crit">{% blocktrans count n=z.tage|cut:"-"|add:0 %}{{ n }} Tag über{% plural %}{{ n }} Tage über{% endblocktrans %}</span>
+                    {% elif z.tage == 0 %} <span class="fw-chip fw-warn">{% trans "heute" %}</span>{% endif %}
+                {% endif %}
             </div>
-            {% if z.blockaden %}<span class="fw-chip fw-crit">{% blocktrans count n=z.blockaden|length %}{{ n }} blockiert{% plural %}{{ n }} blockiert{% endblocktrans %}</span>
-            {% elif z.lauf.laufart.schluessel == 'zahllauf' and z.lauf.status == 'laeuft' %}<span class="fw-chip fw-warn">{% trans "Freigabe nötig" %}</span>
-            {% elif z.tage < 0 %}<span class="fw-chip fw-crit">{% blocktrans count n=z.tage|cut:"-"|add:0 %}{{ n }} Tag über{% plural %}{{ n }} Tage über{% endblocktrans %}</span>
-            {% elif z.tage == 0 %}<span class="fw-chip fw-warn">{% trans "heute" %}</span>
-            {% else %}<span class="fw-chip fw-mut">{% blocktrans with nr=z.schritt gesamt=z.schritte %}Schritt {{ nr }} von {{ gesamt }}{% endblocktrans %}</span>{% endif %}
+            {% if not z.fertig and kann_schreiben and not z.blockaden %}
+            <details class="fw-schritt-skip">
+                <summary>{% trans "Überspringen" %}</summary>
+                <form method="post" action="{% url 'fw_lauf_ueberspringen' z.lauf.pk %}" class="fw-eingang-knoepfe">{% csrf_token %}
+                    <input type="text" name="bemerkung" class="fw-feld" required maxlength="300" placeholder="{% trans 'Begründung, z. B. keine offenen Posten' %}" aria-label="{% trans 'Begründung' %}">
+                    <button class="fw-btn fw-knapp">{% trans "Überspringen" %}</button>
+                </form>
+            </details>
+            {% endif %}
         </div>
-        <ol class="fw-stufen" aria-label="{% blocktrans with nr=z.schritt gesamt=z.schritte %}Schritt {{ nr }} von {{ gesamt }}{% endblocktrans %}">
-            {% for s in z.stufen %}<li class="{{ s.zustand }}"><i></i><span>{{ s.name }}</span></li>{% endfor %}
-        </ol>
-        <div class="fw-lauf-fuss">
-            <span>{% if z.lauf.gestartet_am %}{% blocktrans with datum=z.lauf.gestartet_am|date:"d.m.Y" %}gestartet {{ datum }}{% endblocktrans %} · {% endif %}{% blocktrans with datum=z.lauf.faellig_am|date:"d.m.Y" %}Stichtag {{ datum }}{% endblocktrans %}{% if z.tage > 0 %} · {% blocktrans count n=z.tage %}in {{ n }} Tag{% plural %}in {{ n }} Tagen{% endblocktrans %}{% endif %}</span>
-            <span><a href="{% url 'fw_lauf_detail' z.lauf.pk %}" class="fw-btn fw-knapp">{% trans "Details" %}</a>
-            <a href="{{ z.url }}" class="fw-btn fw-knapp{% if z.braucht_dich %} fw-primary{% endif %}">{% trans "Öffnen" %}</a></span>
-        </div>
-        {% if kann_schreiben and not z.blockaden %}
-        {% comment %} Bewusst auslassen — nur mit Begründung (`Lauf.ueberspringen`).
-           Blockierte Läufe bekommen den Knopf nicht: Die Ursache steht noch. {% endcomment %}
-        <details>
-            <summary>{% trans "Überspringen" %}</summary>
-            <form method="post" action="{% url 'fw_lauf_ueberspringen' z.lauf.pk %}" class="fw-eingang-knoepfe">{% csrf_token %}
-                <input type="text" name="bemerkung" class="fw-feld" required maxlength="300" placeholder="{% trans 'Begründung, z. B. keine offenen Posten' %}" aria-label="{% trans 'Begründung' %}">
-                <button class="fw-btn fw-knapp">{% trans "Überspringen" %}</button>
-            </form>
-        </details>
-        {% endif %}
-    </section>
-    {% empty %}
-    <div class="fw-card fw-lauf-leer">{% include 'fw/_empty.html' with icon='lauf' titel=_('Kein offener Lauf.') %}</div>
+        {% if not z.fertig %}<a href="{{ z.url }}" class="fw-btn fw-knapp{% if z.zustand == 'jetzt' %} fw-primary{% endif %}">{{ z.aktion }}</a>{% endif %}
+    </div>
+    {% endif %}
     {% endfor %}
 </div>
 
+{% if frueher %}
 <div class="fw-card">
     <div class="fw-kopf"><span class="fw-t">{% trans "Zuletzt abgeschlossen" %}</span></div>
-    {% for z in erledigt %}
+    {% for z in frueher %}
     <div class="fw-zeile">
         <span class="fw-marker good"></span>
         <div class="fw-mitte">
@@ -75,4 +75,5 @@
     {% include 'fw/_empty.html' with knapp=True icon='lauf' titel=_('Noch kein Lauf abgeschlossen.') %}
     {% endfor %}
 </div>
+{% endif %}
 {% endblock %}
