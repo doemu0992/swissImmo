@@ -12,8 +12,8 @@ die beim Speichern entstehen. Ohne JavaScript: Beträge eintippen und speichern.
 <div class="fw-phead">
     <div>
         <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/bankabgleich/{{ lg_query }}">{% trans "Bankabgleich" %}</a><span aria-hidden="true">/</span><span>{% if ist_guthaben %}{% trans "Guthaben verrechnen" %}{% else %}{% trans "Zahlung zuordnen" %}{% endif %}</span></nav>
-        <h1>{% if ist_guthaben %}{% trans "Guthaben verrechnen" %}{% else %}{% trans "Zahlung zuordnen" %}{% endif %} {% hilfe 'sammelzahlung' %}</h1>
-        <p>{% trans "Links die Zahlung, rechts die offenen Posten. «offen …» antippen übernimmt den Betrag; am Desktop lässt sich die Zahlung auch auf einen Posten ziehen. Eine Zahlung darf mehrere Posten, Verträge und Mieter tilgen." %}</p>
+        <h1>{% if ist_guthaben %}{% trans "Guthaben verrechnen" %}{% else %}{% trans "Zahlung aufteilen" %}{% endif %} {% hilfe 'sammelzahlung' %}</h1>
+        <p>{% if absender %}{{ absender }} · {% elif ist_guthaben %}{{ z.vertrag.mieter.display_name }} · {% endif %}CHF {{ z.betrag|chf }} · {% blocktrans with datum=z.datum_eingang|date:"d.m.Y" %}Valuta {{ datum }}{% endblocktrans %}</p>
     </div>
 </div>
 
@@ -30,11 +30,11 @@ die beim Speichern entstehen. Ohne JavaScript: Beträge eintippen und speichern.
     <input type="hidden" name="next" value="{{ ziel }}">
     <div class="fw-split">
         <aside class="fw-split-zahlung">
-            <div class="fw-kachel dunkel fw-zahlung-chip" data-zahlung-chip
+            <div class="fw-zahlung-chip" data-zahlung-chip
                  aria-label="{% trans 'Zahlung — auf einen Posten ziehen' %}">
-                <span class="fw-ueber">{% if ist_guthaben %}{% trans "Guthaben" %} · 2030{% else %}{% trans "Zahlungseingang" %} · 1190{% endif %}</span>
-                <div class="fw-kachel-zahl">CHF {{ z.betrag|chf }}</div>
-                <p class="fw-kachel-text">{{ z.datum_eingang|date:"d.m.Y" }}{% if not ist_guthaben %} · {% blocktrans count n=tage %}seit {{ n }} Tag ungeklärt{% plural %}seit {{ n }} Tagen ungeklärt{% endblocktrans %}{% endif %}</p>
+                <span class="fw-zahlung-art">{% if ist_guthaben %}{% trans "Guthaben" %} · 2030{% else %}{% trans "Zahlungseingang" %} · 1190{% endif %}</span>
+                <div class="fw-zahlung-zahl">CHF {{ z.betrag|chf }}</div>
+                <p class="fw-zahlung-text">{{ z.datum_eingang|date:"d.m.Y" }}{% if not ist_guthaben %} · {% blocktrans count n=tage %}seit {{ n }} Tag ungeklärt{% plural %}seit {{ n }} Tagen ungeklärt{% endblocktrans %}{% endif %}</p>
                 <span class="fw-zieh-hinweis" aria-hidden="true">{% zeichen 'weiter' %} {% trans "auf einen Posten ziehen" %}</span>
             </div>
             <dl class="fw-zahlung-daten">
@@ -73,6 +73,25 @@ die beim Speichern entstehen. Ohne JavaScript: Beträge eintippen und speichern.
                 <div data-gewaehlt></div>
             </div>
             <div data-treffer aria-live="polite">{% include 'fw/_posten_gruppen.html' %}</div>
+        <fieldset class="fw-rest-wahl" data-rest-wahl>
+            <legend>{% trans "Was passiert mit dem Rest?" %}</legend>
+            {% if not ist_guthaben %}
+            <label class="fw-zopt"><input type="radio" name="rest_ziel" value="offen" checked class="fw-akzent"><b>{% trans "Bleibt ungeklärt" %}</b><small>{% trans "Der Rest bleibt auf dem Durchlaufkonto 1190." %}</small></label>
+            {% endif %}
+            <label class="fw-zopt"><input type="radio" name="rest_ziel" value="guthaben" {% if ist_guthaben %}checked{% endif %} class="fw-akzent"><b>{% trans "Als Guthaben verbuchen" %}</b><small>{% trans "Auf einen Mieter, sobald ein Posten gewählt ist." %}</small>
+                <select name="rest_vertrag" class="fw-feld" aria-label="{% trans 'Guthaben von' %}">
+                    {% for v in rest_vertraege %}<option value="{{ v.id }}">{{ v.mieter.display_name }}{% if v.einheit_id %} · {{ v.einheit.bezeichnung }}{% endif %}</option>{% empty %}<option value="">{% trans "zuerst einen Posten suchen" %}</option>{% endfor %}
+                </select></label>
+            {% if darf_zurueck %}
+            <label class="fw-zopt"><input type="radio" name="rest_ziel" value="zurueck" class="fw-akzent"><b>{% trans "An den Absender zurücküberweisen" %}</b><small>{% trans "Gebucht wird 1190 an Bank." %}</small>
+                {% if bankkonten|length > 1 %}
+                <select name="bank_konto" class="fw-feld" aria-label="{% trans 'Bankkonto' %}">
+                    {% for k in bankkonten %}<option value="{{ k.nummer }}" {% if k.nummer == '1020' %}selected{% endif %}>{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
+                </select>
+                {% endif %}</label>
+            {% endif %}
+            {% hilfe 'mieterguthaben' %}
+        </fieldset>
         </section>
     </div>
 
@@ -86,25 +105,6 @@ die beim Speichern entstehen. Ohne JavaScript: Beträge eintippen und speichern.
             <a href="{{ ziel }}" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
             <button type="submit" class="fw-btn fw-primary" data-split-absenden>{% zeichen 'speichern' %}{% trans "Buchen" %}</button>
         </div>
-        <fieldset class="fw-rest-wahl" data-rest-wahl>
-            <legend>{% trans "Was passiert mit dem Rest?" %}</legend>
-            {% if not ist_guthaben %}
-            <label class="fw-haekchen"><input type="radio" name="rest_ziel" value="offen" checked class="fw-akzent">{% trans "bleibt ungeklärt (1190)" %}</label>
-            {% endif %}
-            <label class="fw-haekchen"><input type="radio" name="rest_ziel" value="guthaben" {% if ist_guthaben %}checked{% endif %} class="fw-akzent">{% trans "als Guthaben von" %}</label>
-            <select name="rest_vertrag" class="fw-feld" aria-label="{% trans 'Guthaben von' %}">
-                {% for v in rest_vertraege %}<option value="{{ v.id }}">{{ v.mieter.display_name }}{% if v.einheit_id %} · {{ v.einheit.bezeichnung }}{% endif %}</option>{% empty %}<option value="">{% trans "zuerst einen Posten suchen" %}</option>{% endfor %}
-            </select>
-            {% hilfe 'mieterguthaben' %}
-            {% if darf_zurueck %}
-            <label class="fw-haekchen"><input type="radio" name="rest_ziel" value="zurueck" class="fw-akzent">{% trans "an den Absender zurücküberweisen" %}</label>
-            {% if bankkonten|length > 1 %}
-            <select name="bank_konto" class="fw-feld" aria-label="{% trans 'Bankkonto' %}">
-                {% for k in bankkonten %}<option value="{{ k.nummer }}" {% if k.nummer == '1020' %}selected{% endif %}>{{ k.nummer }} {{ k.bezeichnung }}</option>{% endfor %}
-            </select>
-            {% endif %}
-            {% endif %}
-        </fieldset>
         <details class="fw-pruefung-block">
             <summary>{% trans "Diese Buchungen entstehen" %}</summary>
             <ul class="fw-pruefung" data-pruefung>

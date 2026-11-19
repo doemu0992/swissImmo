@@ -17,7 +17,7 @@ trägt ein Betragsfeld `teil_<id>`; «offen …» übernimmt den offenen Betrag
             <div class="fw-s">{% blocktrans with datum=p.r.faellig_am|default:p.r.datum|date:"d.m.Y" %}fällig {{ datum }}{% endblocktrans %}{% if p.teilbezahlt %} · {% blocktrans with betrag=p.r.betrag|chf %}von {{ betrag }}{% endblocktrans %}{% endif %}</div>
         </div>
         <button type="button" class="fw-posten-offen" data-voll
-                title="{% trans 'Offenen Betrag übernehmen' %}">{% trans "offen" %} {{ p.offen|chf }}</button>
+                title="{% trans 'Offenen Betrag übernehmen' %}">{% trans "alles zuteilen" %} ({{ p.offen|chf }})</button>
         <input name="teil_{{ p.r.id }}" data-teil data-offen="{{ p.offen|unlocalize }}"
                data-text="{{ g.mieter }} – {{ p.r.titel }}"
                value="{% if p.vorschlag %}{{ p.vorschlag|unlocalize }}{% endif %}"

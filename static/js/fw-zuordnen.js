@@ -58,6 +58,9 @@
             o.value = k.id; o.textContent = k.label; vertrag.appendChild(o);
         });
         form.querySelector('input[name="weg"][value="miete"]').checked = true;
+        var nf = document.getElementById('fwZuordnenNotizForm');
+        nf.action = '/neu/bankabgleich/zahlung/' + aktuell + '/notiz/';
+        document.getElementById('fwZuordnenNotiz').value = d.notiz || '';
         umstellen();
         dlg.showModal();
     }
