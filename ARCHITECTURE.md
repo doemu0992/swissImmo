@@ -156,6 +156,14 @@ das Sperrkonto in Höhe des bilanzierten Betrags frei. Eine MWST-Periode für de
 Rechenkern `core/utils/billing.py` (`berechne_abrechnung`), Assistent `core/views/fw/nk_wizard.py`, PDF und Versand
 in `core/services/nk_*.py`.
 
+### Formulare ohne riskante Vorbelegung («Neuer Fall»)
+
+Pflichtentscheidungen (Art, Akte) stehen im Formular **leer**; vorgewählt wird nur, was aus der Adresse kommt (`?akte=`).
+Das Formular trägt `data-knopf-erst-gueltig`: `static/js/fw-aktionen.js` sperrt den Absende-Knopf, bis `checkValidity()`
+stimmt (ohne JS bleibt er bedienbar, der Server prüft immer). Frist-Chips (`data-frist-tage="N"`, `data-frist-ziel="id"`)
+setzen das Datum auf heute + N Tage. Vergleiche in Vorlagen nie mit `'präfix-'|add:zahl` bauen: `add` liefert bei Zahlen
+leer (`'' == ''` wählte still den letzten Eintrag vor) – Test: `core/tests/test_fall_neu_formular.py`.
+
 ### Rückgängig (Toast)
 - Eine Handlung kann nach dem Speichern einen Toast mit «Rückgängig» zeigen (`core.views.fw._basis.meldung_mit_rueckgaengig`,
   Filter `rueckgaengig_url`, Vorlage `fw/base.html`, zehn Sekunden). Die Handlung läuft sofort; der Knopf ruft per POST eine

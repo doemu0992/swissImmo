@@ -162,6 +162,11 @@ Info-Farbe `#7f959c`.
 
 Rundung: 24 px für Karten, 14 px für kleine Flächen.
 
+### Formulare
+- Pflichtentscheidungen nicht vorbelegen (Radio/Select ohne Vorauswahl, `required`); `data-knopf-erst-gueltig` am `<form>`
+  sperrt den Absende-Knopf bis zur gültigen Eingabe. Auswahl-Vergleiche in Vorlagen ohne `add` auf Zahlen bauen
+  (`'' == ''`-Falle, siehe `ARCHITECTURE.md`, «Formulare ohne riskante Vorbelegung»).
+
 ### Skripte und Content Security Policy
 - Jedes Inline-`<script>` trägt `nonce="{{ csp_nonce }}"`. Keine Inline-Handler (`onclick=` …): stattdessen
   `data-bei-klick` oder `addEventListener` (`test_csp`).

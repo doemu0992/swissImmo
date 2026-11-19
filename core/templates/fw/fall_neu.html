@@ -16,7 +16,7 @@ Art als Kapseln, Betreff, Akte, Frist und Zuständig nebeneinander, Notiz.
     </div>
 </div>
 
-<form method="post" action="/neu/faelle/neu/" class="fw-card fw-rumpf fw-fallneu">
+<form method="post" action="/neu/faelle/neu/" class="fw-card fw-rumpf fw-fallneu" data-knopf-erst-gueltig>
     {% csrf_token %}
     {% if request.GET.embed %}<input type="hidden" name="embed" value="1">{% endif %}
 
@@ -24,9 +24,9 @@ Art als Kapseln, Betreff, Akte, Frist und Zuständig nebeneinander, Notiz.
         <legend class="fw-label">{% trans "Art" %}</legend>
         <div class="fw-filters fw-auswahl">
             {% for f in fallarten %}
-            <label class="fw-fchip{% if werte.fallart == f.pk|stringformat:'s' or not werte.fallart and forloop.first %} fw-on{% endif %}">
-                <input type="radio" name="fallart" value="{{ f.pk }}" {% if werte.fallart == f.pk|stringformat:'s' or not werte.fallart and forloop.first %}checked{% endif %}
-                       data-auswahl-sync>
+            <label class="fw-fchip{% if werte.fallart == f.pk|stringformat:'s' %} fw-on{% endif %}">
+                <input type="radio" name="fallart" value="{{ f.pk }}" {% if werte.fallart == f.pk|stringformat:'s' %}checked{% endif %}
+                       required data-auswahl-sync>
                 {{ f.bezeichnung }}
             </label>
             {% empty %}
@@ -48,10 +48,10 @@ Art als Kapseln, Betreff, Akte, Frist und Zuständig nebeneinander, Notiz.
         <select class="fw-feld" id="nfA" name="akte" required{% if fehler.akte %} aria-invalid="true"{% endif %}>
             <option value="">— {% trans "wählen" %} —</option>
             <optgroup label="{% trans 'Liegenschaften' %}">
-                {% for l in liegenschaften %}<option value="lg-{{ l.pk }}" {% if werte.akte == 'lg-'|add:l.pk|stringformat:'s' %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>{% endfor %}
+                {% for l in liegenschaften %}<option value="lg-{{ l.pk }}" {% if werte.akte|slice:':3' == 'lg-' and werte.akte|slice:'3:' == l.pk|stringformat:'s' %}selected{% endif %}>{{ l.strasse }}, {{ l.ort }}</option>{% endfor %}
             </optgroup>
             <optgroup label="{% trans 'Mietverhältnisse' %}">
-                {% for v in vertraege %}<option value="mv-{{ v.pk }}" {% if werte.akte == 'mv-'|add:v.pk|stringformat:'s' %}selected{% endif %}>{{ v.mieter }} · MV-{{ v.pk }} · {{ v.einheit.liegenschaft.strasse }}</option>{% endfor %}
+                {% for v in vertraege %}<option value="mv-{{ v.pk }}" {% if werte.akte|slice:':3' == 'mv-' and werte.akte|slice:'3:' == v.pk|stringformat:'s' %}selected{% endif %}>{{ v.mieter }} · MV-{{ v.pk }} · {{ v.einheit.liegenschaft.strasse }}</option>{% endfor %}
             </optgroup>
         </select>
         {% if fehler.akte %}<p class="fw-feldfehler">{{ fehler.akte }}</p>{% endif %}
@@ -61,6 +61,12 @@ Art als Kapseln, Betreff, Akte, Frist und Zuständig nebeneinander, Notiz.
         <div class="fw-feldblock">
             <label class="fw-label" for="nfD">{% trans "Frist" %}</label>
             <input class="fw-feld" type="date" id="nfD" name="frist" value="{{ werte.frist }}" min="{{ heute|date:'Y-m-d' }}">
+            <div class="fw-filters">
+                <button type="button" class="fw-fchip" data-frist-tage="0" data-frist-ziel="nfD">{% trans "Heute" %}</button>
+                <button type="button" class="fw-fchip" data-frist-tage="1" data-frist-ziel="nfD">{% trans "Morgen" %}</button>
+                <button type="button" class="fw-fchip" data-frist-tage="7" data-frist-ziel="nfD">{% trans "In 1 Woche" %}</button>
+                <button type="button" class="fw-fchip" data-frist-tage="30" data-frist-ziel="nfD">{% trans "In 1 Monat" %}</button>
+            </div>
         </div>
         <div class="fw-feldblock">
             <label class="fw-label" for="nfW">{% trans "Zuständig" %}</label>

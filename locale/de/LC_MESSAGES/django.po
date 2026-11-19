@@ -39394,3 +39394,12 @@ msgstr "Bericht suchen …"
 
 msgid "Kein Bericht gefunden."
 msgstr "Kein Bericht gefunden."
+
+msgid "Morgen"
+msgstr "Morgen"
+
+msgid "In 1 Woche"
+msgstr "In 1 Woche"
+
+msgid "In 1 Monat"
+msgstr "In 1 Monat"
