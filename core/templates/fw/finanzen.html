@@ -186,7 +186,7 @@ in die jeweilige Liste.
             <span class="fw-f">{% if durchlauf_saldo %}{% trans "geparkte Positionen klären" %}{% else %}{% trans "alles abgestimmt" %}{% endif %}</span>
         </div>
         <div class="fw-kpi">
-            <span class="fw-l">{% trans "Periodenabschluss" %}</span>
+            <span class="fw-l">{% trans "Abschluss" %}</span>
             <span class="fw-v fw-num">{{ erledigt_n }}/{{ pflicht_n }}</span>
             <span class="fw-f">{% trans "Pflichtschritte erledigt" %}</span>
         </div>
@@ -230,7 +230,7 @@ in die jeweilige Liste.
                 <a href="{{ c.url }}" class="fw-zeile klick">
                     <span class="fw-marker{% if c.ok is True %} good{% elif c.ok is False %} warn{% endif %}"></span>
                     <div class="fw-mitte">
-                        <div class="fw-t">{% if c.ok is True %}<span class="fw-faint line-through">{{ c.titel }}</span>{% else %}{{ c.titel }}{% endif %}</div>
+                        <div class="fw-t">{% if c.ok is True %}<span class="fw-good">{% zeichen 'gut' %}</span> {% endif %}{{ c.titel }}</div>
                         <div class="fw-s">{{ c.hinweis }}</div>
                     </div>
                     {% comment %}

@@ -96,6 +96,8 @@ Hauswart: Schadenfälle seiner Liegenschaften.
 ## 5. Oberfläche
 
 ### Design-System
+- Erledigtes wird mit Haken markiert (`zeichen 'gut'`), nie durchgestrichen: Durchgestrichen heisst «storniert»
+  (`test_finanzen_abschluss_darstellung`). Ein Titel steht einmal auf der Seite.
 - Listen: Die Sortierung wirkt sofort, «Anwenden» (`fw/_listwerkzeug.html`) ist nur ohne Skript sichtbar; Gesucht wird auf dem Server
   (Enter), weil mit Seiten ein Filter im Browser nur die aktuelle Seite träfe (`e2e/tests/liste-sortierung.spec.ts`).
 - Kennzahlen stehen sofort im Endwert, nie als Hochzähl-Animation (`test_kennzahlen_sofort`).
