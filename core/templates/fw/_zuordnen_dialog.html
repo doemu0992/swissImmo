@@ -49,9 +49,20 @@ Ohne JavaScript bleibt «Zuordnen / Aufteilen» als Link zum Assistenten stehen 
             <small>{% trans "Zahlung wird an den Absender retourniert." %}</small>
         </label>
 
+        <p class="fw-zdlg-hinweis">{% trans "Nach dem Zuordnen wird der Absender gemerkt — die nächste Zahlung von ihm ordnet sich selbst zu." %}</p>
         <div class="fw-zdlg-knoepfe">
             <button type="button" class="fw-btn" id="fwZuordnenAbbrechen">{% trans "Abbrechen" %}</button>
             <button type="submit" class="fw-btn fw-primary" id="fwZuordnenOk">{% trans "Zuordnen" %}</button>
+        </div>
+    </form>
+    <form method="post" action="" id="fwZuordnenNotizForm" class="fw-zdlg-notiz" data-no-guard>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="/neu/bankabgleich/?spur=klaerung">
+        <label class="fw-klein" for="fwZuordnenNotiz">{% trans "Notiz zur Klärung" %}</label>
+        <div class="fw-zdlg-notizzeile">
+            <input name="notiz" id="fwZuordnenNotiz" maxlength="255" class="fw-feld"
+                   placeholder="{% trans 'Notiz zur Klärung, z. B. «Mieter angerufen»' %}">
+            <button type="submit" class="fw-btn">{% trans "Notiz speichern" %}</button>
         </div>
     </form>
 </dialog>

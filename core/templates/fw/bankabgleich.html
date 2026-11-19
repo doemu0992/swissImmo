@@ -149,59 +149,30 @@ anderes schachteln.
         {% endif %}
         <div>
             {% for z in klaerung %}
-            <div class="fw-zeile flex-wrap fw-klaerung">
+            {% comment %} UI-Zielbild (Bankabgleich im Zielbild): Farbbalken, Name, Valuta und Alter, ein Hinweis, grüner Betrag und ein Knopf «Zuordnen».
+               Vorschlag, Notiz und «Absender merken» stehen im Dialog (`fw/_zuordnen_dialog.html`). {% endcomment %}
+            <div class="fw-bzeile fw-klaerung">
                 {% if sammel_vertraege %}
                 <input type="checkbox" form="sammelform" name="zahlung_ids" value="{{ z.id }}"
-                       data-zahler="{{ z.zahler|lower }}" class="fw-akzent shrink-0"
-                       title="{% trans 'Für die Sammelzuordnung auswählen' %}">
+                       data-zahler="{{ z.zahler|lower }}" class="fw-akzent fw-bwahl"
+                       title="{% trans 'Für die Sammelzuordnung auswählen' %}" aria-label="{% trans 'Für die Sammelzuordnung auswählen' %}">
                 {% endif %}
-                <span class="fw-chip fw-warn">{% trans "Ungeklärt" %}</span>
-                {% comment %}
-                Wer bezahlt hat, steht zuoberst — vorher stand hier der abgeschnittene
-                Importtext und der Auftraggeber war nirgends sichtbar. Kein truncate:
-                auf dem Handy ist Platz nach unten, nicht nach rechts.
-                {% endcomment %}
+                <span class="fw-bbalken{% if z.alt %} crit{% endif %}" aria-hidden="true"></span>
                 <div class="fw-mitte">
-                    {% if z.zahler %}
-                    <div class="fw-t break-words">{{ z.zahler }}
-                        {% if z.zahler_geraten %}<span class="fw-marke-kapsel"
-                              title="{% trans 'Die Bank liefert keine eigene Auftraggeber-Spalte — aus dem Buchungstext gelesen' %}">{% trans "aus Buchungstext" %}</span>{% endif %}
+                    <div class="fw-t break-words">{% if z.zahler %}{{ z.zahler }}{% else %}<span class="fw-mutet">{% trans "Auftraggeber von der Bank nicht geliefert" %}</span>{% endif %}
+                        {% if z.zahler_geraten %}<span class="fw-marke-kapsel" title="{% trans 'Die Bank liefert keine eigene Auftraggeber-Spalte — aus dem Buchungstext gelesen' %}">{% trans "aus Buchungstext" %}</span>{% endif %}</div>
+                    <div class="fw-s">{% blocktrans with datum=z.datum_eingang|date:"d.m.Y" %}Valuta {{ datum }}{% endblocktrans %}{% if z.ref %} · {% trans "Ref." %} <span class="fw-mono">{{ z.ref }}</span>{% endif %}</div>
+                    <div class="fw-bhinweis">
+                        <span class="fw-chip {% if z.alt %}fw-crit{% else %}fw-warn{% endif %}">{% blocktrans count n=z.tage %}seit {{ n }} Tag{% plural %}seit {{ n }} Tagen{% endblocktrans %}</span>
+                        {% if z.vorschlag.stark %}<span class="fw-chip fw-warn">{% blocktrans with mieter=z.vorschlag.mieter %}Vorschlag: {{ mieter }}{% endblocktrans %}</span>{% endif %}
                     </div>
-                    {% else %}
-                    <div class="fw-t fw-mutet">{% trans "Auftraggeber von der Bank nicht geliefert" %}</div>
-                    {% endif %}
-                    <div class="fw-s">{{ z.datum_eingang|date:"d.m.Y" }}
-                        · <span class="fw-chip {% if z.alt %}fw-crit{% else %}fw-info{% endif %}">{% blocktrans count n=z.tage %}seit {{ n }} Tag{% plural %}seit {{ n }} Tagen{% endblocktrans %}</span>
-                        {% if z.ref %} · {% trans "Ref." %} <span class="fw-mono">{{ z.ref }}</span>{% endif %}</div>
-                    {% if z.mitteilung %}<div class="fw-s break-words">{{ z.mitteilung }}</div>{% endif %}
-                    {% if z.vorschlag.stark %}<div class="fw-s fw-vorschlag">{% zeichen 'gut' %}<b>{% trans "Vorschlag" %}: {{ z.vorschlag.mieter }}</b> — {{ z.vorschlag.gruende.0 }}</div>{% elif z.vorschlag %}<div class="fw-s fw-mutet">{% zeichen 'hinweis' %}{% trans "Nur der Betrag passt" %}: {{ z.vorschlag.mieter }} — {% trans "Zahler prüfen, bevor Sie zuordnen." %}</div>{% endif %}
                     {% if z.klaerung_notiz %}<div class="fw-s fw-notiz">✎ {{ z.klaerung_notiz }}</div>{% endif %}
-                    {% if z.zahler %}
-                    <div class="fw-s fw-marke">
-                        {% zeichen 'einstellungen' %}{% trans "Nach dem Zuordnen wird dieser Absender gemerkt — die nächste Zahlung von ihm ordnet sich selbst zu." %}
-                        {% if sammel_vertraege %}
-                        · <button type="button" data-alle-von="{{ z.zahler|lower }}"
-                                  class="fw-link">{% blocktrans with zahler=z.zahler %}alle von «{{ zahler }}» auswählen{% endblocktrans %}</button>
-                        {% endif %}
-                    </div>
-                    {% endif %}
                 </div>
-                <span class="fw-betrag">CHF {{ z.betrag|chf }}</span>
-                {% comment %} Zielbild: ein Knopf «Zuordnen» öffnet den Dialog mit den vier Wegen. Ohne Skript führt der Link in den Assistenten. {% endcomment %}
-                <button type="button" class="fw-btn fw-primary fw-knapp fw-nur-js" data-zuordnen="{{ z.id }}">{% trans "Zuordnen" %}</button>
-                <a href="/neu/bankabgleich/zahlung/{{ z.id }}/aufteilen/" class="fw-btn fw-primary fw-knapp fw-ohne-js">{% zeichen 'weiter' %}{% trans "Zuordnen / Aufteilen" %}</a>
-                <details class="fw-mehr-aktionen">
-                    <summary class="fw-btn fw-knapp">{% trans "Notiz" %}</summary>
-                    <div class="fw-mehr-inhalt">
-                        <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/notiz/" class="fw-mehr-zeile">
-                            {% csrf_token %}
-                            <input type="hidden" name="next" value="/neu/bankabgleich/?spur=klaerung">
-                            <input name="notiz" value="{{ z.klaerung_notiz }}" maxlength="255" class="fw-feld"
-                                   placeholder="{% trans 'Notiz zur Klärung, z. B. «Mieter angerufen»' %}" aria-label="{% trans 'Klärungsnotiz' %}">
-                            <button type="submit" class="fw-btn fw-knapp">{% trans "Notiz speichern" %}</button>
-                        </form>
-                    </div>
-                </details>
+                <div class="fw-brechts">
+                    <span class="fw-betrag">+ {{ z.betrag|chf }}</span>
+                    <button type="button" class="fw-btn fw-primary fw-knapp fw-nur-js" data-zuordnen="{{ z.id }}">{% trans "Zuordnen" %}</button>
+                    <a href="/neu/bankabgleich/zahlung/{{ z.id }}/aufteilen/" class="fw-btn fw-primary fw-knapp fw-ohne-js">{% zeichen 'weiter' %}{% trans "Zuordnen / Aufteilen" %}</a>
+                </div>
             </div>
             {% empty %}
             <div class="fw-leer">

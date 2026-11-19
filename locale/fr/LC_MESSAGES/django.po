@@ -41202,3 +41202,33 @@ msgstr "Refuser"
 
 msgid "Zahlung wird an den Absender retourniert."
 msgstr "Le paiement est retourné à l'expéditeur."
+
+msgid "Nach dem Zuordnen wird der Absender gemerkt — die nächste Zahlung von ihm ordnet sich selbst zu."
+msgstr "Après l'attribution, l'expéditeur est mémorisé : son prochain paiement s'attribue automatiquement."
+
+msgid "Notiz zur Klärung"
+msgstr "Note de clarification"
+
+msgid "alles zuteilen"
+msgstr "tout attribuer"
+
+msgid "Zahlung aufteilen"
+msgstr "Répartir le paiement"
+
+msgid "Bleibt ungeklärt"
+msgstr "Reste à clarifier"
+
+msgid "Der Rest bleibt auf dem Durchlaufkonto 1190."
+msgstr "Le solde reste sur le compte transitoire 1190."
+
+msgid "Als Guthaben verbuchen"
+msgstr "Comptabiliser comme avoir"
+
+msgid "Auf einen Mieter, sobald ein Posten gewählt ist."
+msgstr "Sur un locataire, dès qu'un poste est choisi."
+
+msgid "An den Absender zurücküberweisen"
+msgstr "Rembourser à l'expéditeur"
+
+msgid "Gebucht wird 1190 an Bank."
+msgstr "Comptabilisé : 1190 au crédit de la banque."

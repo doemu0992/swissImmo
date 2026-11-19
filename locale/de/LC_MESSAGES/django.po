@@ -39430,3 +39430,33 @@ msgstr "Zurückweisen"
 
 msgid "Zahlung wird an den Absender retourniert."
 msgstr "Zahlung wird an den Absender retourniert."
+
+msgid "Nach dem Zuordnen wird der Absender gemerkt — die nächste Zahlung von ihm ordnet sich selbst zu."
+msgstr "Nach dem Zuordnen wird der Absender gemerkt — die nächste Zahlung von ihm ordnet sich selbst zu."
+
+msgid "Notiz zur Klärung"
+msgstr "Notiz zur Klärung"
+
+msgid "alles zuteilen"
+msgstr "alles zuteilen"
+
+msgid "Zahlung aufteilen"
+msgstr "Zahlung aufteilen"
+
+msgid "Bleibt ungeklärt"
+msgstr "Bleibt ungeklärt"
+
+msgid "Der Rest bleibt auf dem Durchlaufkonto 1190."
+msgstr "Der Rest bleibt auf dem Durchlaufkonto 1190."
+
+msgid "Als Guthaben verbuchen"
+msgstr "Als Guthaben verbuchen"
+
+msgid "Auf einen Mieter, sobald ein Posten gewählt ist."
+msgstr "Auf einen Mieter, sobald ein Posten gewählt ist."
+
+msgid "An den Absender zurücküberweisen"
+msgstr "An den Absender zurücküberweisen"
+
+msgid "Gebucht wird 1190 an Bank."
+msgstr "Gebucht wird 1190 an Bank."

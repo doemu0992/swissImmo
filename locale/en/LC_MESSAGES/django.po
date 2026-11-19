@@ -40536,3 +40536,33 @@ msgstr "Reject"
 
 msgid "Zahlung wird an den Absender retourniert."
 msgstr "The payment is returned to the sender."
+
+msgid "Nach dem Zuordnen wird der Absender gemerkt — die nächste Zahlung von ihm ordnet sich selbst zu."
+msgstr "After assigning, the sender is remembered: their next payment is assigned automatically."
+
+msgid "Notiz zur Klärung"
+msgstr "Clarification note"
+
+msgid "alles zuteilen"
+msgstr "assign all"
+
+msgid "Zahlung aufteilen"
+msgstr "Split payment"
+
+msgid "Bleibt ungeklärt"
+msgstr "Stays unresolved"
+
+msgid "Der Rest bleibt auf dem Durchlaufkonto 1190."
+msgstr "The remainder stays on transit account 1190."
+
+msgid "Als Guthaben verbuchen"
+msgstr "Book as credit"
+
+msgid "Auf einen Mieter, sobald ein Posten gewählt ist."
+msgstr "To a tenant, once an item is chosen."
+
+msgid "An den Absender zurücküberweisen"
+msgstr "Refund to the sender"
+
+msgid "Gebucht wird 1190 an Bank."
+msgstr "Booked: 1190 to bank."

@@ -188,7 +188,7 @@ def fw_bankabgleich(request):
         _vor = z.vorschlag['rechnungen'][0].id if (z.vorschlag and z.vorschlag['rechnungen']) else None
         zuordnen_daten[str(z.id)] = {
             'zahler': z.zahler or '', 'betrag': str(_chf(z.betrag)),
-            'valuta': f'{z.datum_eingang:%d.%m.%Y}',
+            'valuta': f'{z.datum_eingang:%d.%m.%Y}', 'notiz': z.klaerung_notiz or '',
             'rechnung': z.schnell.id if z.schnell else _vor,
             'kaution': [{'id': v.id, 'label': f'{v.mieter.display_name} · {v.einheit.liegenschaft.strasse} '
                                               f'(CHF {_chf(v.kautions_betrag)})'} for v in z.kaution_kandidaten],

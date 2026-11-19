@@ -41131,3 +41131,33 @@ msgstr "Respingere"
 
 msgid "Zahlung wird an den Absender retourniert."
 msgstr "Il pagamento viene restituito al mittente."
+
+msgid "Nach dem Zuordnen wird der Absender gemerkt — die nächste Zahlung von ihm ordnet sich selbst zu."
+msgstr "Dopo l'assegnazione il mittente viene memorizzato: il suo prossimo pagamento si assegna da solo."
+
+msgid "Notiz zur Klärung"
+msgstr "Nota di chiarimento"
+
+msgid "alles zuteilen"
+msgstr "assegna tutto"
+
+msgid "Zahlung aufteilen"
+msgstr "Suddividere il pagamento"
+
+msgid "Bleibt ungeklärt"
+msgstr "Resta da chiarire"
+
+msgid "Der Rest bleibt auf dem Durchlaufkonto 1190."
+msgstr "Il resto rimane sul conto transitorio 1190."
+
+msgid "Als Guthaben verbuchen"
+msgstr "Contabilizzare come credito"
+
+msgid "Auf einen Mieter, sobald ein Posten gewählt ist."
+msgstr "Su un inquilino, appena è scelta una voce."
+
+msgid "An den Absender zurücküberweisen"
+msgstr "Rimborsare al mittente"
+
+msgid "Gebucht wird 1190 an Bank."
+msgstr "Si contabilizza 1190 a banca."

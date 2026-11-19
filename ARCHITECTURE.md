@@ -147,7 +147,13 @@ Klärungsfälle (Durchlaufkonto 1190): Jede Zeile hat einen Knopf «Zuordnen», 
 Vier Wege, alle über die bestehenden Routen mit ihren Prüfungen: Mietzins zuordnen (`/neu/bankabgleich/zuordnen/`, die
 vorgeschlagene Rechnung ist vorgewählt), Als Kaution erfassen (`…/zahlung/<id>/kaution/`, mit Rückfrage), Aufteilen (Assistent
 `fw/zahlung_aufteilen.html`), Zurückweisen (`…/guthaben/rueckerstatten/`, mit Rückfrage). Nach dem Zuordnen bietet der Toast «Rückgängig».
-Ohne JavaScript führt «Zuordnen / Aufteilen» direkt in den Assistenten; die Notiz zur Klärung bleibt in der Zeile.
+Ohne JavaScript führt «Zuordnen / Aufteilen» direkt in den Assistenten.
+Die Klärungszeile (`.fw-bzeile`, Mockup «Bankabgleich im Zielbild») trägt Farbbalken (rot ab `KLAERUNG_WARN_TAGE`), Name, Valuta, Alters- und
+Vorschlags-Chip, grünen Betrag und den einen Knopf; Notiz zur Klärung und der Hinweis «Absender wird gemerkt» stehen im Dialog.
+Der Assistent «Aufteilen» (`fw/zahlung_aufteilen.html`, Hooks `data-split`, `data-rest-wahl`, `data-teil` unverändert für
+`static/js/fw-zahlungen.js`): Posten als Karten mit Betragsfeld und «alles zuteilen», Rest-Wahl als drei Karten, feste Summenkarte
+(Zugeteilt/Rest, Balken, Buchen). Ab 1024 px Posten links, Zahlung und Summenkarte rechts; am Handy erst Posten, dann Angaben zur Zahlung.
+Test: `e2e/tests/bankabgleich-zielbild.spec.ts` (390 und 1280 px, kein Überlauf).
 Zahlungsausgang: `core/services/pain001.py` (Zahllauf, ab Freigabelimit mit zweiter Person).
 Storno gehört an die Quelle: Eine Buchung, die zu einer Zahlung oder Rechnung gehört, wird im Journal nicht storniert
 (`fw_buchung_stornieren` verweist auf Bankabgleich bzw. Rechnung), und «Import rückgängig» ist gesperrt, solange
