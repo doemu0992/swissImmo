@@ -154,9 +154,9 @@ in `core/services/nk_*.py`.
 - Eine Handlung kann nach dem Speichern einen Toast mit «Rückgängig» zeigen (`core.views.fw._basis.meldung_mit_rueckgaengig`,
   Filter `rueckgaengig_url`, Vorlage `fw/base.html`, zehn Sekunden). Die Handlung läuft sofort; der Knopf ruft per POST eine
   vorhandene, geprüfte Rücknahme (nicht: verzögert ausführen, denn wer die Seite schliesst, verlöre die Handlung ohne Meldung).
-- Eingebaut: Schritt erledigt → `Fallschritt.wieder_oeffnen` (`/neu/fallschritte/<pk>/wiederoeffnen/`). Geplant: Zahlung zugeordnet →
-  `zahlungsklaerung.zuordnung_aufheben` (Gegenbuchungen im Journal). Nie bei Läufen, Monatsabschluss, Zahllauf, Kaution oder
-  versandten Mails.
+- Eingebaut: Schritt erledigt → `Fallschritt.wieder_oeffnen` (`/neu/fallschritte/<pk>/wiederoeffnen/`); Zahlung aus der Klärung
+  (Durchlaufkonto 1190) zugeordnet → `zahlungsklaerung.zuordnung_aufheben` (Gegenbuchungen im Journal, Rechnung wieder offen,
+  Absender vergessen). Nie bei Läufen, Monatsabschluss, Zahllauf, Kaution oder versandten Mails.
 
 ### Schadenmeldungen und Mail
 - Eingang: Mieterportal, internes Erfassen, Webformular `/schaden/melden/` (ordnet über die hinterlegte E-Mail-Adresse

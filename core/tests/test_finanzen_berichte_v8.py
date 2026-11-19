@@ -125,3 +125,27 @@ class BerichteV8Tests(TestCase):
         # Der Katalog bleibt vollständig.
         self.assertContains(antwort, '/neu/mahnwesen/aging/')
         self.assertContains(antwort, 'Betriebskostenspiegel')
+
+
+class ZuordnungRueckgaengigTests(FinanzenV8Tests):
+    """Toast mit «Rückgängig» nach «Zahlung zugeordnet» (UI-Zielbild, Entscheid 19.11.2026)."""
+
+    def test_zuordnen_zeigt_rueckgaengig_und_der_knopf_nimmt_zurueck(self):
+        from finance.models import Buchung
+        from finance.booking import buche
+        r = _rechnung(self.v, '1700.00', 45)
+        z = _geparkt('1700.00')
+        # Der Import bucht den Geldeingang Bank an Durchlaufkonto; ohne diese Buchung gäbe es nichts zurückzunehmen.
+        buche('1020', '1190', Decimal('1700.00'), 'Import UNGEKLÄRT', datum=z.datum_eingang, zahlung=z)
+        antwort = self.c.post('/neu/bankabgleich/zuordnen/', {'zahlung_id': z.id, 'rechnung_id': r.id}, follow=True)
+        self.assertContains(antwort, 'Rückgängig')
+        self.assertContains(antwort, f'/neu/bankabgleich/zahlung/{z.id}/zuordnung-aufheben/')
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'bezahlt')
+        buchungen_vorher = Buchung.objects.count()
+        antwort = self.c.post(f'/neu/bankabgleich/zahlung/{z.id}/zuordnung-aufheben/', {'weiter': '/neu/bankabgleich/'}, follow=True)
+        self.assertEqual(antwort.status_code, 200)
+        r.refresh_from_db()
+        self.assertEqual(r.status, 'offen')                      # Rechnung wieder offen
+        self.assertGreater(Buchung.objects.count(), buchungen_vorher)   # Gegenbuchungen, nichts gelöscht
+        self.assertEqual(len(self.c.get('/neu/finanzen/').context['gutschriften']), 1)   # wieder ein Klärungsfall
