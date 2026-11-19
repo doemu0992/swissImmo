@@ -13,7 +13,7 @@
    Liegenschaftsliste, Werkzeugzeile und Tabelle. {% endcomment %}
 <div class="fw-phead">
     <div>
-        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><span>{% trans "Akten" %}</span></nav>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><span>{% trans "Liegenschaften" %}</span></nav>
         <h1>{% trans "Mietverhältnisse" %}</h1>
         <p>{% blocktrans count n=treffer %}{{ n }} Vertrag{% plural %}{{ n }} Verträge{% endblocktrans %} · <b class="fw-gut">{% blocktrans count n=aktiv_count %}{{ n }} aktiv{% plural %}{{ n }} aktiv{% endblocktrans %}</b>{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse %}gefiltert auf {{ strasse }}{% endblocktrans %} <a href="/neu/vertraege/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
     </div>

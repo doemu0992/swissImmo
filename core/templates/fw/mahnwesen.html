@@ -7,7 +7,7 @@
 
 <div class="fw-phead fw-phead-lauf">
     <div>
-        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}">{% if ist_team %}<a href="/neu/laeufe/{{ lg_query }}">{% trans "Läufe" %}</a>{% else %}<span>{% trans "Läufe" %}</span>{% endif %}<span aria-hidden="true">/</span><span>{% trans "Mahnwesen" %}</span></nav>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}">{% if ist_team %}<a href="/neu/laeufe/{{ lg_query }}">{% trans "Monatsabschluss" %}</a>{% else %}<span>{% trans "Monatsabschluss" %}</span>{% endif %}<span aria-hidden="true">/</span><span>{% trans "Mahnwesen" %}</span></nav>
         <h1>{% trans "Mahnwesen" %} {% hilfe 'mahnstufen' %}</h1>
         <p>{% trans "Überfällige Forderungen nach Mahnstufe · Mahnung inkl. QR-Rechnung direkt erzeugen" %}
             {% if aktive_lg %}· {% trans "gefiltert auf" %} <span class="fw-strong">{{ aktive_lg.strasse }}</span>
