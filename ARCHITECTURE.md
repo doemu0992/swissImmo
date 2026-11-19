@@ -137,6 +137,10 @@ warnt die Seite «Aufträge» und das Betreiber-Protokoll.
 ### Zahlungseingang
 Bankauszug (camt.053/054 oder CSV) → `core/views/fw/bankabgleich.py`: Gutschriften werden über die QR-Referenz den
 offenen Rechnungen zugeordnet und verbucht; Unzuordenbares wird geparkt (`core/services/zahlungszuordnung.py`).
+Klärungsfälle (Durchlaufkonto 1190): Ist ein Mieter belegt (Referenz, gelernter Absender oder Name) und gibt es genau einen offenen
+Posten mit passendem Betrag, nennt der Knopf die Aufgabe («Zuordnen: Hans Muster») und bestätigt in einem Dialog
+(`data-bestaetigen`, Formular `/neu/bankabgleich/zuordnen/`); danach bietet der Toast «Rückgängig». Aufteilen, mehrere Posten und
+Sonderfälle bleiben im Assistenten auf eigener Seite (`fw/zahlung_aufteilen.html`).
 Zahlungsausgang: `core/services/pain001.py` (Zahllauf, ab Freigabelimit mit zweiter Person).
 Storno gehört an die Quelle: Eine Buchung, die zu einer Zahlung oder Rechnung gehört, wird im Journal nicht storniert
 (`fw_buchung_stornieren` verweist auf Bankabgleich bzw. Rechnung), und «Import rückgängig» ist gesperrt, solange

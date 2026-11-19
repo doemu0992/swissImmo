@@ -187,7 +187,19 @@ anderes schachteln.
                     {% endif %}
                 </div>
                 <span class="fw-betrag">CHF {{ z.betrag|chf }}</span>
+                {% if z.schnell %}
+                <form method="post" action="/neu/bankabgleich/zuordnen/" class="fw-schnell-zuordnen"
+                      data-bestaetigen="{% filter escapejs %}{% blocktrans with betrag=z.betrag|chf mieter=z.vorschlag.mieter titel=z.schnell.titel %}CHF {{ betrag }} an {{ mieter }} zuordnen ({{ titel }})? Der Absender wird gemerkt. Mit «Rückgängig» lässt sich das danach zurücknehmen.{% endblocktrans %}{% endfilter %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="zahlung_id" value="{{ z.id }}">
+                    <input type="hidden" name="rechnung_id" value="{{ z.schnell.id }}">
+                    {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                    <button type="submit" class="fw-btn fw-primary fw-knapp">{% zeichen 'gut' %}{% blocktrans with mieter=z.vorschlag.mieter %}Zuordnen: {{ mieter }}{% endblocktrans %}</button>
+                </form>
+                <a href="/neu/bankabgleich/zahlung/{{ z.id }}/aufteilen/" class="fw-btn fw-knapp">{% trans "Aufteilen …" %}</a>
+                {% else %}
                 <a href="/neu/bankabgleich/zahlung/{{ z.id }}/aufteilen/" class="fw-btn fw-primary fw-knapp">{% zeichen 'weiter' %}{% trans "Zuordnen / Aufteilen" %}</a>
+                {% endif %}
                 <details class="fw-mehr-aktionen">
                     <summary class="fw-btn fw-knapp">{% trans "Weitere" %}</summary>
                     <div class="fw-mehr-inhalt">

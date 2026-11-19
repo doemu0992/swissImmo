@@ -41068,3 +41068,12 @@ msgstr "«%(bezeichnung)s» è di nuovo aperto."
 
 msgid "«%(bezeichnung)s» ist schon offen."
 msgstr "«%(bezeichnung)s» è già aperto."
+
+msgid "CHF %(betrag)s an %(mieter)s zuordnen (%(titel)s)? Der Absender wird gemerkt. Mit «Rückgängig» lässt sich das danach zurücknehmen."
+msgstr "Assegnare CHF %(betrag)s a %(mieter)s (%(titel)s)? Il mittente viene memorizzato. Con «Annulla» potete poi tornare indietro."
+
+msgid "Zuordnen: %(mieter)s"
+msgstr "Assegna: %(mieter)s"
+
+msgid "Aufteilen …"
+msgstr "Ripartire …"

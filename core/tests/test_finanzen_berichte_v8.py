@@ -149,3 +149,19 @@ class ZuordnungRueckgaengigTests(FinanzenV8Tests):
         self.assertEqual(r.status, 'offen')                      # Rechnung wieder offen
         self.assertGreater(Buchung.objects.count(), buchungen_vorher)   # Gegenbuchungen, nichts gelöscht
         self.assertEqual(len(self.c.get('/neu/finanzen/').context['gutschriften']), 1)   # wieder ein Klärungsfall
+
+    def test_normalfall_hat_einen_knopf_der_die_aufgabe_nennt(self):
+        _rechnung(self.v, '1700.00', 45)
+        _geparkt('1700.00')
+        html = self.c.get('/neu/bankabgleich/').content.decode()
+        self.assertIn('fw-schnell-zuordnen', html)
+        self.assertIn('Zuordnen: Hans Muster', html)
+        self.assertIn('data-bestaetigen=', html)            # mit Rückfrage-Dialog
+
+    def test_gegenprobe_zwei_offene_posten_bleiben_im_assistenten(self):
+        _rechnung(self.v, '1700.00', 45)
+        _rechnung(self.v, '1700.00', 15, titel='Miete 2')
+        _geparkt('1700.00')
+        html = self.c.get('/neu/bankabgleich/').content.decode()
+        self.assertNotIn('fw-schnell-zuordnen', html)
+        self.assertIn('Zuordnen / Aufteilen', html)
