@@ -123,7 +123,7 @@ STARTSEITE = [
     'lg_abweichungen_anzahl', '/neu/berichte/', "{% include 'fw/_fwmodal.html' %}",
     # Dashboard-Reduktion (26.10.2026): «Ausserdem» ist der Reiter «Ohne Frist»,
     # Freigaben und Läufe sind Aufgabenkacheln je Schwerpunkt; Schublade und Tastatur.
-    "teil='ohnefrist'", "teil='rechts'", 'kacheln', 'k.zahl', 'k.knopf', 'schwerpunkte',
+    "teil='ohnefrist'", "teil='rechts'", 'kacheln', 'k.zahl', 'k.titel', 'schwerpunkte',
     '/neu/schwerpunkt/', 'termine_kurz',
     '/neu/fallschritte/{{ e.schritt_pk }}/erledigen/', '/neu/fallschritte/{{ e.schritt_pk }}/verschieben/',
     'fwVorgangAuf', 'fwVorgangZu', "e.key === 'j'", "e.key === 'k'", "e.key === 'e'",
@@ -190,6 +190,6 @@ class GerendertTests(TestCase):
         html = c.get('/neu/').content.decode('utf-8')
         for hook in ('id="fwSidebar"', 'id="fwOs"', 'fw-palette-data', 'id="fwModal"',
                      'id="fwBestaetigen"', 'aria-label="Bereiche"', 'name="lg"', 'name="q"',
-                     'class="fw-schwerpunkt"', 'id="h-vorrat"', 'fw-reiter', 'fwThemeWechseln'):
+                     'fw-schwerpunkt-segment', 'id="h-vorrat"', 'fw-reiter', 'fwThemeWechseln'):
             with self.subTest(hook=hook):
                 self.assertIn(hook, html)

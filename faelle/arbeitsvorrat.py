@@ -41,9 +41,16 @@ import logging
 from datetime import timedelta
 
 from django.utils import timezone
-from django.utils.translation import gettext
+from django.utils.translation import gettext, gettext_lazy
 
 log = logging.getLogger(__name__)
+
+#: Der Knopf eines Laufs nennt die Aufgabe (UI-Zielbild: «Auslösen», «Importieren»); unbekannte Läufe: «Öffnen».
+#: Eine Quelle für «Heute» und die Schrittliste unter «Monatsabschluss» (`core/views/fw/arbeit.py`).
+LAUF_AKTION = {
+    'sollstellung': gettext_lazy('Auslösen'), 'mahnlauf': gettext_lazy('Auslösen'), 'mwst': gettext_lazy('Auslösen'),
+    'bankabgleich': gettext_lazy('Importieren'), 'zahllauf': gettext_lazy('Freigeben'),
+}
 
 #: Wie weit «was reisst» nach vorn schaut. Vierzehn Tage, damit eine
 #: zehntägige mietrechtliche Reaktionsfrist auffällt, bevor sie halb
@@ -200,7 +207,7 @@ def _laeufe(heute, bis):
             # Kopf dieser Funktion begruendet: Der Grund fuehrt zu einer
             # Handlung, das Wort «blockiert» nicht.
             'blockiert': bool(blockaden),
-            'ziel': '/neu/laeufe/', 'knopf': gettext('Zum Lauf'), 'objekt': lauf,
+            'ziel': '/neu/laeufe/', 'knopf': str(LAUF_AKTION.get(lauf.laufart.schluessel, gettext('Öffnen'))), 'objekt': lauf,
         })
     return zeilen
 

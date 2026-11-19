@@ -167,6 +167,15 @@ das Sperrkonto in Höhe des bilanzierten Betrags frei. Eine MWST-Periode für de
 Rechenkern `core/utils/billing.py` (`berechne_abrechnung`), Assistent `core/views/fw/nk_wizard.py`, PDF und Versand
 in `core/services/nk_*.py`.
 
+### «Heute» (`/neu/`)
+Nach UI-Zielbild: oben der Schwerpunkt als **sichtbares Segment** (Bewirtschaftung | Buchhaltung | Übersicht, `.fw-schwerpunkt-segment`, POST
+`/neu/schwerpunkt/`; «Neuer Fall» steht in «+ Neu»), darunter eine **Statuszeile** statt der Aufgabenkacheln (`faelle/heute_kacheln.py` liefert
+unverändert Zahl, Titel, Text, Ziel, Ton; im Schwerpunkt «Übersicht» bleibt der Lage-Streifen `fw-lage`). Der Arbeitsvorrat «Heute» und
+«Diese Woche» ist nach Dringlichkeit gruppiert (`_dringlichkeitsgruppen` in `core/views/fw/dashboard.py`: «Überfällig · bis 30 Tage», «Seit über
+30 Tagen offen · vermutlich festgefahren»; `FESTGEFAHREN_TAGE`). Der Zeilenknopf nennt die Aufgabe (Läufe über `LAUF_AKTION` in
+`faelle/arbeitsvorrat.py`: Auslösen, Importieren, Freigeben); dazu ein ✓ «Erledigt» bei Fallschritten (`/neu/fallschritte/<id>/erledigen/`,
+Toast «Rückgängig»). Test: `faelle/test_heute_zielbild.py`, `e2e/tests/heute-zielbild.spec.ts`, `heute.spec.ts`.
+
 ### Statuszeile statt Kennzahl-Kacheln
 Listenseiten zeigen oben eine **Statuszeile** (`.fw-statuszeile` mit `.fw-sz`, UI-Zielbild): schmale Kapseln mit Farbpunkt (grün/gelb/rot nach
 `fw-sz-good|warn|crit`), Zahl und Wort in einem («3 offen», «2 leer (40 %)»). Schäden (`faelle/schaeden.py::streifen`), Liegenschaften

@@ -41278,3 +41278,12 @@ msgid "%(n)s offene Auszugszeile"
 msgid_plural "%(n)s offene Auszugszeilen"
 msgstr[0] "%(n)s ligne de relevé ouverte"
 msgstr[1] "%(n)s lignes de relevé ouvertes"
+
+msgid "bis 30 Tage"
+msgstr "jusqu'à 30 jours"
+
+msgid "Seit über 30 Tagen offen"
+msgstr "Ouvert depuis plus de 30 jours"
+
+msgid "vermutlich festgefahren"
+msgstr "probablement bloqué"

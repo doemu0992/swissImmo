@@ -39506,3 +39506,12 @@ msgid "%(n)s offene Auszugszeile"
 msgid_plural "%(n)s offene Auszugszeilen"
 msgstr[0] "%(n)s offene Auszugszeile"
 msgstr[1] "%(n)s offene Auszugszeilen"
+
+msgid "bis 30 Tage"
+msgstr "bis 30 Tage"
+
+msgid "Seit über 30 Tagen offen"
+msgstr "Seit über 30 Tagen offen"
+
+msgid "vermutlich festgefahren"
+msgstr "vermutlich festgefahren"

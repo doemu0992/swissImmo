@@ -1139,6 +1139,20 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         }
         .fw-laeufe{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:24px}
         .fw-laeufe>.fw-card{margin-bottom:0}
+        .fw-schwerpunkt-segment{display:inline-flex;margin:0}
+        .fw-schwerpunkt-segment button{border:0;cursor:pointer}
+        .fw-vz-gruppe{display:flex;gap:8px;align-items:baseline;list-style:none;padding:12px 20px 6px;font-size:12px;letter-spacing:.06em;
+            text-transform:uppercase;color:var(--ds-muted)}
+        .fw-vz-gruppe b{font-weight:700}
+        .fw-vz-gruppe.fw-crit b{color:var(--ds-crit)}
+        .fw-vz-gruppe span{text-transform:none;letter-spacing:0}
+        .fw-vz-aktion{display:flex;align-items:center;gap:8px}
+        .fw-haken-form{display:inline-flex;margin:0}
+        .fw-haken{width:36px;height:36px;border-radius:var(--ds-kreis);border:1px solid var(--ds-line-stark);background:var(--ds-surface);
+            color:var(--ds-ink);display:grid;place-items:center;cursor:pointer}
+        .fw-haken:hover{border-color:var(--ds-good);color:var(--ds-good)}
+        .fw-haken svg{width:16px;height:16px}
+        @media (max-width:640px){.fw-haken{width:40px;height:40px}}
         .fw-statuszeile{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
         .fw-sz{display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:0 14px;border-radius:var(--ds-pill);
             background:var(--ds-surface);color:var(--ds-ink);font-size:13px;font-weight:600;text-decoration:none}
