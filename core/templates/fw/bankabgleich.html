@@ -187,53 +187,12 @@ anderes schachteln.
                     {% endif %}
                 </div>
                 <span class="fw-betrag">CHF {{ z.betrag|chf }}</span>
-                {% if z.schnell %}
-                <form method="post" action="/neu/bankabgleich/zuordnen/" class="fw-schnell-zuordnen"
-                      data-bestaetigen="{% filter escapejs %}{% blocktrans with betrag=z.betrag|chf mieter=z.vorschlag.mieter titel=z.schnell.titel %}CHF {{ betrag }} an {{ mieter }} zuordnen ({{ titel }})? Der Absender wird gemerkt. Mit «Rückgängig» lässt sich das danach zurücknehmen.{% endblocktrans %}{% endfilter %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="zahlung_id" value="{{ z.id }}">
-                    <input type="hidden" name="rechnung_id" value="{{ z.schnell.id }}">
-                    {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                    <button type="submit" class="fw-btn fw-primary fw-knapp">{% zeichen 'gut' %}{% blocktrans with mieter=z.vorschlag.mieter %}Zuordnen: {{ mieter }}{% endblocktrans %}</button>
-                </form>
-                <a href="/neu/bankabgleich/zahlung/{{ z.id }}/aufteilen/" class="fw-btn fw-knapp">{% trans "Aufteilen …" %}</a>
-                {% else %}
-                <a href="/neu/bankabgleich/zahlung/{{ z.id }}/aufteilen/" class="fw-btn fw-primary fw-knapp">{% zeichen 'weiter' %}{% trans "Zuordnen / Aufteilen" %}</a>
-                {% endif %}
+                {% comment %} Zielbild: ein Knopf «Zuordnen» öffnet den Dialog mit den vier Wegen. Ohne Skript führt der Link in den Assistenten. {% endcomment %}
+                <button type="button" class="fw-btn fw-primary fw-knapp fw-nur-js" data-zuordnen="{{ z.id }}">{% trans "Zuordnen" %}</button>
+                <a href="/neu/bankabgleich/zahlung/{{ z.id }}/aufteilen/" class="fw-btn fw-primary fw-knapp fw-ohne-js">{% zeichen 'weiter' %}{% trans "Zuordnen / Aufteilen" %}</a>
                 <details class="fw-mehr-aktionen">
-                    <summary class="fw-btn fw-knapp">{% trans "Weitere" %}</summary>
+                    <summary class="fw-btn fw-knapp">{% trans "Notiz" %}</summary>
                     <div class="fw-mehr-inhalt">
-                        <form method="post" action="/neu/bankabgleich/zuordnen/" class="fw-mehr-zeile">
-                            {% csrf_token %}
-                            <input type="hidden" name="zahlung_id" value="{{ z.id }}">
-                            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
-                            <select name="rechnung_id" required class="fw-feld" aria-label="{% trans 'Offene Rechnung wählen…' %}">
-                                <option value="">{% trans "Offene Rechnung wählen…" %}</option>
-                                {% for row in rows %}
-                                <option value="{{ row.r.id }}">{{ row.mieter }} · {{ row.r.titel }} (CHF {{ row.offen|chf }})</option>
-                                {% endfor %}
-                            </select>
-                            <button type="submit" class="fw-btn fw-knapp">{% trans "Zuordnen" %}</button>
-                        </form>
-                        {% if z.kaution_kandidaten %}
-                        <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/kaution/" class="fw-mehr-zeile"
-                              data-bestaetigen="{% filter escapejs %}{% trans "Als Kaution verbuchen? Gebucht wird 1190 an 2010 Kautionsverbindlichkeit; danach die Überweisung auf das Sperrkonto veranlassen." %}{% endfilter %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="next" value="/neu/bankabgleich/?spur=klaerung">
-                            <select name="vertrag_id" required class="fw-feld" aria-label="{% trans 'Kaution von' %}">
-                                {% for v in z.kaution_kandidaten %}<option value="{{ v.id }}">{{ v.mieter.display_name }} · {{ v.einheit.liegenschaft.strasse }} ({% trans "Kaution" %} CHF {{ v.kautions_betrag|chf }})</option>{% endfor %}
-                            </select>
-                            <button type="submit" class="fw-btn fw-knapp">{% trans "Als Kaution verbuchen" %}</button>
-                            {% hilfe 'kautionskonto' %}
-                        </form>
-                        {% endif %}
-                        <form method="post" action="/neu/bankabgleich/guthaben/rueckerstatten/" class="fw-mehr-zeile"
-                              data-bestaetigen="{% filter escapejs %}{% trans "Zahlung an den Absender zurücküberweisen? Gebucht wird 1190 an Bank." %}{% endfilter %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="zahlung_id" value="{{ z.id }}">
-                            <input type="hidden" name="next" value="/neu/bankabgleich/?spur=klaerung">
-                            <button type="submit" class="fw-btn fw-knapp">{% trans "An Absender zurücküberweisen" %}</button>
-                        </form>
                         <form method="post" action="/neu/bankabgleich/zahlung/{{ z.id }}/notiz/" class="fw-mehr-zeile">
                             {% csrf_token %}
                             <input type="hidden" name="next" value="/neu/bankabgleich/?spur=klaerung">
@@ -744,5 +703,6 @@ anderes schachteln.
         </div>
     </div>
 </div>
+{% include 'fw/_zuordnen_dialog.html' %}
 <script defer src="{% statisch 'js/fw-zahlungen.js' %}"></script>
 {% endblock %}

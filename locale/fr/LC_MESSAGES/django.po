@@ -41178,3 +41178,27 @@ msgstr "Dans 1 mois"
 
 msgid "Auftrag erteilen"
 msgstr "Donner un mandat"
+
+msgid "Mietzins zuordnen"
+msgstr "Attribuer le loyer"
+
+msgid "Vertrag wählen, Betrag wird dem Mieterkonto gutgeschrieben."
+msgstr "Choisir le contrat, le montant est crédité au compte du locataire."
+
+msgid "Als Kaution erfassen"
+msgstr "Enregistrer comme garantie de loyer"
+
+msgid "Betrag wird als Mietzinsdepot hinterlegt."
+msgstr "Le montant est déposé comme garantie de loyer."
+
+msgid "Aufteilen"
+msgstr "Répartir"
+
+msgid "Auf mehrere Posten verteilen."
+msgstr "Répartir sur plusieurs postes."
+
+msgid "Zurückweisen"
+msgstr "Refuser"
+
+msgid "Zahlung wird an den Absender retourniert."
+msgstr "Le paiement est retourné à l'expéditeur."

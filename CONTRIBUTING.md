@@ -169,6 +169,9 @@ steht in `core/tests/test_stilschuld.py` und darf nur sinken. Hex-Farben stehen 
 Weiss auf Akzent oder mit Begründung (STWEG-Warnrot).
 
 ### Formulare
+- Mehrere Wege zu einer Sache gehören in **einen** Dialog mit wählbaren Karten statt in mehrere Einzelformulare (Vorbild:
+  `fw/_zuordnen_dialog.html`). Die Wege nutzen die bestehenden Routen; der Dialog stellt nur Adresse und Felder um. Ohne Skript
+  bleibt ein Link zur Vollseite (`fw-nur-js` / `fw-ohne-js`).
 - Pflichtentscheidungen nicht vorbelegen (Radio/Select ohne Vorauswahl, `required`); `data-knopf-erst-gueltig` am `<form>`
   sperrt den Absende-Knopf bis zur gültigen Eingabe. Auswahl-Vergleiche in Vorlagen ohne `add` auf Zahlen bauen
   (`'' == ''`-Falle, siehe `ARCHITECTURE.md`, «Formulare ohne riskante Vorbelegung»).

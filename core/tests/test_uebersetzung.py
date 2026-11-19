@@ -125,6 +125,7 @@ UEBERSETZT = (
     'fw/_assistent_leiste.html',
     'fw/_assistent_server.html',  # Assistenten-Standard: server-seitiger Rahmen (27.10.2026)
     'fw/_assistent_server_leiste.html',
+    'fw/_zuordnen_dialog.html',  # UI-Zielbild: Dialog «Zahlung zuordnen»
     'fw/_bestaetigen.html',      # Audit Etappe 3: Bestätigungsdialog',
     'fw/_bezahlt_leer.html',
     'fw/_fwmodal.html',

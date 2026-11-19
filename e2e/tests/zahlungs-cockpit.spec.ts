@@ -59,8 +59,10 @@ for (const b of BREITEN) {
       await page.locator('[data-spur="klaerung"]').click();
 
       // Assistent: Suche, «offen» antippen, Rest live, buchen.
-      await zeile.getByRole('link', { name: /Zuordnen \/ Aufteilen/ }).click();
-      await page.waitForURL(/aufteilen/, { waitUntil: 'domcontentloaded' });
+      await zeile.locator('[data-zuordnen]').click();
+      await page.locator('#fwZuordnen .fw-zopt[data-opt="split"]').click();
+      await Promise.all([page.waitForURL(/aufteilen/, { waitUntil: 'domcontentloaded' }),
+        page.locator('#fwZuordnenOk').click()]);
       await keinQuerscrollen(page);
       await page.fill('input[form="suchform"]', 'E2E');
       await page.press('input[form="suchform"]', 'Enter');
@@ -92,8 +94,10 @@ for (const b of BREITEN) {
       await Promise.all([page.waitForURL(/bankabgleich/, { waitUntil: 'domcontentloaded' }),
         page.locator('form[action="/neu/bankabgleich/camt-import/"] button[type="submit"]').click()]);
       await page.locator('.fw-klaerung', { hasText: `Fremd ${b.name} GmbH` }).first()
-        .getByRole('link', { name: /Zuordnen \/ Aufteilen/ }).click();
-      await page.waitForURL(/aufteilen/, { waitUntil: 'domcontentloaded' });
+        .locator('[data-zuordnen]').click();
+      await page.locator('#fwZuordnen .fw-zopt[data-opt="split"]').click();
+      await Promise.all([page.waitForURL(/aufteilen/, { waitUntil: 'domcontentloaded' }),
+        page.locator('#fwZuordnenOk').click()]);
       await page.fill('input[form="suchform"]', 'E2E');
       await page.press('input[form="suchform"]', 'Enter');
       const feld = page.locator('[data-treffer] input[data-teil]').first();

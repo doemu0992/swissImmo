@@ -41107,3 +41107,27 @@ msgstr "Tra 1 mese"
 
 msgid "Auftrag erteilen"
 msgstr "Conferire l'incarico"
+
+msgid "Mietzins zuordnen"
+msgstr "Assegnare la pigione"
+
+msgid "Vertrag wählen, Betrag wird dem Mieterkonto gutgeschrieben."
+msgstr "Scegliere il contratto, l'importo viene accreditato sul conto dell'inquilino."
+
+msgid "Als Kaution erfassen"
+msgstr "Registrare come cauzione"
+
+msgid "Betrag wird als Mietzinsdepot hinterlegt."
+msgstr "L'importo viene depositato come cauzione."
+
+msgid "Aufteilen"
+msgstr "Suddividere"
+
+msgid "Auf mehrere Posten verteilen."
+msgstr "Distribuire su più voci."
+
+msgid "Zurückweisen"
+msgstr "Respingere"
+
+msgid "Zahlung wird an den Absender retourniert."
+msgstr "Il pagamento viene restituito al mittente."

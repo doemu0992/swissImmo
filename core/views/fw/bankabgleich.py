@@ -181,6 +181,18 @@ def fw_bankabgleich(request):
                          and _v['rechnungen'][0].offener_betrag == z.betrag else None)
             z.kaution_kandidaten = _kaution_offen.get(z.betrag, [])[:5]
     klaerung = [z for z in geparkt if z.konto and z.konto.nummer == '1190']
+    # Dialog «Zahlung zuordnen» (UI-Zielbild): je Klärungsfall die Angaben, die der eine Dialog der Seite braucht.
+    from core.templatetags.chf import chf as _chf
+    zuordnen_daten = {}
+    for z in klaerung:
+        _vor = z.vorschlag['rechnungen'][0].id if (z.vorschlag and z.vorschlag['rechnungen']) else None
+        zuordnen_daten[str(z.id)] = {
+            'zahler': z.zahler or '', 'betrag': str(_chf(z.betrag)),
+            'valuta': f'{z.datum_eingang:%d.%m.%Y}',
+            'rechnung': z.schnell.id if z.schnell else _vor,
+            'kaution': [{'id': v.id, 'label': f'{v.mieter.display_name} · {v.einheit.liegenschaft.strasse} '
+                                              f'(CHF {_chf(v.kautions_betrag)})'} for v in z.kaution_kandidaten],
+        }
     verrechnete = _zk.verrechnete_guthaben()
     zugeordnete = _zk.zugeordnete_klaerungsfaelle()
     stornierte = _zk.stornierte_guthaben()
@@ -325,7 +337,7 @@ def fw_bankabgleich(request):
         # einzelne Rechnung; getilgt wird dann automatisch die älteste zuerst.
         'sammel_vertraege': sammel_vertraege,
         'geparkt_unklar': geparkt_unklar, 'geparkt_guthaben': geparkt_guthaben,
-        'klaerung': klaerung, 'guthaben_liste': guthaben_liste,
+        'klaerung': klaerung, 'zuordnen_daten': zuordnen_daten, 'guthaben_liste': guthaben_liste,
         # Korrektur 26.10.2026: Verrechnungen rückgängig machen, stornierte
         # Guthaben wiederherstellen (core/services/zahlungsklaerung.py).
         'verrechnete': verrechnete,

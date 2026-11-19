@@ -40512,3 +40512,27 @@ msgstr "In 1 month"
 
 msgid "Auftrag erteilen"
 msgstr "Place order"
+
+msgid "Mietzins zuordnen"
+msgstr "Assign rent"
+
+msgid "Vertrag wählen, Betrag wird dem Mieterkonto gutgeschrieben."
+msgstr "Choose the contract; the amount is credited to the tenant account."
+
+msgid "Als Kaution erfassen"
+msgstr "Record as deposit"
+
+msgid "Betrag wird als Mietzinsdepot hinterlegt."
+msgstr "The amount is held as a rent deposit."
+
+msgid "Aufteilen"
+msgstr "Split"
+
+msgid "Auf mehrere Posten verteilen."
+msgstr "Spread across several items."
+
+msgid "Zurückweisen"
+msgstr "Reject"
+
+msgid "Zahlung wird an den Absender retourniert."
+msgstr "The payment is returned to the sender."
