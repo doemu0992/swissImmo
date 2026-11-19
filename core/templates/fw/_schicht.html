@@ -3373,6 +3373,14 @@ und einen Stilblock enthaelt.
             .fw-bestand.aktiv::after{content:"";position:absolute;top:7px;right:7px;width:10px;height:10px;border-radius:var(--ds-pill);
                 background:var(--ds-akzent);box-shadow:0 0 0 2px var(--ds-brand-soft);pointer-events:none}
         }
+        /* Telefon: Ist ein Bestand gewählt, steht seine Strasse (gekürzt) im Knopf statt nur eines Punktes. */
+        .fw-bestand-name{display:none}
+        @media (max-width:640px){
+            .fw-bestand.aktiv{flex:0 1 auto;width:auto;max-width:9.5rem;padding-inline:44px 12px}
+            .fw-bestand.aktiv::after{display:none}
+            .fw-bestand.aktiv .fw-bestand-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+                font-size:13px;font-weight:600;color:var(--ds-brand);pointer-events:none}
+        }
 
         /* Bereiche: schliessen an den Bestand an; zu wenig Platz → sie scrollen in sich statt die Zeile zu sprengen */
         

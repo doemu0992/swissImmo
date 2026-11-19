@@ -41104,3 +41104,6 @@ msgstr "Tra 1 settimana"
 
 msgid "In 1 Monat"
 msgstr "Tra 1 mese"
+
+msgid "Auftrag erteilen"
+msgstr "Conferire l'incarico"

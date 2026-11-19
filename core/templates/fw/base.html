@@ -231,6 +231,7 @@ Detailseiten rufen sie beim Namen.
             <form method="get" class="fw-bestand{% if aktive_lg %} aktiv{% endif %}" title="{% trans 'Globaler Filter' %}">
                 <span class="fw-bestand-zeichen" aria-hidden="true">{% zeichen 'liegenschaft' %}</span>
                 <small class="fw-bestand-ueber" aria-hidden="true">{% trans "Bestand" %}</small>
+                {% if aktive_lg %}<span class="fw-bestand-name" aria-hidden="true">{{ aktive_lg.strasse }}</span>{% endif %}
                 <select name="lg" data-absenden aria-label="{% trans 'Bestand' %}: {% trans 'Globaler Filter' %}">
                     <option value="">{% trans "Ganzer Bestand" %}</option>
                     {% for l in alle_liegenschaften %}
