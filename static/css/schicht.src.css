@@ -1431,6 +1431,21 @@
         .fw-toast button:hover{opacity:1;background:color-mix(in srgb,var(--ds-surface) 14%,transparent)}
         .fw-toast-rueck{display:contents}
         .fw-schnell-zuordnen{display:inline-flex;margin:0}
+        html.fw-js .fw-ohne-js,html:not(.fw-js) .fw-nur-js{display:none}
+        /* Dialog «Zahlung zuordnen» (UI-Zielbild): Karte mit vier wählbaren Wegen */
+        .fw-zdlg{border:1px solid var(--ds-line);border-radius:var(--ds-radius-lg);padding:22px;width:min(520px,calc(100% - 32px));
+            background:var(--ds-surface);color:var(--ds-ink);box-shadow:var(--ds-shadow-lg);margin:auto;max-height:calc(100% - 32px);overflow:auto}
+        .fw-zdlg::backdrop{background:var(--ds-scrim)}
+        .fw-zdlg h2{font-size:20px;font-weight:600;margin:0 0 4px}
+        .fw-zdlg-sub{margin:0 0 14px;color:var(--ds-muted);font-size:14px}
+        .fw-zopt{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;padding:12px;border:1px solid var(--ds-line);
+            border-radius:var(--ds-radius-sm);margin-bottom:8px;cursor:pointer;font-size:14px}
+        .fw-zopt.on{border-color:var(--ds-brand);background:var(--ds-brand-soft)}
+        .fw-zopt small{grid-column:2;color:var(--ds-muted);font-size:13px}
+        .fw-zopt input[type=radio]{margin-top:4px;accent-color:var(--ds-brand)}
+        .fw-zopt select{grid-column:2;margin-top:8px;display:none;width:100%;min-width:0;max-width:100%}
+        .fw-zopt.on select{display:block}
+        .fw-zdlg-knoepfe{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap}
         .fw-toast .fw-toast-knopf{font-weight:600;text-decoration:underline;text-underline-offset:3px;opacity:1;min-height:32px;padding:3px 10px}
         @keyframes fw-toast-ein{from{opacity:0;transform:translateY(8px)}}
 

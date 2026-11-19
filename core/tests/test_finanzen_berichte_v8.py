@@ -150,18 +150,27 @@ class ZuordnungRueckgaengigTests(FinanzenV8Tests):
         self.assertGreater(Buchung.objects.count(), buchungen_vorher)   # Gegenbuchungen, nichts gelöscht
         self.assertEqual(len(self.c.get('/neu/finanzen/').context['gutschriften']), 1)   # wieder ein Klärungsfall
 
-    def test_normalfall_hat_einen_knopf_der_die_aufgabe_nennt(self):
-        _rechnung(self.v, '1700.00', 45)
-        _geparkt('1700.00')
+    def test_normalfall_oeffnet_den_dialog_mit_vorgewaehlter_rechnung(self):
+        r = _rechnung(self.v, '1700.00', 45)
+        z = _geparkt('1700.00')
         html = self.c.get('/neu/bankabgleich/').content.decode()
-        self.assertIn('fw-schnell-zuordnen', html)
-        self.assertIn('Zuordnen: Hans Muster', html)
-        self.assertIn('data-bestaetigen=', html)            # mit Rückfrage-Dialog
+        self.assertIn(f'data-zuordnen="{z.pk}"', html)         # ein Knopf «Zuordnen» öffnet den Dialog
+        self.assertIn('id="fwZuordnen"', html)
+        for weg in ('Mietzins zuordnen', 'Als Kaution erfassen', 'Aufteilen', 'Zurückweisen'):
+            self.assertIn(weg, html)
+        # Die Angaben für den Dialog tragen die vorgeschlagene Rechnung.
+        import json
+        import re
+        daten = json.loads(re.search(r'id="zuordnenDaten"[^>]*>(.*?)</script>', html, re.S).group(1))
+        self.assertEqual(daten[str(z.pk)]['rechnung'], r.pk)
 
     def test_gegenprobe_zwei_offene_posten_bleiben_im_assistenten(self):
         _rechnung(self.v, '1700.00', 45)
         _rechnung(self.v, '1700.00', 15, titel='Miete 2')
         _geparkt('1700.00')
         html = self.c.get('/neu/bankabgleich/').content.decode()
-        self.assertNotIn('fw-schnell-zuordnen', html)
-        self.assertIn('Zuordnen / Aufteilen', html)
+        import json
+        import re
+        daten = json.loads(re.search(r'id="zuordnenDaten"[^>]*>(.*?)</script>', html, re.S).group(1))
+        self.assertTrue(all(d['rechnung'] is None or isinstance(d['rechnung'], int) for d in daten.values()))
+        self.assertIn('Zuordnen / Aufteilen', html)       # ohne Skript führt der Link in den Assistenten

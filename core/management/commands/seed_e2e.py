@@ -101,6 +101,15 @@ class Command(BaseCommand):
                               faellig_am=date(2024, 5, 5), betrag=Decimal("1700"),
                               forderungsart="miete", status="offen"))
 
+            # Eine ungeklärte Zahlung (Durchlaufkonto 1190): Bankabgleich zeigt «Zuordnen» und den Dialog mit den vier Wegen.
+            from django.utils import timezone as _tz
+            from finance.models import Buchungskonto, Zahlungseingang
+            _k1190 = Buchungskonto.objects.filter(nummer="1190").first()
+            if _k1190 and not Zahlungseingang.objects.filter(bemerkung__contains="E2E Muster Anna").exists():
+                Zahlungseingang.objects.create(
+                    betrag=Decimal("1234.50"), datum_eingang=_tz.localdate(), konto=_k1190,
+                    status="verbucht", bemerkung="UNGEKLÄRT: E2E Muster Anna Miete")
+
             # Eine Erfolgsbuchung im Jahr 2024, damit Erfolgsrechnung/Jahresabschluss
             # in der E2E-Welt etwas zu zeigen/abzuschliessen haben.
             from finance.models import Buchung

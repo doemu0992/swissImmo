@@ -39406,3 +39406,27 @@ msgstr "In 1 Monat"
 
 msgid "Auftrag erteilen"
 msgstr "Auftrag erteilen"
+
+msgid "Mietzins zuordnen"
+msgstr "Mietzins zuordnen"
+
+msgid "Vertrag wählen, Betrag wird dem Mieterkonto gutgeschrieben."
+msgstr "Vertrag wählen, Betrag wird dem Mieterkonto gutgeschrieben."
+
+msgid "Als Kaution erfassen"
+msgstr "Als Kaution erfassen"
+
+msgid "Betrag wird als Mietzinsdepot hinterlegt."
+msgstr "Betrag wird als Mietzinsdepot hinterlegt."
+
+msgid "Aufteilen"
+msgstr "Aufteilen"
+
+msgid "Auf mehrere Posten verteilen."
+msgstr "Auf mehrere Posten verteilen."
+
+msgid "Zurückweisen"
+msgstr "Zurückweisen"
+
+msgid "Zahlung wird an den Absender retourniert."
+msgstr "Zahlung wird an den Absender retourniert."
