@@ -164,9 +164,7 @@ for (const theme of ['light', 'dark'] as const) {
       await goto(page, '/neu/');
       const k = await kontrastHinterText(page, '.fw-kachel.akzent');
       expect(k, `kleinster Kontrast Weiss/Karte: ${k.toFixed(2)}`).toBeGreaterThanOrEqual(4.5);
-      await goto(page, '/neu/debitoren/');
-      const kpi = await kontrastHinterText(page, '.fw-kpis:not(.fw-stats) > .fw-kpi.fw-accent');
-      expect(kpi, `kleinster Kontrast Weiss/Kennzahlkarte: ${kpi.toFixed(2)}`).toBeGreaterThanOrEqual(4.5);
+      // Die Kennzahlkarte `fw-kpi.fw-accent` gibt es nicht mehr: Kennzahlen sind seit dem UI-Zielbild Kapseln (Tinte auf Fläche).
     });
   });
 }

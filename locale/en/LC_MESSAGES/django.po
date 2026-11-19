@@ -40578,3 +40578,37 @@ msgstr "All runs are done, the month can be closed."
 
 msgid "Auslösen"
 msgstr "Trigger"
+
+msgid "%(n)s ungelesen"
+msgstr "%(n)s unread"
+
+msgid "älteste %(n)s Tag"
+msgid_plural "älteste %(n)s Tage"
+msgstr[0] "oldest %(n)s day"
+msgstr[1] "oldest %(n)s days"
+
+msgid "%(m)s Objekt"
+msgid_plural "%(m)s Objekte"
+msgstr[0] "%(m)s unit"
+msgstr[1] "%(m)s units"
+
+msgid "%(n)s leer (%(q)s %%)"
+msgstr "%(n)s vacant (%(q)s %%)"
+
+msgid "Ist-Miete CHF %(betrag)s pro Monat"
+msgstr "Actual rent CHF %(betrag)s per month"
+
+msgid "%(n)s ungeklärt"
+msgid_plural "%(n)s ungeklärt"
+msgstr[0] "%(n)s unresolved"
+msgstr[1] "%(n)s unresolved"
+
+msgid "%(n)s Teilzahlung"
+msgid_plural "%(n)s Teilzahlungen"
+msgstr[0] "%(n)s part payment"
+msgstr[1] "%(n)s part payments"
+
+msgid "%(n)s offene Auszugszeile"
+msgid_plural "%(n)s offene Auszugszeilen"
+msgstr[0] "%(n)s open statement line"
+msgstr[1] "%(n)s open statement lines"

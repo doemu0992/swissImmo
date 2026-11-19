@@ -181,6 +181,7 @@ def fw_bankabgleich(request):
                          and _v['rechnungen'][0].offener_betrag == z.betrag else None)
             z.kaution_kandidaten = _kaution_offen.get(z.betrag, [])[:5]
     klaerung = [z for z in geparkt if z.konto and z.konto.nummer == '1190']
+    klaerung_aelteste = max((z.tage for z in klaerung), default=0)
     # Dialog «Zahlung zuordnen» (UI-Zielbild): je Klärungsfall die Angaben, die der eine Dialog der Seite braucht.
     from core.templatetags.chf import chf as _chf
     zuordnen_daten = {}
@@ -337,7 +338,7 @@ def fw_bankabgleich(request):
         # einzelne Rechnung; getilgt wird dann automatisch die älteste zuerst.
         'sammel_vertraege': sammel_vertraege,
         'geparkt_unklar': geparkt_unklar, 'geparkt_guthaben': geparkt_guthaben,
-        'klaerung': klaerung, 'zuordnen_daten': zuordnen_daten, 'guthaben_liste': guthaben_liste,
+        'klaerung': klaerung, 'klaerung_aelteste': klaerung_aelteste, 'zuordnen_daten': zuordnen_daten, 'guthaben_liste': guthaben_liste,
         # Korrektur 26.10.2026: Verrechnungen rückgängig machen, stornierte
         # Guthaben wiederherstellen (core/services/zahlungsklaerung.py).
         'verrechnete': verrechnete,

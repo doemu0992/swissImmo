@@ -397,8 +397,10 @@ class SeitenTests(_Basis):
         """Es zaehlte, was der eigene Filter uebriggelassen hat."""
         with mandant(self.a.organisation):
             html = self.c.get('/neu/schaeden/').content.decode()
-        self.assertIn('class="fw-kpis"', html)
-        self.assertIn('Älteste offen', html)
+        # UI-Zielbild: Statuszeile statt Kennzahl-Kacheln; die Liegezeit der ältesten Meldung bleibt dabei.
+        self.assertIn('class="fw-statuszeile"', html)
+        self.assertNotIn('fw-kpis', html)
+        self.assertRegex(html, r'älteste \d+ Tage?')
         self.assertNotIn('Total angezeigt', html)
 
     def test_es_gibt_kein_zweites_suchfeld_mehr(self):

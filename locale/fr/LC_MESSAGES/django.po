@@ -41244,3 +41244,37 @@ msgstr "Tous les traitements sont terminés, le mois peut être clôturé."
 
 msgid "Auslösen"
 msgstr "Déclencher"
+
+msgid "%(n)s ungelesen"
+msgstr "%(n)s non lus"
+
+msgid "älteste %(n)s Tag"
+msgid_plural "älteste %(n)s Tage"
+msgstr[0] "la plus ancienne : %(n)s jour"
+msgstr[1] "la plus ancienne : %(n)s jours"
+
+msgid "%(m)s Objekt"
+msgid_plural "%(m)s Objekte"
+msgstr[0] "%(m)s objet"
+msgstr[1] "%(m)s objets"
+
+msgid "%(n)s leer (%(q)s %%)"
+msgstr "%(n)s vacants (%(q)s %%)"
+
+msgid "Ist-Miete CHF %(betrag)s pro Monat"
+msgstr "Loyer effectif CHF %(betrag)s par mois"
+
+msgid "%(n)s ungeklärt"
+msgid_plural "%(n)s ungeklärt"
+msgstr[0] "%(n)s à clarifier"
+msgstr[1] "%(n)s à clarifier"
+
+msgid "%(n)s Teilzahlung"
+msgid_plural "%(n)s Teilzahlungen"
+msgstr[0] "%(n)s paiement partiel"
+msgstr[1] "%(n)s paiements partiels"
+
+msgid "%(n)s offene Auszugszeile"
+msgid_plural "%(n)s offene Auszugszeilen"
+msgstr[0] "%(n)s ligne de relevé ouverte"
+msgstr[1] "%(n)s lignes de relevé ouvertes"

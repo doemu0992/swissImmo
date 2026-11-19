@@ -488,9 +488,11 @@ class AnsichtTests(TestCase):
 
     def test_der_kennzahlenstreifen_steht_auf_der_seite(self):
         html = self.client.get('/neu/liegenschaften/').content.decode()
-        self.assertIn('fw-kpis', html)
+        # UI-Zielbild: Statuszeile statt Kennzahl-Kacheln.
+        self.assertIn('fw-statuszeile', html)
+        self.assertNotIn('fw-kpis', html)
         self.assertIn('Ist-Miete', html)
-        self.assertIn('% des Bestands', html)
+        self.assertRegex(html, r'\d+ leer \(')
 
     def test_die_filterleiste_traegt_die_zahlen(self):
         html = self.client.get('/neu/liegenschaften/').content.decode()

@@ -37,27 +37,16 @@ hat genau einen Hauptknopf — den nächsten sinnvollen Schritt.
     <button type="button" class="zu" aria-label="{% trans 'Hinweis ausblenden' %}">{% zeichen 'schliessen' %}</button>
 </div>
 
+{% comment %} Statuszeile statt vier Kacheln (UI-Zielbild): Jede Kapsel öffnet wie die Kachel zuvor ihre Arbeitsliste (`data-spur-link`). {% endcomment %}
+<div class="fw-statuszeile">
+    <a href="?spur=klaerung#spuren" data-spur-link="klaerung" class="fw-sz {% if klaerung_alt %}fw-sz-crit{% elif klaerung %}fw-sz-warn{% else %}fw-sz-good{% endif %}">{% blocktrans count n=klaerung|length %}{{ n }} ungeklärt{% plural %}{{ n }} ungeklärt{% endblocktrans %}{% if klaerung %} · CHF {{ geparkt_unklar|chf }}{% endif %}</a>
+    {% if klaerung_aelteste %}<a href="?spur=klaerung#spuren" data-spur-link="klaerung" class="fw-sz {% if klaerung_alt %}fw-sz-crit{% else %}fw-sz-warn{% endif %}">{% blocktrans count n=klaerung_aelteste %}älteste {{ n }} Tag{% plural %}älteste {{ n }} Tage{% endblocktrans %}</a>{% endif %}
+    <a href="?spur=guthaben#spuren" data-spur-link="guthaben" class="fw-sz {% if guthaben_liste %}fw-sz-warn{% else %}fw-sz-good{% endif %}">{% blocktrans count n=guthaben_liste|length %}{{ n }} Guthaben{% plural %}{{ n }} Guthaben{% endblocktrans %}{% if guthaben_liste %} · CHF {{ geparkt_guthaben|chf }}{% endif %}</a>
+    <a href="?spur=teil#spuren" data-spur-link="teil" class="fw-sz {% if teilzahlungen %}fw-sz-warn{% else %}fw-sz-good{% endif %}">{% blocktrans count n=teilzahlungen|length %}{{ n }} Teilzahlung{% plural %}{{ n }} Teilzahlungen{% endblocktrans %}{% if teilzahlungen %} · {% blocktrans with betrag=teil_rest|chf %}Rest CHF {{ betrag }}{% endblocktrans %}{% endif %}</a>
+    <a href="?spur=bank#spuren" data-spur-link="bank" class="fw-sz {% if bew_offen_n %}fw-sz-warn{% else %}fw-sz-good{% endif %}">{% blocktrans count n=bew_offen_n %}{{ n }} offene Auszugszeile{% plural %}{{ n }} offene Auszugszeilen{% endblocktrans %}</a>
+</div>
+
 <div class="fw-bento fw-zahlungs-bento">
-    <a href="?spur=klaerung#spuren" data-spur-link="klaerung" class="fw-kachel b-s {% if klaerung_alt %}akzent{% endif %}">
-        <div class="fw-kachel-kopf"><h3>{% trans "Klärungsfälle" %}</h3>{% hilfe 'durchlaufkonto' %}</div>
-        <div class="fw-kachel-zahl">{{ klaerung|length }}</div>
-        <p class="fw-kachel-text">{% if klaerung %}CHF {{ geparkt_unklar|chf }}{% if klaerung_alt %} · {% blocktrans count n=klaerung_alt %}{{ n }} länger als 10 Tage{% plural %}{{ n }} länger als 10 Tage{% endblocktrans %}{% endif %}{% else %}{% trans "Nichts ungeklärt" %}{% endif %}{% if stornierte_klaerung %} · <b>{% blocktrans count n=stornierte_klaerung|length %}{{ n }} storniert — wiederherstellen{% plural %}{{ n }} storniert — wiederherstellen{% endblocktrans %}</b>{% endif %}</p>
-    </a>
-    <a href="?spur=guthaben#spuren" data-spur-link="guthaben" class="fw-kachel b-s">
-        <div class="fw-kachel-kopf"><h3>{% trans "Guthaben" %}</h3>{% hilfe 'mieterguthaben' %}</div>
-        <div class="fw-kachel-zahl">{{ guthaben_liste|length }}</div>
-        <p class="fw-kachel-text">{% if guthaben_liste %}CHF {{ geparkt_guthaben|chf }} · {% blocktrans count n=guthaben_auto %}{{ n }} wird automatisch verrechnet{% plural %}{{ n }} werden automatisch verrechnet{% endblocktrans %}{% else %}{% trans "Keine Mieterguthaben" %}{% endif %}{% if stornierte_guthaben %} · <b>{% blocktrans count n=stornierte_guthaben|length %}{{ n }} storniert — wiederherstellen{% plural %}{{ n }} storniert — wiederherstellen{% endblocktrans %}</b>{% endif %}</p>
-    </a>
-    <a href="?spur=teil#spuren" data-spur-link="teil" class="fw-kachel b-s">
-        <div class="fw-kachel-kopf"><h3>{% trans "Teilzahlungen" %}</h3>{% hilfe 'teilzahlung' %}</div>
-        <div class="fw-kachel-zahl">{{ teilzahlungen|length }}</div>
-        <p class="fw-kachel-text">{% if teilzahlungen %}{% blocktrans with betrag=teil_rest|chf %}Rest CHF {{ betrag }} offen{% endblocktrans %}{% else %}{% trans "Keine Teilzahlungen offen" %}{% endif %}</p>
-    </a>
-    <a href="?spur=bank#spuren" data-spur-link="bank" class="fw-kachel b-s">
-        <div class="fw-kachel-kopf"><h3>{% trans "Bank-Eingang" %}</h3></div>
-        <div class="fw-kachel-zahl">{{ bew_offen_n }}</div>
-        <p class="fw-kachel-text">{% if bew_offen_n %}{% trans "offene Auszugszeilen" %}{% else %}{% trans "Alle Auszugszeilen erledigt" %}{% endif %}</p>
-    </a>
     <form method="post" action="/neu/bankabgleich/camt-import/" enctype="multipart/form-data" class="fw-kachel b-voll fw-import-kachel">
         {% csrf_token %}
         {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}

@@ -31,27 +31,10 @@
    Filter. Wuerde er mitfiltern, zeigte der Filter «Leerstand» eine
    Leerstandsquote von 100 % — richtig gerechnet und trotzdem irrefuehrend.
    Begruendung steht auch in core/views/fw/liegenschaften_liste.py::fw_liegenschaften. {% endcomment %}
-<div class="fw-kpis">
-    <div class="fw-kpi">
-        <div class="fw-l">{% trans "Liegenschaften" %}</div>
-        <div class="fw-v">{{ kennzahlen.objekte }}</div>
-        <div class="fw-f">{% blocktrans with n=kennzahlen.mit_befund %}{{ n }} mit Befund{% endblocktrans %}</div>
-    </div>
-    <div class="fw-kpi">
-        <div class="fw-l">{% trans "Objekte" %}</div>
-        <div class="fw-v">{{ kennzahlen.einheiten }}</div>
-        <div class="fw-f">{% trans "Wohnungen, Gewerbe, Nebenobjekte" %}</div>
-    </div>
-    <div class="fw-kpi">
-        <div class="fw-l">{% trans "Leer" %}</div>
-        <div class="fw-v{% if kennzahlen.leer %} fw-crit{% endif %}">{{ kennzahlen.leer }}</div>
-        <div class="fw-f">{% blocktrans with q=kennzahlen.leer_quote %}{{ q }} % des Bestands{% endblocktrans %}</div>
-    </div>
-    <div class="fw-kpi">
-        <div class="fw-l">{% trans "Ist-Miete" %}</div>
-        <div class="fw-v">{{ kennzahlen.ertrag|chf }}</div>
-        <div class="fw-f">{% trans "pro Monat, laufende Verträge" %}</div>
-    </div>
+<div class="fw-statuszeile">
+    <span class="fw-sz {% if kennzahlen.mit_befund %}fw-sz-warn{% else %}fw-sz-good{% endif %}">{% blocktrans count n=kennzahlen.objekte %}{{ n }} Liegenschaft{% plural %}{{ n }} Liegenschaften{% endblocktrans %} · {% blocktrans count m=kennzahlen.einheiten %}{{ m }} Objekt{% plural %}{{ m }} Objekte{% endblocktrans %}</span>
+    <span class="fw-sz {% if kennzahlen.leer %}fw-sz-warn{% else %}fw-sz-good{% endif %}">{% blocktrans with n=kennzahlen.leer q=kennzahlen.leer_quote %}{{ n }} leer ({{ q }} %){% endblocktrans %}</span>
+    <span class="fw-sz fw-sz-good">{% blocktrans with betrag=kennzahlen.ertrag|chf %}Ist-Miete CHF {{ betrag }} pro Monat{% endblocktrans %}</span>
 </div>
 {% endif %}
 
