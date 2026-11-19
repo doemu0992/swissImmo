@@ -21,7 +21,7 @@ Periodenabschluss, Direkt zu) steht unverändert darunter in «Abschluss».
 </div>
 
 <!-- Kennzahlen nach konzept-v8 -->
-<div class="fw-kpis fw-fin-kpis">
+<div class="fw-kpis fw-fin-kpis fw-gross">
     {% if mietzinskonto %}
     <div class="fw-kpi">
         <span class="fw-l">{% trans "Mietzinskonto" %}</span>
@@ -169,7 +169,7 @@ in die jeweilige Liste.
         <span class="fw-rechts"><span class="fw-chip {% if dringend_n %}fw-crit{% elif offene_posten %}fw-warn{% else %}fw-good{% endif %}"><span class="fw-num">{{ offene_posten }}</span> {% trans "offene Aufgaben" %}{% if dringend_n %} · {% blocktrans with n=dringend_n %}{{ n }} dringend{% endblocktrans %}{% endif %}</span></span>
     </div>
     <!-- Kennzahlenleiste -->
-    <div class="fw-kpis">
+    <div class="fw-kpis fw-gross">
         <div class="fw-kpi">
             <span class="fw-l">{% trans "Offene Forderungen" %}</span>
             <span class="fw-v fw-num">CHF {{ deb_offen_chf|chf }}</span>

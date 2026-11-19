@@ -172,7 +172,13 @@ Listenseiten zeigen oben eine **Statuszeile** (`.fw-statuszeile` mit `.fw-sz`, U
 `fw-sz-good|warn|crit`), Zahl und Wort in einem («3 offen», «2 leer (40 %)»). Schäden (`faelle/schaeden.py::streifen`), Liegenschaften
 (`kennzahlen`) und Bankabgleich (Kapseln öffnen die Arbeitslisten, `data-spur-link`). Klassen **immer ausgeschrieben** (`fw-sz-warn`),
 nie `fw-sz-{{ x }}`: `test_fw_klassen_wirken` findet zusammengesetzte Namen nicht. Zahlen, die die Seite nicht liefert, werden nicht
-dazugebaut. Test: `e2e/tests/statuszeile.spec.ts`. Offen: Heute, Objekt.
+dazugebaut. Test: `e2e/tests/statuszeile.spec.ts`.
+**Standard auf allen Seiten:** Jede `.fw-kpis`-Gruppe (rund 55 Vorlagen, auch die Aktenleiste `fw-stats` und die Portale) wird in der Stilschicht
+(Modul «Kennzahlen als Statuszeile», `html .fw-kpis:not(.fw-gross)`) zur Kapselzeile; das Markup (`.fw-kpi > .fw-l/.fw-v/.fw-f`) bleibt. Der
+Farbpunkt folgt `fw-good|warn|crit` am Wert, der Zusatz (`.fw-f`) steht gedämpft dahinter, am Telefon entfällt er bei der Aktenleiste
+(bleibt flach, `telefon.spec.ts`). **Ausnahme `fw-gross`:** nur die grossen Kontostände und der Abschluss-Block auf Finanzen, wie im Zielbild;
+`core/tests/test_statuszeile_standard.py` lässt `fw-gross` nur dort zu. Nicht Teil davon: die Status-Kacheln `fw-lage` (z. B. Debitoren) und die
+Kacheln von «Heute» (eigenes Paket).
 
 ### Monatsabschluss als Schrittliste (`/neu/laeufe/`)
 Die Seite zeigt die Läufe als eine Liste «Schritte in dieser Reihenfolge» (UI-Zielbild): offene Läufe plus die in diesem Monat

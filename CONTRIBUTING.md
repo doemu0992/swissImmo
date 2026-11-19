@@ -171,6 +171,9 @@ Weiss auf Akzent oder mit Begründung (STWEG-Warnrot).
 ### Kennzahlen
 - Oben auf Listenseiten steht eine Statuszeile (`.fw-statuszeile` / `.fw-sz`), keine Kachelwand. Farbklassen ausgeschrieben
   (`fw-sz-good`, `fw-sz-warn`, `fw-sz-crit`), nicht zusammengesetzt (`test_fw_klassen_wirken`).
+- Neue Kennzahlen: weiter `.fw-kpis > .fw-kpi` mit `.fw-l` (Beschriftung), `.fw-v` (Wert, optional `fw-good|warn|crit` für den Farbpunkt)
+  und `.fw-f` (Zusatz). Die Stilschicht macht daraus von selbst die Kapselzeile. Grosse Kacheln (`fw-gross`) gibt es nur auf Finanzen
+  (`core/tests/test_statuszeile_standard.py`).
 
 ### Formulare
 - Mehrere Wege zu einer Sache gehören in **einen** Dialog mit wählbaren Karten statt in mehrere Einzelformulare (Vorbild:
