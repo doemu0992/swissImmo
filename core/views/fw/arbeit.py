@@ -611,6 +611,42 @@ def _lauf_stufen(lauf, blockiert):
     return stufen, min(jetzt + 1, len(namen)), len(namen)
 
 
+# Knopf je Lauf nennt die Aufgabe (UI-Zielbild «Schritte in dieser Reihenfolge»); unbekannte Läufe: «Öffnen».
+LAUF_AKTION = {
+    'sollstellung': gettext_lazy('Auslösen'), 'mahnlauf': gettext_lazy('Auslösen'), 'mwst': gettext_lazy('Auslösen'),
+    'bankabgleich': gettext_lazy('Importieren'), 'zahllauf': gettext_lazy('Freigeben'),
+}
+
+
+def _monatsschritte(offen, erledigt, heute, lg_query):
+    """Der Monatsabschluss als Schrittliste (UI-Zielbild): offene Läufe plus die in diesem Monat abgeschlossenen, in der
+    Reihenfolge der Laufarten; zuletzt der Periodenabschluss, der erst möglich ist, wenn alle Läufe erledigt sind.
+
+    Nur Darstellung: Zustand und Blockaden kommen unverändert aus den Läufen (`fw_laeufe`), gespeichert wird nichts.
+    Zustand je Schritt: 'fertig', 'jetzt' (der erste offene), 'offen' (weitere offene) oder 'gesperrt'.
+    """
+    def dieser_monat(z):
+        d = z['lauf'].abgeschlossen_am
+        d = d.date() if d else z['lauf'].faellig_am
+        return (d.year, d.month) == (heute.year, heute.month)
+
+    zeilen = [dict(z, fertig=False) for z in offen] + [dict(z, fertig=True) for z in erledigt if dieser_monat(z)]
+    zeilen.sort(key=lambda z: (z['lauf'].laufart.reihenfolge, z['lauf'].faellig_am))
+    erster_offen = next((z for z in zeilen if not z['fertig']), None)
+    for z in zeilen:
+        z['aktion'] = LAUF_AKTION.get(z['lauf'].laufart.schluessel, gettext_lazy('Öffnen'))
+        z['zustand'] = 'fertig' if z['fertig'] else ('jetzt' if z is erster_offen else 'offen')
+    alle_fertig = erster_offen is None
+    schritte = zeilen + [{
+        'abschluss': True, 'zustand': 'jetzt' if alle_fertig else 'gesperrt',
+        'wartet_auf': erster_offen['lauf'].laufart.bezeichnung if erster_offen else '',
+        'url': '/neu/finanzen/' + lg_query,
+    }]
+    fertig_n = sum(1 for z in zeilen if z['fertig'])
+    frueher = [z for z in erledigt if not dieser_monat(z)]
+    return schritte, fertig_n, len(schritte), frueher
+
+
 @rolle_erforderlich(*TEAM_ROLLEN)
 def fw_laeufe(request):
     """Läufe mit Zustand — und dem, was sie blockiert.
@@ -652,11 +688,13 @@ def fw_laeufe(request):
         (erledigt if lauf.status in (Lauf.ABGESCHLOSSEN, Lauf.UEBERSPRUNGEN)
          else offen).append(zeile)
     offen.sort(key=lambda z: z['lauf'].faellig_am)
+    schritte, erledigt_n, gesamt_n, frueher = _monatsschritte(offen, erledigt, heute, basis['lg_query'])
     # nav 'laeufe' (bis v8: 'arbeit'): Die Seite ist der Kopf des Bereichs
     # «Läufe» (core/navigation.py) — mit 'arbeit' leuchtete «Heute» auf.
     return render(request, 'fw/laeufe.html', {
         **basis, 'nav': 'laeufe',
-        'heute': heute, 'offen': offen, 'erledigt': erledigt[:20],
+        'heute': heute, 'offen': offen, 'erledigt': erledigt[:20], 'frueher': frueher[:20],
+        'schritte': schritte, 'schritte_erledigt': erledigt_n, 'schritte_gesamt': gesamt_n,
         'brauchen_dich': sum(1 for z in offen if z['braucht_dich']),
     })
 

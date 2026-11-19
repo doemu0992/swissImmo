@@ -40566,3 +40566,15 @@ msgstr "Refund to the sender"
 
 msgid "Gebucht wird 1190 an Bank."
 msgstr "Booked: 1190 to bank."
+
+msgid "Monatsabschluss"
+msgstr "Month-end close"
+
+msgid "Schritte in dieser Reihenfolge"
+msgstr "Steps in this order"
+
+msgid "Alle Läufe sind erledigt, der Monat kann abgeschlossen werden."
+msgstr "All runs are done, the month can be closed."
+
+msgid "Auslösen"
+msgstr "Trigger"

@@ -41232,3 +41232,15 @@ msgstr "Rembourser à l'expéditeur"
 
 msgid "Gebucht wird 1190 an Bank."
 msgstr "Comptabilisé : 1190 au crédit de la banque."
+
+msgid "Monatsabschluss"
+msgstr "Clôture mensuelle"
+
+msgid "Schritte in dieser Reihenfolge"
+msgstr "Étapes dans cet ordre"
+
+msgid "Alle Läufe sind erledigt, der Monat kann abgeschlossen werden."
+msgstr "Tous les traitements sont terminés, le mois peut être clôturé."
+
+msgid "Auslösen"
+msgstr "Déclencher"

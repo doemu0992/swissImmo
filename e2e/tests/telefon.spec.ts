@@ -242,46 +242,28 @@ test('Berichte: Achsenbeschriftung lesbar und ohne Überlappung', async ({ page 
   expect(quer).toBeLessThanOrEqual(0);
 });
 
-test('Läufe: eine Spalte, Stufenband in einer Reihe, Knopf neben dem Kontext', async ({ page }) => {
+test('Monatsabschluss: Schrittliste in einer Spalte, Knopf im Bild und gross genug', async ({ page }) => {
   await login(page);
   await goto(page, '/neu/laeufe/');
 
-  const karten = page.locator('.fw-laeufe > .fw-lauf');
-  // Der E2E-Bestand plant Läufe (laeufe_planen) — ohne Karte wäre das keiner.
-  await expect(karten.first()).toBeVisible();
-  const m = await karten.evaluateAll((els) => els.map((k) => {
+  const schritte = page.locator('.fw-schrittliste .fw-schritt');
+  // Der E2E-Bestand plant Läufe (laeufe_planen) — ohne Schritt wäre das keiner.
+  await expect(schritte.first()).toBeVisible();
+  const m = await schritte.evaluateAll((els) => els.map((k) => {
     const r = k.getBoundingClientRect();
-    const stufen = [...k.querySelectorAll('.fw-stufen li')].map((l) => l.getBoundingClientRect());
-    return {
-      l: Math.round(r.left), r: r.right,
-      reihen: new Set(stufen.map((s) => Math.round(s.top))).size,
-      stufeHoch: Math.max(...stufen.map((s) => s.height)),
-      fuss: k.querySelector('.fw-lauf-fuss')!.getBoundingClientRect().height,
-    };
+    const knopf = k.querySelector('.fw-btn') as HTMLElement | null;
+    const kb = knopf ? knopf.getBoundingClientRect() : null;
+    return { l: Math.round(r.left), r: r.right, h: kb ? kb.height : 99, kr: kb ? kb.right : 0 };
   }));
-  // Eine Spalte: alle Karten beginnen an derselben Kante und bleiben im Bild.
+  // Eine Spalte: alle Schritte beginnen an derselben Kante und bleiben im Bild; der Knopf liegt im Fenster.
   expect(new Set(m.map((k) => k.l)).size).toBe(1);
   for (const k of m) {
     expect(k.r).toBeLessThanOrEqual(390);
-    // Segment + eine Zeile Beschriftung misst 27 px; bricht die Beschriftung
-    // um, wird es über 40.
-    expect(k.reihen, 'Das Stufenband bricht in mehrere Reihen').toBe(1);
-    expect(k.stufeHoch).toBeLessThan(40);
-    // Kontext und Knopf in einer Zeile: 43 px; untereinander wären es über 70.
-    expect(k.fuss).toBeLessThan(60);
+    expect(k.kr).toBeLessThanOrEqual(390);
+    expect(k.h, 'Knopf zu klein zum Tippen').toBeGreaterThanOrEqual(36);
   }
   const quer = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
   expect(quer).toBeLessThanOrEqual(0);
-
-  // Der LÄNGSTE Kontext («gestartet … · Stichtag … · in n Tagen») steht erst ab dem Monatsersten
-  // im Text — der Bestand von heute zeigt ihn nicht immer. Ohne diesen Fall war der Test vom
-  // Kalenderdatum abhängig: am 01.10.2026 war er rot (73 px), am 02.10. grün (43 px).
-  const lang = await karten.first().evaluate((k) => {
-    const fuss = k.querySelector('.fw-lauf-fuss')!;
-    fuss.querySelector('span')!.textContent = 'gestartet 01.10.2026 · Stichtag 05.10.2026 · in 4 Tagen';
-    return fuss.getBoundingClientRect().height;
-  });
-  expect(lang, 'Fusszeile mit langem Kontext bricht die Knöpfe unter den Text').toBeLessThan(60);
 });
 
 test('Sollstellung: die Freigabeleiste verdeckt am Telefon nicht die halbe Seite', async ({ page }) => {

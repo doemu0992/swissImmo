@@ -39460,3 +39460,15 @@ msgstr "An den Absender zurücküberweisen"
 
 msgid "Gebucht wird 1190 an Bank."
 msgstr "Gebucht wird 1190 an Bank."
+
+msgid "Monatsabschluss"
+msgstr "Monatsabschluss"
+
+msgid "Schritte in dieser Reihenfolge"
+msgstr "Schritte in dieser Reihenfolge"
+
+msgid "Alle Läufe sind erledigt, der Monat kann abgeschlossen werden."
+msgstr "Alle Läufe sind erledigt, der Monat kann abgeschlossen werden."
+
+msgid "Auslösen"
+msgstr "Auslösen"

@@ -41161,3 +41161,15 @@ msgstr "Rimborsare al mittente"
 
 msgid "Gebucht wird 1190 an Bank."
 msgstr "Si contabilizza 1190 a banca."
+
+msgid "Monatsabschluss"
+msgstr "Chiusura mensile"
+
+msgid "Schritte in dieser Reihenfolge"
+msgstr "Passaggi in quest'ordine"
+
+msgid "Alle Läufe sind erledigt, der Monat kann abgeschlossen werden."
+msgstr "Tutte le elaborazioni sono concluse, il mese può essere chiuso."
+
+msgid "Auslösen"
+msgstr "Avviare"

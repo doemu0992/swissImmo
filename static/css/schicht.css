@@ -1139,6 +1139,23 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         }
         .fw-laeufe{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:24px}
         .fw-laeufe>.fw-card{margin-bottom:0}
+        .fw-schrittliste{display:block}
+        .fw-schritt{display:flex;align-items:center;gap:16px;padding:14px 20px;border-top:1px solid var(--ds-line)}
+        .fw-schritt .fw-mitte{flex:1;min-width:0}
+        .fw-schritt .fw-t{font-size:14px;font-weight:600;color:var(--ds-ink)}
+        .fw-schritt .fw-t a{color:inherit;text-decoration:none}
+        .fw-schritt .fw-t a:hover{text-decoration:underline}
+        .fw-schritt .fw-s{font-size:13px;color:var(--ds-muted);margin-top:2px}
+        .fw-schritt-zeichen{flex:none;width:26px;height:26px;border-radius:var(--ds-kreis);display:grid;place-items:center;
+            border:2px solid var(--ds-line-stark)}
+        .fw-schritt-zeichen svg{width:14px;height:14px}
+        .fw-schritt.fertig .fw-schritt-zeichen{background:var(--ds-good);border-color:var(--ds-good);color:var(--ds-auf-satt)}
+        .fw-schritt.jetzt .fw-schritt-zeichen{border-color:var(--ds-brand);box-shadow:inset 0 0 0 5px var(--ds-surface),inset 0 0 0 13px var(--ds-brand)}
+        .fw-schritt.gesperrt .fw-t{color:var(--ds-ink)}
+        .fw-schritt-skip{margin-top:6px;font-size:13px;color:var(--ds-muted)}
+        .fw-schritt-skip summary{cursor:pointer;display:inline-block}
+        .fw-schritt-skip form{margin-top:6px}
+        @media (max-width:640px){.fw-schritt{flex-wrap:wrap;gap:12px;padding:14px 16px}}
         .fw-lauf{padding:18px 20px;display:flex;flex-direction:column;gap:14px;min-width:0}
         .fw-lauf-kopf{display:flex;align-items:flex-start;gap:12px}
         .fw-lauf-kopf>.fw-chip{flex:0 0 auto}
