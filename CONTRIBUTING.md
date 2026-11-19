@@ -101,6 +101,9 @@ Hauswart: Schadenfälle seiner Liegenschaften.
   `berichte-suche.spec.ts`).
 - Schrift mindestens 12 px; Ausnahmen (Zahlen in kleinen Kreisen, Diagrammachsen, Mikroschrift) stehen mit Begründung in
   `core/tests/test_schrift_mindestgroesse.py`.
+- Tippflächen am Handy (bis 640 px): Filter-Chips und kleine Knöpfe mindestens 40 px, Segmente 36 px, Schliessen-Knopf 36 px;
+  kleine Zeichen (Hilfe-«i») behalten ihre Optik und bekommen die Fläche unsichtbar dazu (`::before`). Wächter:
+  `e2e/tests/tippflaechen-handy.spec.ts`.
 - «Rückgängig» nur mit geprüfter Rücknahme (`meldung_mit_rueckgaengig`, siehe ARCHITECTURE «Rückgängig (Toast)»); Buchungen werden nie
   gelöscht, die Rücknahme storniert (`faelle/test_rueckgaengig_toast.py`).
 - Avatare tragen das Kürzel aus Vor- und Nachname (`{% load kuerzel %}`, `|kuerzel`: «DG»), nicht die ersten zwei Buchstaben des
