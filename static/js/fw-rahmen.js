@@ -197,6 +197,12 @@ document.addEventListener('input', function(e) {
     ziel.querySelectorAll('[data-zeile]').forEach(function(tr) {
         tr.classList.toggle('hidden', q && tr.textContent.toLowerCase().indexOf(q) === -1);
     });
+    // Gruppen ohne Treffer ausblenden (`data-gruppe`), und eine Meldung, wenn nichts passt (`data-keine`)
+    ziel.querySelectorAll('[data-gruppe]').forEach(function(g) {
+        g.classList.toggle('hidden', !g.querySelector('[data-zeile]:not(.hidden)'));
+    });
+    var keine = ziel.querySelector('[data-keine]');
+    if (keine) keine.classList.toggle('hidden', !q || !!ziel.querySelector('[data-zeile]:not(.hidden)'));
 });
 
 // Globales "⋯ Mehr"-Dropdown: Markup ohne eigenes Script.

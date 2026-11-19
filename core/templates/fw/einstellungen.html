@@ -12,12 +12,22 @@
 </div>
 
 
+<div role="search" class="fw-listwerkzeug">
+    <div class="fw-suchfeld relative">
+        {% zeichen 'suchen' klasse='absolute left-3.5 top-1/2 -translate-y-1/2 fw-faint text-sm' %}
+        <input type="search" id="einstSuche" data-suche="#einstListe" aria-label="{% trans 'Einstellungen durchsuchen' %}"
+               placeholder="{% trans 'Einstellung suchen …' %}" autocomplete="off" class="fw-feld">
+    </div>
+</div>
+
 <!-- Gruppen -->
+<div id="einstListe">
 {% for g in gruppen %}
+<div data-gruppe>
 <h2 class="fw-gruppe-titel">{{ g.label }}</h2>
 <div class="fw-card">
     {% for k in g.eintraege %}
-    <a href="{{ k.url }}" class="fw-zeile klick">
+    <a href="{{ k.url }}" class="fw-zeile klick" data-zeile>
         <span class="fw-ikon">{% zeichen_wert k.icon %}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ k.titel }}</div>
@@ -27,6 +37,9 @@
     </a>
     {% endfor %}
 </div>
+</div>
 {% endfor %}
+<p data-keine class="hidden fw-mutet" role="status">{% trans "Keine Einstellung gefunden." %}</p>
+</div>
 
 {% endblock %}

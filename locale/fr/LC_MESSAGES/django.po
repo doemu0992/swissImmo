@@ -41148,3 +41148,12 @@ msgstr "Attribuer: %(mieter)s"
 
 msgid "Aufteilen …"
 msgstr "Répartir …"
+
+msgid "Einstellungen durchsuchen"
+msgstr "Rechercher dans les paramètres"
+
+msgid "Einstellung suchen …"
+msgstr "Rechercher un paramètre …"
+
+msgid "Keine Einstellung gefunden."
+msgstr "Aucun paramètre trouvé."

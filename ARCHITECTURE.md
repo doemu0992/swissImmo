@@ -80,6 +80,8 @@ Security → `WartungsMiddleware` → `NulBytesMiddleware` → GZip → Session 
 - Einstellungen: `einstellungen_gruppen()` in `core/navigation.py` ist die eine Liste (fünf Gruppen: Verwaltung, Team & Zugriff,
   Vorlagen & Regeln, Schnittstellen, Daten & Protokoll). Aus ihr kommen die Hub-Seite `/neu/einstellungen/`, das Feld der
   Schiene (Symbol «Einstellungen», Taste G dann E) und der Pfad «Einstellungen / Gruppe» auf jeder Einstellungsseite.
+  Die Hub-Seite hat eine Live-Suche (Filter im Browser über `data-suche`, siehe CONTRIBUTING «Listen»); Gruppen ohne Treffer
+  verschwinden, ohne Treffer erscheint «Keine Einstellung gefunden».
 - «Zuletzt geöffnet» liegt im Browser, je Person und Verwaltung (`zuletztSchluessel` im Datenblock der Vorlage).
 
 ## 3. Mandantentrennung

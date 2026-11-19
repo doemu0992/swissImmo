@@ -40482,3 +40482,12 @@ msgstr "Assign: %(mieter)s"
 
 msgid "Aufteilen …"
 msgstr "Split …"
+
+msgid "Einstellungen durchsuchen"
+msgstr "Search settings"
+
+msgid "Einstellung suchen …"
+msgstr "Search a setting …"
+
+msgid "Keine Einstellung gefunden."
+msgstr "No setting found."
