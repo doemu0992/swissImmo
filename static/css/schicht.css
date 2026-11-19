@@ -2322,6 +2322,14 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-bestand.aktiv::after{content:"";position:absolute;top:7px;right:7px;width:10px;height:10px;border-radius:var(--ds-pill);
                 background:var(--ds-akzent);box-shadow:0 0 0 2px var(--ds-brand-soft);pointer-events:none}
         }
+        @media (max-width:640px){
+            .fw-fchip{height:40px}
+            .fw-btn.fw-knapp{min-height:40px}
+            .fw-segment .fw-seg-link{min-height:36px}
+            .fw-side-knopf{width:36px;height:36px}
+            .fw-hilfe-knopf{position:relative}
+            .fw-hilfe-knopf::before{content:"";position:absolute;inset:-9px}
+        }
         .fw-bestand-name{display:none}
         @media (max-width:640px){
             .fw-bestand.aktiv{flex:0 1 auto;width:auto;max-width:9.5rem;padding-inline:44px 12px}

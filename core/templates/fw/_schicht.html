@@ -3373,6 +3373,16 @@ und einen Stilblock enthaelt.
             .fw-bestand.aktiv::after{content:"";position:absolute;top:7px;right:7px;width:10px;height:10px;border-radius:var(--ds-pill);
                 background:var(--ds-akzent);box-shadow:0 0 0 2px var(--ds-brand-soft);pointer-events:none}
         }
+        /* Telefon: Tippflächen mindestens 36 px (Chips und Knöpfe 40 px); kleine Zeichen behalten ihre Optik und
+           bekommen die Fläche unsichtbar dazu. Gemessen bei 390 px (Chips 34, kleine Knöpfe 32, Hilfe-i 18, Schliessen 28). */
+        @media (max-width:640px){
+            .fw-fchip{height:40px}
+            .fw-btn.fw-knapp{min-height:40px}
+            .fw-segment .fw-seg-link{min-height:36px}
+            .fw-side-knopf{width:36px;height:36px}
+            .fw-hilfe-knopf{position:relative}
+            .fw-hilfe-knopf::before{content:"";position:absolute;inset:-9px}
+        }
         /* Telefon: Ist ein Bestand gewählt, steht seine Strasse (gekürzt) im Knopf statt nur eines Punktes. */
         .fw-bestand-name{display:none}
         @media (max-width:640px){
