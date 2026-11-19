@@ -41216,3 +41216,12 @@ msgstr "Aperto da oltre 30 giorni"
 
 msgid "vermutlich festgefahren"
 msgstr "probabilmente bloccato"
+
+msgid "Handeln"
+msgstr "Intervenire"
+
+msgid "Nachfassen"
+msgstr "Sollecitare"
+
+msgid "gemeldet von %(melder)s"
+msgstr "segnalato da %(melder)s"

@@ -145,6 +145,17 @@ def fw_schaeden(request):
         # «Auftrag erteilen» nur, wo noch keiner läuft (stornierte zählen nicht). Die Aufträge sind vorgeladen.
         zeile['ohne_auftrag'] = (t.status in ('neu', 'in_bearbeitung') and
                                  not any(x.status != 'storniert' for x in t.handwerker_auftraege.all()))
+        # Die nächste Aktion nennt der Knopf der Zeile (UI-Zielbild); alle öffnen den Schaden in der Schublade.
+        if zeile['ohne_auftrag']:
+            zeile['aktion'], zeile['aktion_tab'] = gettext('Auftrag erteilen'), 'handwerker'
+        elif zeile['befunde']:
+            zeile['aktion'], zeile['aktion_tab'] = gettext('Handeln'), ''
+        elif zeile['wartet']:
+            zeile['aktion'], zeile['aktion_tab'] = gettext('Nachfassen'), ''
+        elif t.status == 'erledigt':
+            zeile['aktion'], zeile['aktion_tab'] = gettext('Ansehen'), ''
+        else:
+            zeile['aktion'], zeile['aktion_tab'] = gettext('Öffnen'), ''
         zeile['objekt'] = (f"{t.liegenschaft.strasse}, {t.liegenschaft.ort}"
                            if t.liegenschaft_id else '—')
         zeile['melder'] = (t.gemeldet_von.display_name if t.gemeldet_von_id
@@ -157,10 +168,10 @@ def fw_schaeden(request):
         'kopf': kopf,
         'sicht': sicht, 'status_filter': status_filter, 'q': q, 'nur_meine': nur_meine,
         'gefiltert': gefiltert,
-        'sicht_chips': [('offen', gettext('Offen (%(n)s)') % {'n': kopf["offen"]}),
-                        ('befund', gettext('Mit Befund (%(n)s)') % {'n': kopf["mit_befund"]}),
-                        ('wartet', gettext('Wartet auf Dritte (%(n)s)') % {'n': kopf["wartet"]}),
-                        ('erledigt', gettext('Erledigt')), ('', gettext('Alle'))],
+        'sicht_chips': [('offen', gettext('Offen'), kopf['offen']),
+                        ('befund', gettext('Mit Befund'), kopf['mit_befund']),
+                        ('wartet', gettext('Wartet auf Dritte'), kopf['wartet']),
+                        ('erledigt', gettext('Erledigt'), None), ('', gettext('Alle'), None)],
         'liegenschaften': Liegenschaft.objects.order_by('strasse'),
         'stweg_bauteile': _stweg_bauteile.auswahl(),
         'kt_traeger': _stweg_bauteile.KOSTENTRAEGER_CHOICES,

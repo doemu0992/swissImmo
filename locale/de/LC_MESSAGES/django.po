@@ -39515,3 +39515,12 @@ msgstr "Seit über 30 Tagen offen"
 
 msgid "vermutlich festgefahren"
 msgstr "vermutlich festgefahren"
+
+msgid "Handeln"
+msgstr "Handeln"
+
+msgid "Nachfassen"
+msgstr "Nachfassen"
+
+msgid "gemeldet von %(melder)s"
+msgstr "gemeldet von %(melder)s"

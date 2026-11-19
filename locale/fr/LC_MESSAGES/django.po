@@ -41287,3 +41287,12 @@ msgstr "Ouvert depuis plus de 30 jours"
 
 msgid "vermutlich festgefahren"
 msgstr "probablement bloqué"
+
+msgid "Handeln"
+msgstr "Agir"
+
+msgid "Nachfassen"
+msgstr "Relancer"
+
+msgid "gemeldet von %(melder)s"
+msgstr "signalé par %(melder)s"
