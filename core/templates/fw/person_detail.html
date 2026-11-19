@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n rechte %}
+{% load kuerzel zeichen i18n rechte %}
 {% load betreuung %}
 {% load chf %}
 {% load rechte %}
@@ -567,7 +567,7 @@ alten Liegenschaft betreut.
         <div class="fw-kopf"><span class="fw-t">{% trans "Verlauf" %} <small>{% trans "Aktionen zu dieser Person &amp; ihren Verträgen" %}</small></span></div>
         {% for e in verlauf %}
         <div class="fw-zeile">
-            <span class="fw-avci">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}{% zeichen 'einstellungen' %}{% endif %}</span>
+            <span class="fw-avci">{% if e.benutzer %}{{ e.benutzer|kuerzel }}{% else %}{% zeichen 'einstellungen' %}{% endif %}</span>
             <div class="fw-mitte">
                 <div class="fw-t">{{ e.aktion }}
                     {% if e.ziel_typ == 'vertrag' and e.ziel_url %}<a href="{{ e.ziel_url }}" class="fw-link">→ {% trans "Vertrag" %}</a>{% endif %}</div>

@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n rechte %}
+{% load kuerzel zeichen i18n rechte %}
 {% load betreuung %}
 {% load chf %}
 {% block title %}{{ lg.strasse }} — immoswiss{% endblock %}
@@ -503,7 +503,7 @@ Liegenschaft ohne Betreuung soll auffallen.
         <div class="fw-kopf"><span class="fw-t">{% trans "Verlauf" %}</span><span class="fw-neben w-full">{% trans "Aktionen an den Mietverhältnissen dieser Liegenschaft" %}</span></div>
         {% for e in verlauf %}
         <div class="fw-zeile">
-            <span class="fw-avci">{% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}{% zeichen 'einstellungen' %}{% endif %}</span>
+            <span class="fw-avci">{% if e.benutzer %}{{ e.benutzer|kuerzel }}{% else %}{% zeichen 'einstellungen' %}{% endif %}</span>
             <div class="fw-mitte">
                 <div class="fw-t">{{ e.aktion }}</div>
                 <div class="fw-s">{% if e.objekt %}{{ e.objekt }}{% endif %}{% if e.details %} · {{ e.details }}{% endif %}</div>

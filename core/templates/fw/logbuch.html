@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load kuerzel zeichen i18n %}
 {% block title %}{% trans "Logbuch" %} — immoswiss{% endblock %}
 {% block content %}
 <div class="fw-phead">
@@ -110,7 +110,7 @@
                 <td>
                     {% if e.benutzer %}
                     <span class="flex items-center gap-2">
-                        <span class="fw-avci">{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}</span>
+                        <span class="fw-avci">{{ e.benutzer|kuerzel }}</span>
                         <span class="fw-strong">{{ e.benutzer.get_full_name|default:e.benutzer.username }}</span>
                     </span>
                     {% else %}

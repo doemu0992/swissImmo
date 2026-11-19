@@ -96,6 +96,12 @@ Hauswart: Schadenfälle seiner Liegenschaften.
 ## 5. Oberfläche
 
 ### Design-System
+- Avatare tragen das Kürzel aus Vor- und Nachname (`{% load kuerzel %}`, `|kuerzel`: «DG»), nicht die ersten zwei Buchstaben des
+  Namens (`test_kuerzel`).
+- Erledigtes wird mit Haken markiert (`zeichen 'gut'`), nie durchgestrichen: Durchgestrichen heisst «storniert»
+  (`test_finanzen_abschluss_darstellung`). Ein Titel steht einmal auf der Seite.
+- Listen: Die Sortierung wirkt sofort, «Anwenden» (`fw/_listwerkzeug.html`) ist nur ohne Skript sichtbar; Gesucht wird auf dem Server
+  (Enter), weil mit Seiten ein Filter im Browser nur die aktuelle Seite träfe (`e2e/tests/liste-sortierung.spec.ts`).
 - Kennzahlen stehen sofort im Endwert, nie als Hochzähl-Animation (`test_kennzahlen_sofort`).
 - Quelle der Stilschicht ist `core/templates/fw/_schicht.html`; ausgeliefert wird `static/css/schicht.css`. Nach jeder
   Änderung `python manage.py schicht_bauen` (`test_schicht_gebaut`).

@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load kuerzel zeichen i18n %}
 {% load rechte %}
 {% load betreuung %}
 {% load chf l10n %}
@@ -112,7 +112,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             {% if aktiver_vertrag %}
             <div class="flex items-center gap-3 mb-3">
                 <div class="fw-avci">
-                    {{ aktiver_vertrag.mieter.display_name|slice:":2"|upper }}
+                    {{ aktiver_vertrag.mieter.display_name|kuerzel }}
                 </div>
                 <div><div class="fw-strong">{{ aktiver_vertrag.mieter.display_name }}</div>
                     <div class="fw-klein">{% blocktrans with d=aktiver_vertrag.beginn|date:"d.m.Y" %}seit {{ d }}{% endblocktrans %}</div></div>

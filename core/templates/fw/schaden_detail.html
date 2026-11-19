@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n rechte %}
+{% load kuerzel zeichen i18n rechte %}
 {% load betreuung %}
 {% load chf %}
 {% block title %}{% blocktrans with id=t.id %}Ticket #{{ id }}{% endblocktrans %} — immoswiss{% endblock %}
@@ -261,7 +261,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         {% for n in nachrichten %}
         <div class="fw-zeile items-start">
             <div class="fw-ikon {% if n.is_von_verwaltung %}{% elif n.is_intern %}mut{% else %}good{% endif %}">
-                {{ n.absender_name|slice:":2"|upper }}
+                {{ n.absender_name|kuerzel }}
             </div>
             <div class="fw-mitte">
                 <div class="flex items-center gap-2 flex-wrap">

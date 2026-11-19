@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load kuerzel zeichen i18n %}
 {% block title %}{% trans "Suche" %}{% if q %}: {{ q }}{% endif %} — immoswiss{% endblock %}
 {% block content %}
 <div class="fw-phead"><div><h1>{% trans "Suche" %}</h1>
@@ -22,7 +22,7 @@
     <div>
         {% for m in personen %}
         <a href="/neu/personen/{{ m.id }}/" class="fw-zeile klick">
-            <span class="fw-ikon">{{ m.display_name|slice:":2"|upper }}</span>
+            <span class="fw-ikon">{{ m.display_name|kuerzel }}</span>
             <div class="fw-mitte"><div class="fw-t truncate">{{ m.display_name }}</div>
                 <div class="fw-s">{{ m.get_typ_display }}{% if m.ort %} · {{ m.plz }} {{ m.ort }}{% endif %}</div></div>
             <span class="fw-faint">{% zeichen 'weiter' %}</span>

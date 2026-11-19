@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen rechte i18n %}
+{% load kuerzel zeichen rechte i18n %}
 {% block title %}{% trans "Benutzer" %} — immoswiss{% endblock %}
 {% block content %}
 <div class="fw-phead">
@@ -27,7 +27,7 @@
             <tr class="{% if not row.u.is_active %}opacity-50{% endif %}">
                 <td>
                     <{% if darf_verwalten %}a href="/neu/benutzer/{{ row.u.id }}/bearbeiten/"{% else %}div{% endif %} class="flex items-center gap-3">
-                        <span class="fw-avci">{{ row.name|slice:":2"|upper }}</span>
+                        <span class="fw-avci">{{ row.name|kuerzel }}</span>
                         <span><b>{{ row.name }}</b>
                             <span class="fw-klein block">{{ row.u.username }}{% if not row.u.is_active %} · {% trans "inaktiv" %}{% endif %}</span></span>
                     </{% if darf_verwalten %}a{% else %}div{% endif %}>

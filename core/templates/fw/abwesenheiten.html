@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load kuerzel zeichen i18n %}
 {% block title %}{% trans "Abwesenheiten" %} — immoswiss{% endblock %}
 
 {% block content %}
@@ -46,7 +46,7 @@
     {% for a in laufend %}
     <div class="fw-zeile">
         <span class="fw-marker {% if not a.vertreten_durch_id %}warn{% else %}brand{% endif %}"></span>
-        <span class="fw-avci">{{ a.benutzer.get_full_name|default:a.benutzer.username|slice:":2"|upper }}</span>
+        <span class="fw-avci">{{ a.benutzer|kuerzel }}</span>
         <div class="fw-mitte">
             <div class="fw-t">{% blocktrans with wer=a.benutzer.get_full_name|default:a.benutzer.username bis=a.bis|date:"d.m.Y" %}{{ wer }} — bis {{ bis }}{% endblocktrans %}</div>
             <div class="fw-s">{{ a.get_grund_display }}{% if a.notiz %} · {{ a.notiz }}{% endif %}
