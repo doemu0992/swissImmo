@@ -97,7 +97,8 @@ Hauswart: Schadenfälle seiner Liegenschaften.
 
 ### Design-System
 - Live-Filter im Browser (`<input data-suche="#liste">`, `fw-rahmen.js`): Zeilen tragen `data-zeile`, Gruppen `data-gruppe` (verschwinden ohne
-  Treffer), die Meldung `data-keine`; nur dort, wo alles auf einer Seite steht (`e2e/tests/einstellungen-suche.spec.ts`).
+  Treffer), die Meldung `data-keine`; nur dort, wo alles auf einer Seite steht (Einstellungen, Berichte: `e2e/tests/einstellungen-suche.spec.ts`,
+  `berichte-suche.spec.ts`).
 - Schrift mindestens 12 px; Ausnahmen (Zahlen in kleinen Kreisen, Diagrammachsen, Mikroschrift) stehen mit Begründung in
   `core/tests/test_schrift_mindestgroesse.py`.
 - «Rückgängig» nur mit geprüfter Rücknahme (`meldung_mit_rueckgaengig`, siehe ARCHITECTURE «Rückgängig (Toast)»); Buchungen werden nie

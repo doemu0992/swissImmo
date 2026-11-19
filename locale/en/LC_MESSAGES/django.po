@@ -40491,3 +40491,12 @@ msgstr "Search a setting …"
 
 msgid "Keine Einstellung gefunden."
 msgstr "No setting found."
+
+msgid "Berichte durchsuchen"
+msgstr "Search reports"
+
+msgid "Bericht suchen …"
+msgstr "Search a report …"
+
+msgid "Kein Bericht gefunden."
+msgstr "No report found."

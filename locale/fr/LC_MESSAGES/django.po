@@ -41157,3 +41157,12 @@ msgstr "Rechercher un paramètre …"
 
 msgid "Keine Einstellung gefunden."
 msgstr "Aucun paramètre trouvé."
+
+msgid "Berichte durchsuchen"
+msgstr "Rechercher dans les rapports"
+
+msgid "Bericht suchen …"
+msgstr "Rechercher un rapport …"
+
+msgid "Kein Bericht gefunden."
+msgstr "Aucun rapport trouvé."

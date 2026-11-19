@@ -39385,3 +39385,12 @@ msgstr "Einstellung suchen …"
 
 msgid "Keine Einstellung gefunden."
 msgstr "Keine Einstellung gefunden."
+
+msgid "Berichte durchsuchen"
+msgstr "Berichte durchsuchen"
+
+msgid "Bericht suchen …"
+msgstr "Bericht suchen …"
+
+msgid "Kein Bericht gefunden."
+msgstr "Kein Bericht gefunden."

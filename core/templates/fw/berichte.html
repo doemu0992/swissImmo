@@ -91,12 +91,21 @@ stehen einzeln im Katalog und tragen dort die Kapsel «PDF»).
 </section>{% endif %}
 
 <h2 class="fw-subhead fw-bericht-katalog">{% trans "Alle Reports und Exporte an einem Ort." %}</h2>
+<div role="search" class="fw-listwerkzeug">
+    <div class="fw-suchfeld relative">
+        {% zeichen 'suchen' klasse='absolute left-3.5 top-1/2 -translate-y-1/2 fw-faint text-sm' %}
+        <input type="search" id="berichtSuche" data-suche="#berichtListe" aria-label="{% trans 'Berichte durchsuchen' %}"
+               placeholder="{% trans 'Bericht suchen …' %}" autocomplete="off" class="fw-feld">
+    </div>
+</div>
+<div id="berichtListe">
 {% for g in berichte %}
+<div data-gruppe>
 <div class="fw-card">
 <div class="fw-kopf"><h2 class="fw-t">{{ g.gruppe }}</h2></div>
 <div>
     {% for i in g.items %}
-    <a href="{{ i.url }}" class="fw-zeile klick">
+    <a href="{{ i.url }}" class="fw-zeile klick" data-zeile>
             <span class="fw-ikon">
                 {% zeichen_wert i.icon %}
             </span>
@@ -113,5 +122,8 @@ stehen einzeln im Katalog und tragen dort die Kapsel «PDF»).
     {% endfor %}
 </div>
 </div>
+</div>
 {% endfor %}
+<p data-keine class="hidden fw-mutet" role="status">{% trans "Kein Bericht gefunden." %}</p>
+</div>
 {% endblock %}
