@@ -1,4 +1,4 @@
-{% load zeichen i18n statisch %}{% get_current_language as aktuelle_sprache %}
+{% load kuerzel zeichen i18n statisch %}{% get_current_language as aktuelle_sprache %}
 <!DOCTYPE html>
 <html lang="{{ aktuelle_sprache|slice:':2'|default:'de' }}">
 <head>
@@ -131,7 +131,7 @@ Detailseiten rufen sie beim Namen.
             </a>
             {% endif %}
             <button type="button" data-bei-klick="fwProfilMenu" class="fw-ich" aria-haspopup="true" aria-controls="fwProfil">
-                <span class="fw-avatar">{{ request.user.username|slice:":2"|upper }}</span>
+                <span class="fw-avatar">{{ request.user|kuerzel }}</span>
                 <span class="sb-label"><b class="fw-ink truncate">{{ request.user.get_full_name|default:request.user.username }}</b><small class="fw-faint truncate">{{ request.user.email|default:request.user.username }}</small></span>
             </button>
         </div>
@@ -255,7 +255,7 @@ Detailseiten rufen sie beim Namen.
                    class="fw-knopf-rund{% if nav == 'zulauf' %} hier{% endif %}">{% zeichen 'glocke' %}<span class="fw-pip" data-zaehler="zulauf" hidden></span></a>
                 <a href="/neu/einstellungen/{{ lg_query }}" title="{% trans 'Einstellungen' %}" aria-label="{% trans 'Einstellungen' %}" class="fw-knopf-rund fw-wz-einst{% if nav in fw_einstellungen_keys %} hier{% endif %}">{% zeichen 'einstellungen' %}</a>
                 {% endif %}
-                <button type="button" data-bei-klick="fwProfilMenu" aria-label="{{ request.user.username|slice:":2"|upper }}: {% trans 'Profil und Darstellung' %}" aria-haspopup="true" aria-controls="fwProfil" class="fw-avatar-knopf"><span class="fw-avatar fw-avatar-gross">{{ request.user.username|slice:":2"|upper }}</span></button>
+                <button type="button" data-bei-klick="fwProfilMenu" aria-label="{{ request.user|kuerzel }}: {% trans 'Profil und Darstellung' %}" aria-haspopup="true" aria-controls="fwProfil" class="fw-avatar-knopf"><span class="fw-avatar fw-avatar-gross">{{ request.user|kuerzel }}</span></button>
             </div>
           </div>
         </header>
@@ -263,7 +263,7 @@ Detailseiten rufen sie beim Namen.
         <!-- Profilmenü -->
         <div id="fwProfil" class="fw-profil hidden">
             <div class="fw-profil-kopf">
-                <span class="fw-avatar">{{ request.user.username|slice:":2"|upper }}</span>
+                <span class="fw-avatar">{{ request.user|kuerzel }}</span>
                 <div class="fw-profil-name">
                     <b>{% trans "Hallo," %} {{ request.user.get_full_name|default:request.user.username }}</b>
                     <small>{{ request.user.email|default:request.user.username }}</small>

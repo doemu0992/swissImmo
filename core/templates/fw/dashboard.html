@@ -1,6 +1,6 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
-{% load chf verlauf %}
+{% load chf verlauf kuerzel %}
 {% block title %}{{ ansicht_titel }} — immoswiss{% endblock %}
 
 {% block content %}
@@ -157,7 +157,7 @@
             <a href="/neu/faelle/{{ f.id }}/" class="fw-vz-titel">{{ f.betreff|default:f.fallart.bezeichnung }}</a>
             <div class="fw-vz-sub"><span class="fw-vz-obj">{% if f.ist_liegengeblieben %}{% trans "Liegengeblieben" %}{% else %}{% trans "Wartet auf Dritte" %}{% endif %}{% if f.zustaendig %} · {{ f.zustaendig.get_full_name|default:f.zustaendig.username }}{% endif %}</span></div>
         </div>
-        <div class="fw-vz-wer">{% if f.zustaendig %}<span class="fw-avatar" title="{% trans 'zuständig' %}">{{ f.zustaendig.username|slice:":2"|upper }}</span>{% else %}<span class="fw-avatar fw-avatar-offen" title="{% trans 'niemand zuständig' %}">?</span>{% endif %}</div>
+        <div class="fw-vz-wer">{% if f.zustaendig %}<span class="fw-avatar" title="{% trans 'zuständig' %}">{{ f.zustaendig|kuerzel }}</span>{% else %}<span class="fw-avatar fw-avatar-offen" title="{% trans 'niemand zuständig' %}">?</span>{% endif %}</div>
         <div class="fw-vz-frist {% if f.ist_liegengeblieben %}crit{% else %}warn{% endif %}"><b>{% if f.tage_ohne_bewegung is not None %}{% blocktrans count n=f.tage_ohne_bewegung %}{{ n }} Tag{% plural %}{{ n }} Tage{% endblocktrans %}{% endif %}</b><span>{% trans "ohne Bewegung" %}</span></div>
         <div class="fw-vz-aktion"><a href="/neu/faelle/{{ f.id }}/" class="fw-btn fw-knapp">{% trans "Fall öffnen" %}</a></div>
     </li>

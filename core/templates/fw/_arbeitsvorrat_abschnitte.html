@@ -1,4 +1,4 @@
-{% load zeichen i18n %}
+{% load kuerzel zeichen i18n %}
 {% comment %} «Wartet auf Freigabe» und «Vertretung» der Startseite.
 
    Dashboard-Reduktion (26.10.2026): Die Läufe-Karte ist weg — fällige und
@@ -66,7 +66,7 @@
     {% for v in av_vertretung %}
     <div class="fw-zeile">
         <span class="fw-marker {% if v.ungedeckt %}warn{% else %}brand{% endif %}"></span>
-        <span class="fw-avci">{{ v.wer|slice:":2"|upper }}</span>
+        <span class="fw-avci">{{ v.wer|kuerzel }}</span>
         <div class="fw-mitte">
             <div class="fw-t">{{ v.wer }} — {% trans "abwesend bis" %} {{ v.bis|date:"d.m.Y" }}</div>
             <div class="fw-s">{{ v.grund }}{% if v.faelle %} · {% blocktrans count n=v.faelle %}{{ n }} offener Fall läuft weiter{% plural %}{{ n }} offene Fälle laufen weiter{% endblocktrans %}{% endif %}</div>

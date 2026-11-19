@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n hilfe %}
+{% load kuerzel zeichen i18n hilfe %}
 {% load betreuung %}
 {% load rechte %}
 {% load chf %}
@@ -647,7 +647,7 @@ Er hat {{ r }} Rechnung(en) und {{ z }} Zahlung(en) und kann deshalb nicht gelö
             {% for e in verlauf %}
             <div class="fw-zeile">
                 <div class="fw-avci">
-                    {% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}{% zeichen 'einstellungen' %}{% endif %}
+                    {% if e.benutzer %}{{ e.benutzer|kuerzel }}{% else %}{% zeichen 'einstellungen' %}{% endif %}
                 </div>
                 <div class="fw-mitte">
                     <div class="fw-t">{{ e.aktion }}</div>

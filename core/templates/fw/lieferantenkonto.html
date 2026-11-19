@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load kuerzel zeichen i18n %}
 {% load chf %}
 {% block title %}{% blocktrans %}Lieferantenkonto {{ name }}{% endblocktrans %} — immoswiss{% endblock %}
 {% block content %}
@@ -109,7 +109,7 @@
         {% for e in verlauf %}
         <div class="fw-zeile">
             <div class="fw-ikon mut">
-                {% if e.benutzer %}{{ e.benutzer.get_full_name|default:e.benutzer.username|slice:":2"|upper }}{% else %}{% zeichen 'einstellungen' %}{% endif %}
+                {% if e.benutzer %}{{ e.benutzer|kuerzel }}{% else %}{% zeichen 'einstellungen' %}{% endif %}
             </div>
             <div class="fw-mitte">
                 <div class="fw-t">{{ e.aktion }}</div>
