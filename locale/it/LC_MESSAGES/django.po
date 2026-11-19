@@ -41077,3 +41077,12 @@ msgstr "Assegna: %(mieter)s"
 
 msgid "Aufteilen …"
 msgstr "Ripartire …"
+
+msgid "Einstellungen durchsuchen"
+msgstr "Cerca nelle impostazioni"
+
+msgid "Einstellung suchen …"
+msgstr "Cerca un'impostazione …"
+
+msgid "Keine Einstellung gefunden."
+msgstr "Nessuna impostazione trovata."

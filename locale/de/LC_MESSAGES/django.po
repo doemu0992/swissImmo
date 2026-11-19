@@ -39376,3 +39376,12 @@ msgstr "Zuordnen: %(mieter)s"
 
 msgid "Aufteilen …"
 msgstr "Aufteilen …"
+
+msgid "Einstellungen durchsuchen"
+msgstr "Einstellungen durchsuchen"
+
+msgid "Einstellung suchen …"
+msgstr "Einstellung suchen …"
+
+msgid "Keine Einstellung gefunden."
+msgstr "Keine Einstellung gefunden."
