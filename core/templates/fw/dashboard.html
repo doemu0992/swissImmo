@@ -80,7 +80,7 @@
     {% for k in kacheln %}
     <a href="{{ k.ziel }}" class="fw-kachel{% if forloop.first %} akzent{% endif %}" data-kachel="{{ k.schluessel }}">
         <div class="fw-kachel-kopf"><h2>{{ k.titel }}</h2>{% if not forloop.first and k.ton %}<span class="fw-punkt {{ k.ton }}" aria-hidden="true"></span>{% endif %}</div>
-        <div class="fw-kachel-zahl fw-num"><span data-zaehlen>{{ k.zahl }}</span>{% if k.betrag %}<small>CHF {{ k.betrag|chf:0 }}</small>{% endif %}</div>
+        <div class="fw-kachel-zahl fw-num"><span>{{ k.zahl }}</span>{% if k.betrag %}<small>CHF {{ k.betrag|chf:0 }}</small>{% endif %}</div>
         <p class="fw-kachel-text">{{ k.text }}</p>
         <span class="fw-btn fw-knapp">{{ k.knopf }} {% zeichen 'weiter' %}</span>
     </a>

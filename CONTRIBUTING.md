@@ -96,6 +96,7 @@ Hauswart: Schadenfälle seiner Liegenschaften.
 ## 5. Oberfläche
 
 ### Design-System
+- Kennzahlen stehen sofort im Endwert, nie als Hochzähl-Animation (`test_kennzahlen_sofort`).
 - Quelle der Stilschicht ist `core/templates/fw/_schicht.html`; ausgeliefert wird `static/css/schicht.css`. Nach jeder
   Änderung `python manage.py schicht_bauen` (`test_schicht_gebaut`).
 - Farben nur über Tokens `--ds-*`. Jedes benutzte Token ist definiert, kein totes Token, beide Dunkelblöcke führen
