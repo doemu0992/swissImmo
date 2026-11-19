@@ -41173,3 +41173,37 @@ msgstr "Tutte le elaborazioni sono concluse, il mese può essere chiuso."
 
 msgid "Auslösen"
 msgstr "Avviare"
+
+msgid "%(n)s ungelesen"
+msgstr "%(n)s non letti"
+
+msgid "älteste %(n)s Tag"
+msgid_plural "älteste %(n)s Tage"
+msgstr[0] "la più vecchia: %(n)s giorno"
+msgstr[1] "la più vecchia: %(n)s giorni"
+
+msgid "%(m)s Objekt"
+msgid_plural "%(m)s Objekte"
+msgstr[0] "%(m)s oggetto"
+msgstr[1] "%(m)s oggetti"
+
+msgid "%(n)s leer (%(q)s %%)"
+msgstr "%(n)s sfitti (%(q)s %%)"
+
+msgid "Ist-Miete CHF %(betrag)s pro Monat"
+msgstr "Pigione effettiva CHF %(betrag)s al mese"
+
+msgid "%(n)s ungeklärt"
+msgid_plural "%(n)s ungeklärt"
+msgstr[0] "%(n)s da chiarire"
+msgstr[1] "%(n)s da chiarire"
+
+msgid "%(n)s Teilzahlung"
+msgid_plural "%(n)s Teilzahlungen"
+msgstr[0] "%(n)s pagamento parziale"
+msgstr[1] "%(n)s pagamenti parziali"
+
+msgid "%(n)s offene Auszugszeile"
+msgid_plural "%(n)s offene Auszugszeilen"
+msgstr[0] "%(n)s riga di estratto aperta"
+msgstr[1] "%(n)s righe di estratto aperte"

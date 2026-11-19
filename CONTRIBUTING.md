@@ -168,6 +168,10 @@ oder `50%` von Hand. Frei bleiben in `_schicht.html` nur vier Werte (6/3/2 px an
 steht in `core/tests/test_stilschuld.py` und darf nur sinken. Hex-Farben stehen ausserhalb der Token-Definitionen nur als
 Weiss auf Akzent oder mit Begründung (STWEG-Warnrot).
 
+### Kennzahlen
+- Oben auf Listenseiten steht eine Statuszeile (`.fw-statuszeile` / `.fw-sz`), keine Kachelwand. Farbklassen ausgeschrieben
+  (`fw-sz-good`, `fw-sz-warn`, `fw-sz-crit`), nicht zusammengesetzt (`test_fw_klassen_wirken`).
+
 ### Formulare
 - Mehrere Wege zu einer Sache gehören in **einen** Dialog mit wählbaren Karten statt in mehrere Einzelformulare (Vorbild:
   `fw/_zuordnen_dialog.html`). Die Wege nutzen die bestehenden Routen; der Dialog stellt nur Adresse und Felder um. Ohne Skript

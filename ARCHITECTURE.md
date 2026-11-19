@@ -167,6 +167,13 @@ das Sperrkonto in Höhe des bilanzierten Betrags frei. Eine MWST-Periode für de
 Rechenkern `core/utils/billing.py` (`berechne_abrechnung`), Assistent `core/views/fw/nk_wizard.py`, PDF und Versand
 in `core/services/nk_*.py`.
 
+### Statuszeile statt Kennzahl-Kacheln
+Listenseiten zeigen oben eine **Statuszeile** (`.fw-statuszeile` mit `.fw-sz`, UI-Zielbild): schmale Kapseln mit Farbpunkt (grün/gelb/rot nach
+`fw-sz-good|warn|crit`), Zahl und Wort in einem («3 offen», «2 leer (40 %)»). Schäden (`faelle/schaeden.py::streifen`), Liegenschaften
+(`kennzahlen`) und Bankabgleich (Kapseln öffnen die Arbeitslisten, `data-spur-link`). Klassen **immer ausgeschrieben** (`fw-sz-warn`),
+nie `fw-sz-{{ x }}`: `test_fw_klassen_wirken` findet zusammengesetzte Namen nicht. Zahlen, die die Seite nicht liefert, werden nicht
+dazugebaut. Test: `e2e/tests/statuszeile.spec.ts`. Offen: Heute, Objekt.
+
 ### Monatsabschluss als Schrittliste (`/neu/laeufe/`)
 Die Seite zeigt die Läufe als eine Liste «Schritte in dieser Reihenfolge» (UI-Zielbild): offene Läufe plus die in diesem Monat
 abgeschlossenen, geordnet nach `Laufart.reihenfolge`, zuletzt der **Periodenabschluss**. Zustand je Schritt: `fertig` (Haken),

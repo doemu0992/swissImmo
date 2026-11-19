@@ -1830,6 +1830,17 @@
            blockiert = rot. Brotkrume: `fw-krumen` aus Tranche A. */
         .fw-laeufe{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:24px}
         .fw-laeufe>.fw-card{margin-bottom:0}
+        /* Statuszeile statt Kennzahl-Kacheln (UI-Zielbild): schmale Kapseln mit Farbpunkt, Zahl und Wort in einem */
+        .fw-statuszeile{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+        .fw-sz{display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:0 14px;border-radius:var(--ds-pill);
+            background:var(--ds-surface);color:var(--ds-ink);font-size:13px;font-weight:600;text-decoration:none}
+        .fw-sz::before{content:"";flex:none;width:7px;height:7px;border-radius:var(--ds-kreis);background:var(--ds-muted)}
+        .fw-sz-good::before{background:var(--ds-good)}
+        .fw-sz-warn::before{background:var(--ds-warn)}
+        .fw-sz-crit::before{background:var(--ds-crit)}
+        a.fw-sz:hover{box-shadow:var(--ds-shadow-sm)}
+        a.fw-sz:focus-visible{outline:2px solid var(--ds-brand);outline-offset:2px}
+        @media (max-width:640px){.fw-sz{min-height:40px}}
         /* Monatsabschluss als Schrittliste (UI-Zielbild): Haken, aktueller Schritt, gesperrter Schritt */
         .fw-schrittliste{display:block}
         .fw-schritt{display:flex;align-items:center;gap:16px;padding:14px 20px;border-top:1px solid var(--ds-line)}

@@ -87,19 +87,11 @@
    vier Zahlen, die eine Verwaltung im Streitfall erklaeren muss.
 
    Die Zahlen zeigen IMMER den ganzen Bestand, auch bei aktiver Sicht. {% endcomment %}
-<div class="fw-kpis">
-    <div class="fw-kpi"><div class="fw-l">{% trans "Offen" %}</div>
-        <div class="fw-v{% if kopf.offen_stufe %} fw-{{ kopf.offen_stufe }}{% endif %}">{{ kopf.offen }}</div>
-        <div class="fw-f">{% trans "nicht erledigt" %}</div></div>
-    <div class="fw-kpi"><div class="fw-l">{% trans "Ungelesen" %}</div>
-        <div class="fw-v{% if kopf.ungelesen_stufe %} fw-{{ kopf.ungelesen_stufe }}{% endif %}">{{ kopf.ungelesen }}</div>
-        <div class="fw-f">{% trans "noch niemand angesehen" %}</div></div>
-    <div class="fw-kpi"><div class="fw-l">{% trans "Mit Befund" %}</div>
-        <div class="fw-v{% if kopf.mit_befund %} fw-warn{% endif %}">{{ kopf.mit_befund }}</div>
-        <div class="fw-f">{% trans "brauchen eine Handlung" %}</div></div>
-    <div class="fw-kpi"><div class="fw-l">{% trans "Älteste offen" %}</div>
-        <div class="fw-v{% if kopf.aeltester_stufe %} fw-{{ kopf.aeltester_stufe }}{% endif %}">{{ kopf.aeltester }}</div>
-        <div class="fw-f">{% trans "Tage seit Meldung" %}</div></div>
+<div class="fw-statuszeile">
+    <span class="fw-sz {% if kopf.offen %}fw-sz-warn{% else %}fw-sz-good{% endif %}">{% blocktrans with n=kopf.offen %}{{ n }} offen{% endblocktrans %}</span>
+    <span class="fw-sz {% if kopf.ungelesen %}fw-sz-crit{% else %}fw-sz-good{% endif %}">{% blocktrans with n=kopf.ungelesen %}{{ n }} ungelesen{% endblocktrans %}</span>
+    <span class="fw-sz {% if kopf.mit_befund %}fw-sz-warn{% else %}fw-sz-good{% endif %}">{% blocktrans with n=kopf.mit_befund %}{{ n }} mit Befund{% endblocktrans %}</span>
+    <span class="fw-sz {% if kopf.aeltester_stufe == 'crit' %}fw-sz-crit{% elif kopf.aeltester_stufe == 'warn' %}fw-sz-warn{% else %}fw-sz-good{% endif %}">{% blocktrans count n=kopf.aeltester %}älteste {{ n }} Tag{% plural %}älteste {{ n }} Tage{% endblocktrans %}</span>
 </div>
 
 {% comment %} Sichten bilden die ARBEIT ab, nicht die Statustabelle. Der

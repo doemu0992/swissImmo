@@ -39472,3 +39472,37 @@ msgstr "Alle Läufe sind erledigt, der Monat kann abgeschlossen werden."
 
 msgid "Auslösen"
 msgstr "Auslösen"
+
+msgid "%(n)s ungelesen"
+msgstr "%(n)s ungelesen"
+
+msgid "älteste %(n)s Tag"
+msgid_plural "älteste %(n)s Tage"
+msgstr[0] "älteste %(n)s Tag"
+msgstr[1] "älteste %(n)s Tage"
+
+msgid "%(m)s Objekt"
+msgid_plural "%(m)s Objekte"
+msgstr[0] "%(m)s Objekt"
+msgstr[1] "%(m)s Objekte"
+
+msgid "%(n)s leer (%(q)s %%)"
+msgstr "%(n)s leer (%(q)s %%)"
+
+msgid "Ist-Miete CHF %(betrag)s pro Monat"
+msgstr "Ist-Miete CHF %(betrag)s pro Monat"
+
+msgid "%(n)s ungeklärt"
+msgid_plural "%(n)s ungeklärt"
+msgstr[0] "%(n)s ungeklärt"
+msgstr[1] "%(n)s ungeklärt"
+
+msgid "%(n)s Teilzahlung"
+msgid_plural "%(n)s Teilzahlungen"
+msgstr[0] "%(n)s Teilzahlung"
+msgstr[1] "%(n)s Teilzahlungen"
+
+msgid "%(n)s offene Auszugszeile"
+msgid_plural "%(n)s offene Auszugszeilen"
+msgstr[0] "%(n)s offene Auszugszeile"
+msgstr[1] "%(n)s offene Auszugszeilen"
