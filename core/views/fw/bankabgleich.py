@@ -174,6 +174,11 @@ def fw_bankabgleich(request):
             _vs = _zk.vorschlaege(z, absender=z.zahler or '', mitteilung=z.mitteilung or '',
                                   referenz=z.ref, posten=_posten)
             z.vorschlag = _vs[0] if _vs else None
+            # Normalfall (UI-Zielbild): ein belegter Mieter, genau ein offener Posten, Betrag passt. Dann nennt der Knopf die
+            # Aufgabe («Zuordnen: Hans Muster») und bestätigt in einem Dialog; Aufteilen und Sonderfälle bleiben im Assistenten.
+            _v = z.vorschlag
+            z.schnell = (_v['rechnungen'][0] if _v and _v['stark'] and len(_v['rechnungen']) == 1
+                         and _v['rechnungen'][0].offener_betrag == z.betrag else None)
             z.kaution_kandidaten = _kaution_offen.get(z.betrag, [])[:5]
     klaerung = [z for z in geparkt if z.konto and z.konto.nummer == '1190']
     verrechnete = _zk.verrechnete_guthaben()

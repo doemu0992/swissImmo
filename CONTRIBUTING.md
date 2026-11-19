@@ -96,6 +96,8 @@ Hauswart: Schadenfälle seiner Liegenschaften.
 ## 5. Oberfläche
 
 ### Design-System
+- «Rückgängig» nur mit geprüfter Rücknahme (`meldung_mit_rueckgaengig`, siehe ARCHITECTURE «Rückgängig (Toast)»); Buchungen werden nie
+  gelöscht, die Rücknahme storniert (`faelle/test_rueckgaengig_toast.py`).
 - Avatare tragen das Kürzel aus Vor- und Nachname (`{% load kuerzel %}`, `|kuerzel`: «DG»), nicht die ersten zwei Buchstaben des
   Namens (`test_kuerzel`).
 - Erledigtes wird mit Haken markiert (`zeichen 'gut'`), nie durchgestrichen: Durchgestrichen heisst «storniert»

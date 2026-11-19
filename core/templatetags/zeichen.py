@@ -157,3 +157,17 @@ def ohne_emoji(text):
     (`locale/*/django.po`), ein Umschreiben risse jede Übersetzung ab.
     """
     return _FUEHRENDES_EMOJI.sub('', str(text), count=1)
+
+
+@register.filter
+def rueckgaengig_url(meldung):
+    """Die Adresse hinter «Rückgängig» einer Meldung, sonst leer.
+
+    Die Ansicht legt sie in `extra_tags` («rueckgaengig:/neu/…»), siehe `core.views.fw._basis.meldung_mit_rueckgaengig`.
+    Nur Pfade unter `/neu/` gelten: Ein frei wählbares Ziel wäre eine offene Weiterleitung."""
+    for teil in str(getattr(meldung, 'extra_tags', '') or '').split():
+        if teil.startswith('rueckgaengig:'):
+            ziel = teil[len('rueckgaengig:'):]
+            if ziel.startswith('/neu/') and '//' not in ziel and '\\' not in ziel:
+                return ziel
+    return ''

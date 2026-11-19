@@ -39358,3 +39358,21 @@ msgstr "%(n)s Datei(en) wurden nicht gespeichert (kein gültiges Bild oder zu gr
 
 msgid "Menü"
 msgstr "Menü"
+
+msgid "Rückgängig"
+msgstr "Rückgängig"
+
+msgid "«%(bezeichnung)s» ist wieder offen."
+msgstr "«%(bezeichnung)s» ist wieder offen."
+
+msgid "«%(bezeichnung)s» ist schon offen."
+msgstr "«%(bezeichnung)s» ist schon offen."
+
+msgid "CHF %(betrag)s an %(mieter)s zuordnen (%(titel)s)? Der Absender wird gemerkt. Mit «Rückgängig» lässt sich das danach zurücknehmen."
+msgstr "CHF %(betrag)s an %(mieter)s zuordnen (%(titel)s)? Der Absender wird gemerkt. Mit «Rückgängig» lässt sich das danach zurücknehmen."
+
+msgid "Zuordnen: %(mieter)s"
+msgstr "Zuordnen: %(mieter)s"
+
+msgid "Aufteilen …"
+msgstr "Aufteilen …"

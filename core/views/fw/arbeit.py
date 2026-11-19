@@ -314,7 +314,26 @@ def fw_fallschritt_erledigen(request, pk):
 
     schritt = get_object_or_404(Fallschritt.objects.select_related('fall'), pk=pk)
     schritt.erledigen(benutzer=request.user)
-    messages.success(request, gettext('«%(bezeichnung)s» ist erledigt.') % {'bezeichnung': schritt.bezeichnung})
+    from core.views.fw._basis import meldung_mit_rueckgaengig
+    meldung_mit_rueckgaengig(request, gettext('«%(bezeichnung)s» ist erledigt.') % {'bezeichnung': schritt.bezeichnung},
+                             f'/neu/fallschritte/{schritt.pk}/wiederoeffnen/')
+    return redirect(_weiter(request, f'/neu/faelle/{schritt.fall_id}/'))
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+@require_POST
+def fw_fallschritt_wiederoeffnen(request, pk):
+    """«Rückgängig» nach «Erledigt»: Der Schritt ist wieder offen."""
+    from core.auth import log_aktion
+    from faelle.models import Fallschritt
+
+    schritt = get_object_or_404(Fallschritt.objects.select_related('fall'), pk=pk)
+    if schritt.erledigt_am is None:
+        messages.info(request, gettext('«%(bezeichnung)s» ist schon offen.') % {'bezeichnung': schritt.bezeichnung})
+    else:
+        schritt.wieder_oeffnen()
+        log_aktion(request, 'Schritt wieder geöffnet', str(schritt), schritt.bezeichnung)
+        messages.success(request, gettext('«%(bezeichnung)s» ist wieder offen.') % {'bezeichnung': schritt.bezeichnung})
     return redirect(_weiter(request, f'/neu/faelle/{schritt.fall_id}/'))
 
 

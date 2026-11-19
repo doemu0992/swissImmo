@@ -61,7 +61,14 @@ def fw_zahlung_zuordnen(request):
     log_aktion(request, "Geparkte Zahlung zugeordnet", str(vertrag),
                f"CHF {betrag} von {park_nr} auf {rechnung.titel}"
                + (f" · Absender «{gelernt}» gemerkt" if gelernt else ""))
-    messages.success(request, '✅ ' + gettext('CHF %(betrag)s zugeordnet — %(display_name)s (%(titel)s)%(wert)s.') % {'betrag': betrag, 'display_name': vertrag.mieter.display_name, 'titel': rechnung.titel, 'wert': f' · Rest CHF {rest} bleibt als Guthaben' if rest > 0 else ''})
+    text = '✅ ' + gettext('CHF %(betrag)s zugeordnet — %(display_name)s (%(titel)s)%(wert)s.') % {'betrag': betrag, 'display_name': vertrag.mieter.display_name, 'titel': rechnung.titel, 'wert': f' · Rest CHF {rest} bleibt als Guthaben' if rest > 0 else ''}
+    if park_nr == '1190':
+        # Aus der Klärung zugeordnet: «Rückgängig» ruft die geprüfte Rücknahme (`zuordnung_aufheben`: Gegenbuchungen im
+        # Journal, Rechnung wieder offen, Absender vergessen). Bei Guthaben (2030) gibt es diesen Weg nicht.
+        from ._basis import meldung_mit_rueckgaengig
+        meldung_mit_rueckgaengig(request, text, f'/neu/bankabgleich/zahlung/{zahlung.pk}/zuordnung-aufheben/')
+    else:
+        messages.success(request, text)
     ziel = '/neu/bankabgleich/'
     if aktive := request.POST.get('lg'):
         ziel += f'?lg={aktive}'

@@ -40464,3 +40464,21 @@ msgstr "%(n)s file(s) were not saved (not a valid image or too large)."
 
 msgid "Menü"
 msgstr "Menu"
+
+msgid "Rückgängig"
+msgstr "Undo"
+
+msgid "«%(bezeichnung)s» ist wieder offen."
+msgstr "“%(bezeichnung)s” is open again."
+
+msgid "«%(bezeichnung)s» ist schon offen."
+msgstr "“%(bezeichnung)s” is already open."
+
+msgid "CHF %(betrag)s an %(mieter)s zuordnen (%(titel)s)? Der Absender wird gemerkt. Mit «Rückgängig» lässt sich das danach zurücknehmen."
+msgstr "Assign CHF %(betrag)s to %(mieter)s (%(titel)s)? The sender is remembered. You can undo this afterwards with “Undo”."
+
+msgid "Zuordnen: %(mieter)s"
+msgstr "Assign: %(mieter)s"
+
+msgid "Aufteilen …"
+msgstr "Split …"

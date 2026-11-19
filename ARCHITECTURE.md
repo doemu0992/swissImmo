@@ -137,6 +137,10 @@ warnt die Seite «Aufträge» und das Betreiber-Protokoll.
 ### Zahlungseingang
 Bankauszug (camt.053/054 oder CSV) → `core/views/fw/bankabgleich.py`: Gutschriften werden über die QR-Referenz den
 offenen Rechnungen zugeordnet und verbucht; Unzuordenbares wird geparkt (`core/services/zahlungszuordnung.py`).
+Klärungsfälle (Durchlaufkonto 1190): Ist ein Mieter belegt (Referenz, gelernter Absender oder Name) und gibt es genau einen offenen
+Posten mit passendem Betrag, nennt der Knopf die Aufgabe («Zuordnen: Hans Muster») und bestätigt in einem Dialog
+(`data-bestaetigen`, Formular `/neu/bankabgleich/zuordnen/`); danach bietet der Toast «Rückgängig». Aufteilen, mehrere Posten und
+Sonderfälle bleiben im Assistenten auf eigener Seite (`fw/zahlung_aufteilen.html`).
 Zahlungsausgang: `core/services/pain001.py` (Zahllauf, ab Freigabelimit mit zweiter Person).
 Storno gehört an die Quelle: Eine Buchung, die zu einer Zahlung oder Rechnung gehört, wird im Journal nicht storniert
 (`fw_buchung_stornieren` verweist auf Bankabgleich bzw. Rechnung), und «Import rückgängig» ist gesperrt, solange
@@ -149,6 +153,14 @@ das Sperrkonto in Höhe des bilanzierten Betrags frei. Eine MWST-Periode für de
 ### Nebenkosten
 Rechenkern `core/utils/billing.py` (`berechne_abrechnung`), Assistent `core/views/fw/nk_wizard.py`, PDF und Versand
 in `core/services/nk_*.py`.
+
+### Rückgängig (Toast)
+- Eine Handlung kann nach dem Speichern einen Toast mit «Rückgängig» zeigen (`core.views.fw._basis.meldung_mit_rueckgaengig`,
+  Filter `rueckgaengig_url`, Vorlage `fw/base.html`, zehn Sekunden). Die Handlung läuft sofort; der Knopf ruft per POST eine
+  vorhandene, geprüfte Rücknahme (nicht: verzögert ausführen, denn wer die Seite schliesst, verlöre die Handlung ohne Meldung).
+- Eingebaut: Schritt erledigt → `Fallschritt.wieder_oeffnen` (`/neu/fallschritte/<pk>/wiederoeffnen/`); Zahlung aus der Klärung
+  (Durchlaufkonto 1190) zugeordnet → `zahlungsklaerung.zuordnung_aufheben` (Gegenbuchungen im Journal, Rechnung wieder offen,
+  Absender vergessen). Nie bei Läufen, Monatsabschluss, Zahllauf, Kaution oder versandten Mails.
 
 ### Schadenmeldungen und Mail
 - Eingang: Mieterportal, internes Erfassen, Webformular `/schaden/melden/` (ordnet über die hinterlegte E-Mail-Adresse

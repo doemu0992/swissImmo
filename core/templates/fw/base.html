@@ -324,23 +324,29 @@ Detailseiten rufen sie beim Namen.
            Symbol je Meldungsart steht schon davor. {% endcomment %}
         <div id="fw-toasts" class="fw-toasts" role="status" aria-live="polite">
             {% for m in messages %}
+            {% with rueck=m|rueckgaengig_url %}
             <div {% if 'error' in m.tags %}role="alert" {% endif %}class="fw-toast{% if 'error' in m.tags %} crit{% elif 'warning' in m.tags %} warn{% elif 'info' in m.tags %} info{% endif %}"
-                {% if 'error' in m.tags or 'warning' in m.tags %}data-persist="1"{% endif %}>
+                {% if 'error' in m.tags or 'warning' in m.tags %}data-persist="1"{% endif %}{% if rueck %} data-rueckgaengig="1"{% endif %}>
                 {% if 'error' in m.tags %}{% zeichen 'kritisch' %}{% elif 'warning' in m.tags %}{% zeichen 'warnung' %}{% elif 'info' in m.tags %}{% zeichen 'hinweis' %}{% else %}{% zeichen 'gut' %}{% endif %}
                 <div class="fw-toast-text">{{ m|ohne_emoji }}</div>
+                {% if rueck %}<form method="post" action="{{ rueck }}" class="fw-toast-rueck">{% csrf_token %}<input type="hidden" name="weiter" value="{{ request.get_full_path }}"><button type="submit" class="fw-toast-knopf">{% trans "Rückgängig" %}</button></form>{% endif %}
                 <button type="button" data-entfernen=".fw-toast" title="{% trans 'Meldung schliessen' %}">{% zeichen 'schliessen' %}</button>
             </div>
+            {% endwith %}
             {% endfor %}
         </div>
         <script nonce="{{ csp_nonce }}">
-            // Erfolg/Info blenden nach 6 s aus; Fehler/Warnungen bleiben stehen
+            // Erfolg/Info blenden nach 6 s aus (mit «Rückgängig» nach 10 s); Fehler/Warnungen bleiben stehen
             // (der Nutzer muss sie lesen) und werden nur per × geschlossen.
-            setTimeout(function(){
-                document.querySelectorAll('#fw-toasts .fw-toast:not([data-persist])').forEach(function(t){
-                    fwStil(t, {transition: 'opacity .4s', opacity: '0'});
-                    setTimeout(function(){ t.remove(); }, 400);
-                });
-            }, 6000);
+            [[6000, '#fw-toasts .fw-toast:not([data-persist]):not([data-rueckgaengig])'],
+             [10000, '#fw-toasts .fw-toast[data-rueckgaengig]:not([data-persist])']].forEach(function(z){
+                setTimeout(function(){
+                    document.querySelectorAll(z[1]).forEach(function(t){
+                        fwStil(t, {transition: 'opacity .4s', opacity: '0'});
+                        setTimeout(function(){ t.remove(); }, 400);
+                    });
+                }, z[0]);
+            });
         </script>
         {% endif %}
 
