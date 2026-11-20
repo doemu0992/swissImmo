@@ -29,7 +29,7 @@ test.describe('Rollen-Funktionen', () => {
   test('Kalender: Monat, Vor/Zurück, Eintragsarten', async ({ page }) => {
     await login(page);
     await goto(page, '/neu/termine/');
-    await page.getByRole('link', { name: 'Monat' }).click();
+    await page.getByRole('link', { name: 'Monat', exact: true }).click();
     await page.waitForURL(/\/neu\/termine\/kalender\//, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('.fw-kal-raster')).toBeVisible();
     await expect(page.locator('.fw-kal-tag.heute')).toHaveCount(1);

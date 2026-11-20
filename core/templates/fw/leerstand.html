@@ -8,7 +8,7 @@
    faelle/leerstand_cockpit.py (dieselbe Belegungsregel wie Objekt- und Liegenschaftsliste). {% endcomment %}
 <div class="fw-phead">
     <div>
-        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Akten" %}</a><span aria-hidden="true">/</span><span>{% trans "Leerstand" %}</span></nav>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Liegenschaften" %}</a><span aria-hidden="true">/</span><span>{% trans "Leerstand" %}</span></nav>
         <h1>{% trans "Leerstand" %}</h1>
         <p>{% blocktrans trimmed with d=heute|date:"d.m.Y" %}Was leer steht, was in den nächsten sechs Monaten frei wird und woran die Vermietung hängt · Stand {{ d }}{% endblocktrans %}</p>
     </div>

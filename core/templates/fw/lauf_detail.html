@@ -8,7 +8,7 @@
    Überspringen, Zurücksetzen. Die Belege kommen aus `faelle/lauf_belege.py`. {% endcomment %}
 <div class="fw-phead">
     <div>
-        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="{% url 'fw_laeufe' %}">{% trans "Läufe" %}</a> <span>{{ lauf.laufart.bezeichnung }} {{ lauf.periode }}</span></nav>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="{% url 'fw_laeufe' %}">{% trans "Monatsabschluss" %}</a> <span>{{ lauf.laufart.bezeichnung }} {{ lauf.periode }}</span></nav>
         <h1>{{ lauf.laufart.bezeichnung }} {{ lauf.periode }}</h1>
         <p>{{ lauf.get_status_display }} · {% blocktrans with datum=lauf.faellig_am|date:"d.m.Y" %}Stichtag {{ datum }}{% endblocktrans %}{% if lauf.abgeschlossen_am %} · {{ lauf.abgeschlossen_am|date:"d.m.Y H:i" }}{% if lauf.abgeschlossen_durch %} · {{ lauf.abgeschlossen_durch }}{% endif %}{% endif %}</p>
     </div>

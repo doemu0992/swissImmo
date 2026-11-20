@@ -57,9 +57,12 @@ Security → `WartungsMiddleware` → `NulBytesMiddleware` → GZip → Session 
 
 ### Navigation
 
-- Eine Liste ist die Quelle: `core/navigation.py` (`nav_gruppen()`), sechs Bereiche — Heute, Betrieb, Akten, Läufe,
-  Finanzen, Berichte. Heute, Läufe, Finanzen und Berichte beginnen mit «Übersicht», Betrieb und Akten mit ihrer
-  ersten Seite. Einstellungen stehen im Fuss der Schiene, nicht in den Bereichen
+- Eine Liste ist die Quelle: `core/navigation.py` (`nav_gruppen()`), sechs Bereiche — Heute, Schäden, Liegenschaften, Monatsabschluss,
+  Finanzen, Berichte (Namen wie im UI-Zielbild; die Schlüssel `betrieb`, `akten`, `laeufe` bleiben, weil Adressen, Tastenkürzel
+  und Zähler an ihnen hängen). «Schäden» führt neben den Schäden die Aufträge, Anfragen, Vermietung, Ablesung und Ersatz,
+  «Liegenschaften» die Register (Mandate, Objekte, Mietverhältnisse, Personen …), «Monatsabschluss» die Läufe. Heute,
+  Monatsabschluss, Finanzen und Berichte beginnen mit «Übersicht», Schäden und Liegenschaften mit ihrer ersten Seite. Die erste Stufe
+  der Brotkrume trägt denselben Namen (`fw-krumen`). Einstellungen stehen im Fuss der Schiene, nicht in den Bereichen
   (`EINSTELLUNGEN_ZIELE`).
 - Der Context-Processor `fw_navigation` liefert die Liste an `fw/base.html`, gefiltert nach Rolle (`erlaubt`) und
   Abo-Stufe (`gesperrt`). Jede Seite meldet ihren `nav`-Schlüssel; `keys` je Eintrag verbindet ihn mit dem Punkt.
@@ -76,7 +79,7 @@ Security → `WartungsMiddleware` → `NulBytesMiddleware` → GZip → Session 
   Bestandsfilter (`.fw-bestand`, globaler Filter `?lg=`): Am Telefon (bis 640 px) zeigt der Knopf bei gewähltem Bestand die
   Strasse gekürzt (`.fw-bestand-name`, höchstens 9,5 rem) statt nur eines Punktes; ohne Filter bleibt das Haus-Symbol.
   Die native Auswahl liegt weiter unsichtbar darüber. E2E: `e2e/tests/bestand-name-handy.spec.ts` (390 px, kein Überlauf).
-- Rote Zahlen zeigen, wo etwas zu tun ist: an den Bereichen (`/neu/leistenzahlen/`: Heute, Läufe, Zulauf) und an den
+- Rote Zahlen zeigen, wo etwas zu tun ist: an den Bereichen (`/neu/leistenzahlen/`: Heute, Monatsabschluss, Zulauf) und an den
   einzelnen Seiten im Feld (`punkte` derselben Antwort, `_punktzahlen` in `core/views/fw/arbeit.py`; Schlüssel = erster
   `keys`-Eintrag des Menüpunkts). Jede Zahl zählt dasselbe wie ihre Seite; eine Quelle, die ausfällt, fehlt und steht im
   Protokoll.

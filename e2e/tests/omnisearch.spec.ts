@@ -366,7 +366,7 @@ test.describe('Omnisearch am Telefon', () => {
     await expect(page.locator('#fwSchiene a[data-fach]')).toHaveCount(7);
     await expect(page.locator('#fwHauptnav, #navsub-akten')).toHaveCount(0);
     await page.locator('#fwSchiene a[data-fach="akten"]').tap();
-    await expect(page.locator('#fwFach section:visible h2')).toHaveText('Akten');
+    await expect(page.locator('#fwFach section:visible h2')).toHaveText('Liegenschaften');
     await expect(page.locator('#fwFach section:visible a[aria-current="page"]')).toContainText('Liegenschaften');
     await page.keyboard.press('Escape');
     await expect(page.locator('#fwFach')).toBeHidden();

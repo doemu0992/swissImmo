@@ -214,7 +214,7 @@ def nav_gruppen():
         # «Vermietung» ist EIN Punkt: Mieterwechsel, Leerstand, Vermarktung und
         # Bewerbungen sind Schritte eines Ablaufs (`fw/_pipeline.html` führt
         # zwischen ihnen) und leuchten alle diesen Punkt.
-        _g('betrieb', _('Betrieb'), 'arbeit', '/neu/schaeden/', [
+        _g('betrieb', _('Schäden'), 'arbeit', '/neu/schaeden/', [
             _i(_('Schäden'), '/neu/schaeden/', ['schadensfaelle']),
             _i(_('Aufträge'), '/neu/auftraege/', ['auftraege']),
             _i(_('Anfragen'), '/neu/anfragen/', ['anfragen']),
@@ -227,7 +227,7 @@ def nav_gruppen():
         # ── AKTEN ────────────────────────────────────────────────────────────
         # Nur noch die Register, in der Reihenfolge, in der man sie aufschlägt:
         # vom Auftraggeber über das Haus zur einzelnen Person.
-        _g('akten', _('Akten'), 'liegenschaft', '/neu/liegenschaften/', [
+        _g('akten', _('Liegenschaften'), 'liegenschaft', '/neu/liegenschaften/', [
             _i(_('Mandate'), '/neu/mandate/', ['mandate']),
             _i(_('Liegenschaften'), '/neu/liegenschaften/', ['liegenschaften']),
             _i(_('Objekte'), '/neu/objekte/', ['objekte']),
@@ -241,7 +241,7 @@ def nav_gruppen():
         # ── LÄUFE ────────────────────────────────────────────────────────────
         # Alles, was einen Zustand hat und blockieren kann. Der Bereich fehlte
         # im Einfachmodus vollständig, obwohl die Seiten seit 4b.5 stehen.
-        _g('laeufe', _('Läufe'), 'lauf', '/neu/laeufe/', [
+        _g('laeufe', _('Monatsabschluss'), 'lauf', '/neu/laeufe/', [
             _i(_('Übersicht'), '/neu/laeufe/', ['laeufe']),
             _i(_('Sollstellung'), '/neu/sollstellung/', ['sollstellung'], section=_('Monat')),
             _i(_('Bankabgleich'), '/neu/bankabgleich/', ['bankabgleich']),

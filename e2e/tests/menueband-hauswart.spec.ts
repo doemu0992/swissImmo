@@ -27,7 +27,7 @@ async function keinQuerscrollen(page: Page, wo: string) {
 /** Bereich (Schiene) und Menüpunkt (Feld der Schiene), die auf der Seite als «aktuell» gesetzt sind. */
 async function leuchtet(page: Page) {
   return page.evaluate(() => {
-    // Ohne die Zahl der ungelesenen Meldungen, die an «Akten» bzw. «Schäden» hängt.
+    // Ohne die Zahl der ungelesenen Meldungen, die an «Schäden» hängt.
     const text = (el: Element | null) => (el ? (el.textContent || '').replace(/\s+/g, ' ').trim().replace(/\s*\d+$/, '') : null);
     return {
       bereich: text(document.querySelector('#fwSchiene a[data-fach][aria-current="page"]')),
@@ -46,12 +46,12 @@ test.describe('Schiene: jede Seite markiert einen Bereich', () => {
     expect(lgId, 'Seed: keine Liegenschaft').toBeTruthy();
 
     const faelle: Array<[string, string, string | null]> = [
-      ['/neu/betreibungen/', 'Läufe', 'Mahnwesen'],
+      ['/neu/betreibungen/', 'Monatsabschluss', 'Mahnwesen'],
       // Ohne eigenen Menüpunkt: Der Bereich leuchtet, im Band ist kein Punkt aktiv (DESIGN-05 ist offen).
-      ['/neu/dokumente/', 'Akten', null],
+      ['/neu/dokumente/', 'Liegenschaften', null],
       ['/neu/kommunikation/', 'Heute', null],
-      [`/neu/liegenschaften/${lgId}/zaehlerstand/`, 'Akten', 'Liegenschaften'],
-      [`/neu/liegenschaften/${lgId}/verteilschluessel/`, 'Akten', 'Liegenschaften'],
+      [`/neu/liegenschaften/${lgId}/zaehlerstand/`, 'Liegenschaften', 'Liegenschaften'],
+      [`/neu/liegenschaften/${lgId}/verteilschluessel/`, 'Liegenschaften', 'Liegenschaften'],
       ['/neu/suche/?q=e2e', 'Heute', null],
     ];
     for (const [url, bereich, punkt] of faelle) {

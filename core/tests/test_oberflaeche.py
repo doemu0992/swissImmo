@@ -230,7 +230,7 @@ class NavigationTests(TestCase):
         """
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/').content.decode()
-        for bereich in ('Heute', 'Akten', 'Läufe', 'Finanzen', 'Berichte'):
+        for bereich in ('Heute', 'Schäden', 'Liegenschaften', 'Monatsabschluss', 'Finanzen', 'Berichte'):
             with self.subTest(bereich=bereich):
                 self.assertIn(f'>{bereich}<', html,
                               f'Der Bereich «{bereich}» fehlt in der Leiste.')

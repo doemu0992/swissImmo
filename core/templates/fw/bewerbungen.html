@@ -9,7 +9,7 @@
    Die Liste (?ansicht=liste) zeigt alle Bewerbungen, auch ältere Absagen. {% endcomment %}
 <div class="fw-phead">
     <div>
-        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Akten" %}</a><span aria-hidden="true">/</span><span>{% trans "Bewerbungen" %}</span></nav>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Liegenschaften" %}</a><span aria-hidden="true">/</span><span>{% trans "Bewerbungen" %}</span></nav>
         <h1>{% trans "Bewerbungen" %}</h1>
         {% if ansicht == 'board' %}
         <p>{% blocktrans trimmed count n=gesamt %}{{ n }} Bewerbung auf dem Board.{% plural %}{{ n }} Bewerbungen auf dem Board.{% endblocktrans %} {% trans "Karten ziehen oder an der Karte «Verschieben nach…» wählen." %}{% if aktive_lg %} · {% blocktrans with s=aktive_lg.strasse %}gefiltert auf {{ s }}{% endblocktrans %} <a href="/neu/bewerbungen/" class="fw-link">× {% trans "aufheben" %}</a>{% endif %}</p>
