@@ -3392,6 +3392,22 @@
         @media print{.fw-schiene,.fw-fach,.fw-schiene-vorhang,.fw-menue-knopf{display:none!important}.fw-mit-schiene .fw-haupt{margin-left:0}}
         /* ===== Ende MODUL Schiene ===== */
 
+        /* ===== MODUL Dichte Listen (Phase 3): Zeilen mit Titel und Zweitzeile nebeneinander =====
+           Ab 10 Zeilen in einer Karte automatisch, mit Schalter jederzeit umstellbar, nur ab 641 px
+           (am Handy bleiben die grossen Tippflaechen). Nur Abstand und Anordnung aendern sich:
+           Schrift, Farben und Marker bleiben. Gesetzt wird `fw-dicht` von static/js/fw-rahmen.js. */
+        .fw-dichte-schalter,.fw-dichte-leiste{display:none}
+        @media (min-width:641px){
+            .fw-dichte-schalter{display:inline-flex;margin-left:auto;padding:3px;gap:2px;background:var(--ds-surface-2);border-radius:var(--ds-pill)}
+            .fw-dichte-knopf{border:0;background:transparent;color:var(--ds-muted);font:inherit;font-size:12.5px;font-weight:600;padding:4px 12px;border-radius:var(--ds-pill);cursor:pointer}
+            .fw-dichte-knopf[aria-pressed="true"]{background:var(--ds-surface);color:var(--ds-ink);box-shadow:var(--ds-shadow-sm)}
+            .fw-dichte-leiste{display:flex;padding:10px 20px 0}
+            .fw-dicht .fw-zeile{padding:7px 20px;gap:10px}
+            .fw-dicht .fw-zeile .fw-mitte:has(>.fw-t):has(>.fw-s){display:flex;align-items:baseline;gap:10px}
+            .fw-dicht .fw-zeile .fw-mitte>.fw-t{flex:0 1 46%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+            .fw-dicht .fw-zeile .fw-mitte>.fw-s{flex:1 1 0;min-width:0;margin-top:0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        }
+
         /* ===== MODUL Kennzahlen als Statuszeile (UI-Zielbild, Standard auf allen Seiten) =====
            Jede `.fw-kpis`-Gruppe wird zur Kapselzeile: Farbpunkt, Zahl, Beschriftung, Zusatz in einem. Die Markup-Struktur
            (`.fw-kpi > .fw-l/.fw-v/.fw-f`) bleibt, es ändert sich nur die Darstellung. Ausnahme sind die grossen Zahlen auf Finanzen

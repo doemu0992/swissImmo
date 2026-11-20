@@ -39545,3 +39545,12 @@ msgstr "Es gibt keine unzugeordneten Eingänge."
 
 msgid "Zurück zu Heute"
 msgstr "Zurück zu Heute"
+
+msgid "Zeilendichte"
+msgstr "Zeilendichte"
+
+msgid "Bequem"
+msgstr "Bequem"
+
+msgid "Dicht"
+msgstr "Dicht"

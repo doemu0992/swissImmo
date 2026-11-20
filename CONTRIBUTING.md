@@ -102,6 +102,10 @@ Hauswart: Schadenfälle seiner Liegenschaften.
 - Schrift mindestens 12 px; Ausnahmen (Zahlen in kleinen Kreisen, Diagrammachsen, Mikroschrift) stehen mit Begründung in
   `core/tests/test_schrift_mindestgroesse.py`.
 - Tippflächen am Handy (bis 640 px): Filter-Chips und kleine Knöpfe mindestens 40 px, Segmente 36 px, Schliessen-Knopf 36 px;
+- Dichte Listen: Karten mit mindestens 10 `fw-zeile` werden ab 641 px automatisch dicht (`fw-dicht`), der Schalter «Bequem | Dicht»
+  im Kartenkopf stellt um, die Wahl bleibt je Gerät (`localStorage` `fwDichte`). Das Skript steht in `static/js/fw-rahmen.js`
+  (`fwDichteInit`), die Regeln im Modul «Dichte Listen» von `_schicht.html`. Titel und Zweitzeile brauchen die Klassen `fw-t` und
+  `fw-s` direkt in `fw-mitte`. Am Handy bleibt es bei der bequemen Zeile. Test: `e2e/tests/dichte-listen.spec.ts`.
   kleine Zeichen (Hilfe-«i») behalten ihre Optik und bekommen die Fläche unsichtbar dazu (`::before`). Wächter:
   `e2e/tests/tippflaechen-handy.spec.ts`.
 - «Rückgängig» nur mit geprüfter Rücknahme (`meldung_mit_rueckgaengig`, siehe ARCHITECTURE «Rückgängig (Toast)»); Buchungen werden nie

@@ -2395,6 +2395,17 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         }
         @media (max-width:640px) and (prefers-reduced-motion:reduce){.fw-schiene{transition:none}}
         @media print{.fw-schiene,.fw-fach,.fw-schiene-vorhang,.fw-menue-knopf{display:none!important}.fw-mit-schiene .fw-haupt{margin-left:0}}
+        .fw-dichte-schalter,.fw-dichte-leiste{display:none}
+        @media (min-width:641px){
+            .fw-dichte-schalter{display:inline-flex;margin-left:auto;padding:3px;gap:2px;background:var(--ds-surface-2);border-radius:var(--ds-pill)}
+            .fw-dichte-knopf{border:0;background:transparent;color:var(--ds-muted);font:inherit;font-size:12.5px;font-weight:600;padding:4px 12px;border-radius:var(--ds-pill);cursor:pointer}
+            .fw-dichte-knopf[aria-pressed="true"]{background:var(--ds-surface);color:var(--ds-ink);box-shadow:var(--ds-shadow-sm)}
+            .fw-dichte-leiste{display:flex;padding:10px 20px 0}
+            .fw-dicht .fw-zeile{padding:7px 20px;gap:10px}
+            .fw-dicht .fw-zeile .fw-mitte:has(>.fw-t):has(>.fw-s){display:flex;align-items:baseline;gap:10px}
+            .fw-dicht .fw-zeile .fw-mitte>.fw-t{flex:0 1 46%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+            .fw-dicht .fw-zeile .fw-mitte>.fw-s{flex:1 1 0;min-width:0;margin-top:0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        }
         html .fw-kpis:not(.fw-gross){display:flex;flex-wrap:wrap;gap:8px;background:none;border:0;box-shadow:none;overflow:visible;margin:0 0 16px}
         html .fw-kpis:not(.fw-gross)>.fw-kpi{position:relative;flex:0 1 auto;flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:0 8px;
             min-width:0;min-height:34px;padding:7px 14px 7px 28px;margin:0;border:0;border-radius:var(--ds-radius-sm);background:var(--ds-surface);
