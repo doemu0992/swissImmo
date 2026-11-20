@@ -75,6 +75,13 @@ Security → `WartungsMiddleware` → `NulBytesMiddleware` → GZip → Session 
   roten Zahlen) öffnet sie, der Inhalt hat die volle Breite. Dort öffnet ein Bereich sein Feld über der Schublade
   («Bereiche» führt zurück). Ein Tipp bzw. Klick klappt das Feld mit den Seiten des
   Bereichs auf (`#fwFach`, `static/js/fw-schiene.js`), ein Klick daneben, Esc oder die Wahl einer Seite schliesst es.
+  **Handy-Tableiste** (`#fwTabbar`, Mix-Entwurf 20.11.2026): Nur bis 640 px steht unten eine Leiste mit Heute, Schäden, «Neu»,
+  Finanzen und «Mehr»; «Mehr» öffnet dieselbe Schublade mit allen Bereichen. Sie liest dieselbe Quelle (`fw_nav_gruppen`) und ist eine
+  zweite Tür zu denselben Zielen — nichts entfällt, fehlt der Rolle ein Bereich, fehlt er auch dort. Hauswartung und Portal-Rollen
+  bekommen sie nicht (`fw_kopf_reduziert`). Test: `e2e/tests/tableiste.spec.ts`.
+  **Nichts geht verloren:** `core/tests/routen_baseline.txt` hält alle Adressen (mit Namen) vom 20.11.2026 fest;
+  `test_routen_baseline` schlägt fehl, wenn eine fehlt oder ihren Namen wechselt. Neue Adressen dürfen dazukommen, eine Adresse darf
+  nur mit Begründung in `ABSICHTLICH_ENTFERNT` stehen.
   Tastatur: G dann H/B/A/K/L/F/R/E öffnet den Bereich, 1–9 wählt die Seite. Hauswartung und Portal-Rollen bekommen keine
   Schiene (`fw_kopf_reduziert`); sie behalten die Marke in der Kopfzeile. Eine Bereichskapsel oder ein Menüband in der
   Kopfzeile gibt es nicht mehr (entfernt 18.11.2026).

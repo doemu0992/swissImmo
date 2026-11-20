@@ -3398,7 +3398,7 @@
             .fw-tab{position:relative;display:flex;flex:1 1 0;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:44px;min-height:48px;
                 padding:4px 2px;border:0;background:transparent;font:inherit;font-size:12px;font-weight:500;color:var(--ds-muted);text-decoration:none;cursor:pointer;
                 border-radius:var(--ds-radius-knopf)}
-            .fw-tab .fw-zeichen{width:22px;height:22px}
+            .fw-tab .fw-zeichen{width:22px!important;height:22px!important}
             .fw-tab.hier{color:var(--ds-brand);font-weight:600}
             .fw-tab:hover{background:var(--ds-hover);color:var(--ds-ink)}
             .fw-tab-plus{flex:0 0 52px;width:52px;height:52px;min-height:52px;margin-top:-18px;border-radius:var(--ds-pill);background:var(--ds-brand);color:var(--ds-auf-satt);box-shadow:var(--ds-shadow-lg)}
