@@ -40651,3 +40651,12 @@ msgstr "There are no unassigned items."
 
 msgid "Zurück zu Heute"
 msgstr "Back to Today"
+
+msgid "Zeilendichte"
+msgstr "Row density"
+
+msgid "Bequem"
+msgstr "Comfortable"
+
+msgid "Dicht"
+msgstr "Compact"

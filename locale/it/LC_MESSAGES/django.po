@@ -41246,3 +41246,12 @@ msgstr "Non ci sono ingressi non assegnati."
 
 msgid "Zurück zu Heute"
 msgstr "Torna a Oggi"
+
+msgid "Zeilendichte"
+msgstr "Densità delle righe"
+
+msgid "Bequem"
+msgstr "Comodo"
+
+msgid "Dicht"
+msgstr "Compatto"

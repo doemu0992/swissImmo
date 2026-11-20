@@ -378,5 +378,6 @@ Detailseiten rufen sie beim Namen.
 {% comment %} Die Tab-Leiste unten ist mit dem Ember-Redesign entfallen: Die Bereiche stehen
    als Kapsel oben, am Telefon in sich scrollbar (mockups/immoswiss-ember.html). {% endcomment %}
 {% include 'fw/_bestaetigen.html' %}
+<template id="fwDichteVorlage"><div class="fw-dichte-schalter" role="group" aria-label="{% trans 'Zeilendichte' %}"><button type="button" class="fw-dichte-knopf" data-dichte="bequem" aria-pressed="false">{% trans "Bequem" %}</button><button type="button" class="fw-dichte-knopf" data-dichte="dicht" aria-pressed="false">{% trans "Dicht" %}</button></div></template>
 </body>
 </html>

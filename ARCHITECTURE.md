@@ -170,6 +170,14 @@ das Sperrkonto in Höhe des bilanzierten Betrags frei. Eine MWST-Periode für de
 Rechenkern `core/utils/billing.py` (`berechne_abrechnung`), Assistent `core/views/fw/nk_wizard.py`, PDF und Versand
 in `core/services/nk_*.py`.
 
+### Dichte Listen
+
+Karten mit mindestens 10 Zeilen (`.fw-zeile`) bekommen ab 641 px die Klasse `fw-dicht`: halber Abstand, Titel und Zweitzeile nebeneinander
+(Titel kürzt mit «…», der volle Text steht im Tooltip). Ein Schalter «Bequem | Dicht» sitzt im Kartenkopf; die Wahl bleibt je Gerät
+im `localStorage` (`fwDichte`), ohne Wahl gilt die Automatik. Schrift, Farben und Marker bleiben unverändert. Am Handy ist die Ansicht
+nicht verfügbar, damit die Tippflächen halten. Skript `static/js/fw-rahmen.js` (`fwDichteInit`), Vorlage des Schalters
+`#fwDichteVorlage` in `fw/base.html`.
+
 ### «Neuer Fall» und «Mitteilungen» (Zielbild)
 
 «Neuer Fall» zeigt die Brotkrumen «Heute / Neuer Fall» (nicht in der Schublade, `?embed=1`). Die Frist-Kapseln sind «Heute»,

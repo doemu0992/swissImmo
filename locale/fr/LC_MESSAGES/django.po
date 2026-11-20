@@ -41317,3 +41317,12 @@ msgstr "Il n'y a aucune entrée non attribuée."
 
 msgid "Zurück zu Heute"
 msgstr "Retour à Aujourd'hui"
+
+msgid "Zeilendichte"
+msgstr "Densité des lignes"
+
+msgid "Bequem"
+msgstr "Aéré"
+
+msgid "Dicht"
+msgstr "Compact"

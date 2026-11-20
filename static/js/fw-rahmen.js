@@ -423,3 +423,55 @@ function fwSpaltenfilter(wurzel) {
 document.addEventListener('DOMContentLoaded', function () { fwTabellenStapeln(); fwSpaltenfilter(); });
 // Nachgeladene Inhalte (Tab-Wechsel, Modal) ebenfalls erfassen
 document.addEventListener('fw:content', function (e) { fwTabellenStapeln(e.target); fwSpaltenfilter(e.target); });
+
+
+// Dichte Listen (Phase 3): Karten mit mindestens 10 Zeilen (`.fw-zeile`) werden ab 641 px automatisch dicht
+// (`fw-dicht`, Regeln in _schicht.html). Der Schalter «Bequem | Dicht» steht im Kopf der Karte; die Wahl
+// bleibt je Gerät erhalten (localStorage `fwDichte`). Ohne Wahl entscheidet die Anzahl.
+(function () {
+    var KEY = 'fwDichte', AB = 10;
+    function lese() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+    function schreibe(v) { try { localStorage.setItem(KEY, v); } catch (e) { /* ohne Speicher gilt die Automatik */ } }
+    function setze(karte, dicht) {
+        karte.classList.toggle('fw-dicht', dicht);
+        karte.querySelectorAll('.fw-dichte-knopf').forEach(function (k) {
+            k.setAttribute('aria-pressed', (k.getAttribute('data-dichte') === 'dicht') === dicht ? 'true' : 'false');
+        });
+        karte.querySelectorAll('.fw-zeile .fw-mitte > .fw-t').forEach(function (t) {
+            if (dicht && !t.hasAttribute('title')) { t.setAttribute('title', t.textContent.trim()); t.setAttribute('data-dichte-tipp', '1'); }
+            if (!dicht && t.hasAttribute('data-dichte-tipp')) { t.removeAttribute('title'); t.removeAttribute('data-dichte-tipp'); }
+        });
+    }
+    function wahl(karte) {
+        var w = lese();
+        if (w === 'dicht') return true;
+        if (w === 'bequem') return false;
+        return karte.querySelectorAll('.fw-zeile').length >= AB;
+    }
+    var karten = [];
+    window.fwDichteInit = function () {
+        var vorlage = document.getElementById('fwDichteVorlage');
+        if (!vorlage || !vorlage.content) return;
+        document.querySelectorAll('.fw-card').forEach(function (karte) {
+            if (karte.querySelectorAll('.fw-zeile').length < AB || karte.querySelector('.fw-dichte-schalter')) return;
+            var schalter = vorlage.content.firstElementChild.cloneNode(true);
+            var kopf = karte.querySelector(':scope > .fw-kopf, :scope > .fw-h');
+            if (kopf) kopf.appendChild(schalter);
+            else {
+                var leiste = document.createElement('div');
+                leiste.className = 'fw-dichte-leiste';
+                leiste.appendChild(schalter);
+                karte.insertBefore(leiste, karte.firstChild);
+            }
+            karten.push(karte);
+            setze(karte, wahl(karte));
+        });
+    };
+    document.addEventListener('click', function (e) {
+        var knopf = e.target.closest ? e.target.closest('.fw-dichte-knopf') : null;
+        if (!knopf) return;
+        schreibe(knopf.getAttribute('data-dichte'));
+        karten.forEach(function (k) { setze(k, wahl(k)); });
+    });
+    document.addEventListener('DOMContentLoaded', window.fwDichteInit);
+})();
