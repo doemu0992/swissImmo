@@ -7,7 +7,7 @@ Beispieldaten, keine Verbindung zur Anwendung. Im Browser öffnen: links «Stand
 **Vorgabe des Auftraggebers:** Listen, Dialoge, Popups und Bedienung sollen sich in der Anwendung
 **genau so anfühlen** wie im Zielbild. Abweichungen sind zu begründen, nicht stillschweigend zu wählen.
 
-Dieses Dokument ist ein Abbild eines Zeitpunkts (19.11.2026). Widerspricht der Bestand, gilt der Bestand,
+Dieses Dokument ist ein Abbild eines Zeitpunkts (angelegt 19.11.2026, Abgleich nachgeführt 20.11.2026). Widerspricht der Bestand, gilt der Bestand,
 und diese Datei wird im selben PR korrigiert (Skill `swissimmo-review`).
 
 ## Regeln für jeden Umsetzungs-PR
@@ -22,52 +22,39 @@ und diese Datei wird im selben PR korrigiert (Skill `swissimmo-review`).
 - Rollen und Mandantenbezug an jedem neuen Endpunkt (`mandantentrennung`).
 - Vor dem Melden «fertig»: sechs Punkte aus `swissimmo-review` belegen.
 
-## Abgleich Zielbild ↔ Bestand
+## Abgleich Zielbild ↔ Bestand (Stand 20.11.2026)
 
-Status: **da** = im Code gelesen · **fehlt** = im Code nicht gefunden · **prüfen** = noch nicht gelesen.
+Alle Umsetzungs-PRs sind gemergt (#323 bis #346). Gemessen wurden die berechneten Stile von Prototyp und App bei 390 und 1280 px (Heute, Schäden);
+die übrigen Seiten wurden per Screenshot verglichen. Details je Bereich stehen in `ARCHITECTURE.md`.
 
-| Zielbild | Bestand | Status | Hinweis |
-|---|---|---|---|
-| Schiene links, Tab-Leiste mobil, Schublade | `fw/base.html`, `fw-schiene.js` | da | Zielbild nur im Detail vergleichen (Masse, Zahlen) |
-| ⌘K-Suche | `fw-omnisearch.js`, `core/services/palette_suche.py` | da | Bestand sucht über mehr Gruppen als das Zielbild |
-| Dark Mode im Profilmenü | `fw-thema.js` | da | Optik der Schalter-Zeile angleichen |
-| Zahlen sofort statt Hochzählen (Phase 0) | `static/js/fw-kapsel.js` zählt hoch | fehlt | kleinster PR, zuerst |
-| Heute: Statuszeile statt Hero-Kachel | `fw/dashboard.html` (Hero bereits entfernt) | prüfen | Schwerpunkt «Übersicht» zeigt noch Kennzahl-Kacheln |
-| Heute: Arbeitsvorrat mit Dringlichkeitsstufen | `fw/_arbeitsvorrat_abschnitte.html` | prüfen | «Überfällig bis 30 Tage» / «seit über 30 Tagen» |
-| Zeilen: Button nennt die Aufgabe, Haken «Erledigt» | `fw/_arbeitsvorrat_abschnitte.html` | prüfen | |
-| Rückgängig nach «Erledigt» (Toast, Taste Z) | nicht gefunden | fehlt | **braucht Entscheid**, siehe unten |
-| Zuordnen-Dialog Bankabgleich | `fw/bankabgleich.html` (Seite «Zuordnen / Aufteilen») | da | Zielbild ist ein Dialog; Bestand ein Assistent auf eigener Seite |
-| Schäden: Statuszeile, Liste/Board, leerer Zustand | `tickets`, Vorlagen `fw/schaden_*.html` | prüfen | |
-| Liegenschaften: Sortierung sofort, Filterchips | `fw/liegenschaften.html` | prüfen | «Anwenden»-Knopf im Zielbild entfernt |
-| Monatsabschluss als Schritte | `fw/laeufe.html`, `faelle/` | prüfen | Fachlogik der Läufe nicht anfassen |
-| Finanzen: Abschluss mit Haken statt Durchstreichen | `fw/finanzen.html` | prüfen | |
-| Berichte: gruppiert, Suche, Ziellinie im Diagramm | `fw/berichte.html` | prüfen | |
-| Einstellungen: Suche, «Häufig genutzt» | `fw/einstellungen.html`, `core/navigation.py` | prüfen | Gruppen kommen aus `einstellungen_gruppen()` |
-| Neuer Fall: Pflichtfelder leer, Fristenchips, Fehler sofort | `fw/fall_neu.html` | prüfen | Vorbelegung nur, wenn sie fachlich sicher ist |
-| Dichte Listen ab ~10 Vorgängen | | fehlt | Phase 3 |
-| Lesbare Schrift ≥ 12 px, Tippfläche 36/44 px | `_schicht.html` | prüfen | Messen |
+| Zielbild | Stand | Abweichung, bewusst |
+|---|---|---|
+| Schiene links, Tab-Leiste mobil, Schublade | umgesetzt | Handy: «+» öffnet das Drawer-Menü (Variante B) statt einer «Mehr»-Seite |
+| ⌘K-Suche, Profilmenü, Dunkelmodus | umgesetzt | Bestand sucht über mehr Gruppen; Profilmenü zusätzlich Sprache, Dokumente, Kommunikation |
+| Zahlen sofort statt Hochzählen | umgesetzt (19.11.2026) | |
+| Heute: Statuszeile, Arbeitsvorrat mit Dringlichkeit, Haken «Erledigt» | umgesetzt | |
+| Rückgängig nach «Erledigt» und Zuordnen (Toast) | umgesetzt | nur, wo eine geprüfte Rücknahme besteht |
+| Zuordnen als Dialog (Bankabgleich) | umgesetzt | Aufteilen bleibt ein Assistent auf eigener Seite |
+| Schäden, Liegenschaften, Monatsabschluss (Schrittliste), Finanzen | umgesetzt | Schäden zusätzlich Chips Notfall / Hoch / SLA; Debitoren zusätzlich Filter-Kacheln |
+| Berichte (gruppiert, Suche, «Häufig genutzt», Datenstand am Endpunkt) | umgesetzt | **Ziellinie 95 % fehlt**: Der Zielwert muss der Betreiber festlegen |
+| Einstellungen (Suche, «Häufig genutzt») | umgesetzt | |
+| Neuer Fall, Mitteilungen (Zulauf) | umgesetzt | Art nicht vorgewählt (verhindert Fälle auf falscher Akte) |
+| Dichte Listen, Zeilenabstand 7 px am PC | umgesetzt | Ansicht «Dicht» (Zweitzeile neben dem Titel) zusätzlich wählbar |
+| Schriftskala 12/13/14/15/18/22/28 px, Tippflächen 36/44 px | umgesetzt | Anzeigegrössen 34/36/40/52 px ausserhalb der Skala |
+| Anrede «Sie» | umgesetzt | Zielbild zeigt die Du-Variante als Alternative |
+| Zeilenhöhe am Handy | teilweise | Schäden 162 statt 86 px: Zweitzeile und Freigabe-Chips braucht die App fachlich |
 
-## Reihenfolge der PRs (Vorschlag)
+Nicht geprüft: Lade-, Disabled- und Fehlerzustände der Formulare, Tablet-Breiten (641–1023 px), Portale, PDF-Vorlagen, echte Produktionsdaten.
 
-1. **Phase 0:** Hochzählen aus, Texte und Kürzel, kleine Korrekturen (Sortierung, Haken).
-2. **Bausteine:** Dialog, Toast mit Rückgängig, Statuszeile (Komponenten in der Schicht, mit Wächtern).
-3. **Heute:** Arbeitsvorrat und Dringlichkeit.
-4. **Finanzen:** Zuordnen als Dialog, Abschlussblock.
-5. **Schäden, Liegenschaften, Monatsabschluss, Berichte, Einstellungen, Neuer Fall:** je ein PR.
-6. **Phase 2:** Profilmenü, Akzent, Tab-Leiste mobil (Abgleich mit Bestand).
-7. **Phase 3:** Dichte, Design-System-Bereinigung.
+## Entscheide (Stand 20.11.2026)
 
-## Offene Entscheide (nicht selbst auflösen)
-
-1. **Akzentfarbe.** Anwendung: Orange `--ds-brand #b04416`. Zielbild: Blau `#2347c5` als Vorschlag.
-   `test_palette` und `test_ds_tokens` fixieren die Palette. Markenpaket nennt Navy/Coral/Warm-White.
-2. **«Rückgängig».** Das Zielbild hält den Zustand nur im Browser. In der Anwendung braucht es für
-   Buchhaltungsvorgänge entweder verzögerte Ausführung oder eine echte Rücknahme.
-   Buchungen sind nicht löschbar (`finance/db_schutz.py`); Zahlungszuordnung hat eigene Regeln
-   (`core/services/zahlungsklaerung.py`).
-3. **Zuordnen als Dialog oder Seite.** Der Bestand-Assistent kann auf mehrere Posten aufteilen.
-4. **Schrift.** Zielbild und Anwendung nutzen DM Sans (lokal unter `static/fonts/`). Entscheid D3 nennt IBM Plex.
-   Nachsehen, welche tatsächlich ausgeliefert wird.
+1. **Akzentfarbe:** Orange `--ds-brand #b04416` bleibt, nicht das Blau des Prototyps. Dunkelmodus: `#f08a55`.
+2. **«Rückgängig»:** nur mit geprüfter Rücknahme; Buchungen sind nicht löschbar (`finance/db_schutz.py`).
+3. **Zuordnen:** Dialog für die vier Wege, Assistent für das Aufteilen.
+4. **Schrift:** DM Sans, lokal ausgeliefert; sieben Stufen per Wächter (`test_schriftskala`).
+5. **Anrede:** «Sie».
+6. **Zeilendichte:** Prototyp-Abstand (7 px) ist am PC Standard.
+7. **Noch offen:** Zielwert der Ziellinie im Diagramm.
 
 ## Was im Zielbild erfundene Beispieldaten sind
 
