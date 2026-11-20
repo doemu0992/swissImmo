@@ -41511,3 +41511,6 @@ msgstr "Archivi invece la segnalazione di danno."
 
 msgid "Häufig genutzt"
 msgstr "Usati di frequente"
+
+msgid "Stand Bankimport %(datum)s"
+msgstr "stato importazione bancaria %(datum)s"

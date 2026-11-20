@@ -56,11 +56,14 @@ def _achse(klein, gross):
 
 
 @register.simple_tag
-def linien_diagramm(werte, beschriftungen, titel='', einheit=' %'):
+def linien_diagramm(werte, beschriftungen, titel='', einheit=' %', stand=''):
     """Linie über Monate. `werte` mit `None` für ungemessene Monate.
 
     Leer, wenn weniger als zwei Werte gemessen sind — die Vorlage zeigt dann
     ihren Leerzustand.
+
+    `stand` (optional) steht in Klammern hinter dem Endwert, z. B. «66,7 % (Stand Bankimport 26.10.)»
+    (UI-Zielbild): Der letzte Punkt sagt, auf welchem Datenstand er beruht.
     """
     werte = [_zahl(w) for w in (werte or [])]
     gemessen = [w for w in werte if w is not None]
@@ -114,8 +117,8 @@ def linien_diagramm(werte, beschriftungen, titel='', einheit=' %'):
     lw = werte[letzter]
     ende = format_html(
         '<span class="fw-kurve-punkt" data-links="{0}" data-oben="{1}"></span>'
-        '<span class="fw-kurve-wert" data-links="{0}" data-oben="{1}">{2}{3}</span>',
-        f'{x(letzter):.2f}', f'{y(lw):.2f}', _prozent(lw), einheit)
+        '<span class="fw-kurve-wert" data-links="{0}" data-oben="{1}">{2}{3}{4}</span>',
+        f'{x(letzter):.2f}', f'{y(lw):.2f}', _prozent(lw), einheit, f' ({stand})' if stand else '')
 
     # Treffer je Monat: Titel als Tooltip (die Zahl steht auch in der Tabelle)
     breite = 100 / (n - 1)

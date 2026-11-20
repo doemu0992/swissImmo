@@ -41582,3 +41582,6 @@ msgstr "Archivez plutôt la déclaration de sinistre."
 
 msgid "Häufig genutzt"
 msgstr "Souvent utilisés"
+
+msgid "Stand Bankimport %(datum)s"
+msgstr "état de l'import bancaire %(datum)s"
