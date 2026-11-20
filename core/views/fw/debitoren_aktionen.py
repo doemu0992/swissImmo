@@ -209,7 +209,7 @@ def fw_weiterverrechnung(request, kreditor_id):
             # zusätzlich direkt weiterzuverrechnen würde doppelt belasten. Nur mit
             # bewusstem Override (Häkchen) zulassen.
             if (k.is_hnk_relevant or k.hnk_betrag > 0) and request.POST.get('hnk_override') != 'on':
-                messages.error(request, gettext('Diese Rechnung ist HNK-relevant und wird bereits über die Nebenkostenabrechnung verteilt. Direkte Weiterverrechnung nur, wenn du das Häkchen «Trotzdem direkt weiterverrechnen» setzt (sonst doppelte Belastung).'))
+                messages.error(request, gettext('Diese Rechnung ist HNK-relevant und wird bereits über die Nebenkostenabrechnung verteilt. Direkte Weiterverrechnung nur, wenn Sie das Häkchen «Trotzdem direkt weiterverrechnen» setzen (sonst doppelte Belastung).'))
                 return redirect(request.path)
 
             # --- Modus «verteilen»: Fremdkosten in EINEM Schritt nach Verteilschlüssel

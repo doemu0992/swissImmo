@@ -235,7 +235,7 @@ def fw_regelsatz_form(request, pk=None):
         if kollision.exists():
             bereich = f'den Kanton {kanton}' if kanton else 'alle Kantone'
             messages.error(
-                request, gettext('Für %(bereich)s besteht bereits der Regelsatz «%(first)s». Es gilt ein Satz je Kanton — bearbeite den bestehenden, statt einen zweiten anzulegen.') % {'bereich': bereich, 'first': kollision.first()})
+                request, gettext('Für %(bereich)s besteht bereits der Regelsatz «%(first)s». Es gilt ein Satz je Kanton — bearbeiten Sie den bestehenden, statt einen zweiten anzulegen.') % {'bereich': bereich, 'first': kollision.first()})
             return redirect(request.path)
 
         war_geprueft = satz.geprueft if satz else False

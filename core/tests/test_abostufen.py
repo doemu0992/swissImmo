@@ -166,7 +166,7 @@ class PreisseiteTests(TestCase):
 
     def test_ohne_einheiten_ist_start_empfohlen(self):
         body = self._seite()
-        self.assertIn('Für deinen Bestand: CHF 39/Monat', body)
+        self.assertIn('Für Ihren Bestand: CHF 39/Monat', body)
 
     def test_zahlen_mit_schweizer_tausendertrennzeichen(self):
         body = self._seite()

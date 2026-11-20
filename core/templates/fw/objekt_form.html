@@ -100,7 +100,7 @@
                 <input id="id_soll_gueltig_ab" name="soll_gueltig_ab" type="date" value="{{ form.soll_gueltig_ab.value|date:'Y-m-d'|default:form.soll_gueltig_ab.value|default_if_none:'' }}" class="fw-feld w-full"{% if form.soll_gueltig_ab.errors %} aria-invalid="true" aria-describedby="id_soll_gueltig_ab_fehler"{% endif %}>
                 {% include 'fw/_feldfehler.html' with f=form.soll_gueltig_ab %}</div>
         </div>
-        <p class="fw-hilfe">{% blocktrans trimmed %}Optionaler <b>Anfangsmietzins</b> — wird als erste datierte Sollmietzins-Zeile hinterlegt. Spätere Anpassungen, Gratismonate oder Rabatte erfasst du danach im Tab <b>«Mietzins»</b> (die einzige Quelle für Sollstellung, Mieterspiegel und Bilanz).{% endblocktrans %}</p>
+        <p class="fw-hilfe">{% blocktrans trimmed %}Optionaler <b>Anfangsmietzins</b> — wird als erste datierte Sollmietzins-Zeile hinterlegt. Spätere Anpassungen, Gratismonate oder Rabatte erfassen Sie danach im Tab <b>«Mietzins»</b> (die einzige Quelle für Sollstellung, Mieterspiegel und Bilanz).{% endblocktrans %}</p>
         {% else %}
         <p class="fw-fs-fein fw-mutet">{% blocktrans trimmed %}Der Mietzins wird ausschliesslich als <b>datierter Sollmietzins</b> gepflegt (inkl. Gratismonate/Rabatt) — so bleiben Sollstellung, Mieterspiegel und Bilanz konsistent. Hier ist er nur zur Ansicht.{% endblocktrans %}</p>
         {% if sollmietzinse %}

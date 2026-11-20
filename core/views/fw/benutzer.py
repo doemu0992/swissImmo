@@ -127,7 +127,7 @@ def _aus_team_entfernen(request, ziel, organisation):
     from crm.models import Mitgliedschaft
 
     if ziel == request.user:
-        messages.error(request, gettext('Du kannst deinen eigenen Account nicht löschen.'))
+        messages.error(request, gettext('Sie können Ihren eigenen Account nicht löschen.'))
         return False
     if _letzter_verwaltungszugang(ziel, organisation):
         messages.error(request, gettext('Das ist der letzte Verwaltungs-Account — er kann nicht gelöscht werden.'))
@@ -143,7 +143,7 @@ def _aus_team_entfernen(request, ziel, organisation):
         log_aktion(request, "Benutzer aus Team entfernt", name,
                    f"noch in {rest} weiteren Verwaltung(en)")
         messages.success(
-            request, '🗑️ ' + gettext('%(name)s wurde aus deinem Team entfernt. Das Konto bleibt bestehen — es wird in einer anderen Verwaltung genutzt.') % {'name': name})
+            request, '🗑️ ' + gettext('%(name)s wurde aus Ihrem Team entfernt. Das Konto bleibt bestehen — es wird in einer anderen Verwaltung genutzt.') % {'name': name})
     return True
 
 
@@ -222,7 +222,7 @@ def fw_benutzer_form(request, pk=None):
                 messages.warning(request, gettext(
                     'Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail '
                     'und Name kann nur die Person selbst ändern — gespeichert wurde nur die '
-                    'Rolle in deiner Verwaltung.'))
+                    'Rolle in Ihrer Verwaltung.'))
             if P.get('mitgliedschaft_beenden') == 'on':
                 # Deaktivieren heisst hier: aus DIESEM Team austreten lassen.
                 _aus_team_entfernen(request, ziel, organisation)

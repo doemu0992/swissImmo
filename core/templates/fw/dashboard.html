@@ -28,7 +28,7 @@
         <div class="fw-eyebrow">{{ heute|date:"l, d. F Y" }} · KW&nbsp;{{ kw }}{% for name, bis in vertretung_fuer %} · <b class="fw-marke">{% blocktrans with bis=bis|date:"d.m." %}Vertretung für {{ name }} bis {{ bis }}{% endblocktrans %}</b>{% endfor %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse ort=aktive_lg.ort %}Gefiltert auf {{ strasse }}, {{ ort }}{% endblocktrans %}{% endif %}</div>
         {% now "H" as stunde %}{% with name=request.user.first_name|default:request.user.username %}
         <h1>{% if stunde < "11" %}{% blocktrans %}Guten Morgen, {{ name }}.{% endblocktrans %}{% elif stunde < "18" %}{% blocktrans %}Guten Tag, {{ name }}.{% endblocktrans %}{% else %}{% blocktrans %}Guten Abend, {{ name }}.{% endblocktrans %}{% endif %}
-            <em>{% if anzahl_heute %}{% blocktrans count n=anzahl_heute %}{{ n }} Vorgang braucht heute dich.{% plural %}{{ n }} Vorgänge brauchen heute dich.{% endblocktrans %}{% if anzahl_ueberfaellig %} <span class="fw-heute-ueber">{% blocktrans count n=anzahl_ueberfaellig %}{{ n }} davon überfällig.{% plural %}{{ n }} davon überfällig.{% endblocktrans %}</span>{% endif %}{% else %}{% trans "Heute ist nichts fällig." %}{% endif %}</em></h1>
+            <em>{% if anzahl_heute %}{% blocktrans count n=anzahl_heute %}{{ n }} Vorgang braucht heute Ihre Aufmerksamkeit.{% plural %}{{ n }} Vorgänge brauchen heute Ihre Aufmerksamkeit.{% endblocktrans %}{% if anzahl_ueberfaellig %} <span class="fw-heute-ueber">{% blocktrans count n=anzahl_ueberfaellig %}{{ n }} davon überfällig.{% plural %}{{ n }} davon überfällig.{% endblocktrans %}</span>{% endif %}{% else %}{% trans "Heute ist nichts fällig." %}{% endif %}</em></h1>
         {% endwith %}
     </div>
     <div class="fw-phead-knoepfe">

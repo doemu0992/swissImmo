@@ -164,8 +164,8 @@
                 {% if p.zusatz_100 %}<br>{% if p.deckel %}{% blocktrans with preis=p.zusatz_100|chf:0 deckel=p.deckel|chf:0 %}+100 Einheiten: CHF {{ preis }}/Monat, bis {{ deckel }}{% endblocktrans %}{% else %}{% blocktrans with preis=p.zusatz_100|chf:0 %}+100 Einheiten: CHF {{ preis }}/Monat{% endblocktrans %}{% endif %}{% endif %}
             </p>
             <p class="fw-hilfe mt-2{% if p.bestand is not None %} fw-mutet{% endif %}">
-                {% if p.bestand is None %}{% trans "Reicht für deinen heutigen Bestand nicht." %}
-                {% else %}{% blocktrans with preis=p.bestand|chf:0 %}Für deinen Bestand: CHF {{ preis }}/Monat{% endblocktrans %}{% if jaehrlich %}<br>{% blocktrans with preis=p.jahr|chf:0 prozent=rabatt_prozent %}CHF {{ preis }}/Jahr (−{{ prozent }} %){% endblocktrans %}{% endif %}{% endif %}
+                {% if p.bestand is None %}{% trans "Reicht für Ihren heutigen Bestand nicht." %}
+                {% else %}{% blocktrans with preis=p.bestand|chf:0 %}Für Ihren Bestand: CHF {{ preis }}/Monat{% endblocktrans %}{% if jaehrlich %}<br>{% blocktrans with preis=p.jahr|chf:0 prozent=rabatt_prozent %}CHF {{ preis }}/Jahr (−{{ prozent }} %){% endblocktrans %}{% endif %}{% endif %}
             </p>
 
             {% if kann_abo_aendern %}
@@ -197,5 +197,5 @@
     <div class="fw-zeile"><div class="fw-mitte"><div class="fw-t">{% trans "SMS &amp; Speicher" %}</div><div class="fw-s">{% trans "SMS-Benachrichtigungen und zusätzlicher Dokumentenspeicher." %}</div></div></div>
 </div>
 
-<p class="fw-hilfe">{% if mwst_pflichtig %}{% trans "Alle Preise exkl. MWST." %}{% else %}{% trans "Alle Preise in CHF, ohne MWST (nicht mehrwertsteuerpflichtig)." %}{% endif %} {% blocktrans with stand=preisstand %}Einführungspreise, Stand {{ stand }}. Die Einheiten­zahl wird automatisch aus deinen erfassten Objekten berechnet.{% endblocktrans %}</p>
+<p class="fw-hilfe">{% if mwst_pflichtig %}{% trans "Alle Preise exkl. MWST." %}{% else %}{% trans "Alle Preise in CHF, ohne MWST (nicht mehrwertsteuerpflichtig)." %}{% endif %} {% blocktrans with stand=preisstand %}Einführungspreise, Stand {{ stand }}. Die Einheiten­zahl wird automatisch aus Ihren erfassten Objekten berechnet.{% endblocktrans %}</p>
 {% endblock %}

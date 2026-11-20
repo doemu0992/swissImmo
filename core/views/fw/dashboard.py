@@ -181,8 +181,8 @@ def _nach_fallart(zeilen, fallart):
 def _uebernommene_faelle(benutzer_ids):
     """Wie viele offene Fälle bei den Abwesenden liegen.
 
-    Der Satz aus Konzept v7 lautet «Du vertrittst 7 Fälle und 3 Mandate».
-    Ohne die Zahl bliebe «Du vertrittst Lea Frey» — richtig, aber ohne
+    Der Satz aus Konzept v7 lautet «Sie vertreten 7 Fälle und 3 Mandate».
+    Ohne die Zahl bliebe «Sie vertreten Lea Frey» — richtig, aber ohne
     Gewicht: Ob das eine Nachfrage oder eine Woche Arbeit ist, steht nicht da.
 
     EINE Abfrage für alle Abwesenden zusammen, nicht eine je Person.

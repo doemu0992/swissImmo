@@ -683,7 +683,7 @@ def fw_vertrag_neu_speichern(request):
         feld_fehler.setdefault(feld, meldung)
 
     if not einheit:
-        _fehler('einheit_id', gettext('Bitte wähle ein Objekt aus, bevor du den Vertrag erstellst.'))
+        _fehler('einheit_id', gettext('Bitte wählen Sie ein Objekt aus, bevor Sie den Vertrag erstellen.'))
     if _dec_val('netto_mietzins') < 0:
         _fehler('netto_mietzins', gettext('Der Netto-Mietzins darf nicht negativ sein.'))
     if not (einheit and einheit.ist_einstellplatz) and _dec_val('nebenkosten') < 0:

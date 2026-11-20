@@ -172,16 +172,16 @@ _PRUEFER = {
 
 #: Der Hinweis, der die Sperre mit einem gangbaren Weg verbindet.
 _ALTERNATIVE = {
-    'crm.Mieter': _('Beende die Verträge; auf Wunsch der Person kannst du ihre Daten über die '
+    'crm.Mieter': _('Beenden Sie die Verträge; auf Wunsch der Person können Sie ihre Daten über die '
                     'Datenschutz-Löschung (Anonymisierung) unkenntlich machen.'),
-    'rentals.Mietvertrag': _('Archiviere den Vertrag stattdessen («Inaktiv / Archiviert»).'),
-    'portfolio.Liegenschaft': _('Setze die Liegenschaft stattdessen auf «Archiviert» (Archiv, Aufbewahrung zehn Jahre).'),
-    'portfolio.Einheit': _('Beende die Verträge und archiviere das Objekt; es bleibt mit seiner Geschichte bestehen.'),
-    'crm.Eigentuemer': _('Beende das Mandat über «Archivieren» (Mandatsende): Es bleibt zehn Jahre aufbewahrt.'),
-    'rentals.Dokument': _('Archiviere das Dokument stattdessen.'),
-    'portfolio.Dokument': _('Archiviere das Dokument stattdessen.'),
-    'tickets.SchadenMeldung': _('Archiviere die Schadenmeldung stattdessen.'),
-    'stweg.StwegDokument': _('Archiviere das Dokument stattdessen.'),
+    'rentals.Mietvertrag': _('Archivieren Sie den Vertrag stattdessen («Inaktiv / Archiviert»).'),
+    'portfolio.Liegenschaft': _('Setzen Sie die Liegenschaft stattdessen auf «Archiviert» (Archiv, Aufbewahrung zehn Jahre).'),
+    'portfolio.Einheit': _('Beenden Sie die Verträge und archivieren Sie das Objekt; es bleibt mit seiner Geschichte bestehen.'),
+    'crm.Eigentuemer': _('Beenden Sie das Mandat über «Archivieren» (Mandatsende): Es bleibt zehn Jahre aufbewahrt.'),
+    'rentals.Dokument': _('Archivieren Sie das Dokument stattdessen.'),
+    'portfolio.Dokument': _('Archivieren Sie das Dokument stattdessen.'),
+    'tickets.SchadenMeldung': _('Archivieren Sie die Schadenmeldung stattdessen.'),
+    'stweg.StwegDokument': _('Archivieren Sie das Dokument stattdessen.'),
 }
 
 

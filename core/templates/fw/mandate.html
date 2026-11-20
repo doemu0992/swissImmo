@@ -6,7 +6,7 @@
     <div>
         <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/liegenschaften/{{ lg_query }}">{% trans "Liegenschaften" %}</a><span aria-hidden="true">/</span><span>{% trans "Mandate" %}</span></nav>
         <h1>{% trans "Mandate" %}</h1>
-        <p>{% blocktrans count n=rows|length %}{{ n }} Eigentümer, für den du Liegenschaften verwaltest.{% plural %}{{ n }} Eigentümer, für die du Liegenschaften verwaltest.{% endblocktrans %}</p>
+        <p>{% blocktrans count n=rows|length %}{{ n }} Eigentümer, für den Sie Liegenschaften verwalten.{% plural %}{{ n }} Eigentümer, für die Sie Liegenschaften verwalten.{% endblocktrans %}</p>
     </div>
     <div class="fw-phead-knoepfe">
         {% if kann_schreiben %}<a href="/neu/mandate/neu/" class="fw-btn fw-primary">{% zeichen 'neu' %} {% trans "Eigentümer erfassen" %}</a>{% endif %}
