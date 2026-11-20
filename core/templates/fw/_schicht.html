@@ -1895,7 +1895,7 @@ und einen Stilblock enthaelt.
         @media (max-width:640px){.fw-schadenzeile{flex-wrap:wrap}.fw-schadenzeile .fw-mitte{flex-basis:calc(100% - 28px)}}
         /* Statuszeile statt Kennzahl-Kacheln (UI-Zielbild): schmale Kapseln mit Farbpunkt, Zahl und Wort in einem */
         .fw-statuszeile{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
-        .fw-sz{display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:0 14px;border-radius:var(--ds-pill);
+        .fw-sz{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 14px;border-radius:var(--ds-pill);
             background:var(--ds-surface);color:var(--ds-ink);font-size:13px;font-weight:600;text-decoration:none}
         .fw-sz::before{content:"";flex:none;width:7px;height:7px;border-radius:var(--ds-kreis);background:var(--ds-muted)}
         .fw-sz-good::before{background:var(--ds-good)}
@@ -2415,19 +2415,20 @@ und einen Stilblock enthaelt.
         }
 
         /* ---- Seitenkopf: gross und leicht ---- */
-        .fw-phead h1,.fw-hallo h1{font-size:clamp(30px,3.4vw,44px);font-weight:500;letter-spacing:-.04em;line-height:1.06}
+        .fw-phead h1,.fw-hallo h1{font-size:36px;font-weight:500;letter-spacing:-.04em;line-height:1.06}
+        .fw-hallo h1{font-size:clamp(30px,3.4vw,44px)}
         .fw-phead p{font-size:14px}
         .fw-aktenkopf h1{letter-spacing:-.03em}
-        @media (max-width:640px){ .fw-phead h1,.fw-hallo h1{font-size:28px} }
+        @media (max-width:640px){ .fw-phead h1{font-size:22px} .fw-hallo h1{font-size:28px} }
         /* Fünf Bereiche passen am Telefon in die Kapsel (390 px: «Berichte» war abgeschnitten): Block «Kopfzeile» */
         
         
         
 
         /* ---- Karten: ohne Rahmen, grosse Rundung, weicher Schatten ---- */
-        .fw-card,.fw-aktenkopf,.fw-freigabe,.fw-kpis:not(.fw-stats)>.fw-kpi,.fw-lage-kachel,.fw-ampel,.fw-lauf{border-color:transparent;border-radius:var(--ds-radius-lg)}
+        .fw-card,.fw-aktenkopf,.fw-freigabe,.fw-kpis:not(.fw-stats)>.fw-kpi,.fw-lage-kachel,.fw-ampel,.fw-lauf{border-color:transparent;border-radius:var(--ds-radius)}
         .fw-card{box-shadow:var(--ds-shadow-sm)}
-        .fw-kpis.fw-stats{border-color:transparent;border-radius:var(--ds-radius-lg)}
+        .fw-kpis.fw-stats{border-color:transparent;border-radius:var(--ds-radius)}
         .fw-kopf{border-bottom-color:var(--ds-line);padding:20px 24px}
         .fw-kopf h2,.fw-kopf .fw-t,.fw-card>.fw-h .fw-t{font-size:15px;font-weight:600;letter-spacing:-.015em}
         .fw-fuss{padding:14px 24px;border-top-color:var(--ds-line)}
@@ -2464,7 +2465,7 @@ und einen Stilblock enthaelt.
         .fw-btn:disabled,.fw-btn[aria-disabled="true"]{transform:none}
 
         /* ---- Filter, Reiter, Segmente: Kapseln ---- */
-        .fw-fchip{height:34px;padding:0 15px;font-size:13px;background:var(--ds-surface);border-color:var(--ds-line)}
+        .fw-fchip{height:36px;padding:0 15px;font-size:14px;background:var(--ds-surface);border-color:var(--ds-line)}
         .fw-fchip.fw-on{background:var(--ds-ink);color:var(--ds-surface);border-color:var(--ds-ink)}
         .fw-reiter{border-top:0;gap:4px;padding:8px 16px}
         .fw-reiter a{border-radius:var(--ds-pill);padding:7px 14px}
@@ -3430,6 +3431,20 @@ und einen Stilblock enthaelt.
         @media print{.fw-schiene,.fw-fach,.fw-schiene-vorhang,.fw-menue-knopf{display:none!important}.fw-mit-schiene .fw-haupt{margin-left:0}}
         /* ===== Ende MODUL Schiene ===== */
 
+        /* ===== MODUL Zielbild-Masse (UI-Abgleich vom 20.11.2026, gemessen am Prototyp) =====
+           Zeilen: Titel 15 px, Zweitzeile 14 px. Statuschips: 14 px. Zeilenknoepfe: Kapsel, 36 px (Handy 44 px).
+           Die Werte stammen aus den berechneten Stilen von `mockups/immoswiss-ui-ziel.html`. */
+        .fw-zeile .fw-t{font-size:15px;line-height:1.3}
+        .fw-zeile .fw-s{font-size:14px;line-height:1.35}
+        .fw-sz{font-size:14px}
+        .fw-btn.fw-knapp{min-height:36px;font-size:14px;border-radius:var(--ds-pill)}
+        .fw-phead-knoepfe .fw-btn{font-size:14px;min-height:36px}
+        .fw-btn.fw-knapp.fw-mzm-weg{min-height:40px}
+        @media (max-width:640px){
+            .fw-sz{min-height:44px}
+            .fw-phead-knoepfe .fw-btn{min-height:44px}
+        }
+
         /* ===== MODUL Dichte Listen (Phase 3): Zeilen mit Titel und Zweitzeile nebeneinander =====
            Ab 10 Zeilen in einer Karte automatisch, mit Schalter jederzeit umstellbar, nur ab 641 px
            (am Handy bleiben die grossen Tippflaechen). Nur Abstand und Anordnung aendern sich:
@@ -3545,8 +3560,8 @@ und einen Stilblock enthaelt.
         /* Telefon: Tippflächen mindestens 36 px (Chips und Knöpfe 40 px); kleine Zeichen behalten ihre Optik und
            bekommen die Fläche unsichtbar dazu. Gemessen bei 390 px (Chips 34, kleine Knöpfe 32, Hilfe-i 18, Schliessen 28). */
         @media (max-width:640px){
-            .fw-fchip{height:40px}
-            .fw-btn.fw-knapp{min-height:40px}
+            .fw-fchip{height:44px}
+            .fw-btn.fw-knapp{min-height:44px}
             .fw-segment .fw-seg-link{min-height:36px}
             .fw-side-knopf{width:36px;height:36px}
             .fw-hilfe-knopf{position:relative}

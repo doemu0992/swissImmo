@@ -186,6 +186,14 @@ weil Übersetzungen nur angehängt werden). Französisch und Italienisch sind fo
 sucht Du-Pronomen und Befehlsformen am Satzanfang in `fw/`-Vorlagen, Ansichten, Diensten und Hilfetexten; Kommentare zählen nicht. Der Satz
 auf «Heute» heisst «N Vorgänge brauchen heute Ihre Aufmerksamkeit».
 
+### Zielbild-Masse (UI-Abgleich vom 20.11.2026)
+
+Gemessen an den berechneten Stilen des Prototyps (`mockups/immoswiss-ui-ziel.html`) und der App, bei 390 und 1280 px: Zeilen mit Titel 15 px und
+Zweitzeile 14 px, Statuschips und Kapseln 14 px (Höhe 36 px am PC, 44 px am Handy), Zeilenknöpfe als Kapsel (36 / 44 px), Karten mit Radius 24 px,
+Seitentitel auf Unterseiten 36 px (Handy 22 px; «Heute» bleibt gross). Die Werte stehen im Modul «Zielbild-Masse» von `_schicht.html`, der Titel
+von 36 px ist als Anzeigegrösse im Wächter `test_schriftskala` erlaubt. Der vollständige Bericht liegt in der Konversation; offene Punkte sind die
+Zeilendichte als Standard und die Ziellinie im Diagramm (beides Entscheidungen des Betreibers).
+
 ### Schriftskala
 
 Die Stilschicht kennt sieben Schriftstufen: 12, 13, 14, 15, 18, 22, 28 px (vorher 28 verschiedene Werte, viele nur 0,5 px

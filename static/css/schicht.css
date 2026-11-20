@@ -1163,7 +1163,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-filter-zeile{padding:10px 20px 0}
         @media (max-width:640px){.fw-schadenzeile{flex-wrap:wrap}.fw-schadenzeile .fw-mitte{flex-basis:calc(100% - 28px)}}
         .fw-statuszeile{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
-        .fw-sz{display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:0 14px;border-radius:var(--ds-pill);
+        .fw-sz{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 14px;border-radius:var(--ds-pill);
             background:var(--ds-surface);color:var(--ds-ink);font-size:13px;font-weight:600;text-decoration:none}
         .fw-sz::before{content:"";flex:none;width:7px;height:7px;border-radius:var(--ds-kreis);background:var(--ds-muted)}
         .fw-sz-good::before{background:var(--ds-good)}
@@ -1565,13 +1565,14 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-toasts{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
             .fw-profil{top:72px;right:16px}
         }
-        .fw-phead h1,.fw-hallo h1{font-size:clamp(30px,3.4vw,44px);font-weight:500;letter-spacing:-.04em;line-height:1.06}
+        .fw-phead h1,.fw-hallo h1{font-size:36px;font-weight:500;letter-spacing:-.04em;line-height:1.06}
+        .fw-hallo h1{font-size:clamp(30px,3.4vw,44px)}
         .fw-phead p{font-size:14px}
         .fw-aktenkopf h1{letter-spacing:-.03em}
-        @media (max-width:640px){ .fw-phead h1,.fw-hallo h1{font-size:28px} }
-        .fw-card,.fw-aktenkopf,.fw-freigabe,.fw-kpis:not(.fw-stats)>.fw-kpi,.fw-lage-kachel,.fw-ampel,.fw-lauf{border-color:transparent;border-radius:var(--ds-radius-lg)}
+        @media (max-width:640px){ .fw-phead h1{font-size:22px} .fw-hallo h1{font-size:28px} }
+        .fw-card,.fw-aktenkopf,.fw-freigabe,.fw-kpis:not(.fw-stats)>.fw-kpi,.fw-lage-kachel,.fw-ampel,.fw-lauf{border-color:transparent;border-radius:var(--ds-radius)}
         .fw-card{box-shadow:var(--ds-shadow-sm)}
-        .fw-kpis.fw-stats{border-color:transparent;border-radius:var(--ds-radius-lg)}
+        .fw-kpis.fw-stats{border-color:transparent;border-radius:var(--ds-radius)}
         .fw-kopf{border-bottom-color:var(--ds-line);padding:20px 24px}
         .fw-kopf h2,.fw-kopf .fw-t,.fw-card>.fw-h .fw-t{font-size:15px;font-weight:600;letter-spacing:-.015em}
         .fw-fuss{padding:14px 24px;border-top-color:var(--ds-line)}
@@ -1598,7 +1599,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-btn.fw-knapp.fw-primary,.fw-zdlg .fw-btn.fw-primary{background:var(--ds-brand);color:var(--ds-auf-satt);box-shadow:0 8px 18px -12px var(--ds-brand)}
         .fw-btn.fw-knapp.fw-primary:hover,.fw-zdlg .fw-btn.fw-primary:hover{background:var(--ds-brand-600);color:var(--ds-auf-satt)}
         .fw-btn:disabled,.fw-btn[aria-disabled="true"]{transform:none}
-        .fw-fchip{height:34px;padding:0 15px;font-size:13px;background:var(--ds-surface);border-color:var(--ds-line)}
+        .fw-fchip{height:36px;padding:0 15px;font-size:14px;background:var(--ds-surface);border-color:var(--ds-line)}
         .fw-fchip.fw-on{background:var(--ds-ink);color:var(--ds-surface);border-color:var(--ds-ink)}
         .fw-reiter{border-top:0;gap:4px;padding:8px 16px}
         .fw-reiter a{border-radius:var(--ds-pill);padding:7px 14px}
@@ -2395,6 +2396,16 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         }
         @media (max-width:640px) and (prefers-reduced-motion:reduce){.fw-schiene{transition:none}}
         @media print{.fw-schiene,.fw-fach,.fw-schiene-vorhang,.fw-menue-knopf{display:none!important}.fw-mit-schiene .fw-haupt{margin-left:0}}
+        .fw-zeile .fw-t{font-size:15px;line-height:1.3}
+        .fw-zeile .fw-s{font-size:14px;line-height:1.35}
+        .fw-sz{font-size:14px}
+        .fw-btn.fw-knapp{min-height:36px;font-size:14px;border-radius:var(--ds-pill)}
+        .fw-phead-knoepfe .fw-btn{font-size:14px;min-height:36px}
+        .fw-btn.fw-knapp.fw-mzm-weg{min-height:40px}
+        @media (max-width:640px){
+            .fw-sz{min-height:44px}
+            .fw-phead-knoepfe .fw-btn{min-height:44px}
+        }
         .fw-dichte-schalter,.fw-dichte-leiste{display:none}
         @media (min-width:641px){
             .fw-dichte-schalter{display:inline-flex;margin-left:auto;padding:3px;gap:2px;background:var(--ds-surface-2);border-radius:var(--ds-pill)}
@@ -2470,8 +2481,8 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
                 background:var(--ds-akzent);box-shadow:0 0 0 2px var(--ds-brand-soft);pointer-events:none}
         }
         @media (max-width:640px){
-            .fw-fchip{height:40px}
-            .fw-btn.fw-knapp{min-height:40px}
+            .fw-fchip{height:44px}
+            .fw-btn.fw-knapp{min-height:44px}
             .fw-segment .fw-seg-link{min-height:36px}
             .fw-side-knopf{width:36px;height:36px}
             .fw-hilfe-knopf{position:relative}
