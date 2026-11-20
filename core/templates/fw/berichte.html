@@ -90,40 +90,28 @@ stehen einzeln im Katalog und tragen dort die Kapsel «PDF»).
     </div>
 </section>{% endif %}
 
-<h2 class="fw-subhead fw-bericht-katalog">{% trans "Alle Reports und Exporte an einem Ort." %}</h2>
-<div role="search" class="fw-listwerkzeug">
-    <div class="fw-suchfeld relative">
-        {% zeichen 'suchen' klasse='absolute left-3.5 top-1/2 -translate-y-1/2 fw-faint text-sm' %}
-        <input type="search" id="berichtSuche" data-suche="#berichtListe" aria-label="{% trans 'Berichte durchsuchen' %}"
-               placeholder="{% trans 'Bericht suchen …' %}" autocomplete="off" class="fw-feld">
-    </div>
+<section class="fw-card fw-katalog">
+<div class="fw-kopf"><h2>{% trans "Alle Reports und Exporte an einem Ort" %}</h2></div>
+<div role="search" class="fw-katalog-suche">
+    <input type="search" id="berichtSuche" data-suche="#berichtListe" aria-label="{% trans 'Berichte durchsuchen' %}"
+           placeholder="{% trans 'Bericht suchen, z. B. Mieterspiegel' %}" autocomplete="off" class="fw-feld">
 </div>
-<div id="berichtListe">
+<div id="berichtListe" class="fw-katalog-liste">
 {% for g in berichte %}
-<div data-gruppe>
-<div class="fw-card">
-<div class="fw-kopf"><h2 class="fw-t">{{ g.gruppe }}</h2></div>
-<div>
+<div data-gruppe class="fw-katalog-gruppe">
+    <h3 class="fw-katalog-titel">{{ g.gruppe }}</h3>
+    <div class="fw-katalog-kacheln">
     {% for i in g.items %}
-    <a href="{{ i.url }}" class="fw-zeile klick" data-zeile>
-            <span class="fw-ikon">
-                {% zeichen_wert i.icon %}
-            </span>
-            <div class="fw-mitte">
-                <div class="fw-zkopf">
-                    <span class="fw-t">{{ i.titel }}</span>
-                    {% if i.pdf %}<span class="fw-marke-kapsel">PDF</span>{% endif %}
-                </div>
-                <div class="fw-s">{{ i.sub }}</div>
-            </div>
-            {% if i.kennzahl %}<div class="fw-zeit">{{ i.kennzahl }}</div>{% endif %}
-            {% zeichen 'weiter' klasse='fw-faint' %}
+    <a href="{{ i.url }}" class="fw-kachel-bericht" data-zeile>
+        <span class="fw-zkopf"><span class="fw-t">{{ i.titel }}</span>{% if i.pdf %}<span class="fw-marke-kapsel">PDF</span>{% endif %}</span>
+        <span class="fw-s">{{ i.sub }}</span>
+        {% if i.kennzahl %}<span class="fw-katalog-wert">{{ i.kennzahl }}</span>{% endif %}
     </a>
     {% endfor %}
-</div>
-</div>
+    </div>
 </div>
 {% endfor %}
 <p data-keine class="hidden fw-mutet" role="status">{% trans "Kein Bericht gefunden." %}</p>
 </div>
+</section>
 {% endblock %}

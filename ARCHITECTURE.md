@@ -170,6 +170,14 @@ das Sperrkonto in Höhe des bilanzierten Betrags frei. Eine MWST-Periode für de
 Rechenkern `core/utils/billing.py` (`berechne_abrechnung`), Assistent `core/views/fw/nk_wizard.py`, PDF und Versand
 in `core/services/nk_*.py`.
 
+### Berichtskatalog (`/neu/berichte/`)
+
+Der Katalog «Alle Reports und Exporte an einem Ort» steht nach dem UI-Zielbild in **einer** Karte: Suche oben, darunter je Gruppe
+eine Überschrift und ein Kachelraster (`fw-katalog*`, `fw-kachel-bericht`). Die Hooks der Live-Suche (`#berichtListe`,
+`data-gruppe`, `data-zeile`, `data-keine`) sind unverändert (`e2e/tests/berichte-suche.spec.ts`). Noch nicht umgesetzt, weil
+Entscheidungen offen sind: die Gruppe «Häufig» und die Ziellinie im Diagramm. Die Kennzahl der Kachel heisst `fw-katalog-wert`;
+`fw-kachel-zahl` ist die grosse Zahl der Bento-Kacheln und darf hier nicht wiederverwendet werden.
+
 ### «Heute» (`/neu/`)
 Nach UI-Zielbild: oben der Schwerpunkt als **sichtbares Segment** (Bewirtschaftung | Buchhaltung | Übersicht, `.fw-schwerpunkt-segment`, POST
 `/neu/schwerpunkt/`; «Neuer Fall» steht in «+ Neu»), darunter eine **Statuszeile** statt der Aufgabenkacheln (`faelle/heute_kacheln.py` liefert

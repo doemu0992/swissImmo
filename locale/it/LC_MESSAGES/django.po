@@ -41225,3 +41225,9 @@ msgstr "Sollecitare"
 
 msgid "gemeldet von %(melder)s"
 msgstr "segnalato da %(melder)s"
+
+msgid "Alle Reports und Exporte an einem Ort"
+msgstr "Tutti i rapporti e le esportazioni in un unico posto"
+
+msgid "Bericht suchen, z. B. Mieterspiegel"
+msgstr "Cerca un rapporto, ad es. Elenco degli affitti"
