@@ -170,6 +170,13 @@ das Sperrkonto in Höhe des bilanzierten Betrags frei. Eine MWST-Periode für de
 Rechenkern `core/utils/billing.py` (`berechne_abrechnung`), Assistent `core/views/fw/nk_wizard.py`, PDF und Versand
 in `core/services/nk_*.py`.
 
+### Schriftskala
+
+Die Stilschicht kennt sieben Schriftstufen: 12, 13, 14, 15, 18, 22, 28 px (vorher 28 verschiedene Werte, viele nur 0,5 px
+auseinander). Jede alte Grösse wurde auf die nächste Stufe gerundet (12,5 → 13, 13,5 → 14, 16/17/19 → 18, 20/21/23/24 → 22,
+26/30/32 → 28); fast nichts wird kleiner, vieles minimal grösser. Ausserhalb der Skala bleiben die Mikroschrift unter 12 px
+(nur die Selektoren in `test_schrift_mindestgroesse`) und die Anzeigezahlen 34/40/52 px. Wächter: `core/tests/test_schriftskala.py`.
+
 ### Dichte Listen
 
 Karten mit mindestens 10 Zeilen (`.fw-zeile`) bekommen ab 641 px die Klasse `fw-dicht`: halber Abstand, Titel und Zweitzeile nebeneinander
