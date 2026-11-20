@@ -2440,6 +2440,11 @@ und einen Stilblock enthaelt.
         .fw-btn.fw-knapp{min-height:32px;padding:5px 14px}
         .fw-btn.fw-primary{background:var(--ds-ink);color:var(--ds-surface);border-color:transparent;box-shadow:0 10px 22px -12px rgba(23,24,27,.55)}
         .fw-btn.fw-primary:hover{background:var(--ds-ink);color:var(--ds-surface);box-shadow:0 14px 28px -12px rgba(23,24,27,.6)}
+        /* Zielbild: Zeilenaktionen («Zuordnen», «Auslösen», «Auftrag erteilen»), der
+           Dialog und «Neu» in der Kopfzeile tragen die Akzentfarbe; die grossen
+           Seitenknöpfe bleiben schwarz. */
+        .fw-btn.fw-knapp.fw-primary,.fw-zdlg .fw-btn.fw-primary{background:var(--ds-brand);color:var(--ds-auf-satt);box-shadow:0 8px 18px -12px var(--ds-brand)}
+        .fw-btn.fw-knapp.fw-primary:hover,.fw-zdlg .fw-btn.fw-primary:hover{background:var(--ds-brand-600);color:var(--ds-auf-satt)}
         .fw-btn:disabled,.fw-btn[aria-disabled="true"]{transform:none}
 
         /* ---- Filter, Reiter, Segmente: Kapseln ---- */
@@ -3375,7 +3380,7 @@ und einen Stilblock enthaelt.
             .fw-fach{left:88px;width:276px}
             .fw-fach kbd{display:inline}
             .fw-mit-schiene .fw-haupt{margin-left:88px}
-            .fw-werkzeug-kapsel .fw-wz-neu{display:inline-flex;flex-direction:row;align-items:center;justify-content:center;width:auto;padding:0 14px 0 10px;gap:6px;white-space:nowrap;background:var(--ds-ink);color:var(--ds-surface)}
+            .fw-werkzeug-kapsel .fw-wz-neu{display:inline-flex;flex-direction:row;align-items:center;justify-content:center;width:auto;padding:0 14px 0 10px;gap:6px;white-space:nowrap;background:var(--ds-brand);color:var(--ds-auf-satt)}
             .fw-wz-neu-text{display:inline;font-size:13.5px;font-weight:600}
         }
         .fw-menue-knopf{display:none;position:relative}
