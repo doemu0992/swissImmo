@@ -142,7 +142,7 @@ test.describe('Ohne JavaScript (PC)', () => {
 
     // Sechs Bereiche und die Einstellungen, alle sichtbar und anklickbar; das Aufklappfeld bleibt zu
     const links = page.locator('#fwSchiene a[data-fach]');
-    await expect(links).toHaveCount(7);
+    await expect(links).toHaveCount(8);
     await expect(page.locator('#fwFach')).toBeHidden();
     // Die hinteren Bereiche erreicht man trotzdem: der Link führt zum Bereichskopf
     await page.locator('#fwSchiene a[data-fach="finanzen"]').click();

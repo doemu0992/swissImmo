@@ -41585,3 +41585,6 @@ msgstr "Souvent utilisés"
 
 msgid "Stand Bankimport %(datum)s"
 msgstr "état de l'import bancaire %(datum)s"
+
+msgid "Kontakte"
+msgstr "Contacts"

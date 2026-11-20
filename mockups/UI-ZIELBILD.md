@@ -30,6 +30,7 @@ die übrigen Seiten wurden per Screenshot verglichen. Details je Bereich stehen 
 | Zielbild | Stand | Abweichung, bewusst |
 |---|---|---|
 | Schiene links, Tab-Leiste mobil, Schublade | umgesetzt | Handy: «+» öffnet das Drawer-Menü (Variante B) statt einer «Mehr»-Seite |
+| Menü-Gruppen | umgesetzt | Sieben Bereiche: zusätzlich «Kontakte» (Personen, Dienstleister) neben «Liegenschaften» (Betreiber-Entscheid 20.11.2026) |
 | ⌘K-Suche, Profilmenü, Dunkelmodus | umgesetzt | Bestand sucht über mehr Gruppen; Profilmenü zusätzlich Sprache, Dokumente, Kommunikation |
 | Zahlen sofort statt Hochzählen | umgesetzt (19.11.2026) | |
 | Heute: Statuszeile, Arbeitsvorrat mit Dringlichkeit, Haken «Erledigt» | umgesetzt | |

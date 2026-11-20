@@ -1,6 +1,6 @@
 """Zentrale Navigationsstruktur der /neu/-Oberfläche.
 
-SECHS BEREICHE: Heute · Betrieb · Akten · Läufe · Finanzen · Berichte
+SIEBEN BEREICHE: Heute · Betrieb · Akten · Kontakte · Läufe · Finanzen · Berichte
 (Einstellungen steht im Fuss der Leiste — es ist kein Arbeitsbereich.)
 
 NOVEMBER 2026: SECHS BEREICHE UND DIE SCHIENE
@@ -232,10 +232,18 @@ def nav_gruppen():
             _i(_('Liegenschaften'), '/neu/liegenschaften/', ['liegenschaften']),
             _i(_('Objekte'), '/neu/objekte/', ['objekte']),
             _i(_('Mietverhältnisse'), '/neu/vertraege/', ['vertraege']),
-            _i(_('Personen'), '/neu/personen/', ['personen']),
-            _i(_('Dienstleister'), '/neu/dienstleister/', ['dienstleister']),
             _i(_('Stockwerkeigentum'), '/neu/stweg/', ['stweg']),
             _i(_('Dokumente'), '/neu/dokumente/', ['dokumente']),
+        ]),
+
+        # ── KONTAKTE ─────────────────────────────────────────────────────────
+        # Die Menschen und Firmen hinter den Akten: Mieter, Eigentümer, Handwerker.
+        # Bis 20.11.2026 standen Personen und Dienstleister unter «Liegenschaften»;
+        # der Bereichsname passte dazu nicht mehr (Betreiber-Entscheid). Die Adressen
+        # und nav-Keys sind unverändert.
+        _g('kontakte', _('Kontakte'), 'person', '/neu/personen/', [
+            _i(_('Personen'), '/neu/personen/', ['personen']),
+            _i(_('Dienstleister'), '/neu/dienstleister/', ['dienstleister']),
         ]),
 
         # ── LÄUFE ────────────────────────────────────────────────────────────

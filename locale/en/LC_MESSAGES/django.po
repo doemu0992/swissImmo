@@ -40919,3 +40919,6 @@ msgstr "Frequently used"
 
 msgid "Stand Bankimport %(datum)s"
 msgstr "as of bank import %(datum)s"
+
+msgid "Kontakte"
+msgstr "Contacts"
