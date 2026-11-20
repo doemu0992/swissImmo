@@ -391,7 +391,7 @@ test('Vertrag: Leiste einreihig, Vorschau unter dem Inhalt, nichts quer', async 
       quer: document.documentElement.scrollWidth - innerWidth };
   });
   expect(m.leiste, `Leiste ${Math.round(m.leiste)} px — umgebrochen?`).toBeLessThan(70);
-  expect(m.kopf, `Vorschau-Kopf ${Math.round(m.kopf)} px — umgebrochen?`).toBeLessThan(44);
+  expect(m.kopf, `Vorschau-Kopf ${Math.round(m.kopf)} px — umgebrochen?`).toBeLessThan(56);   // eine Zeile: Knopf 44 px (Tippfläche) + Rand
   expect(m.knopf).toBeLessThanOrEqual(390 - 16);
   expect(m.rahmen).toBeLessThanOrEqual(390 - 16);
   expect(m.vorschauOben).toBeGreaterThanOrEqual(m.inhaltUnten);
