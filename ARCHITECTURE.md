@@ -186,6 +186,11 @@ weil Übersetzungen nur angehängt werden). Französisch und Italienisch sind fo
 sucht Du-Pronomen und Befehlsformen am Satzanfang in `fw/`-Vorlagen, Ansichten, Diensten und Hilfetexten; Kommentare zählen nicht. Der Satz
 auf «Heute» heisst «N Vorgänge brauchen heute Ihre Aufmerksamkeit».
 
+### Dunkelmodus nach Zielbild
+
+Die Dunkelwerte folgen dem Prototyp: Hintergrund `#16171a`, Karte `#202227`, Fläche 2 `#2b2d33`, Tinte `#ecebe7`, Sekundärtext `#a0a3a9`, Linie `#33363c`
+(vorher `#111113` / `#1a1b1e` / `#f1efec` / `#b9b6b0` / `#2c2d32`). Der Akzent bleibt Orange `#f08a55` (Betreiber-Entscheid), nicht das Blau des Prototyps.
+Die Palettentabelle in `CONTRIBUTING.md` ist nachgezogen (`test_palette` vergleicht sie mit der Schicht); die Kontrastwächter laufen unverändert grün.
 ### Zielbild-Masse (UI-Abgleich vom 20.11.2026)
 
 Gemessen an den berechneten Stilen des Prototyps (`mockups/immoswiss-ui-ziel.html`) und der App, bei 390 und 1280 px: Zeilen mit Titel 15 px und
