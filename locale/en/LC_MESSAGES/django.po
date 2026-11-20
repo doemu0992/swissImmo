@@ -40636,3 +40636,18 @@ msgstr "All reports and exports in one place"
 
 msgid "Bericht suchen, z. B. Mieterspiegel"
 msgstr "Search a report, e.g. Rent roll"
+
+msgid "In 7 Tagen"
+msgstr "In 7 days"
+
+msgid "In 30 Tagen"
+msgstr "In 30 days"
+
+msgid "Alles zugeordnet"
+msgstr "All assigned"
+
+msgid "Es gibt keine unzugeordneten Eingänge."
+msgstr "There are no unassigned items."
+
+msgid "Zurück zu Heute"
+msgstr "Back to Today"

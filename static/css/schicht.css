@@ -284,6 +284,9 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         html._embed #fwBackdrop,
         html._embed main { padding: 1.25rem !important; max-width: none !important; }
                 .fw-leer{padding:40px 20px;text-align:center;font-size:13.5px;color:var(--ds-muted)}
+                .fw-leer>b{display:block;color:var(--ds-ink);font-weight:600}
+                .fw-leer>b+span{display:block;margin-top:2px}
+                .fw-leer>.fw-btn{margin-top:14px}
         .fw-flaeche{background:var(--ds-surface)}
         .fw-flaeche2{background:var(--ds-surface-2)}
         .fw-linie{border-color:var(--ds-line)}

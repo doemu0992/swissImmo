@@ -170,6 +170,13 @@ das Sperrkonto in Höhe des bilanzierten Betrags frei. Eine MWST-Periode für de
 Rechenkern `core/utils/billing.py` (`berechne_abrechnung`), Assistent `core/views/fw/nk_wizard.py`, PDF und Versand
 in `core/services/nk_*.py`.
 
+### «Neuer Fall» und «Mitteilungen» (Zielbild)
+
+«Neuer Fall» zeigt die Brotkrumen «Heute / Neuer Fall» (nicht in der Schublade, `?embed=1`). Die Frist-Kapseln sind «Heute»,
+«In 7 Tagen», «In 30 Tagen» und «Ohne Frist»; `data-frist-tage="keine"` leert das Datumsfeld (`static/js/fw-aktionen.js`).
+Die Seite `/neu/zulauf/` heisst für die Anwender «Mitteilungen»; Adresse, Ansichten und Code-Namen («Zulauf») bleiben. Ohne offene
+Eingänge steht «Alles zugeordnet» mit dem Weg zurück zu «Heute».
+
 ### Berichtskatalog (`/neu/berichte/`)
 
 Der Katalog «Alle Reports und Exporte an einem Ort» steht nach dem UI-Zielbild in **einer** Karte: Suche oben, darunter je Gruppe

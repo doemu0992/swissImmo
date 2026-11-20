@@ -17,10 +17,12 @@ test('Neuer Fall: Knopf erst bei gültigen Eingaben, Frist-Chips setzen das Datu
   await akte.selectOption({ index: 1 });
   await expect(knopf).toBeEnabled();
 
-  await page.locator('[data-frist-tage="1"]').click();
-  const morgen = new Date(); morgen.setDate(morgen.getDate() + 1);
+  await page.locator('[data-frist-tage="7"]').click();
+  const morgen = new Date(); morgen.setDate(morgen.getDate() + 7);
   const iso = `${morgen.getFullYear()}-${String(morgen.getMonth() + 1).padStart(2, '0')}-${String(morgen.getDate()).padStart(2, '0')}`;
   await expect(page.locator('#nfD')).toHaveValue(iso);
+  await page.locator('[data-frist-tage="keine"]').click();
+  await expect(page.locator('#nfD')).toHaveValue('');
 
   await page.locator('#nfT').fill('ab');
   await expect(knopf).toBeDisabled();
