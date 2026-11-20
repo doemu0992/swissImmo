@@ -291,7 +291,7 @@ def fw_datenreset(request):
         return redirect('/neu/account/#gefahrenzone')
 
     log_aktion(request, "Datenbank zurückgesetzt", f"{anzahl} Modelle geleert")
-    messages.success(request, '✅ ' + gettext('Alle Daten wurden gelöscht — du startest mit einer leeren Datenbank.'))
+    messages.success(request, '✅ ' + gettext('Alle Daten wurden gelöscht — Sie starten mit einer leeren Datenbank.'))
     return redirect('/neu/')
 
 
@@ -310,7 +310,7 @@ def fw_marktdaten_aktualisieren(request):
             if errors:
                 messages.warning(request, gettext(
                     'Hinweis: %(fehler)s — Falls das Netzwerk (PythonAnywhere-Whitelist) die Abfrage '
-                    'blockiert, kannst du die Werte oben manuell eintragen.') % {'fehler': ' | '.join(errors[:2])})
+                    'blockiert, können Sie die Werte oben manuell eintragen.') % {'fehler': ' | '.join(errors[:2])})
         except Exception as e:
             messages.error(request, gettext('Marktdaten konnten nicht geladen werden: %(e)s. Werte bitte manuell eintragen.') % {'e': e})
     return redirect('/neu/account/')
@@ -990,12 +990,12 @@ def fw_integrationen(request):
     integrationen = [
         {'key': 'email', 'name': _('E-Mail-Versand'), 'icon': 'senden', 'farbe': 'marke',
          'aktiv': email_ok, 'status': _('Verbunden') if email_ok else _('Nicht konfiguriert'),
-         'beschreibung': _('Versende Mahnungen, Abrechnungen und Anschreiben direkt aus immoswiss über deinen SMTP-Server.'),
+         'beschreibung': _('Versenden Sie Mahnungen, Abrechnungen und Anschreiben direkt aus immoswiss über Ihren SMTP-Server.'),
          'detail': (getattr(dj_settings, 'EMAIL_HOST', '') or '') if email_ok else _('E-Mail-Zugangsdaten in den Servereinstellungen hinterlegen.'),
          'aktion': 'test_email' if email_ok else None},
         {'key': 'docuseal', 'name': _('DocuSeal — digitale Signatur'), 'icon': 'vertrag', 'farbe': 'emerald',
          'aktiv': gesetzt('DOCUSEAL_API_KEY'), 'status': _('Verbunden') if gesetzt('DOCUSEAL_API_KEY') else _('Nicht konfiguriert'),
-         'beschreibung': _('Sende Mietverträge zur rechtsgültigen elektronischen Unterschrift. Der Rücklauf wird automatisch als unterzeichnetes PDF abgelegt.'),
+         'beschreibung': _('Senden Sie Mietverträge zur rechtsgültigen elektronischen Unterschrift. Der Rücklauf wird automatisch als unterzeichnetes PDF abgelegt.'),
          'detail': _('Nutzbar über «An DocuSeal senden» auf der Vertrags-Detailseite.') if gesetzt('DOCUSEAL_API_KEY') else _('DOCUSEAL_API_KEY hinterlegen.'),
          'aktion': None},
         {'key': 'ki', 'name': _('KI-Rechnungsscanner'), 'icon': 'einstellungen', 'farbe': 'primaer',
@@ -1011,7 +1011,7 @@ def fw_integrationen(request):
          'aktion': None},
         {'key': 'bank', 'name': _('Banken-Abgleich (camt.053 / QR)'), 'icon': 'bank', 'farbe': 'info',
          'aktiv': True, 'status': _('Aktiv'),
-         'beschreibung': _('Importiere camt.053-Kontoauszüge und ordne Zahlungseingänge automatisch per QR-Referenz den Debitoren zu.'),
+         'beschreibung': _('Importieren Sie camt.053-Kontoauszüge und ordnen Sie Zahlungseingänge automatisch per QR-Referenz den Debitoren zu.'),
          'detail': _('Nutzbar im Bereich Bankabgleich.'),
          'aktion': 'bank_link'},
     ]

@@ -591,7 +591,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
         <button type="button" class="fw-btn fw-leise" data-scrollen="anker-zaehler">{% trans "Zähler" %}</button>
         <button type="button" class="fw-btn fw-leise" data-scrollen="schluessel">{% trans "Schlüssel" %}</button>
     </div>
-    {% trans "Noch keine Ausstattung erfasst. Starte mit dem Raumbuch-Assistenten: Er legt alle Räume der Wohnung auf einmal an." as rb_leer_text %}
+    {% trans "Noch keine Ausstattung erfasst. Starten Sie mit dem Raumbuch-Assistenten: Er legt alle Räume der Wohnung auf einmal an." as rb_leer_text %}
     {% include "fw/_raumbuch_liste.html" with rb_basis=rb_basis rb_leer=rb_leer_text %}
 
     {% if kann_schreiben %}
@@ -605,7 +605,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <details class="fw-card" id="raum-assistent"{% if not raeume %} open{% endif %}>
                 <summary class="px-4 py-2.5 cursor-pointer select-none fw-strong">{% trans "Raumbuch-Assistent" %}</summary>
                 <div class="fw-rumpf">
-            <p class="fw-klein mb-3">{% trans "Wähle die Zimmerzahl: Der Assistent schlägt die Räume der Wohnung vor. Passe die Zahlen an und lege alle Räume mit ihrer Standard-Ausstattung auf einmal an. Räume, die es schon gibt, bleiben unverändert." %}</p>
+            <p class="fw-klein mb-3">{% trans "Wählen Sie die Zimmerzahl: Der Assistent schlägt die Räume der Wohnung vor. Passen Sie die Zahlen an und legen Sie alle Räume mit ihrer Standard-Ausstattung auf einmal an. Räume, die es schon gibt, bleiben unverändert." %}</p>
             <form method="post" action="/neu/objekte/{{ e.id }}/ausstattung/assistent/" class="space-y-4">
                 {% csrf_token %}
                 <div class="flex flex-wrap items-end gap-3">

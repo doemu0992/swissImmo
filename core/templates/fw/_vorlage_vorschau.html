@@ -9,7 +9,7 @@ zeigt das Probe-PDF.
     <div class="fw-ht">{% trans "Unbekannte Platzhalter — so lässt sich die Vorlage nicht speichern:" %} <b>{{ unbekannte|join:", " }}</b></div>
 </div>
 {% endif %}
-{% if not mit_daten %}<p class="fw-hilfe fw-vl-hinweis">{% trans "Beispielwerte — wähle oben einen Vertrag oder eine Bewerbung für echte Daten." %}</p>{% endif %}
+{% if not mit_daten %}<p class="fw-hilfe fw-vl-hinweis">{% trans "Beispielwerte — wählen Sie oben einen Vertrag oder eine Bewerbung für echte Daten." %}</p>{% endif %}
 <article class="fw-vl-blatt" lang="{{ dokumentsprache }}">
     <div class="fw-vl-absender">{{ briefkopf.firma }}{% if briefkopf.strasse %} · {{ briefkopf.strasse }}{% endif %}{% if briefkopf.plz_ort %} · {{ briefkopf.plz_ort }}{% endif %}</div>
     <div class="fw-vl-empfaenger">{{ empfaenger.name }}{% if empfaenger.strasse %}<br>{{ empfaenger.strasse }}{% endif %}{% if empfaenger.plz_ort %}<br>{{ empfaenger.plz_ort }}{% endif %}</div>

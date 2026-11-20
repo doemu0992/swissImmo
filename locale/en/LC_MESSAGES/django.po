@@ -40660,3 +40660,256 @@ msgstr "Comfortable"
 
 msgid "Dicht"
 msgstr "Compact"
+
+msgid "Sie vertreten <b>%(n)s</b> offenen Fall."
+msgid_plural "Sie vertreten <b>%(n)s</b> offene Fälle."
+msgstr[0] "You are covering <b>%(n)s</b> open case."
+msgstr[1] "You are covering <b>%(n)s</b> open cases."
+
+msgid "Reicht für Ihren heutigen Bestand nicht."
+msgstr "Not enough for your current portfolio."
+
+msgid "Für Ihren Bestand: CHF %(preis)s/Monat"
+msgstr "For your portfolio: CHF %(preis)s/month"
+
+msgid "Alle Preise exkl. MWST. Einführungspreise, Stand %(stand)s. Die Einheiten­zahl wird automatisch aus Ihren erfassten Objekten berechnet."
+msgstr "All prices excl. VAT. Introductory prices as of %(stand)s. The number of units is calculated automatically from your recorded properties."
+
+msgid "Stammdaten Ihrer Verwaltung und aktuelle Marktdaten für Mietzinsanpassungen."
+msgstr "Master data of your management company and current market data for rent adjustments."
+
+msgid "Erfassen Sie die IBAN bei der Liegenschaft, damit QR-Rechnungen erzeugt werden können."
+msgstr "Enter the IBAN on the property so QR bills can be created."
+
+msgid "Bucht Debitor an Ertrag (3000). Die QR-Rechnung erzeugen Sie danach über den QR-Button in der Liste."
+msgstr "Books debtor to income (3000). You then create the QR bill with the QR button in the list."
+
+msgid "Fälligkeitsalter ab dem Fälligkeits- bzw. Rechnungsdatum. Positionen ab 30 Tagen sind mahnrelevant — Mahnungen erfassen Sie im <a href=\"/neu/mahnwesen/%(lg_query)s\" class=\"fw-marke hover:underline\">Mahnwesen</a>."
+msgstr "Age from the due or invoice date. Items from 30 days are due for dunning — you record reminders under <a href=\"/neu/mahnwesen/%(lg_query)s\" class=\"fw-marke hover:underline\">Dunning</a>."
+
+msgid "Erfassen Sie Raumbuch-Elemente mit Einbaudatum und Neuwert am Objekt, damit die Restnutzungsdauer berechnet werden kann."
+msgstr "Record inventory elements with installation date and replacement value on the unit so the remaining useful life can be calculated."
+
+msgid "Erfassen Sie die Finanzierung je Liegenschaft, um Zinskosten und Fälligkeiten im Blick zu behalten."
+msgstr "Enter the financing per property to keep track of interest costs and maturities."
+
+msgid "Vorlagen verwalten Sie unter <a href=\"/neu/vorlagen/\" class=\"fw-marke hover:underline\">Profil → Vorlagen</a>."
+msgstr "You manage templates under <a href=\"/neu/vorlagen/\" class=\"fw-marke hover:underline\">Profile → Templates</a>."
+
+msgid "Laden Sie oben einen Beleg hoch («Beleg scannen») oder erfassen Sie die Rechnung manuell."
+msgstr "Upload a voucher above (“Scan voucher”) or enter the invoice manually."
+
+msgid "Gebäude- und objektbezogene Dokumente (Versicherung, Pläne, Reglemente). Vertragsdokumente finden Sie beim jeweiligen Objekt unter «Chronik» und bei der Person."
+msgstr "Building and unit documents (insurance, plans, regulations). Contract documents are with the respective unit under “Timeline” and with the person."
+
+msgid "Wählen Sie die Liegenschaften, die diesem Eigentümer gehören."
+msgstr "Choose the properties that belong to this owner."
+
+msgid "%(n)s Eigentümer, für den Sie Liegenschaften verwalten."
+msgid_plural "%(n)s Eigentümer, für die Sie Liegenschaften verwalten."
+msgstr[0] "%(n)s owner whose properties you manage."
+msgstr[1] "%(n)s owners whose properties you manage."
+
+msgid "Noch keine Ausstattung erfasst. Laden Sie einen Raum aus dem Katalog oder erfassen Sie ein Element — die Räume entstehen aus den Assets."
+msgstr "No fittings recorded yet. Load a room from the catalogue or record an element — rooms arise from the assets."
+
+msgid "Optionaler <b>Anfangsmietzins</b> — wird als erste datierte Sollmietzins-Zeile hinterlegt. Spätere Anpassungen, Gratismonate oder Rabatte erfassen Sie danach im Tab <b>«Mietzins»</b> (die einzige Quelle für Sollstellung, Mieterspiegel und Bilanz)."
+msgstr "Optional <b>initial rent</b> — stored as the first dated target-rent line. Later adjustments, free months or discounts are recorded afterwards in the <b>«Rent»</b> tab (the single source for billing, rent roll and balance sheet)."
+
+msgid "Aktuelle Wohnadresse. Ein Umzug (Ein-/Auszug) wird über den Vertrag automatisch als datierte Zeile hinterlegt — den Verlauf sehen Sie auf der Personenseite."
+msgstr "Current home address. A move (in/out) is recorded automatically via the contract as a dated line — the history is on the person page."
+
+msgid "Das Kennzeichen «geprüft» ist die einzige Stelle, an der aus einer Warnung eine <b>Sperre</b> wird. Setzen Sie es erst, wenn jemand die Regeln fachlich gegengelesen hat — eine falsche Sperre hält den Betrieb an, eine falsche Warnung nicht."
+msgstr "The “checked” flag is the only place where a warning becomes a <b>block</b>. Only set it once someone has reviewed the rules on the substance — a wrong block stops operations, a wrong warning does not."
+
+msgid "Vorlagen bearbeiten Sie unter <a href=\"/neu/vorlagen/\" class=\"fw-link\">Vorlagen</a> (Kategorie „Schaden – Auftrag an Handwerker“)."
+msgstr "You edit templates under <a href=\"/neu/vorlagen/\" class=\"fw-link\">Templates</a> (category “Schaden – Auftrag an Handwerker”)."
+
+msgid "Noch keine Handwerker erfasst — legen Sie zuerst unter <a href=\"/neu/dienstleister/\" class=\"fw-link\">Dienstleister</a> einen an."
+msgstr "No tradespeople recorded — first create one under <a href=\"/neu/dienstleister/\" class=\"fw-link\">Service providers</a>."
+
+msgid "Geben Sie oben einen Suchbegriff ein — Personen, Liegenschaften, Objekte und Verträge."
+msgstr "Enter a search term above — people, properties, units and contracts."
+
+msgid "Bitte wählen Sie im Schritt 1 ein Objekt aus, bevor Sie den Vertrag erstellen."
+msgstr "Please choose a unit in step 1 before creating the lease."
+
+msgid "Bitte wählen Sie im Schritt 2 eine Person aus oder erfassen Sie eine neue."
+msgstr "Please choose a person in step 2 or enter a new one."
+
+msgid "Klicken Sie, um einzufügen."
+msgstr "Click to insert."
+
+msgid "Wiederverwendbare Text-/Brief-Vorlagen mit Platzhaltern für Korrespondenz. «Standardvorlagen erstellen» legt vorbelegte Texte für alle Bereiche an, die Sie dann anpassen können."
+msgstr "Reusable text/letter templates with placeholders for correspondence. “Create standard templates” creates pre-filled texts for all areas that you can then adjust."
+
+msgid "Noch keine Vorlagen. Legen Sie mit einem Klick die vorbelegten Standardvorlagen an — oder erstellen Sie eine eigene."
+msgstr "No templates yet. Create the pre-filled standard templates with one click — or create your own."
+
+msgid "Diese Rechnung fliesst bereits über die <b>Nebenkostenabrechnung</b> an die Mieter. Eine zusätzliche direkte Weiterverrechnung würde <b>doppelt belasten</b>. Nur fortfahren, wenn Sie das bewusst wollen — dann unten das Häkchen «Trotzdem direkt weiterverrechnen» setzen."
+msgstr "This invoice already reaches the tenants via the <b>service charge statement</b>. An additional direct recharge would <b>charge them twice</b>. Only continue if you want this deliberately — then tick «Recharge directly anyway» below."
+
+msgid "Sie können Ihren eigenen Account nicht löschen."
+msgstr "You cannot delete your own account."
+
+msgid "%(name)s wurde aus Ihrem Team entfernt. Das Konto bleibt bestehen — es wird in einer anderen Verwaltung genutzt."
+msgstr "%(name)s was removed from your team. The account remains — it is used by another management company."
+
+msgid "Diese Rechnung ist HNK-relevant und wird bereits über die Nebenkostenabrechnung verteilt. Direkte Weiterverrechnung nur, wenn Sie das Häkchen «Trotzdem direkt weiterverrechnen» setzen (sonst doppelte Belastung)."
+msgstr "This invoice is relevant to service charges and is already allocated via the service charge statement. Direct recharge only if you tick 'Recharge directly anyway' (otherwise double charge)."
+
+msgid "Alle Daten wurden gelöscht — Sie starten mit einer leeren Datenbank."
+msgstr "All data has been deleted — you start with an empty database."
+
+msgid "Hinweis: %(fehler)s — Falls das Netzwerk (PythonAnywhere-Whitelist) die Abfrage blockiert, können Sie die Werte oben manuell eintragen."
+msgstr "Note: %(fehler)s — if the network (PythonAnywhere whitelist) blocks the request, you can enter the values above manually."
+
+msgid "Versenden Sie Mahnungen, Abrechnungen und Anschreiben direkt aus immoswiss über Ihren SMTP-Server."
+msgstr "Send reminders, statements and letters directly from immoswiss via your SMTP server."
+
+msgid "Senden Sie Mietverträge zur rechtsgültigen elektronischen Unterschrift. Der Rücklauf wird automatisch als unterzeichnetes PDF abgelegt."
+msgstr "Send leases for legally valid electronic signature. The signed return is filed automatically as a PDF."
+
+msgid "Bitte wählen Sie ein Objekt aus, bevor Sie den Vertrag erstellen."
+msgstr "Please select a unit before you create the lease."
+
+msgid "%(n)s Vorgang braucht heute Ihre Aufmerksamkeit."
+msgid_plural "%(n)s Vorgänge brauchen heute Ihre Aufmerksamkeit."
+msgstr[0] "%(n)s item needs you today."
+msgstr[1] "%(n)s items need you today."
+
+msgid "%(n)s braucht Sie"
+msgid_plural "%(n)s brauchen Sie"
+msgstr[0] "%(n)s needs you"
+msgstr[1] "%(n)s need you"
+
+msgid "Wird in Ihrem Arbeitsvorrat angelegt."
+msgstr "Will be added to your work queue."
+
+msgid "Team-Mitglieder legen Sie unter Einstellungen → Benutzer an."
+msgstr "Add team members under Settings → Users."
+
+msgid "Erinnerung, Mahnung und zuletzt die Fristansetzung nach Art. 257d OR. Welche Stufe gilt, ergibt sich aus den Tagen seit Fälligkeit; Tage und Gebühren stellen Sie unter «Mahnstufen anpassen» ein."
+msgstr "Reminder, dunning notice and finally the deadline under Art. 257d CO. The level depends on the days since the due date; days and fees are set under “Adjust dunning levels”."
+
+msgid "Zahlungsauftrag im Format ISO 20022. Der Zahllauf erzeugt die Datei; Sie laden sie im E-Banking hoch."
+msgstr "Payment order in ISO 20022 format. The payment run creates the file; you upload it in e-banking."
+
+msgid "Ordnet Zahlungseingänge den offenen Rechnungen zu — automatisch über die QR-Referenz, sonst über gespeicherte Zahler-Zuordnungen. Was offen bleibt, ordnen Sie von Hand zu."
+msgstr "Matches incoming payments to open invoices — automatically via the QR reference, otherwise via saved payer mappings. Whatever remains open you match by hand."
+
+msgid "Mieter und Eigentümer sehen im Portal ihre Rechnungen, Dokumente und Meldungen. Den Zugang richten Sie auf der Personen- bzw. Mandatsseite ein."
+msgstr "Tenants and owners see their invoices, documents and reports in the portal. You set up access on the person or mandate page."
+
+msgid "Wird aus dem Zeitraum vorgeschlagen; Sie können sie ändern."
+msgstr "Suggested from the period; you can change it."
+
+msgid "Sieben Schritte vom Objekt bis zum Abschluss — rechts sehen Sie den Vertrag, wie er gedruckt wird."
+msgstr "Seven steps from unit to signing — on the right you see the lease as it will be printed."
+
+msgid "Beispielwerte — wählen Sie oben einen Vertrag oder eine Bewerbung für echte Daten."
+msgstr "Sample values — choose a lease or an application above for real data."
+
+msgid "Mitgelieferte Vorlage: Beim Speichern entsteht eine eigene Fassung für Ihre Verwaltung. Das Original bleibt für alle anderen, wie es ist."
+msgstr "Supplied template: saving creates your management's own version. The original stays unchanged for everyone else."
+
+msgid "Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail und Name kann nur die Person selbst ändern — gespeichert wurde nur die Rolle in Ihrer Verwaltung."
+msgstr "This account is also used in another management company. Only the person themselves can change the password, email and name — only the role in your management company was saved."
+
+msgid "Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail und Name kann nur die Person selbst ändern. Sie können hier die Rolle in Ihrer Verwaltung festlegen oder die Mitgliedschaft beenden."
+msgstr "This account is also used in another management company. Only the person themselves can change the password, email and name. Here you can set the role in your management company or end the membership."
+
+msgid "Beenden Sie die Verträge; auf Wunsch der Person können Sie ihre Daten über die Datenschutz-Löschung (Anonymisierung) unkenntlich machen."
+msgstr "End the leases; at the person’s request you can make their data unrecognisable using the data-protection deletion (anonymisation)."
+
+msgid "Setzen Sie den Vertrag stattdessen auf «Inaktiv / Archiviert»."
+msgstr "Set the lease to “Inactive / Archived” instead."
+
+msgid "Setzen Sie die Liegenschaft stattdessen auf den Status «Archiviert»."
+msgstr "Set the property to the status “Archived” instead."
+
+msgid "Beenden Sie die Verträge; das Objekt bleibt mit seiner Geschichte bestehen."
+msgstr "End the leases; the unit remains with its history."
+
+msgid "Ihr Passwort"
+msgstr "Your password"
+
+msgid "Diesen Vertrag wirklich löschen?\n\nEr hat %(r)s Rechnung(en) und %(z)s Zahlung(en) und kann deshalb nicht gelöscht werden. Setzen Sie ihn stattdessen auf «Inaktiv / Archiviert»."
+msgstr "Really delete this lease?\n\nIt has %(r)s invoice(s) and %(z)s payment(s) and therefore cannot be deleted. Set it to “Inactive / Archived” instead."
+
+msgid "Es laufen noch %(n)s Mietverträge. Beenden Sie sie zuerst."
+msgstr "%(n)s tenancy agreements are still running. End them first."
+
+msgid "Setzen Sie die Liegenschaft stattdessen auf «Archiviert» (Archiv, Aufbewahrung zehn Jahre)."
+msgstr "Set the property to \"Archived\" instead (archive, ten-year retention)."
+
+msgid "Beenden Sie die Verträge und archivieren Sie das Objekt; es bleibt mit seiner Geschichte bestehen."
+msgstr "End the contracts and archive the unit; it is kept with its history."
+
+msgid "Beenden Sie das Mandat über «Archivieren» (Mandatsende): Es bleibt zehn Jahre aufbewahrt."
+msgstr "End the mandate via \"Archive\" (mandate end): it is kept for ten years."
+
+msgid "Versenden Sie Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über Ihren SMTP-Server."
+msgstr "Send reminders, statements and letters directly from swissImmo via your SMTP server."
+
+msgid "Wählen Sie die Zimmerzahl: Der Assistent schlägt die Räume der Wohnung vor. Passen Sie die Zahlen an und legen Sie alle Räume mit ihrer Standard-Ausstattung auf einmal an. Räume, die es schon gibt, bleiben unverändert."
+msgstr "Choose the number of rooms: the assistant suggests the rooms of the apartment. Adjust the numbers and create all rooms with their standard equipment at once. Rooms that already exist remain unchanged."
+
+msgid "Noch keine Ausstattung erfasst. Starten Sie mit dem Raumbuch-Assistenten: Er legt alle Räume der Wohnung auf einmal an."
+msgstr "No equipment recorded yet. Start with the room inventory assistant: it creates all rooms of the apartment at once."
+
+msgid "Noch keine Gemeinschaftsräume erfasst. Legen Sie unten die Waschküche, den Trockenraum oder den Veloraum an."
+msgstr "No communal rooms recorded yet. Create the laundry room, drying room or bike room below."
+
+msgid "Wählen Sie die Räume des Hauses: Jeder wird mit seiner Standard-Ausstattung und den Lebensdauern angelegt. Räume, die es schon gibt, bleiben unverändert."
+msgstr "Choose the rooms of the building: each is created with its standard equipment and service lives. Rooms that already exist remain unchanged."
+
+msgid "Nach dem Versand erfassen Sie bei der Pendenz die Sendungsnummer und bestätigen den Zugang."
+msgstr "After sending, you enter the tracking number on the task and confirm receipt."
+
+msgid "Der Brief trägt «Einschreiben» über der Adresse. Nach dem Versand erfassen Sie bei der Pendenz die Sendungsnummer und bestätigen den Zugang."
+msgstr "The letter shows “Registered mail” above the address. After sending, you enter the tracking number on the task and confirm receipt."
+
+msgid "Ende der Testphase: bis zu diesem Tag wird nichts in Rechnung gestellt. Leer = es wird nichts in Rechnung gestellt, bis Sie das Datum im Kundenprofil setzen."
+msgstr "End of the trial period: nothing is invoiced until this day. Empty = nothing is invoiced until you set the date in the customer profile."
+
+msgid "Adressen sind ohne Abfrageteil gezeigt. Meldungen von Browser-Erweiterungen (Quelle beginnt mit chrome-extension: oder moz-extension:) können Sie ignorieren."
+msgstr "Addresses are shown without the query part. You can ignore reports from browser extensions (source starts with chrome-extension: or moz-extension:)."
+
+msgid "Einführungspreise, Stand %(stand)s. Die Einheiten­zahl wird automatisch aus Ihren erfassten Objekten berechnet."
+msgstr "Introductory prices, as of %(stand)s. The number of units is calculated automatically from your recorded properties."
+
+msgid "Landesindex der Konsumentenpreise, Basis %(basis)s = 100. Hier tragen Sie den Monatswert ein, sobald das BFS ihn veröffentlicht hat; ein Deployment braucht es nicht. Ein Eintrag hier gilt vor der Reihe im Code."
+msgstr "Swiss consumer price index, base %(basis)s = 100. Enter the monthly value here as soon as the FSO has published it; no deployment needed. An entry here takes precedence over the series in the code."
+
+msgid "Alles an einem Ort: Fehler der Anwendung, gescheiterte Abrufe und Aufträge, RLS-Befunde, CSP-Meldungen, fällige Pflege und Sicherheitsereignisse der letzten %(fenster_tage)s Tage. Die rote Zahl in der Leiste zählt Fehler, die Sie noch nicht gesehen haben."
+msgstr "Everything in one place: application errors, failed fetches and jobs, RLS findings, CSP reports, due maintenance and security events of the last %(fenster_tage)s days. The red number in the sidebar counts errors you have not seen yet."
+
+msgid "%(n)s neuer Fehler seit Ihrem letzten Besuch."
+msgid_plural "%(n)s neue Fehler seit Ihrem letzten Besuch."
+msgstr[0] "%(n)s new error since your last visit."
+msgstr[1] "%(n)s new errors since your last visit."
+
+msgid "Diese Mail kam von %(adresse)s. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennen Sie den Absender (etwa die zweite Adresse des Mieters), bestätigen Sie ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders."
+msgstr "This email came from %(adresse)s. The address is not on the ticket, so the tenant does not see the message. If you know the sender (for example the tenant's second address), confirm it: their emails will then count as replies from the reporter for this ticket."
+
+msgid "Der Token schützt die URL — teilen Sie sie nur mit dem Portal/der Middleware. Bei Verdacht auf Missbrauch Token neu erzeugen."
+msgstr "The token protects the URL — share it only with the portal/middleware. If you suspect misuse, regenerate the token."
+
+msgid "Importieren Sie camt.053-Kontoauszüge und ordnen Sie Zahlungseingänge automatisch per QR-Referenz den Debitoren zu."
+msgstr "Import camt.053 statements and assign incoming payments to debtors automatically via the QR reference."
+
+msgid "Für %(bereich)s besteht bereits der Regelsatz «%(first)s». Es gilt ein Satz je Kanton — bearbeiten Sie den bestehenden, statt einen zweiten anzulegen."
+msgstr "The rule set \"%(first)s\" already exists for %(bereich)s. One set per canton applies — edit the existing one instead of creating a second."
+
+msgid "Dem Mandat sind noch %(n)s Liegenschaften zugeordnet, die nicht archiviert sind. Archivieren Sie sie oder ordnen Sie sie einem anderen Mandat zu."
+msgstr "%(n)s properties that are not archived are still assigned to the mandate. Archive them or assign them to another mandate."
+
+msgid "Archivieren Sie den Vertrag stattdessen («Inaktiv / Archiviert»)."
+msgstr "Archive the contract instead (\"Inactive / Archived\")."
+
+msgid "Archivieren Sie das Dokument stattdessen."
+msgstr "Archive the document instead."
+
+msgid "Archivieren Sie die Schadenmeldung stattdessen."
+msgstr "Archive the damage report instead."

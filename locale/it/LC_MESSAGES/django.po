@@ -41255,3 +41255,256 @@ msgstr "Comodo"
 
 msgid "Dicht"
 msgstr "Compatto"
+
+msgid "Sie vertreten <b>%(n)s</b> offenen Fall."
+msgid_plural "Sie vertreten <b>%(n)s</b> offene Fälle."
+msgstr[0] "Lei sostituisce <b>%(n)s</b> pratica aperta."
+msgstr[1] "Lei sostituisce <b>%(n)s</b> pratiche aperte."
+
+msgid "Reicht für Ihren heutigen Bestand nicht."
+msgstr "Non basta per il Suo portafoglio attuale."
+
+msgid "Für Ihren Bestand: CHF %(preis)s/Monat"
+msgstr "Per il Suo portafoglio: CHF %(preis)s/mese"
+
+msgid "Alle Preise exkl. MWST. Einführungspreise, Stand %(stand)s. Die Einheiten­zahl wird automatisch aus Ihren erfassten Objekten berechnet."
+msgstr "Tutti i prezzi IVA esclusa. Prezzi di lancio, stato al %(stand)s. Il numero di oggetti è calcolato automaticamente dagli oggetti registrati."
+
+msgid "Stammdaten Ihrer Verwaltung und aktuelle Marktdaten für Mietzinsanpassungen."
+msgstr "Dati di base della Sua amministrazione e dati di mercato attuali per gli adeguamenti della pigione."
+
+msgid "Erfassen Sie die IBAN bei der Liegenschaft, damit QR-Rechnungen erzeugt werden können."
+msgstr "Inserisca l'IBAN nello stabile per poter generare fatture QR."
+
+msgid "Bucht Debitor an Ertrag (3000). Die QR-Rechnung erzeugen Sie danach über den QR-Button in der Liste."
+msgstr "Registra debitore a ricavo (3000). La fattura QR la genera poi con il pulsante QR nella lista."
+
+msgid "Fälligkeitsalter ab dem Fälligkeits- bzw. Rechnungsdatum. Positionen ab 30 Tagen sind mahnrelevant — Mahnungen erfassen Sie im <a href=\"/neu/mahnwesen/%(lg_query)s\" class=\"fw-marke hover:underline\">Mahnwesen</a>."
+msgstr "Anzianità dalla data di scadenza o di fattura. Le posizioni da 30 giorni vanno sollecitate — i solleciti li registra in <a href=\"/neu/mahnwesen/%(lg_query)s\" class=\"fw-marke hover:underline\">Solleciti</a>."
+
+msgid "Erfassen Sie Raumbuch-Elemente mit Einbaudatum und Neuwert am Objekt, damit die Restnutzungsdauer berechnet werden kann."
+msgstr "Registri sull'oggetto gli elementi dell'inventario con data di installazione e valore a nuovo, affinché si possa calcolare la durata d'uso residua."
+
+msgid "Erfassen Sie die Finanzierung je Liegenschaft, um Zinskosten und Fälligkeiten im Blick zu behalten."
+msgstr "Registri il finanziamento per stabile per tenere d'occhio costi per interessi e scadenze."
+
+msgid "Vorlagen verwalten Sie unter <a href=\"/neu/vorlagen/\" class=\"fw-marke hover:underline\">Profil → Vorlagen</a>."
+msgstr "I modelli si gestiscono in <a href=\"/neu/vorlagen/\" class=\"fw-marke hover:underline\">Profilo → Modelli</a>."
+
+msgid "Laden Sie oben einen Beleg hoch («Beleg scannen») oder erfassen Sie die Rechnung manuell."
+msgstr "Carichi sopra un giustificativo («Scansionare giustificativo») o registri la fattura manualmente."
+
+msgid "Gebäude- und objektbezogene Dokumente (Versicherung, Pläne, Reglemente). Vertragsdokumente finden Sie beim jeweiligen Objekt unter «Chronik» und bei der Person."
+msgstr "Documenti relativi all'edificio e agli oggetti (assicurazione, piani, regolamenti). I documenti contrattuali si trovano presso il rispettivo oggetto in «Cronaca» e presso la persona."
+
+msgid "Wählen Sie die Liegenschaften, die diesem Eigentümer gehören."
+msgstr "Scelga gli stabili che appartengono a questo proprietario."
+
+msgid "%(n)s Eigentümer, für den Sie Liegenschaften verwalten."
+msgid_plural "%(n)s Eigentümer, für die Sie Liegenschaften verwalten."
+msgstr[0] "%(n)s proprietario per cui gestisce stabili."
+msgstr[1] "%(n)s proprietari per cui gestisce stabili."
+
+msgid "Noch keine Ausstattung erfasst. Laden Sie einen Raum aus dem Katalog oder erfassen Sie ein Element — die Räume entstehen aus den Assets."
+msgstr "Ancora nessuna dotazione registrata. Carichi un locale dal catalogo o registri un elemento — i locali nascono dagli elementi."
+
+msgid "Optionaler <b>Anfangsmietzins</b> — wird als erste datierte Sollmietzins-Zeile hinterlegt. Spätere Anpassungen, Gratismonate oder Rabatte erfassen Sie danach im Tab <b>«Mietzins»</b> (die einzige Quelle für Sollstellung, Mieterspiegel und Bilanz)."
+msgstr "<b>Pigione iniziale</b> facoltativa — registrata come prima riga datata della pigione teorica. Adeguamenti, mesi gratuiti o sconti successivi si registrano poi nella scheda <b>«Pigione»</b> (unica fonte per fatturazione, elenco inquilini e bilancio)."
+
+msgid "Aktuelle Wohnadresse. Ein Umzug (Ein-/Auszug) wird über den Vertrag automatisch als datierte Zeile hinterlegt — den Verlauf sehen Sie auf der Personenseite."
+msgstr "Indirizzo di domicilio attuale. Un trasloco (entrata/uscita) viene registrato automaticamente tramite il contratto come riga datata — la cronologia è sulla pagina della persona."
+
+msgid "Das Kennzeichen «geprüft» ist die einzige Stelle, an der aus einer Warnung eine <b>Sperre</b> wird. Setzen Sie es erst, wenn jemand die Regeln fachlich gegengelesen hat — eine falsche Sperre hält den Betrieb an, eine falsche Warnung nicht."
+msgstr "Il contrassegno «verificato» è l'unico punto in cui un avviso diventa un <b>blocco</b>. Lo imposti solo quando qualcuno ha riletto le regole nel merito — un blocco sbagliato ferma l'attività, un avviso sbagliato no."
+
+msgid "Vorlagen bearbeiten Sie unter <a href=\"/neu/vorlagen/\" class=\"fw-link\">Vorlagen</a> (Kategorie „Schaden – Auftrag an Handwerker“)."
+msgstr "I modelli si modificano in <a href=\"/neu/vorlagen/\" class=\"fw-link\">Modelli</a> (categoria «Schaden – Auftrag an Handwerker»)."
+
+msgid "Noch keine Handwerker erfasst — legen Sie zuerst unter <a href=\"/neu/dienstleister/\" class=\"fw-link\">Dienstleister</a> einen an."
+msgstr "Ancora nessun artigiano registrato — ne crei prima uno in <a href=\"/neu/dienstleister/\" class=\"fw-link\">Fornitori di servizi</a>."
+
+msgid "Geben Sie oben einen Suchbegriff ein — Personen, Liegenschaften, Objekte und Verträge."
+msgstr "Inserisca un termine di ricerca in alto — persone, stabili, oggetti e contratti."
+
+msgid "Bitte wählen Sie im Schritt 1 ein Objekt aus, bevor Sie den Vertrag erstellen."
+msgstr "Scelga un oggetto al passo 1 prima di creare il contratto."
+
+msgid "Bitte wählen Sie im Schritt 2 eine Person aus oder erfassen Sie eine neue."
+msgstr "Scelga una persona al passo 2 o ne registri una nuova."
+
+msgid "Klicken Sie, um einzufügen."
+msgstr "Clicchi per inserire."
+
+msgid "Wiederverwendbare Text-/Brief-Vorlagen mit Platzhaltern für Korrespondenz. «Standardvorlagen erstellen» legt vorbelegte Texte für alle Bereiche an, die Sie dann anpassen können."
+msgstr "Modelli di testo/lettera riutilizzabili con segnaposto per la corrispondenza. «Creare i modelli standard» crea testi precompilati per tutti i settori, che può poi adattare."
+
+msgid "Noch keine Vorlagen. Legen Sie mit einem Klick die vorbelegten Standardvorlagen an — oder erstellen Sie eine eigene."
+msgstr "Ancora nessun modello. Crei con un clic i modelli standard precompilati — o ne crei uno proprio."
+
+msgid "Diese Rechnung fliesst bereits über die <b>Nebenkostenabrechnung</b> an die Mieter. Eine zusätzliche direkte Weiterverrechnung würde <b>doppelt belasten</b>. Nur fortfahren, wenn Sie das bewusst wollen — dann unten das Häkchen «Trotzdem direkt weiterverrechnen» setzen."
+msgstr "Questa fattura confluisce già agli inquilini tramite il <b>conteggio delle spese accessorie</b>. Una rifatturazione diretta aggiuntiva li <b>addebiterebbe due volte</b>. Continui solo se lo vuole consapevolmente — allora spunti qui sotto «Rifatturare comunque direttamente»."
+
+msgid "Sie können Ihren eigenen Account nicht löschen."
+msgstr "Non può eliminare il Suo account."
+
+msgid "%(name)s wurde aus Ihrem Team entfernt. Das Konto bleibt bestehen — es wird in einer anderen Verwaltung genutzt."
+msgstr "%(name)s è stato/a rimosso/a dal Suo team. L'account resta — è utilizzato in un'altra amministrazione."
+
+msgid "Diese Rechnung ist HNK-relevant und wird bereits über die Nebenkostenabrechnung verteilt. Direkte Weiterverrechnung nur, wenn Sie das Häkchen «Trotzdem direkt weiterverrechnen» setzen (sonst doppelte Belastung)."
+msgstr "Questa fattura riguarda le SA ed è già ripartita tramite il conteggio delle spese accessorie. Riaddebito diretto solo se selezioni «Riaddebitare comunque direttamente» (altrimenti doppio addebito)."
+
+msgid "Alle Daten wurden gelöscht — Sie starten mit einer leeren Datenbank."
+msgstr "Tutti i dati sono stati eliminati — riparte con una banca dati vuota."
+
+msgid "Hinweis: %(fehler)s — Falls das Netzwerk (PythonAnywhere-Whitelist) die Abfrage blockiert, können Sie die Werte oben manuell eintragen."
+msgstr "Nota: %(fehler)s — se la rete (whitelist PythonAnywhere) blocca la richiesta, può inserire i valori qui sopra manualmente."
+
+msgid "Versenden Sie Mahnungen, Abrechnungen und Anschreiben direkt aus immoswiss über Ihren SMTP-Server."
+msgstr "Invii solleciti, conteggi e lettere direttamente da immoswiss tramite il Suo server SMTP."
+
+msgid "Senden Sie Mietverträge zur rechtsgültigen elektronischen Unterschrift. Der Rücklauf wird automatisch als unterzeichnetes PDF abgelegt."
+msgstr "Invii i contratti per una firma elettronica giuridicamente valida. Il ritorno viene archiviato automaticamente come PDF firmato."
+
+msgid "Bitte wählen Sie ein Objekt aus, bevor Sie den Vertrag erstellen."
+msgstr "Selezioni un oggetto prima di creare il contratto."
+
+msgid "%(n)s Vorgang braucht heute Ihre Aufmerksamkeit."
+msgid_plural "%(n)s Vorgänge brauchen heute Ihre Aufmerksamkeit."
+msgstr[0] "%(n)s pratica ha bisogno di Lei oggi."
+msgstr[1] "%(n)s pratiche hanno bisogno di Lei oggi."
+
+msgid "%(n)s braucht Sie"
+msgid_plural "%(n)s brauchen Sie"
+msgstr[0] "%(n)s ha bisogno di Lei"
+msgstr[1] "%(n)s hanno bisogno di Lei"
+
+msgid "Wird in Ihrem Arbeitsvorrat angelegt."
+msgstr "Verrà creata nel Suo carico di lavoro."
+
+msgid "Team-Mitglieder legen Sie unter Einstellungen → Benutzer an."
+msgstr "Aggiunga i membri del team in Impostazioni → Utenti."
+
+msgid "Erinnerung, Mahnung und zuletzt die Fristansetzung nach Art. 257d OR. Welche Stufe gilt, ergibt sich aus den Tagen seit Fälligkeit; Tage und Gebühren stellen Sie unter «Mahnstufen anpassen» ein."
+msgstr "Promemoria, diffida e infine la fissazione del termine secondo l'art. 257d CO. Il livello applicabile dipende dai giorni trascorsi dalla scadenza; giorni e spese si impostano in «Adatta livelli di sollecito»."
+
+msgid "Zahlungsauftrag im Format ISO 20022. Der Zahllauf erzeugt die Datei; Sie laden sie im E-Banking hoch."
+msgstr "Ordine di pagamento nel formato ISO 20022. Il ciclo di pagamento genera il file; Lei lo carica nell'e-banking."
+
+msgid "Ordnet Zahlungseingänge den offenen Rechnungen zu — automatisch über die QR-Referenz, sonst über gespeicherte Zahler-Zuordnungen. Was offen bleibt, ordnen Sie von Hand zu."
+msgstr "Attribuisce i pagamenti in entrata alle fatture aperte — automaticamente tramite il riferimento QR, altrimenti tramite le associazioni pagatore salvate. Ciò che resta aperto lo attribuisce a mano."
+
+msgid "Mieter und Eigentümer sehen im Portal ihre Rechnungen, Dokumente und Meldungen. Den Zugang richten Sie auf der Personen- bzw. Mandatsseite ein."
+msgstr "Inquilini e proprietari vedono nel portale fatture, documenti e segnalazioni. L'accesso lo configura nella pagina della persona o del mandato."
+
+msgid "Wird aus dem Zeitraum vorgeschlagen; Sie können sie ändern."
+msgstr "Proposta in base al periodo; può modificarla."
+
+msgid "Sieben Schritte vom Objekt bis zum Abschluss — rechts sehen Sie den Vertrag, wie er gedruckt wird."
+msgstr "Sette passi dall'oggetto alla conclusione — a destra vede il contratto come verrà stampato."
+
+msgid "Beispielwerte — wählen Sie oben einen Vertrag oder eine Bewerbung für echte Daten."
+msgstr "Valori di esempio — scegliere in alto un contratto o una candidatura per dati reali."
+
+msgid "Mitgelieferte Vorlage: Beim Speichern entsteht eine eigene Fassung für Ihre Verwaltung. Das Original bleibt für alle anderen, wie es ist."
+msgstr "Modello fornito: salvando si crea una versione propria per la Sua amministrazione. L'originale resta invariato per tutti gli altri."
+
+msgid "Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail und Name kann nur die Person selbst ändern — gespeichert wurde nur die Rolle in Ihrer Verwaltung."
+msgstr "Questo account è utilizzato anche in un’altra amministrazione. Password, e-mail e nome possono essere modificati solo dalla persona stessa — è stato salvato solo il ruolo nella Sua amministrazione."
+
+msgid "Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail und Name kann nur die Person selbst ändern. Sie können hier die Rolle in Ihrer Verwaltung festlegen oder die Mitgliedschaft beenden."
+msgstr "Questo account è utilizzato anche in un’altra amministrazione. Password, e-mail e nome possono essere modificati solo dalla persona stessa. Qui può definire il ruolo nella Sua amministrazione o terminare l’appartenenza."
+
+msgid "Beenden Sie die Verträge; auf Wunsch der Person können Sie ihre Daten über die Datenschutz-Löschung (Anonymisierung) unkenntlich machen."
+msgstr "Termini i contratti; su richiesta della persona può rendere irriconoscibili i suoi dati tramite la cancellazione per la protezione dei dati (anonimizzazione)."
+
+msgid "Setzen Sie den Vertrag stattdessen auf «Inaktiv / Archiviert»."
+msgstr "Imposti invece il contratto su «Inattivo / Archiviato»."
+
+msgid "Setzen Sie die Liegenschaft stattdessen auf den Status «Archiviert»."
+msgstr "Imposti invece lo stabile sullo stato «Archiviato»."
+
+msgid "Beenden Sie die Verträge; das Objekt bleibt mit seiner Geschichte bestehen."
+msgstr "Termini i contratti; l’oggetto resta con la sua storia."
+
+msgid "Ihr Passwort"
+msgstr "La Sua password"
+
+msgid "Diesen Vertrag wirklich löschen?\n\nEr hat %(r)s Rechnung(en) und %(z)s Zahlung(en) und kann deshalb nicht gelöscht werden. Setzen Sie ihn stattdessen auf «Inaktiv / Archiviert»."
+msgstr "Eliminare davvero questo contratto?\n\nHa %(r)s fattura/e e %(z)s pagamento/i e non può quindi essere eliminato. Lo imposti invece su «Inattivo / Archiviato»."
+
+msgid "Es laufen noch %(n)s Mietverträge. Beenden Sie sie zuerst."
+msgstr "Sono ancora in corso %(n)s contratti di locazione. Li termini prima."
+
+msgid "Setzen Sie die Liegenschaft stattdessen auf «Archiviert» (Archiv, Aufbewahrung zehn Jahre)."
+msgstr "Imposti invece lo stabile su «Archiviato» (archivio, conservazione dieci anni)."
+
+msgid "Beenden Sie die Verträge und archivieren Sie das Objekt; es bleibt mit seiner Geschichte bestehen."
+msgstr "Termini i contratti e archivi l'oggetto; rimane con la sua storia."
+
+msgid "Beenden Sie das Mandat über «Archivieren» (Mandatsende): Es bleibt zehn Jahre aufbewahrt."
+msgstr "Termini il mandato tramite «Archivia» (fine del mandato): rimane conservato per dieci anni."
+
+msgid "Versenden Sie Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über Ihren SMTP-Server."
+msgstr "Invii solleciti, conteggi e lettere direttamente da swissImmo tramite il Suo server SMTP."
+
+msgid "Wählen Sie die Zimmerzahl: Der Assistent schlägt die Räume der Wohnung vor. Passen Sie die Zahlen an und legen Sie alle Räume mit ihrer Standard-Ausstattung auf einmal an. Räume, die es schon gibt, bleiben unverändert."
+msgstr "Scelga il numero di locali: l’assistente propone i locali dell’appartamento. Adatti i numeri e crei tutti i locali con le dotazioni standard in un’unica volta. I locali già esistenti rimangono invariati."
+
+msgid "Noch keine Ausstattung erfasst. Starten Sie mit dem Raumbuch-Assistenten: Er legt alle Räume der Wohnung auf einmal an."
+msgstr "Nessuna dotazione registrata. Inizi con l’assistente inventario: crea tutti i locali dell’appartamento in una volta."
+
+msgid "Noch keine Gemeinschaftsräume erfasst. Legen Sie unten die Waschküche, den Trockenraum oder den Veloraum an."
+msgstr "Nessun locale comune registrato. Crei qui sotto la lavanderia, lo stenditoio o il locale biciclette."
+
+msgid "Wählen Sie die Räume des Hauses: Jeder wird mit seiner Standard-Ausstattung und den Lebensdauern angelegt. Räume, die es schon gibt, bleiben unverändert."
+msgstr "Scelga i locali dello stabile: ciascuno viene creato con le dotazioni standard e le durate di vita. I locali già esistenti rimangono invariati."
+
+msgid "Nach dem Versand erfassen Sie bei der Pendenz die Sendungsnummer und bestätigen den Zugang."
+msgstr "Dopo la spedizione registra il numero di tracciamento nella pendenza e conferma il ricevimento."
+
+msgid "Der Brief trägt «Einschreiben» über der Adresse. Nach dem Versand erfassen Sie bei der Pendenz die Sendungsnummer und bestätigen den Zugang."
+msgstr "La lettera reca la dicitura «Raccomandata» sopra l'indirizzo. Dopo la spedizione registra il numero di tracciamento nella pendenza e conferma il ricevimento."
+
+msgid "Ende der Testphase: bis zu diesem Tag wird nichts in Rechnung gestellt. Leer = es wird nichts in Rechnung gestellt, bis Sie das Datum im Kundenprofil setzen."
+msgstr "Fine del periodo di prova: fino a questo giorno non viene fatturato nulla. Vuoto = non viene fatturato nulla finché non imposta la data nel profilo del cliente."
+
+msgid "Adressen sind ohne Abfrageteil gezeigt. Meldungen von Browser-Erweiterungen (Quelle beginnt mit chrome-extension: oder moz-extension:) können Sie ignorieren."
+msgstr "Gli indirizzi sono mostrati senza la parte di query. Può ignorare le segnalazioni delle estensioni del browser (origine che inizia con chrome-extension: o moz-extension:)."
+
+msgid "Einführungspreise, Stand %(stand)s. Die Einheiten­zahl wird automatisch aus Ihren erfassten Objekten berechnet."
+msgstr "Prezzi di lancio, aggiornati al %(stand)s. Il numero di unità viene calcolato automaticamente dai Suoi oggetti registrati."
+
+msgid "Landesindex der Konsumentenpreise, Basis %(basis)s = 100. Hier tragen Sie den Monatswert ein, sobald das BFS ihn veröffentlicht hat; ein Deployment braucht es nicht. Ein Eintrag hier gilt vor der Reihe im Code."
+msgstr "Indice nazionale dei prezzi al consumo, base %(basis)s = 100. Inserisca qui il valore mensile non appena l'UST lo pubblica; non serve alcun deployment. Una voce qui vale prima della serie nel codice."
+
+msgid "Alles an einem Ort: Fehler der Anwendung, gescheiterte Abrufe und Aufträge, RLS-Befunde, CSP-Meldungen, fällige Pflege und Sicherheitsereignisse der letzten %(fenster_tage)s Tage. Die rote Zahl in der Leiste zählt Fehler, die Sie noch nicht gesehen haben."
+msgstr "Tutto in un posto: errori dell'applicazione, richiami e incarichi falliti, rilievi RLS, segnalazioni CSP, manutenzione dovuta ed eventi di sicurezza degli ultimi %(fenster_tage)s giorni. Il numero rosso nella barra conta gli errori che non ha ancora visto."
+
+msgid "%(n)s neuer Fehler seit Ihrem letzten Besuch."
+msgid_plural "%(n)s neue Fehler seit Ihrem letzten Besuch."
+msgstr[0] "%(n)s nuovo errore dalla Sua ultima visita."
+msgstr[1] "%(n)s nuovi errori dalla Sua ultima visita."
+
+msgid "Diese Mail kam von %(adresse)s. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennen Sie den Absender (etwa die zweite Adresse des Mieters), bestätigen Sie ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders."
+msgstr "Questa e-mail proviene da %(adresse)s. L'indirizzo non figura nel ticket, quindi l'inquilino non vede il messaggio. Se conosce il mittente (ad esempio il secondo indirizzo dell'inquilino), lo confermi: le sue e-mail varranno per questo ticket come risposta di chi ha segnalato."
+
+msgid "Der Token schützt die URL — teilen Sie sie nur mit dem Portal/der Middleware. Bei Verdacht auf Missbrauch Token neu erzeugen."
+msgstr "Il token protegge l'URL — la condivida solo con il portale/il middleware. In caso di sospetto abuso rigeneri il token."
+
+msgid "Importieren Sie camt.053-Kontoauszüge und ordnen Sie Zahlungseingänge automatisch per QR-Referenz den Debitoren zu."
+msgstr "Importi estratti conto camt.053 e attribuisca automaticamente gli incassi ai debitori tramite il riferimento QR."
+
+msgid "Für %(bereich)s besteht bereits der Regelsatz «%(first)s». Es gilt ein Satz je Kanton — bearbeiten Sie den bestehenden, statt einen zweiten anzulegen."
+msgstr "Per %(bereich)s esiste già l'insieme di regole «%(first)s». Vale un insieme per cantone — modifichi quello esistente invece di crearne un secondo."
+
+msgid "Dem Mandat sind noch %(n)s Liegenschaften zugeordnet, die nicht archiviert sind. Archivieren Sie sie oder ordnen Sie sie einem anderen Mandat zu."
+msgstr "Al mandato sono ancora assegnati %(n)s stabili non archiviati. Li archivi o li assegni a un altro mandato."
+
+msgid "Archivieren Sie den Vertrag stattdessen («Inaktiv / Archiviert»)."
+msgstr "Archivi invece il contratto («Inattivo / Archiviato»)."
+
+msgid "Archivieren Sie das Dokument stattdessen."
+msgstr "Archivi invece il documento."
+
+msgid "Archivieren Sie die Schadenmeldung stattdessen."
+msgstr "Archivi invece la segnalazione di danno."

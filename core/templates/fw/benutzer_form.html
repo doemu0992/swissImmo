@@ -21,7 +21,7 @@
     <div class="fw-kopf"><span class="fw-t">{% trans "Benutzer" %}</span></div>
     <div class="fw-formular p-5">
         {% if nur_mitgliedschaft %}
-        <div class="fw-feldblock breit"><div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">{% trans "Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail und Name kann nur die Person selbst ändern. Du kannst hier die Rolle in deiner Verwaltung festlegen oder die Mitgliedschaft beenden." %}</div></div></div>
+        <div class="fw-feldblock breit"><div class="fw-hinweis warn"><span class="fw-hi">{% zeichen 'warnung' %}</span><div class="fw-ht">{% trans "Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail und Name kann nur die Person selbst ändern. Sie können hier die Rolle in Ihrer Verwaltung festlegen oder die Mitgliedschaft beenden." %}</div></div></div>
         {% endif %}
         <div class="fw-feldblock breit"><label for="bf-username" class="fw-label">{% trans "Benutzername *" %}</label>
             {% if ist_neu %}<input id="bf-username" name="username" required class="fw-feld">

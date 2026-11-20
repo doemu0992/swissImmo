@@ -18,7 +18,7 @@ HILFE = {
     # ---- Mietrecht ----
     'mahnstufen': (_('Mahnstufen'), _(
         'Erinnerung, Mahnung und zuletzt die Fristansetzung nach Art. 257d OR. Welche Stufe gilt, '
-        'ergibt sich aus den Tagen seit Fälligkeit; Tage und Gebühren stellst du unter «Mahnstufen anpassen» ein.')),
+        'ergibt sich aus den Tagen seit Fälligkeit; Tage und Gebühren stellen Sie unter «Mahnstufen anpassen» ein.')),
     'art_257d': (_('Fristansetzung nach Art. 257d OR'), _(
         'Bei Zahlungsverzug setzt der Vermieter schriftlich eine Zahlungsfrist von mindestens 30 Tagen und droht die '
         'Kündigung an. Zahlt der Mieter nicht, ist eine Kündigung mit mindestens 30 Tagen Frist auf Ende eines Monats möglich. '
@@ -172,7 +172,7 @@ HILFE = {
         'Eine eigene IBAN für QR-Rechnungen mit Referenz; die Institutskennung liegt zwischen 30000 und 31999. '
         'Für Zahlungen ohne Referenz gilt die normale IBAN.')),
     'pain001': (_('pain.001'), _(
-        'Zahlungsauftrag im Format ISO 20022. Der Zahllauf erzeugt die Datei; du lädst sie im E-Banking hoch.')),
+        'Zahlungsauftrag im Format ISO 20022. Der Zahllauf erzeugt die Datei; Sie laden sie im E-Banking hoch.')),
     'camt': (_('camt.053 / camt.054'), _(
         'Kontoauszug bzw. Gutschriftsanzeige der Bank im Format ISO 20022. Der Bankabgleich liest sie ein und ordnet '
         'die Zahlungen den offenen Rechnungen zu.')),
@@ -181,7 +181,7 @@ HILFE = {
         'Erst danach können Zahlungen zugeordnet und gemahnt werden.')),
     'bankabgleich': (_('Bankabgleich'), _(
         'Ordnet Zahlungseingänge den offenen Rechnungen zu — automatisch über die QR-Referenz, sonst über gespeicherte Zahler-Zuordnungen. '
-        'Was offen bleibt, ordnest du von Hand zu.')),
+        'Was offen bleibt, ordnen Sie von Hand zu.')),
     'zahllauf': (_('Zahllauf'), _(
         'Fasst freigegebene Lieferantenrechnungen zu einem Zahlungsauftrag (pain.001) zusammen und verbucht den Lauf gesammelt.')),
     'mahnsperre': (_('Mahnsperre'), _(
@@ -253,7 +253,7 @@ HILFE = {
         'Hilft, Mietdauer und Befristung abzustimmen. Er ist kein Grund, eine Vermietung zu verweigern.')),
     'portal': (_('Portal-Zugang'), _(
         'Mieter und Eigentümer sehen im Portal ihre Rechnungen, Dokumente und Meldungen. '
-        'Den Zugang richtest du auf der Personen- bzw. Mandatsseite ein.')),
+        'Den Zugang richten Sie auf der Personen- bzw. Mandatsseite ein.')),
     # ---- Vorlagen und Dokumente (Modul 5, 27.10.2026) ----
     'dokumentregel': (_('Regel «Wenn … dann …»'), _(
         'Eine Vorlage mit Ereignis erzeugt bei diesem Ereignis ein zusätzliches Dokument in der Akte. Es gilt die '

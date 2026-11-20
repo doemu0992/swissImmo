@@ -272,7 +272,7 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
                 <p class="mt-1 whitespace-pre-line">{{ n.nachricht }}</p>
                 {% if n.typ == 'mail_unbekannt' and n.absender_adresse %}
                 <form method="post" action="{% url 'fw_schaden_absender_bestaetigen' t.id n.id %}" class="mt-2" data-testid="absender-bestaetigen">{% csrf_token %}
-                    <p class="fw-hilfe mb-1">{% blocktrans with adresse=n.absender_adresse %}Diese Mail kam von {{ adresse }}. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennst du den Absender (etwa die zweite Adresse des Mieters), bestätige ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders.{% endblocktrans %}</p>
+                    <p class="fw-hilfe mb-1">{% blocktrans with adresse=n.absender_adresse %}Diese Mail kam von {{ adresse }}. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennen Sie den Absender (etwa die zweite Adresse des Mieters), bestätigen Sie ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders.{% endblocktrans %}</p>
                     <div class="flex flex-wrap gap-2">
                         <button type="submit" class="fw-btn">{% trans "Absender für dieses Ticket bestätigen" %}</button>
                         {% if absender_person %}<button type="submit" name="dauerhaft" value="1" class="fw-btn" data-testid="absender-dauerhaft">{% blocktrans with person=absender_person.display_name %}Bestätigen und bei {{ person }} speichern{% endblocktrans %}</button>{% endif %}
@@ -377,12 +377,12 @@ auffallen — sonst fällt der nächste Fall wieder dem zu, der ihn zufällig
             <div>
                 <label class="fw-label mb-1">{% trans "Auftragstext (aus Vorlage, editierbar)" %}</label>
                 <textarea name="auftragstext" rows="6" class="fw-feld w-full">{{ auftrag_vorschlag }}</textarea>
-                <p class="fw-hilfe mt-1">{% blocktrans trimmed %}Vorlagen bearbeitest du unter <a href="/neu/vorlagen/" class="fw-link">Vorlagen</a> (Kategorie „Schaden – Auftrag an Handwerker“).{% endblocktrans %}</p>
+                <p class="fw-hilfe mt-1">{% blocktrans trimmed %}Vorlagen bearbeiten Sie unter <a href="/neu/vorlagen/" class="fw-link">Vorlagen</a> (Kategorie „Schaden – Auftrag an Handwerker“).{% endblocktrans %}</p>
             </div>
             <button class="fw-btn fw-primary">{% zeichen 'senden' %}{% trans "Beauftragen & Mails senden" %}</button>
         </form>
         {% else %}
-        <p class="text-sm fw-mutet">{% blocktrans trimmed %}Noch keine Handwerker erfasst — lege zuerst unter <a href="/neu/dienstleister/" class="fw-link">Dienstleister</a> einen an.{% endblocktrans %}</p>
+        <p class="text-sm fw-mutet">{% blocktrans trimmed %}Noch keine Handwerker erfasst — legen Sie zuerst unter <a href="/neu/dienstleister/" class="fw-link">Dienstleister</a> einen an.{% endblocktrans %}</p>
         {% endif %}
         </div>
     </div>

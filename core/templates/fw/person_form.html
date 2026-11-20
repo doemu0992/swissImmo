@@ -163,7 +163,7 @@
     <div class="fw-card">
         <div class="fw-kopf"><h2>{% trans "Wohnadresse" %}</h2></div>
         <div class="fw-rumpf space-y-4">
-        <p class="fw-hilfe -mt-2">{% trans "Aktuelle Wohnadresse. Ein Umzug (Ein-/Auszug) wird über den Vertrag automatisch als datierte Zeile hinterlegt — den Verlauf siehst du auf der Personenseite." %}</p>
+        <p class="fw-hilfe -mt-2">{% trans "Aktuelle Wohnadresse. Ein Umzug (Ein-/Auszug) wird über den Vertrag automatisch als datierte Zeile hinterlegt — den Verlauf sehen Sie auf der Personenseite." %}</p>
         <div><label for="p-strasse" class="fw-label mb-1">{% trans "Strasse & Nr." %}</label>
             <input name="strasse" value="{{ m.strasse }}" class="fw-feld w-full" id="p-strasse"{% if feld_fehler.strasse %} aria-invalid="true" aria-describedby="p-strasse_fehler"{% endif %}>{% include 'fw/_feldfehler.html' with fehler=feld_fehler.strasse feld_id='p-strasse' %}</div>
         <div><label for="p-adresszusatz" class="fw-label mb-1">{% trans "Adresszusatz" %}</label>

@@ -23,7 +23,7 @@
     <div class="fw-feldblock breit">
         <span class="fw-label">{% trans "Versand" %}</span>
         <label class="fw-vl-schalter"><input type="checkbox" name="einschreiben" value="1" {% if werte.einschreiben %}checked{% endif %}> {% trans "Als Einschreiben versenden" %}</label>
-        {% if werte.einschreiben or vorlage.einschreiben %}<p class="fw-hilfe">{% trans "Nach dem Versand erfasst du bei der Pendenz die Sendungsnummer und bestätigst den Zugang." %}</p>{% endif %}
+        {% if werte.einschreiben or vorlage.einschreiben %}<p class="fw-hilfe">{% trans "Nach dem Versand erfassen Sie bei der Pendenz die Sendungsnummer und bestätigen den Zugang." %}</p>{% endif %}
     </div>
     {% if vorlage.frist_art == 'datum' %}
     <div class="fw-feldblock"><label for="bf-datum" class="fw-label">{% trans "Frist bis" %}</label>

@@ -60,7 +60,7 @@
     {% if vertretung_fuer %}
     <p class="fw-vertretungssatz">
         {% for name, bis in vertretung_fuer %}{% blocktrans with name=name bis=bis|date:"d.m." %}<b>{{ name }}</b> ist bis {{ bis }} abwesend.{% endblocktrans %}{% if not forloop.last %} {% endif %}{% endfor %}
-        {% if vertretung_faelle %}{% blocktrans count n=vertretung_faelle %}Du vertrittst <b>{{ n }}</b> offenen Fall.{% plural %}Du vertrittst <b>{{ n }}</b> offene Fälle.{% endblocktrans %}{% endif %}
+        {% if vertretung_faelle %}{% blocktrans count n=vertretung_faelle %}Sie vertreten <b>{{ n }}</b> offenen Fall.{% plural %}Sie vertreten <b>{{ n }}</b> offene Fälle.{% endblocktrans %}{% endif %}
     </p>
     {% endif %}
     {% for v in av_vertretung %}

@@ -38,9 +38,9 @@ class AbonnementTests(TestCase):
         team = _team_user('Inhaber')  # den Plan wählt seit 28.09.2026 nur der Inhaber
         c = Client(); c.force_login(team)
         body = c.get('/neu/abonnement/').content.decode()
-        self.assertIn('Für deinen Bestand: CHF 119/Monat', body)   # Team
+        self.assertIn('Für Ihren Bestand: CHF 119/Monat', body)   # Team
         body_j = c.post('/neu/abonnement/', {'plan': 'team', 'jaehrlich': 'on'}, follow=True).content.decode()
-        self.assertIn('Für deinen Bestand: CHF 101/Monat', body_j)  # 119 * 0.85 gerundet
+        self.assertIn('Für Ihren Bestand: CHF 101/Monat', body_j)  # 119 * 0.85 gerundet
         self.assertIn("CHF 1'214/Jahr", body_j)                    # 119 * 0.85 * 12
 
 

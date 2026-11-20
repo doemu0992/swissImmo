@@ -39554,3 +39554,256 @@ msgstr "Bequem"
 
 msgid "Dicht"
 msgstr "Dicht"
+
+msgid "Sie vertreten <b>%(n)s</b> offenen Fall."
+msgid_plural "Sie vertreten <b>%(n)s</b> offene Fälle."
+msgstr[0] "Sie vertreten <b>%(n)s</b> offenen Fall."
+msgstr[1] "Sie vertreten <b>%(n)s</b> offene Fälle."
+
+msgid "Reicht für Ihren heutigen Bestand nicht."
+msgstr "Reicht für Ihren heutigen Bestand nicht."
+
+msgid "Für Ihren Bestand: CHF %(preis)s/Monat"
+msgstr "Für Ihren Bestand: CHF %(preis)s/Monat"
+
+msgid "Alle Preise exkl. MWST. Einführungspreise, Stand %(stand)s. Die Einheiten­zahl wird automatisch aus Ihren erfassten Objekten berechnet."
+msgstr "Alle Preise exkl. MWST. Einführungspreise, Stand %(stand)s. Die Einheiten­zahl wird automatisch aus Ihren erfassten Objekten berechnet."
+
+msgid "Stammdaten Ihrer Verwaltung und aktuelle Marktdaten für Mietzinsanpassungen."
+msgstr "Stammdaten Ihrer Verwaltung und aktuelle Marktdaten für Mietzinsanpassungen."
+
+msgid "Erfassen Sie die IBAN bei der Liegenschaft, damit QR-Rechnungen erzeugt werden können."
+msgstr "Erfassen Sie die IBAN bei der Liegenschaft, damit QR-Rechnungen erzeugt werden können."
+
+msgid "Bucht Debitor an Ertrag (3000). Die QR-Rechnung erzeugen Sie danach über den QR-Button in der Liste."
+msgstr "Bucht Debitor an Ertrag (3000). Die QR-Rechnung erzeugen Sie danach über den QR-Button in der Liste."
+
+msgid "Fälligkeitsalter ab dem Fälligkeits- bzw. Rechnungsdatum. Positionen ab 30 Tagen sind mahnrelevant — Mahnungen erfassen Sie im <a href=\"/neu/mahnwesen/%(lg_query)s\" class=\"fw-marke hover:underline\">Mahnwesen</a>."
+msgstr "Fälligkeitsalter ab dem Fälligkeits- bzw. Rechnungsdatum. Positionen ab 30 Tagen sind mahnrelevant — Mahnungen erfassen Sie im <a href=\"/neu/mahnwesen/%(lg_query)s\" class=\"fw-marke hover:underline\">Mahnwesen</a>."
+
+msgid "Erfassen Sie Raumbuch-Elemente mit Einbaudatum und Neuwert am Objekt, damit die Restnutzungsdauer berechnet werden kann."
+msgstr "Erfassen Sie Raumbuch-Elemente mit Einbaudatum und Neuwert am Objekt, damit die Restnutzungsdauer berechnet werden kann."
+
+msgid "Erfassen Sie die Finanzierung je Liegenschaft, um Zinskosten und Fälligkeiten im Blick zu behalten."
+msgstr "Erfassen Sie die Finanzierung je Liegenschaft, um Zinskosten und Fälligkeiten im Blick zu behalten."
+
+msgid "Vorlagen verwalten Sie unter <a href=\"/neu/vorlagen/\" class=\"fw-marke hover:underline\">Profil → Vorlagen</a>."
+msgstr "Vorlagen verwalten Sie unter <a href=\"/neu/vorlagen/\" class=\"fw-marke hover:underline\">Profil → Vorlagen</a>."
+
+msgid "Laden Sie oben einen Beleg hoch («Beleg scannen») oder erfassen Sie die Rechnung manuell."
+msgstr "Laden Sie oben einen Beleg hoch («Beleg scannen») oder erfassen Sie die Rechnung manuell."
+
+msgid "Gebäude- und objektbezogene Dokumente (Versicherung, Pläne, Reglemente). Vertragsdokumente finden Sie beim jeweiligen Objekt unter «Chronik» und bei der Person."
+msgstr "Gebäude- und objektbezogene Dokumente (Versicherung, Pläne, Reglemente). Vertragsdokumente finden Sie beim jeweiligen Objekt unter «Chronik» und bei der Person."
+
+msgid "Wählen Sie die Liegenschaften, die diesem Eigentümer gehören."
+msgstr "Wählen Sie die Liegenschaften, die diesem Eigentümer gehören."
+
+msgid "%(n)s Eigentümer, für den Sie Liegenschaften verwalten."
+msgid_plural "%(n)s Eigentümer, für die Sie Liegenschaften verwalten."
+msgstr[0] "%(n)s Eigentümer, für den Sie Liegenschaften verwalten."
+msgstr[1] "%(n)s Eigentümer, für die Sie Liegenschaften verwalten."
+
+msgid "Noch keine Ausstattung erfasst. Laden Sie einen Raum aus dem Katalog oder erfassen Sie ein Element — die Räume entstehen aus den Assets."
+msgstr "Noch keine Ausstattung erfasst. Laden Sie einen Raum aus dem Katalog oder erfassen Sie ein Element — die Räume entstehen aus den Assets."
+
+msgid "Optionaler <b>Anfangsmietzins</b> — wird als erste datierte Sollmietzins-Zeile hinterlegt. Spätere Anpassungen, Gratismonate oder Rabatte erfassen Sie danach im Tab <b>«Mietzins»</b> (die einzige Quelle für Sollstellung, Mieterspiegel und Bilanz)."
+msgstr "Optionaler <b>Anfangsmietzins</b> — wird als erste datierte Sollmietzins-Zeile hinterlegt. Spätere Anpassungen, Gratismonate oder Rabatte erfassen Sie danach im Tab <b>«Mietzins»</b> (die einzige Quelle für Sollstellung, Mieterspiegel und Bilanz)."
+
+msgid "Aktuelle Wohnadresse. Ein Umzug (Ein-/Auszug) wird über den Vertrag automatisch als datierte Zeile hinterlegt — den Verlauf sehen Sie auf der Personenseite."
+msgstr "Aktuelle Wohnadresse. Ein Umzug (Ein-/Auszug) wird über den Vertrag automatisch als datierte Zeile hinterlegt — den Verlauf sehen Sie auf der Personenseite."
+
+msgid "Das Kennzeichen «geprüft» ist die einzige Stelle, an der aus einer Warnung eine <b>Sperre</b> wird. Setzen Sie es erst, wenn jemand die Regeln fachlich gegengelesen hat — eine falsche Sperre hält den Betrieb an, eine falsche Warnung nicht."
+msgstr "Das Kennzeichen «geprüft» ist die einzige Stelle, an der aus einer Warnung eine <b>Sperre</b> wird. Setzen Sie es erst, wenn jemand die Regeln fachlich gegengelesen hat — eine falsche Sperre hält den Betrieb an, eine falsche Warnung nicht."
+
+msgid "Vorlagen bearbeiten Sie unter <a href=\"/neu/vorlagen/\" class=\"fw-link\">Vorlagen</a> (Kategorie „Schaden – Auftrag an Handwerker“)."
+msgstr "Vorlagen bearbeiten Sie unter <a href=\"/neu/vorlagen/\" class=\"fw-link\">Vorlagen</a> (Kategorie „Schaden – Auftrag an Handwerker“)."
+
+msgid "Noch keine Handwerker erfasst — legen Sie zuerst unter <a href=\"/neu/dienstleister/\" class=\"fw-link\">Dienstleister</a> einen an."
+msgstr "Noch keine Handwerker erfasst — legen Sie zuerst unter <a href=\"/neu/dienstleister/\" class=\"fw-link\">Dienstleister</a> einen an."
+
+msgid "Geben Sie oben einen Suchbegriff ein — Personen, Liegenschaften, Objekte und Verträge."
+msgstr "Geben Sie oben einen Suchbegriff ein — Personen, Liegenschaften, Objekte und Verträge."
+
+msgid "Bitte wählen Sie im Schritt 1 ein Objekt aus, bevor Sie den Vertrag erstellen."
+msgstr "Bitte wählen Sie im Schritt 1 ein Objekt aus, bevor Sie den Vertrag erstellen."
+
+msgid "Bitte wählen Sie im Schritt 2 eine Person aus oder erfassen Sie eine neue."
+msgstr "Bitte wählen Sie im Schritt 2 eine Person aus oder erfassen Sie eine neue."
+
+msgid "Klicken Sie, um einzufügen."
+msgstr "Klicken Sie, um einzufügen."
+
+msgid "Wiederverwendbare Text-/Brief-Vorlagen mit Platzhaltern für Korrespondenz. «Standardvorlagen erstellen» legt vorbelegte Texte für alle Bereiche an, die Sie dann anpassen können."
+msgstr "Wiederverwendbare Text-/Brief-Vorlagen mit Platzhaltern für Korrespondenz. «Standardvorlagen erstellen» legt vorbelegte Texte für alle Bereiche an, die Sie dann anpassen können."
+
+msgid "Noch keine Vorlagen. Legen Sie mit einem Klick die vorbelegten Standardvorlagen an — oder erstellen Sie eine eigene."
+msgstr "Noch keine Vorlagen. Legen Sie mit einem Klick die vorbelegten Standardvorlagen an — oder erstellen Sie eine eigene."
+
+msgid "Diese Rechnung fliesst bereits über die <b>Nebenkostenabrechnung</b> an die Mieter. Eine zusätzliche direkte Weiterverrechnung würde <b>doppelt belasten</b>. Nur fortfahren, wenn Sie das bewusst wollen — dann unten das Häkchen «Trotzdem direkt weiterverrechnen» setzen."
+msgstr "Diese Rechnung fliesst bereits über die <b>Nebenkostenabrechnung</b> an die Mieter. Eine zusätzliche direkte Weiterverrechnung würde <b>doppelt belasten</b>. Nur fortfahren, wenn Sie das bewusst wollen — dann unten das Häkchen «Trotzdem direkt weiterverrechnen» setzen."
+
+msgid "Sie können Ihren eigenen Account nicht löschen."
+msgstr "Sie können Ihren eigenen Account nicht löschen."
+
+msgid "%(name)s wurde aus Ihrem Team entfernt. Das Konto bleibt bestehen — es wird in einer anderen Verwaltung genutzt."
+msgstr "%(name)s wurde aus Ihrem Team entfernt. Das Konto bleibt bestehen — es wird in einer anderen Verwaltung genutzt."
+
+msgid "Diese Rechnung ist HNK-relevant und wird bereits über die Nebenkostenabrechnung verteilt. Direkte Weiterverrechnung nur, wenn Sie das Häkchen «Trotzdem direkt weiterverrechnen» setzen (sonst doppelte Belastung)."
+msgstr "Diese Rechnung ist HNK-relevant und wird bereits über die Nebenkostenabrechnung verteilt. Direkte Weiterverrechnung nur, wenn Sie das Häkchen «Trotzdem direkt weiterverrechnen» setzen (sonst doppelte Belastung)."
+
+msgid "Alle Daten wurden gelöscht — Sie starten mit einer leeren Datenbank."
+msgstr "Alle Daten wurden gelöscht — Sie starten mit einer leeren Datenbank."
+
+msgid "Hinweis: %(fehler)s — Falls das Netzwerk (PythonAnywhere-Whitelist) die Abfrage blockiert, können Sie die Werte oben manuell eintragen."
+msgstr "Hinweis: %(fehler)s — Falls das Netzwerk (PythonAnywhere-Whitelist) die Abfrage blockiert, können Sie die Werte oben manuell eintragen."
+
+msgid "Versenden Sie Mahnungen, Abrechnungen und Anschreiben direkt aus immoswiss über Ihren SMTP-Server."
+msgstr "Versenden Sie Mahnungen, Abrechnungen und Anschreiben direkt aus immoswiss über Ihren SMTP-Server."
+
+msgid "Senden Sie Mietverträge zur rechtsgültigen elektronischen Unterschrift. Der Rücklauf wird automatisch als unterzeichnetes PDF abgelegt."
+msgstr "Senden Sie Mietverträge zur rechtsgültigen elektronischen Unterschrift. Der Rücklauf wird automatisch als unterzeichnetes PDF abgelegt."
+
+msgid "Bitte wählen Sie ein Objekt aus, bevor Sie den Vertrag erstellen."
+msgstr "Bitte wählen Sie ein Objekt aus, bevor Sie den Vertrag erstellen."
+
+msgid "%(n)s Vorgang braucht heute Ihre Aufmerksamkeit."
+msgid_plural "%(n)s Vorgänge brauchen heute Ihre Aufmerksamkeit."
+msgstr[0] "%(n)s Vorgang braucht heute Ihre Aufmerksamkeit."
+msgstr[1] "%(n)s Vorgänge brauchen heute Ihre Aufmerksamkeit."
+
+msgid "%(n)s braucht Sie"
+msgid_plural "%(n)s brauchen Sie"
+msgstr[0] "%(n)s braucht Sie"
+msgstr[1] "%(n)s brauchen Sie"
+
+msgid "Wird in Ihrem Arbeitsvorrat angelegt."
+msgstr "Wird in Ihrem Arbeitsvorrat angelegt."
+
+msgid "Team-Mitglieder legen Sie unter Einstellungen → Benutzer an."
+msgstr "Team-Mitglieder legen Sie unter Einstellungen → Benutzer an."
+
+msgid "Erinnerung, Mahnung und zuletzt die Fristansetzung nach Art. 257d OR. Welche Stufe gilt, ergibt sich aus den Tagen seit Fälligkeit; Tage und Gebühren stellen Sie unter «Mahnstufen anpassen» ein."
+msgstr "Erinnerung, Mahnung und zuletzt die Fristansetzung nach Art. 257d OR. Welche Stufe gilt, ergibt sich aus den Tagen seit Fälligkeit; Tage und Gebühren stellen Sie unter «Mahnstufen anpassen» ein."
+
+msgid "Zahlungsauftrag im Format ISO 20022. Der Zahllauf erzeugt die Datei; Sie laden sie im E-Banking hoch."
+msgstr "Zahlungsauftrag im Format ISO 20022. Der Zahllauf erzeugt die Datei; Sie laden sie im E-Banking hoch."
+
+msgid "Ordnet Zahlungseingänge den offenen Rechnungen zu — automatisch über die QR-Referenz, sonst über gespeicherte Zahler-Zuordnungen. Was offen bleibt, ordnen Sie von Hand zu."
+msgstr "Ordnet Zahlungseingänge den offenen Rechnungen zu — automatisch über die QR-Referenz, sonst über gespeicherte Zahler-Zuordnungen. Was offen bleibt, ordnen Sie von Hand zu."
+
+msgid "Mieter und Eigentümer sehen im Portal ihre Rechnungen, Dokumente und Meldungen. Den Zugang richten Sie auf der Personen- bzw. Mandatsseite ein."
+msgstr "Mieter und Eigentümer sehen im Portal ihre Rechnungen, Dokumente und Meldungen. Den Zugang richten Sie auf der Personen- bzw. Mandatsseite ein."
+
+msgid "Wird aus dem Zeitraum vorgeschlagen; Sie können sie ändern."
+msgstr "Wird aus dem Zeitraum vorgeschlagen; Sie können sie ändern."
+
+msgid "Sieben Schritte vom Objekt bis zum Abschluss — rechts sehen Sie den Vertrag, wie er gedruckt wird."
+msgstr "Sieben Schritte vom Objekt bis zum Abschluss — rechts sehen Sie den Vertrag, wie er gedruckt wird."
+
+msgid "Beispielwerte — wählen Sie oben einen Vertrag oder eine Bewerbung für echte Daten."
+msgstr "Beispielwerte — wählen Sie oben einen Vertrag oder eine Bewerbung für echte Daten."
+
+msgid "Mitgelieferte Vorlage: Beim Speichern entsteht eine eigene Fassung für Ihre Verwaltung. Das Original bleibt für alle anderen, wie es ist."
+msgstr "Mitgelieferte Vorlage: Beim Speichern entsteht eine eigene Fassung für Ihre Verwaltung. Das Original bleibt für alle anderen, wie es ist."
+
+msgid "Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail und Name kann nur die Person selbst ändern — gespeichert wurde nur die Rolle in Ihrer Verwaltung."
+msgstr "Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail und Name kann nur die Person selbst ändern — gespeichert wurde nur die Rolle in Ihrer Verwaltung."
+
+msgid "Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail und Name kann nur die Person selbst ändern. Sie können hier die Rolle in Ihrer Verwaltung festlegen oder die Mitgliedschaft beenden."
+msgstr "Dieses Konto wird auch in einer anderen Verwaltung genutzt. Passwort, E-Mail und Name kann nur die Person selbst ändern. Sie können hier die Rolle in Ihrer Verwaltung festlegen oder die Mitgliedschaft beenden."
+
+msgid "Beenden Sie die Verträge; auf Wunsch der Person können Sie ihre Daten über die Datenschutz-Löschung (Anonymisierung) unkenntlich machen."
+msgstr "Beenden Sie die Verträge; auf Wunsch der Person können Sie ihre Daten über die Datenschutz-Löschung (Anonymisierung) unkenntlich machen."
+
+msgid "Setzen Sie den Vertrag stattdessen auf «Inaktiv / Archiviert»."
+msgstr "Setzen Sie den Vertrag stattdessen auf «Inaktiv / Archiviert»."
+
+msgid "Setzen Sie die Liegenschaft stattdessen auf den Status «Archiviert»."
+msgstr "Setzen Sie die Liegenschaft stattdessen auf den Status «Archiviert»."
+
+msgid "Beenden Sie die Verträge; das Objekt bleibt mit seiner Geschichte bestehen."
+msgstr "Beenden Sie die Verträge; das Objekt bleibt mit seiner Geschichte bestehen."
+
+msgid "Ihr Passwort"
+msgstr "Ihr Passwort"
+
+msgid "Diesen Vertrag wirklich löschen?\n\nEr hat %(r)s Rechnung(en) und %(z)s Zahlung(en) und kann deshalb nicht gelöscht werden. Setzen Sie ihn stattdessen auf «Inaktiv / Archiviert»."
+msgstr "Diesen Vertrag wirklich löschen?\n\nEr hat %(r)s Rechnung(en) und %(z)s Zahlung(en) und kann deshalb nicht gelöscht werden. Setzen Sie ihn stattdessen auf «Inaktiv / Archiviert»."
+
+msgid "Es laufen noch %(n)s Mietverträge. Beenden Sie sie zuerst."
+msgstr "Es laufen noch %(n)s Mietverträge. Beenden Sie sie zuerst."
+
+msgid "Setzen Sie die Liegenschaft stattdessen auf «Archiviert» (Archiv, Aufbewahrung zehn Jahre)."
+msgstr "Setzen Sie die Liegenschaft stattdessen auf «Archiviert» (Archiv, Aufbewahrung zehn Jahre)."
+
+msgid "Beenden Sie die Verträge und archivieren Sie das Objekt; es bleibt mit seiner Geschichte bestehen."
+msgstr "Beenden Sie die Verträge und archivieren Sie das Objekt; es bleibt mit seiner Geschichte bestehen."
+
+msgid "Beenden Sie das Mandat über «Archivieren» (Mandatsende): Es bleibt zehn Jahre aufbewahrt."
+msgstr "Beenden Sie das Mandat über «Archivieren» (Mandatsende): Es bleibt zehn Jahre aufbewahrt."
+
+msgid "Versenden Sie Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über Ihren SMTP-Server."
+msgstr "Versenden Sie Mahnungen, Abrechnungen und Anschreiben direkt aus swissImmo über Ihren SMTP-Server."
+
+msgid "Wählen Sie die Zimmerzahl: Der Assistent schlägt die Räume der Wohnung vor. Passen Sie die Zahlen an und legen Sie alle Räume mit ihrer Standard-Ausstattung auf einmal an. Räume, die es schon gibt, bleiben unverändert."
+msgstr "Wählen Sie die Zimmerzahl: Der Assistent schlägt die Räume der Wohnung vor. Passen Sie die Zahlen an und legen Sie alle Räume mit ihrer Standard-Ausstattung auf einmal an. Räume, die es schon gibt, bleiben unverändert."
+
+msgid "Noch keine Ausstattung erfasst. Starten Sie mit dem Raumbuch-Assistenten: Er legt alle Räume der Wohnung auf einmal an."
+msgstr "Noch keine Ausstattung erfasst. Starten Sie mit dem Raumbuch-Assistenten: Er legt alle Räume der Wohnung auf einmal an."
+
+msgid "Noch keine Gemeinschaftsräume erfasst. Legen Sie unten die Waschküche, den Trockenraum oder den Veloraum an."
+msgstr "Noch keine Gemeinschaftsräume erfasst. Legen Sie unten die Waschküche, den Trockenraum oder den Veloraum an."
+
+msgid "Wählen Sie die Räume des Hauses: Jeder wird mit seiner Standard-Ausstattung und den Lebensdauern angelegt. Räume, die es schon gibt, bleiben unverändert."
+msgstr "Wählen Sie die Räume des Hauses: Jeder wird mit seiner Standard-Ausstattung und den Lebensdauern angelegt. Räume, die es schon gibt, bleiben unverändert."
+
+msgid "Nach dem Versand erfassen Sie bei der Pendenz die Sendungsnummer und bestätigen den Zugang."
+msgstr "Nach dem Versand erfassen Sie bei der Pendenz die Sendungsnummer und bestätigen den Zugang."
+
+msgid "Der Brief trägt «Einschreiben» über der Adresse. Nach dem Versand erfassen Sie bei der Pendenz die Sendungsnummer und bestätigen den Zugang."
+msgstr "Der Brief trägt «Einschreiben» über der Adresse. Nach dem Versand erfassen Sie bei der Pendenz die Sendungsnummer und bestätigen den Zugang."
+
+msgid "Ende der Testphase: bis zu diesem Tag wird nichts in Rechnung gestellt. Leer = es wird nichts in Rechnung gestellt, bis Sie das Datum im Kundenprofil setzen."
+msgstr "Ende der Testphase: bis zu diesem Tag wird nichts in Rechnung gestellt. Leer = es wird nichts in Rechnung gestellt, bis Sie das Datum im Kundenprofil setzen."
+
+msgid "Adressen sind ohne Abfrageteil gezeigt. Meldungen von Browser-Erweiterungen (Quelle beginnt mit chrome-extension: oder moz-extension:) können Sie ignorieren."
+msgstr "Adressen sind ohne Abfrageteil gezeigt. Meldungen von Browser-Erweiterungen (Quelle beginnt mit chrome-extension: oder moz-extension:) können Sie ignorieren."
+
+msgid "Einführungspreise, Stand %(stand)s. Die Einheiten­zahl wird automatisch aus Ihren erfassten Objekten berechnet."
+msgstr "Einführungspreise, Stand %(stand)s. Die Einheiten­zahl wird automatisch aus Ihren erfassten Objekten berechnet."
+
+msgid "Landesindex der Konsumentenpreise, Basis %(basis)s = 100. Hier tragen Sie den Monatswert ein, sobald das BFS ihn veröffentlicht hat; ein Deployment braucht es nicht. Ein Eintrag hier gilt vor der Reihe im Code."
+msgstr "Landesindex der Konsumentenpreise, Basis %(basis)s = 100. Hier tragen Sie den Monatswert ein, sobald das BFS ihn veröffentlicht hat; ein Deployment braucht es nicht. Ein Eintrag hier gilt vor der Reihe im Code."
+
+msgid "Alles an einem Ort: Fehler der Anwendung, gescheiterte Abrufe und Aufträge, RLS-Befunde, CSP-Meldungen, fällige Pflege und Sicherheitsereignisse der letzten %(fenster_tage)s Tage. Die rote Zahl in der Leiste zählt Fehler, die Sie noch nicht gesehen haben."
+msgstr "Alles an einem Ort: Fehler der Anwendung, gescheiterte Abrufe und Aufträge, RLS-Befunde, CSP-Meldungen, fällige Pflege und Sicherheitsereignisse der letzten %(fenster_tage)s Tage. Die rote Zahl in der Leiste zählt Fehler, die Sie noch nicht gesehen haben."
+
+msgid "%(n)s neuer Fehler seit Ihrem letzten Besuch."
+msgid_plural "%(n)s neue Fehler seit Ihrem letzten Besuch."
+msgstr[0] "%(n)s neuer Fehler seit Ihrem letzten Besuch."
+msgstr[1] "%(n)s neue Fehler seit Ihrem letzten Besuch."
+
+msgid "Diese Mail kam von %(adresse)s. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennen Sie den Absender (etwa die zweite Adresse des Mieters), bestätigen Sie ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders."
+msgstr "Diese Mail kam von %(adresse)s. Die Adresse steht nicht am Ticket, deshalb sieht der Mieter die Nachricht nicht. Kennen Sie den Absender (etwa die zweite Adresse des Mieters), bestätigen Sie ihn: Seine Mails gelten für dieses Ticket dann als Antwort des Melders."
+
+msgid "Der Token schützt die URL — teilen Sie sie nur mit dem Portal/der Middleware. Bei Verdacht auf Missbrauch Token neu erzeugen."
+msgstr "Der Token schützt die URL — teilen Sie sie nur mit dem Portal/der Middleware. Bei Verdacht auf Missbrauch Token neu erzeugen."
+
+msgid "Importieren Sie camt.053-Kontoauszüge und ordnen Sie Zahlungseingänge automatisch per QR-Referenz den Debitoren zu."
+msgstr "Importieren Sie camt.053-Kontoauszüge und ordnen Sie Zahlungseingänge automatisch per QR-Referenz den Debitoren zu."
+
+msgid "Für %(bereich)s besteht bereits der Regelsatz «%(first)s». Es gilt ein Satz je Kanton — bearbeiten Sie den bestehenden, statt einen zweiten anzulegen."
+msgstr "Für %(bereich)s besteht bereits der Regelsatz «%(first)s». Es gilt ein Satz je Kanton — bearbeiten Sie den bestehenden, statt einen zweiten anzulegen."
+
+msgid "Dem Mandat sind noch %(n)s Liegenschaften zugeordnet, die nicht archiviert sind. Archivieren Sie sie oder ordnen Sie sie einem anderen Mandat zu."
+msgstr "Dem Mandat sind noch %(n)s Liegenschaften zugeordnet, die nicht archiviert sind. Archivieren Sie sie oder ordnen Sie sie einem anderen Mandat zu."
+
+msgid "Archivieren Sie den Vertrag stattdessen («Inaktiv / Archiviert»)."
+msgstr "Archivieren Sie den Vertrag stattdessen («Inaktiv / Archiviert»)."
+
+msgid "Archivieren Sie das Dokument stattdessen."
+msgstr "Archivieren Sie das Dokument stattdessen."
+
+msgid "Archivieren Sie die Schadenmeldung stattdessen."
+msgstr "Archivieren Sie die Schadenmeldung stattdessen."

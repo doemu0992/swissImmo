@@ -44,7 +44,7 @@ Assistenten: dieselbe Leiste mit sechs Schritten wie in der Periode, Schritt 1 a
         <div class="fw-feldblock breit"><label class="fw-label" for="nk-bez">{% trans "Bezeichnung *" %}</label>
             <input name="bezeichnung" id="nk-bez" required maxlength="100" placeholder="{% trans 'z.B. Heizperiode 2025/2026' %}" class="fw-feld" value="{{ eingabe.bezeichnung|default:'' }}"{% if fehler.bezeichnung %} aria-invalid="true"{% endif %}>
             {% if fehler.bezeichnung %}<p class="fw-feldfehler" role="alert">{{ fehler.bezeichnung }}</p>{% endif %}
-            <p class="fw-hilfe">{% trans "Wird aus dem Zeitraum vorgeschlagen; du kannst sie ändern." %}</p></div>
+            <p class="fw-hilfe">{% trans "Wird aus dem Zeitraum vorgeschlagen; Sie können sie ändern." %}</p></div>
     </div></div>
 </form>
 {% endblock %}

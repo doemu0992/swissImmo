@@ -112,13 +112,13 @@ def _hindernis(objekt):
     """Warum sich `objekt` (noch) nicht archivieren lässt, sonst ''."""
     laufend = _laufende_vertraege(objekt).count()
     if laufend:
-        return gettext('Es laufen noch %(n)s Mietverträge. Beende sie zuerst.') % {'n': laufend}
+        return gettext('Es laufen noch %(n)s Mietverträge. Beenden Sie sie zuerst.') % {'n': laufend}
     if objekt._meta.label == 'crm.Eigentuemer':
         from portfolio.models import Liegenschaft
         offen = Liegenschaft.objects.filter(eigentuemer=objekt).exclude(status='archiviert').count()
         if offen:
             return gettext('Dem Mandat sind noch %(n)s Liegenschaften zugeordnet, die nicht archiviert sind. '
-                           'Archiviere sie oder ordne sie einem anderen Mandat zu.') % {'n': offen}
+                           'Archivieren Sie sie oder ordnen Sie sie einem anderen Mandat zu.') % {'n': offen}
     return ''
 
 

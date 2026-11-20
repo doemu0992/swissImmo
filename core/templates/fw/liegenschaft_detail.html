@@ -304,7 +304,7 @@ Liegenschaft ohne Betreuung soll auffallen.
     {% comment %} Gemeinschaftsräume: das Raumbuch des Hauses (nicht einer Wohnung). Gleiche Liste wie bei der Wohnung. {% endcomment %}
     <div class="fw-subhead" id="gemeinschaft">{% trans "Gemeinschaftsräume" %}</div>
     <p class="fw-klein mb-3">{% trans "Waschküche, Trockenraum, Veloraum …: Räume, die allen Wohnungen des Hauses gehören. Sie erscheinen nicht in der Wohnungsabnahme." %}</p>
-    {% trans "Noch keine Gemeinschaftsräume erfasst. Lege unten die Waschküche, den Trockenraum oder den Veloraum an." as rb_leer_gem %}
+    {% trans "Noch keine Gemeinschaftsräume erfasst. Legen Sie unten die Waschküche, den Trockenraum oder den Veloraum an." as rb_leer_gem %}
     {% include "fw/_raumbuch_liste.html" with raeume=gemeinschaft_raeume rb_basis=gem_basis rb_leer=rb_leer_gem %}
     {% if kann_schreiben %}
     <details class="group fw-card mt-4" id="gemeinschaft-hinzufuegen"{% if not gemeinschaft_raeume %} open{% endif %}>
@@ -315,7 +315,7 @@ Liegenschaft ohne Betreuung soll auffallen.
         <div class="border-t fw-linie fw-rumpf space-y-4">
             <form method="post" action="{{ gem_basis }}/ausstattung/gemeinschaft/" class="space-y-3">
                 {% csrf_token %}
-                <p class="fw-klein">{% trans "Wähle die Räume des Hauses: Jeder wird mit seiner Standard-Ausstattung und den Lebensdauern angelegt. Räume, die es schon gibt, bleiben unverändert." %}</p>
+                <p class="fw-klein">{% trans "Wählen Sie die Räume des Hauses: Jeder wird mit seiner Standard-Ausstattung und den Lebensdauern angelegt. Räume, die es schon gibt, bleiben unverändert." %}</p>
                 <div class="fw-raster r3">
                     {% for typ in gemeinschaft_typen %}
                     <label class="flex items-center gap-2"><input type="checkbox" name="typ" value="{{ typ }}"> <span>{{ typ }}</span></label>
@@ -616,7 +616,7 @@ Liegenschaft ohne Betreuung soll auffallen.
 
 <!-- ===== REITER: DOKUMENTE (nach Objekt gruppiert) ===== -->
 <div data-panel="lg" id="lg-dokumente" class="hidden">
-    <p class="fw-klein mb-2">{% zeichen 'hinweis' klasse='mr-1' %}{% trans "Gebäude- und objektbezogene Dokumente (Versicherung, Pläne, Reglemente). Vertragsdokumente findest du beim jeweiligen Objekt unter «Chronik» und bei der Person." %}</p>
+    <p class="fw-klein mb-2">{% zeichen 'hinweis' klasse='mr-1' %}{% trans "Gebäude- und objektbezogene Dokumente (Versicherung, Pläne, Reglemente). Vertragsdokumente finden Sie beim jeweiligen Objekt unter «Chronik» und bei der Person." %}</p>
     {% for g in dok_gruppen %}
     <details class="fw-card group">
         <summary class="fw-kopf cursor-pointer select-none list-none">
