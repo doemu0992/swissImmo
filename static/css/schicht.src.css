@@ -3405,7 +3405,11 @@
             .fw-tab-plus:hover{background:var(--ds-brand);color:var(--ds-auf-satt)}
             .fw-tab-zahl{position:absolute;top:0;left:calc(50% + 6px);min-width:16px;height:16px;padding:0 4px;border-radius:var(--ds-pill);background:var(--ds-crit);color:var(--ds-auf-satt);font-size:11px;font-weight:600;line-height:16px;text-align:center}
             .fw-tab-zahl[hidden]{display:none}
-            .fw-mit-schiene .fw-haupt{padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+            /* Alles, was unten klebt, rückt über die Leiste (sonst verdeckt sie Fusszeilen und Meldungen, E2E «Abnahme-Assistent» am Telefon). */
+            .fw-mit-schiene:has(#fwTabbar){--fw-tab-h:calc(68px + env(safe-area-inset-bottom,0px))}
+            .fw-mit-schiene:has(#fwTabbar) .fw-haupt{padding-bottom:var(--fw-tab-h)}
+            .fw-mit-schiene:has(#fwTabbar) :is(.fw-freigabe,.fw-assistent-fuss,.fw-split-fuss,.fw-sk-absenden){bottom:calc(var(--fw-tab-h) + 8px)}
+            .fw-mit-schiene:has(#fwTabbar) .fw-toasts{bottom:calc(var(--fw-tab-h) + 8px)}
         }
         @media print{.fw-tabbar{display:none!important}}
         @media print{.fw-schiene,.fw-fach,.fw-schiene-vorhang,.fw-menue-knopf{display:none!important}.fw-mit-schiene .fw-haupt{margin-left:0}}
