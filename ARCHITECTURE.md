@@ -226,6 +226,12 @@ auseinander). Jede alte Grösse wurde auf die nächste Stufe gerundet (12,5 → 
 26/30/32 → 28); fast nichts wird kleiner, vieles minimal grösser. Ausserhalb der Skala bleiben die Mikroschrift unter 12 px
 (nur die Selektoren in `test_schrift_mindestgroesse`) und die Anzeigezahlen 34/40/52 px. Wächter: `core/tests/test_schriftskala.py`.
 
+### Zeilenabstand als Standard
+
+Am PC haben Zeilen den Abstand des Prototyps als Standard: `7 px 18 px 7 px 14 px` (vorher 14 px 24 px), auf «Heute» entsprechend; die Zeile bleibt zweizeilig.
+Am Handy (bis 640 px) bleibt der grosse Abstand wegen der Tippflächen. Die Ansicht «Dicht» (Zweitzeile neben dem Titel, Schalter ab 10 Einträgen)
+bleibt zusätzlich wählbar. Entscheidung des Betreibers vom 20.11.2026 («nach Empfehlung»).
+
 ### Dichte Listen
 
 Karten mit mindestens 10 Zeilen (`.fw-zeile`) bekommen ab 641 px die Klasse `fw-dicht`: halber Abstand, Titel und Zweitzeile nebeneinander
