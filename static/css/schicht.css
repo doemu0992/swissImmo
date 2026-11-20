@@ -1546,7 +1546,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-logo-haus .a{stroke:var(--ds-ink)}.fw-logo-haus .b{stroke:var(--ds-akzent)}
         .fw-logo-kreuz{position:absolute;right:0;top:-2px;width:12px;height:12px}
         .fw-werkzeug-kapsel{gap:6px;padding:0 6px;flex:0 0 auto}
-        .fw-werkzeug-kapsel .fw-knopf-rund{width:40px;height:40px;border-radius:var(--ds-pill)}
+        .fw-werkzeug-kapsel .fw-knopf-rund{width:36px;height:36px;border-radius:var(--ds-pill)}
         .fw-knopf-rund.fw-knopf-dunkel{background:var(--ds-ink);color:var(--ds-surface)}
         .fw-knopf-rund.fw-knopf-dunkel:hover{background:var(--ds-ink);color:var(--ds-surface);transform:rotate(25deg)}
         .fw-werkzeug-kapsel .fw-pip{top:9px;right:10px;background:var(--ds-akzent);box-shadow:0 0 0 2px var(--ds-surface)}
@@ -2418,6 +2418,8 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-vz-haupt .fw-vz-titel{order:1;flex:1 1 0;min-width:8ch}
             .fw-vz-haupt .fw-vz-sub{order:2;flex:1 1 100%;margin-top:0}
         }
+        .fw-zeile .fw-btn:hover,.fw-vz .fw-btn:hover{transform:none}
+        .fw-schiene-b.hier{font-weight:500}
         .fw-dichte-schalter,.fw-dichte-leiste{display:none}
         @media (min-width:641px){
             .fw-dichte-schalter{display:inline-flex;margin-left:auto;padding:3px;gap:2px;background:var(--ds-surface-2);border-radius:var(--ds-pill)}
@@ -2464,12 +2466,12 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-logo-haus{width:24px;height:24px}
             .fw-logo-kreuz{width:10px;height:10px}
         }
-        .fw-bestand{position:relative;flex:0 1 auto;min-width:0;max-width:13rem;display:flex;align-items:center;height:52px;
+        .fw-bestand{position:relative;flex:0 1 auto;min-width:0;max-width:13rem;display:flex;align-items:center;height:44px;
             background:var(--ds-surface);border-radius:var(--ds-pill);box-shadow:var(--ds-shadow-sm),0 0 0 1px var(--ds-line);
             transition:box-shadow .2s,background .2s}
         .fw-bestand:hover{box-shadow:var(--ds-shadow-sm),0 0 0 1px var(--ds-line-stark)}
         .fw-bestand:focus-within{box-shadow:var(--ds-shadow-sm),0 0 0 2px color-mix(in srgb,var(--ds-akzent) 65%,transparent)}
-        .fw-bestand-zeichen{position:absolute;left:9px;top:9px;width:34px;height:34px;border-radius:var(--ds-pill);background:var(--ds-surface-2);
+        .fw-bestand-zeichen{position:absolute;left:6px;top:6px;width:32px;height:32px;border-radius:var(--ds-pill);background:var(--ds-surface-2);
             color:var(--ds-ink);display:grid;place-items:center;pointer-events:none}
         .fw-bestand-ueber{position:absolute;left:52px;right:34px;top:10px;font-size:12px;font-weight:600;letter-spacing:.08em;line-height:1.2;
             text-transform:uppercase;color:var(--ds-faint);white-space:nowrap;overflow:hidden;pointer-events:none}
@@ -2516,10 +2518,10 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         button.fw-profil-link{width:100%;border:0;background:none;font:inherit;font-size:14px;text-align:left;cursor:pointer}
         .fw-profil{max-height:calc(100dvh - 96px);overflow-y:auto}
         .fw-os{--fw-os-ruhe:13rem;--fw-os-offen:calc(var(--fw-os-ruhe) + var(--fw-os-extra,0px));
-            position:relative;flex:0 0 var(--fw-os-ruhe);width:var(--fw-os-ruhe);height:44px;margin-left:auto}
-        @media (max-width:1439px){.fw-os{--fw-os-ruhe:11rem}}
-        @media (max-width:1359px){.fw-os{--fw-os-ruhe:10.5rem}}
-        .fw-os-feld{position:absolute;top:0;right:0;z-index:2;width:var(--fw-os-ruhe);height:44px;margin:0;display:flex;align-items:center;gap:8px;
+            position:relative;flex:0 0 var(--fw-os-ruhe);width:var(--fw-os-ruhe);height:36px;margin-left:auto}
+        @media (max-width:1439px){.fw-os{--fw-os-ruhe:11.5rem}}
+        @media (max-width:1359px){.fw-os{--fw-os-ruhe:11.5rem}}
+        .fw-os-feld{position:absolute;top:0;right:0;z-index:2;width:var(--fw-os-ruhe);height:36px;margin:0;display:flex;align-items:center;gap:8px;
             padding:0 8px 0 14px;background:var(--ds-surface);border-radius:var(--ds-pill);color:var(--ds-faint);
             box-shadow:var(--ds-shadow-sm),0 0 0 1px var(--ds-line);transition:width .2s var(--ds-ease),box-shadow .2s}
         .fw-os-feld:hover{box-shadow:var(--ds-shadow-sm),0 0 0 1px var(--ds-line-stark)}

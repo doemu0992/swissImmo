@@ -206,6 +206,12 @@ Am Handy (bis 640 px) steht das Etikett (Status bei Schäden, Art bei «Heute»)
 Zweitzeile und ohne Freigabe-Chips, die die App fachlich braucht). Der Chip «Freigabe ausstehend …» bricht um, statt über den Kartenrand zu laufen; der Knopf
 steht rechts. Regeln im Modul «Zeilen am Handy» von `_schicht.html`.
 
+### Kopfzeile nach Zielbild
+
+Am PC sind die Steuerelemente der Kopfzeile so hoch wie im Prototyp: Bestand-Pille 44 px (Symbolkreis 32 px), Suchfeld 36 px, Werkzeugknöpfe 36 px
+(vorher 52 / 44 / 40 px). Das Suchfeld ist unterhalb von 1440 px etwas breiter (11,5 rem), damit «Suchen …» und das Kürzel nicht abgeschnitten werden.
+Zeilenknöpfe heben sich beim Zeigen nicht mehr an (in dichten Listen sprang die Zeile), der aktive Eintrag der Schiene ist 500 statt 600 stark.
+
 ### Schriftskala
 
 Die Stilschicht kennt sieben Schriftstufen: 12, 13, 14, 15, 18, 22, 28 px (vorher 28 verschiedene Werte, viele nur 0,5 px

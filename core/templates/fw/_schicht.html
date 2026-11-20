@@ -2394,7 +2394,7 @@ und einen Stilblock enthaelt.
         
         
         .fw-werkzeug-kapsel{gap:6px;padding:0 6px;flex:0 0 auto}
-        .fw-werkzeug-kapsel .fw-knopf-rund{width:40px;height:40px;border-radius:var(--ds-pill)}
+        .fw-werkzeug-kapsel .fw-knopf-rund{width:36px;height:36px;border-radius:var(--ds-pill)}
         .fw-knopf-rund.fw-knopf-dunkel{background:var(--ds-ink);color:var(--ds-surface)}
         .fw-knopf-rund.fw-knopf-dunkel:hover{background:var(--ds-ink);color:var(--ds-surface);transform:rotate(25deg)}
         .fw-werkzeug-kapsel .fw-pip{top:9px;right:10px;background:var(--ds-akzent);box-shadow:0 0 0 2px var(--ds-surface)}
@@ -3461,6 +3461,10 @@ und einen Stilblock enthaelt.
             .fw-vz-haupt .fw-vz-sub{order:2;flex:1 1 100%;margin-top:0}
         }
 
+        /* Zeilenknoepfe springen nicht: Der Prototyp hebt sie beim Zeigen nicht an, in dichten Listen verschoebe sich sonst die Zeile unter dem Zeiger. */
+        .fw-zeile .fw-btn:hover,.fw-vz .fw-btn:hover{transform:none}
+        .fw-schiene-b.hier{font-weight:500}
+
         /* ===== MODUL Dichte Listen (Phase 3): Zeilen mit Titel und Zweitzeile nebeneinander =====
            Ab 10 Zeilen in einer Karte automatisch, mit Schalter jederzeit umstellbar, nur ab 641 px
            (am Handy bleiben die grossen Tippflaechen). Nur Abstand und Anordnung aendern sich:
@@ -3543,12 +3547,12 @@ und einen Stilblock enthaelt.
         /* Bestandsfilter `lg` als Kontext-Chip: Überzeile «BESTAND», darunter der Name. Die native Auswahl
            liegt über dem ganzen Chip (Padding schiebt den Text in die zweite Zeile), ein Tipp irgendwo
            darauf öffnet sie; Symbol, Überzeile und Pfeil sind Zierde und reichen den Tipp durch. */
-        .fw-bestand{position:relative;flex:0 1 auto;min-width:0;max-width:13rem;display:flex;align-items:center;height:52px;
+        .fw-bestand{position:relative;flex:0 1 auto;min-width:0;max-width:13rem;display:flex;align-items:center;height:44px;
             background:var(--ds-surface);border-radius:var(--ds-pill);box-shadow:var(--ds-shadow-sm),0 0 0 1px var(--ds-line);
             transition:box-shadow .2s,background .2s}
         .fw-bestand:hover{box-shadow:var(--ds-shadow-sm),0 0 0 1px var(--ds-line-stark)}
         .fw-bestand:focus-within{box-shadow:var(--ds-shadow-sm),0 0 0 2px color-mix(in srgb,var(--ds-akzent) 65%,transparent)}
-        .fw-bestand-zeichen{position:absolute;left:9px;top:9px;width:34px;height:34px;border-radius:var(--ds-pill);background:var(--ds-surface-2);
+        .fw-bestand-zeichen{position:absolute;left:6px;top:6px;width:32px;height:32px;border-radius:var(--ds-pill);background:var(--ds-surface-2);
             color:var(--ds-ink);display:grid;place-items:center;pointer-events:none}
         .fw-bestand-ueber{position:absolute;left:52px;right:34px;top:10px;font-size:12px;font-weight:600;letter-spacing:.08em;line-height:1.2;
             text-transform:uppercase;color:var(--ds-faint);white-space:nowrap;overflow:hidden;pointer-events:none}
@@ -3648,10 +3652,10 @@ und einen Stilblock enthaelt.
         /* Omnisearch: das Feld wächst bei Fokus nach links in den freien Platz (`--fw-os-extra`, höchstens 8 rem, misst
            `fw-omnisearch.js`; ohne Skript wächst es nicht). Der Platz in der Zeile bleibt unverändert, nichts rutscht. */
         .fw-os{--fw-os-ruhe:13rem;--fw-os-offen:calc(var(--fw-os-ruhe) + var(--fw-os-extra,0px));
-            position:relative;flex:0 0 var(--fw-os-ruhe);width:var(--fw-os-ruhe);height:44px;margin-left:auto}
-        @media (max-width:1439px){.fw-os{--fw-os-ruhe:11rem}}
-        @media (max-width:1359px){.fw-os{--fw-os-ruhe:10.5rem}}
-        .fw-os-feld{position:absolute;top:0;right:0;z-index:2;width:var(--fw-os-ruhe);height:44px;margin:0;display:flex;align-items:center;gap:8px;
+            position:relative;flex:0 0 var(--fw-os-ruhe);width:var(--fw-os-ruhe);height:36px;margin-left:auto}
+        @media (max-width:1439px){.fw-os{--fw-os-ruhe:11.5rem}}
+        @media (max-width:1359px){.fw-os{--fw-os-ruhe:11.5rem}}
+        .fw-os-feld{position:absolute;top:0;right:0;z-index:2;width:var(--fw-os-ruhe);height:36px;margin:0;display:flex;align-items:center;gap:8px;
             padding:0 8px 0 14px;background:var(--ds-surface);border-radius:var(--ds-pill);color:var(--ds-faint);
             box-shadow:var(--ds-shadow-sm),0 0 0 1px var(--ds-line);transition:width .2s var(--ds-ease),box-shadow .2s}
         .fw-os-feld:hover{box-shadow:var(--ds-shadow-sm),0 0 0 1px var(--ds-line-stark)}
