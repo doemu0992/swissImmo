@@ -91,7 +91,14 @@ def _berichte_v8(heute, aktive_lg):
         mandate.append({**z, **je_mandat[z['mandat'].id]})
 
     gemessen = [w for w in reihe if w is not None]
+    # Datenstand des Endpunkts (UI-Zielbild): wann zuletzt ein Kontoauszug importiert wurde
+    from django.utils import timezone
+    from finance.models import Kontoauszug
+    letzter_auszug = Kontoauszug.objects.order_by('-importiert_am').values_list('importiert_am', flat=True).first()
+    quote_stand = (_('Stand Bankimport %(datum)s') % {'datum': timezone.localtime(letzter_auszug).strftime('%d.%m.')}
+                   if letzter_auszug else '')
     return {
+        'quote_stand': quote_stand,
         'bericht_von': enden[0].replace(day=1), 'bericht_bis': enden[-1],
         'quote_werte': reihe, 'quote_monate': monate,
         'quote_min': min(gemessen) if gemessen else None,

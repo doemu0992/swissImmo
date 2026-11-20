@@ -40916,3 +40916,6 @@ msgstr "Archive the damage report instead."
 
 msgid "Häufig genutzt"
 msgstr "Frequently used"
+
+msgid "Stand Bankimport %(datum)s"
+msgstr "as of bank import %(datum)s"

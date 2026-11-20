@@ -39810,3 +39810,6 @@ msgstr "Archivieren Sie die Schadenmeldung stattdessen."
 
 msgid "Häufig genutzt"
 msgstr "Häufig genutzt"
+
+msgid "Stand Bankimport %(datum)s"
+msgstr "Stand Bankimport %(datum)s"

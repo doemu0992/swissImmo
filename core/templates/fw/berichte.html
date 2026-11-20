@@ -34,7 +34,7 @@ stehen einzeln im Katalog und tragen dort die Kapsel «PDF»).
             <span class="fw-neben">{% trans "Ist in % vom Soll" %}</span>
         </div>
         {% trans "Zahlungsquote je Monat" as quote_titel %}
-        {% linien_diagramm quote_werte quote_monate quote_titel as linie %}
+        {% linien_diagramm quote_werte quote_monate quote_titel stand=quote_stand as linie %}
         {% if linie %}
         <div class="fw-diagramm">{{ linie }}</div>
         <div class="fw-fuss"><span>{% blocktrans with tief=quote_min|floatformat:1 hoch=quote_max|floatformat:1 %}zwischen {{ tief }} % und {{ hoch }} % · Monate ohne Sollstellung bleiben leer{% endblocktrans %}</span></div>

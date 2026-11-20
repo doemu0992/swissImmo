@@ -2391,7 +2391,7 @@
         .fw-card,.fw-aktenkopf,.fw-freigabe,.fw-kpis:not(.fw-stats)>.fw-kpi,.fw-lage-kachel,.fw-ampel,.fw-lauf{border-color:transparent;border-radius:var(--ds-radius)}
         .fw-card{box-shadow:var(--ds-shadow-sm)}
         .fw-kpis.fw-stats{border-color:transparent;border-radius:var(--ds-radius)}
-        .fw-kopf{border-bottom-color:var(--ds-line);padding:20px 24px}
+        .fw-kopf{border-bottom-color:var(--ds-line);padding:18px 22px 14px}   /* Prototyp: Kartenkopf 18 px oben, 22 px seitlich */
         .fw-kopf h2,.fw-kopf .fw-t,.fw-card>.fw-h .fw-t{font-size:15px;font-weight:600;letter-spacing:-.015em}
         .fw-fuss{padding:14px 24px;border-top-color:var(--ds-line)}
         .fw-zeile{padding:14px 24px}

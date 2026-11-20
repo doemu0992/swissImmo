@@ -212,6 +212,13 @@ Am PC sind die Steuerelemente der Kopfzeile so hoch wie im Prototyp: Bestand-Pil
 (vorher 52 / 44 / 40 px). Das Suchfeld ist unterhalb von 1440 px etwas breiter (11,5 rem), damit «Suchen …» und das Kürzel nicht abgeschnitten werden.
 Zeilenknöpfe heben sich beim Zeigen nicht mehr an (in dichten Listen sprang die Zeile), der aktive Eintrag der Schiene ist 500 statt 600 stark.
 
+### Diagramm: Datenstand am Endpunkt
+
+Der Endwert der Zahlungsquote nennt seinen Datenstand, wie im Prototyp: «66,7 % (Stand Bankimport 26.10.)». Das Datum ist der Importzeitpunkt des letzten
+Kontoauszugs (`Kontoauszug.importiert_am`); ohne Auszug steht nur der Wert. Das Template-Tag `linien_diagramm` nimmt dafür den Parameter `stand`
+(`core/templatetags/diagramm.py`, Test `core/tests/test_diagramm_stand.py`). Die gestrichelte Ziellinie des Prototyps (95 %) fehlt weiter: Ihr Zielwert muss der Betreiber festlegen.
+Kartenköpfe haben jetzt `18 px 22 px 14 px` Innenabstand (vorher 20 / 24 px).
+
 ### Schriftskala
 
 Die Stilschicht kennt sieben Schriftstufen: 12, 13, 14, 15, 18, 22, 28 px (vorher 28 verschiedene Werte, viele nur 0,5 px
