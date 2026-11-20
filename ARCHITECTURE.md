@@ -199,6 +199,13 @@ Seitentitel auf Unterseiten 36 px (Handy 22 px; «Heute» bleibt gross). Die Wer
 von 36 px ist als Anzeigegrösse im Wächter `test_schriftskala` erlaubt. Der vollständige Bericht liegt in der Konversation; offene Punkte sind die
 Zeilendichte als Standard und die Ziellinie im Diagramm (beides Entscheidungen des Betreibers).
 
+### Zeilen am Handy
+
+Am Handy (bis 640 px) steht das Etikett (Status bei Schäden, Art bei «Heute») **neben** dem Titel statt darüber, wie im Prototyp; darunter folgen Zweitzeile,
+«seit N Tagen» und der Knopf. Gemessen sank die Zeile bei Schäden von 182 auf 162 px, bei «Heute» von 142 auf 120 px (Prototyp: 86 / 105 px, ohne
+Zweitzeile und ohne Freigabe-Chips, die die App fachlich braucht). Der Chip «Freigabe ausstehend …» bricht um, statt über den Kartenrand zu laufen; der Knopf
+steht rechts. Regeln im Modul «Zeilen am Handy» von `_schicht.html`.
+
 ### Schriftskala
 
 Die Stilschicht kennt sieben Schriftstufen: 12, 13, 14, 15, 18, 22, 28 px (vorher 28 verschiedene Werte, viele nur 0,5 px

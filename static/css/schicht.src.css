@@ -3407,6 +3407,22 @@
             .fw-phead-knoepfe .fw-btn{min-height:44px}
         }
 
+        /* Zielbild am Handy: Etikett (Status, Art) steht NEBEN dem Titel, nicht darueber. Der Prototyp zeigt
+           Etikett und Titel in einer Zeile, darunter «seit N Tagen» und den Knopf. Gemessen: Schaeden
+           182 px statt 86 px, Heute 142 px statt 105 px je Zeile. */
+        @media (max-width:640px){
+            .fw-schadenzeile .fw-mitte{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px}
+            .fw-schadenzeile .fw-schaden-tags{order:0;display:flex;flex-wrap:wrap;gap:4px;margin:0}
+            .fw-schadenzeile .fw-mitte>.fw-t{order:1;flex:1 1 0;min-width:8ch}
+            .fw-schadenzeile .fw-mitte>.fw-s:not(.fw-schaden-tags){order:2;flex:1 1 100%}
+            .fw-schadenzeile .fw-chip{max-width:100%;white-space:normal}   /* «Freigabe ausstehend — beim Eigentümer …» lief über den Kartenrand */
+            .fw-schadenzeile>.fw-btn{margin-left:auto}
+            .fw-vz-haupt{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px}
+            .fw-vz-haupt .fw-vz-kopf{order:0;margin:0}
+            .fw-vz-haupt .fw-vz-titel{order:1;flex:1 1 0;min-width:8ch}
+            .fw-vz-haupt .fw-vz-sub{order:2;flex:1 1 100%;margin-top:0}
+        }
+
         /* ===== MODUL Dichte Listen (Phase 3): Zeilen mit Titel und Zweitzeile nebeneinander =====
            Ab 10 Zeilen in einer Karte automatisch, mit Schalter jederzeit umstellbar, nur ab 641 px
            (am Handy bleiben die grossen Tippflaechen). Nur Abstand und Anordnung aendern sich:

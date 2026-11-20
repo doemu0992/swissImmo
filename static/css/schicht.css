@@ -2406,6 +2406,18 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-sz{min-height:44px}
             .fw-phead-knoepfe .fw-btn{min-height:44px}
         }
+        @media (max-width:640px){
+            .fw-schadenzeile .fw-mitte{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px}
+            .fw-schadenzeile .fw-schaden-tags{order:0;display:flex;flex-wrap:wrap;gap:4px;margin:0}
+            .fw-schadenzeile .fw-mitte>.fw-t{order:1;flex:1 1 0;min-width:8ch}
+            .fw-schadenzeile .fw-mitte>.fw-s:not(.fw-schaden-tags){order:2;flex:1 1 100%}
+            .fw-schadenzeile .fw-chip{max-width:100%;white-space:normal}   
+            .fw-schadenzeile>.fw-btn{margin-left:auto}
+            .fw-vz-haupt{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px}
+            .fw-vz-haupt .fw-vz-kopf{order:0;margin:0}
+            .fw-vz-haupt .fw-vz-titel{order:1;flex:1 1 0;min-width:8ch}
+            .fw-vz-haupt .fw-vz-sub{order:2;flex:1 1 100%;margin-top:0}
+        }
         .fw-dichte-schalter,.fw-dichte-leiste{display:none}
         @media (min-width:641px){
             .fw-dichte-schalter{display:inline-flex;margin-left:auto;padding:3px;gap:2px;background:var(--ds-surface-2);border-radius:var(--ds-pill)}
