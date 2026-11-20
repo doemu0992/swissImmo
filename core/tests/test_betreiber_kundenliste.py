@@ -279,14 +279,21 @@ class BetreiberTestphaseTests(TestCase):
 
     def test_keine_rechnung_vor_ende_der_testphase_dann_ohne_mwst(self):
         from datetime import date as d
+        from datetime import timedelta
         from decimal import Decimal
 
+        from django.utils import timezone
+
         from abo import dienst
-        self.c.post('/betreiber/neu/', {**self.daten, 'abrechnung_ab': '2026-12-01'})
+        # Datumsunabhängig: Beginn = der 1. des Monats, der mehr als 40 Tage vor uns liegt (also ausserhalb des Vorlaufs von
+        # ABO_VORLAUF_TAGE; ein fester Termin kippte, sobald er in den Vorlauf rückte), und eine volle Periode.
+        heute = timezone.localdate()
+        beginn = ((heute + timedelta(days=40)).replace(day=1) + timedelta(days=32)).replace(day=1)
+        self.c.post('/betreiber/neu/', {**self.daten, 'abrechnung_ab': beginn.isoformat()})
         org = Organisation.objects.get(firma='Testphase AG')
         abo = Abonnement.alle_organisationen.get(organisation=org)
-        self.assertIsNone(dienst.rechnung_stellen(org, abo, heute=d(2026, 11, 20)))     # noch Testphase
-        rechnung = dienst.rechnung_stellen(org, abo, heute=d(2026, 12, 1))
+        self.assertIsNone(dienst.rechnung_stellen(org, abo, heute=heute))     # noch Testphase
+        rechnung = dienst.rechnung_stellen(org, abo, heute=beginn)
         self.assertIsNotNone(rechnung)
         self.assertIsNone(rechnung.mwst_satz)                      # nicht mehrwertsteuerpflichtig: keine MWST
         self.assertEqual((rechnung.netto, rechnung.mwst_betrag, rechnung.brutto),
@@ -321,7 +328,10 @@ class BetreiberSofortRechnungTests(TestCase):
         from abo.models import AboRechnung
         self._einstellen(self.heute)
         self._einstellen(self.heute)
-        self.assertEqual(AboRechnung.alle_organisationen.filter(organisation=self.org).count(), 1)
+        # Nie dieselbe Periode zweimal. (Liegt der Monatswechsel im Vorlauf, darf die NÄCHSTE Periode schon dabei sein.)
+        perioden = list(AboRechnung.alle_organisationen.filter(organisation=self.org).values_list('periode_von', flat=True))
+        self.assertEqual(len(perioden), len(set(perioden)))
+        self.assertIn(self.heute, perioden)
 
     def test_datum_weit_in_der_zukunft_stellt_nichts(self):
         from datetime import timedelta
