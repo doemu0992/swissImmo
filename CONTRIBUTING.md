@@ -171,6 +171,10 @@ Primärknöpfe: Zeilenaktionen (`fw-knapp fw-primary`, z. B. «Zuordnen», «Aus
 sind Akzent (`--ds-brand`, Schrift `--ds-auf-satt`); die grossen Seitenknöpfe (`fw-btn fw-primary` ohne `fw-knapp`) bleiben
 schwarz. Test: `core/tests/test_primaerknopf_akzent.py`.
 
+Anrede: Die Oberfläche siezt («Erfassen Sie …», «Ihre Verwaltung»), auch in Hinweisen, Fehlermeldungen und Hilfetexten. Keine Du-Formen und
+keine Befehlsform wie «Erfasse …». Wer einen Text ändert, ergänzt die Übersetzung (FR formell «vous», IT formell «Lei»). Wächter:
+`core/tests/test_sie_form.py`.
+
 Schriftgrössen: nur 12, 13, 14, 15, 18, 22 und 28 px (Stufen `fw-fs-*` und die Regeln der Schicht). Unter 12 px nur die
 begründeten Ausnahmen aus `test_schrift_mindestgroesse`; 34, 40, 52 px und das `clamp(…)` der Titelzeile sind Anzeigezahlen.
 Eine neue Grösse lässt `core/tests/test_schriftskala.py` scheitern.

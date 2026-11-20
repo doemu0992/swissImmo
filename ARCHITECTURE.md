@@ -170,6 +170,14 @@ das Sperrkonto in Höhe des bilanzierten Betrags frei. Eine MWST-Periode für de
 Rechenkern `core/utils/billing.py` (`berechne_abrechnung`), Assistent `core/views/fw/nk_wizard.py`, PDF und Versand
 in `core/services/nk_*.py`.
 
+### Anrede «Sie»
+
+Alle Texte der Oberfläche siezen (Entscheidung vom 20.11.2026). Vorher mischte die Anwendung «du kannst», «Erfasse die IBAN» und «Sie». 86 Texte
+wurden umgestellt, im Code und mit neuen Einträgen in den vier `.po`-Dateien (die alten Du-Einträge bleiben als ungenutzte Zeilen stehen,
+weil Übersetzungen nur angehängt werden). Französisch und Italienisch sind formell («vous», «Lei»). Der Wächter `core/tests/test_sie_form.py`
+sucht Du-Pronomen und Befehlsformen am Satzanfang in `fw/`-Vorlagen, Ansichten, Diensten und Hilfetexten; Kommentare zählen nicht. Der Satz
+auf «Heute» heisst «N Vorgänge brauchen heute Ihre Aufmerksamkeit».
+
 ### Schriftskala
 
 Die Stilschicht kennt sieben Schriftstufen: 12, 13, 14, 15, 18, 22, 28 px (vorher 28 verschiedene Werte, viele nur 0,5 px
