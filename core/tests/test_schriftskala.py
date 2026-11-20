@@ -5,7 +5,7 @@ hält ein Wächter die Skala fest: Eine neue Pixelgrösse in der Stilschicht lä
 
 Ausnahmen, mit Begründung:
 * unter 12 px: nur die Selektoren aus `test_schrift_mindestgroesse` (Zahlen in kleinen Kreisen, Achsen);
-* 34, 40, 52 px und `clamp(…)`: Anzeigezahlen und die Titelzeile («Heute»), bewusst grösser als jede Textstufe;
+* 34, 36, 40, 52 px und `clamp(…)`: Anzeigezahlen und Seitentitel (36 px am PC), bewusst grösser als jede Textstufe;
 * `1rem`, `inherit`: übernehmen die Grösse des Umfelds.
 """
 import pathlib
@@ -16,7 +16,7 @@ from django.test import SimpleTestCase
 
 WURZEL = pathlib.Path(settings.BASE_DIR)
 SKALA = {12, 13, 14, 15, 18, 22, 28}
-ANZEIGE = {34, 40, 52}
+ANZEIGE = {34, 36, 40, 52}
 
 
 class SchriftskalaTests(SimpleTestCase):
