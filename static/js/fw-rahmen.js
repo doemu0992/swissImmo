@@ -201,6 +201,8 @@ document.addEventListener('input', function(e) {
     ziel.querySelectorAll('[data-gruppe]').forEach(function(g) {
         g.classList.toggle('hidden', !g.querySelector('[data-zeile]:not(.hidden)'));
     });
+    // «Häufig genutzt» (`data-haeufig`) doppelt Einträge der Liste: Während der Suche bleibt es verborgen
+    ziel.querySelectorAll('[data-haeufig]').forEach(function(h) { h.classList.toggle('hidden', !!q); });
     var keine = ziel.querySelector('[data-keine]');
     if (keine) keine.classList.toggle('hidden', !q || !!ziel.querySelector('[data-zeile]:not(.hidden)'));
 });

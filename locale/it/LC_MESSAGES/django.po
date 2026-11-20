@@ -41508,3 +41508,6 @@ msgstr "Archivi invece il documento."
 
 msgid "Archivieren Sie die Schadenmeldung stattdessen."
 msgstr "Archivi invece la segnalazione di danno."
+
+msgid "Häufig genutzt"
+msgstr "Usati di frequente"

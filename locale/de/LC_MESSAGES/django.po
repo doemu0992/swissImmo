@@ -39807,3 +39807,6 @@ msgstr "Archivieren Sie das Dokument stattdessen."
 
 msgid "Archivieren Sie die Schadenmeldung stattdessen."
 msgstr "Archivieren Sie die Schadenmeldung stattdessen."
+
+msgid "Häufig genutzt"
+msgstr "Häufig genutzt"

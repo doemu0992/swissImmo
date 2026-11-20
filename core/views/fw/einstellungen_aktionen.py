@@ -32,8 +32,11 @@ def fw_einstellungen(request):
         eintraege = [k for k in g['eintraege'] if darf_oeffnen(request.user, k['url'], meine)]
         if eintraege:
             gruppen.append(dict(g, eintraege=eintraege))
+    # «Häufig genutzt» (UI-Zielbild): feste Liste mit drei Einträgen, nur was die Rolle öffnen darf. Kein lernendes Verfahren.
+    haeufig_titel = [str(_('Benutzer & Rollen')), str(_('Zahlungsfreigabe')), str(_('Vorlagen'))]
+    haeufig = [k for t in haeufig_titel for g in gruppen for k in g['eintraege'] if str(k['titel']) == t]
     return render(request, 'fw/einstellungen.html', {
-        **basis, 'nav': 'einstellungen', 'gruppen': gruppen,
+        **basis, 'nav': 'einstellungen', 'gruppen': gruppen, 'haeufig': haeufig,
     })
 
 
