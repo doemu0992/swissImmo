@@ -39524,3 +39524,9 @@ msgstr "Nachfassen"
 
 msgid "gemeldet von %(melder)s"
 msgstr "gemeldet von %(melder)s"
+
+msgid "Alle Reports und Exporte an einem Ort"
+msgstr "Alle Reports und Exporte an einem Ort"
+
+msgid "Bericht suchen, z. B. Mieterspiegel"
+msgstr "Bericht suchen, z. B. Mieterspiegel"

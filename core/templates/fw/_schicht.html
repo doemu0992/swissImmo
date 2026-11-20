@@ -2041,6 +2041,19 @@ und einen Stilblock enthaelt.
         .fw-bericht-zwei>.fw-card{margin-bottom:0;min-width:0}
         @media (max-width:1100px){.fw-bericht-zwei{grid-template-columns:minmax(0,1fr)}}
         .fw-bericht-katalog{margin:8px 0 10px}
+        /* Zielbild «Berichte»: ein Katalog in einer Karte, Suche oben, Gruppen mit Kacheln */
+        .fw-katalog{overflow:hidden}
+        .fw-katalog-gruppe{min-width:0}
+        .fw-katalog-suche{padding:0 20px 8px}
+        .fw-katalog-suche .fw-feld{width:100%}
+        .fw-katalog-liste{padding:0 20px 20px;display:flex;flex-direction:column;gap:18px}
+        .fw-katalog-titel{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ds-muted);margin:0 0 8px}
+        .fw-katalog-kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+        .fw-kachel-bericht{display:flex;flex-direction:column;gap:3px;padding:12px 14px;background:var(--ds-surface-2);border-radius:var(--ds-radius-sm);color:var(--ds-ink);text-decoration:none;min-width:0}
+        .fw-kachel-bericht:hover{background:var(--ds-hover)}
+        .fw-kachel-bericht .fw-t{font-weight:600}
+        .fw-kachel-bericht .fw-s{font-size:13px;color:var(--ds-muted)}
+        .fw-katalog-wert{font-size:13px;font-weight:600;margin-top:4px}
         .fw-mandat-name{font-weight:600;color:var(--ds-ink);text-decoration:none}
         a.fw-mandat-name:hover{color:var(--ds-brand)}
         .fw-diagramm{padding:14px 20px 16px 20px}

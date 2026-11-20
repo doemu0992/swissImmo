@@ -40630,3 +40630,9 @@ msgstr "Follow up"
 
 msgid "gemeldet von %(melder)s"
 msgstr "reported by %(melder)s"
+
+msgid "Alle Reports und Exporte an einem Ort"
+msgstr "All reports and exports in one place"
+
+msgid "Bericht suchen, z. B. Mieterspiegel"
+msgstr "Search a report, e.g. Rent roll"
