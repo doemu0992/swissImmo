@@ -161,11 +161,11 @@ Info-Farbe `#7f959c`.
 | `--ds-brand` | `#b04416` | `#f08a55` |
 | `--ds-brand-600` | `#8a3410` | `#f6a77c` |
 | `--ds-brand-soft` | `#fbe7dc` | `#3a2317` |
-| `--ds-ink` | `#17181b` | `#f1efec` |
-| `--ds-muted` | `#5d6068` | `#b9b6b0` |
-| `--ds-faint` | `#62656d` | `#9e9b94` |
-| `--ds-line` | `#e7e5e1` | `#2c2d32` |
-| `--ds-hover` | `#f3f1ee` | `#28292e` |
+| `--ds-ink` | `#17181b` | `#ecebe7` |
+| `--ds-muted` | `#5d6068` | `#a0a3a9` |
+| `--ds-faint` | `#62656d` | `#9498a0` |
+| `--ds-line` | `#e7e5e1` | `#33363c` |
+| `--ds-hover` | `#f3f1ee` | `#2a2c32` |
 
 Primärknöpfe: Zeilenaktionen (`fw-knapp fw-primary`, z. B. «Zuordnen», «Auslösen»), der Dialog `fw-zdlg` und «Neu» in der Kopfzeile
 sind Akzent (`--ds-brand`, Schrift `--ds-auf-satt`); die grossen Seitenknöpfe (`fw-btn fw-primary` ohne `fw-knapp`) bleiben
