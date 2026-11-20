@@ -354,7 +354,7 @@ test('Seitenkopf: Brotkrume klein über dem Titel, auch auf Unterseiten', async 
     });
     expect(m, `${pfad}: keine Brotkrume im Seitenkopf`).not.toBeNull();
     expect(m!.krume).toBeLessThanOrEqual(m!.h1);
-    expect(m!.schrift).toBe('12.5px');
+    expect(m!.schrift).toBe('13px');
   }
 });
 
