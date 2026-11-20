@@ -40913,3 +40913,6 @@ msgstr "Archive the document instead."
 
 msgid "Archivieren Sie die Schadenmeldung stattdessen."
 msgstr "Archive the damage report instead."
+
+msgid "Häufig genutzt"
+msgstr "Frequently used"

@@ -199,7 +199,10 @@ def fw_berichte(request):
         berichte = [g for g in berichte if g['items']]
         v8['mandat_zeilen'] = []
         v8['ausstand_balken'] = [dict(z, url='') for z in v8.get('ausstand_balken') or []]
-    return render(request, 'fw/berichte.html', {**basis, 'nav': 'berichte', 'berichte': berichte,
+    # «Häufig genutzt» (UI-Zielbild): feste Liste mit drei Berichten, nur was die Rolle öffnen darf. Kein lernendes Verfahren.
+    haeufig_titel = [str(_('Mieterspiegel')), str(_('Debitoren-Altersstruktur')), str(_('MWST-Abrechnung'))]
+    haeufig = [i for t in haeufig_titel for g in berichte for i in g['items'] if str(i['titel']) == t]
+    return render(request, 'fw/berichte.html', {**basis, 'nav': 'berichte', 'berichte': berichte, 'haeufig': haeufig,
                                                 'heute': heute, **v8})
 
 

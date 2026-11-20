@@ -22,6 +22,21 @@
 
 <!-- Gruppen -->
 <div id="einstListe">
+{% if haeufig %}<div data-haeufig>
+<h2 class="fw-gruppe-titel">{% trans "Häufig genutzt" %}</h2>
+<div class="fw-card">
+    {% for k in haeufig %}
+    <a href="{{ k.url }}" class="fw-zeile klick">
+        <span class="fw-ikon">{% zeichen_wert k.icon %}</span>
+        <div class="fw-mitte">
+            <div class="fw-t">{{ k.titel }}</div>
+            <div class="fw-s">{{ k.sub }}</div>
+        </div>
+        <span class="fw-faint">{% zeichen 'weiter' %}</span>
+    </a>
+    {% endfor %}
+</div>
+</div>{% endif %}
 {% for g in gruppen %}
 <div data-gruppe>
 <h2 class="fw-gruppe-titel">{{ g.label }}</h2>

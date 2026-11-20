@@ -170,6 +170,14 @@ das Sperrkonto in Höhe des bilanzierten Betrags frei. Eine MWST-Periode für de
 Rechenkern `core/utils/billing.py` (`berechne_abrechnung`), Assistent `core/views/fw/nk_wizard.py`, PDF und Versand
 in `core/services/nk_*.py`.
 
+### «Häufig genutzt» (Berichte und Einstellungen)
+
+Beide Seiten zeigen über der Liste eine **feste** Auswahl von drei Einträgen (kein lernendes Verfahren): Berichte «Mieterspiegel»,
+«Debitoren-Altersstruktur», «MWST-Abrechnung»; Einstellungen «Benutzer & Rollen», «Zahlungsfreigabe», «Vorlagen». Die Ansichten
+(`core/views/fw/berichte.py`, `einstellungen_aktionen.py`) wählen sie aus der bereits nach Rolle gefilterten Liste, die Rolle sieht also nie einen
+Eintrag, den sie nicht öffnen darf. Der Block trägt `data-haeufig` (nicht `data-gruppe`/`data-zeile`) und wird während der Suche ausgeblendet
+(`static/js/fw-rahmen.js`), damit kein Treffer doppelt erscheint. Die Ziellinie im Diagramm fehlt weiter: Ein Zielwert müsste der Betreiber festlegen.
+
 ### Anrede «Sie»
 
 Alle Texte der Oberfläche siezen (Entscheidung vom 20.11.2026). Vorher mischte die Anwendung «du kannst», «Erfasse die IBAN» und «Sie». 86 Texte
