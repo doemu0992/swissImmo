@@ -96,7 +96,7 @@ test.describe('Omnisearch am Desktop', () => {
     expect(os.x + os.width, 'Die Werkzeuge stehen nicht rechts von der Suche').toBeLessThanOrEqual(werkzeug.x + 1);
     // Die Suche steht rechtsbündig: zwischen ihr und den Werkzeugen bleibt nur der Zeilenabstand
     expect(werkzeug.x - (os.x + os.width), 'Die Suche steht nicht rechtsbündig vor den Werkzeugen').toBeLessThan(20);
-    expect(Math.abs(os.width - 168), 'Bei 1280 px ist das Feld ruhend 10,5 rem breit').toBeLessThan(3);
+    expect(Math.abs(os.width - 184), 'Bei 1280 px ist das Feld ruhend 11,5 rem breit').toBeLessThan(3);   // UI-Abgleich: 10,5 rem schnitt «Suchen …» ab
     // alles in einer Reihe
     for (const b of [bestand, werkzeug]) expect(Math.abs(b.y + b.height / 2 - (os.y + os.height / 2))).toBeLessThan(10);
 
