@@ -363,7 +363,7 @@ test.describe('Omnisearch am Telefon', () => {
     const schiene = await box(page, '#fwSchiene');
     expect(schiene.x).toBe(0);
     expect(schiene.width).toBeLessThanOrEqual(390 * 0.84 + 1);
-    await expect(page.locator('#fwSchiene a[data-fach]')).toHaveCount(7);
+    await expect(page.locator('#fwSchiene a[data-fach]')).toHaveCount(8);
     await expect(page.locator('#fwHauptnav, #navsub-akten')).toHaveCount(0);
     await page.locator('#fwSchiene a[data-fach="akten"]').tap();
     await expect(page.locator('#fwFach section:visible h2')).toHaveText('Liegenschaften');

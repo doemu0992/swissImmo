@@ -39813,3 +39813,6 @@ msgstr "Häufig genutzt"
 
 msgid "Stand Bankimport %(datum)s"
 msgstr "Stand Bankimport %(datum)s"
+
+msgid "Kontakte"
+msgstr "Kontakte"

@@ -57,10 +57,12 @@ Security → `WartungsMiddleware` → `NulBytesMiddleware` → GZip → Session 
 
 ### Navigation
 
-- Eine Liste ist die Quelle: `core/navigation.py` (`nav_gruppen()`), sechs Bereiche — Heute, Schäden, Liegenschaften, Monatsabschluss,
-  Finanzen, Berichte (Namen wie im UI-Zielbild; die Schlüssel `betrieb`, `akten`, `laeufe` bleiben, weil Adressen, Tastenkürzel
-  und Zähler an ihnen hängen). «Schäden» führt neben den Schäden die Aufträge, Anfragen, Vermietung, Ablesung und Ersatz,
-  «Liegenschaften» die Register (Mandate, Objekte, Mietverhältnisse, Personen …), «Monatsabschluss» die Läufe. Heute,
+- Eine Liste ist die Quelle: `core/navigation.py` (`nav_gruppen()`), sieben Bereiche — Heute, Schäden, Liegenschaften, Kontakte,
+  Monatsabschluss, Finanzen, Berichte (Namen wie im UI-Zielbild; die Schlüssel `betrieb`, `akten`, `laeufe` bleiben, weil Adressen,
+  Tastenkürzel und Zähler an ihnen hängen). «Schäden» führt neben den Schäden die Aufträge, Anfragen, Vermietung, Ablesung und Ersatz,
+  «Liegenschaften» die Register der Objekte (Mandate, Liegenschaften, Objekte, Mietverhältnisse, Stockwerkeigentum, Dokumente),
+  «Kontakte» (Schlüssel `kontakte`, Taste «K») Personen und Dienstleister — bis 20.11.2026 standen sie unter «Liegenschaften», der Name passte
+  nicht mehr (Betreiber-Entscheid). «Monatsabschluss» führt die Läufe. Heute,
   Monatsabschluss, Finanzen und Berichte beginnen mit «Übersicht», Schäden und Liegenschaften mit ihrer ersten Seite. Die erste Stufe
   der Brotkrume trägt denselben Namen (`fw-krumen`). Einstellungen stehen im Fuss der Schiene, nicht in den Bereichen
   (`EINSTELLUNGEN_ZIELE`).
@@ -73,7 +75,7 @@ Security → `WartungsMiddleware` → `NulBytesMiddleware` → GZip → Session 
   roten Zahlen) öffnet sie, der Inhalt hat die volle Breite. Dort öffnet ein Bereich sein Feld über der Schublade
   («Bereiche» führt zurück). Ein Tipp bzw. Klick klappt das Feld mit den Seiten des
   Bereichs auf (`#fwFach`, `static/js/fw-schiene.js`), ein Klick daneben, Esc oder die Wahl einer Seite schliesst es.
-  Tastatur: G dann H/B/A/L/F/R/E öffnet den Bereich, 1–9 wählt die Seite. Hauswartung und Portal-Rollen bekommen keine
+  Tastatur: G dann H/B/A/K/L/F/R/E öffnet den Bereich, 1–9 wählt die Seite. Hauswartung und Portal-Rollen bekommen keine
   Schiene (`fw_kopf_reduziert`); sie behalten die Marke in der Kopfzeile. Eine Bereichskapsel oder ein Menüband in der
   Kopfzeile gibt es nicht mehr (entfernt 18.11.2026).
   Bestandsfilter (`.fw-bestand`, globaler Filter `?lg=`): Am Telefon (bis 640 px) zeigt der Knopf bei gewähltem Bestand die

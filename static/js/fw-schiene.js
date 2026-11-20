@@ -1,5 +1,5 @@
 /* Die Schiene (bei jeder Breite; am Telefon nur mit Symbolen): ein Klick auf einen Bereich klappt seine Seiten auf, ein Klick auf eine Seite schliesst
-   das Feld wieder. Tastatur: «G» dann H/B/A/L/F/R (E = Einstellungen) öffnet den Bereich, 1–9 wählt die Seite im offenen Feld, Esc schliesst.
+   das Feld wieder. Tastatur: «G» dann H/B/A/K/L/F/R (E = Einstellungen) öffnet den Bereich, 1–9 wählt die Seite im offenen Feld, Esc schliesst.
    Ohne dieses Skript sind die Symbole gewöhnliche Links auf den Bereichskopf (`core/navigation.py`). */
 (function () {
     var schiene = document.getElementById('fwSchiene');
@@ -7,7 +7,7 @@
     if (!schiene || !fach) return;
     var knoepfe = [].slice.call(schiene.querySelectorAll('[data-fach]'));
     var bereiche = [].slice.call(fach.querySelectorAll('[data-fach-bereich]'));
-    var TASTEN = {h: 'heute', b: 'betrieb', a: 'akten', l: 'laeufe', f: 'finanzen', r: 'berichte', e: 'einst'};
+    var TASTEN = {h: 'heute', b: 'betrieb', a: 'akten', k: 'kontakte', l: 'laeufe', f: 'finanzen', r: 'berichte', e: 'einst'};
     var offen = null;
     // Telefon (bis 640 px): Die Schiene ist eine Schublade, die der Menüknopf der Kopfzeile öffnet.
     var telefon = window.matchMedia ? window.matchMedia('(max-width:640px)') : {matches: false};
