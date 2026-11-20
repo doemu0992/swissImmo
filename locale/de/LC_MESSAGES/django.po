@@ -39816,3 +39816,6 @@ msgstr "Stand Bankimport %(datum)s"
 
 msgid "Kontakte"
 msgstr "Kontakte"
+
+msgid "Schnellzugriff"
+msgstr "Schnellzugriff"
