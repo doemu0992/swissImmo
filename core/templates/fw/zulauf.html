@@ -1,12 +1,12 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
-{% block title %}{% trans "Zulauf" %} — immoswiss{% endblock %}
+{% block title %}{% trans "Mitteilungen" %} — immoswiss{% endblock %}
 
 {% block content %}
 <div class="fw-phead">
     <div>
-        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/{{ lg_query }}">{% trans "Heute" %}</a><span aria-hidden="true">/</span><span>{% trans "Zulauf" %}</span></nav>
-        <h1>{% trans "Zulauf" %}</h1>
+        <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/{{ lg_query }}">{% trans "Heute" %}</a><span aria-hidden="true">/</span><span>{% trans "Mitteilungen" %}</span></nav>
+        <h1>{% trans "Mitteilungen" %}</h1>
         <p>{% blocktrans trimmed %}Jeder Eingang wird zu genau einem von drei Dingen: einer Akte zugeordnet,
            Auslöser eines Falls, oder bewusst abgelegt.{% endblocktrans %}</p>
     </div>
@@ -41,7 +41,7 @@
         </div>
     </div>
     {% empty %}
-    <div class="fw-leer"><span class="fw-leer-zeichen">{% zeichen 'gut' %}</span><b>{% trans "Nichts Unzugeordnetes. 🎉" %}</b></div>
+    <div class="fw-leer"><b>{% trans "Alles zugeordnet" %}</b><span>{% trans "Es gibt keine unzugeordneten Eingänge." %}</span><a class="fw-btn fw-knapp" href="/neu/{{ lg_query }}">{% trans "Zurück zu Heute" %}</a></div>
     {% endfor %}
 </div>
 

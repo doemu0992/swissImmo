@@ -39530,3 +39530,18 @@ msgstr "Alle Reports und Exporte an einem Ort"
 
 msgid "Bericht suchen, z. B. Mieterspiegel"
 msgstr "Bericht suchen, z. B. Mieterspiegel"
+
+msgid "In 7 Tagen"
+msgstr "In 7 Tagen"
+
+msgid "In 30 Tagen"
+msgstr "In 30 Tagen"
+
+msgid "Alles zugeordnet"
+msgstr "Alles zugeordnet"
+
+msgid "Es gibt keine unzugeordneten Eingänge."
+msgstr "Es gibt keine unzugeordneten Eingänge."
+
+msgid "Zurück zu Heute"
+msgstr "Zurück zu Heute"

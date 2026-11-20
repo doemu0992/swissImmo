@@ -11,6 +11,7 @@ Art als Kapseln, Betreff, Akte, Frist und Zuständig nebeneinander, Notiz.
 {% endcomment %}
 <div class="fw-phead">
     <div>
+        {% if not request.GET.embed %}<nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/">{% trans "Heute" %}</a><span aria-hidden="true">/</span><span>{% trans "Neuer Fall" %}</span></nav>{% endif %}
         <h1>{% trans "Neuer Fall" %}</h1>
         <p>{% trans "Wird in deinem Arbeitsvorrat angelegt." %}</p>
     </div>
@@ -63,9 +64,9 @@ Art als Kapseln, Betreff, Akte, Frist und Zuständig nebeneinander, Notiz.
             <input class="fw-feld" type="date" id="nfD" name="frist" value="{{ werte.frist }}" min="{{ heute|date:'Y-m-d' }}">
             <div class="fw-filters">
                 <button type="button" class="fw-fchip" data-frist-tage="0" data-frist-ziel="nfD">{% trans "Heute" %}</button>
-                <button type="button" class="fw-fchip" data-frist-tage="1" data-frist-ziel="nfD">{% trans "Morgen" %}</button>
-                <button type="button" class="fw-fchip" data-frist-tage="7" data-frist-ziel="nfD">{% trans "In 1 Woche" %}</button>
-                <button type="button" class="fw-fchip" data-frist-tage="30" data-frist-ziel="nfD">{% trans "In 1 Monat" %}</button>
+                <button type="button" class="fw-fchip" data-frist-tage="7" data-frist-ziel="nfD">{% trans "In 7 Tagen" %}</button>
+                <button type="button" class="fw-fchip" data-frist-tage="30" data-frist-ziel="nfD">{% trans "In 30 Tagen" %}</button>
+                <button type="button" class="fw-fchip" data-frist-tage="keine" data-frist-ziel="nfD">{% trans "Ohne Frist" %}</button>
             </div>
         </div>
         <div class="fw-feldblock">

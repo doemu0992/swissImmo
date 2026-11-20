@@ -43,5 +43,5 @@ class FallNeuFormularTests(TestCase):
 
     def test_frist_chips_vorhanden(self):
         html = self._seite()
-        for tage in ('0', '1', '7', '30'):
+        for tage in ('0', '7', '30', 'keine'):
             self.assertIn(f'data-frist-tage="{tage}"', html)

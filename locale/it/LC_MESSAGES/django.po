@@ -41231,3 +41231,18 @@ msgstr "Tutti i rapporti e le esportazioni in un unico posto"
 
 msgid "Bericht suchen, z. B. Mieterspiegel"
 msgstr "Cerca un rapporto, ad es. Elenco degli affitti"
+
+msgid "In 7 Tagen"
+msgstr "Tra 7 giorni"
+
+msgid "In 30 Tagen"
+msgstr "Tra 30 giorni"
+
+msgid "Alles zugeordnet"
+msgstr "Tutto assegnato"
+
+msgid "Es gibt keine unzugeordneten Eingänge."
+msgstr "Non ci sono ingressi non assegnati."
+
+msgid "Zurück zu Heute"
+msgstr "Torna a Oggi"

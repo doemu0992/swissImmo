@@ -30,7 +30,7 @@
  *   data-auswahl-sync           Änderung: Klasse `fw-on` an den Beschriftungen der Auswahl (.fw-auswahl) nachführen
  *   data-grund-abfragen="Text"  Absenden: Grund erfragen (`|` = Zeilenumbruch) und ins Feld `grund` schreiben
  *   data-knopf-erst-gueltig     Formular: der Absende-Knopf bleibt gesperrt, bis alle Pflichtfelder gültig sind
- *   data-frist-tage="N"         Klick: Datumsfeld #<data-frist-ziel> auf heute + N Tage setzen
+ *   data-frist-tage="N"         Klick: Datumsfeld #<data-frist-ziel> auf heute + N Tage setzen («keine» leert es)
  *   data-pruefe-gewaehlt=".sel" Absenden nur, wenn `.sel` mindestens einmal passt (data-pruefe-meldung = Hinweis)
  */
 (function () {
@@ -123,9 +123,13 @@
         if ((el = t.closest('[data-frist-tage]')) && !gestoppt(el, t)) {
             var feld = byId(el.getAttribute('data-frist-ziel'));
             if (feld) {
-                var d = new Date();
-                d.setDate(d.getDate() + parseInt(el.getAttribute('data-frist-tage'), 10));
-                feld.value = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+                var tage = el.getAttribute('data-frist-tage');
+                if (tage === 'keine') feld.value = '';
+                else {
+                    var d = new Date();
+                    d.setDate(d.getDate() + parseInt(tage, 10));
+                    feld.value = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+                }
                 feld.dispatchEvent(new Event('input', {bubbles: true}));
             }
         }

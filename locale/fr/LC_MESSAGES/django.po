@@ -41302,3 +41302,18 @@ msgstr "Tous les rapports et exports au même endroit"
 
 msgid "Bericht suchen, z. B. Mieterspiegel"
 msgstr "Rechercher un rapport, p. ex. Rôle des loyers"
+
+msgid "In 7 Tagen"
+msgstr "Dans 7 jours"
+
+msgid "In 30 Tagen"
+msgstr "Dans 30 jours"
+
+msgid "Alles zugeordnet"
+msgstr "Tout est attribué"
+
+msgid "Es gibt keine unzugeordneten Eingänge."
+msgstr "Il n'y a aucune entrée non attribuée."
+
+msgid "Zurück zu Heute"
+msgstr "Retour à Aujourd'hui"
