@@ -171,6 +171,10 @@ Primärknöpfe: Zeilenaktionen (`fw-knapp fw-primary`, z. B. «Zuordnen», «Aus
 sind Akzent (`--ds-brand`, Schrift `--ds-auf-satt`); die grossen Seitenknöpfe (`fw-btn fw-primary` ohne `fw-knapp`) bleiben
 schwarz. Test: `core/tests/test_primaerknopf_akzent.py`.
 
+Schriftgrössen: nur 12, 13, 14, 15, 18, 22 und 28 px (Stufen `fw-fs-*` und die Regeln der Schicht). Unter 12 px nur die
+begründeten Ausnahmen aus `test_schrift_mindestgroesse`; 34, 40, 52 px und das `clamp(…)` der Titelzeile sind Anzeigezahlen.
+Eine neue Grösse lässt `core/tests/test_schriftskala.py` scheitern.
+
 Rundung: 24 px für Karten, 14 px für kleine Flächen. Kapseln `var(--ds-pill)`, Kreise `var(--ds-kreis)` (50 %), nie `999px`
 oder `50%` von Hand. Frei bleiben in `_schicht.html` nur vier Werte (6/3/2 px an Fokusring, Legendenpunkt, Marker); der Zähler
 steht in `core/tests/test_stilschuld.py` und darf nur sinken. Hex-Farben stehen ausserhalb der Token-Definitionen nur als

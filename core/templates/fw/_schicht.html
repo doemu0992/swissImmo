@@ -160,7 +160,7 @@ und einen Stilblock enthaelt.
            sich von der Reiterzeile darueber klar unterscheidet — es filtert
            innerhalb der Ansicht, es wechselt sie nicht. */
         .fw-band{display:flex;flex-wrap:wrap;align-items:center;gap:6px;
-            padding:12px 20px;border-bottom:1px solid var(--ds-line);font-size:12.5px}
+            padding:12px 20px;border-bottom:1px solid var(--ds-line);font-size:13px}
         .fw-band>a{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:var(--ds-pill);
             border:1px solid var(--ds-line);color:var(--ds-muted);background:var(--ds-surface);font-weight:500;
             text-decoration:none;white-space:nowrap;transition:border-color .12s,color .12s,background .12s}
@@ -197,7 +197,7 @@ und einen Stilblock enthaelt.
             .fw-kopffilter .fw-feld{max-width:78px}
         }
         .fw-phead h1{font-size:28px;line-height:1.15;letter-spacing:-.025em;font-weight:600;color:var(--ds-ink);text-wrap:balance}
-        .fw-phead p{font-size:13.5px;color:var(--ds-muted);margin-top:6px}
+        .fw-phead p{font-size:14px;color:var(--ds-muted);margin-top:6px}
         /* Buttons */
         .fw-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;font-size:13px;font-weight:600;line-height:1.2;text-decoration:none;padding:7px 14px;border-radius:var(--ds-radius-knopf);cursor:pointer;border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-ink);white-space:nowrap;transition:background .12s,border-color .12s,box-shadow .12s,transform .08s}
         .fw-btn:hover{border-color:var(--ds-line-stark);box-shadow:var(--ds-shadow-sm)}
@@ -231,7 +231,7 @@ und einen Stilblock enthaelt.
            Grösse (`fw-knapp`) und Farben, die es vorher nur als Einzelklassen
            gab. Namen bewusst eigen — `fw-klein` und `fw-akzent` sind schon
            belegt (Schriftgrösse, Formularfarbe). */
-        .fw-btn.fw-knapp{min-height:30px;padding:5px 11px;font-size:12.5px;gap:6px;border-radius:var(--ds-radius-sm)}
+        .fw-btn.fw-knapp{min-height:30px;padding:5px 11px;font-size:13px;gap:6px;border-radius:var(--ds-radius-sm)}
         .fw-btn.fw-leise{background:var(--ds-surface-2);border-color:transparent;color:var(--ds-muted)}
         .fw-btn.fw-leise:hover{color:var(--ds-ink);border-color:var(--ds-line)}
         .fw-btn.fw-geist{background:transparent;border-color:transparent;color:var(--ds-muted)}
@@ -255,15 +255,15 @@ und einen Stilblock enthaelt.
         .fw-kpi{background:var(--ds-surface);padding:18px 20px 16px;display:flex;flex-direction:column;gap:6px;min-width:0;transition:background .12s;
             border-right:1px solid var(--ds-line);border-bottom:1px solid var(--ds-line);margin:0 -1px -1px 0}
         .fw-kpi.fw-accent{background:linear-gradient(150deg,color-mix(in srgb,var(--ds-brand) 12%,var(--ds-surface)),var(--ds-surface))}
-        .fw-kpi .fw-l{font-size:12.5px;color:var(--ds-muted);font-weight:500}
-        .fw-kpi .fw-v{font-size:26px;line-height:1.1;font-weight:600;letter-spacing:-.03em;color:var(--ds-ink);font-variant-numeric:tabular-nums}
+        .fw-kpi .fw-l{font-size:13px;color:var(--ds-muted);font-weight:500}
+        .fw-kpi .fw-v{font-size:28px;line-height:1.1;font-weight:600;letter-spacing:-.03em;color:var(--ds-ink);font-variant-numeric:tabular-nums}
         .fw-kpi .fw-v.fw-crit{color:var(--ds-crit)}.fw-kpi .fw-v.fw-warn{color:var(--ds-warn)}.fw-kpi .fw-v.fw-good{color:var(--ds-good)}
         .fw-kpi .fw-f{font-size:12px;color:var(--ds-faint)}
         /* Karte */
         .fw-card{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:var(--ds-shadow-sm);margin-bottom:24px;overflow:hidden}
         .fw-card>.fw-h{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--ds-line)}
         .fw-card>.fw-h .fw-t{font-weight:600;font-size:15px;letter-spacing:-.01em;color:var(--ds-ink)}
-        .fw-card>.fw-h .fw-t small{color:var(--ds-faint);font-weight:400;font-size:12.5px;margin-left:8px;letter-spacing:0}
+        .fw-card>.fw-h .fw-t small{color:var(--ds-faint);font-weight:400;font-size:13px;margin-left:8px;letter-spacing:0}
         .fw-card>.fw-h .fw-r{margin-left:auto;display:flex;gap:6px;align-items:center}
         /* Tabelle (nur mit .fw-table — global bleibt unberührt) */
         .fw-tablewrap{overflow-x:auto}
@@ -302,7 +302,7 @@ und einen Stilblock enthaelt.
         .fw-chip.fw-dot::before{content:"";width:6px;height:6px;border-radius:var(--ds-kreis);background:currentColor}
         /* Filter-Chips */
         .fw-filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
-        .fw-fchip{display:inline-flex;align-items:center;gap:6px;height:28px;font-size:12.5px;font-weight:500;padding:0 11px;border-radius:var(--ds-pill);border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-muted);cursor:pointer;text-decoration:none;transition:border-color .12s,color .12s,background .12s}
+        .fw-fchip{display:inline-flex;align-items:center;gap:6px;height:28px;font-size:13px;font-weight:500;padding:0 11px;border-radius:var(--ds-pill);border:1px solid var(--ds-line);background:var(--ds-surface);color:var(--ds-muted);cursor:pointer;text-decoration:none;transition:border-color .12s,color .12s,background .12s}
         .fw-fchip.fw-on{background:var(--ds-ink);color:var(--ds-surface);border-color:var(--ds-ink);font-weight:600}
         /* Raster */
         .fw-grid2{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start}
@@ -589,7 +589,7 @@ und einen Stilblock enthaelt.
            gab, und machte die Regeln damit unwirksam. */
                 /* Leseansicht der Akte: Gruppen aus Bezeichnung und Wert (Phase 4b).
            Ersetzt die frueheren Karten-Paare mit eingestreuten Formularen. */
-                .fw-leer{padding:40px 20px;text-align:center;font-size:13.5px;color:var(--ds-muted)}
+                .fw-leer{padding:40px 20px;text-align:center;font-size:14px;color:var(--ds-muted)}
                 .fw-leer>b{display:block;color:var(--ds-ink);font-weight:600}
                 .fw-leer>b+span{display:block;margin-top:2px}
                 .fw-leer>.fw-btn{margin-top:14px}
@@ -780,7 +780,7 @@ und einen Stilblock enthaelt.
         /* Neutraler Schatten — bisher `shadow-slate-300/40` im Profilmenue. */
         .fw-schatten{box-shadow:var(--ds-shadow)}
         .fw-gut-voll:hover{filter:brightness(.92)}
-        .fw-link{color:var(--ds-brand);font-weight:600;text-decoration:none;font-size:12.5px}
+        .fw-link{color:var(--ds-brand);font-weight:600;text-decoration:none;font-size:13px}
         .fw-link:hover{text-decoration:underline}
         .fw-klein{font-size:12px;color:var(--ds-faint)}
 
@@ -797,7 +797,7 @@ und einen Stilblock enthaelt.
            ist Absicht: Ohne das erben `select` und `textarea` die Schriftart des
            Betriebssystems und stehen neben dem Fliesstext. */
         .fw-feld{background:var(--ds-surface);border:1px solid var(--ds-line-stark);
-            border-radius:var(--ds-radius-knopf);padding:8px 12px;font-size:13.5px;min-height:38px;
+            border-radius:var(--ds-radius-knopf);padding:8px 12px;font-size:14px;min-height:38px;
             color:var(--ds-ink);font-family:inherit;max-width:100%;transition:border-color .12s,box-shadow .12s}
         .fw-feld:focus{outline:none;border-color:var(--ds-brand);box-shadow:0 0 0 3px var(--ds-brand-soft)}
         /* Feldfehler (Audit Etappe 2): Ein Formular kommt mit der Meldung AM
@@ -850,14 +850,14 @@ und einen Stilblock enthaelt.
         .fw-dz:last-child{border-bottom:0}
         .fw-dl{flex:0 0 205px;font-size:12px;color:var(--ds-faint)}
         .fw-dl.fw-dl-schmal{flex-basis:105px}  /* kurze Beschriftung (Kontaktzeilen im Vertrag); mit .fw-dl allein gewänne dessen 205px */
-        .fw-dv{flex:1;min-width:0;font-size:13.5px;font-weight:500;color:var(--ds-ink)}
+        .fw-dv{flex:1;min-width:0;font-size:14px;font-weight:500;color:var(--ds-ink)}
         .fw-dv small{display:block;font-size:12px;color:var(--ds-faint);font-weight:400;
             margin-top:2px;line-height:1.45}
         @media(max-width:640px){.fw-dz{flex-direction:column;gap:2px}.fw-dl,.fw-dl.fw-dl-schmal{flex-basis:auto}}
 
         /* Erfassen gehoert nicht in eine Leseansicht — aber auch nicht weg. */
         .fw-aufklapp{border-bottom:1px solid var(--ds-line)}
-        .fw-aufklapp>summary{padding:9px 16px;font-size:12.5px;font-weight:600;
+        .fw-aufklapp>summary{padding:9px 16px;font-size:13px;font-weight:600;
             color:var(--ds-brand);cursor:pointer;list-style:none;display:flex;
             align-items:center;gap:7px}
         /* Pfeil aus zwei Raendern statt aus Font Awesome. Die Schrift wird
@@ -880,10 +880,10 @@ und einen Stilblock enthaelt.
         .fw-akte-oben{padding:17px 20px;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
         .fw-akte-bild{width:48px;height:48px;border-radius:var(--ds-radius-sm);
             background:var(--ds-brand-soft);color:var(--ds-brand);display:flex;
-            align-items:center;justify-content:center;flex:0 0 48px;font-size:20px}
+            align-items:center;justify-content:center;flex:0 0 48px;font-size:22px}
         .fw-akte-typ{font-size:12px;font-weight:700;letter-spacing:.14em;
             text-transform:uppercase;color:var(--ds-faint);margin-bottom:4px}
-        .fw-akte-oben h1{margin:0;font-size:24px;line-height:1.2;font-weight:600;letter-spacing:-.02em;color:var(--ds-ink)}
+        .fw-akte-oben h1{margin:0;font-size:22px;line-height:1.2;font-weight:600;letter-spacing:-.02em;color:var(--ds-ink)}
         .fw-akte-pfad{font-size:12px;color:var(--ds-faint);margin-top:4px;line-height:1.55}
         .fw-akte-pfad b{color:var(--ds-muted);font-weight:600}
         /* Eine Angabe je Zeile, Beschriftungen untereinander ausgerichtet.
@@ -904,8 +904,8 @@ und einen Stilblock enthaelt.
         .fw-kzn{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--ds-line)}
         .fw-kzn>div{padding:12px 20px;border-right:1px solid var(--ds-line)}
         .fw-kzn>div:last-child{border-right:0}
-        .fw-kzn .fw-l{font-size:12.5px;font-weight:500;color:var(--ds-muted)}
-        .fw-kzn .fw-w{font-size:20px;font-weight:600;letter-spacing:-.02em;margin-top:4px;
+        .fw-kzn .fw-l{font-size:13px;font-weight:500;color:var(--ds-muted)}
+        .fw-kzn .fw-w{font-size:22px;font-weight:600;letter-spacing:-.02em;margin-top:4px;
             font-variant-numeric:tabular-nums;color:var(--ds-ink)}
         .fw-kzn .fw-w.warn{color:var(--ds-warn)}
         .fw-kzn .fw-w.crit{color:var(--ds-crit)}
@@ -978,7 +978,7 @@ und einen Stilblock enthaelt.
         .fw-kopf{padding:16px 20px;border-bottom:1px solid var(--ds-line);
             display:flex;align-items:center;gap:10px;flex-wrap:wrap}
         .fw-kopf h2,.fw-kopf .fw-t{margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--ds-ink)}
-        .fw-kopf .fw-neben{font-size:12.5px;color:var(--ds-faint)}
+        .fw-kopf .fw-neben{font-size:13px;color:var(--ds-faint)}
         .fw-kopf .fw-rechts{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
         .fw-ikon{width:30px;height:30px;border-radius:var(--ds-radius-knopf);
             background:var(--ds-brand-soft);color:var(--ds-brand);display:flex;
@@ -987,7 +987,7 @@ und einen Stilblock enthaelt.
         .fw-ikon.crit{background:var(--ds-crit-soft);color:var(--ds-crit)}
         .fw-ikon.good{background:var(--ds-good-soft);color:var(--ds-good)}
         .fw-fuss{padding:12px 20px;border-top:1px solid var(--ds-line);display:flex;
-            justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--ds-faint)}
+            justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--ds-faint)}
         /* Listen-Werkzeugkasten (Audit Etappe 4): Suche, Sortierung, Export in
            einer Zeile; am Telefon bricht sie um, die Suche nimmt die ganze Breite. */
         .fw-listwerkzeug{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
@@ -1014,8 +1014,8 @@ und einen Stilblock enthaelt.
         .fw-zeile.klick:hover{background:var(--ds-hover)}
         .fw-zeile .fw-mitte{flex:1;min-width:0}
         .fw-zeile .fw-t{font-size:14px;font-weight:600;letter-spacing:-.005em;color:var(--ds-ink)}
-        .fw-zeile .fw-s{font-size:12.5px;color:var(--ds-muted);margin-top:3px;line-height:1.45}
-        .fw-zeile .fw-zeit{font-size:12.5px;font-weight:700;color:var(--ds-muted);
+        .fw-zeile .fw-s{font-size:13px;color:var(--ds-muted);margin-top:3px;line-height:1.45}
+        .fw-zeile .fw-zeit{font-size:13px;font-weight:700;color:var(--ds-muted);
             font-variant-numeric:tabular-nums;white-space:nowrap}
         /* Auf dem Handy bekommt der Titel die VOLLE Breite, alles andere
            rutscht darunter.
@@ -1109,7 +1109,7 @@ und einen Stilblock enthaelt.
         .fw-befund-kopf{display:flex;gap:12px;align-items:flex-start;padding:13px 16px}
         .fw-befund-kosten{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;
             padding:0 16px 13px}
-        .fw-befund-kosten .fw-betrag{font-size:19px}
+        .fw-befund-kosten .fw-betrag{font-size:18px}
         .fw-befund-fuss{padding:9px 16px;border-top:1px solid var(--ds-line);
             background:var(--ds-surface)}
         .fw-befund .fw-aufklapp{border-top:1px solid var(--ds-line);border-bottom:0}
@@ -1144,7 +1144,7 @@ und einen Stilblock enthaelt.
             width:calc(100% - 32px);max-width:440px;background:var(--ds-surface);
             color:var(--ds-ink);box-shadow:var(--ds-shadow-lg)}
         .fw-bestaetigen::backdrop{background:var(--ds-scrim)}
-        .fw-bestaetigen-titel{font-size:17px;font-weight:600;letter-spacing:-.01em;margin:0 0 8px}
+        .fw-bestaetigen-titel{font-size:18px;font-weight:600;letter-spacing:-.01em;margin:0 0 8px}
         .fw-bestaetigen-text{font-size:14px;line-height:1.5;color:var(--ds-muted);margin:0 0 18px;white-space:pre-line}
         .fw-bestaetigen-knoepfe{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
         .fw-mutet{color:var(--ds-faint)}
@@ -1187,8 +1187,8 @@ und einen Stilblock enthaelt.
         .fw-lage-kachel:first-child{border-left:0}
         .fw-lage-kachel:hover{background:var(--ds-surface-2)}
         .fw-lage-zeile{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
-        .fw-lage .fw-l{font-size:12.5px;font-weight:500;color:var(--ds-muted)}
-        .fw-lage .fw-w{font-size:26px;line-height:1.1;font-weight:600;letter-spacing:-.03em;
+        .fw-lage .fw-l{font-size:13px;font-weight:500;color:var(--ds-muted)}
+        .fw-lage .fw-w{font-size:28px;line-height:1.1;font-weight:600;letter-spacing:-.03em;
             font-variant-numeric:tabular-nums;color:var(--ds-ink);white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
         .fw-lage .fw-f{font-size:12px;color:var(--ds-faint);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
         .fw-spark{width:96px;height:34px;flex:0 0 auto;overflow:visible;color:var(--ds-brand)}
@@ -1208,7 +1208,7 @@ und einen Stilblock enthaelt.
         }
         @media (max-width:720px){
             .fw-lage-kachel{padding:14px 14px 12px}
-            .fw-lage .fw-w{font-size:21px}
+            .fw-lage .fw-w{font-size:22px}
             .fw-spark{width:64px;height:28px}
         }
         @media (max-width:420px){.fw-lage-zeile{flex-direction:column;align-items:flex-start;gap:6px}}
@@ -1218,7 +1218,7 @@ und einen Stilblock enthaelt.
         .fw-klapp{background:var(--ds-surface);border:1px solid var(--ds-line);
             border-radius:var(--ds-radius);box-shadow:var(--ds-shadow);
             margin-bottom:14px;overflow:hidden}
-        .fw-klapp>summary{padding:11px 15px;font-size:13.5px;font-weight:700;
+        .fw-klapp>summary{padding:11px 15px;font-size:14px;font-weight:700;
             cursor:pointer;list-style:none;display:flex;align-items:center;
             gap:10px;color:var(--ds-ink)}
         .fw-klapp>summary::-webkit-details-marker{display:none}
@@ -1381,7 +1381,7 @@ und einen Stilblock enthaelt.
         .fw-nav-zahl.crit,.fw-nav-eintrag.hier .fw-nav-zahl.crit{padding:0 7px;border-radius:var(--ds-pill);
             background:var(--ds-crit);color:var(--ds-auf-satt)}
         .fw-zuletzt{display:flex;flex-direction:column;gap:2px}
-        .fw-zuletzt-eintrag{font-size:13.5px}
+        .fw-zuletzt-eintrag{font-size:14px}
         .fw-zuletzt-eintrag .truncate{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .fw-avatar.fw-avatar-klein{width:18px;height:18px;flex:0 0 18px;font-size:9px}
         html._sbc .fw-zuletzt,html._sbc #fwZuletztTitel{display:none}
@@ -1437,16 +1437,16 @@ und einen Stilblock enthaelt.
             border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:var(--ds-shadow-lg);padding:6px 0}
         .fw-profil-kopf{display:flex;align-items:center;gap:10px;padding:10px 16px 12px;border-bottom:1px solid var(--ds-line);margin-bottom:6px}
         .fw-profil-name{min-width:0}
-        .fw-profil-kopf b{display:block;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .fw-profil-kopf b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .fw-profil-kopf small{display:block;font-size:12px;color:var(--ds-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .fw-profil-abschnitt{padding:6px 16px 8px}
         .fw-profil-titel{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ds-faint);margin-bottom:6px}
         .fw-segment{display:flex;gap:2px;padding:2px;border-radius:var(--ds-radius-sm);background:var(--ds-surface-2);border:1px solid var(--ds-line)}
         .fw-segment button{flex:1;padding:5px 8px;border-radius:var(--ds-radius-xs);border:0;background:none;cursor:pointer;
-            font:inherit;font-size:12.5px;font-weight:600;color:var(--ds-muted);transition:background .12s,color .12s}
+            font:inherit;font-size:13px;font-weight:600;color:var(--ds-muted);transition:background .12s,color .12s}
         .fw-segment button:hover{color:var(--ds-ink)}
         .fw-segment button.an,.fw-segment button[aria-pressed="true"]{background:var(--ds-surface);color:var(--ds-ink);box-shadow:var(--ds-shadow-sm)}
-        .fw-profil-link{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13.5px;color:var(--ds-ink);text-decoration:none}
+        .fw-profil-link{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:14px;color:var(--ds-ink);text-decoration:none}
         .fw-profil-link:hover{background:var(--ds-hover)}
         .fw-profil-link.crit{color:var(--ds-crit)}
         .fw-profil-link.crit:hover{background:var(--ds-crit-soft)}
@@ -1460,7 +1460,7 @@ und einen Stilblock enthaelt.
         .fw-toasts{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
             z-index:100;display:flex;flex-direction:column;gap:8px;align-items:center;width:min(460px,calc(100% - 32px))}
         .fw-toast{display:flex;align-items:flex-start;gap:12px;width:100%;padding:11px 10px 11px 16px;border-radius:var(--ds-radius);
-            background:var(--ds-ink);color:var(--ds-surface);box-shadow:var(--ds-shadow-lg);font-size:13.5px;line-height:1.45;
+            background:var(--ds-ink);color:var(--ds-surface);box-shadow:var(--ds-shadow-lg);font-size:14px;line-height:1.45;
             animation:fw-toast-ein .22s var(--ds-ease)}
         .fw-toast>.fw-zeichen{margin-top:3px;color:var(--ds-good)}
         .fw-toast.warn>.fw-zeichen{color:var(--ds-warn)}
@@ -1477,7 +1477,7 @@ und einen Stilblock enthaelt.
         .fw-zdlg{border:1px solid var(--ds-line);border-radius:var(--ds-radius-lg);padding:22px;width:min(520px,calc(100% - 32px));
             background:var(--ds-surface);color:var(--ds-ink);box-shadow:var(--ds-shadow-lg);margin:auto;max-height:calc(100% - 32px);overflow:auto}
         .fw-zdlg::backdrop{background:var(--ds-scrim)}
-        .fw-zdlg h2{font-size:20px;font-weight:600;margin:0 0 4px}
+        .fw-zdlg h2{font-size:22px;font-weight:600;margin:0 0 4px}
         .fw-zdlg-sub{margin:0 0 14px;color:var(--ds-muted);font-size:14px}
         .fw-zopt{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;padding:12px;border:1px solid var(--ds-line);
             border-radius:var(--ds-radius-sm);margin-bottom:8px;cursor:pointer;font-size:14px}
@@ -1523,9 +1523,9 @@ und einen Stilblock enthaelt.
         }
         @media (min-width:1024px){ .fw-vorhang-mobil{display:none} }
         @media (max-width:720px){
-            .fw-phead h1{font-size:23px}
+            .fw-phead h1{font-size:22px}
             .fw-lage>div{padding:14px 14px 12px}
-            .fw-lage .fw-w{font-size:21px}
+            .fw-lage .fw-w{font-size:22px}
         }
         /* Zugeklappte Leiste auf dem Desktop (`_sbc`): nur die Zeichen. */
         @media (min-width:1024px){
@@ -1568,7 +1568,7 @@ und einen Stilblock enthaelt.
         .fw-schublade-inhalt{position:relative;flex:1;display:flex;min-height:0}
         .fw-schublade-inhalt iframe{position:relative;flex:1;width:100%;border:0;background:var(--ds-surface)}
         .fw-schublade-laedt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;
-            font-size:13.5px;color:var(--ds-faint)}
+            font-size:14px;color:var(--ds-faint)}
         .fw-schublade-laedt.hidden{display:none}
         @keyframes fw-schublade-ein{from{transform:translateX(24px);opacity:.6}}
         @keyframes fw-vorhang-ein{from{opacity:0}}
@@ -1580,9 +1580,9 @@ und einen Stilblock enthaelt.
         .fw-einbettung-meldungen .fw-hinweis{border-radius:var(--ds-radius-sm);border:0}
         .fw-fertig{min-height:40vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px}
         .fw-fertig-zeichen{width:56px;height:56px;border-radius:var(--ds-pill);background:var(--ds-good-soft);color:var(--ds-good);
-            display:grid;place-items:center;font-size:26px;margin-bottom:14px}
-        .fw-fertig-titel{font-size:17px;font-weight:600;color:var(--ds-ink);margin:0}
-        .fw-fertig-text{font-size:13.5px;color:var(--ds-faint);margin:4px 0 0}
+            display:grid;place-items:center;font-size:28px;margin-bottom:14px}
+        .fw-fertig-titel{font-size:18px;font-weight:600;color:var(--ds-ink);margin:0}
+        .fw-fertig-text{font-size:14px;color:var(--ds-faint);margin:4px 0 0}
         @media (max-width:640px){.fw-einbettung{padding:16px}}
         /* ============================================================
            STARTSEITE NACH KONZEPT-V8 (`fw/dashboard.html`)
@@ -1611,7 +1611,7 @@ und einen Stilblock enthaelt.
         .fw-vorrat-filter{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:12px 20px;border-bottom:1px solid var(--ds-line)}
         .fw-vorrat-wahl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
         .fw-vorrat-wahl select{height:28px;min-height:0;border:1px solid var(--ds-line);border-radius:var(--ds-pill);background:var(--ds-surface);
-            padding:0 10px;font:inherit;font-size:12.5px;color:var(--ds-muted);width:auto;cursor:pointer}
+            padding:0 10px;font:inherit;font-size:13px;color:var(--ds-muted);width:auto;cursor:pointer}
         .fw-vorrat-liste{list-style:none;margin:0;padding:6px 0}
         .fw-vz{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto 104px 150px;align-items:center;gap:16px;
             padding:12px 20px 12px 24px;cursor:pointer;outline:0;transition:background .12s}
@@ -1627,11 +1627,11 @@ und einen Stilblock enthaelt.
         .fw-vz-kopf .fw-marke-kapsel .fw-zeichen{width:12px!important;height:12px!important}
         .fw-vz-titel{display:block;font-weight:600;font-size:14px;letter-spacing:-.005em;color:var(--ds-ink);text-decoration:none;
             white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .fw-vz-sub{font-size:12.5px;color:var(--ds-muted);display:flex;align-items:center;gap:10px;margin-top:3px;min-width:0}
+        .fw-vz-sub{font-size:13px;color:var(--ds-muted);display:flex;align-items:center;gap:10px;margin-top:3px;min-width:0}
         .fw-vz-obj{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
         .fw-vz-wer{display:flex}
         .fw-avatar.fw-avatar-offen{border-style:dashed}
-        .fw-vz-frist{text-align:right;font-size:12.5px;line-height:1.35}
+        .fw-vz-frist{text-align:right;font-size:13px;line-height:1.35}
         .fw-vz-frist b{display:block;font-weight:600;font-size:13px;color:var(--ds-ink)}
         .fw-vz-frist span{color:var(--ds-faint)}
         .fw-vz-frist.crit b{color:var(--ds-crit)}
@@ -1658,16 +1658,16 @@ und einen Stilblock enthaelt.
         .fw-vg.offen .fw-vg-vorhang{opacity:1}
         .fw-vg.offen .fw-vg-box{transform:none}
         .fw-vg-kopf{padding:20px 24px 16px;padding-top:calc(20px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--ds-line)}
-        .fw-vg-oben{display:flex;align-items:center;gap:8px;color:var(--ds-faint);font-size:12.5px}
+        .fw-vg-oben{display:flex;align-items:center;gap:8px;color:var(--ds-faint);font-size:13px}
         .fw-vg-oben .fw-knopf-rund{margin-left:auto;margin-right:-8px}
-        .fw-vg-kopf h3{margin:10px 0 4px;font-size:20px;letter-spacing:-.02em;line-height:1.25;font-weight:600;color:var(--ds-ink);text-wrap:balance}
+        .fw-vg-kopf h3{margin:10px 0 4px;font-size:22px;letter-spacing:-.02em;line-height:1.25;font-weight:600;color:var(--ds-ink);text-wrap:balance}
         .fw-vg-kopf p{margin:0;color:var(--ds-muted);font-size:13px}
         .fw-vg-kopf p:empty{display:none}
         .fw-vg-inhalt{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:22px}
         .fw-vg-inhalt .fw-hinweis{border-radius:var(--ds-radius-sm);border-bottom:0}
         .fw-vg-abschnitt h4{margin:0 0 10px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ds-faint)}
         .fw-vg-abschnitt .fw-ablauf{padding:0}
-        .fw-vg-fakten{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px 20px;margin:0;font-size:13.5px}
+        .fw-vg-fakten{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px 20px;margin:0;font-size:14px}
         .fw-vg-fakten dt{color:var(--ds-faint)}
         .fw-vg-fakten dd{margin:0;font-weight:500;min-width:0;overflow-wrap:anywhere;color:var(--ds-ink)}
         .fw-vg-fuss{padding:14px 24px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--ds-line);
@@ -1678,7 +1678,7 @@ und einen Stilblock enthaelt.
         .fw-vg-fuss-daten{display:contents}
         @media (prefers-reduced-motion:reduce){.fw-vg-box,.fw-vg-vorhang{transition:none}}
         @media (max-width:720px){
-            .fw-hallo h1{font-size:23px}
+            .fw-hallo h1{font-size:22px}
             .fw-vz{grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;padding:12px 16px 12px 22px}
             .fw-vz-wer{display:none}
             .fw-vz-frist{grid-column:2;grid-row:1}
@@ -1708,29 +1708,29 @@ und einen Stilblock enthaelt.
             display:grid;place-items:center;margin:0 auto 10px;font-size:18px}
         .fw-leer .fw-leer-zeichen.mut{background:var(--ds-surface-2);color:var(--ds-faint)}
         .fw-leer b{display:block;color:var(--ds-ink);font-weight:600}
-        .fw-leer p{margin:4px auto 0;max-width:24rem;font-size:12.5px;color:var(--ds-faint)}
+        .fw-leer p{margin:4px auto 0;max-width:24rem;font-size:13px;color:var(--ds-faint)}
         .fw-leer .fw-btn{margin-top:14px}
         .fw-leer-knapp .fw-leer-zeichen{width:32px;height:32px;font-size:15px;margin-bottom:8px}
         .fw-leer-knapp b{font-weight:500;color:var(--ds-muted)}
         .fw-eingang{align-items:flex-start}
         .fw-quelle{width:32px;height:32px;border-radius:var(--ds-radius-knopf);display:grid;place-items:center;flex:0 0 32px;
             background:var(--ds-surface-2);border:1px solid var(--ds-line);color:var(--ds-muted);font-size:15px}
-        .fw-vorschlag{display:inline-block;margin-top:8px;font-size:12.5px;font-weight:500;padding:3px 8px;border-radius:var(--ds-radius-xs);
+        .fw-vorschlag{display:inline-block;margin-top:8px;font-size:13px;font-weight:500;padding:3px 8px;border-radius:var(--ds-radius-xs);
             background:var(--ds-brand-soft);color:var(--ds-brand-600)}
         .fw-vorschlag.unsicher{background:var(--ds-warn-soft);color:var(--ds-warn)}
         .fw-eingang-knoepfe{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
         .fw-agenda{padding:10px 20px 14px}
         .fw-agenda-zeile{display:grid;grid-template-columns:52px 22px minmax(0,1fr);gap:10px;align-items:start;padding:8px 0;position:relative}
         .fw-agenda-zeile:not(:last-child)::after{content:"";position:absolute;left:72px;top:30px;bottom:-8px;width:1px;background:var(--ds-line)}
-        .fw-agenda-zeit{font-family:var(--ds-mono);font-size:12.5px;color:var(--ds-muted);padding-top:1px;display:flex;flex-direction:column}
+        .fw-agenda-zeit{font-family:var(--ds-mono);font-size:13px;color:var(--ds-muted);padding-top:1px;display:flex;flex-direction:column}
         .fw-agenda-punkt{width:22px;height:22px;border-radius:var(--ds-pill);border:1.5px solid var(--ds-brand);background:var(--ds-surface);/* v8: Zeichen im Ring */
             color:var(--ds-brand);display:grid;place-items:center;font-size:12px;position:relative;z-index:1}
-        .fw-agenda .fw-t{font-weight:600;font-size:13.5px;line-height:1.35;color:var(--ds-ink)}
+        .fw-agenda .fw-t{font-weight:600;font-size:14px;line-height:1.35;color:var(--ds-ink)}
         .fw-agenda .fw-s{font-size:12px;color:var(--ds-faint)}
         .fw-agenda .fw-link{display:inline-block;margin-top:4px}
         .fw-mandat{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:12px 20px;border-bottom:1px solid var(--ds-line)}
         .fw-mandat:last-of-type{border-bottom:0}
-        .fw-mandat .fw-t{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ds-ink)}
+        .fw-mandat .fw-t{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ds-ink)}
         .fw-mandat .fw-s{font-size:12px;color:var(--ds-faint)}
         .fw-belegung{grid-column:1 / -1;height:4px;border-radius:var(--ds-radius-xs);background:var(--ds-surface-2);overflow:hidden;border:1px solid var(--ds-line)}
         .fw-belegung i{display:block;height:100%;background:var(--ds-brand)}
@@ -1744,7 +1744,7 @@ und einen Stilblock enthaelt.
         .fw-freigabe>.fw-ht b{color:var(--ds-ink)}
         /* Ablauf: Schritte eines Falls als Zeitleiste (Mockup: Schublade «Ablauf») */
         .fw-ablauf{list-style:none;margin:0;padding:10px 20px 14px}
-        .fw-ablauf li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;padding:7px 0;position:relative;align-items:start;font-size:13.5px}
+        .fw-ablauf li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;padding:7px 0;position:relative;align-items:start;font-size:14px}
         .fw-ablauf li:not(:last-child)::after{content:"";position:absolute;left:10px;top:27px;bottom:-5px;width:2px;background:var(--ds-line)}
         .fw-ablauf li.fertig:not(:last-child)::after{background:var(--ds-brand)}
         .fw-ablauf-punkt{width:22px;height:22px;border-radius:var(--ds-pill);border:2px solid var(--ds-line-stark);display:grid;place-items:center;
@@ -1759,14 +1759,14 @@ und einen Stilblock enthaelt.
         /* Kartenrumpf mit Innenabstand (statt p-5 an Formkarten) */
         .fw-rumpf{padding:20px}
         /* Häkchen: Checkbox und Beschriftung in einer Zeile, auch im fw-feldblock */
-        .fw-haekchen{display:flex;flex-direction:row;align-items:flex-start;gap:10px;font-size:13.5px;color:var(--ds-ink);cursor:pointer;line-height:1.4}
+        .fw-haekchen{display:flex;flex-direction:row;align-items:flex-start;gap:10px;font-size:14px;color:var(--ds-ink);cursor:pointer;line-height:1.4}
         .fw-haekchen input[type=checkbox],.fw-haekchen input[type=radio]{margin-top:2px;flex:0 0 auto;width:16px;height:16px;accent-color:var(--ds-brand)}
         @media (max-width:640px){
             .fw-zeile .fw-zeit{text-align:left}
             .fw-eingang .fw-mitte{flex-basis:calc(100% - 44px)}
             .fw-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
             .fw-kpi{padding:14px 16px 12px}
-            .fw-kpi .fw-v{font-size:21px}
+            .fw-kpi .fw-v{font-size:22px}
             .fw-freigabe{bottom:calc(80px + env(safe-area-inset-bottom))}
             .fw-rumpf{padding:16px}
             .fw-ablauf{padding:10px 16px 14px}
@@ -1784,7 +1784,7 @@ und einen Stilblock enthaelt.
         .fw-feldblock{display:flex;flex-direction:column;gap:6px;min-width:0}
         .fw-feldblock.breit{grid-column:1 / -1}
         .fw-feldblock .fw-feld{width:100%}
-        .fw-label{display:block;font-size:12.5px;font-weight:600;color:var(--ds-muted)}
+        .fw-label{display:block;font-size:13px;font-weight:600;color:var(--ds-muted)}
         .fw-hilfe{font-size:12px;color:var(--ds-faint);margin:0}
         .fw-formular-fuss{grid-column:1 / -1;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;
             padding-top:8px;border-top:1px solid var(--ds-line);margin-top:4px}
@@ -1813,7 +1813,7 @@ und einen Stilblock enthaelt.
            Werkzeugzeile und Tabelle; Akten mit Brotkrume im Seitenkopf,
            Kennzahlen, Zwei-Spalten-Teil und Rueckstandszeile. Masse aus dem
            Mockup (`.crumbs`, `.p-tools`, `.two`, `.issues`, `.callout`). */
-        .fw-krumen{display:flex;flex-wrap:wrap;gap:6px;font-size:12.5px;color:var(--ds-faint);font-weight:500}
+        .fw-krumen{display:flex;flex-wrap:wrap;gap:6px;font-size:13px;color:var(--ds-faint);font-weight:500}
         .fw-krumen a{color:var(--ds-muted);text-decoration:none}
         .fw-krumen a:hover{color:var(--ds-brand);text-decoration:underline;text-underline-offset:3px}
         .fw-phead .fw-krumen + h1{margin-top:6px}
@@ -1824,7 +1824,7 @@ und einen Stilblock enthaelt.
         .fw-akten-karte>.fw-reiter:last-child{border-bottom:0}
         .fw-akten-werkzeug{display:flex;gap:10px 14px;align-items:center;flex-wrap:wrap;padding:12px 20px;border-bottom:1px solid var(--ds-line)}
         .fw-akten-werkzeug .fw-listwerkzeug{margin:0;flex:1 1 auto;max-width:680px;min-width:0}
-        .fw-akten-hinweis{font-size:12.5px;color:var(--ds-faint)}
+        .fw-akten-hinweis{font-size:13px;color:var(--ds-faint)}
         .fw-akten-werkzeug .fw-filters{margin:0;flex-basis:100%}
         table.fw-table tr.fw-klickzeile{cursor:pointer}
         table.fw-table .fw-zelle-titel{font-weight:600;color:var(--ds-ink);text-decoration:none}
@@ -1839,8 +1839,8 @@ und einen Stilblock enthaelt.
         .fw-auffaellig li{display:flex;align-items:center;gap:12px;padding:12px 20px}
         .fw-auffaellig li + li{border-top:1px solid var(--ds-line)}
         .fw-auffaellig .fw-mitte{flex:1;min-width:0}
-        .fw-auffaellig .fw-mitte b{display:block;font-weight:600;font-size:13.5px;color:var(--ds-ink)}
-        .fw-auffaellig .fw-mitte span{font-size:12.5px;color:var(--ds-muted)}
+        .fw-auffaellig .fw-mitte b{display:block;font-weight:600;font-size:14px;color:var(--ds-ink)}
+        .fw-auffaellig .fw-mitte span{font-size:13px;color:var(--ds-muted)}
         .fw-ansage{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:16px 20px;margin-bottom:24px;
             border-radius:var(--ds-radius);border:1px solid var(--ds-line);background:var(--ds-surface)}
         .fw-ansage>.fw-zeichen{flex:0 0 auto}
@@ -1926,8 +1926,8 @@ und einen Stilblock enthaelt.
         .fw-lauf-kopf{display:flex;align-items:flex-start;gap:12px}
         .fw-lauf-kopf>.fw-chip{flex:0 0 auto}
         .fw-lauf-titel{flex:1;min-width:0}
-        .fw-lauf-titel b{display:block;font-size:14.5px;font-weight:600;letter-spacing:-.01em;color:var(--ds-ink)}
-        .fw-lauf-titel span{font-size:12.5px;color:var(--ds-muted)}
+        .fw-lauf-titel b{display:block;font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--ds-ink)}
+        .fw-lauf-titel span{font-size:13px;color:var(--ds-muted)}
         .fw-lauf-fuss{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:auto;
             padding-top:12px;border-top:1px solid var(--ds-line);font-size:12px;color:var(--ds-faint)}
         /* Zwei Knöpfe («Details», «Öffnen») in einer Reihe; der Kontexttext nimmt den Rest und
@@ -1981,7 +1981,7 @@ und einen Stilblock enthaelt.
         .fw-datei:focus-visible{outline:none;border-color:var(--ds-brand);box-shadow:0 0 0 3px var(--ds-brand-soft)}
         .fw-datei::file-selector-button{margin-right:10px;min-height:30px;padding:5px 12px;
             border:1px solid var(--ds-line);border-radius:var(--ds-radius-sm);background:var(--ds-surface-2);
-            color:var(--ds-ink);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;
+            color:var(--ds-ink);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;
             transition:border-color .12s,box-shadow .12s}
         .fw-datei:hover::file-selector-button{border-color:var(--ds-line-stark);box-shadow:var(--ds-shadow-sm)}
         @media (max-width:640px){
@@ -2026,7 +2026,7 @@ und einen Stilblock enthaelt.
         .fw-gs .fw-mitte{flex:1;min-width:0}
         .fw-gs .fw-s{font-size:12px;color:var(--ds-faint);margin-top:2px;overflow-wrap:anywhere}
         .fw-gs-kopf{display:flex;gap:12px;justify-content:space-between;align-items:baseline}
-        .fw-gs-wer{font-size:12.5px;font-weight:500;color:var(--ds-ink);min-width:0;overflow-wrap:anywhere}
+        .fw-gs-wer{font-size:13px;font-weight:500;color:var(--ds-ink);min-width:0;overflow-wrap:anywhere}
         .fw-gs-kopf .fw-betrag{white-space:nowrap;flex:0 0 auto}
         .fw-gs .fw-eingang-knoepfe{align-items:center}
         .fw-gs .fw-eingang-knoepfe .fw-vorschlag{margin-top:0}
@@ -2087,7 +2087,7 @@ und einen Stilblock enthaelt.
         .fw-hbar-v.fw-faint{font-weight:400;color:var(--ds-faint)}
         @media (max-width:640px){
             .fw-gs{padding:12px 16px}
-            .fw-fin-kpis .fw-kpi .fw-v{font-size:17px}
+            .fw-fin-kpis .fw-kpi .fw-v{font-size:18px}
             .fw-diagramm{padding:12px 16px 14px}
             .fw-kurve{padding-left:38px}
             .fw-kurve-y{left:-38px;width:32px;font-size:10.5px}
@@ -2134,14 +2134,14 @@ und einen Stilblock enthaelt.
         /* Filterzeile unter dem Tabellenkopf (fwSpaltenfilter in base.html) */
         table.fw-table tr.fw-filterzeile th{padding:5px 8px;background:var(--ds-surface);font-weight:400;
             border-bottom:1px solid var(--ds-line);text-transform:none;letter-spacing:0}
-        .fw-filterfeld{width:100%;min-width:92px;height:28px;padding:0 8px;font:inherit;font-size:12.5px;
+        .fw-filterfeld{width:100%;min-width:92px;height:28px;padding:0 8px;font:inherit;font-size:13px;
             color:var(--ds-ink);background:var(--ds-surface);border:1px solid var(--ds-line);
             border-radius:var(--ds-radius-knopf);transition:border-color .12s,box-shadow .12s}
         .fw-filterfeld:focus{outline:none;border-color:var(--ds-brand);box-shadow:0 0 0 3px var(--ds-brand-soft)}
         .fw-filterfeld.fw-aktiv{border-color:var(--ds-brand);background:var(--ds-brand-soft)}
-        .fw-filterstand{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:12.5px;
+        .fw-filterstand{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;
             color:var(--ds-faint);border-bottom:1px solid var(--ds-line)}
-        .fw-filterstand button{font:inherit;font-size:12.5px;color:var(--ds-brand);background:none;border:0;
+        .fw-filterstand button{font:inherit;font-size:13px;color:var(--ds-brand);background:none;border:0;
             cursor:pointer;padding:0;text-decoration:underline}
         .fw-filterstand[hidden]{display:none}
         table.fw-table tbody tr.fw-gefiltert{display:none}
@@ -2255,7 +2255,7 @@ und einen Stilblock enthaelt.
         .fw-spalte-kopf .fw-z{font-size:12px;font-weight:600;padding:0 7px;line-height:18px;border-radius:var(--ds-pill);
             background:var(--ds-surface);border:1px solid var(--ds-line);color:var(--ds-muted)}
         .fw-spalte-liste{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;min-height:8px}
-        .fw-spalte-leer{font-size:12.5px;color:var(--ds-faint);text-align:center;padding:14px 8px}
+        .fw-spalte-leer{font-size:13px;color:var(--ds-faint);text-align:center;padding:14px 8px}
         .fw-karte{display:flex;flex-direction:column;gap:8px;padding:14px;background:var(--ds-surface);border:1px solid var(--ds-line);
             border-radius:var(--ds-radius);box-shadow:var(--ds-shadow-sm);transition:box-shadow .15s var(--ds-ease),border-color .12s;
             border-left:3px solid var(--ds-line-stark)}
@@ -2266,7 +2266,7 @@ und einen Stilblock enthaelt.
         .fw-karte-kopf{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;color:var(--ds-faint)}
         .fw-karte-titel{font-size:14px;font-weight:600;line-height:1.35;color:var(--ds-ink);text-decoration:none}
         .fw-karte-titel:hover{color:var(--ds-brand)}
-        .fw-karte-sub{font-size:12.5px;color:var(--ds-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .fw-karte-sub{font-size:13px;color:var(--ds-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .fw-karte-befunde{display:flex;flex-wrap:wrap;gap:6px}
         .fw-karte-fuss{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:2px;min-width:0}
         .fw-karte-alter{font-size:12px;color:var(--ds-faint);white-space:nowrap}
@@ -2317,7 +2317,7 @@ und einen Stilblock enthaelt.
             .fw-kal-liste-tag{display:flex;gap:14px;padding:12px 16px;border-bottom:1px solid var(--ds-line)}
             .fw-kal-liste-tag.heute{background:var(--ds-brand-soft)}
             .fw-kal-liste-datum{display:flex;flex-direction:column;align-items:center;width:38px;flex:0 0 38px}
-            .fw-kal-liste-datum b{font-size:20px;line-height:1.1}.fw-kal-liste-datum span{font-size:12px;color:var(--ds-faint);text-transform:uppercase}
+            .fw-kal-liste-datum b{font-size:22px;line-height:1.1}.fw-kal-liste-datum span{font-size:12px;color:var(--ds-faint);text-transform:uppercase}
             .fw-kal-liste-eintraege{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
             .fw-kal-chip{white-space:normal}
         }
@@ -2327,8 +2327,8 @@ und einen Stilblock enthaelt.
         .fw-legende-strich.zwei{border-top:2px dashed var(--ds-faint)}
         .fw-cash-summe{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;padding-bottom:4px}
         .fw-cash-summe div{display:flex;flex-direction:column;gap:2px;min-width:0}
-        .fw-cash-summe span{font-size:12.5px;color:var(--ds-muted)}
-        .fw-cash-summe b{font-size:20px;font-weight:600;letter-spacing:-.02em;white-space:nowrap}
+        .fw-cash-summe span{font-size:13px;color:var(--ds-muted)}
+        .fw-cash-summe b{font-size:22px;font-weight:600;letter-spacing:-.02em;white-space:nowrap}
         .fw-donut-zeile{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
         .fw-donut{position:relative;width:176px;height:176px;flex:0 0 176px}
         .fw-donut svg{width:100%;height:100%;transform:none}
@@ -2344,10 +2344,10 @@ und einen Stilblock enthaelt.
         .fw-donut-teil{transform:rotate(0deg)}
         .fw-donut:hover .fw-donut-teil{opacity:.7}.fw-donut .fw-donut-teil:hover{opacity:1}
         .fw-donut-mitte{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
-        .fw-donut-mitte b{font-size:26px;font-weight:600;letter-spacing:-.03em;line-height:1.1}
+        .fw-donut-mitte b{font-size:28px;font-weight:600;letter-spacing:-.03em;line-height:1.1}
         .fw-donut-mitte span{font-size:12px;color:var(--ds-muted)}
         .fw-donut-legende{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;flex:1;min-width:11rem}
-        .fw-donut-legende li{display:flex;align-items:center;gap:10px;font-size:13.5px;min-width:0}
+        .fw-donut-legende li{display:flex;align-items:center;gap:10px;font-size:14px;min-width:0}
         .fw-donut-legende li span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .fw-punkt-donut{width:10px;height:10px;border-radius:var(--ds-pill);flex:0 0 10px}
         @media (max-width:720px){.fw-cash-summe{grid-template-columns:1fr;gap:8px}.fw-donut-zeile{justify-content:center}}
@@ -2380,7 +2380,7 @@ und einen Stilblock enthaelt.
             padding-block:20px 0;padding-left:max(32px,env(safe-area-inset-left,0px));padding-right:max(32px,env(safe-area-inset-right,0px))}
         .fw-kapsel{background:var(--ds-surface);border-radius:var(--ds-pill);box-shadow:var(--ds-shadow-sm);height:52px;display:flex;align-items:center}
         .fw-logo-kapsel{gap:9px;padding:0 20px 0 14px;color:var(--ds-ink);text-decoration:none;flex:0 0 auto}
-        .fw-logo-kapsel b{position:relative;font-size:19px;font-weight:700;letter-spacing:-.02em;padding-right:16px}
+        .fw-logo-kapsel b{position:relative;font-size:18px;font-weight:700;letter-spacing:-.02em;padding-right:16px}
         .fw-logo-haus{width:30px;height:30px;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
         .fw-logo-haus .a{stroke:var(--ds-ink)}.fw-logo-haus .b{stroke:var(--ds-akzent)}
         .fw-logo-kreuz{position:absolute;right:0;top:-2px;width:12px;height:12px}
@@ -2418,7 +2418,7 @@ und einen Stilblock enthaelt.
         .fw-phead h1,.fw-hallo h1{font-size:clamp(30px,3.4vw,44px);font-weight:500;letter-spacing:-.04em;line-height:1.06}
         .fw-phead p{font-size:14px}
         .fw-aktenkopf h1{letter-spacing:-.03em}
-        @media (max-width:640px){ .fw-phead h1,.fw-hallo h1{font-size:30px} }
+        @media (max-width:640px){ .fw-phead h1,.fw-hallo h1{font-size:28px} }
         /* Fünf Bereiche passen am Telefon in die Kapsel (390 px: «Berichte» war abgeschnitten): Block «Kopfzeile» */
         
         
@@ -2429,7 +2429,7 @@ und einen Stilblock enthaelt.
         .fw-card{box-shadow:var(--ds-shadow-sm)}
         .fw-kpis.fw-stats{border-color:transparent;border-radius:var(--ds-radius-lg)}
         .fw-kopf{border-bottom-color:var(--ds-line);padding:20px 24px}
-        .fw-kopf h2,.fw-kopf .fw-t,.fw-card>.fw-h .fw-t{font-size:15.5px;font-weight:600;letter-spacing:-.015em}
+        .fw-kopf h2,.fw-kopf .fw-t,.fw-card>.fw-h .fw-t{font-size:15px;font-weight:600;letter-spacing:-.015em}
         .fw-fuss{padding:14px 24px;border-top-color:var(--ds-line)}
         .fw-zeile{padding:14px 24px}
         .fw-rumpf{padding:22px 24px}
@@ -2440,7 +2440,7 @@ und einen Stilblock enthaelt.
             transform:translateY(-5px);box-shadow:var(--ds-shadow)}
         .fw-kpi .fw-v,.fw-lage .fw-w{font-weight:500;letter-spacing:-.035em}
         /* Gross nur, wo Platz ist — am Telefon gelten die Stufen der Kachelreihe (21 / 17 px) */
-        @media (min-width:721px){.fw-kpis:not(.fw-stats) .fw-kpi .fw-v{font-size:32px}}
+        @media (min-width:721px){.fw-kpis:not(.fw-stats) .fw-kpi .fw-v{font-size:28px}}
         /* Die Akzent-Kachel einer Kennzahlenreihe ist die orange Hauptkarte */
         .fw-kpis:not(.fw-stats)>.fw-kpi.fw-accent{background:radial-gradient(120% 120% at 100% 0%,var(--ds-karte-hell) 0%,transparent 55%),
             linear-gradient(155deg,var(--ds-karte-mitte) 0%,var(--ds-karte-tief) 100%);color:#fff}
@@ -2530,7 +2530,7 @@ und einen Stilblock enthaelt.
         .fw-team-mitte{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
         .fw-team-name{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
         .fw-team-name b{font-weight:600}
-        .fw-team-zahlen{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:12.5px;color:var(--ds-muted)}
+        .fw-team-zahlen{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:13px;color:var(--ds-muted)}
         .fw-team-zahlen b{color:var(--ds-ink);font-weight:600}
         /* Lastbalken: Kapsel, Breite aus `data-w` (Skript in base.html, kein style-Attribut). */
         .fw-lastbalken{display:block;height:8px;border-radius:var(--ds-pill);background:var(--ds-surface-2);overflow:hidden}
@@ -2540,7 +2540,7 @@ und einen Stilblock enthaelt.
         .fw-alter-zeile{display:grid;grid-template-columns:64px minmax(0,1fr) 40px;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--ds-line)}
         .fw-alter-zeile:first-child{border-top:0}
         .fw-alter-zeile b{text-align:right;font-weight:600}
-        .fw-alter-label{font-size:12.5px;color:var(--ds-muted)}
+        .fw-alter-label{font-size:13px;color:var(--ds-muted)}
         .fw-alter-zeile .fw-lastbalken{height:12px}
         @media (max-width:640px){.fw-team-liste{padding:2px 16px 12px}.fw-team-zeile .fw-avci{width:32px;height:32px}}
         /* ---- Ende UI-Audit ---- */
@@ -2570,7 +2570,7 @@ und einen Stilblock enthaelt.
         .fw-kachel-kopf h2,.fw-kachel-kopf h3{margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em}
         .fw-kachel-zahl{font-size:40px;font-weight:500;letter-spacing:-.04em;line-height:1;margin-top:auto}
         .fw-kachel-zahl small{font-size:14px;font-weight:500;letter-spacing:0;color:var(--ds-muted);margin-left:6px}
-        .fw-kachel-text{font-size:12.5px;color:var(--ds-muted);line-height:1.45;margin:0}
+        .fw-kachel-text{font-size:13px;color:var(--ds-muted);line-height:1.45;margin:0}
         .fw-kachel.akzent{background:radial-gradient(120% 120% at 100% 0%,var(--ds-karte-hell) 0%,transparent 55%),linear-gradient(160deg,var(--ds-karte-mitte),var(--ds-karte-tief));color:var(--ds-auf-satt)}
         .fw-kachel.akzent,.fw-kachel.akzent .fw-kachel-text{color:#fff}
         .fw-kachel.dunkel{background:var(--ds-ink);color:var(--ds-surface)}
@@ -2607,7 +2607,7 @@ und einen Stilblock enthaelt.
         .fw-assistent.an .fw-assistent-leiste{display:block;position:sticky;top:16px;background:var(--ds-surface);border-radius:var(--ds-radius-lg);box-shadow:var(--ds-shadow-sm);padding:14px}
         .fw-assistent-leiste ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
         .fw-assistent-leiste li button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;background:none;border-radius:var(--ds-radius-sm);
-            font:inherit;font-size:13.5px;color:var(--ds-muted);text-align:left;cursor:pointer}
+            font:inherit;font-size:14px;color:var(--ds-muted);text-align:left;cursor:pointer}
         .fw-assistent-leiste li button:hover{background:var(--ds-surface-2);color:var(--ds-ink)}
         .fw-assistent-leiste .nr{width:26px;height:26px;flex:0 0 26px;border-radius:var(--ds-pill);display:grid;place-items:center;font-size:12px;font-weight:600;
             background:var(--ds-surface-2);color:var(--ds-muted)}
@@ -2624,12 +2624,12 @@ und einen Stilblock enthaelt.
         .fw-assistent-schritt-kopf{display:none}
         .fw-assistent.an .fw-assistent-schritt-kopf{display:flex;flex-direction:column;gap:4px}
         .fw-assistent-schritt-kopf .fw-ueber{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ds-faint)}
-        .fw-assistent-schritt-kopf h2{margin:0;font-size:24px;font-weight:500;letter-spacing:-.03em}
+        .fw-assistent-schritt-kopf h2{margin:0;font-size:22px;font-weight:500;letter-spacing:-.03em}
         .fw-assistent-schritt-kopf p{margin:0;font-size:13px;color:var(--ds-muted)}
         .fw-assistent-fuss{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 18px;background:var(--ds-surface);
             border-radius:var(--ds-radius-lg);box-shadow:var(--ds-shadow-lg);position:sticky;bottom:16px;z-index:5}
         .fw-assistent-fuss .rechts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
-        .fw-assistent-fuss .stand{font-size:12.5px;color:var(--ds-muted)}
+        .fw-assistent-fuss .stand{font-size:13px;color:var(--ds-muted)}
         .fw-assistent:not(.an) [data-assistent-nur-js]{display:none}
         .fw-assistent.an [data-assistent-ohne-js]{display:none}
         .fw-assistent-pruefen dl{margin:0;display:grid;grid-template-columns:minmax(120px,34%) minmax(0,1fr);gap:8px 16px;font-size:13px}
@@ -2678,7 +2678,7 @@ und einen Stilblock enthaelt.
         /* position:relative hält die .sr-only-Zeile im Link — sonst ragt sie am Telefon aus der
            waagrecht scrollenden Leiste und die ganze Seite scrollt quer (gemessen: 383 px). */
         .fw-assistent-leiste li>a,.fw-assistent-leiste li>.schritt{position:relative;display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;
-            border-radius:var(--ds-radius-sm);font-size:13.5px;line-height:1.35;color:var(--ds-muted);text-decoration:none}
+            border-radius:var(--ds-radius-sm);font-size:14px;line-height:1.35;color:var(--ds-muted);text-decoration:none}
         .fw-assistent-leiste li>a:hover{background:var(--ds-surface-2);color:var(--ds-ink)}
         .fw-assistent-leiste li.hier>a{color:var(--ds-ink);font-weight:600}
         .fw-assistent-leiste .t{min-width:0}
@@ -2714,7 +2714,7 @@ und einen Stilblock enthaelt.
             border:1px solid var(--ds-line-stark);background:var(--ds-surface);color:var(--ds-muted);font:600 11px/1 var(--ds-font);cursor:pointer;padding:0;flex:0 0 18px}
         .fw-hilfe-knopf:hover,.fw-hilfe-knopf[aria-expanded="true"]{background:var(--ds-ink);border-color:var(--ds-ink);color:var(--ds-surface)}
         .fw-hilfe-blase{position:fixed;z-index:90;max-width:min(320px,calc(100vw - 24px));padding:12px 14px;border-radius:var(--ds-radius-sm);
-            background:var(--ds-ink);color:var(--ds-surface);font-size:12.5px;line-height:1.5;font-weight:400;letter-spacing:0;text-transform:none;
+            background:var(--ds-ink);color:var(--ds-surface);font-size:13px;line-height:1.5;font-weight:400;letter-spacing:0;text-transform:none;
             box-shadow:var(--ds-shadow-lg);text-align:left}
         .fw-hilfe-blase b{display:block;margin-bottom:3px;font-weight:600}
         .fw-hilfe-blase a{color:var(--ds-akzent-hell)}
@@ -2786,7 +2786,7 @@ und einen Stilblock enthaelt.
             .fw-bento.fw-heute-kacheln>*{grid-column:span 1 !important;min-height:0;padding:16px}
             .fw-bento.fw-heute-kacheln.n-1>:first-child,.fw-bento.fw-heute-kacheln.n-3>:first-child{grid-column:1 / -1 !important}
             .fw-heute-kacheln .fw-kachel-zahl{font-size:34px}
-            .fw-heute-kacheln .fw-kachel-kopf h2{font-size:13.5px}
+            .fw-heute-kacheln .fw-kachel-kopf h2{font-size:14px}
         }
         /* Schwerpunkt der Startseite: Kapsel im Kopf, darunter drei Knöpfe. */
         .fw-schwerpunkt{position:relative}
@@ -2796,7 +2796,7 @@ und einen Stilblock enthaelt.
            selbst einen der drei Namen, die Liste ragt also nicht aus dem Bild. */
         .fw-schwerpunkt-wahl{position:absolute;left:0;top:calc(100% + 6px);z-index:30;display:flex;flex-direction:column;gap:2px;min-width:100%;width:max-content;padding:6px;
             background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:var(--ds-shadow)}
-        .fw-schwerpunkt-wahl button{text-align:left;border:0;background:transparent;padding:10px 12px;border-radius:var(--ds-radius-sm);font:inherit;font-size:13.5px;color:var(--ds-ink);cursor:pointer}
+        .fw-schwerpunkt-wahl button{text-align:left;border:0;background:transparent;padding:10px 12px;border-radius:var(--ds-radius-sm);font:inherit;font-size:14px;color:var(--ds-ink);cursor:pointer}
         .fw-schwerpunkt-wahl button:hover{background:var(--ds-surface-2)}
         .fw-schwerpunkt-wahl button.hier{font-weight:600;background:var(--ds-surface-2)}
         /* Filter des Arbeitsvorrats: zugeklappt, offen nur, wenn einer gilt. */
@@ -2836,7 +2836,7 @@ und einen Stilblock enthaelt.
         .fw-split-zahlung{display:flex;flex-direction:column;gap:14px;min-width:0}
         .fw-zahlung-chip{user-select:none;background:var(--ds-surface);border-radius:var(--ds-radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:4px}
         .fw-zahlung-art{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ds-muted);font-weight:600}
-        .fw-zahlung-zahl{font-size:26px;font-weight:700;letter-spacing:-.02em;color:var(--ds-good)}
+        .fw-zahlung-zahl{font-size:28px;font-weight:700;letter-spacing:-.02em;color:var(--ds-good)}
         .fw-zahlung-text{margin:0;font-size:13px;color:var(--ds-muted)}
         .fw-split-form.an .fw-zahlung-chip{cursor:grab}
         .fw-zieh-hinweis{display:none;font-size:12px;opacity:.75;gap:6px;align-items:center}
@@ -2848,7 +2848,7 @@ und einen Stilblock enthaelt.
         .fw-vorschlaege h2{font-size:13px;font-weight:600;margin:0 0 8px}
         .fw-vorschlaege>ul{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-direction:column;gap:8px}
         .fw-vorschlaege li ul{margin:2px 0 0;padding-left:18px;color:var(--ds-muted)}
-        .fw-split-regel{font-size:12.5px;color:var(--ds-muted);margin:0;line-height:1.5}
+        .fw-split-regel{font-size:13px;color:var(--ds-muted);margin:0;line-height:1.5}
         .fw-split-posten{display:flex;flex-direction:column;gap:14px;min-width:0}
         .fw-split-posten [data-treffer],.fw-split-posten [data-gewaehlt]{display:flex;flex-direction:column;gap:12px}
         .fw-split-fuss>.fw-rest-wahl,.fw-split-fuss>.fw-pruefung-block,.fw-split-fuss>.fw-split-meldung{flex-basis:100%}
@@ -2875,11 +2875,11 @@ und einen Stilblock enthaelt.
         .fw-rest-wahl{border:0;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:14px;min-width:0}
         .fw-rest-wahl legend{padding:0;margin:0 0 8px;font-weight:600;font-size:14px}
         .fw-rest-wahl .fw-feld{max-width:100%;min-width:0}
-        .fw-pruefung-block{flex-basis:100%;font-size:12.5px}
+        .fw-pruefung-block{flex-basis:100%;font-size:13px}
         .fw-pruefung-block summary{cursor:pointer;color:var(--ds-muted)}
         .fw-pruefung{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:4px}
         .fw-pruefung li{display:grid;grid-template-columns:120px 120px minmax(0,1fr);gap:10px}
-        .fw-split-meldung{flex-basis:100%;margin:0;font-size:12.5px;color:var(--ds-crit)}
+        .fw-split-meldung{flex-basis:100%;margin:0;font-size:13px;color:var(--ds-crit)}
         .fw-split-knoepfe{justify-content:flex-end;display:flex;flex-wrap:wrap;gap:8px}
         @media (max-width:1023px){
             /* Handy: erst suchen und zuteilen, die Angaben zur Zahlung folgen darunter; der Betrag steht schon im Kopf */
@@ -2910,7 +2910,7 @@ und einen Stilblock enthaelt.
             .fw-zahlungs-bento{grid-template-columns:repeat(2,minmax(0,1fr))}
             .fw-zahlungs-bento>.b-s{grid-column:span 1 !important;padding:16px}
             .fw-zahlungs-bento>.b-voll{grid-column:1 / -1 !important}
-            .fw-zahlungs-bento .fw-kachel-zahl{font-size:30px}
+            .fw-zahlungs-bento .fw-kachel-zahl{font-size:28px}
             .fw-import-kachel .fw-import-zeile{flex-basis:100%}
             .fw-import-zeile .fw-feld{flex-basis:100%}
         }
@@ -2935,16 +2935,16 @@ und einen Stilblock enthaelt.
         .fw-nk-personen .fw-feld{width:64px}
         .fw-nk-zeile{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
         .fw-nk-zeile .fw-feld{flex:1 1 180px;min-width:0}
-        .fw-nk-ausschluss summary{cursor:pointer;font-size:12.5px}
+        .fw-nk-ausschluss summary{cursor:pointer;font-size:13px}
         .fw-nk-ausschluss[open] summary{margin-bottom:8px}
         .fw-nk-raster{display:flex;flex-direction:column;gap:8px}
-        .fw-nk-wahl{display:flex;flex-direction:column;gap:8px;font-size:13.5px}
-        .fw-nk-schalter{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;margin-bottom:12px}
+        .fw-nk-wahl{display:flex;flex-direction:column;gap:8px;font-size:14px}
+        .fw-nk-schalter{display:flex;gap:8px;align-items:flex-start;font-size:14px;margin-bottom:12px}
         .fw-nk-staende{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
         .fw-nk-staende fieldset{border:1px solid var(--ds-line);border-radius:var(--ds-radius-sm);padding:8px 10px 10px;margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
         .fw-nk-staende legend{font-size:12px;font-weight:600;color:var(--ds-muted);padding:0 4px}
         .fw-nk-staende .fw-chip{align-self:flex-start}
-        .fw-nk-saldo{font-size:20px;font-weight:600;letter-spacing:-.02em;white-space:nowrap}
+        .fw-nk-saldo{font-size:22px;font-weight:600;letter-spacing:-.02em;white-space:nowrap}
         .fw-nk-saldo.nach{color:var(--ds-crit)}
         .fw-nk-saldo.gut{color:var(--ds-good)}
         .fw-nk-karte.eigen{background:var(--ds-surface-2)}
@@ -2983,9 +2983,9 @@ und einen Stilblock enthaelt.
         .fw-regel-marken{display:flex;flex-wrap:wrap;gap:6px}
         .fw-regel-knoepfe{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:4px}
         /* Editor (fw/vorlage_form.html): Formular links, Vorschau rechts; unter 1024 px untereinander (fw-raster l2). */
-        .fw-vl-stand{display:inline-block;margin-left:6px;color:var(--ds-faint);font-size:12.5px}
+        .fw-vl-stand{display:inline-block;margin-left:6px;color:var(--ds-faint);font-size:13px}
         .fw-vl-editor{margin-bottom:20px}
-        .fw-vl-schalter{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;min-height:38px}
+        .fw-vl-schalter{display:inline-flex;align-items:center;gap:8px;font-size:14px;min-height:38px}
         .fw-vl-chips{display:flex;flex-direction:column;gap:8px}
         .fw-vl-gruppe{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
         .fw-vl-gruppe-name{flex-basis:100%;font-size:12px;font-weight:600;color:var(--ds-muted);text-transform:uppercase;letter-spacing:.04em}
@@ -3000,11 +3000,11 @@ und einen Stilblock enthaelt.
         .fw-vl-vorschau{padding:16px 20px 20px;min-width:0}
         .fw-vl-hinweis{margin:0 0 10px}
         /* Das Blatt: Briefaufbau wie im PDF, ohne Verwaltungsfarbe (die zeigt das Probe-PDF). */
-        .fw-vl-blatt{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius-sm);padding:22px 24px;font-size:13.5px;line-height:1.55;overflow-wrap:anywhere}
+        .fw-vl-blatt{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius-sm);padding:22px 24px;font-size:14px;line-height:1.55;overflow-wrap:anywhere}
         .fw-vl-absender{font-size:12px;color:var(--ds-muted);border-bottom:1px solid var(--ds-line);padding-bottom:6px;margin-bottom:14px}
         .fw-vl-empfaenger{margin-bottom:14px}
         .fw-vl-datum{text-align:right;font-size:12px;color:var(--ds-muted);margin-bottom:12px}
-        .fw-vl-betreff{font-size:14.5px;font-weight:600;margin:0 0 10px}
+        .fw-vl-betreff{font-size:15px;font-weight:600;margin:0 0 10px}
         .fw-vl-text p{margin:0 0 10px}
         .fw-vl-text ul,.fw-vl-text ol{margin:0 0 10px;padding-left:20px}
         .fw-vl-fuss{margin-top:16px;padding-top:6px;border-top:1px solid var(--ds-line);font-size:12px;color:var(--ds-faint)}
@@ -3038,7 +3038,7 @@ und einen Stilblock enthaelt.
         .fw-sk-art .fw-zeichen{width:18px;height:18px}
         .fw-sk-titel{flex:1;min-width:0}
         .fw-sk-titel>b{display:block;font-size:14px;font-weight:600;overflow-wrap:anywhere}
-        .fw-sk-titel>span{display:block;font-size:12.5px;color:var(--ds-muted);overflow-wrap:anywhere}
+        .fw-sk-titel>span{display:block;font-size:13px;color:var(--ds-muted);overflow-wrap:anywhere}
         .fw-sk-stand{flex:0 0 auto;text-align:right;font-size:12px;color:var(--ds-muted);white-space:nowrap}
         .fw-sk-stand b{display:block;font-size:18px;font-weight:600;color:var(--ds-ink)}
         .fw-sk-stand b.fw-kritisch{color:var(--ds-crit)}
@@ -3052,7 +3052,7 @@ und einen Stilblock enthaelt.
         .fw-sk-inhaber small{font-size:12px;color:var(--ds-muted)}
         .fw-sk-inhaber small.fw-kritisch{color:var(--ds-crit)}
         .fw-sk-fuss{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
-        .fw-sk-formular>summary{cursor:pointer;font-weight:600;font-size:13.5px;padding:6px 0}
+        .fw-sk-formular>summary{cursor:pointer;font-weight:600;font-size:14px;padding:6px 0}
         .fw-sk-formular[open]>summary{margin-bottom:8px}
         .fw-sk-verlauf{padding:4px 16px 12px}
         /* Kartenseite: eine Spalte, Tippflächen ab 44 px, Knopf unten fest */
@@ -3105,16 +3105,16 @@ und einen Stilblock enthaelt.
             .fw-bento.fw-mieter-start>*{grid-column:span 1 !important;padding:16px}
             .fw-bento.fw-mieter-start>.akzent,.fw-bento.fw-mieter-start>.klein{grid-column:1 / -1 !important}
             .fw-mieter-start>.fw-kachel{min-height:128px}
-            .fw-mieter-start .fw-kachel-zahl{font-size:32px}
+            .fw-mieter-start .fw-kachel-zahl{font-size:28px}
         }
         /* Handwerkerportal: eine schmale Einzelseite ohne Leiste. */
         .fw-hw-seite{max-width:680px}
         .fw-hw-kopf{display:flex;align-items:center;gap:10px;margin-bottom:18px}
-        .fw-hw-titel{margin:0;font-size:17px;font-weight:600;letter-spacing:-.01em;line-height:1.3}
+        .fw-hw-titel{margin:0;font-size:18px;font-weight:600;letter-spacing:-.01em;line-height:1.3}
         .fw-hw-fakten{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:10px}
         .fw-hw-fakten li{display:flex;flex-direction:column;gap:2px;min-width:0;overflow-wrap:anywhere}
         .fw-hw-fakten b{font-weight:600;color:var(--ds-ink)}
-        .fw-hw-text{margin:0 0 14px;font-size:13.5px;line-height:1.55;color:var(--ds-ink);white-space:pre-line;overflow-wrap:anywhere}
+        .fw-hw-text{margin:0 0 14px;font-size:14px;line-height:1.55;color:var(--ds-ink);white-space:pre-line;overflow-wrap:anywhere}
         .fw-hw-text .fw-label{margin-bottom:2px}
         .fw-hw-fotos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
         @media (min-width:520px){.fw-hw-fotos{grid-template-columns:repeat(3,minmax(0,1fr))}}
@@ -3123,7 +3123,7 @@ und einen Stilblock enthaelt.
         .fw-hw-formular>.fw-btn{align-self:flex-start}
         .fw-hw-nachricht{padding:10px 12px;border-radius:var(--ds-radius-sm);background:var(--ds-surface-2);margin-bottom:8px}
         .fw-hw-nachricht.eigen{background:var(--ds-brand-soft)}
-        .fw-hw-nachricht p{margin:2px 0 0;font-size:13.5px;line-height:1.5;white-space:pre-line;overflow-wrap:anywhere}
+        .fw-hw-nachricht p{margin:2px 0 0;font-size:14px;line-height:1.5;white-space:pre-line;overflow-wrap:anywhere}
         /* ===== Ende MODUL Portale ===== */
 
         /* ===== MODUL assistent-seiten (27.10.2026): 2FA-Einrichtung, Serienbrief, Abnahme vor Ort =====
@@ -3136,7 +3136,7 @@ und einen Stilblock enthaelt.
         .fw-zf-scan{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
         .fw-zf-qr{flex:0 0 200px;width:200px;padding:12px;border:1px solid var(--ds-line);border-radius:var(--ds-radius-lg)}
         .fw-zf-qr svg{display:block;width:100%;height:auto}
-        .fw-zf-schluessel{flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:8px;font-size:13.5px;color:var(--ds-muted)}
+        .fw-zf-schluessel{flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--ds-muted)}
         .fw-zf-schluessel p{margin:0}
         .fw-zf-geheimnis{display:block;overflow-wrap:anywhere;user-select:all}
         .fw-zf-form{display:flex;flex-direction:column;gap:6px;max-width:260px}
@@ -3160,7 +3160,7 @@ und einen Stilblock enthaelt.
         .fw-abn-liste{list-style:none;margin:0 0 12px;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
         .fw-abn-zeile{display:flex;align-items:center;gap:2px;background:var(--ds-surface-2);border:1px solid var(--ds-line);
             border-radius:var(--ds-radius-lg);padding:4px 4px 4px 10px}
-        .fw-abn-zeile input{flex:1;min-width:0;border:0;background:transparent;color:var(--ds-ink);font-size:16px;font-weight:600;min-height:44px}
+        .fw-abn-zeile input{flex:1;min-width:0;border:0;background:transparent;color:var(--ds-ink);font-size:18px;font-weight:600;min-height:44px}
         .fw-abn-ikon{width:44px;height:44px;flex:0 0 44px;display:flex;align-items:center;justify-content:center;background:transparent;
             border:0;border-radius:var(--ds-radius);color:var(--ds-brand);cursor:pointer}
         .fw-abn-ikon.gefahr{color:var(--ds-crit)}
@@ -3201,7 +3201,7 @@ und einen Stilblock enthaelt.
         .fw-mzm-hilfe{position:absolute;top:10px;right:10px;z-index:2}
         .fw-mzm-hilfe .fw-hilfe-knopf{margin:0}
         .fw-mzm-kachel:has(input:focus-visible){outline:2px solid var(--ds-ink);outline-offset:2px}
-        .fw-mzm-rueck{margin:0;font-size:12.5px;color:var(--ds-muted)}
+        .fw-mzm-rueck{margin:0;font-size:13px;color:var(--ds-muted)}
         /* Ampel der festen Dauer */
         .fw-mzm-ampel{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:var(--ds-radius);background:var(--ds-surface-2)}
         .fw-mzm-ampel.gut{background:var(--ds-good-soft)}
@@ -3214,7 +3214,7 @@ und einen Stilblock enthaelt.
         /* Panels */
         .fw-mzm-panel{display:flex;flex-direction:column;gap:12px;padding-top:16px;border-top:1px solid var(--ds-line)}
         .fw-mzm-kopf{margin:0;font-size:14px;font-weight:600}
-        .fw-mzm-start{margin:0;font-size:13.5px;color:var(--ds-muted)}
+        .fw-mzm-start{margin:0;font-size:14px;color:var(--ds-muted)}
         .fw-mzm-start b{margin:0 4px;font-size:15px;color:var(--ds-ink)}
         .fw-mzm-zeilen{display:flex;flex-direction:column;gap:10px}
         .fw-mzm-leer{display:none;margin:0}
@@ -3234,7 +3234,7 @@ und einen Stilblock enthaelt.
         .fw-mzm-gen{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:var(--ds-radius);background:var(--ds-surface-2)}
         .fw-mzm-gen .fw-hilfe,.fw-mzm-gen .fw-feldfehler{margin:0}
         .fw-mzm-gen .fw-feldfehler:empty{display:none}
-        .fw-mzm-vorschlag{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0;font-size:12.5px;color:var(--ds-muted)}
+        .fw-mzm-vorschlag{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0;font-size:13px;color:var(--ds-muted)}
         .fw-mzm-beispiel{margin:0;padding:10px 12px;border-radius:var(--ds-radius);background:var(--ds-surface-2);font-size:13px;color:var(--ds-ink)}
         /* Befunde: die Hinweis-Bausteine, enger gesetzt */
         .fw-mzm-befunde{display:flex;flex-direction:column;gap:8px}
@@ -3246,7 +3246,7 @@ und einen Stilblock enthaelt.
         /* Fix-Knöpfe tragen ganze Sätze: umbrechen statt am Telefon abschneiden */
         .fw-mzm-ampel .fw-btn,.fw-mzm-befunde .fw-btn,.fw-mzm-zeilenbefund .fw-btn{white-space:normal;text-align:left;height:auto;max-width:100%;justify-content:flex-start}
         /* Grund der Sperre im Fuss des Assistenten */
-        .fw-mzm-fuss{flex:1 1 100%;order:-1;display:flex;align-items:flex-start;gap:8px;margin:0;font-size:12.5px;line-height:1.4;color:var(--ds-crit)}
+        .fw-mzm-fuss{flex:1 1 100%;order:-1;display:flex;align-items:flex-start;gap:8px;margin:0;font-size:13px;line-height:1.4;color:var(--ds-crit)}
         .fw-mzm-fuss svg{flex:0 0 auto;margin-top:2px}
         .fw-mzm-fuss-text{padding:0;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;text-decoration:underline;
             display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-width:0}
@@ -3265,7 +3265,7 @@ und einen Stilblock enthaelt.
         .fw-profil-mandant select{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;
             text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
         .fw-profil-zuletzt{display:flex;flex-direction:column;gap:2px;margin-inline:-8px;min-width:0}
-        .fw-profil-zuletzt .fw-zuletzt-eintrag{font-size:13.5px;min-width:0;padding:6px 8px}
+        .fw-profil-zuletzt .fw-zuletzt-eintrag{font-size:14px;min-width:0;padding:6px 8px}
         .fw-profil-zuletzt .fw-zuletzt-eintrag .truncate{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         /* ===== Ende MODUL Profilmenue Mandant ===== */
 
@@ -3278,7 +3278,7 @@ und einen Stilblock enthaelt.
         .fw-aussen{min-height:100vh;display:flex;flex-direction:column}
         .fw-aussen-kopf{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;max-width:1040px;margin:0 auto;padding:16px 20px 0}
         .fw-aussen-marke{display:flex;align-items:center;gap:10px;min-width:0;color:var(--ds-ink);text-decoration:none}
-        .fw-aussen-marke b{font-size:16px;font-weight:700;letter-spacing:-.02em}
+        .fw-aussen-marke b{font-size:18px;font-weight:700;letter-spacing:-.02em}
         .fw-aussen-inhalt{flex:1;width:100%;max-width:1040px;margin:0 auto;padding:22px 20px 40px;min-width:0}
         .fw-aussen-inhalt.eng{max-width:720px}
         .fw-aussen-inhalt .fw-phead{margin-bottom:18px}
@@ -3288,10 +3288,10 @@ und einen Stilblock enthaelt.
         .fw-aussen-erfolg{text-align:center;padding:36px 20px}
         .fw-aussen-erfolg .kreis{width:56px;height:56px;border-radius:var(--ds-pill);background:var(--ds-good-soft);color:var(--ds-good);display:grid;place-items:center;margin:0 auto 14px}
         .fw-aussen-erfolg .kreis .fw-zeichen{width:26px!important;height:26px!important}
-        .fw-aussen-erfolg h1,.fw-aussen-erfolg h2{margin:0 0 8px;font-size:24px;font-weight:600;letter-spacing:-.025em}
+        .fw-aussen-erfolg h1,.fw-aussen-erfolg h2{margin:0 0 8px;font-size:22px;font-weight:600;letter-spacing:-.025em}
         .fw-aussen-erfolg p{margin:0 auto 18px;max-width:46ch;color:var(--ds-muted)}
         .fw-aussen-text{font-size:14px;line-height:1.65;color:var(--ds-ink)}
-        .fw-aussen-text h2{font-size:17px;font-weight:600;margin:0 0 6px}
+        .fw-aussen-text h2{font-size:18px;font-weight:600;margin:0 0 6px}
         .fw-aussen-text section+section{margin-top:22px}
         .fw-aussen-text p+p{margin-top:8px}
         .fw-aussen-text table{width:100%;border-collapse:collapse;margin-top:6px}
@@ -3301,7 +3301,7 @@ und einen Stilblock enthaelt.
         @media (max-width:440px){.fw-wahlraster{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.fw-wahl{font-size:13px;padding:14px 5px}}
         .fw-wahl{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:86px;padding:14px 10px;
             text-align:center;border:1px solid var(--ds-line-stark);border-radius:var(--ds-radius-sm);background:var(--ds-surface);color:var(--ds-ink);
-            font-size:13.5px;font-weight:500;line-height:1.25;overflow-wrap:break-word;hyphens:auto;cursor:pointer;transition:border-color .12s,background .12s,color .12s}
+            font-size:14px;font-weight:500;line-height:1.25;overflow-wrap:break-word;hyphens:auto;cursor:pointer;transition:border-color .12s,background .12s,color .12s}
         .fw-wahl input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
         .fw-wahl .fw-zeichen{width:26px!important;height:26px!important;color:var(--ds-brand)}
         .fw-wahl:hover{border-color:var(--ds-brand)}
@@ -3365,7 +3365,7 @@ und einen Stilblock enthaelt.
             padding:22px 12px calc(20px + env(safe-area-inset-bottom,0px));overflow:auto;
             background:var(--ds-surface);border-right:1px solid var(--ds-line);box-shadow:var(--ds-shadow-lg)}
         .fw-fach[hidden],.fw-fach [hidden]{display:none}
-        .fw-fach h2{margin:0 0 10px;padding:0 10px;font-size:19px;letter-spacing:-.01em}
+        .fw-fach h2{margin:0 0 10px;padding:0 10px;font-size:18px;letter-spacing:-.01em}
         .fw-fach h3{margin:16px 10px 4px;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ds-faint)}
         .fw-fach ul{list-style:none;margin:0;padding:0}
         .fw-fach li a{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;padding:9px 10px;
@@ -3378,7 +3378,7 @@ und einen Stilblock enthaelt.
             font-size:12px;font-weight:700;line-height:20px;text-align:center}
         .fw-fach-rechts .fw-z[hidden]{display:none}
         .fw-fach .fw-fach-selten{margin-top:18px}
-        .fw-fach .fw-fach-selten-liste li a{font-size:13.5px}
+        .fw-fach .fw-fach-selten-liste li a{font-size:14px}
         .fw-fach-zuletzt{margin-top:8px;border-top:1px solid var(--ds-line)}
         .fw-fach-zuletzt a{display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 10px;border-radius:var(--ds-radius);color:var(--ds-muted);text-decoration:none}
         .fw-fach-zuletzt a:hover{background:var(--ds-hover);color:var(--ds-ink)}
@@ -3397,7 +3397,7 @@ und einen Stilblock enthaelt.
             .fw-fach kbd{display:inline}
             .fw-mit-schiene .fw-haupt{margin-left:88px}
             .fw-werkzeug-kapsel .fw-wz-neu{display:inline-flex;flex-direction:row;align-items:center;justify-content:center;width:auto;padding:0 14px 0 10px;gap:6px;white-space:nowrap;background:var(--ds-brand);color:var(--ds-auf-satt)}
-            .fw-wz-neu-text{display:inline;font-size:13.5px;font-weight:600}
+            .fw-wz-neu-text{display:inline;font-size:14px;font-weight:600}
         }
         .fw-menue-knopf{display:none;position:relative}
         .fw-fach-zurueck,.fw-schiene-vorhang{display:none}
@@ -3437,7 +3437,7 @@ und einen Stilblock enthaelt.
         .fw-dichte-schalter,.fw-dichte-leiste{display:none}
         @media (min-width:641px){
             .fw-dichte-schalter{display:inline-flex;margin-left:auto;padding:3px;gap:2px;background:var(--ds-surface-2);border-radius:var(--ds-pill)}
-            .fw-dichte-knopf{border:0;background:transparent;color:var(--ds-muted);font:inherit;font-size:12.5px;font-weight:600;padding:4px 12px;border-radius:var(--ds-pill);cursor:pointer}
+            .fw-dichte-knopf{border:0;background:transparent;color:var(--ds-muted);font:inherit;font-size:13px;font-weight:600;padding:4px 12px;border-radius:var(--ds-pill);cursor:pointer}
             .fw-dichte-knopf[aria-pressed="true"]{background:var(--ds-surface);color:var(--ds-ink);box-shadow:var(--ds-shadow-sm)}
             .fw-dichte-leiste{display:flex;padding:10px 20px 0}
             .fw-dicht .fw-zeile{padding:7px 20px;gap:10px}
@@ -3498,7 +3498,7 @@ und einen Stilblock enthaelt.
         /* Marke: Tablet und Telefon kleiner, nie nur das Zeichen */
         @media (max-width:1023px){
             .fw-logo-kapsel{padding:0 12px 0 11px;gap:7px}
-            .fw-logo-kapsel b{font-size:16px;padding-right:14px}
+            .fw-logo-kapsel b{font-size:18px;padding-right:14px}
             .fw-logo-haus{width:26px;height:26px}
             .fw-logo-kreuz{width:11px;height:11px;top:-1px}
         }
@@ -3522,7 +3522,7 @@ und einen Stilblock enthaelt.
         .fw-bestand-ueber{position:absolute;left:52px;right:34px;top:10px;font-size:12px;font-weight:600;letter-spacing:.08em;line-height:1.2;
             text-transform:uppercase;color:var(--ds-faint);white-space:nowrap;overflow:hidden;pointer-events:none}
         .fw-bestand select{-webkit-appearance:none;appearance:none;field-sizing:content;box-sizing:border-box;min-width:0;max-width:100%;height:100%;
-            padding:13px 34px 0 52px;border:0;border-radius:var(--ds-pill);background:transparent;font:inherit;font-size:13.5px;font-weight:600;
+            padding:13px 34px 0 52px;border:0;border-radius:var(--ds-pill);background:transparent;font:inherit;font-size:14px;font-weight:600;
             line-height:1.2;color:var(--ds-ink);cursor:pointer;text-overflow:ellipsis;outline:none;box-shadow:none}
         .fw-bestand select option{background:var(--ds-surface);color:var(--ds-ink)}
         .fw-bestand-pfeil{position:absolute;right:12px;top:50%;transform:translateY(-50%);display:flex;color:var(--ds-muted);pointer-events:none}
@@ -3538,7 +3538,7 @@ und einen Stilblock enthaelt.
         @media (max-width:1239px){
             .fw-bestand{flex:0 0 52px;width:52px;max-width:none}
             .fw-bestand-ueber,.fw-bestand-pfeil{display:none}
-            .fw-bestand select{position:absolute;inset:0;width:100%;padding:0;opacity:0;font-size:16px}
+            .fw-bestand select{position:absolute;inset:0;width:100%;padding:0;opacity:0;font-size:18px}
             .fw-bestand.aktiv::after{content:"";position:absolute;top:7px;right:7px;width:10px;height:10px;border-radius:var(--ds-pill);
                 background:var(--ds-akzent);box-shadow:0 0 0 2px var(--ds-brand-soft);pointer-events:none}
         }
@@ -3575,7 +3575,7 @@ und einen Stilblock enthaelt.
         /* Profilmenü: was die Kopfzeile bis 1023 px nicht mehr trägt, steht dort */
         .fw-profil-schnell{display:none}
         @media (max-width:1023px){.fw-profil-schnell{display:block}}
-        button.fw-profil-link{width:100%;border:0;background:none;font:inherit;font-size:13.5px;text-align:left;cursor:pointer}
+        button.fw-profil-link{width:100%;border:0;background:none;font:inherit;font-size:14px;text-align:left;cursor:pointer}
         .fw-profil{max-height:calc(100dvh - 96px);overflow-y:auto}
 
         /* Menüband: Bereichsname als kleine Überzeile, aktive Unterseite im Ember-Ton */
@@ -3637,9 +3637,9 @@ und einen Stilblock enthaelt.
                 padding:0 8px 0 0;justify-content:flex-start}
             .fw-os.offen .fw-os-feld input,.fw-os:focus-within .fw-os-feld input{flex:1;width:auto;opacity:1}
         }
-        .fw-os-lupe{display:grid;place-items:center;flex:0 0 auto;color:inherit;cursor:text;font-size:16px}
+        .fw-os-lupe{display:grid;place-items:center;flex:0 0 auto;color:inherit;cursor:text;font-size:18px}
         .fw-os-feld input{flex:1;min-width:0;height:100%;border:0;background:transparent;padding:0;outline:none;box-shadow:none;
-            font:inherit;font-size:13.5px;color:var(--ds-ink)}
+            font:inherit;font-size:14px;color:var(--ds-ink)}
         .fw-os-feld input::placeholder{color:var(--ds-faint)}
         .fw-os-feld .fw-taste{flex:0 0 auto;cursor:default}
         .fw-os.offen .fw-os-feld .fw-taste,.fw-os:focus-within .fw-os-feld .fw-taste{display:none}
@@ -3652,7 +3652,7 @@ und einen Stilblock enthaelt.
         @keyframes fw-os-auf{from{opacity:0;transform:translateY(-4px) scale(.985)}}
         .fw-os-filter{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:12px 16px;border-bottom:1px solid var(--ds-line)}
         .fw-os-chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border:0;border-radius:var(--ds-pill);
-            background:var(--ds-surface-2);color:var(--ds-muted);font:inherit;font-size:12.5px;font-weight:500;cursor:pointer;white-space:nowrap}
+            background:var(--ds-surface-2);color:var(--ds-muted);font:inherit;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
         .fw-os-chip i{font-style:normal;font-family:var(--ds-mono);font-size:12px;color:var(--ds-faint)}
         .fw-os-chip:hover:not(:disabled):not(.an){background:var(--ds-hover);color:var(--ds-ink)}
         .fw-os-chip.an{background:var(--ds-ink);color:var(--ds-surface)}
@@ -3668,11 +3668,11 @@ und einen Stilblock enthaelt.
         .fw-os-t{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:var(--ds-radius-knopf);color:var(--ds-ink);text-decoration:none;cursor:pointer}
         .fw-os-t.sel{background:var(--ds-brand-soft)}
         .fw-os-ico{flex:0 0 32px;width:32px;height:32px;border-radius:var(--ds-radius-xs);background:var(--ds-surface-2);color:var(--ds-muted);
-            display:grid;place-items:center;font-size:16px}
+            display:grid;place-items:center;font-size:18px}
         .fw-os-t.sel .fw-os-ico{background:var(--ds-surface);color:var(--ds-brand)}
         .fw-os-ico.akt,.fw-os-t.sel .fw-os-ico.akt{background:var(--ds-akzent-tief);color:#fff}
         .fw-os-txt{flex:1;min-width:0;display:flex;flex-direction:column}
-        .fw-os-txt b{font-weight:500;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .fw-os-txt b{font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .fw-os-txt b mark{background:none;color:var(--ds-brand);font-weight:700}
         .fw-os-txt small{font-size:12px;color:var(--ds-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .fw-os-rechts{flex:0 0 auto;display:flex;align-items:center;gap:8px}
@@ -3680,7 +3680,7 @@ und einen Stilblock enthaelt.
         .fw-os-enter{flex:0 0 auto;border:0;background:none;padding:0;opacity:0;font-family:var(--ds-mono);font-size:12px;color:var(--ds-faint)}
         .fw-os-t.sel .fw-os-enter{opacity:1}
         .fw-os-leer{padding:28px 20px;text-align:center;font-size:13px;color:var(--ds-muted)}
-        .fw-os-leer b{display:block;margin-bottom:6px;font-size:13.5px;font-weight:600;color:var(--ds-ink)}
+        .fw-os-leer b{display:block;margin-bottom:6px;font-size:14px;font-weight:600;color:var(--ds-ink)}
         .fw-os-leer p{margin:0 auto 12px;max-width:36ch;line-height:1.5}
         .fw-os-geruest .fw-os-t{cursor:default}
         .fw-os-balken{display:block;height:10px;border-radius:var(--ds-pill);background:var(--ds-surface-2);animation:fw-os-puls 1.4s ease-in-out infinite}
@@ -3717,7 +3717,7 @@ und einen Stilblock enthaelt.
             .fw-os-lupe{width:44px;height:44px;cursor:pointer}
             .fw-os.offen,.fw-os:focus-within{flex:1 1 100%;width:auto}
             .fw-os.offen .fw-os-feld,.fw-os:focus-within .fw-os-feld{width:100%;padding:0 6px 0 4px;justify-content:flex-start}
-            .fw-os.offen .fw-os-feld input,.fw-os:focus-within .fw-os-feld input{flex:1;width:auto;opacity:1;font-size:16px}
+            .fw-os.offen .fw-os-feld input,.fw-os:focus-within .fw-os-feld input{flex:1;width:auto;opacity:1;font-size:18px}
             .fw-os.offen .fw-os-zu,.fw-os:focus-within .fw-os-zu{display:grid}
             .fw-kopf-z1:has(.fw-os.offen)>:not(.fw-os),.fw-kopf-z1:has(.fw-os:focus-within)>:not(.fw-os){display:none}
             
