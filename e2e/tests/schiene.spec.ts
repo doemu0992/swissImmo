@@ -93,7 +93,7 @@ test.describe('Schiene am PC', () => {
     await krume.locator('a').click();
     await page.waitForURL('**/neu/einstellungen/**');
     await expect(page.locator('.fw-einst-krumen')).toHaveCount(0);
-    await expect(page.locator('.fw-gruppe-titel')).toHaveCount(5);
+    await expect(page.locator('[data-gruppe] .fw-gruppe-titel')).toHaveCount(5);
   });
 
   test('Tastatur: G dann E öffnet die Einstellungen', async ({ page }) => {
