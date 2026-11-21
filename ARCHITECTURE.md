@@ -252,7 +252,9 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
 - Handy (bis 640 px): weisse Kopfleiste mit Linie; Listenzeilen (`.fw-card > .fw-zeile`) als einzelne Karten mit Statuspunkt
   auf dem Seitengrund, wie im Mockup.
 - Breite Navigation: «Einstellungen» bleibt unten ohne Baum (alle Punkte auf der Seite selbst); Versalien-Etiketten nur in den
-  grossen Kennzahlkarten, nicht in den Statuskapseln (`.fw-stats`).
+  grossen Kennzahlkarten (`.fw-kpis.fw-gross`, Finanzen), nicht in den Statuskapseln.
+- Tabellen: `min-w-max` und `whitespace-nowrap` (Tailwind) gelten in `table.fw-table` wieder; vorher brachen Namen in Kreditoren
+  über mehrere Zeilen um. Breite Tabellen scrollen in `.fw-tablewrap` quer.
 
 ### Schriftskala
 
