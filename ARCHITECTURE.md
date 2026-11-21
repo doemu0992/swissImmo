@@ -263,6 +263,12 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
 - Tabellen: `min-w-max` und `whitespace-nowrap` (Tailwind) gelten in `table.fw-table` wieder; vorher brachen Namen in Kreditoren
   über mehrere Zeilen um. Breite Tabellen scrollen in `.fw-tablewrap` quer.
 - Arbeitsvorrat auf «Heute» (`.fw-vz`) am PC wie die Mockup-Zeilen: Statuspunkt statt Balken, keine Trennlinien.
+- **Akten, Modul 2 (22.11.2026):** Alle Akten mit `.fw-aktenkopf` (Liegenschaft, Objekt, Mietverhältnis, Person, Dienstleister,
+  Mandat, Schaden, Fall) folgen einem Muster: Kopf ohne Karte auf dem Seitengrund, Titelbild ausgeblendet (`.fw-akte-bild`),
+  Pfad als Metazeile, Kennzahlen als ein Band (`.fw-kzn`, `.fw-kpis.fw-band`), Reiter als Text mit Markenstrich statt Pillen.
+  Der Brotkrumen (`.fw-krumen`, `.fw-brotkrume`) wandert in der breiten Navigation in die Kopfleiste (`fw-schiene.js`).
+  **Bewusste Abweichung vom Mockup:** kein eigener Reiter «Übersicht». Das Aktenregister (`faelle/akten.py`, `test_reiter_panels`)
+  legt die Reiter fest, und «Was auffällt» bleibt nach Entscheid E2.73 auf jedem Reiter sichtbar.
 
 ### Schriftskala
 
