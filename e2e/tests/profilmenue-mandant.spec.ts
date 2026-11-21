@@ -1,6 +1,11 @@
 import { test, expect, Page } from '@playwright/test';
 import { login, goto, warteAufURL } from './helpers';
 
+// Diese Datei prüft die Kopfzeile der SCHMALEN Navigation (Bestand, Suchfeld und Werkzeuge in Zeile 1). Ab 1280 px ist seit Modul 1
+// die breite Navigation Vorgabe (Arbeitsbereich, Suche und Profil in der Spalte); sie steht in `schiene-anheften.spec.ts`.
+test.beforeEach(async ({ page }) => { await page.addInitScript(() => { try { localStorage.setItem('fwSchieneBreit', '0'); } catch (e) { /* egal */ } }); });
+
+
 // MANDANT UND «ZULETZT GEÖFFNET» IM PROFILMENÜ — GEMESSEN IM BROWSER (28.10.2026)
 //
 // Beide standen nur in der Schublade `#fwSidebar`. Die ist ab 1024 px aus; am PC kam man an den Mandantenwechsel

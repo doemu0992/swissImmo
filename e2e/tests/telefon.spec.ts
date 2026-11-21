@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test';
 import { login, goto } from './helpers';
 
+// Diese Datei prüft die Kopfzeile der SCHMALEN Navigation (Bestand, Suchfeld und Werkzeuge in Zeile 1). Ab 1280 px ist seit Modul 1
+// die breite Navigation Vorgabe (Arbeitsbereich, Suche und Profil in der Spalte); sie steht in `schiene-anheften.spec.ts`.
+test.beforeEach(async ({ page }) => { await page.addInitScript(() => { try { localStorage.setItem('fwSchieneBreit', '0'); } catch (e) { /* egal */ } }); });
+
+
 // «HEUTE» AM TELEFON — GEMESSEN, NICHT GESCHÄTZT
 //
 // E2.68 hat die Startseite fürs Telefon umgebaut, weil bei 1280 Pixel alles
@@ -493,7 +498,7 @@ test('Zeile 1 bricht bei keiner Breite um, nichts schiebt quer, nichts überlapp
       expect(m.menue, `${wo}: Menüknopf nur am Telefon`).toBe(false);
       expect(m.schieneSicht, `${wo}: Schiene`).toBe(true);
       expect(m.schiene.l, `${wo}: Schiene links`).toBe(0);
-      expect(Math.round(m.schiene.w), `${wo}: Breite der Schiene`).toBe(w >= 1280 ? 248 : w >= 1024 ? 88 : 56);   // ab 1280 px die breite Navigation (Mix), sonst Symbolschiene
+      expect(Math.round(m.schiene.w), `${wo}: Breite der Schiene`).toBe(w >= 1024 ? 88 : 56);   // schmale Navigation (siehe oben); die breite prüft schiene-anheften.spec.ts
       expect(m.z1.l, `${wo}: Zeile 1 beginnt unter der Schiene`).toBeGreaterThanOrEqual(m.schiene.r - 1);
     }
     expect(m.z1.h, `${wo}: Zeile 1 ist ${Math.round(m.z1.h)} px hoch — umgebrochen?`).toBeLessThan(60);
