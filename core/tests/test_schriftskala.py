@@ -15,7 +15,7 @@ from django.conf import settings
 from django.test import SimpleTestCase
 
 WURZEL = pathlib.Path(settings.BASE_DIR)
-SKALA = {12, 13, 14, 15, 18, 22, 28}
+SKALA = {12, 13, 14, 15, 18, 22, 24, 28}   # 24: Seitentitel im Mix-Entwurf (21.11.2026)
 ANZEIGE = {34, 36, 40, 52}
 
 

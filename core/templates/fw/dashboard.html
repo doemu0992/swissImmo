@@ -24,13 +24,6 @@
    ===== {% endcomment %}
 
 <section class="fw-hallo">
-    <div>
-        <div class="fw-eyebrow">{{ heute|date:"l, d. F Y" }} · KW&nbsp;{{ kw }}{% for name, bis in vertretung_fuer %} · <b class="fw-marke">{% blocktrans with bis=bis|date:"d.m." %}Vertretung für {{ name }} bis {{ bis }}{% endblocktrans %}</b>{% endfor %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse ort=aktive_lg.ort %}Gefiltert auf {{ strasse }}, {{ ort }}{% endblocktrans %}{% endif %}</div>
-        {% now "H" as stunde %}{% with name=request.user.first_name|default:request.user.username %}
-        <h1>{% if stunde < "11" %}{% blocktrans %}Guten Morgen, {{ name }}.{% endblocktrans %}{% elif stunde < "18" %}{% blocktrans %}Guten Tag, {{ name }}.{% endblocktrans %}{% else %}{% blocktrans %}Guten Abend, {{ name }}.{% endblocktrans %}{% endif %}
-            <em>{% if anzahl_heute %}{% blocktrans count n=anzahl_heute %}{{ n }} Vorgang braucht heute Ihre Aufmerksamkeit.{% plural %}{{ n }} Vorgänge brauchen heute Ihre Aufmerksamkeit.{% endblocktrans %}{% if anzahl_ueberfaellig %} <span class="fw-heute-ueber">{% blocktrans count n=anzahl_ueberfaellig %}{{ n }} davon überfällig.{% plural %}{{ n }} davon überfällig.{% endblocktrans %}</span>{% endif %}{% else %}{% trans "Heute ist nichts fällig." %}{% endif %}</em></h1>
-        {% endwith %}
-    </div>
     <div class="fw-phead-knoepfe">
         {% if aktive_lg %}<a href="/neu/" class="fw-btn fw-geist">{% zeichen 'schliessen' %} {% trans "Filter aufheben" %}</a>{% endif %}
         {% comment %} Der Schwerpunkt wählt nur die Statuszeile, keine Rechte (UI-Zielbild): ein sichtbares Segment mit drei Knöpfen,
@@ -41,6 +34,24 @@
             <button type="submit" name="schwerpunkt" value="{{ wert }}" class="fw-seg-link{% if wert == schwerpunkt %} an{% endif %}"{% if wert == schwerpunkt %} aria-current="true"{% endif %}>{{ text }}</button>
             {% endfor %}
         </form>
+    </div>
+    <div class="fw-hero">
+    <div class="fw-hero-text">
+        <div class="fw-eyebrow">{{ heute|date:"l, d. F Y" }} · KW&nbsp;{{ kw }}{% for name, bis in vertretung_fuer %} · <b class="fw-marke">{% blocktrans with bis=bis|date:"d.m." %}Vertretung für {{ name }} bis {{ bis }}{% endblocktrans %}</b>{% endfor %}{% if aktive_lg %} · {% blocktrans with strasse=aktive_lg.strasse ort=aktive_lg.ort %}Gefiltert auf {{ strasse }}, {{ ort }}{% endblocktrans %}{% endif %}</div>
+        {% now "H" as stunde %}{% with name=request.user.first_name|default:request.user.username %}
+        <h1>{% if stunde < "11" %}{% blocktrans %}Guten Morgen, {{ name }}.{% endblocktrans %}{% elif stunde < "18" %}{% blocktrans %}Guten Tag, {{ name }}.{% endblocktrans %}{% else %}{% blocktrans %}Guten Abend, {{ name }}.{% endblocktrans %}{% endif %}
+            <em>{% if anzahl_heute %}{% blocktrans count n=anzahl_heute %}{{ n }} Vorgang braucht heute Ihre Aufmerksamkeit.{% plural %}{{ n }} Vorgänge brauchen heute Ihre Aufmerksamkeit.{% endblocktrans %}{% if anzahl_ueberfaellig %} <span class="fw-heute-ueber">{% blocktrans count n=anzahl_ueberfaellig %}{{ n }} davon überfällig.{% plural %}{{ n }} davon überfällig.{% endblocktrans %}</span>{% endif %}{% else %}{% trans "Heute ist nichts fällig." %}{% endif %}</em></h1>
+        {% endwith %}
+    </div>
+    {% if schwerpunkt != 'uebersicht' and kacheln %}
+    {% comment %} Die Aufgaben stehen als grosse Zahlen in der dunklen Karte (Mix-Entwurf): Zahl, Bedeutung, Verb — dieselben Links, höchstens vier,
+       die dringendste zuerst (`faelle/heute_kacheln.py`). Im Schwerpunkt «Übersicht» steht an ihrer Stelle der Kennzahlenstreifen. {% endcomment %}
+    <section class="fw-statuszeile" aria-label="{% trans 'Heute zu tun' %}">
+        {% for k in kacheln %}
+        <a href="{{ k.ziel }}" class="fw-sz {% if k.ton == 'crit' %}fw-sz-crit{% elif k.ton == 'warn' %}fw-sz-warn{% else %}fw-sz-good{% endif %}" data-kachel="{{ k.schluessel }}"><b class="fw-sz-zahl">{{ k.zahl }}</b> <span class="fw-sz-text">{{ k.titel }} · {{ k.text }}{% if k.betrag %} · CHF {{ k.betrag|chf:0 }}{% endif %}</span></a>
+        {% endfor %}
+    </section>
+    {% endif %}
     </div>
 </section>
 
@@ -66,15 +77,6 @@
             <span>{{ k.fuss }}</span>
         </div>
     </a>
-    {% endfor %}
-</section>
-{% elif kacheln %}
-{% comment %} Aufgabenkacheln: Zahl, Bedeutung, Verb. Die erste ist die dringendste und
-   trägt den Ember-Akzent; `n-…` legt die Breiten fest (eine Kachel über die
-   ganze Breite, zwei halb-halb, drei 6/3/3, vier je ein Viertel). {% endcomment %}
-<section class="fw-statuszeile" aria-label="{% trans 'Heute zu tun' %}">
-    {% for k in kacheln %}
-    <a href="{{ k.ziel }}" class="fw-sz {% if k.ton == 'crit' %}fw-sz-crit{% elif k.ton == 'warn' %}fw-sz-warn{% else %}fw-sz-good{% endif %}" data-kachel="{{ k.schluessel }}">{{ k.zahl }} {{ k.titel }} · {{ k.text }}{% if k.betrag %} · CHF {{ k.betrag|chf:0 }}{% endif %}</a>
     {% endfor %}
 </section>
 {% endif %}
