@@ -148,7 +148,7 @@ Detailseiten rufen sie beim Namen.
     <div class="fw-schiene-vorhang" id="fwSchieneVorhang" hidden></div>
     <nav class="fw-schiene" id="fwSchiene" aria-label="{% trans 'Bereiche' %}">
         <a href="{% if fw_kopf_reduziert %}{{ fw_kopf_start }}{% else %}/neu/{{ lg_query }}{% endif %}" class="fw-schiene-marke" title="{% trans 'Zur Übersicht' %}" aria-label="immoswiss — {% trans 'Zur Übersicht' %}">
-            <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true" class="fw-logo-haus"><path d="M3 15L16 4l13 11M7 13v14h18V13" class="a"/><path d="M12 27v-7h3v7M18 27v-9h3v9" class="b"/></svg>
+            <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true" class="fw-logo-haus"><path d="M3 15L16 4l13 11M7 13v14h18V13" class="a"/><path d="M12 27v-7h3v7M18 27v-9h3v9" class="b"/></svg><b class="fw-schiene-wort" aria-hidden="true">immoswiss</b>
         </a>
         {% for g in fw_nav_gruppen %}
         <a href="{{ g.ziel }}{{ lg_query }}" class="fw-schiene-b{% if nav in g.alle_keys %} hier{% endif %}" data-fach="{{ g.key }}" data-taste="{{ g.key }}" title="{{ g.label }}"{% if nav in g.alle_keys %} aria-current="page"{% endif %}>
@@ -158,10 +158,10 @@ Detailseiten rufen sie beim Namen.
         {% endfor %}
         {% if not fw_kopf_reduziert %}
         <div class="fw-schiene-fuss">
-            {% comment %} Anheften (nur ab 1280 px, Mix-Entwurf): Das Seitenfeld des aktiven Bereichs bleibt offen und schiebt den Inhalt zur Seite.
-               Der Wunsch bleibt im Browser (`localStorage`, `static/js/fw-schiene.js`). Ohne Skript gibt es den Knopf nicht. {% endcomment %}
-            <button type="button" class="fw-schiene-b fw-schiene-fest" data-schiene-fest aria-pressed="false" title="{% trans 'Seitenfeld anheften' %}" hidden>
-                {% zeichen 'filtern' %}<span>{% trans "Anheften" %}</span>
+            {% comment %} Breit oder schmal (nur ab 1280 px, Mix-Entwurf): breit = Beschriftung und Baum der Seiten in der Spalte (Vorgabe), schmal = Symbole
+               mit Seitenfeld daneben. Der Wunsch bleibt im Browser (`localStorage` `fwSchieneBreit`, `static/js/fw-schiene.js`). Ohne Skript gibt es den Knopf nicht. {% endcomment %}
+            <button type="button" class="fw-schiene-b fw-schiene-fest" data-schiene-fest title="{% trans 'Navigation breit oder schmal' %}" hidden>
+                {% zeichen 'filtern' %}<span class="fw-sf-schmal">{% trans "Schmal" %}</span><span class="fw-sf-breit">{% trans "Breit" %}</span>
             </button>
             <a href="/neu/einstellungen/{{ lg_query }}" class="fw-schiene-b{% if nav in fw_einstellungen_keys %} hier{% endif %}" data-fach="einst" title="{% trans "Einstellungen" %}"{% if nav in fw_einstellungen_keys %} aria-current="page"{% endif %}>
                 {% zeichen 'einstellungen' %}<span>{% trans "Einstellungen" %}</span>

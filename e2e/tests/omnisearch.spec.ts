@@ -83,10 +83,10 @@ test.describe('Omnisearch am Desktop', () => {
     await login(page);
     await goto(page, '/neu/liegenschaften/');
 
-    // Die Bereiche stehen in der Schiene (88 px), nicht mehr in der Kopfzeile
+    // Die Bereiche stehen in der Schiene (ab 1280 px breit: 248 px), nicht mehr in der Kopfzeile
     const schiene = await box(page, '#fwSchiene');
     expect(schiene.x).toBe(0);
-    expect(Math.round(schiene.width)).toBe(88);
+    expect(Math.round(schiene.width)).toBe(248);
     await expect(page.locator('.fw-kopf-z1 .fw-logo-kapsel')).toBeHidden();
     const bestand = await box(page, '.fw-kopf-z1 .fw-bestand');
     const os = await box(page, '.fw-kopf-z1 #fwOs');

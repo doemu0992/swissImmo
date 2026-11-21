@@ -8,6 +8,8 @@ import { login, goto } from './helpers';
 test.use({ viewport: { width: 1280, height: 800 } });
 
 test.describe('Schiene am PC', () => {
+  // Diese Tests prüfen die schmale Schiene mit Seitenfeld (Knopf «Schmal»); die breite Navigation steht unten.
+  test.beforeEach(async ({ page }) => { await page.addInitScript(() => { try { localStorage.setItem('fwSchieneBreit', '0'); } catch (e) { /* egal */ } }); });
   test('Ein Klick öffnet das Feld mit den Seiten, die Wahl einer Seite führt dorthin und schliesst es', async ({ page }) => {
     await login(page);
     await goto(page, '/neu/liegenschaften/');

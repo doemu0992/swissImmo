@@ -79,10 +79,12 @@ Security → `WartungsMiddleware` → `NulBytesMiddleware` → GZip → Session 
   Finanzen und «Mehr»; «Mehr» öffnet dieselbe Schublade mit allen Bereichen. Sie liest dieselbe Quelle (`fw_nav_gruppen`) und ist eine
   zweite Tür zu denselben Zielen — nichts entfällt, fehlt der Rolle ein Bereich, fehlt er auch dort. Hauswartung und Portal-Rollen
   bekommen sie nicht (`fw_kopf_reduziert`). Test: `e2e/tests/tableiste.spec.ts`.
-  **Schiene anheften** (Mix-Entwurf, 21.11.2026): Ab 1280 px steht in der Schiene der Knopf «Anheften» (`[data-schiene-fest]`). Angeheftet
-  bleibt das Seitenfeld des aktiven Bereichs offen (Klick daneben und Esc schliessen es nicht) und der Inhalt rückt daneben
-  (`html.fw-fach-fest`, 88 + 276 px). Der Wunsch liegt im Browser (`localStorage` `fwSchieneFest`), ohne Skript gibt es den Knopf nicht;
-  ohne Anheften verhält sich alles wie bisher. Test: `e2e/tests/schiene-anheften.spec.ts`.
+  **Breite Navigation** (Mix-Entwurf, 21.11.2026): Ab 1280 px ist die Schiene Vorgabe eine Spalte (248 px) mit Marke, Beschriftung und dem
+  **Baum** der Seiten des Bereichs, in dem man steht (`html.fw-breit`; die Abschnitte des Seitenfeldes `#fwFach` ziehen per Skript
+  unter ihren Bereich um — nichts wird doppelt geführt). Ein Klick auf einen Bereich führt auf dessen Seite; «G» dann H/B/A/K/L/F/R
+  springt dorthin, 1–9 wählt die Seite im Baum. Der Knopf «Schmal» im Fuss (`[data-schiene-fest]`) stellt Symbolschiene und Seitenfeld
+  wieder her; der Wunsch liegt im Browser (`localStorage` `fwSchieneBreit`). Unter 1280 px und am Telefon ändert sich nichts.
+  Test: `e2e/tests/schiene-anheften.spec.ts` (breit), `schiene.spec.ts` (schmal).
   **Nichts geht verloren:** `core/tests/routen_baseline.txt` hält alle Adressen (mit Namen) vom 20.11.2026 fest;
   `test_routen_baseline` schlägt fehl, wenn eine fehlt oder ihren Namen wechselt. Neue Adressen dürfen dazukommen, eine Adresse darf
   nur mit Begründung in `ABSICHTLICH_ENTFERNT` stehen.

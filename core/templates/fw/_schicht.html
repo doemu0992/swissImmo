@@ -2949,6 +2949,8 @@ und einen Stilblock enthaelt.
         .fw-nk-saldo.nach{color:var(--ds-crit)}
         .fw-nk-saldo.gut{color:var(--ds-good)}
         .fw-nk-karte.eigen{background:var(--ds-surface-2)}
+        /* Langer Knopftext (Akonto-Vorschlag) bricht um, statt die Kachel zu sprengen — sichtbar, seit die Spalte neben der breiten Navigation schmaler ist. */
+        .fw-nk-karte .fw-btn.fw-knapp{max-width:100%;height:auto;white-space:normal;text-align:left}
         .fw-nk-knoepfe{display:flex;flex-wrap:wrap;gap:8px}
         @media (max-width:640px){.fw-nk-felder{grid-template-columns:minmax(0,1fr)}}
         /* ===== Ende MODUL Nebenkosten-Wizard ===== */
@@ -3428,13 +3430,39 @@ und einen Stilblock enthaelt.
             .fw-fach-zurueck:hover{background:var(--ds-hover);color:var(--ds-ink)}
         }
         @media (max-width:640px) and (prefers-reduced-motion:reduce){.fw-schiene{transition:none}}
-        /* Schiene anheften (Mix-Entwurf): nur ab 1280 px; das Feld bleibt offen, der Inhalt rückt daneben. */
-        .fw-schiene-fest{display:none}
+        /* Breite Navigation (Mix-Entwurf, ab 1280 px, Vorgabe): eine Spalte mit Beschriftung, die Seiten des aktiven Bereichs als Baum darunter.
+           `html.fw-breit` setzt `static/js/fw-schiene.js`; «Schmal» (Knopf im Fuss) stellt Schiene und Seitenfeld wieder her. */
+        .fw-schiene-fest,.fw-schiene-wort{display:none}
         @media (min-width:1280px){
             .fw-schiene-fest:not([hidden]){display:flex}
-            .fw-schiene-fest[aria-pressed="true"]{background:var(--ds-brand-soft);color:var(--ds-brand-600)}
-            html.fw-fach-fest .fw-fach{box-shadow:none}
-            html.fw-fach-fest .fw-mit-schiene .fw-haupt{margin-left:calc(88px + 276px)}
+            .fw-schiene-fest .fw-sf-breit{display:none}
+            .fw-schiene-fest[aria-pressed="false"] .fw-sf-schmal{display:none}
+            .fw-schiene-fest[aria-pressed="false"] .fw-sf-breit{display:inline}
+            html.fw-breit .fw-schiene{width:248px;padding:18px 12px 14px;gap:2px}
+            html.fw-breit .fw-fach{display:none}
+            html.fw-breit .fw-mit-schiene .fw-haupt{margin-left:248px}
+            html.fw-breit .fw-schiene-marke{display:flex;align-items:center;justify-content:flex-start;gap:10px;padding:2px 10px 16px}
+            html.fw-breit .fw-schiene-wort{display:inline;font-size:18px;font-weight:700;letter-spacing:-.02em}
+            html.fw-breit .fw-schiene-b{flex-direction:row;justify-content:flex-start;gap:12px;min-height:40px;padding:8px 12px;font-size:15px;font-weight:500;
+                border-radius:var(--ds-radius-knopf)}
+            html.fw-breit .fw-schiene-b>span:not(.fw-schiene-zahl){position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:nowrap}
+            html.fw-breit .fw-schiene-b .fw-zeichen{width:18px!important;height:18px!important;flex:0 0 auto}
+            html.fw-breit .fw-schiene-b .fw-schiene-zahl{position:static;margin-left:auto}
+            html.fw-breit .fw-schiene-b.hier{font-weight:600}
+            html.fw-breit .fw-schiene [data-fach-bereich]{margin:2px 0 6px 21px;padding:0 0 0 0;border-left:1px solid var(--ds-line)}
+            html.fw-breit .fw-schiene [data-fach-bereich] h2{display:none}
+            html.fw-breit .fw-schiene [data-fach-bereich] h3{margin:10px 0 2px 14px;font-size:12px}
+            html.fw-breit .fw-schiene [data-fach-bereich] li a{min-height:32px;padding:5px 12px;margin-left:6px;font-size:14px;border-radius:var(--ds-radius-knopf)}
+            html.fw-breit .fw-schiene [data-fach-bereich] li a.hier{background:var(--ds-hover);color:var(--ds-ink);font-weight:600;box-shadow:inset 2px 0 0 var(--ds-brand)}
+            html.fw-breit .fw-schiene [data-fach-bereich] ul{list-style:none;margin:0;padding:0}
+            html.fw-breit .fw-schiene [data-fach-bereich] li a{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--ds-muted);text-decoration:none}
+            html.fw-breit .fw-schiene [data-fach-bereich] li a:hover{background:var(--ds-hover);color:var(--ds-ink)}
+            html.fw-breit .fw-schiene [data-fach-bereich] .fw-fach-rechts{display:inline-flex;align-items:center;gap:8px}
+            html.fw-breit .fw-schiene [data-fach-bereich] .fw-z{min-width:20px;padding:0 7px;border-radius:var(--ds-pill);background:var(--ds-akzent);color:var(--ds-auf-satt);font-size:12px;font-weight:700;line-height:20px;text-align:center}
+            html.fw-breit .fw-schiene [data-fach-bereich] .fw-z[hidden]{display:none}
+            html.fw-breit .fw-schiene [data-fach-bereich] .fw-fach-selten-liste li a{font-size:14px}
+            html.fw-breit .fw-schiene [data-fach-bereich] kbd{display:none}
+            html.fw-breit .fw-schiene-fuss{margin-top:auto;padding-top:10px;border-top:1px solid var(--ds-line)}
         }
         /* Handy-Tableiste (Mix-Entwurf): am Telefon unten, sonst aus. Der Inhalt bekommt unten Platz, damit nichts verdeckt wird. */
         .fw-tabbar{display:none}

@@ -40931,3 +40931,12 @@ msgstr "Pin the page panel"
 
 msgid "Anheften"
 msgstr "Pin"
+
+msgid "Navigation breit oder schmal"
+msgstr "Navigation wide or narrow"
+
+msgid "Schmal"
+msgstr "Narrow"
+
+msgid "Breit"
+msgstr "Wide"

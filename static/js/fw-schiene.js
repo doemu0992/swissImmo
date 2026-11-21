@@ -47,27 +47,41 @@
         });
     });
 
-    // Anheften (ab 1280 px): Das Feld des aktiven Bereichs bleibt offen und schiebt den Inhalt zur Seite. Der Wunsch bleibt im Browser.
+    // Breite Navigation (ab 1280 px, Mix-Entwurf): Die Schiene ist eine Spalte mit Beschriftung, und die Seiten des Bereichs, in dem man steht,
+    // hängen als Baum darunter (die Abschnitte des Feldes ziehen dorthin um — nichts wird doppelt geführt). «Schmal» stellt die Schiene
+    // mit Seitenfeld wieder her. Der Wunsch bleibt im Browser.
     var breit = window.matchMedia ? window.matchMedia('(min-width:1280px)') : {matches: false};
     var festKnopf = schiene.querySelector('[data-schiene-fest]');
-    var fest = false;
-    function festLesen() { try { return localStorage.getItem('fwSchieneFest') === '1'; } catch (e) { return false; } }
-    function festSchreiben(an) { try { localStorage.setItem('fwSchieneFest', an ? '1' : '0'); } catch (e) { /* ohne Speicher: nur für diese Seite */ } }
+    var ausgebreitet = false;
+    function breitLesen() { try { return localStorage.getItem('fwSchieneBreit') !== '0'; } catch (e) { return true; } }
+    function breitSchreiben(an) { try { localStorage.setItem('fwSchieneBreit', an ? '1' : '0'); } catch (e) { /* ohne Speicher: nur für diese Seite */ } }
     function aktiverBereich() {
-        var k = schiene.querySelector('[data-fach][aria-current="page"]') || schiene.querySelector('[data-fach="heute"]');
+        var k = schiene.querySelector('[data-fach][aria-current="page"]');
         return k ? k.getAttribute('data-fach') : null;
     }
-    function festAnwenden(an, ohneFokus) {
-        fest = !!an && breit.matches;
-        document.documentElement.classList.toggle('fw-fach-fest', fest);
-        if (festKnopf) festKnopf.setAttribute('aria-pressed', fest ? 'true' : 'false');
-        if (fest) { var key = offen || aktiverBereich(); if (key) auf(key, ohneFokus); }
-        else if (offen) { zu(false); }
+    function breitAnwenden(an) {
+        var neuAn = !!an && breit.matches;
+        if (neuAn === ausgebreitet) { if (festKnopf) festKnopf.setAttribute('aria-pressed', neuAn ? 'true' : 'false'); return; }
+        if (offen) { offen = null; fach.hidden = true; knoepfe.forEach(function (k) { k.setAttribute('aria-expanded', 'false'); }); }
+        ausgebreitet = neuAn;
+        document.documentElement.classList.toggle('fw-breit', ausgebreitet);
+        var aktiv = aktiverBereich();
+        bereiche.forEach(function (b) {
+            var key = b.getAttribute('data-fach-bereich');
+            var knopf = schiene.querySelector('[data-fach="' + key + '"]');
+            if (ausgebreitet) {
+                if (knopf) knopf.insertAdjacentElement('afterend', b);
+                b.hidden = key !== aktiv;
+            } else {
+                fach.insertBefore(b, fach.querySelector('.fw-fach-zuletzt'));
+                b.hidden = true;
+            }
+        });
+        if (festKnopf) festKnopf.setAttribute('aria-pressed', ausgebreitet ? 'true' : 'false');
     }
 
     function zu(zurueck) {
         if (!offen) return;
-        if (fest) return;
         var knopf = schiene.querySelector('[data-fach="' + offen + '"]');
         offen = null;
         fach.hidden = true;
@@ -91,20 +105,21 @@
         k.setAttribute('aria-controls', 'fwFach');
         k.addEventListener('click', function (e) {
             var key = k.getAttribute('data-fach');
+            if (ausgebreitet) return;   // breit: ein Klick führt auf die Seite des Bereichs, der Baum hängt darunter
             e.preventDefault();
             if (offen === key) zu(true); else auf(key);
         });
     });
-    fach.addEventListener('click', function (e) { if (e.target.closest('a')) { if (!fest) zu(false); schublade(false); } });
+    fach.addEventListener('click', function (e) { if (e.target.closest('a')) { zu(false); schublade(false); } });
     document.addEventListener('click', function (e) {
         if (offen && !fach.contains(e.target) && !schiene.contains(e.target) && !(menue && menue.contains(e.target))) zu(false);
     });
     if (telefon.addEventListener) telefon.addEventListener('change', function () { zu(false); schublade(false); });
     if (festKnopf) {
         festKnopf.hidden = false;
-        festKnopf.addEventListener('click', function () { var an = !fest; festSchreiben(an); festAnwenden(an, false); });
-        if (breit.addEventListener) breit.addEventListener('change', function () { festAnwenden(festLesen(), true); });
-        festAnwenden(festLesen(), true);
+        festKnopf.addEventListener('click', function () { var an = !ausgebreitet; breitSchreiben(an); if (!breit.matches) return; breitAnwenden(an); });
+        if (breit.addEventListener) breit.addEventListener('change', function () { breitAnwenden(breitLesen()); });
+        breitAnwenden(breitLesen());
     }
     var g = false, gZeit = 0;
     document.addEventListener('keydown', function (e) {
@@ -117,13 +132,19 @@
         var k = (e.key || '').toLowerCase();
         if (g && Date.now() - gZeit < 1200) {
             g = false;
+            if (ausgebreitet && TASTEN[k]) {
+                var ziel = schiene.querySelector('[data-fach="' + TASTEN[k] + '"]');
+                if (ziel && ziel.href) { e.preventDefault(); location.href = ziel.href; }
+                return;
+            }
             if (TASTEN[k] && auf(TASTEN[k])) e.preventDefault();
             return;
         }
         g = false;
         if (k === 'g') { g = true; gZeit = Date.now(); return; }
-        if (offen && /^[1-9]$/.test(k)) {
-            var links = [].slice.call(fach.querySelectorAll('[data-fach-bereich="' + offen + '"] li a'))
+        var tastenBereich = ausgebreitet ? aktiverBereich() : offen;
+        if (tastenBereich && /^[1-9]$/.test(k)) {
+            var links = [].slice.call(document.querySelectorAll('[data-fach-bereich="' + tastenBereich + '"] li a'))
                 .filter(function (x) { return !x.closest('.fw-fach-selten-liste'); });
             var a = links[+k - 1];
             if (a) { e.preventDefault(); a.click(); if (a.href) location.href = a.href; }
