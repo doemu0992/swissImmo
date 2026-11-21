@@ -72,7 +72,7 @@ Liegenschaft ohne Betreuung soll auffallen.
     </div>
 </div>
 
-<div class="fw-kpis fw-stats">
+<div class="fw-kpis fw-stats fw-band">
     <div class="fw-kpi"><div class="fw-l">{% trans "Objekte" %}</div>
         <div class="fw-v">{{ total_einheiten }}</div>
         <div class="fw-f">{% if not total_einheiten %}{% trans "keine Objekte erfasst" %}{% elif leerstand %}{% blocktrans count n=leerstand %}{{ n }} leer{% plural %}{{ n }} leer{% endblocktrans %}{% else %}{% trans "alle vermietet" %}{% endif %}</div></div>

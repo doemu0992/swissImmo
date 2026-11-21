@@ -63,7 +63,7 @@
     var arbeit = document.getElementById('fwArbeit');
     var arbeitPop = document.getElementById('fwArbeitPop');
     var zuletzt = document.getElementById('fwZuletztFachAbschnitt');
-    var krume = document.querySelector('main .fw-krumen');
+    var krume = document.querySelector('main .fw-krumen, main .fw-brotkrume');
     var krumeOrt = krume ? {eltern: krume.parentNode, vor: krume.nextSibling} : null;
     var kopfZeile = document.querySelector('.fw-kopf-z1');
     function arbeitZu(fokus) {
