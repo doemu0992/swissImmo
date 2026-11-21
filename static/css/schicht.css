@@ -2612,6 +2612,13 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         }
         table.fw-table.min-w-max{min-width:max-content}
         table.fw-table .whitespace-nowrap{white-space:nowrap}
+        @media (min-width:641px){
+            .fw-vz{margin:0 8px;border-radius:var(--ds-radius-knopf)}
+            .fw-vz + .fw-vz{border-top:0}
+            .fw-vz::before{left:10px;top:50%;bottom:auto;width:8px;height:8px;margin-top:-4px;border-radius:var(--ds-kreis)}
+            .fw-vz.sel{box-shadow:none}
+            .fw-vz-titel{font-weight:500}
+        }
         .fw-kopf-z1{display:flex;align-items:center;gap:12px}
         @media (max-width:1023px){
             .fw-logo-kapsel{padding:0 12px 0 11px;gap:7px}
