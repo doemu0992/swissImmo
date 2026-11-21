@@ -2911,6 +2911,8 @@
         .fw-nk-saldo.nach{color:var(--ds-crit)}
         .fw-nk-saldo.gut{color:var(--ds-good)}
         .fw-nk-karte.eigen{background:var(--ds-surface-2)}
+        /* Langer Knopftext (Akonto-Vorschlag) bricht um, statt die Kachel zu sprengen — sichtbar, seit die Spalte neben der breiten Navigation schmaler ist. */
+        .fw-nk-karte .fw-btn.fw-knapp{max-width:100%;height:auto;white-space:normal;text-align:left}
         .fw-nk-knoepfe{display:flex;flex-wrap:wrap;gap:8px}
         @media (max-width:640px){.fw-nk-felder{grid-template-columns:minmax(0,1fr)}}
         /* ===== Ende MODUL Nebenkosten-Wizard ===== */
