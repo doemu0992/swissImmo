@@ -251,6 +251,8 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Zweispalter und Assistent (`:has()`-Regel im Modul «Mix-Entwurf»); Arbeitsflächen behalten die volle Breite.
 - Handy (bis 640 px): weisse Kopfleiste mit Linie; Listenzeilen (`.fw-card > .fw-zeile`) als einzelne Karten mit Statuspunkt
   auf dem Seitengrund, wie im Mockup.
+- Breite Navigation: «Einstellungen» bleibt unten ohne Baum (alle Punkte auf der Seite selbst); Versalien-Etiketten nur in den
+  grossen Kennzahlkarten, nicht in den Statuskapseln (`.fw-stats`).
 
 ### Schriftskala
 

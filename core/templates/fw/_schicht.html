@@ -3494,6 +3494,8 @@ und einen Stilblock enthaelt.
             html.fw-breit .fw-schiene [data-fach-bereich] .fw-fach-selten-liste li a{font-size:14px}
             html.fw-breit .fw-schiene [data-fach-bereich] kbd{display:none}
             html.fw-breit .fw-schiene-fuss{margin-top:auto;padding-top:10px;border-top:1px solid var(--ds-line)}
+            /* Einstellungen bleiben unten ohne Baum (Mockup); alle Punkte stehen auf der Seite «Einstellungen» selbst. */
+            html.fw-breit .fw-schiene [data-fach-bereich="einst"]{display:none}
         }
         /* Handy-Tableiste (Mix-Entwurf): am Telefon unten, sonst aus. Der Inhalt bekommt unten Platz, damit nichts verdeckt wird. */
         .fw-tabbar{display:none}
@@ -3656,7 +3658,7 @@ und einen Stilblock enthaelt.
             .fw-os,.fw-os-feld,.fw-os-feld input{min-width:0}
         }
         /* Seiten (Mix B): Kennzahlen wie die Karten im Mockup — Etikett in Versalien, Zahl in Sora fett. */
-        .fw-kpi .fw-l{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ds-muted)}
+        .fw-kpis:not(.fw-stats) .fw-kpi .fw-l{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ds-muted)}
         .fw-kpi .fw-v,.fw-lage .fw-w{font-family:var(--ds-disp);font-weight:700;letter-spacing:-.04em}
         /* Monatsabschluss: jeder Schritt eine eigene Karte mit Nummer; der aktuelle mit Markenrand, gesperrte blass (Mockup «Monatsabschluss»). */
         .fw-card.fw-schrittliste{background:transparent;border:0;overflow:visible;counter-reset:fw-schritt}
