@@ -2570,7 +2570,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-chip{font-size:12px;font-weight:600;padding:1px 8px}
         @media (min-width:641px){
             .fw-zeile{border-bottom:0;border-radius:var(--ds-radius-knopf);padding:11px 14px;margin:0 6px}
-            .fw-zeile .fw-marker{width:8px;height:8px;flex:0 0 8px;align-self:center;border-radius:var(--ds-kreis)}
+            .fw-zeile .fw-marker{width:8px;height:8px;min-height:0;flex:0 0 8px;align-self:center;border-radius:var(--ds-kreis)}
             .fw-zeile .fw-t{font-weight:500}
             .fw-zeile.klick>.fw-btn.fw-knapp:not(.fw-primary){opacity:0;transition:opacity .12s}
             .fw-zeile.klick:hover>.fw-btn.fw-knapp,.fw-zeile.klick:focus-within>.fw-btn.fw-knapp,.fw-zeile.klick>.fw-btn.fw-knapp:focus-visible{opacity:1}
@@ -2582,6 +2582,21 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-fchip{height:40px}
             .fw-os,.fw-os-feld,.fw-os-feld input{min-width:0}
         }
+        .fw-kpi .fw-l{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ds-muted)}
+        .fw-kpi .fw-v,.fw-lage .fw-w{font-family:var(--ds-disp);font-weight:700;letter-spacing:-.04em}
+        .fw-card.fw-schrittliste{background:transparent;border:0;overflow:visible;counter-reset:fw-schritt}
+        .fw-schrittliste>.fw-kopf{padding:0 0 10px;border:0;background:transparent}
+        .fw-schrittliste .fw-schritt{counter-increment:fw-schritt;background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius-sm);
+            padding:14px 16px;margin-bottom:10px}
+        .fw-schrittliste .fw-schritt-zeichen{width:30px;height:30px;border:0;background:var(--ds-surface-2);color:var(--ds-muted);
+            font-family:var(--ds-disp);font-size:13px;font-weight:700;box-shadow:none}
+        .fw-schrittliste .fw-schritt:not(.fertig) .fw-schritt-zeichen::before{content:counter(fw-schritt)}
+        .fw-schrittliste .fw-schritt.fertig .fw-schritt-zeichen{background:var(--ds-good);color:var(--ds-auf-satt)}
+        .fw-schrittliste .fw-schritt.jetzt{border-color:var(--ds-brand);box-shadow:0 10px 26px -18px var(--ds-brand)}
+        .fw-schrittliste .fw-schritt.jetzt .fw-schritt-zeichen{background:var(--ds-brand);color:var(--ds-auf-satt);box-shadow:none}
+        .fw-schrittliste .fw-schritt.gesperrt{opacity:.6}
+        .fw-schrittliste .fw-schritt .fw-t{font-weight:500}
+        .fw-btn.fw-knapp.fw-primary{box-shadow:none}
         .fw-kopf-z1{display:flex;align-items:center;gap:12px}
         @media (max-width:1023px){
             .fw-logo-kapsel{padding:0 12px 0 11px;gap:7px}
