@@ -3655,6 +3655,14 @@
            Lieferantennamen brachen über drei Zeilen um (Kreditoren). Hier gelten sie wieder; der Rahmen `.fw-tablewrap` scrollt quer. */
         table.fw-table.min-w-max{min-width:max-content}
         table.fw-table .whitespace-nowrap{white-space:nowrap}
+        /* Arbeitsvorrat («Heute») wie die Zeilen im Mockup: Statuspunkt statt Balken, keine Trennlinien, runde Fläche beim Überfahren. */
+        @media (min-width:641px){
+            .fw-vz{margin:0 8px;border-radius:var(--ds-radius-knopf)}
+            .fw-vz + .fw-vz{border-top:0}
+            .fw-vz::before{left:10px;top:50%;bottom:auto;width:8px;height:8px;margin-top:-4px;border-radius:var(--ds-kreis)}
+            .fw-vz.sel{box-shadow:none}
+            .fw-vz-titel{font-weight:500}
+        }
         /* ===== Ende MODUL Mix-Entwurf ===== */
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
         /* Vorlage: navmock/v2/vorschau (freigegeben, Stand «Kopfzeile v2»). Zeile 1 von links: Marke,

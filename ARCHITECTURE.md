@@ -255,6 +255,7 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   grossen Kennzahlkarten (`.fw-kpis.fw-gross`, Finanzen), nicht in den Statuskapseln.
 - Tabellen: `min-w-max` und `whitespace-nowrap` (Tailwind) gelten in `table.fw-table` wieder; vorher brachen Namen in Kreditoren
   über mehrere Zeilen um. Breite Tabellen scrollen in `.fw-tablewrap` quer.
+- Arbeitsvorrat auf «Heute» (`.fw-vz`) am PC wie die Mockup-Zeilen: Statuspunkt statt Balken, keine Trennlinien.
 
 ### Schriftskala
 
