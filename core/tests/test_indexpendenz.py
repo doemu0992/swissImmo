@@ -147,8 +147,12 @@ class IndexpendenzWirdErzeugtTest(TestCase):
 
     def test_verpasste_frist_faellt_auf_heute_und_nennt_den_fruehesten_termin(self):
         heute = date.today()
-        # Termin in zehn Tagen: der späteste Versand liegt Wochen zurück.
-        pendenz = self._pendenz(self._vertrag(letzte_anpassung=ia.plus_monate(heute + timedelta(days=10), -12)))
+        # Der nächste Monatserste: der späteste Versand dafür liegt an jedem Kalendertag in der Vergangenheit.
+        # (Vorher «in zehn Tagen»: ab dem 22. fiel das in den Folgemonat, der Termin rückte auf den
+        # übernächsten Monatsersten, und dessen Frist war noch offen — der Test hing am Datum.)
+        ziel = ia.termin_ab(heute + timedelta(days=1))
+        self.assertLess(ia.spaetester_versand(ziel), heute)
+        pendenz = self._pendenz(self._vertrag(letzte_anpassung=ia.plus_monate(ziel, -12)))
         self.assertIsNotNone(pendenz)
         self.assertEqual(pendenz.faellig_am, heute)
         self.assertIn('reicht die Frist bei Versand heute nicht mehr', pendenz.beschreibung)
