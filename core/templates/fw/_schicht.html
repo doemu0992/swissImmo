@@ -3680,7 +3680,8 @@ und einen Stilblock enthaelt.
         /* Handy wie im Mockup: weisse Kopfleiste mit Linie; jede Zeile eine eigene Karte mit Statuspunkt auf dem Seitengrund. */
         @media (max-width:640px){
             html .fw-mit-schiene .fw-kopfleiste{background:var(--ds-surface);border-bottom:1px solid var(--ds-line)}
-            .fw-card:has(>.fw-zeile){background:transparent;border:0;overflow:visible}
+            .fw-card:has(>.fw-zeile){background:transparent;border:0}
+            .fw-zeile .fw-chip{max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis}
             .fw-card:has(>.fw-zeile)>.fw-zeile{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius-sm);margin:0 0 10px}
             .fw-card:has(>.fw-zeile)>.fw-zeile:last-child{border-bottom:1px solid var(--ds-line)}
             .fw-zeile .fw-marker{width:8px;height:8px;min-height:0;flex:0 0 8px;align-self:flex-start;margin-top:7px;border-radius:var(--ds-kreis)}
