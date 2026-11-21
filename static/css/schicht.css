@@ -2455,6 +2455,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             html.fw-breit .fw-schiene [data-fach-bereich] .fw-fach-selten-liste li a{font-size:14px}
             html.fw-breit .fw-schiene [data-fach-bereich] kbd{display:none}
             html.fw-breit .fw-schiene-fuss{margin-top:auto;padding-top:10px;border-top:1px solid var(--ds-line)}
+            html.fw-breit .fw-schiene [data-fach-bereich="einst"]{display:none}
         }
         .fw-tabbar{display:none}
         @media (max-width:640px){
@@ -2582,7 +2583,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-fchip{height:40px}
             .fw-os,.fw-os-feld,.fw-os-feld input{min-width:0}
         }
-        .fw-kpi .fw-l{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ds-muted)}
+        .fw-kpis:not(.fw-stats) .fw-kpi .fw-l{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ds-muted)}
         .fw-kpi .fw-v,.fw-lage .fw-w{font-family:var(--ds-disp);font-weight:700;letter-spacing:-.04em}
         .fw-card.fw-schrittliste{background:transparent;border:0;overflow:visible;counter-reset:fw-schritt}
         .fw-schrittliste>.fw-kopf{padding:0 0 10px;border:0;background:transparent}
