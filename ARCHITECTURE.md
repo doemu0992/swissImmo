@@ -245,6 +245,8 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Tabellenkopf als Band, Knöpfe und Reiter als Pillen (aktiver Reiter dunkel), Hauptknöpfe in der Markenfarbe.
 - «Heute»: Datum, Begrüssung und die Aufgaben als grosse Zahlen in einer dunklen Karte (`.fw-hero`, Tokens `--ds-hero*`, in beiden
   Modi dunkel); der Schwerpunkt steht darüber. Die Zahlen sind dieselben Links wie zuvor die Kapseln (`data-kachel`).
+- Seiten (Mix B): Monatsabschluss als einzelne Schritt-Karten mit Nummer (CSS-Zähler), aktueller Schritt mit Markenrand, gesperrte
+  blass; Kennzahlen (`.fw-kpi`) mit Etikett in Versalien und Zahl in Sora; Statuspunkte statt Balken in allen Zeilen am PC.
 
 ### Schriftskala
 
