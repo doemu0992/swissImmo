@@ -314,6 +314,11 @@ unverändert Zahl, Titel, Text, Ziel, Ton; im Schwerpunkt «Übersicht» bleibt 
 30 Tagen offen · vermutlich festgefahren»; `FESTGEFAHREN_TAGE`). Der Zeilenknopf nennt die Aufgabe (Läufe über `LAUF_AKTION` in
 `faelle/arbeitsvorrat.py`: Auslösen, Importieren, Freigeben); dazu ein ✓ «Erledigt» bei Fallschritten (`/neu/fallschritte/<id>/erledigen/`,
 Toast «Rückgängig»). Test: `faelle/test_heute_zielbild.py`, `e2e/tests/heute-zielbild.spec.ts`, `heute.spec.ts`.
+**Heute, Modul 3 (22.11.2026):** Die dunkle Karte ist weg. Begrüssung und Datum stehen ruhig auf dem Seitengrund, der Schwerpunkt
+rechts daneben; die Aufgabenzahlen bilden ein Band mit Zellen (dieselben Links, `.fw-hallo .fw-statuszeile`). Die Reiter des
+Arbeitsvorrats sind Text mit Markenstrich, die gewählte Zeile trägt den Markenton, Karten haben eine Linie. Nur Gestalt in
+`_schicht.html` («Heute, Modul 3»); Vorlage, Ansicht und Adressen sind unverändert. Die Eckdaten-Spalte aus dem Mockup bleibt die
+bestehende Vorschau (`fw-vg`).
 
 ### Statuszeile statt Kennzahl-Kacheln
 Listenseiten zeigen oben eine **Statuszeile** (`.fw-statuszeile` mit `.fw-sz`, UI-Zielbild): schmale Kapseln mit Farbpunkt (grün/gelb/rot nach

@@ -3793,6 +3793,43 @@ und einen Stilblock enthaelt.
             .fw-aktenkopf .fw-reiter button,.fw-akten-karte>.fw-reiter button{min-height:42px}
         }
         /* ===== Ende Akten, Modul 2 ===== */
+        /* ===== Heute, Modul 3 (Mockup «Immoswiss Heute»): Begrüssung ruhig auf dem Seitengrund, Schwerpunkt daneben,
+           die Aufgabenzahlen als ein Band mit Zellen (dieselben Links aus `faelle/heute_kacheln.py`), Reiter des Arbeitsvorrats
+           als Text mit Markenstrich, Karten mit Linie. Nur Gestalt. ===== */
+        html .fw-hallo{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px 16px;align-items:end;margin-bottom:18px}
+        html .fw-hallo>.fw-phead-knoepfe{grid-column:2;grid-row:1;margin:0}
+        html .fw-hallo .fw-hero{display:contents}
+        html .fw-hallo .fw-hero-text{grid-column:1;grid-row:1;min-width:0}
+        html .fw-hallo .fw-hero .fw-eyebrow{color:var(--ds-muted);font-size:12px;letter-spacing:.05em}
+        html .fw-hallo .fw-hero .fw-eyebrow .fw-marke{color:var(--ds-brand)}
+        html .fw-hallo .fw-hero h1{color:var(--ds-ink);font-size:24px;font-weight:700;letter-spacing:-.03em;line-height:1.2;margin:2px 0 0}
+        html .fw-hallo .fw-hero h1 em{display:block;font-family:var(--ds-font);font-size:14px;font-weight:400;letter-spacing:0;line-height:1.5;color:var(--ds-muted);margin-top:2px}
+        html .fw-hallo .fw-hero .fw-heute-ueber{color:var(--ds-crit);font-weight:600}
+        html .fw-hallo .fw-hero .fw-statuszeile{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:0;margin:0;
+            background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);overflow:hidden}
+        html .fw-hallo .fw-hero .fw-sz{flex-direction:column;align-items:flex-start;gap:2px;min-height:0;padding:14px 16px;border:0;border-radius:var(--ds-radius-0);
+            background:var(--ds-surface);color:var(--ds-muted);box-shadow:1px 0 0 var(--ds-line),0 1px 0 var(--ds-line)}
+        html .fw-hallo .fw-hero .fw-sz:hover{background:var(--ds-hover);box-shadow:1px 0 0 var(--ds-line),0 1px 0 var(--ds-line)}
+        html .fw-hallo .fw-hero .fw-sz-zahl{font-size:24px;line-height:1.1;color:var(--ds-ink)}
+        html .fw-hallo .fw-hero .fw-sz-crit .fw-sz-zahl{color:var(--ds-crit)}
+        html .fw-hallo .fw-hero .fw-sz-text{font-size:12px;line-height:1.4;max-width:none;color:var(--ds-muted)}
+        html .fw-card.fw-vorrat,html .fw-neben>.fw-card{border:1px solid var(--ds-line)}
+        .fw-vorrat>.fw-reiter{gap:2px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:0 10px;border:0;border-bottom:1px solid var(--ds-line);background:transparent}
+        .fw-vorrat>.fw-reiter a{border:0;border-bottom:2px solid transparent;border-radius:var(--ds-radius-0);background:transparent;padding:9px 10px;margin-bottom:-1px;
+            color:var(--ds-muted);font-weight:500;white-space:nowrap}
+        .fw-vorrat>.fw-reiter a:hover{background:transparent;color:var(--ds-ink)}
+        .fw-vorrat>.fw-reiter a.hier,.fw-vorrat>.fw-reiter a[aria-selected="true"]{background:transparent;border-color:transparent;border-bottom-color:var(--ds-brand);color:var(--ds-ink);font-weight:600}
+        .fw-vorrat>.fw-reiter a.crit .fw-z{color:var(--ds-crit)}
+        html .fw-vz.sel{background:var(--ds-brand-soft);box-shadow:none}
+        @media (max-width:640px){
+            html .fw-hallo{grid-template-columns:minmax(0,1fr)}
+            html .fw-hallo>.fw-phead-knoepfe{grid-column:1;grid-row:2;justify-content:flex-start}
+            html .fw-hallo .fw-hero h1{font-size:22px}
+            html .fw-hallo .fw-hero .fw-statuszeile{grid-template-columns:1fr 1fr}
+            html .fw-hallo .fw-hero .fw-sz{min-height:44px;padding:12px 14px}
+            .fw-vorrat>.fw-reiter a{min-height:42px}
+        }
+        /* ===== Ende Heute, Modul 3 ===== */
         /* ===== Ende MODUL Mix-Entwurf ===== */
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
         /* Vorlage: navmock/v2/vorschau (freigegeben, Stand «Kopfzeile v2»). Zeile 1 von links: Marke,
