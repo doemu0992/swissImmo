@@ -168,7 +168,7 @@ class TokenTests(TestCase):
     #: erste Fassung dieses Tests verlangte es und wurde deshalb rot.
     #: Keine Farben, also im Dunkeln gleich: Geometrie, Schrift, Bewegung.
     GEOMETRIE = {'--ds-radius', '--ds-radius-sm', '--ds-pill', '--ds-radius-knopf',
-                 '--ds-radius-xs', '--ds-radius-lg', '--ds-kreis', '--ds-font', '--ds-disp', '--ds-mono', '--ds-ease'}
+                 '--ds-radius-xs', '--ds-radius-lg', '--ds-radius-0', '--ds-kreis', '--ds-font', '--ds-disp', '--ds-mono', '--ds-ease'}
 
     #: **Beide** Dunkelblöcke, nicht nur einer.
     #:

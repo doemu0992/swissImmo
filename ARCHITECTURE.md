@@ -263,6 +263,12 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
 - Tabellen: `min-w-max` und `whitespace-nowrap` (Tailwind) gelten in `table.fw-table` wieder; vorher brachen Namen in Kreditoren
   über mehrere Zeilen um. Breite Tabellen scrollen in `.fw-tablewrap` quer.
 - Arbeitsvorrat auf «Heute» (`.fw-vz`) am PC wie die Mockup-Zeilen: Statuspunkt statt Balken, keine Trennlinien.
+- **Akten, Modul 2 (22.11.2026):** Alle Akten mit `.fw-aktenkopf` (Liegenschaft, Objekt, Mietverhältnis, Person, Dienstleister,
+  Mandat, Schaden, Fall) folgen einem Muster: Kopf ohne Karte auf dem Seitengrund, Titelbild ausgeblendet (`.fw-akte-bild`),
+  Pfad als Metazeile, Kennzahlen als ein Band (`.fw-kzn`, `.fw-kpis.fw-band`), Reiter als Text mit Markenstrich statt Pillen.
+  Der Brotkrumen (`.fw-krumen`, `.fw-brotkrume`) wandert in der breiten Navigation in die Kopfleiste (`fw-schiene.js`).
+  **Bewusste Abweichung vom Mockup:** kein eigener Reiter «Übersicht». Das Aktenregister (`faelle/akten.py`, `test_reiter_panels`)
+  legt die Reiter fest, und «Was auffällt» bleibt nach Entscheid E2.73 auf jedem Reiter sichtbar.
 
 ### Schriftskala
 
@@ -308,6 +314,11 @@ unverändert Zahl, Titel, Text, Ziel, Ton; im Schwerpunkt «Übersicht» bleibt 
 30 Tagen offen · vermutlich festgefahren»; `FESTGEFAHREN_TAGE`). Der Zeilenknopf nennt die Aufgabe (Läufe über `LAUF_AKTION` in
 `faelle/arbeitsvorrat.py`: Auslösen, Importieren, Freigeben); dazu ein ✓ «Erledigt» bei Fallschritten (`/neu/fallschritte/<id>/erledigen/`,
 Toast «Rückgängig»). Test: `faelle/test_heute_zielbild.py`, `e2e/tests/heute-zielbild.spec.ts`, `heute.spec.ts`.
+**Heute, Modul 3 (22.11.2026):** Die dunkle Karte ist weg. Begrüssung und Datum stehen ruhig auf dem Seitengrund, der Schwerpunkt
+rechts daneben; die Aufgabenzahlen bilden ein Band mit Zellen (dieselben Links, `.fw-hallo .fw-statuszeile`). Die Reiter des
+Arbeitsvorrats sind Text mit Markenstrich, die gewählte Zeile trägt den Markenton, Karten haben eine Linie. Nur Gestalt in
+`_schicht.html` («Heute, Modul 3»); Vorlage, Ansicht und Adressen sind unverändert. Die Eckdaten-Spalte aus dem Mockup bleibt die
+bestehende Vorschau (`fw-vg`).
 
 ### Statuszeile statt Kennzahl-Kacheln
 Listenseiten zeigen oben eine **Statuszeile** (`.fw-statuszeile` mit `.fw-sz`, UI-Zielbild): schmale Kapseln mit Farbpunkt (grün/gelb/rot nach
