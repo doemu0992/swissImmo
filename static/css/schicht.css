@@ -2583,7 +2583,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-fchip{height:40px}
             .fw-os,.fw-os-feld,.fw-os-feld input{min-width:0}
         }
-        .fw-kpis:not(.fw-stats) .fw-kpi .fw-l{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ds-muted)}
+        .fw-kpis.fw-gross .fw-kpi .fw-l{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ds-muted)}
         .fw-kpi .fw-v,.fw-lage .fw-w{font-family:var(--ds-disp);font-weight:700;letter-spacing:-.04em}
         .fw-card.fw-schrittliste{background:transparent;border:0;overflow:visible;counter-reset:fw-schritt}
         .fw-schrittliste>.fw-kopf{padding:0 0 10px;border:0;background:transparent}
@@ -2610,6 +2610,8 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-zeile .fw-marker{width:8px;height:8px;min-height:0;flex:0 0 8px;align-self:flex-start;margin-top:7px;border-radius:var(--ds-kreis)}
             .fw-zeile .fw-mitte{flex-basis:calc(100% - 20px)}
         }
+        table.fw-table.min-w-max{min-width:max-content}
+        table.fw-table .whitespace-nowrap{white-space:nowrap}
         .fw-kopf-z1{display:flex;align-items:center;gap:12px}
         @media (max-width:1023px){
             .fw-logo-kapsel{padding:0 12px 0 11px;gap:7px}
