@@ -2597,6 +2597,9 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-schrittliste .fw-schritt.gesperrt{opacity:.6}
         .fw-schrittliste .fw-schritt .fw-t{font-weight:500}
         .fw-btn.fw-knapp.fw-primary{box-shadow:none}
+        @media (min-width:1280px){
+            .fw-inhalt:not(:has(table)):not(:has(.fw-cockpit)):not(:has(.fw-bento)):not(:has(.fw-kpis)):not(:has(.fw-split)):not(:has(.fw-zwei)){max-width:984px}
+        }
         .fw-kopf-z1{display:flex;align-items:center;gap:12px}
         @media (max-width:1023px){
             .fw-logo-kapsel{padding:0 12px 0 11px;gap:7px}
