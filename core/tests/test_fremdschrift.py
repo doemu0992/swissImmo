@@ -1,7 +1,7 @@
 """Keine Fremdschrift in eigenen Vorlagen und Stylesheets.
 
 WARUM
-Die Oberfläche hat eine Schrift (`--ds-font`, DM Sans, lokal ausgeliefert über `static/css/schriften.css`).
+Die Oberfläche hat eine Schrift (`--ds-font`, seit dem Mix-Entwurf Inter, Titel `--ds-disp` Sora; lokal über `static/css/schriften.css`).
 Die öffentlichen Formulare liefen mit einer zweiten (`IBM Plex Sans`, in einem Inline-`<style>` der Vorlage),
 und niemand sah es, bis der Audit (Etappe 3) drei Fassungen desselben Formulars in drei Schriften fand.
 `test_keine_fremdquellen` sperrt fremde Hosts, `test_farbklassen*` fremde Farben; diese Lücke blieb offen:
@@ -77,7 +77,7 @@ class FremdschriftTests(SimpleTestCase):
             funde = fremdschriften(text)
             if funde:
                 neu[rel] = sorted(set(funde))
-        self.assertEqual(neu, {}, 'Fremdschrift: Die Anwendung nutzt `var(--ds-font)` (DM Sans). Öffentliche '
+        self.assertEqual(neu, {}, 'Fremdschrift: Die Anwendung nutzt `var(--ds-font)` (Inter). Öffentliche '
                                   'Formulare nehmen die Standardoberfläche der fw-Schicht, keine eigene Schrift.')
 
     def test_die_altfaelle_gibt_es_wirklich(self):

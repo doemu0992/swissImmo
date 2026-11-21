@@ -128,7 +128,8 @@ Hauswart: Schadenfälle seiner Liegenschaften.
 - Leere Zustände über `fw/_empty.html`. Lange Listen blättern mit `core/views/fw/_liste.blaettern` und `fw/_seiten.html`.
 - Symbole nur über `{% load zeichen %}{% zeichen 'name' %}`. Die erlaubten Namen stehen in
   `core/templatetags/zeichen_tabelle.md`; ein neues Symbol zuerst dort eintragen (`test_zeichen_sprite`).
-- Schrift: DM Sans, für Zahlen und Kennungen IBM Plex Mono; lokal ausgeliefert, keine fremden Hosts
+- Schrift: Inter (`--ds-font`), Titel und grosse Zahlen Sora (`--ds-disp`), Kennungen IBM Plex Mono; lokal ausgeliefert, keine fremden Hosts
+- Gestalt: das Mix-Mockup. Neue Seiten nutzen die Bausteine des Moduls «Mix-Entwurf» (Pillen-Reiter, Karten mit Rand, Hauptknopf in der Markenfarbe)
   (`test_fremdschrift`, `test_keine_fremdquellen`).
 - Geprüft wird bei Telefonbreite 390 × 844, nicht nur am Desktop.
 - Neue Seite im Menü: Eintrag in `core/navigation.py` (Bereich, `keys`), die View meldet einen dieser Schlüssel als

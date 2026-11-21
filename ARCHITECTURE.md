@@ -234,9 +234,21 @@ Kontoauszugs (`Kontoauszug.importiert_am`); ohne Auszug steht nur der Wert. Das 
 (`core/templatetags/diagramm.py`, Test `core/tests/test_diagramm_stand.py`). Die gestrichelte Ziellinie des Prototyps (95 %) fehlt weiter: Ihr Zielwert muss der Betreiber festlegen.
 Kartenköpfe haben jetzt `18 px 22 px 14 px` Innenabstand (vorher 20 / 24 px).
 
+### Mix-Entwurf als Gestalt (21.11.2026)
+
+Das freigegebene Mockup («Immoswiss Prototyp», `prototyp.html`) ist die Vorlage für die Darstellung aller Seiten. Umgesetzt wird
+nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_baseline`, `test_erreichbarkeit`).
+
+- Schriften: Inter für die Oberfläche (`--ds-font`), Sora für Seitentitel und grosse Zahlen (`--ds-disp`), IBM Plex Mono für
+  Kennungen — alle lokal in `static/fonts/` (OFL), keine fremden Hosts.
+- Modul «Mix-Entwurf» am Ende von `fw/_schicht.html`: weisse Kopfleiste mit Linie, Titel 24 px Sora, Karten mit Rand statt Schatten,
+  Tabellenkopf als Band, Knöpfe und Reiter als Pillen (aktiver Reiter dunkel), Hauptknöpfe in der Markenfarbe.
+- «Heute»: Datum, Begrüssung und die Aufgaben als grosse Zahlen in einer dunklen Karte (`.fw-hero`, Tokens `--ds-hero*`, in beiden
+  Modi dunkel); der Schwerpunkt steht darüber. Die Zahlen sind dieselben Links wie zuvor die Kapseln (`data-kachel`).
+
 ### Schriftskala
 
-Die Stilschicht kennt sieben Schriftstufen: 12, 13, 14, 15, 18, 22, 28 px (vorher 28 verschiedene Werte, viele nur 0,5 px
+Die Stilschicht kennt acht Schriftstufen: 12, 13, 14, 15, 18, 22, 24, 28 px (24 px seit dem Mix-Entwurf für Seitentitel) (vorher 28 verschiedene Werte, viele nur 0,5 px
 auseinander). Jede alte Grösse wurde auf die nächste Stufe gerundet (12,5 → 13, 13,5 → 14, 16/17/19 → 18, 20/21/23/24 → 22,
 26/30/32 → 28); fast nichts wird kleiner, vieles minimal grösser. Ausserhalb der Skala bleiben die Mikroschrift unter 12 px
 (nur die Selektoren in `test_schrift_mindestgroesse`) und die Anzeigezahlen 34/40/52 px. Wächter: `core/tests/test_schriftskala.py`.
