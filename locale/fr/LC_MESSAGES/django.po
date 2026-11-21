@@ -41591,3 +41591,9 @@ msgstr "Contacts"
 
 msgid "Schnellzugriff"
 msgstr "Accès rapide"
+
+msgid "Seitenfeld anheften"
+msgstr "Épingler le volet des pages"
+
+msgid "Anheften"
+msgstr "Épingler"

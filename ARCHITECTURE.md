@@ -79,6 +79,10 @@ Security → `WartungsMiddleware` → `NulBytesMiddleware` → GZip → Session 
   Finanzen und «Mehr»; «Mehr» öffnet dieselbe Schublade mit allen Bereichen. Sie liest dieselbe Quelle (`fw_nav_gruppen`) und ist eine
   zweite Tür zu denselben Zielen — nichts entfällt, fehlt der Rolle ein Bereich, fehlt er auch dort. Hauswartung und Portal-Rollen
   bekommen sie nicht (`fw_kopf_reduziert`). Test: `e2e/tests/tableiste.spec.ts`.
+  **Schiene anheften** (Mix-Entwurf, 21.11.2026): Ab 1280 px steht in der Schiene der Knopf «Anheften» (`[data-schiene-fest]`). Angeheftet
+  bleibt das Seitenfeld des aktiven Bereichs offen (Klick daneben und Esc schliessen es nicht) und der Inhalt rückt daneben
+  (`html.fw-fach-fest`, 88 + 276 px). Der Wunsch liegt im Browser (`localStorage` `fwSchieneFest`), ohne Skript gibt es den Knopf nicht;
+  ohne Anheften verhält sich alles wie bisher. Test: `e2e/tests/schiene-anheften.spec.ts`.
   **Nichts geht verloren:** `core/tests/routen_baseline.txt` hält alle Adressen (mit Namen) vom 20.11.2026 fest;
   `test_routen_baseline` schlägt fehl, wenn eine fehlt oder ihren Namen wechselt. Neue Adressen dürfen dazukommen, eine Adresse darf
   nur mit Begründung in `ABSICHTLICH_ENTFERNT` stehen.

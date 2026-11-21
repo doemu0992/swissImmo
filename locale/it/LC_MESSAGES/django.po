@@ -41520,3 +41520,9 @@ msgstr "Contatti"
 
 msgid "Schnellzugriff"
 msgstr "Accesso rapido"
+
+msgid "Seitenfeld anheften"
+msgstr "Fissa il pannello delle pagine"
+
+msgid "Anheften"
+msgstr "Fissa"
