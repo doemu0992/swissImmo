@@ -40925,3 +40925,9 @@ msgstr "Contacts"
 
 msgid "Schnellzugriff"
 msgstr "Quick access"
+
+msgid "Seitenfeld anheften"
+msgstr "Pin the page panel"
+
+msgid "Anheften"
+msgstr "Pin"

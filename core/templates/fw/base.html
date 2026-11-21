@@ -158,6 +158,11 @@ Detailseiten rufen sie beim Namen.
         {% endfor %}
         {% if not fw_kopf_reduziert %}
         <div class="fw-schiene-fuss">
+            {% comment %} Anheften (nur ab 1280 px, Mix-Entwurf): Das Seitenfeld des aktiven Bereichs bleibt offen und schiebt den Inhalt zur Seite.
+               Der Wunsch bleibt im Browser (`localStorage`, `static/js/fw-schiene.js`). Ohne Skript gibt es den Knopf nicht. {% endcomment %}
+            <button type="button" class="fw-schiene-b fw-schiene-fest" data-schiene-fest aria-pressed="false" title="{% trans 'Seitenfeld anheften' %}" hidden>
+                {% zeichen 'filtern' %}<span>{% trans "Anheften" %}</span>
+            </button>
             <a href="/neu/einstellungen/{{ lg_query }}" class="fw-schiene-b{% if nav in fw_einstellungen_keys %} hier{% endif %}" data-fach="einst" title="{% trans "Einstellungen" %}"{% if nav in fw_einstellungen_keys %} aria-current="page"{% endif %}>
                 {% zeichen 'einstellungen' %}<span>{% trans "Einstellungen" %}</span>
             </a>

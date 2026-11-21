@@ -39819,3 +39819,9 @@ msgstr "Kontakte"
 
 msgid "Schnellzugriff"
 msgstr "Schnellzugriff"
+
+msgid "Seitenfeld anheften"
+msgstr "Seitenfeld anheften"
+
+msgid "Anheften"
+msgstr "Anheften"

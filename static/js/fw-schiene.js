@@ -47,15 +47,34 @@
         });
     });
 
+    // Anheften (ab 1280 px): Das Feld des aktiven Bereichs bleibt offen und schiebt den Inhalt zur Seite. Der Wunsch bleibt im Browser.
+    var breit = window.matchMedia ? window.matchMedia('(min-width:1280px)') : {matches: false};
+    var festKnopf = schiene.querySelector('[data-schiene-fest]');
+    var fest = false;
+    function festLesen() { try { return localStorage.getItem('fwSchieneFest') === '1'; } catch (e) { return false; } }
+    function festSchreiben(an) { try { localStorage.setItem('fwSchieneFest', an ? '1' : '0'); } catch (e) { /* ohne Speicher: nur für diese Seite */ } }
+    function aktiverBereich() {
+        var k = schiene.querySelector('[data-fach][aria-current="page"]') || schiene.querySelector('[data-fach="heute"]');
+        return k ? k.getAttribute('data-fach') : null;
+    }
+    function festAnwenden(an, ohneFokus) {
+        fest = !!an && breit.matches;
+        document.documentElement.classList.toggle('fw-fach-fest', fest);
+        if (festKnopf) festKnopf.setAttribute('aria-pressed', fest ? 'true' : 'false');
+        if (fest) { var key = offen || aktiverBereich(); if (key) auf(key, ohneFokus); }
+        else if (offen) { zu(false); }
+    }
+
     function zu(zurueck) {
         if (!offen) return;
+        if (fest) return;
         var knopf = schiene.querySelector('[data-fach="' + offen + '"]');
         offen = null;
         fach.hidden = true;
         knoepfe.forEach(function (k) { k.setAttribute('aria-expanded', 'false'); });
         if (zurueck && knopf) knopf.focus();
     }
-    function auf(key) {
+    function auf(key, ohneFokus) {
         var ziel = fach.querySelector('[data-fach-bereich="' + key + '"]');
         if (!ziel) return false;
         bereiche.forEach(function (b) { b.hidden = b !== ziel; });
@@ -63,7 +82,7 @@
         fach.hidden = false;
         offen = key;
         var erste = ziel.querySelector('a.hier') || ziel.querySelector('a');
-        if (erste) erste.focus({preventScroll: true});
+        if (erste && !ohneFokus) erste.focus({preventScroll: true});
         return true;
     }
 
@@ -76,11 +95,17 @@
             if (offen === key) zu(true); else auf(key);
         });
     });
-    fach.addEventListener('click', function (e) { if (e.target.closest('a')) { zu(false); schublade(false); } });
+    fach.addEventListener('click', function (e) { if (e.target.closest('a')) { if (!fest) zu(false); schublade(false); } });
     document.addEventListener('click', function (e) {
         if (offen && !fach.contains(e.target) && !schiene.contains(e.target) && !(menue && menue.contains(e.target))) zu(false);
     });
     if (telefon.addEventListener) telefon.addEventListener('change', function () { zu(false); schublade(false); });
+    if (festKnopf) {
+        festKnopf.hidden = false;
+        festKnopf.addEventListener('click', function () { var an = !fest; festSchreiben(an); festAnwenden(an, false); });
+        if (breit.addEventListener) breit.addEventListener('change', function () { festAnwenden(festLesen(), true); });
+        festAnwenden(festLesen(), true);
+    }
     var g = false, gZeit = 0;
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && offen) { zu(!telefon.matches); if (telefon.matches) schublade(true); return; }

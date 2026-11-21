@@ -2395,6 +2395,13 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-fach-zurueck:hover{background:var(--ds-hover);color:var(--ds-ink)}
         }
         @media (max-width:640px) and (prefers-reduced-motion:reduce){.fw-schiene{transition:none}}
+        .fw-schiene-fest{display:none}
+        @media (min-width:1280px){
+            .fw-schiene-fest:not([hidden]){display:flex}
+            .fw-schiene-fest[aria-pressed="true"]{background:var(--ds-brand-soft);color:var(--ds-brand-600)}
+            html.fw-fach-fest .fw-fach{box-shadow:none}
+            html.fw-fach-fest .fw-mit-schiene .fw-haupt{margin-left:calc(88px + 276px)}
+        }
         .fw-tabbar{display:none}
         @media (max-width:640px){
             .fw-tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;align-items:center;justify-content:space-around;gap:2px;

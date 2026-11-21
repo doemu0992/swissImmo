@@ -3428,6 +3428,14 @@ und einen Stilblock enthaelt.
             .fw-fach-zurueck:hover{background:var(--ds-hover);color:var(--ds-ink)}
         }
         @media (max-width:640px) and (prefers-reduced-motion:reduce){.fw-schiene{transition:none}}
+        /* Schiene anheften (Mix-Entwurf): nur ab 1280 px; das Feld bleibt offen, der Inhalt rückt daneben. */
+        .fw-schiene-fest{display:none}
+        @media (min-width:1280px){
+            .fw-schiene-fest:not([hidden]){display:flex}
+            .fw-schiene-fest[aria-pressed="true"]{background:var(--ds-brand-soft);color:var(--ds-brand-600)}
+            html.fw-fach-fest .fw-fach{box-shadow:none}
+            html.fw-fach-fest .fw-mit-schiene .fw-haupt{margin-left:calc(88px + 276px)}
+        }
         /* Handy-Tableiste (Mix-Entwurf): am Telefon unten, sonst aus. Der Inhalt bekommt unten Platz, damit nichts verdeckt wird. */
         .fw-tabbar{display:none}
         @media (max-width:640px){
