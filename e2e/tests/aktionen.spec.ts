@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test';
 import { login, goto } from './helpers';
 
+// Diese Datei prüft die Kopfzeile der SCHMALEN Navigation (Bestand, Suchfeld und Werkzeuge in Zeile 1). Ab 1280 px ist seit Modul 1
+// die breite Navigation Vorgabe (Arbeitsbereich, Suche und Profil in der Spalte); sie steht in `schiene-anheften.spec.ts`.
+test.beforeEach(async ({ page }) => { await page.addInitScript(() => { try { localStorage.setItem('fwSchieneBreit', '0'); } catch (e) { /* egal */ } }); });
+
+
 // AKTIONEN PER DATENATTRIBUT (CSP, Roadmap Nr. 23, Etappe 3): static/js/fw-aktionen.js ersetzt die Inline-Handler.
 // Gemessen im Browser: Das Verhalten ist dasselbe wie mit `onclick="…"` — nur dass es auch unter einer strengen
 // Content-Security-Policy (kein Inline-Handler) läuft.

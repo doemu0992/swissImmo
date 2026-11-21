@@ -1,6 +1,11 @@
 import { test, expect, Page } from '@playwright/test';
 import { login, goto, warteAufURL } from './helpers';
 
+// Diese Datei prüft die Kopfzeile der SCHMALEN Navigation (Bestand, Suchfeld und Werkzeuge in Zeile 1). Ab 1280 px ist seit Modul 1
+// die breite Navigation Vorgabe (Arbeitsbereich, Suche und Profil in der Spalte); sie steht in `schiene-anheften.spec.ts`.
+test.beforeEach(async ({ page }) => { await page.addInitScript(() => { try { localStorage.setItem('fwSchieneBreit', '0'); } catch (e) { /* egal */ } }); });
+
+
 // DIE OMNISEARCH IN DER KOPFZEILE (27.10.2026) — GEMESSEN IM BROWSER
 //
 // Was hier steht, lässt sich nicht aus dem Quelltext lesen: ob das Feld bei
@@ -83,10 +88,10 @@ test.describe('Omnisearch am Desktop', () => {
     await login(page);
     await goto(page, '/neu/liegenschaften/');
 
-    // Die Bereiche stehen in der Schiene (ab 1280 px breit: 248 px), nicht mehr in der Kopfzeile
+    // Die Bereiche stehen in der Schiene (schmal: 88 px), nicht mehr in der Kopfzeile
     const schiene = await box(page, '#fwSchiene');
     expect(schiene.x).toBe(0);
-    expect(Math.round(schiene.width)).toBe(248);
+    expect(Math.round(schiene.width)).toBe(88);
     await expect(page.locator('.fw-kopf-z1 .fw-logo-kapsel')).toBeHidden();
     const bestand = await box(page, '.fw-kopf-z1 .fw-bestand');
     const os = await box(page, '.fw-kopf-z1 #fwOs');

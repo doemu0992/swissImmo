@@ -41606,3 +41606,9 @@ msgstr "Étroit"
 
 msgid "Breit"
 msgstr "Large"
+
+msgid "Verwaltung und Bestand wählen"
+msgstr "Choisir la gérance et le parc"
+
+msgid "Liegenschaft suchen …"
+msgstr "Rechercher un immeuble …"

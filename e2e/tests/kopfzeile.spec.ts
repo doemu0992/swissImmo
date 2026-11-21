@@ -1,6 +1,11 @@
 import { test, expect, Page } from '@playwright/test';
 import { login, goto } from './helpers';
 
+// Diese Datei prüft die Kopfzeile der SCHMALEN Navigation (Bestand, Suchfeld und Werkzeuge in Zeile 1). Ab 1280 px ist seit Modul 1
+// die breite Navigation Vorgabe (Arbeitsbereich, Suche und Profil in der Spalte); sie steht in `schiene-anheften.spec.ts`.
+test.beforeEach(async ({ page }) => { await page.addInitScript(() => { try { localStorage.setItem('fwSchieneBreit', '0'); } catch (e) { /* egal */ } }); });
+
+
 // DIE KOPFZEILE (seit 18.11.2026 OHNE Bereichskapsel und Menüband)
 //
 // Die Bereiche stehen bei jeder Breite in der Schiene am linken Rand (`schiene.spec.ts`). Die Kopfzeile trägt Bestand

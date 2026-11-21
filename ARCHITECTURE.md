@@ -85,6 +85,13 @@ Security → `WartungsMiddleware` → `NulBytesMiddleware` → GZip → Session 
   springt dorthin, 1–9 wählt die Seite im Baum. Der Knopf «Schmal» im Fuss (`[data-schiene-fest]`) stellt Symbolschiene und Seitenfeld
   wieder her; der Wunsch liegt im Browser (`localStorage` `fwSchieneBreit`). Unter 1280 px und am Telefon ändert sich nichts.
   Test: `e2e/tests/schiene-anheften.spec.ts` (breit), `schiene.spec.ts` (schmal).
+  **Rahmen, Modul 1 (22.11.2026):** In der breiten Navigation trägt die Spalte den Rahmen, die Kopfleiste gehört der Seite.
+  Oben in der Spalte steht der **Arbeitsbereich** (`#fwArbeit`, `#fwArbeitPop`): Verwaltung und Bestand in einem Schalter, mit
+  Suchfeld; die Wahl ist dieselbe wie bisher (`?lg=` bzw. POST `/neu/mandant/`). Darunter die Suchzeile (`#fwSchieneSuche`): sie und
+  Strg+K öffnen die bestehende Omnisearch als mittige Palette. «Zuletzt geöffnet» steht in der Spalte, das Profil im Fuss
+  (`.fw-schiene-profil`, öffnet `#fwProfil`). Die Kopfleiste zeigt nur Brotkrume (`.fw-krumen` zieht per Skript hinein), «Neu» und
+  Mitteilungen. Die Taste `[` schaltet breit und schmal. In der schmalen Navigation und am Telefon bleibt die bisherige Kopfzeile
+  (Bestand, Suchfeld, Werkzeuge) — deren Tests laufen ausdrücklich schmal (`fwSchieneBreit=0`).
   **Nichts geht verloren:** `core/tests/routen_baseline.txt` hält alle Adressen (mit Namen) vom 20.11.2026 fest;
   `test_routen_baseline` schlägt fehl, wenn eine fehlt oder ihren Namen wechselt. Neue Adressen dürfen dazukommen, eine Adresse darf
   nur mit Begründung in `ABSICHTLICH_ENTFERNT` stehen.
