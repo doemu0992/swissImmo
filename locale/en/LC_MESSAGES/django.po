@@ -40940,3 +40940,9 @@ msgstr "Narrow"
 
 msgid "Breit"
 msgstr "Wide"
+
+msgid "Verwaltung und Bestand wählen"
+msgstr "Choose management and portfolio"
+
+msgid "Liegenschaft suchen …"
+msgstr "Search property …"

@@ -39834,3 +39834,9 @@ msgstr "Schmal"
 
 msgid "Breit"
 msgstr "Breit"
+
+msgid "Verwaltung und Bestand wählen"
+msgstr "Verwaltung und Bestand wählen"
+
+msgid "Liegenschaft suchen …"
+msgstr "Liegenschaft suchen …"

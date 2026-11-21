@@ -59,6 +59,42 @@
         var k = schiene.querySelector('[data-fach][aria-current="page"]');
         return k ? k.getAttribute('data-fach') : null;
     }
+    // Rahmen (Modul 1): Arbeitsbereich-Schalter, Suchzeile, «Zuletzt» und Brotkrume gehören in der breiten Navigation zur Spalte bzw. Kopfleiste.
+    var arbeit = document.getElementById('fwArbeit');
+    var arbeitPop = document.getElementById('fwArbeitPop');
+    var zuletzt = document.getElementById('fwZuletztFachAbschnitt');
+    var krume = document.querySelector('main .fw-krumen');
+    var krumeOrt = krume ? {eltern: krume.parentNode, vor: krume.nextSibling} : null;
+    var kopfZeile = document.querySelector('.fw-kopf-z1');
+    function arbeitZu(fokus) {
+        if (!arbeitPop || arbeitPop.hidden) return;
+        arbeitPop.hidden = true; arbeit.setAttribute('aria-expanded', 'false');
+        if (fokus) arbeit.focus();
+    }
+    if (arbeit && arbeitPop) {
+        arbeit.addEventListener('click', function () {
+            var auf = arbeitPop.hidden;
+            arbeitPop.hidden = !auf; arbeit.setAttribute('aria-expanded', auf ? 'true' : 'false');
+            if (auf) { var f = document.getElementById('fwArbeitSuche'); if (f) { f.value = ''; filtern(''); f.focus(); } }
+        });
+        document.addEventListener('click', function (e) { if (!arbeitPop.hidden && !arbeitPop.contains(e.target) && !arbeit.contains(e.target)) arbeitZu(false); });
+        var feld = document.getElementById('fwArbeitSuche');
+        if (feld) feld.addEventListener('input', function () { filtern(feld.value); });
+    }
+    function filtern(q) {
+        q = (q || '').toLowerCase();
+        [].slice.call(document.querySelectorAll('#fwArbeitListe .fw-arbeit-wahl')).forEach(function (a, i) {
+            a.hidden = !!q && i > 0 && a.textContent.toLowerCase().indexOf(q) < 0;
+        });
+    }
+    var sucheKnopf = document.getElementById('fwSchieneSuche');
+    if (sucheKnopf) sucheKnopf.addEventListener('click', function () { var e = document.getElementById('fwOsEingabe'); if (e) e.focus(); });
+    function rahmenAnwenden(an) {
+        if (zuletzt) { if (an) schiene.insertBefore(zuletzt, schiene.querySelector('.fw-schiene-fuss')); else fach.appendChild(zuletzt); }
+        if (krume && kopfZeile && krumeOrt) { if (an) kopfZeile.insertBefore(krume, kopfZeile.firstChild); else krumeOrt.eltern.insertBefore(krume, krumeOrt.vor); }
+        if (!an) arbeitZu(false);
+    }
+
     function breitAnwenden(an) {
         var neuAn = !!an && breit.matches;
         if (neuAn === ausgebreitet) { if (festKnopf) festKnopf.setAttribute('aria-pressed', neuAn ? 'true' : 'false'); return; }
@@ -77,6 +113,7 @@
                 b.hidden = true;
             }
         });
+        rahmenAnwenden(ausgebreitet);
         if (festKnopf) festKnopf.setAttribute('aria-pressed', ausgebreitet ? 'true' : 'false');
     }
 
@@ -123,6 +160,7 @@
     }
     var g = false, gZeit = 0;
     document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && arbeitPop && !arbeitPop.hidden) { arbeitZu(true); return; }
         if (e.key === 'Escape' && offen) { zu(!telefon.matches); if (telefon.matches) schublade(true); return; }
         if (e.key === 'Escape' && schubladeOffen) { schublade(false, true); return; }
         var t = e.target, tag = t && t.tagName;
@@ -130,6 +168,7 @@
         if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
         if (document.querySelector('dialog[open]')) return;
         var k = (e.key || '').toLowerCase();
+        if (k === '[' && festKnopf && breit.matches) { e.preventDefault(); festKnopf.click(); return; }
         if (g && Date.now() - gZeit < 1200) {
             g = false;
             if (ausgebreitet && TASTEN[k]) {

@@ -150,6 +150,17 @@ Detailseiten rufen sie beim Namen.
         <a href="{% if fw_kopf_reduziert %}{{ fw_kopf_start }}{% else %}/neu/{{ lg_query }}{% endif %}" class="fw-schiene-marke" title="{% trans 'Zur Übersicht' %}" aria-label="immoswiss — {% trans 'Zur Übersicht' %}">
             <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true" class="fw-logo-haus"><path d="M3 15L16 4l13 11M7 13v14h18V13" class="a"/><path d="M12 27v-7h3v7M18 27v-9h3v9" class="b"/></svg><b class="fw-schiene-wort" aria-hidden="true">immoswiss</b>
         </a>
+        {% if not fw_kopf_reduziert %}
+        {% comment %} ===== RAHMEN, MODUL 1 (22.11.2026) — nur in der breiten Navigation (ab 1280 px, `html.fw-breit`) =====
+           ARBEITSBEREICH: Verwaltung und Bestand in EINEM Schalter. Die Wahl ist dieselbe wie bisher — der Bestand setzt `?lg=`
+           (wie die Auswahl in der Kopfzeile), der Mandant sendet an `/neu/mandant/` (wie das Profilmenü). Darunter die Suche:
+           sie öffnet die bestehende Omnisearch als mittige Palette. Schmal und am Telefon bleibt die Kopfzeile wie sie war. {% endcomment %}
+        <button type="button" class="fw-arbeit" id="fwArbeit" aria-haspopup="true" aria-expanded="false" aria-controls="fwArbeitPop" title="{% trans 'Verwaltung und Bestand wählen' %}">
+            <span class="fw-arbeit-text"><b>{{ fw_mandant.firma|default:"immoswiss" }}</b><small>{% if aktive_lg %}{{ aktive_lg.strasse }}, {{ aktive_lg.ort }}{% else %}{% trans "Ganzer Bestand" %}{% endif %}</small></span>
+            {% zeichen 'aufklappen' %}
+        </button>
+        <button type="button" class="fw-schiene-suche" id="fwSchieneSuche">{% zeichen 'suchen' %}<span>{% trans "Suchen …" %}</span><kbd class="fw-taste" aria-hidden="true">⌘K</kbd></button>
+        {% endif %}
         {% for g in fw_nav_gruppen %}
         <a href="{{ g.ziel }}{{ lg_query }}" class="fw-schiene-b{% if nav in g.alle_keys %} hier{% endif %}" data-fach="{{ g.key }}" data-taste="{{ g.key }}" title="{{ g.label }}"{% if nav in g.alle_keys %} aria-current="page"{% endif %}>
             {% zeichen_wert g.icon %}<span>{{ g.label }}</span>
@@ -166,6 +177,9 @@ Detailseiten rufen sie beim Namen.
             <a href="/neu/einstellungen/{{ lg_query }}" class="fw-schiene-b{% if nav in fw_einstellungen_keys %} hier{% endif %}" data-fach="einst" title="{% trans "Einstellungen" %}"{% if nav in fw_einstellungen_keys %} aria-current="page"{% endif %}>
                 {% zeichen 'einstellungen' %}<span>{% trans "Einstellungen" %}</span>
             </a>
+            <button type="button" class="fw-schiene-b fw-schiene-profil" data-bei-klick="fwProfilMenu" aria-haspopup="true" aria-controls="fwProfil" title="{% trans 'Profil und Darstellung' %}">
+                <span class="fw-avatar fw-avatar-klein" aria-hidden="true">{{ request.user|kuerzel }}</span><span>{{ request.user.get_full_name|default:request.user.username }}</span>
+            </button>
         </div>
         {% endif %}
     </nav>
@@ -184,6 +198,26 @@ Detailseiten rufen sie beim Namen.
         {% endif %}{% endfor %}
         <button type="button" class="fw-tab" data-tab-mehr aria-controls="fwSchiene">{% zeichen 'mehr' %}<span>{% trans "Mehr" %}</span></button>
     </nav>
+    {% endif %}
+    {% if not fw_kopf_reduziert %}
+    <div class="fw-arbeit-pop" id="fwArbeitPop" role="dialog" aria-label="{% trans 'Verwaltung und Bestand wählen' %}" hidden>
+        {% if fw_mandant and fw_mandanten|length > 1 %}
+        <div class="fw-arbeit-titel">{% trans "Verwaltung" %}</div>
+        <form method="post" action="/neu/mandant/">{% csrf_token %}
+            {% for m in fw_mandanten %}
+            <button type="submit" name="organisation" value="{{ m.id }}" class="fw-arbeit-wahl{% if fw_mandant.id == m.id %} an{% endif %}"{% if fw_mandant.id == m.id %} aria-current="true"{% endif %}>{{ m.firma }}</button>
+            {% endfor %}
+        </form>
+        {% endif %}
+        <div class="fw-arbeit-titel">{% trans "Bestand" %}</div>
+        <input type="search" id="fwArbeitSuche" class="fw-feld" placeholder="{% trans 'Liegenschaft suchen …' %}" aria-label="{% trans 'Liegenschaft suchen …' %}" autocomplete="off">
+        <div id="fwArbeitListe">
+            <a href="?lg=" class="fw-arbeit-wahl{% if not aktive_lg %} an{% endif %}"{% if not aktive_lg %} aria-current="true"{% endif %}>{% trans "Ganzer Bestand" %}</a>
+            {% for l in alle_liegenschaften %}
+            <a href="?lg={{ l.id }}" class="fw-arbeit-wahl{% if aktive_lg and aktive_lg.id == l.id %} an{% endif %}"{% if aktive_lg and aktive_lg.id == l.id %} aria-current="true"{% endif %}>{{ l.strasse }}, {{ l.ort }}</a>
+            {% endfor %}
+        </div>
+    </div>
     {% endif %}
     <div class="fw-fach" id="fwFach" role="region" aria-label="{% trans 'Seiten des Bereichs' %}" hidden>
         <button type="button" class="fw-fach-zurueck" id="fwFachZurueck">{% zeichen 'zurueck' %}<span>{% trans "Bereiche" %}</span></button>

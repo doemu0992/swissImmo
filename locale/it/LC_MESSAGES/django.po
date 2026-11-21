@@ -41535,3 +41535,9 @@ msgstr "Stretta"
 
 msgid "Breit"
 msgstr "Larga"
+
+msgid "Verwaltung und Bestand wählen"
+msgstr "Scegli amministrazione e patrimonio"
+
+msgid "Liegenschaft suchen …"
+msgstr "Cerca un immobile …"
