@@ -208,6 +208,13 @@ Weiss auf Akzent oder mit Begründung (STWEG-Warnrot).
 - Rückfragen über `data-bestaetigen="{% filter escapejs %}…{% endfilter %}"`.
 - Geheimnisse gehören nicht in Adressen, die im Protokoll landen; neue Pfade mit Token in `core/logschutz.py` eintragen.
 
+### Umbau der Oberfläche: nichts geht verloren
+- Eine bestehende Seite oder Funktion wird nie gestrichen, nur umgestaltet oder verschoben. Verschobenes steht im PR in einer
+  Tabelle «Wo war es → wo ist es jetzt».
+- `core/tests/routen_baseline.txt` ist die Mindestmenge der Adressen; `test_routen_baseline` und `test_erreichbarkeit` müssen grün
+  bleiben. Die Baseline wächst mit neuen Adressen (Zeile `Adresse<TAB>Name` ergänzen), sie schrumpft nie ohne Eintrag und Grund in
+  `ABSICHTLICH_ENTFERNT`.
+
 ### Sprachen
 - Jeder sichtbare Text ist ausgezeichnet (`{% trans %}`, `{% blocktrans %}`, `gettext`) und in allen vier Sprachen
   übersetzt; kein Eintrag `fuzzy`, die `.mo`-Dateien sind aktuell und im Repository (`test_uebersetzung`).

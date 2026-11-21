@@ -40922,3 +40922,6 @@ msgstr "as of bank import %(datum)s"
 
 msgid "Kontakte"
 msgstr "Contacts"
+
+msgid "Schnellzugriff"
+msgstr "Quick access"

@@ -3390,6 +3390,28 @@
             .fw-fach-zurueck:hover{background:var(--ds-hover);color:var(--ds-ink)}
         }
         @media (max-width:640px) and (prefers-reduced-motion:reduce){.fw-schiene{transition:none}}
+        /* Handy-Tableiste (Mix-Entwurf): am Telefon unten, sonst aus. Der Inhalt bekommt unten Platz, damit nichts verdeckt wird. */
+        .fw-tabbar{display:none}
+        @media (max-width:640px){
+            .fw-tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;align-items:center;justify-content:space-around;gap:2px;
+                padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:var(--ds-surface);border-top:1px solid var(--ds-line)}
+            .fw-tab{position:relative;display:flex;flex:1 1 0;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:44px;min-height:48px;
+                padding:4px 2px;border:0;background:transparent;font:inherit;font-size:12px;font-weight:500;color:var(--ds-muted);text-decoration:none;cursor:pointer;
+                border-radius:var(--ds-radius-knopf)}
+            .fw-tab .fw-zeichen{width:22px!important;height:22px!important}
+            .fw-tab.hier{color:var(--ds-brand);font-weight:600}
+            .fw-tab:hover{background:var(--ds-hover);color:var(--ds-ink)}
+            .fw-tab-plus{flex:0 0 52px;width:52px;height:52px;min-height:52px;margin-top:-18px;border-radius:var(--ds-pill);background:var(--ds-brand);color:var(--ds-auf-satt);box-shadow:var(--ds-shadow-lg)}
+            .fw-tab-plus:hover{background:var(--ds-brand);color:var(--ds-auf-satt)}
+            .fw-tab-zahl{position:absolute;top:0;left:calc(50% + 6px);min-width:16px;height:16px;padding:0 4px;border-radius:var(--ds-pill);background:var(--ds-crit);color:var(--ds-auf-satt);font-size:12px;font-weight:600;line-height:16px;text-align:center}
+            .fw-tab-zahl[hidden]{display:none}
+            /* Alles, was unten klebt, rückt über die Leiste (sonst verdeckt sie Fusszeilen und Meldungen, E2E «Abnahme-Assistent» am Telefon). */
+            .fw-mit-schiene:has(#fwTabbar){--fw-tab-h:calc(68px + env(safe-area-inset-bottom,0px))}
+            .fw-mit-schiene:has(#fwTabbar) .fw-haupt{padding-bottom:var(--fw-tab-h)}
+            .fw-mit-schiene:has(#fwTabbar) :is(.fw-freigabe,.fw-assistent-fuss,.fw-split-fuss,.fw-sk-absenden){bottom:calc(var(--fw-tab-h) + 8px)}
+            .fw-mit-schiene:has(#fwTabbar) .fw-toasts{bottom:calc(var(--fw-tab-h) + 8px)}
+        }
+        @media print{.fw-tabbar{display:none!important}}
         @media print{.fw-schiene,.fw-fach,.fw-schiene-vorhang,.fw-menue-knopf{display:none!important}.fw-mit-schiene .fw-haupt{margin-left:0}}
         /* ===== Ende MODUL Schiene ===== */
 

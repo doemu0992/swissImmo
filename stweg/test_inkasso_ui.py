@@ -111,7 +111,8 @@ class InkassoOberflaecheTests(TestCase):
     def test_seite_zeigt_offene_einheit_und_keine_kuendigung(self):
         r = self.client.get(self.basis)
         self.assertContains(r, self.b.bezeichnung)
-        self.assertNotContains(r, '257d')
+        # Als eigenes Wort suchen: ein Inhalts-Hash im Link der Schicht (`?v=…257d…`) darf nicht zufällig treffen.
+        self.assertNotRegex(r.content.decode(), r'(?<![0-9A-Za-z])257d(?![0-9A-Za-z])')
         self.assertContains(r, 'keine Kündigungsandrohung')
 
     def test_mahnen_retention_pfandrecht_und_pdfs(self):

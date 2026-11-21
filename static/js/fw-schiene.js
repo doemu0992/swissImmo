@@ -23,6 +23,9 @@
         if (schubladeOffen) { var e1 = schiene.querySelector('a.hier, [data-fach]'); if (e1) e1.focus({preventScroll: true}); }
         else if (fokus && menue) menue.focus();
     }
+    // Handy-Tableiste: «Mehr» öffnet dieselbe Schublade wie der Menüknopf oben.
+    var mehr = document.querySelector('[data-tab-mehr]');
+    if (mehr) mehr.addEventListener('click', function () { schublade(true); });
     // Summe der roten Zahlen der Bereiche am Menüknopf (die Zahlen holt `fw-rahmen.js` nach dem Laden).
     window.fwMenueSumme = function () {
         var sum = 0, el = document.getElementById('fwMenueSumme');
