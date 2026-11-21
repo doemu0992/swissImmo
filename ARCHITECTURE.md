@@ -249,6 +249,8 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   blass; Kennzahlen (`.fw-kpi`) mit Etikett in Versalien und Zahl in Sora; Statuspunkte statt Balken in allen Zeilen am PC.
 - Schmale Lesespalte (984 px, wie `.wrap` im Mockup) ab 1280 px für Seiten ohne Tabelle, Cockpit, Kachelraster, Kennzahlen,
   Zweispalter und Assistent (`:has()`-Regel im Modul «Mix-Entwurf»); Arbeitsflächen behalten die volle Breite.
+- Handy (bis 640 px): weisse Kopfleiste mit Linie; Listenzeilen (`.fw-card > .fw-zeile`) als einzelne Karten mit Statuspunkt
+  auf dem Seitengrund, wie im Mockup.
 
 ### Schriftskala
 

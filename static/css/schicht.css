@@ -2600,6 +2600,14 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         @media (min-width:1280px){
             .fw-inhalt:not(:has(table)):not(:has(.fw-cockpit)):not(:has(.fw-bento)):not(:has(.fw-kpis)):not(:has(.fw-split)):not(:has(.fw-zwei)):not(:has(.fw-assistent)){max-width:984px}
         }
+        @media (max-width:640px){
+            html .fw-mit-schiene .fw-kopfleiste{background:var(--ds-surface);border-bottom:1px solid var(--ds-line)}
+            .fw-card:has(>.fw-zeile){background:transparent;border:0;overflow:visible}
+            .fw-card:has(>.fw-zeile)>.fw-zeile{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius-sm);margin:0 0 10px}
+            .fw-card:has(>.fw-zeile)>.fw-zeile:last-child{border-bottom:1px solid var(--ds-line)}
+            .fw-zeile .fw-marker{width:8px;height:8px;min-height:0;flex:0 0 8px;align-self:flex-start;margin-top:7px;border-radius:var(--ds-kreis)}
+            .fw-zeile .fw-mitte{flex-basis:calc(100% - 20px)}
+        }
         .fw-kopf-z1{display:flex;align-items:center;gap:12px}
         @media (max-width:1023px){
             .fw-logo-kapsel{padding:0 12px 0 11px;gap:7px}
