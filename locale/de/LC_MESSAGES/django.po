@@ -39825,3 +39825,12 @@ msgstr "Seitenfeld anheften"
 
 msgid "Anheften"
 msgstr "Anheften"
+
+msgid "Navigation breit oder schmal"
+msgstr "Navigation breit oder schmal"
+
+msgid "Schmal"
+msgstr "Schmal"
+
+msgid "Breit"
+msgstr "Breit"

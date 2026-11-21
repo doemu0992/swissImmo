@@ -493,7 +493,7 @@ test('Zeile 1 bricht bei keiner Breite um, nichts schiebt quer, nichts überlapp
       expect(m.menue, `${wo}: Menüknopf nur am Telefon`).toBe(false);
       expect(m.schieneSicht, `${wo}: Schiene`).toBe(true);
       expect(m.schiene.l, `${wo}: Schiene links`).toBe(0);
-      expect(Math.round(m.schiene.w), `${wo}: Breite der Schiene`).toBe(w >= 1024 ? 88 : 56);
+      expect(Math.round(m.schiene.w), `${wo}: Breite der Schiene`).toBe(w >= 1280 ? 248 : w >= 1024 ? 88 : 56);   // ab 1280 px die breite Navigation (Mix), sonst Symbolschiene
       expect(m.z1.l, `${wo}: Zeile 1 beginnt unter der Schiene`).toBeGreaterThanOrEqual(m.schiene.r - 1);
     }
     expect(m.z1.h, `${wo}: Zeile 1 ist ${Math.round(m.z1.h)} px hoch — umgebrochen?`).toBeLessThan(60);

@@ -41526,3 +41526,12 @@ msgstr "Fissa il pannello delle pagine"
 
 msgid "Anheften"
 msgstr "Fissa"
+
+msgid "Navigation breit oder schmal"
+msgstr "Navigazione larga o stretta"
+
+msgid "Schmal"
+msgstr "Stretta"
+
+msgid "Breit"
+msgstr "Larga"

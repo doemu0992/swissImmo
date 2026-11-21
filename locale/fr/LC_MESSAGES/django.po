@@ -41597,3 +41597,12 @@ msgstr "Épingler le volet des pages"
 
 msgid "Anheften"
 msgstr "Épingler"
+
+msgid "Navigation breit oder schmal"
+msgstr "Navigation large ou étroite"
+
+msgid "Schmal"
+msgstr "Étroit"
+
+msgid "Breit"
+msgstr "Large"
