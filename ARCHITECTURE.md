@@ -247,6 +247,8 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Modi dunkel); der Schwerpunkt steht darüber. Die Zahlen sind dieselben Links wie zuvor die Kapseln (`data-kachel`).
 - Seiten (Mix B): Monatsabschluss als einzelne Schritt-Karten mit Nummer (CSS-Zähler), aktueller Schritt mit Markenrand, gesperrte
   blass; Kennzahlen (`.fw-kpi`) mit Etikett in Versalien und Zahl in Sora; Statuspunkte statt Balken in allen Zeilen am PC.
+- Schmale Lesespalte (984 px, wie `.wrap` im Mockup) ab 1280 px für Seiten ohne Tabelle, Cockpit, Kachelraster, Kennzahlen,
+  Zweispalter und Assistent (`:has()`-Regel im Modul «Mix-Entwurf»); Arbeitsflächen behalten die volle Breite.
 
 ### Schriftskala
 
