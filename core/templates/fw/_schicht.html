@@ -3672,6 +3672,11 @@ und einen Stilblock enthaelt.
         .fw-schrittliste .fw-schritt.gesperrt{opacity:.6}
         .fw-schrittliste .fw-schritt .fw-t{font-weight:500}
         .fw-btn.fw-knapp.fw-primary{box-shadow:none}
+        /* Schmale Lesespalte wie im Mockup (`.wrap` 920 px): Seiten ohne Tabelle, ohne Cockpit und ohne Kachelraster stehen ab 1280 px
+           mittig. Tabellen und Arbeitsflächen behalten die volle Breite. */
+        @media (min-width:1280px){
+            .fw-inhalt:not(:has(table)):not(:has(.fw-cockpit)):not(:has(.fw-bento)):not(:has(.fw-kpis)):not(:has(.fw-split)):not(:has(.fw-zwei)):not(:has(.fw-assistent)){max-width:984px}
+        }
         /* ===== Ende MODUL Mix-Entwurf ===== */
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
         /* Vorlage: navmock/v2/vorschau (freigegeben, Stand «Kopfzeile v2»). Zeile 1 von links: Marke,
