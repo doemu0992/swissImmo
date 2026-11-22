@@ -3836,6 +3836,45 @@ und einen Stilblock enthaelt.
         .fw-zeilenakt form{display:inline-flex}
         @media (max-width:640px){.fw-zeilenakt{flex-wrap:wrap;white-space:normal;gap:8px 12px}}
         /* ===== Ende Listen, Modul 2b ===== */
+        /* ===== Liegenschaftsliste, Modul 2: Vorschau rechts neben der Liste und Ansicht «Karten» (dieselbe Tabelle, als Karten
+           gesetzt). Gesetzt von `static/js/fw-liegenschaften.js`. Bis 1099 px gibt es keine Vorschau, bis 640 px keinen Schalter:
+           dort ist die Tabelle ohnehin gestapelt und die Zeile öffnet die Akte. ===== */
+        .fw-ansicht-schalter{display:none}
+        html table.fw-table .fw-lg-peek-zelle{display:none}
+        .fw-lg-vorschau{display:none}
+        .fw-lg-spalten{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:start}
+        @media (min-width:641px){
+            .fw-ansicht-schalter:not([hidden]){display:inline-flex;margin-left:auto;padding:3px;gap:2px;background:var(--ds-surface-2);border-radius:var(--ds-pill)}
+            html .fw-karten .fw-tablewrap{overflow:visible}
+            html .fw-karten table.fw-table{display:block;min-width:0;background:transparent}
+            html .fw-karten table.fw-table thead{display:none}
+            html .fw-karten table.fw-table tbody{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;padding:14px 0}
+            html .fw-karten table.fw-table tbody tr{display:flex;flex-direction:column;gap:4px;position:relative;padding:14px 16px;
+                background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius)}
+            html .fw-karten table.fw-table tbody tr:hover{background:var(--ds-hover)}
+            html .fw-karten table.fw-table tbody td{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:2px 0;border:0;
+                text-align:right;white-space:normal;background:transparent}
+            html .fw-karten table.fw-table tbody td::before{content:attr(data-label);color:var(--ds-muted);font-size:12px;text-align:left}
+            html .fw-karten table.fw-table tbody td:first-child{display:block;text-align:left;margin-bottom:6px;padding-right:96px}
+            html .fw-karten table.fw-table tbody td:first-child::before{content:none}
+        }
+        @media (min-width:1100px){
+            html table.fw-table .fw-lg-peek-zelle{display:table-cell}
+            html .fw-karten table.fw-table tbody td.fw-lg-peek-zelle{display:block;position:absolute;top:10px;right:10px;padding:0}
+            html .fw-karten table.fw-table tbody td.fw-lg-peek-zelle::before{content:none}
+            .fw-lg-spalten.mit-vorschau{grid-template-columns:minmax(0,1fr) 320px}
+            .fw-lg-vorschau:not([hidden]){display:block;position:sticky;top:72px;padding:16px;background:var(--ds-surface);
+                border:1px solid var(--ds-brand);border-radius:var(--ds-radius)}
+            html table.fw-table tbody tr.sel{background:var(--ds-brand-soft)}
+        }
+        .fw-lg-v-kopf{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+        .fw-lg-v-titel{display:block;font-family:var(--ds-disp);font-size:18px;font-weight:700;letter-spacing:-.02em;line-height:1.3}
+        .fw-lg-v-daten{display:grid;grid-template-columns:104px minmax(0,1fr);gap:6px 10px;margin:0 0 12px;font-size:13px}
+        .fw-lg-v-daten dt{color:var(--ds-muted)}
+        .fw-lg-v-daten dd{margin:0;min-width:0;overflow-wrap:anywhere}
+        .fw-lg-v-befund{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+        .fw-lg-v-knoepfe{display:flex;flex-wrap:wrap;gap:8px}
+        /* ===== Ende Liegenschaftsliste, Modul 2 ===== */
         /* ===== Ende MODUL Mix-Entwurf ===== */
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
         /* Vorlage: navmock/v2/vorschau (freigegeben, Stand «Kopfzeile v2»). Zeile 1 von links: Marke,

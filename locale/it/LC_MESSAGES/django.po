@@ -41541,3 +41541,6 @@ msgstr "Scegli amministrazione e patrimonio"
 
 msgid "Liegenschaft suchen …"
 msgstr "Cerca un immobile …"
+
+msgid "Karten"
+msgstr "Schede"

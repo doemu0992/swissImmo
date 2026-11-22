@@ -39840,3 +39840,6 @@ msgstr "Verwaltung und Bestand wählen"
 
 msgid "Liegenschaft suchen …"
 msgstr "Liegenschaft suchen …"
+
+msgid "Karten"
+msgstr "Karten"

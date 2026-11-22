@@ -41612,3 +41612,6 @@ msgstr "Choisir la gérance et le parc"
 
 msgid "Liegenschaft suchen …"
 msgstr "Rechercher un immeuble …"
+
+msgid "Karten"
+msgstr "Cartes"
