@@ -276,6 +276,11 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Der Brotkrumen (`.fw-krumen`, `.fw-brotkrume`) wandert in der breiten Navigation in die Kopfleiste (`fw-schiene.js`).
   **Bewusste Abweichung vom Mockup:** kein eigener Reiter «Übersicht». Das Aktenregister (`faelle/akten.py`, `test_reiter_panels`)
   legt die Reiter fest, und «Was auffällt» bleibt nach Entscheid E2.73 auf jedem Reiter sichtbar.
+- **Schäden, Modul 4 (22.11.2026):** Die Schadenliste (`.fw-schadenliste`) nutzt die volle Breite, die Sichten sind Text mit
+  Markenstrich, und ab 900 px stehen die Zeilen im Spaltenraster (Nummer, Schaden, Zuständig als Kürzel, Dauer, Aktion; die
+  Aktion ist immer sichtbar). Die Akte bleibt beim Aktenregister (Stammdaten, Chronik, Finanzen, Dokumente, Fälle, Handwerker &
+  Kosten) und trägt das Muster aus Modul 2. **Nebenbefund behoben:** Im Fenster (`html._embed`, iframe) standen Kopfleiste und
+  Handy-Tableiste; die alte Ausblend-Regel hatte ihr `display:none` verloren.
 - **Liegenschaftsliste, Modul 2 (22.11.2026):** Ab 1100 px zeigt «Vorschau» je Zeile die Eckdaten rechts neben der Liste (Mandat,
   Objekte, Belegung, Soll, alle Befunde; Knöpfe «Akte öffnen», «Objekte», «Mietverhältnisse»), ohne die Akte zu öffnen. Der Inhalt
   steht fertig in einer `template`-Marke der Zeile, `static/js/fw-liegenschaften.js` setzt ihn nur um. Ab 641 px stellt der Schalter

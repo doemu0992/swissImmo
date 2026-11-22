@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n rechte %}
+{% load zeichen i18n rechte kuerzel %}
 {% block title %}{% trans "Schäden" %} — immoswiss{% endblock %}
 
 {% block content %}
@@ -96,7 +96,7 @@
 
 {% comment %} Sichten bilden die ARBEIT ab, nicht die Statustabelle. Der
    Feinfilter der Vorfassung bleibt ueber `?status=` erreichbar. {% endcomment %}
-<div class="fw-card">
+<div class="fw-card fw-schadenliste">
     {% comment %} UI-Zielbild: Die Sichten stehen als Reiter mit Zahl in der Karte; Meine Tickets, Status- und Suchfilter darunter. {% endcomment %}
     <div class="fw-reiter" role="tablist">
         {% for wert, label, n in sicht_chips %}
@@ -118,6 +118,7 @@
     {% comment %} UI-Zielbild: Statuschip über dem Titel, Objekt und Melder darunter, rechts «seit N Tagen» und die nächste Aktion als Knopf. {% endcomment %}
     <div class="fw-zeile klick fw-schadenzeile" data-bei-klick="fwModalOpenUrl" data-args='["/neu/schaeden/{{ row.t.id }}/","Schaden #{{ row.t.id }}"]'>
         <span class="fw-marker{% if row.stufe != 'good' %} {{ row.stufe }}{% endif %}"></span>
+        <span class="fw-schaden-nr" aria-hidden="true">#{{ row.t.id }}</span>
         <div class="fw-mitte">
             <div class="fw-s fw-schaden-tags">
                 <span class="fw-chip {{ row.s_cls }}">{{ row.s_label }}</span>
@@ -134,6 +135,7 @@
             </div>
             {% endif %}
         </div>
+        {% if row.t.zugewiesen_an %}<span class="fw-schaden-wer" aria-hidden="true" title="{% trans "Zuständig" %}: {{ row.t.zugewiesen_an.get_full_name|default:row.t.zugewiesen_an.username }}">{{ row.t.zugewiesen_an|kuerzel }}</span>{% else %}<span class="fw-schaden-wer offen" aria-hidden="true" title="{% trans "nicht zugeteilt" %}">?</span>{% endif %}
         <b class="fw-seit{% if row.stufe == 'crit' %} fw-crit{% endif %}">{% blocktrans count n=row.alter %}seit {{ n }} Tag{% plural %}seit {{ n }} Tagen{% endblocktrans %}</b>
         <button type="button" data-stop class="fw-btn fw-knapp{% if row.ohne_auftrag and kann_schreiben %} fw-primary{% endif %}" data-bei-klick="fwModalOpenUrl"
                 data-args='["/neu/schaeden/{{ row.t.id }}/{% if row.aktion_tab %}?tab={{ row.aktion_tab }}{% endif %}","Schaden #{{ row.t.id }}"]'>{{ row.aktion }}</button>
