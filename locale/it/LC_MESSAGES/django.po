@@ -41598,3 +41598,6 @@ msgstr "Tabella"
 
 msgid "In der Tabelle zeigen"
 msgstr "Mostra nella tabella"
+
+msgid "kein Mietverhältnis"
+msgstr "nessuna locazione"

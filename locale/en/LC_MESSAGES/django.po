@@ -41003,3 +41003,6 @@ msgstr "Table"
 
 msgid "In der Tabelle zeigen"
 msgstr "Show in table"
+
+msgid "kein Mietverhältnis"
+msgstr "no tenancy"

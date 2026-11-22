@@ -285,6 +285,15 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Bestandsfilter mit). «Schaden erfassen» ist ab 900 px eine Schublade von rechts (`#neuschaden.fw-schublade-rechts`, derselbe
   Knopf öffnet und schliesst, dazu das Kreuz); am Telefon klappt das Formular wie bisher in der Seite auf. Die Boards
   (`.fw-spalte`: Schäden, Bewerbungen) nutzen die volle Breite, die Spaltenköpfe stehen in Versalien.
+- **Kontakte, Modul 7 (22.11.2026):** Personen (`/neu/personen/`) und Dienstleister (`/neu/dienstleister/`) haben denselben Aufbau:
+  Zahlenzeile, Kartenkopf mit Filter und Suche, Tabelle mit den Spalten Name, Kontakt, dritte Spalte (Adresse bzw. Kontaktperson),
+  Stand, Aktion. Ab 1100 px zeigt «Vorschau» die Eckdaten rechts (`#fwVorschau`, `static/js/fw-vorschau.js`, der Inhalt steht in der
+  `template`-Marke der Zeile); mit offener Vorschau weicht die dritte Spalte. Die Dienstleister waren Kacheln und sind jetzt eine
+  Tabelle: Bearbeiten klappt unter der Zeile auf (`tr#dledit-<id>`), Löschen steht an der Zeile, «Auftrag per E-Mail» und «Anrufen»
+  stehen in der Vorschau, «Handwerker erfassen» ist ab 900 px eine Schublade (`.fw-schublade-rechts`). «Stand» nutzt vorhandene
+  Daten (aktuelles Mietobjekt bzw. offene Aufträge), keine weitere Abfrage. Test: `e2e/tests/kontakte-modul7.spec.ts`.
+  Nebenbei behoben: Die 46 % breite Vorschau der Mieterkonten (Modul 6) galt versehentlich für jede Liste mit Vorschau, auch
+  für die Liegenschaften; sie hängt jetzt an `.fw-mk-spalten`. Leere Felder im Bearbeiten-Formular zeigten «None».
 - **Finanzen, Modul 6 (22.11.2026):** Übersicht (`/neu/finanzen/`): die vier Kennzahlen stehen als ein Band und sind Verweise
   (Bankkonten, Kreditoren, Debitoren-Aging, Kautionen). Ab 1100 px zwei Spalten: links «Ausstände nach Alter» mit einem
   Altersbalken (SVG ohne Inline-Stil; Anteile der vier Klassen am überfälligen Total, `aus_balken`), rechts der Bankabgleich und

@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n statisch %}
 {% block title %}{% trans "Dienstleister" %} — immoswiss{% endblock %}
 
 {% block content %}
@@ -16,8 +16,9 @@
 </div>
 
 
-<div id="dlform" class="hidden fw-card">
-    <div class="fw-kopf"><h2>{% trans "Handwerker / Dienstleister erfassen" %}</h2></div>
+<div id="dlform" class="hidden fw-card fw-schublade-rechts">
+    <div class="fw-kopf"><h2>{% trans "Handwerker / Dienstleister erfassen" %}</h2>
+        <button type="button" data-umschalten="dlform" class="fw-ikon mut fw-rechts" aria-label="{% trans 'Schliessen' %}">{% zeichen 'schliessen' %}</button></div>
     <form method="post" action="/neu/dienstleister/neu/" class="fw-formular fw-rumpf">
         {% csrf_token %}
         <div><label for="dl-firma" class="fw-label mb-1">{% trans "Firma" %} *</label>
@@ -43,47 +44,80 @@
     </form>
 </div>
 
-<!-- Filterzeile -->
-<div class="fw-listwerkzeug">
-    <div class="fw-filters fw-nomb">
-        {% for wert, label in branche_chips %}
-        <a href="?branche={{ wert }}{% if q %}&q={{ q|urlencode }}{% endif %}"
-           class="fw-fchip{% if branche_filter == wert %} fw-on{% endif %}">{{ label }}</a>
-        {% endfor %}
-    </div>
-    <form method="get" class="fw-suchfeld relative ml-auto">
-        {% if branche_filter %}<input type="hidden" name="branche" value="{{ branche_filter }}">{% endif %}
-        {% zeichen 'suchen' klasse='absolute left-3 top-1/2 -translate-y-1/2 fw-faint text-xs' %}
-        <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Firma oder Kontakt suchen…' %}" aria-label="{% trans 'Dienstleister nach Firma oder Kontakt durchsuchen' %}"
-               class="fw-flaeche border fw-linie pl-8 pr-3 py-2 rounded-lg text-sm w-full focus:outline-none focus:ring-2 fw-fokusring">
-    </form>
+{% comment %} Modul 7: derselbe Aufbau wie die Personenliste (Zahlenzeile, Filter und Suche im Kartenkopf, Tabelle mit Vorschau).
+   Bearbeiten klappt unter der Zeile auf, Löschen und «Auftrag per E-Mail» stehen an der Zeile bzw. in der Vorschau:
+   alles, was auf den früheren Kacheln stand, ist noch da. {% endcomment %}
+<div class="fw-statuszeile">
+    <span class="fw-sz fw-sz-good">{% blocktrans count n=anzahl %}{{ n }} Dienstleister{% plural %}{{ n }} Dienstleister{% endblocktrans %}</span>
+    <span class="fw-sz fw-sz-good">{% blocktrans count n=anzahl_branchen %}{{ n }} Branche{% plural %}{{ n }} Branchen{% endblocktrans %}</span>
 </div>
 
-<!-- Karten-Grid -->
-<div class="fw-raster m2 l3">
-    {% for row in rows %}
-    <div class="fw-card fw-nomb fw-rumpf">
-        <div class="flex items-start justify-between gap-3 mb-3">
-            {% comment %} Seit 4b.12 führt die Kachel zur Dienstleisterakte —
-               vorher gab es keine, und die Kachel führte nirgendwohin. {% endcomment %}
-            <a href="/neu/dienstleister/{{ row.h.id }}/" class="flex items-center gap-3 min-w-0 flex-1">
-                <span class="fw-ikon">{% zeichen_wert row.icon %}</span>
-                <div class="min-w-0">
-                    <div class="fw-strong">{{ row.h.firma }}</div>
-                    <div class="fw-sub2">{{ row.branche }}</div>
-                </div>
-            </a>
-            <div class="flex items-center gap-2 shrink-0">
-                {% if row.offene %}<span class="fw-chip fw-crit whitespace-nowrap">{% blocktrans with n=row.offene %}{{ n }} offen{% endblocktrans %}</span>{% endif %}
-                <button type="button" data-umschalten="dledit-{{ row.h.id }}" class="fw-ikon mut" title="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
-                <form method="post" action="/neu/dienstleister/{{ row.h.id }}/loeschen/" data-bestaetigen="{% filter escapejs %}{% blocktrans with name=row.h.firma|safe %}Dienstleister «{{ name }}» löschen?{% endblocktrans %}{% endfilter %}">{% csrf_token %}
-                    <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
-                </form>
-            </div>
+<div class="fw-lg-spalten" id="fwVorschauSpalten">
+<div class="fw-card">
+    <div class="fw-kopf">
+        <div class="fw-filters fw-nomb">
+            {% for wert, label in branche_chips %}
+            <a href="?branche={{ wert }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}"
+               class="fw-fchip{% if branche_filter == wert %} fw-on{% endif %}">{{ label }}</a>
+            {% endfor %}
         </div>
-
-        <!-- Inline-Bearbeitung -->
-        <div id="dledit-{{ row.h.id }}" class="hidden mb-4 pb-4 border-b fw-linie">
+        <form method="get" class="fw-suchfeld fw-kontakt-suche" role="search">
+            {% if branche_filter %}<input type="hidden" name="branche" value="{{ branche_filter }}">{% endif %}
+            <input type="search" name="q" value="{{ q }}" class="fw-feld" placeholder="{% trans 'Firma oder Kontakt suchen…' %}" aria-label="{% trans 'Dienstleister nach Firma oder Kontakt durchsuchen' %}">
+        </form>
+    </div>
+    <div class="fw-tablewrap">
+        <table class="fw-table">
+            <thead><tr>
+                <th scope="col">{% trans "Name" %}</th>
+                <th scope="col">{% trans "Kontakt" %}</th>
+                <th scope="col" class="fw-kontakt-3">{% trans "Kontaktperson" %}</th>
+                <th scope="col">{% trans "Stand" %}</th>
+                <th scope="col"><span class="sr-only">{% trans "Aktion" %}</span></th>
+            </tr></thead>
+            <tbody>
+            {% for row in rows %}
+            <tr class="fw-klickzeile" data-zeile data-gehe-zu="/neu/dienstleister/{{ row.h.id }}/">
+                <td>
+                    <a href="/neu/dienstleister/{{ row.h.id }}/" class="fw-kontakt-name" data-stop>
+                        <span class="fw-ikon">{% zeichen_wert row.icon %}</span>
+                        <span><span class="fw-zelle-titel">{{ row.h.firma }}</span><span class="fw-zelle-sub">{{ row.branche }}</span></span>
+                    </a>
+                </td>
+                <td>
+                    {% if row.h.email %}<a href="mailto:{{ row.h.email }}" class="fw-kontakt-zeile" data-stop>{{ row.h.email }}</a>{% endif %}
+                    {% if row.h.telefon %}<a href="tel:{{ row.h.telefon }}" class="fw-kontakt-zeile fw-zelle-sub" data-stop>{{ row.h.telefon }}</a>{% endif %}
+                    {% if not row.h.email and not row.h.telefon %}<span class="fw-faint" title="{% trans 'Keine Kontaktdaten hinterlegt' %}">—</span>{% endif %}
+                </td>
+                <td class="fw-kontakt-3">{% if row.h.kontaktperson %}{{ row.h.kontaktperson }}{% else %}<span class="fw-faint">—</span>{% endif %}</td>
+                <td>{% if row.offene %}<span class="fw-chip fw-crit whitespace-nowrap">{% blocktrans with n=row.offene %}{{ n }} offen{% endblocktrans %}</span>{% else %}<span class="fw-chip fw-good whitespace-nowrap">{% trans "nichts offen" %}</span>{% endif %}</td>
+                <td class="fw-right">
+                    <span class="fw-zeilenakt" data-stop>
+                        <button type="button" class="fw-btn fw-knapp fw-geist fw-lg-peek" data-vorschau aria-controls="fwVorschau" aria-expanded="false">{% trans "Vorschau" %}</button>
+                        <button type="button" data-umschalten="dledit-{{ row.h.id }}" class="fw-ikon mut" title="{% trans 'Bearbeiten' %}" aria-label="{% trans 'Bearbeiten' %}">{% zeichen 'bearbeiten' %}</button>
+                        <form method="post" action="/neu/dienstleister/{{ row.h.id }}/loeschen/" data-bestaetigen="{% filter escapejs %}{% blocktrans with name=row.h.firma|safe %}Dienstleister «{{ name }}» löschen?{% endblocktrans %}{% endfilter %}">{% csrf_token %}
+                    <button class="fw-ikon mut gefahr" title="{% trans 'Löschen' %}" aria-label="{% trans 'Löschen' %}">{% zeichen 'loeschen' %}</button>
+                </form>
+                    </span>
+                    <template>
+                        <div class="fw-lg-v-kopf"><div><b class="fw-lg-v-titel">{{ row.h.firma }}</b><span class="fw-zelle-sub">{{ row.branche }}</span></div>
+                            <button type="button" class="fw-ikon mut" data-vorschau-zu aria-label="{% trans 'Schliessen' %}">{% zeichen 'schliessen' %}</button></div>
+                        <dl class="fw-lg-v-daten">
+                            <dt>{% trans "Kontaktperson" %}</dt><dd>{{ row.h.kontaktperson|default:"—" }}</dd>
+                            <dt>{% trans "E-Mail" %}</dt><dd>{{ row.h.email|default:"—" }}</dd>
+                            <dt>{% trans "Telefon" %}</dt><dd>{{ row.h.telefon|default:"—" }}</dd>
+                            <dt>{% trans "Stand" %}</dt><dd>{% if row.offene %}{% blocktrans with n=row.offene %}{{ n }} offen{% endblocktrans %}{% else %}{% trans "nichts offen" %}{% endif %}</dd>
+                        </dl>
+                        <div class="fw-lg-v-knoepfe">
+                            <a href="/neu/dienstleister/{{ row.h.id }}/" class="fw-btn fw-primary">{% trans "Akte öffnen" %}</a>
+                            {% if row.h.email %}<a href="mailto:{{ row.h.email }}" class="fw-btn">{% trans "Auftrag per E-Mail" %}</a>{% endif %}
+                            {% if row.h.telefon %}<a href="tel:{{ row.h.telefon }}" class="fw-btn">{% trans "Anrufen" %}</a>{% endif %}
+                        </div>
+                    </template>
+                </td>
+            </tr>
+            <tr id="dledit-{{ row.h.id }}" class="hidden fw-kontakt-edit"><td colspan="5">
+                <div class="fw-rumpf">
             <form method="post" action="/neu/dienstleister/{{ row.h.id }}/bearbeiten/" class="fw-formular">
                 {% csrf_token %}
                 <div><label for="dle-firma-{{ row.h.id }}" class="fw-label mb-1">{% trans "Firma" %} *</label>
@@ -100,11 +134,11 @@
                         <option value="reinigung" {% if row.h.branche == 'reinigung' %}selected{% endif %}>{% trans "Reinigungsinstitut" %}</option>
                     </select></div>
                 <div><label for="dle-kontakt-{{ row.h.id }}" class="fw-label mb-1">{% trans "Kontaktperson" %}</label>
-                    <input id="dle-kontakt-{{ row.h.id }}" name="kontaktperson" value="{{ row.h.kontaktperson }}" class="fw-feld w-full"></div>
+                    <input id="dle-kontakt-{{ row.h.id }}" name="kontaktperson" value="{{ row.h.kontaktperson|default:'' }}" class="fw-feld w-full"></div>
                 <div><label for="dle-email-{{ row.h.id }}" class="fw-label mb-1">{% trans "E-Mail" %}</label>
-                    <input id="dle-email-{{ row.h.id }}" name="email" type="email" value="{{ row.h.email }}" class="fw-feld w-full"></div>
+                    <input id="dle-email-{{ row.h.id }}" name="email" type="email" value="{{ row.h.email|default:'' }}" class="fw-feld w-full"></div>
                 <div><label for="dle-telefon-{{ row.h.id }}" class="fw-label mb-1">{% trans "Telefon" %}</label>
-                    <input id="dle-telefon-{{ row.h.id }}" name="telefon" value="{{ row.h.telefon }}" class="fw-feld w-full"></div>
+                    <input id="dle-telefon-{{ row.h.id }}" name="telefon" value="{{ row.h.telefon|default:'' }}" class="fw-feld w-full"></div>
                 <div class="fw-formular-fuss">
                     <button type="button" data-verstecken="dledit-{{ row.h.id }}" class="fw-btn fw-geist">{% trans "Abbrechen" %}</button>
                     <button class="fw-btn fw-primary">{% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}</button>
@@ -112,26 +146,19 @@
             </form>
         </div>
 
-        <dl class="space-y-2">
-            {% if row.h.kontaktperson %}<div class="flex items-center gap-2 fw-mutet">{% zeichen 'person' klasse='fw-faint w-4 text-center text-xs' %}{{ row.h.kontaktperson }}</div>{% endif %}
-            {% if row.h.telefon %}<div class="flex items-center gap-2 fw-mutet">{% zeichen 'senden' klasse='fw-faint w-4 text-center text-xs' %}<a href="tel:{{ row.h.telefon }}" class="hover:fw-marke">{{ row.h.telefon }}</a></div>{% endif %}
-            {% if row.h.email %}<div class="flex items-center gap-2 fw-mutet">{% zeichen 'senden' klasse='fw-faint w-4 text-center text-xs' %}<a href="mailto:{{ row.h.email }}" class="hover:fw-marke truncate">{{ row.h.email }}</a></div>{% endif %}
-            {% if not row.h.kontaktperson and not row.h.telefon and not row.h.email %}<div class="fw-hilfe">{% trans "Keine Kontaktdaten hinterlegt" %}</div>{% endif %}
-        </dl>
-
-        {% if row.h.email %}
-        <div class="fw-abtrenner">
-            <a href="mailto:{{ row.h.email }}" class="fw-link inline-flex items-center gap-1.5">
-                {% zeichen 'senden' klasse='text-xs' %} {% trans "Auftrag per E-Mail" %}
-            </a>
-        </div>
-        {% endif %}
+            </td></tr>
+            {% empty %}
+            <tr><td colspan="5" class="fw-leerzeile">
+                <div class="fw-leer"><b>{% if q or branche_filter %}{% trans "Keine Treffer" %}{% else %}{% trans "Noch keine Dienstleister erfasst" %}{% endif %}</b>
+                {% trans "Handwerker werden in der klassischen Ansicht erfasst." %}</div>
+            </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
-    {% empty %}
-    <div class="md:col-span-2 fw-lg-col-span-3 fw-card fw-nomb">
-        <div class="fw-leer"><b>{% if q or branche_filter %}{% trans "Keine Treffer" %}{% else %}{% trans "Noch keine Dienstleister erfasst" %}{% endif %}</b>
-        {% trans "Handwerker werden in der klassischen Ansicht erfasst." %}</div>
-    </div>
-    {% endfor %}
+</div>
+<aside id="fwVorschau" class="fw-lg-vorschau" aria-label="{% trans 'Vorschau' %}" hidden></aside>
 </div>
 {% endblock %}
+
+{% block scripts %}<script src="{% statisch 'js/fw-vorschau.js' %}"></script>{% endblock %}

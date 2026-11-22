@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n statisch %}
 {% block title %}{% trans "Personen" %} — immoswiss{% endblock %}
 
 {% block content %}
@@ -16,6 +16,15 @@
     </div>
 </div>
 
+{% comment %} Modul 7: derselbe Aufbau wie die Dienstleisterliste (Zahlenzeile, Filter und Suche im Kartenkopf, Tabelle mit
+   Vorschau). {% endcomment %}
+<div class="fw-statuszeile">
+    <span class="fw-sz fw-sz-good">{% blocktrans count n=treffer %}{{ n }} Person{% plural %}{{ n }} Personen{% endblocktrans %}</span>
+    <span class="fw-sz fw-sz-good">{% blocktrans with n=mit_vertrag_count %}{{ n }} mit aktivem Vertrag{% endblocktrans %}</span>
+    {% if anrede_offen %}<span class="fw-sz fw-sz-warn">{% trans "Anrede prüfen" %} ({{ anrede_offen }})</span>{% endif %}
+</div>
+
+<div class="fw-lg-spalten" id="fwVorschauSpalten">
 <div class="fw-card">
 
     <div class="fw-kopf">
@@ -90,38 +99,54 @@
             <tr>
                 <th scope="col">{% trans "Name" %}</th>
                 <th scope="col" class="hidden md:table-cell">{% trans "Kontakt" %}</th>
-                <th scope="col" class="hidden lg:table-cell">{% trans "Adresse" %}</th>
-                <th scope="col">{% trans "Mietet aktuell" %}</th>
-                <th scope="col"></th>
+                <th scope="col" class="hidden lg:table-cell fw-kontakt-3">{% trans "Adresse" %}</th>
+                <th scope="col">{% trans "Stand" %}</th>
+                <th scope="col"><span class="sr-only">{% trans "Aktion" %}</span></th>
             </tr>
             </thead>
             <tbody>
             {% for row in rows %}
             <tr class="cursor-pointer" data-zeile data-gehe-zu="/neu/personen/{{ row.m.id }}/">
                 <td>
-                    <a href="/neu/personen/{{ row.m.id }}/" class="flex items-center gap-3" data-stop>
+                    <a href="/neu/personen/{{ row.m.id }}/" class="fw-kontakt-name" data-stop>
                         <span class="fw-ikon">{% zeichen 'person' %}</span>
-                        <div>
-                            <div class="fw-strong whitespace-nowrap">{{ row.m.display_name }}</div>
-                            <div class="fw-sub2">{{ row.m.get_typ_display }}</div>
-                        </div>
+                        <span><span class="fw-zelle-titel">{{ row.m.display_name }}</span><span class="fw-zelle-sub">{{ row.m.get_typ_display }}</span></span>
                     </a>
                 </td>
                 <td class="hidden md:table-cell">
-                    {% if row.m.email %}<div class="whitespace-nowrap">{% zeichen 'senden' klasse='fw-faint mr-1.5 text-xs' %}{{ row.m.email }}</div>{% endif %}
-                    {% if row.telefon %}<div class="fw-sub2 whitespace-nowrap">{% zeichen 'senden' klasse='fw-faint mr-1.5 fw-fs-mikro' %}{{ row.telefon }}</div>{% endif %}
-                    {% if not row.m.email and not row.telefon %}<span class="fw-sub2">—</span>{% endif %}
+                    {% if row.m.email %}<a href="mailto:{{ row.m.email }}" class="fw-kontakt-zeile" data-stop>{{ row.m.email }}</a>{% endif %}
+                    {% if row.telefon %}<a href="tel:{{ row.telefon }}" class="fw-kontakt-zeile fw-zelle-sub" data-stop>{{ row.telefon }}</a>{% endif %}
+                    {% if not row.m.email and not row.telefon %}<span class="fw-faint">—</span>{% endif %}
                 </td>
-                <td class="hidden lg:table-cell whitespace-nowrap">
+                <td class="hidden lg:table-cell whitespace-nowrap fw-kontakt-3">
                     {% if row.m.strasse %}{{ row.m.strasse }}, {{ row.m.plz }} {{ row.m.ort }}{% else %}<span class="fw-sub2">—</span>{% endif %}
                 </td>
                 <td class="whitespace-nowrap">
                     {% if row.objekt %}
                     <span class="fw-chip fw-good">{{ row.objekt }}</span>
                     {% if row.aktive|length > 1 %}<span class="fw-sub2 ml-1">+{{ row.aktive|length|add:"-1" }}</span>{% endif %}
-                    {% else %}<span class="fw-sub2">—</span>{% endif %}
+                    {% else %}<span class="fw-chip fw-mut">{% trans "kein Mietverhältnis" %}</span>{% endif %}
                 </td>
-                <td class="fw-right">{% zeichen 'weiter' klasse='fw-faint text-xs' %}</td>
+                <td class="fw-right">
+                    <span class="fw-zeilenakt" data-stop>
+                        <button type="button" class="fw-btn fw-knapp fw-geist fw-lg-peek" data-vorschau aria-controls="fwVorschau" aria-expanded="false">{% trans "Vorschau" %}</button>
+                    </span>
+                    <template>
+                        <div class="fw-lg-v-kopf"><div><b class="fw-lg-v-titel">{{ row.m.display_name }}</b><span class="fw-zelle-sub">{{ row.m.get_typ_display }}</span></div>
+                            <button type="button" class="fw-ikon mut" data-vorschau-zu aria-label="{% trans 'Schliessen' %}">{% zeichen 'schliessen' %}</button></div>
+                        <dl class="fw-lg-v-daten">
+                            <dt>{% trans "Adresse" %}</dt><dd>{% if row.m.strasse %}{{ row.m.strasse }}, {{ row.m.plz }} {{ row.m.ort }}{% else %}—{% endif %}</dd>
+                            <dt>{% trans "E-Mail" %}</dt><dd>{{ row.m.email|default:"—" }}</dd>
+                            <dt>{% trans "Telefon" %}</dt><dd>{{ row.telefon|default:"—" }}</dd>
+                            <dt>{% trans "Stand" %}</dt><dd>{% if row.objekt %}{{ row.objekt }}{% if row.aktive|length > 1 %} +{{ row.aktive|length|add:"-1" }}{% endif %}{% else %}{% trans "kein Mietverhältnis" %}{% endif %}</dd>
+                        </dl>
+                        <div class="fw-lg-v-knoepfe">
+                            <a href="/neu/personen/{{ row.m.id }}/" class="fw-btn fw-primary">{% trans "Akte öffnen" %}</a>
+                            <a href="/neu/mieterkonten/{{ row.m.id }}/" class="fw-btn">{% trans "Kontoblatt" %}</a>
+                            {% if row.m.email %}<a href="mailto:{{ row.m.email }}" class="fw-btn">{% trans "E-Mail" %}</a>{% endif %}
+                        </div>
+                    </template>
+                </td>
             </tr>
             {% empty %}
             <tr><td colspan="5">
@@ -135,4 +160,8 @@
     </div>
     {% include 'fw/_seiten.html' %}
 </div>
+<aside id="fwVorschau" class="fw-lg-vorschau" aria-label="{% trans 'Vorschau' %}" hidden></aside>
+</div>
 {% endblock %}
+
+{% block scripts %}<script src="{% statisch 'js/fw-vorschau.js' %}"></script>{% endblock %}
