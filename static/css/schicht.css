@@ -2599,7 +2599,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-schrittliste .fw-schritt .fw-t{font-weight:500}
         .fw-btn.fw-knapp.fw-primary{box-shadow:none}
         @media (min-width:1280px){
-            .fw-inhalt:not(:has(table)):not(:has(.fw-cockpit)):not(:has(.fw-bento)):not(:has(.fw-kpis)):not(:has(.fw-split)):not(:has(.fw-zwei)):not(:has(.fw-assistent)):not(:has(.fw-raster.l3)){max-width:984px}
+            .fw-inhalt:not(:has(table)):not(:has(.fw-cockpit)):not(:has(.fw-bento)):not(:has(.fw-kpis)):not(:has(.fw-split)):not(:has(.fw-zwei)):not(:has(.fw-assistent)):not(:has(.fw-raster.l3)):not(:has(.fw-schadenliste)){max-width:984px}
         }
         @media (max-width:640px){
             html .fw-mit-schiene .fw-kopfleiste{background:var(--ds-surface);border-bottom:1px solid var(--ds-line)}
@@ -2812,6 +2812,26 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             html.fw-blatt .fw-schiene [data-fach-bereich]{margin:2px 0 8px 22px}
             html.fw-blatt .fw-schiene [data-fach-bereich] li a{min-height:42px;font-size:15px}
         }
+        html._embed .fw-kopfleiste,html._embed .fw-tabbar,html._embed .fw-schiene-vorhang{display:none!important}
+        html._embed .fw-mit-schiene{--fw-tab-h:0px}
+        html._embed .fw-mit-schiene .fw-haupt{padding-bottom:0}
+        html .fw-card.fw-schadenliste{border:1px solid var(--ds-line)}
+        .fw-schadenliste>.fw-reiter{gap:2px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:0 10px;border:0;border-bottom:1px solid var(--ds-line);background:transparent}
+        .fw-schadenliste>.fw-reiter a{border:0;border-bottom:2px solid transparent;border-radius:var(--ds-radius-0);background:transparent;padding:9px 10px;margin-bottom:-1px;
+            color:var(--ds-muted);font-weight:500;white-space:nowrap}
+        .fw-schadenliste>.fw-reiter a:hover{background:transparent;color:var(--ds-ink)}
+        .fw-schadenliste>.fw-reiter a.hier,.fw-schadenliste>.fw-reiter a[aria-selected="true"]{background:transparent;border-color:transparent;border-bottom-color:var(--ds-brand);color:var(--ds-ink);font-weight:600}
+        .fw-schaden-nr,.fw-schaden-wer{display:none}
+        @media (min-width:900px){
+            html .fw-schadenliste .fw-schadenzeile{display:grid;grid-template-columns:10px 64px minmax(0,1fr) 28px 110px 128px;gap:14px;align-items:center}
+            .fw-schaden-nr{display:block;font-family:var(--ds-mono);font-size:12px;font-weight:500;color:var(--ds-muted)}
+            .fw-schaden-wer{display:grid;place-items:center;width:24px;height:24px;border-radius:var(--ds-kreis);background:var(--ds-surface-2);color:var(--ds-muted);
+                font-size:12px;font-weight:600;letter-spacing:0}
+            .fw-schaden-wer.offen{background:transparent;border:1px dashed var(--ds-line-stark);color:var(--ds-faint)}
+            html .fw-schadenliste .fw-schadenzeile .fw-seit{text-align:right;white-space:nowrap}
+            html .fw-schadenliste .fw-schadenzeile>.fw-btn{justify-self:end;opacity:1}
+        }
+        @media (max-width:640px){ .fw-schadenliste>.fw-reiter a{min-height:42px} }
         .fw-kopf-z1{display:flex;align-items:center;gap:12px}
         @media (max-width:1023px){
             .fw-logo-kapsel{padding:0 12px 0 11px;gap:7px}
