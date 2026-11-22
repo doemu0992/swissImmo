@@ -285,6 +285,16 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Bestandsfilter mit). «Schaden erfassen» ist ab 900 px eine Schublade von rechts (`#neuschaden.fw-schublade-rechts`, derselbe
   Knopf öffnet und schliesst, dazu das Kreuz); am Telefon klappt das Formular wie bisher in der Seite auf. Die Boards
   (`.fw-spalte`: Schäden, Bewerbungen) nutzen die volle Breite, die Spaltenköpfe stehen in Versalien.
+- **Einstellungen, Modul 9 (22.11.2026):** Die Übersicht (`/neu/einstellungen/`) und jede Einstellungsseite (`fw_einst_rahmen` aus
+  dem Context-Processor) stehen im selben Rahmen: ab 1024 px links die Liste aller Einstellungen (`.fw-einst-spalten` >
+  `nav.fw-einst-nav#fwEinstNav` + `.fw-einst-seite`, in `fw/base.html` um `block content` gelegt) mit Suchfeld (generischer Filter
+  `data-suche`), Gruppen und markierter offener Seite (`aria-current="page"`, `aktiv` je Eintrag). Quelle bleibt
+  `einstellungen_gruppen()`, gefiltert nach Rolle und Abo-Stufe. Am Telefon bleibt die Liste weg; die Krume führt zur Übersicht.
+  **Aus einem Guss, per Test gesichert** (`EinstellungenSeitenlisteTests`): Der Seitentitel ist der Name aus der Liste, es gibt genau
+  eine Pfadzeile (die Krume des Rahmens, keine eigene `.fw-brotkrume`), die Leiste markiert «Einstellungen», und der Inhalt hat eine
+  Breite (860 px ohne Tabelle, volle Breite mit; eigene `max-w-*` der Seiten gelten im Rahmen nicht). Neue Einstellungsseiten
+  halten sich daran. Der Verweis Lebensdauertabelle → Ersatzplanung ist jetzt ein Knopf im Seitenkopf.
+  **Nicht gebaut:** die schwebende Speicherleiste und neue Schalter aus dem Mockup (die Seiten behalten ihre Formulare).
 - **Berichte, Modul 8 (22.11.2026):** Übersicht, Portfolio, Auswertung und Team zeigen ihre Kennzahlen als ein Band
   (`.fw-kpis.fw-band.fw-ber-band`) statt als Kapselzeile oder mit oranger Akzentzelle. Die Übersicht (`/neu/berichte/`) hat neu ein
   Band über den Diagrammen: letzter gemessener Monat der Zahlungsquote, Summe der Ausstände über 30 Tage mit der Zahl betroffener

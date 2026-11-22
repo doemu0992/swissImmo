@@ -63,3 +63,52 @@ class GruppenSeitenTests(TestCase):
         self.assertNotContains(self.client.get('/neu/einstellungen/'), 'fw-einst-krumen')
         # Gegenprobe: eine Seite ausserhalb der Einstellungen trägt sie nicht
         self.assertNotContains(self.client.get('/neu/liegenschaften/'), 'fw-einst-krumen')
+
+
+class EinstellungenSeitenlisteTests(TestCase):
+    """Modul 9: Auf jeder Einstellungsseite steht die Liste aller Einstellungen, die offene Seite ist markiert."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def setUp(self):
+        self.client = Client(raise_request_exception=False)
+        self.client.force_login(self.a.benutzer)
+
+    def test_unterseite_hat_liste_und_markiert_sich(self):
+        r = self.client.get('/neu/vorlagen/')
+        self.assertContains(r, 'id="fwEinstNav"')
+        html = r.content.decode()
+        nav = html[html.index('id="fwEinstNav"'):html.index('class="fw-einst-seite"')]
+        self.assertEqual(nav.count('aria-current="page"'), 1)
+        self.assertRegex(nav, r'href="/neu/vorlagen/[^"]*" data-zeile aria-current="page"')
+        # Dieselben Seiten wie im Feld der Schiene (Rolle und Abo-Stufe gefiltert), keine mehr und keine weniger
+        for g in r.context['fw_einstellungen_gruppen']:
+            for k in g['eintraege']:
+                self.assertIn('href="%s' % k['url'], nav)
+
+    def test_uebersicht_im_selben_rahmen_fremde_seite_ohne_liste(self):
+        r = self.client.get('/neu/einstellungen/')
+        self.assertContains(r, 'id="fwEinstNav"')
+        # Auf der Übersicht ist keine einzelne Seite offen
+        html = r.content.decode()
+        self.assertNotIn('aria-current="page"', html[html.index('id="fwEinstNav"'):html.index('class="fw-einst-seite"')])
+        self.assertNotContains(self.client.get('/neu/liegenschaften/'), 'id="fwEinstNav"')
+
+    def test_seitentitel_gleich_wie_in_der_liste(self):
+        """Aus einem Guss: Der Titel der Seite ist der Name, unter dem sie in der Liste steht."""
+        import html as _html
+        import re
+        for g in self.client.get('/neu/einstellungen/').context['fw_einstellungen_gruppen']:
+            for k in g['eintraege']:
+                r = self.client.get(k['url'])
+                if r.status_code != 200:
+                    continue
+                m = re.search(r'<h1[^>]*>(.*?)</h1>', r.content.decode(), re.S)
+                self.assertIsNotNone(m, k['url'])
+                self.assertEqual(_html.unescape(re.sub(r'<[^>]+>', '', m.group(1))).strip(), str(k['titel']), k['url'])
+                # die Leiste markiert «Einstellungen», nicht einen Arbeitsbereich
+                self.assertIn(r.context['nav'], r.context['fw_einstellungen_keys'], k['url'])
+                # und genau eine Pfadzeile
+                self.assertNotContains(r, 'fw-brotkrume', msg_prefix=k['url'])

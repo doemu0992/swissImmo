@@ -203,8 +203,11 @@ document.addEventListener('input', function(e) {
     });
     // «Häufig genutzt» (`data-haeufig`) doppelt Einträge der Liste: Während der Suche bleibt es verborgen
     ziel.querySelectorAll('[data-haeufig]').forEach(function(h) { h.classList.toggle('hidden', !!q); });
-    var keine = ziel.querySelector('[data-keine]');
-    if (keine) keine.classList.toggle('hidden', !q || !!ziel.querySelector('[data-zeile]:not(.hidden)'));
+    // Mehrere Listen im Ziel (Einstellungen: Seitenliste und Übersicht) melden «nichts gefunden» je für sich
+    ziel.querySelectorAll('[data-keine]').forEach(function(keine) {
+        var liste = keine.parentNode;
+        keine.classList.toggle('hidden', !q || !!liste.querySelector('[data-zeile]:not(.hidden)'));
+    });
 });
 
 // Globales "⋯ Mehr"-Dropdown: Markup ohne eigenes Script.
