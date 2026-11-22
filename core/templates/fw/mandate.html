@@ -30,7 +30,7 @@
                 <td class="fw-mutet">{{ row.md.kontaktperson|default:row.md.email|default:"—" }}</td>
                 <td class="fw-mutet">{% if row.md.ort %}{{ row.md.plz }} {{ row.md.ort }}{% else %}—{% endif %}</td>
                 <td class="fw-right fw-num">{{ row.anzahl_lg }}</td>
-                <td class="fw-right"><span class="inline-flex flex-wrap items-center justify-end gap-3">
+                <td class="fw-right"><span class="fw-zeilenakt">
                     {% if ist_verwaltung %}
                     <a href="/neu/mandate/{{ row.md.id }}/abrechnung/" class="fw-link whitespace-nowrap">{% trans "Abrechnung" %}</a>
                     <a href="/neu/mandate/{{ row.md.id }}/kontokorrent/" class="fw-link whitespace-nowrap">{% trans "Kontokorrent" %}</a>
