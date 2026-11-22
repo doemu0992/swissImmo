@@ -39843,3 +39843,9 @@ msgstr "Liegenschaft suchen …"
 
 msgid "Karten"
 msgstr "Karten"
+
+msgid "Titel, Liegenschaft, Melder …"
+msgstr "Titel, Liegenschaft, Melder …"
+
+msgid "Schäden durchsuchen"
+msgstr "Schäden durchsuchen"

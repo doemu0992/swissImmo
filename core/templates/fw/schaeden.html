@@ -29,8 +29,11 @@
 
 <!-- Schaden intern erfassen (nur wer schreiben darf — der Hauswart sieht das Formular nicht) -->
 {% if kann_schreiben %}
-<div id="neuschaden" class="hidden fw-card">
-    <div class="fw-kopf"><span class="fw-ikon crit">{% zeichen 'warnung' %}</span><h2>{% trans "Schaden erfassen (z.B. telefonisch gemeldet)" %}</h2></div>
+{% comment %} Modul 4: ab 900 px ist das Formular eine Schublade von rechts (`#neuschaden`, Regeln in der Stilschicht); am Telefon
+   klappt es wie bisher in der Seite auf. Derselbe Knopf öffnet und schliesst, dazu das Kreuz im Kopf. {% endcomment %}
+<div id="neuschaden" class="hidden fw-card fw-schublade-rechts">
+    <div class="fw-kopf"><span class="fw-ikon crit">{% zeichen 'warnung' %}</span><h2>{% trans "Schaden erfassen (z.B. telefonisch gemeldet)" %}</h2>
+        <button type="button" data-umschalten="neuschaden" class="fw-ikon mut fw-rechts" aria-label="{% trans 'Schliessen' %}">{% zeichen 'schliessen' %}</button></div>
     <form method="post" action="/neu/schaeden/neu/" enctype="multipart/form-data" class="fw-formular fw-rumpf">
         {% csrf_token %}
         <div class="fw-feldblock breit"><label class="fw-label">{% trans "Titel / Schaden *" %}</label>
@@ -113,6 +116,14 @@
         <a href="?{% if sicht %}sicht={{ sicht }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"
            class="fw-fchip fw-on">{% trans "Suche" %} «{{ q }}» ×</a>
         {% endif %}
+        {% comment %} Modul 4: die Suche steht in der Filterzeile. Sie sendet `q` an dieselbe Ansicht und trägt Sicht, «Meine Tickets»
+           und den Bestandsfilter mit. {% endcomment %}
+        <form method="get" class="fw-suchfeld fw-schaden-suche" role="search">
+            {% if sicht %}<input type="hidden" name="sicht" value="{{ sicht }}">{% endif %}
+            {% if nur_meine %}<input type="hidden" name="zustaendig" value="ich">{% endif %}
+            {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+            <input type="search" name="q" value="{{ q }}" class="fw-feld" placeholder="{% trans 'Titel, Liegenschaft, Melder …' %}" aria-label="{% trans 'Schäden durchsuchen' %}">
+        </form>
     </div>
     {% for row in rows %}
     {% comment %} UI-Zielbild: Statuschip über dem Titel, Objekt und Melder darunter, rechts «seit N Tagen» und die nächste Aktion als Knopf. {% endcomment %}

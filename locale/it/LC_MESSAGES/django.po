@@ -41544,3 +41544,9 @@ msgstr "Cerca un immobile …"
 
 msgid "Karten"
 msgstr "Schede"
+
+msgid "Titel, Liegenschaft, Melder …"
+msgstr "Titolo, immobile, segnalante …"
+
+msgid "Schäden durchsuchen"
+msgstr "Cerca nei danni"
