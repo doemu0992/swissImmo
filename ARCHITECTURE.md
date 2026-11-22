@@ -285,6 +285,12 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Bestandsfilter mit). «Schaden erfassen» ist ab 900 px eine Schublade von rechts (`#neuschaden.fw-schublade-rechts`, derselbe
   Knopf öffnet und schliesst, dazu das Kreuz); am Telefon klappt das Formular wie bisher in der Seite auf. Die Boards
   (`.fw-spalte`: Schäden, Bewerbungen) nutzen die volle Breite, die Spaltenköpfe stehen in Versalien.
+- **Berichte, Modul 8 (22.11.2026):** Übersicht, Portfolio, Auswertung und Team zeigen ihre Kennzahlen als ein Band
+  (`.fw-kpis.fw-band.fw-ber-band`) statt als Kapselzeile oder mit oranger Akzentzelle. Die Übersicht (`/neu/berichte/`) hat neu ein
+  Band über den Diagrammen: letzter gemessener Monat der Zahlungsquote, Summe der Ausstände über 30 Tage mit der Zahl betroffener
+  Liegenschaften, Zahl der Liegenschaften; die Zellen sind Verweise (Auswertung, Debitoren-Aging, Portfolio). Die Werte kommen aus
+  `_berichte_v8`, ohne weitere Abfrage. **Nicht gebaut** (bräuchte neue Rechenregeln): «Bester Monat» und «Gegenüber Vorjahr» in
+  der Auswertung, Auslastung in Prozent im Team; die Schublade für eigene Auswertungen (die eigene Seite bleibt).
 - **Kontakte, Modul 7 (22.11.2026):** Personen (`/neu/personen/`) und Dienstleister (`/neu/dienstleister/`) haben denselben Aufbau:
   Zahlenzeile, Kartenkopf mit Filter und Suche, Tabelle mit den Spalten Name, Kontakt, dritte Spalte (Adresse bzw. Kontaktperson),
   Stand, Aktion. Ab 1100 px zeigt «Vorschau» die Eckdaten rechts (`#fwVorschau`, `static/js/fw-vorschau.js`, der Inhalt steht in der

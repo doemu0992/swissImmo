@@ -4052,6 +4052,25 @@ und einen Stilblock enthaelt.
         @media (min-width:1100px){ .fw-lg-peek{display:inline-flex} }
         @media (max-width:640px){ .fw-kontakt-suche{flex:1 1 100%;margin-left:0} .fw-kontakt-suche .fw-feld{height:44px} }
         /* ===== Ende Kontakte, Modul 7 ===== */
+        /* ===== Berichte, Modul 8 (Mockup «Immoswiss Berichte») =====
+           Übersicht, Portfolio, Auswertung und Team zeigen ihre Kennzahlen als ein Band (`.fw-kpis.fw-band.fw-ber-band`) statt als
+           Kapselzeile; auf der Übersicht sind die Zellen Verweise. Karten mit Linie wie im Rest. */
+        html .fw-kpis.fw-ber-band{margin-bottom:18px;padding:0;gap:0;grid-auto-rows:auto;border-radius:var(--ds-radius)}
+        html .fw-kpis.fw-ber-band>.fw-kpi{display:flex;flex-direction:column;gap:2px;height:auto;min-height:0;max-height:none;padding:14px 18px;margin:0;
+            color:inherit;text-decoration:none;background:transparent;border:0;border-radius:var(--ds-radius-0);box-shadow:1px 0 0 var(--ds-line),0 1px 0 var(--ds-line)}
+        html .fw-kpis.fw-ber-band>a.fw-kpi:hover{background:var(--ds-hover)}
+        html .fw-kpis.fw-ber-band>.fw-kpi{align-items:flex-start;text-align:left}
+        html .fw-kpis.fw-ber-band>.fw-kpi.fw-accent{background:transparent;background-image:none;color:inherit}
+        html .fw-kpis.fw-ber-band>.fw-kpi.fw-accent .fw-l{color:var(--ds-muted)}
+        html .fw-kpis.fw-ber-band>.fw-kpi.fw-accent .fw-v{color:var(--ds-ink)}
+        html .fw-kpis.fw-ber-band>.fw-kpi.fw-accent .fw-f{color:var(--ds-faint)}
+        html .fw-kpis.fw-ber-band .fw-l{color:var(--ds-muted)}
+        html .fw-kpis.fw-ber-band .fw-v{display:block;font-size:22px;line-height:1.2;color:var(--ds-ink)}
+        html .fw-kpis.fw-ber-band .fw-f{color:var(--ds-faint)}
+        html .fw-kpis.fw-ber-band .fw-v.fw-crit{color:var(--ds-crit)}
+        html .fw-kpis.fw-ber-band .fw-v.fw-warn{color:var(--ds-warn)}
+        html .fw-bericht-zwei>.fw-card,html .fw-card.fw-katalog{border:1px solid var(--ds-line)}
+        /* ===== Ende Berichte, Modul 8 ===== */
         /* ===== Ende MODUL Mix-Entwurf ===== */
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
         /* Vorlage: navmock/v2/vorschau (freigegeben, Stand «Kopfzeile v2»). Zeile 1 von links: Marke,

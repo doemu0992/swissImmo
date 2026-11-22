@@ -27,6 +27,26 @@ stehen einzeln im Katalog und tragen dort die Kapsel «PDF»).
     </div>
 </div>
 
+{% comment %} Modul 8: Kennzahlenband über den Diagrammen. Dieselben Zahlen wie in den Diagrammen darunter, als Verweise auf die
+   Seite, die sie erklärt. {% endcomment %}
+<div class="fw-kpis fw-band fw-ber-band">
+    <a class="fw-kpi" href="/neu/auswertung/{{ lg_query }}">
+        <span class="fw-l">{% trans "Zahlungsquote" %}{% if band_quote_monat %} {{ band_quote_monat }}{% endif %}</span>
+        <span class="fw-v fw-num">{% if band_quote is not None %}{{ band_quote|floatformat:1 }} %{% else %}–{% endif %}</span>
+        <span class="fw-f">{% trans "Ist in % vom Soll" %}</span>
+    </a>
+    <a class="fw-kpi" href="/neu/mahnwesen/aging/{{ lg_query }}">
+        <span class="fw-l">{% trans "Ausstände > 30 Tage" %}</span>
+        <span class="fw-v fw-num{% if ausstand_summe %} fw-crit{% endif %}">CHF {{ ausstand_summe|chf:0 }}</span>
+        <span class="fw-f">{% blocktrans with n=band_lg_mit_ausstand m=band_lg_n %}in {{ n }} von {{ m }} Liegenschaften{% endblocktrans %}</span>
+    </a>
+    <a class="fw-kpi" href="/neu/portfolio/">
+        <span class="fw-l">{% trans "Liegenschaften" %}</span>
+        <span class="fw-v fw-num">{{ band_lg_n }}</span>
+        <span class="fw-f">{% trans "Rendite, Leerstand, Cashflow" %}</span>
+    </a>
+</div>
+
 <div class="fw-bericht-zwei">
     <section class="fw-card">
         <div class="fw-kopf">

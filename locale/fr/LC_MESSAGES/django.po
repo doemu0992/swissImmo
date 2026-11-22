@@ -41672,3 +41672,9 @@ msgstr "Afficher dans le tableau"
 
 msgid "kein Mietverhältnis"
 msgstr "aucun bail"
+
+msgid "in %(n)s von %(m)s Liegenschaften"
+msgstr "dans %(n)s immeubles sur %(m)s"
+
+msgid "Rendite, Leerstand, Cashflow"
+msgstr "Rendement, vacance, cash-flow"

@@ -39,7 +39,7 @@
 </form>
 
 <!-- Total -->
-<div class="fw-kpis">
+<div class="fw-kpis fw-band fw-ber-band">
     <div class="fw-kpi">
         <div class="fw-l">{{ typ_label }} {{ jahr }}{% if aktive_lg %} · {{ aktive_lg.strasse }}{% endif %}</div>
         <div class="fw-v{% if total < 0 %} fw-crit{% endif %}">CHF {{ total|chf }}</div>

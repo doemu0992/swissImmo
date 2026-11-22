@@ -41601,3 +41601,9 @@ msgstr "Mostra nella tabella"
 
 msgid "kein Mietverhältnis"
 msgstr "nessuna locazione"
+
+msgid "in %(n)s von %(m)s Liegenschaften"
+msgstr "in %(n)s immobili su %(m)s"
+
+msgid "Rendite, Leerstand, Cashflow"
+msgstr "Rendimento, sfitto, cash flow"

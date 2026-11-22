@@ -39900,3 +39900,9 @@ msgstr "In der Tabelle zeigen"
 
 msgid "kein Mietverhältnis"
 msgstr "kein Mietverhältnis"
+
+msgid "in %(n)s von %(m)s Liegenschaften"
+msgstr "in %(n)s von %(m)s Liegenschaften"
+
+msgid "Rendite, Leerstand, Cashflow"
+msgstr "Rendite, Leerstand, Cashflow"
