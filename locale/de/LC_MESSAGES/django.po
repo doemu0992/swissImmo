@@ -39882,3 +39882,18 @@ msgstr "Davon offen"
 
 msgid "Offene Positionen"
 msgstr "Offene Positionen"
+
+msgid "Diese Woche fällig"
+msgstr "Diese Woche fällig"
+
+msgid "Verteilung der Ausstände nach Alter"
+msgstr "Verteilung der Ausstände nach Alter"
+
+msgid "Als Nächstes fällig"
+msgstr "Als Nächstes fällig"
+
+msgid "Tabelle"
+msgstr "Tabelle"
+
+msgid "In der Tabelle zeigen"
+msgstr "In der Tabelle zeigen"

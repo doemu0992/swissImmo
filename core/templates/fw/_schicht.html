@@ -3986,6 +3986,52 @@ und einen Stilblock enthaelt.
         .fw-schrittliste .fw-schritt.ausgelassen .fw-schritt-zeichen{background:var(--ds-surface-2);color:var(--ds-faint)}
         .fw-schrittliste .fw-schritt.ausgelassen .fw-schritt-zeichen::before{content:"–"}
         /* ===== Ende Monatsabschluss, Modul 5 ===== */
+        /* ===== Finanzen, Modul 6 (Mockup «Immoswiss Finanzen») =====
+           Übersicht: die vier Kennzahlen als ein Band mit Verweisen, ab 1100 px zwei Spalten (links Ausstände nach Alter mit
+           Altersbalken, rechts Bankabgleich und «Diese Woche fällig»). */
+        html .fw-kpis.fw-fin-kpis.fw-gross{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;background:var(--ds-surface);
+            border:1px solid var(--ds-line);border-radius:var(--ds-radius);overflow:hidden;margin-bottom:18px}
+        html .fw-kpis.fw-fin-kpis.fw-gross>.fw-kpi{border:0;border-radius:var(--ds-radius-0);background:transparent;padding:14px 18px;min-width:0;color:inherit;text-decoration:none;
+            box-shadow:1px 0 0 var(--ds-line),0 1px 0 var(--ds-line)}
+        html .fw-kpis.fw-fin-kpis.fw-gross>a.fw-kpi:hover{background:var(--ds-hover)}
+        html .fw-kpis.fw-fin-kpis.fw-gross .fw-l{font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ds-muted)}
+        html .fw-kpis.fw-fin-kpis.fw-gross .fw-v{font-size:22px}
+        .fw-fin-spalten{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:start}
+        .fw-fin-rechts{display:flex;flex-direction:column;gap:18px;min-width:0}
+        .fw-fin-spalten .fw-card{margin:0}
+        html .fw-fin-spalten>.fw-card,html .fw-fin-rechts>.fw-card{border:1px solid var(--ds-line)}
+        @media (min-width:1100px){
+            .fw-fin-spalten{grid-template-columns:minmax(0,1fr) 380px}
+            .fw-fin-rechts{order:2}
+        }
+        .fw-fin-spalten+.fw-fin-abschluss,.fw-fin-spalten+script+.fw-fin-abschluss{margin-top:18px}
+        .fw-altersbalken{display:block;width:calc(100% - 40px);height:8px;margin:4px 20px 6px;border-radius:var(--ds-pill);overflow:hidden;background:var(--ds-surface-2)}
+        .fw-altersbalken .d30{fill:var(--ds-line-stark)}
+        .fw-altersbalken .d60{fill:var(--ds-warn)}
+        .fw-altersbalken .d90{fill:var(--ds-akzent)}
+        .fw-altersbalken .d90plus{fill:var(--ds-crit)}
+        .fw-alterslegende{display:flex;flex-wrap:wrap;gap:4px 16px;padding:0 20px 12px;font-size:12px;color:var(--ds-muted)}
+        .fw-alterslegende span::before{content:"";display:inline-block;width:8px;height:8px;margin-right:6px;border-radius:var(--ds-kreis);background:var(--ds-line-stark)}
+        .fw-alterslegende .d60::before{background:var(--ds-warn)}
+        .fw-alterslegende .d90::before{background:var(--ds-akzent)}
+        .fw-alterslegende .d90plus::before{background:var(--ds-crit)}
+        .fw-fin-woche .fw-zeile{text-decoration:none;color:inherit}
+        /* Modul 6, zweiter Teil: Kreditoren als Spalten (zweite Ansicht), Kontoblatt neben der Liste der Mieterkonten. */
+        .fw-kr-spalten{padding:14px;margin:0;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+        .fw-kr-spalten[hidden]{display:none}
+        .fw-kr-spalten .fw-karte-fuss{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+        .fw-kr-spalten .fw-spalte-liste:empty::after{content:"–";color:var(--ds-faint);font-size:13px;padding:4px}
+        html table.fw-table tbody tr.sel{background:var(--ds-brand-soft)}
+        .fw-mk-peek,.fw-mk-blatt{display:none}
+        @media (min-width:1100px){
+            .fw-mk-peek{display:inline-flex}
+            .fw-lg-spalten.mit-vorschau{grid-template-columns:minmax(0,1fr) 46%}
+            .fw-mk-blatt:not([hidden]){display:flex;flex-direction:column;position:sticky;top:72px;height:calc(100dvh - 96px);background:var(--ds-surface);
+                border:1px solid var(--ds-brand);border-radius:var(--ds-radius);overflow:hidden}
+            .fw-mk-blatt-kopf{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid var(--ds-line);font-size:14px}
+            .fw-mk-blatt iframe{flex:1 1 auto;width:100%;border:0;background:var(--ds-bg)}
+        }
+        /* ===== Ende Finanzen, Modul 6 ===== */
         /* ===== Ende MODUL Mix-Entwurf ===== */
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
         /* Vorlage: navmock/v2/vorschau (freigegeben, Stand «Kopfzeile v2»). Zeile 1 von links: Marke,

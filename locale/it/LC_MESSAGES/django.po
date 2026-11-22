@@ -41583,3 +41583,18 @@ msgstr "Di cui aperto"
 
 msgid "Offene Positionen"
 msgstr "Partite aperte"
+
+msgid "Diese Woche fällig"
+msgstr "In scadenza questa settimana"
+
+msgid "Verteilung der Ausstände nach Alter"
+msgstr "Ripartizione degli arretrati per anzianità"
+
+msgid "Als Nächstes fällig"
+msgstr "Prossime scadenze"
+
+msgid "Tabelle"
+msgstr "Tabella"
+
+msgid "In der Tabelle zeigen"
+msgstr "Mostra nella tabella"

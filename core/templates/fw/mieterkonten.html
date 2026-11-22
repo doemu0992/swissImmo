@@ -1,6 +1,6 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
-{% load chf %}
+{% load chf statisch %}
 {% block title %}{% trans "Mieterkonten" %} — immoswiss{% endblock %}
 {% block content %}
 <div class="fw-phead">
@@ -42,6 +42,9 @@
 </p>
 {% endif %}
 
+{% comment %} Modul 6: ab 1100 px zeigt «Kontoblatt» das Kontoblatt rechts neben der Liste (dieselbe Seite im Rahmen, ohne
+   Kopfleiste). Die Zeile selbst öffnet weiter das Kontoblatt als Seite. `static/js/fw-finanzen.js`. {% endcomment %}
+<div class="fw-lg-spalten" id="mkSpalten">
 <div class="fw-card">
     <div class="fw-tablewrap">
 <table class="fw-table">
@@ -68,7 +71,7 @@
                     {% elif r.saldo < 0 %}<span class="fw-betrag good">CHF {{ r.saldo|chf }}</span><div class="fw-klein">{% trans "Guthaben" %}</div>
                     {% else %}<span class="fw-faint">{% trans "ausgeglichen" %}</span>{% endif %}
                 </td>
-                <td class="fw-right">{% zeichen 'weiter' klasse='fw-faint' %}</td>
+                <td class="fw-right"><button type="button" class="fw-btn fw-knapp fw-geist fw-mk-peek" data-stop data-mk-blatt="/neu/mieterkonten/{{ r.m.id }}/?embed=1{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}" data-mk-titel="{{ r.m.display_name }}" aria-controls="mkBlatt" aria-expanded="false">{% trans "Kontoblatt" %}</button> {% zeichen 'weiter' klasse='fw-faint' %}</td>
             </tr>
         {% empty %}
             <tr><td colspan="5" class="fw-leerzeile"><span class="fw-mutet">{% trans "Keine Mieterkonten" %}{% if filter_op %} {% trans "mit offenem Saldo" %}{% endif %}.</span></td></tr>
@@ -77,4 +80,11 @@
     </table>
 </div>
 </div>
+<aside id="mkBlatt" class="fw-mk-blatt" aria-label="{% trans 'Kontoblatt' %}" hidden>
+    <div class="fw-mk-blatt-kopf"><b id="mkBlattTitel"></b><button type="button" class="fw-ikon mut" data-mk-zu aria-label="{% trans 'Schliessen' %}">{% zeichen 'schliessen' %}</button></div>
+    <iframe id="mkBlattRahmen" title="{% trans 'Kontoblatt' %}" src="about:blank"></iframe>
+</aside>
+</div>
 {% endblock %}
+
+{% block scripts %}<script src="{% statisch 'js/fw-finanzen.js' %}"></script>{% endblock %}

@@ -41654,3 +41654,18 @@ msgstr "Dont ouvert"
 
 msgid "Offene Positionen"
 msgstr "Postes ouverts"
+
+msgid "Diese Woche fällig"
+msgstr "Échéances de la semaine"
+
+msgid "Verteilung der Ausstände nach Alter"
+msgstr "Répartition des impayés par ancienneté"
+
+msgid "Als Nächstes fällig"
+msgstr "Prochaines échéances"
+
+msgid "Tabelle"
+msgstr "Tableau"
+
+msgid "In der Tabelle zeigen"
+msgstr "Afficher dans le tableau"

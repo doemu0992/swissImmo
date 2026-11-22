@@ -40988,3 +40988,18 @@ msgstr "Of which open"
 
 msgid "Offene Positionen"
 msgstr "Open items"
+
+msgid "Diese Woche fällig"
+msgstr "Due this week"
+
+msgid "Verteilung der Ausstände nach Alter"
+msgstr "Arrears by age"
+
+msgid "Als Nächstes fällig"
+msgstr "Due next"
+
+msgid "Tabelle"
+msgstr "Table"
+
+msgid "In der Tabelle zeigen"
+msgstr "Show in table"
