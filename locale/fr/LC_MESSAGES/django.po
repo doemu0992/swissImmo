@@ -41615,3 +41615,9 @@ msgstr "Rechercher un immeuble …"
 
 msgid "Karten"
 msgstr "Cartes"
+
+msgid "Titel, Liegenschaft, Melder …"
+msgstr "Titre, immeuble, déclarant …"
+
+msgid "Schäden durchsuchen"
+msgstr "Rechercher dans les dégâts"

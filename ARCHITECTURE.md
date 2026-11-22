@@ -281,6 +281,10 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Aktion ist immer sichtbar). Die Akte bleibt beim Aktenregister (Stammdaten, Chronik, Finanzen, Dokumente, Fälle, Handwerker &
   Kosten) und trägt das Muster aus Modul 2. **Nebenbefund behoben:** Im Fenster (`html._embed`, iframe) standen Kopfleiste und
   Handy-Tableiste; die alte Ausblend-Regel hatte ihr `display:none` verloren.
+  **Zweiter Teil:** Die Suche steht in der Filterzeile (`.fw-schaden-suche`, sendet `q` und trägt Sicht, «Meine Tickets» und
+  Bestandsfilter mit). «Schaden erfassen» ist ab 900 px eine Schublade von rechts (`#neuschaden.fw-schublade-rechts`, derselbe
+  Knopf öffnet und schliesst, dazu das Kreuz); am Telefon klappt das Formular wie bisher in der Seite auf. Die Boards
+  (`.fw-spalte`: Schäden, Bewerbungen) nutzen die volle Breite, die Spaltenköpfe stehen in Versalien.
 - **Liegenschaftsliste, Modul 2 (22.11.2026):** Ab 1100 px zeigt «Vorschau» je Zeile die Eckdaten rechts neben der Liste (Mandat,
   Objekte, Belegung, Soll, alle Befunde; Knöpfe «Akte öffnen», «Objekte», «Mietverhältnisse»), ohne die Akte zu öffnen. Der Inhalt
   steht fertig in einer `template`-Marke der Zeile, `static/js/fw-liegenschaften.js` setzt ihn nur um. Ab 641 px stellt der Schalter

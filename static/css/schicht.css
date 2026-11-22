@@ -2599,7 +2599,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-schrittliste .fw-schritt .fw-t{font-weight:500}
         .fw-btn.fw-knapp.fw-primary{box-shadow:none}
         @media (min-width:1280px){
-            .fw-inhalt:not(:has(table)):not(:has(.fw-cockpit)):not(:has(.fw-bento)):not(:has(.fw-kpis)):not(:has(.fw-split)):not(:has(.fw-zwei)):not(:has(.fw-assistent)):not(:has(.fw-raster.l3)):not(:has(.fw-schadenliste)){max-width:984px}
+            .fw-inhalt:not(:has(table)):not(:has(.fw-cockpit)):not(:has(.fw-bento)):not(:has(.fw-kpis)):not(:has(.fw-split)):not(:has(.fw-zwei)):not(:has(.fw-assistent)):not(:has(.fw-raster.l3)):not(:has(.fw-schadenliste)):not(:has(.fw-spalte)){max-width:984px}
         }
         @media (max-width:640px){
             html .fw-mit-schiene .fw-kopfleiste{background:var(--ds-surface);border-bottom:1px solid var(--ds-line)}
@@ -2832,6 +2832,17 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             html .fw-schadenliste .fw-schadenzeile>.fw-btn{justify-self:end;opacity:1}
         }
         @media (max-width:640px){ .fw-schadenliste>.fw-reiter a{min-height:42px} }
+        .fw-schaden-suche{margin-left:auto;flex:0 1 280px;min-width:0}
+        .fw-schaden-suche .fw-feld{width:100%;height:36px}
+        .fw-spalte-kopf h2{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ds-muted)}
+        @media (max-width:640px){ .fw-schaden-suche{flex:1 1 100%;margin-left:0} .fw-schaden-suche .fw-feld{height:44px} }
+        @media (min-width:900px){
+            .fw-schublade-rechts:not(.hidden){position:fixed;top:0;right:0;bottom:0;z-index:72;width:min(460px,100vw);margin:0;overflow-y:auto;overscroll-behavior:contain;
+                border-radius:var(--ds-radius-0);border:0;border-left:1px solid var(--ds-line);box-shadow:var(--ds-shadow-lg)}
+            .fw-schublade-rechts:not(.hidden)::before{content:"";position:fixed;top:0;bottom:0;left:0;right:min(460px,100vw);background:var(--ds-scrim)}
+            .fw-schublade-rechts .fw-formular{grid-template-columns:minmax(0,1fr)}
+            .fw-schublade-rechts .fw-formular>*{grid-column:1/-1}
+        }
         .fw-kopf-z1{display:flex;align-items:center;gap:12px}
         @media (max-width:1023px){
             .fw-logo-kapsel{padding:0 12px 0 11px;gap:7px}

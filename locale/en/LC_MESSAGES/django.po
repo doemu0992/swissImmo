@@ -40949,3 +40949,9 @@ msgstr "Search property …"
 
 msgid "Karten"
 msgstr "Cards"
+
+msgid "Titel, Liegenschaft, Melder …"
+msgstr "Title, property, reporter …"
+
+msgid "Schäden durchsuchen"
+msgstr "Search damage reports"
