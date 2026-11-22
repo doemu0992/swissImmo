@@ -117,6 +117,32 @@
         if (festKnopf) festKnopf.setAttribute('aria-pressed', ausgebreitet ? 'true' : 'false');
     }
 
+    // Telefon (Mockup «Mehr»): Die Schublade ist ein Blatt von unten. Die Seiten eines Bereichs klappen IM Blatt unter ihrem Bereich auf
+    // (dieselben Abschnitte des Feldes ziehen dorthin um, wie in der breiten Navigation); offen ist zuerst der Bereich, in dem man steht.
+    var blatt = false, aufgeklappt = null;
+    function blattZeigen() {
+        bereiche.forEach(function (b) { b.hidden = b.getAttribute('data-fach-bereich') !== aufgeklappt; });
+        knoepfe.forEach(function (k) { k.setAttribute('aria-expanded', k.getAttribute('data-fach') === aufgeklappt ? 'true' : 'false'); });
+    }
+    function blattAnwenden() {
+        var an = !!telefon.matches;
+        if (an === blatt) return;
+        blatt = an;
+        document.documentElement.classList.toggle('fw-blatt', blatt);
+        if (blatt) {
+            if (offen) { offen = null; fach.hidden = true; }
+            bereiche.forEach(function (b) {
+                var knopf = schiene.querySelector('[data-fach="' + b.getAttribute('data-fach-bereich') + '"]');
+                if (knopf) knopf.insertAdjacentElement('afterend', b);
+            });
+            aufgeklappt = aktiverBereich();
+            blattZeigen();
+        } else {
+            bereiche.forEach(function (b) { fach.insertBefore(b, fach.querySelector('.fw-fach-zuletzt')); b.hidden = true; });
+            knoepfe.forEach(function (k) { k.setAttribute('aria-expanded', 'false'); });
+        }
+    }
+
     function zu(zurueck) {
         if (!offen) return;
         var knopf = schiene.querySelector('[data-fach="' + offen + '"]');
@@ -143,6 +169,13 @@
         k.addEventListener('click', function (e) {
             var key = k.getAttribute('data-fach');
             if (ausgebreitet) return;   // breit: ein Klick führt auf die Seite des Bereichs, der Baum hängt darunter
+            if (blatt) {                // Telefon: der Bereich klappt im Blatt auf oder zu
+                if (!schiene.querySelector('[data-fach-bereich="' + key + '"]')) return;
+                e.preventDefault();
+                aufgeklappt = aufgeklappt === key ? null : key;
+                blattZeigen();
+                return;
+            }
             e.preventDefault();
             if (offen === key) zu(true); else auf(key);
         });
@@ -151,13 +184,15 @@
     document.addEventListener('click', function (e) {
         if (offen && !fach.contains(e.target) && !schiene.contains(e.target) && !(menue && menue.contains(e.target))) zu(false);
     });
-    if (telefon.addEventListener) telefon.addEventListener('change', function () { zu(false); schublade(false); });
+    schiene.addEventListener('click', function (e) { if (blatt && e.target.closest('[data-fach-bereich] a')) schublade(false); });
+    if (telefon.addEventListener) telefon.addEventListener('change', function () { zu(false); schublade(false); blattAnwenden(); });
     if (festKnopf) {
         festKnopf.hidden = false;
         festKnopf.addEventListener('click', function () { var an = !ausgebreitet; breitSchreiben(an); if (!breit.matches) return; breitAnwenden(an); });
         if (breit.addEventListener) breit.addEventListener('change', function () { breitAnwenden(breitLesen()); });
         breitAnwenden(breitLesen());
     }
+    blattAnwenden();
     var g = false, gZeit = 0;
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && arbeitPop && !arbeitPop.hidden) { arbeitZu(true); return; }

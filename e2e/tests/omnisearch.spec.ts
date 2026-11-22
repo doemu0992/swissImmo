@@ -362,18 +362,18 @@ test.describe('Omnisearch am Telefon', () => {
     expect(Math.abs(os.width - 44), 'Das Feld ist am Telefon ein Symbol').toBeLessThan(2);
     expect(Math.abs((chip.y + chip.height / 2) - (werkzeug.y + werkzeug.height / 2)), 'Bestand und Werkzeuge stehen nicht in einer Reihe').toBeLessThan(4);
     expect(Math.abs(chip.y + chip.height / 2 - (os.y + os.height / 2))).toBeLessThan(8);
-    // Die Bereiche stehen in der Schublade; der Menüknopf in Zeile 1 öffnet sie, ein Tipp auf einen Bereich öffnet seine Seiten
+    // Die Bereiche stehen im Blatt von unten; der Menüknopf in Zeile 1 öffnet es, ein Tipp auf einen Bereich klappt seine Seiten im Blatt auf
     await expect(page.locator('#fwSchiene')).toBeHidden();
     await page.locator('#fwMenueKnopf').tap();
     const schiene = await box(page, '#fwSchiene');
     expect(schiene.x).toBe(0);
-    expect(schiene.width).toBeLessThanOrEqual(390 * 0.84 + 1);
+    expect(Math.round(schiene.width)).toBe(390);
     await expect(page.locator('#fwSchiene a[data-fach]')).toHaveCount(8);
     await expect(page.locator('#fwHauptnav, #navsub-akten')).toHaveCount(0);
-    await page.locator('#fwSchiene a[data-fach="akten"]').tap();
-    await expect(page.locator('#fwFach section:visible h2')).toHaveText('Liegenschaften');
-    await expect(page.locator('#fwFach section:visible a[aria-current="page"]')).toContainText('Liegenschaften');
-    await page.keyboard.press('Escape');
+    await expect(page.locator('#fwSchiene [data-fach-bereich="akten"] a[aria-current="page"]')).toContainText('Liegenschaften');
+    await page.locator('#fwSchiene a[data-fach="kontakte"]').tap();
+    await expect(page.locator('#fwSchiene [data-fach-bereich="kontakte"]')).toBeVisible();
+    await expect(page.locator('#fwSchiene [data-fach-bereich="akten"]')).toBeHidden();
     await expect(page.locator('#fwFach')).toBeHidden();
     await page.keyboard.press('Escape');
     await expect(page.locator('#fwSchiene')).toBeHidden();

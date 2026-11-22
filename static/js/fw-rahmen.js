@@ -221,6 +221,8 @@ function fwMenuEinpassen(list) {
     // Links endet der freie Bereich an der Schiene (sie liegt über dem Inhalt): Einträge darunter wären nicht klickbar.
     var schiene = document.getElementById('fwSchiene');
     var links = schiene && schiene.offsetWidth ? schiene.getBoundingClientRect().right : 0;
+    // Am Telefon ist die Schiene ein Blatt über die ganze Breite (zu oder offen): sie begrenzt links nichts.
+    if (links >= innerWidth - 48) links = 0;
     fwStil(list, {transform: null, maxWidth: (innerWidth - links - 24) + 'px'});
     var r = list.getBoundingClientRect(), rand = 12, dx = 0;
     if (r.right > innerWidth - rand) dx = innerWidth - rand - r.right;
