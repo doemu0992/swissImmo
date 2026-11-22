@@ -3542,32 +3542,11 @@
         }
 
         /* ===== MODUL Kennzahlen als Statuszeile (UI-Zielbild, Standard auf allen Seiten) =====
-           Jede `.fw-kpis`-Gruppe wird zur Kapselzeile: Farbpunkt, Zahl, Beschriftung, Zusatz in einem. Die Markup-Struktur
+           Jede `.fw-kpis`-Gruppe ist eine Statuszeile (bis 22.11.2026 als Kapseln, seither als Band). Die Markup-Struktur
            (`.fw-kpi > .fw-l/.fw-v/.fw-f`) bleibt, es ändert sich nur die Darstellung. Ausnahme sind die grossen Zahlen auf Finanzen
            (`.fw-gross`), die auch im Zielbild Kacheln sind. Ziel: höchstens zwei Kapselzeilen am Handy statt einer Kachelwand. */
-        html .fw-kpis:not(.fw-gross):not(.fw-band){display:flex;flex-wrap:wrap;gap:8px;background:none;border:0;box-shadow:none;overflow:visible;margin:0 0 16px}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi{position:relative;flex:0 1 auto;flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:0 8px;
-            min-width:0;min-height:34px;padding:7px 14px 7px 28px;margin:0;border:0;border-radius:var(--ds-radius-sm);background:var(--ds-surface);
-            box-shadow:none;color:var(--ds-ink)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi::before{content:"";position:absolute;left:13px;top:50%;width:7px;height:7px;margin-top:-3.5px;
-            border-radius:var(--ds-kreis);background:var(--ds-muted)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi:has(.fw-good)::before{background:var(--ds-good)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi:has(.fw-warn)::before{background:var(--ds-warn)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi:has(.fw-crit)::before{background:var(--ds-crit)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi:hover{box-shadow:var(--ds-shadow-sm)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi.fw-accent{background:var(--ds-surface)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi .fw-v{order:1;font-size:13px;line-height:1.35;font-weight:700;letter-spacing:0;color:var(--ds-ink)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi .fw-l{order:2;font-size:13px;line-height:1.35;font-weight:500;color:var(--ds-ink)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi .fw-f{order:3;font-size:13px;line-height:1.35;font-weight:400;color:var(--ds-muted)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi .fw-f::before{content:"· "}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi.fw-accent .fw-l,html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi.fw-accent .fw-f,
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi.fw-accent .fw-v{color:var(--ds-ink)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi.fw-accent .fw-f{color:var(--ds-muted)}
-        @media (max-width:640px){
-            html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi{min-height:40px;padding-block:9px}
-            /* Die Aktenleiste (`fw-stats`) bleibt am Telefon flach (telefon.spec.ts): ohne Zusatz passen zwei Kapseln in eine Zeile. */
-            html .fw-kpis.fw-stats:not(.fw-gross)>.fw-kpi .fw-f{display:none}
-        }
+        /* Seit «Aus einem Guss» (22.11.2026) ist die Statuszeile ein Band mit Linien (`html .fw-kpis:not(.fw-gross)` weiter unten):
+           Die Kapseln mit Farbpunkt sind entfallen, damit Kennzahlen auf jeder Seite gleich aussehen. */
 
         /* ===== MODUL Mix-Entwurf (21.11.2026) =====
            Das freigegebene Mockup (prototyp.html, «Immoswiss Prototyp») als Gestalt fuer alle Seiten: weisse Kopfleiste mit Linie,
@@ -3637,9 +3616,9 @@
         .fw-schrittliste .fw-schritt .fw-t{font-weight:500}
         .fw-btn.fw-knapp.fw-primary{box-shadow:none}
         /* Schmale Lesespalte wie im Mockup (`.wrap` 920 px): Seiten ohne Tabelle, ohne Cockpit und ohne Kachelraster stehen ab 1280 px
-           mittig. Tabellen und Arbeitsflächen behalten die volle Breite. */
+           schmal, aber am selben linken Rand wie alle anderen Seiten (Guss: kein Mittigsetzen mehr). Tabellen und Arbeitsflächen behalten die volle Breite. */
         @media (min-width:1280px){
-            .fw-inhalt:not(:has(table)):not(:has(.fw-cockpit)):not(:has(.fw-bento)):not(:has(.fw-kpis)):not(:has(.fw-split)):not(:has(.fw-zwei)):not(:has(.fw-assistent)):not(:has(.fw-raster.l3)):not(:has(.fw-schadenliste)):not(:has(.fw-spalte)):not(:has(.fw-la-spalten)):not(:has(.fw-einst-spalten)){max-width:984px}
+            .fw-inhalt:not(:has(table)):not(:has(.fw-cockpit)):not(:has(.fw-bento)):not(:has(.fw-kpis)):not(:has(.fw-split)):not(:has(.fw-zwei)):not(:has(.fw-assistent)):not(:has(.fw-raster.l3)):not(:has(.fw-schadenliste)):not(:has(.fw-spalte)):not(:has(.fw-la-spalten)):not(:has(.fw-einst-spalten))>*{max-width:920px}
         }
         /* Handy wie im Mockup: weisse Kopfleiste mit Linie; jede Zeile eine eigene Karte mit Statuspunkt auf dem Seitengrund. */
         @media (max-width:640px){
@@ -4053,6 +4032,49 @@
             .fw-einst-seite>.fw-listwerkzeug:has(#einstSuche){display:none}
             .fw-einst-nav a.hidden,.fw-einst-nav>div.hidden{display:none}
         }
+        /* ===== Aus einem Guss (22.11.2026): EINE Form je Baustein auf allen Seiten. Gemessen über alle Seiten der Navigation
+           (`e2e/tests/guss.spec.ts`): vorher drei Knopfgrössen, zwei Kennzahl-Formen, Karten mit und ohne Linie, drei Feldhöhen. ===== */
+        /* Knöpfe: eine Grösse (36 px, 14 px Schrift, 16 px Rand), ob im Seitenkopf, in der Karte oder knapp. Am Telefon gilt die Fingergrösse von oben. */
+        @media (min-width:641px){
+            html .fw-btn:not(.fw-mzm-weg),html .fw-btn.fw-knapp:not(.fw-mzm-weg),html .fw-phead-knoepfe .fw-btn{min-height:36px;font-size:14px;padding:6px 16px}
+            html .fw-sk-absenden .fw-btn{min-height:48px}
+            /* Felder: eine Höhe für Eingabe und Auswahl (vorher 38, 39 und 41 px). */
+            html input.fw-feld:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]),html select.fw-feld{height:40px;min-height:40px}
+            html .fw-kopffilter .fw-feld{height:auto;min-height:0}
+        }
+        /* Karten: überall mit Linie (wie Heute, Schäden, Finanzen, Berichte). Listen ohne Kartenrahmen (`border:0` im Modul) bleiben. */
+        html .fw-card{border:1px solid var(--ds-line)}
+        /* Dieselbe Fläche für die übrigen Kacheln (Hilfebox, Freigabe-Leiste, Ampel, Regel- und Importkachel): Linie und
+           Kartenradius statt Schatten und 28 px. */
+        html .fw-hilfebox,html .fw-freigabe,html .fw-kachel:not(.akzent),html .fw-ampel{
+            border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:none}
+        /* Kennzahlen: überall ein Band mit Linien (wie Berichte und Finanzen) statt Kapseln. `.fw-gross` (Finanzen) hat sein eigenes Band. */
+        html .fw-kpis:not(.fw-gross){display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0;margin-bottom:18px;padding:0;grid-auto-rows:auto;
+            background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);overflow:hidden;box-shadow:none}
+        html .fw-kpis:not(.fw-gross)>.fw-kpi{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:2px;height:auto;min-height:0;max-height:none;
+            padding:14px 18px;margin:0;color:inherit;text-decoration:none;background:transparent;background-image:none;border:0;border-radius:var(--ds-radius-0);
+            box-shadow:1px 0 0 var(--ds-line),0 1px 0 var(--ds-line)}
+        html .fw-kpis:not(.fw-gross)>a.fw-kpi:hover{background:var(--ds-hover)}
+        /* Die hervorgehobene Zelle (`.fw-accent`: Hauptzahl oder gewählter Filter) trägt nur einen ruhigen Grund, keine orange Fläche und keinen Schatten. */
+        html .fw-kpis:not(.fw-gross)>.fw-kpi.fw-accent{background:var(--ds-surface-2);background-image:none;color:inherit}
+        html .fw-kpis:not(.fw-gross)>.fw-kpi,html .fw-kpis:not(.fw-gross)>.fw-kpi:hover,html .fw-kpis:not(.fw-gross)>.fw-kpi.fw-accent:hover{box-shadow:1px 0 0 var(--ds-line),0 1px 0 var(--ds-line);transform:none}
+        html .fw-kpis:not(.fw-gross)>.fw-kpi.fw-accent .fw-l{color:var(--ds-muted)}
+        html .fw-kpis:not(.fw-gross)>.fw-kpi.fw-accent .fw-v{color:var(--ds-ink)}
+        html .fw-kpis:not(.fw-gross)>.fw-kpi.fw-accent .fw-f{color:var(--ds-faint)}
+        html .fw-kpis:not(.fw-gross) .fw-l{font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ds-muted)}
+        html .fw-kpis:not(.fw-gross) .fw-v{display:block;font-family:var(--ds-disp);font-size:22px;font-weight:700;letter-spacing:-.03em;line-height:1.2;color:var(--ds-ink)}
+        html .fw-kpis:not(.fw-gross) .fw-f{display:block;font-size:12px;color:var(--ds-faint)}
+        html .fw-kpis:not(.fw-gross)>.fw-kpi .fw-v.fw-crit,html .fw-kpis:not(.fw-gross)>.fw-kpi.fw-accent .fw-v.fw-crit{color:var(--ds-crit)}
+        html .fw-kpis:not(.fw-gross)>.fw-kpi .fw-v.fw-warn,html .fw-kpis:not(.fw-gross)>.fw-kpi.fw-accent .fw-v.fw-warn{color:var(--ds-warn)}
+        html .fw-kpis:not(.fw-gross)>.fw-kpi .fw-v.fw-good,html .fw-kpis:not(.fw-gross)>.fw-kpi.fw-accent .fw-v.fw-good{color:var(--ds-good)}
+        @media (max-width:640px){
+            html .fw-kpis:not(.fw-gross){grid-template-columns:1fr 1fr}
+            /* Die Aktenleiste (`fw-stats`) bleibt am Telefon flach (telefon.spec.ts): knapper Rand, kleinere Zahl, kein Zusatz. */
+            html .fw-kpis.fw-stats:not(.fw-gross)>.fw-kpi{padding:8px 14px}
+            html .fw-kpis.fw-stats:not(.fw-gross)>.fw-kpi .fw-v{font-size:18px}
+            html .fw-kpis.fw-stats:not(.fw-gross)>.fw-kpi .fw-f{display:none}
+        }
+        /* ===== Ende Aus einem Guss ===== */
         /* ===== Ende MODUL Mix-Entwurf ===== */
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
         /* Vorlage: navmock/v2/vorschau (freigegeben, Stand «Kopfzeile v2»). Zeile 1 von links: Marke,
