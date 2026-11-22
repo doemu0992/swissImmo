@@ -41624,3 +41624,33 @@ msgstr "Rechercher dans les dégâts"
 
 msgid "als Nächstes: %(name)s"
 msgstr "prochaine étape : %(name)s"
+
+msgid "Vormonat"
+msgstr "Mois précédent"
+
+msgid "Folgemonat"
+msgstr "Mois suivant"
+
+msgid "Übersprungen am %(datum)s"
+msgstr "Ignoré le %(datum)s"
+
+msgid "Begründung, z. B. doch offene Posten"
+msgstr "Motif, p. ex. il y a tout de même des postes ouverts"
+
+msgid "%(m)s in Zahlen"
+msgstr "%(m)s en chiffres"
+
+msgid "In diesem Monat war keine Sollstellung fällig."
+msgstr "Aucune facturation n’était due ce mois-ci."
+
+msgid "Soll, fällig im Monat"
+msgstr "Facturé, échu dans le mois"
+
+msgid "Eingangsquote"
+msgstr "Taux d’encaissement"
+
+msgid "Davon offen"
+msgstr "Dont ouvert"
+
+msgid "Offene Positionen"
+msgstr "Postes ouverts"

@@ -2850,7 +2850,20 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-la-fortschritt::-moz-progress-bar{background:var(--ds-good);border-radius:var(--ds-pill)}
         .fw-la-spalten{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:start}
         html .fw-card.fw-la-frueher{border:1px solid var(--ds-line)}
-        @media (min-width:1100px){ .fw-la-spalten:has(.fw-la-frueher){grid-template-columns:minmax(0,1fr) 340px} }
+        @media (min-width:1100px){ .fw-la-spalten{grid-template-columns:minmax(0,1fr) 340px} }
+        .fw-monatswahl{display:inline-flex;align-items:center;gap:4px;padding:2px;background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius-knopf)}
+        .fw-monatswahl b{min-width:128px;padding:0 8px;font-size:13px;font-weight:600;text-align:center}
+        .fw-monatswahl .fw-aus{opacity:.3}
+        .fw-la-rechts{display:flex;flex-direction:column;gap:14px;min-width:0}
+        .fw-la-rechts>.fw-card{margin:0}
+        .fw-la-zahlenraster{display:grid;grid-template-columns:1fr 1fr;margin:0;border-top:1px solid var(--ds-line)}
+        .fw-la-zahlenraster>div{padding:12px 16px;box-shadow:1px 0 0 var(--ds-line),0 1px 0 var(--ds-line);min-width:0}
+        .fw-la-zahlenraster dt{font-size:12px;color:var(--ds-muted)}
+        .fw-la-zahlenraster dd{margin:2px 0 0;font-family:var(--ds-disp);font-size:18px;font-weight:700;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums}
+        .fw-la-zahlenraster .crit dd{color:var(--ds-crit)}
+        .fw-la-leer{margin:0;padding:14px 16px;font-size:13px;color:var(--ds-muted);border-top:1px solid var(--ds-line)}
+        .fw-schrittliste .fw-schritt.ausgelassen .fw-schritt-zeichen{background:var(--ds-surface-2);color:var(--ds-faint)}
+        .fw-schrittliste .fw-schritt.ausgelassen .fw-schritt-zeichen::before{content:"–"}
         .fw-kopf-z1{display:flex;align-items:center;gap:12px}
         @media (max-width:1023px){
             .fw-logo-kapsel{padding:0 12px 0 11px;gap:7px}

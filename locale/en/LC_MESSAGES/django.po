@@ -40958,3 +40958,33 @@ msgstr "Search damage reports"
 
 msgid "als Nächstes: %(name)s"
 msgstr "next: %(name)s"
+
+msgid "Vormonat"
+msgstr "Previous month"
+
+msgid "Folgemonat"
+msgstr "Next month"
+
+msgid "Übersprungen am %(datum)s"
+msgstr "Skipped on %(datum)s"
+
+msgid "Begründung, z. B. doch offene Posten"
+msgstr "Reason, e.g. there are open items after all"
+
+msgid "%(m)s in Zahlen"
+msgstr "%(m)s in figures"
+
+msgid "In diesem Monat war keine Sollstellung fällig."
+msgstr "No rent billing was due this month."
+
+msgid "Soll, fällig im Monat"
+msgstr "Billed, due this month"
+
+msgid "Eingangsquote"
+msgstr "Collection rate"
+
+msgid "Davon offen"
+msgstr "Of which open"
+
+msgid "Offene Positionen"
+msgstr "Open items"

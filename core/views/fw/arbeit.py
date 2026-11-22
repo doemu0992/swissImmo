@@ -614,7 +614,25 @@ def _lauf_stufen(lauf, blockiert):
 from faelle.arbeitsvorrat import LAUF_AKTION  # noqa: E402  (eine Quelle für «Heute» und die Schrittliste)
 
 
-def _monatsschritte(offen, erledigt, heute, lg_query):
+def _monat_aus_anfrage(wert, heute):
+    """`?monat=JJJJ-MM` als erster Tag dieses Monats; ungültig, leer oder in der Zukunft ergibt den laufenden Monat."""
+    import datetime as _dt
+    aktuell = heute.replace(day=1)
+    try:
+        jahr, monat = (int(t) for t in (wert or '').split('-'))
+        gewaehlt = _dt.date(jahr, monat, 1)
+    except (ValueError, TypeError):
+        return aktuell
+    return gewaehlt if _dt.date(2000, 1, 1) <= gewaehlt <= aktuell else aktuell
+
+
+def _monat_versetzt(erster, monate):
+    """Der erste Tag des Monats `monate` vor (negativ) oder nach `erster`."""
+    index = erster.year * 12 + (erster.month - 1) + monate
+    return erster.replace(year=index // 12, month=index % 12 + 1)
+
+
+def _monatsschritte(offen, erledigt, heute, lg_query, periode=None):
     """Der Monatsabschluss als Schrittliste (UI-Zielbild): offene Läufe plus die in diesem Monat abgeschlossenen, in der
     Reihenfolge der Laufarten; zuletzt der Periodenabschluss, der erst möglich ist, wenn alle Läufe erledigt sind.
 
@@ -626,7 +644,11 @@ def _monatsschritte(offen, erledigt, heute, lg_query):
         d = d.date() if d else z['lauf'].faellig_am
         return (d.year, d.month) == (heute.year, heute.month)
 
-    zeilen = [dict(z, fertig=False) for z in offen] + [dict(z, fertig=True) for z in erledigt if dieser_monat(z)]
+    if periode:
+        # Ein früherer Monat (Monatswahl): genau die Läufe dieser Periode, offen wie erledigt.
+        zeilen = [dict(z, fertig=False) for z in offen] + [dict(z, fertig=True) for z in erledigt]
+    else:
+        zeilen = [dict(z, fertig=False) for z in offen] + [dict(z, fertig=True) for z in erledigt if dieser_monat(z)]
     zeilen.sort(key=lambda z: (z['lauf'].laufart.reihenfolge, z['lauf'].faellig_am))
     erster_offen = next((z for z in zeilen if not z['fertig']), None)
     for z in zeilen:
@@ -639,7 +661,7 @@ def _monatsschritte(offen, erledigt, heute, lg_query):
         'url': '/neu/finanzen/' + lg_query,
     }]
     fertig_n = sum(1 for z in zeilen if z['fertig'])
-    frueher = [z for z in erledigt if not dieser_monat(z)]
+    frueher = [] if periode else [z for z in erledigt if not dieser_monat(z)]
     return schritte, fertig_n, len(schritte), frueher
 
 
@@ -661,10 +683,16 @@ def fw_laeufe(request):
 
     basis = _global_filter(request)
     heute = timezone.localdate()
+    # Monatswahl (Modul 5): `?monat=JJJJ-MM` zeigt einen früheren Monat. Der laufende Monat bleibt wie bisher (alle offenen
+    # Läufe plus die in diesem Monat erledigten); ein früherer zeigt genau die Läufe seiner Periode.
+    aktueller_monat = heute.replace(day=1)
+    monat = _monat_aus_anfrage(request.GET.get('monat'), heute)
+    periode = None if monat == aktueller_monat else f'{monat.year}-{monat.month:02d}'
+    laeufe = Lauf.objects.select_related('laufart').prefetch_related('blockaden').order_by('-faellig_am')
+    laeufe = laeufe.filter(periode=periode) if periode else laeufe[:100]
     offen, erledigt = [], []
     ziele = {}
-    for lauf in (Lauf.objects.select_related('laufart')
-                 .prefetch_related('blockaden').order_by('-faellig_am')[:100]):
+    for lauf in laeufe:
         # Aus dem Prefetch gefiltert statt `lauf.offene_blockaden`: Das ist
         # ein `.filter()` und fragte je Lauf einmal nach (bis zu 100 Abfragen).
         blockaden = [b for b in lauf.blockaden.all() if b.behoben_am is None]
@@ -675,6 +703,7 @@ def fw_laeufe(request):
             ziele[art] = _lauf_url(art) + basis['lg_query']
         zeile = {
             'lauf': lauf, 'blockaden': blockaden, 'tage': tage,
+            'uebersprungen': lauf.status == Lauf.UEBERSPRUNGEN,
             'stufen': stufen, 'schritt': schritt, 'schritte': schritte,
             'url': ziele[art],
             # Dieselbe Regel wie der Zaehler «Läufe» in der Leiste
@@ -684,11 +713,27 @@ def fw_laeufe(request):
         (erledigt if lauf.status in (Lauf.ABGESCHLOSSEN, Lauf.UEBERSPRUNGEN)
          else offen).append(zeile)
     offen.sort(key=lambda z: z['lauf'].faellig_am)
-    schritte, erledigt_n, gesamt_n, frueher = _monatsschritte(offen, erledigt, heute, basis['lg_query'])
+    schritte, erledigt_n, gesamt_n, frueher = _monatsschritte(offen, erledigt, heute, basis['lg_query'], periode=periode)
+    # «Monat in Zahlen»: dieselbe Rechnung wie der Kennzahlenstreifen auf «Heute» (`faelle/lage.py`), auf den gewählten Monat
+    # gelegt: im Monat fällige Sollstellung, was davon offen ist, und die Quote. Keine neue Definition.
+    from faelle.lage import _eingangsquote
+    from datetime import timedelta
+    monatsende = _monat_versetzt(monat, 1) - timedelta(days=1)
+    quote, soll, soll_offen, anzahl_offen = _eingangsquote(monat, min(monatsende, heute), basis.get('aktive_lg'))
+    lg_teil = ('&lg=%s' % basis['aktive_lg'].pk) if basis.get('aktive_lg') else ''
+    vor = _monat_versetzt(monat, -1)
+    aeltester = Lauf.objects.order_by('periode').values_list('periode', flat=True).first()
+    hat_vor = bool(aeltester) and f'{vor.year}-{vor.month:02d}' >= aeltester[:7]
+    nach = _monat_versetzt(monat, 1)
     # nav 'laeufe' (bis v8: 'arbeit'): Die Seite ist der Kopf des Bereichs
     # «Läufe» (core/navigation.py) — mit 'arbeit' leuchtete «Heute» auf.
     return render(request, 'fw/laeufe.html', {
         **basis, 'nav': 'laeufe',
+        'monat': monat, 'monat_ist_aktuell': periode is None,
+        'monat_vor_url': f'?monat={vor.year}-{vor.month:02d}{lg_teil}' if hat_vor else '',
+        'monat_nach_url': '' if periode is None else (
+            (basis['lg_query'] or '?') if nach == aktueller_monat else f'?monat={nach.year}-{nach.month:02d}{lg_teil}'),
+        'zahlen': {'quote': quote, 'soll': soll, 'offen': soll_offen, 'anzahl_offen': anzahl_offen},
         'heute': heute, 'offen': offen, 'erledigt': erledigt[:20], 'frueher': frueher[:20],
         'schritte': schritte, 'schritte_erledigt': erledigt_n, 'schritte_gesamt': gesamt_n,
         'brauchen_dich': sum(1 for z in offen if z['braucht_dich']),
