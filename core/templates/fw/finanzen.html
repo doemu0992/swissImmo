@@ -1,6 +1,6 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
-{% load chf %}
+{% load chf l10n %}
 {% block title %}{% trans "Finanzen" %} — immoswiss{% endblock %}
 {% block content %}
 {% comment %}
@@ -23,29 +23,33 @@ Periodenabschluss, Direkt zu) steht unverändert darunter in «Abschluss».
 <!-- Kennzahlen nach konzept-v8 -->
 <div class="fw-kpis fw-fin-kpis fw-gross">
     {% if mietzinskonto %}
-    <div class="fw-kpi">
+    <a class="fw-kpi" href="/neu/bankkonten/{{ lg_query }}">
         <span class="fw-l">{% trans "Mietzinskonto" %}</span>
         <span class="fw-v fw-num">CHF {{ mietzinskonto.saldo|chf }}</span>
         <span class="fw-f">{% if mietzinskonto.iban %}<span class="fw-mono">{{ mietzinskonto.iban }}</span>{% else %}{% blocktrans with nr=mietzinskonto.konto.nummer %}Konto {{ nr }}{% endblocktrans %} · {% trans "laut Buchhaltung" %}{% endif %}</span>
-    </div>
+    </a>
     {% endif %}
-    <div class="fw-kpi">
+    <a class="fw-kpi" href="/neu/kreditoren/{{ lg_query }}">
         <span class="fw-l">{% trans "Offene Kreditoren" %}</span>
         <span class="fw-v fw-num">CHF {{ kred_offen_chf|chf }}</span>
         <span class="fw-f">{% blocktrans count n=kred_offen_n %}{{ n }} Rechnung{% plural %}{{ n }} Rechnungen{% endblocktrans %}</span>
-    </div>
-    <div class="fw-kpi">
+    </a>
+    <a class="fw-kpi" href="/neu/mahnwesen/aging/{{ lg_query }}">
         <span class="fw-l">{% trans "Ausstände > 30 Tage" %}</span>
         <span class="fw-v fw-num {% if ueber30_chf %}fw-crit{% else %}fw-good{% endif %}">CHF {{ ueber30_chf|chf }}</span>
         <span class="fw-f">{% blocktrans count n=ueber30_n %}{{ n }} Mietpartei{% plural %}{{ n }} Mietparteien{% endblocktrans %}</span>
-    </div>
-    <div class="fw-kpi">
+    </a>
+    <a class="fw-kpi" href="/neu/kautionen/{{ lg_query }}">
         <span class="fw-l">{% trans "Kautionen" %}</span>
         <span class="fw-v fw-num">CHF {{ kautionen_chf|chf }}</span>
         <span class="fw-f">{% blocktrans count n=kautionen_n %}{{ n }} Vertrag · hinterlegt{% plural %}{{ n }} Verträge · hinterlegt{% endblocktrans %}</span>
-    </div>
+    </a>
 </div>
 
+{% comment %} Modul 6: ab 1100 px zwei Spalten. Links die Ausstände nach Alter (im Quelltext nach dem Bankabgleich, `order` stellt
+   sie nach links), rechts der Bankabgleich und «Diese Woche fällig». Am Telefon bleibt die bisherige Reihenfolge. {% endcomment %}
+<div class="fw-fin-spalten">
+<div class="fw-fin-rechts">
 <!-- Bankabgleich: offene Gutschriften mit Vorschlag -->
 <section class="fw-card fw-gutschriften">
     <div class="fw-kopf">
@@ -95,6 +99,18 @@ Periodenabschluss, Direkt zu) steht unverändert darunter in «Abschluss».
     {% include 'fw/_empty.html' with icon='gut' titel=_("Abgeglichen.") subtext=_("Alle Gutschriften sind verbucht.") %}
     {% endif %}
 </section>
+{% if kred_woche %}
+<section class="fw-card fw-fin-woche">
+    <div class="fw-kopf"><h2>{% trans "Als Nächstes fällig" %}</h2><span class="fw-neben">{% trans "Kreditoren" %}</span></div>
+    {% for k in kred_woche %}
+    <a class="fw-zeile" href="/neu/kreditoren/{{ lg_query }}">
+        <span class="fw-zeit fw-mono{% if k.faellig_am < heute %} fw-crit{% endif %}">{{ k.faellig_am|date:"d.m." }}</span>
+        <div class="fw-mitte"><div class="fw-t">{{ k.lieferant|default:"—" }}</div><div class="fw-s">CHF {{ k.offener_betrag|chf }} · {{ k.get_status_display }}</div></div>
+    </a>
+    {% endfor %}
+</section>
+{% endif %}
+</div>
 
 <!-- Ausstände nach Alter (dieselbe Einteilung wie /neu/mahnwesen/aging/) -->
 <section class="fw-card">
@@ -102,6 +118,15 @@ Periodenabschluss, Direkt zu) steht unverändert darunter in «Abschluss».
         <h2>{% trans "Ausstände nach Alter" %}</h2>
         <span class="fw-neben">{% if aktive_lg %}{{ aktive_lg.strasse }}{% else %}{% trans "ganzer Bestand" %}{% endif %}</span>
     </div>
+    {% if aus_balken %}
+    {% comment %} Altersbalken: Anteile der vier Klassen am überfälligen Total (dieselben Summen wie die Fusszeile der Tabelle). {% endcomment %}
+    <svg class="fw-altersbalken" viewBox="0 0 100 4" preserveAspectRatio="none" role="img" aria-label="{% trans 'Verteilung der Ausstände nach Alter' %}">
+        {% for b in aus_balken %}<rect class="{{ b.klasse }}" x="{{ b.x|unlocalize }}" y="0" width="{{ b.breite|unlocalize }}" height="4"></rect>{% endfor %}
+    </svg>
+    <div class="fw-alterslegende">
+        {% for b in aus_balken %}<span class="{{ b.klasse }}">{% if b.klasse == 'd30' %}1–30{% elif b.klasse == 'd60' %}31–60{% elif b.klasse == 'd90' %}61–90{% else %}&gt; 90{% endif %} · CHF {{ b.betrag|chf:0 }}</span>{% endfor %}
+    </div>
+    {% endif %}
     <div class="fw-tablewrap">
         <table class="fw-table fw-aging-tabelle">
             <thead><tr>
@@ -146,6 +171,7 @@ Periodenabschluss, Direkt zu) steht unverändert darunter in «Abschluss».
         <span class="fw-rechts fw-fin-links"><a href="/neu/mahnwesen/aging/{{ lg_query }}" class="fw-link">{% trans "Debitoren-Aging" %}</a> <a href="/neu/mahnwesen/{{ lg_query }}" class="fw-link">{% trans "Zum Mahnwesen" %}</a></span>
     </div>
 </section>
+</div>
 <script nonce="{{ csp_nonce }}">
 document.querySelectorAll('.fw-aging-tabelle tr[data-href]').forEach(function (tr) {
     tr.addEventListener('click', function (e) {

@@ -636,7 +636,20 @@ def _finanzen_v8(basis, heute, deb, kred):
         })
     gutschriften.sort(key=lambda g: g['valuta'] or heute, reverse=True)
 
+    # Modul 6: Altersbalken (Anteile der vier Altersklassen am überfälligen Total, für ein SVG ohne Inline-Stil) und die
+    # Kreditoren, die bis in sieben Tagen fällig sind. Beides aus den schon geladenen Daten, ohne weitere Abfrage.
+    from datetime import timedelta as _td
+    aus_balken, _x = [], Decimal('0')
+    if aus_total['ueberfaellig'] > 0:
+        for klasse in ('d30', 'd60', 'd90', 'd90plus'):
+            breite = (aus_total[klasse] / aus_total['ueberfaellig'] * 100).quantize(Decimal('0.01'))
+            aus_balken.append({'klasse': klasse, 'x': _x, 'breite': breite, 'betrag': aus_total[klasse]})
+            _x += breite
+    kred_woche = sorted((k for k in kred_offen if k.faellig_am and k.faellig_am <= heute + _td(days=7)),
+                        key=lambda k: k.faellig_am)[:5]
+
     return {
+        'aus_balken': aus_balken, 'kred_woche': kred_woche,
         'mietzinskonto': mietzinskonto, 'letzter_import': letzter_import,
         'kred_offen_chf': sum((k.offener_betrag for k in kred_offen), Decimal('0.00')),
         'kred_offen_n': len(kred_offen),

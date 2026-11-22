@@ -1,6 +1,6 @@
 {% extends 'fw/base.html' %}
 {% load zeichen i18n %}
-{% load chf %}
+{% load chf statisch %}
 {% block title %}{% trans "Kreditoren" %} — immoswiss{% endblock %}
 
 {% block content %}
@@ -167,9 +167,34 @@
             {% if suche %}<a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}{% if aktive_lg %}lg={{ aktive_lg.id }}{% endif %}" class="fw-link">× {{ suche }}</a>{% endif %}
             <span class="fw-klein">{% blocktrans count n=anzahl %}{{ n }} Rechnung{% plural %}{{ n }} Rechnungen{% endblocktrans %}</span>
         </form>
+        {% comment %} Modul 6: «Tabelle | Spalten». Die Spalten zeigen dieselben Rechnungen nach Status; bearbeitet, freigegeben und
+           bezahlt wird weiter in der Tabelle («In der Tabelle zeigen»). Die Wahl bleibt je Gerät (`fwKrAnsicht`,
+           `static/js/fw-finanzen.js`); ohne Skript bleibt die Tabelle. `aria-pressed` setzt das Skript. {% endcomment %}
+        <div class="fw-ansicht-schalter" role="group" aria-label="{% trans 'Ansicht' %}" id="krAnsicht" hidden>
+            <button type="button" class="fw-dichte-knopf" data-ansicht="tabelle">{% trans "Tabelle" %}</button>
+            <button type="button" class="fw-dichte-knopf" data-ansicht="spalten">{% trans "Spalten" %}</button>
+        </div>
     </div>
 
-    <div class="fw-tablewrap fw-sticky">
+    <div class="fw-board fw-kr-spalten" id="krSpalten" hidden>
+        {% for wert, label in status_chips %}{% if wert %}
+        <section class="fw-spalte" data-kr-spalte="{{ wert }}">
+            <header class="fw-spalte-kopf"><h2>{{ label }}</h2></header>
+            <ul class="fw-spalte-liste">
+                {% for row in rows %}{% if row.k.status == wert %}
+                <li class="fw-karte">
+                    <span class="fw-karte-titel">{{ row.lieferant }}</span>
+                    <span class="fw-karte-sub">{{ row.objekt }}{% if row.faellig %} · {% trans "Fällig" %} {{ row.faellig|date:"d.m.Y" }}{% endif %}</span>
+                    <div class="fw-karte-fuss"><b class="fw-num{% if row.ueberfaellig %} fw-kritisch{% endif %}">CHF {{ row.betrag|chf }}</b>
+                        <button type="button" class="fw-btn fw-knapp fw-geist" data-kr-zeige="krow-{{ row.k.id }}">{% trans "In der Tabelle zeigen" %}</button></div>
+                </li>
+                {% endif %}{% endfor %}
+            </ul>
+        </section>
+        {% endif %}{% endfor %}
+    </div>
+
+    <div class="fw-tablewrap fw-sticky" id="krTabelle">
         <table class="fw-table min-w-max" data-spaltenfilter>
             <thead>
             <tr>
@@ -184,7 +209,7 @@
             </thead>
             <tbody>
             {% for row in rows %}
-            <tr class="{% if row.k.status == 'neu' %}cursor-pointer{% endif %}"
+            <tr id="krow-{{ row.k.id }}" class="{% if row.k.status == 'neu' %}cursor-pointer{% endif %}"
                 {% if row.k.status == 'neu' %}data-umschalten="kedit-{{ row.k.id }}" data-ausser="form,button,a,select,input,label" title="{% trans 'Klicken zum Bearbeiten (mit Beleg-Vorschau)' %}"{% endif %}>
                 <td class="fw-strong whitespace-nowrap">
                     {{ row.lieferant }}
@@ -473,3 +498,5 @@ function fwHnkSync(sel){
 </script>
 {% include 'fw/_fwmodal.html' %}
 {% endblock %}
+
+{% block scripts %}<script src="{% statisch 'js/fw-finanzen.js' %}"></script>{% endblock %}

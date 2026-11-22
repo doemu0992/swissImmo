@@ -285,6 +285,14 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Bestandsfilter mit). «Schaden erfassen» ist ab 900 px eine Schublade von rechts (`#neuschaden.fw-schublade-rechts`, derselbe
   Knopf öffnet und schliesst, dazu das Kreuz); am Telefon klappt das Formular wie bisher in der Seite auf. Die Boards
   (`.fw-spalte`: Schäden, Bewerbungen) nutzen die volle Breite, die Spaltenköpfe stehen in Versalien.
+- **Finanzen, Modul 6 (22.11.2026):** Übersicht (`/neu/finanzen/`): die vier Kennzahlen stehen als ein Band und sind Verweise
+  (Bankkonten, Kreditoren, Debitoren-Aging, Kautionen). Ab 1100 px zwei Spalten: links «Ausstände nach Alter» mit einem
+  Altersbalken (SVG ohne Inline-Stil; Anteile der vier Klassen am überfälligen Total, `aus_balken`), rechts der Bankabgleich und
+  «Als Nächstes fällig» (offene Kreditoren, fällig bis in sieben Tagen oder überfällig, `kred_woche`). Beides aus den schon
+  geladenen Daten, ohne weitere Abfrage. **Kreditoren:** «Tabelle | Spalten» (`#krAnsicht`, `localStorage` `fwKrAnsicht`); die
+  Spalten zeigen dieselben Rechnungen nach Status, bearbeitet und freigegeben wird weiter in der Tabelle («In der Tabelle zeigen»).
+  **Mieterkonten:** ab 1100 px öffnet «Kontoblatt» das Kontoblatt rechts neben der Liste (dieselbe Seite im Rahmen, `?embed=1`);
+  die Zeile öffnet weiter die Seite. Skript: `static/js/fw-finanzen.js`. Test: `e2e/tests/finanzen-modul6.spec.ts`.
 - **Monatsabschluss, Modul 5 (22.11.2026):** Die Übersicht (`/neu/laeufe/`) nutzt die volle Breite. Unter dem Titel steht der
   Fortschritt als Balken (`progress.fw-la-fortschritt`, dieselben Zahlen wie die Unterzeile, die auch den nächsten Schritt nennt).
   **Monatswahl:** `?monat=JJJJ-MM` blättert in frühere Monate (`_monat_aus_anfrage`; Unsinn und Zukunft fallen auf den laufenden
