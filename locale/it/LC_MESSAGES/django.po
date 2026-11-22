@@ -41550,3 +41550,36 @@ msgstr "Titolo, immobile, segnalante …"
 
 msgid "Schäden durchsuchen"
 msgstr "Cerca nei danni"
+
+msgid "als Nächstes: %(name)s"
+msgstr "prossimo passo: %(name)s"
+
+msgid "Vormonat"
+msgstr "Mese precedente"
+
+msgid "Folgemonat"
+msgstr "Mese successivo"
+
+msgid "Übersprungen am %(datum)s"
+msgstr "Saltato il %(datum)s"
+
+msgid "Begründung, z. B. doch offene Posten"
+msgstr "Motivo, p. es. ci sono comunque partite aperte"
+
+msgid "%(m)s in Zahlen"
+msgstr "%(m)s in cifre"
+
+msgid "In diesem Monat war keine Sollstellung fällig."
+msgstr "In questo mese non era dovuta alcuna fatturazione."
+
+msgid "Soll, fällig im Monat"
+msgstr "Fatturato, in scadenza nel mese"
+
+msgid "Eingangsquote"
+msgstr "Quota d’incasso"
+
+msgid "Davon offen"
+msgstr "Di cui aperto"
+
+msgid "Offene Positionen"
+msgstr "Partite aperte"

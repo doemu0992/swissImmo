@@ -285,6 +285,17 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Bestandsfilter mit). «Schaden erfassen» ist ab 900 px eine Schublade von rechts (`#neuschaden.fw-schublade-rechts`, derselbe
   Knopf öffnet und schliesst, dazu das Kreuz); am Telefon klappt das Formular wie bisher in der Seite auf. Die Boards
   (`.fw-spalte`: Schäden, Bewerbungen) nutzen die volle Breite, die Spaltenköpfe stehen in Versalien.
+- **Monatsabschluss, Modul 5 (22.11.2026):** Die Übersicht (`/neu/laeufe/`) nutzt die volle Breite. Unter dem Titel steht der
+  Fortschritt als Balken (`progress.fw-la-fortschritt`, dieselben Zahlen wie die Unterzeile, die auch den nächsten Schritt nennt).
+  **Monatswahl:** `?monat=JJJJ-MM` blättert in frühere Monate (`_monat_aus_anfrage`; Unsinn und Zukunft fallen auf den laufenden
+  Monat). Der laufende Monat zeigt wie bisher alle offenen Läufe plus die in ihm erledigten, ein früherer genau die Läufe seiner
+  Periode. **Monat in Zahlen** (rechts ab 1100 px): im Monat fällige Sollstellung, was davon offen ist, Anzahl offener Positionen
+  und Eingangsquote, gerechnet mit `faelle.lage._eingangsquote`, also derselben Definition wie der Kennzahlenstreifen auf «Heute».
+  **Übersprungen:** Ein übersprungener Lauf steht als «Übersprungen am …» mit seiner Begründung da (nicht mehr als
+  «Abgeschlossen») und lässt sich an der Zeile zurücknehmen; das ist derselbe Weg wie «Zurücksetzen» in der Laufakte
+  (`fw_lauf_zuruecksetzen`, nur mit Begründung, im Logbuch). Test: `faelle/test_schrittliste.py`.
+  **Bewusst nicht gebaut:** einzelne Positionen in der Sollstellung auslassen. Der Lauf würde als abgeschlossen gelten, obwohl
+  Mieten fehlen; das ändert die Fachlogik und braucht einen eigenen Entscheid.
 - **Liegenschaftsliste, Modul 2 (22.11.2026):** Ab 1100 px zeigt «Vorschau» je Zeile die Eckdaten rechts neben der Liste (Mandat,
   Objekte, Belegung, Soll, alle Befunde; Knöpfe «Akte öffnen», «Objekte», «Mietverhältnisse»), ohne die Akte zu öffnen. Der Inhalt
   steht fertig in einer `template`-Marke der Zeile, `static/js/fw-liegenschaften.js` setzt ihn nur um. Ab 641 px stellt der Schalter

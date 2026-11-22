@@ -39,3 +39,60 @@ class SchrittlisteTests(_Basis):
         self.assertEqual(schritte[-1]['zustand'], 'jetzt')
         self.assertEqual(antwort.context['schritte_erledigt'], len(schritte) - 1)
         self.assertContains(antwort, 'Abschliessen')
+
+
+class MonatswahlUndZuruecknehmenTests(_Basis):
+    """Modul 5, zweiter Teil: Monatswahl, «Monat in Zahlen», Überspringen zurücknehmen."""
+
+    def _vormonat(self):
+        from django.utils import timezone
+        erster = timezone.localdate().replace(day=1)
+        index = erster.year * 12 + erster.month - 2
+        return erster.replace(year=index // 12, month=index % 12 + 1)
+
+    def test_ohne_wahl_steht_der_laufende_monat_und_es_geht_nicht_vorwaerts(self):
+        antwort = self.c.get('/neu/laeufe/')
+        self.assertTrue(antwort.context['monat_ist_aktuell'])
+        self.assertEqual(antwort.context['monat_nach_url'], '')
+        self.assertIn('zahlen', antwort.context)
+
+    def test_ein_frueherer_monat_zeigt_nur_seine_laeufe(self):
+        vor = self._vormonat()
+        periode = f'{vor.year}-{vor.month:02d}'
+        vorlage = Lauf.alle_organisationen.filter(periode=PERIODE).first()
+        alt = Lauf(organisation=vorlage.organisation, laufart=vorlage.laufart, periode=periode,
+                   faellig_am=vor, status=Lauf.OFFEN)
+        alt.save()
+        antwort = self.c.get(f'/neu/laeufe/?monat={periode}')
+        self.assertEqual(antwort.status_code, 200)
+        self.assertFalse(antwort.context['monat_ist_aktuell'])
+        self.assertEqual(antwort.context['monat'], vor)
+        laeufe = [s['lauf'] for s in antwort.context['schritte'] if not s.get('abschluss')]
+        self.assertEqual({lauf.periode for lauf in laeufe}, {periode})
+        # Gegenprobe: vorwärts führt zurück auf den laufenden Monat (ohne Parameter).
+        self.assertNotIn('monat=', antwort.context['monat_nach_url'])
+        self.assertTrue(antwort.context['monat_nach_url'])
+
+    def test_unsinn_und_zukunft_fallen_auf_den_laufenden_monat(self):
+        for wert in ('abc', '2026-13', '2999-01', ''):
+            antwort = self.c.get('/neu/laeufe/', {'monat': wert})
+            self.assertEqual(antwort.status_code, 200, wert)
+            self.assertTrue(antwort.context['monat_ist_aktuell'], wert)
+
+    def test_uebersprungen_steht_als_uebersprungen_da_und_laesst_sich_zuruecknehmen(self):
+        lauf = Lauf.alle_organisationen.filter(periode=PERIODE).first()
+        self.c.post(f'/neu/laeufe/{lauf.pk}/ueberspringen/', {'bemerkung': 'keine offenen Posten'})
+        lauf.refresh_from_db()
+        self.assertEqual(lauf.status, Lauf.UEBERSPRUNGEN)
+        antwort = self.c.get('/neu/laeufe/')
+        self.assertContains(antwort, 'Übersprungen am')
+        self.assertContains(antwort, 'keine offenen Posten')
+        self.assertContains(antwort, f'/neu/laeufe/{lauf.pk}/zuruecksetzen/')
+        # Ohne Begründung bleibt der Lauf übersprungen (Gegenprobe), mit Begründung ist er wieder offen.
+        self.c.post(f'/neu/laeufe/{lauf.pk}/zuruecksetzen/', {'grund': ''})
+        lauf.refresh_from_db()
+        self.assertEqual(lauf.status, Lauf.UEBERSPRUNGEN)
+        self.c.post(f'/neu/laeufe/{lauf.pk}/zuruecksetzen/', {'grund': 'doch offene Posten'})
+        lauf.refresh_from_db()
+        self.assertEqual(lauf.status, Lauf.OFFEN)
+        self.assertNotContains(self.c.get('/neu/laeufe/'), 'Übersprungen am')

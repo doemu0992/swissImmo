@@ -1,5 +1,5 @@
 {% extends 'fw/base.html' %}
-{% load zeichen i18n %}
+{% load zeichen i18n chf %}
 {% block title %}{% trans "Monatsabschluss" %} — immoswiss{% endblock %}
 
 {% block content %}
@@ -10,9 +10,21 @@
     <div>
         <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/">{% trans "Heute" %}</a><span aria-hidden="true">/</span><span>{% trans "Monatsabschluss" %}</span></nav>
         <h1>{% trans "Monatsabschluss" %}</h1>
-        <p>{{ heute|date:"F Y" }} · {% blocktrans with n=schritte_erledigt gesamt=schritte_gesamt %}{{ n }} von {{ gesamt }} Schritten erledigt{% endblocktrans %}</p>
+        <p>{{ monat|date:"F Y" }} · {% blocktrans with n=schritte_erledigt gesamt=schritte_gesamt %}{{ n }} von {{ gesamt }} Schritten erledigt{% endblocktrans %}{% for z in schritte %}{% if z.zustand == 'jetzt' %} · {% if z.abschluss %}{% blocktrans with name=_("Periodenabschluss") %}als Nächstes: {{ name }}{% endblocktrans %}{% else %}{% blocktrans with name=z.lauf.laufart.bezeichnung %}als Nächstes: {{ name }}{% endblocktrans %}{% endif %}{% endif %}{% endfor %}</p>
+    </div>
+    {% comment %} Monatswahl (Modul 5): `?monat=JJJJ-MM` blättert in frühere Monate; vorwärts höchstens bis zum laufenden. {% endcomment %}
+    <div class="fw-phead-knoepfe">
+        <div class="fw-monatswahl" role="group" aria-label="{% trans 'Monat' %}">
+            {% if monat_vor_url %}<a href="{{ monat_vor_url }}" class="fw-ikon mut" aria-label="{% trans 'Vormonat' %}" title="{% trans 'Vormonat' %}">{% zeichen 'zurueck' %}</a>{% else %}<span class="fw-ikon mut fw-aus" aria-hidden="true">{% zeichen 'zurueck' %}</span>{% endif %}
+            <b>{{ monat|date:"F Y" }}</b>
+            {% if monat_nach_url %}<a href="{{ monat_nach_url }}" class="fw-ikon mut" aria-label="{% trans 'Folgemonat' %}" title="{% trans 'Folgemonat' %}">{% zeichen 'weiter' %}</a>{% else %}<span class="fw-ikon mut fw-aus" aria-hidden="true">{% zeichen 'weiter' %}</span>{% endif %}
+        </div>
     </div>
 </div>
+{% comment %} Modul 5: der Fortschritt des Monats als Balken (dieselben Zahlen wie in der Unterzeile), darunter links die Schritte,
+   rechts ab 1100 px «Zuletzt abgeschlossen». {% endcomment %}
+<progress class="fw-la-fortschritt" max="{{ schritte_gesamt }}" value="{{ schritte_erledigt }}" aria-label="{% blocktrans with n=schritte_erledigt gesamt=schritte_gesamt %}{{ n }} von {{ gesamt }} Schritten erledigt{% endblocktrans %}"></progress>
+<div class="fw-la-spalten">
 
 {% comment %} UI-Zielbild «Schritte in dieser Reihenfolge»: eine Liste statt Laufkarten. Zustand je Schritt:
    fertig (Haken), jetzt (der erste offene Lauf, Ring mit Punkt, Knopf in Akzent), offen (weitere offene Läufe, leerer Ring,
@@ -31,18 +43,30 @@
         {% if z.zustand == 'jetzt' %}<a href="{{ z.url }}" class="fw-btn fw-primary fw-knapp">{% trans "Abschliessen" %}</a>{% endif %}
     </div>
     {% else %}
-    <div class="fw-schritt {{ z.zustand }}">
-        <span class="fw-schritt-zeichen" aria-hidden="true">{% if z.fertig %}{% zeichen 'gut' %}{% endif %}</span>
+    <div class="fw-schritt {{ z.zustand }}{% if z.fertig and z.uebersprungen %} ausgelassen{% endif %}">
+        <span class="fw-schritt-zeichen" aria-hidden="true">{% if z.fertig and not z.uebersprungen %}{% zeichen 'gut' %}{% endif %}</span>
         <div class="fw-mitte">
             <div class="fw-t"><a href="{% url 'fw_lauf_detail' z.lauf.pk %}">{{ z.lauf.laufart.bezeichnung }} {{ z.lauf.periode }}</a></div>
             <div class="fw-s">
-                {% if z.fertig %}{% blocktrans with datum=z.lauf.abgeschlossen_am|date:"d.m.Y" %}Abgeschlossen am {{ datum }}{% endblocktrans %}{% for schluessel, wert in z.lauf.kennzahlen.items %} · {{ schluessel }} {{ wert }}{% endfor %}
+                {% if z.fertig and z.uebersprungen %}{% blocktrans with datum=z.lauf.abgeschlossen_am|date:"d.m.Y" %}Übersprungen am {{ datum }}{% endblocktrans %}{% if z.lauf.bemerkung %} · {{ z.lauf.bemerkung|truncatechars:120 }}{% endif %}
+                {% elif z.fertig %}{% blocktrans with datum=z.lauf.abgeschlossen_am|date:"d.m.Y" %}Abgeschlossen am {{ datum }}{% endblocktrans %}{% for schluessel, wert in z.lauf.kennzahlen.items %} · {{ schluessel }} {{ wert }}{% endfor %}
                 {% else %}{% blocktrans with datum=z.lauf.faellig_am|date:"d.m.Y" %}Stichtag {{ datum }}{% endblocktrans %}
                     {% if z.blockaden %}{% for b in z.blockaden %} <span class="fw-chip fw-warn">{{ b.grund }}</span>{% endfor %}
                     {% elif z.tage < 0 %} <span class="fw-chip fw-crit">{% blocktrans count n=z.tage|cut:"-"|add:0 %}{{ n }} Tag über{% plural %}{{ n }} Tage über{% endblocktrans %}</span>
                     {% elif z.tage == 0 %} <span class="fw-chip fw-warn">{% trans "heute" %}</span>{% endif %}
                 {% endif %}
             </div>
+            {% comment %} Überspringen zurücknehmen: derselbe Weg wie «Zurücksetzen» in der Laufakte (`fw_lauf_zuruecksetzen`, mit
+               Begründung, im Logbuch), hier direkt an der Zeile. {% endcomment %}
+            {% if z.fertig and z.uebersprungen and kann_schreiben %}
+            <details class="fw-schritt-skip">
+                <summary>{% trans "Zurücknehmen" %}</summary>
+                <form method="post" action="{% url 'fw_lauf_zuruecksetzen' z.lauf.pk %}" class="fw-eingang-knoepfe">{% csrf_token %}
+                    <input type="text" name="grund" class="fw-feld" required maxlength="300" placeholder="{% trans 'Begründung, z. B. doch offene Posten' %}" aria-label="{% trans 'Begründung' %}">
+                    <button class="fw-btn fw-knapp">{% trans "Zurücknehmen" %}</button>
+                </form>
+            </details>
+            {% endif %}
             {% if not z.fertig and kann_schreiben and not z.blockaden %}
             <details class="fw-schritt-skip">
                 <summary>{% trans "Überspringen" %}</summary>
@@ -59,8 +83,23 @@
     {% endfor %}
 </div>
 
+<div class="fw-la-rechts">
+{% comment %} «Monat in Zahlen» (Modul 5): dieselbe Rechnung wie der Kennzahlenstreifen auf «Heute» (`faelle/lage.py`). {% endcomment %}
+<div class="fw-card fw-la-frueher">
+    <div class="fw-kopf"><span class="fw-t">{% blocktrans with m=monat|date:"F Y" %}{{ m }} in Zahlen{% endblocktrans %}</span></div>
+    {% if zahlen.quote is None %}
+    <p class="fw-la-leer">{% trans "In diesem Monat war keine Sollstellung fällig." %}</p>
+    {% else %}
+    <dl class="fw-la-zahlenraster">
+        <div><dt>{% trans "Soll, fällig im Monat" %}</dt><dd>CHF {{ zahlen.soll|chf:0 }}</dd></div>
+        <div><dt>{% trans "Eingangsquote" %}</dt><dd>{{ zahlen.quote }} %</dd></div>
+        <div{% if zahlen.offen %} class="crit"{% endif %}><dt>{% trans "Davon offen" %}</dt><dd>CHF {{ zahlen.offen|chf:0 }}</dd></div>
+        <div><dt>{% trans "Offene Positionen" %}</dt><dd>{{ zahlen.anzahl_offen }}</dd></div>
+    </dl>
+    {% endif %}
+</div>
 {% if frueher %}
-<div class="fw-card">
+<div class="fw-card fw-la-frueher">
     <div class="fw-kopf"><span class="fw-t">{% trans "Zuletzt abgeschlossen" %}</span></div>
     {% for z in frueher %}
     <div class="fw-zeile">
@@ -76,4 +115,6 @@
     {% endfor %}
 </div>
 {% endif %}
+</div>
+</div>
 {% endblock %}

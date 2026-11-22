@@ -39849,3 +39849,36 @@ msgstr "Titel, Liegenschaft, Melder …"
 
 msgid "Schäden durchsuchen"
 msgstr "Schäden durchsuchen"
+
+msgid "als Nächstes: %(name)s"
+msgstr "als Nächstes: %(name)s"
+
+msgid "Vormonat"
+msgstr "Vormonat"
+
+msgid "Folgemonat"
+msgstr "Folgemonat"
+
+msgid "Übersprungen am %(datum)s"
+msgstr "Übersprungen am %(datum)s"
+
+msgid "Begründung, z. B. doch offene Posten"
+msgstr "Begründung, z. B. doch offene Posten"
+
+msgid "%(m)s in Zahlen"
+msgstr "%(m)s in Zahlen"
+
+msgid "In diesem Monat war keine Sollstellung fällig."
+msgstr "In diesem Monat war keine Sollstellung fällig."
+
+msgid "Soll, fällig im Monat"
+msgstr "Soll, fällig im Monat"
+
+msgid "Eingangsquote"
+msgstr "Eingangsquote"
+
+msgid "Davon offen"
+msgstr "Davon offen"
+
+msgid "Offene Positionen"
+msgstr "Offene Positionen"
