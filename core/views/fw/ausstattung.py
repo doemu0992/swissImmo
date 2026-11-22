@@ -403,8 +403,9 @@ def fw_lebensdauer(request):
         return redirect('/neu/lebensdauer/')
 
     from django.contrib import messages as _m
+    # Die Tabelle steht unter Einstellungen (`einstellungen_gruppen`): Die Leiste markiert denselben Bereich wie auf den Nachbarseiten.
     return render(request, 'fw/lebensdauer.html', {
-        **basis, 'nav': 'assets',
+        **basis, 'nav': 'einstellungen',
         'rows': eigene,
         'meldung': list(_m.get_messages(request)),
     })

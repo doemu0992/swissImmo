@@ -4,7 +4,7 @@
 {% block content %}
 <div class="fw-phead">
     <div>
-        <h1>{% trans "Zwei-Faktor-Anmeldung" %}</h1>
+        <h1>{% if fw_einstellungen_krume %}{% trans "Anmeldung & Sicherheit" %}{% else %}{% trans "Zwei-Faktor-Anmeldung" %}{% endif %}</h1>
         <p>{% trans "Zusätzlicher Schutz für Ihr Konto: Nach dem Passwort fragt immoswiss einen Code aus Ihrer Authenticator-App." %}</p>
     </div>
 </div>

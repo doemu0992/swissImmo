@@ -88,6 +88,27 @@ class EinstellungenSeitenlisteTests(TestCase):
             for k in g['eintraege']:
                 self.assertIn('href="%s' % k['url'], nav)
 
-    def test_hub_und_fremde_seite_ohne_liste(self):
-        self.assertNotContains(self.client.get('/neu/einstellungen/'), 'id="fwEinstNav"')
+    def test_uebersicht_im_selben_rahmen_fremde_seite_ohne_liste(self):
+        r = self.client.get('/neu/einstellungen/')
+        self.assertContains(r, 'id="fwEinstNav"')
+        # Auf der Übersicht ist keine einzelne Seite offen
+        html = r.content.decode()
+        self.assertNotIn('aria-current="page"', html[html.index('id="fwEinstNav"'):html.index('class="fw-einst-seite"')])
         self.assertNotContains(self.client.get('/neu/liegenschaften/'), 'id="fwEinstNav"')
+
+    def test_seitentitel_gleich_wie_in_der_liste(self):
+        """Aus einem Guss: Der Titel der Seite ist der Name, unter dem sie in der Liste steht."""
+        import html as _html
+        import re
+        for g in self.client.get('/neu/einstellungen/').context['fw_einstellungen_gruppen']:
+            for k in g['eintraege']:
+                r = self.client.get(k['url'])
+                if r.status_code != 200:
+                    continue
+                m = re.search(r'<h1[^>]*>(.*?)</h1>', r.content.decode(), re.S)
+                self.assertIsNotNone(m, k['url'])
+                self.assertEqual(_html.unescape(re.sub(r'<[^>]+>', '', m.group(1))).strip(), str(k['titel']), k['url'])
+                # die Leiste markiert «Einstellungen», nicht einen Arbeitsbereich
+                self.assertIn(r.context['nav'], r.context['fw_einstellungen_keys'], k['url'])
+                # und genau eine Pfadzeile
+                self.assertNotContains(r, 'fw-brotkrume', msg_prefix=k['url'])

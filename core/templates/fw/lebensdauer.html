@@ -3,12 +3,6 @@
 {% block title %}{% trans "Lebensdauertabelle" %} — immoswiss{% endblock %}
 {% block content %}
 
-<nav class="fw-brotkrume mb-3">
-    <a href="/neu/ersatzplanung/">{% trans "Ersatzplanung" %}</a>
-    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
-    <b>{% trans "Lebensdauertabelle" %}</b>
-</nav>
-
 <div class="fw-phead">
     <div>
         <h1>{% trans "Lebensdauertabelle" %}</h1>
@@ -17,6 +11,7 @@
     <form method="post" action="/neu/lebensdauer/" class="fw-phead-knoepfe">
         {% csrf_token %}
         <input type="hidden" name="aktion" value="seed">
+        <a href="/neu/ersatzplanung/" class="fw-btn">{% trans "Ersatzplanung" %}</a>
         <button class="fw-btn">{% zeichen 'lauf' %}{% trans "Standardwerte ergänzen" %}</button>
     </form>
 </div>

@@ -561,5 +561,7 @@ def _fw_navigation(request):
             'fw_einstellungen_keys': EINSTELLUNGEN_KEYS,
             'fw_einstellungen_gruppen': einst,
             'fw_einstellungen_krume': einstellungen_krume(request.path),
+            # Modul 9: Übersicht und jede Einstellungsseite tragen denselben Rahmen (Seitenliste links).
+            'fw_einst_rahmen': bool(einst) and (pfad_hier == '/neu/einstellungen/' or bool(einstellungen_krume(request.path))),
             'fw_neuer_fall': darf_oeffnen(user, '/neu/faelle/neu/', meine),
             'fw_mandanten': mandanten, 'fw_mandant': aktiv, **suche_kontext}

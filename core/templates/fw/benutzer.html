@@ -4,7 +4,7 @@
 {% block content %}
 <div class="fw-phead">
     <div>
-        <h1>{% trans "Benutzer" %}</h1>
+        <h1>{% trans "Benutzer & Rollen" %}</h1>
         <p>{% blocktrans count n=rows|length %}{{ n }} Team-Mitglied mit Zugriff auf die Verwaltung.{% plural %}{{ n }} Team-Mitglieder mit Zugriff auf die Verwaltung.{% endblocktrans %}</p>
     </div>
     {% if request.user|darf:"/neu/benutzer/neu/" %}

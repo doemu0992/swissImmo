@@ -5,20 +5,22 @@ import { login, goto } from './helpers';
 test('Einstellungen: Suche filtert Einträge und blendet leere Gruppen aus', async ({ page }) => {
   await login(page);
   await goto(page, '/neu/einstellungen/');
+  // Modul 9: Am PC steht das Suchfeld in der Seitenliste und filtert Liste und Übersicht zugleich
+  const suche = page.locator('#fwEinstSuche');
   const alle = page.locator('#einstListe [data-zeile]');
   const gruppen = page.locator('#einstListe [data-gruppe]');
   const n = await alle.count();
   const g = await gruppen.count();
   expect(n).toBeGreaterThan(5);
   const titel = (await alle.first().locator('.fw-t').innerText()).trim();
-  await page.locator('#einstSuche').fill(titel.slice(0, 5));
+  await suche.fill(titel.slice(0, 5));
   await expect(alle.locator(':scope:visible')).not.toHaveCount(0);
   expect(await page.locator('#einstListe [data-zeile]:visible').count()).toBeLessThan(n + 1);
-  await page.locator('#einstSuche').fill('zzzzkeintreffer');
+  await suche.fill('zzzzkeintreffer');
   await expect(page.locator('#einstListe [data-zeile]:visible')).toHaveCount(0);
   await expect(page.locator('#einstListe [data-gruppe]:visible')).toHaveCount(0);
   await expect(page.locator('#einstListe [data-keine]')).toBeVisible();
-  await page.locator('#einstSuche').fill('');
+  await suche.fill('');
   await expect(page.locator('#einstListe [data-zeile]:visible')).toHaveCount(n);
   await expect(page.locator('#einstListe [data-gruppe]:visible')).toHaveCount(g);
   await expect(page.locator('#einstListe [data-keine]')).toBeHidden();

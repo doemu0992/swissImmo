@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { login, goto } from './helpers';
 
 // UI-Zielbild: «Häufig genutzt» ist eine feste Liste mit drei Einträgen und verschwindet während der Suche.
-for (const [seite, suche] of [['/neu/berichte/', '#berichtSuche'], ['/neu/einstellungen/', '#einstSuche']]) {
+for (const [seite, suche] of [['/neu/berichte/', '#berichtSuche'], ['/neu/einstellungen/', '#fwEinstSuche']]) {
   test(`Häufig genutzt (${seite}): drei Einträge, bei der Suche verborgen`, async ({ page }) => {
     await login(page);
     await goto(page, seite);

@@ -2938,6 +2938,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         html .fw-bericht-zwei>.fw-card,html .fw-card.fw-katalog{border:1px solid var(--ds-line)}
         .fw-einst-nav{display:none}
         .fw-einst-seite{min-width:0}
+        .fw-einst-seite>.max-w-2xl,.fw-einst-seite>.max-w-3xl,.fw-einst-seite>.max-w-4xl{max-width:none}
         @media (min-width:1024px){
             .fw-einst-spalten{display:grid;grid-template-columns:230px minmax(0,1fr);gap:24px;align-items:start}
             .fw-einst-nav{display:flex;flex-direction:column;gap:2px;position:sticky;top:8px;min-width:0}
@@ -2948,6 +2949,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-einst-nav a:hover{background:var(--ds-hover);color:var(--ds-ink)}
             .fw-einst-nav a[aria-current="page"]{background:var(--ds-surface);color:var(--ds-ink);font-weight:600;box-shadow:inset 2px 0 0 var(--ds-brand)}
             .fw-einst-seite:not(:has(table)){max-width:860px}
+            .fw-einst-seite>.fw-listwerkzeug:has(#einstSuche){display:none}
             .fw-einst-nav a.hidden,.fw-einst-nav>div.hidden{display:none}
         }
         .fw-kopf-z1{display:flex;align-items:center;gap:12px}
