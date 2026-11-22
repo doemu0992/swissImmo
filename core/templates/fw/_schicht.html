@@ -3677,7 +3677,7 @@ und einen Stilblock enthaelt.
         /* Schmale Lesespalte wie im Mockup (`.wrap` 920 px): Seiten ohne Tabelle, ohne Cockpit und ohne Kachelraster stehen ab 1280 px
            mittig. Tabellen und Arbeitsflächen behalten die volle Breite. */
         @media (min-width:1280px){
-            .fw-inhalt:not(:has(table)):not(:has(.fw-cockpit)):not(:has(.fw-bento)):not(:has(.fw-kpis)):not(:has(.fw-split)):not(:has(.fw-zwei)):not(:has(.fw-assistent)){max-width:984px}
+            .fw-inhalt:not(:has(table)):not(:has(.fw-cockpit)):not(:has(.fw-bento)):not(:has(.fw-kpis)):not(:has(.fw-split)):not(:has(.fw-zwei)):not(:has(.fw-assistent)):not(:has(.fw-raster.l3)){max-width:984px}
         }
         /* Handy wie im Mockup: weisse Kopfleiste mit Linie; jede Zeile eine eigene Karte mit Statuspunkt auf dem Seitengrund. */
         @media (max-width:640px){
@@ -3830,6 +3830,12 @@ und einen Stilblock enthaelt.
             .fw-vorrat>.fw-reiter a{min-height:42px}
         }
         /* ===== Ende Heute, Modul 3 ===== */
+        /* ===== Listen, Modul 2b: Zeilenaktionen bleiben in einer Zeile (Mandate); die Tabelle scrollt notfalls in `.fw-tablewrap`.
+           Dienstleister-Karten nutzen die volle Breite (oben von der Lesespalte ausgenommen). ===== */
+        .fw-zeilenakt{display:inline-flex;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:12px;white-space:nowrap}
+        .fw-zeilenakt form{display:inline-flex}
+        @media (max-width:640px){.fw-zeilenakt{flex-wrap:wrap;white-space:normal;gap:8px 12px}}
+        /* ===== Ende Listen, Modul 2b ===== */
         /* ===== Ende MODUL Mix-Entwurf ===== */
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
         /* Vorlage: navmock/v2/vorschau (freigegeben, Stand «Kopfzeile v2»). Zeile 1 von links: Marke,

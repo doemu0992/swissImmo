@@ -269,6 +269,10 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Der Brotkrumen (`.fw-krumen`, `.fw-brotkrume`) wandert in der breiten Navigation in die Kopfleiste (`fw-schiene.js`).
   **Bewusste Abweichung vom Mockup:** kein eigener Reiter «Übersicht». Das Aktenregister (`faelle/akten.py`, `test_reiter_panels`)
   legt die Reiter fest, und «Was auffällt» bleibt nach Entscheid E2.73 auf jedem Reiter sichtbar.
+- **Listen, Modul 2b (22.11.2026):** Die Akten von Mandat, Mietverhältnis, Person und Dienstleister tragen das Muster aus Modul 2
+  bereits über `.fw-aktenkopf`. An den Listen: Zeilenaktionen der Mandate stehen in einer Zeile (`.fw-zeilenakt`, am Handy
+  umbrechend, damit keine Aktion abgeschnitten wird); die Dienstleister-Karten (`.fw-raster.l3`) sind von der Lesespalte
+  ausgenommen und nutzen die volle Breite.
 
 ### Schriftskala
 
