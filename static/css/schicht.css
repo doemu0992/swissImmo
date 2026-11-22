@@ -2899,12 +2899,28 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-mk-peek,.fw-mk-blatt{display:none}
         @media (min-width:1100px){
             .fw-mk-peek{display:inline-flex}
-            .fw-lg-spalten.mit-vorschau{grid-template-columns:minmax(0,1fr) 46%}
+            .fw-lg-spalten.fw-mk-spalten.mit-vorschau{grid-template-columns:minmax(0,1fr) 46%}
             .fw-mk-blatt:not([hidden]){display:flex;flex-direction:column;position:sticky;top:72px;height:calc(100dvh - 96px);background:var(--ds-surface);
                 border:1px solid var(--ds-brand);border-radius:var(--ds-radius);overflow:hidden}
             .fw-mk-blatt-kopf{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid var(--ds-line);font-size:14px}
             .fw-mk-blatt iframe{flex:1 1 auto;width:100%;border:0;background:var(--ds-bg)}
         }
+        .fw-kontakt-name{display:flex;align-items:center;gap:12px;min-width:0;color:inherit;text-decoration:none}
+        .fw-kontakt-name>span:last-child{display:flex;flex-direction:column;min-width:0}
+        .fw-kontakt-zeile{display:block;color:inherit;text-decoration:none;white-space:nowrap}
+        a.fw-kontakt-zeile:hover{color:var(--ds-brand)}
+        .fw-kontakt-suche{margin-left:auto;flex:0 1 300px;min-width:0}
+        .fw-kontakt-suche .fw-feld{width:100%;height:36px}
+        .fw-kontakt-edit>td{background:var(--ds-surface-2)}
+        .fw-kontakt-edit>td{white-space:normal}
+        .fw-kontakt-edit .fw-formular{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+        .fw-kontakt-name .fw-zelle-titel{white-space:nowrap}
+        html .fw-lg-spalten.mit-vorschau .fw-kontakt-name .fw-zelle-sub{white-space:normal}
+        html .fw-lg-spalten.mit-vorschau table.fw-table .fw-chip{max-width:190px;overflow:hidden;text-overflow:ellipsis}
+        html .fw-lg-spalten.mit-vorschau table.fw-table .fw-kontakt-3{display:none}
+        .fw-lg-peek{display:none}
+        @media (min-width:1100px){ .fw-lg-peek{display:inline-flex} }
+        @media (max-width:640px){ .fw-kontakt-suche{flex:1 1 100%;margin-left:0} .fw-kontakt-suche .fw-feld{height:44px} }
         .fw-kopf-z1{display:flex;align-items:center;gap:12px}
         @media (max-width:1023px){
             .fw-logo-kapsel{padding:0 12px 0 11px;gap:7px}

@@ -41669,3 +41669,6 @@ msgstr "Tableau"
 
 msgid "In der Tabelle zeigen"
 msgstr "Afficher dans le tableau"
+
+msgid "kein Mietverhältnis"
+msgstr "aucun bail"

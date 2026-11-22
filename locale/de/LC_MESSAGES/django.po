@@ -39897,3 +39897,6 @@ msgstr "Tabelle"
 
 msgid "In der Tabelle zeigen"
 msgstr "In der Tabelle zeigen"
+
+msgid "kein Mietverhältnis"
+msgstr "kein Mietverhältnis"
