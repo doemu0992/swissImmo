@@ -63,3 +63,31 @@ class GruppenSeitenTests(TestCase):
         self.assertNotContains(self.client.get('/neu/einstellungen/'), 'fw-einst-krumen')
         # Gegenprobe: eine Seite ausserhalb der Einstellungen trägt sie nicht
         self.assertNotContains(self.client.get('/neu/liegenschaften/'), 'fw-einst-krumen')
+
+
+class EinstellungenSeitenlisteTests(TestCase):
+    """Modul 9: Auf jeder Einstellungsseite steht die Liste aller Einstellungen, die offene Seite ist markiert."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def setUp(self):
+        self.client = Client(raise_request_exception=False)
+        self.client.force_login(self.a.benutzer)
+
+    def test_unterseite_hat_liste_und_markiert_sich(self):
+        r = self.client.get('/neu/vorlagen/')
+        self.assertContains(r, 'id="fwEinstNav"')
+        html = r.content.decode()
+        nav = html[html.index('id="fwEinstNav"'):html.index('class="fw-einst-seite"')]
+        self.assertEqual(nav.count('aria-current="page"'), 1)
+        self.assertRegex(nav, r'href="/neu/vorlagen/[^"]*" data-zeile aria-current="page"')
+        # Dieselben Seiten wie im Feld der Schiene (Rolle und Abo-Stufe gefiltert), keine mehr und keine weniger
+        for g in r.context['fw_einstellungen_gruppen']:
+            for k in g['eintraege']:
+                self.assertIn('href="%s' % k['url'], nav)
+
+    def test_hub_und_fremde_seite_ohne_liste(self):
+        self.assertNotContains(self.client.get('/neu/einstellungen/'), 'id="fwEinstNav"')
+        self.assertNotContains(self.client.get('/neu/liegenschaften/'), 'id="fwEinstNav"')

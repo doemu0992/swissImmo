@@ -410,7 +410,19 @@ Detailseiten rufen sie beim Namen.
             {% comment %} Einstellungsseiten haben kein Menüband: Der Pfad «Einstellungen / Gruppe» ist der Weg zurück (`core/navigation.py`). {% endcomment %}
             {% if fw_einstellungen_krume %}<nav class="fw-krumen fw-einst-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/einstellungen/{{ lg_query }}">{% trans "Einstellungen" %}</a><span aria-hidden="true">/</span><span>{{ fw_einstellungen_krume }}</span></nav>{% endif %}
             {% include 'fw/_abo_hinweis.html' %}
+            {% comment %} Modul 9: Auf jeder Einstellungsseite steht links die Liste aller Einstellungen (ab 1024 px); am Telefon führt die Krume zurück. {% endcomment %}
+            {% if fw_einstellungen_krume and fw_einstellungen_gruppen %}<div class="fw-einst-spalten">
+            <nav class="fw-einst-nav" id="fwEinstNav" aria-label="{% trans 'Einstellungen' %}">
+                <input type="search" data-suche="#fwEinstNav" aria-label="{% trans 'Einstellungen durchsuchen' %}" placeholder="{% trans 'Einstellung suchen …' %}" autocomplete="off" class="fw-feld">
+                {% for g in fw_einstellungen_gruppen %}<div data-gruppe>
+                <h2>{{ g.label }}</h2>
+                {% for k in g.eintraege %}<a href="{{ k.url }}{{ lg_query }}" data-zeile{% if k.aktiv %} aria-current="page"{% endif %}>{{ k.titel }}{% if k.gesperrt %}<span class="fw-abo-schloss">{% trans 'gesperrt' %}</span>{% endif %}</a>
+                {% endfor %}</div>{% endfor %}
+                <p data-keine class="hidden fw-mutet" role="status">{% trans "Keine Einstellung gefunden." %}</p>
+            </nav>
+            <div class="fw-einst-seite">{% endif %}
             {% block content %}{% endblock %}
+            {% if fw_einstellungen_krume and fw_einstellungen_gruppen %}</div></div>{% endif %}
         </main>
     </div>
 </div>

@@ -545,13 +545,16 @@ def _fw_navigation(request):
     # zusätzliche Abfrage je Seite.
     # Einstellungen: dieselbe Filterung wie die Bereiche (Rolle, Abo-Stufe); leere Gruppen entfallen.
     einst = []
+    pfad_hier = request.path if request.path.endswith('/') else request.path + '/'
     for g in einstellungen_gruppen():
         eintraege = []
         for eintrag in g['eintraege']:
             if not darf_oeffnen(user, eintrag['url'], meine):
                 continue
             merkmal = merkmal_der_view(eintrag['url'])
-            eintraege.append(dict(eintrag, gesperrt=bool(merkmal and not user.is_superuser and not hat_funktion(organisation, merkmal))))
+            # `aktiv`: markiert die offene Seite in der Seitennavigation der Einstellungen (Modul 9).
+            eintraege.append(dict(eintrag, aktiv=pfad_hier.startswith(eintrag['url']),
+                                  gesperrt=bool(merkmal and not user.is_superuser and not hat_funktion(organisation, merkmal))))
         if eintraege:
             einst.append(dict(g, eintraege=eintraege))
     return {'fw_nav_gruppen': gruppen, 'fw_palette': palette,

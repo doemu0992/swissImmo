@@ -285,6 +285,13 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Bestandsfilter mit). «Schaden erfassen» ist ab 900 px eine Schublade von rechts (`#neuschaden.fw-schublade-rechts`, derselbe
   Knopf öffnet und schliesst, dazu das Kreuz); am Telefon klappt das Formular wie bisher in der Seite auf. Die Boards
   (`.fw-spalte`: Schäden, Bewerbungen) nutzen die volle Breite, die Spaltenköpfe stehen in Versalien.
+- **Einstellungen, Modul 9 (22.11.2026):** Jede Einstellungsseite (alle, für die `einstellungen_krume` eine Gruppe nennt) zeigt ab
+  1024 px links die Liste aller Einstellungen (`.fw-einst-spalten` > `nav.fw-einst-nav#fwEinstNav` + `.fw-einst-seite`, in
+  `fw/base.html` um `block content` gelegt): Suchfeld (generischer Filter `data-suche`), Gruppen, offene Seite mit
+  `aria-current="page"` (`aktiv` aus dem Context-Processor). Quelle bleibt `einstellungen_gruppen()`, gefiltert nach Rolle und
+  Abo-Stufe. Am Telefon bleibt die Liste weg; die Krume führt zur Übersicht (`/neu/einstellungen/`), die unverändert ist (inkl.
+  «Häufig genutzt»). «Anmeldung & Sicherheit» (`/konto/zwei-faktor/`) hat eine andere Grundvorlage und keine Seitenliste.
+  **Nicht gebaut:** die schwebende Speicherleiste und neue Schalter aus dem Mockup (die Seiten behalten ihre Formulare).
 - **Berichte, Modul 8 (22.11.2026):** Übersicht, Portfolio, Auswertung und Team zeigen ihre Kennzahlen als ein Band
   (`.fw-kpis.fw-band.fw-ber-band`) statt als Kapselzeile oder mit oranger Akzentzelle. Die Übersicht (`/neu/berichte/`) hat neu ein
   Band über den Diagrammen: letzter gemessener Monat der Zahlungsquote, Summe der Ausstände über 30 Tage mit der Zahl betroffener
