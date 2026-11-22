@@ -3837,6 +3837,53 @@
         .fw-lg-v-befund{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
         .fw-lg-v-knoepfe{display:flex;flex-wrap:wrap;gap:8px}
         /* ===== Ende Liegenschaftsliste, Modul 2 ===== */
+        /* ===== Handy-Navigation als Blatt von unten (Mockup, 22.11.2026): «Mehr» und der Menüknopf öffnen dieselbe Schiene, jetzt als
+           Blatt mit Griff. Oben der Arbeitsbereich (Verwaltung und Bestand), darunter die Bereiche; ein Tipp klappt die Seiten des
+           Bereichs im Blatt auf (`html.fw-blatt`, `static/js/fw-schiene.js`). Ohne Skript bleiben die Bereiche Links. ===== */
+        @media (max-width:640px){
+            .fw-schiene{left:0;right:0;top:auto;bottom:0;width:100%;height:auto;max-height:86dvh;overflow-y:auto;overscroll-behavior:contain;z-index:70;
+                padding:8px 12px calc(16px + env(safe-area-inset-bottom,0px));border:0;border-radius:var(--ds-radius) var(--ds-radius) var(--ds-radius-0) var(--ds-radius-0);
+                transform:translateY(105%);box-shadow:var(--ds-shadow-lg)}
+            .fw-schiene.offen{transform:none}
+            .fw-schiene::before{content:"";flex:0 0 auto;display:block;width:38px;height:4px;margin:4px auto 10px;border-radius:var(--ds-pill);background:var(--ds-line-stark)}
+            .fw-schiene .fw-schiene-marke{display:none}
+            .fw-schiene .fw-schiene-b{min-height:48px;padding:10px 12px;gap:14px;font-size:15px;font-weight:500;color:var(--ds-muted);border-radius:var(--ds-radius-knopf);background:transparent}
+            .fw-schiene .fw-schiene-b.hier,.fw-schiene .fw-schiene-b[aria-expanded="true"]{color:var(--ds-ink);background:transparent}
+            .fw-schiene .fw-schiene-b .fw-schiene-zahl{background:transparent;color:var(--ds-faint);font-family:var(--ds-mono);font-size:12px;font-weight:500;min-width:0;padding:0}
+            .fw-schiene .fw-schiene-b .fw-schiene-zahl.crit{color:var(--ds-crit)}
+            .fw-schiene .fw-schiene-fuss{margin-top:0;padding-top:0;border-top:0}
+            html.fw-blatt .fw-fach{display:none}
+            html.fw-blatt .fw-arbeit{display:flex;align-items:center;gap:8px;width:100%;min-width:0;min-height:52px;margin-bottom:8px;padding:10px 12px;border:0;
+                border-radius:var(--ds-radius-knopf);background:var(--ds-surface-2);color:var(--ds-ink);font:inherit;text-align:left;cursor:pointer}
+            html.fw-blatt .fw-arbeit-text{display:flex;flex-direction:column;flex:1 1 auto;min-width:0}
+            html.fw-blatt .fw-arbeit-text b,html.fw-blatt .fw-arbeit-text small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+            html.fw-blatt .fw-arbeit-text small{font-size:12px;color:var(--ds-muted)}
+            html.fw-blatt .fw-arbeit-pop:not([hidden]){display:block;position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:80;
+                max-height:70dvh;overflow:auto;padding:10px;background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:var(--ds-shadow-lg)}
+            html.fw-blatt .fw-schiene [data-fach-bereich]{margin:2px 0 6px 21px;padding:0 0 0 0;border-left:1px solid var(--ds-line)}
+            html.fw-blatt .fw-schiene [data-fach-bereich] h2{display:none}
+            html.fw-blatt .fw-schiene [data-fach-bereich] h3{margin:10px 0 2px 14px;font-size:12px}
+            html.fw-blatt .fw-schiene [data-fach-bereich] li a{min-height:32px;padding:5px 12px;margin-left:6px;font-size:14px;border-radius:var(--ds-radius-knopf)}
+            html.fw-blatt .fw-schiene [data-fach-bereich] li a.hier{background:var(--ds-hover);color:var(--ds-ink);font-weight:600;box-shadow:inset 2px 0 0 var(--ds-brand)}
+            html.fw-blatt .fw-schiene [data-fach-bereich] ul{list-style:none;margin:0;padding:0}
+            html.fw-blatt .fw-schiene [data-fach-bereich] li a{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--ds-muted);text-decoration:none}
+            html.fw-blatt .fw-schiene [data-fach-bereich] li a:hover{background:var(--ds-hover);color:var(--ds-ink)}
+            html.fw-blatt .fw-schiene [data-fach-bereich] .fw-fach-rechts{display:inline-flex;align-items:center;gap:8px}
+            html.fw-blatt .fw-schiene [data-fach-bereich] .fw-z{min-width:20px;padding:0 7px;border-radius:var(--ds-pill);background:var(--ds-akzent);color:var(--ds-auf-satt);font-size:12px;font-weight:700;line-height:20px;text-align:center}
+            html.fw-blatt .fw-schiene [data-fach-bereich] .fw-z[hidden]{display:none}
+            html.fw-blatt .fw-schiene [data-fach-bereich] .fw-fach-selten-liste li a{font-size:14px}
+            html.fw-blatt .fw-schiene [data-fach-bereich] kbd{display:none}
+            html.fw-blatt .fw-arbeit-titel{padding:8px 10px 4px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ds-faint)}
+            html.fw-blatt .fw-arbeit-pop .fw-feld{width:100%;height:44px;margin:2px 0 4px}
+            html.fw-blatt .fw-arbeit-wahl{display:flex;align-items:center;width:100%;min-height:44px;padding:8px 10px;border:0;border-radius:var(--ds-radius-xs);background:transparent;
+                color:var(--ds-ink);font:inherit;font-size:15px;text-align:left;text-decoration:none;cursor:pointer}
+            html.fw-blatt .fw-arbeit-wahl.an{font-weight:600}
+            html.fw-blatt .fw-arbeit-wahl.an::after{content:"✓";margin-left:auto;color:var(--ds-brand)}
+            html.fw-blatt .fw-arbeit-wahl[hidden]{display:none}
+            html.fw-blatt .fw-schiene [data-fach-bereich]{margin:2px 0 8px 22px}
+            html.fw-blatt .fw-schiene [data-fach-bereich] li a{min-height:42px;font-size:15px}
+        }
+        /* ===== Ende Handy-Navigation als Blatt ===== */
         /* ===== Ende MODUL Mix-Entwurf ===== */
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
         /* Vorlage: navmock/v2/vorschau (freigegeben, Stand «Kopfzeile v2»). Zeile 1 von links: Marke,

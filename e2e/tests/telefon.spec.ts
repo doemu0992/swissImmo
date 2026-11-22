@@ -524,8 +524,14 @@ test('Die Marke steht bei jeder Breite in der Schiene und wird nicht abgeschnitt
   for (const w of [1920, 1280, 1024, 1023, 820, 601, 600, 390, 360]) {
     await page.setViewportSize({ width: w, height: 900 });
     await page.waitForTimeout(100);
-    // Am Telefon (bis 640 px) ist die Schiene eine Schublade und erst nach dem Tipp auf den Menüknopf im Bild.
-    if (w <= 640) await page.locator('#fwMenueKnopf').click();
+    // Am Telefon (bis 640 px) ist die Schiene ein Blatt von unten ohne Marke (Mockup, 22.11.2026): dort beginnt es mit dem
+    // Arbeitsbereich. Geprüft wird, dass das Blatt aufgeht und der Arbeitsbereich darin steht.
+    if (w <= 640) {
+      await page.locator('#fwMenueKnopf').click();
+      await expect(page.locator('#fwSchiene #fwArbeit')).toBeVisible();
+      await page.keyboard.press('Escape');
+      continue;
+    }
     const m = await page.evaluate(() => {
       const s = (document.querySelector('#fwSchiene') as HTMLElement).getBoundingClientRect();
       const h = (document.querySelector('.fw-schiene-marke .fw-logo-haus') as SVGElement).getBoundingClientRect();
@@ -536,6 +542,5 @@ test('Die Marke steht bei jeder Breite in der Schiene und wird nicht abgeschnitt
     expect(m.haus.left, `${wo}: Haus ragt links aus der Schiene`).toBeGreaterThanOrEqual(m.schiene.left);
     expect(m.haus.right, `${wo}: Haus ragt rechts aus der Schiene`).toBeLessThanOrEqual(m.schiene.right);
     expect(m.haus.top, `${wo}: Haus ragt oben aus dem Bild`).toBeGreaterThanOrEqual(0);
-    if (w <= 640) await page.keyboard.press('Escape');
   }
 });

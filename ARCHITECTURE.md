@@ -85,6 +85,13 @@ Security → `WartungsMiddleware` → `NulBytesMiddleware` → GZip → Session 
   springt dorthin, 1–9 wählt die Seite im Baum. Der Knopf «Schmal» im Fuss (`[data-schiene-fest]`) stellt Symbolschiene und Seitenfeld
   wieder her; der Wunsch liegt im Browser (`localStorage` `fwSchieneBreit`). Unter 1280 px und am Telefon ändert sich nichts.
   Test: `e2e/tests/schiene-anheften.spec.ts` (breit), `schiene.spec.ts` (schmal).
+  **Handy-Navigation als Blatt (22.11.2026, nach Mockup):** Bis 640 px ist die Schiene kein Einschub von links mehr, sondern ein Blatt
+  von unten über die ganze Breite (Griff, ohne Marke). Oben steht der Arbeitsbereich (`#fwArbeit`, dieselbe Wahl von Verwaltung und
+  Bestand wie in der breiten Navigation, das Feld liegt über dem Blatt), darunter die Bereiche. Ein Tipp auf einen Bereich klappt seine
+  Seiten IM Blatt auf (`html.fw-blatt`; die Abschnitte des Feldes ziehen wie in der breiten Navigation unter ihren Bereich), offen ist
+  zuerst der Bereich, in dem man steht. Das frühere Feld über der Schublade und «Bereiche» (zurück) gibt es am Telefon nicht mehr;
+  alle Bereiche und Seiten bleiben erreichbar. `fwMenuEinpassen` (`fw-rahmen.js`) lässt die Schiene als linke Grenze weg, wenn sie
+  die ganze Breite einnimmt. Test: `e2e/tests/schiene.spec.ts` («Schublade am Telefon»), `omnisearch.spec.ts`, `tableiste.spec.ts`.
   **Rahmen, Modul 1 (22.11.2026):** In der breiten Navigation trägt die Spalte den Rahmen, die Kopfleiste gehört der Seite.
   Oben in der Spalte steht der **Arbeitsbereich** (`#fwArbeit`, `#fwArbeitPop`): Verwaltung und Bestand in einem Schalter, mit
   Suchfeld; die Wahl ist dieselbe wie bisher (`?lg=` bzw. POST `/neu/mandant/`). Darunter die Suchzeile (`#fwSchieneSuche`): sie und

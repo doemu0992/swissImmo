@@ -108,8 +108,8 @@ test.describe('Schiene am PC', () => {
   });
 });
 
-// Am Telefon (bis 640 px) ist die Schiene eine Schublade: Der Menüknopf in der Kopfzeile öffnet sie, mit Beschriftung;
-// ein Bereich öffnet sein Feld über der Schublade, «Bereiche» führt zurück. Der Inhalt hat die volle Breite.
+// Am Telefon (bis 640 px) ist die Schiene ein Blatt von unten (Mockup, 22.11.2026): Der Menüknopf und «Mehr» öffnen es, mit
+// Beschriftung; ein Tipp auf einen Bereich klappt seine Seiten IM Blatt auf. Der Inhalt hat die volle Breite.
 test.describe('Schublade am Telefon', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
@@ -133,35 +133,51 @@ test.describe('Schublade am Telefon', () => {
     await expect(page.locator('#fwSchiene a[data-fach="betrieb"] > span:not(.fw-schiene-zahl)')).toBeVisible();
   });
 
-  test('Ein Bereich öffnet sein Feld, «Bereiche» führt zurück, die Wahl einer Seite schliesst alles', async ({ page }) => {
+  test('Ein Bereich klappt seine Seiten im Blatt auf und wieder zu, die Wahl einer Seite schliesst das Blatt', async ({ page }) => {
     await login(page);
     await goto(page, '/neu/liegenschaften/');
     await page.locator('#fwMenueKnopf').tap();
-    await page.locator('#fwSchiene a[data-fach="betrieb"]').tap();
-    const fach = page.locator('#fwFach');
-    await expect(fach).toBeVisible();
-    const kasten = (await fach.boundingBox())!;
-    expect(kasten.x + kasten.width, 'Das Feld ragt aus dem Bild').toBeLessThanOrEqual(390);
-    await page.locator('#fwFachZurueck').tap();
-    await expect(fach).toBeHidden();
-    await expect(page.locator('#fwSchiene')).toBeVisible();
-    await page.locator('#fwSchiene a[data-fach="betrieb"]').tap();
-    await fach.locator('a[href^="/neu/schaeden/"]').tap();
+    const blatt = page.locator('#fwSchiene');
+    // Das Blatt steht unten und reicht über die ganze Breite.
+    const kasten = (await blatt.boundingBox())!;
+    expect(Math.round(kasten.x)).toBe(0);
+    expect(Math.round(kasten.width)).toBe(390);
+    expect(Math.round(kasten.y + kasten.height)).toBe(844);
+    // Offen ist zuerst der Bereich, in dem man steht.
+    await expect(blatt.locator('[data-fach-bereich="akten"]')).toBeVisible();
+    await expect(blatt.locator('a[data-fach="akten"]')).toHaveAttribute('aria-expanded', 'true');
+    const betrieb = blatt.locator('a[data-fach="betrieb"]');
+    await betrieb.tap();
+    await expect(page).toHaveURL(/\/neu\/liegenschaften\/$/);      // der Tipp klappt auf, er führt nicht weg
+    await expect(blatt.locator('[data-fach-bereich="betrieb"]')).toBeVisible();
+    await expect(blatt.locator('[data-fach-bereich="akten"]')).toBeHidden();
+    await expect(page.locator('#fwFach')).toBeHidden();              // das alte Feld über der Schublade gibt es am Telefon nicht mehr
+    await betrieb.tap();
+    await expect(blatt.locator('[data-fach-bereich="betrieb"]')).toBeHidden();
+    await betrieb.tap();
+    await blatt.locator('[data-fach-bereich="betrieb"] a[href^="/neu/schaeden/"]').tap();
     await page.waitForURL('**/neu/schaeden/**');
-    await expect(page.locator('#fwFach')).toBeHidden();
     await expect(page.locator('#fwSchiene')).toBeHidden();
     const quer = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(quer, `die Seite scrollt ${quer} px quer`).toBeLessThanOrEqual(0);
   });
 
-  test('Ein Tipp neben die Schublade schliesst sie; die Einstellungen öffnen ihr Feld', async ({ page }) => {
+  test('Ein Tipp über dem Blatt schliesst es; Einstellungen und der Arbeitsbereich sind im Blatt erreichbar', async ({ page }) => {
     await login(page);
     await goto(page, '/neu/liegenschaften/');
     await page.locator('#fwMenueKnopf').tap();
-    await page.mouse.click(380, 700);
+    await page.mouse.click(195, 40);
     await expect(page.locator('#fwSchiene')).toBeHidden();
     await page.locator('#fwMenueKnopf').tap();
     await page.locator('#fwSchiene a[data-fach="einst"]').tap();
-    await expect(page.locator('#fwFach section:visible h2')).toHaveText('Einstellungen');
+    await expect(page.locator('#fwSchiene [data-fach-bereich="einst"] a').first()).toBeVisible();
+    // Arbeitsbereich: Verwaltung und Bestand wie in der breiten Navigation, hier als Feld über dem Blatt.
+    await page.locator('#fwArbeit').tap();
+    const pop = page.locator('#fwArbeitPop');
+    await expect(pop).toBeVisible();
+    const k = (await pop.boundingBox())!;
+    expect(k.x).toBeGreaterThanOrEqual(0);
+    expect(k.x + k.width).toBeLessThanOrEqual(390);
+    await expect(pop.locator('a[href="?lg="]')).toBeVisible();
   });
 });
