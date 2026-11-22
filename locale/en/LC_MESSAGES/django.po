@@ -41006,3 +41006,9 @@ msgstr "Show in table"
 
 msgid "kein Mietverhältnis"
 msgstr "no tenancy"
+
+msgid "in %(n)s von %(m)s Liegenschaften"
+msgstr "in %(n)s of %(m)s properties"
+
+msgid "Rendite, Leerstand, Cashflow"
+msgstr "Yield, vacancy, cash flow"

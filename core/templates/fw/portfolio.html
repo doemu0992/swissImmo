@@ -29,7 +29,7 @@
 <div class="fw-card">{% include 'fw/_empty.html' with icon='liegenschaft' titel=_('Keine Liegenschaft im Portfolio') subtext=_('Sobald Liegenschaften erfasst sind, erscheinen hier Rendite, Leerstand und Cashflow.') %}</div>
 {% else %}
 
-<div class="fw-kpis">
+<div class="fw-kpis fw-band fw-ber-band">
     <div class="fw-kpi fw-accent">
         <span class="fw-l">{% trans "Soll-Mietertrag p. a." %}</span>
         <span class="fw-v fw-num">CHF {{ u.soll_jahr|chf:0 }}</span>

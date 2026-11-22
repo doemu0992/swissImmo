@@ -97,7 +97,14 @@ def _berichte_v8(heute, aktive_lg):
     letzter_auszug = Kontoauszug.objects.order_by('-importiert_am').values_list('importiert_am', flat=True).first()
     quote_stand = (_('Stand Bankimport %(datum)s') % {'datum': timezone.localtime(letzter_auszug).strftime('%d.%m.')}
                    if letzter_auszug else '')
+    # Kennzahlenband der Übersicht (Modul 8): nur Werte, die oben schon gerechnet sind. Der letzte gemessene Monat der
+    # Zahlungsquote, die Summe der Ausstände über 30 Tage und in wie vielen Liegenschaften sie stehen.
+    letzter_index = max((i for i, w in enumerate(reihe) if w is not None), default=None)
     return {
+        'band_quote': reihe[letzter_index] if letzter_index is not None else None,
+        'band_quote_monat': monate[letzter_index] if letzter_index is not None else '',
+        'band_lg_mit_ausstand': sum(1 for b in balken if b['wert']),
+        'band_lg_n': len(balken),
         'quote_stand': quote_stand,
         'bericht_von': enden[0].replace(day=1), 'bericht_bis': enden[-1],
         'quote_werte': reihe, 'quote_monate': monate,
