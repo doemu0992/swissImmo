@@ -269,6 +269,11 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Der Brotkrumen (`.fw-krumen`, `.fw-brotkrume`) wandert in der breiten Navigation in die Kopfleiste (`fw-schiene.js`).
   **Bewusste Abweichung vom Mockup:** kein eigener Reiter «Übersicht». Das Aktenregister (`faelle/akten.py`, `test_reiter_panels`)
   legt die Reiter fest, und «Was auffällt» bleibt nach Entscheid E2.73 auf jedem Reiter sichtbar.
+- **Liegenschaftsliste, Modul 2 (22.11.2026):** Ab 1100 px zeigt «Vorschau» je Zeile die Eckdaten rechts neben der Liste (Mandat,
+  Objekte, Belegung, Soll, alle Befunde; Knöpfe «Akte öffnen», «Objekte», «Mietverhältnisse»), ohne die Akte zu öffnen. Der Inhalt
+  steht fertig in einer `template`-Marke der Zeile, `static/js/fw-liegenschaften.js` setzt ihn nur um. Ab 641 px stellt der Schalter
+  «Liste | Karten» dieselbe Tabelle als Karten dar (`#lgListe.fw-karten`, `localStorage` `fwLgAnsicht`). Keine neue Adresse, keine
+  neue Abfrage; ohne Skript bleibt die Tabelle. Test: `e2e/tests/liegenschaften-vorschau.spec.ts`.
 - **Listen, Modul 2b (22.11.2026):** Die Akten von Mandat, Mietverhältnis, Person und Dienstleister tragen das Muster aus Modul 2
   bereits über `.fw-aktenkopf`. An den Listen: Zeilenaktionen der Mandate stehen in einer Zeile (`.fw-zeilenakt`, am Handy
   umbrechend, damit keine Aktion abgeschnitten wird); die Dienstleister-Karten (`.fw-raster.l3`) sind von der Lesespalte

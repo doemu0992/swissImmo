@@ -1,6 +1,6 @@
 {% extends 'fw/base.html' %}
 {% load zeichen %}
-{% load chf i18n %}
+{% load chf i18n statisch %}
 {% block title %}{% trans "Liegenschaften" %} — immoswiss{% endblock %}
 
 {% block content %}
@@ -60,8 +60,17 @@
             <a href="{{ filter_urls.budget }}" class="fw-fchip{% if befund == 'budget' %} fw-on{% endif %}">{% trans "Unterhalt" %} {{ filter_zaehler.budget }}</a>
             <a href="{{ filter_urls.ohne }}" class="fw-fchip{% if befund == 'ohne' %} fw-on{% endif %}">{% trans "Ohne Befund" %} {{ filter_zaehler.ohne }}</a>
         </div>
+        {% comment %} Ansicht «Liste | Karten» (Mockup Modul 2): dieselbe Tabelle, als Karten gesetzt. Die Wahl bleibt je Gerät
+           (`localStorage` `fwLgAnsicht`, `static/js/fw-liegenschaften.js`); ohne Skript bleibt der Schalter verborgen.
+           `aria-pressed` setzt das Skript. {% endcomment %}
+        <div class="fw-ansicht-schalter" role="group" aria-label="{% trans 'Ansicht' %}" id="lgAnsicht" hidden>
+            <button type="button" class="fw-dichte-knopf" data-ansicht="liste">{% trans "Liste" %}</button>
+            <button type="button" class="fw-dichte-knopf" data-ansicht="karten">{% trans "Karten" %}</button>
+        </div>
         {% endif %}
     </div>
+
+<div class="fw-lg-spalten" id="lgSpalten">
 
 <div id="lgListe">
     {% if rows %}
@@ -74,6 +83,7 @@
                 <th scope="col" class="fw-right">{% trans "Belegung" %}</th>
                 <th scope="col" class="fw-right">{% trans "Soll / Monat" %}</th>
                 <th scope="col">{% trans "Befund" %}</th>
+                <th scope="col" class="fw-lg-peek-zelle"><span class="sr-only">{% trans "Vorschau" %}</span></th>
             </tr></thead>
             <tbody>
             {% for row in rows %}
@@ -98,6 +108,29 @@
                     <span class="fw-chip fw-mut" title="{% for chip in row.chips %}{% if row.ausstand or not forloop.first %}{{ chip.1 }}{% if chip.3 %} ({{ chip.3 }}){% endif %}{% if not forloop.last %} · {% endif %}{% endif %}{% endfor %}">+{% if row.ausstand %}{{ n }}{% else %}{{ n|add:"-1" }}{% endif %}</span>
                     {% endif %}{% endwith %}
                 </div></td>
+                {% comment %} Vorschau (Mockup Modul 2): der Knopf zeigt die Eckdaten rechts neben der Liste, ohne die Akte zu öffnen.
+                   Der Inhalt steht fertig in der `template`-Marke; das Skript setzt ihn nur um. Die Zeile selbst öffnet weiter die Akte. {% endcomment %}
+                <td class="fw-right fw-lg-peek-zelle"><button type="button" class="fw-btn fw-knapp fw-geist" data-stop data-lg-vorschau aria-controls="lgVorschau" aria-expanded="false">{% trans "Vorschau" %}</button>
+                    <template>
+                        <div class="fw-lg-v-kopf"><div><b class="fw-lg-v-titel">{{ row.lg.strasse }}</b><span class="fw-zelle-sub">{{ row.lg.plz }} {{ row.lg.ort }}{% if row.lg.baujahr %} · {% blocktrans with j=row.lg.baujahr %}Baujahr {{ j }}{% endblocktrans %}{% endif %}</span></div>
+                            <button type="button" class="fw-ikon mut" data-lg-vorschau-zu aria-label="{% trans 'Schliessen' %}">{% zeichen 'schliessen' %}</button></div>
+                        <dl class="fw-lg-v-daten">
+                            <dt>{% trans "Mandat" %}</dt><dd>{% if row.lg.eigentuemer %}{{ row.lg.eigentuemer }}{% else %}—{% endif %}</dd>
+                            <dt>{% trans "Objekte" %}</dt><dd>{{ row.einheiten }}</dd>
+                            <dt>{% trans "Belegung" %}</dt><dd>{% if row.einheiten %}{{ row.belegung }} %{% else %}—{% endif %}</dd>
+                            <dt>{% trans "Soll / Monat" %}</dt><dd>CHF {{ row.ertrag|chf:0 }}</dd>
+                        </dl>
+                        <div class="fw-lg-v-befund">
+                            {% if row.ausstand %}<span class="fw-chip fw-crit">{% blocktrans with b=row.ausstand|chf:0 %}CHF {{ b }} offen{% endblocktrans %}</span>{% endif %}
+                            {% for chip in row.chips %}<span class="fw-chip fw-{{ chip.0 }}"{% if chip.3 %} title="{{ chip.3 }}"{% endif %}>{{ chip.1 }}</span>{% empty %}{% if not row.ausstand %}<span class="fw-chip fw-good">{% trans "ohne Befund" %}</span>{% endif %}{% endfor %}
+                        </div>
+                        <div class="fw-lg-v-knoepfe">
+                            <a href="/neu/liegenschaften/{{ row.lg.id }}/" class="fw-btn fw-primary">{% trans "Akte öffnen" %}</a>
+                            <a href="/neu/objekte/?lg={{ row.lg.id }}" class="fw-btn">{% trans "Objekte" %}</a>
+                            <a href="/neu/vertraege/?lg={{ row.lg.id }}" class="fw-btn">{% trans "Mietverhältnisse" %}</a>
+                        </div>
+                    </template>
+                </td>
             </tr>
             {% endfor %}
             </tbody>
@@ -122,5 +155,9 @@
     </div>
     {% endif %}
 </div>
+<aside id="lgVorschau" class="fw-lg-vorschau" aria-label="{% trans 'Vorschau' %}" hidden></aside>
+</div>
 </div>
 {% endblock %}
+
+{% block scripts %}<script src="{% statisch 'js/fw-liegenschaften.js' %}"></script>{% endblock %}
