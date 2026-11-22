@@ -2599,7 +2599,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-schrittliste .fw-schritt .fw-t{font-weight:500}
         .fw-btn.fw-knapp.fw-primary{box-shadow:none}
         @media (min-width:1280px){
-            .fw-inhalt:not(:has(table)):not(:has(.fw-cockpit)):not(:has(.fw-bento)):not(:has(.fw-kpis)):not(:has(.fw-split)):not(:has(.fw-zwei)):not(:has(.fw-assistent)):not(:has(.fw-raster.l3)):not(:has(.fw-schadenliste)):not(:has(.fw-spalte)){max-width:984px}
+            .fw-inhalt:not(:has(table)):not(:has(.fw-cockpit)):not(:has(.fw-bento)):not(:has(.fw-kpis)):not(:has(.fw-split)):not(:has(.fw-zwei)):not(:has(.fw-assistent)):not(:has(.fw-raster.l3)):not(:has(.fw-schadenliste)):not(:has(.fw-spalte)):not(:has(.fw-la-spalten)){max-width:984px}
         }
         @media (max-width:640px){
             html .fw-mit-schiene .fw-kopfleiste{background:var(--ds-surface);border-bottom:1px solid var(--ds-line)}
@@ -2843,6 +2843,14 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-schublade-rechts .fw-formular{grid-template-columns:minmax(0,1fr)}
             .fw-schublade-rechts .fw-formular>*{grid-column:1/-1}
         }
+        .fw-la-fortschritt{display:block;width:100%;height:6px;margin:0 0 18px;border:0;border-radius:var(--ds-pill);overflow:hidden;background:var(--ds-surface-2);
+            appearance:none;-webkit-appearance:none}
+        .fw-la-fortschritt::-webkit-progress-bar{background:var(--ds-surface-2);border-radius:var(--ds-pill)}
+        .fw-la-fortschritt::-webkit-progress-value{background:var(--ds-good);border-radius:var(--ds-pill)}
+        .fw-la-fortschritt::-moz-progress-bar{background:var(--ds-good);border-radius:var(--ds-pill)}
+        .fw-la-spalten{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:start}
+        html .fw-card.fw-la-frueher{border:1px solid var(--ds-line)}
+        @media (min-width:1100px){ .fw-la-spalten:has(.fw-la-frueher){grid-template-columns:minmax(0,1fr) 340px} }
         .fw-kopf-z1{display:flex;align-items:center;gap:12px}
         @media (max-width:1023px){
             .fw-logo-kapsel{padding:0 12px 0 11px;gap:7px}

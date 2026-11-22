@@ -40955,3 +40955,6 @@ msgstr "Title, property, reporter …"
 
 msgid "Schäden durchsuchen"
 msgstr "Search damage reports"
+
+msgid "als Nächstes: %(name)s"
+msgstr "next: %(name)s"

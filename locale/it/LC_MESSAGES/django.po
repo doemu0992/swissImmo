@@ -41550,3 +41550,6 @@ msgstr "Titolo, immobile, segnalante …"
 
 msgid "Schäden durchsuchen"
 msgstr "Cerca nei danni"
+
+msgid "als Nächstes: %(name)s"
+msgstr "prossimo passo: %(name)s"

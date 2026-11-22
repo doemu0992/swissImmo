@@ -39849,3 +39849,6 @@ msgstr "Titel, Liegenschaft, Melder …"
 
 msgid "Schäden durchsuchen"
 msgstr "Schäden durchsuchen"
+
+msgid "als Nächstes: %(name)s"
+msgstr "als Nächstes: %(name)s"

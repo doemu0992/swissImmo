@@ -10,9 +10,13 @@
     <div>
         <nav class="fw-krumen" aria-label="{% trans 'Pfad' %}"><a href="/neu/">{% trans "Heute" %}</a><span aria-hidden="true">/</span><span>{% trans "Monatsabschluss" %}</span></nav>
         <h1>{% trans "Monatsabschluss" %}</h1>
-        <p>{{ heute|date:"F Y" }} · {% blocktrans with n=schritte_erledigt gesamt=schritte_gesamt %}{{ n }} von {{ gesamt }} Schritten erledigt{% endblocktrans %}</p>
+        <p>{{ heute|date:"F Y" }} · {% blocktrans with n=schritte_erledigt gesamt=schritte_gesamt %}{{ n }} von {{ gesamt }} Schritten erledigt{% endblocktrans %}{% for z in schritte %}{% if z.zustand == 'jetzt' %} · {% if z.abschluss %}{% blocktrans with name=_("Periodenabschluss") %}als Nächstes: {{ name }}{% endblocktrans %}{% else %}{% blocktrans with name=z.lauf.laufart.bezeichnung %}als Nächstes: {{ name }}{% endblocktrans %}{% endif %}{% endif %}{% endfor %}</p>
     </div>
 </div>
+{% comment %} Modul 5: der Fortschritt des Monats als Balken (dieselben Zahlen wie in der Unterzeile), darunter links die Schritte,
+   rechts ab 1100 px «Zuletzt abgeschlossen». {% endcomment %}
+<progress class="fw-la-fortschritt" max="{{ schritte_gesamt }}" value="{{ schritte_erledigt }}" aria-label="{% blocktrans with n=schritte_erledigt gesamt=schritte_gesamt %}{{ n }} von {{ gesamt }} Schritten erledigt{% endblocktrans %}"></progress>
+<div class="fw-la-spalten">
 
 {% comment %} UI-Zielbild «Schritte in dieser Reihenfolge»: eine Liste statt Laufkarten. Zustand je Schritt:
    fertig (Haken), jetzt (der erste offene Lauf, Ring mit Punkt, Knopf in Akzent), offen (weitere offene Läufe, leerer Ring,
@@ -60,7 +64,7 @@
 </div>
 
 {% if frueher %}
-<div class="fw-card">
+<div class="fw-card fw-la-frueher">
     <div class="fw-kopf"><span class="fw-t">{% trans "Zuletzt abgeschlossen" %}</span></div>
     {% for z in frueher %}
     <div class="fw-zeile">
@@ -76,4 +80,5 @@
     {% endfor %}
 </div>
 {% endif %}
+</div>
 {% endblock %}

@@ -285,6 +285,11 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Bestandsfilter mit). «Schaden erfassen» ist ab 900 px eine Schublade von rechts (`#neuschaden.fw-schublade-rechts`, derselbe
   Knopf öffnet und schliesst, dazu das Kreuz); am Telefon klappt das Formular wie bisher in der Seite auf. Die Boards
   (`.fw-spalte`: Schäden, Bewerbungen) nutzen die volle Breite, die Spaltenköpfe stehen in Versalien.
+- **Monatsabschluss, Modul 5 (22.11.2026):** Die Übersicht (`/neu/laeufe/`) nutzt die volle Breite. Unter dem Titel steht der
+  Fortschritt als Balken (`progress.fw-la-fortschritt`, dieselben Zahlen wie die Unterzeile, die jetzt auch den nächsten Schritt
+  nennt); rechts neben den Schritten steht ab 1100 px «Zuletzt abgeschlossen» (`.fw-la-spalten`). Nur Gestalt. **Nicht umgesetzt
+  aus dem Mockup** (neue Funktion, nicht bestellt): Monatswahl, «Monat in Zahlen», Positionen in der Sollstellung auslassen,
+  Überspringen zurücknehmen. Sollstellung, Bankabgleich, Mahnwesen und Zahllauf bleiben wie sie sind.
 - **Liegenschaftsliste, Modul 2 (22.11.2026):** Ab 1100 px zeigt «Vorschau» je Zeile die Eckdaten rechts neben der Liste (Mandat,
   Objekte, Belegung, Soll, alle Befunde; Knöpfe «Akte öffnen», «Objekte», «Mietverhältnisse»), ohne die Akte zu öffnen. Der Inhalt
   steht fertig in einer `template`-Marke der Zeile, `static/js/fw-liegenschaften.js` setzt ihn nur um. Ab 641 px stellt der Schalter

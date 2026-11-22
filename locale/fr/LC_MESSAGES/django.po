@@ -41621,3 +41621,6 @@ msgstr "Titre, immeuble, déclarant …"
 
 msgid "Schäden durchsuchen"
 msgstr "Rechercher dans les dégâts"
+
+msgid "als Nächstes: %(name)s"
+msgstr "prochaine étape : %(name)s"
