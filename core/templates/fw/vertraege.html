@@ -6,8 +6,6 @@
 
 {% block content %}
 
-{% include 'fw/_pipeline.html' %}
-
 {% comment %} Aufbau nach konzept-v8 (#akten, Reiter «Mietverhältnisse»):
    Kopf mit Brotkrume, dann EINE Karte mit denselben Reitern wie die
    Liegenschaftsliste, Werkzeugzeile und Tabelle. {% endcomment %}
@@ -81,6 +79,8 @@
     </div>
     {% include 'fw/_seiten.html' %}
 </div>
+{% comment %} Wie auf Vermarktung, Bewerbungen und Mieterwechsel: Die Ablaufleiste steht unter dem Inhalt, der Seitenkopf zuoberst. {% endcomment %}
+{% include 'fw/_pipeline.html' %}
 {% endblock %}
 
 {% block scripts %}

@@ -285,6 +285,20 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Bestandsfilter mit). «Schaden erfassen» ist ab 900 px eine Schublade von rechts (`#neuschaden.fw-schublade-rechts`, derselbe
   Knopf öffnet und schliesst, dazu das Kreuz); am Telefon klappt das Formular wie bisher in der Seite auf. Die Boards
   (`.fw-spalte`: Schäden, Bewerbungen) nutzen die volle Breite, die Spaltenköpfe stehen in Versalien.
+- **Aus einem Guss (22.11.2026):** Jeder Baustein hat auf allen Seiten EINE Form; `e2e/tests/guss.spec.ts` misst das am
+  gerenderten Bild über alle Seiten der Navigation (61 Adressen) und nennt die Seite, die abweicht. Die Regeln stehen im Block
+  «Aus einem Guss» in `fw/_schicht.html`:
+  - **Knöpfe** (`.fw-btn`, auch `.fw-knapp` und im Seitenkopf): 36 px hoch, 14 px Schrift, 16 px Rand (vorher 40/13, 36/14/16 und
+    36/14/14). Am Telefon gilt weiter die Fingergrösse.
+  - **Karten** (`.fw-card`) und die übrigen Kacheln (Hilfebox, Freigabe-Leiste, Ampel, Regel-/Importkachel): Linie,
+    Kartenradius, kein Schatten. Listen ohne Kartenrahmen (`border:0` im Modul) bleiben.
+  - **Kennzahlen** (`.fw-kpis`): überall ein Band mit Linien wie auf Berichte und Finanzen; die Kapselzeile mit Farbpunkt ist
+    entfallen. `.fw-accent` (Hauptzahl oder gewählter Filter) trägt nur einen ruhigen Grund. Ausnahme bleibt `.fw-gross` (Finanzen).
+  - **Felder** (`input.fw-feld`, `select.fw-feld`): 40 px hoch (vorher 38, 39, 41).
+  - **Linker Rand:** Schmale Seiten (Lesespalte) stehen nicht mehr mittig; ihr Inhalt ist 920 px breit und beginnt am selben Rand
+    wie jede andere Seite.
+  - **Seitenkopf zuoberst:** Die Ablaufleiste der Vermietung steht auch auf «Mietverhältnisse» unter dem Inhalt.
+  Neue Seiten bauen auf diesen Bausteinen auf, statt eigene Grössen zu setzen.
 - **Einstellungen, Modul 9 (22.11.2026):** Die Übersicht (`/neu/einstellungen/`) und jede Einstellungsseite (`fw_einst_rahmen` aus
   dem Context-Processor) stehen im selben Rahmen: ab 1024 px links die Liste aller Einstellungen (`.fw-einst-spalten` >
   `nav.fw-einst-nav#fwEinstNav` + `.fw-einst-seite`, in `fw/base.html` um `block content` gelegt) mit Suchfeld (generischer Filter

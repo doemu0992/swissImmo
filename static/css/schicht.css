@@ -2518,28 +2518,6 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-dicht .fw-zeile .fw-mitte>.fw-t{flex:0 1 46%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
             .fw-dicht .fw-zeile .fw-mitte>.fw-s{flex:1 1 0;min-width:0;margin-top:0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         }
-        html .fw-kpis:not(.fw-gross):not(.fw-band){display:flex;flex-wrap:wrap;gap:8px;background:none;border:0;box-shadow:none;overflow:visible;margin:0 0 16px}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi{position:relative;flex:0 1 auto;flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:0 8px;
-            min-width:0;min-height:34px;padding:7px 14px 7px 28px;margin:0;border:0;border-radius:var(--ds-radius-sm);background:var(--ds-surface);
-            box-shadow:none;color:var(--ds-ink)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi::before{content:"";position:absolute;left:13px;top:50%;width:7px;height:7px;margin-top:-3.5px;
-            border-radius:var(--ds-kreis);background:var(--ds-muted)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi:has(.fw-good)::before{background:var(--ds-good)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi:has(.fw-warn)::before{background:var(--ds-warn)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi:has(.fw-crit)::before{background:var(--ds-crit)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi:hover{box-shadow:var(--ds-shadow-sm)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi.fw-accent{background:var(--ds-surface)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi .fw-v{order:1;font-size:13px;line-height:1.35;font-weight:700;letter-spacing:0;color:var(--ds-ink)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi .fw-l{order:2;font-size:13px;line-height:1.35;font-weight:500;color:var(--ds-ink)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi .fw-f{order:3;font-size:13px;line-height:1.35;font-weight:400;color:var(--ds-muted)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi .fw-f::before{content:"· "}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi.fw-accent .fw-l,html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi.fw-accent .fw-f,
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi.fw-accent .fw-v{color:var(--ds-ink)}
-        html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi.fw-accent .fw-f{color:var(--ds-muted)}
-        @media (max-width:640px){
-            html .fw-kpis:not(.fw-gross):not(.fw-band)>.fw-kpi{min-height:40px;padding-block:9px}
-            html .fw-kpis.fw-stats:not(.fw-gross)>.fw-kpi .fw-f{display:none}
-        }
         .fw-mit-schiene .fw-kopfleiste{max-width:none;background:var(--ds-surface);border-bottom:1px solid var(--ds-line);padding-block:8px}
         .fw-mit-schiene .fw-kopfleiste .fw-kapsel{box-shadow:none}
         .fw-mit-schiene .fw-kopfleiste .fw-werkzeug-kapsel,.fw-mit-schiene .fw-kopfleiste .fw-bestand{box-shadow:inset 0 0 0 1px var(--ds-line)}
@@ -2599,7 +2577,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-schrittliste .fw-schritt .fw-t{font-weight:500}
         .fw-btn.fw-knapp.fw-primary{box-shadow:none}
         @media (min-width:1280px){
-            .fw-inhalt:not(:has(table)):not(:has(.fw-cockpit)):not(:has(.fw-bento)):not(:has(.fw-kpis)):not(:has(.fw-split)):not(:has(.fw-zwei)):not(:has(.fw-assistent)):not(:has(.fw-raster.l3)):not(:has(.fw-schadenliste)):not(:has(.fw-spalte)):not(:has(.fw-la-spalten)):not(:has(.fw-einst-spalten)){max-width:984px}
+            .fw-inhalt:not(:has(table)):not(:has(.fw-cockpit)):not(:has(.fw-bento)):not(:has(.fw-kpis)):not(:has(.fw-split)):not(:has(.fw-zwei)):not(:has(.fw-assistent)):not(:has(.fw-raster.l3)):not(:has(.fw-schadenliste)):not(:has(.fw-spalte)):not(:has(.fw-la-spalten)):not(:has(.fw-einst-spalten))>*{max-width:920px}
         }
         @media (max-width:640px){
             html .fw-mit-schiene .fw-kopfleiste{background:var(--ds-surface);border-bottom:1px solid var(--ds-line)}
@@ -2951,6 +2929,38 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-einst-seite:not(:has(table)){max-width:860px}
             .fw-einst-seite>.fw-listwerkzeug:has(#einstSuche){display:none}
             .fw-einst-nav a.hidden,.fw-einst-nav>div.hidden{display:none}
+        }
+        @media (min-width:641px){
+            html .fw-btn:not(.fw-mzm-weg),html .fw-btn.fw-knapp:not(.fw-mzm-weg),html .fw-phead-knoepfe .fw-btn{min-height:36px;font-size:14px;padding:6px 16px}
+            html .fw-sk-absenden .fw-btn{min-height:48px}
+            html input.fw-feld:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]),html select.fw-feld{height:40px;min-height:40px}
+            html .fw-kopffilter .fw-feld{height:auto;min-height:0}
+        }
+        html .fw-card{border:1px solid var(--ds-line)}
+        html .fw-hilfebox,html .fw-freigabe,html .fw-kachel:not(.akzent),html .fw-ampel{
+            border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:none}
+        html .fw-kpis:not(.fw-gross){display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0;margin-bottom:18px;padding:0;grid-auto-rows:auto;
+            background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);overflow:hidden;box-shadow:none}
+        html .fw-kpis:not(.fw-gross)>.fw-kpi{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:2px;height:auto;min-height:0;max-height:none;
+            padding:14px 18px;margin:0;color:inherit;text-decoration:none;background:transparent;background-image:none;border:0;border-radius:var(--ds-radius-0);
+            box-shadow:1px 0 0 var(--ds-line),0 1px 0 var(--ds-line)}
+        html .fw-kpis:not(.fw-gross)>a.fw-kpi:hover{background:var(--ds-hover)}
+        html .fw-kpis:not(.fw-gross)>.fw-kpi.fw-accent{background:var(--ds-surface-2);background-image:none;color:inherit}
+        html .fw-kpis:not(.fw-gross)>.fw-kpi,html .fw-kpis:not(.fw-gross)>.fw-kpi:hover,html .fw-kpis:not(.fw-gross)>.fw-kpi.fw-accent:hover{box-shadow:1px 0 0 var(--ds-line),0 1px 0 var(--ds-line);transform:none}
+        html .fw-kpis:not(.fw-gross)>.fw-kpi.fw-accent .fw-l{color:var(--ds-muted)}
+        html .fw-kpis:not(.fw-gross)>.fw-kpi.fw-accent .fw-v{color:var(--ds-ink)}
+        html .fw-kpis:not(.fw-gross)>.fw-kpi.fw-accent .fw-f{color:var(--ds-faint)}
+        html .fw-kpis:not(.fw-gross) .fw-l{font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ds-muted)}
+        html .fw-kpis:not(.fw-gross) .fw-v{display:block;font-family:var(--ds-disp);font-size:22px;font-weight:700;letter-spacing:-.03em;line-height:1.2;color:var(--ds-ink)}
+        html .fw-kpis:not(.fw-gross) .fw-f{display:block;font-size:12px;color:var(--ds-faint)}
+        html .fw-kpis:not(.fw-gross)>.fw-kpi .fw-v.fw-crit,html .fw-kpis:not(.fw-gross)>.fw-kpi.fw-accent .fw-v.fw-crit{color:var(--ds-crit)}
+        html .fw-kpis:not(.fw-gross)>.fw-kpi .fw-v.fw-warn,html .fw-kpis:not(.fw-gross)>.fw-kpi.fw-accent .fw-v.fw-warn{color:var(--ds-warn)}
+        html .fw-kpis:not(.fw-gross)>.fw-kpi .fw-v.fw-good,html .fw-kpis:not(.fw-gross)>.fw-kpi.fw-accent .fw-v.fw-good{color:var(--ds-good)}
+        @media (max-width:640px){
+            html .fw-kpis:not(.fw-gross){grid-template-columns:1fr 1fr}
+            html .fw-kpis.fw-stats:not(.fw-gross)>.fw-kpi{padding:8px 14px}
+            html .fw-kpis.fw-stats:not(.fw-gross)>.fw-kpi .fw-v{font-size:18px}
+            html .fw-kpis.fw-stats:not(.fw-gross)>.fw-kpi .fw-f{display:none}
         }
         .fw-kopf-z1{display:flex;align-items:center;gap:12px}
         @media (max-width:1023px){
