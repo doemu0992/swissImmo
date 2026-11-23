@@ -30,7 +30,7 @@
         }
         .theme { position: fixed; top: max(14px, calc(env(safe-area-inset-top) + 6px)); right: 18px; }
         .iconbtn {
-            display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 10px;
+            display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: var(--ds-pill);
             border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; font-size: 15px;
         }
         .iconbtn:hover { color: var(--ink); border-color: var(--accent); }
@@ -40,9 +40,8 @@
             width: 62px; height: 62px; border-radius: 19px; display: grid; place-items: center; margin: 0 auto 18px;
             background: var(--ds-brand); color: var(--ds-auf-satt);
             font-weight: 700; font-size: 28px; letter-spacing: -.03em;
-            box-shadow: 0 10px 26px color-mix(in srgb, var(--brand-500) 42%, transparent);
         }
-        .hero h1 { font-size: clamp(27px, 7.5vw, 40px); line-height: 1.1; letter-spacing: -.03em; text-wrap: balance; }
+        .hero h1 { font-family: var(--ds-disp); font-weight: 700; font-size: clamp(27px, 7.5vw, 40px); line-height: 1.1; letter-spacing: -.03em; text-wrap: balance; }
         .hero p { color: var(--muted); font-size: clamp(14px, 4vw, 16px); margin-top: 10px; max-width: 30ch; margin-inline: auto; }
 
         .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; max-width: 780px; width: 100%; }
@@ -50,10 +49,9 @@
         .tile {
             position: relative; overflow: hidden; text-decoration: none; color: inherit;
             background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-            box-shadow: var(--shadow); padding: 24px; display: flex; flex-direction: column;
-            transition: transform .2s, box-shadow .2s, border-color .2s;
+            padding: 24px; display: flex; flex-direction: column;
+            transition: border-color .2s;
         }
-        .tile:hover { transform: translateY(-3px); box-shadow: 0 1px 2px rgba(23,26,43,.05), 0 16px 40px rgba(23,26,43,.12); }
         .tile .ic { width: 52px; height: 52px; border-radius: 15px; display: grid; place-items: center; margin-bottom: 16px; }
         .tile.repair:hover { border-color: color-mix(in srgb, var(--good) 40%, var(--line)); }
         .tile.repair .ic { background: var(--good-soft); color: var(--good); }

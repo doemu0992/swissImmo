@@ -19,16 +19,16 @@ also nichts, wohin eine Navigation führen dürfte.
         body { background:var(--bg); color:var(--ink); min-height:100dvh; display:grid;
                place-items:center; padding:24px;
                font-family:var(--ds-font); }
-        .card { background:var(--surface); border:1px solid var(--line); border-radius:var(--ds-radius-lg);
+        .card { background:var(--surface); border:1px solid var(--line); border-radius:var(--ds-radius);
                 padding:32px; width:100%; max-width:420px;
-                box-shadow:var(--ds-shadow); }
-        h1 { font-size:22px; font-weight: 600; letter-spacing:-.02em; margin-bottom:8px; }
+                }   /* Guss: Karte mit Linie, ohne Schatten */
+        h1 { font-family:var(--ds-disp); font-size:24px; font-weight:700; letter-spacing:-.03em; margin-bottom:8px; }
         p  { color:var(--muted); font-size:14px; line-height:1.55; margin-bottom:20px; }
         label { display:block; font-size:12.5px; font-weight:600; color:var(--muted); margin-bottom:6px; }
-        input { width:100%; padding:12px 14px; border:1px solid var(--ds-line-stark); border-radius:var(--ds-radius-knopf);
+        input { width:100%; height:40px; padding:0 14px; border:1px solid var(--ds-line-stark); border-radius:var(--ds-radius-knopf);
                 background:var(--bg); color:var(--ink); font-size:20px; letter-spacing:.32em;
                 text-align:center; font-variant-numeric:tabular-nums; }
-        button { width:100%; margin-top:16px; padding:12px; border:0; border-radius:var(--ds-radius-knopf);
+        button { width:100%; margin-top:16px; min-height:40px; padding:0 16px; border:0; border-radius:var(--ds-pill);
                  background:var(--brand); color:var(--ds-auf-satt); font-weight:600; font-size:14px;
                  cursor:pointer; }
         .alert { background:var(--crit-soft); color:var(--crit); border-radius:var(--ds-radius-knopf);

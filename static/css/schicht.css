@@ -3018,6 +3018,11 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             html .fw-app:has(>#pTabbar) .fw-haupt{padding-bottom:var(--fw-tab-h)}
             html .fw-app:has(>#pTabbar) :is(.fw-freigabe,.fw-assistent-fuss,.fw-split-fuss,.fw-sk-absenden,.fw-toasts){bottom:calc(var(--fw-tab-h) + 8px)}
         }
+        html .fw-aussen-guss h1,html .fw-aussen-inhalt h1{font-family:var(--ds-disp);font-weight:700;letter-spacing:-.03em}
+        html .fw-aussen-guss h1{font-size:24px;line-height:1.2}
+        html .fw-aussen-guss .fw-flaeche.rounded-2xl{border-radius:var(--ds-radius);box-shadow:none;border:1px solid var(--ds-line)}
+        html .fw-aussen-guss input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]){height:40px;min-height:40px;padding-top:0;padding-bottom:0;
+            border-radius:var(--ds-radius-knopf);background:var(--ds-surface);font-weight:500}
         html .fw-card.fw-lf{padding:0;overflow:hidden}
         .fw-lf-kopf{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-bottom:1px solid var(--ds-line)}
         .fw-lf-kopf .fw-filters{margin:0}
