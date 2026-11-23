@@ -50,77 +50,73 @@
         <div class="fw-f">{% trans "brauchen eine Handlung" %}</div></div>
 </div>
 
-<div class="fw-filters">
-    {% for wert, label in zustand_chips %}
-    <a href="?zustand={{ wert }}{% if typ_filter %}&amp;typ={{ typ_filter }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"
-       class="fw-fchip{% if zustand == wert %} fw-on{% endif %}">{{ label }}</a>
-    {% endfor %}
-</div>
-<div class="fw-filters">
-    {% for wert, label in typ_chips %}
-    <a href="?typ={{ wert }}{% if zustand %}&amp;zustand={{ zustand }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"
-       class="fw-fchip{% if typ_filter == wert %} fw-on{% endif %}">{{ label }}</a>
-    {% endfor %}
-    {% if q %}
-    <a href="?{% if typ_filter %}typ={{ typ_filter }}&amp;{% endif %}{% if zustand %}zustand={{ zustand }}{% endif %}"
-       class="fw-fchip fw-on">{% blocktrans %}Suche «{{ q }}»{% endblocktrans %} ×</a>
-    {% endif %}
-</div>
-
-{% for g in gruppen %}
-<details class="fw-card"{% if g.offen %} open{% endif %}>
-    <summary class="fw-kopf cursor-pointer list-none">
-        {% zeichen 'weiter' klasse='fw-klein' %}
-        <span class="fw-ikon{% if g.stufe != 'good' %} {{ g.stufe }}{% endif %}">{% zeichen 'liegenschaft' %}</span>
-        <span class="fw-t">{{ g.lg.strasse }}</span><span class="fw-neben">{{ g.lg.plz }} {{ g.lg.ort }}</span>
-        <span class="fw-rechts">
-            {% if g.leer %}<span class="fw-chip fw-warn fw-dot">{% blocktrans with n=g.leer %}{{ n }} leer{% endblocktrans %}</span>{% endif %}
-            <span class="fw-chip fw-mut">{% blocktrans with belegt=g.belegt anzahl=g.anzahl %}{{ belegt }} / {{ anzahl }} vermietet{% endblocktrans %}</span>
-            <a href="/neu/liegenschaften/{{ g.lg.id }}/" class="fw-link" data-stop>{% trans "Liegenschaft" %} →</a>
-        </span>
-    </summary>
-
-    {% for z in g.zeilen %}
-    <a href="/neu/objekte/{{ z.e.id }}/" class="fw-zeile klick">
-        <span class="fw-marker{% if z.stufe != 'good' %} {{ z.stufe }}{% endif %}"></span>
-        <div class="fw-mitte">
-            <div class="fw-t">{{ z.e.bezeichnung }}</div>
-            <div class="fw-s">{{ z.e.get_typ_display }}{% if z.e.zimmer %} · {% blocktrans with n=z.e.zimmer %}{{ n }} Zi.{% endblocktrans %}{% endif %}{% if z.e.flaeche_m2 %} · {{ z.e.flaeche_m2|floatformat:0 }} m²{% endif %}{% if z.mieter %} · {{ z.mieter }}{% endif %}</div>
-            {% if z.befunde %}
-            <div class="fw-s mt-1">
-                {% for b in z.befunde %}
-                <span class="fw-chip fw-{{ b.stufe }} fw-dot mr-1">{{ b.text }}{% if b.titel %} — {{ b.titel }}{% endif %}</span>
-                {% endfor %}
-            </div>
-            {% elif z.nachmieter_ab %}
-            <div class="fw-s mt-1">
-                <span class="fw-chip fw-good fw-dot">{% blocktrans with ab=z.nachmieter_ab|date:"d.m.Y" %}Nachmieter ab {{ ab }}{% endblocktrans %}</span>
-            </div>
+{% comment %} Listenform (Mockup «Immoswiss Listenform», 23.11.2026): EINE Karte mit Filtern im Kopf, Spaltenkopf und Zeilen im selben
+   Raster wie jede andere Liste. Die Liegenschaft ist eine Gruppenzeile und lässt sich weiter zuklappen (`details`). {% endcomment %}
+<div class="fw-card fw-lf fw-lf-objekte">
+    <div class="fw-lf-kopf">
+        <div class="fw-filters">
+            {% for wert, label in zustand_chips %}
+            <a href="?zustand={{ wert }}{% if typ_filter %}&amp;typ={{ typ_filter }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"
+               class="fw-fchip{% if zustand == wert %} fw-on{% endif %}">{{ label }}</a>
+            {% endfor %}
+        </div>
+        <div class="fw-filters">
+            {% for wert, label in typ_chips %}
+            <a href="?typ={{ wert }}{% if zustand %}&amp;zustand={{ zustand }}{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if aktive_lg %}&amp;lg={{ aktive_lg.id }}{% endif %}"
+               class="fw-fchip{% if typ_filter == wert %} fw-on{% endif %}">{{ label }}</a>
+            {% endfor %}
+            {% if q %}
+            <a href="?{% if typ_filter %}typ={{ typ_filter }}&amp;{% endif %}{% if zustand %}zustand={{ zustand }}{% endif %}"
+               class="fw-fchip fw-on">{% blocktrans %}Suche «{{ q }}»{% endblocktrans %} ×</a>
             {% endif %}
         </div>
-        <div class="fw-zeit">
-            {% if z.e.nettomiete_aktuell %}CHF {{ z.e.nettomiete_aktuell|chf }}{% else %}<span class="fw-warnton">{% trans "kein Zins" %}</span>{% endif %}
-        </div>
-        {% zeichen 'weiter' klasse='fw-klein' %}
-    </a>
+    </div>
+    {% if gruppen %}
+    <div class="fw-lf-raster fw-lf-spalten" aria-hidden="true">
+        <span>{% trans "Objekt" %}</span><span>{% trans "Mieter" %}</span><span>{% trans "Befund" %}</span><span class="fw-lf-zahl">{% trans "Mietzins" %}</span><span></span>
+    </div>
+    {% endif %}
+    {% for g in gruppen %}
+    <details class="fw-lf-gruppe"{% if g.offen %} open{% endif %}>
+        <summary class="fw-lf-gruppenkopf">
+            {% zeichen 'weiter' klasse='fw-klein' %}
+            <span class="fw-t">{{ g.lg.strasse }}</span><span class="fw-neben">{{ g.lg.plz }} {{ g.lg.ort }}</span>
+            <span class="fw-rechts">
+                {% if g.leer %}<span class="fw-chip fw-warn fw-dot">{% blocktrans with n=g.leer %}{{ n }} leer{% endblocktrans %}</span>{% endif %}
+                <span class="fw-chip fw-mut">{% blocktrans with belegt=g.belegt anzahl=g.anzahl %}{{ belegt }} / {{ anzahl }} vermietet{% endblocktrans %}</span>
+                <a href="/neu/liegenschaften/{{ g.lg.id }}/" class="fw-link" data-stop>{% trans "Liegenschaft" %} →</a>
+            </span>
+        </summary>
+        {% for z in g.zeilen %}
+        <a href="/neu/objekte/{{ z.e.id }}/" class="fw-lf-raster fw-lf-zeile">
+            <span class="fw-lf-titel">
+                <span class="fw-marker{% if z.stufe != 'good' %} {{ z.stufe }}{% endif %}"></span>
+                <span class="fw-lf-text">
+                    <span class="fw-t">{{ z.e.bezeichnung }}</span>
+                    <span class="fw-s">{{ z.e.get_typ_display }}{% if z.e.zimmer %} · {% blocktrans with n=z.e.zimmer %}{{ n }} Zi.{% endblocktrans %}{% endif %}{% if z.e.flaeche_m2 %} · {{ z.e.flaeche_m2|floatformat:0 }} m²{% endif %}</span>
+                </span>
+            </span>
+            <span class="fw-lf-zelle{% if not z.mieter %} fw-lf-leer{% endif %}">{% if z.mieter %}{{ z.mieter }}{% else %}—{% endif %}</span>
+            <span class="fw-lf-chips">
+                {% if z.befunde %}{% for b in z.befunde %}<span class="fw-chip fw-{{ b.stufe }} fw-dot">{{ b.text }}{% if b.titel %} — {{ b.titel }}{% endif %}</span>{% endfor %}
+                {% elif z.nachmieter_ab %}<span class="fw-chip fw-good fw-dot">{% blocktrans with ab=z.nachmieter_ab|date:"d.m.Y" %}Nachmieter ab {{ ab }}{% endblocktrans %}</span>{% endif %}
+            </span>
+            <span class="fw-lf-zahl">{% if z.e.nettomiete_aktuell %}CHF {{ z.e.nettomiete_aktuell|chf }}{% else %}<span class="fw-warnton">{% trans "kein Zins" %}</span>{% endif %}</span>
+            <span class="fw-lf-akt">{% trans "Öffnen" %} {% zeichen 'weiter' klasse='fw-klein' %}</span>
+        </a>
+        {% endfor %}
+    </details>
+    {% empty %}
+    <div class="px-4">
+    {% if gefiltert or q or typ_filter %}
+        {% include 'fw/_empty.html' with icon='gut' titel=_('Nichts zu tun') subtext=_('Für diesen Filter gibt es kein Objekt. Das ist eine gute Nachricht — oder der Filter ist zu eng.') cta_url='/neu/objekte/' cta_label=_('Alle Objekte zeigen') %}
+    {% else %}
+        {% include 'fw/_empty.html' with icon='einheit' titel=_('Noch keine Objekte') subtext=_('Objekte gehören zu einer Liegenschaft — legen Sie zuerst eine Liegenschaft an oder importieren Sie die Wohnungen aus dem GWR.') cta_url='/neu/liegenschaften/neu/' cta_label=_('Liegenschaft erfassen') %}
+    {% endif %}
+    </div>
     {% endfor %}
-</details>
-{% empty %}
-<div class="fw-card px-4">
-{% if gefiltert or q or typ_filter %}
-    {% include 'fw/_empty.html' with icon='gut' titel=_('Nichts zu tun') subtext=_('Für diesen Filter gibt es kein Objekt. Das ist eine gute Nachricht — oder der Filter ist zu eng.') cta_url='/neu/objekte/' cta_label=_('Alle Objekte zeigen') %}
-{% else %}
-    {% include 'fw/_empty.html' with icon='einheit' titel=_('Noch keine Objekte') subtext=_('Objekte gehören zu einer Liegenschaft — legen Sie zuerst eine Liegenschaft an oder importieren Sie die Wohnungen aus dem GWR.') cta_url='/neu/liegenschaften/neu/' cta_label=_('Liegenschaft erfassen') %}
-{% endif %}
+    {% if gruppen %}<div class="fw-lf-fuss">{% trans "Nach Befund geordnet — was klemmt, steht oben." %}</div>{% endif %}
+    {% if seite.paginator.num_pages > 1 %}{% include 'fw/_seiten.html' %}{% endif %}
 </div>
-{% endfor %}
-{% if seite.paginator.num_pages > 1 %}<div class="fw-card">{% include 'fw/_seiten.html' %}</div>{% endif %}
-
-<style nonce="{{ csp_nonce }}">
-    /* Der Pfeil dreht sich beim Aufklappen. `details[open]` statt einer
-       JS-Klasse — die Gruppe kennt ihren Zustand selbst. */
-    details[open] > summary > svg:first-child { transform: rotate(90deg); }
-    summary::-webkit-details-marker { display: none; }
-</style>
 
 {% endblock %}
