@@ -304,7 +304,14 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   **Navigation (23.11.2026, Entscheid «alles aus einem Guss»):** Die Portale haben ab 1024 px dieselbe Seitenleiste wie die
   Verwaltung (`#pSidebar`: 248 px links, Marke oben, Seiten mit Zeichen untereinander, Abschnittstitel, Sprache und Abmelden im
   Fuss, aktive Seite wie in der Schiene). Vorher wurde dieselbe Leiste am Desktop zur Kopfleiste mit Kapseln umgestellt; das
-  Markup ist unverändert. Am Telefon bleibt der Menüknopf mit ausfahrender Leiste.
+  Markup ist unverändert.
+  **Telefon (bis 640 px, 23.11.2026):** untere Leiste `#pTabbar` mit denselben Regeln wie `#fwTabbar` der Verwaltung
+  (`.fw-tabbar`, `.fw-tab`, `.fw-tab-plus`). Belegung an einer Stelle in `core/templatetags/portal_tabs.py`, nach dem Pfad
+  der Anfrage: Mieter (Übersicht, Rechnungen, + Schaden melden, Meldungen), Eigentümer (Übersicht, Abrechnung, Objekte,
+  Dokumente), Betreiber (Kunden, Protokoll mit Fehlerzahl, + Kunde anlegen, LIK-Werte), dazu immer «Mehr». «Mehr» öffnet
+  die vollständige Liste `#pSidebar` (`pOpenNav`), die die untere Leiste überdeckt; kein Ziel steht nur unten
+  (`core/tests/test_portal_tabbar.py`). Der Menüknopf der Kopfzeile entfällt bis 640 px (dort das Markenzeichen), von 641
+  bis 1023 px bleibt er. Das Handwerker-Portal ist eine einzelne Seite ohne Navigation und hat keine Leiste.
   **Anmeldeseiten** (`core/login.html`, `core/portal_login.html`, auch Betreiber): Titel in der Titelschrift, Felder 40 px,
   Knopf und Sprachwahl als Pille, Karte mit Linie statt Schatten. Die geteilte Seite mit der Markenfläche bleibt.
   Die Markenfläche ist seit 23.11.2026 eine ruhige helle Fläche wie die Seitenleiste (Fläche + Linie, Titel in der

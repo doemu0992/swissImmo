@@ -75,6 +75,48 @@ for (const [portal, konto, seiten] of PORTALE) {
   });
 }
 
+// Telefon: dieselbe untere Leiste wie die Verwaltung (`#fwTabbar`), «Mehr» öffnet die vollständige Liste.
+for (const [portal, konto, seiten] of PORTALE) {
+  test(`Telefon im ${portal}: untere Leiste wie die Verwaltung, «Mehr» zeigt die ganze Liste`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await anmelden(page, konto);
+    await goto(page, seiten[0]);
+    const m = await page.evaluate(() => {
+      const leiste = document.querySelector('#pTabbar')!, r = leiste.getBoundingClientRect(), c = getComputedStyle(leiste);
+      const tabs = [...leiste.querySelectorAll('.fw-tab')] as HTMLElement[];
+      return { unten: Math.round(r.bottom) === innerHeight, breit: Math.round(r.width) === innerWidth, fest: c.position, tabs: tabs.length,
+        aktiv: leiste.querySelectorAll('.fw-tab.hier').length, quer: document.documentElement.scrollWidth > innerWidth,
+        ueberlauf: tabs.filter(t => t.scrollWidth > t.clientWidth + 1).map(t => t.textContent!.trim()),
+        hoehe: Math.min(...tabs.map(t => t.offsetHeight)), menueknopf: (document.querySelector('.fw-portal-top > .fw-knopf-rund') as HTMLElement).offsetWidth,
+        marke: (document.querySelector('.fw-portal-top-marke') as HTMLElement).offsetWidth,
+        // der Inhalt endet über der Leiste: das letzte Element von <main> ist nach dem Scrollen ganz sichtbar
+        platz: parseFloat(getComputedStyle(document.querySelector('.fw-haupt')!).paddingBottom) >= r.height };
+    });
+    expect(m).toEqual({ unten: true, breit: true, fest: 'fixed', tabs: 5, aktiv: 1, quer: false, ueberlauf: [], hoehe: m.hoehe, menueknopf: 0, marke: 30, platz: true });
+    expect(m.hoehe).toBeGreaterThanOrEqual(48);
+    // «Mehr» öffnet die bisherige Leiste; sie überdeckt die untere Leiste, Abmelden bleibt erreichbar
+    const eintraege = await page.locator('#pSidebar .fw-nav-eintrag').count();
+    expect(eintraege).toBeGreaterThanOrEqual(5);
+    await page.locator('#pTabbar [data-bei-klick="pOpenNav"]').click();
+    await expect(page.locator('#pSidebar')).toHaveClass(/offen/);
+    const abmelden = page.locator('#pSidebar form[action="/logout/"] button');
+    await expect(abmelden).toBeVisible();
+    // (die Liste fährt ein: abwarten, bis der Knopf an seinem Platz liegt)
+    await expect.poll(() => abmelden.evaluate(e => { const r = e.getBoundingClientRect(); const t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return !!t && t.closest('#pSidebar') !== null; }), { message: 'Abmelden liegt über der unteren Leiste' }).toBe(true);
+    await page.keyboard.press('Escape');
+    // Ein Tab führt auf seine Seite und ist dort aktiv
+    const zweiter = page.locator('#pTabbar a.fw-tab:not(.fw-tab-plus)').nth(1);
+    const ziel = await zweiter.getAttribute('href');
+    await Promise.all([warteAufURL(page, '**' + ziel), zweiter.click()]);
+    await expect(page.locator('#pTabbar a.fw-tab.hier')).toHaveAttribute('href', ziel!);
+    // Zwischen Telefon und Desktop bleibt der Menüknopf, die untere Leiste ist aus
+    await page.setViewportSize({ width: 800, height: 900 });
+    await expect(page.locator('#pTabbar')).toBeHidden();
+    await expect(page.locator('.fw-portal-top > .fw-knopf-rund')).toBeVisible();
+  });
+}
+
 test('Anmeldeseiten: Titelschrift, Feldhöhe und Knopf wie im Programm', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   for (const u of ['/login/', '/portal/login/']) {
