@@ -1088,7 +1088,7 @@ def fw_vertrag_vorschau(request):
     einheit = Einheit.objects.filter(id=P.get('einheit_id') or 0).select_related('liegenschaft').first()
     if not einheit:
         return HttpResponse(
-            '<div style="font-family:Helvetica,sans-serif;color:#64748b;padding:40px;'
+            '<div style="font-family:Inter,system-ui,sans-serif;color:#5d6068;padding:40px;'
             'text-align:center;font-size:14px;">Bitte zuerst ein Objekt auswählen — '
             'dann erscheint hier die 1:1-Vorschau des Vertrags.</div>',
             content_type='text/html')

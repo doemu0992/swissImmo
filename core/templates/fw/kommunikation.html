@@ -4,6 +4,12 @@
 
 {% block content %}
 
+<nav class="fw-brotkrume mb-3">
+    <a href="/neu/{{ lg_query }}">{% trans "Heute" %}</a>
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
+    <b>{% trans "Kommunikation" %}</b>
+</nav>
+
 <div class="fw-phead">
     <div>
         <h1>{% trans "Mitteilungs-Assistent" %}</h1>
@@ -220,7 +226,7 @@ Freundliche Grüsse</textarea>
     </div>
     <div class="fw-assistent-vorschau-rumpf" id="mk-vorschau-rumpf">
         <span id="preview-hint" class="fw-klein"></span>
-        <div id="brief" class="fw-card fw-brief text-sm fw-strong leading-relaxed">
+        <div id="brief" class="fw-card fw-brief text-sm fw-ink leading-relaxed">
             {% comment %} Logo, Absender, Empfänger-Adresse, Ort/Datum, Betreff, Text {% endcomment %}
             <div id="pv-logo" class="mb-6"></div>
             <div id="pv-absender" class="fw-fs-klein fw-mutet mb-10"></div>

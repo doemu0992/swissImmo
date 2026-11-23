@@ -3023,6 +3023,12 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         html .fw-aussen-guss .fw-flaeche.rounded-2xl{border-radius:var(--ds-radius);box-shadow:none;border:1px solid var(--ds-line)}
         html .fw-aussen-guss input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]){height:40px;min-height:40px;padding-top:0;padding-bottom:0;
             border-radius:var(--ds-radius-knopf);background:var(--ds-surface);font-weight:500}
+        .fw-assistent-inhalt{container-type:inline-size}
+        @container (max-width:520px){.fw-assistent-fuss .stand{display:none}}
+        .fw-assistent-vorschau-rumpf>:empty{display:none}
+        html .fw-brotkrume>.fw-zeichen{width:11px!important;height:11px!important;vertical-align:-1px}
+        html .fw-krumen>span[aria-hidden="true"]{font-size:0}
+        html .fw-krumen>span[aria-hidden="true"]::before{content:"\203A";font-size:14px;line-height:1}
         html .fw-card.fw-lf{padding:0;overflow:hidden}
         .fw-lf-kopf{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-bottom:1px solid var(--ds-line)}
         .fw-lf-kopf .fw-filters{margin:0}

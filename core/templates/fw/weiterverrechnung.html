@@ -5,6 +5,11 @@
 {% block content %}
 {{ vertrag_daten|json_script:"wv-vd-data" }}
 {{ absender|json_script:"wv-abs-data" }}
+<nav class="fw-brotkrume mb-3">
+    <a href="/neu/kreditoren/{{ lg_query }}">{% trans "Kreditoren" %}</a>
+    {% zeichen 'weiter' klasse='fw-fs-mikro' %}
+    <b>{% trans "Weiterverrechnen" %}</b>
+</nav>
 <div class="fw-phead">
     <div>
         <h1>{% trans "An Mieter weiterverrechnen" %}</h1>
@@ -95,13 +100,13 @@ Erklärung, warum.{% endcomment %}
 </div>
 {% endif %}
 
-<div class="fw-raster l2 items-start" id="wv-einzeln">
+<div id="wv-einzeln">
 <form method="post" id="wv-form">
     {% csrf_token %}
     <input type="hidden" name="embed" id="wv_embed" value="">
     <script nonce="{{ csp_nonce }}">if (window.self !== window.top) document.getElementById('wv_embed').value = '1';</script>
     {% trans "Prüfen & erstellen" as wv_pruefen %}
-    <div class="fw-assistent fw-assistent-schmal" {% include 'fw/_assistent_attribute.html' with pruefen=wv_pruefen %}>
+    <div class="fw-assistent fw-assistent-mit-vorschau" {% include 'fw/_assistent_attribute.html' with pruefen=wv_pruefen %}>
     {% include 'fw/_assistent_leiste.html' %}
     <div class="fw-assistent-inhalt">
         <section data-schritt="{% trans 'Empfänger' %}" data-schritt-text="{% trans 'Welcher Mieter trägt die Kosten?' %}">
@@ -169,16 +174,19 @@ Erklärung, warum.{% endcomment %}
             </div>
         </div>
     </div>
+    {# RECHTS: Live-Vorschau der entstehenden Debitorenrechnung — derselbe Baustein wie in Vertrag und Kommunikation #}
+    <aside class="fw-assistent-vorschau offen" aria-label="{% trans 'Live-Vorschau' %}">
+        <div class="fw-assistent-vorschau-kopf">
+            <span class="fw-assistent-vorschau-titel">{% zeichen 'rechnung' %} {% trans "Live-Vorschau" %}</span>
+            <button type="button" class="fw-btn fw-knapp fw-leise" data-vorschau-knopf aria-controls="wv-vorschau-rumpf"
+                    data-text-zeigen="{% trans 'Vorschau zeigen' %}" data-text-verbergen="{% trans 'Vorschau ausblenden' %}"><span class="t">{% trans "Vorschau ausblenden" %}</span></button>
+        </div>
+        <div class="fw-assistent-vorschau-rumpf" id="wv-vorschau-rumpf">
+            <div class="fw-card"><div id="wv-pv" class="fw-rumpf fw-fs-fein fw-ink leading-relaxed"></div></div>
+        </div>
+    </aside>
     </div>
 </form>
-
-<!-- RECHTS: Live-Vorschau der entstehenden Debitorenrechnung -->
-<div class="lg:sticky lg:top-24">
-    <div class="fw-card">
-    <div class="fw-kopf"><span class="fw-t">{% trans "Live-Vorschau" %}</span></div>
-    <div id="wv-pv" class="fw-rumpf fw-fs-fein fw-ink leading-relaxed"></div>
-    </div>
-</div>
 </div>
 
 <script nonce="{{ csp_nonce }}">
