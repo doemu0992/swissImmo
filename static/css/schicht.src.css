@@ -4150,6 +4150,9 @@
             html .fw-schadenliste .fw-schadenzeile .fw-schaden-tags{grid-area:s;margin:0;gap:4px}
             html .fw-schadenliste .fw-schadenzeile .fw-mitte>.fw-s.flex-wrap{grid-area:b;display:flex;flex-wrap:wrap;gap:4px;min-width:0}
             html .fw-schadenliste .fw-schadenzeile .fw-mitte>.fw-s.flex-wrap .fw-chip{max-width:100%;white-space:normal}
+            /* Dichte Liste: Die allgemeine Regel macht die Mitte zur Flexzeile und ist stärker; hier bleibt das Raster, die Zeile wird flacher. */
+            html .fw-schadenliste.fw-dicht .fw-schadenzeile.fw-zeile .fw-mitte:has(>.fw-t):has(>.fw-s){display:contents}
+            html .fw-schadenliste.fw-dicht .fw-schadenzeile.fw-zeile{min-height:0;padding-block:5px}
             html .fw-schadenliste .fw-schadenzeile>.fw-schaden-wer{grid-area:w}
             html .fw-schadenliste .fw-schadenzeile>.fw-seit{grid-area:a}
             html .fw-schadenliste .fw-schadenzeile>.fw-btn{grid-area:k}
