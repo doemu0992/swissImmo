@@ -68,13 +68,18 @@ const SEITEN: string[] = [
   '/neu/zulauf/'
 ];
 
+// Detailseiten und Formulare (Akte, Assistent): dieselben Bausteine, dieselben Masse.
+const DETAIL: string[] = ['/neu/liegenschaften/1/', '/neu/vertraege/1/', '/neu/personen/1/', '/neu/einheiten/1/', '/neu/schaeden/1/', '/neu/mandate/1/',
+  '/neu/dienstleister/1/', '/neu/personen/neu/', '/neu/liegenschaften/neu/', '/neu/faelle/neu/', '/neu/vertraege/neu/', '/neu/benutzer/neu/',
+  '/neu/einstellungen/daten/import/', '/neu/einstellungen/daten/export/'];
+
 test('Guss: Knöpfe, Karten, Kennzahlen, Felder und linker Rand sind auf allen Seiten gleich', async ({ page }) => {
   test.setTimeout(600000);
   await page.setViewportSize({ width: 1440, height: 900 });
   await login(page);
   const befunde: string[] = [];
   const raender = new Map<number, string[]>();
-  for (const u of SEITEN) {
+  for (const u of [...SEITEN, ...DETAIL]) {
     const r = await page.goto(u, { waitUntil: 'domcontentloaded' });
     if (!r || r.status() !== 200) continue; // gesperrte Seite (Rolle, Abo) wird hier nicht geprüft
     const m = await page.evaluate(() => {
@@ -108,9 +113,36 @@ test('Guss: Knöpfe, Karten, Kennzahlen, Felder und linker Rand sind auf allen S
     });
     for (const x of m.f) befunde.push(u + ': ' + x);
     if (m.quer) befunde.push(u + ': scrollt quer');
-    if (m.links >= 0 && !m.einst) raender.set(m.links, [...(raender.get(m.links) || []), u]);
+    if (m.links >= 0 && !m.einst && !DETAIL.includes(u)) raender.set(m.links, [...(raender.get(m.links) || []), u]);
   }
   expect(befunde, befunde.join('\n')).toEqual([]);
   // Ein linker Rand für alle Seiten ausserhalb der Einstellungen (dort steht die Seitenliste davor)
   expect([...raender.keys()], JSON.stringify([...raender.entries()].filter(([, s]) => s.length < 10))).toHaveLength(1);
+});
+
+test('Guss am Telefon: nichts scrollt quer, Knöpfe haben Fingergrösse, Karten tragen die Linie', async ({ page }) => {
+  test.setTimeout(600000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await login(page);
+  const befunde: string[] = [];
+  for (const u of [...SEITEN, ...DETAIL]) {
+    const r = await page.goto(u, { waitUntil: 'domcontentloaded' });
+    if (!r || r.status() !== 200) continue;
+    const f = await page.evaluate(() => {
+      const main = document.querySelector('main')!;
+      const sichtbar = (e: any) => e.offsetWidth > 0 && e.offsetHeight > 0;
+      const alle = (sel: string) => [...main.querySelectorAll(sel)].filter(sichtbar) as HTMLElement[];
+      const f: string[] = [];
+      if (document.documentElement.scrollWidth > innerWidth) f.push('scrollt quer');
+      const hoehen = new Set(alle('.fw-btn:not(.fw-mzm-weg)').filter(b => !b.closest('.fw-sk-absenden')).map(b => getComputedStyle(b).minHeight));
+      if (hoehen.size > 1) f.push('Knopfhöhen ' + [...hoehen].join(', '));
+      for (const k of alle('.fw-card')) {
+        const c = getComputedStyle(k);
+        if (parseFloat(c.borderTopWidth) > 0 && c.borderTopColor === 'rgba(0, 0, 0, 0)') { f.push('Karte ohne Linie: ' + k.className); break; }
+      }
+      return f;
+    });
+    for (const x of f) befunde.push(u + ': ' + x);
+  }
+  expect(befunde, befunde.join('\n')).toEqual([]);
 });

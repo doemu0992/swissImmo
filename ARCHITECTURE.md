@@ -286,7 +286,7 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Knopf öffnet und schliesst, dazu das Kreuz); am Telefon klappt das Formular wie bisher in der Seite auf. Die Boards
   (`.fw-spalte`: Schäden, Bewerbungen) nutzen die volle Breite, die Spaltenköpfe stehen in Versalien.
 - **Aus einem Guss (22.11.2026):** Jeder Baustein hat auf allen Seiten EINE Form; `e2e/tests/guss.spec.ts` misst das am
-  gerenderten Bild über alle Seiten der Navigation (61 Adressen) und nennt die Seite, die abweicht. Die Regeln stehen im Block
+  gerenderten Bild über alle Seiten der Navigation (61 Adressen) und 14 Detailseiten und nennt die Seite, die abweicht. Die Regeln stehen im Block
   «Aus einem Guss» in `fw/_schicht.html`:
   - **Knöpfe** (`.fw-btn`, auch `.fw-knapp` und im Seitenkopf): 36 px hoch, 14 px Schrift, 16 px Rand (vorher 40/13, 36/14/16 und
     36/14/14). Am Telefon gilt weiter die Fingergrösse.
@@ -298,6 +298,12 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   - **Linker Rand:** Schmale Seiten (Lesespalte) stehen nicht mehr mittig; ihr Inhalt ist 920 px breit und beginnt am selben Rand
     wie jede andere Seite.
   - **Seitenkopf zuoberst:** Die Ablaufleiste der Vermietung steht auch auf «Mietverhältnisse» unter dem Inhalt.
+  - **Listen (23.11.2026):** Die Aktenliste (`.fw-akten-karte`: Liegenschaften, Mietverhältnisse) steht in derselben Karte wie jede
+    andere Liste statt rahmenlos auf dem Seitengrund. Die Zahlenzeile (`.fw-statuszeile` mit `.fw-sz`: Liegenschaften, Personen,
+    Dienstleister, Schäden, Bankabgleich) ist dasselbe Band wie die Kennzahlen, der Farbpunkt bleibt. Umschalter (`.fw-segment`)
+    haben die Masse der Filterknöpfe.
+  - **Detailseiten und Telefon (23.11.2026):** Der Wächter prüft zusätzlich 14 Detailseiten und Formulare und läuft ein zweites Mal
+    bei 390 px: nichts scrollt quer, alle Knöpfe haben die Fingergrösse 44 px (vorher 40 und 44 gemischt), Karten tragen die Linie.
   Neue Seiten bauen auf diesen Bausteinen auf, statt eigene Grössen zu setzen.
 - **Einstellungen, Modul 9 (22.11.2026):** Die Übersicht (`/neu/einstellungen/`) und jede Einstellungsseite (`fw_einst_rahmen` aus
   dem Context-Processor) stehen im selben Rahmen: ab 1024 px links die Liste aller Einstellungen (`.fw-einst-spalten` >

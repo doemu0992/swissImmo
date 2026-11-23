@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { login, goto } from './helpers';
 
-// UI-Zielbild: Statuszeile (schmale Kapseln) statt grosser Kennzahl-Kacheln auf Schäden, Liegenschaften, Bankabgleich.
+// UI-Zielbild: Statuszeile (schmale Zellen, seit «Aus einem Guss» als Band) statt grosser Kennzahl-Kacheln auf Schäden, Liegenschaften, Bankabgleich.
 for (const [name, vp] of [['Telefon', { width: 390, height: 844 }], ['Desktop', { width: 1280, height: 800 }]] as const) {
   test(`Statuszeile ${name}: Kapseln statt Kacheln, kein Überlauf`, async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: vp, hasTouch: name === 'Telefon' });
