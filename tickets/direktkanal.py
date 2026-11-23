@@ -302,7 +302,7 @@ def _mail_senden(auftrag, von_seite, ziel, adresse, nachrichten):
                            "Mieter. Oder öffnen Sie den Chat:\n%(link)s") % {
                     'gruss': gruss, 'wer': wer, 'schaden': ticket.titel, 'text': texte, 'link': link}
             betreff = betreff_fuer(auftrag, seite=ziel)
-        html = klartext_html(inhalt, link)
+        html = klartext_html(inhalt, link, _('Nachricht öffnen'))
         return send_via_hoststar(
             adresse, betreff, html, reply_to=reply_to(ticket), organisation=ticket.organisation_id,
             absender_name=None if von_seite == 'verwaltung' else wer,

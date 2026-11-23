@@ -12,7 +12,7 @@ helles Blau (Treppenhaus-Poster) — drei Blautöne und kein Ember. Die Marke st
 Gegenproben (29.10.2026, je einzeln eingebaut, rot gesehen, zurückgebaut):
   * `EMBER` in druckfarben.py auf `#4F46E5` ändern         → `test_die_werte_sind_die_der_oberflaeche` rot
   * im Poster wieder `setFillColorRGB(0.1, 0.4, 0.8)`        → `test_keine_alten_farben…` und `test_das_poster…` rot
-  * in `base_email.html` `#b04416` auf `#4f46e5` zurück      → `test_die_mailvorlage…` rot
+  * in `email_service.STIL` `#b04416` auf `#4f46e5` zurück      → `test_die_mailvorlage…` rot
   * in `email_service.py` einen `{EMBER}` durch `#4338ca`     → `test_keine_alten_farben…` rot
 """
 import io
@@ -136,7 +136,9 @@ class ErgebnisTraegtEmberTests(TestCase):
 
 class MailTraegtEmberTests(TestCase):
     def test_die_mailvorlage_traegt_ember(self):
-        html = render_to_string('emails/base_email.html', {'firma_name': 'Test AG'}).lower()
+        # Seit 23.11.2026 ein Rahmen für alle Mails; die Markenfarbe trägt der Knopf (`STIL['knopf']`).
+        from core.utils.email_service import mail_html, mail_rahmen
+        html = mail_rahmen(mail_html('portal_zugang', link='https://example.ch/x/', login_text='Öffnen')).lower()
         self.assertIn('#b04416', html)
         self.assertNotIn('#4f46e5', html)
         self.assertNotIn('#4338ca', html)

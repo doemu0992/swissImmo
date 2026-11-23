@@ -88,7 +88,8 @@ class FormularUndMahnungTests(_Basis):
             'gruss': mieter_gruss(SimpleNamespace(typ='person', anrede='Frau', vorname='Eva', nachname='Muster',
                                                   firmen_name='', kontaktperson=''), 'de'),
             'firma_name': 'V AG', 'objekt_name': 'x', 'monat': '10/2026', 'betrag': '1.00', 'logo_url': ''})
-        self.assertIn('<p>Guten Tag Frau Muster,</p>', html)
+        # Der Absatz trägt seit 23.11.2026 den Stil des gemeinsamen Rahmens; der Satz ist unverändert.
+        self.assertRegex(html, r'<p style="[^"]*">Guten Tag Frau Muster,</p>')
 
 
 class FristenDigestTests(_Basis):
@@ -126,7 +127,7 @@ class ZugangUndEingangTests(_Basis):
         c.force_login(benutzer)
         c.post(f'/neu/mandate/{eig.pk}/portal-zugang/')
         self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('<p>Guten Tag Frau Meier</p>', _text(mail.outbox[0]))
+        self.assertRegex(_text(mail.outbox[0]), r'<p style="[^"]*">Guten Tag Frau Meier</p>')
 
     def test_portal_zugang_mieter(self):
         _lg, _e, m, _v = _basis_objekte()
@@ -134,13 +135,13 @@ class ZugangUndEingangTests(_Basis):
         c.force_login(_team_user())
         c.post(f'/neu/personen/{m.pk}/portal-zugang/')
         self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('<p>Guten Tag Herr Muster</p>', _text(mail.outbox[0]))
+        self.assertRegex(_text(mail.outbox[0]), r'<p style="[^"]*">Guten Tag Herr Muster</p>')
         # Ohne Anrede: Vorname und Nachname (früher nur der Nachname).
         m.anrede = ''
         m.save()
         mail.outbox.clear()
         c.post(f'/neu/personen/{m.pk}/portal-zugang/')
-        self.assertIn('<p>Guten Tag Hans Muster</p>', _text(mail.outbox[0]))
+        self.assertRegex(_text(mail.outbox[0]), r'<p style="[^"]*">Guten Tag Hans Muster</p>')
 
     def test_eingangsbestaetigung_des_portals_franzoesisch(self):
         from tickets.meldung_mails import eingangsbestaetigung_text

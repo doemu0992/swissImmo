@@ -41631,3 +41631,15 @@ msgstr "La lettera riporta la dicitura «Raccomandata». Per ogni destinatario v
 
 msgid "Die Frist wird beim Erstellen des Briefs automatisch im Fristen-Center eingetragen."
 msgstr "Il termine viene registrato automaticamente nel centro scadenze alla creazione della lettera."
+
+msgid "Falls der Knopf nicht geht:"
+msgstr "Se il pulsante non funziona:"
+
+msgid "Auftrag öffnen"
+msgstr "Apri l'incarico"
+
+msgid "Nachricht öffnen"
+msgstr "Apri il messaggio"
+
+msgid "Termin bestätigen oder ändern"
+msgstr "Conferma o modifica l'appuntamento"

@@ -39930,3 +39930,15 @@ msgstr "Der Brief trägt den Vermerk «Einschreiben». Je Empfänger entsteht ei
 
 msgid "Die Frist wird beim Erstellen des Briefs automatisch im Fristen-Center eingetragen."
 msgstr "Die Frist wird beim Erstellen des Briefs automatisch im Fristen-Center eingetragen."
+
+msgid "Falls der Knopf nicht geht:"
+msgstr "Falls der Knopf nicht geht:"
+
+msgid "Auftrag öffnen"
+msgstr "Auftrag öffnen"
+
+msgid "Nachricht öffnen"
+msgstr "Nachricht öffnen"
+
+msgid "Termin bestätigen oder ändern"
+msgstr "Termin bestätigen oder ändern"

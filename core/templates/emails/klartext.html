@@ -1,3 +1,2 @@
-{% extends "emails/rahmen_schlicht.html" %}
-{% load mail_tags %}
-{% block inhalt %}{{ text|klartext_link:link }}{% endblock %}
+{% load mail_tags %}{% comment %}Frei geschriebene Mitteilung (Schaden, Handwerker, Termine, Rundschreiben). Kontext: text, link, knopf, stil.
+Der Text wird maskiert; ein Link im Text wird zum Knopf, die Adresse bleibt klein darunter (Ausweichweg).{% endcomment %}<div>{% klartext_mit_knopf text link knopf stil %}</div>

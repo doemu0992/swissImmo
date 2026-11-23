@@ -35,7 +35,7 @@ class MailHtmlNichtInPythonTests(SimpleTestCase):
         gefunden = _zaehlen()
         zu_viel = {d: n for d, n in gefunden.items() if n > NOCH_NICHT_UMGEZOGEN.get(d, 0)}
         self.assertEqual(zu_viel, {}, 'Mail-HTML in Python: bitte als Vorlage unter core/templates/emails/ anlegen '
-                                      '(Rahmen: rahmen_schlicht.html / rahmen_karte.html, Helfer: '
+                                      '(Rahmen: emails/rahmen.html über mail_rahmen, Bausteine: STIL, Helfer: '
                                       'core.utils.email_service.mail_html).')
 
     def test_umgezogene_stellen_werden_aus_der_liste_genommen(self):

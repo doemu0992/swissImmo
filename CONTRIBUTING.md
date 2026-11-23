@@ -193,6 +193,9 @@ Weiss auf Akzent oder mit Begründung (STWEG-Warnrot).
   `fw/_schicht.html` und gilt überall. Neue Seiten der Navigation gehören in die Liste in `guss.spec.ts`.
 - Portale (Mieter, Eigentümer, Betreiber, Handwerker) nutzen dieselben Bausteine: `fw-btn`, Karten mit Linie, Titel in der
   Titelschrift. Keine handgebauten Knöpfe aus Tailwind-Klassen (`e2e/tests/guss-portale.spec.ts`).
+- E-Mails: Eine neue Mail ist eine Vorlage unter `core/templates/emails/`, die nur den Inhalt liefert (kein `<body>`,
+  keine eigenen Farben; Stile aus `{{ stil.… }}`), gerendert mit `mail_html` und versendet über `send_via_hoststar`. Den
+  Rahmen setzt der Versand. Links als Knopf: `klartext_html(text, link, beschriftung)`.
 - Formulare: Die Knopfreihe am Ende eines Seitenformulars ist `<div class="fw-formular-fuss">`; Abbrechen als
   `fw-btn fw-geist`, Hauptknopf als `fw-btn fw-primary`. Den Hauptknopf im Quelltext als ersten Absendeknopf schreiben
   (Enter), die Schicht stellt ihn nach rechts. Keine eigene Reihe aus `flex`-Klassen (`core/tests/test_guss_formulare.py`).

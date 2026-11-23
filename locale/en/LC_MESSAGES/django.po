@@ -41036,3 +41036,15 @@ msgstr "The letter carries the note \"Registered mail\". A task is created per r
 
 msgid "Die Frist wird beim Erstellen des Briefs automatisch im Fristen-Center eingetragen."
 msgstr "The deadline is entered automatically in the deadline centre when the letter is created."
+
+msgid "Falls der Knopf nicht geht:"
+msgstr "If the button does not work:"
+
+msgid "Auftrag öffnen"
+msgstr "Open job"
+
+msgid "Nachricht öffnen"
+msgstr "Open message"
+
+msgid "Termin bestätigen oder ändern"
+msgstr "Confirm or change appointment"
