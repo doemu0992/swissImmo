@@ -185,12 +185,30 @@ oder `50%` von Hand. Frei bleiben in `_schicht.html` nur vier Werte (6/3/2 px an
 steht in `core/tests/test_stilschuld.py` und darf nur sinken. Hex-Farben stehen ausserhalb der Token-Definitionen nur als
 Weiss auf Akzent oder mit Begründung (STWEG-Warnrot).
 
+### Aus einem Guss
+- Jeder Baustein hat auf allen Seiten **eine** Form. `e2e/tests/guss.spec.ts` misst das am gerenderten Bild über alle Seiten
+  der Navigation, 14 Detailseiten und bei 390 px, und nennt die Seite, die abweicht: Knöpfe (36 px / 14 px / 16 px Rand, am
+  Telefon 44 px), Karten und Kacheln (Linie, kein Schatten), Kennzahlen (Band), Felder (40 px), linker Rand.
+- Eine Seite setzt keine eigenen Grössen für diese Bausteine. Braucht sie etwas Neues, kommt es als Baustein in
+  `fw/_schicht.html` und gilt überall. Neue Seiten der Navigation gehören in die Liste in `guss.spec.ts`.
+- Einstellungsseiten: Der Seitentitel ist der Name aus `einstellungen_gruppen()`, es gibt genau eine Pfadzeile (die Krume des
+  Rahmens), `nav` liegt in `EINSTELLUNGEN_KEYS` (`EinstellungenSeitenlisteTests`).
+
 ### Kennzahlen
-- Oben auf Listenseiten steht eine Statuszeile (`.fw-statuszeile` / `.fw-sz`), keine Kachelwand. Farbklassen ausgeschrieben
+- Oben auf Listenseiten steht eine Zahlenzeile (`.fw-statuszeile` / `.fw-sz`), keine Kachelwand. Farbklassen ausgeschrieben
   (`fw-sz-good`, `fw-sz-warn`, `fw-sz-crit`), nicht zusammengesetzt (`test_fw_klassen_wirken`).
-- Neue Kennzahlen: weiter `.fw-kpis > .fw-kpi` mit `.fw-l` (Beschriftung), `.fw-v` (Wert, optional `fw-good|warn|crit` für den Farbpunkt)
-  und `.fw-f` (Zusatz). Die Stilschicht macht daraus von selbst die Kapselzeile. Grosse Kacheln (`fw-gross`) gibt es nur auf Finanzen
-  (`core/tests/test_statuszeile_standard.py`).
+- Neue Kennzahlen: weiter `.fw-kpis > .fw-kpi` mit `.fw-l` (Beschriftung), `.fw-v` (Wert, optional `fw-good|warn|crit`)
+  und `.fw-f` (Zusatz). Zahlenzeile und Kennzahlen sind dasselbe Band mit Linien (bis 22.11.2026 Kapseln). Grosse Zahlen
+  (`fw-gross`) gibt es nur auf Finanzen (`core/tests/test_statuszeile_standard.py`).
+
+### Listen
+- Tabellen stehen in einer Karte (`.fw-card`) mit Filtern im Kartenkopf.
+- Listen, die keine `<table>` sind, nutzen die Listenform: `.fw-card.fw-lf` mit Spaltenkopf (`.fw-lf-spalten`) und Zeilen im
+  Raster (`.fw-lf-raster.fw-lf-zeile`; Spalten über eine Seitenklasse wie `.fw-lf-objekte`), Gruppen als
+  `details.fw-lf-gruppe`. Bestehende `.fw-zeile`-Listen mit Formularen behalten ihr Markup und bekommen das Raster über
+  `.fw-lf-pendenzen` oder eine eigene Regel mit `display:contents` (Schäden). Unter 900 px entfällt der Spaltenkopf.
+- Regeln der dichten Liste (`.fw-dicht`) sind stärker als einfache Zeilenregeln: Ein neues Raster braucht seine eigene
+  dichte Variante (`e2e/tests/dichte-listen.spec.ts`).
 
 ### Formulare
 - Mehrere Wege zu einer Sache gehören in **einen** Dialog mit wählbaren Karten statt in mehrere Einzelformulare (Vorbild:
@@ -232,6 +250,12 @@ Weiss auf Akzent oder mit Begründung (STWEG-Warnrot).
   Buchungen werden storniert, nie gelöscht.
 - Geldpfade: sperren, prüfen, buchen — in dieser Reihenfolge und in einer Transaktion.
 - Was länger dauert (viele Mails, viele Buchungen), läuft als Hintergrundauftrag und muss wiederholbar sein.
+- **Platzhalter und Briefe aus einer Quelle.** Vorschau, PDF und E-Mail lösen Platzhalter über
+  `core.services.platzhalter.kontext_fuer` auf (im Mitteilungs-Assistenten: `serienbrief.empfaenger_kontext`); kein Weg
+  ersetzt mit einer eigenen Liste. Was hinausgeht, wird in der Akte abgelegt (`ablage.ablegen`, Mieter und Vertrag). Setzt ein
+  Schreiben eine Frist oder geht es als Einschreiben, entsteht die Pendenz über `brief_aus_vorlage._pendenz_anlegen`; sie steht
+  damit im Fristen-Center. Ein Fristdatum wird nie erfunden: Ohne Angabe bleibt `{frist}` sichtbar stehen.
+- Briefe werden nie aus der Bildschirmvorschau gedruckt, sondern über das Briefgerüst (`DokCanvas.brief`).
 - Eingaben aus Formularen stürzen nie ab: Daten über `core.utils.eingabe` (`datum_oder_none`, `zeit_oder_none`;
   `parse_date` wirft bei «2026-02-30» einen Fehler 500, ein Wächtertest verbietet den direkten Import in Ansichten),
   Beträge über `core.utils.betrag` und `endlicher_betrag` (`NaN`/`Infinity` sind für `Decimal` gültig und knallen erst

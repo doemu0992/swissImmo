@@ -7,7 +7,11 @@ KEINE MAIL DOPPELT: Ein abgestürzter Auftrag wird neu gestartet. `versenden` be
 schon gesendet wurde) und meldet jede gelungene Mail sofort über `nach_jedem`; der Auftrag schreibt das in seine
 Parameter. Der Neustart überspringt die Erledigten.
 """
+import logging
+
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 #: Ab so vielen Empfängern geht der Versand IMMER in den Hintergrund (siehe `mahnlauf_lauf.SCHWELLE_HINTERGRUND`).
 SCHWELLE_HINTERGRUND = 30
@@ -42,11 +46,17 @@ def versenden(betreff, text, mieter_ids, benutzer=None, erledigt=(), nach_jedem=
             continue
         # Platzhalter je Empfänger ersetzen (23.11.2026): Vorher ging der Text mit `{mieter.anrede}` roh hinaus,
         # obwohl die Maske «werden pro Empfänger automatisch ersetzt» verspricht.
-        b, t = _fuer_empfaenger(betreff, text, m, frist_datum, frist_tage)
+        b, t, e, v = _fuer_empfaenger(betreff, text, m, frist_datum, frist_tage)
         if send_ticket_email(m.email, b, t):
             gesendet += 1
             schon.add(mid)
             journal_email(b, t, mieter=m, user=benutzer, empfaenger=m.email)
+            # Ablage und Frist wie beim Brief (23.11.2026). Die Mail ist hinaus: Scheitert die Ablage, wird das protokolliert,
+            # aber nicht nochmals gesendet.
+            try:
+                _ablegen_und_frist(betreff, text, b, m, v, e, frist_datum, frist_tage, benutzer)
+            except Exception:
+                logger.exception('Rundschreiben: Ablage oder Fristeintrag gescheitert (Mieter %s)', mid)
             if nach_jedem is not None:
                 nach_jedem(mid)
     return gesendet
@@ -65,4 +75,34 @@ def _fuer_empfaenger(betreff, text, mieter, frist_datum=None, frist_tage=None):
         'liegenschaft': (f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else ''),
         '_ph': ph,
     }
-    return _ersetze(betreff, e), _ersetze(text, e)
+    return _ersetze(betreff, e), _ersetze(text, e), e, v
+
+
+def _ablegen_und_frist(betreff_roh, text_roh, betreff, mieter, vertrag, e, frist_datum, frist_tage, benutzer):
+    """Legt die versandte Mitteilung als PDF in der Akte ab (Mieter und Vertrag) und trägt eine im Text gesetzte Frist ein.
+
+    Dieselbe Darstellung und dieselbe Pendenz wie beim Serienbrief-PDF; der Titel beginnt mit «E-Mail:», damit in der Akte
+    erkennbar ist, auf welchem Weg die Mitteilung hinausging."""
+    from django.utils import timezone
+
+    from core.models import Pendenz
+    from core.services.ablage import ablegen
+    from core.services.brief_aus_vorlage import _pendenz_anlegen
+    from core.services.serienbrief import frist_art_im_text, generate_serienbrief_pdf
+    from core.tenancy import aktuelle_organisation
+    org = aktuelle_organisation()
+    absender = {'firma': org.firma if org else '', 'strasse': org.strasse if org else '',
+                'plz': org.plz if org else '', 'ort': org.ort if org else ''}
+    logo = None
+    if org and getattr(org, 'logo', None):
+        try:
+            logo = org.logo.path
+        except Exception:
+            logo = None
+    pdf = generate_serienbrief_pdf(absender, betreff_roh, text_roh, [e], logo_path=logo)
+    dok = ablegen(pdf, f"E-Mail: {betreff}", kategorie='korrespondenz', vertrag=vertrag, mieter=mieter,
+                  im_portal_sichtbar=True)
+    frist_art = frist_art_im_text(betreff_roh, text_roh, frist_datum, frist_tage)
+    if dok and frist_art:
+        _pendenz_anlegen(Pendenz, dok, mieter, vertrag, betreff, False, frist_art, frist_datum, frist_tage,
+                         timezone.localdate(), benutzer)

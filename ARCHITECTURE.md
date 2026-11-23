@@ -302,7 +302,10 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   (`brief_aus_vorlage._pendenz_anlegen`, Quelle `brief:<Dokument>`); sie steht damit im Fristen-Center. Der Brief setzt
   «Freundliche Grüsse», Unterschrift und Absender selbst; eine Grussformel am Schluss des Textes wird nicht doppelt gedruckt
   (`_ohne_schlussgruss`). Ein langer Text läuft auf die Folgeseite (vorher brach er am Seitenende ohne Hinweis ab).
-  Der E-Mail-Versand legt keine Pendenz an (kein abgelegtes Dokument).
+  **E-Mail (23.11.2026):** Auch der E-Mail-Versand (`rundschreiben.versenden`, sofort und als Hintergrundauftrag) legt die
+  versandte Mitteilung als PDF in der Akte ab (Titel «E-Mail: …», Mieter und Vertrag) und trägt eine im Text gesetzte Frist
+  ein (`_ablegen_und_frist`). Abgelegt wird nur nach gelungenem Versand; scheitert die Ablage, wird protokolliert und nicht
+  nochmals gesendet. Alle abgelegten Briefe und E-Mails sind im Mieterportal sichtbar (`im_portal_sichtbar=True`, Entscheid 23.11.2026).
 - **Listenform (23.11.2026, Mockup «Immoswiss Listenform»):** Listen, die keine `<table>` sind, bekommen dieselbe Form wie die
   Tabellen: Karte `.fw-card.fw-lf`, Filter im Kartenkopf (`.fw-lf-kopf`), Spaltenkopf (`.fw-lf-spalten`), Zeilen (`.fw-lf-zeile`) im
   selben Raster (`.fw-lf-raster`; die Spalten setzt eine Seitenklasse wie `.fw-lf-objekte`). Zeile: Statuspunkt, Titel mit Unterzeile
