@@ -291,7 +291,10 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   (`.fw-lf-titel`), Zellen (`.fw-lf-zelle`, `.fw-lf-chips`), Zahl rechts (`.fw-lf-zahl`), Aktion beim Überfahren (`.fw-lf-akt`).
   Gruppen sind `details.fw-lf-gruppe` und bleiben zuklappbar. Unter 900 px entfällt der Spaltenkopf, die Zeile stapelt.
   **Umgestellt:** Objekte (`/neu/objekte/`: eine Karte statt einer Karte je Liegenschaft; Mieter, Befund, Mietzins als Spalten).
-  **Noch Zeilenlisten alter Form** (`.fw-zeile`): Schäden, Pendenzen, Fristen, Ablesung u. a.; sie folgen seitenweise.
+  Schäden (`/neu/schaeden/`): Die Zeile behält ihr Markup (`.fw-zeile.fw-schadenzeile`, Klick öffnet weiter das Fenster); ab 900 px
+  löst `display:contents` die Mitte auf, sodass Titel, Unterzeile (mit Nummer), Status und Befund Rasterzellen unter dem
+  Spaltenkopf `.fw-schaden-spalten` werden. Darunter bleibt die gestapelte Zeile.
+  **Noch Zeilenlisten alter Form** (`.fw-zeile`): Pendenzen, Fristen, Ablesung u. a.; sie folgen seitenweise.
 - **Aus einem Guss (22.11.2026):** Jeder Baustein hat auf allen Seiten EINE Form; `e2e/tests/guss.spec.ts` misst das am
   gerenderten Bild über alle Seiten der Navigation (61 Adressen) und 14 Detailseiten und nennt die Seite, die abweicht. Die Regeln stehen im Block
   «Aus einem Guss» in `fw/_schicht.html`:

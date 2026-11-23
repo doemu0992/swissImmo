@@ -41012,3 +41012,6 @@ msgstr "in %(n)s of %(m)s properties"
 
 msgid "Rendite, Leerstand, Cashflow"
 msgstr "Yield, vacancy, cash flow"
+
+msgid "Alter"
+msgstr "Age"
