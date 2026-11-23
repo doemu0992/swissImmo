@@ -23,7 +23,7 @@ Das PDF «Betreibungsbegehren (Daten)» entsteht nach dem Speichern auf der Betr
     <p>{% if r.vertrag_id %}{{ r.vertrag.mieter.display_name }} · {% endif %}{{ r.titel }}</p>
 </div></div>
 
-<div class="fw-hilfebox max-w-2xl" data-hilfebox="betreibung_einleiten">
+<div class="fw-hilfebox" data-hilfebox="betreibung_einleiten">
     <span class="fw-hi" aria-hidden="true">{% zeichen 'hinweis' %}</span>
     <div class="fw-hilfebox-inhalt">
         <b>{% trans "So läuft die Betreibung" %}</b>
@@ -38,7 +38,7 @@ Das PDF «Betreibungsbegehren (Daten)» entsteht nach dem Speichern auf der Betr
     <button type="button" class="zu" aria-label="{% trans 'Hinweis ausblenden' %}">{% zeichen 'schliessen' %}</button>
 </div>
 
-<form method="post" class="max-w-2xl" novalidate>
+<form method="post" novalidate>
     {% csrf_token %}
     {% if form.non_field_errors %}
     <div class="fw-hinweis crit rounded-lg mb-3" role="alert">

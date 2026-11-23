@@ -4154,6 +4154,17 @@
         html .fw-aussen-guss .fw-flaeche.rounded-2xl{border-radius:var(--ds-radius);box-shadow:none;border:1px solid var(--ds-line)}
         html .fw-aussen-guss input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]){height:40px;min-height:40px;padding-top:0;padding-bottom:0;
             border-radius:var(--ds-radius-knopf);background:var(--ds-surface);font-weight:500}
+        /* Assistenten aus einem Guss (23.11.2026, gemessen bei 1440 px): Der Fuss brach in den Assistenten mit Vorschau und in
+           der Betreibung auf zwei Zeilen (110 statt 64 px), weil «Schritt x von y» mit in der Zeile stand. Die Angabe steht
+           bereits über dem Schritttitel und unter der Schrittliste: In einem schmalen Fuss entfällt sie. */
+        .fw-assistent-inhalt{container-type:inline-size}
+        @container (max-width:520px){.fw-assistent-fuss .stand{display:none}}
+        /* Vorschau-Spalte: ein leerer Hinweis schob die Briefkarte in der Kommunikation 8 px tiefer als die Vertragsvorschau. */
+        .fw-assistent-vorschau-rumpf>:empty{display:none}
+        /* Pfadzeile: ein Trennzeichen. `.fw-brotkrume` trug das Zeichen in zwei Grössen, `.fw-krumen` einen Schrägstrich. */
+        html .fw-brotkrume>.fw-zeichen{width:11px!important;height:11px!important;vertical-align:-1px}
+        html .fw-krumen>span[aria-hidden="true"]{font-size:0}
+        html .fw-krumen>span[aria-hidden="true"]::before{content:"\203A";font-size:14px;line-height:1}
         /* ===== Ende Aus einem Guss ===== */
         /* ===== Listenform (Mockup «Immoswiss Listenform», 23.11.2026) =====
            EINE Form für Listen, die keine `<table>` sind: Karte `.fw-card.fw-lf`, Kopf mit Filtern (`.fw-lf-kopf`), Spaltenkopf

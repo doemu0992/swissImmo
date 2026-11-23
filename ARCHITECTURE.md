@@ -323,6 +323,14 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   `e2e/tests/guss-aussen.spec.ts` (acht Seiten, 1280 und 390 px) und `core/tests/test_guss_aussen.py` (Fehlerseiten und
   Zwei-Faktor, die der Testserver nicht zeigt).
   Das offene Bewerbungsformular war bereits stimmig; `zz-a-oeffentlich-bewerbung.spec.ts` hält das mit einem Guss-Test fest.
+  **Assistenten (23.11.2026):** Alle Assistenten der Verwaltung haben denselben Aufbau: volle Inhaltsbreite, Schrittliste
+  links, Inhalt, bei Vertrag, Kommunikation und Weiterverrechnen die Vorschau rechts als `.fw-assistent-vorschau`
+  (`fw-assistent-mit-vorschau`). Weiterverrechnen nutzte die schmale Variante mit liegender Schrittleiste und eigener
+  Vorschaukarte, die Betreibung stand in einer 672-px-Spalte; beide sind umgestellt. Der Fuss bleibt einzeilig: In einem
+  schmalen Inhalt (Container-Abfrage auf `.fw-assistent-inhalt`, bis 520 px) entfällt «Schritt x von y», das über dem
+  Schritttitel und unter der Schrittliste steht. Kommunikation und Weiterverrechnen haben eine Pfadzeile; `.fw-brotkrume`
+  und `.fw-krumen` zeigen dasselbe Trennzeichen. Die Brief-Vorschau der Kommunikation steht in normaler Schriftstärke wie
+  der gedruckte Brief (nur der Betreff fett). Wächter: `e2e/tests/guss-assistenten.spec.ts`.
   **Betreiber-Portal im Wächter:** `seed_e2e` legt `e2e-betreiber` (Superuser, `e2e-pass`) an, aber nur bei `DEBUG`
   (so startet `e2e/run-server.sh`); ohne `DEBUG` entsteht kein Konto mit bekanntem Passwort (`core/tests/test_seed_e2e.py`).
   `guss-portale.spec.ts` prüft damit alle neun Betreiber-Seiten. Das Kennzahlenband `.fw-kzn` gilt dort wie in den Akten der
