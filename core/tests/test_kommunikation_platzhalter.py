@@ -196,3 +196,19 @@ class KommunikationBriefTests(TestCase):
         seiten = PdfReader(io.BytesIO(r.content)).pages
         self.assertGreater(len(seiten), 1)
         self.assertIn('Schlusssatz ganz am Ende.', ' '.join((s.extract_text() or '') for s in seiten))
+
+    def test_brief_liegt_in_der_mieterakte_und_am_vertrag(self):
+        """Wie bei der Mahnung: Der Brief hängt am Mieter und am Vertrag und ist in beiden Akten zu sehen."""
+        from rentals.models import Dokument
+        for art in ({}, {'anzeigen': '1'}):                     # Serienbrief-PDF und «Als Brief drucken»
+            self._post(**art)
+        with organisation_kontext(self.a.organisation):
+            doks = list(Dokument.objects.filter(titel__startswith='Brief: Abmahnung'))
+            self.assertEqual(len(doks), 2)
+            for d in doks:
+                self.assertEqual(d.mieter_id, self.a.mieter.pk)
+                self.assertEqual(d.vertrag_id, self.a.vertrag.pk)
+                self.assertEqual(d.kategorie, 'korrespondenz')
+                self.assertTrue(d.datei)
+        for akte in (f'/neu/personen/{self.a.mieter.pk}/', f'/neu/vertraege/{self.a.vertrag.pk}/'):
+            self.assertContains(self.c.get(akte), 'Brief: Abmahnung', msg_prefix=akte)
