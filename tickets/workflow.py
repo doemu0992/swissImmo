@@ -469,7 +469,8 @@ def arbeitsauftrag_senden(auftrag, text=''):
         inhalt = (f"{inhalt}\n\nAuftrag online ansehen, Termin bestätigen, Offerte oder "
                   f"Rechnung hochladen:\n{url}")
         # Maskiert (Titel und Beschreibung stammen vom Melder), danach erst der Link als Anker.
-        html = klartext_html(inhalt, url)
+        from django.utils.translation import gettext
+        html = klartext_html(inhalt, url, gettext('Auftrag öffnen'))
         versendet = send_via_hoststar(
             hw.email, betreff, html, f"Reparaturauftrag_{auftrag.id}.pdf", pdf,
             weitere_anhaenge=anhaenge, reply_to=reply_to(ticket), organisation=ticket.organisation_id)

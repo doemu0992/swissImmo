@@ -84,7 +84,7 @@ FEST = re.compile(r'#[0-9a-fA-F]{3,8}\b|\brgba?\s*\(|\bhsla?\s*\(')
 #: Sammelbecken. Wer hier etwas einträgt, schreibt dazu, warum der Modus
 #: dort keine Rolle spielt.
 AUSNAHMEN = {
-    'core/templates/emails/base_email.html':
+    'core/templates/emails/rahmen.html':
         'E-Mail. Mailprogramme kennen keine CSS-Variablen — ein Token käme '
         'dort als leerer Wert an, und der Brief hätte gar keine Farbe.',
 }
@@ -130,7 +130,7 @@ class DunkelmodusHuellenTest(SimpleTestCase):
         Ohne diese Prüfung wäre ein Tippfehler in `REGEL` oder `STIL` nicht
         von einem sauberen Bestand zu unterscheiden.
         """
-        # Nach Dateien zählen, nicht nach Fundstellen: `base_email.html`
+        # Nach Dateien zählen, nicht nach Fundstellen: `emails/rahmen.html`
         # setzt Grund UND Schrift, ergibt also zwei Treffer in einer Datei.
         dateien = {pfad for pfad, _ in _fundstellen()}
         self.assertEqual(

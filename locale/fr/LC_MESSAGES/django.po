@@ -41702,3 +41702,15 @@ msgstr "La lettre porte la mention «Recommandé». Une tâche est créée par d
 
 msgid "Die Frist wird beim Erstellen des Briefs automatisch im Fristen-Center eingetragen."
 msgstr "Le délai est inscrit automatiquement dans le centre des délais lors de la création de la lettre."
+
+msgid "Falls der Knopf nicht geht:"
+msgstr "Si le bouton ne fonctionne pas :"
+
+msgid "Auftrag öffnen"
+msgstr "Ouvrir le mandat"
+
+msgid "Nachricht öffnen"
+msgstr "Ouvrir le message"
+
+msgid "Termin bestätigen oder ändern"
+msgstr "Confirmer ou modifier le rendez-vous"

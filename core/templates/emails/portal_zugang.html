@@ -1,18 +1,12 @@
-{% extends "emails/rahmen_karte.html" %}
-{% block inhalt %}
-      <p>{{ gruss }}</p>
-      <p>{{ einleitung }}</p>
-      <table style="margin:20px 0;border-collapse:collapse;">
-        <tr><td style="padding:6px 16px 6px 0;color:#64748b;">{{ benutzer_text }}</td>
-            <td style="padding:6px 0;font-weight:700;font-family:monospace;">{{ username }}</td></tr>
-      </table>
-      <p style="margin:24px 0;">
-        <a href="{{ link }}" style="background:{{ EMBER }};color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;display:inline-block;">{{ login_text }}</a>
-      </p>
-      <p style="color:#64748b;font-size:13px;">{{ adresse_text }}<br>
-        <a href="{{ link }}" style="color:{{ EMBER }};">{{ link }}</a></p>
-      <p style="color:#64748b;font-size:13px;">{{ danach_text }}<br>
-        <a href="{{ login_url }}" style="color:{{ EMBER }};">{{ login_url }}</a></p>
-      <p style="color:#94a3b8;font-size:12px;margin-top:20px;">{{ hinweis }}</p>
-      {% if absender_firma %}<p style="margin:24px 0 0;color:#94a3b8;font-size:13px;">{{ absender_firma }}</p>{% endif %}
-{% endblock %}
+{% comment %}Zugangsdaten (Mieter- und Eigentümerportal). Der Titel `kopf` stand früher im farbigen Kopf der Karte.{% endcomment %}<p style="{{ stil.titel }}">{{ kopf }}</p>
+<p style="{{ stil.absatz }}">{{ gruss }}</p>
+<p style="{{ stil.absatz }}">{{ einleitung }}</p>
+<div style="{{ stil.kasten }}"><table cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+  <tr><td style="{{ stil.zelle_name }}">{{ benutzer_text }}</td><td style="{{ stil.zelle_wert }}font-family:monospace;">{{ username }}</td></tr>
+</table></div>
+<p style="{{ stil.absatz }}"><a href="{{ link }}" style="{{ stil.knopf }}">{{ login_text }}</a></p>
+<p style="{{ stil.klein }}">{{ adresse_text }}<br><a href="{{ link }}" style="{{ stil.link_klein }}">{{ link }}</a></p>
+<p style="{{ stil.klein }}">{{ danach_text }}<br><a href="{{ login_url }}" style="{{ stil.link_klein }}">{{ login_url }}</a></p>
+<p style="{{ stil.klein }}">{{ hinweis }}</p>
+{% if absender_firma %}<p style="{{ stil.klein }}">{{ absender_firma }}</p>
+{% endif %}

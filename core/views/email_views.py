@@ -395,7 +395,8 @@ def send_mahnung_email_view(request, vertrag_id):
         'monat': monat_str, 'betrag': betrag_str,
     }
 
-    html_content = render_to_string('emails/email_mahnung.html', context)
+    from core.utils.email_service import mail_html, mail_rahmen
+    html_content = mail_rahmen(mail_html('email_mahnung', **context), verwaltung)
     email = EmailMultiAlternatives(
         subject=f"Kopie: Mahnung mit Kündigungsandrohung (Art. 257d OR) — Original folgt per Einschreiben: {context['objekt_name']}",
         body=(f"{context['gruss']}, im Anhang finden Sie eine KOPIE der Mahnung für {monat_str}. "

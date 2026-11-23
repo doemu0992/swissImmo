@@ -37,7 +37,9 @@ from .test_ticket_workflow import _handwerker, _ticket
 
 def _klar(m):
     """Der Mailtext ohne Markup, Zeilenumbrüche als solche: so liest ihn der Empfänger."""
-    return strip_tags(m.body.replace('<br>', '\n').replace('</p>', '\n\n')).strip()
+    # Seit dem gemeinsamen Mail-Rahmen (23.11.2026) steht der Text im Inhalt des Rahmens; Kopf und Fuss zählen nicht.
+    from core.utils.email_service import mail_inhalt
+    return strip_tags(mail_inhalt(m.body).replace('<br>', '\n').replace('</p>', '\n\n')).strip()
 
 
 class HelferTests(SimpleTestCase):

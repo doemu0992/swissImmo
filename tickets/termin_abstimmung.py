@@ -123,7 +123,7 @@ def _vorschlag_mail(auftrag, von, termin_am, hinweis):
                        "wenn Sie ihn bestätigen.") % {
                 'gruss': gruss, 'wer': wer, 'schaden': ticket.titel, 'zeit': zeit, 'link': link,
                 'hinweis': (_("Hinweis: %(h)s") % {'h': hinweis} + "\n") if hinweis else ''}
-        html = klartext_html(inhalt, link)
+        html = klartext_html(inhalt, link, _('Termin bestätigen oder ändern'))
         return send_via_hoststar(adresse, betreff, html, reply_to=reply_to(ticket),
                                  organisation=ticket.organisation_id, absender_name=wer,
                                  headers={direktkanal.KOPF_BRUECKE: '1', 'Auto-Submitted': 'auto-generated'})

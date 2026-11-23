@@ -17,17 +17,90 @@ from core.services.druckfarben import EMBER
 logger = logging.getLogger(__name__)
 
 
+#: Marke am Anfang des fertigen Rahmens: `mail_rahmen` rahmt nie zweimal ein.
+RAHMEN_MARKE = '<!--mail-rahmen-->'
+#: Marke im Inhalt einer Mail an das eigene Team: Rahmen ohne Adressfuss.
+INTERN_MARKE = '<!--mail-intern-->'
+
+#: Die Bausteine des Mail-Inhalts (Mockup «E-Mails», 23.11.2026). Inline, weil Mailprogramme <style>-Blöcke streichen;
+#: an EINER Stelle, damit jede Mail denselben Titel, Kasten und Knopf trägt.
+STIL = {
+    'titel': 'font-size:20px;font-weight:700;letter-spacing:-.01em;line-height:1.25;margin:0 0 14px;color:#17181b;',
+    'absatz': 'margin:0 0 12px;',
+    'kasten': 'background:#f6f5f3;border-radius:14px;padding:12px 16px;margin:14px 0;',
+    'kasten_krit': 'background:#fbe9e7;color:#8f1d16;border-radius:14px;padding:12px 16px;margin:14px 0;',
+    'knopf': (f'display:inline-block;background:{EMBER};color:#ffffff;text-decoration:none;padding:10px 22px;'
+              'border-radius:999px;font-weight:700;margin:4px 0 6px;'),
+    'klein': 'color:#5d6068;font-size:13px;margin:0 0 12px;overflow-wrap:anywhere;',
+    'link_klein': 'color:#5d6068;word-break:break-all;',
+    'zelle_name': 'padding:3px 16px 3px 0;color:#5d6068;vertical-align:top;',
+    'zelle_wert': 'padding:3px 0;font-weight:700;vertical-align:top;',
+    'zelle_text': 'padding:3px 0;vertical-align:top;',
+}
+
+
 def mail_html(vorlage, **kontext):
-    """Rendert eine Mail aus `templates/emails/<vorlage>.html` (Roadmap Nr. 24).
+    """Rendert den INHALT einer Mail aus `templates/emails/<vorlage>.html` (Roadmap Nr. 24).
 
-    Layout und Stil stehen in den Vorlagen, nicht in Python-Strings; die Texte kommen übersetzt aus dem
-    Aufrufer, die Werte werden von Django escaped. `EMBER` (Markenfarbe) ist immer da."""
-    return render_to_string(f'emails/{vorlage}.html', {'EMBER': EMBER, **kontext})
+    Layout und Stil stehen in den Vorlagen und in `STIL`, nicht in Python-Strings; die Texte kommen übersetzt aus
+    dem Aufrufer, die Werte werden von Django escaped. Den Rahmen (Kopf mit Absender, Adressfuss) setzt
+    `mail_rahmen` beim Versand."""
+    return render_to_string(f'emails/{vorlage}.html', {'EMBER': EMBER, 'stil': STIL, **kontext})
 
 
-def klartext_html(text, link=''):
-    """Klartext (maskiert, Zeilenumbrüche als <br>); `link`, falls im Text, wird zum Anker."""
-    return mail_html('klartext', text=text or '', link=link)
+def _absender(organisation):
+    """Kopf und Fuss des Rahmens: die Verwaltung, die schreibt. Leer, wenn keine bekannt ist (dann «immoswiss»,
+    kein Adressfuss). `organisation`: Objekt, ID oder None (dann der Mandant der laufenden Anfrage)."""
+    try:
+        if organisation is None:
+            from core.tenancy import aktuelle_organisation
+            organisation = aktuelle_organisation()
+        elif not hasattr(organisation, 'firma'):
+            from crm.models import Organisation
+            organisation = Organisation.objects.filter(pk=organisation).first()
+        if organisation is None:
+            return {}
+        basis = (getattr(settings, 'PORTAL_BASE_URL', '') or '').rstrip('/')
+        logo = getattr(organisation, 'logo', None)
+        plz_ort = f"{organisation.plz or ''} {organisation.ort or ''}".strip()
+        return {
+            # Der Firmenname, wie er hinterlegt ist (`anzeigename` kürzt ihn für die Absenderzeile der Mail).
+            'name': organisation.firma or anzeigename(organisation) or '',
+            # Logos liegen öffentlich unter /media/logos/ (core/views/media_protected.py); ohne Basisadresse kein Bild.
+            'logo_url': (basis + logo.url) if (basis and logo) else '',
+            'adresse': ' · '.join(t for t in (organisation.strasse or '', plz_ort) if t),
+            'kontakt': ' · '.join(t for t in (organisation.email or '', organisation.telefon or '') if t),
+        }
+    except Exception:
+        # Der Rahmen darf nie einen Versand verhindern: ohne Absender geht die Mail als «immoswiss» hinaus.
+        logger.warning('Mail-Rahmen: Absender nicht bestimmbar', exc_info=True)
+        return {}
+
+
+def mail_rahmen(html, organisation=None):
+    """Setzt den Inhalt einer Mail in den gemeinsamen Rahmen (`emails/rahmen.html`). Schon Eingerahmtes bleibt."""
+    html = html or ''
+    if RAHMEN_MARKE in html:
+        return html
+    from django.utils.safestring import mark_safe
+    return render_to_string('emails/rahmen.html', {
+        # Der Inhalt ist fertiges HTML aus unseren Vorlagen (dort maskiert); hier wird nichts mehr escaped.
+        'inhalt': mark_safe(html), 'absender': _absender(organisation), 'intern': INTERN_MARKE in html})
+
+
+def mail_inhalt(html):
+    """Der Inhalt einer eingerahmten Mail ohne Kopf und Fuss — so, wie die Vorlage ihn geliefert hat.
+    Nicht Eingerahmtes kommt unverändert zurück."""
+    html = html or ''
+    if '<!--mail-inhalt-->' not in html:
+        return html
+    return html.split('<!--mail-inhalt-->', 1)[1].split('<!--/mail-inhalt-->', 1)[0].strip()
+
+
+def klartext_html(text, link='', knopf=''):
+    """Klartext (maskiert, Zeilenumbrüche als <br>). `link`, falls im Text, wird zum Knopf mit der Beschriftung
+    `knopf` (sonst «Öffnen»); die Adresse bleibt klein darunter stehen."""
+    return mail_html('klartext', text=text or '', link=link, knopf=knopf or gettext('Öffnen'))
 
 
 def stweg_mail_html(eigentuemer, absaetze, unterschrift):
@@ -60,7 +133,8 @@ def send_via_hoststar(to_email, subject, html_content, attachment_name=None, att
             kopf['from_email'] = absender_person(absender_name)
         email = EmailMessage(
             subject=_einzeilig(subject),
-            body=html_content,
+            # Der gemeinsame Rahmen aller Mails: Kopf mit der Verwaltung, Adressfuss (23.11.2026).
+            body=mail_rahmen(html_content, organisation),
             to=[to_email],
             cc=cc_list or [],
             headers=headers or None,
@@ -127,7 +201,10 @@ def send_neue_meldung_intern(ticket, to_emails, herkunft='aus dem Mieterportal')
     einheit = ticket.betroffene_einheit.bezeichnung if ticket.betroffene_einheit_id else '—'
     melder = (ticket.gemeldet_von.display_name if ticket.gemeldet_von_id
               else f"{ticket.melder_vorname or ''} {ticket.melder_nachname or ''}".strip() or '—')
-    html = mail_html('neue_meldung_intern', ticket=ticket, herkunft=herkunft, objekt=objekt, einheit=einheit, melder=melder)
+    basis = (getattr(settings, 'PORTAL_BASE_URL', '') or '').rstrip('/')
+    link = f'{basis}/neu/schaeden/{ticket.pk}/' if basis else ''
+    html = mail_html('neue_meldung_intern', ticket=ticket, herkunft=herkunft, objekt=objekt, einheit=einheit, melder=melder,
+                     link=link)
     betreff = f"Neue Schadenmeldung #{ticket.id}: {ticket.titel}"
     ok = False
     for adr in empf:
@@ -207,7 +284,7 @@ def _mieter_portal_zugang(to_email, anrede_name, username, link, login_url, abse
     _text6 = gettext('Passwort festlegen')
     _text7 = gettext('Oder öffnen Sie diese Adresse im Browser:')
     _text8 = gettext('Der Link gilt nur wenige Tage und nur einmal. Ist er abgelaufen, bitten Sie Ihre Verwaltung um einen neuen. Diese E-Mail wurde automatisch erstellt.')
-    html = mail_html('portal_zugang', zeichen='🔑', kopf=_text1, gruss=_text2, einleitung=_text3,
+    html = mail_html('portal_zugang', kopf=_text1, gruss=_text2, einleitung=_text3,
                      benutzer_text=_text4, danach_text=_text5, login_text=_text6, adresse_text=_text7,
                      hinweis=_text8, username=username, link=link, login_url=login_url,
                      absender_firma=absender_firma)
@@ -220,7 +297,7 @@ def send_report_mail(to_email, betreff, html_inhalt, anhaenge=None, organisation
     if not to_email:
         return False
     try:
-        email = EmailMessage(subject=_einzeilig(betreff), body=html_inhalt, to=[to_email],
+        email = EmailMessage(subject=_einzeilig(betreff), body=mail_rahmen(html_inhalt, organisation), to=[to_email],
                              **kopfzeilen(organisation))
         email.content_subtype = "html"
         for name, inhalt in (anhaenge or []):
@@ -256,7 +333,7 @@ def _eigentuemer_portal_zugang(to_email, anrede_name, username, link, login_url,
     _login = gettext('Passwort festlegen')
     _adresse = gettext('Oder öffnen Sie diese Adresse im Browser:')
     _hinweis = gettext('Der Link gilt nur wenige Tage und nur einmal. Ist er abgelaufen, bitten Sie Ihre Verwaltung um einen neuen. Diese E-Mail wurde automatisch erstellt.')
-    html = mail_html('portal_zugang', zeichen='🏠', kopf=_kopf, gruss=_gruss, einleitung=_einleitung,
+    html = mail_html('portal_zugang', kopf=_kopf, gruss=_gruss, einleitung=_einleitung,
                      benutzer_text=_benutzer, danach_text=_danach, login_text=_login, adresse_text=_adresse,
                      hinweis=_hinweis, username=username, link=link, login_url=login_url,
                      absender_firma=absender_firma)

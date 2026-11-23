@@ -1,13 +1,11 @@
-{% extends "emails/rahmen_schlicht.html" %}
-{% block inhalt %}
-<h2 style="color:{{ EMBER }};">Neue Schadenmeldung {{ herkunft }}</h2>
-<table cellpadding="6" style="border-collapse:collapse;">
-  <tr><td style="color:#64748b;">Ticket</td><td><strong>#{{ ticket.id }}</strong></td></tr>
-  <tr><td style="color:#64748b;">Titel</td><td><strong>{{ ticket.titel }}</strong></td></tr>
-  <tr><td style="color:#64748b;">Objekt</td><td>{{ objekt }} · {{ einheit }}</td></tr>
-  <tr><td style="color:#64748b;">Raum</td><td>{{ ticket.raum|default:"—" }}</td></tr>
-  <tr><td style="color:#64748b;">Melder</td><td>{{ melder }}<br>{{ ticket.email_melder|default:"" }} {{ ticket.tel_melder|default:"" }}</td></tr>
-</table>
-<p style="margin-top:12px;white-space:pre-line;">{{ ticket.beschreibung|default:"" }}</p>
-<p style="color:#94a3b8;font-size:12px;margin-top:20px;">Diese Meldung erscheint in der Software unter Schadensfälle.</p>
-{% endblock %}
+<!--mail-intern--><p style="{{ stil.titel }}">Neue Schadenmeldung {{ herkunft }}</p>
+<div style="{{ stil.kasten }}"><table cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+  <tr><td style="{{ stil.zelle_name }}">Ticket</td><td style="{{ stil.zelle_wert }}">#{{ ticket.id }}</td></tr>
+  <tr><td style="{{ stil.zelle_name }}">Titel</td><td style="{{ stil.zelle_wert }}">{{ ticket.titel }}</td></tr>
+  <tr><td style="{{ stil.zelle_name }}">Objekt</td><td style="{{ stil.zelle_text }}">{{ objekt }} · {{ einheit }}</td></tr>
+  <tr><td style="{{ stil.zelle_name }}">Raum</td><td style="{{ stil.zelle_text }}">{{ ticket.raum|default:"—" }}</td></tr>
+  <tr><td style="{{ stil.zelle_name }}">Melder</td><td style="{{ stil.zelle_text }}">{{ melder }}<br>{{ ticket.email_melder|default:"" }} {{ ticket.tel_melder|default:"" }}</td></tr>
+</table></div>
+<p style="{{ stil.absatz }}white-space:pre-line;">{{ ticket.beschreibung|default:"" }}</p>
+{% if link %}<p style="{{ stil.absatz }}"><a href="{{ link }}" style="{{ stil.knopf }}">Meldung öffnen</a></p>
+{% endif %}<p style="{{ stil.klein }}">Diese Meldung erscheint in der Software unter Schadensfälle.</p>

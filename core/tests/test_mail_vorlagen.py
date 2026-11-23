@@ -46,7 +46,9 @@ class ZugangsMailTests(TestCase):
         html = self._senden(email_service.send_eigentuemer_portal_zugang)
         self.assertNotIn('<script>', html)
         self.assertIn('Eigentümer-Portal', html)
-        self.assertIn('🏠', html)
+        # Der Titel steht seit 23.11.2026 im Inhalt (kein farbiger Kopf mit Emoji mehr), der Rahmen ist derselbe.
+        self.assertIn(email_service.RAHMEN_MARKE, html)
+        self.assertNotIn('🏠', html)
         self.assertIn(EMBER, html)
 
 
@@ -104,7 +106,11 @@ class KlartextMitLinkTests(TestCase):
         self.assertNotIn('<script>', html)
         self.assertIn('&lt;script&gt;', html)
         self.assertIn('<br>', html)
-        self.assertIn('<a href="https://example.ch/auftrag/abc/?a=1&amp;b=2">https://example.ch/auftrag/abc/?a=1&amp;b=2</a>', html)
+        # Der Link wird zum Knopf (Pille in der Markenfarbe); die Adresse bleibt als Ausweichweg darunter lesbar.
+        self.assertRegex(html, r'<a href="https://example\.ch/auftrag/abc/\?a=1&amp;b=2" style="[^"]*border-radius:999px[^"]*">Öffnen</a>')
+        self.assertIn('Falls der Knopf nicht geht:', html)
+        self.assertRegex(html, r'>https://example\.ch/auftrag/abc/\?a=1&amp;b=2</a>')
+        self.assertEqual(html.count('border-radius:999px'), 1)
 
     def test_ohne_link_bleibt_text_text(self):
         html = email_service.klartext_html('Nur Text & mehr')

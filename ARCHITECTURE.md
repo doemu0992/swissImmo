@@ -345,6 +345,19 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   statt mittig: Der Reset setzt `margin:0`, nur `.fw-zdlg` trug `margin:auto`. Jetzt mittig. Fenstertitel einheitlich 18 px
   (Zuordnen hatte 22 px), das Auswahlfenster «Verwaltung und Bestand» trägt den Radius des Profilmenüs (24 statt 14 px),
   sein Suchfeld 40 px. Wächter: `e2e/tests/guss-dialoge.spec.ts`.
+  **E-Mails (23.11.2026, Mockup «E-Mails»):** ein Rahmen für alle Mails statt dreier Aufmachungen (`base_email.html`,
+  `rahmen_karte.html`, `rahmen_schlicht.html` sind entfernt). Die Vorlagen unter `core/templates/emails/` liefern nur noch
+  ihren INHALT; `email_service.mail_rahmen` setzt ihn beim Versand in `emails/rahmen.html` (Kopf mit Logo oder Name der
+  Verwaltung, Inhalt, Adressfuss). Das geschieht zentral in `send_via_hoststar` und `send_report_mail`, also auch für
+  Schadenmeldung, Handwerker-Auftrag, Terminvorschlag und -bestätigung, Erinnerungen, Direktkanal, Einladung und
+  Nebenkosten-Versand. Der Absender kommt aus der übergebenen Organisation (Objekt oder ID), sonst aus dem Mandanten der
+  Anfrage; ohne beides steht «immoswiss» im Kopf und der Adressfuss entfällt. Die Bausteine (Titel, Kasten, roter Kasten
+  nur für offene Beträge, Knopf als Pille, kleine Schrift) stehen an einer Stelle in `email_service.STIL`. Ein Link im
+  Klartext wird zum Knopf (`klartext_mit_knopf`), die Adresse bleibt als Ausweichweg klein darunter; die Beschriftung
+  gibt der Aufrufer mit («Auftrag öffnen», «Termin bestätigen oder ändern», «Nachricht öffnen»). Mails an das eigene Team
+  tragen `<!--mail-intern-->` und bekommen keinen Adressfuss; die Benachrichtigung über eine neue Schadenmeldung hat neu
+  den Knopf «Meldung öffnen». Texte sind unverändert (Mahnung nach Art. 257d OR: Test auf den Wortlaut). Die PDF-Dokumente
+  bauen bereits alle auf `DokCanvas` bzw. `dok_base.html` auf und sind nicht betroffen. Tests: `core/tests/test_mail_rahmen.py`.
   **Betreiber-Portal im Wächter:** `seed_e2e` legt `e2e-betreiber` (Superuser, `e2e-pass`) an, aber nur bei `DEBUG`
   (so startet `e2e/run-server.sh`); ohne `DEBUG` entsteht kein Konto mit bekanntem Passwort (`core/tests/test_seed_e2e.py`).
   `guss-portale.spec.ts` prüft damit alle neun Betreiber-Seiten. Das Kennzahlenband `.fw-kzn` gilt dort wie in den Akten der
