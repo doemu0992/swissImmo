@@ -72,7 +72,7 @@ async function schwacheKontraste(page: Page) {
 }
 
 async function menueOeffnen(page: Page) {
-  await page.locator('.fw-portal-top button').click();     // Name wechselt mit der Sprache
+  await page.locator('[data-bei-klick="pOpenNav"]:visible').click();     // Telefon: «Mehr» in der unteren Leiste, sonst der Menüknopf
   await expect(page.locator('#pSidebar')).toBeVisible();
 }
 

@@ -10,10 +10,13 @@ const PORTALE: [string, string, string[]][] = [
     '/mieter/konto/', '/mieter/anfragen/', '/mieter/zaehler/', '/mieter/daten/', '/mieter/passwort/', '/mieter/kuendigung/']],
   ['Eigentümerportal', 'e2e-eigentuemer', ['/portal/', '/portal/liegenschaften/', '/portal/schaeden/', '/portal/abrechnungen/',
     '/portal/dokumente/', '/portal/mitteilungen/', '/portal/profil/']],
+  // Betreiber-Portal: eigenes Konto im Seed (nur bei DEBUG), Kunde 1 ist die E2E-Verwaltung
+  ['Betreiber-Portal', 'e2e-betreiber', ['/betreiber/', '/betreiber/neu/', '/betreiber/protokoll/', '/betreiber/csp/', '/betreiber/lik/',
+    '/betreiber/sicherheit/', '/betreiber/1/', '/betreiber/1/bearbeiten/', '/betreiber/1/abo/']],
 ];
 
 async function anmelden(page: Page, name: string) {
-  await goto(page, '/portal/login/');
+  await goto(page, name === 'e2e-betreiber' ? '/betreiber/login/' : '/portal/login/');
   await page.fill('input[name="username"]', name);
   await page.fill('input[name="password"]', 'e2e-pass');
   await Promise.all([warteAufURL(page, '**'), page.click('button[type="submit"], input[type="submit"]')]);
@@ -55,6 +58,8 @@ for (const [portal, konto, seiten] of PORTALE) {
           const c = cs(e);
           if (c.backgroundColor !== 'rgb(255, 255, 255)' || parseFloat(c.borderTopLeftRadius) < 8) continue;
           if (e.tagName === 'A' && e.offsetHeight < 60) continue;
+          // Das Kennzahlenband (.fw-kzn) ist derselbe Baustein wie in den Akten der Verwaltung: 14 px, kein Kartenradius
+          if (e.classList.contains('fw-kzn')) { if (parseFloat(c.borderTopLeftRadius) !== 14) { f.push('Kennzahlenband ' + c.borderTopLeftRadius); break; } continue; }
           if (c.boxShadow !== 'none') { f.push('Karte mit Schatten: ' + e.className.toString().slice(0, 40)); break; }
           if (parseFloat(c.borderTopLeftRadius) !== 24 && e.offsetHeight > 90) { f.push('Kartenradius ' + c.borderTopLeftRadius + ': ' + e.className.toString().slice(0, 40)); break; }
         }
@@ -70,6 +75,48 @@ for (const [portal, konto, seiten] of PORTALE) {
   });
 }
 
+// Telefon: dieselbe untere Leiste wie die Verwaltung (`#fwTabbar`), «Mehr» öffnet die vollständige Liste.
+for (const [portal, konto, seiten] of PORTALE) {
+  test(`Telefon im ${portal}: untere Leiste wie die Verwaltung, «Mehr» zeigt die ganze Liste`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await anmelden(page, konto);
+    await goto(page, seiten[0]);
+    const m = await page.evaluate(() => {
+      const leiste = document.querySelector('#pTabbar')!, r = leiste.getBoundingClientRect(), c = getComputedStyle(leiste);
+      const tabs = [...leiste.querySelectorAll('.fw-tab')] as HTMLElement[];
+      return { unten: Math.round(r.bottom) === innerHeight, breit: Math.round(r.width) === innerWidth, fest: c.position, tabs: tabs.length,
+        aktiv: leiste.querySelectorAll('.fw-tab.hier').length, quer: document.documentElement.scrollWidth > innerWidth,
+        ueberlauf: tabs.filter(t => t.scrollWidth > t.clientWidth + 1).map(t => t.textContent!.trim()),
+        hoehe: Math.min(...tabs.map(t => t.offsetHeight)), menueknopf: (document.querySelector('.fw-portal-top > .fw-knopf-rund') as HTMLElement).offsetWidth,
+        marke: (document.querySelector('.fw-portal-top-marke') as HTMLElement).offsetWidth,
+        // der Inhalt endet über der Leiste: das letzte Element von <main> ist nach dem Scrollen ganz sichtbar
+        platz: parseFloat(getComputedStyle(document.querySelector('.fw-haupt')!).paddingBottom) >= r.height };
+    });
+    expect(m).toEqual({ unten: true, breit: true, fest: 'fixed', tabs: 5, aktiv: 1, quer: false, ueberlauf: [], hoehe: m.hoehe, menueknopf: 0, marke: 30, platz: true });
+    expect(m.hoehe).toBeGreaterThanOrEqual(48);
+    // «Mehr» öffnet die bisherige Leiste; sie überdeckt die untere Leiste, Abmelden bleibt erreichbar
+    const eintraege = await page.locator('#pSidebar .fw-nav-eintrag').count();
+    expect(eintraege).toBeGreaterThanOrEqual(5);
+    await page.locator('#pTabbar [data-bei-klick="pOpenNav"]').click();
+    await expect(page.locator('#pSidebar')).toHaveClass(/offen/);
+    const abmelden = page.locator('#pSidebar form[action="/logout/"] button');
+    await expect(abmelden).toBeVisible();
+    // (die Liste fährt ein: abwarten, bis der Knopf an seinem Platz liegt)
+    await expect.poll(() => abmelden.evaluate(e => { const r = e.getBoundingClientRect(); const t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return !!t && t.closest('#pSidebar') !== null; }), { message: 'Abmelden liegt über der unteren Leiste' }).toBe(true);
+    await page.keyboard.press('Escape');
+    // Ein Tab führt auf seine Seite und ist dort aktiv
+    const zweiter = page.locator('#pTabbar a.fw-tab:not(.fw-tab-plus)').nth(1);
+    const ziel = await zweiter.getAttribute('href');
+    await Promise.all([warteAufURL(page, '**' + ziel), zweiter.click()]);
+    await expect(page.locator('#pTabbar a.fw-tab.hier')).toHaveAttribute('href', ziel!);
+    // Zwischen Telefon und Desktop bleibt der Menüknopf, die untere Leiste ist aus
+    await page.setViewportSize({ width: 800, height: 900 });
+    await expect(page.locator('#pTabbar')).toBeHidden();
+    await expect(page.locator('.fw-portal-top > .fw-knopf-rund')).toBeVisible();
+  });
+}
+
 test('Anmeldeseiten: Titelschrift, Feldhöhe und Knopf wie im Programm', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   for (const u of ['/login/', '/portal/login/']) {
@@ -77,8 +124,11 @@ test('Anmeldeseiten: Titelschrift, Feldhöhe und Knopf wie im Programm', async (
     const m = await page.evaluate(() => {
       const cs = (e: Element) => getComputedStyle(e);
       const h = document.querySelector('.head h2')!, i = document.querySelector('input[name="username"]')!, k = document.querySelector('.submit')!, c = document.querySelector('.card')!;
-      return { schrift: cs(h).fontFamily.slice(0, 4), feld: Math.round(i.getBoundingClientRect().height), knopf: parseFloat(cs(k).borderTopLeftRadius), schatten: cs(c).boxShadow };
+      // Markenfläche: ruhige helle Fläche wie die Seitenleiste, kein Farbverlauf mehr; ihr Titel in der Titelschrift
+      const p = document.querySelector('.brandpane')!, t = document.querySelector('.pane-mid h1')!;
+      return { schrift: cs(h).fontFamily.slice(0, 4), feld: Math.round(i.getBoundingClientRect().height), knopf: parseFloat(cs(k).borderTopLeftRadius), schatten: cs(c).boxShadow,
+        flaeche: cs(p).backgroundImage + ' ' + cs(p).backgroundColor, markentitel: cs(t).fontFamily.slice(0, 4) };
     });
-    expect(m, u).toEqual({ schrift: 'Sora', feld: 40, knopf: 999, schatten: 'none' });
+    expect(m, u).toEqual({ schrift: 'Sora', feld: 40, knopf: 999, schatten: 'none', flaeche: 'none rgb(255, 255, 255)', markentitel: 'Sora' });
   }
 });

@@ -1,5 +1,5 @@
 {% load zeichen i18n %}
-{% load chf %}<!DOCTYPE html>
+{% load chf portal_tabs %}<!DOCTYPE html>
 {% get_current_language as sprache %}<html lang="{{ sprache|slice:':2'|default:'de' }}">
 <head>
     <meta charset="utf-8">
@@ -59,6 +59,8 @@ Blöcke (`brand_icon`, `brand`, `brand_mobile`, `nav`, `content`, `footer`,
         <!-- Kopfzeile (mobil) -->
         <header class="fw-portal-top">
             <button type="button" data-bei-klick="pOpenNav" aria-label="{% trans 'Menü öffnen' %}" class="fw-knopf-rund">{% zeichen 'mehr' %}</button>
+            {# Am Telefon (bis 640 px) übernimmt die untere Leiste das Menü («Mehr»); hier steht dann das Markenzeichen. #}
+            {% portal_zeichen as p_zeichen %}<span class="fw-marke-zeichen fw-portal-top-marke" aria-hidden="true">{% zeichen_wert p_zeichen 'fw-auf-marke' %}</span>
             <b class="fw-portal-titel">{% block brand_mobile %}{% trans "Mieterportal" %}{% endblock %}</b>
         </header>
 
@@ -75,6 +77,8 @@ Blöcke (`brand_icon`, `brand`, `brand_mobile`, `nav`, `content`, `footer`,
             <p class="fw-portal-fuss">{% block footer %}{% trans "immoswiss Mieterportal · Alle Angaben ohne Gewähr" %}{% endblock %}</p>
         </main>
     </div>
+    {# Untere Leiste am Telefon, wie `#fwTabbar` der Verwaltung; Belegung in core/templatetags/portal_tabs.py #}
+    {% portal_tabbar %}
 </div>
 
 <script nonce="{{ csp_nonce }}">

@@ -1,0 +1,6 @@
+{% load zeichen i18n %}{% if tabs %}
+<nav class="fw-tabbar fw-portal-tabbar" id="pTabbar" aria-label="{% trans 'Schnellzugriff' %}">
+    {% for t in tabs %}<a href="{{ t.ziel }}" class="fw-tab{% if t.plus %} fw-tab-plus{% endif %}{% if t.hier and not t.plus %} hier{% endif %}"{% if t.hier %} aria-current="page"{% endif %}{% if t.plus %} aria-label="{{ t.text }}"{% endif %}>{% zeichen_wert t.zeichen %}{% if not t.plus %}<span>{{ t.text }}</span>{% endif %}{% if t.zahl %}<span class="fw-tab-zahl crit">{{ t.zahl }}</span>{% endif %}</a>
+    {% endfor %}<button type="button" class="fw-tab{% if mehr_hier %} hier{% endif %}" data-bei-klick="pOpenNav" aria-controls="pSidebar">{% zeichen 'mehr' %}<span>{% trans "Mehr" %}</span></button>
+</nav>
+{% endif %}

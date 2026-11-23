@@ -124,3 +124,18 @@ class SeedE2ETest(TestCase):
             self.assertEqual(
                 set(Liegenschaft.objects.values_list('pk', flat=True)), vorher,
                 'Der zweite Lauf hat den Bestand dieses Mandanten verändert.')
+
+
+class SeedBetreiberKontoTest(TestCase):
+    """Das Betreiber-Testkonto (Superuser, bekanntes Passwort) entsteht nur im Entwicklungsbetrieb."""
+
+    def test_ohne_debug_entsteht_kein_superuser(self):
+        call_command('seed_e2e', stdout=StringIO())
+        self.assertFalse(get_user_model().objects.filter(is_superuser=True).exists())
+
+    def test_mit_debug_gibt_es_das_konto_fuer_den_guss_waechter(self):
+        from django.test import override_settings
+        with override_settings(DEBUG=True):
+            call_command('seed_e2e', stdout=StringIO())
+        konto = get_user_model().objects.get(username='e2e-betreiber')
+        self.assertTrue(konto.is_superuser and konto.check_password('e2e-pass'))

@@ -4134,6 +4134,19 @@
             html #pSidebar .fw-side-fuss .fw-nav-eintrag{height:auto}
             html .fw-app:has(>#pSidebar) .fw-portal-inhalt{max-width:1192px;margin-left:0}
         }
+        /* Portale am Telefon: untere Leiste wie die Verwaltung (`#pTabbar`, dieselben Regeln wie `.fw-tabbar`). «Mehr» öffnet die
+           Leiste `#pSidebar`; der Menüknopf der Kopfzeile entfällt bis 640 px, dort steht das Markenzeichen. Die Leiste liegt
+           unter dem Vorhang (45), damit die ausgefahrene Liste samt «Abmelden» sie überdeckt. */
+        .fw-portal-top-marke{display:none}
+        @media (max-width:640px){
+            html .fw-portal-tabbar{z-index:44}
+            html .fw-portal-top>.fw-knopf-rund{display:none}
+            html .fw-portal-top-marke{display:grid}
+            html .fw-portal-top .fw-nav-zahl{display:none}
+            html .fw-app:has(>#pTabbar){--fw-tab-h:calc(68px + env(safe-area-inset-bottom,0px))}
+            html .fw-app:has(>#pTabbar) .fw-haupt{padding-bottom:var(--fw-tab-h)}
+            html .fw-app:has(>#pTabbar) :is(.fw-freigabe,.fw-assistent-fuss,.fw-split-fuss,.fw-sk-absenden,.fw-toasts){bottom:calc(var(--fw-tab-h) + 8px)}
+        }
         /* ===== Ende Aus einem Guss ===== */
         /* ===== Listenform (Mockup «Immoswiss Listenform», 23.11.2026) =====
            EINE Form für Listen, die keine `<table>` sind: Karte `.fw-card.fw-lf`, Kopf mit Filtern (`.fw-lf-kopf`), Spaltenkopf
