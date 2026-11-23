@@ -10,10 +10,13 @@ const PORTALE: [string, string, string[]][] = [
     '/mieter/konto/', '/mieter/anfragen/', '/mieter/zaehler/', '/mieter/daten/', '/mieter/passwort/', '/mieter/kuendigung/']],
   ['Eigentümerportal', 'e2e-eigentuemer', ['/portal/', '/portal/liegenschaften/', '/portal/schaeden/', '/portal/abrechnungen/',
     '/portal/dokumente/', '/portal/mitteilungen/', '/portal/profil/']],
+  // Betreiber-Portal: eigenes Konto im Seed (nur bei DEBUG), Kunde 1 ist die E2E-Verwaltung
+  ['Betreiber-Portal', 'e2e-betreiber', ['/betreiber/', '/betreiber/neu/', '/betreiber/protokoll/', '/betreiber/csp/', '/betreiber/lik/',
+    '/betreiber/sicherheit/', '/betreiber/1/', '/betreiber/1/bearbeiten/', '/betreiber/1/abo/']],
 ];
 
 async function anmelden(page: Page, name: string) {
-  await goto(page, '/portal/login/');
+  await goto(page, name === 'e2e-betreiber' ? '/betreiber/login/' : '/portal/login/');
   await page.fill('input[name="username"]', name);
   await page.fill('input[name="password"]', 'e2e-pass');
   await Promise.all([warteAufURL(page, '**'), page.click('button[type="submit"], input[type="submit"]')]);
@@ -55,6 +58,8 @@ for (const [portal, konto, seiten] of PORTALE) {
           const c = cs(e);
           if (c.backgroundColor !== 'rgb(255, 255, 255)' || parseFloat(c.borderTopLeftRadius) < 8) continue;
           if (e.tagName === 'A' && e.offsetHeight < 60) continue;
+          // Das Kennzahlenband (.fw-kzn) ist derselbe Baustein wie in den Akten der Verwaltung: 14 px, kein Kartenradius
+          if (e.classList.contains('fw-kzn')) { if (parseFloat(c.borderTopLeftRadius) !== 14) { f.push('Kennzahlenband ' + c.borderTopLeftRadius); break; } continue; }
           if (c.boxShadow !== 'none') { f.push('Karte mit Schatten: ' + e.className.toString().slice(0, 40)); break; }
           if (parseFloat(c.borderTopLeftRadius) !== 24 && e.offsetHeight > 90) { f.push('Kartenradius ' + c.borderTopLeftRadius + ': ' + e.className.toString().slice(0, 40)); break; }
         }
@@ -77,8 +82,11 @@ test('Anmeldeseiten: Titelschrift, Feldhöhe und Knopf wie im Programm', async (
     const m = await page.evaluate(() => {
       const cs = (e: Element) => getComputedStyle(e);
       const h = document.querySelector('.head h2')!, i = document.querySelector('input[name="username"]')!, k = document.querySelector('.submit')!, c = document.querySelector('.card')!;
-      return { schrift: cs(h).fontFamily.slice(0, 4), feld: Math.round(i.getBoundingClientRect().height), knopf: parseFloat(cs(k).borderTopLeftRadius), schatten: cs(c).boxShadow };
+      // Markenfläche: ruhige helle Fläche wie die Seitenleiste, kein Farbverlauf mehr; ihr Titel in der Titelschrift
+      const p = document.querySelector('.brandpane')!, t = document.querySelector('.pane-mid h1')!;
+      return { schrift: cs(h).fontFamily.slice(0, 4), feld: Math.round(i.getBoundingClientRect().height), knopf: parseFloat(cs(k).borderTopLeftRadius), schatten: cs(c).boxShadow,
+        flaeche: cs(p).backgroundImage + ' ' + cs(p).backgroundColor, markentitel: cs(t).fontFamily.slice(0, 4) };
     });
-    expect(m, u).toEqual({ schrift: 'Sora', feld: 40, knopf: 999, schatten: 'none' });
+    expect(m, u).toEqual({ schrift: 'Sora', feld: 40, knopf: 999, schatten: 'none', flaeche: 'none rgb(255, 255, 255)', markentitel: 'Sora' });
   }
 });

@@ -56,6 +56,16 @@ class Command(BaseCommand):
         user.save()
         user.groups.add(grp)
 
+        # Der Betreiber (e2e-betreiber / e2e-pass) für den Guss-Wächter des Betreiber-Portals (guss-portale.spec.ts).
+        # Ein Superuser mit bekanntem Passwort entsteht NUR im Entwicklungsbetrieb (DEBUG, so startet e2e/run-server.sh):
+        # Wer den Befehl versehentlich auf einer echten Installation ausführt, bekommt dieses Konto nicht.
+        from django.conf import settings
+        if settings.DEBUG:
+            betreiber, _ = User.objects.get_or_create(username="e2e-betreiber", defaults={"is_staff": True, "is_superuser": True})
+            betreiber.set_password("e2e-pass")
+            betreiber.is_active = True
+            betreiber.save()
+
         org, _ = Organisation.objects.get_or_create(
             firma="E2E Verwaltung AG",
             defaults=dict(strasse="Teststrasse 1", plz="8000", ort="Zürich",

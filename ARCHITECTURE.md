@@ -307,6 +307,12 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Markup ist unverändert. Am Telefon bleibt der Menüknopf mit ausfahrender Leiste.
   **Anmeldeseiten** (`core/login.html`, `core/portal_login.html`, auch Betreiber): Titel in der Titelschrift, Felder 40 px,
   Knopf und Sprachwahl als Pille, Karte mit Linie statt Schatten. Die geteilte Seite mit der Markenfläche bleibt.
+  Die Markenfläche ist seit 23.11.2026 eine ruhige helle Fläche wie die Seitenleiste (Fläche + Linie, Titel in der
+  Titelschrift, Markenzeichen in der Markenfarbe) statt eines Farbverlaufs; der Wächter prüft das mit.
+  **Betreiber-Portal im Wächter:** `seed_e2e` legt `e2e-betreiber` (Superuser, `e2e-pass`) an, aber nur bei `DEBUG`
+  (so startet `e2e/run-server.sh`); ohne `DEBUG` entsteht kein Konto mit bekanntem Passwort (`core/tests/test_seed_e2e.py`).
+  `guss-portale.spec.ts` prüft damit alle neun Betreiber-Seiten. Das Kennzahlenband `.fw-kzn` gilt dort wie in den Akten der
+  Verwaltung als eigener Baustein (14 px).
 - **Brief aus dem Mitteilungs-Assistenten (23.11.2026):** «Als Brief drucken» druckte die Vorschau aus einem leeren Browserfenster
   ohne Stilregeln (Logo in voller Grösse, kein Adressfeld). Jetzt liefern «Serienbrief-PDF» und «Als Brief drucken» denselben
   formatierten Brief (`generate_serienbrief_pdf`, Briefgerüst `DokCanvas.brief`); der Unterschied ist nur Herunterladen oder im
