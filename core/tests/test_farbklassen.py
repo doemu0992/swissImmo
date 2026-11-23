@@ -49,7 +49,8 @@ Ember-Schema (`text-primary-600` statt Blau): 55 in 15.
 Etappe 3 (29.10.2026): Dossier entfallen (7), öffentliche Formulare, Datenschutz und Absageseite auf der
 Hülle `core/aussen_base.html` und den Bausteinen der Schicht, Passwort-Rückweg auf `fw-link`:
 Alte Django-Admin entfernt (07.11.2026): ihre Vorlagen entfallen (30 + 8 Kopfvorlagen):
-**STAND 12 in 8 Vorlagen**.
+«Portale aus einem Guss» (23.11.2026): Das Mieterportal ist frei (handgebaute Knöpfe sind `fw-btn`, «Ihr Mietobjekt» ohne `text-white`):
+**STAND 5 in 3 Vorlagen**.
 
 E2.84: DAS OVERLAY IST AUSGEBAUT — UND DIE WARNUNG VON E2.20 GEPRUEFT
 ---------------------------------------------------------------------
@@ -283,11 +284,6 @@ FARBMUSTER = re.compile(
 #: Obergrenze eine Buchhaltung ueber fremde Schuld.
 
 OBERGRENZE = {
-    'core/templates/core/mieter_kuendigung.html': 1,
-    'core/templates/core/mieter_portal.html': 2,
-    'core/templates/core/mieter_rechnungen.html': 1,
-    'core/templates/core/mieter_ticket_detail.html': 1,
-    'core/templates/core/mieter_tickets.html': 2,
     'core/templates/fw/_pipeline.html': 1,
     'core/templates/fw/_schicht.html': 2,
     'core/templates/fw/schaden_detail.html': 2,

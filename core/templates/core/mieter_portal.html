@@ -58,7 +58,7 @@
         </section>
 
         {% for o in objekte %}
-        <div class="rounded-2xl fw-marke-verlauf text-white p-6 shadow-lg fw-schatten-marke mb-5 relative overflow-hidden">
+        <div class="rounded-2xl fw-marke-verlauf p-6 mb-5 relative overflow-hidden">
             <div class="absolute -top-16 -right-10 w-56 h-56 rounded-full fw-glas blur-2xl"></div>
             <div class="relative">
                 <div class="flex items-start justify-between gap-3">
@@ -85,7 +85,7 @@
                 </div>
                 {% if o.kaution %}
                 <div class="mt-3 flex items-center gap-2 fw-faint text-sm">
-                    {% zeichen 'gesperrt' %} {% trans "Mietkaution" %}: <span class="font-semibold text-white">CHF {{ o.kaution|chf }}</span>
+                    {% zeichen 'gesperrt' %} {% trans "Mietkaution" %}: <span class="font-semibold">CHF {{ o.kaution|chf }}</span>
                 </div>
                 {% endif %}
             </div>

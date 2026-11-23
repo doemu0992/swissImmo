@@ -58,12 +58,8 @@ OBERGRENZE = {
     # Auf null (Roadmap, 12.11.2026): kein `style="…"` mehr in den Browser-Vorlagen. Dynamische Masse laufen über
     # `data-breite`/`-hoehe`/`-links`/`-oben` (`static/js/fw-aktionen.js`). E-Mail-Vorlagen sind ausgenommen (siehe Test unten).
     'INLINE_STIL': {},
+    # 23.11.2026 («Portale aus einem Guss»): Die Knöpfe des Mieterportals sind `fw-btn`.
     'SELBSTGEBAUTER_KNOPF': {
-    'core/mieter_konto.html': 1,
-    'core/mieter_kuendigung.html': 2,
-    'core/mieter_rechnungen.html': 2,
-    'core/mieter_ticket_detail.html': 1,
-    'core/mieter_tickets.html': 2,
     'fw/_unterschrift_feld.html': 1,
 },
     'FREIE_RUNDUNG': {

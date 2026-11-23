@@ -50,7 +50,9 @@ test.describe('Schiene am PC', () => {
   test('Tastatur: G dann B öffnet «Schäden», die Ziffer 3 wählt die dritte Seite', async ({ page }) => {
     await login(page);
     await goto(page, '/neu/liegenschaften/');
-    await page.locator('body').click({ position: { x: 700, y: 400 } });
+    // Fokus in den Inhalt, ohne etwas auszulösen: Ein Klick auf feste Koordinaten traf je nach Ladezeitpunkt eine Listenzeile
+    // und verliess die Seite, bevor die Tasten ankamen.
+    await page.locator('main h1').first().click();
     await page.keyboard.press('g');
     await page.keyboard.press('b');
     await expect(page.locator('#fwFach section:visible h2')).toHaveText('Schäden');
@@ -101,7 +103,9 @@ test.describe('Schiene am PC', () => {
   test('Tastatur: G dann E öffnet die Einstellungen', async ({ page }) => {
     await login(page);
     await goto(page, '/neu/liegenschaften/');
-    await page.locator('body').click({ position: { x: 700, y: 400 } });
+    // Fokus in den Inhalt, ohne etwas auszulösen: Ein Klick auf feste Koordinaten traf je nach Ladezeitpunkt eine Listenzeile
+    // und verliess die Seite, bevor die Tasten ankamen.
+    await page.locator('main h1').first().click();
     await page.keyboard.press('g');
     await page.keyboard.press('e');
     await expect(page.locator('#fwFach section:visible h2')).toHaveText('Einstellungen');

@@ -2973,6 +2973,22 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             html .fw-statuszeile:not(.fw-hero .fw-statuszeile)>.fw-sz{padding:10px 16px}
         }
         @media (max-width:640px){html .fw-btn:not(.fw-mzm-weg),html .fw-btn.fw-knapp:not(.fw-mzm-weg){min-height:44px}}
+        html .fw-portal-inhalt h1,html .fw-hw-seite h1{font-family:var(--ds-disp);font-weight:700;letter-spacing:-.03em}
+        html .fw-portal-inhalt .fw-flaeche.rounded-2xl,html .fw-hw-seite .fw-flaeche.rounded-2xl{border-radius:var(--ds-radius);box-shadow:none;border:1px solid var(--ds-line)}
+        html .fw-portal-inhalt .fw-kachel.akzent{background:var(--ds-surface);background-image:none;color:var(--ds-ink);border:1px solid var(--ds-line);box-shadow:none}
+        html .fw-portal-inhalt .fw-kachel.akzent .fw-kachel-text{color:var(--ds-muted)}
+        html .fw-portal-inhalt .fw-kachel.akzent .fw-kachel-zahl,html .fw-portal-inhalt .fw-kachel.akzent h2,html .fw-portal-inhalt .fw-kachel.akzent .fw-zeichen{color:var(--ds-ink)}
+        html .fw-portal-inhalt .fw-kachel.akzent .fw-kachel-zahl small{color:var(--ds-muted)}
+        html .fw-portal-inhalt .fw-kachel.akzent>.fw-btn{background:var(--ds-brand);color:var(--ds-auf-satt);border:0}
+        html .fw-portal-inhalt .fw-kachel{box-shadow:none;border-radius:var(--ds-radius)}
+        html .fw-portal-inhalt .fw-marke-verlauf{background:var(--ds-surface);background-image:none;color:var(--ds-ink);border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:none}
+        html .fw-portal-inhalt .fw-marke-verlauf .fw-glas{background:var(--ds-surface-2);color:var(--ds-ink)}
+        html .fw-portal-inhalt .fw-marke-verlauf .fw-glas.blur-2xl{display:none}
+        html .fw-portal-inhalt .fw-marke-verlauf .fw-faint{color:var(--ds-muted)}
+        @media (min-width:641px){
+            html .fw-portal-inhalt input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=hidden]),html .fw-portal-inhalt select,
+            html .fw-hw-seite input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=hidden]),html .fw-hw-seite select{height:40px;min-height:40px}
+        }
         html .fw-card.fw-lf{padding:0;overflow:hidden}
         .fw-lf-kopf{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-bottom:1px solid var(--ds-line)}
         .fw-lf-kopf .fw-filters{margin:0}

@@ -191,6 +191,8 @@ Weiss auf Akzent oder mit Begründung (STWEG-Warnrot).
   Telefon 44 px), Karten und Kacheln (Linie, kein Schatten), Kennzahlen (Band), Felder (40 px), linker Rand.
 - Eine Seite setzt keine eigenen Grössen für diese Bausteine. Braucht sie etwas Neues, kommt es als Baustein in
   `fw/_schicht.html` und gilt überall. Neue Seiten der Navigation gehören in die Liste in `guss.spec.ts`.
+- Portale (Mieter, Eigentümer, Betreiber, Handwerker) nutzen dieselben Bausteine: `fw-btn`, Karten mit Linie, Titel in der
+  Titelschrift. Keine handgebauten Knöpfe aus Tailwind-Klassen (`e2e/tests/guss-portale.spec.ts`).
 - Einstellungsseiten: Der Seitentitel ist der Name aus `einstellungen_gruppen()`, es gibt genau eine Pfadzeile (die Krume des
   Rahmens), `nav` liegt in `EINSTELLUNGEN_KEYS` (`EinstellungenSeitenlisteTests`).
 
