@@ -285,6 +285,14 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Bestandsfilter mit). «Schaden erfassen» ist ab 900 px eine Schublade von rechts (`#neuschaden.fw-schublade-rechts`, derselbe
   Knopf öffnet und schliesst, dazu das Kreuz); am Telefon klappt das Formular wie bisher in der Seite auf. Die Boards
   (`.fw-spalte`: Schäden, Bewerbungen) nutzen die volle Breite, die Spaltenköpfe stehen in Versalien.
+- **Platzhalter im Mitteilungs-Assistenten (23.11.2026):** Vorschau, Serienbrief-PDF und E-Mail lösen Platzhalter aus EINER Quelle
+  auf (`core.services.serienbrief.empfaenger_kontext` → `platzhalter.kontext_fuer`). Vorher kannte die Live-Vorschau nur die alten
+  Kurznamen (`{name}`, `{objekt}`), das PDF nur einen Teil der neuen (`{mieter.anrede}`, `{objekt.adresse}`, `{verwaltung.telefon}`
+  blieben stehen) und die E-Mail ersetzte gar nichts. Die Vorschau holt die Werte des ersten Empfängers von
+  `/neu/kommunikation/platzhalter/` (JSON, mandantengefiltert); ohne Empfänger zeigt sie die Beschriftung in eckigen Klammern. Die
+  alten Kurznamen behalten Vorrang und Bedeutung. `{frist}` / `{frist.tage}`: Nennt der Text eine Frist, erscheinen die Felder
+  «Frist bis» und «Frist in Tagen», vorbelegt aus der Vorlage (`brief_aus_vorlage.frist_vorgabe`); ohne Wert bleibt der Platzhalter
+  sichtbar stehen — es wird kein Datum erfunden.
 - **Listenform (23.11.2026, Mockup «Immoswiss Listenform»):** Listen, die keine `<table>` sind, bekommen dieselbe Form wie die
   Tabellen: Karte `.fw-card.fw-lf`, Filter im Kartenkopf (`.fw-lf-kopf`), Spaltenkopf (`.fw-lf-spalten`), Zeilen (`.fw-lf-zeile`) im
   selben Raster (`.fw-lf-raster`; die Spalten setzt eine Seitenklasse wie `.fw-lf-objekte`). Zeile: Statuspunkt, Titel mit Unterzeile

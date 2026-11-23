@@ -40,8 +40,47 @@ def _ersetze(text, e):
     }
     # Der zentrale Dienst ersetzt (Modul 5): dieselben alten Namen, dazu die
     # neuen, die auf sie zeigen (`{mieter.name}` = `{name}`).
+    # `_ph` (23.11.2026): der volle Kontext des Empfängers aus `empfaenger_kontext` — damit lösen sich auch
+    # `{mieter.anrede}`, `{objekt.adresse}`, `{verwaltung.telefon}` oder `{frist}` auf, die Vorlagen heute verwenden.
+    # Die alten flachen Namen behalten Vorrang und damit ihre bisherige Bedeutung.
     from core.services.platzhalter import ersetze
-    return ersetze(text or '', {k: (v or '') for k, v in ersatz.items()})
+    kontext = dict(e.get('_ph') or {})
+    kontext.update({k: (v or '') for k, v in ersatz.items()})
+    return ersetze(text or '', kontext)
+
+
+def empfaenger_kontext(mieter, organisation=None, frist_datum=None, frist_tage=None, vertrag=None):
+    """Alle Platzhalterwerte für EINEN Empfänger des Rundschreibens: `(vertrag, kontext)`.
+
+    Dieselbe Quelle für Live-Vorschau, Serienbrief-PDF und E-Mail (`core.services.platzhalter.kontext_fuer`). Ohne
+    `vertrag` gilt der aktive Vertrag der Person (als Mieter oder Mitmieter); hat sie keinen, kommen nur die Werte
+    der Person und der Verwaltung."""
+    from django.db.models import Q
+
+    from core.services.platzhalter import kontext_fuer
+    from rentals.models import Mietvertrag
+    if vertrag is None:
+        vertrag = (Mietvertrag.objects.filter(Q(mieter=mieter) | Q(mitmieter=mieter), status='aktiv')
+                   .select_related('einheit__liegenschaft', 'mieter', 'mitmieter').first())
+    return vertrag, kontext_fuer(vertrag=vertrag, mieter=mieter, organisation=organisation,
+                                 frist_datum=frist_datum, frist_tage=frist_tage)
+
+
+def frist_aus(werte):
+    """`(frist_datum, frist_tage)` aus Formular- oder Auftragswerten; Ungültiges wird zu None."""
+    from core.services.brief_aus_vorlage import FRIST_MAX_TAGE
+    datum = None
+    roh = str(werte.get('frist_datum') or '').strip()
+    if roh:
+        try:
+            datum = datetime.date.fromisoformat(roh)
+        except ValueError:
+            datum = None
+    try:
+        tage = int(werte.get('frist_tage') or 0)
+    except (TypeError, ValueError):
+        tage = 0
+    return datum, (tage if 0 < tage <= FRIST_MAX_TAGE else None)
 
 
 @nur_deutsch
