@@ -21,7 +21,7 @@ def im_hintergrund(anzahl):
     return anzahl >= schwelle()
 
 
-def versenden(betreff, text, mieter_ids, benutzer=None, erledigt=(), nach_jedem=None):
+def versenden(betreff, text, mieter_ids, benutzer=None, erledigt=(), nach_jedem=None, frist_datum=None, frist_tage=None):
     """Schickt die Mitteilung an jeden Mieter mit E-Mail-Adresse und trägt sie ins Kommunikationsjournal ein.
 
     Gibt die Zahl der in DIESEM Aufruf versandten Mails zurück. Läuft im gesetzten Mandantenkontext: Eine fremde
@@ -38,10 +38,31 @@ def versenden(betreff, text, mieter_ids, benutzer=None, erledigt=(), nach_jedem=
         if mid in schon:
             continue
         m = Mieter.objects.filter(id=mid).first()
-        if m and m.email and send_ticket_email(m.email, betreff, text):
+        if not (m and m.email):
+            continue
+        # Platzhalter je Empfänger ersetzen (23.11.2026): Vorher ging der Text mit `{mieter.anrede}` roh hinaus,
+        # obwohl die Maske «werden pro Empfänger automatisch ersetzt» verspricht.
+        b, t = _fuer_empfaenger(betreff, text, m, frist_datum, frist_tage)
+        if send_ticket_email(m.email, b, t):
             gesendet += 1
             schon.add(mid)
-            journal_email(betreff, text, mieter=m, user=benutzer, empfaenger=m.email)
+            journal_email(b, t, mieter=m, user=benutzer, empfaenger=m.email)
             if nach_jedem is not None:
                 nach_jedem(mid)
     return gesendet
+
+
+def _fuer_empfaenger(betreff, text, mieter, frist_datum=None, frist_tage=None):
+    """Betreff und Text mit den Werten dieses Empfängers — dieselbe Auflösung wie im Serienbrief-PDF."""
+    from core.services.serienbrief import _ersetze, empfaenger_kontext
+    v, ph = empfaenger_kontext(mieter, frist_datum=frist_datum, frist_tage=frist_tage)
+    lg = v.einheit.liegenschaft if (v is not None and v.einheit_id) else None
+    e = {
+        'name': mieter.display_name, 'anrede': mieter.anrede or '',
+        'strasse': mieter.strasse or (lg.strasse if lg else ''),
+        'plz': mieter.plz or (lg.plz if lg else ''), 'ort': mieter.ort or (lg.ort if lg else ''),
+        'objekt': (f"{lg.strasse}, {lg.ort} · {v.einheit.bezeichnung}" if lg else ''),
+        'liegenschaft': (f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else ''),
+        '_ph': ph,
+    }
+    return _ersetze(betreff, e), _ersetze(text, e)

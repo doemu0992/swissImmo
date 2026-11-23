@@ -252,8 +252,11 @@ def _rundschreiben(auftrag, fortschritt):
         Auftrag.alle_organisationen.filter(pk=auftrag.pk).update(parameter=p)
         fortschritt(100 * len(erledigt) // max(1, len(empfaenger)), f'{len(erledigt)} von {len(empfaenger)} versandt')
 
+    from core.services.serienbrief import frist_aus
+    frist_datum, frist_tage = frist_aus(p)
     rundschreiben.versenden(p.get('betreff') or 'Mitteilung', p.get('text') or '', empfaenger,
-                            benutzer=auftrag.erstellt_von, erledigt=erledigt, nach_jedem=nach_jedem)
+                            benutzer=auftrag.erstellt_von, erledigt=erledigt, nach_jedem=nach_jedem,
+                            frist_datum=frist_datum, frist_tage=frist_tage)
     log_aktion(None, 'Rundschreiben per E-Mail', p.get('betreff') or 'Mitteilung',
                f'{len(erledigt)} Empfänger · Auftrag', user=auftrag.erstellt_von)
     return f'{len(erledigt)} von {len(empfaenger)} E-Mail(s) versandt (ohne Adresse: übergangen).'

@@ -15,6 +15,8 @@
 {{ empfaenger|json_script:"empfaenger-data" }}
 {{ absender|json_script:"absender-data" }}
 {{ vorlagen|json_script:"vorlagen-data" }}
+{{ platzhalter_namen|json_script:"platzhalter-namen" }}
+{{ platzhalter_aliase|json_script:"platzhalter-aliase" }}
 <span id="logo-url" data-url="{{ logo_url }}"></span>
 
 {% comment %}
@@ -102,6 +104,13 @@ Wir möchten Sie über anstehende Arbeiten in Ihrer Liegenschaft ({objekt}) info
 
 Freundliche Grüsse</textarea>
             <p class="fw-hilfe mt-2">{% trans "Platzhalter werden pro Empfänger automatisch ersetzt." %}</p>
+            {% comment %} Erscheint nur, wenn der Text eine Frist nennt ({frist}, {frist.datum}, {frist.tage}); die Vorlage belegt die Werte vor. {% endcomment %}
+            <div id="mk-frist" class="fw-raster m2 mt-3 hidden">
+                <div><label class="fw-label mb-1" for="mk-frist-datum">{% trans "Frist bis" %}</label>
+                    <input type="date" id="mk-frist-datum" class="fw-feld" data-bei-eingabe="aktualisiere" data-bei-aenderung="aktualisiere"></div>
+                <div><label class="fw-label mb-1" for="mk-frist-tage">{% trans "Frist in Tagen" %}</label>
+                    <input type="number" id="mk-frist-tage" min="1" max="365" class="fw-feld" data-bei-eingabe="aktualisiere"></div>
+            </div>
             </div>
         </div>
     </section>
@@ -128,11 +137,15 @@ Freundliche Grüsse</textarea>
             <form id="mailForm" method="post" action="/neu/kommunikation/senden/" class="hidden">{% csrf_token %}
                 <input type="hidden" name="betreff" id="mail-betreff">
                 <input type="hidden" name="text" id="mail-text">
+                <input type="hidden" name="frist_datum" id="mail-frist-datum">
+                <input type="hidden" name="frist_tage" id="mail-frist-tage">
                 <div id="mail-empfaenger"></div>
             </form>
             <form id="pdfForm" method="post" action="/neu/kommunikation/serienbrief/" class="hidden" target="_blank">{% csrf_token %}
                 <input type="hidden" name="betreff" id="pdf-betreff">
                 <input type="hidden" name="text" id="pdf-text">
+                <input type="hidden" name="frist_datum" id="pdf-frist-datum">
+                <input type="hidden" name="frist_tage" id="pdf-frist-tage">
                 <div id="pdf-empfaenger"></div>
             </form>
             <script nonce="{{ csp_nonce }}">
@@ -150,6 +163,8 @@ Freundliche Grüsse</textarea>
                 if(!confirm('{% filter escapejs %}{% trans "{n} Empfänger per E-Mail anschreiben?" %}{% endfilter %}'.replace('{n}', d.ids.length)))return;
                 document.getElementById('mail-betreff').value=d.betreff;
                 document.getElementById('mail-text').value=d.text;
+                document.getElementById('mail-frist-datum').value=document.getElementById('mk-frist-datum').value;
+                document.getElementById('mail-frist-tage').value=document.getElementById('mk-frist-tage').value;
                 var box=document.getElementById('mail-empfaenger'); box.innerHTML='';
                 d.ids.forEach(function(id){var i=document.createElement('input');i.type='hidden';i.name='empfaenger_id';i.value=id;box.appendChild(i);});
                 document.getElementById('mailForm').submit();
@@ -158,6 +173,8 @@ Freundliche Grüsse</textarea>
                 var d=_sammleVersand(); if(!d)return;
                 document.getElementById('pdf-betreff').value=d.betreff;
                 document.getElementById('pdf-text').value=d.text;
+                document.getElementById('pdf-frist-datum').value=document.getElementById('mk-frist-datum').value;
+                document.getElementById('pdf-frist-tage').value=document.getElementById('mk-frist-tage').value;
                 var box=document.getElementById('pdf-empfaenger'); box.innerHTML='';
                 d.ids.forEach(function(id){var i=document.createElement('input');i.type='hidden';i.name='empfaenger_id';i.value=id;box.appendChild(i);});
                 document.getElementById('pdfForm').submit();
@@ -229,6 +246,8 @@ function vorlageWaehlen(){
     if(!v) return;
     if(v.betreff) document.getElementById('betreff').value = v.betreff;
     document.getElementById('nachricht').value = v.inhalt || '';
+    document.getElementById('mk-frist-datum').value = v.frist_datum || '';
+    document.getElementById('mk-frist-tage').value = v.frist_tage || '';
     aktualisiere();
 }
 
@@ -268,24 +287,51 @@ function einfuegen(ph) {
     t.focus(); t.selectionStart = t.selectionEnd = s + ph.length;
     aktualisiere();
 }
+// Platzhalter (23.11.2026): dieselben Namen und Werte wie im PDF und in der E-Mail. Die Werte des ersten Empfängers holt die
+// Vorschau vom Server (`/neu/kommunikation/platzhalter/`, core.services.platzhalter); die alten Kurznamen ({name}, {objekt} …)
+// behalten ihre bisherige Bedeutung. Was der Kontext nicht kennt, bleibt stehen — wie beim Versand.
+const PH_NAMEN = JSON.parse(document.getElementById('platzhalter-namen').textContent);
+const PH_ALIASE = JSON.parse(document.getElementById('platzhalter-aliase').textContent);
+const PH_MUSTER = /\{([A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)?)\}/g;
+const PH_ALT = {name:'Name', mieter_name:'Name', anrede:'Anrede', objekt:'Objekt', liegenschaft:'Liegenschaft', adresse:'Adresse', mieter_adresse:'Adresse', miete:'Miete'};
+const PH_VORRAT = {};
+let PH = null, PH_SCHLUESSEL = '';
+function phSchluessel(emp) {
+    return emp.id + '|' + document.getElementById('mk-frist-datum').value + '|' + document.getElementById('mk-frist-tage').value;
+}
+function phLaden(emp) {
+    if (!emp) { PH = null; PH_SCHLUESSEL = ''; return; }
+    const key = phSchluessel(emp);
+    PH = PH_VORRAT[key] || null;
+    if (PH || PH_SCHLUESSEL === key) return;
+    PH_SCHLUESSEL = key;
+    const teile = key.split('|');
+    fetch('/neu/kommunikation/platzhalter/?mieter=' + encodeURIComponent(teile[0]) + '&frist_datum=' + encodeURIComponent(teile[1])
+          + '&frist_tage=' + encodeURIComponent(teile[2]), {credentials: 'same-origin', headers: {'X-Requested-With': 'XMLHttpRequest'}})
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(d){ if (!d) return; PH_VORRAT[key] = d; if (PH_SCHLUESSEL === key) { PH_SCHLUESSEL = ''; aktualisiere(); } })
+        .catch(function(){ PH_SCHLUESSEL = ''; });
+}
 function ersetze(txt, emp) {
-    const vermieter = ABS.firma || '';
-    const datum = heuteStr();
-    if (!emp) {
-        return txt.replace(/\{name\}/g,'[Name]').replace(/\{mieter_name\}/g,'[Name]')
-                  .replace(/\{anrede\}/g,'[Anrede]')
-                  .replace(/\{objekt\}/g,'[Objekt]').replace(/\{liegenschaft\}/g,'[Liegenschaft]')
-                  .replace(/\{adresse\}/g,'[Adresse]').replace(/\{mieter_adresse\}/g,'[Adresse]')
-                  .replace(/\{vermieter\}/g, vermieter).replace(/\{datum\}/g, datum)
-                  .replace(/\{miete\}/g,'[Miete]');
-    }
-    const adr = (emp.strasse||'') + ', ' + (emp.plz||'') + ' ' + (emp.ort||'');
-    return txt.replace(/\{name\}/g, emp.name).replace(/\{mieter_name\}/g, emp.name)
-              .replace(/\{anrede\}/g, emp.anrede||'')
-              .replace(/\{objekt\}/g, emp.objekt).replace(/\{liegenschaft\}/g, emp.objekt)
-              .replace(/\{adresse\}/g, adr).replace(/\{mieter_adresse\}/g, adr)
-              .replace(/\{vermieter\}/g, vermieter).replace(/\{datum\}/g, datum)
-              .replace(/\{miete\}/g, '');
+    const fest = {vermieter: ABS.firma || '', datum: heuteStr()};
+    const adr = emp ? (emp.strasse||'') + ', ' + (emp.plz||'') + ' ' + (emp.ort||'') : '';
+    const flach = emp ? {name: emp.name, mieter_name: emp.name, anrede: emp.anrede||'', objekt: emp.objekt, liegenschaft: emp.objekt,
+                         adresse: adr, mieter_adresse: adr, miete: ''} : null;
+    return txt.replace(PH_MUSTER, function(ganz, name) {
+        if (name in fest) return fest[name];
+        if (!emp) {
+            if (PH_ALT[name]) return '[' + PH_ALT[name] + ']';
+            const ziel = PH_NAMEN[name] ? name : PH_ALIASE[name];
+            return ziel && PH_NAMEN[ziel] ? '[' + PH_NAMEN[ziel] + ']' : ganz;
+        }
+        if (name in flach) return flach[name];
+        if (PH) {
+            if (name in PH) return PH[name];
+            const ziel = PH_ALIASE[name];
+            if (ziel && ziel in PH) return PH[ziel];
+        }
+        return ganz;
+    });
 }
 function heuteStr() {
     const d = new Date();
@@ -295,6 +341,10 @@ function aktualisiere() {
     const ids = gewaehlte();
     const empf = EMPF.filter(e => ids.includes(e.id));
     const erste = empf[0] || null;
+    // Fristfelder nur zeigen, wenn Betreff oder Text eine Frist nennen
+    const mitFrist = /\{frist(\.[a-z_]+)?\}/.test(document.getElementById('betreff').value + document.getElementById('nachricht').value);
+    document.getElementById('mk-frist').classList.toggle('hidden', !mitFrist);
+    phLaden(erste);
 
     document.getElementById('emp-count').textContent = '{% filter escapejs %}{% trans "{n} ausgewählt" %}{% endfilter %}'.replace('{n}', empf.length);
     document.getElementById('preview-hint').textContent = erste ? ('{% filter escapejs %}{% trans "Beispiel:" %}{% endfilter %} ' + erste.name) : '';

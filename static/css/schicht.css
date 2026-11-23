@@ -3010,6 +3010,25 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-lf-gruppenkopf .fw-t,.fw-lf-gruppenkopf .fw-neben{white-space:nowrap}
             .fw-lf-gruppenkopf .fw-rechts{flex:1 1 100%;margin-left:0;justify-content:flex-start}
         }
+        .fw-schaden-spalten{display:none}
+        html .fw-schadenliste .fw-schaden-nr{display:inline;font-family:var(--ds-mono);font-size:12px;font-weight:500;color:var(--ds-muted)}
+        @media (min-width:900px){
+            .fw-schaden-spalten,html .fw-schadenliste .fw-schadenzeile{display:grid;grid-template-columns:8px minmax(0,2.6fr) minmax(0,1.3fr) minmax(0,2.2fr) 28px 110px 128px;column-gap:14px;row-gap:0;align-items:center}
+            .fw-schaden-spalten{padding:0 14px}
+            html .fw-schadenliste .fw-schadenzeile{grid-template-areas:"p t s b w a k" "p u s b w a k";min-height:56px}
+            html .fw-schadenliste .fw-schadenzeile>.fw-mitte{display:contents}
+            html .fw-schadenliste .fw-schadenzeile>.fw-marker{grid-area:p;align-self:center;width:8px;height:8px;min-height:0;border-radius:var(--ds-kreis)}
+            html .fw-schadenliste .fw-schadenzeile .fw-mitte>.fw-t{grid-area:t;align-self:end;min-width:0;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+            html .fw-schadenliste .fw-schadenzeile .fw-mitte>.fw-s:not(.fw-schaden-tags):not(.flex-wrap){grid-area:u;align-self:start;min-width:0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+            html .fw-schadenliste .fw-schadenzeile .fw-schaden-tags{grid-area:s;margin:0;gap:4px}
+            html .fw-schadenliste .fw-schadenzeile .fw-mitte>.fw-s.flex-wrap{grid-area:b;display:flex;flex-wrap:wrap;gap:4px;min-width:0}
+            html .fw-schadenliste .fw-schadenzeile .fw-mitte>.fw-s.flex-wrap .fw-chip{max-width:100%;white-space:normal}
+            html .fw-schadenliste.fw-dicht .fw-schadenzeile.fw-zeile .fw-mitte:has(>.fw-t):has(>.fw-s){display:contents}
+            html .fw-schadenliste.fw-dicht .fw-schadenzeile.fw-zeile{min-height:0;padding-block:5px}
+            html .fw-schadenliste .fw-schadenzeile>.fw-schaden-wer{grid-area:w}
+            html .fw-schadenliste .fw-schadenzeile>.fw-seit{grid-area:a}
+            html .fw-schadenliste .fw-schadenzeile>.fw-btn{grid-area:k}
+        }
         .fw-kopf-z1{display:flex;align-items:center;gap:12px}
         @media (max-width:1023px){
             .fw-logo-kapsel{padding:0 12px 0 11px;gap:7px}

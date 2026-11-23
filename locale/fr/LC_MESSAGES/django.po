@@ -41678,3 +41678,6 @@ msgstr "dans %(n)s immeubles sur %(m)s"
 
 msgid "Rendite, Leerstand, Cashflow"
 msgstr "Rendement, vacance, cash-flow"
+
+msgid "Alter"
+msgstr "Ancienneté"

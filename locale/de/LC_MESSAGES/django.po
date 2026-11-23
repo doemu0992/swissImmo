@@ -39906,3 +39906,6 @@ msgstr "in %(n)s von %(m)s Liegenschaften"
 
 msgid "Rendite, Leerstand, Cashflow"
 msgstr "Rendite, Leerstand, Cashflow"
+
+msgid "Alter"
+msgstr "Alter"

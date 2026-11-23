@@ -49,3 +49,30 @@ test('Objekte Telefon: kein Spaltenkopf, nichts quer', async ({ browser }) => {
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
   await ctx.close();
 });
+
+test('Schäden Desktop: Spaltenkopf, Status und Befund stehen als Spalten neben dem Titel', async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await ctx.newPage();
+  await login(page);
+  await goto(page, '/neu/schaeden/');
+  const kopf = page.locator('.fw-schaden-spalten');
+  await expect(kopf).toBeVisible();
+  const zeile = page.locator('.fw-schadenzeile').first();
+  const titel = await zeile.locator('.fw-mitte > .fw-t').boundingBox();
+  const status = await zeile.locator('.fw-schaden-tags').boundingBox();
+  // Status steht rechts neben dem Titel, nicht darüber
+  expect(status!.x).toBeGreaterThan(titel!.x + titel!.width - 1);
+  // … und unter der Spalte «Status»
+  const kx = await kopf.locator('span').nth(2).evaluate((e) => Math.round(e.getBoundingClientRect().left));
+  expect(Math.abs(kx - Math.round(status!.x))).toBeLessThanOrEqual(1);
+  // Die Nummer steht in der Unterzeile
+  await expect(zeile.locator('.fw-mitte > .fw-s .fw-schaden-nr')).toContainText('#');
+  // Nichts ragt aus der Zeile: kein Chip überdeckt die Spalte «Alter»
+  const alter = await zeile.locator('.fw-seit').boundingBox();
+  for (const c of await zeile.locator('.fw-chip').all()) {
+    const b = await c.boundingBox();
+    if (b) expect(b.x + b.width).toBeLessThanOrEqual(alter!.x);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+  await ctx.close();
+});

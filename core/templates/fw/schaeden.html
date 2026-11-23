@@ -125,11 +125,14 @@
             <input type="search" name="q" value="{{ q }}" class="fw-feld" placeholder="{% trans 'Titel, Liegenschaft, Melder …' %}" aria-label="{% trans 'Schäden durchsuchen' %}">
         </form>
     </div>
+    {% comment %} Listenform (23.11.2026): Spaltenkopf wie die Tabellen; ab 900 px stehen Status und Befund als Spalten neben dem Titel. {% endcomment %}
+    {% if rows %}<div class="fw-lf-spalten fw-schaden-spalten" aria-hidden="true">
+        <span></span><span>{% trans "Schaden" %}</span><span>{% trans "Status" %}</span><span>{% trans "Befund" %}</span><span></span><span class="fw-lf-zahl">{% trans "Alter" %}</span><span></span>
+    </div>{% endif %}
     {% for row in rows %}
     {% comment %} UI-Zielbild: Statuschip über dem Titel, Objekt und Melder darunter, rechts «seit N Tagen» und die nächste Aktion als Knopf. {% endcomment %}
     <div class="fw-zeile klick fw-schadenzeile" data-bei-klick="fwModalOpenUrl" data-args='["/neu/schaeden/{{ row.t.id }}/","Schaden #{{ row.t.id }}"]'>
         <span class="fw-marker{% if row.stufe != 'good' %} {{ row.stufe }}{% endif %}"></span>
-        <span class="fw-schaden-nr" aria-hidden="true">#{{ row.t.id }}</span>
         <div class="fw-mitte">
             <div class="fw-s fw-schaden-tags">
                 <span class="fw-chip {{ row.s_cls }}">{{ row.s_label }}</span>
@@ -137,7 +140,7 @@
                 {% if row.ueberfaellig %}<span class="fw-chip fw-crit" title="{% trans 'Zielzeit überschritten' %}">{% trans "SLA überfällig" %}</span>{% endif %}
             </div>
             <div class="fw-t">{{ row.t.titel|truncatechars:70 }}</div>
-            <div class="fw-s">{{ row.objekt }}{% if row.t.kategorie %} · {{ row.t.kategorie }}{% endif %} · {% blocktrans with melder=row.melder %}gemeldet von {{ melder }}{% endblocktrans %}{% if row.t.zugewiesen_an %} · {% trans "Zuständig" %}: {{ row.t.zugewiesen_an.get_full_name|default:row.t.zugewiesen_an.username }}{% endif %}</div>
+            <div class="fw-s"><span class="fw-schaden-nr">#{{ row.t.id }}</span> · {{ row.objekt }}{% if row.t.kategorie %} · {{ row.t.kategorie }}{% endif %} · {% blocktrans with melder=row.melder %}gemeldet von {{ melder }}{% endblocktrans %}{% if row.t.zugewiesen_an %} · {% trans "Zuständig" %}: {{ row.t.zugewiesen_an.get_full_name|default:row.t.zugewiesen_an.username }}{% endif %}</div>
             {% if row.befunde %}
             <div class="fw-s flex-wrap">
                 {% for b in row.befunde %}

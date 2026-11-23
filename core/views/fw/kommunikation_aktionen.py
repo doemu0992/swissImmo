@@ -30,16 +30,21 @@ def fw_kommunikation_senden(request):
         messages.error(request, gettext('Text und mindestens ein Empfänger erforderlich.'))
         return redirect('fw_kommunikation')
     from core.services import auftraege, rundschreiben
+    from core.services.serienbrief import frist_aus
+    frist_datum, frist_tage = frist_aus(request.POST)
     # Viele Empfänger: immer in den Hintergrund (jede Mail geht einzeln über SMTP hinaus). Steht der Läufer, warnt
     # die Seite «Aufträge».
     if rundschreiben.im_hintergrund(len(ids)):
-        auftraege.anlegen('rundschreiben', {'betreff': betreff, 'text': text, 'empfaenger': ids, 'erledigt': []},
+        auftraege.anlegen('rundschreiben', {'betreff': betreff, 'text': text, 'empfaenger': ids, 'erledigt': [],
+                                            'frist_datum': frist_datum.isoformat() if frist_datum else '',
+                                            'frist_tage': frist_tage or 0},
                           benutzer=request.user)
         messages.success(request, gettext(
             'Das Rundschreiben an %(n)s Empfänger wird im Hintergrund versandt. Stand und Ergebnis stehen unter '
             '«Aufträge».') % {'n': len(ids)})
         return redirect('/neu/auftraege/')
-    gesendet = rundschreiben.versenden(betreff, text, ids, benutzer=request.user)
+    gesendet = rundschreiben.versenden(betreff, text, ids, benutzer=request.user,
+                                       frist_datum=frist_datum, frist_tage=frist_tage)
     log_aktion(request, "Rundschreiben per E-Mail", betreff, f"{gesendet} Empfänger")
     messages.success(request, ('✅ ' + gettext('%(gesendet)s E-Mail(s) versendet.') % {'gesendet': gesendet}) if gesendet
                      else gettext('Keine E-Mail versendet (fehlende Adressen).'))
@@ -77,6 +82,8 @@ def fw_serienbrief_pdf(request):
     # Bei 2-Personen-Verträgen werden BEIDE Namen adressiert; sind beide Personen
     # gewählt, entsteht trotzdem nur EIN Brief (Dedup über Vertrag).
     from django.db.models import Q as _Q
+    from core.services.serienbrief import empfaenger_kontext, frist_aus
+    frist_datum, frist_tage = frist_aus(request.POST)
     empfaenger = []
     verarbeitete_vertraege = set()
     for mid in ids:
@@ -101,6 +108,7 @@ def fw_serienbrief_pdf(request):
                 'ort': prim.ort or (lg.ort if lg else ''),
                 'objekt': (f"{lg.strasse}, {lg.ort} · {v.einheit.bezeichnung}" if lg else ''),
                 'liegenschaft': (f"{lg.strasse}, {lg.plz} {lg.ort}" if lg else ''),
+                '_ph': empfaenger_kontext(prim, vw, frist_datum, frist_tage, vertrag=v)[1],
             })
         else:
             empfaenger.append({
@@ -108,6 +116,7 @@ def fw_serienbrief_pdf(request):
                 'name': m.display_name, 'anrede': m.anrede or '',
                 'strasse': m.strasse or '', 'plz': m.plz or '', 'ort': m.ort or '',
                 'objekt': '', 'liegenschaft': '',
+                '_ph': empfaenger_kontext(m, vw, frist_datum, frist_tage)[1],
             })
     if not empfaenger:
         messages.error(request, gettext('Keine gültigen Empfänger gefunden.'))
@@ -145,3 +154,23 @@ def fw_serienbrief_pdf(request):
     resp = HttpResponse(pdf, content_type='application/pdf')
     resp['Content-Disposition'] = f'attachment; filename="serienbrief_{date.today().isoformat()}.pdf"'
     return resp
+
+
+@rolle_erforderlich(*SCHREIB_ROLLEN)
+def fw_kommunikation_platzhalter(request):
+    """Die Platzhalterwerte EINES Empfängers als JSON — für die Live-Vorschau des Mitteilungs-Assistenten.
+
+    Dieselbe Quelle wie PDF und E-Mail (`empfaenger_kontext`), damit die Vorschau zeigt, was hinausgeht. `Mieter.objects`
+    filtert auf den Mandanten: Eine fremde ID ergibt 404."""
+    from django.http import Http404, JsonResponse
+    from core.services.serienbrief import empfaenger_kontext, frist_aus
+    try:
+        mid = int(request.GET.get('mieter') or 0)
+    except (TypeError, ValueError):
+        mid = 0
+    m = Mieter.objects.filter(id=mid).first() if mid else None
+    if m is None:
+        raise Http404
+    frist_datum, frist_tage = frist_aus(request.GET)
+    _v, kontext = empfaenger_kontext(m, aktuelle_organisation(), frist_datum, frist_tage)
+    return JsonResponse({k: ('' if w is None else str(w)) for k, w in kontext.items()})

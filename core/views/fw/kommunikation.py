@@ -35,8 +35,17 @@ def fw_kommunikation(request):
         except Exception:
             logo_url = ''
 
-    vorlagen = [{'id': v.id, 'name': v.name, 'betreff': v.betreff, 'inhalt': v.inhalt,
-                 'kategorie': v.get_kategorie_display()} for v in Vorlage.objects.all()]
+    # Die Frist der Vorlage (`{frist}`, `{frist.tage}`) wird vorbelegt wie beim Brief aus Vorlage und ist in der Maske änderbar.
+    from core.services.brief_aus_vorlage import frist_vorgabe
+    from core.services.platzhalter import ALIASE, REGISTRY
+    vorlagen = []
+    for v in Vorlage.objects.all():
+        f = frist_vorgabe(v)
+        vorlagen.append({'id': v.id, 'name': v.name, 'betreff': v.betreff, 'inhalt': v.inhalt,
+                         'kategorie': v.get_kategorie_display(),
+                         'frist_datum': f['datum'].isoformat() if f['datum'] else '', 'frist_tage': f['tage'] or ''})
+    platzhalter_namen = {k: str(p.beschriftung) for k, p in REGISTRY.items()}
+    platzhalter_aliase = {alt: neu for alt, neu in ALIASE.items() if neu}
 
     # Empfänger = Mieter mit aktivem Vertrag (im Filter-Scope)
     vertraege = (Mietvertrag.objects.filter(status='aktiv')
@@ -103,5 +112,6 @@ def fw_kommunikation(request):
         'anzahl_empfaenger': len(empfaenger),
         'liegenschaften_wahl': liegenschaften_wahl,
         'vorlagen': vorlagen, 'logo_url': logo_url,
+        'platzhalter_namen': platzhalter_namen, 'platzhalter_aliase': platzhalter_aliase,
         'vorwahl_mieter': vorwahl_mieter,
     })
