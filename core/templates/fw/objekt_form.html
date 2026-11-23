@@ -139,11 +139,11 @@
     </div>
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="fw-formular-fuss">
+        <a href="{% if ist_neu %}/neu/objekte/{% else %}/neu/objekte/{{ e.id }}/{% endif %}" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
         <button type="submit" class="fw-btn fw-primary">
             {% zeichen 'speichern' klasse='mr-1.5' %}{% trans "Speichern" %}
         </button>
-        <a href="{% if ist_neu %}/neu/objekte/{% else %}/neu/objekte/{{ e.id }}/{% endif %}" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 {% endblock %}

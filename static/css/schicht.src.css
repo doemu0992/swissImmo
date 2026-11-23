@@ -4165,6 +4165,14 @@
         html .fw-brotkrume>.fw-zeichen{width:11px!important;height:11px!important;vertical-align:-1px}
         html .fw-krumen>span[aria-hidden="true"]{font-size:0}
         html .fw-krumen>span[aria-hidden="true"]::before{content:"\203A";font-size:14px;line-height:1}
+        /* Formulare aus einem Guss (23.11.2026, gemessen: Hauptknopf in 25 Seitenformularen links, in 8 rechts; Breiten 672,
+           768 und 920 px). Der Fuss eines Seitenformulars ist `.fw-formular-fuss`: Abbrechen zuerst, Hauptknopf rechts aussen.
+           Die Reihenfolge im Bild regelt `order`, damit der Hauptknopf im Quelltext der ERSTE Absendeknopf bleiben darf
+           (Enter in einem Feld löst den ersten aus, z. B. «Frist ansetzen» und nicht «Zusätzlich als PDF öffnen»). */
+        .fw-formular-fuss>.fw-geist{order:-1}
+        .fw-formular-fuss>.fw-primary{order:9}
+        /* Lesebreite für Seitenformulare, wenn die Seite wegen Kennzahlen oder Tabellen nicht von selbst schmal wird. */
+        .fw-lesebreite{max-width:920px}
         /* ===== Ende Aus einem Guss ===== */
         /* ===== Listenform (Mockup «Immoswiss Listenform», 23.11.2026) =====
            EINE Form für Listen, die keine `<table>` sind: Karte `.fw-card.fw-lf`, Kopf mit Filtern (`.fw-lf-kopf`), Spaltenkopf

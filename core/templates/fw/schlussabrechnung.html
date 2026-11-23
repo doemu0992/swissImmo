@@ -20,7 +20,7 @@
     </div>
 </div>
 
-<form method="post" class="max-w-3xl" id="sa-form"
+<form method="post" class="fw-lesebreite" id="sa-form"
       data-offen="{{ offen_total|unlocalize }}"
       data-kaution="{{ kaution|unlocalize }}"
       data-versicherung="{% if ist_versicherung %}1{% else %}0{% endif %}">
@@ -114,7 +114,7 @@
         </div>
     </div>
 
-    <div class="flex flex-wrap items-center gap-3">
+    <div class="fw-formular-fuss">
         <button type="submit" name="aktion" value="pdf" formtarget="_blank" class="fw-btn fw-primary">
             {% zeichen 'drucken' %}{% trans "Schlussabrechnung als PDF" %}
         </button>

@@ -8,6 +8,9 @@ const ASSISTENTEN: [string, boolean][] = [
   ['/neu/vertraege/neu/', true], ['/neu/kommunikation/', true], ['/neu/kreditoren/1/weiterverrechnen/', true],
   ['/neu/nebenkosten/neu/', false], ['/neu/liegenschaften/neu/', false], ['/neu/personen/neu/', false],
   ['/neu/vertraege/1/kuendigen/', false], ['/neu/mietzins/1/anpassung/', false], ['/neu/betreibungen/neu/1/', false],
+  // Nebenkosten: alle Schritte der Seed-Periode «NK E2E 2024» (server-seitiger Assistent)
+  ['/neu/nebenkosten/1/periode/', false], ['/neu/nebenkosten/1/kosten/', false], ['/neu/nebenkosten/1/verteilung/', false],
+  ['/neu/nebenkosten/1/heizung/', false], ['/neu/nebenkosten/1/pruefen/', false], ['/neu/nebenkosten/1/abschluss/', false],
 ];
 
 test('Assistenten: gleiche Breite, Schrittliste links, Fuss einzeilig, Vorschau rechts, Pfadzeile', async ({ page }) => {

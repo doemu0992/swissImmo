@@ -69,9 +69,9 @@
         </div>
     </div>
 
-    <div class="flex gap-2">
-        <button type="submit" class="fw-btn fw-primary">{% trans "Kundendaten speichern" %}</button>
+    <div class="fw-formular-fuss">
         <a href="{% url 'fw_betreiber_kunde' org.pk %}?tab=stamm" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+        <button type="submit" class="fw-btn fw-primary">{% trans "Kundendaten speichern" %}</button>
     </div>
 </form>
 {% endblock %}
