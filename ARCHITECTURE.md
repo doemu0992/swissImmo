@@ -293,6 +293,16 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   alten Kurznamen behalten Vorrang und Bedeutung. `{frist}` / `{frist.tage}`: Nennt der Text eine Frist, erscheinen die Felder
   «Frist bis» und «Frist in Tagen», vorbelegt aus der Vorlage (`brief_aus_vorlage.frist_vorgabe`); ohne Wert bleibt der Platzhalter
   sichtbar stehen — es wird kein Datum erfunden.
+- **Portale aus einem Guss (23.11.2026):** Mieter-, Eigentümer-, Betreiber- und Handwerker-Portal wurden wie die Verwaltung am
+  gerenderten Bild vermessen (Desktop und 390 px). Das Betreiber-Portal nutzte schon die gemeinsamen Bausteine. Mieter- und
+  Eigentümerportal wichen ab und sind über den Block «Portale aus einem Guss» in `fw/_schicht.html` angeglichen
+  (`.fw-portal-inhalt`, `.fw-hw-seite`): Seitentitel in Sora 700 (vorher Inter 600), Karten `.fw-flaeche.rounded-2xl` und Kacheln
+  mit 24 px und Linie statt 12 px mit Schatten, Akzentkachel («Etwas melden», «Leerstand») als normale Karte mit Primärknopf,
+  «Ihr Mietobjekt» als helle Karte statt dunklem Verlauf, Felder 40 px. Handgebaute Knöpfe (Tailwind-Klassen) in
+  `mieter_kuendigung`, `mieter_tickets`, `mieter_ticket_detail` und den Passwort-Seiten sind `fw-btn fw-primary`.
+  Wächter: `e2e/tests/guss-portale.spec.ts` (Titel, Karten, Knöpfe, Felder, Querscrollen auf allen Seiten beider Portale).
+  **Bewusst anders:** Die Portale behalten die Kopfleiste mit Reitern statt der Seitenleiste (wenige Seiten, Telefon zuerst);
+  die Anmeldeseiten behalten ihr eigenes Layout.
 - **Brief aus dem Mitteilungs-Assistenten (23.11.2026):** «Als Brief drucken» druckte die Vorschau aus einem leeren Browserfenster
   ohne Stilregeln (Logo in voller Grösse, kein Adressfeld). Jetzt liefern «Serienbrief-PDF» und «Als Brief drucken» denselben
   formatierten Brief (`generate_serienbrief_pdf`, Briefgerüst `DokCanvas.brief`); der Unterschied ist nur Herunterladen oder im

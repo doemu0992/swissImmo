@@ -64,7 +64,7 @@
                     unterschreiben (Art. 266m OR). Der Brief enthält zwei Unterschriftszeilen.</p>
                 </div>
 
-                <button type="submit" class="w-full sm:w-auto fw-balken-voll hover:fw-balken-voll transition-colors text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg fw-schatten-marke flex items-center justify-center gap-2">
+                <button type="submit" class="w-full sm:w-auto fw-btn fw-primary">
                     {% zeichen 'senden' %} Kündigung erfassen
                 </button>
             </form>
@@ -92,7 +92,7 @@
                 <div class="flex items-center gap-2.5 shrink-0">
                     <span class="text-xs font-semibold px-2.5 py-1 rounded-full fw-markenflaeche fw-marke">{{ k.status }}</span>
                     <a href="/mieter/kuendigung/{{ k.id }}/brief/" target="_blank" rel="noopener"
-                       class="fw-flaeche border fw-linie-marke fw-marke hover:fw-markenflaeche transition-colors text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap flex items-center gap-1.5">
+                       class="fw-btn fw-knapp">
                         {% zeichen 'drucken' %} Brief
                     </a>
                 </div>

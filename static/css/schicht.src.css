@@ -4091,6 +4091,27 @@
         }
         /* Am Telefon haben alle Knöpfe die Fingergrösse (vorher 40 und 44 px gemischt auf 17 Seiten). */
         @media (max-width:640px){html .fw-btn:not(.fw-mzm-weg),html .fw-btn.fw-knapp:not(.fw-mzm-weg){min-height:44px}}
+        /* ----- Portale aus einem Guss (23.11.2026): Mieter-, Eigentümer-, Betreiber- und Handwerker-Portal (`.fw-portal-inhalt`,
+           `.fw-hw-seite`) tragen dieselben Bausteine wie die Verwaltung. Gemessen: Titel in Inter 600 statt Sora 700, Karten mit
+           12 px und Schatten statt 24 px mit Linie, orange Akzentkachel und dunkler Verlaufsblock, Felder 39–44 px. ----- */
+        html .fw-portal-inhalt h1,html .fw-hw-seite h1{font-family:var(--ds-disp);font-weight:700;letter-spacing:-.03em}
+        html .fw-portal-inhalt .fw-flaeche.rounded-2xl,html .fw-hw-seite .fw-flaeche.rounded-2xl{border-radius:var(--ds-radius);box-shadow:none;border:1px solid var(--ds-line)}
+        /* Akzentkachel («Etwas melden», «Leerstand»): Karte wie die anderen; der Knopf darin ist der Primärknopf. */
+        html .fw-portal-inhalt .fw-kachel.akzent{background:var(--ds-surface);background-image:none;color:var(--ds-ink);border:1px solid var(--ds-line);box-shadow:none}
+        html .fw-portal-inhalt .fw-kachel.akzent .fw-kachel-text{color:var(--ds-muted)}
+        html .fw-portal-inhalt .fw-kachel.akzent .fw-kachel-zahl,html .fw-portal-inhalt .fw-kachel.akzent h2,html .fw-portal-inhalt .fw-kachel.akzent .fw-zeichen{color:var(--ds-ink)}
+        html .fw-portal-inhalt .fw-kachel.akzent .fw-kachel-zahl small{color:var(--ds-muted)}
+        html .fw-portal-inhalt .fw-kachel.akzent>.fw-btn{background:var(--ds-brand);color:var(--ds-auf-satt);border:0}
+        html .fw-portal-inhalt .fw-kachel{box-shadow:none;border-radius:var(--ds-radius)}
+        /* «Ihr Mietobjekt»: helle Karte mit Linie statt dunklem Verlauf; die drei Werte stehen auf ruhigem Grund. */
+        html .fw-portal-inhalt .fw-marke-verlauf{background:var(--ds-surface);background-image:none;color:var(--ds-ink);border:1px solid var(--ds-line);border-radius:var(--ds-radius);box-shadow:none}
+        html .fw-portal-inhalt .fw-marke-verlauf .fw-glas{background:var(--ds-surface-2);color:var(--ds-ink)}
+        html .fw-portal-inhalt .fw-marke-verlauf .fw-glas.blur-2xl{display:none}
+        html .fw-portal-inhalt .fw-marke-verlauf .fw-faint{color:var(--ds-muted)}
+        @media (min-width:641px){
+            html .fw-portal-inhalt input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=hidden]),html .fw-portal-inhalt select,
+            html .fw-hw-seite input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=hidden]),html .fw-hw-seite select{height:40px;min-height:40px}
+        }
         /* ===== Ende Aus einem Guss ===== */
         /* ===== Listenform (Mockup «Immoswiss Listenform», 23.11.2026) =====
            EINE Form für Listen, die keine `<table>` sind: Karte `.fw-card.fw-lf`, Kopf mit Filtern (`.fw-lf-kopf`), Spaltenkopf
