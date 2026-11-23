@@ -49,6 +49,23 @@ def _ersetze(text, e):
     return ersetze(text or '', kontext)
 
 
+_GRUSS = ('freundliche grüsse', 'freundliche grüße', 'mit freundlichen grüssen', 'mit freundlichen grüßen', 'beste grüsse')
+
+
+def _ohne_schlussgruss(text):
+    """Der Brieftext ohne eigene Grussformel am Schluss.
+
+    Der Serienbrief setzt «Freundliche Grüsse», Unterschrift und Absender selbst. Vorlagen enden oft schon mit
+    «Freundliche Grüsse / {verwaltung.name}»; ohne diesen Schnitt stand die Formel zweimal im Brief. Geschnitten wird nur,
+    wenn die Formel in den letzten vier nicht leeren Zeilen steht — ein Gruss mitten im Text bleibt."""
+    zeilen = (text or '').rstrip().split('\n')
+    belegt = [i for i, z in enumerate(zeilen) if z.strip()]
+    for i in belegt[-4:]:
+        if zeilen[i].strip().lower().rstrip(',.') in _GRUSS:
+            return '\n'.join(zeilen[:i]).rstrip()
+    return text or ''
+
+
 def empfaenger_kontext(mieter, organisation=None, frist_datum=None, frist_tage=None, vertrag=None):
     """Alle Platzhalterwerte für EINEN Empfänger des Rundschreibens: `(vertrag, kontext)`.
 
@@ -85,8 +102,10 @@ def frist_aus(werte):
 
 @nur_deutsch
 def generate_serienbrief_pdf(absender, betreff, text, empfaenger, logo_path=None,
-                             signatur=()):
+                             signatur=(), einschreiben=False):
     """absender: dict firma/strasse/plz/ort. empfaenger: Liste dicts.
+
+    `einschreiben`: Der Zustellvermerk «Einschreiben» steht über dem Adressfeld (wie beim Brief aus Vorlage).
 
     `signatur`: Objekte (Verwaltung/Eigentuemer) in Unterzeichner-Reihenfolge — der
     Brief bekommt damit die digitale Unterschrift über den Absendernamen."""
@@ -102,16 +121,20 @@ def generate_serienbrief_pdf(absender, betreff, text, empfaenger, logo_path=None
             c.neues_dokument()
         # Fenster (Adressfeld rechts), Ort/Datum und Betreff: gemeinsames Briefgerüst
         yy = c.brief([e.get('name', ''), e.get('strasse', ''), f"{e.get('plz','')} {e.get('ort','')}".strip()],
-                     f"{ort_abs}, {heute}", _ersetze(betreff, e))
+                     f"{ort_abs}, {heute}", _ersetze(betreff, e), einschreiben=einschreiben)
         # Body
         c.setFont("Helvetica", 10.5)
-        for zeile in _wrap(_ersetze(text, e), 92):
+        for zeile in _wrap(_ohne_schlussgruss(_ersetze(text, e)), 92):
+            # Langer Brief: auf der Folgeseite weiter (23.11.2026). Vorher brach die Schleife am Seitenende ab und der
+            # Rest des Textes fehlte im Brief, ohne Hinweis.
             if yy < 40 * mm:
-                break
+                c.showPage(); c.setFont("Helvetica", 10.5); yy = c.Y_FOLGE
             c.drawString(LINKS, yy, zeile)
             yy -= 5.6 * mm
         # Grussformel + digitale Unterschrift darüber
         yy -= 6 * mm
+        if yy < 45 * mm:
+            c.showPage(); c.setFont("Helvetica", 10.5); yy = c.Y_FOLGE
         c.drawString(LINKS, yy, "Freundliche Grüsse")
         yy -= 12 * mm
         if signatur:
@@ -123,3 +146,16 @@ def generate_serienbrief_pdf(absender, betreff, text, empfaenger, logo_path=None
 
     c.save(); buf.seek(0)
     return buf.read()
+
+
+def frist_art_im_text(betreff, text, frist_datum, frist_tage):
+    """Welche Frist der Brief tatsächlich setzt: `'datum'`, `'zugang'` oder `''`.
+
+    Massgebend ist der Text, nicht das Formularfeld: Eine vorbelegte Frist, die der Brief gar nicht nennt, zählt nicht."""
+    from core.services.platzhalter import ALIASE, MUSTER
+    namen = {ALIASE.get(n) or n for n in MUSTER.findall(f'{betreff or ""} {text or ""}')}
+    if frist_datum and namen & {'frist.datum', 'frist.datum_lang'}:
+        return 'datum'
+    if frist_tage and 'frist.tage' in namen:
+        return 'zugang'
+    return ''

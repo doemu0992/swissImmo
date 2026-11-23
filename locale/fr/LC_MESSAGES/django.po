@@ -41681,3 +41681,24 @@ msgstr "Rendement, vacance, cash-flow"
 
 msgid "Alter"
 msgstr "Ancienneté"
+
+msgid "Erledigt am"
+msgstr "Terminé le"
+
+msgid "Öffnet den formatierten Brief des ersten Empfängers als PDF zum Drucken. Er wird nicht in der Akte abgelegt."
+msgstr "Ouvre la lettre mise en forme du premier destinataire au format PDF pour l'impression. Elle n'est pas classée dans le dossier."
+
+msgid "Der Brief trägt den Vermerk «Einschreiben». Mit dem Serienbrief-PDF entsteht je Empfänger eine Pendenz, in der Sie Sendungsnummer und Zugang erfassen."
+msgstr "La lettre porte la mention «Recommandé». Avec le PDF de publipostage, une tâche est créée par destinataire pour saisir le numéro d'envoi et la réception."
+
+msgid "Einschreiben"
+msgstr "Recommandé"
+
+msgid "Öffnet die formatierten Briefe als PDF im Browser zum Drucken. Sie werden wie beim Serienbrief-PDF in der Akte abgelegt."
+msgstr "Ouvre les lettres mises en forme au format PDF dans le navigateur pour l'impression. Elles sont classées dans le dossier comme pour le PDF de publipostage."
+
+msgid "Der Brief trägt den Vermerk «Einschreiben». Je Empfänger entsteht eine Pendenz im Fristen-Center, in der Sie Sendungsnummer und Zugang erfassen."
+msgstr "La lettre porte la mention «Recommandé». Une tâche est créée par destinataire dans le centre des délais pour saisir le numéro d'envoi et la réception."
+
+msgid "Die Frist wird beim Erstellen des Briefs automatisch im Fristen-Center eingetragen."
+msgstr "Le délai est inscrit automatiquement dans le centre des délais lors de la création de la lettre."

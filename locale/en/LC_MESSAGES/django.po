@@ -41015,3 +41015,24 @@ msgstr "Yield, vacancy, cash flow"
 
 msgid "Alter"
 msgstr "Age"
+
+msgid "Erledigt am"
+msgstr "Completed on"
+
+msgid "Öffnet den formatierten Brief des ersten Empfängers als PDF zum Drucken. Er wird nicht in der Akte abgelegt."
+msgstr "Opens the formatted letter for the first recipient as a PDF for printing. It is not filed in the record."
+
+msgid "Der Brief trägt den Vermerk «Einschreiben». Mit dem Serienbrief-PDF entsteht je Empfänger eine Pendenz, in der Sie Sendungsnummer und Zugang erfassen."
+msgstr "The letter carries the note \"Registered mail\". With the mail-merge PDF, a task is created per recipient in which you record the tracking number and receipt."
+
+msgid "Einschreiben"
+msgstr "Registered mail"
+
+msgid "Öffnet die formatierten Briefe als PDF im Browser zum Drucken. Sie werden wie beim Serienbrief-PDF in der Akte abgelegt."
+msgstr "Opens the formatted letters as a PDF in the browser for printing. They are filed in the record just like the mail-merge PDF."
+
+msgid "Der Brief trägt den Vermerk «Einschreiben». Je Empfänger entsteht eine Pendenz im Fristen-Center, in der Sie Sendungsnummer und Zugang erfassen."
+msgstr "The letter carries the note \"Registered mail\". A task is created per recipient in the deadline centre in which you record the tracking number and receipt."
+
+msgid "Die Frist wird beim Erstellen des Briefs automatisch im Fristen-Center eingetragen."
+msgstr "The deadline is entered automatically in the deadline centre when the letter is created."

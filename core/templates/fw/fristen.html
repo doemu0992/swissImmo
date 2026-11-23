@@ -65,12 +65,14 @@
 
 {% for b in buckets %}
 {% if b.items %}
-<div class="fw-card">
+{% comment %} Listenform (23.11.2026): Spaltenkopf und Raster wie die Pendenzen; die Fälligkeit steht in einer festen Spalte rechts. {% endcomment %}
+<div class="fw-card fw-lf fw-lf-pendenzen">
     <div class="fw-kopf">
         <span class="fw-ikon{% if b.key == 'ueberfaellig' %} crit{% elif b.key == 'woche' %} warn{% endif %}">{% zeichen_wert b.icon %}</span>
         <h2>{{ b.titel }}</h2>
         <span class="fw-neben">{{ b.items|length }}</span>
     </div>
+    <div class="fw-lf-spalten fw-lf-zweispaltig" aria-hidden="true"><span>{% trans "Frist" %}</span><span>{% trans "Fällig" %}</span></div>
     {% for e in b.items %}
     <div class="fw-zeile">
         <span class="fw-marker{% if e.tage < 0 %} crit{% elif e.tage <= 7 %} warn{% endif %}"></span>

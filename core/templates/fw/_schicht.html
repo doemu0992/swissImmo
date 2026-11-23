@@ -4195,6 +4195,28 @@ und einen Stilblock enthaelt.
             html .fw-schadenliste .fw-schadenzeile>.fw-seit{grid-area:a}
             html .fw-schadenliste .fw-schadenzeile>.fw-btn{grid-area:k}
         }
+        /* Pendenzen in der Listenform: Die Zeilen behalten ihr Markup (`.fw-zeile` mit Formularen zum Erledigen und Löschen). Ab 900 px
+           stehen sie im Raster: Punkt, Zeichen, Titel, Aktionen, und die Fälligkeit in einer festen Spalte ganz rechts unter dem Kopf. */
+        .fw-lf-zweispaltig{display:flex;justify-content:space-between;align-items:center;padding:0 14px 0 36px}
+        .fw-lf-gruppenkopf.fw-lf-fest{cursor:default}
+        @media (max-width:899px){.fw-lf-spalten.fw-lf-zweispaltig{display:none}}
+        .fw-lf-gruppenkopf .fw-neben{margin-left:auto}
+        .fw-lf-gruppenkopf>.min-w-0 .fw-neben{margin-left:0}
+        html .fw-lf-pendenzen .fw-zeile .fw-marker{flex:0 0 8px;align-self:center;width:8px;height:8px;min-height:0;border-radius:var(--ds-kreis)}
+        @media (min-width:900px){
+            html .fw-lf-pendenzen .fw-zeile{display:grid;grid-template-columns:8px auto minmax(0,1fr) auto auto auto 110px;column-gap:10px;align-items:center;
+                min-height:56px;padding:8px 14px;margin:0;border:0;border-bottom:1px solid var(--ds-line);border-radius:var(--ds-radius-0)}
+            html .fw-lf-pendenzen .fw-zeile:last-child{border-bottom:0}
+            html .fw-lf-pendenzen .fw-zeile>*{grid-row:1}
+            html .fw-lf-pendenzen .fw-zeile>.fw-marker{grid-column:1}
+            html .fw-lf-pendenzen .fw-zeile>.fw-ikon{grid-column:2}
+            html .fw-lf-pendenzen .fw-zeile>.fw-mitte{grid-column:3;min-width:0}
+            html .fw-lf-pendenzen .fw-zeile>a.fw-btn{grid-column:4}
+            html .fw-lf-pendenzen .fw-zeile>form:nth-last-of-type(2){grid-column:5}
+            html .fw-lf-pendenzen .fw-zeile>form:last-of-type{grid-column:6}
+            html .fw-lf-pendenzen .fw-zeile>.fw-zeit{grid-column:7;text-align:right;font-size:13px;font-variant-numeric:tabular-nums}
+            html .fw-lf-pendenzen .fw-zeile .fw-mitte .fw-t{font-size:14px;font-weight:600}
+        }
         /* ===== Ende Listenform ===== */
         /* ===== Ende MODUL Mix-Entwurf ===== */
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */

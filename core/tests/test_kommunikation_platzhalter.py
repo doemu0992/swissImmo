@@ -94,3 +94,121 @@ class KommunikationPlatzhalterTests(TestCase):
             'betreff': 'Abmahnung', 'text': TEXT, 'empfaenger_id': [self.a.mieter.pk], 'frist_datum': '2026-12-15', 'frist_tage': '10'})
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r['Content-Type'], 'application/pdf')
+
+
+class KommunikationBriefTests(TestCase):
+    """«Als Brief drucken» liefert den formatierten Brief; «Einschreiben» setzt den Vermerk und legt die Pendenz an.
+
+    Anlass (23.11.2026): Der Druck aus dem Browser kam ohne jede Formatierung heraus (Logo in voller Grösse, kein Adressfeld),
+    und der Assistent liess Einschreiben nicht wählen."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.a = MandantenFixture('A', '8000', 'Zürich')
+
+    def setUp(self):
+        self.c = Client(raise_request_exception=False)
+        self.c.force_login(self.a.benutzer)
+
+    def _post(self, **mehr):
+        return self.c.post('/neu/kommunikation/serienbrief/', {
+            'betreff': 'Abmahnung', 'text': TEXT, 'empfaenger_id': [self.a.mieter.pk],
+            'frist_datum': '2026-12-15', 'frist_tage': '10', **mehr})
+
+    def _text(self, antwort):
+        import io
+
+        from pypdf import PdfReader
+        return ' '.join((seite.extract_text() or '') for seite in PdfReader(io.BytesIO(antwort.content)).pages)
+
+    def test_drucken_liefert_den_formatierten_brief_und_traegt_die_frist_ein(self):
+        """«Als Brief drucken» ist derselbe Brief wie das Serienbrief-PDF, nur im Browser geöffnet: abgelegt, mit Pendenz."""
+        from core.models import Pendenz
+        from rentals.models import Dokument
+        with organisation_kontext(self.a.organisation):
+            vorher = Dokument.objects.count()
+        r = self._post(anzeigen='1')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/pdf')
+        self.assertTrue(r['Content-Disposition'].startswith('inline'))
+        text = self._text(r)
+        self.assertIn('Abmahnung', text)
+        self.assertIn('Sehr geehrter Herr A', text)
+        with organisation_kontext(self.a.organisation):
+            self.assertEqual(Dokument.objects.count(), vorher + 1)
+            self.assertEqual(Pendenz.objects.filter(quelle__startswith='brief:').count(), 1)
+
+    def test_frist_im_brief_steht_im_fristen_center(self):
+        """Wunsch vom 23.11.2026: Eine Frist, die der Brief setzt, erscheint ohne weiteres Zutun im Fristen-Center."""
+        from core.models import Pendenz
+        self.assertNotContains(self.c.get('/neu/fristen/'), 'Abmahnung')
+        self._post()
+        with organisation_kontext(self.a.organisation):
+            p = Pendenz.objects.get(quelle__startswith='brief:')
+            self.assertEqual(p.kategorie, 'frist')
+            self.assertEqual(p.faellig_am.isoformat(), '2026-12-15')
+            self.assertFalse(p.einschreiben)
+        r = self.c.get('/neu/fristen/')
+        self.assertContains(r, 'Frist Mieter A: Abmahnung')
+        self.assertContains(self.c.get('/neu/fristen/?nur=frist'), 'Frist Mieter A: Abmahnung')
+
+    def test_einschreiben_setzt_vermerk_und_legt_die_pendenz_an(self):
+        from core.models import Pendenz
+        r = self._post(einschreiben='1')
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('Einschreiben', self._text(r))
+        with organisation_kontext(self.a.organisation):
+            p = Pendenz.objects.get(einschreiben=True)
+            self.assertEqual(p.faellig_am.isoformat(), '2026-12-15')      # die Frist aus dem Brief
+            self.assertIsNotNone(p.versand_am)
+            self.assertTrue(p.quelle.startswith('brief:'))
+            self.assertEqual(p.vertrag_id, self.a.vertrag.pk)
+
+    def test_ohne_einschreiben_kein_vermerk(self):
+        r = self._post()
+        self.assertNotIn('Einschreiben', self._text(r))
+
+    def test_frist_im_formular_ohne_frist_im_text_legt_keine_pendenz_an(self):
+        from core.models import Pendenz
+        r = self.c.post('/neu/kommunikation/serienbrief/', {
+            'betreff': 'Information', 'text': 'Guten Tag {name}', 'empfaenger_id': [self.a.mieter.pk],
+            'frist_datum': '2026-12-15', 'frist_tage': '10'})
+        self.assertEqual(r.status_code, 200)
+        with organisation_kontext(self.a.organisation):
+            self.assertEqual(Pendenz.objects.filter(quelle__startswith='brief:').count(), 0)
+
+    def test_seite_bietet_einschreiben_an(self):
+        r = self.c.get('/neu/kommunikation/')
+        self.assertContains(r, 'id="mk-einschreiben"')
+        self.assertContains(r, 'name="anzeigen"')
+
+    def test_grussformel_steht_nur_einmal_im_brief(self):
+        """Die Vorlage endet mit «Freundliche Grüsse / {verwaltung.name}»; der Brief setzt Gruss und Absender selbst."""
+        self.assertEqual(self._text(self._post()).count('Freundliche Grüsse'), 1)
+
+    def test_langer_brief_laeuft_auf_die_naechste_seite(self):
+        import io
+
+        from pypdf import PdfReader
+        lang = '\n\n'.join(f'Absatz {i}: ' + 'Text ' * 40 for i in range(1, 31)) + '\n\nSchlusssatz ganz am Ende.'
+        r = self.c.post('/neu/kommunikation/serienbrief/', {'betreff': 'Lang', 'text': lang, 'empfaenger_id': [self.a.mieter.pk],
+                                                             'anzeigen': '1'})
+        seiten = PdfReader(io.BytesIO(r.content)).pages
+        self.assertGreater(len(seiten), 1)
+        self.assertIn('Schlusssatz ganz am Ende.', ' '.join((s.extract_text() or '') for s in seiten))
+
+    def test_brief_liegt_in_der_mieterakte_und_am_vertrag(self):
+        """Wie bei der Mahnung: Der Brief hängt am Mieter und am Vertrag und ist in beiden Akten zu sehen."""
+        from rentals.models import Dokument
+        for art in ({}, {'anzeigen': '1'}):                     # Serienbrief-PDF und «Als Brief drucken»
+            self._post(**art)
+        with organisation_kontext(self.a.organisation):
+            doks = list(Dokument.objects.filter(titel__startswith='Brief: Abmahnung'))
+            self.assertEqual(len(doks), 2)
+            for d in doks:
+                self.assertEqual(d.mieter_id, self.a.mieter.pk)
+                self.assertEqual(d.vertrag_id, self.a.vertrag.pk)
+                self.assertEqual(d.kategorie, 'korrespondenz')
+                self.assertTrue(d.datei)
+        for akte in (f'/neu/personen/{self.a.mieter.pk}/', f'/neu/vertraege/{self.a.vertrag.pk}/'):
+            self.assertContains(self.c.get(akte), 'Brief: Abmahnung', msg_prefix=akte)
