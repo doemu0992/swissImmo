@@ -341,6 +341,10 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Assistenten-Wächter; die Vertragsvorschau zeigt bewusst die Schrift des gedruckten Vertrags.
   Die Kachel «Kosten total» im Nebenkosten-Assistenten ist ruhig (`.fw-assistent .fw-kachel.akzent`, kein Farbverlauf);
   die Heute-Karte bleibt der einzige Blickfang dieser Art in der Verwaltung.
+  **Dialoge (23.11.2026):** Das Bestätigungsfenster (`dialog.fw-bestaetigen`, 109 Rückfragen) stand oben links in der Ecke
+  statt mittig: Der Reset setzt `margin:0`, nur `.fw-zdlg` trug `margin:auto`. Jetzt mittig. Fenstertitel einheitlich 18 px
+  (Zuordnen hatte 22 px), das Auswahlfenster «Verwaltung und Bestand» trägt den Radius des Profilmenüs (24 statt 14 px),
+  sein Suchfeld 40 px. Wächter: `e2e/tests/guss-dialoge.spec.ts`.
   **Betreiber-Portal im Wächter:** `seed_e2e` legt `e2e-betreiber` (Superuser, `e2e-pass`) an, aber nur bei `DEBUG`
   (so startet `e2e/run-server.sh`); ohne `DEBUG` entsteht kein Konto mit bekanntem Passwort (`core/tests/test_seed_e2e.py`).
   `guss-portale.spec.ts` prüft damit alle neun Betreiber-Seiten. Das Kennzahlenband `.fw-kzn` gilt dort wie in den Akten der

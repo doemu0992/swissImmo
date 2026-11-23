@@ -4179,6 +4179,13 @@
         html .fw-assistent .fw-kachel.akzent .fw-kachel-text{color:var(--ds-muted)}
         html .fw-assistent .fw-kachel.akzent .fw-kachel-zahl,html .fw-assistent .fw-kachel.akzent h3,html .fw-assistent .fw-kachel.akzent .fw-zeichen{color:var(--ds-ink)}
         html .fw-assistent .fw-kachel.akzent .fw-kachel-zahl small{color:var(--ds-muted)}
+        /* Dialoge aus einem Guss (23.11.2026, gemessen). Das Bestätigungsfenster stand oben links in der Ecke statt mittig:
+           Der Reset setzt `margin:0`, und nur `.fw-zdlg` trug `margin:auto`. Titel der Fenster 18 px (Zuordnen hatte 22 px),
+           das Auswahlfenster für Verwaltung und Bestand trägt den Radius des Profilmenüs (24 statt 14 px). */
+        dialog.fw-bestaetigen{margin:auto}
+        html .fw-zdlg h2{font-size:18px;letter-spacing:-.01em}
+        html.fw-breit .fw-arbeit-pop:not([hidden]){border-radius:var(--ds-radius)}
+        html .fw-arbeit-pop .fw-feld{height:40px}
         /* ===== Ende Aus einem Guss ===== */
         /* ===== Listenform (Mockup «Immoswiss Listenform», 23.11.2026) =====
            EINE Form für Listen, die keine `<table>` sind: Karte `.fw-card.fw-lf`, Kopf mit Filtern (`.fw-lf-kopf`), Spaltenkopf
