@@ -40,3 +40,31 @@ test('Live-Vorschau ersetzt die neuen Platzhalter mit den Werten des ersten Empf
   await expect(vorschau).toContainText('Guten Tag Erika E2E');
   await expect(page.locator('#mk-frist')).toHaveClass(/hidden/);
 });
+
+test('Einschreiben ist wählbar: Vermerk in der Vorschau, «Als Brief drucken» schickt den formatierten Brief ans PDF-Ziel', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await login(page);
+  await goto(page, '/neu/kommunikation/');
+  await page.locator('.emp-row', { hasText: 'Erika E2E' }).first().locator('.emp-check').check();
+  await page.locator('.fw-assistent-fuss [data-assistent-weiter]').click();
+  await page.locator('.fw-assistent-fuss [data-assistent-weiter]').click();   // Schritt «Versand»
+  const haken = page.locator('#mk-einschreiben');
+  await expect(haken).toBeVisible();
+  await expect(page.locator('#pv-vermerk')).toBeHidden();
+  await haken.check();
+  await expect(page.locator('#pv-vermerk')).toBeVisible();
+  await expect(page.locator('#pv-vermerk')).toHaveText('Einschreiben');
+
+  // «Als Brief drucken» nutzt dasselbe Formular wie das Serienbrief-PDF (formatierter Brief), im Browser geöffnet
+  await page.locator('input[name="mk-art"][value="druck"]').check();
+  const felder = await page.evaluate(() => {
+    const f = document.getElementById('pdfForm') as HTMLFormElement;
+    let gesendet: Record<string, string> = {};
+    f.submit = () => { new FormData(f).forEach((v, k) => { gesendet[k] = String(v); }); };
+    (window as any).druckeVorschau();
+    return gesendet;
+  });
+  expect(felder.einschreiben).toBe('1');
+  expect(felder.anzeigen).toBe('1');
+  expect(felder.empfaenger_id).toBeTruthy();
+});

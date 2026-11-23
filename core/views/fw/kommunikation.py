@@ -43,7 +43,8 @@ def fw_kommunikation(request):
         f = frist_vorgabe(v)
         vorlagen.append({'id': v.id, 'name': v.name, 'betreff': v.betreff, 'inhalt': v.inhalt,
                          'kategorie': v.get_kategorie_display(),
-                         'frist_datum': f['datum'].isoformat() if f['datum'] else '', 'frist_tage': f['tage'] or ''})
+                         'frist_datum': f['datum'].isoformat() if f['datum'] else '', 'frist_tage': f['tage'] or '',
+                         'einschreiben': bool(f['einschreiben'])})
     platzhalter_namen = {k: str(p.beschriftung) for k, p in REGISTRY.items()}
     platzhalter_aliase = {alt: neu for alt, neu in ALIASE.items() if neu}
 

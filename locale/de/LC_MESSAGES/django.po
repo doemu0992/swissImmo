@@ -39912,3 +39912,21 @@ msgstr "Alter"
 
 msgid "Erledigt am"
 msgstr "Erledigt am"
+
+msgid "Öffnet den formatierten Brief des ersten Empfängers als PDF zum Drucken. Er wird nicht in der Akte abgelegt."
+msgstr "Öffnet den formatierten Brief des ersten Empfängers als PDF zum Drucken. Er wird nicht in der Akte abgelegt."
+
+msgid "Der Brief trägt den Vermerk «Einschreiben». Mit dem Serienbrief-PDF entsteht je Empfänger eine Pendenz, in der Sie Sendungsnummer und Zugang erfassen."
+msgstr "Der Brief trägt den Vermerk «Einschreiben». Mit dem Serienbrief-PDF entsteht je Empfänger eine Pendenz, in der Sie Sendungsnummer und Zugang erfassen."
+
+msgid "Einschreiben"
+msgstr "Einschreiben"
+
+msgid "Öffnet die formatierten Briefe als PDF im Browser zum Drucken. Sie werden wie beim Serienbrief-PDF in der Akte abgelegt."
+msgstr "Öffnet die formatierten Briefe als PDF im Browser zum Drucken. Sie werden wie beim Serienbrief-PDF in der Akte abgelegt."
+
+msgid "Der Brief trägt den Vermerk «Einschreiben». Je Empfänger entsteht eine Pendenz im Fristen-Center, in der Sie Sendungsnummer und Zugang erfassen."
+msgstr "Der Brief trägt den Vermerk «Einschreiben». Je Empfänger entsteht eine Pendenz im Fristen-Center, in der Sie Sendungsnummer und Zugang erfassen."
+
+msgid "Die Frist wird beim Erstellen des Briefs automatisch im Fristen-Center eingetragen."
+msgstr "Die Frist wird beim Erstellen des Briefs automatisch im Fristen-Center eingetragen."

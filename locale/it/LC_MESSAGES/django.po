@@ -41613,3 +41613,21 @@ msgstr "Età"
 
 msgid "Erledigt am"
 msgstr "Completato il"
+
+msgid "Öffnet den formatierten Brief des ersten Empfängers als PDF zum Drucken. Er wird nicht in der Akte abgelegt."
+msgstr "Apre la lettera formattata del primo destinatario in PDF per la stampa. Non viene archiviata nel fascicolo."
+
+msgid "Der Brief trägt den Vermerk «Einschreiben». Mit dem Serienbrief-PDF entsteht je Empfänger eine Pendenz, in der Sie Sendungsnummer und Zugang erfassen."
+msgstr "La lettera riporta la dicitura «Raccomandata». Con il PDF della lettera in serie viene creata per ogni destinatario una pendenza in cui registrare il numero d'invio e la ricezione."
+
+msgid "Einschreiben"
+msgstr "Raccomandata"
+
+msgid "Öffnet die formatierten Briefe als PDF im Browser zum Drucken. Sie werden wie beim Serienbrief-PDF in der Akte abgelegt."
+msgstr "Apre le lettere formattate in PDF nel browser per la stampa. Vengono archiviate nel fascicolo come per il PDF della lettera in serie."
+
+msgid "Der Brief trägt den Vermerk «Einschreiben». Je Empfänger entsteht eine Pendenz im Fristen-Center, in der Sie Sendungsnummer und Zugang erfassen."
+msgstr "La lettera riporta la dicitura «Raccomandata». Per ogni destinatario viene creata una pendenza nel centro scadenze in cui registrare il numero d'invio e la ricezione."
+
+msgid "Die Frist wird beim Erstellen des Briefs automatisch im Fristen-Center eingetragen."
+msgstr "Il termine viene registrato automaticamente nel centro scadenze alla creazione della lettera."

@@ -84,6 +84,11 @@ def fw_serienbrief_pdf(request):
     from django.db.models import Q as _Q
     from core.services.serienbrief import empfaenger_kontext, frist_aus
     frist_datum, frist_tage = frist_aus(request.POST)
+    # Einschreiben: Vermerk über dem Adressfeld und eine Pendenz für Sendungsnummer und Zugang (wie beim Brief aus Vorlage).
+    einschreiben = request.POST.get('einschreiben') == '1'
+    # «Als Brief drucken»: dieselben formatierten Briefe, im Browser geöffnet statt heruntergeladen — mit Ablage und Pendenz,
+    # damit eine gesetzte Frist auch dann im Fristen-Center steht, wenn man direkt druckt.
+    anzeigen = request.POST.get('anzeigen') == '1'
     empfaenger = []
     verarbeitete_vertraege = set()
     for mid in ids:
@@ -130,7 +135,15 @@ def fw_serienbrief_pdf(request):
             logo_path = None
 
     pdf = generate_serienbrief_pdf(absender, betreff, text, empfaenger,
-                                   logo_path=logo_path, signatur=(vw,))
+                                   logo_path=logo_path, signatur=(vw,), einschreiben=einschreiben)
+    from django.utils import timezone
+
+    from core.models import Pendenz
+    from core.services.brief_aus_vorlage import _pendenz_anlegen
+    from core.services.serienbrief import frist_art_im_text
+    frist_art = frist_art_im_text(betreff, text, frist_datum, frist_tage)
+    heute = timezone.localdate()
+    pendenzen = 0
 
     # Auto-Ablage: pro Empfänger eine eigene (einseitige) Brief-Kopie in dessen
     # Akte ablegen — erscheint automatisch im Mieterportal (portal-sichtbar).
@@ -141,18 +154,27 @@ def fw_serienbrief_pdf(request):
             continue
         v = Mietvertrag.objects.filter(id=e.get('_vertrag_id')).first() if e.get('_vertrag_id') else None
         einzel = generate_serienbrief_pdf(absender, betreff, text, [e],
-                                          logo_path=logo_path, signatur=(vw,))
+                                          logo_path=logo_path, signatur=(vw,), einschreiben=einschreiben)
         # Titel mit aufgelösten Platzhaltern ({liegenschaft} etc.) — nicht roh.
         from core.services.serienbrief import _ersetze
         betreff_aufgeloest = _ersetze(betreff, e) or betreff
         # Ablage am Vertrag (erscheint im Portal beider Personen) + am Hauptmieter
-        if ablegen(einzel, f"Brief: {betreff_aufgeloest}", kategorie='korrespondenz', vertrag=v, mieter=m,
-                   im_portal_sichtbar=True):
+        dok = ablegen(einzel, f"Brief: {betreff_aufgeloest}", kategorie='korrespondenz', vertrag=v, mieter=m,
+                      im_portal_sichtbar=True)
+        if dok:
             abgelegt += 1
+            # Einschreiben oder gesetzte Frist: dieselbe Pendenz wie beim Brief aus Vorlage (Sendungsnummer, Zugang, Fristende).
+            if einschreiben or frist_art:
+                _pendenz_anlegen(Pendenz, dok, m, v, betreff_aufgeloest, einschreiben, frist_art, frist_datum,
+                                 frist_tage, heute, request.user)
+                pendenzen += 1
 
-    log_aktion(request, "Serienbrief-PDF erzeugt", betreff, f"{len(empfaenger)} Empfänger · {abgelegt} abgelegt")
+    log_aktion(request, "Serienbrief-PDF erzeugt", betreff,
+               f"{len(empfaenger)} Empfänger · {abgelegt} abgelegt"
+               + (' · Einschreiben' if einschreiben else '') + (f' · {pendenzen} Pendenz(en)' if pendenzen else ''))
     resp = HttpResponse(pdf, content_type='application/pdf')
-    resp['Content-Disposition'] = f'attachment; filename="serienbrief_{date.today().isoformat()}.pdf"'
+    resp['Content-Disposition'] = (f'{"inline" if anzeigen else "attachment"}; '
+                                   f'filename="serienbrief_{date.today().isoformat()}.pdf"')
     return resp
 
 

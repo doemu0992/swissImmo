@@ -293,6 +293,16 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   alten Kurznamen behalten Vorrang und Bedeutung. `{frist}` / `{frist.tage}`: Nennt der Text eine Frist, erscheinen die Felder
   «Frist bis» und «Frist in Tagen», vorbelegt aus der Vorlage (`brief_aus_vorlage.frist_vorgabe`); ohne Wert bleibt der Platzhalter
   sichtbar stehen — es wird kein Datum erfunden.
+- **Brief aus dem Mitteilungs-Assistenten (23.11.2026):** «Als Brief drucken» druckte die Vorschau aus einem leeren Browserfenster
+  ohne Stilregeln (Logo in voller Grösse, kein Adressfeld). Jetzt liefern «Serienbrief-PDF» und «Als Brief drucken» denselben
+  formatierten Brief (`generate_serienbrief_pdf`, Briefgerüst `DokCanvas.brief`); der Unterschied ist nur Herunterladen oder im
+  Browser öffnen (`anzeigen=1`). Beide legen je Empfänger ab. **Einschreiben** ist wählbar (`#mk-einschreiben`, vorbelegt aus der
+  Vorlage): Vermerk über dem Adressfeld. **Frist:** Setzt der Brieftext eine Frist (`frist_art_im_text`: massgebend ist der Text,
+  nicht das Formularfeld) oder ist Einschreiben gewählt, entsteht je Empfänger dieselbe Pendenz wie beim Brief aus Vorlage
+  (`brief_aus_vorlage._pendenz_anlegen`, Quelle `brief:<Dokument>`); sie steht damit im Fristen-Center. Der Brief setzt
+  «Freundliche Grüsse», Unterschrift und Absender selbst; eine Grussformel am Schluss des Textes wird nicht doppelt gedruckt
+  (`_ohne_schlussgruss`). Ein langer Text läuft auf die Folgeseite (vorher brach er am Seitenende ohne Hinweis ab).
+  Der E-Mail-Versand legt keine Pendenz an (kein abgelegtes Dokument).
 - **Listenform (23.11.2026, Mockup «Immoswiss Listenform»):** Listen, die keine `<table>` sind, bekommen dieselbe Form wie die
   Tabellen: Karte `.fw-card.fw-lf`, Filter im Kartenkopf (`.fw-lf-kopf`), Spaltenkopf (`.fw-lf-spalten`), Zeilen (`.fw-lf-zeile`) im
   selben Raster (`.fw-lf-raster`; die Spalten setzt eine Seitenklasse wie `.fw-lf-objekte`). Zeile: Statuspunkt, Titel mit Unterzeile

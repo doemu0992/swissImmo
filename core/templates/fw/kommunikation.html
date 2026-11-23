@@ -110,6 +110,7 @@ Freundliche Grüsse</textarea>
                     <input type="date" id="mk-frist-datum" class="fw-feld" data-bei-eingabe="aktualisiere" data-bei-aenderung="aktualisiere"></div>
                 <div><label class="fw-label mb-1" for="mk-frist-tage">{% trans "Frist in Tagen" %}</label>
                     <input type="number" id="mk-frist-tage" min="1" max="365" class="fw-feld" data-bei-eingabe="aktualisiere"></div>
+                <p class="fw-hilfe col-span-full">{% trans "Die Frist wird beim Erstellen des Briefs automatisch im Fristen-Center eingetragen." %}</p>
             </div>
             </div>
         </div>
@@ -132,8 +133,13 @@ Freundliche Grüsse</textarea>
                     <small class="fw-hilfe">{% trans "Verschickt die Mitteilung an alle gewählten Mieter mit hinterlegter E-Mail-Adresse." %}</small></span></label>
                 <label class="fw-haekchen"><input type="radio" name="mk-art" value="druck" class="fw-akzent"
                     data-knopf="{% trans 'Als Brief drucken' %}"> <span><b>{% trans "Als Brief drucken" %}</b>
-                    <small class="fw-hilfe">{% trans "Druckt die Vorschau (das Beispiel des ersten Empfängers) direkt aus dem Browser." %}</small></span></label>
+                    <small class="fw-hilfe">{% trans "Öffnet die formatierten Briefe als PDF im Browser zum Drucken. Sie werden wie beim Serienbrief-PDF in der Akte abgelegt." %}</small></span></label>
             </div>
+            {% comment %} Einschreiben (23.11.2026): wie beim Brief aus Vorlage. Der Vermerk steht über dem Adressfeld; beim Serienbrief-PDF
+               entsteht je Empfänger eine Pendenz für Sendungsnummer und Zugang. Für E-Mail ohne Bedeutung. {% endcomment %}
+            <label class="fw-haekchen mt-3" id="mk-einschreiben-zeile"><input type="checkbox" id="mk-einschreiben" class="fw-akzent" data-bei-aenderung="aktualisiere">
+                <span><b>{% trans "Als Einschreiben versenden" %}</b>
+                <small class="fw-hilfe">{% trans "Der Brief trägt den Vermerk «Einschreiben». Je Empfänger entsteht eine Pendenz im Fristen-Center, in der Sie Sendungsnummer und Zugang erfassen." %}</small></span></label>
             <form id="mailForm" method="post" action="/neu/kommunikation/senden/" class="hidden">{% csrf_token %}
                 <input type="hidden" name="betreff" id="mail-betreff">
                 <input type="hidden" name="text" id="mail-text">
@@ -146,6 +152,8 @@ Freundliche Grüsse</textarea>
                 <input type="hidden" name="text" id="pdf-text">
                 <input type="hidden" name="frist_datum" id="pdf-frist-datum">
                 <input type="hidden" name="frist_tage" id="pdf-frist-tage">
+                <input type="hidden" name="einschreiben" id="pdf-einschreiben">
+                <input type="hidden" name="anzeigen" id="pdf-anzeigen">
                 <div id="pdf-empfaenger"></div>
             </form>
             <script nonce="{{ csp_nonce }}">
@@ -169,8 +177,10 @@ Freundliche Grüsse</textarea>
                 d.ids.forEach(function(id){var i=document.createElement('input');i.type='hidden';i.name='empfaenger_id';i.value=id;box.appendChild(i);});
                 document.getElementById('mailForm').submit();
               }
-              function serienbriefPdf(){
+              function serienbriefPdf(anzeigen){
                 var d=_sammleVersand(); if(!d)return;
+                document.getElementById('pdf-einschreiben').value=document.getElementById('mk-einschreiben').checked?'1':'';
+                document.getElementById('pdf-anzeigen').value=anzeigen===true?'1':'';
                 document.getElementById('pdf-betreff').value=d.betreff;
                 document.getElementById('pdf-text').value=d.text;
                 document.getElementById('pdf-frist-datum').value=document.getElementById('mk-frist-datum').value;
@@ -183,7 +193,7 @@ Freundliche Grüsse</textarea>
               function versandAusfuehren(){
                 var art=(document.querySelector('input[name=mk-art]:checked')||{}).value;
                 if(art==='mail') perEmailSenden();
-                else if(art==='druck'){ if(_sammleVersand()) druckeVorschau(); }
+                else if(art==='druck') druckeVorschau();
                 else serienbriefPdf();
               }
             </script>
@@ -214,6 +224,7 @@ Freundliche Grüsse</textarea>
             {% comment %} Logo, Absender, Empfänger-Adresse, Ort/Datum, Betreff, Text {% endcomment %}
             <div id="pv-logo" class="mb-6"></div>
             <div id="pv-absender" class="fw-fs-klein fw-mutet mb-10"></div>
+            <div id="pv-vermerk" class="font-bold hidden">{% trans "Einschreiben" %}</div>
             <div id="pv-empfaenger" class="mb-8 whitespace-pre-line"></div>
             <div id="pv-datum" class="text-right text-xs fw-mutet mb-6"></div>
             <div id="pv-betreff" class="font-bold mb-4"></div>
@@ -248,6 +259,7 @@ function vorlageWaehlen(){
     document.getElementById('nachricht').value = v.inhalt || '';
     document.getElementById('mk-frist-datum').value = v.frist_datum || '';
     document.getElementById('mk-frist-tage').value = v.frist_tage || '';
+    document.getElementById('mk-einschreiben').checked = !!v.einschreiben;
     aktualisiere();
 }
 
@@ -345,6 +357,7 @@ function aktualisiere() {
     const mitFrist = /\{frist(\.[a-z_]+)?\}/.test(document.getElementById('betreff').value + document.getElementById('nachricht').value);
     document.getElementById('mk-frist').classList.toggle('hidden', !mitFrist);
     phLaden(erste);
+    document.getElementById('pv-vermerk').classList.toggle('hidden', !document.getElementById('mk-einschreiben').checked);
 
     document.getElementById('emp-count').textContent = '{% filter escapejs %}{% trans "{n} ausgewählt" %}{% endfilter %}'.replace('{n}', empf.length);
     document.getElementById('preview-hint').textContent = erste ? ('{% filter escapejs %}{% trans "Beispiel:" %}{% endfilter %} ' + erste.name) : '';
@@ -371,21 +384,10 @@ function aktualisiere() {
 document.querySelectorAll('input[name=mk-art]').forEach(function(r){
     r.addEventListener('change', function(){ document.getElementById('mk-los-text').textContent = r.dataset.knopf; });
 });
-function druckeVorschau() {
-    const inhalt = document.getElementById('brief').innerHTML;
-    const w = window.open('', '_blank');
-    // Kein <style>-Block und kein style-Attribut im geschriebenen Text: Das Fenster erbt die Content-Security-Policy.
-    // Das Aussehen kommt aus einem konstruierten Stylesheet des neuen Fensters (kein Inline-Stil, auch nicht per Skript).
-    w.document.write('<html><head><title>Brief</title></head><body>'+inhalt+'</body></html>');
-    w.document.close();
-    try {
-        var blatt = new w.CSSStyleSheet();
-        blatt.replaceSync('body{font-family:Inter,sans-serif;padding:40px;color:#1e293b;line-height:1.6;font-size:14px}'
-            + '.whitespace-pre-line{white-space:pre-line}');
-        w.document.adoptedStyleSheets = [blatt];
-    } catch (e) { /* ältere Browser: Druck ohne eigene Schrift, der Text bleibt lesbar */ }
-    w.focus(); w.print();
-}
+// «Als Brief drucken» (23.11.2026): Vorher druckte der Browser die Vorschau in einem leeren Fenster ohne Stilregeln — Logo in
+// voller Grösse, kein Adressfeld, kein Abstand. Jetzt kommen dieselben formatierten Briefe wie beim Serienbrief-PDF (Briefkopf,
+// Fensteradresse, Betreff), im Browser geöffnet; Ablage, Einschreiben und Frist gelten gleich.
+function druckeVorschau() { serienbriefPdf(true); }
 aktualisiere();
 </script>
 {% endblock %}
