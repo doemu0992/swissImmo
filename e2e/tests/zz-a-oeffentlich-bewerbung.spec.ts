@@ -42,6 +42,25 @@ test.describe.serial('Bewerbung', () => {
     await seite.context().close();
   });
 
+  // «Aus einem Guss»: das offene Formular trägt dieselben Bausteine wie Verwaltung und Portale (gemessen 23.11.2026).
+  test('Guss: Titelschrift, Karten mit Linie, Knöpfe als Pille, Felder 40 px', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(`/bewerben/${OBJEKT}/`, { waitUntil: 'load' });
+    const m = await page.evaluate(() => {
+      const cs = (e: Element) => getComputedStyle(e);
+      const sichtbar = (e: any) => e.offsetWidth > 0 && e.offsetHeight > 0;
+      const h1 = document.querySelector('h1')!;
+      const karten = [...document.querySelectorAll('.fw-card')].map(e => cs(e).borderTopLeftRadius + ' ' + cs(e).boxShadow);
+      return {
+        titel: cs(h1).fontFamily.slice(0, 4) + ' ' + cs(h1).fontWeight,
+        karten: [...new Set(karten)],
+        knoepfe: [...new Set([...document.querySelectorAll('.fw-btn')].map(e => cs(e).minHeight + ' ' + cs(e).borderTopLeftRadius))],
+        felder: [...new Set([...document.querySelectorAll('input.fw-feld, select.fw-feld')].filter(sichtbar).map(e => Math.round(e.getBoundingClientRect().height)))],
+      };
+    });
+    expect(m).toEqual({ titel: 'Sora 700', karten: ['24px none'], knoepfe: ['36px 999px'], felder: [40] });
+  });
+
   test('Telefon 390 px: Kopf heil, DM Sans, kein Querscroll (DESIGN-24)', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/bewerben/${OBJEKT}/`, { waitUntil: 'load' });

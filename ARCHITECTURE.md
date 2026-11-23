@@ -322,6 +322,7 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   holt die Regeln der Schicht; Seiten in `aussen_base.html` bekommen den Titel über `.fw-aussen-inhalt h1`. Wächter:
   `e2e/tests/guss-aussen.spec.ts` (acht Seiten, 1280 und 390 px) und `core/tests/test_guss_aussen.py` (Fehlerseiten und
   Zwei-Faktor, die der Testserver nicht zeigt).
+  Das offene Bewerbungsformular war bereits stimmig; `zz-a-oeffentlich-bewerbung.spec.ts` hält das mit einem Guss-Test fest.
   **Betreiber-Portal im Wächter:** `seed_e2e` legt `e2e-betreiber` (Superuser, `e2e-pass`) an, aber nur bei `DEBUG`
   (so startet `e2e/run-server.sh`); ohne `DEBUG` entsteht kein Konto mit bekanntem Passwort (`core/tests/test_seed_e2e.py`).
   `guss-portale.spec.ts` prüft damit alle neun Betreiber-Seiten. Das Kennzahlenband `.fw-kzn` gilt dort wie in den Akten der
