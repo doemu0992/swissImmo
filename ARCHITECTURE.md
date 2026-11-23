@@ -301,8 +301,12 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   «Ihr Mietobjekt» als helle Karte statt dunklem Verlauf, Felder 40 px. Handgebaute Knöpfe (Tailwind-Klassen) in
   `mieter_kuendigung`, `mieter_tickets`, `mieter_ticket_detail` und den Passwort-Seiten sind `fw-btn fw-primary`.
   Wächter: `e2e/tests/guss-portale.spec.ts` (Titel, Karten, Knöpfe, Felder, Querscrollen auf allen Seiten beider Portale).
-  **Bewusst anders:** Die Portale behalten die Kopfleiste mit Reitern statt der Seitenleiste (wenige Seiten, Telefon zuerst);
-  die Anmeldeseiten behalten ihr eigenes Layout.
+  **Navigation (23.11.2026, Entscheid «alles aus einem Guss»):** Die Portale haben ab 1024 px dieselbe Seitenleiste wie die
+  Verwaltung (`#pSidebar`: 248 px links, Marke oben, Seiten mit Zeichen untereinander, Abschnittstitel, Sprache und Abmelden im
+  Fuss, aktive Seite wie in der Schiene). Vorher wurde dieselbe Leiste am Desktop zur Kopfleiste mit Kapseln umgestellt; das
+  Markup ist unverändert. Am Telefon bleibt der Menüknopf mit ausfahrender Leiste.
+  **Anmeldeseiten** (`core/login.html`, `core/portal_login.html`, auch Betreiber): Titel in der Titelschrift, Felder 40 px,
+  Knopf und Sprachwahl als Pille, Karte mit Linie statt Schatten. Die geteilte Seite mit der Markenfläche bleibt.
 - **Brief aus dem Mitteilungs-Assistenten (23.11.2026):** «Als Brief drucken» druckte die Vorschau aus einem leeren Browserfenster
   ohne Stilregeln (Logo in voller Grösse, kein Adressfeld). Jetzt liefern «Serienbrief-PDF» und «Als Brief drucken» denselben
   formatierten Brief (`generate_serienbrief_pdf`, Briefgerüst `DokCanvas.brief`); der Unterschied ist nur Herunterladen oder im

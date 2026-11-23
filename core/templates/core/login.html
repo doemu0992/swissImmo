@@ -65,12 +65,12 @@
             .mobrand .n { font-weight: 700; font-size: 18px; letter-spacing: -.01em; }
         }
         .head { margin-bottom: 22px; }
-        .head h2 { font-size: 22px; letter-spacing: -.02em; }
+        .head h2 { font-family: var(--ds-disp); font-size: 24px; font-weight: 700; letter-spacing: -.03em; }   /* Guss: Titelschrift wie im Programm */
         .head p { color: var(--muted); font-size: 14px; margin-top: 3px; }
 
         .card {
             background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-            box-shadow: var(--shadow); padding: 26px 26px 28px;
+            box-shadow: none; padding: 26px 26px 28px;   /* Guss: Karte mit Linie, kein Schatten */
         }
         .alert {
             display: flex; gap: 10px; align-items: flex-start; font-size: 13px; font-weight: 500;
@@ -84,8 +84,8 @@
         .inwrap svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--faint); }
         .input {
             width: 100%; font: inherit; font-size: 14px; font-weight: 500; color: var(--ink);
-            background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-sm);
-            padding: 11px 13px 11px 40px;
+            background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm);
+            height: 40px; padding: 0 13px 0 40px;   /* Guss: Feldhöhe wie im Programm */
         }
         .input::placeholder { color: var(--faint); font-weight: 400; }
         .input:focus { outline: none; background: var(--surface); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
@@ -94,7 +94,7 @@
         .forgot a:hover { text-decoration: underline; }
         .submit {
             width: 100%; font: inherit; font-size: 14px; font-weight: 600; color: var(--ds-auf-satt); cursor: pointer;
-            border: 0; border-radius: var(--radius-sm); padding: 13px 16px;
+            border: 0; border-radius: var(--ds-pill); min-height: 40px; padding: 8px 16px;   /* Guss: Knopf als Pille */
             background: var(--ds-brand);
             display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform .06s, filter .15s;
         }
@@ -116,7 +116,7 @@
         /* Sprachwahl (core/_sprachwahl.html) */
         .sprachwahl { display: flex; gap: 4px; justify-content: center; }
         .sprachwahl-knopf {
-            font: inherit; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 8px;
+            font: inherit; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: var(--ds-pill);
             border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer;
         }
         .sprachwahl-knopf:hover { color: var(--ink); border-color: var(--accent); }
