@@ -12,7 +12,9 @@ ABLESUNG — Aufruf an die Mieterschaft einer Liegenschaft, die Zähler abzulese
     </div>
 </div>
 
-<div class="fw-card">
+{% comment %} Listenform (23.11.2026): Spaltenkopf und Raster wie die übrigen Listen. {% endcomment %}
+<div class="fw-card fw-lf fw-lf-pendenzen">
+    {% if zeilen %}<div class="fw-lf-spalten fw-lf-zweispaltig" aria-hidden="true"><span>{% trans "Liegenschaft" %}</span><span></span></div>{% endif %}
     {% for z in zeilen %}
     <div class="fw-zeile" data-testid="ablesung-zeile">
         <div class="fw-mitte">

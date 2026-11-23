@@ -76,3 +76,38 @@ test('Schäden Desktop: Spaltenkopf, Status und Befund stehen als Spalten neben 
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
   await ctx.close();
 });
+
+test('Pendenzen: eine Karte mit Spaltenkopf, Fälligkeit in einer Spalte, Erledigen bleibt', async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await ctx.newPage();
+  await login(page);
+  const titel = `Listenform ${Date.now() % 100000}`;
+  for (const [t, d] of [[titel + ' A', '2026-12-05'], [titel + ' B', '2026-12-20']]) {
+    await goto(page, '/neu/pendenzen/');
+    await page.fill('input[name="titel"]', t);
+    await page.fill('input[name="faellig_am"]', d);
+    await page.locator('form:has(input[name="titel"]) button.fw-btn').last().click();
+    await page.waitForLoadState('domcontentloaded');
+  }
+  await goto(page, '/neu/pendenzen/');
+  const karte = page.locator('.fw-lf-pendenzen').filter({ hasText: titel + ' A' });
+  await expect(karte).toHaveCount(1);
+  await expect(karte.locator('.fw-lf-spalten')).toBeVisible();
+  const a = karte.locator('.fw-zeile').filter({ hasText: titel + ' A' });
+  const b = karte.locator('.fw-zeile').filter({ hasText: titel + ' B' });
+  // Die Fälligkeit beider Zeilen endet an derselben Kante (eine Spalte)
+  const ra = await a.locator('.fw-zeit').evaluate((e) => Math.round(e.getBoundingClientRect().right));
+  const rb = await b.locator('.fw-zeit').evaluate((e) => Math.round(e.getBoundingClientRect().right));
+  expect(ra).toBe(rb);
+  // Erledigen funktioniert weiter
+  await a.locator('button[title="Als erledigt markieren"]').click();
+  await page.waitForLoadState('domcontentloaded');
+  await goto(page, '/neu/pendenzen/');
+  await expect(page.locator('.fw-lf-pendenzen .fw-zeile .line-through', { hasText: titel + ' A' })).toBeVisible();
+  // Telefon: kein Spaltenkopf, nichts quer
+  await page.setViewportSize({ width: 390, height: 844 });
+  await goto(page, '/neu/pendenzen/');
+  await expect(page.locator('.fw-lf-pendenzen .fw-lf-spalten').first()).toBeHidden();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+  await ctx.close();
+});

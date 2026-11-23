@@ -15,11 +15,12 @@
     <!-- Linke Spalte: Fristen + Pendenzen -->
     <div class="fw-cockpit-haupt">
         <!-- Automatische Fristen -->
-        <div class="fw-card">
+        <div class="fw-card fw-lf fw-lf-pendenzen">
             <div class="fw-kopf">
                 <span class="fw-t">{% trans "Automatische Fristen (nächste 90 Tage)" %}</span>
                 <span class="fw-neben">{{ auto|length }}</span>
             </div>
+            {% if auto %}<div class="fw-lf-spalten fw-lf-zweispaltig" aria-hidden="true"><span>{% trans "Frist" %}</span><span>{% trans "Fällig" %}</span></div>{% endif %}
             {% for f in auto %}
             <a href="{{ f.url }}" data-modal="{{ f.titel}}" data-modal-breit class="fw-zeile klick">
                 <span class="fw-marker{% if f.tage < 14 %} crit{% elif f.farbe == 'amber' %} warn{% endif %}"></span>
@@ -37,9 +38,12 @@
         </div>
 
         <!-- Offene Pendenzen — gruppiert nach Bezug (Auszug/Objekt) -->
+        {% comment %} Listenform (23.11.2026): EINE Karte mit Spaltenkopf; der Bezug (Auszug, Objekt) ist eine Gruppenzeile. {% endcomment %}
+        {% if gruppen %}
+        <div class="fw-card fw-lf fw-lf-pendenzen">
+        <div class="fw-lf-spalten fw-lf-zweispaltig" aria-hidden="true"><span>{% trans "Pendenz" %}</span><span>{% trans "Fällig" %}</span></div>
         {% for g in gruppen %}
-        <div class="fw-card">
-            <div class="fw-kopf">
+            <div class="fw-lf-gruppenkopf fw-lf-fest">
                 <span class="fw-ikon">{% zeichen_wert g.icon %}</span>
                 <div class="min-w-0 flex-1">
                     {% if g.url %}
@@ -75,16 +79,18 @@
                 </form>
             </div>
             {% endfor %}
-        </div>
-        {% empty %}
-        <div class="fw-card">{% include 'fw/_empty.html' with icon='gut' titel=_('Keine offenen Pendenzen.') %}</div>
         {% endfor %}
+        </div>
+        {% else %}
+        <div class="fw-card">{% include 'fw/_empty.html' with icon='gut' titel=_('Keine offenen Pendenzen.') %}</div>
+        {% endif %}
         {% include 'fw/_seiten.html' %}
 
         {% if erledigte %}
-        <div class="fw-card">
+        <div class="fw-card fw-lf fw-lf-pendenzen">
             <div class="fw-kopf"><span class="fw-t">{% trans "Erledigt" %}</span>
                 <span class="fw-neben">{{ erledigte|length }}</span></div>
+            <div class="fw-lf-spalten fw-lf-zweispaltig" aria-hidden="true"><span>{% trans "Pendenz" %}</span><span>{% trans "Erledigt am" %}</span></div>
             {% for p in erledigte %}
             <div class="fw-zeile">
                 <span class="fw-marker good"></span>

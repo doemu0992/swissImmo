@@ -41610,3 +41610,6 @@ msgstr "Rendimento, sfitto, cash flow"
 
 msgid "Alter"
 msgstr "Età"
+
+msgid "Erledigt am"
+msgstr "Completato il"

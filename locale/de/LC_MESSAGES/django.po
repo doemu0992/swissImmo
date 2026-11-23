@@ -39909,3 +39909,6 @@ msgstr "Rendite, Leerstand, Cashflow"
 
 msgid "Alter"
 msgstr "Alter"
+
+msgid "Erledigt am"
+msgstr "Erledigt am"

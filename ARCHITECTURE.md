@@ -302,7 +302,13 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Schäden (`/neu/schaeden/`): Die Zeile behält ihr Markup (`.fw-zeile.fw-schadenzeile`, Klick öffnet weiter das Fenster); ab 900 px
   löst `display:contents` die Mitte auf, sodass Titel, Unterzeile (mit Nummer), Status und Befund Rasterzellen unter dem
   Spaltenkopf `.fw-schaden-spalten` werden. Darunter bleibt die gestapelte Zeile.
-  **Noch Zeilenlisten alter Form** (`.fw-zeile`): Pendenzen, Fristen, Ablesung u. a.; sie folgen seitenweise.
+  Pendenzen (`/neu/pendenzen/`, `.fw-lf-pendenzen`): Die offenen Pendenzen stehen in EINER Karte, der Bezug ist eine Gruppenzeile
+  (`.fw-lf-gruppenkopf.fw-lf-fest`, nicht zuklappbar); Fristen, Pendenzen und Erledigtes haben einen Spaltenkopf
+  (`.fw-lf-zweispaltig`), die Fälligkeit steht ab 900 px in einer festen Spalte rechts. Die Zeilen behalten ihr Markup samt
+  Formularen zum Erledigen und Löschen.
+  Fristen (`/neu/fristen/`) und Ablesung (`/neu/ablesung/`) nutzen dieselben Klassen (`.fw-lf.fw-lf-pendenzen` mit Spaltenkopf).
+  **Noch Zeilenlisten alter Form** (`.fw-zeile`): Einstellungs-Übersicht, Abonnement, Daten, MWST, Rechtsgrundlagen, E-Mail-Eingang,
+  «Diese Woche» auf Finanzen.
 - **Aus einem Guss (22.11.2026):** Jeder Baustein hat auf allen Seiten EINE Form; `e2e/tests/guss.spec.ts` misst das am
   gerenderten Bild über alle Seiten der Navigation (61 Adressen) und 14 Detailseiten und nennt die Seite, die abweicht. Die Regeln stehen im Block
   «Aus einem Guss» in `fw/_schicht.html`:

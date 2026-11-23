@@ -41681,3 +41681,6 @@ msgstr "Rendement, vacance, cash-flow"
 
 msgid "Alter"
 msgstr "Ancienneté"
+
+msgid "Erledigt am"
+msgstr "Terminé le"
