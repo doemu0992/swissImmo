@@ -3764,7 +3764,8 @@ und einen Stilblock enthaelt.
             background:transparent;border-color:transparent;border-bottom-color:var(--ds-brand);color:var(--ds-ink);font-weight:600}
         .fw-aktenkopf .fw-reiter button.hier .fw-z,.fw-akten-karte>.fw-reiter button.hier .fw-z{opacity:1}
         .fw-reiter .fw-z{font-family:var(--ds-mono);font-size:12px;background:transparent;border:0;color:var(--ds-faint);padding:0 0 0 4px;min-width:0}
-        .fw-card.fw-akten-karte{background:transparent;border:0;overflow:visible;margin-bottom:18px}
+        /* Guss (23.11.2026): Die Aktenliste steht in derselben Karte wie jede andere Liste (vorher rahmenlos auf dem Seitengrund). */
+        .fw-card.fw-akten-karte{margin-bottom:18px}
         @media (max-width:640px){
             .fw-kpis.fw-band{grid-template-columns:1fr 1fr}
             .fw-kpis.fw-band>.fw-kpi:nth-child(2n){border-right:0}
@@ -4112,6 +4113,22 @@ und einen Stilblock enthaelt.
             html .fw-kpis.fw-stats:not(.fw-gross)>.fw-kpi .fw-v{font-size:18px}
             html .fw-kpis.fw-stats:not(.fw-gross)>.fw-kpi .fw-f{display:none}
         }
+        /* Umschalter (Liste/Monat, Board/Liste) haben die Masse der Filterknöpfe. */
+        @media (min-width:641px){html .fw-segment .fw-seg-link,html .fw-segment button{min-height:32px;font-size:14px;padding:0 14px}}
+        /* Die Zahlenzeile der Akten- und Kontaktlisten (`.fw-statuszeile` mit `.fw-sz`) ist dasselbe Band wie die Kennzahlen: ein Rahmen,
+           Zellen mit Linien, der Farbpunkt bleibt. Die Zeile im Kopf von «Heute» (`.fw-hero`) hat ihre eigene Form. */
+        html .fw-statuszeile:not(.fw-hero .fw-statuszeile){display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0;margin:0 0 18px;
+            background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:var(--ds-radius);overflow:hidden}
+        html .fw-statuszeile:not(.fw-hero .fw-statuszeile)>.fw-sz{justify-content:flex-start;min-height:0;padding:14px 18px;border:0;border-radius:var(--ds-radius-0);
+            background:transparent;box-shadow:1px 0 0 var(--ds-line),0 1px 0 var(--ds-line);font-size:14px;font-weight:600;color:var(--ds-ink);text-decoration:none}
+        html .fw-statuszeile:not(.fw-hero .fw-statuszeile)>a.fw-sz:hover{background:var(--ds-hover);box-shadow:1px 0 0 var(--ds-line),0 1px 0 var(--ds-line)}
+        /* Am Telefon stehen die Zellen untereinander: Nebeneinander brach der Text auf drei Zeilen um (statuszeile.spec.ts). */
+        @media (max-width:640px){
+            html .fw-statuszeile:not(.fw-hero .fw-statuszeile){grid-template-columns:1fr}
+            html .fw-statuszeile:not(.fw-hero .fw-statuszeile)>.fw-sz{padding:10px 16px}
+        }
+        /* Am Telefon haben alle Knöpfe die Fingergrösse (vorher 40 und 44 px gemischt auf 17 Seiten). */
+        @media (max-width:640px){html .fw-btn:not(.fw-mzm-weg),html .fw-btn.fw-knapp:not(.fw-mzm-weg){min-height:44px}}
         /* ===== Ende Aus einem Guss ===== */
         /* ===== Ende MODUL Mix-Entwurf ===== */
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
