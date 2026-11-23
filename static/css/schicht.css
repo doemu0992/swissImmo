@@ -2968,6 +2968,10 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         html .fw-statuszeile:not(.fw-hero .fw-statuszeile)>.fw-sz{justify-content:flex-start;min-height:0;padding:14px 18px;border:0;border-radius:var(--ds-radius-0);
             background:transparent;box-shadow:1px 0 0 var(--ds-line),0 1px 0 var(--ds-line);font-size:14px;font-weight:600;color:var(--ds-ink);text-decoration:none}
         html .fw-statuszeile:not(.fw-hero .fw-statuszeile)>a.fw-sz:hover{background:var(--ds-hover);box-shadow:1px 0 0 var(--ds-line),0 1px 0 var(--ds-line)}
+        @media (min-width:641px){
+            html .fw-statuszeile:not(.fw-hero .fw-statuszeile){display:flex;flex-wrap:wrap}
+            html .fw-statuszeile:not(.fw-hero .fw-statuszeile)>.fw-sz{flex:1 1 180px;white-space:nowrap}
+        }
         @media (max-width:640px){
             html .fw-statuszeile:not(.fw-hero .fw-statuszeile){grid-template-columns:1fr}
             html .fw-statuszeile:not(.fw-hero .fw-statuszeile)>.fw-sz{padding:10px 16px}

@@ -358,6 +358,10 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   tragen `<!--mail-intern-->` und bekommen keinen Adressfuss; die Benachrichtigung über eine neue Schadenmeldung hat neu
   den Knopf «Meldung öffnen». Texte sind unverändert (Mahnung nach Art. 257d OR: Test auf den Wortlaut). Die PDF-Dokumente
   bauen bereits alle auf `DokCanvas` bzw. `dok_base.html` auf und sind nicht betroffen. Tests: `core/tests/test_mail_rahmen.py`.
+  **Statuszeile, fünf Zellen (24.11.2026):** Ab 641 px richtet sich die Zellenbreite nach dem Text (`flex:1 1 180px`,
+  `white-space:nowrap`) statt nach einem festen Raster. Im Bankabgleich kommt die Zelle «älteste N Tage» erst dazu, wenn
+  eine ungeklärte Zahlung einen Tag alt ist; im Raster brach dann der Text in allen Zellen um (70 statt 51 px). Aufgefallen
+  in der CI, die über Mitternacht lief. `statuszeile.spec.ts` setzt die fünfte Zelle jetzt selbst und prüft den Fall jeden Tag.
   **Betreiber-Portal im Wächter:** `seed_e2e` legt `e2e-betreiber` (Superuser, `e2e-pass`) an, aber nur bei `DEBUG`
   (so startet `e2e/run-server.sh`); ohne `DEBUG` entsteht kein Konto mit bekanntem Passwort (`core/tests/test_seed_e2e.py`).
   `guss-portale.spec.ts` prüft damit alle neun Betreiber-Seiten. Das Kennzahlenband `.fw-kzn` gilt dort wie in den Akten der

@@ -4122,6 +4122,14 @@ und einen Stilblock enthaelt.
         html .fw-statuszeile:not(.fw-hero .fw-statuszeile)>.fw-sz{justify-content:flex-start;min-height:0;padding:14px 18px;border:0;border-radius:var(--ds-radius-0);
             background:transparent;box-shadow:1px 0 0 var(--ds-line),0 1px 0 var(--ds-line);font-size:14px;font-weight:600;color:var(--ds-ink);text-decoration:none}
         html .fw-statuszeile:not(.fw-hero .fw-statuszeile)>a.fw-sz:hover{background:var(--ds-hover);box-shadow:1px 0 0 var(--ds-line),0 1px 0 var(--ds-line)}
+        /* Ab 641 px richtet sich die Zellenbreite nach dem Text: Im festen Raster brach der Text um, sobald eine fünfte Zelle
+           dazukam (Bankabgleich: «älteste 1 Tag» erscheint erst, wenn eine ungeklärte Zahlung einen Tag alt ist, also nie
+           am Tag des Seeds; gefunden in der CI um Mitternacht, 70 statt 51 px). Passt die Zeile nicht, bricht sie als
+           Ganzes um, nie der Text in der Zelle. */
+        @media (min-width:641px){
+            html .fw-statuszeile:not(.fw-hero .fw-statuszeile){display:flex;flex-wrap:wrap}
+            html .fw-statuszeile:not(.fw-hero .fw-statuszeile)>.fw-sz{flex:1 1 180px;white-space:nowrap}
+        }
         /* Am Telefon stehen die Zellen untereinander: Nebeneinander brach der Text auf drei Zeilen um (statuszeile.spec.ts). */
         @media (max-width:640px){
             html .fw-statuszeile:not(.fw-hero .fw-statuszeile){grid-template-columns:1fr}
