@@ -3032,6 +3032,10 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-formular-fuss>.fw-geist{order:-1}
         .fw-formular-fuss>.fw-primary{order:9}
         .fw-lesebreite{max-width:920px}
+        html .fw-assistent .fw-kachel.akzent{background:var(--ds-surface);background-image:none;color:var(--ds-ink);border:1px solid var(--ds-line);box-shadow:none}
+        html .fw-assistent .fw-kachel.akzent .fw-kachel-text{color:var(--ds-muted)}
+        html .fw-assistent .fw-kachel.akzent .fw-kachel-zahl,html .fw-assistent .fw-kachel.akzent h3,html .fw-assistent .fw-kachel.akzent .fw-zeichen{color:var(--ds-ink)}
+        html .fw-assistent .fw-kachel.akzent .fw-kachel-zahl small{color:var(--ds-muted)}
         html .fw-card.fw-lf{padding:0;overflow:hidden}
         .fw-lf-kopf{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-bottom:1px solid var(--ds-line)}
         .fw-lf-kopf .fw-filters{margin:0}

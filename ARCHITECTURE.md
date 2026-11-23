@@ -339,6 +339,8 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   bleiben, wie sie sind: rechtsbündig in ihrer Zeile. Wächter: `e2e/tests/guss-formulare.spec.ts`,
   `core/tests/test_guss_formulare.py`. Die Nebenkosten-Schritte 2 bis 6 sind vermessen (stimmig) und stehen im
   Assistenten-Wächter; die Vertragsvorschau zeigt bewusst die Schrift des gedruckten Vertrags.
+  Die Kachel «Kosten total» im Nebenkosten-Assistenten ist ruhig (`.fw-assistent .fw-kachel.akzent`, kein Farbverlauf);
+  die Heute-Karte bleibt der einzige Blickfang dieser Art in der Verwaltung.
   **Betreiber-Portal im Wächter:** `seed_e2e` legt `e2e-betreiber` (Superuser, `e2e-pass`) an, aber nur bei `DEBUG`
   (so startet `e2e/run-server.sh`); ohne `DEBUG` entsteht kein Konto mit bekanntem Passwort (`core/tests/test_seed_e2e.py`).
   `guss-portale.spec.ts` prüft damit alle neun Betreiber-Seiten. Das Kennzahlenband `.fw-kzn` gilt dort wie in den Akten der

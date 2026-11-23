@@ -4173,6 +4173,12 @@
         .fw-formular-fuss>.fw-primary{order:9}
         /* Lesebreite für Seitenformulare, wenn die Seite wegen Kennzahlen oder Tabellen nicht von selbst schmal wird. */
         .fw-lesebreite{max-width:920px}
+        /* Nebenkosten-Assistent: «Kosten total» war die einzige Kennzahl der Assistenten mit Farbverlauf. Sie ist jetzt
+           ruhig wie die übrigen Kacheln (dieselben Werte wie die Akzentkachel der Portale). Die Heute-Karte bleibt Blickfang. */
+        html .fw-assistent .fw-kachel.akzent{background:var(--ds-surface);background-image:none;color:var(--ds-ink);border:1px solid var(--ds-line);box-shadow:none}
+        html .fw-assistent .fw-kachel.akzent .fw-kachel-text{color:var(--ds-muted)}
+        html .fw-assistent .fw-kachel.akzent .fw-kachel-zahl,html .fw-assistent .fw-kachel.akzent h3,html .fw-assistent .fw-kachel.akzent .fw-zeichen{color:var(--ds-ink)}
+        html .fw-assistent .fw-kachel.akzent .fw-kachel-zahl small{color:var(--ds-muted)}
         /* ===== Ende Aus einem Guss ===== */
         /* ===== Listenform (Mockup «Immoswiss Listenform», 23.11.2026) =====
            EINE Form für Listen, die keine `<table>` sind: Karte `.fw-card.fw-lf`, Kopf mit Filtern (`.fw-lf-kopf`), Spaltenkopf
