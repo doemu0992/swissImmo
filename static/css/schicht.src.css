@@ -4112,6 +4112,28 @@
             html .fw-portal-inhalt input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=hidden]),html .fw-portal-inhalt select,
             html .fw-hw-seite input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=hidden]),html .fw-hw-seite select{height:40px;min-height:40px}
         }
+        /* Portale: dieselbe Seitenleiste wie die Verwaltung (23.11.2026). Bis dahin wurde `#pSidebar` ab 1024 px zur Kopfleiste mit
+           Kapseln («Portale: am Desktop wird die Leiste zur Ember-Kopfleiste»). Jetzt steht sie links, 248 px breit, mit Marke oben,
+           Seiten mit Zeichen untereinander, Sprache und Abmelden im Fuss, die aktive Seite wie in der Schiene. Markup unverändert. */
+        @media (min-width:1024px){
+            html .fw-app:has(>#pSidebar){display:flex;align-items:flex-start}
+            html .fw-app:has(>#pSidebar)>.fw-haupt{flex:1 1 auto;min-width:0}
+            html #pSidebar.fw-side{display:flex;flex-direction:column;align-items:stretch;position:sticky;top:0;height:100vh;height:100dvh;width:248px;flex:0 0 248px;
+                max-width:none;margin:0;gap:2px;padding:18px 12px 14px;background:var(--ds-hover);border:0;border-right:1px solid var(--ds-line);box-shadow:none;overflow-y:auto}
+            html #pSidebar .fw-side-kopf,html #pSidebar .fw-nav,html #pSidebar .fw-side-fuss{background:none;border-radius:var(--ds-radius-0);height:auto;box-shadow:none}
+            html #pSidebar .fw-side-kopf{flex:0 0 auto;padding:4px 8px 16px 10px;gap:10px}
+            html #pSidebar .fw-nav{flex:1 1 auto;flex-direction:column;align-items:stretch;gap:2px;padding:0;overflow:visible}
+            html #pSidebar .fw-nav-eintrag{width:100%;height:auto;min-height:40px;padding:8px 12px;gap:12px;border-radius:var(--ds-radius-knopf);white-space:normal;
+                font-size:15px;font-weight:500;color:var(--ds-muted);box-shadow:none}
+            html #pSidebar .fw-nav-eintrag>.fw-zeichen{display:inline-block!important;width:18px!important;height:18px!important;flex:0 0 auto}
+            html #pSidebar .fw-nav-eintrag:hover{background:var(--ds-surface);color:var(--ds-ink)}
+            html #pSidebar .fw-nav-eintrag.hier{background:var(--ds-surface);color:var(--ds-brand-600);font-weight:600;box-shadow:none}
+            html #pSidebar .fw-nav-abschnitt{display:block;margin:12px 12px 4px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ds-faint)}
+            html #pSidebar .fw-side-fuss{flex:0 0 auto;flex-direction:column;align-items:stretch;gap:2px;border-top:1px solid var(--ds-line);padding:8px 0 0}
+            html #pSidebar .fw-side-fuss .fw-profil-abschnitt{padding:4px 8px 8px}
+            html #pSidebar .fw-side-fuss .fw-nav-eintrag{height:auto}
+            html .fw-app:has(>#pSidebar) .fw-portal-inhalt{max-width:1192px;margin-left:0}
+        }
         /* ===== Ende Aus einem Guss ===== */
         /* ===== Listenform (Mockup «Immoswiss Listenform», 23.11.2026) =====
            EINE Form für Listen, die keine `<table>` sind: Karte `.fw-card.fw-lf`, Kopf mit Filtern (`.fw-lf-kopf`), Spaltenkopf

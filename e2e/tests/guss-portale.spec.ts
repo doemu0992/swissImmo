@@ -25,6 +25,15 @@ for (const [portal, konto, seiten] of PORTALE) {
     await page.setViewportSize({ width: 1440, height: 900 });
     await anmelden(page, konto);
     const befunde: string[] = [];
+    // Navigation wie in der Verwaltung: Seitenleiste links (248 px), der Inhalt daneben; die aktive Seite ist markiert
+    await goto(page, seiten[0]);
+    const leiste = await page.locator('#pSidebar').boundingBox();
+    const inhalt = await page.locator('main').boundingBox();
+    expect(Math.round(leiste!.width)).toBe(248);
+    expect(leiste!.x).toBe(0);
+    expect(inhalt!.x).toBeGreaterThanOrEqual(248);
+    await expect(page.locator('#pSidebar .fw-nav-eintrag.hier')).toHaveCount(1);
+    await expect(page.locator('#pSidebar .fw-nav-eintrag').first().locator('svg')).toBeVisible();
     for (const u of seiten) {
       const r = await page.goto(u, { waitUntil: 'domcontentloaded' });
       if (!r || r.status() !== 200) { befunde.push(u + ': Status ' + (r ? r.status() : 0)); continue; }
@@ -60,3 +69,16 @@ for (const [portal, konto, seiten] of PORTALE) {
     expect(befunde, befunde.join('\n')).toEqual([]);
   });
 }
+
+test('Anmeldeseiten: Titelschrift, Feldhöhe und Knopf wie im Programm', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  for (const u of ['/login/', '/portal/login/']) {
+    await goto(page, u);
+    const m = await page.evaluate(() => {
+      const cs = (e: Element) => getComputedStyle(e);
+      const h = document.querySelector('.head h2')!, i = document.querySelector('input[name="username"]')!, k = document.querySelector('.submit')!, c = document.querySelector('.card')!;
+      return { schrift: cs(h).fontFamily.slice(0, 4), feld: Math.round(i.getBoundingClientRect().height), knopf: parseFloat(cs(k).borderTopLeftRadius), schatten: cs(c).boxShadow };
+    });
+    expect(m, u).toEqual({ schrift: 'Sora', feld: 40, knopf: 999, schatten: 'none' });
+  }
+});
