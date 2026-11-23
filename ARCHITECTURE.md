@@ -320,8 +320,10 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   (`.fw-lf-zweispaltig`), die Fälligkeit steht ab 900 px in einer festen Spalte rechts. Die Zeilen behalten ihr Markup samt
   Formularen zum Erledigen und Löschen.
   Fristen (`/neu/fristen/`) und Ablesung (`/neu/ablesung/`) nutzen dieselben Klassen (`.fw-lf.fw-lf-pendenzen` mit Spaltenkopf).
-  **Noch Zeilenlisten alter Form** (`.fw-zeile`): Einstellungs-Übersicht, Abonnement, Daten, MWST, Rechtsgrundlagen, E-Mail-Eingang,
-  «Diese Woche» auf Finanzen.
+  **Alle übrigen Zeilenlisten** (`.fw-zeile`: Einstellungs-Übersicht, Abonnement, Daten, MWST, Rechtsgrundlagen, E-Mail-Eingang,
+  «Als Nächstes fällig» auf Finanzen u. a.) tragen ab 641 px dieselbe Zeile wie die Listenform: Trennlinie über die ganze Breite
+  statt abgerundeter Fläche mit Seitenrand, Titel 14 px/600, Unterzeile 12 px, Mindesthöhe 56 px. Sie sind Menüs oder kurze
+  Listen und haben darum keinen Spaltenkopf. `guss.spec.ts` prüft die Zeilenform auf allen Seiten.
 - **Aus einem Guss (22.11.2026):** Jeder Baustein hat auf allen Seiten EINE Form; `e2e/tests/guss.spec.ts` misst das am
   gerenderten Bild über alle Seiten der Navigation (61 Adressen) und 14 Detailseiten und nennt die Seite, die abweicht. Die Regeln stehen im Block
   «Aus einem Guss» in `fw/_schicht.html`:

@@ -107,6 +107,11 @@ test('Guss: Knöpfe, Karten, Kennzahlen, Felder und linker Rand sind auf allen S
         if (e.closest('.fw-kopffilter')) continue;
         if (Math.round(e.getBoundingClientRect().height) !== 40) { f.push('Feldhöhe ' + Math.round(e.getBoundingClientRect().height)); break; }
       }
+      // Zeilenlisten: dieselbe Zeile überall (Trennlinie über die ganze Breite, keine abgerundete Fläche mit Seitenrand)
+      for (const z of alle('.fw-zeile')) {
+        const c = cs(z);
+        if (parseFloat(c.borderTopLeftRadius) !== 0 || parseFloat(c.marginLeft) !== 0) { f.push('Zeile mit eigener Form: ' + z.className + ' r' + c.borderTopLeftRadius + ' m' + c.marginLeft); break; }
+      }
       const h1 = alle('h1')[0];
       return { f, links: h1 ? Math.round(h1.getBoundingClientRect().left) : -1, einst: !!document.querySelector('.fw-einst-spalten'),
                quer: document.documentElement.scrollWidth > innerWidth };
