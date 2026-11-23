@@ -458,7 +458,8 @@ class SeitenTests(_Basis):
         self.assertNotIn('hidden md:block', markup)
         self.assertNotIn('md:hidden', markup)
         self.assertNotIn('<table', markup)
-        self.assertIn('fw-zeile', markup)
+        # Seit der Listenform (23.11.2026) heisst die Zeile `fw-lf-zeile`; es bleibt EINE Darstellung.
+        self.assertIn('fw-lf-zeile', markup)
 
     def test_der_waechter_wuerde_die_tabelle_auch_wirklich_finden(self):
         """Gegenprobe zur Gegenprobe: `_nur_markup` darf nicht zu viel

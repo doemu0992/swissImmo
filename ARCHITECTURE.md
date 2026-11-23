@@ -285,6 +285,13 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Bestandsfilter mit). «Schaden erfassen» ist ab 900 px eine Schublade von rechts (`#neuschaden.fw-schublade-rechts`, derselbe
   Knopf öffnet und schliesst, dazu das Kreuz); am Telefon klappt das Formular wie bisher in der Seite auf. Die Boards
   (`.fw-spalte`: Schäden, Bewerbungen) nutzen die volle Breite, die Spaltenköpfe stehen in Versalien.
+- **Listenform (23.11.2026, Mockup «Immoswiss Listenform»):** Listen, die keine `<table>` sind, bekommen dieselbe Form wie die
+  Tabellen: Karte `.fw-card.fw-lf`, Filter im Kartenkopf (`.fw-lf-kopf`), Spaltenkopf (`.fw-lf-spalten`), Zeilen (`.fw-lf-zeile`) im
+  selben Raster (`.fw-lf-raster`; die Spalten setzt eine Seitenklasse wie `.fw-lf-objekte`). Zeile: Statuspunkt, Titel mit Unterzeile
+  (`.fw-lf-titel`), Zellen (`.fw-lf-zelle`, `.fw-lf-chips`), Zahl rechts (`.fw-lf-zahl`), Aktion beim Überfahren (`.fw-lf-akt`).
+  Gruppen sind `details.fw-lf-gruppe` und bleiben zuklappbar. Unter 900 px entfällt der Spaltenkopf, die Zeile stapelt.
+  **Umgestellt:** Objekte (`/neu/objekte/`: eine Karte statt einer Karte je Liegenschaft; Mieter, Befund, Mietzins als Spalten).
+  **Noch Zeilenlisten alter Form** (`.fw-zeile`): Schäden, Pendenzen, Fristen, Ablesung u. a.; sie folgen seitenweise.
 - **Aus einem Guss (22.11.2026):** Jeder Baustein hat auf allen Seiten EINE Form; `e2e/tests/guss.spec.ts` misst das am
   gerenderten Bild über alle Seiten der Navigation (61 Adressen) und 14 Detailseiten und nennt die Seite, die abweicht. Die Regeln stehen im Block
   «Aus einem Guss» in `fw/_schicht.html`:

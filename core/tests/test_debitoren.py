@@ -540,7 +540,9 @@ class MieterkontoblattTests(TestCase):
 
         c = Client(); c.force_login(_team_user())
         html = c.get('/neu/objekte/').content.decode('utf-8')
-        self.assertGreaterEqual(html.count('<details class="fw-card"'), 2)
+        # Seit der Listenform (23.11.2026) stehen die Gruppen in EINER Karte, getrennt durch je eine Gruppenzeile.
+        self.assertGreaterEqual(html.count('<details class="fw-lf-gruppe"'), 2)
+        self.assertGreaterEqual(html.count('class="fw-lf-gruppenkopf"'), 2)
         self.assertIn('Zweitweg 2', html)
 
     def test_das_gruppenband_bleibt_dunkler_als_das_zeilenband(self):
