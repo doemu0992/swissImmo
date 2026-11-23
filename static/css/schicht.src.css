@@ -4179,6 +4179,15 @@
             html .fw-lf-pendenzen .fw-zeile>.fw-zeit{grid-column:7;text-align:right;font-size:13px;font-variant-numeric:tabular-nums}
             html .fw-lf-pendenzen .fw-zeile .fw-mitte .fw-t{font-size:14px;font-weight:600}
         }
+        /* Alle übrigen Zeilenlisten (`.fw-zeile`: Einstellungs-Übersicht, Abonnement, Daten, MWST, Rechtsgrundlagen, E-Mail-Eingang,
+           «Diese Woche» …) tragen dieselbe Zeile wie die Listenform: Trennlinie über die ganze Breite statt abgerundeter Fläche mit
+           Seitenrand, Titel 14 px/600, Unterzeile 12 px, gleiche Zeilenhöhe. Am Telefon bleiben die Zeilen eigene Karten. */
+        @media (min-width:641px){
+            html .fw-zeile{min-height:56px;padding:8px 14px;margin:0;border-bottom:1px solid var(--ds-line);border-radius:var(--ds-radius-0)}
+            html .fw-zeile:last-child{border-bottom:0}
+            html .fw-zeile .fw-t{font-size:14px;font-weight:600;line-height:1.3}
+            html .fw-zeile .fw-s{font-size:12px;line-height:1.4;margin-top:1px}
+        }
         /* ===== Ende Listenform ===== */
         /* ===== Ende MODUL Mix-Entwurf ===== */
         /* ===== MODUL Kopfzeile und Omnisearch (27.10.2026) ===== */
