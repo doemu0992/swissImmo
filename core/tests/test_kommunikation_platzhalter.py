@@ -212,3 +212,37 @@ class KommunikationBriefTests(TestCase):
                 self.assertTrue(d.datei)
         for akte in (f'/neu/personen/{self.a.mieter.pk}/', f'/neu/vertraege/{self.a.vertrag.pk}/'):
             self.assertContains(self.c.get(akte), 'Brief: Abmahnung', msg_prefix=akte)
+
+    def test_email_wird_abgelegt_und_traegt_die_frist_ein(self):
+        """Wie beim Brief: Die versandte E-Mail liegt als PDF in der Mieterakte, die Frist steht im Fristen-Center."""
+        from core.models import Pendenz
+        from rentals.models import Dokument
+        with mock.patch('core.utils.email_service.send_ticket_email', return_value=True):
+            self.c.post('/neu/kommunikation/senden/', {
+                'betreff': 'Abmahnung', 'text': TEXT, 'empfaenger_id': [self.a.mieter.pk],
+                'frist_datum': '2026-12-15', 'frist_tage': '10'})
+        with organisation_kontext(self.a.organisation):
+            d = Dokument.objects.get(titel='E-Mail: Abmahnung')
+            self.assertEqual((d.mieter_id, d.vertrag_id, d.kategorie), (self.a.mieter.pk, self.a.vertrag.pk, 'korrespondenz'))
+            p = Pendenz.objects.get(quelle=f'brief:{d.pk}')
+            self.assertEqual(p.faellig_am.isoformat(), '2026-12-15')
+            self.assertFalse(p.einschreiben)
+        self.assertContains(self.c.get('/neu/fristen/'), 'Frist Mieter A: Abmahnung')
+        self.assertContains(self.c.get(f'/neu/personen/{self.a.mieter.pk}/'), 'E-Mail: Abmahnung')
+
+    def test_email_ohne_frist_wird_abgelegt_aber_ohne_pendenz(self):
+        from core.models import Pendenz
+        from rentals.models import Dokument
+        with mock.patch('core.utils.email_service.send_ticket_email', return_value=True):
+            self.c.post('/neu/kommunikation/senden/', {'betreff': 'Info', 'text': 'Guten Tag {name}',
+                                                       'empfaenger_id': [self.a.mieter.pk]})
+        with organisation_kontext(self.a.organisation):
+            self.assertEqual(Dokument.objects.filter(titel='E-Mail: Info').count(), 1)
+            self.assertEqual(Pendenz.objects.filter(quelle__startswith='brief:').count(), 0)
+
+    def test_nicht_versandte_email_wird_nicht_abgelegt(self):
+        from rentals.models import Dokument
+        with mock.patch('core.utils.email_service.send_ticket_email', return_value=False):
+            self.c.post('/neu/kommunikation/senden/', {'betreff': 'Info', 'text': 'Guten Tag', 'empfaenger_id': [self.a.mieter.pk]})
+        with organisation_kontext(self.a.organisation):
+            self.assertEqual(Dokument.objects.filter(titel__startswith='E-Mail:').count(), 0)

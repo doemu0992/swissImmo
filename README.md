@@ -15,6 +15,7 @@ derselben Installation — und wird als Monatsabo betrieben; neue Kunden schalte
 | Bestand | Mandate, Liegenschaften, Objekte, Mietverhältnisse, Personen, Dienstleister, Dokumente |
 | Vermietung | Mieterwechsel, Vermarktung, Bewerbungen, Kündigung und Mietzinsanpassung mit amtlichen Formularen |
 | Finanzen | Sollstellung, QR-Rechnungen, Bankabgleich (camt und CSV), Mahnwesen, Betreibung, Zahllauf (pain.001), Nebenkostenabrechnung, MWST, Kautionen, doppelte Buchhaltung, Jahresabschluss |
+| Kommunikation | Mitteilungen und Rundschreiben mit Live-Vorschau, Vorlagen mit Platzhaltern, Serienbrief-PDF, E-Mail, Einschreiben; Ablage in der Akte, Fristen automatisch im Fristen-Center |
 | Gebäude | Schadenmeldungen (auch per QR-Aushang), Handwerker-Aufträge, Ersatzplanung, Zähler, Schlüssel |
 | Stockwerkeigentum | Beschlüsse, Budget, Erneuerungsfonds, Abstimmung, Inkasso |
 | Portale | Mieterportal, Eigentümerportal, Handwerker-Zugang per Link |
