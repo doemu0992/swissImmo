@@ -331,6 +331,20 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   Schritttitel und unter der Schrittliste steht. Kommunikation und Weiterverrechnen haben eine Pfadzeile; `.fw-brotkrume`
   und `.fw-krumen` zeigen dasselbe Trennzeichen. Die Brief-Vorschau der Kommunikation steht in normaler Schriftstärke wie
   der gedruckte Brief (nur der Betreff fett). Wächter: `e2e/tests/guss-assistenten.spec.ts`.
+  **Seitenformulare (23.11.2026):** Der Fuss eines Seitenformulars ist `.fw-formular-fuss`: Abbrechen zuerst, Hauptknopf
+  rechts aussen (vorher in 25 Formularen links, in 8 rechts). Die Reihenfolge im Bild regelt `order`
+  (`.fw-geist` −1, `.fw-primary` 9), damit der Hauptknopf im Quelltext der erste Absendeknopf bleibt: Enter in einem Feld
+  löst ihn aus (Zahlungsverzug: «Frist ansetzen», nicht «Zusätzlich als PDF öffnen»). Zahlungsverzug und Schlussabrechnung
+  tragen `.fw-lesebreite` (920 px) statt 672 und 768 px. Zeilenformulare in Tabellen und Akten (Bearbeiten einer Zeile)
+  bleiben, wie sie sind: rechtsbündig in ihrer Zeile. Wächter: `e2e/tests/guss-formulare.spec.ts`,
+  `core/tests/test_guss_formulare.py`. Die Nebenkosten-Schritte 2 bis 6 sind vermessen (stimmig) und stehen im
+  Assistenten-Wächter; die Vertragsvorschau zeigt bewusst die Schrift des gedruckten Vertrags.
+  Die Kachel «Kosten total» im Nebenkosten-Assistenten ist ruhig (`.fw-assistent .fw-kachel.akzent`, kein Farbverlauf);
+  die Heute-Karte bleibt der einzige Blickfang dieser Art in der Verwaltung.
+  **Dialoge (23.11.2026):** Das Bestätigungsfenster (`dialog.fw-bestaetigen`, 109 Rückfragen) stand oben links in der Ecke
+  statt mittig: Der Reset setzt `margin:0`, nur `.fw-zdlg` trug `margin:auto`. Jetzt mittig. Fenstertitel einheitlich 18 px
+  (Zuordnen hatte 22 px), das Auswahlfenster «Verwaltung und Bestand» trägt den Radius des Profilmenüs (24 statt 14 px),
+  sein Suchfeld 40 px. Wächter: `e2e/tests/guss-dialoge.spec.ts`.
   **Betreiber-Portal im Wächter:** `seed_e2e` legt `e2e-betreiber` (Superuser, `e2e-pass`) an, aber nur bei `DEBUG`
   (so startet `e2e/run-server.sh`); ohne `DEBUG` entsteht kein Konto mit bekanntem Passwort (`core/tests/test_seed_e2e.py`).
   `guss-portale.spec.ts` prüft damit alle neun Betreiber-Seiten. Das Kennzahlenband `.fw-kzn` gilt dort wie in den Akten der

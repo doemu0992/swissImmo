@@ -193,6 +193,9 @@ Weiss auf Akzent oder mit Begründung (STWEG-Warnrot).
   `fw/_schicht.html` und gilt überall. Neue Seiten der Navigation gehören in die Liste in `guss.spec.ts`.
 - Portale (Mieter, Eigentümer, Betreiber, Handwerker) nutzen dieselben Bausteine: `fw-btn`, Karten mit Linie, Titel in der
   Titelschrift. Keine handgebauten Knöpfe aus Tailwind-Klassen (`e2e/tests/guss-portale.spec.ts`).
+- Formulare: Die Knopfreihe am Ende eines Seitenformulars ist `<div class="fw-formular-fuss">`; Abbrechen als
+  `fw-btn fw-geist`, Hauptknopf als `fw-btn fw-primary`. Den Hauptknopf im Quelltext als ersten Absendeknopf schreiben
+  (Enter), die Schicht stellt ihn nach rechts. Keine eigene Reihe aus `flex`-Klassen (`core/tests/test_guss_formulare.py`).
 - Neuer Assistent: `fw-assistent` in voller Breite (kein `max-w-*` darum), Vorschau nur als `<aside class="fw-assistent-vorschau">`
   mit `fw-assistent-mit-vorschau`, Pfadzeile `fw-brotkrume`; in `e2e/tests/guss-assistenten.spec.ts` eintragen.
 - Neue Seite ohne Anmeldung: in `aussen_base.html` bauen oder `fw-aussen-guss` an den `<body>` setzen und in

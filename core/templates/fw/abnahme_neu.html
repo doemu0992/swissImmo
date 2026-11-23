@@ -82,9 +82,9 @@
         <p class="fw-feldblock breit fw-hilfe">{% trans "Abgeschlossen wird im nächsten Schritt: mit den Unterschriften von Verwaltung und Mieter (oder dem Grund seiner Abwesenheit)." %}</p>
     </div></div>
 
-    <div class="flex items-center gap-3">
-        <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %}{% trans "Protokoll speichern" %}</button>
+    <div class="fw-formular-fuss">
         <a href="/neu/vertraege/{{ v.id }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
+        <button type="submit" class="fw-btn fw-primary">{% zeichen 'speichern' %}{% trans "Protokoll speichern" %}</button>
     </div>
 </form>
 

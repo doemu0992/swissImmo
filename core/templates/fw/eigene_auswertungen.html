@@ -72,9 +72,9 @@
         </fieldset>
         {% endfor %}
         <p class="fw-hilfe mt-3">{% trans "Die Spalten erscheinen in der Reihenfolge, in der sie hier stehen. Die Vorlage gehört der Verwaltung: Das ganze Team kann sie ausführen." %}</p>
-        <div class="flex flex-wrap gap-2 mt-4">
-            <button type="submit" class="fw-btn fw-primary">{% trans "Vorlage speichern" %}</button>
+        <div class="fw-formular-fuss">
             {% if bearbeiten %}<a href="/neu/auswertung/eigene/{{ vorlage.id }}/" class="fw-btn">{% trans "Abbrechen" %}</a>{% endif %}
+            <button type="submit" class="fw-btn fw-primary">{% trans "Vorlage speichern" %}</button>
         </div>
     </form>
 </div>

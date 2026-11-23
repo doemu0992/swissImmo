@@ -8,6 +8,9 @@ const ASSISTENTEN: [string, boolean][] = [
   ['/neu/vertraege/neu/', true], ['/neu/kommunikation/', true], ['/neu/kreditoren/1/weiterverrechnen/', true],
   ['/neu/nebenkosten/neu/', false], ['/neu/liegenschaften/neu/', false], ['/neu/personen/neu/', false],
   ['/neu/vertraege/1/kuendigen/', false], ['/neu/mietzins/1/anpassung/', false], ['/neu/betreibungen/neu/1/', false],
+  // Nebenkosten: alle Schritte der Seed-Periode «NK E2E 2024» (server-seitiger Assistent)
+  ['/neu/nebenkosten/1/periode/', false], ['/neu/nebenkosten/1/kosten/', false], ['/neu/nebenkosten/1/verteilung/', false],
+  ['/neu/nebenkosten/1/heizung/', false], ['/neu/nebenkosten/1/pruefen/', false], ['/neu/nebenkosten/1/abschluss/', false],
 ];
 
 test('Assistenten: gleiche Breite, Schrittliste links, Fuss einzeilig, Vorschau rechts, Pfadzeile', async ({ page }) => {
@@ -24,15 +27,18 @@ test('Assistenten: gleiche Breite, Schrittliste links, Fuss einzeilig, Vorschau 
       const innen = main.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
       const a = r('.fw-assistent')!, l = r('.fw-assistent-leiste')!, i = r('.fw-assistent-inhalt')!, f = r('.fw-assistent-fuss')!, v = r('.fw-assistent-vorschau');
       const pfad = document.querySelector('.fw-kopfleiste .fw-brotkrume, .fw-kopfleiste .fw-krumen, main .fw-brotkrume') as HTMLElement;
+      // Kennzahl-Kacheln im Assistenten sind ruhig: kein Farbverlauf («Kosten total» der Nebenkosten trug einen)
+      const verlauf = [...document.querySelectorAll('.fw-assistent .fw-kachel')].filter(e => getComputedStyle(e).backgroundImage !== 'none').length;
       const vt = document.querySelector('.fw-assistent-vorschau-titel');
       return { breite: Math.round(a.width) === Math.round(innen), leisteLinks: l.right <= i.left && l.height > 150, fuss: Math.round(f.height),
         vorschauRechts: v ? v.left >= i.right : null, vorschauTitel: vt ? getComputedStyle(vt).textTransform + ' ' + getComputedStyle(vt).fontSize : null,
-        pfad: pfad ? pfad.innerText.trim().length > 3 : false };
+        pfad: pfad ? pfad.innerText.trim().length > 3 : false, verlauf };
     });
     if (!m.breite) befunde.push(u + ': Assistent nicht in voller Inhaltsbreite');
     if (!m.leisteLinks) befunde.push(u + ': Schrittliste steht nicht links neben dem Inhalt');
     if (m.fuss > 70) befunde.push(u + ': Fuss ' + m.fuss + ' px (zweizeilig)');
     if (!m.pfad) befunde.push(u + ': keine Pfadzeile');
+    if (m.verlauf) befunde.push(u + ': Kachel mit Farbverlauf');
     if (mitVorschau && (m.vorschauRechts !== true || m.vorschauTitel !== 'uppercase 12px')) befunde.push(u + ': Vorschau ' + m.vorschauRechts + ' / ' + m.vorschauTitel);
     if (!mitVorschau && m.vorschauRechts !== null) befunde.push(u + ': unerwartete Vorschau');
   }

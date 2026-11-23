@@ -55,11 +55,11 @@ sie nur an und schickt sie unverändert zurück. Die Feldnamen
     </div>
     {% endfor %}
 
-    <div class="flex items-center gap-3 flex-wrap">
+    <div class="fw-formular-fuss">
+        <a href="/neu/mandate/{{ md.id }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
         <button type="submit" class="fw-btn fw-primary">
             {% zeichen 'speichern' %}{% trans "Speichern" %}
         </button>
-        <a href="/neu/mandate/{{ md.id }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 {% endblock %}

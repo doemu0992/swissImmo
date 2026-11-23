@@ -30,11 +30,11 @@
         <div class="fw-feldblock"><label class="fw-label">{% trans "Frist (Tage)" %}</label>
             <input name="frist_tage" type="number" value="14" min="1" class="fw-feld fw-num"></div>
     </div></div>
-    <div class="flex items-center gap-3">
+    <div class="fw-formular-fuss">
+        <a href="/neu/vertraege/{{ v.id }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
         <button type="submit" class="fw-btn fw-primary">
             {% zeichen 'drucken' %}{% trans "Mängelrüge als PDF erstellen" %}
         </button>
-        <a href="/neu/vertraege/{{ v.id }}/" class="fw-btn fw-geist">{% trans "Abbrechen" %}</a>
     </div>
 </form>
 {% endblock %}

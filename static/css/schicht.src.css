@@ -4165,6 +4165,27 @@
         html .fw-brotkrume>.fw-zeichen{width:11px!important;height:11px!important;vertical-align:-1px}
         html .fw-krumen>span[aria-hidden="true"]{font-size:0}
         html .fw-krumen>span[aria-hidden="true"]::before{content:"\203A";font-size:14px;line-height:1}
+        /* Formulare aus einem Guss (23.11.2026, gemessen: Hauptknopf in 25 Seitenformularen links, in 8 rechts; Breiten 672,
+           768 und 920 px). Der Fuss eines Seitenformulars ist `.fw-formular-fuss`: Abbrechen zuerst, Hauptknopf rechts aussen.
+           Die Reihenfolge im Bild regelt `order`, damit der Hauptknopf im Quelltext der ERSTE Absendeknopf bleiben darf
+           (Enter in einem Feld löst den ersten aus, z. B. «Frist ansetzen» und nicht «Zusätzlich als PDF öffnen»). */
+        .fw-formular-fuss>.fw-geist{order:-1}
+        .fw-formular-fuss>.fw-primary{order:9}
+        /* Lesebreite für Seitenformulare, wenn die Seite wegen Kennzahlen oder Tabellen nicht von selbst schmal wird. */
+        .fw-lesebreite{max-width:920px}
+        /* Nebenkosten-Assistent: «Kosten total» war die einzige Kennzahl der Assistenten mit Farbverlauf. Sie ist jetzt
+           ruhig wie die übrigen Kacheln (dieselben Werte wie die Akzentkachel der Portale). Die Heute-Karte bleibt Blickfang. */
+        html .fw-assistent .fw-kachel.akzent{background:var(--ds-surface);background-image:none;color:var(--ds-ink);border:1px solid var(--ds-line);box-shadow:none}
+        html .fw-assistent .fw-kachel.akzent .fw-kachel-text{color:var(--ds-muted)}
+        html .fw-assistent .fw-kachel.akzent .fw-kachel-zahl,html .fw-assistent .fw-kachel.akzent h3,html .fw-assistent .fw-kachel.akzent .fw-zeichen{color:var(--ds-ink)}
+        html .fw-assistent .fw-kachel.akzent .fw-kachel-zahl small{color:var(--ds-muted)}
+        /* Dialoge aus einem Guss (23.11.2026, gemessen). Das Bestätigungsfenster stand oben links in der Ecke statt mittig:
+           Der Reset setzt `margin:0`, und nur `.fw-zdlg` trug `margin:auto`. Titel der Fenster 18 px (Zuordnen hatte 22 px),
+           das Auswahlfenster für Verwaltung und Bestand trägt den Radius des Profilmenüs (24 statt 14 px). */
+        dialog.fw-bestaetigen{margin:auto}
+        html .fw-zdlg h2{font-size:18px;letter-spacing:-.01em}
+        html.fw-breit .fw-arbeit-pop:not([hidden]){border-radius:var(--ds-radius)}
+        html .fw-arbeit-pop .fw-feld{height:40px}
         /* ===== Ende Aus einem Guss ===== */
         /* ===== Listenform (Mockup «Immoswiss Listenform», 23.11.2026) =====
            EINE Form für Listen, die keine `<table>` sind: Karte `.fw-card.fw-lf`, Kopf mit Filtern (`.fw-lf-kopf`), Spaltenkopf
