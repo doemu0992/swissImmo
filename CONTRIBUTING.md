@@ -193,6 +193,8 @@ Weiss auf Akzent oder mit Begründung (STWEG-Warnrot).
   `fw/_schicht.html` und gilt überall. Neue Seiten der Navigation gehören in die Liste in `guss.spec.ts`.
 - Portale (Mieter, Eigentümer, Betreiber, Handwerker) nutzen dieselben Bausteine: `fw-btn`, Karten mit Linie, Titel in der
   Titelschrift. Keine handgebauten Knöpfe aus Tailwind-Klassen (`e2e/tests/guss-portale.spec.ts`).
+- Neue Seite ohne Anmeldung: in `aussen_base.html` bauen oder `fw-aussen-guss` an den `<body>` setzen und in
+  `e2e/tests/guss-aussen.spec.ts` eintragen. Keine Tailwind-Schatten (`shadow-*`) auf Karten.
 - Neue Portalseite: Sie kommt zuerst in die Liste (`_mieter_nav.html`, `_eig_nav.html`, `betreiber_base.html`). Die untere
   Leiste am Telefon (`core/templatetags/portal_tabs.py`) zeigt nur eine Auswahl daraus; kein Ziel steht nur dort.
 - Einstellungsseiten: Der Seitentitel ist der Name aus `einstellungen_gruppen()`, es gibt genau eine Pfadzeile (die Krume des
