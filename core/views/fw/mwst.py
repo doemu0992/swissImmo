@@ -17,7 +17,7 @@ from django.utils import timezone
 from core.auth import rolle_erforderlich, ROLLE_VERWALTER, TEAM_ROLLEN
 from core.auth import FINANZ_LESE_ROLLEN
 
-from ._basis import (_global_filter, _mwst_beleg, _mwst_bereits_verbucht,
+from ._basis import (_global_filter, _mwst_beleg, _mwst_bereits_verbucht, _mwst_vermerk,
                      _mwst_periode, _num)
 from core.tenancy import aktuelle_organisation
 from core.utils.parameter import jahr_streng
@@ -56,6 +56,9 @@ def fw_mwst(request):
         'umsatz_steuerbar': p['umsatz_steuerbar'], 'umsatz_brutto': p['umsatz_brutto'],
         'estv': p['estv'], 'saldo_vorteil': p['saldo_vorteil'],
         'mwst_verbucht': _mwst_bereits_verbucht(jahr, quartal, aktive_lg),
+        # Nullabrechnung: nichts zu buchen, aber abschliessbar (Vermerk `MwstAbschluss`).
+        'mwst_ohne_betrag': p['umsatzsteuer'] <= 0 and p['vorsteuer'] <= 0,
+        'mwst_ohne_betrag_abgeschlossen': _mwst_vermerk(jahr, quartal, aktive_lg).exists(),
         'mwst_methode': p['methode'], 'saldosteuersatz': p['saldosteuersatz'],
         'mwst_uid': getattr(vw, 'mwst_uid', '') if vw else '',
         'jahre': list(range(heute.year, heute.year - 5, -1)),

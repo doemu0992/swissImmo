@@ -433,6 +433,16 @@ def fw_mwst_verbuchen(request):
     if aktive_lg:
         ziel += f'&lg={aktive_lg.id}'
 
+    # Abschluss ohne Betrag wieder aufheben (z. B. weil nachträglich doch eine Rechnung in die Periode fiel). Nur der
+    # Vermerk dieser Periode; eine verbuchte Abrechnung wird wie bisher über den Storno ihrer Buchungen geöffnet.
+    if request.POST.get('aufheben'):
+        from ._basis import _mwst_vermerk
+        geloescht, _n = _mwst_vermerk(jahr, quartal, aktive_lg).delete()
+        if geloescht:
+            log_aktion(request, "MWST-Abschluss aufgehoben", _mwst_beleg(jahr, quartal), "ohne Betrag (Nullabrechnung)")
+            messages.success(request, gettext('Abschluss aufgehoben: Die Periode ist wieder offen.'))
+        return redirect(ziel)
+
     if _mwst_bereits_verbucht(jahr, quartal, aktive_lg):
         messages.info(request, gettext('Diese MWST-Periode wurde bereits verbucht.'))
         return redirect(ziel)
@@ -443,7 +453,21 @@ def fw_mwst_verbuchen(request):
     umsatzsteuer, vorsteuer = p['umsatzsteuer'], p['vorsteuer']
     zahllast, methode = p['zahllast'], p['methode']
     if umsatzsteuer <= 0 and vorsteuer <= 0:
-        messages.info(request, gettext('Für diese Periode gibt es keine MWST zu verbuchen.'))
+        # NULLABRECHNUNG: Es gibt nichts zu buchen, die Periode muss sich trotzdem abschliessen lassen (auch eine
+        # Abrechnung über null wird eingereicht). Vorher endete der Weg hier mit einem Hinweis, und die Periode blieb
+        # für immer offen (gemeldet 24.11.2026). Der Vermerk steht statt der Ausbuchung.
+        from finance.models import MwstAbschluss
+        with transaction.atomic():
+            from core.sperren import sperre_organisation
+            from core.tenancy import organisation_der_anfrage
+            sperre_organisation('mwst_verbuchen', organisation_der_anfrage(request).pk)
+            if _mwst_bereits_verbucht(jahr, quartal, aktive_lg):
+                messages.info(request, gettext('Diese MWST-Periode wurde bereits verbucht.'))
+                return redirect(ziel)
+            MwstAbschluss.objects.create(jahr=jahr, quartal=quartal if quartal in ('1', '2', '3', '4') else '',
+                                         liegenschaft=aktive_lg, abgeschlossen_von=request.user)
+        log_aktion(request, "MWST-Abrechnung abgeschlossen", _mwst_beleg(jahr, quartal), "ohne Betrag (Nullabrechnung)")
+        messages.success(request, gettext('MWST-Periode abgeschlossen: Es war kein Betrag zu verbuchen (Nullabrechnung).'))
         return redirect(ziel)
 
     beleg = _mwst_beleg(jahr, quartal)

@@ -41714,3 +41714,27 @@ msgstr "Ouvrir le message"
 
 msgid "Termin bestätigen oder ändern"
 msgstr "Confirmer ou modifier le rendez-vous"
+
+msgid "Periode abgeschlossen"
+msgstr "Période clôturée"
+
+msgid "In dieser Periode war kein Betrag zu verbuchen (Nullabrechnung)."
+msgstr "Aucun montant n'était à comptabiliser pour cette période (décompte nul)."
+
+msgid "Abschluss aufheben"
+msgstr "Annuler la clôture"
+
+msgid "In dieser Periode ist kein Betrag angefallen. Schliessen Sie sie ab, sobald die Abrechnung über null eingereicht ist; es entsteht keine Buchung."
+msgstr "Aucun montant n'a été généré pour cette période. Clôturez-la dès que le décompte nul a été remis ; aucune écriture n'est créée."
+
+msgid "Diese MWST-Periode ohne Betrag abschliessen?"
+msgstr "Clôturer cette période TVA sans montant ?"
+
+msgid "Periode abschliessen"
+msgstr "Clôturer la période"
+
+msgid "MWST-Periode abgeschlossen: Es war kein Betrag zu verbuchen (Nullabrechnung)."
+msgstr "Période TVA clôturée : aucun montant n'était à comptabiliser (décompte nul)."
+
+msgid "Abschluss aufgehoben: Die Periode ist wieder offen."
+msgstr "Clôture annulée : la période est de nouveau ouverte."

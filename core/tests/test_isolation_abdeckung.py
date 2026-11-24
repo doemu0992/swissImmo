@@ -63,7 +63,7 @@ class ErweiterterBestand(MandantenFixture):
                                     Erneuerungsfonds,
                                     ErneuerungsfondsBewegung, Hypothek, Jahresabschluss, Kontoauszug,
                                     KreditorenZahlung, KreditorPosition, LieferantProfil, Mahnung,
-                                    MietzinsKontrolle, NebenkostenBeleg, NebenkostenLernRegel, ZahlerZuordnung,
+                                    MietzinsKontrolle, MwstAbschluss, NebenkostenBeleg, NebenkostenLernRegel, ZahlerZuordnung,
                                     Zahlungsvereinbarung, SperreAenderung)
         from portfolio.models import (EinheitFoto, Lebensdauer, LiegenschaftVerteilschluessel, Unterhalt,
                                       Verteilschluessel, ZaehlerStand)
@@ -107,6 +107,7 @@ class ErweiterterBestand(MandantenFixture):
             organisation=org, fonds=self.zusatz_erneuerungsfonds, art='einlage', betrag=Decimal('100'), jahr=2025))
         self._neu('lieferantprofil', lambda: LieferantProfil.objects.create(
             organisation=org, name_key=f'handwerk-{k.lower()}', name_anzeige=f'Handwerk {k}'))
+        self._neu('mwstabschluss', lambda: MwstAbschluss.objects.create(organisation=org, jahr=2025, quartal='1'))
         self._neu('kreditorposition', lambda: KreditorPosition.objects.create(
             organisation=org, rechnung=self.kreditor, konto=self.konto_soll, betrag=Decimal('500')))
         self._neu('zahlerzuordnung', lambda: ZahlerZuordnung.objects.create(

@@ -41643,3 +41643,27 @@ msgstr "Apri il messaggio"
 
 msgid "Termin bestätigen oder ändern"
 msgstr "Conferma o modifica l'appuntamento"
+
+msgid "Periode abgeschlossen"
+msgstr "Periodo chiuso"
+
+msgid "In dieser Periode war kein Betrag zu verbuchen (Nullabrechnung)."
+msgstr "In questo periodo non c'era alcun importo da contabilizzare (rendiconto a zero)."
+
+msgid "Abschluss aufheben"
+msgstr "Annulla la chiusura"
+
+msgid "In dieser Periode ist kein Betrag angefallen. Schliessen Sie sie ab, sobald die Abrechnung über null eingereicht ist; es entsteht keine Buchung."
+msgstr "In questo periodo non è maturato alcun importo. Chiudetelo non appena il rendiconto a zero è stato inoltrato; non viene creata alcuna registrazione."
+
+msgid "Diese MWST-Periode ohne Betrag abschliessen?"
+msgstr "Chiudere questo periodo IVA senza importo?"
+
+msgid "Periode abschliessen"
+msgstr "Chiudi il periodo"
+
+msgid "MWST-Periode abgeschlossen: Es war kein Betrag zu verbuchen (Nullabrechnung)."
+msgstr "Periodo IVA chiuso: non c'era alcun importo da contabilizzare (rendiconto a zero)."
+
+msgid "Abschluss aufgehoben: Die Periode ist wieder offen."
+msgstr "Chiusura annullata: il periodo è di nuovo aperto."

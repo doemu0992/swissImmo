@@ -39942,3 +39942,27 @@ msgstr "Nachricht öffnen"
 
 msgid "Termin bestätigen oder ändern"
 msgstr "Termin bestätigen oder ändern"
+
+msgid "Periode abgeschlossen"
+msgstr "Periode abgeschlossen"
+
+msgid "In dieser Periode war kein Betrag zu verbuchen (Nullabrechnung)."
+msgstr "In dieser Periode war kein Betrag zu verbuchen (Nullabrechnung)."
+
+msgid "Abschluss aufheben"
+msgstr "Abschluss aufheben"
+
+msgid "In dieser Periode ist kein Betrag angefallen. Schliessen Sie sie ab, sobald die Abrechnung über null eingereicht ist; es entsteht keine Buchung."
+msgstr "In dieser Periode ist kein Betrag angefallen. Schliessen Sie sie ab, sobald die Abrechnung über null eingereicht ist; es entsteht keine Buchung."
+
+msgid "Diese MWST-Periode ohne Betrag abschliessen?"
+msgstr "Diese MWST-Periode ohne Betrag abschliessen?"
+
+msgid "Periode abschliessen"
+msgstr "Periode abschliessen"
+
+msgid "MWST-Periode abgeschlossen: Es war kein Betrag zu verbuchen (Nullabrechnung)."
+msgstr "MWST-Periode abgeschlossen: Es war kein Betrag zu verbuchen (Nullabrechnung)."
+
+msgid "Abschluss aufgehoben: Die Periode ist wieder offen."
+msgstr "Abschluss aufgehoben: Die Periode ist wieder offen."
