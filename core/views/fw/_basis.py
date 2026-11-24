@@ -197,13 +197,28 @@ def _mwst_bereits_verbucht(jahr, quartal, liegenschaft=None):
     # blockiert deshalb ihre eigene UND die Gesamtabrechnung; die Gesamtabrechnung blockiert jede vorhandene.
     if liegenschaft:
         qs = qs.filter(_Q(liegenschaft=liegenschaft) | _Q(liegenschaft__isnull=True))
+    # Eine Periode ohne Betrag hat keine Buchung: Sie ist abgeschlossen, wenn der Vermerk `MwstAbschluss` besteht.
+    # Dieselbe Überlappung wie bei den Buchungen (Jahr und Quartal, Bestand und Liegenschaft).
+    from finance.models import MwstAbschluss
+    vermerk = MwstAbschluss.objects.filter(jahr=jahr)
+    if liegenschaft:
+        vermerk = vermerk.filter(_Q(liegenschaft=liegenschaft) | _Q(liegenschaft__isnull=True))
     if quartal not in ('1', '2', '3', '4'):
-        return qs.exists()                      # Jahr: jede Quartalsabrechnung zählt
+        return qs.exists() or vermerk.exists()  # Jahr: jede Quartalsabrechnung zählt
+    if vermerk.filter(quartal__in=(quartal, '')).exists():
+        return True
     # Quartal: nur das EIGENE Quartal oder eine Jahresabrechnung blockiert.
     # Der Jahresbeleg ist ein Präfix der Quartalsbelege, deshalb wird er über
     # den Trenner « — » abgegrenzt — sonst würde Q1 auch Q2 blockieren.
     return qs.filter(_Q(beleg_text__startswith=f"{_mwst_beleg(jahr, quartal)} ")
                      | _Q(beleg_text__startswith=f"{_mwst_beleg(jahr, '')} —")).exists()
+
+
+def _mwst_vermerk(jahr, quartal, liegenschaft=None):
+    """Der Abschluss-Vermerk GENAU dieser Periode (Nullabrechnung) — zum Anzeigen und zum Aufheben."""
+    from finance.models import MwstAbschluss
+    qs = MwstAbschluss.objects.filter(jahr=jahr, quartal=quartal if quartal in ('1', '2', '3', '4') else '')
+    return qs.filter(liegenschaft=liegenschaft) if liegenschaft else qs.filter(liegenschaft__isnull=True)
 
 
 def _mwst_periode(jahr, quartal, liegenschaft=None):

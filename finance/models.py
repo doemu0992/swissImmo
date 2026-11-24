@@ -1270,6 +1270,52 @@ class Jahresabschluss(OrganisationAusKette):
 
     class Meta: db_table = 'core_jahresabschluss'
 
+class MwstAbschluss(models.Model):
+    """Vermerk «MWST-Periode abgeschlossen» für eine Periode OHNE Betrag (Nullabrechnung).
+
+    Ob eine Periode verbucht ist, liest das Programm sonst an der Ausbuchung von Konto 2200 ab. Ist in der Periode
+    weder Umsatzsteuer noch Vorsteuer angefallen, gibt es nichts zu buchen (`buche` überspringt den Betrag 0) — die
+    Periode liess sich deshalb nie abschliessen und stand dauerhaft als offen da (gemeldet 24.11.2026). Auch eine
+    Abrechnung über null wird der ESTV eingereicht; dieser Vermerk hält fest, dass das geschehen ist.
+
+    Je Verwaltung: eigene Spalte `organisation` (kein Weg über die Liegenschaft, sie ist optional wie in der
+    Verbuchung — leer heisst «ganzer Bestand»)."""
+    organisation = models.ForeignKey('crm.Organisation', on_delete=models.CASCADE, editable=False,
+                                     related_name='%(app_label)s_%(class)s', verbose_name='Organisation')
+    jahr = models.IntegerField("Jahr")
+    #: '' = ganzes Jahr, sonst '1' bis '4' (wie in der Verbuchung und im Belegtext).
+    quartal = models.CharField("Quartal", max_length=1, blank=True, default='')
+    liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE, null=True, blank=True,
+                                     related_name='+', verbose_name='Liegenschaft')
+    abgeschlossen_am = models.DateTimeField(auto_now_add=True)
+    abgeschlossen_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                          editable=False, related_name='+')
+
+    objects = TenantManager()
+    alle_organisationen = AlleOrganisationenManager()
+
+    class Meta:
+        verbose_name = 'MWST-Abschluss (ohne Betrag)'
+        verbose_name_plural = 'MWST-Abschlüsse (ohne Betrag)'
+        constraints = [
+            models.UniqueConstraint(fields=['organisation', 'jahr', 'quartal', 'liegenschaft'],
+                                    condition=models.Q(liegenschaft__isnull=False),
+                                    name='uniq_mwstabschluss_je_liegenschaft'),
+            models.UniqueConstraint(fields=['organisation', 'jahr', 'quartal'],
+                                    condition=models.Q(liegenschaft__isnull=True),
+                                    name='uniq_mwstabschluss_gesamt'),
+        ]
+
+    def save(self, *args, **kwargs):
+        if self.organisation_id is None:
+            from core.organisation_kette import organisation_aus_kontext
+            self.organisation_id = organisation_aus_kontext()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"MWST {self.jahr}" + (f" Q{self.quartal}" if self.quartal else "")
+
+
 class MietzinsKontrolle(OrganisationAusKette):
     ORGANISATION_PFAD = 'liegenschaft'
     liegenschaft = models.ForeignKey('portfolio.Liegenschaft', on_delete=models.CASCADE)

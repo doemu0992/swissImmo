@@ -57,11 +57,25 @@
         <!-- Abrechnung verbuchen: 2200 ausbuchen (sonst wächst das Konto endlos) -->
         <div class="fw-fuss">
             {% if mwst_verbucht %}
+            {% if mwst_ohne_betrag_abgeschlossen %}
+            {# Nullabrechnung: kein Betrag, keine Buchung — abgeschlossen über den Vermerk; er lässt sich wieder aufheben. #}
+            <span class="fw-chip fw-good">{% zeichen 'gut' %}{% trans "Periode abgeschlossen" %}</span>
+            <span>{% trans "In dieser Periode war kein Betrag zu verbuchen (Nullabrechnung)." %}</span>
+            <form method="post" action="/neu/mwst/verbuchen/">
+                {% csrf_token %}
+                <input type="hidden" name="jahr" value="{{ jahr }}">
+                <input type="hidden" name="quartal" value="{{ quartal }}">
+                <input type="hidden" name="aufheben" value="1">
+                {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
+                <button type="submit" class="fw-btn">{% trans "Abschluss aufheben" %}</button>
+            </form>
+            {% else %}
             <span class="fw-chip fw-good">{% zeichen 'gut' %}{% trans "Periode verbucht" %}</span>
             <span>{% trans "Konto 2200 ist für diese Periode ausgebucht. Die Schuld steht auf 2201 (ESTV) bis zur Zahlung." %}</span>
+            {% endif %}
             {% else %}
-            <span>{% if mwst_methode == 'saldo' %}{% trans "Bucht 2200 aus: Vorsteuer verrechnen und Zahllast als Schuld auf 2201 (ESTV), Saldosatz-Vorteil als Ertrag. Die Zahlung selbst wird später über den Bankabgleich gebucht." %}{% else %}{% trans "Bucht 2200 aus: Vorsteuer verrechnen und Zahllast als Schuld auf 2201 (ESTV). Die Zahlung selbst wird später über den Bankabgleich gebucht." %}{% endif %}</span>
-            <form method="post" action="/neu/mwst/verbuchen/" data-bestaetigen="{% filter escapejs %}{% trans "MWST-Abrechnung dieser Periode verbuchen?" %}{% endfilter %}">
+            <span>{% if mwst_ohne_betrag %}{% trans "In dieser Periode ist kein Betrag angefallen. Schliessen Sie sie ab, sobald die Abrechnung über null eingereicht ist; es entsteht keine Buchung." %}{% elif mwst_methode == 'saldo' %}{% trans "Bucht 2200 aus: Vorsteuer verrechnen und Zahllast als Schuld auf 2201 (ESTV), Saldosatz-Vorteil als Ertrag. Die Zahlung selbst wird später über den Bankabgleich gebucht." %}{% else %}{% trans "Bucht 2200 aus: Vorsteuer verrechnen und Zahllast als Schuld auf 2201 (ESTV). Die Zahlung selbst wird später über den Bankabgleich gebucht." %}{% endif %}</span>
+            <form method="post" action="/neu/mwst/verbuchen/" data-bestaetigen="{% filter escapejs %}{% if mwst_ohne_betrag %}{% trans "Diese MWST-Periode ohne Betrag abschliessen?" %}{% else %}{% trans "MWST-Abrechnung dieser Periode verbuchen?" %}{% endif %}{% endfilter %}">
                 {% csrf_token %}
                 <input type="hidden" name="jahr" value="{{ jahr }}">
                 <input type="hidden" name="quartal" value="{{ quartal }}">
@@ -71,7 +85,7 @@
                 {% endcomment %}
                 {% if aktive_lg %}<input type="hidden" name="lg" value="{{ aktive_lg.id }}">{% endif %}
                 <button type="submit" class="fw-btn fw-primary">
-                    {% zeichen 'gut' %}{% trans "Abrechnung verbuchen" %}
+                    {% zeichen 'gut' %}{% if mwst_ohne_betrag %}{% trans "Periode abschliessen" %}{% else %}{% trans "Abrechnung verbuchen" %}{% endif %}
                 </button>
             </form>
             {% endif %}

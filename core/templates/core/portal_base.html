@@ -1,5 +1,5 @@
 {% load zeichen i18n %}
-{% load chf portal_tabs %}<!DOCTYPE html>
+{% load chf portal_tabs statisch %}<!DOCTYPE html>
 {% get_current_language as sprache %}<html lang="{{ sprache|slice:':2'|default:'de' }}">
 <head>
     <meta charset="utf-8">
@@ -22,7 +22,7 @@ Blöcke (`brand_icon`, `brand`, `brand_mobile`, `nav`, `content`, `footer`,
 `scripts`), die Sprachwahl und das Abmelden per POST.
 {% endcomment %}
 <body class="fw-body">
-<div class="fw-app">
+<div class="fw-app fw-portal-app">
 
     <!-- Vorhang (mobil) -->
     <div id="pBackdrop" data-bei-klick="pCloseNav" class="fw-vorhang-mobil hidden"></div>
@@ -76,6 +76,8 @@ Blöcke (`brand_icon`, `brand`, `brand_mobile`, `nav`, `content`, `footer`,
 
             <p class="fw-portal-fuss">{% block footer %}{% trans "immoswiss Mieterportal · Alle Angaben ohne Gewähr" %}{% endblock %}</p>
         </main>
+        {# Lesespalte als Klasse statt als :has()-Kette (static/js/fw-lesespalte.js) #}
+        <script src="{% statisch 'js/fw-lesespalte.js' %}"></script>
     </div>
     {# Untere Leiste am Telefon, wie `#fwTabbar` der Verwaltung; Belegung in core/templatetags/portal_tabs.py #}
     {% portal_tabbar %}

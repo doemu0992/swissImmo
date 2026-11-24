@@ -41048,3 +41048,27 @@ msgstr "Open message"
 
 msgid "Termin bestätigen oder ändern"
 msgstr "Confirm or change appointment"
+
+msgid "Periode abgeschlossen"
+msgstr "Period closed"
+
+msgid "In dieser Periode war kein Betrag zu verbuchen (Nullabrechnung)."
+msgstr "There was no amount to post for this period (nil return)."
+
+msgid "Abschluss aufheben"
+msgstr "Reopen period"
+
+msgid "In dieser Periode ist kein Betrag angefallen. Schliessen Sie sie ab, sobald die Abrechnung über null eingereicht ist; es entsteht keine Buchung."
+msgstr "No amount arose in this period. Close it once the nil return has been filed; no booking is created."
+
+msgid "Diese MWST-Periode ohne Betrag abschliessen?"
+msgstr "Close this VAT period without an amount?"
+
+msgid "Periode abschliessen"
+msgstr "Close period"
+
+msgid "MWST-Periode abgeschlossen: Es war kein Betrag zu verbuchen (Nullabrechnung)."
+msgstr "VAT period closed: there was no amount to post (nil return)."
+
+msgid "Abschluss aufgehoben: Die Periode ist wieder offen."
+msgstr "Closure undone: the period is open again."
