@@ -193,6 +193,9 @@ Weiss auf Akzent oder mit Begründung (STWEG-Warnrot).
   `fw/_schicht.html` und gilt überall. Neue Seiten der Navigation gehören in die Liste in `guss.spec.ts`.
 - Portale (Mieter, Eigentümer, Betreiber, Handwerker) nutzen dieselben Bausteine: `fw-btn`, Karten mit Linie, Titel in der
   Titelschrift. Keine handgebauten Knöpfe aus Tailwind-Klassen (`e2e/tests/guss-portale.spec.ts`).
+- Leistung: Kein `:has()` am Seitengerüst (`html`, `body`, `main`, `.fw-app`, `.fw-inhalt`, `.fw-mit-schiene` …). Was die
+  ganze Seite betrifft, steht als Klasse am Gerüst (vom Server oder einmal per Skript gesetzt). `:has()` nur an kleinen
+  Bausteinen (Feld, Zeile, Karte). `core/tests/test_stil_leistung.py` hält das fest.
 - E-Mails: Eine neue Mail ist eine Vorlage unter `core/templates/emails/`, die nur den Inhalt liefert (kein `<body>`,
   keine eigenen Farben; Stile aus `{{ stil.… }}`), gerendert mit `mail_html` und versendet über `send_via_hoststar`. Den
   Rahmen setzt der Versand. Links als Knopf: `klartext_html(text, link, beschriftung)`.

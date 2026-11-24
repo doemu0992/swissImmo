@@ -2471,10 +2471,10 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-tab-plus:hover{background:var(--ds-brand);color:var(--ds-auf-satt)}
             .fw-tab-zahl{position:absolute;top:0;left:calc(50% + 6px);min-width:16px;height:16px;padding:0 4px;border-radius:var(--ds-pill);background:var(--ds-crit);color:var(--ds-auf-satt);font-size:12px;font-weight:600;line-height:16px;text-align:center}
             .fw-tab-zahl[hidden]{display:none}
-            .fw-mit-schiene:has(#fwTabbar){--fw-tab-h:calc(68px + env(safe-area-inset-bottom,0px))}
-            .fw-mit-schiene:has(#fwTabbar) .fw-haupt{padding-bottom:var(--fw-tab-h)}
-            .fw-mit-schiene:has(#fwTabbar) :is(.fw-freigabe,.fw-assistent-fuss,.fw-split-fuss,.fw-sk-absenden){bottom:calc(var(--fw-tab-h) + 8px)}
-            .fw-mit-schiene:has(#fwTabbar) .fw-toasts{bottom:calc(var(--fw-tab-h) + 8px)}
+            .fw-mit-tabbar{--fw-tab-h:calc(68px + env(safe-area-inset-bottom,0px))}
+            .fw-mit-tabbar .fw-haupt{padding-bottom:var(--fw-tab-h)}
+            .fw-mit-tabbar :is(.fw-freigabe,.fw-assistent-fuss,.fw-split-fuss,.fw-sk-absenden){bottom:calc(var(--fw-tab-h) + 8px)}
+            .fw-mit-tabbar .fw-toasts{bottom:calc(var(--fw-tab-h) + 8px)}
         }
         @media print{.fw-tabbar{display:none!important}}
         @media print{.fw-schiene,.fw-fach,.fw-schiene-vorhang,.fw-menue-knopf{display:none!important}.fw-mit-schiene .fw-haupt{margin-left:0}}
@@ -2577,7 +2577,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
         .fw-schrittliste .fw-schritt .fw-t{font-weight:500}
         .fw-btn.fw-knapp.fw-primary{box-shadow:none}
         @media (min-width:1280px){
-            .fw-inhalt:not(:has(table)):not(:has(.fw-cockpit)):not(:has(.fw-bento)):not(:has(.fw-kpis)):not(:has(.fw-split)):not(:has(.fw-zwei)):not(:has(.fw-assistent)):not(:has(.fw-raster.l3)):not(:has(.fw-schadenliste)):not(:has(.fw-spalte)):not(:has(.fw-la-spalten)):not(:has(.fw-einst-spalten))>*{max-width:920px}
+            .fw-inhalt.fw-lesespalte>*{max-width:920px}
         }
         @media (max-width:640px){
             html .fw-mit-schiene .fw-kopfleiste{background:var(--ds-surface);border-bottom:1px solid var(--ds-line)}
@@ -2926,7 +2926,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             .fw-einst-nav a{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:var(--ds-radius-sm);font-size:13px;color:var(--ds-muted);text-decoration:none}
             .fw-einst-nav a:hover{background:var(--ds-hover);color:var(--ds-ink)}
             .fw-einst-nav a[aria-current="page"]{background:var(--ds-surface);color:var(--ds-ink);font-weight:600;box-shadow:inset 2px 0 0 var(--ds-brand)}
-            .fw-einst-seite:not(:has(table)){max-width:860px}
+            .fw-einst-seite.fw-ohne-tabelle{max-width:860px}
             .fw-einst-seite>.fw-listwerkzeug:has(#einstSuche){display:none}
             .fw-einst-nav a.hidden,.fw-einst-nav>div.hidden{display:none}
         }
@@ -2994,8 +2994,8 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             html .fw-hw-seite input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=hidden]),html .fw-hw-seite select{height:40px;min-height:40px}
         }
         @media (min-width:1024px){
-            html .fw-app:has(>#pSidebar){display:flex;align-items:flex-start}
-            html .fw-app:has(>#pSidebar)>.fw-haupt{flex:1 1 auto;min-width:0}
+            html .fw-portal-app{display:flex;align-items:flex-start}
+            html .fw-portal-app>.fw-haupt{flex:1 1 auto;min-width:0}
             html #pSidebar.fw-side{display:flex;flex-direction:column;align-items:stretch;position:sticky;top:0;height:100vh;height:100dvh;width:248px;flex:0 0 248px;
                 max-width:none;margin:0;gap:2px;padding:18px 12px 14px;background:var(--ds-hover);border:0;border-right:1px solid var(--ds-line);box-shadow:none;overflow-y:auto}
             html #pSidebar .fw-side-kopf,html #pSidebar .fw-nav,html #pSidebar .fw-side-fuss{background:none;border-radius:var(--ds-radius-0);height:auto;box-shadow:none}
@@ -3010,7 +3010,7 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             html #pSidebar .fw-side-fuss{flex:0 0 auto;flex-direction:column;align-items:stretch;gap:2px;border-top:1px solid var(--ds-line);padding:8px 0 0}
             html #pSidebar .fw-side-fuss .fw-profil-abschnitt{padding:4px 8px 8px}
             html #pSidebar .fw-side-fuss .fw-nav-eintrag{height:auto}
-            html .fw-app:has(>#pSidebar) .fw-portal-inhalt{max-width:1192px;margin-left:0}
+            html .fw-portal-app .fw-portal-inhalt{max-width:1192px;margin-left:0}
         }
         .fw-portal-top-marke{display:none}
         @media (max-width:640px){
@@ -3018,9 +3018,9 @@ body { font-family: var(--ds-font); font-size:14px; line-height:1.5; -webkit-fon
             html .fw-portal-top>.fw-knopf-rund{display:none}
             html .fw-portal-top-marke{display:grid}
             html .fw-portal-top .fw-nav-zahl{display:none}
-            html .fw-app:has(>#pTabbar){--fw-tab-h:calc(68px + env(safe-area-inset-bottom,0px))}
-            html .fw-app:has(>#pTabbar) .fw-haupt{padding-bottom:var(--fw-tab-h)}
-            html .fw-app:has(>#pTabbar) :is(.fw-freigabe,.fw-assistent-fuss,.fw-split-fuss,.fw-sk-absenden,.fw-toasts){bottom:calc(var(--fw-tab-h) + 8px)}
+            html .fw-portal-app{--fw-tab-h:calc(68px + env(safe-area-inset-bottom,0px))}
+            html .fw-portal-app .fw-haupt{padding-bottom:var(--fw-tab-h)}
+            html .fw-portal-app :is(.fw-freigabe,.fw-assistent-fuss,.fw-split-fuss,.fw-sk-absenden,.fw-toasts){bottom:calc(var(--fw-tab-h) + 8px)}
         }
         html .fw-aussen-guss h1,html .fw-aussen-inhalt h1{font-family:var(--ds-disp);font-weight:700;letter-spacing:-.03em}
         html .fw-aussen-guss h1{font-size:24px;line-height:1.2}

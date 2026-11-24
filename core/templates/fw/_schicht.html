@@ -3513,10 +3513,10 @@ und einen Stilblock enthaelt.
             .fw-tab-zahl{position:absolute;top:0;left:calc(50% + 6px);min-width:16px;height:16px;padding:0 4px;border-radius:var(--ds-pill);background:var(--ds-crit);color:var(--ds-auf-satt);font-size:12px;font-weight:600;line-height:16px;text-align:center}
             .fw-tab-zahl[hidden]{display:none}
             /* Alles, was unten klebt, rückt über die Leiste (sonst verdeckt sie Fusszeilen und Meldungen, E2E «Abnahme-Assistent» am Telefon). */
-            .fw-mit-schiene:has(#fwTabbar){--fw-tab-h:calc(68px + env(safe-area-inset-bottom,0px))}
-            .fw-mit-schiene:has(#fwTabbar) .fw-haupt{padding-bottom:var(--fw-tab-h)}
-            .fw-mit-schiene:has(#fwTabbar) :is(.fw-freigabe,.fw-assistent-fuss,.fw-split-fuss,.fw-sk-absenden){bottom:calc(var(--fw-tab-h) + 8px)}
-            .fw-mit-schiene:has(#fwTabbar) .fw-toasts{bottom:calc(var(--fw-tab-h) + 8px)}
+            .fw-mit-tabbar{--fw-tab-h:calc(68px + env(safe-area-inset-bottom,0px))}
+            .fw-mit-tabbar .fw-haupt{padding-bottom:var(--fw-tab-h)}
+            .fw-mit-tabbar :is(.fw-freigabe,.fw-assistent-fuss,.fw-split-fuss,.fw-sk-absenden){bottom:calc(var(--fw-tab-h) + 8px)}
+            .fw-mit-tabbar .fw-toasts{bottom:calc(var(--fw-tab-h) + 8px)}
         }
         @media print{.fw-tabbar{display:none!important}}
         @media print{.fw-schiene,.fw-fach,.fw-schiene-vorhang,.fw-menue-knopf{display:none!important}.fw-mit-schiene .fw-haupt{margin-left:0}}
@@ -3656,7 +3656,9 @@ und einen Stilblock enthaelt.
         /* Schmale Lesespalte wie im Mockup (`.wrap` 920 px): Seiten ohne Tabelle, ohne Cockpit und ohne Kachelraster stehen ab 1280 px
            schmal, aber am selben linken Rand wie alle anderen Seiten (Guss: kein Mittigsetzen mehr). Tabellen und Arbeitsflächen behalten die volle Breite. */
         @media (min-width:1280px){
-            .fw-inhalt:not(:has(table)):not(:has(.fw-cockpit)):not(:has(.fw-bento)):not(:has(.fw-kpis)):not(:has(.fw-split)):not(:has(.fw-zwei)):not(:has(.fw-assistent)):not(:has(.fw-raster.l3)):not(:has(.fw-schadenliste)):not(:has(.fw-spalte)):not(:has(.fw-la-spalten)):not(:has(.fw-einst-spalten))>*{max-width:920px}
+            /* Die Klasse setzt static/js/fw-lesespalte.js einmal je Seite. Als `:has()`-Kette am Inhaltsbereich kostete die Regel bei
+               jeder Änderung im Inhalt eine volle Neuberechnung (24.11.2026: 113 ms -> 900 ms für dieselben Handgriffe). */
+            .fw-inhalt.fw-lesespalte>*{max-width:920px}
         }
         /* Handy wie im Mockup: weisse Kopfleiste mit Linie; jede Zeile eine eigene Karte mit Statuspunkt auf dem Seitengrund. */
         @media (max-width:640px){
@@ -4066,7 +4068,8 @@ und einen Stilblock enthaelt.
             .fw-einst-nav a{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:var(--ds-radius-sm);font-size:13px;color:var(--ds-muted);text-decoration:none}
             .fw-einst-nav a:hover{background:var(--ds-hover);color:var(--ds-ink)}
             .fw-einst-nav a[aria-current="page"]{background:var(--ds-surface);color:var(--ds-ink);font-weight:600;box-shadow:inset 2px 0 0 var(--ds-brand)}
-            .fw-einst-seite:not(:has(table)){max-width:860px}
+            /* Klasse aus static/js/fw-lesespalte.js (vorher `:not(:has(table))`, siehe dort). */
+            .fw-einst-seite.fw-ohne-tabelle{max-width:860px}
             /* Auf der Übersicht steht das Suchfeld schon in der Seitenliste. */
             .fw-einst-seite>.fw-listwerkzeug:has(#einstSuche){display:none}
             .fw-einst-nav a.hidden,.fw-einst-nav>div.hidden{display:none}
@@ -4162,8 +4165,8 @@ und einen Stilblock enthaelt.
            Kapseln («Portale: am Desktop wird die Leiste zur Ember-Kopfleiste»). Jetzt steht sie links, 248 px breit, mit Marke oben,
            Seiten mit Zeichen untereinander, Sprache und Abmelden im Fuss, die aktive Seite wie in der Schiene. Markup unverändert. */
         @media (min-width:1024px){
-            html .fw-app:has(>#pSidebar){display:flex;align-items:flex-start}
-            html .fw-app:has(>#pSidebar)>.fw-haupt{flex:1 1 auto;min-width:0}
+            html .fw-portal-app{display:flex;align-items:flex-start}
+            html .fw-portal-app>.fw-haupt{flex:1 1 auto;min-width:0}
             html #pSidebar.fw-side{display:flex;flex-direction:column;align-items:stretch;position:sticky;top:0;height:100vh;height:100dvh;width:248px;flex:0 0 248px;
                 max-width:none;margin:0;gap:2px;padding:18px 12px 14px;background:var(--ds-hover);border:0;border-right:1px solid var(--ds-line);box-shadow:none;overflow-y:auto}
             html #pSidebar .fw-side-kopf,html #pSidebar .fw-nav,html #pSidebar .fw-side-fuss{background:none;border-radius:var(--ds-radius-0);height:auto;box-shadow:none}
@@ -4178,7 +4181,7 @@ und einen Stilblock enthaelt.
             html #pSidebar .fw-side-fuss{flex:0 0 auto;flex-direction:column;align-items:stretch;gap:2px;border-top:1px solid var(--ds-line);padding:8px 0 0}
             html #pSidebar .fw-side-fuss .fw-profil-abschnitt{padding:4px 8px 8px}
             html #pSidebar .fw-side-fuss .fw-nav-eintrag{height:auto}
-            html .fw-app:has(>#pSidebar) .fw-portal-inhalt{max-width:1192px;margin-left:0}
+            html .fw-portal-app .fw-portal-inhalt{max-width:1192px;margin-left:0}
         }
         /* Portale am Telefon: untere Leiste wie die Verwaltung (`#pTabbar`, dieselben Regeln wie `.fw-tabbar`). «Mehr» öffnet die
            Leiste `#pSidebar`; der Menüknopf der Kopfzeile entfällt bis 640 px, dort steht das Markenzeichen. Die Leiste liegt
@@ -4189,9 +4192,9 @@ und einen Stilblock enthaelt.
             html .fw-portal-top>.fw-knopf-rund{display:none}
             html .fw-portal-top-marke{display:grid}
             html .fw-portal-top .fw-nav-zahl{display:none}
-            html .fw-app:has(>#pTabbar){--fw-tab-h:calc(68px + env(safe-area-inset-bottom,0px))}
-            html .fw-app:has(>#pTabbar) .fw-haupt{padding-bottom:var(--fw-tab-h)}
-            html .fw-app:has(>#pTabbar) :is(.fw-freigabe,.fw-assistent-fuss,.fw-split-fuss,.fw-sk-absenden,.fw-toasts){bottom:calc(var(--fw-tab-h) + 8px)}
+            html .fw-portal-app{--fw-tab-h:calc(68px + env(safe-area-inset-bottom,0px))}
+            html .fw-portal-app .fw-haupt{padding-bottom:var(--fw-tab-h)}
+            html .fw-portal-app :is(.fw-freigabe,.fw-assistent-fuss,.fw-split-fuss,.fw-sk-absenden,.fw-toasts){bottom:calc(var(--fw-tab-h) + 8px)}
         }
         /* Aussenseiten (Passwort zurücksetzen, Fehlerseiten 400/403/404/500, «nicht mehr ausgeschrieben»): dieselben Bausteine.
            Gemessen 23.11.2026: Titel in Inter 600 (18–24 px), Karte mit Schatten, Felder 46 px. `fw-aussen-guss` steht am <body>. */

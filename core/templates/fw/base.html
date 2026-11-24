@@ -60,7 +60,7 @@ WAS AUS DER ALTEN HUELLE WOHIN GING — nichts ist weggefallen:
 Die Ids und Funktionsnamen sind unveraendert — Tests, `_fwmodal.html` und die
 Detailseiten rufen sie beim Namen.
 {% endcomment %}
-<body class="fw-body{% if fw_nav_gruppen %} fw-mit-schiene{% endif %}">
+<body class="fw-body{% if fw_nav_gruppen %} fw-mit-schiene{% endif %}{% if fw_nav_gruppen and not fw_kopf_reduziert %} fw-mit-tabbar{% endif %}">
 <a href="#fw-inhalt" class="fw-skip">{% trans "Zum Inhalt springen" %}</a>
 <div class="fw-app">
 
@@ -424,6 +424,8 @@ Detailseiten rufen sie beim Namen.
             {% block content %}{% endblock %}
             {% if fw_einst_rahmen %}</div></div>{% endif %}
         </main>
+        {# Lesespalte als Klasse statt als :has()-Kette (static/js/fw-lesespalte.js) #}
+        <script src="{% statisch 'js/fw-lesespalte.js' %}"></script>
     </div>
 </div>
 {% if fw_palette or fw_suche_gruppen %}

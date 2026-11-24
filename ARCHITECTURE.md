@@ -362,6 +362,17 @@ nur die Gestalt; Markup, Ziele und Funktionen bleiben (Wächter `test_routen_bas
   `white-space:nowrap`) statt nach einem festen Raster. Im Bankabgleich kommt die Zelle «älteste N Tage» erst dazu, wenn
   eine ungeklärte Zahlung einen Tag alt ist; im Raster brach dann der Text in allen Zellen um (70 statt 51 px). Aufgefallen
   in der CI, die über Mitternacht lief. `statuszeile.spec.ts` setzt die fünfte Zelle jetzt selbst und prüft den Fall jeden Tag.
+  **Leistung der Stilregeln (24.11.2026, Meldung «extrem langsam»):** `:has()` am Seitengerüst liess den Browser bei jeder
+  Änderung im Inhalt alles neu berechnen. Gemessen über acht Seiten (Maus über Zeilen, 40 kleine Änderungen): 113 ms
+  Stilberechnung vor «Aus einem Guss», 900 ms danach, bis 1500 ms mit der Portal-Seitenleiste; nach dem Umbau 98 ms.
+  Ersetzt sind: die Lesespalte (`.fw-inhalt:not(:has(table))…` -> Klasse `fw-lesespalte`, gesetzt von
+  `static/js/fw-lesespalte.js` direkt nach `</main>`, mit Beobachter für nachgeladene Tabellen), die Einstellungsseite
+  (`fw-ohne-tabelle`), die Portal-Hülle (`.fw-app:has(>#pSidebar)` -> `fw-portal-app` in `portal_base.html`) und die
+  Tableiste (`.fw-mit-schiene:has(#fwTabbar)` -> `fw-mit-tabbar` am `<body>`). Wächter: `core/tests/test_stil_leistung.py`.
+  **MWST-Nullabrechnung (24.11.2026):** Eine Periode ohne Betrag liess sich nie abschliessen, weil «verbucht» nur an der
+  Ausbuchung von 2200 erkannt wurde. Neu hält `finance.MwstAbschluss` (je Organisation, Migration 0062) den Abschluss fest;
+  `_mwst_bereits_verbucht` berücksichtigt ihn mit derselben Überlappung wie die Buchungen, er lässt sich aufheben.
+  Tests: `core/tests/test_mwst_nullabrechnung.py`.
   **Betreiber-Portal im Wächter:** `seed_e2e` legt `e2e-betreiber` (Superuser, `e2e-pass`) an, aber nur bei `DEBUG`
   (so startet `e2e/run-server.sh`); ohne `DEBUG` entsteht kein Konto mit bekanntem Passwort (`core/tests/test_seed_e2e.py`).
   `guss-portale.spec.ts` prüft damit alle neun Betreiber-Seiten. Das Kennzahlenband `.fw-kzn` gilt dort wie in den Akten der
